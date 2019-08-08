@@ -66,7 +66,7 @@
 #undef getarg_
 #define iargc_ petsccommandargumentcount_
 #define getarg_ petscgetcommandargument_
-#elif defined(PETSC_HAVE_GFORTRAN_IARGC) /* gfortran from gcc4 */
+#elif defined(PETSC_HAVE__GFORTRAN_IARGC) /* gfortran from gcc4 */
 #undef iargc_
 #undef getarg_
 #define iargc_  _gfortran_iargc
@@ -158,7 +158,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_DynamicLibraries(void);
 #if defined(PETSC_USE_LOG)
 PETSC_INTERN PetscErrorCode PetscLogInitialize(void);
 #endif
-PETSC_EXTERN PetscErrorCode PetscMallocAlign(size_t,int,const char[],const char[],void**);
+PETSC_EXTERN PetscErrorCode PetscMallocAlign(size_t,PetscBool,int,const char[],const char[],void**);
 PETSC_EXTERN PetscErrorCode PetscFreeAlign(void*,int,const char[],const char[]);
 PETSC_INTERN int  PetscGlobalArgc;
 PETSC_INTERN char **PetscGlobalArgs;
@@ -192,7 +192,7 @@ PetscErrorCode PETScParseFortranArgs_Private(int *argc,char ***argv)
   ierr = MPI_Bcast(argc,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
 
   /* PetscTrMalloc() not yet set, so don't use PetscMalloc() */
-  ierr = PetscMallocAlign((*argc+1)*(warg*sizeof(char)+sizeof(char*)),0,0,0,(void**)argv);CHKERRQ(ierr);
+  ierr = PetscMallocAlign((*argc+1)*(warg*sizeof(char)+sizeof(char*)),PETSC_FALSE,0,0,0,(void**)argv);CHKERRQ(ierr);
   (*argv)[0] = (char*)(*argv + *argc + 1);
 
   if (!rank) {
@@ -249,6 +249,7 @@ PETSC_INTERN PetscErrorCode  PetscInitializeSAWs(const char[]);
 #endif
 
 PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelComm_Shm(MPI_Comm,PetscMPIInt,void *,void *);
+PETSC_INTERN PetscErrorCode PetscPreMPIInit_Private();
 
 /*
     petscinitialize - Version called from Fortran.
@@ -314,6 +315,8 @@ static void petscinitialize_internal(char* filename, PetscInt len, PetscBool rea
     PetscMPIInt mierr;
 
     if (f_petsc_comm_world) {(*PetscErrorPrintf)("You cannot set PETSC_COMM_WORLD if you have not initialized MPI first\n");return;}
+
+    *ierr = PetscPreMPIInit_Private(); if(*ierr) return;
     mpi_init_(&mierr);
     if (mierr) {
       *ierr = mierr;
@@ -344,6 +347,13 @@ static void petscinitialize_internal(char* filename, PetscInt len, PetscBool rea
 
   MPIU_BOOL = MPI_INT;
   MPIU_ENUM = MPI_INT;
+  MPIU_FORTRANADDR = (sizeof(void*) == sizeof(int)) ? MPI_INT : MPIU_INT64;
+  if (sizeof(size_t) == sizeof(unsigned)) MPIU_SIZE_T = MPI_UNSIGNED;
+  else if (sizeof(size_t) == sizeof(unsigned long)) MPIU_SIZE_T = MPI_UNSIGNED_LONG;
+#if defined(PETSC_SIZEOF_LONG_LONG)
+  else if (sizeof(size_t) == sizeof(unsigned long long)) MPIU_SIZE_T = MPI_UNSIGNED_LONG_LONG;
+#endif
+  else {(*PetscErrorPrintf)("PetscInitialize: Could not find MPI type for size_t\n"); return;}
 
 #if defined(PETSC_HAVE_COMPLEX)
   /*

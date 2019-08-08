@@ -48,8 +48,6 @@ PetscFunctionList PCList = 0;
   Developer Note: PCRegister() is used to add preconditioner types to PCList from which they
   are accessed by PCSetType().
 
-.keywords: PC, set, method, type
-
 .seealso: KSPSetType(), PCType, PCRegister(), PCCreate(), KSPGetPC()
 
 @*/
@@ -101,8 +99,6 @@ PetscErrorCode  PCSetType(PC pc,PCType type)
 
    Level: intermediate
 
-.keywords: PC, get, method, name, type
-
 .seealso: PCSetType()
 
 @*/
@@ -131,8 +127,6 @@ extern PetscErrorCode PCGetDefaultType_Private(PC,const char*[]);
 .   -pc_use_amat true,false see PCSetUseAmat()
 
    Level: developer
-
-.keywords: PC, set, from, options, database
 
 .seealso: PCSetUseAmat()
 
@@ -243,8 +237,6 @@ PetscErrorCode  PCGetDM(PC pc,DM *dm)
 
    Level: intermediate
 
-.keywords: PC, set, application, context
-
 .seealso: PCGetApplicationContext()
 @*/
 PetscErrorCode  PCSetApplicationContext(PC pc,void *usrP)
@@ -267,8 +259,6 @@ PetscErrorCode  PCSetApplicationContext(PC pc,void *usrP)
 .  usrP - user context
 
    Level: intermediate
-
-.keywords: PC, get, application, context
 
 .seealso: PCSetApplicationContext()
 @*/

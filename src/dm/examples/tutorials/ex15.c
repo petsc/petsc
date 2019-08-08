@@ -111,7 +111,7 @@ PetscErrorCode HeaderlessBinaryReadCheck(DM dm,const char name[])
   len = DMDA_I*DMDA_J*DMDA_K*dof;
   if (!rank) {
     ierr = PetscBinaryOpen(name,FILE_MODE_READ,&fdes);CHKERRQ(ierr);
-    ierr = PetscBinaryRead(fdes,buffer,len,PETSC_SCALAR);CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fdes,buffer,len,NULL,PETSC_SCALAR);CHKERRQ(ierr);
     ierr = PetscBinaryClose(fdes);CHKERRQ(ierr);
 
     for (k=0; k<DMDA_K; k++) {
@@ -260,7 +260,7 @@ int main(int argc,char **args)
    test:
       suffix: 3
       nsize: 12
-      requires: define(PETSC_HAVE_MPIIO) !define(PETSC_HAVE_LIBMSMPI)
+      requires: define(PETSC_HAVE_MPIIO)
       args: -usempiio
 
 TEST*/

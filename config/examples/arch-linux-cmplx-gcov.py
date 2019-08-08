@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 
 configure_options = [
-  'COPTFLAGS=-g -O',
-  'FOPTFLAGS=-g -O',
-  'CXXOPTFLAGS=-g -O',
   '--with-clanguage=cxx',
   '--with-scalar-type=complex',
   '--with-gcov=1',
@@ -12,8 +9,7 @@ configure_options = [
   '--download-parmetis',
   '--download-ptscotch',
   '--download-scalapack',
-  '--download-strumpack',
-  '--with-cxx-dialect=C++11',
+  '--download-strumpack'
   ]
 
 if __name__ == '__main__':

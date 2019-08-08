@@ -99,6 +99,7 @@ PETSC_EXTERN PetscErrorCode DMStagGetStencilType(DM,DMStagStencilType*);
 PETSC_EXTERN PetscErrorCode DMStagGetStencilWidth(DM,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMStagMatSetValuesStencil(DM,Mat,PetscInt,const DMStagStencil*,PetscInt,const DMStagStencil*,const PetscScalar*,InsertMode);
 PETSC_EXTERN PetscErrorCode DMStagMigrateVec(DM,Vec,DM,Vec);
+PETSC_EXTERN PetscErrorCode DMStagPopulateLocalToGlobalInjective(DM);
 PETSC_EXTERN PetscErrorCode DMStagRestore1dCoordinateArraysDOFRead(DM,void*,void*,void*);
 PETSC_EXTERN PetscErrorCode DMStagSetBoundaryTypes(DM,DMBoundaryType,DMBoundaryType,DMBoundaryType);
 PETSC_EXTERN PetscErrorCode DMStagSetCoordinateDMType(DM,DMType);
@@ -119,7 +120,7 @@ PETSC_EXTERN PetscErrorCode DMStagVecRestoreArrayDOFRead(DM,Vec,void*);
 PETSC_EXTERN PetscErrorCode DMStagVecSetValuesStencil(DM,Vec,PetscInt,const DMStagStencil*,const PetscScalar*,InsertMode);
 PETSC_EXTERN PetscErrorCode DMStagVecSplitToDMDA(DM,Vec,DMStagStencilLocation,PetscInt,DM*,Vec*);
 
-PETSC_EXTERN PETSC_DEPRECATED("Use DMStagGetStencilType") PetscErrorCode DMStagGetGhostType(DM,DMStagStencilType*);
-PETSC_EXTERN PETSC_DEPRECATED("Use DMStagSetStencilType") PetscErrorCode DMStagSetGhostType(DM,DMStagStencilType);
+PETSC_DEPRECATED_FUNCTION("Use DMStagGetStencilType() (since version 3.11)") PETSC_STATIC_INLINE PetscErrorCode DMStagGetGhostType(DM dm,DMStagStencilType *s) {return DMStagGetStencilType(dm,s);}
+PETSC_DEPRECATED_FUNCTION("Use DMStagSetStencilType() (since version 3.11)") PETSC_STATIC_INLINE PetscErrorCode DMStagSetGhostType(DM dm,DMStagStencilType *s) {return DMStagGetStencilType(dm,s);}
 
 #endif

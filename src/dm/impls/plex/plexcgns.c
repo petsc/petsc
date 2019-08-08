@@ -16,7 +16,7 @@
 /*@C
   DMPlexCreateCGNS - Create a DMPlex mesh from a CGNS file.
 
-  Collective on comm
+  Collective
 
   Input Parameters:
 + comm  - The MPI communicator
@@ -30,7 +30,6 @@
 
   Level: beginner
 
-.keywords: mesh,CGNS
 .seealso: DMPlexCreate(), DMPlexCreateCGNS(), DMPlexCreateExodus()
 @*/
 PetscErrorCode DMPlexCreateCGNSFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm)
@@ -60,7 +59,7 @@ PetscErrorCode DMPlexCreateCGNSFromFile(MPI_Comm comm, const char filename[], Pe
 /*@
   DMPlexCreateCGNS - Create a DMPlex mesh from a CGNS file ID.
 
-  Collective on comm
+  Collective
 
   Input Parameters:
 + comm  - The MPI communicator
@@ -74,7 +73,6 @@ PetscErrorCode DMPlexCreateCGNSFromFile(MPI_Comm comm, const char filename[], Pe
 
   Level: beginner
 
-.keywords: mesh,CGNS
 .seealso: DMPlexCreate(), DMPlexCreateExodus()
 @*/
 PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpolate, DM *dm)

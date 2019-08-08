@@ -9,6 +9,11 @@
 
 PETSC_EXTERN PetscLogEvent DMPLEX_Interpolate;
 PETSC_EXTERN PetscLogEvent DMPLEX_Partition;
+PETSC_EXTERN PetscLogEvent DMPLEX_PartSelf;
+PETSC_EXTERN PetscLogEvent DMPLEX_PartLabelInvert;
+PETSC_EXTERN PetscLogEvent DMPLEX_PartLabelCreateSF;
+PETSC_EXTERN PetscLogEvent DMPLEX_PartStratSF;
+PETSC_EXTERN PetscLogEvent DMPLEX_CreatePointSF;
 PETSC_EXTERN PetscLogEvent DMPLEX_Distribute;
 PETSC_EXTERN PetscLogEvent DMPLEX_DistributeCones;
 PETSC_EXTERN PetscLogEvent DMPLEX_DistributeLabels;
@@ -23,6 +28,7 @@ PETSC_EXTERN PetscLogEvent DMPLEX_GlobalToNaturalEnd;
 PETSC_EXTERN PetscLogEvent DMPLEX_NaturalToGlobalBegin;
 PETSC_EXTERN PetscLogEvent DMPLEX_NaturalToGlobalEnd;
 PETSC_EXTERN PetscLogEvent DMPLEX_Stratify;
+PETSC_EXTERN PetscLogEvent DMPLEX_Symmetrize;
 PETSC_EXTERN PetscLogEvent DMPLEX_Preallocate;
 PETSC_EXTERN PetscLogEvent DMPLEX_ResidualFEM;
 PETSC_EXTERN PetscLogEvent DMPLEX_JacobianFEM;
@@ -35,6 +41,7 @@ PETSC_EXTERN PetscLogEvent DMPLEX_RebalanceSharedPoints;
 PETSC_EXTERN PetscBool      PetscPartitionerRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode PetscPartitionerRegisterAll(void);
 
+PETSC_EXTERN const char * const CellRefiners[];
 typedef enum {REFINER_NOOP = 0,
               REFINER_SIMPLEX_1D,
               REFINER_SIMPLEX_2D,
@@ -68,6 +75,7 @@ struct _p_PetscPartitioner {
   PetscViewer       viewerGraph;
   PetscViewerFormat formatGraph;
   PetscBool         viewGraph;
+  PetscBool         noGraph;          /* if true, the partitioner does not need the connectivity graph, only the number of local vertices */
 };
 
 typedef struct {
@@ -78,7 +86,25 @@ typedef struct {
   PetscInt  ptype;
   PetscReal imbalanceRatio;
   PetscInt  debugFlag;
+  PetscInt  randomSeed;
 } PetscPartitioner_ParMetis;
+
+typedef struct {
+  PetscInt  strategy;
+  PetscReal imbalance;
+} PetscPartitioner_PTScotch;
+
+static const char *const
+PTScotchStrategyList[] = {
+  "DEFAULT",
+  "QUALITY",
+  "SPEED",
+  "BALANCE",
+  "SAFETY",
+  "SCALABILITY",
+  "RECURSIVE",
+  "REMAP"
+};
 
 typedef struct {
   PetscSection section;   /* Sizes for each partition */
@@ -215,6 +241,7 @@ PETSC_EXTERN PetscErrorCode DMPlexView_HDF5(DM, PetscViewer);
 PETSC_EXTERN PetscErrorCode DMPlexLoad_HDF5(DM, PetscViewer);
 #endif
 
+PETSC_INTERN PetscErrorCode DMPlexClosurePoints_Private(DM,PetscInt,const PetscInt[],IS*);
 PETSC_INTERN PetscErrorCode DMSetFromOptions_NonRefinement_Plex(PetscOptionItems *, DM);
 PETSC_INTERN PetscErrorCode DMCoarsen_Plex(DM, MPI_Comm, DM *);
 PETSC_INTERN PetscErrorCode DMCoarsenHierarchy_Plex(DM, PetscInt, DM []);
@@ -259,6 +286,7 @@ PETSC_INTERN PetscErrorCode DMPlexRestoreFaces_Internal(DM,PetscInt,PetscInt,Pet
 PETSC_INTERN PetscErrorCode DMPlexRefineUniform_Internal(DM,CellRefiner,DM*);
 PETSC_INTERN PetscErrorCode DMPlexGetCellRefiner_Internal(DM,CellRefiner*);
 PETSC_INTERN PetscErrorCode CellRefinerGetAffineTransforms_Internal(CellRefiner, PetscInt *, PetscReal *[], PetscReal *[], PetscReal *[]);
+PETSC_INTERN PetscErrorCode CellRefinerGetAffineFaceTransforms_Internal(CellRefiner, PetscInt *, PetscReal *[], PetscReal *[], PetscReal *[], PetscReal *[]);
 PETSC_INTERN PetscErrorCode CellRefinerRestoreAffineTransforms_Internal(CellRefiner, PetscInt *, PetscReal *[], PetscReal *[], PetscReal *[]);
 PETSC_INTERN PetscErrorCode CellRefinerInCellTest_Internal(CellRefiner, const PetscReal[], PetscBool *);
 PETSC_INTERN PetscErrorCode DMPlexInvertCell_Internal(PetscInt, PetscInt, PetscInt[]);
@@ -280,6 +308,7 @@ PETSC_INTERN PetscErrorCode DMPlexCreateVertexNumbering_Internal(DM, PetscBool, 
 PETSC_INTERN PetscErrorCode DMPlexCreateNumbering_Internal(DM, PetscInt, PetscInt, PetscInt, PetscInt *, PetscSF, IS *);
 PETSC_INTERN PetscErrorCode DMPlexRefine_Internal(DM, DMLabel, DM *);
 PETSC_INTERN PetscErrorCode DMPlexCoarsen_Internal(DM, DMLabel, DM *);
+PETSC_INTERN PetscErrorCode DMCreateMatrix_Plex(DM, Mat*);
 
 /* invert dihedral symmetry: return a^-1,
  * using the representation described in
@@ -311,6 +340,167 @@ PETSC_STATIC_INLINE PetscInt DihedralSwap(PetscInt N, PetscInt a, PetscInt b)
 PETSC_EXTERN PetscErrorCode DMPlexComputeResidual_Internal(DM, IS , PetscReal, Vec, Vec, PetscReal, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeJacobian_Internal(DM, IS, PetscReal, PetscReal, Vec, Vec, Mat, Mat, void *);
 PETSC_EXTERN PetscErrorCode DMPlexReconstructGradients_Internal(DM, PetscFV, PetscInt, PetscInt, Vec, Vec, Vec, Vec);
+
+/* Matvec with A in row-major storage, x and y can be aliased */
+PETSC_STATIC_INLINE void DMPlex_Mult2D_Internal(const PetscScalar A[], PetscInt ldx, const PetscScalar x[], PetscScalar y[])
+{
+  PetscScalar z[2];
+  z[0] = x[0]; z[1] = x[ldx];
+  y[0]   = A[0]*z[0] + A[1]*z[1];
+  y[ldx] = A[2]*z[0] + A[3]*z[1];
+  (void)PetscLogFlops(6.0);
+}
+PETSC_STATIC_INLINE void DMPlex_Mult3D_Internal(const PetscScalar A[], PetscInt ldx, const PetscScalar x[], PetscScalar y[])
+{
+  PetscScalar z[3];
+  z[0] = x[0]; z[1] = x[ldx]; z[2] = x[ldx*2];
+  y[0]     = A[0]*z[0] + A[1]*z[1] + A[2]*z[2];
+  y[ldx]   = A[3]*z[0] + A[4]*z[1] + A[5]*z[2];
+  y[ldx*2] = A[6]*z[0] + A[7]*z[1] + A[8]*z[2];
+  (void)PetscLogFlops(15.0);
+}
+PETSC_STATIC_INLINE void DMPlex_MultTranspose2D_Internal(const PetscScalar A[], PetscInt ldx, const PetscScalar x[], PetscScalar y[])
+{
+  PetscScalar z[2];
+  z[0] = x[0]; z[1] = x[ldx];
+  y[0]   = A[0]*z[0] + A[2]*z[1];
+  y[ldx] = A[1]*z[0] + A[3]*z[1];
+  (void)PetscLogFlops(6.0);
+}
+PETSC_STATIC_INLINE void DMPlex_MultTranspose3D_Internal(const PetscScalar A[], PetscInt ldx, const PetscScalar x[], PetscScalar y[])
+{
+  PetscScalar z[3];
+  z[0] = x[0]; z[1] = x[ldx]; z[2] = x[ldx*2];
+  y[0]     = A[0]*z[0] + A[3]*z[1] + A[6]*z[2];
+  y[ldx]   = A[1]*z[0] + A[4]*z[1] + A[7]*z[2];
+  y[ldx*2] = A[2]*z[0] + A[5]*z[1] + A[8]*z[2];
+  (void)PetscLogFlops(15.0);
+}
+PETSC_STATIC_INLINE void DMPlex_Mult2DReal_Internal(const PetscReal A[], PetscInt ldx, const PetscScalar x[], PetscScalar y[])
+{
+  PetscScalar z[2];
+  z[0] = x[0]; z[1] = x[ldx];
+  y[0]   = A[0]*z[0] + A[1]*z[1];
+  y[ldx] = A[2]*z[0] + A[3]*z[1];
+  (void)PetscLogFlops(6.0);
+}
+PETSC_STATIC_INLINE void DMPlex_Mult3DReal_Internal(const PetscReal A[], PetscInt ldx, const PetscScalar x[], PetscScalar y[])
+{
+  PetscScalar z[3];
+  z[0] = x[0]; z[1] = x[ldx]; z[2] = x[ldx*2];
+  y[0]     = A[0]*z[0] + A[1]*z[1] + A[2]*z[2];
+  y[ldx]   = A[3]*z[0] + A[4]*z[1] + A[5]*z[2];
+  y[ldx*2] = A[6]*z[0] + A[7]*z[1] + A[8]*z[2];
+  (void)PetscLogFlops(15.0);
+}
+PETSC_STATIC_INLINE void DMPlex_MultTranspose2DReal_Internal(const PetscReal A[], PetscInt ldx, const PetscScalar x[], PetscScalar y[])
+{
+  PetscScalar z[2];
+  z[0] = x[0]; z[1] = x[ldx];
+  y[0]   = A[0]*z[0] + A[2]*z[1];
+  y[ldx] = A[1]*z[0] + A[3]*z[1];
+  (void)PetscLogFlops(6.0);
+}
+PETSC_STATIC_INLINE void DMPlex_MultTranspose3DReal_Internal(const PetscReal A[], PetscInt ldx, const PetscScalar x[], PetscScalar y[])
+{
+  PetscScalar z[3];
+  z[0] = x[0]; z[1] = x[ldx]; z[2] = x[ldx*2];
+  y[0]     = A[0]*z[0] + A[3]*z[1] + A[6]*z[2];
+  y[ldx]   = A[1]*z[0] + A[4]*z[1] + A[7]*z[2];
+  y[ldx*2] = A[2]*z[0] + A[5]*z[1] + A[8]*z[2];
+  (void)PetscLogFlops(15.0);
+}
+
+PETSC_STATIC_INLINE void DMPlex_MatMult2D_Internal(const PetscScalar A[], PetscInt n, PetscInt ldb, const PetscScalar B[], PetscScalar C[])
+{
+  PetscInt j;
+  for (j = 0; j < n; ++j) {
+    PetscScalar z[2];
+    z[0] = B[0+j]; z[1] = B[1*ldb+j];
+    DMPlex_Mult2D_Internal(A, 1, z, z);
+    C[0+j] = z[0]; C[1*ldb+j] = z[1];
+  }
+  (void)PetscLogFlops(8.0*n);
+}
+PETSC_STATIC_INLINE void DMPlex_MatMult3D_Internal(const PetscScalar A[], PetscInt n, PetscInt ldb, const PetscScalar B[], PetscScalar C[])
+{
+  PetscInt j;
+  for (j = 0; j < n; ++j) {
+    PetscScalar z[3];
+    z[0] = B[0+j]; z[1] = B[1*ldb+j]; z[2] = B[2*ldb+j];
+    DMPlex_Mult3D_Internal(A, 1, z, z);
+    C[0+j] = z[0]; C[1*ldb+j] = z[1]; C[2*ldb+j] = z[2];
+  }
+  (void)PetscLogFlops(8.0*n);
+}
+PETSC_STATIC_INLINE void DMPlex_MatMultTranspose2D_Internal(const PetscScalar A[], PetscInt n, PetscInt ldb, const PetscScalar B[], PetscScalar C[])
+{
+  PetscInt j;
+  for (j = 0; j < n; ++j) {
+    PetscScalar z[2];
+    z[0] = B[0+j]; z[1] = B[1*ldb+j];
+    DMPlex_MultTranspose2D_Internal(A, 1, z, z);
+    C[0+j] = z[0]; C[1*ldb+j] = z[1];
+  }
+  (void)PetscLogFlops(8.0*n);
+}
+PETSC_STATIC_INLINE void DMPlex_MatMultTranspose3D_Internal(const PetscScalar A[], PetscInt n, PetscInt ldb, const PetscScalar B[], PetscScalar C[])
+{
+  PetscInt j;
+  for (j = 0; j < n; ++j) {
+    PetscScalar z[3];
+    z[0] = B[0+j]; z[1] = B[1*ldb+j]; z[2] = B[2*ldb+j];
+    DMPlex_MultTranspose3D_Internal(A, 1, z, z);
+    C[0+j] = z[0]; C[1*ldb+j] = z[1]; C[2*ldb+j] = z[2];
+  }
+  (void)PetscLogFlops(8.0*n);
+}
+
+PETSC_STATIC_INLINE void DMPlex_MatMultLeft2D_Internal(const PetscScalar A[], PetscInt m, PetscInt ldb, const PetscScalar B[], PetscScalar C[])
+{
+  PetscInt j;
+  for (j = 0; j < m; ++j) {
+    DMPlex_MultTranspose2D_Internal(A, 1, &B[j*ldb], &C[j*ldb]);
+  }
+  (void)PetscLogFlops(8.0*m);
+}
+PETSC_STATIC_INLINE void DMPlex_MatMultLeft3D_Internal(const PetscScalar A[], PetscInt m, PetscInt ldb, const PetscScalar B[], PetscScalar C[])
+{
+  PetscInt j;
+  for (j = 0; j < m; ++j) {
+    DMPlex_MultTranspose3D_Internal(A, 1, &B[j*ldb], &C[j*ldb]);
+  }
+  (void)PetscLogFlops(8.0*m);
+}
+PETSC_STATIC_INLINE void DMPlex_MatMultTransposeLeft2D_Internal(const PetscScalar A[], PetscInt m, PetscInt ldb, const PetscScalar B[], PetscScalar C[])
+{
+  PetscInt j;
+  for (j = 0; j < m; ++j) {
+    DMPlex_Mult2D_Internal(A, 1, &B[j*ldb], &C[j*ldb]);
+  }
+  (void)PetscLogFlops(8.0*m);
+}
+PETSC_STATIC_INLINE void DMPlex_MatMultTransposeLeft3D_Internal(const PetscScalar A[], PetscInt m, PetscInt ldb, const PetscScalar B[], PetscScalar C[])
+{
+  PetscInt j;
+  for (j = 0; j < m; ++j) {
+    DMPlex_Mult3D_Internal(A, 1, &B[j*ldb], &C[j*ldb]);
+  }
+  (void)PetscLogFlops(8.0*m);
+}
+
+PETSC_STATIC_INLINE void DMPlex_Transpose2D_Internal(PetscScalar A[])
+{
+  PetscScalar tmp;
+  tmp = A[1]; A[1] = A[2]; A[2] = tmp;
+}
+PETSC_STATIC_INLINE void DMPlex_Transpose3D_Internal(PetscScalar A[])
+{
+  PetscScalar tmp;
+  tmp = A[1]; A[1] = A[3]; A[3] = tmp;
+  tmp = A[2]; A[2] = A[6]; A[6] = tmp;
+  tmp = A[5]; A[5] = A[7]; A[7] = tmp;
+}
 
 PETSC_STATIC_INLINE void DMPlex_Invert2D_Internal(PetscReal invJ[], PetscReal J[], PetscReal detJ)
 {
@@ -438,13 +628,19 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexFixFaceOrientations_Permute_Private(Pet
 }
 
 PETSC_INTERN PetscErrorCode DMPlexGetPointDualSpaceFEM(DM,PetscInt,PetscInt,PetscDualSpace *);
-PETSC_INTERN PetscErrorCode DMPlexGetIndicesPoint_Internal(PetscSection,PetscInt,PetscInt,PetscInt *,PetscBool,const PetscInt[],PetscInt[]);
-PETSC_INTERN PetscErrorCode DMPlexGetIndicesPointFields_Internal(PetscSection,PetscInt,PetscInt,PetscInt[],PetscBool,const PetscInt***,PetscInt,PetscInt[]);
+PETSC_INTERN PetscErrorCode DMPlexGetIndicesPoint_Internal(PetscSection,PetscInt,PetscInt,PetscInt *,PetscBool,const PetscInt[],const PetscInt[],PetscInt[]);
+PETSC_INTERN PetscErrorCode DMPlexGetIndicesPointFields_Internal(PetscSection,PetscInt,PetscInt,PetscInt[],PetscBool,const PetscInt***,PetscInt,const PetscInt[],PetscInt[]);
+PETSC_INTERN PetscErrorCode DMPlexGetCompressedClosure(DM, PetscSection, PetscInt, PetscInt *, PetscInt **, PetscSection *, IS *, const PetscInt **);
+PETSC_INTERN PetscErrorCode DMPlexRestoreCompressedClosure(DM, PetscSection, PetscInt, PetscInt *, PetscInt **, PetscSection *, IS *, const PetscInt **);
 
 PETSC_EXTERN PetscErrorCode DMSNESGetFEGeom(DMField, IS, PetscQuadrature, PetscBool, PetscFEGeom **);
 PETSC_EXTERN PetscErrorCode DMSNESRestoreFEGeom(DMField, IS, PetscQuadrature, PetscBool, PetscFEGeom **);
 PETSC_EXTERN PetscErrorCode DMPlexComputeResidual_Patch_Internal(DM, PetscSection, IS, PetscReal, Vec, Vec, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeJacobian_Patch_Internal(DM, PetscSection, PetscSection, IS, PetscReal, PetscReal, Vec, Vec, Mat, Mat, void *);
 PETSC_INTERN PetscErrorCode DMCreateSubDomainDM_Plex(DM,DMLabel,PetscInt,IS*,DM*);
+PETSC_INTERN PetscErrorCode DMPlexBasisTransformPoint_Internal(DM, DM, Vec, PetscInt, PetscBool[], PetscBool, PetscScalar *);
+PETSC_EXTERN PetscErrorCode DMPlexBasisTransformPointTensor_Internal(DM, DM, Vec, PetscInt, PetscBool, PetscInt, PetscScalar *);
+PETSC_INTERN PetscErrorCode DMPlexBasisTransformApplyReal_Internal(DM, const PetscReal[], PetscBool, PetscInt, const PetscReal *, PetscReal *, void *);
+PETSC_INTERN PetscErrorCode DMPlexBasisTransformApply_Internal(DM, const PetscReal[], PetscBool, PetscInt, const PetscScalar *, PetscScalar *, void *);
 
 #endif /* _PLEXIMPL_H */

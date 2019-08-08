@@ -93,6 +93,9 @@ struct _VecOps {
   PetscErrorCode (*restorelocalvector)(Vec,Vec);
   PetscErrorCode (*getlocalvectorread)(Vec,Vec);
   PetscErrorCode (*restorelocalvectorread)(Vec,Vec);
+  PetscErrorCode (*pintocpu)(Vec,PetscBool);
+  PetscErrorCode (*getarraywrite)(Vec,PetscScalar**);
+  PetscErrorCode (*restorearraywrite)(Vec,PetscScalar**);
 };
 
 /*
@@ -139,6 +142,7 @@ struct _p_Vec {
   PetscInt               lock;         /* lock state. vector can be free (=0), locked for read (>0) or locked for write(<0) */
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
   PetscOffloadFlag       valid_GPU_array;    /* indicates where the most recently modified vector data is (GPU or CPU) */
+  PetscBool              pinnedtocpu;
   void                   *spptr; /* this is the special pointer to the array on the GPU */
 #endif
 };
@@ -286,19 +290,23 @@ PETSC_EXTERN PetscErrorCode VecMatlabEngineGet_Default(PetscObject,void*);
 PETSC_EXTERN PetscErrorCode PetscSectionGetField_Internal(PetscSection, PetscSection, Vec, PetscInt, PetscInt, PetscInt, IS *, Vec *);
 PETSC_EXTERN PetscErrorCode PetscSectionRestoreField_Internal(PetscSection, PetscSection, Vec, PetscInt, PetscInt, PetscInt, IS *, Vec *);
 
-#define VecCheckSameLocalSize(x,ar1,y,ar2)                                 \
-  if ((x)->map->n != (y)->map->n) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths parameter # %d local size %D != parameter # %d local size %D", ar1,(x)->map->n, ar2,(y)->map->n);
+#define VecCheckSameLocalSize(x,ar1,y,ar2) do { \
+    if ((x)->map->n != (y)->map->n) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths parameter # %d local size %D != parameter # %d local size %D", ar1,(x)->map->n, ar2,(y)->map->n); \
+  } while (0)
 
-#define VecCheckSameSize(x,ar1,y,ar2)                                      \
-  if ((x)->map->N != (y)->map->N) SETERRQ4(PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths parameter # %d global size %D != paramter # %d global size %D", ar1,(x)->map->N, ar2,(y)->map->N);\
-  VecCheckSameLocalSize(x,ar1,y,ar2);
-  
-#define VecCheckLocalSize(x,ar1,n)                                         \
-  if ((x)->map->n != n) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incorrect vector local size: parameter # %d local size %D != %D",ar1,(x)->map->n,n);
-  
-#define VecCheckSize(x,ar1,n,N)                                            \
-  if ((x)->map->N != N) SETERRQ(PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_INCOMP,"Incorrect vector global size: parameter # %d global size %D != %D",ar1,(x)->map->N, N);\
-  VecCheckLocalSize(x,ar1,n);
+#define VecCheckSameSize(x,ar1,y,ar2) do { \
+    if ((x)->map->N != (y)->map->N) SETERRQ4(PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths parameter # %d global size %D != parameter # %d global size %D", ar1,(x)->map->N, ar2,(y)->map->N); \
+    VecCheckSameLocalSize(x,ar1,y,ar2); \
+  } while(0)
+
+#define VecCheckLocalSize(x,ar1,n) do { \
+    if ((x)->map->n != n) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incorrect vector local size: parameter # %d local size %D != %D",ar1,(x)->map->n,n); \
+  } while (0)
+
+#define VecCheckSize(x,ar1,n,N) do { \
+    if ((x)->map->N != N) SETERRQ(PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_INCOMP,"Incorrect vector global size: parameter # %d global size %D != %D",ar1,(x)->map->N, N); \
+    VecCheckLocalSize(x,ar1,n); \
+  } while (0)
 
 typedef struct _VecTaggerOps *VecTaggerOps;
 struct _VecTaggerOps {

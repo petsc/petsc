@@ -28,130 +28,22 @@ chk_c2html:
           echo "Require c2html for html docs. Please reconfigure with --download-c2html=1"; \
           printf "******************************************************"${PETSC_TEXT_NORMAL}"\n" ;false; fi
 
-lssrc:
-	@if [ "${SOURCEALL}" != "" ]; then \
-	  ls ${SOURCEALL} | cat;\
-	 fi
-
 chklib_dir:
 	@if [ ! -d "${INSTALL_LIB_DIR}" ]; then \
 	  echo Making directory ${INSTALL_LIB_DIR} for library; ${MKDIR} ${INSTALL_LIB_DIR} ; fi
 
-
-# 3. Check if the shared libs are out of date
-chkopts: chk_upgrade
-	@for LIBNAME in ${SHLIBS}; do \
-	  library=${INSTALL_LIB_DIR}/$$LIBNAME.a; \
-	sharedlibrary=${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}; \
-	flag=""; \
-	if [ -f $$library ]; then \
-	  if [ -f $$sharedlibrary ]; then \
-	    flag=`find ${INSTALL_LIB_DIR} -type f -name $$LIBNAME.a -newer $$sharedlibrary -print`; \
-	  fi; \
-	fi; \
-	if [ "$$flag" != "" ]; then \
-	  echo "Shared libs in ${INSTALL_LIB_DIR} are out of date, attempting to rebuild."; \
-	  if [ -w ${INSTALL_LIB_DIR} ]; then \
-	    ${OMAKE}  PETSC_ARCH=${PETSC_ARCH} shared; \
-	  else \
-	    printf ${PETSC_TEXT_HILIGHT}"*********************** ERROR ************************\n"; \
-	    echo "Unable to rebuild shared libraries; you do not have write permission."; \
-	    user=`ls -l ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}  | tr -s ' ' | cut -d ' ' -f 3`; \
-	    echo "Libraries were built by user $$user; please contact him/her to have them rebuilt."; \
-	    printf "******************************************************"${PETSC_TEXT_NORMAL}"\n" ; \
-	    false; \
-	  fi; \
-	fi; \
-	done
-
-#
-# uses the cmake infrastructure to build/rebuild the libraries
-ccmake:
-	@echo "=========================================="
-	+@cd ${PETSC_DIR}/${PETSC_ARCH} && MAKEFLAGS="-j$(MAKE_NP) -l$(MAKE_LOAD) $(MAKEFLAGS)" ${OMAKE} VERBOSE=${VERBOSE}
-	@if [ "${BUILDSHAREDLIB}" = "yes" -a "${DSYMUTIL}" != "true" ]; then \
-        echo "Running ${DSYMUTIL} on ${SHLIBS}";\
-        for LIBNAME in ${SHLIBS}; do ${DSYMUTIL} ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}; done; fi
-	@echo "========================================="
-
-cmake:
-	+@MAKEFLAGS="-j$(MAKE_NP) -l$(MAKE_LOAD) $(MAKEFLAGS)" ${OMAKE} ccmake VERBOSE=1
+chkopts:
+	-@echo "Warning: chkopts target is deprecated and can be removed from user makefiles"
 
 gnumake:
+	+@echo "make gnumake is deprecated, use make libs"
+	+@make libs
+
+libs:
 	+@cd ${PETSC_DIR} && MAKEFLAGS="-j$(MAKE_NP) -l$(MAKE_LOAD) $(MAKEFLAGS)" ${OMAKE_PRINTDIR} -f gmakefile ${MAKE_PAR_OUT_FLG} V=${V}
 
 # Does nothing; needed for some rules that require actions.
 foo:
-
-# Builds library
-lib:  ${SOURCE}
-	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} chk_petscdir
-	@-if [ "${SPECIALLIB}" = "yes" ] ; then \
-	   ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  speciallib;  \
-	  else \
-            if [ "${SOURCECU}" != "" ] ; then \
-              ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  libcu; fi ; \
-            if [ "${SOURCEC}" != "" ] ; then \
-              ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  libc; fi ; \
-            if [ "${SOURCECXX}" != "" ] ; then \
-              ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  libcxx; fi ; \
-            if [ "${SOURCEF}" != "" ] ; then \
-		${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  libf; fi ; \
-            if [ "${OBJS}" != " " ] ; then \
-		${RANLIB}  ${LIBNAME}; \
-		${RM} ${OBJS}; \
-	    fi;\
-          fi
-#
-#  Does not work for some machines with .F fortran files.
-#
-# Builds library - fast versiong
-
-libfast:  ${SOURCE}
-	-@if [ "${SPECIALFASTLIB}" = "yes" ] ; then \
-	    ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  specialfastlib;  \
-	else \
-	    ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  libfastcompile;  \
-	fi
-
-libfastcompile:
-	-@if [ "${SOURCECU}" != "" ]; then \
-                    ${PETSC_CUCOMPILE}; \
-	            ${AR} ${FAST_AR_FLAGS} ${LIBNAME} ${OBJSCU}; \
-		    ${RM} ${OBJSCU} ${OBJSCU:.o=.lo}; \
-	    fi; \
-          if [ "${SOURCEC}" != "" ]; then \
-                    ${PETSC_COMPILE}; \
-	            ${AR} ${FAST_AR_FLAGS} ${LIBNAME} ${OBJSC}; \
-		    ${RM} ${OBJSC} ${OBJSC:.o=.lo}; \
-	    fi; \
-          if [ "${SOURCECXX}" != "" ]; then \
-                    ${PETSC_CXXCOMPILE}; \
-	            ${AR} ${FAST_AR_FLAGS} ${LIBNAME} ${OBJSCXX}; \
-		    ${RM} ${OBJSCXX} ${OBJSCXX:.o=.lo}; \
-	    fi; \
-	if [ "${SOURCEF}" != "" ]; then \
-                    ${PETSC_FCOMPILE}; \
-	            ${AR} ${FAST_AR_FLAGS} ${LIBNAME} ${OBJSF}; \
-		    ${RM} ${OBJSF}; \
-	    fi
-
-# Build f90 .mod from .F source, and add .o to the corresponding library
-buildmod:
-	-@${OMAKE} clean-legacy
-	@${OMAKE}  libf
-	@${OMAKE}  modcopy
-	@${OMAKE}  clean-legacy
-
-buildmodfast:
-	-@${OMAKE} clean-legacy
-	@${OMAKE}  libfastcompile
-	@${OMAKE}  modcopy
-	@${OMAKE}  clean-legacy
-
-# copy modules to the include dir
-modcopy:
-	@${CP} -f *.mod ${PETSC_DIR}/${PETSC_ARCH}/include
 
 # Removes garbage files
 clean-legacy:
@@ -162,15 +54,16 @@ clean-legacy:
                ex[0-9].exe ex[0-9][0-9].exe ex[0-9][0-9][0-9].exe \
                ex[0-9]f.exe ex[0-9][0-9]f.exe ex[0-9][0-9][0-9]f.exe \
                ex[0-9]f90.exe ex[0-9][0-9]f90.exe ex[0-9][0-9][0-9]f90.exe \
-	       PI* *.ln l.outa* mputil.mp_* core core.* *.tmp *.map gmon.out *.gcov.html \
-	       trashz \#*\# *.mex* *.stolen *.trace Log.* *.stolen \
-	       output/*~ .mpirtmp mon.out *.aus *.mon.* __* p4pg ins10*.c \
-	        *.cp_ *.cp__ *.c*.c pageform.txt \
+              PI* *.ln l.outa* mputil.mp_* core core.* *.tmp *.map gmon.out *.gcov.html \
+              trashz \#*\# *.mex* *.stolen *.trace Log.* *.stolen \
+              output/*~ .mpirtmp mon.out *.aus *.mon.* __* p4pg ins10*.c \
+               *.cp_ *.cp__ *.c*.c \
                *.dep *.proj ctoatmp PETScArena* *.L *.anl *.mod .mpi* *.d \
-	       *.class *.ouit *.ad.* g_* silly.cmp *.tmp.* *.ilk *.pdb *.inst.c *.rej *.gcda *.gcno
+              *.class *.ouit *.ad.* g_* silly.cmp *.tmp.* *.ilk *.pdb *.inst.c *.rej *.gcda *.gcno
 	@-${RM} -rf ${CLEANDIRS} *.dSYM AD_cache SunWS_cache
 
 clean:: clean-legacy
+
 #
 #  Checks if directory requires particular package or language
 # The makefile may contain
@@ -242,6 +135,7 @@ alltree_makefile: ${ACTION}
 	${OMAKE}  alltree_makefile ACTION=${ACTION}  \
 	PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} ) ;fi; \
 	done
+
 # This target goes through all dirs specified by DIRS,EDIRS, and
 # excludes dirs specified by $XDIRS
 alltree: ${ACTION}
@@ -358,7 +252,7 @@ getautoconfargs:
 	  fi; \
 	fi
 
-.c.o .ad.o:
+.c.o:
 	-+@mypwd=`pwd`; newpwd=`echo $${mypwd} | sed "s+/examples/tutorials+DUMMY+g"`;\
         if [ $${mypwd} != $${newpwd} ]; then \
 	  ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chk_petscdir;\
@@ -375,24 +269,6 @@ getautoconfargs:
 #   Compiles CUDA code
 .cu.o:
 	${PETSC_CUCOMPILE_SINGLE} `pwd`/$<
-
-.cu.a:
-	${PETSC_CUCOMPILE_SINGLE} `pwd`/$<
-	-${AR} ${AR_FLAGS} ${LIBNAME} $*.o
-	-if test -n "${LIBTOOL}"; then ${AR} ${AR_FLAGS} ${LT_LIBNAME} $*.lo; fi
-	-${RM} $*.o $*.lo
-
-.c.a:
-	-${PETSC_COMPILE_SINGLE} `pwd`/$<
-	-${AR} ${AR_FLAGS} ${LIBNAME} $*.o
-	-if test -n "${LIBTOOL}"; then ${AR} ${AR_FLAGS} ${LT_LIBNAME} $*.lo; fi
-	-${RM} $*.o $*.lo
-
-.cpp.a .cxx.a .cc.a .C.a:
-	-${PETSC_CXXCOMPILE_SINGLE} `pwd`/$<
-	-${AR} ${AR_FLAGS} ${LIBNAME} $*.o
-	-if test -n "${LIBTOOL}"; then ${AR} ${AR_FLAGS} ${LT_LIBNAME} $*.lo; fi
-	-${RM} $*.o $*.lo
 
 #
 #  These rules are for compiling the test examples.
@@ -521,7 +397,6 @@ deleteshared:
           ${RM} ${INSTALL_LIB_DIR}/so_locations; \
 	fi
 
-noshared:
 # ---------------------------------------------------------------------------------------
 #   Rules for the automatic generation of documentation, tutorials etc
 # See rule for allmanualpages and allhtml in ${PETSC_DIR}/makefile
@@ -610,53 +485,36 @@ exampleconcepts:
             fi; \
 	  done; \
         fi
-#
-#   Goes through all manual pages removing the Concepts: field and adding the
-# concepts to the manconcepts file
-#
-manconcepts:
-	-@${RM} ${LOC}/docs/manconcepts ${LOC}/docs/exampleconcepts
-	-@for i in docs/manualpages/*/*.html ; do \
-              ${RM} ltmp; \
-              grep Concepts: $$i | sed s?Concepts:??g > ltmp;  \
-              line=`cat ltmp | wc -l`; \
-              line=`expr $$line - 1` ; \
-              line=`expr $$line + 1` ; \
-              if [ $$line -gt 0 ] ; then \
-                while [ $$line -gt 0 ] ; do \
-                  a=`head -$$line ltmp | tail -1`; \
-                  echo $$i $$a >> ${LOC}/docs/manconcepts; \
-                  line=`expr $$line - 1` ; \
-                done; \
-                grep -v Concepts: $$i | sed "s/PETSC[A-Z]*_DLLEXPORT//g" > tmp; \
-                mv tmp $$i; \
-              fi; \
-              ${RM} ltmp; \
-          done
 
 #
 #    Goes through all manual pages adding links to implementations of the method
-# or class, at the end of the file. 
-# 
+# or class, at the end of the file.
+#
 # To find functions implementing methods, we use git grep to look for
-# functions with a single underscore following the items's name, for files
-# of appropriate types (.cu .c .cxx .h) in paths including /impls/ .
-# We exclude any line with a semicolon to avoid matching prototypes.
+# well-formed PETSc functions
+# - with a single underscore following the item's name,
+# - in files of appropriate types (.cu .c .cxx .h),
+# - in paths including "/impls/",
+# - excluding any line with a semicolon (to avoid matching prototypes), and
+# - excluding any line including "_Private"
+# and then process implsFunc.txt to generate HTML.
 #
 # Efficiency note: this runs git grep for each man page. It may be more efficient
-#  to run it once for all possible implementation functions and store the results, 
+#  to run it once for all possible implementation functions and store the results,
 #  sorted, in a temporary file.
 #
-# To find class implementations, we populate implsClassAll.txt with candidates,
-# and then match any lines similar to "struct _p_itemName {", not containing a semicolon,
-# which likely define data for class itemName.
+# To find class implementations, we populate implsClassAll.txt with candidates
+# - of the form "struct _p_itemName {",  and
+# - not containing a semicolon
+# and then match for particular values of itemName, generating implsClass.txt,
+# which is processed to generate HTML.
 #
 manimplementations:
 	-@git grep "struct\s\+_p_[^\s]\+.*{" -- *.cu *.c *.h *.cxx | grep -v ";" | grep -v "/examples/" > implsClassAll.txt ; \
   for i in docs/manualpages/*/*.html; do \
           printf "manimplementations in: $$i\n"; \
           itemName=`basename $$i .html`; \
-          git grep -n "^\(static \)\?\(PETSC_EXTERN \)\?\(PETSC_INTERN \)\?\(extern \)\?PetscErrorCode\s\+$${itemName}_.*(" -- */impls/*.c */impls/*.cu */impls/*.cxx */impls/*.h | grep -v ";" > implsFunc.txt ; \
+          git grep -n "^\(static \)\?\(PETSC_EXTERN \)\?\(PETSC_INTERN \)\?\(extern \)\?PetscErrorCode\s\+$${itemName}_.*(" -- */impls/*.c */impls/*.cu */impls/*.cxx */impls/*.h | grep -v ";" | grep -v "_Private" > implsFunc.txt ; \
           grep "_p_$${itemName}\b" implsClassAll.txt > implsClass.txt ; \
           if [ -s implsFunc.txt ] || [ -s implsClass.txt ] ; then \
             printf "<P><H3><FONT COLOR=\"CC3333\">Implementations</FONT></H3>" >> $$i; \
@@ -774,28 +632,26 @@ checkbadFileHeader:
 	done
 
 checkbadSource:
-	-@for filename in ${SOURCEALL} makefile ${EXAMPLESC} ${EXAMPLESF}; do \
-       a=`grep '( ' $$filename | wc -l`; \
-       if [ $$a -ge 1 ] ; then \
-       echo "$$filename: extra blank after (" ; \
-       fi; \
-       a=`grep ' )' $$filename | wc -l`; \
-       if [ $$a -ge 1 ] ; then \
-       echo "$$filename: extra blank before )" ; \
-       fi; \
-         a=`grep 'register int' $$filename | wc -l`; \
-       if [ $$a -ge 1 ] ; then \
-       echo "$$filename: do not use register keyword in PETSc" ; \
-       fi; \
-         a=`grep 'register double' $$filename | wc -l`; \
-       if [ $$a -ge 1 ] ; then \
-       echo "$$filename: do not use register keyword in PETSc" ; \
-       fi; \
-         a=`grep '; CHK' $$filename | wc -l`; \
-       if [ $$a -ge 1 ] ; then \
-       echo "$$filename: space before CHKERRx() or CHKPTRx()" ; \
-       fi; \
-         done
+	-@${RM} -f checkbadSource.out
+	-@echo "Tabs in file -----------------------------------------" > checkbadSource.out
+	-@git --no-pager grep -l -P  '\t'  -- '*.[chF]' '*.F90' '*.cxx' >> checkbadSource.out;true
+	-@echo "White space at end of line ---------------------------" >> checkbadSource.out
+	-@git --no-pager grep -l -P ' $$' -- '*.[chF]' '*.F90' '*.cxx' >> checkbadSource.out;true
+#	-@echo "Space after ( ----------------------------------------" >> checkbadSource.out
+#	-@git --no-pager grep -l -P '\( ' -- '*.[chF]' '*.F90' '*.cxx' >> checkbadSource.out;true
+	-@echo "Space before ) ---------------------------------------" >> checkbadSource.out
+	-@git --no-pager grep -l -P ' \)' -- '*.[chF]' '*.F90' '*.cxx' >> checkbadSource.out;true
+	-@echo "Space before CHKERRQ ---------------------------------" >> checkbadSource.out
+	-@git --no-pager grep -l -P '; CHKERRQ' -- '*.[chF]' '*.F90' '*.cxx' >> checkbadSource.out;true
+	-@echo "No space after if or for -----------------------------" >> checkbadSource.out
+	-@git --no-pager grep -l -P -e 'for\(' -e 'if\(' -- '*.[chF]' '*.F90' '*.cxx' >> checkbadSource.out;true
+	-@echo "DOS file (with DOS newlines)--------------------------" >> checkbadSource.out
+	-@git --no-pager grep -l -P '\r' -- '*.[chF]' '*.F90' '*.cxx' >> checkbadSource.out;true
+	-@a=`cat checkbadSource.out | wc -l`; let "l=$$a-6" ;\
+         if [ $$l -gt 0 ] ; then \
+           echo $$l " files with errors detected in source code formatting" ;\
+           cat checkbadSource.out ;\
+         fi
 
 checkTestCoverage:
 	-@for filename in ex*.c; do \
@@ -835,116 +691,69 @@ checkTestCoverage:
 	  fi; \
 	done
 
+#  Lists all the URLs in the PETSc repository that are unaccessable, nonexistent, or permanently moved (301)
+#  REPLACE=1 locations marked as permanently moved (301) are replaced in the repository
+#  This code is fragile; always check the changes after a use of REPLACE=1 before commiting the changes
 #
+#  Notes:
+#    The first tr in the line is split lines for the cases where multiple URLs are in the same line
+#    The first sed handles the case (http[s]*://xxx)
+#    The list is sorted by length so that if REPLACE is used the longer apply before the shorter
+#    The code recursively follows the permanently moved (301) redirections until it reaches the final URL
+#    For DropBox we need to check the validity of the new URL but do not want to return to user the internal "raw" URL
+checkbadURLS:
+	-@x=`git grep "http[s]*://" -- '*.[chF]' '*.html' '*.cxx' '*.F90' '*.py' '*.tex' | egrep -v "(config/packages|HandsOnExercises)" | tr '[[:blank:]]' '\n' | grep 'http[s]*://' |  sed 's!.*(\(http[s]*://[-a-zA-Z0-9_./()?=&+%~]*\))!\1!g' | sed 's!.*\(http[s]*://[-a-zA-Z0-9_./()?=&+%~]*\).*!\1!g' | sed 's/\.$$//g' | sort | uniq| awk '{ print length, $$0 }' | sort -r -n -s | cut -d" " -f2` ;  \
+        for i in $$x; do \
+          url=$$i; \
+          msg=''; \
+          while [[ "$${msg}D" == "D" ]] ; do \
+            y1=`curl  --connect-timeout 5 --head --silent $${url} | head -n 1`; \
+            y2=`echo $${y1} | grep ' 4[0-9]* '`; \
+            y3=`echo $${y1} | grep ' 301 '`; \
+            if [[ "$${y1}D" == "D" ]] ; then  \
+              msg="Unable to reach site" ; \
+            elif [[ "$${y2}D" != "D" ]] ; then  \
+              msg=$${y1} ; \
+            elif [[ "$${y3}D" != "D" ]] ; then  \
+              l=`curl --connect-timeout 5 --head --silent $${url} | grep ocation | sed 's/.*ocation:[[:blank:]]\(.*\)/\1/g' | tr -d '\r'` ; \
+              w=`echo $$l | grep 'http'` ; \
+              if [[ "$${w}D" != "D" ]] ; then  \
+                url=$$l ; \
+              else  \
+                ws=`echo $${url} | sed 's!\(http[s]*://[-a-zA-Z0-9_.]*\)/.*!\1!g'` ; \
+                dp=`echo $${ws}$${l} | grep "dropbox.com/s/raw"` ; \
+                if [[ "$${dp}D" != "D" ]] ; then  \
+                  b=`curl  --connect-timeout 5 --head --silent $${ws}$$l | head -n 1` ; \
+                  c=`echo $${b} | egrep "( 2[0-9]* | 302 )"` ; \
+                  if [[ "$${c}D" == "D" ]] ; then  \
+                    msg=`echo "dropbox file doesn't exist" $${c}` ; \
+                  else \
+                    break ; \
+                  fi; \
+                else \
+                  url="$${ws}$$l" ; \
+                fi; \
+              fi; \
+            else \
+              break; \
+            fi; \
+          done;\
+          if [[ "$${msg}D" == "D" && "$${url}" != "$$i" ]] ; then \
+            echo "URL" $$i "has moved to valid final location:" $${url} ; \
+            if [[ "$${REPLACE}D" != "D" ]] ; then  \
+              git psed $$i $$l ;\
+            fi; \
+          elif [[ "$${msg}D" != "D" && "$${url}" != "$$i" ]] ; then \
+            echo "ERROR: URL" $$i "has moved to invalid final location:" $${url} $${msg} ; \
+          elif [[ "$${msg}D" != "D" ]] ; then \
+            echo "ERROR: URL" $$i "invalid:" $${msg} ; \
+          fi; \
+        done
 
 sourcelist:
 	-@for i in ${SOURCEALL}; do \
 	    /bin/echo -n ${LOCDIR}$${i} " " >> ${BASE_DIR}/files; \
         done
-
-# Actions to rebuild an out-of-date shared library
-#   The library basename is given by LIBNAME
-
-# Obsolete rules, to be deleted
-shared_irix:
-	-@${PCC} -elf -no_library_replacement -shared -rdata_shared -all ${INSTALL_LIB_DIR}/${LIBNAME}.${AR_LIB_SUFFIX} -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SL_LINKER_SUFFIX}
-
-shared_alpha:
-	-@${LD} -shared -all ${INSTALL_LIB_DIR}/${LIBNAME}.${AR_LIB_SUFFIX} -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SL_LINKER_SUFFIX} >/dev/null 2>&1
-
-shared_freebsd:
-	-@${LD} -Bshareable --whole-archive ${INSTALL_LIB_DIR}/${LIBNAME}.${AR_LIB_SUFFIX} -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SL_LINKER_SUFFIX}
-
-shared_hpux:
-	-@cd ${SHARED_LIBRARY_TMPDIR}; \
-	${LD} -b *.o -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SL_LINKER_SUFFIX}
-
-shared_solaris_gnu:
-	-@cd ${SHARED_LIBRARY_TMPDIR}; \
-	sys_lib=`echo "${SYS_LIB}" | sed s?-Wl,-rpath?-L?g`; external_lib=`echo "${PETSC_EXTERNAL_LIB_BASIC}" | sed s?-Wl,-rpath?-L?g`;\
-	${LD}  -G -h ${LIBNAME}.${SL_LINKER_SUFFIX} *.o -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SL_LINKER_SUFFIX} $${sys_lib} $${external_lib}
-
-shared_solaris:
-	-@cd ${SHARED_LIBRARY_TMPDIR}; \
-	${CC} -G -h ${LIBNAME}.${SL_LINKER_SUFFIX} *.o -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SL_LINKER_SUFFIX} ${SYS_LIB} ${PETSC_EXTERNAL_LIB_BASIC}
-
-shared_libtool:
-	-@cd ${SHARED_LIBRARY_TMPDIR}; \
-	${AR} x ${INSTALL_LIB_DIR}/lt_${LIBNAME}.${AR_LIB_SUFFIX}; \
-	${LIBTOOL} --mode=link ${CLINKER} ${CFLAGS} ${CCPPFLAGS} -rpath ${INSTALL_LIB_DIR} -o ${LIBNAME}.la *.lo; \
-	${LIBTOOL} --mode=install ${PETSC_DIR}/bin/config/install-sh ${LIBNAME}.la ${INSTALL_LIB_DIR}
-
-# Supported rules for building different shared libraries
-shared_none:
-
-shared_linux:
-	-@cd ${SHARED_LIBRARY_TMPDIR}; \
-	${CLINKER} -shared -Wl,-soname,${LIBNAME}.${SL_LINKER_SUFFIX} -o ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX} *.o ${PETSC_EXTERNAL_LIB_BASIC} ${OTHERSHAREDLIBS}; \
-
-shared_darwin:
-	-@cd ${SHARED_LIBRARY_TMPDIR}; \
-        if [ "${LIBNAME}" = "libpetsc" ]; then OTHERLIBS="${PETSC_EXTERNAL_LIB_BASIC}   ${SYS_LIB}  ${OTHERSHAREDLIBS}  ${SL_LINKER_LIBS} -lm -lc "; fi;\
-        if [ "${LIBNAME}" = "libpetscsys" ]; then OTHERLIBS="  ${SYS_LIB}  ${OTHERSHAREDLIBS}  ${SL_LINKER_LIBS} -lm -lc "; fi;\
-        if [ "${LIBNAME}" = "libpetscvec" ]; then OTHERLIBS="${HYPRE_LIB} ${PETSC_SYS_LIB_BASIC}"  ; fi;\
-        if [ "${LIBNAME}" = "libpetscmat" ]; then OTHERLIBS="${SCOTCH_LIB} ${PARTY_LIB} ${CHACO_LIB} ${SUPERLU_LIB} ${SUPERLU_DIST_LIB} ${MUMPS_LIB} ${SCALAPACK_LIB} ${BLACS_LIB} ${PARMETIS_LIB} ${UMFPACK_LIB} ${LUSOL_LIB} ${PETSC_VEC_LIB_BASIC}"  ; fi;\
-        if [ "${LIBNAME}" = "libpetscdm" ]; then OTHERLIBS="${TRIANGLE_LIB} ${TETGEN_LIB} ${HYPRE_LIB} ${PETSC_MAT_LIB_BASIC} ${MPI_LIB}"  ; fi;\
-        if [ "${LIBNAME}" = "libpetscksp" ]; then OTHERLIBS="${HYPRE_LIB} ${PETSC_CHARACTERISTIC_LIB_BASIC}"  ; fi;\
-        if [ "${LIBNAME}" = "libpetscsnes" ]; then OTHERLIBS="${PETSC_KSP_LIB_BASIC}"  ; fi;\
-        if [ "${LIBNAME}" = "libpetscts" ]; then OTHERLIBS="${SUNDIALS_LIB} ${PETSC_SNES_LIB_BASIC}"  ; fi;\
-        if [ "$${LIBNAME:0:8}" = "libslepc" ]; then OTHERLIBS="${PETSC_KSP_LIB_BASIC} ${SLEPC_EXTERNAL_LIB}"  ; fi;\
-        if [ "${LIBNAME}" = "libtao" ]; then OTHERLIBS="${PETSC_LIB_BASIC}"  ; fi;\
-        if [ "${LIBNAME}" = "libtaopetsc" ]; then OTHERLIBS="-L${TAO_LIB_DIR} -ltao ${PETSC_TS_LIB_BASIC}"  ; fi;\
-        if [ "${LIBNAME}" = "libtaofortran" ]; then OTHERLIBS="-L${TAO_LIB_DIR} -ltaopetsc -ltao ${PETSC_TS_LIB_BASIC}"  ; fi;\
-        if [ "${MACOSX_DEPLOYMENT_TARGET}" = "" ]; then MACOSX_DEPLOYMENT_TARGET=`sw_vers -productVersion | cut -d . -f1,2`; export MACOSX_DEPLOYMENT_TARGET; fi;\
-        ${LD_SHARED} -g  -dynamiclib -single_module -multiply_defined suppress -undefined dynamic_lookup ${DARWIN_COMMONS_USE_DYLIBS} -o ${INSTALL_LIB_DIR}/$$LIBNAME.dylib *.o -L${PETSC_LIB_DIR}  $$OTHERLIBS; \
-	${DSYMUTIL} ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}
-
-# This is the main target for building shared libraries. It takes the following actions
-#   a) Create 'tmp-petsc-shlib' in the library directory
-#   b) Loops over the shared libraries in $SHLIBS
-#   c) Checks that the corresponding archive or its libtool counterpart exists
-#   d) Checks whether an existing archive is newer than the shared library
-#   e) Executes target 'shared_arch' for any out-of-date library (The library basename is passed as LIBNAME)
-#   f) Removes 'tmp-petsc-shlib'
-# The 'shared_arch' target is passed
-#   a) LIBNAME (the library basename)
-#   b) SHARED_LIBRARY_TMPDIR (where .o files should be manipulated)
-# and both the archive and shared library reside in INSTALL_LIB_DIR.
-
-shared: shared_nomesg
-	-@if [ "${BUILDSHAREDLIB}" = "no" ]; then \
-	    echo "Shared libraries disabled"; \
-          fi
-
-shared_nomesg:
-	-@if [ "${BUILDSHAREDLIB}" != "no" ]; then \
-	    echo "making shared libraries in ${INSTALL_LIB_DIR}"; \
-            cwd=`pwd`; \
-	    for LIBNAME in ${SHLIBS}; \
-	    do \
-	      mkdir ${INSTALL_LIB_DIR}/$$LIBNAME.tmp-petsc-shlib; \
-	      if test -f ${INSTALL_LIB_DIR}/$$LIBNAME.${AR_LIB_SUFFIX} -o -f ${INSTALL_LIB_DIR}/lt_$$LIBNAME.${AR_LIB_SUFFIX}; then \
-	        if test -f ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}; then \
-	          flag=`find ${INSTALL_LIB_DIR} -type f -name $$LIBNAME.${AR_LIB_SUFFIX} -newer ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX} -print`; \
-	          if [ "$$flag" = "" ]; then \
-	            flag=`find ${INSTALL_LIB_DIR} -type f -name lt_$$LIBNAME.${AR_LIB_SUFFIX} -newer ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX} -print`; \
-	          fi; \
-	        else \
-	          flag="build"; \
-	        fi; \
-	        if [ "$$flag" != "" ]; then \
-	          echo "building $$LIBNAME.${SL_LINKER_SUFFIX}"; \
-              ${RM} -f ${INSTALL_LIB_DIR}/$$LIBNAME.tmp-petsc-shlib/*; \
-	          cd ${INSTALL_LIB_DIR}/$$LIBNAME.tmp-petsc-shlib; \
-	          ${AR} x ${INSTALL_LIB_DIR}/$$LIBNAME.${AR_LIB_SUFFIX}; \
-	          cd $$cwd;\
-	          ${OMAKE} LIBNAME=$$LIBNAME SHARED_LIBRARY_TMPDIR=${INSTALL_LIB_DIR}/$$LIBNAME.tmp-petsc-shlib shared_arch; \
-	        fi; \
-	      fi; \
-              ${RM} -rf ${INSTALL_LIB_DIR}/$$LIBNAME.tmp-petsc-shlib; \
-	    done; \
-	    echo "========================================="; \
-	  fi
 
 #
 #  Remove trailing blanks from source code
@@ -954,7 +763,6 @@ rmtrailingblanks:
 	done
 
 #
-#  Remove trailing blanks from source code
 uncrustify:
 	@for i in ${SOURCED} ${EXAMPLESC}; do \
 	  uncrustify -c ${PETSC_DIR}/lib/petsc/conf/uncrustify.cfg $$i; \
@@ -962,5 +770,3 @@ uncrustify:
 
 include ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscrules
 
-# To leave executables in place, you can uncomment this line
-#RM = echo

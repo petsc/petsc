@@ -1,8 +1,8 @@
 /*
     User interface for the nonlinear solvers package.
 */
-#if !defined(__PETSCSNES_H)
-#define __PETSCSNES_H
+#if !defined(PETSCSNES_H)
+#define PETSCSNES_H
 #include <petscksp.h>
 #include <petscdmtypes.h>
 #include <petscfvtypes.h>
@@ -12,8 +12,6 @@
      SNES - Abstract PETSc object that manages all nonlinear solves
 
    Level: beginner
-
-  Concepts: nonlinear solvers
 
 .seealso:  SNESCreate(), SNESSetType(), SNESType, TS, KSP, KSP, PC, SNESDestroy()
 S*/
@@ -139,6 +137,9 @@ PETSC_EXTERN PetscErrorCode SNESSetForceIteration(SNES,PetscBool);
 PETSC_EXTERN PetscErrorCode SNESGetIterationNumber(SNES,PetscInt*);
 PETSC_EXTERN PetscErrorCode SNESSetIterationNumber(SNES,PetscInt);
 
+PETSC_EXTERN PetscErrorCode SNESNewtonTRSetPostCheck(SNES, PetscErrorCode (*)(SNES,Vec,Vec,Vec,PetscBool*,void*),void *ctx);
+PETSC_EXTERN PetscErrorCode SNESNewtonTRGetPostCheck(SNES, PetscErrorCode (**)(SNES,Vec,Vec,Vec,PetscBool*,void*),void **ctx);
+
 PETSC_EXTERN PetscErrorCode SNESGetNonlinearStepFailures(SNES,PetscInt*);
 PETSC_EXTERN PetscErrorCode SNESSetMaxNonlinearStepFailures(SNES,PetscInt);
 PETSC_EXTERN PetscErrorCode SNESGetMaxNonlinearStepFailures(SNES,PetscInt*);
@@ -237,7 +238,6 @@ typedef enum {/* converged */
               SNES_CONVERGED_FNORM_RELATIVE    =  3, /* ||F|| < rtol*||F_initial|| */
               SNES_CONVERGED_SNORM_RELATIVE    =  4, /* Newton computed step size small; || delta x || < stol || x ||*/
               SNES_CONVERGED_ITS               =  5, /* maximum iterations reached */
-              SNES_CONVERGED_TR_DELTA          =  7,
               /* diverged */
               SNES_DIVERGED_FUNCTION_DOMAIN     = -1, /* the new x location passed the function is not in the domain of F */
               SNES_DIVERGED_FUNCTION_COUNT      = -2,
@@ -249,6 +249,7 @@ typedef enum {/* converged */
               SNES_DIVERGED_LOCAL_MIN           = -8, /* || J^T b || is small, implies converged to local minimum of F() */
               SNES_DIVERGED_DTOL                = -9, /* || F || > divtol*||F_initial|| */
               SNES_DIVERGED_JACOBIAN_DOMAIN     = -10, /* Jacobian calculation does not make sense */
+              SNES_DIVERGED_TR_DELTA            = -11,
 
               SNES_CONVERGED_ITERATING          =  0} SNESConvergedReason;
 PETSC_EXTERN const char *const*SNESConvergedReasons;
@@ -356,7 +357,7 @@ PETSC_EXTERN PetscErrorCode SNESConvergedSkip(SNES,PetscInt,PetscReal,PetscReal,
 PETSC_EXTERN PetscErrorCode SNESGetConvergedReason(SNES,SNESConvergedReason*);
 PETSC_EXTERN PetscErrorCode SNESSetConvergedReason(SNES,SNESConvergedReason);
 
-PETSC_DEPRECATED("Use SNESConvergedSkip()") PETSC_STATIC_INLINE void SNESSkipConverged(void) { /* never called */ }
+PETSC_DEPRECATED_FUNCTION("Use SNESConvergedSkip() (since version 3.5)") PETSC_STATIC_INLINE void SNESSkipConverged(void) { /* never called */ }
 #define SNESSkipConverged (SNESSkipConverged, SNESConvergedSkip)
 
 /* --------- Solving systems of nonlinear equations --------------- */
@@ -518,8 +519,6 @@ PETSC_EXTERN PetscErrorCode SNESShellSetSolve(SNES,PetscErrorCode (*)(SNES,Vec))
 
    Level: beginner
 
-  Concepts: nonlinear solvers, line search
-
 .seealso:  SNESLineSearchCreate(), SNESLineSearchSetType(), SNES
 S*/
 typedef struct _p_LineSearch* SNESLineSearch;
@@ -538,6 +537,7 @@ typedef const char* SNESLineSearchType;
 #define SNESLINESEARCHL2                 "l2"
 #define SNESLINESEARCHCP                 "cp"
 #define SNESLINESEARCHSHELL              "shell"
+#define SNESLINESEARCHNCGLINEAR          "ncglinear"
 
 PETSC_EXTERN PetscFunctionList SNESList;
 PETSC_EXTERN PetscClassId      SNESLINESEARCH_CLASSID;
@@ -681,8 +681,8 @@ PETSC_EXTERN PetscErrorCode SNESGetLineSearch(SNES,SNESLineSearch*);
 PETSC_EXTERN PetscErrorCode SNESRestrictHookAdd(SNES,PetscErrorCode (*)(SNES,SNES,void*),void*);
 PETSC_EXTERN PetscErrorCode SNESRestrictHooksRun(SNES,SNES);
 
-PETSC_DEPRECATED("Use SNESGetLineSearch()") PETSC_STATIC_INLINE PetscErrorCode SNESGetSNESLineSearch(SNES snes,SNESLineSearch *ls) {return SNESGetLineSearch(snes,ls);}
-PETSC_DEPRECATED("Use SNESSetLineSearch()") PETSC_STATIC_INLINE PetscErrorCode SNESSetSNESLineSearch(SNES snes,SNESLineSearch ls) {return SNESSetLineSearch(snes,ls);}
+PETSC_DEPRECATED_FUNCTION("Use SNESGetLineSearch() (since version 3.4)") PETSC_STATIC_INLINE PetscErrorCode SNESGetSNESLineSearch(SNES snes,SNESLineSearch *ls) {return SNESGetLineSearch(snes,ls);}
+PETSC_DEPRECATED_FUNCTION("Use SNESSetLineSearch() (since version 3.4)") PETSC_STATIC_INLINE PetscErrorCode SNESSetSNESLineSearch(SNES snes,SNESLineSearch ls) {return SNESSetLineSearch(snes,ls);}
 
 PETSC_EXTERN PetscErrorCode SNESSetUpMatrices(SNES);
 PETSC_EXTERN PetscErrorCode DMSNESSetFunction(DM,PetscErrorCode(*)(SNES,Vec,Vec,void*),void*);
@@ -886,6 +886,9 @@ PETSC_EXTERN PetscErrorCode SNESFASFullSetDownSweep(SNES,PetscBool);
 PETSC_EXTERN PetscErrorCode SNESFASCreateCoarseVec(SNES,Vec*);
 PETSC_EXTERN PetscErrorCode SNESFASRestrict(SNES,Vec,Vec);
 
+PETSC_EXTERN PetscErrorCode DMSNESCheckDiscretization(SNES,DM,Vec,PetscErrorCode (**)(PetscInt,PetscReal,const PetscReal[],PetscInt,PetscScalar*,void*),void**,PetscReal,PetscReal[]);
+PETSC_EXTERN PetscErrorCode DMSNESCheckResidual(SNES,DM,Vec,PetscReal,PetscReal*);
+PETSC_EXTERN PetscErrorCode DMSNESCheckJacobian(SNES,DM,Vec,PetscReal,PetscBool*,PetscReal*);
 PETSC_EXTERN PetscErrorCode DMSNESCheckFromOptions(SNES,Vec,PetscErrorCode (**)(PetscInt,PetscReal,const PetscReal[],PetscInt,PetscScalar*,void*),void**);
 
 #endif

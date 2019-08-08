@@ -1,7 +1,7 @@
 
 /* This file contains info for the use of PETSc Fortran interface stubs */
-#if !defined(_FORTRANIMPL_H)
-#define _FORTRANIMPL_H
+#if !defined(PETSCFORTRANIMPL_H)
+#define PETSCFORTRANIMPL_H
 
 #include <petsc/private/petscimpl.h>
 
@@ -227,7 +227,7 @@ typedef PETSC_UINTPTR_T PetscFortranAddr;
 #define PetscObjectUseFortranCallbackSubType(obj,cid,types,args) PetscObjectUseFortranCallback_Private(obj,cid,types,args,PETSC_FORTRAN_CALLBACK_SUBTYPE)
 
 /* Disable deprecation warnings while building Fortran wrappers */
-#undef  PETSC_DEPRECATED
-#define PETSC_DEPRECATED(arg)
+#undef  PETSC_DEPRECATED_FUNCTION
+#define PETSC_DEPRECATED_FUNCTION(arg)
 
 #endif

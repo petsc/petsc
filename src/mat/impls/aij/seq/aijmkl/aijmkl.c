@@ -1,3 +1,4 @@
+
 /*
   Defines basic operations for the MATSEQAIJMKL matrix class.
   This class is derived from the MATSEQAIJ class and retains the
@@ -8,17 +9,15 @@
 
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/aij/seq/aijmkl/aijmkl.h>
-
-/* MKL include files. */
-#include <mkl_spblas.h>  /* Sparse BLAS */
+#include <mkl_spblas.h>
 
 typedef struct {
-  PetscBool no_SpMV2;  /* If PETSC_TRUE, then don't use the MKL SpMV2 inspector-executor routines. */
-  PetscBool eager_inspection; /* If PETSC_TRUE, then call mkl_sparse_optimize() in MatDuplicate()/MatAssemblyEnd(). */
-  PetscBool sparse_optimized; /* If PETSC_TRUE, then mkl_sparse_optimize() has been called. */
-  PetscObjectState state;
+  PetscBool           no_SpMV2;  /* If PETSC_TRUE, then don't use the MKL SpMV2 inspector-executor routines. */
+  PetscBool           eager_inspection; /* If PETSC_TRUE, then call mkl_sparse_optimize() in MatDuplicate()/MatAssemblyEnd(). */
+  PetscBool           sparse_optimized; /* If PETSC_TRUE, then mkl_sparse_optimize() has been called. */
+  PetscObjectState    state;
 #if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
-  sparse_matrix_t csrA; /* "Handle" used by SpMV2 inspector-executor routines. */
+  sparse_matrix_t     csrA; /* "Handle" used by SpMV2 inspector-executor routines. */
   struct matrix_descr descr;
 #endif
 } Mat_SeqAIJMKL;
@@ -303,7 +302,7 @@ PetscErrorCode MatDuplicate_SeqAIJMKL(Mat A, MatDuplicateOption op, Mat *M)
   ierr = MatDuplicate_SeqAIJ(A,op,M);CHKERRQ(ierr);
   aijmkl      = (Mat_SeqAIJMKL*) A->spptr;
   aijmkl_dest = (Mat_SeqAIJMKL*) (*M)->spptr;
-  ierr = PetscMemcpy(aijmkl_dest,aijmkl,sizeof(Mat_SeqAIJMKL));CHKERRQ(ierr);
+  ierr = PetscArraycpy(aijmkl_dest,aijmkl,1);CHKERRQ(ierr);
   aijmkl_dest->sparse_optimized = PETSC_FALSE;
   if (aijmkl->eager_inspection) {
     ierr = MatSeqAIJMKL_create_mkl_handle(A);CHKERRQ(ierr);
@@ -1052,7 +1051,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A,MatType type,MatRe
    symmetric A) operations are currently supported.
    Note that MKL version 18, update 2 or later is required for MatPtAP/MatPtAPNumeric and MatMatMultNumeric.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - MPI communicator, set to PETSC_COMM_SELF
@@ -1073,8 +1072,6 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A,MatType type,MatRe
    If nnz is given then nz is ignored
 
    Level: intermediate
-
-.keywords: matrix, MKL, sparse, parallel
 
 .seealso: MatCreate(), MatCreateMPIAIJMKL(), MatSetValues()
 @*/

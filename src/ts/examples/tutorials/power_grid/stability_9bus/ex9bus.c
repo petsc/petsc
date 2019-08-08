@@ -335,7 +335,7 @@ PetscErrorCode SaveSolution(TS ts)
   ierr     = MatDenseGetArray(user->Sol,&mat);CHKERRQ(ierr);
   ierr     = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   mat[idx] = t;
-  ierr     = PetscMemcpy(mat+idx+1,x,user->neqs_pgrid*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr     = PetscArraycpy(mat+idx+1,x,user->neqs_pgrid);CHKERRQ(ierr);
   ierr     = MatDenseRestoreArray(user->Sol,&mat);CHKERRQ(ierr);
   ierr     = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   user->stepnum++;
@@ -1007,23 +1007,24 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat A,Mat 
 
 int main(int argc,char **argv)
 {
-  TS             ts;
-  SNES           snes_alg;
-  PetscErrorCode ierr;
-  PetscMPIInt    size;
-  Userctx        user;
-  PetscViewer    Xview,Ybusview,viewer;
-  Vec            X,F_alg;
-  Mat            J,A;
-  PetscInt       i,idx,*idx2;
-  Vec            Xdot;
-  PetscScalar    *x,*mat,*amat;
-  Vec            vatol;
-  PetscInt       *direction;
-  PetscBool      *terminate;
-  const PetscInt *idx3;
-  PetscScalar    *vatoli;
-  PetscInt       k;
+  TS               ts;
+  SNES              snes_alg;
+  PetscErrorCode    ierr;
+  PetscMPIInt       size;
+  Userctx           user;
+  PetscViewer       Xview,Ybusview,viewer;
+  Vec               X,F_alg;
+  Mat               J,A;
+  PetscInt          i,idx,*idx2;
+  Vec               Xdot;
+  PetscScalar       *x,*mat,*amat;
+  const PetscScalar *rmat;
+  Vec               vatol;
+  PetscInt          *direction;
+  PetscBool         *terminate;
+  const PetscInt    *idx3;
+  PetscScalar       *vatoli;
+  PetscInt          k;
 
 
   ierr = PetscInitialize(&argc,&argv,"petscoptions",help);if (ierr) return ierr;
@@ -1145,7 +1146,7 @@ int main(int argc,char **argv)
 
   mat[idx] = 0.0;
 
-  ierr = PetscMemcpy(mat+idx+1,x,user.neqs_pgrid*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArraycpy(mat+idx+1,x,user.neqs_pgrid);CHKERRQ(ierr);
   ierr = MatDenseRestoreArray(user.Sol,&mat);CHKERRQ(ierr);
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   user.stepnum++;
@@ -1198,12 +1199,11 @@ int main(int argc,char **argv)
   ierr = VecDuplicate(X,&F_alg);CHKERRQ(ierr);
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes_alg);CHKERRQ(ierr);
   ierr = SNESSetFunction(snes_alg,F_alg,AlgFunction,&user);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(snes_alg,J,J,AlgJacobian,&user);CHKERRQ(ierr); 
-
+  ierr = SNESSetJacobian(snes_alg,J,J,AlgJacobian,&user);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes_alg);CHKERRQ(ierr);
 
   user.snes_alg=snes_alg;
-  
+
   /* Solve */
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
 
@@ -1211,11 +1211,11 @@ int main(int argc,char **argv)
   ierr = MatAssemblyEnd(user.Sol,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   ierr = MatCreateSeqDense(PETSC_COMM_SELF,user.neqs_pgrid+1,user.stepnum,NULL,&A);CHKERRQ(ierr);
-  ierr = MatDenseGetArray(user.Sol,&mat);CHKERRQ(ierr);
+  ierr = MatDenseGetArrayRead(user.Sol,&rmat);CHKERRQ(ierr);
   ierr = MatDenseGetArray(A,&amat);CHKERRQ(ierr);
-  ierr = PetscMemcpy(amat,mat,(user.stepnum*(user.neqs_pgrid+1))*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArraycpy(amat,rmat,user.stepnum*(user.neqs_pgrid+1));CHKERRQ(ierr);
   ierr = MatDenseRestoreArray(A,&amat);CHKERRQ(ierr);
-  ierr = MatDenseRestoreArray(user.Sol,&mat);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArrayRead(user.Sol,&rmat);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"out.bin",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
   ierr = MatView(A,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);

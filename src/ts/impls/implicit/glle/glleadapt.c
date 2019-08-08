@@ -46,8 +46,6 @@ $     -ts_adapt_type my_scheme
 
    Level: advanced
 
-.keywords: TSGLLEAdapt, register
-
 .seealso: TSGLLEAdaptRegisterAll()
 @*/
 PetscErrorCode  TSGLLEAdaptRegister(const char sname[],PetscErrorCode (*function)(TSGLLEAdapt))
@@ -66,8 +64,6 @@ PetscErrorCode  TSGLLEAdaptRegister(const char sname[],PetscErrorCode (*function
   Not Collective
 
   Level: advanced
-
-.keywords: TSGLLEAdapt, register, all
 
 .seealso: TSGLLEAdaptRegisterDestroy()
 @*/
@@ -90,7 +86,6 @@ PetscErrorCode  TSGLLEAdaptRegisterAll(void)
 
   Level: developer
 
-.keywords: Petsc, destroy, package
 .seealso: PetscFinalize()
 @*/
 PetscErrorCode  TSGLLEAdaptFinalizePackage(void)
@@ -110,7 +105,6 @@ PetscErrorCode  TSGLLEAdaptFinalizePackage(void)
 
   Level: developer
 
-.keywords: TSGLLEAdapt, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode  TSGLLEAdaptInitializePackage(void)
@@ -326,10 +320,10 @@ typedef struct {
 static PetscErrorCode TSGLLEAdaptChoose_Both(TSGLLEAdapt adapt,PetscInt n,const PetscInt orders[],const PetscReal errors[],const PetscReal cost[],PetscInt cur,PetscReal h,PetscReal tleft,PetscInt *next_sc,PetscReal *next_h,PetscBool  *finish)
 {
   TSGLLEAdapt_Both *both = (TSGLLEAdapt_Both*)adapt->data;
-  PetscErrorCode ierr;
-  PetscReal      dec = 0.2,inc = 5.0,safe = 0.9;
+  PetscErrorCode   ierr;
+  PetscReal        dec = 0.2,inc = 5.0,safe = 0.9;
   struct {PetscInt id; PetscReal h,eff;} best={-1,0,0},trial={-1,0,0},current={-1,0,0};
-  PetscInt i;
+  PetscInt        i;
 
   PetscFunctionBegin;
   for (i=0; i<n; i++) {
@@ -338,8 +332,8 @@ static PetscErrorCode TSGLLEAdaptChoose_Both(TSGLLEAdapt adapt,PetscInt n,const 
     optimal   = PetscPowReal((PetscReal)errors[i],(PetscReal)-1./(safe*orders[i]));
     trial.h   = h*optimal;
     trial.eff = trial.h/cost[i];
-    if (trial.eff > best.eff) {ierr = PetscMemcpy(&best,&trial,sizeof(trial));CHKERRQ(ierr);}
-    if (i == cur) {ierr = PetscMemcpy(&current,&trial,sizeof(trial));CHKERRQ(ierr);}
+    if (trial.eff > best.eff) {ierr = PetscArraycpy(&best,&trial,1);CHKERRQ(ierr);}
+    if (i == cur) {ierr = PetscArraycpy(&current,&trial,1);CHKERRQ(ierr);}
   }
   /* Only switch orders if the scheme offers significant benefits over the current one.
   When the scheme is not changing, only change step size if it offers significant benefits. */

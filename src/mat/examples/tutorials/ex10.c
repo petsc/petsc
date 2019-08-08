@@ -68,6 +68,7 @@ int main(int argc,char **args)
   ierr = PetscObjectPrintClassNamePrefixType((PetscObject)A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatGetOption(A,MAT_SYMMETRIC,&flg);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"MAT_SYMMETRIC: %D\n",flg);CHKERRQ(ierr);
+  ierr = MatViewFromOptions(A,NULL,"-mat_view");CHKERRQ(ierr);
 
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = PetscFinalize();
@@ -91,6 +92,12 @@ int main(int argc,char **args)
       requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) hdf5 zlib
       args: -f ${DATAFILESPATH}/matrices/matlab/small.mat -a_mat_type mpiaij -viewer_type hdf5 -viewer_format hdf5_mat
       args: -a_matload_symmetric
+
+   test:
+      suffix: mpiaij_rect_hdf5
+      nsize: 2
+      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) hdf5 zlib
+      args: -f ${DATAFILESPATH}/matrices/matlab/small_rect.mat -a_mat_type mpiaij -viewer_type hdf5 -viewer_format hdf5_mat
 
    test:
       # test for more processes than rows
@@ -137,9 +144,37 @@ int main(int argc,char **args)
       args: -a_matload_symmetric
 
    test:
+      suffix: seqaij_rect_hdf5
+      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) hdf5 zlib
+      args: -f ${DATAFILESPATH}/matrices/matlab/small_rect.mat -a_mat_type seqaij -viewer_type hdf5 -viewer_format hdf5_mat
+
+   test:
       suffix: seqdense
       requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/small -a_mat_type seqdense
       args: -a_matload_symmetric
 
+   test:
+      suffix: seqdense_hdf5
+      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) hdf5 zlib
+      args: -f ${DATAFILESPATH}/matrices/matlab/small_dense.mat -a_mat_type seqdense -viewer_type hdf5 -viewer_format hdf5_mat
+      args: -a_matload_symmetric
+
+   test:
+      suffix: seqdense_rect_hdf5
+      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) hdf5 zlib
+      args: -f ${DATAFILESPATH}/matrices/matlab/small_rect_dense.mat -a_mat_type seqdense -viewer_type hdf5 -viewer_format hdf5_mat
+
+   test:
+      suffix: mpidense_hdf5
+      nsize: 2
+      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) hdf5 zlib
+      args: -f ${DATAFILESPATH}/matrices/matlab/small_dense.mat -a_mat_type mpidense -viewer_type hdf5 -viewer_format hdf5_mat
+      args: -a_matload_symmetric
+
+   test:
+      suffix: mpidense_rect_hdf5
+      nsize: 2
+      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) hdf5 zlib
+      args: -f ${DATAFILESPATH}/matrices/matlab/small_rect_dense.mat -a_mat_type mpidense -viewer_type hdf5 -viewer_format hdf5_mat
 TEST*/

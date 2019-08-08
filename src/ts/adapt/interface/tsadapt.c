@@ -38,8 +38,6 @@ $     -ts_adapt_type my_scheme
 
    Level: advanced
 
-.keywords: TSAdapt, register
-
 .seealso: TSAdaptRegisterAll()
 @*/
 PetscErrorCode  TSAdaptRegister(const char sname[],PetscErrorCode (*function)(TSAdapt))
@@ -58,8 +56,6 @@ PetscErrorCode  TSAdaptRegister(const char sname[],PetscErrorCode (*function)(TS
   Not Collective
 
   Level: advanced
-
-.keywords: TSAdapt, register, all
 
 .seealso: TSAdaptRegisterDestroy()
 @*/
@@ -85,7 +81,6 @@ PetscErrorCode  TSAdaptRegisterAll(void)
 
   Level: developer
 
-.keywords: Petsc, destroy, package
 .seealso: PetscFinalize()
 @*/
 PetscErrorCode  TSAdaptFinalizePackage(void)
@@ -105,7 +100,6 @@ PetscErrorCode  TSAdaptFinalizePackage(void)
 
   Level: developer
 
-.keywords: TSAdapt, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode  TSAdaptInitializePackage(void)
@@ -134,8 +128,6 @@ PetscErrorCode  TSAdaptInitializePackage(void)
 . -ts_adapt_type <basic or dsp or none> - to set the adapter type
 
   Level: intermediate
-
-.keywords: TSAdapt, create
 
 .seealso: TSGetAdapt(), TSAdaptDestroy(), TSAdaptType, TSAdaptGetType()
 @*/
@@ -171,7 +163,6 @@ PetscErrorCode  TSAdaptSetType(TSAdapt adapt,TSAdaptType type)
 
   Level: intermediate
 
-.keywords: TSAdapt, get, type
 .seealso TSAdaptSetType()
 @*/
 PetscErrorCode TSAdaptGetType(TSAdapt adapt,TSAdaptType *type)
@@ -243,7 +234,7 @@ PetscErrorCode  TSAdaptLoad(TSAdapt adapt,PetscViewer viewer)
 PetscErrorCode  TSAdaptView(TSAdapt adapt,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscBool      iascii,isbinary,isnone;
+  PetscBool      iascii,isbinary,isnone,isglee;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
@@ -255,6 +246,7 @@ PetscErrorCode  TSAdaptView(TSAdapt adapt,PetscViewer viewer)
   if (iascii) {
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)adapt,viewer);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)adapt,TSADAPTNONE,&isnone);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)adapt,TSADAPTGLEE,&isglee);CHKERRQ(ierr);
     if (!isnone) {
       if (adapt->always_accept) {ierr = PetscViewerASCIIPrintf(viewer,"  always accepting steps\n");CHKERRQ(ierr);}
       ierr = PetscViewerASCIIPrintf(viewer,"  safety factor %g\n",(double)adapt->safety);CHKERRQ(ierr);
@@ -263,6 +255,14 @@ PetscErrorCode  TSAdaptView(TSAdapt adapt,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  clip fastest decrease %g\n",(double)adapt->clip[0]);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  maximum allowed timestep %g\n",(double)adapt->dt_max);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  minimum allowed timestep %g\n",(double)adapt->dt_min);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  maximum solution absolute value to be ignored %g\n",(double)adapt->ignore_max);CHKERRQ(ierr);
+    }
+    if (isglee) {
+      if (adapt->glee_use_local) {
+        ierr = PetscViewerASCIIPrintf(viewer,"  GLEE uses local error control\n");CHKERRQ(ierr);
+      } else {
+        ierr = PetscViewerASCIIPrintf(viewer,"  GLEE uses global error control\n");CHKERRQ(ierr);
+      }
     }
     if (adapt->ops->view) {
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -467,6 +467,56 @@ PetscErrorCode TSAdaptGetSafety(TSAdapt adapt,PetscReal *safety,PetscReal *rejec
 }
 
 /*@
+   TSAdaptSetMaxIgnore - Set error estimation threshold. Solution components below this threshold value will not be considered when computing error norms for time step adaptivity (in absolute value). A negative value (default) of the threshold leads to considering all solution components.
+
+   Logically collective on TSAdapt
+
+   Input Arguments:
++  adapt - adaptive controller context
+-  max_ignore - threshold for solution components that are ignored during error estimation
+
+   Options Database Keys:
+.  -ts_adapt_max_ignore <max_ignore> - to set the threshold
+
+   Level: intermediate
+
+.seealso: TSAdapt, TSAdaptGetMaxIgnore(), TSAdaptChoose()
+@*/
+PetscErrorCode TSAdaptSetMaxIgnore(TSAdapt adapt,PetscReal max_ignore)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
+  PetscValidLogicalCollectiveReal(adapt,max_ignore,2);
+  adapt->ignore_max = max_ignore;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   TSAdaptGetMaxIgnore - Get error estimation threshold. Solution components below this threshold value will not be considered when computing error norms for time step adaptivity (in absolute value).
+
+   Not Collective
+
+   Input Arguments:
+.  adapt - adaptive controller context
+
+   Ouput Arguments:
+.  max_ignore - threshold for solution components that are ignored during error estimation
+
+   Level: intermediate
+
+.seealso: TSAdapt, TSAdaptSetMaxIgnore(), TSAdaptChoose()
+@*/
+PetscErrorCode TSAdaptGetMaxIgnore(TSAdapt adapt,PetscReal *max_ignore)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
+  PetscValidRealPointer(max_ignore,2);
+  *max_ignore = adapt->ignore_max;
+  PetscFunctionReturn(0);
+}
+
+
+/*@
    TSAdaptSetClip - Sets the admissible decrease/increase factor in step size
 
    Logically collective on TSAdapt
@@ -612,8 +662,6 @@ PetscErrorCode TSAdaptGetStepLimits(TSAdapt adapt,PetscReal *hmin,PetscReal *hma
    Notes:
    This function is automatically called by TSSetFromOptions()
 
-.keywords: TS, TSGetAdapt(), TSAdaptSetType(), TSAdaptSetStepLimits()
-
 .seealso: TSGetAdapt(), TSAdaptSetType(), TSAdaptSetAlwaysAccept(), TSAdaptSetSafety(),
           TSAdaptSetClip(), TSAdaptSetStepLimits(), TSAdaptSetMonitor()
 */
@@ -653,13 +701,16 @@ PetscErrorCode  TSAdaptSetFromOptions(PetscOptionItems *PetscOptionsObject,TSAda
   ierr = PetscOptionsReal("-ts_adapt_dt_max","Maximum time step considered","TSAdaptSetStepLimits",hmax,&hmax,&flg);CHKERRQ(ierr);
   if (set || flg) {ierr = TSAdaptSetStepLimits(adapt,hmin,hmax);CHKERRQ(ierr);}
 
+  ierr = PetscOptionsReal("-ts_adapt_max_ignore","Adaptor ignores (absolute) solution values smaller than this value","",adapt->ignore_max,&adapt->ignore_max,&set);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ts_adapt_glee_use_local","GLEE adaptor uses local error estimation for step control","",adapt->glee_use_local,&adapt->glee_use_local,&set);CHKERRQ(ierr);
+
   ierr = PetscOptionsReal("-ts_adapt_scale_solve_failed","Scale step by this factor if solve fails","",adapt->scale_solve_failed,&adapt->scale_solve_failed,NULL);CHKERRQ(ierr);
 
   ierr = PetscOptionsEnum("-ts_adapt_wnormtype","Type of norm computed for error estimation","",NormTypes,(PetscEnum)adapt->wnormtype,(PetscEnum*)&adapt->wnormtype,NULL);CHKERRQ(ierr);
   if (adapt->wnormtype != NORM_2 && adapt->wnormtype != NORM_INFINITY) SETERRQ(PetscObjectComm((PetscObject)adapt),PETSC_ERR_SUP,"Only 2-norm and infinite norm supported");
 
   ierr = PetscOptionsInt("-ts_adapt_time_step_increase_delay","Number of timesteps to delay increasing the time step after it has been decreased due to failed solver","TSAdaptSetTimeStepIncreaseDelay",adapt->timestepjustdecreased_delay,&adapt->timestepjustdecreased_delay,NULL);CHKERRQ(ierr);
-  
+
   ierr = PetscOptionsBool("-ts_adapt_monitor","Print choices made by adaptive controller","TSAdaptSetMonitor",adapt->monitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
   if (set) {ierr = TSAdaptSetMonitor(adapt,flg);CHKERRQ(ierr);}
 
@@ -939,7 +990,7 @@ PetscErrorCode TSAdaptCheckStage(TSAdapt adapt,TS ts,PetscReal t,Vec Y,PetscBool
 /*@
   TSAdaptCreate - create an adaptive controller context for time stepping
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 . comm - The communicator
@@ -952,7 +1003,6 @@ PetscErrorCode TSAdaptCheckStage(TSAdapt adapt,TS ts,PetscReal t,Vec Y,PetscBool
   Notes:
   TSAdapt creation is handled by TS, so users should not need to call this function.
 
-.keywords: TSAdapt, create
 .seealso: TSGetAdapt(), TSAdaptSetType(), TSAdaptDestroy()
 @*/
 PetscErrorCode  TSAdaptCreate(MPI_Comm comm,TSAdapt *inadapt)
@@ -974,6 +1024,8 @@ PetscErrorCode  TSAdaptCreate(MPI_Comm comm,TSAdapt *inadapt)
   adapt->clip[1]            = 10.;
   adapt->dt_min             = 1e-20;
   adapt->dt_max             = 1e+20;
+  adapt->ignore_max         = -1.0;
+  adapt->glee_use_local     = PETSC_TRUE;
   adapt->scale_solve_failed = 0.25;
   /* these two safety factors are not public, and they are used only in the TS_EXACTFINALTIME_MATCHSTEP case
      to prevent from situations were unreasonably small time steps are taken in order to match the final time */

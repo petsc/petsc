@@ -316,8 +316,6 @@ static PetscErrorCode SNESLineSearchDestroy_NLEQERR(SNESLineSearch linesearch)
 
    Level: advanced
 
-.keywords: SNES, SNESLineSearch, damping
-
 .seealso: SNESLineSearchCreate(), SNESLineSearchSetType()
 M*/
 PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_NLEQERR(SNESLineSearch linesearch)

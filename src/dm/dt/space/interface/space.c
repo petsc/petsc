@@ -36,7 +36,6 @@ PetscBool         PetscSpaceRegisterAllCalled = PETSC_FALSE;
 
   Level: advanced
 
-.keywords: PetscSpace, register
 .seealso: PetscSpaceRegisterAll(), PetscSpaceRegisterDestroy()
 
 @*/
@@ -52,7 +51,7 @@ PetscErrorCode PetscSpaceRegister(const char sname[], PetscErrorCode (*function)
 /*@C
   PetscSpaceSetType - Builds a particular PetscSpace
 
-  Collective on PetscSpace
+  Collective on sp
 
   Input Parameters:
 + sp   - The PetscSpace object
@@ -63,7 +62,6 @@ PetscErrorCode PetscSpaceRegister(const char sname[], PetscErrorCode (*function)
 
   Level: intermediate
 
-.keywords: PetscSpace, set, type
 .seealso: PetscSpaceGetType(), PetscSpaceCreate()
 @*/
 PetscErrorCode PetscSpaceSetType(PetscSpace sp, PetscSpaceType name)
@@ -104,7 +102,6 @@ PetscErrorCode PetscSpaceSetType(PetscSpace sp, PetscSpaceType name)
 
   Level: intermediate
 
-.keywords: PetscSpace, get, type, name
 .seealso: PetscSpaceSetType(), PetscSpaceCreate()
 @*/
 PetscErrorCode PetscSpaceGetType(PetscSpace sp, PetscSpaceType *name)
@@ -124,7 +121,7 @@ PetscErrorCode PetscSpaceGetType(PetscSpace sp, PetscSpaceType *name)
 /*@C
   PetscSpaceView - Views a PetscSpace
 
-  Collective on PetscSpace
+  Collective on sp
 
   Input Parameter:
 + sp - the PetscSpace object to view
@@ -136,6 +133,7 @@ PetscErrorCode PetscSpaceGetType(PetscSpace sp, PetscSpaceType *name)
 @*/
 PetscErrorCode PetscSpaceView(PetscSpace sp, PetscViewer v)
 {
+  PetscInt       pdim;
   PetscBool      iascii;
   PetscErrorCode ierr;
 
@@ -143,10 +141,11 @@ PetscErrorCode PetscSpaceView(PetscSpace sp, PetscViewer v)
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   if (v) PetscValidHeaderSpecific(v, PETSC_VIEWER_CLASSID, 2);
   if (!v) {ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject) sp), &v);CHKERRQ(ierr);}
+  ierr = PetscSpaceGetDimension(sp, &pdim);CHKERRQ(ierr);
   ierr = PetscObjectPrintClassNamePrefixType((PetscObject)sp,v);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) v, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
-  if (iascii) {ierr = PetscViewerASCIIPrintf(v, "Space in %D variables with %D components\n", sp->Nv, sp->Nc);CHKERRQ(ierr);}
+  if (iascii) {ierr = PetscViewerASCIIPrintf(v, "Space in %D variables with %D components, size %D\n", sp->Nv, sp->Nc, pdim);CHKERRQ(ierr);}
   if (sp->ops->view) {ierr = (*sp->ops->view)(sp, v);CHKERRQ(ierr);}
   ierr = PetscViewerASCIIPopTab(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -155,7 +154,7 @@ PetscErrorCode PetscSpaceView(PetscSpace sp, PetscViewer v)
 /*@
   PetscSpaceSetFromOptions - sets parameters in a PetscSpace from the options database
 
-  Collective on PetscSpace
+  Collective on sp
 
   Input Parameter:
 . sp - the PetscSpace object to set options for
@@ -171,7 +170,7 @@ PetscErrorCode PetscSpaceSetFromOptions(PetscSpace sp)
 {
   const char    *defaultType;
   char           name[256];
-  PetscBool      flg, orderflg;
+  PetscBool      flg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -191,20 +190,12 @@ PetscErrorCode PetscSpaceSetFromOptions(PetscSpace sp)
     ierr = PetscSpaceSetType(sp, defaultType);CHKERRQ(ierr);
   }
   {
-    ierr = PetscOptionsInt("-petscspace_order", "DEPRECATED: The approximation order", "PetscSpaceSetDegree", sp->degree, &sp->degree, &orderflg);CHKERRQ(ierr);
-    if (orderflg) {
-      int compare;
-
-      ierr = MPI_Comm_compare(PetscObjectComm((PetscObject)sp), PETSC_COMM_WORLD, &compare);CHKERRQ(ierr);
-
-      if (compare == MPI_IDENT || compare == MPI_CONGRUENT) {
-        ierr = PetscPrintf(PetscObjectComm((PetscObject)sp), "Warning: -petscspace_order is deprecated.  Use -petscspace_degree\n");CHKERRQ(ierr);
-      }
-    }
+    ierr = PetscOptionsDeprecated("-petscspace_order","-petscspace_degree","3.11",NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBoundedInt("-petscspace_order", "DEPRECATED: The approximation order", "PetscSpaceSetDegree", sp->degree, &sp->degree, NULL,0);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsInt("-petscspace_degree", "The (maximally included) polynomial degree", "PetscSpaceSetDegree", sp->degree, &sp->degree, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-petscspace_variables", "The number of different variables, e.g. x and y", "PetscSpaceSetNumVariables", sp->Nv, &sp->Nv, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-petscspace_components", "The number of components", "PetscSpaceSetNumComponents", sp->Nc, &sp->Nc, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-petscspace_degree", "The (maximally included) polynomial degree", "PetscSpaceSetDegree", sp->degree, &sp->degree, NULL,0);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-petscspace_variables", "The number of different variables, e.g. x and y", "PetscSpaceSetNumVariables", sp->Nv, &sp->Nv, NULL,0);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-petscspace_components", "The number of components", "PetscSpaceSetNumComponents", sp->Nc, &sp->Nc, NULL,0);CHKERRQ(ierr);
   if (sp->ops->setfromoptions) {
     ierr = (*sp->ops->setfromoptions)(PetscOptionsObject,sp);CHKERRQ(ierr);
   }
@@ -218,7 +209,7 @@ PetscErrorCode PetscSpaceSetFromOptions(PetscSpace sp)
 /*@C
   PetscSpaceSetUp - Construct data structures for the PetscSpace
 
-  Collective on PetscSpace
+  Collective on sp
 
   Input Parameter:
 . sp - the PetscSpace object to setup
@@ -240,7 +231,7 @@ PetscErrorCode PetscSpaceSetUp(PetscSpace sp)
 /*@
   PetscSpaceDestroy - Destroys a PetscSpace object
 
-  Collective on PetscSpace
+  Collective on sp
 
   Input Parameter:
 . sp - the PetscSpace object to destroy
@@ -269,7 +260,7 @@ PetscErrorCode PetscSpaceDestroy(PetscSpace *sp)
 /*@
   PetscSpaceCreate - Creates an empty PetscSpace object. The type can then be set with PetscSpaceSetType().
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 . comm - The communicator for the PetscSpace object

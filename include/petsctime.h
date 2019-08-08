@@ -3,8 +3,8 @@
      be included in user programs.
 */
 
-#if !defined(__PETSCTIME_H)
-#define __PETSCTIME_H
+#if !defined(PETSCTIME_H)
+#define PETSCTIME_H
 #include <petscsys.h>
 
 PETSC_EXTERN PetscErrorCode PetscGetCPUTime(PetscLogDouble*);
@@ -41,7 +41,6 @@ PETSC_EXTERN PetscLogDouble petsc_BaseTime;
 
 .seealso:  PetscTimeSubtract(), PetscTimeAdd(), PetscLogStageRegister(), PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd()
 
-.keywords:  Petsc, time
 M*/
 
 /*MC
@@ -72,7 +71,6 @@ M*/
 
 .seealso:  PetscTime(), PetscTimeAdd(), PetscLogStageRegister(), PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd()
 
-.keywords:  Petsc, time, subtract
 M*/
 
 /*MC
@@ -100,7 +98,6 @@ M*/
 
 .seealso:  PetscTime(), PetscTimeSubtract(), PetscLogStageRegister(), PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd()
 
-.keywords:  Petsc, time, add
 M*/
 
 PETSC_STATIC_INLINE PetscErrorCode PetscTime(PetscLogDouble *v)

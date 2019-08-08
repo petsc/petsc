@@ -242,8 +242,8 @@ static PetscErrorCode TaoView_LMVM(Tao tao, PetscViewer viewer)
   to computed the steplength in the dk direction
      
   Options Database Keys:
-.   -tao_lmvm_recycle - enable recycling LMVM updates between TaoSolve() calls
-.   -tao_lmvm_no_scale - (developer) disables diagonal Broyden scaling on the LMVM approximation
++   -tao_lmvm_recycle - enable recycling LMVM updates between TaoSolve() calls
+-   -tao_lmvm_no_scale - (developer) disables diagonal Broyden scaling on the LMVM approximation
 
   Level: beginner
 M*/

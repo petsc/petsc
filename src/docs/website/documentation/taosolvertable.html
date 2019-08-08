@@ -82,7 +82,7 @@
               <p>
                 <a name="relax">**</a> A "block Jacobi" style SOR with lits local
                 smoothing followed by update of ghost points from other processors, see
-                <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatSOR.html">MatSOR()</a>
+                <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatSOR.html">MatSOR()</a>
               </p>
 
               <p><a name="pbrelax">***</a> Use PCType of PCSOR</p>
@@ -95,7 +95,7 @@
         <tbody>
           <tr>
             <td>Unconstrained</td>
-            <td><a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Tao/Nelder-Mead.html">Nelder-Mead</a></td>
+            <td><a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Tao/TAONM.html">Nelder-Mead</a></td>
             <td>X</td>
             <td></td>
             <td></td>
@@ -106,7 +106,7 @@
 
           <tr>
             <td></td>
-            <td><a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Tao/taocg.html">conjugate gradient</a></td>
+            <td><a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Tao/TAOCG.html">conjugate gradient</a></td>
             <td>X</td>
             <td>X</td>
             <td></td>
@@ -117,7 +117,7 @@
 
           <tr>
             <td></td>
-            <td><a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Tao/lmvm.html">limited memory variable metric (quasi-Newton)</a></td>
+            <td><a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Tao/TAOLMVM.html">limited memory variable metric (quasi-Newton)</a></td>
             <td>X</td>
             <td>X</td>
             <td></td>
@@ -128,7 +128,7 @@
 
           <tr>
             <td></td>
-            <td><a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Tao/owlqn.html">owlqn</a></td>
+            <td><a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Tao/TAOOWLQN.html">owlqn</a></td>
             <td>X</td>
             <td>X</td>
             <td></td>
@@ -139,7 +139,7 @@
 
           <tr>
             <td></td>
-            <td><a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Tao/bmrm.html">bmrm</a></td>
+            <td><a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Tao/TAOBMRM.html">bmrm</a></td>
             <td>X</td>
             <td>X</td>
             <td></td>
@@ -150,7 +150,7 @@
 
           <tr>
             <td></td>
-            <td><a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Tao/nls.html">Newton line search</a></td>
+            <td><a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Tao/TAONLS.html">Newton line search</a></td>
             <td>X</td>
             <td>X</td>
             <td>X</td>
@@ -161,18 +161,7 @@
 
           <tr>
             <td></td>
-            <td><a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Tao/ntr.html">Newton trust region</a></td>
-            <td>X</td>
-            <td>X</td>
-            <td>X</td>
-            <td></td>
-            <td></td>
-            <td></td>
-          </tr>
-
-          <tr>
-            <td></td>
-            <td><a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Tao/ntl.html">Newton trust region with linesearch</a></td>
+            <td><a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Tao/TAONTR.html">Newton trust region</a></td>
             <td>X</td>
             <td>X</td>
             <td>X</td>
@@ -183,7 +172,47 @@
 
           <tr>
             <td>Bound Constrained</td>
-            <td><a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Tao/blmvm.html">bounded limited memory variable metric (quasi-Newton)</a></td>
+            <td><a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Tao/TAOBNCG.html">bounded conjugate gradient</a></td>
+            <td>X</td>
+            <td>X</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>Box constraints</td>
+          </tr>
+
+          <tr>
+            <td><a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Tao/TAOBLMVM.html">bounded limited memory variable metric (quasi-Newton)</a></td>
+            <td>X</td>
+            <td>X</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>Box constraints</td>
+          </tr>
+
+          <tr>
+            <td><a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Tao/TAOBQNLS.html">bounded quasi-Newton line search</a></td>
+            <td>X</td>
+            <td>X</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>Box constraints</td>
+          </tr>
+
+          <tr>
+            <td><a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Tao/TAOBNLS.html">bounded Newton line search</a></td>
+            <td>X</td>
+            <td>X</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>Box constraints</td>
+          </tr>
+
+          <tr>
+            <td><a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Tao/TAOBNTR.html">bounded Newton trust-region</a></td>
             <td>X</td>
             <td>X</td>
             <td></td>
@@ -194,7 +223,7 @@
 
           <tr>
             <td></td>
-            <td><a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Tao/gpcg.html">gradient projection conjugate gradient</a></td>
+            <td><a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Tao/TAOGPCG.html">gradient projection conjugate gradient</a></td>
             <td>X</td>
             <td>X</td>
             <td></td>
@@ -205,7 +234,7 @@
 
           <tr>
             <td></td>
-            <td><a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Tao/bqpip.html">bounded quadratic interior point</a></td>
+            <td><a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Tao/TAOBQPIP.html">bounded quadratic interior point</a></td>
             <td>X</td>
             <td>X</td>
             <td></td>
@@ -216,7 +245,7 @@
 
           <tr>
             <td></td>
-            <td><a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Tao/tron.html">tron</a></td>
+            <td><a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Tao/TAOTRON.html">tron</a></td>
             <td>X</td>
             <td>X</td>
             <td>X</td>
@@ -227,7 +256,7 @@
 
           <tr>
             <td>Complementarity</td>
-            <td><a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Tao/asfls.html">active-set feasible line search</a></td>
+            <td><a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Tao/TAOASFLS.html">active-set feasible line search</a></td>
             <td></td>
             <td></td>
             <td></td>
@@ -238,7 +267,7 @@
 
           <tr>
             <td></td>
-            <td><a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Tao/asils.html">active-set infeasible line search</a></td>
+            <td><a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Tao/TAOASILS.html">active-set infeasible line search</a></td>
             <td></td>
             <td></td>
             <td></td>
@@ -249,7 +278,7 @@
 
           <tr>
             <td></td>
-            <td><a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Tao/ssfls.html">semismooth feasible line search</a></td>
+            <td><a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Tao/TAOSSFLS.html">semismooth feasible line search</a></td>
             <td></td>
             <td></td>
             <td></td>
@@ -260,7 +289,7 @@
 
           <tr>
             <td></td>
-            <td><a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Tao/ssfls.html">semismooth infeasible line search</a></td>
+            <td><a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Tao/TAOSSFLS.html">semismooth infeasible line search</a></td>
             <td></td>
             <td></td>
             <td></td>
@@ -271,7 +300,7 @@
 
           <tr>
             <td>Nonlinear Least-squares</td>
-            <td><a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Tao/pounders.html">POUNDERS</a></td>
+            <td><a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Tao/TAOPOUNDERS.html">POUNDERS</a></td>
             <td>X</td>
             <td></td>
             <td></td>
@@ -282,7 +311,7 @@
 
           <tr>
             <td>PDE-constrained</td>
-            <td><a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Tao/lcl.html">linearly constrained lagrangian</a></td>
+            <td><a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Tao/TAOLCL.html">linearly constrained lagrangian</a></td>
             <td>X</td>
             <td>X</td>
             <td>X</td>
@@ -293,7 +322,7 @@
 
           <tr>
             <td>Constrained</td>
-            <td><a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Tao/ipm.html">interior point method</a></td>
+            <td><a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Tao/TAOIPM.html">interior point method</a></td>
             <td>X</td>
             <td>X</td>
             <td>X</td>

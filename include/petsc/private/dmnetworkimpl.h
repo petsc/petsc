@@ -3,7 +3,7 @@
 
 #include <petscmat.h>       /*I      "petscmat.h"          I*/
 #include <petscdmnetwork.h> /*I      "petscdmnetwork.h"    I*/
-#include "petsc/private/dmimpl.h"
+#include <petsc/private/dmpleximpl.h>  /*I  "petscdmplex.h"  I*/
 
 #define MAX_DATA_AT_POINT 36
 
@@ -46,23 +46,19 @@ typedef struct {
 } DMNetworkEdgeInfo;
 
 typedef struct {
-  PetscInt  id;             /* Subnetwork id */
   PetscInt  Nvtx, nvtx;     /* Number of global/local vertices */
   PetscInt  Nedge,nedge;    /* Number of global/local edges */
-  PetscInt eStart, eEnd;    /* Range of edge numbers (start, end+1) */
-  PetscInt vStart, vEnd;    /* Range of vertex numbers (start, end+1) */
-  PetscInt *edgelist;       /* User provided list of edges. Each edge has the format [from to] where from and to are the vertices covering the edge */
+  PetscInt  eStart, eEnd;   /* Range of edge numbers (start, end+1) */
+  PetscInt  vStart, vEnd;   /* Range of vertex numbers (start, end+1) */
+  PetscInt  *edgelist;      /* User provided list of edges. Each edge has the format [from to] where from and to are the vertices covering the edge */
   PetscInt  *vertices;      /* Vertices for this subnetwork. These are mapped to the vertex numbers for the whole network */
-  PetscInt *edges;          /* Edges for this subnetwork. These are mapped to the edge numbers for the whole network */
+  PetscInt  *edges;         /* Edges for this subnetwork. These are mapped to the edge numbers for the whole network */
 } DMSubnetwork;
 
 typedef struct {
   PetscInt                          refct;       /* reference count */
-  PetscInt                          NEdges;      /* Number of global edges */
-  PetscInt                          NVertices;   /* Number of global vertices */
-  PetscInt                          nEdges;      /* Number of local edges */
-  PetscInt                          nVertices;   /* Number of local vertices */
-  PetscInt                          *edges;      /* Edge list */
+  PetscInt                          NEdges,nEdges;        /* Number of global/local edges */
+  PetscInt                          NVertices,nVertices; /* Number of global/local vertices */
   PetscInt                          pStart,pEnd; /* Start and end indices for topological points */
   PetscInt                          vStart,vEnd; /* Start and end indices for vertices */
   PetscInt                          eStart,eEnd; /* Start and end indices for edges */
@@ -70,6 +66,8 @@ typedef struct {
   PetscSection                      DataSection; /* Section for managing parameter distribution */
   PetscSection                      DofSection;  /* Section for managing data distribution */
   PetscSection                      GlobalDofSection; /* Global Dof section */
+  PetscBool                         distributecalled; /* Flag if DMNetworkDistribute() is called */
+  PetscInt                          *vltog;           /* Maps vertex local ordering to global ordering, include ghost vertices */
 
   DMNetworkVertexInfo               vertex;
   DMNetworkEdgeInfo                 edge;
@@ -81,9 +79,10 @@ typedef struct {
   PetscInt                          dataheadersize;
   DMNetworkComponentGenericDataType *componentdataarray; /* Array to hold the data */
 
-  PetscInt                          nsubnet;  /* Total number of subnetworks, including coupling subnetworks */
-  PetscInt                          ncsubnet; /* Number of coupling subnetworks */
+  PetscInt                          nsubnet;  /* Global number of subnetworks, including coupling subnetworks */
+  PetscInt                          ncsubnet; /* Global number of coupling subnetworks */
   DMSubnetwork                      *subnet;  /* Subnetworks */
+  PetscInt                          *subnetvtx; /* Maps local vertex to local subnetwork's vertex */
 
   PetscBool                         userEdgeJacobian,userVertexJacobian;  /* Global flag for using user's sub Jacobians */
   Mat                               *Je;  /* Pointer array to hold local sub Jacobians for edges, 3 elements for an edge */

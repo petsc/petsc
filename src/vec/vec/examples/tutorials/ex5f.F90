@@ -3,14 +3,15 @@ program main
 use petscvec
 implicit none
 
-  PetscErrorCode ierr
-  PetscMPIInt    rank,mySize
-  PetscInt       i
+  PetscErrorCode ::ierr
+  PetscMPIInt ::   rank,mySize
+  PetscInt :: i
+  PetscInt, parameter :: one = 1
   PetscInt :: m = 10
   PetscInt :: low,high,ldim,iglobal
-  PetscScalar    v
-  Vec            u
-  PetscViewer    viewer
+  PetscScalar :: v
+  Vec ::         u
+  PetscViewer :: viewer
   
   PetscBool :: flg
 #if defined(PETSC_USE_LOG)
@@ -25,7 +26,7 @@ implicit none
   
   call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr) 
   
-  call MPI_Comm_Size(PETSC_COMM_WORLD,mySize,ierr);CHKERRA(ierr)  !gives number of processes in the group of comm (integer) 
+  call MPI_Comm_size(PETSC_COMM_WORLD,mySize,ierr);CHKERRA(ierr)  !gives number of processes in the group of comm (integer) 
   call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-m",m,flg,ierr);CHKERRA(ierr) !gives the integer value for a particular option in the database. 
 
   ! PART 1:  Generate vector, then write it in binary format */
@@ -41,7 +42,7 @@ implicit none
   do i=0,ldim-1
    iglobal = i + low
    v       = real(i + 100*rank)
-   call VecSetValues(u,1,iglobal,v,INSERT_VALUES,ierr);CHKERRA(ierr)
+   call VecSetValues(u,one,iglobal,v,INSERT_VALUES,ierr);CHKERRA(ierr)
   end do
   call VecAssemblyBegin(u,ierr);CHKERRA(ierr)
   call VecAssemblyEnd(u,ierr);CHKERRA(ierr)
@@ -77,3 +78,17 @@ implicit none
 end program
 
 
+!/*TEST
+!
+!     test:
+!       nsize: 1
+!       requires: mpiio
+!       output_file: output/ex5_1.out
+!
+!     test:
+!       suffix: 2
+!       nsize: 2
+!       requires: mpiio
+!       output_file: output/ex5_2.out
+!
+!TEST*/

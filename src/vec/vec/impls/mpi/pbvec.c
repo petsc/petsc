@@ -90,15 +90,23 @@ static PetscErrorCode VecDuplicate_MPI(Vec win,Vec *v)
 static PetscErrorCode VecSetOption_MPI(Vec V,VecOption op,PetscBool flag)
 {
   Vec_MPI        *v = (Vec_MPI*)V->data;
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   switch (op) {
   case VEC_IGNORE_OFF_PROC_ENTRIES: V->stash.donotstash = flag;
     break;
   case VEC_IGNORE_NEGATIVE_INDICES: V->stash.ignorenegidx = flag;
     break;
-  case VEC_SUBSET_OFF_PROC_ENTRIES: v->assembly_subset = flag;
+  case VEC_SUBSET_OFF_PROC_ENTRIES:
+    v->assembly_subset = flag; /* See the same logic in MatAssembly wrt MAT_SUBSET_OFF_PROC_ENTRIES */
+    if (!v->assembly_subset) { /* User indicates "do not reuse the communication pattern" */
+      ierr = VecAssemblyReset_MPI(V);CHKERRQ(ierr); /* Reset existing pattern to free memory */
+      v->first_assembly_done = PETSC_FALSE; /* Mark the first assembly is not done */
+    }
     break;
   }
+
   PetscFunctionReturn(0);
 }
 
@@ -126,13 +134,15 @@ static PetscErrorCode VecAssemblySend_MPI_Private(MPI_Comm comm,const PetscMPIIn
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* x->recvhdr only exists when we are reusing a communication network.  In that case, some messages can be empty, but
-   * we have to send them this time if we sent them before because the receiver is expecting them. */
-  if (hdr->count || (x->recvhdr && x->sendptrs[rankid].ints)) {
+  /* x->first_assembly_done indicates we are reusing a communication network. In that case, some
+     messages can be empty, but we have to send them this time if we sent them before because the
+     receiver is expecting them.
+   */
+  if (hdr->count || (x->first_assembly_done && x->sendptrs[rankid].ints)) {
     ierr = MPI_Isend(x->sendptrs[rankid].ints,hdr->count,MPIU_INT,rank,tag[0],comm,&req[0]);CHKERRQ(ierr);
     ierr = MPI_Isend(x->sendptrs[rankid].scalars,hdr->count,MPIU_SCALAR,rank,tag[1],comm,&req[1]);CHKERRQ(ierr);
   }
-  if (hdr->bcount || (x->recvhdr && x->sendptrs[rankid].intb)) {
+  if (hdr->bcount || (x->first_assembly_done && x->sendptrs[rankid].intb)) {
     ierr = MPI_Isend(x->sendptrs[rankid].intb,hdr->bcount,MPIU_INT,rank,tag[2],comm,&req[2]);CHKERRQ(ierr);
     ierr = MPI_Isend(x->sendptrs[rankid].scalarb,hdr->bcount*bs,MPIU_SCALAR,rank,tag[3],comm,&req[3]);CHKERRQ(ierr);
   }
@@ -236,9 +246,8 @@ static PetscErrorCode VecAssemblyBegin_MPI_BTS(Vec X)
   if (!x->segrecvint) {ierr = PetscSegBufferCreate(sizeof(PetscInt),1000,&x->segrecvint);CHKERRQ(ierr);}
   if (!x->segrecvscalar) {ierr = PetscSegBufferCreate(sizeof(PetscScalar),1000,&x->segrecvscalar);CHKERRQ(ierr);}
   if (!x->segrecvframe) {ierr = PetscSegBufferCreate(sizeof(VecAssemblyFrame),50,&x->segrecvframe);CHKERRQ(ierr);}
-  if (x->recvhdr) {             /* VEC_SUBSET_OFF_PROC_ENTRIES and this is not the first assembly */
+  if (x->first_assembly_done) { /* this is not the first assembly */
     PetscMPIInt tag[4];
-    if (!x->assembly_subset) SETERRQ(comm,PETSC_ERR_PLIB,"Attempt to reuse rendezvous when not VEC_SUBSET_OFF_PROC_ENTRIES");
     for (i=0; i<4; i++) {ierr = PetscCommGetNewTag(comm,&tag[i]);CHKERRQ(ierr);}
     for (i=0; i<x->nsendranks; i++) {
       ierr = VecAssemblySend_MPI_Private(comm,tag,i,x->sendranks[i],x->sendhdr+i,x->sendreqs+4*i,X);CHKERRQ(ierr);
@@ -247,10 +256,15 @@ static PetscErrorCode VecAssemblyBegin_MPI_BTS(Vec X)
       ierr = VecAssemblyRecv_MPI_Private(comm,tag,x->recvranks[i],x->recvhdr+i,x->recvreqs+4*i,X);CHKERRQ(ierr);
     }
     x->use_status = PETSC_TRUE;
-  } else {                      /* First time */
+  } else { /* First time assembly */
     ierr = PetscCommBuildTwoSidedFReq(comm,3,MPIU_INT,x->nsendranks,x->sendranks,(PetscInt*)x->sendhdr,&x->nrecvranks,&x->recvranks,&x->recvhdr,4,&x->sendreqs,&x->recvreqs,VecAssemblySend_MPI_Private,VecAssemblyRecv_MPI_Private,X);CHKERRQ(ierr);
     x->use_status = PETSC_FALSE;
   }
+
+  /* The first_assembly_done flag is only meaningful when x->assembly_subset is set.
+     This line says when assembly_subset is set, then we mark that the first assembly is done.
+   */
+  x->first_assembly_done = x->assembly_subset;
 
   {
     PetscInt nstash,reallocs;
@@ -279,6 +293,7 @@ static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
     PetscFunctionReturn(0);
   }
 
+  if (!x->segrecvframe) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing segrecvframe! Probably you forgot to call VecAssemblyBegin first"); 
   ierr = VecGetArray(X,&xarray);CHKERRQ(ierr);
   ierr = PetscSegBufferExtractInPlace(x->segrecvframe,&frame);CHKERRQ(ierr);
   ierr = PetscMalloc2(4*x->nrecvranks,&some_indices,x->use_status?4*x->nrecvranks:0,&some_statuses);CHKERRQ(ierr);
@@ -497,9 +512,8 @@ PetscErrorCode VecCreate_MPI_Private(Vec v,PetscBool alloc,PetscInt nghost,const
   s->array_allocated = 0;
   if (alloc && !array) {
     PetscInt n = v->map->n+nghost;
-    ierr               = PetscMalloc1(n,&s->array);CHKERRQ(ierr);
+    ierr               = PetscCalloc1(n,&s->array);CHKERRQ(ierr);
     ierr               = PetscLogObjectMemory((PetscObject)v,n*sizeof(PetscScalar));CHKERRQ(ierr);
-    ierr               = PetscMemzero(s->array,n*sizeof(PetscScalar));CHKERRQ(ierr);
     s->array_allocated = s->array;
   }
 
@@ -531,7 +545,7 @@ PetscErrorCode VecCreate_MPI_Private(Vec v,PetscBool alloc,PetscInt nghost,const
 
   Level: beginner
 
-.seealso: VecCreate(), VecSetType(), VecSetFromOptions(), VecCreateMpiWithArray(), VECMPI, VecType, VecCreateMPI(), VecCreateMpi()
+.seealso: VecCreate(), VecSetType(), VecSetFromOptions(), VecCreateMPIWithArray(), VECMPI, VecType, VecCreateMPI(), VecCreateMPI()
 M*/
 
 PETSC_EXTERN PetscErrorCode VecCreate_MPI(Vec vv)
@@ -573,7 +587,7 @@ PETSC_EXTERN PetscErrorCode VecCreate_Standard(Vec v)
    VecCreateMPIWithArray - Creates a parallel, array-style vector,
    where the user provides the array space to store the vector values.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm  - the MPI communicator to use
@@ -597,8 +611,6 @@ PETSC_EXTERN PetscErrorCode VecCreate_Standard(Vec v)
 
    Level: intermediate
 
-   Concepts: vectors^creating with array
-
 .seealso: VecCreateSeqWithArray(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost(),
           VecCreateMPI(), VecCreateGhostWithArray(), VecPlaceArray()
 
@@ -621,7 +633,7 @@ PetscErrorCode  VecCreateMPIWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,Petsc
    VecCreateGhostWithArray - Creates a parallel vector with ghost padding on each processor;
    the caller allocates the array space.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - the MPI communicator to use
@@ -642,8 +654,6 @@ PetscErrorCode  VecCreateMPIWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,Petsc
 
    Level: advanced
 
-   Concepts: vectors^creating with array
-   Concepts: vectors^ghosted
 
 .seealso: VecCreate(), VecGhostGetLocalForm(), VecGhostRestoreLocalForm(),
           VecCreateGhost(), VecCreateSeqWithArray(), VecCreateMPIWithArray(),
@@ -705,7 +715,7 @@ PetscErrorCode  VecCreateGhostWithArray(MPI_Comm comm,PetscInt n,PetscInt N,Pets
 /*@
    VecCreateGhost - Creates a parallel vector with ghost padding on each processor.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - the MPI communicator to use
@@ -724,8 +734,6 @@ PetscErrorCode  VecCreateGhostWithArray(MPI_Comm comm,PetscInt n,PetscInt N,Pets
    This also automatically sets the ISLocalToGlobalMapping() for this vector.
 
    Level: advanced
-
-   Concepts: vectors^ghosted
 
 .seealso: VecCreateSeq(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateMPI(),
           VecGhostGetLocalForm(), VecGhostRestoreLocalForm(), VecGhostUpdateBegin(),
@@ -762,8 +770,6 @@ PetscErrorCode  VecCreateGhost(MPI_Comm comm,PetscInt n,PetscInt N,PetscInt ngho
    You must call this AFTER you have set the type of the vector (with VecSetType()) and the size (with VecSetSizes()).
 
    Level: advanced
-
-   Concepts: vectors^ghosted
 
 .seealso: VecCreateSeq(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateMPI(),
           VecGhostGetLocalForm(), VecGhostRestoreLocalForm(), VecGhostUpdateBegin(),
@@ -832,7 +838,7 @@ PetscErrorCode  VecMPISetGhost(Vec vv,PetscInt nghost,const PetscInt ghosts[])
    VecCreateGhostBlockWithArray - Creates a parallel vector with ghost padding on each processor;
    the caller allocates the array space. Indices in the ghost region are based on blocks.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - the MPI communicator to use
@@ -856,8 +862,6 @@ PetscErrorCode  VecMPISetGhost(Vec vv,PetscInt nghost,const PetscInt ghosts[])
 
    Level: advanced
 
-   Concepts: vectors^creating ghosted
-   Concepts: vectors^creating with array
 
 .seealso: VecCreate(), VecGhostGetLocalForm(), VecGhostRestoreLocalForm(),
           VecCreateGhost(), VecCreateSeqWithArray(), VecCreateMPIWithArray(),
@@ -922,7 +926,7 @@ PetscErrorCode  VecCreateGhostBlockWithArray(MPI_Comm comm,PetscInt bs,PetscInt 
    VecCreateGhostBlock - Creates a parallel vector with ghost padding on each processor.
         The indicing of the ghost points is done with blocks.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - the MPI communicator to use
@@ -944,8 +948,6 @@ PetscErrorCode  VecCreateGhostBlockWithArray(MPI_Comm comm,PetscInt bs,PetscInt 
    portion is bs*nghost
 
    Level: advanced
-
-   Concepts: vectors^ghosted
 
 .seealso: VecCreateSeq(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateMPI(),
           VecGhostGetLocalForm(), VecGhostRestoreLocalForm(),

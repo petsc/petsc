@@ -249,7 +249,7 @@ PETSC_INTERN PetscErrorCode PetscSocketListen(int listenport,int *t)
 /*@C
    PetscViewerSocketOpen - Opens a connection to a MATLAB or other socket based server.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - the MPI communicator
@@ -282,8 +282,8 @@ $    -viewer_socket_machine <machine>
 $    -viewer_socket_port <port>
 
    Environmental variables:
-+   PETSC_VIEWER_SOCKET_PORT portnumber
--   PETSC_VIEWER_SOCKET_MACHINE machine name
++   PETSC_VIEWER_SOCKET_PORT - portnumber
+-   PETSC_VIEWER_SOCKET_MACHINE - machine name
 
      Currently the only socket client available is MATLAB. See
      src/dm/examples/tests/ex12.c and ex12.m for an example of usage.
@@ -296,8 +296,6 @@ $    -viewer_socket_port <port>
      .mat file. Use PetscMatlabEngineCreate() or PETSC_MATLAB_ENGINE_(), PETSC_MATLAB_ENGINE_SELF, or PETSC_MATLAB_ENGINE_WORLD
      for communicating with a MATLAB Engine
 
-   Concepts: MATLAB^sending data
-   Concepts: sockets^sending data
 
 .seealso: MatView(), VecView(), PetscViewerDestroy(), PetscViewerCreate(), PetscViewerSetType(),
           PetscViewerSocketSetConnection(), PETSC_VIEWER_SOCKET_, PETSC_VIEWER_SOCKET_WORLD,
@@ -474,7 +472,7 @@ PetscMPIInt Petsc_Viewer_Socket_keyval = MPI_KEYVAL_INVALID;
 /*@C
      PETSC_VIEWER_SOCKET_ - Creates a socket viewer shared by all processors in a communicator.
 
-     Collective on MPI_Comm
+     Collective
 
      Input Parameter:
 .    comm - the MPI communicator to share the socket PetscViewer
@@ -488,8 +486,8 @@ $    -viewer_socket_machine <machine>
 $    -viewer_socket_port <port>
 
    Environmental variables:
-+   PETSC_VIEWER_SOCKET_PORT portnumber
--   PETSC_VIEWER_SOCKET_MACHINE machine name
++   PETSC_VIEWER_SOCKET_PORT - portnumber
+-   PETSC_VIEWER_SOCKET_MACHINE - machine name
 
      Notes:
      Unlike almost all other PETSc routines, PetscViewer_SOCKET_ does not return

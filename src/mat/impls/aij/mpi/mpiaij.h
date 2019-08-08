@@ -29,6 +29,8 @@ typedef struct { /* used by MatPtAP_MPIAIJ_MPIAIJ() and MatMatMult_MPIAIJ_MPIAIJ
   PetscBool               freestruct;              /* flag for MatFreeIntermediateDataStructures() */
   Mat                     Rd,Ro,AP_loc,C_loc,C_oth;
   PetscInt                algType;                 /* implementation algorithm */
+  PetscSF                 sf;                      /* use it to communicate remote part of C */
+  PetscInt                *c_othi,*c_rmti;
 
   Mat_Merge_SeqsToMPI *merge;
   PetscErrorCode (*destroy)(Mat);
@@ -124,7 +126,11 @@ PETSC_INTERN PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat,Mat,PetscReal,Mat*
 PETSC_INTERN PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat,Mat,Mat);
 
 PETSC_INTERN PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat,Mat,PetscReal,Mat*);
+PETSC_INTERN PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce(Mat,Mat,PetscReal,Mat*);
+PETSC_INTERN PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce_merged(Mat,Mat,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable(Mat,Mat,Mat);
+PETSC_INTERN PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_allatonce(Mat,Mat,Mat);
+PETSC_INTERN PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_allatonce_merged(Mat,Mat,Mat);
 PETSC_INTERN PetscErrorCode MatFreeIntermediateDataStructures_MPIAIJ_AP(Mat);
 PETSC_INTERN PetscErrorCode MatFreeIntermediateDataStructures_MPIAIJ_BC(Mat);
 
@@ -176,8 +182,8 @@ PETSC_INTERN PetscErrorCode MatSetSeqMats_MPIAIJ(Mat,IS,IS,IS,MatStructure,Mat,M
 /* compute apa = A[i,:]*P = Ad[i,:]*P_loc + Ao*[i,:]*P_oth using sparse axpy */
 #define AProw_scalable(i,ad,ao,p_loc,p_oth,api,apj,apa) \
 {\
-  PetscInt    _anz,_pnz,_j,_k,*_ai,*_aj,_row,*_pi,*_pj,_nextp,*_apJ;      \
-  PetscScalar *_aa,_valtmp,*_pa;                             \
+  PetscInt    _anz,_pnz,_j,_k,*_ai,*_aj,_row,*_pi,*_pj,_nextp,*_apJ;\
+  PetscScalar *_aa,_valtmp,*_pa;\
   _apJ = apj + api[i];\
   /* diagonal portion of A */\
   _ai  = ad->i;\
@@ -186,47 +192,49 @@ PETSC_INTERN PetscErrorCode MatSetSeqMats_MPIAIJ(Mat,IS,IS,IS,MatStructure,Mat,M
   _aa  = ad->a + _ai[i];\
   for (_j=0; _j<_anz; _j++) {\
     _row = _aj[_j]; \
-    _pi  = p_loc->i;                                 \
-    _pnz = _pi[_row+1] - _pi[_row];         \
+    _pi  = p_loc->i;                             \
+    _pnz = _pi[_row+1] - _pi[_row];              \
     _pj  = p_loc->j + _pi[_row];                 \
     _pa  = p_loc->a + _pi[_row];                 \
     /* perform sparse axpy */                    \
     _valtmp = _aa[_j];                           \
     _nextp  = 0; \
     for (_k=0; _nextp<_pnz; _k++) {                    \
-      if (_apJ[_k] == _pj[_nextp]) { /* column of AP == column of P */   \
-        apa[_k] += _valtmp*_pa[_nextp++];                                \
+      if (_apJ[_k] == _pj[_nextp]) { /* column of AP == column of P */\
+        apa[_k] += _valtmp*_pa[_nextp++];                             \
       } \
     }                                           \
     (void)PetscLogFlops(2.0*_pnz);              \
   }                                             \
   /* off-diagonal portion of A */               \
-  _ai  = ao->i;\
-  _anz = _ai[i+1] - _ai[i];                     \
-  _aj  = ao->j + _ai[i];                         \
-  _aa  = ao->a + _ai[i];                         \
-  for (_j=0; _j<_anz; _j++) {                      \
-    _row = _aj[_j];    \
-    _pi  = p_oth->i;                         \
-    _pnz = _pi[_row+1] - _pi[_row];          \
-    _pj  = p_oth->j + _pi[_row];                  \
-    _pa  = p_oth->a + _pi[_row];                  \
-    /* perform sparse axpy */                     \
-    _valtmp = _aa[_j];                             \
-    _nextp  = 0; \
-    for (_k=0; _nextp<_pnz; _k++) {                     \
-      if (_apJ[_k] == _pj[_nextp]) { /* column of AP == column of P */\
-        apa[_k] += _valtmp*_pa[_nextp++];                       \
-      }                                                     \
-    }                                            \
-    (void)PetscLogFlops(2.0*_pnz);               \
-  } \
+  if (p_oth){ \
+    _ai  = ao->i;\
+    _anz = _ai[i+1] - _ai[i];                   \
+    _aj  = ao->j + _ai[i];                      \
+    _aa  = ao->a + _ai[i];                      \
+    for (_j=0; _j<_anz; _j++) {                 \
+      _row = _aj[_j];    \
+      _pi  = p_oth->i;                         \
+      _pnz = _pi[_row+1] - _pi[_row];          \
+      _pj  = p_oth->j + _pi[_row];             \
+      _pa  = p_oth->a + _pi[_row];             \
+      /* perform sparse axpy */                \
+      _valtmp = _aa[_j];                       \
+      _nextp  = 0; \
+      for (_k=0; _nextp<_pnz; _k++) {          \
+        if (_apJ[_k] == _pj[_nextp]) { /* column of AP == column of P */\
+          apa[_k] += _valtmp*_pa[_nextp++];    \
+        }                                      \
+      }                                        \
+      (void)PetscLogFlops(2.0*_pnz);           \
+    } \
+  }\
 }
 
 #define AProw_nonscalable(i,ad,ao,p_loc,p_oth,apa) \
 {\
-  PetscInt    _anz,_pnz,_j,_k,*_ai,*_aj,_row,*_pi,*_pj;      \
-  PetscScalar *_aa,_valtmp,*_pa;                             \
+  PetscInt    _anz,_pnz,_j,_k,*_ai,*_aj,_row,*_pi,*_pj;\
+  PetscScalar *_aa,_valtmp,*_pa;                       \
   /* diagonal portion of A */\
   _ai  = ad->i;\
   _anz = _ai[i+1] - _ai[i];\
@@ -234,35 +242,37 @@ PETSC_INTERN PetscErrorCode MatSetSeqMats_MPIAIJ(Mat,IS,IS,IS,MatStructure,Mat,M
   _aa  = ad->a + _ai[i];\
   for (_j=0; _j<_anz; _j++) {\
     _row = _aj[_j]; \
-    _pi  = p_loc->i;                                 \
+    _pi  = p_loc->i;                        \
     _pnz = _pi[_row+1] - _pi[_row];         \
-    _pj  = p_loc->j + _pi[_row];                 \
-    _pa  = p_loc->a + _pi[_row];                 \
-    /* perform dense axpy */                    \
-    _valtmp = _aa[_j];                           \
-    for (_k=0; _k<_pnz; _k++) {                    \
-      apa[_pj[_k]] += _valtmp*_pa[_k];               \
-    }                                           \
-    (void)PetscLogFlops(2.0*_pnz);              \
-  }                                             \
-  /* off-diagonal portion of A */               \
-  _ai  = ao->i;\
-  _anz = _ai[i+1] - _ai[i];                     \
-  _aj  = ao->j + _ai[i];                         \
-  _aa  = ao->a + _ai[i];                         \
-  for (_j=0; _j<_anz; _j++) {                      \
-    _row = _aj[_j];    \
-    _pi  = p_oth->i;                         \
-    _pnz = _pi[_row+1] - _pi[_row];          \
-    _pj  = p_oth->j + _pi[_row];                  \
-    _pa  = p_oth->a + _pi[_row];                  \
-    /* perform dense axpy */                     \
-    _valtmp = _aa[_j];                             \
-    for (_k=0; _k<_pnz; _k++) {                     \
-      apa[_pj[_k]] += _valtmp*_pa[_k];                \
-    }                                            \
-    (void)PetscLogFlops(2.0*_pnz);               \
-  } \
+    _pj  = p_loc->j + _pi[_row];            \
+    _pa  = p_loc->a + _pi[_row];            \
+    /* perform dense axpy */                \
+    _valtmp = _aa[_j];                      \
+    for (_k=0; _k<_pnz; _k++) {             \
+      apa[_pj[_k]] += _valtmp*_pa[_k];      \
+    }                                       \
+    (void)PetscLogFlops(2.0*_pnz);          \
+  }                                         \
+  /* off-diagonal portion of A */           \
+  if (p_oth){ \
+    _ai  = ao->i;\
+    _anz = _ai[i+1] - _ai[i];               \
+    _aj  = ao->j + _ai[i];                  \
+    _aa  = ao->a + _ai[i];                  \
+    for (_j=0; _j<_anz; _j++) {             \
+      _row = _aj[_j];    \
+      _pi  = p_oth->i;                      \
+      _pnz = _pi[_row+1] - _pi[_row];       \
+      _pj  = p_oth->j + _pi[_row];          \
+      _pa  = p_oth->a + _pi[_row];          \
+      /* perform dense axpy */              \
+      _valtmp = _aa[_j];                    \
+      for (_k=0; _k<_pnz; _k++) {           \
+        apa[_pj[_k]] += _valtmp*_pa[_k];    \
+      }                                     \
+      (void)PetscLogFlops(2.0*_pnz);        \
+    }                                       \
+  }\
 }
 
 #endif

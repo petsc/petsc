@@ -131,7 +131,7 @@ PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscInt align,PetscS
 
     /* shift work by that number of bytes */
     work = (PetscScalar*)(((char*)work) + shift);
-    ierr = PetscMemcpy(work,addr,N*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscArraycpy(work,addr,N);CHKERRQ(ierr);
 
     /* store in the first location in addr how much you shift it */
     ((PetscInt*)addr)[0] = shift;
@@ -184,7 +184,7 @@ PetscErrorCode PetscScalarAddressFromFortran(PetscObject obj,PetscScalar *base,s
     tlx  = base + addr;
 
     shift = *(PetscInt*)*lx;
-    ierr  = PetscMemcpy(*lx,tlx,N*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr  = PetscArraycpy(*lx,tlx,N);CHKERRQ(ierr);
     tlx   = (PetscScalar*)(((char*)tlx) - shift);
 
     ierr = PetscFree(tlx);CHKERRQ(ierr);

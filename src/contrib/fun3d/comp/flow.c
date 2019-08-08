@@ -7,6 +7,8 @@ and ported into PETSc framework by D. K. Kaushik, ODU and ICASE.\n\n";
 #include <petsctime.h>
 #include "user.h"
 
+#define PetscBinaryRead(fd,data,num,type) PetscBinaryRead(fd,data,num,NULL,type)
+
 typedef struct {
   PetscViewer viewer;
 } MonitorCtx;

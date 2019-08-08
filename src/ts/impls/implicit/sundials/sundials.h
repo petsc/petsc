@@ -4,8 +4,8 @@
    solver developed at LLNL.
 */
 
-#if !defined(__PETSCSUNDIALS_H)
-#define __PETSCSUNDIALS_H
+#if !defined(PETSC_SUNDIALS_H)
+#define PETSC_SUNDIALS_H
 
 #include <petsc/private/tsimpl.h>       /*I   "petscts.h"   I*/
 #include <petsc/private/pcimpl.h>

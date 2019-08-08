@@ -7,11 +7,12 @@ static PetscErrorCode DMProjectPoint_Func_Private(DM dm, PetscDS prob, PetscReal
                                                   PetscScalar values[])
 {
   PetscInt       coordDim, Nf, *Nc, f, totDim, spDim, d, v, tp;
-  PetscBool      isAffine;
+  PetscBool      isAffine, transform;
   PetscErrorCode ierr;
 
   PetscFunctionBeginHot;
   ierr = DMGetCoordinateDim(dm,&coordDim);CHKERRQ(ierr);
+  ierr = DMHasBasisTransform(dm, &transform);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
   ierr = PetscDSGetComponents(prob, &Nc);CHKERRQ(ierr);
   ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
@@ -29,14 +30,13 @@ static PetscErrorCode DMProjectPoint_Func_Private(DM dm, PetscDS prob, PetscReal
         const PetscReal   *points;
         PetscScalar       *pointEval;
         PetscReal         *x;
-        DM                dm;
+        DM                rdm;
 
-        ierr = PetscDualSpaceGetDM(sp[f],&dm);CHKERRQ(ierr);
+        ierr = PetscDualSpaceGetDM(sp[f],&rdm);CHKERRQ(ierr);
         ierr = PetscDualSpaceGetAllPoints(sp[f], &allPoints);CHKERRQ(ierr);
         ierr = PetscQuadratureGetData(allPoints,&dim,NULL,&numPoints,&points,NULL);CHKERRQ(ierr);
-        ierr = PetscDualSpaceGetDM(sp[f],&dm);CHKERRQ(ierr);
-        ierr = DMGetWorkArray(dm,numPoints*Nc[f],MPIU_SCALAR,&pointEval);CHKERRQ(ierr);
-        ierr = DMGetWorkArray(dm,coordDim,MPIU_REAL,&x);CHKERRQ(ierr);
+        ierr = DMGetWorkArray(rdm,numPoints*Nc[f],MPIU_SCALAR,&pointEval);CHKERRQ(ierr);
+        ierr = DMGetWorkArray(rdm,coordDim,MPIU_REAL,&x);CHKERRQ(ierr);
         for (q = 0; q < numPoints; q++, tp++) {
           const PetscReal *v0;
 
@@ -46,11 +46,14 @@ static PetscErrorCode DMProjectPoint_Func_Private(DM dm, PetscDS prob, PetscReal
           } else {
             v0 = &fegeom->v[tp*coordDim];
           }
-          ierr = (*funcs[f])(coordDim,time,v0, Nc[f], &pointEval[Nc[f]*q], ctx);CHKERRQ(ierr);
+          if (transform) {ierr = DMPlexBasisTransformApplyReal_Internal(dm, v0, PETSC_TRUE, coordDim, v0, x, dm->transformCtx);CHKERRQ(ierr); v0 = x;}
+          ierr = (*funcs[f])(coordDim, time, v0, Nc[f], &pointEval[Nc[f]*q], ctx);CHKERRQ(ierr);
         }
+        /* Transform point evaluations pointEval[q,c] */
+        ierr = PetscDualSpacePullback(sp[f], fegeom, numPoints, Nc[f], pointEval);CHKERRQ(ierr);
         ierr = PetscDualSpaceApplyAll(sp[f], pointEval, &values[v]);CHKERRQ(ierr);
-        ierr = DMRestoreWorkArray(dm,coordDim,MPIU_REAL,&x);CHKERRQ(ierr);
-        ierr = DMRestoreWorkArray(dm,numPoints*Nc[f],MPIU_SCALAR,&pointEval);CHKERRQ(ierr);
+        ierr = DMRestoreWorkArray(rdm,coordDim,MPIU_REAL,&x);CHKERRQ(ierr);
+        ierr = DMRestoreWorkArray(rdm,numPoints*Nc[f],MPIU_SCALAR,&pointEval);CHKERRQ(ierr);
         v += spDim;
       } else {
         for (d = 0; d < spDim; ++d, ++v) {
@@ -64,7 +67,7 @@ static PetscErrorCode DMProjectPoint_Func_Private(DM dm, PetscDS prob, PetscReal
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMProjectPoint_Field_Private(DM dm, PetscDS prob, DM dmAux, PetscDS probAux, PetscReal time, Vec localU, Vec localA, PetscFEGeom *fegeom, PetscDualSpace sp[], PetscInt p, PetscInt Ncc, const PetscInt comps[],
+static PetscErrorCode DMProjectPoint_Field_Private(DM dm, PetscDS prob, DM dmAux, PetscDS probAux, PetscReal time, Vec localU, Vec localA, PetscFEGeom *cgeom, PetscDualSpace sp[], PetscInt p, PetscInt Ncc, const PetscInt comps[],
                                                    PetscReal **basisTab, PetscReal **basisDerTab, PetscReal **basisTabAux, PetscReal **basisDerTabAux,
                                                    void (**funcs)(PetscInt, PetscInt, PetscInt,
                                                                   const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -73,15 +76,16 @@ static PetscErrorCode DMProjectPoint_Field_Private(DM dm, PetscDS prob, DM dmAux
                                                    PetscScalar values[])
 {
   PetscSection       section, sectionAux = NULL;
-  PetscScalar       *u, *u_t = NULL, *u_x, *a = NULL, *a_t = NULL, *a_x = NULL, *refSpaceDer, *refSpaceDerAux = NULL, *bc;
+  PetscScalar       *u, *u_t = NULL, *u_x, *a = NULL, *a_t = NULL, *a_x = NULL, *bc;
   PetscScalar       *coefficients   = NULL, *coefficientsAux   = NULL;
   PetscScalar       *coefficients_t = NULL, *coefficientsAux_t = NULL;
   const PetscScalar *constants;
   PetscReal         *x;
   PetscInt          *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL, *Nb, *Nc, *NbAux = NULL, *NcAux = NULL;
-  const PetscInt     dE = fegeom->dimEmbed;
+  PetscFEGeom        fegeom;
+  const PetscInt     dE = cgeom->dimEmbed;
   PetscInt           dimAux = 0, numConstants, Nf, NfAux = 0, f, spDim, d, v, tp = 0;
-  PetscBool          isAffine;
+  PetscBool          isAffine, transform;
   PetscErrorCode     ierr;
 
   PetscFunctionBeginHot;
@@ -91,8 +95,9 @@ static PetscErrorCode DMProjectPoint_Field_Private(DM dm, PetscDS prob, DM dmAux
   ierr = PetscDSGetComponentOffsets(prob, &uOff);CHKERRQ(ierr);
   ierr = PetscDSGetComponentDerivativeOffsets(prob, &uOff_x);CHKERRQ(ierr);
   ierr = PetscDSGetEvaluationArrays(prob, &u, &bc /*&u_t*/, &u_x);CHKERRQ(ierr);
-  ierr = PetscDSGetRefCoordArrays(prob, &x, &refSpaceDer);CHKERRQ(ierr);
+  ierr = PetscDSGetWorkspace(prob, &x, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
   ierr = PetscDSGetConstants(prob, &numConstants, &constants);CHKERRQ(ierr);
+  ierr = DMHasBasisTransform(dm, &transform);CHKERRQ(ierr);
   ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
   ierr = DMPlexVecGetClosure(dm, section, localU, p, NULL, &coefficients);CHKERRQ(ierr);
   if (dmAux) {
@@ -107,11 +112,17 @@ static PetscErrorCode DMProjectPoint_Field_Private(DM dm, PetscDS prob, DM dmAux
     ierr = PetscDSGetComponentOffsets(probAux, &aOff);CHKERRQ(ierr);
     ierr = PetscDSGetComponentDerivativeOffsets(probAux, &aOff_x);CHKERRQ(ierr);
     ierr = PetscDSGetEvaluationArrays(probAux, &a, NULL /*&a_t*/, &a_x);CHKERRQ(ierr);
-    ierr = PetscDSGetRefCoordArrays(probAux, NULL, &refSpaceDerAux);CHKERRQ(ierr);
     ierr = DMPlexVecGetClosure(dmAux, sectionAux, localA, subp, NULL, &coefficientsAux);CHKERRQ(ierr);
   }
   /* Get values for closure */
-  isAffine = fegeom->isAffine;
+  isAffine = cgeom->isAffine;
+  if (isAffine) {
+    fegeom.v    = x;
+    fegeom.xi   = cgeom->xi;
+    fegeom.J    = cgeom->J;
+    fegeom.invJ = cgeom->invJ;
+    fegeom.detJ = cgeom->detJ;
+  }
   for (f = 0, v = 0; f < Nf; ++f) {
     PetscQuadrature   allPoints;
     PetscInt          q, dim, numPoints;
@@ -130,20 +141,18 @@ static PetscErrorCode DMProjectPoint_Field_Private(DM dm, PetscDS prob, DM dmAux
     ierr = PetscQuadratureGetData(allPoints,&dim,NULL,&numPoints,&points,NULL);CHKERRQ(ierr);
     ierr = DMGetWorkArray(dm,numPoints*Nc[f],MPIU_SCALAR,&pointEval);CHKERRQ(ierr);
     for (q = 0; q < numPoints; ++q, ++tp) {
-      const PetscReal *v0;
-      const PetscReal *invJ;
-
       if (isAffine) {
-        CoordinatesRefToReal(dE, dim, fegeom->xi, fegeom->v, fegeom->J, &points[q*dim], x);
-        v0 = x;
-        invJ = fegeom->invJ;
+        CoordinatesRefToReal(dE, dim, fegeom.xi, cgeom->v, fegeom.J, &points[q*dim], x);
       } else {
-        v0 = &fegeom->v[tp*dE];
-        invJ = &fegeom->invJ[tp*dE*dE];
+        fegeom.v    = &cgeom->v[tp*dE];
+        fegeom.J    = &cgeom->J[tp*dE*dE];
+        fegeom.invJ = &cgeom->invJ[tp*dE*dE];
+        fegeom.detJ = &cgeom->detJ[tp];
       }
-      EvaluateFieldJets(dim, Nf, Nb, Nc, tp, basisTab, basisDerTab, refSpaceDer, invJ, coefficients, coefficients_t, u, u_x, u_t);
-      if (probAux) EvaluateFieldJets(dimAux, NfAux, NbAux, NcAux, tp, basisTabAux, basisDerTabAux, refSpaceDerAux, invJ, coefficientsAux, coefficientsAux_t, a, a_x, a_t);
-      (*funcs[f])(dE, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, a_t, a_x, time, v0, numConstants, constants, &pointEval[Nc[f]*q]);
+      ierr = PetscFEEvaluateFieldJets_Internal(prob, dim, Nf, Nb, Nc, tp, basisTab, basisDerTab, &fegeom, coefficients, coefficients_t, u, u_x, u_t);CHKERRQ(ierr);
+      if (probAux) {ierr = PetscFEEvaluateFieldJets_Internal(probAux, dimAux, NfAux, NbAux, NcAux, tp, basisTabAux, basisDerTabAux, &fegeom, coefficientsAux, coefficientsAux_t, a, a_x, a_t);CHKERRQ(ierr);}
+      if (transform) {ierr = DMPlexBasisTransformApplyReal_Internal(dm, fegeom.v, PETSC_TRUE, dE, fegeom.v, fegeom.v, dm->transformCtx);CHKERRQ(ierr);}
+      (*funcs[f])(dE, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, a_t, a_x, time, fegeom.v, numConstants, constants, &pointEval[Nc[f]*q]);
     }
     ierr = PetscDualSpaceApplyAll(sp[f], pointEval, &values[v]);CHKERRQ(ierr);
     ierr = DMRestoreWorkArray(dm,numPoints*Nc[f],MPIU_SCALAR,&pointEval);CHKERRQ(ierr);
@@ -154,7 +163,7 @@ static PetscErrorCode DMProjectPoint_Field_Private(DM dm, PetscDS prob, DM dmAux
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMProjectPoint_BdField_Private(DM dm, PetscDS prob, DM dmAux, PetscDS probAux, PetscReal time, Vec localU, Vec localA, PetscFEGeom *fegeom, PetscDualSpace sp[], PetscInt p, PetscInt Ncc, const PetscInt comps[],
+static PetscErrorCode DMProjectPoint_BdField_Private(DM dm, PetscDS prob, DM dmAux, PetscDS probAux, PetscReal time, Vec localU, Vec localA, PetscFEGeom *fgeom, PetscDualSpace sp[], PetscInt p, PetscInt Ncc, const PetscInt comps[],
                                                      PetscReal **basisTab, PetscReal **basisDerTab, PetscReal **basisTabAux, PetscReal **basisDerTabAux,
                                                      void (**funcs)(PetscInt, PetscInt, PetscInt,
                                                                     const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -163,13 +172,14 @@ static PetscErrorCode DMProjectPoint_BdField_Private(DM dm, PetscDS prob, DM dmA
                                                      PetscScalar values[])
 {
   PetscSection       section, sectionAux = NULL;
-  PetscScalar       *u, *u_t = NULL, *u_x, *a = NULL, *a_t = NULL, *a_x = NULL, *refSpaceDer, *refSpaceDerAux = NULL, *bc;
+  PetscScalar       *u, *u_t = NULL, *u_x, *a = NULL, *a_t = NULL, *a_x = NULL, *bc;
   PetscScalar       *coefficients   = NULL, *coefficientsAux   = NULL;
   PetscScalar       *coefficients_t = NULL, *coefficientsAux_t = NULL;
   const PetscScalar *constants;
   PetscReal         *x;
   PetscInt          *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL, *Nb, *Nc, *NbAux = NULL, *NcAux = NULL;
-  const PetscInt     dE = fegeom->dimEmbed;
+  PetscFEGeom        fegeom, cgeom;
+  const PetscInt     dE = fgeom->dimEmbed;
   PetscInt           dimAux = 0, numConstants, Nf, NfAux = 0, f, spDim, d, v, tp = 0;
   PetscBool          isAffine;
   PetscErrorCode     ierr;
@@ -181,7 +191,7 @@ static PetscErrorCode DMProjectPoint_BdField_Private(DM dm, PetscDS prob, DM dmA
   ierr = PetscDSGetComponentOffsets(prob, &uOff);CHKERRQ(ierr);
   ierr = PetscDSGetComponentDerivativeOffsets(prob, &uOff_x);CHKERRQ(ierr);
   ierr = PetscDSGetEvaluationArrays(prob, &u, &bc /*&u_t*/, &u_x);CHKERRQ(ierr);
-  ierr = PetscDSGetRefCoordArrays(prob, &x, &refSpaceDer);CHKERRQ(ierr);
+  ierr = PetscDSGetWorkspace(prob, &x, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
   ierr = PetscDSGetConstants(prob, &numConstants, &constants);CHKERRQ(ierr);
   ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
   ierr = DMPlexVecGetClosure(dm, section, localU, p, NULL, &coefficients);CHKERRQ(ierr);
@@ -200,11 +210,26 @@ static PetscErrorCode DMProjectPoint_BdField_Private(DM dm, PetscDS prob, DM dmA
     ierr = PetscDSGetComponentOffsets(probAux, &aOff);CHKERRQ(ierr);
     ierr = PetscDSGetComponentDerivativeOffsets(probAux, &aOff_x);CHKERRQ(ierr);
     ierr = PetscDSGetEvaluationArrays(probAux, &a, NULL /*&a_t*/, &a_x);CHKERRQ(ierr);
-    ierr = PetscDSGetRefCoordArrays(probAux, NULL, &refSpaceDerAux);CHKERRQ(ierr);
     ierr = DMPlexVecGetClosure(dmAux, sectionAux, localA, subp, NULL, &coefficientsAux);CHKERRQ(ierr);
   }
   /* Get values for closure */
-  isAffine = fegeom->isAffine;
+  isAffine = fgeom->isAffine;
+  fegeom.n  = 0;
+  fegeom.J  = 0;
+  fegeom.v  = 0;
+  fegeom.xi = 0;
+  if (isAffine) {
+    fegeom.v    = x;
+    fegeom.xi   = fgeom->xi;
+    fegeom.J    = fgeom->J;
+    fegeom.invJ = fgeom->invJ;
+    fegeom.detJ = fgeom->detJ;
+    fegeom.n    = fgeom->n;
+
+    cgeom.J     = fgeom->suppJ[0];
+    cgeom.invJ  = fgeom->suppInvJ[0];
+    cgeom.detJ  = fgeom->suppDetJ[0];
+  }
   for (f = 0, v = 0; f < Nf; ++f) {
     PetscQuadrature   allPoints;
     PetscInt          q, dim, numPoints;
@@ -223,23 +248,22 @@ static PetscErrorCode DMProjectPoint_BdField_Private(DM dm, PetscDS prob, DM dmA
     ierr = PetscQuadratureGetData(allPoints,&dim,NULL,&numPoints,&points,NULL);CHKERRQ(ierr);
     ierr = DMGetWorkArray(dm,numPoints*Nc[f],MPIU_SCALAR,&pointEval);CHKERRQ(ierr);
     for (q = 0; q < numPoints; ++q, ++tp) {
-      const PetscReal *v0;
-      const PetscReal *invJ;
-      const PetscReal *n;
-
       if (isAffine) {
-        CoordinatesRefToReal(dE, dim, fegeom->xi, fegeom->v, fegeom->J, &points[q*dim], x);
-        v0 = x;
-        invJ = fegeom->invJ;
-        n  = fegeom->n;
+        CoordinatesRefToReal(dE, dim, fegeom.xi, fgeom->v, fegeom.J, &points[q*dim], x);
       } else {
-        v0 = &fegeom->v[tp*dE];
-        invJ = &fegeom->invJ[tp*dE*dE];
-        n  = &fegeom->n[tp*dE];
+        fegeom.v    = &fgeom->v[tp*dE];
+        fegeom.J    = &fgeom->J[tp*dE*dE];
+        fegeom.invJ = &fgeom->invJ[tp*dE*dE];
+        fegeom.detJ = &fgeom->detJ[tp];
+        fegeom.n    = &fgeom->n[tp*dE];
+
+        cgeom.J     = &fgeom->suppJ[0][tp*dE*dE];
+        cgeom.invJ  = &fgeom->suppInvJ[0][tp*dE*dE];
+        cgeom.detJ  = &fgeom->suppDetJ[0][tp];
       }
-      EvaluateFieldJets(dim, Nf, Nb, Nc, tp, basisTab, basisDerTab, refSpaceDer, invJ, coefficients, coefficients_t, u, u_x, u_t);
-      if (probAux) {EvaluateFieldJets(dimAux, NfAux, NbAux, NcAux, tp, basisTabAux, basisDerTabAux, refSpaceDerAux, invJ, coefficientsAux, coefficientsAux_t, a, a_x, a_t);}
-      (*funcs[f])(dE, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, a_t, a_x, time, v0, n, numConstants, constants, &pointEval[Nc[f]*q]);
+      ierr = PetscFEEvaluateFieldJets_Internal(prob, dim, Nf, Nb, Nc, tp, basisTab, basisDerTab, &cgeom, coefficients, coefficients_t, u, u_x, u_t);CHKERRQ(ierr);
+      if (probAux) {ierr = PetscFEEvaluateFieldJets_Internal(probAux, dimAux, NfAux, NbAux, NcAux, tp, basisTabAux, basisDerTabAux, &cgeom, coefficientsAux, coefficientsAux_t, a, a_x, a_t);CHKERRQ(ierr);}
+      (*funcs[f])(dE, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, a_t, a_x, time, fegeom.v, fegeom.n, numConstants, constants, &pointEval[Nc[f]*q]);
     }
     ierr = PetscDualSpaceApplyAll(sp[f], pointEval, &values[v]);CHKERRQ(ierr);
     ierr = DMRestoreWorkArray(dm,numPoints*Nc[f],MPIU_SCALAR,&pointEval);CHKERRQ(ierr);
@@ -397,15 +421,15 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
                                                   DMBoundaryConditionType type, void (**funcs)(void), void **ctxs,
                                                   InsertMode mode, Vec localX)
 {
-  DM              dmAux = NULL;
+  DM              dmAux = NULL, tdm;
   PetscDS         prob = NULL, probAux = NULL;
-  Vec             localA = NULL;
+  Vec             localA = NULL, tv;
   PetscSection    section;
   PetscDualSpace *sp, *cellsp;
   PetscReal     **basisTab = NULL, **basisDerTab = NULL, **basisTabAux = NULL, **basisDerTabAux = NULL;
   PetscInt       *Nc;
   PetscInt        dim, dimEmbed, depth, minHeight, maxHeight, h, Nf, NfAux = 0, f;
-  PetscBool      *isFE, hasFE = PETSC_FALSE, hasFV = PETSC_FALSE, auxBd = PETSC_FALSE;
+  PetscBool      *isFE, hasFE = PETSC_FALSE, hasFV = PETSC_FALSE, auxBd = PETSC_FALSE, transform;
   DMField         coordField;
   DMLabel         depthLabel;
   PetscQuadrature allPoints = NULL;
@@ -416,6 +440,9 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
   ierr = PetscObjectQuery((PetscObject) dm, "A", (PetscObject *) &localA);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetVTKCellHeight(dm, &minHeight);CHKERRQ(ierr);
+  ierr = DMGetBasisTransformDM_Internal(dm, &tdm);CHKERRQ(ierr);
+  ierr = DMGetBasisTransformVec_Internal(dm, &tv);CHKERRQ(ierr);
+  ierr = DMHasBasisTransform(dm, &transform);CHKERRQ(ierr);
   /* Auxiliary information can only be used with interpolation of field functions */
   if (type == DM_BC_ESSENTIAL_FIELD || type == DM_BC_NATURAL_FIELD) {
     if (dmAux && !localA) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Missing localA vector");
@@ -578,7 +605,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
         for (p = 0; p < n; ++p) {
           const PetscInt  point = points[p];
 
-          ierr = PetscMemzero(values, numValues * sizeof(PetscScalar));CHKERRQ(ierr);
+          ierr = PetscArrayzero(values, numValues);CHKERRQ(ierr);
           ierr = PetscFEGeomGetChunk(fegeom,p,p+1,&chunkgeom);CHKERRQ(ierr);
           ierr = DMProjectPoint_Private(dm, probEff, chunkgeom, dmAux, probAux, effectiveHeight, time, localU, localA, hasFE, hasFV, isFE, sp, point, Ncc, comps, basisTab, basisDerTab, basisTabAux, basisDerTabAux, type, funcs, ctxs, fieldActive, values);
           if (ierr) {
@@ -587,6 +614,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
             ierr2 = DMRestoreWorkArray(dm, Nf, MPI_INT, &fieldActive);CHKERRQ(ierr2);
             CHKERRQ(ierr);
           }
+          if (transform) {ierr = DMPlexBasisTransformPoint_Internal(dm, tdm, tv, point, fieldActive, PETSC_FALSE, values);CHKERRQ(ierr);}
           ierr = DMPlexVecSetFieldClosure_Internal(dm, section, localX, fieldActive, point, Ncc, comps, values, mode);CHKERRQ(ierr);
         }
         ierr = PetscFEGeomRestoreChunk(fegeom,p,p+1,&chunkgeom);CHKERRQ(ierr);
@@ -615,7 +643,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
       }
       ierr = DMFieldCreateFEGeom(coordField,pointIS,quad,PETSC_FALSE,&fegeom);CHKERRQ(ierr);
       for (p = pStart; p < pEnd; ++p) {
-        ierr = PetscMemzero(values, numValues * sizeof(PetscScalar));CHKERRQ(ierr);
+        ierr = PetscArrayzero(values, numValues);CHKERRQ(ierr);
         ierr = PetscFEGeomGetChunk(fegeom,p-pStart,p-pStart+1,&chunkgeom);CHKERRQ(ierr);
         ierr = DMProjectPoint_Private(dm, probEff, chunkgeom, dmAux, probAux, effectiveHeight, time, localU, localA, hasFE, hasFV, isFE, sp, p, Ncc, comps, basisTab, basisDerTab, basisTabAux, basisDerTabAux, type, funcs, ctxs, fieldActive, values);
         if (ierr) {
@@ -624,6 +652,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
           ierr2 = DMRestoreWorkArray(dm, Nf, MPI_INT, &fieldActive);CHKERRQ(ierr2);
           CHKERRQ(ierr);
         }
+        if (transform) {ierr = DMPlexBasisTransformPoint_Internal(dm, tdm, tv, p, fieldActive, PETSC_FALSE, values);CHKERRQ(ierr);}
         ierr = DMPlexVecSetFieldClosure_Internal(dm, section, localX, fieldActive, p, Ncc, comps, values, mode);CHKERRQ(ierr);
       }
       ierr = PetscFEGeomRestoreChunk(fegeom,p-pStart,pStart-p+1,&chunkgeom);CHKERRQ(ierr);

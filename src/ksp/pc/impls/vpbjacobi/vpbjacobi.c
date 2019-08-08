@@ -165,8 +165,6 @@ static PetscErrorCode PCDestroy_VPBJacobi(PC pc)
 
    Level: beginner
 
-  Concepts: variable point block Jacobi
-
 .seealso:  MatSetVariableBlockSizes(), PCCreate(), PCSetType(), PCType (for list of available types), PC, PCJACOBI
 
 M*/

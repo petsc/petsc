@@ -45,11 +45,4 @@ PETSC_EXTERN PetscMPIInt Petsc_Viewer_HDF5_keyval;
 PETSC_EXTERN PetscMPIInt Petsc_Viewer_Socket_keyval;
 #endif
 
-#if defined(PETSC_HAVE_HDF5)
-#include <petscviewerhdf5.h>
-#include <petscis.h>
-/* this needs to be declared PETSC_EXTERN as it is used within Vec and IS which can be in a separate shared library */
-PETSC_EXTERN PetscErrorCode PetscViewerHDF5Load(PetscViewer,const char *,PetscLayout,hid_t,void**);
-#endif
-
 #endif

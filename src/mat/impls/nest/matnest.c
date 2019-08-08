@@ -1481,7 +1481,7 @@ static PetscErrorCode MatConvert_Nest_SeqAIJ_fast(Mat A,MatType newtype,MatReuse
   }
 
   /* new row pointer */
-  ierr = PetscMemzero(ii,(nr+1)*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArrayzero(ii,nr+1);CHKERRQ(ierr);
   for (i=0; i<nest->nr; ++i) {
     PetscInt       ncr,rst;
 

@@ -13,7 +13,7 @@
    DMDAGlobalToNaturalAllCreate - Creates a scatter context that maps from the
      global vector the entire vector to each processor in natural numbering
 
-   Collective on DMDA
+   Collective on da
 
    Input Parameter:
 .  da - the distributed array context
@@ -22,8 +22,6 @@
 .  scatter - the scatter context
 
    Level: advanced
-
-.keywords: distributed array, global to local, begin, coarse problem
 
 .seealso: DMDAGlobalToNaturalEnd(), DMLocalToGlobalBegin(), DMDACreate2d(),
           DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMDACreateNaturalVector()
@@ -61,7 +59,7 @@ PetscErrorCode  DMDAGlobalToNaturalAllCreate(DM da,VecScatter *scatter)
    DMDANaturalAllToGlobalCreate - Creates a scatter context that maps from a copy
      of the entire vector on each processor to its local part in the global vector.
 
-   Collective on DMDA
+   Collective on da
 
    Input Parameter:
 .  da - the distributed array context
@@ -70,8 +68,6 @@ PetscErrorCode  DMDAGlobalToNaturalAllCreate(DM da,VecScatter *scatter)
 .  scatter - the scatter context
 
    Level: advanced
-
-.keywords: distributed array, global to local, begin, coarse problem
 
 .seealso: DMDAGlobalToNaturalEnd(), DMLocalToGlobalBegin(), DMDACreate2d(),
           DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMDACreateNaturalVector()

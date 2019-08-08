@@ -66,10 +66,6 @@ int main(int argc,char **argv)
 
   if (user.coarse.mz) Test_3D = PETSC_TRUE;
 
-  user.fine.mx = user.ratio*(user.coarse.mx-1)+1;
-  user.fine.my = user.ratio*(user.coarse.my-1)+1;
-  user.fine.mz = user.ratio*(user.coarse.mz-1)+1;
-
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-Npx",&Npx,NULL);CHKERRQ(ierr);
@@ -78,12 +74,15 @@ int main(int argc,char **argv)
 
   /* Set up distributed array for fine grid */
   if (!Test_3D) {
-    ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.fine.mx,user.fine.my,Npx,Npy,1,1,NULL,NULL,&user.fine.da);CHKERRQ(ierr);
+    ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.coarse.mx,user.coarse.my,Npx,Npy,1,1,NULL,NULL,&user.coarse.da);CHKERRQ(ierr);
   } else {
-    ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.fine.mx,user.fine.my,user.fine.mz,Npx,Npy,Npz,1,1,NULL,NULL,NULL,&user.fine.da);CHKERRQ(ierr);
+    ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.coarse.mx,user.coarse.my,user.coarse.mz,Npx,Npy,Npz,1,1,NULL,NULL,NULL,&user.coarse.da);CHKERRQ(ierr);
   }
-  ierr = DMSetFromOptions(user.fine.da);CHKERRQ(ierr);
-  ierr = DMSetUp(user.fine.da);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(user.coarse.da);CHKERRQ(ierr);
+  ierr = DMSetUp(user.coarse.da);CHKERRQ(ierr);
+
+  /* This makes sure the coarse DMDA has the same partition as the fine DMDA */
+  ierr = DMRefine(user.coarse.da,PetscObjectComm((PetscObject)user.coarse.da),&user.fine.da);CHKERRQ(ierr);
 
   /* Test DMCreateMatrix()                                         */
   /*------------------------------------------------------------*/
@@ -132,16 +131,6 @@ int main(int argc,char **argv)
     ierr = MatRestoreRowIJ(AB,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg);CHKERRQ(ierr);
   }
   /* ierr = MatView(A, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
-
-  /* Set up distributed array for coarse grid */
-  if (!Test_3D) {
-    ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.coarse.mx,user.coarse.my,Npx,Npy,1,1,NULL,NULL,&user.coarse.da);CHKERRQ(ierr);
-  } else {
-    ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.coarse.mx,user.coarse.my,user.coarse.mz,Npx,Npy,Npz,
-                        1,1,NULL,NULL,NULL,&user.coarse.da);CHKERRQ(ierr);
-  }
-  ierr = DMSetFromOptions(user.coarse.da);CHKERRQ(ierr);
-  ierr = DMSetUp(user.coarse.da);CHKERRQ(ierr);
 
   /* Create interpolation between the fine and coarse grids */
   ierr = DMCreateInterpolation(user.coarse.da,user.fine.da,&P,NULL);CHKERRQ(ierr);
@@ -337,6 +326,18 @@ int main(int argc,char **argv)
      suffix: seq_rowmerge
      nsize: 3
      args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable -inner_diag_matmatmult_via rowmerge -inner_offdiag_matmatmult_via rowmerge
+     output_file: output/ex96_1.out
+
+   test:
+     suffix: allatonce
+     nsize: 3
+     args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via allatonce
+     output_file: output/ex96_1.out
+
+   test:
+     suffix: allatonce_merged
+     nsize: 3
+     args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via allatonce_merged
      output_file: output/ex96_1.out
 
 TEST*/

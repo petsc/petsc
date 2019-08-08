@@ -82,9 +82,7 @@ class Configure(config.base.Configure):
       if arg in self.argDB:
         val = self.argDB[arg]
       elif self.argDB['with-batch']:
-        body = 'freopen("/dev/null","w",stderr);\n' + 'fprintf(output,"  \'--'+arg+'=%ld\',\\n",'+fname+'());'
-        self.framework.addBatchInclude(source)
-        self.framework.addBatchBody(body)
+        self.log.write('Skipping determination of '+str(a.enum())+' in batch mode, using default '+str(a.default)+'\n')
         val = a.default
       else:
         filename = 'conftestval'

@@ -98,10 +98,10 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqBAIJ(Mat A,MatType newtype,MatR
 
   b = (Mat_SeqBAIJ*)(B->data);
 
-  ierr = PetscMemcpy(b->i,a->i,(m+1)*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMemcpy(b->ilen,a->ilen,m*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMemcpy(b->j,a->j,a->nz*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMemcpy(b->a,a->a,a->nz*sizeof(MatScalar));CHKERRQ(ierr);
+  ierr = PetscArraycpy(b->i,a->i,m+1);CHKERRQ(ierr);
+  ierr = PetscArraycpy(b->ilen,a->ilen,m);CHKERRQ(ierr);
+  ierr = PetscArraycpy(b->j,a->j,a->nz);CHKERRQ(ierr);
+  ierr = PetscArraycpy(b->a,a->a,a->nz);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

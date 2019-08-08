@@ -11,6 +11,7 @@ static PetscErrorCode PetscViewerFileClose_ASCII(PetscViewer viewer)
   int               err;
 
   PetscFunctionBegin;
+  if (vascii->sviewer) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_WRONGSTATE,"Cannot call with outstanding call to PetscViewerRestoreSubViewer()");
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRQ(ierr);
   if (!rank && vascii->fd != stderr && vascii->fd != PETSC_STDOUT) {
     if (vascii->fd && vascii->closefile) {
@@ -44,7 +45,7 @@ PetscErrorCode PetscViewerDestroy_ASCII(PetscViewer viewer)
   PetscBool         flg;
 
   PetscFunctionBegin;
-  if (vascii->sviewer) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"ASCII PetscViewer destroyed before restoring singleton or subcomm PetscViewer");
+  if (vascii->sviewer) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_WRONGSTATE,"Cannot call with outstanding call to PetscViewerRestoreSubViewer()");
   ierr = PetscViewerFileClose_ASCII(viewer);CHKERRQ(ierr);
   ierr = PetscFree(vascii);CHKERRQ(ierr);
 
@@ -111,6 +112,7 @@ PetscErrorCode PetscViewerFlush_ASCII(PetscViewer viewer)
   FILE              *fd = vascii->fd;
 
   PetscFunctionBegin;
+  if (vascii->sviewer) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_WRONGSTATE,"Cannot call with outstanding call to PetscViewerRestoreSubViewer()");
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -201,8 +203,6 @@ PetscErrorCode PetscViewerFlush_ASCII(PetscViewer viewer)
     Fortran Note:
     This routine is not supported in Fortran.
 
-  Concepts: PetscViewer^file pointer
-  Concepts: file pointer^getting from PetscViewer
 
 .seealso: PetscViewerASCIIOpen(), PetscViewerDestroy(), PetscViewerSetType(), PetscViewerCreate(), PetscViewerASCIIPrintf(),
           PetscViewerASCIISynchronizedPrintf(), PetscViewerFlush()
@@ -254,8 +254,6 @@ PETSC_INTERN FILE *petsc_history;
     Fortran Note:
     This routine is not supported in Fortran.
 
-  Concepts: PetscViewerASCII^formating
-  Concepts: tab^setting
 
 .seealso: PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(), PetscViewerASCIIGetTab(),
           PetscViewerASCIIPopTab(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIOpen(),
@@ -281,6 +279,7 @@ PetscErrorCode  PetscViewerASCIISetTab(PetscViewer viewer,PetscInt tabs)
 
     Input Parameters:
 .    viewer - obtained with PetscViewerASCIIOpen()
+
     Output Parameters:
 .    tabs - number of tabs
 
@@ -289,8 +288,6 @@ PetscErrorCode  PetscViewerASCIISetTab(PetscViewer viewer,PetscInt tabs)
     Fortran Note:
     This routine is not supported in Fortran.
 
-  Concepts: PetscViewerASCII^formating
-  Concepts: tab^retrieval
 
 .seealso: PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(), PetscViewerASCIISetTab(),
           PetscViewerASCIIPopTab(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIOpen(),
@@ -323,8 +320,6 @@ PetscErrorCode  PetscViewerASCIIGetTab(PetscViewer viewer,PetscInt *tabs)
     Fortran Note:
     This routine is not supported in Fortran.
 
-  Concepts: PetscViewerASCII^formating
-  Concepts: tab^setting
 
 .seealso: PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(),
           PetscViewerASCIIPopTab(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIOpen(),
@@ -357,8 +352,6 @@ PetscErrorCode  PetscViewerASCIIAddTab(PetscViewer viewer,PetscInt tabs)
     Fortran Note:
     This routine is not supported in Fortran.
 
-  Concepts: PetscViewerASCII^formating
-  Concepts: tab^setting
 
 .seealso: PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(),
           PetscViewerASCIIPopTab(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIOpen(),
@@ -386,13 +379,14 @@ PetscErrorCode  PetscViewerASCIISubtractTab(PetscViewer viewer,PetscInt tabs)
 .    viewer - obtained with PetscViewerASCIIOpen()
 
     Level: intermediate
+    
+    Notes:
+    See documentation of PetscViewerASCIISynchronizedPrintf() for more details how the synchronized output should be done properly.
 
-  Concepts: PetscViewerASCII^formating
-  Concepts: tab^setting
 
-.seealso: PetscViewerASCIIPopSynchronized(), PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(),
-          PetscViewerASCIIPopTab(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIOpen(),
-          PetscViewerCreate(), PetscViewerDestroy(), PetscViewerSetType(), PetscViewerASCIIGetPointer()
+.seealso: PetscViewerASCIISynchronizedPrintf(), PetscViewerFlush(), PetscViewerASCIIPopSynchronized(),
+          PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(), PetscViewerASCIIOpen(),
+          PetscViewerCreate(), PetscViewerDestroy(), PetscViewerSetType()
 @*/
 PetscErrorCode  PetscViewerASCIIPushSynchronized(PetscViewer viewer)
 {
@@ -402,6 +396,7 @@ PetscErrorCode  PetscViewerASCIIPushSynchronized(PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  if (ascii->sviewer) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_WRONGSTATE,"Cannot call with outstanding call to PetscViewerRestoreSubViewer()");
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) ascii->allowsynchronized++;
   PetscFunctionReturn(0);
@@ -416,13 +411,14 @@ PetscErrorCode  PetscViewerASCIIPushSynchronized(PetscViewer viewer)
 .    viewer - obtained with PetscViewerASCIIOpen()
 
     Level: intermediate
+    
+    Notes:
+    See documentation of PetscViewerASCIISynchronizedPrintf() for more details how the synchronized output should be done properly.
 
-  Concepts: PetscViewerASCII^formating
-  Concepts: tab^setting
 
-.seealso: PetscViewerASCIIPushSynchronized(), PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(),
-          PetscViewerASCIIPopTab(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIOpen(),
-          PetscViewerCreate(), PetscViewerDestroy(), PetscViewerSetType(), PetscViewerASCIIGetPointer()
+.seealso: PetscViewerASCIIPushSynchronized(), PetscViewerASCIISynchronizedPrintf(), PetscViewerFlush(),
+          PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(), PetscViewerASCIIOpen(),
+          PetscViewerCreate(), PetscViewerDestroy(), PetscViewerSetType()
 @*/
 PetscErrorCode  PetscViewerASCIIPopSynchronized(PetscViewer viewer)
 {
@@ -432,6 +428,7 @@ PetscErrorCode  PetscViewerASCIIPopSynchronized(PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  if (ascii->sviewer) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_WRONGSTATE,"Cannot call with outstanding call to PetscViewerRestoreSubViewer()");
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ascii->allowsynchronized--;
@@ -454,8 +451,6 @@ PetscErrorCode  PetscViewerASCIIPopSynchronized(PetscViewer viewer)
     Fortran Note:
     This routine is not supported in Fortran.
 
-  Concepts: PetscViewerASCII^formating
-  Concepts: tab^setting
 
 .seealso: PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(),
           PetscViewerASCIIPopTab(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIOpen(),
@@ -488,8 +483,6 @@ PetscErrorCode  PetscViewerASCIIPushTab(PetscViewer viewer)
     Fortran Note:
     This routine is not supported in Fortran.
 
-  Concepts: PetscViewerASCII^formating
-  Concepts: tab^setting
 
 .seealso: PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(),
           PetscViewerASCIIPushTab(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIOpen(),
@@ -525,8 +518,6 @@ PetscErrorCode  PetscViewerASCIIPopTab(PetscViewer viewer)
     Fortran Note:
     This routine is not supported in Fortran.
 
-  Concepts: PetscViewerASCII^formating
-  Concepts: tab^setting
 
 .seealso: PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(),
           PetscViewerASCIIPopTab(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIPushTab(), PetscViewerASCIIOpen(),
@@ -570,10 +561,6 @@ PetscErrorCode  PetscViewerASCIIUseTabs(PetscViewer viewer,PetscBool flg)
     The call sequence is PetscViewerASCIIPrintf(PetscViewer, character(*), int ierr) from Fortran.
     That is, you can only pass a single character string from Fortran.
 
-  Concepts: PetscViewerASCII^printing
-  Concepts: printing^to file
-  Concepts: printf
-
 .seealso: PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIOpen(),
           PetscViewerASCIIPushTab(), PetscViewerASCIIPopTab(), PetscViewerASCIISynchronizedPrintf(),
           PetscViewerCreate(), PetscViewerDestroy(), PetscViewerSetType(), PetscViewerASCIIGetPointer(), PetscViewerASCIIPushSynchronized()
@@ -590,6 +577,7 @@ PetscErrorCode  PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],..
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  if (ascii->sviewer) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_WRONGSTATE,"Cannot call with outstanding call to PetscViewerRestoreSubViewer()");
   PetscValidCharPointer(format,2);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (!iascii) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not ASCII PetscViewer");
@@ -790,7 +778,13 @@ PetscErrorCode PetscViewerGetSubViewer_ASCII(PetscViewer viewer,MPI_Comm subcomm
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII*)viewer->data,*ovascii;
 
   PetscFunctionBegin;
+  ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
   if (vascii->sviewer) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"SubViewer already obtained from PetscViewer and not restored");
+  /*
+     The following line is a bug; but if it is removed the code won't work because it relies on this behavior. In particular
+     this line causes the synchronized flush to occur when the viewer is destroyed (since the count never gets to zero)
+     in some examples this displays information that otherwise would be lost
+  */
   ierr         = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
   ierr         = PetscViewerCreate(subcomm,outviewer);CHKERRQ(ierr);
   ierr         = PetscViewerSetType(*outviewer,PETSCVIEWERASCII);CHKERRQ(ierr);
@@ -819,9 +813,10 @@ PetscErrorCode PetscViewerRestoreSubViewer_ASCII(PetscViewer viewer,MPI_Comm com
   if (!ascii->sviewer) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"SubViewer never obtained from PetscViewer");
   if (ascii->sviewer != *outviewer) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"This PetscViewer did not generate this SubViewer");
 
-  ascii->sviewer             = 0;
+  ascii->sviewer             = NULL;
   (*outviewer)->ops->destroy = PetscViewerDestroy_ASCII;
   ierr                       = PetscViewerDestroy(outviewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -896,15 +891,29 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_ASCII(PetscViewer viewer)
     Level: intermediate
 
     Notes:
-    You must have previously called PetscViewerASCIISynchronizeAllow() to allow this routine to be called.
+    You must have previously called PetscViewerASCIIPushSynchronized() to allow this routine to be called.
+    Then you can do multiple independent calls to this routine.
+    The actual synchronized print is then done using PetscViewerFlush().
+    PetscViewerASCIIPopSynchronized() should be then called if we are already done with the synchronized output
+    to conclude the "synchronized session".
+    So the typical calling sequence looks like
+$ PetscViewerASCIIPushSynchronized(viewer);
+$ PetscViewerASCIISynchronizedPrintf(viewer, ...);
+$ PetscViewerASCIISynchronizedPrintf(viewer, ...);
+$ ...
+$ PetscViewerFlush(viewer);
+$ PetscViewerASCIISynchronizedPrintf(viewer, ...);
+$ PetscViewerASCIISynchronizedPrintf(viewer, ...);
+$ ...
+$ PetscViewerFlush(viewer);
+$ PetscViewerASCIIPopSynchronized(viewer);    
 
     Fortran Note:
       Can only print a single character* string
 
-.seealso: PetscSynchronizedPrintf(), PetscSynchronizedFlush(), PetscFPrintf(),
-          PetscFOpen(), PetscViewerFlush(), PetscViewerASCIIGetPointer(), PetscViewerDestroy(), PetscViewerASCIIOpen(),
-          PetscViewerASCIIPrintf(), PetscViewerASCIIPushSynchronized()
-
+.seealso: PetscViewerASCIIPushSynchronized(), PetscViewerFlush(), PetscViewerASCIIPopSynchronized(),
+          PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(), PetscViewerASCIIOpen(),
+          PetscViewerCreate(), PetscViewerDestroy(), PetscViewerSetType()
 @*/
 PetscErrorCode  PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char format[],...)
 {
@@ -983,8 +992,7 @@ PetscErrorCode  PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char
     }
     vascii->petsc_printfqueuelength++;
     next->size = QUEUESTRINGSIZE;
-    ierr       = PetscMalloc1(next->size, &next->string);CHKERRQ(ierr);
-    ierr       = PetscMemzero(next->string,next->size);CHKERRQ(ierr);
+    ierr       = PetscCalloc1(next->size, &next->string);CHKERRQ(ierr);
     string     = next->string;
     tab       *= 2;
     while (tab--) {
@@ -996,8 +1004,7 @@ PetscErrorCode  PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char
     if (fullLength > (size_t) (next->size-2*vascii->tab)) {
       ierr       = PetscFree(next->string);CHKERRQ(ierr);
       next->size = fullLength + 2*vascii->tab;
-      ierr       = PetscMalloc1(next->size, &next->string);CHKERRQ(ierr);
-      ierr       = PetscMemzero(next->string,next->size);CHKERRQ(ierr);
+      ierr       = PetscCalloc1(next->size, &next->string);CHKERRQ(ierr);
       string     = next->string;
       tab        = 2*vascii->tab;
       while (tab--) {
@@ -1026,8 +1033,6 @@ PetscErrorCode  PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char
 .  count - number of items of data actually read, or NULL
 
    Level: beginner
-
-   Concepts: ascii files
 
 .seealso: PetscViewerASCIIOpen(), PetscViewerPushFormat(), PetscViewerDestroy(), PetscViewerCreate(), PetscViewerFileSetMode(), PetscViewerFileSetName()
           VecView(), MatView(), VecLoad(), MatLoad(), PetscViewerBinaryGetDescriptor(),

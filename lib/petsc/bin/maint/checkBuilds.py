@@ -185,7 +185,7 @@ class BuildChecker(script.Script):
     # avoid MPI argument checks that cannot handle long long * vs long *
     if re.search(r"\(aka 'long \*'\) doesn't match specified 'MPI' type tag that requires 'long long \*",line): return
     if re.search(r"\(aka 'const long \*'\) doesn't match specified 'MPI' type tag that requires 'long long \*",line): return
-    # avoid Microsoft VC's dubious macro-expansion warnings: http://stackoverflow.com/questions/10684169/ */
+    # avoid Microsoft VC's dubious macro-expansion warnings: /questions/10684169/preprocessor-macros-as-parameters-to-other-macros */
     if re.search(r"warning C4003: not enough actual parameters for macro",line): return
     if self.argDB['ignoreDeprecated'] and re.search(r'deprecated',line):  return
     if self.argDB['ignorePragma'] and re.search(r'unrecognized #pragma',line):  return
@@ -417,7 +417,7 @@ Thanks,
     self.setup()
     self.isLocal = os.path.isdir(self.argDB['logDirectory'])
     if self.argDB['logDirectory'].startswith('/mcs/ftp/pub/petsc/nightlylogs/'):
-      self.logurl = self.argDB['logDirectory'].replace('/mcs/ftp/pub/petsc/nightlylogs/','http://ftp.mcs.anl.gov/pub/petsc/nightlylogs/')
+      self.logurl = self.argDB['logDirectory'].replace('/mcs/ftp/pub/petsc/nightlylogs/','http://ftp.mcs.anl.gov/pub/petsc/nightlylogs//')
     else:
       self.logurl=''
     print(self.isLocal)
@@ -429,6 +429,6 @@ Thanks,
 
 if __name__ == '__main__':
   print('')
-  print('Logs located at http://ftp.mcs.anl.gov/pub/petsc/nightlylogs')
+  print('Logs located at http://ftp.mcs.anl.gov/pub/petsc/nightlylogs/')
   print('')
   BuildChecker().run()

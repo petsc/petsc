@@ -214,6 +214,7 @@ PetscErrorCode PetscByteSwap(void *data,PetscDataType pdtype,PetscInt count)
   else if (pdtype == PETSC_BOOL)   {ierr = PetscByteSwapBool((PetscBool*)data,count);CHKERRQ(ierr);}
   else if (pdtype == PETSC_SCALAR) {ierr = PetscByteSwapScalar((PetscScalar*)data,count);CHKERRQ(ierr);}
   else if (pdtype == PETSC_REAL)   {ierr = PetscByteSwapReal((PetscReal*)data,count);CHKERRQ(ierr);}
+  else if (pdtype == PETSC_COMPLEX){ierr = PetscByteSwapReal((PetscReal*)data,2*count);CHKERRQ(ierr);}
   else if (pdtype == PETSC_INT64)  {ierr = PetscByteSwapInt64((PetscInt64*)data,count);CHKERRQ(ierr);}
   else if (pdtype == PETSC_DOUBLE) {ierr = PetscByteSwapDouble((double*)data,count);CHKERRQ(ierr);}
   else if (pdtype == PETSC_FLOAT)  {ierr = PetscByteSwapFloat((float*)data,count);CHKERRQ(ierr);}
@@ -222,25 +223,28 @@ PetscErrorCode PetscByteSwap(void *data,PetscDataType pdtype,PetscInt count)
   PetscFunctionReturn(0);
 }
 
-/* --------------------------------------------------------- */
-/*@
+/*@C
    PetscBinaryRead - Reads from a binary file.
 
    Not Collective
 
    Input Parameters:
-+  fd - the file
-.  n  - the number of items to read
--  type - the type of items to read (PETSC_INT, PETSC_DOUBLE or PETSC_SCALAR)
++  fd - the file descriptor
+.  num  - the maximum number of items to read
+-  type - the type of items to read (PETSC_INT, PETSC_REAL, PETSC_SCALAR, etc.)
 
    Output Parameters:
-.  p - the buffer
++  data - the buffer
+-  count - the number of items read, optional
 
 
 
    Level: developer
 
    Notes:
+   If count is not provided and the number of items read is less than
+   the maximum number of items to read, then this routine errors.
+
    PetscBinaryRead() uses byte swapping to work on all machines; the files
    are written to file ALWAYS using big-endian ordering. On small-endian machines the numbers
    are converted to the small-endian format when they are read in from the file.
@@ -248,106 +252,91 @@ PetscErrorCode PetscByteSwap(void *data,PetscDataType pdtype,PetscInt count)
    file as 64 bit integers, this means they can only be read back in when the option --with-64bit-indices
    is used.
 
-   Concepts: files^reading binary
-   Concepts: binary files^reading
 
 .seealso: PetscBinaryWrite(), PetscBinaryOpen(), PetscBinaryClose(), PetscViewerBinaryGetDescriptor(), PetscBinarySynchronizedWrite(),
           PetscBinarySynchronizedRead(), PetscBinarySynchronizedSeek()
 @*/
-PetscErrorCode  PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
+PetscErrorCode  PetscBinaryRead(int fd,void *data,PetscInt num,PetscInt *count,PetscDataType type)
 {
-  int               wsize,err;
-  size_t            m = (size_t) n,maxblock = 65536;
-  char              *pp = (char*)p;
+  size_t            typesize, m = (size_t) num, n = 0, maxblock = 65536;
+  char              *p = (char*)data;
 #if defined(PETSC_USE_REAL___FLOAT128)
   PetscBool         readdouble = PETSC_FALSE;
-  double            *ppp;
+  double            *pdouble;
 #endif
-#if !defined(PETSC_WORDS_BIGENDIAN) || defined(PETSC_USE_REAL___FLOAT128)
-  PetscErrorCode    ierr;
-#endif
-#if !defined(PETSC_WORDS_BIGENDIAN)
-  void              *ptmp = p;
-#endif
+  void              *ptmp = data;
   char              *fname = NULL;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  if (n < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to write a negative amount of data %D",n);
-  if (!n) PetscFunctionReturn(0);
+  if (count) *count = 0;
+  if (num < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to read a negative amount of data %D",num);
+  if (!num) PetscFunctionReturn(0);
 
   if (type == PETSC_FUNCTION) {
-    m            = 64;
-    type         = PETSC_CHAR;
-    fname        = (char*) malloc(m*sizeof(char));
+    m     = 64;
+    type  = PETSC_CHAR;
+    fname = (char*)malloc(m*sizeof(char));
+    p     = (char*)fname;
+    ptmp  = (void*)fname;
     if (!fname) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"Cannot allocate space for function name");
-    pp           = (char*)fname;
-#if !defined(PETSC_WORDS_BIGENDIAN)
-    ptmp         = (void*)fname;
-#endif
   }
+  if (type == PETSC_BIT_LOGICAL) m = PetscBTLength(m);
 
-  if (type == PETSC_INT)          m *= sizeof(PetscInt);
-  else if (type == PETSC_SCALAR)  m *= sizeof(PetscScalar);
-  else if (type == PETSC_REAL)    m *= sizeof(PetscReal);
-  else if (type == PETSC_DOUBLE)  m *= sizeof(double);
-  else if (type == PETSC_FLOAT)   m *= sizeof(float);
-  else if (type == PETSC_SHORT)   m *= sizeof(short);
-  else if (type == PETSC_LONG)    m *= sizeof(long);
-  else if (type == PETSC_CHAR)    m *= sizeof(char);
-  else if (type == PETSC_ENUM)    m *= sizeof(PetscEnum);
-  else if (type == PETSC_BOOL)    m *= sizeof(PetscBool);
-  else if (type == PETSC_INT64)   m *= sizeof(PetscInt64);
-  else if (type == PETSC_BIT_LOGICAL) m  = PetscBTLength(m)*sizeof(char);
-  else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown type");
+  ierr = PetscDataTypeGetSize(type,&typesize);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_REAL___FLOAT128)
   ierr = PetscOptionsGetBool(NULL,NULL,"-binary_read_double",&readdouble,NULL);CHKERRQ(ierr);
   /* If using __float128 precision we still read in doubles from file */
-  if ((type == PETSC_SCALAR || type == PETSC_REAL) && readdouble) {
-    m    = m/2;
-    ierr = PetscMalloc1(n,&ppp);CHKERRQ(ierr);
-    pp   = (char*)ppp;
+  if ((type == PETSC_REAL || type == PETSC_COMPLEX) && readdouble) {
+    PetscInt cnt = num * ((type == PETSC_REAL) ? 1 : 2);
+    ierr = PetscMalloc1(cnt,&pdouble);CHKERRQ(ierr);
+    p = (char*)pdouble;
+    typesize /= 2;
   }
 #endif
+
+  m *= typesize;
 
   while (m) {
-    wsize = (m < maxblock) ? m : maxblock;
-    err   = read(fd,pp,wsize);
-    if (err < 0 && errno == EINTR) continue;
-    if (!err && wsize > 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Read past end of file");
-    if (err < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Error reading from file, errno %d",errno);
-    m  -= err;
-    pp += err;
+    size_t len = (m < maxblock) ? m : maxblock;
+    int    ret = (int)read(fd,p,len);
+    if (ret < 0 && errno == EINTR) continue;
+    if (!ret && len > 0) break; /* Proxy for EOF */
+    if (ret < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Error reading from file, errno %d",errno);
+    m -= ret;
+    p += ret;
+    n += ret;
   }
+  if (m && !count) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Read past end of file");
+
+  num = (PetscInt)(n/typesize); /* Should we require `n % typesize == 0` ? */
+  if (count) *count = num;      /* TODO: This is most likely wrong for PETSC_BIT_LOGICAL */
 
 #if defined(PETSC_USE_REAL___FLOAT128)
-  if ((type == PETSC_SCALAR || type == PETSC_REAL) && readdouble) {
-    PetscScalar *pv = (PetscScalar*) p;
-    PetscInt    i;
-#if !defined(PETSC_WORDS_BIGENDIAN)
-    ierr = PetscByteSwapDouble(ppp,n);CHKERRQ(ierr);
-#endif
-    for (i=0; i<n; i++) pv[i] = ppp[i];
-    ierr = PetscFree(ppp);CHKERRQ(ierr);
+  if ((type == PETSC_REAL || type == PETSC_COMPLEX) && readdouble) {
+    PetscInt  i, cnt = num * ((type == PETSC_REAL) ? 1 : 2);
+    PetscReal *preal = (PetscReal*)data;
+    if (!PetscBinaryBigEndian()) {ierr = PetscByteSwapDouble(pdouble,cnt);CHKERRQ(ierr);}
+    for (i=0; i<cnt; i++) preal[i] = pdouble[i];
+    ierr = PetscFree(pdouble);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 #endif
 
-#if !defined(PETSC_WORDS_BIGENDIAN)
-  ierr = PetscByteSwap(ptmp,type,n);CHKERRQ(ierr);
-#endif
+  if (!PetscBinaryBigEndian()) {ierr = PetscByteSwap(ptmp,type,num);CHKERRQ(ierr);}
 
   if (type == PETSC_FUNCTION) {
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
-    ierr = PetscDLSym(NULL,fname,(void**)p);CHKERRQ(ierr);
+    ierr = PetscDLSym(NULL,fname,(void**)data);CHKERRQ(ierr);
 #else
-    *(void**)p = NULL;
+    *(void**)data = NULL;
 #endif
     free(fname);
   }
   PetscFunctionReturn(0);
 }
-/* --------------------------------------------------------- */
+
 /*@
    PetscBinaryWrite - Writes to a binary file.
 
@@ -384,8 +373,6 @@ PetscErrorCode  PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
 
    Because byte-swapping may be done on the values in data it cannot be declared const
 
-   Concepts: files^writing binary
-   Concepts: binary files^writing
 
 .seealso: PetscBinaryRead(), PetscBinaryOpen(), PetscBinaryClose(), PetscViewerBinaryGetDescriptor(), PetscBinarySynchronizedWrite(),
           PetscBinarySynchronizedRead(), PetscBinarySynchronizedSeek()
@@ -396,9 +383,7 @@ PetscErrorCode  PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,Pe
   int            err,wsize;
   size_t         m = (size_t)n,maxblock=65536;
   PetscErrorCode ierr;
-#if !defined(PETSC_WORDS_BIGENDIAN)
   void           *ptmp = p;
-#endif
   char           *fname = NULL;
 #if defined(PETSC_USE_REAL___FLOAT128)
   PetscBool      writedouble = PETSC_FALSE;
@@ -428,9 +413,7 @@ PetscErrorCode  PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,Pe
 #endif
     wtype = PETSC_CHAR;
     pp    = (char*)fname;
-#if !defined(PETSC_WORDS_BIGENDIAN)
     ptmp  = (void*)fname;
-#endif
   }
 
 #if defined(PETSC_USE_REAL___FLOAT128)
@@ -462,9 +445,7 @@ PetscErrorCode  PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,Pe
   else if (wtype == PETSC_BIT_LOGICAL) m = PetscBTLength(m)*sizeof(char);
   else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown type");
 
-#if !defined(PETSC_WORDS_BIGENDIAN)
-  ierr = PetscByteSwap(ptmp,wtype,n);CHKERRQ(ierr);
-#endif
+  if (!PetscBinaryBigEndian()) {ierr = PetscByteSwap(ptmp,wtype,n);CHKERRQ(ierr);}
 
   while (m) {
     wsize = (m < maxblock) ? m : maxblock;
@@ -475,11 +456,9 @@ PetscErrorCode  PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,Pe
     pp += wsize;
   }
 
-#if !defined(PETSC_WORDS_BIGENDIAN)
   if (!istemp) {
-    ierr = PetscByteSwap(ptmp,wtype,n);CHKERRQ(ierr);
+    if (!PetscBinaryBigEndian()) {ierr = PetscByteSwap(ptmp,wtype,n);CHKERRQ(ierr);}
   }
-#endif
   if (type == PETSC_FUNCTION) {
     free(fname);
   }
@@ -505,8 +484,6 @@ PetscErrorCode  PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,Pe
 
    Level: advanced
 
-  Concepts: files^opening binary
-  Concepts: binary files^opening
 
    Notes:
     Files access with PetscBinaryRead() and PetscBinaryWrite() are ALWAYS written in
@@ -585,8 +562,6 @@ PetscErrorCode  PetscBinaryClose(int fd)
    binary file may be read on any machine. Hence you CANNOT use sizeof()
    to determine the offset or location.
 
-   Concepts: files^binary seeking
-   Concepts: binary files^seeking
 
 .seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscBinaryOpen(), PetscBinarySynchronizedWrite(), PetscBinarySynchronizedRead(),
           PetscBinarySynchronizedSeek()
@@ -613,65 +588,69 @@ PetscErrorCode  PetscBinarySeek(int fd,off_t off,PetscBinarySeekType whence,off_
 /*@C
    PetscBinarySynchronizedRead - Reads from a binary file.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - the MPI communicator
-.  fd - the file
-.  n  - the number of items to read
--  type - the type of items to read (PETSC_INT, PETSC_DOUBLE or PETSC_SCALAR)
+.  fd - the file descriptor
+.  num  - the maximum number of items to read
+-  type - the type of items to read (PETSC_INT, PETSC_REAL, PETSC_SCALAR, etc.)
 
    Output Parameters:
-.  p - the buffer
++  data - the buffer
+-  count - the number of items read, optional
 
    Level: developer
 
    Notes:
    Does a PetscBinaryRead() followed by an MPI_Bcast()
 
+   If count is not provided and the number of items read is less than
+   the maximum number of items to read, then this routine errors.
+
    PetscBinarySynchronizedRead() uses byte swapping to work on all machines.
    Integers are stored on the file as 32 long, regardless of whether
    they are stored in the machine as 32 or 64, this means the same
    binary file may be read on any machine.
 
-   Concepts: files^synchronized reading of binary files
-   Concepts: binary files^reading, synchronized
 
 .seealso: PetscBinaryWrite(), PetscBinaryOpen(), PetscBinaryClose(), PetscBinaryRead(), PetscBinarySynchronizedWrite(),
           PetscBinarySynchronizedSeek()
 @*/
-PetscErrorCode  PetscBinarySynchronizedRead(MPI_Comm comm,int fd,void *p,PetscInt n,PetscDataType type)
+PetscErrorCode  PetscBinarySynchronizedRead(MPI_Comm comm,int fd,void *data,PetscInt num,PetscInt *count,PetscDataType type)
 {
-  PetscErrorCode ierr,ierrp=0;
+  PetscErrorCode ierr;
   PetscMPIInt    rank;
   MPI_Datatype   mtype;
+  PetscInt       ibuf[2] = {0, 0};
   char           *fname = NULL;
-  void           *ptmp = NULL;
+  void           *fptr = NULL;
 
   PetscFunctionBegin;
   if (type == PETSC_FUNCTION) {
-    n            = 64;
-    type         = PETSC_CHAR;
-    ptmp         = p;
-    fname        = (char*)malloc(n*sizeof(char));
+    num   = 64;
+    type  = PETSC_CHAR;
+    fname = (char*)malloc(num*sizeof(char));
+    fptr  = data;
+    data  = (void*)fname;
     if (!fname) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"Cannot allocate space for function name");
-    p            = (void*)fname;
   }
 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
-    ierrp = PetscBinaryRead(fd,p,n,type);
+    ibuf[0] = PetscBinaryRead(fd,data,num,count?&ibuf[1]:NULL,type);
   }
-  ierr = MPI_Bcast(&ierrp,1,MPI_INT,0,comm);CHKERRQ(ierr);
-  CHKERRQ(ierrp);
+  ierr = MPI_Bcast(ibuf,2,MPIU_INT,0,comm);CHKERRQ(ierr);
+  ierr = (PetscErrorCode)ibuf[0];CHKERRQ(ierr);
   ierr = PetscDataTypeToMPIDataType(type,&mtype);CHKERRQ(ierr);
-  ierr = MPI_Bcast(p,n,mtype,0,comm);CHKERRQ(ierr);
+  ierr = MPI_Bcast(data,count?ibuf[1]:num,mtype,0,comm);CHKERRQ(ierr);
+  if (count) *count = ibuf[1];
 
   if (type == PETSC_FUNCTION) {
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
-    ierr = PetscDLLibrarySym(PETSC_COMM_SELF,&PetscDLLibrariesLoaded,NULL,fname,(void**)ptmp);CHKERRQ(ierr);
+    ierr = PetscDLLibrarySym(PETSC_COMM_SELF,&PetscDLLibrariesLoaded,NULL,fname,(void**)fptr);CHKERRQ(ierr);
 #else
-    *(void**)ptmp = NULL;
+    *(void**)fptr = NULL;
 #endif
     free(fname);
   }
@@ -681,7 +660,7 @@ PetscErrorCode  PetscBinarySynchronizedRead(MPI_Comm comm,int fd,void *p,PetscIn
 /*@C
    PetscBinarySynchronizedWrite - writes to a binary file.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - the MPI communicator
@@ -707,8 +686,6 @@ PetscErrorCode  PetscBinarySynchronizedRead(MPI_Comm comm,int fd,void *p,PetscIn
    WARNING: This is NOT like PetscSynchronizedFPrintf()! This routine ignores calls on all but process 0,
    while PetscSynchronizedFPrintf() has all processes print their strings in order.
 
-   Concepts: files^synchronized writing of binary files
-   Concepts: binary files^reading, synchronized
 
 .seealso: PetscBinaryWrite(), PetscBinaryOpen(), PetscBinaryClose(), PetscBinaryRead(), PetscBinarySynchronizedRead(),
           PetscBinarySynchronizedSeek()
@@ -749,8 +726,6 @@ PetscErrorCode  PetscBinarySynchronizedWrite(MPI_Comm comm,int fd,void *p,PetscI
    binary file may be read on any machine. Hence you CANNOT use sizeof()
    to determine the offset or location.
 
-   Concepts: binary files^seeking
-   Concepts: files^seeking in binary
 
 .seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscBinaryOpen(), PetscBinarySynchronizedWrite(), PetscBinarySynchronizedRead(),
           PetscBinarySynchronizedSeek()
@@ -769,7 +744,6 @@ PetscErrorCode  PetscBinarySynchronizedSeek(MPI_Comm comm,int fd,off_t off,Petsc
 }
 
 #if defined(PETSC_HAVE_MPIIO)
-#if !defined(PETSC_WORDS_BIGENDIAN)
 
 #if defined(PETSC_USE_PETSC_MPI_EXTERNAL32)
 /*
@@ -803,7 +777,7 @@ PETSC_EXTERN PetscMPIInt PetscDataRep_read_conv_fn(void *userbuf, MPI_Datatype d
   userbuf = ((char*)userbuf) + dsize*position;
 
   ierr = PetscMemcpy(userbuf,filebuf,count*dsize);CHKERRQ(ierr);
-  ierr = PetscByteSwap(userbuf,pdtype,count);CHKERRQ(ierr);
+  if (!PetscBinaryBigEndian()) {ierr = PetscByteSwap(userbuf,pdtype,count);CHKERRQ(ierr);}
   return ierr;
 }
 
@@ -820,34 +794,35 @@ PetscMPIInt PetscDataRep_write_conv_fn(void *userbuf, MPI_Datatype datatype,Pets
   userbuf = ((char*)userbuf) + dsize*position;
 
   ierr = PetscMemcpy(filebuf,userbuf,count*dsize);CHKERRQ(ierr);
-  ierr = PetscByteSwap(filebuf,pdtype,count);CHKERRQ(ierr);
+  if (!PetscBinaryBigEndian()) {ierr = PetscByteSwap(filebuf,pdtype,count);CHKERRQ(ierr);}
   return ierr;
 }
 #endif
 
 PetscErrorCode MPIU_File_write_all(MPI_File fd,void *data,PetscMPIInt cnt,MPI_Datatype dtype,MPI_Status *status)
 {
-  PetscErrorCode ierr;
   PetscDataType  pdtype;
+  PetscErrorCode ierr;
+
 
   PetscFunctionBegin;
   ierr = PetscMPIDataTypeToPetscDataType(dtype,&pdtype);CHKERRQ(ierr);
-  ierr = PetscByteSwap(data,pdtype,cnt);CHKERRQ(ierr);
+  if (!PetscBinaryBigEndian()) {ierr = PetscByteSwap(data,pdtype,cnt);CHKERRQ(ierr);}
   ierr = MPI_File_write_all(fd,data,cnt,dtype,status);CHKERRQ(ierr);
-  ierr = PetscByteSwap(data,pdtype,cnt);CHKERRQ(ierr);
+  if (!PetscBinaryBigEndian()) {ierr = PetscByteSwap(data,pdtype,cnt);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MPIU_File_read_all(MPI_File fd,void *data,PetscMPIInt cnt,MPI_Datatype dtype,MPI_Status *status)
 {
-  PetscErrorCode ierr;
   PetscDataType  pdtype;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscMPIDataTypeToPetscDataType(dtype,&pdtype);CHKERRQ(ierr);
   ierr = MPI_File_read_all(fd,data,cnt,dtype,status);CHKERRQ(ierr);
-  ierr = PetscByteSwap(data,pdtype,cnt);CHKERRQ(ierr);
+  if (!PetscBinaryBigEndian()) {ierr = PetscByteSwap(data,pdtype,cnt);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
-#endif
+
 #endif

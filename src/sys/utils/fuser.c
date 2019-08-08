@@ -29,8 +29,6 @@ PetscErrorCode  PetscGetUserName(char name[],size_t nlen)
 
     Level: developer
 
-    Concepts: user name
-
 .seealso: PetscGetHostName()
 @*/
 PetscErrorCode  PetscGetUserName(char name[],size_t nlen)

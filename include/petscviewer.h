@@ -2,8 +2,8 @@
      PetscViewers are objects where other objects can be looked at or stored.
 */
 
-#if !defined(__PETSCVIEWER_H)
-#define __PETSCVIEWER_H
+#if !defined(PETSCVIEWER_H)
+#define PETSCVIEWER_H
 
 #include <petscsys.h>
 #include <petscviewertypes.h>
@@ -135,6 +135,7 @@ typedef enum {
   PETSC_VIEWER_ASCII_LATEX,
   PETSC_VIEWER_ASCII_XML,
   PETSC_VIEWER_ASCII_GLVIS,
+  PETSC_VIEWER_ASCII_CSV,
   PETSC_VIEWER_DRAW_BASIC,
   PETSC_VIEWER_DRAW_LG,
   PETSC_VIEWER_DRAW_LG_XRANGE,
@@ -154,7 +155,7 @@ typedef enum {
   } PetscViewerFormat;
 PETSC_EXTERN const char *const PetscViewerFormats[];
 
-PETSC_EXTERN PETSC_DEPRECATED("Use PetscViewerPushFormat()/PetscViewerPopFormat()") PetscErrorCode PetscViewerSetFormat(PetscViewer,PetscViewerFormat);
+PETSC_EXTERN PETSC_DEPRECATED_FUNCTION("Use PetscViewerPushFormat()/PetscViewerPopFormat()") PetscErrorCode PetscViewerSetFormat(PetscViewer,PetscViewerFormat);
 PETSC_EXTERN PetscErrorCode PetscViewerPushFormat(PetscViewer,PetscViewerFormat);
 PETSC_EXTERN PetscErrorCode PetscViewerPopFormat(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerGetFormat(PetscViewer,PetscViewerFormat*);
@@ -164,7 +165,7 @@ PETSC_EXTERN PetscErrorCode PetscOptionsPushGetViewerOff(PetscBool);
 PETSC_EXTERN PetscErrorCode PetscOptionsPopGetViewerOff(void);
 PETSC_EXTERN PetscErrorCode PetscOptionsGetViewerOff(PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscOptionsGetViewer(MPI_Comm,PetscOptions,const char[],const char[],PetscViewer*,PetscViewerFormat*,PetscBool*);
-#define PetscOptionsViewer(a,b,c,d,e,f) PetscOptionsViewer_Private(PetscOptionsObject,a,b,c,d,e,f);
+#define PetscOptionsViewer(a,b,c,d,e,f) PetscOptionsViewer_Private(PetscOptionsObject,a,b,c,d,e,f)
 PETSC_EXTERN PetscErrorCode PetscOptionsViewer_Private(PetscOptionItems*,const char[],const char[],const char[],PetscViewer*,PetscViewerFormat *,PetscBool *);
 
 typedef struct {PetscViewer viewer;PetscViewerFormat format;} PetscViewerAndFormat;
@@ -196,7 +197,9 @@ PETSC_EXTERN PetscErrorCode PetscViewerBinaryGetInfoPointer(PetscViewer,FILE **)
 PETSC_EXTERN PetscErrorCode PetscViewerBinaryRead(PetscViewer,void*,PetscInt,PetscInt*,PetscDataType);
 PETSC_EXTERN PetscErrorCode PetscViewerBinaryWrite(PetscViewer,void*,PetscInt,PetscDataType,PetscBool );
 PETSC_EXTERN PetscErrorCode PetscViewerStringSPrintf(PetscViewer,const char[],...);
-PETSC_EXTERN PetscErrorCode PetscViewerStringSetString(PetscViewer,char[],PetscInt);
+PETSC_EXTERN PetscErrorCode PetscViewerStringSetString(PetscViewer,char[],size_t);
+PETSC_EXTERN PetscErrorCode PetscViewerStringGetStringRead(PetscViewer,const char*[],size_t*);
+PETSC_EXTERN PetscErrorCode PetscViewerStringSetOwnString(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerDrawClear(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerDrawSetHold(PetscViewer,PetscBool);
 PETSC_EXTERN PetscErrorCode PetscViewerDrawGetHold(PetscViewer,PetscBool*);
@@ -367,8 +370,6 @@ PETSC_EXTERN PetscErrorCode PetscObjectViewSAWs(PetscObject,PetscViewer);
      PetscViewers - Abstract collection of PetscViewers. It is just an expandable array of viewers.
 
    Level: intermediate
-
-  Concepts: viewing
 
 .seealso:  PetscViewerCreate(), PetscViewerSetType(), PetscViewerType, PetscViewer, PetscViewersCreate(),
            PetscViewersGetViewer()

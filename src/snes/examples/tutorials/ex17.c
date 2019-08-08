@@ -349,7 +349,7 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
     break;
   default: SETERRQ2(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Invalid solution type: %s (%D)", solutionTypes[PetscMin(user->solType, NUM_SOLUTION_TYPES)], user->solType);
   }
-  ierr = PetscDSSetExactSolution(prob, 0, exact);CHKERRQ(ierr);
+  ierr = PetscDSSetExactSolution(prob, 0, exact, user);CHKERRQ(ierr);
   ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) exact, 1, &id, user);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -446,6 +446,7 @@ int main(int argc, char **argv)
     args: -simplex 0 -displacement_petscspace_degree 2 -dm_refine 2 -dmsnes_check
   test:
     suffix: 2d_q3_quad_vlap
+    requires: !single
     args: -simplex 0 -displacement_petscspace_degree 3 -dm_refine 2 -dmsnes_check
   test:
     suffix: 2d_p1_quad_elas
@@ -510,6 +511,7 @@ int main(int argc, char **argv)
     args: -sol_type elas_quad -dim 3 -simplex 0 -displacement_petscspace_degree 2 -dm_refine 1 -dmsnes_check
   test:
     suffix: 3d_q3_quad_elas
+    requires: !single
     args: -sol_type elas_quad -dim 3 -simplex 0 -displacement_petscspace_degree 3 -dm_refine 0 -dmsnes_check
 
   test:

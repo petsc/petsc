@@ -20,19 +20,17 @@ static PetscErrorCode PETSCMAPNAME(ISGlobalToLocalMappingApply)(ISLocalToGlobalM
     ierr = ISGlobalToLocalMappingSetUp(mapping);CHKERRQ(ierr);
     map  = (PETSCMAPTYPE(ISLocalToGlobalMapping) *)mapping->data;
   }
-  start   = mapping->globalstart;
-  end     = mapping->globalend;
-  bs      = GTOLBS;
-
-
+  start = mapping->globalstart;
+  end   = mapping->globalend;
+  bs    = GTOLBS;
 
   if (type == IS_GTOLM_MASK) {
     if (idxout) {
       for (i=0; i<n; i++) {
-        if (idx[i] < 0)                   idxout[i] = idx[i];
-        else if (idx[i] < bs*start)       idxout[i] = -1;
-        else if (idx[i] > bs*(end+1)-1)   idxout[i] = -1;
-        else                              GTOL(idx[i], idxout[i]);
+        if (idx[i] < 0)                 idxout[i] = idx[i];
+        else if (idx[i] < bs*start)     idxout[i] = -1;
+        else if (idx[i] > bs*(end+1)-1) idxout[i] = -1;
+        else                            GTOL(idx[i], idxout[i]);
       }
     }
     if (nout) *nout = n;

@@ -1,14 +1,14 @@
 Initial L_2 Error: 1.50075
-  0 SNES Function norm 2.716370286747e+00 
-  1 SNES Function norm 8.268462004861e-08 
-  2 SNES Function norm 2.485817272360e-15 
+  0 SNES Function norm 2.716370286747e+00
+  1 SNES Function norm 1.021970122516e-07
+  2 SNES Function norm 2.796189151303e-15
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 Final L_2 Error: < 1.0e-11
 Vec Object: solution 1 MPI processes
   type: seq
 0.5
 4.
-6.95949e-18
+6.0318e-18
 0.125
 0.625
 0.3125

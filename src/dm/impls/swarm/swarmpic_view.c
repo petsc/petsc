@@ -25,7 +25,7 @@ PetscErrorCode private_PetscViewerCreate_XDMF(MPI_Comm comm,const char filename[
   
   /* write xdmf header */
   ierr = PetscViewerASCIIPrintf(viewer,"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"<Xdmf xmlns:xi=\"http://www.w3.org/2001/XInclude\" Version=\"2.99\">\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"<Xdmf xmlns:xi=\"http://www.w3.org/2001/XInclude/\" Version=\"2.99\">\n");CHKERRQ(ierr);
   /* write xdmf domain */
   ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"<Domain>\n");CHKERRQ(ierr);
@@ -332,7 +332,7 @@ PetscErrorCode private_ISView_Swarm_XDMF(IS is,PetscViewer viewer)
 /*@C
    DMSwarmViewFieldsXDMF - Write a selection of DMSwarm fields to an XDMF3 file
  
-   Collective on DM
+   Collective on dm
  
    Input parameters:
 +  dm - the DMSwarm
@@ -392,7 +392,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmViewFieldsXDMF(DM dm,const char filename[],Pe
 /*@C
    DMSwarmViewXDMF - Write DMSwarm fields to an XDMF3 file
  
-   Collective on DM
+   Collective on dm
  
    Input parameters:
 +  dm - the DMSwarm

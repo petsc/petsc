@@ -112,7 +112,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
 #endif
     /* make 'is_eq_newproc' */
     ierr = PetscMalloc1(size, &counts);CHKERRQ(ierr);
-    if (pc_gamg->repart) {
+    if (pc_gamg->repart && new_size!=nactive) {
       /* Repartition Cmat_{k} and move colums of P^{k}_{k-1} and coordinates of primal part accordingly */
       Mat adj;
 
@@ -730,8 +730,6 @@ PetscErrorCode PCDestroy_GAMG(PC pc)
 
    Level: intermediate
 
-   Concepts: Unstructured multigrid preconditioner
-
 .seealso: PCGAMGSetCoarseEqLim()
 @*/
 PetscErrorCode  PCGAMGSetProcEqLim(PC pc, PetscInt n)
@@ -771,8 +769,6 @@ static PetscErrorCode PCGAMGSetProcEqLim_GAMG(PC pc, PetscInt n)
 
    Level: intermediate
 
-   Concepts: Unstructured multigrid preconditioner
-
 .seealso: PCGAMGSetProcEqLim()
 @*/
 PetscErrorCode PCGAMGSetCoarseEqLim(PC pc, PetscInt n)
@@ -811,8 +807,6 @@ static PetscErrorCode PCGAMGSetCoarseEqLim_GAMG(PC pc, PetscInt n)
     this will generally improve the loading balancing of the work on each level
 
    Level: intermediate
-
-   Concepts: Unstructured multigrid preconditioner
 
 .seealso: ()
 @*/
@@ -854,8 +848,6 @@ static PetscErrorCode PCGAMGSetRepartition_GAMG(PC pc, PetscBool n)
     this may negatively affect the convergence rate of the method on new matrices if the matrix entries change a great deal, but allows
           rebuilding the preconditioner quicker.
 
-   Concepts: Unstructured multigrid preconditioner
-
 .seealso: ()
 @*/
 PetscErrorCode PCGAMGSetReuseInterpolation(PC pc, PetscBool n)
@@ -891,8 +883,6 @@ static PetscErrorCode PCGAMGSetReuseInterpolation_GAMG(PC pc, PetscBool n)
 .  -pc_gamg_asm_use_agg
 
    Level: intermediate
-
-   Concepts: Unstructured multigrid preconditioner
 
 .seealso: ()
 @*/
@@ -930,8 +920,6 @@ static PetscErrorCode PCGAMGASMSetUseAggs_GAMG(PC pc, PetscBool flg)
 
    Level: intermediate
 
-   Concepts: Unstructured multigrid preconditioner
-
 .seealso: ()
 @*/
 PetscErrorCode PCGAMGSetUseParallelCoarseGridSolve(PC pc, PetscBool flg)
@@ -967,8 +955,6 @@ static PetscErrorCode PCGAMGSetUseParallelCoarseGridSolve_GAMG(PC pc, PetscBool 
 .  -pc_mg_levels
 
    Level: intermediate
-
-   Concepts: Unstructured multigrid preconditioner
 
 .seealso: ()
 @*/
@@ -1010,8 +996,6 @@ static PetscErrorCode PCGAMGSetNlevels_GAMG(PC pc, PetscInt n)
 
    Level: intermediate
 
-   Concepts: Unstructured multigrid preconditioner
-
 .seealso: PCGAMGFilterGraph(), PCGAMGSetSquareGraph()
 @*/
 PetscErrorCode PCGAMGSetThreshold(PC pc, PetscReal v[], PetscInt n)
@@ -1049,8 +1033,6 @@ static PetscErrorCode PCGAMGSetThreshold_GAMG(PC pc, PetscReal v[], PetscInt n)
 
    Level: advanced
 
-   Concepts: Unstructured multigrid preconditioner
-
 .seealso: ()
 @*/
 PetscErrorCode PCGAMGSetThresholdScale(PC pc, PetscReal v)
@@ -1086,8 +1068,6 @@ static PetscErrorCode PCGAMGSetThresholdScale_GAMG(PC pc, PetscReal v)
 
    Level: intermediate
 
-   Concepts: Unstructured multigrid preconditioner
-
 .seealso: PCGAMGGetType(), PCGAMG, PCGAMGType
 @*/
 PetscErrorCode PCGAMGSetType(PC pc, PCGAMGType type)
@@ -1112,8 +1092,6 @@ PetscErrorCode PCGAMGSetType(PC pc, PCGAMGType type)
 .  type - the type of algorithm used
 
    Level: intermediate
-
-   Concepts: Unstructured multigrid preconditioner
 
 .seealso: PCGAMGSetType(), PCGAMGType
 @*/
@@ -1306,8 +1284,6 @@ PetscErrorCode PCSetFromOptions_GAMG(PetscOptionItems *PetscOptionsObject,PC pc)
 
   Level: intermediate
 
-  Concepts: algebraic multigrid
-
 .seealso:  PCCreate(), PCSetType(), MatSetBlockSize(), PCMGType, PCSetCoordinates(), MatSetNearNullSpace(), PCGAMGSetType(), PCGAMGAGG, PCGAMGGEO, PCGAMGCLASSICAL, PCGAMGSetProcEqLim(),
            PCGAMGSetCoarseEqLim(), PCGAMGSetRepartition(), PCGAMGRegister(), PCGAMGSetReuseInterpolation(), PCGAMGASMSetUseAggs(), PCGAMGSetUseParallelCoarseGridSolve(), PCGAMGSetNlevels(), PCGAMGSetThreshold(), PCGAMGGetType(), PCGAMGSetReuseInterpolation()
 M*/
@@ -1382,7 +1358,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
 
  Level: developer
 
- .keywords: PC, PCGAMG, initialize, package
  .seealso: PetscInitialize()
 @*/
 PetscErrorCode PCGAMGInitializePackage(void)
@@ -1451,7 +1426,6 @@ PetscErrorCode PCGAMGInitializePackage(void)
 
  Level: developer
 
- .keywords: Petsc, destroy, package
  .seealso: PetscFinalize()
 @*/
 PetscErrorCode PCGAMGFinalizePackage(void)

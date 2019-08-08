@@ -108,7 +108,7 @@ static int PetscOptionItemCreate_Private(PetscOptionItems *PetscOptionsObject,co
 /*
     PetscScanString -  Gets user input via stdin from process and broadcasts to all processes
 
-    Collective on MPI_Comm
+    Collective
 
    Input Parameters:
 +     commm - communicator for the broadcast, must be PETSC_COMM_WORLD
@@ -342,7 +342,7 @@ PetscErrorCode PetscOptionsGetFromTextInput(PetscOptionItems *PetscOptionsObject
       }
       break;
     case OPTION_FLIST:
-      ierr = PetscFunctionListPrintTypes(PETSC_COMM_WORLD,stdout,PetscOptionsObject->prefix,next->option,next->text,next->man,next->flist,(char*)next->data);CHKERRQ(ierr);
+      ierr = PetscFunctionListPrintTypes(PETSC_COMM_WORLD,stdout,PetscOptionsObject->prefix,next->option,next->text,next->man,next->flist,(char*)next->data,(char*)next->data);CHKERRQ(ierr);
       ierr = PetscScanString(PETSC_COMM_WORLD,512,str);CHKERRQ(ierr);
       if (str[0]) {
         PetscOptionsObject->changedmethod = PETSC_TRUE;
@@ -371,8 +371,8 @@ PetscErrorCode PetscOptionsSAWsDestroy(void)
 }
 
 static const char *OptionsHeader = "<head>\n"
-                                   "<script type=\"text/javascript\" src=\"http://www.mcs.anl.gov/research/projects/saws/js/jquery-1.9.1.js\"></script>\n"
-                                   "<script type=\"text/javascript\" src=\"http://www.mcs.anl.gov/research/projects/saws/js/SAWs.js\"></script>\n"
+                                   "<script type=\"text/javascript\" src=\"https://www.mcs.anl.gov/research/projects/saws/js/jquery-1.9.1.js\"></script>\n"
+                                   "<script type=\"text/javascript\" src=\"https://www.mcs.anl.gov/research/projects/saws/js/SAWs.js\"></script>\n"
                                    "<script type=\"text/javascript\" src=\"js/PETSc.js\"></script>\n"
                                    "<script>\n"
                                       "jQuery(document).ready(function() {\n"
@@ -660,8 +660,6 @@ $                 if (flg) {
 
    Level: beginner
 
-   Concepts: options database
-
    Notes:
     Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
@@ -727,8 +725,6 @@ PetscErrorCode  PetscOptionsEnum_Private(PetscOptionItems *PetscOptionsObject,co
 
    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
-   Concepts: options database^array of enums
-
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
@@ -767,7 +763,89 @@ PetscErrorCode  PetscOptionsEnumArray_Private(PetscOptionItems *PetscOptionsObje
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------------------------------------------*/
+/*@C
+   PetscOptionsBoundedInt - Gets an integer value greater than or equal a given bound for a particular option in the database.
+
+   Logically Collective on the communicator passed in PetscOptionsBegin()
+
+   Input Parameters:
++  opt - option name
+.  text - short string that describes the option
+.  man - manual page with additional information on option
+.  currentvalue - the current value; caller is responsible for setting this value correctly. Normally this is done with either
+$                 PetscOptionsInt(..., obj->value,&object->value,...) or
+$                 value = defaultvalue
+$                 PetscOptionsInt(..., value,&value,&flg);
+$                 if (flg) {
+-  bound - the requested value should be large than this bound
+
+   Output Parameter:
++  value - the integer value to return
+-  flg - PETSC_TRUE if found, else PETSC_FALSE
+
+   Notes:
+    If the user does not supply the option at all value is NOT changed. Thus
+    you should ALWAYS initialize value if you access it without first checking if the set flag is true.
+
+    The default/currentvalue passed into this routine does not get transferred to the output value variable automatically.
+
+    Errors if the supplied integer does not satisfy the bound
+
+    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+
+   Level: beginner
+
+.seealso: PetscOptionsInt(), PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
+          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(), PetscOptionsRangeInt()
+          PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
+          PetscOptionsFList(), PetscOptionsEList()
+@*/
+
+/*@C
+   PetscOptionsRangeInt - Gets an integer value within a range of values for a particular option in the database.
+
+   Logically Collective on the communicator passed in PetscOptionsBegin()
+
+   Input Parameters:
++  opt - option name
+.  text - short string that describes the option
+.  man - manual page with additional information on option
+.  currentvalue - the current value; caller is responsible for setting this value correctly. Normally this is done with either
+$                 PetscOptionsInt(..., obj->value,&object->value,...) or
+$                 value = defaultvalue
+$                 PetscOptionsInt(..., value,&value,&flg);
+$                 if (flg) {
+.  lb - the lower bound
+-  ub - the upper bound
+
+   Output Parameter:
++  value - the integer value to return
+-  flg - PETSC_TRUE if found, else PETSC_FALSE
+
+   Notes:
+    If the user does not supply the option at all value is NOT changed. Thus
+    you should ALWAYS initialize value if you access it without first checking if the set flag is true.
+
+    The default/currentvalue passed into this routine does not get transferred to the output value variable automatically.
+
+    Errors if the supplied integer does not satisfy the range
+
+    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+
+   Level: beginner
+
+.seealso: PetscOptionsInt(), PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
+          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(), PetscOptionsBoundedInt()
+          PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
+          PetscOptionsFList(), PetscOptionsEList()
+@*/
+
 /*@C
    PetscOptionsInt - Gets the integer value for a particular option in the database.
 
@@ -789,33 +867,32 @@ $                 if (flg) {
 
    Notes:
     If the user does not supply the option at all value is NOT changed. Thus
-          you should ALWAYS initialize value if you access it without first checking if the set flag is true.
+    you should ALWAYS initialize value if you access it without first checking if the set flag is true.
 
-          The default/currentvalue passed into this routine does not get transferred to the output value variable automatically.
+    The default/currentvalue passed into this routine does not get transferred to the output value variable automatically.
+
+    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
    Level: beginner
 
-   Concepts: options database^has int
-
-   Notes:
-    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
-
-.seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
-          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
+.seealso: PetscOptionsBoundedInt(), PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
+          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(), PetscOptionsRangeInt()
           PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
 @*/
-PetscErrorCode  PetscOptionsInt_Private(PetscOptionItems *PetscOptionsObject,const char opt[],const char text[],const char man[],PetscInt currentvalue,PetscInt *value,PetscBool  *set)
+PetscErrorCode  PetscOptionsInt_Private(PetscOptionItems *PetscOptionsObject,const char opt[],const char text[],const char man[],PetscInt currentvalue,PetscInt *value,PetscBool  *set,PetscInt lb,PetscInt ub)
 {
   PetscErrorCode  ierr;
   PetscOptionItem amsopt;
   PetscBool       wasset;
 
   PetscFunctionBegin;
-  if (!PetscOptionsObject->count) {
+  if (currentvalue < lb) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Current value %D less than allowed bound %D",currentvalue,lb);
+  if (currentvalue > ub ) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Newly set value %D greater than allowed bound %D",currentvalue,ub);
+     if (!PetscOptionsObject->count) {
     ierr = PetscOptionItemCreate_Private(PetscOptionsObject,opt,text,man,OPTION_INT,&amsopt);CHKERRQ(ierr);
     ierr = PetscMalloc(sizeof(PetscInt),&amsopt->data);CHKERRQ(ierr);
     *(PetscInt*)amsopt->data = currentvalue;
@@ -825,9 +902,12 @@ PetscErrorCode  PetscOptionsInt_Private(PetscOptionItems *PetscOptionsObject,con
       *(PetscInt*)amsopt->data = currentvalue;
     }
   }
-  ierr = PetscOptionsGetInt(PetscOptionsObject->options,PetscOptionsObject->prefix,opt,value,set);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PetscOptionsObject->options,PetscOptionsObject->prefix,opt,value,&wasset);CHKERRQ(ierr);
+  if (wasset && *value < lb ) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Newly set value %D less than allowed bound %D",*value,lb);
+  if (wasset && *value > ub ) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Newly set value %D greater than allowed bound %D",*value,ub);
+  if (set) *set = wasset;
   if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) {
-    ierr = (*PetscHelpPrintf)(PetscOptionsObject->comm,"  -%s%s <%d>: %s (%s)\n",PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "",opt+1,currentvalue,text,ManSection(man));CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(PetscOptionsObject->comm,"  -%s%s <now %D : formerly %D>: %s (%s)\n",PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "",opt+1,wasset && value ? *value : currentvalue,currentvalue,text,ManSection(man));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -849,8 +929,6 @@ PetscErrorCode  PetscOptionsInt_Private(PetscOptionItems *PetscOptionsObject,con
 -  flg - PETSC_TRUE if found, else PETSC_FALSE
 
    Level: beginner
-
-   Concepts: options database^has int
 
    Notes:
     Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
@@ -875,6 +953,7 @@ PetscErrorCode  PetscOptionsString_Private(PetscOptionItems *PetscOptionsObject,
 {
   PetscErrorCode  ierr;
   PetscOptionItem amsopt;
+  PetscBool       lset;
 
   PetscFunctionBegin;
   if (!PetscOptionsObject->count) {
@@ -882,9 +961,10 @@ PetscErrorCode  PetscOptionsString_Private(PetscOptionItems *PetscOptionsObject,
     /* must use system malloc since SAWs may free this */
     ierr = PetscStrdup(currentvalue ? currentvalue : "",(char**)&amsopt->data);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsGetString(PetscOptionsObject->options,PetscOptionsObject->prefix,opt,value,len,set);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PetscOptionsObject->options,PetscOptionsObject->prefix,opt,value,len,&lset);CHKERRQ(ierr);
+  if (set) *set = lset;
   if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) {
-    ierr = (*PetscHelpPrintf)(PetscOptionsObject->comm,"  -%s%s <%s>: %s (%s)\n",PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "",opt+1,currentvalue,text,ManSection(man));CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(PetscOptionsObject->comm,"  -%s%s <now %s : formerly %s>: %s (%s)\n",PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "",opt+1,lset && value ? value : currentvalue,currentvalue,text,ManSection(man));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -910,16 +990,13 @@ $                 if (flg) {
 
    Notes:
     If the user does not supply the option at all value is NOT changed. Thus
-          you should ALWAYS initialize value if you access it without first checking if the set flag is true.
+    you should ALWAYS initialize value if you access it without first checking if the set flag is true.
 
-          The default/currentvalue passed into this routine does not get transferred to the output value variable automatically.
+    The default/currentvalue passed into this routine does not get transferred to the output value variable automatically.
+
+    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
    Level: beginner
-
-   Concepts: options database^has int
-
-   Notes:
-    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
           PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
@@ -933,6 +1010,7 @@ PetscErrorCode  PetscOptionsReal_Private(PetscOptionItems *PetscOptionsObject,co
 {
   PetscErrorCode  ierr;
   PetscOptionItem amsopt;
+  PetscBool       lset;
 
   PetscFunctionBegin;
   if (!PetscOptionsObject->count) {
@@ -941,9 +1019,10 @@ PetscErrorCode  PetscOptionsReal_Private(PetscOptionItems *PetscOptionsObject,co
 
     *(PetscReal*)amsopt->data = currentvalue;
   }
-  ierr = PetscOptionsGetReal(PetscOptionsObject->options,PetscOptionsObject->prefix,opt,value,set);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PetscOptionsObject->options,PetscOptionsObject->prefix,opt,value,&lset);CHKERRQ(ierr);
+  if (set) *set = lset;
   if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) {
-    ierr = (*PetscHelpPrintf)(PetscOptionsObject->comm,"  -%s%s <%g>: %s (%s)\n",PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "",opt+1,(double)currentvalue,text,ManSection(man));CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(PetscOptionsObject->comm,"  -%s%s <%g : %g>: %s (%s)\n",PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "",opt+1,lset && value ? (double)*value : (double) currentvalue,(double)currentvalue,text,ManSection(man));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -970,16 +1049,13 @@ $                 if (flg) {
 
    Notes:
     If the user does not supply the option at all value is NOT changed. Thus
-          you should ALWAYS initialize value if you access it without first checking if the set flag is true.
+    you should ALWAYS initialize value if you access it without first checking if the set flag is true.
 
-          The default/currentvalue passed into this routine does not get transferred to the output value variable automatically.
+    The default/currentvalue passed into this routine does not get transferred to the output value variable automatically.
+
+    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
    Level: beginner
-
-   Concepts: options database^has int
-
-   Notes:
-    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
           PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
@@ -1017,8 +1093,6 @@ PetscErrorCode  PetscOptionsScalar_Private(PetscOptionItems *PetscOptionsObject,
 .  flg - PETSC_TRUE if found, else PETSC_FALSE
 
    Level: beginner
-
-   Concepts: options database^has int
 
    Notes:
     Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
@@ -1086,8 +1160,6 @@ $                 if (flg) {
 
    Developer Note: This cannot check for invalid selection because of things like MATAIJ that are not included in the list
 
-   Concepts: options database^list
-
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
            PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
@@ -1099,6 +1171,7 @@ PetscErrorCode  PetscOptionsFList_Private(PetscOptionItems *PetscOptionsObject,c
 {
   PetscErrorCode  ierr;
   PetscOptionItem amsopt;
+  PetscBool       lset;
 
   PetscFunctionBegin;
   if (!PetscOptionsObject->count) {
@@ -1107,9 +1180,10 @@ PetscErrorCode  PetscOptionsFList_Private(PetscOptionItems *PetscOptionsObject,c
     ierr = PetscStrdup(currentvalue ? currentvalue : "",(char**)&amsopt->data);CHKERRQ(ierr);
     amsopt->flist = list;
   }
-  ierr = PetscOptionsGetString(PetscOptionsObject->options,PetscOptionsObject->prefix,opt,value,len,set);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PetscOptionsObject->options,PetscOptionsObject->prefix,opt,value,len,&lset);CHKERRQ(ierr);
+  if (set) *set = lset;
   if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) {
-    ierr = PetscFunctionListPrintTypes(PetscOptionsObject->comm,stdout,PetscOptionsObject->prefix,opt,ltext,man,list,currentvalue);CHKERRQ(ierr);CHKERRQ(ierr);
+    ierr = PetscFunctionListPrintTypes(PetscOptionsObject->comm,stdout,PetscOptionsObject->prefix,opt,ltext,man,list,currentvalue,lset && value ? value : currentvalue);CHKERRQ(ierr);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1144,8 +1218,6 @@ $                 if (flg) {
 
    See PetscOptionsFList() for when the choices are given in a PetscFunctionList()
 
-   Concepts: options database^list
-
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
            PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
@@ -1158,6 +1230,7 @@ PetscErrorCode  PetscOptionsEList_Private(PetscOptionItems *PetscOptionsObject,c
   PetscErrorCode  ierr;
   PetscInt        i;
   PetscOptionItem amsopt;
+  PetscBool       lset;
 
   PetscFunctionBegin;
   if (!PetscOptionsObject->count) {
@@ -1167,9 +1240,10 @@ PetscErrorCode  PetscOptionsEList_Private(PetscOptionItems *PetscOptionsObject,c
     ierr = PetscStrNArrayallocpy(ntext,list,(char***)&amsopt->list);CHKERRQ(ierr);
     amsopt->nlist = ntext;
   }
-  ierr = PetscOptionsGetEList(PetscOptionsObject->options,PetscOptionsObject->prefix,opt,list,ntext,value,set);CHKERRQ(ierr);
+  ierr = PetscOptionsGetEList(PetscOptionsObject->options,PetscOptionsObject->prefix,opt,list,ntext,value,&lset);CHKERRQ(ierr);
+  if (set) *set = lset;
   if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) {
-    ierr = (*PetscHelpPrintf)(PetscOptionsObject->comm,"  -%s%s <%s> %s (choose one of)",PetscOptionsObject->prefix?PetscOptionsObject->prefix:"",opt+1,currentvalue,ltext);CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(PetscOptionsObject->comm,"  -%s%s <now %s : formerly %s> %s (choose one of)",PetscOptionsObject->prefix?PetscOptionsObject->prefix:"",opt+1,lset && value ? list[*value] : currentvalue,currentvalue,ltext);CHKERRQ(ierr);
     for (i=0; i<ntext; i++) {
       ierr = (*PetscHelpPrintf)(PetscOptionsObject->comm," %s",list[i]);CHKERRQ(ierr);
     }
@@ -1198,8 +1272,6 @@ PetscErrorCode  PetscOptionsEList_Private(PetscOptionItems *PetscOptionsObject,c
     Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
    Must be followed by 0 or more PetscOptionsBoolGroup()s and PetscOptionsBoolGroupEnd()
-
-    Concepts: options database^logical group
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
            PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
@@ -1250,8 +1322,6 @@ PetscErrorCode  PetscOptionsBoolGroupBegin_Private(PetscOptionItems *PetscOption
 
    Must follow a PetscOptionsBoolGroupBegin() and preceded a PetscOptionsBoolGroupEnd()
 
-    Concepts: options database^logical group
-
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
            PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
@@ -1300,8 +1370,6 @@ PetscErrorCode  PetscOptionsBoolGroup_Private(PetscOptionItems *PetscOptionsObje
 
    Must follow a PetscOptionsBoolGroupBegin()
 
-    Concepts: options database^logical group
-
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
            PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
@@ -1341,8 +1409,8 @@ PetscErrorCode  PetscOptionsBoolGroupEnd_Private(PetscOptionItems *PetscOptionsO
 -  currentvalue - the current value
 
    Output Parameter:
-.  flg - PETSC_TRUE or PETSC_FALSE
-.  set - PETSC_TRUE if found, else PETSC_FALSE
++  flg - PETSC_TRUE or PETSC_FALSE
+-  set - PETSC_TRUE if found, else PETSC_FALSE
 
    Notes:
        TRUE, true, YES, yes, nostring, and 1 all translate to PETSC_TRUE
@@ -1354,12 +1422,9 @@ PetscErrorCode  PetscOptionsBoolGroupEnd_Private(PetscOptionItems *PetscOptionsO
        If the user does not supply the option at all flg is NOT changed. Thus
      you should ALWAYS initialize the flg if you access it without first checking if the set flag is true.
 
-   Level: beginner
-
-   Concepts: options database^logical
-
-   Notes:
     Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+
+   Level: beginner
 
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
           PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
@@ -1385,8 +1450,8 @@ PetscErrorCode  PetscOptionsBool_Private(PetscOptionItems *PetscOptionsObject,co
   ierr = PetscOptionsGetBool(PetscOptionsObject->options,PetscOptionsObject->prefix,opt,flg,&iset);CHKERRQ(ierr);
   if (set) *set = iset;
   if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) {
-    const char *v = PetscBools[currentvalue];
-    ierr = (*PetscHelpPrintf)(PetscOptionsObject->comm,"  -%s%s: <%s> %s (%s)\n",PetscOptionsObject->prefix?PetscOptionsObject->prefix:"",opt+1,v,text,ManSection(man));CHKERRQ(ierr);
+    const char *v = PetscBools[currentvalue], *vn = PetscBools[iset && flg ? *flg : currentvalue];
+    ierr = (*PetscHelpPrintf)(PetscOptionsObject->comm,"  -%s%s: <%s : %s> %s (%s)\n",PetscOptionsObject->prefix?PetscOptionsObject->prefix:"",opt+1,v,vn,text,ManSection(man));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1415,8 +1480,6 @@ PetscErrorCode  PetscOptionsBool_Private(PetscOptionItems *PetscOptionsObject,co
    The user should pass in an array of doubles
 
    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
-
-   Concepts: options database^array of strings
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
            PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
@@ -1476,8 +1539,6 @@ PetscErrorCode PetscOptionsRealArray_Private(PetscOptionItems *PetscOptionsObjec
    The user should pass in an array of doubles
 
    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
-
-   Concepts: options database^array of strings
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
@@ -1543,8 +1604,6 @@ PetscErrorCode PetscOptionsScalarArray_Private(PetscOptionItems *PetscOptionsObj
 
    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
-   Concepts: options database^array of ints
-
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
            PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
@@ -1608,8 +1667,6 @@ PetscErrorCode  PetscOptionsIntArray_Private(PetscOptionItems *PetscOptionsObjec
 
    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
-   Concepts: options database^array of strings
-
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
            PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
@@ -1661,8 +1718,6 @@ PetscErrorCode  PetscOptionsStringArray_Private(PetscOptionItems *PetscOptionsOb
 
    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
-   Concepts: options database^array of strings
-
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
            PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
@@ -1713,8 +1768,6 @@ PetscErrorCode  PetscOptionsBoolArray_Private(PetscOptionItems *PetscOptionsObje
 
    Level: beginner
 
-   Concepts: options database^has int
-
    Notes:
     Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
@@ -1763,8 +1816,6 @@ PetscErrorCode  PetscOptionsViewer_Private(PetscOptionItems *PetscOptionsObject,
     Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
           Can be followed by a call to PetscOptionsTail() in the same function.
-
-   Concepts: options database^subheading
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
            PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),

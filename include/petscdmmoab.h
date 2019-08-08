@@ -1,5 +1,5 @@
-#if !defined(__PETSCMOAB_H)
-#define __PETSCMOAB_H
+#if !defined(PETSCMOAB_H)
+#define PETSCMOAB_H
 
 #include <petscvec.h>    /*I      "petscvec.h"    I*/
 #include <petscmat.h>    /*I      "petscmat.h"    I*/

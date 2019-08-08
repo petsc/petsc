@@ -34,7 +34,7 @@ def currentversion(petscdir):
   try:
     import urllib2
     fd = urllib2.urlopen("https://bitbucket.org/petsc/petsc/raw/maint/include/petscversion.h",timeout = 2)
-    #fd = urllib2.urlopen("http://www.mcs.anl.gov/petsc/petsc-current/include/petscversion.h",timeout = 2)
+    #fd = urllib2.urlopen("https://www.mcs.anl.gov/petsc/petsc-current/include/petscversion.h",timeout = 2)
     pv = fd.read()
     fd.close()
     aversion = parse_version_h(pv)
@@ -44,7 +44,7 @@ def currentversion(petscdir):
     print("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
     print("The version of PETSc you are using is out-of-date, we recommend updating to the new release")
     print(" Available Version: "+str(aversion)+"   Installed Version: "+str(version))
-    print("http://www.mcs.anl.gov/petsc/download/index.html")
+    print("https://www.mcs.anl.gov/petsc/download/index.html")
     print("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
   try:
     fd = open(os.path.join(petscdir,'.nagged'),"w")

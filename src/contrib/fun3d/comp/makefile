@@ -25,7 +25,7 @@ FLOW_OBJSF       = $(EXAMPLESF:.F=.o)
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
 
-flow: flow.o $(FLOW_OBJSF) chkopts
+flow: flow.o $(FLOW_OBJSF)
 	-$(CLINKER) -o flow flow.o $(FLOW_OBJSF) $(PETSC_SNES_LIB)
 
 puns3d: puns3d.a.o

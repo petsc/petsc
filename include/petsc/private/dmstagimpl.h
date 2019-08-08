@@ -27,8 +27,8 @@ typedef struct {
   PetscMPIInt       rank[DMSTAG_MAX_DIM];         /* Location in grid of ranks         */
   PetscMPIInt       *neighbors;                   /* dim^3 local ranks                 */
   PetscInt          *l[DMSTAG_MAX_DIM];           /* Elements/rank in each direction   */
-  VecScatter        gton;                         /* Global --> Natural                */
   VecScatter        gtol;                         /* Global --> Local                  */
+  VecScatter        ltog_injective;               /* Local  --> Global, injective      */
   PetscInt          *locationOffsets;             /* Offsets for points in loc. rep.   */
 
   /* Coordinates */
@@ -45,6 +45,9 @@ typedef struct {
 PETSC_INTERN PetscErrorCode DMSetUp_Stag_1d(DM);
 PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM);
 PETSC_INTERN PetscErrorCode DMSetUp_Stag_3d(DM);
+PETSC_INTERN PetscErrorCode DMStagPopulateLocalToGlobalInjective_1d(DM);
+PETSC_INTERN PetscErrorCode DMStagPopulateLocalToGlobalInjective_2d(DM);
+PETSC_INTERN PetscErrorCode DMStagPopulateLocalToGlobalInjective_3d(DM);
 PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_1d(DM,PetscReal,PetscReal);
 PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_2d(DM,PetscReal,PetscReal,PetscReal,PetscReal);
 PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_3d(DM,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal);

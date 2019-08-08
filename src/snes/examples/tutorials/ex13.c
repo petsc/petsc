@@ -129,6 +129,7 @@ static PetscErrorCode CreateSpectralPlanes(DM dm, PetscInt numPlanes, const Pets
     ierr = PetscSNPrintf(name, PETSC_MAX_PATH_LEN, "spectral_plane_%D", p);CHKERRQ(ierr);
     ierr = DMCreateLabel(dm, name);CHKERRQ(ierr);
     ierr = DMGetLabel(dm, name, &label);CHKERRQ(ierr);
+    ierr = DMLabelAddStratum(label, 1);CHKERRQ(ierr);
     for (v = vStart; v < vEnd; ++v) {
       PetscInt off;
 
@@ -208,7 +209,7 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
   ierr = PetscDSSetResidual(prob, 0, f0_trig_u, f1_u);CHKERRQ(ierr);
   ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_uu);CHKERRQ(ierr);
   ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) trig_u, 1, &id, user);CHKERRQ(ierr);
-  ierr = PetscDSSetExactSolution(prob, 0, trig_u);CHKERRQ(ierr);
+  ierr = PetscDSSetExactSolution(prob, 0, trig_u, user);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

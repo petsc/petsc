@@ -21,7 +21,7 @@ static PetscBool Xterm = PETSC_TRUE;
    Not Collective
 
    Input Parameters:
-+  terminal - name of terminal and any flags required to execute a program.
+.  terminal - name of terminal and any flags required to execute a program.
               For example "xterm -e", "urxvt -e", "gnome-terminal -x".
 
    Options Database Keys:
@@ -38,8 +38,6 @@ static PetscBool Xterm = PETSC_TRUE;
 
    Fortran Note:
    This routine is not supported in Fortran.
-
-   Concepts: debugger^setting
 
 .seealso: PetscSetDebugger()
 @*/
@@ -72,8 +70,6 @@ PetscErrorCode  PetscSetDebugTerminal(const char terminal[])
    Fortran Note:
    This routine is not supported in Fortran.
 
-  Concepts: debugger^setting
-
 .seealso: PetscAttachDebugger(), PetscAttachDebuggerErrorHandler()
 @*/
 PetscErrorCode  PetscSetDebugger(const char debugger[],PetscBool xterm)
@@ -102,16 +98,8 @@ PetscErrorCode  PetscSetDefaultDebugger(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_LLDB_DEBUGGER)
-  ierr = PetscSetDebugger("lldb",PETSC_TRUE);CHKERRQ(ierr);
-#elif defined(PETSC_USE_DBX_DEBUGGER)
-  ierr = PetscSetDebugger("dbx",PETSC_TRUE);CHKERRQ(ierr);
-#elif defined(PETSC_USE_XDB_DEBUGGER)
-  ierr = PetscSetDebugger("xdb",PETSC_TRUE);CHKERRQ(ierr);
-#elif defined(PETSC_USE_IDB_DEBUGGER)
-  ierr = PetscSetDebugger("idb",PETSC_TRUE);CHKERRQ(ierr);
-#else  /* Default is gdb */
-  ierr = PetscSetDebugger("gdb",PETSC_TRUE);CHKERRQ(ierr);
+#if defined(PETSC_USE_DEBUGGER)
+  ierr = PetscSetDebugger(PETSC_USE_DEBUGGER,PETSC_TRUE);CHKERRQ(ierr);
 #endif
   ierr = PetscSetDebugTerminal("xterm -e");CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -180,8 +168,6 @@ PetscErrorCode  PetscSetDebuggerFromString(const char *string)
    Not Collective
 
    Level: advanced
-
-   Concepts: debugger^starting from program
 
    Developer Notes:
     Since this can be called by the error handler should it be calling SETERRQ() and CHKERRQ()?
@@ -433,8 +419,6 @@ $    PetscAttachDebuggerErrorHandler()
 $    PetscAbortErrorHandler()
    or you may write your own.
 
-   Concepts: debugger^error handler
-   Concepts: error handler^attach debugger
 
 .seealso:  PetscPushErrorHandler(), PetscTraceBackErrorHandler(),
            PetscAbortErrorHandler()
@@ -468,8 +452,6 @@ PetscErrorCode  PetscAttachDebuggerErrorHandler(MPI_Comm comm,int line,const cha
 
    Developer Notes:
     Since this can be called by the error handler, should it be calling SETERRQ() and CHKERRQ()?
-
-   Concepts: debugger^waiting for attachment
 
 .seealso: PetscSetDebugger(), PetscAttachDebugger()
 @*/

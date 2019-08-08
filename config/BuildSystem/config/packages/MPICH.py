@@ -4,12 +4,10 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.download         = ['http://www.mpich.org/static/downloads/3.3b1/mpich-3.3b1.tar.gz',
-                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-3.3b1.tar.gz']
+    self.download         = ['https://www.mpich.org/static/downloads/3.3.1/mpich-3.3.1.tar.gz',
+                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-3.3.1.tar.gz']
     self.download_31      = ['http://www.mpich.org/static/downloads/3.1/mpich-3.1.tar.gz',
                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-3.1.tar.gz']
-    self.download_33a2    = ['http://www.mpich.org/static/downloads/3.3a2/mpich-3.3a2.tar.gz',
-                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-3.3a2.tar.gz']
     self.downloaddirnames  = ['mpich']
     self.skippackagewithoptions = 1
     self.isMPI = 1
@@ -33,11 +31,15 @@ class Configure(config.package.GNUPackage):
         if self.argDB['with-shared-libraries']:
           raise RuntimeError('Sorry, --download-mpich does not work with shared-libraries. Suggest installing OpenMPI via cygwin or use --with-shared-libraries=0')
       else:
-        raise RuntimeError('Sorry, cannot download-install MPICH on Windows with Microsoft or Intel Compilers. Suggest installing Windows version of MPICH manually')
+        raise RuntimeError('Sorry, cannot download-install MPICH on Windows with Microsoft or Intel Compilers. Suggest using MS-MPI or Intel-MPI (do not use MPICH2')
+    if self.argDB['download-'+self.downloadname.lower()] and  'package-prefix-hash' in self.argDB and self.argDB['package-prefix-hash'] == 'reuse':
+      self.logWrite('Reusing package prefix install of '+self.defaultInstallDir+' for MPICH')
+      self.installDir = self.defaultInstallDir
+      self.updateCompilers(self.installDir,'mpicc','mpicxx','mpif77','mpif90')
+      return self.installDir
     if self.argDB['download-'+self.downloadname.lower()]:
       return self.getInstallDir()
     return ''
-
 
   def formGNUConfigureArgs(self):
     '''MPICH has many specific extra configure arguments'''
@@ -51,6 +53,8 @@ class Configure(config.package.GNUPackage):
       args.append("--enable-error-messages=all")
     # make MPICH behave properly for valgrind
     args.append('--enable-g=meminit')
+    if not self.sharedLibraries.useShared and config.setCompilers.Configure.isDarwin(self.log):
+      args.append('--disable-opencl')
     # MPICH configure errors out on certain standard configure arguments
     args = self.rmArgs(args,['--disable-f90','--enable-f90'])
     args = self.rmArgsStartsWith(args,['F90=','F90FLAGS='])
@@ -58,6 +62,8 @@ class Configure(config.package.GNUPackage):
 
   def Install(self):
     '''After downloading and installing MPICH we need to reset the compilers to use those defined by the MPICH install'''
+    if 'package-prefix-hash' in self.argDB and self.argDB['package-prefix-hash'] == 'reuse':
+      return self.defaultInstallDir
     installDir = config.package.GNUPackage.Install(self)
     self.updateCompilers(installDir,'mpicc','mpicxx','mpif77','mpif90')
     return installDir
@@ -65,7 +71,5 @@ class Configure(config.package.GNUPackage):
   def configure(self):
     if config.setCompilers.Configure.isCygwin(self.log) and config.setCompilers.Configure.isGNU(self.setCompilers.CC, self.log):
       self.download = self.download_31
-    elif config.setCompilers.Configure.isSolaris(self.log):
-      self.download = self.download_33a2
     return config.package.Package.configure(self)
 

@@ -8,7 +8,6 @@ static PetscBool PetscRandomPackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.keywords: Petsc, destroy, package, mathematica
 .seealso: PetscFinalize()
 @*/
 PetscErrorCode  PetscRandomFinalizePackage(void)
@@ -29,7 +28,6 @@ PetscErrorCode  PetscRandomFinalizePackage(void)
 
   Level: developer
 
-.keywords: PetscRandom, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode  PetscRandomInitializePackage(void)

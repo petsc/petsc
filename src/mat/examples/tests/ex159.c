@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = MatComputeExplicitOperator(A,&Aexplicit);CHKERRQ(ierr);
+  ierr = MatComputeOperator(A,MATAIJ,&Aexplicit);CHKERRQ(ierr);
   ierr = MatView(Aexplicit,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = MatDestroy(&A);CHKERRQ(ierr);

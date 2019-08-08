@@ -774,8 +774,10 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
       ierr = DMPlexGetSupport(dm, point, &supp);CHKERRQ(ierr);
       for (s = 0; s < numSupp; s++, offset++) {
         for (q = 0; q < Nq * dE * dE; q++) {
+          geom->suppJ[s][p * Nq * dE * dE + q]    = cellGeom->J[offset * Nq * dE * dE + q];
           geom->suppInvJ[s][p * Nq * dE * dE + q] = cellGeom->invJ[offset * Nq * dE * dE + q];
         }
+        for (q = 0; q < Nq; q++) geom->suppDetJ[s][p * Nq + q] = cellGeom->detJ[offset * Nq + q];
       }
     }
     ierr = PetscFEGeomDestroy(&cellGeom);CHKERRQ(ierr);
@@ -986,8 +988,10 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
           for (s = 0; s < 2; s++) {
             if (co[p][s][0] == f && co[p][s][1] == o + minOrient) {
               for (q = 0; q < Nq * dE * dE; q++) {
+                geom->suppJ[s][p * Nq * dE * dE + q]    = cellGeom->J[offset * Nq * dE * dE + q];
                 geom->suppInvJ[s][p * Nq * dE * dE + q] = cellGeom->invJ[offset * Nq * dE * dE + q];
               }
+              for (q = 0; q < Nq; q++) geom->suppDetJ[s][p * Nq + q] = cellGeom->detJ[offset * Nq + q];
               offset++;
             }
           }
@@ -1004,6 +1008,7 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
     }
     ierr = PetscFree2(orients,orientPoints);CHKERRQ(ierr);
     ierr = PetscQuadratureDestroy(&cellQuad);CHKERRQ(ierr);
+    for (f = 0; f < coneSize; f++) {ierr = PetscFree(counts[f]);CHKERRQ(ierr);}
     ierr = PetscFree2(co,counts);CHKERRQ(ierr);
   }
   ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);

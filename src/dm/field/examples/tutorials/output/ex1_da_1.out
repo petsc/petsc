@@ -1,6 +1,4 @@
-PetscQuadrature Object: Test quadrature 1 MPI processes
-  type: GaussTensor
-  Quadrature on 2 points of order 3
+  Quadrature of order 3 on 2 points (dim 1)
 IS Object: FE Test Cells 1 MPI processes
   type: general
 Number of indices in set 2

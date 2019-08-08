@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit              = 'b2723cc' #3.11.0
+    self.gitcommit              = '484155e' #master jul-18-2019
     self.download               = ['git://https://bitbucket.org/petsc/petsc4py','https://bitbucket.org/petsc/petsc4py/get/'+self.gitcommit+'.tar.gz']
     self.functions              = []
     self.includes               = []
@@ -33,7 +33,7 @@ class Configure(config.package.Package):
     self.logResetRemoveDirectory()
     archflags = ""
     if self.setCompilers.isDarwin(self.log):
-      if self.types.sizes['known-sizeof-void-p'] == 4:
+      if self.types.sizes['void-p'] == 4:
         archflags = "ARCHFLAGS=\'-arch i386\' "
       else:
         archflags = "ARCHFLAGS=\'-arch x86_64\' "

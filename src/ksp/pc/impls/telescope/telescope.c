@@ -18,7 +18,7 @@ static const char citation[] =
 "  pages     = {5:1--5:12},\n"
 "  articleno = {5},\n"
 "  numpages  = {12},\n"
-"  url       = {http://doi.acm.org/10.1145/2929908.2929913},\n"
+"  url       = {https://doi.acm.org/10.1145/2929908.2929913},\n"
 "  doi       = {10.1145/2929908.2929913},\n"
 "  acmid     = {2929913},\n"
 "  publisher = {ACM},\n"
@@ -44,7 +44,7 @@ static const char citation[] =
 */
 
 /*
-  Collective on MPI_Comm[comm_f]
+  Collective[comm_f]
   Notes
    * Using comm_f = MPI_COMM_NULL will result in an error
    * Using comm_c = MPI_COMM_NULL is valid. If all instances of comm_c are NULL the subcomm is not valid.
@@ -886,7 +886,6 @@ static PetscErrorCode PCTelescopeGetDM_Telescope(PC pc,DM *dm)
 
  Level: advanced
 
-.keywords: PC, telescopting solve
 @*/
 PetscErrorCode PCTelescopeGetKSP(PC pc,KSP *subksp)
 {
@@ -909,7 +908,6 @@ PetscErrorCode PCTelescopeGetKSP(PC pc,KSP *subksp)
 
  Level: advanced
 
-.keywords: PC, telescoping solve
 @*/
 PetscErrorCode PCTelescopeGetReductionFactor(PC pc,PetscInt *fact)
 {
@@ -932,7 +930,6 @@ PetscErrorCode PCTelescopeGetReductionFactor(PC pc,PetscInt *fact)
 
  Level: advanced
 
-.keywords: PC, telescoping solve
 @*/
 PetscErrorCode PCTelescopeSetReductionFactor(PC pc,PetscInt fact)
 {
@@ -955,7 +952,6 @@ PetscErrorCode PCTelescopeSetReductionFactor(PC pc,PetscInt fact)
 
  Level: advanced
 
-.keywords: PC, telescoping solve
 @*/
 PetscErrorCode PCTelescopeGetIgnoreDM(PC pc,PetscBool *v)
 {
@@ -978,7 +974,6 @@ PetscErrorCode PCTelescopeGetIgnoreDM(PC pc,PetscBool *v)
 
  Level: advanced
 
-.keywords: PC, telescoping solve
 @*/
 PetscErrorCode PCTelescopeSetIgnoreDM(PC pc,PetscBool v)
 {
@@ -1001,7 +996,6 @@ PetscErrorCode PCTelescopeSetIgnoreDM(PC pc,PetscBool v)
 
  Level: advanced
 
-.keywords: PC, telescoping solve
 @*/
 PetscErrorCode PCTelescopeGetUseCoarseDM(PC pc,PetscBool *v)
 {
@@ -1122,7 +1116,6 @@ PetscErrorCode PCTelescopeGetUseCoarseDM(PC pc,PetscBool *v)
 
  Level: advanced
 
-.keywords: PC, telescoping solve
 @*/
 PetscErrorCode PCTelescopeSetUseCoarseDM(PC pc,PetscBool v)
 {
@@ -1145,7 +1138,6 @@ PetscErrorCode PCTelescopeSetUseCoarseDM(PC pc,PetscBool v)
 
  Level: advanced
 
-.keywords: PC, telescoping solve
 @*/
 PetscErrorCode PCTelescopeGetIgnoreKSPComputeOperators(PC pc,PetscBool *v)
 {
@@ -1168,7 +1160,6 @@ PetscErrorCode PCTelescopeGetIgnoreKSPComputeOperators(PC pc,PetscBool *v)
 
  Level: advanced
 
-.keywords: PC, telescoping solve
 @*/
 PetscErrorCode PCTelescopeSetIgnoreKSPComputeOperators(PC pc,PetscBool v)
 {
@@ -1191,7 +1182,6 @@ PetscErrorCode PCTelescopeSetIgnoreKSPComputeOperators(PC pc,PetscBool v)
 
  Level: advanced
 
-.keywords: PC, telescoping solve
 @*/
 PetscErrorCode PCTelescopeGetDM(PC pc,DM *subdm)
 {
@@ -1211,8 +1201,6 @@ PetscErrorCode PCTelescopeGetDM(PC pc,DM *subdm)
 -  subcommtype - the subcommunicator type (see PetscSubcommType)
 
  Level: advanced
-
-.keywords: PC, telescoping solve
 
 .seealso: PetscSubcommType, PetscSubcomm, PCTELESCOPE
 @*/
@@ -1236,8 +1224,6 @@ PetscErrorCode PCTelescopeSetSubcommType(PC pc, PetscSubcommType subcommtype)
 .  subcommtype - the subcommunicator type (see PetscSubcommType)
 
  Level: advanced
-
-.keywords: PC, telescoping solve
 
 .seealso: PetscSubcomm, PetscSubcommType, PCTELESCOPE
 @*/

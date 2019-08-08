@@ -68,11 +68,11 @@ static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag)
 
   /* Check that entries are as expected */
   {
-    PetscInt entriesGhost,nerr;
-    const PetscInt maxErrPerRank = 3;
-    PetscScalar *arrLocalExpected;
+    PetscInt          entriesGhost,nerr;
+    const PetscInt    maxErrPerRank = 3;
+    PetscScalar       *arrLocalExpected;
     const PetscScalar *arrLocal;
-    PetscMPIInt rank;
+    PetscMPIInt       rank;
 
     ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dmstag),&rank);CHKERRQ(ierr);
     ierr = VecGetSize(vecLocal,&entriesGhost);CHKERRQ(ierr); /* entriesGhost happens to always be 216 here */
@@ -923,7 +923,7 @@ static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag)
       if (arrLocal[i] != arrLocalExpected[i]) {
         ++nerr;
           if (nerr <= maxErrPerRank) {
-            ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Entry %d has value %g instead of the expected %g\n",rank,i,arrLocal[i],arrLocalExpected[i]);CHKERRQ(ierr);
+            ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Entry %D has value %g instead of the expected %g\n",rank,i,(double)PetscRealPart(arrLocal[i]),(double)PetscRealPart(arrLocalExpected[i]));CHKERRQ(ierr);
             if (nerr == maxErrPerRank + 1) {
               ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Skipping additional errors on this rank\n",rank);CHKERRQ(ierr);
             }

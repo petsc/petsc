@@ -5,8 +5,9 @@
 
 #include <petsc/private/dmdaimpl.h>      /*I  "petscdmda.h"   I*/
 #include <petsc/private/glvisvecimpl.h>
+#include <petsc/private/viewerimpl.h>
+#include <petsc/private/viewerhdf5impl.h>
 #include <petscdraw.h>
-#include <petscviewerhdf5.h>
 
 /*
         The data that is passed into the graphics callback
@@ -412,11 +413,11 @@ static PetscErrorCode VecGetHDF5ChunkSize(DM_DA *da, Vec xin, PetscInt dimension
 #if defined(PETSC_HAVE_HDF5)
 PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
 {
+  PetscViewer_HDF5  *hdf5 = (PetscViewer_HDF5*) viewer->data;
   DM                dm;
   DM_DA             *da;
   hid_t             filespace;  /* file dataspace identifier */
   hid_t             chunkspace; /* chunk dataset property identifier */
-  hid_t             plist_id;   /* property list identifier */
   hid_t             dset_id;    /* dataset identifier */
   hid_t             memspace;   /* memory dataspace identifier */
   hid_t             file_id;
@@ -550,23 +551,22 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
   PetscStackCallHDF5Return(filespace,H5Dget_space,(dset_id));
   PetscStackCallHDF5(H5Sselect_hyperslab,(filespace, H5S_SELECT_SET, offset, NULL, count, NULL));
 
-  /* Create property list for collective dataset write */
-  PetscStackCallHDF5Return(plist_id,H5Pcreate,(H5P_DATASET_XFER));
-#if defined(PETSC_HAVE_H5PSET_FAPL_MPIO)
-  PetscStackCallHDF5(H5Pset_dxpl_mpio,(plist_id, H5FD_MPIO_COLLECTIVE));
-#endif
-  /* To write dataset independently use H5Pset_dxpl_mpio(plist_id, H5FD_MPIO_INDEPENDENT) */
-
   ierr   = VecGetArrayRead(xin, &x);CHKERRQ(ierr);
-  PetscStackCallHDF5(H5Dwrite,(dset_id, memscalartype, memspace, filespace, plist_id, x));
+  PetscStackCallHDF5(H5Dwrite,(dset_id, memscalartype, memspace, filespace, hdf5->dxpl_id, x));
   PetscStackCallHDF5(H5Fflush,(file_id, H5F_SCOPE_GLOBAL));
   ierr   = VecRestoreArrayRead(xin, &x);CHKERRQ(ierr);
+
+  #if defined(PETSC_USE_COMPLEX)
+  {
+    PetscBool tru = PETSC_TRUE;
+    ierr = PetscViewerHDF5WriteObjectAttribute(viewer,(PetscObject)xin,"complex",PETSC_BOOL,&tru);CHKERRQ(ierr);
+  }
+  #endif
 
   /* Close/release resources */
   if (group != file_id) {
     PetscStackCallHDF5(H5Gclose,(group));
   }
-  PetscStackCallHDF5(H5Pclose,(plist_id));
   PetscStackCallHDF5(H5Sclose,(filespace));
   PetscStackCallHDF5(H5Sclose,(memspace));
   PetscStackCallHDF5(H5Dclose,(dset_id));
@@ -772,6 +772,7 @@ PetscErrorCode  VecView_MPI_DA(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_HDF5)
 PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
 {
+  PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
   DM             da;
   PetscErrorCode ierr;
   int            dim,rdim;
@@ -780,7 +781,6 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
   PetscScalar    *x;
   const char     *vecname;
   hid_t          filespace; /* file dataspace identifier */
-  hid_t          plist_id;  /* property list identifier */
   hid_t          dset_id;   /* dataset identifier */
   hid_t          memspace;  /* memory dataspace identifier */
   hid_t          file_id,group;
@@ -874,22 +874,14 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
   PetscStackCallHDF5Return(memspace,H5Screate_simple,(dim, count, NULL));
   PetscStackCallHDF5(H5Sselect_hyperslab,(filespace, H5S_SELECT_SET, offset, NULL, count, NULL));
 
-  /* Create property list for collective dataset write */
-  PetscStackCallHDF5Return(plist_id,H5Pcreate,(H5P_DATASET_XFER));
-#if defined(PETSC_HAVE_H5PSET_FAPL_MPIO)
-  PetscStackCallHDF5(H5Pset_dxpl_mpio,(plist_id, H5FD_MPIO_COLLECTIVE));
-#endif
-  /* To read dataset independently use H5Pset_dxpl_mpio(plist_id, H5FD_MPIO_INDEPENDENT) */
-
   ierr   = VecGetArray(xin, &x);CHKERRQ(ierr);
-  PetscStackCallHDF5(H5Dread,(dset_id, scalartype, memspace, filespace, plist_id, x));
+  PetscStackCallHDF5(H5Dread,(dset_id, scalartype, memspace, filespace, hdf5->dxpl_id, x));
   ierr   = VecRestoreArray(xin, &x);CHKERRQ(ierr);
 
   /* Close/release resources */
   if (group != file_id) {
     PetscStackCallHDF5(H5Gclose,(group));
   }
-  PetscStackCallHDF5(H5Pclose,(plist_id));
   PetscStackCallHDF5(H5Sclose,(filespace));
   PetscStackCallHDF5(H5Sclose,(memspace));
   PetscStackCallHDF5(H5Dclose,(dset_id));

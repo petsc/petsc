@@ -10,7 +10,7 @@
     PetscFOpen - Has the first process in the communicator open a file;
     all others do nothing.
 
-    Logically Collective on MPI_Comm
+    Logically Collective
 
     Input Parameters:
 +   comm - the communicator
@@ -28,8 +28,6 @@
     Fortran Note:
     This routine is not supported in Fortran.
 
-    Concepts: opening ASCII file
-    Concepts: files^opening ASCII
 
 .seealso: PetscFClose(), PetscSynchronizedFGets(), PetscSynchronizedPrintf(), PetscSynchronizedFlush(),
           PetscFPrintf()
@@ -70,7 +68,7 @@ PetscErrorCode  PetscFOpen(MPI_Comm comm,const char name[],const char mode[],FIL
     PetscFClose - Has the first processor in the communicator close a
     file; all others do nothing.
 
-    Logically Collective on MPI_Comm
+    Logically Collective
 
     Input Parameters:
 +   comm - the communicator
@@ -81,8 +79,6 @@ PetscErrorCode  PetscFOpen(MPI_Comm comm,const char name[],const char mode[],FIL
     Fortran Note:
     This routine is not supported in Fortran.
 
-    Concepts: files^closing ASCII
-    Concepts: closing file
 
 .seealso: PetscFOpen()
 @*/
@@ -107,7 +103,7 @@ static char PetscPOpenMachine[128] = "";
 /*@C
       PetscPClose - Closes (ends) a program on processor zero run with PetscPOpen()
 
-     Collective on MPI_Comm, but only process 0 runs the command
+     Collective, but only process 0 runs the command
 
    Input Parameters:
 +   comm - MPI communicator, only processor zero runs the program
@@ -141,7 +137,7 @@ PetscErrorCode PetscPClose(MPI_Comm comm,FILE *fd)
       PetscPOpen - Runs a program on processor zero and sends either its input or output to
           a file.
 
-     Logically Collective on MPI_Comm, but only process 0 runs the command
+     Logically Collective, but only process 0 runs the command
 
    Input Parameters:
 +   comm - MPI communicator, only processor zero runs the program
@@ -215,7 +211,7 @@ PetscErrorCode  PetscPOpen(MPI_Comm comm,const char machine[],const char program
 /*@C
       PetscPOpenSetMachine - Sets the name of the default machine to run PetscPOpen() calls on
 
-     Logically Collective on MPI_Comm, but only process 0 runs the command
+     Logically Collective, but only process 0 runs the command
 
    Input Parameter:
 .   machine - machine to run command on or NULL to remove previous entry

@@ -18,12 +18,13 @@ Level: intermediate
 @*/
 PetscErrorCode  SNESFASSetType(SNES snes,SNESFASType fastype)
 {
-  SNES_FAS       *fas = (SNES_FAS*)snes->data;
+  SNES_FAS       *fas;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
   PetscValidLogicalCollectiveEnum(snes,fastype,2);
+  fas = (SNES_FAS*)snes->data;
   fas->fastype = fastype;
   if (fas->next) {
     ierr = SNESFASSetType(fas->next, fastype);CHKERRQ(ierr);
@@ -49,11 +50,12 @@ Level: intermediate
 @*/
 PetscErrorCode  SNESFASGetType(SNES snes,SNESFASType *fastype)
 {
-  SNES_FAS *fas = (SNES_FAS*)snes->data;
+  SNES_FAS *fas;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
   PetscValidPointer(fastype, 2);
+  fas = (SNES_FAS*)snes->data;
   *fastype = fas->fastype;
   PetscFunctionReturn(0);
 }
@@ -66,7 +68,7 @@ PetscErrorCode  SNESFASGetType(SNES snes,SNESFASType *fastype)
 +  snes   - the snes context
 .  levels - the number of levels
 -  comms  - optional communicators for each level; this is to allow solving the coarser
-            problems on smaller sets of processors. 
+            problems on smaller sets of processors.
 
    Level: intermediate
 
@@ -74,29 +76,29 @@ PetscErrorCode  SNESFASGetType(SNES snes,SNESFASType *fastype)
      If the number of levels is one then the multigrid uses the -fas_levels prefix
   for setting the level options rather than the -fas_coarse prefix.
 
-.keywords: FAS, MG, set, levels, multigrid
-
 .seealso: SNESFASGetLevels()
 @*/
-PetscErrorCode SNESFASSetLevels(SNES snes, PetscInt levels, MPI_Comm * comms)
+PetscErrorCode SNESFASSetLevels(SNES snes, PetscInt levels, MPI_Comm *comms)
 {
   PetscErrorCode ierr;
   PetscInt       i;
   const char     *optionsprefix;
   char           tprefix[128];
-  SNES_FAS       *fas = (SNES_FAS*)snes->data;
+  SNES_FAS       *fas;
   SNES           prevsnes;
   MPI_Comm       comm;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
+  fas = (SNES_FAS*)snes->data;
   ierr = PetscObjectGetComm((PetscObject)snes,&comm);CHKERRQ(ierr);
   if (levels == fas->levels) {
     if (!comms) PetscFunctionReturn(0);
   }
   /* user has changed the number of levels; reset */
-  ierr = SNESReset(snes);CHKERRQ(ierr);
+  ierr = (*snes->ops->reset)(snes);CHKERRQ(ierr);
   /* destroy any coarser levels if necessary */
-  if (fas->next) SNESDestroy(&fas->next);CHKERRQ(ierr);
+  ierr = SNESDestroy(&fas->next);CHKERRQ(ierr);
   fas->next     = NULL;
   fas->previous = NULL;
   prevsnes      = snes;
@@ -112,7 +114,7 @@ PetscErrorCode SNESFASSetLevels(SNES snes, PetscInt levels, MPI_Comm * comms)
     if (i > 0) {
       ierr = SNESCreate(comm, &fas->next);CHKERRQ(ierr);
       ierr = SNESGetOptionsPrefix(fas->fine, &optionsprefix);CHKERRQ(ierr);
-      sprintf(tprefix,"fas_levels_%d_cycle_",(int)fas->level);
+      ierr = PetscSNPrintf(tprefix,sizeof(tprefix),"fas_levels_%d_cycle_",(int)fas->level);CHKERRQ(ierr);
       ierr = SNESAppendOptionsPrefix(fas->next,optionsprefix);CHKERRQ(ierr);
       ierr = SNESAppendOptionsPrefix(fas->next,tprefix);CHKERRQ(ierr);
       ierr = SNESSetType(fas->next, SNESFAS);CHKERRQ(ierr);
@@ -141,15 +143,16 @@ PetscErrorCode SNESFASSetLevels(SNES snes, PetscInt levels, MPI_Comm * comms)
 
    Level: advanced
 
-.keywords: MG, get, levels, multigrid
-
 .seealso: SNESFASSetLevels(), PCMGGetLevels()
 @*/
 PetscErrorCode SNESFASGetLevels(SNES snes, PetscInt *levels)
 {
-  SNES_FAS * fas = (SNES_FAS*)snes->data;
+  SNES_FAS *fas;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
+  PetscValidIntPointer(levels,3);
+  fas = (SNES_FAS*)snes->data;
   *levels = fas->levels;
   PetscFunctionReturn(0);
 }
@@ -166,16 +169,17 @@ PetscErrorCode SNESFASGetLevels(SNES snes, PetscInt *levels)
 
    Level: advanced
 
-.keywords: FAS, MG, set, cycles, Gauss-Seidel, multigrid
-
 .seealso: SNESFASSetLevels(), SNESFASGetLevels()
 @*/
 PetscErrorCode SNESFASGetCycleSNES(SNES snes,PetscInt level,SNES *lsnes)
 {
-  SNES_FAS *fas = (SNES_FAS*)snes->data;
+  SNES_FAS *fas;
   PetscInt i;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
+  PetscValidPointer(lsnes,3);
+  fas = (SNES_FAS*)snes->data;
   if (level > fas->levels-1) SETERRQ2(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"Requested level %D from SNESFAS containing %D levels",level,fas->levels);
   if (fas->level !=  fas->levels - 1) SETERRQ2(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"SNESFASGetCycleSNES may only be called on the finest-level SNES.",level,fas->level);
 
@@ -203,16 +207,16 @@ PetscErrorCode SNESFASGetCycleSNES(SNES snes,PetscInt level,SNES *lsnes)
 
    Level: advanced
 
-.keywords: FAS, MG, smooth, down, pre-smoothing, steps, multigrid
-
 .seealso: SNESFASSetNumberSmoothDown()
 @*/
 PetscErrorCode SNESFASSetNumberSmoothUp(SNES snes, PetscInt n)
 {
-  SNES_FAS       *fas =  (SNES_FAS*)snes->data;
+  SNES_FAS       *fas;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
+  fas =  (SNES_FAS*)snes->data;
   fas->max_up_it = n;
   if (!fas->smoothu && fas->level != 0) {
     ierr = SNESFASCycleCreateSmoother_Private(snes, &fas->smoothu);CHKERRQ(ierr);
@@ -241,16 +245,16 @@ PetscErrorCode SNESFASSetNumberSmoothUp(SNES snes, PetscInt n)
 
    Level: advanced
 
-.keywords: FAS, MG, smooth, down, pre-smoothing, steps, multigrid
-
 .seealso: SNESFASSetNumberSmoothUp()
 @*/
 PetscErrorCode SNESFASSetNumberSmoothDown(SNES snes, PetscInt n)
 {
-  SNES_FAS       *fas =  (SNES_FAS*)snes->data;
-  PetscErrorCode ierr = 0;
+  SNES_FAS       *fas;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
+  fas = (SNES_FAS*)snes->data;
   if (!fas->smoothd) {
     ierr = SNESFASCycleCreateSmoother_Private(snes, &fas->smoothd);CHKERRQ(ierr);
   }
@@ -281,23 +285,23 @@ PetscErrorCode SNESFASSetNumberSmoothDown(SNES snes, PetscInt n)
    Notes:
     This sets the prefix on the upsweep smoothers to -fas_continuation
 
-.keywords: FAS, MG, smoother, continuation
-
 .seealso: SNESFAS
 @*/
 PetscErrorCode SNESFASSetContinuation(SNES snes,PetscBool continuation)
 {
   const char     *optionsprefix;
   char           tprefix[128];
-  SNES_FAS       *fas =  (SNES_FAS*)snes->data;
-  PetscErrorCode ierr = 0;
+  SNES_FAS       *fas;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
+  fas  = (SNES_FAS*)snes->data;
   ierr = SNESGetOptionsPrefix(fas->fine, &optionsprefix);CHKERRQ(ierr);
   if (!fas->smoothu) {
     ierr = SNESFASCycleCreateSmoother_Private(snes, &fas->smoothu);CHKERRQ(ierr);
   }
-  sprintf(tprefix,"fas_levels_continuation_");
+  ierr = PetscStrncpy(tprefix,"fas_levels_continuation_",sizeof(tprefix));CHKERRQ(ierr);
   ierr = SNESSetOptionsPrefix(fas->smoothu, optionsprefix);CHKERRQ(ierr);
   ierr = SNESAppendOptionsPrefix(fas->smoothu, tprefix);CHKERRQ(ierr);
   ierr = SNESSetType(fas->smoothu,SNESNEWTONLS);CHKERRQ(ierr);
@@ -325,19 +329,18 @@ PetscErrorCode SNESFASSetContinuation(SNES snes,PetscBool continuation)
 
    Level: advanced
 
-.keywords: MG, set, cycles, V-cycle, W-cycle, multigrid
-
 .seealso: SNESFASSetCyclesOnLevel()
 @*/
 PetscErrorCode SNESFASSetCycles(SNES snes, PetscInt cycles)
 {
-  SNES_FAS       *fas = (SNES_FAS*)snes->data;
+  SNES_FAS       *fas;
   PetscErrorCode ierr;
   PetscBool      isFine;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
   ierr = SNESFASCycleIsFine(snes, &isFine);CHKERRQ(ierr);
-
+  fas = (SNES_FAS*)snes->data;
   fas->n_cycles = cycles;
   if (!isFine) {
     ierr = SNESSetTolerances(snes, snes->abstol, snes->rtol, snes->stol, cycles, snes->max_funcs);CHKERRQ(ierr);
@@ -361,20 +364,21 @@ PetscErrorCode SNESFASSetCycles(SNES snes, PetscInt cycles)
 
    Level: advanced
 
-.keywords: FAS, monitor
-
 .seealso: SNESFASSetCyclesOnLevel()
 @*/
 PetscErrorCode SNESFASSetMonitor(SNES snes, PetscViewerAndFormat *vf, PetscBool flg)
 {
-  SNES_FAS       *fas = (SNES_FAS*)snes->data;
+  SNES_FAS       *fas;
   PetscErrorCode ierr;
   PetscBool      isFine;
-  PetscInt       i, levels = fas->levels;
+  PetscInt       i, levels;
   SNES           levelsnes;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
   ierr = SNESFASCycleIsFine(snes, &isFine);CHKERRQ(ierr);
+  fas = (SNES_FAS*)snes->data;
+  levels = fas->levels;
   if (isFine) {
     for (i = 0; i < levels; i++) {
       ierr = SNESFASGetCycleSNES(snes, i, &levelsnes);CHKERRQ(ierr);
@@ -404,33 +408,34 @@ PetscErrorCode SNESFASSetMonitor(SNES snes, PetscViewerAndFormat *vf, PetscBool 
 
    Level: advanced
 
-.keywords: FAS, logging
-
 .seealso: SNESFASSetMonitor()
 @*/
 PetscErrorCode SNESFASSetLog(SNES snes, PetscBool flg)
 {
-  SNES_FAS       *fas = (SNES_FAS*)snes->data;
+  SNES_FAS       *fas;
   PetscErrorCode ierr;
   PetscBool      isFine;
-  PetscInt       i, levels = fas->levels;
+  PetscInt       i, levels;
   SNES           levelsnes;
   char           eventname[128];
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
   ierr = SNESFASCycleIsFine(snes, &isFine);CHKERRQ(ierr);
+  fas = (SNES_FAS*)snes->data;
+  levels = fas->levels;
   if (isFine) {
     for (i = 0; i < levels; i++) {
       ierr = SNESFASGetCycleSNES(snes, i, &levelsnes);CHKERRQ(ierr);
       fas  = (SNES_FAS*)levelsnes->data;
       if (flg) {
-        sprintf(eventname,"FASSetup  %d",(int)i);
+        ierr = PetscSNPrintf(eventname,sizeof(eventname),"FASSetup  %d",(int)i);CHKERRQ(ierr);
         ierr = PetscLogEventRegister(eventname,((PetscObject)snes)->classid,&fas->eventsmoothsetup);CHKERRQ(ierr);
-        sprintf(eventname,"FASSmooth %d",(int)i);
+        ierr = PetscSNPrintf(eventname,sizeof(eventname),"FASSmooth %d",(int)i);CHKERRQ(ierr);
         ierr = PetscLogEventRegister(eventname,((PetscObject)snes)->classid,&fas->eventsmoothsolve);CHKERRQ(ierr);
-        sprintf(eventname,"FASResid  %d",(int)i);
+        ierr = PetscSNPrintf(eventname,sizeof(eventname),"FASResid  %d",(int)i);CHKERRQ(ierr);
         ierr = PetscLogEventRegister(eventname,((PetscObject)snes)->classid,&fas->eventresidual);CHKERRQ(ierr);
-        sprintf(eventname,"FASInterp %d",(int)i);
+        ierr = PetscSNPrintf(eventname,sizeof(eventname),"FASInterp %d",(int)i);CHKERRQ(ierr);
         ierr = PetscLogEventRegister(eventname,((PetscObject)snes)->classid,&fas->eventinterprestrict);CHKERRQ(ierr);
       } else {
         fas->eventsmoothsetup    = 0;
@@ -458,19 +463,20 @@ PetscErrorCode SNESFASCycleCreateSmoother_Private(SNES snes, SNES *smooth)
   SNES           nsmooth;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
+  PetscValidPointer(smooth,3);
   fas  = (SNES_FAS*)snes->data;
   ierr = SNESGetOptionsPrefix(fas->fine, &optionsprefix);CHKERRQ(ierr);
   /* create the default smoother */
   ierr = SNESCreate(PetscObjectComm((PetscObject)snes), &nsmooth);CHKERRQ(ierr);
   if (fas->level == 0) {
-    sprintf(tprefix,"fas_coarse_");
+    ierr = PetscStrncpy(tprefix,"fas_coarse_",sizeof(tprefix));CHKERRQ(ierr);
     ierr = SNESAppendOptionsPrefix(nsmooth, optionsprefix);CHKERRQ(ierr);
     ierr = SNESAppendOptionsPrefix(nsmooth, tprefix);CHKERRQ(ierr);
     ierr = SNESSetType(nsmooth, SNESNEWTONLS);CHKERRQ(ierr);
     ierr = SNESSetTolerances(nsmooth, nsmooth->abstol, nsmooth->rtol, nsmooth->stol, nsmooth->max_its, nsmooth->max_funcs);CHKERRQ(ierr);
   } else {
-    sprintf(tprefix,"fas_levels_%d_",(int)fas->level);
+    ierr = PetscSNPrintf(tprefix,sizeof(tprefix),"fas_levels_%d_",(int)fas->level);CHKERRQ(ierr);
     ierr = SNESAppendOptionsPrefix(nsmooth, optionsprefix);CHKERRQ(ierr);
     ierr = SNESAppendOptionsPrefix(nsmooth, tprefix);CHKERRQ(ierr);
     ierr = SNESSetType(nsmooth, SNESNRICHARDSON);CHKERRQ(ierr);
@@ -498,18 +504,18 @@ PetscErrorCode SNESFASCycleCreateSmoother_Private(SNES snes, SNES *smooth)
 
    Level: advanced
 
-.keywords: SNES, FAS, set, cycles, V-cycle, W-cycle, multigrid
-
 .seealso: SNESFASSetCycles()
 @*/
 PetscErrorCode SNESFASCycleSetCycles(SNES snes, PetscInt cycles)
 {
-  SNES_FAS       *fas =  (SNES_FAS*)snes->data;
+  SNES_FAS       *fas;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
+  fas = (SNES_FAS*)snes->data;
   fas->n_cycles = cycles;
-  ierr          = SNESSetTolerances(snes, snes->abstol, snes->rtol, snes->stol, cycles, snes->max_funcs);CHKERRQ(ierr);
+  ierr = SNESSetTolerances(snes, snes->abstol, snes->rtol, snes->stol, cycles, snes->max_funcs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -527,8 +533,6 @@ PetscErrorCode SNESFASCycleSetCycles(SNES snes, PetscInt cycles)
 
    Level: advanced
 
-.keywords: SNES, FAS, get, smoother, multigrid
-
 .seealso: SNESFASCycleGetSmootherUp(), SNESFASCycleGetSmootherDown()
 @*/
 PetscErrorCode SNESFASCycleGetSmoother(SNES snes, SNES *smooth)
@@ -536,7 +540,8 @@ PetscErrorCode SNESFASCycleGetSmoother(SNES snes, SNES *smooth)
   SNES_FAS *fas;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
+  PetscValidPointer(smooth,2);
   fas     = (SNES_FAS*)snes->data;
   *smooth = fas->smoothd;
   PetscFunctionReturn(0);
@@ -558,8 +563,6 @@ PetscErrorCode SNESFASCycleGetSmoother(SNES snes, SNES *smooth)
 
    Level: advanced
 
-.keywords: SNES, FAS, get, smoother, multigrid
-
 .seealso: SNESFASCycleGetSmoother(), SNESFASCycleGetSmootherDown()
 @*/
 PetscErrorCode SNESFASCycleGetSmootherUp(SNES snes, SNES *smoothu)
@@ -567,7 +570,8 @@ PetscErrorCode SNESFASCycleGetSmootherUp(SNES snes, SNES *smoothu)
   SNES_FAS *fas;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
+  PetscValidPointer(smoothu,2);
   fas = (SNES_FAS*)snes->data;
   if (!fas->smoothu) *smoothu = fas->smoothd;
   else *smoothu = fas->smoothu;
@@ -587,8 +591,6 @@ PetscErrorCode SNESFASCycleGetSmootherUp(SNES snes, SNES *smoothu)
 
    Level: advanced
 
-.keywords: SNES, FAS, get, smoother, multigrid
-
 .seealso: SNESFASCycleGetSmootherUp(), SNESFASCycleGetSmoother()
 @*/
 PetscErrorCode SNESFASCycleGetSmootherDown(SNES snes, SNES *smoothd)
@@ -596,8 +598,9 @@ PetscErrorCode SNESFASCycleGetSmootherDown(SNES snes, SNES *smoothd)
   SNES_FAS *fas;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  fas      = (SNES_FAS*)snes->data;
+  PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
+  PetscValidPointer(smoothd,2);
+  fas = (SNES_FAS*)snes->data;
   *smoothd = fas->smoothd;
   PetscFunctionReturn(0);
 }
@@ -619,8 +622,6 @@ PetscErrorCode SNESFASCycleGetSmootherDown(SNES snes, SNES *smoothd)
 
    Level: advanced
 
-.keywords: SNES, FAS, get, smoother, multigrid
-
 .seealso: SNESFASCycleGetSmootherUp(), SNESFASCycleGetSmoother()
 @*/
 PetscErrorCode SNESFASCycleGetCorrection(SNES snes, SNES *correction)
@@ -628,8 +629,9 @@ PetscErrorCode SNESFASCycleGetCorrection(SNES snes, SNES *correction)
   SNES_FAS *fas;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  fas         = (SNES_FAS*)snes->data;
+  PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
+  PetscValidPointer(correction,2);
+  fas = (SNES_FAS*)snes->data;
   *correction = fas->next;
   PetscFunctionReturn(0);
 }
@@ -647,8 +649,6 @@ PetscErrorCode SNESFASCycleGetCorrection(SNES snes, SNES *correction)
 
    Level: developer
 
-.keywords: SNES, FAS, get, smoother, multigrid
-
 .seealso: SNESFASCycleGetSmootherUp(), SNESFASCycleGetSmoother()
 @*/
 PetscErrorCode SNESFASCycleGetInterpolation(SNES snes, Mat *mat)
@@ -656,8 +656,9 @@ PetscErrorCode SNESFASCycleGetInterpolation(SNES snes, Mat *mat)
   SNES_FAS *fas;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  fas  = (SNES_FAS*)snes->data;
+  PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
+  PetscValidPointer(mat,2);
+  fas = (SNES_FAS*)snes->data;
   *mat = fas->interpolate;
   PetscFunctionReturn(0);
 }
@@ -676,8 +677,6 @@ PetscErrorCode SNESFASCycleGetInterpolation(SNES snes, Mat *mat)
 
    Level: developer
 
-.keywords: SNES, FAS, get, smoother, multigrid
-
 .seealso: SNESFASGetRestriction(), SNESFASCycleGetInterpolation()
 @*/
 PetscErrorCode SNESFASCycleGetRestriction(SNES snes, Mat *mat)
@@ -685,8 +684,9 @@ PetscErrorCode SNESFASCycleGetRestriction(SNES snes, Mat *mat)
   SNES_FAS *fas;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  fas  = (SNES_FAS*)snes->data;
+  PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
+  PetscValidPointer(mat,2);
+  fas = (SNES_FAS*)snes->data;
   *mat = fas->restrct;
   PetscFunctionReturn(0);
 }
@@ -705,8 +705,6 @@ PetscErrorCode SNESFASCycleGetRestriction(SNES snes, Mat *mat)
 
    Level: developer
 
-.keywords: SNES, FAS, get, smoother, multigrid
-
 .seealso: SNESFASGetInjection(), SNESFASCycleGetRestriction()
 @*/
 PetscErrorCode SNESFASCycleGetInjection(SNES snes, Mat *mat)
@@ -714,8 +712,9 @@ PetscErrorCode SNESFASCycleGetInjection(SNES snes, Mat *mat)
   SNES_FAS *fas;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  fas  = (SNES_FAS*)snes->data;
+  PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
+  PetscValidPointer(mat,2);
+  fas = (SNES_FAS*)snes->data;
   *mat = fas->inject;
   PetscFunctionReturn(0);
 }
@@ -733,8 +732,6 @@ PetscErrorCode SNESFASCycleGetInjection(SNES snes, Mat *mat)
 
    Level: developer
 
-.keywords: SNES, FAS, get, smoother, multigrid
-
 .seealso: SNESFASCycleGetRestriction(), SNESFASGetRScale()
 @*/
 PetscErrorCode SNESFASCycleGetRScale(SNES snes, Vec *vec)
@@ -742,7 +739,8 @@ PetscErrorCode SNESFASCycleGetRScale(SNES snes, Vec *vec)
   SNES_FAS *fas;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
+  PetscValidPointer(vec,2);
   fas  = (SNES_FAS*)snes->data;
   *vec = fas->rscale;
   PetscFunctionReturn(0);
@@ -761,8 +759,6 @@ PetscErrorCode SNESFASCycleGetRScale(SNES snes, Vec *vec)
 
    Level: advanced
 
-.keywords: SNES, FAS
-
 .seealso: SNESFASSetLevels()
 @*/
 PetscErrorCode SNESFASCycleIsFine(SNES snes, PetscBool *flg)
@@ -770,7 +766,8 @@ PetscErrorCode SNESFASCycleIsFine(SNES snes, PetscBool *flg)
   SNES_FAS *fas;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
+  PetscValidBoolPointer(flg,2);
   fas = (SNES_FAS*)snes->data;
   if (fas->level == fas->levels - 1) *flg = PETSC_TRUE;
   else *flg = PETSC_FALSE;
@@ -797,8 +794,6 @@ PetscErrorCode SNESFASCycleIsFine(SNES snes, PetscBool *flg)
           One can pass in the interpolation matrix or its transpose; PETSc figures
     out from the matrix size which one it is.
 
-.keywords:  FAS, multigrid, set, interpolate, level
-
 .seealso: SNESFASSetInjection(), SNESFASSetRestriction(), SNESFASSetRScale()
 @*/
 PetscErrorCode SNESFASSetInterpolation(SNES snes, PetscInt level, Mat mat)
@@ -808,11 +803,12 @@ PetscErrorCode SNESFASSetInterpolation(SNES snes, PetscInt level, Mat mat)
   SNES           levelsnes;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
+  if (mat) PetscValidHeaderSpecific(mat,MAT_CLASSID,3);
   ierr = SNESFASGetCycleSNES(snes, level, &levelsnes);CHKERRQ(ierr);
   fas  = (SNES_FAS*)levelsnes->data;
   ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
   ierr = MatDestroy(&fas->interpolate);CHKERRQ(ierr);
-
   fas->interpolate = mat;
   PetscFunctionReturn(0);
 }
@@ -830,8 +826,6 @@ PetscErrorCode SNESFASSetInterpolation(SNES snes, PetscInt level, Mat mat)
 
    Level: advanced
 
-.keywords:  FAS, multigrid, get, interpolate, level
-
 .seealso: SNESFASSetInterpolation(), SNESFASGetInjection(), SNESFASGetRestriction(), SNESFASGetRScale()
 @*/
 PetscErrorCode SNESFASGetInterpolation(SNES snes, PetscInt level, Mat *mat)
@@ -841,6 +835,8 @@ PetscErrorCode SNESFASGetInterpolation(SNES snes, PetscInt level, Mat *mat)
   SNES           levelsnes;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
+  PetscValidPointer(mat,3);
   ierr = SNESFASGetCycleSNES(snes, level, &levelsnes);CHKERRQ(ierr);
   fas  = (SNES_FAS*)levelsnes->data;
   *mat = fas->interpolate;
@@ -868,8 +864,6 @@ PetscErrorCode SNESFASGetInterpolation(SNES snes, PetscInt level, Mat *mat)
          If you do not set this, the transpose of the Mat set with SNESFASSetInterpolation()
     is used.
 
-.keywords: FAS, MG, set, multigrid, restriction, level
-
 .seealso: SNESFASSetInterpolation(), SNESFASSetInjection()
 @*/
 PetscErrorCode SNESFASSetRestriction(SNES snes, PetscInt level, Mat mat)
@@ -879,11 +873,12 @@ PetscErrorCode SNESFASSetRestriction(SNES snes, PetscInt level, Mat mat)
   SNES           levelsnes;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
+  if (mat) PetscValidHeaderSpecific(mat,MAT_CLASSID,3);
   ierr = SNESFASGetCycleSNES(snes, level, &levelsnes);CHKERRQ(ierr);
   fas  = (SNES_FAS*)levelsnes->data;
   ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
   ierr = MatDestroy(&fas->restrct);CHKERRQ(ierr);
-
   fas->restrct = mat;
   PetscFunctionReturn(0);
 }
@@ -901,8 +896,6 @@ PetscErrorCode SNESFASSetRestriction(SNES snes, PetscInt level, Mat mat)
 
    Level: advanced
 
-.keywords:  FAS, multigrid, get, restrict, level
-
 .seealso: SNESFASSetRestriction(), SNESFASGetInjection(), SNESFASGetInterpolation(), SNESFASGetRScale()
 @*/
 PetscErrorCode SNESFASGetRestriction(SNES snes, PetscInt level, Mat *mat)
@@ -912,6 +905,8 @@ PetscErrorCode SNESFASGetRestriction(SNES snes, PetscInt level, Mat *mat)
   SNES           levelsnes;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
+  PetscValidPointer(mat,3);
   ierr = SNESFASGetCycleSNES(snes, level, &levelsnes);CHKERRQ(ierr);
   fas  = (SNES_FAS*)levelsnes->data;
   *mat = fas->restrct;
@@ -934,8 +929,6 @@ PetscErrorCode SNESFASGetRestriction(SNES snes, PetscInt level, Mat *mat)
          If you do not set this, the restriction and rscale is used to
    project the solution instead.
 
-.keywords: FAS, MG, set, multigrid, restriction, level
-
 .seealso: SNESFASSetInterpolation(), SNESFASSetRestriction()
 @*/
 PetscErrorCode SNESFASSetInjection(SNES snes, PetscInt level, Mat mat)
@@ -945,6 +938,8 @@ PetscErrorCode SNESFASSetInjection(SNES snes, PetscInt level, Mat mat)
   SNES           levelsnes;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
+  if (mat) PetscValidHeaderSpecific(mat,MAT_CLASSID,3);
   ierr = SNESFASGetCycleSNES(snes, level, &levelsnes);CHKERRQ(ierr);
   fas  = (SNES_FAS*)levelsnes->data;
   ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
@@ -968,8 +963,6 @@ PetscErrorCode SNESFASSetInjection(SNES snes, PetscInt level, Mat mat)
 
    Level: advanced
 
-.keywords:  FAS, multigrid, get, restrict, level
-
 .seealso: SNESFASSetInjection(), SNESFASGetRestriction(), SNESFASGetInterpolation(), SNESFASGetRScale()
 @*/
 PetscErrorCode SNESFASGetInjection(SNES snes, PetscInt level, Mat *mat)
@@ -979,6 +972,8 @@ PetscErrorCode SNESFASGetInjection(SNES snes, PetscInt level, Mat *mat)
   SNES           levelsnes;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
+  PetscValidPointer(mat,3);
   ierr = SNESFASGetCycleSNES(snes, level, &levelsnes);CHKERRQ(ierr);
   fas  = (SNES_FAS*)levelsnes->data;
   *mat = fas->inject;
@@ -999,8 +994,6 @@ PetscErrorCode SNESFASGetInjection(SNES snes, PetscInt level, Mat *mat)
    Notes:
          This is only used in the case that the injection is not set.
 
-.keywords: FAS, MG, set, multigrid, restriction, level
-
 .seealso: SNESFASSetInjection(), SNESFASSetRestriction()
 @*/
 PetscErrorCode SNESFASSetRScale(SNES snes, PetscInt level, Vec rscale)
@@ -1010,11 +1003,12 @@ PetscErrorCode SNESFASSetRScale(SNES snes, PetscInt level, Vec rscale)
   SNES           levelsnes;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
+  if (rscale) PetscValidHeaderSpecific(rscale,VEC_CLASSID,3);
   ierr = SNESFASGetCycleSNES(snes, level, &levelsnes);CHKERRQ(ierr);
   fas  = (SNES_FAS*)levelsnes->data;
   ierr = PetscObjectReference((PetscObject)rscale);CHKERRQ(ierr);
   ierr = VecDestroy(&fas->rscale);CHKERRQ(ierr);
-
   fas->rscale = rscale;
   PetscFunctionReturn(0);
 }
@@ -1031,8 +1025,6 @@ PetscErrorCode SNESFASSetRScale(SNES snes, PetscInt level, Vec rscale)
 
    Level: advanced
 
-.keywords: FAS, MG, get, multigrid, smoother, level
-
 .seealso: SNESFASSetInjection(), SNESFASSetRestriction()
 @*/
 PetscErrorCode SNESFASGetSmoother(SNES snes, PetscInt level, SNES *smooth)
@@ -1042,6 +1034,8 @@ PetscErrorCode SNESFASGetSmoother(SNES snes, PetscInt level, SNES *smooth)
   SNES           levelsnes;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
+  PetscValidPointer(smooth,3);
   ierr = SNESFASGetCycleSNES(snes, level, &levelsnes);CHKERRQ(ierr);
   fas  = (SNES_FAS*)levelsnes->data;
   if (!fas->smoothd) {
@@ -1063,8 +1057,6 @@ PetscErrorCode SNESFASGetSmoother(SNES snes, PetscInt level, SNES *smooth)
 
    Level: advanced
 
-.keywords: FAS, MG, get, multigrid, smoother, level
-
 .seealso: SNESFASSetInjection(), SNESFASSetRestriction()
 @*/
 PetscErrorCode SNESFASGetSmootherDown(SNES snes, PetscInt level, SNES *smooth)
@@ -1074,6 +1066,8 @@ PetscErrorCode SNESFASGetSmootherDown(SNES snes, PetscInt level, SNES *smooth)
   SNES           levelsnes;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
+  PetscValidPointer(smooth,3);
   ierr = SNESFASGetCycleSNES(snes, level, &levelsnes);CHKERRQ(ierr);
   fas  = (SNES_FAS*)levelsnes->data;
   /* if the user chooses to differentiate smoothers, create them both at this point */
@@ -1099,8 +1093,6 @@ PetscErrorCode SNESFASGetSmootherDown(SNES snes, PetscInt level, SNES *smooth)
 
    Level: advanced
 
-.keywords: FAS, MG, get, multigrid, smoother, level
-
 .seealso: SNESFASSetInjection(), SNESFASSetRestriction()
 @*/
 PetscErrorCode SNESFASGetSmootherUp(SNES snes, PetscInt level, SNES *smooth)
@@ -1110,6 +1102,8 @@ PetscErrorCode SNESFASGetSmootherUp(SNES snes, PetscInt level, SNES *smooth)
   SNES           levelsnes;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
+  PetscValidPointer(smooth,3);
   ierr = SNESFASGetCycleSNES(snes, level, &levelsnes);CHKERRQ(ierr);
   fas  = (SNES_FAS*)levelsnes->data;
   /* if the user chooses to differentiate smoothers, create them both at this point */
@@ -1134,7 +1128,6 @@ PetscErrorCode SNESFASGetSmootherUp(SNES snes, PetscInt level, SNES *smooth)
 
   Level: advanced
 
-.keywords: FAS, MG, get, multigrid, solver, coarse
 .seealso: SNESFASSetInjection(), SNESFASSetRestriction()
 @*/
 PetscErrorCode SNESFASGetCoarseSolve(SNES snes, SNES *coarse)
@@ -1144,6 +1137,8 @@ PetscErrorCode SNESFASGetCoarseSolve(SNES snes, SNES *coarse)
   SNES           levelsnes;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
+  PetscValidPointer(coarse,3);
   ierr = SNESFASGetCycleSNES(snes, 0, &levelsnes);CHKERRQ(ierr);
   fas  = (SNES_FAS*)levelsnes->data;
   /* if the user chooses to differentiate smoothers, create them both at this point */
@@ -1168,16 +1163,16 @@ PetscErrorCode SNESFASGetCoarseSolve(SNES snes, SNES *coarse)
 
    Level: advanced
 
-.keywords: FAS, MG, smooth, down, pre-smoothing, steps, multigrid
-
 .seealso: SNESFASSetNumberSmoothUp()
 @*/
 PetscErrorCode SNESFASFullSetDownSweep(SNES snes,PetscBool swp)
 {
-  SNES_FAS       *fas =  (SNES_FAS*)snes->data;
-  PetscErrorCode ierr = 0;
+  SNES_FAS       *fas;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
+  fas = (SNES_FAS*)snes->data;
   fas->full_downsweep = swp;
   if (fas->next) {
     ierr = SNESFASFullSetDownSweep(fas->next,swp);CHKERRQ(ierr);

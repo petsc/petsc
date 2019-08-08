@@ -5,7 +5,7 @@
      PetscOptionsGetenv - Gets an environmental variable, broadcasts to all
           processors in communicator from first.
 
-     Collective on MPI_Comm
+     Collective
 
    Input Parameters:
 +    comm - communicator to share variable
@@ -52,7 +52,7 @@ PetscErrorCode  PetscOptionsGetenv(MPI_Comm comm,const char name[],char env[],si
     if (flg) {
       if (flag) *flag = PETSC_TRUE;
     } else { /* now check environment */
-      ierr = PetscMemzero(env,len*sizeof(char));CHKERRQ(ierr);
+      ierr = PetscArrayzero(env,len);CHKERRQ(ierr);
 
       ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
       if (!rank) {
@@ -85,9 +85,9 @@ static PetscErrorCode PetscWorldIsSingleHost(PetscBool  *onehost)
   PetscBool      flag;
 
   PetscFunctionBegin;
-  ierr = PetscGetHostName(hostname,256);CHKERRQ(ierr);
-  ierr = PetscMemcpy(roothostname,hostname,256);CHKERRQ(ierr);
-  ierr = MPI_Bcast(roothostname,256,MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = PetscGetHostName(hostname,sizeof(hostname));CHKERRQ(ierr);
+  ierr = PetscMemcpy(roothostname,hostname,sizeof(hostname));CHKERRQ(ierr);
+  ierr = MPI_Bcast(roothostname,sizeof(roothostname),MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
   ierr = PetscStrcmp(hostname,roothostname,&flag);CHKERRQ(ierr);
 
   localmatch = (PetscMPIInt)flag;

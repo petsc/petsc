@@ -33,16 +33,15 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newtype,Ma
       rowlengths[k+j] = rowlengths[k];
     }
     k += bs;
-    /* printf(" rowlengths[%d]: %d\n",i, rowlengths[i]); */
   }
 
-  ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,m,n,m,n);CHKERRQ(ierr);
-  ierr = MatSetType(B,MATSEQAIJ);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(B,0,rowlengths);CHKERRQ(ierr);
-  ierr = MatSetOption(B,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
-
-  B->rmap->bs = A->rmap->bs;
+  if (reuse != MAT_REUSE_MATRIX) {
+    ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
+    ierr = MatSetSizes(B,m,n,m,n);CHKERRQ(ierr);
+    ierr = MatSetType(B,MATSEQAIJ);CHKERRQ(ierr);
+    ierr = MatSeqAIJSetPreallocation(B,0,rowlengths);CHKERRQ(ierr);
+    ierr = MatSetBlockSize(B,A->rmap->bs);CHKERRQ(ierr);
+  } else B = *newmat;
 
   b  = (Mat_SeqAIJ*)(B->data);
   bi = b->i;
@@ -129,12 +128,12 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqSBAIJ(Mat A,MatType newtype,Mat
   for (i=0; i<m; i++) {
     rowlengths[i] = ai[i+1] - a->diag[i];
   }
-  ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,m,n,m,n);CHKERRQ(ierr);
-  ierr = MatSetType(B,MATSEQSBAIJ);CHKERRQ(ierr);
-  ierr = MatSeqSBAIJSetPreallocation(B,1,0,rowlengths);CHKERRQ(ierr);
-
-  ierr = MatSetOption(B,MAT_ROW_ORIENTED,PETSC_TRUE);CHKERRQ(ierr);
+  if (reuse != MAT_REUSE_MATRIX) {
+    ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
+    ierr = MatSetSizes(B,m,n,m,n);CHKERRQ(ierr);
+    ierr = MatSetType(B,MATSEQSBAIJ);CHKERRQ(ierr);
+    ierr = MatSeqSBAIJSetPreallocation(B,1,0,rowlengths);CHKERRQ(ierr);
+  } else B = *newmat;
 
   b  = (Mat_SeqSBAIJ*)(B->data);
   bi = b->i;
@@ -188,11 +187,12 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType newtype,M
     browlengths[i] += nz;   /* no. of upper triangular blocks */
   }
 
-  ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,m,n,m,n);CHKERRQ(ierr);
-  ierr = MatSetType(B,MATSEQBAIJ);CHKERRQ(ierr);
-  ierr = MatSeqBAIJSetPreallocation(B,bs,0,browlengths);CHKERRQ(ierr);
-  ierr = MatSetOption(B,MAT_ROW_ORIENTED,PETSC_TRUE);CHKERRQ(ierr);
+  if (reuse != MAT_REUSE_MATRIX) {
+    ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
+    ierr = MatSetSizes(B,m,n,m,n);CHKERRQ(ierr);
+    ierr = MatSetType(B,MATSEQBAIJ);CHKERRQ(ierr);
+    ierr = MatSeqBAIJSetPreallocation(B,bs,0,browlengths);CHKERRQ(ierr);
+  } else B = *newmat;
 
   b  = (Mat_SeqBAIJ*)(B->data);
   bi = b->i;
@@ -279,11 +279,12 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqSBAIJ(Mat A, MatType newtype,M
     browlengths[i] = ai[i+1] - a->diag[i];
   }
 
-  ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,m,n,m,n);CHKERRQ(ierr);
-  ierr = MatSetType(B,MATSEQSBAIJ);CHKERRQ(ierr);
-  ierr = MatSeqSBAIJSetPreallocation(B,bs,0,browlengths);CHKERRQ(ierr);
-  ierr = MatSetOption(B,MAT_ROW_ORIENTED,PETSC_TRUE);CHKERRQ(ierr);
+  if (reuse != MAT_REUSE_MATRIX) {
+    ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
+    ierr = MatSetSizes(B,m,n,m,n);CHKERRQ(ierr);
+    ierr = MatSetType(B,MATSEQSBAIJ);CHKERRQ(ierr);
+    ierr = MatSeqSBAIJSetPreallocation(B,bs,0,browlengths);CHKERRQ(ierr);
+  } else B = *newmat;
 
   b  = (Mat_SeqSBAIJ*)(B->data);
   bi = b->i;

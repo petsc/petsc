@@ -1,5 +1,5 @@
-#if !defined(__PETSCSYSTYPES_H)
-#define __PETSCSYSTYPES_H
+#if !defined(PETSCSYSTYPES_H)
+#define PETSCSYSTYPES_H
 
 #include <petscconf.h>
 #include <petscfix.h>
@@ -318,6 +318,9 @@ typedef double PetscLogDouble;
    Developer comment:
    It would be nice if we could always just use MPI Datatypes, why can we not?
 
+   If you change any values in PetscDatatype make sure you update their usage in
+   share/petsc/matlab/PetscBagRead.m
+
 .seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscDataTypeToMPIDataType(),
           PetscDataTypeGetSize()
 
@@ -469,8 +472,6 @@ typedef struct _p_PetscContainer*  PetscContainer;
 
    Level: intermediate
 
-  Concepts: random numbers
-
 .seealso:  PetscRandomCreate(), PetscRandomGetValue(), PetscRandomType
 S*/
 typedef struct _p_PetscRandom*   PetscRandom;
@@ -580,8 +581,6 @@ $     PetscSubcommContiguousParent() returns a parent communitor but with all ch
 
    Level: advanced
 
-   Concepts: communicator, create
-
    Notes:
 $   PETSC_SUBCOMM_GENERAL - similar to MPI_Comm_split() each process sets the new communicator (color) they will belong to and the order within that communicator
 $   PETSC_SUBCOMM_CONTIGUOUS - each new communicator contains a set of process with contiguous ranks in the original MPI communicator
@@ -606,8 +605,6 @@ typedef enum {PETSC_SUBCOMM_GENERAL=0,PETSC_SUBCOMM_CONTIGUOUS=1,PETSC_SUBCOMM_I
      PetscHeap - A simple class for managing heaps
 
    Level: intermediate
-
-  Concepts: random numbers
 
 .seealso:  PetscHeapCreate(), PetscHeapAdd(), PetscHeapPop(), PetscHeapPeek(), PetscHeapStash(), PetscHeapUnstash(), PetscHeapView(), PetscHeapDestroy()
 S*/

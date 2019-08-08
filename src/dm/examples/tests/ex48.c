@@ -1,12 +1,28 @@
-static char help[] = "Test VTK structured (.vts)  and rectilinear (.vtr) viewer support with multi-dof DMDAs\n\n";
+static char help[] = "Test VTK structured (.vts)  and rectilinear (.vtr) viewer support with multi-dof DMDAs.\n\
+                      Supply the -namefields flag to test with field names.\n\n";
 
 #include <petscdm.h>
 #include <petscdmda.h>
 
+/* Helper function to name DMDA fields */
+PetscErrorCode NameFields(DM da,PetscInt dof)
+{
+  PetscErrorCode ierr;
+  PetscInt       c;
+
+  PetscFunctionBeginUser;
+  for (c=0; c<dof; ++c) {
+    char fieldname[256];
+    ierr = PetscSNPrintf(fieldname,sizeof(fieldname),"field_%D",c);CHKERRQ(ierr);
+    ierr = DMDASetFieldName(da,c,fieldname);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 /*
   Write 3D DMDA vector with coordinates in VTK format
 */
-PetscErrorCode test_3d(const char filename[],PetscInt dof)
+PetscErrorCode test_3d(const char filename[],PetscInt dof,PetscBool namefields)
 {
   MPI_Comm          comm = MPI_COMM_WORLD;
   const PetscInt    M=10,N=15,P=30,sw=1;
@@ -22,6 +38,7 @@ PetscErrorCode test_3d(const char filename[],PetscInt dof)
   ierr = DMDACreate3d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR, M,N,P,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,sw,NULL,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMSetFromOptions(da);CHKERRQ(ierr);
   ierr = DMSetUp(da);CHKERRQ(ierr);
+  if (namefields) {ierr = NameFields(da,dof);CHKERRQ(ierr);}
 
   ierr = DMDASetUniformCoordinates(da,0.0,Lx,0.0,Ly,0.0,Lz);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
@@ -52,7 +69,7 @@ PetscErrorCode test_3d(const char filename[],PetscInt dof)
 /*
   Write 2D DMDA vector with coordinates in VTK format
 */
-PetscErrorCode test_2d(const char filename[],PetscInt dof)
+PetscErrorCode test_2d(const char filename[],PetscInt dof,PetscBool namefields)
 {
   MPI_Comm          comm = MPI_COMM_WORLD;
   const PetscInt    M=10,N=20,sw=1;
@@ -68,6 +85,7 @@ PetscErrorCode test_2d(const char filename[],PetscInt dof)
   ierr = DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR, M,N,PETSC_DECIDE,PETSC_DECIDE,dof,sw,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMSetFromOptions(da);CHKERRQ(ierr);
   ierr = DMSetUp(da);CHKERRQ(ierr);
+  if (namefields) {ierr = NameFields(da,dof);CHKERRQ(ierr);}
   ierr = DMDASetUniformCoordinates(da,0.0,Lx,0.0,Ly,0.0,Lz);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&v);CHKERRQ(ierr);
@@ -93,7 +111,7 @@ PetscErrorCode test_2d(const char filename[],PetscInt dof)
 /*
   Write a scalar and a vector field from two compatible 3d DMDAs
 */
-PetscErrorCode test_3d_compat(const char filename[],PetscInt dof)
+PetscErrorCode test_3d_compat(const char filename[],PetscInt dof,PetscBool namefields)
 {
   MPI_Comm          comm = MPI_COMM_WORLD;
   const PetscInt    M=10,N=15,P=30,sw=1;
@@ -109,10 +127,12 @@ PetscErrorCode test_3d_compat(const char filename[],PetscInt dof)
   ierr = DMDACreate3d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR, M,N,P,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,/* dof:*/1,sw,NULL,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMSetFromOptions(da);CHKERRQ(ierr);
   ierr = DMSetUp(da);CHKERRQ(ierr);
+  if (namefields) {ierr = NameFields(da,1);CHKERRQ(ierr);}
 
   ierr = DMDASetUniformCoordinates(da,0.0,Lx,0.0,Ly,0.0,Lz);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
   ierr = DMDACreateCompatibleDMDA(da,dof,&daVector);CHKERRQ(ierr);
+  if (namefields) {ierr = NameFields(daVector,dof);CHKERRQ(ierr);}
   ierr = DMCreateGlobalVector(da,&v);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(daVector,&vVector);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,v,&va);CHKERRQ(ierr);
@@ -146,7 +166,7 @@ PetscErrorCode test_3d_compat(const char filename[],PetscInt dof)
 /*
   Write a scalar and a vector field from two compatible 2d DMDAs
 */
-PetscErrorCode test_2d_compat(const char filename[],PetscInt dof)
+PetscErrorCode test_2d_compat(const char filename[],PetscInt dof,PetscBool namefields)
 {
   MPI_Comm          comm = MPI_COMM_WORLD;
   const PetscInt    M=10,N=20,sw=1;
@@ -162,8 +182,10 @@ PetscErrorCode test_2d_compat(const char filename[],PetscInt dof)
   ierr = DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR, M,N,PETSC_DECIDE,PETSC_DECIDE,/* dof:*/ 1,sw,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMSetFromOptions(da);CHKERRQ(ierr);
   ierr = DMSetUp(da);CHKERRQ(ierr);
+  if (namefields) {ierr = NameFields(da,1);CHKERRQ(ierr);}
   ierr = DMDASetUniformCoordinates(da,0.0,Lx,0.0,Ly,0.0,Lz);CHKERRQ(ierr);
   ierr = DMDACreateCompatibleDMDA(da,dof,&daVector);CHKERRQ(ierr);
+  if (namefields) {ierr = NameFields(daVector,dof);CHKERRQ(ierr);}
   ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&v);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(daVector,&vVector);CHKERRQ(ierr);
@@ -196,18 +218,21 @@ int main(int argc, char *argv[])
 {
   PetscErrorCode ierr;
   PetscInt       dof;
+  PetscBool      namefields;
 
   ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
   dof = 2;
   ierr = PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL);CHKERRQ(ierr);
-  ierr = test_3d("3d.vtr",dof);CHKERRQ(ierr);
-  ierr = test_2d("2d.vtr",dof);CHKERRQ(ierr);
-  ierr = test_3d_compat("3d_compat.vtr",dof);CHKERRQ(ierr);
-  ierr = test_2d_compat("2d_compat.vtr",dof);CHKERRQ(ierr);
-  ierr = test_3d("3d.vts",dof);CHKERRQ(ierr);
-  ierr = test_2d("2d.vts",dof);CHKERRQ(ierr);
-  ierr = test_3d_compat("3d_compat.vts",dof);CHKERRQ(ierr);
-  ierr = test_2d_compat("2d_compat.vts",dof);CHKERRQ(ierr);
+  namefields = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(NULL,NULL,"-namefields",&namefields,NULL);CHKERRQ(ierr);
+  ierr = test_3d("3d.vtr",dof,namefields);CHKERRQ(ierr);
+  ierr = test_2d("2d.vtr",dof,namefields);CHKERRQ(ierr);
+  ierr = test_3d_compat("3d_compat.vtr",dof,namefields);CHKERRQ(ierr);
+  ierr = test_2d_compat("2d_compat.vtr",dof,namefields);CHKERRQ(ierr);
+  ierr = test_3d("3d.vts",dof,namefields);CHKERRQ(ierr);
+  ierr = test_2d("2d.vts",dof,namefields);CHKERRQ(ierr);
+  ierr = test_3d_compat("3d_compat.vts",dof,namefields);CHKERRQ(ierr);
+  ierr = test_2d_compat("2d_compat.vts",dof,namefields);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }
@@ -231,5 +256,15 @@ int main(int argc, char *argv[])
       suffix: 3
       nsize: 2
       args: -dof 3
+
+   test:
+      suffix: 4
+      nsize: 1
+      args: -dof 2 -namefields
+
+   test:
+      suffix: 5
+      nsize: 2
+      args: -dof 4 -namefields
 
 TEST*/

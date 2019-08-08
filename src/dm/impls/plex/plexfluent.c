@@ -73,7 +73,7 @@ static PetscErrorCode DMPlexCreateFluent_ReadValues(PetscViewer viewer, void *da
     /* Always read 32-bit ints and cast to PetscInt */
     int *ibuf;
     ierr = PetscMalloc1(count, &ibuf);CHKERRQ(ierr);
-    ierr = PetscBinaryRead(fdes, ibuf, count, PETSC_ENUM);CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fdes, ibuf, count, NULL, PETSC_ENUM);CHKERRQ(ierr);
     ierr = PetscByteSwap(ibuf, PETSC_ENUM, count);CHKERRQ(ierr);
     for (i = 0; i < count; i++) ((PetscInt*)data)[i] = (PetscInt)(ibuf[i]);
     ierr = PetscFree(ibuf);CHKERRQ(ierr);
@@ -82,7 +82,7 @@ static PetscErrorCode DMPlexCreateFluent_ReadValues(PetscViewer viewer, void *da
     float *fbuf;
     /* Always read 32-bit floats and cast to PetscScalar */
     ierr = PetscMalloc1(count, &fbuf);CHKERRQ(ierr);
-    ierr = PetscBinaryRead(fdes, fbuf, count, PETSC_FLOAT);CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fdes, fbuf, count, NULL, PETSC_FLOAT);CHKERRQ(ierr);
     ierr = PetscByteSwap(fbuf, PETSC_FLOAT, count);CHKERRQ(ierr);
     for (i = 0; i < count; i++) ((PetscScalar*)data)[i] = (PetscScalar)(fbuf[i]);
     ierr = PetscFree(fbuf);CHKERRQ(ierr);
@@ -209,7 +209,7 @@ static PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentS
 /*@C
   DMPlexCreateFluent - Create a DMPlex mesh from a Fluent mesh file.
 
-  Collective on comm
+  Collective
 
   Input Parameters:
 + comm  - The MPI communicator
@@ -223,7 +223,6 @@ static PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentS
 
   Level: beginner
 
-.keywords: mesh, fluent, case
 .seealso: DMPLEX, DMCreate()
 @*/
 PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool interpolate, DM *dm)
@@ -284,7 +283,7 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
           numFaceEntries = numFaceVertices + 2;
           if (!faces) {ierr = PetscMalloc1(numFaces*numFaceEntries, &faces);CHKERRQ(ierr);}
           if (!faceZoneIDs) {ierr = PetscMalloc1(numFaces, &faceZoneIDs);CHKERRQ(ierr);}
-          ierr = PetscMemcpy(&(faces[(s.first-1)*numFaceEntries]), s.data, (s.last-s.first+1)*numFaceEntries*sizeof(PetscInt));CHKERRQ(ierr);
+          ierr = PetscMemcpy(&faces[(s.first-1)*numFaceEntries], s.data, (s.last-s.first+1)*numFaceEntries*sizeof(PetscInt));CHKERRQ(ierr);
           /* Record the zoneID for each face set */
           for (z = s.first -1; z < s.last; z++) faceZoneIDs[z] = s.zoneID;
           ierr = PetscFree(s.data);CHKERRQ(ierr);

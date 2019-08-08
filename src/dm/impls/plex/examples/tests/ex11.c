@@ -60,23 +60,24 @@ static PetscErrorCode TestInsertion()
 
 static PetscErrorCode TestEmptyStrata(MPI_Comm comm)
 {
-  DM             dm, dmDist;
-  PetscInt       c0[6]  = {2,3,6,7,9,11};
-  PetscInt       c1[6]  = {4,5,7,8,10,12};
-  PetscInt       c2[4]  = {13,15,19,21};
-  PetscInt       c3[4]  = {14,16,20,22};
-  PetscInt       c4[4]  = {15,17,21,23};
-  PetscInt       c5[4]  = {16,18,22,24};
-  PetscInt       c6[4]  = {13,14,19,20};
-  PetscInt       c7[4]  = {15,16,21,22};
-  PetscInt       c8[4]  = {17,18,23,24};
-  PetscInt       c9[4]  = {13,14,15,16};
-  PetscInt       c10[4] = {15,16,17,18};
-  PetscInt       c11[4] = {19,20,21,22};
-  PetscInt       c12[4] = {21,22,23,24};
-  PetscInt       dim    = 3;
-  PetscMPIInt    rank;
-  PetscErrorCode ierr;
+  DM               dm, dmDist;
+  PetscPartitioner part;
+  PetscInt         c0[6]  = {2,3,6,7,9,11};
+  PetscInt         c1[6]  = {4,5,7,8,10,12};
+  PetscInt         c2[4]  = {13,15,19,21};
+  PetscInt         c3[4]  = {14,16,20,22};
+  PetscInt         c4[4]  = {15,17,21,23};
+  PetscInt         c5[4]  = {16,18,22,24};
+  PetscInt         c6[4]  = {13,14,19,20};
+  PetscInt         c7[4]  = {15,16,21,22};
+  PetscInt         c8[4]  = {17,18,23,24};
+  PetscInt         c9[4]  = {13,14,15,16};
+  PetscInt         c10[4] = {15,16,17,18};
+  PetscInt         c11[4] = {19,20,21,22};
+  PetscInt         c12[4] = {21,22,23,24};
+  PetscInt         dim    = 3;
+  PetscMPIInt      rank;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
@@ -140,10 +141,22 @@ static PetscErrorCode TestEmptyStrata(MPI_Comm comm)
     ierr = MPI_Allreduce(&numValues, &maxValues, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject) dm));CHKERRQ(ierr);
     for (v = numValues; v < maxValues; ++v) {ierr = DMLabelAddStratum(label,v);CHKERRQ(ierr);}
   }
+  {
+    DMLabel label;
+    ierr = DMPlexGetDepthLabel(dm, &label);CHKERRQ(ierr);
+    ierr = DMLabelView(label, PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);
+  }
+  ierr = DMPlexGetPartitioner(dm,&part);CHKERRQ(ierr);
+  ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
   ierr = DMPlexDistribute(dm, 1, NULL, &dmDist);CHKERRQ(ierr);
   if (dmDist) {
     ierr = DMDestroy(&dm);CHKERRQ(ierr);CHKERRQ(ierr);
     dm   = dmDist;
+  }
+  {
+    DMLabel label;
+    ierr = DMPlexGetDepthLabel(dm, &label);CHKERRQ(ierr);
+    ierr = DMLabelView(label, PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);
   }
   /* Create a cell vector */
   {
@@ -171,14 +184,15 @@ static PetscErrorCode TestEmptyStrata(MPI_Comm comm)
 
 static PetscErrorCode TestDistribution(MPI_Comm comm)
 {
-  DM             dm, dmDist;
-  DMLabel        label;
-  char           filename[2048];
-  const char    *name    = "test label";
-  PetscInt       overlap = 0, cStart, cEnd, c;
-  PetscMPIInt    rank;
-  PetscBool      flg;
-  PetscErrorCode ierr;
+  DM               dm, dmDist;
+  PetscPartitioner part;
+  DMLabel          label;
+  char             filename[2048];
+  const char      *name    = "test label";
+  PetscInt         overlap = 0, cStart, cEnd, c;
+  PetscMPIInt      rank;
+  PetscBool        flg;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
@@ -194,6 +208,8 @@ static PetscErrorCode TestDistribution(MPI_Comm comm)
     ierr = DMLabelSetValue(label, c, c);CHKERRQ(ierr);
   }
   ierr = DMLabelView(label, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = DMPlexGetPartitioner(dm,&part);CHKERRQ(ierr);
+  ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
   ierr = DMPlexDistribute(dm, overlap, NULL, &dmDist);CHKERRQ(ierr);
   if (dmDist) {
     ierr = DMDestroy(&dm);CHKERRQ(ierr);
@@ -226,7 +242,27 @@ int main(int argc, char **argv)
   test:
     suffix: 1
     nsize: 2
-    requires: chaco exodusii
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/2Dgrd.exo -overlap 1
+    args: -petscpartitioner_type simple
+
+  testset:
+    suffix: gmsh
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.msh -petscpartitioner_type simple
+    test:
+      suffix: 1
+      nsize: 1
+    test:
+      suffix: 2
+      nsize: 2
+
+  testset:
+    suffix: exodusii
+    requires: exodusii
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/2Dgrd.exo -petscpartitioner_type simple
+    test:
+      suffix: 1
+      nsize: 1
+    test:
+      suffix: 2
+      nsize: 2
 
 TEST*/

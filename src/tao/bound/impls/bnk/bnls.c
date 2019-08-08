@@ -179,10 +179,10 @@ PetscErrorCode TaoSolve_BNLS(Tao tao)
   TAOBNLS - Bounded Newton Line Search for nonlinear minimization with bound constraints.
 
   Options Database Keys:
-  + -tao_bnk_max_cg_its - maximum number of bounded conjugate-gradient iterations taken in each Newton loop
-  . -tao_bnk_init_type - trust radius initialization method ("constant", "direction", "interpolation")
-  . -tao_bnk_update_type - trust radius update method ("step", "direction", "interpolation")
-  - -tao_bnk_as_type - active-set estimation method ("none", "bertsekas")
++ -tao_bnk_max_cg_its - maximum number of bounded conjugate-gradient iterations taken in each Newton loop
+. -tao_bnk_init_type - trust radius initialization method ("constant", "direction", "interpolation")
+. -tao_bnk_update_type - trust radius update method ("step", "direction", "interpolation")
+- -tao_bnk_as_type - active-set estimation method ("none", "bertsekas")
 
   Level: beginner
 M*/

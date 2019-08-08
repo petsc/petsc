@@ -13,10 +13,10 @@
 /*
      These are defined in mal.c and ensure that malloced space is PetscScalar aligned
 */
-PETSC_EXTERN PetscErrorCode PetscMallocAlign(size_t,int,const char[],const char[],void**);
+PETSC_EXTERN PetscErrorCode PetscMallocAlign(size_t,PetscBool,int,const char[],const char[],void**);
 PETSC_EXTERN PetscErrorCode PetscFreeAlign(void*,int,const char[],const char[]);
 PETSC_EXTERN PetscErrorCode PetscReallocAlign(size_t,int,const char[],const char[],void**);
-PETSC_EXTERN PetscErrorCode PetscTrMallocDefault(size_t,int,const char[],const char[],void**);
+PETSC_EXTERN PetscErrorCode PetscTrMallocDefault(size_t,PetscBool,int,const char[],const char[],void**);
 PETSC_EXTERN PetscErrorCode PetscTrFreeDefault(void*,int,const char[],const char[]);
 PETSC_EXTERN PetscErrorCode PetscTrReallocDefault(size_t,int,const char[],const char[],void**);
 
@@ -52,13 +52,16 @@ typedef union {
   char    v[HEADER_BYTES];
 } TrSPACE;
 
-
+#define MAXTRMAXMEMS 50
 static size_t    TRallocated  = 0;
 static int       TRfrags      = 0;
 static TRSPACE   *TRhead      = NULL;
 static int       TRid         = 0;
 static PetscBool TRdebugLevel = PETSC_FALSE;
 static size_t    TRMaxMem     = 0;
+static int       NumTRMaxMems = 0;
+static size_t    TRMaxMems[MAXTRMAXMEMS];
+static int       TRMaxMemsEvents[MAXTRMAXMEMS];
 /*
       Arrays to log information on all Mallocs
 */
@@ -67,12 +70,15 @@ static int        PetscLogMalloc          = -1;
 static size_t     PetscLogMallocThreshold = 0;
 static size_t     *PetscLogMallocLength;
 static const char **PetscLogMallocFile,**PetscLogMallocFunction;
+static PetscBool  PetscSetUseTrMallocCalled = PETSC_FALSE;
 
 PETSC_INTERN PetscErrorCode PetscSetUseTrMalloc_Private(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (PetscSetUseTrMallocCalled) PetscFunctionReturn(0);
+  PetscSetUseTrMallocCalled = PETSC_TRUE;
   ierr = PetscMallocSet(PetscTrMallocDefault,PetscTrFreeDefault);CHKERRQ(ierr);
   PetscTrRealloc = PetscTrReallocDefault;
 
@@ -105,6 +111,8 @@ PETSC_INTERN PetscErrorCode PetscSetUseTrMalloc_Private(void)
    Level: advanced
 
    Notes:
+    This is only run if PetscMallocDebug() has been called which is set by -malloc_test (if debugging is turned on) or -malloc_debug (any time)
+
     You should generally use CHKMEMQ as a short cut for calling this
     routine.
 
@@ -123,6 +131,7 @@ PetscErrorCode  PetscMallocValidate(int line,const char function[],const char fi
   char         *a;
   PetscClassId *nend;
 
+  if (!TRdebugLevel) return 0;
   PetscFunctionBegin;
   head = TRhead; lasthead = NULL;
   while (head) {
@@ -164,7 +173,7 @@ PetscErrorCode  PetscMallocValidate(int line,const char function[],const char fi
     double aligned pointer to requested storage, or null if not
     available.
  */
-PetscErrorCode  PetscTrMallocDefault(size_t a,int lineno,const char function[],const char filename[],void **result)
+PetscErrorCode  PetscTrMallocDefault(size_t a,PetscBool clear,int lineno,const char function[],const char filename[],void **result)
 {
   TRSPACE        *head;
   char           *inew;
@@ -175,12 +184,10 @@ PetscErrorCode  PetscTrMallocDefault(size_t a,int lineno,const char function[],c
   /* Do not try to handle empty blocks */
   if (!a) { *result = NULL; PetscFunctionReturn(0); }
 
-  if (TRdebugLevel) {
-    ierr = PetscMallocValidate(lineno,function,filename); if (ierr) PetscFunctionReturn(ierr);
-  }
+  ierr = PetscMallocValidate(lineno,function,filename); if (ierr) PetscFunctionReturn(ierr);
 
   nsize = (a + (PETSC_MEMALIGN-1)) & ~(PETSC_MEMALIGN-1);
-  ierr  = PetscMallocAlign(nsize+sizeof(TrSPACE)+sizeof(PetscClassId),lineno,function,filename,(void**)&inew);CHKERRQ(ierr);
+  ierr  = PetscMallocAlign(nsize+sizeof(TrSPACE)+sizeof(PetscClassId),clear,lineno,function,filename,(void**)&inew);CHKERRQ(ierr);
 
   head  = (TRSPACE*)inew;
   inew += sizeof(TrSPACE);
@@ -200,6 +207,12 @@ PetscErrorCode  PetscTrMallocDefault(size_t a,int lineno,const char function[],c
 
   TRallocated += nsize;
   if (TRallocated > TRMaxMem) TRMaxMem = TRallocated;
+  if (PetscLogMemory) {
+    PetscInt i;
+    for (i=0; i<NumTRMaxMems; i++) {
+      if (TRallocated > TRMaxMems[i]) TRMaxMems[i] = TRallocated;
+    }
+  }
   TRfrags++;
 
 #if defined(PETSC_USE_DEBUG)
@@ -255,9 +268,7 @@ PetscErrorCode  PetscTrFreeDefault(void *aa,int line,const char function[],const
   /* Do not try to handle empty blocks */
   if (!a) PetscFunctionReturn(0);
 
-  if (TRdebugLevel) {
-    ierr = PetscMallocValidate(line,function,file);CHKERRQ(ierr);
-  }
+  ierr = PetscMallocValidate(line,function,file);CHKERRQ(ierr);
 
   ahead = a;
   a     = a - sizeof(TrSPACE);
@@ -297,9 +308,7 @@ PetscErrorCode  PetscTrFreeDefault(void *aa,int line,const char function[],const
   } else {
     head->lineno = -head->lineno;
   }
-  /* zero out memory - helps to find some reuse of already freed memory */
-  ierr = PetscMemzero(aa,head->size);CHKERRQ(ierr);
-
+  if (TRallocated < head->size) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEMC,"TRallocate is smaller than memory just freed");
   TRallocated -= head->size;
   TRfrags--;
   if (head->prev) head->prev->next = head->next;
@@ -346,11 +355,11 @@ PetscErrorCode PetscTrReallocDefault(size_t len, int lineno, const char function
   }
   /* Realloc with NULL = malloc */
   if (!*result) {
-    ierr = PetscTrMallocDefault(len,lineno,function,filename,result);CHKERRQ(ierr);
+    ierr = PetscTrMallocDefault(len,PETSC_FALSE,lineno,function,filename,result);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
-  if (TRdebugLevel) {ierr = PetscMallocValidate(lineno,function,filename); if (ierr) PetscFunctionReturn(ierr);}
+  ierr = PetscMallocValidate(lineno,function,filename); if (ierr) PetscFunctionReturn(ierr);
 
   ahead = a;
   a     = a - sizeof(TrSPACE);
@@ -409,6 +418,12 @@ PetscErrorCode PetscTrReallocDefault(size_t len, int lineno, const char function
 
   TRallocated += nsize;
   if (TRallocated > TRMaxMem) TRMaxMem = TRallocated;
+  if (PetscLogMemory) {
+    PetscInt i;
+    for (i=0; i<NumTRMaxMems; i++) {
+      if (TRallocated > TRMaxMems[i]) TRMaxMems[i] = TRallocated;
+    }
+  }
   TRfrags++;
 
 #if defined(PETSC_USE_DEBUG)
@@ -459,8 +474,6 @@ PetscErrorCode PetscTrReallocDefault(size_t len, int lineno, const char function
 -    -memory_view - during PetscFinalize() have this routine called
 
     Level: intermediate
-
-    Concepts: memory usage
 
 .seealso: PetscMallocDump(), PetscMemoryGetCurrentUsage(), PetscMemorySetGetMaximumUsage()
  @*/
@@ -540,8 +553,6 @@ PetscErrorCode  PetscMemoryView(PetscViewer viewer,const char message[])
 
     Level: intermediate
 
-    Concepts: memory usage
-
 .seealso: PetscMallocDump(), PetscMallocDumpLog(), PetscMallocGetMaximumUsage(), PetscMemoryGetCurrentUsage(),
           PetscMemoryGetMaximumUsage()
  @*/
@@ -563,15 +574,61 @@ PetscErrorCode  PetscMallocGetCurrentUsage(PetscLogDouble *space)
 
     Level: intermediate
 
-    Concepts: memory usage
-
 .seealso: PetscMallocDump(), PetscMallocDumpLog(), PetscMallocGetMaximumUsage(), PetscMemoryGetCurrentUsage(),
-          PetscMemoryGetCurrentUsage()
+          PetscMallocPushMaximumUsage()
  @*/
 PetscErrorCode  PetscMallocGetMaximumUsage(PetscLogDouble *space)
 {
   PetscFunctionBegin;
   *space = (PetscLogDouble) TRMaxMem;
+  PetscFunctionReturn(0);
+}
+
+/*@
+    PetscMallocPushMaximumUsage - Adds another event to collect the maximum memory usage over an event
+
+    Not Collective
+
+    Input Parameter:
+.   event - an event id; this is just for error checking
+
+    Level: developer
+
+.seealso: PetscMallocDump(), PetscMallocDumpLog(), PetscMallocGetMaximumUsage(), PetscMemoryGetCurrentUsage(),
+          PetscMallocPopMaximumUsage()
+ @*/
+PetscErrorCode  PetscMallocPushMaximumUsage(int event)
+{
+  PetscFunctionBegin;
+  if (++NumTRMaxMems > MAXTRMAXMEMS) PetscFunctionReturn(0);
+  TRMaxMems[NumTRMaxMems-1]       = TRallocated;
+  TRMaxMemsEvents[NumTRMaxMems-1] = event;
+  PetscFunctionReturn(0);
+}
+
+/*@
+    PetscMallocPopMaximumUsage - collect the maximum memory usage over an event
+
+    Not Collective
+
+    Input Parameter:
+.   event - an event id; this is just for error checking
+
+    Output Parameter:
+.   mu - maximum amount of memory malloced during this event; high water mark relative to the beginning of the event
+
+    Level: developer
+
+.seealso: PetscMallocDump(), PetscMallocDumpLog(), PetscMallocGetMaximumUsage(), PetscMemoryGetCurrentUsage(),
+          PetscMallocPushMaximumUsage()
+ @*/
+PetscErrorCode  PetscMallocPopMaximumUsage(int event,PetscLogDouble *mu)
+{
+  PetscFunctionBegin;
+  *mu = 0;
+  if (NumTRMaxMems-- > MAXTRMAXMEMS) PetscFunctionReturn(0);
+  if (TRMaxMemsEvents[NumTRMaxMems] != event) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEMC,"PetscMallocPush/PopMaximumUsage() are not nested");
+  *mu = TRMaxMems[NumTRMaxMems];
   PetscFunctionReturn(0);
 }
 
@@ -633,16 +690,12 @@ PetscErrorCode  PetscMallocGetStack(void *ptr,void **stack)
     uses MPI_COMM_WORLD, because this may be called in PetscFinalize() after PETSC_COMM_WORLD
           has been freed.
 
-   Concepts: memory usage
-   Concepts: memory bleeding
-   Concepts: bleeding memory
-
 .seealso:  PetscMallocGetCurrentUsage(), PetscMallocDumpLog()
 @*/
 PetscErrorCode  PetscMallocDump(FILE *fp)
 {
   TRSPACE        *head;
-  PetscInt       libAlloc = 0;
+  size_t         libAlloc = 0;
   PetscErrorCode ierr;
   PetscMPIInt    rank;
 
@@ -651,9 +704,6 @@ PetscErrorCode  PetscMallocDump(FILE *fp)
   if (!fp) fp = PETSC_STDOUT;
   head = TRhead;
   while (head) {
-    PetscBool isLib;
-
-    ierr = PetscStrcmp(head->functionname, "PetscDLLibraryOpen", &isLib);CHKERRQ(ierr);
     libAlloc += head->size;
     head = head->next;
   }

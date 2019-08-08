@@ -1,15 +1,8 @@
-#if defined(PETSC_HAVE_LIBMKL_INTEL_ILP64)
-#define MKL_ILP64
-#endif
-
 #include <../src/mat/impls/aij/seq/aij.h>        /*I "petscmat.h" I*/
 #include <../src/mat/impls/sbaij/seq/sbaij.h>
 #include <../src/mat/impls/dense/seq/dense.h>
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#if defined(PETSC_HAVE_LIBMKL_INTEL_ILP64)
+#if defined(PETSC_HAVE_MKL_INTEL_ILP64)
 #define MKL_ILP64
 #endif
 #include <mkl_pardiso.h>
@@ -35,7 +28,7 @@ PETSC_EXTERN void PetscSetMKL_PARDISOThreads(int);
 #define IPARM_SIZE 64
 
 #if defined(PETSC_USE_64BIT_INDICES)
- #if defined(PETSC_HAVE_LIBMKL_INTEL_ILP64)
+ #if defined(PETSC_HAVE_MKL_INTEL_ILP64)
   #define INT_TYPE long long int
   #define MKL_PARDISO pardiso
   #define MKL_PARDISO_INIT pardisoinit
@@ -280,9 +273,9 @@ PetscErrorCode MatFactorSetSchurIS_MKL_PARDISO(Mat F, IS is)
     ierr = MatSetOption(F->schur,MAT_SPD,PETSC_TRUE);CHKERRQ(ierr);
   }
 
-  ierr = PetscMemzero(mpardiso->perm,mpardiso->n*sizeof(INT_TYPE));CHKERRQ(ierr);
+  ierr = PetscArrayzero(mpardiso->perm,mpardiso->n);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&idxs);CHKERRQ(ierr);
-  ierr = PetscMemcpy(mpardiso->schur_idxs,idxs,size*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArraycpy(mpardiso->schur_idxs,idxs,size);CHKERRQ(ierr);
   for (i=0;i<size;i++) mpardiso->perm[idxs[i]] = 1;
   ierr = ISRestoreIndices(is,&idxs);CHKERRQ(ierr);
   if (size) { /* turn on Schur switch if the set of indices is not empty */
@@ -491,20 +484,21 @@ PetscErrorCode MatMatSolve_MKL_PARDISO(Mat A,Mat B,Mat X)
 {
   Mat_MKL_PARDISO   *mat_mkl_pardiso=(Mat_MKL_PARDISO*)(A)->data;
   PetscErrorCode    ierr;
-  PetscScalar       *barray, *xarray;
+  const PetscScalar *barray;
+  PetscScalar       *xarray;
   PetscBool         flg;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)B,MATSEQDENSE,&flg);CHKERRQ(ierr);
+  ierr = PetscObjectBaseTypeCompare((PetscObject)B,MATSEQDENSE,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix B must be MATSEQDENSE matrix");
-  ierr = PetscObjectTypeCompare((PetscObject)X,MATSEQDENSE,&flg);CHKERRQ(ierr);
+  ierr = PetscObjectBaseTypeCompare((PetscObject)X,MATSEQDENSE,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix X must be MATSEQDENSE matrix");
 
   ierr = MatGetSize(B,NULL,(PetscInt*)&mat_mkl_pardiso->nrhs);CHKERRQ(ierr);
 
   if (mat_mkl_pardiso->nrhs > 0) {
-    ierr = MatDenseGetArray(B,&barray);
-    ierr = MatDenseGetArray(X,&xarray);
+    ierr = MatDenseGetArrayRead(B,&barray);CHKERRQ(ierr);
+    ierr = MatDenseGetArray(X,&xarray);CHKERRQ(ierr);
 
     if (barray == xarray) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"B and X cannot share the same memory location");
     if (!mat_mkl_pardiso->schur) mat_mkl_pardiso->phase = JOB_SOLVE_ITERATIVE_REFINEMENT;
@@ -529,6 +523,7 @@ PetscErrorCode MatMatSolve_MKL_PARDISO(Mat A,Mat B,Mat X)
       &mat_mkl_pardiso->err);
     if (mat_mkl_pardiso->err < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_PARDISO: err=%d. Please check manual",mat_mkl_pardiso->err);
 
+    ierr = MatDenseRestoreArrayRead(B,&barray);CHKERRQ(ierr);
     if (mat_mkl_pardiso->schur) { /* solve Schur complement and expand solution */
       PetscScalar *o_schur_work = NULL;
       PetscInt    shift = mat_mkl_pardiso->schur_size*mat_mkl_pardiso->nrhs,scale;

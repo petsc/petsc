@@ -1370,6 +1370,7 @@ static PetscErrorCode DMView_ASCII_pforest(PetscObject odm, PetscViewer viewer)
     else      {ierr = PetscViewerASCIIPrintf(viewer, "Forest in %D dimensions:\n", dim);CHKERRQ(ierr);}
   }
   case PETSC_VIEWER_ASCII_INFO_DETAIL:
+  case PETSC_VIEWER_LOAD_BALANCE:
   {
     DM plex;
 
@@ -1788,16 +1789,18 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
     PetscInt     coordDim;
     Vec          coordVec;
     PetscSection coordSec;
+    PetscBool    localized;
 
-    ierr = DMGetCoordinateDim(dm,&coordDim);CHKERRQ(ierr);
-    ierr = DMGetCoordinatesLocal(dm,&coordVec);CHKERRQ(ierr);
-    ierr = DMGetCoordinateSection(dm,&coordSec);CHKERRQ(ierr);
+    ierr = DMGetCoordinateDim(dm, &coordDim);CHKERRQ(ierr);
+    ierr = DMGetCoordinatesLocal(dm, &coordVec);CHKERRQ(ierr);
+    ierr = DMGetCoordinatesLocalizedLocal(dm, &localized);CHKERRQ(ierr);
+    ierr = DMGetCoordinateSection(dm, &coordSec);CHKERRQ(ierr);
     for (c = cStart; c < cEnd; c++) {
       PetscInt    dof;
       PetscScalar *cellCoords = NULL;
 
       ierr = DMPlexVecGetClosure(dm, coordSec, coordVec, c, &dof, &cellCoords);CHKERRQ(ierr);
-      if (!dm->periodic && dof != P4EST_CHILDREN * coordDim) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Need coordinates at the corners");
+      if (!localized && dof != P4EST_CHILDREN * coordDim) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Need coordinates at the corners: (dof) %D != %D * %D (sdim)", dof, P4EST_CHILDREN, coordDim);
       for (v = 0; v < P4EST_CHILDREN; v++) {
         PetscInt i, lim = PetscMin(3, coordDim);
         PetscInt p4estVert = PetscVertToP4estVert[v];
@@ -2448,7 +2451,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
         *sf  = pforestC->pointSelfToAdaptSF;
         if (childIds) {
           ierr      = PetscMalloc1(pEndF-pStartF,&cids);CHKERRQ(ierr);
-          ierr      = PetscMemcpy(cids,pforestC->pointSelfToAdaptCids,(pEndF-pStartF) * sizeof(PetscInt));CHKERRQ(ierr);
+          ierr      = PetscArraycpy(cids,pforestC->pointSelfToAdaptCids,pEndF-pStartF);CHKERRQ(ierr);
           *childIds = cids;
         }
         PetscFunctionReturn(0);
@@ -2462,7 +2465,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
         *sf  = pforestF->pointAdaptToSelfSF;
         if (childIds) {
           ierr      = PetscMalloc1(pEndF-pStartF,&cids);CHKERRQ(ierr);
-          ierr      = PetscMemcpy(cids,pforestF->pointAdaptToSelfCids,(pEndF-pStartF) * sizeof(PetscInt));CHKERRQ(ierr);
+          ierr      = PetscArraycpy(cids,pforestF->pointAdaptToSelfCids,pEndF-pStartF);CHKERRQ(ierr);
           *childIds = cids;
         }
         PetscFunctionReturn(0);
@@ -2691,7 +2694,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
               if (!cl) {
                 newcid = cid + 1;
               } else {
-                PetscInt rcl, parent, parentOrnt;
+                PetscInt rcl, parent, parentOrnt = 0;
 
                 ierr = DMPlexGetTreeParent(refTree,point,&parent,NULL);CHKERRQ(ierr);
                 if (parent == point) {
@@ -2861,7 +2864,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
       PetscInt *rootTypeCopy, p;
 
       ierr = PetscMalloc1(pEndF-pStartF,&rootTypeCopy);CHKERRQ(ierr);
-      ierr = PetscMemcpy(rootTypeCopy,rootType,(pEndF-pStartF)*sizeof(*rootTypeCopy));CHKERRQ(ierr);
+      ierr = PetscArraycpy(rootTypeCopy,rootType,pEndF-pStartF);CHKERRQ(ierr);
       ierr = PetscSFReduceBegin(pointSF,MPIU_INT,rootTypeCopy,rootTypeCopy,MPIU_MAX);CHKERRQ(ierr);
       ierr = PetscSFReduceEnd(pointSF,MPIU_INT,rootTypeCopy,rootTypeCopy,MPIU_MAX);CHKERRQ(ierr);
       ierr = PetscSFBcastBegin(pointSF,MPIU_INT,rootTypeCopy,rootTypeCopy);CHKERRQ(ierr);
@@ -2937,7 +2940,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
       pforestC->pointSelfToAdaptCids = cids;
     } else {
       ierr = PetscMalloc1(pEndF-pStartF,&pforestC->pointSelfToAdaptCids);CHKERRQ(ierr);
-      ierr = PetscMemcpy(pforestC->pointSelfToAdaptCids,cids,(pEndF-pStartF)*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscArraycpy(pforestC->pointSelfToAdaptCids,cids,pEndF-pStartF);CHKERRQ(ierr);
     }
   } else if (saveInFine) {
     ierr = PetscObjectReference((PetscObject)*sf);CHKERRQ(ierr);
@@ -2946,7 +2949,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
       pforestF->pointAdaptToSelfCids = cids;
     } else {
       ierr = PetscMalloc1(pEndF-pStartF,&pforestF->pointAdaptToSelfCids);CHKERRQ(ierr);
-      ierr = PetscMemcpy(pforestF->pointAdaptToSelfCids,cids,(pEndF-pStartF)*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscArraycpy(pforestF->pointAdaptToSelfCids,cids,pEndF-pStartF);CHKERRQ(ierr);
     }
   }
   ierr = PetscFree2(treeQuads,treeQuadCounts);CHKERRQ(ierr);
@@ -4605,16 +4608,6 @@ static PetscErrorCode DMCreateInjection_pforest(DM dmCoarse, DM dmFine, Mat *inj
   PetscFunctionReturn(0);
 }
 
-#define DMHasCreateInjection_pforest _append_pforest(DMHasCreateInjection)
-static PetscErrorCode DMHasCreateInjection_pforest(DM dm, PetscBool *flg)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidPointer(flg,2);
-  *flg = PETSC_TRUE;
-  PetscFunctionReturn(0);
-}
-
 static void transfer_func_0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                             const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                             const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
@@ -5232,8 +5225,7 @@ static PetscErrorCode DMInitialize_pforest(DM dm)
   dm->ops->view                      = DMView_pforest;
   dm->ops->clone                     = DMClone_pforest;
   dm->ops->createinterpolation       = DMCreateInterpolation_pforest;
-  dm->ops->getinjection              = DMCreateInjection_pforest;
-  dm->ops->hascreateinjection        = DMHasCreateInjection_pforest;
+  dm->ops->createinjection           = DMCreateInjection_pforest;
   dm->ops->setfromoptions            = DMSetFromOptions_pforest;
   dm->ops->createcoordinatedm        = DMCreateCoordinateDM_pforest;
   dm->ops->createglobalvector        = DMCreateGlobalVector_pforest;

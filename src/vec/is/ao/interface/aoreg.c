@@ -21,7 +21,6 @@ PetscBool         AORegisterAllCalled = PETSC_FALSE;
 
   Level: intermediate
 
-.keywords: ao, set, type
 .seealso: AOGetType(), AOCreate()
 @*/
 PetscErrorCode  AOSetType(AO ao, AOType method)
@@ -60,7 +59,6 @@ PetscErrorCode  AOSetType(AO ao, AOType method)
 
   Level: intermediate
 
-.keywords: ao, get, type, name
 .seealso: AOSetType(), AOCreate()
 @*/
 PetscErrorCode  AOGetType(AO ao, AOType *type)

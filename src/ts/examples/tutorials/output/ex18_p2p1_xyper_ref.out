@@ -1,9 +1,0 @@
-L_2 Error: [2.73385e-07, < 1.0e-11]
-L_2 Residual: 1.09793e-06
-Linear L_2 Residual: 12.3783
-0 TS dt 0.01 time 0.
-1 TS dt 0.01 time 0.01
-L_2 Error: [2.73385e-07, < 1.0e-11]
-L_2 Residual: 1.09793e-06
-Linear L_2 Residual: 1.09795e-06
-CONVERGED_ITS at time 0.01 after 1 steps

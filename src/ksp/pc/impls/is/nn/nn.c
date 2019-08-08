@@ -144,7 +144,7 @@ static PetscErrorCode PCDestroy_NN(PC pc)
 .    -pc_is_remove_nullspace_fixed -
 .    -pc_is_set_damping_factor_floating <fact> -
 .    -pc_is_not_damp_floating -
-+    -pc_is_not_remove_nullspace_floating -
+-    -pc_is_not_remove_nullspace_floating -
 
    Level: intermediate
 
@@ -413,7 +413,7 @@ PetscErrorCode PCNNApplySchurToChunk(PC pc, PetscInt n, PetscInt *idx, PetscScal
   PC_IS          *pcis = (PC_IS*)(pc->data);
 
   PetscFunctionBegin;
-  ierr = PetscMemzero((void*)array_N, pcis->n*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArrayzero(array_N, pcis->n);CHKERRQ(ierr);
   for (i=0; i<n; i++) array_N[idx[i]] = chunk[i];
   ierr = PCISScatterArrayNToVecB(array_N,vec2_B,INSERT_VALUES,SCATTER_FORWARD,pc);CHKERRQ(ierr);
   ierr = PCISApplySchur(pc,vec2_B,vec1_B,(Vec)0,vec1_D,vec2_D);CHKERRQ(ierr);

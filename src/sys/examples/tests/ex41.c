@@ -14,7 +14,7 @@ if (PetscUnlikely(!(expr)))               \
 int main(int argc,char **argv)
 {
   PetscHSetI     ht = NULL, hd;
-  PetscInt       n, off, array[4];
+  PetscInt       n, off, array[4],na,nb,i,*marray,size;
   PetscBool      has, flag;
   PetscErrorCode ierr;
 
@@ -112,6 +112,38 @@ int main(int argc,char **argv)
   ierr = PetscHSetIGetSize(ht,&n);CHKERRQ(ierr);
   PetscAssert(n == 0);
   ierr = PetscHSetIDestroy(&ht);CHKERRQ(ierr);
+
+  ierr = PetscHSetICreate(&ht);CHKERRQ(ierr);
+  ierr = PetscHSetICreate(&hd);CHKERRQ(ierr);
+  n = 10;
+  ierr = PetscHSetIResize(ht,n);CHKERRQ(ierr);
+  ierr = PetscHSetIResize(hd,n);CHKERRQ(ierr);
+  ierr = PetscHSetIGetCapacity(ht,&na);CHKERRQ(ierr);
+  ierr = PetscHSetIGetCapacity(hd,&nb);CHKERRQ(ierr);
+  PetscAssert(na>=n);
+  PetscAssert(nb>=n);
+  for (i=0; i<n; i++) {
+    ierr = PetscHSetIAdd(ht,i+1);CHKERRQ(ierr);
+    ierr = PetscHSetIAdd(hd,i+1+n);CHKERRQ(ierr);
+  }
+  ierr = PetscHSetIGetCapacity(ht,&nb);CHKERRQ(ierr);
+  PetscAssert(nb>=na);
+  /* Merge ht and hd, and the result is in ht */
+  ierr = PetscHSetIUpdate(ht,hd);CHKERRQ(ierr);
+  ierr = PetscHSetIDestroy(&hd);CHKERRQ(ierr);
+  ierr = PetscHSetIGetSize(ht,&size);CHKERRQ(ierr);
+  PetscAssert(size==(2*n));CHKERRQ(ierr);
+  ierr = PetscMalloc1(n*2,&marray);CHKERRQ(ierr);
+  off = 0;
+  ierr = PetscHSetIGetElems(ht,&off,marray);CHKERRQ(ierr);
+  ierr = PetscHSetIDestroy(&ht);CHKERRQ(ierr);
+  PetscAssert(off==(2*n));
+  ierr = PetscSortInt(off,marray);CHKERRQ(ierr);
+  for (i=0; i<n; i++) {
+    PetscAssert(marray[i]==(i+1));
+    PetscAssert(marray[n+i]==(i+1+n));
+  }
+  ierr = PetscFree(marray);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return ierr;

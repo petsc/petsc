@@ -13,6 +13,7 @@ typedef struct {
   /* Domain and mesh definition */
   PetscInt  dim;               /* The topological mesh dimension */
   PetscBool simplex;           /* Flag for simplex or tensor product mesh */
+  PetscBool refcell;           /* Make the mesh only a reference cell */
   PetscBool useDA;             /* Flag DMDA tensor product mesh */
   PetscBool interpolate;       /* Generate intermediate mesh elements */
   PetscReal refinementLimit;   /* The largest allowable cell volume */
@@ -122,12 +123,14 @@ PetscErrorCode trigDer(PetscInt dim, PetscReal time, const PetscReal coords[], c
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
+  PetscInt       n = 3;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   options->debug           = 0;
   options->dim             = 2;
   options->simplex         = PETSC_TRUE;
+  options->refcell         = PETSC_FALSE;
   options->useDA           = PETSC_TRUE;
   options->interpolate     = PETSC_TRUE;
   options->refinementLimit = 0.0;
@@ -144,27 +147,32 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->testFEjacobian  = PETSC_FALSE;
   options->testFVgrad      = PETSC_FALSE;
   options->testInjector    = PETSC_FALSE;
+  options->constants[0]    = 1.0;
+  options->constants[1]    = 2.0;
+  options->constants[2]    = 3.0;
 
   ierr = PetscOptionsBegin(comm, "", "Projection Test Options", "DMPlex");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-debug", "The debugging level", "ex3.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex3.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-debug", "The debugging level", "ex3.c", options->debug, &options->debug, NULL,0);CHKERRQ(ierr);
+  ierr = PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex3.c", options->dim, &options->dim, NULL,1,3);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-simplex", "Flag for simplices or hexhedra", "ex3.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-refcell", "Make the mesh only the reference cell", "ex3.c", options->refcell, &options->refcell, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-use_da", "Flag for DMDA mesh", "ex3.c", options->useDA, &options->useDA, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex3.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex3.c", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-shear_coords", "Transform coordinates with a shear", "ex3.c", options->shearCoords, &options->shearCoords, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-non_affine_coords", "Transform coordinates with a non-affine transform", "ex3.c", options->nonaffineCoords, &options->nonaffineCoords, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-qorder", "The quadrature order", "ex3.c", options->qorder, &options->qorder, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-num_comp", "The number of field components", "ex3.c", options->numComponents, &options->numComponents, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-porder", "The order of polynomials to test", "ex3.c", options->porder, &options->porder, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-qorder", "The quadrature order", "ex3.c", options->qorder, &options->qorder, NULL,0);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-num_comp", "The number of field components", "ex3.c", options->numComponents, &options->numComponents, NULL,PETSC_DEFAULT);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-porder", "The order of polynomials to test", "ex3.c", options->porder, &options->porder, NULL,0);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-convergence", "Check the convergence rate", "ex3.c", options->convergence, &options->convergence, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-conv_refine", "Use refinement for the convergence rate", "ex3.c", options->convRefine, &options->convRefine, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-constraints", "Test local constraints (serial only)", "ex3.c", options->constraints, &options->constraints, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-tree", "Test tree routines", "ex3.c", options->tree, &options->tree, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-tree_cell", "cell to refine in tree test", "ex3.c", options->treeCell, &options->treeCell, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-tree_cell", "cell to refine in tree test", "ex3.c", options->treeCell, &options->treeCell, NULL,0);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_fe_jacobian", "Test finite element Jacobian assembly", "ex3.c", options->testFEjacobian, &options->testFEjacobian, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_fv_grad", "Test finite volume gradient reconstruction", "ex3.c", options->testFVgrad, &options->testFVgrad, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_injector","Test finite element injection", "ex3.c", options->testInjector, &options->testInjector,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsRealArray("-constants","Set the constant values", "ex3.c", options->constants, &n,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   options->numComponents = options->numComponents < 0 ? options->dim : options->numComponents;
@@ -247,11 +255,14 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  if (user->simplex) {
+  if (user->refcell) {
+    ierr = DMPlexCreateReferenceCell(comm, dim, user->simplex, dm);CHKERRQ(ierr);
+  } else if (user->simplex || !user->useDA) {
     DM refinedMesh = NULL;
 
-    ierr = DMPlexCreateBoxMesh(comm, dim, PETSC_TRUE, NULL, NULL, NULL, NULL, interpolate, dm);CHKERRQ(ierr);
+    ierr = DMPlexCreateBoxMesh(comm, dim, user->simplex, NULL, NULL, NULL, NULL, interpolate, dm);CHKERRQ(ierr);
     /* Refine mesh using a volume constraint */
+    ierr = DMPlexSetRefinementUniform(*dm, PETSC_FALSE);CHKERRQ(ierr);
     ierr = DMPlexSetRefinementLimit(*dm, refinementLimit);CHKERRQ(ierr);
     ierr = DMRefine(*dm, comm, &refinedMesh);CHKERRQ(ierr);
     if (refinedMesh) {
@@ -360,7 +371,6 @@ static void symmetric_gradient_inner_product(PetscInt dim, PetscInt Nf, PetscInt
 
 static PetscErrorCode SetupSection(DM dm, AppCtx *user)
 {
-  PetscBool      isPlex;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
@@ -421,18 +431,6 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
   ierr = DMSetNumFields(dm, 1);CHKERRQ(ierr);
   ierr = DMSetField(dm, 0, NULL, (PetscObject) user->fe);CHKERRQ(ierr);
   ierr = DMCreateDS(dm);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)dm,DMPLEX,&isPlex);CHKERRQ(ierr);
-  if (!isPlex) {
-    PetscSection    section;
-    const PetscInt *numDof;
-    PetscInt        numComp;
-
-    ierr = PetscFEGetNumComponents(user->fe, &numComp);CHKERRQ(ierr);
-    ierr = PetscFEGetNumDof(user->fe, &numDof);CHKERRQ(ierr);
-    ierr = DMDACreateSection(dm, &numComp, numDof, NULL, &section);CHKERRQ(ierr);
-    ierr = DMSetSection(dm, section);CHKERRQ(ierr);
-    ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
-  }
   if (!user->simplex && user->constraints) {
     /* test getting local constraint matrix that matches section */
     PetscSection aSec;
@@ -502,36 +500,6 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
       ierr = MatView(mass,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
       ierr = MatDestroy(&mass);CHKERRQ(ierr);
       ierr = DMRestoreLocalVector(dm,&local);CHKERRQ(ierr);
-#if 0
-      {
-        /* compare this to periodicity with DMDA: this is broken right now
-         * because DMCreateMatrix() doesn't respect the default section that I
-         * set */
-        DM              dmda;
-        PetscSection    section;
-        const PetscInt *numDof;
-        PetscInt        numComp;
-
-                                                              /* periodic x */
-        ierr = DMDACreate2d(PetscObjectComm((PetscObject)dm), DM_BOUNDARY_PERIODIC, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, -2, -2, PETSC_DETERMINE, PETSC_DETERMINE, 1, 1, NULL, NULL, &dmda);CHKERRQ(ierr);
-        ierr = DMSetFromOptions(dmda);CHKERRQ(ierr);
-        ierr = DMSetUp(dmda);CHKERRQ(ierr);
-        ierr = DMDASetVertexCoordinates(dmda, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
-
-
-        ierr = PetscFEGetNumComponents(user->fe, &numComp);CHKERRQ(ierr);
-        ierr = PetscFEGetNumDof(user->fe, &numDof);CHKERRQ(ierr);
-        ierr = DMDACreateSection(dmda, &numComp, numDof, NULL, &section);CHKERRQ(ierr);
-        ierr = DMSetSection(dmda, section);CHKERRQ(ierr);
-        ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
-        ierr = DMCreateMatrix(dmda,&mass);CHKERRQ(ierr);
-        /* there isn't a DMDA equivalent of DMPlexSNESComputeJacobianFEM()
-         * right now, but we can at least verify the nonzero structure */
-        ierr = MatView(mass,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-        ierr = MatDestroy(&mass);CHKERRQ(ierr);
-        ierr = DMDestroy(&dmda);CHKERRQ(ierr);
-      }
-#endif
     }
   }
   PetscFunctionReturn(0);
@@ -772,9 +740,6 @@ static PetscErrorCode CheckFunctions(DM dm, PetscInt order, AppCtx *user)
   exactCtxs[0]       = user;
   exactCtxs[1]       = user;
   exactCtxs[2]       = user;
-  user->constants[0] = 1.0;
-  user->constants[1] = 2.0;
-  user->constants[2] = 3.0;
   ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
   /* Setup functions to approximate */
   switch (order) {
@@ -818,19 +783,15 @@ static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscIn
   MPI_Comm        comm;
   PetscInt        dim  = user->dim;
   PetscReal       error, errorDer, tol = PETSC_SMALL;
-  PetscBool       isPlex, isDA;
+  PetscBool       isPlex;
   PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
   exactCtxs[0]       = user;
   exactCtxs[1]       = user;
   exactCtxs[2]       = user;
-  user->constants[0] = 1.0;
-  user->constants[1] = 2.0;
-  user->constants[2] = 3.0;
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) dm, DMPLEX, &isPlex);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject) dm, DMDA,   &isDA);CHKERRQ(ierr);
   ierr = DMRefine(dm, comm, &rdm);CHKERRQ(ierr);
   ierr = DMSetCoarseDM(rdm, dm);CHKERRQ(ierr);
   ierr = DMPlexSetRegularRefinement(rdm, user->convRefine);CHKERRQ(ierr);
@@ -923,9 +884,9 @@ static PetscErrorCode CheckConvergence(DM dm, PetscInt Nr, AppCtx *user)
       ierr = SetupSection(rdm, user);CHKERRQ(ierr);
       ierr = ComputeError(rdm, exactFuncs, exactFuncDers, exactCtxs, &error, &errorDer, user);CHKERRQ(ierr);
       p    = PetscLog2Real(errorOld/error);
-      ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Function   convergence rate at refinement %D: %.2g\n", r, (double)p);CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Function   convergence rate at refinement %D: %.2f\n", r, (double)p);CHKERRQ(ierr);
       p    = PetscLog2Real(errorDerOld/errorDer);
-      ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Derivative convergence rate at refinement %D: %.2g\n", r, (double)p);CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Derivative convergence rate at refinement %D: %.2f\n", r, (double)p);CHKERRQ(ierr);
       ierr = DMDestroy(&odm);CHKERRQ(ierr);
       odm         = rdm;
       errorOld    = error;
@@ -945,10 +906,10 @@ static PetscErrorCode CheckConvergence(DM dm, PetscInt Nr, AppCtx *user)
       len  = cEnd - cStart;
       rel  = error/errorOld;
       p    = PetscLogReal(rel) / PetscLogReal(lenOld / len);
-      ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Function   convergence rate at coarsening %D: %.2g\n", c, (double)p);CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Function   convergence rate at coarsening %D: %.2f\n", c, (double)p);CHKERRQ(ierr);
       rel  = errorDer/errorDerOld;
       p    = PetscLogReal(rel) / PetscLogReal(lenOld / len);
-      ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Derivative convergence rate at coarsening %D: %.2g\n", c, (double)p);CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Derivative convergence rate at coarsening %D: %.2f\n", c, (double)p);CHKERRQ(ierr);
       ierr = DMDestroy(&odm);CHKERRQ(ierr);
       odm         = cdm;
       errorOld    = error;
@@ -975,9 +936,16 @@ int main(int argc, char **argv)
   if (user.testFVgrad) {ierr = TestFVGrad(dm, &user);CHKERRQ(ierr);}
   if (user.testInjector) {ierr = TestInjector(dm, &user);CHKERRQ(ierr);}
   ierr = CheckFunctions(dm, user.porder, &user);CHKERRQ(ierr);
-  if (user.dim == 2 && user.simplex == PETSC_TRUE && user.tree == PETSC_FALSE) {
-    ierr = CheckInterpolation(dm, PETSC_FALSE, user.porder, &user);CHKERRQ(ierr);
-    ierr = CheckInterpolation(dm, PETSC_TRUE,  user.porder, &user);CHKERRQ(ierr);
+  {
+    PetscDualSpace dsp;
+    PetscInt       k;
+
+    ierr = PetscFEGetDualSpace(user.fe, &dsp);CHKERRQ(ierr);
+    ierr = PetscDualSpaceGetDeRahm(dsp, &k);CHKERRQ(ierr);
+    if (user.dim == 2 && user.simplex == PETSC_TRUE && user.tree == PETSC_FALSE && k == 0) {
+      ierr = CheckInterpolation(dm, PETSC_FALSE, user.porder, &user);CHKERRQ(ierr);
+      ierr = CheckInterpolation(dm, PETSC_TRUE,  user.porder, &user);CHKERRQ(ierr);
+    }
   }
   ierr = CheckConvergence(dm, 3, &user);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&user.fe);CHKERRQ(ierr);
@@ -1244,6 +1212,40 @@ int main(int argc, char **argv)
     suffix: p1d_2d_5
     requires: triangle
     args: -use_da 0 -simplex 0 -petscspace_degree 1 -petscdualspace_lagrange_continuity 0 -qorder 1 -porder 2
+
+  # 2D BDM_1 on a triangle
+  test:
+    suffix: bdm1_2d_0
+    requires: triangle
+    args: -petscspace_degree 1 -petscdualspace_type bdm \
+          -num_comp 2 -qorder 1 -convergence
+  test:
+    suffix: bdm1_2d_1
+    requires: triangle
+    args: -petscspace_degree 1 -petscdualspace_type bdm \
+          -num_comp 2 -qorder 1 -porder 1
+  test:
+    suffix: bdm1_2d_2
+    requires: triangle
+    args: -petscspace_degree 1 -petscdualspace_type bdm \
+          -num_comp 2 -qorder 1 -porder 2
+
+  # 2D BDM_1 on a quadrilateral
+  test:
+    suffix: bdm1q_2d_0
+    requires: triangle
+    args: -petscspace_degree 1 -petscdualspace_type bdm \
+          -use_da 0 -simplex 0 -num_comp 2 -qorder 1 -convergence
+  test:
+    suffix: bdm1q_2d_1
+    requires: triangle
+    args: -petscspace_degree 1 -petscdualspace_type bdm \
+          -use_da 0 -simplex 0 -num_comp 2 -qorder 1 -porder 1
+  test:
+    suffix: bdm1q_2d_2
+    requires: triangle
+    args: -petscspace_degree 1 -petscdualspace_type bdm \
+          -use_da 0 -simplex 0 -num_comp 2 -qorder 1 -porder 2
 
   # Test high order quadrature
   test:

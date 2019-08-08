@@ -1,6 +1,6 @@
 
-#if !defined(__PETSCVIEWERSAWS_H)
-#define __PETSCVIEWERSAWS_H
+#if !defined(PETSCVIEWERSAWS_H)
+#define PETSCVIEWERSAWS_H
 
 #include <petscviewer.h>
 #include <SAWs.h>

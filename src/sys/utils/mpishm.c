@@ -32,7 +32,7 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelComm_Shm(MPI_Comm comm,PetscMPIInt keyv
     PetscShmCommGet - Given a PETSc communicator returns a communicator of all ranks that share a common memory
 
 
-    Collective on comm.
+    Collective.
 
     Input Parameter:
 .   globcomm - MPI_Comm
@@ -46,8 +46,6 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelComm_Shm(MPI_Comm comm,PetscMPIInt keyv
     This should be called only with an PetscCommDuplicate() communictor
 
            When used with MPICH, MPICH must be configured with --download-mpich-device=ch3:nemesis
-
-    Concepts: MPI subcomm^numbering
 
 @*/
 PetscErrorCode PetscShmCommGet(MPI_Comm globcomm,PetscShmComm *pshmcomm)
@@ -108,8 +106,6 @@ PetscErrorCode PetscShmCommGet(MPI_Comm globcomm,PetscShmComm *pshmcomm)
 
     It may be better to rewrite this to map multiple global ranks to local in the same function call
 
-    Concepts: MPI subcomm^numbering
-
 @*/
 PetscErrorCode PetscShmCommGlobalToLocal(PetscShmComm pshmcomm,PetscMPIInt grank,PetscMPIInt *lrank)
 {
@@ -152,7 +148,6 @@ PetscErrorCode PetscShmCommGlobalToLocal(PetscShmComm pshmcomm,PetscMPIInt grank
 
     Level: developer
 
-    Concepts: MPI subcomm^numbering
 @*/
 PetscErrorCode PetscShmCommLocalToGlobal(PetscShmComm pshmcomm,PetscMPIInt lrank,PetscMPIInt *grank)
 {
@@ -219,9 +214,9 @@ struct _n_PetscOmpCtrl {
 
 
 /* Allocate and initialize a pthread_barrier_t object in memory shared by processes in omp_comm
-   contained by the controler.
+   contained by the controller.
 
-   PETSc OpenMP controler users do not call this function directly. This function exists
+   PETSc OpenMP controller users do not call this function directly. This function exists
    only because we want to separate shared memory allocation methods from other code.
  */
 PETSC_STATIC_INLINE PetscErrorCode PetscOmpCtrlCreateBarrier(PetscOmpCtrl ctrl)
@@ -282,7 +277,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscOmpCtrlCreateBarrier(PetscOmpCtrl ctrl)
   PetscFunctionReturn(0);
 }
 
-/* Destroy the pthread barrier in the PETSc OpenMP controler */
+/* Destroy the pthread barrier in the PETSc OpenMP controller */
 PETSC_STATIC_INLINE PetscErrorCode PetscOmpCtrlDestroyBarrier(PetscOmpCtrl ctrl)
 {
   PetscErrorCode ierr;
@@ -301,16 +296,18 @@ PETSC_STATIC_INLINE PetscErrorCode PetscOmpCtrlDestroyBarrier(PetscOmpCtrl ctrl)
 }
 
 /*@C
-    PetscOmpCtrlCreate - create a PETSc OpenMP controler, which manages PETSc's interaction with third party libraries using OpenMP
+    PetscOmpCtrlCreate - create a PETSc OpenMP controller, which manages PETSc's interaction with third party libraries using OpenMP
 
     Input Parameter:
 +   petsc_comm - a communicator some PETSc object (for example, a matrix) lives in
-.   nthreads   - number of threads per MPI rank to spawn in a library using OpenMP. If nthreads = -1, let PETSc decide a suitable value
+-   nthreads   - number of threads per MPI rank to spawn in a library using OpenMP. If nthreads = -1, let PETSc decide a suitable value
 
     Output Parameter:
-.   pctrl      - a PETSc OpenMP controler
+.   pctrl      - a PETSc OpenMP controller
 
     Level: developer
+
+    TODO: Possibly use the variable PetscNumOMPThreads to determine the number for threads to use 
 
 .seealso PetscOmpCtrlDestroy()
 @*/
@@ -435,10 +432,10 @@ PetscErrorCode PetscOmpCtrlCreate(MPI_Comm petsc_comm,PetscInt nthreads,PetscOmp
 }
 
 /*@C
-    PetscOmpCtrlDestroy - destory the PETSc OpenMP controler
+    PetscOmpCtrlDestroy - destory the PETSc OpenMP controller
 
     Input Parameter:
-.   pctrl  - a PETSc OpenMP controler
+.   pctrl  - a PETSc OpenMP controller
 
     Level: developer
 
@@ -463,10 +460,10 @@ PetscErrorCode PetscOmpCtrlDestroy(PetscOmpCtrl *pctrl)
 }
 
 /*@C
-    PetscOmpCtrlGetOmpComms - Get MPI communicators from a PETSc OMP controler
+    PetscOmpCtrlGetOmpComms - Get MPI communicators from a PETSc OMP controller
 
     Input Parameter:
-.   ctrl - a PETSc OMP controler
+.   ctrl - a PETSc OMP controller
 
     Output Parameter:
 +   omp_comm         - a communicator that includes a master rank and slave ranks where master spawns threads
@@ -488,10 +485,10 @@ PetscErrorCode PetscOmpCtrlGetOmpComms(PetscOmpCtrl ctrl,MPI_Comm *omp_comm,MPI_
 }
 
 /*@C
-    PetscOmpCtrlBarrier - Do barrier on MPI ranks in omp_comm contained by the PETSc OMP controler (to let slave ranks free their CPU)
+    PetscOmpCtrlBarrier - Do barrier on MPI ranks in omp_comm contained by the PETSc OMP controller (to let slave ranks free their CPU)
 
     Input Parameter:
-.   ctrl - a PETSc OMP controler
+.   ctrl - a PETSc OMP controller
 
     Notes:
     this is a pthread barrier on MPI processes. Using MPI_Barrier instead is conceptually correct. But MPI standard does not
@@ -525,10 +522,10 @@ PetscErrorCode PetscOmpCtrlBarrier(PetscOmpCtrl ctrl)
     PetscOmpCtrlOmpRegionOnMasterBegin - Mark the beginning of an OpenMP library call on master ranks
 
     Input Parameter:
-.   ctrl - a PETSc OMP controler
+.   ctrl - a PETSc OMP controller
 
     Notes:
-    Only master ranks can call this function. Call PetscOmpCtrlGetOmpComms to know if this is a master rank.
+    Only master ranks can call this function. Call PetscOmpCtrlGetOmpComms() to know if this is a master rank.
     This function changes CPU binding of master ranks and nthreads-var of OpenMP runtime
 
     Level: developer
@@ -549,10 +546,10 @@ PetscErrorCode PetscOmpCtrlOmpRegionOnMasterBegin(PetscOmpCtrl ctrl)
    PetscOmpCtrlOmpRegionOnMasterEnd - Mark the end of an OpenMP library call on master ranks
 
    Input Parameter:
-.  ctrl - a PETSc OMP controler
+.  ctrl - a PETSc OMP controller
 
    Notes:
-   Only master ranks can call this function. Call PetscOmpCtrlGetOmpComms to know if this is a master rank.
+   Only master ranks can call this function. Call PetscOmpCtrlGetOmpComms() to know if this is a master rank.
    This function restores the CPU binding of master ranks and set and nthreads-var of OpenMP runtime to 1.
 
    Level: developer

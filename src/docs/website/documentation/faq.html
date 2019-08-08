@@ -96,7 +96,7 @@
         <li><a href="#PetscOptionsInsertFile">What does it mean when make test gives:</a>
             <pre>
 Possible error running C/C++ src/snes/examples/tutorials/ex19 with 2 MPI processes
-See http://www.mcs.anl.gov/petsc/documentation/faq.html
+See https://www.mcs.anl.gov/petsc/documentation/faq.html
 [0]PETSC ERROR: #1 PetscOptionsInsertFile() line 563 in /Users/barrysmith/Src/PETSc/src/sys/objects/options.c
 [0]PETSC ERROR: #2 PetscOptionsInsert() line 720 in /Users/barrysmith/Src/PETSc/src/sys/objects/options.c
 [0]PETSC ERROR: #3 PetscInitialize() line 828 in /Users/barrysmith/Src/PETSc/src/sys/objects/pinit.c
@@ -196,11 +196,11 @@ See http://www.mcs.anl.gov/petsc/documentation/faq.html
 
       <h3><a name="petsc-mailing-list">How can I subscribe to the PETSc mailing lists?</a></h3>
 
-      See <a href="http://www.mcs.anl.gov/petsc/miscellaneous/mailing-lists.html">http://www.mcs.anl.gov/petsc/miscellaneous/mailing-lists.html</a>
+      See <a href="https://www.mcs.anl.gov/petsc/miscellaneous/mailing-lists.html">https://www.mcs.anl.gov/petsc/miscellaneous/mailing-lists.html</a>
 
       <h3><a name="book">Any useful books on numerical computing?</a></h3>
 
-      <a href="http://ebooks.cambridge.org/ebook.jsf?bid=CBO9780511617973">Writing Scientific Software: A Guide to Good Style</a>
+      <a href="/core/books/writing-scientific-software/23206704175AF868E43FE3FB399C2F53">Writing Scientific Software: A Guide to Good Style</a>
 
       <h3><a name="computers">What kind of parallel computers or clusters are needed to use PETSc? Or why do I get little speedup?</a></h3>
 
@@ -254,7 +254,7 @@ See http://www.mcs.anl.gov/petsc/documentation/faq.html
 
       <ul>
       <li>
-            <dt><a href="http://wiki.mcs.anl.gov/mpich2/index.php/Using_the_Hydra_Process_Manager#Process-core_Binding">MPICH2 binding with the Hydra process manager</a></dt>
+            <dt><a href="https://wiki.mpich.org/mpich/index.php/Using_the_Hydra_Process_Manager#Process-core_Binding">MPICH2 binding with the Hydra process manager</a></dt>
             <dd><code>mpiexec.hydra -n 4 --binding cpu:sockets</code></dd>
       </li>
       <li>
@@ -441,7 +441,7 @@ See http://www.mcs.anl.gov/petsc/documentation/faq.html
       <h3><a name="gpus">Can PETSc use GPUs to speedup computations?</a></h3>
 
       The <a href="https://bitbucket.org/petsc/petsc">PETSc developer repository</a> has some support for running portions of the computation on
-      GPUs. See <a href="http://www.mcs.anl.gov/petsc/features/gpus.html">PETSc GPUs</a> for
+      GPUs. See <a href="https://www.mcs.anl.gov/petsc/features/gpus.html">PETSc GPUs</a> for
       more information. PETSc has Vec classes VECCUDA and VECVIENNACL which perform almost all
       the vector operations on the GPU. The Mat classes AIJCUSPARSE and AIJVIENNACL perform
       matrix-vector products on the GPU but do not have matrix assembly on the
@@ -449,7 +449,7 @@ See http://www.mcs.anl.gov/petsc/documentation/faq.html
       except KSPIBCGS, run all their vector operations on the GPU thus, for
       example Jacobi preconditioned Krylov methods run completely on the GPU.
       Preconditioners are a problem, we could do with some help for these. The
-      example <a href="http://www.mcs.anl.gov/petsc/petsc-master/src/snes/examples/tutorials/ex47cu.cu.html">src/snes/examples/tutorials/ex47cu.cu</a>
+      example <a href="https://www.mcs.anl.gov/petsc/petsc-master/src/snes/examples/tutorials/ex47cu.cu.html">src/snes/examples/tutorials/ex47cu.cu</a>
       demonstates how the nonlinear function evaluation can be done on the
       GPU.
 
@@ -612,11 +612,11 @@ See http://www.mcs.anl.gov/petsc/documentation/faq.html
       <h3><a name="gfortran">What Fortran compiler do you recommend for the Apple Mac OS X?</a></h3>
 
       <p>
-        We recommend using brew (http://brew.sh) to install gfortran
+        We recommend using brew (https://brew.sh/) to install gfortran
 
       <p>
         Please contact Apple at <a
-          href="http://www.apple.com/feedback">http://www.apple.com/feedback</a>
+          href="https://www.apple.com/feedback/">https://www.apple.com/feedback/</a>
         and urge them to bundle gfortran with future versions of Xcode.
       </p>
 
@@ -640,7 +640,7 @@ See http://www.mcs.anl.gov/petsc/documentation/faq.html
       <h3><a name="PetscOptionsInsertFile">What does it mean when make test gives:</a></h3>
             <pre>
 Possible error running C/C++ src/snes/examples/tutorials/ex19 with 2 MPI processes
-See http://www.mcs.anl.gov/petsc/documentation/faq.html
+See https://www.mcs.anl.gov/petsc/documentation/faq.html
 [0]PETSC ERROR: #1 PetscOptionsInsertFile() line 563 in /Users/barrysmith/Src/PETSc/src/sys/objects/options.c
 [0]PETSC ERROR: #2 PetscOptionsInsert() line 720 in /Users/barrysmith/Src/PETSc/src/sys/objects/options.c
 [0]PETSC ERROR: #3 PetscInitialize() line 828 in /Users/barrysmith/Src/PETSc/src/sys/objects/pinit.c
@@ -778,7 +778,7 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
         and several others. You may see the available ASM options by using
         <code>-pc_type asm -help</code> Also, see the procedural interfaces in the
         manual pages, with names <code>PCASMxxxx()</code> and check the index of the
-        <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf">users manual</a>
+        <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf">users manual</a>
         for <code>PCASMxxx</code>().
       </p>
 
@@ -817,18 +817,18 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
 
       <ul>
         <li>Create the scatter context that will do the communication</li>
-        <li> <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Vec/VecScatterCreateToAll.html">VecScatterCreateToAll</a>(v,&amp;ctx,&amp;w);</li>
+        <li> <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Vec/VecScatterCreateToAll.html">VecScatterCreateToAll</a>(v,&amp;ctx,&amp;w);</li>
         <li>
           Actually do the communication; this can be done repeatedly as needed
           <ul>
-            <li><a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Vec/VecScatterBegin.html">VecScatterBegin</a>(ctx,v,w,INSERT_VALUES,SCATTER_FORWARD);</li>
-            <li> <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Vec/VecScatterEnd.html">VecScatterEnd</a>(ctx,v,w,INSERT_VALUES,SCATTER_FORWARD);</li>
+            <li><a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Vec/VecScatterBegin.html">VecScatterBegin</a>(ctx,v,w,INSERT_VALUES,SCATTER_FORWARD);</li>
+            <li> <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Vec/VecScatterEnd.html">VecScatterEnd</a>(ctx,v,w,INSERT_VALUES,SCATTER_FORWARD);</li>
           </ul>
         </li>
         <li>
           Remember to free the scatter context when no longer needed
           <ul>
-            <li> <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Vec/VecScatterDestroy.html">VecScatterDestroy</a>(ctx);</li>
+            <li> <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Vec/VecScatterDestroy.html">VecScatterDestroy</a>(ctx);</li>
           </ul>
         </li>
       </ul>
@@ -845,20 +845,20 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
         <li>
           Create the scatter context that will do the communication
           <ul>
-            <li><a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Vec/VecScatterCreateToZero.html">VecScatterCreateToZero</a>(v,&amp;ctx,&amp;w);</li>
+            <li><a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Vec/VecScatterCreateToZero.html">VecScatterCreateToZero</a>(v,&amp;ctx,&amp;w);</li>
           </ul>
         </li>
         <li>
           Actually do the communication; this can be done repeatedly as needed
           <ul>
-            <li><a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Vec/VecScatterBegin.html">VecScatterBegin</a>(ctx,v,w,INSERT_VALUES,SCATTER_FORWARD);</li>
-            <li> <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Vec/VecScatterEnd.html">VecScatterEnd</a>(ctx,v,w,INSERT_VALUES,SCATTER_FORWARD);</li>
+            <li><a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Vec/VecScatterBegin.html">VecScatterBegin</a>(ctx,v,w,INSERT_VALUES,SCATTER_FORWARD);</li>
+            <li> <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Vec/VecScatterEnd.html">VecScatterEnd</a>(ctx,v,w,INSERT_VALUES,SCATTER_FORWARD);</li>
           </ul>
         </li>
         <li>
           Remember to free the scatter context when no longer needed
           <ul>
-            <li> <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Vec/VecScatterDestroy.html">VecScatterDestroy</a>(ctx);</li>
+            <li> <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Vec/VecScatterDestroy.html">VecScatterDestroy</a>(ctx);</li>
           </ul>
         </li>
       </ul>
@@ -871,14 +871,28 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
 
       <h3><a name="sparse-matrix-ascii-format">How can I read in or write out a sparse matrix in Matrix Market, Harwell-Boeing, SLAPC or other ASCII format?</a></h3>
 
-      See the examples in src/mat/examples/tests, specifically ex72.c, ex78.c,
-      and ex32.c. You will likely need to modify the code slightly to match your
+      <p>If you can read or write your matrix using Python or MATLAB/Octave, there
+      are PetscBinaryIO modules for each language that can assist with reading
+      and writing.  If you just want to convert MatrixMarket, you can use</p>
+
+      <code>python -m PetscBinaryIO convert matrix.mtx</code>
+
+      <p>to produce <code>matrix.petsc</code>.  The above assumes you have either
+      installed the module or added <code>$PETSC_DIR/lib/petsc/bin</code> to
+      your <code>PYTHONPATH</code>.  You can also call the script directly or
+      import it from your Python code.  There is also
+      a <a href="https://github.com/tkonolige/PETScBinaryIO.jl">PETScBinaryIO.jl</a>
+      Julia package.</p>
+
+      <p>For other formats, either adapt one of the above libraries or see the
+      examples in src/mat/examples/tests, specifically ex72.c, ex78.c, and
+      ex32.c. You will likely need to modify the code slightly to match your
       required ASCII format. Note: Never read or write in parallel an ASCII
       matrix file, instead for reading: read in sequentially with a standalone
       code based on ex72.c, ex78.c, or ex32.c then save the matrix with the
       binary viewer PetscBinaryViewerOpen() and load the matrix in parallel in
       your "real" PETSc program with MatLoad(); for writing save with the binary
-      viewer and then load with the sequential code to store it as ASCII.
+      viewer and then load with the sequential code to store it as ASCII.</p>
 
       <h3><a name="setfromoptions">Does TSSetFromOptions(), SNESSetFromOptions() or KSPSetFromOptions() reset all the parameters I previously set or how come my TS/SNES/KSPSetXXX() does not seem to work?</a></h3>
 
@@ -922,7 +936,7 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
 
       <h3><a name="makefiles">Can I use my own makefiles or rules for compiling code, instead of using PETSc's?</a></h3>
 
-      Yes, see the section of the <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf">users manual</a> called Makefiles
+      Yes, see the section of the <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf">users manual</a> called Makefiles
 
       <h3><a name="cmake">Can I use CMake to build my own project that depends on PETSc?</a></h3>
 
@@ -981,12 +995,12 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
       </p>
 
       <h3><a name="jacobianfree">How can I use Newton's method Jacobian free? Can I difference a different function than provided
-             with <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/SNES/SNESSetFunction.html">SNESSetFunction()?</a></h3>
+             with <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/SNES/SNESSetFunction.html">SNESSetFunction()?</a></h3>
 
       <p>
          The simplest way is with the option -snes_mf, this will use finite differencing of the function provided to SNESComputeFunction() to approximate the action of Jacobian. Since no matrix-representation of the
          Jacobian is provided the -pc_type used with this option must be -pc_type none.  You can provide a custom preconditioner with SNESGetKSP(), KSPGetPC(),
-         PCSetType(pc,<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCSHELL.html">PCSHELL</a>).
+         PCSetType(pc,<a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCSHELL.html">PCSHELL</a>).
       </p>
 
       <p>
@@ -994,16 +1008,16 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
       </p>
 
       <p>
-       To write the code (rather than use the options above) use <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/SNES/MatCreateSNESMF.html">MatCreateSNESMF()</a> and pass the resulting matrix object to
+       To write the code (rather than use the options above) use <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/SNES/MatCreateSNESMF.html">MatCreateSNESMF()</a> and pass the resulting matrix object to
        SNESSetJacobian(). For purely matrix-free (like -snes_mf) pass the matrix object for both matrix arguments and pass the function MatMFFDComputeJacobian(). To provide your own approximate Jacobian matrix to compute
        the preconditioner (like -snes_mf_operator), pass this other matrix as the second matrix argument to SNESSetJacobian(). Make sure your provided computejacobian() function calls MatAssemblyBegin/End() separately on BOTH
-       matrix arguments to this function. See <a href="http://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tests/ex7.c.html">src/snes/examples/tests/ex7.c</a>
+       matrix arguments to this function. See <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tests/ex7.c.html">src/snes/examples/tests/ex7.c</a>
       </p>
 
       <p>
        To difference a different function than that passed to SNESSetJacobian() to compute the matrix-free Jacobian multiply call
-       <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatMFFDSetFunction.html">MatMFFDSetFunction()</a> to set that other function.
-       See <a href="http://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tests/ex7.c.html">src/snes/examples/tests/ex7.c.h</a>
+       <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatMFFDSetFunction.html">MatMFFDSetFunction()</a> to set that other function.
+       See <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tests/ex7.c.html">src/snes/examples/tests/ex7.c.h</a>
       </p>
 
       <h3><a name="conditionnumber">How can I determine the condition number of a matrix?</a></h3>
@@ -1087,13 +1101,13 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
       <ol>
         <li>
           use DMPlex, which is a high level approach to manage your mesh and
-          discretization. <a href="http://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex62.c.html">SNES
+          discretization. <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex62.c.html">SNES
           ex62</a> solves the Stokes equation using this approach.
         </li>
         <li>
           manage the grid data structure yourself and use
           PETSc IS and VecScatter to communicate the required
-          ghost point communication. See <a href="http://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex10d/ex10.c.html">src/snes/examples/tutorials/ex10d/ex10.c</a>
+          ghost point communication. See <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex10d/ex10.c.html">src/snes/examples/tutorials/ex10d/ex10.c</a>
         </li>
       </ol>
 
@@ -1141,10 +1155,10 @@ PETSC_COMM_WORLD = NewComm;
 
       <p>
         For nonsymmetric systems put the appropriate boundary solutions in the
-        x vector and use <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatZeroRows.html">MatZeroRows()</a> followed by <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPSetOperators.html">KSPSetOperators()</a>. For symmetric
-        problems use <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatZeroRowsColumns.html">MatZeroRowsColumns()</a> instead.  If you have many Dirichlet
+        x vector and use <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatZeroRows.html">MatZeroRows()</a> followed by <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPSetOperators.html">KSPSetOperators()</a>. For symmetric
+        problems use <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatZeroRowsColumns.html">MatZeroRowsColumns()</a> instead.  If you have many Dirichlet
         locations you can use MatZeroRows() (not MatZeroRowsColumns()) and
-        -ksp_type preonly -pc_type redistribute; see <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCREDISTRIBUTE.html">
+        -ksp_type preonly -pc_type redistribute; see <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCREDISTRIBUTE.html">
         PCREDISTRIBUTE</a>) and PETSc will repartition the parallel matrix for load
         balancing; in this case the new matrix solved remains symmetric even though
         MatZeroRows() is used.
@@ -1166,12 +1180,12 @@ PETSC_COMM_WORLD = NewComm;
           Using the MATLAB Engine, allowing PETSc to automatically call MATLAB
           to perform some specific computations. This does not allow MATLAB to be
           used interactively by the user. See the <a
-            href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Sys/PetscMatlabEngine.html">PetscMatlabEngine</a>.
+            href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Sys/PetscMatlabEngine.html">PetscMatlabEngine</a>.
         </li>
 
         <li>
           To save PETSc Mats and Vecs to files that can be read from MATLAB use <a
-            href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Viewer/PetscViewerBinaryOpen.html">PetscViewerBinaryOpen()</a>
+            href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Viewer/PetscViewerBinaryOpen.html">PetscViewerBinaryOpen()</a>
           viewer and VecView() or MatView() to save objects for MATLAB and
           VecLoad() and MatLoad() to get the objects that MATLAB has saved. See
           PetscBinaryRead.m and PetscBinaryWrite.m in share/petsc/matlab for loading and
@@ -1182,21 +1196,15 @@ PETSC_COMM_WORLD = NewComm;
           You can open a socket connection between MATLAB and PETSc to allow
           sending objects back and forth between an interactive MATLAB session
           and a running PETSc program. See
-          <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Viewer/PetscViewerSocketOpen.html">PetscViewerSocketOpen</a>()
+          <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Viewer/PetscViewerSocketOpen.html">PetscViewerSocketOpen</a>()
           for access from the PETSc side and PetscReadBinary.m in share/petsc/matlab for
           access from the MATLAB side.
         </li>
 
         <li>
           You can save PETSc Vecs (not Mats) with the <a
-            href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Viewer/PetscViewerMatlabOpen.html">PetscViewerMatlabOpen</a>()
+            href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Viewer/PetscViewerMatlabOpen.html">PetscViewerMatlabOpen</a>()
           viewer that saves .mat files can then be loaded into MATLAB.
-        </li>
-        <li>
-          We are just beginning to develop in <a
-            href="../developers/index.html">petsc master (branch in git)</a> an API to call most of
-          the PETSc function directly from MATLAB; we could use help in
-          developing this. See share/petsc/matlab/classes/PetscInitialize.m
         </li>
       </ol>
 
@@ -1209,7 +1217,7 @@ PETSC_COMM_WORLD = NewComm;
           Learn how to <a href="http://docs.cython.org/src/quickstart/build.html">build a Cython module</a>
         </li>
         <li>
-          Go through the simple example provided by Denis <a href="http://stackoverflow.com/questions/3046305/simple-wrapping-of-c-code-with-cython">here</a>.
+          Go through the simple example provided by Denis <a href="https://stackoverflow.com/questions/3046305/simple-wrapping-of-c-code-with-cython">here</a>.
           Note also the next comment that shows how to create numpy arrays in the Cython and pass them back.
         </li>
         <li>
@@ -1222,11 +1230,11 @@ PETSC_COMM_WORLD = NewComm;
 
      <h3><a name="customnormforksp">I would like to compute a custom norm for KSP to use as a convergence test or for monitoring?</a></h3>
 
-     You need to call <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPBuildResidual.html">KSPBuildResidual</a>() on your KSP object and then
+     You need to call <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPBuildResidual.html">KSPBuildResidual</a>() on your KSP object and then
       compute the     appropriate norm on the resulting residual. Note that depending on the
-      <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPSetNormType.html">KSPSetNormType</a>() of the method you may not return the same
+      <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPSetNormType.html">KSPSetNormType</a>() of the method you may not return the same
       norm as provided by the method. See also
-      <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPSetPCSide.html">KSPSetPCSide</a>()
+      <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPSetPCSide.html">KSPSetPCSide</a>()
 
       <h3><a name="parallelsolvesequentialcode">If I have a sequential program can I use a parallel direct solver?</a></h3>
 
@@ -1276,7 +1284,7 @@ PETSC_COMM_WORLD = NewComm;
 
       <h3><a name="efficient-assembly">Assembling large sparse matrices takes a long time. What can I do make this process faster? or MatSetValues() is so slow, what can I do to speed it up?</a></h3>
 
-      See the <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf#nameddest=ch_performance">Performance chapter of the users manual</a> for many tips on this.
+      See the <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf#nameddest=ch_performance">Performance chapter of the users manual</a> for many tips on this.
 
       <ol>
         <li>
@@ -1298,13 +1306,13 @@ PETSC_COMM_WORLD = NewComm;
       <p>Preallocation of matrix memory is crucial for good performance for large problems, see:</p>
 
       <ul>
-        <li><a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf#sec_matsparse">http://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf#sec_matsparse</a></li>
-        <li><a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatCreateMPIAIJ.html">http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatCreateMPIAIJ.html</a></li>
+        <li><a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf#sec_matsparse">https://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf#sec_matsparse</a></li>
+        <li><a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatCreateAIJ.html">https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatCreateMPIAIJ.html</a></li>
       </ul>
 
       <p>
-        If you can set several nonzeros in a block at the same time, this is faster
-        than calling MatSetValues() for each individual matrix entry.
+        If you can set several nonzeros in a block at the same time, this is than
+        faster calling MatSetValues() for each individual matrix entry.
       </p>
 
       <p>
@@ -1316,7 +1324,7 @@ PETSC_COMM_WORLD = NewComm;
 
       <h3><a name="log-view">How can I generate performance summaries with PETSc?</a></h3>
 
-      Use these options at runtime: -log_view. See the <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf#nameddest=ch_performance">Performance chapter of the users manual</a>
+      Use these options at runtime: -log_view. See the <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf#nameddest=ch_performance">Performance chapter of the users manual</a>
       for information on interpreting the summary data. If using the PETSc
       (non)linear solvers, one can also specify -snes_view or -ksp_view for
       a printout of solver info. Only the highest level PETSc object used needs
@@ -1379,20 +1387,20 @@ PETSC_COMM_WORLD = NewComm;
           the sequential solver. Most preconditioners require more iterations
           when used on more processes, this is particularly true for block
           Jaccobi, the default parallel preconditioner, you can try -pc_type asm
-          (<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCASM.html">PCASM</a>)
+          (<a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCASM.html">PCASM</a>)
           its iterations scale a bit better for more processes.  You may also consider
-          multigrid preconditioners like <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCMG.html">PCMG</a>
-          or BoomerAMG in <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCHYPRE.html">PCHYPRE</a>.
+          multigrid preconditioners like <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCMG.html">PCMG</a>
+          or BoomerAMG in <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCHYPRE.html">PCHYPRE</a>.
         </li>
       </ul>
 
       <h3><a name="pipelined">What steps are necessary to make the pipelined solvers execute efficiently?</a></h3>
 
       Pipelined solvers like
-      <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPPGMRES.html">KSPPGMRES</a>,
-      <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPPIPECG.html">KSPPIPECG</a>,
-      <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPPIPECR.html">KSPPIPECR</a>, and
-      <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPGROPPCG.html">KSPGROPPCG</a>
+      <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPPGMRES.html">KSPPGMRES</a>,
+      <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPPIPECG.html">KSPPIPECG</a>,
+      <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPPIPECR.html">KSPPIPECR</a>, and
+      <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPGROPPCG.html">KSPGROPPCG</a>
       may require special MPI configuration to effectively overlap reductions with computation.
       In general, this requires an MPI-3 implementation, an implementation that supports multiple threads, and use of a "progress thread".
       Consult the documentation from your vendor or computing facility for more.
@@ -1517,7 +1525,7 @@ PETSC_COMM_WORLD = NewComm;
 
         <li>
           Change the units (nondimensionalization), boundary condition scaling,
-          or formulation so that the Jacobian is better conditioned. See <a href="http://en.wikipedia.org/wiki/Buckingham_π_theorem">http://en.wikipedia.org/wiki/Buckingham_π_theorem</a>
+          or formulation so that the Jacobian is better conditioned. See <a href="https://en.wikipedia.org/wiki/Buckingham_π_theorem">https://en.wikipedia.org/wiki/Buckinghamπ_theorem</a>
         </li>
 
         <li>
@@ -2034,13 +2042,13 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh
       that might have caused this behavior. This is achieved by:
 
       <ul>
-        <li>using <a href="http://git-scm.com/">Git</a> to access PETSc sources</li>
+        <li>using <a href="https://git-scm.com/">Git</a> to access PETSc sources</li>
 
         <li>knowing the Git commit for the <b>known working</b> version of PETSc</li>
 
         <li>knowing the Git commit for the <b>known broken</b> version of PETSc</li>
 
-        <li>using the <a href="https://www.kernel.org/pub/software/scm/git/docs/git-bisect.html">bisect</a> functionality of Git</li>
+        <li>using the <a href="https://mirrors.edge.kernel.org/pub/software/scm/git/docs/git-bisect.html">bisect</a> functionality of Git</li>
       </ul>
 
       This process can be as follows:
@@ -2079,8 +2087,8 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh
         </li>
 
         <li>
-          See <a href="https://www.kernel.org/pub/software/scm/git/docs/git-bisect.html">git-bisect(1)</a>
-          and the <a href="http://git-scm.com/book/en/Git-Tools-Debugging-with-Git">debugging
+          See <a href="https://mirrors.edge.kernel.org/pub/software/scm/git/docs/git-bisect.html">git-bisect(1)</a>
+          and the <a href="https://git-scm.com/book/en/Git-Tools-Debugging-with-Git">debugging
           section of the Git Book</a> for more debugging tips.
         <li>
       </ul>

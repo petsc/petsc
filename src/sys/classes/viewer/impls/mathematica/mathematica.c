@@ -18,7 +18,6 @@ static PetscBool PetscViewerMathematicaPackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.keywords: Petsc, destroy, package, mathematica
 .seealso: PetscFinalize()
 @*/
 PetscErrorCode  PetscViewerMathematicaFinalizePackage(void)
@@ -35,7 +34,6 @@ PetscErrorCode  PetscViewerMathematicaFinalizePackage(void)
 
   Level: developer
 
-.keywords: Petsc, initialize, package
 .seealso: PetscSysInitializePackage(), PetscInitialize()
 @*/
 PetscErrorCode  PetscViewerMathematicaInitializePackage(void)
@@ -324,7 +322,7 @@ PetscErrorCode  PetscViewerMathematicaSetLinkMode(PetscViewer v, LinkMode mode)
 /*@C
   PetscViewerMathematicaOpen - Communicates with Mathemtica using MathLink.
 
-  Collective on comm
+  Collective
 
   Input Parameters:
 + comm    - The MPI communicator
@@ -357,8 +355,6 @@ $    VecView(Vec vector, PetscViewer viewer)
 .    -viewer_math_type <type>        - The plot type, e.g. Triangulation, Vector
 -    -viewer_math_graphics <output>  - The output type, e.g. Motif, PS, PSFile
 
-.keywords: PetscViewer, Mathematica, open
-
 .seealso: MatView(), VecView()
 @*/
 PetscErrorCode  PetscViewerMathematicaOpen(MPI_Comm comm, int port, const char machine[], const char mode[], PetscViewer *v)
@@ -382,8 +378,8 @@ PetscErrorCode  PetscViewerMathematicaOpen(MPI_Comm comm, int port, const char m
   PetscViewerMathematicaGetLink - Returns the link to Mathematica
 
   Input Parameters:
-. viewer - The Mathematica viewer
-. link   - The link to Mathematica
++ viewer - The Mathematica viewer
+- link   - The link to Mathematica
 
   Level: intermediate
 
@@ -404,8 +400,8 @@ PetscErrorCode  PetscViewerMathematicaGetLink(PetscViewer viewer, MLINK *link)
   PetscViewerMathematicaSkipPackets - Discard packets sent by Mathematica until a certain packet type is received
 
   Input Parameters:
-. viewer - The Mathematica viewer
-. type   - The packet type to search for, e.g RETURNPKT
++ viewer - The Mathematica viewer
+- type   - The packet type to search for, e.g RETURNPKT
 
   Level: advanced
 
@@ -456,8 +452,8 @@ PetscErrorCode  PetscViewerMathematicaGetName(PetscViewer viewer, const char **n
   PetscViewerMathematicaSetName - Override the default name for objects communicated to Mathematica
 
   Input Parameters:
-. viewer - The Mathematica viewer
-. name   - The name for new objects created in Mathematica
++ viewer - The Mathematica viewer
+- name   - The name for new objects created in Mathematica
 
   Level: intermediate
 
@@ -537,7 +533,7 @@ PetscErrorCode  PetscViewerMathematicaGetVector(PetscViewer viewer, Vec v)
   ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);CHKERRQ(ierr);
   MLGetRealList(link, &mArray, &mSize);
   if (n != mSize) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Incompatible vector sizes %d %d",n,mSize);
-  ierr = PetscMemcpy(array, mArray, mSize * sizeof(double));CHKERRQ(ierr);
+  ierr = PetscArraycpy(array, mArray, mSize);CHKERRQ(ierr);
   MLDisownRealList(link, mArray, mSize);
   ierr = VecRestoreArray(v, &array);CHKERRQ(ierr);
   PetscFunctionReturn(0);

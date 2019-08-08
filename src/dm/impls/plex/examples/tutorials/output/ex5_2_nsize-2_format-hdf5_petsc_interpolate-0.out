@@ -1115,9 +1115,9 @@ PetscSF Object: 2 MPI processes
   [0]    101 <- 51
   [0]    102 <- 52
   [1] Roots referenced by my leaves, by rank
-DM Object: (new_) 2 MPI processes
+DM Object: Mesh_new (new_) 2 MPI processes
   type: plex
-DM_0x84000004_0 in 3 dimensions:
+Mesh_new in 3 dimensions:
 Supports:
 [0] Max support size: 8
 [0]: 56 ----> 0

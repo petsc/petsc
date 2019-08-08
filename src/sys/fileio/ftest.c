@@ -217,7 +217,7 @@ PetscErrorCode  PetscTestDirectory(const char dirname[],char mode,PetscBool  *fl
 /*@C
    PetscLs - produce a listing of the files in a directory
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameter:
 +  comm - the MPI communicator

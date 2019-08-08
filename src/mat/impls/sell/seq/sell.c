@@ -39,7 +39,7 @@
  (or the array nnz).  By setting these parameters accurately, performance
  during matrix assembly can be increased significantly.
 
- Collective on MPI_Comm
+ Collective
 
  Input Parameters:
  +  B - The matrix
@@ -136,7 +136,7 @@ PetscErrorCode MatSeqSELLSetPreallocation_SeqSELL(Mat B,PetscInt maxallocrow,con
           b->sliidx[i] = PetscMax(b->sliidx[i],rlen[8*(i-1)+j]);
         }
         maxallocrow = PetscMax(b->sliidx[i],maxallocrow);
-        b->sliidx[i] = b->sliidx[i-1] + 8*b->sliidx[i];
+        ierr = PetscIntSumError(b->sliidx[i-1],8*b->sliidx[i],&b->sliidx[i]);CHKERRQ(ierr);
       }
       /* last slice */
       b->sliidx[totalslices] = 0;
@@ -831,7 +831,7 @@ PetscErrorCode MatZeroEntries_SeqSELL(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMemzero(a->val,(a->sliidx[a->totalslices])*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArrayzero(a->val,a->sliidx[a->totalslices]);CHKERRQ(ierr);
   ierr = MatSeqSELLInvalidateDiagonal(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -896,6 +896,7 @@ PetscErrorCode MatSetOption_SeqSELL(Mat A,MatOption op,PetscBool flg)
   case MAT_NEW_DIAGONALS:
   case MAT_IGNORE_OFF_PROC_ENTRIES:
   case MAT_USE_HASH_TABLE:
+  case MAT_SORTED_FULL:
     ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
     break;
   case MAT_SPD:
@@ -1543,7 +1544,7 @@ PetscErrorCode MatCopy_SeqSELL(Mat A,Mat B,MatStructure str)
     Mat_SeqSELL *b=(Mat_SeqSELL*)B->data;
 
     if (a->sliidx[a->totalslices] != b->sliidx[b->totalslices]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of nonzeros in two matrices are different");
-    ierr = PetscMemcpy(b->val,a->val,a->sliidx[a->totalslices]*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscArraycpy(b->val,a->val,a->sliidx[a->totalslices]);CHKERRQ(ierr);
   } else {
     ierr = MatCopy_Basic(A,B,str);CHKERRQ(ierr);
   }
@@ -1893,7 +1894,7 @@ PetscErrorCode MatStoreValues_SeqSELL(Mat mat)
   }
 
   /* copy values over */
-  ierr = PetscMemcpy(a->saved_values,a->val,a->sliidx[a->totalslices]*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArraycpy(a->saved_values,a->val,a->sliidx[a->totalslices]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1905,8 +1906,7 @@ PetscErrorCode MatRetrieveValues_SeqSELL(Mat mat)
   PetscFunctionBegin;
   if (!a->nonew) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);first");
   if (!a->saved_values) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call MatStoreValues(A);first");
-  /* copy values over */
-  ierr = PetscMemcpy(a->val,a->saved_values,a->sliidx[a->totalslices]*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArraycpy(a->val,a->saved_values,a->sliidx[a->totalslices]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2017,11 +2017,11 @@ PetscErrorCode MatDuplicateNoCreate_SeqSELL(Mat C,Mat A,MatDuplicateOption cpval
     c->singlemalloc = PETSC_TRUE;
 
     if (m > 0) {
-      ierr = PetscMemcpy(c->colidx,a->colidx,(a->maxallocmat)*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscArraycpy(c->colidx,a->colidx,a->maxallocmat);CHKERRQ(ierr);
       if (cpvalues == MAT_COPY_VALUES) {
-        ierr = PetscMemcpy(c->val,a->val,a->maxallocmat*sizeof(PetscScalar));CHKERRQ(ierr);
+        ierr = PetscArraycpy(c->val,a->val,a->maxallocmat);CHKERRQ(ierr);
       } else {
-        ierr = PetscMemzero(c->val,a->maxallocmat*sizeof(PetscScalar));CHKERRQ(ierr);
+        ierr = PetscArrayzero(c->val,a->maxallocmat);CHKERRQ(ierr);
       }
     }
   }
@@ -2076,7 +2076,7 @@ PetscErrorCode MatDuplicate_SeqSELL(Mat A,MatDuplicateOption cpvalues,Mat *B)
 /*@C
  MatCreateSeqSELL - Creates a sparse matrix in SELL format.
 
- Collective on MPI_Comm
+ Collective
 
  Input Parameters:
  +  comm - MPI communicator, set to PETSC_COMM_SELF
@@ -2090,7 +2090,7 @@ PetscErrorCode MatDuplicate_SeqSELL(Mat A,MatDuplicateOption cpvalues,Mat *B)
  .  A - the matrix
 
  It is recommended that one use the MatCreate(), MatSetType() and/or MatSetFromOptions(),
- MatXXXXSetPreallocation() paradgm instead of this routine directly.
+ MatXXXXSetPreallocation() paradigm instead of this routine directly.
  [MatXXXXSetPreallocation() is, for example, MatSeqSELLSetPreallocation]
 
  Notes:
@@ -2131,10 +2131,10 @@ PetscErrorCode MatEqual_SeqSELL(Mat A,Mat B,PetscBool * flg)
     PetscFunctionReturn(0);
   }
   /* if the a->colidx are the same */
-  ierr = PetscMemcmp(a->colidx,b->colidx,a->sliidx[totalslices]*sizeof(PetscInt),flg);CHKERRQ(ierr);
+  ierr = PetscArraycmp(a->colidx,b->colidx,a->sliidx[totalslices],flg);CHKERRQ(ierr);
   if (!*flg) PetscFunctionReturn(0);
   /* if a->val are the same */
-  ierr = PetscMemcmp(a->val,b->val,a->sliidx[totalslices]*sizeof(PetscScalar),flg);CHKERRQ(ierr);
+  ierr = PetscArraycmp(a->val,b->val,a->sliidx[totalslices],flg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

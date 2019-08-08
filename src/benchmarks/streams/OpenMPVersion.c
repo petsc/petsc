@@ -45,6 +45,7 @@
 # include <limits.h>
 # include <float.h>
 # include <sys/time.h>
+#include <stdlib.h>
 
 /* INSTRUCTIONS:
  *
@@ -101,37 +102,29 @@ static double a[N+OFFSET],
 static double avgtime[4] = {0}, maxtime[4] = {0},
               mintime[4] = {FLT_MAX,FLT_MAX,FLT_MAX,FLT_MAX};
 
-static const char *label[4] = {"Copy:      ", "Scale:     ","Add:       ", "Triad:     "};
 
-static double bytes[4] = {
-  2 * sizeof(double) * N,
-  2 * sizeof(double) * N,
-  3 * sizeof(double) * N,
+static double bytes[1] = {
   3 * sizeof(double) * N
 };
 
 extern double mysecond();
-extern void checkSTREAMresults();
-#if defined(TUNED)
-extern void tuned_STREAM_Copy();
-extern void tuned_STREAM_Scale(double scalar);
-extern void tuned_STREAM_Add();
-extern void tuned_STREAM_Triad(double scalar);
-#endif
 extern int omp_get_num_threads();
 int main()
 {
   int          quantum, checktick();
-  int          BytesPerWord;
   register int j, k;
-  double       scalar, t, times[4][NTIMES];
+  double       scalar, t, times[4][NTIMES],rate;
+  int          size;
+  char         *env;
+  FILE         *fd;
 
+  env = getenv("OMP_NUM_THREADS");
+  sscanf(env,"%d",&size);
   /* --- SETUP --- determine precision and check timing --- */
 
   /*printf(HLINE);
   printf("STREAM version $Revision: 5.9 $\n");
    printf(HLINE); */
-  BytesPerWord = sizeof(double);
   /*    printf("This system uses %d bytes per DOUBLE PRECISION word.\n",
    BytesPerWord);
 
@@ -148,15 +141,6 @@ int main()
   printf("the *best* time for each is used.\n");
 
    printf(HLINE); */
-#pragma omp parallel
-  {
-#pragma omp master
-    {
-      k = omp_get_num_threads();
-      printf(HLINE);
-      printf ("Number of OpenMP Threads requested = %i\n",k);
-    }
-  }
 
 
 
@@ -197,63 +181,36 @@ int main()
   for (k=0; k<NTIMES; k++)
   {
     times[0][k] = mysecond();
-#if defined(TUNED)
-    tuned_STREAM_Copy();
-#else
-#pragma omp parallel for
-    for (j=0; j<N; j++) c[j] = a[j];
-#endif
-    times[0][k] = mysecond() - times[0][k];
-
-    times[1][k] = mysecond();
-#if defined(TUNED)
-    tuned_STREAM_Scale(scalar);
-#else
-#pragma omp parallel for
-    for (j=0; j<N; j++) b[j] = scalar*c[j];
-#endif
-    times[1][k] = mysecond() - times[1][k];
-
-    times[2][k] = mysecond();
-#if defined(TUNED)
-    tuned_STREAM_Add();
-#else
-#pragma omp parallel for
-    for (j=0; j<N; j++) c[j] = a[j]+b[j];
-#endif
-    times[2][k] = mysecond() - times[2][k];
-
-    times[3][k] = mysecond();
-#if defined(TUNED)
-    tuned_STREAM_Triad(scalar);
-#else
 #pragma omp parallel for
     for (j=0; j<N; j++) a[j] = b[j]+scalar*c[j];
-#endif
-    times[3][k] = mysecond() - times[3][k];
+    times[0][k] = mysecond() - times[0][k];
   }
 
   /*  --- SUMMARY --- */
 
-  for (k=1; k<NTIMES; k++)   /* note -- skip first iteration */
-    for (j=0; j<4; j++)
+  for (k=1; k<NTIMES; k++) {  /* note -- skip first iteration */
+    for (j=0; j<1; j++)
     {
       avgtime[j] = avgtime[j] + times[j][k];
       mintime[j] = MIN(mintime[j], times[j][k]);
       maxtime[j] = MAX(maxtime[j], times[j][k]);
     }
-
-  printf("Function      Rate (MB/s) \n");
-  for (j=0; j<4; j++) {
-    avgtime[j] = avgtime[j]/(double)(NTIMES-1);
-
-    printf("%s%11.4f  \n", label[j], 1.0E-06 * bytes[j]/mintime[j]);
   }
-  /* printf(HLINE);*/
 
-  /* --- Check Results --- */
-  checkSTREAMresults();
-  /*    printf(HLINE);*/
+  rate = 1.0E-06 * bytes[0]/mintime[0];
+
+  if (size == 1) {
+    printf("%d %11.4f   Rate (MB/s)\n",size, rate);
+    fd = fopen("flops","w");
+    fprintf(fd,"%g\n",rate);
+    fclose(fd);
+  } else {
+    double prate;
+    fd = fopen("flops","r");
+    fscanf(fd,"%lg",&prate);
+    fclose(fd);
+    printf("%d %11.4f   Rate (MB/s) %g \n", size, rate,rate/prate);
+  }
 
   return 0;
 }
@@ -299,96 +256,8 @@ double mysecond()
 {
   struct timeval  tp;
   struct timezone tzp;
-  int             i;
 
-  i = gettimeofday(&tp,&tzp);
+  (void) gettimeofday(&tp,&tzp);
   return ((double) tp.tv_sec + (double) tp.tv_usec * 1.e-6);
 }
 
-void checkSTREAMresults()
-{
-  double aj,bj,cj,scalar;
-  double asum,bsum,csum;
-  double epsilon;
-  int    j,k;
-
-  /* reproduce initialization */
-  aj = 1.0;
-  bj = 2.0;
-  cj = 0.0;
-  /* a[] is modified during timing check */
-  aj = 2.0E0 * aj;
-  /* now execute timing loop */
-  scalar = 3.0;
-  for (k=0; k<NTIMES; k++)
-  {
-    cj = aj;
-    bj = scalar*cj;
-    cj = aj+bj;
-    aj = bj+scalar*cj;
-  }
-  aj = aj * (double) (N);
-  bj = bj * (double) (N);
-  cj = cj * (double) (N);
-
-  asum = 0.0;
-  bsum = 0.0;
-  csum = 0.0;
-  for (j=0; j<N; j++) {
-    asum += a[j];
-    bsum += b[j];
-    csum += c[j];
-  }
-#if defined(VERBOSE)
-  printf ("Results Comparison: \n");
-  printf ("        Expected  : %f %f %f \n",aj,bj,cj);
-  printf ("        Observed  : %f %f %f \n",asum,bsum,csum);
-#endif
-
-#if !defined(abs)
-#define abs(a) ((a) >= 0 ? (a) : -(a))
-#endif
-  epsilon = 1.e-8;
-
-  if (abs(aj-asum)/asum > epsilon) {
-    printf ("Failed Validation on array a[]\n");
-    printf ("        Expected  : %f \n",aj);
-    printf ("        Observed  : %f \n",asum);
-  } else if (abs(bj-bsum)/bsum > epsilon) {
-    printf ("Failed Validation on array b[]\n");
-    printf ("        Expected  : %f \n",bj);
-    printf ("        Observed  : %f \n",bsum);
-  } else if (abs(cj-csum)/csum > epsilon) {
-    printf ("Failed Validation on array c[]\n");
-    printf ("        Expected  : %f \n",cj);
-    printf ("        Observed  : %f \n",csum);
-  } else ;  /* printf ("Solution Validates\n"); */
-}
-
-void tuned_STREAM_Copy()
-{
-  int j;
-#pragma omp parallel for
-  for (j=0; j<N; j++) c[j] = a[j];
-}
-
-void tuned_STREAM_Scale(double scalar)
-{
-  int j;
-#pragma omp parallel for
-  for (j=0; j<N; j++) b[j] = scalar*c[j];
-}
-
-void tuned_STREAM_Add()
-{
-  int j;
-#pragma omp parallel for
-  for (j=0; j<N; j++) c[j] = a[j]+b[j];
-}
-
-void tuned_STREAM_Triad(double scalar)
-{
-  int j;
-#pragma omp parallel for
-  for (j=0; j<N; j++) a[j] = b[j]+scalar*c[j];
-}

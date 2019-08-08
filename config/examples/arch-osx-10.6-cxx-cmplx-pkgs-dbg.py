@@ -3,7 +3,7 @@
 configure_options = [
   '--with-cc=clang',
   '--with-cxx=clang++',
-  '--with-fc=gfortran', # http://brew.sh/
+  '--with-fc=gfortran', # https://brew.sh/
   'COPTFLAGS=-g -O',
   'FOPTFLAGS=-g -O',
   'CXXOPTFLAGS=-g -O',
@@ -28,7 +28,6 @@ configure_options = [
   '--download-zlib=1',
   '--download-petsc4py=1',
   '--download-mpi4py=1',
-  '--with-cxx-dialect=C++11',
   '--download-elemental=1'
   #'--download-sundials=1',
   #'--download-hypre=1',

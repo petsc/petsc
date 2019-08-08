@@ -20,7 +20,6 @@ configure_options = [
   '--download-scalapack=1',
   '--download-mumps=1',
   '--download-elemental=1',
-  '--with-cxx-dialect=C++11',
   '--download-spai=1',
   '--download-parms=1',
   '--download-moab=1',
@@ -36,6 +35,8 @@ configure_options = [
   '--download-mfem=1',
   '--download-glvis=1',
   '--with-opengl=1',
+  '--download-libpng=1',
+  '--download-libjpeg=1',
   ]
 
 if __name__ == '__main__':

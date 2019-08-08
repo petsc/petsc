@@ -70,6 +70,7 @@ TS Object: 1 MPI processes
     clip fastest decrease 0.1
     maximum allowed timestep 1e+20
     minimum allowed timestep 1e-20
+    maximum solution absolute value to be ignored -1.
   SNES Object: 1 MPI processes
     type: ksponly
     maximum iterations=50, maximum function evaluations=10000
@@ -79,11 +80,6 @@ TS Object: 1 MPI processes
     norm schedule ALWAYS
     Jacobian is never rebuilt
     Jacobian is built using finite differences with coloring
-    SNESLineSearch Object: 1 MPI processes
-      type: basic
-      maxstep=1.000000e+08, minlambda=1.000000e-12
-      tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
-      maximum iterations=1
     KSP Object: 1 MPI processes
       type: gmres
         restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement

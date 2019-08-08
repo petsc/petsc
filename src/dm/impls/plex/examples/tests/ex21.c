@@ -18,9 +18,9 @@ static PetscErrorCode ProcessOptions(AppCtx *options)
   options->n           = 2;
 
   ierr = PetscOptionsBegin(PETSC_COMM_SELF, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex21.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex21.c", options->dim, &options->dim, NULL,1,3);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-cellSimplex", "Flag for simplices", "ex21.c", options->cellSimplex, &options->cellSimplex, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-n", "The number of faces per dimension", "ex21.c", options->n, &options->n, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-n", "The number of faces per dimension", "ex21.c", options->n, &options->n, NULL,0);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

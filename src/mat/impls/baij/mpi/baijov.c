@@ -91,7 +91,7 @@ PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C,PetscInt imax,IS is[])
      required. Based on this, buffers are allocated, and data copied into them*/
   ierr = PetscCalloc4(size,&w1,size,&w2,size,&w3,size,&w4);CHKERRQ(ierr);
   for (i=0; i<imax; i++) {
-    ierr  = PetscMemzero(w4,size*sizeof(PetscInt));CHKERRQ(ierr); /* initialise work vector*/
+    ierr  = PetscArrayzero(w4,size);CHKERRQ(ierr); /* initialise work vector*/
     idx_i = idx[i];
     len   = n[i];
     for (j=0; j<len; j++) {
@@ -134,8 +134,8 @@ PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C,PetscInt imax,IS is[])
 
   /* Allocate Memory for outgoing messages */
   ierr = PetscMalloc4(size,&outdat,size,&ptr,msz,&tmp,size,&ctr);CHKERRQ(ierr);
-  ierr = PetscMemzero(outdat,size*sizeof(PetscInt*));CHKERRQ(ierr);
-  ierr = PetscMemzero(ptr,size*sizeof(PetscInt*));CHKERRQ(ierr);
+  ierr = PetscArrayzero(outdat,size);CHKERRQ(ierr);
+  ierr = PetscArrayzero(ptr,size);CHKERRQ(ierr);
   {
     PetscInt *iptr = tmp,ict  = 0;
     for (i=0; i<nrqs; i++) {
@@ -151,7 +151,7 @@ PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C,PetscInt imax,IS is[])
   for (i=0; i<nrqs; i++) {
     j            = pa[i];
     outdat[j][0] = 0;
-    ierr         = PetscMemzero(outdat[j]+1,2*w3[j]*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr         = PetscArrayzero(outdat[j]+1,2*w3[j]);CHKERRQ(ierr);
     ptr[j]       = outdat[j] + 2*w3[j] + 1;
   }
 
@@ -171,7 +171,7 @@ PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C,PetscInt imax,IS is[])
     PetscBT  table_i;
 
     for (i=0; i<imax; i++) {
-      ierr    = PetscMemzero(ctr,size*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr    = PetscArrayzero(ctr,size);CHKERRQ(ierr);
       n_i     = n[i];
       table_i = table[i];
       idx_i   = idx[i];
@@ -437,7 +437,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Receive(Mat C,PetscInt nrqr,Pet
   ierr         = PetscMalloc1(mem_estimate,&xdata[0]);CHKERRQ(ierr);
   ++no_malloc;
   ierr = PetscBTCreate(Mbs,&xtable);CHKERRQ(ierr);
-  ierr = PetscMemzero(isz1,nrqr*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArrayzero(isz1,nrqr);CHKERRQ(ierr);
 
   ct3 = 0;
   for (i=0; i<nrqr; i++) { /* for easch mesg from proc i */
@@ -456,7 +456,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Receive(Mat C,PetscInt nrqr,Pet
           if (!(ct3 < mem_estimate)) {
             new_estimate = (PetscInt)(1.5*mem_estimate)+1;
             ierr         = PetscMalloc1(new_estimate,&tmp);CHKERRQ(ierr);
-            ierr         = PetscMemcpy(tmp,xdata[0],mem_estimate*sizeof(PetscInt));CHKERRQ(ierr);
+            ierr         = PetscArraycpy(tmp,xdata[0],mem_estimate);CHKERRQ(ierr);
             ierr         = PetscFree(xdata[0]);CHKERRQ(ierr);
             xdata[0]     = tmp;
             mem_estimate = new_estimate; ++no_malloc;
@@ -476,7 +476,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Receive(Mat C,PetscInt nrqr,Pet
             if (!(ct3 < mem_estimate)) {
               new_estimate = (PetscInt)(1.5*mem_estimate)+1;
               ierr         = PetscMalloc1(new_estimate,&tmp);CHKERRQ(ierr);
-              ierr         = PetscMemcpy(tmp,xdata[0],mem_estimate*sizeof(PetscInt));CHKERRQ(ierr);
+              ierr         = PetscArraycpy(tmp,xdata[0],mem_estimate);CHKERRQ(ierr);
               ierr         = PetscFree(xdata[0]);CHKERRQ(ierr);
               xdata[0]     = tmp;
               mem_estimate = new_estimate; ++no_malloc;
@@ -494,7 +494,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Receive(Mat C,PetscInt nrqr,Pet
             if (!(ct3 < mem_estimate)) {
               new_estimate = (PetscInt)(1.5*mem_estimate)+1;
               ierr         = PetscMalloc1(new_estimate,&tmp);CHKERRQ(ierr);
-              ierr         = PetscMemcpy(tmp,xdata[0],mem_estimate*sizeof(PetscInt));CHKERRQ(ierr);
+              ierr         = PetscArraycpy(tmp,xdata[0],mem_estimate);CHKERRQ(ierr);
               ierr         = PetscFree(xdata[0]);CHKERRQ(ierr);
               xdata[0]     = tmp;
               mem_estimate = new_estimate; ++no_malloc;
@@ -554,9 +554,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ(Mat C,PetscInt ismax,const IS isrow[
     } else { /* (*submat)[0] is a dummy matrix */
       smat = (Mat_SubSppt*)(*submat)[0]->data;
     }
-    if (!smat) {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"MatCreateSubMatrices(...,MAT_REUSE_MATRIX,...) requires submat");
-    }
+    if (!smat) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"MatCreateSubMatrices(...,MAT_REUSE_MATRIX,...) requires submat");
     nstages = smat->nstages;
   }
 
@@ -634,7 +632,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS 
   MPI_Status     *r_status1,*r_status2,*s_status1,*s_status3,*s_status2;
   MPI_Status     *r_status3,*r_status4,*s_status4;
   MPI_Comm       comm;
-  PetscScalar    **rbuf4,*rbuf4_i=NULL,**sbuf_aa,*vals,*mat_a=NULL,*imat_a,*sbuf_aa_i;
+  PetscScalar    **rbuf4,*rbuf4_i=NULL,**sbuf_aa,*vals,*mat_a=NULL,*imat_a=NULL,*sbuf_aa_i;
   PetscMPIInt    *onodes1,*olengths1,end;
   PetscInt       **row2proc,*row2proc_i,*imat_ilen,*imat_j,*imat_i;
   Mat_SubSppt    *smat_i;
@@ -691,7 +689,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS 
       if (subc->mbs != nrow[i] || subc->nbs != ncol[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong size");
 
       /* Initial matrix as if empty */
-      ierr = PetscMemzero(subc->ilen,subc->mbs*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscArrayzero(subc->ilen,subc->mbs);CHKERRQ(ierr);
 
       /* Initial matrix as if empty */
       submats[i]->factortype = C->factortype;
@@ -809,8 +807,8 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS 
 
     /* Allocate Memory for outgoing messages */
     ierr = PetscMalloc4(size,&sbuf1,size,&ptr,2*msz,&tmp,size,&ctr);CHKERRQ(ierr);
-    ierr = PetscMemzero(sbuf1,size*sizeof(PetscInt*));CHKERRQ(ierr);
-    ierr = PetscMemzero(ptr,size*sizeof(PetscInt*));CHKERRQ(ierr);
+    ierr = PetscArrayzero(sbuf1,size);CHKERRQ(ierr);
+    ierr = PetscArrayzero(ptr,size);CHKERRQ(ierr);
 
     {
       PetscInt *iptr = tmp;
@@ -827,14 +825,14 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS 
     for (i=0; i<nrqs; i++) {
       j           = pa[i];
       sbuf1[j][0] = 0;
-      ierr        = PetscMemzero(sbuf1[j]+1,2*w3[j]*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr        = PetscArrayzero(sbuf1[j]+1,2*w3[j]);CHKERRQ(ierr);
       ptr[j]      = sbuf1[j] + 2*w3[j] + 1;
     }
 
     /* Parse the isrow and copy data into outbuf */
     for (i=0; i<ismax; i++) {
       row2proc_i = row2proc[i];
-      ierr   = PetscMemzero(ctr,size*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr   = PetscArrayzero(ctr,size);CHKERRQ(ierr);
       irow_i = irow[i];
       jmax   = nrow[i];
       for (j=0; j<jmax; j++) {  /* parse the indices of each IS */
@@ -1271,15 +1269,15 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS 
           vals = sbuf_aa_i+ct2*bs2;
           for (l=0; l<nzB; l++) {
             if ((bmap[cworkB[l]]) < cstart) {
-              ierr = PetscMemcpy(vals+l*bs2,vworkB+l*bs2,bs2*sizeof(MatScalar));CHKERRQ(ierr);
+              ierr = PetscArraycpy(vals+l*bs2,vworkB+l*bs2,bs2);CHKERRQ(ierr);
             } else break;
           }
           imark = l;
           for (l=0; l<nzA; l++) {
-            ierr = PetscMemcpy(vals+(imark+l)*bs2,vworkA+l*bs2,bs2*sizeof(MatScalar));CHKERRQ(ierr);
+            ierr = PetscArraycpy(vals+(imark+l)*bs2,vworkA+l*bs2,bs2);CHKERRQ(ierr);
           }
           for (l=imark; l<nzB; l++) {
-            ierr = PetscMemcpy(vals+(nzA+l)*bs2,vworkB+l*bs2,bs2*sizeof(MatScalar));CHKERRQ(ierr);
+            ierr = PetscArraycpy(vals+(nzA+l)*bs2,vworkB+l*bs2,bs2);CHKERRQ(ierr);
           }
 
           ct2 += ncols;
@@ -1348,7 +1346,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS 
               if ((tcol = cmap_i[ctmp])) {
 #endif
                 *mat_j++ = tcol - 1;
-                ierr     = PetscMemcpy(mat_a,vworkB+l*bs2,bs2*sizeof(MatScalar));CHKERRQ(ierr);
+                ierr     = PetscArraycpy(mat_a,vworkB+l*bs2,bs2);CHKERRQ(ierr);
                 mat_a   += bs2;
                 ilen++;
               }
@@ -1364,7 +1362,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS 
 #endif
               *mat_j++ = tcol - 1;
               if (!ijonly) {
-                ierr   = PetscMemcpy(mat_a,vworkA+l*bs2,bs2*sizeof(MatScalar));CHKERRQ(ierr);
+                ierr   = PetscArraycpy(mat_a,vworkA+l*bs2,bs2);CHKERRQ(ierr);
                 mat_a += bs2;
               }
               ilen++;
@@ -1379,7 +1377,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS 
 #endif
               *mat_j++ = tcol - 1;
               if (!ijonly) {
-                ierr   = PetscMemcpy(mat_a,vworkB+l*bs2,bs2*sizeof(MatScalar));CHKERRQ(ierr);
+                ierr   = PetscArraycpy(mat_a,vworkB+l*bs2,bs2);CHKERRQ(ierr);
                 mat_a += bs2;
               }
               ilen++;
@@ -1389,7 +1387,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS 
           for (l=0; l<nzB; l++) {
             if ((ctmp = bmap[cworkB[l]]) < cstart) {
               *mat_j++ = ctmp;
-              ierr     = PetscMemcpy(mat_a,vworkB+l*bs2,bs2*sizeof(MatScalar));CHKERRQ(ierr);
+              ierr     = PetscArraycpy(mat_a,vworkB+l*bs2,bs2);CHKERRQ(ierr);
               mat_a   += bs2;
               ilen++;
             } else break;
@@ -1398,7 +1396,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS 
           for (l=0; l<nzA; l++) {
             *mat_j++ = cstart+cworkA[l];
             if (!ijonly) {
-              ierr   = PetscMemcpy(mat_a,vworkA+l*bs2,bs2*sizeof(MatScalar));CHKERRQ(ierr);
+              ierr   = PetscArraycpy(mat_a,vworkA+l*bs2,bs2);CHKERRQ(ierr);
               mat_a += bs2;
             }
             ilen++;
@@ -1406,7 +1404,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS 
           for (l=imark; l<nzB; l++) {
             *mat_j++ = bmap[cworkB[l]];
             if (!ijonly) {
-              ierr   = PetscMemcpy(mat_a,vworkB+l*bs2,bs2*sizeof(MatScalar));CHKERRQ(ierr);
+              ierr   = PetscArraycpy(mat_a,vworkB+l*bs2,bs2);CHKERRQ(ierr);
               mat_a += bs2;
             }
             ilen++;
@@ -1468,7 +1466,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS 
             if (tcol) {
               *mat_j++ = tcol - 1;
               if (!ijonly) {
-                ierr   = PetscMemcpy(mat_a,rbuf4_i+ct2*bs2,bs2*sizeof(MatScalar));CHKERRQ(ierr);
+                ierr   = PetscArraycpy(mat_a,rbuf4_i+ct2*bs2,bs2);CHKERRQ(ierr);
                 mat_a += bs2;
               }
               ilen++;
@@ -1478,7 +1476,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS 
           for (l=0; l<max2; l++,ct2++) {
             *mat_j++ = rbuf3_i[ct2]; /* same global column index of C */
             if (!ijonly) {
-              ierr   = PetscMemcpy(mat_a,rbuf4_i+ct2*bs2,bs2*sizeof(MatScalar));CHKERRQ(ierr);
+              ierr   = PetscArraycpy(mat_a,rbuf4_i+ct2*bs2,bs2);CHKERRQ(ierr);
               mat_a += bs2;
             }
             ilen++;

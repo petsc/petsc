@@ -36,8 +36,7 @@ PetscErrorCode DMInitialize_Patch(DM dm)
   dm->ops->getcoloring                     = 0;
   dm->ops->creatematrix                    = 0;
   dm->ops->createinterpolation             = 0;
-  dm->ops->getaggregates                   = 0;
-  dm->ops->getinjection                    = 0;
+  dm->ops->createinjection                 = 0;
   dm->ops->refine                          = 0;
   dm->ops->coarsen                         = 0;
   dm->ops->refinehierarchy                 = 0;
@@ -75,7 +74,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Patch(DM dm)
 /*@
   DMPatchCreate - Creates a DMPatch object, which is a collections of DMs called patches.
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 . comm - The communicator for the DMPatch object
@@ -85,7 +84,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_Patch(DM dm)
 
   Level: beginner
 
-.keywords: DMPatch, create
 @*/
 PetscErrorCode DMPatchCreate(MPI_Comm comm, DM *mesh)
 {

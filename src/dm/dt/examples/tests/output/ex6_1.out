@@ -1,0 +1,9 @@
+Gauss-Lobatto-Legendre nodes and weights computed via linear algebra: 
+ 0:  -1.0000e+00   0.0000e+00   1.0000e+00
+ 0:   3.3333e-01   1.3333e+00   3.3333e-01
+Gauss-Lobatto-Legendre nodes and weights computed via Newton: 
+ 0:  -1.0000e+00   0.0000e+00   1.0000e+00
+ 0:   3.3333e-01   1.3333e+00   3.3333e-01
+Difference: 
+ 0:   0.0000e+00   0.0000e+00   0.0000e+00
+ 0:   0.0000e+00   0.0000e+00   0.0000e+00

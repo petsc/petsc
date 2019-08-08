@@ -167,7 +167,7 @@ PetscErrorCode  PetscOptionsPopGetViewerOff(void)
 PetscErrorCode  PetscOptionsGetViewerOff(PetscBool *flg)
 {
   PetscFunctionBegin;
-  PetscValidPointer(flg,1);
+  PetscValidBoolPointer(flg,1);
   *flg = noviewer;
   PetscFunctionReturn(0);
 }
@@ -175,7 +175,7 @@ PetscErrorCode  PetscOptionsGetViewerOff(PetscBool *flg)
 /*@C
    PetscOptionsGetViewer - Gets a viewer appropriate for the type indicated by the user
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - the communicator to own the viewer
@@ -369,7 +369,7 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,PetscOptions options,const c
 /*@
    PetscViewerCreate - Creates a viewing context
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameter:
 .  comm - MPI communicator
@@ -378,10 +378,6 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,PetscOptions options,const c
 .  inviewer - location to put the PetscViewer context
 
    Level: advanced
-
-   Concepts: graphics^creating PetscViewer
-   Concepts: file input/output^creating PetscViewer
-   Concepts: sockets^creating PetscViewer
 
 .seealso: PetscViewerDestroy(), PetscViewerSetType(), PetscViewerType
 
@@ -472,8 +468,6 @@ $     PetscViewerSetType(viewer,"my_viewer_type")
    or at runtime via the option
 $     -viewer_type my_viewer_type
 
-  Concepts: registering^Viewers
-
 .seealso: PetscViewerRegisterAll(), PetscViewerRegisterDestroy()
  @*/
 PetscErrorCode  PetscViewerRegister(const char *sname,PetscErrorCode (*function)(PetscViewer))
@@ -499,8 +493,6 @@ PetscErrorCode  PetscViewerRegister(const char *sname,PetscErrorCode (*function)
 
    Notes:
     Must be called after PetscViewerCreate() before the PetscViewer is used.
-
-  Concepts: PetscViewer^setting options
 
 .seealso: PetscViewerCreate(), PetscViewerSetType(), PetscViewerType
 

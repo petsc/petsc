@@ -5,7 +5,7 @@
 /*@C
    PCMGResidualDefault - Default routine to calculate the residual.
 
-   Collective on Mat and Vec
+   Collective on Mat
 
    Input Parameters:
 +  mat - the matrix
@@ -16,8 +16,6 @@
 .  r - location to store the residual
 
    Level: developer
-
-.keywords: MG, default, multigrid, residual
 
 .seealso: PCMGSetResidual()
 @*/
@@ -43,8 +41,6 @@ PetscErrorCode  PCMGResidualDefault(Mat mat,Vec b,Vec x,Vec r)
 
    Level: advanced
 
-.keywords: MG, multigrid, get, coarse grid
-
 .seealso: PCMGGetSmootherUp(), PCMGGetSmootherDown(), PCMGGetSmoother()
 @*/
 PetscErrorCode  PCMGGetCoarseSolve(PC pc,KSP *ksp)
@@ -62,7 +58,7 @@ PetscErrorCode  PCMGGetCoarseSolve(PC pc,KSP *ksp)
    PCMGSetResidual - Sets the function to be used to calculate the residual
    on the lth level.
 
-   Logically Collective on PC and Mat
+   Logically Collective on PC
 
    Input Parameters:
 +  pc       - the multigrid context
@@ -72,8 +68,6 @@ PetscErrorCode  PCMGGetCoarseSolve(PC pc,KSP *ksp)
 -  mat      - matrix associated with residual
 
    Level: advanced
-
-.keywords:  MG, set, multigrid, residual, level
 
 .seealso: PCMGResidualDefault()
 @*/
@@ -98,7 +92,7 @@ PetscErrorCode  PCMGSetResidual(PC pc,PetscInt l,PetscErrorCode (*residual)(Mat,
    PCMGSetInterpolation - Sets the function to be used to calculate the
    interpolation from l-1 to the lth level
 
-   Logically Collective on PC and Mat
+   Logically Collective on PC
 
    Input Parameters:
 +  pc  - the multigrid context
@@ -113,8 +107,6 @@ PetscErrorCode  PCMGSetResidual(PC pc,PetscInt l,PetscErrorCode (*residual)(Mat,
 
           One can pass in the interpolation matrix or its transpose; PETSc figures
     out from the matrix size which one it is.
-
-.keywords:  multigrid, set, interpolate, level
 
 .seealso: PCMGSetRestriction()
 @*/
@@ -136,6 +128,38 @@ PetscErrorCode  PCMGSetInterpolation(PC pc,PetscInt l,Mat mat)
 }
 
 /*@
+   PCMGSetOperators - Sets operator and preconditioning matrix for lth level
+
+   Logically Collective on PC
+
+   Input Parameters:
++  pc  - the multigrid context
+.  Amat - the operator
+.  pmat - the preconditioning operator
+-  l   - the level (0 is the coarsest) to supply
+
+   Level: advanced
+
+.keywords:  multigrid, set, interpolate, level
+
+.seealso: PCMGSetRestriction(), PCMGSetInterpolation()
+@*/
+PetscErrorCode  PCMGSetOperators(PC pc,PetscInt l,Mat Amat,Mat Pmat)
+{
+  PC_MG          *mg        = (PC_MG*)pc->data;
+  PC_MG_Levels   **mglevels = mg->levels;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidHeaderSpecific(Amat,MAT_CLASSID,3);
+  PetscValidHeaderSpecific(Pmat,MAT_CLASSID,4);
+  if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  ierr = KSPSetOperators(mglevels[l]->smoothd,Amat,Pmat);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
    PCMGGetInterpolation - Gets the function to be used to calculate the
    interpolation from l-1 to the lth level
 
@@ -149,8 +173,6 @@ PetscErrorCode  PCMGSetInterpolation(PC pc,PetscInt l,Mat mat)
 .  mat - the interpolation matrix, can be NULL
 
    Level: advanced
-
-.keywords: MG, get, multigrid, interpolation, level
 
 .seealso: PCMGGetRestriction(), PCMGSetInterpolation(), PCMGGetRScale()
 @*/
@@ -177,7 +199,7 @@ PetscErrorCode  PCMGGetInterpolation(PC pc,PetscInt l,Mat *mat)
    PCMGSetRestriction - Sets the function to be used to restrict dual vectors
    from level l to l-1.
 
-   Logically Collective on PC and Mat
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - the multigrid context
@@ -195,8 +217,6 @@ PetscErrorCode  PCMGGetInterpolation(PC pc,PetscInt l,Mat *mat)
 
          If you do not set this, the transpose of the Mat set with PCMGSetInterpolation()
     is used.
-
-.keywords: MG, set, multigrid, restriction, level
 
 .seealso: PCMGSetInterpolation(), PCMGetSetInjection()
 @*/
@@ -222,7 +242,7 @@ PetscErrorCode  PCMGSetRestriction(PC pc,PetscInt l,Mat mat)
    PCMGGetRestriction - Gets the function to be used to restrict dual vectors
    from level l to l-1.
 
-   Logically Collective on PC and Mat
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - the multigrid context
@@ -232,8 +252,6 @@ PetscErrorCode  PCMGSetRestriction(PC pc,PetscInt l,Mat mat)
 .  mat - the restriction matrix
 
    Level: advanced
-
-.keywords: MG, get, multigrid, restriction, level
 
 .seealso: PCMGGetInterpolation(), PCMGSetRestriction(), PCMGGetRScale(), PCMGGetInjection()
 @*/
@@ -259,7 +277,7 @@ PetscErrorCode  PCMGGetRestriction(PC pc,PetscInt l,Mat *mat)
 /*@
    PCMGSetRScale - Sets the pointwise scaling for the restriction operator from level l to l-1.
 
-   Logically Collective on PC and Vec
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - the multigrid context
@@ -270,8 +288,6 @@ PetscErrorCode  PCMGGetRestriction(PC pc,PetscInt l,Mat *mat)
 
    Notes:
        When evaluating a function on a coarse level one does not want to do F(R * x) one does F(rscale * R * x) where rscale is 1 over the row sums of R.  It is preferable to use PCMGSetInjection() to control moving primal vectors.
-
-.keywords: MG, set, multigrid, restriction, level
 
 .seealso: PCMGSetInterpolation(), PCMGSetRestriction(), PCMGGetRScale(), PCMGSetInjection()
 @*/
@@ -306,8 +322,6 @@ PetscErrorCode  PCMGSetRScale(PC pc,PetscInt l,Vec rscale)
 
    Notes:
        When evaluating a function on a coarse level one does not want to do F(R * x) one does F(rscale * R * x) where rscale is 1 over the row sums of R.  It is preferable to use PCMGGetInjection() to control moving primal vectors.
-
-.keywords: MG, set, multigrid, restriction, level
 
 .seealso: PCMGSetInterpolation(), PCMGGetRestriction(), PCMGGetInjection()
 @*/
@@ -348,7 +362,7 @@ PetscErrorCode PCMGGetRScale(PC pc,PetscInt l,Vec *rscale)
    PCMGSetInjection - Sets the function to be used to inject primal vectors
    from level l to l-1.
 
-   Logically Collective on PC and Mat
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - the multigrid context
@@ -356,8 +370,6 @@ PetscErrorCode PCMGGetRScale(PC pc,PetscInt l,Vec *rscale)
 -  mat - the injection matrix
 
    Level: advanced
-
-.keywords: MG, set, multigrid, restriction, injection, level
 
 .seealso: PCMGSetRestriction()
 @*/
@@ -383,7 +395,7 @@ PetscErrorCode  PCMGSetInjection(PC pc,PetscInt l,Mat mat)
    PCMGGetInjection - Gets the function to be used to inject primal vectors
    from level l to l-1.
 
-   Logically Collective on PC and Mat
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - the multigrid context
@@ -393,8 +405,6 @@ PetscErrorCode  PCMGSetInjection(PC pc,PetscInt l,Mat mat)
 .  mat - the restriction matrix (may be NULL if no injection is available).
 
    Level: advanced
-
-.keywords: MG, get, multigrid, restriction, injection, level
 
 .seealso: PCMGSetInjection(), PCMGetGetRestriction()
 @*/
@@ -434,8 +444,6 @@ PetscErrorCode  PCMGGetInjection(PC pc,PetscInt l,Mat *mat)
 
    Level: advanced
 
-.keywords: MG, get, multigrid, level, smoother, pre-smoother, post-smoother
-
 .seealso: PCMGGetSmootherUp(), PCMGGetSmootherDown(), PCMGGetCoarseSolve()
 @*/
 PetscErrorCode  PCMGGetSmoother(PC pc,PetscInt l,KSP *ksp)
@@ -467,8 +475,6 @@ PetscErrorCode  PCMGGetSmoother(PC pc,PetscInt l,KSP *ksp)
    Notes:
     calling this will result in a different pre and post smoother so you may need to
          set options on the pre smoother also
-
-.keywords: MG, multigrid, get, smoother, up, post-smoother, level
 
 .seealso: PCMGGetSmootherUp(), PCMGGetSmootherDown()
 @*/
@@ -539,8 +545,6 @@ PetscErrorCode  PCMGGetSmootherUp(PC pc,PetscInt l,KSP *ksp)
     calling this will result in a different pre and post smoother so you may need to
          set options on the post smoother also
 
-.keywords: MG, multigrid, get, smoother, down, pre-smoother, level
-
 .seealso: PCMGGetSmootherUp(), PCMGGetSmoother()
 @*/
 PetscErrorCode  PCMGGetSmootherDown(PC pc,PetscInt l,KSP *ksp)
@@ -571,8 +575,6 @@ PetscErrorCode  PCMGGetSmootherDown(PC pc,PetscInt l,KSP *ksp)
 
    Level: advanced
 
-.keywords: MG, multigrid, set, cycles, V-cycle, W-cycle, level
-
 .seealso: PCMGSetCycleType()
 @*/
 PetscErrorCode  PCMGSetCycleTypeOnLevel(PC pc,PetscInt l,PCMGCycleType c)
@@ -593,7 +595,7 @@ PetscErrorCode  PCMGSetCycleTypeOnLevel(PC pc,PetscInt l,PCMGCycleType c)
    PCMGSetRhs - Sets the vector space to be used to store the right-hand side
    on a particular level.
 
-   Logically Collective on PC and Vec
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - the multigrid context
@@ -607,8 +609,6 @@ PetscErrorCode  PCMGSetCycleTypeOnLevel(PC pc,PetscInt l,PCMGCycleType c)
 
           You do not need to keep a reference to this vector if you do
           not need it PCDestroy() will properly free it.
-
-.keywords: MG, multigrid, set, right-hand-side, rhs, level
 
 .seealso: PCMGSetX(), PCMGSetR()
 @*/
@@ -633,7 +633,7 @@ PetscErrorCode  PCMGSetRhs(PC pc,PetscInt l,Vec c)
    PCMGSetX - Sets the vector space to be used to store the solution on a
    particular level.
 
-   Logically Collective on PC and Vec
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - the multigrid context
@@ -647,8 +647,6 @@ PetscErrorCode  PCMGSetRhs(PC pc,PetscInt l,Vec c)
 
           You do not need to keep a reference to this vector if you do
           not need it PCDestroy() will properly free it.
-
-.keywords: MG, multigrid, set, solution, level
 
 .seealso: PCMGSetRhs(), PCMGSetR()
 @*/
@@ -673,7 +671,7 @@ PetscErrorCode  PCMGSetX(PC pc,PetscInt l,Vec c)
    PCMGSetR - Sets the vector space to be used to store the residual on a
    particular level.
 
-   Logically Collective on PC and Vec
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - the multigrid context
@@ -688,7 +686,6 @@ PetscErrorCode  PCMGSetX(PC pc,PetscInt l,Vec c)
           You do not need to keep a reference to this vector if you do
           not need it PCDestroy() will properly free it.
 
-.keywords: MG, multigrid, set, residual, level
 @*/
 PetscErrorCode  PCMGSetR(PC pc,PetscInt l,Vec c)
 {

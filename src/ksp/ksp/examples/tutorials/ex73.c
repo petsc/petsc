@@ -212,8 +212,8 @@ static PetscErrorCode DMDACreatePermutation_2d(DM dmrepart,DM dmf,Mat *mat)
   ierr = PetscCalloc1(Mp_re,&range_i_re);CHKERRQ(ierr);
   ierr = PetscCalloc1(Np_re,&range_j_re);CHKERRQ(ierr);
 
-  if (_range_i_re) {ierr = PetscMemcpy(range_i_re,_range_i_re,sizeof(PetscInt)*Mp_re);CHKERRQ(ierr);}
-  if (_range_j_re) {ierr = PetscMemcpy(range_j_re,_range_j_re,sizeof(PetscInt)*Np_re);CHKERRQ(ierr);}
+  if (_range_i_re) {ierr = PetscArraycpy(range_i_re,_range_i_re,Mp_re);CHKERRQ(ierr);}
+  if (_range_j_re) {ierr = PetscArraycpy(range_j_re,_range_j_re,Np_re);CHKERRQ(ierr);}
 
   ierr = MPI_Bcast(range_i_re,Mp_re,MPIU_INT,0,comm);CHKERRQ(ierr);
   ierr = MPI_Bcast(range_j_re,Np_re,MPIU_INT,0,comm);CHKERRQ(ierr);

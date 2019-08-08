@@ -121,7 +121,7 @@ PetscErrorCode MatDuplicate_SeqAIJSELL(Mat A, MatDuplicateOption op, Mat *M)
   ierr = MatDuplicate_SeqAIJ(A,op,M);CHKERRQ(ierr);
   aijsell      = (Mat_SeqAIJSELL*) A->spptr;
   aijsell_dest = (Mat_SeqAIJSELL*) (*M)->spptr;
-  ierr = PetscMemcpy(aijsell_dest,aijsell,sizeof(Mat_SeqAIJSELL));CHKERRQ(ierr);
+  ierr = PetscArraycpy(aijsell_dest,aijsell,1);CHKERRQ(ierr);
   /* We don't duplicate the shadow matrix -- that will be constructed as needed. */
   aijsell_dest->S = NULL;
   if (aijsell->eager_shadow) {
@@ -295,7 +295,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJSELL(Mat A,MatType type,MatR
    Because SEQAIJSELL is a subtype of SEQAIJ, the option "-mat_seqaij_type seqaijsell" can be used to make
    sequential AIJ matrices default to being instances of MATSEQAIJSELL.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - MPI communicator, set to PETSC_COMM_SELF
@@ -315,8 +315,6 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJSELL(Mat A,MatType type,MatR
    If nnz is given then nz is ignored
 
    Level: intermediate
-
-.keywords: matrix, sparse
 
 .seealso: MatCreate(), MatCreateMPIAIJSELL(), MatSetValues()
 @*/

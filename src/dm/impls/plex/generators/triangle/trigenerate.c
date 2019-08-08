@@ -1,5 +1,8 @@
 #include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 
+#if !defined(ANSI_DECLARATORS)
+#define ANSI_DECLARATORS
+#endif
 #include <triangle.h>
 
 static PetscErrorCode InitInput_Triangle(struct triangulateio *inputCtx)

@@ -46,6 +46,31 @@ PetscErrorCode  DMCreateInterpolationScale(DM dac,DM daf,Mat mat,Vec *scale)
   PetscFunctionReturn(0);
 }
 
+/*
+   Since the interpolation uses MATMAIJ for dof > 0 we convert request for non-MATAIJ baseded matrices to MATAIJ.
+   This is a bit of a hack, the reason for it is partially because -dm_mat_type defines the
+   matrix type for both the operator matrices and the interpolation matrices so that users
+   can select matrix types of base MATAIJ for accelerators
+*/
+static PetscErrorCode ConvertToAIJ(MatType intype,MatType *outtype)
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+  char           const *types[3] = {MATAIJ,MATSEQAIJ,MATMPIAIJ};
+  PetscBool      flg;
+
+  PetscFunctionBegin;
+  *outtype = MATAIJ;
+  for (i=0; i<3; i++) {
+    ierr = PetscStrbeginswith(intype,types[i],&flg);CHKERRQ(ierr);
+    if (flg) {
+      *outtype = intype;
+      PetscFunctionReturn(0);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
 {
   PetscErrorCode         ierr;
@@ -58,7 +83,7 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
   Mat                    mat;
   DMBoundaryType         bx;
   ISLocalToGlobalMapping ltog_f,ltog_c;
-
+  MatType                mattype;
 
   PetscFunctionBegin;
   ierr = DMDAGetInfo(dac,0,&Mx,0,0,0,0,0,0,0,&bx,0,0,0);CHKERRQ(ierr);
@@ -83,8 +108,18 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
 
   /* create interpolation matrix */
   ierr = MatCreate(PetscObjectComm((PetscObject)dac),&mat);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  /*
+     Temporary hack: Since the MAIJ matrix must be converted to AIJ before being used by the GPU
+     we don't want the original unconverted matrix copied to the GPU
+   */
+  if (dof > 1) {
+    ierr = MatPinToCPU(mat,PETSC_TRUE);CHKERRQ(ierr);
+  }
+  #endif
   ierr = MatSetSizes(mat,m_f,m_c,mx,Mx);CHKERRQ(ierr);
-  ierr = MatSetType(mat,MATAIJ);CHKERRQ(ierr);
+  ierr = ConvertToAIJ(dac->mattype,&mattype);CHKERRQ(ierr);
+  ierr = MatSetType(mat,mattype);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(mat,2,NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(mat,2,NULL,1,NULL);CHKERRQ(ierr);
 
@@ -189,6 +224,7 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q0(DM dac,DM daf,Mat *A)
   PetscScalar            v[2],x;
   Mat                    mat;
   DMBoundaryType         bx;
+  MatType                mattype;
 
   PetscFunctionBegin;
   ierr = DMDAGetInfo(dac,0,&Mx,0,0,0,0,0,0,0,&bx,0,0,0);CHKERRQ(ierr);
@@ -215,8 +251,18 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q0(DM dac,DM daf,Mat *A)
 
   /* create interpolation matrix */
   ierr = MatCreate(PetscObjectComm((PetscObject)dac),&mat);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  /*
+     Temporary hack: Since the MAIJ matrix must be converted to AIJ before being used by the GPU
+     we don't want the original unconverted matrix copied to the GPU
+   */
+  if (dof > 1) {
+    ierr = MatPinToCPU(mat,PETSC_TRUE);CHKERRQ(ierr);
+  }
+  #endif
   ierr = MatSetSizes(mat,m_f,m_c,mx,Mx);CHKERRQ(ierr);
-  ierr = MatSetType(mat,MATAIJ);CHKERRQ(ierr);
+  ierr = ConvertToAIJ(dac->mattype,&mattype);CHKERRQ(ierr);
+  ierr = MatSetType(mat,mattype);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(mat,2,NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(mat,2,NULL,0,NULL);CHKERRQ(ierr);
 
@@ -268,6 +314,7 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
   PetscScalar            v[4],x,y;
   Mat                    mat;
   DMBoundaryType         bx,by;
+  MatType                mattype;
 
   PetscFunctionBegin;
   ierr = DMDAGetInfo(dac,0,&Mx,&My,0,0,0,0,0,0,&bx,&by,0,0);CHKERRQ(ierr);
@@ -350,8 +397,18 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
     }
   }
   ierr = MatCreate(PetscObjectComm((PetscObject)daf),&mat);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  /*
+     Temporary hack: Since the MAIJ matrix must be converted to AIJ before being used by the GPU
+     we don't want the original unconverted matrix copied to the GPU
+  */
+  if (dof > 1) {
+    ierr = MatPinToCPU(mat,PETSC_TRUE);CHKERRQ(ierr);
+  }
+#endif
   ierr = MatSetSizes(mat,m_f*n_f,col_scale*m_c*n_c,mx*my,col_scale*Mx*My);CHKERRQ(ierr);
-  ierr = MatSetType(mat,MATAIJ);CHKERRQ(ierr);
+  ierr = ConvertToAIJ(dac->mattype,&mattype);CHKERRQ(ierr);
+  ierr = MatSetType(mat,mattype);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(mat,0,dnz);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(mat,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
@@ -495,6 +552,7 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
   PetscScalar            v[4];
   Mat                    mat;
   DMBoundaryType         bx,by;
+  MatType                mattype;
 
   PetscFunctionBegin;
   ierr = DMDAGetInfo(dac,0,&Mx,&My,0,0,0,0,0,0,&bx,&by,0,0);CHKERRQ(ierr);
@@ -561,8 +619,18 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
     }
   }
   ierr = MatCreate(PetscObjectComm((PetscObject)daf),&mat);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  /*
+     Temporary hack: Since the MAIJ matrix must be converted to AIJ before being used by the GPU
+     we don't want the original unconverted matrix copied to the GPU
+  */
+  if (dof > 1) {
+    ierr = MatPinToCPU(mat,PETSC_TRUE);CHKERRQ(ierr);
+  }
+  #endif
   ierr = MatSetSizes(mat,m_f*n_f,col_scale*m_c*n_c,mx*my,col_scale*Mx*My);CHKERRQ(ierr);
-  ierr = MatSetType(mat,MATAIJ);CHKERRQ(ierr);
+  ierr = ConvertToAIJ(dac->mattype,&mattype);CHKERRQ(ierr);
+  ierr = MatSetType(mat,mattype);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(mat,0,dnz);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(mat,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
@@ -610,6 +678,7 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
   PetscScalar            v[8];
   Mat                    mat;
   DMBoundaryType         bx,by,bz;
+  MatType                mattype;
 
   PetscFunctionBegin;
   ierr = DMDAGetInfo(dac,0,&Mx,&My,&Mz,0,0,0,0,0,&bx,&by,&bz,0);CHKERRQ(ierr);
@@ -685,8 +754,18 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
     }
   }
   ierr = MatCreate(PetscObjectComm((PetscObject)daf),&mat);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  /*
+     Temporary hack: Since the MAIJ matrix must be converted to AIJ before being used by the GPU
+     we don't want the original unconverted matrix copied to the GPU
+  */
+  if (dof > 1) {
+    ierr = MatPinToCPU(mat,PETSC_TRUE);CHKERRQ(ierr);
+  }
+  #endif
   ierr = MatSetSizes(mat,m_f*n_f*p_f,col_scale*m_c*n_c*p_c,mx*my*mz,col_scale*Mx*My*Mz);CHKERRQ(ierr);
-  ierr = MatSetType(mat,MATAIJ);CHKERRQ(ierr);
+  ierr = ConvertToAIJ(dac->mattype,&mattype);CHKERRQ(ierr);
+  ierr = MatSetType(mat,mattype);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(mat,0,dnz);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(mat,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
@@ -735,6 +814,7 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
   PetscScalar            v[8],x,y,z;
   Mat                    mat;
   DMBoundaryType         bx,by,bz;
+  MatType                mattype;
 
   PetscFunctionBegin;
   ierr = DMDAGetInfo(dac,0,&Mx,&My,&Mz,0,0,0,0,0,&bx,&by,&bz,0);CHKERRQ(ierr);
@@ -835,8 +915,18 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
     }
   }
   ierr = MatCreate(PetscObjectComm((PetscObject)dac),&mat);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  /*
+     Temporary hack: Since the MAIJ matrix must be converted to AIJ before being used by the GPU
+     we don't want the original unconverted matrix copied to the GPU
+  */
+  if (dof > 1) {
+    ierr = MatPinToCPU(mat,PETSC_TRUE);CHKERRQ(ierr);
+  }
+  #endif
   ierr = MatSetSizes(mat,m_f*n_f*p_f,m_c*n_c*p_c,mx*my*mz,Mx*My*Mz);CHKERRQ(ierr);
-  ierr = MatSetType(mat,MATAIJ);CHKERRQ(ierr);
+  ierr = ConvertToAIJ(dac->mattype,&mattype);CHKERRQ(ierr);
+  ierr = MatSetType(mat,mattype);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(mat,0,dnz);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(mat,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
@@ -1303,7 +1393,36 @@ PetscErrorCode  DMCreateInjection_DA(DM dac,DM daf,Mat *mat)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  DMCreateAggregates_DA(DM dac,DM daf,Mat *rest)
+/*@
+   DMCreateAggregates - Deprecated, see DMDACreateAggregates.
+@*/
+PetscErrorCode DMCreateAggregates(DM dm1,DM dm2,Mat *mat)
+{
+  return DMDACreateAggregates(dm1,dm2,mat);
+}
+
+/*@
+   DMDACreateAggregates - Gets the aggregates that map between
+   grids associated with two DMDAs.
+
+   Collective on dmc
+
+   Input Parameters:
++  dmc - the coarse grid DMDA
+-  dmf - the fine grid DMDA
+
+   Output Parameters:
+.  rest - the restriction matrix (transpose of the projection matrix)
+
+   Level: intermediate
+
+   Note: This routine is not used by PETSc.
+   It is not clear what its use case is and it may be removed in a future release.
+   Users should contact petsc-maint@mcs.anl.gov if they plan to use it.
+
+.seealso: DMRefine(), DMCreateInjection(), DMCreateInterpolation()
+@*/
+PetscErrorCode DMDACreateAggregates(DM dac,DM daf,Mat *rest)
 {
   PetscErrorCode         ierr;
   PetscInt               dimc,Mc,Nc,Pc,mc,nc,pc,dofc,sc;
@@ -1327,8 +1446,8 @@ PetscErrorCode  DMCreateAggregates_DA(DM dac,DM daf,Mat *rest)
   ISLocalToGlobalMapping ltogmf,ltogmc;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dac,DM_CLASSID,1);
-  PetscValidHeaderSpecific(daf,DM_CLASSID,2);
+  PetscValidHeaderSpecificType(dac,DM_CLASSID,1,DMDA);
+  PetscValidHeaderSpecificType(daf,DM_CLASSID,2,DMDA);
   PetscValidPointer(rest,3);
 
   ierr = DMDAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&bxc,&byc,&bzc,&stc);CHKERRQ(ierr);

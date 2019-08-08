@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 
 configure_options = [
-  'COPTFLAGS=-g -O',
-  'FOPTFLAGS=-g -O',
-  'CXXOPTFLAGS=-g -O',
   '--with-gcov=1',
   #'--download-mpich=1', use system MPI as elemental fails with this
   '--download-fblaslapack=1',
@@ -19,7 +16,6 @@ configure_options = [
   '--download-scalapack=1',
   '--download-mumps=1',
   '--download-elemental=1',
-  '--with-cxx-dialect=C++11',
   '--download-spai=1',
   '--download-parms=1',
   '--download-chaco=1',

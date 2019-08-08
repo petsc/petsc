@@ -8,7 +8,7 @@
 /*@
    DMDAGetLogicalCoordinate - Returns a the i,j,k logical coordinate for the closest mesh point to a x,y,z point in the coordinates of the DMDA
 
-   Collective on DMDA
+   Collective on da
 
    Input Parameters:
 +  da - the distributed array
@@ -23,7 +23,6 @@
    Notes:
    All processors that share the DMDA must call this with the same coordinate value
 
-.keywords: distributed array, get, processor subset
 @*/
 PetscErrorCode  DMDAGetLogicalCoordinate(DM da,PetscScalar x,PetscScalar y,PetscScalar z,PetscInt *II,PetscInt *JJ,PetscInt *KK,PetscScalar *X,PetscScalar *Y,PetscScalar *Z)
 {
@@ -95,7 +94,6 @@ PetscErrorCode  DMDAGetLogicalCoordinate(DM da,PetscScalar x,PetscScalar y,Petsc
    Notes:
    All processors that share the DMDA must call this with the same gp value
 
-.keywords: distributed array, get, processor subset
 @*/
 PetscErrorCode  DMDAGetRay(DM da,DMDADirection dir,PetscInt gp,Vec *newvec,VecScatter *scatter)
 {
@@ -169,7 +167,7 @@ PetscErrorCode  DMDAGetRay(DM da,DMDADirection dir,PetscInt gp,Vec *newvec,VecSc
    processors in a DMDA that own a particular global x, y, or z grid point
    (corresponding to a logical plane in a 3D grid or a line in a 2D grid).
 
-   Collective on DMDA
+   Collective on da
 
    Input Parameters:
 +  da - the distributed array
@@ -192,7 +190,6 @@ PetscErrorCode  DMDAGetRay(DM da,DMDADirection dir,PetscInt gp,Vec *newvec,VecSc
 
    Not supported from Fortran
 
-.keywords: distributed array, get, processor subset
 @*/
 PetscErrorCode  DMDAGetProcessorSubset(DM da,DMDADirection dir,PetscInt gp,MPI_Comm *comm)
 {
@@ -245,7 +242,7 @@ PetscErrorCode  DMDAGetProcessorSubset(DM da,DMDADirection dir,PetscInt gp,MPI_C
    processors in a DMDA adjacent in a particular dimension,
    corresponding to a logical plane in a 3D grid or a line in a 2D grid.
 
-   Collective on DMDA
+   Collective on da
 
    Input Parameters:
 +  da - the distributed array
@@ -263,7 +260,6 @@ PetscErrorCode  DMDAGetProcessorSubset(DM da,DMDADirection dir,PetscInt gp,MPI_C
 
    Not supported from Fortran
 
-.keywords: distributed array, get, processor subset
 @*/
 PetscErrorCode  DMDAGetProcessorSubsets(DM da, DMDADirection dir, MPI_Comm *subcomm)
 {

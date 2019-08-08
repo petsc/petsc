@@ -396,6 +396,11 @@ int main(int argc,char **argv)
       args: -dm_view -stag_grid_x 13 -stag_boundary_type_x periodic -a 1.1234
 
    test:
+      suffix: periodic_seq
+      nsize: 1
+      args: -dm_view -stag_grid_x 13 -stag_boundary_type_x periodic -a 1.1234
+
+   test:
       suffix: ghosted_vacuous
       nsize: 3
       args: -dm_view -stag_grid_x 13 -stag_boundary_type_x ghosted -a 1.1234

@@ -38,21 +38,25 @@ class Configure(config.base.Configure):
     if hasattr(self, 'CC'):
       self.pushLanguage('C')
       desc.append('  C Compiler:         '+self.getCompiler()+' '+self.getCompilerFlags())
+      if self.compilerflags.version['C']: desc.append('    Version: '+self.compilerflags.version['C'])
       if not self.getLinker() == self.getCompiler(): desc.append('  C Linker:           '+self.getLinker()+' '+self.getLinkerFlags())
       self.popLanguage()
     if hasattr(self, 'CUDAC'):
       self.pushLanguage('CUDA')
       desc.append('  CUDA Compiler:      '+self.getCompiler()+' '+self.getCompilerFlags())
+      if self.compilerflags.version['CUDA']: desc.append('    Version: '+self.compilerflags.version['CUDA'])
       if not self.getLinker() == self.getCompiler(): desc.append('  CUDA Linker:        '+self.getLinker()+' '+self.getLinkerFlags())
       self.popLanguage()
     if hasattr(self, 'CXX'):
       self.pushLanguage('Cxx')
       desc.append('  C++ Compiler:       '+self.getCompiler()+' '+self.getCompilerFlags())
+      if self.compilerflags.version['Cxx']: desc.append('    Version: '+self.compilerflags.version['Cxx'])
       if not self.getLinker() == self.getCompiler(): desc.append('  C++ Linker:         '+self.getLinker()+' '+self.getLinkerFlags())
       self.popLanguage()
     if hasattr(self, 'FC'):
       self.pushLanguage('FC')
       desc.append('  Fortran Compiler:   '+self.getCompiler()+' '+self.getCompilerFlags())
+      if self.compilerflags.version['FC']: desc.append('    Version: '+self.compilerflags.version['FC'])
       if not self.getLinker() == self.getCompiler(): desc.append('  Fortran Linker:     '+self.getLinker()+' '+self.getLinkerFlags())
       self.popLanguage()
     desc.append('Linkers:')
@@ -88,9 +92,6 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-FFLAGS=<string>',       nargs.Arg(None, None, 'Specify the Fortran compiler options'))
     help.addArgument('Compilers', '-FC_LINKER_FLAGS=<string>',        nargs.Arg(None, [], 'Specify the FC linker flags'))
 
-    help.addArgument('Compilers', '-with-gnu-compilers=<bool>',      nargs.ArgBool(None, 1, 'Try to use GNU compilers'))
-    help.addArgument('Compilers', '-with-vendor-compilers=<vendor as string>', nargs.Arg(None, '', 'Try to use vendor compilers (no argument all vendors, 0 no vendors)'))
-
     help.addArgument('Compilers', '-with-large-file-io=<bool>', nargs.ArgBool(None, 0, 'Allow IO with files greater then 2 GB'))
 
     help.addArgument('Compilers', '-CUDAPP=<prog>',        nargs.Arg(None, None, 'Specify the CUDA preprocessor'))
@@ -121,6 +122,7 @@ class Configure(config.base.Configure):
     config.base.Configure.setupDependencies(self, framework)
     self.headers = framework.require('config.headers', None)
     self.libraries = framework.require('config.libraries', None)
+    self.compilerflags = framework.require('config.compilerFlags', None)
     return
 
   def isNAG(compiler, log):
@@ -138,7 +140,7 @@ class Configure(config.base.Configure):
   def isGNU(compiler, log):
     '''Returns true if the compiler is a GNU compiler'''
     try:
-      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help', log = log)
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help | head -n 20 ', log = log)
       output = output + error
       return (any([s in output for s in ['www.gnu.org',
                                          'bugzilla.redhat.com',
@@ -162,7 +164,7 @@ class Configure(config.base.Configure):
   def isClang(compiler, log):
     '''Returns true if the compiler is a Clang/LLVM compiler'''
     try:
-      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help', log = log)
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help | head -n 500', log = log)
       output = output + error
       return any([s in output for s in ['Emit Clang AST']])
     except RuntimeError:
@@ -235,7 +237,7 @@ class Configure(config.base.Configure):
   def isG95(compiler, log):
     '''Returns true if the compiler is g95'''
     try:
-      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help', log = log)
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help | head -n 20', log = log)
       output = output + error
       if output.find('Unrecognised option --help passed to ld') >=0:    # NAG f95 compiler
         return 0
@@ -249,7 +251,7 @@ class Configure(config.base.Configure):
   def isCompaqF90(compiler, log):
     '''Returns true if the compiler is Compaq f90'''
     try:
-      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help', log = log)
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help | head -n 20', log = log)
       output = output + error
       if output.find('Unrecognised option --help passed to ld') >=0:    # NAG f95 compiler
         return 0
@@ -287,7 +289,7 @@ class Configure(config.base.Configure):
   def isIntel(compiler, log):
     '''Returns true if the compiler is a Intel compiler'''
     try:
-      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help', log = log)
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help | head -n 20', log = log)
       output = output + error
       if output.find('Intel Corporation') >= 0 :
         return 1
@@ -441,16 +443,6 @@ class Configure(config.base.Configure):
       return 1
     return 0
 
-  def checkVendor(self):
-    '''Determine the compiler vendor'''
-    self.vendor = self.argDB['with-vendor-compilers']
-    if self.argDB['with-vendor-compilers'] == 'no' or self.argDB['with-vendor-compilers'] == 'false':
-      self.vendor = None
-    if self.argDB['with-vendor-compilers'] == '1' or self.argDB['with-vendor-compilers'] == 'yes' or self.argDB['with-vendor-compilers'] == 'true':
-      self.vendor = ''
-    self.logPrint('Compiler vendor is "'+str(self.vendor)+'"')
-    return
-
   def checkInitialFlags(self):
     '''Initialize the compiler and linker flags'''
     for language in ['C', 'CUDA', 'Cxx', 'FC']:
@@ -498,17 +490,20 @@ class Configure(config.base.Configure):
       if not self.checkRun(linkLanguage=linkLanguage):
         msg = 'Cannot run executables created with '+language+'. If this machine uses a batch system \nto submit jobs you will need to configure using ./configure with the additional option  --with-batch.\n Otherwise there is problem with the compilers. Can you compile and run code with your compiler \''+ self.getCompiler()+'\'?\n'
         if self.isIntel(self.getCompiler(), self.log):
-          msg = msg + 'See http://www.mcs.anl.gov/petsc/documentation/faq.html#libimf'
+          msg = msg + 'See https://www.mcs.anl.gov/petsc/documentation/faq.html#libimf'
         self.popLanguage()
         raise OSError(msg)
     self.popLanguage()
     return
 
   def generateCCompilerGuesses(self):
-    '''Determine the C compiler using CC, then --with-cc, then MPI, then GNU, then vendors
-       - Any given category can be excluded'''
+    '''Determine the C compiler '''
     if hasattr(self, 'CC'):
       yield self.CC
+      if self.argDB['download-mpich']: mesg ='with downloaded MPICH'
+      elif self.argDB['download-openmpi']: mesg ='with downloaded OpenMPI'
+      else: mesg = ''
+      raise RuntimeError('Error '+mesg+': '+self.mesg)
     elif 'with-cc' in self.argDB:
       if self.isWindows(self.argDB['with-cc'], self.log):
         yield 'win32fe '+self.argDB['with-cc']
@@ -529,7 +524,7 @@ class Configure(config.base.Configure):
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'hcc')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpcc_r')
       self.usedMPICompilers = 0
-      raise RuntimeError('MPI compiler wrappers in '+self.argDB['with-mpi-dir']+'/bin do not work. See http://www.mcs.anl.gov/petsc/documentation/faq.html#mpi-compilers')
+      raise RuntimeError('MPI compiler wrappers in '+self.argDB['with-mpi-dir']+'/bin do not work. See https://www.mcs.anl.gov/petsc/documentation/faq.html#mpi-compilers')
     else:
       if self.useMPICompilers() and 'with-mpi-dir' in self.argDB:
       # if it gets here these means that self.argDB['with-mpi-dir']/bin does not exist so we should not search for MPI compilers
@@ -539,49 +534,22 @@ class Configure(config.base.Configure):
         self.argDB['with-mpi-compilers'] = 0
       if self.useMPICompilers():
         self.usedMPICompilers = 1
-        if Configure.isGNU('mpicc', self.log) and self.argDB['with-gnu-compilers']:
-          yield 'mpicc'
-        if Configure.isGNU('hcc', self.log) and self.argDB['with-gnu-compilers']:
-          yield 'hcc'
-        if not Configure.isGNU('mpicc', self.log) and (not self.vendor is None):
-          yield 'mpicc'
-        if not Configure.isGNU('hcc', self.log) and (not self.vendor is None):
-          yield 'hcc'
-        if not self.vendor is None:
-          yield 'mpcc_r'
-          yield 'mpcc'
-          yield 'mpxlc'
+        yield 'mpicc'
+        yield 'mpiicc'
+        yield 'mpcc_r'
+        yield 'mpcc'
+        yield 'mpxlc'
+        yield 'hcc'
         self.usedMPICompilers = 0
-      vendor = self.vendor
-      if (not vendor) and self.argDB['with-gnu-compilers']:
-        yield 'gcc'
-        if Configure.isGNU('cc', self.log):
-          yield 'cc'
-      if not self.vendor is None:
-        if not vendor and not Configure.isGNU('cc', self.log):
-          yield 'cc'
-        if vendor == 'borland' or not vendor:
-          yield 'win32fe bcc32'
-        if vendor == 'kai' or not vendor:
-          yield 'kcc'
-        if vendor == 'ibm' or not vendor:
-          yield 'xlc'
-        if vendor == 'intel' or not vendor:
-          yield 'icc'
-          yield 'ecc'
-          yield 'win32fe icl'
-        if vendor == 'microsoft' or not vendor:
-          yield 'win32fe cl'
-        if vendor == 'portland' or not vendor:
-          yield 'pgcc'
-        if vendor == 'solaris' or not vendor:
-          if not Configure.isGNU('cc', self.log):
-            yield 'cc'
-      # duplicate code
-      if self.argDB['with-gnu-compilers']:
-        yield 'gcc'
-        if Configure.isGNU('cc', self.log):
-          yield 'cc'
+      yield 'gcc'
+      yield 'clang'
+      yield 'icc'
+      yield 'cc'
+      yield 'xlc'
+      yield 'win32fe icl'
+      yield 'win32fe cl'
+      yield 'pgcc'
+      yield 'win32fe bcc32'
     return
 
   def checkCCompiler(self):
@@ -604,6 +572,10 @@ class Configure(config.base.Configure):
         del self.CC
     if not hasattr(self, 'CC'):
       raise RuntimeError('Could not locate a functional C compiler')
+    try:
+      self.executeShellCommand(self.CC+' --version', log = self.log)
+    except:
+      pass
     return
 
   def generateCPreprocessorGuesses(self):
@@ -634,10 +606,11 @@ class Configure(config.base.Configure):
 
   def generateCUDACompilerGuesses(self):
     import os
-    '''Determine the CUDA compiler using CUDAC, then --with-cudac, then vendors
+    '''Determine the CUDA compiler using CUDAC, then --with-cudac
        - Any given category can be excluded'''
     if hasattr(self, 'CUDAC'):
       yield self.CUDAC
+      raise RuntimeError('Error: '+self.mesg)
     elif 'with-cudac' in self.argDB:
       yield self.argDB['with-cudac']
       raise RuntimeError('CUDA compiler you provided with -with-cudac='+self.argDB['with-cudac']+' does not work.'+'\n'+self.mesg)
@@ -649,10 +622,6 @@ class Configure(config.base.Configure):
       nvccPath = os.path.join(self.argDB['with-cuda-dir'], 'bin','nvcc')
       yield nvccPath
     else:
-      vendor = self.vendor
-      if not self.vendor is None:
-        if vendor == 'nvidia' or not vendor:
-          yield 'nvcc'
       yield 'nvcc'
       yield os.path.join('/Developer','NVIDIA','CUDA-6.5','bin','nvcc')
       yield os.path.join('/usr','local','cuda','bin','nvcc')
@@ -713,12 +682,15 @@ class Configure(config.base.Configure):
     return
 
   def generateCxxCompilerGuesses(self):
-    '''Determine the Cxx compiler using CXX, then --with-cxx, then MPI, then GNU, then vendors
-       - Any given category can be excluded'''
+    '''Determine the Cxx compiler'''
     import os
 
     if hasattr(self, 'CXX'):
       yield self.CXX
+      if self.argDB['download-mpich']: mesg ='with downloaded MPICH'
+      elif self.argDB['download-openmpi']: mesg ='with downloaded OpenMPI'
+      else: mesg = ''
+      raise RuntimeError('Error '+mesg+': '+self.mesg)
     elif 'with-c++' in self.argDB:
       raise RuntimeError('Keyword --with-c++ is WRONG, use --with-cxx')
     if 'with-CC' in self.argDB:
@@ -746,69 +718,45 @@ class Configure(config.base.Configure):
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpiCC')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpCC_r')
       self.usedMPICompilers = 0
-      raise RuntimeError('bin/<mpiCC,mpicxx,hcp,mpCC_r> you provided with -with-mpi-dir='+self.argDB['with-mpi-dir']+' does not work. See http://www.mcs.anl.gov/petsc/documentation/faq.html#mpi-compilers')
+      raise RuntimeError('bin/<mpiCC,mpicxx,hcp,mpCC_r> you provided with -with-mpi-dir='+self.argDB['with-mpi-dir']+' does not work. See https://www.mcs.anl.gov/petsc/documentation/faq.html#mpi-compilers')
     else:
       if self.useMPICompilers():
         self.usedMPICompilers = 1
-        if Configure.isGNU('mpicxx', self.log) and self.argDB['with-gnu-compilers']:
-          yield 'mpicxx'
-        if not Configure.isGNU('mpicxx', self.log) and (not self.vendor is None):
-          yield 'mpicxx'
-        if Configure.isGNU('mpiCC', self.log) and self.argDB['with-gnu-compilers']:
-          yield 'mpiCC'
-        if not Configure.isGNU('mpiCC', self.log) and (not self.vendor is None):
-          yield 'mpiCC'
-        if Configure.isGNU('mpic++', self.log) and self.argDB['with-gnu-compilers']:
-          yield 'mpic++'
-        if not Configure.isGNU('mpic++', self.log) and (not self.vendor is None):
-          yield 'mpic++'
-        if not self.vendor is None:
-          yield 'mpCC_r'
-          yield 'mpCC'
+        yield 'mpicxx'
+        yield 'mpiicpc'
+        yield 'mpCC_r'
+        yield 'mpiCC'
+        yield 'mpic++'
+        yield 'mpCC'
+        yield 'mpxlC'
         self.usedMPICompilers = 0
       #attempt to match c++ compiler with c compiler
       if self.CC.find('win32fe cl') >= 0:
         yield 'win32fe cl'
       elif self.CC.find('win32fe icl') >= 0:
         yield 'win32fe icl'
+      elif self.CC == 'gcc':
+        yield 'g++'
       elif self.CC == 'clang':
         yield 'clang++'
       elif self.CC == 'icc':
         yield 'icpc'
-      vendor = self.vendor
-      if (not vendor) and self.argDB['with-gnu-compilers']:
-        yield 'g++'
-        if Configure.isGNU('c++', self.log):
-          yield 'c++'
-      if not self.vendor is None:
-        if not vendor:
-          if not Configure.isGNU('c++', self.log):
-            yield 'c++'
-          if not Configure.isGNU('CC', self.log):
-            yield 'CC'
-          yield 'cxx'
-          yield 'cc++'
-        if vendor == 'borland' or not vendor:
-          yield 'win32fe bcc32'
-        if vendor == 'ibm' or not vendor:
-          yield 'xlC'
-        if vendor == 'intel' or not vendor:
-          yield 'icpc'
-          yield 'ccpc'
-          yield 'icc'
-          yield 'ecc'
-          yield 'win32fe icl'
-        if vendor == 'microsoft' or not vendor:
-          yield 'win32fe cl'
-        if vendor == 'portland' or not vendor:
-          yield 'pgCC'
-        if vendor == 'solaris':
-          yield 'CC'
-      #duplicate code
-      if self.argDB['with-gnu-compilers']:
-        yield 'g++'
-        if Configure.isGNU('c++', self.log):
-          yield 'c++'
+      elif self.CC == 'xlc':
+        yield 'xlC'
+      yield 'g++'
+      yield 'clang++'
+      yield 'c++'
+      yield 'icpc'
+      yield 'CC'
+      yield 'cxx'
+      yield 'cc++'
+      yield 'xlC'
+      yield 'ccpc'
+      yield 'win32fe icl'
+      yield 'win32fe cl'
+      yield 'pgCC'
+      yield 'CC'
+      yield 'win32fe bcc32'
     return
 
   def checkCxxCompiler(self):
@@ -835,6 +783,10 @@ class Configure(config.base.Configure):
           self.delMakeMacro('CXX')
           del self.CXX
       if hasattr(self, 'CXX'):
+        try:
+          self.executeShellCommand(self.CXX+' --version', log = self.log)
+        except:
+          pass
         break
     return
 
@@ -872,12 +824,15 @@ class Configure(config.base.Configure):
     return
 
   def generateFortranCompilerGuesses(self):
-    '''Determine the Fortran compiler using FC, then --with-fc, then MPI, then GNU, then vendors
-       - Any given category can be excluded'''
+    '''Determine the Fortran compiler'''
     import os
 
     if hasattr(self, 'FC'):
       yield self.FC
+      if self.argDB['download-mpich']: mesg ='with downloaded MPICH'
+      elif self.argDB['download-openmpi']: mesg ='with downloaded OpenMPI'
+      else: mesg = ''
+      raise RuntimeError('Error '+mesg+': '+self.mesg)
     elif 'with-fc' in self.argDB:
       if self.isWindows(self.argDB['with-fc'], self.log):
         yield 'win32fe '+self.argDB['with-fc']
@@ -895,76 +850,50 @@ class Configure(config.base.Configure):
       self.usedMPICompilers = 1
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpiifort')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpif90')
-      yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpif77')
+      yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpf90')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpxlf95_r')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpxlf90_r')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpxlf_r')
-      yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpf90')
-      yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpf77')
       self.usedMPICompilers = 0
-      if os.path.isfile(os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpif90')) or os.path.isfile((os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpif77'))):
-        raise RuntimeError('bin/mpif90[f77] you provided with --with-mpi-dir='+self.argDB['with-mpi-dir']+' does not work.\nRun with --with-fc=0 if you wish to use this MPI and disable Fortran. See http://www.mcs.anl.gov/petsc/documentation/faq.html#mpi-compilers')
+      if os.path.isfile(os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpif90')):
+        raise RuntimeError('bin/mpif90 you provided with --with-mpi-dir='+self.argDB['with-mpi-dir']+' does not work.\nRun with --with-fc=0 if you wish to use this MPI and disable Fortran. See https://www.mcs.anl.gov/petsc/documentation/faq.html#mpi-compilers')
     else:
       if self.useMPICompilers():
         self.usedMPICompilers = 1
-        if Configure.isGNU('mpif90', self.log) and self.argDB['with-gnu-compilers']:
-          yield 'mpif90'
-        if not Configure.isGNU('mpif90', self.log) and (not self.vendor is None):
-          yield 'mpif90'
-        if Configure.isGNU('mpif77', self.log) and self.argDB['with-gnu-compilers']:
-          yield 'mpif77'
-        if not Configure.isGNU('mpif77', self.log) and (not self.vendor is None):
-          yield 'mpif77'
-        if not self.vendor is None:
-          yield 'mpxlf_r'
-          yield 'mpxlf'
-          yield 'mpf90'
-          yield 'mpf77'
+        yield 'mpif90'
+        yield 'mpiifort'
+        yield 'mpxlf_r'
+        yield 'mpxlf'
+        yield 'mpf90'
         self.usedMPICompilers = 0
       #attempt to match fortran compiler with c compiler
-      if self.CC.find('win32fe cl') >= 0:
+      if self.CC == 'gcc':
+        yield 'gfortran'
+      elif self.CC == 'clang':
+        yield 'gfortran'
+      elif self.CC == 'icc':
+        yield 'ifort'
+      elif self.CC == 'xlc':
+        yield 'xlf90'
+        yield 'xlf'
+      elif self.CC.find('win32fe cl') >= 0:
         yield 'win32fe f90'
         yield 'win32fe ifc'
       elif self.CC.find('win32fe icl') >= 0:
         yield 'win32fe ifc'
-      elif self.CC == 'icc':
-        yield 'ifort'
-      vendor = self.vendor
-      if (not vendor) and self.argDB['with-gnu-compilers']:
-        yield 'gfortran'
-        yield 'g95'
-        yield 'g77'
-        if Configure.isGNU('f77', self.log):
-          yield 'f77'
-      if not self.vendor is None:
-        if vendor == 'ibm' or not vendor:
-          yield 'xlf'
-          yield 'xlf90'
-        if not vendor or vendor in ['absoft', 'cray', 'dec', 'hp', 'sgi']:
-          yield 'f90'
-        if vendor == 'lahaye' or not vendor:
-          yield 'lf95'
-        if vendor == 'intel' or not vendor:
-          yield 'win32fe ifort'
-          yield 'win32fe ifl'
-          yield 'ifort'
-          yield 'ifc'
-          yield 'efc'
-        if vendor == 'portland' or not vendor:
-          yield 'pgf90'
-          yield 'pgf77'
-        if vendor == 'solaris' or not vendor:
-          yield 'f95'
-          yield 'f90'
-          if not Configure.isGNU('f77', self.log):
-            yield 'f77'
-      #duplicate code
-      if self.argDB['with-gnu-compilers']:
-        yield 'gfortran'
-        yield 'g95'
-        yield 'g77'
-        if Configure.isGNU('f77', self.log):
-          yield 'f77'
+      yield 'gfortran'
+      yield 'g95'
+      yield 'xlf90'
+      yield 'xlf'
+      yield 'f90'
+      yield 'lf95'
+      yield 'win32fe ifort'
+      yield 'win32fe ifl'
+      yield 'ifort'
+      yield 'ifc'
+      yield 'pgf90'
+      yield 'f95'
+      yield 'f90'
     return
 
   def checkFortranCompiler(self):
@@ -982,10 +911,15 @@ class Configure(config.base.Configure):
       except RuntimeError as e:
         self.mesg = str(e)
         self.logPrint('Error testing Fortran compiler: '+str(e))
-        if os.path.basename(self.FC) in ['mpif90', 'mpif77']:
+        if os.path.basename(self.FC) in ['mpif90']:
           self.logPrint(' MPI installation '+str(self.FC)+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.')
         self.delMakeMacro('FC')
         del self.FC
+    if hasattr(self, 'FC'):
+      try:
+        self.executeShellCommand(self.FC+' --version', log = self.log)
+      except:
+        pass
     return
 
   def checkFortranComments(self):
@@ -1040,6 +974,7 @@ class Configure(config.base.Configure):
 
   def insertCompilerFlag(self, flag, compilerOnly):
     '''DANGEROUS: Put in the compiler flag without checking'''
+    if not flag: return
     flagsArg = self.getCompilerFlagsArg(compilerOnly)
     setattr(self, flagsArg, getattr(self, flagsArg)+' '+flag)
     self.log.write('Added '+self.language[-1]+' compiler flag '+flag+'\n')
@@ -1073,6 +1008,11 @@ class Configure(config.base.Configure):
     if not self.argDB['with-pic'] and not useSharedLibraries:
       self.logPrint("Skip checking PIC options on user request")
       return
+    if self.argDB['with-pic'] and not useSharedLibraries:
+      # this is a flaw in configure; it is a legitimate use case where PETSc is built with PIC flags but not shared libraries
+      # to fix it the capability to build shared libraries must be enabled in configure if --with-pic=true even if shared libraries are off and this
+      # test must use that capability instead of using the default shared library build in that case which is static libraries
+      raise RuntimeError("Cannot determine compiler PIC flags if shared libraries is turned off\nEither run using --with-shared-libraries or --with-pic=0 and supply the compiler PIC flag via CFLAGS, CXXXFLAGS, and FCFLAGS\n")
     languages = ['C']
     if hasattr(self, 'CXX'):
       languages.append('Cxx')
@@ -1089,7 +1029,10 @@ class Configure(config.base.Configure):
       compilerFlagsArg = self.getCompilerFlagsArg(1) # compiler only
       oldCompilerFlags = getattr(self, compilerFlagsArg)
       for testFlag in self.generatePICGuesses():
-        self.logPrint('Trying '+language+' compiler flag '+testFlag)
+        if testFlag:
+          self.logPrint('Trying '+language+' compiler flag '+testFlag+' for PIC code')
+        else:
+          self.logPrint('Trying '+language+' for PIC code without any compiler flag')
         acceptedPIC = 1
         try:
           self.addCompilerFlag(testFlag, compilerOnly = 1)
@@ -1100,7 +1043,10 @@ class Configure(config.base.Configure):
           self.logPrint('Rejected '+language+' compiler flag '+testFlag+' because shared linker cannot handle it')
           setattr(self, compilerFlagsArg, oldCompilerFlags)
           continue
-        self.logPrint('Accepted '+language+' compiler flag '+testFlag)
+        if testFlag:
+          self.logPrint('Accepted '+language+' compiler flag '+testFlag+' for PIC code')
+        else:
+          self.logPrint('Accepted '+language+' PIC code without compiler flag')
         self.isPIC = 1
         break
       self.popLanguage()
@@ -1286,7 +1232,7 @@ class Configure(config.base.Configure):
       yield (self.argDB['LD_SHARED'], [], 'so')
     if Configure.isDarwin(self.log):
       if 'with-shared-ld' in self.argDB:
-        yield (self.argDB['with-dynamic-ld'], ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress'], '-no_compact_unwind', 'dylib')
+        yield (self.argDB['with-shared-ld'], ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress', '-no_compact_unwind'], 'dylib')
       if hasattr(self, 'CXX') and self.mainLanguage == 'Cxx':
         yield (self.CXX, ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress', '-no_compact_unwind'], 'dylib')
       yield (self.CC, ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress', '-no_compact_unwind'], 'dylib')
@@ -1404,6 +1350,24 @@ class Configure(config.base.Configure):
     for language in languages:
       self.pushLanguage(language)
       for testFlag in ['-Wl,-multiply_defined,suppress', '-Wl,-multiply_defined -Wl,suppress', '-Wl,-commons,use_dylibs', '-Wl,-search_paths_first', '-Wl,-no_compact_unwind']:
+        if self.checkLinkerFlag(testFlag):
+          # expand to CC_LINKER_FLAGS or CXX_LINKER_FLAGS or FC_LINKER_FLAGS
+          linker_flag_var = langMap[language]+'_LINKER_FLAGS'
+          val = getattr(self,linker_flag_var)
+          val.append(testFlag)
+          setattr(self,linker_flag_var,val)
+      self.popLanguage()
+    return
+
+  def checkLinkerWindows(self):
+    '''Turns off linker warning about unknown .o files extension'''
+    langMap = {'C':'CC','FC':'FC','Cxx':'CXX','CUDA':'CUDAC'}
+    languages = ['C']
+    if hasattr(self, 'CXX'):
+      languages.append('Cxx')
+    for language in languages:
+      self.pushLanguage(language)
+      for testFlag in ['-Qwd10161']:  #Warning for Intel icl,  there appear to be no way to remove warnings with Microsoft cl
         if self.checkLinkerFlag(testFlag):
           # expand to CC_LINKER_FLAGS or CXX_LINKER_FLAGS or FC_LINKER_FLAGS
           linker_flag_var = langMap[language]+'_LINKER_FLAGS'
@@ -1540,10 +1504,10 @@ if (dlclose(handle)) {
   return -1;
 }
 ''' % oldLib
-          if self.checkLink(includes = '#include<dlfcn.h>', body = code):
-            os.remove(oldLib)
+          if self.checkLink(includes = '#include <dlfcn.h>\n#include <stdio.h>', body = code):
             self.dynamicLibraries = 1
             self.logPrint('Using dynamic linker '+self.dynamicLinker+' with flags '+str(self.dynamicLibraryFlags)+' and library extension '+self.dynamicLibraryExt)
+            os.remove(oldLib)
             break
         if os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
         del self.dynamicLinker
@@ -1611,19 +1575,19 @@ if (dlclose(handle)) {
 
     if 'with-mpi-dir' in self.argDB and self.argDB['with-mpi-compilers']:
       optcplrs = [(['with-cc','CC'],['mpiicc','mpicc','mpcc','hcc','mpcc_r']),
-              (['with-fc','FC'],['mpiifort','mpif90','mpif77','mpxlf95_r','mpxlf90_r','mpxlf_r','mpf90','mpf77']),
+              (['with-fc','FC'],['mpiifort','mpif90','mpxlf95_r','mpxlf90_r','mpxlf_r','mpf90']),
               (['with-cxx','CXX'],['mpiicpc','mpicxx','hcp','mpic++','mpiCC','mpCC_r'])]
       for opts,cplrs in optcplrs:
         for opt in opts:
           if (opt in self.argDB  and self.argDB[opt] != '0'):
             # check if corresponding mpi wrapper exists
             for cplr in cplrs:
-              mpicplr = os.path.join(self.argDB['with-mpi-dir'], 'bin', cplr)
-              if os.path.exists(mpicplr):
-                msg = '--'+opt+'='+self.argDB[opt]+' is specified along with --with-mpi-dir='+self.argDB['with-mpi-dir']+' which implies using '+mpicplr+'.\n\
+              for mpicplr in [os.path.join(self.argDB['with-mpi-dir'], 'bin', cplr),os.path.join(self.argDB['with-mpi-dir'], 'intel64', 'bin', cplr)]:
+                if os.path.exists(mpicplr):
+                  msg = '--'+opt+'='+self.argDB[opt]+' is specified along with --with-mpi-dir='+self.argDB['with-mpi-dir']+' which implies using '+mpicplr+'.\n\
   configure is confused and does not know which compiler to select and use! Please specify either [mpi] compilers or --with-mpi-dir - but not both!\n\
   In most cases, specifying --with-mpi-dir - and not explicitly listing compilers could be preferable.'
-                raise RuntimeError(msg)
+                  raise RuntimeError(msg)
     return
 
   def requireMpiLdPath(self):
@@ -1702,7 +1666,6 @@ if (dlclose(handle)) {
     self.executeTest(self.checkEnvCompilers)
     self.executeTest(self.checkMPICompilerOverride)
     self.executeTest(self.requireMpiLdPath)
-    self.executeTest(self.checkVendor)
     self.executeTest(self.checkInitialFlags)
     self.executeTest(self.checkCCompiler)
     self.executeTest(self.checkCPreprocessor)
@@ -1719,6 +1682,8 @@ if (dlclose(handle)) {
     self.executeTest(self.checkSharedLinker)
     if Configure.isDarwin(self.log):
       self.executeTest(self.checkLinkerMac)
+    if Configure.isCygwin(self.log):
+      self.executeTest(self.checkLinkerWindows)
     self.executeTest(self.checkPIC)
     self.executeTest(self.checkSharedLinkerPaths)
     self.executeTest(self.checkLibC)

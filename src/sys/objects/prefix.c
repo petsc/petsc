@@ -65,15 +65,13 @@ PetscErrorCode  PetscObjectSetOptions(PetscObject obj,PetscOptions options)
    Collective on Object
 
    Input Parameters:
-.  obj - any PETSc object, for example a Vec, Mat or KSP.
-.  prefix - the prefix string to prepend to option requests of the object.
++  obj - any PETSc object, for example a Vec, Mat or KSP.
+-  prefix - the prefix string to prepend to option requests of the object.
 
    Notes:
    A hyphen (-) must NOT be given at the beginning of the prefix name.
    The first character of all runtime options is AUTOMATICALLY the
    hyphen.
-
-   Concepts: prefix^setting
 
   Level: advanced
 
@@ -104,15 +102,13 @@ PetscErrorCode  PetscObjectSetOptionsPrefix(PetscObject obj,const char prefix[])
    options of PetscObjectType in the database.
 
    Input Parameters:
-.  obj - any PETSc object, for example a Vec, Mat or KSP.
-.  prefix - the prefix string to prepend to option requests of the object.
++  obj - any PETSc object, for example a Vec, Mat or KSP.
+-  prefix - the prefix string to prepend to option requests of the object.
 
    Notes:
    A hyphen (-) must NOT be given at the beginning of the prefix name.
    The first character of all runtime options is AUTOMATICALLY the
    hyphen.
-
-   Concepts: prefix^setting
 
   Level: advanced
 
@@ -153,8 +149,6 @@ PetscErrorCode  PetscObjectAppendOptionsPrefix(PetscObject obj,const char prefix
    Output Parameters:
 .  prefix - pointer to the prefix string used is returned
 
-   Concepts: prefix^getting
-
   Level: advanced
 
 .seealso: PetscOptionsCreate(), PetscOptionsDestroy(), PetscObjectSetOptionsPrefix(), PetscObjectAppendOptionsPrefix(), PetscObjectPrependOptionsPrefix(),
@@ -175,15 +169,13 @@ PetscErrorCode  PetscObjectGetOptionsPrefix(PetscObject obj,const char *prefix[]
    options of PetscObjectType in the database.
 
    Input Parameters:
-.  obj - any PETSc object, for example a Vec, Mat or KSP.
-.  prefix - the prefix string to prepend to option requests of the object.
++  obj - any PETSc object, for example a Vec, Mat or KSP.
+-  prefix - the prefix string to prepend to option requests of the object.
 
    Notes:
    A hyphen (-) must NOT be given at the beginning of the prefix name.
    The first character of all runtime options is AUTOMATICALLY the
    hyphen.
-
-   Concepts: prefix^setting
 
   Level: advanced
 

@@ -30,12 +30,12 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->reinterpolate  = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-debug", "The debugging level", "ex4.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex4.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-debug", "The debugging level", "ex4.c", options->debug, &options->debug, NULL,0);CHKERRQ(ierr);
+  ierr = PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex4.c", options->dim, &options->dim, NULL,1,3);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-cell_hybrid", "Use a hybrid mesh", "ex4.c", options->cellHybrid, &options->cellHybrid, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-cell_simplex", "Use simplices if true, otherwise hexes", "ex4.c", options->cellSimplex, &options->cellSimplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_partition", "Use a fixed partition for testing", "ex4.c", options->testPartition, &options->testPartition, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-test_num", "The particular mesh to test", "ex4.c", options->testNum, &options->testNum, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-test_num", "The particular mesh to test", "ex4.c", options->testNum, &options->testNum, NULL,0);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-simplex2tensor", "Refine simplicial cells in tensor product cells", "ex4.c", options->simplex2tensor, &options->simplex2tensor, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-uninterpolate", "Uninterpolate the mesh at the end", "ex4.c", options->uninterpolate, &options->uninterpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-reinterpolate", "Reinterpolate the mesh at the end", "ex4.c", options->reinterpolate, &options->reinterpolate, NULL);CHKERRQ(ierr);
@@ -646,8 +646,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
           PetscInt triPoints_p2[2] = {0, 1};
 
           ierr = PetscMalloc2(2, &sizes, 2, &points);CHKERRQ(ierr);
-          ierr = PetscMemcpy(sizes,  triSizes_p2, 2 * sizeof(PetscInt));CHKERRQ(ierr);
-          ierr = PetscMemcpy(points, triPoints_p2, 2 * sizeof(PetscInt));CHKERRQ(ierr);break;}
+          ierr = PetscArraycpy(sizes,  triSizes_p2, 2);CHKERRQ(ierr);
+          ierr = PetscArraycpy(points, triPoints_p2, 2);CHKERRQ(ierr);break;}
         default:
           SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for triangular mesh on 2 procs", user->testNum);
         }
@@ -658,8 +658,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
           PetscInt triPoints_p2[3] = {0, 1, 2};
 
           ierr = PetscMalloc2(2, &sizes, 3, &points);CHKERRQ(ierr);
-          ierr = PetscMemcpy(sizes,  triSizes_p2, 2 * sizeof(PetscInt));CHKERRQ(ierr);
-          ierr = PetscMemcpy(points, triPoints_p2, 3 * sizeof(PetscInt));CHKERRQ(ierr);break;}
+          ierr = PetscArraycpy(sizes,  triSizes_p2, 2);CHKERRQ(ierr);
+          ierr = PetscArraycpy(points, triPoints_p2, 3);CHKERRQ(ierr);break;}
         default:
           SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for triangular hybrid mesh on 2 procs", user->testNum);
         }
@@ -670,8 +670,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
           PetscInt quadPoints_p2[2] = {0, 1};
 
           ierr = PetscMalloc2(2, &sizes, 2, &points);CHKERRQ(ierr);
-          ierr = PetscMemcpy(sizes,  quadSizes_p2, 2 * sizeof(PetscInt));CHKERRQ(ierr);
-          ierr = PetscMemcpy(points, quadPoints_p2, 2 * sizeof(PetscInt));CHKERRQ(ierr);break;}
+          ierr = PetscArraycpy(sizes,  quadSizes_p2, 2);CHKERRQ(ierr);
+          ierr = PetscArraycpy(points, quadPoints_p2, 2);CHKERRQ(ierr);break;}
         default:
           SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for quadrilateral mesh on 2 procs", user->testNum);
         }
@@ -682,8 +682,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
           PetscInt quadPoints_p2[3] = {0, 1, 2};
 
           ierr = PetscMalloc2(2, &sizes, 3, &points);CHKERRQ(ierr);
-          ierr = PetscMemcpy(sizes,  quadSizes_p2, 2 * sizeof(PetscInt));CHKERRQ(ierr);
-          ierr = PetscMemcpy(points, quadPoints_p2, 3 * sizeof(PetscInt));CHKERRQ(ierr);break;}
+          ierr = PetscArraycpy(sizes,  quadSizes_p2, 2);CHKERRQ(ierr);
+          ierr = PetscArraycpy(points, quadPoints_p2, 3);CHKERRQ(ierr);break;}
         default:
           SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for quadrilateral hybrid mesh on 2 procs", user->testNum);
         }
@@ -694,15 +694,15 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
           PetscInt tetPoints_p2[2] = {0, 1};
 
           ierr = PetscMalloc2(2, &sizes, 2, &points);CHKERRQ(ierr);
-          ierr = PetscMemcpy(sizes,  tetSizes_p2, 2 * sizeof(PetscInt));CHKERRQ(ierr);
-          ierr = PetscMemcpy(points, tetPoints_p2, 2 * sizeof(PetscInt));CHKERRQ(ierr);break;}
+          ierr = PetscArraycpy(sizes,  tetSizes_p2, 2);CHKERRQ(ierr);
+          ierr = PetscArraycpy(points, tetPoints_p2, 2);CHKERRQ(ierr);break;}
         case 1: {
           PetscInt tetSizes_p2[2]  = {1, 1};
           PetscInt tetPoints_p2[2] = {0, 1};
 
           ierr = PetscMalloc2(2, &sizes, 2, &points);CHKERRQ(ierr);
-          ierr = PetscMemcpy(sizes,  tetSizes_p2, 2 * sizeof(PetscInt));CHKERRQ(ierr);
-          ierr = PetscMemcpy(points, tetPoints_p2, 2 * sizeof(PetscInt));CHKERRQ(ierr);break;}
+          ierr = PetscArraycpy(sizes,  tetSizes_p2, 2);CHKERRQ(ierr);
+          ierr = PetscArraycpy(points, tetPoints_p2, 2);CHKERRQ(ierr);break;}
         default:
           SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for tetrahedral mesh on 2 procs", user->testNum);
         }
@@ -713,15 +713,15 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
           PetscInt tetPoints_p2[3] = {0, 1, 2};
 
           ierr = PetscMalloc2(2, &sizes, 3, &points);CHKERRQ(ierr);
-          ierr = PetscMemcpy(sizes,  tetSizes_p2, 2 * sizeof(PetscInt));CHKERRQ(ierr);
-          ierr = PetscMemcpy(points, tetPoints_p2, 3 * sizeof(PetscInt));CHKERRQ(ierr);break;}
+          ierr = PetscArraycpy(sizes,  tetSizes_p2, 2);CHKERRQ(ierr);
+          ierr = PetscArraycpy(points, tetPoints_p2, 3);CHKERRQ(ierr);break;}
         case 1: {
           PetscInt tetSizes_p2[2]  = {3, 4};
           PetscInt tetPoints_p2[7] = {0, 3, 5, 1, 2, 4, 6};
 
           ierr = PetscMalloc2(2, &sizes, 7, &points);CHKERRQ(ierr);
-          ierr = PetscMemcpy(sizes,  tetSizes_p2, 2 * sizeof(PetscInt));CHKERRQ(ierr);
-          ierr = PetscMemcpy(points, tetPoints_p2, 7 * sizeof(PetscInt));CHKERRQ(ierr);break;}
+          ierr = PetscArraycpy(sizes,  tetSizes_p2, 2);CHKERRQ(ierr);
+          ierr = PetscArraycpy(points, tetPoints_p2, 7);CHKERRQ(ierr);break;}
         default:
           SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for tetrahedral hybrid mesh on 2 procs", user->testNum);
         }
@@ -732,8 +732,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
           PetscInt hexPoints_p2[2] = {0, 1};
 
           ierr = PetscMalloc2(2, &sizes, 2, &points);CHKERRQ(ierr);
-          ierr = PetscMemcpy(sizes,  hexSizes_p2, 2 * sizeof(PetscInt));CHKERRQ(ierr);
-          ierr = PetscMemcpy(points, hexPoints_p2, 2 * sizeof(PetscInt));CHKERRQ(ierr);break;}
+          ierr = PetscArraycpy(sizes,  hexSizes_p2, 2);CHKERRQ(ierr);
+          ierr = PetscArraycpy(points, hexPoints_p2, 2);CHKERRQ(ierr);break;}
         default:
           SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for hexahedral mesh on 2 procs", user->testNum);
         }
@@ -744,15 +744,15 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
           PetscInt hexPoints_p2[2] = {0, 1};
 
           ierr = PetscMalloc2(2, &sizes, 2, &points);CHKERRQ(ierr);
-          ierr = PetscMemcpy(sizes,  hexSizes_p2, 2 * sizeof(PetscInt));CHKERRQ(ierr);
-          ierr = PetscMemcpy(points, hexPoints_p2, 2 * sizeof(PetscInt));CHKERRQ(ierr);break;}
+          ierr = PetscArraycpy(sizes,  hexSizes_p2, 2);CHKERRQ(ierr);
+          ierr = PetscArraycpy(points, hexPoints_p2, 2);CHKERRQ(ierr);break;}
         case 1: {
           PetscInt hexSizes_p2[2]  = {5, 4};
           PetscInt hexPoints_p2[9] = {3, 4, 5, 7, 8, 0, 1, 2, 6};
 
           ierr = PetscMalloc2(2, &sizes, 9, &points);CHKERRQ(ierr);
-          ierr = PetscMemcpy(sizes,  hexSizes_p2, 2 * sizeof(PetscInt));CHKERRQ(ierr);
-          ierr = PetscMemcpy(points, hexPoints_p2, 9 * sizeof(PetscInt));CHKERRQ(ierr);break;}
+          ierr = PetscArraycpy(sizes,  hexSizes_p2, 2);CHKERRQ(ierr);
+          ierr = PetscArraycpy(points, hexPoints_p2, 9);CHKERRQ(ierr);break;}
         default:
           SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for hexahedral hybrid mesh on 2 procs", user->testNum);
         }

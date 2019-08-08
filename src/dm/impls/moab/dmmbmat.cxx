@@ -210,7 +210,7 @@ static PetscErrorCode DMMoabSetBlockFills_Private(PetscInt w, const PetscInt *fi
     DMMoabSetBlockFills - Sets the fill pattern in each block for a multi-component problem
     of the matrix returned by DMCreateMatrix().
 
-    Logically Collective on DMDA
+    Logically Collective on da
 
     Input Parameter:
 +   dm - the DMMoab object

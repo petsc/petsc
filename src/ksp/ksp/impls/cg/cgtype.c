@@ -6,7 +6,7 @@
     use for solving a linear system with a complex coefficient matrix.
     This option is irrelevant when solving a real system.
 
-    Logically Collective on KSP
+    Logically Collective on ksp
 
     Input Parameters:
 +   ksp - the iterative context
@@ -25,8 +25,6 @@
     Note:
     By default, the matrix is assumed to be complex, Hermitian.
 
-.keywords: CG, conjugate gradient, Hermitian, symmetric, set, type
-
 .seealso: KSP, KSPCG
 @*/
 PetscErrorCode  KSPCGSetType(KSP ksp,KSPCGType type)
@@ -42,7 +40,7 @@ PetscErrorCode  KSPCGSetType(KSP ksp,KSPCGType type)
 /*@
     KSPCGUseSingleReduction - Merge the two inner products needed in CG into a single MPI_Allreduce() call.
 
-    Logically Collective on KSP
+    Logically Collective on ksp
 
     Input Parameters:
 +   ksp - the iterative context
@@ -61,8 +59,6 @@ PetscErrorCode  KSPCGSetType(KSP ksp,KSPCGType type)
 
      See also KSPPIPECG, KSPPIPECR, and KSPGROPPCG that use non-blocking reductions.
 
-.keywords: CG, conjugate gradient, Hermitian, symmetric, set, type
-
 .seealso: KSP, KSPCG, KSPGMRES
 @*/
 PetscErrorCode  KSPCGUseSingleReduction(KSP ksp,PetscBool flg)
@@ -79,15 +75,13 @@ PetscErrorCode  KSPCGUseSingleReduction(KSP ksp,PetscBool flg)
 /*@
     KSPCGSetRadius - Sets the radius of the trust region.
 
-    Logically Collective on KSP
+    Logically Collective on ksp
 
     Input Parameters:
 +   ksp    - the iterative context
 -   radius - the trust region radius (Infinity is the default)
 
     Level: advanced
-
-.keywords:  set, trust region radius
 
 .seealso: KSP, KSPCG, KSPNASH, KSPSTCG, KSPGLTR
 @*/
@@ -106,15 +100,13 @@ PetscErrorCode  KSPCGSetRadius(KSP ksp, PetscReal radius)
 /*@
     KSPCGGetNormD - Got norm of the direction.
 
-    Collective on KSP
+    Collective on ksp
 
     Input Parameters:
 +   ksp    - the iterative context
 -   norm_d - the norm of the direction
 
     Level: advanced
-
-.keywords:  get, norm direction
 
 .seealso: KSP, KSPCG, KSPNASH, KSPSTCG, KSPGLTR
 @*/
@@ -131,15 +123,13 @@ PetscErrorCode  KSPCGGetNormD(KSP ksp, PetscReal *norm_d)
 /*@
     KSPCGGetObjFcn - Get objective function value.
 
-    Collective on KSP
+    Collective on ksp
 
     Input Parameters:
 +   ksp   - the iterative context
 -   o_fcn - the objective function value
 
     Level: advanced
-
-.keywords:  get, objective function
 
 .seealso: KSP, KSPCG, KSPNASH, KSPSTCG, KSPGLTR
 @*/

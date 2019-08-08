@@ -300,7 +300,7 @@ int main(int argc,char **args)
    test:
       suffix: hypre
       nsize: 4
-      requires: hypre
+      requires: hypre !complex
       args: -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type hypre -pc_hypre_type boomeramg -ksp_monitor_short
 
 TEST*/

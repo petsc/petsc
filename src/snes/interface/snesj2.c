@@ -41,8 +41,6 @@ static PetscErrorCode SNESComputeFunctionCtx(SNES snes,Vec x,Vec f,void *ctx)
         get the coloring from the matrix.  This requires that the matrix have nonzero entries
         precomputed.  
 
-.keywords: SNES, finite differences, Jacobian, coloring, sparse
-
 .seealso: SNESSetJacobian(), SNESTestJacobian(), SNESComputeJacobianDefault()
           MatFDColoringCreate(), MatFDColoringSetFunction()
 

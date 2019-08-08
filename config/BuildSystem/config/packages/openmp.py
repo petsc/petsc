@@ -37,6 +37,9 @@ class Configure(config.package.Package):
       if self.setCompilers.checkCompilerFlag(flag):
         ompflag = flag
         self.found = 1
+        # Since clang on Apple doesn't work OpenMP, need to provide flag to GNU compiler that does the linking
+        if self.setCompilers.isDarwin(self.log):
+          self.setCompilers.LDFLAGS += ' '+ompflag
         break
     if not self.found:
       raise RuntimeError('Compiler has no support for OpenMP')

@@ -11,13 +11,13 @@ typedef struct {
 
 static PetscErrorCode SNESPatchComputeResidual_Private(SNES snes, Vec x, Vec F, void *ctx)
 {
-  PC             pc      = (PC) ctx;
-  PC_PATCH      *pcpatch = (PC_PATCH *) pc->data;
-  PetscInt       pt, size, i;
-  const PetscInt *indices;
+  PC                pc      = (PC) ctx;
+  PC_PATCH          *pcpatch = (PC_PATCH *) pc->data;
+  PetscInt          pt, size, i;
+  const PetscInt    *indices;
   const PetscScalar *X;
-  PetscScalar   *XWithAll;
-  PetscErrorCode ierr;
+  PetscScalar       *XWithAll;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
 
@@ -43,13 +43,13 @@ static PetscErrorCode SNESPatchComputeResidual_Private(SNES snes, Vec x, Vec F, 
 
 static PetscErrorCode SNESPatchComputeJacobian_Private(SNES snes, Vec x, Mat J, Mat M, void *ctx)
 {
-  PC             pc      = (PC) ctx;
-  PC_PATCH      *pcpatch = (PC_PATCH *) pc->data;
-  PetscInt       pt, size, i;
-  const PetscInt *indices;
+  PC                pc      = (PC) ctx;
+  PC_PATCH          *pcpatch = (PC_PATCH *) pc->data;
+  PetscInt          pt, size, i;
+  const PetscInt    *indices;
   const PetscScalar *X;
-  PetscScalar   *XWithAll;
-  PetscErrorCode ierr;
+  PetscScalar       *XWithAll;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   /* scatter from x to patch->patchStateWithAll[pt] */
@@ -74,8 +74,8 @@ static PetscErrorCode SNESPatchComputeJacobian_Private(SNES snes, Vec x, Mat J, 
 
 static PetscErrorCode PCSetUp_PATCH_Nonlinear(PC pc)
 {
-  PC_PATCH      *patch = (PC_PATCH *) pc->data;
-  const char    *prefix;
+  PC_PATCH       *patch = (PC_PATCH *) pc->data;
+  const char     *prefix;
   PetscInt       i, pStart, dof;
   PetscErrorCode ierr;
 
@@ -86,14 +86,11 @@ static PetscErrorCode PCSetUp_PATCH_Nonlinear(PC pc)
     ierr = PetscSectionGetChart(patch->gtolCounts, &pStart, NULL);CHKERRQ(ierr);
     for (i = 0; i < patch->npatch; ++i) {
       SNES snes;
-      KSP  subksp;
 
       ierr = SNESCreate(PETSC_COMM_SELF, &snes);CHKERRQ(ierr);
       ierr = SNESSetOptionsPrefix(snes, prefix);CHKERRQ(ierr);
       ierr = SNESAppendOptionsPrefix(snes, "sub_");CHKERRQ(ierr);
       ierr = PetscObjectIncrementTabLevel((PetscObject) snes, (PetscObject) pc, 2);CHKERRQ(ierr);
-      ierr = SNESGetKSP(snes, &subksp);CHKERRQ(ierr);
-      ierr = PetscObjectIncrementTabLevel((PetscObject) subksp, (PetscObject) pc, 2);CHKERRQ(ierr);
       ierr = PetscLogObjectParent((PetscObject) pc, (PetscObject) snes);CHKERRQ(ierr);
       patch->solver[i] = (PetscObject) snes;
     }
@@ -278,15 +275,15 @@ static PetscErrorCode SNESView_Patch(SNES snes,PetscViewer viewer)
 
 static PetscErrorCode SNESSolve_Patch(SNES snes)
 {
-  SNES_Patch *patch = (SNES_Patch *) snes->data;
-  PC_PATCH   *pcpatch = (PC_PATCH *) patch->pc->data;
-  SNESLineSearch ls;
-  Vec rhs, update, state, residual;
+  SNES_Patch        *patch = (SNES_Patch *) snes->data;
+  PC_PATCH          *pcpatch = (PC_PATCH *) patch->pc->data;
+  SNESLineSearch    ls;
+  Vec               rhs, update, state, residual;
   const PetscScalar *globalState  = NULL;
   PetscScalar       *localState   = NULL;
-  PetscInt its = 0;
-  PetscReal xnorm = 0.0, ynorm = 0.0, fnorm = 0.0;
-  PetscErrorCode ierr;
+  PetscInt          its = 0;
+  PetscReal         xnorm = 0.0, ynorm = 0.0, fnorm = 0.0;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = SNESGetSolution(snes, &state);CHKERRQ(ierr);
@@ -357,8 +354,6 @@ static PetscErrorCode SNESSolve_Patch(SNES snes)
 
   Level: intermediate
 
-  Concepts: composing solvers
-
 .seealso:  SNESCreate(), SNESSetType(), SNESType (for list of available types), SNES,
            PCPATCH
 
@@ -369,8 +364,9 @@ M*/
 PETSC_EXTERN PetscErrorCode SNESCreate_Patch(SNES snes)
 {
   PetscErrorCode ierr;
-  SNES_Patch    *patch;
-  PC_PATCH      *patchpc;
+  SNES_Patch     *patch;
+  PC_PATCH       *patchpc;
+  SNESLineSearch linesearch;
 
   PetscFunctionBegin;
   ierr = PetscNewLog(snes, &patch);CHKERRQ(ierr);
@@ -381,6 +377,10 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Patch(SNES snes)
   snes->ops->destroy        = SNESDestroy_Patch;
   snes->ops->setfromoptions = SNESSetFromOptions_Patch;
   snes->ops->view           = SNESView_Patch;
+
+  ierr = SNESGetLineSearch(snes,&linesearch);CHKERRQ(ierr);
+  ierr = SNESLineSearchSetType(linesearch,SNESLINESEARCHBASIC);CHKERRQ(ierr);
+  snes->usesksp        = PETSC_FALSE;
 
   snes->alwayscomputesfinalresidual = PETSC_FALSE;
 
@@ -404,9 +404,9 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Patch(SNES snes)
 PetscErrorCode SNESPatchSetDiscretisationInfo(SNES snes, PetscInt nsubspaces, DM *dms, PetscInt *bs, PetscInt *nodesPerCell, const PetscInt **cellNodeMap,
                                             const PetscInt *subspaceOffsets, PetscInt numGhostBcs, const PetscInt *ghostBcNodes, PetscInt numGlobalBcs, const PetscInt *globalBcNodes)
 {
-  SNES_Patch    *patch = (SNES_Patch *) snes->data;
+  SNES_Patch     *patch = (SNES_Patch *) snes->data;
   PetscErrorCode ierr;
-  DM dm;
+  DM             dm;
 
   PetscFunctionBegin;
   ierr = SNESGetDM(snes, &dm);CHKERRQ(ierr);

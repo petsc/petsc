@@ -22,6 +22,9 @@
 -coupled_sub_pc_type lu
 -coupled_sub_pc_factor_mat_ordering_type qmd
 
+# Network partitioner
+-petscpartitioner_type simple
+
 #========= Power network ==========
 # SNES (nonlinear solver) options
 # Newton method

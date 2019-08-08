@@ -5,26 +5,27 @@ if __name__ == '__main__':
   import os
   sys.path.insert(0, os.path.abspath('config'))
   import configure
+  pkgsdir = '/home/petsc/soft/master-gcc-pkgs-opt'
   configure_options = [
     '--with-clanguage=c',
     '--with-shared-libraries=yes',
     '--with-debugging=no',
     'DATAFILESPATH=/home/petsc/datafiles',
-    '--with-mpi-dir=/home/petsc/soft/mpich-3.3b1',
     '--with-sowing-dir=/home/petsc/soft/sowing-v1.1.25-p1',
-    '--with-metis-dir=/home/petsc/soft/gcc-opt-pkgs',
-    '--with-parmetis-dir=/home/petsc/soft/gcc-opt-pkgs',
-    '--with-scalapack-dir=/home/petsc/soft/gcc-opt-pkgs',
-    '--with-mumps-dir=/home/petsc/soft/gcc-opt-pkgs',
-    '--with-zlib-dir=/home/petsc/soft/gcc-opt-pkgs',
-    '--with-hdf5-dir=/home/petsc/soft/gcc-opt-pkgs',
-    '--with-netcdf-dir=/home/petsc/soft/gcc-opt-pkgs',
-    '--with-pnetcdf-dir=/home/petsc/soft/gcc-opt-pkgs',
-    '--with-exodusii-dir=/home/petsc/soft/gcc-opt-pkgs',
-    '--with-ml-dir=/home/petsc/soft/gcc-opt-pkgs',
-    '--with-suitesparse-dir=/home/petsc/soft/gcc-opt-pkgs',
-    '--with-triangle-dir=/home/petsc/soft/gcc-opt-pkgs',
-    '--with-chaco-dir=/home/petsc/soft/gcc-opt-pkgs',
-    '--with-ctetgen-dir=/home/petsc/soft/gcc-opt-pkgs',
+    '--with-mpi-dir='+pkgsdir,
+    '--with-metis-dir='+pkgsdir,
+    '--with-parmetis-dir='+pkgsdir,
+    '--with-scalapack-dir='+pkgsdir,
+    '--with-mumps-dir='+pkgsdir,
+    '--with-zlib-dir='+pkgsdir,
+    '--with-hdf5-dir='+pkgsdir,
+    '--with-netcdf-dir='+pkgsdir,
+    '--with-pnetcdf-dir='+pkgsdir,
+    '--with-exodusii-dir='+pkgsdir,
+    '--with-ml-dir='+pkgsdir,
+    '--with-suitesparse-dir='+pkgsdir,
+    '--with-triangle-dir='+pkgsdir,
+    '--with-chaco-dir='+pkgsdir,
+    '--with-ctetgen-dir='+pkgsdir,
     ]
   configure.petsc_configure(configure_options)

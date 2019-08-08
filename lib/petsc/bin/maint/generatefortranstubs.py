@@ -184,7 +184,8 @@ def processDir(petscdir, bfort, verbose, dirpath, dirnames, filenames):
 
   # remove from list of subdirectories all directories without source code
   dirnames[:] = [name for name in dirnames
-                 if name not in ['.git','.hg','SCCS', 'output', 'BitKeeper', 'examples', 'externalpackages', 'bilinear', 'ftn-auto','ftn-auto-interfaces', 'fortran','bin','maint','ftn-custom','config','f90-custom','ftn-kernels']
+                 if name not in ['SCCS', 'output', 'BitKeeper', 'examples', 'externalpackages', 'bilinear', 'ftn-auto','ftn-auto-interfaces', 'fortran','bin','maint','ftn-custom','config','f90-custom','ftn-kernels']
+                 and not name.startswith(".")
                  # skip for ./configure generated $PETSC_ARCH directories
                  and not os.path.isdir(os.path.join(dirpath,name,'lib','petsc'))
                  and not os.path.isdir(os.path.join(dirpath,name,'lib','petsc-conf'))
@@ -209,7 +210,10 @@ def processf90interfaces(petscdir,verbose):
           txt = fdr.readline()
           while txt:
             fd.write(txt)
-            if txt.find('subroutine ') > -1:
+            if txt.find('subroutine ') > -1 and txt.find('end subroutine') == -1:
+              while txt.endswith('&\n'):
+                txt = fdr.readline()
+                fd.write(txt)
               fd.write('      use petsc'+mansec+'def\n')
             txt = fdr.readline()
           fdr.close()

@@ -443,7 +443,7 @@ PetscErrorCode DMPlexCreateReferenceTree_Union(DM K, DM Kref, const char *labelN
 /*@
   DMPlexCreateDefaultReferenceTree - create a reference tree for isotropic hierarchical mesh refinement.
 
-  Collective on comm
+  Collective
 
   Input Parameters:
 + comm    - the MPI communicator
@@ -455,7 +455,6 @@ PetscErrorCode DMPlexCreateReferenceTree_Union(DM K, DM Kref, const char *labelN
 
   Level: intermediate
 
-.keywords: reference cell
 .seealso: DMPlexSetReferenceTree(), DMPlexGetReferenceTree()
 @*/
 PetscErrorCode DMPlexCreateDefaultReferenceTree(MPI_Comm comm, PetscInt dim, PetscBool simplex, DM *ref)
@@ -835,11 +834,11 @@ static PetscErrorCode DMPlexGetTrueSupportSize(DM dm,PetscInt p,PetscInt *dof,Pe
 
 static PetscErrorCode DMPlexTreeExchangeSupports(DM dm)
 {
-  DM_Plex *mesh = (DM_Plex *)dm->data;
-  PetscSection newSupportSection;
-  PetscInt newSize, *newSupports, pStart, pEnd, p, d, depth;
-  PetscInt *numTrueSupp;
-  PetscInt *offsets;
+  DM_Plex        *mesh = (DM_Plex *)dm->data;
+  PetscSection   newSupportSection;
+  PetscInt       newSize, *newSupports, pStart, pEnd, p, d, depth;
+  PetscInt       *numTrueSupp;
+  PetscInt       *offsets;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -964,12 +963,12 @@ static PetscErrorCode DMPlexSetTree_Internal(DM dm, PetscSection parentSection, 
   if (parents != mesh->parents) {
     ierr = PetscFree(mesh->parents);CHKERRQ(ierr);
     ierr = PetscMalloc1(size,&mesh->parents);CHKERRQ(ierr);
-    ierr = PetscMemcpy(mesh->parents, parents, size * sizeof(*parents));CHKERRQ(ierr);
+    ierr = PetscArraycpy(mesh->parents, parents, size);CHKERRQ(ierr);
   }
   if (childIDs != mesh->childIDs) {
     ierr = PetscFree(mesh->childIDs);CHKERRQ(ierr);
     ierr = PetscMalloc1(size,&mesh->childIDs);CHKERRQ(ierr);
-    ierr = PetscMemcpy(mesh->childIDs, childIDs, size * sizeof(*childIDs));CHKERRQ(ierr);
+    ierr = PetscArraycpy(mesh->childIDs, childIDs, size);CHKERRQ(ierr);
   }
   ierr = DMPlexGetReferenceTree(dm,&refTree);CHKERRQ(ierr);
   if (refTree) {
@@ -988,8 +987,7 @@ static PetscErrorCode DMPlexSetTree_Internal(DM dm, PetscSection parentSection, 
       }
     }
     mesh->computeanchormatrix = DMPlexComputeAnchorMatrix_Tree_FromReference;
-  }
-  else {
+  } else {
     mesh->computeanchormatrix = DMPlexComputeAnchorMatrix_Tree_Direct;
   }
   ierr = DMPlexTreeSymmetrize(dm);CHKERRQ(ierr);
@@ -1241,16 +1239,17 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection 
   ierr = PetscMalloc6(spdim,&v0,spdim,&v0parent,spdim,&vtmp,spdim*spdim,&J,spdim*spdim,&Jparent,spdim*spdim,&invJparent);CHKERRQ(ierr);
 
   for (f = 0; f < numFields; f++) {
-    PetscObject disc;
-    PetscClassId id;
-    PetscSpace     bspace;
-    PetscDualSpace dspace;
-    PetscInt i, j, k, nPoints, Nc, offset;
-    PetscInt fSize, maxDof;
-    PetscReal   *weights, *pointsRef, *pointsReal, *work;
-    PetscScalar *scwork, *X;
-    PetscInt  *sizes, *workIndRow, *workIndCol;
-    Mat Amat, Bmat, Xmat;
+    PetscObject       disc;
+    PetscClassId      id;
+    PetscSpace        bspace;
+    PetscDualSpace    dspace;
+    PetscInt          i, j, k, nPoints, Nc, offset;
+    PetscInt          fSize, maxDof;
+    PetscReal         *weights, *pointsRef, *pointsReal, *work;
+    PetscScalar       *scwork;
+    const PetscScalar *X;
+    PetscInt          *sizes, *workIndRow, *workIndCol;
+    Mat               Amat, Bmat, Xmat;
     const PetscInt    *numDof  = NULL;
     const PetscInt    ***perms = NULL;
     const PetscScalar ***flips = NULL;
@@ -1309,8 +1308,8 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection 
 
       ierr = PetscDualSpaceGetFunctional(dspace,i,&quad);CHKERRQ(ierr);
       ierr = PetscQuadratureGetData(quad,NULL,NULL,&qPoints,&p,&w);CHKERRQ(ierr);
-      ierr = PetscMemcpy(weights+Nc*offset,w,Nc*qPoints*sizeof(*w));CHKERRQ(ierr);
-      ierr = PetscMemcpy(pointsRef+spdim*offset,p,spdim*qPoints*sizeof(*p));CHKERRQ(ierr);
+      ierr = PetscArraycpy(weights+Nc*offset,w,Nc*qPoints);CHKERRQ(ierr);
+      ierr = PetscArraycpy(pointsRef+spdim*offset,p,spdim*qPoints);CHKERRQ(ierr);
       sizes[i] = qPoints;
       offset  += qPoints;
     }
@@ -1352,7 +1351,7 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection 
       }
       ierr = EvaluateBasis(bspace,fSize,fSize,Nc,nPoints,sizes,pointsReal,weights,work,Bmat);CHKERRQ(ierr);
       ierr = MatMatSolve(Amat,Bmat,Xmat);CHKERRQ(ierr);
-      ierr = MatDenseGetArray(Xmat,&X);CHKERRQ(ierr);
+      ierr = MatDenseGetArrayRead(Xmat,&X);CHKERRQ(ierr);
       ierr = DMPlexGetTransitiveClosure(dm,parent,PETSC_TRUE,&closureSizeP,&closureP);CHKERRQ(ierr);
       ierr = PetscMalloc2(closureSize+1,&childOffsets,closureSizeP+1,&parentOffsets);CHKERRQ(ierr);
       childOffsets[0] = 0;
@@ -1430,7 +1429,7 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection 
               flipP  = (flips && flips[j]) ? flips[j][oq] : NULL;
               nWorkP = parentOffsets[j+1]-parentOffsets[j];
               /* get a copy of the child-to-anchor portion of the matrix, and transpose so that rows correspond to the
-               * child and columns correspond to the anchor: BUT the maxrix returned by MatDenseGetArray is
+               * child and columns correspond to the anchor: BUT the maxrix returned by MatDenseGetArrayRead() is
                * column-major, so transpose-transpose = do nothing */
               for (r = 0; r < nWork; r++) {
                 for (s = 0; s < nWorkP; s++) {
@@ -1459,7 +1458,7 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection 
           }
         }
       }
-      ierr = MatDenseRestoreArray(Xmat,&X);CHKERRQ(ierr);
+      ierr = MatDenseRestoreArrayRead(Xmat,&X);CHKERRQ(ierr);
       ierr = PetscFree2(childOffsets,parentOffsets);CHKERRQ(ierr);
       ierr = DMPlexRestoreTransitiveClosure(dm,c,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
       ierr = DMPlexRestoreTransitiveClosure(dm,parent,PETSC_TRUE,&closureSizeP,&closureP);CHKERRQ(ierr);
@@ -2492,7 +2491,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
             for (cl = 0; cl < numPoints; cl++) {
               PetscInt globalOff, c = points[2*cl];
               ierr = PetscSectionGetOffset(globalCoarse, c, &globalOff);CHKERRQ(ierr);
-              DMPlexGetIndicesPointFields_Internal(localCoarse, c, globalOff < 0 ? -(globalOff+1) : globalOff, newOffsets, PETSC_FALSE, perms, cl, pInd);
+              DMPlexGetIndicesPointFields_Internal(localCoarse, c, globalOff < 0 ? -(globalOff+1) : globalOff, newOffsets, PETSC_FALSE, perms, cl, NULL, pInd);
             }
           } else {
             for (cl = 0; cl < numPoints; cl++) {
@@ -2500,7 +2499,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
               const PetscInt *perm = perms[0] ? perms[0][cl] : NULL;
 
               ierr = PetscSectionGetOffset(globalCoarse, c, &globalOff);CHKERRQ(ierr);
-              DMPlexGetIndicesPoint_Internal(localCoarse, c, globalOff < 0 ? -(globalOff+1) : globalOff, newOffsets, PETSC_FALSE, perm, pInd);
+              DMPlexGetIndicesPoint_Internal(localCoarse, c, globalOff < 0 ? -(globalOff+1) : globalOff, newOffsets, PETSC_FALSE, perm, NULL, pInd);
             }
           }
           for (f = 0; f < maxFields; f++) {
@@ -2539,19 +2538,19 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
             newOffsets[f + 1]    += newOffsets[f];
             newOffsetsCopy[f + 1] = newOffsets[f + 1];
           }
-          ierr = DMPlexGetIndicesPointFields_Internal(cSec,p,cOff,offsetsCopy,PETSC_TRUE,NULL,-1,rowIndices);CHKERRQ(ierr);
+          ierr = DMPlexGetIndicesPointFields_Internal(cSec,p,cOff,offsetsCopy,PETSC_TRUE,NULL,-1, NULL,rowIndices);CHKERRQ(ierr);
           for (a = 0; a < aDof; a++) {
             PetscInt anchor = anchors[a + aOff], lOff;
             ierr = PetscSectionGetOffset(localCoarse,anchor,&lOff);CHKERRQ(ierr);
-            ierr = DMPlexGetIndicesPointFields_Internal(localCoarse,anchor,lOff,newOffsetsCopy,PETSC_TRUE,NULL,-1,colIndices);CHKERRQ(ierr);
+            ierr = DMPlexGetIndicesPointFields_Internal(localCoarse,anchor,lOff,newOffsetsCopy,PETSC_TRUE,NULL,-1, NULL,colIndices);CHKERRQ(ierr);
           }
         }
         else {
-          ierr = DMPlexGetIndicesPoint_Internal(cSec,p,cOff,offsetsCopy,PETSC_TRUE,NULL,rowIndices);CHKERRQ(ierr);
+          ierr = DMPlexGetIndicesPoint_Internal(cSec,p,cOff,offsetsCopy,PETSC_TRUE,NULL, NULL,rowIndices);CHKERRQ(ierr);
           for (a = 0; a < aDof; a++) {
             PetscInt anchor = anchors[a + aOff], lOff;
             ierr = PetscSectionGetOffset(localCoarse,anchor,&lOff);CHKERRQ(ierr);
-            ierr = DMPlexGetIndicesPoint_Internal(localCoarse,anchor,lOff,newOffsetsCopy,PETSC_TRUE,NULL,colIndices);CHKERRQ(ierr);
+            ierr = DMPlexGetIndicesPoint_Internal(localCoarse,anchor,lOff,newOffsetsCopy,PETSC_TRUE,NULL, NULL,colIndices);CHKERRQ(ierr);
           }
         }
         if (numFields) {
@@ -2569,7 +2568,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
             PetscInt anchor = anchors[a + aOff];
             PetscInt gOff;
             ierr = PetscSectionGetOffset(globalCoarse,anchor,&gOff);CHKERRQ(ierr);
-            ierr = DMPlexGetIndicesPointFields_Internal(localCoarse,anchor,gOff < 0 ? -(gOff + 1) : gOff,newOffsets,PETSC_FALSE,NULL,-1,pInd);CHKERRQ(ierr);
+            ierr = DMPlexGetIndicesPointFields_Internal(localCoarse,anchor,gOff < 0 ? -(gOff + 1) : gOff,newOffsets,PETSC_FALSE,NULL,-1, NULL,pInd);CHKERRQ(ierr);
           }
         }
         else {
@@ -2579,7 +2578,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
             PetscInt anchor = anchors[a + aOff];
             PetscInt gOff;
             ierr = PetscSectionGetOffset(globalCoarse,anchor,&gOff);CHKERRQ(ierr);
-            ierr = DMPlexGetIndicesPoint_Internal(localCoarse,anchor,gOff < 0 ? -(gOff + 1) : gOff,newOffsets,PETSC_FALSE,NULL,pInd);CHKERRQ(ierr);
+            ierr = DMPlexGetIndicesPoint_Internal(localCoarse,anchor,gOff < 0 ? -(gOff + 1) : gOff,newOffsets,PETSC_FALSE,NULL, NULL,pInd);CHKERRQ(ierr);
           }
         }
         ierr = DMRestoreWorkArray(coarse,numColIndices,MPIU_INT,&colIndices);CHKERRQ(ierr);
@@ -2599,9 +2598,9 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
             pInd[numColIndices + f]             = offsets[f+1];
             pInd[numColIndices + numFields + f] = offsets[f+1];
           }
-          ierr = DMPlexGetIndicesPointFields_Internal(localCoarse,p,gOff < 0 ? -(gOff + 1) : gOff,offsets,PETSC_FALSE,NULL,-1,pInd);CHKERRQ(ierr);
+          ierr = DMPlexGetIndicesPointFields_Internal(localCoarse,p,gOff < 0 ? -(gOff + 1) : gOff,offsets,PETSC_FALSE,NULL,-1, NULL,pInd);CHKERRQ(ierr);
         } else {
-          ierr = DMPlexGetIndicesPoint_Internal(localCoarse,p,gOff < 0 ? -(gOff + 1) : gOff,offsets,PETSC_FALSE,NULL,pInd);CHKERRQ(ierr);
+          ierr = DMPlexGetIndicesPoint_Internal(localCoarse,p,gOff < 0 ? -(gOff + 1) : gOff,offsets,PETSC_FALSE,NULL, NULL,pInd);CHKERRQ(ierr);
         }
       }
     }
@@ -2694,7 +2693,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
           numD[f] = 0;
           numO[f] = 0;
         }
-        ierr = DMPlexGetIndicesPointFields_Internal(localFine,p,gOff,offsetsCopy,PETSC_FALSE,NULL,-1,rowIndices);CHKERRQ(ierr);
+        ierr = DMPlexGetIndicesPointFields_Internal(localFine,p,gOff,offsetsCopy,PETSC_FALSE,NULL,-1, NULL,rowIndices);CHKERRQ(ierr);
         for (f = 0; f < numFields; f++) {
           PetscInt colOffset    = newOffsets[f];
           PetscInt numFieldCols = newOffsets[f + 1] - newOffsets[f];
@@ -2712,7 +2711,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
         }
       }
       else {
-        ierr = DMPlexGetIndicesPoint_Internal(localFine,p,gOff,offsetsCopy,PETSC_FALSE,NULL,rowIndices);CHKERRQ(ierr);
+        ierr = DMPlexGetIndicesPoint_Internal(localFine,p,gOff,offsetsCopy,PETSC_FALSE,NULL, NULL,rowIndices);CHKERRQ(ierr);
         numD[0] = 0;
         numO[0] = 0;
         for (i = 0; i < numColIndices; i++) {
@@ -2872,10 +2871,10 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
           rowOffsets[f + 1]  = pInd[numColIndices + f];
           newOffsets[f + 1]  = pInd[numColIndices + numFields + f];
         }
-        ierr = DMPlexGetIndicesPointFields_Internal(localFine,p,gOff,offsetsCopy,PETSC_FALSE,NULL,-1,rowIndices);CHKERRQ(ierr);
+        ierr = DMPlexGetIndicesPointFields_Internal(localFine,p,gOff,offsetsCopy,PETSC_FALSE,NULL,-1, NULL,rowIndices);CHKERRQ(ierr);
       }
       else {
-        ierr = DMPlexGetIndicesPoint_Internal(localFine,p,gOff,offsetsCopy,PETSC_FALSE,NULL,rowIndices);CHKERRQ(ierr);
+        ierr = DMPlexGetIndicesPoint_Internal(localFine,p,gOff,offsetsCopy,PETSC_FALSE,NULL, NULL,rowIndices);CHKERRQ(ierr);
       }
       ierr = PetscSectionGetDof(leafMatricesSec,p,&matSize);CHKERRQ(ierr);
       if (!matSize) { /* incoming matrix is identity */
@@ -3559,9 +3558,9 @@ static PetscErrorCode DMPlexTransferInjectorTree(DM coarse, DM fine, PetscSF coa
             ierr = PetscSectionGetFieldDof(localFine,p,f,&fDof);CHKERRQ(ierr);
             offsets[f + 1] = fDof + offsets[f];
           }
-          ierr = DMPlexGetIndicesPointFields_Internal(localFine,p,gOff < 0 ? -(gOff + 1) : gOff,offsets,PETSC_FALSE,NULL,-1,pInd);CHKERRQ(ierr);
+          ierr = DMPlexGetIndicesPointFields_Internal(localFine,p,gOff < 0 ? -(gOff + 1) : gOff,offsets,PETSC_FALSE,NULL,-1, NULL,pInd);CHKERRQ(ierr);
         } else {
-          ierr = DMPlexGetIndicesPoint_Internal(localFine,p,gOff < 0 ? -(gOff + 1) : gOff,offsets,PETSC_FALSE,NULL,pInd);CHKERRQ(ierr);
+          ierr = DMPlexGetIndicesPoint_Internal(localFine,p,gOff < 0 ? -(gOff + 1) : gOff,offsets,PETSC_FALSE,NULL, NULL,pInd);CHKERRQ(ierr);
         }
         if (gatheredValues) {ierr = VecGetValues(fineVec,dof,pInd,pVal);CHKERRQ(ierr);}
       }
@@ -3795,9 +3794,9 @@ PetscErrorCode DMPlexComputeInjectorTree(DM coarse, DM fine, PetscSF coarseToFin
         ierr = PetscSectionGetFieldDof(localCoarse,p,f,&fDof);CHKERRQ(ierr);
         rowOffsets[f + 1] = offsetsCopy[f + 1] = fDof + rowOffsets[f];
       }
-      ierr = DMPlexGetIndicesPointFields_Internal(localCoarse,p,gOff < 0 ? -(gOff + 1) : gOff,offsetsCopy,PETSC_FALSE,NULL,-1,parentIndices);CHKERRQ(ierr);
+      ierr = DMPlexGetIndicesPointFields_Internal(localCoarse,p,gOff < 0 ? -(gOff + 1) : gOff,offsetsCopy,PETSC_FALSE,NULL,-1, NULL,parentIndices);CHKERRQ(ierr);
     } else {
-      ierr = DMPlexGetIndicesPoint_Internal(localCoarse,p,gOff < 0 ? -(gOff + 1) : gOff,offsetsCopy,PETSC_FALSE,NULL,parentIndices);CHKERRQ(ierr);
+      ierr = DMPlexGetIndicesPoint_Internal(localCoarse,p,gOff < 0 ? -(gOff + 1) : gOff,offsetsCopy,PETSC_FALSE,NULL, NULL,parentIndices);CHKERRQ(ierr);
       rowOffsets[1] = offsetsCopy[0];
     }
 
@@ -3903,9 +3902,9 @@ PetscErrorCode DMPlexComputeInjectorTree(DM coarse, DM fine, PetscSF coarseToFin
         ierr = PetscSectionGetFieldDof(localCoarse,p,f,&fDof);CHKERRQ(ierr);
         rowOffsets[f + 1] = offsetsCopy[f + 1] = fDof + rowOffsets[f];
       }
-      ierr = DMPlexGetIndicesPointFields_Internal(localCoarse,p,gOff < 0 ? -(gOff + 1) : gOff,offsetsCopy,PETSC_FALSE,NULL,-1,parentIndices);CHKERRQ(ierr);
+      ierr = DMPlexGetIndicesPointFields_Internal(localCoarse,p,gOff < 0 ? -(gOff + 1) : gOff,offsetsCopy,PETSC_FALSE,NULL,-1, NULL,parentIndices);CHKERRQ(ierr);
     } else {
-      ierr = DMPlexGetIndicesPoint_Internal(localCoarse,p,gOff < 0 ? -(gOff + 1) : gOff,offsetsCopy,PETSC_FALSE,NULL,parentIndices);CHKERRQ(ierr);
+      ierr = DMPlexGetIndicesPoint_Internal(localCoarse,p,gOff < 0 ? -(gOff + 1) : gOff,offsetsCopy,PETSC_FALSE,NULL, NULL,parentIndices);CHKERRQ(ierr);
       rowOffsets[1] = offsetsCopy[0];
     }
 
@@ -4240,14 +4239,14 @@ static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse
           /* TODO: closure indices */
           newOffsets[f + 1]     = newOffsets[f] + ((childId == -1) ? rowDof : refPointFieldN[childId - pRefStart][f]);
         }
-        ierr = DMPlexGetIndicesPointFields_Internal(localFine,p,gOff,offsetsCopy,PETSC_FALSE,NULL,-1,rowIndices);CHKERRQ(ierr);
+        ierr = DMPlexGetIndicesPointFields_Internal(localFine,p,gOff,offsetsCopy,PETSC_FALSE,NULL,-1,NULL,rowIndices);CHKERRQ(ierr);
       }
       else {
         offsets[0]    = 0;
         offsets[1]    = lDof;
         newOffsets[0] = 0;
         newOffsets[1] = (childId == -1) ? lDof : refPointFieldN[childId - pRefStart][0];
-        ierr = DMPlexGetIndicesPoint_Internal(localFine,p,gOff,offsetsCopy,PETSC_FALSE,NULL,rowIndices);CHKERRQ(ierr);
+        ierr = DMPlexGetIndicesPoint_Internal(localFine,p,gOff,offsetsCopy,PETSC_FALSE,NULL,NULL,rowIndices);CHKERRQ(ierr);
       }
       if (childId == -1) { /* no child interpolation: one nnz per */
         ierr = VecSetValues(vecFine,numValues,rowIndices,pVal,INSERT_VALUES);CHKERRQ(ierr);
@@ -4385,9 +4384,9 @@ static PetscErrorCode DMPlexTransferVecTree_Inject(DM fine, Vec vecFine, DM coar
         ierr = PetscSectionGetFieldDof(localCoarse,p,f,&fDof);CHKERRQ(ierr);
         rowOffsets[f + 1] = offsetsCopy[f + 1] = fDof + rowOffsets[f];
       }
-      ierr = DMPlexGetIndicesPointFields_Internal(localCoarse,p,gOff < 0 ? -(gOff + 1) : gOff,offsetsCopy,PETSC_FALSE,NULL,-1,parentIndices);CHKERRQ(ierr);
+      ierr = DMPlexGetIndicesPointFields_Internal(localCoarse,p,gOff < 0 ? -(gOff + 1) : gOff,offsetsCopy,PETSC_FALSE,NULL,-1,NULL,parentIndices);CHKERRQ(ierr);
     } else {
-      ierr = DMPlexGetIndicesPoint_Internal(localCoarse,p,gOff < 0 ? -(gOff + 1) : gOff,offsetsCopy,PETSC_FALSE,NULL,parentIndices);CHKERRQ(ierr);
+      ierr = DMPlexGetIndicesPoint_Internal(localCoarse,p,gOff < 0 ? -(gOff + 1) : gOff,offsetsCopy,PETSC_FALSE,NULL,NULL,parentIndices);CHKERRQ(ierr);
       rowOffsets[1] = offsetsCopy[0];
     }
 

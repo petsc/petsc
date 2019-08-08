@@ -7,8 +7,10 @@
 
 #include <petscsys.h>
 #include <petscvec.h>         /*I  "petscvec.h"  I*/
+#include <petsc/private/isimpl.h> /* for PetscViewerHDF5Load_Private */
 #include <petsc/private/vecimpl.h>
 #include <petsc/private/viewerimpl.h>
+#include <petscviewerhdf5.h>
 
 static PetscErrorCode PetscViewerBinaryReadVecHeader_Private(PetscViewer viewer,PetscInt *rows)
 {
@@ -115,7 +117,7 @@ PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
   ierr = PetscObjectGetNewTag((PetscObject)viewer,&tag);CHKERRQ(ierr);
   ierr = VecGetArray(vec,&avec);CHKERRQ(ierr);
   if (!rank) {
-    ierr = PetscBinaryRead(fd,avec,n,PETSC_SCALAR);CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd,avec,n,NULL,PETSC_SCALAR);CHKERRQ(ierr);
 
     if (size > 1) {
       /* read in other chuncks and send to other processors */
@@ -127,7 +129,7 @@ PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
       ierr = PetscMalloc1(n,&avecwork);CHKERRQ(ierr);
       for (i=1; i<size; i++) {
         n    = range[i+1] - range[i];
-        ierr = PetscBinaryRead(fd,avecwork,n,PETSC_SCALAR);CHKERRQ(ierr);
+        ierr = PetscBinaryRead(fd,avecwork,n,NULL,PETSC_SCALAR);CHKERRQ(ierr);
         ierr = MPI_Isend(avecwork,n,MPIU_SCALAR,i,tag,comm,&request);CHKERRQ(ierr);
         ierr = MPI_Wait(&request,&status);CHKERRQ(ierr);
       }
@@ -144,10 +146,6 @@ PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
 }
 
 #if defined(PETSC_HAVE_HDF5)
-/*
-     This should handle properly the cases where PetscInt is 32 or 64 and hsize_t is 32 or 64. These means properly casting with
-   checks back and forth between the two types of variables.
-*/
 PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
 {
   hid_t          scalartype; /* scalar type (H5T_NATIVE_FLOAT or H5T_NATIVE_DOUBLE) */
@@ -167,7 +165,7 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
   scalartype = H5T_NATIVE_DOUBLE;
 #endif
   ierr = PetscObjectGetName((PetscObject)xin, &vecname);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5Load(viewer, vecname, xin->map, scalartype, (void**)&x);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5Load_Private(viewer, vecname, xin->map, scalartype, (void**)&x);CHKERRQ(ierr);
   ierr = VecSetUp(xin);CHKERRQ(ierr);
   ierr = VecReplaceArray(xin, x);CHKERRQ(ierr);
   PetscFunctionReturn(0);

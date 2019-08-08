@@ -158,7 +158,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
       }
     }
     /* Copy MZa to MZb */
-    ierr = PetscMemcpy(MZb,MZa,ldMZ*ldMZ*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscArraycpy(MZb,MZa,ldMZ*ldMZ);CHKERRQ(ierr);
 
     if (!bcgsl->bConvex || bcgsl->ell==1) {
       PetscBLASInt ione = 1,bell;
@@ -188,7 +188,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
         }
         /* tolerance is hardwired to bell*max(s)*PETSC_MACHINE_EPSILON */
         pinv_tol = bell*max_s*PETSC_MACHINE_EPSILON;
-        ierr = PetscMemzero(&AY0c[1],bell*sizeof(PetscScalar));CHKERRQ(ierr);
+        ierr = PetscArrayzero(&AY0c[1],bell);CHKERRQ(ierr);
         for (i=0; i<bell; i++) {
           if (bcgsl->s[i] >= pinv_tol) {
             utb=0.;
@@ -211,7 +211,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
           ksp->reason = KSP_DIVERGED_BREAKDOWN;
           PetscFunctionReturn(0);
         }
-        ierr = PetscMemcpy(&AY0c[1],&MZb[1],bcgsl->ell*sizeof(PetscScalar));CHKERRQ(ierr);
+        ierr = PetscArraycpy(&AY0c[1],&MZb[1],bcgsl->ell);CHKERRQ(ierr);
         PetscStackCallBLAS("LAPACKpotrs",LAPACKpotrs_("Lower", &bell, &ione, &MZa[1+ldMZ], &ldMZ, &AY0c[1], &ldMZ, &bierr));
       }
     } else {
@@ -229,12 +229,12 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
         ksp->reason = KSP_DIVERGED_BREAKDOWN;
         PetscFunctionReturn(0);
       }
-      ierr = PetscMemcpy(&AY0c[1],&MZb[1],(bcgsl->ell-1)*sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr = PetscArraycpy(&AY0c[1],&MZb[1],bcgsl->ell-1);CHKERRQ(ierr);
       PetscStackCallBLAS("LAPACKpotrs",LAPACKpotrs_("Lower", &neqs, &ione, &MZa[1+ldMZ], &ldMZ, &AY0c[1], &ldMZ, &bierr));
       AY0c[0]          = -1;
       AY0c[bcgsl->ell] = 0.;
 
-      ierr = PetscMemcpy(&AYlc[1],&MZb[1+ldMZ*(bcgsl->ell)],(bcgsl->ell-1)*sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr = PetscArraycpy(&AYlc[1],&MZb[1+ldMZ*(bcgsl->ell)],bcgsl->ell-1);CHKERRQ(ierr);
       PetscStackCallBLAS("LAPACKpotrs",LAPACKpotrs_("Lower", &neqs, &ione, &MZa[1+ldMZ], &ldMZ, &AYlc[1], &ldMZ, &bierr));
 
       AYlc[0]          = 0.;
@@ -319,7 +319,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
    KSPBCGSLSetXRes - Sets the parameter governing when
    exact residuals will be used instead of computed residuals.
 
-   Logically Collective on KSP
+   Logically Collective on ksp
 
    Input Parameters:
 +  ksp - iterative context obtained from KSPCreate
@@ -330,8 +330,6 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
 .  -ksp_bcgsl_xres delta
 
    Level: intermediate
-
-.keywords: BiCGStab(L), set, exact residuals
 
 .seealso: KSPBCGSLSetEll(), KSPBCGSLSetPol(), KSP
 @*/
@@ -357,7 +355,7 @@ PetscErrorCode  KSPBCGSLSetXRes(KSP ksp, PetscReal delta)
 /*@
    KSPBCGSLSetUsePseudoinverse - Use pseudoinverse (via SVD) to solve polynomial part of update
 
-   Logically Collective on KSP
+   Logically Collective on ksp
 
    Input Parameters:
 +  ksp - iterative context obtained from KSPCreate
@@ -365,11 +363,9 @@ PetscErrorCode  KSPBCGSLSetXRes(KSP ksp, PetscReal delta)
 
    Options Database Keys:
 
-+  -ksp_bcgsl_pinv - use pseudoinverse
+.  -ksp_bcgsl_pinv - use pseudoinverse
 
    Level: intermediate
-
-.keywords: BiCGStab(L), set, polynomial
 
 .seealso: KSPBCGSLSetEll(), KSP
 @*/
@@ -386,7 +382,7 @@ PetscErrorCode KSPBCGSLSetUsePseudoinverse(KSP ksp,PetscBool use_pinv)
    KSPBCGSLSetPol - Sets the type of polynomial part will
    be used in the BiCGSTab(L) solver.
 
-   Logically Collective on KSP
+   Logically Collective on ksp
 
    Input Parameters:
 +  ksp - iterative context obtained from KSPCreate
@@ -395,11 +391,9 @@ PetscErrorCode KSPBCGSLSetUsePseudoinverse(KSP ksp,PetscBool use_pinv)
    Options Database Keys:
 
 +  -ksp_bcgsl_cxpoly - use enhanced polynomial
-.  -ksp_bcgsl_mrpoly - use standard polynomial
+-  -ksp_bcgsl_mrpoly - use standard polynomial
 
    Level: intermediate
-
-.keywords: BiCGStab(L), set, polynomial
 
 .seealso: KSP, KSPBCGSL, KSPCreate(), KSPSetType()
 @*/
@@ -429,7 +423,7 @@ PetscErrorCode  KSPBCGSLSetPol(KSP ksp, PetscBool uMROR)
 /*@
    KSPBCGSLSetEll - Sets the number of search directions in BiCGStab(L).
 
-   Logically Collective on KSP
+   Logically Collective on ksp
 
    Input Parameters:
 +  ksp - iterative context obtained from KSPCreate
@@ -445,8 +439,6 @@ PetscErrorCode  KSPBCGSLSetPol(KSP ksp, PetscBool uMROR)
    For large ell it is common for the polynomial update problem to become singular (due to happy breakdown for smallish
    test problems, but also for larger problems). Consequently, by default, the system is solved by pseudoinverse, which
    allows the iteration to complete successfully. See KSPBCGSLSetUsePseudoinverse() to switch to a conventional solve.
-
-.keywords: BiCGStab(L), set, exact residuals,
 
 .seealso: KSPBCGSLSetUsePseudoinverse(), KSP, KSPBCGSL
 @*/

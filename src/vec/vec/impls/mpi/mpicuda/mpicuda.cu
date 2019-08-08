@@ -198,7 +198,7 @@ PetscErrorCode VecCreate_CUDA(Vec v)
    VecCreateMPICUDAWithArray - Creates a parallel, array-style vector,
    where the user provides the GPU array space to store the vector values.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm  - the MPI communicator to use
@@ -222,8 +222,6 @@ PetscErrorCode VecCreate_CUDA(Vec v)
 
    Level: intermediate
 
-   Concepts: vectors^creating with array
-
 .seealso: VecCreateSeqCUDAWithArray(), VecCreateMPIWithArray(), VecCreateSeqWithArray(),
           VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost(),
           VecCreateMPI(), VecCreateGhostWithArray(), VecPlaceArray()
@@ -243,6 +241,84 @@ PetscErrorCode  VecCreateMPICUDAWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,P
   PetscFunctionReturn(0);
 }
 
+extern "C" PetscErrorCode VecGetArrayWrite_SeqCUDA(Vec,PetscScalar**);
+
+PetscErrorCode VecPinToCPU_MPICUDA(Vec V,PetscBool pin)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  V->pinnedtocpu = pin;
+  if (pin) {
+    ierr = VecCUDACopyFromGPU(V);CHKERRQ(ierr);
+    V->valid_GPU_array = PETSC_OFFLOAD_CPU; /* since the CPU code will likely change values in the vector */
+    V->ops->dotnorm2               = NULL;
+    V->ops->waxpy                  = VecWAXPY_Seq;
+    V->ops->dot                    = VecDot_MPI;
+    V->ops->mdot                   = VecMDot_MPI;
+    V->ops->tdot                   = VecTDot_MPI;
+    V->ops->norm                   = VecNorm_MPI;
+    V->ops->scale                  = VecScale_Seq;
+    V->ops->copy                   = VecCopy_Seq;
+    V->ops->set                    = VecSet_Seq;
+    V->ops->swap                   = VecSwap_Seq;
+    V->ops->axpy                   = VecAXPY_Seq;
+    V->ops->axpby                  = VecAXPBY_Seq;
+    V->ops->maxpy                  = VecMAXPY_Seq;
+    V->ops->aypx                   = VecAYPX_Seq;
+    V->ops->axpbypcz               = VecAXPBYPCZ_Seq;
+    V->ops->pointwisemult          = VecPointwiseMult_Seq;
+    V->ops->setrandom              = VecSetRandom_Seq;
+    V->ops->placearray             = VecPlaceArray_Seq;
+    V->ops->replacearray           = VecReplaceArray_Seq;
+    V->ops->resetarray             = VecResetArray_Seq;
+    V->ops->dot_local              = VecDot_Seq;
+    V->ops->tdot_local             = VecTDot_Seq;
+    V->ops->norm_local             = VecNorm_Seq;
+    V->ops->mdot_local             = VecMDot_Seq;
+    V->ops->pointwisedivide        = VecPointwiseDivide_Seq;
+    V->ops->getlocalvector         = NULL;
+    V->ops->restorelocalvector     = NULL;
+    V->ops->getlocalvectorread     = NULL;
+    V->ops->restorelocalvectorread = NULL;
+    V->ops->getarraywrite          = NULL;
+  } else {
+    V->ops->dotnorm2               = VecDotNorm2_MPICUDA;
+    V->ops->waxpy                  = VecWAXPY_SeqCUDA;
+    V->ops->duplicate              = VecDuplicate_MPICUDA;
+    V->ops->dot                    = VecDot_MPICUDA;
+    V->ops->mdot                   = VecMDot_MPICUDA;
+    V->ops->tdot                   = VecTDot_MPICUDA;
+    V->ops->norm                   = VecNorm_MPICUDA;
+    V->ops->scale                  = VecScale_SeqCUDA;
+    V->ops->copy                   = VecCopy_SeqCUDA;
+    V->ops->set                    = VecSet_SeqCUDA;
+    V->ops->swap                   = VecSwap_SeqCUDA;
+    V->ops->axpy                   = VecAXPY_SeqCUDA;
+    V->ops->axpby                  = VecAXPBY_SeqCUDA;
+    V->ops->maxpy                  = VecMAXPY_SeqCUDA;
+    V->ops->aypx                   = VecAYPX_SeqCUDA;
+    V->ops->axpbypcz               = VecAXPBYPCZ_SeqCUDA;
+    V->ops->pointwisemult          = VecPointwiseMult_SeqCUDA;
+    V->ops->setrandom              = VecSetRandom_SeqCUDA;
+    V->ops->placearray             = VecPlaceArray_SeqCUDA;
+    V->ops->replacearray           = VecReplaceArray_SeqCUDA;
+    V->ops->resetarray             = VecResetArray_SeqCUDA;
+    V->ops->dot_local              = VecDot_SeqCUDA;
+    V->ops->tdot_local             = VecTDot_SeqCUDA;
+    V->ops->norm_local             = VecNorm_SeqCUDA;
+    V->ops->mdot_local             = VecMDot_SeqCUDA;
+    V->ops->destroy                = VecDestroy_MPICUDA;
+    V->ops->pointwisedivide        = VecPointwiseDivide_SeqCUDA;
+    V->ops->getlocalvector         = VecGetLocalVector_SeqCUDA;
+    V->ops->restorelocalvector     = VecRestoreLocalVector_SeqCUDA;
+    V->ops->getlocalvectorread     = VecGetLocalVector_SeqCUDA;
+    V->ops->restorelocalvectorread = VecRestoreLocalVector_SeqCUDA;
+    V->ops->getarraywrite          = VecGetArrayWrite_SeqCUDA;
+  }
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode VecCreate_MPICUDA_Private(Vec vv,PetscBool alloc,PetscInt nghost,const PetscScalar array[])
 {
   PetscErrorCode ierr;
@@ -253,37 +329,8 @@ PetscErrorCode VecCreate_MPICUDA_Private(Vec vv,PetscBool alloc,PetscInt nghost,
   ierr = VecCreate_MPI_Private(vv,PETSC_FALSE,0,0);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)vv,VECMPICUDA);CHKERRQ(ierr);
 
-  vv->ops->dotnorm2               = VecDotNorm2_MPICUDA;
-  vv->ops->waxpy                  = VecWAXPY_SeqCUDA;
-  vv->ops->duplicate              = VecDuplicate_MPICUDA;
-  vv->ops->dot                    = VecDot_MPICUDA;
-  vv->ops->mdot                   = VecMDot_MPICUDA;
-  vv->ops->tdot                   = VecTDot_MPICUDA;
-  vv->ops->norm                   = VecNorm_MPICUDA;
-  vv->ops->scale                  = VecScale_SeqCUDA;
-  vv->ops->copy                   = VecCopy_SeqCUDA;
-  vv->ops->set                    = VecSet_SeqCUDA;
-  vv->ops->swap                   = VecSwap_SeqCUDA;
-  vv->ops->axpy                   = VecAXPY_SeqCUDA;
-  vv->ops->axpby                  = VecAXPBY_SeqCUDA;
-  vv->ops->maxpy                  = VecMAXPY_SeqCUDA;
-  vv->ops->aypx                   = VecAYPX_SeqCUDA;
-  vv->ops->axpbypcz               = VecAXPBYPCZ_SeqCUDA;
-  vv->ops->pointwisemult          = VecPointwiseMult_SeqCUDA;
-  vv->ops->setrandom              = VecSetRandom_SeqCUDA;
-  vv->ops->placearray             = VecPlaceArray_SeqCUDA;
-  vv->ops->replacearray           = VecReplaceArray_SeqCUDA;
-  vv->ops->resetarray             = VecResetArray_SeqCUDA;
-  vv->ops->dot_local              = VecDot_SeqCUDA;
-  vv->ops->tdot_local             = VecTDot_SeqCUDA;
-  vv->ops->norm_local             = VecNorm_SeqCUDA;
-  vv->ops->mdot_local             = VecMDot_SeqCUDA;
-  vv->ops->destroy                = VecDestroy_MPICUDA;
-  vv->ops->pointwisedivide        = VecPointwiseDivide_SeqCUDA;
-  vv->ops->getlocalvector         = VecGetLocalVector_SeqCUDA;
-  vv->ops->restorelocalvector     = VecRestoreLocalVector_SeqCUDA;
-  vv->ops->getlocalvectorread     = VecGetLocalVector_SeqCUDA;
-  vv->ops->restorelocalvectorread = VecRestoreLocalVector_SeqCUDA;
+  ierr = VecPinToCPU_MPICUDA(vv,PETSC_FALSE);CHKERRQ(ierr);
+  vv->ops->pintocpu = VecPinToCPU_MPICUDA;
 
   /* Later, functions check for the Vec_CUDA structure existence, so do not create it without array */
   if (alloc && !array) {

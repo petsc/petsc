@@ -18,7 +18,7 @@ PETSC_EXTERN mxArray *MatSeqAIJToMatlab(Mat B)
 
   PetscFunctionBegin;
   mat  = mxCreateSparse(B->cmap->n,B->rmap->n,aij->nz,mxREAL);
-  ierr = PetscMemcpy(mxGetPr(mat),aij->a,aij->nz*sizeof(PetscScalar));if (ierr) return NULL;
+  ierr = PetscArraycpy(mxGetPr(mat),aij->a,aij->nz);if (ierr) return NULL;
   /* MATLAB stores by column, not row so we pass in the transpose of the matrix */
   jj = mxGetIr(mat);
   for (i=0; i<aij->nz; i++) jj[i] = aij->j[i];
@@ -39,18 +39,6 @@ PETSC_EXTERN PetscErrorCode MatlabEnginePut_SeqAIJ(PetscObject obj,void *mengine
   PetscFunctionReturn(0);
 }
 
-/*@C
-    MatSeqAIJFromMatlab - Given a MATLAB sparse matrix, fills a SeqAIJ matrix with its transpose.
-
-   Not Collective
-
-   Input Parameters:
-+     mmat - a MATLAB sparse matris
--     mat - an already created MATSEQAIJ
-
-  Level: intermediate
-
-@*/
 PETSC_EXTERN PetscErrorCode MatSeqAIJFromMatlab(mxArray *mmat,Mat mat)
 {
   PetscErrorCode ierr;
@@ -85,7 +73,7 @@ PETSC_EXTERN PetscErrorCode MatSeqAIJFromMatlab(mxArray *mmat,Mat mat)
     aij->singlemalloc = PETSC_TRUE;
   }
 
-  ierr = PetscMemcpy(aij->a,mxGetPr(mmat),aij->nz*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArraycpy(aij->a,mxGetPr(mmat),aij->nz);CHKERRQ(ierr);
   /* MATLAB stores by column, not row so we pass in the transpose of the matrix */
   i = aij->i;
   for (k=0; k<n+1; k++) i[k] = (PetscInt) ii[k];

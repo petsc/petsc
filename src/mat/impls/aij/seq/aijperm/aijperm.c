@@ -144,7 +144,7 @@ PetscErrorCode MatDuplicate_SeqAIJPERM(Mat A, MatDuplicateOption op, Mat *M)
     ierr        = PetscObjectComposeFunction((PetscObject)*M,"MatMatMultSymbolic_seqdense_seqaijperm_C",MatMatMultSymbolic_SeqDense_SeqAIJ);CHKERRQ(ierr);
     ierr        = PetscObjectComposeFunction((PetscObject)*M,"MatMatMultNumeric_seqdense_seqaijperm_C",MatMatMultNumeric_SeqDense_SeqAIJ);CHKERRQ(ierr);
   }
-  ierr        = PetscMemcpy(aijperm_dest,aijperm,sizeof(Mat_SeqAIJPERM));CHKERRQ(ierr);
+  ierr        = PetscArraycpy(aijperm_dest,aijperm,1);CHKERRQ(ierr);
   /* Allocate space for, and copy the grouping and permutation info.
    * I note that when the groups are initially determined in
    * MatSeqAIJPERM_create_perm, xgroup and nzgroup may be sized larger than
@@ -154,9 +154,9 @@ PetscErrorCode MatDuplicate_SeqAIJPERM(Mat A, MatDuplicateOption op, Mat *M)
   ierr = PetscMalloc1(A->rmap->n, &aijperm_dest->iperm);CHKERRQ(ierr);
   ierr = PetscMalloc1(aijperm->ngroup+1, &aijperm_dest->xgroup);CHKERRQ(ierr);
   ierr = PetscMalloc1(aijperm->ngroup, &aijperm_dest->nzgroup);CHKERRQ(ierr);
-  ierr = PetscMemcpy(aijperm_dest->iperm,aijperm->iperm,sizeof(PetscInt)*A->rmap->n);CHKERRQ(ierr);
-  ierr = PetscMemcpy(aijperm_dest->xgroup,aijperm->xgroup,sizeof(PetscInt)*(aijperm->ngroup+1));CHKERRQ(ierr);
-  ierr = PetscMemcpy(aijperm_dest->nzgroup,aijperm->nzgroup,sizeof(PetscInt)*aijperm->ngroup);CHKERRQ(ierr);
+  ierr = PetscArraycpy(aijperm_dest->iperm,aijperm->iperm,A->rmap->n);CHKERRQ(ierr);
+  ierr = PetscArraycpy(aijperm_dest->xgroup,aijperm->xgroup,aijperm->ngroup+1);CHKERRQ(ierr);
+  ierr = PetscArraycpy(aijperm_dest->nzgroup,aijperm->nzgroup,aijperm->ngroup);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -694,7 +694,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJPERM(Mat A,MatType type,MatR
    important to preallocate matrix storage in order to get good assembly
    performance.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - MPI communicator, set to PETSC_COMM_SELF
@@ -711,8 +711,6 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJPERM(Mat A,MatType type,MatR
    If nnz is given then nz is ignored
 
    Level: intermediate
-
-.keywords: matrix, cray, sparse, parallel
 
 .seealso: MatCreate(), MatCreateMPIAIJPERM(), MatSetValues()
 @*/

@@ -4,7 +4,6 @@
    These are for blocks of data, each block is indicated with a single integer.
 */
 #include <petsc/private/isimpl.h>               /*I  "petscis.h"     I*/
-#include <petscvec.h>
 #include <petscviewer.h>
 
 typedef struct {
@@ -287,7 +286,7 @@ static PetscErrorCode ISCopy_Block(IS is,IS isy)
   ierr = PetscLayoutGetSize(isy->map, &Ny);CHKERRQ(ierr);
   if (n != ny || N != Ny || bs != bsy) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Index sets incompatible");
   isy_block->sorted = is_block->sorted;
-  ierr = PetscMemcpy(isy_block->idx,is_block->idx,(n/bs)*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArraycpy(isy_block->idx,is_block->idx,(n/bs));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -368,7 +367,7 @@ static struct _ISOps myops = { ISGetSize_Block,
 .  bs - number of elements in each block, one for each block and count of block not indices
 .   n - the length of the index set (the number of blocks)
 .  idx - the list of integers, these are by block, not by location
-+  mode - see PetscCopyMode, only PETSC_COPY_VALUES and PETSC_OWN_POINTER are supported
+-  mode - see PetscCopyMode, only PETSC_COPY_VALUES and PETSC_OWN_POINTER are supported
 
 
    Notes:
@@ -382,10 +381,6 @@ static struct _ISOps myops = { ISGetSize_Block,
    a block size of 2 and idx of {0,2}.
 
    Level: beginner
-
-  Concepts: IS^block
-  Concepts: index sets^block
-  Concepts: block^index set
 
 .seealso: ISCreateStride(), ISCreateGeneral(), ISAllGather()
 @*/
@@ -417,7 +412,7 @@ static PetscErrorCode  ISBlockSetIndices_Block(IS is,PetscInt bs,PetscInt n,cons
   if (mode == PETSC_COPY_VALUES) {
     ierr = PetscMalloc1(n,&sub->idx);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)is,n*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMemcpy(sub->idx,idx,n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(sub->idx,idx,n);CHKERRQ(ierr);
     sub->allocated = PETSC_TRUE;
   } else if (mode == PETSC_OWN_POINTER) {
     sub->idx = (PetscInt*) idx;
@@ -453,7 +448,7 @@ static PetscErrorCode  ISBlockSetIndices_Block(IS is,PetscInt bs,PetscInt n,cons
    ISCreateBlock - Creates a data structure for an index set containing
    a list of integers. The indices are relative to entries, not blocks.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - the MPI communicator
@@ -476,10 +471,6 @@ static PetscErrorCode  ISBlockSetIndices_Block(IS is,PetscInt bs,PetscInt n,cons
    a block size of 2 and idx of {0,3}.
 
    Level: beginner
-
-  Concepts: IS^block
-  Concepts: index sets^block
-  Concepts: block^index set
 
 .seealso: ISCreateStride(), ISCreateGeneral(), ISAllGather()
 @*/
@@ -527,10 +518,6 @@ static PetscErrorCode  ISBlockRestoreIndices_Block(IS is,const PetscInt *idx[])
 
    Level: intermediate
 
-   Concepts: IS^block
-   Concepts: index sets^getting indices
-   Concepts: index sets^block
-
 .seealso: ISGetIndices(), ISBlockRestoreIndices()
 @*/
 PetscErrorCode  ISBlockGetIndices(IS is,const PetscInt *idx[])
@@ -554,10 +541,6 @@ PetscErrorCode  ISBlockGetIndices(IS is,const PetscInt *idx[])
 .  idx - the integer indices
 
    Level: intermediate
-
-   Concepts: IS^block
-   Concepts: index sets^getting indices
-   Concepts: index sets^block
 
 .seealso: ISRestoreIndices(), ISBlockGetIndices()
 @*/
@@ -583,8 +566,6 @@ PetscErrorCode  ISBlockRestoreIndices(IS is,const PetscInt *idx[])
 
    Level: intermediate
 
-   Concepts: IS^block sizes
-   Concepts: index sets^block sizes
 
 .seealso: ISGetBlockSize(), ISBlockGetSize(), ISGetSize(), ISCreateBlock()
 @*/
@@ -622,8 +603,6 @@ static PetscErrorCode  ISBlockGetLocalSize_Block(IS is,PetscInt *size)
 
    Level: intermediate
 
-   Concepts: IS^block sizes
-   Concepts: index sets^block sizes
 
 .seealso: ISGetBlockSize(), ISBlockGetLocalSize(), ISGetSize(), ISCreateBlock()
 @*/

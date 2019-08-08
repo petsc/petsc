@@ -3,25 +3,27 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download               = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/fblaslapack-3.4.2.tar.gz']
+    self.gitcommit              = 'v3.4.2-p1'
+    self.download               = ['git://https://bitbucket.org/petsc/pkg-fblaslapack','https://bitbucket.org/petsc/pkg-fblaslapack/get/'+self.gitcommit+'.tar.gz']
     self.precisions             = ['single','double']
     self.downloadonWindows      = 1
     self.skippackagewithoptions = 1
     self.installwithbatch       = 1
+    self.fc                     = 1
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
     return
 
+  def configureLibrary(self):
+    if self.argDB['with-64-bit-blas-indices']:
+      raise RuntimeError('fblaslapack does not support -with-64-bit-blas-indices')
+    if hasattr(self.argDB,'known-64-bit-blas-indices') and self.argDB['known-64-bit-blas-indices']:
+      raise RuntimeError('fblaslapack does not support -known-64-bit-blas-indices')
+    config.package.Package.configureLibrary(self)
 
   def Install(self):
     import os
-
-    if self.defaultPrecision == '__float128':
-      raise RuntimeError('Cannot build fblaslapack with __float128; use --download-f2cblaslapack instead')
-
-    if not hasattr(self.compilers, 'FC'):
-      raise RuntimeError('Cannot request fblaslapack without Fortran compiler, use --download-f2cblaslapack intead')
 
     self.setCompilers.pushLanguage('FC')
     if config.setCompilers.Configure.isNAG(self.setCompilers.getLinker(), self.log):
@@ -74,6 +76,8 @@ class Configure(config.package.Package):
         line = 'RANLIB = '+self.setCompilers.RANLIB+'\n'
       if line.startswith('RM  '):
         line = 'RM = '+self.programs.RM+'\n'
+      if line.startswith('OMAKE  '):
+        line = 'OMAKE = '+self.make.make+'\n'
 
       if line.startswith('include'):
         line = '\n'
@@ -88,7 +92,7 @@ class Configure(config.package.Package):
 
     try:
       self.logPrintBox('Compiling FBLASLAPACK; this may take several minutes')
-      output1,err1,ret  = config.package.Package.executeShellCommand('cd '+blasDir+' && make -f tmpmakefile cleanblaslapck cleanlib && make -f tmpmakefile', timeout=2500, log = self.log)
+      output1,err1,ret  = config.package.Package.executeShellCommand('cd '+blasDir+' && make -f tmpmakefile cleanblaslapck cleanlib && '+self.make.make_jnp+' -f tmpmakefile', timeout=2500, log = self.log)
     except RuntimeError as e:
       raise RuntimeError('Error running make on '+blasDir+': '+str(e))
     try:

@@ -58,8 +58,8 @@ class Configure(config.base.Configure):
     elif self.functions.check('GETARG@16', libraries = self.compilers.flibs):
       self.addDefine('USE_NARGS',1)
       self.addDefine('HAVE_IARG_COUNT_PROGNAME',1)
-    elif self.functions.check('_gfortran_iargc', libraries = self.compilers.flibs):
-      self.addDefine('HAVE_GFORTRAN_IARGC',1)
+    else:
+      self.functions.check('_gfortran_iargc', libraries = self.compilers.flibs)
     self.popLanguage()
     self.logWrite(self.libraries.restoreLog())
     self.logWrite(self.functions.restoreLog())

@@ -183,12 +183,12 @@ recommend that one initially read the entire document before proceeding with
 serious use of PETSc, but bear in mind that PETSc can be used efficiently
 before one understands all of the material presented here. Furthermore, the
 definitive reference for any PETSc function is always the online manual page
-\href{http://www.mcs.anl.gov/petsc/documentation}{http://www.mcs.anl.gov/petsc/documentation}.
+\href{https://www.mcs.anl.gov/petsc/documentation/}{https://www.mcs.anl.gov/petsc/documentation/}.
 
 \medskip \medskip
 
 Manual pages for all PETSc functions can be
-accessed at \href{https://www.mcs.anl.gov/petsc/documentation}{www.mcs.anl.gov/petsc/documentation}.
+accessed at \href{https://www.mcs.anl.gov/petsc/documentation/}{www.mcs.anl.gov/petsc/documentation}.
 The manual pages
 provide hyperlinked indices (organized by
 both concept and routine name) to the tutorial examples and enable
@@ -199,14 +199,14 @@ Emacs and Vi/Vim users may find the
 source code.  Details of this feature are provided in
 Section~\ref{sec_emacs}.
 
-The file \href{http://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf}{http://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf}.
+The file \href{https://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf}{https://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf}.
 the complete {\em PETSc Users Manual},
-while \href{http://www.mcs.anl.gov/petsc/petsc-current/docs/intro.pdf}{http://www.mcs.anl.gov/petsc/petsc-current/docs/intro.pdf}
+while \href{https://www.mcs.anl.gov/petsc/petsc-current/docs/intro.pdf}{https://www.mcs.anl.gov/petsc/petsc-current/docs/intro.pdf}
 includes only the introductory segment, Part I.  \sindex{installing PETSc}
 The complete PETSc distribution, users
 manual, manual pages, and additional information are available via
 the PETSc home page at
-\href{http://www.mcs.anl.gov/petsc}{www.mcs.anl.gov/petsc}.
+\href{https://www.mcs.anl.gov/petsc}{www.mcs.anl.gov/petsc}.
 The PETSc home page also
 contains details regarding installation, new features and changes in recent
 versions of PETSc, machines that we currently support, and a frequently asked questions (FAQ) list.
@@ -226,7 +226,7 @@ routines that support direct use of Fortran90 pointers. \\
 \noindent{\bf Note to Python Programmers}: \label{petsc4py} \findex{petsc4py}
 To program with PETSc in Python you need to install the PETSc4py package developed by
 Lisandro Dalcin. This can be done by configuring PETSc with the option \trl{--download-petsc4py}. See the PETSc installation guide
-for more details:\\ \href{http://www.mcs.anl.gov/petsc/documentation/installation.html}{http://www.mcs.anl.gov/petsc/documentation/installation.html}.
+for more details:\\ \href{https://www.mcs.anl.gov/petsc/documentation/installation.html}{https://www.mcs.anl.gov/petsc/documentation/installation.html}.
 
 %-----------------------------------------------------------------------------
 \section{Running PETSc Programs}
@@ -334,7 +334,7 @@ for generating new communicators consisting of subsets of processors,
 though most users rarely need to use these. The book {\em Using MPI},
 by Lusk, Gropp, and Skjellum \cite{using-mpi} provides an excellent
 introduction to the concepts in MPI. See also the MPI homepage
-\href{http://www.mcs.anl.gov/mpi/}{http://www.mcs.anl.gov/mpi/}.
+\href{https://www.mcs.anl.gov/research/projects/mpi/}{https://www.mcs.anl.gov/research/projects/mpi/}.
 Note that PETSc users need not program much message passing directly
 with MPI, but they must be familiar with the basic concepts of message
 passing and distributed memory computing.
@@ -543,7 +543,7 @@ details regarding error checking when using the PETSc Fortran interface.
  [0]PETSC ERROR: Memory allocated 11282182704 Memory used by process 7075897344
  [0]PETSC ERROR: Try running with -malloc_dump or -malloc_log for info.
  [0]PETSC ERROR: Memory requested 18446744072169447424
- [0]PETSC ERROR: See http://www.mcs.anl.gov/petsc/documentation/faq.html for trouble shooting.
+ [0]PETSC ERROR: See https://www.mcs.anl.gov/petsc/documentation/faq.html for trouble shooting.
  [0]PETSC ERROR: Petsc Development GIT revision: v3.7.1-224-g9c9a9c5  GIT Date: 2016-05-18 22:43:00 -0500
  [0]PETSC ERROR: ./ex3 on a arch-darwin-double-debug named Patricks-MacBook-Pro-2.local by patrick Mon Jun 27 18:04:03 2016
  [0]PETSC ERROR: Configure options PETSC_DIR=/Users/patrick/petsc PETSC_ARCH=arch-darwin-double-debug --download-mpich --download-f2cblaslapack --with-cc=clang --with-cxx=clang++ --with-fc=gfortran --with-debugging=1 --with-precision=double --with-scalar-type=real --with-viennacl=0 --download-c2html -download-sowing
@@ -569,7 +569,7 @@ anywhere in the code to check the current status of the memory for corruption.
 By putting several (or many) of these macros into your code you can usually
 easily track down in what small segment of your code the corruption has occured.
 One can also use Valgrind to track down memory errors; see the FAQ at
-\href{http://www.mcs.anl.gov/petsc/documentation/faq.html}{www.mcs.anl.gov/petsc/documentation/faq.html}
+\href{https://www.mcs.anl.gov/petsc/documentation/faq.html}{www.mcs.anl.gov/petsc/documentation/faq.html}
 
 \subsection*{Parallel Programming}
 Since PETSc uses the message-passing model for
@@ -601,7 +601,7 @@ in the same order on each processor.
 
 The next example, given in Figure~\ref{fig_example2}, illustrates the
 solution of a linear system in parallel.  This code, corresponding to
-\href{http://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/examples/tutorials/ex3.c.html}{\trl{$PETSC_DIR/src/ksp/ksp/examples/tutorials/ex2.c}}, handles the
+\href{https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/examples/tutorials/ex3.c.html}{\trl{$PETSC_DIR/src/ksp/ksp/examples/tutorials/ex2.c}}, handles the
 two-dimensional Laplacian discretized with finite differences, where
 the linear system is again solved with KSP.  The code performs the
 same tasks as the sequential version within Figure~\ref{fig_example1}.
@@ -629,7 +629,7 @@ compilation commands as determined by the configuration process.  See Chapter \r
 for a discussion about compiling PETSc programs.
 Users who are experiencing difficulties linking PETSc programs should
 refer to the FAQ on the PETSc website
-\href{http://www.mcs.anl.gov/petsc}{http://www.mcs.anl.gov/petsc} or
+\href{https://www.mcs.anl.gov/petsc}{https://www.mcs.anl.gov/petsc} or
 given in the file \trl{$PETSC_DIR/docs/faq.html}.
 
 \begin{figure}[H]
@@ -729,7 +729,7 @@ where \trl{<library>}
 denotes any of the PETSc libraries (listed in the following
 section), such as \trl{SNES} or \trl{KSP}.
 The manual pages located at \trl{${PETSC_DIR}/docs/index.htm} or 
-\href{http://www.mcs.anl.gov/petsc/documentation}{http://www.mcs.anl.gov/petsc/documentation}
+\href{https://www.mcs.anl.gov/petsc/documentation/}{https://www.mcs.anl.gov/petsc/documentation/}
 provide links (organized by both routine names and concepts) to the tutorial examples.
 
 To write a new application program using PETSc, we suggest the
@@ -768,7 +768,7 @@ When citing PETSc in a publication please cite the following:
    and Lois Curfman McInnes and Richard Tran Mills and Todd Munson and Karl Rupp
    and Patrick Sanan and Barry~F. Smith and Stefano Zampini and Hong Zhang and Hong Zhang",
    Title  = "{PETS}c {W}eb page",
-   Note   = "http://www.mcs.anl.gov/petsc",
+   Note   = "https://www.mcs.anl.gov/petsc",
    Year   = "2018"}
 
 @TechReport{petsc-user-ref,

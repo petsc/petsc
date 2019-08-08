@@ -1,5 +1,5 @@
-#if !defined(_PETSC_HASHTABLE_H)
-#define _PETSC_HASHTABLE_H
+#if !defined(PETSC_HASHTABLE_H)
+#define PETSC_HASHTABLE_H
 
 #include <petsc/private/petscimpl.h>
 
@@ -207,4 +207,4 @@ PETSC_STATIC_INLINE PetscHash_t PetscHashCombine(PetscHash_t seed, PetscHash_t h
 #define PetscHashEqual(a,b) ((a) == (b))
 
 
-#endif /* _PETSC_HASHTABLE_H */
+#endif /* PETSC_HASHTABLE_H */

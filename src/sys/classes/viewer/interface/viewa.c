@@ -22,6 +22,7 @@ const char *const PetscViewerFormats[] = {
   "ASCII_LATEX",
   "ASCII_XML",
   "ASCII_GLVIS",
+  "ASCII_CSV",
   "DRAW_BASIC",
   "DRAW_LG",
   "DRAW_LG_XRANGE",
@@ -89,8 +90,6 @@ const char *const PetscViewerFormats[] = {
 
     Note: This supports passing in a NULL for the viewer for use in the debugger, but it should never be called in the code with a NULL viewer
 
-   Concepts: PetscViewer^setting format
-
 .seealso: PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), MatView(), VecView(), PetscViewerType,
           PetscViewerPushFormat(), PetscViewerPopFormat(), PetscViewerDrawOpen(),PetscViewerSocketOpen()
 @*/
@@ -139,8 +138,6 @@ PetscErrorCode  PetscViewerSetFormat(PetscViewer viewer,PetscViewerFormat format
    These formats are most often used for viewing matrices and vectors.
    Currently, the object name is used only in the MATLAB format.
 
-   Concepts: PetscViewer^setting format
-
 .seealso: PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), MatView(), VecView(),
           PetscViewerSetFormat(), PetscViewerPopFormat()
 @*/
@@ -166,8 +163,6 @@ PetscErrorCode  PetscViewerPushFormat(PetscViewer viewer,PetscViewerFormat forma
 
    Level: intermediate
 
-   Concepts: PetscViewer^setting format
-
 .seealso: PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), MatView(), VecView(),
           PetscViewerSetFormat(), PetscViewerPushFormat()
 @*/
@@ -187,6 +182,3 @@ PetscErrorCode  PetscViewerGetFormat(PetscViewer viewer,PetscViewerFormat *forma
   *format =  viewer->format;
   PetscFunctionReturn(0);
 }
-
-
-

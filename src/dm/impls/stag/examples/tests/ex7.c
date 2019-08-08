@@ -43,7 +43,7 @@ int main(int argc,char **argv)
       for (i=startx; i<startx + nx; ++i) {
         for (d=0; d<dofTotal; ++d) {
           if (a1[k][j][i][d] != 1.0) {
-            PetscPrintf(PETSC_COMM_SELF,"[%d] Unexpected value %g (expecting %g)\n",rank,a1[k][j][i][d],1.0);CHKERRQ(ierr);
+            ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Unexpected value %g (expecting %g)\n",rank,(double)PetscRealPart(a1[k][j][i][d]),1.0);CHKERRQ(ierr);
           }
           a2[k][j][i][d] = 0.0;
           for (ks = -stencilWidth; ks <= stencilWidth; ++ks) {
@@ -60,8 +60,8 @@ int main(int argc,char **argv)
   ierr = DMStagVecRestoreArrayDOFRead(dm,vecLocal1,&a1);CHKERRQ(ierr);
   ierr = DMStagVecRestoreArrayDOF(dm,vecLocal2,&a2);CHKERRQ(ierr);
 
-  DMLocalToGlobalBegin(dm,vecLocal2,INSERT_VALUES,vec);CHKERRQ(ierr);
-  DMLocalToGlobalEnd(dm,vecLocal2,INSERT_VALUES,vec);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(dm,vecLocal2,INSERT_VALUES,vec);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(dm,vecLocal2,INSERT_VALUES,vec);CHKERRQ(ierr);
 
   /* For the all-periodic case, all values are the same . Otherwise, just check the local version */
   ierr = DMStagGetBoundaryTypes(dm,&boundaryTypex,&boundaryTypey,&boundaryTypez);CHKERRQ(ierr);
@@ -70,7 +70,7 @@ int main(int argc,char **argv)
     expected = 1.0; for(d=0;d<3;++d) expected *= (2*stencilWidth+1);
     for (i=0; i<nz*ny*nx*dofTotal; ++i) {
       if (a[i] != expected) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Unexpected value %g (expecting %g)\n",rank,a[i],expected);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Unexpected value %g (expecting %g)\n",rank,(double)PetscRealPart(a[i]),(double)PetscRealPart(expected));CHKERRQ(ierr);
       }
     }
     ierr = VecRestoreArray(vec,&a);CHKERRQ(ierr);
@@ -94,7 +94,7 @@ int main(int argc,char **argv)
             for (dd=0;dd<3;++dd) expected *= (bnd[dd] ? stencilWidth + 1 + extra[dd] : 2*stencilWidth + 1);
             for (d=0; d<dof0; ++d) {
               if (a2[k][j][i][d] != expected) {
-                ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Element (%D,%D,%D)[%D] Unexpected value %g (expecting %g)\n",rank,i,j,k,d,a2[k][j][i][d],expected);CHKERRQ(ierr);
+                ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Element (%D,%D,%D)[%D] Unexpected value %g (expecting %g)\n",rank,i,j,k,d,(double)PetscRealPart(a2[k][j][i][d]),(double)PetscRealPart(expected));CHKERRQ(ierr);
               }
             }
           }
@@ -103,7 +103,7 @@ int main(int argc,char **argv)
             for (dd=1;dd<3;++dd) expected *= (bnd[dd] ? stencilWidth + 1 + extra[dd] : 2*stencilWidth + 1);
             for (d=dof0; d<dof0+dof1; ++d) {
               if (a2[k][j][i][d] != expected) {
-                ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Element (%D,%D,%D)[%D] Unexpected value %g (expecting %g)\n",rank,i,j,k,d,a2[k][j][i][d],expected);CHKERRQ(ierr);
+                ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Element (%D,%D,%D)[%D] Unexpected value %g (expecting %g)\n",rank,i,j,k,d,(double)PetscRealPart(a2[k][j][i][d]),(double)PetscRealPart(expected));CHKERRQ(ierr);
               }
             }
           }
@@ -112,7 +112,7 @@ int main(int argc,char **argv)
             for (dd=0;dd<3;dd+=2) expected *= (bnd[dd] ? stencilWidth + 1 + extra[dd] : 2*stencilWidth + 1);
             for (d=dof0+dof1; d<dof0+2*dof1; ++d) {
               if (a2[k][j][i][d] != expected) {
-                ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Element (%D,%D,%D)[%D] Unexpected value %g (expecting %g)\n",rank,i,j,k,d,a2[k][j][i][d],expected);CHKERRQ(ierr);
+                ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Element (%D,%D,%D)[%D] Unexpected value %g (expecting %g)\n",rank,i,j,k,d,(double)PetscRealPart(a2[k][j][i][d]),(double)PetscRealPart(expected));CHKERRQ(ierr);
               }
             }
           }
@@ -121,7 +121,7 @@ int main(int argc,char **argv)
             for (dd=0;dd<2;++dd) expected *= ((bnd[dd] ? 1 : 2) * stencilWidth + 1);
             for (d=dof0+2*dof1; d<dof0+2*dof1+dof2; ++d) {
               if (a2[k][j][i][d] != expected) {
-                ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Element (%D,%D,%D)[%D] Unexpected value %g (expecting %g)\n",rank,i,j,k,d,a2[k][j][i][d],expected);CHKERRQ(ierr);
+                ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Element (%D,%D,%D)[%D] Unexpected value %g (expecting %g)\n",rank,i,j,k,d,(double)PetscRealPart(a2[k][j][i][d]),(double)PetscRealPart(expected));CHKERRQ(ierr);
               }
             }
           }
@@ -130,7 +130,7 @@ int main(int argc,char **argv)
             for (dd=0;dd<2;++dd) expected *= (bnd[dd] ? stencilWidth + 1 + extra[dd] : 2*stencilWidth + 1);
             for (d=dof0+2*dof1+dof2; d<dof0+3*dof1+dof2; ++d) {
               if (a2[k][j][i][d] != expected) {
-                ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Element (%D,%D,%D)[%D] Unexpected value %g (expecting %g)\n",rank,i,j,k,d,a2[k][j][i][d],expected);CHKERRQ(ierr);
+                ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Element (%D,%D,%D)[%D] Unexpected value %g (expecting %g)\n",rank,i,j,k,d,(double)PetscRealPart(a2[k][j][i][d]),(double)PetscRealPart(expected));CHKERRQ(ierr);
               }
             }
           }
@@ -139,7 +139,7 @@ int main(int argc,char **argv)
             for (dd=0;dd<3;dd+=2) expected *= ((bnd[dd] ? 1 : 2) * stencilWidth + 1);
             for (d=dof0+3*dof1+dof2; d<dof0+3*dof1+2*dof2; ++d) {
               if (a2[k][j][i][d] != expected) {
-                ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Element (%D,%D,%D)[%D] Unexpected value %g (expecting %g)\n",rank,i,j,k,d,a2[k][j][i][d],expected);CHKERRQ(ierr);
+                ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Element (%D,%D,%D)[%D] Unexpected value %g (expecting %g)\n",rank,i,j,k,d,(double)PetscRealPart(a2[k][j][i][d]),(double)PetscRealPart(expected));CHKERRQ(ierr);
               }
             }
           }
@@ -148,7 +148,7 @@ int main(int argc,char **argv)
             for (dd=1;dd<3;++dd) expected *= ((bnd[dd] ? 1 : 2) * stencilWidth + 1);
             for (d=dof0+3*dof1+2*dof2; d<dof0+3*dof1+3*dof2; ++d) {
               if (a2[k][j][i][d] != expected) {
-                ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Element (%D,%D,%D)[%D] Unexpected value %g (expecting %g)\n",rank,i,j,k,d,a2[k][j][i][d],expected);CHKERRQ(ierr);
+                ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Element (%D,%D,%D)[%D] Unexpected value %g (expecting %g)\n",rank,i,j,k,d,(double)PetscRealPart(a2[k][j][i][d]),(double)PetscRealPart(expected));CHKERRQ(ierr);
               }
             }
           }
@@ -157,7 +157,7 @@ int main(int argc,char **argv)
             for (dd=0;dd<3;++dd) expected *= ((bnd[dd] ? 1 : 2) * stencilWidth + 1);
             for (d=dofTotal-dof3; d<dofTotal; ++d) {
               if (a2[k][j][i][d] != expected) {
-                ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Element (%D,%D,%D)[%D] Unexpected value %g (expecting %g)\n",rank,i,j,k,d,a2[k][j][i][d],expected);CHKERRQ(ierr);
+                ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Element (%D,%D,%D)[%D] Unexpected value %g (expecting %g)\n",rank,i,j,k,d,(double)PetscRealPart(a2[k][j][i][d]),(double)PetscRealPart(expected));CHKERRQ(ierr);
               }
             }
           }

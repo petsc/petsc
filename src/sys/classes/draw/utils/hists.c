@@ -42,7 +42,7 @@ struct _p_PetscDrawHG {
 .  hist - The histogram context
 
    Notes:
-    The difference between a bar chart, PetscDrawBar, and a histogram, PetscDrawHG, is explained here http://stattrek.com/statistics/charts/histogram.aspx?Tutorial=AP
+    The difference between a bar chart, PetscDrawBar, and a histogram, PetscDrawHG, is explained here https://stattrek.com/statistics/charts/histogram.aspx?Tutorial=AP
 
    The histogram is only displayed when PetscDrawHGDraw() is called.
 
@@ -50,8 +50,6 @@ struct _p_PetscDrawHG {
    zeroth MPI process in the communicator. All MPI processes in the communicator must call PetscDrawHGDraw() to display the updated graph.
 
    Level: intermediate
-
-   Concepts: histogram^creating
 
 .seealso: PetscDrawHGDestroy(), PetscDrawHG, PetscDrawBarCreate(), PetscDrawBar, PetscDrawLGCreate(), PetscDrawLG, PetscDrawSPCreate(), PetscDrawSP,
           PetscDrawHGSetNumberBins(), PetscDrawHGReset(), PetscDrawHGAddValue(), PetscDrawHGDraw(), PetscDrawHGSave(), PetscDrawHGView(), PetscDrawHGSetColor(),
@@ -112,8 +110,6 @@ PetscErrorCode  PetscDrawHGCreate(PetscDraw draw,int bins,PetscDrawHG *hist)
 
    Level: intermediate
 
-   Concepts: histogram^setting number of bins
-
 .seealso: PetscDrawHGCreate(), PetscDrawHG, PetscDrawHGDraw(), PetscDrawHGIntegerBins()
 
 @*/
@@ -144,8 +140,6 @@ PetscErrorCode  PetscDrawHGSetNumberBins(PetscDrawHG hist, int bins)
 . hist - The histogram context.
 
   Level: intermediate
-
-  Concepts: histogram^resetting
 
 .seealso: PetscDrawHGCreate(), PetscDrawHG, PetscDrawHGDraw(), PetscDrawHGAddValue()
 
@@ -203,8 +197,6 @@ PetscErrorCode  PetscDrawHGDestroy(PetscDrawHG *hist)
 
   Level: intermediate
 
-  Concepts: histogram^adding values
-
 .seealso: PetscDrawHGCreate(), PetscDrawHG, PetscDrawHGDraw(), PetscDrawHGAddValue(), PetscDrawHGReset()
 @*/
 PetscErrorCode  PetscDrawHGAddValue(PetscDrawHG hist, PetscReal value)
@@ -219,7 +211,7 @@ PetscErrorCode  PetscDrawHGAddValue(PetscDrawHG hist, PetscReal value)
 
     ierr = PetscMalloc1(hist->maxValues+CHUNKSIZE, &tmp);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)hist, CHUNKSIZE * sizeof(PetscReal));CHKERRQ(ierr);
-    ierr = PetscMemcpy(tmp, hist->values, hist->maxValues * sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscArraycpy(tmp, hist->values, hist->maxValues);CHKERRQ(ierr);
     ierr = PetscFree(hist->values);CHKERRQ(ierr);
 
     hist->values     = tmp;
@@ -350,7 +342,7 @@ PetscErrorCode  PetscDrawHGDraw(PetscDrawHG hist)
     binSize = (xmax - xmin)/numBins;
     bins    = hist->bins;
 
-    ierr = PetscMemzero(bins, numBins * sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscArrayzero(bins, numBins);CHKERRQ(ierr);
 
     maxHeight = 0.0;
     for (i = 0; i < numBins; i++) {
@@ -411,8 +403,6 @@ PetscErrorCode  PetscDrawHGDraw(PetscDrawHG hist)
 
   Level: intermediate
 
-  Concepts: histogram^saving
-
 .seealso:  PetscDrawHGCreate(), PetscDrawHGGetDraw(), PetscDrawSetSave(), PetscDrawSave(), PetscDrawHGDraw()
 @*/
 PetscErrorCode  PetscDrawHGSave(PetscDrawHG hg)
@@ -437,7 +427,6 @@ PetscErrorCode  PetscDrawHGSave(PetscDrawHG hg)
 
 .seealso:  PetscDrawHGCreate(), PetscDrawHGGetDraw(), PetscDrawSetSave(), PetscDrawSave(), PetscDrawHGDraw()
 
-.keywords:  draw, histogram
 @*/
 PetscErrorCode  PetscDrawHGView(PetscDrawHG hist,PetscViewer viewer)
 {
@@ -487,7 +476,7 @@ PetscErrorCode  PetscDrawHGView(PetscDrawHG hist,PetscViewer viewer)
     bins    = hist->bins;
 
     /* Calculate number of points in each bin */
-    ierr = PetscMemzero(bins, numBins * sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscArrayzero(bins, numBins);CHKERRQ(ierr);
     for (i = 0; i < numBins; i++) {
       binLeft  = xmin + binSize*i;
       binRight = xmin + binSize*(i+1);
@@ -557,8 +546,6 @@ PetscErrorCode  PetscDrawHGSetColor(PetscDrawHG hist,int color)
 
   Level: intermediate
 
-  Concepts: histogram^setting axis
-
 .seealso:  PetscDrawHGCreate(), PetscDrawHGGetDraw(), PetscDrawSetSave(), PetscDrawSave(), PetscDrawHGDraw(), PetscDrawHGGetAxis()
 
 @*/
@@ -585,8 +572,6 @@ PetscErrorCode  PetscDrawHGSetLimits(PetscDrawHG hist, PetscReal x_min, PetscRea
 
   Level: intermediate
 
-.keywords:  draw, histogram, statistics
-
 .seealso:  PetscDrawHGCreate(), PetscDrawHGAddValue(), PetscDrawHGView(), PetscDrawHGDraw()
 
 @*/
@@ -609,8 +594,6 @@ PetscErrorCode  PetscDrawHGCalcStats(PetscDrawHG hist, PetscBool calc)
 - ints - Flag for integer width bins
 
   Level: intermediate
-
-.keywords:  draw, histogram, statistics
 
 .seealso:  PetscDrawHGCreate(), PetscDrawHGAddValue(), PetscDrawHGView(), PetscDrawHGDraw(), PetscDrawHGSetColor()
 

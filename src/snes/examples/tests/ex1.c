@@ -61,6 +61,9 @@ typedef struct {
 extern PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,void*);
 extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
 extern PetscErrorCode FormInitialGuess(AppCtx*,Vec);
+extern PetscErrorCode ConvergenceTest(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*);
+extern PetscErrorCode ConvergenceDestroy(void*);
+extern PetscErrorCode postcheck(SNES,Vec,Vec,Vec,PetscBool*,void*);
 
 int main(int argc,char **argv)
 {
@@ -73,7 +76,9 @@ int main(int argc,char **argv)
   PetscMPIInt    size;
   PetscReal      bratu_lambda_max = 6.81,bratu_lambda_min = 0.,history[50];
   MatFDColoring  fdcoloring;
-  PetscBool      matrix_free = PETSC_FALSE,flg,fd_coloring = PETSC_FALSE;
+  PetscBool      matrix_free = PETSC_FALSE,flg,fd_coloring = PETSC_FALSE, use_convergence_test = PETSC_FALSE,pc = PETSC_FALSE;
+  KSP            ksp;
+  PetscInt       *testarray;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -86,14 +91,21 @@ int main(int argc,char **argv)
   ierr    = PetscOptionsGetInt(NULL,NULL,"-mx",&user.mx,NULL);CHKERRQ(ierr);
   ierr    = PetscOptionsGetInt(NULL,NULL,"-my",&user.my,NULL);CHKERRQ(ierr);
   ierr    = PetscOptionsGetReal(NULL,NULL,"-par",&user.param,NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetBool(NULL,NULL,"-pc",&pc,NULL);CHKERRQ(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) SETERRQ(PETSC_COMM_SELF,1,"Lambda is out of range");
   N = user.mx*user.my;
+  ierr    = PetscOptionsGetBool(NULL,NULL,"-use_convergence_test",&use_convergence_test,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
+
+  if (pc) {
+    ierr = SNESSetType(snes,SNESNEWTONTR);CHKERRQ(ierr);
+    ierr = SNESNewtonTRSetPostCheck(snes, postcheck,NULL);CHKERRQ(ierr);
+  }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create vector data structures; set function evaluation routine
@@ -209,6 +221,17 @@ int main(int argc,char **argv)
      rather than just to view the function norms via -snes_monitor.
   */
   ierr = SNESSetConvergenceHistory(snes,history,hist_its,50,PETSC_TRUE);CHKERRQ(ierr);
+
+  /*
+      Add a user provided convergence test; this is to test that SNESNEWTONTR properly calls the
+      user provided test before the specialized test. The convergence context is just an array to
+      test that it gets properly freed at the end
+  */
+  if (use_convergence_test) {
+    ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
+    ierr = PetscMalloc1(5,&testarray);CHKERRQ(ierr);
+    ierr = KSPSetConvergenceTest(ksp,ConvergenceTest,testarray,ConvergenceDestroy);CHKERRQ(ierr);
+  }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Evaluate initial guess; then solve nonlinear system
@@ -444,6 +467,43 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat jac,void *ptr)
   return 0;
 }
 
+PetscErrorCode ConvergenceTest(KSP ksp,PetscInt it,PetscReal nrm,KSPConvergedReason *reason,void *ctx)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *reason = KSP_CONVERGED_ITERATING;
+  if (it > 1) {
+    *reason = KSP_CONVERGED_ITS;
+    ierr = PetscInfo(NULL,"User provided convergence test returning after 2 iterations\n");CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode ConvergenceDestroy(void* ctx)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscInfo(NULL,"User provided convergence destroy called\n");CHKERRQ(ierr);
+  ierr = PetscFree(ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode postcheck(SNES snes,Vec x,Vec y,Vec w,PetscBool *changed_w,void *ctx)
+{
+  PetscErrorCode ierr;
+  PetscReal      norm;
+  Vec            tmp;
+
+  PetscFunctionBegin;
+  ierr = VecDuplicate(x,&tmp);CHKERRQ(ierr);
+  ierr = VecWAXPY(tmp,-1.0,x,w);CHKERRQ(ierr);
+  ierr = VecNorm(tmp,NORM_2,&norm);CHKERRQ(ierr);
+  ierr = VecDestroy(&tmp);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of search step %g\n",(double)norm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 
 /*TEST
@@ -459,7 +519,25 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat jac,void *ptr)
       args: -snes_monitor_short -snes_type newtontr -ksp_gmres_cgs_refinement_type refine_always
 
    test:
+      suffix: 2a
+      filter: grep -i KSPConvergedDefault > /dev/null && echo "Found KSPConvergedDefault"
+      args: -snes_monitor_short -snes_type newtontr -ksp_gmres_cgs_refinement_type refine_always -info
+      requires: define(PETSC_USE_LOG)
+
+   test:
+      suffix: 2b
+      filter: grep -i  "User provided convergence test" > /dev/null  && echo "Found User provided convergence test"
+      args: -snes_monitor_short -snes_type newtontr -ksp_gmres_cgs_refinement_type refine_always -use_convergence_test -info
+      requires: define(PETSC_USE_LOG)
+
+   test:
       suffix: 3
       args: -snes_monitor_short -mat_coloring_type sl -snes_fd_coloring -mx 8 -my 11 -ksp_gmres_cgs_refinement_type refine_always
 
+   test:
+      suffix: 4
+      args: -pc -par 6.807 -snes_monitor -snes_converged_reason
+
 TEST*/
+
+

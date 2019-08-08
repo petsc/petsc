@@ -1,0 +1,54 @@
+Vec Object: y_subcomm_0 3 MPI processes
+  type: mpi
+Process [0]
+0.
+-1.
+-2.
+-3.
+-4.
+-5.
+-6.
+Process [1]
+-7.
+-8.
+-9.
+-10.
+-11.
+-12.
+-13.
+Process [2]
+-14.
+-15.
+-16.
+-17.
+-18.
+-19.
+Vec Object: x_commworld 7 MPI processes
+  type: mpi
+Process [0]
+0.
+-2.
+-4.
+Process [1]
+-6.
+-8.
+-10.
+Process [2]
+-12.
+-14.
+-16.
+Process [3]
+-18.
+-20.
+-22.
+Process [4]
+-24.
+-26.
+-28.
+Process [5]
+-30.
+-32.
+-34.
+Process [6]
+-36.
+-38.

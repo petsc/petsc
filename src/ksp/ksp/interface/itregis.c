@@ -9,9 +9,9 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPECG(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPECGRR(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPELCG(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_CGNE(KSP);
-PETSC_EXTERN PetscErrorCode KSPCreate_CGNASH(KSP);
-PETSC_EXTERN PetscErrorCode KSPCreate_CGSTCG(KSP);
-PETSC_EXTERN PetscErrorCode KSPCreate_CGGLTR(KSP);
+PETSC_EXTERN PetscErrorCode KSPCreate_NASH(KSP);
+PETSC_EXTERN PetscErrorCode KSPCreate_STCG(KSP);
+PETSC_EXTERN PetscErrorCode KSPCreate_GLTR(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_TCQMR(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_FCG(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPEFCG(KSP);
@@ -53,8 +53,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FETIDP(KSP);
 
   Level: advanced
 
-.keywords: KSP, register, all
-
 .seealso:  KSPRegisterDestroy()
 @*/
 PetscErrorCode  KSPRegisterAll(void)
@@ -71,9 +69,9 @@ PetscErrorCode  KSPRegisterAll(void)
   ierr = KSPRegister(KSPPIPECGRR,    KSPCreate_PIPECGRR);CHKERRQ(ierr);
   ierr = KSPRegister(KSPPIPELCG,     KSPCreate_PIPELCG);CHKERRQ(ierr);
   ierr = KSPRegister(KSPCGNE,        KSPCreate_CGNE);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPCGNASH,      KSPCreate_CGNASH);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPCGSTCG,      KSPCreate_CGSTCG);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPCGGLTR,      KSPCreate_CGGLTR);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPNASH,        KSPCreate_NASH);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPSTCG,        KSPCreate_STCG);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPGLTR,        KSPCreate_GLTR);CHKERRQ(ierr);
   ierr = KSPRegister(KSPRICHARDSON,  KSPCreate_Richardson);CHKERRQ(ierr);
   ierr = KSPRegister(KSPCHEBYSHEV,   KSPCreate_Chebyshev);CHKERRQ(ierr);
   ierr = KSPRegister(KSPGMRES,       KSPCreate_GMRES);CHKERRQ(ierr);

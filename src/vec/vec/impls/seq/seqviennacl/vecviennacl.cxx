@@ -19,7 +19,7 @@
 #endif
 
 
-PETSC_EXTERN PetscErrorCode VecViennaCLGetArrayReadWrite(Vec v, ViennaCLVector **a)
+PETSC_EXTERN PetscErrorCode VecViennaCLGetArray(Vec v, ViennaCLVector **a)
 {
   PetscErrorCode ierr;
 
@@ -32,7 +32,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetArrayReadWrite(Vec v, ViennaCLVector *
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode VecViennaCLRestoreArrayReadWrite(Vec v, ViennaCLVector **a)
+PETSC_EXTERN PetscErrorCode VecViennaCLRestoreArray(Vec v, ViennaCLVector **a)
 {
   PetscErrorCode ierr;
 
@@ -252,6 +252,7 @@ PetscErrorCode VecViennaCLCopyToGPU(Vec v)
       } catch(std::exception const & ex) {
         SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
       }
+      ierr = PetscLogCpuToGpu((v->map->n)*sizeof(PetscScalar));CHKERRQ(ierr);
       ierr = PetscLogEventEnd(VEC_ViennaCLCopyToGPU,v,0,0,0);CHKERRQ(ierr);
       v->valid_GPU_array = PETSC_OFFLOAD_BOTH;
     }
@@ -280,6 +281,7 @@ PetscErrorCode VecViennaCLCopyFromGPU(Vec v)
     } catch(std::exception const & ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
     }
+    ierr = PetscLogGpuToCpu((v->map->n)*sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = PetscLogEventEnd(VEC_ViennaCLCopyFromGPU,v,0,0,0);CHKERRQ(ierr);
     v->valid_GPU_array = PETSC_OFFLOAD_BOTH;
   }
@@ -300,7 +302,7 @@ static PetscErrorCode VecCopy_SeqViennaCL_Private(Vec xin,Vec yin)
   if (xin != yin) {
     ierr = VecGetArrayRead(xin,&xa);CHKERRQ(ierr);
     ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);
-    ierr = PetscMemcpy(ya,xa,xin->map->n*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscArraycpy(ya,xa,xin->map->n);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(xin,&xa);CHKERRQ(ierr);
     ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
   }
@@ -366,11 +368,12 @@ PetscErrorCode VecAYPX_SeqViennaCL(Vec yin, PetscScalar alpha, Vec xin)
 
   PetscFunctionBegin;
   ierr = VecViennaCLGetArrayRead(xin,&xgpu);CHKERRQ(ierr);
-  ierr = VecViennaCLGetArrayReadWrite(yin,&ygpu);CHKERRQ(ierr);
+  ierr = VecViennaCLGetArray(yin,&ygpu);CHKERRQ(ierr);
+  ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
   try {
     if (alpha != 0.0 && xin->map->n > 0) {
       *ygpu = *xgpu + alpha * *ygpu;
-      ierr = PetscLogFlops(2.0*yin->map->n);CHKERRQ(ierr);
+      ierr = PetscLogGpuFlops(2.0*yin->map->n);CHKERRQ(ierr);
     } else {
       *ygpu = *xgpu;
     }
@@ -378,8 +381,9 @@ PetscErrorCode VecAYPX_SeqViennaCL(Vec yin, PetscScalar alpha, Vec xin)
   } catch(std::exception const & ex) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
   }
+  ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
   ierr = VecViennaCLRestoreArrayRead(xin,&xgpu);CHKERRQ(ierr);
-  ierr = VecViennaCLRestoreArrayReadWrite(yin,&ygpu);CHKERRQ(ierr);
+  ierr = VecViennaCLRestoreArray(yin,&ygpu);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -393,16 +397,18 @@ PetscErrorCode VecAXPY_SeqViennaCL(Vec yin,PetscScalar alpha,Vec xin)
   PetscFunctionBegin;
   if (alpha != 0.0 && xin->map->n > 0) {
     ierr = VecViennaCLGetArrayRead(xin,&xgpu);CHKERRQ(ierr);
-    ierr = VecViennaCLGetArrayReadWrite(yin,&ygpu);CHKERRQ(ierr);
+    ierr = VecViennaCLGetArray(yin,&ygpu);CHKERRQ(ierr);
+    ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
     try {
       *ygpu += alpha * *xgpu;
       ViennaCLWaitForGPU();
     } catch(std::exception const & ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
     }
+    ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
     ierr = VecViennaCLRestoreArrayRead(xin,&xgpu);CHKERRQ(ierr);
-    ierr = VecViennaCLRestoreArrayReadWrite(yin,&ygpu);CHKERRQ(ierr);
-    ierr = PetscLogFlops(2.0*yin->map->n);CHKERRQ(ierr);
+    ierr = VecViennaCLRestoreArray(yin,&ygpu);CHKERRQ(ierr);
+    ierr = PetscLogGpuFlops(2.0*yin->map->n);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -419,13 +425,15 @@ PetscErrorCode VecPointwiseDivide_SeqViennaCL(Vec win, Vec xin, Vec yin)
     ierr = VecViennaCLGetArrayRead(xin,&xgpu);CHKERRQ(ierr);
     ierr = VecViennaCLGetArrayRead(yin,&ygpu);CHKERRQ(ierr);
     ierr = VecViennaCLGetArrayWrite(win,&wgpu);CHKERRQ(ierr);
+    ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
     try {
       *wgpu = viennacl::linalg::element_div(*xgpu, *ygpu);
       ViennaCLWaitForGPU();
     } catch(std::exception const & ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
     }
-    ierr = PetscLogFlops(win->map->n);CHKERRQ(ierr);
+    ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
+    ierr = PetscLogGpuFlops(win->map->n);CHKERRQ(ierr);
     ierr = VecViennaCLRestoreArrayRead(xin,&xgpu);CHKERRQ(ierr);
     ierr = VecViennaCLRestoreArrayRead(yin,&ygpu);CHKERRQ(ierr);
     ierr = VecViennaCLRestoreArrayWrite(win,&wgpu);CHKERRQ(ierr);
@@ -447,29 +455,31 @@ PetscErrorCode VecWAXPY_SeqViennaCL(Vec win,PetscScalar alpha,Vec xin, Vec yin)
     ierr = VecViennaCLGetArrayRead(xin,&xgpu);CHKERRQ(ierr);
     ierr = VecViennaCLGetArrayRead(yin,&ygpu);CHKERRQ(ierr);
     ierr = VecViennaCLGetArrayWrite(win,&wgpu);CHKERRQ(ierr);
+    ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
     if (alpha == 1.0) {
       try {
         *wgpu = *ygpu + *xgpu;
       } catch(std::exception const & ex) {
         SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
       }
-      ierr = PetscLogFlops(win->map->n);CHKERRQ(ierr);
+      ierr = PetscLogGpuFlops(win->map->n);CHKERRQ(ierr);
     } else if (alpha == -1.0) {
       try {
         *wgpu = *ygpu - *xgpu;
       } catch(std::exception const & ex) {
         SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
       }
-      ierr = PetscLogFlops(win->map->n);CHKERRQ(ierr);
+      ierr = PetscLogGpuFlops(win->map->n);CHKERRQ(ierr);
     } else {
       try {
         *wgpu = *ygpu + alpha * *xgpu;
       } catch(std::exception const & ex) {
         SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
       }
-      ierr = PetscLogFlops(2*win->map->n);CHKERRQ(ierr);
+      ierr = PetscLogGpuFlops(2*win->map->n);CHKERRQ(ierr);
     }
     ViennaCLWaitForGPU();
+    ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
     ierr = VecViennaCLRestoreArrayRead(xin,&xgpu);CHKERRQ(ierr);
     ierr = VecViennaCLRestoreArrayRead(yin,&ygpu);CHKERRQ(ierr);
     ierr = VecViennaCLRestoreArrayWrite(win,&wgpu);CHKERRQ(ierr);
@@ -512,15 +522,17 @@ PetscErrorCode VecDot_SeqViennaCL(Vec xin,Vec yin,PetscScalar *z)
   if (xin->map->n > 0) {
     ierr = VecViennaCLGetArrayRead(xin,&xgpu);CHKERRQ(ierr);
     ierr = VecViennaCLGetArrayRead(yin,&ygpu);CHKERRQ(ierr);
+    ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
     try {
       *z = viennacl::linalg::inner_prod(*xgpu,*ygpu);
     } catch(std::exception const & ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
     }
-    if (xin->map->n >0) {
-      ierr = PetscLogFlops(2.0*xin->map->n-1);CHKERRQ(ierr);
-    }
     ViennaCLWaitForGPU();
+    ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
+    if (xin->map->n >0) {
+      ierr = PetscLogGpuFlops(2.0*xin->map->n-1);CHKERRQ(ierr);
+    }
     ierr = VecViennaCLRestoreArrayRead(xin,&xgpu);CHKERRQ(ierr);
     ierr = VecViennaCLRestoreArrayRead(yin,&ygpu);CHKERRQ(ierr);
   } else *z = 0.0;
@@ -549,19 +561,17 @@ PetscErrorCode VecMDot_SeqViennaCL(Vec xin,PetscInt nv,const Vec yin[],PetscScal
       ierr = VecViennaCLGetArrayRead(yyin[i],&ygpu);CHKERRQ(ierr);
       ygpu_array[i] = ygpu;
     }
-
+    ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
     viennacl::vector_tuple<PetscScalar> y_tuple(ygpu_array);
     ViennaCLVector result = viennacl::linalg::inner_prod(*xgpu, y_tuple);
-
     viennacl::copy(result.begin(), result.end(), z);
-
     for (i=0; i<nv; i++) {
       ierr = VecViennaCLRestoreArrayRead(yyin[i],&ygpu);CHKERRQ(ierr);
     }
-
     ViennaCLWaitForGPU();
+    ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
     ierr = VecViennaCLRestoreArrayRead(xin,&xgpu);CHKERRQ(ierr);
-    ierr = PetscLogFlops(PetscMax(nv*(2.0*n-1),0.0));CHKERRQ(ierr);
+    ierr = PetscLogGpuFlops(PetscMax(nv*(2.0*n-1),0.0));CHKERRQ(ierr);
   } else {
     for (i=0; i<nv; i++) z[i] = 0.0;
   }
@@ -588,12 +598,14 @@ PetscErrorCode VecSet_SeqViennaCL(Vec xin,PetscScalar alpha)
   PetscFunctionBegin;
   if (xin->map->n > 0) {
     ierr = VecViennaCLGetArrayWrite(xin,&xgpu);CHKERRQ(ierr);
+    ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
     try {
       *xgpu = viennacl::scalar_vector<PetscScalar>(xgpu->size(), alpha);
       ViennaCLWaitForGPU();
     } catch(std::exception const & ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
     }
+    ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
     ierr = VecViennaCLRestoreArrayWrite(xin,&xgpu);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -607,17 +619,19 @@ PetscErrorCode VecScale_SeqViennaCL(Vec xin, PetscScalar alpha)
   PetscFunctionBegin;
   if (alpha == 0.0 && xin->map->n > 0) {
     ierr = VecSet_SeqViennaCL(xin,alpha);CHKERRQ(ierr);
-    ierr = PetscLogFlops(xin->map->n);CHKERRQ(ierr);
+    ierr = PetscLogGpuFlops(xin->map->n);CHKERRQ(ierr);
   } else if (alpha != 1.0 && xin->map->n > 0) {
-    ierr = VecViennaCLGetArrayReadWrite(xin,&xgpu);CHKERRQ(ierr);
+    ierr = VecViennaCLGetArray(xin,&xgpu);CHKERRQ(ierr);
+    ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
     try {
       *xgpu *= alpha;
       ViennaCLWaitForGPU();
     } catch(std::exception const & ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
     }
-    ierr = VecViennaCLRestoreArrayReadWrite(xin,&xgpu);CHKERRQ(ierr);
-    ierr = PetscLogFlops(xin->map->n);CHKERRQ(ierr);
+    ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
+    ierr = VecViennaCLRestoreArray(xin,&xgpu);CHKERRQ(ierr);
+    ierr = PetscLogGpuFlops(xin->map->n);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -646,12 +660,14 @@ PetscErrorCode VecCopy_SeqViennaCL(Vec xin,Vec yin)
     if (xin->valid_GPU_array == PETSC_OFFLOAD_GPU) {
       ierr = VecViennaCLGetArrayRead(xin,&xgpu);CHKERRQ(ierr);
       ierr = VecViennaCLGetArrayWrite(yin,&ygpu);CHKERRQ(ierr);
+      ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
       try {
         *ygpu = *xgpu;
         ViennaCLWaitForGPU();
       } catch(std::exception const & ex) {
         SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
       }
+      ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
       ierr = VecViennaCLRestoreArrayRead(xin,&xgpu);CHKERRQ(ierr);
       ierr = VecViennaCLRestoreArrayWrite(yin,&ygpu);CHKERRQ(ierr);
 
@@ -669,12 +685,14 @@ PetscErrorCode VecCopy_SeqViennaCL(Vec xin,Vec yin)
         /* copy in GPU */
         ierr = VecViennaCLGetArrayRead(xin,&xgpu);CHKERRQ(ierr);
         ierr = VecViennaCLGetArrayWrite(yin,&ygpu);CHKERRQ(ierr);
+        ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
         try {
           *ygpu = *xgpu;
           ViennaCLWaitForGPU();
         } catch(std::exception const & ex) {
           SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
         }
+        ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
         ierr = VecViennaCLRestoreArrayRead(xin,&xgpu);CHKERRQ(ierr);
         ierr = VecViennaCLRestoreArrayWrite(yin,&ygpu);CHKERRQ(ierr);
       } else if (yin->valid_GPU_array == PETSC_OFFLOAD_BOTH) {
@@ -682,12 +700,14 @@ PetscErrorCode VecCopy_SeqViennaCL(Vec xin,Vec yin)
            default to copy in GPU (this is an arbitrary choice) */
         ierr = VecViennaCLGetArrayRead(xin,&xgpu);CHKERRQ(ierr);
         ierr = VecViennaCLGetArrayWrite(yin,&ygpu);CHKERRQ(ierr);
+        ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
         try {
           *ygpu = *xgpu;
           ViennaCLWaitForGPU();
         } catch(std::exception const & ex) {
           SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
         }
+        ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
         ierr = VecViennaCLRestoreArrayRead(xin,&xgpu);CHKERRQ(ierr);
         ierr = VecViennaCLRestoreArrayWrite(yin,&ygpu);CHKERRQ(ierr);
       } else {
@@ -707,17 +727,18 @@ PetscErrorCode VecSwap_SeqViennaCL(Vec xin,Vec yin)
 
   PetscFunctionBegin;
   if (xin != yin && xin->map->n > 0) {
-    ierr = VecViennaCLGetArrayReadWrite(xin,&xgpu);CHKERRQ(ierr);
-    ierr = VecViennaCLGetArrayReadWrite(yin,&ygpu);CHKERRQ(ierr);
-
+    ierr = VecViennaCLGetArray(xin,&xgpu);CHKERRQ(ierr);
+    ierr = VecViennaCLGetArray(yin,&ygpu);CHKERRQ(ierr);
+    ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
     try {
       viennacl::swap(*xgpu, *ygpu);
       ViennaCLWaitForGPU();
     } catch(std::exception const & ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
     }
-    ierr = VecViennaCLRestoreArrayReadWrite(xin,&xgpu);CHKERRQ(ierr);
-    ierr = VecViennaCLRestoreArrayReadWrite(yin,&ygpu);CHKERRQ(ierr);
+    ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
+    ierr = VecViennaCLRestoreArray(xin,&xgpu);CHKERRQ(ierr);
+    ierr = VecViennaCLRestoreArray(yin,&ygpu);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -740,28 +761,32 @@ PetscErrorCode VecAXPBY_SeqViennaCL(Vec yin,PetscScalar alpha,PetscScalar beta,V
     ierr = VecAYPX_SeqViennaCL(yin,beta,xin);CHKERRQ(ierr);
   } else if (b == 0.0 && xin->map->n > 0) {
     ierr = VecViennaCLGetArrayRead(xin,&xgpu);CHKERRQ(ierr);
-    ierr = VecViennaCLGetArrayReadWrite(yin,&ygpu);CHKERRQ(ierr);
+    ierr = VecViennaCLGetArray(yin,&ygpu);CHKERRQ(ierr);
+    ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
     try {
       *ygpu = *xgpu * alpha;
       ViennaCLWaitForGPU();
     } catch(std::exception const & ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
     }
-    ierr = PetscLogFlops(xin->map->n);CHKERRQ(ierr);
+    ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
+    ierr = PetscLogGpuFlops(xin->map->n);CHKERRQ(ierr);
     ierr = VecViennaCLRestoreArrayRead(xin,&xgpu);CHKERRQ(ierr);
-    ierr = VecViennaCLRestoreArrayReadWrite(yin,&ygpu);CHKERRQ(ierr);
+    ierr = VecViennaCLRestoreArray(yin,&ygpu);CHKERRQ(ierr);
   } else if (xin->map->n > 0) {
     ierr = VecViennaCLGetArrayRead(xin,&xgpu);CHKERRQ(ierr);
-    ierr = VecViennaCLGetArrayReadWrite(yin,&ygpu);CHKERRQ(ierr);
+    ierr = VecViennaCLGetArray(yin,&ygpu);CHKERRQ(ierr);
+    ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
     try {
       *ygpu = *xgpu * alpha + *ygpu * beta;
       ViennaCLWaitForGPU();
     } catch(std::exception const & ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
     }
+    ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
     ierr = VecViennaCLRestoreArrayRead(xin,&xgpu);CHKERRQ(ierr);
-    ierr = VecViennaCLRestoreArrayReadWrite(yin,&ygpu);CHKERRQ(ierr);
-    ierr = PetscLogFlops(3.0*xin->map->n);CHKERRQ(ierr);
+    ierr = VecViennaCLRestoreArray(yin,&ygpu);CHKERRQ(ierr);
+    ierr = PetscLogGpuFlops(3.0*xin->map->n);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -778,49 +803,56 @@ PetscErrorCode VecAXPBYPCZ_SeqViennaCL(Vec zin,PetscScalar alpha,PetscScalar bet
   PetscFunctionBegin;
   ierr = VecViennaCLGetArrayRead(xin,&xgpu);CHKERRQ(ierr);
   ierr = VecViennaCLGetArrayRead(yin,&ygpu);CHKERRQ(ierr);
-  ierr = VecViennaCLGetArrayReadWrite(zin,&zgpu);CHKERRQ(ierr);
+  ierr = VecViennaCLGetArray(zin,&zgpu);CHKERRQ(ierr);
   if (alpha == 0.0 && xin->map->n > 0) {
+    ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
     try {
       if (beta == 0.0) {
         *zgpu = gamma * *zgpu;
         ViennaCLWaitForGPU();
-        ierr = PetscLogFlops(1.0*n);CHKERRQ(ierr);
+        ierr = PetscLogGpuFlops(1.0*n);CHKERRQ(ierr);
       } else if (gamma == 0.0) {
         *zgpu = beta * *ygpu;
         ViennaCLWaitForGPU();
-        ierr = PetscLogFlops(1.0*n);CHKERRQ(ierr);
+        ierr = PetscLogGpuFlops(1.0*n);CHKERRQ(ierr);
       } else {
         *zgpu = beta * *ygpu + gamma * *zgpu;
         ViennaCLWaitForGPU();
-        ierr = PetscLogFlops(3.0*n);CHKERRQ(ierr);
+        ierr = PetscLogGpuFlops(3.0*n);CHKERRQ(ierr);
       }
     } catch(std::exception const & ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
     }
-    ierr = PetscLogFlops(3.0*n);CHKERRQ(ierr);
+    ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
+    ierr = PetscLogGpuFlops(3.0*n);CHKERRQ(ierr);
   } else if (beta == 0.0 && xin->map->n > 0) {
+    ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
     try {
       if (gamma == 0.0) {
         *zgpu = alpha * *xgpu;
         ViennaCLWaitForGPU();
-        ierr = PetscLogFlops(1.0*n);CHKERRQ(ierr);
+        ierr = PetscLogGpuFlops(1.0*n);CHKERRQ(ierr);
       } else {
         *zgpu = alpha * *xgpu + gamma * *zgpu;
         ViennaCLWaitForGPU();
-        ierr = PetscLogFlops(3.0*n);CHKERRQ(ierr);
+        ierr = PetscLogGpuFlops(3.0*n);CHKERRQ(ierr);
       }
     } catch(std::exception const & ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
     }
+    ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
   } else if (gamma == 0.0 && xin->map->n > 0) {
+    ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
     try {
       *zgpu = alpha * *xgpu + beta * *ygpu;
       ViennaCLWaitForGPU();
     } catch(std::exception const & ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
     }
-    ierr = PetscLogFlops(3.0*n);CHKERRQ(ierr);
+    ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
+    ierr = PetscLogGpuFlops(3.0*n);CHKERRQ(ierr);
   } else if (xin->map->n > 0) {
+    ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
     try {
       /* Split operation into two steps. This is not completely ideal, but avoids temporaries (which are far worse) */
       if (gamma != 1.0)
@@ -830,10 +862,11 @@ PetscErrorCode VecAXPBYPCZ_SeqViennaCL(Vec zin,PetscScalar alpha,PetscScalar bet
     } catch(std::exception const & ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
     }
-    ierr = VecViennaCLRestoreArrayReadWrite(zin,&zgpu);CHKERRQ(ierr);
+    ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
+    ierr = VecViennaCLRestoreArray(zin,&zgpu);CHKERRQ(ierr);
     ierr = VecViennaCLRestoreArrayRead(xin,&xgpu);CHKERRQ(ierr);
     ierr = VecViennaCLRestoreArrayRead(yin,&ygpu);CHKERRQ(ierr);
-    ierr = PetscLogFlops(5.0*n);CHKERRQ(ierr);
+    ierr = PetscLogGpuFlops(5.0*n);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -849,17 +882,19 @@ PetscErrorCode VecPointwiseMult_SeqViennaCL(Vec win,Vec xin,Vec yin)
   if (xin->map->n > 0) {
     ierr = VecViennaCLGetArrayRead(xin,&xgpu);CHKERRQ(ierr);
     ierr = VecViennaCLGetArrayRead(yin,&ygpu);CHKERRQ(ierr);
-    ierr = VecViennaCLGetArrayReadWrite(win,&wgpu);CHKERRQ(ierr);
+    ierr = VecViennaCLGetArray(win,&wgpu);CHKERRQ(ierr);
+    ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
     try {
       *wgpu = viennacl::linalg::element_prod(*xgpu, *ygpu);
       ViennaCLWaitForGPU();
     } catch(std::exception const & ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
     }
+    ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
     ierr = VecViennaCLRestoreArrayRead(xin,&xgpu);CHKERRQ(ierr);
     ierr = VecViennaCLRestoreArrayRead(yin,&ygpu);CHKERRQ(ierr);
-    ierr = VecViennaCLRestoreArrayReadWrite(win,&wgpu);CHKERRQ(ierr);
-    ierr = PetscLogFlops(n);CHKERRQ(ierr);
+    ierr = VecViennaCLRestoreArray(win,&wgpu);CHKERRQ(ierr);
+    ierr = PetscLogGpuFlops(n);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -877,31 +912,38 @@ PetscErrorCode VecNorm_SeqViennaCL(Vec xin,NormType type,PetscReal *z)
     ierr = PetscBLASIntCast(n,&bn);CHKERRQ(ierr);
     ierr = VecViennaCLGetArrayRead(xin,&xgpu);CHKERRQ(ierr);
     if (type == NORM_2 || type == NORM_FROBENIUS) {
+      ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
       try {
         *z = viennacl::linalg::norm_2(*xgpu);
         ViennaCLWaitForGPU();
       } catch(std::exception const & ex) {
         SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
       }
-      ierr = PetscLogFlops(PetscMax(2.0*n-1,0.0));CHKERRQ(ierr);
+      ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
+      ierr = PetscLogGpuFlops(PetscMax(2.0*n-1,0.0));CHKERRQ(ierr);
     } else if (type == NORM_INFINITY) {
       ierr = VecViennaCLGetArrayRead(xin,&xgpu);CHKERRQ(ierr);
+      ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
       try {
         *z = viennacl::linalg::norm_inf(*xgpu);
         ViennaCLWaitForGPU();
       } catch(std::exception const & ex) {
         SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
       }
+      ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
       ierr = VecViennaCLRestoreArrayRead(xin,&xgpu);CHKERRQ(ierr);
     } else if (type == NORM_1) {
+      ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
       try {
         *z = viennacl::linalg::norm_1(*xgpu);
         ViennaCLWaitForGPU();
       } catch(std::exception const & ex) {
         SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
       }
-      ierr = PetscLogFlops(PetscMax(n-1.0,0.0));CHKERRQ(ierr);
+      ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
+      ierr = PetscLogGpuFlops(PetscMax(n-1.0,0.0));CHKERRQ(ierr);
     } else if (type == NORM_1_AND_2) {
+      ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
       try {
         *z     = viennacl::linalg::norm_1(*xgpu);
         *(z+1) = viennacl::linalg::norm_2(*xgpu);
@@ -909,8 +951,9 @@ PetscErrorCode VecNorm_SeqViennaCL(Vec xin,NormType type,PetscReal *z)
       } catch(std::exception const & ex) {
         SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
       }
-      ierr = PetscLogFlops(PetscMax(2.0*n-1,0.0));CHKERRQ(ierr);
-      ierr = PetscLogFlops(PetscMax(n-1.0,0.0));CHKERRQ(ierr);
+      ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
+      ierr = PetscLogGpuFlops(PetscMax(2.0*n-1,0.0));CHKERRQ(ierr);
+      ierr = PetscLogGpuFlops(PetscMax(n-1.0,0.0));CHKERRQ(ierr);
     }
     ierr = VecViennaCLRestoreArrayRead(xin,&xgpu);CHKERRQ(ierr);
   } else if (type == NORM_1_AND_2) {
@@ -971,7 +1014,7 @@ PetscErrorCode VecReplaceArray_SeqViennaCL(Vec vin,const PetscScalar *a)
 /*@
    VecCreateSeqViennaCL - Creates a standard, sequential array-style vector.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameter:
 +  comm - the communicator, should be PETSC_COMM_SELF
@@ -985,8 +1028,6 @@ PetscErrorCode VecReplaceArray_SeqViennaCL(Vec vin,const PetscScalar *a)
    same type as an existing vector.
 
    Level: intermediate
-
-   Concepts: vectors^creating sequential
 
 .seealso: VecCreateMPI(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost()
 @*/
@@ -1047,6 +1088,76 @@ PetscErrorCode VecDestroy_SeqViennaCL(Vec v)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode VecPinToCPU_SeqAIJViennaCL(Vec V,PetscBool flg)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  V->pinnedtocpu = flg;
+  if (flg) {
+    ierr = VecViennaCLCopyFromGPU(V);CHKERRQ(ierr);
+    V->valid_GPU_array = PETSC_OFFLOAD_CPU; /* since the CPU code will likely change values in the vector */
+    V->ops->dot             = VecDot_Seq;
+    V->ops->norm            = VecNorm_Seq;
+    V->ops->tdot            = VecTDot_Seq;
+    V->ops->scale           = VecScale_Seq;
+    V->ops->copy            = VecCopy_Seq;
+    V->ops->set             = VecSet_Seq;
+    V->ops->swap            = VecSwap_Seq;
+    V->ops->axpy            = VecAXPY_Seq;
+    V->ops->axpby           = VecAXPBY_Seq;
+    V->ops->axpbypcz        = VecAXPBYPCZ_Seq;
+    V->ops->pointwisemult   = VecPointwiseMult_Seq;
+    V->ops->pointwisedivide = VecPointwiseDivide_Seq;
+    V->ops->setrandom       = VecSetRandom_Seq;
+    V->ops->dot_local       = VecDot_Seq;
+    V->ops->tdot_local      = VecTDot_Seq;
+    V->ops->norm_local      = VecNorm_Seq;
+    V->ops->mdot_local      = VecMDot_Seq;
+    V->ops->mtdot_local     = VecMTDot_Seq;
+    V->ops->maxpy           = VecMAXPY_Seq;
+    V->ops->mdot            = VecMDot_Seq;
+    V->ops->mtdot           = VecMTDot_Seq;
+    V->ops->aypx            = VecAYPX_Seq;
+    V->ops->waxpy           = VecWAXPY_Seq;
+    V->ops->dotnorm2        = NULL;
+    V->ops->placearray      = VecPlaceArray_Seq;
+    V->ops->replacearray    = VecReplaceArray_Seq;
+    V->ops->resetarray      = VecResetArray_Seq;
+    V->ops->duplicate       = VecDuplicate_Seq;
+  } else {
+    V->ops->dot             = VecDot_SeqViennaCL;
+    V->ops->norm            = VecNorm_SeqViennaCL;
+    V->ops->tdot            = VecTDot_SeqViennaCL;
+    V->ops->scale           = VecScale_SeqViennaCL;
+    V->ops->copy            = VecCopy_SeqViennaCL;
+    V->ops->set             = VecSet_SeqViennaCL;
+    V->ops->swap            = VecSwap_SeqViennaCL;
+    V->ops->axpy            = VecAXPY_SeqViennaCL;
+    V->ops->axpby           = VecAXPBY_SeqViennaCL;
+    V->ops->axpbypcz        = VecAXPBYPCZ_SeqViennaCL;
+    V->ops->pointwisemult   = VecPointwiseMult_SeqViennaCL;
+    V->ops->pointwisedivide = VecPointwiseDivide_SeqViennaCL;
+    V->ops->setrandom       = VecSetRandom_SeqViennaCL;
+    V->ops->dot_local       = VecDot_SeqViennaCL;
+    V->ops->tdot_local      = VecTDot_SeqViennaCL;
+    V->ops->norm_local      = VecNorm_SeqViennaCL;
+    V->ops->mdot_local      = VecMDot_SeqViennaCL;
+    V->ops->mtdot_local     = VecMTDot_SeqViennaCL;
+    V->ops->maxpy           = VecMAXPY_SeqViennaCL;
+    V->ops->mdot            = VecMDot_SeqViennaCL;
+    V->ops->mtdot           = VecMTDot_SeqViennaCL;
+    V->ops->aypx            = VecAYPX_SeqViennaCL;
+    V->ops->waxpy           = VecWAXPY_SeqViennaCL;
+    V->ops->dotnorm2        = VecDotNorm2_SeqViennaCL;
+    V->ops->placearray      = VecPlaceArray_SeqViennaCL;
+    V->ops->replacearray    = VecReplaceArray_SeqViennaCL;
+    V->ops->resetarray      = VecResetArray_SeqViennaCL;
+    V->ops->destroy         = VecDestroy_SeqViennaCL;
+    V->ops->duplicate       = VecDuplicate_SeqViennaCL;
+  }
+  PetscFunctionReturn(0);
+}
 
 PETSC_EXTERN PetscErrorCode VecCreate_SeqViennaCL(Vec V)
 {
@@ -1059,35 +1170,8 @@ PETSC_EXTERN PetscErrorCode VecCreate_SeqViennaCL(Vec V)
   ierr = VecCreate_Seq_Private(V,0);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)V,VECSEQVIENNACL);CHKERRQ(ierr);
 
-  V->ops->dot             = VecDot_SeqViennaCL;
-  V->ops->norm            = VecNorm_SeqViennaCL;
-  V->ops->tdot            = VecTDot_SeqViennaCL;
-  V->ops->scale           = VecScale_SeqViennaCL;
-  V->ops->copy            = VecCopy_SeqViennaCL;
-  V->ops->set             = VecSet_SeqViennaCL;
-  V->ops->swap            = VecSwap_SeqViennaCL;
-  V->ops->axpy            = VecAXPY_SeqViennaCL;
-  V->ops->axpby           = VecAXPBY_SeqViennaCL;
-  V->ops->axpbypcz        = VecAXPBYPCZ_SeqViennaCL;
-  V->ops->pointwisemult   = VecPointwiseMult_SeqViennaCL;
-  V->ops->pointwisedivide = VecPointwiseDivide_SeqViennaCL;
-  V->ops->setrandom       = VecSetRandom_SeqViennaCL;
-  V->ops->dot_local       = VecDot_SeqViennaCL;
-  V->ops->tdot_local      = VecTDot_SeqViennaCL;
-  V->ops->norm_local      = VecNorm_SeqViennaCL;
-  V->ops->mdot_local      = VecMDot_SeqViennaCL;
-  V->ops->mtdot_local     = VecMTDot_SeqViennaCL;
-  V->ops->maxpy           = VecMAXPY_SeqViennaCL;
-  V->ops->mdot            = VecMDot_SeqViennaCL;
-  V->ops->mtdot           = VecMTDot_SeqViennaCL;
-  V->ops->aypx            = VecAYPX_SeqViennaCL;
-  V->ops->waxpy           = VecWAXPY_SeqViennaCL;
-  V->ops->dotnorm2        = VecDotNorm2_SeqViennaCL;
-  V->ops->placearray      = VecPlaceArray_SeqViennaCL;
-  V->ops->replacearray    = VecReplaceArray_SeqViennaCL;
-  V->ops->resetarray      = VecResetArray_SeqViennaCL;
-  V->ops->destroy         = VecDestroy_SeqViennaCL;
-  V->ops->duplicate       = VecDuplicate_SeqViennaCL;
+  ierr = VecPinToCPU_SeqAIJViennaCL(V,PETSC_FALSE);CHKERRQ(ierr);
+  V->ops->pintocpu = VecPinToCPU_SeqAIJViennaCL;
 
   ierr = VecViennaCLAllocateCheck(V);CHKERRQ(ierr);
   V->valid_GPU_array      = PETSC_OFFLOAD_GPU;

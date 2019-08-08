@@ -1,7 +1,6 @@
 #include <petscconvest.h>            /*I "petscconvest.h" I*/
 #include <petscdmplex.h>
 #include <petscds.h>
-#include <petscblaslapack.h>
 
 #include <petsc/private/petscconvestimpl.h>
 
@@ -16,7 +15,7 @@ static PetscErrorCode zero_private(PetscInt dim, PetscReal time, const PetscReal
 /*@
   PetscConvEstCreate - Create a PetscConvEst object
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 . comm - The communicator for the PetscConvEst object
@@ -26,7 +25,6 @@ static PetscErrorCode zero_private(PetscInt dim, PetscReal time, const PetscReal
 
   Level: beginner
 
-.keywords: PetscConvEst, convergence, create
 .seealso: PetscConvEstDestroy(), PetscConvEstGetConvRate()
 @*/
 PetscErrorCode PetscConvEstCreate(MPI_Comm comm, PetscConvEst *ce)
@@ -52,7 +50,6 @@ PetscErrorCode PetscConvEstCreate(MPI_Comm comm, PetscConvEst *ce)
 
   Level: beginner
 
-.keywords: PetscConvEst, convergence, destroy
 .seealso: PetscConvEstCreate(), PetscConvEstGetConvRate()
 @*/
 PetscErrorCode PetscConvEstDestroy(PetscConvEst *ce)
@@ -66,7 +63,7 @@ PetscErrorCode PetscConvEstDestroy(PetscConvEst *ce)
     *ce = NULL;
     PetscFunctionReturn(0);
   }
-  ierr = PetscFree2((*ce)->initGuess, (*ce)->exactSol);CHKERRQ(ierr);
+  ierr = PetscFree3((*ce)->initGuess, (*ce)->exactSol, (*ce)->ctxs);CHKERRQ(ierr);
   ierr = PetscFree((*ce)->errors);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(ce);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -82,7 +79,6 @@ PetscErrorCode PetscConvEstDestroy(PetscConvEst *ce)
 
   Level: beginner
 
-.keywords: PetscConvEst, convergence, options
 .seealso: PetscConvEstCreate(), PetscConvEstGetConvRate()
 @*/
 PetscErrorCode PetscConvEstSetFromOptions(PetscConvEst ce)
@@ -108,7 +104,6 @@ PetscErrorCode PetscConvEstSetFromOptions(PetscConvEst ce)
 
   Level: beginner
 
-.keywords: PetscConvEst, convergence, view
 .seealso: PetscConvEstCreate(), PetscConvEstGetConvRate()
 @*/
 PetscErrorCode PetscConvEstView(PetscConvEst ce, PetscViewer viewer)
@@ -134,7 +129,6 @@ PetscErrorCode PetscConvEstView(PetscConvEst ce, PetscViewer viewer)
 
   Level: intermediate
 
-.keywords: PetscConvEst, convergence
 .seealso: PetscConvEstSetSolver(), PetscConvEstCreate(), PetscConvEstGetConvRate()
 @*/
 PetscErrorCode PetscConvEstGetSolver(PetscConvEst ce, SNES *snes)
@@ -159,7 +153,6 @@ PetscErrorCode PetscConvEstGetSolver(PetscConvEst ce, SNES *snes)
 
   Note: The solver MUST have an attached DM/DS, so that we know the exact solution
 
-.keywords: PetscConvEst, convergence
 .seealso: PetscConvEstGetSolver(), PetscConvEstCreate(), PetscConvEstGetConvRate()
 @*/
 PetscErrorCode PetscConvEstSetSolver(PetscConvEst ce, SNES snes)
@@ -184,7 +177,6 @@ PetscErrorCode PetscConvEstSetSolver(PetscConvEst ce, SNES snes)
 
   Level: beginner
 
-.keywords: PetscConvEst, convergence, setup
 .seealso: PetscConvEstCreate(), PetscConvEstGetConvRate()
 @*/
 PetscErrorCode PetscConvEstSetUp(PetscConvEst ce)
@@ -197,68 +189,12 @@ PetscErrorCode PetscConvEstSetUp(PetscConvEst ce)
   ierr = DMGetDS(ce->idm, &prob);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(prob, &ce->Nf);CHKERRQ(ierr);
   ierr = PetscMalloc1((ce->Nr+1)*ce->Nf, &ce->errors);CHKERRQ(ierr);
-  ierr = PetscMalloc2(ce->Nf, &ce->initGuess, ce->Nf, &ce->exactSol);CHKERRQ(ierr);
+  ierr = PetscMalloc3(ce->Nf, &ce->initGuess, ce->Nf, &ce->exactSol, ce->Nf, &ce->ctxs);CHKERRQ(ierr);
   for (f = 0; f < ce->Nf; ++f) ce->initGuess[f] = zero_private;
   for (f = 0; f < ce->Nf; ++f) {
-    ierr = PetscDSGetExactSolution(prob, f, &ce->exactSol[f]);CHKERRQ(ierr);
+    ierr = PetscDSGetExactSolution(prob, f, &ce->exactSol[f], &ce->ctxs[f]);CHKERRQ(ierr);
     if (!ce->exactSol[f]) SETERRQ1(PetscObjectComm((PetscObject) ce), PETSC_ERR_ARG_WRONG, "DS must contain exact solution functions in order to estimate convergence, missing for field %D", f);
   }
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode PetscConvEstLinearRegression_Private(PetscConvEst ce, PetscInt n, const PetscReal x[], const PetscReal y[], PetscReal *slope, PetscReal *intercept)
-{
-  PetscScalar    H[4];
-  PetscReal     *X, *Y, beta[2];
-  PetscInt       i, j, k;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  *slope = *intercept = 0.0;
-  ierr = PetscMalloc2(n*2, &X, n*2, &Y);CHKERRQ(ierr);
-  for (k = 0; k < n; ++k) {
-    /* X[n,2] = [1, x] */
-    X[k*2+0] = 1.0;
-    X[k*2+1] = x[k];
-  }
-  /* H = X^T X */
-  for (i = 0; i < 2; ++i) {
-    for (j = 0; j < 2; ++j) {
-      H[i*2+j] = 0.0;
-      for (k = 0; k < n; ++k) {
-        H[i*2+j] += X[k*2+i] * X[k*2+j];
-      }
-    }
-  }
-  /* H = (X^T X)^{-1} */
-  {
-    PetscBLASInt two = 2, ipiv[2], info;
-    PetscScalar  work[2];
-
-    ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-    PetscStackCallBLAS("LAPACKgetrf", LAPACKgetrf_(&two, &two, H, &two, ipiv, &info));
-    PetscStackCallBLAS("LAPACKgetri", LAPACKgetri_(&two, H, &two, ipiv, work, &two, &info));
-    ierr = PetscFPTrapPop();CHKERRQ(ierr);
-  }
-    /* Y = H X^T */
-  for (i = 0; i < 2; ++i) {
-    for (k = 0; k < n; ++k) {
-      Y[i*n+k] = 0.0;
-      for (j = 0; j < 2; ++j) {
-        Y[i*n+k] += PetscRealPart(H[i*2+j]) * X[k*2+j];
-      }
-    }
-  }
-  /* beta = Y error = [y-intercept, slope] */
-  for (i = 0; i < 2; ++i) {
-    beta[i] = 0.0;
-    for (k = 0; k < n; ++k) {
-      beta[i] += Y[i*n+k] * y[k];
-    }
-  }
-  ierr = PetscFree2(X, Y);CHKERRQ(ierr);
-  *intercept = beta[0];
-  *slope     = beta[1];
   PetscFunctionReturn(0);
 }
 
@@ -285,7 +221,6 @@ and then fit the result to our model above using linear regression.
 
   Level: intermediate
 
-.keywords: PetscConvEst, convergence
 .seealso: PetscConvEstSetSolver(), PetscConvEstCreate(), PetscConvEstGetConvRate()
 @*/
 PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal alpha[])
@@ -323,6 +258,7 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal alpha[])
       ierr = DMRefine(dm[r-1], MPI_COMM_NULL, &dm[r]);CHKERRQ(ierr);
       ierr = DMSetCoarseDM(dm[r], dm[r-1]);CHKERRQ(ierr);
       ierr = DMCopyDisc(ce->idm, dm[r]);CHKERRQ(ierr);
+      ierr = DMCopyTransform(ce->idm, dm[r]);CHKERRQ(ierr);
       ierr = PetscObjectGetName((PetscObject) dm[r-1], &dmname);CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject) dm[r], dmname);CHKERRQ(ierr);
       for (f = 0; f <= ce->Nf; ++f) {
@@ -343,10 +279,10 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal alpha[])
     ierr = DMPlexSetSNESLocalFEM(dm[r], ctx, ctx, ctx);CHKERRQ(ierr);
     ierr = SNESSetFromOptions(ce->snes);CHKERRQ(ierr);
     /* Create initial guess */
-    ierr = DMProjectFunction(dm[r], t, ce->initGuess, NULL, INSERT_VALUES, u);CHKERRQ(ierr);
+    ierr = DMProjectFunction(dm[r], t, ce->initGuess, ce->ctxs, INSERT_VALUES, u);CHKERRQ(ierr);
     ierr = SNESSolve(ce->snes, NULL, u);CHKERRQ(ierr);
     ierr = PetscLogEventBegin(event, ce, 0, 0, 0);CHKERRQ(ierr);
-    ierr = DMComputeL2FieldDiff(dm[r], t, ce->exactSol, NULL, u, &ce->errors[r*ce->Nf]);CHKERRQ(ierr);
+    ierr = DMComputeL2FieldDiff(dm[r], t, ce->exactSol, ce->ctxs, u, &ce->errors[r*ce->Nf]);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(event, ce, 0, 0, 0);CHKERRQ(ierr);
     for (f = 0; f < ce->Nf; ++f) {
       PetscSection s, fs;
@@ -397,7 +333,7 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal alpha[])
       x[r] = PetscLog10Real(dof[r*ce->Nf+f]);
       y[r] = PetscLog10Real(ce->errors[r*ce->Nf+f]);
     }
-    ierr = PetscConvEstLinearRegression_Private(ce, Nr+1, x, y, &slope, &intercept);CHKERRQ(ierr);
+    ierr = PetscLinearRegression(Nr+1, x, y, &slope, &intercept);CHKERRQ(ierr);
     /* Since h^{-dim} = N, lg err = s lg N + b = -s dim lg h + b */
     alpha[f] = -slope * dim;
   }

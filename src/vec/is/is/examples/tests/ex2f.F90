@@ -46,7 +46,7 @@
       call ISCreateStride(PETSC_COMM_SELF,ssize,stride,first,is,ierr)
       call ISGetLocalSize(is,n,ierr)
       call ISGetIndices(is,ii,iis,ierr)
-      do 10, i=1,10000
+      do 10, i=1,n
         if (ii(i+iis) .ne. -11 + 3*i) then; SETERRA(PETSC_COMM_SELF,1,'Wrong result from ISGetIndices'); endif
  10   continue
       call ISRestoreIndices(is,ii,iis,ierr)

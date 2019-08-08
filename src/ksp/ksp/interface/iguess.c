@@ -27,8 +27,6 @@ $     -ksp_guess_type my_initial_guess
 
    Level: advanced
 
-.keywords: KSP, register, KSPGuess
-
 .seealso: KSPGuess, KSPGuessRegisterAll()
 
 @*/
@@ -48,8 +46,6 @@ PetscErrorCode  KSPGuessRegister(const char sname[],PetscErrorCode (*function)(K
   Not Collective
 
   Level: advanced
-
-.keywords: KSPGuess, register, all
 
 .seealso: KSPRegisterAll(),  KSPInitializePackage()
 */
@@ -81,14 +77,12 @@ PetscErrorCode KSPGuessSetFromOptions(KSPGuess guess)
 /*@
    KSPGuessDestroy - Destroys KSPGuess context.
 
-   Collective on KSPGuess
+   Collective on kspGuess
 
    Input Parameter:
 .  guess - initial guess object
 
    Level: beginner
-
-.keywords: KSP, destroy
 
 .seealso: KSPGuessCreate(), KSPGuess, KSPGuessType
 @*/
@@ -109,7 +103,7 @@ PetscErrorCode  KSPGuessDestroy(KSPGuess *guess)
 /*@C
    KSPGuessView - View the KSPGuess object
 
-   Logically Collective on KSPGuess
+   Logically Collective on guess
 
    Input Parameters:
 +  guess  - the initial guess object for the Krylov method
@@ -148,7 +142,7 @@ PetscErrorCode  KSPGuessView(KSPGuess guess, PetscViewer view)
 /*@
    KSPGuessCreate - Creates the default KSPGuess context.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameter:
 .  comm - MPI communicator
@@ -160,8 +154,6 @@ PetscErrorCode  KSPGuessView(KSPGuess guess, PetscViewer view)
    The default KSPGuess type is XXX
 
    Level: beginner
-
-.keywords: KSP, create, context
 
 .seealso: KSPSolve(), KSPGuessDestroy(), KSPGuess, KSPGuessType, KSP
 @*/
@@ -183,7 +175,7 @@ PetscErrorCode  KSPGuessCreate(MPI_Comm comm,KSPGuess *guess)
 /*@C
    KSPGuessSetType - Sets the type of a KSPGuess
 
-   Logically Collective on KSPGuess
+   Logically Collective on guess
 
    Input Parameters:
 +  guess - the initial guess object for the Krylov method
@@ -237,8 +229,6 @@ PetscErrorCode  KSPGuessSetType(KSPGuess guess, KSPGuessType type)
 
    Level: intermediate
 
-.keywords: KSP, get, method, name
-
 .seealso: KSPGuessSetType()
 @*/
 PetscErrorCode  KSPGuessGetType(KSPGuess guess,KSPGuessType *type)
@@ -253,7 +243,7 @@ PetscErrorCode  KSPGuessGetType(KSPGuess guess,KSPGuessType *type)
 /*@
     KSPGuessUpdate - Updates the guess object with the current solution and rhs vector
 
-   Collective on KSPGuess
+   Collective on guess
 
    Input Parameter:
 +  guess - the initial guess context
@@ -261,8 +251,6 @@ PetscErrorCode  KSPGuessGetType(KSPGuess guess,KSPGuessType *type)
 -  sol   - the computed solution
 
    Level: intermediate
-
-.keywords: KSP, get, method, name
 
 .seealso: KSPGuessCreate(), KSPGuess
 @*/
@@ -281,7 +269,7 @@ PetscErrorCode  KSPGuessUpdate(KSPGuess guess, Vec rhs, Vec sol)
 /*@
     KSPGuessFormGuess - Form the initial guess
 
-   Collective on KSPGuess
+   Collective on guess
 
    Input Parameter:
 +  guess - the initial guess context
@@ -289,8 +277,6 @@ PetscErrorCode  KSPGuessUpdate(KSPGuess guess, Vec rhs, Vec sol)
 -  sol   - the initial guess vector
 
    Level: intermediate
-
-.keywords: KSP, get, method, name
 
 .seealso: KSPGuessCreate(), KSPGuess
 @*/
@@ -309,14 +295,12 @@ PetscErrorCode  KSPGuessFormGuess(KSPGuess guess, Vec rhs, Vec sol)
 /*@
     KSPGuessSetUp - Setup the initial guess object
 
-   Collective on KSPGuess
+   Collective on guess
 
    Input Parameter:
 -  guess - the initial guess context
 
    Level: intermediate
-
-.keywords: KSP, get, method, name
 
 .seealso: KSPGuessCreate(), KSPGuess
 @*/

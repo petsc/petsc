@@ -40,14 +40,12 @@ struct _p_PetscDrawBar {
    Notes:
     Call PetscDrawBarSetData() to provide the bins to be plotted and then PetscDrawBarDraw() to display the new plot
 
-  The difference between a bar chart, PetscDrawBar, and a histogram, PetscDrawHG, is explained here http://stattrek.com/statistics/charts/histogram.aspx?Tutorial=AP
+  The difference between a bar chart, PetscDrawBar, and a histogram, PetscDrawHG, is explained here https://stattrek.com/statistics/charts/histogram.aspx?Tutorial=AP
 
    The MPI communicator that owns the PetscDraw owns this PetscDrawBar, but the calls to set options and add data are ignored on all processes except the
    zeroth MPI process in the communicator. All MPI processes in the communicator must call PetscDrawBarDraw() to display the updated graph.
 
    Level: intermediate
-
-   Concepts: bar graph^creating
 
 .seealso: PetscDrawLGCreate(), PetscDrawLG, PetscDrawSPCreate(), PetscDrawSP, PetscDrawHGCreate(), PetscDrawHG, PetscDrawBarDestroy(), PetscDrawBarSetData(),
           PetscDrawBar, PetscDrawBarDraw(), PetscDrawBarSave(), PetscDrawBarSetColor(), PetscDrawBarSort(), PetscDrawBarSetLimits(), PetscDrawBarGetAxis(), PetscDrawAxis,
@@ -113,7 +111,7 @@ PetscErrorCode  PetscDrawBarSetData(PetscDrawBar bar,PetscInt bins,const PetscRe
     ierr = PetscMalloc1(bins, &bar->values);CHKERRQ(ierr);
     bar->numBins = bins;
   }
-  ierr = PetscMemcpy(bar->values,data,bins*sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscArraycpy(bar->values,data,bins);CHKERRQ(ierr);
   bar->numBins = bins;
   if (labels) {
     ierr = PetscStrArrayallocpy(labels,&bar->labels);CHKERRQ(ierr);
@@ -262,8 +260,6 @@ PetscErrorCode  PetscDrawBarDraw(PetscDrawBar bar)
 
   Level: intermediate
 
-  Concepts: bar graph^saving
-
 .seealso:  PetscDrawBarCreate(), PetscDrawBarGetDraw(), PetscDrawSetSave(), PetscDrawSave(), PetscDrawBarSetData()
 @*/
 PetscErrorCode  PetscDrawBarSave(PetscDrawBar bar)
@@ -307,11 +303,9 @@ PetscErrorCode  PetscDrawBarSetColor(PetscDrawBar bar, int color)
   Input Parameters:
 + bar - The bar graph context
 . sort - PETSC_TRUE to sort the values
-. tolerance - discard values less than tolerance
+- tolerance - discard values less than tolerance
 
   Level: intermediate
-
-  Concepts: bar graph^setting axis
 
 .seealso: PetscDrawBarCreate(), PetscDrawBar, PetscDrawBarSetData(), PetscDrawBarSetColor(), PetscDrawBarDraw(), PetscDrawBarGetAxis()
 @*/
@@ -336,8 +330,6 @@ PetscErrorCode  PetscDrawBarSort(PetscDrawBar bar, PetscBool sort, PetscReal tol
 - y_min,y_max - The limits
 
   Level: intermediate
-
-  Concepts: bar graph^setting axis
 
 .seealso: PetscDrawBarCreate(), PetscDrawBar, PetscDrawBarGetAxis(), PetscDrawBarSetData(), PetscDrawBarDraw()
 @*/

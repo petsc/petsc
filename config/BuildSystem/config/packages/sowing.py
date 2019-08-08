@@ -8,13 +8,15 @@ def noCheck(command, status, output, error):
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.gitcommit         = 'v1.1.25-p1'
+    self.minversion        = '1.1.25'
+    self.gitcommit         = 'v'+self.minversion+'-p1'
     self.download          = ['git://https://bitbucket.org/petsc/pkg-sowing.git','https://bitbucket.org/petsc/pkg-sowing/get/'+self.gitcommit+'.tar.gz']
     self.downloaddirnames  = ['petsc-pkg-sowing']
     self.complex           = 1
     self.downloadonWindows = 1
     self.publicInstall     = 0  # always install in PETSC_DIR/PETSC_ARCH (not --prefix) since this is not used by users
     self.parallelMake      = 0  # sowing does not support make -j np
+    self.executablename    = 'bfort'
     return
 
   def setupHelp(self, help):
@@ -35,7 +37,7 @@ class Configure(config.package.GNUPackage):
   def formGNUConfigureArgs(self):
     '''Does not use the standard arguments at all since this does not use the MPI compilers etc
        Sowing will chose its own compilers if they are not provided explicitly here'''
-    args = ['--prefix='+self.confDir]
+    args = ['--prefix='+self.installDir]
     if 'download-sowing-cc' in self.argDB and self.argDB['download-sowing-cc']:
       args.append('CC="'+self.argDB['download-sowing-cc']+'"')
     if 'download-sowing-cxx' in self.argDB and self.argDB['download-sowing-cxx']:
@@ -51,19 +53,19 @@ class Configure(config.package.GNUPackage):
   def alternateConfigureLibrary(self):
     self.checkDownload()
 
-  def checkBfortVersion(self,mmajor,mminor,msubminor):
+  def checkBfortVersion(self):
     try:
       import re
       (output, error, status) = config.base.Configure.executeShellCommand(self.bfort+' -version', checkCommand=noCheck, log = self.log)
       ver = re.compile('bfort \(sowing\) release ([0-9]+).([0-9]+).([0-9]+)').match(output)
-      major    = int(ver.group(1))
-      minor    = int(ver.group(2))
-      subminor = int(ver.group(3))
+      foundversion = tuple(map(int,ver.groups()))
+      self.foundversion = ".".join(map(str,foundversion))
     except RuntimeError as e:
       self.log.write(self.bfort+' version check failed: '+str(e)+'\n')
       return
-    if (major < mmajor) or (major == mmajor and minor < mminor) or (major == mmajor and minor == mminor and subminor < msubminor):
-      raise RuntimeError(self.bfort+' version '+str(major)+'.'+str(minor)+'.'+str(subminor)+' is older than required '+str(mmajor)+'.'+str(mminor)+'.'+str(msubminor)+'. Perhaps a stale install of sowing?')
+    version = tuple(map(int, self.minversion.split('.')))
+    if foundversion < version:
+      raise RuntimeError(self.bfort+' version '+".".join(map(str,foundversion))+' is older than required '+self.minversion+'. Perhaps a stale install of sowing?')
     return
 
   def configure(self):
@@ -92,16 +94,18 @@ class Configure(config.package.GNUPackage):
           self.logPrint('Found bfort in user provided directory, not installing sowing')
           self.found = 1
         else:
-          raise RuntimeError('You passed --with-sowing-dir='+installDir+' but it does not contain sowings bfort')
+          raise RuntimeError("You passed --with-sowing-dir='+installDir+' but it does not contain sowing's bfort")
 
       else:
-        self.getExecutable('bfort', getFullPath = 1)
-        self.getExecutable('doctext', getFullPath = 1)
-        self.getExecutable('mapnames', getFullPath = 1)
-        self.getExecutable('bib2html', getFullPath = 1)
+        if not self.argDB['download-sowing']:
+          self.getExecutable('bfort', getFullPath = 1)
+          self.getExecutable('doctext', getFullPath = 1)
+          self.getExecutable('mapnames', getFullPath = 1)
+          self.getExecutable('bib2html', getFullPath = 1)
 
-        if hasattr(self, 'bfort') and not self.argDB['download-sowing']:
+        if hasattr(self, 'bfort'):
           self.logPrint('Found bfort, not installing sowing')
+          self.found = 1
         else:
           self.logPrint('Bfort not found. Installing sowing for FortranStubs')
           if (not self.argDB['download-sowing']):  self.argDB['download-sowing'] = 1
@@ -109,14 +113,17 @@ class Configure(config.package.GNUPackage):
           if os.path.exists('/usr/bin/cygcheck.exe') and not os.path.exists('/usr/bin/g++.exe'):
             raise RuntimeError('Error! sowing on windows requires cygwin/g++. Please install it with cygwin setup.exe')
           config.package.GNUPackage.configure(self)
-
           installDir = os.path.join(self.installDir,'bin')
           self.getExecutable('bfort',    path=installDir, getFullPath = 1)
           self.getExecutable('doctext',  path=installDir, getFullPath = 1)
           self.getExecutable('mapnames', path=installDir, getFullPath = 1)
           self.getExecutable('bib2html', path=installDir, getFullPath = 1)
+          self.found = 1
+          if not hasattr(self,'bfort'): raise RuntimeError('Unable to locate bfort (part of sowing) in its expected location in '+installDir+'\n\
+Perhaps the installation has been corrupted or changed, remove the directory '+os.path.join(self.petscdir.dir,self.arch)+'\n\
+and run configure again\n')
 
-      self.checkBfortVersion(1,1,25)
+      self.checkBfortVersion()
       self.buildFortranStubs()
     else:
       self.logPrint("Not a clone of PETSc or no Fortran compiler or fortran-bindings disabled, don't need Sowing\n")

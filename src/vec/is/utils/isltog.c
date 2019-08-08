@@ -209,8 +209,6 @@ static PetscErrorCode ISLocalToGlobalMappingDestroy_Hash(ISLocalToGlobalMapping 
 
     Level: advanced
 
-    Concepts: mapping^local to global
-
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreate()
 @*/
 PetscErrorCode  ISLocalToGlobalMappingDuplicate(ISLocalToGlobalMapping ltog,ISLocalToGlobalMapping* nltog)
@@ -236,8 +234,6 @@ PetscErrorCode  ISLocalToGlobalMappingDuplicate(ISLocalToGlobalMapping ltog,ISLo
 
     Level: advanced
 
-    Concepts: mapping^local to global
-
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreate()
 @*/
 PetscErrorCode  ISLocalToGlobalMappingGetSize(ISLocalToGlobalMapping mapping,PetscInt *n)
@@ -259,8 +255,6 @@ PetscErrorCode  ISLocalToGlobalMappingGetSize(ISLocalToGlobalMapping mapping,Pet
 -   viewer - viewer
 
     Level: advanced
-
-    Concepts: mapping^local to global
 
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreate()
 @*/
@@ -308,8 +302,6 @@ PetscErrorCode  ISLocalToGlobalMappingView(ISLocalToGlobalMapping mapping,PetscV
     the block size of the IS determines the block size of the mapping
     Level: advanced
 
-    Concepts: mapping^local to global
-
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreate(), ISLocalToGlobalMappingSetFromOptions()
 @*/
 PetscErrorCode  ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *mapping)
@@ -355,8 +347,6 @@ PetscErrorCode  ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *map
 
     Level: advanced
 
-    Concepts: mapping^local to global
-
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreate(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingSetFromOptions()
 @*/
 PetscErrorCode ISLocalToGlobalMappingCreateSF(PetscSF sf,PetscInt start,ISLocalToGlobalMapping *mapping)
@@ -393,12 +383,10 @@ PetscErrorCode ISLocalToGlobalMappingCreateSF(PetscSF sf,PetscInt start,ISLocalT
     Not collective
 
     Input Parameters:
-.   mapping - mapping data structure
-.   bs - the blocksize
++   mapping - mapping data structure
+-   bs - the blocksize
 
     Level: advanced
-
-    Concepts: mapping^local to global
 
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS()
 @*/
@@ -478,8 +466,6 @@ PetscErrorCode  ISLocalToGlobalMappingSetBlockSize(ISLocalToGlobalMapping mappin
 
     Level: advanced
 
-    Concepts: mapping^local to global
-
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS()
 @*/
 PetscErrorCode  ISLocalToGlobalMappingGetBlockSize(ISLocalToGlobalMapping mapping,PetscInt *bs)
@@ -515,8 +501,6 @@ PetscErrorCode  ISLocalToGlobalMappingGetBlockSize(ISLocalToGlobalMapping mappin
 
     Level: advanced
 
-    Concepts: mapping^local to global
-
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingSetFromOptions(), ISLOCALTOGLOBALMAPPINGBASIC, ISLOCALTOGLOBALMAPPINGHASH
           ISLocalToGlobalMappingSetType(), ISLocalToGlobalMappingType
 @*/
@@ -549,7 +533,7 @@ PetscErrorCode  ISLocalToGlobalMappingCreate(MPI_Comm comm,PetscInt bs,PetscInt 
   (*mapping)->ops->destroy                        = NULL;
   if (mode == PETSC_COPY_VALUES) {
     ierr = PetscMalloc1(n,&in);CHKERRQ(ierr);
-    ierr = PetscMemcpy(in,indices,n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(in,indices,n);CHKERRQ(ierr);
     (*mapping)->indices = in;
     ierr = PetscLogObjectMemory((PetscObject)*mapping,n*sizeof(PetscInt));CHKERRQ(ierr);
   } else if (mode == PETSC_OWN_POINTER) {
@@ -629,8 +613,7 @@ PetscErrorCode  ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping *mapping)
   if ((*mapping)->info_nodei) {
     ierr = PetscFree(((*mapping)->info_nodei)[0]);CHKERRQ(ierr);
   }
-  ierr = PetscFree((*mapping)->info_nodei);CHKERRQ(ierr);
-  ierr = PetscFree((*mapping)->info_nodec);CHKERRQ(ierr);
+  ierr = PetscFree2((*mapping)->info_nodec,(*mapping)->info_nodei);CHKERRQ(ierr);
   if ((*mapping)->ops->destroy) {
     ierr = (*(*mapping)->ops->destroy)(*mapping);CHKERRQ(ierr);
   }
@@ -657,8 +640,6 @@ PetscErrorCode  ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping *mapping)
     The output IS will have the same communicator of the input IS.
 
     Level: advanced
-
-    Concepts: mapping^local to global
 
 .seealso: ISLocalToGlobalMappingApply(), ISLocalToGlobalMappingCreate(),
           ISLocalToGlobalMappingDestroy(), ISGlobalToLocalMappingApply()
@@ -706,7 +687,6 @@ PetscErrorCode  ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping,IS 
           ISLocalToGlobalMappingApplyIS(),AOCreateBasic(),AOApplicationToPetsc(),
           AOPetscToApplication(), ISGlobalToLocalMappingApply()
 
-    Concepts: mapping^local to global
 @*/
 PetscErrorCode ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping,PetscInt N,const PetscInt in[],PetscInt out[])
 {
@@ -766,7 +746,6 @@ PetscErrorCode ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping,PetscI
           ISLocalToGlobalMappingApplyIS(),AOCreateBasic(),AOApplicationToPetsc(),
           AOPetscToApplication(), ISGlobalToLocalMappingApply()
 
-    Concepts: mapping^local to global
 @*/
 PetscErrorCode ISLocalToGlobalMappingApplyBlock(ISLocalToGlobalMapping mapping,PetscInt N,const PetscInt in[],PetscInt out[])
 {
@@ -822,8 +801,6 @@ PetscErrorCode ISLocalToGlobalMappingApplyBlock(ISLocalToGlobalMapping mapping,P
     Developer Note: The manual page states that idx and idxout may be identical but the calling
        sequence declares idx as const so it cannot be the same as idxout.
 
-    Concepts: mapping^global to local
-
 .seealso: ISLocalToGlobalMappingApply(), ISGlobalToLocalMappingApplyBlock(), ISLocalToGlobalMappingCreate(),
           ISLocalToGlobalMappingDestroy()
 @*/
@@ -860,8 +837,6 @@ PetscErrorCode  ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlo
     The output IS will be sequential, as it encodes a purely local operation
 
     Level: advanced
-
-    Concepts: mapping^local to global
 
 .seealso: ISGlobalToLocalMappingApply(), ISLocalToGlobalMappingCreate(),
           ISLocalToGlobalMappingDestroy()
@@ -924,8 +899,6 @@ PetscErrorCode  ISGlobalToLocalMappingApplyIS(ISLocalToGlobalMapping mapping,ISG
     Developer Note: The manual page states that idx and idxout may be identical but the calling
        sequence declares idx as const so it cannot be the same as idxout.
 
-    Concepts: mapping^global to local
-
 .seealso: ISLocalToGlobalMappingApply(), ISGlobalToLocalMappingApply(), ISLocalToGlobalMappingCreate(),
           ISLocalToGlobalMappingDestroy()
 @*/
@@ -960,8 +933,6 @@ PetscErrorCode  ISGlobalToLocalMappingApplyBlock(ISLocalToGlobalMapping mapping,
 -   indices - indices of nodes (in local numbering) shared with neighbors (sorted by global numbering)
 
     Level: advanced
-
-    Concepts: mapping^local to global
 
     Fortran Usage:
 $        ISLocalToGlobalMpngGetInfoSize(ISLocalToGlobalMapping,PetscInt nproc,PetscInt numprocmax,ierr) followed by
@@ -1058,7 +1029,7 @@ static PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGloba
 
   /* determine ownership ranges of global indices */
   ierr = PetscMalloc1(2*size,&nprocs);CHKERRQ(ierr);
-  ierr = PetscMemzero(nprocs,2*size*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArrayzero(nprocs,2*size);CHKERRQ(ierr);
 
   /* determine owners of each local node  */
   ierr = PetscMalloc1(n,&owner);CHKERRQ(ierr);
@@ -1112,8 +1083,7 @@ static PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGloba
   ierr = PetscMalloc1(nrecvs+1,&source);CHKERRQ(ierr);
   ierr = PetscMalloc1(nrecvs+1,&len);CHKERRQ(ierr);
   cnt  = nrecvs;
-  ierr = PetscMalloc1(ng+1,&nownedsenders);CHKERRQ(ierr);
-  ierr = PetscMemzero(nownedsenders,ng*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscCalloc1(ng+1,&nownedsenders);CHKERRQ(ierr);
   while (cnt) {
     ierr = MPI_Waitany(nrecvs,recv_waits,&imdex,&recv_status);CHKERRQ(ierr);
     /* unpack receives into our local space */
@@ -1217,7 +1187,7 @@ static PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGloba
         sends2[starts2[i]]++;
         sends2[starts2[i]+cnt++] = recvs[2*i*nmax+2*j+1];
         sends2[starts2[i]+cnt++] = nownedsenders[node];
-        ierr = PetscMemcpy(&sends2[starts2[i]+cnt],&ownedsenders[starts[node]],nownedsenders[node]*sizeof(PetscInt));CHKERRQ(ierr);
+        ierr = PetscArraycpy(&sends2[starts2[i]+cnt],&ownedsenders[starts[node]],nownedsenders[node]);CHKERRQ(ierr);
         cnt += nownedsenders[node];
       }
     }
@@ -1291,8 +1261,7 @@ static PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGloba
   } /* -----------------------------------  */
 
   /* count number subdomains for each local node */
-  ierr = PetscMalloc1(size,&nprocs);CHKERRQ(ierr);
-  ierr = PetscMemzero(nprocs,size*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscCalloc1(size,&nprocs);CHKERRQ(ierr);
   cnt  = 0;
   for (i=0; i<nrecvs2; i++) {
     nt = recvs2[cnt++];
@@ -1320,7 +1289,7 @@ static PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGloba
   }
 
   /* make the list of subdomains for each nontrivial local node */
-  ierr = PetscMemzero(*numprocs,nt*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArrayzero(*numprocs,nt);CHKERRQ(ierr);
   cnt  = 0;
   for (i=0; i<nrecvs2; i++) {
     nt = recvs2[cnt++];
@@ -1462,8 +1431,6 @@ PetscErrorCode  ISLocalToGlobalMappingRestoreBlockInfo(ISLocalToGlobalMapping ma
 
     Level: advanced
 
-    Concepts: mapping^local to global
-
     Notes: The user needs to call ISLocalToGlobalMappingRestoreInfo when the data is no longer needed.
 
     Fortran Usage:
@@ -1548,8 +1515,6 @@ PetscErrorCode  ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping mapping
 
     Level: advanced
 
-    Concepts: mapping^local to global
-
     Notes: The user needs to call ISLocalToGlobalMappingRestoreInfo when the data is no longer needed.
 
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingCreate(),
@@ -1566,10 +1531,11 @@ PetscErrorCode  ISLocalToGlobalMappingGetNodeInfo(ISLocalToGlobalMapping mapping
   if (!mapping->info_nodec) {
     PetscInt i,m,n_neigh,*neigh,*n_shared,**shared;
 
-    ierr = PetscCalloc1(n+1,&mapping->info_nodec);CHKERRQ(ierr); /* always allocate to flag setup */
-    ierr = PetscMalloc1(n,&mapping->info_nodei);CHKERRQ(ierr);
+    ierr = PetscMalloc2(n+1,&mapping->info_nodec,n,&mapping->info_nodei);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingGetInfo(mapping,&n_neigh,&neigh,&n_shared,&shared);CHKERRQ(ierr);
-    for (i=0,m=0;i<n;i++) { mapping->info_nodec[i] = 1; m++; }
+    for (i=0;i<n;i++) { mapping->info_nodec[i] = 1;}
+    m = n;
+    mapping->info_nodec[n] = 0;
     for (i=1;i<n_neigh;i++) {
       PetscInt j;
 
@@ -1578,7 +1544,7 @@ PetscErrorCode  ISLocalToGlobalMappingGetNodeInfo(ISLocalToGlobalMapping mapping
     }
     if (n) { ierr = PetscMalloc1(m,&mapping->info_nodei[0]);CHKERRQ(ierr); }
     for (i=1;i<n;i++) mapping->info_nodei[i] = mapping->info_nodei[i-1] + mapping->info_nodec[i-1];
-    ierr = PetscMemzero(mapping->info_nodec,n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArrayzero(mapping->info_nodec,n);CHKERRQ(ierr);
     for (i=0;i<n;i++) { mapping->info_nodec[i] = 1; mapping->info_nodei[i][0] = neigh[0]; }
     for (i=1;i<n_neigh;i++) {
       PetscInt j;
@@ -1782,7 +1748,7 @@ PetscErrorCode ISLocalToGlobalMappingConcatenate(MPI_Comm comm,PetscInt n,const 
     const PetscInt *subidx;
     ierr = ISLocalToGlobalMappingGetSize(ltogs[i],&m);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingGetIndices(ltogs[i],&subidx);CHKERRQ(ierr);
-    ierr = PetscMemcpy(&idx[cnt],subidx,m*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(&idx[cnt],subidx,m);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingRestoreIndices(ltogs[i],&subidx);CHKERRQ(ierr);
     cnt += m;
   }
@@ -1795,7 +1761,7 @@ PetscErrorCode ISLocalToGlobalMappingConcatenate(MPI_Comm comm,PetscInt n,const 
                                     used this is good for only small and moderate size problems.
 
    Options Database Keys:
-+   -islocaltoglobalmapping_type basic - select this method
+.   -islocaltoglobalmapping_type basic - select this method
 
    Level: beginner
 
@@ -1816,7 +1782,7 @@ PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingCreate_Basic(ISLocalToGlobalMa
                                     used this is good for large memory problems.
 
    Options Database Keys:
-+   -islocaltoglobalmapping_type hash - select this method
+.   -islocaltoglobalmapping_type hash - select this method
 
 
    Notes:
@@ -1861,8 +1827,6 @@ $     -islocaltoglobalmapping_type my_mapper
 
    Level: advanced
 
-.keywords: ISLocalToGlobalMappingType, register
-
 .seealso: ISLocalToGlobalMappingRegisterAll(), ISLocalToGlobalMappingRegisterDestroy(), ISLOCALTOGLOBALMAPPINGBASIC, ISLOCALTOGLOBALMAPPINGHASH
 
 @*/
@@ -1901,8 +1865,6 @@ PetscErrorCode  ISLocalToGlobalMappingRegister(const char sname[],PetscErrorCode
   Developer Note: ISLocalToGlobalMappingRegister() is used to add new types to ISLocalToGlobalMappingList from which they
   are accessed by ISLocalToGlobalMappingSetType().
 
-.keywords: ISLocalToGlobalMapping, set, method
-
 .seealso: PCSetType(), ISLocalToGlobalMappingType, ISLocalToGlobalMappingRegister(), ISLocalToGlobalMappingCreate()
 
 @*/
@@ -1939,7 +1901,6 @@ PetscBool ISLocalToGlobalMappingRegisterAllCalled = PETSC_FALSE;
 
   Level: advanced
 
-.keywords: IS, register, all
 .seealso:  ISRegister(),  ISLocalToGlobalRegister()
 @*/
 PetscErrorCode  ISLocalToGlobalMappingRegisterAll(void)

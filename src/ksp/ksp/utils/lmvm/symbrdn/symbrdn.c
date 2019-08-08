@@ -369,14 +369,15 @@ static PetscErrorCode MatReset_LMVMSymBrdn(Mat B, PetscBool destructive)
   Mat_LMVM          *dbase;
   Mat_DiagBrdn      *dctx;
   PetscErrorCode    ierr;
-  
+
   PetscFunctionBegin;
   lsb->watchdog = 0;
   lsb->needP = lsb->needQ = PETSC_TRUE;
   if (lsb->allocated) {
     if (destructive) {
       ierr = VecDestroy(&lsb->work);CHKERRQ(ierr);
-      ierr = PetscFree6(lsb->stp, lsb->ytq, lsb->yts, lsb->yty, lsb->sts, lsb->psi);CHKERRQ(ierr);
+      ierr = PetscFree5(lsb->stp, lsb->ytq, lsb->yts, lsb->yty, lsb->sts);CHKERRQ(ierr);
+      ierr = PetscFree(lsb->psi);CHKERRQ(ierr);
       ierr = VecDestroyVecs(lmvm->m, &lsb->P);CHKERRQ(ierr);
       ierr = VecDestroyVecs(lmvm->m, &lsb->Q);CHKERRQ(ierr);
       switch (lsb->scale_type) {
@@ -418,14 +419,14 @@ static PetscErrorCode MatAllocate_LMVMSymBrdn(Mat B, Vec X, Vec F)
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_SymBrdn       *lsb = (Mat_SymBrdn*)lmvm->ctx;
   PetscErrorCode    ierr;
-  
+
   PetscFunctionBegin;
   ierr = MatAllocate_LMVM(B, X, F);CHKERRQ(ierr);
   if (!lsb->allocated) {
     ierr = VecDuplicate(X, &lsb->work);CHKERRQ(ierr);
-    ierr = PetscMalloc6(lmvm->m, &lsb->stp, lmvm->m, &lsb->ytq, lmvm->m, &lsb->yts, lmvm->m, &lsb->yty, lmvm->m, &lsb->sts, lmvm->m, &lsb->psi);CHKERRQ(ierr);
-    ierr = PetscMemzero(lsb->psi, lmvm->m);CHKERRQ(ierr);
     if (lmvm->m > 0) {
+      ierr = PetscMalloc5(lmvm->m,&lsb->stp,lmvm->m,&lsb->ytq,lmvm->m,&lsb->yts,lmvm->m,&lsb->yty,lmvm->m,&lsb->sts);CHKERRQ(ierr);
+      ierr = PetscCalloc1(lmvm->m,&lsb->psi);CHKERRQ(ierr);
       ierr = VecDuplicateVecs(X, lmvm->m, &lsb->P);CHKERRQ(ierr);
       ierr = VecDuplicateVecs(X, lmvm->m, &lsb->Q);CHKERRQ(ierr);
     }
@@ -452,7 +453,8 @@ static PetscErrorCode MatDestroy_LMVMSymBrdn(Mat B)
   PetscFunctionBegin;
   if (lsb->allocated) {
     ierr = VecDestroy(&lsb->work);CHKERRQ(ierr);
-    ierr = PetscFree6(lsb->stp, lsb->ytq, lsb->yts, lsb->yty, lsb->sts, lsb->psi);CHKERRQ(ierr);
+    ierr = PetscFree5(lsb->stp, lsb->ytq, lsb->yts, lsb->yty, lsb->sts);CHKERRQ(ierr);
+    ierr = PetscFree(lsb->psi);CHKERRQ(ierr);
     ierr = VecDestroyVecs(lmvm->m, &lsb->P);CHKERRQ(ierr);
     ierr = VecDestroyVecs(lmvm->m, &lsb->Q);CHKERRQ(ierr);
     lsb->allocated = PETSC_FALSE;
@@ -471,14 +473,14 @@ static PetscErrorCode MatSetUp_LMVMSymBrdn(Mat B)
   Mat_SymBrdn       *lsb = (Mat_SymBrdn*)lmvm->ctx;
   PetscErrorCode    ierr;
   PetscInt          n, N;
-  
+
   PetscFunctionBegin;
   ierr = MatSetUp_LMVM(B);CHKERRQ(ierr);
   if (!lsb->allocated) {
     ierr = VecDuplicate(lmvm->Xprev, &lsb->work);CHKERRQ(ierr);
-    ierr = PetscMalloc6(lmvm->m, &lsb->stp, lmvm->m, &lsb->ytq, lmvm->m, &lsb->yts, lmvm->m, &lsb->yty, lmvm->m, &lsb->sts, lmvm->m, &lsb->psi);CHKERRQ(ierr);
-    ierr = PetscMemzero(lsb->psi, lmvm->m);CHKERRQ(ierr);
     if (lmvm->m > 0) {
+      ierr = PetscMalloc5(lmvm->m,&lsb->stp,lmvm->m,&lsb->ytq,lmvm->m,&lsb->yts,lmvm->m,&lsb->yty,lmvm->m,&lsb->sts);CHKERRQ(ierr);
+      ierr = PetscCalloc1(lmvm->m,&lsb->psi);CHKERRQ(ierr);
       ierr = VecDuplicateVecs(lmvm->Xprev, lmvm->m, &lsb->P);CHKERRQ(ierr);
       ierr = VecDuplicateVecs(lmvm->Xprev, lmvm->m, &lsb->Q);CHKERRQ(ierr);
     }
@@ -662,7 +664,7 @@ PetscErrorCode MatSymBrdnSetDelta(Mat B, PetscScalar delta)
    This ensures that the internal storage and work vectors are duplicated from the 
    correct type of vector.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - MPI communicator, set to PETSC_COMM_SELF
@@ -676,14 +678,14 @@ PetscErrorCode MatSymBrdnSetDelta(Mat B, PetscScalar delta)
    paradigm instead of this routine directly.
 
    Options Database Keys:
-.   -mat_lmvm_num_vecs - maximum number of correction vectors (i.e.: updates) stored
++   -mat_lmvm_num_vecs - maximum number of correction vectors (i.e.: updates) stored
 .   -mat_lmvm_phi - (developer) convex ratio between BFGS and DFP components of the update
 .   -mat_lmvm_scale_type - (developer) type of scaling applied to J0 (none, scalar, diagonal)
 .   -mat_lmvm_theta - (developer) convex ratio between BFGS and DFP components of the diagonal J0 scaling
 .   -mat_lmvm_rho - (developer) update limiter for the J0 scaling
 .   -mat_lmvm_alpha - (developer) coefficient factor for the quadratic subproblem in J0 scaling
 .   -mat_lmvm_beta - (developer) exponential factor for the diagonal J0 scaling
-.   -mat_lmvm_sigma_hist - (developer) number of past updates to use in J0 scaling
+-   -mat_lmvm_sigma_hist - (developer) number of past updates to use in J0 scaling
 
    Level: intermediate
 

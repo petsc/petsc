@@ -10,7 +10,6 @@ configure_options = [
   'CXXOPTFLAGS=-g -O',
   '--with-clanguage=cxx',
   '--with-scalar-type=complex',
-  '--with-cxx-dialect=C++11',
   '--with-64-bit-indices=1',
   'DATAFILESPATH=/home/petsc/datafiles',
   ]

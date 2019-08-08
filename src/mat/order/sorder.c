@@ -106,8 +106,6 @@ $     MatOrderingSetType(part,"my_order)
    or at runtime via the option
 $     -pc_factor_mat_ordering_type my_order
 
-.keywords: matrix, ordering, register
-
 .seealso: MatOrderingRegisterDestroy(), MatOrderingRegisterAll()
 @*/
 PetscErrorCode  MatOrderingRegister(const char sname[],PetscErrorCode (*function)(Mat,MatOrderingType,IS*,IS*))
@@ -159,7 +157,6 @@ $      MATORDERINGQMD - Quotient Minimum Degree
    this call.
 
 
-.keywords: matrix, set, ordering, factorization, direct, ILU, LU,
            fill, reordering, natural, Nested Dissection,
            One-way Dissection, Cholesky, Reverse Cuthill-McKee,
            Quotient Minimum Degree

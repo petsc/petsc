@@ -1,7 +1,16 @@
 static char help[] = "Test PETSc integer hash map.\n\n";
 
 #include <petsc/private/hashmapi.h>
+#include <petsc/private/hashmapiv.h>
 #include <petscsys.h>
+
+/* Unused, keep it for testing purposes */
+PETSC_HASH_MAP(HMapIP, PetscInt, void*, PetscHashInt, PetscHashEqual, NULL)
+
+/* Unused, keep it for testing purposes */
+typedef struct { double x; double y; double z; } Point;
+static Point origin = {0.0, 0.0, 0.0};
+PETSC_HASH_MAP(HMapIS, PetscInt, Point, PetscHashInt, PetscHashEqual, origin)
 
 #define PetscAssert(expr) do {            \
 if (PetscUnlikely(!(expr)))               \
@@ -14,7 +23,9 @@ if (PetscUnlikely(!(expr)))               \
 int main(int argc,char **argv)
 {
   PetscHMapI     ht = NULL, hd;
-  PetscInt       n, v, koff, keys[4], voff, vals[4];
+  PetscHMapIV    htv;
+  PetscInt       n, v, koff, keys[4], voff, vals[4],na,nb,i,size,*karray,off;
+  PetscScalar    *varray,*vwork;
   PetscBool      has, flag;
   PetscErrorCode ierr;
 
@@ -122,6 +133,35 @@ int main(int argc,char **argv)
   ierr = PetscHMapIGetSize(ht,&n);CHKERRQ(ierr);
   PetscAssert(n == 0);
   ierr = PetscHMapIDestroy(&ht);CHKERRQ(ierr);
+
+  ierr = PetscHMapIVCreate(&htv);CHKERRQ(ierr);
+  n = 10;
+  ierr = PetscHMapIVResize(htv,n);CHKERRQ(ierr);
+  ierr = PetscHMapIVGetCapacity(htv,&na);CHKERRQ(ierr);
+  PetscAssert(na>=n);
+  for (i=0; i<n; i++) {
+    ierr = PetscHMapIVSet(htv,i+100,10.);CHKERRQ(ierr);
+  }
+  ierr = PetscHMapIVGetCapacity(htv,&nb);CHKERRQ(ierr);
+  PetscAssert(nb>=na);
+  for (i=0; i<(2*n); i++) {
+    ierr = PetscHMapIVAddValue(htv,i+100,5.);CHKERRQ(ierr);
+  }
+  ierr = PetscHMapIVGetSize(htv,&size);CHKERRQ(ierr);
+  PetscAssert(size==(2*n));
+  ierr = PetscMalloc3(size,&karray,size,&varray,size,&vwork);CHKERRQ(ierr);
+  off = 0;
+  ierr = PetscHMapIVGetPairs(htv,&off,karray,varray);CHKERRQ(ierr);
+  PetscAssert(off==(2*n));
+  ierr = PetscSortIntWithDataArray(off,karray,varray,sizeof(PetscScalar),vwork);CHKERRQ(ierr);
+  for (i=0; i<n; i++) {
+    PetscAssert(karray[i]==(i+100));
+    PetscAssert(karray[n+i]==(n+i+100));
+    PetscAssert(varray[i]==15.);
+    PetscAssert(varray[n+i]==5.);
+  }
+  ierr = PetscFree3(karray,varray,vwork);CHKERRQ(ierr);
+  ierr = PetscHMapIVDestroy(&htv);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return ierr;

@@ -15,29 +15,23 @@ PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj)
     for (i=0; i<obj->intstar_idmax; i++) {
       ierr = PetscFree(obj->intstarcomposeddata[i]);CHKERRQ(ierr);
     }
-    ierr = PetscFree(obj->intstarcomposeddata);CHKERRQ(ierr);
-    ierr = PetscFree(obj->intstarcomposedstate);CHKERRQ(ierr);
+    ierr = PetscFree2(obj->intstarcomposeddata,obj->intstarcomposedstate);CHKERRQ(ierr);
   }
   if (obj->realstar_idmax>0) {
     for (i=0; i<obj->realstar_idmax; i++) {
       ierr = PetscFree(obj->realstarcomposeddata[i]);CHKERRQ(ierr);
     }
-    ierr = PetscFree(obj->realstarcomposeddata);CHKERRQ(ierr);
-    ierr = PetscFree(obj->realstarcomposedstate);CHKERRQ(ierr);
+    ierr = PetscFree2(obj->realstarcomposeddata,obj->realstarcomposedstate);CHKERRQ(ierr);
   }
   if (obj->scalarstar_idmax>0) {
     for (i=0; i<obj->scalarstar_idmax; i++) {
       ierr = PetscFree(obj->scalarstarcomposeddata[i]);CHKERRQ(ierr);
     }
-    ierr = PetscFree(obj->scalarstarcomposeddata);CHKERRQ(ierr);
-    ierr = PetscFree(obj->scalarstarcomposedstate);CHKERRQ(ierr);
+    ierr = PetscFree2(obj->scalarstarcomposeddata,obj->scalarstarcomposedstate);CHKERRQ(ierr);
   }
-  ierr = PetscFree(obj->intcomposeddata);CHKERRQ(ierr);
-  ierr = PetscFree(obj->intcomposedstate);CHKERRQ(ierr);
-  ierr = PetscFree(obj->realcomposeddata);CHKERRQ(ierr);
-  ierr = PetscFree(obj->realcomposedstate);CHKERRQ(ierr);
-  ierr = PetscFree(obj->scalarcomposeddata);CHKERRQ(ierr);
-  ierr = PetscFree(obj->scalarcomposedstate);CHKERRQ(ierr);
+  ierr = PetscFree2(obj->intcomposeddata,obj->intcomposedstate);CHKERRQ(ierr);
+  ierr = PetscFree2(obj->realcomposeddata,obj->realcomposedstate);CHKERRQ(ierr);
+  ierr = PetscFree2(obj->scalarcomposeddata,obj->scalarcomposedstate);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -52,10 +46,6 @@ PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj)
          PetscObjectDestroy((PetscObject*)&mat);
 
    Level: beginner
-
-    Concepts: destroying object
-    Concepts: freeing object
-    Concepts: deleting object
 
 @*/
 PetscErrorCode  PetscObjectDestroy(PetscObject *obj)
@@ -157,11 +147,7 @@ PetscErrorCode PetscObjectViewFromOptions(PetscObject obj,PetscObject bobj,const
 
    Level: intermediate
 
-.seealso: VecGetType(), KSPGetType(), PCGetType(), SNESGetType(), PetscObjectBaseTypeCompare(), PetscObjectTypeCompareAny()
-
-   Concepts: comparing^object types
-   Concepts: types^comparing
-   Concepts: object type^comparpeing
+.seealso: VecGetType(), KSPGetType(), PCGetType(), SNESGetType(), PetscObjectBaseTypeCompare(), PetscObjectTypeCompareAny(), PetscObjectBaseTypeCompareAny()
 
 @*/
 PetscErrorCode  PetscObjectTypeCompare(PetscObject obj,const char type_name[],PetscBool  *same)
@@ -169,13 +155,13 @@ PetscErrorCode  PetscObjectTypeCompare(PetscObject obj,const char type_name[],Pe
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidPointer(same,3);
   if (!obj) *same = PETSC_FALSE;
   else if (!type_name && !obj->type_name) *same = PETSC_TRUE;
   else if (!type_name || !obj->type_name) *same = PETSC_FALSE;
   else {
     PetscValidHeader(obj,1);
     PetscValidCharPointer(type_name,2);
-    PetscValidPointer(same,3);
     ierr = PetscStrcmp((char*)(obj->type_name),type_name,same);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -195,7 +181,7 @@ PetscErrorCode  PetscObjectTypeCompare(PetscObject obj,const char type_name[],Pe
 
    Level: intermediate
 
-.seealso: PetscObjectTypeCompare(), PetscObjectTypeCompareAny()
+.seealso: PetscObjectTypeCompare(), PetscObjectTypeCompareAny(), PetscObjectBaseTypeCompareAny()
 
 @*/
 PetscErrorCode  PetscObjectBaseTypeCompare(PetscObject obj,const char type_name[],PetscBool  *same)
@@ -203,13 +189,13 @@ PetscErrorCode  PetscObjectBaseTypeCompare(PetscObject obj,const char type_name[
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidPointer(same,3);
   if (!obj) *same = PETSC_FALSE;
   else if (!type_name && !obj->type_name) *same = PETSC_TRUE;
   else if (!type_name || !obj->type_name) *same = PETSC_FALSE;
   else {
     PetscValidHeader(obj,1);
     PetscValidCharPointer(type_name,2);
-    PetscValidPointer(same,3);
     ierr = PetscStrbeginswith((char*)(obj->type_name),type_name,same);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -230,11 +216,7 @@ PetscErrorCode  PetscObjectBaseTypeCompare(PetscObject obj,const char type_name[
 
    Level: intermediate
 
-.seealso: VecGetType(), KSPGetType(), PCGetType(), SNESGetType(), PetscObjectTypeCompare(), PetscObjectBaseTypeCompare()
-
-   Concepts: comparing^object types
-   Concepts: types^comparing
-   Concepts: object type^comparing
+.seealso: VecGetType(), KSPGetType(), PCGetType(), SNESGetType(), PetscObjectTypeCompare(), PetscObjectBaseTypeCompare(), PetscObjectTypeCompareAny()
 
 @*/
 PetscErrorCode PetscObjectTypeCompareAny(PetscObject obj,PetscBool *match,const char type_name[],...)
@@ -243,11 +225,53 @@ PetscErrorCode PetscObjectTypeCompareAny(PetscObject obj,PetscBool *match,const 
   va_list        Argp;
 
   PetscFunctionBegin;
+  PetscValidPointer(match,3);
   *match = PETSC_FALSE;
   va_start(Argp,type_name);
   while (type_name && type_name[0]) {
     PetscBool found;
     ierr = PetscObjectTypeCompare(obj,type_name,&found);CHKERRQ(ierr);
+    if (found) {
+      *match = PETSC_TRUE;
+      break;
+    }
+    type_name = va_arg(Argp,const char*);
+  }
+  va_end(Argp);
+  PetscFunctionReturn(0);
+}
+
+
+/*@C
+   PetscObjectBaseTypeCompareAny - Determines whether a PETSc object has the base type of any of a list of types.
+
+   Not Collective
+
+   Input Parameters:
++  obj - any PETSc object, for example a Vec, Mat or KSP.
+         This must be cast with a (PetscObject), for example, PetscObjectBaseTypeCompareAny((PetscObject)mat,...);
+-  type_name - string containing a type name, pass the empty string "" to terminate the list
+
+   Output Parameter:
+.  match - PETSC_TRUE if the type of obj matches any in the list, else PETSC_FALSE
+
+   Level: intermediate
+
+.seealso: VecGetType(), KSPGetType(), PCGetType(), SNESGetType(), PetscObjectTypeCompare(), PetscObjectBaseTypeCompare(), PetscObjectTypeCompareAny()
+
+@*/
+PetscErrorCode PetscObjectBaseTypeCompareAny(PetscObject obj,PetscBool *match,const char type_name[],...)
+{
+  PetscErrorCode ierr;
+  va_list        Argp;
+
+  PetscFunctionBegin;
+  PetscValidPointer(match,3);
+  *match = PETSC_FALSE;
+  va_start(Argp,type_name);
+  while (type_name && type_name[0]) {
+    PetscBool found;
+    ierr = PetscObjectBaseTypeCompare(obj,type_name,&found);CHKERRQ(ierr);
     if (found) {
       *match = PETSC_TRUE;
       break;

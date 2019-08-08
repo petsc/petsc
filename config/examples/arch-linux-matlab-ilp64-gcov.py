@@ -17,9 +17,6 @@ if __name__ == '__main__':
   sys.path.insert(0, os.path.abspath('config'))
   import configure
   configure_options = [
-    'COPTFLAGS=-g -O',
-    'FOPTFLAGS=-g -O',
-    'CXXOPTFLAGS=-g -O',
     '--download-mpich=1', # /usr/bin/mpicc does not resolve '__gcov_merge_add'? and gcc-4.4 gives gcov errors
     '--with-display=140.221.10.20:0.0', # for matlab example with graphics
     '--with-blaslapack-dir=/soft/com/packages/MATLAB/R2016a',

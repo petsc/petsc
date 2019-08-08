@@ -47,8 +47,6 @@
       PetscRandomDestroy(&r);
 .ve
 
-   Concepts: random numbers^getting
-
 .seealso: PetscRandomCreate(), PetscRandomDestroy(), VecSetRandom(), PetscRandomGetValueReal()
 @*/
 PetscErrorCode  PetscRandomGetValue(PetscRandom r,PetscScalar *val)
@@ -91,8 +89,6 @@ PetscErrorCode  PetscRandomGetValue(PetscRandom r,PetscScalar *val)
       PetscRandomDestroy(&r);
 .ve
 
-   Concepts: random numbers^getting
-
 .seealso: PetscRandomCreate(), PetscRandomDestroy(), VecSetRandom(), PetscRandomGetValue()
 @*/
 PetscErrorCode  PetscRandomGetValueReal(PetscRandom r,PetscReal *val)
@@ -123,8 +119,6 @@ PetscErrorCode  PetscRandomGetValueReal(PetscRandom r,PetscReal *val)
 -  high - The upper bound of the interval
 
    Level: intermediate
-
-   Concepts: random numbers^range
 
 .seealso: PetscRandomCreate(), PetscRandomSetInterval()
 @*/
@@ -159,8 +153,6 @@ PetscErrorCode  PetscRandomGetInterval(PetscRandom r,PetscScalar *low,PetscScala
    Notes:
     for complex numbers either the real part or the imaginary part of high must be greater than its low part; or both of them can be greater.
     If the real or imaginary part of low and high are the same then that value is always returned in the real or imaginary part.
-
-   Concepts: random numbers^range
 
 .seealso: PetscRandomCreate(), PetscRandomGetInterval()
 @*/

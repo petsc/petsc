@@ -93,8 +93,7 @@ PetscErrorCode TSSolve_Radau5(TS ts)
   LWORK  = 4*ND*ND+12*ND+20;
   LIWORK = 3*ND+20;
 
-  ierr = PetscCalloc1(LWORK,&WORK);CHKERRQ(ierr);
-  ierr = PetscCalloc1(LIWORK,&IWORK);CHKERRQ(ierr);
+  ierr = PetscCalloc2(LWORK,&WORK,LIWORK,&IWORK);CHKERRQ(ierr);
 
   /* C --- PARAMETER IN THE DIFFERENTIAL EQUATION */
   RPAR=1.0e-6;
@@ -121,8 +120,7 @@ PetscErrorCode TSSolve_Radau5(TS ts)
 
   radau5_(&ND,FVPOL,&X,Y,&XEND,&H,&RTOL,&ATOL,&ITOL,JVPOL,&IJAC,&MLJAC,&MUJAC,FVPOL,&IMAS,&MLMAS,&MUMAS,SOLOUT,&IOUT,WORK,&LWORK,IWORK,&LIWORK,&RPAR,(void*)ts,&IDID);
 
-  ierr = PetscFree(WORK);CHKERRQ(ierr);
-  ierr = PetscFree(IWORK);CHKERRQ(ierr);
+  ierr = PetscFree2(WORK,IWORK);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

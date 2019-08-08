@@ -74,7 +74,7 @@ PetscErrorCode PetscSpaceEvaluate_Point(PetscSpace sp, PetscInt npoints, const P
 
   PetscFunctionBegin;
   if (npoints != pt->quad->numPoints) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot evaluate Point space on %d points != %d size", npoints, pt->quad->numPoints);
-  ierr = PetscMemzero(B, npoints*pdim * sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscArrayzero(B, npoints*pdim);CHKERRQ(ierr);
   for (p = 0; p < npoints; ++p) {
     for (i = 0; i < pdim; ++i) {
       for (d = 0; d < dim; ++d) {
@@ -91,8 +91,8 @@ PetscErrorCode PetscSpaceEvaluate_Point(PetscSpace sp, PetscInt npoints, const P
       }
     }
   }
-  if (D) {ierr = PetscMemzero(D, npoints*pdim*dim * sizeof(PetscReal));CHKERRQ(ierr);}
-  if (H) {ierr = PetscMemzero(H, npoints*pdim*dim*dim * sizeof(PetscReal));CHKERRQ(ierr);}
+  if (D) {ierr = PetscArrayzero(D, npoints*pdim*dim);CHKERRQ(ierr);}
+  if (H) {ierr = PetscArrayzero(H, npoints*pdim*dim*dim);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -146,7 +146,6 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Point(PetscSpace sp)
 
   Level: intermediate
 
-.keywords: PetscSpacePoint
 .seealso: PetscSpaceCreate(), PetscSpaceSetType()
 @*/
 PetscErrorCode PetscSpacePointSetPoints(PetscSpace sp, PetscQuadrature q)
@@ -175,7 +174,6 @@ PetscErrorCode PetscSpacePointSetPoints(PetscSpace sp, PetscQuadrature q)
 
   Level: intermediate
 
-.keywords: PetscSpacePoint
 .seealso: PetscSpaceCreate(), PetscSpaceSetType()
 @*/
 PetscErrorCode PetscSpacePointGetPoints(PetscSpace sp, PetscQuadrature *q)

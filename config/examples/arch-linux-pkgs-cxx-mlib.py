@@ -22,7 +22,6 @@ configure_options = [
   '--download-parms=1',
   '--download-ctetgen=1',
   '--download-elemental=1',
-  '--with-cxx-dialect=C++11',
   '--download-spai=1',
   '--download-chaco=1',
   '--download-netcdf=1',

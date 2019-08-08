@@ -17,7 +17,7 @@ const char *const*TSConvergedReasons = TSConvergedReasons_Shifted + 2;
   TSCreate - This function creates an empty timestepper. The problem type can then be set with TSSetProblemType() and the
        type of solver can then be set with TSSetType().
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 . comm - The communicator
@@ -34,7 +34,6 @@ const char *const*TSConvergedReasons = TSConvergedReasons_Shifted + 2;
                     in TSView(). TSSetFromOptions() does call SNESSetFromOptions() which can lead to users being confused
                     by help messages about meaningless SNES options.
 
-.keywords: TS, create
 .seealso: TSSetType(), TSSetUp(), TSDestroy(), TSSetProblemType()
 @*/
 PetscErrorCode  TSCreate(MPI_Comm comm, TS *ts)

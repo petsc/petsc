@@ -32,8 +32,6 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_AMD(Mat,MatOrderingType,IS*,IS*);
   those orderigs you do not wish to include.  Make sure that the
   replacement routine is linked before libpetscmat.a.
 
-.keywords: matrix, reordering, register, all
-
 .seealso: MatOrderingRegister(), MatOrderingRegisterDestroy()
 @*/
 PetscErrorCode  MatOrderingRegisterAll(void)

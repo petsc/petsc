@@ -60,8 +60,6 @@ PetscErrorCode  PetscRandomDestroy(PetscRandom *r)
 
    Level: intermediate
 
-   Concepts: random numbers^seed
-
 .seealso: PetscRandomCreate(), PetscRandomSetSeed(), PetscRandomSeed()
 @*/
 PetscErrorCode  PetscRandomGetSeed(PetscRandom r,unsigned long *seed)
@@ -93,8 +91,6 @@ PetscErrorCode  PetscRandomGetSeed(PetscRandom r,unsigned long *seed)
       PetscRandomSeed(r) without a call to PetscRandomSetSeed() re-initializes
         the seed. The random numbers generated will be the same as before.
 
-   Concepts: random numbers^seed
-
 .seealso: PetscRandomCreate(), PetscRandomGetSeed(), PetscRandomSeed()
 @*/
 PetscErrorCode  PetscRandomSetSeed(PetscRandom r,unsigned long seed)
@@ -119,7 +115,6 @@ PetscErrorCode  PetscRandomSetSeed(PetscRandom r,unsigned long seed)
 
   Level: intermediate
 
-.keywords: PetscRandom, set, options, database, type
 .seealso: PetscRandomSetFromOptions(), PetscRandomSetType()
 */
 static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscOptionItems *PetscOptionsObject,PetscRandom rnd)
@@ -165,7 +160,6 @@ static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscOptionItems *Pe
 
   Level: beginner
 
-.keywords: PetscRandom, set, options, database
 .seealso: PetscRandomCreate(), PetscRandomSetType()
 @*/
 PetscErrorCode  PetscRandomSetFromOptions(PetscRandom rnd)
@@ -286,7 +280,7 @@ PetscErrorCode  PetscRandomView(PetscRandom rnd,PetscViewer viewer)
    PetscRandomCreate - Creates a context for generating random numbers,
    and initializes the random-number generator.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 .  comm - MPI communicator
@@ -318,8 +312,6 @@ PetscErrorCode  PetscRandomView(PetscRandom rnd,PetscViewer viewer)
       PetscRandomGetValueReal(r,&value2);
       PetscRandomDestroy(&r);
 .ve
-
-   Concepts: random numbers^creating
 
 .seealso: PetscRandomSetType(), PetscRandomGetValue(), PetscRandomGetValueReal(), PetscRandomSetInterval(),
           PetscRandomDestroy(), VecSetRandom(), PetscRandomType
@@ -366,8 +358,6 @@ PetscErrorCode  PetscRandomCreate(MPI_Comm comm,PetscRandom *r)
 
       PetscRandomSeed(r) without a call to PetscRandomSetSeed() re-initializes
         the seed. The random numbers generated will be the same as before.
-
-   Concepts: random numbers^seed
 
 .seealso: PetscRandomCreate(), PetscRandomGetSeed(), PetscRandomSetSeed()
 @*/

@@ -74,7 +74,7 @@ static PetscErrorCode TestMatrix(Mat A,Vec X,Vec Y,Vec Z)
   ierr = MatDiagonalScale(A,X,Y);CHKERRQ(ierr);
   ierr = MatScale(A,41);CHKERRQ(ierr);
   ierr = MatDiagonalScale(A,Y,Z);CHKERRQ(ierr);
-  ierr = MatComputeExplicitOperator(A,&E);CHKERRQ(ierr);
+  ierr = MatComputeOperator(A,MATDENSE,&E);CHKERRQ(ierr);
 
   ierr = MatView(E,viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"Testing MatMult + MatMultTranspose\n");CHKERRQ(ierr);

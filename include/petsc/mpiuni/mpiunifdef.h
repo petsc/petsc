@@ -1,5 +1,5 @@
-#if !defined (__MPIUNIFDEF_H)
-#define __MPIUNIFDEF_H
+#if !defined (MPIUNIFDEF_H)
+#define MPIUNIFDEF_H
 
 #define MPI_Init                  PETSC_MPI_INIT
 #define MPI_Finalize              PETSC_MPI_FINALIZE

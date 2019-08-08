@@ -231,7 +231,33 @@ PetscErrorCode DMCreateSectionSubDM(DM dm, PetscInt numFields, const PetscInt fi
       }
       ierr = PetscDSCopyConstants(dm->probs[0].ds, (*subdm)->probs[0].ds);CHKERRQ(ierr);
       ierr = PetscDSCopyBoundary(dm->probs[0].ds, (*subdm)->probs[0].ds);CHKERRQ(ierr);
-      ierr = PetscDSSelectEquations(dm->probs[0].ds, numFields, fields, (*subdm)->probs[0].ds);CHKERRQ(ierr);
+      /* Translate DM fields to DS fields */
+      if (dm->probs[0].fields) {
+        IS              infields, dsfields;
+        const PetscInt *fld, *ofld;
+        PetscInt       *fidx;
+        PetscInt        onf, nf, f, g;
+
+        ierr = ISCreateGeneral(PETSC_COMM_SELF, numFields, fields, PETSC_USE_POINTER, &infields);CHKERRQ(ierr);
+        ierr = ISIntersect(infields, dm->probs[0].fields, &dsfields);CHKERRQ(ierr);
+        ierr = ISDestroy(&infields);CHKERRQ(ierr);
+        ierr = ISGetLocalSize(dsfields, &nf);CHKERRQ(ierr);
+        if (!nf) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "DS cannot be supported on 0 fields");
+        ierr = ISGetIndices(dsfields, &fld);CHKERRQ(ierr);
+        ierr = ISGetLocalSize(dm->probs[0].fields, &onf);CHKERRQ(ierr);
+        ierr = ISGetIndices(dm->probs[0].fields, &ofld);CHKERRQ(ierr);
+        ierr = PetscMalloc1(nf, &fidx);CHKERRQ(ierr);
+        for (f = 0, g = 0; f < onf && g < nf; ++f) {
+          if (ofld[f] == fld[g]) fidx[g++] = f;
+        }
+        ierr = ISRestoreIndices(dm->probs[0].fields, &ofld);CHKERRQ(ierr);
+        ierr = ISRestoreIndices(dsfields, &fld);CHKERRQ(ierr);
+        ierr = ISDestroy(&dsfields);CHKERRQ(ierr);
+        ierr = PetscDSSelectEquations(dm->probs[0].ds, nf, fidx, (*subdm)->probs[0].ds);CHKERRQ(ierr);
+        ierr = PetscFree(fidx);CHKERRQ(ierr);
+      } else {
+        ierr = PetscDSSelectEquations(dm->probs[0].ds, numFields, fields, (*subdm)->probs[0].ds);CHKERRQ(ierr);
+      }
     }
     if (dm->coarseMesh) {
       ierr = DMCreateSubDM(dm->coarseMesh, numFields, fields, NULL, &(*subdm)->coarseMesh);CHKERRQ(ierr);

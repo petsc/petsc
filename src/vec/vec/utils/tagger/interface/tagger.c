@@ -67,11 +67,9 @@ PetscErrorCode VecTaggerCreate(MPI_Comm comm,VecTagger *tagger)
 .    VECTAGGERRELATIVE - tag based on a box relative to the range of values present in the vector
 .    VECTAGGERCDF      - tag based on a box in the cumulative distribution of values present in the vector
 .    VECTAGGEROR       - tag based on the union of a set of VecTagger contexts
-.    VECTAGGERAND      - tag based on the intersection of a set of other VecTagger contexts
+-    VECTAGGERAND      - tag based on the intersection of a set of other VecTagger contexts
 
   Level: advanced
-
-.keywords: VecTagger, set, type
 
 .seealso: VecTaggerType, VecTaggerCreate()
 @*/
@@ -113,7 +111,6 @@ PetscErrorCode VecTaggerSetType(VecTagger tagger,VecTaggerType type)
 
   Level: advanced
 
-.keywords: VecTagger, get, type, name
 .seealso: VecTaggerSetType(), VecTaggerCreate()
 @*/
 PetscErrorCode  VecTaggerGetType(VecTagger tagger, VecTaggerType *type)
@@ -192,7 +189,6 @@ PetscErrorCode VecTaggerSetUp(VecTagger tagger)
 
    Level: advanced
 
-.keywords: tagging, set, from, options, database
 @*/
 PetscErrorCode VecTaggerSetFromOptions(VecTagger tagger)
 {

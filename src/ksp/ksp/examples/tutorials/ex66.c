@@ -14,7 +14,9 @@
        Compare to ex50.c
 */
 
-static char help[] = "Solves 2D Poisson equation using multigrid.\n\n";
+static char help[] = "Solves 2D Poisson equation,\n\
+                      using mirrored boundaries to implement Neumann boundary conditions,\n\
+                      using multigrid.\n\n";
 
 #include <petscdm.h>
 #include <petscdmda.h>

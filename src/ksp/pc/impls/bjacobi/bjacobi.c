@@ -60,7 +60,7 @@ static PetscErrorCode PCSetUp_BJacobi(PC pc)
       if (size == 1) {
         jac->n_local = jac->n;
         ierr         = PetscMalloc1(jac->n_local,&jac->l_lens);CHKERRQ(ierr);
-        ierr         = PetscMemcpy(jac->l_lens,jac->g_lens,jac->n_local*sizeof(PetscInt));CHKERRQ(ierr);
+        ierr         = PetscArraycpy(jac->l_lens,jac->g_lens,jac->n_local);CHKERRQ(ierr);
         /* check that user set these correctly */
         sum = 0;
         for (i=0; i<jac->n_local; i++) sum += jac->l_lens[i];
@@ -83,7 +83,7 @@ start_1:
 end_1:
         jac->n_local = i_end - i_start;
         ierr         = PetscMalloc1(jac->n_local,&jac->l_lens);CHKERRQ(ierr);
-        ierr         = PetscMemcpy(jac->l_lens,jac->g_lens+i_start,jac->n_local*sizeof(PetscInt));CHKERRQ(ierr);
+        ierr         = PetscArraycpy(jac->l_lens,jac->g_lens+i_start,jac->n_local);CHKERRQ(ierr);
       }
     } else { /* no global blocks given, determine then using default layout */
       jac->n_local = jac->n/size + ((jac->n % size) > rank);
@@ -290,7 +290,7 @@ static PetscErrorCode  PCBJacobiSetTotalBlocks_BJacobi(PC pc,PetscInt blocks,Pet
   else {
     ierr = PetscMalloc1(blocks,&jac->g_lens);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)pc,blocks*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMemcpy(jac->g_lens,lens,blocks*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(jac->g_lens,lens,blocks);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -318,7 +318,7 @@ static PetscErrorCode  PCBJacobiSetLocalBlocks_BJacobi(PC pc,PetscInt blocks,con
   else {
     ierr = PetscMalloc1(blocks,&jac->l_lens);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)pc,blocks*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMemcpy(jac->l_lens,lens,blocks*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(jac->l_lens,lens,blocks);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -363,8 +363,6 @@ static PetscErrorCode  PCBJacobiGetLocalBlocks_BJacobi(PC pc, PetscInt *blocks, 
 
    Level: advanced
 
-.keywords:  block, Jacobi, get, sub, KSP, context
-
 .seealso: PCBJacobiGetSubKSP()
 @*/
 PetscErrorCode  PCBJacobiGetSubKSP(PC pc,PetscInt *n_local,PetscInt *first_local,KSP *ksp[])
@@ -397,8 +395,6 @@ PetscErrorCode  PCBJacobiGetSubKSP(PC pc,PetscInt *n_local,PetscInt *first_local
 
    Level: intermediate
 
-.keywords:  set, number, Jacobi, global, total, blocks
-
 .seealso: PCSetUseAmat(), PCBJacobiSetLocalBlocks()
 @*/
 PetscErrorCode  PCBJacobiSetTotalBlocks(PC pc,PetscInt blocks,const PetscInt lens[])
@@ -426,8 +422,6 @@ PetscErrorCode  PCBJacobiSetTotalBlocks(PC pc,PetscInt blocks,const PetscInt len
 -  lens - integer array containing the size of each block
 
    Level: intermediate
-
-.keywords:  get, number, Jacobi, global, total, blocks
 
 .seealso: PCSetUseAmat(), PCBJacobiGetLocalBlocks()
 @*/
@@ -461,8 +455,6 @@ PetscErrorCode  PCBJacobiGetTotalBlocks(PC pc, PetscInt *blocks, const PetscInt 
 
    Level: intermediate
 
-.keywords: PC, set, number, Jacobi, local, blocks
-
 .seealso: PCSetUseAmat(), PCBJacobiSetTotalBlocks()
 @*/
 PetscErrorCode  PCBJacobiSetLocalBlocks(PC pc,PetscInt blocks,const PetscInt lens[])
@@ -491,8 +483,6 @@ PetscErrorCode  PCBJacobiSetLocalBlocks(PC pc,PetscInt blocks,const PetscInt len
    Currently only a limited number of blocking configurations are supported.
 
    Level: intermediate
-
-.keywords: PC, get, number, Jacobi, local, blocks
 
 .seealso: PCSetUseAmat(), PCBJacobiGetTotalBlocks()
 @*/
@@ -536,8 +526,6 @@ PetscErrorCode  PCBJacobiGetLocalBlocks(PC pc, PetscInt *blocks, const PetscInt 
      When multiple processes share a single block, each block encompasses exactly all the unknowns owned its set of processes.
 
    Level: beginner
-
-   Concepts: block Jacobi
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            PCASM, PCSetUseAmat(), PCGetUseAmat(), PCBJacobiGetSubKSP(), PCBJacobiSetTotalBlocks(),

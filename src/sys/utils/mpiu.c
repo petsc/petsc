@@ -57,7 +57,7 @@ PetscMPIInt Petsc_Seq_keyval = MPI_KEYVAL_INVALID;
 /*@
    PetscSequentialPhaseBegin - Begins a sequential section of code.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - Communicator to sequentialize.
@@ -84,8 +84,6 @@ PetscMPIInt Petsc_Seq_keyval = MPI_KEYVAL_INVALID;
    that you want).
 
 .seealso: PetscSequentialPhaseEnd()
-
-   Concepts: sequential stage
 
 @*/
 PetscErrorCode  PetscSequentialPhaseBegin(MPI_Comm comm,int ng)
@@ -117,7 +115,7 @@ PetscErrorCode  PetscSequentialPhaseBegin(MPI_Comm comm,int ng)
 /*@
    PetscSequentialPhaseEnd - Ends a sequential section of code.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - Communicator to sequentialize.
@@ -130,8 +128,6 @@ PetscErrorCode  PetscSequentialPhaseBegin(MPI_Comm comm,int ng)
    See PetscSequentialPhaseBegin() for more details.
 
 .seealso: PetscSequentialPhaseBegin()
-
-   Concepts: sequential stage
 
 @*/
 PetscErrorCode  PetscSequentialPhaseEnd(MPI_Comm comm,int ng)
@@ -159,7 +155,7 @@ PetscErrorCode  PetscSequentialPhaseEnd(MPI_Comm comm,int ng)
 /*@C
   PetscGlobalMinMaxInt - Get the global min/max from local min/max input
 
-  Collective on comm
+  Collective
 
   Input Parameter:
 . minMaxVal - An array with the local min and max
@@ -169,7 +165,6 @@ PetscErrorCode  PetscSequentialPhaseEnd(MPI_Comm comm,int ng)
 
   Level: beginner
 
-.keywords: minimum, maximum
 .seealso: PetscSplitOwnership()
 @*/
 PetscErrorCode PetscGlobalMinMaxInt(MPI_Comm comm, PetscInt minMaxVal[2], PetscInt minMaxValGlobal[2])
@@ -186,7 +181,7 @@ PetscErrorCode PetscGlobalMinMaxInt(MPI_Comm comm, PetscInt minMaxVal[2], PetscI
 /*@C
   PetscGlobalMinMaxReal - Get the global min/max from local min/max input
 
-  Collective on comm
+  Collective
 
   Input Parameter:
 . minMaxVal - An array with the local min and max
@@ -196,7 +191,6 @@ PetscErrorCode PetscGlobalMinMaxInt(MPI_Comm comm, PetscInt minMaxVal[2], PetscI
 
   Level: beginner
 
-.keywords: minimum, maximum
 .seealso: PetscSplitOwnership()
 @*/
 PetscErrorCode PetscGlobalMinMaxReal(MPI_Comm comm, PetscReal minMaxVal[2], PetscReal minMaxValGlobal[2])

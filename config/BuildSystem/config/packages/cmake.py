@@ -12,6 +12,8 @@ class Configure(config.package.GNUPackage):
     self.lookforbydefault  = 1
     self.publicInstall     = 0  # always install in PETSC_DIR/PETSC_ARCH (not --prefix) since this is not used by users
     self.linkedbypetsc     = 0
+    self.executablename    = 'cmake'
+    self.useddirectly      = 0
     return
 
   def setupHelp(self, help):
@@ -26,7 +28,8 @@ class Configure(config.package.GNUPackage):
   def formGNUConfigureArgs(self):
     '''Does not use the standard arguments at all since this does not use the MPI compilers etc
        Cmake will chose its own compilers if they are not provided explicitly here'''
-    args = ['--prefix='+self.confDir,'--parallel='+str(self.make.make_np)]
+    args = ['--prefix='+self.installDir]
+    args.append('--parallel='+str(self.make.make_np))
     if 'download-cmake-cc' in self.argDB and self.argDB['download-cmake-cc']:
       args.append('CC="'+self.argDB['download-cmake-cc']+'"')
     if 'download-cmake-configure-options' in self.argDB and self.argDB['download-cmake-configure-options']:
@@ -65,5 +68,42 @@ class Configure(config.package.GNUPackage):
       self.executeTest(self.locateCMake)
     else:
       self.log.write('Not checking for CMake\n')
-    if hasattr(self, 'cmake'): self.found = 1
+    if hasattr(self, 'cmake'):
+      import re
+      self.found = 1
+      try:
+        (output, error, status) = config.base.Configure.executeShellCommand(self.cmake+' --version', log = self.log)
+        if status:
+          self.log.write('cmake --version failed: '+str(e)+'\n')
+          return
+      except:
+        self.log.write('cmake --version failed: '+str(e)+'\n')
+        return
+      output = output.replace('stdout: ','')
+      gver = None
+      try:
+        gver = re.compile('cmake version ([0-9]+).([0-9]+).([0-9]+)').match(output)
+      except: pass
+      if gver:
+        try:
+           self.foundversion = ".".join(gver.groups())
+           self.log.write('cmake version found '+self.foundversion+'\n')
+           return
+        except: pass
+      gver = None
+      try:
+        gver = re.compile('cmake version ([0-9]+).([0-9]+)-patch ([0-9]+)').match(output)
+      except: pass
+      if gver:
+        try:
+           val = list(gver.groups())
+           v = [val[0],val[1],'0',val[2]]
+           self.foundversion = ".".join(v)
+           print(self.foundversion)
+           self.log.write('cmake version found '+self.foundversion+'\n')
+           return
+        except: pass
+      self.log.write('cmake version check failed\n')
+    else:
+      self.log.write('cmake not found\n')
     return

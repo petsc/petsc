@@ -21,7 +21,7 @@ static const char citation[] =
 "  pages     = {5:1--5:12},\n"
 "  articleno = {5},\n"
 "  numpages  = {12},\n"
-"  url       = {http://doi.acm.org/10.1145/2929908.2929913},\n"
+"  url       = {https://doi.acm.org/10.1145/2929908.2929913},\n"
 "  doi       = {10.1145/2929908.2929913},\n"
 "  acmid     = {2929913},\n"
 "  publisher = {ACM},\n"
@@ -445,25 +445,23 @@ PetscErrorCode PCTelescopeSetUp_dmda_repart(PC pc,PC_Telescope sred,PC_Telescope
 
   /* generate ranges for repartitioned dm */
   /* note - assume rank 0 always participates */
+  /* TODO: use a single MPI call */
   ierr = MPI_Bcast(&ctx->Mp_re,1,MPIU_INT,0,comm);CHKERRQ(ierr);
   ierr = MPI_Bcast(&ctx->Np_re,1,MPIU_INT,0,comm);CHKERRQ(ierr);
   ierr = MPI_Bcast(&ctx->Pp_re,1,MPIU_INT,0,comm);CHKERRQ(ierr);
 
-  ierr = PetscCalloc1(ctx->Mp_re,&ctx->range_i_re);CHKERRQ(ierr);
-  ierr = PetscCalloc1(ctx->Np_re,&ctx->range_j_re);CHKERRQ(ierr);
-  ierr = PetscCalloc1(ctx->Pp_re,&ctx->range_k_re);CHKERRQ(ierr);
+  ierr = PetscCalloc3(ctx->Mp_re,&ctx->range_i_re,ctx->Np_re,&ctx->range_j_re,ctx->Pp_re,&ctx->range_k_re);CHKERRQ(ierr);
 
-  if (_range_i_re) {ierr = PetscMemcpy(ctx->range_i_re,_range_i_re,sizeof(PetscInt)*ctx->Mp_re);CHKERRQ(ierr);}
-  if (_range_j_re) {ierr = PetscMemcpy(ctx->range_j_re,_range_j_re,sizeof(PetscInt)*ctx->Np_re);CHKERRQ(ierr);}
-  if (_range_k_re) {ierr = PetscMemcpy(ctx->range_k_re,_range_k_re,sizeof(PetscInt)*ctx->Pp_re);CHKERRQ(ierr);}
+  if (_range_i_re) {ierr = PetscArraycpy(ctx->range_i_re,_range_i_re,ctx->Mp_re);CHKERRQ(ierr);}
+  if (_range_j_re) {ierr = PetscArraycpy(ctx->range_j_re,_range_j_re,ctx->Np_re);CHKERRQ(ierr);}
+  if (_range_k_re) {ierr = PetscArraycpy(ctx->range_k_re,_range_k_re,ctx->Pp_re);CHKERRQ(ierr);}
 
+  /* TODO: use a single MPI call */
   ierr = MPI_Bcast(ctx->range_i_re,ctx->Mp_re,MPIU_INT,0,comm);CHKERRQ(ierr);
   ierr = MPI_Bcast(ctx->range_j_re,ctx->Np_re,MPIU_INT,0,comm);CHKERRQ(ierr);
   ierr = MPI_Bcast(ctx->range_k_re,ctx->Pp_re,MPIU_INT,0,comm);CHKERRQ(ierr);
 
-  ierr = PetscMalloc1(ctx->Mp_re,&ctx->start_i_re);CHKERRQ(ierr);
-  ierr = PetscMalloc1(ctx->Np_re,&ctx->start_j_re);CHKERRQ(ierr);
-  ierr = PetscMalloc1(ctx->Pp_re,&ctx->start_k_re);CHKERRQ(ierr);
+  ierr = PetscMalloc3(ctx->Mp_re,&ctx->start_i_re,ctx->Np_re,&ctx->start_j_re,ctx->Pp_re,&ctx->start_k_re);CHKERRQ(ierr);
 
   sum = 0;
   for (k=0; k<ctx->Mp_re; k++) {
@@ -707,8 +705,7 @@ PetscErrorCode PCTelescopeSetUp_dmda(PC pc,PC_Telescope sred)
 
   PetscFunctionBegin;
   ierr = PetscInfo(pc,"PCTelescope: setup (DMDA)\n");CHKERRQ(ierr);
-  PetscMalloc1(1,&ctx);
-  PetscMemzero(ctx,sizeof(PC_Telescope_DMDACtx));
+  ierr = PetscNew(&ctx);CHKERRQ(ierr);
   sred->dm_ctx = (void*)ctx;
 
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
@@ -1044,12 +1041,8 @@ PetscErrorCode PCReset_Telescope_dmda(PC pc)
   ierr = VecDestroy(&ctx->xp);CHKERRQ(ierr);
   ierr = MatDestroy(&ctx->permutation);CHKERRQ(ierr);
   ierr = DMDestroy(&ctx->dmrepart);CHKERRQ(ierr);
-  ierr = PetscFree(ctx->range_i_re);CHKERRQ(ierr);
-  ierr = PetscFree(ctx->range_j_re);CHKERRQ(ierr);
-  ierr = PetscFree(ctx->range_k_re);CHKERRQ(ierr);
-  ierr = PetscFree(ctx->start_i_re);CHKERRQ(ierr);
-  ierr = PetscFree(ctx->start_j_re);CHKERRQ(ierr);
-  ierr = PetscFree(ctx->start_k_re);CHKERRQ(ierr);
+  ierr = PetscFree3(ctx->range_i_re,ctx->range_j_re,ctx->range_k_re);CHKERRQ(ierr);
+  ierr = PetscFree3(ctx->start_i_re,ctx->start_j_re,ctx->start_k_re);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

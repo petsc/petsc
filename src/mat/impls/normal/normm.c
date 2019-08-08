@@ -174,7 +174,7 @@ PetscErrorCode MatGetDiagonal_Normal(Mat N,Vec v)
 
   PetscFunctionBegin;
   ierr = PetscMalloc2(A->cmap->N,&diag,A->cmap->N,&work);CHKERRQ(ierr);
-  ierr = PetscMemzero(work,A->cmap->N*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArrayzero(work,A->cmap->N);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
     ierr = MatGetRow(A,i,&nnz,&cols,&mvalues);CHKERRQ(ierr);
@@ -187,7 +187,7 @@ PetscErrorCode MatGetDiagonal_Normal(Mat N,Vec v)
   rstart = N->cmap->rstart;
   rend   = N->cmap->rend;
   ierr   = VecGetArray(v,&values);CHKERRQ(ierr);
-  ierr   = PetscMemcpy(values,diag+rstart,(rend-rstart)*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr   = PetscArraycpy(values,diag+rstart,rend-rstart);CHKERRQ(ierr);
   ierr   = VecRestoreArray(v,&values);CHKERRQ(ierr);
   ierr   = PetscFree2(diag,work);CHKERRQ(ierr);
   ierr   = VecScale(v,Na->scale);CHKERRQ(ierr);

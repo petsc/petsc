@@ -14,7 +14,6 @@ static PetscBool PetscDrawPackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.keywords: Petsc, destroy, package, mathematica
 .seealso: PetscFinalize()
 @*/
 PetscErrorCode  PetscDrawFinalizePackage(void)
@@ -35,7 +34,6 @@ PetscErrorCode  PetscDrawFinalizePackage(void)
 
   Level: developer
 
-.keywords: Petsc, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode  PetscDrawInitializePackage(void)
@@ -400,10 +398,6 @@ PetscErrorCode  PetscDrawSetDisplay(PetscDraw draw,const char display[])
 .  draw - the drawing context
 
    Level: intermediate
-
-   Concepts: drawing^double buffer
-   Concepts: graphics^double buffer
-   Concepts: double buffer
 
 @*/
 PetscErrorCode  PetscDrawSetDoubleBuffer(PetscDraw draw)

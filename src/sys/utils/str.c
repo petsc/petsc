@@ -6,9 +6,6 @@
 
 */
 #include <petscsys.h>                   /*I  "petscsys.h"   I*/
-#if defined(PETSC_HAVE_STRING_H)
-#include <string.h>             /* strstr */
-#endif
 #if defined(PETSC_HAVE_STRINGS_H)
 #  include <strings.h>          /* strcasecmp */
 #endif
@@ -109,8 +106,6 @@ PetscErrorCode  PetscStrToArray(const char s[],char sp,int *argc,char ***args)
 
    Level: intermediate
 
-   Concepts: command line arguments
-
    Notes:
     This may be called before PetscInitialize() or after PetscFinalize()
 
@@ -148,8 +143,6 @@ PetscErrorCode  PetscStrToArrayDestroy(int argc,char **args)
 
    Not for use in Fortran
 
-  Concepts: string length
-
 @*/
 PetscErrorCode  PetscStrlen(const char s[],size_t *len)
 {
@@ -176,8 +169,6 @@ PetscErrorCode  PetscStrlen(const char s[],size_t *len)
       Null string returns a new null string
 
       Not for use in Fortran
-
-  Concepts: string copy
 
 @*/
 PetscErrorCode  PetscStrallocpy(const char s[],char *t[])
@@ -212,8 +203,6 @@ PetscErrorCode  PetscStrallocpy(const char s[],char *t[])
    Note:
       Not for use in Fortran
 
-  Concepts: string copy
-
 .seealso: PetscStrallocpy() PetscStrArrayDestroy()
 
 @*/
@@ -241,8 +230,6 @@ PetscErrorCode  PetscStrArrayallocpy(const char *const *list,char ***t)
 .   list - array of strings
 
    Level: intermediate
-
-   Concepts: command line arguments
 
    Notes:
     Not for use in Fortran
@@ -281,8 +268,6 @@ PetscErrorCode PetscStrArrayDestroy(char ***list)
 
    Note:
       Not for use in Fortran
-
-  Concepts: string copy
 
 .seealso: PetscStrallocpy() PetscStrArrayDestroy()
 
@@ -349,8 +334,6 @@ PetscErrorCode PetscStrNArrayDestroy(PetscInt n,char ***list)
 
      Not for use in Fortran
 
-  Concepts: string copy
-
 .seealso: PetscStrncpy(), PetscStrcat(), PetscStrlcat()
 
 @*/
@@ -384,8 +367,6 @@ PetscErrorCode  PetscStrcpy(char s[],const char t[])
      If the string that is being copied is of length n or larger then the entire string is not
      copied and the final location of s is set to NULL. This is different then the behavior of 
      strncpy() which leaves s non-terminated if there is not room for the entire string.
-
-  Concepts: string copy
 
   Developers Note: Should this be PetscStrlcpy() to reflect its behavior which is like strlcpy() not strncpy()
 
@@ -422,8 +403,6 @@ PetscErrorCode  PetscStrncpy(char s[],const char t[],size_t n)
    Notes:
     Not for use in Fortran
 
-  Concepts: string copy
-
 .seealso: PetscStrcpy(), PetscStrncpy(), PetscStrlcat()
 
 @*/
@@ -454,8 +433,6 @@ PetscErrorCode  PetscStrcat(char s[],const char t[])
   original allocated space, not the length of the left-over space. This is
   similar to the BSD system call strlcat().
 
-  Concepts: string copy
-
 .seealso: PetscStrcpy(), PetscStrncpy(), PetscStrcat()
 
 @*/
@@ -473,10 +450,6 @@ PetscErrorCode  PetscStrlcat(char s[],const char t[],size_t n)
   PetscFunctionReturn(0);
 }
 
-/*
-   Only to be used with PetscCheck__FUNCT__()!
-
-*/
 void  PetscStrcmpNoError(const char a[],const char b[],PetscBool  *flg)
 {
   int c;

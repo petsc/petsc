@@ -9,23 +9,26 @@
 PetscErrorCode  PetscSSEHardwareTest(PetscBool  *flag)
 {
   PetscErrorCode ierr;
-  char           *vendor;
+  char           vendor[13];
   char           Intel[13]="GenuineIntel";
   char           AMD[13]  ="AuthenticAMD";
+  char           Hygon[13]="HygonGenuine";
+  PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc1(13,&vendor);CHKERRQ(ierr);
-  strcpy(vendor,"************");
+  ierr = PetscStrncpy(vendor,"************",sizeof(vendor));CHKERRQ(ierr);
   CPUID_GET_VENDOR(vendor);
-  if (!strcmp(vendor,Intel) || !strcmp(vendor,AMD)) {
-    /* Both Intel and AMD use bit 25 of CPUID_FEATURES */
+  ierr = PetscStrcmp(vendor,Intel,&flg);CHKERRQ(ierr);
+  if (!flg) {ierr = PetscStrcmp(vendor,AMD,&flg);CHKERRQ(ierr);}
+  if (!flg) {ierr = PetscStrcmp(vendor,Hygon,&flg);CHKERRQ(ierr);
+    if (flg) {
+    /* Intel, AMD, and Hygon use bit 25 of CPUID_FEATURES */
     /* to denote availability of SSE Support */
     unsigned long myeax,myebx,myecx,myedx;
     CPUID(CPUID_FEATURES,&myeax,&myebx,&myecx,&myedx);
     if (myedx & SSE_FEATURE_FLAG) *flag = PETSC_TRUE;
     else *flag = PETSC_FALSE;
   }
-  ierr = PetscFree(vendor);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -98,14 +101,14 @@ PetscErrorCode  PetscSSEEnabledTest_FALSE(PetscBool  *flag)
      set can be used.  Some operating systems do not allow the use of these instructions despite
      hardware availability.
 
-     Collective on MPI_Comm
+     Collective
 
      Input Parameter:
 .    comm - the MPI Communicator
 
      Output Parameters:
-.    lflag - Local Flag:  PETSC_TRUE if enabled in this process
-.    gflag - Global Flag: PETSC_TRUE if enabled for all processes in comm
++    lflag - Local Flag:  PETSC_TRUE if enabled in this process
+-    gflag - Global Flag: PETSC_TRUE if enabled for all processes in comm
 
      Notes:
      NULL can be specified for lflag or gflag if either of these values are not desired.

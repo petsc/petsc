@@ -346,7 +346,7 @@ PETSC_INTERN PetscErrorCode PCPreSolveChangeRHS(PC,PetscBool*);
    KSPCheckDot - Checks if the result of a dot product used by the corresponding KSP contains Inf or NaN. These indicate that the previous 
       application of the preconditioner generated an error
 
-   Collective on KSP
+   Collective on ksp
 
    Input Parameter:
 .  ksp - the linear solver (KSP) context.
@@ -359,11 +359,9 @@ PETSC_INTERN PetscErrorCode PCPreSolveChangeRHS(PC,PetscBool*);
    Developer Note:
    this is used to manage returning from KSP solvers whose preconditioners have failed in some way
 
-.keywords: KSP, PC, divergence, convergence
-
 .seealso: KSPCreate(), KSPSetType(), KSP, KSPCheckNorm(), KSPCheckSolve()
 M*/
-#define KSPCheckDot(ksp,beta)           \
+#define KSPCheckDot(ksp,beta) do { \
   if (PetscIsInfOrNanScalar(beta)) { \
     if (ksp->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to Nan or Inf inner product");\
     else {\
@@ -381,13 +379,13 @@ M*/
       }\
       PetscFunctionReturn(0);\
     }\
-  }
+  } } while (0)
 
 /*MC
    KSPCheckNorm - Checks if the result of a norm used by the corresponding KSP contains Inf or NaN. These indicate that the previous
       application of the preconditioner generated an error
 
-   Collective on KSP
+   Collective on ksp
 
    Input Parameter:
 .  ksp - the linear solver (KSP) context.
@@ -400,11 +398,9 @@ M*/
    Developer Note:
    this is used to manage returning from KSP solvers whose preconditioners have failed in some way
 
-.keywords: KSP, PC, divergence, convergence
-
 .seealso: KSPCreate(), KSPSetType(), KSP, KSPCheckDot(), KSPCheckSolve()
 M*/
-#define KSPCheckNorm(ksp,beta)           \
+#define KSPCheckNorm(ksp,beta) do { \
   if (PetscIsInfOrNanReal(beta)) { \
     if (ksp->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to Nan or Inf norm");\
     else {\
@@ -422,6 +418,6 @@ M*/
       }\
       PetscFunctionReturn(0);\
     }\
-  }
+  } } while (0)
 
 #endif

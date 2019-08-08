@@ -8,7 +8,7 @@ class Configure(config.package.Package):
     self.functions        = ['triangulate']
     self.includes         = ['triangle.h']
     self.liblist          = [['libtriangle.a']]
-    self.precisions       = ['single','double']
+    self.precisions       = ['double']
     self.hastests         = 1
     return
 
@@ -123,6 +123,4 @@ triangle_shared:
 
   def configureLibrary(self):
     config.package.Package.configureLibrary(self)
-    if self.found:
-      self.framework.addDefine('ANSI_DECLARATORS', 1)
     return

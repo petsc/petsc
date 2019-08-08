@@ -53,7 +53,7 @@ PetscErrorCode PetscSubcommSetFromOptions(PetscSubcomm psubcomm)
 
   ierr = PetscOptionsName("-psubcomm_view","Triggers display of PetscSubcomm context","PetscSubcommView",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscSubcommView(psubcomm,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscSubcommView(psubcomm,PETSC_VIEWER_STDOUT_(psubcomm->parent));CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -118,8 +118,10 @@ PetscErrorCode PetscSubcommView(PetscSubcomm psubcomm,PetscViewer viewer)
       ierr = MPI_Comm_size(psubcomm->child,&subsize);CHKERRQ(ierr);
       ierr = MPI_Comm_rank(psubcomm->child,&subrank);CHKERRQ(ierr);
       ierr = MPI_Comm_rank(psubcomm->dupparent,&duprank);CHKERRQ(ierr);
-      ierr = PetscSynchronizedPrintf(comm,"  [%d], color %d, sub-size %d, sub-rank %d, duprank %d\n",rank,psubcomm->color,subsize,subrank,duprank);CHKERRQ(ierr);
-      ierr = PetscSynchronizedFlush(comm,PETSC_STDOUT);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  [%d], color %d, sub-size %d, sub-rank %d, duprank %d\n",rank,psubcomm->color,subsize,subrank,duprank);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     }
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not supported yet");
   PetscFunctionReturn(0);
@@ -128,15 +130,13 @@ PetscErrorCode PetscSubcommView(PetscSubcomm psubcomm,PetscViewer viewer)
 /*@C
   PetscSubcommSetNumber - Set total number of subcommunicators.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameter:
 +  psubcomm - PetscSubcomm context
 -  nsubcomm - the total number of subcommunicators in psubcomm
 
    Level: advanced
-
-.keywords: communicator
 
 .seealso: PetscSubcommCreate(),PetscSubcommDestroy(),PetscSubcommSetType(),PetscSubcommSetTypeGeneral()
 @*/
@@ -159,15 +159,13 @@ PetscErrorCode  PetscSubcommSetNumber(PetscSubcomm psubcomm,PetscInt nsubcomm)
 /*@C
   PetscSubcommSetType - Set type of subcommunicators.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameter:
 +  psubcomm - PetscSubcomm context
 -  subcommtype - subcommunicator type, PETSC_SUBCOMM_CONTIGUOUS,PETSC_SUBCOMM_INTERLACED
 
    Level: advanced
-
-.keywords: communicator
 
 .seealso: PetscSubcommCreate(),PetscSubcommDestroy(),PetscSubcommSetNumber(),PetscSubcommSetTypeGeneral()
 @*/
@@ -190,7 +188,7 @@ PetscErrorCode  PetscSubcommSetType(PetscSubcomm psubcomm,PetscSubcommType subco
 /*@C
   PetscSubcommSetTypeGeneral - Set a PetscSubcomm from user's specifications
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameter:
 +  psubcomm - PetscSubcomm context
@@ -198,8 +196,6 @@ PetscErrorCode  PetscSubcommSetType(PetscSubcomm psubcomm,PetscSubcommType subco
 -  subrank - rank in the subcommunicator
 
    Level: advanced
-
-.keywords: communicator, create
 
 .seealso: PetscSubcommCreate(),PetscSubcommDestroy(),PetscSubcommSetNumber(),PetscSubcommSetType()
 @*/
@@ -285,7 +281,7 @@ PetscErrorCode  PetscSubcommDestroy(PetscSubcomm *psubcomm)
 /*@C
   PetscSubcommCreate - Create a PetscSubcomm context.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameter:
 .  comm - MPI communicator
@@ -294,8 +290,6 @@ PetscErrorCode  PetscSubcommDestroy(PetscSubcomm *psubcomm)
 .  psubcomm - location to store the PetscSubcomm context
 
    Level: advanced
-
-.keywords: communicator, create
 
 .seealso: PetscSubcommDestroy()
 @*/

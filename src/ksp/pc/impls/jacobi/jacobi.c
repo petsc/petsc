@@ -373,8 +373,6 @@ static PetscErrorCode PCSetFromOptions_Jacobi(PetscOptionItems *PetscOptionsObje
 
    Level: beginner
 
-  Concepts: Jacobi, diagonal scaling, preconditioners
-
   Notes:
     By using KSPSetPCSide(ksp,PC_SYMMETRIC) or -ksp_pc_side symmetric
          can scale each side of the matrix by the square root of the diagonal entries.
@@ -453,8 +451,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_Jacobi(PC pc)
 
    Level: intermediate
 
-   Concepts: Jacobi preconditioner
-
 .seealso: PCJacobiaSetType(), PCJacobiGetUseAbs()
 
 @*/
@@ -485,8 +481,6 @@ PetscErrorCode  PCJacobiSetUseAbs(PC pc,PetscBool flg)
 
    Level: intermediate
 
-   Concepts: Jacobi preconditioner
-
 .seealso: PCJacobiaSetType(), PCJacobiSetUseAbs(), PCJacobiGetType()
 
 @*/
@@ -515,8 +509,6 @@ PetscErrorCode  PCJacobiGetUseAbs(PC pc,PetscBool *flg)
 
    Level: intermediate
 
-   Concepts: Jacobi preconditioner
-
 .seealso: PCJacobiaUseAbs(), PCJacobiGetType()
 @*/
 PetscErrorCode  PCJacobiSetType(PC pc,PCJacobiType type)
@@ -541,8 +533,6 @@ PetscErrorCode  PCJacobiSetType(PC pc,PCJacobiType type)
 .  type - PC_JACOBI_DIAGONAL, PC_JACOBI_ROWMAX, PC_JACOBI_ROWSUM
 
    Level: intermediate
-
-   Concepts: Jacobi preconditioner
 
 .seealso: PCJacobiaUseAbs(), PCJacobiSetType()
 @*/

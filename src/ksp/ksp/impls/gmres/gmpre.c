@@ -6,7 +6,7 @@
     needed work vectors at initial setup rather than the default, which
     is to allocate them in chunks when needed.
 
-    Logically Collective on KSP
+    Logically Collective on ksp
 
     Input Parameter:
 .   ksp   - iterative context obtained from KSPCreate
@@ -15,8 +15,6 @@
 .   -ksp_gmres_preallocate - Activates KSPGmresSetPreAllocateVectors()
 
     Level: intermediate
-
-.keywords: GMRES, preallocate, vectors
 
 .seealso: KSPGMRESSetRestart(), KSPGMRESSetOrthogonalization(), KSPGMRESGetOrthogonalization()
 @*/

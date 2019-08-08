@@ -260,10 +260,11 @@ static PetscErrorCode DMCreateLocalVector_Network(DM dm,Vec *vec)
 
 PetscErrorCode DMInitialize_Network(DM dm)
 {
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
-  dm->ops->view                            = NULL;
+  ierr = DMSetDimension(dm,1); CHKERRQ(ierr);
+  dm->ops->view                            = DMView_Network;
   dm->ops->setfromoptions                  = DMSetFromOptions_Network;
   dm->ops->clone                           = DMClone_Network;
   dm->ops->setup                           = DMSetUp_Network;
@@ -275,8 +276,7 @@ PetscErrorCode DMInitialize_Network(DM dm)
   dm->ops->getcoloring                     = 0;
   dm->ops->creatematrix                    = DMCreateMatrix_Network;
   dm->ops->createinterpolation             = 0;
-  dm->ops->getaggregates                   = 0;
-  dm->ops->getinjection                    = 0;
+  dm->ops->createinjection                 = 0;
   dm->ops->refine                          = 0;
   dm->ops->coarsen                         = 0;
   dm->ops->refinehierarchy                 = 0;
@@ -331,7 +331,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Network(DM dm)
   network->NEdges    = 0;
   network->nVertices = 0;
   network->nEdges    = 0;
-  network->nsubnet   =  0;
+  network->nsubnet   = 0;
 
 
   ierr = DMInitialize_Network(dm);CHKERRQ(ierr);
@@ -341,7 +341,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Network(DM dm)
 /*@
   DMNetworkCreate - Creates a DMNetwork object, which encapsulates an unstructured network.
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 . comm - The communicator for the DMNetwork object
@@ -351,7 +351,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_Network(DM dm)
 
   Level: beginner
 
-.keywords: DMNetwork, create
 @*/
 PetscErrorCode DMNetworkCreate(MPI_Comm comm, DM *network)
 {

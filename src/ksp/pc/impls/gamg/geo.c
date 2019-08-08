@@ -5,7 +5,9 @@
 #include <../src/ksp/pc/impls/gamg/gamg.h>        /*I "petscpc.h" I*/
 
 #if defined(PETSC_HAVE_TRIANGLE)
-#define REAL PetscReal
+#if !defined(ANSI_DECLARATORS)
+#define ANSI_DECLARATORS
+#endif
 #include <triangle.h>
 #endif
 

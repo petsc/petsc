@@ -398,8 +398,6 @@ PetscErrorCode MatPartitioningDestroy_Party(MatPartitioning part)
    Notes:
     See http://wwwcs.upb.de/fachbereich/AG/monien/RESEARCH/PART/party.html
 
-.keywords: Partitioning, create, context
-
 .seealso: MatPartitioningSetType(), MatPartitioningType
 
 M*/

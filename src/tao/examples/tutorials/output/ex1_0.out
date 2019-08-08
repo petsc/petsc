@@ -1,3 +1,3 @@
-L_2 Error: [< 1.0e-11, < 1.0e-11, < 1.0e-11]
-L_2 Residual: 1.65182e-15
-Linear L_2 Residual: 1.04699
+L_2 Error: [1.85057e-16, 9.31817e-17, 0.]
+L_2 Residual: 1.72509e-15
+Taylor approximation converging at order 1.07

@@ -3,7 +3,7 @@
 /*@C
    KSPPythonSetType - Initalize a KSP object implemented in Python.
 
-   Collective on KSP
+   Collective on ksp
 
    Input Parameter:
 +  ksp - the linear solver (KSP) context.
@@ -13,8 +13,6 @@
 .  -ksp_python_type <pyname>
 
    Level: intermediate
-
-.keywords: KSP, Python
 
 .seealso: KSPCreate(), KSPSetType(), KSPPYTHON, PetscPythonInitialize()
 @*/

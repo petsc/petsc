@@ -84,9 +84,9 @@ int main(int argc,char **args)
   /*create a sub-communicator */
   ierr = MPI_Comm_split(comm, membershipKey,rank,&scomm);CHKERRQ(ierr);
   ierr = ISGetLocalSize(isrows,&isrows_localsize);CHKERRQ(ierr);
-  ierr = PetscCalloc1(isrows_localsize,&indices_sc);CHKERRQ(ierr);
+  ierr = PetscMalloc1(isrows_localsize,&indices_sc);CHKERRQ(ierr);
   ierr = ISGetIndices(isrows,&indices);CHKERRQ(ierr);
-  ierr = PetscMemcpy(indices_sc,indices,sizeof(PetscInt)*isrows_localsize);CHKERRQ(ierr);
+  ierr = PetscArraycpy(indices_sc,indices,isrows_localsize);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrows,&indices);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
   ierr = ISDestroy(&coarseparts);CHKERRQ(ierr);

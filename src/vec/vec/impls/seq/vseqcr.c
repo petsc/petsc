@@ -8,7 +8,7 @@
 /*@
    VecCreateSeq - Creates a standard, sequential array-style vector.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameter:
 +  comm - the communicator, should be PETSC_COMM_SELF
@@ -22,8 +22,6 @@
    same type as an existing vector.
 
    Level: intermediate
-
-   Concepts: vectors^creating sequential
 
 .seealso: VecCreateMPI(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost()
 @*/

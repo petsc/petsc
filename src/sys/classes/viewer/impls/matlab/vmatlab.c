@@ -40,7 +40,7 @@ PetscErrorCode  PetscViewerMatlabPutArray(PetscViewer mfile,int m,int n,const Pe
 #else
     mat  = mxCreateDoubleMatrix(m,n,mxCOMPLEX);
 #endif
-    ierr = PetscMemcpy(mxGetPr(mat),array,m*n*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscArraycpy(mxGetPr(mat),array,m*n);CHKERRQ(ierr);
     matPutVariable(ml->ep,name,mat);
 
     ierr = PetscInfo1(mfile,"Put MATLAB array %s\n",name);CHKERRQ(ierr);
@@ -85,7 +85,7 @@ PetscErrorCode  PetscViewerMatlabGetArray(PetscViewer mfile,int m,int n,PetscSca
     ierr = PetscInfo1(mfile,"Getting MATLAB array %s\n",name);CHKERRQ(ierr);
     mat  = matGetVariable(ml->ep,name);
     if (!mat) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to get array %s from matlab",name);
-    ierr = PetscMemcpy(array,mxGetPr(mat),m*n*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscArraycpy(array,mxGetPr(mat),m*n);CHKERRQ(ierr);
     ierr = PetscInfo1(mfile,"Got MATLAB array %s\n",name);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -187,7 +187,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Matlab(PetscViewer viewer)
 /*@C
    PetscViewerMatlabOpen - Opens a Matlab .mat file for output
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - MPI communicator
@@ -209,8 +209,6 @@ $    FILE_MODE_WRITE - open existing file for MATLAB output
      This only saves Vecs it cannot be used to save Mats. We recommend using the PETSCVIEWERBINARY to save objects to be loaded into MATLAB
      instead of this routine.
 
-   Concepts: MATLAB .mat files
-   Concepts: PetscViewerMatlab^creating
 
 .seealso: PetscViewerASCIIOpen(), PetscViewerPushFormat(), PetscViewerDestroy(), PETSCVIEWERBINARY, PetscViewerBinaryOpen()
           VecView(), MatView(), VecLoad(), MatLoad()
@@ -233,7 +231,7 @@ static PetscMPIInt Petsc_Viewer_Matlab_keyval = MPI_KEYVAL_INVALID;
      PETSC_VIEWER_MATLAB_ - Creates a Matlab PetscViewer shared by all processors
                      in a communicator.
 
-     Collective on MPI_Comm
+     Collective
 
      Input Parameter:
 .    comm - the MPI communicator to share the Matlab PetscViewer

@@ -13,7 +13,6 @@
 #include <unistd.h>
 #endif
 
-#if !defined(PETSC_WORDS_BIGENDIAN)
 /*
   SYByteSwapInt - Swap bytes in an integer
 */
@@ -59,7 +58,6 @@ void SYByteSwapScalar(PetscScalar *buff,int n)
     buff1[j] = tmp;
   }
 }
-#endif
 
 #define PETSC_MEX_ERROR(a) {fprintf(stdout,"sread: %s \n",a); return PETSC_ERR_SYS;}
 
@@ -77,15 +75,13 @@ void SYByteSwapScalar(PetscScalar *buff,int n)
   Notes:
     does byte swapping to work on all machines.
 */
-PetscErrorCode PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
+PetscErrorCode PetscBinaryRead(int fd,void *p,int n,int *dummy, PetscDataType type)
 {
 
   int  maxblock,wsize,err;
   char *pp = (char*)p;
-#if !defined(PETSC_WORDS_BIGENDIAN)
   int  ntmp  = n;
   void *ptmp = p;
-#endif
 
   maxblock = 65536;
   if (type == PETSC_INT)         n *= sizeof(int);
@@ -107,11 +103,11 @@ PetscErrorCode PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
     pp += err;
   }
 
-#if !defined(PETSC_WORDS_BIGENDIAN)
-  if (type == PETSC_INT) SYByteSwapInt((int*)ptmp,ntmp);
-  else if (type == PETSC_SCALAR) SYByteSwapScalar((PetscScalar*)ptmp,ntmp);
-  else if (type == PETSC_SHORT) SYByteSwapShort((short*)ptmp,ntmp);
-#endif
+  if(!PetscBinaryBigEndian()) {
+    if (type == PETSC_INT) SYByteSwapInt((int*)ptmp,ntmp);
+    else if (type == PETSC_SCALAR) SYByteSwapScalar((PetscScalar*)ptmp,ntmp);
+    else if (type == PETSC_SHORT) SYByteSwapShort((short*)ptmp,ntmp);
+  }
   return 0;
 }
 
@@ -133,10 +129,8 @@ PetscErrorCode PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,PetscBoo
 
   int  maxblock,wsize,err;
   char *pp = (char*)p;
-#if !defined(PETSC_WORDS_BIGENDIAN)
   int  ntmp  = n;
   void *ptmp = p;
-#endif
 
   maxblock = 65536;
   if (type == PETSC_INT)         n *= sizeof(int);
@@ -145,12 +139,12 @@ PetscErrorCode PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,PetscBoo
   else if (type == PETSC_CHAR)   n *= sizeof(char);
   else PETSC_MEX_ERROR("PetscBinaryRead: Unknown type");
 
-#if !defined(PETSC_WORDS_BIGENDIAN)
-  /* make sure data is in correct byte ordering before sending  */
-  if (type == PETSC_INT) SYByteSwapInt((int*)ptmp,ntmp);
-  else if (type == PETSC_SCALAR) SYByteSwapScalar((PetscScalar*)ptmp,ntmp);
-  else if (type == PETSC_SHORT) SYByteSwapShort((short*)ptmp,ntmp);
-#endif
+  if(!PetscBinaryBigEndian()) {
+    /* make sure data is in correct byte ordering before sending  */
+    if (type == PETSC_INT) SYByteSwapInt((int*)ptmp,ntmp);
+    else if (type == PETSC_SCALAR) SYByteSwapScalar((PetscScalar*)ptmp,ntmp);
+    else if (type == PETSC_SHORT) SYByteSwapShort((short*)ptmp,ntmp);
+  }
 
   while (n) {
     wsize = (n < maxblock) ? n : maxblock;
@@ -163,12 +157,13 @@ PetscErrorCode PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,PetscBoo
     n  -= err;
     pp += err;
   }
-#if !defined(PETSC_WORDS_BIGENDIAN)
-  /* swap the data back if we swapped it before sending it */
-  if (type == PETSC_INT) SYByteSwapInt((int*)ptmp,ntmp);
-  else if (type == PETSC_SCALAR) SYByteSwapScalar((PetscScalar*)ptmp,ntmp);
-  else if (type == PETSC_SHORT) SYByteSwapShort((short*)ptmp,ntmp);
-#endif
+
+  if(!PetscBinaryBigEndian()) {
+    /* swap the data back if we swapped it before sending it */
+    if (type == PETSC_INT) SYByteSwapInt((int*)ptmp,ntmp);
+    else if (type == PETSC_SCALAR) SYByteSwapScalar((PetscScalar*)ptmp,ntmp);
+    else if (type == PETSC_SHORT) SYByteSwapShort((short*)ptmp,ntmp);
+  }
 
   return 0;
 }

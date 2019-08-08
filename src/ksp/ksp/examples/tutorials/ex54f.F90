@@ -445,7 +445,7 @@
 !/*TEST
 !
 !   build:
-!      requires: !libpgf90
+!      requires: !pgf90_compiler
 !
 !   test:
 !      nsize: 4

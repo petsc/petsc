@@ -5,7 +5,7 @@
 /*@C
   PetscGatherNumberOfMessages -  Computes the number of messages a node expects to receive
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameters:
 + comm     - Communicator
@@ -18,8 +18,6 @@
 . nrecvs    - number of messages received
 
   Level: developer
-
-  Concepts: mpi utility
 
   Notes:
   With this info, the correct message lengths can be determined using
@@ -65,7 +63,7 @@ PetscErrorCode  PetscGatherNumberOfMessages(MPI_Comm comm,const PetscMPIInt ifla
   PetscGatherMessageLengths - Computes info about messages that a MPI-node will receive,
   including (from-id,length) pairs for each message.
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameters:
 + comm      - Communicator
@@ -81,8 +79,6 @@ PetscErrorCode  PetscGatherNumberOfMessages(MPI_Comm comm,const PetscMPIInt ifla
 
   Level: developer
 
-  Concepts: mpi utility
-
   Notes:
   With this info, the correct MPI_Irecv() can be posted with the correct
   from-id, with a buffer with the right amount of memory required.
@@ -96,12 +92,13 @@ PetscErrorCode  PetscGatherNumberOfMessages(MPI_Comm comm,const PetscMPIInt ifla
 PetscErrorCode  PetscGatherMessageLengths(MPI_Comm comm,PetscMPIInt nsends,PetscMPIInt nrecvs,const PetscMPIInt ilengths[],PetscMPIInt **onodes,PetscMPIInt **olengths)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    size,tag,i,j;
+  PetscMPIInt    size,rank,tag,i,j;
   MPI_Request    *s_waits  = NULL,*r_waits = NULL;
   MPI_Status     *w_status = NULL;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = PetscCommGetNewTag(comm,&tag);CHKERRQ(ierr);
 
   /* cannot use PetscMalloc3() here because in the call to MPI_Waitall() they MUST be contiguous */
@@ -127,7 +124,18 @@ PetscErrorCode  PetscGatherMessageLengths(MPI_Comm comm,PetscMPIInt nsends,Petsc
 
   /* Pack up the received data */
   ierr = PetscMalloc1(nrecvs,onodes);CHKERRQ(ierr);
-  for (i=0; i<nrecvs; ++i) (*onodes)[i] = w_status[i].MPI_SOURCE;
+  for (i=0; i<nrecvs; ++i) {
+    (*onodes)[i] = w_status[i].MPI_SOURCE;
+#if defined(PETSC_HAVE_OMPI_MAJOR_VERSION)
+    /* This line is a workaround for a bug in OpenMPI-2.1.1 distributed by Ubuntu-18.04.2 LTS.
+       It happens in self-to-self MPI_Send/Recv using MPI_ANY_SOURCE for message matching. OpenMPI
+       does not put correct value in recv buffer. See also
+       https://lists.mcs.anl.gov/pipermail/petsc-dev/2019-July/024803.html
+       https://www.mail-archive.com/users@lists.open-mpi.org//msg33383.html
+     */
+    if (w_status[i].MPI_SOURCE == rank) (*olengths)[i] = ilengths[rank];
+#endif
+  }
   ierr = PetscFree2(r_waits,w_status);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -137,7 +145,7 @@ PetscErrorCode  PetscGatherMessageLengths(MPI_Comm comm,PetscMPIInt nsends,Petsc
   including (from-id,length) pairs for each message. Same functionality as PetscGatherMessageLengths()
   except it takes TWO ilenths and output TWO olengths.
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameters:
 + comm      - Communicator
@@ -151,8 +159,6 @@ PetscErrorCode  PetscGatherMessageLengths(MPI_Comm comm,PetscMPIInt nsends,Petsc
 - olengths1, olengths2 - corresponding message lengths
 
   Level: developer
-
-  Concepts: mpi utility
 
   Notes:
   With this info, the correct MPI_Irecv() can be posted with the correct

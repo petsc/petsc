@@ -14,10 +14,6 @@
 
    Level: beginner
 
-   Concepts: waiting^for user input
-   Concepts: drawing^waiting
-   Concepts: graphics^waiting
-
 .seealso: PetscDrawSetPause(), PetscDrawGetPause()
 @*/
 PetscErrorCode  PetscDrawPause(PetscDraw draw)
@@ -48,8 +44,6 @@ PetscErrorCode  PetscDrawPause(PetscDraw draw)
    By default the pause time is zero unless the -draw_pause option is given
    during PetscDrawCreate().
 
-   Concepts: drawing^waiting
-
 .seealso: PetscDrawGetPause(), PetscDrawPause()
 @*/
 PetscErrorCode  PetscDrawSetPause(PetscDraw draw,PetscReal lpause)
@@ -75,10 +69,6 @@ PetscErrorCode  PetscDrawSetPause(PetscDraw draw,PetscReal lpause)
 
    Note:
    By default the pause time is zero unless the -draw_pause option is given
-
-   Concepts: waiting^for user input
-   Concepts: drawing^waiting
-   Concepts: graphics^waiting
 
 .seealso: PetscDrawSetPause(), PetscDrawPause()
 @*/

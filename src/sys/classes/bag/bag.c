@@ -106,7 +106,6 @@ PetscErrorCode PetscBagRegisterIntArray(PetscBag bag,void *addr,PetscInt msize, 
   PetscInt       i,tmp = msize;
 
   PetscFunctionBegin;
-  /* ierr = PetscMemzero(addr,msize*sizeof(PetscInt));CHKERRQ(ierr);*/
   nname[0] = '-';
   nname[1] = 0;
   ierr     = PetscStrlcat(nname,name,PETSC_BAG_NAME_LENGTH);CHKERRQ(ierr);
@@ -158,7 +157,6 @@ PetscErrorCode PetscBagRegisterRealArray(PetscBag bag,void *addr,PetscInt msize,
   PetscInt       i,tmp = msize;
 
   PetscFunctionBegin;
-  /* ierr = PetscMemzero(addr,msize*sizeof(PetscInt));CHKERRQ(ierr);*/
   nname[0] = '-';
   nname[1] = 0;
   ierr     = PetscStrlcat(nname,name,PETSC_BAG_NAME_LENGTH);CHKERRQ(ierr);
@@ -839,7 +837,7 @@ PetscErrorCode  PetscBagLoad(PetscViewer view,PetscBag bag)
 /*@C
     PetscBagCreate - Create a bag of values
 
-  Collective on MPI_Comm
+  Collective
 
   Level: Intermediate
 

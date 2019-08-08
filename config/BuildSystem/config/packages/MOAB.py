@@ -15,7 +15,15 @@ class Configure(config.package.GNUPackage):
     self.cxx               = 1
     self.precisions        = ['single','double']
     self.hastests          = 1
+    self.useddirectly      = 0
     return
+
+  def setupHelp(self, help):
+    config.package.GNUPackage.setupHelp(self,help)
+    import nargs
+    help.addArgument('MOAB', '-download-moab-fc', nargs.ArgBool(None, 1, 'Build MOAB Fortran interface'))
+    return
+
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
@@ -29,8 +37,9 @@ class Configure(config.package.GNUPackage):
     self.parmetis       = framework.require('config.packages.parmetis',self)
     self.ptscotch       = framework.require('config.packages.PTScotch',self)
     self.zoltan         = framework.require('config.packages.Zoltan', self)
+    self.szlib          = framework.require('config.packages.szlib',self)
     self.deps           = [self.mpi,self.blasLapack]
-    self.odeps          = [self.eigen,self.hdf5,self.netcdf,self.metis,self.parmetis,self.ptscotch,self.zoltan]
+    self.odeps          = [self.szlib,self.eigen,self.hdf5,self.netcdf,self.metis,self.parmetis,self.ptscotch,self.zoltan]
     return
 
   def gitPreReqCheck(self):
@@ -44,6 +53,10 @@ class Configure(config.package.GNUPackage):
       args.append('--enable-debug')
     else:
       args.append('--enable-optimize')
+    if hasattr(self.compilers, 'FC') and self.argDB['download-moab-fc']:
+      args.append('--enable-fortran')
+    else:
+      args.append('--disable-fortran')
     args.append('--with-mpi="'+self.mpi.directory+'"')
     args.append('--with-blas="'+self.libraries.toString(self.blasLapack.dlib)+'"')
     args.append('--with-lapack="'+self.libraries.toString(self.blasLapack.dlib)+'"')
@@ -51,6 +64,10 @@ class Configure(config.package.GNUPackage):
     args.append('--enable-imesh')
     if self.hdf5.found:
       args.append('--with-hdf5="'+self.hdf5.directory+'"')
+      if self.szlib.found:
+        args.append('--with-szip="'+self.szlib.directory+'"')
+      else:
+        args.append('--with-szip=no')
     else:
       args.append('--without-hdf5')
     if self.netcdf.found:

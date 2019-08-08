@@ -24,8 +24,6 @@
 $       comm = PetscObjectComm((PetscObject)obj); 
         instead use PetscObjectGetComm()
 
-   Concepts: communicator^getting from object
-   Concepts: MPI communicator^getting from object
 
 .seealso: PetscObjectGetComm()
 @*/
@@ -51,8 +49,6 @@ MPI_Comm  PetscObjectComm(PetscObject obj)
 
    Level: advanced
 
-   Concepts: communicator^getting from object
-   Concepts: MPI communicator^getting from object
 
 .seealso: PetscObjectComm()
 @*/

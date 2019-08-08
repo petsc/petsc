@@ -78,8 +78,8 @@ static PetscErrorCode TaoSetFromOptions_BQNLS(PetscOptionItems *PetscOptionsObje
              accessible via the prefix `-tao_bqnls_`
 
   Options Database Keys:
-  + -tao_bqnls_max_cg_its - maximum number of bounded conjugate-gradient iterations taken in each Newton loop
-  - -tao_bqnls_as_type - active-set estimation method ("none", "bertsekas")
++ -tao_bqnls_max_cg_its - maximum number of bounded conjugate-gradient iterations taken in each Newton loop
+- -tao_bqnls_as_type - active-set estimation method ("none", "bertsekas")
 
   Level: beginner
 M*/

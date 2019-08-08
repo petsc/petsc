@@ -5,7 +5,7 @@
 /*@C
     PetscViewerSAWsOpen - Opens an SAWs PetscViewer.
 
-    Collective on MPI_Comm
+    Collective
 
     Input Parameters:
 .   comm - the MPI communicator
@@ -30,7 +30,7 @@
     one to view the object asynchronously as the program continues to run. One can remove SAWs access to the object with a call to
     PetscObjectSAWsViewOff().
 
-    Information about the SAWs is available via http://bitbucket.org/saws/saws
+    Information about the SAWs is available via https://bitbucket.org/saws/saws
 
 .seealso: PetscViewerDestroy(), PetscViewerStringSPrintf(), PETSC_VIEWER_SAWS_(), PetscObjectSAWsBlock(),
           PetscObjectSAWsViewOff(), PetscObjectSAWsTakeAccess(), PetscObjectSAWsGrantAccess()
@@ -58,8 +58,6 @@ PetscErrorCode PetscViewerSAWsOpen(MPI_Comm comm,PetscViewer *lab)
 -  viewer - the SAWs viewer
 
    Level: advanced
-
-   Concepts: publishing object
 
    Developer Note: Currently this is called only on rank zero of PETSC_COMM_WORLD
 

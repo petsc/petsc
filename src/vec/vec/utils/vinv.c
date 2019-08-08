@@ -25,8 +25,6 @@ extern MPI_Op MPIU_MININDEX_OP;
 
    Level: advanced
 
-   Concepts: scale^on stride of vector
-   Concepts: stride^scale
 
 .seealso: VecNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax(), VecStrideScale()
 @*/
@@ -48,10 +46,8 @@ PetscErrorCode  VecStrideSet(Vec v,PetscInt start,PetscScalar s)
   if (start < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
   else if (start >= bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%D) is too large for stride\n  Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,bs);
   x += start;
-
   for (i=0; i<n; i+=bs) x[i] = s;
   x -= start;
-
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -75,8 +71,6 @@ PetscErrorCode  VecStrideSet(Vec v,PetscInt start,PetscScalar s)
 
    Level: advanced
 
-   Concepts: scale^on stride of vector
-   Concepts: stride^scale
 
 .seealso: VecNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax(), VecStrideScale()
 @*/
@@ -98,10 +92,8 @@ PetscErrorCode  VecStrideScale(Vec v,PetscInt start,PetscScalar scale)
   if (start < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
   else if (start >= bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%D) is too large for stride\n  Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,bs);
   x += start;
-
   for (i=0; i<n; i+=bs) x[i] *= scale;
   x -= start;
-
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -134,8 +126,6 @@ PetscErrorCode  VecStrideScale(Vec v,PetscInt start,PetscScalar scale)
 
    Level: advanced
 
-   Concepts: norm^on stride of vector
-   Concepts: stride^norm
 
 .seealso: VecNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax()
 @*/
@@ -211,8 +201,6 @@ PetscErrorCode  VecStrideNorm(Vec v,PetscInt start,NormType ntype,PetscReal *nrm
 
    Level: advanced
 
-   Concepts: maximum^on stride of vector
-   Concepts: stride^maximum
 
 .seealso: VecMax(), VecStrideNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin()
 @*/
@@ -291,8 +279,6 @@ PetscErrorCode  VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
    the pressure is stored (interlaced) with other variables, e.g., density, etc.
    This will only work if the desire subvector is a stride subvector.
 
-   Concepts: minimum^on stride of vector
-   Concepts: stride^minimum
 
 .seealso: VecMin(), VecStrideNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMax()
 @*/
@@ -363,8 +349,6 @@ PetscErrorCode  VecStrideMin(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
 
    Level: advanced
 
-   Concepts: scale^on stride of vector
-   Concepts: stride^scale
 
 .seealso: VecNorm(), VecStrideScale(), VecScale(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax()
 @*/
@@ -417,8 +401,6 @@ PetscErrorCode  VecStrideScaleAll(Vec v,const PetscScalar *scales)
 
    Level: advanced
 
-   Concepts: norm^on stride of vector
-   Concepts: stride^norm
 
 .seealso: VecNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax()
 @*/
@@ -497,8 +479,6 @@ PetscErrorCode  VecStrideNormAll(Vec v,NormType ntype,PetscReal nrm[])
 
    Level: advanced
 
-   Concepts: maximum^on stride of vector
-   Concepts: stride^maximum
 
 .seealso: VecMax(), VecStrideNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin()
 @*/
@@ -560,8 +540,6 @@ PetscErrorCode  VecStrideMaxAll(Vec v,PetscInt idex[],PetscReal nrm[])
 
    The dimension of nrm must be the same as the vector block size
 
-   Concepts: minimum^on stride of vector
-   Concepts: stride^minimum
 
 .seealso: VecMin(), VecStrideNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMax()
 @*/
@@ -629,8 +607,6 @@ PetscErrorCode  VecStrideMinAll(Vec v,PetscInt idex[],PetscReal nrm[])
    Not optimized; could be easily
 
    Level: advanced
-
-   Concepts: gather^into strided vector
 
 .seealso: VecStrideNorm(), VecStrideScatter(), VecStrideMin(), VecStrideMax(), VecStrideGather(),
           VecStrideScatterAll()
@@ -726,8 +702,6 @@ PetscErrorCode  VecStrideGatherAll(Vec v,Vec s[],InsertMode addv)
 
    Level: advanced
 
-   Concepts:  scatter^into strided vector
-
 .seealso: VecStrideNorm(), VecStrideScatter(), VecStrideMin(), VecStrideMax(), VecStrideGather(),
           VecStrideScatterAll()
 @*/
@@ -735,7 +709,8 @@ PetscErrorCode  VecStrideScatterAll(Vec s[],Vec v,InsertMode addv)
 {
   PetscErrorCode    ierr;
   PetscInt          i,n,n2,bs,j,jj,k,*bss = NULL,nv,nvc;
-  PetscScalar       *x,**y;
+  PetscScalar       *x;
+  PetscScalar const **y;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
@@ -747,13 +722,13 @@ PetscErrorCode  VecStrideScatterAll(Vec s[],Vec v,InsertMode addv)
   ierr = VecGetBlockSize(v,&bs);CHKERRQ(ierr);
   if (bs <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Input vector does not have a valid blocksize set");
 
-  ierr = PetscMalloc2(bs,&y,bs,&bss);CHKERRQ(ierr);
+  ierr = PetscMalloc2(bs,(PetscScalar***)&y,bs,&bss);CHKERRQ(ierr);
   nv   = 0;
   nvc  = 0;
   for (i=0; i<bs; i++) {
     ierr = VecGetBlockSize(s[i],&bss[i]);CHKERRQ(ierr);
     if (bss[i] < 1) bss[i] = 1; /* if user never set it then assume 1  Re: [PETSC #8241] VecStrideGatherAll */
-    ierr = VecGetArray(s[i],&y[i]);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(s[i],&y[i]);CHKERRQ(ierr);
     nvc += bss[i];
     nv++;
     if (nvc > bs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of subvectors in subvectors > number of vectors in main vector");
@@ -790,9 +765,9 @@ PetscErrorCode  VecStrideScatterAll(Vec s[],Vec v,InsertMode addv)
 
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   for (i=0; i<nv; i++) {
-    ierr = VecRestoreArray(s[i],&y[i]);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(s[i],&y[i]);CHKERRQ(ierr);
   }
-  ierr = PetscFree2(y,bss);CHKERRQ(ierr);
+  ierr = PetscFree2(*(PetscScalar***)&y,bss);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -823,8 +798,6 @@ PetscErrorCode  VecStrideScatterAll(Vec s[],Vec v,InsertMode addv)
    Not optimized; could be easily
 
    Level: advanced
-
-   Concepts: gather^into strided vector
 
 .seealso: VecStrideNorm(), VecStrideScatter(), VecStrideMin(), VecStrideMax(), VecStrideGatherAll(),
           VecStrideScatterAll()
@@ -866,8 +839,6 @@ PetscErrorCode  VecStrideGather(Vec v,PetscInt start,Vec s,InsertMode addv)
    Not optimized; could be easily
 
    Level: advanced
-
-   Concepts: scatter^into strided vector
 
 .seealso: VecStrideNorm(), VecStrideGather(), VecStrideMin(), VecStrideMax(), VecStrideGatherAll(),
           VecStrideScatterAll(), VecStrideSubSetScatter(), VecStrideSubSetGather()
@@ -913,8 +884,6 @@ PetscErrorCode  VecStrideScatter(Vec s,PetscInt start,Vec v,InsertMode addv)
 
    Level: advanced
 
-   Concepts: gather^into strided vector
-
 .seealso: VecStrideNorm(), VecStrideScatter(), VecStrideGather(), VecStrideSubSetScatter(), VecStrideMin(), VecStrideMax(), VecStrideGatherAll(),
           VecStrideScatterAll()
 @*/
@@ -955,8 +924,6 @@ PetscErrorCode  VecStrideSubSetGather(Vec v,PetscInt nidx,const PetscInt idxv[],
    Not optimized; could be easily
 
    Level: advanced
-
-   Concepts: scatter^into strided vector
 
 .seealso: VecStrideNorm(), VecStrideGather(), VecStrideGather(), VecStrideSubSetGather(), VecStrideMin(), VecStrideMax(), VecStrideGatherAll(),
           VecStrideScatterAll()
@@ -1057,11 +1024,11 @@ PetscErrorCode  VecStrideSubSetGather_Default(Vec v,PetscInt nidx,const PetscInt
   bss = s->map->bs;
   n  =  n/bs;
 
-#if defined(PETSC_DEBUG)
+#if defined(PETSC_USE_DEBUG)
   if (n != ns/bss) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Incompatible layout of vectors");
   for (j=0; j<nidx; j++) {
-    if (idxv[j] < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"idx[%D] %D is negative",j,idxv[j]);
-    if (idxv[j] >= bs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"idx[%D] %D is greater than or equal to vector blocksize %D",j,idxv[j],bs);
+    if (idxv[j] < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"idx[%D] %D is negative",j,idxv[j]);
+    if (idxv[j] >= bs) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"idx[%D] %D is greater than or equal to vector blocksize %D",j,idxv[j],bs);
   }
   if (!idxs && bss != nidx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must provide idxs when not gathering into all locations");
 #endif
@@ -1122,11 +1089,13 @@ PetscErrorCode  VecStrideSubSetScatter_Default(Vec s,PetscInt nidx,const PetscIn
   bss = s->map->bs;
   n  =  n/bs;
 
-#if defined(PETSC_DEBUG)
+#if defined(PETSC_USE_DEBUG)
   if (n != ns/bss) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Incompatible layout of vectors");
   for (j=0; j<bss; j++) {
-    if (idx[j] < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"idx[%D] %D is negative",j,idx[j]);
-    if (idx[j] >= bs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"idx[%D] %D is greater than or equal to vector blocksize %D",j,idx[j],bs);
+    if (idxs) {
+      if (idxs[j] < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"idx[%D] %D is negative",j,idxs[j]);
+      if (idxs[j] >= bs) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"idx[%D] %D is greater than or equal to vector blocksize %D",j,idxs[j],bs);
+    }
   }
   if (!idxs && bss != nidx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must provide idxs when not scattering from all locations");
 #endif
@@ -1201,7 +1170,6 @@ PetscErrorCode VecReciprocal_Default(Vec v)
 
 .seealso:  VecLog(), VecAbs(), VecSqrtAbs(), VecReciprocal()
 
-.keywords: vector, sqrt, square root
 @*/
 PetscErrorCode  VecExp(Vec v)
 {
@@ -1237,7 +1205,6 @@ PetscErrorCode  VecExp(Vec v)
 
 .seealso:  VecExp(), VecAbs(), VecSqrtAbs(), VecReciprocal()
 
-.keywords: vector, sqrt, square root
 @*/
 PetscErrorCode  VecLog(Vec v)
 {
@@ -1275,7 +1242,6 @@ PetscErrorCode  VecLog(Vec v)
 
 .seealso: VecLog(), VecExp(), VecReciprocal(), VecAbs()
 
-.keywords: vector, sqrt, square root
 @*/
 PetscErrorCode  VecSqrtAbs(Vec v)
 {
@@ -1317,7 +1283,6 @@ PetscErrorCode  VecSqrtAbs(Vec v)
 
 .seealso:   VecDot(), VecNorm(), VecDotBegin(), VecNormBegin(), VecDotEnd(), VecNormEnd()
 
-.keywords: vector, sqrt, square root
 @*/
 PetscErrorCode  VecDotNorm2(Vec s,Vec t,PetscScalar *dp, PetscReal *nm)
 {
@@ -1377,8 +1342,6 @@ PetscErrorCode  VecDotNorm2(Vec s,Vec t,PetscScalar *dp, PetscReal *nm)
 .  sum - the result
 
    Level: beginner
-
-   Concepts: sum^of vector entries
 
 .seealso: VecNorm()
 @*/
@@ -1469,8 +1432,6 @@ PetscErrorCode  VecRealPart(Vec v)
 
    Level: intermediate
 
-   Concepts: vector^adding constant
-
 @*/
 PetscErrorCode  VecShift(Vec v,PetscScalar shift)
 {
@@ -1482,6 +1443,7 @@ PetscErrorCode  VecShift(Vec v,PetscScalar shift)
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidLogicalCollectiveScalar(v,shift,2);
   ierr = VecSetErrorIfLocked(v,1);CHKERRQ(ierr);
+  if (shift == 0.0) PetscFunctionReturn(0);
 
   if (v->ops->shift) {
     ierr = (*v->ops->shift)(v,shift);CHKERRQ(ierr);
@@ -1503,8 +1465,6 @@ PetscErrorCode  VecShift(Vec v,PetscScalar shift)
 .  v - the vector
 
    Level: intermediate
-
-   Concepts: vector^absolute value
 
 @*/
 PetscErrorCode  VecAbs(Vec v)
@@ -1541,21 +1501,21 @@ PetscErrorCode  VecAbs(Vec v)
   Note: This function does not yet support parallel Index Sets with non-local permutations
 
 .seealso: MatPermute()
-.keywords: vec, permute
 @*/
 PetscErrorCode  VecPermute(Vec x, IS row, PetscBool inv)
 {
-  PetscScalar    *array, *newArray;
-  const PetscInt *idx;
-  PetscInt       i,rstart,rend;
-  PetscErrorCode ierr;
+  const PetscScalar *array;
+  PetscScalar       *newArray;
+  const PetscInt    *idx;
+  PetscInt          i,rstart,rend;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = VecSetErrorIfLocked(x,1);CHKERRQ(ierr);
 
   ierr = VecGetOwnershipRange(x,&rstart,&rend);CHKERRQ(ierr);
   ierr = ISGetIndices(row, &idx);CHKERRQ(ierr);
-  ierr = VecGetArray(x, &array);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x, &array);CHKERRQ(ierr);
   ierr = PetscMalloc1(x->map->n, &newArray);CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG)
   for (i = 0; i < x->map->n; i++) {
@@ -1567,7 +1527,7 @@ PetscErrorCode  VecPermute(Vec x, IS row, PetscBool inv)
   } else {
     for (i = 0; i < x->map->n; i++) newArray[idx[i]-rstart] = array[i];
   }
-  ierr = VecRestoreArray(x, &array);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x, &array);CHKERRQ(ierr);
   ierr = ISRestoreIndices(row, &idx);CHKERRQ(ierr);
   ierr = VecReplaceArray(x, newArray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1589,8 +1549,6 @@ PetscErrorCode  VecPermute(Vec x, IS row, PetscBool inv)
 
    Level: intermediate
 
-   Concepts: equal^two vectors
-   Concepts: vector^equality
 
 @*/
 PetscErrorCode  VecEqual(Vec vec1,Vec vec2,PetscBool  *flg)
@@ -1603,7 +1561,7 @@ PetscErrorCode  VecEqual(Vec vec1,Vec vec2,PetscBool  *flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec1,VEC_CLASSID,1);
   PetscValidHeaderSpecific(vec2,VEC_CLASSID,2);
-  PetscValidPointer(flg,3);
+  PetscValidBoolPointer(flg,3);
   if (vec1 == vec2) *flg = PETSC_TRUE;
   else {
     ierr = VecGetSize(vec1,&N1);CHKERRQ(ierr);
@@ -1616,7 +1574,7 @@ PetscErrorCode  VecEqual(Vec vec1,Vec vec2,PetscBool  *flg)
       else {
         ierr = VecGetArrayRead(vec1,&v1);CHKERRQ(ierr);
         ierr = VecGetArrayRead(vec2,&v2);CHKERRQ(ierr);
-        ierr = PetscMemcmp(v1,v2,n1*sizeof(PetscScalar),&flg1);CHKERRQ(ierr);
+        ierr = PetscArraycmp(v1,v2,n1,&flg1);CHKERRQ(ierr);
         ierr = VecRestoreArrayRead(vec1,&v1);CHKERRQ(ierr);
         ierr = VecRestoreArrayRead(vec2,&v2);CHKERRQ(ierr);
       }

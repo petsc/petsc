@@ -33,9 +33,8 @@ struct _DMOps {
   PetscErrorCode (*createinterpolation)(DM,DM,Mat*,Vec*);
   PetscErrorCode (*createrestriction)(DM,DM,Mat*);
   PetscErrorCode (*createmassmatrix)(DM,DM,Mat*);
-  PetscErrorCode (*getaggregates)(DM,DM,Mat*);
   PetscErrorCode (*hascreateinjection)(DM,PetscBool*);
-  PetscErrorCode (*getinjection)(DM,DM,Mat*);
+  PetscErrorCode (*createinjection)(DM,DM,Mat*);
 
   PetscErrorCode (*refine)(DM,MPI_Comm,DM*);
   PetscErrorCode (*coarsen)(DM,MPI_Comm,DM*);
@@ -169,8 +168,9 @@ typedef struct _n_Field {
 } RegionField;
 
 typedef struct _n_Space {
-  PetscDS ds;
-  DMLabel label;
+  PetscDS ds;     /* Approximation space in this domain */
+  DMLabel label;  /* Label defining the domain of definition of the discretization */
+  IS      fields; /* Map from DS field numbers to original field numbers in the DM */
 } DMSpace;
 
 PETSC_EXTERN PetscErrorCode DMDestroyLabelLinkList(DM);
@@ -223,6 +223,13 @@ struct _p_DM {
   /* Constraints */
   PetscSection            defaultConstraintSection;
   Mat                     defaultConstraintMat;
+  /* Basis transformation */
+  DM                      transformDM;          /* Layout for basis transformation */
+  Vec                     transform;            /* Basis transformation matrices */
+  void                   *transformCtx;         /* Basis transformation context */
+  PetscErrorCode        (*transformSetUp)(DM, void *);
+  PetscErrorCode        (*transformDestroy)(DM, void *);
+  PetscErrorCode        (*transformGetMatrix)(DM, const PetscReal[], PetscBool, const PetscScalar **, void *);
   /* Coordinates */
   PetscInt                dimEmbed;             /* The dimension of the embedding space */
   DM                      coordinateDM;         /* Layout for coordinates (default section) */
@@ -258,6 +265,8 @@ PETSC_EXTERN PetscLogEvent DM_Coarsen;
 PETSC_EXTERN PetscLogEvent DM_Refine;
 PETSC_EXTERN PetscLogEvent DM_CreateInterpolation;
 PETSC_EXTERN PetscLogEvent DM_CreateRestriction;
+PETSC_EXTERN PetscLogEvent DM_CreateInjection;
+PETSC_EXTERN PetscLogEvent DM_CreateMatrix;
 
 PETSC_EXTERN PetscErrorCode DMCreateGlobalVector_Section_Private(DM,Vec*);
 PETSC_EXTERN PetscErrorCode DMCreateLocalVector_Section_Private(DM,Vec*);
@@ -451,5 +460,9 @@ PETSC_STATIC_INLINE PetscErrorCode DMGetGlobalFieldOffset_Private(DM dm, PetscIn
 #endif
   PetscFunctionReturn(0);
 }
+
+PETSC_EXTERN PetscErrorCode DMGetBasisTransformDM_Internal(DM, DM *);
+PETSC_EXTERN PetscErrorCode DMGetBasisTransformVec_Internal(DM, Vec *);
+PETSC_INTERN PetscErrorCode DMConstructBasisTransform_Internal(DM);
 
 #endif

@@ -1,10 +1,10 @@
-#if !defined(__PETSCVERSION_H)
-#define __PETSCVERSION_H
+#if !defined(PETSCVERSION_H)
+#define PETSCVERSION_H
 
 #define PETSC_VERSION_RELEASE    0
 #define PETSC_VERSION_MAJOR      3
 #define PETSC_VERSION_MINOR      11
-#define PETSC_VERSION_SUBMINOR   1
+#define PETSC_VERSION_SUBMINOR   3
 #define PETSC_VERSION_PATCH      0
 #define PETSC_RELEASE_DATE       "Mar, 29, 2019"
 #define PETSC_VERSION_DATE       "unknown"

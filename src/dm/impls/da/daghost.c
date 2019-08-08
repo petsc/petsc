@@ -29,8 +29,6 @@
    grid point has (potentially) several degrees of freedom.
    Any of y, z, n, and p can be passed in as NULL if not needed.
 
-.keywords: distributed array, get, ghost, corners, nodes, local indices
-
 .seealso: DMDAGetCorners(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDAGetOwnershipRanges()
 
 @*/

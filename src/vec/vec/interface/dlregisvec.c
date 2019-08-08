@@ -14,7 +14,6 @@ extern PetscFunctionList ISLocalToGlobalMappingList;
 
   Level: developer
 
-.keywords: Petsc, destroy, package
 .seealso: PetscFinalize()
 @*/
 PetscErrorCode  ISFinalizePackage(void)
@@ -38,7 +37,6 @@ PetscErrorCode  ISFinalizePackage(void)
 
   Level: developer
 
-.keywords: Vec, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode  ISInitializePackage(void)
@@ -143,7 +141,6 @@ static PetscBool  VecPackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.keywords: Vec, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode  VecInitializePackage(void)
@@ -194,14 +191,14 @@ PetscErrorCode  VecInitializePackage(void)
   ierr = PetscLogEventRegister("VecReduceEnd",     VEC_CLASSID,&VEC_ReduceEnd);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("VecNormalize",     VEC_CLASSID,&VEC_Normalize);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_VIENNACL)
-  ierr = PetscLogEventRegister("VecViennaCLCopyTo",   VEC_CLASSID,&VEC_ViennaCLCopyToGPU);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecViennaCLCopyFrom", VEC_CLASSID,&VEC_ViennaCLCopyFromGPU);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecVCLCopyTo",     VEC_CLASSID,&VEC_ViennaCLCopyToGPU);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecVCLCopyFrom",   VEC_CLASSID,&VEC_ViennaCLCopyFromGPU);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_CUDA)
-  ierr = PetscLogEventRegister("VecCUDACopyTo",     VEC_CLASSID,&VEC_CUDACopyToGPU);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecCUDACopyFrom",   VEC_CLASSID,&VEC_CUDACopyFromGPU);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecCopyToSome",     VEC_CLASSID,&VEC_CUDACopyToGPUSome);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecCopyFromSome",   VEC_CLASSID,&VEC_CUDACopyFromGPUSome);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecCUDACopyTo",    VEC_CLASSID,&VEC_CUDACopyToGPU);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecCUDACopyFrom",  VEC_CLASSID,&VEC_CUDACopyFromGPU);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecCopyToSome",    VEC_CLASSID,&VEC_CUDACopyToGPUSome);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecCopyFromSome",  VEC_CLASSID,&VEC_CUDACopyFromGPUSome);CHKERRQ(ierr);
 #endif
 
   /* Mark non-collective events */
@@ -258,7 +255,6 @@ PetscErrorCode  VecInitializePackage(void)
 
   Level: developer
 
-.keywords: Vec, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode  VecFinalizePackage(void)

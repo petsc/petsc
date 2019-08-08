@@ -227,7 +227,7 @@ PetscErrorCode MatCreate_LMVMSymBadBrdn(Mat B)
    This ensures that the internal storage and work vectors are duplicated from the
    correct type of vector.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - MPI communicator, set to PETSC_COMM_SELF
@@ -241,14 +241,14 @@ PetscErrorCode MatCreate_LMVMSymBadBrdn(Mat B)
    paradigm instead of this routine directly.
 
    Options Database Keys:
-.   -mat_lmvm_num_vecs - maximum number of correction vectors (i.e.: updates) stored
++   -mat_lmvm_num_vecs - maximum number of correction vectors (i.e.: updates) stored
 .   -mat_lmvm_phi - (developer) convex ratio between BFGS and DFP components of the update
 .   -mat_lmvm_scale_type - (developer) type of scaling applied to J0 (none, scalar, diagonal)
 .   -mat_lmvm_theta - (developer) convex ratio between BFGS and DFP components of the diagonal J0 scaling
 .   -mat_lmvm_rho - (developer) update limiter for the J0 scaling
 .   -mat_lmvm_alpha - (developer) coefficient factor for the quadratic subproblem in J0 scaling
 .   -mat_lmvm_beta - (developer) exponential factor for the diagonal J0 scaling
-.   -mat_lmvm_sigma_hist - (developer) number of past updates to use in J0 scaling
+-   -mat_lmvm_sigma_hist - (developer) number of past updates to use in J0 scaling
 
    Level: intermediate
 

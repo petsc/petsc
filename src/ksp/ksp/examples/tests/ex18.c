@@ -45,7 +45,7 @@ int main(int argc,char **args)
     ierr = VecSetFromOptions(tmp);CHKERRQ(ierr);
     ierr = VecGetArray(tmp,&bnew);CHKERRQ(ierr);
     ierr = VecGetArray(b,&bold);CHKERRQ(ierr);
-    ierr = PetscMemcpy(bnew,bold,mvec*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscArraycpy(bnew,bold,mvec);CHKERRQ(ierr);
     ierr = VecDestroy(&b);CHKERRQ(ierr);
     b    = tmp;
   }

@@ -220,7 +220,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,DM da,Vec X)
        - You MUST call VecRestoreArray() when you no longer need access to
          the array.
   */
-  ierr = DMDAVecGetArray(da,X,&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayWrite(da,X,&x);CHKERRQ(ierr);
 
   /*
      Compute initial guess over the locally owned part of the grid
@@ -238,7 +238,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,DM da,Vec X)
   /*
      Restore vector
   */
-  ierr = DMDAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayWrite(da,X,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -421,7 +421,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
     ierr = DMGlobalToLocalEnd(da,B,INSERT_VALUES,localB);CHKERRQ(ierr);
   }
   ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,localX,&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayWrite(da,localX,&x);CHKERRQ(ierr);
   if (B) {
     ierr = DMDAVecGetArrayRead(da,localB,&b);CHKERRQ(ierr);
   }
@@ -634,7 +634,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
       }
     }
   }
-  ierr = DMDAVecRestoreArray(da,localX,&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayWrite(da,localX,&x);CHKERRQ(ierr);
   if (B) {
     ierr = DMDAVecRestoreArrayRead(da,localB,&b);CHKERRQ(ierr);
   }
@@ -885,10 +885,11 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
       args: -ksp_type fgmres -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type SCHUR -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -fieldsplit_0_pc_type lu -fieldsplit_1_pc_type lu -snes_monitor_short -ksp_monitor_short
       requires: !single
 
+   # HYPRE PtAP broken with complex numbers
    test:
       suffix: fieldsplit_hypre
       nsize: 2
-      requires: hypre mumps
+      requires: hypre mumps !complex
       args: -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type SCHUR -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -fieldsplit_0_pc_type lu -fieldsplit_0_pc_factor_mat_solver_type mumps -fieldsplit_1_pc_type hypre -fieldsplit_1_pc_hypre_type boomeramg -snes_monitor_short -ksp_monitor_short
 
    test:
@@ -904,10 +905,11 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
       args: -da_refine 3 -snes_monitor_short -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -mat_coloring_weight_type lf -mat_coloring_view> ex19_greedy_coloring.tmp 2>&1
       requires: !single
 
+   # HYPRE PtAP broken with complex numbers
    test:
       suffix: hypre
       nsize: 2
-      requires: hypre
+      requires: hypre !complex
       args: -da_refine 3 -snes_monitor_short -pc_type hypre
 
    test:
@@ -970,12 +972,12 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
 
    test:
       suffix: ngs
-      args: -ksp_monitor_short -snes_type ngs -snes_view -snes_monitor -snes_rtol 1e-4
+      args: -snes_type ngs -snes_view -snes_monitor -snes_rtol 1e-4
       requires: !single
 
    test:
       suffix: ngs_fd
-      args: -ksp_monitor_short -snes_type ngs -snes_ngs_secant -snes_view -snes_monitor -snes_rtol 1e-4
+      args: -snes_type ngs -snes_ngs_secant -snes_view -snes_monitor -snes_rtol 1e-4
       requires: !single
 
    test:
@@ -1046,10 +1048,11 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
       requires: !single
       args: -da_refine 5 -snes_monitor -ksp_monitor -snes_view -pc_type mg
 
+   # HYPRE PtAP broken with complex numbers
    test:
       suffix: tut_3
       nsize: 4
-      requires: hypre !single
+      requires: hypre !single !complex
       args: -da_refine 5 -snes_monitor -ksp_monitor -snes_view -pc_type hypre
 
    test:
@@ -1103,5 +1106,16 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
       requires: cuda
       args: -snes_monitor -dm_mat_type mpiaijcusparse -dm_vec_type mpicuda -pc_type gamg -ksp_monitor  -mg_levels_ksp_max_it 3
 
+   test:
+      suffix: seqbaijmkl
+      nsize: 1
+      requires: define(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
+      args: -dm_mat_type baij -snes_monitor -ksp_monitor -snes_view
+
+   test:
+      suffix: mpibaijmkl
+      nsize: 2
+      requires:  define(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
+      args: -dm_mat_type baij -snes_monitor -ksp_monitor -snes_view
 
 TEST*/

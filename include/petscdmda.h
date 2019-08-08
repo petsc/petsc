@@ -1,5 +1,5 @@
-#if !defined(__PETSCDMDA_H)
-#define __PETSCDMDA_H
+#if !defined(PETSCDMDA_H)
+#define PETSCDMDA_H
 
 #include <petscdm.h>
 #include <petscdmdatypes.h>
@@ -30,6 +30,7 @@ M*/
 
 PETSC_EXTERN PetscErrorCode DMDASetInterpolationType(DM,DMDAInterpolationType);
 PETSC_EXTERN PetscErrorCode DMDAGetInterpolationType(DM,DMDAInterpolationType*);
+PETSC_EXTERN PetscErrorCode DMDACreateAggregates(DM,DM,Mat*);
 
 /* FEM */
 PETSC_EXTERN PetscErrorCode DMDASetElementType(DM,DMDAElementType);
@@ -55,8 +56,8 @@ PETSC_EXTERN PetscErrorCode DMDAGlobalToNaturalBegin(DM,Vec,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMDAGlobalToNaturalEnd(DM,Vec,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMDANaturalToGlobalBegin(DM,Vec,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMDANaturalToGlobalEnd(DM,Vec,InsertMode,Vec);
-PETSC_DEPRECATED("Use DMLocalToLocalBegin()") PETSC_STATIC_INLINE PetscErrorCode DMDALocalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec l) {return DMLocalToLocalBegin(dm,g,mode,l);}
-PETSC_DEPRECATED("Use DMLocalToLocalEnd()") PETSC_STATIC_INLINE PetscErrorCode DMDALocalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l) {return DMLocalToLocalEnd(dm,g,mode,l);}
+PETSC_DEPRECATED_FUNCTION("Use DMLocalToLocalBegin() (since version 3.5)") PETSC_STATIC_INLINE PetscErrorCode DMDALocalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec l) {return DMLocalToLocalBegin(dm,g,mode,l);}
+PETSC_DEPRECATED_FUNCTION("Use DMLocalToLocalEnd() (since version 3.5)") PETSC_STATIC_INLINE PetscErrorCode DMDALocalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l) {return DMLocalToLocalEnd(dm,g,mode,l);}
 PETSC_EXTERN PetscErrorCode DMDACreateNaturalVector(DM,Vec *);
 
 PETSC_EXTERN PetscErrorCode DMDAGetCorners(DM,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
@@ -75,8 +76,7 @@ PETSC_EXTERN PetscErrorCode DMDAGetNeighbors(DM,const PetscMPIInt**);
 PETSC_EXTERN PetscErrorCode DMDASetAOType(DM,AOType);
 PETSC_EXTERN PetscErrorCode DMDAGetAO(DM,AO*);
 PETSC_EXTERN PetscErrorCode DMDASetUniformCoordinates(DM,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal);
-#include <petscgll.h>
-PETSC_EXTERN PetscErrorCode DMDASetGLLCoordinates(DM,PetscGLL*);
+PETSC_EXTERN PetscErrorCode DMDASetGLLCoordinates(DM,PetscInt,PetscReal*);
 PETSC_EXTERN PetscErrorCode DMDAGetCoordinateArray(DM,void*);
 PETSC_EXTERN PetscErrorCode DMDARestoreCoordinateArray(DM,void*);
 PETSC_EXTERN PetscErrorCode DMDAGetBoundingBox(DM,PetscReal[],PetscReal[]);
@@ -86,7 +86,7 @@ PETSC_EXTERN PetscErrorCode DMDAGetLogicalCoordinate(DM,PetscScalar,PetscScalar,
 PETSC_EXTERN PetscErrorCode DMDAMapCoordsToPeriodicDomain(DM,PetscScalar*,PetscScalar*);
 
 PETSC_EXTERN PetscErrorCode DMDACreateCompatibleDMDA(DM,PetscInt,DM*);
-PETSC_EXTERN PETSC_DEPRECATED("Use DMDACreateCompatibleDMDA()") PetscErrorCode DMDAGetReducedDMDA(DM,PetscInt,DM*);
+PETSC_EXTERN PETSC_DEPRECATED_FUNCTION("Use DMDACreateCompatibleDMDA()  (since version 3.10)") PetscErrorCode DMDAGetReducedDMDA(DM,PetscInt,DM*);
 
 PETSC_EXTERN PetscErrorCode DMDASetFieldName(DM,PetscInt,const char[]);
 PETSC_EXTERN PetscErrorCode DMDAGetFieldName(DM,PetscInt,const char**);
@@ -116,6 +116,8 @@ PETSC_EXTERN PetscErrorCode DMDAGetStencilType(DM, DMDAStencilType*);
 
 PETSC_EXTERN PetscErrorCode DMDAVecGetArray(DM,Vec,void *);
 PETSC_EXTERN PetscErrorCode DMDAVecRestoreArray(DM,Vec,void *);
+PETSC_EXTERN PetscErrorCode DMDAVecGetArrayWrite(DM,Vec,void *);
+PETSC_EXTERN PetscErrorCode DMDAVecRestoreArrayWrite(DM,Vec,void *);
 
 PETSC_EXTERN PetscErrorCode DMDAVecGetArrayDOF(DM,Vec,void *);
 PETSC_EXTERN PetscErrorCode DMDAVecRestoreArrayDOF(DM,Vec,void *);
@@ -207,7 +209,6 @@ PETSC_EXTERN PetscErrorCode DMDAGetNumVertices(DM, PetscInt *, PetscInt *, Petsc
 PETSC_EXTERN PetscErrorCode DMDAGetNumFaces(DM, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMDAGetHeightStratum(DM, PetscInt, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMDAGetDepthStratum(DM, PetscInt, PetscInt *, PetscInt *);
-PETSC_EXTERN PetscErrorCode DMDACreateSection(DM, const PetscInt[], const PetscInt[], const PetscInt[], PetscSection *);
 PETSC_EXTERN PetscErrorCode DMDAComputeCellGeometryFEM(DM, PetscInt, PetscQuadrature, PetscReal [], PetscReal [], PetscReal [], PetscReal []);
 PETSC_EXTERN PetscErrorCode DMDAGetTransitiveClosure(DM, PetscInt, PetscBool, PetscInt *, PetscInt **);
 PETSC_EXTERN PetscErrorCode DMDARestoreTransitiveClosure(DM, PetscInt, PetscBool, PetscInt *, PetscInt **);

@@ -70,15 +70,6 @@ static PetscErrorCode PCSetFromOptions_ILU(PetscOptionItems *PetscOptionsObject,
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCView_ILU(PC pc,PetscViewer viewer)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PCView_Factor(pc,viewer);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode PCSetUp_ILU(PC pc)
 {
   PetscErrorCode         ierr;
@@ -261,8 +252,6 @@ static PetscErrorCode PCApplySymmetricRight_ILU(PC pc,Vec x,Vec y)
 
    Level: beginner
 
-  Concepts: incomplete factorization
-
    Notes:
     Only implemented for some matrix formats. (for parallel see PCHYPRE for hypre's ILU)
 
@@ -318,7 +307,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_ILU(PC pc)
   pc->ops->applytranspose      = PCApplyTranspose_ILU;
   pc->ops->setup               = PCSetUp_ILU;
   pc->ops->setfromoptions      = PCSetFromOptions_ILU;
-  pc->ops->view                = PCView_ILU;
+  pc->ops->view                = PCView_Factor;
   pc->ops->applysymmetricleft  = PCApplySymmetricLeft_ILU;
   pc->ops->applysymmetricright = PCApplySymmetricRight_ILU;
   pc->ops->applyrichardson     = 0;

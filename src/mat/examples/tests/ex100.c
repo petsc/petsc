@@ -1,5 +1,5 @@
 
-static char help[] = "Tests vatious routines in MatMAIJ format.\n";
+static char help[] = "Tests various routines in MatMAIJ format.\n";
 
 #include <petscmat.h>
 #define IMAX 15

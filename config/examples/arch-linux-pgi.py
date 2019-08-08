@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 configure_options = [
+  # the machine this runs on does not support PGI std-C++11 functionality
+  '--with-cxx-dialect=cxx11',
   'CC=pgcc',
   'CXX=pgc++',
   'FC=pgf90',
@@ -10,7 +12,6 @@ configure_options = [
   '--with-hwloc=0', # ubuntu -lhwloc requires -lnuma - which conflicts with -lnuma from pgf90
   '--download-mpich=1',
   '--download-fblaslapack=1',
-  '--with-cxx-dialect=C++11',
   '--download-codipack=1',
   '--download-adblaslapack=1',
   ]

@@ -35,8 +35,6 @@
 
     Level: developer
 
-    Concepts: machine name
-    Concepts: host name
 
    Fortran Version:
    In Fortran this routine has the format

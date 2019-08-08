@@ -184,7 +184,7 @@ PetscErrorCode VecCopy_Seq(Vec xin,Vec yin)
   if (xin != yin) {
     ierr = VecGetArrayRead(xin,&xa);CHKERRQ(ierr);
     ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);
-    ierr = PetscMemcpy(ya,xa,xin->map->n*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscArraycpy(ya,xa,xin->map->n);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(xin,&xa);CHKERRQ(ierr);
     ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
   }
@@ -924,7 +924,7 @@ PetscErrorCode VecCreate_Seq_Private(Vec v,const PetscScalar array[])
    VecCreateSeqWithArray - Creates a standard,sequential array-style vector,
    where the user provides the array space to store the vector values.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameter:
 +  comm - the communicator, should be PETSC_COMM_SELF
@@ -946,8 +946,6 @@ PetscErrorCode VecCreate_Seq_Private(Vec v,const PetscScalar array[])
    The user should not free the array until the vector is destroyed.
 
    Level: intermediate
-
-   Concepts: vectors^creating with array
 
 .seealso: VecCreateMPIWithArray(), VecCreate(), VecDuplicate(), VecDuplicateVecs(),
           VecCreateGhost(), VecCreateSeq(), VecPlaceArray()

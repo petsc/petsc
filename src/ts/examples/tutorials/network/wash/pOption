@@ -1,0 +1,4 @@
+#-petscpartitioner_type simple
+-pc_type lu
+-pc_factor_shift_type NONZERO
+-sub_pc_factor_shift_type NONZERO

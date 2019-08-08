@@ -1,13 +1,11 @@
-#if !defined(__PETSCDMLABEL_H)
-#define __PETSCDMLABEL_H
+#if !defined(PETSCDMLABEL_H)
+#define PETSCDMLABEL_H
 #include <petscis.h>
 
 /*S
   DMLabel - Object which encapsulates a subset of the mesh from this DM
 
   Level: developer
-
-  Concepts: grids, grid refinement
 
 .seealso:  DM, DMPlexCreate(), DMPlexCreateLabel()
 S*/

@@ -553,8 +553,6 @@ static PetscErrorCode PCSetFromOptions_SPAI(PetscOptionItems *PetscOptionsObject
 
    Level: beginner
 
-   Concepts: approximate inverse
-
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
     PCSPAISetEpsilon(), PCSPAISetMax(), PCSPAISetMaxNew(), PCSPAISetBlockSize(),
     PCSPAISetVerbose(), PCSPAISetSp()

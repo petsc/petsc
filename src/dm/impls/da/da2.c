@@ -745,7 +745,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
    DMDACreate2d -  Creates an object that will manage the communication of  two-dimensional
    regular array data that is distributed across some processors.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - MPI communicator
@@ -793,8 +793,6 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
    If you wish to use the options database to change values in the DMDA call DMSetFromOptions() after this call
    but before DMSetUp().
 
-.keywords: distributed array, create, two-dimensional
-
 .seealso: DMDestroy(), DMView(), DMDACreate1d(), DMDACreate3d(), DMGlobalToLocalBegin(), DMDAGetRefinementFactor(),
           DMGlobalToLocalEnd(), DMLocalToGlobalBegin(), DMLocalToLocalBegin(), DMLocalToLocalEnd(), DMDASetRefinementFactor(),
           DMDAGetInfo(), DMCreateGlobalVector(), DMCreateLocalVector(), DMDACreateNaturalVector(), DMLoad(), DMDAGetOwnershipRanges()
@@ -802,7 +800,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
 @*/
 
 PetscErrorCode  DMDACreate2d(MPI_Comm comm,DMBoundaryType bx,DMBoundaryType by,DMDAStencilType stencil_type,
-                          PetscInt M,PetscInt N,PetscInt m,PetscInt n,PetscInt dof,PetscInt s,const PetscInt lx[],const PetscInt ly[],DM *da)
+                             PetscInt M,PetscInt N,PetscInt m,PetscInt n,PetscInt dof,PetscInt s,const PetscInt lx[],const PetscInt ly[],DM *da)
 {
   PetscErrorCode ierr;
 

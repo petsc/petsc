@@ -20,6 +20,13 @@ T*/
 */
 #include <petscksp.h>
 
+typedef enum {
+  RHS_FILE,
+  RHS_ONE,
+  RHS_RANDOM
+} RHSType;
+const char *const RHSTypes[] = {"FILE", "ONE", "RANDOM", "RHSType", "RHS_", NULL};
+
 /* ATTENTION: this is the example used in the Profiling chaper of the PETSc manual,
    where we referenced its profiling stages, preloading and output etc.
    When you modify it, please make sure it is still consistent with the manual.
@@ -34,6 +41,7 @@ int main(int argc,char **args)
   char              file[2][PETSC_MAX_PATH_LEN];
   PetscViewer       viewer;      /* viewer */
   PetscBool         flg,preload=PETSC_FALSE,same,trans=PETSC_FALSE;
+  RHSType           rhstype = RHS_FILE;
   PetscInt          its,j,len,start,idx,n1,n2;
   const PetscScalar *val;
 
@@ -54,6 +62,7 @@ int main(int argc,char **args)
     ierr = PetscOptionsGetString(NULL,NULL,"-f1",file[1],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (!flg) preload = PETSC_FALSE;   /* don't bother with second system */
   }
+  ierr = PetscOptionsGetEnum(NULL,NULL,"-rhs",RHSTypes,(PetscEnum*)&rhstype,NULL);CHKERRQ(ierr);
 
   /*
     To use preloading, one usually has code like the following:
@@ -94,10 +103,25 @@ int main(int argc,char **args)
 
   /* load the matrix and vector; then destroy the viewer */
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatLoad(A,viewer);CHKERRQ(ierr);
-  ierr = VecLoad(b,viewer);CHKERRQ(ierr);
+  switch (rhstype) {
+  case RHS_FILE:
+    /* Vectors in the file might a different size than the matrix so we need a
+     * Vec whose size hasn't been set yet.  It'll get fixed below.  Otherwise we
+     * can create the correct size Vec. */
+    ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
+    ierr = VecLoad(b,viewer);CHKERRQ(ierr);
+    break;
+  case RHS_ONE:
+    ierr = MatCreateVecs(A,&b,NULL);CHKERRQ(ierr);
+    ierr = VecSet(b,1.0);CHKERRQ(ierr);
+    break;
+  case RHS_RANDOM:
+    ierr = MatCreateVecs(A,&b,NULL);CHKERRQ(ierr);
+    ierr = VecSetRandom(b,NULL);CHKERRQ(ierr);
+    break;
+  }
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
   /* if the loaded matrix is larger than the vector (due to being padded
@@ -169,10 +193,25 @@ int main(int argc,char **args)
 
   /* load the matrix and vector; then destroy the viewer */
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatLoad(A,viewer);CHKERRQ(ierr);
-  ierr = VecLoad(b,viewer);CHKERRQ(ierr);
+  switch (rhstype) {
+  case RHS_FILE:
+    /* Vectors in the file might a different size than the matrix so we need a
+     * Vec whose size hasn't been set yet.  It'll get fixed below.  Otherwise we
+     * can create the correct size Vec. */
+    ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
+    ierr = VecLoad(b,viewer);CHKERRQ(ierr);
+    break;
+  case RHS_ONE:
+    ierr = MatCreateVecs(A,&b,NULL);CHKERRQ(ierr);
+    ierr = VecSet(b,1.0);CHKERRQ(ierr);
+    break;
+  case RHS_RANDOM:
+    ierr = MatCreateVecs(A,&b,NULL);CHKERRQ(ierr);
+    ierr = VecSetRandom(b,NULL);CHKERRQ(ierr);
+    break;
+  }
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
   ierr = MatGetLocalSize(A,NULL,&n1);CHKERRQ(ierr);

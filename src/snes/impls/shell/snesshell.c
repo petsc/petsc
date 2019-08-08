@@ -24,8 +24,6 @@ typedef struct {PetscErrorCode (*solve)(SNES,Vec);void *ctx;} SNES_Shell;
 
    Level: advanced
 
-.keywords: SNES, shell, set, apply, user-provided
-
 .seealso: SNESSHELL, SNESShellSetContext(), SNESShellGetContext()
 @*/
 PetscErrorCode  SNESShellSetSolve(SNES snes,PetscErrorCode (*solve)(SNES,Vec))
@@ -90,8 +88,6 @@ PetscErrorCode SNESView_Shell(SNES snes, PetscViewer viewer)
 
     Notes:
     This routine is intended for use within various shell routines
-
-.keywords: SNES, shell, get, context
 
 .seealso: SNESCreateShell(), SNESShellSetContext()
 @*/

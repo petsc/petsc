@@ -20,8 +20,6 @@
 
    Level: developer
 
-.keywords: SNES, nonlinear, compute, function
-
 .seealso: SNESGetNPC(),SNESSetNPC(),SNESComputeFunction()
 @*/
 PetscErrorCode  SNESApplyNPC(SNES snes,Vec x,Vec f,Vec y)
@@ -77,12 +75,10 @@ PetscErrorCode SNESComputeFunctionDefaultNPC(SNES snes,Vec X,Vec F)
 .  snes - the SNES context
 
    Output Parameter:
-.  F - function vector
-.  fnorm - the norm of F
++  F - function vector
+-  fnorm - the norm of F
 
    Level: developer
-
-.keywords: SNES, nonlinear, function
 
 .seealso: SNESGetNPC(),SNESSetNPC(),SNESComputeFunction(),SNESApplyNPC(),SNESSolve()
 @*/

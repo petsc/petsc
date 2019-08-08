@@ -78,7 +78,9 @@ endif
 $(generatedtest) : $(petscconf) $(petscvariables) $(CONFIGDIR)/gmakegentest.py $(TESTDIR)/.DIR | $$(@D)/.DIR
 	$(PYTHON) $(CONFIGDIR)/gmakegentest.py --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) --testdir=$(TESTDIR)
 
+ifneq ($(MAKECMDGOALS:clean%=clean),clean)
 -include $(generatedtest)
+endif
 
 ifeq ($(PETSC_LANGUAGE),CXXONLY)
   cc_name := CXX
@@ -149,6 +151,16 @@ else
 PETSC_TEST_LIB = $(C_SH_LIB_PATH) $(PETSC_EXTERNAL_LIB_BASIC)
 endif
 
+# manually list some some library dependencies to check for circular dependencies
+$(TESTDIR)/sys/examples/tests/ex9: PETSC_TEST_LIB = $(PETSC_SYS_LIB)
+$(TESTDIR)/vec/vec/examples/tests/ex1: PETSC_TEST_LIB = $(PETSC_VEC_LIB)
+$(TESTDIR)/mat/examples/tests/ex1: PETSC_TEST_LIB = $(PETSC_MAT_LIB)
+$(TESTDIR)/dm/examples/tests/ex1: PETSC_TEST_LIB = $(PETSC_DM_LIB)
+$(TESTDIR)/ksp/ksp/examples/tests/ex1: PETSC_TEST_LIB = $(PETSC_KSP_LIB)
+$(TESTDIR)/snes/examples/tests/ex1: PETSC_TEST_LIB = $(PETSC_SNES_LIB)
+$(TESTDIR)/ts/examples/tests/ex2: PETSC_TEST_LIB = $(PETSC_TS_LIB)
+$(TESTDIR)/tao/examples/tutorials/ex1: PETSC_TEST_LIB = $(PETSC_TAO_LIB)
+
 # Test executables
 $(testexe.F) $(testexe.F90) : $(TESTDIR)/% : $(TESTDIR)/%.o $$^ $(libpetscall)
 	$(call quiet,FLINKER) -o $@ $^ $(PETSC_TEST_LIB)
@@ -165,12 +177,12 @@ $(foreach pkg, $(pkgs), $(call concattestlang,$(pkg),F F90)) : $(libpetscall)
 # Testing convenience targets
 .PHONY: test pre-clean
 
-test: pre-clean report_tests
+test: report_tests
 
 pre-clean:
-	@$(eval STARTTIME := $(shell date +%s))
 	@$(RM) -rf $(TESTDIR)/counts $(TESTLOGFILE)
 	@touch $(TESTLOGFILE)
+	@echo "Using MAKEFLAGS:" ${MAKEFLAGS}
 
 .PHONY: $(foreach pkg, $(pkgs), test-$(pkg) $(foreach lang, $(testlangs), test-$(pkg).$(lang) test-rm-$(pkg).$(lang)))
 testpkgs := $(foreach pkg, $(pkgs), test-$(pkg))
@@ -251,7 +263,7 @@ else ifdef searchin
 else ifdef argsearch
   TESTTARGETS := $(foreach v,$(alltesttargets),$(if $(findstring $(argsearch),$($(v)_ARGS)),$(v)))
 else ifdef globsearch
-  TESTTARGETS := $(shell $(PYTHON) -c"import sys,fnmatch; print ' '.join(fnmatch.filter(sys.argv[2].split(),sys.argv[1]))" '$(globsearch)' '$(alltesttargets)')
+  TESTTARGETS := $(shell $(PYTHON) -c"import sys,fnmatch; print(' '.join(fnmatch.filter(sys.argv[2].split(),sys.argv[1])))" '$(globsearch)' '$(alltesttargets)')
 else                            # No filter - run them all, but delete the executables as we go
   TESTTARGETS := $(testpkgs)
 endif
@@ -261,7 +273,14 @@ endif
 print-test:
 	-@echo $(TESTTARGETS)
 
-report_tests: $(TESTTARGETS)
+# Don't start running tests until starttime has completed
+$(alltesttargets:%=$(TESTDIR)/counts/%.counts) : starttime
+
+# Ensure that libpetsc (if it is a prerequisite) has been built and clean the counts/logs before starting timer
+starttime: pre-clean $(libpetscall)
+	@$(eval STARTTIME := $(shell date +%s))
+
+report_tests: starttime $(TESTTARGETS)
 	@$(eval ENDTIME := $(shell date +%s))
 	-@elapsed_time=$$(($(ENDTIME)- $(STARTTIME))) && \
 	$(PYTHON) $(CONFIGDIR)/report_tests.py -m $(MAKE) -d $(TESTDIR)/counts -t 5 -e $${elapsed_time}

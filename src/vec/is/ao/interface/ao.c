@@ -11,7 +11,7 @@ PetscLogEvent AO_PetscToApplication, AO_ApplicationToPetsc;
 /*@C
    AOView - Displays an application ordering.
 
-   Collective on AO and PetscViewer
+   Collective on AO
 
    Input Parameters:
 +  ao - the application ordering context
@@ -32,8 +32,6 @@ PetscLogEvent AO_PetscToApplication, AO_ApplicationToPetsc;
 
    The user can open an alternative visualization context with
    PetscViewerASCIIOpen() - output to a specified file.
-
-.keywords: application ordering
 
 .seealso: PetscViewerASCIIOpen()
 @*/
@@ -62,8 +60,6 @@ PetscErrorCode  AOView(AO ao,PetscViewer viewer)
 .  ao - the application ordering context
 
    Level: beginner
-
-.keywords: destroy, application ordering
 
 .seealso: AOCreate()
 @*/
@@ -97,7 +93,7 @@ PETSC_INTERN PetscErrorCode ISSetUp_General(IS);
    AOPetscToApplicationIS - Maps an index set in the PETSc ordering to
    the application-defined ordering.
 
-   Collective on AO and IS
+   Collective on AO
 
    Input Parameters:
 +  ao - the application ordering context
@@ -115,8 +111,6 @@ PETSC_INTERN PetscErrorCode ISSetUp_General(IS);
          allows one to convert, for example, neighbor lists that use negative
          entries to indicate nonexistent neighbors due to boundary conditions
          etc.
-
-.keywords: application ordering, mapping
 
 .seealso: AOCreateBasic(), AOView(),AOApplicationToPetsc(),
           AOApplicationToPetscIS(),AOPetscToApplication()
@@ -145,7 +139,7 @@ PetscErrorCode  AOPetscToApplicationIS(AO ao,IS is)
    AOApplicationToPetscIS - Maps an index set in the application-defined
    ordering to the PETSc ordering.
 
-   Collective on AO and IS
+   Collective on AO
 
    Input Parameters:
 +  ao - the application ordering context
@@ -162,8 +156,6 @@ PetscErrorCode  AOPetscToApplicationIS(AO ao,IS is)
    Any integers in ia[] that are negative are left unchanged. This
    allows one to convert, for example, neighbor lists that use negative
    entries to indicate nonexistent neighbors due to boundary conditions, etc.
-
-.keywords: application ordering, mapping
 
 .seealso: AOCreateBasic(), AOView(), AOPetscToApplication(),
           AOPetscToApplicationIS(), AOApplicationToPetsc()
@@ -210,8 +202,6 @@ PetscErrorCode  AOApplicationToPetscIS(AO ao,IS is)
 
    Integers that are out of range are mapped to -1
 
-.keywords: application ordering, mapping
-
 .seealso: AOCreateBasic(), AOView(),AOApplicationToPetsc(),
           AOPetscToApplicationIS(), AOApplicationToPetsc()
 @*/
@@ -248,8 +238,6 @@ PetscErrorCode  AOPetscToApplication(AO ao,PetscInt n,PetscInt ia[])
    entries to indicate nonexistent neighbors due to boundary conditions, etc.
 
    Integers that are out of range are mapped to -1
-
-.keywords: application ordering, mapping
 
 .seealso: AOCreateBasic(), AOView(), AOPetscToApplication(),
           AOPetscToApplicationIS(), AOApplicationToPetsc()
@@ -288,7 +276,6 @@ PetscErrorCode  AOApplicationToPetsc(AO ao,PetscInt n,PetscInt ia[])
 
   Level: beginner
 
-.keywords: application ordering, mapping
 .seealso: AOCreateBasic(), AOView(), AOApplicationToPetsc(), AOPetscToApplicationIS()
 @*/
 PetscErrorCode  AOPetscToApplicationPermuteInt(AO ao, PetscInt block, PetscInt array[])
@@ -324,8 +311,6 @@ PetscErrorCode  AOPetscToApplicationPermuteInt(AO ao, PetscInt block, PetscInt a
   of 'i' in the petsc ordering.
 
   Level: beginner
-
-.keywords: application ordering, mapping
 
 .seealso: AOCreateBasic(), AOView(), AOPetscToApplicationIS(), AOApplicationToPetsc()
 @*/
@@ -363,8 +348,6 @@ PetscErrorCode  AOApplicationToPetscPermuteInt(AO ao, PetscInt block, PetscInt a
 
   Level: beginner
 
-.keywords: application ordering, mapping
-
 .seealso: AOCreateBasic(), AOView(), AOApplicationToPetsc(), AOPetscToApplicationIS()
 @*/
 PetscErrorCode  AOPetscToApplicationPermuteReal(AO ao, PetscInt block, PetscReal array[])
@@ -401,8 +384,6 @@ PetscErrorCode  AOPetscToApplicationPermuteReal(AO ao, PetscInt block, PetscReal
 
   Level: beginner
 
-.keywords: application ordering, mapping
-
 .seealso: AOCreateBasic(), AOView(),AOApplicationToPetsc(), AOPetscToApplicationIS()
 @*/
 PetscErrorCode  AOApplicationToPetscPermuteReal(AO ao, PetscInt block, PetscReal array[])
@@ -425,8 +406,6 @@ PetscErrorCode  AOApplicationToPetscPermuteReal(AO ao, PetscInt block, PetscReal
 .  ao - the application ordering
 
    Level: beginner
-
-.keywords: AO, options, database
 
 .seealso: AOCreate(), AOSetType(), AODestroy(), AOPetscToApplication(), AOApplicationToPetsc()
 @*/
@@ -454,7 +433,7 @@ PetscErrorCode AOSetFromOptions(AO ao)
 /*@
    AOSetIS - Sets the IS associated with the application ordering.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  ao - the application ordering
@@ -468,8 +447,6 @@ PetscErrorCode AOSetFromOptions(AO ao)
    This routine increases the reference count of isapp and ispetsc so you may/should destroy these arguments after this call if you no longer need them
 
    Level: beginner
-
-.keywords: AO, create
 
 .seealso: AOCreate(), AODestroy(), AOPetscToApplication(), AOApplicationToPetsc()
 @*/
@@ -496,7 +473,7 @@ PetscErrorCode AOSetIS(AO ao,IS isapp,IS ispetsc)
 /*@
    AOCreate - Creates an application ordering.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 .  comm - MPI communicator that is to share AO
@@ -509,8 +486,6 @@ PetscErrorCode AOSetIS(AO ao,IS isapp,IS ispetsc)
 -   -ao_view - call AOView() at the conclusion of AOCreate()
 
    Level: beginner
-
-.keywords: AO, create
 
 .seealso: AOSetIS(), AODestroy(), AOPetscToApplication(), AOApplicationToPetsc()
 @*/

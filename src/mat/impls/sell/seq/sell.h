@@ -77,10 +77,10 @@ if (NONEW == -2) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"New nonzero 
 ierr = PetscMalloc2(BS2*new_size,&new_val,BS2*new_size,&new_colidx);CHKERRQ(ierr); \
 \
 /* copy over old data into new slots by two steps: one step for data before the current slice and the other for the rest */ \
-ierr = PetscMemcpy(new_val,VAL,SIDX[SID+1]*sizeof(datatype));CHKERRQ(ierr); \
-ierr = PetscMemcpy(new_colidx,COLIDX,SIDX[SID+1]*sizeof(PetscInt));CHKERRQ(ierr); \
-ierr = PetscMemcpy(new_val+SIDX[SID+1]+8,VAL+SIDX[SID+1],(SIDX[AM>>3]-SIDX[SID+1])*sizeof(datatype));CHKERRQ(ierr); \
-ierr = PetscMemcpy(new_colidx+SIDX[SID+1]+8,COLIDX+SIDX[SID+1],(SIDX[AM>>3]-SIDX[SID+1])*sizeof(PetscInt));CHKERRQ(ierr); \
+ierr = PetscArraycpy(new_val,VAL,SIDX[SID+1]);CHKERRQ(ierr); \
+ierr = PetscArraycpy(new_colidx,COLIDX,SIDX[SID+1]);CHKERRQ(ierr); \
+ierr = PetscArraycpy(new_val+SIDX[SID+1]+8,VAL+SIDX[SID+1],SIDX[AM>>3]-SIDX[SID+1]);CHKERRQ(ierr); \
+ierr = PetscArraycpy(new_colidx+SIDX[SID+1]+8,COLIDX+SIDX[SID+1],SIDX[AM>>3]-SIDX[SID+1]);CHKERRQ(ierr); \
 /* update slice_idx */ \
 for (ii=SID+1;ii<=AM>>3;ii++) { SIDX[ii] += 8; } \
 /* update pointers. Notice that they point to the FIRST postion of the row */ \
@@ -130,10 +130,10 @@ if (WIDTH>=Ain->rlenmax) Ain->rlenmax++; \
         /* malloc new storage space */ \
         ierr = PetscMalloc2(new_size,&new_val,new_size,&new_colidx);CHKERRQ(ierr); \
         /* copy over old data into new slots by two steps: one step for data before the current slice and the other for the rest */ \
-        ierr = PetscMemcpy(new_val,a->val,a->sliidx[row/8+1]*sizeof(MatScalar));CHKERRQ(ierr); \
-        ierr = PetscMemcpy(new_colidx,a->colidx,a->sliidx[row/8+1]*sizeof(PetscInt));CHKERRQ(ierr); \
-        ierr = PetscMemcpy(new_val+a->sliidx[row/8+1]+8,a->val+a->sliidx[row/8+1],(a->sliidx[a->totalslices]-a->sliidx[row/8+1])*sizeof(MatScalar));CHKERRQ(ierr);  \
-        ierr = PetscMemcpy(new_colidx+a->sliidx[row/8+1]+8,a->colidx+a->sliidx[row/8+1],(a->sliidx[a->totalslices]-a->sliidx[row/8+1])*sizeof(PetscInt));CHKERRQ(ierr); \
+        ierr = PetscArraycpy(new_val,a->val,a->sliidx[row/8+1]);CHKERRQ(ierr); \
+        ierr = PetscArraycpy(new_colidx,a->colidx,a->sliidx[row/8+1]);CHKERRQ(ierr); \
+        ierr = PetscArraycpy(new_val+a->sliidx[row/8+1]+8,a->val+a->sliidx[row/8+1],a->sliidx[a->totalslices]-a->sliidx[row/8+1]);CHKERRQ(ierr);  \
+        ierr = PetscArraycpy(new_colidx+a->sliidx[row/8+1]+8,a->colidx+a->sliidx[row/8+1],a->sliidx[a->totalslices]-a->sliidx[row/8+1]);CHKERRQ(ierr); \
         /* update pointers. Notice that they point to the FIRST postion of the row */ \
         cp = new_colidx+a->sliidx[row/8]+(row & 0x07); \
         vp = new_val+a->sliidx[row/8]+(row & 0x07); \
@@ -146,8 +146,8 @@ if (WIDTH>=Ain->rlenmax) Ain->rlenmax++; \
         a->reallocs++; \
       } else { \
         /* no need to reallocate, just shift the following slices to create space for the added slice column */ \
-        ierr = PetscMemmove(a->val+a->sliidx[row/8+1]+8,a->val+a->sliidx[row/8+1],(a->sliidx[a->totalslices]-a->sliidx[row/8+1])*sizeof(MatScalar));CHKERRQ(ierr);  \
-        ierr = PetscMemmove(a->colidx+a->sliidx[row/8+1]+8,a->colidx+a->sliidx[row/8+1],(a->sliidx[a->totalslices]-a->sliidx[row/8+1])*sizeof(PetscInt));CHKERRQ(ierr); \
+        ierr = PetscArraymove(a->val+a->sliidx[row/8+1]+8,a->val+a->sliidx[row/8+1],a->sliidx[a->totalslices]-a->sliidx[row/8+1]);CHKERRQ(ierr);  \
+        ierr = PetscArraymove(a->colidx+a->sliidx[row/8+1]+8,a->colidx+a->sliidx[row/8+1],a->sliidx[a->totalslices]-a->sliidx[row/8+1]);CHKERRQ(ierr); \
       } \
       /* update slice_idx */ \
       for (ii=row/8+1;ii<=a->totalslices;ii++) a->sliidx[ii] += 8; \

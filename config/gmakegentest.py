@@ -6,7 +6,6 @@ import sys
 import logging, time
 import types
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
-from cmakegen import Mistakes, stripsplit, AUTODIRS, SKIPDIRS
 from collections import defaultdict
 from gmakegen import *
 
@@ -756,9 +755,9 @@ class generateExamples(Petsc):
             continue
 
         # Rest should be packages that we can just get from conf
-        if requirement == "complex":
-          petscconfvar="PETSC_USE_COMPLEX"
-          pkgconfvar="PETSC_USE_COMPLEX"
+        if requirement in ["complex","debug"]:
+          petscconfvar="PETSC_USE_"+requirement.upper()
+          pkgconfvar=self.pkg_name.upper()+"_USE_"+requirement.upper()
         else:
           petscconfvar="PETSC_HAVE_"+requirement.upper()
           pkgconfvar=self.pkg_name.upper()+'_HAVE_'+requirement.upper()

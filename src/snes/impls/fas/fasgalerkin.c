@@ -11,15 +11,15 @@
 
    Level: advanced
 
-.keywords: FAS, galerkin
-
 .seealso: SNESFASSetLevels(), SNESFASSetGalerkin()
 @*/
 PetscErrorCode SNESFASGetGalerkin(SNES snes, PetscBool *flg)
 {
-  SNES_FAS * fas = (SNES_FAS*)snes->data;
+  SNES_FAS *fas;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
+  fas = (SNES_FAS*)snes->data;
   *flg = fas->galerkin;
   PetscFunctionReturn(0);
 }
@@ -28,21 +28,21 @@ PetscErrorCode SNESFASGetGalerkin(SNES snes, PetscBool *flg)
    SNESFASSetGalerkin - Sets coarse problems as formed by projection to the fine problem
 
    Input Parameter:
-.  snes - the nonlinear solver context
-.  flg - the status of the galerkin problem
++  snes - the nonlinear solver context
+-  flg - the status of the galerkin problem
 
    Level: advanced
-
-.keywords: FAS, galerkin
 
 .seealso: SNESFASSetLevels(), SNESFASGetGalerkin()
 @*/
 PetscErrorCode SNESFASSetGalerkin(SNES snes, PetscBool flg)
 {
-  SNES_FAS       * fas = (SNES_FAS*)snes->data;
+  SNES_FAS       *fas;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
+  fas = (SNES_FAS*)snes->data;
   fas->galerkin = flg;
   if (fas->next) {ierr = SNESFASSetGalerkin(fas->next, flg);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
@@ -52,9 +52,9 @@ PetscErrorCode SNESFASSetGalerkin(SNES snes, PetscBool flg)
    SNESFASGalerkinFunctionDefault - Computes the Galerkin FAS function
 
    Input Parameters:
-.  snes - the nonlinear solver context
++  snes - the nonlinear solver context
 .  X - input vector
-.  ctx - the FAS context
+-  ctx - the FAS context
 
    Output Parameter:
 .  F - output vector
@@ -64,8 +64,6 @@ PetscErrorCode SNESFASSetGalerkin(SNES snes, PetscBool flg)
 $  F^l(x^l) = I^l_0 F^0(P^0_l x^l)
 
    Level: developer
-
-.keywords: FAS, galerkin
 
 .seealso: SNESFASGetGalerkin(), SNESFASSetGalerkin()
 @*/

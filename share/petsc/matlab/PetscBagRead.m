@@ -20,7 +20,7 @@ for lcv = 1:count
   help  = deblank(char(read(fd,help_len,'uchar')'));
   msize = read(fd,1,'int32');
 
-  if dtype == 0     % integer
+  if dtype == 16     % integer
     val = read(fd,msize,'int32');
   elseif dtype == 1 % double
     val = read(fd,msize,'double');

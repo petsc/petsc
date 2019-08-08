@@ -108,11 +108,11 @@ PetscErrorCode MatConvertToCSC(Mat A,PetscBool valOnly,PetscInt *n,PetscInt **co
     ierr = PetscMalloc1(nnz,values);CHKERRQ(ierr);
 
     if (isSBAIJ || isSeqSBAIJ || isMpiSBAIJ) {
-      ierr = PetscMemcpy (*colptr, rowptr, ((*n)+1)*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscArraycpy (*colptr, rowptr, (*n)+1);CHKERRQ(ierr);
       for (i = 0; i < *n+1; i++) (*colptr)[i] += base;
-      ierr = PetscMemcpy (*row, col, (nnz)*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscArraycpy (*row, col, nnz);CHKERRQ(ierr);
       for (i = 0; i < nnz; i++) (*row)[i] += base;
-      ierr = PetscMemcpy (*values, rvalues, (nnz)*sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr = PetscArraycpy (*values, rvalues, nnz);CHKERRQ(ierr);
     } else {
       ierr = PetscMalloc1(*n,&colcount);CHKERRQ(ierr);
 

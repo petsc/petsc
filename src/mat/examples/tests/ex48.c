@@ -1,11 +1,11 @@
 
-static char help[] = "Tests the vatious routines in MatSeqBAIJ format.\n";
+static char help[] = "Tests various routines in MatSeqBAIJ format.\n";
 
 #include <petscmat.h>
 
 int main(int argc,char **args)
 {
-  Mat            A,B,Fact;
+  Mat            A,B,C,D,Fact;
   Vec            xx,s1,s2,yy;
   PetscErrorCode ierr;
   PetscInt       m=45,rows[2],cols[2],bs=1,i,row,col,*idx,M;
@@ -106,7 +106,7 @@ int main(int argc,char **args)
     rows[1] = PetscMin(M-1,(PetscInt)(PetscRealPart(rval)*M));
     ierr    = MatGetValues(A,2,rows,2,cols,vals1);CHKERRQ(ierr);
     ierr    = MatGetValues(B,2,rows,2,cols,vals2);CHKERRQ(ierr);
-    ierr    = PetscMemcmp(vals1,vals2,4*sizeof(PetscScalar),&flg);CHKERRQ(ierr);
+    ierr    = PetscArraycmp(vals1,vals2,4,&flg);CHKERRQ(ierr);
     if (!flg) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatGetValues bs = %D\n",bs);CHKERRQ(ierr);
     }
@@ -148,6 +148,22 @@ int main(int argc,char **args)
   ierr = MatMultTransposeAddEqual(A,B,10,&flg);CHKERRQ(ierr);
   if (!flg) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatMultTransposeAdd()\n");CHKERRQ(ierr);
+  }
+
+  /* Test MatMatMult() */
+  ierr = MatCreateSeqDense(PETSC_COMM_SELF,M,40,NULL,&C);CHKERRQ(ierr);
+  ierr = MatSetRandom(C,rdm);CHKERRQ(ierr);
+  ierr = MatMatMult(A,C,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&D);CHKERRQ(ierr);
+  ierr = MatMatMultEqual(A,C,D,40,&flg);CHKERRQ(ierr);
+  if (!flg) {
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatMatMult()\n");CHKERRQ(ierr);
+  }
+  ierr = MatDestroy(&D);CHKERRQ(ierr);
+  ierr = MatCreateSeqDense(PETSC_COMM_SELF,M,40,NULL,&D);CHKERRQ(ierr);
+  ierr = MatMatMult(A,C,MAT_REUSE_MATRIX,PETSC_DEFAULT,&D);CHKERRQ(ierr);
+  ierr = MatMatMultEqual(A,C,D,40,&flg);CHKERRQ(ierr);
+  if (!flg) {
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatMatMult()\n");CHKERRQ(ierr);
   }
 
   /* Do LUFactor() on both the matrices */
@@ -244,6 +260,8 @@ int main(int argc,char **args)
 
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
+  ierr = MatDestroy(&D);CHKERRQ(ierr);
   ierr = VecDestroy(&xx);CHKERRQ(ierr);
   ierr = VecDestroy(&s1);CHKERRQ(ierr);
   ierr = VecDestroy(&s2);CHKERRQ(ierr);

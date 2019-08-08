@@ -62,7 +62,7 @@ static PetscErrorCode DMDASetBlockFillsSparse_Private(const PetscInt *dfillspars
 
   /* Allocate space for our copy of the given sparse matrix representation. */
   ierr = PetscMalloc1(nz + w + 1,rfill);CHKERRQ(ierr);
-  ierr = PetscMemcpy(*rfill,dfillsparse,(nz+w+1)*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArraycpy(*rfill,dfillsparse,nz+w+1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -94,7 +94,7 @@ static PetscErrorCode DMDASetBlockFills_Private2(DM_DA *dd)
     DMDASetBlockFills - Sets the fill pattern in each block for a multi-component problem
     of the matrix returned by DMCreateMatrix().
 
-    Logically Collective on DMDA
+    Logically Collective on da
 
     Input Parameter:
 +   da - the distributed array
@@ -147,7 +147,7 @@ PetscErrorCode  DMDASetBlockFills(DM da,const PetscInt *dfill,const PetscInt *of
     of the matrix returned by DMCreateMatrix(), using sparse representations
     of fill patterns.
 
-    Logically Collective on DMDA
+    Logically Collective on da
 
     Input Parameter:
 +   da - the distributed array
@@ -203,7 +203,7 @@ PetscErrorCode  DMCreateColoring_DA(DM da,ISColoringType ctype,ISColoring *color
 {
   PetscErrorCode   ierr;
   PetscInt         dim,m,n,p,nc;
-  DMBoundaryType bx,by,bz;
+  DMBoundaryType   bx,by,bz;
   MPI_Comm         comm;
   PetscMPIInt      size;
   PetscBool        isBAIJ;
@@ -248,9 +248,9 @@ PetscErrorCode  DMCreateColoring_DA(DM da,ISColoringType ctype,ISColoring *color
 
   /* Tell the DMDA it has 1 degree of freedom per grid point so that the coloring for BAIJ
      matrices is for the blocks, not the individual matrix elements  */
-  ierr = PetscStrcmp(da->mattype,MATBAIJ,&isBAIJ);CHKERRQ(ierr);
-  if (!isBAIJ) {ierr = PetscStrcmp(da->mattype,MATMPIBAIJ,&isBAIJ);CHKERRQ(ierr);}
-  if (!isBAIJ) {ierr = PetscStrcmp(da->mattype,MATSEQBAIJ,&isBAIJ);CHKERRQ(ierr);}
+  ierr = PetscStrbeginswith(da->mattype,MATBAIJ,&isBAIJ);CHKERRQ(ierr);
+  if (!isBAIJ) {ierr = PetscStrbeginswith(da->mattype,MATMPIBAIJ,&isBAIJ);CHKERRQ(ierr);}
+  if (!isBAIJ) {ierr = PetscStrbeginswith(da->mattype,MATSEQBAIJ,&isBAIJ);CHKERRQ(ierr);}
   if (isBAIJ) {
     dd->w  = 1;
     dd->xs = dd->xs/nc;
@@ -568,11 +568,11 @@ PetscErrorCode DMCreateColoring_DA_2d_5pt_MPIAIJ(DM da,ISColoringType ctype,ISCo
 }
 
 /* =========================================================================== */
-extern PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ(DM,Mat);
+extern PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ(DM,Mat,PetscBool);
 extern PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM,Mat);
-extern PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM,Mat);
+extern PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM,Mat,PetscBool);
 extern PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ_Fill(DM,Mat);
-extern PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ(DM,Mat);
+extern PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ(DM,Mat,PetscBool);
 extern PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ_Fill(DM,Mat);
 extern PetscErrorCode DMCreateMatrix_DA_2d_MPIBAIJ(DM,Mat);
 extern PetscErrorCode DMCreateMatrix_DA_3d_MPIBAIJ(DM,Mat);
@@ -585,7 +585,7 @@ extern PetscErrorCode DMCreateMatrix_DA_IS(DM,Mat);
 /*@C
    MatSetupDM - Sets the DMDA that is to be used by the HYPRE_StructMatrix PETSc matrix
 
-   Logically Collective on Mat
+   Logically Collective on mat
 
    Input Parameters:
 +  mat - the matrix
@@ -692,7 +692,6 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
   Mat            A;
   MPI_Comm       comm;
   MatType        Atype;
-  PetscSection   section, sectionGlobal;
   void           (*aij)(void)=NULL,(*baij)(void)=NULL,(*sbaij)(void)=NULL,(*sell)(void)=NULL,(*is)(void)=NULL;
   MatType        mtype;
   PetscMPIInt    size;
@@ -702,56 +701,6 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
   ierr = MatInitializePackage();CHKERRQ(ierr);
   mtype = da->mattype;
 
-  ierr = DMGetSection(da, &section);CHKERRQ(ierr);
-  if (section) {
-    PetscInt  bs = -1;
-    PetscInt  localSize;
-    PetscBool isShell, isBlock, isSeqBlock, isMPIBlock, isSymBlock, isSymSeqBlock, isSymMPIBlock, isSymmetric;
-
-    ierr = DMGetGlobalSection(da, &sectionGlobal);CHKERRQ(ierr);
-    ierr = PetscSectionGetConstrainedStorageSize(sectionGlobal, &localSize);CHKERRQ(ierr);
-    ierr = MatCreate(PetscObjectComm((PetscObject)da),&A);CHKERRQ(ierr);
-    ierr = MatSetSizes(A,localSize,localSize,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-    ierr = MatSetType(A,mtype);CHKERRQ(ierr);
-    ierr = PetscStrcmp(mtype,MATSHELL,&isShell);CHKERRQ(ierr);
-    ierr = PetscStrcmp(mtype,MATBAIJ,&isBlock);CHKERRQ(ierr);
-    ierr = PetscStrcmp(mtype,MATSEQBAIJ,&isSeqBlock);CHKERRQ(ierr);
-    ierr = PetscStrcmp(mtype,MATMPIBAIJ,&isMPIBlock);CHKERRQ(ierr);
-    ierr = PetscStrcmp(mtype,MATSBAIJ,&isSymBlock);CHKERRQ(ierr);
-    ierr = PetscStrcmp(mtype,MATSEQSBAIJ,&isSymSeqBlock);CHKERRQ(ierr);
-    ierr = PetscStrcmp(mtype,MATMPISBAIJ,&isSymMPIBlock);CHKERRQ(ierr);
-    /* Check for symmetric storage */
-    isSymmetric = (PetscBool) (isSymBlock || isSymSeqBlock || isSymMPIBlock);
-    if (isSymmetric) {
-      ierr = MatSetOption(*J, MAT_IGNORE_LOWER_TRIANGULAR, PETSC_TRUE);CHKERRQ(ierr);
-    }
-    if (!isShell) {
-      PetscInt *dnz, *onz, *dnzu, *onzu, bsLocal;
-
-      if (bs < 0) {
-        if (isBlock || isSeqBlock || isMPIBlock || isSymBlock || isSymSeqBlock || isSymMPIBlock) {
-          PetscInt pStart, pEnd, p, dof;
-
-          ierr = PetscSectionGetChart(sectionGlobal, &pStart, &pEnd);CHKERRQ(ierr);
-          for (p = pStart; p < pEnd; ++p) {
-            ierr = PetscSectionGetDof(sectionGlobal, p, &dof);CHKERRQ(ierr);
-            if (dof) {
-              bs = dof;
-              break;
-            }
-          }
-        } else {
-          bs = 1;
-        }
-        /* Must have same blocksize on all procs (some might have no points) */
-        bsLocal = bs;
-        ierr    = MPIU_Allreduce(&bsLocal, &bs, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
-      }
-      ierr = PetscCalloc4(localSize/bs, &dnz, localSize/bs, &onz, localSize/bs, &dnzu, localSize/bs, &onzu);CHKERRQ(ierr);
-      /* ierr = DMPlexPreallocateOperator(dm, bs, section, sectionGlobal, dnz, onz, dnzu, onzu, *J, fillMatrix);CHKERRQ(ierr); */
-      ierr = PetscFree4(dnz, onz, dnzu, onzu);CHKERRQ(ierr);
-    }
-  }
   /*
                                   m
           ------------------------------------------------------
@@ -831,19 +780,19 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
       if (dd->ofill) {
         ierr = DMCreateMatrix_DA_1d_MPIAIJ_Fill(da,A);CHKERRQ(ierr);
       } else {
-        ierr = DMCreateMatrix_DA_1d_MPIAIJ(da,A);CHKERRQ(ierr);
+        ierr = DMCreateMatrix_DA_1d_MPIAIJ(da,A,PETSC_FALSE);CHKERRQ(ierr);
       }
     } else if (dim == 2) {
       if (dd->ofill) {
         ierr = DMCreateMatrix_DA_2d_MPIAIJ_Fill(da,A);CHKERRQ(ierr);
       } else {
-        ierr = DMCreateMatrix_DA_2d_MPIAIJ(da,A);CHKERRQ(ierr);
+        ierr = DMCreateMatrix_DA_2d_MPIAIJ(da,A,PETSC_FALSE);CHKERRQ(ierr);
       }
     } else if (dim == 3) {
       if (dd->ofill) {
         ierr = DMCreateMatrix_DA_3d_MPIAIJ_Fill(da,A);CHKERRQ(ierr);
       } else {
-        ierr = DMCreateMatrix_DA_3d_MPIAIJ(da,A);CHKERRQ(ierr);
+        ierr = DMCreateMatrix_DA_3d_MPIAIJ(da,A,PETSC_FALSE);CHKERRQ(ierr);
       }
     }
   } else if (baij) {
@@ -953,17 +902,17 @@ PetscErrorCode DMCreateMatrix_DA_IS(DM dm,Mat J)
   switch (dim) {
   case 1:
     ierr = PetscObjectComposeFunction((PetscObject)J,"MatMPIAIJSetPreallocation_C",MatISSetPreallocation_IS);CHKERRQ(ierr);
-    ierr = DMCreateMatrix_DA_1d_MPIAIJ(dm,J);CHKERRQ(ierr);
+    ierr = DMCreateMatrix_DA_1d_MPIAIJ(dm,J,PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)J,"MatMPIAIJSetPreallocation_C",NULL);CHKERRQ(ierr);
     break;
   case 2:
     ierr = PetscObjectComposeFunction((PetscObject)J,"MatMPIAIJSetPreallocation_C",MatISSetPreallocation_IS);CHKERRQ(ierr);
-    ierr = DMCreateMatrix_DA_2d_MPIAIJ(dm,J);CHKERRQ(ierr);
+    ierr = DMCreateMatrix_DA_2d_MPIAIJ(dm,J,PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)J,"MatMPIAIJSetPreallocation_C",NULL);CHKERRQ(ierr);
     break;
   case 3:
     ierr = PetscObjectComposeFunction((PetscObject)J,"MatMPIAIJSetPreallocation_C",MatISSetPreallocation_IS);CHKERRQ(ierr);
-    ierr = DMCreateMatrix_DA_3d_MPIAIJ(dm,J);CHKERRQ(ierr);
+    ierr = DMCreateMatrix_DA_3d_MPIAIJ(dm,J,PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)J,"MatMPIAIJSetPreallocation_C",NULL);CHKERRQ(ierr);
     break;
   default:
@@ -1068,8 +1017,11 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPISELL(DM da,Mat J)
       }
     }
     ierr = PetscFree(values);CHKERRQ(ierr);
+    /* do not copy values to GPU since they are all zero and not yet needed there */
+    ierr = MatPinToCPU(J,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatPinToCPU(J,PETSC_FALSE);CHKERRQ(ierr);
     ierr = MatSetOption(J,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   }
   ierr = PetscFree2(rows,cols);CHKERRQ(ierr);
@@ -1178,21 +1130,23 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPISELL(DM da,Mat J)
       }
     }
     ierr = PetscFree(values);CHKERRQ(ierr);
+    /* do not copy values to GPU since they are all zero and not yet needed there */
+    ierr = MatPinToCPU(J,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatPinToCPU(J,PETSC_FALSE);CHKERRQ(ierr);
     ierr = MatSetOption(J,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   }
   ierr = PetscFree2(rows,cols);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM da,Mat J)
+PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM da,Mat J,PetscBool isIS)
 {
   PetscErrorCode         ierr;
   PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny,m,n,dim,s,*cols = NULL,k,nc,*rows = NULL,col,cnt,l,p,M,N;
   PetscInt               lstart,lend,pstart,pend,*dnz,*onz;
   MPI_Comm               comm;
-  PetscScalar            *values;
   DMBoundaryType         bx,by;
   ISLocalToGlobalMapping ltog,mltog;
   DMDAStencilType        st;
@@ -1205,6 +1159,9 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM da,Mat J)
 
   */
   ierr = DMDAGetInfo(da,&dim,&m,&n,&M,&N,0,0,&nc,&s,&bx,&by,0,&st);CHKERRQ(ierr);
+  if (!isIS && bx == DM_BOUNDARY_NONE && by == DM_BOUNDARY_NONE) {
+    ierr = MatSetOption(J,MAT_SORTED_FULL,PETSC_TRUE);CHKERRQ(ierr);
+  }
   col  = 2*s + 1;
   /*
        With one processor in periodic domains in a skinny dimension the code will label nonzero columns multiple times
@@ -1266,7 +1223,6 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM da,Mat J)
     PETSc ordering.
   */
   if (!da->prealloc_only) {
-    ierr = PetscCalloc1(col*col*nc*nc,&values);CHKERRQ(ierr);
     for (i=xs; i<xs+nx; i++) {
 
       pstart = (bx == DM_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-i));
@@ -1279,23 +1235,29 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM da,Mat J)
         lend   = (by == DM_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,n-j-1));
 
         cnt = 0;
-        for (k=0; k<nc; k++) {
-          for (l=lstart; l<lend+1; l++) {
-            for (p=pstart; p<pend+1; p++) {
-              if ((st == DMDA_STENCIL_BOX) || (!l || !p)) {  /* entries on star have either l = 0 or p = 0 */
-                cols[cnt++] = k + nc*(slot + gnx*l + p);
+        for (l=lstart; l<lend+1; l++) {
+          for (p=pstart; p<pend+1; p++) {
+            if ((st == DMDA_STENCIL_BOX) || (!l || !p)) {  /* entries on star have either l = 0 or p = 0 */
+              cols[cnt++] = nc*(slot + gnx*l + p);
+              for (k=1; k<nc; k++) {
+                cols[cnt] = 1 + cols[cnt-1];cnt++;
               }
             }
           }
-          rows[k] = k + nc*(slot);
         }
-        ierr = MatSetValuesLocal(J,nc,rows,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
+        for (k=0; k<nc; k++) rows[k] = k + nc*(slot);
+        ierr = MatSetValuesLocal(J,nc,rows,cnt,cols,NULL,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
-    ierr = PetscFree(values);CHKERRQ(ierr);
+    /* do not copy values to GPU since they are all zero and not yet needed there */
+    ierr = MatPinToCPU(J,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatPinToCPU(J,PETSC_FALSE);CHKERRQ(ierr);
     ierr = MatSetOption(J,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+    if (bx == DM_BOUNDARY_NONE && by == DM_BOUNDARY_NONE) {
+      ierr = MatSetOption(J,MAT_SORTED_FULL,PETSC_FALSE);CHKERRQ(ierr);
+    }
   }
   ierr = PetscFree2(rows,cols);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1310,7 +1272,6 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ_Fill(DM da,Mat J)
   DM_DA                  *dd = (DM_DA*)da->data;
   PetscInt               ifill_col,*ofill = dd->ofill, *dfill = dd->dfill;
   MPI_Comm               comm;
-  PetscScalar            *values;
   DMBoundaryType         bx,by;
   ISLocalToGlobalMapping ltog;
   DMDAStencilType        st;
@@ -1389,7 +1350,6 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ_Fill(DM da,Mat J)
     PETSc ordering.
   */
   if (!da->prealloc_only) {
-    ierr = PetscCalloc1(maxcnt,&values);CHKERRQ(ierr);
     for (i=xs; i<xs+nx; i++) {
 
       pstart = (bx == DM_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-i));
@@ -1419,13 +1379,15 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ_Fill(DM da,Mat J)
             }
           }
           row  = k + nc*(slot);
-          ierr = MatSetValuesLocal(J,1,&row,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
+          ierr = MatSetValuesLocal(J,1,&row,cnt,cols,NULL,INSERT_VALUES);CHKERRQ(ierr);
         }
       }
     }
-    ierr = PetscFree(values);CHKERRQ(ierr);
+    /* do not copy values to GPU since they are all zero and not yet needed there */
+    ierr = MatPinToCPU(J,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatPinToCPU(J,PETSC_FALSE);CHKERRQ(ierr);
     ierr = MatSetOption(J,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   }
   ierr = PetscFree(cols);CHKERRQ(ierr);
@@ -1434,14 +1396,13 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ_Fill(DM da,Mat J)
 
 /* ---------------------------------------------------------------------------------*/
 
-PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ(DM da,Mat J)
+PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ(DM da,Mat J,PetscBool isIS)
 {
   PetscErrorCode         ierr;
   PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;
   PetscInt               m,n,dim,s,*cols = NULL,k,nc,*rows = NULL,col,cnt,l,p,*dnz = NULL,*onz = NULL;
   PetscInt               istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk,M,N,P;
   MPI_Comm               comm;
-  PetscScalar            *values;
   DMBoundaryType         bx,by,bz;
   ISLocalToGlobalMapping ltog,mltog;
   DMDAStencilType        st;
@@ -1454,6 +1415,9 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ(DM da,Mat J)
 
   */
   ierr = DMDAGetInfo(da,&dim,&m,&n,&p,&M,&N,&P,&nc,&s,&bx,&by,&bz,&st);CHKERRQ(ierr);
+  if (!isIS && bx == DM_BOUNDARY_NONE && by == DM_BOUNDARY_NONE && bz == DM_BOUNDARY_NONE) {
+    ierr = MatSetOption(J,MAT_SORTED_FULL,PETSC_TRUE);CHKERRQ(ierr);
+  }
   col  = 2*s + 1;
 
   /*
@@ -1522,7 +1486,6 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ(DM da,Mat J)
     PETSc ordering.
   */
   if (!da->prealloc_only) {
-    ierr = PetscCalloc1(col*col*col*nc*nc*nc,&values);CHKERRQ(ierr);
     for (i=xs; i<xs+nx; i++) {
       istart = (bx == DM_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-i));
       iend   = (bx == DM_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,m-i-1));
@@ -1536,25 +1499,31 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ(DM da,Mat J)
           slot = i - gxs + gnx*(j - gys) + gnx*gny*(k - gzs);
 
           cnt = 0;
-          for (l=0; l<nc; l++) {
-            for (ii=istart; ii<iend+1; ii++) {
-              for (jj=jstart; jj<jend+1; jj++) {
-                for (kk=kstart; kk<kend+1; kk++) {
-                  if ((st == DMDA_STENCIL_BOX) || ((!ii && !jj) || (!jj && !kk) || (!ii && !kk))) {/* entries on star*/
-                    cols[cnt++] = l + nc*(slot + ii + gnx*jj + gnx*gny*kk);
+          for (kk=kstart; kk<kend+1; kk++) {
+            for (jj=jstart; jj<jend+1; jj++) {
+              for (ii=istart; ii<iend+1; ii++) {
+                if ((st == DMDA_STENCIL_BOX) || ((!ii && !jj) || (!jj && !kk) || (!ii && !kk))) {/* entries on star*/
+                  cols[cnt++] = nc*(slot + ii + gnx*jj + gnx*gny*kk);
+                    for (l=1; l<nc; l++) {
+                      cols[cnt] = 1 + cols[cnt-1];cnt++;
                   }
                 }
               }
             }
-            rows[l] = l + nc*(slot);
           }
-          ierr = MatSetValuesLocal(J,nc,rows,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
+          rows[0] = nc*(slot); for (l=1; l<nc; l++) rows[l] = 1 + rows[l-1];
+          ierr = MatSetValuesLocal(J,nc,rows,cnt,cols,NULL,INSERT_VALUES);CHKERRQ(ierr);
         }
       }
     }
-    ierr = PetscFree(values);CHKERRQ(ierr);
+    /* do not copy values to GPU since they are all zero and not yet needed there */
+    ierr = MatPinToCPU(J,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    if (!isIS && bx == DM_BOUNDARY_NONE && by == DM_BOUNDARY_NONE && bz == DM_BOUNDARY_NONE) {
+      ierr = MatSetOption(J,MAT_SORTED_FULL,PETSC_FALSE);CHKERRQ(ierr);
+    }
+    ierr = MatPinToCPU(J,PETSC_FALSE);CHKERRQ(ierr);
     ierr = MatSetOption(J,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   }
   ierr = PetscFree2(rows,cols);CHKERRQ(ierr);
@@ -1570,7 +1539,6 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da,Mat J)
   PetscInt               xs,nx,i,j,gxs,gnx,row,k,l;
   PetscInt               m,dim,s,*cols = NULL,nc,cnt,maxcnt = 0,*ocols;
   PetscInt               *ofill = dd->ofill,*dfill = dd->dfill;
-  PetscScalar            *values;
   DMBoundaryType         bx;
   ISLocalToGlobalMapping ltog;
   PetscMPIInt            rank,size;
@@ -1643,8 +1611,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da,Mat J)
     PETSc ordering.
   */
   if (!da->prealloc_only) {
-    ierr = PetscCalloc2(maxcnt,&values,maxcnt,&cols);CHKERRQ(ierr);
-
+    ierr = PetscMalloc1(maxcnt,&cols);CHKERRQ(ierr);
     row = xs*nc;
     /* coupling with process to the left */
     for (i=xs; i<xs+s; i++) {
@@ -1672,7 +1639,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da,Mat J)
         for (l=0; l<s; l++) {
           for (k=ofill[j]; k<ofill[j+1]; k++) cols[cnt++] = (i + s - l)*nc + ofill[k];
         }
-        ierr = MatSetValues(J,1,&row,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValues(J,1,&row,cnt,cols,NULL,INSERT_VALUES);CHKERRQ(ierr);
         row++;
       }
     }
@@ -1694,7 +1661,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da,Mat J)
         for (l=0; l<s; l++) {
           for (k=ofill[j]; k<ofill[j+1]; k++) cols[cnt++] = (i + s - l)*nc + ofill[k];
         }
-        ierr = MatSetValues(J,1,&row,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValues(J,1,&row,cnt,cols,NULL,INSERT_VALUES);CHKERRQ(ierr);
         row++;
       }
     }
@@ -1724,13 +1691,16 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da,Mat J)
             for (k=ofill[j]; k<ofill[j+1]; k++) cols[cnt++] = (i - s - l - m + 2)*nc + ofill[k];
           }
         }
-        ierr = MatSetValues(J,1,&row,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValues(J,1,&row,cnt,cols,NULL,INSERT_VALUES);CHKERRQ(ierr);
         row++;
       }
     }
-    ierr = PetscFree2(values,cols);CHKERRQ(ierr);
+    ierr = PetscFree(cols);CHKERRQ(ierr);
+    /* do not copy values to GPU since they are all zero and not yet needed there */
+    ierr = MatPinToCPU(J,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatPinToCPU(J,PETSC_FALSE);CHKERRQ(ierr);
     ierr = MatSetOption(J,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -1738,13 +1708,12 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da,Mat J)
 
 /* ---------------------------------------------------------------------------------*/
 
-PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ(DM da,Mat J)
+PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ(DM da,Mat J,PetscBool isIS)
 {
   PetscErrorCode         ierr;
   PetscInt               xs,nx,i,i1,slot,gxs,gnx;
   PetscInt               m,dim,s,*cols = NULL,nc,*rows = NULL,col,cnt,l;
   PetscInt               istart,iend;
-  PetscScalar            *values;
   DMBoundaryType         bx;
   ISLocalToGlobalMapping ltog,mltog;
 
@@ -1755,6 +1724,9 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ(DM da,Mat J)
 
   */
   ierr = DMDAGetInfo(da,&dim,&m,0,0,0,0,0,&nc,&s,&bx,0,0,0);CHKERRQ(ierr);
+  if (!isIS && bx == DM_BOUNDARY_NONE) {
+    ierr = MatSetOption(J,MAT_SORTED_FULL,PETSC_TRUE);CHKERRQ(ierr);
+  }
   col  = 2*s + 1;
 
   ierr = DMDAGetCorners(da,&xs,0,0,&nx,0,0);CHKERRQ(ierr);
@@ -1777,24 +1749,29 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ(DM da,Mat J)
   */
   if (!da->prealloc_only) {
     ierr = PetscMalloc2(nc,&rows,col*nc*nc,&cols);CHKERRQ(ierr);
-    ierr = PetscCalloc1(col*nc*nc,&values);CHKERRQ(ierr);
     for (i=xs; i<xs+nx; i++) {
       istart = PetscMax(-s,gxs - i);
       iend   = PetscMin(s,gxs + gnx - i - 1);
       slot   = i - gxs;
 
       cnt = 0;
-      for (l=0; l<nc; l++) {
-        for (i1=istart; i1<iend+1; i1++) {
-          cols[cnt++] = l + nc*(slot + i1);
+      for (i1=istart; i1<iend+1; i1++) {
+        cols[cnt++] = nc*(slot + i1);
+        for (l=1; l<nc; l++) {
+          cols[cnt] = 1 + cols[cnt-1];cnt++;
         }
-        rows[l] = l + nc*(slot);
       }
-      ierr = MatSetValuesLocal(J,nc,rows,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
+      rows[0] = nc*(slot); for (l=1; l<nc; l++) rows[l] = 1 + rows[l-1];
+      ierr = MatSetValuesLocal(J,nc,rows,cnt,cols,NULL,INSERT_VALUES);CHKERRQ(ierr);
     }
-    ierr = PetscFree(values);CHKERRQ(ierr);
+    /* do not copy values to GPU since they are all zero and not yet needed there */
+    ierr = MatPinToCPU(J,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    if (!isIS && bx == DM_BOUNDARY_NONE) {
+      ierr = MatSetOption(J,MAT_SORTED_FULL,PETSC_FALSE);CHKERRQ(ierr);
+    }
+    ierr = MatPinToCPU(J,PETSC_FALSE);CHKERRQ(ierr);
     ierr = MatSetOption(J,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscFree2(rows,cols);CHKERRQ(ierr);
   }
@@ -1883,8 +1860,11 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIBAIJ(DM da,Mat J)
       }
     }
     ierr = PetscFree(values);CHKERRQ(ierr);
+    /* do not copy values to GPU since they are all zero and not yet needed there */
+    ierr = MatPinToCPU(J,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatPinToCPU(J,PETSC_FALSE);CHKERRQ(ierr);
     ierr = MatSetOption(J,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   }
   ierr = PetscFree(cols);CHKERRQ(ierr);
@@ -1989,8 +1969,11 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIBAIJ(DM da,Mat J)
       }
     }
     ierr = PetscFree(values);CHKERRQ(ierr);
+    /* do not copy values to GPU since they are all zero and not yet needed there */
+    ierr = MatPinToCPU(J,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatPinToCPU(J,PETSC_FALSE);CHKERRQ(ierr);
     ierr = MatSetOption(J,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   }
   ierr = PetscFree(cols);CHKERRQ(ierr);
@@ -2102,8 +2085,11 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPISBAIJ(DM da,Mat J)
       }
     }
     ierr = PetscFree(values);CHKERRQ(ierr);
+    /* do not copy values to GPU since they are all zero and not yet needed there */
+    ierr = MatPinToCPU(J,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatPinToCPU(J,PETSC_FALSE);CHKERRQ(ierr);
     ierr = MatSetOption(J,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   }
   ierr = PetscFree(cols);CHKERRQ(ierr);
@@ -2210,8 +2196,11 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPISBAIJ(DM da,Mat J)
       }
     }
     ierr = PetscFree(values);CHKERRQ(ierr);
+    /* do not copy values to GPU since they are all zero and not yet needed there */
+    ierr = MatPinToCPU(J,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatPinToCPU(J,PETSC_FALSE);CHKERRQ(ierr);
     ierr = MatSetOption(J,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   }
   ierr = PetscFree(cols);CHKERRQ(ierr);
@@ -2361,8 +2350,11 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ_Fill(DM da,Mat J)
       }
     }
     ierr = PetscFree(values);CHKERRQ(ierr);
+    /* do not copy values to GPU since they are all zero and not yet needed there */
+    ierr = MatPinToCPU(J,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatPinToCPU(J,PETSC_FALSE);CHKERRQ(ierr);
     ierr = MatSetOption(J,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   }
   ierr = PetscFree(cols);CHKERRQ(ierr);

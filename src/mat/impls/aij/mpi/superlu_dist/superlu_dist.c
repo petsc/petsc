@@ -5,9 +5,6 @@
 
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
-#if defined(PETSC_HAVE_STDLIB_H) /* This is to get around weird problem with SuperLU on cray */
-#include <stdlib.h>
-#endif
 
 EXTERN_C_BEGIN
 #if defined(PETSC_USE_COMPLEX)
@@ -319,9 +316,9 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFacto
     av = aa->a;
 #endif
 
-    ierr = PetscMemcpy(lu->row,ai,(m+1)*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMemcpy(lu->col,aj,nz*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMemcpy(lu->val,av,nz*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscArraycpy(lu->row,ai,(m+1));CHKERRQ(ierr);
+    ierr = PetscArraycpy(lu->col,aj,nz);CHKERRQ(ierr);
+    ierr = PetscArraycpy(lu->val,av,nz);CHKERRQ(ierr);
   } else {
     nz = 0;
     for (i=0; i<m; i++) {
@@ -503,6 +500,7 @@ static PetscErrorCode MatView_Info_SuperLU_DIST(Mat A,PetscViewer viewer)
   case MMD_ATA:
     ierr = PetscViewerASCIIPrintf(viewer,"  Column permutation MMD_ATA\n");CHKERRQ(ierr);
     break;
+  /*  Even though this is called METIS, the SuperLU_DIST code sets this by default if PARMETIS is defined, not METIS */
   case METIS_AT_PLUS_A:
     ierr = PetscViewerASCIIPrintf(viewer,"  Column permutation METIS_AT_PLUS_A\n");CHKERRQ(ierr);
     break;

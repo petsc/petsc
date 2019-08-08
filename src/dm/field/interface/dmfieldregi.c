@@ -13,8 +13,6 @@ PetscFunctionList DMFieldList;
 
    Level: advanced
 
-.keywords: DMField, register, all
-
 .seealso:  DMFieldRegisterDestroy()
 @*/
 PetscErrorCode  DMFieldRegisterAll(void)
@@ -51,8 +49,6 @@ PetscErrorCode  DMFieldRegisterAll(void)
 $     DMFieldSetType(tagger,"my_impl")
 
    Level: advanced
-
-.keywords: DMField, register
 
 .seealso: DMFieldRegisterAll(), DMFieldRegisterDestroy()
 @*/

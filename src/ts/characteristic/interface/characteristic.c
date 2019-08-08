@@ -150,8 +150,6 @@ PetscErrorCode CharacteristicCreate(MPI_Comm comm, Characteristic *c)
 
   Level: intermediate
 
-.keywords: Characteristic, set, method
-
 .seealso: CharacteristicType
 
 @*/
@@ -192,8 +190,6 @@ PetscErrorCode CharacteristicSetType(Characteristic c, CharacteristicType type)
 .  ksp   - iterative context obtained from CharacteristicCreate()
 
    Level: developer
-
-.keywords: Characteristic, setup
 
 .seealso: CharacteristicCreate(), CharacteristicSolve(), CharacteristicDestroy()
 @*/
@@ -245,8 +241,6 @@ PetscErrorCode CharacteristicSetUp(Characteristic c)
 
    Notes:
    CharacteristicRegister() may be called multiple times to add several user-defined solvers.
-
-.keywords: Characteristic, register
 
 .seealso: CharacteristicRegisterAll(), CharacteristicRegisterDestroy()
 
@@ -561,7 +555,7 @@ PetscErrorCode CharacteristicSetNeighbors(Characteristic c, PetscInt numNeighbor
   c->numNeighbors = numNeighbors;
   ierr = PetscFree(c->neighbors);CHKERRQ(ierr);
   ierr = PetscMalloc1(numNeighbors, &c->neighbors);CHKERRQ(ierr);
-  ierr = PetscMemcpy(c->neighbors, neighbors, numNeighbors * sizeof(PetscMPIInt));CHKERRQ(ierr);
+  ierr = PetscArraycpy(c->neighbors, neighbors, numNeighbors);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -582,7 +576,7 @@ int CharacteristicSendCoordinatesBegin(Characteristic c)
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)c), &rank);CHKERRQ(ierr);
   ierr = CharacteristicHeapSort(c, c->queue, c->queueSize);CHKERRQ(ierr);
-  ierr = PetscMemzero(c->needCount, c->numNeighbors * sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArrayzero(c->needCount, c->numNeighbors);CHKERRQ(ierr);
   for (i = 0;  i < c->queueSize; i++) c->needCount[c->queue[i].proc]++;
   c->fillCount[0] = 0;
   for (n = 1; n < c->numNeighbors; n++) {

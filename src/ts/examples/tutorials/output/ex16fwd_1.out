@@ -1,0 +1,11 @@
+mu 1., steps 500, ftime 0.5
+Vec Object: 1 MPI processes
+  type: seq
+2.00694
+-0.376967
+
+ forward sensitivity: d[y(tf) z(tf)]/d[y0 z0 mu]
+Mat Object: 1 MPI processes
+  type: seqdense
+8.8068735085981475e-01 2.4102287797144764e-01 -3.2098283690090622e-02 
+-1.3722358205486823e-01 1.9351874144199066e-01 8.7710457410309736e-02 

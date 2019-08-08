@@ -67,7 +67,7 @@ PetscErrorCode MatLUFactorNumeric_Essl(Mat F,Mat A,const MatFactorInfo *info)
   for (i=0; i<A->rmap->n+1; i++) essl->ia[i] = aa->i[i] + 1;
   for (i=0; i<aa->nz; i++) essl->ja[i] = aa->j[i] + 1;
 
-  ierr = PetscMemcpy(essl->a,aa->a,(aa->nz)*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArraycpy(essl->a,aa->a,aa->nz);CHKERRQ(ierr);
 
   /* set Essl options */
   essl->iparm[0] = 1;

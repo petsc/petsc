@@ -2,7 +2,7 @@
   Run with -tao_test_gradient_view and optionally -tao_test_gradient <threshold> to show difference
     of hand-coded and finite difference gradient entries greater than <threshold>.
   Testing hand-coded Gradient, if (for double precision runs) ||G - Gfd||_F/||G||_F is
-    O(1.e-8), the hand-coded Hessian is probably correct.
+    O(1.e-8), the hand-coded Gradient is probably correct.
   ||Gfd|| 0.0021849, ||G|| = 0.00218604, angle cosine = (Gfd'G)/||Gfd||||G|| = 1.
   2-norm ||G - Gfd||/||G|| = 0.000520807, ||G - Gfd|| = 1.1385e-06
   max-norm ||G - Gfd||/||G|| = 0.000520807, ||G - Gfd|| = 1.1385e-06

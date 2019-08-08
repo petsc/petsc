@@ -19,7 +19,6 @@ configure_options = [
   '--download-strumpack=1',
   '--download-mumps=1',
   '--download-elemental=1',
-  '--with-cxx-dialect=C++11',
   #'--download-spai=1', valgrind leaks here will probably not get fixed in the near future
   '--download-parms=1',
   '--download-moab=1',
@@ -27,6 +26,8 @@ configure_options = [
   '--download-revolve=1',
   '--download-codipack=1',
   '--download-adblaslapack=1',
+  '--download-p4est=1',
+  '--download-zlib=1',
   ]
 
 if __name__ == '__main__':

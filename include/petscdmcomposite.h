@@ -1,6 +1,6 @@
 /* "Unintrusive" multi-physics DM */
-#if !defined(__PETSCDMCOMPOSITE_H)
-#define __PETSCDMCOMPOSITE_H
+#if !defined(PETSCDMCOMPOSITE_H)
+#define PETSCDMCOMPOSITE_H
 
 #include <petscdm.h>
 

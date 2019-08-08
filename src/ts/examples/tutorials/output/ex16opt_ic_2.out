@@ -1,8 +1,0 @@
-mu 1., steps 0, ftime 0.5
-mu 1., steps 7, ftime 0.5
-mu 1.000000, steps 75, ftime 0.5
-Observed value y_ob=[2.007040; -0.377156], ODE solution y=[2.103106;-0.382918], Cost function f=0.009262
-mu 1.000000, steps 68, ftime 0.5
-Observed value y_ob=[2.007040; -0.377156], ODE solution y=[2.007313;-0.374969], Cost function f=0.000005
-mu 1.000000, steps 68, ftime 0.5
-Observed value y_ob=[2.007040; -0.377156], ODE solution y=[2.007198;-0.375177], Cost function f=0.000004

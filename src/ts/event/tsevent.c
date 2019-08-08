@@ -52,7 +52,7 @@ PetscErrorCode TSEventDestroy(TSEvent *event)
 }
 
 /*@
-  TSSetPostEventIntervalStep - Set the time-step immediately following the event interval
+  TSSetPostEventIntervalStep - Set the time-step used immediately following the event interval
 
   Logically Collective
 
@@ -64,7 +64,7 @@ PetscErrorCode TSEventDestroy(TSEvent *event)
 . -ts_event_post_eventinterval_step <dt> time-step after event interval
 
   Notes:
-  TSSetPostEventIntervalStep allows to set a time-step immediately following an event interval. 
+  TSSetPostEventIntervalStep allows one to set a time-step that is used immediately following an event interval. 
   
   This function should be called from the postevent function set with TSSetEventHandler().
 
@@ -126,7 +126,7 @@ PetscErrorCode TSSetEventTolerances(TS ts,PetscReal tol,PetscReal vtol[])
 }
 
 /*@C
-   TSSetEventHandler - Sets a monitoring function used for detecting events
+   TSSetEventHandler - Sets a function used for detecting events
 
    Logically Collective on TS
 
@@ -168,8 +168,6 @@ PetscErrorCode TSSetEventTolerances(TS ts,PetscReal tol,PetscReal vtol[])
 -  ctx          - the context passed with eventhandler
 
    Level: intermediate
-
-.keywords: TS, event, set
 
 .seealso: TSCreate(), TSSetTimeStep(), TSSetConvergedReason()
 @*/
@@ -268,11 +266,11 @@ static PetscErrorCode TSEventRecorderResize(TSEvent event)
   }
 
   /* Copy over data */
-  ierr = PetscMemcpy(time,event->recorder.time,event->recsize*sizeof(PetscReal));CHKERRQ(ierr);
-  ierr = PetscMemcpy(stepnum,event->recorder.stepnum,event->recsize*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMemcpy(nevents,event->recorder.nevents,event->recsize*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArraycpy(time,event->recorder.time,event->recsize);CHKERRQ(ierr);
+  ierr = PetscArraycpy(stepnum,event->recorder.stepnum,event->recsize);CHKERRQ(ierr);
+  ierr = PetscArraycpy(nevents,event->recorder.nevents,event->recsize);CHKERRQ(ierr);
   for (i=0; i < event->recsize; i++) {
-    ierr = PetscMemcpy(eventidx[i],event->recorder.eventidx[i],event->recorder.nevents[i]*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(eventidx[i],event->recorder.eventidx[i],event->recorder.nevents[i]);CHKERRQ(ierr);
   }
 
   /* Destroy old arrays */
@@ -297,7 +295,7 @@ static PetscErrorCode TSEventRecorderResize(TSEvent event)
 }
 
 /*
-   Helper rutine to handle user postenvents and recording
+   Helper routine to handle user postevents and recording
 */
 static PetscErrorCode TSPostEvent(TS ts,PetscReal t,Vec U)
 {

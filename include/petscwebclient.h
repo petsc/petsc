@@ -1,8 +1,8 @@
 /*
   This is the include file for source code that accesses HTTPS
 */
-#if !defined(__PETSCWEBCLIENT_H)
-#define __PETSCWEBCLIENT_H
+#if !defined(PETSCWEBCLIENT_H)
+#define PETSCWEBCLIENT_H
 
 /*  complex number I conflicts with SSL include files */
 #define PETSC_SKIP_COMPLEX

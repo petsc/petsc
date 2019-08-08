@@ -51,10 +51,11 @@ static PetscErrorCode DMLocalSNESGetContext(DM dm,DMSNES sdm,DMSNES_Local **dmlo
 
 static PetscErrorCode SNESComputeFunction_DMLocal(SNES snes,Vec X,Vec F,void *ctx)
 {
-  PetscErrorCode ierr;
+  DMSNES_Local  *dmlocalsnes = (DMSNES_Local *) ctx;
   DM             dm;
-  DMSNES_Local   *dmlocalsnes = (DMSNES_Local*)ctx;
   Vec            Xloc,Floc;
+  PetscBool      transform;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -64,10 +65,14 @@ static PetscErrorCode SNESComputeFunction_DMLocal(SNES snes,Vec X,Vec F,void *ct
   ierr = DMGetLocalVector(dm,&Xloc);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm,&Floc);CHKERRQ(ierr);
   ierr = VecZeroEntries(Xloc);CHKERRQ(ierr);
-  if (dmlocalsnes->boundarylocal) {ierr = (*dmlocalsnes->boundarylocal)(dm,Xloc,dmlocalsnes->boundarylocalctx);CHKERRQ(ierr);}
   ierr = VecZeroEntries(Floc);CHKERRQ(ierr);
+  /* Non-conforming routines needs boundary values before G2L */
+  if (dmlocalsnes->boundarylocal) {ierr = (*dmlocalsnes->boundarylocal)(dm,Xloc,dmlocalsnes->boundarylocalctx);CHKERRQ(ierr);}
   ierr = DMGlobalToLocalBegin(dm,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dm,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
+  /* Need to reset boundary values if we transformed */
+  ierr = DMHasBasisTransform(dm, &transform);CHKERRQ(ierr);
+  if (transform && dmlocalsnes->boundarylocal) {ierr = (*dmlocalsnes->boundarylocal)(dm,Xloc,dmlocalsnes->boundarylocalctx);CHKERRQ(ierr);}
   CHKMEMQ;
   ierr = (*dmlocalsnes->residuallocal)(dm,Xloc,Floc,dmlocalsnes->residuallocalctx);CHKERRQ(ierr);
   CHKMEMQ;
@@ -98,19 +103,24 @@ static PetscErrorCode SNESComputeFunction_DMLocal(SNES snes,Vec X,Vec F,void *ct
 
 static PetscErrorCode SNESComputeJacobian_DMLocal(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 {
-  PetscErrorCode ierr;
+  DMSNES_Local  *dmlocalsnes = (DMSNES_Local *) ctx;
   DM             dm;
-  DMSNES_Local   *dmlocalsnes = (DMSNES_Local*)ctx;
   Vec            Xloc;
+  PetscBool      transform;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   if (dmlocalsnes->jacobianlocal) {
     ierr = DMGetLocalVector(dm,&Xloc);CHKERRQ(ierr);
     ierr = VecZeroEntries(Xloc);CHKERRQ(ierr);
+    /* Non-conforming routines needs boundary values before G2L */
     if (dmlocalsnes->boundarylocal) {ierr = (*dmlocalsnes->boundarylocal)(dm,Xloc,dmlocalsnes->boundarylocalctx);CHKERRQ(ierr);}
     ierr = DMGlobalToLocalBegin(dm,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
     ierr = DMGlobalToLocalEnd(dm,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
+    /* Need to reset boundary values if we transformed */
+    ierr = DMHasBasisTransform(dm, &transform);CHKERRQ(ierr);
+    if (transform && dmlocalsnes->boundarylocal) {ierr = (*dmlocalsnes->boundarylocal)(dm,Xloc,dmlocalsnes->boundarylocalctx);CHKERRQ(ierr);}
     CHKMEMQ;
     ierr = (*dmlocalsnes->jacobianlocal)(dm,Xloc,A,B,dmlocalsnes->jacobianlocalctx);CHKERRQ(ierr);
     CHKMEMQ;
@@ -255,4 +265,3 @@ PetscErrorCode DMSNESSetJacobianLocal(DM dm,PetscErrorCode (*func)(DM,Vec,Mat,Ma
   ierr = DMSNESSetJacobian(dm,SNESComputeJacobian_DMLocal,dmlocalsnes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-

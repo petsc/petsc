@@ -332,4 +332,19 @@ int main(int argc,char **argv)
       args: -rhs-form -ts_type rk -ts_rk_type 5bs -ts_trajectory_dirname ex40_g_dir
       output_file: output/ex40.out 
 
+    test:
+      suffix: h
+      args: -rhs-form -ts_type rk -ts_rk_type 6vr -ts_trajectory_dirname ex40_h_dir
+      output_file: output/ex40.out
+
+    test:
+      suffix: i
+      args: -rhs-form -ts_type rk -ts_rk_type 7vr -ts_trajectory_dirname ex40_i_dir
+      output_file: output/ex40.out
+
+    test:
+      suffix: j
+      args: -rhs-form -ts_type rk -ts_rk_type 8vr -ts_trajectory_dirname ex40_j_dir
+      output_file: output/ex40.out
+
 TEST*/

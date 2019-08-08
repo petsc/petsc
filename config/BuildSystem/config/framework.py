@@ -85,6 +85,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.cHeader         = 'matt_fix.h'
     self.headerPrefix    = ''
     self.substPrefix     = ''
+    self.pkgheader       = ''
     self.warningRE       = re.compile('warning', re.I)
     if not nargs.Arg.findArgument('debugSections', self.clArgs):
       self.argDB['debugSections'] = ['screen']
@@ -200,7 +201,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     '''Change titles and setup all children'''
     argDB = script.Script.setupArguments(self, argDB)
 
-    self.help.title = 'Configure Help\n   Comma separated lists should be given between [] (use \[ \] in tcsh/csh)\n      For example: --with-mpi-lib=\[/usr/local/lib/libmpich.a,/usr/local/lib/libpmpich.a\]\n   Options beginning with --known- are to provide values you already know\n      For example:--known-endian=big\n   Options beginning with --with- indicate that you are requesting something\n      For example: --with-clanguage=c++\n   <prog> means a program name or a full path to a program\n      For example:--with-cmake=/Users/bsmith/bin/cmake\n   <bool> means a boolean, use either 0 or 1\n   <dir> means a directory\n      For example: --with-packages-download-dir=/Users/bsmith/Downloads\n   For packages use --with-PACKAGE-dir=<dir> OR\n      --with-PACKAGE-include=<dir> --with-PACKAGE-lib=<lib> OR --download-PACKAGE'
+    self.help.title = 'Configure Help\n   Comma separated lists should be given between [] (use \[ \] in tcsh/csh)\n      For example: --with-mpi-lib=\[/usr/local/lib/libmpich.a,/usr/local/lib/libpmpich.a\]\n   Options beginning with --known- are to provide values you already know\n    Options beginning with --with- indicate that you are requesting something\n      For example: --with-clanguage=c++\n   <prog> means a program name or a full path to a program\n      For example:--with-cmake=/Users/bsmith/bin/cmake\n   <bool> means a boolean, use either 0 or 1\n   <dir> means a directory\n      For example: --with-packages-download-dir=/Users/bsmith/Downloads\n   For packages use --with-PACKAGE-dir=<dir> OR\n      --with-PACKAGE-include=<dir> --with-PACKAGE-lib=<lib> OR --download-PACKAGE'
     self.actions.title = 'Configure Actions\n   These are the actions performed by configure on the filesystem'
 
     for child in self.childGraph.vertices:
@@ -233,8 +234,25 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       self.log.write('**** ' + self.cHeader + ' ****\n')
       self.outputCHeader(self.log)
       self.actions.addArgument('Framework', 'File creation', 'Created C specific configure header '+self.cHeader)
+    if self.pkgheader:
+      self.outputPkgHeader(self.pkgheader)
+      self.log.write('**** ' + self.pkgheader + ' ****\n')
+      self.outputPkgHeader(self.log)
+      self.actions.addArgument('Framework', 'File creation', 'Created configure pkg header '+self.pkgheader)
     self.log.write('\n')
     return
+
+  def saveHash(self):
+    '''Saves the hash for configure (created in arch.py)'''
+    for hf in ['hashfile','hashfilepackages']:
+      if hasattr(self,'hash') and hasattr(self,hf):
+        self.logPrint('Attempting to save configure hash file: '+getattr(self,hf))
+        try:
+          with open(getattr(self,hf), 'w') as f:
+            f.write(self.hash)
+          self.logPrint('Saved configure hash file: '+getattr(self,hf))
+        except:
+          self.logPrint('Unable to save configure hash file: '+getattr(self,hf))
 
   def cleanup(self):
     self.actions.output(self.log)
@@ -604,16 +622,18 @@ class Framework(config.base.Configure, script.LanguageProcessor):
 
   def outputDefine(self, f, name, value = None, comment = ''):
     '''Define "name" to "value" in the configuration header'''
-    guard = re.match(r'^(\w+)(\([\w,]+\))?', name).group(1)
+    # we need to keep the libraries in this list and simply not print them at the end
+    # because libraries.havelib() is used to find library in this list we had to list the libraries in the
+    # list even though we don't need them in petscconf.h
+    # two packages have LIB in there name so we have to include them here
+    if (name.startswith('PETSC_HAVE_LIB') and not name in ['PETSC_HAVE_LIBPNG','PETSC_HAVE_LIBJPEG']) or name.endswith('LIB'): return
     if comment:
       for line in comment.split('\n'):
         if line: f.write('/* '+line+' */\n')
-    f.write('#ifndef '+guard+'\n')
     if value:
       f.write('#define '+name+' '+str(value)+'\n')
     else:
       f.write('/* #undef '+name+' */\n')
-    f.write('#endif\n\n')
     return
 
   def outputMakeMacro(self, f, name, value):
@@ -678,6 +698,40 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       else:
         self.outputDefine(f, self.getFullDefineName(child, pair[0], prefix), pair[1])
     return
+
+  def outputPkgVersion(self, f, child):
+    '''If the child contains a tuple named "version_tuple", the entries are output in the config package header.'''
+    if not hasattr(child, 'version_tuple') or not isinstance(child.version_tuple, tuple): return
+    if not child.version_tuple: return
+    vt = child.version_tuple
+    prefix = 'PETSC_PKG_'+child.name.upper()+('_')
+    ss = ('VERSION_MAJOR','VERSION_MINOR','VERSION_SUBMINOR')
+    # output versioning tuple
+    for t in range(min(len(vt),3)):
+      f.write('#define '+prefix+ss[t]+(' ')+str(vt[t])+'\n')
+    while (t < 2):
+      t = t+1
+      f.write('#define '+prefix+ss[t]+(' 0\n'))
+
+    # output macros following petscversion.h style
+    f.write('#define '+prefix+'VERSION_ '+prefix+'VERSION_EQ\n\n')
+    f.write('#define '+prefix+'VERSION_EQ(MAJOR,MINOR,SUBMINOR)         \\\n')
+    f.write('      (('+prefix+'VERSION_MAJOR    == (MAJOR)) &&          \\\n')
+    f.write('       ('+prefix+'VERSION_MINOR    == (MINOR)) &&          \\\n')
+    f.write('       ('+prefix+'VERSION_SUBMINOR == (SUBMINOR)))\n\n')
+    f.write('#define '+prefix+'VERSION_LT(MAJOR,MINOR,SUBMINOR)         \\\n')
+    f.write('       ('+prefix+'VERSION_MAJOR  < (MAJOR) ||              \\\n')
+    f.write('        ('+prefix+'VERSION_MAJOR == (MAJOR) &&             \\\n')
+    f.write('         ('+prefix+'VERSION_MINOR  < (MINOR) ||            \\\n')
+    f.write('          ('+prefix+'VERSION_MINOR == (MINOR) &&           \\\n')
+    f.write('           ('+prefix+'VERSION_SUBMINOR  < (SUBMINOR))))))\n\n')
+    f.write('#define '+prefix+'VERSION_LE(MAJOR,MINOR,SUBMINOR)         \\\n')
+    f.write('       ('+prefix+'VERSION_LT(MAJOR,MINOR,SUBMINOR) ||      \\\n')
+    f.write('        '+prefix+'VERSION_EQ(MAJOR,MINOR,SUBMINOR))\n\n')
+    f.write('#define '+prefix+'VERSION_GT(MAJOR,MINOR,SUBMINOR)         \\\n')
+    f.write('       ( 0 == '+prefix+'VERSION_LE(MAJOR,MINOR,SUBMINOR))\n\n')
+    f.write('#define '+prefix+'VERSION_GE(MAJOR,MINOR,SUBMINOR)         \\\n')
+    f.write('       ( 0 == '+prefix+'VERSION_LT(MAJOR,MINOR,SUBMINOR))\n\n')
 
   def outputTypedefs(self, f, child):
     '''If the child contains a dictionary named "typedefs", the entries are output as typedefs in the config header.'''
@@ -757,6 +811,33 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.outputDefines(f, self, prefix)
     for child in self.childGraph.vertices:
       self.outputDefines(f, child, prefix)
+    if hasattr(self, 'headerBottom'):
+      f.write(str(self.headerBottom)+'\n')
+    f.write('#endif\n')
+    if not hasattr(name, 'close'):
+      f.close()
+    return
+
+  def outputPkgHeader(self, name, prefix = None):
+    '''Write the packages configuration header'''
+    if hasattr(name, 'close'):
+      f = name
+      filename = 'Unknown'
+    else:
+      dir = os.path.dirname(name)
+      if dir and not os.path.exists(dir):
+        os.makedirs(dir)
+      if self.file_create_pause: time.sleep(1)
+      f = open(name, 'w')
+      filename = os.path.basename(name)
+    guard = 'INCLUDED_'+filename.upper().replace('.', '_')
+    f.write('#if !defined('+guard+')\n')
+    f.write('#define '+guard+'\n\n')
+    if hasattr(self, 'headerTop'):
+      f.write(str(self.headerTop)+'\n')
+    self.outputPkgVersion(f, self)
+    for child in self.childGraph.vertices:
+      self.outputPkgVersion(f, child)
     if hasattr(self, 'headerBottom'):
       f.write(str(self.headerBottom)+'\n')
     f.write('#endif\n')
@@ -891,7 +972,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       body.extend(self.batchCleanup)
       # pretty print repr(args.values())
       for itm in args:
-        if (itm != '--configModules=PETSc.Configure') and (itm != '--optionsModule=config.compilerOptions'):
+        if (itm not in ['--configModules=PETSc.Configure','--optionsModule=config.compilerOptions','--force']):
           body.append('fprintf(output,"  \'%s\',\\n","'+str(itm).replace('"', "'")+'");')
       body.append('fprintf(output,"]");')
       driver = ['fprintf(output, "\\nif __name__ == \'__main__\':',
@@ -1087,5 +1168,6 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     if self.argDB['with-batch']:
       self.configureBatch()
     self.dumpConfFiles()
+    self.saveHash()
     self.cleanup()
     return 1

@@ -312,6 +312,7 @@ static PetscErrorCode PhysicsSample_Advect(void *vctx,PetscInt initial,FVBCType 
     case 4: u[0] = PetscAbs(x0); break;
     case 5: u[0] = (x0 < 0 || x0 > 0.5) ? 0 : PetscSqr(PetscSinReal(2*PETSC_PI*x0)); break;
     case 6: u[0] = (x0 < 0) ? 0 : ((x0 < 1) ? x0 : ((x0 < 2) ? 2-x0 : 0)); break;
+    case 7: u[0] = PetscPowReal(PetscSinReal(PETSC_PI*x0),10.0);break;
     default: SETERRQ(PETSC_COMM_SELF,1,"unknown initial condition");
   }
   PetscFunctionReturn(0);
@@ -909,7 +910,7 @@ static PetscErrorCode PhysicsCharacteristic_IsoGas(void *vctx,PetscInt m,const P
   X[0*2+1]  = speeds[0];
   X[1*2+0]  = 1;
   X[1*2+1]  = speeds[1];
-  ierr = PetscMemcpy(Xi,X,4*sizeof(X[0]));CHKERRQ(ierr);
+  ierr = PetscArraycpy(Xi,X,4);CHKERRQ(ierr);
   ierr = PetscKernel_A_gets_inverse_A_2(Xi,0,PETSC_FALSE,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1066,7 +1067,7 @@ static PetscErrorCode PhysicsCharacteristic_Shallow(void *vctx,PetscInt m,const 
   X[0*2+1]  = speeds[0];
   X[1*2+0]  = 1;
   X[1*2+1]  = speeds[1];
-  ierr = PetscMemcpy(Xi,X,4*sizeof(X[0]));CHKERRQ(ierr);
+  ierr = PetscArraycpy(Xi,X,4);CHKERRQ(ierr);
   ierr = PetscKernel_A_gets_inverse_A_2(Xi,0,PETSC_FALSE,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1149,7 +1150,7 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
     /* Determine the right eigenvectors R, where A = R \Lambda R^{-1} */
     ierr = (*ctx->physics.characteristic)(ctx->physics.user,dof,&x[i*dof],ctx->R,ctx->Rinv,ctx->speeds);CHKERRQ(ierr);
     /* Evaluate jumps across interfaces (i-1, i) and (i, i+1), put in characteristic basis */
-    ierr  = PetscMemzero(ctx->cjmpLR,2*dof*sizeof(ctx->cjmpLR[0]));CHKERRQ(ierr);
+    ierr  = PetscArrayzero(ctx->cjmpLR,2*dof);CHKERRQ(ierr);
     cjmpL = &ctx->cjmpLR[0];
     cjmpR = &ctx->cjmpLR[dof];
     for (j=0; j<dof; j++) {
@@ -1317,7 +1318,7 @@ static PetscErrorCode SolutionStatsView(DM da,Vec X,PetscViewer viewer)
     for (i=xs; i<xs+xm; i++) {
       for (j=0; j<dof; j++) tvsum += PetscAbsScalar(x[i*dof+j] - x[(i-1)*dof+j]);
     }
-    ierr = MPI_Allreduce(&tvsum,&tvgsum,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&tvsum,&tvgsum,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
     ierr = DMDAVecRestoreArrayRead(da,Xloc,(void*)&x);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(da,&Xloc);CHKERRQ(ierr);
 

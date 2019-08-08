@@ -59,7 +59,7 @@ PetscErrorCode TaoTestGradient(Tao tao,Vec x,Vec g1)
   }
   if (!directionsprinted) {
     ierr = PetscViewerASCIIPrintf(viewer,"  Testing hand-coded Gradient, if (for double precision runs) ||G - Gfd||_F/||G||_F is\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    O(1.e-8), the hand-coded Hessian is probably correct.\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"    O(1.e-8), the hand-coded Gradient is probably correct.\n");CHKERRQ(ierr);
     directionsprinted = PETSC_TRUE;
   }
   if (complete_print) {

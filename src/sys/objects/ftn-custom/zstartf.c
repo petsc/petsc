@@ -44,7 +44,6 @@ PETSC_EXTERN void PETSC_STDCALL petscsetcomm_(MPI_Fint*,MPI_Fint*);
 
 .seealso:  PetscInitialize()
 
-.keywords: Mixing C and Fortran, passing PETSc objects to Fortran
 @*/
 PetscErrorCode PetscInitializeFortran(void)
 {

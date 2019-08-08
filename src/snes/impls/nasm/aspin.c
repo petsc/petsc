@@ -44,8 +44,6 @@ PetscErrorCode MatMultASPIN(Mat m,Vec X,Vec Y)
     ierr = KSPSetOperators(ksp,subJ,subpJ);CHKERRQ(ierr);
     ierr = KSPSolve(ksp,b[i],x[i]);CHKERRQ(ierr);
     ierr = VecScatterBegin(oscatter[i],x[i],Y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  }
-  for (i=0;i<n;i++) {
     ierr = VecScatterEnd(oscatter[i],x[i],Y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -82,6 +80,16 @@ static PetscErrorCode SNESDestroy_ASPIN(SNES snes)
     which is the ASPIN preconditioned matrix. Similar solvers may be constructed by having matrix-free differencing of
     nonlinear solves per linear iteration, but this is far more efficient when subdomain sparse-direct preconditioner
     factorizations are reused on each application of J_b^{-1}.
+
+    The Krylov method used in this nonlinear solver is run with NO preconditioner, because the preconditioning is done
+    at the nonlinear level, but the Jacobian for the original function must be provided (or calculated via coloring and
+    finite differences automatically) in the Pmat location of SNESSetJacobian() because the action of the original Jacobian
+    is needed by the shell matrix used to apply the Jacobian of the nonlinear preconditioned problem (see above).
+    Note that since the Pmat is not used to construct a preconditioner it could be provided in a matrix-free form.
+    The code for this implementation is a bit confusing because the Amat of SNESSetJacobian() applies the Jacobian of the
+    nonlinearly preconditioned function Jacobian while the Pmat provides the Jacobian of the original user provided function.
+    Note that the original SNES and nonlinear preconditioner preconditioner (see SNESGetNPC()), in this case NASM, share
+    the same Jacobian matrices. SNESNASM computes the need Jacobian in SNESNASMComputeFinalJacobian_Private()
 
    Level: intermediate
 

@@ -15,7 +15,6 @@ petsc-dist/config/BuildSystem/.hg
 petsc-dist/config/BuildSystem/.hgignore
 petsc-dist/config/BuildSystem/.hgtags
 petsc-dist/docs/exampleconcepts
-petsc-dist/docs/manconcepts
 petsc-dist/src/tops
 petsc-dist/src/java
 petsc-dist/src/tops/images

@@ -14,6 +14,7 @@ configure_options = [
   '--with-scalar-type=complex',
   '--with-64-bit-indices=1',
 
+  '--download-hypre=1',
   '--download-mpich=1',
   '--download-cmake=1',
   '--download-make=1',
@@ -22,7 +23,6 @@ configure_options = [
   '--download-pastix=1',
   '--download-ptscotch=1',
   '--download-superlu_dist=1',
-  '--with-cxx-dialect=C++11',
   '--download-elemental=1',
   '--download-p4est=1',
   '--with-zlib=1',

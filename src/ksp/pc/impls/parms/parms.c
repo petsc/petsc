@@ -103,22 +103,22 @@ static PetscErrorCode PCSetUp_PARMS(PC pc)
     if (ia[i-low+1] >= length) {
       length += ncols;
       ierr    = PetscMalloc1(length,&ja1);CHKERRQ(ierr);
-      ierr    = PetscMemcpy(ja1,ja,(ia[i-low]-1)*sizeof(int));CHKERRQ(ierr);
+      ierr    = PetscArraycpy(ja1,ja,ia[i-low]-1);CHKERRQ(ierr);
       ierr    = PetscFree(ja);CHKERRQ(ierr);
       ja      = ja1;
       ierr    = PetscMalloc1(length,&aa1);CHKERRQ(ierr);
-      ierr    = PetscMemcpy(aa1,aa,(ia[i-low]-1)*sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr    = PetscArraycpy(aa1,aa,ia[i-low]-1);CHKERRQ(ierr);
       ierr    = PetscFree(aa);CHKERRQ(ierr);
       aa      = aa1;
     }
-    ierr = PetscMemcpy(&ja[pos],cols,ncols*sizeof(int));CHKERRQ(ierr);
-    ierr = PetscMemcpy(&aa[pos],values,ncols*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscArraycpy(&ja[pos],cols,ncols);CHKERRQ(ierr);
+    ierr = PetscArraycpy(&aa[pos],values,ncols);CHKERRQ(ierr);
     ierr = MatRestoreRow(pmat,i,&ncols,&cols,&values);CHKERRQ(ierr);
   }
 
   /* csr info is for local matrix so initialize im[] locally */
   ierr = PetscMalloc1(lsize,&im);CHKERRQ(ierr);
-  ierr = PetscMemcpy(im,&maptmp[mapptr[rank]-1],lsize*sizeof(int));CHKERRQ(ierr);
+  ierr = PetscArraycpy(im,&maptmp[mapptr[rank]-1],lsize);CHKERRQ(ierr);
 
   /* 1-based indexing */
   for (i=0; i<ia[lsize]-1; i++) ja[i] = ja[i]+1;

@@ -45,7 +45,7 @@ static PetscErrorCode PCSetUp_CP(PC pc)
   for (i=0; i<aij->nz; i++) colcnt[aij->j[i]]++;
   cp->i[0] = 0;
   for (i=0; i<cp->n; i++) cp->i[i+1] = cp->i[i] + colcnt[i];
-  ierr = PetscMemzero(colcnt,cp->n*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArrayzero(colcnt,cp->n);CHKERRQ(ierr);
   for (i=0; i<cp->m; i++) {  /* over rows */
     for (j=aij->i[i]; j<aij->i[i+1]; j++) {  /* over columns in row */
       cp->j[cp->i[aij->j[j]]+colcnt[aij->j[j]]]   = i;

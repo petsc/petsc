@@ -1,12 +1,10 @@
-#if !defined(_PETSCDMTYPES_H)
-#define _PETSCDMTYPES_H
+#if !defined(PETSCDMTYPES_H)
+#define PETSCDMTYPES_H
 
 /*S
      DM - Abstract PETSc object that manages an abstract grid object and its interactions with the algebraic solvers
 
    Level: intermediate
-
-  Concepts: grids, grid refinement
 
    Notes:
     The DMDACreate() based object and the DMCompositeCreate() based object are examples of DMs
@@ -37,7 +35,7 @@ typedef struct _p_DM* DM;
   as the 0th grid point where the physical boundary serves as the mirror?
 
   References: 
-  http://scicomp.stackexchange.com/questions/5355/writing-the-poisson-equation-finite-difference-matrix-with-neumann-boundary-cond
+  https://scicomp.stackexchange.com/questions/5355/writing-the-poisson-equation-finite-difference-matrix-with-neumann-boundary-cond
 
 .seealso: DMDASetBoundaryType(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDACreate()
 E*/
@@ -115,8 +113,6 @@ typedef enum {DM_ADAPT_DETERMINE = PETSC_DETERMINE, DM_ADAPT_KEEP = 0, DM_ADAPT_
   PetscPartitioner - PETSc object that manages a graph partitioner
 
   Level: intermediate
-
-  Concepts: partition, mesh
 
 .seealso: PetscPartitionerCreate(), PetscPartitionerSetType(), PetscPartitionerType
 S*/

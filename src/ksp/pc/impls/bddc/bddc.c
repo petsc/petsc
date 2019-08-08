@@ -1079,9 +1079,9 @@ static PetscErrorCode PCBDDCSetLocalAdjacencyGraph_BDDC(PC pc, PetscInt nvtxs,co
   if (mat_graph->nvtxs == nvtxs && mat_graph->freecsr) { /* we own the data */
     if (mat_graph->xadj == xadj && mat_graph->adjncy == adjncy) same_data = PETSC_TRUE;
     if (!same_data && mat_graph->xadj[nvtxs] == xadj[nvtxs]) {
-      ierr = PetscMemcmp(xadj,mat_graph->xadj,(nvtxs+1)*sizeof(PetscInt),&same_data);CHKERRQ(ierr);
+      ierr = PetscArraycmp(xadj,mat_graph->xadj,nvtxs+1,&same_data);CHKERRQ(ierr);
       if (same_data) {
-        ierr = PetscMemcmp(adjncy,mat_graph->adjncy,xadj[nvtxs]*sizeof(PetscInt),&same_data);CHKERRQ(ierr);
+        ierr = PetscArraycmp(adjncy,mat_graph->adjncy,xadj[nvtxs],&same_data);CHKERRQ(ierr);
       }
     }
   }
@@ -1092,8 +1092,8 @@ static PetscErrorCode PCBDDCSetLocalAdjacencyGraph_BDDC(PC pc, PetscInt nvtxs,co
     if (copymode == PETSC_COPY_VALUES) {
       ierr = PetscMalloc1(nvtxs+1,&mat_graph->xadj);CHKERRQ(ierr);
       ierr = PetscMalloc1(xadj[nvtxs],&mat_graph->adjncy);CHKERRQ(ierr);
-      ierr = PetscMemcpy(mat_graph->xadj,xadj,(nvtxs+1)*sizeof(PetscInt));CHKERRQ(ierr);
-      ierr = PetscMemcpy(mat_graph->adjncy,adjncy,xadj[nvtxs]*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscArraycpy(mat_graph->xadj,xadj,nvtxs+1);CHKERRQ(ierr);
+      ierr = PetscArraycpy(mat_graph->adjncy,adjncy,xadj[nvtxs]);CHKERRQ(ierr);
       mat_graph->freecsr = PETSC_TRUE;
     } else if (copymode == PETSC_OWN_POINTER) {
       mat_graph->xadj    = (PetscInt*)xadj;
@@ -2023,7 +2023,7 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
   }
   if (pcbddc->benign_have_null) { /* set p0 (computed in PCBDDCApplyInterface) */
     if (pcbddc->benign_apply_coarse_only) {
-      ierr = PetscMemzero(pcbddc->benign_p0,pcbddc->benign_n*sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr = PetscArrayzero(pcbddc->benign_p0,pcbddc->benign_n);CHKERRQ(ierr);
     }
     ierr = PCBDDCBenignGetOrSetP0(pc,z,PETSC_FALSE);CHKERRQ(ierr);
   }
@@ -2288,7 +2288,7 @@ static PetscErrorCode PCSetCoordinates_BDDC(PC pc, PetscInt dim, PetscInt nloc, 
   PetscFunctionBegin;
   ierr = PetscFree(mat_graph->coords);CHKERRQ(ierr);
   ierr = PetscMalloc1(nloc*dim,&mat_graph->coords);CHKERRQ(ierr);
-  ierr = PetscMemcpy(mat_graph->coords,coords,nloc*dim*sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscArraycpy(mat_graph->coords,coords,nloc*dim);CHKERRQ(ierr);
   mat_graph->cnloc = nloc;
   mat_graph->cdim  = dim;
   mat_graph->cloc  = PETSC_FALSE;
@@ -2379,9 +2379,9 @@ static PetscErrorCode PCBDDCMatFETIDPGetRHS_BDDC(Mat fetidp_mat, Vec standard_rh
     ierr = VecCopy(mat_ctx->temp_solution_D,pcis->vec1_D);CHKERRQ(ierr);
   }
   /* apply BDDC */
-  ierr = PetscMemzero(pcbddc->benign_p0,pcbddc->benign_n*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArrayzero(pcbddc->benign_p0,pcbddc->benign_n);CHKERRQ(ierr);
   ierr = PCBDDCApplyInterfacePreconditioner(mat_ctx->pc,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = PetscMemzero(pcbddc->benign_p0,pcbddc->benign_n*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArrayzero(pcbddc->benign_p0,pcbddc->benign_n);CHKERRQ(ierr);
 
   /* Application of B_delta and assembling of rhs for fetidp fluxes */
   ierr = MatMult(mat_ctx->B_delta,pcis->vec1_B,mat_ctx->lambda_local);CHKERRQ(ierr);
@@ -2466,7 +2466,7 @@ static PetscErrorCode PCBDDCMatFETIDPGetSolution_BDDC(Mat fetidp_mat, Vec fetidp
   }
 
   /* apply BDDC */
-  ierr = PetscMemzero(pcbddc->benign_p0,pcbddc->benign_n*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArrayzero(pcbddc->benign_p0,pcbddc->benign_n);CHKERRQ(ierr);
   ierr = PCBDDCApplyInterfacePreconditioner(mat_ctx->pc,PETSC_FALSE);CHKERRQ(ierr);
 
   /* put values into global vector */
@@ -2902,8 +2902,8 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, PetscBool fully_redundant, con
 
 .vb
    [1] C. R. Dohrmann. "An approximate BDDC preconditioner", Numerical Linear Algebra with Applications Volume 14, Issue 2, pages 149-168, March 2007
-   [2] A. Klawonn and O. B. Widlund. "Dual-Primal FETI Methods for Linear Elasticity", http://cs.nyu.edu/csweb/Research/TechReports/TR2004-855/TR2004-855.pdf
-   [3] J. Mandel, B. Sousedik, C. R. Dohrmann. "Multispace and Multilevel BDDC", http://arxiv.org/abs/0712.3977
+   [2] A. Klawonn and O. B. Widlund. "Dual-Primal FETI Methods for Linear Elasticity", https://cs.nyu.edu/dynamic/reports/?year=all
+   [3] J. Mandel, B. Sousedik, C. R. Dohrmann. "Multispace and Multilevel BDDC", https://arxiv.org/abs/0712.3977
    [4] C. Pechstein and C. R. Dohrmann. "Modern domain decomposition methods BDDC, deluxe scaling, and an algebraic approach", Seminar talk, Linz, December 2013, http://people.ricam.oeaw.ac.at/c.pechstein/pechstein-bddc2013.pdf
 .ve
 
@@ -2934,7 +2934,7 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, PetscBool fully_redundant, con
 
    Options Database Keys (some of them, run with -h for a complete list):
 
-.    -pc_bddc_use_vertices <true> - use or not vertices in primal space
++    -pc_bddc_use_vertices <true> - use or not vertices in primal space
 .    -pc_bddc_use_edges <true> - use or not edges in primal space
 .    -pc_bddc_use_faces <false> - use or not faces in primal space
 .    -pc_bddc_symmetric <true> - symmetric computation of primal basis functions. Specify false for unsymmetric problems
@@ -3064,7 +3064,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
 
  Level: developer
 
- .keywords: PC, PCBDDC, initialize, package
  .seealso: PetscInitialize()
 @*/
 PetscErrorCode PCBDDCInitializePackage(void)
@@ -3118,7 +3117,6 @@ PetscErrorCode PCBDDCInitializePackage(void)
 
  Level: developer
 
- .keywords: Petsc, destroy, package
  .seealso: PetscFinalize()
 @*/
 PetscErrorCode PCBDDCFinalizePackage(void)

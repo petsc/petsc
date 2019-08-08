@@ -318,17 +318,15 @@ PetscErrorCode MatCoarsenDestroy_MIS(MatCoarsen coarse)
 /*MC
    MATCOARSENMIS - Creates a coarsen context via the external package MIS.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameter:
 .  coarse - the coarsen context
 
    Options Database Keys:
-+  -mat_coarsen_MIS_xxx -
+.  -mat_coarsen_MIS_xxx -
 
    Level: beginner
-
-.keywords: Coarsen, create, context
 
 .seealso: MatCoarsenSetType(), MatCoarsenType
 

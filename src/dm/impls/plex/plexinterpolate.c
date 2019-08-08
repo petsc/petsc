@@ -266,7 +266,7 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
   PetscHashIJKL  faceTable;
   PetscInt      *pStart, *pEnd;
   PetscInt       cellDim, depth, faceDepth = cellDepth, numPoints = 0, faceSizeAll = 0, face, c, d;
-  PetscInt       coneSizeH = 0, faceSizeAllH = 0, numCellFacesH = 0, faceH, pMax = -1, dim, outerloop;
+  PetscInt       coneSizeH = 0, faceSizeAllH = 0, faceSizeAllT = 0, numCellFacesH = 0, faceT = 0, faceH, pMax = -1, dim, outerloop;
   PetscInt       cMax, fMax, eMax, vMax;
   PetscErrorCode ierr;
 
@@ -302,6 +302,9 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
     const PetscInt *cellFaces, *cone;
     PetscInt        numCellFacesT, faceSize, cf;
 
+    /* First get normal cell face size (we now allow hybrid cells to meet normal cells on either hybrid or normal faces */
+    if (pStart[cellDepth] < pMax) {ierr = DMPlexGetFaces_Internal(dm, cellDim, pStart[cellDepth], NULL, &faceSizeAll, NULL);CHKERRQ(ierr);}
+
     ierr = DMPlexGetConeSize(dm, pMax, &coneSizeH);CHKERRQ(ierr);
     ierr = DMPlexGetCone(dm, pMax, &cone);CHKERRQ(ierr);
     ierr = DMPlexGetRawFacesHybrid_Internal(dm, cellDim, coneSizeH, cone, &numCellFacesH, &numCellFacesT, &faceSize, &cellFaces);CHKERRQ(ierr);
@@ -320,8 +323,8 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
       minv = sizes[0];
       maxv = sizes[PetscMax(numCellFacesT-1, 0)];
       if (minv != maxv) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_SUP, "Different number of vertices for non-hybrid face %D != %D", minv, maxv);
-      faceSizeAll = minv;
-      ierr = PetscMemzero(sizes, numCellFacesH*sizeof(PetscInt));CHKERRQ(ierr);
+      faceSizeAllT = minv;
+      ierr = PetscArrayzero(sizes, numCellFacesH);CHKERRQ(ierr);
       for (cf = numCellFacesT; cf < numCellFacesH; ++cf) { /* These are the hybrid faces */
         const PetscInt *cellFace = &cellFaces[-cf*faceSize];
         PetscInt       f;
@@ -334,12 +337,14 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
       ierr = PetscFree(sizes);CHKERRQ(ierr);
       if (minv != maxv) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_SUP, "Different number of vertices for hybrid face %D != %D", minv, maxv);
       faceSizeAllH = minv;
+      if (!faceSizeAll) faceSizeAll = faceSizeAllT;
     } else { /* the size of the faces in hybrid cells is the same */
-      faceSizeAll = faceSizeAllH = faceSize;
+      faceSizeAll = faceSizeAllH = faceSizeAllT = faceSize;
     }
     ierr = DMPlexRestoreRawFacesHybrid_Internal(dm, cellDim, coneSizeH, cone, &numCellFacesH, &numCellFacesT, &faceSize, &cellFaces);CHKERRQ(ierr);
   } else if (pEnd[cellDepth] > pStart[cellDepth]) {
     ierr = DMPlexGetFaces_Internal(dm, cellDim, pStart[cellDepth], NULL, &faceSizeAll, NULL);CHKERRQ(ierr);
+    faceSizeAllH = faceSizeAllT = faceSizeAll;
   }
   if (faceSizeAll > 4) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Do not support interpolation of meshes with faces of %D vertices", faceSizeAll);
 
@@ -354,11 +359,12 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
     end = outerloop == 0 ? pEnd[cellDepth] : pMax;
     for (c = start; c < end; ++c) {
       const PetscInt *cellFaces;
-      PetscInt        numCellFaces, faceSize, faceSizeInc, cf;
+      PetscInt        numCellFaces, faceSize, faceSizeInc, faceSizeCheck, cf;
 
       if (c < pMax) {
         ierr = DMPlexGetFaces_Internal(dm, cellDim, c, &numCellFaces, &faceSize, &cellFaces);CHKERRQ(ierr);
         if (faceSize != faceSizeAll) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistent face for cell %D of size %D != %D", c, faceSize, faceSizeAll);
+        faceSizeCheck = faceSizeAll;
       } else { /* Hybrid cell */
         const PetscInt *cone;
         PetscInt        numCellFacesN, coneSize;
@@ -371,6 +377,7 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
         faceSize = PetscMax(faceSize, -faceSize);
         if (faceSize > 4) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Do not support interpolation of meshes with faces of %D vertices", faceSize);
         numCellFaces = numCellFacesN; /* process only non-hybrid faces */
+        faceSizeCheck = faceSizeAllT;
       }
       faceSizeInc = faceSize;
       for (cf = 0; cf < numCellFaces; ++cf) {
@@ -393,9 +400,12 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
           ierr  = PetscSortInt(faceSize, (PetscInt *) &key);CHKERRQ(ierr);
         }
         /* this check is redundant for non-hybrid meshes */
-        if (faceSizeH != faceSizeAll) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unexpected number of vertices for face %D of point %D -> %D != %D", cf, c, faceSizeH, faceSizeAll);
+        if (faceSizeH != faceSizeCheck) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unexpected number of vertices for face %D of point %D -> %D != %D", cf, c, faceSizeH, faceSizeCheck);
         ierr = PetscHashIJKLPut(faceTable, key, &iter, &missing);CHKERRQ(ierr);
-        if (missing) {ierr = PetscHashIJKLIterSet(faceTable, iter, face++);CHKERRQ(ierr);}
+        if (missing) {
+          ierr = PetscHashIJKLIterSet(faceTable, iter, face++);CHKERRQ(ierr);
+          if (c >= pMax) ++faceT;
+        }
       }
       if (c < pMax) {
         ierr = DMPlexRestoreFaces_Internal(dm, cellDim, c, &numCellFaces, &faceSize, &cellFaces);CHKERRQ(ierr);
@@ -459,13 +469,26 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
     PetscInt coneSize, p;
 
     if (d == faceDepth) {
-      /* I see no way to do this if we admit faces of different shapes */
-      for (p = pStart[d]; p < pEnd[d]-faceH; ++p) {
-        ierr = DMPlexSetConeSize(idm, p, faceSizeAll);CHKERRQ(ierr);
-      }
-      for (p = pEnd[d]-faceH; p < pEnd[d]; ++p) {
-        ierr = DMPlexSetConeSize(idm, p, faceSizeAllH);CHKERRQ(ierr);
-      }
+      /* Now we have two cases: */
+      if (faceSizeAll == faceSizeAllT) {
+        /* I see no way to do this if we admit faces of different shapes */
+        for (p = pStart[d]; p < pEnd[d]-faceH; ++p) {
+          ierr = DMPlexSetConeSize(idm, p, faceSizeAll);CHKERRQ(ierr);
+        }
+        for (p = pEnd[d]-faceH; p < pEnd[d]; ++p) {
+          ierr = DMPlexSetConeSize(idm, p, faceSizeAllH);CHKERRQ(ierr);
+        }
+      } else if (faceSizeAll == faceSizeAllH) {
+        for (p = pStart[d]; p < pStart[d]+faceT; ++p) {
+          ierr = DMPlexSetConeSize(idm, p, faceSizeAllT);CHKERRQ(ierr);
+        }
+        for (p = pStart[d]+faceT; p < pEnd[d]-faceH; ++p) {
+          ierr = DMPlexSetConeSize(idm, p, faceSizeAll);CHKERRQ(ierr);
+        }
+        for (p = pEnd[d]-faceH; p < pEnd[d]; ++p) {
+          ierr = DMPlexSetConeSize(idm, p, faceSizeAllH);CHKERRQ(ierr);
+        }
+      } else SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistent faces sizes N: %D T: %D H: %D", faceSizeAll, faceSizeAllT, faceSizeAllH);
     } else if (d == cellDepth) {
       for (p = pStart[d]; p < pEnd[d]; ++p) {
         /* Number of cell faces may be different from number of cell vertices*/
@@ -570,7 +593,7 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
             if (j == faceSize) {
               if (i == 0) ornt = -faceSize;
               else        ornt = -i;
-            } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not determine face orientation");
+            } else SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not determine orientation of face %D in cell %D", f, c);
           }
           ierr = DMPlexInsertConeOrientation(idm, c, cf, ornt);CHKERRQ(ierr);
         }
@@ -618,8 +641,10 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
         ierr = PetscHashIJKLIterSet(faceTable, iter, face);CHKERRQ(ierr);
         ierr = DMPlexInsertCone(idm, c, cf, face++);CHKERRQ(ierr);
       } else {
+        PetscInt        fv[4] = {0, 1, 2, 3};
         const PetscInt *cone;
         PetscInt        coneSize, ornt, i, j, f;
+        PetscBool       q2h = PETSC_FALSE;
 
         ierr = PetscHashIJKLIterGet(faceTable, iter, &f);CHKERRQ(ierr);
         ierr = DMPlexInsertCone(idm, c, cf, f);CHKERRQ(ierr);
@@ -627,20 +652,46 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
         ierr = DMPlexGetConeSize(idm, f, &coneSize);CHKERRQ(ierr);
         ierr = DMPlexGetCone(idm, f, &cone);CHKERRQ(ierr);
         if (coneSize != faceSizeH) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of face vertices %D for face %D should be %D", coneSize, f, faceSizeH);
+        /* Hybrid faces are stored as tensor products of edges, so to compare them to normal faces, we have to flip */
+        if (faceSize == 4 && c >= pMax && faceSizeAll != faceSizeAllT && f < pEnd[faceDepth] - faceH) {q2h = PETSC_TRUE; fv[2] = 3; fv[3] = 2;}
         /* - First find the initial vertex */
-        for (i = 0; i < faceSizeH; ++i) if (cellFace[0] == cone[i]) break;
-        /* - Try forward comparison */
-        for (j = 0; j < faceSizeH; ++j) if (cellFace[j] != cone[(i+j)%faceSizeH]) break;
-        if (j == faceSizeH) {
-          if ((faceSizeH == 2) && (i == 1)) ornt = -2;
-          else                             ornt = i;
-        } else {
-          /* - Try backward comparison */
-          for (j = 0; j < faceSizeH; ++j) if (cellFace[j] != cone[(i+faceSizeH-j)%faceSizeH]) break;
+        for (i = 0; i < faceSizeH; ++i) if (cellFace[fv[0]] == cone[i]) break;
+        if (q2h) { /* Matt's case: hybrid faces meeting with non-hybrid faces. This is a case that is not (and will not be) supported in general by the refinements */
+          /* - Try forward comparison */
+          for (j = 0; j < faceSizeH; ++j) if (cellFace[fv[j]] != cone[(i+j)%faceSizeH]) break;
           if (j == faceSizeH) {
-            if (i == 0) ornt = -faceSizeH;
-            else        ornt = -i;
-          } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not determine face orientation");
+            if ((faceSizeH == 2) && (i == 1)) ornt = -2;
+            else                              ornt = i;
+          } else {
+            /* - Try backward comparison */
+            for (j = 0; j < faceSizeH; ++j) if (cellFace[fv[j]] != cone[(i+faceSizeH-j)%faceSizeH]) break;
+            if (j == faceSizeH) {
+              if (i == 0) ornt = -faceSizeH;
+              else        ornt = -i;
+            } else SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not determine orientation of face %D in cell %D", f, c);
+          }
+        } else {
+          /* when matching hybrid faces in 3D, only few cases are possible.
+             Face traversal however can no longer follow the usual convention, this seems a serious issue to me */
+          PetscInt tquad_map[4][4] = { {PETSC_MIN_INT,            0,PETSC_MIN_INT,PETSC_MIN_INT},
+                                       {           -1,PETSC_MIN_INT,PETSC_MIN_INT,PETSC_MIN_INT},
+                                       {PETSC_MIN_INT,PETSC_MIN_INT,PETSC_MIN_INT,            1},
+                                       {PETSC_MIN_INT,PETSC_MIN_INT,           -2,PETSC_MIN_INT} };
+          PetscInt i2;
+
+          /* find the second vertex */
+          for (i2 = 0; i2 < faceSizeH; ++i2) if (cellFace[fv[1]] == cone[i2]) break;
+          switch (faceSizeH) {
+          case 2:
+            ornt = i ? -2 : 0;
+            break;
+          case 4:
+            ornt = tquad_map[i][i2];
+            break;
+          default:
+            SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unhandled face size %D for face %D in cell %D", faceSizeH, f, c);
+
+          }
         }
         ierr = DMPlexInsertConeOrientation(idm, c, cf, ornt);CHKERRQ(ierr);
       }
@@ -750,7 +801,7 @@ static PetscErrorCode SortRmineRremoteByRemote_Private(PetscSF sf, PetscInt *rmi
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  ierr = PetscSFGetRanks(sf, &nranks, &ranks, &roffset, &rmine, &rremote);CHKERRQ(ierr);
+  ierr = PetscSFGetRootRanks(sf, &nranks, &ranks, &roffset, &rmine, &rremote);CHKERRQ(ierr);
   nleaves = roffset[nranks];
   ierr = PetscMalloc2(nleaves, rmine1, nleaves, rremote1);CHKERRQ(ierr);
   for (r=0; r<nranks; r++) {
@@ -758,8 +809,8 @@ static PetscErrorCode SortRmineRremoteByRemote_Private(PetscSF sf, PetscInt *rmi
        - to unify order with the other side */
     o = roffset[r];
     n = roffset[r+1] - o;
-    ierr = PetscMemcpy(&(*rmine1)[o], &rmine[o], n*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMemcpy(&(*rremote1)[o], &rremote[o], n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(&(*rmine1)[o], &rmine[o], n);CHKERRQ(ierr);
+    ierr = PetscArraycpy(&(*rremote1)[o], &rremote[o], n);CHKERRQ(ierr);
     ierr = PetscSortIntWithArray(n, &(*rremote1)[o], &(*rmine1)[o]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -789,7 +840,7 @@ PetscErrorCode DMPlexOrientInterface(DM dm)
   ierr = PetscSFGetGraph(sf, &nroots, &nleaves, &locals, &remotes);CHKERRQ(ierr);
   if (nroots < 0) PetscFunctionReturn(0);
   ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
-  ierr = PetscSFGetRanks(sf, &nranks, &ranks, &roffset, NULL, NULL);CHKERRQ(ierr);
+  ierr = PetscSFGetRootRanks(sf, &nranks, &ranks, &roffset, NULL, NULL);CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG)
   ierr = DMViewFromOptions(dm, NULL, "-before_fix_dm_view");CHKERRQ(ierr);
   ierr = DMPlexCheckPointSF(dm);CHKERRQ(ierr);
@@ -962,7 +1013,7 @@ static PetscErrorCode DMPlexMapToLocalPoint(PetscHMapIJ roothash, const PetscInt
 /*@
   DMPlexInterpolatePointSF - Insert interpolated points in the overlap into the PointSF in parallel, following local interpolation
 
-  Collective on DM
+  Collective on dm
 
   Input Parameters:
 + dm      - The interpolated DM
@@ -975,7 +1026,6 @@ static PetscErrorCode DMPlexMapToLocalPoint(PetscHMapIJ roothash, const PetscInt
 
    Note: All debugging for this process can be turned on with the options: -dm_interp_pre_view -petscsf_interp_pre_view -petscsection_interp_candidate_view -petscsection_interp_candidate_remote_view -petscsection_interp_claim_view -petscsf_interp_pre_view -dmplex_interp_debug
 
-.keywords: mesh
 .seealso: DMPlexInterpolate(), DMPlexUninterpolate()
 @*/
 PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF)
@@ -1286,10 +1336,10 @@ PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
   DMPlexInterpolate - Take in a cell-vertex mesh and return one with all intermediate faces, edges, etc.
 
-  Collective on DM
+  Collective on dm
 
   Input Parameters:
 + dm - The DMPlex object with only cells and vertices
@@ -1303,7 +1353,6 @@ PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF)
   Notes:
     It does not copy over the coordinates.
 
-.keywords: mesh
 .seealso: DMPlexUninterpolate(), DMPlexCreateFromCellList(), DMPlexCopyCoordinates()
 @*/
 PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
@@ -1361,7 +1410,7 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
 /*@
   DMPlexCopyCoordinates - Copy coordinates from one mesh to another with the same vertices
 
-  Collective on DM
+  Collective on dmA
 
   Input Parameter:
 . dmA - The DMPlex object with initial coordinates
@@ -1373,7 +1422,6 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
 
   Note: This is typically used when adding pieces other than vertices to a mesh
 
-.keywords: mesh
 .seealso: DMCopyLabels(), DMGetCoordinates(), DMGetCoordinatesLocal(), DMGetCoordinateDM(), DMGetCoordinateSection()
 @*/
 PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
@@ -1469,7 +1517,7 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
       ierr = PetscSectionGetOffset(coordSectionA, c + cStartA, &offA);CHKERRQ(ierr);
       ierr = PetscSectionGetOffset(coordSectionB, c + cStartB, &offB);CHKERRQ(ierr);
       ierr = PetscSectionGetDof(coordSectionA, c + cStartA, &dof);CHKERRQ(ierr);
-      ierr = PetscMemcpy(coordsB + offB,coordsA + offA,dof*sizeof(*coordsB));CHKERRQ(ierr);
+      ierr = PetscArraycpy(coordsB + offB,coordsA + offA,dof);CHKERRQ(ierr);
     }
   }
   ierr = VecRestoreArray(coordinatesA, &coordsA);CHKERRQ(ierr);
@@ -1482,7 +1530,7 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
 /*@
   DMPlexUninterpolate - Take in a mesh with all intermediate faces, edges, etc. and return a cell-vertex mesh
 
-  Collective on DM
+  Collective on dm
 
   Input Parameter:
 . dm - The complete DMPlex object
@@ -1495,7 +1543,6 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
   Notes:
     It does not copy over the coordinates.
 
-.keywords: mesh
 .seealso: DMPlexInterpolate(), DMPlexCreateFromCellList(), DMPlexCopyCoordinates()
 @*/
 PetscErrorCode DMPlexUninterpolate(DM dm, DM *dmUnint)

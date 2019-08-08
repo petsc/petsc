@@ -6,7 +6,7 @@
    guidelines that apply to MPIAIJ matrices for preallocating the matrix 
    storage apply here as well.
 
-      Collective on MPI_Comm
+      Collective
 
    Input Parameters:
 +  comm - MPI communicator
@@ -73,8 +73,6 @@
 .  -mat_aijmkl_no_spmv2 - disables use of the SpMV2 inspector-executor routines
 
    Level: intermediate
-
-.keywords: matrix, MKL, sparse, parallel
 
 .seealso: MatCreate(), MatCreateSeqAIJMKL(), MatSetValues()
 @*/

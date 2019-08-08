@@ -269,8 +269,6 @@ PetscErrorCode KSPDestroy_LSQR(KSP ksp)
 
    Level: intermediate
 
-.keywords: KSP, KSPLSQR
-
 .seealso: KSPSolve(), KSPLSQR, KSPLSQRGetStandardErrorVec()
 @*/
 PetscErrorCode  KSPLSQRSetComputeStandardErrorVec(KSP ksp, PetscBool flg)
@@ -297,8 +295,6 @@ PetscErrorCode  KSPLSQRSetComputeStandardErrorVec(KSP ksp, PetscBool flg)
    This can affect convergence rate as KSPLSQRConvergedDefault() assumes different value of ||A|| used in normal equation stopping criterion.
 
    Level: intermediate
-
-.keywords: KSP, KSPLSQR
 
 .seealso: KSPSolve(), KSPLSQR, KSPLSQRGetNorms(), KSPLSQRConvergedDefault()
 @*/
@@ -333,8 +329,6 @@ PetscErrorCode  KSPLSQRSetExactMatNorm(KSP ksp, PetscBool flg)
 
    Level: intermediate
 
-.keywords: KSP, KSPLSQR
-
 .seealso: KSPSolve(), KSPLSQR, KSPLSQRSetComputeStandardErrorVec()
 @*/
 PetscErrorCode  KSPLSQRGetStandardErrorVec(KSP ksp,Vec *se)
@@ -365,8 +359,6 @@ PetscErrorCode  KSPLSQRGetStandardErrorVec(KSP ksp,Vec *se)
 
    Level: intermediate
 
-.keywords: KSP, KSPLSQR
-
 .seealso: KSPSolve(), KSPLSQR, KSPLSQRSetExactMatNorm()
 @*/
 PetscErrorCode  KSPLSQRGetNorms(KSP ksp,PetscReal *arnorm, PetscReal *anorm)
@@ -383,7 +375,7 @@ PetscErrorCode  KSPLSQRGetNorms(KSP ksp,PetscReal *arnorm, PetscReal *anorm)
    KSPLSQRMonitorDefault - Print the residual norm at each iteration of the LSQR method,
    norm of the residual of the normal equations A'*A x = A' b, and estimate of matrix norm ||A||.
 
-   Collective on KSP
+   Collective on ksp
 
    Input Parameters:
 +  ksp   - iterative context
@@ -392,8 +384,6 @@ PetscErrorCode  KSPLSQRGetNorms(KSP ksp,PetscReal *arnorm, PetscReal *anorm)
 -  dummy - viewer and format context
 
    Level: intermediate
-
-.keywords: KSP, KSPLSQR, default, monitor, residual
 
 .seealso: KSPLSQR, KSPMonitorSet(), KSPMonitorTrueResidualNorm(), KSPMonitorLGResidualNormCreate(), KSPMonitorDefault()
 @*/
@@ -463,7 +453,7 @@ PetscErrorCode KSPView_LSQR(KSP ksp,PetscViewer viewer)
 /*@C
    KSPLSQRConvergedDefault - Determines convergence of the LSQR Krylov method.
 
-   Collective on KSP
+   Collective on ksp
 
    Input Parameters:
 +  ksp   - iterative context
@@ -485,8 +475,6 @@ PetscErrorCode KSPView_LSQR(KSP ksp,PetscViewer viewer)
    This criterion is now largely compatible with that in MATLAB lsqr().
 
    Level: intermediate
-
-.keywords: KSP, KSPLSQR, default, convergence, residual
 
 .seealso: KSPLSQR, KSPSetConvergenceTest(), KSPSetTolerances(), KSPConvergedSkip(), KSPConvergedReason, KSPGetConvergedReason(),
           KSPConvergedDefaultSetUIRNorm(), KSPConvergedDefaultSetUMIRNorm(), KSPConvergedDefaultCreate(), KSPConvergedDefaultDestroy(), KSPConvergedDefault(), KSPLSQRGetNorms(), KSPLSQRSetExactMatNorm()

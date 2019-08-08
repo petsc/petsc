@@ -22,6 +22,7 @@ PETSC_EXTERN PetscErrorCode TSRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSAdaptRegisterAll(void);
 
 PETSC_EXTERN PetscErrorCode TSRKRegisterAll(void);
+PETSC_EXTERN PetscErrorCode TSMPRKRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSARKIMEXRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSRosWRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSGLLERegisterAll(void);
@@ -48,10 +49,13 @@ struct _TSOps {
   PetscErrorCode (*getstages)(TS,PetscInt*,Vec**);
   PetscErrorCode (*adjointstep)(TS);
   PetscErrorCode (*adjointsetup)(TS);
+  PetscErrorCode (*adjointreset)(TS);
   PetscErrorCode (*adjointintegral)(TS);
   PetscErrorCode (*forwardsetup)(TS);
+  PetscErrorCode (*forwardreset)(TS);
   PetscErrorCode (*forwardstep)(TS);
   PetscErrorCode (*forwardintegral)(TS);
+  PetscErrorCode (*forwardgetstages)(TS,PetscInt*,Mat**);
   PetscErrorCode (*getsolutioncomponents)(TS,PetscInt*,Vec*);
   PetscErrorCode (*getauxsolution)(TS,Vec*);
   PetscErrorCode (*gettimeerror)(TS,PetscInt,Vec*);
@@ -109,6 +113,7 @@ struct _p_TSTrajectory {
     } Udotcached;
   } lag;
   Vec            U,Udot;                  /* used by TSTrajectory{Get|Restore}UpdatedHistoryVecs */
+  PetscBool      usehistory;              /* whether to use TSHistory */
   PetscBool      solution_only;           /* whether we dump just the solution or also the stages */
   PetscBool      adjoint_solve_mode;      /* whether we will use the Trajectory inside a TSAdjointSolve() or not */
   PetscViewer    monitor;
@@ -175,19 +180,41 @@ struct _p_TS {
   PetscBool adjoint_solve;          /* immediately call TSAdjointSolve() after TSSolve() is complete */
   PetscBool costintegralfwd;        /* cost integral is evaluated in the forward run if true */
   Vec       vec_costintegrand;      /* workspace for Adjoint computations */
-  Mat       Jacp;
-  void      *rhsjacobianpctx;
+  Mat       Jacp,Jacprhs;
+  void      *ijacobianpctx,*rhsjacobianpctx;
   void      *costintegrandctx;
-  Vec       *vecs_drdy;
+  Vec       *vecs_drdu;
   Vec       *vecs_drdp;
+  Vec       vec_drdu_col,vec_drdp_col;
 
+  /* first-order adjoint */
   PetscErrorCode (*rhsjacobianp)(TS,PetscReal,Vec,Mat,void*);
+  PetscErrorCode (*ijacobianp)(TS,PetscReal,Vec,Vec,PetscReal,Mat,void*);
   PetscErrorCode (*costintegrand)(TS,PetscReal,Vec,Vec,void*);
-  PetscErrorCode (*drdyfunction)(TS,PetscReal,Vec,Vec*,void*);
+  PetscErrorCode (*drdufunction)(TS,PetscReal,Vec,Vec*,void*);
   PetscErrorCode (*drdpfunction)(TS,PetscReal,Vec,Vec*,void*);
+
+  /* second-order adjoint */
+  Vec *vecs_sensi2;
+  Vec *vecs_sensi2p;
+  Vec vec_dir; /* directional vector for optimization */
+  Vec *vecs_fuu,*vecs_guu;
+  Vec *vecs_fup,*vecs_gup;
+  Vec *vecs_fpu,*vecs_gpu;
+  Vec *vecs_fpp,*vecs_gpp;
+  void *ihessianproductctx,*rhshessianproductctx;
+  PetscErrorCode (*ihessianproduct_fuu)(TS,PetscReal,Vec,Vec*,Vec,Vec*,void*);
+  PetscErrorCode (*ihessianproduct_fup)(TS,PetscReal,Vec,Vec*,Vec,Vec*,void*);
+  PetscErrorCode (*ihessianproduct_fpu)(TS,PetscReal,Vec,Vec*,Vec,Vec*,void*);
+  PetscErrorCode (*ihessianproduct_fpp)(TS,PetscReal,Vec,Vec*,Vec,Vec*,void*);
+  PetscErrorCode (*rhshessianproduct_guu)(TS,PetscReal,Vec,Vec*,Vec,Vec*,void*);
+  PetscErrorCode (*rhshessianproduct_gup)(TS,PetscReal,Vec,Vec*,Vec,Vec*,void*);
+  PetscErrorCode (*rhshessianproduct_gpu)(TS,PetscReal,Vec,Vec*,Vec,Vec*,void*);
+  PetscErrorCode (*rhshessianproduct_gpp)(TS,PetscReal,Vec,Vec*,Vec,Vec*,void*);
 
   /* specific to forward sensitivity analysis */
   Mat       mat_sensip;              /* matrix storing forward sensitivities */
+  Vec       vec_sensip_col;          /* space for a column of the sensip matrix */
   Vec       *vecs_integral_sensip;   /* one vector for each integral */
   PetscInt  num_parameters;
   PetscInt  num_initialvalues;
@@ -267,6 +294,10 @@ struct _p_TS {
   /* ---------------------- RHS splitting support ---------------------------------*/
   PetscInt        num_rhs_splits;
   TS_RHSSplitLink tsrhssplit;
+  PetscBool       use_splitrhsfunction;
+
+  /* ---------------------- Quadrature integration support ---------------------------------*/
+  TS quadraturets;
 };
 
 struct _TSAdaptOps {
@@ -296,6 +327,8 @@ struct _p_TSAdapt {
   PetscReal   reject_safety;      /* extra safety factor if the last step was rejected */
   PetscReal   clip[2];            /* admissible time step decrease/increase factors */
   PetscReal   dt_min,dt_max;      /* admissible minimum and maximum time step */
+  PetscReal   ignore_max;         /* minimum value of the solution to be considered by the adaptor */
+  PetscBool   glee_use_local;     /* GLEE adaptor uses global or local error */
   PetscReal   scale_solve_failed; /* scale step by this factor if solver (linear or nonlinear) fails. */
   PetscReal   matchstepfac[2];    /* factors to control the behaviour of matchstep */
   NormType    wnormtype;
@@ -461,6 +494,7 @@ PETSC_EXTERN PetscErrorCode TSGetRHSMats_Private(TS,Mat*,Mat*);
 PETSC_EXTERN PetscErrorCode TSAdaptHistorySetTSHistory(TSAdapt,TSHistory,PetscBool);
 
 PETSC_INTERN PetscErrorCode TSTrajectoryReconstruct_Private(TSTrajectory,TS,PetscReal,Vec,Vec);
+PETSC_INTERN PetscErrorCode TSTrajectorySetUp_Basic(TSTrajectory,TS);
 
 PETSC_EXTERN PetscLogEvent TSTrajectory_Set;
 PETSC_EXTERN PetscLogEvent TSTrajectory_Get;

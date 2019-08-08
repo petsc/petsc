@@ -33,7 +33,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_N_inplace(Mat A,Vec bb,Vec xx)
   /* forward solve the upper triangular transpose */
   ls = a->solve_work + A->cmap->n;
   for (i=0; i<n; i++) {
-    ierr = PetscMemcpy(ls,t+i*bs,bs*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscArraycpy(ls,t+i*bs,bs);CHKERRQ(ierr);
     PetscKernel_w_gets_transA_times_v(bs,ls,aa+bs2*a->diag[i],t+i*bs);
     v  = aa + bs2*(a->diag[i] + 1);
     vi = aj + a->diag[i] + 1;
@@ -102,7 +102,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_N(Mat A,Vec bb,Vec xx)
   /* forward solve the upper triangular transpose */
   ls = a->solve_work + A->cmap->n;
   for (i=0; i<n; i++) {
-    ierr = PetscMemcpy(ls,t+i*bs,bs*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscArraycpy(ls,t+i*bs,bs);CHKERRQ(ierr);
     PetscKernel_w_gets_transA_times_v(bs,ls,aa+bs2*diag[i],t+i*bs);
     v  = aa + bs2*(diag[i] - 1);
     vi = aj + diag[i] - 1;

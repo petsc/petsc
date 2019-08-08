@@ -113,8 +113,6 @@ PetscErrorCode PCView_Kaczmarz(PC pc,PetscViewer viewer)
 
    Level: beginner
 
-   Concepts: Kaczmarz, preconditioners, row projection
-
    Notes:
     In parallel this is block-Jacobi with Kaczmarz inner solve.
 

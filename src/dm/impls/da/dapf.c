@@ -6,7 +6,7 @@
    DMDACreatePF - Creates an appropriately dimensioned PF mathematical function object
       from a DMDA.
 
-   Collective on DMDA
+   Collective on da
 
    Input Parameter:
 .  da - initial distributed array
@@ -17,8 +17,6 @@
    Level: advanced
 
    Not supported from Fortran
-
-.keywords:  distributed array, grid function
 
 .seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDestroy(), DMCreateGlobalVector()
 @*/

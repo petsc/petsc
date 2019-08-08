@@ -6,7 +6,7 @@ static char help[] = "Simple example to test separable objective optimizers.\n";
 #include <petscmath.h>
 
 #define NWORKLEFT 4
-#define NWORKRIGHT 11
+#define NWORKRIGHT 12
 
 typedef struct _UserCtx
 {
@@ -304,6 +304,7 @@ static PetscErrorCode ObjectiveRegularization(Tao tao, Vec x, PetscReal *J, void
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  *J = 0;
   ierr = VecNorm (x, ctx->p, &norm);CHKERRQ(ierr);
   if (ctx->p == NORM_2) norm = 0.5 * norm * norm;
   *J = ctx->alpha * norm;
@@ -503,47 +504,13 @@ static PetscErrorCode HessianComplete(Tao tao, Vec x, Mat H, Mat Hpre, void *ctx
   PetscFunctionReturn(0);
 }
 
-static PetscReal SoftThreshold(PetscReal z, PetscReal mu)
-{
-  return PetscMax(0,z- mu) - PetscMax(0, -z-mu);
-}
-
-/* SoftThreshold(x+u, alpha/mu) */
-static PetscErrorCode TaoShellSolve_SoftThreshold(Tao tao)
-{
-  PetscErrorCode ierr;
-  PetscInt       nlocal,i;
-  PetscReal      *zarray, *xarray, *uarray, alpha, mu;
-  UserCtx        ctx;
-  Vec            xk,z,u;
-
-  PetscFunctionBegin;
-  ierr  = TaoShellGetContext(tao, (void**) &ctx);CHKERRQ(ierr);
-  alpha = ((UserCtx)ctx)->alpha;
-  mu    = ((UserCtx)ctx)->mu;
-  xk    = ((UserCtx)ctx)->workRight[4];
-  ierr  = TaoGetSolutionVector(tao, &z);CHKERRQ(ierr);
-  /* assert z == workRight[6] */
-  u =  ((UserCtx)ctx)->workRight[6];
-  /* soft thresholding */
-  ierr = VecGetArray(z, &zarray);CHKERRQ(ierr);
-  ierr = VecGetArray(xk, &xarray);CHKERRQ(ierr);
-  ierr = VecGetArray(u, &uarray);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(z, &nlocal);CHKERRQ(ierr);
-  for (i=0; i<nlocal; i++) zarray[i] = SoftThreshold(xarray[i] + uarray[i], alpha/mu);
-  ierr = VecRestoreArray(z, &zarray);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xk, &xarray);CHKERRQ(ierr);
-  ierr = VecRestoreArray(u, &uarray);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode TaoSolveADMM(UserCtx ctx,  Vec x)
 {
   PetscErrorCode ierr;
   PetscInt       i;
   PetscReal      u_norm, r_norm, s_norm, primal, dual, x_norm, z_norm;
   Tao            tao1,tao2;
-  Vec            xk,z,u,diff,zold,zdiff;
+  Vec            xk,z,u,diff,zold,zdiff,temp;
   PetscReal      mu;
 
   PetscFunctionBegin;
@@ -553,6 +520,7 @@ static PetscErrorCode TaoSolveADMM(UserCtx ctx,  Vec x)
   diff  = ctx->workRight[7];
   zold  = ctx->workRight[8];
   zdiff = ctx->workRight[9];
+  temp  = ctx->workRight[11];
   mu    = ctx->mu;
   ierr  = VecSet(u, 0.);CHKERRQ(ierr);
   ierr  = TaoCreate(PETSC_COMM_WORLD, &tao1);CHKERRQ(ierr);
@@ -565,23 +533,26 @@ static PetscErrorCode TaoSolveADMM(UserCtx ctx,  Vec x)
   ierr  = TaoSetOptionsPrefix(tao1, "misfit_");CHKERRQ(ierr);
   ierr  = TaoSetFromOptions(tao1);CHKERRQ(ierr);
   ierr  = TaoCreate(PETSC_COMM_WORLD, &tao2);CHKERRQ(ierr);
-  if (ctx->p == NORM_1) {
-    ierr = TaoSetType(tao2,TAOSHELL);CHKERRQ(ierr);
-    ierr = TaoShellSetContext(tao2, (void*) ctx);CHKERRQ(ierr);
-    ierr = TaoShellSetSolve(tao2, TaoShellSolve_SoftThreshold);CHKERRQ(ierr);
-  } else {ierr = TaoSetType(tao2,TAONLS);CHKERRQ(ierr);}
-  ierr = TaoSetObjectiveRoutine(tao2, ObjectiveRegularizationADMM, (void*) ctx);CHKERRQ(ierr);
-  ierr = TaoSetGradientRoutine(tao2, GradientRegularizationADMM, (void*) ctx);CHKERRQ(ierr);
-  ierr = TaoSetHessianRoutine(tao2, ctx->Hr, ctx->Hr, HessianRegularizationADMM, (void*) ctx);CHKERRQ(ierr);
+  if (ctx->p == NORM_2) {
+    ierr = TaoSetType(tao2,TAONLS);CHKERRQ(ierr);
+    ierr = TaoSetObjectiveRoutine(tao2, ObjectiveRegularizationADMM, (void*) ctx);CHKERRQ(ierr);
+    ierr = TaoSetGradientRoutine(tao2, GradientRegularizationADMM, (void*) ctx);CHKERRQ(ierr);
+    ierr = TaoSetHessianRoutine(tao2, ctx->Hr, ctx->Hr, HessianRegularizationADMM, (void*) ctx);CHKERRQ(ierr);
+  }
   ierr = VecSet(z, 0.);CHKERRQ(ierr);
   ierr = TaoSetInitialVector(tao2, z);CHKERRQ(ierr);
   ierr = TaoSetOptionsPrefix(tao2, "reg_");CHKERRQ(ierr);
   ierr = TaoSetFromOptions(tao2);CHKERRQ(ierr);
 
   for (i=0; i<ctx->iter; i++) {
-    ierr = VecCopy(z,zold);
-    TaoSolve(tao1);CHKERRQ(ierr); /* Updates xk */
-    TaoSolve(tao2);CHKERRQ(ierr); /* Update zk */
+    ierr = VecCopy(z,zold);CHKERRQ(ierr);
+    ierr = TaoSolve(tao1);CHKERRQ(ierr); /* Updates xk */
+    if (ctx->p == NORM_1){
+      ierr = VecWAXPY(temp,1.,xk,u);CHKERRQ(ierr);
+      ierr = TaoSoftThreshold(temp,-ctx->alpha/mu,ctx->alpha/mu,z);CHKERRQ(ierr);
+    } else {
+      ierr = TaoSolve(tao2);CHKERRQ(ierr); /* Update zk */
+    }
     /* u = u + xk -z */
     ierr = VecAXPBYPCZ(u,1.,-1.,1.,xk,z);CHKERRQ(ierr);
     /* r_norm : norm(x-z) */

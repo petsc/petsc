@@ -9,7 +9,7 @@ implicit none
 
   Mat             A
   PetscInt,parameter ::  n=5,m=5
-  PetscReal,parameter ::  two =2.0, one = 1.0
+  PetscScalar,parameter ::  two =2.0, one = 1.0
   PetscInt,pointer,dimension(:) ::  dnnz,onnz
   PetscInt    ::  i,rstart,rend,M1,N1
   PetscErrorCode  ierr
@@ -57,3 +57,15 @@ implicit none
   
 end program
 
+!/*TEST
+!
+!   test:
+!      suffix: 1
+!      output_file: output/ex4_1.out
+!
+!   test:
+!      suffix: 2
+!      nsize: 2
+!      output_file: output/ex4_2.out
+!
+!TEST*/

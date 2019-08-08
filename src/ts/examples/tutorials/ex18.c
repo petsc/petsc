@@ -1013,11 +1013,11 @@ static PetscErrorCode MonitorFunctionals(TS ts, PetscInt stepnum, PetscReal time
 
       /* Create string with functional outputs */
       if (f % 3) {
-        ierr = PetscMemcpy(buffer, "  ", 2);CHKERRQ(ierr);
+        ierr = PetscArraycpy(buffer, "  ", 2);CHKERRQ(ierr);
         p    = buffer + 2;
       } else if (f) {
-        ierr = PetscMemcpy(buffer, newline, sizeof newline-1);CHKERRQ(ierr);
-        p    = buffer + sizeof newline - 1;
+        ierr = PetscArraycpy(buffer, newline, sizeof(newline)-1);CHKERRQ(ierr);
+        p    = buffer + sizeof(newline) - 1;
       } else {
         p = buffer;
       }
@@ -1029,11 +1029,11 @@ static PetscErrorCode MonitorFunctionals(TS ts, PetscInt stepnum, PetscReal time
 
         ftablealloc = 2*ftablealloc + countused;
         ierr = PetscMalloc1(ftablealloc, &ftablenew);CHKERRQ(ierr);
-        ierr = PetscMemcpy(ftablenew, ftable, ftableused);CHKERRQ(ierr);
+        ierr = PetscArraycpy(ftablenew, ftable, ftableused);CHKERRQ(ierr);
         ierr = PetscFree(ftable);CHKERRQ(ierr);
         ftable = ftablenew;
       }
-      ierr = PetscMemcpy(ftable+ftableused, buffer, countused);CHKERRQ(ierr);
+      ierr = PetscArraycpy(ftable+ftableused, buffer, countused);CHKERRQ(ierr);
       ftableused += countused;
       ftable[ftableused] = 0;
       /* Output vecs */
@@ -1178,10 +1178,6 @@ int main(int argc, char **argv)
     suffix: p2p1_xyper
     requires: !complex !single
     args: -dm_refine 1 -velocity_petscspace_degree 2 -porosity_petscspace_degree 1 -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type lu -pc_factor_shift_type nonzero -ksp_rtol 1.0e-8 -ts_monitor -snes_error_if_not_converged -ksp_error_if_not_converged -dmts_check
-  test:
-    suffix: p2p1_xyper_ref
-    requires: !complex !single
-    args: -dm_refine 2 -velocity_petscspace_degree 2 -porosity_petscspace_degree 1 -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type lu -pc_factor_shift_type nonzero -ksp_rtol 1.0e-8 -ts_monitor -snes_error_if_not_converged -ksp_error_if_not_converged -dmts_check
   #   Must check that FV BCs propagate to coarse meshes
   #   Must check that FV BC ids propagate to coarse meshes
   #   Must check that FE+FV BCs work at the same time

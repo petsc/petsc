@@ -1,8 +1,8 @@
 /*
       mathematical function module.
 */
-#if !defined(__PETSCPF_H)
-#define __PETSCPF_H
+#if !defined(PETSCPF_H)
+#define PETSCPF_H
 #include <petscvec.h>
 
 /*
@@ -30,8 +30,6 @@ typedef const char* PFType;
      PF - Abstract PETSc mathematical function
 
    Level: beginner
-
-  Concepts: functions
 
 .seealso:  PFCreate(), PFDestroy(), PFSetType(), PFApply(), PFApplyVec(), PFSet(), PFType
 S*/

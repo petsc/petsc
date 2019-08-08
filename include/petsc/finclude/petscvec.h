@@ -2,8 +2,8 @@
 !
 !  Include file for Fortran use of the Vec package in PETSc
 !
-#if !defined (__PETSCVECDEF_H)
-#define __PETSCVECDEF_H
+#if !defined (PETSCVECDEF_H)
+#define PETSCVECDEF_H
 
 #include "petsc/finclude/petscao.h"
 

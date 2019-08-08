@@ -45,8 +45,6 @@ struct _p_PetscDrawSP {
    The MPI communicator that owns the PetscDraw owns this PetscDrawSP, but the calls to set options and add points are ignored on all processes except the
    zeroth MPI process in the communicator. All MPI processes in the communicator must call PetscDrawSPDraw() to display the updated graph.
 
-   Concepts: scatter plot^creating
-
 .seealso:  PetscDrawLGCreate(), PetscDrawLG, PetscDrawBarCreate(), PetscDrawBar, PetscDrawHGCreate(), PetscDrawHG, PetscDrawSPDestroy(), PetscDraw, PetscDrawSP, PetscDrawSPSetDimension(), PetscDrawSPReset(),
            PetscDrawSPAddPoint(), PetscDrawSPAddPoints(), PetscDrawSPDraw(), PetscDrawSPSave(), PetscDrawSPSetLimits(), PetscDrawSPGetAxis(),PetscDrawAxis, PetscDrawSPGetDraw()
 @*/
@@ -99,8 +97,6 @@ PetscErrorCode  PetscDrawSPCreate(PetscDraw draw,int dim,PetscDrawSP *drawsp)
 
    Level: intermediate
 
-   Concepts: scatter plot^setting number of data types
-
 .seealso: PetscDrawSP, PetscDrawSPCreate(), PetscDrawSPAddPoint(), PetscDrawSPAddPoints()
 
 @*/
@@ -130,8 +126,6 @@ PetscErrorCode  PetscDrawSPSetDimension(PetscDrawSP sp,int dim)
 .  sp - the line graph context.
 
    Level: intermediate
-
-  Concepts: scatter plot^resetting
 
 .seealso: PetscDrawSP, PetscDrawSPCreate(), PetscDrawSPAddPoint(), PetscDrawSPAddPoints(), PetscDrawSPDraw()
 @*/
@@ -192,8 +186,6 @@ PetscErrorCode  PetscDrawSPDestroy(PetscDrawSP *sp)
    Notes:
     the new points will not be displayed until a call to PetscDrawSPDraw() is made
 
-   Concepts: scatter plot^adding points
-
 .seealso: PetscDrawSPAddPoints(), PetscDrawSP, PetscDrawSPCreate(), PetscDrawSPReset(), PetscDrawSPDraw()
 
 @*/
@@ -209,8 +201,8 @@ PetscErrorCode  PetscDrawSPAddPoint(PetscDrawSP sp,PetscReal *x,PetscReal *y)
     PetscReal *tmpx,*tmpy;
     ierr     = PetscMalloc2(sp->len+sp->dim*CHUNCKSIZE,&tmpx,sp->len+sp->dim*CHUNCKSIZE,&tmpy);CHKERRQ(ierr);
     ierr     = PetscLogObjectMemory((PetscObject)sp,2*sp->dim*CHUNCKSIZE*sizeof(PetscReal));CHKERRQ(ierr);
-    ierr     = PetscMemcpy(tmpx,sp->x,sp->len*sizeof(PetscReal));CHKERRQ(ierr);
-    ierr     = PetscMemcpy(tmpy,sp->y,sp->len*sizeof(PetscReal));CHKERRQ(ierr);
+    ierr     = PetscArraycpy(tmpx,sp->x,sp->len);CHKERRQ(ierr);
+    ierr     = PetscArraycpy(tmpy,sp->y,sp->len);CHKERRQ(ierr);
     ierr     = PetscFree2(sp->x,sp->y);CHKERRQ(ierr);
     sp->x    = tmpx;
     sp->y    = tmpy;
@@ -246,8 +238,6 @@ PetscErrorCode  PetscDrawSPAddPoint(PetscDrawSP sp,PetscReal *x,PetscReal *y)
    Notes:
     the new points will not be displayed until a call to PetscDrawSPDraw() is made
 
-   Concepts: scatter plot^adding points
-
 .seealso: PetscDrawSPAddPoint(), PetscDrawSP, PetscDrawSPCreate(), PetscDrawSPReset(), PetscDrawSPDraw()
 @*/
 PetscErrorCode  PetscDrawSPAddPoints(PetscDrawSP sp,int n,PetscReal **xx,PetscReal **yy)
@@ -265,8 +255,8 @@ PetscErrorCode  PetscDrawSPAddPoints(PetscDrawSP sp,int n,PetscReal **xx,PetscRe
     if (n > chunk) chunk = n;
     ierr = PetscMalloc2(sp->len+sp->dim*chunk,&tmpx,sp->len+sp->dim*chunk,&tmpy);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)sp,2*sp->dim*CHUNCKSIZE*sizeof(PetscReal));CHKERRQ(ierr);
-    ierr = PetscMemcpy(tmpx,sp->x,sp->len*sizeof(PetscReal));CHKERRQ(ierr);
-    ierr = PetscMemcpy(tmpy,sp->y,sp->len*sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscArraycpy(tmpx,sp->x,sp->len);CHKERRQ(ierr);
+    ierr = PetscArraycpy(tmpy,sp->y,sp->len);CHKERRQ(ierr);
     ierr = PetscFree2(sp->x,sp->y);CHKERRQ(ierr);
 
     sp->x    = tmpx;
@@ -359,8 +349,6 @@ PetscErrorCode  PetscDrawSPDraw(PetscDrawSP sp, PetscBool clear)
 
    Level: intermediate
 
-   Concepts: scatter plot^saving
-
 .seealso:  PetscDrawSPCreate(), PetscDrawSPGetDraw(), PetscDrawSetSave(), PetscDrawSave()
 @*/
 PetscErrorCode  PetscDrawSPSave(PetscDrawSP sp)
@@ -385,8 +373,6 @@ PetscErrorCode  PetscDrawSPSave(PetscDrawSP sp)
 -  x_min,x_max,y_min,y_max - the limits
 
    Level: intermediate
-
-   Concepts: scatter plot^setting axis
 
 .seealso: PetscDrawSP, PetscDrawSPCreate(), PetscDrawSPDraw(), PetscDrawSPAddPoint(), PetscDrawSPAddPoints(), PetscDrawSPGetAxis()
 @*/

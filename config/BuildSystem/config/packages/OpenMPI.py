@@ -4,9 +4,8 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.download               = ['https://www.open-mpi.org/software/ompi/v3.0/downloads/openmpi-3.0.1.tar.gz',
-                                   'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/openmpi-3.0.1.tar.gz']
-
+    self.download               = ['https://download.open-mpi.org/release/open-mpi/v3.1/openmpi-3.1.4.tar.gz',
+                                   'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/openmpi-3.1.4.tar.gz']
     self.downloaddirnames       = ['openmpi']
     self.skippackagewithoptions = 1
     self.isMPI                  = 1
@@ -38,12 +37,19 @@ class Configure(config.package.GNUPackage):
     return args
 
   def checkDownload(self):
+    if self.argDB['download-'+self.downloadname.lower()] and  'package-prefix-hash' in self.argDB and self.argDB['package-prefix-hash'] == 'reuse':
+      self.logWrite('Reusing package prefix install of '+self.defaultInstallDir+' for OpenMPI')
+      self.installDir = self.defaultInstallDir
+      self.updateCompilers(self.installDir,'mpicc','mpicxx','mpif77','mpif90')
+      return self.installDir
     if self.argDB['download-'+self.downloadname.lower()]:
       return self.getInstallDir()
     return ''
 
   def Install(self):
     '''After downloading and installing OpenMPI we need to reset the compilers to use those defined by the OpenMPI install'''
+    if 'package-prefix-hash' in self.argDB and self.argDB['package-prefix-hash'] == 'reuse':
+      return self.defaultInstallDir
     installDir = config.package.GNUPackage.Install(self)
     self.updateCompilers(installDir,'mpicc','mpicxx','mpif77','mpif90')
     return installDir

@@ -747,8 +747,8 @@ DMDAVecGetArray(DM da,Vec global,&f);
 DMDAVecRestoreArray(DM da,Vec local,&u);
 DMDAVecRestoreArray(DM da,Vec global,&f);
 \end{lstlisting}
-See \href{http://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex5.c.html}{\trl{$PETSC_DIR/src/snes/examples/tutorials/ex5.c}} for a 
-complete example and see \href{http://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex19.c.html}{\trl{$PETSC_DIR/src/snes/examples/tutorials/ex19.c}} for an
+See \href{https://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex5.c.html}{\trl{$PETSC_DIR/src/snes/examples/tutorials/ex5.c}} for a 
+complete example and see \href{https://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex19.c.html}{\trl{$PETSC_DIR/src/snes/examples/tutorials/ex19.c}} for an
 example for a multi-component PDE.
 
 %---------------------------------------------------------------------------
@@ -813,10 +813,10 @@ array, divided among four processes.
 \end{figure}
 
 The example
-\href{http://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex5.c.html}{\trl{$PETSC_DIR/src/snes/examples/tutorials/ex5.c}}
+\href{https://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex5.c.html}{\trl{$PETSC_DIR/src/snes/examples/tutorials/ex5.c}}
 illustrates the use of a distributed array in the solution of
 a nonlinear problem.  The analogous Fortran program is
-\href{http://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex5f.F90.html}{\trl{$PETSC_DIR/src/snes/examples/tutorials/ex5f.F90}};
+\href{https://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex5f.F90.html}{\trl{$PETSC_DIR/src/snes/examples/tutorials/ex5f.F90}};
 see Chapter \ref{chapter_snes} for a discussion of the nonlinear
 solvers.
 
@@ -1219,7 +1219,7 @@ should be specified after the first matrix has been fully assembled.
 This option ensures that certain data structures and communication
 information will be reused (instead of regenerated) during successive
 steps, thereby increasing efficiency.
-See \href{http://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/examples/tutorials/ex5.c.html}{\trl{$PETSC_DIR/src/ksp/ksp/examples/tutorials/ex5.c}} for a simple example of
+See \href{https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/examples/tutorials/ex5.c.html}{\trl{$PETSC_DIR/src/ksp/ksp/examples/tutorials/ex5.c}} for a simple example of
 solving two linear systems that use the same matrix data structure.
 
 \subsection{Sparse Matrices}
@@ -1661,7 +1661,7 @@ If a monolithic matrix format is used, then \lstinline{MatGetLocalSubMatrix()} r
 Note that although \lstinline{submat} may not be a fully functional matrix and the caller does not even know a priori which communicator it will reside on, it always implements the local assembly functions (which are not collective).
 The index sets \lstinline{isrow,iscol} can be obtained using \break\lstinline{DMCompositeGetLocalISs()} if \lstinline{DMComposite} is being used.
 DMComposite can also be used to create matrices, in which case the MATNEST format can be specified using \trl{-prefix_dm_mat_type nest} and MATAIJ can be specified using \trl{-prefix_dm_mat_type aij}.
-See \href{http://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex28.c.html}{\trl{$PETSC_DIR/src/snes/examples/tutorials/ex28.c}} for a simple example using this interface.
+See \href{https://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex28.c.html}{\trl{$PETSC_DIR/src/snes/examples/tutorials/ex28.c}} for a simple example using this interface.
 
 \section{Basic Matrix Operations}
 \label{sec_matoptions}
@@ -1785,7 +1785,7 @@ equation solvers discussed in the following chapters.
 
 The routine \lstinline{MatShellSetOperation()} can be used to set any other
 matrix operations as well.  The file
-\href{http://www.mcs.anl.gov/petsc/petsc-current/include/petscmat.h.html}{\trl{$PETSC_DIR/include/petscmat.h}} provides a complete list of matrix
+\href{https://www.mcs.anl.gov/petsc/petsc-current/include/petscmat.h.html}{\trl{$PETSC_DIR/include/petscmat.h}} provides a complete list of matrix
 operations, which have the form \lstinline{MATOP_<OPERATION>}, where \lstinline{<OPERATION>} is the name (in all capital letters) of the user
 interface routine (for example, \lstinline{MatMult()} $ \to $ \lstinline{MATOP_MULT}).  All
 user-provided functions have the same calling sequence as the
@@ -1911,7 +1911,7 @@ MatConvert(Mat mat,MatType newtype,Mat *M)
 which converts the matrix \lstinline{mat} to new matrix, \lstinline{M}, that has
 either the same or different format.  Set \lstinline{newtype} to \lstinline{MATSAME}
 to copy the matrix, keeping the same matrix format.  See
-\href{http://www.mcs.anl.gov/petsc/petsc-current/include/petscmat.h.html}{\trl{$PETSC_DIR/include/petscmat.h}} for other available matrix types;
+\href{https://www.mcs.anl.gov/petsc/petsc-current/include/petscmat.h.html}{\trl{$PETSC_DIR/include/petscmat.h}} for other available matrix types;
 standard ones are \lstinline{MATSEQDENSE}, \lstinline{MATSEQAIJ}, \lstinline{MATMPIAIJ},
                \lstinline{MATSEQBAIJ} and \lstinline{MATMPIBAIJ}.
 
@@ -2817,8 +2817,8 @@ user {\em must} explicitly call \lstinline{KSPSetUp()}
 before calling \lstinline{PCBJacobiGetSubKSP()} or
 \lstinline{PCASMGetSubKSP(}).
 For further details, see the
-examples \href{http://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/examples/tutorials/ex7.c.html}{\trl{$PETSC_DIR/src/ksp/ksp/examples/tutorials/ex7.c}}
-or \href{http://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/examples/tutorials/ex7.c.html}{\trl{$PETSC_DIR/src/ksp/ksp/examples/tutorials/ex8.c}}.
+examples \href{https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/examples/tutorials/ex7.c.html}{\trl{$PETSC_DIR/src/ksp/ksp/examples/tutorials/ex7.c}}
+or \href{https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/examples/tutorials/ex7.c.html}{\trl{$PETSC_DIR/src/ksp/ksp/examples/tutorials/ex8.c}}.
 
 The block Jacobi, block Gauss-Seidel, and additive Schwarz
 preconditioners allow the user
@@ -2926,7 +2926,7 @@ decompositions.
 Currently there is no support for increasing the overlap of multi-rank subdomains via\break \lstinline{PCGASMSetOverlap()} -- this
 functionality works only for subdomains that fit within a single MPI rank, exactly as in \lstinline{PCASM}.
 
-Examples of the described PCGASM usage can be found in \href{http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCGASM.html}{\trl{${PETSC_DIR}/src/ksp/ksp/examples/tutorials/ex62.c}}.
+Examples of the described PCGASM usage can be found in \href{https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCGASM.html}{\trl{${PETSC_DIR}/src/ksp/ksp/examples/tutorials/ex62.c}}.
 In particular, \trl{runex62_superlu_dist}
 illustrates the use of \trl{SuperLU_DIST} as the subdomain solver on
 coalesced multi-rank subdomains. The \trl{runex62_2D_*} examples illustrate the use of \lstinline{PCGASMCreateSubdomains2D()}.
@@ -2966,13 +2966,30 @@ One can provide an orthonormal set of null space vectors with \lstinline{MatSetN
 The vector of all ones is the default, for each variable given by the block size (e.g., the translational rigid  body modes).
 For elasticity, where rotational rigid body modes are required to complete the near null space you can use \lstinline{MatNullSpaceCreateRigidBody()} to create the null space vectors and then \lstinline{MatSetNearNullSpace()}.
 
+The GAMG framework provides for reducing the number of active processes on coarse grids to reduce communication costs when there is not enough parallelism to keep relative communication costs down.
+Most AMG solver reduce to just one active process on the coarsest grid (the PETSc MG framework also supports redundantly solving the coarse grid on all processes to potentially reduce communication  costs), although this forcing to one process can be overridden if one wishes to use a parallel coarse grid solver.
+GAMG generalizes this by reducing the active number of processes on other coarse grids as well.
+GAMG will select the number of active processors by fitting the desired number of equation per process (set with \trl{-pc_gamg_process_eq_limit <50>,}) at each level given that size of each level.
+If $P_i < P$ processors are desired on a level $i$ then the first $P_i$ ranks are populated with the grid and the remaining are empty on that grid.
+One can, and probably should, repartition the coarse grids with \trl{-pc_gamg_repartition <true>,}, otherwise an integer process reduction factor ($q$) is selected and the equations on the first $q$ processes are move to process 0, and so on.
+As mentioned multigrid generally coarsens the problem until it is small enough to be solved with an exact solver (eg, LU or SVD) in a relatively small time.
+GAMG will stop coarsening when the number of equation on a grid falls below at threshold give by \trl{-pc_gamg_coarse_eq_limit <50>,}.
+
 There are several options to provide parameters to the coarsening algorithm and parallel data layout.
 Run a code that uses GAMG with \trl{-help} to get full listing of GAMG parameters with short parameter descriptions.
+The rate of coarsening is critical in AMG performance -- too slow of coarsening will result in an overly expensive solver per iteration and too fast coarsening will result in decrease in the convergence rate. \trl{-pc_gamg_threshold <0>} and  \trl{-pc_gamg_square_graph <1>,} are the primary parameters that control coarsening rates, which is very important for AMG perforamance.
+A greedy maximal independent set (MIS) algorithm is used in coarsening.
+Squaring the graph implements so called MIS-2, the root vertex in an aggregate is more than two edges away from another root vertex, instead of more than one in MIS.
+The threshold parameter sets a normalized threshold for which edges are removed from the MIS graph, thereby coarsening slower.
+Zero will keep all non-zero edges, a negative number will keep zero edges, a positive number will drop small edges.
+Typical finite threshold values are in the range of $0.01 - 0.05$.
+There are additional parameters for changing the weights on coarse grids.
+Note, the parallel algorithm requires symmetric weights/matrix.
+You must use \trl{-pc_gamg_sym_graph <true>} to symmetrize the graph if your problem is not symmetric.
 
 {\bf Trouble shooting algebraic multigrid methods:}  
 If {\it GAMG}, {\it ML}, or {\it hypre} does not perform well the first thing to try is one of 
 the other methods. Often the default parameters or just the strengths of different algorithms can fix performance problems or provide useful information to guide further debugging.
-
 There are several sources of poor performance of
 AMG solvers and often special purpose methods must be developed to
 achieve the full potential of multigrid.
@@ -3112,7 +3129,7 @@ The latter can be requested by specifying the number of requested level at comma
 An additional parameter (see \lstinline{PCBDDCSetCoarseningRatio()}) controls the number of subdomains that will be generated at the next level;
 the larger the coarsening ratio, the lower the number of coarser subdomains.
 
-For further details, see the example \href{http://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/examples/tutorials/ex59.c}{\trl{${PETSC_DIR}/src/ksp/ksp/examples/tutorials/ex59.c}} and the online documentation for \lstinline{PCBDDC}.
+For further details, see the example \href{https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/examples/tutorials/ex59.c}{\trl{${PETSC_DIR}/src/ksp/ksp/examples/tutorials/ex59.c}} and the online documentation for \lstinline{PCBDDC}.
 
 %----------------------------------------------------------------------
 \subsection{Shell Preconditioners}
@@ -4750,7 +4767,7 @@ Note that the routine \lstinline{MatFDColoringCreate()} currently is only suppor
 \label{sec_vi}
 
 \lstinline{SNES} can also solve variational inequalities with box constraints. 
-That are nonlinear algebraic systems with additional inequality constraints on some or all of the variables: $ Lu_i \le u_i \le Hu_i $.
+These are nonlinear algebraic systems with additional inequality constraints on some or all of the variables: $ Lu_i \le u_i \le Hu_i $.
 Some or all of the lower bounds may be negative infinity (indicated to PETSc with \lstinline{SNES_VI_NINF}) and some or all of the upper bounds may be infinity (indicated by \lstinline{SNES_VI_INF}). The command
 \begin{lstlisting}
 SNESVISetVariableBounds(SNES,Vec Lu,Vec Hu);
@@ -5276,8 +5293,10 @@ method (the 2-norm of the difference is used). The default method is the \sindex
 $3$rd-order Bogacki-Shampine method with a $2$nd-order embedded method (\lstinline{TSRK3BS}).
 Other available methods are the \sindex{Fehlberg} $5$th-order Fehlberg RK scheme with a $4$th-order embedded
 method (\lstinline{TSRK5F}), the \sindex{Dormand-Prince} $5$th-order Dormand-Prince RK scheme with a $4$th-order embedded method
-(\lstinline{TSRK5DP}), and the \sindex{Bogacki-Shampine} $5$th-order Bogacki-Shampine RK scheme with a $4$th-order embedded method
-(\lstinline{TSRK5BS}). Variable timesteps cannot be used with RK schemes that do not have an embedded
+(\lstinline{TSRK5DP}), the \sindex{Bogacki-Shampine} $5$th-order Bogacki-Shampine RK scheme with a $4$th-order embedded method
+(\lstinline{TSRK5BS}, and the \sindex{Verner} $6$th-, $7$th, and $8$th-order robust Verner RK schemes with a
+$5$th-, $6$th, and $7$th-order embedded method, respectively (\lstinline{TSRK6VR}, \lstinline{TSRK7VR}, \lstinline{TSRK8VR}).
+Variable timesteps cannot be used with RK schemes that do not have an embedded
 method (\lstinline{TSRK1FE} - $1$st-order, $1$-stage forward Euler, \lstinline{TSRK2A} - $2$nd-order, $2$-stage RK scheme,
 \lstinline{TSRK3} - $3$rd-order, $3$-stage RK scheme, \lstinline{TSRK4} - $4$-th order, $4$-stage RK scheme).
 
@@ -5450,8 +5469,8 @@ To utilize PETSc's ODE solvers for these systems, first install PETSc with the a
 \trl{./configure} option \trl{--download-tchem}. We currently provide two examples of its use;
 one for single cell reaction and one for an ``artificial'' one dimensional problem with 
 periodic boundary conditions and diffusion of all species. The self-explanatory examples 
-are \href{http://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/extchem.c.html}{\trl{$PETSC_DIR/src/ts/examples/tutorials/extchem.c}} 
-and \href{http://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/exchemfield.c.html}{\trl{$PETSC_DIR/src/ts/examples/tutorials/exchemfield.c}}.
+are \href{https://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/extchem.c.html}{\trl{$PETSC_DIR/src/ts/examples/tutorials/extchem.c}} 
+and \href{https://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/exchemfield.c.html}{\trl{$PETSC_DIR/src/ts/examples/tutorials/exchemfield.c}}.
 
 \section{Using Sundials from PETSc}
 \label{sec_sundials}
@@ -5585,7 +5604,7 @@ If \lstinline{TSSetCostGradients()} and \lstinline{TSSetCostIntegrand()} are cal
 Otherwise, the computation will take place in the backward run (inside \lstinline{TSAdjointSolve()}).
 Note that this allows the evaluation of the integral term in the cost function without having to run the adjoint solvers.
 
-To provide a better understanding of the use of the adjoint solvers, we introduce a simple example, corresponding to \href{http://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/power_grid/ex3adj.c.html}{\trl{${PETSC_DIR}/src/ts/examples/tutorials/power_grid/ex3adj.c}}.
+To provide a better understanding of the use of the adjoint solvers, we introduce a simple example, corresponding to \href{https://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/power_grid/ex3adj.c.html}{\trl{${PETSC_DIR}/src/ts/examples/tutorials/power_grid/ex3adj.c}}.
 The problem is to study dynamic security of power system when there are credible contingencies such as short-circuits or loss of generators, transmission lines, or loads.
 The dynamic security constraints are incorporated as equality constraints in the form of discretized differential equations and inequality constraints for bounds on the trajectory.
 The governing ODE system is
@@ -5637,23 +5656,23 @@ Examples
 include:
 \begin{itemize}
 \item a discrete adjoint sensitivity using explicit time stepping
-  methods \href{http://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/ex16adj.c.html}{\trl{${PETSC_DIR}/src/ts/examples/tutorials/ex16adj.c}},
+  methods \href{https://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/ex16adj.c.html}{\trl{${PETSC_DIR}/src/ts/examples/tutorials/ex16adj.c}},
 \item a discrete adjoint sensitivity using implicit time stepping
-  methods \href{http://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/ex20adj.c.html}{\trl{${PETSC_DIR}/src/ts/examples/tutorials/ex20adj.c}},
+  methods \href{https://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/ex20adj.c.html}{\trl{${PETSC_DIR}/src/ts/examples/tutorials/ex20adj.c}},
 \item an optimization using the discrete adjoint models of ERK
-  \href{http://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/ex16opt_ic.c.html}{\trl{${PETSC_DIR}/src/ts/examples/tutorials/ex16opt_ic.c}} and \href{http://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/ex16opt_p.c.html}{\trl{${PETSC_DIR}/src/ts/examples/tutorials/ex16opt_p.c}},
+  \href{https://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/ex16opt_ic.c.html}{\trl{${PETSC_DIR}/src/ts/examples/tutorials/ex16opt_ic.c}} and \href{https://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/ex16opt_p.c.html}{\trl{${PETSC_DIR}/src/ts/examples/tutorials/ex16opt_p.c}},
 \item an optimization using the discrete adjoint models of Theta
 methods for stiff DAEs
-    \href{http://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/ex20opt_ic.c.html}{\trl{${PETSC_DIR}/src/ts/examples/tutorials/ex20opt_ic.c}} and \href{http://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/ex20opt_p.c.html}{\trl{${PETSC_DIR}/src/ts/examples/tutorials/ex20opt_p.c}},
+    \href{https://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/ex20opt_ic.c.html}{\trl{${PETSC_DIR}/src/ts/examples/tutorials/ex20opt_ic.c}} and \href{https://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/ex20opt_p.c.html}{\trl{${PETSC_DIR}/src/ts/examples/tutorials/ex20opt_p.c}},
 \item an ODE-constrained optimization using the discrete adjoint
-  models of Theta methods for cost function with an integral term \href{http://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/power_grid/ex3opt.c.html}{\trl{${PETSC_DIR}/src/ts/examples/tutorials/power_grid/ex3opt.c}},
+  models of Theta methods for cost function with an integral term \href{https://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/power_grid/ex3opt.c.html}{\trl{${PETSC_DIR}/src/ts/examples/tutorials/power_grid/ex3opt.c}},
 \item a discrete adjoint sensitivity using \lstinline{TSCN} (Crank-Nicolson)
-  methods for DAEs with discontinuities \href{http://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/power_grid/stability/stability_9bus/ex9busadj.c.html}{\trl{${PETSC_DIR}/src/ts/examples/tutorials/power_grid/stability_9bus/ex9busadj.c}},
+  methods for DAEs with discontinuities \href{https://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/power_grid/stability/stability_9bus/ex9busadj.c.html}{\trl{${PETSC_DIR}/src/ts/examples/tutorials/power_grid/stability_9bus/ex9busadj.c}},
 \item a DAE-constrained optimization using the discrete adjoint
 models of \lstinline{TSCN} (Crank-Nicolson) methods for cost function with an
-    integral term \href{http://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/power_grid/stability/stability_9bus/ex9busopt.c.html}{\trl{${PETSC_DIR}/src/ts/examples/tutorials/power_grid/stability_9bus/ex9busopt.c}},
+    integral term \href{https://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/power_grid/stability/stability_9bus/ex9busopt.c.html}{\trl{${PETSC_DIR}/src/ts/examples/tutorials/power_grid/stability_9bus/ex9busopt.c}},
   \item a discrete adjoint sensitivity using \lstinline{TSCN} methods for a
-  PDE problem \href{http://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/advection-diffusion-reaction/ex5adj.c.html}{\trl{${PETSC_DIR}/src/ts/examples/tutorials/advection-diffusion-reaction/ex5adj.c}}.
+  PDE problem \href{https://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/advection-diffusion-reaction/ex5adj.c.html}{\trl{${PETSC_DIR}/src/ts/examples/tutorials/advection-diffusion-reaction/ex5adj.c}}.
 \end{itemize}
 
 \section{Checkpointing}
@@ -6028,7 +6047,7 @@ problem. Very often, this influence pattern is determined jointly by the computa
 discretization. \lstinline{DMCreateMatrix} must compute this pattern when it automatically creates the properly
 preallocated Jacobian matrix. In \lstinline{DMDA} the influence pattern, or what we will call
 variable \textit{adjacency}\sindex{adjacency}, depends only on the stencil since the topology is Cartesian and the
-discretization is implicitly finite difference. In lstinline{DMPlex}, we allow the user to specify the adjacency
+discretization is implicitly finite difference. In \lstinline{DMPlex}, we allow the user to specify the adjacency
 topologically, while maintaining good defaults.
 
 The pattern is controlled by two flags. The first flag, \lstinline{useCone}, indicates whether variables couple first to
@@ -6094,7 +6113,7 @@ DMPlexVecGetClosure(dm, section, u, cell, &csize, &values);
 DMPlexVecRestoreClosure(dm, section, u, cell, &csize, &values);
 DMPlexVecSetClosure(dm, section, residual, cell, &r, ADD_VALUES);
 \end{lstlisting}
-A simple example of this kind of calculation is in \href{http://www.mcs.anl.gov/petsc/petsc-current/src/dm/impls/plex/plexfem.c.html#DMComputeL2Diff_Plex}{\trl{DMPlexComputeL2Diff_Plex()}}. Note that there is no restriction on the
+A simple example of this kind of calculation is in \href{https://www.mcs.anl.gov/petsc/petsc-current/src/dm/impls/plex/plexfem.c.html#DMComputeL2Diff_Plex}{\trl{DMPlexComputeL2Diff_Plex()}}. Note that there is no restriction on the
 type of cell or dimension of the mesh in the code above, so it will work for polyhedral cells, hybrid meshes, and meshes
 of any dimension, without change. We can also reverse the covering relation, so that the code works for finite volume
 methods where we want the data from neighboring cells for each face:
@@ -6113,7 +6132,7 @@ PetscSectionGetOffset(section, points[1*2], &offB);
 myfunc(a[offA], a[offB]);
 VecRestoreArray(u, &a);
 \end{lstlisting}
-This kind of calculation is used in \lstinline{TS} \href{http://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/ex11.c.html}{\trl{$PETSC_DIR/src/ts/examples/tutorials/ex11.c}}.
+This kind of calculation is used in \lstinline{TS} \href{https://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/ex11.c.html}{\trl{$PETSC_DIR/src/ts/examples/tutorials/ex11.c}}.
 
 \section{Networks}
 Built on top of \lstinline{DMPlex}, the \lstinline{DMNetwork} subclass provides abstractions for representing general unstructured
@@ -6449,11 +6468,11 @@ See the manual pages for details and pointers to example programs.
 Sample programs that illustrate the PETSc interface for Fortran
 are given in Figures \ref{fig_vec-Fortran} {\em --} \ref{fig_SNES-Fortran},
 corresponding to
-\href{http://www.mcs.anl.gov/petsc/petsc-current/src/vec/vec/examples/tests/ex19f.F.html}{\trl{${PETSC_DIR}/src/vec/vec/examples/tests/ex19f.F}},
-\href{http://www.mcs.anl.gov/petsc/petsc-current/src/vec/vec/examples/tutorials/ex4f.F.html}{\trl{${PETSC_DIR}/src/vec/vec/examples/tutorials/ex4f.F}},
+\href{https://www.mcs.anl.gov/petsc/petsc-current/src/vec/vec/examples/tests/ex19f.F.html}{\trl{${PETSC_DIR}/src/vec/vec/examples/tests/ex19f.F}},
+\href{https://www.mcs.anl.gov/petsc/petsc-current/src/vec/vec/examples/tutorials/ex4f.F.html}{\trl{${PETSC_DIR}/src/vec/vec/examples/tutorials/ex4f.F}},
 \break 
-\href{http://www.mcs.anl.gov/petsc/petsc-current/src/sys/classes/draw/examples/tests/ex5f.F.html}{\trl{${PETSC_DIR}/src/sys/classes/draw/examples/tests/ex5f.F}}, and
-\href{http://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex1f.F90.html}{\trl{${PETSC_DIR}/src/snes/examples/ex1f.F90}}, respectively.  We also
+\href{https://www.mcs.anl.gov/petsc/petsc-current/src/sys/classes/draw/examples/tests/ex5f.F.html}{\trl{${PETSC_DIR}/src/sys/classes/draw/examples/tests/ex5f.F}}, and
+\href{https://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex1f.F90.html}{\trl{${PETSC_DIR}/src/snes/examples/ex1f.F90}}, respectively.  We also
 refer Fortran programmers to the C examples listed throughout the manual,
 since PETSc usage within the two languages differs only slightly.
 
@@ -6595,7 +6614,7 @@ PetscViewerPushFormat(viewer,PETSC_VIEWER_BINARY_MATLAB}
 \end{lstlisting}
 to dump both a PETSc binary file and a corresponding \trl{.info} file which 
 \lstinline{PetscReadBinaryMatlab.m} will use to format the binary file in more complex cases, such as using a \lstinline{DMDA}. 
-For an example, see \href{http://www.mcs.anl.gov/petsc/petsc-current/src/dm/examples/tutorials/ex7.c.html}{\trl{${PETSC_DIR}/src/dm/examples/tutorials/ex7.c}}.
+For an example, see \href{https://www.mcs.anl.gov/petsc/petsc-current/src/dm/examples/tutorials/ex7.c.html}{\trl{${PETSC_DIR}/src/dm/examples/tutorials/ex7.c}}.
 In MATLAB (R2015b), one may then generate a useful structure. For example:
 \begin{outputlisting}[\normalsize\ttfamily]
 setenv('PETSC_DIR','~/petsc');
@@ -6630,7 +6649,7 @@ your call to \lstinline{PetscViewerSocketOpen()}), and then \lstinline{a = Petsc
 viewing a single vector or matrix. \lstinline{close()} closes the connection from MATLAB.
 On the PETSc side, one should destroy the viewer object with \lstinline{PetscViewerDestroy()}. 
 
-For an example, which includes sending data back to PETSc, see \href{http://www.mcs.anl.gov/petsc/petsc-current/src/vec/vec/examples/tutorials/ex42.c.html}{\trl{${PETSC_DIR}/src/vec/vec/examples/tutorials/ex42.c}} and the associated \trl{.m} file.
+For an example, which includes sending data back to PETSc, see \href{https://www.mcs.anl.gov/petsc/petsc-current/src/vec/vec/examples/tutorials/ex42.c.html}{\trl{${PETSC_DIR}/src/vec/vec/examples/tutorials/ex42.c}} and the associated \trl{.m} file.
 
 \section{Using the MATLAB Compute Engine}
 \label{sec_matlabengine}
@@ -6828,7 +6847,7 @@ We next discuss performance summaries for parallel programs,
 \findex{-log_view} as shown within Figures~\ref{fig_exparprof}
 and~\ref{fig_exparprof2}, which present the combined output generated by
 the \trl{-log_view} option.  The program that generated this data is
-\href{http://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/examples/tutorials/ex10.c.html}{\trl{${PETSC_DIR}/src/ksp/ksp/examples/tutorials/ex10.c}}.
+\href{https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/examples/tutorials/ex10.c.html}{\trl{${PETSC_DIR}/src/ksp/ksp/examples/tutorials/ex10.c}}.
 The code loads a
 matrix and right-hand-side vector from a binary file and then solves
 the resulting linear system; the program then repeats this process for
@@ -6939,7 +6958,7 @@ Phase summary info:
    AvgLen: average message length
    Reduct: number of global reductions
    Global: entire computation
-   Stage: optional user-defined stages of a computation. Set stages with PLogStagePush() and PLogStagePop().
+   Stage: optional user-defined stages of a computation. Set stages with PetscLogStagePush() and PetscLogStagePop().
       %T - percent time in this phase         %F - percent flop in this phase
       %M - percent messages in this phase     %L - percent message lengths in this phase
       %R - percent reductions in this phase
@@ -7270,7 +7289,7 @@ performance numbers are not distorted.
 When this procedure is used in conjunction with the user-defined stages of profiling
 described in Section~\ref{sec_profstages}, we can focus easily on the
 problem of interest.  For example, we used this technique in the program
-\href{http://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/examples/tutorials/ex10.c.html}{\trl{${PETSC_DIR}/src/ksp/ksp/examples/tutorials/ex10.c}} to
+\href{https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/examples/tutorials/ex10.c.html}{\trl{${PETSC_DIR}/src/ksp/ksp/examples/tutorials/ex10.c}} to
 generate the timings within Figures~\ref{fig_exparprof} and \ref{fig_exparprof2}.
 In this case,
 the profiled code of interest (solving the linear system for the larger problem)
@@ -7789,8 +7808,8 @@ A simple technique for saving work vectors, matrices, etc. is employing
 a user-defined context.  In C and C++ such a context is merely a
 structure in which various objects can be stashed; in Fortran a user
 context can be an integer array that contains both parameters and pointers
-to PETSc objects. See \href{http://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex5.c.html}{\trl{${PETSC_DIR}/snes/examples/tutorials/ex5.c}} and
-\href{http://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex5f.F90.html}{\trl{${PETSC_DIR}/snes/examples/tutorials/ex5f.F90}} for examples of user-defined application
+to PETSc objects. See \href{https://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex5.c.html}{\trl{${PETSC_DIR}/snes/examples/tutorials/ex5.c}} and
+\href{https://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex5f.F90.html}{\trl{${PETSC_DIR}/snes/examples/tutorials/ex5f.F90}} for examples of user-defined application
 contexts in C and Fortran, respectively.
 
 \subsection{Numerical Experiments}
@@ -7868,7 +7887,7 @@ overcoming them.
 \item {\bf Overhead of timing routines on certain machines}: On certain machines,
       even calling the system clock in order to time routines is
       slow; this skews all of the flop rates and timing results. The file
-      \href{http://www.mcs.anl.gov/petsc/petsc-current/src/benchmarks/PetscTime.c.html}{\trl{$PETSC_DIR/src/benchmarks/PetscTime.c}} contains a 
+      \href{https://www.mcs.anl.gov/petsc/petsc-current/src/benchmarks/PetscTime.c.html}{\trl{$PETSC_DIR/src/benchmarks/PetscTime.c}} contains a 
       simple test problem that will approximate the amount of time
       required to get the current time in a running program. On good
       systems it will on the order of $10^{-6}$ seconds or less.
@@ -8364,10 +8383,10 @@ numbers when using the complex versions of the PETSc libraries;
 however, when working {\em only} with real numbers in a code,
 one should use a version of PETSc for real numbers for best efficiency.
 
-The program \href{http://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/examples/tutorials/ex11.c.html}{\trl{${PETSC_DIR}/src/ksp/ksp/examples/tutorials/ex11.c}}
+The program \href{https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/examples/tutorials/ex11.c.html}{\trl{${PETSC_DIR}/src/ksp/ksp/examples/tutorials/ex11.c}}
 solves a linear system with a complex
 coefficient matrix.  Its Fortran counterpart is
-\href{http://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/examples/tutorials/ex11f.F.html}{\trl{${PETSC_DIR}/src/ksp/ksp/examples/tutorials/ex11f.F}}.
+\href{https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/examples/tutorials/ex11f.F90.html}{\trl{${PETSC_DIR}/src/ksp/ksp/examples/tutorials/ex11f.F90}}.
 
 \section{Parallel Communication}
 
@@ -8673,8 +8692,8 @@ One way to index and build PETSc in Eclipse is as follows.
 If you launch Eclipse from the Dock on Mac OS X, \trl{.bashrc} will not be loaded (a known OS X behavior, for security reasons).
 This will be a problem if you set the environment variables \trl{PETSC_DIR} and \trl{PETSC_ARCH} in \trl{.bashrc}.
 A solution which involves replacing the executable can be found at
-\href{http://stackoverflow.com/questions/829749}
-{\trl{http://stackoverflow.com/questions/829749}}.
+\href{/questions/829749/launch-mac-eclipse-with-environment-variables-set}
+{\trl{/questions/829749/launch-mac-eclipse-with-environment-variables-set}}.
 Alternatively, you can add \trl{PETSC_DIR} and \trl{PETSC_ARCH} manually under ``Properties $\rightarrow$ C/C++ Build $\rightarrow$ Environment''.
 
 To allow an Eclipse code to compile with the PETSc include files and link with the PETSc libraries, a PETSc user has suggested the following.
@@ -8768,7 +8787,7 @@ In this example, keywords include:
 \item \lstinline{CONFIG}: Configuration options to be used by \trl{qmake}. Here, the option \lstinline{link_pkgconfig} instructs \trl{qmake} to internally 
   use \lstinline{pkgconfig} to resolve \lstinline{INCLUDEPATH} and \lstinline{LIBS} variables.
 \item \lstinline{PKGCONFIG}: Name of the configuration file (the \trl{.pc} file -- here \trl{PETSc.pc}) to be passed to \trl{pkgconfig}. Note that for this functionality to work, \trl{PETSc.pc} must be in path which might require adjusting the \lstinline{PKG_CONFIG_PATH} enviroment variable. 
-  For more information see \url{http://doc.qt.io/qtcreator/creator-build-settings.html#build-environment}.
+  For more information see \url{https://doc.qt.io/qtcreator/creator-build-settings.html#build-environment}.
 \item \lstinline{QMAKE_CC} and \lstinline{QMAKE_CXX}: Define which C/C++ compilers use.
 \item \lstinline{QMAKE_LINK}: Defines the proper linker to be used. Relevant if compiling C++ projects.
 \item \lstinline{QMAKE_CFLAGS}, \lstinline{QMAKE_CXXFLAGS} and \lstinline{QMAKE_LFLAGS}: Set the corresponding compile and linking flags.
@@ -8777,10 +8796,10 @@ In this example, keywords include:
 \item \lstinline{OTHER_FILES}: Other files to include (source, header, or any other extension). Note that none of the source files placed here are compiled.
 \end{tightitemize}
 
-More options can be included in a \trl{.pro} file; see \url{http://doc.qt.io/qt-5/qmake-project-files.html}. 
+More options can be included in a \trl{.pro} file; see \url{https://doc.qt.io/qt-5/qmake-project-files.html}. 
 Once the \trl{.pro} file is generated, the user can simply open it via Qt Creator. 
 Upon opening, one has the option to create two different build options, debug and release, and switch between the two. 
-For more information on using the Qt Creator interface and other more advanced aspects of the IDE, refer to \url{https://www.qt.io/ide/}
+For more information on using the Qt Creator interface and other more advanced aspects of the IDE, refer to \url{https://www.qt.io/qt-features-libraries-apis-tools-and-ide/}
 
 \section{Visual Studio Users} \sindex{visual studio}
 
@@ -8919,7 +8938,7 @@ within the makefile.
    include ${PETSC_DIR}/lib/petsc/conf/variables
    include ${PETSC_DIR}/lib/petsc/conf/rules
 
-   ex2: ex2.o chkopts
+   ex2: ex2.o 
            ${CLINKER} -o ex2 ex2.o  ${PETSC_LIB}
            ${RM} ex2.o
 \end{makelisting}
@@ -9483,7 +9502,7 @@ where the latter is needed to make have it run in the local directory instead of
 \trl{$PREFIX_DIR}.
 
 To learn more about the test system details, one can look at the
-\href{http://www.mcs.anl.gov/petsc/petsc-current/docs/developers.pdf}{Developer's Guide}.
+\href{https://www.mcs.anl.gov/petsc/petsc-current/docs/developers.pdf}{Developer's Guide}.
 
 \cleardoublepage
 \input{acknowltmp.tex}

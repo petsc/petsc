@@ -3,8 +3,9 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit = 'v3.2p4'
-    self.download  = ['git://https://bitbucket.org/petsc/pkg-parms.git','http://ftp.mcs.anl.gov/pub/petsc/externalpackages/pARMS_3.2p4.tar.gz']
+    self.gitcommit = 'v3.2p5'
+    self.download  = ['git://https://bitbucket.org/petsc/pkg-parms.git','https://bitbucket.org/petsc/pkg-metis/get/'+self.gitcommit+'.tar.gz']
+    self.downloaddirnames  = ['petsc-pkg-parms','pARMS']
     self.functions = ['parms_PCCreate']
     self.includes  = ['parms.h']
     self.liblist   = [['libparms.a']]
@@ -48,7 +49,7 @@ class Configure(config.package.Package):
       g.write('CFDEFS     = \n')
     else:
       raise RuntimeError('Unknown blas mangling: cannot proceed with pARMS: '+str(self.blasLapack.mangling))
-    g.write('CFFLAGS    = ${CFDEFS} -DVOID_POINTER_SIZE_'+str(self.types.sizes['known-sizeof-void-p'])+'\n')
+    g.write('CFFLAGS    = ${CFDEFS} -DVOID_POINTER_SIZE_'+str(self.types.sizes['void-p'])+'\n')
 
     g.write('RM         = rm\n')
     g.write('RMFLAGS    = -rf\n')

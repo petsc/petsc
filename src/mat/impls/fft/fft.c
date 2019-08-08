@@ -23,7 +23,7 @@ PetscErrorCode MatDestroy_FFT(Mat A)
 /*@C
       MatCreateFFT - Creates a matrix object that provides FFT via an external package
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameter:
 +   comm - MPI communicator
@@ -35,7 +35,7 @@ PetscErrorCode MatDestroy_FFT(Mat A)
 .   A  - the matrix
 
   Options Database Keys:
-+ -mat_fft_type - set FFT type
+. -mat_fft_type - set FFT type
 
    Level: intermediate
 
@@ -62,7 +62,7 @@ PetscErrorCode MatCreateFFT(MPI_Comm comm,PetscInt ndim,const PetscInt dim[],Mat
   }
 
   ierr = PetscMalloc1(ndim,&fft->dim);CHKERRQ(ierr);
-  ierr = PetscMemcpy(fft->dim,dim,ndim*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArraycpy(fft->dim,dim,ndim);CHKERRQ(ierr);
 
   fft->ndim = ndim;
   fft->n    = PETSC_DECIDE;

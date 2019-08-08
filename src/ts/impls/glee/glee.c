@@ -141,8 +141,6 @@ M*/
 
   Level: advanced
 
-.keywords: TS, TSGLEE, register, all
-
 .seealso:  TSGLEERegisterDestroy()
 @*/
 PetscErrorCode TSGLEERegisterAll(void)
@@ -364,7 +362,6 @@ PetscErrorCode TSGLEERegisterAll(void)
 
    Level: advanced
 
-.keywords: TSGLEE, register, destroy
 .seealso: TSGLEERegister(), TSGLEERegisterAll()
 @*/
 PetscErrorCode TSGLEERegisterDestroy(void)
@@ -376,14 +373,14 @@ PetscErrorCode TSGLEERegisterDestroy(void)
   while ((link = GLEETableauList)) {
     GLEETableau t = &link->tab;
     GLEETableauList = link->next;
-    ierr = PetscFree5(t->A,t->B,t->U,t->V,t->c);  CHKERRQ(ierr);
-    ierr = PetscFree2(t->S,t->F);                 CHKERRQ(ierr);
-    ierr = PetscFree (t->Fembed);                 CHKERRQ(ierr);
-    ierr = PetscFree (t->Ferror);                 CHKERRQ(ierr);
-    ierr = PetscFree (t->Serror);                 CHKERRQ(ierr);
-    ierr = PetscFree (t->binterp);                CHKERRQ(ierr);
-    ierr = PetscFree (t->name);                   CHKERRQ(ierr);
-    ierr = PetscFree (link);                      CHKERRQ(ierr);
+    ierr = PetscFree5(t->A,t->B,t->U,t->V,t->c);CHKERRQ(ierr);
+    ierr = PetscFree2(t->S,t->F);               CHKERRQ(ierr);
+    ierr = PetscFree (t->Fembed);               CHKERRQ(ierr);
+    ierr = PetscFree (t->Ferror);               CHKERRQ(ierr);
+    ierr = PetscFree (t->Serror);               CHKERRQ(ierr);
+    ierr = PetscFree (t->binterp);              CHKERRQ(ierr);
+    ierr = PetscFree (t->name);                 CHKERRQ(ierr);
+    ierr = PetscFree (link);                    CHKERRQ(ierr);
   }
   TSGLEERegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -395,7 +392,6 @@ PetscErrorCode TSGLEERegisterDestroy(void)
 
   Level: developer
 
-.keywords: TS, TSGLEE, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode TSGLEEInitializePackage(void)
@@ -417,7 +413,6 @@ PetscErrorCode TSGLEEInitializePackage(void)
 
   Level: developer
 
-.keywords: Petsc, destroy, package
 .seealso: PetscFinalize()
 @*/
 PetscErrorCode TSGLEEFinalizePackage(void)
@@ -459,8 +454,6 @@ PetscErrorCode TSGLEEFinalizePackage(void)
 
    Level: advanced
 
-.keywords: TS, register
-
 .seealso: TSGLEE
 @*/
 PetscErrorCode TSGLEERegister(TSGLEEType name,PetscInt order,PetscInt s, PetscInt r,
@@ -480,36 +473,35 @@ PetscErrorCode TSGLEERegister(TSGLEEType name,PetscInt order,PetscInt s, PetscIn
 
   PetscFunctionBegin;
   ierr     = TSGLEEInitializePackage();CHKERRQ(ierr);
-  ierr     = PetscMalloc(sizeof(*link),&link);CHKERRQ(ierr);
-  ierr     = PetscMemzero(link,sizeof(*link));CHKERRQ(ierr);
+  ierr     = PetscNew(&link);CHKERRQ(ierr);
   t        = &link->tab;
   ierr     = PetscStrallocpy(name,&t->name);CHKERRQ(ierr);
   t->order = order;
   t->s     = s;
   t->r     = r;
   t->gamma = gamma;
-  ierr     = PetscMalloc5(s*s,&t->A,r*r,&t->V,s,&t->c,r*s,&t->B,s*r,&t->U); CHKERRQ(ierr);
-  ierr     = PetscMalloc2(r,&t->S,r,&t->F); CHKERRQ(ierr);
-  ierr     = PetscMemcpy(t->A,A,s*s*sizeof(A[0]));CHKERRQ(ierr);
-  ierr     = PetscMemcpy(t->B,B,r*s*sizeof(B[0]));CHKERRQ(ierr);
-  ierr     = PetscMemcpy(t->U,U,s*r*sizeof(U[0]));CHKERRQ(ierr);
-  ierr     = PetscMemcpy(t->V,V,r*r*sizeof(V[0]));CHKERRQ(ierr);
-  ierr     = PetscMemcpy(t->S,S,r  *sizeof(S[0]));CHKERRQ(ierr);
-  ierr     = PetscMemcpy(t->F,F,r  *sizeof(F[0]));CHKERRQ(ierr);
-  if (c) { 
-    ierr   = PetscMemcpy(t->c,c,s*sizeof(c[0])); CHKERRQ(ierr); 
+  ierr     = PetscMalloc5(s*s,&t->A,r*r,&t->V,s,&t->c,r*s,&t->B,s*r,&t->U);CHKERRQ(ierr);
+  ierr     = PetscMalloc2(r,&t->S,r,&t->F);CHKERRQ(ierr);
+  ierr     = PetscArraycpy(t->A,A,s*s);CHKERRQ(ierr);
+  ierr     = PetscArraycpy(t->B,B,r*s);CHKERRQ(ierr);
+  ierr     = PetscArraycpy(t->U,U,s*r);CHKERRQ(ierr);
+  ierr     = PetscArraycpy(t->V,V,r*r);CHKERRQ(ierr);
+  ierr     = PetscArraycpy(t->S,S,r  );CHKERRQ(ierr);
+  ierr     = PetscArraycpy(t->F,F,r  );CHKERRQ(ierr);
+  if (c) {
+    ierr   = PetscArraycpy(t->c,c,s);CHKERRQ(ierr);
   } else {
     for (i=0; i<s; i++) for (j=0,t->c[i]=0; j<s; j++) t->c[i] += A[i*s+j];
   }
   ierr = PetscMalloc1(r,&t->Fembed);CHKERRQ(ierr);
   ierr = PetscMalloc1(r,&t->Ferror);CHKERRQ(ierr);
   ierr = PetscMalloc1(r,&t->Serror);CHKERRQ(ierr);
-  ierr = PetscMemcpy(t->Fembed,Fembed,r*sizeof(Fembed[0]));CHKERRQ(ierr);
-  ierr = PetscMemcpy(t->Ferror,Ferror,r*sizeof(Ferror[0]));CHKERRQ(ierr);
-  ierr = PetscMemcpy(t->Serror,Serror,r*sizeof(Serror[0]));CHKERRQ(ierr);
+  ierr = PetscArraycpy(t->Fembed,Fembed,r);CHKERRQ(ierr);
+  ierr = PetscArraycpy(t->Ferror,Ferror,r);CHKERRQ(ierr);
+  ierr = PetscArraycpy(t->Serror,Serror,r);CHKERRQ(ierr);
   t->pinterp = pinterp;
   ierr       = PetscMalloc1(s*pinterp,&t->binterp);CHKERRQ(ierr);
-  ierr       = PetscMemcpy(t->binterp,binterp,s*pinterp*sizeof(binterp[0]));CHKERRQ(ierr);
+  ierr       = PetscArraycpy(t->binterp,binterp,s*pinterp);CHKERRQ(ierr);
 
   link->next      = GLEETableauList;
   GLEETableauList = link;
@@ -547,11 +539,11 @@ static PetscErrorCode TSEvaluateStep_GLEE(TS ts,PetscInt order,Vec X,PetscBool *
     */
     if (glee->status == TS_STEP_INCOMPLETE) {
       for (i=0; i<r; i++) {
-        ierr = VecZeroEntries(Y[i]); CHKERRQ(ierr);
+        ierr = VecZeroEntries(Y[i]);CHKERRQ(ierr);
         for (j=0; j<r; j++) wr[j] = V[i*r+j];
-        ierr = VecMAXPY(Y[i],r,wr,glee->X); CHKERRQ(ierr);
+        ierr = VecMAXPY(Y[i],r,wr,glee->X);CHKERRQ(ierr);
         for (j=0; j<s; j++) ws[j] = h*B[i*s+j];
-        ierr = VecMAXPY(Y[i],s,ws,YdotStage); CHKERRQ(ierr);
+        ierr = VecMAXPY(Y[i],s,ws,YdotStage);CHKERRQ(ierr);
       }
       ierr = VecZeroEntries(X);CHKERRQ(ierr);
       for (j=0; j<r; j++) wr[j] = F[j];
@@ -563,11 +555,11 @@ static PetscErrorCode TSEvaluateStep_GLEE(TS ts,PetscInt order,Vec X,PetscBool *
 
     /* Complete with the embedded method (Fembed) */
     for (i=0; i<r; i++) {
-      ierr = VecZeroEntries(Y[i]); CHKERRQ(ierr);
+      ierr = VecZeroEntries(Y[i]);CHKERRQ(ierr);
       for (j=0; j<r; j++) wr[j] = V[i*r+j];
-      ierr = VecMAXPY(Y[i],r,wr,glee->X); CHKERRQ(ierr);
+      ierr = VecMAXPY(Y[i],r,wr,glee->X);CHKERRQ(ierr);
       for (j=0; j<s; j++) ws[j] = h*B[i*s+j];
-      ierr = VecMAXPY(Y[i],s,ws,YdotStage); CHKERRQ(ierr);
+      ierr = VecMAXPY(Y[i],s,ws,YdotStage);CHKERRQ(ierr);
     }
     ierr = VecZeroEntries(X);CHKERRQ(ierr);
     for (j=0; j<r; j++) wr[j] = Fembed[j];
@@ -605,7 +597,7 @@ static PetscErrorCode TSStep_GLEE(TS ts)
   PetscFunctionBegin;
   ierr = PetscCitationsRegister(citation,&cited);CHKERRQ(ierr);
 
-  for (i=0; i<r; i++) { ierr = VecCopy(Y[i],X[i]); CHKERRQ(ierr); }
+  for (i=0; i<r; i++) { ierr = VecCopy(Y[i],X[i]);CHKERRQ(ierr); }
 
   ierr           = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   next_time_step = ts->time_step;
@@ -621,7 +613,7 @@ static PetscErrorCode TSStep_GLEE(TS ts)
     for (i=0; i<s; i++) {
 
       glee->stage_time = t + h*c[i];
-      ierr = TSPreStage(ts,glee->stage_time); CHKERRQ(ierr);
+      ierr = TSPreStage(ts,glee->stage_time);CHKERRQ(ierr);
 
       if (A[i*s+i] == 0) {  /* Explicit stage */
         ierr = VecZeroEntries(YStage[i]);CHKERRQ(ierr);
@@ -649,7 +641,7 @@ static PetscErrorCode TSStep_GLEE(TS ts)
       ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
       ierr = TSAdaptCheckStage(adapt,ts,glee->stage_time,YStage[i],&accept);CHKERRQ(ierr);
       if (!accept) goto reject_step;
-      ierr = TSPostStage(ts,glee->stage_time,i,YStage); CHKERRQ(ierr);
+      ierr = TSPostStage(ts,glee->stage_time,i,YStage);CHKERRQ(ierr);
       ierr = TSComputeRHSFunction(ts,t+h*c[i],YStage[i],YdotStage[i]);CHKERRQ(ierr);
     }
     ierr = TSEvaluateStep(ts,tab->order,ts->vec_sol,NULL);CHKERRQ(ierr);
@@ -865,7 +857,7 @@ static PetscErrorCode TSSetUp_GLEE(TS ts)
   ierr = VecDuplicate(ts->vec_sol,&glee->yGErr);CHKERRQ(ierr);
   ierr = VecZeroEntries(glee->yGErr);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&glee->W);CHKERRQ(ierr);
-  ierr = PetscMalloc2(s,&glee->swork,r,&glee->rwork); CHKERRQ(ierr);
+  ierr = PetscMalloc2(s,&glee->swork,r,&glee->rwork);CHKERRQ(ierr);
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_TSGLEE,DMRestrictHook_TSGLEE,ts);CHKERRQ(ierr);
   ierr = DMSubDomainHookAdd(dm,DMSubDomainHook_TSGLEE,DMSubDomainRestrictHook_TSGLEE,ts);CHKERRQ(ierr);
@@ -928,7 +920,7 @@ static PetscErrorCode TSView_GLEE(TS ts,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     TSGLEEType gleetype;
-    char   buf[512];
+    char       buf[512];
     ierr = TSGLEEGetType(ts,&gleetype);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  GLEE type %s\n",gleetype);CHKERRQ(ierr);
     ierr = PetscFormatRealArray(buf,sizeof(buf),"% 8.6f",tab->s,tab->c);CHKERRQ(ierr);
@@ -1060,7 +1052,7 @@ PetscErrorCode TSGetSolutionComponents_GLEE(TS ts,PetscInt *n,Vec *Y)
   if (!Y) *n = tab->r;
   else {
     if ((*n >= 0) && (*n < tab->r)) { 
-      ierr = VecCopy(glee->Y[*n],*Y); CHKERRQ(ierr);
+      ierr = VecCopy(glee->Y[*n],*Y);CHKERRQ(ierr);
     } else SETERRQ3(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Second argument (%d) out of range[%d,%d].",*n,0,tab->r-1);
   }
   PetscFunctionReturn(0);
@@ -1118,9 +1110,9 @@ PetscErrorCode TSSetTimeError_GLEE(TS ts,Vec X)
   PetscFunctionBegin;
   if (r != 2) SETERRQ2(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSSetTimeError_GLEE not supported for '%s' with r=%D.",tab->name,tab->r);
   for (i=1; i<r; i++) {
-    ierr = VecCopy(ts->vec_sol,Y[i]); CHKERRQ(ierr);
-    ierr = VecAXPBY(Y[i],S[0],S[1],X); CHKERRQ(ierr);
-    ierr = VecCopy(X,glee->yGErr); CHKERRQ(ierr);
+    ierr = VecCopy(ts->vec_sol,Y[i]);CHKERRQ(ierr);
+    ierr = VecAXPBY(Y[i],S[0],S[1],X);CHKERRQ(ierr);
+    ierr = VecCopy(X,glee->yGErr);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

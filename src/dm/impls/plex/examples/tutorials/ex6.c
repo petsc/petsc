@@ -22,8 +22,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->k   = NULL;
 
   ierr = PetscOptionsBegin(comm, "", "SEM Problem Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim", "Problem dimension", "ex6.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-num_fields", "The number of fields", "ex6.c", options->Nf, &options->Nf, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsRangeInt("-dim", "Problem dimension", "ex6.c", options->dim, &options->dim, NULL,1,3);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-num_fields", "The number of fields", "ex6.c", options->Nf, &options->Nf, NULL,0);CHKERRQ(ierr);
   if (options->Nf) {
     len  = options->Nf;
     ierr = PetscMalloc1(len, &options->Nc);CHKERRQ(ierr);
@@ -49,7 +49,7 @@ static PetscErrorCode LoadData2D(DM dm, PetscInt Ni, PetscInt Nj, PetscInt clSiz
   for (j = 0; j < Nj; ++j) {
     for (i = 0; i < Ni; ++i) {
       PetscInt    ki, kj, o = 0;
-      ierr = PetscMemzero(closure,sizeof(PetscScalar)*clSize);CHKERRQ(ierr);
+      ierr = PetscArrayzero(closure,clSize);CHKERRQ(ierr);
 
       for (f = 0; f < user->Nf; ++f) {
         PetscInt ioff = i*user->k[f], joff = j*user->k[f];
@@ -81,7 +81,7 @@ static PetscErrorCode LoadData3D(DM dm, PetscInt Ni, PetscInt Nj, PetscInt Nk, P
     for (j = 0; j < Nj; ++j) {
       for (i = 0; i < Ni; ++i) {
         PetscInt    ki, kj, kk, o = 0;
-        ierr = PetscMemzero(closure,sizeof(PetscScalar)*clSize);CHKERRQ(ierr);
+        ierr = PetscArrayzero(closure,clSize);CHKERRQ(ierr);
 
         for (f = 0; f < user->Nf; ++f) {
           PetscInt ioff = i*user->k[f], joff = j*user->k[f], koff = k*user->k[f];
@@ -362,7 +362,7 @@ int main(int argc, char **argv)
   }
   ierr = DMSetSection(dm, s);CHKERRQ(ierr);
   /* Create spectral ordering and load in data */
-  ierr = DMPlexCreateSpectralClosurePermutation(dm, PETSC_DETERMINE, NULL);CHKERRQ(ierr);
+  ierr = DMPlexSetClosurePermutationTensor(dm, PETSC_DETERMINE, NULL);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm, &u);CHKERRQ(ierr);
   switch (user.dim) {
   case 2: ierr = LoadData2D(dm, 2, 2, size, u, &user);CHKERRQ(ierr);break;
@@ -385,7 +385,7 @@ int main(int argc, char **argv)
     break;
   }
   /* Recreate spectral ordering and read out data */
-  ierr = DMPlexCreateSpectralClosurePermutation(dm, PETSC_DETERMINE, s);CHKERRQ(ierr);
+  ierr = DMPlexSetClosurePermutationTensor(dm, PETSC_DETERMINE, s);CHKERRQ(ierr);
   switch (user.dim) {
   case 2: ierr = ReadData2D(dm, u, &user);CHKERRQ(ierr);break;
   case 3: ierr = ReadData3D(dm, u, &user);CHKERRQ(ierr);break;

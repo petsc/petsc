@@ -1,8 +1,8 @@
 !
 !  Include file for Fortran use of the TS (timestepping) package in PETSc
 !
-#if !defined (__PETSCTSDEF_H)
-#define __PETSCTSDEF_H
+#if !defined (PETSCTSDEF_H)
+#define PETSCTSDEF_H
 
 #include "petsc/finclude/petscsnes.h"
 
@@ -36,6 +36,7 @@
 #define TSROSW            'rosw'
 #define TSEIMEX           'eimex'
 #define TSRADAU5          'radau5'
+#define TSMPRK            'mprk'
 
 #define TSTRAJECTORYBASIC 'basic'
 
@@ -66,6 +67,14 @@
 #define TSRK5F    '5f'
 #define TSRK5DP   '5dp'
 #define TSRK5BS   '5bs'
+#define TSRK6VR   "6vr"
+#define TSRK7VR   "7vr"
+#define TSRK8VR   "8vr"
+
+#define TSMPRKType   character*(80)
+#define TSMPRKPM2     'pm2'
+#define TSMPRKP2      'p2'
+#define TSMPRKP3      'p3'
 
 #define TSARKIMEXType character*(80)
 #define TSARKIMEX1BEE   '1bee'

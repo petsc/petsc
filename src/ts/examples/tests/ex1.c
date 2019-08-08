@@ -41,7 +41,9 @@ int main(int argc,char **argv)
   ierr = MatSetUp(A);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatShift(A,(PetscReal)0);CHKERRQ(ierr);
+  /* ensure that the Jacobian matrix has diagonal entries since that is required by TS */
+  ierr = MatShift(A,(PetscReal)1);CHKERRQ(ierr);
+  ierr = MatShift(A,(PetscReal)-1);CHKERRQ(ierr);
   ierr = TSSetRHSJacobian(ts,A,A,RHSJacobian,NULL);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
 

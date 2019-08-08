@@ -1,7 +1,4 @@
 #include <petsc/private/petscimpl.h>        /*I  "petscsys.h"   I*/
-#if defined(PETSC_HAVE_STRING_H)
-#include <string.h>
-#endif
 #include <yaml.h>
 
 enum storage_flags {VAR,VAL,SEQ};     /* "Store as" switch */
@@ -67,7 +64,7 @@ static PetscErrorCode PetscParseLayerYAML(yaml_parser_t *parser,int *lvl)
 
   PetscOptionsInsertFileYAML - Insert a YAML-formatted file in the option database
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 +   comm - the processes that will share the options (usually PETSC_COMM_WORLD)
@@ -83,7 +80,7 @@ static PetscErrorCode PetscParseLayerYAML(yaml_parser_t *parser,int *lvl)
   is detected, hence the user should check that the YAML file is valid before 
   supplying it, for instance at http://www.yamllint.com/ .
 
-  Inspired by http://stackoverflow.com/a/621451
+  Inspired by https://stackoverflow.com/a/621451
 
   Level: intermediate
 

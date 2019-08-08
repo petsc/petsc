@@ -144,8 +144,6 @@ PetscErrorCode  PetscDrawLGSPDraw(PetscDrawLG lg,PetscDrawSP spin)
     The MPI communicator that owns the PetscDraw owns this PetscDrawLG, but the calls to set options and add points are ignored on all processes except the
            zeroth MPI process in the communicator. All MPI processes in the communicator must call PetscDrawLGDraw() to display the updated graph.
 
-    Concepts: line graph^creating
-
 .seealso:  PetscDrawLGDestroy(), PetscDrawLGAddPoint(), PetscDrawLGAddCommonPoint(), PetscDrawLGAddPoints(), PetscDrawLGDraw(), PetscDrawLGSave(),
            PetscDrawLGView(), PetscDrawLGReset(), PetscDrawLGSetDimension(), PetscDrawLGGetDimension(), PetscDrawLGSetLegend(), PetscDrawLGGetAxis(),
            PetscDrawLGGetDraw(), PetscDrawLGSetUseMarkers(), PetscDrawLGSetLimits(), PetscDrawLGSetColors(), PetscDrawLGSetOptionsPrefix(), PetscDrawLGSetFromOptions()
@@ -201,8 +199,6 @@ PetscErrorCode  PetscDrawLGCreate(PetscDraw draw,PetscInt dim,PetscDrawLG *outlg
 
    Level: intermediate
 
-   Concepts: line graph^setting number of lines
-
 .seealso: PetscDrawLGCreate()
 
 @*/
@@ -216,7 +212,7 @@ PetscErrorCode  PetscDrawLGSetColors(PetscDrawLG lg,const int colors[])
 
   ierr = PetscFree(lg->colors);CHKERRQ(ierr);
   ierr = PetscMalloc1(lg->dim,&lg->colors);CHKERRQ(ierr);
-  ierr = PetscMemcpy(lg->colors,colors,lg->dim*sizeof(int));CHKERRQ(ierr);
+  ierr = PetscArraycpy(lg->colors,colors,lg->dim);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -233,8 +229,6 @@ PetscErrorCode  PetscDrawLGSetColors(PetscDrawLG lg,const int colors[])
 
    Notes:
     Call PetscDrawLGGetAxis() and then change properties of the PetscDrawAxis for detailed control of the plot
-
-   Concepts: line graph^setting number of lines
 
 .seealso: PetscDrawLGGetAxis(), PetscDrawAxis, PetscDrawAxisSetColors(), PetscDrawAxisSetLabels(), PetscDrawAxisSetHoldLimits()
 
@@ -276,8 +270,6 @@ PetscErrorCode  PetscDrawLGSetLegend(PetscDrawLG lg,const char *const *names)
 
    Level: intermediate
 
-   Concepts: line graph^setting number of lines
-
 .seealso: PetscDrawLGCreate(), PetscDrawLGSetDimension()
 
 @*/
@@ -300,8 +292,6 @@ PetscErrorCode  PetscDrawLGGetDimension(PetscDrawLG lg,PetscInt *dim)
 -  dim - the number of curves.
 
    Level: intermediate
-
-   Concepts: line graph^setting number of lines
 
 .seealso: PetscDrawLGCreate(), PetscDrawLGGetDimension()
 @*/
@@ -344,8 +334,6 @@ PetscErrorCode  PetscDrawLGSetDimension(PetscDrawLG lg,PetscInt dim)
 
    Level: intermediate
 
-   Concepts: line graph^setting axis
-
 .seealso: PetscDrawLGCreate()
 
 @*/
@@ -370,8 +358,6 @@ PetscErrorCode  PetscDrawLGSetLimits(PetscDrawLG lg,PetscReal x_min,PetscReal x_
 .  lg - the line graph context.
 
    Level: intermediate
-
-   Concepts: line graph^restarting
 
 .seealso: PetscDrawLGCreate()
 
@@ -437,8 +423,6 @@ PetscErrorCode  PetscDrawLGDestroy(PetscDrawLG *lg)
 .  -lg_use_markers  <true,false>
 
    Level: intermediate
-
-   Concepts: line graph^showing points
 
 .seealso: PetscDrawLGCreate()
 
@@ -537,8 +521,6 @@ PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
 
   Level: intermediate
 
-  Concepts: line graph^saving
-
 .seealso:  PetscDrawLGCreate(), PetscDrawLGGetDraw(), PetscDrawSetSave(), PetscDrawSave()
 @*/
 PetscErrorCode  PetscDrawLGSave(PetscDrawLG lg)
@@ -563,7 +545,6 @@ PetscErrorCode  PetscDrawLGSave(PetscDrawLG lg)
 
 .seealso: PetscDrawLGCreate()
 
-.keywords:  draw, line, graph
 @*/
 PetscErrorCode  PetscDrawLGView(PetscDrawLG lg,PetscViewer viewer)
 {
@@ -602,8 +583,6 @@ PetscErrorCode  PetscDrawLGView(PetscDrawLG lg,PetscViewer viewer)
 
    Level: advanced
 
-.keywords: PetscDrawLG, set, options, prefix, database
-
 .seealso: PetscDrawLGSetFromOptions(), PetscDrawLGCreate()
 @*/
 PetscErrorCode  PetscDrawLGSetOptionsPrefix(PetscDrawLG lg,const char prefix[])
@@ -624,8 +603,6 @@ PetscErrorCode  PetscDrawLGSetOptionsPrefix(PetscDrawLG lg,const char prefix[])
     Options Database:
 
     Level: intermediate
-
-    Concepts: line graph^creating
 
 .seealso:  PetscDrawLGDestroy(), PetscDrawLGCreate()
 @*/

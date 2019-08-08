@@ -200,6 +200,12 @@ typedef struct {
   PetscBool  testOrientIF;                 /* Test for different original interface orientations */
   PetscInt   ornt[2];                      /* Orientation of interface on rank 0 and rank 1 */
   PetscInt   faces[3];                     /* Number of faces per dimension for generator */
+  PetscReal  coords[128];
+  PetscReal  coordsTol;
+  PetscInt   ncoords;
+  PetscInt   pointsToExpand[128];
+  PetscInt   nPointsToExpand;
+  PetscBool  testExpandPointsEmpty;
   char       filename[PETSC_MAX_PATH_LEN]; /* Import mesh from file */
 } AppCtx;
 
@@ -219,27 +225,37 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->interpolate  = NONE;
   options->useGenerator = PETSC_FALSE;
   options->testOrientIF = PETSC_FALSE;
+  options->testExpandPointsEmpty = PETSC_FALSE;
   options->ornt[0]      = 0;
   options->ornt[1]      = 0;
   options->faces[0]     = 2;
   options->faces[1]     = 2;
   options->faces[2]     = 2;
   options->filename[0]  = '\0';
+  options->coordsTol    = PETSC_DEFAULT;
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Interpolation Test Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-debug", "The debugging level", "ex18.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-testnum", "The mesh to create", "ex18.c", options->testNum, &options->testNum, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex18.c", options->dim, &options->dim, &flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-debug", "The debugging level", "ex18.c", options->debug, &options->debug, NULL,0);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-testnum", "The mesh to create", "ex18.c", options->testNum, &options->testNum, NULL,0);CHKERRQ(ierr);
+  ierr = PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex18.c", options->dim, &options->dim, &flg1,1,3);CHKERRQ(ierr);
   if (options->dim < 1 || options->dim > 3) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "dimension set to %d, must be between 1 and 3", options->dim);
-  ierr = PetscOptionsBool("-cell_simplex", "Use simplices if true, otherwise hexes", "ex18.c", options->cellSimplex, &options->cellSimplex, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-cell_simplex", "Generate simplices if true, otherwise hexes", "ex18.c", options->cellSimplex, &options->cellSimplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-distribute", "Distribute the mesh", "ex18.c", options->distribute, &options->distribute, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEList("-interpolate", "Type of mesh interpolation, e.g. none, serial, parallel", "ex18.c", interpTypes, 3, interpTypes[options->interpolate], &interp, NULL);CHKERRQ(ierr);
   options->interpolate = (InterpType) interp;
   if (!options->distribute && options->interpolate == PARALLEL) SETERRQ(comm, PETSC_ERR_SUP, "-interpolate parallel  needs  -distribute 1");
   ierr = PetscOptionsBool("-use_generator", "Use a mesh generator to build the mesh", "ex18.c", options->useGenerator, &options->useGenerator, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-rotate_interface_0", "Rotation (relative orientation) of interface on rank 0; implies -interpolate serial -distribute 0", "ex18.c", options->ornt[0], &options->ornt[0], &options->testOrientIF);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-rotate_interface_1", "Rotation (relative orientation) of interface on rank 1; implies -interpolate serial -distribute 0", "ex18.c", options->ornt[1], &options->ornt[1], &flg2);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-rotate_interface_0", "Rotation (relative orientation) of interface on rank 0; implies -interpolate serial -distribute 0", "ex18.c", options->ornt[0], &options->ornt[0], &options->testOrientIF,0);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-rotate_interface_1", "Rotation (relative orientation) of interface on rank 1; implies -interpolate serial -distribute 0", "ex18.c", options->ornt[1], &options->ornt[1], &flg2,0);CHKERRQ(ierr);
+  options->ncoords = 128;
+  ierr = PetscOptionsRealArray("-view_vertices_from_coords", "Print DAG points corresponding to vertices with given coordinates", "ex18.c", options->coords, &options->ncoords, NULL);CHKERRQ(ierr);
   if (flg2 != options->testOrientIF) SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "neither or both -rotate_interface_0 -rotate_interface_1 must be set");
+  ierr = PetscOptionsReal("-view_vertices_from_coords_tol", "Tolerance for -view_vertices_from_coords", "ex18.c", options->coordsTol, &options->coordsTol, NULL);CHKERRQ(ierr);
+  options->nPointsToExpand = 128;
+  ierr = PetscOptionsIntArray("-test_expand_points", "Expand given array of DAG point using DMPlexGetConeRecursive() and print results", "ex18.c", options->pointsToExpand, &options->nPointsToExpand, NULL);CHKERRQ(ierr);
+  if (options->nPointsToExpand) {
+    ierr = PetscOptionsBool("-test_expand_points_empty", "For -test_expand_points, rank 0 will have empty input array", "ex18.c", options->testExpandPointsEmpty, &options->testExpandPointsEmpty, NULL);CHKERRQ(ierr);
+  }
   if (options->testOrientIF) {
     PetscInt i;
     for (i=0; i<2; i++) {
@@ -264,7 +280,7 @@ static PetscErrorCode CreateMesh_1D(MPI_Comm comm, PetscBool interpolate, AppCtx
   PetscInt       testNum = user->testNum;
   PetscMPIInt    rank,size;
   PetscErrorCode ierr;
-  PetscInt       spacedim=2,numCorners=2,i;
+  PetscInt       numCorners=2,i;
   PetscInt       numCells,numVertices,network;
   int            *cells;
   PetscReal      *coords;
@@ -279,13 +295,15 @@ static PetscErrorCode CreateMesh_1D(MPI_Comm comm, PetscBool interpolate, AppCtx
   if (numCells < 3) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Test ncells must >=3",numCells);
 
   if (size == 1) {
+    double *dcoords;
     numVertices = numCells + 1;
-    ierr = PetscMalloc2(2*numCells,&cells,2*numVertices,&coords);CHKERRQ(ierr);
+    ierr = PetscMalloc2(2*numCells,&cells,2*numVertices,&dcoords);CHKERRQ(ierr);
     for (i=0; i<numCells; i++) {
       cells[2*i] = i; cells[2*i+1] = i + 1;
+      dcoords[2*i] = i; dcoords[2*i+1] = i + 1;
     }
 
-    ierr = DMPlexCreateFromCellList(comm, user->dim, numCells, numVertices, numCorners, PETSC_FALSE, (const int*)cells, spacedim, (const double*)coords, dm);CHKERRQ(ierr);
+    ierr = DMPlexCreateFromCellList(comm, user->dim, numCells, numVertices, numCorners, PETSC_FALSE, cells, user->dim, dcoords, dm);CHKERRQ(ierr);
     ierr = PetscFree2(cells,coords);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
@@ -301,6 +319,8 @@ static PetscErrorCode CreateMesh_1D(MPI_Comm comm, PetscBool interpolate, AppCtx
       ierr = PetscMalloc2(2*numCells,&cells,2*numCells,&coords);CHKERRQ(ierr);
       cells[0] = 0; cells[1] = 1;
       cells[2] = 1; cells[3] = 2;
+      coords[0] = 0.; coords[1] = 1.;
+      coords[2] = 1.; coords[3] = 2.;
     }
     break;
     case 1:
@@ -310,6 +330,7 @@ static PetscErrorCode CreateMesh_1D(MPI_Comm comm, PetscBool interpolate, AppCtx
       ierr = PetscMalloc2(2*numCells,&cells,2*numCells,&coords);CHKERRQ(ierr);
       for (i=0; i<numCells; i++) {
         cells[2*i] = 2+i; cells[2*i+1] = 2 + i + 1;
+        coords[2*i] = 2+i; coords[2*i+1] = 2 + i + 1;
       }
     }
     break;
@@ -338,7 +359,7 @@ static PetscErrorCode CreateMesh_1D(MPI_Comm comm, PetscBool interpolate, AppCtx
     default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
     }
   }
-  ierr = DMPlexCreateFromCellListParallel(comm, user->dim, numCells, numVertices, numCorners, PETSC_FALSE, (const int*)cells, spacedim, coords, NULL, dm);CHKERRQ(ierr);
+  ierr = DMPlexCreateFromCellListParallel(comm, user->dim, numCells, numVertices, numCorners, PETSC_FALSE, cells, user->dim, coords, NULL, dm);CHKERRQ(ierr);
   ierr = PetscFree2(cells,coords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -624,6 +645,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   if (len) {
     ierr = DMPlexCreateFromFile(comm, filename, interpSerial, dm);CHKERRQ(ierr);
     ierr = DMGetDimension(*dm, &dim);CHKERRQ(ierr);
+    user->dim = dim;
   } else if (useGenerator) {
     ierr = DMPlexCreateBoxMesh(comm, dim, cellSimplex, user->faces, NULL, NULL, NULL, interpSerial, dm);CHKERRQ(ierr);
   } else {
@@ -649,6 +671,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make meshes for dimension %D", dim);
     }
   }
+  if (user->ncoords % user->dim) SETERRQ2(comm, PETSC_ERR_ARG_OUTOFRANGE, "length of coordinates array %D must be divisable by spatial dimension %D", user->ncoords, user->dim);
   ierr = PetscObjectSetName((PetscObject) *dm, "Original Mesh");CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-orig_dm_view");CHKERRQ(ierr);
 
@@ -686,6 +709,84 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionReturn(0);
 }
 
+PETSC_STATIC_INLINE PetscErrorCode coord2str(char buf[], PetscInt len, PetscInt dim, PetscReal *coords, PetscReal tol)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (tol >= 1e-3) {
+    switch (dim) {
+      case 1: ierr = PetscSNPrintf(buf,len,"(%12.3f)",(double)coords[0]);CHKERRQ(ierr);
+      case 2: ierr = PetscSNPrintf(buf,len,"(%12.3f, %12.3f)",(double)coords[0],(double)coords[1]);CHKERRQ(ierr);
+      case 3: ierr = PetscSNPrintf(buf,len,"(%12.3f, %12.3f, %12.3f)",(double)coords[0],(double)coords[1],(double)coords[2]);CHKERRQ(ierr);
+    }
+  } else {
+    switch (dim) {
+      case 1: ierr = PetscSNPrintf(buf,len,"(%12.6f)",(double)coords[0]);CHKERRQ(ierr);
+      case 2: ierr = PetscSNPrintf(buf,len,"(%12.6f, %12.6f)",(double)coords[0],(double)coords[1]);CHKERRQ(ierr);
+      case 3: ierr = PetscSNPrintf(buf,len,"(%12.6f, %12.6f, %12.6f)",(double)coords[0],(double)coords[1],(double)coords[2]);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode ViewVerticesFromCoords(DM dm, PetscInt npoints, PetscReal coords[], PetscReal tol, PetscViewer viewer)
+{
+  PetscInt       dim, i;
+  PetscInt       *points;
+  char           coordstr[128];
+  MPI_Comm       comm;
+  PetscMPIInt    rank;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
+  ierr = PetscMalloc1(npoints, &points);CHKERRQ(ierr);
+  ierr = DMPlexFindVertices(dm, npoints, coords, tol, points);CHKERRQ(ierr);
+  for (i=0; i < npoints; i++) {
+    ierr = coord2str(coordstr, 128, dim, &coords[i*dim], tol);CHKERRQ(ierr);
+    if (!rank && i) {ierr = PetscViewerASCIISynchronizedPrintf(viewer, "-----\n");CHKERRQ(ierr);}
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %s --> points[%D] = %D\n", rank, coordstr, i, points[i]);CHKERRQ(ierr);
+    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+  }
+  ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
+  ierr = PetscFree(points);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode TestExpandPoints(DM dm, AppCtx *user)
+{
+  IS                is;
+  PetscSection      *sects;
+  IS                *iss;
+  PetscInt          d,depth;
+  PetscMPIInt       rank;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
+  if (user->testExpandPointsEmpty && !rank) {
+    ierr = ISCreateGeneral(PETSC_COMM_SELF, 0, NULL, PETSC_USE_POINTER, &is);CHKERRQ(ierr);
+  } else {
+    ierr = ISCreateGeneral(PETSC_COMM_SELF, user->nPointsToExpand, user->pointsToExpand, PETSC_USE_POINTER, &is);CHKERRQ(ierr);
+  }
+  ierr = DMPlexGetConeRecursive(dm, is, &depth, &iss, &sects);CHKERRQ(ierr);
+  ierr = PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF, "[%d] ==========================\n",rank);CHKERRQ(ierr);
+  for (d=depth-1; d>=0; d--) {
+    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF, "depth %D ---------------\n",d);CHKERRQ(ierr);
+    ierr = PetscSectionView(sects[d], PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    ierr = ISView(iss[d], PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  }
+  ierr = PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1);CHKERRQ(ierr);
+  ierr = DMPlexRestoreConeRecursive(dm, is, &depth, &iss, &sects);CHKERRQ(ierr);
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 int main(int argc, char **argv)
 {
   DM             dm;
@@ -695,6 +796,12 @@ int main(int argc, char **argv)
   ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
+  if (user.nPointsToExpand) {
+    ierr = TestExpandPoints(dm, &user);CHKERRQ(ierr);
+  }
+  if (user.ncoords) {
+    ierr = ViewVerticesFromCoords(dm, user.ncoords/user.dim, user.coords, user.coordsTol, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
   if (user.interpolate != NONE) {
     ierr = DMPlexCheckPointSF(dm);CHKERRQ(ierr);
     ierr = DMPlexCheckFaces(dm, 0);CHKERRQ(ierr);
@@ -714,37 +821,33 @@ int main(int argc, char **argv)
       suffix: 1_tri_dist0
       args: -distribute 0 -interpolate {{none serial}separate output}
     test:
-      # Add back in 'none' and 'parallel'
       suffix: 1_tri_dist1
-      args: -distribute 1 -interpolate {{serial}separate output}
-    test:
-      TODO: Parallel partitioning of uninterpolated meshes not supported
-      suffix: 1_tri_dist1_ppu
-      args: -distribute 1 -interpolate {{none parallel}separate output}
+      args: -distribute 1 -interpolate {{none serial parallel}separate output}
     test:
       suffix: 1_quad_dist0
       args: -cell_simplex 0 -distribute 0 -interpolate {{none serial}separate output}
     test:
-      # Add back in 'none' and 'parallel'
       suffix: 1_quad_dist1
-      args: -cell_simplex 0 -distribute 1 -interpolate {{serial}separate output}
-    test:
-      TODO: Parallel partitioning of uninterpolated meshes not supported
-      suffix: 1_quad_dist1_ppu
-      args: -cell_simplex 0 -distribute 1 -interpolate {{none parallel}separate output}
+      args: -cell_simplex 0 -distribute 1 -interpolate {{none serial parallel}separate output}
     test:
       suffix: 1_1d_dist1
       args: -dim 1 -distribute 1
 
-  test:
-    suffix: 2
+  testset:
     nsize: 3
-    args: -testnum 1 -interpolate serial -dm_view ascii::ascii_info_detail -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
-  test:
-    requires:
-    suffix: 2b
-    nsize: 3
-    args: -testnum 1 -interpolate serial -dm_view ascii::ascii_info_detail -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
+    args: -testnum 1 -interpolate serial -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
+    test:
+      suffix: 2
+      args: -dm_view ascii::ascii_info_detail 
+    test:
+      suffix: 2a
+      args: -dm_plex_check_cones_conform_on_interfaces_verbose
+    test:
+      suffix: 2b
+      args: -test_expand_points 0,1,2,5,6
+    test:
+      suffix: 2c
+      args: -test_expand_points 0,1,2,5,6 -test_expand_points_empty
 
   testset:
     # the same as 1% for 3D
@@ -754,24 +857,14 @@ int main(int argc, char **argv)
       suffix: 4_tet_dist0
       args: -distribute 0 -interpolate {{none serial}separate output}
     test:
-      # Add back in 'none' and 'parallel'
       suffix: 4_tet_dist1
-      args: -distribute 1 -interpolate {{serial}separate output}
-    test:
-      TODO: Parallel partitioning of uninterpolated meshes not supported
-      suffix: 4_tet_dist1_ppu
-      args: -distribute 1 -interpolate {{none parallel}separate output}
+      args: -distribute 1 -interpolate {{none serial parallel}separate output}
     test:
       suffix: 4_hex_dist0
       args: -cell_simplex 0 -distribute 0 -interpolate {{none serial}separate output}
     test:
-      # Add back in 'none' and 'parallel'
       suffix: 4_hex_dist1
-      args: -cell_simplex 0 -distribute 1 -interpolate {{serial}separate output}
-    test:
-      TODO: Parallel partitioning of uninterpolated meshes not supported
-      suffix: 4_hex_dist1_ppu
-      args: -cell_simplex 0 -distribute 1 -interpolate {{none parallel}separate output}
+      args: -cell_simplex 0 -distribute 1 -interpolate {{none serial parallel}separate output}
 
   test:
     # the same as 4_tet_dist0 but test different initial orientations
@@ -785,7 +878,7 @@ int main(int argc, char **argv)
     requires: exodusii
     nsize: 2
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/TwoQuads.exo
-    args: -cell_simplex 0 -dm_view ascii::ascii_info_detail -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
+    args: -dm_view ascii::ascii_info_detail -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
     test:
       suffix: 5_dist0
       args: -distribute 0 -interpolate {{none serial}separate output}
@@ -815,35 +908,68 @@ int main(int argc, char **argv)
 
   testset:
     nsize: {{1 2 4 5}}
-    args: -cell_simplex 0 -distribute -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
+    args: -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
     test:
       suffix: 7_exo
       requires: exodusii
+      args: -distribute -petscpartitioner_type simple
       args: -interpolate {{none serial parallel}}
       args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo
     test:
-      # Add back in 'none' and 'parallel'
+      TODO: This fails for nsize 5, but I already know why :-)
+      suffix: 7_exo_metis
+      requires: exodusii parmetis
+      args: -distribute -petscpartitioner_type parmetis
+      args: -interpolate {{serial parallel}}
+      args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo
+    test:
+      suffix: 7_hdf5_seqload
+      requires: hdf5 !complex
+      args: -distribute -petscpartitioner_type simple
+      args: -interpolate {{none serial parallel}}
+      args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5 -dm_plex_create_from_hdf5_xdmf -dm_plex_hdf5_force_sequential
+    test:
+      suffix: 7_hdf5_seqload_metis
+      requires: hdf5 !complex parmetis
+      args: -distribute -petscpartitioner_type parmetis
+      args: -interpolate {{serial parallel}}
+      args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5 -dm_plex_create_from_hdf5_xdmf -dm_plex_hdf5_force_sequential
+    test:
       suffix: 7_hdf5
       requires: hdf5 !complex
-      args: -interpolate serial
+      args: -interpolate {{none serial}}  #TODO serial means before DMPlexDistribute but plex is already parallel from DMLoad - serial/parallel should be renamed
+      args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5 -dm_plex_create_from_hdf5_xdmf
+    test:
+      suffix: 7_hdf5_repart
+      requires: hdf5 !complex parmetis
+      args: -distribute -petscpartitioner_type parmetis
+      args: -interpolate {{serial}}  #TODO parallel means after DMPlexDistribute but plex is already parallel from DMLoad - serial/parallel should be renamed
       args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5 -dm_plex_create_from_hdf5_xdmf
     test:
       TODO: Parallel partitioning of uninterpolated meshes not supported
-      suffix: 7_hdf5_ppu
-      requires: hdf5 !complex
-      args: -interpolate {{none parallel}}
+      suffix: 7_hdf5_repart_ppu
+      requires: hdf5 !complex parmetis
+      args: -distribute -petscpartitioner_type parmetis
+      args: -interpolate {{none parallel}}  #TODO parallel means after DMPlexDistribute but plex is already parallel from DMLoad - serial/parallel should be renamed
       args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5 -dm_plex_create_from_hdf5_xdmf
-
-
   test:
     suffix: 7_hdf5_hierarch
     requires: hdf5 ptscotch !complex
     nsize: {{2 3 4}separate output}
-    args: -cell_simplex 0 -distribute -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
+    args: -distribute -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
     args: -interpolate serial
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5 -dm_plex_create_from_hdf5_xdmf
     args: -petscpartitioner_type matpartitioning -petscpartitioner_view ::ascii_info
     args: -mat_partitioning_type hierarch -mat_partitioning_hierarchical_nfineparts 2
     args: -mat_partitioning_hierarchical_coarseparttype ptscotch -mat_partitioning_hierarchical_fineparttype ptscotch
+
+  test:
+    suffix: 8
+    requires: hdf5 !complex
+    nsize: 4
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5 -dm_plex_create_from_hdf5_xdmf
+    args: -distribute 0 -interpolate serial
+    args: -view_vertices_from_coords 0.,1.,0.,-0.5,1.,0.,0.583,-0.644,0.,-2.,-2.,-2. -view_vertices_from_coords_tol 1e-3
+
 
 TEST*/

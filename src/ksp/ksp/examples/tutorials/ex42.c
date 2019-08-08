@@ -548,7 +548,7 @@ static void FormDivergenceOperatorQ13D(PetscScalar De[],PetscScalar coords[])
   PetscInt    i,j;
   PetscInt    nr_g,nc_g;
 
-  PetscMemzero(Ge,sizeof(PetscScalar)*U_DOFS*NODES_PER_EL*P_DOFS*NODES_PER_EL);
+  PetscMemzero(Ge,sizeof(Ge));
   FormGradientOperatorQ13D(Ge,coords);
 
   nr_g = U_DOFS*NODES_PER_EL;
@@ -782,10 +782,10 @@ static PetscErrorCode AssembleA_Stokes(Mat A,DM stokes_da,CellProperties cell_pr
         prop_eta = props->eta;
 
         /* initialise element stiffness matrix */
-        ierr = PetscMemzero(Ae,sizeof(PetscScalar)*NODES_PER_EL*U_DOFS*NODES_PER_EL*U_DOFS);CHKERRQ(ierr);
-        ierr = PetscMemzero(Ge,sizeof(PetscScalar)*NODES_PER_EL*U_DOFS*NODES_PER_EL*P_DOFS);CHKERRQ(ierr);
-        ierr = PetscMemzero(De,sizeof(PetscScalar)*NODES_PER_EL*P_DOFS*NODES_PER_EL*U_DOFS);CHKERRQ(ierr);
-        ierr = PetscMemzero(Ce,sizeof(PetscScalar)*NODES_PER_EL*P_DOFS*NODES_PER_EL*P_DOFS);CHKERRQ(ierr);
+        ierr = PetscMemzero(Ae,sizeof(Ae));CHKERRQ(ierr);
+        ierr = PetscMemzero(Ge,sizeof(Ge));CHKERRQ(ierr);
+        ierr = PetscMemzero(De,sizeof(De));CHKERRQ(ierr);
+        ierr = PetscMemzero(Ce,sizeof(Ce));CHKERRQ(ierr);
 
         /* form element stiffness matrix */
         FormStressOperatorQ13D(Ae,el_coords,prop_eta);
@@ -871,10 +871,10 @@ static PetscErrorCode AssembleA_PCStokes(Mat A,DM stokes_da,CellProperties cell_
         prop_eta = props->eta;
 
         /* initialise element stiffness matrix */
-        ierr = PetscMemzero(Ae,sizeof(PetscScalar)*NODES_PER_EL*U_DOFS*NODES_PER_EL*U_DOFS);CHKERRQ(ierr);
-        ierr = PetscMemzero(Ge,sizeof(PetscScalar)*NODES_PER_EL*U_DOFS*NODES_PER_EL*P_DOFS);CHKERRQ(ierr);
-        ierr = PetscMemzero(De,sizeof(PetscScalar)*NODES_PER_EL*P_DOFS*NODES_PER_EL*U_DOFS);CHKERRQ(ierr);
-        ierr = PetscMemzero(Ce,sizeof(PetscScalar)*NODES_PER_EL*P_DOFS*NODES_PER_EL*P_DOFS);CHKERRQ(ierr);
+        ierr = PetscMemzero(Ae,sizeof(Ae));CHKERRQ(ierr);
+        ierr = PetscMemzero(Ge,sizeof(Ge));CHKERRQ(ierr);
+        ierr = PetscMemzero(De,sizeof(De));CHKERRQ(ierr);
+        ierr = PetscMemzero(Ce,sizeof(Ce));CHKERRQ(ierr);
 
         /* form element stiffness matrix */
         FormStressOperatorQ13D(Ae,el_coords,prop_eta);
@@ -964,8 +964,8 @@ static PetscErrorCode AssembleF_Stokes(Vec F,DM stokes_da,CellProperties cell_pr
         prop_hc = props->hc;
 
         /* initialise element stiffness matrix */
-        ierr = PetscMemzero(Fe,sizeof(PetscScalar)*NODES_PER_EL*U_DOFS);CHKERRQ(ierr);
-        ierr = PetscMemzero(He,sizeof(PetscScalar)*NODES_PER_EL*P_DOFS);CHKERRQ(ierr);
+        ierr = PetscMemzero(Fe,sizeof(Fe));CHKERRQ(ierr);
+        ierr = PetscMemzero(He,sizeof(He));CHKERRQ(ierr);
 
         /* form element stiffness matrix */
         FormMomentumRhsQ13D(Fe,el_coords,prop_fx,prop_fy,prop_fz);
@@ -1292,6 +1292,7 @@ PetscErrorCode DAView_3DVTK_StructuredGrid_appended(DM da,Vec FIELD,const char f
   PetscMPIInt    rank;
   MPI_Comm       comm;
   FILE           *vtk_fp = NULL;
+  const char     *byte_order = PetscBinaryBigEndian() ? "BigEndian" : "LittleEndian";
   PetscInt       si,sj,sk,nx,ny,nz,i;
   PetscInt       f,n_fields,N;
   DM             cda;
@@ -1319,11 +1320,7 @@ PetscErrorCode DAView_3DVTK_StructuredGrid_appended(DM da,Vec FIELD,const char f
   ierr = DMDAGetGhostCorners(da,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
   N    = nx * ny * nz;
 
-#if defined(PETSC_WORDS_BIGENDIAN)
-  PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"<VTKFile type=\"StructuredGrid\" version=\"0.1\" byte_order=\"BigEndian\">\n");
-#else
-  PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"<VTKFile type=\"StructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");
-#endif
+  PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"<VTKFile type=\"StructuredGrid\" version=\"0.1\" byte_order=\"%s\">\n",byte_order);
   PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"  <StructuredGrid WholeExtent=\"%D %D %D %D %D %D\">\n",si,si+nx-1,sj,sj+ny-1,sk,sk+nz-1);
   PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"    <Piece Extent=\"%D %D %D %D %D %D\">\n",si,si+nx-1,sj,sj+ny-1,sk,sk+nz-1);
 
@@ -1508,6 +1505,7 @@ PetscErrorCode DAView_3DVTK_PStructuredGrid(DM da,const char file_prefix[],const
   PetscMPIInt    size,rank;
   char           vtk_filename[PETSC_MAX_PATH_LEN];
   FILE           *vtk_fp = NULL;
+  const char     *byte_order = PetscBinaryBigEndian() ? "BigEndian" : "LittleEndian";
   PetscInt       M,N,P,si,sj,sk,nx,ny,nz;
   PetscInt       i,dofs;
   PetscErrorCode ierr;
@@ -1528,11 +1526,7 @@ PetscErrorCode DAView_3DVTK_PStructuredGrid(DM da,const char file_prefix[],const
   /* (VTK) generate pvts header */
   PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"<?xml version=\"1.0\"?>\n");
 
-#if defined(PETSC_WORDS_BIGENDIAN)
-  PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"<VTKFile type=\"PStructuredGrid\" version=\"0.1\" byte_order=\"BigEndian\">\n");
-#else
-  PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"<VTKFile type=\"PStructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");
-#endif
+  PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"<VTKFile type=\"PStructuredGrid\" version=\"0.1\" byte_order=\"%s\">\n",byte_order);
 
   /* define size of the nodal mesh based on the cell DM */
   ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0,&dofs,0,0,0,0,0);CHKERRQ(ierr);

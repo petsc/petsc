@@ -1,12 +1,10 @@
-#if !defined(_PETSCPCTYPES_H)
-#define _PETSCPCTYPES_H
+#if !defined(PETSCPCTYPES_H)
+#define PETSCPCTYPES_H
 
 /*S
      PC - Abstract PETSc object that manages all preconditioners including direct solvers such as PCLU
 
    Level: beginner
-
-  Concepts: preconditioners
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types)
 S*/
@@ -70,6 +68,8 @@ typedef const char* PCType;
 #define PCTELESCOPE       "telescope"
 #define PCPATCH           "patch"
 #define PCLMVM            "lmvm"
+#define PCHMG             "hmg"
+#define PCDEFLATION       "deflation"
 
 /*E
     PCSide - If the preconditioner is to be applied to the left, right
@@ -222,6 +222,10 @@ typedef enum {PC_PARMS_LOCAL_ILU0,PC_PARMS_LOCAL_ILUK,PC_PARMS_LOCAL_ILUT,PC_PAR
 
     Level: intermediate
 
+$   PCGAMGAGG - (the default) smoothed aggregation algorithm, robust, very well tested
+$   PCGAMGGEO - geometric coarsening, uses mesh generator to produce coarser meshes, limited to triangles, not well tested
+$   PCGAMGCLASSICAL - classical algebraic multigrid preconditioner, incomplete, poorly tested
+
 .seealso: PCMG, PCSetType(), PCGAMGSetThreshold(), PCGAMGSetThreshold(), PCGAMGSetReuseInterpolation()
 E*/
 typedef const char *PCGAMGType;
@@ -306,6 +310,39 @@ typedef enum { PC_EXOTIC_FACE,PC_EXOTIC_WIREBASKET } PCExoticType;
 .seealso: PCPatchSetConstructType(), PCEXOTIC
 E*/
 typedef enum {PC_PATCH_STAR, PC_PATCH_VANKA, PC_PATCH_PARDECOMP, PC_PATCH_USER, PC_PATCH_PYTHON} PCPatchConstructType;
+
+/*E
+    PCDeflationSpaceType - Type of deflation
+
+    Values:
++   PC_DEFLATION_SPACE_HAAR        - directly assembled based on Haar (db2) wavelet with overflowed filter cuted-off
+.   PC_DEFLATION_SPACE_DB2         - MATCOMPOSITE of 1-lvl matices based on db2 (2 coefficient Daubechies / Haar wavelet)
+.   PC_DEFLATION_SPACE_DB4         - same as above, but with db4 (4 coefficient Daubechies)
+.   PC_DEFLATION_SPACE_DB8         - same as above, but with db8 (8 coefficient Daubechies)
+.   PC_DEFLATION_SPACE_DB16        - same as above, but with db16 (16 coefficient Daubechies)
+.   PC_DEFLATION_SPACE_BIORTH22    - same as above, but with biorthogonal 2.2 (6 coefficients)
+.   PC_DEFLATION_SPACE_MEYER       - same as above, but with Meyer/FIR (62 coefficients)
+.   PC_DEFLATION_SPACE_AGGREGATION - aggregates local indices (given by operator matix distribution) into a subdomain
+-   PC_DEFLATION_SPACE_USER        - indicates space set by user
+
+    Notes:
+      Wavelet-based space (except Haar) can be used in multilevel deflation.
+
+    Level: intermediate
+
+.seealso: PCDeflationSetSpaceToCompute(), PCDEFLATION
+E*/
+typedef enum {
+  PC_DEFLATION_SPACE_HAAR,
+  PC_DEFLATION_SPACE_DB2,
+  PC_DEFLATION_SPACE_DB4,
+  PC_DEFLATION_SPACE_DB8,
+  PC_DEFLATION_SPACE_DB16,
+  PC_DEFLATION_SPACE_BIORTH22,
+  PC_DEFLATION_SPACE_MEYER,
+  PC_DEFLATION_SPACE_AGGREGATION,
+  PC_DEFLATION_SPACE_USER
+} PCDeflationSpaceType;
 
 /*E
     PCFailedReason - indicates type of PC failure

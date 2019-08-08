@@ -246,7 +246,7 @@ PetscErrorCode KSPSolve_GMRES(KSP ksp)
           ierr = VecDuplicateVecs(VEC_VV(0),N,&gmres->vecb);CHKERRQ(ierr);
         }
         ierr = PetscBLASIntCast(N,&bN);CHKERRQ(ierr);
-        ierr = PetscMemcpy(gmres->hes_ritz,gmres->hes_origin,bN*bN*sizeof(PetscReal));CHKERRQ(ierr);
+        ierr = PetscArraycpy(gmres->hes_ritz,gmres->hes_origin,bN*bN);CHKERRQ(ierr);
         for (i=0; i<gmres->max_k+1; i++) {
           ierr = VecCopy(VEC_VV(i),gmres->vecb[i]);CHKERRQ(ierr);
         }
@@ -482,7 +482,7 @@ PetscErrorCode KSPBuildSolution_GMRES(KSP ksp,Vec ptr,Vec *result)
   if (!gmres->nrs) {
     /* allocate the work area */
     ierr = PetscMalloc1(gmres->max_k,&gmres->nrs);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory((PetscObject)ksp,gmres->max_k*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)ksp,gmres->max_k);CHKERRQ(ierr);
   }
 
   ierr = KSPGMRESBuildSoln(gmres->nrs,ksp->vec_sol,ptr,ksp,gmres->it);CHKERRQ(ierr);
@@ -531,7 +531,7 @@ PetscErrorCode KSPView_GMRES(KSP ksp,PetscViewer viewer)
 /*@C
    KSPGMRESMonitorKrylov - Calls VecView() for each new direction in the GMRES accumulated Krylov space.
 
-   Collective on KSP
+   Collective on ksp
 
    Input Parameters:
 +  ksp - the KSP context
@@ -545,8 +545,6 @@ PetscErrorCode KSPView_GMRES(KSP ksp,PetscViewer viewer)
    Notes:
     A new PETSCVIEWERDRAW is created for each Krylov vector so they can all be simultaneously viewed
    Level: intermediate
-
-.keywords: KSP, nonlinear, vector, monitor, view, Krylov space
 
 .seealso: KSPMonitorSet(), KSPMonitorDefault(), VecView(), KSPViewersCreate(), KSPViewersDestroy()
 @*/
@@ -688,7 +686,7 @@ PetscErrorCode  KSPGMRESGetCGSRefinementType_GMRES(KSP ksp,KSPGMRESCGSRefinement
    KSPGMRESSetCGSRefinementType - Sets the type of iterative refinement to use
          in the classical Gram Schmidt orthogonalization.
 
-   Logically Collective on KSP
+   Logically Collective on ksp
 
    Input Parameters:
 +  ksp - the Krylov space context
@@ -698,8 +696,6 @@ PetscErrorCode  KSPGMRESGetCGSRefinementType_GMRES(KSP ksp,KSPGMRESCGSRefinement
 .  -ksp_gmres_cgs_refinement_type <refine_never,refine_ifneeded,refine_always>
 
    Level: intermediate
-
-.keywords: KSP, GMRES, iterative refinement
 
 .seealso: KSPGMRESSetOrthogonalization(), KSPGMRESCGSRefinementType, KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESGetCGSRefinementType(),
           KSPGMRESGetOrthogonalization()
@@ -732,8 +728,6 @@ PetscErrorCode  KSPGMRESSetCGSRefinementType(KSP ksp,KSPGMRESCGSRefinementType t
 
    Level: intermediate
 
-.keywords: KSP, GMRES, iterative refinement
-
 .seealso: KSPGMRESSetOrthogonalization(), KSPGMRESCGSRefinementType, KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESSetCGSRefinementType(),
           KSPGMRESGetOrthogonalization()
 @*/
@@ -751,7 +745,7 @@ PetscErrorCode  KSPGMRESGetCGSRefinementType(KSP ksp,KSPGMRESCGSRefinementType *
 /*@
    KSPGMRESSetRestart - Sets number of iterations at which GMRES, FGMRES and LGMRES restarts.
 
-   Logically Collective on KSP
+   Logically Collective on ksp
 
    Input Parameters:
 +  ksp - the Krylov space context
@@ -763,8 +757,6 @@ PetscErrorCode  KSPGMRESGetCGSRefinementType(KSP ksp,KSPGMRESCGSRefinementType *
     Note: The default value is 30.
 
    Level: intermediate
-
-.keywords: KSP, GMRES, restart, iterations
 
 .seealso: KSPSetTolerances(), KSPGMRESSetOrthogonalization(), KSPGMRESSetPreAllocateVectors(), KSPGMRESGetRestart()
 @*/
@@ -794,8 +786,6 @@ PetscErrorCode  KSPGMRESSetRestart(KSP ksp, PetscInt restart)
 
    Level: intermediate
 
-.keywords: KSP, GMRES, restart, iterations
-
 .seealso: KSPSetTolerances(), KSPGMRESSetOrthogonalization(), KSPGMRESSetPreAllocateVectors(), KSPGMRESSetRestart()
 @*/
 PetscErrorCode  KSPGMRESGetRestart(KSP ksp, PetscInt *restart)
@@ -810,7 +800,7 @@ PetscErrorCode  KSPGMRESGetRestart(KSP ksp, PetscInt *restart)
 /*@
    KSPGMRESSetHapTol - Sets tolerance for determining happy breakdown in GMRES, FGMRES and LGMRES.
 
-   Logically Collective on KSP
+   Logically Collective on ksp
 
    Input Parameters:
 +  ksp - the Krylov space context
@@ -824,8 +814,6 @@ PetscErrorCode  KSPGMRESGetRestart(KSP ksp, PetscInt *restart)
          things can happen hence very occasionally you may need to set this value to detect this condition
 
    Level: intermediate
-
-.keywords: KSP, GMRES, tolerance
 
 .seealso: KSPSetTolerances()
 @*/

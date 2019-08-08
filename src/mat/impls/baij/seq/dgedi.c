@@ -14,6 +14,7 @@
 */
 
 #include <petscsys.h>
+#include <petsc/private/kernels/blockinvert.h>
 
 PETSC_INTERN PetscErrorCode PetscLINPACKgedi(MatScalar *a,PetscInt n,PetscInt *ipvt,MatScalar *work)
 {

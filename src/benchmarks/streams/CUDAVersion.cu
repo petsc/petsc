@@ -365,7 +365,7 @@ int main(int argc, char *argv[])
   ierr = PetscPrintf(PETSC_COMM_SELF, "%s Starting...\n\n", argv[0]);CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "STREAM Benchmark Options", "STREAM");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-device", "Specify the CUDA device to be used", "STREAM", device, &device, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-device", "Specify the CUDA device to be used", "STREAM", device, &device, NULL,0);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-double",    "Also run double precision tests",   "STREAM", runDouble, &runDouble, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-cputiming", "Force CPU-based timing to be used", "STREAM", cpuTiming, &cpuTiming, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();

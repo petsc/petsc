@@ -4,33 +4,30 @@ Mat Object: 2 MPI processes
   rows=8, cols=8, bs=2
   total: nonzeros=64, allocated nonzeros=64
   total number of mallocs used during MatSetValues calls =0
-    [0] Local rows 4 nz 32 nz alloced 32 bs 2 mem 6488.
+    [0] Local rows 4 nz 32 nz alloced 32 bs 2 mem 6536.
     [0] on-diagonal part: nz 16 
     [0] off-diagonal part: nz 16 
-    [1] Local rows 4 nz 32 nz alloced 32 bs 2 mem 6488.
+    [1] Local rows 4 nz 32 nz alloced 32 bs 2 mem 6536.
     [1] on-diagonal part: nz 16 
     [1] off-diagonal part: nz 16 
     Information on VecScatter used in matrix-vector product: 
-    [0] Number sends = 1; Number to self = 0
-    [0]   0 length = 2 to whom 1
-    Now the indices for all remote sends (in order by process sent to)
-    [0] 0 
-    [0] 2 
-    [0] Number receives = 1; Number from self = 0
-    [0] 0 length 2 from whom 1
-    Now the indices for all remote receives (in order by process received from)
-    [0] 0 
-    [0] 2 
-    [1] Number sends = 1; Number to self = 0
-    [1]   0 length = 2 to whom 0
-    Now the indices for all remote sends (in order by process sent to)
-    [1] 0 
-    [1] 2 
-    [1] Number receives = 1; Number from self = 0
-    [1] 0 length 2 from whom 0
-    Now the indices for all remote receives (in order by process received from)
-    [1] 0 
-    [1] 2 
+    PetscSF Object: 2 MPI processes
+      type: basic
+        sort=rank-order
+      [0] Number of roots=2, leaves=2, remote ranks=1
+      [0] 0 <- (1,0)
+      [0] 1 <- (1,1)
+      [1] Number of roots=2, leaves=2, remote ranks=1
+      [1] 0 <- (0,0)
+      [1] 1 <- (0,1)
+      [0] Roots referenced by my leaves, by rank
+      [0] 1: 2 edges
+      [0]    0 <- 0
+      [0]    1 <- 1
+      [1] Roots referenced by my leaves, by rank
+      [1] 0: 2 edges
+      [1]    0 <- 0
+      [1]    1 <- 1
 Mat Object: 2 MPI processes
   type: mpibaij
 row 0: (0, 2.)  (1, 4.)  (2, 6.)  (3, 8.)  (4, 10.)  (5, 12.)  (6, 14.)  (7, 16.) 
@@ -47,25 +44,25 @@ Mat Object: 2 MPI processes
   rows=8, cols=8, bs=2
   total: nonzeros=40, allocated nonzeros=64
   total number of mallocs used during MatSetValues calls =0
-    [0] Local rows 4 nz 28 nz alloced 32 bs 2 mem 6640.
+    [0] Local rows 4 nz 28 nz alloced 32 bs 2 mem 6688.
     [0] on-diagonal part: nz 12 
     [0] off-diagonal part: nz 16 
-    [1] Local rows 4 nz 12 nz alloced 32 bs 2 mem 6640.
+    [1] Local rows 4 nz 12 nz alloced 32 bs 2 mem 6688.
     [1] on-diagonal part: nz 12 
     [1] off-diagonal part: nz 0 
     Information on VecScatter used in matrix-vector product: 
-    [0] Number sends = 0; Number to self = 0
-    [0] Number receives = 1; Number from self = 0
-    [0] 0 length 2 from whom 1
-    Now the indices for all remote receives (in order by process received from)
-    [0] 0 
-    [0] 2 
-    [1] Number sends = 1; Number to self = 0
-    [1]   0 length = 2 to whom 0
-    Now the indices for all remote sends (in order by process sent to)
-    [1] 0 
-    [1] 2 
-    [1] Number receives = 0; Number from self = 0
+    PetscSF Object: 2 MPI processes
+      type: basic
+        sort=rank-order
+      [0] Number of roots=2, leaves=2, remote ranks=1
+      [0] 0 <- (1,0)
+      [0] 1 <- (1,1)
+      [1] Number of roots=2, leaves=0, remote ranks=0
+      [0] Roots referenced by my leaves, by rank
+      [0] 1: 2 edges
+      [0]    0 <- 0
+      [0]    1 <- 1
+      [1] Roots referenced by my leaves, by rank
 Mat Object: 2 MPI processes
   type: mpisbaij
 row 0: (0, 2.)  (1, 4.)  (2, 6.)  (3, 8.)  (4, 10.)  (5, 12.)  (6, 14.)  (7, 16.) 
@@ -82,33 +79,30 @@ Mat Object: 2 MPI processes
   rows=4, cols=4
   total: nonzeros=16, allocated nonzeros=16
   total number of mallocs used during MatSetValues calls =0
-    [0] Local rows 2 nz 8 nz alloced 8 bs 1 mem 6280.
+    [0] Local rows 2 nz 8 nz alloced 8 bs 1 mem 6328.
     [0] on-diagonal part: nz 4 
     [0] off-diagonal part: nz 4 
-    [1] Local rows 2 nz 8 nz alloced 8 bs 1 mem 6280.
+    [1] Local rows 2 nz 8 nz alloced 8 bs 1 mem 6328.
     [1] on-diagonal part: nz 4 
     [1] off-diagonal part: nz 4 
     Information on VecScatter used in matrix-vector product: 
-    [0] Number sends = 1; Number to self = 0
-    [0]   0 length = 2 to whom 1
-    Now the indices for all remote sends (in order by process sent to)
-    [0] 0 
-    [0] 1 
-    [0] Number receives = 1; Number from self = 0
-    [0] 0 length 2 from whom 1
-    Now the indices for all remote receives (in order by process received from)
-    [0] 0 
-    [0] 1 
-    [1] Number sends = 1; Number to self = 0
-    [1]   0 length = 2 to whom 0
-    Now the indices for all remote sends (in order by process sent to)
-    [1] 0 
-    [1] 1 
-    [1] Number receives = 1; Number from self = 0
-    [1] 0 length 2 from whom 0
-    Now the indices for all remote receives (in order by process received from)
-    [1] 0 
-    [1] 1 
+    PetscSF Object: 2 MPI processes
+      type: basic
+        sort=rank-order
+      [0] Number of roots=2, leaves=2, remote ranks=1
+      [0] 0 <- (1,0)
+      [0] 1 <- (1,1)
+      [1] Number of roots=2, leaves=2, remote ranks=1
+      [1] 0 <- (0,0)
+      [1] 1 <- (0,1)
+      [0] Roots referenced by my leaves, by rank
+      [0] 1: 2 edges
+      [0]    0 <- 0
+      [0]    1 <- 1
+      [1] Roots referenced by my leaves, by rank
+      [1] 0: 2 edges
+      [1]    0 <- 0
+      [1]    1 <- 1
 Mat Object: 2 MPI processes
   type: mpibaij
 row 0: (0, 2.)  (1, 4.)  (2, 6.)  (3, 8.) 
@@ -121,25 +115,25 @@ Mat Object: 2 MPI processes
   rows=4, cols=4
   total: nonzeros=10, allocated nonzeros=16
   total number of mallocs used during MatSetValues calls =0
-    [0] Local rows 2 nz 7 nz alloced 8 bs 1 mem 6438.
+    [0] Local rows 2 nz 7 nz alloced 8 bs 1 mem 6486.
     [0] on-diagonal part: nz 3 
     [0] off-diagonal part: nz 4 
-    [1] Local rows 2 nz 3 nz alloced 8 bs 1 mem 6438.
+    [1] Local rows 2 nz 3 nz alloced 8 bs 1 mem 6486.
     [1] on-diagonal part: nz 3 
     [1] off-diagonal part: nz 0 
     Information on VecScatter used in matrix-vector product: 
-    [0] Number sends = 0; Number to self = 0
-    [0] Number receives = 1; Number from self = 0
-    [0] 0 length 2 from whom 1
-    Now the indices for all remote receives (in order by process received from)
-    [0] 0 
-    [0] 1 
-    [1] Number sends = 1; Number to self = 0
-    [1]   0 length = 2 to whom 0
-    Now the indices for all remote sends (in order by process sent to)
-    [1] 0 
-    [1] 1 
-    [1] Number receives = 0; Number from self = 0
+    PetscSF Object: 2 MPI processes
+      type: basic
+        sort=rank-order
+      [0] Number of roots=2, leaves=2, remote ranks=1
+      [0] 0 <- (1,0)
+      [0] 1 <- (1,1)
+      [1] Number of roots=2, leaves=0, remote ranks=0
+      [0] Roots referenced by my leaves, by rank
+      [0] 1: 2 edges
+      [0]    0 <- 0
+      [0]    1 <- 1
+      [1] Roots referenced by my leaves, by rank
 Mat Object: 2 MPI processes
   type: mpisbaij
 row 0: (0, 2.)  (1, 4.)  (2, 6.)  (3, 8.) 

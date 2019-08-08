@@ -184,6 +184,20 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_1d(DM dm)
       }
       break;
     case DM_BOUNDARY_GHOSTED:
+      switch (stag->stencilType) {
+        case DMSTAG_STENCIL_NONE :
+          stag->startGhost[0] = stag->start[0];
+          stag->nGhost[0]     = stag->n[0] + (stag->lastRank[0] ? 1 : 0);
+          break;
+        case DMSTAG_STENCIL_STAR :
+        case DMSTAG_STENCIL_BOX :
+          stag->startGhost[0] = stag->start[0] - stag->stencilWidth; /* This value may be negative */
+          stag->nGhost[0]     = stag->n[0] + 2*stag->stencilWidth + (stag->lastRank[0] && stag->stencilWidth == 0 ? 1 : 0);
+          break;
+        default :
+          SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unrecognized ghost stencil type %d",stag->stencilType);
+      }
+      break;
     case DM_BOUNDARY_PERIODIC:
       switch (stag->stencilType) {
         case DMSTAG_STENCIL_NONE :
@@ -192,8 +206,8 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_1d(DM dm)
           break;
         case DMSTAG_STENCIL_STAR :
         case DMSTAG_STENCIL_BOX :
-          stag->startGhost[0] = stag->start[0] - stag->stencilWidth; /* Note that this value may be negative */
-          stag->nGhost[0] = stag->n[0] + 2*stag->stencilWidth;
+          stag->startGhost[0] = stag->start[0] - stag->stencilWidth; /* This value may be negative */
+          stag->nGhost[0]     = stag->n[0] + 2*stag->stencilWidth;
           break;
         default :
           SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unrecognized ghost stencil type %d",stag->stencilType);
@@ -389,6 +403,11 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_1d(DM dm)
       ierr = VecDestroy(&local);CHKERRQ(ierr);
     }
 
+    /* In special cases, create a dedicated injective local-to-global map */
+    if (stag->boundaryType[0] == DM_BOUNDARY_PERIODIC && stag->nRanks[0] == 1) {
+      ierr = DMStagPopulateLocalToGlobalInjective(dm);CHKERRQ(ierr);
+    }
+
     /* Destroy ISs */
     ierr = ISDestroy(&isLocal);CHKERRQ(ierr);
     ierr = ISDestroy(&isGlobal);CHKERRQ(ierr);
@@ -411,7 +430,7 @@ static PetscErrorCode DMStagComputeLocationOffsets_1d(DM dm)
 {
   PetscErrorCode  ierr;
   DM_Stag * const stag = (DM_Stag*)dm->data;
-  const PetscInt epe = stag->entriesPerElement;
+  const PetscInt  epe = stag->entriesPerElement;
 
   PetscFunctionBegin;
   ierr = PetscMalloc1(DMSTAG_NUMBER_LOCATIONS,&stag->locationOffsets);CHKERRQ(ierr);
@@ -421,3 +440,44 @@ static PetscErrorCode DMStagComputeLocationOffsets_1d(DM dm)
   PetscFunctionReturn(0);
 }
 
+PETSC_INTERN PetscErrorCode DMStagPopulateLocalToGlobalInjective_1d(DM dm)
+{
+  PetscErrorCode  ierr;
+  DM_Stag * const stag = (DM_Stag*)dm->data;
+  PetscInt        *idxLocal,*idxGlobal;
+  PetscInt        i,iLocal,d,count;
+  IS              isLocal,isGlobal;
+
+  PetscFunctionBegin;
+  ierr = PetscMalloc1(stag->entries,&idxLocal);CHKERRQ(ierr);
+  ierr = PetscMalloc1(stag->entries,&idxGlobal);CHKERRQ(ierr);
+  count = 0;
+  iLocal = stag->start[0]-stag->startGhost[0];
+  for (i=stag->start[0]; i<stag->start[0]+stag->n[0]; ++i,++iLocal) {
+    for (d=0; d<stag->entriesPerElement; ++d,++count) {
+      idxGlobal[count] = i      * stag->entriesPerElement + d;
+      idxLocal [count] = iLocal * stag->entriesPerElement + d;
+    }
+  }
+  if (stag->lastRank[0] && stag->boundaryType[0] != DM_BOUNDARY_PERIODIC) {
+    i = stag->start[0]+stag->n[0];
+    iLocal = stag->start[0]-stag->startGhost[0] + stag->n[0];
+    for (d=0; d<stag->dof[0]; ++d,++count) {
+      idxGlobal[count] = i      * stag->entriesPerElement + d;
+      idxLocal [count] = iLocal * stag->entriesPerElement + d;
+    }
+  }
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm),stag->entries,idxLocal,PETSC_OWN_POINTER,&isLocal);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm),stag->entries,idxGlobal,PETSC_OWN_POINTER,&isGlobal);CHKERRQ(ierr);
+  {
+    Vec local,global;
+    ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)dm),1,stag->entries,PETSC_DECIDE,NULL,&global);CHKERRQ(ierr);
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,stag->entriesPerElement,stag->entriesGhost,NULL,&local);CHKERRQ(ierr);
+    ierr = VecScatterCreate(local,isLocal,global,isGlobal,&stag->ltog_injective);CHKERRQ(ierr);
+    ierr = VecDestroy(&global);CHKERRQ(ierr);
+    ierr = VecDestroy(&local);CHKERRQ(ierr);
+  }
+  ierr = ISDestroy(&isLocal);CHKERRQ(ierr);
+  ierr = ISDestroy(&isGlobal);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

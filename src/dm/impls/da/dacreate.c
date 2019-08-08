@@ -16,27 +16,27 @@ PetscErrorCode  DMSetFromOptions_DA(PetscOptionItems *PetscOptionsObject,DM da)
   if (dd->P < 0) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Dimension must be non-negative, call DMSetFromOptions() if you want to change the value at runtime");
 
   ierr = PetscOptionsHead(PetscOptionsObject,"DMDA Options");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-da_grid_x","Number of grid points in x direction","DMDASetSizes",dd->M,&dd->M,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-da_grid_y","Number of grid points in y direction","DMDASetSizes",dd->N,&dd->N,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-da_grid_z","Number of grid points in z direction","DMDASetSizes",dd->P,&dd->P,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-da_grid_x","Number of grid points in x direction","DMDASetSizes",dd->M,&dd->M,NULL,1);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-da_grid_y","Number of grid points in y direction","DMDASetSizes",dd->N,&dd->N,NULL,1);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-da_grid_z","Number of grid points in z direction","DMDASetSizes",dd->P,&dd->P,NULL,1);CHKERRQ(ierr);
 
-  ierr = PetscOptionsInt("-da_overlap","Decomposition overlap in all directions","DMDASetOverlap",dd->xol,&dd->xol,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-da_overlap","Decomposition overlap in all directions","DMDASetOverlap",dd->xol,&dd->xol,&flg,0);CHKERRQ(ierr);
   if (flg) {ierr = DMDASetOverlap(da,dd->xol,dd->xol,dd->xol);CHKERRQ(ierr);}
-  ierr = PetscOptionsInt("-da_overlap_x","Decomposition overlap in x direction","DMDASetOverlap",dd->xol,&dd->xol,NULL);CHKERRQ(ierr);
-  if (dim > 1) {ierr = PetscOptionsInt("-da_overlap_y","Decomposition overlap in y direction","DMDASetOverlap",dd->yol,&dd->yol,NULL);CHKERRQ(ierr);}
-  if (dim > 2) {ierr = PetscOptionsInt("-da_overlap_z","Decomposition overlap in z direction","DMDASetOverlap",dd->zol,&dd->zol,NULL);CHKERRQ(ierr);}
+  ierr = PetscOptionsBoundedInt("-da_overlap_x","Decomposition overlap in x direction","DMDASetOverlap",dd->xol,&dd->xol,NULL,0);CHKERRQ(ierr);
+  if (dim > 1) {ierr = PetscOptionsBoundedInt("-da_overlap_y","Decomposition overlap in y direction","DMDASetOverlap",dd->yol,&dd->yol,NULL,0);CHKERRQ(ierr);}
+  if (dim > 2) {ierr = PetscOptionsBoundedInt("-da_overlap_z","Decomposition overlap in z direction","DMDASetOverlap",dd->zol,&dd->zol,NULL,0);CHKERRQ(ierr);}
 
-  ierr = PetscOptionsInt("-da_local_subdomains","","DMDASetNumLocalSubdomains",dd->Nsub,&dd->Nsub,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-da_local_subdomains","","DMDASetNumLocalSubdomains",dd->Nsub,&dd->Nsub,&flg,PETSC_DECIDE);CHKERRQ(ierr);
   if (flg) {ierr = DMDASetNumLocalSubDomains(da,dd->Nsub);CHKERRQ(ierr);}
 
   /* Handle DMDA parallel distribution */
-  ierr = PetscOptionsInt("-da_processors_x","Number of processors in x direction","DMDASetNumProcs",dd->m,&dd->m,NULL);CHKERRQ(ierr);
-  if (dim > 1) {ierr = PetscOptionsInt("-da_processors_y","Number of processors in y direction","DMDASetNumProcs",dd->n,&dd->n,NULL);CHKERRQ(ierr);}
-  if (dim > 2) {ierr = PetscOptionsInt("-da_processors_z","Number of processors in z direction","DMDASetNumProcs",dd->p,&dd->p,NULL);CHKERRQ(ierr);}
+  ierr = PetscOptionsBoundedInt("-da_processors_x","Number of processors in x direction","DMDASetNumProcs",dd->m,&dd->m,NULL,PETSC_DECIDE);CHKERRQ(ierr);
+  if (dim > 1) {ierr = PetscOptionsBoundedInt("-da_processors_y","Number of processors in y direction","DMDASetNumProcs",dd->n,&dd->n,NULL,PETSC_DECIDE);CHKERRQ(ierr);}
+  if (dim > 2) {ierr = PetscOptionsBoundedInt("-da_processors_z","Number of processors in z direction","DMDASetNumProcs",dd->p,&dd->p,NULL,PETSC_DECIDE);CHKERRQ(ierr);}
   /* Handle DMDA refinement */
-  ierr = PetscOptionsInt("-da_refine_x","Refinement ratio in x direction","DMDASetRefinementFactor",dd->refine_x,&dd->refine_x,NULL);CHKERRQ(ierr);
-  if (dim > 1) {ierr = PetscOptionsInt("-da_refine_y","Refinement ratio in y direction","DMDASetRefinementFactor",dd->refine_y,&dd->refine_y,NULL);CHKERRQ(ierr);}
-  if (dim > 2) {ierr = PetscOptionsInt("-da_refine_z","Refinement ratio in z direction","DMDASetRefinementFactor",dd->refine_z,&dd->refine_z,NULL);CHKERRQ(ierr);}
+  ierr = PetscOptionsBoundedInt("-da_refine_x","Refinement ratio in x direction","DMDASetRefinementFactor",dd->refine_x,&dd->refine_x,NULL,1);CHKERRQ(ierr);
+  if (dim > 1) {ierr = PetscOptionsBoundedInt("-da_refine_y","Refinement ratio in y direction","DMDASetRefinementFactor",dd->refine_y,&dd->refine_y,NULL,1);CHKERRQ(ierr);}
+  if (dim > 2) {ierr = PetscOptionsBoundedInt("-da_refine_z","Refinement ratio in z direction","DMDASetRefinementFactor",dd->refine_z,&dd->refine_z,NULL,1);CHKERRQ(ierr);}
   dd->coarsen_x = dd->refine_x; dd->coarsen_y = dd->refine_y; dd->coarsen_z = dd->refine_z;
 
   /* Get refinement factors, defaults taken from the coarse DMDA */
@@ -52,7 +52,7 @@ PetscErrorCode  DMSetFromOptions_DA(PetscOptionItems *PetscOptionsObject,DM da)
     dd->refine_x = refx[0];
     dd->refine_x_hier_n = n;
     ierr = PetscMalloc1(n,&dd->refine_x_hier);CHKERRQ(ierr);
-    ierr = PetscMemcpy(dd->refine_x_hier,refx,n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(dd->refine_x_hier,refx,n);CHKERRQ(ierr);
   }
   if (dim > 1) {
     n    = maxnlevels;
@@ -61,7 +61,7 @@ PetscErrorCode  DMSetFromOptions_DA(PetscOptionItems *PetscOptionsObject,DM da)
       dd->refine_y = refy[0];
       dd->refine_y_hier_n = n;
       ierr = PetscMalloc1(n,&dd->refine_y_hier);CHKERRQ(ierr);
-      ierr = PetscMemcpy(dd->refine_y_hier,refy,n*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscArraycpy(dd->refine_y_hier,refy,n);CHKERRQ(ierr);
     }
   }
   if (dim > 2) {
@@ -71,11 +71,11 @@ PetscErrorCode  DMSetFromOptions_DA(PetscOptionItems *PetscOptionsObject,DM da)
       dd->refine_z = refz[0];
       dd->refine_z_hier_n = n;
       ierr = PetscMalloc1(n,&dd->refine_z_hier);CHKERRQ(ierr);
-      ierr = PetscMemcpy(dd->refine_z_hier,refz,n*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscArraycpy(dd->refine_z_hier,refz,n);CHKERRQ(ierr);
     }
   }
 
-  ierr = PetscOptionsInt("-da_refine","Uniformly refine DA one or more times","None",refine,&refine,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-da_refine","Uniformly refine DA one or more times","None",refine,&refine,NULL,0);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
 
   while (refine--) {
@@ -126,7 +126,6 @@ extern PetscErrorCode  DMCoarsen_DA(DM,MPI_Comm,DM*);
 extern PetscErrorCode  DMRefineHierarchy_DA(DM,PetscInt,DM[]);
 extern PetscErrorCode  DMCoarsenHierarchy_DA(DM,PetscInt,DM[]);
 extern PetscErrorCode  DMCreateInjection_DA(DM,DM,Mat*);
-extern PetscErrorCode  DMCreateAggregates_DA(DM,DM,Mat*);
 extern PetscErrorCode  DMView_DA(DM,PetscViewer);
 extern PetscErrorCode  DMSetUp_DA(DM);
 extern PetscErrorCode  DMDestroy_DA(DM);
@@ -177,7 +176,6 @@ PetscErrorCode DMLoad_DA(DM da,PetscViewer viewer)
 PetscErrorCode DMCreateSubDM_DA(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm)
 {
   DM_DA         *da = (DM_DA*) dm->data;
-  PetscSection   section;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -210,22 +208,17 @@ PetscErrorCode DMCreateSubDM_DA(DM dm, PetscInt numFields, const PetscInt fields
     ierr = DMDASetStencilWidth(*subdm, da->s);CHKERRQ(ierr);
     ierr = DMDASetOwnershipRanges(*subdm, da->lx, da->ly, da->lz);CHKERRQ(ierr);
   }
-  ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
-  if (section) {
-    ierr = DMCreateSectionSubDM(dm, numFields, fields, is, subdm);CHKERRQ(ierr);
-  } else {
-    if (is) {
-      PetscInt *indices, cnt = 0, dof = da->w, i, j;
+  if (is) {
+    PetscInt *indices, cnt = 0, dof = da->w, i, j;
 
-      ierr = PetscMalloc1(da->Nlocal*numFields/dof, &indices);CHKERRQ(ierr);
-      for (i = da->base/dof; i < (da->base+da->Nlocal)/dof; ++i) {
-        for (j = 0; j < numFields; ++j) {
-          indices[cnt++] = dof*i + fields[j];
-        }
+    ierr = PetscMalloc1(da->Nlocal*numFields/dof, &indices);CHKERRQ(ierr);
+    for (i = da->base/dof; i < (da->base+da->Nlocal)/dof; ++i) {
+      for (j = 0; j < numFields; ++j) {
+        indices[cnt++] = dof*i + fields[j];
       }
-      if (cnt != da->Nlocal*numFields/dof) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Count %d does not equal expected value %d", cnt, da->Nlocal*numFields/dof);
-      ierr = ISCreateGeneral(PetscObjectComm((PetscObject) dm), cnt, indices, PETSC_OWN_POINTER, is);CHKERRQ(ierr);
     }
+    if (cnt != da->Nlocal*numFields/dof) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Count %D does not equal expected value %D", cnt, da->Nlocal*numFields/dof);
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject) dm), cnt, indices, PETSC_OWN_POINTER, is);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -304,7 +297,7 @@ static PetscErrorCode DMHasCreateInjection_DA(DM dm, PetscBool *flg)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidPointer(flg,2);
+  PetscValidBoolPointer(flg,2);
   *flg = da->interptype == DMDA_Q1 ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -360,9 +353,6 @@ static PetscErrorCode DMGetNeighbors_DA(DM dm, PetscInt *nranks, const PetscMPII
 .seealso: DMType, DMCOMPOSITE, DMDACreate(), DMCreate(), DMSetType()
 M*/
 
-extern PetscErrorCode DMProjectFunctionLocal_DA(DM, PetscReal, PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **, InsertMode, Vec);
-extern PetscErrorCode DMComputeL2Diff_DA(DM, PetscReal, PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **, Vec, PetscReal *);
-extern PetscErrorCode DMComputeL2GradientDiff_DA(DM, PetscReal, PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal [], const PetscReal [],PetscInt, PetscScalar *, void *), void **, Vec,const PetscReal [], PetscReal *);
 extern PetscErrorCode DMLocatePoints_DA_Regular(DM,Vec,DMPointLocationType,PetscSF);
 PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject,PetscViewer);
 
@@ -441,9 +431,8 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
   da->ops->coarsen                     = DMCoarsen_DA;
   da->ops->refinehierarchy             = DMRefineHierarchy_DA;
   da->ops->coarsenhierarchy            = DMCoarsenHierarchy_DA;
-  da->ops->getinjection                = DMCreateInjection_DA;
+  da->ops->createinjection             = DMCreateInjection_DA;
   da->ops->hascreateinjection          = DMHasCreateInjection_DA;
-  da->ops->getaggregates               = DMCreateAggregates_DA;
   da->ops->destroy                     = DMDestroy_DA;
   da->ops->view                        = 0;
   da->ops->setfromoptions              = DMSetFromOptions_DA;
@@ -456,9 +445,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
   da->ops->createdomaindecomposition   = DMCreateDomainDecomposition_DA;
   da->ops->createddscatters            = DMCreateDomainDecompositionScatters_DA;
   da->ops->getdimpoints                = DMGetDimPoints_DA;
-  da->ops->projectfunctionlocal        = DMProjectFunctionLocal_DA;
-  da->ops->computel2diff               = DMComputeL2Diff_DA;
-  da->ops->computel2gradientdiff       = DMComputeL2GradientDiff_DA;
   da->ops->getneighbors                = DMGetNeighbors_DA;
   da->ops->locatepoints                = DMLocatePoints_DA_Regular;
   da->ops->getcompatibility            = DMGetCompatibility_DA;
@@ -469,7 +455,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
 /*@
   DMDACreate - Creates a DMDA object.
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 . comm - The communicator for the DMDA object
@@ -479,10 +465,10 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
 
   Level: advanced
 
-  Developers Note: Since there exists DMDACreate1/2/3d() should this routine even exist?
+  Developers Note: 
+  Since there exists DMDACreate1/2/3d() should this routine even exist?
 
-.keywords: DMDA, create
-.seealso:  DMDASetSizes(), DMDADuplicate(),  DMDACreate1d(), DMDACreate2d(), DMDACreate3d()
+.seealso:  DMDASetSizes(), DMClone(),  DMDACreate1d(), DMDACreate2d(), DMDACreate3d()
 @*/
 PetscErrorCode  DMDACreate(MPI_Comm comm, DM *da)
 {

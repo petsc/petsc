@@ -109,5 +109,6 @@ int main(int argc,char **argv)
      test:
        nsize: 2
        suffix: 2
+       output_file: output/ex18_1.out
 
 TEST*/

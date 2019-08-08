@@ -4,6 +4,7 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.gitcommit              = 'v3.11'
+    self.gitcommitmaster        = 'origin/master'
     self.download               = ['git://https://bitbucket.com/slepc/slepc.git']
     self.functions              = []
     self.includes               = []
@@ -23,6 +24,8 @@ class Configure(config.package.Package):
     self.setCompilers    = framework.require('config.setCompilers',self)
     self.sharedLibraries = framework.require('PETSc.options.sharedLibraries', self)
     self.installdir      = framework.require('PETSc.options.installDir',self)
+    self.parch           = framework.require('PETSc.options.arch',self)
+    self.scalartypes     = framework.require('PETSc.options.scalarTypes',self)
     return
 
   def Install(self):
@@ -36,8 +39,11 @@ class Configure(config.package.Package):
 
     # if installing prefix location then need to set new value for PETSC_DIR/PETSC_ARCH
     if self.argDB['prefix']:
+       iarch = 'installed-'+self.parch.nativeArch
+       if self.scalartypes.scalartype != 'real':
+         iarch += '-' + self.scalartypes.scalartype
        carg = 'SLEPC_DIR='+self.packageDir+' PETSC_DIR='+os.path.abspath(os.path.expanduser(self.argDB['prefix']))+' PETSC_ARCH="" '
-       barg = 'SLEPC_DIR='+self.packageDir+' PETSC_DIR='+os.path.abspath(os.path.expanduser(self.argDB['prefix']))+' PETSC_ARCH=installed-'+self.arch+' '
+       barg = 'SLEPC_DIR='+self.packageDir+' PETSC_DIR='+os.path.abspath(os.path.expanduser(self.argDB['prefix']))+' PETSC_ARCH='+iarch+' '
        prefix = os.path.abspath(os.path.expanduser(self.argDB['prefix']))
     else:
        carg = ' SLEPC_DIR='+self.packageDir+' '

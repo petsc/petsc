@@ -5,7 +5,7 @@
 configure_options = [
   '--with-cc=clang',
   '--with-cxx=clang++',
-  '--with-fc=gfortran', # http://brew.sh/
+  '--with-fc=gfortran', # https://brew.sh/
 
   'CXXFLAGS=-Wall -Wwrite-strings -Wno-strict-aliasing -Wno-unknown-pragmas -fstack-protector -Wno-deprecated',
   '--with-clanguage=cxx',
@@ -23,7 +23,6 @@ configure_options = [
   '--download-triangle=1',
   '--download-superlu=1',
   '--download-superlu_dist=1',
-  '--with-cxx-dialect=C++11',
   '--download-scalapack=1',
   '--download-mumps=1',
   '--download-parms=1',

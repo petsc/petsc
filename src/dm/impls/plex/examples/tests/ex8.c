@@ -15,27 +15,18 @@ typedef struct {
   PetscReal *centroid, *normal, *vol;     /* FVM data */
 } AppCtx;
 
-PetscErrorCode ReadMesh(MPI_Comm comm, const char *filename, AppCtx *user, DM *dm)
+static PetscErrorCode ReadMesh(MPI_Comm comm, const char *filename, AppCtx *user, DM *dm)
 {
-  PetscMPIInt    rank;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = DMPlexCreateFromFile(comm, filename, PETSC_FALSE, dm);CHKERRQ(ierr);
-  if (user->interpolate) {
-    DM idm;
-
-    ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
-    ierr = DMDestroy(dm);CHKERRQ(ierr);
-    *dm  = idm;
-  }
+  ierr = DMPlexCreateFromFile(comm, filename, user->interpolate, dm);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *dm, "Input Mesh");CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   const char    *runTypes[2] = {"reference", "file"};
   PetscInt       run;
@@ -89,11 +80,11 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   }
   ierr = PetscOptionsEnd();
 
-  if (options->transform) {ierr = PetscPrintf(comm, "Using random transforms");CHKERRQ(ierr);}
+  if (options->transform) {ierr = PetscPrintf(comm, "Using random transforms\n");CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ChangeCoordinates(DM dm, PetscInt spaceDim, PetscScalar vertexCoords[])
+static PetscErrorCode ChangeCoordinates(DM dm, PetscInt spaceDim, PetscScalar vertexCoords[])
 {
   PetscSection   coordSection;
   Vec            coordinates;
@@ -136,7 +127,7 @@ PetscErrorCode ChangeCoordinates(DM dm, PetscInt spaceDim, PetscScalar vertexCoo
 
 #define RelativeError(a,b) PetscAbs(a-b)/(1.0+PetscMax(PetscAbs(a),PetscAbs(b)))
 
-PetscErrorCode CheckFEMGeometry(DM dm, PetscInt cell, PetscInt spaceDim, PetscReal v0Ex[], PetscReal JEx[], PetscReal invJEx[], PetscReal detJEx)
+static PetscErrorCode CheckFEMGeometry(DM dm, PetscInt cell, PetscInt spaceDim, PetscReal v0Ex[], PetscReal JEx[], PetscReal invJEx[], PetscReal detJEx)
 {
   PetscReal      v0[3], J[9], invJ[9], detJ;
   PetscInt       d, i, j;
@@ -163,7 +154,7 @@ PetscErrorCode CheckFEMGeometry(DM dm, PetscInt cell, PetscInt spaceDim, PetscRe
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CheckFVMGeometry(DM dm, PetscInt cell, PetscInt spaceDim, PetscReal centroidEx[], PetscReal normalEx[], PetscReal volEx)
+static PetscErrorCode CheckFVMGeometry(DM dm, PetscInt cell, PetscInt spaceDim, PetscReal centroidEx[], PetscReal normalEx[], PetscReal volEx)
 {
   PetscReal      centroid[3], normal[3], vol;
   PetscInt       d;
@@ -172,18 +163,252 @@ PetscErrorCode CheckFVMGeometry(DM dm, PetscInt cell, PetscInt spaceDim, PetscRe
   PetscFunctionBegin;
   ierr = DMPlexComputeCellGeometryFVM(dm, cell, &vol, centroid, normal);CHKERRQ(ierr);
   for (d = 0; d < spaceDim; ++d) {
-    if (RelativeError(centroid[d],centroidEx[d]) > 10*PETSC_SMALL) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid centroid[%D]: %g != %g diff %g", d, (double)centroid[d], (double)centroidEx[d],(double)(centroid[d]-centroidEx[d]));
-    if (RelativeError(normal[d],normalEx[d]) > 10*PETSC_SMALL) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid normal[%D]: %g != %g", d, (double)normal[d], (double)normalEx[d]);
+    if (RelativeError(centroid[d],centroidEx[d]) > 10*PETSC_SMALL) SETERRQ5(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cell %D, Invalid centroid[%D]: %g != %g diff %g", cell, d, (double)centroid[d], (double)centroidEx[d],(double)(centroid[d]-centroidEx[d]));
+    if (RelativeError(normal[d],normalEx[d]) > 10*PETSC_SMALL) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cell %D, Invalid normal[%D]: %g != %g", cell, d, (double)normal[d], (double)normalEx[d]);
   }
-  if (RelativeError(volEx,vol) > 10*PETSC_SMALL) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid volume = %g != %g diff %g", (double)vol, (double)volEx,(double)(vol - volEx));
+  if (RelativeError(volEx,vol) > 10*PETSC_SMALL) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cell %D, Invalid volume = %g != %g diff %g", cell, (double)vol, (double)volEx,(double)(vol - volEx));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TestTriangle(MPI_Comm comm, PetscBool interpolate, PetscBool transform)
+static PetscErrorCode CheckCell(DM dm, PetscInt cell, PetscBool transform, PetscReal v0Ex[], PetscReal JEx[], PetscReal invJEx[], PetscReal detJEx, PetscReal centroidEx[], PetscReal normalEx[], PetscReal volEx, PetscReal faceCentroidEx[], PetscReal faceNormalEx[], PetscReal faceVolEx[])
+{
+  const PetscInt *cone;
+  PetscInt        coneSize, c;
+  PetscInt        dim, depth, cdim;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(dm, &cdim);CHKERRQ(ierr);
+  if (v0Ex) {
+    ierr = CheckFEMGeometry(dm, cell, cdim, v0Ex, JEx, invJEx, detJEx);CHKERRQ(ierr);
+  }
+  if (dim == depth && centroidEx) {
+    ierr = CheckFVMGeometry(dm, cell, cdim, centroidEx, normalEx, volEx);CHKERRQ(ierr);
+    if (faceCentroidEx) {
+      ierr = DMPlexGetConeSize(dm, cell, &coneSize);CHKERRQ(ierr);
+      ierr = DMPlexGetCone(dm, cell, &cone);CHKERRQ(ierr);
+      for (c = 0; c < coneSize; ++c) {
+        ierr = CheckFVMGeometry(dm, cone[c], dim, &faceCentroidEx[c*dim], &faceNormalEx[c*dim], faceVolEx[c]);CHKERRQ(ierr);
+      }
+    }
+  }
+  if (transform) {
+    Vec          coordinates;
+    PetscSection coordSection;
+    PetscScalar *coords = NULL, *origCoords, *newCoords;
+    PetscReal   *v0ExT, *JExT, *invJExT, detJExT=0, *centroidExT, *normalExT, volExT=0;
+    PetscReal   *faceCentroidExT, *faceNormalExT, faceVolExT;
+    PetscRandom  r, ang, ang2;
+    PetscInt     coordSize, numCorners, t;
+
+    ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
+    ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+    ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, cell, &coordSize, &coords);CHKERRQ(ierr);
+    ierr = PetscMalloc2(coordSize, &origCoords, coordSize, &newCoords);CHKERRQ(ierr);
+    ierr = PetscMalloc5(cdim, &v0ExT, cdim*cdim, &JExT, cdim*cdim, &invJExT, cdim, &centroidExT, cdim, &normalExT);CHKERRQ(ierr);
+    ierr = PetscMalloc2(cdim, &faceCentroidExT, cdim, &faceNormalExT);CHKERRQ(ierr);
+    for (c = 0; c < coordSize; ++c) origCoords[c] = coords[c];
+    ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, cell, &coordSize, &coords);CHKERRQ(ierr);
+    numCorners = coordSize/cdim;
+
+    ierr = PetscRandomCreate(PETSC_COMM_SELF, &r);CHKERRQ(ierr);
+    ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
+    ierr = PetscRandomSetInterval(r, 0.0, 10.0);CHKERRQ(ierr);
+    ierr = PetscRandomCreate(PETSC_COMM_SELF, &ang);CHKERRQ(ierr);
+    ierr = PetscRandomSetFromOptions(ang);CHKERRQ(ierr);
+    ierr = PetscRandomSetInterval(ang, 0.0, 2*PETSC_PI);CHKERRQ(ierr);
+    ierr = PetscRandomCreate(PETSC_COMM_SELF, &ang2);CHKERRQ(ierr);
+    ierr = PetscRandomSetFromOptions(ang2);CHKERRQ(ierr);
+    ierr = PetscRandomSetInterval(ang2, 0.0, PETSC_PI);CHKERRQ(ierr);
+    for (t = 0; t < 1; ++t) {
+      PetscScalar trans[3];
+      PetscReal   R[9], rot[3], rotM[9];
+      PetscReal   scale, phi, theta, psi = 0.0, norm;
+      PetscInt    d, e, f, p;
+
+      for (c = 0; c < coordSize; ++c) newCoords[c] = origCoords[c];
+      ierr = PetscRandomGetValueReal(r, &scale);CHKERRQ(ierr);
+      ierr = PetscRandomGetValueReal(ang, &phi);CHKERRQ(ierr);
+      ierr = PetscRandomGetValueReal(ang2, &theta);CHKERRQ(ierr);
+      for (d = 0; d < cdim; ++d) {
+        ierr = PetscRandomGetValue(r, &trans[d]);CHKERRQ(ierr);
+      }
+      switch (cdim) {
+      case 2:
+        R[0] = PetscCosReal(phi); R[1] = -PetscSinReal(phi);
+        R[2] = PetscSinReal(phi); R[3] =  PetscCosReal(phi);
+        break;
+      case 3:
+      {
+        const PetscReal ct = PetscCosReal(theta), st = PetscSinReal(theta);
+        const PetscReal cp = PetscCosReal(phi),   sp = PetscSinReal(phi);
+        const PetscReal cs = PetscCosReal(psi),   ss = PetscSinReal(psi);
+        R[0] = ct*cs; R[1] = sp*st*cs - cp*ss;    R[2] = sp*ss    + cp*st*cs;
+        R[3] = ct*ss; R[4] = cp*cs    + sp*st*ss; R[5] = cp*st*ss - sp*cs;
+        R[6] = -st;   R[7] = sp*ct;               R[8] = cp*ct;
+        break;
+      }
+      default: SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Invalid coordinate dimension %D", cdim);
+      }
+      if (v0Ex) {
+        detJExT = detJEx;
+        for (d = 0; d < cdim; ++d) {
+          v0ExT[d] = v0Ex[d];
+          for (e = 0; e < cdim; ++e) {
+            JExT[d*cdim+e]    = JEx[d*cdim+e];
+            invJExT[d*cdim+e] = invJEx[d*cdim+e];
+          }
+        }
+        for (d = 0; d < cdim; ++d) {
+          v0ExT[d] *= scale;
+          v0ExT[d] += PetscRealPart(trans[d]);
+          /* Only scale dimensions in the manifold */
+          for (e = 0; e < dim; ++e) {
+            JExT[d*cdim+e]    *= scale;
+            invJExT[d*cdim+e] /= scale;
+          }
+          if (d < dim) detJExT *= scale;
+        }
+        /* Do scaling and translation before rotation, so that we can leave out the normal dimension for lower dimensional manifolds */
+        for (d = 0; d < cdim; ++d) {
+          for (e = 0, rot[d] = 0.0; e < cdim; ++e) {
+            rot[d] += R[d*cdim+e] * v0ExT[e];
+          }
+        }
+        for (d = 0; d < cdim; ++d) v0ExT[d] = rot[d];
+        for (d = 0; d < cdim; ++d) {
+          for (e = 0; e < cdim; ++e) {
+            for (f = 0, rotM[d*cdim+e] = 0.0; f < cdim; ++f) {
+              rotM[d*cdim+e] += R[d*cdim+f] * JExT[f*cdim+e];
+            }
+          }
+        }
+        for (d = 0; d < cdim; ++d) {
+          for (e = 0; e < cdim; ++e) {
+            JExT[d*cdim+e] = rotM[d*cdim+e];
+          }
+        }
+        for (d = 0; d < cdim; ++d) {
+          for (e = 0; e < cdim; ++e) {
+            for (f = 0, rotM[d*cdim+e] = 0.0; f < cdim; ++f) {
+              rotM[d*cdim+e] += invJExT[d*cdim+f] * R[e*cdim+f];
+            }
+          }
+        }
+        for (d = 0; d < cdim; ++d) {
+          for (e = 0; e < cdim; ++e) {
+            invJExT[d*cdim+e] = rotM[d*cdim+e];
+          }
+        }
+      }
+      if (centroidEx) {
+        volExT = volEx;
+        for (d = 0; d < cdim; ++d) {
+          centroidExT[d]  = centroidEx[d];
+          normalExT[d]    = normalEx[d];
+        }
+        for (d = 0; d < cdim; ++d) {
+          centroidExT[d] *= scale;
+          centroidExT[d] += PetscRealPart(trans[d]);
+          normalExT[d]   /= scale;
+          /* Only scale dimensions in the manifold */
+          if (d < dim) volExT  *= scale;
+        }
+        /* Do scaling and translation before rotation, so that we can leave out the normal dimension for lower dimensional manifolds */
+        for (d = 0; d < cdim; ++d) {
+          for (e = 0, rot[d] = 0.0; e < cdim; ++e) {
+            rot[d] += R[d*cdim+e] * centroidExT[e];
+          }
+        }
+        for (d = 0; d < cdim; ++d) centroidExT[d] = rot[d];
+        for (d = 0; d < cdim; ++d) {
+          for (e = 0, rot[d] = 0.0; e < cdim; ++e) {
+            rot[d] += R[d*cdim+e] * normalExT[e];
+          }
+        }
+        for (d = 0; d < cdim; ++d) normalExT[d] = rot[d];
+        for (d = 0, norm = 0.0; d < cdim; ++d) norm += PetscSqr(normalExT[d]);
+        norm = PetscSqrtReal(norm);
+        for (d = 0; d < cdim; ++d) normalExT[d] /= norm;
+      }
+      for (d = 0; d < cdim; ++d) {
+        for (p = 0; p < numCorners; ++p) {
+          newCoords[p*cdim+d] *= scale;
+          newCoords[p*cdim+d] += trans[d];
+        }
+      }
+      for (p = 0; p < numCorners; ++p) {
+        for (d = 0; d < cdim; ++d) {
+          for (e = 0, rot[d] = 0.0; e < cdim; ++e) {
+            rot[d] += R[d*cdim+e] * PetscRealPart(newCoords[p*cdim+e]);
+          }
+        }
+        for (d = 0; d < cdim; ++d) newCoords[p*cdim+d] = rot[d];
+      }
+
+      ierr = ChangeCoordinates(dm, cdim, newCoords);CHKERRQ(ierr);
+      if (v0Ex) {
+        ierr = CheckFEMGeometry(dm, 0, cdim, v0ExT, JExT, invJExT, detJExT);CHKERRQ(ierr);
+      }
+      if (dim == depth && centroidEx) {
+        ierr = CheckFVMGeometry(dm, cell, cdim, centroidExT, normalExT, volExT);CHKERRQ(ierr);
+        if (faceCentroidEx) {
+          ierr = DMPlexGetConeSize(dm, cell, &coneSize);CHKERRQ(ierr);
+          ierr = DMPlexGetCone(dm, cell, &cone);CHKERRQ(ierr);
+          for (c = 0; c < coneSize; ++c) {
+            PetscInt off = c*cdim;
+
+            faceVolExT = faceVolEx[c];
+            for (d = 0; d < cdim; ++d) {
+              faceCentroidExT[d]  = faceCentroidEx[off+d];
+              faceNormalExT[d]    = faceNormalEx[off+d];
+            }
+            for (d = 0; d < cdim; ++d) {
+              faceCentroidExT[d] *= scale;
+              faceCentroidExT[d] += PetscRealPart(trans[d]);
+              faceNormalExT[d]   /= scale;
+              /* Only scale dimensions in the manifold */
+              if (d < dim-1) {
+                faceVolExT *= scale;
+              }
+            }
+            for (d = 0; d < cdim; ++d) {
+              for (e = 0, rot[d] = 0.0; e < cdim; ++e) {
+                rot[d] += R[d*cdim+e] * faceCentroidExT[e];
+              }
+            }
+            for (d = 0; d < cdim; ++d) faceCentroidExT[d] = rot[d];
+            for (d = 0; d < cdim; ++d) {
+              for (e = 0, rot[d] = 0.0; e < cdim; ++e) {
+                rot[d] += R[d*cdim+e] * faceNormalExT[e];
+              }
+            }
+            for (d = 0; d < cdim; ++d) faceNormalExT[d] = rot[d];
+            for (d = 0, norm = 0.0; d < cdim; ++d) norm += PetscSqr(faceNormalExT[d]);
+            norm = PetscSqrtReal(norm);
+            for (d = 0; d < cdim; ++d) faceNormalExT[d] /= norm;
+
+            ierr = CheckFVMGeometry(dm, cone[c], cdim, faceCentroidExT, faceNormalExT, faceVolExT);CHKERRQ(ierr);
+          }
+        }
+      }
+    }
+    ierr = PetscRandomDestroy(&r);CHKERRQ(ierr);
+    ierr = PetscRandomDestroy(&ang);CHKERRQ(ierr);
+    ierr = PetscRandomDestroy(&ang2);CHKERRQ(ierr);
+    ierr = PetscFree2(origCoords, newCoords);CHKERRQ(ierr);
+    ierr = PetscFree5(v0ExT, JExT, invJExT, centroidExT, normalExT);CHKERRQ(ierr);
+    ierr = PetscFree2(faceCentroidExT, faceNormalExT);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode TestTriangle(MPI_Comm comm, PetscBool interpolate, PetscBool transform)
 {
   DM             dm;
-  PetscRandom    r, ang, ang2;
-  PetscInt       dim, t;
+  PetscInt       dim;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -220,232 +445,32 @@ PetscErrorCode TestTriangle(MPI_Comm comm, PetscBool interpolate, PetscBool tran
     PetscReal normalEx[2]   = {0.0, 0.0};
     PetscReal volEx         = 2.0;
 
-    ierr = CheckFEMGeometry(dm, 0, dim, v0Ex, JEx, invJEx, detJEx);CHKERRQ(ierr);
-    if (interpolate) {ierr = CheckFVMGeometry(dm, 0, dim, centroidEx, normalEx, volEx);CHKERRQ(ierr);}
-  }
-  /* Check random triangles: rotate, scale, then translate */
-  if (transform) {
-    ierr = PetscRandomCreate(PETSC_COMM_SELF, &r);CHKERRQ(ierr);
-    ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
-    ierr = PetscRandomSetInterval(r, 0.0, 10.0);CHKERRQ(ierr);
-    ierr = PetscRandomCreate(PETSC_COMM_SELF, &ang);CHKERRQ(ierr);
-    ierr = PetscRandomSetFromOptions(ang);CHKERRQ(ierr);
-    ierr = PetscRandomSetInterval(ang, 0.0, 2*PETSC_PI);CHKERRQ(ierr);
-    for (t = 0; t < 100; ++t) {
-      PetscScalar vertexCoords[6] = {-1.0, -1.0, 1.0, -1.0, -1.0, 1.0}, trans[2];
-      PetscReal   v0Ex[2]         = {-1.0, -1.0};
-      PetscReal   JEx[4]          = {1.0, 0.0, 0.0, 1.0}, R[4], rot[2], rotM[4];
-      PetscReal   invJEx[4]       = {1.0, 0.0, 0.0, 1.0};
-      PetscReal   detJEx          = 1.0, scale, phi;
-      PetscReal   centroidEx[2]   = {-((PetscReal)1.)/((PetscReal)3.), -((PetscReal)1.)/((PetscReal)3.)};
-      PetscReal   normalEx[2]     = {0.0, 0.0};
-      PetscReal   volEx           = 2.0;
-      PetscInt    d, e, f, p;
-
-      ierr = PetscRandomGetValueReal(r, &scale);CHKERRQ(ierr);
-      ierr = PetscRandomGetValueReal(ang, &phi);CHKERRQ(ierr);
-      R[0] = PetscCosReal(phi); R[1] = -PetscSinReal(phi);
-      R[2] = PetscSinReal(phi); R[3] =  PetscCosReal(phi);
-      for (p = 0; p < 3; ++p) {
-        for (d = 0; d < dim; ++d) {
-          for (e = 0, rot[d] = 0.0; e < dim; ++e) {
-            rot[d] += R[d*dim+e] * PetscRealPart(vertexCoords[p*dim+e]);
-          }
-        }
-        for (d = 0; d < dim; ++d) vertexCoords[p*dim+d] = rot[d];
-      }
-      for (d = 0; d < dim; ++d) {
-        for (e = 0, rot[d] = 0.0; e < dim; ++e) {
-          rot[d] += R[d*dim+e] * centroidEx[e];
-        }
-      }
-      for (d = 0; d < dim; ++d) centroidEx[d] = rot[d];
-      for (d = 0; d < dim; ++d) {
-        for (e = 0; e < dim; ++e) {
-          for (f = 0, rotM[d*dim+e] = 0.0; f < dim; ++f) {
-            rotM[d*dim+e] += R[d*dim+f] * JEx[f*dim+e];
-          }
-        }
-      }
-      for (d = 0; d < dim; ++d) {
-        for (e = 0; e < dim; ++e) {
-          JEx[d*dim+e] = rotM[d*dim+e];
-        }
-      }
-      for (d = 0; d < dim; ++d) {
-        for (e = 0; e < dim; ++e) {
-          for (f = 0, rotM[d*dim+e] = 0.0; f < dim; ++f) {
-            rotM[d*dim+e] += invJEx[d*dim+f] * R[e*dim+f];
-          }
-        }
-      }
-      for (d = 0; d < dim; ++d) {
-        for (e = 0; e < dim; ++e) {
-          invJEx[d*dim+e] = rotM[d*dim+e];
-        }
-      }
-      for (d = 0; d < dim; ++d) {
-        ierr = PetscRandomGetValue(r, &trans[d]);CHKERRQ(ierr);
-        for (p = 0; p < 3; ++p) {
-          vertexCoords[p*dim+d] *= scale;
-          vertexCoords[p*dim+d] += trans[d];
-        }
-        v0Ex[d] = PetscRealPart(vertexCoords[d]);
-        for (e = 0; e < dim; ++e) {
-          JEx[d*dim+e]    *= scale;
-          invJEx[d*dim+e] /= scale;
-        }
-        detJEx *= scale;
-        centroidEx[d] *= scale;
-        centroidEx[d] += PetscRealPart(trans[d]);
-        volEx *= scale;
-      }
-      ierr = ChangeCoordinates(dm, dim, vertexCoords);CHKERRQ(ierr);
-      ierr = CheckFEMGeometry(dm, 0, dim, v0Ex, JEx, invJEx, detJEx);CHKERRQ(ierr);
-      if (interpolate) {ierr = CheckFVMGeometry(dm, 0, dim, centroidEx, normalEx, volEx);CHKERRQ(ierr);}
-    }
-    ierr = PetscRandomDestroy(&r);CHKERRQ(ierr);
-    ierr = PetscRandomDestroy(&ang);CHKERRQ(ierr);
+    ierr = CheckCell(dm, 0, transform, v0Ex, JEx, invJEx, detJEx, centroidEx, normalEx, volEx, NULL, NULL, NULL);CHKERRQ(ierr);
   }
   /* Move to 3D: Check reference geometry: determinant is scaled by reference volume (2.0) */
   dim = 3;
   {
     PetscScalar vertexCoords[9] = {-1.0, -1.0, 0.0, 1.0, -1.0, 0.0, -1.0, 1.0, 0.0};
-    PetscReal v0Ex[3]       = {-1.0, -1.0, 0.0};
-    PetscReal JEx[9]        = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
-    PetscReal invJEx[9]     = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
-    PetscReal detJEx        = 1.0;
-    PetscReal centroidEx[3] = {-((PetscReal)1.)/((PetscReal)3.), -((PetscReal)1.)/((PetscReal)3.), 0.0};
-    PetscReal normalEx[3]   = {0.0, 0.0, 1.0};
-    PetscReal volEx         = 2.0;
-
-    ierr = ChangeCoordinates(dm, dim, vertexCoords);CHKERRQ(ierr);
-    ierr = CheckFEMGeometry(dm, 0, dim, v0Ex, JEx, invJEx, detJEx);CHKERRQ(ierr);
-    if (interpolate) {ierr = CheckFVMGeometry(dm, 0, dim, centroidEx, normalEx, volEx);CHKERRQ(ierr);}
-  }
-  /* Rotated reference element */
-  {
-    PetscScalar vertexCoords[9] = {0.0, -1.0, -1.0, 0.0, 1.0, -1.0, 0.0, -1.0, 1.0};
-    PetscReal   v0Ex[3]         = {0.0, -1.0, -1.0};
-    PetscReal   JEx[9]          = {0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0};
-    PetscReal   invJEx[9]       = {0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0};
+    PetscReal   v0Ex[3]         = {-1.0, -1.0, 0.0};
+    PetscReal   JEx[9]          = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
+    PetscReal   invJEx[9]       = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
     PetscReal   detJEx          = 1.0;
-    PetscReal   centroidEx[3]   = {0.0, -((PetscReal)1.)/((PetscReal)3.), -((PetscReal)1.)/((PetscReal)3.)};
-    PetscReal   normalEx[3]     = {1.0, 0.0, 0.0};
+    PetscReal   centroidEx[3]   = {-((PetscReal)1.)/((PetscReal)3.), -((PetscReal)1.)/((PetscReal)3.), 0.0};
+    PetscReal   normalEx[3]     = {0.0, 0.0, 1.0};
     PetscReal   volEx           = 2.0;
 
     ierr = ChangeCoordinates(dm, dim, vertexCoords);CHKERRQ(ierr);
-    ierr = CheckFEMGeometry(dm, 0, dim, v0Ex, JEx, invJEx, detJEx);CHKERRQ(ierr);
-    if (interpolate) {ierr = CheckFVMGeometry(dm, 0, dim, centroidEx, normalEx, volEx);CHKERRQ(ierr);}
-  }
-  /* Check random triangles: scale, translate, then rotate */
-  if (transform) {
-    ierr = PetscRandomCreate(PETSC_COMM_SELF, &r);CHKERRQ(ierr);
-    ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
-    ierr = PetscRandomSetInterval(r, 0.0, 10.0);CHKERRQ(ierr);
-    ierr = PetscRandomCreate(PETSC_COMM_SELF, &ang);CHKERRQ(ierr);
-    ierr = PetscRandomSetFromOptions(ang);CHKERRQ(ierr);
-    ierr = PetscRandomSetInterval(ang, 0.0, 2*PETSC_PI);CHKERRQ(ierr);
-    ierr = PetscRandomCreate(PETSC_COMM_SELF, &ang2);CHKERRQ(ierr);
-    ierr = PetscRandomSetFromOptions(ang2);CHKERRQ(ierr);
-    ierr = PetscRandomSetInterval(ang2, 0.0, PETSC_PI);CHKERRQ(ierr);
-    for (t = 0; t < 100; ++t) {
-      PetscScalar vertexCoords[9] = {-1.0, -1.0, 0.0, 1.0, -1.0, 0.0, -1.0, 1.0, 0.0}, trans[3];
-      PetscReal   v0Ex[3]         = {-1.0, -1.0, 0.0};
-      PetscReal   JEx[9]          = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0}, R[9], rot[3], rotM[9];
-      PetscReal   invJEx[9]       = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
-      PetscReal   detJEx          = 1.0, scale, phi, theta, psi = 0.0;
-      PetscReal   centroidEx[3]   = {-((PetscReal)1.)/((PetscReal)3.), -((PetscReal)1.)/((PetscReal)3.), 0.0};
-      PetscReal   normalEx[3]     = {0.0, 0.0, 1.0};
-      PetscReal   volEx           = 2.0;
-      PetscInt    d, e, f, p;
-
-      ierr = PetscRandomGetValueReal(r, &scale);CHKERRQ(ierr);
-      ierr = PetscRandomGetValueReal(ang, &phi);CHKERRQ(ierr);
-      ierr = PetscRandomGetValueReal(ang2, &theta);CHKERRQ(ierr);
-      for (d = 0; d < dim; ++d) {
-        ierr = PetscRandomGetValue(r, &trans[d]);CHKERRQ(ierr);
-        for (p = 0; p < 3; ++p) {
-          vertexCoords[p*dim+d] *= scale;
-          vertexCoords[p*dim+d] += trans[d];
-        }
-        centroidEx[d] *= scale;
-        centroidEx[d] += PetscRealPart(trans[d]);
-        for (e = 0; e < dim-1; ++e) {
-          JEx[d*dim+e]    *= scale;
-          invJEx[d*dim+e] /= scale;
-        }
-        if (d < dim-1) {
-          detJEx *= scale;
-          volEx  *= scale;
-        }
-      }
-      R[0] = PetscCosReal(theta)*PetscCosReal(psi); R[1] = PetscSinReal(phi)*PetscSinReal(theta)*PetscCosReal(psi) - PetscCosReal(phi)*PetscSinReal(psi); R[2] = PetscSinReal(phi)*PetscSinReal(psi) + PetscCosReal(phi)*PetscSinReal(theta)*PetscCosReal(psi);
-      R[3] = PetscCosReal(theta)*PetscSinReal(psi); R[4] = PetscCosReal(phi)*PetscCosReal(psi) + PetscSinReal(phi)*PetscSinReal(theta)*PetscSinReal(psi); R[5] = PetscCosReal(phi)*PetscSinReal(theta)*PetscSinReal(psi) - PetscSinReal(phi)*PetscCosReal(psi);
-      R[6] = -PetscSinReal(theta);         R[7] = PetscSinReal(phi)*PetscCosReal(theta);                              R[8] = PetscCosReal(phi)*PetscCosReal(theta);
-      for (p = 0; p < 3; ++p) {
-        for (d = 0; d < dim; ++d) {
-          for (e = 0, rot[d] = 0.0; e < dim; ++e) {
-            rot[d] += R[d*dim+e] * PetscRealPart(vertexCoords[p*dim+e]);
-          }
-        }
-        for (d = 0; d < dim; ++d) vertexCoords[p*dim+d] = rot[d];
-      }
-      for (d = 0; d < dim; ++d) {
-        for (e = 0, rot[d] = 0.0; e < dim; ++e) {
-          rot[d] += R[d*dim+e] * centroidEx[e];
-        }
-      }
-      for (d = 0; d < dim; ++d) centroidEx[d] = rot[d];
-      for (d = 0; d < dim; ++d) {
-        for (e = 0, rot[d] = 0.0; e < dim; ++e) {
-          rot[d] += R[d*dim+e] * normalEx[e];
-        }
-      }
-      for (d = 0; d < dim; ++d) normalEx[d] = rot[d];
-      for (d = 0; d < dim; ++d) {
-        v0Ex[d] = PetscRealPart(vertexCoords[d]);
-        for (e = 0; e < dim; ++e) {
-          for (f = 0, rotM[d*dim+e] = 0.0; f < dim; ++f) {
-            rotM[d*dim+e] += R[d*dim+f] * JEx[f*dim+e];
-          }
-        }
-      }
-      for (d = 0; d < dim; ++d) {
-        for (e = 0; e < dim; ++e) {
-          JEx[d*dim+e] = rotM[d*dim+e];
-        }
-      }
-      for (d = 0; d < dim; ++d) {
-        for (e = 0; e < dim; ++e) {
-          for (f = 0, rotM[d*dim+e] = 0.0; f < dim; ++f) {
-            rotM[d*dim+e] += invJEx[d*dim+f] * R[e*dim+f];
-          }
-        }
-      }
-      for (d = 0; d < dim; ++d) {
-        for (e = 0; e < dim; ++e) {
-          invJEx[d*dim+e] = rotM[d*dim+e];
-        }
-      }
-      ierr = ChangeCoordinates(dm, dim, vertexCoords);CHKERRQ(ierr);
-      ierr = CheckFEMGeometry(dm, 0, dim, v0Ex, JEx, invJEx, detJEx);CHKERRQ(ierr);
-      if (interpolate) {ierr = CheckFVMGeometry(dm, 0, dim, centroidEx, normalEx, volEx);CHKERRQ(ierr);}
-    }
-    ierr = PetscRandomDestroy(&r);CHKERRQ(ierr);
-    ierr = PetscRandomDestroy(&ang);CHKERRQ(ierr);
-    ierr = PetscRandomDestroy(&ang2);CHKERRQ(ierr);
+    ierr = CheckCell(dm, 0, transform, v0Ex, JEx, invJEx, detJEx, centroidEx, normalEx, volEx, NULL, NULL, NULL);CHKERRQ(ierr);
   }
   /* Cleanup */
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TestQuadrilateral(MPI_Comm comm, PetscBool interpolate, PetscBool transform)
+static PetscErrorCode TestQuadrilateral(MPI_Comm comm, PetscBool interpolate, PetscBool transform)
 {
   DM             dm;
-  PetscRandom    r, ang, ang2;
-  PetscInt       dim, t;
+  PetscInt       dim;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -482,217 +507,32 @@ PetscErrorCode TestQuadrilateral(MPI_Comm comm, PetscBool interpolate, PetscBool
     PetscReal normalEx[2]   = {0.0, 0.0};
     PetscReal volEx         = 4.0;
 
-    ierr = CheckFEMGeometry(dm, 0, dim, v0Ex, JEx, invJEx, detJEx);CHKERRQ(ierr);
-    if (interpolate) {ierr = CheckFVMGeometry(dm, 0, dim, centroidEx, normalEx, volEx);CHKERRQ(ierr);}
-  }
-  /* Check random quadrilaterals: rotate, scale, then translate */
-  if (transform) {
-    ierr = PetscRandomCreate(PETSC_COMM_SELF, &r);CHKERRQ(ierr);
-    ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
-    ierr = PetscRandomSetInterval(r, 0.0, 10.0);CHKERRQ(ierr);
-    ierr = PetscRandomCreate(PETSC_COMM_SELF, &ang);CHKERRQ(ierr);
-    ierr = PetscRandomSetFromOptions(ang);CHKERRQ(ierr);
-    ierr = PetscRandomSetInterval(ang, 0.0, 2*PETSC_PI);CHKERRQ(ierr);
-    for (t = 0; t < 100; ++t) {
-      PetscScalar vertexCoords[8] = {-1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0}, trans[2];
-      PetscReal   v0Ex[2]         = {-1.0, -1.0};
-      PetscReal   JEx[4]          = {1.0, 0.0, 0.0, 1.0}, R[4], rot[2], rotM[4];
-      PetscReal   invJEx[4]       = {1.0, 0.0, 0.0, 1.0};
-      PetscReal   detJEx          = 1.0, scale, phi;
-      PetscReal   centroidEx[2]   = {0.0, 0.0};
-      PetscReal   normalEx[2]     = {0.0, 0.0};
-      PetscReal   volEx           = 4.0;
-      PetscInt    d, e, f, p;
-
-      ierr = PetscRandomGetValueReal(r, &scale);CHKERRQ(ierr);
-      ierr = PetscRandomGetValueReal(ang, &phi);CHKERRQ(ierr);
-      R[0] = PetscCosReal(phi); R[1] = -PetscSinReal(phi);
-      R[2] = PetscSinReal(phi); R[3] =  PetscCosReal(phi);
-      for (p = 0; p < 4; ++p) {
-        for (d = 0; d < dim; ++d) {
-          for (e = 0, rot[d] = 0.0; e < dim; ++e) {
-            rot[d] += R[d*dim+e] * PetscRealPart(vertexCoords[p*dim+e]);
-          }
-        }
-        for (d = 0; d < dim; ++d) vertexCoords[p*dim+d] = rot[d];
-      }
-      for (d = 0; d < dim; ++d) {
-        for (e = 0, rot[d] = 0.0; e < dim; ++e) {
-          rot[d] += R[d*dim+e] * centroidEx[e];
-        }
-      }
-      for (d = 0; d < dim; ++d) centroidEx[d] = rot[d];
-      for (d = 0; d < dim; ++d) {
-        for (e = 0; e < dim; ++e) {
-          for (f = 0, rotM[d*dim+e] = 0.0; f < dim; ++f) {
-            rotM[d*dim+e] += R[d*dim+f] * JEx[f*dim+e];
-          }
-        }
-      }
-      for (d = 0; d < dim; ++d) {
-        for (e = 0; e < dim; ++e) {
-          JEx[d*dim+e] = rotM[d*dim+e];
-        }
-      }
-      for (d = 0; d < dim; ++d) {
-        for (e = 0; e < dim; ++e) {
-          for (f = 0, rotM[d*dim+e] = 0.0; f < dim; ++f) {
-            rotM[d*dim+e] += invJEx[d*dim+f] * R[e*dim+f];
-          }
-        }
-      }
-      for (d = 0; d < dim; ++d) {
-        for (e = 0; e < dim; ++e) {
-          invJEx[d*dim+e] = rotM[d*dim+e];
-        }
-      }
-      for (d = 0; d < dim; ++d) {
-        ierr = PetscRandomGetValue(r, &trans[d]);CHKERRQ(ierr);
-        for (p = 0; p < 4; ++p) {
-          vertexCoords[p*dim+d] *= scale;
-          vertexCoords[p*dim+d] += trans[d];
-        }
-        v0Ex[d] = PetscRealPart(vertexCoords[d]);
-        for (e = 0; e < dim; ++e) {
-          JEx[d*dim+e]    *= scale;
-          invJEx[d*dim+e] /= scale;
-        }
-        detJEx *= scale;
-        centroidEx[d] *= scale;
-        centroidEx[d] += PetscRealPart(trans[d]);
-        volEx *= scale;
-      }
-      ierr = ChangeCoordinates(dm, dim, vertexCoords);CHKERRQ(ierr);
-      ierr = CheckFEMGeometry(dm, 0, dim, v0Ex, JEx, invJEx, detJEx);CHKERRQ(ierr);
-      if (interpolate) {ierr = CheckFVMGeometry(dm, 0, dim, centroidEx, normalEx, volEx);CHKERRQ(ierr);}
-    }
-    ierr = PetscRandomDestroy(&r);CHKERRQ(ierr);
-    ierr = PetscRandomDestroy(&ang);CHKERRQ(ierr);
+    ierr = CheckCell(dm, 0, transform, v0Ex, JEx, invJEx, detJEx, centroidEx, normalEx, volEx, NULL, NULL, NULL);CHKERRQ(ierr);
   }
   /* Move to 3D: Check reference geometry: determinant is scaled by reference volume (4.0) */
   dim = 3;
   {
     PetscScalar vertexCoords[12] = {-1.0, -1.0, 0.0, 1.0, -1.0, 0.0, 1.0, 1.0, 0.0, -1.0, 1.0, 0.0};
-    PetscReal v0Ex[3]            = {-1.0, -1.0, 0.0};
-    PetscReal JEx[9]             = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
-    PetscReal invJEx[9]          = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
-    PetscReal detJEx             = 1.0;
-    PetscReal centroidEx[3]      = {0.0, 0.0, 0.0};
-    PetscReal normalEx[3]        = {0.0, 0.0, 1.0};
-    PetscReal volEx              = 4.0;
+    PetscReal   v0Ex[3]          = {-1.0, -1.0, 0.0};
+    PetscReal   JEx[9]           = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
+    PetscReal   invJEx[9]        = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
+    PetscReal   detJEx           = 1.0;
+    PetscReal   centroidEx[3]    = {0.0, 0.0, 0.0};
+    PetscReal   normalEx[3]      = {0.0, 0.0, 1.0};
+    PetscReal   volEx            = 4.0;
 
     ierr = ChangeCoordinates(dm, dim, vertexCoords);CHKERRQ(ierr);
-    ierr = CheckFEMGeometry(dm, 0, dim, v0Ex, JEx, invJEx, detJEx);CHKERRQ(ierr);
-    if (interpolate) {ierr = CheckFVMGeometry(dm, 0, dim, centroidEx, normalEx, volEx);CHKERRQ(ierr);}
-  }
-  /* Check random quadrilaterals: scale, translate, then rotate */
-  if (transform) {
-    ierr = PetscRandomCreate(PETSC_COMM_SELF, &r);CHKERRQ(ierr);
-    ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
-    ierr = PetscRandomSetInterval(r, 0.0, 10.0);CHKERRQ(ierr);
-    ierr = PetscRandomCreate(PETSC_COMM_SELF, &ang);CHKERRQ(ierr);
-    ierr = PetscRandomSetFromOptions(ang);CHKERRQ(ierr);
-    ierr = PetscRandomSetInterval(ang, 0.0, 2*PETSC_PI);CHKERRQ(ierr);
-    ierr = PetscRandomCreate(PETSC_COMM_SELF, &ang2);CHKERRQ(ierr);
-    ierr = PetscRandomSetFromOptions(ang2);CHKERRQ(ierr);
-    ierr = PetscRandomSetInterval(ang2, 0.0, PETSC_PI);CHKERRQ(ierr);
-    for (t = 0; t < 100; ++t) {
-      PetscScalar vertexCoords[12] = {-1.0, -1.0, 0.0, 1.0, -1.0, 0.0, 1.0, 1.0, 0.0, -1.0, 1.0, 0.0}, trans[3];
-      PetscReal   v0Ex[3]          = {-1.0, -1.0, 0.0};
-      PetscReal   JEx[9]           = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0}, R[9], rot[3], rotM[9];
-      PetscReal   invJEx[9]        = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
-      PetscReal   detJEx           = 1.0, scale, phi, theta, psi = 0.0;
-      PetscReal   centroidEx[3]    = {0.0, 0.0, 0.0};
-      PetscReal   normalEx[3]      = {0.0, 0.0, 1.0};
-      PetscReal   volEx            = 4.0;
-      PetscInt    d, e, f, p;
-
-      ierr = PetscRandomGetValueReal(r, &scale);CHKERRQ(ierr);
-      ierr = PetscRandomGetValueReal(ang, &phi);CHKERRQ(ierr);
-      ierr = PetscRandomGetValueReal(ang2, &theta);CHKERRQ(ierr);
-      for (d = 0; d < dim; ++d) {
-        ierr = PetscRandomGetValue(r, &trans[d]);CHKERRQ(ierr);
-        for (p = 0; p < 4; ++p) {
-          vertexCoords[p*dim+d] *= scale;
-          vertexCoords[p*dim+d] += trans[d];
-        }
-        centroidEx[d] *= scale;
-        centroidEx[d] += PetscRealPart(trans[d]);
-        for (e = 0; e < dim-1; ++e) {
-          JEx[d*dim+e]    *= scale;
-          invJEx[d*dim+e] /= scale;
-        }
-        if (d < dim-1) {
-          detJEx *= scale;
-          volEx  *= scale;
-        }
-      }
-      R[0] = PetscCosReal(theta)*PetscCosReal(psi); R[1] = PetscSinReal(phi)*PetscSinReal(theta)*PetscCosReal(psi) - PetscCosReal(phi)*PetscSinReal(psi); R[2] = PetscSinReal(phi)*PetscSinReal(psi) + PetscCosReal(phi)*PetscSinReal(theta)*PetscCosReal(psi);
-      R[3] = PetscCosReal(theta)*PetscSinReal(psi); R[4] = PetscCosReal(phi)*PetscCosReal(psi) + PetscSinReal(phi)*PetscSinReal(theta)*PetscSinReal(psi); R[5] = PetscCosReal(phi)*PetscSinReal(theta)*PetscSinReal(psi) - PetscSinReal(phi)*PetscCosReal(psi);
-      R[6] = -PetscSinReal(theta);         R[7] = PetscSinReal(phi)*PetscCosReal(theta);                              R[8] = PetscCosReal(phi)*PetscCosReal(theta);
-      for (p = 0; p < 4; ++p) {
-        for (d = 0; d < dim; ++d) {
-          for (e = 0, rot[d] = 0.0; e < dim; ++e) {
-            rot[d] += R[d*dim+e] * PetscRealPart(vertexCoords[p*dim+e]);
-          }
-        }
-        for (d = 0; d < dim; ++d) vertexCoords[p*dim+d] = rot[d];
-      }
-      for (d = 0; d < dim; ++d) {
-        for (e = 0, rot[d] = 0.0; e < dim; ++e) {
-          rot[d] += R[d*dim+e] * centroidEx[e];
-        }
-      }
-      for (d = 0; d < dim; ++d) centroidEx[d] = rot[d];
-      for (d = 0; d < dim; ++d) {
-        for (e = 0, rot[d] = 0.0; e < dim; ++e) {
-          rot[d] += R[d*dim+e] * normalEx[e];
-        }
-      }
-      for (d = 0; d < dim; ++d) normalEx[d] = rot[d];
-      for (d = 0; d < dim; ++d) {
-        v0Ex[d] = PetscRealPart(vertexCoords[d]);
-        for (e = 0; e < dim; ++e) {
-          for (f = 0, rotM[d*dim+e] = 0.0; f < dim; ++f) {
-            rotM[d*dim+e] += R[d*dim+f] * JEx[f*dim+e];
-          }
-        }
-      }
-      for (d = 0; d < dim; ++d) {
-        for (e = 0; e < dim; ++e) {
-          JEx[d*dim+e] = rotM[d*dim+e];
-        }
-      }
-      for (d = 0; d < dim; ++d) {
-        for (e = 0; e < dim; ++e) {
-          for (f = 0, rotM[d*dim+e] = 0.0; f < dim; ++f) {
-            rotM[d*dim+e] += invJEx[d*dim+f] * R[e*dim+f];
-          }
-        }
-      }
-      for (d = 0; d < dim; ++d) {
-        for (e = 0; e < dim; ++e) {
-          invJEx[d*dim+e] = rotM[d*dim+e];
-        }
-      }
-      ierr = ChangeCoordinates(dm, dim, vertexCoords);CHKERRQ(ierr);
-      ierr = CheckFEMGeometry(dm, 0, dim, v0Ex, JEx, invJEx, detJEx);CHKERRQ(ierr);
-      if (interpolate) {ierr = CheckFVMGeometry(dm, 0, dim, centroidEx, normalEx, volEx);CHKERRQ(ierr);}
-    }
-    ierr = PetscRandomDestroy(&r);CHKERRQ(ierr);
-    ierr = PetscRandomDestroy(&ang);CHKERRQ(ierr);
-    ierr = PetscRandomDestroy(&ang2);CHKERRQ(ierr);
+    ierr = CheckCell(dm, 0, transform, v0Ex, JEx, invJEx, detJEx, centroidEx, normalEx, volEx, NULL, NULL, NULL);CHKERRQ(ierr);
   }
   /* Cleanup */
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TestTetrahedron(MPI_Comm comm, PetscBool interpolate, PetscBool transform)
+static PetscErrorCode TestTetrahedron(MPI_Comm comm, PetscBool interpolate, PetscBool transform)
 {
   DM             dm;
-  PetscRandom    r, ang, ang2;
-  PetscInt       dim, t;
+  PetscInt       dim;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -729,109 +569,17 @@ PetscErrorCode TestTetrahedron(MPI_Comm comm, PetscBool interpolate, PetscBool t
     PetscReal normalEx[3]   = {0.0, 0.0, 0.0};
     PetscReal volEx         = (PetscReal)4.0/(PetscReal)3.0;
 
-    ierr = CheckFEMGeometry(dm, 0, dim, v0Ex, JEx, invJEx, detJEx);CHKERRQ(ierr);
-    if (interpolate) {ierr = CheckFVMGeometry(dm, 0, dim, centroidEx, normalEx, volEx);CHKERRQ(ierr);}
-  }
-  /* Check random tetrahedra: rotate, scale, then translate */
-  if (transform) {
-    ierr = PetscRandomCreate(PETSC_COMM_SELF, &r);CHKERRQ(ierr);
-    ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
-    ierr = PetscRandomSetInterval(r, 0.0, 10.0);CHKERRQ(ierr);
-    ierr = PetscRandomCreate(PETSC_COMM_SELF, &ang);CHKERRQ(ierr);
-    ierr = PetscRandomSetFromOptions(ang);CHKERRQ(ierr);
-    ierr = PetscRandomSetInterval(ang, 0.0, 2*PETSC_PI);CHKERRQ(ierr);
-    ierr = PetscRandomCreate(PETSC_COMM_SELF, &ang2);CHKERRQ(ierr);
-    ierr = PetscRandomSetFromOptions(ang2);CHKERRQ(ierr);
-    ierr = PetscRandomSetInterval(ang2, 0.0, PETSC_PI);CHKERRQ(ierr);
-    for (t = 0; t < 100; ++t) {
-      PetscScalar vertexCoords[12] = {-1.0, -1.0, -1.0,  -1.0, 1.0, -1.0,  1.0, -1.0, -1.0,  -1.0, -1.0, 1.0}, trans[3];
-      PetscReal   v0Ex[3]          = {-1.0, -1.0, -1.0};
-      PetscReal   JEx[9]           = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0}, R[9], rot[3], rotM[9];
-      PetscReal   invJEx[9]        = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
-      PetscReal   detJEx           = 1.0, scale, phi, theta, psi = 0.0;
-      PetscReal   centroidEx[3]    = {-0.5, -0.5, -0.5};
-      PetscReal   normalEx[3]      = {0.0, 0.0, 0.0};
-      PetscReal   volEx            = (PetscReal)4.0/(PetscReal)3.0;
-      PetscInt    d, e, f, p;
-
-      ierr = PetscRandomGetValueReal(r, &scale);CHKERRQ(ierr);
-      ierr = PetscRandomGetValueReal(ang, &phi);CHKERRQ(ierr);
-      ierr = PetscRandomGetValueReal(ang2, &theta);CHKERRQ(ierr);
-      for (d = 0; d < dim; ++d) {
-        ierr = PetscRandomGetValue(r, &trans[d]);CHKERRQ(ierr);
-        for (p = 0; p < 4; ++p) {
-          vertexCoords[p*dim+d] *= scale;
-          vertexCoords[p*dim+d] += trans[d];
-        }
-        centroidEx[d] *= scale;
-        centroidEx[d] += PetscRealPart(trans[d]);
-        for (e = 0; e < dim; ++e) {
-          JEx[d*dim+e]    *= scale;
-          invJEx[d*dim+e] /= scale;
-        }
-        detJEx *= scale;
-        volEx  *= scale;
-      }
-      R[0] = PetscCosReal(theta)*PetscCosReal(psi); R[1] = PetscSinReal(phi)*PetscSinReal(theta)*PetscCosReal(psi) - PetscCosReal(phi)*PetscSinReal(psi); R[2] = PetscSinReal(phi)*PetscSinReal(psi) + PetscCosReal(phi)*PetscSinReal(theta)*PetscCosReal(psi);
-      R[3] = PetscCosReal(theta)*PetscSinReal(psi); R[4] = PetscCosReal(phi)*PetscCosReal(psi) + PetscSinReal(phi)*PetscSinReal(theta)*PetscSinReal(psi); R[5] = PetscCosReal(phi)*PetscSinReal(theta)*PetscSinReal(psi) - PetscSinReal(phi)*PetscCosReal(psi);
-      R[6] = -PetscSinReal(theta);         R[7] = PetscSinReal(phi)*PetscCosReal(theta);                              R[8] = PetscCosReal(phi)*PetscCosReal(theta);
-      for (p = 0; p < 4; ++p) {
-        for (d = 0; d < dim; ++d) {
-          for (e = 0, rot[d] = 0.0; e < dim; ++e) {
-            rot[d] += R[d*dim+e] * PetscRealPart(vertexCoords[p*dim+e]);
-          }
-        }
-        for (d = 0; d < dim; ++d) vertexCoords[p*dim+d] = rot[d];
-      }
-      for (d = 0; d < dim; ++d) {
-        for (e = 0, rot[d] = 0.0; e < dim; ++e) {
-          rot[d] += R[d*dim+e] * centroidEx[e];
-        }
-      }
-      for (d = 0; d < dim; ++d) centroidEx[d] = rot[d];
-      for (d = 0; d < dim; ++d) {
-        v0Ex[d] = PetscRealPart(vertexCoords[d]);
-        for (e = 0; e < dim; ++e) {
-          for (f = 0, rotM[d*dim+e] = 0.0; f < dim; ++f) {
-            rotM[d*dim+e] += R[d*dim+f] * JEx[f*dim+e];
-          }
-        }
-      }
-      for (d = 0; d < dim; ++d) {
-        for (e = 0; e < dim; ++e) {
-          JEx[d*dim+e] = rotM[d*dim+e];
-        }
-      }
-      for (d = 0; d < dim; ++d) {
-        for (e = 0; e < dim; ++e) {
-          for (f = 0, rotM[d*dim+e] = 0.0; f < dim; ++f) {
-            rotM[d*dim+e] += invJEx[d*dim+f] * R[e*dim+f];
-          }
-        }
-      }
-      for (d = 0; d < dim; ++d) {
-        for (e = 0; e < dim; ++e) {
-          invJEx[d*dim+e] = rotM[d*dim+e];
-        }
-      }
-      ierr = ChangeCoordinates(dm, dim, vertexCoords);CHKERRQ(ierr);
-      ierr = CheckFEMGeometry(dm, 0, dim, v0Ex, JEx, invJEx, detJEx);CHKERRQ(ierr);
-      if (interpolate) {ierr = CheckFVMGeometry(dm, 0, dim, centroidEx, normalEx, volEx);CHKERRQ(ierr);}
-    }
-    ierr = PetscRandomDestroy(&r);CHKERRQ(ierr);
-    ierr = PetscRandomDestroy(&ang);CHKERRQ(ierr);
-    ierr = PetscRandomDestroy(&ang2);CHKERRQ(ierr);
+    ierr = CheckCell(dm, 0, transform, v0Ex, JEx, invJEx, detJEx, centroidEx, normalEx, volEx, NULL, NULL, NULL);CHKERRQ(ierr);
   }
   /* Cleanup */
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TestHexahedron(MPI_Comm comm, PetscBool interpolate, PetscBool transform)
+static PetscErrorCode TestHexahedron(MPI_Comm comm, PetscBool interpolate, PetscBool transform)
 {
   DM             dm;
-  PetscRandom    r, ang, ang2;
-  PetscInt       dim, t;
+  PetscInt       dim;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -869,99 +617,67 @@ PetscErrorCode TestHexahedron(MPI_Comm comm, PetscBool interpolate, PetscBool tr
     PetscReal normalEx[3]   = {0.0, 0.0, 0.0};
     PetscReal volEx         = 8.0;
 
-    ierr = CheckFEMGeometry(dm, 0, dim, v0Ex, JEx, invJEx, detJEx);CHKERRQ(ierr);
-    if (interpolate) {ierr = CheckFVMGeometry(dm, 0, dim, centroidEx, normalEx, volEx);CHKERRQ(ierr);}
+    ierr = CheckCell(dm, 0, transform, v0Ex, JEx, invJEx, detJEx, centroidEx, normalEx, volEx, NULL, NULL, NULL);CHKERRQ(ierr);
   }
-  /* Check random hexahedra: rotate, scale, then translate */
-  if (transform) {
-    ierr = PetscRandomCreate(PETSC_COMM_SELF, &r);CHKERRQ(ierr);
-    ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
-    ierr = PetscRandomSetInterval(r, 0.0, 10.0);CHKERRQ(ierr);
-    ierr = PetscRandomCreate(PETSC_COMM_SELF, &ang);CHKERRQ(ierr);
-    ierr = PetscRandomSetFromOptions(ang);CHKERRQ(ierr);
-    ierr = PetscRandomSetInterval(ang, 0.0, 2*PETSC_PI);CHKERRQ(ierr);
-    ierr = PetscRandomCreate(PETSC_COMM_SELF, &ang2);CHKERRQ(ierr);
-    ierr = PetscRandomSetFromOptions(ang2);CHKERRQ(ierr);
-    ierr = PetscRandomSetInterval(ang2, 0.0, PETSC_PI);CHKERRQ(ierr);
-    for (t = 0; t < 100; ++t) {
-      PetscScalar vertexCoords[24] = {-1.0, -1.0, -1.0,  -1.0,  1.0, -1.0,  1.0, 1.0, -1.0,   1.0, -1.0, -1.0,
-                                      -1.0, -1.0,  1.0,   1.0, -1.0,  1.0,  1.0, 1.0,  1.0,  -1.0,  1.0,  1.0}, trans[3];
-      PetscReal   v0Ex[3]          = {-1.0, -1.0, -1.0};
-      PetscReal   JEx[9]           = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0}, R[9], rot[3], rotM[9];
-      PetscReal   invJEx[9]        = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
-      PetscReal   detJEx           = 1.0, scale, phi, theta, psi = 0.0;
-      PetscReal   centroidEx[3]    = {0.0, 0.0, 0.0};
-      PetscReal   normalEx[3]      = {0.0, 0.0, 0.0};
-      PetscReal   volEx            = 8.0;
-      PetscInt    d, e, f, p;
+  /* Cleanup */
+  ierr = DMDestroy(&dm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
-      ierr = PetscRandomGetValueReal(r, &scale);CHKERRQ(ierr);
-      ierr = PetscRandomGetValueReal(ang, &phi);CHKERRQ(ierr);
-      ierr = PetscRandomGetValueReal(ang2, &theta);CHKERRQ(ierr);
-      for (d = 0; d < dim; ++d) {
-        ierr = PetscRandomGetValue(r, &trans[d]);CHKERRQ(ierr);
-        for (p = 0; p < 8; ++p) {
-          vertexCoords[p*dim+d] *= scale;
-          vertexCoords[p*dim+d] += trans[d];
-        }
-        centroidEx[d] *= scale;
-        centroidEx[d] += PetscRealPart(trans[d]);
-        for (e = 0; e < dim; ++e) {
-          JEx[d*dim+e]    *= scale;
-          invJEx[d*dim+e] /= scale;
-        }
-        detJEx *= scale;
-        volEx  *= scale;
-      }
-      R[0] = PetscCosReal(theta)*PetscCosReal(psi); R[1] = PetscSinReal(phi)*PetscSinReal(theta)*PetscCosReal(psi) - PetscCosReal(phi)*PetscSinReal(psi); R[2] = PetscSinReal(phi)*PetscSinReal(psi) + PetscCosReal(phi)*PetscSinReal(theta)*PetscCosReal(psi);
-      R[3] = PetscCosReal(theta)*PetscSinReal(psi); R[4] = PetscCosReal(phi)*PetscCosReal(psi) + PetscSinReal(phi)*PetscSinReal(theta)*PetscSinReal(psi); R[5] = PetscCosReal(phi)*PetscSinReal(theta)*PetscSinReal(psi) - PetscSinReal(phi)*PetscCosReal(psi);
-      R[6] = -PetscSinReal(theta);         R[7] = PetscSinReal(phi)*PetscCosReal(theta);                              R[8] = PetscCosReal(phi)*PetscCosReal(theta);
-      for (p = 0; p < 8; ++p) {
-        for (d = 0; d < dim; ++d) {
-          for (e = 0, rot[d] = 0.0; e < dim; ++e) {
-            rot[d] += R[d*dim+e] * PetscRealPart(vertexCoords[p*dim+e]);
-          }
-        }
-        for (d = 0; d < dim; ++d) vertexCoords[p*dim+d] = rot[d];
-      }
-      for (d = 0; d < dim; ++d) {
-        for (e = 0, rot[d] = 0.0; e < dim; ++e) {
-          rot[d] += R[d*dim+e] * centroidEx[e];
-        }
-      }
-      for (d = 0; d < dim; ++d) centroidEx[d] = rot[d];
-      for (d = 0; d < dim; ++d) {
-        v0Ex[d] = PetscRealPart(vertexCoords[d]);
-        for (e = 0; e < dim; ++e) {
-          for (f = 0, rotM[d*dim+e] = 0.0; f < dim; ++f) {
-            rotM[d*dim+e] += R[d*dim+f] * JEx[f*dim+e];
-          }
-        }
-      }
-      for (d = 0; d < dim; ++d) {
-        for (e = 0; e < dim; ++e) {
-          JEx[d*dim+e] = rotM[d*dim+e];
-        }
-      }
-      for (d = 0; d < dim; ++d) {
-        for (e = 0; e < dim; ++e) {
-          for (f = 0, rotM[d*dim+e] = 0.0; f < dim; ++f) {
-            rotM[d*dim+e] += invJEx[d*dim+f] * R[e*dim+f];
-          }
-        }
-      }
-      for (d = 0; d < dim; ++d) {
-        for (e = 0; e < dim; ++e) {
-          invJEx[d*dim+e] = rotM[d*dim+e];
-        }
-      }
-      ierr = ChangeCoordinates(dm, dim, vertexCoords);CHKERRQ(ierr);
-      ierr = CheckFEMGeometry(dm, 0, dim, v0Ex, JEx, invJEx, detJEx);CHKERRQ(ierr);
-      if (interpolate) {ierr = CheckFVMGeometry(dm, 0, dim, centroidEx, normalEx, volEx);CHKERRQ(ierr);}
+static PetscErrorCode TestWedge(MPI_Comm comm, PetscBool interpolate, PetscBool transform)
+{
+  DM             dm;
+  PetscInt       dim;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* Create reference wedge */
+  dim  = 3;
+  ierr = DMCreate(comm, &dm);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) dm, "Triangular Prism");CHKERRQ(ierr);
+  ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
+  ierr = DMSetDimension(dm, dim);CHKERRQ(ierr);
+  {
+    PetscInt    numPoints[2]        = {6, 1};
+    PetscInt    coneSize[7]         = {6, 0, 0, 0, 0, 0, 0};
+    PetscInt    cones[6]            = {1, 2, 3, 4, 5, 6};
+    PetscInt    coneOrientations[6] = {0, 0, 0, 0, 0, 0};
+    PetscScalar vertexCoords[18]    = {-1.0, -1.0, -1.0,   1.0, -1.0, -1.0,  -1.0, 1.0, -1.0,
+                                       -1.0, -1.0,  1.0,   1.0, -1.0,  1.0,  -1.0, 1.0,  1.0};
+
+    ierr = DMPlexCreateFromDAG(dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
+    ierr = DMPlexSetHybridBounds(dm, 0, PETSC_DETERMINE, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
+    if (interpolate) {
+      DM idm;
+
+      ierr = DMPlexInterpolate(dm, &idm);CHKERRQ(ierr);
+      ierr = DMDestroy(&dm);CHKERRQ(ierr);
+      dm   = idm;
     }
-    ierr = PetscRandomDestroy(&r);CHKERRQ(ierr);
-    ierr = PetscRandomDestroy(&ang);CHKERRQ(ierr);
-    ierr = PetscRandomDestroy(&ang2);CHKERRQ(ierr);
+    ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
+  }
+  /* Check reference geometry: determinant is scaled by reference volume 4.0 */
+  {
+#if 0
+    /* FEM geometry is not functional for wedges */
+    PetscReal v0Ex[3]   = {-1.0, -1.0, -1.0};
+    PetscReal JEx[9]    = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
+    PetscReal invJEx[9] = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
+    PetscReal detJEx    = 1.0;
+#endif
+
+    if (interpolate) {
+      PetscReal       centroidEx[3]      = {-((PetscReal)1.)/((PetscReal)3.), -((PetscReal)1.)/((PetscReal)3.), 0.0};
+      PetscReal       normalEx[3]        = {0.0, 0.0, 0.0};
+      PetscReal       volEx              = 4.0;
+      PetscReal       faceVolEx[5]       = {2.0, 2.0, 4.0, PETSC_SQRT2*4.0, 4.0};
+      PetscReal       faceNormalEx[15]   = {0.0, 0.0, 1.0,  0.0, 0.0, 1.0,  0.0, -1.0, 0.0,  PETSC_SQRT2/2.0, PETSC_SQRT2/2.0, 0.0,  -1.0, 0.0, 0.0};
+      PetscReal       faceCentroidEx[15] = {-((PetscReal)1.)/((PetscReal)3.), -((PetscReal)1.)/((PetscReal)3.), -1.0,
+                                            -((PetscReal)1.)/((PetscReal)3.), -((PetscReal)1.)/((PetscReal)3.),  1.0,
+                                            0.0, -1.0, 0.0,  0.0, 0.0, 0.0,  -1.0, 0.0, 0.0};
+
+      ierr = CheckCell(dm, 0, transform, NULL, NULL, NULL, 0.0, centroidEx, normalEx, volEx, faceCentroidEx, faceNormalEx, faceVolEx);CHKERRQ(ierr);
+    }
   }
   /* Cleanup */
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
@@ -980,14 +696,14 @@ int main(int argc, char **argv)
     ierr = TestQuadrilateral(PETSC_COMM_SELF, user.interpolate, user.transform);CHKERRQ(ierr);
     ierr = TestTetrahedron(PETSC_COMM_SELF, user.interpolate, user.transform);CHKERRQ(ierr);
     ierr = TestHexahedron(PETSC_COMM_SELF, user.interpolate, user.transform);CHKERRQ(ierr);
+    ierr = TestWedge(PETSC_COMM_SELF, user.interpolate, user.transform);CHKERRQ(ierr);
   } else if (user.runType == RUN_FILE) {
     PetscInt dim, cStart, cEnd, c;
 
     ierr = DMGetDimension(user.dm, &dim);CHKERRQ(ierr);
     ierr = DMPlexGetHeightStratum(user.dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
     for (c = 0; c < cEnd-cStart; ++c) {
-      ierr = CheckFEMGeometry(user.dm, c+cStart, dim, &user.v0[c*dim], &user.J[c*dim*dim], &user.invJ[c*dim*dim], user.detJ[c]);CHKERRQ(ierr);
-      if (user.interpolate) {ierr = CheckFVMGeometry(user.dm, c+cStart, dim, &user.centroid[c*dim], &user.normal[c*dim], user.vol[c]);CHKERRQ(ierr);}
+      ierr = CheckCell(user.dm, c+cStart, PETSC_FALSE, &user.v0[c*dim], &user.J[c*dim*dim], &user.invJ[c*dim*dim], user.detJ[c], &user.centroid[c*dim], &user.normal[c*dim], user.vol[c], NULL, NULL, NULL);CHKERRQ(ierr);
     }
     ierr = PetscFree7(user.v0,user.J,user.invJ,user.detJ,user.centroid,user.normal,user.vol);CHKERRQ(ierr);
     ierr = DMDestroy(&user.dm);CHKERRQ(ierr);

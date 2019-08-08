@@ -64,8 +64,6 @@ PetscErrorCode PCGetDefaultType_Private(PC pc,const char *type[])
    Notes:
     This allows a PC to be reused for a different sized linear system but using the same options that have been previously set in the PC
 
-.keywords: PC, destroy
-
 .seealso: PCCreate(), PCSetUp()
 @*/
 PetscErrorCode  PCReset(PC pc)
@@ -95,8 +93,6 @@ PetscErrorCode  PCReset(PC pc)
 .  pc - the preconditioner context
 
    Level: developer
-
-.keywords: PC, destroy
 
 .seealso: PCCreate(), PCSetUp()
 @*/
@@ -138,15 +134,13 @@ PetscErrorCode  PCDestroy(PC *pc)
 $           D M A D^{-1} y = D M b  for left preconditioning or
 $           D A M D^{-1} z = D b for right preconditioning
 
-.keywords: PC
-
 .seealso: PCCreate(), PCSetUp(), PCDiagonalScaleLeft(), PCDiagonalScaleRight(), PCSetDiagonalScale()
 @*/
 PetscErrorCode  PCGetDiagonalScale(PC pc,PetscBool  *flag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidPointer(flag,2);
+  PetscValidBoolPointer(flag,2);
   *flag = pc->diagonalscale;
   PetscFunctionReturn(0);
 }
@@ -169,8 +163,6 @@ $           D M A D^{-1} y = D M b  for left preconditioning or
 $           D A M D^{-1} z = D b for right preconditioning
 
    PCDiagonalScaleLeft() scales a vector by D. PCDiagonalScaleRight() scales a vector by D^{-1}.
-
-.keywords: PC
 
 .seealso: PCCreate(), PCSetUp(), PCDiagonalScaleLeft(), PCDiagonalScaleRight(), PCGetDiagonalScale()
 @*/
@@ -202,7 +194,7 @@ PetscErrorCode  PCSetDiagonalScale(PC pc,Vec s)
    Input Parameters:
 +  pc - the preconditioner context
 .  in - input vector
-+  out - scaled vector (maybe the same as in)
+-  out - scaled vector (maybe the same as in)
 
    Level: intermediate
 
@@ -214,8 +206,6 @@ $           D A M D^{-1} z = D b for right preconditioning
    PCDiagonalScaleLeft() scales a vector by D. PCDiagonalScaleRight() scales a vector by D^{-1}.
 
    If diagonal scaling is turned off and in is not out then in is copied to out
-
-.keywords: PC
 
 .seealso: PCCreate(), PCSetUp(), PCDiagonalScaleSet(), PCDiagonalScaleRight(), PCDiagonalScale()
 @*/
@@ -243,7 +233,7 @@ PetscErrorCode  PCDiagonalScaleLeft(PC pc,Vec in,Vec out)
    Input Parameters:
 +  pc - the preconditioner context
 .  in - input vector
-+  out - scaled vector (maybe the same as in)
+-  out - scaled vector (maybe the same as in)
 
    Level: intermediate
 
@@ -255,8 +245,6 @@ $           D A M D^{-1} z = D b for right preconditioning
    PCDiagonalScaleLeft() scales a vector by D. PCDiagonalScaleRight() scales a vector by D^{-1}.
 
    If diagonal scaling is turned off and in is not out then in is copied to out
-
-.keywords: PC
 
 .seealso: PCCreate(), PCSetUp(), PCDiagonalScaleLeft(), PCDiagonalScaleSet(), PCDiagonalScale()
 @*/
@@ -324,8 +312,6 @@ PetscErrorCode  PCSetUseAmat(PC pc,PetscBool flg)
 
     This is propagated into KSPs used by this PC, which then propagate it into PCs used by those KSPs
 
-.keywords: PC, set, initial guess, nonzero
-
 .seealso: PCGetInitialGuessNonzero(), PCSetInitialGuessKnoll(), PCGetInitialGuessKnoll()
 @*/
 PetscErrorCode  PCSetErrorIfFailure(PC pc,PetscBool flg)
@@ -369,7 +355,7 @@ PetscErrorCode  PCGetUseAmat(PC pc,PetscBool *flg)
 /*@
    PCCreate - Creates a preconditioner context.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameter:
 .  comm - MPI communicator
@@ -382,8 +368,6 @@ PetscErrorCode  PCGetUseAmat(PC pc,PetscBool *flg)
    in parallel. For dense matrices it is always PCNONE.
 
    Level: developer
-
-.keywords: PC, create, context
 
 .seealso: PCSetUp(), PCApply(), PCDestroy()
 @*/
@@ -421,7 +405,7 @@ PetscErrorCode  PCCreate(MPI_Comm comm,PC *newpc)
 /*@
    PCApply - Applies the preconditioner to a vector.
 
-   Collective on PC and Vec
+   Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -431,8 +415,6 @@ PetscErrorCode  PCCreate(MPI_Comm comm,PC *newpc)
 .  y - output vector
 
    Level: developer
-
-.keywords: PC, apply
 
 .seealso: PCApplyTranspose(), PCApplyBAorAB()
 @*/
@@ -469,7 +451,7 @@ PetscErrorCode  PCApply(PC pc,Vec x,Vec y)
 /*@
    PCApplySymmetricLeft - Applies the left part of a symmetric preconditioner to a vector.
 
-   Collective on PC and Vec
+   Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -482,8 +464,6 @@ PetscErrorCode  PCApply(PC pc,Vec x,Vec y)
    Currently, this routine is implemented only for PCICC and PCJACOBI preconditioners.
 
    Level: developer
-
-.keywords: PC, apply, symmetric, left
 
 .seealso: PCApply(), PCApplySymmetricRight()
 @*/
@@ -511,7 +491,7 @@ PetscErrorCode  PCApplySymmetricLeft(PC pc,Vec x,Vec y)
 /*@
    PCApplySymmetricRight - Applies the right part of a symmetric preconditioner to a vector.
 
-   Collective on PC and Vec
+   Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -524,8 +504,6 @@ PetscErrorCode  PCApplySymmetricLeft(PC pc,Vec x,Vec y)
 
    Notes:
    Currently, this routine is implemented only for PCICC and PCJACOBI preconditioners.
-
-.keywords: PC, apply, symmetric, right
 
 .seealso: PCApply(), PCApplySymmetricLeft()
 @*/
@@ -553,7 +531,7 @@ PetscErrorCode  PCApplySymmetricRight(PC pc,Vec x,Vec y)
 /*@
    PCApplyTranspose - Applies the transpose of preconditioner to a vector.
 
-   Collective on PC and Vec
+   Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -569,8 +547,6 @@ PetscErrorCode  PCApplySymmetricRight(PC pc,Vec x,Vec y)
     We need to implement a PCApplyHermitianTranspose()
 
    Level: developer
-
-.keywords: PC, apply, transpose
 
 .seealso: PCApply(), PCApplyBAorAB(), PCApplyBAorABTranspose(), PCApplyTransposeExists()
 @*/
@@ -598,7 +574,7 @@ PetscErrorCode  PCApplyTranspose(PC pc,Vec x,Vec y)
 /*@
    PCApplyTransposeExists - Test whether the preconditioner has a transpose apply operation
 
-   Collective on PC and Vec
+   Collective on PC
 
    Input Parameters:
 .  pc - the preconditioner context
@@ -608,15 +584,13 @@ PetscErrorCode  PCApplyTranspose(PC pc,Vec x,Vec y)
 
    Level: developer
 
-.keywords: PC, apply, transpose
-
 .seealso: PCApplyTranspose()
 @*/
 PetscErrorCode  PCApplyTransposeExists(PC pc,PetscBool  *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidPointer(flg,2);
+  PetscValidBoolPointer(flg,2);
   if (pc->ops->applytranspose) *flg = PETSC_TRUE;
   else *flg = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -625,7 +599,7 @@ PetscErrorCode  PCApplyTransposeExists(PC pc,PetscBool  *flg)
 /*@
    PCApplyBAorAB - Applies the preconditioner and operator to a vector. y = B*A*x or y = A*B*x.
 
-   Collective on PC and Vec
+   Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -641,8 +615,6 @@ PetscErrorCode  PCApplyTransposeExists(PC pc,PetscBool  *flg)
    Notes:
     If the PC has had PCSetDiagonalScale() set then D M A D^{-1} for left preconditioning or  D A M D^{-1} is actually applied. Note that the
    specific KSPSolve() method must also be written to handle the post-solve "correction" for the diagonal scaling.
-
-.keywords: PC, apply, operator
 
 .seealso: PCApply(), PCApplyTranspose(), PCApplyBAorABTranspose()
 @*/
@@ -706,7 +678,7 @@ PetscErrorCode  PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Vec work)
    and operator to a vector. That is, applies tr(B) * tr(A) with left preconditioning,
    NOT tr(B*A) = tr(A)*tr(B).
 
-   Collective on PC and Vec
+   Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -723,8 +695,6 @@ PetscErrorCode  PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Vec work)
       defined by B'. This is why this has the funny form that it computes tr(B) * tr(A)
 
     Level: developer
-
-.keywords: PC, apply, operator, transpose
 
 .seealso: PCApply(), PCApplyTranspose(), PCApplyBAorAB()
 @*/
@@ -775,8 +745,6 @@ PetscErrorCode  PCApplyBAorABTranspose(PC pc,PCSide side,Vec x,Vec y,Vec work)
 
    Level: developer
 
-.keywords: PC, apply, Richardson, exists
-
 .seealso: PCApplyRichardson()
 @*/
 PetscErrorCode  PCApplyRichardsonExists(PC pc,PetscBool  *exists)
@@ -820,8 +788,6 @@ PetscErrorCode  PCApplyRichardsonExists(PC pc,PetscBool  *exists)
 
    Level: developer
 
-.keywords: PC, apply, Richardson
-
 .seealso: PCApplyRichardsonExists()
 @*/
 PetscErrorCode  PCApplyRichardson(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its,PetscBool guesszero,PetscInt *outits,PCRichardsonConvergedReason *reason)
@@ -853,8 +819,6 @@ PetscErrorCode  PCApplyRichardson(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscRe
 
    Level: advanced
 
-.keywords: PC, setup
-
 .seealso: PCCreate(), PCApply(), PCDestroy()
 @*/
 PetscErrorCode PCGetFailedReason(PC pc,PCFailedReason *reason)
@@ -880,8 +844,6 @@ PetscErrorCode PCGetFailedReason(PC pc,PCFailedReason *reason)
 .  pc - the preconditioner context
 
    Level: developer
-
-.keywords: PC, setup
 
 .seealso: PCCreate(), PCApply(), PCDestroy()
 @*/
@@ -948,8 +910,6 @@ PetscErrorCode  PCSetUp(PC pc)
 
    Level: developer
 
-.keywords: PC, setup, blocks
-
 .seealso: PCCreate(), PCApply(), PCDestroy(), PCSetUp()
 @*/
 PetscErrorCode  PCSetUpOnBlocks(PC pc)
@@ -982,7 +942,7 @@ PetscErrorCode  PCSetUpOnBlocks(PC pc)
    Calling sequence of func:
 $     func (PC pc,PetscInt nsub,IS *row,IS *col,Mat *submat,void *ctx);
 
-.  row - an array of index sets that contain the global row numbers
++  row - an array of index sets that contain the global row numbers
          that comprise each local submatrix
 .  col - an array of index sets that contain the global column numbers
          that comprise each local submatrix
@@ -999,8 +959,6 @@ $     func (PC pc,PetscInt nsub,IS *row,IS *col,Mat *submat,void *ctx);
    preconditioners.  All other preconditioners ignore this routine.
 
    Level: advanced
-
-.keywords: PC, set, modify, submatrices
 
 .seealso: PCModifySubMatrices(), PCASMGetSubMatrices()
 @*/
@@ -1046,8 +1004,6 @@ PetscErrorCode  PCSetModifySubMatrices(PC pc,PetscErrorCode (*func)(PC,PetscInt,
 
    Level: developer
 
-.keywords: PC, modify, submatrices
-
 .seealso: PCSetModifySubMatrices()
 @*/
 PetscErrorCode  PCModifySubMatrices(PC pc,PetscInt nsub,const IS row[],const IS col[],Mat submat[],void *ctx)
@@ -1067,7 +1023,7 @@ PetscErrorCode  PCModifySubMatrices(PC pc,PetscInt nsub,const IS row[],const IS 
    PCSetOperators - Sets the matrix associated with the linear system and
    a (possibly) different one associated with the preconditioner.
 
-   Logically Collective on PC and Mat
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -1088,8 +1044,6 @@ PetscErrorCode  PCModifySubMatrices(PC pc,PetscInt nsub,const IS row[],const IS 
    zero all elements of a matrix.
 
    Level: intermediate
-
-.keywords: PC, set, operators, matrix, linear system
 
 .seealso: PCGetOperators(), MatZeroEntries()
  @*/
@@ -1229,8 +1183,6 @@ $           set size, type, etc of Amat and Pmat
     it can be created for you?
 
 
-.keywords: PC, get, operators, matrix, linear system
-
 .seealso: PCSetOperators(), KSPGetOperators(), KSPSetOperators(), PCGetOperatorsSet()
 @*/
 PetscErrorCode  PCGetOperators(PC pc,Mat *Amat,Mat *Pmat)
@@ -1287,8 +1239,6 @@ PetscErrorCode  PCGetOperators(PC pc,Mat *Amat,Mat *Pmat)
 
    Level: intermediate
 
-.keywords: PC, get, operators, matrix, linear system
-
 .seealso: PCSetOperators(), KSPGetOperators(), KSPSetOperators(), PCGetOperators()
 @*/
 PetscErrorCode  PCGetOperatorsSet(PC pc,PetscBool  *mat,PetscBool  *pmat)
@@ -1318,7 +1268,6 @@ PetscErrorCode  PCGetOperatorsSet(PC pc,PetscBool  *mat,PetscBool  *pmat)
    Notes:
     Does not increase the reference count for the matrix so DO NOT destroy it
 
-.keywords: PC, get, factored, matrix
 @*/
 PetscErrorCode  PCFactorGetMatrix(PC pc,Mat *mat)
 {
@@ -1350,8 +1299,6 @@ PetscErrorCode  PCFactorGetMatrix(PC pc,Mat *mat)
 
    Level: advanced
 
-.keywords: PC, set, options, prefix, database
-
 .seealso: PCAppendOptionsPrefix(), PCGetOptionsPrefix()
 @*/
 PetscErrorCode  PCSetOptionsPrefix(PC pc,const char prefix[])
@@ -1380,8 +1327,6 @@ PetscErrorCode  PCSetOptionsPrefix(PC pc,const char prefix[])
    hyphen.
 
    Level: advanced
-
-.keywords: PC, append, options, prefix, database
 
 .seealso: PCSetOptionsPrefix(), PCGetOptionsPrefix()
 @*/
@@ -1412,8 +1357,6 @@ PetscErrorCode  PCAppendOptionsPrefix(PC pc,const char prefix[])
    sufficient length to hold the prefix.
 
    Level: advanced
-
-.keywords: PC, get, options, prefix, database
 
 .seealso: PCSetOptionsPrefix(), PCAppendOptionsPrefix()
 @*/
@@ -1470,8 +1413,6 @@ PETSC_INTERN PetscErrorCode  PCPreSolveChangeRHS(PC pc,PetscBool *change)
 
    KSPSolve() calls this directly, so is rarely called by the user.
 
-.keywords: PC, pre-solve
-
 .seealso: PCPostSolve()
 @*/
 PetscErrorCode  PCPreSolve(PC pc,KSP ksp)
@@ -1515,8 +1456,6 @@ PetscErrorCode  PCPreSolve(PC pc,KSP ksp)
    KSPSolve() calls this routine directly, so it is rarely called by the user.
 
    Level: developer
-
-.keywords: PC, post-solve
 
 .seealso: PCPreSolve(), KSPSolve()
 @*/
@@ -1612,8 +1551,6 @@ PetscErrorCode  PCLoad(PC newdm, PetscViewer viewer)
 
    Level: developer
 
-.keywords: PC, view
-
 .seealso: KSPView(), PetscViewerASCIIOpen()
 @*/
 PetscErrorCode  PCView(PC pc,PetscViewer viewer)
@@ -1673,8 +1610,10 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
     }
   } else if (isstring) {
     ierr = PCGetType(pc,&cstr);CHKERRQ(ierr);
-    ierr = PetscViewerStringSPrintf(viewer," %-7.7s",cstr);CHKERRQ(ierr);
+    ierr = PetscViewerStringSPrintf(viewer," PCType: %-7.7s",cstr);CHKERRQ(ierr);
     if (pc->ops->view) {ierr = (*pc->ops->view)(pc,viewer);CHKERRQ(ierr);}
+    if (pc->mat) {ierr = MatView(pc->mat,viewer);CHKERRQ(ierr);}
+    if (pc->pmat && pc->pmat != pc->mat) {ierr = MatView(pc->pmat,viewer);CHKERRQ(ierr);}
   } else if (isbinary) {
     PetscInt    classid = PC_FILE_CLASSID;
     MPI_Comm    comm;
@@ -1752,8 +1691,6 @@ $     -pc_type my_solver
 
    Level: advanced
 
-.keywords: PC, register
-
 .seealso: PCRegisterAll(), PCRegisterDestroy()
 @*/
 PetscErrorCode  PCRegister(const char sname[],PetscErrorCode (*function)(PC))
@@ -1766,88 +1703,55 @@ PetscErrorCode  PCRegister(const char sname[],PetscErrorCode (*function)(PC))
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatMult_PC(Mat A,Vec X,Vec Y)
+{
+  PC             pc;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatShellGetContext(A,&pc);CHKERRQ(ierr);
+  ierr = PCApply(pc,X,Y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@
-    PCComputeExplicitOperator - Computes the explicit preconditioned operator.
+    PCComputeOperator - Computes the explicit preconditioned operator.
 
     Collective on PC
 
     Input Parameter:
-.   pc - the preconditioner object
++   pc - the preconditioner object
+-   mattype - the matrix type to be used for the operator
 
     Output Parameter:
 .   mat - the explict preconditioned operator
 
     Notes:
-    This computation is done by applying the operators to columns of the
-    identity matrix.
-
-    Currently, this routine uses a dense matrix format when 1 processor
-    is used and a sparse format otherwise.  This routine is costly in general,
-    and is recommended for use only with relatively small systems.
+    This computation is done by applying the operators to columns of the identity matrix.
+    This routine is costly in general, and is recommended for use only with relatively small systems.
+    Currently, this routine uses a dense matrix format when mattype == NULL
 
     Level: advanced
 
-.keywords: PC, compute, explicit, operator
-
-.seealso: KSPComputeExplicitOperator()
+.seealso: KSPComputeOperator(), MatType
 
 @*/
-PetscErrorCode  PCComputeExplicitOperator(PC pc,Mat *mat)
+PetscErrorCode  PCComputeOperator(PC pc,MatType mattype,Mat *mat)
 {
-  Vec            in,out;
   PetscErrorCode ierr;
-  PetscInt       i,M,m,*rows,start,end;
-  PetscMPIInt    size;
-  MPI_Comm       comm;
-  PetscScalar    *array,one = 1.0;
+  PetscInt       N,M,m,n;
+  Mat            A,Apc;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidPointer(mat,2);
-
-  ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-
-  if (!pc->pmat) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ORDER,"You must call KSPSetOperators() or PCSetOperators() before this call");
-  ierr = MatCreateVecs(pc->pmat,&in,0);CHKERRQ(ierr);
-  ierr = VecDuplicate(in,&out);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(in,&start,&end);CHKERRQ(ierr);
-  ierr = VecGetSize(in,&M);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(in,&m);CHKERRQ(ierr);
-  ierr = PetscMalloc1(m+1,&rows);CHKERRQ(ierr);
-  for (i=0; i<m; i++) rows[i] = start + i;
-
-  ierr = MatCreate(comm,mat);CHKERRQ(ierr);
-  ierr = MatSetSizes(*mat,m,m,M,M);CHKERRQ(ierr);
-  if (size == 1) {
-    ierr = MatSetType(*mat,MATSEQDENSE);CHKERRQ(ierr);
-    ierr = MatSeqDenseSetPreallocation(*mat,NULL);CHKERRQ(ierr);
-  } else {
-    ierr = MatSetType(*mat,MATMPIAIJ);CHKERRQ(ierr);
-    ierr = MatMPIAIJSetPreallocation(*mat,0,NULL,0,NULL);CHKERRQ(ierr);
-  }
-  ierr = MatSetOption(*mat,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
-
-  for (i=0; i<M; i++) {
-
-    ierr = VecSet(in,0.0);CHKERRQ(ierr);
-    ierr = VecSetValues(in,1,&i,&one,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(in);CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(in);CHKERRQ(ierr);
-
-    /* should fix, allowing user to choose side */
-    ierr = PCApply(pc,in,out);CHKERRQ(ierr);
-
-    ierr = VecGetArray(out,&array);CHKERRQ(ierr);
-    ierr = MatSetValues(*mat,m,rows,1,&i,array,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = VecRestoreArray(out,&array);CHKERRQ(ierr);
-
-  }
-  ierr = PetscFree(rows);CHKERRQ(ierr);
-  ierr = VecDestroy(&out);CHKERRQ(ierr);
-  ierr = VecDestroy(&in);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscValidPointer(mat,3);
+  ierr = PCGetOperators(pc,&A,NULL);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
+  ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
+  ierr = MatCreateShell(PetscObjectComm((PetscObject)pc),m,n,M,N,pc,&Apc);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(Apc,MATOP_MULT,(void (*)(void))MatMult_PC);CHKERRQ(ierr);
+  ierr = MatComputeOperator(Apc,mattype,mat);CHKERRQ(ierr);
+  ierr = MatDestroy(&Apc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1884,5 +1788,65 @@ PetscErrorCode PCSetCoordinates(PC pc, PetscInt dim, PetscInt nloc, PetscReal *c
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveInt(pc,dim,2);
   ierr = PetscTryMethod(pc,"PCSetCoordinates_C",(PC,PetscInt,PetscInt,PetscReal*),(pc,dim,nloc,coords));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PCGetInterpolations - Gets interpolation matrices for all levels (except level 0)
+
+   Logically Collective on PC
+
+   Input Parameters:
++  pc - the precondition context
+
+   Output Parameter:
+-  num_levels - the number of levels
+.  interpolations - the interpolation matrices (size of num_levels-1)
+
+   Level: advanced
+
+.keywords: MG, GAMG, BoomerAMG, multigrid, interpolation, level
+
+.seealso: PCMGGetRestriction(), PCMGSetInterpolation(), PCMGGetInterpolation(), PCGetCoarseOperators()
+@*/
+PetscErrorCode PCGetInterpolations(PC pc,PetscInt *num_levels,Mat *interpolations[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidPointer(num_levels,2);
+  PetscValidPointer(interpolations,3);
+  ierr = PetscUseMethod(pc,"PCGetInterpolations_C",(PC,PetscInt*,Mat*[]),(pc,num_levels,interpolations));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PCGetCoarseOperators - Gets coarse operator matrices for all levels (except the finest level)
+
+   Logically Collective on PC
+
+   Input Parameters:
++  pc - the precondition context
+
+   Output Parameter:
+-  num_levels - the number of levels
+.  coarseOperators - the coarse operator matrices (size of num_levels-1)
+
+   Level: advanced
+
+.keywords: MG, GAMG, BoomerAMG, get, multigrid, interpolation, level
+
+.seealso: PCMGGetRestriction(), PCMGSetInterpolation(), PCMGGetRScale(), PCMGGetInterpolation(), PCGetInterpolations()
+@*/
+PetscErrorCode PCGetCoarseOperators(PC pc,PetscInt *num_levels,Mat *coarseOperators[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidPointer(num_levels,2);
+  PetscValidPointer(coarseOperators,3);
+  ierr = PetscUseMethod(pc,"PCGetCoarseOperators_C",(PC,PetscInt*,Mat*[]),(pc,num_levels,coarseOperators));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

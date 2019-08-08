@@ -98,7 +98,7 @@ PetscErrorCode DMFieldView(DMField field,PetscViewer viewer)
 /*@C
    DMFieldSetType - set the DMField implementation
 
-   Collective on DMField
+   Collective on field
 
    Input Parameters:
 +  field - the DMField context
@@ -111,8 +111,6 @@ PetscErrorCode DMFieldView(DMField field,PetscViewer viewer)
 -    DMFIELDSHELL - a field defined by arbitrary callbacks
 
   Level: advanced
-
-.keywords: DMField, set, type
 
 .seealso: DMFieldType,
 @*/
@@ -154,7 +152,6 @@ PetscErrorCode DMFieldSetType(DMField field,DMFieldType type)
 
   Level: advanced
 
-.keywords: DMField, get, type, name
 .seealso: DMFieldSetType()
 @*/
 PetscErrorCode  DMFieldGetType(DMField field, DMFieldType *type)
@@ -220,7 +217,7 @@ PetscErrorCode DMFieldGetDM(DMField field, DM *dm)
 /*@
   DMFieldEvaluate - Evaluate the field and its derivatives on a set of points
 
-  Collective on Vec
+  Collective on points
 
   Input Parameter:
 + field - The DMField object

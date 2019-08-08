@@ -3,11 +3,17 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit              = '92ab0429f21834bf4caa545d9495a26fff4f19bb'
+    #disable version checking
+    #self.minversion             = '4'
+    #self.version                = '4.0.0'
+    #self.versionname            = 'MFEM_VERSION_STRING'
+    #self.versioninclude         = 'mfem/config.hpp'
+    self.gitcommit              = 'v4.0' # tags do not include subminor
     self.download               = ['git://https://github.com/mfem/mfem.git']
     self.linkedbypetsc          = 0
     self.downloadonWindows      = 1
     self.cxx                    = 1
+    self.requirescxx11          = 1
     self.skippackagewithoptions = 1
     self.builtafterpetsc        = 1
     self.noMPIUni               = 1
@@ -49,6 +55,10 @@ class Configure(config.package.Package):
     cxx = self.setCompilers.getCompiler()
     cxxflags = self.setCompilers.getCompilerFlags()
     cxxflags = cxxflags.replace('-fvisibility=hidden','') # MFEM is currently broken with -fvisibility=hidden
+    # MFEM uses the macro MFEM_BUILD_DIR that builds a path by combining the directory plus other stuff but if the
+    # directory name contains  "-linux'" this is converted by CPP to the value 1 since that is defined in Linux header files
+    # unless the -std=C++11 or -std=C++14 flag is used; we want to support MFEM without this flag
+    cxxflags += ' -Dlinux=linux'    
     self.setCompilers.popLanguage()
     if 'download-mfem-ghv-cxx' in self.argDB and self.argDB['download-mfem-ghv-cxx']:
       ghv = self.argDB['download-mfem-ghv-cxx']

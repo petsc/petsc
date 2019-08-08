@@ -45,8 +45,6 @@ typedef struct {
     The routine to be called here to compute the timestep should be
     set by calling TSPseudoSetTimeStep().
 
-.keywords: timestep, pseudo, compute
-
 .seealso: TSPseudoTimeStepDefault(), TSPseudoSetTimeStep()
 @*/
 PetscErrorCode  TSPseudoComputeTimeStep(TS ts,PetscReal *dt)
@@ -83,8 +81,6 @@ PetscErrorCode  TSPseudoComputeTimeStep(TS ts,PetscReal *dt)
    This routine always returns a flag of 1, indicating an acceptable
    timestep.
 
-.keywords: timestep, pseudo, default, verify
-
 .seealso: TSPseudoSetVerifyTimeStep(), TSPseudoVerifyTimeStep()
 @*/
 PetscErrorCode  TSPseudoVerifyTimeStepDefault(TS ts,Vec update,void *dtctx,PetscReal *newdt,PetscBool  *flag)
@@ -113,8 +109,6 @@ PetscErrorCode  TSPseudoVerifyTimeStepDefault(TS ts,Vec update,void *dtctx,Petsc
     Notes:
     The routine to be called here to compute the timestep should be
     set by calling TSPseudoSetVerifyTimeStep().
-
-.keywords: timestep, pseudo, verify
 
 .seealso: TSPseudoSetVerifyTimeStep(), TSPseudoVerifyTimeStepDefault()
 @*/
@@ -381,18 +375,16 @@ static PetscErrorCode TSView_Pseudo(TS ts,PetscViewer viewer)
    Level: advanced
 
    Calling sequence of func:
-.  func (TS ts,Vec update,void *ctx,PetscReal *newdt,PetscBool  *flag);
+$  func (TS ts,Vec update,void *ctx,PetscReal *newdt,PetscBool  *flag);
 
-.  update - latest solution vector
++  update - latest solution vector
 .  ctx - [optional] timestep context
 .  newdt - the timestep to use for the next step
-.  flag - flag indicating whether the last time step was acceptable
+-  flag - flag indicating whether the last time step was acceptable
 
    Notes:
    The routine set here will be called by TSPseudoVerifyTimeStep()
    during the timestepping process.
-
-.keywords: timestep, pseudo, set, verify
 
 .seealso: TSPseudoVerifyTimeStepDefault(), TSPseudoVerifyTimeStep()
 @*/
@@ -421,8 +413,6 @@ PetscErrorCode  TSPseudoSetVerifyTimeStep(TS ts,PetscErrorCode (*dt)(TS,Vec,void
 
     Level: advanced
 
-.keywords: timestep, pseudo, set, increment
-
 .seealso: TSPseudoSetTimeStep(), TSPseudoTimeStepDefault()
 @*/
 PetscErrorCode  TSPseudoSetTimeStepIncrement(TS ts,PetscReal inc)
@@ -450,8 +440,6 @@ PetscErrorCode  TSPseudoSetTimeStepIncrement(TS ts,PetscReal inc)
 .    -ts_pseudo_max_dt <increment>
 
     Level: advanced
-
-.keywords: timestep, pseudo, set
 
 .seealso: TSPseudoSetTimeStep(), TSPseudoTimeStepDefault()
 @*/
@@ -483,8 +471,6 @@ $         dt = current_dt*previous_fnorm/current_fnorm.
 
     Level: advanced
 
-.keywords: timestep, pseudo, set, increment
-
 .seealso: TSPseudoSetTimeStep(), TSPseudoTimeStepDefault()
 @*/
 PetscErrorCode  TSPseudoIncrementDtFromInitialDt(TS ts)
@@ -513,17 +499,15 @@ PetscErrorCode  TSPseudoIncrementDtFromInitialDt(TS ts)
    Level: intermediate
 
    Calling sequence of func:
-.  func (TS ts,PetscReal *newdt,void *ctx);
+$  func (TS ts,PetscReal *newdt,void *ctx);
 
-.  newdt - the newly computed timestep
-.  ctx - [optional] timestep context
++  newdt - the newly computed timestep
+-  ctx - [optional] timestep context
 
    Notes:
    The routine set here will be called by TSPseudoComputeTimeStep()
    during the timestepping process.
    If not set then TSPseudoTimeStepDefault() is automatically used
-
-.keywords: timestep, pseudo, set
 
 .seealso: TSPseudoTimeStepDefault(), TSPseudoComputeTimeStep()
 @*/
@@ -689,15 +673,13 @@ PETSC_EXTERN PetscErrorCode TSCreate_Pseudo(TS ts)
    Collective on TS
 
    Input Parameters:
-.  ts - the timestep context
-.  dtctx - unused timestep context
++  ts - the timestep context
+-  dtctx - unused timestep context
 
    Output Parameter:
 .  newdt - the timestep to use for the next step
 
    Level: advanced
-
-.keywords: timestep, pseudo, default
 
 .seealso: TSPseudoSetTimeStep(), TSPseudoComputeTimeStep()
 @*/

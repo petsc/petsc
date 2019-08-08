@@ -21,8 +21,8 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_3(Mat C,Mat A,const MatFactorIn
   ierr = PetscCalloc1(9*mbs,&rtmp);CHKERRQ(ierr);
   ierr = PetscMalloc2(mbs,&il,mbs,&jl);CHKERRQ(ierr);
   il[0] = 0;
-  for (i=0; i<mbs; i++) jl[i] = mbs; 
-  
+  for (i=0; i<mbs; i++) jl[i] = mbs;
+
   ierr = PetscMalloc2(9,&dk,9,&uik);CHKERRQ(ierr);
   ierr = ISGetIndices(perm,&perm_ptr);CHKERRQ(ierr);
 
@@ -32,9 +32,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_3(Mat C,Mat A,const MatFactorIn
   } else {
     ai   = a->inew; aj = a->jnew;
     ierr = PetscMalloc1(9*ai[mbs],&aa);CHKERRQ(ierr);
-    ierr = PetscMemcpy(aa,a->a,9*ai[mbs]*sizeof(MatScalar));CHKERRQ(ierr);
+    ierr = PetscArraycpy(aa,a->a,9*ai[mbs]);CHKERRQ(ierr);
     ierr = PetscMalloc1(ai[mbs],&a2anew);CHKERRQ(ierr);
-    ierr = PetscMemcpy(a2anew,a->a2anew,(ai[mbs])*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(a2anew,a->a2anew,ai[mbs]);CHKERRQ(ierr);
 
     for (i=0; i<mbs; i++) {
       jmin = ai[i]; jmax = ai[i+1];
@@ -76,7 +76,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_3(Mat C,Mat A,const MatFactorIn
     }
 
     /* modify k-th row by adding in those rows i with U(i,k) != 0 */
-    ierr = PetscMemcpy(dk,rtmp+k*9,9*sizeof(MatScalar));CHKERRQ(ierr);
+    ierr = PetscArraycpy(dk,rtmp+k*9,9);CHKERRQ(ierr);
     i    = jl[k]; /* first row to be added to k_th row  */
 
     while (i < mbs) {
@@ -117,7 +117,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_3(Mat C,Mat A,const MatFactorIn
       ierr = PetscLogFlops(27.0*4.0);CHKERRQ(ierr);
 
       /* update -U(i,k) */
-      ierr = PetscMemcpy(ba+ili*9,uik,9*sizeof(MatScalar));CHKERRQ(ierr);
+      ierr = PetscArraycpy(ba+ili*9,uik,9);CHKERRQ(ierr);
 
       /* add multiple of row i to k-th row ... */
       jmin = ili + 1; jmax = bi[i+1];
@@ -152,7 +152,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_3(Mat C,Mat A,const MatFactorIn
 
     /* invert diagonal block */
     diag = ba+k*9;
-    ierr = PetscMemcpy(diag,dk,9*sizeof(MatScalar));CHKERRQ(ierr);
+    ierr = PetscArraycpy(diag,dk,9);CHKERRQ(ierr);
     ierr = PetscKernel_A_gets_inverse_A_3(diag,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
     if (zeropivotdetected) C->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
 

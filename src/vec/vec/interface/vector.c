@@ -63,8 +63,6 @@ PetscErrorCode  VecStashGetInfo(Vec vec,PetscInt *nstash,PetscInt *reallocs,Pets
 
    Level: intermediate
 
-   Concepts: vector^setting values with local numbering
-
 seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValues(), VecSetValuesLocal(),
            VecSetLocalToGlobalMapping(), VecSetValuesBlockedLocal()
 @*/
@@ -97,8 +95,6 @@ PetscErrorCode  VecSetLocalToGlobalMapping(Vec x,ISLocalToGlobalMapping mapping)
 
    Level: advanced
 
-   Concepts: vectors^local to global mapping
-   Concepts: local to global mapping^for vectors
 
 .seealso:  VecSetValuesLocal()
 @*/
@@ -122,8 +118,6 @@ PetscErrorCode VecGetLocalToGlobalMapping(Vec X,ISLocalToGlobalMapping *mapping)
 .  vec - the vector
 
    Level: beginner
-
-   Concepts: assembly^vectors
 
 .seealso: VecAssemblyEnd(), VecSetValues()
 @*/
@@ -199,8 +193,6 @@ PetscErrorCode  VecAssemblyEnd(Vec vec)
     any subset of the x, y, and w may be the same vector.
           For complex numbers compares only the real part
 
-   Concepts: vector^pointwise multiply
-
 .seealso: VecPointwiseDivide(), VecPointwiseMult(), VecPointwiseMin(), VecPointwiseMaxAbs(), VecMaxPointwiseDivide()
 @*/
 PetscErrorCode  VecPointwiseMax(Vec w,Vec x,Vec y)
@@ -241,8 +233,6 @@ PetscErrorCode  VecPointwiseMax(Vec w,Vec x,Vec y)
     any subset of the x, y, and w may be the same vector.
           For complex numbers compares only the real part
 
-   Concepts: vector^pointwise multiply
-
 .seealso: VecPointwiseDivide(), VecPointwiseMult(), VecPointwiseMin(), VecPointwiseMaxAbs(), VecMaxPointwiseDivide()
 @*/
 PetscErrorCode  VecPointwiseMin(Vec w,Vec x,Vec y)
@@ -281,8 +271,6 @@ PetscErrorCode  VecPointwiseMin(Vec w,Vec x,Vec y)
    Notes:
     any subset of the x, y, and w may be the same vector.
 
-   Concepts: vector^pointwise multiply
-
 .seealso: VecPointwiseDivide(), VecPointwiseMult(), VecPointwiseMin(), VecPointwiseMax(), VecMaxPointwiseDivide()
 @*/
 PetscErrorCode  VecPointwiseMaxAbs(Vec w,Vec x,Vec y)
@@ -320,8 +308,6 @@ PetscErrorCode  VecPointwiseMaxAbs(Vec w,Vec x,Vec y)
 
    Notes:
     any subset of the x, y, and w may be the same vector.
-
-   Concepts: vector^pointwise divide
 
 .seealso: VecPointwiseMult(), VecPointwiseMax(), VecPointwiseMin(), VecPointwiseMaxAbs(), VecMaxPointwiseDivide()
 @*/
@@ -538,8 +524,6 @@ $    here should equal the name that you use in the Vec object that you use with
 
    Level: beginner
 
-   Concepts: vector^printing
-   Concepts: vector^saving to disk
 
 .seealso: PetscViewerASCIIOpen(), PetscViewerDrawOpen(), PetscDrawLGCreate(),
           PetscViewerSocketOpen(), PetscViewerBinaryOpen(), VecLoad(), PetscViewerCreate(),
@@ -627,8 +611,6 @@ PETSC_UNUSED static int TV_display_type(const struct _p_Vec *v)
 
    Level: beginner
 
-   Concepts: vector^local size
-
 .seealso: VecGetLocalSize()
 @*/
 PetscErrorCode  VecGetSize(Vec x,PetscInt *size)
@@ -657,8 +639,6 @@ PetscErrorCode  VecGetSize(Vec x,PetscInt *size)
 .  size - the length of the local piece of the vector
 
    Level: beginner
-
-   Concepts: vector^size
 
 .seealso: VecGetSize()
 @*/
@@ -697,8 +677,6 @@ PetscErrorCode  VecGetLocalSize(Vec x,PetscInt *size)
 
    Level: beginner
 
-   Concepts: ownership^of vectors
-   Concepts: vector^ownership of elements
 
 .seealso:   MatGetOwnershipRange(), MatGetOwnershipRanges(), VecGetOwnershipRanges()
 @*/
@@ -736,8 +714,6 @@ PetscErrorCode  VecGetOwnershipRange(Vec x,PetscInt *low,PetscInt *high)
 
    Level: beginner
 
-   Concepts: ownership^of vectors
-   Concepts: vector^ownership of elements
 
 .seealso:   MatGetOwnershipRange(), MatGetOwnershipRanges(), VecGetOwnershipRange()
 @*/
@@ -772,9 +748,11 @@ PetscErrorCode  VecGetOwnershipRanges(Vec x,const PetscInt *ranges[])
           ignored.
 -     VEC_SUBSET_OFF_PROC_ENTRIES, which causes VecAssemblyBegin() to assume that the off-process
           entries will always be a subset (possibly equal) of the off-process entries set on the
-          first assembly.  This reuses the communication pattern, thus avoiding a global reduction.
-          Subsequent assemblies setting off-process values should use the same InsertMode as the
-          first assembly.
+          first assembly which had a true VEC_SUBSET_OFF_PROC_ENTRIES and the vector has not
+          changed this flag afterwards. If this assembly is not such first assembly, then this
+          assembly can reuse the communication pattern setup in that first assembly, thus avoiding
+          a global reduction. Subsequent assemblies setting off-process values should use the same
+          InsertMode as the first assembly.
 
    Developer Note:
    The InsertMode restriction could be removed by packing the stash messages out of place.
@@ -903,8 +881,6 @@ linux, Windows and the paragon; thus if you write your own binary
 read/write routines you have to swap the bytes; see PetscBinaryRead()
 and PetscBinaryWrite() to see how this may be done.
 
-  Concepts: vector^loading from file
-
 .seealso: PetscViewerBinaryOpen(), VecView(), MatLoad(), VecLoad()
 @*/
 PetscErrorCode  VecLoad(Vec newvec, PetscViewer viewer)
@@ -950,8 +926,6 @@ PetscErrorCode  VecLoad(Vec newvec, PetscViewer viewer)
 
    Level: intermediate
 
-   Concepts: vector^reciprocal
-
 .seealso: VecLog(), VecExp(), VecSqrtAbs()
 
 @*/
@@ -993,8 +967,6 @@ $      ierr = VecSetOperation(x,VECOP_VIEW,(void(*)(void))userview);CHKERRQ(ierr
     user interface routine (e.g., VecView() -> VECOP_VIEW).
 
     This function is not currently available from Fortran.
-
-.keywords: vector, set, operation
 
 .seealso: VecCreate(), MatShellSetOperation()
 @*/
@@ -1040,8 +1012,6 @@ PetscErrorCode VecSetOperation(Vec vec,VecOperation op, void (*f)(void))
      VecAssemblyBegin_MPIXXX:Block-Stash has BMM entries, uses nn mallocs.
      to determine the value, BMM to use for bsize
 
-   Concepts: vector^stash
-   Concepts: stash^vector
 
 .seealso: VecSetBlockSize(), VecSetValues(), VecSetValuesBlocked(), VecStashView()
 
@@ -1066,8 +1036,6 @@ PetscErrorCode  VecStashSetInitialSize(Vec vec,PetscInt size,PetscInt bsize)
 .  x - the vector
 
    Level: intermediate
-
-   Concepts: vector^conjugate
 
 @*/
 PetscErrorCode  VecConjugate(Vec x)
@@ -1103,8 +1071,6 @@ PetscErrorCode  VecConjugate(Vec x)
 
    Notes:
     any subset of the x, y, and w may be the same vector.
-
-   Concepts: vector^pointwise multiply
 
 .seealso: VecPointwiseDivide(), VecPointwiseMax(), VecPointwiseMin(), VecPointwiseMaxAbs(), VecMaxPointwiseDivide()
 @*/
@@ -1152,8 +1118,6 @@ PetscErrorCode  VecPointwiseMult(Vec w, Vec x,Vec y)
 
    Level: intermediate
 
-   Concepts: vector^setting to random
-   Concepts: random^vector
 
 .seealso: VecSet(), VecSetValues(), PetscRandomCreate(), PetscRandomDestroy()
 @*/
@@ -1200,7 +1164,6 @@ PetscErrorCode  VecSetRandom(Vec x,PetscRandom rctx)
      like a Vec (one is an operator and one is an element of a vector space, yeah yeah dual blah blah blah) so
      this routine should not exist.
 
-.keywords: Vec, set, options, database
 .seealso: VecCreate(),  VecSetOptionsPrefix(), VecSet(), VecSetValues()
 @*/
 PetscErrorCode  VecZeroEntries(Vec vec)
@@ -1223,7 +1186,6 @@ PetscErrorCode  VecZeroEntries(Vec vec)
 
   Level: intermediate
 
-.keywords: Vec, set, options, database, type
 .seealso: VecSetFromOptions(), VecSetType()
 */
 static PetscErrorCode VecSetTypeFromOptions_Private(PetscOptionItems *PetscOptionsObject,Vec vec)
@@ -1266,10 +1228,7 @@ static PetscErrorCode VecSetTypeFromOptions_Private(PetscOptionItems *PetscOptio
 
   Level: beginner
 
-  Concepts: vectors^setting options
-  Concepts: vectors^setting type
 
-.keywords: Vec, set, options, database
 .seealso: VecCreate(), VecSetOptionsPrefix()
 @*/
 PetscErrorCode  VecSetFromOptions(Vec vec)
@@ -1347,7 +1306,6 @@ PetscErrorCode  VecSetSizes(Vec v, PetscInt n, PetscInt N)
 
 .seealso: VecSetValuesBlocked(), VecSetLocalToGlobalMapping(), VecGetBlockSize()
 
-  Concepts: block size^vectors
 @*/
 PetscErrorCode  VecSetBlockSize(Vec v,PetscInt bs)
 {
@@ -1381,8 +1339,6 @@ PetscErrorCode  VecSetBlockSize(Vec v,PetscInt bs)
 
 .seealso: VecSetValuesBlocked(), VecSetLocalToGlobalMapping(), VecSetBlockSize()
 
-   Concepts: vector^block size
-   Concepts: block^vector
 
 @*/
 PetscErrorCode  VecGetBlockSize(Vec v,PetscInt *bs)
@@ -1412,8 +1368,6 @@ PetscErrorCode  VecGetBlockSize(Vec v,PetscInt *bs)
 
    Level: advanced
 
-.keywords: Vec, set, options, prefix, database
-
 .seealso: VecSetFromOptions()
 @*/
 PetscErrorCode  VecSetOptionsPrefix(Vec v,const char prefix[])
@@ -1441,8 +1395,6 @@ PetscErrorCode  VecSetOptionsPrefix(Vec v,const char prefix[])
    The first character of all runtime options is AUTOMATICALLY the hyphen.
 
    Level: advanced
-
-.keywords: Vec, append, options, prefix, database
 
 .seealso: VecGetOptionsPrefix()
 @*/
@@ -1474,8 +1426,6 @@ PetscErrorCode  VecAppendOptionsPrefix(Vec v,const char prefix[])
 
    Level: advanced
 
-.keywords: Vec, get, options, prefix, database
-
 .seealso: VecAppendOptionsPrefix()
 @*/
 PetscErrorCode  VecGetOptionsPrefix(Vec v,const char *prefix[])
@@ -1501,8 +1451,6 @@ PetscErrorCode  VecGetOptionsPrefix(Vec v,const char *prefix[])
    VecSetUp(), since these actions will happen automatically.
 
    Level: advanced
-
-.keywords: Vec, setup
 
 .seealso: VecCreate(), VecDestroy()
 @*/
@@ -1637,8 +1585,6 @@ PetscErrorCode  VecCopy(Vec x,Vec y)
 
    Level: advanced
 
-   Concepts: vector^swapping values
-
 @*/
 PetscErrorCode  VecSwap(Vec x,Vec y)
 {
@@ -1723,8 +1669,6 @@ PetscErrorCode VecStashViewFromOptions(Vec obj,PetscObject bobj,const char optio
 
    Level: advanced
 
-   Concepts: vector^stash
-   Concepts: stash^vector
 
 .seealso: VecSetBlockSize(), VecSetValues(), VecSetValuesBlocked()
 
@@ -1870,3 +1814,27 @@ PetscErrorCode VecSetInf(Vec xin)
   ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/*@
+     VecPinToCPU - marks a vector to temporarily stay on the CPU and perform computations on the CPU
+
+   Input Parameters:
++   v - the vector
+-   flg - pin to the CPU if value of PETSC_TRUE
+
+@*/
+PetscErrorCode VecPinToCPU(Vec v,PetscBool flg)
+{
+  PetscFunctionBegin;
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+  PetscErrorCode ierr;
+
+  if (v->pinnedtocpu == flg) return 0;
+  v->pinnedtocpu = flg;
+  if (v->ops->pintocpu) {
+    ierr = (*v->ops->pintocpu)(v,flg);CHKERRQ(ierr);
+  }
+#endif
+  PetscFunctionReturn(0);
+}
+

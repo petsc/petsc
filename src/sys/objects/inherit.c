@@ -76,9 +76,8 @@ PetscErrorCode  PetscHeaderCreate_Private(PetscObject h,PetscClassId classid,con
     /* Need to increase the space for storing PETSc objects */
     if (!PetscObjectsMaxCounts) newPetscObjectsMaxCounts = 100;
     else                        newPetscObjectsMaxCounts = 2*PetscObjectsMaxCounts;
-    ierr = PetscMalloc1(newPetscObjectsMaxCounts,&newPetscObjects);CHKERRQ(ierr);
-    ierr = PetscMemcpy(newPetscObjects,PetscObjects,PetscObjectsMaxCounts*sizeof(PetscObject));CHKERRQ(ierr);
-    ierr = PetscMemzero(newPetscObjects+PetscObjectsMaxCounts,(newPetscObjectsMaxCounts - PetscObjectsMaxCounts)*sizeof(PetscObject));CHKERRQ(ierr);
+    ierr = PetscCalloc1(newPetscObjectsMaxCounts,&newPetscObjects);CHKERRQ(ierr);
+    ierr = PetscArraycpy(newPetscObjects,PetscObjects,PetscObjectsMaxCounts);CHKERRQ(ierr);
     ierr = PetscFree(PetscObjects);CHKERRQ(ierr);
 
     PetscObjects                        = newPetscObjects;
@@ -279,8 +278,6 @@ PetscErrorCode PetscObjectGetFortranCallback(PetscObject obj,PetscFortranCallbac
 
    Level: advanced
 
-   Concepts: options database^printing
-
 @*/
 PetscErrorCode  PetscObjectsDump(FILE *fd,PetscBool all)
 {
@@ -351,8 +348,6 @@ PetscErrorCode  PetscObjectsDump(FILE *fd,PetscBool all)
 
    Level: advanced
 
-   Concepts: options database^printing
-
 @*/
 PetscErrorCode  PetscObjectsView(PetscViewer viewer)
 {
@@ -381,8 +376,6 @@ PetscErrorCode  PetscObjectsView(PetscViewer viewer)
 .   obj - the object or null if there is no object
 
    Level: advanced
-
-   Concepts: options database^printing
 
 @*/
 PetscErrorCode  PetscObjectsGetObject(const char *name,PetscObject *obj,char **classname)
@@ -722,8 +715,6 @@ PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject obj,const char name[],
    PetscContainerCreate() for info on how to create an object from a
    user-provided pointer that may then be composed with PETSc objects.
 
-   Concepts: objects^composing
-   Concepts: composing objects
 
 .seealso: PetscObjectQuery(), PetscContainerCreate()
 @*/
@@ -757,10 +748,6 @@ PetscErrorCode  PetscObjectCompose(PetscObject obj,const char name[],PetscObject
 
    The reference count of neither object is increased in this call
 
-   Concepts: objects^composing
-   Concepts: composing objects
-   Concepts: objects^querying
-   Concepts: querying objects
 
 .seealso: PetscObjectCompose()
 @*/
@@ -800,12 +787,6 @@ PetscErrorCode  PetscObjectQuery(PetscObject obj,const char name[],PetscObject *
    PetscObjectComposeFunction() can be used with any PETSc object (such as
    Mat, Vec, KSP, SNES, etc.) or any user-provided object.
 
-   Concepts: objects^composing functions
-   Concepts: composing functions
-   Concepts: functions^querying
-   Concepts: objects^querying
-   Concepts: querying objects
-
 .seealso: PetscObjectQueryFunction(), PetscContainerCreate()
 M*/
 
@@ -838,12 +819,6 @@ PetscErrorCode  PetscObjectComposeFunction_Private(PetscObject obj,const char na
 .  fptr - function pointer
 
    Level: advanced
-
-   Concepts: objects^composing functions
-   Concepts: composing functions
-   Concepts: functions^querying
-   Concepts: objects^querying
-   Concepts: querying objects
 
 .seealso: PetscObjectComposeFunction(), PetscFunctionListFind()
 M*/
@@ -991,7 +966,7 @@ PetscClassId PETSC_CONTAINER_CLASSID;
    through a pointer) with the PetscObjectCompose() function to a PetscObject.
    The data item itself is attached by a call to PetscContainerSetPointer().
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 .  comm - MPI communicator that shares the object
@@ -1031,7 +1006,6 @@ PetscErrorCode  PetscContainerCreate(MPI_Comm comm,PetscContainer *container)
 
    Level: beginner
 
-.keywords: set, options, database
 .seealso: PetscObjectSetOptionsPrefix(), PetscObjectGetOptionsPrefix()
 @*/
 PetscErrorCode  PetscObjectSetFromOptions(PetscObject obj)
@@ -1054,7 +1028,6 @@ PetscErrorCode  PetscObjectSetFromOptions(PetscObject obj)
 
    Level: advanced
 
-.keywords: setup
 .seealso: PetscObjectDestroy()
 @*/
 PetscErrorCode  PetscObjectSetUp(PetscObject obj)

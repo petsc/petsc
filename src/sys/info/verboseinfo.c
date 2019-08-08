@@ -36,8 +36,6 @@ int       PetscInfoFlags[]  = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 
     Level: advanced
 
-   Concepts: debugging^detailed runtime information
-   Concepts: dumping detailed runtime information
 
 .seealso: PetscInfo()
 @*/
@@ -74,7 +72,6 @@ PetscErrorCode  PetscInfoAllow(PetscBool flag, const char filename[])
 
   Level: developer
 
-.keywords: allow, information, printing, monitoring
 .seealso: PetscInfoActivateClass(), PetscInfo(), PetscInfoAllow()
 @*/
 PetscErrorCode  PetscInfoDeactivateClass(PetscClassId classid)
@@ -98,7 +95,6 @@ PetscErrorCode  PetscInfoDeactivateClass(PetscClassId classid)
 
   Level: developer
 
-.keywords: allow, information, printing, monitoring
 .seealso: PetscInfoDeactivateClass(), PetscInfo(), PetscInfoAllow()
 @*/
 PetscErrorCode  PetscInfoActivateClass(PetscClassId classid)
@@ -148,8 +144,6 @@ $     Mat A
 $     double alpha
 $     PetscInfo1(A,"Matrix uses parameter alpha=%g\n",alpha);
 $
-
-   Concepts: runtime information
 
 .seealso: PetscInfoAllow()
 M*/

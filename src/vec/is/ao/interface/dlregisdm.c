@@ -9,7 +9,6 @@ static PetscBool AOPackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.keywords: AO, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode  AOFinalizePackage(void)
@@ -30,7 +29,6 @@ PetscErrorCode  AOFinalizePackage(void)
 
   Level: developer
 
-.keywords: AO, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode  AOInitializePackage(void)

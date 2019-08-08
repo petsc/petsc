@@ -9,13 +9,8 @@ EXAMPLESF       = shashi.F90
 EXAMPLESFH      =
 MANSEC          = TS
 DIRS            =
-CLEANFILES      =  SA-data/*
+CLEANFILES      = TS-data-*
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
-
-shashi: shashi.o  chkopts
-	-${FLINKER} -o shashi shashi.o  ${PETSC_TS_LIB}
-	${RM} shashi.o
-
 include ${PETSC_DIR}/lib/petsc/conf/test

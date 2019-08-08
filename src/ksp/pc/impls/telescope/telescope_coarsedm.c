@@ -21,7 +21,7 @@ static const char citation[] =
 "  pages     = {5:1--5:12},\n"
 "  articleno = {5},\n"
 "  numpages  = {12},\n"
-"  url       = {http://doi.acm.org/10.1145/2929908.2929913},\n"
+"  url       = {https://doi.acm.org/10.1145/2929908.2929913},\n"
 "  doi       = {10.1145/2929908.2929913},\n"
 "  acmid     = {2929913},\n"
 "  publisher = {ACM},\n"
@@ -96,8 +96,7 @@ PetscErrorCode PCTelescopeSetUp_CoarseDM(PC pc,PC_Telescope sred)
 
   PetscFunctionBegin;
   ierr = PetscInfo(pc,"PCTelescope: setup (CoarseDM)\n");CHKERRQ(ierr);
-  ierr = PetscMalloc1(1,&ctx);CHKERRQ(ierr);
-  ierr = PetscMemzero(ctx,sizeof(PC_Telescope_CoarseDMCtx));CHKERRQ(ierr);
+  ierr = PetscNew(&ctx);CHKERRQ(ierr);
   sred->dm_ctx = (void*)ctx;
 
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);

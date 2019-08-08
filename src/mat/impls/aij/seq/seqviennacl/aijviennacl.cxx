@@ -56,6 +56,7 @@ PetscErrorCode MatViennaCLCopyToGPU(Mat A)
             col_buffer.set(i, (a->j)[i]);
 
           viennaclstruct->compressed_mat->set(row_buffer.get(), row_indices.get(), col_buffer.get(), a->a, A->rmap->n, A->cmap->n, a->compressedrow.nrows, a->nz);
+          ierr = PetscLogCpuToGpu(((2*a->compressedrow.nrows)+1+a->nz)*sizeof(PetscInt) + (a->nz)*sizeof(PetscScalar));CHKERRQ(ierr);
         } else {
           if (!viennaclstruct->mat) viennaclstruct->mat = new ViennaCLAIJMatrix();
 
@@ -71,6 +72,7 @@ PetscErrorCode MatViennaCLCopyToGPU(Mat A)
             col_buffer.set(i, (a->j)[i]);
 
           viennaclstruct->mat->set(row_buffer.get(), col_buffer.get(), a->a, A->rmap->n, A->cmap->n, a->nz);
+          ierr = PetscLogCpuToGpu(((A->rmap->n+1)+a->nz)*sizeof(PetscInt)+(a->nz)*sizeof(PetscScalar));CHKERRQ(ierr);
         }
         ViennaCLWaitForGPU();
       } catch(std::exception const & ex) {
@@ -127,8 +129,10 @@ PetscErrorCode MatViennaCLCopyFromGPU(Mat A, const ViennaCLAIJMatrix *Agpu)
         a->singlemalloc = PETSC_TRUE;
 
         /* Setup row lengths */
-        if (a->imax) {ierr = PetscFree2(a->imax,a->ilen);CHKERRQ(ierr);}
-        ierr = PetscMalloc2(m,&a->imax,m,&a->ilen);CHKERRQ(ierr);
+        ierr = PetscFree(a->imax);CHKERRQ(ierr);
+        ierr = PetscFree(a->ilen);CHKERRQ(ierr);
+        ierr = PetscMalloc1(m,&a->imax);CHKERRQ(ierr);
+        ierr = PetscMalloc1(m,&a->ilen);CHKERRQ(ierr);
         ierr = PetscLogObjectMemory((PetscObject)A, 2*m*sizeof(PetscInt));CHKERRQ(ierr);
 
         /* Copy data back from GPU */
@@ -151,6 +155,7 @@ PetscErrorCode MatViennaCLCopyFromGPU(Mat A, const ViennaCLAIJMatrix *Agpu)
         // copy nonzero entries directly to destination (no conversion required)
         viennacl::backend::memory_read(Agpu->handle(), 0, sizeof(PetscScalar)*Agpu->nnz(), a->a);
 
+        ierr = PetscLogGpuToCpu(row_buffer.raw_size()+col_buffer.raw_size()+(Agpu->nnz()*sizeof(PetscScalar)));CHKERRQ(ierr);
         ViennaCLWaitForGPU();
         /* TODO: Once a->diag is moved out of MatAssemblyEnd(), invalidate it here. */
       }
@@ -179,6 +184,7 @@ PetscErrorCode MatMult_SeqAIJViennaCL(Mat A,Vec xx,Vec yy)
   if (A->rmap->n > 0 && A->cmap->n > 0 && a->nz) {
     ierr = VecViennaCLGetArrayRead(xx,&xgpu);CHKERRQ(ierr);
     ierr = VecViennaCLGetArrayWrite(yy,&ygpu);CHKERRQ(ierr);
+    ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
     try {
       if (a->compressedrow.use) {
         *ygpu = viennacl::linalg::prod(*viennaclstruct->compressed_mat, *xgpu);
@@ -189,9 +195,10 @@ PetscErrorCode MatMult_SeqAIJViennaCL(Mat A,Vec xx,Vec yy)
     } catch (std::exception const & ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
     }
+    ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
     ierr = VecViennaCLRestoreArrayRead(xx,&xgpu);CHKERRQ(ierr);
     ierr = VecViennaCLRestoreArrayWrite(yy,&ygpu);CHKERRQ(ierr);
-    ierr = PetscLogFlops(2.0*a->nz - a->nonzerorowcnt);CHKERRQ(ierr);
+    ierr = PetscLogGpuFlops(2.0*a->nz - a->nonzerorowcnt);CHKERRQ(ierr);
   } else {
     ierr = VecSet(yy,0);CHKERRQ(ierr);
   }
@@ -212,7 +219,7 @@ PetscErrorCode MatMultAdd_SeqAIJViennaCL(Mat A,Vec xx,Vec yy,Vec zz)
       ierr = VecViennaCLGetArrayRead(xx,&xgpu);CHKERRQ(ierr);
       ierr = VecViennaCLGetArrayRead(yy,&ygpu);CHKERRQ(ierr);
       ierr = VecViennaCLGetArrayWrite(zz,&zgpu);CHKERRQ(ierr);
-
+      ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
       if (a->compressedrow.use) {
         ViennaCLVector temp = viennacl::linalg::prod(*viennaclstruct->compressed_mat, *xgpu);
         *zgpu = *ygpu + temp;
@@ -229,7 +236,7 @@ PetscErrorCode MatMultAdd_SeqAIJViennaCL(Mat A,Vec xx,Vec yy,Vec zz)
           ViennaCLWaitForGPU();
         }
       }
-
+      ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
       ierr = VecViennaCLRestoreArrayRead(xx,&xgpu);CHKERRQ(ierr);
       ierr = VecViennaCLRestoreArrayRead(yy,&ygpu);CHKERRQ(ierr);
       ierr = VecViennaCLRestoreArrayWrite(zz,&zgpu);CHKERRQ(ierr);
@@ -237,7 +244,7 @@ PetscErrorCode MatMultAdd_SeqAIJViennaCL(Mat A,Vec xx,Vec yy,Vec zz)
     } catch(std::exception const & ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
     }
-    ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
+    ierr = PetscLogGpuFlops(2.0*a->nz);CHKERRQ(ierr);
   } else {
     ierr = VecCopy(yy,zz);CHKERRQ(ierr);
   }
@@ -250,7 +257,10 @@ PetscErrorCode MatAssemblyEnd_SeqAIJViennaCL(Mat A,MatAssemblyType mode)
 
   PetscFunctionBegin;
   ierr = MatAssemblyEnd_SeqAIJ(A,mode);CHKERRQ(ierr);
-  ierr = MatViennaCLCopyToGPU(A);CHKERRQ(ierr);
+  if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
+  if (!A->pinnedtocpu) {
+    ierr = MatViennaCLCopyToGPU(A);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -264,7 +274,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJViennaCL(Mat A,MatAssemblyType mode)
    performance during matrix assembly can be increased substantially.
 
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - MPI communicator, set to PETSC_COMM_SELF
@@ -349,20 +359,18 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJViennaCL(Mat B)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatPinToCPU_SeqAIJViennaCL(Mat,PetscBool);
 static PetscErrorCode MatDuplicate_SeqAIJViennaCL(Mat A,MatDuplicateOption cpvalues,Mat *B)
 {
   PetscErrorCode ierr;
-  Mat C;
+  Mat            C;
 
   PetscFunctionBegin;
   ierr = MatDuplicate_SeqAIJ(A,cpvalues,B);CHKERRQ(ierr);
   C = *B;
 
-  C->ops->mult        = MatMult_SeqAIJViennaCL;
-  C->ops->multadd     = MatMultAdd_SeqAIJViennaCL;
-  C->ops->assemblyend = MatAssemblyEnd_SeqAIJViennaCL;
-  C->ops->destroy     = MatDestroy_SeqAIJViennaCL;
-  C->ops->duplicate   = MatDuplicate_SeqAIJViennaCL;
+  ierr = MatPinToCPU_SeqAIJViennaCL(A,PETSC_FALSE);CHKERRQ(ierr);
+  C->ops->pintocpu = MatPinToCPU_SeqAIJViennaCL;
 
   C->spptr        = new Mat_SeqAIJViennaCL();
   ((Mat_SeqAIJViennaCL*)C->spptr)->tempvec        = NULL;
@@ -378,6 +386,25 @@ static PetscErrorCode MatDuplicate_SeqAIJViennaCL(Mat A,MatDuplicateOption cpval
     ierr = MatViennaCLCopyToGPU(C);CHKERRQ(ierr);
   }
 
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatPinToCPU_SeqAIJViennaCL(Mat A,PetscBool flg)
+{
+  PetscFunctionBegin;
+  A->pinnedtocpu = flg;
+  if (flg) {
+    A->ops->mult        = MatMult_SeqAIJ;
+    A->ops->multadd     = MatMultAdd_SeqAIJ;
+    A->ops->assemblyend = MatAssemblyEnd_SeqAIJ;
+    A->ops->duplicate   = MatDuplicate_SeqAIJ;
+  } else {
+    A->ops->mult        = MatMult_SeqAIJViennaCL;
+    A->ops->multadd     = MatMultAdd_SeqAIJViennaCL;
+    A->ops->assemblyend = MatAssemblyEnd_SeqAIJViennaCL;
+    A->ops->destroy     = MatDestroy_SeqAIJViennaCL;
+    A->ops->duplicate   = MatDuplicate_SeqAIJViennaCL;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -400,17 +427,14 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJViennaCL(Mat A,MatType type,
   aij             = (Mat_SeqAIJ*)B->data;
   aij->inode.use  = PETSC_FALSE;
 
-  B->ops->mult    = MatMult_SeqAIJViennaCL;
-  B->ops->multadd = MatMultAdd_SeqAIJViennaCL;
   B->spptr        = new Mat_SeqAIJViennaCL();
 
   ((Mat_SeqAIJViennaCL*)B->spptr)->tempvec        = NULL;
   ((Mat_SeqAIJViennaCL*)B->spptr)->mat            = NULL;
   ((Mat_SeqAIJViennaCL*)B->spptr)->compressed_mat = NULL;
 
-  B->ops->assemblyend    = MatAssemblyEnd_SeqAIJViennaCL;
-  B->ops->destroy        = MatDestroy_SeqAIJViennaCL;
-  B->ops->duplicate      = MatDuplicate_SeqAIJViennaCL;
+  ierr = MatPinToCPU_SeqAIJViennaCL(A,PETSC_FALSE);CHKERRQ(ierr);
+  A->ops->pintocpu = MatPinToCPU_SeqAIJViennaCL;
 
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJVIENNACL);CHKERRQ(ierr);
   ierr = PetscFree(B->defaultvectype);CHKERRQ(ierr);

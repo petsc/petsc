@@ -366,20 +366,18 @@ PetscErrorCode MatPartitioningDestroy_Parmetis(MatPartitioning part)
 /*MC
    MATPARTITIONINGPARMETIS - Creates a partitioning context via the external package PARMETIS.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameter:
 .  part - the partitioning context
 
    Options Database Keys:
-+  -mat_partitioning_parmetis_coarse_sequential - use sequential PARMETIS coarse partitioner
+.  -mat_partitioning_parmetis_coarse_sequential - use sequential PARMETIS coarse partitioner
 
    Level: beginner
 
    Notes:
-    See http://www-users.cs.umn.edu/~karypis/metis/
-
-.keywords: Partitioning, create, context
+    See https://www-users.cs.umn.edu/~karypis/metis/
 
 .seealso: MatPartitioningSetType(), MatPartitioningType
 

@@ -7,7 +7,7 @@ implicit none
   Vec,pointer,dimension(:) ::  vecs
   PetscInt :: i,start
   PetscInt :: endd
-  PetscInt,parameter :: n = 20
+  PetscInt,parameter :: n = 20, four = 4, two = 2, one = 1
   PetscErrorCode ierr
   PetscScalar  ::  myValue
   PetscBool :: flg
@@ -25,15 +25,15 @@ implicit none
   !Create multi-component vector with 2 components
   call VecCreate(PETSC_COMM_WORLD,v,ierr);CHKERRA(ierr)
   call VecSetSizes(v,PETSC_DECIDE,n,ierr);CHKERRA(ierr)
-  call VecSetBlockSize(v,4,ierr);CHKERRA(ierr)
+  call VecSetBlockSize(v,four,ierr);CHKERRA(ierr)
   call VecSetFromOptions(v,ierr);CHKERRA(ierr)
 
 
   !Create double-component vectors
 
   call VecCreate(PETSC_COMM_WORLD,s,ierr);CHKERRA(ierr)
-  call VecSetSizes(s,PETSC_DECIDE,n/2,ierr);CHKERRA(ierr)
-  call VecSetBlockSize(s,2,ierr);CHKERRA(ierr)
+  call VecSetSizes(s,PETSC_DECIDE,n/two,ierr);CHKERRA(ierr)
+  call VecSetBlockSize(s,two,ierr);CHKERRA(ierr)
   call VecSetFromOptions(s,ierr);CHKERRA(ierr)
   call VecDuplicate(s,r,ierr);CHKERRA(ierr)
   allocate(vecs(0:2))
@@ -46,7 +46,7 @@ implicit none
   call VecGetOwnershipRange(v,start,endd,ierr);CHKERRA(ierr)
   do i=start,endd-1
      myValue = real(i)
-     call VecSetValues(v,1,i,myValue,INSERT_VALUES,ierr);CHKERRA(ierr)
+     call VecSetValues(v,one,i,myValue,INSERT_VALUES,ierr);CHKERRA(ierr)
   end do
 
   
@@ -71,3 +71,11 @@ implicit none
   call PetscFinalize(ierr);CHKERRA(ierr)
   
 end program
+
+!/*TEST
+!
+!     test:
+!       nsize: 2
+!       output_file: output/ex16_1.out
+!
+!TEST*/

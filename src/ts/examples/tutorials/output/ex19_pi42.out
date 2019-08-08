@@ -21,6 +21,7 @@ TS Object: 1 MPI processes
     clip fastest decrease 0.1
     maximum allowed timestep 1e+20
     minimum allowed timestep 1e-20
+    maximum solution absolute value to be ignored -1.
     filter parameters kBeta=[0.6,-0.2,0.] Alpha=[0.,0.]
   SNES Object: 1 MPI processes
     type: newtonls
@@ -63,7 +64,7 @@ TS Object: 1 MPI processes
       Mat Object: 1 MPI processes
         type: seqaij
         rows=2, cols=2
-        total: nonzeros=4, allocated nonzeros=10
+        total: nonzeros=4, allocated nonzeros=4
         total number of mallocs used during MatSetValues calls =0
           using I-node routines: found 1 nodes, limit used is 5
 steps  20, ftime 0.504523

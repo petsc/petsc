@@ -24,6 +24,7 @@ class Configure(config.base.Configure):
     self.fmainlibs = []
     self.clibs = []
     self.cxxlibs = []
+    self.cxxCompileC = False
     self.cRestrict = ' '
     self.cxxRestrict = ' '
     self.cxxdialect = ''
@@ -44,7 +45,7 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-with-fortranlib-autodetect=<bool>',     nargs.ArgBool(None, 1, 'Autodetect Fortran compiler libraries'))
     help.addArgument('Compilers', '-with-cxxlib-autodetect=<bool>',         nargs.ArgBool(None, 1, 'Autodetect C++ compiler libraries'))
     help.addArgument('Compilers', '-with-dependencies=<bool>',              nargs.ArgBool(None, 1, 'Compile with -MMD or equivalent flag if possible'))
-    help.addArgument('Compilers', '-with-cxx-dialect=<dialect>',            nargs.Arg(None, '', 'Dialect under which to compile C++ sources (e.g., C++11)'))
+    help.addArgument('Compilers', '-with-cxx-dialect=<dialect>',            nargs.Arg(None, 'auto', 'Dialect under which to compile C++ sources (auto,cxx14,cxx11,0)'))
     help.addArgument('Compilers', '-with-fortran-type-initialize=<bool>',   nargs.ArgBool(None, 1, 'Initialize PETSc objects in Fortran'))
 
     return
@@ -376,7 +377,7 @@ class Configure(config.base.Configure):
     self.logPrint('Libraries needed to link C code with another linker: '+str(self.clibs), 3, 'compilers')
 
     if hasattr(self.setCompilers, 'FC') or hasattr(self.setCompilers, 'CXX'):
-      self.logPrint('Check that C libraries can be used from Fortran', 4, 'compilers')
+      self.logPrint('Check that C libraries can be used with Fortran as linker', 4, 'compilers')
       oldLibs = self.setCompilers.LIBS
       self.setCompilers.LIBS = ' '.join([self.libraries.getLibArgument(lib) for lib in self.clibs])+' '+self.setCompilers.LIBS
     if hasattr(self.setCompilers, 'FC'):
@@ -387,7 +388,7 @@ class Configure(config.base.Configure):
         self.setCompilers.LIBS = oldLibs
         self.logWrite(self.setCompilers.restoreLog())
         self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
-        raise RuntimeError('C libraries cannot directly be used from Fortran')
+        raise RuntimeError('C libraries cannot directly be used with Fortran as linker')
       except OSError as e:
         self.setCompilers.LIBS = oldLibs
         self.logWrite(self.setCompilers.restoreLog())
@@ -426,18 +427,18 @@ class Configure(config.base.Configure):
     cxxObj = self.framework.getCompilerObject('Cxx')
     oldExt = cxxObj.sourceExtension
     cxxObj.sourceExtension = self.framework.getCompilerObject('C').sourceExtension
-    success=0
     for flag in ['', '-+', '-x cxx -tlocal', '-Kc++']:
       try:
         self.setCompilers.addCompilerFlag(flag, body = 'class somename { int i; };')
-        success=1
+        self.cxxCompileC = True
         break
       except RuntimeError:
         pass
-    if success==0:
-      for flag in ['-TP','-P']:
+    if not self.cxxCompileC:
+      for flag in ['-x c++', '-TP','-P']:
         try:
           self.setCompilers.addCompilerFlag(flag, body = 'class somename { int i; };', compilerOnly = 1)
+          self.cxxCompileC = True
           break
         except RuntimeError:
           pass
@@ -446,31 +447,34 @@ class Configure(config.base.Configure):
     self.logWrite(self.setCompilers.restoreLog())
     return
 
-  def checkCxxNamespace(self):
-    '''Checks that C++ compiler supports namespaces, and if it does defines HAVE_CXX_NAMESPACE'''
-    self.pushLanguage('C++')
-    self.cxxNamespace = 0
-    if self.checkCompile('namespace petsc {int dummy;}'):
-      if self.checkCompile('template <class dummy> struct a {};\nnamespace trouble{\ntemplate <class dummy> struct a : public ::a<dummy> {};\n}\ntrouble::a<int> uugh;\n'):
-        self.cxxNamespace = 1
-    self.popLanguage()
-    if self.cxxNamespace:
-      self.logPrint('C++ has namespaces', 4, 'compilers')
-      self.addDefine('HAVE_CXX_NAMESPACE', 1)
-    else:
-      self.logPrint('C++ does not have namespaces', 4, 'compilers')
-    return
 
-  def checkCxx11(self):
-    """Determine the option needed to support the C++11 dialect
-
-    We auto-detect C++11 if the compiler supports it without options,
-    otherwise we require with-cxx-dialect=C++11 to try adding flags to
-    support it.
+  def checkCxxDialect(self):
+    """Determine the Cxx dialect supported by the compiler [and correspoding compiler option - if any].
+    -with-cxx-dialect can take options:
+      auto: use highest dialect configure can determine
+      cxx17: [future?]
+      cxx14: gnu++14 or c++14
+      cxx11: gnu++11 or c++11
+      0: disable CxxDialect check and use compiler default
     """
+    TESTCXX14 = 0
+    TESTCXX11 = 0
+    cxxdialect = self.argDB.get('with-cxx-dialect','').upper().replace('X','+')
+    if cxxdialect in ['','0','NONE']: return
+    elif cxxdialect == 'AUTO':
+      TESTCXX14 = 1
+      TESTCXX11 = 1
+    elif cxxdialect == 'C++14':
+      TESTCXX14 = 1
+    elif cxxdialect == 'C++11':
+      TESTCXX11 = 1
+    else:
+      raise RuntimeError('Unknown C++ dialect: with-cxx-dialect=%s' % (self.argDB['with-cxx-dialect']))
+
     # Test borrowed from Jack Poulson (Elemental)
     includes = """
           #include <random>
+          #include <iostream>
           template<typename T> constexpr T Cubed( T x ) { return x*x*x; }
           """
     body = """
@@ -478,34 +482,56 @@ class Configure(config.base.Configure):
           std::mt19937 mt(rd());
           std::normal_distribution<double> dist(0,1);
           const double x = dist(mt);
+          std::cout << x;
+          """
+    body14 = """
+          auto lambda = [](auto x, auto y) {return x + y;};
+          return lambda(3,4);
           """
     self.setCompilers.saveLog()
     self.setCompilers.pushLanguage('Cxx')
-    cxxdialect = self.argDB.get('with-cxx-dialect','').upper().replace('X','+')
-    flags_to_try = ['']
-    if cxxdialect == 'C++11':
-      flags_to_try += ['-std=c++11','-std=c++0x']
-    for flag in flags_to_try:
-      if self.setCompilers.checkCompilerFlag(flag, includes, body):
-        self.setCompilers.CXXCPPFLAGS += ' ' + flag
-        self.cxxdialect = 'C++11'
-        break
-    if cxxdialect == 'C++11':
-      if self.cxxdialect != 'C++11':
+    if TESTCXX14:
+      flags_to_try = ['']
+      if self.isGCXX: flags_to_try += ['-std=gnu++14']
+      else: flags_to_try += ['-std=c++14']
+      for flag in flags_to_try:
         self.logWrite(self.setCompilers.restoreLog())
-        raise RuntimeError('Could not determine compiler flag for with-cxx-dialect=%s,\nIf you know the flag for turning on C++11 features set it with the CXXFLAGS variables\n for example, --with-cxx-dialect=C++11 CXXFLAGS="-std=c++0x"' % (self.argDB['with-cxx-dialect']))
-    elif cxxdialect in ['C++98', 'C++03', '']:
-      self.cxxdialect = cxxdialect
-      pass                    # The user can set CXXFLAGS if they want to be strict
-    else:
+        self.logPrint('checkCxxDialect: checking CXX14 with flag: '+flag)
+        self.setCompilers.saveLog()
+        if self.setCompilers.checkCompilerFlag(flag, includes, body+body14):
+          self.setCompilers.CXXCPPFLAGS += ' ' + flag
+          self.cxxdialect = 'C++14'
+          self.addDefine('HAVE_CXX_DIALECT_CXX14',1)
+          self.addDefine('HAVE_CXX_DIALECT_CXX11',1)
+          break
+
+    if cxxdialect == 'C++14' and self.cxxdialect != 'C++14':
       self.logWrite(self.setCompilers.restoreLog())
-      raise RuntimeError('Unknown C++ dialect: with-cxx-dialect=%s' % (self.argDB['with-cxx-dialect']))
+      raise RuntimeError('Could not determine compiler flag for with-cxx-dialect=%s,\nIf you know the flag, set it with CXXFLAGS option')
+    elif not self.cxxdialect and TESTCXX11:
+      flags_to_try = ['']
+      if self.isGCXX: flags_to_try += ['-std=gnu++11']
+      else: flags_to_try += ['-std=c++11','-std=c++0x']
+      for flag in flags_to_try:
+        self.logWrite(self.setCompilers.restoreLog())
+        self.logPrint('checkCxxDialect: checking CXX11 with flag: '+flag)
+        self.setCompilers.saveLog()
+        if self.setCompilers.checkCompilerFlag(flag, includes, body):
+          self.setCompilers.CXXCPPFLAGS += ' ' + flag
+          self.cxxdialect = 'C++11'
+          self.addDefine('HAVE_CXX_DIALECT_CXX11',1)
+          break
+
+    if cxxdialect == 'C++11' and self.cxxdialect != 'C++11':
+      self.logWrite(self.setCompilers.restoreLog())
+      raise RuntimeError('Could not determine compiler flag for with-cxx-dialect=%s,\nIf you know the flag, set it with CXXFLAGS option')
+
     self.setCompilers.popLanguage()
     self.logWrite(self.setCompilers.restoreLog())
     return
 
   def checkCxxLibraries(self):
-    '''Determines the libraries needed to link with C++'''
+    '''Determines the libraries needed to link with C++ from C and Fortran'''
     skipcxxlibraries = 1
     self.setCompilers.saveLog()
     body   = '''#include <iostream>\n#include <vector>\nvoid asub(void)\n{std::vector<int> v;\ntry  { throw 20;  }  catch (int e)  { std::cout << "An exception occurred";  }}'''
@@ -515,14 +541,31 @@ class Configure(config.base.Configure):
         self.logPrint('C++ libraries are not needed when using C linker')
       else:
         self.logWrite(self.setCompilers.restoreLog())
-        oldLibs = self.setCompilers.LIBS
-        self.setCompilers.LIBS = '-lstdc++ '+self.setCompilers.LIBS
-        if self.checkCrossLink(body,"int main(int argc,char **args)\n{return 0;}\n",language1='C++',language2='C'):
-          self.logPrint('C++ requires -lstdc++ to link with C compiler', 3, 'compilers')
-        else:
-          self.setCompilers.LIBS = oldLibs
-          self.logPrint('C++ code cannot directly be linked with C linker, therefor will determine needed C++ libraries')
-          skipcxxlibraries = 0
+        if self.setCompilers.isDarwin(self.log) and config.setCompilers.Configure.isClang(self.getCompiler('C'), self.log):
+          oldLibs = self.setCompilers.LIBS
+          self.setCompilers.LIBS = '-lc++ '+self.setCompilers.LIBS
+          self.setCompilers.saveLog()
+          if self.checkCrossLink(body,"int main(int argc,char **args)\n{return 0;}\n",language1='C++',language2='C'):
+            self.logWrite(self.setCompilers.restoreLog())
+            self.logPrint('C++ requires -lc++ to link with C compiler', 3, 'compilers')
+          else:
+            self.logWrite(self.setCompilers.restoreLog())
+            self.setCompilers.LIBS = oldLibs
+            self.logPrint('C++ code cannot directly be linked with C linker using -lc++, therefor will determine needed C++ libraries')
+            skipcxxlibaries = 0
+        if not skipcxxlibraries: 
+          self.setCompilers.saveLog()
+          oldLibs = self.setCompilers.LIBS
+          self.setCompilers.LIBS = '-lstdc++ '+self.setCompilers.LIBS
+          if self.checkCrossLink(body,"int main(int argc,char **args)\n{return 0;}\n",language1='C++',language2='C'):
+            self.logWrite(self.setCompilers.restoreLog())
+            self.logPrint('C++ requires -lstdc++ to link with C compiler', 3, 'compilers')
+            skipcxxlibaries = 1
+          else:
+            self.logWrite(self.setCompilers.restoreLog())
+            self.setCompilers.LIBS = oldLibs
+            self.logPrint('C++ code cannot directly be linked with C linker using -lstdc++, therefor will determine needed C++ libraries')
+            skipcxxlibraries = 0
     except RuntimeError as e:
       self.logWrite(self.setCompilers.restoreLog())
       self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
@@ -692,30 +735,43 @@ class Configure(config.base.Configure):
 
     self.logPrint('Libraries needed to link Cxx code with another linker: '+str(self.cxxlibs), 3, 'compilers')
 
-    self.logPrint('Check that Cxx libraries can be used from C', 4, 'compilers')
+    self.logPrint('Check that Cxx libraries can be used with C as linker', 4, 'compilers')
     oldLibs = self.setCompilers.LIBS
     self.setCompilers.LIBS = ' '.join([self.libraries.getLibArgument(lib) for lib in self.cxxlibs])+' '+self.setCompilers.LIBS
     self.setCompilers.saveLog()
     try:
       self.setCompilers.checkCompiler('C')
     except RuntimeError as e:
-      self.logPrint('Cxx libraries cannot directly be used from C', 4, 'compilers')
+      self.logWrite(self.setCompilers.restoreLog())
+      self.logPrint('Cxx libraries cannot directly be used with C as linker', 4, 'compilers')
       self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
+      raise RuntimeError("Cxx libraries cannot directly be used with C as linker.\n\
+If you don't need the C++ compiler to build external packages or for you application you can run\n\
+./configure with --with-cxx=0. Otherwise you need a different combination of C and C++ compilers")
+    else:
+      self.logWrite(self.setCompilers.restoreLog())
     self.setCompilers.LIBS = oldLibs
-    self.logWrite(self.setCompilers.restoreLog())
 
     if hasattr(self.setCompilers, 'FC'):
-      self.logPrint('Check that Cxx libraries can be used from Fortran', 4, 'compilers')
+
+      self.logPrint('Check that Cxx libraries can be used with Fortran as linker', 4, 'compilers')
       oldLibs = self.setCompilers.LIBS
       self.setCompilers.LIBS = ' '.join([self.libraries.getLibArgument(lib) for lib in self.cxxlibs])+' '+self.setCompilers.LIBS
       self.setCompilers.saveLog()
       try:
         self.setCompilers.checkCompiler('FC')
       except RuntimeError as e:
-        self.logPrint('Cxx libraries cannot directly be used from Fortran', 4, 'compilers')
+        self.logWrite(self.setCompilers.restoreLog())
+        self.logPrint('Cxx libraries cannot directly be used with Fortran as linker', 4, 'compilers')
         self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
+        raise RuntimeError("Cxx libraries cannot directly be used with Fortran as linker.\n\
+If you don't need the C++ compiler to build external packages or for you application you can run\n\
+./configure with --with-cxx=0. If you don't need the Fortran compiler to build external packages\n\
+or for you application you can run ./configure with --with-fc=0.\n\
+Otherwise you need a different combination of C, C++, and Fortran compilers")
+      else:
+        self.logWrite(self.setCompilers.restoreLog())
       self.setCompilers.LIBS = oldLibs
-      self.logWrite(self.setCompilers.restoreLog())
     return
 
   def checkFortranTypeSizes(self):
@@ -797,7 +853,7 @@ class Configure(config.base.Configure):
         break
     else:
       if self.setCompilers.isDarwin(self.log):
-        mess = '  See http://www.mcs.anl.gov/petsc/documentation/faq.html#gfortran'
+        mess = '  See https://www.mcs.anl.gov/petsc/documentation/faq.html#gfortran'
       else:
         mess = ''
       raise RuntimeError('Unknown Fortran name mangling: Are you sure the C and Fortran compilers are compatible?\n  Perhaps one is 64 bit and one is 32 bit?\n'+mess)
@@ -958,15 +1014,20 @@ class Configure(config.base.Configure):
         output = output[0:loc]+' -lU77 -lV77 '+output[loc:]
 
     # PGI/Windows: to properly resolve symbols, we need to list the fortran runtime libraries before -lpgf90
+    # PGI Fortran compiler uses PETSC_HAVE_F90_2PTR_ARG which is incompatible with
+    # certain PETSc example uses of Fortran (like passing classes) hence we need to define
+    # HAVE_PGF90_COMPILER so those examples are not run
     if output.find(' -lpgf90') >= 0 and output.find(' -lkernel32') >= 0:
       loc  = output.find(' -lpgf90')
       loc2 = output.find(' -lpgf90rtl -lpgftnrtl')
       if loc2 >= -1:
         output = output[0:loc] + ' -lpgf90rtl -lpgftnrtl' + output[loc:]
+      self.addDefine('HAVE_PGF90_COMPILER','1')
     elif output.find(' -lpgf90rtl -lpgftnrtl') >= 0:
       # somehow doing this hacky thing appears to get rid of error with undefined __hpf_exit
       self.logPrint('Adding -lpgftnrtl before -lpgf90rtl in librarylist')
       output = output.replace(' -lpgf90rtl -lpgftnrtl',' -lpgftnrtl -lpgf90rtl -lpgftnrtl')
+      self.addDefine('HAVE_PGF90_COMPILER','1')
 
     # PGI: kill anything enclosed in single quotes
     if output.find('\'') >= 0:
@@ -1212,65 +1273,78 @@ class Configure(config.base.Configure):
 
     self.logPrint('Libraries needed to link Fortran code with the C linker: '+str(self.flibs), 3, 'compilers')
     self.logPrint('Libraries needed to link Fortran main with the C linker: '+str(self.fmainlibs), 3, 'compilers')
-    # check that these monster libraries can be used from C
-    self.logPrint('Check that Fortran libraries can be used from C', 4, 'compilers')
+    # check that these monster libraries can be used with C as the linker
+    self.logPrint('Check that Fortran libraries can be used with C as the linker', 4, 'compilers')
     oldLibs = self.setCompilers.LIBS
     self.setCompilers.LIBS = ' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])+' '+self.setCompilers.LIBS
     self.setCompilers.saveLog()
     try:
       self.setCompilers.checkCompiler('C')
     except RuntimeError as e:
-      self.logPrint('Fortran libraries cannot directly be used from C, try without -lcrt2.o', 4, 'compilers')
+      self.logWrite(self.setCompilers.restoreLog())
+      self.logPrint('Fortran libraries cannot directly be used with C as the liner, try without -lcrt2.o', 4, 'compilers')
       self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
       # try removing this one
       if '-lcrt2.o' in self.flibs: self.flibs.remove('-lcrt2.o')
       self.setCompilers.LIBS = oldLibs+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
+      self.setCompilers.saveLog()
       try:
         self.setCompilers.checkCompiler('C')
       except RuntimeError as e:
-        self.logPrint('Fortran libraries still cannot directly be used from C, try without pgi.ld files', 4, 'compilers')
+        self.logWrite(self.setCompilers.restoreLog())
+        self.logPrint('Fortran libraries still cannot directly be used with C as the linker, try without pgi.ld files', 4, 'compilers')
         self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
         tmpflibs = self.flibs
         for lib in tmpflibs:
           if lib.find('pgi.ld')>=0:
             self.flibs.remove(lib)
         self.setCompilers.LIBS = oldLibs+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
+        self.setCompilers.saveLog()
         try:
           self.setCompilers.checkCompiler('C')
         except:
+          self.logWrite(self.setCompilers.restoreLog())
           self.logPrint(str(e), 4, 'compilers')
           self.logWrite(self.setCompilers.restoreLog())
-          raise RuntimeError('Fortran libraries cannot be used with C compiler')
-    self.logWrite(self.setCompilers.restoreLog())
+          raise RuntimeError('Fortran libraries cannot be used with C as linker')
+      else:
+        self.logWrite(self.setCompilers.restoreLog())
+    else:
+      self.logWrite(self.setCompilers.restoreLog())
 
     # check these monster libraries work from C++
     if hasattr(self.setCompilers, 'CXX'):
-      self.logPrint('Check that Fortran libraries can be used from C++', 4, 'compilers')
+      self.logPrint('Check that Fortran libraries can be used with C++ as linker', 4, 'compilers')
       self.setCompilers.LIBS = ' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])+' '+oldLibs
       self.setCompilers.saveLog()
       try:
         self.setCompilers.checkCompiler('Cxx')
         self.logPrint('Fortran libraries can be used from C++', 4, 'compilers')
       except RuntimeError as e:
+        self.logWrite(self.setCompilers.restoreLog())
         self.logPrint(str(e), 4, 'compilers')
         # try removing this one causes grief with gnu g++ and Intel Fortran
         if '-lintrins' in self.flibs: self.flibs.remove('-lintrins')
         self.setCompilers.LIBS = oldLibs+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
+        self.setCompilers.saveLog()
         try:
           self.setCompilers.checkCompiler('Cxx')
         except RuntimeError as e:
+          self.logWrite(self.setCompilers.restoreLog())
           self.logPrint(str(e), 4, 'compilers')
           if str(e).find('INTELf90_dclock') >= 0:
             self.logPrint('Intel 7.1 Fortran compiler cannot be used with g++ 3.2!', 2, 'compilers')
+        else:
+           self.logWrite(self.setCompilers.restoreLog())
+        raise RuntimeError('Fortran libraries cannot be used with C++ as linker.\n Run with --with-fc=0 or --with-cxx=0')
+      else:
         self.logWrite(self.setCompilers.restoreLog())
-        raise RuntimeError('Fortran libraries cannot be used with C++ compiler.\n Run with --with-fc=0 or --with-cxx=0')
-      self.logWrite(self.setCompilers.restoreLog())
 
     self.setCompilers.LIBS = oldLibs
     return
 
   def checkFortranLinkingCxx(self):
-    '''Check that Fortran can be linked against C++'''
+    '''Check that Fortran can link C++ libraries'''
     link = 0
     cinc, cfunc, ffunc = self.manglerFuncs[self.fortranMangling]
     cinc = 'extern "C" '+cinc+'\n'
@@ -1301,7 +1375,7 @@ class Configure(config.base.Configure):
     if os.path.isfile(cxxobj):
       os.remove(cxxobj)
     if not link:
-      raise RuntimeError('Fortran could not successfully link C++ objects')
+      raise RuntimeError('Fortran could not successfully link C++ objects with Fortran as linker')
     return
 
   def configureFortranFlush(self):
@@ -1316,7 +1390,6 @@ class Configure(config.base.Configure):
   def checkFortranTypeInitialize(self):
     '''Determines if PETSc objects in Fortran are initialized by default (doesn't work with common blocks)'''
     if self.argDB['with-fortran-type-initialize']:
-      self.addDefine('HAVE_FORTRAN_TYPE_INITIALIZE', -2)
       self.addDefine('FORTRAN_TYPE_INITIALIZE', ' = -2')
       self.logPrint('Initializing Fortran objects')
     else:
@@ -1664,7 +1737,6 @@ class Configure(config.base.Configure):
         restoredlog = 1
         self.framework.logPrint('Accepted C99 compile flag: '+flag)
         break
-    if self.c99flag == '': self.addDefine('HAVE_C99', 1)
     self.setCompilers.popLanguage()
     if not restoredlog:
       self.logWrite(self.setCompilers.restoreLog())
@@ -1687,12 +1759,14 @@ class Configure(config.base.Configure):
     if hasattr(self.setCompilers, 'CXX'):
       self.isGCXX = config.setCompilers.Configure.isGNU(self.setCompilers.CXX, self.log)
       self.executeTest(self.checkRestrict,['Cxx'])
-      self.executeTest(self.checkCxxNamespace)
       self.executeTest(self.checkCxxOptionalExtensions)
       self.executeTest(self.checkCxxInline)
       if self.argDB['with-cxxlib-autodetect']:
         self.executeTest(self.checkCxxLibraries)
-      self.executeTest(self.checkCxx11)
+      self.executeTest(self.checkCxxDialect)
+      # To skip Sun C++ compiler warnings/errors
+      if config.setCompilers.Configure.isSun(self.setCompilers.CXX, self.log):
+        self.addDefine('HAVE_SUN_CXX', 1)
     else:
       self.isGCXX = 0
     if hasattr(self.setCompilers, 'FC'):

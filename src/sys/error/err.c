@@ -48,8 +48,6 @@ $     SETERRQ(PETSC_COMM_SELF,number,p,mess)
    Developer Note:
    Since this is an error handler it cannot call CHKERRQ(); thus we just return if an error is detected.
 
-   Concepts: emacs^going to on error
-   Concepts: error handler^going to line in emacs
 
 .seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(),
           PetscAbortErrorHandler()
@@ -139,8 +137,6 @@ PetscErrorCode  PetscPushErrorHandler(PetscErrorCode (*handler)(MPI_Comm comm,in
 
    Level: intermediate
 
-   Concepts: error handler^setting
-
 .seealso: PetscPushErrorHandler()
 @*/
 PetscErrorCode  PetscPopErrorHandler(void)
@@ -188,8 +184,6 @@ $     SETERRQ(comm,number,mess)
    currently available PETSc error handlers include PetscTraceBackErrorHandler(),
    PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler(), and PetscAbortErrorHandler()
 
-   Concepts: error handler
-
 .seealso:  PetscPushErrorHandler(), PetscPopErrorHandler().
  @*/
 
@@ -214,35 +208,35 @@ static const char *PetscErrorStrings[] = {
           "Argument aliasing not permitted",
           "Invalid argument",
   /*63 */ "Argument out of range",
-          "Corrupt argument: http://www.mcs.anl.gov/petsc/documentation/faq.html#valgrind",
+          "Corrupt argument: https://www.mcs.anl.gov/petsc/documentation/faq.html#valgrind",
           "Unable to open file",
           "Read from file failed",
           "Write to file failed",
           "Invalid pointer",
   /*69 */ "Arguments must have same type",
   /*70 */ "Attempt to use a pointer that does not point to a valid accessible location",
-  /*71 */ "Zero pivot in LU factorization: http://www.mcs.anl.gov/petsc/documentation/faq.html#zeropivot",
+  /*71 */ "Zero pivot in LU factorization: https://www.mcs.anl.gov/petsc/documentation/faq.html#zeropivot",
   /*72 */ "Floating point exception",
   /*73 */ "Object is in wrong state",
           "Corrupted Petsc object",
           "Arguments are incompatible",
           "Error in external library",
   /*77 */ "Petsc has generated inconsistent data",
-          "Memory corruption: http://www.mcs.anl.gov/petsc/documentation/installation.html#valgrind",
+          "Memory corruption: https://www.mcs.anl.gov/petsc/documentation/installation.html#valgrind",
           "Unexpected data in file",
   /*80 */ "Arguments must have same communicators",
-  /*81 */ "Zero pivot in Cholesky factorization: http://www.mcs.anl.gov/petsc/documentation/faq.html#zeropivot",
+  /*81 */ "Zero pivot in Cholesky factorization: https://www.mcs.anl.gov/petsc/documentation/faq.html#zeropivot",
           "  ",
           "  ",
-          "Overflow in integer operation: http://www.mcs.anl.gov/petsc/documentation/faq.html#64-bit-indices",
+          "Overflow in integer operation: https://www.mcs.anl.gov/petsc/documentation/faq.html#64-bit-indices",
   /*85 */ "Null argument, when expecting valid pointer",
-  /*86 */ "Unknown type. Check for miss-spelling or missing package: http://www.mcs.anl.gov/petsc/documentation/installation.html#external",
+  /*86 */ "Unknown type. Check for miss-spelling or missing package: https://www.mcs.anl.gov/petsc/documentation/installation.html#external",
   /*87 */ "MPI library at runtime is not compatible with MPI used at compile time",
   /*88 */ "Error in system call",
-  /*89 */ "Object Type not set: http://www.mcs.anl.gov/petsc/documentation/faq.html#objecttypenotset",
+  /*89 */ "Object Type not set: https://www.mcs.anl.gov/petsc/documentation/faq.html#objecttypenotset",
   /*90 */ "  ",
   /*   */ "  ",
-  /*92 */ "See http://www.mcs.anl.gov/petsc/documentation/linearsolvertable.html for possible LU and Cholesky solvers",
+  /*92 */ "See https://www.mcs.anl.gov/petsc/documentation/linearsolvertable.html for possible LU and Cholesky solvers",
   /*93 */ "You cannot overwrite this option since that will conflict with other previously set options",
 };
 
@@ -259,8 +253,6 @@ static const char *PetscErrorStrings[] = {
 -  specific - the specific error message that was set with SETERRxxx() or PetscError().  (NULL if not desired)
 
    Level: developer
-
-   Concepts: error handler^messages
 
 .seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), PetscError(), SETERRQ(), CHKERRQ() 
           PetscAbortErrorHandler(), PetscTraceBackErrorHandler()
@@ -334,8 +326,6 @@ $    PetscError(MPI_Comm comm,PetscErrorCode n,PetscErrorType p,char *message)
    Developer Note: Since this is called after an error condition it should not be calling any error handlers (currently it ignores any error codes)
    BUT this routine does call regular PETSc functions that may call error handlers, this is problematic and could be fixed by never calling other PETSc routines
    but this annoying.
-
-   Concepts: error^setting condition
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), SETERRQ(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), PetscErrorMessage()
 @*/

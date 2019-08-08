@@ -12,11 +12,6 @@ class Configure(config.base.Configure):
   def getDefineName(self, funcName):
     return 'HAVE_'+funcName.upper()
 
-  def setupHelp(self, help):
-    import nargs
-    help.addArgument('Functions', '-known-memcmp-ok=<bool>', nargs.ArgBool(None, None, 'Does memcmp() work correctly?'))
-    return
-
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
     self.compilers = self.framework.require('config.compilers', self)
@@ -109,41 +104,22 @@ builtin and then its argument prototype would still apply. */
 
   def checkMemcmp(self):
     '''Check for 8-bit clean memcmp'''
-    if 'known-memcmp-ok' in self.argDB:
-      if self.argDB['known-memcmp-ok'] == 0:
-        raise RuntimeError('No 8-bit clean memcmp() exists. Cannot proceed')
-      else:
-        return
     if not self.argDB['with-batch']:
       self.logPrint('Making executable to test memcmp()')
       if not self.checkRun('#include <string.h>\nvoid exit(int);\n\n', 'char c0 = 0x40;\nchar c1 = (char) 0x80;\nchar c2 = (char) 0x81;\nexit(memcmp(&c0, &c2, 1) < 0 && memcmp(&c1, &c2, 1) < 0 ? 0 : 1);\n'):
         raise RuntimeError('Failed to find 8-bit clean memcmp(). Cannot proceed.')
     else:
-      self.framework.addBatchInclude('#include <string.h>')
-      self.framework.addBatchBody(['{',
-                                   '  char c0 = 0x40;',
-                                   '  char c1 = (char) 0x80;',
-                                   '  char c2 = (char) 0x81;',
-                                   '  if (memcmp(&c0, &c2, 1) < 0 && memcmp(&c1, &c2, 1) < 0 ? 0 : 1) {',
-                                   '    fprintf(output, "  \'--known-memcmp-ok=0\',\\n");',
-                                   '  } else {',
-                                   '    fprintf(output, "  \'--known-memcmp-ok=1\',\\n");',
-                                   '  }',
-                                   '}'])
+      self.log.write('Skipping testing of memcmp() on batch system\n')
     return
 
   def checkSysinfo(self):
     '''Check whether sysinfo takes three arguments, and if it does define HAVE_SYSINFO_3ARG'''
     self.check('sysinfo')
     if self.getDefineName('sysinfo') in self.defines:
-      map(self.headers.check, ['linux/kernel.h', 'sys/sysinfo.h', 'sys/systeminfo.h'])
+      map(self.headers.check, ['sys/sysinfo.h', 'sys/systeminfo.h'])
       includes = '''
-#ifdef HAVE_LINUX_KERNEL_H
-#  include <linux/kernel.h>
-#  include <linux/sys.h>
-#  ifdef HAVE_SYS_SYSINFO_H
-#    include <sys/sysinfo.h>
-#  endif
+#ifdef HAVE_SYS_SYSINFO_H
+#  include <sys/sysinfo.h>
 #elif defined(HAVE_SYS_SYSTEMINFO_H)
 #  include <sys/systeminfo.h>
 #else
@@ -157,14 +133,12 @@ builtin and then its argument prototype would still apply. */
 
   def checkVPrintf(self):
     '''Checks whether vprintf requires a char * last argument, and if it does defines HAVE_VPRINTF_CHAR'''
-    self.check('vprintf')
     if not self.checkLink('#include <stdio.h>\n#include <stdarg.h>\n', 'va_list Argp;\nvprintf( "%d", Argp );\n'):
       self.addDefine('HAVE_VPRINTF_CHAR', 1)
     return
 
   def checkVFPrintf(self):
     '''Checks whether vfprintf requires a char * last argument, and if it does defines HAVE_VFPRINTF_CHAR'''
-    self.check('vfprintf')
     if not self.checkLink('#include <stdio.h>\n#include <stdarg.h>\n', 'va_list Argp;\nvfprintf(stdout, "%d", Argp );\n'):
       self.addDefine('HAVE_VFPRINTF_CHAR', 1)
     return

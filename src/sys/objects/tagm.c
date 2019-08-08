@@ -30,10 +30,6 @@
 
     Level: developer
 
-    Concepts: tag^getting
-    Concepts: message tag^getting
-    Concepts: MPI message tag^getting
-
 .seealso: PetscCommGetNewTag()
 @*/
 PetscErrorCode  PetscObjectGetNewTag(PetscObject obj,PetscMPIInt *tag)
@@ -51,7 +47,7 @@ PetscErrorCode  PetscObjectGetNewTag(PetscObject obj,PetscMPIInt *tag)
     number of times.  This tag should only be used with the current objects
     communicator; do NOT use it with any other MPI communicator.
 
-    Collective on comm
+    Collective
 
     Input Parameter:
 .   comm - the MPI communicator
@@ -60,10 +56,6 @@ PetscErrorCode  PetscObjectGetNewTag(PetscObject obj,PetscMPIInt *tag)
 .   tag - the new tag
 
     Level: developer
-
-    Concepts: tag^getting
-    Concepts: message tag^getting
-    Concepts: MPI message tag^getting
 
 .seealso: PetscObjectGetNewTag(), PetscCommDuplicate()
 @*/
@@ -99,7 +91,7 @@ PetscErrorCode  PetscCommGetNewTag(MPI_Comm comm,PetscMPIInt *tag)
 /*@C
   PetscCommDuplicate - Duplicates the communicator only if it is not already a PETSc communicator.
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameters:
 . comm_in - Input communicator
@@ -116,8 +108,6 @@ PetscErrorCode  PetscCommGetNewTag(MPI_Comm comm,PetscMPIInt *tag)
   level MPI_Comm that may be performing communication for the user or other library and so IS NOT used by PETSc.
 
   Level: developer
-
-  Concepts: communicator^duplicate
 
 .seealso: PetscObjectGetNewTag(), PetscCommGetNewTag(), PetscCommDestroy()
 @*/
@@ -189,14 +179,12 @@ PetscErrorCode  PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPII
 /*@C
    PetscCommDestroy - Frees communicator.  Use in conjunction with PetscCommDuplicate().
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameter:
 .  comm - the communicator to free
 
    Level: developer
-
-   Concepts: communicator^destroy
 
 .seealso:   PetscCommDuplicate()
 @*/
@@ -246,7 +234,7 @@ PetscErrorCode  PetscCommDestroy(MPI_Comm *comm)
     of PetscObjects living on subcommunicators of a given communicator.
 
 
-    Collective on comm.
+    Collective.
 
     Input Parameters:
 +   comm    - MPI_Comm
@@ -260,8 +248,6 @@ PetscErrorCode  PetscCommDestroy(MPI_Comm *comm)
 
 
     Level: developer
-
-    Concepts: MPI subcomm^numbering
 
 @*/
 PetscErrorCode  PetscObjectsListGetGlobalNumbering(MPI_Comm comm, PetscInt len, PetscObject *objlist, PetscInt *count, PetscInt *numbering)

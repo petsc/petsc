@@ -12,6 +12,7 @@ static PetscErrorCode  PCKSPCreateKSP_KSP(PC pc)
   PetscErrorCode ierr;
   const char     *prefix;
   PC_KSP         *jac = (PC_KSP*)pc->data;
+  DM             dm;
 
   PetscFunctionBegin;
   ierr = KSPCreate(PetscObjectComm((PetscObject)pc),&jac->ksp);CHKERRQ(ierr);
@@ -20,6 +21,11 @@ static PetscErrorCode  PCKSPCreateKSP_KSP(PC pc)
   ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(jac->ksp,prefix);CHKERRQ(ierr);
   ierr = KSPAppendOptionsPrefix(jac->ksp,"ksp_");CHKERRQ(ierr);
+  ierr = PCGetDM(pc, &dm);CHKERRQ(ierr);
+  if (dm) {
+    ierr = KSPSetDM(jac->ksp, dm);CHKERRQ(ierr);
+    ierr = KSPSetDMActive(jac->ksp, PETSC_FALSE);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -154,7 +160,6 @@ static PetscErrorCode  PCKSPSetKSP_KSP(PC pc,KSP ksp)
 
    Level: advanced
 
-.keywords:  PC, KSP, set, context
 @*/
 PetscErrorCode  PCKSPSetKSP(PC pc,KSP ksp)
 {
@@ -197,7 +202,6 @@ static PetscErrorCode  PCKSPGetKSP_KSP(PC pc,KSP *ksp)
 
    Level: advanced
 
-.keywords:  PC, KSP, get, context
 @*/
 PetscErrorCode  PCKSPGetKSP(PC pc,KSP *ksp)
 {
@@ -236,8 +240,6 @@ static PetscErrorCode PCSetFromOptions_KSP(PetscOptionItems *PetscOptionsObject,
                     the preconditioner, Pmat (see PCSetOperators())
 
    Level: intermediate
-
-   Concepts: inner iteration
 
    Notes:
     Using a Krylov method inside another Krylov method can be dangerous (you get divergence or

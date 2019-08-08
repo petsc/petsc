@@ -17,8 +17,6 @@
 
    Level: advanced
 
-   Concepts: drawing^coordinates
-   Concepts: graphics^coordinates
 
 .seealso: PetscDrawGetCoordinates()
 
@@ -52,8 +50,6 @@ PetscErrorCode  PetscDrawSetCoordinates(PetscDraw draw,PetscReal xl,PetscReal yl
 .  xl,yl,xr,yr - the coordinates of the lower left corner and upper
                  right corner of the drawing region.
 
-   Concepts: drawing^coordinates
-   Concepts: graphics^coordinates
 
 .seealso: PetscDrawSetCoordinates()
 

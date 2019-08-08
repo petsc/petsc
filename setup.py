@@ -84,13 +84,13 @@ def bootstrap():
     options = os.environ.get('PETSC_CONFIGURE_OPTIONS', '')
     CONFIGURE_OPTIONS.extend(split_quoted(options))
     for i in CONFIGURE_OPTIONS:
-        if i.startswith('--with-mpi-dir'):
+        if i.startswith('--with-mpi-dir='):
             raise RuntimeError("Do not use --with-mpi-dir, use the environmental variables MPICC, MPICXX, MPIF90")
-        if i.startswith('--with-cc'):
+        if i.startswith('--with-cc='):
             raise RuntimeError("Do not use --with-cc, use the environmental variable MPICC")
-        if i.startswith('--with-cxx') and not i == "--with-cxx=0":
+        if i.startswith('--with-cxx=') and i != "--with-cxx=0":
             raise RuntimeError("Do not use --with-cxx, use the environmental variable MPICXX")
-        if i.startswith('--with-fc') and not i == "--with-fc=0":
+        if i.startswith('--with-fc=') and i != "--with-fc=0":
             raise RuntimeError("Do not use --with-fc, use the environmental variable MPIF90")
 
     if '--with-mpi=0' not in CONFIGURE_OPTIONS:
@@ -268,7 +268,7 @@ def version():
 def tarball():
     VERSION = version()
     if '.dev' in VERSION: return None
-    return ('http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/'
+    return ('http://ftp.mcs.anl.gov/pub/petsc/release-snapshots//'
             'petsc-lite-%s.tar.gz#egg=petsc-%s' % (VERSION, VERSION))
 
 description = __doc__.split('\n')[1:-1]; del description[1:3]
@@ -300,7 +300,7 @@ setup(name='petsc',
       platforms=['POSIX'],
       license='BSD',
 
-      url='http://www.mcs.anl.gov/petsc/',
+      url='https://www.mcs.anl.gov/petsc/',
       download_url=tarball(),
 
       author='PETSc Team',

@@ -2,8 +2,8 @@
     Defines an interface to the MATLAB Engine from PETSc
 */
 
-#if !defined(__PETSCMATLAB_H)
-#define __PETSCMATLAB_H
+#if !defined(PETSCMATLAB_H)
+#define PETSCMATLAB_H
 
 PETSC_EXTERN PetscClassId MATLABENGINE_CLASSID;
 
@@ -11,6 +11,9 @@ PETSC_EXTERN PetscClassId MATLABENGINE_CLASSID;
      PetscMatlabEngine - Object used to communicate with MATLAB
 
    Level: intermediate
+
+   Note: Mats transfered between PETSc and MATLAB and vis versa are transposed in the other space
+         (this is because MATLAB uses compressed column format and PETSc uses compressed row format)
 
 .seealso:  PetscMatlabEngineCreate(), PetscMatlabEngineDestroy(), PetscMatlabEngineEvaluate(),
            PetscMatlabEngineGetOutput(), PetscMatlabEnginePut(), PetscMatlabEngineGet(),

@@ -297,8 +297,6 @@ M*/
 
   Level: advanced
 
-.keywords: TS, TSRosW, register, all
-
 .seealso:  TSRosWRegisterDestroy()
 @*/
 PetscErrorCode TSRosWRegisterAll(void)
@@ -603,7 +601,6 @@ PetscErrorCode TSRosWRegisterAll(void)
 
    Level: advanced
 
-.keywords: TSRosW, register, destroy
 .seealso: TSRosWRegister(), TSRosWRegisterAll()
 @*/
 PetscErrorCode TSRosWRegisterDestroy(void)
@@ -632,7 +629,6 @@ PetscErrorCode TSRosWRegisterDestroy(void)
 
   Level: developer
 
-.keywords: TS, TSRosW, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode TSRosWInitializePackage(void)
@@ -653,7 +649,6 @@ PetscErrorCode TSRosWInitializePackage(void)
 
   Level: developer
 
-.keywords: Petsc, destroy, package
 .seealso: PetscFinalize()
 @*/
 PetscErrorCode TSRosWFinalizePackage(void)
@@ -687,8 +682,6 @@ PetscErrorCode TSRosWFinalizePackage(void)
 
    Level: advanced
 
-.keywords: TS, register
-
 .seealso: TSRosW
 @*/
 PetscErrorCode TSRosWRegister(TSRosWType name,PetscInt order,PetscInt s,const PetscReal A[],const PetscReal Gamma[],const PetscReal b[],const PetscReal bembed[],
@@ -708,20 +701,20 @@ PetscErrorCode TSRosWRegister(TSRosWType name,PetscInt order,PetscInt s,const Pe
   if (bembed) PetscValidPointer(bembed,7);
 
   ierr     = TSRosWInitializePackage();CHKERRQ(ierr);
-  ierr     = PetscCalloc1(1,&link);CHKERRQ(ierr);
+  ierr     = PetscNew(&link);CHKERRQ(ierr);
   t        = &link->tab;
   ierr     = PetscStrallocpy(name,&t->name);CHKERRQ(ierr);
   t->order = order;
   t->s     = s;
   ierr     = PetscMalloc5(s*s,&t->A,s*s,&t->Gamma,s,&t->b,s,&t->ASum,s,&t->GammaSum);CHKERRQ(ierr);
   ierr     = PetscMalloc5(s*s,&t->At,s,&t->bt,s*s,&t->GammaInv,s,&t->GammaZeroDiag,s*s,&t->GammaExplicitCorr);CHKERRQ(ierr);
-  ierr     = PetscMemcpy(t->A,A,s*s*sizeof(A[0]));CHKERRQ(ierr);
-  ierr     = PetscMemcpy(t->Gamma,Gamma,s*s*sizeof(Gamma[0]));CHKERRQ(ierr);
-  ierr     = PetscMemcpy(t->GammaExplicitCorr,Gamma,s*s*sizeof(Gamma[0]));CHKERRQ(ierr);
-  ierr     = PetscMemcpy(t->b,b,s*sizeof(b[0]));CHKERRQ(ierr);
+  ierr     = PetscArraycpy(t->A,A,s*s);CHKERRQ(ierr);
+  ierr     = PetscArraycpy(t->Gamma,Gamma,s*s);CHKERRQ(ierr);
+  ierr     = PetscArraycpy(t->GammaExplicitCorr,Gamma,s*s);CHKERRQ(ierr);
+  ierr     = PetscArraycpy(t->b,b,s);CHKERRQ(ierr);
   if (bembed) {
     ierr = PetscMalloc2(s,&t->bembed,s,&t->bembedt);CHKERRQ(ierr);
-    ierr = PetscMemcpy(t->bembed,bembed,s*sizeof(bembed[0]));CHKERRQ(ierr);
+    ierr = PetscArraycpy(t->bembed,bembed,s);CHKERRQ(ierr);
   }
   for (i=0; i<s; i++) {
     t->ASum[i]     = 0;
@@ -790,7 +783,7 @@ PetscErrorCode TSRosWRegister(TSRosWType name,PetscInt order,PetscInt s,const Pe
 
   t->pinterp = pinterp;
   ierr = PetscMalloc1(s*pinterp,&t->binterpt);CHKERRQ(ierr);
-  ierr = PetscMemcpy(t->binterpt,binterpt,s*pinterp*sizeof(binterpt[0]));CHKERRQ(ierr);
+  ierr = PetscArraycpy(t->binterpt,binterpt,s*pinterp);CHKERRQ(ierr);
   link->next = RosWTableauList;
   RosWTableauList = link;
   PetscFunctionReturn(0);
@@ -808,7 +801,7 @@ PetscErrorCode TSRosWRegister(TSRosWType name,PetscInt order,PetscInt s,const Pe
 .  a3 - design parameter or PETSC_DEFAULT to satisfy one of the order five conditions (Eq 7.22)
 .  b3 - design parameter, see Table 7.2 of Hairer&Wanner
 .  beta43 - design parameter or PETSC_DEFAULT to use Equation 7.21 of Hairer&Wanner
-.  e4 - design parameter for embedded method, see coefficient E4 in ros4.f code from Hairer
+-  e4 - design parameter for embedded method, see coefficient E4 in ros4.f code from Hairer
 
    Notes:
    This routine encodes the design of fourth order Rosenbrock methods as described in Hairer and Wanner volume 2.
@@ -816,8 +809,6 @@ PetscErrorCode TSRosWRegister(TSRosWType name,PetscInt order,PetscInt s,const Pe
    It was written this way instead of by copying coefficients in order to provide better than double precision satisfaction of the order conditions.
 
    Level: developer
-
-.keywords: TS, register
 
 .seealso: TSRosW, TSRosWRegister()
 @*/

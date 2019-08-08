@@ -93,7 +93,6 @@ static PetscErrorCode MatFDColoringView_Draw(MatFDColoring fd,PetscViewer viewer
 
 .seealso: MatFDColoringCreate()
 
-.keywords: Mat, finite differences, coloring, view
 @*/
 PetscErrorCode  MatFDColoringView(MatFDColoring c,PetscViewer viewer)
 {
@@ -170,8 +169,6 @@ PetscErrorCode  MatFDColoringView(MatFDColoring c,PetscViewer viewer)
 
    Level: advanced
 
-.keywords: Mat, finite differences, coloring, set, parameters
-
 .seealso: MatFDColoringCreate(), MatFDColoringSetFromOptions()
 
 @*/
@@ -198,8 +195,6 @@ PetscErrorCode MatFDColoringSetParameters(MatFDColoring matfd,PetscReal error,Pe
 
    Level: intermediate
 
-.keywords: Mat, coloring
-
 .seealso: MatFDColoringCreate(), MatFDColoringSetFromOptions()
 
 @*/
@@ -225,8 +220,6 @@ PetscErrorCode MatFDColoringSetBlockSize(MatFDColoring matfd,PetscInt brows,Pets
 -  color - the matrix coloring context
 
    Level: beginner
-
-.keywords: MatFDColoring, setup
 
 .seealso: MatFDColoringCreate(), MatFDColoringDestroy()
 @*/
@@ -262,8 +255,6 @@ PetscErrorCode MatFDColoringSetUp(Mat mat,ISColoring iscoloring,MatFDColoring co
 -  fctx - the optional user-defined function context
 
    Level: intermediate
-
-.keywords: Mat, Jacobian, finite differences, set, function
 
 .seealso: MatFDColoringCreate(), MatFDColoringSetFunction(), MatFDColoringSetFromOptions()
 
@@ -301,8 +292,6 @@ PetscErrorCode  MatFDColoringGetFunction(MatFDColoring matfd,PetscErrorCode (**f
    Fortran Notes:
     In Fortran you must call MatFDColoringSetFunction() for a coloring object to
   be used without SNES or within the SNES solvers.
-
-.keywords: Mat, Jacobian, finite differences, set, function
 
 .seealso: MatFDColoringCreate(), MatFDColoringGetFunction(), MatFDColoringSetFromOptions()
 
@@ -342,8 +331,6 @@ PetscErrorCode  MatFDColoringSetFunction(MatFDColoring matfd,PetscErrorCode (*f)
 -  -mat_fd_coloring_view draw - Activates drawing
 
     Level: intermediate
-
-.keywords: Mat, finite differences, parameters
 
 .seealso: MatFDColoringCreate(), MatFDColoringView(), MatFDColoringSetParameters()
 
@@ -396,8 +383,6 @@ PetscErrorCode  MatFDColoringSetFromOptions(MatFDColoring matfd)
          introducing another one.
 
    Level: intermediate
-
-.keywords: Mat, finite differences, parameters
 
 .seealso: MatFDColoringCreate(), MatFDColoringView(), MatFDColoringSetParameters()
 
@@ -480,8 +465,12 @@ PetscErrorCode  MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring 
   } else SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Code not yet written for matrix type %s",((PetscObject)mat)->type_name);
 
   ierr = MatCreateVecs(mat,NULL,&c->w1);CHKERRQ(ierr);
+  /* Vec is used instensively in particular piece of scalar CPU code; won't benifit from bouncing back and forth to the GPU */
+  ierr = VecPinToCPU(c->w1,PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)c,(PetscObject)c->w1);CHKERRQ(ierr);
   ierr = VecDuplicate(c->w1,&c->w2);CHKERRQ(ierr);
+  /* Vec is used instensively in particular piece of scalar CPU code; won't benifit from bouncing back and forth to the GPU */
+  ierr = VecPinToCPU(c->w2,PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)c,(PetscObject)c->w2);CHKERRQ(ierr);
 
   c->error_rel    = PETSC_SQRT_MACHINE_EPSILON;
@@ -520,11 +509,12 @@ PetscErrorCode  MatFDColoringDestroy(MatFDColoring *c)
   if (!*c) PetscFunctionReturn(0);
   if (--((PetscObject)color)->refct > 0) {*c = 0; PetscFunctionReturn(0);}
 
+  /* we do not free the column arrays since their entries are owned by the ISs in color->isa */
   for (i=0; i<color->ncolors; i++) {
-    ierr = PetscFree(color->columns[i]);CHKERRQ(ierr);
+    ierr = ISDestroy(&color->isa[i]);CHKERRQ(ierr);
   }
-  ierr = PetscFree(color->ncolumns);CHKERRQ(ierr);
-  ierr = PetscFree(color->columns);CHKERRQ(ierr);
+  ierr = PetscFree(color->isa);CHKERRQ(ierr);
+  ierr = PetscFree2(color->ncolumns,color->columns);CHKERRQ(ierr);
   ierr = PetscFree(color->nrows);CHKERRQ(ierr);
   if (color->htype[0] == 'w') {
     ierr = PetscFree(color->matentry2);CHKERRQ(ierr);
@@ -555,6 +545,8 @@ PetscErrorCode  MatFDColoringDestroy(MatFDColoring *c)
 
    Level: advanced
 
+   Note: IF the matrix type is BAIJ, then the block column indices are returned
+
    Fortran Note:
    This routine has a different interface for Fortran
 $     #include <petsc/finclude/petscmat.h>
@@ -568,7 +560,6 @@ $          call MatFDColoringRestorePerturbedColumnsF90(i,array,ierr)
 
 .seealso: MatFDColoringCreate(), MatFDColoringDestroy(), MatFDColoringView(), MatFDColoringApply()
 
-.keywords: coloring, Jacobian, finite differences
 @*/
 PetscErrorCode  MatFDColoringGetPerturbedColumns(MatFDColoring coloring,PetscInt *n,const PetscInt *cols[])
 {
@@ -604,12 +595,10 @@ PetscErrorCode  MatFDColoringGetPerturbedColumns(MatFDColoring coloring,PetscInt
 
 .seealso: MatFDColoringCreate(), MatFDColoringDestroy(), MatFDColoringView(), MatFDColoringSetFunction()
 
-.keywords: coloring, Jacobian, finite differences
 @*/
 PetscErrorCode  MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,void *sctx)
 {
   PetscErrorCode ierr;
-  PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(J,MAT_CLASSID,1);
@@ -620,17 +609,6 @@ PetscErrorCode  MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,void *sct
   if (!coloring->setupcalled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call MatFDColoringSetUp()");
 
   ierr = MatSetUnfactored(J);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(((PetscObject)coloring)->options,NULL,"-mat_fd_coloring_dont_rezero",&flg,NULL);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscInfo(coloring,"Not calling MatZeroEntries()\n");CHKERRQ(ierr);
-  } else {
-    PetscBool assembled;
-    ierr = MatAssembled(J,&assembled);CHKERRQ(ierr);
-    if (assembled) {
-      ierr = MatZeroEntries(J);CHKERRQ(ierr);
-    }
-  }
-
   ierr = PetscLogEventBegin(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
   ierr = (*J->ops->fdcoloringapply)(J,coloring,x1,sctx);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);

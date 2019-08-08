@@ -1,6 +1,6 @@
 
-#ifndef __PETSCMATCOARSEN_H
-#define __PETSCMATCOARSEN_H
+#ifndef PETSCMATCOARSEN_H
+#define PETSCMATCOARSEN_H
 #include <petscmat.h>
 
 PETSC_EXTERN PetscFunctionList MatCoarsenList;
@@ -12,8 +12,6 @@ PETSC_EXTERN PetscFunctionList MatCoarsenList;
 
   Notes:
     This is used by the PCGAMG to generate coarser representations of an algebraic problem
-
-  Concepts: coarsen
 
 .seealso:  MatCoarsenCreate(), MatCoarsenType
 S*/

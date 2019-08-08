@@ -1,5 +1,5 @@
-#if !defined(_PETSC_HASHMAP_H)
-#define _PETSC_HASHMAP_H
+#if !defined(PETSC_HASHMAP_H)
+#define PETSC_HASHMAP_H
 
 #include <petsc/private/hashtable.h>
 
@@ -20,9 +20,6 @@
 
   Level: developer
 
-  Concepts: hash table, map
-
-.keywords: hash table, map
 .seealso: PetscHMapT, PetscHMapTCreate()
 M*/
 
@@ -34,9 +31,6 @@ M*/
 
   Level: developer
 
-  Concepts: hash table, map
-
-.keywords: hash table, map
 .seealso:  PETSC_HASH_MAP(), PetscHMapTCreate()
 S*/
 
@@ -52,9 +46,6 @@ S*/
 
   Level: developer
 
-  Concepts: hash table, map
-
-.keywords: hash table, map, create
 .seealso: PetscHMapTDestroy()
 M*/
 
@@ -70,9 +61,6 @@ M*/
 
   Level: developer
 
-  Concepts: hash table, map
-
-.keywords: hash table, map, destroy
 .seealso: PetscHMapTCreate()
 M*/
 
@@ -88,9 +76,6 @@ M*/
 
   Level: developer
 
-  Concepts: hash table, map
-
-.keywords: hash table, map, reset
 .seealso: PetscHMapTClear()
 M*/
 
@@ -109,9 +94,6 @@ M*/
 
   Level: developer
 
-  Concepts: hash table, map
-
-.keywords: hash table, map, duplicate
 .seealso: PetscHMapTCreate()
 M*/
 
@@ -127,9 +109,6 @@ M*/
 
   Level: developer
 
-  Concepts: hash table, map
-
-.keywords: hash table, map, reset
 .seealso: PetscHMapTReset()
 M*/
 
@@ -145,8 +124,6 @@ M*/
 - nb - The number of buckets
 
   Level: developer
-
-  Concepts: hash table, map
 
 .seealso: PetscHMapTCreate()
 M*/
@@ -166,10 +143,25 @@ M*/
 
   Level: developer
 
-  Concepts: hash table, map
-
-.keywords: hash table, map, resize
 .seealso: PetscHMapTResize()
+M*/
+
+/*MC
+  PetscHMapTGetCapacity - Get the current size of the array in the hash table
+
+  Synopsis:
+  #include <petsc/private/hashmap.h>
+  PetscErrorCode PetscHMapTGetCapacity(PetscHMapT ht,PetscInt *n)
+
+  Input Parameter:
+. ht - The hash table
+
+  Output Parameter:
+. n - The capacity
+
+  Level: developer
+
+.seealso: PetscHMapTResize(), PetscHMapTGetSize()
 M*/
 
 /*MC
@@ -188,9 +180,6 @@ M*/
 
   Level: developer
 
-  Concepts: hash table, map
-
-.keywords: hash table, map, query
 .seealso:  PetscHMapTGet(), PetscHMapTSet(), PetscHMapTFind()
 M*/
 
@@ -210,9 +199,6 @@ M*/
 
   Level: developer
 
-  Concepts: hash table, map
-
-.keywords: hash table, map, get
 .seealso:  PetscHMapTSet(), PetscHMapTIterGet()
 M*/
 
@@ -230,9 +216,6 @@ M*/
 
   Level: developer
 
-  Concepts: hash table, map
-
-.keywords: hash table, map, set
 .seealso: PetscHMapTGet(), PetscHMapTIterSet()
 M*/
 
@@ -249,9 +232,6 @@ M*/
 
   Level: developer
 
-  Concepts: hash table, map
-
-.keywords: hash table, map, del
 .seealso: PetscHMapTHas(), PetscHMapTIterDel()
 M*/
 
@@ -272,9 +252,6 @@ M*/
 
   Level: developer
 
-  Concepts: hash table, map
-
-.keywords: hash table, map, query, set
 .seealso: PetscHMapTQueryDel(), PetscHMapTSet()
 M*/
 
@@ -294,9 +271,6 @@ M*/
 
   Level: developer
 
-  Concepts: hash table, map
-
-.keywords: hash table, map, query, del
 .seealso: PetscHMapTQuerySet(), PetscHMapTDel()
 M*/
 
@@ -317,9 +291,6 @@ M*/
 
   Level: developer
 
-  Concepts: hash table, map
-
-.keywords: hash table, map, iterator, find
 .seealso: PetscHMapTIterGet(), PetscHMapTIterDel()
 M*/
 
@@ -340,9 +311,6 @@ M*/
 
   Level: developer
 
-  Concepts: hash table, map
-
-.keywords: hash table, map, iterator, put
 .seealso: PetscHMapTIterSet(), PetscHMapTQuerySet(), PetscHMapTSet()
 M*/
 
@@ -362,9 +330,6 @@ M*/
 
   Level: developer
 
-  Concepts: hash table, map
-
-.keywords: hash table, map, iterator, get
 .seealso: PetscHMapTFind(), PetscHMapTGet()
 M*/
 
@@ -382,9 +347,6 @@ M*/
 
   Level: developer
 
-  Concepts: hash table, map
-
-.keywords: hash table, map, iterator, set
 .seealso: PetscHMapTPut(), PetscHMapTQuerySet(), PetscHMapTSet()
 M*/
 
@@ -401,9 +363,6 @@ M*/
 
   Level: developer
 
-  Concepts: hash table, map
-
-.keywords: hash table, map, iterator, del
 .seealso: PetscHMapTFind(), PetscHMapTQueryDel(), PetscHMapTDel()
 M*/
 
@@ -425,9 +384,6 @@ M*/
 
   Level: developer
 
-  Concepts: hash table, map
-
-.keywords: hash table, map, array
 .seealso: PetscHSetTGetSize(), PetscHMapTGetVals()
 M*/
 
@@ -449,10 +405,30 @@ M*/
 
   Level: developer
 
-  Concepts: hash table, map
-
-.keywords: hash table, map, array
 .seealso: PetscHSetTGetSize(), PetscHMapTGetKeys()
+M*/
+
+/*MC
+  PetscHMapTGetPairs - Get all (key,value) pairs from a hash table
+
+  Synopsis:
+  #include <petsc/private/hashmap.h>
+  PetscErrorCode PetscHMapTGetPairs(PetscHMapT ht,PetscInt *off,KeyType karray[],ValType varray[])
+
+  Input Parameters:
++ ht    - The hash table
+. off   - Input offset in array (usually zero)
+- karray - Array where to put hash table keys into
+- varray - Array where to put hash table values into
+
+  Output Parameter:
++ off   - Output offset in array (output offset = input offset + hash table size)
+- karray - Array filled with the hash table keys
+- varray - Array filled with the hash table values
+
+  Level: developer
+
+.seealso: PetscHSetTGetSize(), PetscHMapTGetKeys(), PetscHMapTGetVals()
 M*/
 
 #define PETSC_HASH_MAP(HashT, KeyType, ValType, HashFunc, EqualFunc, DefaultValue)                   \
@@ -537,6 +513,16 @@ PetscErrorCode Petsc##HashT##GetSize(Petsc##HashT ht,PetscInt *n)               
   PetscValidPointer(ht,1);                                                                           \
   PetscValidIntPointer(n,2);                                                                         \
   *n = (PetscInt)kh_size(ht);                                                                        \
+  PetscFunctionReturn(0);                                                                            \
+}                                                                                                    \
+                                                                                                     \
+PETSC_STATIC_INLINE PETSC_UNUSED                                                                     \
+PetscErrorCode Petsc##HashT##GetCapacity(Petsc##HashT ht,PetscInt *n)                                \
+{                                                                                                    \
+  PetscFunctionBegin;                                                                                \
+  PetscValidPointer(ht,1);                                                                           \
+  PetscValidIntPointer(n,2);                                                                         \
+  *n = (PetscInt)kh_n_buckets(ht);                                                                   \
   PetscFunctionReturn(0);                                                                            \
 }                                                                                                    \
                                                                                                      \
@@ -702,5 +688,23 @@ PetscErrorCode Petsc##HashT##GetVals(Petsc##HashT ht,PetscInt *off,ValType array
   *off = pos;                                                                                        \
   PetscFunctionReturn(0);                                                                            \
 }                                                                                                    \
+                                                                                                     \
+                                                                                                     \
+PETSC_STATIC_INLINE PETSC_UNUSED                                                                     \
+PetscErrorCode Petsc##HashT##GetPairs(Petsc##HashT ht,PetscInt *off,KeyType karray[],ValType varray[]) \
+{                                                                                                    \
+  ValType  val;                                                                                      \
+  KeyType  key;                                                                                      \
+  PetscInt pos;                                                                                      \
+  PetscFunctionBegin;                                                                                \
+  PetscValidPointer(ht,1);                                                                           \
+  PetscValidIntPointer(off,2);                                                                       \
+  pos = *off;                                                                                        \
+  kh_foreach(ht,key,val,                                                                             \
+  { karray[pos] = key;                                                                               \
+  varray[pos++] = val;})                                                                             \
+  *off = pos;                                                                                        \
+  PetscFunctionReturn(0);                                                                            \
+}                                                                                                    \
 
-#endif /* _PETSC_HASHMAP_H */
+#endif /* PETSC_HASHMAP_H */

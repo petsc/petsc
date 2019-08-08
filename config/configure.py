@@ -131,30 +131,11 @@ def chkenable():
         if tail == '1': tail = '0'
         sys.argv[l] = head.replace('without-','with-')+'='+tail
 
-def argsAddDownload(value,deps = [],options = []):
-  # Adds --download-value to args if the command line DOES NOT already has --with-value or --download-value in it
-  # this is to prevent introducing conflicting arguments to ones that already exist
-  for opt in sys.argv[1:]:
-    optname = opt.split('=')[0].strip('-')
-    if optname in ['download-'+value,'with-'+value,'with-'+value+'-dir','with-'+value+'-include','with-'+value+'-lib']: return
-  sys.argv.append('--download-'+value)
-  for i in deps:
-    argsAddDownload(i)
-  for i in options:
-    sys.argv.append(i)
-
 def chksynonyms():
   #replace common configure options with ones that PETSc BuildSystem recognizes
-  downloadxsdk = 0
-  downloadideas = 0
+  simplereplacements = {'F77' : 'FC', 'F90' : 'FC'}
   for l in range(0,len(sys.argv)):
     name = sys.argv[l]
-
-    if name.find('download-xsdk=') >= 0 or name.endswith('download-xsdk'):
-      downloadxsdk = 1
-
-    if name.find('download-ideas=') >= 0 or name.endswith('download-ideas'):
-      downloadideas = 1
 
     if name.find('with-blas-lapack') >= 0:
       sys.argv[l] = name.replace('with-blas-lapack','with-blaslapack')
@@ -187,27 +168,11 @@ def chksynonyms():
       if tail.find('quad')>=0:
         sys.argv[l]='--with-precision=__float128'
 
-  if downloadideas:
-    downloadxsdk = 1
-    argsAddDownload('alquimia')
-    # mstk currently cannot build a shared library
-    argsAddDownload('mstk',[],['--download-mstk-shared=0'])
-    argsAddDownload('ascem-io')
-    argsAddDownload('unittestcpp')
-
-  if downloadxsdk:
-    # Common external libraries
-    argsAddDownload('pflotran')
-    argsAddDownload('hdf5',['zlib'])
-    argsAddDownload('netcdf')
-    argsAddDownload('metis')
-
-    argsAddDownload('superlu_dist',['parmetis'])
-
-    argsAddDownload('hypre')
-
-    argsAddDownload('trilinos',['boost','xsdktrilinos'],['--with-cxx-dialect=C++11'])
-
+    for i,j in simplereplacements.items():
+      if name.find(i+'=') >= 0:
+        sys.argv[l] = name.replace(i+'=',j+'=')
+      elif name.find('with-'+i.lower()+'=') >= 0:
+        sys.argv[l] = name.replace(i.lower()+'=',j.lower()+'=')
 
 def chkwinf90():
   for arg in sys.argv:
@@ -274,6 +239,17 @@ def chkcygwinpython():
 ===============================================================================''')
   return 0
 
+def chkcygwinwindowscompilers():
+  '''Adds win32fe for Microsoft/Intel compilers'''
+  if os.path.exists('/usr/bin/cygcheck.exe'):
+    for l in range(1,len(sys.argv)):
+      option = sys.argv[l]
+      for i in ['cl','icl','ifort']:
+        if option.startswith(i):
+          sys.argv[l] = 'win32fe '+option
+          break
+  return 0
+
 def chkrhl9():
   if os.path.exists('/etc/redhat-release'):
     try:
@@ -291,6 +267,27 @@ def chkrhl9():
    ****** Disabling thread usage for this run of ./configure *********
 ===============================================================================''')
   return 0
+
+def chktmpnoexec():
+  if not hasattr(os,'ST_NOEXEC'): return
+  if 'TMPDIR' in os.environ: tmpDir = os.environ['TMPDIR']
+  else: tmpDir = '/tmp'
+  if os.statvfs(tmpDir).f_flag & os.ST_NOEXEC:
+    if os.statvfs(os.path.abspath('.')).f_flag & os.ST_NOEXEC:
+      print('************************************************************************')
+      print('* TMPDIR '+tmpDir+' has noexec attribute. Same with '+os.path.abspath('.')+' where petsc is built.')
+      print('* Suggest building PETSc in a location without this restriction!')
+      print('* Alternatively, set env variable TMPDIR to a location that is not restricted to run binaries.')
+      print('************************************************************************')
+      sys.exit(4)
+    else:
+      newTmp = os.path.abspath('tmp-petsc')
+      print('************************************************************************')
+      print('* TMPDIR '+tmpDir+' has noexec attribute. Using '+newTmp+' instead.')
+      print('************************************************************************')
+      if not os.path.isdir(newTmp): os.mkdir(os.path.abspath(newTmp))
+      os.environ['TMPDIR'] = newTmp
+  return
 
 def check_broken_configure_log_links():
   '''Sometime symlinks can get broken if the original files are deleted. Delete such broken links'''
@@ -391,6 +388,8 @@ def petsc_configure(configure_options):
   chkcygwinpython()
   chkcygwinlink()
   chkdosfiles()
+  chkcygwinwindowscompilers()
+  chktmpnoexec()
 
   # Should be run from the toplevel
   configDir = os.path.abspath('config')
@@ -402,6 +401,7 @@ def petsc_configure(configure_options):
   import config.base
   import config.framework
   import pickle
+  import traceback
 
   framework = None
   try:
@@ -434,7 +434,7 @@ def petsc_configure(configure_options):
     emsg = str(e)
     if not emsg.endswith('\n'): emsg = emsg+'\n'
     msg ='*******************************************************************************\n'\
-    +'                ERROR in COMMAND LINE ARGUMENT to ./configure \n' \
+    +'    TypeError or ValueError possibly related to ERROR in COMMAND LINE ARGUMENT to ./configure \n' \
     +'-------------------------------------------------------------------------------\n'  \
     +emsg+'*******************************************************************************\n'
     se = ''
@@ -482,19 +482,21 @@ def petsc_configure(configure_options):
           framework.outputCHeader(framework.log)
       except Exception as e:
         framework.log.write('Problem writing headers to log: '+str(e))
-      import traceback
       try:
         framework.log.write(msg+se)
         traceback.print_tb(sys.exc_info()[2], file = framework.log)
         print_final_timestamp(framework)
         if hasattr(framework,'log'): framework.log.close()
         move_configure_log(framework)
-      except:
-        pass
+      except Exception as e:
+        print('Error printing error message from exception or printing the traceback:'+str(e))
+        traceback.print_tb(sys.exc_info()[2])
       sys.exit(1)
+    else:
+      print(se)
+      traceback.print_tb(sys.exc_info()[2])
   else:
     print(se)
-    import traceback
     traceback.print_tb(sys.exc_info()[2])
   if hasattr(framework,'log'): framework.log.close()
 

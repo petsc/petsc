@@ -11,7 +11,6 @@ static PetscBool PetscSysPackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.keywords: Petsc, destroy, package
 .seealso: PetscFinalize()
 @*/
 PetscErrorCode  PetscSysFinalizePackage(void)
@@ -33,7 +32,6 @@ PetscErrorCode  PetscSysFinalizePackage(void)
 
   Level: developer
 
-.keywords: Petsc, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode  PetscSysInitializePackage(void)

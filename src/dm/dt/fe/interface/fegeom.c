@@ -18,7 +18,10 @@ PetscErrorCode PetscFEGeomCreate(PetscQuadrature quad, PetscInt numCells, PetscI
   N = numCells * Nq;
   ierr = PetscCalloc3(N * dimEmbed, &g->v, N * dimEmbed * dimEmbed, &g->J, N, &g->detJ);CHKERRQ(ierr);
   if (faceData) {
-    ierr = PetscCalloc4(numCells, &g->face, N * dimEmbed, &g->n, N * dimEmbed * dimEmbed, &(g->suppInvJ[0]), N * dimEmbed * dimEmbed, &(g->suppInvJ[1]));CHKERRQ(ierr);
+    ierr = PetscCalloc2(numCells, &g->face, N * dimEmbed, &g->n);CHKERRQ(ierr);
+    ierr = PetscCalloc6(N * dimEmbed * dimEmbed, &(g->suppJ[0]),    N * dimEmbed * dimEmbed, &(g->suppJ[1]),
+                        N * dimEmbed * dimEmbed, &(g->suppInvJ[0]), N * dimEmbed * dimEmbed, &(g->suppInvJ[1]),
+                        N,                       &(g->suppDetJ[0]), N,                       &(g->suppDetJ[1]));CHKERRQ(ierr);
   }
   ierr = PetscCalloc1(N * dimEmbed * dimEmbed, &g->invJ);CHKERRQ(ierr);
   *geom = g;
@@ -33,7 +36,8 @@ PetscErrorCode PetscFEGeomDestroy(PetscFEGeom **geom)
   if (!*geom) PetscFunctionReturn(0);
   ierr = PetscFree3((*geom)->v,(*geom)->J,(*geom)->detJ);CHKERRQ(ierr);
   ierr = PetscFree((*geom)->invJ);CHKERRQ(ierr);
-  ierr = PetscFree4((*geom)->face,(*geom)->n,(*geom)->suppInvJ[0],(*geom)->suppInvJ[1]);CHKERRQ(ierr);
+  ierr = PetscFree2((*geom)->face,(*geom)->n);CHKERRQ(ierr);
+  ierr = PetscFree6((*geom)->suppJ[0],(*geom)->suppJ[1],(*geom)->suppInvJ[0],(*geom)->suppInvJ[1],(*geom)->suppDetJ[0],(*geom)->suppDetJ[1]);CHKERRQ(ierr);
   ierr = PetscFree(*geom);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -63,8 +67,12 @@ PetscErrorCode PetscFEGeomGetChunk(PetscFEGeom *geom, PetscInt cStart, PetscInt 
   (*chunkGeom)->detJ = &geom->detJ[Nq*cStart];
   (*chunkGeom)->n = geom->n ? &geom->n[Nq*dE*cStart] : NULL;
   (*chunkGeom)->face = geom->face ? &geom->face[cStart] : NULL;
+  (*chunkGeom)->suppJ[0]    = geom->suppJ[0]    ? &geom->suppJ[0][Nq*dE*dE*cStart]    : NULL;
+  (*chunkGeom)->suppJ[1]    = geom->suppJ[1]    ? &geom->suppJ[1][Nq*dE*dE*cStart]    : NULL;
   (*chunkGeom)->suppInvJ[0] = geom->suppInvJ[0] ? &geom->suppInvJ[0][Nq*dE*dE*cStart] : NULL;
   (*chunkGeom)->suppInvJ[1] = geom->suppInvJ[1] ? &geom->suppInvJ[1][Nq*dE*dE*cStart] : NULL;
+  (*chunkGeom)->suppDetJ[0] = geom->suppDetJ[0] ? &geom->suppDetJ[0][Nq*cStart]       : NULL;
+  (*chunkGeom)->suppDetJ[1] = geom->suppDetJ[1] ? &geom->suppDetJ[1][Nq*cStart]       : NULL;
   (*chunkGeom)->isAffine = geom->isAffine;
   PetscFunctionReturn(0);
 }
@@ -114,4 +122,3 @@ PetscErrorCode PetscFEGeomComplete(PetscFEGeom *geom)
   }
   PetscFunctionReturn(0);
 }
-

@@ -284,10 +284,8 @@ PetscErrorCode spbas_compress_pattern(PetscInt *irow_in, PetscInt *icol_in, Pets
   /* Allocate the ordering for the rows */
   ierr = PetscMalloc1(nrows,&isort);CHKERRQ(ierr);
   ierr = PetscMalloc1(nrows,&ipoint);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nrows,&used);CHKERRQ(ierr);
+  ierr = PetscCalloc1(nrows,&used);CHKERRQ(ierr);
 
-  /*  Initialize the sorting */
-  ierr = PetscMemzero((void*) used, nrows*sizeof(PetscBool));CHKERRQ(ierr);
   for (i = 0; i<nrows; i++)  {
     B->row_nnz[i] = irow_in[i+1]-irow_in[i];
     isort[i]      = i;
@@ -827,11 +825,8 @@ PetscErrorCode spbas_power(spbas_matrix in_matrix,PetscInt power, spbas_matrix *
   /* Allocate sparseness pattern */
   ierr =  spbas_allocate_pattern(&retval, in_matrix.values ? PETSC_TRUE : PETSC_FALSE);CHKERRQ(ierr);
 
-  /* Allocate marker array */
-  ierr = PetscMalloc1(nrows, &iwork);CHKERRQ(ierr);
-
-  /* Erase the pattern for this row */
-  ierr = PetscMemzero((void*) iwork, retval.nrows*sizeof(PetscInt));CHKERRQ(ierr);
+  /* Allocate marker array: note sure the max needed so use the max of the two */
+  ierr = PetscCalloc1(PetscMax(ncols,nrows), &iwork);CHKERRQ(ierr);
 
   /* Calculate marker values */
   marker = 1; for (i=1; i<power; i++) marker*=2;
@@ -858,7 +853,7 @@ PetscErrorCode spbas_power(spbas_matrix in_matrix,PetscInt power, spbas_matrix *
       if (iwork[j]) {
         retval.icols[i][inz] = j-i;
         inz++;
-        iwork[j]=0;
+        iwork[j] = 0;
       }
     }
     retval.nnz += nnz;

@@ -11,9 +11,10 @@ int main(int argc,char **args)
   PetscInt       *boundary_nodes, nboundary_nodes, *boundary_indices;
   PetscMPIInt    rank,size;
   PetscErrorCode ierr;
-  PetscScalar    v,v0,v1,v2,a0=0.1,a,rhsval, *boundary_values;
+  PetscScalar    v,v0,v1,v2,a0=0.1,a,rhsval, *boundary_values,diag = 1.0;
   PetscReal      norm;
-  PetscBool      upwind = PETSC_FALSE, nonlocalBC = PETSC_FALSE;
+  char           convname[64];
+  PetscBool      upwind = PETSC_FALSE, nonlocalBC = PETSC_FALSE, zerorhs = PETSC_TRUE, convert = PETSC_FALSE;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -22,6 +23,9 @@ int main(int argc,char **args)
 
   ierr = PetscOptionsGetInt(NULL,NULL, "-bs", &bs, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL, "-nonlocal_bc", &nonlocalBC, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetScalar(NULL,NULL, "-diag", &diag, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-convname",convname,sizeof(convname),&convert);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL, "-zerorhs", &zerorhs, NULL);CHKERRQ(ierr);
 
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n*bs,m*n*bs);CHKERRQ(ierr);
@@ -70,10 +74,21 @@ int main(int argc,char **args)
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  if (convert) { /* Test different Mat implementations */
+    Mat B;
+
+    ierr = MatConvert(A,convname,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+    ierr = MatDestroy(&A);CHKERRQ(ierr);
+    A    = B;
+  }
+
   ierr = VecAssemblyBegin(rhs);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(rhs);CHKERRQ(ierr);
   /* set rhs to zero to simplify */
-  ierr = VecZeroEntries(rhs);CHKERRQ(ierr);
+  if (zerorhs) {
+    ierr = VecZeroEntries(rhs);CHKERRQ(ierr);
+  }
 
   if (nonlocalBC) {
     /*version where boundary conditions are set by processes that don't necessarily own the nodes */
@@ -122,7 +137,7 @@ int main(int argc,char **args)
     }
   }
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD, NULL);CHKERRQ(ierr);
-  if (nboundary_nodes) {ierr = VecSetValues(x, nboundary_nodes*bs, boundary_indices, boundary_values, INSERT_VALUES);CHKERRQ(ierr);}
+  ierr = VecSetValues(x, nboundary_nodes*bs, boundary_indices, boundary_values, INSERT_VALUES);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
 
@@ -130,7 +145,8 @@ int main(int argc,char **args)
   ierr = VecDuplicate(x, &y);CHKERRQ(ierr);
   ierr = MatMult(A, x, y);CHKERRQ(ierr);
   ierr = VecAYPX(y, -1.0, rhs);CHKERRQ(ierr);
-  if (nboundary_nodes) {ierr = VecSetValues(y, nboundary_nodes*bs, boundary_indices, boundary_values, INSERT_VALUES);CHKERRQ(ierr);}
+  for (k=0; k<nboundary_nodes*bs; k++) boundary_values[k] *= diag;
+  ierr = VecSetValues(y, nboundary_nodes*bs, boundary_indices, boundary_values, INSERT_VALUES);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(y);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(y);CHKERRQ(ierr);
 
@@ -138,7 +154,7 @@ int main(int argc,char **args)
   ierr = MatView(A, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  ierr = MatZeroRowsColumns(A, nboundary_nodes*bs, boundary_indices, 1.0, x, rhs);CHKERRQ(ierr);
+  ierr = MatZeroRowsColumns(A, nboundary_nodes*bs, boundary_indices, diag, x, rhs);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD, "*** Vector rhs returned by MatZeroRowsColumns\n");CHKERRQ(ierr);
   ierr = VecView(rhs,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecAXPY(y, -1.0, rhs);CHKERRQ(ierr);
@@ -230,4 +246,21 @@ int main(int argc,char **args)
       suffix: 9
       args: -bs 2 -nonlocal_bc
 
+   test:
+      suffix: 15
+      args: -bs 2 -nonlocal_bc -convname shell
+
+   test:
+      suffix: 16
+      nsize: 2
+      args: -bs 2 -nonlocal_bc -convname shell
+
+   test:
+      suffix: 17
+      args: -bs 2 -nonlocal_bc -convname dense
+
+   testset:
+      suffix: full
+      nsize: {{1 3}separate output}
+      args: -diag {{0.12 -0.13}separate output} -convname {{aij shell baij}separate output} -zerorhs 0
 TEST*/

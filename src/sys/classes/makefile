@@ -1,7 +1,7 @@
 
 ALL: lib
 SOURCEH   =
-DIRS      = viewer draw matlabengine random bag gll
+DIRS      = viewer draw matlabengine random bag
 LOCDIR    = src/sys/classes/
 MANSEC    = Sys
 

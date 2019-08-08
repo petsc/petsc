@@ -3,6 +3,10 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self,framework)
+    self.version           = '5.7.1'
+    self.versionname       = 'UMFPACK_MAIN_VERSION.UMFPACK_SUB_VERSION.UMFPACK_SUBSUB_VERSION'
+    self.versioninclude    = 'umfpack.h'
+    #  Note that there is not SuitSparse version number in the code, the only version information is for UMFPACK
     self.download          = ['http://faculty.cse.tamu.edu/davis/SuiteSparse/SuiteSparse-4.4.3.tar.gz',
                               'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/SuiteSparse-4.4.3.tar.gz']
     self.liblist           = [['libumfpack.a','libklu.a','libcholmod.a','libbtf.a','libccolamd.a','libcolamd.a','libcamd.a','libamd.a','libsuitesparseconfig.a'],
@@ -118,6 +122,6 @@ class Configure(config.package.Package):
 
   def consistencyChecks(self):
     config.package.Package.consistencyChecks(self)
-    if self.framework.argDB['with-'+self.package] and self.defaultIndexSize == 64 and self.types.sizes['known-sizeof-void-p'] == 4:
+    if self.framework.argDB['with-'+self.package] and self.defaultIndexSize == 64 and self.types.sizes['void-p'] == 4:
       raise RuntimeError('SuiteSparse does not support 64bit indices in 32bit (pointer) mode.')
     return

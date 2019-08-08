@@ -79,7 +79,7 @@ PetscErrorCode TaoLineSearchView(TaoLineSearch ls, PetscViewer viewer)
   TaoLineSearchCreate - Creates a TAO Line Search object.  Algorithms in TAO that use
   line-searches will automatically create one.
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 . comm - MPI communicator
@@ -489,7 +489,7 @@ PetscErrorCode TaoLineSearchMonitor(TaoLineSearch ls, PetscInt its, PetscReal f,
     ierr = PetscViewerASCIISetTab(ls->viewer, ((PetscObject)ls)->tablevel);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(ls->viewer, "%3D LS", its);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(ls->viewer, "  Function value: %g,", (double)f);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(ls->viewer, "  Step lenght: %g\n", (double)step);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(ls->viewer, "  Step length: %g\n", (double)step);CHKERRQ(ierr);
     if (ls->ops->monitor && its > 0) {
       ierr = PetscViewerASCIISetTab(ls->viewer, ((PetscObject)ls)->tablevel + 3);CHKERRQ(ierr);
       ierr = (*ls->ops->monitor)(ls);CHKERRQ(ierr);
@@ -1065,7 +1065,7 @@ PetscErrorCode TaoLineSearchComputeObjectiveAndGTS(TaoLineSearch ls, Vec x, Pets
 . TAOLINESEARCH_HALTED_USER - user can set this reason to stop line search
 . TAOLINESEARCH_HALTED_OTHER - any other reason
 
-+ TAOLINESEARCH_SUCCESS - successful line search
+- TAOLINESEARCH_SUCCESS - successful line search
 
   Level: developer
 

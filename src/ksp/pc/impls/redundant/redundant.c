@@ -323,7 +323,6 @@ static PetscErrorCode PCRedundantSetNumber_Redundant(PC pc,PetscInt nreds)
 
    Level: advanced
 
-.keywords: PC, redundant solve
 @*/
 PetscErrorCode PCRedundantSetNumber(PC pc,PetscInt nredundant)
 {
@@ -367,7 +366,6 @@ static PetscErrorCode PCRedundantSetScatter_Redundant(PC pc,VecScatter in,VecSca
 
    Level: advanced
 
-.keywords: PC, redundant solve
 @*/
 PetscErrorCode PCRedundantSetScatter(PC pc,VecScatter in,VecScatter out)
 {
@@ -435,7 +433,6 @@ static PetscErrorCode PCRedundantGetKSP_Redundant(PC pc,KSP *innerksp)
 
    Level: advanced
 
-.keywords: PC, redundant solve
 @*/
 PetscErrorCode PCRedundantGetKSP(PC pc,KSP *innerksp)
 {
@@ -472,7 +469,6 @@ static PetscErrorCode PCRedundantGetOperators_Redundant(PC pc,Mat *mat,Mat *pmat
 
    Level: advanced
 
-.keywords: PC, redundant solve
 @*/
 PetscErrorCode PCRedundantGetOperators(PC pc,Mat *mat,Mat *pmat)
 {

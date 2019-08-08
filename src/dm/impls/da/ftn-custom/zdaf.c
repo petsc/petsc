@@ -20,7 +20,7 @@ PETSC_EXTERN void PETSC_STDCALL dmdagetneighbors_(DM *da,PetscMPIInt *ranks,Pets
   *ierr = DMGetDimension(*da,&dim);if (*ierr) return;
   if (dim == 2) n = 9;
   else n = 27;
-  *ierr = PetscMemcpy(ranks,r,n*sizeof(PetscMPIInt));
+  *ierr = PetscArraycpy(ranks,r,n);
 }
 
 PETSC_EXTERN void PETSC_STDCALL dmdagetownershipranges_(DM *da,PetscInt lx[],PetscInt ly[],PetscInt lz[],PetscErrorCode *ierr)

@@ -62,7 +62,7 @@ PetscErrorCode KSPMonitorSAWsDestroy(void **ctx)
 /*@C
    KSPMonitorSAWs - monitor solution using SAWs
 
-   Logically Collective on KSP
+   Logically Collective on ksp
 
    Input Parameters:
 +  ksp   - iterative context
@@ -71,8 +71,6 @@ PetscErrorCode KSPMonitorSAWsDestroy(void **ctx)
 -  ctx -  PetscViewer of type SAWs
 
    Level: advanced
-
-.keywords: KSP, CG, monitor, SAWs, singular values
 
 .seealso: KSPMonitorSingularValue(), KSPComputeExtremeSingularValues(), PetscViewerSAWsOpen()
 @*/

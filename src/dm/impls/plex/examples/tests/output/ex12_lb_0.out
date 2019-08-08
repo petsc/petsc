@@ -1,3 +1,7 @@
+DM Object: Parallel Mesh 4 MPI processes
+  type: plex
+  Cell balance: 1.00 (max 4, min 4, empty 0)
+  Edge Cut: 19 (on node 1.000)
 Graph Partitioner: 4 MPI Processes
   type: parmetis
   edge cut: 8
@@ -5,3 +9,8 @@ Graph Partitioner: 4 MPI Processes
   ParMetis type: kway
   load imbalance ratio 1.05
   debug flag 0
+  random seed -1
+DM Object: Tensor Product Mesh 4 MPI processes
+  type: plex
+  Cell balance: 1.00 (max 4, min 4, empty 0)
+  Edge Cut: 8 (on node 1.000)

@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
     ia[6] = 13;
     ia[7] = 14;
   }
-  ierr = PetscMemcpy(ia0,ia,n_loc*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArraycpy(ia0,ia,n_loc);CHKERRQ(ierr);
 
   ierr = AOApplicationToPetsc(app2petsc, n_loc, ia);CHKERRQ(ierr);
 

@@ -104,12 +104,12 @@ PetscErrorCode TaoTestHessian(Tao tao)
   else hessian = tao->hessian_pre;
 
   while (hessian) {
-    ierr = PetscObjectTypeCompareAny((PetscObject)hessian,&flg,MATSEQAIJ,MATMPIAIJ,MATSEQDENSE,MATMPIDENSE,MATSEQBAIJ,MATMPIBAIJ,MATSEQSBAIJ,MATMPIBAIJ,"");CHKERRQ(ierr);
+    ierr = PetscObjectBaseTypeCompareAny((PetscObject)hessian,&flg,MATSEQAIJ,MATMPIAIJ,MATSEQDENSE,MATMPIDENSE,MATSEQBAIJ,MATMPIBAIJ,MATSEQSBAIJ,MATMPIBAIJ,"");CHKERRQ(ierr);
     if (flg) {
       A    = hessian;
       ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
     } else {
-      ierr = MatComputeExplicitOperator(hessian,&A);CHKERRQ(ierr);
+      ierr = MatComputeOperator(hessian,MATAIJ,&A);CHKERRQ(ierr);
     }
 
     ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
@@ -132,7 +132,7 @@ PetscErrorCode TaoTestHessian(Tao tao)
 
     if (complete_print) {
       ierr = PetscViewerASCIIPrintf(viewer,"  Hand-coded Hessian ----------\n");CHKERRQ(ierr);
-      ierr = MatView(hessian,mviewer);CHKERRQ(ierr);
+      ierr = MatView(A,mviewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  Finite difference Hessian ----------\n");CHKERRQ(ierr);
       ierr = MatView(B,mviewer);CHKERRQ(ierr);
     }

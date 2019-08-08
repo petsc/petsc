@@ -5,6 +5,130 @@
    DMDAVecGetArray - Returns a multiple dimension array that shares data with
       the underlying vector and is indexed using the global dimensions.
 
+   Logically collective on da
+
+   Input Parameter:
++  da - the distributed array
+-  vec - the vector, either a vector the same size as one obtained with DMCreateGlobalVector() or DMCreateLocalVector()
+
+   Output Parameter:
+.  array - the array
+
+   Notes:
+    Call DMDAVecRestoreArray() once you have finished accessing the vector entries.
+
+    In C, the indexing is "backwards" from what expects: array[k][j][i] NOT array[i][j][k]!
+
+    If vec is a local vector (obtained with DMCreateLocalVector() etc) then the ghost point locations are accessible. If it is
+    a global vector then the ghost points are not accessible. Of course with the local vector you will have had to do the
+
+    appropriate DMGlobalToLocalBegin() and DMGlobalToLocalEnd() to have correct values in the ghost locations.
+
+  Fortran Notes:
+    From Fortran use DMDAVecGetArrayF90() and pass for the array type PetscScalar,pointer :: array(:,...,:) of the appropriate
+       dimension. For a DMDA created with a dof of 1 use the dimension of the DMDA, for a DMDA created with a dof greater than 1 use one more than the
+       dimension of the DMDA. The order of the indices is array(xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) (when dof is 1) otherwise
+       array(0:dof-1,xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) where the values are obtained from
+       DMDAGetCorners() for a global array or DMDAGetGhostCorners() for a local array. Include petsc/finclude/petscdmda.h90 to access this routine.
+
+  Due to bugs in the compiler DMDAVecGetArrayF90() does not work with gfortran versions before 4.5
+
+  Level: intermediate
+
+.seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecRestoreArray(), DMDAVecRestoreArrayDOF()
+          DMDAVecGetArrayDOF(), DMDAVecGetArrayWrite(), DMDAVecRestoreArrayWrite(), DMDAVecGetArrayRead(), DMDAVecRestoreArrayRead()
+@*/
+PetscErrorCode  DMDAVecGetArray(DM da,Vec vec,void *array)
+{
+  PetscErrorCode ierr;
+  PetscInt       xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecificType(da, DM_CLASSID, 1,DMDA);
+  PetscValidHeaderSpecific(vec, VEC_CLASSID, 2);
+  PetscValidPointer(array, 3);
+  ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
+
+  /* Handle case where user passes in global vector as opposed to local */
+  ierr = VecGetLocalSize(vec,&N);CHKERRQ(ierr);
+  if (N == xm*ym*zm*dof) {
+    gxm = xm;
+    gym = ym;
+    gzm = zm;
+    gxs = xs;
+    gys = ys;
+    gzs = zs;
+  } else if (N != gxm*gym*gzm*dof) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DMDA local sizes %D %D\n",N,xm*ym*zm*dof,gxm*gym*gzm*dof);
+
+  if (dim == 1) {
+    ierr = VecGetArray1d(vec,gxm*dof,gxs*dof,(PetscScalar**)array);CHKERRQ(ierr);
+  } else if (dim == 2) {
+    ierr = VecGetArray2d(vec,gym,gxm*dof,gys,gxs*dof,(PetscScalar***)array);CHKERRQ(ierr);
+  } else if (dim == 3) {
+    ierr = VecGetArray3d(vec,gzm,gym,gxm*dof,gzs,gys,gxs*dof,(PetscScalar****)array);CHKERRQ(ierr);
+  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"DMDA dimension not 1, 2, or 3, it is %D\n",dim);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   DMDAVecRestoreArray - Restores a multiple dimension array obtained with DMDAVecGetArray()
+
+   Logically collective on da
+
+   Input Parameter:
++  da - the distributed array
+.  vec - the vector, either a vector the same size as one obtained with
+         DMCreateGlobalVector() or DMCreateLocalVector()
+-  array - the array, non-NULL pointer is zeroed
+
+  Level: intermediate
+
+  Fortran Notes:
+    From Fortran use DMDAVecRestoreArayF90()
+
+.seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecGetArray(),
+          DMDAVecGetArrayWrite(), DMDAVecRestoreArrayWrite(), DMDAVecGetArrayRead(), DMDAVecRestoreArrayRead()
+@*/
+PetscErrorCode  DMDAVecRestoreArray(DM da,Vec vec,void *array)
+{
+  PetscErrorCode ierr;
+  PetscInt       xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecificType(da, DM_CLASSID, 1,DMDA);
+  PetscValidHeaderSpecific(vec, VEC_CLASSID, 2);
+  PetscValidPointer(array, 3);
+  ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
+
+  /* Handle case where user passes in global vector as opposed to local */
+  ierr = VecGetLocalSize(vec,&N);CHKERRQ(ierr);
+  if (N == xm*ym*zm*dof) {
+    gxm = xm;
+    gym = ym;
+    gzm = zm;
+    gxs = xs;
+    gys = ys;
+    gzs = zs;
+  } else if (N != gxm*gym*gzm*dof) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DMDA local sizes %D %D\n",N,xm*ym*zm*dof,gxm*gym*gzm*dof);
+
+  if (dim == 1) {
+    ierr = VecRestoreArray1d(vec,gxm*dof,gxs*dof,(PetscScalar**)array);CHKERRQ(ierr);
+  } else if (dim == 2) {
+    ierr = VecRestoreArray2d(vec,gym,gxm*dof,gys,gxs*dof,(PetscScalar***)array);CHKERRQ(ierr);
+  } else if (dim == 3) {
+    ierr = VecRestoreArray3d(vec,gzm,gym,gxm*dof,gzs,gys,gxs*dof,(PetscScalar****)array);CHKERRQ(ierr);
+  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"DMDA dimension not 1, 2, or 3, it is %D\n",dim);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   DMDAVecGetArrayWrite - Returns a multiple dimension array that shares data with
+      the underlying vector and is indexed using the global dimensions.
+
    Logically collective on Vec
 
    Input Parameter:
@@ -35,12 +159,12 @@
 
   Level: intermediate
 
-.keywords: distributed array, get, corners, nodes, local indices, coordinates
+  Developer Notes: This has code duplication with DMDAVecGetArray() and DMDAVecGetArrayRead()
 
-.seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecRestoreArray(), DMDAVecRestoreArrayDOF()
-          DMDAVecGetArrayDOF()
+.seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecRestoreArrayWrite(), DMDAVecRestoreArrayDOF()
+          DMDAVecGetArrayDOF(), DMDAVecGetArray(), DMDAVecRestoreArray(), DMDAVecGetArrayRead(), DMDAVecRestoreArrayRead()
 @*/
-PetscErrorCode  DMDAVecGetArray(DM da,Vec vec,void *array)
+PetscErrorCode  DMDAVecGetArrayWrite(DM da,Vec vec,void *array)
 {
   PetscErrorCode ierr;
   PetscInt       xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
@@ -50,7 +174,7 @@ PetscErrorCode  DMDAVecGetArray(DM da,Vec vec,void *array)
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 2);
   PetscValidPointer(array, 3);
   if (da->defaultSection) {
-    ierr = VecGetArray(vec,(PetscScalar**)array);CHKERRQ(ierr);
+    ierr = VecGetArrayWrite(vec,(PetscScalar**)array);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
@@ -69,17 +193,17 @@ PetscErrorCode  DMDAVecGetArray(DM da,Vec vec,void *array)
   } else if (N != gxm*gym*gzm*dof) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DMDA local sizes %D %D\n",N,xm*ym*zm*dof,gxm*gym*gzm*dof);
 
   if (dim == 1) {
-    ierr = VecGetArray1d(vec,gxm*dof,gxs*dof,(PetscScalar**)array);CHKERRQ(ierr);
+    ierr = VecGetArray1dWrite(vec,gxm*dof,gxs*dof,(PetscScalar**)array);CHKERRQ(ierr);
   } else if (dim == 2) {
-    ierr = VecGetArray2d(vec,gym,gxm*dof,gys,gxs*dof,(PetscScalar***)array);CHKERRQ(ierr);
+    ierr = VecGetArray2dWrite(vec,gym,gxm*dof,gys,gxs*dof,(PetscScalar***)array);CHKERRQ(ierr);
   } else if (dim == 3) {
-    ierr = VecGetArray3d(vec,gzm,gym,gxm*dof,gzs,gys,gxs*dof,(PetscScalar****)array);CHKERRQ(ierr);
+    ierr = VecGetArray3dWrite(vec,gzm,gym,gxm*dof,gzs,gys,gxs*dof,(PetscScalar****)array);CHKERRQ(ierr);
   } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"DMDA dimension not 1, 2, or 3, it is %D\n",dim);
   PetscFunctionReturn(0);
 }
 
 /*@
-   DMDAVecRestoreArray - Restores a multiple dimension array obtained with DMDAVecGetArray()
+   DMDAVecRestoreArrayWrite - Restores a multiple dimension array obtained with DMDAVecGetArrayWrite()
 
    Logically collective on Vec
 
@@ -92,13 +216,12 @@ PetscErrorCode  DMDAVecGetArray(DM da,Vec vec,void *array)
   Level: intermediate
 
   Fortran Notes:
-    From Fortran use DMDAVecRestoreArrayF90()
+    From Fortran use DMDAVecRestoreArayF90()
 
-.keywords: distributed array, get, corners, nodes, local indices, coordinates
-
-.seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecGetArray()
+.seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecGetArrayWrite(),
+          DMDAVecGetArray(), DMDAVecRestoreArray(), DMDAVecGetArrayRead(), DMDAVecRestoreArrayRead()
 @*/
-PetscErrorCode  DMDAVecRestoreArray(DM da,Vec vec,void *array)
+PetscErrorCode  DMDAVecRestoreArrayWrite(DM da,Vec vec,void *array)
 {
   PetscErrorCode ierr;
   PetscInt       xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
@@ -127,11 +250,11 @@ PetscErrorCode  DMDAVecRestoreArray(DM da,Vec vec,void *array)
   } else if (N != gxm*gym*gzm*dof) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DMDA local sizes %D %D\n",N,xm*ym*zm*dof,gxm*gym*gzm*dof);
 
   if (dim == 1) {
-    ierr = VecRestoreArray1d(vec,gxm*dof,gxs*dof,(PetscScalar**)array);CHKERRQ(ierr);
+    ierr = VecRestoreArray1dWrite(vec,gxm*dof,gxs*dof,(PetscScalar**)array);CHKERRQ(ierr);
   } else if (dim == 2) {
-    ierr = VecRestoreArray2d(vec,gym,gxm*dof,gys,gxs*dof,(PetscScalar***)array);CHKERRQ(ierr);
+    ierr = VecRestoreArray2dWrite(vec,gym,gxm*dof,gys,gxs*dof,(PetscScalar***)array);CHKERRQ(ierr);
   } else if (dim == 3) {
-    ierr = VecRestoreArray3d(vec,gzm,gym,gxm*dof,gzs,gys,gxs*dof,(PetscScalar****)array);CHKERRQ(ierr);
+    ierr = VecRestoreArray3dWrite(vec,gzm,gym,gxm*dof,gzs,gys,gxs*dof,(PetscScalar****)array);CHKERRQ(ierr);
   } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"DMDA dimension not 1, 2, or 3, it is %D\n",dim);
   PetscFunctionReturn(0);
 }
@@ -160,9 +283,8 @@ PetscErrorCode  DMDAVecRestoreArray(DM da,Vec vec,void *array)
 
   Level: intermediate
 
-.keywords: distributed array, get, corners, nodes, local indices, coordinates
-
-.seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecRestoreArray(), DMDAVecGetArray(), DMDAVecRestoreArrayDOF()
+.seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecRestoreArray(), DMDAVecGetArray(), DMDAVecRestoreArrayDOF(),
+          DMDAVecGetArrayWrite(), DMDAVecRestoreArrayWrite(), DMDAVecGetArrayRead(), DMDAVecRestoreArrayRead()
 @*/
 PetscErrorCode  DMDAVecGetArrayDOF(DM da,Vec vec,void *array)
 {
@@ -208,9 +330,8 @@ PetscErrorCode  DMDAVecGetArrayDOF(DM da,Vec vec,void *array)
 
   Level: intermediate
 
-.keywords: distributed array, get, corners, nodes, local indices, coordinates
-
-.seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecGetArray(), DMDAVecGetArrayDOF(), DMDAVecRestoreArrayDOF()
+.seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecGetArray(), DMDAVecGetArrayDOF(), DMDAVecRestoreArrayDOF(),
+          DMDAVecGetArrayWrite(), DMDAVecRestoreArrayWrite(), DMDAVecGetArrayRead(), DMDAVecRestoreArrayRead()
 @*/
 PetscErrorCode  DMDAVecRestoreArrayDOF(DM da,Vec vec,void *array)
 {
@@ -277,10 +398,8 @@ PetscErrorCode  DMDAVecRestoreArrayDOF(DM da,Vec vec,void *array)
 
   Level: intermediate
 
-.keywords: distributed array, get, corners, nodes, local indices, coordinates
-
-.seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecRestoreArray(), DMDAVecRestoreArrayDOF()
-          DMDAVecGetArrayDOF()
+.seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecRestoreArrayRead(), DMDAVecRestoreArrayDOF()
+          DMDAVecGetArrayDOF(), DMDAVecGetArray(), DMDAVecRestoreArray(), DMDAVecGetArrayRead(), DMDAVecRestoreArrayRead()
 @*/
 PetscErrorCode  DMDAVecGetArrayRead(DM da,Vec vec,void *array)
 {
@@ -291,10 +410,6 @@ PetscErrorCode  DMDAVecGetArrayRead(DM da,Vec vec,void *array)
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1,DMDA);
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 2);
   PetscValidPointer(array, 3);
-  if (da->defaultSection) {
-    ierr = VecGetArrayRead(vec,(const PetscScalar**)array);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
@@ -336,9 +451,8 @@ PetscErrorCode  DMDAVecGetArrayRead(DM da,Vec vec,void *array)
   Fortran Notes:
     From Fortran use DMDAVecRestoreArrayReadF90()
 
-.keywords: distributed array, get, corners, nodes, local indices, coordinates
-
-.seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecGetArray()
+.seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecGetArrayRead(),
+          DMDAVecGetArray(), DMDAVecRestoreArray(), DMDAVecGetArrayWrite(), DMDAVecRestoreArrayWrite()
 @*/
 PetscErrorCode  DMDAVecRestoreArrayRead(DM da,Vec vec,void *array)
 {
@@ -349,10 +463,6 @@ PetscErrorCode  DMDAVecRestoreArrayRead(DM da,Vec vec,void *array)
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1,DMDA);
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 2);
   PetscValidPointer(array, 3);
-  if (da->defaultSection) {
-    ierr = VecRestoreArrayRead(vec,(const PetscScalar**)array);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
@@ -402,9 +512,8 @@ PetscErrorCode  DMDAVecRestoreArrayRead(DM da,Vec vec,void *array)
 
   Level: intermediate
 
-.keywords: distributed array, get, corners, nodes, local indices, coordinates
-
-.seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecRestoreArray(), DMDAVecGetArray(), DMDAVecRestoreArrayDOF()
+.seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecRestoreArray(), DMDAVecGetArray(), DMDAVecRestoreArrayDOF(),
+          DMDAVecGetArrayWrite(), DMDAVecRestoreArrayWrite(), DMDAVecGetArrayRead(), DMDAVecRestoreArrayRead()
 @*/
 PetscErrorCode  DMDAVecGetArrayDOFRead(DM da,Vec vec,void *array)
 {
@@ -450,9 +559,8 @@ PetscErrorCode  DMDAVecGetArrayDOFRead(DM da,Vec vec,void *array)
 
   Level: intermediate
 
-.keywords: distributed array, get, corners, nodes, local indices, coordinates
-
-.seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecGetArray(), DMDAVecGetArrayDOF(), DMDAVecRestoreArrayDOF()
+.seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecGetArray(), DMDAVecGetArrayDOF(), DMDAVecRestoreArrayDOF(),
+          DMDAVecGetArrayWrite(), DMDAVecRestoreArrayWrite(), DMDAVecGetArrayRead(), DMDAVecRestoreArrayRead()
 @*/
 PetscErrorCode  DMDAVecRestoreArrayDOFRead(DM da,Vec vec,void *array)
 {

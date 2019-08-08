@@ -246,8 +246,6 @@ $    -pc_type  sor  -pc_sor_symmetric
 
    Level: intermediate
 
-.keywords: PC, Eisenstat, set, SOR, SSOR, relaxation, omega
-
 .seealso: PCSORSetOmega()
 @*/
 PetscErrorCode  PCEisenstatSetOmega(PC pc,PetscReal omega)
@@ -280,8 +278,6 @@ PetscErrorCode  PCEisenstatSetOmega(PC pc,PetscReal omega)
    Note:
      If you use the KPSSetDiagonalScaling() or -ksp_diagonal_scale option then you will
    likley want to use this routine since it will save you some unneeded flops.
-
-.keywords: PC, Eisenstat, use, diagonal, scaling, SSOR
 
 .seealso: PCEisenstatSetOmega()
 @*/
@@ -322,8 +318,6 @@ $    -pc_type  sor  -pc_sor_symmetric
 
    Level: intermediate
 
-.keywords: PC, Eisenstat, set, SOR, SSOR, relaxation, omega
-
 .seealso: PCSORGetOmega(), PCEisenstatSetOmega()
 @*/
 PetscErrorCode  PCEisenstatGetOmega(PC pc,PetscReal *omega)
@@ -358,8 +352,6 @@ PetscErrorCode  PCEisenstatGetOmega(PC pc,PetscReal *omega)
      If you use the KPSSetDiagonalScaling() or -ksp_diagonal_scale option then you will
    likley want to use this routine since it will save you some unneeded flops.
 
-.keywords: PC, Eisenstat, use, diagonal, scaling, SSOR
-
 .seealso: PCEisenstatGetOmega()
 @*/
 PetscErrorCode  PCEisenstatGetNoDiagonalScaling(PC pc,PetscBool *flg)
@@ -390,8 +382,6 @@ static PetscErrorCode PCPreSolveChangeRHS_Eisenstat(PC pc, PetscBool* change)
 -  -pc_eisenstat_no_diagonal_scaling - Activates PCEisenstatSetNoDiagonalScaling()
 
    Level: beginner
-
-  Concepts: SOR, preconditioners, Gauss-Seidel, Eisenstat's trick
 
    Notes:
     Only implemented for the SeqAIJ matrix format.

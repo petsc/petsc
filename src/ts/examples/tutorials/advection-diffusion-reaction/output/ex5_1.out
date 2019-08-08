@@ -44,6 +44,7 @@ TS Object: 1 MPI processes
     clip fastest decrease 0.1
     maximum allowed timestep 1e+20
     minimum allowed timestep 1e-20
+    maximum solution absolute value to be ignored -1.
   SNES Object: 1 MPI processes
     type: newtonls
     maximum iterations=50, maximum function evaluations=10000

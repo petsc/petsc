@@ -1,6 +1,6 @@
 
-#if !defined(_PETSCFPIMPL_H)
-#define _PETSCFPIMPL_H
+#if !defined(PETSCFPIMPL_H)
+#define PETSCFPIMPL_H
 #include <petscviewertypes.h>
 #include <petscsys.h>
 /*

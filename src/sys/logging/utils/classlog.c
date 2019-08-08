@@ -17,7 +17,6 @@
 
   Level: developer
 
-.keywords: log, class, create
 .seealso: PetscClassRegLogDestroy(), PetscStageLogCreate()
 @*/
 PetscErrorCode PetscClassRegLogCreate(PetscClassRegLog *classLog)
@@ -47,7 +46,6 @@ PetscErrorCode PetscClassRegLogCreate(PetscClassRegLog *classLog)
 
   Level: developer
 
-.keywords: log, event, destroy
 .seealso: PetscClassRegLogCreate()
 @*/
 PetscErrorCode PetscClassRegLogDestroy(PetscClassRegLog classLog)
@@ -74,7 +72,6 @@ PetscErrorCode PetscClassRegLogDestroy(PetscClassRegLog classLog)
 
   Level: developer
 
-.keywords: log, class, destroy
 .seealso: PetscStageLogDestroy(), EventLogDestroy()
 @*/
 PetscErrorCode PetscClassRegInfoDestroy(PetscClassRegInfo *c)
@@ -96,7 +93,6 @@ PetscErrorCode PetscClassRegInfoDestroy(PetscClassRegInfo *c)
 
   Level: developer
 
-.keywords: log, class, create
 .seealso: PetscClassPerfLogDestroy(), PetscStageLogCreate()
 @*/
 PetscErrorCode PetscClassPerfLogCreate(PetscClassPerfLog *classLog)
@@ -126,7 +122,6 @@ PetscErrorCode PetscClassPerfLogCreate(PetscClassPerfLog *classLog)
 
   Level: developer
 
-.keywords: log, event, destroy
 .seealso: PetscClassPerfLogCreate()
 @*/
 PetscErrorCode PetscClassPerfLogDestroy(PetscClassPerfLog classLog)
@@ -150,7 +145,6 @@ PetscErrorCode PetscClassPerfLogDestroy(PetscClassPerfLog classLog)
 
   Level: developer
 
-.keywords: log, class, destroy
 .seealso: PetscClassPerfLogCreate()
 @*/
 PetscErrorCode PetscClassPerfInfoClear(PetscClassPerfInfo *classInfo)
@@ -175,7 +169,6 @@ PetscErrorCode PetscClassPerfInfoClear(PetscClassPerfInfo *classInfo)
 
   Level: developer
 
-.keywords: log, class, size, ensure
 .seealso: PetscClassPerfLogCreate()
 @*/
 PetscErrorCode PetscClassPerfLogEnsureSize(PetscClassPerfLog classLog, int size)
@@ -186,7 +179,7 @@ PetscErrorCode PetscClassPerfLogEnsureSize(PetscClassPerfLog classLog, int size)
   PetscFunctionBegin;
   while (size > classLog->maxClasses) {
     ierr = PetscMalloc1(classLog->maxClasses*2, &classInfo);CHKERRQ(ierr);
-    ierr = PetscMemcpy(classInfo, classLog->classInfo, classLog->maxClasses * sizeof(PetscClassPerfInfo));CHKERRQ(ierr);
+    ierr = PetscArraycpy(classInfo, classLog->classInfo, classLog->maxClasses);CHKERRQ(ierr);
     ierr = PetscFree(classLog->classInfo);CHKERRQ(ierr);
 
     classLog->classInfo   = classInfo;
@@ -213,7 +206,6 @@ PetscErrorCode PetscClassPerfLogEnsureSize(PetscClassPerfLog classLog, int size)
 
   Level: developer
 
-.keywords: log, class, register
 .seealso: PetscClassIdRegister()
 @*/
 PetscErrorCode PetscClassRegLogRegister(PetscClassRegLog classLog, const char cname[], PetscClassId classid)
@@ -228,7 +220,7 @@ PetscErrorCode PetscClassRegLogRegister(PetscClassRegLog classLog, const char cn
   c = classLog->numClasses++;
   if (classLog->numClasses > classLog->maxClasses) {
     ierr = PetscMalloc1(classLog->maxClasses*2, &classInfo);CHKERRQ(ierr);
-    ierr = PetscMemcpy(classInfo, classLog->classInfo, classLog->maxClasses * sizeof(PetscClassRegInfo));CHKERRQ(ierr);
+    ierr = PetscArraycpy(classInfo, classLog->classInfo, classLog->maxClasses);CHKERRQ(ierr);
     ierr = PetscFree(classLog->classInfo);CHKERRQ(ierr);
 
     classLog->classInfo   = classInfo;
@@ -256,7 +248,6 @@ PetscErrorCode PetscClassRegLogRegister(PetscClassRegLog classLog, const char cn
 
   Level: developer
 
-.keywords: log, class, register
 .seealso: PetscClassIdRegister(), PetscLogObjCreateDefault(), PetscLogObjDestroyDefault()
 @*/
 PetscErrorCode PetscClassRegLogGetClass(PetscClassRegLog classLog, PetscClassId classid, int *oclass)
@@ -300,7 +291,7 @@ PetscErrorCode PetscLogObjCreateDefault(PetscObject obj)
   if (petsc_numActions >= petsc_maxActions) {
     PetscTime(&start);
     ierr = PetscMalloc1(petsc_maxActions*2, &tmpAction);CHKERRQ(ierr);
-    ierr = PetscMemcpy(tmpAction, petsc_actions, petsc_maxActions * sizeof(Action));CHKERRQ(ierr);
+    ierr = PetscArraycpy(tmpAction, petsc_actions, petsc_maxActions);CHKERRQ(ierr);
     ierr = PetscFree(petsc_actions);CHKERRQ(ierr);
 
     petsc_actions     = tmpAction;
@@ -330,14 +321,14 @@ PetscErrorCode PetscLogObjCreateDefault(PetscObject obj)
     petsc_objects[petsc_numObjects].parent = -1;
     petsc_objects[petsc_numObjects].obj    = obj;
 
-    ierr = PetscMemzero(petsc_objects[petsc_numObjects].name, 64 * sizeof(char));CHKERRQ(ierr);
-    ierr = PetscMemzero(petsc_objects[petsc_numObjects].info, 64 * sizeof(char));CHKERRQ(ierr);
+    ierr = PetscMemzero(petsc_objects[petsc_numObjects].name, sizeof(petsc_objects[0].name));CHKERRQ(ierr);
+    ierr = PetscMemzero(petsc_objects[petsc_numObjects].info, sizeof(petsc_objects[0].info));CHKERRQ(ierr);
 
     /* Dynamically enlarge logging structures */
     if (petsc_numObjects >= petsc_maxObjects) {
       PetscTime(&start);
       ierr = PetscMalloc1(petsc_maxObjects*2, &tmpObjects);CHKERRQ(ierr);
-      ierr = PetscMemcpy(tmpObjects, petsc_objects, petsc_maxObjects * sizeof(Object));CHKERRQ(ierr);
+      ierr = PetscArraycpy(tmpObjects, petsc_objects, petsc_maxObjects);CHKERRQ(ierr);
       ierr = PetscFree(petsc_objects);CHKERRQ(ierr);
 
       petsc_objects     = tmpObjects;
@@ -379,7 +370,7 @@ PetscErrorCode PetscLogObjDestroyDefault(PetscObject obj)
   if (petsc_numActions >= petsc_maxActions) {
     PetscTime(&start);
     ierr = PetscMalloc1(petsc_maxActions*2, &tmpAction);CHKERRQ(ierr);
-    ierr = PetscMemcpy(tmpAction, petsc_actions, petsc_maxActions * sizeof(Action));CHKERRQ(ierr);
+    ierr = PetscArraycpy(tmpAction, petsc_actions, petsc_maxActions);CHKERRQ(ierr);
     ierr = PetscFree(petsc_actions);CHKERRQ(ierr);
 
     petsc_actions     = tmpAction;

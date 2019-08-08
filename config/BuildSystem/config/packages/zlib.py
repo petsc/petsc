@@ -3,11 +3,12 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download  = ['http://www.zlib.net/zlib-1.2.11.tar.gz',
-                      'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/zlib-1.2.11.tar.gz']
-    self.functions = ['compress', 'uncompress']
-    self.includes  = ['zlib.h']
-    self.liblist   = [['libz.a'],['zlib.lib']]
+    self.download     = ['http://www.zlib.net/zlib-1.2.11.tar.gz',
+                         'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/zlib-1.2.11.tar.gz']
+    self.functions    = ['compress', 'uncompress']
+    self.includes     = ['zlib.h']
+    self.liblist      = [['libz.a'],['zlib.lib']]
+    self.useddirectly = 0
     return
 
   def setupHelp(self, help):
@@ -39,7 +40,7 @@ class Configure(config.package.Package):
 
     if not self.installNeeded(conffile): return self.installDir
     self.log.write('zlibDir = '+self.packageDir+' installDir '+self.installDir+'\n')
-    self.logPrintBox('Building and installing zlib, this may take many minutes')
+    self.logPrintBox('Building and installing zlib, this may take several minutes')
     self.installDirProvider.printSudoPasswordMessage()
     try:
       output,err,ret  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && ' + args + ' ./configure '+cargs+' && '+self.make.make_jnp+' && '+self.installSudo+' ' +self.make.make+' install', timeout=600, log = self.log)

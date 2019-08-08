@@ -223,7 +223,7 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
 
   if (flag & SOR_ZERO_INITIAL_GUESS) {
     if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) {
-      ierr = PetscMemcpy(t,b,m*sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr = PetscArraycpy(t,b,m);CHKERRQ(ierr);
 
       v  = aa + 1;
       vj = aj + 1;
@@ -295,7 +295,7 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
 
     */
     if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) {
-      ierr = PetscMemcpy(t,b,m*sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr = PetscArraycpy(t,b,m);CHKERRQ(ierr);
 
       for (i=0; i<m; i++) {
         v    = aa + ai[i] + 1; v1=v;
@@ -318,7 +318,7 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
          x[i]   = (1-omega)x[i] + omega*sum[i];
       */
       /* if there was a forward sweep done above then I thing the next two for loops are not needed */
-      ierr = PetscMemcpy(t,b,m*sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr = PetscArraycpy(t,b,m);CHKERRQ(ierr);
 
       for (i=0; i<m-1; i++) {  /* update rhs */
         v    = aa + ai[i] + 1;

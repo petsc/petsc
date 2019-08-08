@@ -3,8 +3,6 @@ static char help[] = "Used to benchmark changes to the PETSc VecScatter routines
 #include <petscksp.h>
 extern PetscErrorCode  PetscLogView_VecScatter(PetscViewer);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   KSP            ksp;
@@ -64,8 +62,6 @@ int main(int argc,char **args)
    This is a special log viewer that prints out detailed information only for the VecScatter routines
 */
 typedef enum { COUNT,TIME,NUMMESS,MESSLEN,REDUCT,FLOPS} Stats;
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogView_VecScatter"
 PetscErrorCode  PetscLogView_VecScatter(PetscViewer viewer)
 {
   MPI_Comm           comm       = PetscObjectComm((PetscObject) viewer);

@@ -139,7 +139,6 @@ static struct _AOOps AOps = {AOView_Mapping,
 
   Level: intermediate
 
-.keywords: AO, index
 .seealso: AOMappingHasPetscIndex(), AOCreateMapping()
 @*/
 PetscErrorCode  AOMappingHasApplicationIndex(AO ao, PetscInt idex, PetscBool  *hasIndex)
@@ -179,7 +178,6 @@ PetscErrorCode  AOMappingHasApplicationIndex(AO ao, PetscInt idex, PetscBool  *h
 
   Level: intermediate
 
-.keywords: AO, index
 .seealso: AOMappingHasApplicationIndex(), AOCreateMapping()
 @*/
 PetscErrorCode  AOMappingHasPetscIndex(AO ao, PetscInt idex, PetscBool  *hasIndex)
@@ -228,7 +226,6 @@ PetscErrorCode  AOMappingHasPetscIndex(AO ao, PetscInt idex, PetscBool  *hasInde
     the arrays myapp and mypetsc need NOT contain the all the integers 0 to napp-1, that is there CAN be "holes"  in the indices.
        Use AOCreateBasic() or AOCreateBasicIS() if they do not have holes for better performance.
 
-.keywords: AO, create
 .seealso: AOCreateBasic(), AOCreateBasic(), AOCreateMappingIS(), AODestroy()
 @*/
 PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp[],const PetscInt mypetsc[],AO *aoout)
@@ -347,7 +344,6 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
     the index sets isapp and ispetsc need NOT contain the all the integers 0 to N-1, that is there CAN be "holes"  in the indices.
        Use AOCreateBasic() or AOCreateBasicIS() if they do not have holes for better performance.
 
-.keywords: AO, create
 .seealso: AOCreateBasic(), AOCreateMapping(), AODestroy()
 @*/
 PetscErrorCode  AOCreateMappingIS(IS isapp, IS ispetsc, AO *aoout)

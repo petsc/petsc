@@ -7,6 +7,101 @@
 #if defined(PETSC_HAVE_ELEMENTAL)
 PETSC_INTERN PetscErrorCode MatConvert_MPISBAIJ_Elemental(Mat,MatType,MatReuse,Mat*);
 #endif
+
+/* This could be moved to matimpl.h */
+static PetscErrorCode MatPreallocateWithMats_Private(Mat B, PetscInt nm, Mat X[], PetscBool symm[], PetscBool fill)
+{
+  Mat            preallocator;
+  PetscInt       r,rstart,rend;
+  PetscInt       bs,i,m,n,M,N;
+  PetscBool      cong = PETSC_TRUE;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(B,MAT_CLASSID,1);
+  PetscValidLogicalCollectiveInt(B,nm,2);
+  for (i = 0; i < nm; i++) {
+    PetscValidHeaderSpecific(X[i],MAT_CLASSID,3);
+    ierr = PetscLayoutCompare(B->rmap,X[i]->rmap,&cong);CHKERRQ(ierr);
+    if (!cong) SETERRQ(PetscObjectComm((PetscObject)B),PETSC_ERR_SUP,"Not for different layouts");
+  }
+  PetscValidLogicalCollectiveBool(B,fill,5);
+  ierr = MatGetBlockSize(B,&bs);CHKERRQ(ierr);
+  ierr = MatGetSize(B,&M,&N);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(B,&m,&n);CHKERRQ(ierr);
+  ierr = MatCreate(PetscObjectComm((PetscObject)B),&preallocator);CHKERRQ(ierr);
+  ierr = MatSetType(preallocator,MATPREALLOCATOR);CHKERRQ(ierr);
+  ierr = MatSetBlockSize(preallocator,bs);CHKERRQ(ierr);
+  ierr = MatSetSizes(preallocator,m,n,M,N);CHKERRQ(ierr);
+  ierr = MatSetUp(preallocator);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(preallocator,&rstart,&rend);CHKERRQ(ierr);
+  for (r = rstart; r < rend; ++r) {
+    PetscInt          ncols;
+    const PetscInt    *row;
+    const PetscScalar *vals;
+
+    for (i = 0; i < nm; i++) {
+      ierr = MatGetRow(X[i],r,&ncols,&row,&vals);CHKERRQ(ierr);
+      ierr = MatSetValues(preallocator,1,&r,ncols,row,vals,INSERT_VALUES);CHKERRQ(ierr);
+      if (symm && symm[i]) {
+        ierr = MatSetValues(preallocator,ncols,row,1,&r,vals,INSERT_VALUES);CHKERRQ(ierr);
+      }
+      ierr = MatRestoreRow(X[i],r,&ncols,&row,&vals);CHKERRQ(ierr);
+    }
+  }
+  ierr = MatAssemblyBegin(preallocator,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(preallocator,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatPreallocatorPreallocate(preallocator,fill,B);CHKERRQ(ierr);
+  ierr = MatDestroy(&preallocator);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatConvert_MPISBAIJ_XAIJ(Mat A, MatType newtype, MatReuse reuse, Mat *newmat)
+{
+  Mat            B;
+  PetscErrorCode ierr;
+  PetscInt       r;
+
+  PetscFunctionBegin;
+  if (reuse != MAT_REUSE_MATRIX) {
+    PetscBool symm = PETSC_TRUE;
+    PetscInt  bs;
+
+    ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
+    ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
+    ierr = MatSetType(B,newtype);CHKERRQ(ierr);
+    ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
+    ierr = MatSetBlockSize(B,bs);CHKERRQ(ierr);
+    ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
+    ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
+    ierr = MatGetRowUpperTriangular(A);CHKERRQ(ierr);
+    ierr = MatPreallocateWithMats_Private(B,1,&A,&symm,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = MatRestoreRowUpperTriangular(A);CHKERRQ(ierr);
+  } else B = *newmat;
+
+  ierr = MatGetRowUpperTriangular(A);CHKERRQ(ierr);
+  for (r = A->rmap->rstart; r < A->rmap->rend; r++) {
+    PetscInt          ncols;
+    const PetscInt    *row;
+    const PetscScalar *vals;
+
+    ierr = MatGetRow(A,r,&ncols,&row,&vals);CHKERRQ(ierr);
+    ierr = MatSetValues(B,1,&r,ncols,row,vals,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(B,ncols,row,1,&r,vals,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatRestoreRow(A,r,&ncols,&row,&vals);CHKERRQ(ierr);
+  }
+  ierr = MatRestoreRowUpperTriangular(A);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  if (reuse == MAT_INPLACE_MATRIX) {
+    ierr = MatHeaderReplace(A,&B);CHKERRQ(ierr);
+  } else {
+    *newmat = B;
+  }
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode  MatStoreValues_MPISBAIJ(Mat mat)
 {
   Mat_MPISBAIJ   *aij = (Mat_MPISBAIJ*)mat->data;
@@ -31,7 +126,6 @@ PetscErrorCode  MatRetrieveValues_MPISBAIJ(Mat mat)
 
 #define  MatSetValues_SeqSBAIJ_A_Private(row,col,value,addv,orow,ocol)      \
   { \
- \
     brow = row/bs;  \
     rp   = aj + ai[brow]; ap = aa + bs2*ai[brow]; \
     rmax = aimax[brow]; nrow = ailen[brow]; \
@@ -57,11 +151,9 @@ PetscErrorCode  MatRetrieveValues_MPISBAIJ(Mat mat)
     MatSeqXAIJReallocateAIJ(A,a->mbs,bs2,nrow,brow,bcol,rmax,aa,ai,aj,rp,ap,aimax,a->nonew,MatScalar); \
     N = nrow++ - 1;  \
     /* shift up all the later entries in this row */ \
-    for (ii=N; ii>=_i; ii--) { \
-      rp[ii+1] = rp[ii]; \
-      ierr     = PetscMemcpy(ap+bs2*(ii+1),ap+bs2*(ii),bs2*sizeof(MatScalar));CHKERRQ(ierr); \
-    } \
-    if (N>=_i) { ierr = PetscMemzero(ap+bs2*_i,bs2*sizeof(MatScalar));CHKERRQ(ierr); }  \
+    ierr  = PetscArraymove(rp+_i+1,rp+_i,N-_i+1);CHKERRQ(ierr); \
+    ierr  = PetscArraymove(ap+bs2*(_i+1),ap+bs2*_i,bs2*(N-_i+1));CHKERRQ(ierr); \
+    ierr = PetscArrayzero(ap+bs2*_i,bs2);CHKERRQ(ierr);  \
     rp[_i]                      = bcol;  \
     ap[bs2*_i + bs*cidx + ridx] = value;  \
     A->nonzerostate++;\
@@ -96,11 +188,9 @@ a_noinsert:; \
     MatSeqXAIJReallocateAIJ(B,b->mbs,bs2,nrow,brow,bcol,rmax,ba,bi,bj,rp,ap,bimax,b->nonew,MatScalar); \
     N = nrow++ - 1;  \
     /* shift up all the later entries in this row */ \
-    for (ii=N; ii>=_i; ii--) { \
-      rp[ii+1] = rp[ii]; \
-      ierr     = PetscMemcpy(ap+bs2*(ii+1),ap+bs2*(ii),bs2*sizeof(MatScalar));CHKERRQ(ierr); \
-    } \
-    if (N>=_i) { ierr = PetscMemzero(ap+bs2*_i,bs2*sizeof(MatScalar));CHKERRQ(ierr);}  \
+    ierr  = PetscArraymove(rp+_i+1,rp+_i,N-_i+1);CHKERRQ(ierr); \
+    ierr  = PetscArraymove(ap+bs2*(_i+1),ap+bs2*_i,bs2*(N-_i+1));CHKERRQ(ierr); \
+    ierr = PetscArrayzero(ap+bs2*_i,bs2);CHKERRQ(ierr); \
     rp[_i]                      = bcol;  \
     ap[bs2*_i + bs*cidx + ridx] = value;  \
     B->nonzerostate++;\
@@ -299,13 +389,8 @@ PETSC_STATIC_INLINE PetscErrorCode MatSetValuesBlocked_SeqSBAIJ_Inlined(Mat A,Pe
   MatSeqXAIJReallocateAIJ(A,a->mbs,bs2,nrow,row,col,rmax,aa,ai,aj,rp,ap,imax,nonew,MatScalar);
   N = nrow++ - 1; high++;
   /* shift up all the later entries in this row */
-  for (ii=N; ii>=i; ii--) {
-    rp[ii+1] = rp[ii];
-    ierr     = PetscMemcpy(ap+bs2*(ii+1),ap+bs2*(ii),bs2*sizeof(MatScalar));CHKERRQ(ierr);
-  }
-  if (N >= i) {
-    ierr = PetscMemzero(ap+bs2*i,bs2*sizeof(MatScalar));CHKERRQ(ierr);
-  }
+  ierr = PetscArraymove(rp+i+1,rp+i,N-i+1);CHKERRQ(ierr);
+  ierr = PetscArraymove(ap+bs2*(i+1),ap+bs2*i,bs2*(N-i+1));CHKERRQ(ierr);
   rp[i] = col;
   bap   = ap +  bs2*i;
   if (roworiented) {
@@ -396,13 +481,8 @@ PETSC_STATIC_INLINE PetscErrorCode MatSetValuesBlocked_SeqBAIJ_Inlined(Mat A,Pet
   MatSeqXAIJReallocateAIJ(A,a->mbs,bs2,nrow,row,col,rmax,aa,ai,aj,rp,ap,imax,nonew,MatScalar);
   N = nrow++ - 1; high++;
   /* shift up all the later entries in this row */
-  for (ii=N; ii>=i; ii--) {
-    rp[ii+1] = rp[ii];
-    ierr     = PetscMemcpy(ap+bs2*(ii+1),ap+bs2*(ii),bs2*sizeof(MatScalar));CHKERRQ(ierr);
-  }
-  if (N >= i) {
-    ierr = PetscMemzero(ap+bs2*i,bs2*sizeof(MatScalar));CHKERRQ(ierr);
-  }
+  ierr  = PetscArraymove(rp+i+1,rp+i,N-i+1);CHKERRQ(ierr);
+  ierr  = PetscArraymove(ap+bs2*(i+1),ap+bs2*i,bs2*(N-i+1));CHKERRQ(ierr);
   rp[i] = col;
   bap   = ap +  bs2*i;
   if (roworiented) {
@@ -600,7 +680,7 @@ PetscErrorCode MatNorm_MPISBAIJ(Mat mat,NormType type,PetscReal *norm)
       MatScalar    *v;
 
       ierr = PetscMalloc2(mat->cmap->N,&rsum,mat->cmap->N,&rsum2);CHKERRQ(ierr);
-      ierr = PetscMemzero(rsum,mat->cmap->N*sizeof(PetscReal));CHKERRQ(ierr);
+      ierr = PetscArrayzero(rsum,mat->cmap->N);CHKERRQ(ierr);
       /* Amat */
       v = amat->a; jj = amat->j;
       for (brow=0; brow<mbs; brow++) {
@@ -987,7 +1067,7 @@ static PetscErrorCode MatView_MPISBAIJ_Binary(Mat mat,PetscViewer viewer)
     }
     len = cnt - pcnt;
     for (k=1; k<bs; k++) {
-      ierr = PetscMemcpy(&column_indices[cnt],&column_indices[pcnt],len*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscArraycpy(&column_indices[cnt],&column_indices[pcnt],len);CHKERRQ(ierr);
       cnt += len;
     }
   }
@@ -1137,10 +1217,11 @@ PetscErrorCode MatDestroy_MPISBAIJ(Mat mat)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatStoreValues_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatRetrieveValues_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPISBAIJSetPreallocation_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpisbaij_mpisbstrm_C",NULL);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_ELEMENTAL)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpisbaij_elemental_C",NULL);CHKERRQ(ierr);
 #endif
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpisbaij_mpiaij_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpisbaij_mpibaij_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1167,7 +1248,7 @@ PetscErrorCode MatMult_MPISBAIJ_Hermitian(Mat A,Vec xx,Vec yy)
   ierr = VecGetArray(a->slvec0,&from);CHKERRQ(ierr);
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
 
-  ierr = PetscMemcpy(from,x,bs*mbs*sizeof(MatScalar));CHKERRQ(ierr);
+  ierr = PetscArraycpy(from,x,bs*mbs);CHKERRQ(ierr);
   ierr = VecRestoreArray(a->slvec0,&from);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
 
@@ -1201,7 +1282,7 @@ PetscErrorCode MatMult_MPISBAIJ(Mat A,Vec xx,Vec yy)
   ierr = VecGetArray(a->slvec0,&from);CHKERRQ(ierr);
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
 
-  ierr = PetscMemcpy(from,x,bs*mbs*sizeof(MatScalar));CHKERRQ(ierr);
+  ierr = PetscArraycpy(from,x,bs*mbs);CHKERRQ(ierr);
   ierr = VecRestoreArray(a->slvec0,&from);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
 
@@ -1261,7 +1342,7 @@ PetscErrorCode MatMultAdd_MPISBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   /* copy x into the vec slvec0 */
   ierr = VecGetArray(a->slvec0,&from);CHKERRQ(ierr);
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
-  ierr = PetscMemcpy(from,x,bs*mbs*sizeof(MatScalar));CHKERRQ(ierr);
+  ierr = PetscArraycpy(from,x,bs*mbs);CHKERRQ(ierr);
   ierr = VecRestoreArray(a->slvec0,&from);CHKERRQ(ierr);
 
   ierr = VecScatterBegin(a->sMvctx,a->slvec0,a->slvec1,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -1450,8 +1531,8 @@ PetscErrorCode MatImaginaryPart_MPISBAIJ(Mat A)
 }
 
 /* Check if isrow is a subset of iscol_local, called by MatCreateSubMatrix_MPISBAIJ()
-   Input: isrow       - distributed(parallel), 
-          iscol_local - locally owned (seq) 
+   Input: isrow       - distributed(parallel),
+          iscol_local - locally owned (seq)
 */
 PetscErrorCode ISEqual_private(IS isrow,IS iscol_local,PetscBool  *flg)
 {
@@ -1463,7 +1544,7 @@ PetscErrorCode ISEqual_private(IS isrow,IS iscol_local,PetscBool  *flg)
   ierr = ISGetLocalSize(isrow,&sz1);CHKERRQ(ierr);
   ierr = ISGetLocalSize(iscol_local,&sz2);CHKERRQ(ierr);
   if (sz1 > sz2) {
-    *flg = PETSC_FALSE; 
+    *flg = PETSC_FALSE;
     PetscFunctionReturn(0);
   }
 
@@ -1472,8 +1553,8 @@ PetscErrorCode ISEqual_private(IS isrow,IS iscol_local,PetscBool  *flg)
 
   ierr = PetscMalloc1(sz1,&a1);CHKERRQ(ierr);
   ierr = PetscMalloc1(sz2,&a2);CHKERRQ(ierr);
-  ierr = PetscMemcpy(a1,ptr1,sz1*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMemcpy(a2,ptr2,sz2*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArraycpy(a1,ptr1,sz1);CHKERRQ(ierr);
+  ierr = PetscArraycpy(a2,ptr2,sz2);CHKERRQ(ierr);
   ierr = PetscSortInt(sz1,a1);CHKERRQ(ierr);
   ierr = PetscSortInt(sz2,a2);CHKERRQ(ierr);
 
@@ -1492,7 +1573,7 @@ PetscErrorCode ISEqual_private(IS isrow,IS iscol_local,PetscBool  *flg)
   ierr = PetscFree(a1);CHKERRQ(ierr);
   ierr = PetscFree(a2);CHKERRQ(ierr);
   if (nmatch < sz1) {
-    *flg = PETSC_FALSE; 
+    *flg = PETSC_FALSE;
   } else {
     *flg = PETSC_TRUE;
   }
@@ -1518,7 +1599,7 @@ PetscErrorCode MatCreateSubMatrix_MPISBAIJ(Mat mat,IS isrow,IS iscol,MatReuse ca
   }
 
   /* now call MatCreateSubMatrix_MPIBAIJ() */
-  ierr = MatCreateSubMatrix_MPIBAIJ_Private(mat,isrow,iscol_local,csize,call,newmat);CHKERRQ(ierr); 
+  ierr = MatCreateSubMatrix_MPIBAIJ_Private(mat,isrow,iscol_local,csize,call,newmat);CHKERRQ(ierr);
   if (call == MAT_INITIAL_MATRIX) {
     ierr = PetscObjectCompose((PetscObject)*newmat,"ISAllGather",(PetscObject)iscol_local);CHKERRQ(ierr);
     ierr = ISDestroy(&iscol_local);CHKERRQ(ierr);
@@ -1611,6 +1692,7 @@ PetscErrorCode MatSetOption_MPISBAIJ(Mat A,MatOption op,PetscBool flg)
     ierr = MatSetOption(a->B,op,flg);CHKERRQ(ierr);
     break;
   case MAT_NEW_DIAGONALS:
+  case MAT_SORTED_FULL:
     ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
     break;
   case MAT_IGNORE_OFF_PROC_ENTRIES:
@@ -1746,16 +1828,20 @@ PetscErrorCode MatEqual_MPISBAIJ(Mat A,Mat B,PetscBool  *flag)
 PetscErrorCode MatCopy_MPISBAIJ(Mat A,Mat B,MatStructure str)
 {
   PetscErrorCode ierr;
-  Mat_MPISBAIJ   *a = (Mat_MPISBAIJ*)A->data;
-  Mat_MPISBAIJ   *b = (Mat_MPISBAIJ*)B->data;
+  PetscBool      isbaij;
 
   PetscFunctionBegin;
+  ierr = PetscObjectTypeCompareAny((PetscObject)B,&isbaij,MATSEQSBAIJ,MATMPISBAIJ,"");CHKERRQ(ierr);
+  if (!isbaij) SETERRQ1(PetscObjectComm((PetscObject)B),PETSC_ERR_SUP,"Not for matrix type %s",((PetscObject)B)->type_name);
   /* If the two matrices don't have the same copy implementation, they aren't compatible for fast copy. */
   if ((str != SAME_NONZERO_PATTERN) || (A->ops->copy != B->ops->copy)) {
     ierr = MatGetRowUpperTriangular(A);CHKERRQ(ierr);
     ierr = MatCopy_Basic(A,B,str);CHKERRQ(ierr);
     ierr = MatRestoreRowUpperTriangular(A);CHKERRQ(ierr);
   } else {
+    Mat_MPISBAIJ *a = (Mat_MPISBAIJ*)A->data;
+    Mat_MPISBAIJ *b = (Mat_MPISBAIJ*)B->data;
+
     ierr = MatCopy(a->A,b->A,str);CHKERRQ(ierr);
     ierr = MatCopy(a->B,b->B,str);CHKERRQ(ierr);
   }
@@ -2034,6 +2120,7 @@ PetscErrorCode  MatMPISBAIJSetPreallocation_MPISBAIJ(Mat B,PetscInt bs,PetscInt 
   Mat_MPISBAIJ   *b;
   PetscErrorCode ierr;
   PetscInt       i,mbs,Mbs;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
   ierr = MatSetBlockSize(B,PetscAbs(bs));CHKERRQ(ierr);
@@ -2078,9 +2165,10 @@ PetscErrorCode  MatMPISBAIJSetPreallocation_MPISBAIJ(Mat B,PetscInt bs,PetscInt 
   ierr = VecScatterDestroy(&b->sMvctx);CHKERRQ(ierr);
 
   /* Because the B will have been resized we simply destroy it and create a new one each time */
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)B),&size);CHKERRQ(ierr);
   ierr = MatDestroy(&b->B);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_SELF,&b->B);CHKERRQ(ierr);
-  ierr = MatSetSizes(b->B,B->rmap->n,B->cmap->N,B->rmap->n,B->cmap->N);CHKERRQ(ierr);
+  ierr = MatSetSizes(b->B,B->rmap->n,size > 1 ? B->cmap->N : 0,B->rmap->n,size > 1 ? B->cmap->N : 0);CHKERRQ(ierr);
   ierr = MatSetType(b->B,MATSEQBAIJ);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)B,(PetscObject)b->B);CHKERRQ(ierr);
 
@@ -2145,8 +2233,7 @@ PetscErrorCode MatMPISBAIJSetPreallocationCSR_MPISBAIJ(Mat B,PetscInt bs,const P
 
   values = (PetscScalar*)V;
   if (!values) {
-    ierr = PetscMalloc1(bs*bs*nz_max,&values);CHKERRQ(ierr);
-    ierr = PetscMemzero(values,bs*bs*nz_max*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscCalloc1(bs*bs*nz_max,&values);CHKERRQ(ierr);
   }
   for (i=0; i<m; i++) {
     PetscInt          row    = i + rstart;
@@ -2178,8 +2265,6 @@ PetscErrorCode MatMPISBAIJSetPreallocationCSR_MPISBAIJ(Mat B,PetscInt bs,const P
 
 .seealso: MatCreateMPISBAIJ
 M*/
-
-PETSC_INTERN PetscErrorCode MatConvert_MPISBAIJ_MPISBSTRM(Mat,MatType,MatReuse,Mat*);
 
 PETSC_EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat B)
 {
@@ -2252,6 +2337,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat B)
 #if defined(PETSC_HAVE_ELEMENTAL)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpisbaij_elemental_C",MatConvert_MPISBAIJ_Elemental);CHKERRQ(ierr);
 #endif
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpisbaij_mpiaij_C",MatConvert_MPISBAIJ_XAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpisbaij_mpibaij_C",MatConvert_MPISBAIJ_XAIJ);CHKERRQ(ierr);
 
   B->symmetric                  = PETSC_TRUE;
   B->structurally_symmetric     = PETSC_TRUE;
@@ -2317,9 +2404,9 @@ M*/
 
 
    Options Database Keys:
-.   -mat_no_unroll - uses code that does not unroll the loops in the
++   -mat_no_unroll - uses code that does not unroll the loops in the
                      block calculations (much slower)
-.   -mat_block_size - size of the blocks to use
+-   -mat_block_size - size of the blocks to use
 
    Notes:
 
@@ -2373,8 +2460,6 @@ M*/
 
    Level: intermediate
 
-.keywords: matrix, block, aij, compressed row, sparse, parallel
-
 .seealso: MatCreate(), MatCreateSeqSBAIJ(), MatSetValues(), MatCreateBAIJ(), PetscSplitOwnership()
 @*/
 PetscErrorCode  MatMPISBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
@@ -2396,7 +2481,7 @@ PetscErrorCode  MatMPISBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt d_nz,cons
    d_nz (or d_nnz) and o_nz (or o_nnz).  By setting these parameters accurately,
    performance can be increased by more than a factor of 50.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - MPI communicator
@@ -2427,14 +2512,14 @@ PetscErrorCode  MatMPISBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt d_nz,cons
 .  A - the matrix
 
    Options Database Keys:
-.   -mat_no_unroll - uses code that does not unroll the loops in the
++   -mat_no_unroll - uses code that does not unroll the loops in the
                      block calculations (much slower)
 .   -mat_block_size - size of the blocks to use
-.   -mat_mpi - use the parallel matrix data structures even on one processor
+-   -mat_mpi - use the parallel matrix data structures even on one processor
                (defaults to using SeqBAIJ format on one processor)
 
    It is recommended that one use the MatCreate(), MatSetType() and/or MatSetFromOptions(),
-   MatXXXXSetPreallocation() paradgm instead of this routine directly.
+   MatXXXXSetPreallocation() paradigm instead of this routine directly.
    [MatXXXXSetPreallocation() is, for example, MatSeqAIJSetPreallocation]
 
    Notes:
@@ -2487,8 +2572,6 @@ PetscErrorCode  MatMPISBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt d_nz,cons
    matrices.
 
    Level: intermediate
-
-.keywords: matrix, block, aij, compressed row, sparse, parallel
 
 .seealso: MatCreate(), MatCreateSeqSBAIJ(), MatSetValues(), MatCreateBAIJ()
 @*/
@@ -2564,21 +2647,21 @@ static PetscErrorCode MatDuplicate_MPISBAIJ(Mat matin,MatDuplicateOption cpvalue
   a->ht_total_ct  = 0;
   a->ht_insert_ct = 0;
 
-  ierr = PetscMemcpy(a->rangebs,oldmat->rangebs,(a->size+2)*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArraycpy(a->rangebs,oldmat->rangebs,a->size+2);CHKERRQ(ierr);
   if (oldmat->colmap) {
 #if defined(PETSC_USE_CTABLE)
     ierr = PetscTableCreateCopy(oldmat->colmap,&a->colmap);CHKERRQ(ierr);
 #else
     ierr = PetscMalloc1(a->Nbs,&a->colmap);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)mat,(a->Nbs)*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMemcpy(a->colmap,oldmat->colmap,(a->Nbs)*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(a->colmap,oldmat->colmap,a->Nbs);CHKERRQ(ierr);
 #endif
   } else a->colmap = 0;
 
   if (oldmat->garray && (len = ((Mat_SeqBAIJ*)(oldmat->B->data))->nbs)) {
     ierr = PetscMalloc1(len,&a->garray);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)mat,len*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMemcpy(a->garray,oldmat->garray,len*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(a->garray,oldmat->garray,len);CHKERRQ(ierr);
   } else a->garray = 0;
 
   ierr = MatStashCreate_Private(PetscObjectComm((PetscObject)matin),matin->rmap->bs,&mat->bstash);CHKERRQ(ierr);
@@ -2652,7 +2735,7 @@ PetscErrorCode MatLoad_MPISBAIJ(Mat newmat,PetscViewer viewer)
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
   if (!rank) {
-    ierr = PetscBinaryRead(fd,(char*)header,4,PETSC_INT);CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd,(char*)header,4,NULL,PETSC_INT);CHKERRQ(ierr);
     if (header[0] != MAT_FILE_CLASSID) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"not matrix object");
     if (header[3] < 0) SETERRQ(PetscObjectComm((PetscObject)newmat),PETSC_ERR_FILE_UNEXPECTED,"Matrix stored in special format, cannot load as MPISBAIJ");
   }
@@ -2700,7 +2783,7 @@ PetscErrorCode MatLoad_MPISBAIJ(Mat newmat,PetscViewer viewer)
   ierr = PetscMalloc1((rend-rstart)*bs,&locrowlens);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscMalloc1(M+extra_rows,&rowlengths);CHKERRQ(ierr);
-    ierr = PetscBinaryRead(fd,rowlengths,M,PETSC_INT);CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd,rowlengths,M,NULL,PETSC_INT);CHKERRQ(ierr);
     for (i=0; i<extra_rows; i++) rowlengths[M+i] = 1;
     ierr = PetscMalloc1(size,&sndcounts);CHKERRQ(ierr);
     for (i=0; i<size; i++) sndcounts[i] = browners[i+1] - browners[i];
@@ -2712,8 +2795,7 @@ PetscErrorCode MatLoad_MPISBAIJ(Mat newmat,PetscViewer viewer)
 
   if (!rank) {   /* procs[0] */
     /* calculate the number of nonzeros on each processor */
-    ierr = PetscMalloc1(size,&procsnz);CHKERRQ(ierr);
-    ierr = PetscMemzero(procsnz,size*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscCalloc1(size,&procsnz);CHKERRQ(ierr);
     for (i=0; i<size; i++) {
       for (j=rowners[i]*bs; j< rowners[i+1]*bs; j++) {
         procsnz[i] += rowlengths[j];
@@ -2733,7 +2815,7 @@ PetscErrorCode MatLoad_MPISBAIJ(Mat newmat,PetscViewer viewer)
     ierr   = PetscMalloc1(nz,&ibuf);CHKERRQ(ierr);
     mycols = ibuf;
     if (size == 1) nz -= extra_rows;
-    ierr = PetscBinaryRead(fd,mycols,nz,PETSC_INT);CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd,mycols,nz,NULL,PETSC_INT);CHKERRQ(ierr);
     if (size == 1) {
       for (i=0; i< extra_rows; i++) mycols[nz+i] = M+i;
     }
@@ -2741,13 +2823,13 @@ PetscErrorCode MatLoad_MPISBAIJ(Mat newmat,PetscViewer viewer)
     /* read in every ones (except the last) and ship off */
     for (i=1; i<size-1; i++) {
       nz   = procsnz[i];
-      ierr = PetscBinaryRead(fd,cols,nz,PETSC_INT);CHKERRQ(ierr);
+      ierr = PetscBinaryRead(fd,cols,nz,NULL,PETSC_INT);CHKERRQ(ierr);
       ierr = MPI_Send(cols,nz,MPIU_INT,i,tag,comm);CHKERRQ(ierr);
     }
     /* read in the stuff for the last proc */
     if (size != 1) {
       nz   = procsnz[size-1] - extra_rows;  /* the extra rows are not on the disk */
-      ierr = PetscBinaryRead(fd,cols,nz,PETSC_INT);CHKERRQ(ierr);
+      ierr = PetscBinaryRead(fd,cols,nz,NULL,PETSC_INT);CHKERRQ(ierr);
       for (i=0; i<extra_rows; i++) cols[nz+i] = M+i;
       ierr = MPI_Send(cols,nz+extra_rows,MPIU_INT,size-1,tag,comm);CHKERRQ(ierr);
     }
@@ -2766,10 +2848,7 @@ PetscErrorCode MatLoad_MPISBAIJ(Mat newmat,PetscViewer viewer)
 
   /* loop over local rows, determining number of off diagonal entries */
   ierr     = PetscMalloc2(rend-rstart,&dlens,rend-rstart,&odlens);CHKERRQ(ierr);
-  ierr     = PetscMalloc3(Mbs,&mask,Mbs,&masked1,Mbs,&masked2);CHKERRQ(ierr);
-  ierr     = PetscMemzero(mask,Mbs*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr     = PetscMemzero(masked1,Mbs*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr     = PetscMemzero(masked2,Mbs*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr     = PetscCalloc3(Mbs,&mask,Mbs,&masked1,Mbs,&masked2);CHKERRQ(ierr);
   rowcount = 0;
   nzcount  = 0;
   for (i=0; i<mbs; i++) {
@@ -2806,7 +2885,7 @@ PetscErrorCode MatLoad_MPISBAIJ(Mat newmat,PetscViewer viewer)
     vals   = buf;
     mycols = ibuf;
     if (size == 1) nz -= extra_rows;
-    ierr = PetscBinaryRead(fd,vals,nz,PETSC_SCALAR);CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd,vals,nz,NULL,PETSC_SCALAR);CHKERRQ(ierr);
     if (size == 1) {
       for (i=0; i< extra_rows; i++) vals[nz+i] = 1.0;
     }
@@ -2824,14 +2903,14 @@ PetscErrorCode MatLoad_MPISBAIJ(Mat newmat,PetscViewer viewer)
     for (i=1; i<size-1; i++) {
       nz   = procsnz[i];
       vals = buf;
-      ierr = PetscBinaryRead(fd,vals,nz,PETSC_SCALAR);CHKERRQ(ierr);
+      ierr = PetscBinaryRead(fd,vals,nz,NULL,PETSC_SCALAR);CHKERRQ(ierr);
       ierr = MPI_Send(vals,nz,MPIU_SCALAR,i,((PetscObject)newmat)->tag,comm);CHKERRQ(ierr);
     }
     /* the last proc */
     if (size != 1) {
       nz   = procsnz[i] - extra_rows;
       vals = buf;
-      ierr = PetscBinaryRead(fd,vals,nz,PETSC_SCALAR);CHKERRQ(ierr);
+      ierr = PetscBinaryRead(fd,vals,nz,NULL,PETSC_SCALAR);CHKERRQ(ierr);
       for (i=0; i<extra_rows; i++) vals[nz+i] = 1.0;
       ierr = MPI_Send(vals,nz+extra_rows,MPIU_SCALAR,size-1,((PetscObject)newmat)->tag,comm);CHKERRQ(ierr);
     }
@@ -2883,8 +2962,6 @@ PetscErrorCode MatLoad_MPISBAIJ(Mat newmat,PetscViewer viewer)
   Notes:
    This can also be set by the command line option: -mat_use_hash_table fact
 
-.keywords: matrix, hashtable, factor, HT
-
 .seealso: MatSetOption()
 @XXXXX*/
 
@@ -2922,8 +2999,7 @@ PetscErrorCode MatGetRowMaxAbs_MPISBAIJ(Mat A,Vec v,PetscInt idx[])
   rowners_bs = A->rmap->range;
 
   /* each proc creates an array to be distributed */
-  ierr = PetscMalloc1(bs*Mbs,&work);CHKERRQ(ierr);
-  ierr = PetscMemzero(work,bs*Mbs*sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscCalloc1(bs*Mbs,&work);CHKERRQ(ierr);
 
   /* row_max for B */
   if (rank != size-1) {
@@ -3005,7 +3081,7 @@ PetscErrorCode MatSOR_MPISBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,
       /* copy xx into slvec0a */
       ierr = VecGetArray(mat->slvec0,&ptr);CHKERRQ(ierr);
       ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
-      ierr = PetscMemcpy(ptr,x,bs*mbs*sizeof(MatScalar));CHKERRQ(ierr);
+      ierr = PetscArraycpy(ptr,x,bs*mbs);CHKERRQ(ierr);
       ierr = VecRestoreArray(mat->slvec0,&ptr);CHKERRQ(ierr);
 
       ierr = VecScale(mat->slvec0,-1.0);CHKERRQ(ierr);
@@ -3013,7 +3089,7 @@ PetscErrorCode MatSOR_MPISBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,
       /* copy bb into slvec1a */
       ierr = VecGetArray(mat->slvec1,&ptr);CHKERRQ(ierr);
       ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
-      ierr = PetscMemcpy(ptr,b,bs*mbs*sizeof(MatScalar));CHKERRQ(ierr);
+      ierr = PetscArraycpy(ptr,b,bs*mbs);CHKERRQ(ierr);
       ierr = VecRestoreArray(mat->slvec1,&ptr);CHKERRQ(ierr);
 
       /* set slvec1b = 0 */
@@ -3090,7 +3166,7 @@ PetscErrorCode MatSOR_MPISBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,
     ierr = (*mat->B->ops->multtranspose)(mat->B,xx,mat->slvec0b);CHKERRQ(ierr);
     ierr = VecGetArray(mat->slvec0,&from);CHKERRQ(ierr);
     ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
-    ierr = PetscMemcpy(from,x,bs*mbs*sizeof(MatScalar));CHKERRQ(ierr);
+    ierr = PetscArraycpy(from,x,bs*mbs);CHKERRQ(ierr);
     ierr = VecRestoreArray(mat->slvec0,&from);CHKERRQ(ierr);
     ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
     ierr = VecScatterBegin(mat->sMvctx,mat->slvec0,mat->slvec1,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -3152,7 +3228,7 @@ PetscErrorCode MatSOR_MPISBAIJ_2comm(Mat matin,Vec bb,PetscReal omega,MatSORType
      MatCreateMPISBAIJWithArrays - creates a MPI SBAIJ matrix using arrays that contain in standard
          CSR format the local rows.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - MPI communicator
@@ -3179,8 +3255,6 @@ PetscErrorCode MatSOR_MPISBAIJ_2comm(Mat matin,Vec bb,PetscReal omega,MatSORType
 
        The i and j indices are 0 based, and i indices are indices corresponding to the local j array.
 
-.keywords: matrix, aij, compressed row, sparse, parallel
-
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIAIJSetPreallocation(), MatMPIAIJSetPreallocationCSR(),
           MPIAIJ, MatCreateAIJ(), MatCreateMPIAIJWithSplitArrays()
 @*/
@@ -3201,10 +3275,9 @@ PetscErrorCode  MatCreateMPISBAIJWithArrays(MPI_Comm comm,PetscInt bs,PetscInt m
 
 
 /*@C
-   MatMPISBAIJSetPreallocationCSR - Allocates memory for a sparse parallel matrix in BAIJ format
-   (the default parallel PETSc format).
+   MatMPISBAIJSetPreallocationCSR - Creates a sparse parallel matrix in SBAIJ format using the given nonzero structure and (optional) numerical values
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  B - the matrix
@@ -3213,9 +3286,10 @@ PetscErrorCode  MatCreateMPISBAIJWithArrays(MPI_Comm comm,PetscInt bs,PetscInt m
 .  j - the column indices for each local row (starts with zero) these must be sorted for each row
 -  v - optional values in the matrix
 
-   Level: developer
+   Level: advanced
 
-.keywords: matrix, aij, compressed row, sparse, parallel
+   Notes:
+   Though this routine has Preallocation() in the name it also sets the exact nonzero locations of the matrix entries and usually the numerical values as well
 
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIBAIJSetPreallocation(), MatCreateAIJ(), MPIAIJ
 @*/
@@ -3239,27 +3313,32 @@ PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPISBAIJ(MPI_Comm comm,Mat inmat
   ierr = MatGetSize(inmat,&m,&N);CHKERRQ(ierr);
   if (scall == MAT_INITIAL_MATRIX) { /* symbolic phase */
     Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)inmat->data;
-    PetscInt       *dnz,*onz,sum,bs,cbs,mbs,Nbs;
+    PetscInt       *dnz,*onz,mbs,Nbs,nbs;
     PetscInt       *bindx,rmax=a->rmax,j;
-   
+    PetscMPIInt    rank,size;
+
     ierr = MatGetBlockSizes(inmat,&bs,&cbs);CHKERRQ(ierr);
     mbs = m/bs; Nbs = N/cbs;
     if (n == PETSC_DECIDE) {
-      ierr = PetscSplitOwnership(comm,&n,&Nbs);CHKERRQ(ierr);
+      ierr = PetscSplitOwnershipBlock(comm,cbs,&n,&N);
     }
-    /* Check sum(n) = Nbs */
-    ierr = MPIU_Allreduce(&n,&sum,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
-    if (sum != Nbs) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Sum of local columns != global columns %d",Nbs);
-
-    ierr    = MPI_Scan(&mbs, &rstart,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
-    rstart -= mbs;
+    nbs = n/cbs;
 
     ierr = PetscMalloc1(rmax,&bindx);CHKERRQ(ierr);
-    ierr = MatPreallocateInitialize(comm,mbs,n,dnz,onz);CHKERRQ(ierr);
+    ierr = MatPreallocateInitialize(comm,mbs,nbs,dnz,onz);CHKERRQ(ierr); /* inline function, output __end and __rstart are used below */
+
+    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(comm,&size);CHKERRQ(ierr);
+    if (rank == size-1) {
+      /* Check sum(nbs) = Nbs */
+      if (__end != Nbs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Sum of local block columns %D != global block columns %D",__end,Nbs);
+    }
+
+    rstart = __rstart; /* block rstart of *outmat; see inline function MatPreallocateInitialize */
     ierr = MatSetOption(inmat,MAT_GETROW_UPPERTRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
     for (i=0; i<mbs; i++) {
       ierr = MatGetRow_SeqSBAIJ(inmat,i*bs,&nnz,&indx,NULL);CHKERRQ(ierr); /* non-blocked nnz and indx */
-      nnz = nnz/bs;
+      nnz  = nnz/bs;
       for (j=0; j<nnz; j++) bindx[j] = indx[j*bs]/bs;
       ierr = MatPreallocateSet(i+rstart,nnz,bindx,dnz,onz);CHKERRQ(ierr);
       ierr = MatRestoreRow_SeqSBAIJ(inmat,i*bs,&nnz,&indx,NULL);CHKERRQ(ierr);
@@ -3268,13 +3347,14 @@ PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPISBAIJ(MPI_Comm comm,Mat inmat
     ierr = PetscFree(bindx);CHKERRQ(ierr);
 
     ierr = MatCreate(comm,outmat);CHKERRQ(ierr);
-    ierr = MatSetSizes(*outmat,m,n*bs,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
+    ierr = MatSetSizes(*outmat,m,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
     ierr = MatSetBlockSizes(*outmat,bs,cbs);CHKERRQ(ierr);
-    ierr = MatSetType(*outmat,MATMPISBAIJ);CHKERRQ(ierr);
+    ierr = MatSetType(*outmat,MATSBAIJ);CHKERRQ(ierr);
+    ierr = MatSeqSBAIJSetPreallocation(*outmat,bs,0,dnz);CHKERRQ(ierr);
     ierr = MatMPISBAIJSetPreallocation(*outmat,bs,0,dnz,0,onz);CHKERRQ(ierr);
     ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
-  } 
- 
+  }
+
   /* numeric phase */
   ierr = MatGetBlockSizes(inmat,&bs,&cbs);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(*outmat,&rstart,NULL);CHKERRQ(ierr);

@@ -1,8 +1,8 @@
 /*
       Objects which encapsulate finite volume spaces and operations
 */
-#if !defined(__PETSCFV_H)
-#define __PETSCFV_H
+#if !defined(PETSCFV_H)
+#define PETSCFV_H
 #include <petscdm.h>
 #include <petscdt.h>
 #include <petscfvtypes.h>

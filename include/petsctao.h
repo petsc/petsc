@@ -1,5 +1,5 @@
-#ifndef __TAO_H
-#define __TAO_H
+#ifndef PETSCTAO_H
+#define PETSCTAO_H
 
 #include <petscksp.h>
 
@@ -7,6 +7,7 @@ PetscErrorCode VecFischer(Vec, Vec, Vec, Vec, Vec);
 PetscErrorCode VecSFischer(Vec, Vec, Vec, Vec, PetscReal, Vec);
 PetscErrorCode MatDFischer(Mat, Vec, Vec, Vec, Vec, Vec, Vec, Vec, Vec);
 PetscErrorCode MatDSFischer(Mat, Vec, Vec, Vec, Vec, PetscReal, Vec, Vec, Vec, Vec, Vec);
+PETSC_EXTERN PetscErrorCode TaoSoftThreshold(Vec, PetscReal, PetscReal, Vec);
 
 
 /*E
@@ -165,11 +166,8 @@ PETSC_EXTERN PetscErrorCode TaoShellSetSolve(Tao, PetscErrorCode(*)(Tao));
 PETSC_EXTERN PetscErrorCode TaoShellSetContext(Tao, void*);
 PETSC_EXTERN PetscErrorCode TaoShellGetContext(Tao, void**);
 
-PETSC_DEPRECATED("Use TaoSetResidualRoutine()") PETSC_STATIC_INLINE PetscErrorCode TaoSetSeparableObjectiveRoutine(Tao tao, Vec res, PetscErrorCode (*func)(Tao, Vec, Vec, void*),void *ctx)
-{ return TaoSetResidualRoutine(tao, res, func, ctx); }
-
-PETSC_DEPRECATED("Use TaoSetResidualWeights()") PETSC_STATIC_INLINE PetscErrorCode TaoSetSeparableObjectiveWeights(Tao tao, Vec sigma_v, PetscInt n, PetscInt *rows, PetscInt *cols, PetscReal *vals)
-{ return TaoSetResidualWeights(tao, sigma_v, n, rows, cols, vals); }
+PETSC_DEPRECATED_FUNCTION("Use TaoSetResidualRoutine() (since version 3.11)") PETSC_STATIC_INLINE PetscErrorCode TaoSetSeparableObjectiveRoutine(Tao tao, Vec res, PetscErrorCode (*func)(Tao, Vec, Vec, void*),void *ctx) {return TaoSetResidualRoutine(tao, res, func, ctx);}
+PETSC_DEPRECATED_FUNCTION("Use TaoSetResidualWeights() (since version 3.11)") PETSC_STATIC_INLINE PetscErrorCode TaoSetSeparableObjectiveWeights(Tao tao, Vec sigma_v, PetscInt n, PetscInt *rows, PetscInt *cols, PetscReal *vals) {return TaoSetResidualWeights(tao, sigma_v, n, rows, cols, vals);}
 
 PETSC_EXTERN PetscErrorCode TaoSetStateDesignIS(Tao, IS, IS);
 
@@ -186,8 +184,7 @@ PETSC_EXTERN PetscErrorCode TaoIsObjectiveDefined(Tao,PetscBool*);
 PETSC_EXTERN PetscErrorCode TaoIsGradientDefined(Tao,PetscBool*);
 PETSC_EXTERN PetscErrorCode TaoIsObjectiveAndGradientDefined(Tao,PetscBool*);
 
-PETSC_DEPRECATED("Use TaoComputeResidual()") PETSC_STATIC_INLINE PetscErrorCode TaoComputeSeparableObjective(Tao tao, Vec X, Vec F)
-{ return TaoComputeResidual(tao, X, F); }
+PETSC_DEPRECATED_FUNCTION("Use TaoComputeResidual() (since version 3.11)") PETSC_STATIC_INLINE PetscErrorCode TaoComputeSeparableObjective(Tao tao, Vec X, Vec F) {return TaoComputeResidual(tao, X, F);}
 
 PETSC_EXTERN PetscErrorCode TaoTestHessian(Tao);
 PETSC_EXTERN PetscErrorCode TaoComputeHessian(Tao, Vec, Mat, Mat);
@@ -248,7 +245,7 @@ PETSC_EXTERN PetscErrorCode TaoGetConvergenceHistory(Tao,PetscReal**,PetscReal**
 PETSC_EXTERN PetscErrorCode TaoSetMonitor(Tao, PetscErrorCode (*)(Tao,void*),void *,PetscErrorCode (*)(void**));
 PETSC_EXTERN PetscErrorCode TaoCancelMonitors(Tao);
 PETSC_EXTERN PetscErrorCode TaoMonitorDefault(Tao, void*);
-PETSC_DEPRECATED ("Use TaoMonitorDefault()") PETSC_STATIC_INLINE PetscErrorCode TaoDefaultMonitor(Tao tao, void*ctx) {return TaoMonitorDefault(tao,ctx);}
+PETSC_DEPRECATED_FUNCTION("Use TaoMonitorDefault() (since version 3.9)") PETSC_STATIC_INLINE PetscErrorCode TaoDefaultMonitor(Tao tao, void*ctx) {return TaoMonitorDefault(tao,ctx);}
 PETSC_EXTERN PetscErrorCode TaoDefaultGMonitor(Tao, void*);
 PETSC_EXTERN PetscErrorCode TaoDefaultSMonitor(Tao, void*);
 PETSC_EXTERN PetscErrorCode TaoDefaultCMonitor(Tao, void*);

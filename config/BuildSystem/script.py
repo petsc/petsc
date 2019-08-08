@@ -109,7 +109,7 @@ class Script(logger.Logger):
 
   def checkPython(self):
     if not hasattr(sys, 'version_info') or sys.version_info < (2,6):
-      raise RuntimeError('BuildSystem requires Python version 2.6 or higher. Get Python at http://www.python.org')
+      raise RuntimeError('BuildSystem requires Python version 2.6 or higher. Get Python at https://www.python.org/')
     return
 
   def getModule(root, name):
@@ -149,8 +149,11 @@ class Script(logger.Logger):
       if log: log.write('Executing: %s\n' % (command,))
       try:
         pipe = Popen(command, cwd=cwd, stdin=None, stdout=PIPE, stderr=PIPE,
-                     shell=useShell, universal_newlines=True)
+                     shell=useShell)
         (out, err) = pipe.communicate()
+        if sys.version_info >= (3,0):
+          out = out.decode(encoding='UTF-8',errors='replace')
+          err = err.decode(encoding='UTF-8',errors='replace')
         ret = pipe.returncode
       except OSError as e:
         return ('', e.message, e.errno)

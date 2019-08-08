@@ -128,7 +128,7 @@ static PetscErrorCode DMLocalToGlobalBegin_Redundant(DM dm,Vec l,InsertMode imod
 #endif
   } break;
   case INSERT_VALUES:
-    ierr = PetscMemcpy(gv,lv,red->n*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscArraycpy(gv,lv,red->n);CHKERRQ(ierr);
     break;
   default: SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"InsertMode not supported");
   }
@@ -155,7 +155,7 @@ static PetscErrorCode DMGlobalToLocalBegin_Redundant(DM dm,Vec g,InsertMode imod
   ierr = VecGetArray(l,&lv);CHKERRQ(ierr);
   switch (imode) {
   case INSERT_VALUES:
-    if (red->n) {ierr = PetscMemcpy(lv,gv,red->n*sizeof(PetscScalar));CHKERRQ(ierr);}
+    if (red->n) {ierr = PetscArraycpy(lv,gv,red->n);CHKERRQ(ierr);}
     ierr = MPI_Bcast(lv,red->N,MPIU_SCALAR,red->rank,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
     break;
   default: SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"InsertMode not supported");
@@ -283,7 +283,7 @@ static PetscErrorCode DMCreateInterpolation_Redundant(DM dmc,DM dmf,Mat *P,Vec *
 /*@
     DMRedundantSetSize - Sets the size of a densely coupled redundant object
 
-    Collective on DM
+    Collective on dm
 
     Input Parameter:
 +   dm - redundant DM
@@ -313,7 +313,7 @@ PetscErrorCode DMRedundantSetSize(DM dm,PetscMPIInt rank,PetscInt N)
     Not Collective
 
     Input Parameter:
-+   dm - redundant DM
+.   dm - redundant DM
 
     Output Parameters:
 +   rank - rank of process to own redundant degrees of freedom (or NULL)
@@ -387,8 +387,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_Redundant(DM dm)
   ierr     = PetscNewLog(dm,&red);CHKERRQ(ierr);
   dm->data = red;
 
-  ierr = PetscObjectChangeTypeName((PetscObject)dm,DMREDUNDANT);CHKERRQ(ierr);
-
   dm->ops->setup               = DMSetUp_Redundant;
   dm->ops->view                = DMView_Redundant;
   dm->ops->createglobalvector  = DMCreateGlobalVector_Redundant;
@@ -413,7 +411,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Redundant(DM dm)
 /*@C
     DMRedundantCreate - Creates a DM object, used to manage data for dense globally coupled variables
 
-    Collective on MPI_Comm
+    Collective
 
     Input Parameter:
 +   comm - the processors that will share the global vector

@@ -6,7 +6,7 @@
    guidelines that apply to MPIAIJ matrices for preallocating the matrix 
    storage apply here as well.
 
-      Collective on MPI_Comm
+      Collective
 
    Input Parameters:
 +  comm - MPI communicator
@@ -73,8 +73,6 @@
 .  -mat_aijsell_eager_shadow - Construct shadow matrix upon matrix assembly; default is to take a "lazy" approach, performing this step the first time the matrix is applied
 
    Level: intermediate
-
-.keywords: matrix, sparse, parallel
 
 .seealso: MatCreate(), MatCreateSeqAIJSELL(), MatSetValues()
 @*/

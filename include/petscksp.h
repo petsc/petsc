@@ -1,8 +1,8 @@
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */
-#ifndef __PETSCKSP_H
-#define __PETSCKSP_H
+#ifndef PETSCKSP_H
+#define PETSCKSP_H
 #include <petscpc.h>
 
 PETSC_EXTERN PetscErrorCode KSPInitializePackage(void);
@@ -12,8 +12,6 @@ PETSC_EXTERN PetscErrorCode KSPInitializePackage(void);
          linear solves in PETSc (even those such as direct solvers that do no use Krylov accelerators).
 
    Level: beginner
-
-  Concepts: Krylov methods
 
         Notes:
     When a direct solver is used but no Krylov solver is used the KSP object is still used by with a
@@ -39,9 +37,12 @@ typedef const char* KSPType;
 #define KSPPIPECGRR   "pipecgrr"
 #define KSPPIPELCG     "pipelcg"
 #define   KSPCGNE       "cgne"
-#define   KSPCGNASH     "nash"
-#define   KSPCGSTCG     "stcg"
-#define   KSPCGGLTR     "gltr"
+#define   KSPNASH       "nash"
+#define   KSPSTCG       "stcg"
+#define   KSPGLTR       "gltr"
+#define     KSPCGNASH  PETSC_DEPRECATED_MACRO("GCC warning \"KSPCGNASH macro is deprecated use KSPNASH (since version 3.11)\"")  "nash"
+#define     KSPCGSTCG  PETSC_DEPRECATED_MACRO("GCC warning \"KSPCGSTCG macro is deprecated use KSPSTCG (since version 3.11)\"")  "stcg"
+#define     KSPCGGLTR  PETSC_DEPRECATED_MACRO("GCC warning \"KSPCGGLTR macro is deprecated use KSPSGLTR (since version 3.11)\"") "gltr"
 #define KSPFCG        "fcg"
 #define KSPPIPEFCG    "pipefcg"
 #define KSPGMRES      "gmres"
@@ -117,7 +118,7 @@ PETSC_EXTERN PetscErrorCode KSPGetResidualNorm(KSP,PetscReal*);
 PETSC_EXTERN PetscErrorCode KSPGetIterationNumber(KSP,PetscInt*);
 PETSC_EXTERN PetscErrorCode KSPGetTotalIterations(KSP,PetscInt*);
 PETSC_EXTERN PetscErrorCode KSPCreateVecs(KSP,PetscInt,Vec**,PetscInt,Vec**);
-PETSC_DEPRECATED("Use KSPCreateVecs()") PETSC_STATIC_INLINE PetscErrorCode KSPGetVecs(KSP ksp,PetscInt n,Vec **x,PetscInt m,Vec **y) {return KSPCreateVecs(ksp,n,x,m,y);}
+PETSC_DEPRECATED_FUNCTION("Use KSPCreateVecs() (since version 3.6)") PETSC_STATIC_INLINE PetscErrorCode KSPGetVecs(KSP ksp,PetscInt n,Vec **x,PetscInt m,Vec **y) {return KSPCreateVecs(ksp,n,x,m,y);}
 
 PETSC_EXTERN PetscErrorCode KSPSetPreSolve(KSP,PetscErrorCode (*)(KSP,Vec,Vec,void*),void*);
 PETSC_EXTERN PetscErrorCode KSPSetPostSolve(KSP,PetscErrorCode (*)(KSP,Vec,Vec,void*),void*);
@@ -149,6 +150,7 @@ PETSC_EXTERN PetscErrorCode PCMGGetSmootherDown(PC,PetscInt,KSP*);
 PETSC_EXTERN PetscErrorCode PCMGGetSmootherUp(PC,PetscInt,KSP*);
 PETSC_EXTERN PetscErrorCode PCMGGetCoarseSolve(PC,KSP*);
 PETSC_EXTERN PetscErrorCode PCGalerkinGetKSP(PC,KSP*);
+PETSC_EXTERN PetscErrorCode PCDeflationGetCoarseKSP(PC,KSP*);
 
 PETSC_EXTERN PetscErrorCode KSPBuildSolution(KSP,Vec,Vec*);
 PETSC_EXTERN PetscErrorCode KSPBuildResidual(KSP,Vec,Vec,Vec*);
@@ -322,8 +324,6 @@ PETSC_EXTERN PetscErrorCode KSPGetOperatorsSet(KSP,PetscBool*,PetscBool*);
 PETSC_EXTERN PetscErrorCode KSPSetOptionsPrefix(KSP,const char[]);
 PETSC_EXTERN PetscErrorCode KSPAppendOptionsPrefix(KSP,const char[]);
 PETSC_EXTERN PetscErrorCode KSPGetOptionsPrefix(KSP,const char*[]);
-PETSC_EXTERN PetscErrorCode KSPSetTabLevel(KSP,PetscInt);
-PETSC_EXTERN PetscErrorCode KSPGetTabLevel(KSP,PetscInt*);
 
 PETSC_EXTERN PetscErrorCode KSPSetDiagonalScale(KSP,PetscBool );
 PETSC_EXTERN PetscErrorCode KSPGetDiagonalScale(KSP,PetscBool*);
@@ -427,6 +427,7 @@ PETSC_EXTERN PetscErrorCode KSPSetLagNorm(KSP,PetscBool);
 
 .seealso: KSPSolve(), KSPGetConvergedReason(), KSPSetTolerances()
 E*/
+#define KSP_DIVERGED_PCSETUP_FAILED_DEPRECATED KSP_DIVERGED_PCSETUP_FAILED PETSC_DEPRECATED_ENUM("Use KSP_DIVERGED_PC_FAILED (since version 3.11)")
 typedef enum {/* converged */
               KSP_CONVERGED_RTOL_NORMAL        =  1,
               KSP_CONVERGED_ATOL_NORMAL        =  9,
@@ -448,7 +449,7 @@ typedef enum {/* converged */
               KSP_DIVERGED_NANORINF            = -9,
               KSP_DIVERGED_INDEFINITE_MAT      = -10,
               KSP_DIVERGED_PC_FAILED           = -11,
-              KSP_DIVERGED_PCSETUP_FAILED PETSC_DEPRECATED_ENUM("Use KSP_DIVERGED_PC_FAILED (since v3.11)") = -11,
+              KSP_DIVERGED_PCSETUP_FAILED_DEPRECATED  = -11,
 
               KSP_CONVERGED_ITERATING          =  0} KSPConvergedReason;
 PETSC_EXTERN const char *const*KSPConvergedReasons;
@@ -591,6 +592,8 @@ M*/
 M*/
 
 PETSC_EXTERN PetscErrorCode KSPSetConvergenceTest(KSP,PetscErrorCode (*)(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*),void*,PetscErrorCode (*)(void*));
+PETSC_EXTERN PetscErrorCode KSPGetConvergenceTest(KSP,PetscErrorCode (**)(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*),void**,PetscErrorCode (**)(void*));
+PETSC_EXTERN PetscErrorCode KSPGetAndClearConvergenceTest(KSP,PetscErrorCode (**)(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*),void**,PetscErrorCode (**)(void*));
 PETSC_EXTERN PetscErrorCode KSPGetConvergenceContext(KSP,void**);
 PETSC_EXTERN PetscErrorCode KSPConvergedDefault(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*);
 PETSC_EXTERN PetscErrorCode KSPLSQRConvergedDefault(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*);
@@ -601,20 +604,21 @@ PETSC_EXTERN PetscErrorCode KSPConvergedDefaultSetUMIRNorm(KSP);
 PETSC_EXTERN PetscErrorCode KSPConvergedSkip(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*);
 PETSC_EXTERN PetscErrorCode KSPGetConvergedReason(KSP,KSPConvergedReason*);
 
-PETSC_DEPRECATED("Use KSPConvergedDefault()") PETSC_STATIC_INLINE void KSPDefaultConverged(void) { /* never called */ }
+PETSC_DEPRECATED_FUNCTION("Use KSPConvergedDefault() (since version 3.5)") PETSC_STATIC_INLINE void KSPDefaultConverged(void) { /* never called */ }
 #define KSPDefaultConverged (KSPDefaultConverged, KSPConvergedDefault)
-PETSC_DEPRECATED("Use KSPConvergedDefaultDestroy()") PETSC_STATIC_INLINE void KSPDefaultConvergedDestroy(void) { /* never called */ }
+PETSC_DEPRECATED_FUNCTION("Use KSPConvergedDefaultDestroy() (since version 3.5)") PETSC_STATIC_INLINE void KSPDefaultConvergedDestroy(void) { /* never called */ }
 #define KSPDefaultConvergedDestroy (KSPDefaultConvergedDestroy, KSPConvergedDefaultDestroy)
-PETSC_DEPRECATED("Use KSPConvergedDefaultCreate()") PETSC_STATIC_INLINE void KSPDefaultConvergedCreate(void) { /* never called */ }
+PETSC_DEPRECATED_FUNCTION("Use KSPConvergedDefaultCreate() (since version 3.5)") PETSC_STATIC_INLINE void KSPDefaultConvergedCreate(void) { /* never called */ }
 #define KSPDefaultConvergedCreate (KSPDefaultConvergedCreate, KSPConvergedDefaultCreate)
-PETSC_DEPRECATED("Use KSPConvergedDefaultSetUIRNorm()") PETSC_STATIC_INLINE void KSPDefaultConvergedSetUIRNorm(void) { /* never called */ }
+PETSC_DEPRECATED_FUNCTION("Use KSPConvergedDefaultSetUIRNorm() (since version 3.5)") PETSC_STATIC_INLINE void KSPDefaultConvergedSetUIRNorm(void) { /* never called */ }
 #define KSPDefaultConvergedSetUIRNorm (KSPDefaultConvergedSetUIRNorm, KSPConvergedDefaultSetUIRNorm)
-PETSC_DEPRECATED("Use KSPConvergedDefaultSetUMIRNorm()") PETSC_STATIC_INLINE void KSPDefaultConvergedSetUMIRNorm(void) { /* never called */ }
+PETSC_DEPRECATED_FUNCTION("Use KSPConvergedDefaultSetUMIRNorm() (since version 3.5)") PETSC_STATIC_INLINE void KSPDefaultConvergedSetUMIRNorm(void) { /* never called */ }
 #define KSPDefaultConvergedSetUMIRNorm (KSPDefaultConvergedSetUMIRNorm, KSPConvergedDefaultSetUMIRNorm)
-PETSC_DEPRECATED("Use KSPConvergedSkip()") PETSC_STATIC_INLINE void KSPSkipConverged(void) { /* never called */ }
+PETSC_DEPRECATED_FUNCTION("Use KSPConvergedSkip() (since version 3.5)") PETSC_STATIC_INLINE void KSPSkipConverged(void) { /* never called */ }
 #define KSPSkipConverged (KSPSkipConverged, KSPConvergedSkip)
 
-PETSC_EXTERN PetscErrorCode KSPComputeExplicitOperator(KSP,Mat*);
+PETSC_EXTERN PetscErrorCode KSPComputeOperator(KSP,MatType,Mat*);
+PETSC_DEPRECATED_FUNCTION("Use KSPComputeOperator() (since version 3.12)") PETSC_STATIC_INLINE PetscErrorCode KSPComputeExplicitOperator(KSP A,Mat* B) { return KSPComputeOperator(A,NULL,B); }
 
 /*E
     KSPCGType - Determines what type of CG to use
@@ -633,8 +637,10 @@ PETSC_EXTERN PetscErrorCode KSPCGSetRadius(KSP,PetscReal);
 PETSC_EXTERN PetscErrorCode KSPCGGetNormD(KSP,PetscReal*);
 PETSC_EXTERN PetscErrorCode KSPCGGetObjFcn(KSP,PetscReal*);
 
-PETSC_EXTERN PetscErrorCode KSPCGGLTRGetMinEig(KSP,PetscReal*);
-PETSC_EXTERN PetscErrorCode KSPCGGLTRGetLambda(KSP,PetscReal*);
+PETSC_EXTERN PetscErrorCode KSPGLTRGetMinEig(KSP,PetscReal*);
+PETSC_EXTERN PetscErrorCode KSPGLTRGetLambda(KSP,PetscReal*);
+PETSC_DEPRECATED_FUNCTION("Use KSPGLTRGetMinEig (since v3.12)") PETSC_STATIC_INLINE PetscErrorCode KSPCGGLTRGetMinEig(KSP ksp,PetscReal *x) {return KSPGLTRGetMinEig(ksp,x);}
+PETSC_DEPRECATED_FUNCTION("Use KSPGLTRGetLambda (since v3.12)") PETSC_STATIC_INLINE PetscErrorCode KSPCGGLTRGetLambda(KSP ksp,PetscReal *x) {return KSPGLTRGetLambda(ksp,x);}
 
 PETSC_EXTERN PetscErrorCode KSPPythonSetType(KSP,const char[]);
 
@@ -655,8 +661,6 @@ PETSC_EXTERN PetscErrorCode PCShellSetPostSolve(PC,PetscErrorCode (*)(PC,KSP,Vec
      KSPGuess - Abstract PETSc object that manages all initial guess methods in Krylov methods.
 
    Level: beginner
-
-  Concepts: Krylov methods
 
 .seealso:  KSPCreate(), KSPSetGuessType(), KSPGuessType
 S*/

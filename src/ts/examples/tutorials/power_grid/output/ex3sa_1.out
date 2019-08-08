@@ -5,7 +5,7 @@ Vec Object: 1 MPI processes
 -174.765
 15064.4
 
- mu: d[Psi(tf)]/d[pm]  d[Psi(tf)]/d[pm]
+ mu: d[Psi(tf)]/d[pm]
 Vec Object: 1 MPI processes
   type: seq
 444.994

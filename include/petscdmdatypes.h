@@ -1,5 +1,5 @@
-#if !defined(_PETSCDMDATYPES_H)
-#define _PETSCDMDATYPES_H
+#if !defined(PETSCDMDATYPES_H)
+#define PETSCDMDATYPES_H
 
 #include <petscdmtypes.h>
 
@@ -39,8 +39,6 @@ typedef enum { DMDA_ELEMENT_P1, DMDA_ELEMENT_Q1 } DMDAElementType;
               location in it.
 
    Level: beginner
-
-  Concepts: distributed array
 
   Fortran Notes - This should be declared as
 $    DMDALocalInfo :: info(DMDA_LOCAL_INFO_SIZE)

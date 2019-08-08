@@ -4,8 +4,8 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.gitcommit         = '8ca66eb'
-    self.download          = ['git://https://bitbucket.org/petsc/ctetgen.git','http://ftp.mcs.anl.gov/pub/petsc/externalpackages/ctetgen-0.4.tar.gz']
+    self.gitcommit         = 'ctetgen-0.5'
+    self.download          = ['git://https://bitbucket.org/petsc/ctetgen.git','http://ftp.mcs.anl.gov/pub/petsc/externalpackages/ctetgen-0.5.tar.gz']
     self.functions         = []
     self.includes          = []
     self.hastests          = 1
@@ -58,7 +58,7 @@ class Configure(config.package.GNUPackage):
       self.log.write(output+err)
       self.logPrintBox('Installing Ctetgen; this may take several minutes')
       self.installDirProvider.printSudoPasswordMessage(1)
-      output,err,ret  = config.package.GNUPackage.executeShellCommand(self.installDirProvider.installSudo+self.make.make+' PETSC_DIR='+self.petscdir.dir+' install-ctetgen',timeout=1000, log = self.log, cwd=self.packageDir)
+      output,err,ret  = config.package.GNUPackage.executeShellCommand(self.installDirProvider.installSudo+self.make.make+' PETSC_DIR='+self.petscdir.dir+' prefix='+self.installDir+' install-ctetgen',timeout=1000, log = self.log, cwd=self.packageDir)
       self.log.write(output+err)
     except RuntimeError as e:
       raise RuntimeError('Error running make on Ctetgen: '+str(e))

@@ -475,7 +475,7 @@ static PetscErrorCode KSPDestroy_PIPEGCR(KSP ksp)
 /*@
   KSPPIPEGCRSetUnrollW - Set to PETSC_TRUE to use PIPEGCR with unrolling of the w vector
 
-  Logically Collective on KSP
+  Logically Collective on ksp
 
   Input Parameters:
 +  ksp - the Krylov space context
@@ -502,7 +502,7 @@ PetscErrorCode KSPPIPEGCRSetUnrollW(KSP ksp,PetscBool unroll_w)
 /*@
   KSPPIPEGCRGetUnrollW - Get information on PIPEGCR unrolling the w vector
 
-  Logically Collective on KSP
+  Logically Collective on ksp
 
    Input Parameter:
 .  ksp - the Krylov space context
@@ -534,7 +534,7 @@ PetscErrorCode KSPPIPEGCRGetUnrollW(KSP ksp,PetscBool *unroll_w)
   and whether all are used in each iteration also depends on the truncation strategy
   (see KSPPIPEGCRSetTruncationType)
 
-  Logically Collective on KSP
+  Logically Collective on ksp
 
   Input Parameters:
 +  ksp - the Krylov space context
@@ -576,8 +576,6 @@ PetscErrorCode KSPPIPEGCRSetMmax(KSP ksp,PetscInt mmax)
 
    Level: intermediate
 
-.keywords: KSP, PIPEGCR, truncation
-
 .seealso: KSPPIPEGCR, KSPPIPEGCRGetTruncationType(), KSPPIPEGCRGetNprealloc(), KSPPIPEGCRSetMmax()
 @*/
 
@@ -594,7 +592,7 @@ PetscErrorCode KSPPIPEGCRGetMmax(KSP ksp,PetscInt *mmax)
 /*@
   KSPPIPEGCRSetNprealloc - set the number of directions to preallocate with PIPEGCR
 
-  Logically Collective on KSP
+  Logically Collective on ksp
 
   Input Parameters:
 +  ksp - the Krylov space context
@@ -634,8 +632,6 @@ PetscErrorCode KSPPIPEGCRSetNprealloc(KSP ksp,PetscInt nprealloc)
 
    Level: advanced
 
-.keywords: KSP, PIPEGCR, truncation
-
 .seealso: KSPPIPEGCR, KSPPIPEGCRGetTruncationType(), KSPPIPEGCRSetNprealloc()
 @*/
 PetscErrorCode KSPPIPEGCRGetNprealloc(KSP ksp,PetscInt *nprealloc)
@@ -651,7 +647,7 @@ PetscErrorCode KSPPIPEGCRGetNprealloc(KSP ksp,PetscInt *nprealloc)
 /*@
   KSPPIPEGCRSetTruncationType - specify how many of its stored previous directions PIPEGCR uses during orthoganalization
 
-  Logically Collective on KSP
+  Logically Collective on ksp
 
   KSP_FCD_TRUNC_TYPE_STANDARD uses all (up to mmax) stored directions
   KSP_FCD_TRUNC_TYPE_NOTAY uses the last max(1,mod(i,mmax)) directions at iteration i=0,1,..
@@ -696,8 +692,6 @@ PetscErrorCode KSPPIPEGCRSetTruncationType(KSP ksp,KSPFCDTruncationType truncstr
 . -ksp_pipegcr_truncation_type <standard,notay> - which stored basis vectors to orthogonalize against
 
    Level: intermediate
-
-.keywords: KSP, PIPEGCR, truncation
 
 .seealso: KSPPIPEGCR, KSPPIPEGCRSetTruncationType, KSPPIPEGCRTruncationType, KSPFCDTruncationType
 @*/
@@ -749,7 +743,7 @@ static PetscErrorCode  KSPPIPEGCRSetModifyPC_PIPEGCR(KSP ksp,KSPPIPEGCRModifyPCF
 /*@C
  KSPPIPEGCRSetModifyPC - Sets the routine used by PIPEGCR to modify the preconditioner.
 
- Logically Collective on KSP
+ Logically Collective on ksp
 
  Input Parameters:
  +  ksp      - iterative context obtained from KSPCreate()
@@ -786,10 +780,10 @@ PetscErrorCode  KSPPIPEGCRSetModifyPC(KSP ksp,PetscErrorCode (*function)(KSP,Pet
      KSPPIPEGCR - Implements a Pipelined Generalized Conjugate Residual method.
 
   Options Database Keys:
-.   -ksp_pipegcr_mmax <N>  - the max number of Krylov directions to orthogonalize against
++   -ksp_pipegcr_mmax <N>  - the max number of Krylov directions to orthogonalize against
 .   -ksp_pipegcr_unroll_w - unroll w at the storage cost of a maximum of (mmax+1) extra vectors with the benefit of better pipelining (default: PETSC_TRUE)
 .   -ksp_pipegcr_nprealloc <N> - the number of vectors to preallocated for storing Krylov directions. Once exhausted new directions are allocated blockwise (default: 5)
-.   -ksp_pipegcr_truncation_type <standard,notay> - which previous search directions to orthogonalize against
+-   -ksp_pipegcr_truncation_type <standard,notay> - which previous search directions to orthogonalize against
 
 
   Notes:

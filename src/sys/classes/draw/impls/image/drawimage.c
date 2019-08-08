@@ -412,7 +412,7 @@ static PetscErrorCode PetscDrawGetSingleton_Image(PetscDraw draw,PetscDraw *sdra
   ierr = PetscDrawSetType(*sdraw,PETSC_DRAW_IMAGE);CHKERRQ(ierr);
   (*sdraw)->ops->resizewindow = NULL;
   simg = (PetscImage)(*sdraw)->data;
-  ierr = PetscMemcpy(simg->buffer,pimg->buffer,(size_t)(pimg->w*pimg->h));CHKERRQ(ierr);
+  ierr = PetscArraycpy(simg->buffer,pimg->buffer,pimg->w*pimg->h);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -423,7 +423,7 @@ static PetscErrorCode PetscDrawRestoreSingleton_Image(PetscDraw draw,PetscDraw *
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMemcpy(pimg->buffer,simg->buffer,(size_t)(pimg->w*pimg->h));CHKERRQ(ierr);
+  ierr = PetscArraycpy(pimg->buffer,simg->buffer,pimg->w*pimg->h);CHKERRQ(ierr);
   ierr = PetscDrawDestroy(sdraw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -455,7 +455,7 @@ static PetscErrorCode PetscDrawGetImage_Image(PetscDraw draw,unsigned char palet
   }
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)draw),&size);CHKERRQ(ierr);
   if (size == 1) {
-    ierr = PetscMemcpy(buffer,img->buffer,(size_t)(img->w*img->h));CHKERRQ(ierr);
+    ierr = PetscArraycpy(buffer,img->buffer,img->w*img->h);CHKERRQ(ierr);
   } else {
     ierr = MPI_Reduce(img->buffer,buffer,img->w*img->h,MPI_UNSIGNED_CHAR,MPI_MAX,0,PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
   }
@@ -606,7 +606,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_Image(PetscDraw draw)
 /*@C
    PetscDrawOpenImage - Opens an image for use with the PetscDraw routines.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - the communicator that will share image

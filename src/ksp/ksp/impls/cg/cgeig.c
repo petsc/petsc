@@ -19,7 +19,7 @@ PetscErrorCode KSPComputeEigenvalues_CG(KSP ksp,PetscInt nmax,PetscReal *r,Petsc
   if (nmax < n) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_SIZ,"Not enough room in work space r and c for eigenvalues");
   *neig = n;
 
-  ierr = PetscMemzero(c,nmax*sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscArrayzero(c,nmax);CHKERRQ(ierr);
   if (!n) {
     PetscFunctionReturn(0);
   }

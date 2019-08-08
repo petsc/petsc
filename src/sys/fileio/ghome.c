@@ -22,7 +22,6 @@
 
    On Windows machines the enviornmental variable HOME specifies the home directory.
 
-   Concepts: home directory
 @*/
 PetscErrorCode  PetscGetHomeDirectory(char dir[],size_t maxlen)
 {

@@ -9,62 +9,28 @@
 from __future__ import print_function
 import os
 #
-def process(fileoutput = 1):
+def process(streamstype,fileoutput):
   import re
+
   ff = open('scaling.log')
   data = ff.read()
   ff.close()
 
   s = data.split('\n')
-  ss = []
-  for i in s:
-    if not i.startswith('MPI rank'):
-      ss.append(i)
-  data = '\n'.join(ss)
-  hosts  = {}
   triads = {}
   speedups = {}
-  match = data.split('Number of MPI processes ')
-  for i in match:
-    if i:
-      fields = i.split('\n')
-      size = int(fields[0].split()[0])
-      hosts[size] = fields[0].split()[3:]
-      triads[size] = float(fields[1].split()[1])
+  size = 0
+  for i in s[0:-1]:
+      i = i.split()
+      triads[size] = float(i[1])
+      size = size + 1
 
-  if len(hosts) < 2: return
+  if size < 2: return
 
-  ff = open('scaling.log','a')
-  if fileoutput: print('np  speedup')
-  if fileoutput: ff.write('np  speedup\n')
-  for sizes in hosts:
-    speedups[sizes] = triads[sizes]/triads[1]
-    if fileoutput: print(sizes,round(triads[sizes]/triads[1],2))
-    if fileoutput: ff.write(str(sizes)+' '+str(round(triads[sizes]/triads[1],2))+'\n')
-
-  if fileoutput: print("Estimation of possible speedup of MPI programs based on Streams benchmark.")
-  if fileoutput: ff.write("Estimation of possible speedup of MPI programs based on Streams benchmark.\n")
-
-  if fileoutput:
-    import re
-    last = max(hosts.keys())
-    lasthosts = hosts[last]
-    for i in range(0,len(lasthosts)):
-      lasthosts[i] = re.sub(r"Process [0-9]*", "", lasthosts[i])
-    ulasthosts = list(set(lasthosts))
-    print("It appears you have "+str(len(ulasthosts))+" node(s)")
-    ff.write("It appears you have "+str(len(ulasthosts))+" node(s)\n")
-
-    if len(ulasthosts) < 1:
-      testhosts = []
-      for i in range(0,len(lasthosts)):
-        testhosts.append(ulasthosts[i % len(ulasthosts)])
-      if testhosts == lasthosts:
-        print("   distributed in a round robin order")
-        ff.write("   distributed in a round robin order\n")
-      else:
-        print("   NOT distributed in a round robin order")
-        ff.write("   NOT distributed in a round robin order\n")
+  triads = triads.values()
+  speedups = {}
+  for i in range(0,size):
+    speedups[i] = triads[i]/triads[0]
 
   try:
     import matplotlib
@@ -81,28 +47,33 @@ def process(fileoutput = 1):
 
   try:
     fig, ax1 = plt.subplots()
-    plt.title('MPI Perfect and Streams Speedup')
+    plt.title(streamstype+' Perfect and Streams Speedup')
     ax2 = ax1.twinx()
     ax1.set_autoscaley_on(False)
 
+    r = range(1,size+1)
+    speedups = speedups.values()
+
     # make sure that actual bandwidth values (as opposed to perfect speedup) takes
     # at least a third of the y axis
-    ymax = min(max(hosts.keys()), 3*max(triads.values())/min(triads.values()) - 2)
+    ymax = min(size, 3*max(speedups))
+    ymin = min(1, min(speedups))
+    if ymin < 1: ymin = 0
 
-    ax1.set_xlim([min(hosts.keys()),max(hosts.keys())])
-    ax1.set_ylim([min(hosts.keys()),ymax])
-    ax1.set_xlabel('Number of MPI processes')
+    ax1.set_xlim(1,size)
+    ax1.set_ylim([ymin,ymax])
+    ax1.set_xlabel('Number of processes/threads')
     ax1.set_ylabel('Memory Bandwidth Speedup')
-    ax1.plot(hosts.keys(),hosts.keys(),'b',hosts.keys(),speedups.values(),'r-o')
+    ax1.plot(r,r,'b',r,speedups,'r-o')
     ax2.set_autoscaley_on(False)
-    ax2.set_xlim([min(hosts.keys()),max(hosts.keys())])
-    ax2.set_ylim([min(triads.values())/1000.,min(triads.values())*ymax/1000.])
-    ax2.set_ylabel("Achieved Bandwidth. Gigabytes per Second")
+    ax2.set_xlim([1,size])
+    ax2.set_ylim([min(triads),max(triads)])
+    ax2.set_ylabel("Achieved Bandwidth. Megabytes per Second")
+    ax2.plot(r,triads,'g-o')
 
     plt.show()
-    if fileoutput: plt.savefig('scaling.png')
-    if fileoutput: print("See graph in the file src/benchmarks/streams/scaling.png")
-    if fileoutput: ff.write("See graph in the file src/benchmarks/streams/scaling.png\n")
+    if fileoutput: plt.savefig(streamstype+'scaling.png')
+    if fileoutput: print("See graph in the file src/benchmarks/streams/"+streamstype+"scaling.png")
   except Exception as e:
     if fileoutput: print("Unable to plot speedup to a file")
     else: print("Unable to display speedup plot")
@@ -114,6 +85,7 @@ def process(fileoutput = 1):
 #
 if __name__ ==  '__main__':
   import sys
-  process(len(sys.argv)-1)
+
+  process(sys.argv[1],len(sys.argv)-2)
 
 

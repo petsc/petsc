@@ -21,8 +21,6 @@
 
    Level: intermediate
 
-   Concepts: index sets^difference
-   Concepts: IS^difference
 
 .seealso: ISDestroy(), ISView(), ISSum(), ISExpand()
 
@@ -110,8 +108,6 @@ PetscErrorCode  ISDifference(IS is1,IS is2,IS *isout)
 
 .seealso: ISDestroy(), ISView(), ISDifference(), ISExpand()
 
-   Concepts: index sets^union
-   Concepts: IS^union
 
 @*/
 PetscErrorCode  ISSum(IS is1,IS is2,IS *is3)
@@ -137,7 +133,10 @@ PetscErrorCode  ISSum(IS is1,IS is2,IS *is3)
 
   ierr = ISGetLocalSize(is1,&n1);CHKERRQ(ierr);
   ierr = ISGetLocalSize(is2,&n2);CHKERRQ(ierr);
-  if (!n2) PetscFunctionReturn(0);
+  if (!n2) {
+    ierr = ISDuplicate(is1,is3);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
   ierr = ISGetIndices(is1,&i1);CHKERRQ(ierr);
   ierr = ISGetIndices(is2,&i2);CHKERRQ(ierr);
 
@@ -237,8 +236,6 @@ PetscErrorCode  ISSum(IS is1,IS is2,IS *is3)
 
 .seealso: ISDestroy(), ISView(), ISDifference(), ISSum()
 
-   Concepts: index sets^difference
-   Concepts: IS^difference
 
 @*/
 PetscErrorCode ISExpand(IS is1,IS is2,IS *isout)
@@ -303,8 +300,7 @@ PetscErrorCode ISExpand(IS is1,IS is2,IS *isout)
 }
 
 /*@
-   ISIntersect - Computes the union of two index sets, by concatenating 2 lists, sorting,
-   and finding duplicates.
+   ISIntersect - Computes the intersection of two index sets, by sorting and comparing.
 
    Collective on IS
 
@@ -325,8 +321,6 @@ PetscErrorCode ISExpand(IS is1,IS is2,IS *isout)
 
 .seealso: ISDestroy(), ISView(), ISDifference(), ISSum(), ISExpand()
 
-   Concepts: index sets^intersection
-   Concepts: IS^intersection
 
 @*/
 PetscErrorCode ISIntersect(IS is1,IS is2,IS *isout)
@@ -428,7 +422,7 @@ PetscErrorCode ISIntersect_Caching_Internal(IS is1, IS is2, IS *isect)
    ISConcatenate - Forms a new IS by locally concatenating the indices from an IS list without reordering.
 
 
-   Collective on comm.
+   Collective.
 
    Input Parameter:
 +  comm    - communicator of the concatenated IS.
@@ -445,8 +439,6 @@ PetscErrorCode ISIntersect_Caching_Internal(IS is1, IS is2, IS *isect)
 
 .seealso: ISDifference(), ISSum(), ISExpand()
 
-   Concepts: index sets^concatenation
-   Concepts: IS^concatenation
 
 @*/
 PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS *isout)
@@ -480,7 +472,7 @@ PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS 
     if (islist[i]) {
       ierr = ISGetLocalSize(islist[i], &n);CHKERRQ(ierr);
       ierr = ISGetIndices(islist[i], &iidx);CHKERRQ(ierr);
-      ierr = PetscMemcpy(idx+N,iidx, sizeof(PetscInt)*n);CHKERRQ(ierr);
+      ierr = PetscArraycpy(idx+N,iidx, n);CHKERRQ(ierr);
       ierr = ISRestoreIndices(islist[i], &iidx);CHKERRQ(ierr);
       N   += n;
     }
@@ -495,7 +487,7 @@ PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS 
                         mapped to j.
 
 
-  Collective on comm.
+  Collective.
 
   Input arguments:
 + comm    -  MPI_Comm
@@ -607,8 +599,8 @@ PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
   ierr = ISGetIndices(coloris, &ccolors);CHKERRQ(ierr);
   ierr = ISGetIndices(indis, &cinds);CHKERRQ(ierr);
   ierr = PetscMalloc2(ilen,&inds,llen,&colors);CHKERRQ(ierr);
-  ierr = PetscMemcpy(inds,cinds,ilen*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMemcpy(colors,ccolors,llen*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArraycpy(inds,cinds,ilen);CHKERRQ(ierr);
+  ierr = PetscArraycpy(colors,ccolors,llen);CHKERRQ(ierr);
   ierr = PetscSortIntWithArray(llen, colors, inds);CHKERRQ(ierr);
   /* Determine the global extent of colors. */
   llow   = 0; lhigh  = -1;
@@ -732,7 +724,7 @@ PetscErrorCode ISEmbed(IS a, IS b, PetscBool drop, IS *c)
   if (clen != alen) {
     cindices2 = cindices;
     ierr      = PetscMalloc1(clen, &cindices);CHKERRQ(ierr);
-    ierr      = PetscMemcpy(cindices,cindices2,clen*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr      = PetscArraycpy(cindices,cindices2,clen);CHKERRQ(ierr);
     ierr      = PetscFree(cindices2);CHKERRQ(ierr);
   }
   ierr = ISCreateGeneral(PETSC_COMM_SELF,clen,cindices,PETSC_OWN_POINTER,c);CHKERRQ(ierr);

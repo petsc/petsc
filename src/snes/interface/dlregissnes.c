@@ -10,7 +10,6 @@ static PetscBool SNESPackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.keywords: Petsc, destroy, package, mathematica
 .seealso: PetscFinalize()
 @*/
 PetscErrorCode  SNESFinalizePackage(void)
@@ -33,7 +32,6 @@ PetscErrorCode  SNESFinalizePackage(void)
 
   Level: developer
 
-.keywords: SNES, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode  SNESInitializePackage(void)
@@ -56,6 +54,7 @@ PetscErrorCode  SNESInitializePackage(void)
   ierr = SNESLineSearchRegisterAll();CHKERRQ(ierr);
   /* Register Events */
   ierr = PetscLogEventRegister("SNESSolve",            SNES_CLASSID,&SNES_Solve);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SNESSetUp",            SNES_CLASSID,&SNES_Setup);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("SNESFunctionEval",     SNES_CLASSID,&SNES_FunctionEval);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("SNESObjectiveEval",    SNES_CLASSID,&SNES_ObjectiveEval);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("SNESNGSEval",          SNES_CLASSID,&SNES_NGSEval);CHKERRQ(ierr);

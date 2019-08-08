@@ -65,8 +65,6 @@ static double a[N+OFFSET],
 
 static double mintime[4] = {FLT_MAX,FLT_MAX,FLT_MAX,FLT_MAX};
 
-static const char *label[4] = {"Copy:      ", "Scale:     ", "Add:       ", "Triad:     "};
-
 static double bytes[4] = {
   2 * sizeof(double) * N,
   2 * sizeof(double) * N,
@@ -83,23 +81,20 @@ int main(int argc,char **args)
   char           hostname[MPI_MAX_PROCESSOR_NAME];
   MPI_Status     status;
   int            ierr;
+  FILE           *fd;
 
   ierr = PetscInitialize(&argc,&args,NULL,NULL);if (ierr) return ierr;
   ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);if (ierr) return ierr;
   ierr = MPI_Comm_size(MPI_COMM_WORLD,&size);if (ierr) return ierr;
-  if (!rank) printf("Number of MPI processes %d ",size);
 
   for (j=0; j<MPI_MAX_PROCESSOR_NAME; j++) {
     hostname[j] = 0;
   }
   ierr = MPI_Get_processor_name(hostname,&resultlen);if (ierr) return ierr;
   if (!rank) {
-    printf("Processor names  %s ",hostname);
     for (j=1; j<size; j++) {
       ierr = MPI_Recv(hostname,MPI_MAX_PROCESSOR_NAME,MPI_CHAR,j,0,MPI_COMM_WORLD,&status);if (ierr) return ierr;
-      printf("%s ",hostname);
     }
-    printf("\n");
  } else {
    ierr = MPI_Send(hostname,MPI_MAX_PROCESSOR_NAME,MPI_CHAR,0,0,MPI_COMM_WORLD);if (ierr) return ierr;
  }
@@ -187,8 +182,18 @@ int main(int argc,char **args)
   if (ierr) printf("Error calling MPI\n");
 
   if (!rank) {
-    printf("%s  %11.4f   Rate (MB/s) \n", label[3],rate[3]);
-    /* for (j=0; j<4; j++) printf("%s%11.4f\n", label[j],rate[j]);*/
+    if (size == 1) {
+      printf("%d %11.4f   Rate (MB/s)\n",size, rate[3]);
+      fd = fopen("flops","w");
+      fprintf(fd,"%g\n",rate[3]);
+      fclose(fd);
+    } else {
+      double prate;
+      fd = fopen("flops","r");
+      fscanf(fd,"%lg",&prate);
+      fclose(fd);
+      printf("%d %11.4f   Rate (MB/s) %g \n", size, rate[3],rate[3]/prate);
+    }
   }
   PetscFinalize();
   return 0;

@@ -33,9 +33,9 @@ class CompilerOptions(config.base.Configure):
         if not nargs.ArgBool('with-errorchecking', arg if arg is not None else '1', isTemporary=True).getValue():
           flags.extend(['-Wno-unused-but-set-variable'])
       elif bopt == 'g':
-        if self.argDB['with-gcov']:
-          flags.extend(['-fprofile-arcs', '-ftest-coverage'])
         flags.append('-g3')
+      elif bopt == 'gcov':
+        flags.extend(['--coverage','-Og']) # --coverage is equal to -fprofile-arcs -ftest-coverage. Use -Og to have accurate coverage result and fine performance
       elif bopt == 'O':
         flags.append('-g')
         if config.setCompilers.Configure.isClang(compiler, self.log):
@@ -119,10 +119,10 @@ class CompilerOptions(config.base.Configure):
         if not nargs.ArgBool('with-errorchecking', arg if arg is not None else '1', isTemporary=True).getValue():
           flags.extend(['-Wno-unused-but-set-variable'])
       elif bopt in ['g']:
-        if self.argDB['with-gcov']:
-          flags.extend(['-fprofile-arcs', '-ftest-coverage'])
         # -g3 causes an as SEGV on OSX
         flags.append('-g')
+      elif bopt == 'gcov':
+        flags.extend(['--coverage','-Og'])
       elif bopt in ['O']:
         flags.append('-g')
         if 'USER' in os.environ:
@@ -204,12 +204,12 @@ class CompilerOptions(config.base.Configure):
         if not config.setCompilers.Configure.isGfortran47plus(compiler, self.log):
           flags.extend(['-Wno-unused-variable']) # older gfortran warns about unused common block constants
         if config.setCompilers.Configure.isGfortran45x(compiler, self.log):
-          flags.extend(['-Wno-line-truncation']) # Work around bug in this series, fixed in 4.6: http://gcc.gnu.org/bugzilla/show_bug.cgi?id=42852
+          flags.extend(['-Wno-line-truncation']) # Work around bug in this series, fixed in 4.6: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=42852
       elif bopt == 'g':
-        if self.argDB['with-gcov']:
-          flags.extend(['-fprofile-arcs', '-ftest-coverage'])
         # g77 3.2.3 preprocesses the file into nothing if we give -g3
         flags.append('-g')
+      elif bopt == 'gcov':
+        flags.extend(['--coverage','-Og'])
       elif bopt == 'O':
         flags.append('-g')
         flags.extend(['-O'])
@@ -257,6 +257,8 @@ class CompilerOptions(config.base.Configure):
     return flags
 
   def getCompilerFlags(self, language, compiler, bopt):
+    if bopt == 'gcov' and not config.setCompilers.Configure.isGNU(compiler, self.log) and not config.setCompilers.Configure.isClang(compiler, self.log):
+      raise RuntimeError('Having --with-gcov but the compiler is neither GCC nor Clang, we do not know how to do gcov')
     flags = ''
     if language == 'C' or language == 'CUDA':
       flags = self.getCFlags(compiler, bopt)
@@ -300,4 +302,5 @@ class CompilerOptions(config.base.Configure):
     except RuntimeError as e:
       self.logWrite('Could not determine compiler version: '+str(e))
     self.logWrite('getCompilerVersion: '+str(compiler)+' '+str(version)+'\n')
+    self.framework.addMakeMacro(language+'_VERSION',version)
     return version

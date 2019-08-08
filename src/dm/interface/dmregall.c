@@ -36,7 +36,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_Stag(DM);
 
   Level: advanced
 
-.keywords: DM, register, all
 .seealso:  DMRegister(), DMRegisterDestroy()
 @*/
 PetscErrorCode  DMRegisterAll(void)
@@ -87,7 +86,6 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_MatPartitioning(PetscPartitio
 
   Level: advanced
 
-.keywords: PetscPartitioner, register, all
 .seealso:  PetscPartitionerRegister(), PetscPartitionerRegisterDestroy()
 @*/
 PetscErrorCode PetscPartitionerRegisterAll(void)
@@ -124,7 +122,6 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Subspace(PetscSpace);
 
   Level: advanced
 
-.keywords: PetscSpace, register, all
 .seealso:  PetscSpaceRegister(), PetscSpaceRegisterDestroy()
 @*/
 PetscErrorCode PetscSpaceRegisterAll(void)
@@ -143,6 +140,7 @@ PetscErrorCode PetscSpaceRegisterAll(void)
 }
 
 PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Lagrange(PetscDualSpace);
+PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_BDM(PetscDualSpace);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Simple(PetscDualSpace);
 
 /*@C
@@ -155,7 +153,6 @@ PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Simple(PetscDualSpace);
 
   Level: advanced
 
-.keywords: PetscDualSpace, register, all
 .seealso:  PetscDualSpaceRegister(), PetscDualSpaceRegisterDestroy()
 @*/
 PetscErrorCode PetscDualSpaceRegisterAll(void)
@@ -167,6 +164,7 @@ PetscErrorCode PetscDualSpaceRegisterAll(void)
   PetscDualSpaceRegisterAllCalled = PETSC_TRUE;
 
   ierr = PetscDualSpaceRegister(PETSCDUALSPACELAGRANGE, PetscDualSpaceCreate_Lagrange);CHKERRQ(ierr);
+  ierr = PetscDualSpaceRegister(PETSCDUALSPACEBDM,      PetscDualSpaceCreate_BDM);CHKERRQ(ierr);
   ierr = PetscDualSpaceRegister(PETSCDUALSPACESIMPLE,   PetscDualSpaceCreate_Simple);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -188,7 +186,6 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_OpenCL(PetscFE);
 
   Level: advanced
 
-.keywords: PetscFE, register, all
 .seealso:  PetscFERegister(), PetscFERegisterDestroy()
 @*/
 PetscErrorCode PetscFERegisterAll(void)
@@ -227,7 +224,6 @@ PETSC_EXTERN PetscErrorCode PetscLimiterCreate_MC(PetscLimiter);
 
   Level: advanced
 
-.keywords: PetscLimiter, register, all
 .seealso:  PetscLimiterRegister(), PetscLimiterRegisterDestroy()
 @*/
 PetscErrorCode PetscLimiterRegisterAll(void)
@@ -262,7 +258,6 @@ PETSC_EXTERN PetscErrorCode PetscFVCreate_LeastSquares(PetscFV);
 
   Level: advanced
 
-.keywords: PetscFV, register, all
 .seealso:  PetscFVRegister(), PetscFVRegisterDestroy()
 @*/
 PetscErrorCode PetscFVRegisterAll(void)
@@ -291,7 +286,6 @@ PETSC_EXTERN PetscErrorCode PetscDSCreate_Basic(PetscDS);
 
   Level: advanced
 
-.keywords: PetscDS, register, all
 .seealso:  PetscDSRegister(), PetscDSRegisterDestroy()
 @*/
 PetscErrorCode PetscDSRegisterAll(void)

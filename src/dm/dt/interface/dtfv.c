@@ -44,7 +44,6 @@ const char LimiterCitation[] = "@article{BergerAftosmisMurman2005,\n"
 
   Level: advanced
 
-.keywords: PetscLimiter, register
 .seealso: PetscLimiterRegisterAll(), PetscLimiterRegisterDestroy()
 
 @*/
@@ -60,7 +59,7 @@ PetscErrorCode PetscLimiterRegister(const char sname[], PetscErrorCode (*functio
 /*@C
   PetscLimiterSetType - Builds a particular PetscLimiter
 
-  Collective on PetscLimiter
+  Collective on lim
 
   Input Parameters:
 + lim  - The PetscLimiter object
@@ -71,7 +70,6 @@ PetscErrorCode PetscLimiterRegister(const char sname[], PetscErrorCode (*functio
 
   Level: intermediate
 
-.keywords: PetscLimiter, set, type
 .seealso: PetscLimiterGetType(), PetscLimiterCreate()
 @*/
 PetscErrorCode PetscLimiterSetType(PetscLimiter lim, PetscLimiterType name)
@@ -111,7 +109,6 @@ PetscErrorCode PetscLimiterSetType(PetscLimiter lim, PetscLimiterType name)
 
   Level: intermediate
 
-.keywords: PetscLimiter, get, type, name
 .seealso: PetscLimiterSetType(), PetscLimiterCreate()
 @*/
 PetscErrorCode PetscLimiterGetType(PetscLimiter lim, PetscLimiterType *name)
@@ -129,7 +126,7 @@ PetscErrorCode PetscLimiterGetType(PetscLimiter lim, PetscLimiterType *name)
 /*@C
   PetscLimiterView - Views a PetscLimiter
 
-  Collective on PetscLimiter
+  Collective on lim
 
   Input Parameter:
 + lim - the PetscLimiter object to view
@@ -153,7 +150,7 @@ PetscErrorCode PetscLimiterView(PetscLimiter lim, PetscViewer v)
 /*@
   PetscLimiterSetFromOptions - sets parameters in a PetscLimiter from the options database
 
-  Collective on PetscLimiter
+  Collective on lim
 
   Input Parameter:
 . lim - the PetscLimiter object to set options for
@@ -193,7 +190,7 @@ PetscErrorCode PetscLimiterSetFromOptions(PetscLimiter lim)
 /*@C
   PetscLimiterSetUp - Construct data structures for the PetscLimiter
 
-  Collective on PetscLimiter
+  Collective on lim
 
   Input Parameter:
 . lim - the PetscLimiter object to setup
@@ -215,7 +212,7 @@ PetscErrorCode PetscLimiterSetUp(PetscLimiter lim)
 /*@
   PetscLimiterDestroy - Destroys a PetscLimiter object
 
-  Collective on PetscLimiter
+  Collective on lim
 
   Input Parameter:
 . lim - the PetscLimiter object to destroy
@@ -243,7 +240,7 @@ PetscErrorCode PetscLimiterDestroy(PetscLimiter *lim)
 /*@
   PetscLimiterCreate - Creates an empty PetscLimiter object. The type can then be set with PetscLimiterSetType().
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 . comm - The communicator for the PetscLimiter object
@@ -929,7 +926,6 @@ PetscBool         PetscFVRegisterAllCalled = PETSC_FALSE;
 
   Level: advanced
 
-.keywords: PetscFV, register
 .seealso: PetscFVRegisterAll(), PetscFVRegisterDestroy()
 
 @*/
@@ -945,7 +941,7 @@ PetscErrorCode PetscFVRegister(const char sname[], PetscErrorCode (*function)(Pe
 /*@C
   PetscFVSetType - Builds a particular PetscFV
 
-  Collective on PetscFV
+  Collective on fvm
 
   Input Parameters:
 + fvm  - The PetscFV object
@@ -956,7 +952,6 @@ PetscErrorCode PetscFVRegister(const char sname[], PetscErrorCode (*function)(Pe
 
   Level: intermediate
 
-.keywords: PetscFV, set, type
 .seealso: PetscFVGetType(), PetscFVCreate()
 @*/
 PetscErrorCode PetscFVSetType(PetscFV fvm, PetscFVType name)
@@ -996,7 +991,6 @@ PetscErrorCode PetscFVSetType(PetscFV fvm, PetscFVType name)
 
   Level: intermediate
 
-.keywords: PetscFV, get, type, name
 .seealso: PetscFVSetType(), PetscFVCreate()
 @*/
 PetscErrorCode PetscFVGetType(PetscFV fvm, PetscFVType *name)
@@ -1014,7 +1008,7 @@ PetscErrorCode PetscFVGetType(PetscFV fvm, PetscFVType *name)
 /*@C
   PetscFVView - Views a PetscFV
 
-  Collective on PetscFV
+  Collective on fvm
 
   Input Parameter:
 + fvm - the PetscFV object to view
@@ -1038,7 +1032,7 @@ PetscErrorCode PetscFVView(PetscFV fvm, PetscViewer v)
 /*@
   PetscFVSetFromOptions - sets parameters in a PetscFV from the options database
 
-  Collective on PetscFV
+  Collective on fvm
 
   Input Parameter:
 . fvm - the PetscFV object to set options for
@@ -1084,7 +1078,7 @@ PetscErrorCode PetscFVSetFromOptions(PetscFV fvm)
 /*@
   PetscFVSetUp - Construct data structures for the PetscFV
 
-  Collective on PetscFV
+  Collective on fvm
 
   Input Parameter:
 . fvm - the PetscFV object to setup
@@ -1107,7 +1101,7 @@ PetscErrorCode PetscFVSetUp(PetscFV fvm)
 /*@
   PetscFVDestroy - Destroys a PetscFV object
 
-  Collective on PetscFV
+  Collective on fvm
 
   Input Parameter:
 . fvm - the PetscFV object to destroy
@@ -1146,7 +1140,7 @@ PetscErrorCode PetscFVDestroy(PetscFV *fvm)
 /*@
   PetscFVCreate - Creates an empty PetscFV object. The type can then be set with PetscFVSetType().
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 . comm - The communicator for the PetscFV object
@@ -1185,7 +1179,7 @@ PetscErrorCode PetscFVCreate(MPI_Comm comm, PetscFV *fvm)
 /*@
   PetscFVSetLimiter - Set the limiter object
 
-  Logically collective on PetscFV
+  Logically collective on fvm
 
   Input Parameters:
 + fvm - the PetscFV object
@@ -1235,7 +1229,7 @@ PetscErrorCode PetscFVGetLimiter(PetscFV fvm, PetscLimiter *lim)
 /*@
   PetscFVSetNumComponents - Set the number of field components
 
-  Logically collective on PetscFV
+  Logically collective on fvm
 
   Input Parameters:
 + fvm - the PetscFV object
@@ -1293,7 +1287,7 @@ PetscErrorCode PetscFVGetNumComponents(PetscFV fvm, PetscInt *comp)
 /*@C
   PetscFVSetComponentName - Set the name of a component (used in output and viewing)
 
-  Logically collective on PetscFV
+  Logically collective on fvm
   Input Parameters:
 + fvm - the PetscFV object
 . comp - the component number
@@ -1316,7 +1310,7 @@ PetscErrorCode PetscFVSetComponentName(PetscFV fvm, PetscInt comp, const char *n
 /*@C
   PetscFVGetComponentName - Get the name of a component (used in output and viewing)
 
-  Logically collective on PetscFV
+  Logically collective on fvm
   Input Parameters:
 + fvm - the PetscFV object
 - comp - the component number
@@ -1338,7 +1332,7 @@ PetscErrorCode PetscFVGetComponentName(PetscFV fvm, PetscInt comp, const char **
 /*@
   PetscFVSetSpatialDimension - Set the spatial dimension
 
-  Logically collective on PetscFV
+  Logically collective on fvm
 
   Input Parameters:
 + fvm - the PetscFV object
@@ -1359,7 +1353,7 @@ PetscErrorCode PetscFVSetSpatialDimension(PetscFV fvm, PetscInt dim)
 /*@
   PetscFVGetSpatialDimension - Get the spatial dimension
 
-  Logically collective on PetscFV
+  Logically collective on fvm
 
   Input Parameter:
 . fvm - the PetscFV object
@@ -1383,7 +1377,7 @@ PetscErrorCode PetscFVGetSpatialDimension(PetscFV fvm, PetscInt *dim)
 /*@
   PetscFVSetComputeGradients - Toggle computation of cell gradients
 
-  Logically collective on PetscFV
+  Logically collective on fvm
 
   Input Parameters:
 + fvm - the PetscFV object
@@ -1428,7 +1422,7 @@ PetscErrorCode PetscFVGetComputeGradients(PetscFV fvm, PetscBool *computeGradien
 /*@
   PetscFVSetQuadrature - Set the quadrature object
 
-  Logically collective on PetscFV
+  Logically collective on fvm
 
   Input Parameters:
 + fvm - the PetscFV object
@@ -1630,7 +1624,7 @@ PetscErrorCode PetscFVRestoreTabulation(PetscFV fvm, PetscInt npoints, const Pet
   Input Parameters:
 + fvm      - The PetscFV object
 . numFaces - The number of cell faces which are not constrained
-. dx       - The vector from the cell centroid to the neighboring cell centroid for each face
+- dx       - The vector from the cell centroid to the neighboring cell centroid for each face
 
   Level: developer
 
@@ -1734,8 +1728,8 @@ PetscErrorCode PetscFVRefine(PetscFV fv, PetscFV *fvRef)
     np   = npoints/numSubelements;
     ierr = PetscMalloc1(np*dim,&p);CHKERRQ(ierr);
     ierr = PetscMalloc1(np*Nc,&w);CHKERRQ(ierr);
-    ierr = PetscMemcpy(p, &points[s*np*dim], np*dim * sizeof(PetscReal));CHKERRQ(ierr);
-    ierr = PetscMemcpy(w, &weights[s*np*Nc], np*Nc  * sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscArraycpy(p, &points[s*np*dim], np*dim);CHKERRQ(ierr);
+    ierr = PetscArraycpy(w, &weights[s*np*Nc], np*Nc);CHKERRQ(ierr);
     ierr = PetscQuadratureSetData(qs, dim, Nc, np, p, w);CHKERRQ(ierr);
     ierr = PetscDualSpaceSimpleSetFunctional(Qref, s, qs);CHKERRQ(ierr);
     ierr = PetscQuadratureDestroy(&qs);CHKERRQ(ierr);
@@ -1924,7 +1918,7 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverse_Static(PetscInt m,PetscIn
   PetscFunctionBegin;
   if (debug) {
     ierr = PetscMalloc1(m*n,&Aback);CHKERRQ(ierr);
-    ierr = PetscMemcpy(Aback,A,m*n*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscArraycpy(Aback,A,m*n);CHKERRQ(ierr);
   }
 
   ierr = PetscBLASIntCast(m,&M);CHKERRQ(ierr);
@@ -1939,7 +1933,7 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverse_Static(PetscInt m,PetscIn
 
   /* Extract an explicit representation of Q */
   Q    = Ainv;
-  ierr = PetscMemcpy(Q,A,mstride*n*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscArraycpy(Q,A,mstride*n);CHKERRQ(ierr);
   K    = N;                     /* full rank */
   PetscStackCallBLAS("LAPACKorgqr",LAPACKorgqr_(&M,&N,&K,Q,&lda,tau,work,&ldwork,&info));
   if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"xORGQR/xUNGQR error");
@@ -1981,7 +1975,7 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverseSVD_Static(PetscInt m,Pets
   PetscFunctionBegin;
   if (debug) {
     ierr = PetscMalloc1(m*n,&Aback);CHKERRQ(ierr);
-    ierr = PetscMemcpy(Aback,A,m*n*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscArraycpy(Aback,A,m*n);CHKERRQ(ierr);
   }
 
   /* initialize to identity */

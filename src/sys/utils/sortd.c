@@ -46,8 +46,6 @@ static PetscErrorCode PetscSortReal_Private(PetscReal *v,PetscInt right)
 
    Level: intermediate
 
-   Concepts: sorting^doubles
-
 .seealso: PetscSortInt(), PetscSortRealWithPermutation(), PetscSortRealWithArrayInt()
 @*/
 PetscErrorCode  PetscSortReal(PetscInt n,PetscReal v[])
@@ -111,8 +109,6 @@ static PetscErrorCode PetscSortRealWithArrayInt_Private(PetscReal *v,PetscInt *V
 
    Level: intermediate
 
-   Concepts: sorting^ints with array
-
 .seealso: PetscSortReal()
 @*/
 PetscErrorCode  PetscSortRealWithArrayInt(PetscInt n,PetscReal r[],PetscInt Ii[])
@@ -156,8 +152,6 @@ PetscErrorCode  PetscSortRealWithArrayInt(PetscInt n,PetscReal r[],PetscInt Ii[]
 
    Level: intermediate
 
-   Concepts: sorting^ints
-
 .seealso: PetscSortReal(), PetscSortRealWithArrayInt()
 @*/
 PetscErrorCode PetscFindReal(PetscReal key, PetscInt n, const PetscReal t[], PetscReal eps, PetscInt *loc)
@@ -190,8 +184,6 @@ PetscErrorCode PetscFindReal(PetscReal key, PetscInt n, const PetscReal t[], Pet
 .  n - number of non-redundant values
 
    Level: intermediate
-
-   Concepts: sorting^doubles
 
 .seealso: PetscSortReal(), PetscSortRemoveDupsInt()
 @*/
@@ -229,8 +221,6 @@ PetscErrorCode  PetscSortRemoveDupsReal(PetscInt *n,PetscReal v[])
 -  idx   - permuted index of array a
 
    Level: intermediate
-
-   Concepts: sorting^doubles
 
 .seealso: PetscSortInt(), PetscSortRealWithPermutation()
 @*/
@@ -292,8 +282,6 @@ PetscErrorCode  PetscSortSplit(PetscInt ncut,PetscInt n,PetscScalar a[],PetscInt
 -  idx   - permuted index of array a
 
    Level: intermediate
-
-   Concepts: sorting^doubles
 
 .seealso: PetscSortInt(), PetscSortRealWithPermutation()
 @*/

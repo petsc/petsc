@@ -99,7 +99,7 @@ PetscErrorCode  DMSlicedSetGhosts(DM dm,PetscInt bs,PetscInt nlocal,PetscInt Ngh
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr           = PetscFree(slice->ghosts);CHKERRQ(ierr);
   ierr           = PetscMalloc1(Nghosts,&slice->ghosts);CHKERRQ(ierr);
-  ierr           = PetscMemcpy(slice->ghosts,ghosts,Nghosts*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr           = PetscArraycpy(slice->ghosts,ghosts,Nghosts);CHKERRQ(ierr);
   slice->bs      = bs;
   slice->n       = nlocal;
   slice->Nghosts = Nghosts;
@@ -176,7 +176,7 @@ static PetscErrorCode DMSlicedSetBlockFills_Private(PetscInt bs,const PetscInt *
     DMSlicedSetBlockFills - Sets the fill pattern in each block for a multi-component problem
     of the matrix returned by DMSlicedGetMatrix().
 
-    Logically Collective on DM
+    Logically Collective on dm
 
     Input Parameter:
 +   sliced - the DM object
@@ -275,8 +275,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_Sliced(DM p)
   ierr    = PetscNewLog(p,&slice);CHKERRQ(ierr);
   p->data = slice;
 
-  ierr = PetscObjectChangeTypeName((PetscObject)p,DMSLICED);CHKERRQ(ierr);
-
   p->ops->createglobalvector = DMCreateGlobalVector_Sliced;
   p->ops->creatematrix       = DMCreateMatrix_Sliced;
   p->ops->globaltolocalbegin = DMGlobalToLocalBegin_Sliced;
@@ -288,7 +286,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Sliced(DM p)
 /*@C
     DMSlicedCreate - Creates a DM object, used to manage data for a unstructured problem
 
-    Collective on MPI_Comm
+    Collective
 
     Input Parameter:
 +   comm - the processors that will share the global vector

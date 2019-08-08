@@ -1021,7 +1021,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     if (jac->offdiag_use_amat) {
       ierr  = MatCreateSubMatrix(pc->mat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->C);CHKERRQ(ierr);
     } else {
-	    ierr  = MatCreateSubMatrix(pc->pmat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->C);CHKERRQ(ierr);
+      ierr  = MatCreateSubMatrix(pc->pmat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->C);CHKERRQ(ierr);
     }
     ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
     /* Create work vectors for GKB algorithm */
@@ -1643,9 +1643,9 @@ static PetscErrorCode  PCFieldSplitSetFields_FieldSplit(PC pc,const char splitna
   }
   ilink->event = jac->nsplits < 5 ? KSP_Solve_FS_0 + jac->nsplits : KSP_Solve_FS_0 + 4; /* Any split great than 4 gets logged in the 4th split */
   ierr = PetscMalloc1(n,&ilink->fields);CHKERRQ(ierr);
-  ierr = PetscMemcpy(ilink->fields,fields,n*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArraycpy(ilink->fields,fields,n);CHKERRQ(ierr);
   ierr = PetscMalloc1(n,&ilink->fields_col);CHKERRQ(ierr);
-  ierr = PetscMemcpy(ilink->fields_col,fields_col,n*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscArraycpy(ilink->fields_col,fields_col,n);CHKERRQ(ierr);
 
   ilink->nfields = n;
   ilink->next    = NULL;
@@ -1733,7 +1733,7 @@ static PetscErrorCode  PCFieldSplitGetSubKSP_FieldSplit(PC pc,PetscInt *n,KSP **
 
     Input Parameters:
 +   pc  - the preconditioner context
-+   is - the index set that defines the indices to which the fieldsplit is to be restricted
+-   is - the index set that defines the indices to which the fieldsplit is to be restricted
 
     Level: advanced
 
@@ -1771,7 +1771,7 @@ static PetscErrorCode  PCFieldSplitRestrictIS_FieldSplit(PC pc, IS isy)
     ierr          = ISGetLocalSize(isrl,&localsize);CHKERRQ(ierr);
     ierr          = PetscMalloc1(localsize,&indc);CHKERRQ(ierr);
     ierr          = ISGetIndices(isrl,&ind);CHKERRQ(ierr);
-    ierr          = PetscMemcpy(indc,ind,localsize*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr          = PetscArraycpy(indc,ind,localsize);CHKERRQ(ierr);
     ierr          = ISRestoreIndices(isrl,&ind);CHKERRQ(ierr);
     ierr          = ISDestroy(&isrl);CHKERRQ(ierr);
     for (i=0; i<localsize; i++) *(indc+i) += size;
@@ -1796,7 +1796,7 @@ static PetscErrorCode  PCFieldSplitRestrictIS_FieldSplit(PC pc, IS isy)
       ierr   = ISGetLocalSize(iszl,&localsize);CHKERRQ(ierr);
       ierr   = PetscMalloc1(localsize,&indcz);CHKERRQ(ierr);
       ierr   = ISGetIndices(iszl,&indz);CHKERRQ(ierr);
-      ierr   = PetscMemcpy(indcz,indz,localsize*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr   = PetscArraycpy(indcz,indz,localsize);CHKERRQ(ierr);
       ierr   = ISRestoreIndices(iszl,&indz);CHKERRQ(ierr);
       ierr   = ISDestroy(&iszl);CHKERRQ(ierr);
       for (i=0; i<localsize; i++) *(indcz+i) += sizez;
@@ -1961,7 +1961,7 @@ PetscErrorCode  PCFieldSplitGetDiagUseAmat(PC pc,PetscBool *flg)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidPointer(flg,2);
+  PetscValidBoolPointer(flg,2);
   ierr = PetscObjectTypeCompare((PetscObject)pc,PCFIELDSPLIT,&isfs);CHKERRQ(ierr);
   if (!isfs) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"PC not of type %s",PCFIELDSPLIT);
   *flg = jac->diag_use_amat;
@@ -2024,7 +2024,7 @@ PetscErrorCode  PCFieldSplitGetOffDiagUseAmat(PC pc,PetscBool *flg)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidPointer(flg,2);
+  PetscValidBoolPointer(flg,2);
   ierr = PetscObjectTypeCompare((PetscObject)pc,PCFIELDSPLIT,&isfs);CHKERRQ(ierr);
   if (!isfs) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"PC not of type %s",PCFIELDSPLIT);
   *flg = jac->offdiag_use_amat;
@@ -2106,6 +2106,46 @@ PetscErrorCode PCFieldSplitGetIS(PC pc,const char splitname[],IS *is)
       }
       ilink = ilink->next;
     }
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+    PCFieldSplitGetISByIndex - Retrieves the elements for a given index field as an IS
+
+    Logically Collective on PC
+
+    Input Parameters:
++   pc  - the preconditioner context
+-   index - index of this split
+
+    Output Parameter:
+-   is - the index set that defines the vector elements in this field
+
+    Level: intermediate
+
+.seealso: PCFieldSplitGetSubKSP(), PCFIELDSPLIT, PCFieldSplitGetIS(), PCFieldSplitSetIS()
+
+@*/
+PetscErrorCode PCFieldSplitGetISByIndex(PC pc,PetscInt index,IS *is)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (index < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative field %D requested",index);
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidPointer(is,3);
+  {
+    PC_FieldSplit     *jac  = (PC_FieldSplit*) pc->data;
+    PC_FieldSplitLink ilink = jac->head;
+    PetscInt          i     = 0;
+    if (index >= jac->nsplits) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Field %D requested but only %D exist",index,jac->nsplits);
+
+    while (i < index) {
+      ilink = ilink->next;
+      ++i;
+    }
+    ierr = PCFieldSplitGetIS(pc,ilink->splitname,is);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -2349,7 +2389,7 @@ PetscErrorCode  PCFieldSplitSchurGetS(PC pc,Mat *S)
 
     Input Parameters:
 +   pc      - the preconditioner context
-.   S       - the Schur complement matrix
+-   S       - the Schur complement matrix
 
     Level: advanced
 
@@ -2762,15 +2802,13 @@ static PetscErrorCode  PCFieldSplitSetBlockSize_FieldSplit(PC pc,PetscInt bs)
    Collective on PC
 
    Input Parameter:
-.  pc - the preconditioner context
-.  type - PC_COMPOSITE_ADDITIVE, PC_COMPOSITE_MULTIPLICATIVE (default), PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE, PC_COMPOSITE_SPECIAL, PC_COMPOSITE_SCHUR
++  pc - the preconditioner context
+-  type - PC_COMPOSITE_ADDITIVE, PC_COMPOSITE_MULTIPLICATIVE (default), PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE, PC_COMPOSITE_SPECIAL, PC_COMPOSITE_SCHUR
 
    Options Database Key:
 .  -pc_fieldsplit_type <type: one of multiplicative, additive, symmetric_multiplicative, special, schur> - Sets fieldsplit preconditioner type
 
    Level: Intermediate
-
-.keywords: PC, set, type, composite preconditioner, additive, multiplicative
 
 .seealso: PCCompositeSetType()
 
@@ -2798,7 +2836,6 @@ PetscErrorCode  PCFieldSplitSetType(PC pc,PCCompositeType type)
 
   Level: Intermediate
 
-.keywords: PC, set, type, composite preconditioner, additive, multiplicative
 .seealso: PCCompositeSetType()
 @*/
 PetscErrorCode PCFieldSplitGetType(PC pc, PCCompositeType *type)
@@ -2825,8 +2862,6 @@ PetscErrorCode PCFieldSplitGetType(PC pc, PCCompositeType *type)
 .  -pc_fieldsplit_dm_splits
 
    Level: Intermediate
-
-.keywords: PC, DM, composite preconditioner, additive, multiplicative
 
 .seealso: PCFieldSplitGetDMSplits()
 
@@ -2861,8 +2896,6 @@ PetscErrorCode  PCFieldSplitSetDMSplits(PC pc,PetscBool flg)
 
    Level: Intermediate
 
-.keywords: PC, DM, composite preconditioner, additive, multiplicative
-
 .seealso: PCFieldSplitSetDMSplits()
 
 @*/
@@ -2874,7 +2907,7 @@ PetscErrorCode  PCFieldSplitGetDMSplits(PC pc,PetscBool* flg)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidPointer(flg,2);
+  PetscValidBoolPointer(flg,2);
   ierr = PetscObjectTypeCompare((PetscObject)pc,PCFIELDSPLIT,&isfs);CHKERRQ(ierr);
   if (isfs) {
     if(flg) *flg = jac->dm_splits;
@@ -3012,8 +3045,6 @@ $              (  0   S  )
      The forms of these preconditioners are closely related if not identical to forms derived as "Distributive Iterations", see,
      for example, page 294 in "Principles of Computational Fluid Dynamics" by Pieter Wesseling. Note that one can also use PCFIELDSPLIT
      inside a smoother resulting in "Distributive Smoothers".
-
-   Concepts: physics based preconditioners, block preconditioners
 
    There is a nice discussion of block preconditioners in
 

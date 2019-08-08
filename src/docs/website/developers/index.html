@@ -31,7 +31,7 @@
           <ul>
             <li><span class="current">Getting started</span></li>
             <li><a href="../documentation/changes/dev.html">Changes</a></li>
-            <li><a href="http://www.mcs.anl.gov/petsc/petsc-master/docs/index.html">Development copy of documentation</a></li>
+            <li><a href="https://www.mcs.anl.gov/petsc/petsc-master/docs/index.html">Development copy of documentation</a></li>
             <li><a href="developers.pdf">Developers Instructions</a></li>
             <li><a href="https://bitbucket.org/petsc/petsc/issues?status=new&status=open">Proposed projects</a></li>
           </ul>
@@ -60,9 +60,9 @@
         <li><a href="#building_documentation:">build documentation for the development version</a></li>
         <li><a href="#sending_patches_to_update_the_">submitting code for inclusion in PETSc</a></li>
         <li><a href="#nightly_logs">check nightlybuild logs</a></li>
-        <li><a href="http://www.mcs.anl.gov/petsc/petsc-current/src/ksp/pc/impls/jacobi/jacobi.c.html">add a new PC type</a></li>
-        <li><a href="http://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/impls/cg/cg.c.html">add a new KSP type</a></li>
-        <li><a href="http://www.mcs.anl.gov/petsc/petsc-current/src/mat/impls/aij/seq/superlu/superlu.c.html">add a new subclass of a matrix type (implementation inheritence)</a></li>
+        <li><a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/pc/impls/jacobi/jacobi.c.html">add a new PC type</a></li>
+        <li><a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/impls/cg/cg.c.html">add a new KSP type</a></li>
+        <li><a href="https://www.mcs.anl.gov/petsc/petsc-current/src/mat/impls/aij/seq/superlu/superlu.c.html">add a new subclass of a matrix type (implementation inheritence)</a></li>
       </ul>
 
       <h2><a name="browsing">Browsing source:</a></h2>
@@ -76,7 +76,7 @@
       <h2><a name="obtaining">Obtaining the development version of PETSc:</a></h2>
 
 
-      <a href="http://git-scm.com/downloads">Install Git</a> if it is not already installed on your machine, then obtain PETSc with the following:
+      <a href="https://git-scm.com/downloads">Install Git</a> if it is not already installed on your machine, then obtain PETSc with the following:
 
       <ul>
         <li><code>git clone https://bitbucket.org/petsc/petsc</code></li>
@@ -94,8 +94,8 @@
       Once updated, you will usually want to rebuild completely
 
       <ul>
-        <li><code>./$PETSC_ARCH/lib/petsc/conf/reconfigure-$PETSC_ARCH.py</code></li>
-        <li><code>make</code></li>
+        <li><code>make reconfigure all</code><br />
+	    (shorthand version of <code>./$PETSC_ARCH/lib/petsc/conf/reconfigure-$PETSC_ARCH.py &amp;&amp; make all</code> )</li>
       </ul>
 
       For additional help use
@@ -103,7 +103,7 @@
         <li>git help [or]</li>
         <li>man git</li>
         <li><a href="https://bitbucket.org/petsc/petsc/wiki/Home">[developer instructions at our wiki]</a></li>
-        <li><a href="http://git-scm.com/book/en/">[Pro Git book]</a></li>
+        <li><a href="https://git-scm.com/book/en/">[Pro Git book]</a></li>
       </ul>
 
       If you absolutely cannot use git then you can <a href="#master-tarball">access tarballs directly from 'master' branch.</a> or <a href="#nightly-tarball">access the nightly tarball snapshot</a> 
@@ -120,7 +120,7 @@
       <ul>
         <li>
           <a href="http://ftp.mcs.anl.gov/pub/sowing/sowing.tar.gz">Sowing</a>:
-          a text processing tool developed by Bill Gropp. This produces the PETSc manual pages see <a href="http://www.cs.uiuc.edu/homes/wgropp/projects/software/sowing/doctext.pdf">sowing documentation</a></li>
+          a text processing tool developed by Bill Gropp. This produces the PETSc manual pages see <a href="http://www.cs.illinois.edu/homes/wgropp/projects/software/sowing/doctext.pdf">sowing documentation</a></li>
 
         <li>
           <a href="http://ftp.mcs.anl.gov/pub/petsc/c2html.tar.gz">C2html</a>:
@@ -138,7 +138,7 @@
         use compilers specified to PETSc configure. [Windows users please install the corresponding
         cygwin packages]
 
-      <p>Once pdflatex (e.g., from <a href="http://tug.org/texlive">TeX Live</a>) is in your PATH, you can build the documentation with:</p>
+      <p>Once pdflatex (e.g., from <a href="http://tug.org/texlive/">TeX Live</a>) is in your PATH, you can build the documentation with:</p>
 
       <ul>
         <li><code>make alldoc LOC=${PETSC_DIR}</code></li>
@@ -151,7 +151,7 @@
 
       <p>
         Please read the code standards chapter of the
-        <a href="http://www.mcs.anl.gov/petsc/developers/developers.pdf">developer guide</a>
+        <a href="https://www.mcs.anl.gov/petsc/developers/developers.pdf">developer guide</a>
         before submitting code.
       </p>
 
@@ -164,7 +164,7 @@
 
       <h2>Developer guide:</h2>
 
-      The <a href="http://www.mcs.anl.gov/petsc/developers/developers.pdf">developer guide</a>
+      The <a href="https://www.mcs.anl.gov/petsc/developers/developers.pdf">developer guide</a>
       gives an overview of the design and detailed style specifications.
 
       <h2><a name="nightly_logs">Nightly builds:</a></h2>

@@ -7,7 +7,6 @@ static PetscBool TSPackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.keywords: Petsc, destroy, package, mathematica
 .seealso: PetscFinalize()
 @*/
 PetscErrorCode  TSFinalizePackage(void)
@@ -29,7 +28,6 @@ PetscErrorCode  TSFinalizePackage(void)
 
   Level: developer
 
-.keywords: TS, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode  TSInitializePackage(void)

@@ -48,7 +48,7 @@ static PetscErrorCode DMPlexCreateOrderingClosure_Static(DM dm, PetscInt numPoin
 /*@
   DMPlexGetOrdering - Calculate a reordering of the mesh
 
-  Collective on DM
+  Collective on dm
 
   Input Parameter:
 + dm - The DMPlex object
@@ -69,7 +69,6 @@ $     MATORDERINGQMD - Quotient Minimum Degree
 
   Level: intermediate
 
-.keywords: mesh
 .seealso: MatGetOrdering()
 @*/
 PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, DMLabel label, IS *perm)
@@ -126,7 +125,7 @@ PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, DMLabel label, IS
     }
     ierr = ISRestoreIndices(valueIS, &values);CHKERRQ(ierr);
     ierr = ISDestroy(&valueIS);CHKERRQ(ierr);
-    ierr = PetscMemcpy(cperm, sperm, numCells * sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscArraycpy(cperm, sperm, numCells);CHKERRQ(ierr);
     ierr = PetscFree3(sperm, vsize, voff);CHKERRQ(ierr);
   }
   /* Construct closure */
@@ -142,7 +141,7 @@ PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, DMLabel label, IS
 /*@
   DMPlexPermute - Reorder the mesh according to the input permutation
 
-  Collective on DM
+  Collective on dm
 
   Input Parameter:
 + dm - The DMPlex object
@@ -153,7 +152,6 @@ PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, DMLabel label, IS
 
   Level: intermediate
 
-.keywords: mesh
 .seealso: MatPermute()
 @*/
 PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)

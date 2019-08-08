@@ -1,0 +1,24 @@
+0 0 0.000000
+0 1 1.000000
+0 2 2.000000
+0 4 4.000000
+*** Matrix A and vector x:
+Mat Object: 1 MPI processes
+  type: shell
+Vec Object: 1 MPI processes
+  type: seq
+0.
+1.
+2.
+0.
+4.
+0.
+*** Vector rhs returned by MatZeroRowsColumns
+Vec Object: 1 MPI processes
+  type: seq
+0.
+-0.13
+-0.26
+6.
+-0.52
+9.

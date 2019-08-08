@@ -716,7 +716,7 @@ PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM dm,DM dmc,Pets
 
   ierr = PetscQuadratureCreate(PetscObjectComm((PetscObject)dm),&quadrature);CHKERRQ(ierr);
   ierr = PetscMalloc1(npoints*dim,&xiq);CHKERRQ(ierr);
-  ierr = PetscMemcpy(xiq,xi,npoints*dim*sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscArraycpy(xiq,xi,npoints*dim);CHKERRQ(ierr);
   ierr = PetscQuadratureSetData(quadrature,dim,1,npoints,(const PetscReal*)xiq,NULL);CHKERRQ(ierr);
   ierr = private_PetscFECreateDefault_scalar_pk1(dmc, dim, is_simplex, 0, &fe);CHKERRQ(ierr);
   ierr = PetscFESetQuadrature(fe,quadrature);CHKERRQ(ierr);

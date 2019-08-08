@@ -34,7 +34,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"DMDA VecView/VecLoad example","");CHKERRQ(ierr);
   {
     ndof = 1;
-    PetscOptionsInt("-ndof","Number of DOF's in DMDA","",ndof,&ndof,NULL);
+    PetscOptionsBoundedInt("-ndof","Number of DOF's in DMDA","",ndof,&ndof,NULL,1);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 

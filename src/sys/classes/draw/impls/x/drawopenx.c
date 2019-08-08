@@ -8,7 +8,7 @@
 /*@C
    PetscDrawOpenX - Opens an X-window for use with the PetscDraw routines.
 
-   Collective on MPI_Comm
+   Collective
 
    Input Parameters:
 +  comm - the communicator that will share X-window
@@ -53,8 +53,6 @@
    PETSC_NULL_CHARACTER must be employed; using NULL is not
    correct for character data!  Thus, PETSC_NULL_CHARACTER can be
    used for the display and title input parameters.
-
-   Concepts: X windows^drawing to
 
 .seealso: PetscDrawFlush(), PetscDrawDestroy(), PetscDrawCreate(), PetscDrawOpnOpenGL()
 @*/

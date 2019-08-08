@@ -17,7 +17,7 @@ PetscErrorCode MatSetUpMultiply_MPIDense(Mat mat)
   ierr = VecCreateSeq(PETSC_COMM_SELF,mat->cmap->N,&mdn->lvec);CHKERRQ(ierr);
 
   /* Create temporary index set for building scatter gather */
-  ierr = ISCreateStride(PetscObjectComm((PetscObject)mat),mat->cmap->N,0,1,&from);CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,mat->cmap->N,0,1,&from);CHKERRQ(ierr);
   ierr = ISCreateStride(PETSC_COMM_SELF,mat->cmap->N,0,1,&to);CHKERRQ(ierr);
 
   /* Create temporary global vector to generate scatter context */
@@ -124,10 +124,10 @@ PetscErrorCode MatCreateSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS
   /* evaluate communication - mesg to who,length of mesg, and buffer space
      required. Based on this, buffers are allocated, and data copied into them*/
   ierr = PetscMalloc3(2*size,&w1,size,&w3,size,&w4);CHKERRQ(ierr);
-  ierr = PetscMemzero(w1,size*2*sizeof(PetscInt));CHKERRQ(ierr); /* initialize work vector*/
-  ierr = PetscMemzero(w3,size*sizeof(PetscInt));CHKERRQ(ierr); /* initialize work vector*/
+  ierr = PetscArrayzero(w1,size*2);CHKERRQ(ierr); /* initialize work vector*/
+  ierr = PetscArrayzero(w3,size);CHKERRQ(ierr); /* initialize work vector*/
   for (i=0; i<ismax; i++) {
-    ierr   = PetscMemzero(w4,size*sizeof(PetscInt));CHKERRQ(ierr); /* initialize work vector*/
+    ierr   = PetscArrayzero(w4,size);CHKERRQ(ierr); /* initialize work vector*/
     jmax   = nrow[i];
     irow_i = irow[i];
     for (j=0; j<jmax; j++) {
@@ -174,8 +174,8 @@ PetscErrorCode MatCreateSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS
 
   /* Allocate Memory for outgoing messages */
   ierr = PetscMalloc4(size,&sbuf1,size,&ptr,2*msz,&tmp,size,&ctr);CHKERRQ(ierr);
-  ierr = PetscMemzero(sbuf1,size*sizeof(PetscInt*));CHKERRQ(ierr);
-  ierr = PetscMemzero(ptr,size*sizeof(PetscInt*));CHKERRQ(ierr);
+  ierr = PetscArrayzero(sbuf1,size);CHKERRQ(ierr);
+  ierr = PetscArrayzero(ptr,size);CHKERRQ(ierr);
   {
     PetscInt *iptr = tmp,ict = 0;
     for (i=0; i<nrqs; i++) {
@@ -191,13 +191,13 @@ PetscErrorCode MatCreateSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS
   for (i=0; i<nrqs; i++) {
     j           = pa[i];
     sbuf1[j][0] = 0;
-    ierr        = PetscMemzero(sbuf1[j]+1,2*w3[j]*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr        = PetscArrayzero(sbuf1[j]+1,2*w3[j]);CHKERRQ(ierr);
     ptr[j]      = sbuf1[j] + 2*w3[j] + 1;
   }
 
   /* Parse the isrow and copy data into outbuf */
   for (i=0; i<ismax; i++) {
-    ierr   = PetscMemzero(ctr,size*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr   = PetscArrayzero(ctr,size);CHKERRQ(ierr);
     irow_i = irow[i];
     jmax   = nrow[i];
     for (j=0; j<jmax; j++) {  /* parse the indices of each IS */
@@ -285,7 +285,7 @@ PetscErrorCode MatCreateSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS
     for (i=0; i<ismax; i++) {
       mat = (Mat_SeqDense*)(submats[i]->data);
       if ((submats[i]->rmap->n != nrow[i]) || (submats[i]->cmap->n != ncol[i])) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong size");
-      ierr = PetscMemzero(mat->v,submats[i]->rmap->n*submats[i]->cmap->n*sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr = PetscArrayzero(mat->v,submats[i]->rmap->n*submats[i]->cmap->n);CHKERRQ(ierr);
 
       submats[i]->factortype = C->factortype;
     }
@@ -328,8 +328,7 @@ PetscErrorCode MatCreateSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS
   /* Create row map-> This maps c->row to submat->row for each submat*/
   /* this is a very expensive operation wrt memory usage */
   ierr = PetscMalloc1(ismax,&rmap);CHKERRQ(ierr);
-  ierr = PetscMalloc1(ismax*C->rmap->N,&rmap[0]);CHKERRQ(ierr);
-  ierr = PetscMemzero(rmap[0],ismax*C->rmap->N*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscCalloc1(ismax*C->rmap->N,&rmap[0]);CHKERRQ(ierr);
   for (i=1; i<ismax; i++) rmap[i] = rmap[i-1] + C->rmap->N;
   for (i=0; i<ismax; i++) {
     rmap_i = rmap[i];

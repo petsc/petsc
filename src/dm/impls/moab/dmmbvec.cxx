@@ -19,21 +19,19 @@ static PetscErrorCode DMVecCreateTagName_Moab_Private(moab::Interface *mbiface,c
 /*@C
   DMMoabCreateVector - Create a Vec from either an existing tag, or a specified tag size, and a range of entities
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 + dm              - The DMMoab object being set
 . tag             - If non-zero, block size will be taken from the tag size
 . range           - If non-empty, Vec corresponds to these entities, otherwise to the entities set on the DMMoab
 . is_global_vec   - If true, this is a local representation of the Vec (including ghosts in parallel), otherwise a truly parallel one
-. destroy_tag     - If true, MOAB tag is destroyed with Vec, otherwise it is left on MOAB
+- destroy_tag     - If true, MOAB tag is destroyed with Vec, otherwise it is left on MOAB
 
   Output Parameter:
 . vec             - The created vector
 
   Level: beginner
-
-.keywords: Vec, create
 
 .seealso: VecCreate()
 @*/
@@ -59,8 +57,6 @@ PetscErrorCode DMMoabCreateVector(DM dm, moab::Tag tag, const moab::Range* range
 . tag - Tag associated with this Vec. NULL if vec is a native PETSc Vec.
 
   Level: beginner
-
-.keywords: DMMoab, MOAB tag
 
 .seealso: DMMoabCreateVector(), DMMoabGetVecRange()
 @*/
@@ -93,8 +89,6 @@ PetscErrorCode DMMoabGetVecTag(Vec vec, moab::Tag *tag)
 
   Level: beginner
 
-.keywords: DMMoab, MOAB range
-
 .seealso: DMMoabCreateVector(), DMMoabGetVecTag()
 @*/
 PetscErrorCode DMMoabGetVecRange(Vec vec, moab::Range *range)
@@ -118,18 +112,16 @@ PetscErrorCode DMMoabGetVecRange(Vec vec, moab::Range *range)
 /*@C
   DMMoabVecGetArray - Returns the writable direct access array to the local representation of MOAB tag data for the underlying vector using locally owned+ghosted range of entities
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
-. dm              - The DMMoab object being set
-. vec             - The Vector whose underlying data is requested
++ dm              - The DMMoab object being set
+- vec             - The Vector whose underlying data is requested
 
   Output Parameter:
 . array           - The local data array
 
   Level: intermediate
-
-.keywords: MOAB, distributed array
 
 .seealso: DMMoabVecRestoreArray(), DMMoabVecGetArrayRead(), DMMoabVecRestoreArrayRead()
 @*/
@@ -206,16 +198,14 @@ PetscErrorCode  DMMoabVecGetArray(DM dm, Vec vec, void* array)
 /*@C
   DMMoabVecRestoreArray - Restores the writable direct access array obtained via DMMoabVecGetArray
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 + dm              - The DMMoab object being set
 . vec             - The Vector whose underlying data is requested
-. array           - The local data array
+- array           - The local data array
 
   Level: intermediate
-
-.keywords: MOAB, distributed array
 
 .seealso: DMMoabVecGetArray(), DMMoabVecGetArrayRead(), DMMoabVecRestoreArrayRead()
 @*/
@@ -290,18 +280,16 @@ PetscErrorCode  DMMoabVecRestoreArray(DM dm, Vec vec, void* array)
 /*@C
   DMMoabVecGetArrayRead - Returns the read-only direct access array to the local representation of MOAB tag data for the underlying vector using locally owned+ghosted range of entities
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 + dm              - The DMMoab object being set
-. vec             - The Vector whose underlying data is requested
+- vec             - The Vector whose underlying data is requested
 
   Output Parameter:
 . array           - The local data array
 
   Level: intermediate
-
-.keywords: MOAB, distributed array
 
 .seealso: DMMoabVecRestoreArrayRead(), DMMoabVecGetArray(), DMMoabVecRestoreArray()
 @*/
@@ -374,16 +362,14 @@ PetscErrorCode  DMMoabVecGetArrayRead(DM dm, Vec vec, void* array)
 /*@C
   DMMoabVecRestoreArray - Restores the read-only direct access array obtained via DMMoabVecGetArray
 
-  Collective on MPI_Comm
+  Collective
 
   Input Parameter:
 + dm              - The DMMoab object being set
 . vec             - The Vector whose underlying data is requested
-. array           - The local data array
+- array           - The local data array
 
   Level: intermediate
-
-.keywords: MOAB, distributed array
 
 .seealso: DMMoabVecGetArrayRead(), DMMoabVecGetArray(), DMMoabVecRestoreArray()
 @*/

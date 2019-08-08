@@ -1,0 +1,1792 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rules version="1.0">
+
+<rule>
+    <id>
+        Renamed_Field
+    </id>
+    <severity>
+        High
+    </severity>
+    <kind>
+        Fields
+    </kind>
+    <change>
+        Field @target has been renamed to @new_value.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken with the error message: @type_name has no member named @target.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Used_Reserved_Field
+    </id>
+    <severity>
+        Safe
+    </severity>
+    <kind>
+        Fields
+    </kind>
+    <change>
+        Reserved field @target has been replaced by @new_value.
+    </change>
+    <effect>
+        No effect.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Field_Type
+    </id>
+    <severity>
+        Low
+    </severity>
+    <kind>
+        Fields
+    </kind>
+    <change>
+        Type of field @target has been changed from @old_value to @new_value.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Added_Pure_Virtual_Method
+    </id>
+    <severity>
+        High
+    </severity>
+    <kind>
+        V-table
+    </kind>
+    <change>
+        Pure virtual method @target has been added to this class.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken with the error message: cannot allocate an object of abstract type @type_name because the following virtual functions are pure within @type_name: virtual @target.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Removed_Pure_Virtual_Method
+    </id>
+    <severity>
+        High
+    </severity>
+    <kind>
+        V-table
+    </kind>
+    <change>
+        Pure virtual method @target has been removed from this class.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Overridden_Virtual_Method
+    </id>
+    <severity>
+        Low
+    </severity>
+    <kind>
+        V-table
+    </kind>
+    <change>
+        Virtual method @old_value has been overridden by @new_value.
+    </change>
+    <effect>
+        Method @new_value will be called after recompilation instead of @old_value.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Overridden_Virtual_Method_B
+    </id>
+    <severity>
+        Low
+    </severity>
+    <kind>
+        V-table
+    </kind>
+    <change>
+        Virtual method @old_value has been overridden by @new_value.
+    </change>
+    <effect>
+        Method @new_value will be called after recompilation instead of @old_value.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Added_Base_Class
+    </id>
+    <severity>
+        Low
+    </severity>
+    <kind>
+        Classes
+    </kind>
+    <change>
+        Base class @target has been added.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Removed_Base_Class
+    </id>
+    <severity>
+        Low
+    </severity>
+    <kind>
+        Classes
+    </kind>
+    <change>
+        Base class @target has been removed.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        DataType_Type
+    </id>
+    <severity>
+        Medium
+    </severity>
+    <kind>
+        Types
+    </kind>
+    <change>
+        Type of this type has been changed from @old_value to @new_value.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Moved_Field
+    </id>
+    <severity>
+        Safe
+    </severity>
+    <kind>
+        Fields
+    </kind>
+    <change>
+        The relative position of field @target has been changed from @old_value to @new_value.
+    </change>
+    <effect>
+        No effect.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Added_Field
+    </id>
+    <severity>
+        Low
+    </severity>
+    <kind>
+        Fields
+    </kind>
+    <change>
+        Field @target has been added to this type.
+    </change>
+    <effect>
+        This field will not be initialized or used by old client applications.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Added_Union_Field
+    </id>
+    <severity>
+        Safe
+    </severity>
+    <kind>
+        Fields
+    </kind>
+    <change>
+        Field @target has been added to this type.
+    </change>
+    <effect>
+        No effect.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Removed_Field
+    </id>
+    <severity>
+        High
+    </severity>
+    <kind>
+        Fields
+    </kind>
+    <change>
+        Field @target has been removed from this type.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken with the error message: '@type_name' has no member named '@target'.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Removed_Union_Field
+    </id>
+    <severity>
+        High
+    </severity>
+    <kind>
+        Fields
+    </kind>
+    <change>
+        Field @target has been removed from this union.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Enum_Member_Value
+    </id>
+    <severity>
+        Safe
+    </severity>
+    <kind>
+        Constants
+    </kind>
+    <change>
+        Value of member @target has been changed from @old_value to @new_value.
+    </change>
+    <effect>
+        No effect.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Enum_Last_Member_Value
+    </id>
+    <severity>
+        Safe
+    </severity>
+    <kind>
+        Constants
+    </kind>
+    <change>
+        Value of member @target has been changed from @old_value to @new_value.
+    </change>
+    <effect>
+        No effect.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Enum_Private_Member_Value
+    </id>
+    <severity>
+        Safe
+    </severity>
+    <kind>
+        Constants
+    </kind>
+    <change>
+        Value of private member @target has been changed from @old_value to @new_value.
+    </change>
+    <effect>
+        No effect.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Enum_Member_Removed
+    </id>
+    <severity>
+        High
+    </severity>
+    <kind>
+        Constants
+    </kind>
+    <change>
+        The member @target has been removed.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Enum_Member_Name
+    </id>
+    <severity>
+        High
+    </severity>
+    <kind>
+        Constants
+    </kind>
+    <change>
+        Name of member with value @target has been changed from @old_value to @new_value.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken with the error message: '@old_value' was not declared in this scope.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Field_BaseType
+    </id>
+    <severity>
+        Low
+    </severity>
+    <kind>
+        Fields
+    </kind>
+    <change>
+        Base type of field @target has been changed from @old_value to @new_value.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Field_PointerLevel
+    </id>
+    <severity>
+        Medium
+    </severity>
+    <kind>
+        Fields
+    </kind>
+    <change>
+        The pointer level of field @target has been increased from @old_value to @new_value.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Typedef_BaseType
+    </id>
+    <severity>
+        Low
+    </severity>
+    <kind>
+        Types
+    </kind>
+    <change>
+        Base type has been changed from @old_value to @new_value.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Typedef_BaseType_Format
+    </id>
+    <severity>
+        Low
+    </severity>
+    <kind>
+        Types
+    </kind>
+    <change>
+        Base type has been changed from @old_value to @new_value of different format.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Added_Symbol
+    </id>
+    <severity>
+        Safe
+    </severity>
+    <kind>
+        Symbols
+    </kind>
+</rule>
+
+<rule>
+    <id>
+        Removed_Symbol
+    </id>
+    <severity>
+        High
+    </severity>
+    <kind>
+        Symbols
+    </kind>
+</rule>
+
+<rule>
+    <id>
+        Method_Became_Static
+    </id>
+    <severity>
+        Safe
+    </severity>
+    <kind>
+        Symbols
+    </kind>
+    <change>
+        Method became static.
+    </change>
+    <effect>
+        No effect.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Method_Became_Non_Static
+    </id>
+    <severity>
+        High
+    </severity>
+    <kind>
+        Symbols
+    </kind>
+    <change>
+        Method became non-static.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken with the error message: cannot call member function @target without object.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Parameter_Default_Value_Changed
+    </id>
+    <severity>
+        Safe
+    </severity>
+    <kind>
+        Parameters
+    </kind>
+    <change>
+        The default argument of @param_pos parameter @target has been changed from @old_value to @new_value.
+    </change>
+    <effect>
+        No effect.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Parameter_Default_Value_Removed
+    </id>
+    <severity>
+        Medium
+    </severity>
+    <kind>
+        Parameters
+    </kind>
+    <change>
+        The default argument @old_value of @param_pos parameter @target has been removed.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Parameter_Default_Value_Added
+    </id>
+    <severity>
+        Safe
+    </severity>
+    <kind>
+        Parameters
+    </kind>
+    <change>
+        The default argument @new_value of @param_pos parameter @target has been added.
+    </change>
+    <effect>
+        No effect.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Parameter_Type
+    </id>
+    <severity>
+        Low
+    </severity>
+    <kind>
+        Parameters
+    </kind>
+    <change>
+        Type of @param_pos parameter @target has been changed from @old_value to @new_value.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Parameter_Type_Format
+    </id>
+    <severity>
+        Medium
+    </severity>
+    <kind>
+        Parameters
+    </kind>
+    <change>
+        Type of parameter @target has been changed from @old_value to @new_value of different format.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Parameter_BaseType_Format
+    </id>
+    <severity>
+        Medium
+    </severity>
+    <kind>
+        Parameters
+    </kind>
+    <change>
+        Base type of parameter @target has been changed from @old_value to @new_value of different format.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Parameter_BaseType
+    </id>
+    <severity>
+        Low
+    </severity>
+    <kind>
+        Parameters
+    </kind>
+    <change>
+        Base type of @param_pos parameter @target has been changed from @old_value to @new_value.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Parameter_Became_Non_Const
+    </id>
+    <severity>
+        Medium
+    </severity>
+    <kind>
+        Parameters
+    </kind>
+    <change>
+        Type of @param_pos parameter @target has been changed from @old_value to @new_value (became non-const).
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Parameter_Removed_Const
+    </id>
+    <severity>
+        Medium
+    </severity>
+    <kind>
+        Parameters
+    </kind>
+    <change>
+        Type of @param_pos parameter @target has been changed from @old_value to @new_value (removed const qualifier).
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Return_Type_Became_Const
+    </id>
+    <severity>
+        Medium
+    </severity>
+    <kind>
+        Symbols
+    </kind>
+    <change>
+        Type of return value became const (has been changed from @old_value to @new_value).
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Return_Type_Added_Const
+    </id>
+    <severity>
+        Medium
+    </severity>
+    <kind>
+        Symbols
+    </kind>
+    <change>
+        Added **const** qualifier to return value (has been changed from @old_value to @new_value).
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Parameter_PointerLevel
+    </id>
+    <severity>
+        Medium
+    </severity>
+    <kind>
+        Parameters
+    </kind>
+    <change>
+        The pointer level of @param_pos parameter @target has been increased from @old_value to @new_value.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Return_Type
+    </id>
+    <severity>
+        Low
+    </severity>
+    <kind>
+        Symbols
+    </kind>
+    <change>
+        Type of return value has been changed from @old_value to @new_value.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Return_Type_From_Void
+    </id>
+    <severity>
+        Safe
+    </severity>
+    <kind>
+        Symbols
+    </kind>
+    <change>
+        Type of return value has been changed from void to @new_value.
+    </change>
+    <effect>
+        No effect.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Global_Data_Type
+    </id>
+    <severity>
+        Low
+    </severity>
+    <kind>
+        Symbols
+    </kind>
+    <change>
+        Type of this global data has been changed from @old_value to @new_value.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Global_Data_Type_Format
+    </id>
+    <severity>
+        Medium
+    </severity>
+    <kind>
+        Symbols
+    </kind>
+    <change>
+        Type of this global data has been changed from @old_value to @new_value of different format.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Return_Type_Became_Void
+    </id>
+    <severity>
+        Medium
+    </severity>
+    <kind>
+        Symbols
+    </kind>
+    <change>
+        Type of return value has been changed from @old_value (@old_size) to void.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Global_Data_Became_Non_Const
+    </id>
+    <severity>
+        Safe
+    </severity>
+    <kind>
+        Symbols
+    </kind>
+    <change>
+        This global data became non-const.
+    </change>
+    <effect>
+        No effect.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Global_Data_Removed_Const
+    </id>
+    <severity>
+        Safe
+    </severity>
+    <kind>
+        Symbols
+    </kind>
+    <change>
+        Removed **const** qualifier from the type of this global data.
+    </change>
+    <effect>
+        No effect.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Global_Data_Became_Const
+    </id>
+    <severity>
+        Medium
+    </severity>
+    <kind>
+        Symbols
+    </kind>
+    <change>
+        This global data became const.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Global_Data_Added_Const
+    </id>
+    <severity>
+        Medium
+    </severity>
+    <kind>
+        Symbols
+    </kind>
+    <change>
+        Added **const** qualifier to the type of this global data.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Return_BaseType
+    </id>
+    <severity>
+        Low
+    </severity>
+    <kind>
+        Symbols
+    </kind>
+    <change>
+        Base type of return value has been changed from @old_value to @new_value.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Return_PointerLevel
+    </id>
+    <severity>
+        Medium
+    </severity>
+    <kind>
+        Symbols
+    </kind>
+    <change>
+        The pointer level of return value has been increased from @old_value to @new_value.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Removed_Parameter
+    </id>
+    <severity>
+        Medium
+    </severity>
+    <kind>
+        Parameters
+    </kind>
+    <change>
+        @param_pos parameter @target has been removed from the calling stack.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Removed_Unnamed_Parameter
+    </id>
+    <severity>
+        Medium
+    </severity>
+    <kind>
+        Parameters
+    </kind>
+    <change>
+        Parameter @target of type @param_type has been removed from the calling stack.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Added_Parameter
+    </id>
+    <severity>
+        Medium
+    </severity>
+    <kind>
+        Parameters
+    </kind>
+    <change>
+        Parameter @target of type @param_type has been added to the calling stack.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Added_Unnamed_Parameter
+    </id>
+    <severity>
+        Medium
+    </severity>
+    <kind>
+        Parameters
+    </kind>
+    <change>
+        @param_pos parameter @target has been added to the calling stack.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Removed_Middle_Parameter
+    </id>
+    <severity>
+        High
+    </severity>
+    <kind>
+        Parameters
+    </kind>
+    <change>
+        @param_pos middle parameter @target has been removed from the calling stack.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Removed_Middle_Unnamed_Parameter
+    </id>
+    <severity>
+        High
+    </severity>
+    <kind>
+        Parameters
+    </kind>
+    <change>
+        Middle parameter @target of type @param_type has been removed from the calling stack.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Added_Middle_Parameter
+    </id>
+    <severity>
+        High
+    </severity>
+    <kind>
+        Parameters
+    </kind>
+    <change>
+        Parameter @target of type @param_type has been added to the calling stack at the middle position.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Added_Middle_Unnamed_Parameter
+    </id>
+    <severity>
+        High
+    </severity>
+    <kind>
+        Parameters
+    </kind>
+    <change>
+        @param_pos parameter @target has been added to the calling stack at the middle position.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Renamed_Parameter
+    </id>
+    <severity>
+        Safe
+    </severity>
+    <kind>
+        Parameters
+    </kind>
+    <change>
+        @param_pos parameter @target has been renamed to @new_value.
+    </change>
+    <effect>
+        No effect.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Changed_Constant
+    </id>
+    <severity>
+        Low
+    </severity>
+    <kind>
+        Constants
+    </kind>
+    <change>
+        The value of constant @target has been changed from @old_value to @new_value.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Added_Constant
+    </id>
+    <severity>
+        Safe
+    </severity>
+    <kind>
+        Constants
+    </kind>
+    <change>
+        The constant @target with value @new_value has been added.
+    </change>
+    <effect>
+        No effect.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Removed_Constant
+    </id>
+    <severity>
+        Low
+    </severity>
+    <kind>
+        Constants
+    </kind>
+    <change>
+        The constant @target with value @old_value has been removed.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Field_Type_Format
+    </id>
+    <severity>
+        Medium
+    </severity>
+    <kind>
+        Fields
+    </kind>
+    <change>
+        Type of field @target has been changed from @old_value to @new_value of different format.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Field_BaseType_Format
+    </id>
+    <severity>
+        Medium
+    </severity>
+    <kind>
+        Fields
+    </kind>
+    <change>
+        Base type of field @target has been changed from @old_value to @new_value of different format.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Return_Type_Format
+    </id>
+    <severity>
+        Medium
+    </severity>
+    <kind>
+        Symbols
+    </kind>
+    <change>
+        Type of return value has been changed from @old_value to @new_value of different format.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Return_BaseType_Format
+    </id>
+    <severity>
+        Medium
+    </severity>
+    <kind>
+        Symbols
+    </kind>
+    <change>
+        Base type of return value has been changed from @old_value to @new_value of different format.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Parameter_Became_Non_VaList
+    </id>
+    <severity>
+        Medium
+    </severity>
+    <kind>
+        Parameters
+    </kind>
+    <change>
+        Type of @param_pos parameter has been changed from ... (va_list) to @new_value.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Parameter_Became_VaList
+    </id>
+    <severity>
+        Safe
+    </severity>
+    <kind>
+        Parameters
+    </kind>
+    <change>
+        Type of @param_pos parameter @target has been changed from @old_value to ... (va_list).
+    </change>
+    <effect>
+        No effect.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Added_Enum_Member
+    </id>
+    <severity>
+        Safe
+    </severity>
+    <kind>
+        Constants
+    </kind>
+    <change>
+        The member @target with value @new_value has been added.
+    </change>
+    <effect>
+        No effect.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Symbol_Changed_Parameters
+    </id>
+    <severity>
+        Medium
+    </severity>
+    <kind>
+        Symbols
+    </kind>
+    <change>
+        Parameters list has been changed.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Method_Became_Non_Const
+    </id>
+    <severity>
+        Medium
+    </severity>
+    <kind>
+        Symbols
+    </kind>
+    <change>
+        Method became non-const.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken with the error message: passing 'const @type_name' as 'this' argument of '@target' discards qualifiers.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Method_Became_Const
+    </id>
+    <severity>
+        Safe
+    </severity>
+    <kind>
+        Symbols
+    </kind>
+    <change>
+        Method became const.
+    </change>
+    <effect>
+        No effect.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Method_Became_Volatile
+    </id>
+    <severity>
+        Safe
+    </severity>
+    <kind>
+        Symbols
+    </kind>
+    <change>
+        Method became volatile.
+    </change>
+    <effect>
+        No effect.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Method_Became_Non_Volatile
+    </id>
+    <severity>
+        Safe
+    </severity>
+    <kind>
+        Symbols
+    </kind>
+    <change>
+        Method became non-volatile.
+    </change>
+    <effect>
+        No effect.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Parameter_Became_Restrict
+    </id>
+    <severity>
+        Safe
+    </severity>
+    <kind>
+        Parameters
+    </kind>
+    <change>
+        Parameter @target became restrict.
+    </change>
+    <effect>
+        No effect.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Parameter_Became_Non_Restrict
+    </id>
+    <severity>
+        Safe
+    </severity>
+    <kind>
+        Parameters
+    </kind>
+    <change>
+        Parameter @target became non-restrict.
+    </change>
+    <effect>
+        No effect.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Field_Became_Volatile
+    </id>
+    <severity>
+        Safe
+    </severity>
+    <kind>
+        Fields
+    </kind>
+    <change>
+        Field @target became volatile.
+    </change>
+    <effect>
+        No effect.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Field_Became_Non_Volatile
+    </id>
+    <severity>
+        Safe
+    </severity>
+    <kind>
+        Fields
+    </kind>
+    <change>
+        Field @target became non-volatile.
+    </change>
+    <effect>
+        No effect.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Return_Value_Became_Volatile
+    </id>
+    <severity>
+        Safe
+    </severity>
+    <kind>
+        Symbols
+    </kind>
+    <change>
+        Return value became volatile.
+    </change>
+    <effect>
+        No effect.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Parameter_Became_Non_Volatile
+    </id>
+    <severity>
+        Safe
+    </severity>
+    <kind>
+        Symbols
+    </kind>
+    <change>
+        Parameter @target became non-volatile.
+    </change>
+    <effect>
+        No effect.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Global_Data_Value_Changed
+    </id>
+    <severity>
+        Safe
+    </severity>
+    <kind>
+        Symbols
+    </kind>
+    <change>
+        The initial value of this global data has been changed from @old_value to @new_value.
+    </change>
+    <effect>
+        No effect.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Field_Became_Mutable
+    </id>
+    <severity>
+        Safe
+    </severity>
+    <kind>
+        Fields
+    </kind>
+    <change>
+        Field @target became **mutable**.
+    </change>
+    <effect>
+        No effect.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Field_Became_Non_Mutable
+    </id>
+    <severity>
+        Medium
+    </severity>
+    <kind>
+        Fields
+    </kind>
+    <change>
+        Field @target became **non-mutable**.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken with the error message: assignment of member '@type_name::@target' in read-only object.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Removed_Const_Overload
+    </id>
+    <severity>
+        Medium
+    </severity>
+    <kind>
+        Types
+    </kind>
+    <change>
+        The **const** overload of the method @target has been removed from this class.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken with the error message: passing 'const @type_name' as 'this' argument of '@target' discards qualifiers.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Method_Became_Private
+    </id>
+    <severity>
+        High
+    </severity>
+    <kind>
+        Symbols
+    </kind>
+    <change>
+        This method became **private**.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken with the error message: '@target' is private.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Method_Became_Protected
+    </id>
+    <severity>
+        Medium
+    </severity>
+    <kind>
+        Symbols
+    </kind>
+    <change>
+        This method became **protected**.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken with the error message: '@target' is protected.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Method_Became_Public
+    </id>
+    <severity>
+        Safe
+    </severity>
+    <kind>
+        Symbols
+    </kind>
+    <change>
+        This method became **public**.
+    </change>
+    <effect>
+        No effect. 
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Global_Data_Became_Private
+    </id>
+    <severity>
+        High
+    </severity>
+    <kind>
+        Symbols
+    </kind>
+    <change>
+        This global data became **private**.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken with the error message: '@target' is private.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Global_Data_Became_Protected
+    </id>
+    <severity>
+        Medium
+    </severity>
+    <kind>
+        Symbols
+    </kind>
+    <change>
+        This global data became **protected**.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken with the error message: '@target' is protected.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Global_Data_Became_Public
+    </id>
+    <severity>
+        Safe
+    </severity>
+    <kind>
+        Symbols
+    </kind>
+    <change>
+        This global data became **public**.
+    </change>
+    <effect>
+        No effect. 
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Field_Became_Const
+    </id>
+    <severity>
+        Medium
+    </severity>
+    <kind>
+        Types
+    </kind>
+    <change>
+        Field @target became **const**.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken with the error message: assignment of read-only member/location '@type_name::@target'.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Field_Became_Non_Const
+    </id>
+    <severity>
+        Safe
+    </severity>
+    <kind>
+        Types
+    </kind>
+    <change>
+        Field @target became **non-const**.
+    </change>
+    <effect>
+        No effect.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Field_Added_Const
+    </id>
+    <severity>
+        Low
+    </severity>
+    <kind>
+        Types
+    </kind>
+    <change>
+        Added **const** qualifier to field @target.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken with the error message: assignment of read-only member/location '@type_name::@target'.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Field_Removed_Const
+    </id>
+    <severity>
+        Safe
+    </severity>
+    <kind>
+        Types
+    </kind>
+    <change>
+        Removed **const** qualifier from field @target.
+    </change>
+    <effect>
+        No effect.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Field_Became_Private
+    </id>
+    <severity>
+        Medium
+    </severity>
+    <kind>
+        Types
+    </kind>
+    <change>
+        Field @target became **private**.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken with the error message: '@type_name::@target' is private.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Field_Became_Protected
+    </id>
+    <severity>
+        Medium
+    </severity>
+    <kind>
+        Types
+    </kind>
+    <change>
+        Field @target became **protected**.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken with the error message: '@type_name::@target' is protected.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Virtual_Method_Became_Pure
+    </id>
+    <severity>
+        Medium
+    </severity>
+    <kind>
+        Types
+    </kind>
+    <change>
+        Virtual method @target became **pure**.
+    </change>
+    <effect>
+        Recompilation of a client program may be broken with the error message: cannot allocate an object of abstract type '@type_name' because the following virtual functions are pure within '@type_name': virtual @target.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Virtual_Method_Became_Non_Pure
+    </id>
+    <severity>
+        Safe
+    </severity>
+    <kind>
+        Types
+    </kind>
+    <change>
+        Virtual method @target became **non-pure**.
+    </change>
+    <effect>
+        No effect.
+    </effect>
+</rule>
+
+<rule>
+    <id>
+        Type_Became_Opaque
+    </id>
+    <severity>
+        Medium
+    </severity>
+    <kind>
+        Types
+    </kind>
+    <change>
+        This type became **opaque**.
+    </change>
+    <effect>
+        The internal structure of this type is hidden in the new library version and recompilation of a client program may be broken.
+    </effect>
+</rule>
+
+</rules>

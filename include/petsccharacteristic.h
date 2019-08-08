@@ -1,8 +1,8 @@
 /*
    Defines the interface functions for the method of characteristics solvers
 */
-#ifndef __PETSCCHARACTERISTICS_H
-#define __PETSCCHARACTERISTICS_H
+#ifndef PETSCCHARACTERISTICS_H
+#define PETSCCHARACTERISTICS_H
 
 #include <petscvec.h>
 #include <petscdmdatypes.h>
@@ -13,8 +13,6 @@ PETSC_EXTERN PetscErrorCode CharacteristicInitializePackage(void);
      Characteristic - Abstract PETSc object that manages method of characteristics solves
 
    Level: beginner
-
-  Concepts: Method of characteristics
 
 .seealso:  CharacteristicCreate(), CharacteristicSetType(), CharacteristicType, SNES, TS, PC, KSP
 S*/
@@ -44,4 +42,4 @@ PETSC_EXTERN PetscFunctionList CharacteristicList;
 
 PETSC_EXTERN PetscErrorCode CharacteristicRegister(const char[],PetscErrorCode (*)(Characteristic));
 
-#endif /*__PETSCCHARACTERISTICS_H*/
+#endif /*PETSCCHARACTERISTICS_H*/
