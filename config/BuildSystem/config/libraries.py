@@ -131,7 +131,7 @@ class Configure(config.base.Configure):
       # remove duplicate -L, -Wl,-rpath options - and only consecutive -l optipons
       if j in newldflags and any([j.startswith(flg) for flg in dupflags]): continue
       if newlibs and j == newlibs[-1]: continue
-      if j.startswith('-l'):
+      if j.startswith('-l') or j.endswith('.lib'):
         newlibs.append(j)
       else:
         newldflags.append(j)
