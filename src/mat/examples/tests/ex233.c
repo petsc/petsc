@@ -41,6 +41,7 @@ int main(int argc,char **argv)
   ierr = MatViewFromOptions(ssbaij,NULL,"-view");CHKERRQ(ierr);
   ierr = MatDestroy(&ssbaij);CHKERRQ(ierr);
   ierr = PetscFinalize();
+  return ierr;
 }
 
 /*TEST
