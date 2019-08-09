@@ -1846,13 +1846,15 @@ static PetscErrorCode DMPlexComputeGeometryFVM_2D_Internal(DM dm, PetscInt dim, 
   PetscReal      vsum = 0.0, csum[3] = {0.0, 0.0, 0.0}, vtmp, ctmp[4], v0[3], R[9];
   PetscBool      isHybrid = PETSC_FALSE;
   PetscInt       fv[4] = {0, 1, 2, 3};
-  PetscInt       cdepth, tdim = 2, coordSize, numCorners, p, d, e;
+  PetscInt       pEndInterior[4], cdepth, tdim = 2, coordSize, numCorners, p, d, e;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* Must check for hybrid cells because prisms have a different orientation scheme */
   ierr = DMPlexGetDepthLabel(dm, &depth);CHKERRQ(ierr);
   ierr = DMLabelGetValue(depth, cell, &cdepth);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &pEndInterior[3], &pEndInterior[2], &pEndInterior[1], &pEndInterior[0]);CHKERRQ(ierr);
+  if ((pEndInterior[cdepth]) >=0 && (cell >= pEndInterior[cdepth])) isHybrid = PETSC_TRUE;
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMPlexGetConeSize(dm, cell, &numCorners);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);

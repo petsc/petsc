@@ -624,6 +624,7 @@ static PetscErrorCode TestHexahedron(MPI_Comm comm, PetscBool interpolate, Petsc
   PetscFunctionReturn(0);
 }
 
+/* This wedge is a tensor product cell, rather than a normal wedge */
 static PetscErrorCode TestWedge(MPI_Comm comm, PetscBool interpolate, PetscBool transform)
 {
   DM             dm;

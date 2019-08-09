@@ -830,7 +830,7 @@ PetscErrorCode DMPlexConstructGhostCells(DM dm, const char labelName[], PetscInt
   DM             gdm;
   DMLabel        label;
   const char    *name = labelName ? labelName : "Face Sets";
-  PetscInt       dim;
+  PetscInt       dim, Ng = 0, cMax, fMax, eMax, vMax;
   PetscBool      useCone, useClosure;
   PetscErrorCode ierr;
 
@@ -851,10 +851,17 @@ PetscErrorCode DMPlexConstructGhostCells(DM dm, const char labelName[], PetscInt
     ierr = DMGetLabel(dm, name, &label);CHKERRQ(ierr);
     ierr = DMPlexMarkBoundaryFaces(dm, 1, label);CHKERRQ(ierr);
   }
-  ierr = DMPlexConstructGhostCells_Internal(dm, label, numGhostCells, gdm);CHKERRQ(ierr);
+  ierr = DMPlexConstructGhostCells_Internal(dm, label, &Ng, gdm);CHKERRQ(ierr);
   ierr = DMCopyBoundary(dm, gdm);CHKERRQ(ierr);
   ierr = DMCopyDisc(dm, gdm);CHKERRQ(ierr);
+  /* Copy the hybrid bounds */
+  ierr = DMPlexGetHybridBounds(dm, &cMax, &fMax, &eMax, &vMax);CHKERRQ(ierr);
+  if (fMax >= 0) fMax += Ng;
+  if (eMax >= 0) eMax += Ng;
+  if (vMax >= 0) vMax += Ng;
+  ierr = DMPlexSetHybridBounds(gdm, cMax, fMax, eMax, vMax);CHKERRQ(ierr);
   gdm->setfromoptionscalled = dm->setfromoptionscalled;
+  if (numGhostCells) *numGhostCells = Ng;
   *dmGhosted = gdm;
   PetscFunctionReturn(0);
 }

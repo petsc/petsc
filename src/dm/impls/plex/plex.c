@@ -1032,9 +1032,9 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     ierr  = VecDestroy(&acown);CHKERRQ(ierr);
   } else {
     MPI_Comm    comm;
-    PetscInt   *sizes, *hybsizes;
+    PetscInt   *sizes, *hybsizes, *ghostsizes;
     PetscInt    locDepth, depth, cellHeight, dim, d, pMax[4];
-    PetscInt    pStart, pEnd, p;
+    PetscInt    pStart, pEnd, p, gcStart, gcEnd, gcNum;
     PetscInt    numLabels, l;
     const char *name;
     PetscMPIInt size;
@@ -1050,13 +1050,16 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     ierr = DMPlexGetDepth(dm, &locDepth);CHKERRQ(ierr);
     ierr = MPIU_Allreduce(&locDepth, &depth, 1, MPIU_INT, MPI_MAX, comm);CHKERRQ(ierr);
     ierr = DMPlexGetHybridBounds(dm, &pMax[depth], depth > 0 ? &pMax[depth-1] : NULL, depth > 1 ? &pMax[depth - 2] : NULL, &pMax[0]);CHKERRQ(ierr);
-    ierr = PetscCalloc2(size,&sizes,size,&hybsizes);CHKERRQ(ierr);
+    ierr = DMPlexGetGhostCellStratum(dm, &gcStart, &gcEnd);CHKERRQ(ierr);
+    gcNum = gcEnd - gcStart;
+    ierr = PetscCalloc3(size,&sizes,size,&hybsizes,size,&ghostsizes);CHKERRQ(ierr);
     if (depth == 1) {
       ierr = DMPlexGetDepthStratum(dm, 0, &pStart, &pEnd);CHKERRQ(ierr);
       pEnd = pEnd - pStart;
       pMax[0] -= pStart;
       ierr = MPI_Gather(&pEnd, 1, MPIU_INT, sizes, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
       ierr = MPI_Gather(&pMax[0], 1, MPIU_INT, hybsizes, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
+      ierr = MPI_Gather(&gcNum, 1, MPIU_INT, ghostsizes, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer, "  %d-cells:", 0);CHKERRQ(ierr);
       for (p = 0; p < size; ++p) {
         if (hybsizes[p] >= 0) {ierr = PetscViewerASCIIPrintf(viewer, " %D (%D)", sizes[p], sizes[p] - hybsizes[p]);CHKERRQ(ierr);}
@@ -1070,8 +1073,9 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
       ierr = MPI_Gather(&pMax[depth], 1, MPIU_INT, hybsizes, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer, "  %D-cells:", dim);CHKERRQ(ierr);
       for (p = 0; p < size; ++p) {
-        if (hybsizes[p] >= 0) {ierr = PetscViewerASCIIPrintf(viewer, " %D (%D)", sizes[p], sizes[p] - hybsizes[p]);CHKERRQ(ierr);}
-        else                  {ierr = PetscViewerASCIIPrintf(viewer, " %D", sizes[p]);CHKERRQ(ierr);}
+        ierr = PetscViewerASCIIPrintf(viewer, " %D", sizes[p]);CHKERRQ(ierr);
+        if (hybsizes[p] >= 0)   {ierr = PetscViewerASCIIPrintf(viewer, " (%D)", sizes[p] - hybsizes[p]);CHKERRQ(ierr);}
+        if (ghostsizes[p] > 0) {ierr = PetscViewerASCIIPrintf(viewer, " [%D]", ghostsizes[p]);CHKERRQ(ierr);}
       }
       ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
     } else {
@@ -1083,17 +1087,19 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
         pMax[d] -= pStart;
         ierr = MPI_Gather(&pEnd, 1, MPIU_INT, sizes, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
         ierr = MPI_Gather(&pMax[d], 1, MPIU_INT, hybsizes, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
+        if (d == dim) {ierr = MPI_Gather(&gcNum, 1, MPIU_INT, ghostsizes, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);}
         ierr = PetscViewerASCIIPrintf(viewer, "  %D-cells:", d);CHKERRQ(ierr);
         for (p = 0; p < size; ++p) {
           if (!rank) {
-            if (hybsizes[p] >= 0) {ierr = PetscViewerASCIIPrintf(viewer, " %D (%D)", sizes[p], sizes[p] - hybsizes[p]);CHKERRQ(ierr);}
-            else                  {ierr = PetscViewerASCIIPrintf(viewer, " %D", sizes[p]);CHKERRQ(ierr);}
+            ierr = PetscViewerASCIIPrintf(viewer, " %D", sizes[p]);CHKERRQ(ierr);
+            if (hybsizes[p] >= 0) {ierr = PetscViewerASCIIPrintf(viewer, " (%D)", sizes[p] - hybsizes[p]);CHKERRQ(ierr);}
+            if (d == dim && ghostsizes[p] > 0) {ierr = PetscViewerASCIIPrintf(viewer, " [%D]", ghostsizes[p]);CHKERRQ(ierr);}
           }
         }
         ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
       }
     }
-    ierr = PetscFree2(sizes,hybsizes);CHKERRQ(ierr);
+    ierr = PetscFree3(sizes,hybsizes,ghostsizes);CHKERRQ(ierr);
     ierr = DMGetNumLabels(dm, &numLabels);CHKERRQ(ierr);
     if (numLabels) {ierr = PetscViewerASCIIPrintf(viewer, "Labels:\n");CHKERRQ(ierr);}
     for (l = 0; l < numLabels; ++l) {

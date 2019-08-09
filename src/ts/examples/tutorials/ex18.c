@@ -882,7 +882,7 @@ static PetscErrorCode SetInitialConditionFVM(DM dm, Vec X, PetscInt field, Petsc
   ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
   ierr = DMPlexTSGetGeometryFVM(dm, NULL, &cellgeom, NULL);CHKERRQ(ierr);
   ierr = VecGetDM(cellgeom, &dmCell);CHKERRQ(ierr);
-  ierr = DMPlexGetInteriorCellStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetInteriorCellStratum(dm, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = VecGetArrayRead(cellgeom, &cgeom);CHKERRQ(ierr);
   ierr = VecGetArray(X, &x);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
@@ -915,7 +915,6 @@ static PetscErrorCode MonitorFunctionals(TS ts, PetscInt stepnum, PetscReal time
   ierr = VecViewFromOptions(X, (PetscObject) ts, "-view_solution");CHKERRQ(ierr);
   ierr = VecGetDM(X, &dm);CHKERRQ(ierr);
   ierr = DMPlexTSGetGeometryFVM(dm, NULL, &cellgeom, NULL);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
   ierr = DMGetLocalSection(dm, &s);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(s, &Nf);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
@@ -968,7 +967,7 @@ static PetscErrorCode MonitorFunctionals(TS ts, PetscInt stepnum, PetscReal time
       ierr = PetscObjectSetName((PetscObject) fv[f], name);CHKERRQ(ierr);
       ierr = VecGetArray(fv[f], &fx[f]);CHKERRQ(ierr);
     }
-    ierr = DMPlexGetInteriorCellStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+    ierr = DMPlexGetInteriorCellStratum(dm, &cStart, &cEnd);CHKERRQ(ierr);
     ierr = VecGetDM(cellgeom, &dmCell);CHKERRQ(ierr);
     ierr = VecGetArrayRead(cellgeom, &cgeom);CHKERRQ(ierr);
     ierr = VecGetArrayRead(X, &x);CHKERRQ(ierr);

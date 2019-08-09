@@ -1097,13 +1097,14 @@ static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmPa
   PetscFunctionReturn(0);
 }
 
+/* Set hybrid and ghost state of points */
 static PetscErrorCode DMPlexDistributeSetupHybrid(DM dm, PetscSF migrationSF, ISLocalToGlobalMapping renumbering, DM dmParallel)
 {
   DM_Plex        *mesh  = (DM_Plex*) dm->data;
   DM_Plex        *pmesh = (DM_Plex*) (dmParallel)->data;
-  PetscBool      *isHybrid, *isHybridParallel;
+  PetscInt       *isHybrid, *isHybridParallel; /* 0 for normal, 1 for hybrid, 2 for ghost cell */
   PetscInt        dim, depth, d;
-  PetscInt        pStart, pEnd, pStartP, pEndP;
+  PetscInt        pStart, pEnd, pStartP, pEndP, gcStart, gcEnd;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -1114,19 +1115,21 @@ static PetscErrorCode DMPlexDistributeSetupHybrid(DM dm, PetscSF migrationSF, IS
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMPlexGetChart(dm,&pStart,&pEnd);CHKERRQ(ierr);
   ierr = DMPlexGetChart(dmParallel,&pStartP,&pEndP);CHKERRQ(ierr);
+  ierr = DMPlexGetGhostCellStratum(dm, &gcStart, &gcEnd);CHKERRQ(ierr);
   ierr = PetscCalloc2(pEnd-pStart,&isHybrid,pEndP-pStartP,&isHybridParallel);CHKERRQ(ierr);
   for (d = 0; d <= depth; d++) {
-    PetscInt hybridMax = (depth == 1 && d == 1) ? mesh->hybridPointMax[dim] : mesh->hybridPointMax[d];
+    PetscInt hybridMax = (depth == 1 && d == 1) ? mesh->hybridPointMax[dim] : mesh->hybridPointMax[d], p;
 
     if (hybridMax >= 0) {
-      PetscInt sStart, sEnd, p;
+      PetscInt sStart, sEnd;
 
       ierr = DMPlexGetDepthStratum(dm,d,&sStart,&sEnd);CHKERRQ(ierr);
-      for (p = hybridMax; p < sEnd; p++) isHybrid[p-pStart] = PETSC_TRUE;
+      for (p = hybridMax; p < sEnd; p++) isHybrid[p-pStart] = 1;
     }
+    if (d == depth) for (p = gcStart; p < gcEnd; ++p) isHybrid[p-pStart] = 2;
   }
-  ierr = PetscSFBcastBegin(migrationSF,MPIU_BOOL,isHybrid,isHybridParallel);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(migrationSF,MPIU_BOOL,isHybrid,isHybridParallel);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(migrationSF,MPIU_INT,isHybrid,isHybridParallel);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(migrationSF,MPIU_INT,isHybrid,isHybridParallel);CHKERRQ(ierr);
   for (d = 0; d <= dim; d++) pmesh->hybridPointMax[d] = -1;
   for (d = 0; d <= depth; d++) {
     PetscInt sStart, sEnd, p, dd;
@@ -1134,8 +1137,12 @@ static PetscErrorCode DMPlexDistributeSetupHybrid(DM dm, PetscSF migrationSF, IS
     ierr = DMPlexGetDepthStratum(dmParallel,d,&sStart,&sEnd);CHKERRQ(ierr);
     dd = (depth == 1 && d == 1) ? dim : d;
     for (p = sStart; p < sEnd; p++) {
-      if (isHybridParallel[p-pStartP]) {
+      if (isHybridParallel[p-pStartP] == 1) {
         pmesh->hybridPointMax[dd] = p;
+        break;
+      }
+      if (d == depth && isHybridParallel[p-pStartP] == 2) {
+        ierr = DMPlexSetGhostCellStratum(dmParallel, p, PETSC_DETERMINE);CHKERRQ(ierr);
         break;
       }
     }
