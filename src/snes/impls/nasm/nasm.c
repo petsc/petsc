@@ -185,7 +185,7 @@ static PetscErrorCode SNESSetFromOptions_NASM(PetscOptionItems *PetscOptionsObje
   SNES_NASM         *nasm = (SNES_NASM*)snes->data;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject,"Nonlinear Additive Schwartz options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Nonlinear Additive Schwarz options");CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-snes_nasm_type","Type of restriction/extension","",SNESNASMTypes,(PetscEnum)nasm->type,(PetscEnum*)&asmtype,&flg);CHKERRQ(ierr);
   if (flg) {ierr = SNESNASMSetType(snes,asmtype);CHKERRQ(ierr);}
   flg    = PETSC_FALSE;
@@ -844,7 +844,7 @@ static PetscErrorCode SNESSolve_NASM(SNES snes)
 }
 
 /*MC
-  SNESNASM - Nonlinear Additive Schwartz
+  SNESNASM - Nonlinear Additive Schwarz
 
    Options Database:
 +  -snes_nasm_log - enable logging events for the communication and solve stages
