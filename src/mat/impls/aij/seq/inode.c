@@ -4079,6 +4079,7 @@ PetscErrorCode MatSeqAIJCheckInode(Mat A)
     ierr = PetscObjectTypeCompareAny((PetscObject)A,&is_cudatype, MATAIJCUSPARSE, MATSEQAIJCUSPARSE, MATMPIAIJCUSPARSE, MATAIJVIENNACL, MATSEQAIJVIENNACL, MATMPIAIJVIENNACL,"");CHKERRQ(ierr);
     if (is_cudatype) {
       ierr = PetscInfo(A,"Not using Inode routines on GPU matrix\n");CHKERRQ(ierr);
+      ierr = PetscFree(ns);CHKERRQ(ierr);
       a->inode.node_count       = 0;
       a->inode.size             = NULL;
       a->inode.use              = PETSC_FALSE;
