@@ -45,6 +45,11 @@ else
   set CONFIGURE_ARGS=""
 endif
 
+# update datafiles
+if ( -d ~/datafiles && -w ~/datafiles ) then
+  cd ~/datafiles && git pull
+endif
+
 set MACH=`hostname`
 cd $nPETSC_DIR
 rm -f build.log
