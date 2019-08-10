@@ -160,6 +160,40 @@ int main(int argc, char **argv)
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5
     args: -dm_plex_create_from_hdf5_xdmf -distribute 0 -format hdf5_xdmf -second_write_read -compare
 
+  testset:
+    # the same data and settings as dm_impls_plex_tests-ex18_9%
+    requires: hdf5 !complex datafilespath
+    #TODO DMPlexCheckPointSF() fails for nsize 4
+    nsize: {{1 2}}
+    args: -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
+    args: -filename ${DATAFILESPATH}/meshes/cube-hexahedra-refined.h5 -dm_plex_create_from_hdf5_xdmf -dm_plex_hdf5_topology_path /cells -dm_plex_hdf5_geometry_path /coordinates
+    args: -format hdf5_xdmf -second_write_read -compare
+    test:
+      suffix: 9_hdf5_seqload
+      args: -distribute -petscpartitioner_type simple
+      args: -interpolate {{0 1}}
+      args: -dm_plex_hdf5_force_sequential
+    test:
+      suffix: 9_hdf5_seqload_metis
+      requires: parmetis
+      args: -distribute -petscpartitioner_type parmetis
+      args: -interpolate 1
+      args: -dm_plex_hdf5_force_sequential
+    test:
+      suffix: 9_hdf5
+      args: -interpolate 1
+    test:
+      suffix: 9_hdf5_repart
+      requires: parmetis
+      args: -distribute -petscpartitioner_type parmetis
+      args: -interpolate 1
+    test:
+      TODO: Parallel partitioning of uninterpolated meshes not supported
+      suffix: 9_hdf5_repart_ppu
+      requires: parmetis
+      args: -distribute -petscpartitioner_type parmetis
+      args: -interpolate 0
+
   # reproduce PetscSFView() crash - fixed, left as regression test
   test:
     suffix: new_dm_view
