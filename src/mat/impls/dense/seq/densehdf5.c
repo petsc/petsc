@@ -59,7 +59,7 @@ PetscErrorCode MatLoad_Dense_HDF5(Mat mat, PetscViewer viewer)
 
   /* Read the dataset and setup its layout */
   /* Note: PetscViewerHDF5ReadSizes_Private takes into account that the dataset is transposed for MATLAB MAT files */
-  ierr = PetscViewerHDF5Load_Private(viewer, mat_name, vmap, scalartype, (void**)&a);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5Load(viewer, mat_name, vmap, scalartype, (void**)&a);CHKERRQ(ierr);
 
   /* Convert the dataset layout back to rmap and cmap */
   mat->cmap->N = vmap->bs;

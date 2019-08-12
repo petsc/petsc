@@ -1,7 +1,7 @@
 #include <petsc/private/viewerimpl.h>
 #include <petsc/private/viewerhdf5impl.h>
 #include <petscviewerhdf5.h>    /*I   "petscviewerhdf5.h"   I*/
-#include <petsc/private/isimpl.h> /* for PetscViewerHDF5Load_Private */
+#include <petsc/private/isimpl.h> /* for PetscViewerHDF5Load */
 #include <petscis.h>    /*I   "petscis.h"   I*/
 
 #if defined(PETSC_HAVE_HDF5)
@@ -161,7 +161,7 @@ static PetscErrorCode PetscViewerHDF5ReadArray_Private(PetscViewer viewer, HDF5R
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscViewerHDF5Load_Private(PetscViewer viewer, const char *name, PetscLayout map, hid_t datatype, void **newarr)
+PetscErrorCode PetscViewerHDF5Load(PetscViewer viewer, const char *name, PetscLayout map, hid_t datatype, void **newarr)
 {
   HDF5ReadCtx     h=NULL;
   hid_t           memspace=0;
