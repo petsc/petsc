@@ -879,14 +879,19 @@ int main(int argc, char **argv)
 
   testset:
     requires: exodusii
-    nsize: 2
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/TwoQuads.exo
     args: -dm_view ascii::ascii_info_detail -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
     test:
+      suffix: 5_seq
+      nsize: 1
+      args: -distribute 0 -interpolate {{none serial}separate output}
+    test:
       suffix: 5_dist0
+      nsize: 2
       args: -distribute 0 -interpolate {{none serial}separate output}
     test:
       suffix: 5_dist1
+      nsize: 2
       args: -distribute 1 -interpolate {{none serial parallel}separate output}
 
   testset:
