@@ -17,6 +17,10 @@
 
   Level: beginner
 
+  Notes:
+  The label name is actually usual PetscObject name.
+  One can get/set it with PetscObjectGetName()/PetscObjectSetName().
+
 .seealso: DMLabelDestroy()
 @*/
 PetscErrorCode DMLabelCreate(MPI_Comm comm, const char name[], DMLabel *label)
