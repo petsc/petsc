@@ -10,9 +10,8 @@ import config.setsOrdered as sets
 class Preprocessor(config.compile.C.Preprocessor):
   '''The Fortran preprocessor, which now is just the C preprocessor'''
   def __init__(self, argDB):
-    config.compile.C.Preprocessor.__init__(self, argDB)
+    config.compile.processor.Processor.__init__(self, argDB, 'FPP', 'FPPFLAGS', '.FPP', '.F90')
     self.language        = 'FC'
-    self.targetExtension = '.F90'
     self.includeDirectories = sets.Set()
     return
 

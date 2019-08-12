@@ -481,10 +481,14 @@ class Configure(script.Script):
 
   # Should be static
   def getPreprocessorFlagsName(self, language):
-    if language in ['C', 'Cxx', 'FC']:
+    if language == 'C':
       flagsArg = 'CPPFLAGS'
     elif language == 'CUDA':
       flagsArg = 'CUDAPPFLAGS'
+    elif language == 'Cxx':
+      flagsArg = 'CXXCPPFLAGS'
+    elif language == 'FC':
+      flagsArg = 'FPPFLAGS'
     else:
       raise RuntimeError('Unknown language: '+language)
     return flagsArg
