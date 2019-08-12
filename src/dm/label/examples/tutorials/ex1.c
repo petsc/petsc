@@ -60,7 +60,61 @@ int main(int argc, char **argv)
     dm   = dmDist;
   }
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
+
+  /* add custom labels to test adding/removal */
+  {
+    DMLabel label0, label1, label2, label3;
+    PetscInt p, pStart, pEnd;
+    ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+    /* create label in DM and get from DM */
+    ierr = DMCreateLabel(dm, "label0");CHKERRQ(ierr);
+    ierr = DMGetLabel(dm, "label0", &label0);CHKERRQ(ierr);
+    /* alternative: create standalone label and add to DM; needs to be destroyed */
+    ierr = DMLabelCreate(PETSC_COMM_SELF, "label1", &label1);CHKERRQ(ierr);
+    ierr = DMAddLabel(dm, label1);CHKERRQ(ierr);
+
+    pEnd = pStart + (pEnd-pStart)/3; /* we will mark the first third of points */
+    for (p=pStart; p < pEnd; p++) {
+      ierr = DMLabelSetValue(label0, p, 1);CHKERRQ(ierr);
+      ierr = DMLabelSetValue(label1, p, 2);CHKERRQ(ierr);
+    }
+    /* duplicate label */
+    ierr = DMLabelDuplicate(label0, &label2);CHKERRQ(ierr);
+    ierr = DMLabelDuplicate(label1, &label3);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)label2, "label2");CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)label3, "label3");CHKERRQ(ierr);
+    ierr = DMAddLabel(dm, label2);CHKERRQ(ierr);
+    ierr = DMAddLabel(dm, label3);CHKERRQ(ierr);
+    /* remove the labels in this scope */
+    ierr = DMLabelDestroy(&label1);CHKERRQ(ierr);
+    ierr = DMLabelDestroy(&label2);CHKERRQ(ierr);
+    ierr = DMLabelDestroy(&label3);CHKERRQ(ierr);
+  }
+
   ierr = ViewLabels(dm, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
+  /* remove label0 and label1 just to test manual removal; let label3 be removed automatically by DMDestroy() */
+  {
+    DMLabel label0, label1, label2;
+    ierr = DMGetLabel(dm, "label0", &label0);CHKERRQ(ierr);
+    ierr = DMGetLabel(dm, "label1", &label1);CHKERRQ(ierr);
+    if (!label0) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label0 must not be NULL now");
+    if (!label1) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label1 must not be NULL now");
+    ierr = DMRemoveLabelBySelf(dm, &label0, PETSC_TRUE);CHKERRQ(ierr);
+    ierr = DMRemoveLabel(dm, "label1", NULL);CHKERRQ(ierr);
+    ierr = DMRemoveLabel(dm, "label2", &label2);CHKERRQ(ierr);
+    ierr = DMGetLabel(dm, "label0", &label0);CHKERRQ(ierr);
+    ierr = DMGetLabel(dm, "label1", &label1);CHKERRQ(ierr);
+    if (label0) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label0 must be NULL now");
+    if (label1) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label1 must be NULL now");
+    if (!label2) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label2 must not be NULL now");
+    ierr = DMRemoveLabelBySelf(dm, &label2, PETSC_FALSE);CHKERRQ(ierr); /* this should do nothing */
+    if (!label2) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label2 must not be NULL now");
+    ierr = DMLabelDestroy(&label2);CHKERRQ(ierr);
+    ierr = DMGetLabel(dm, "label2", &label2);CHKERRQ(ierr);
+    if (label2) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label2 must be NULL now");
+  }
+
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
