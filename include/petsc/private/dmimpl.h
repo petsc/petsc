@@ -173,7 +173,7 @@ typedef struct _n_Space {
   IS      fields; /* Map from DS field numbers to original field numbers in the DM */
 } DMSpace;
 
-PETSC_EXTERN PetscErrorCode DMDestroyLabelLinkList(DM);
+PETSC_INTERN PetscErrorCode DMDestroyLabelLinkList_Internal(DM);
 
 struct _p_DM {
   PETSCHEADER(struct _DMOps);

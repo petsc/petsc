@@ -4422,7 +4422,7 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
       newPlex = newPlexGhosted;
 
       /* share the labels back */
-      ierr = DMDestroyLabelLinkList(dm);CHKERRQ(ierr);
+      ierr = DMDestroyLabelLinkList_Internal(dm);CHKERRQ(ierr);
       newPlex->labels->refct++;
       dm->labels = newPlex->labels;
 
