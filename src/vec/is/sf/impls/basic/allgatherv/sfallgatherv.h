@@ -8,8 +8,6 @@
 typedef struct _n_PetscSFPack_Allgatherv *PetscSFPack_Allgatherv;
 struct _n_PetscSFPack_Allgatherv {
   SFPACKHEADER;
-  char          *root;   /* root buffer */
-  char          *leaf;   /* leaf buffer */
   MPI_Request   request;
 };
 

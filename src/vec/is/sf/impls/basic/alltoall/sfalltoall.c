@@ -46,8 +46,8 @@ static PetscErrorCode PetscSFBcastAndOpBegin_Alltoall(PetscSF sf,MPI_Datatype un
   ierr = PetscObjectGetComm((PetscObject)sf,&comm);CHKERRQ(ierr);
 
   if (op != MPIU_REPLACE) {
-    if (!link->leaf) {ierr = PetscMalloc(sf->nleaves*link->unitbytes,&link->leaf);CHKERRQ(ierr);}
-    recvbuf = link->leaf;
+    if (!link->leafbuf) {ierr = PetscMalloc(sf->nleaves*link->unitbytes,&link->leafbuf);CHKERRQ(ierr);}
+    recvbuf = link->leafbuf;
   } else {
     recvbuf = leafdata;
   }
@@ -67,8 +67,8 @@ static PetscErrorCode PetscSFReduceBegin_Alltoall(PetscSF sf,MPI_Datatype unit,c
   ierr = PetscObjectGetComm((PetscObject)sf,&comm);CHKERRQ(ierr);
 
   if (op != MPIU_REPLACE) {
-    if (!link->root) {ierr = PetscMalloc(sf->nroots*link->unitbytes,&link->root);CHKERRQ(ierr);}
-    recvbuf = link->root;
+    if (!link->rootbuf) {ierr = PetscMalloc(sf->nroots*link->unitbytes,&link->rootbuf);CHKERRQ(ierr);}
+    recvbuf = link->rootbuf;
   } else {
     recvbuf = rootdata;
   }

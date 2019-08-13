@@ -25,8 +25,8 @@ static PetscErrorCode PetscSFBcastAndOpBegin_Allgather(PetscSF sf,MPI_Datatype u
     ierr = MPIU_Iallgather(rootdata,sendcount,unit,leafdata,sendcount,unit,comm,&link->request);CHKERRQ(ierr);
   } else {
     /* Allgather to the leaf buffer and then add leaf buffer to rootdata */
-    if (!link->leaf) {ierr = PetscMalloc(sf->nleaves*link->unitbytes,&link->leaf);CHKERRQ(ierr);}
-    ierr = MPIU_Iallgather(rootdata,sendcount,unit,link->leaf,sendcount,unit,comm,&link->request);CHKERRQ(ierr);
+    if (!link->leafbuf) {ierr = PetscMalloc(sf->nleaves*link->unitbytes,&link->leafbuf);CHKERRQ(ierr);}
+    ierr = MPIU_Iallgather(rootdata,sendcount,unit,link->leafbuf,sendcount,unit,comm,&link->request);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -64,12 +64,12 @@ static PetscErrorCode PetscSFReduceBegin_Allgather(PetscSF sf,MPI_Datatype unit,
     ierr = PetscMemcpy(rootdata,(const char*)leafdata+(size_t)rstart*link->unitbytes,(size_t)sf->nroots*link->unitbytes);CHKERRQ(ierr);
   } else {
     /* Reduce all leafdata on rank 0, then scatter the result to root buffer, then reduce root buffer to leafdata */
-    if (!rank && !link->leaf) {ierr = PetscMalloc(sf->nleaves*link->unitbytes,&link->leaf);CHKERRQ(ierr);}
+    if (!rank && !link->leafbuf) {ierr = PetscMalloc(sf->nleaves*link->unitbytes,&link->leafbuf);CHKERRQ(ierr);}
     ierr = PetscMPIIntCast(sf->nleaves*link->bs,&count);CHKERRQ(ierr);
     ierr = PetscMPIIntCast(sf->nroots,&sendcount);CHKERRQ(ierr);
-    ierr = MPI_Reduce(leafdata,link->leaf,count,link->basicunit,op,0/*rank 0*/,comm);CHKERRQ(ierr); /* Must do reduce with MPI builltin datatype basicunit */
-    if (!link->root) {ierr = PetscMalloc(sf->nroots*link->unitbytes,&link->root);CHKERRQ(ierr);} /* Allocate root buffer */
-    ierr = MPIU_Iscatter(link->leaf,sendcount,unit,link->root,sendcount,unit,0/*rank 0*/,comm,&link->request);CHKERRQ(ierr);
+    ierr = MPI_Reduce(leafdata,link->leafbuf,count,link->basicunit,op,0/*rank 0*/,comm);CHKERRQ(ierr); /* Must do reduce with MPI builltin datatype basicunit */
+    if (!link->rootbuf) {ierr = PetscMalloc(sf->nroots*link->unitbytes,&link->rootbuf);CHKERRQ(ierr);} /* Allocate root buffer */
+    ierr = MPIU_Iscatter(link->leafbuf,sendcount,unit,link->rootbuf,sendcount,unit,0/*rank 0*/,comm,&link->request);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

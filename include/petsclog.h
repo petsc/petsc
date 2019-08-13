@@ -383,7 +383,7 @@ PETSC_EXTERN PetscErrorCode PetscLogEventZeroFlops(PetscLogEvent);
 /*
    Logging of MPI activities
 */
-PETSC_STATIC_INLINE PetscErrorCode PetscMPITypeSize(PetscMPIInt count,MPI_Datatype type,PetscLogDouble *length)
+PETSC_STATIC_INLINE PetscErrorCode PetscMPITypeSize(PetscInt count,MPI_Datatype type,PetscLogDouble *length)
 {
   PetscMPIInt    typesize;
   PetscErrorCode ierr;

@@ -206,8 +206,8 @@ static PetscErrorCode VecScatterRemap_SF(VecScatter vscat,const PetscInt *tomap,
   for (i=0; i<bas->ioffset[bas->niranks]; i++) bas->irootloc[i] = tomap[bas->irootloc[i]*bs]/bs;
 
   /* Destroy and then rebuild root packing optimizations since indices are changed */
-  ierr = PetscSFPackDestoryOptimization(&bas->rootpackopt);CHKERRQ(ierr);
-  ierr = PetscSFPackSetupOptimization(bas->niranks,bas->ioffset,bas->irootloc,&bas->rootpackopt);CHKERRQ(ierr);
+  ierr = PetscSFPackDestroyOptimization_Basic(sf);CHKERRQ(ierr);
+  ierr = PetscSFPackSetupOptimization_Basic(sf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -22,8 +22,8 @@ PETSC_INTERN PetscErrorCode PetscSFBcastAndOpBegin_Gather(PetscSF sf,MPI_Datatyp
     recvbuf = leafdata;
   } else {
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-    if (!link->leaf && !rank) {ierr = PetscMalloc(sf->nleaves*link->unitbytes,&link->leaf);CHKERRQ(ierr);}
-    recvbuf = link->leaf;
+    if (!link->leafbuf && !rank) {ierr = PetscMalloc(sf->nleaves*link->unitbytes,&link->leafbuf);CHKERRQ(ierr);}
+    recvbuf = link->leafbuf;
   }
 
   ierr = PetscMPIIntCast(sf->nroots,&sendcount);CHKERRQ(ierr);
@@ -46,8 +46,8 @@ static PetscErrorCode PetscSFReduceBegin_Gather(PetscSF sf,MPI_Datatype unit,con
   if (op == MPIU_REPLACE) {
     recvbuf = rootdata;
   } else {
-    if (!link->root) {ierr = PetscMalloc(sf->nroots*link->unitbytes,&link->root);CHKERRQ(ierr);}
-    recvbuf = link->root;
+    if (!link->rootbuf) {ierr = PetscMalloc(sf->nroots*link->unitbytes,&link->rootbuf);CHKERRQ(ierr);}
+    recvbuf = link->rootbuf;
   }
 
   ierr = PetscMPIIntCast(sf->nroots,&recvcount);CHKERRQ(ierr);

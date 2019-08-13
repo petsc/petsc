@@ -7,10 +7,10 @@
  * therefore we pack data types manually. This file defines packing routines for the standard data types.
  */
 
-#define CPPJoin2_exp(a,b)     a ## b
-#define CPPJoin2(a,b)         CPPJoin2_exp(a,b)
-#define CPPJoin3_exp_(a,b,c)  a ## b ## _ ## c
-#define CPPJoin3_(a,b,c)      CPPJoin3_exp_(a,b,c)
+#define CPPJoin2(a,b)         a ##_## b
+#define CPPJoin3(a,b,c)       a ##_## b ##_## c
+#define CPPJoin4_(a,b,c,d)    a##b##_##c##_##d
+#define CPPJoin4(a,b,c,d)     CPPJoin4_(a##_,b,c,d)
 
 #define EXECUTE(statement)    statement /* no braces since the statement might declare a variable; braces impose an unwanted scope */
 #define IGNORE(statement)     do {} while(0)
@@ -20,123 +20,148 @@
 #define LXOR_OP(r,s,op,t)     do {(r) = (!s) != (!t);} while(0)  /* logical exclusive OR */
 #define PAIRTYPE_OP(r,s,op,t) do {(r).a = (s).a op (t).a; (r).b = (s).b op (t).b;} while(0)
 
-#define BlockType(type,count) CPPJoin3_(_blocktype_,type,count) /* typename for struct {type v[count];} */
-#define PairType(type1,type2) CPPJoin3_(_pairtype_,type1,type2) /* typename for struct {type1 a; type2 b;} */
+#define PairType(Type1,Type2) Type1##_##Type2 /* typename for struct {Type1 a; Type2 b;} */
 
 /* DEF_PackFunc - macro defining a Pack routine
 
    Arguments of the macro:
-   +type      Type of the basic data in an entry, i.e., int, PetscInt, PetscReal etc. It is not the type of an entry.
-   -BS        Block size for vectorization. It is a factor of bs.
+   +Type      Type of the basic data in an entry, i.e., int, PetscInt, PetscReal etc. It is not the type of an entry.
+   .BS        Block size for vectorization. It is a factor of bs.
+   -EQ        (bs == BS) ? 1 : 0. EQ is a compile-time const to help compiler optimizations. See below.
 
    Arguments of the Pack routine:
-   +n         Number of entries to pack. Each entry is of type 'unit'. Here the unit is the arg used in calls like PetscSFBcastBegin(sf,unit,..).
-              If idx is not NULL, then n also indicates the number of indices in idx[]
+   +count     Number of indices in idx[]
+   .idx       Indices of entries to packed. NULL means contiguous indices, that is [0,count)
    .bs        Number of basic types in an entry. Ex. if unit is MPI_2INT, then bs=2 and the basic type is int
-   .idx       Indices of entries. NULL means contiguous indices [0,n)
-   .r         Do packing for the r-th destination process
-   .opt       Pack optimization plans. NULL means no plan.
-   .unpacked  Address of the unpacked data
-   -packed    Address of the packed data
+   .opt       Pack optimization plans. NULL means no plan at all.
+   .unpacked  Address of the unpacked data. The entries will be packed are unpacked[idx[i]],for i in [0,count)
+   -packed    Address of the packed data for each rank
  */
-#define DEF_PackFunc(type,BS) \
-  static PetscErrorCode CPPJoin3_(Pack_,type,BS)(PetscInt n,PetscInt bs,const PetscInt *idx,PetscInt r,PetscSFPackOpt opt,const void *unpacked,void *packed) { \
-    PetscErrorCode ierr;                                                                                   \
-    const type     *u = (const type*)unpacked,*u2;                                                         \
-    type           *p = (type*)packed;                                                                     \
-    PetscInt       i,j,k,l,step;                                                                           \
-    PetscFunctionBegin;                                                                                    \
-    if (!idx) {  /* idx[] is contiguous */                                                                 \
-      ierr = PetscArraycpy(p,u,bs*n);CHKERRQ(ierr);                                                        \
-    } else if (!opt || !opt->optimized[r]) { /* idx[] is not optimized*/                                   \
-      for (i=0; i<n; i++)                                                                                  \
-        for (j=0; j<bs; j+=BS)                                                                             \
-          for (k=j; k<j+BS; k++)                                                                           \
-            p[i*bs+k] = u[idx[i]*bs+k];                                                                    \
-    } else { /* idx[] is optimized*/                                                                       \
-      if (opt->copy_offset[r] != opt->copy_offset[r+1]) { /* idx[] is piece-wise contiguous */             \
-        for (i=opt->copy_offset[r]; i<opt->copy_offset[r+1]; i++) {                                        \
-          l    = opt->copy_length[i]*bs; /* length in types */                                             \
-          u2   = u + opt->copy_start[i]*bs;                                                                \
-          ierr = PetscArraycpy(p,u2,l);CHKERRQ(ierr);                                                      \
-          p   += l;                                                                                        \
-        }                                                                                                  \
-      } else { /* idx[] is strided */                                                                      \
-        u   += opt->stride_first[r]*bs;                                                                    \
-        step = opt->stride_step[r];                                                                        \
-        for (i=0; i<opt->stride_n[r]; i++)                                                                 \
-          for (j=0; j<bs; j++)                                                                             \
-            p[i*bs+j] = u[i*step*bs+j];                                                                    \
-      }                                                                                                    \
-    }                                                                                                      \
-    PetscFunctionReturn(0);                                                                                \
+#define DEF_PackFunc(Type,BS,EQ) \
+  static PetscErrorCode CPPJoin4(Pack,Type,BS,EQ)(PetscInt count,const PetscInt *idx,PetscInt bs,PetscSFPackOpt opt,const void *unpacked,void *packed) \
+  {                                                                                                          \
+    PetscErrorCode ierr;                                                                                     \
+    const Type     *u = (const Type*)unpacked,*u2;                                                           \
+    Type           *p = (Type*)packed,*p2;                                                                   \
+    PetscInt       i,j,k,l,r,step;                                                                           \
+    const PetscInt *idx2,M = (EQ) ? 1 : bs/BS; /* If EQ, then M=1 enables compiler's const-propagation */    \
+    const PetscInt MBS = M*BS; /* MBS=bs. We turn MBS into a compile time const when EQ=1. */                \
+    PetscFunctionBegin;                                                                                      \
+    if (!idx) {ierr = PetscArraycpy(p,u,MBS*count);CHKERRQ(ierr);}  /* Indices are contiguous */             \
+    else if (!opt) { /* No optimizations available */                                                        \
+      for (i=0; i<count; i++)                                                                                \
+        for (j=0; j<M; j++)     /* Decent compilers should fuse this loop when M = const 1 */                \
+          for (k=0; k<BS; k++)  /* Compiler either fuses (BS=1) or vectorizes (BS=2,4,8,etc) this loop */    \
+            p[i*MBS+j*BS+k] = u[idx[i]*MBS+j*BS+k];                                                          \
+    } else {                                                                                                 \
+      for (r=0; r<opt->n; r++) {                                                                             \
+        p2  = p + opt->offset[r]*MBS;                                                                        \
+        if (opt->type[r] == PETSCSF_PACKOPT_NONE) {                                                          \
+          idx2 = idx + opt->offset[r];                                                                       \
+          for (i=0; i<opt->offset[r+1]-opt->offset[r]; i++)                                                  \
+            for (j=0; j<M; j++)                                                                              \
+              for (k=0; k<BS; k++)                                                                           \
+                p2[i*MBS+j*BS+k] = u[idx2[i]*MBS+j*BS+k];                                                    \
+        } else if (opt->type[r] == PETSCSF_PACKOPT_MULTICOPY) {                                              \
+          for (i=opt->copy_offset[r]; i<opt->copy_offset[r+1]; i++) {                                        \
+            u2   = u + idx[opt->copy_start[i]]*MBS;                                                          \
+            l    = opt->copy_length[i]*MBS; /* length in basic type such as MPI_INT */                       \
+            ierr = PetscArraycpy(p2,u2,l);CHKERRQ(ierr);                                                     \
+            p2  += l;                                                                                        \
+          }                                                                                                  \
+        } else if (opt->type[r] == PETSCSF_PACKOPT_STRIDE) {                                                 \
+          u2   = u + idx[opt->offset[r]]*MBS;                                                                \
+          step = opt->stride_step[r];                                                                        \
+          for (i=0; i<opt->stride_n[r]; i++)                                                                 \
+            for (j=0; j<MBS; j++) p2[i*MBS+j] = u2[i*step*MBS+j];                                            \
+        } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unknown SFPack optimzation type %D",opt->type[r]);   \
+      }                                                                                                      \
+    }                                                                                                        \
+    PetscFunctionReturn(0);                                                                                  \
   }
 
 /* DEF_Action - macro defining a Unpack(Fetch)AndInsert routine
 
    Arguments:
   +action     Unpack or Fetch
-  .type       Type of the data
+  .Type       Type of the data
   .BS         Block size for vectorization
+  .EQ        (bs == BS) ? 1 : 0. EQ is a compile-time const.
   .FILTER     Macro defining what to do with a statement, either EXECUTE or IGNORE
-  .ctype      Type with or without the const qualifier, i.e., const type or type
-  .cvoid      void with or without the const qualifier, i.e., const void or void
+  .CType      Type with or without the const qualifier, i.e., const Type or Type
+  .Cvoid      void with or without the const qualifier, i.e., const void or void
 
   Notes:
    This macro is not combined with DEF_ActionAndOp because we want to use memcpy in this macro.
-   The two arguments ctype and cvoid are used (instead of one constness argument), because we want to
+   The two arguments CType and Cvoid are used (instead of one constness argument), because we want to
    get rid of compilation warning "empty macro arguments are undefined in ISO C90". With one constness argument,
    sometimes we input 'const', sometimes we have to input empty.
+
+   If action is Fetch, we may do Malloc/Free in the routine. It is costly but the expectation is that this case is really rare.
  */
-#define DEF_Action(action,type,BS,FILTER,ctype,cvoid)               \
-  static PetscErrorCode CPPJoin3_(action##AndInsert_,type,BS)(PetscInt n,PetscInt bs,const PetscInt *idx,PetscInt r,PetscSFPackOpt opt,void *unpacked,cvoid *packed) { \
-    PetscErrorCode ierr;                                                                                   \
-    type           *u = (type*)unpacked,*u2;                                                               \
-    ctype          *p = (ctype*)packed;                                                                    \
-    PetscInt       i,j,k,l,step;                                                                           \
-    PetscFunctionBegin;                                                                                    \
-    if (!idx) {  /* idx[] is contiguous */                                                                 \
-      FILTER(type *v);                                                                                     \
-      FILTER(ierr = PetscMalloc1(bs*n,&v);CHKERRQ(ierr));                                                  \
-      FILTER(ierr = PetscArraycpy(v,u,bs*n);CHKERRQ(ierr));                                                \
-             ierr = PetscArraycpy(u,p,bs*n);CHKERRQ(ierr);                                                 \
-      FILTER(ierr = PetscArraycpy(p,v,bs*n);CHKERRQ(ierr));                                                \
-      FILTER(ierr = PetscFree(v);CHKERRQ(ierr));                                                           \
-    } else if (!opt || !opt->optimized[r]) { /* idx[] is not optimized*/                                   \
-      for (i=0; i<n; i++) {                                                                                \
-        for (j=0; j<bs; j+=BS) {                                                                           \
-          for (k=j; k<j+BS; k++) {                                                                         \
-            FILTER(type t = u[idx[i]*bs+k]);                                                               \
-            u[idx[i]*bs+k] = p[i*bs+k];                                                                    \
-            FILTER(p[i*bs+k] = t);                                                                         \
-          }                                                                                                \
-        }                                                                                                  \
-      }                                                                                                    \
-    } else { /* idx[] is optimized*/                                                                       \
-      if (opt->copy_offset[r] != opt->copy_offset[r+1]) { /* idx[] is piece-wise contiguous */             \
-        FILTER(type *v);                                                                                   \
-        FILTER(ierr = PetscMalloc1(bs*n,&v);CHKERRQ(ierr)); /* maximal buffer  */                          \
-        for (i=opt->copy_offset[r]; i<opt->copy_offset[r+1]; i++) { /* i-th piece */                       \
-          l  = opt->copy_length[i]*bs; /* length in types */                                               \
-          u2 = u + opt->copy_start[i]*bs;                                                                  \
-          FILTER(ierr = PetscArraycpy(v,u2,l);CHKERRQ(ierr));                                              \
-                 ierr = PetscArraycpy(u2,p,l);CHKERRQ(ierr);                                               \
-          FILTER(ierr = PetscArraycpy(p,v,l);CHKERRQ(ierr));                                               \
-          p += l;                                                                                          \
-        }                                                                                                  \
-        FILTER(ierr = PetscFree(v);CHKERRQ(ierr));                                                         \
-      } else { /* idx[] is strided */                                                                      \
-        u   += opt->stride_first[r]*bs;                                                                    \
-        step = opt->stride_step[r];                                                                        \
-        for (i=0; i<opt->stride_n[r]; i++)                                                                 \
-          for (j=0; j<bs; j++) {                                                                           \
-            FILTER(type t = u[i*step*bs+j]);                                                               \
-            u[i*step*bs+j] = p[i*bs+j];                                                                    \
-            FILTER(p[i*bs+j] = t);                                                                         \
-          }                                                                                                \
-      }                                                                                                    \
-    }                                                                                                      \
-    PetscFunctionReturn(0);                                                                                \
+#define DEF_Action(action,Type,BS,EQ,FILTER,CType,Cvoid)               \
+  static PetscErrorCode CPPJoin4(action##AndInsert,Type,BS,EQ)(PetscInt count,const PetscInt *idx,PetscInt bs,PetscSFPackOpt opt,void *unpacked,Cvoid *packed) \
+  {                                                                                                          \
+    PetscErrorCode ierr;                                                                                     \
+    Type           *u = (Type*)unpacked,*u2;                                                                 \
+    CType          *p = (CType*)packed,*p2;                                                                  \
+    PetscInt       i,j,k,l,r,step;                                                                           \
+    const PetscInt *idx2,M = (EQ) ? 1 : bs/BS; /* If EQ, then M=1 enables compiler's const-propagation */    \
+    const PetscInt MBS = M*BS; /* MBS=bs. We turn MBS into a compile time const when EQ=1. */                \
+    PetscFunctionBegin;                                                                                      \
+    if (!idx) {                                                                                              \
+      FILTER(Type *v);                                                                                       \
+      FILTER(ierr = PetscMalloc1(count*MBS,&v);CHKERRQ(ierr));                                               \
+      FILTER(ierr = PetscArraycpy(v,u,count*MBS);CHKERRQ(ierr));                                             \
+             ierr = PetscArraycpy(u,p,count*MBS);CHKERRQ(ierr);                                              \
+      FILTER(ierr = PetscArraycpy(p,v,count*MBS);CHKERRQ(ierr));                                             \
+      FILTER(ierr = PetscFree(v);CHKERRQ(ierr));                                                             \
+    } else if (!opt) { /* No optimizations available */                                                      \
+      for (i=0; i<count; i++)                                                                                \
+        for (j=0; j<M; j++)                                                                                  \
+          for (k=0; k<BS; k++) {                                                                             \
+            FILTER(Type t                = u[idx[i]*MBS+j*BS+k]);                                            \
+                   u[idx[i]*MBS+j*BS+k]  = p[i*MBS+j*BS+k];                                                  \
+            FILTER(p[i*MBS+j*BS+k]       = t);                                                               \
+          }                                                                                                  \
+    } else {                                                                                                 \
+      for (r=0; r<opt->n; r++) {                                                                             \
+        p2 = p + opt->offset[r]*MBS;                                                                         \
+        if (opt->type[r] == PETSCSF_PACKOPT_NONE) {                                                          \
+          idx2 = idx + opt->offset[r];                                                                       \
+          for (i=0; i<opt->offset[r+1]-opt->offset[r]; i++)                                                  \
+            for (j=0; j<M; j++)                                                                              \
+              for (k=0; k<BS; k++) {                                                                         \
+                FILTER(Type t                = u[idx2[i]*MBS+j*BS+k]);                                       \
+                       u[idx2[i]*MBS+j*BS+k] = p2[i*MBS+j*BS+k];                                             \
+                FILTER(p2[i*MBS+j*BS+k]      = t);                                                           \
+              }                                                                                              \
+        } else if (opt->type[r] == PETSCSF_PACKOPT_MULTICOPY) {                                              \
+          FILTER(Type *v);                                                                                   \
+          FILTER(ierr = PetscMalloc1((opt->offset[r+1]-opt->offset[r])*MBS,&v);CHKERRQ(ierr)); /* max buf */ \
+          for (i=opt->copy_offset[r]; i<opt->copy_offset[r+1]; i++) { /* i-th piece */                       \
+            u2 = u + idx[opt->copy_start[i]]*MBS;                                                            \
+            l  = opt->copy_length[i]*MBS;                                                                    \
+            FILTER(ierr = PetscArraycpy(v,u2,l);CHKERRQ(ierr));                                              \
+                   ierr = PetscArraycpy(u2,p2,l);CHKERRQ(ierr);                                              \
+            FILTER(ierr = PetscArraycpy(p2,v,l);CHKERRQ(ierr));                                              \
+            p2 += l;                                                                                         \
+          }                                                                                                  \
+          FILTER(ierr = PetscFree(v);CHKERRQ(ierr));                                                         \
+        } else if (opt->type[r] == PETSCSF_PACKOPT_STRIDE) {                                                 \
+          u2   = u + idx[opt->offset[r]]*MBS;                                                                \
+          step = opt->stride_step[r];                                                                        \
+          for (i=0; i<opt->stride_n[r]; i++)                                                                 \
+            for (j=0; j<M; j++)                                                                              \
+              for (k=0; k<BS; k++) {                                                                         \
+                FILTER(Type t                = u2[i*step*MBS+j*BS+k]);                                       \
+                       u2[i*step*MBS+j*BS+k] = p2[i*MBS+j*BS+k];                                             \
+                FILTER(p2[i*MBS+j*BS+k]      = t);                                                           \
+              }                                                                                              \
+        } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unknown SFPack optimzation type %D",opt->type[r]);   \
+      }                                                                                                      \
+    }                                                                                                        \
+    PetscFunctionReturn(0);                                                                                  \
   }
 
 /* DEF_ActionAndOp - macro defining a Unpack(Fetch)AndOp routine. Op can not be Insert, Maxloc or Minloc
@@ -144,60 +169,77 @@
    Arguments:
   +action     Unpack or Fetch
   .opname     Name of the Op, such as Add, Mult, LAND, etc.
-  .type       Type of the data
+  .Type       Type of the data
   .BS         Block size for vectorization
+  .EQ         (bs == BS) ? 1 : 0. EQ is a compile-time const.
   .op         Operator for the op, such as +, *, &&, ||, PetscMax, PetscMin, etc.
   .APPLY      Macro defining application of the op. Could be BINARY_OP, FUNCTION_OP, LXOR_OP or PAIRTYPE_OP
   .FILTER     Macro defining what to do with a statement, either EXECUTE or IGNORE
-  .ctype      Type with or without the const qualifier, i.e., const type or type
-  -cvoid      void with or without the const qualifier, i.e., const void or void
+  .CType      Type with or without the const qualifier, i.e., const Type or Type
+  -Cvoid      void with or without the const qualifier, i.e., const void or void
  */
-#define DEF_ActionAndOp(action,opname,type,BS,op,APPLY,FILTER,ctype,cvoid) \
-  static PetscErrorCode CPPJoin3_(action##And##opname##_,type,BS)(PetscInt n,PetscInt bs,const PetscInt *idx,PetscInt r,PetscSFPackOpt opt,void *unpacked,cvoid *packed) { \
-    type     *u = (type*)unpacked,*u2,t;                                                                   \
-    ctype    *p = (ctype*)packed;                                                                          \
-    PetscInt i,j,k,l,step;                                                                                 \
-    PetscFunctionBegin;                                                                                    \
-    if (!idx) {  /* idx[] is contiguous */                                                                 \
-      for (i=0; i<n*bs; i++) {                                                                             \
-        t = u[i];                                                                                          \
-        APPLY(u[i],t,op,p[i]);                                                                             \
-        FILTER(p[i] = t);                                                                                  \
-      }                                                                                                    \
-    } else if (!opt || !opt->optimized[r]) { /* idx[] is not optimized*/                                   \
-      for (i=0; i<n; i++) {                                                                                \
-        for (j=0; j<bs; j+=BS) {                                                                           \
-          for (k=j; k<j+BS; k++) {                                                                         \
-            t = u[idx[i]*bs+k];                                                                            \
-            APPLY(u[idx[i]*bs+k],t,op,p[i*bs+k]);                                                          \
-            FILTER(p[i*bs+k] = t);                                                                         \
-          }                                                                                                \
-        }                                                                                                  \
-      }                                                                                                    \
-    } else { /* idx[] is optimized*/                                                                       \
-      if (opt->copy_offset[r] != opt->copy_offset[r+1]) { /* idx[] is piece-wise contiguous */             \
-        for (i=opt->copy_offset[r]; i<opt->copy_offset[r+1]; i++) { /* i-th piece */                       \
-          l  = opt->copy_length[i]*bs; /* length in types */                                               \
-          u2 = u + opt->copy_start[i]*bs;                                                                  \
-          for (j=0; j<l; j++) {                                                                            \
-            t = u2[j];                                                                                     \
-            APPLY(u2[j],t,op,p[j]);                                                                        \
-            FILTER(p[j] = t);                                                                              \
-          }                                                                                                \
-          p += l;                                                                                          \
-        }                                                                                                  \
-      } else { /* idx[] is strided */                                                                      \
-        u   += opt->stride_first[r]*bs;                                                                    \
-        step = opt->stride_step[r];                                                                        \
-        for (i=0; i<opt->stride_n[r]; i++)                                                                 \
-          for (j=0; j<bs; j++) {                                                                           \
-            t = u[i*step*bs+j];                                                                            \
-            APPLY(u[i*step*bs+j],t,op,p[i*bs+j]);                                                          \
-            FILTER(p[i*bs+j] = t);                                                                         \
-          }                                                                                                \
-      }                                                                                                    \
-    }                                                                                                      \
-    PetscFunctionReturn(0);                                                                                \
+#define DEF_ActionAndOp(action,opname,Type,BS,EQ,op,APPLY,FILTER,CType,Cvoid) \
+  static PetscErrorCode CPPJoin4(action##And##opname,Type,BS,EQ)(PetscInt count,const PetscInt *idx,PetscInt bs,PetscSFPackOpt opt,void *unpacked,Cvoid *packed) \
+  {                                                                                                          \
+    Type           *u = (Type*)unpacked,*u2,t;                                                               \
+    CType          *p = (CType*)packed,*p2;                                                                  \
+    PetscInt       i,j,k,l,r,step;                                                                           \
+    const PetscInt *idx2,M = (EQ) ? 1 : bs/BS; /* If EQ, then M=1 enables compiler's const-propagation */    \
+    const PetscInt MBS = M*BS; /* MBS=bs. We turn MBS into a compile time const when EQ=1. */                \
+    PetscFunctionBegin;                                                                                      \
+    if (!idx) {                                                                                              \
+      for (i=0; i<count; i++)                                                                                \
+        for (j=0; j<M; j++)                                                                                  \
+          for (k=0; k<BS; k++) {                                                                             \
+            t    = u[i*MBS+j*BS+k];                                                                          \
+            APPLY (u[i*MBS+j*BS+k],t,op,p[i*MBS+j*BS+k]);                                                    \
+            FILTER(p[i*MBS+j*BS+k] = t);                                                                     \
+          }                                                                                                  \
+    } else if (!opt) { /* No optimizations available */                                                      \
+      for (i=0; i<count; i++)                                                                                \
+        for (j=0; j<M; j++)                                                                                  \
+          for (k=0; k<BS; k++) {                                                                             \
+              t    = u[idx[i]*MBS+j*BS+k];                                                                   \
+              APPLY (u[idx[i]*MBS+j*BS+k],t,op,p[i*MBS+j*BS+k]);                                             \
+              FILTER(p[i*MBS+j*BS+k] = t);                                                                   \
+          }                                                                                                  \
+    } else {                                                                                                 \
+      for (r=0; r<opt->n; r++) {                                                                             \
+        p2 = p + opt->offset[r]*MBS;                                                                         \
+        if (opt->type[r] == PETSCSF_PACKOPT_NONE) {                                                          \
+          idx2 = idx + opt->offset[r];                                                                       \
+          for (i=0; i<opt->offset[r+1]-opt->offset[r]; i++)                                                  \
+            for (j=0; j<M; j++)                                                                              \
+              for (k=0; k<BS; k++) {                                                                         \
+                t    = u[idx2[i]*MBS+j*BS+k];                                                                \
+                APPLY (u[idx2[i]*MBS+j*BS+k],t,op,p2[i*MBS+j*BS+k]);                                         \
+                FILTER(p2[i*MBS+j*BS+k] = t);                                                                \
+              }                                                                                              \
+        } else if (opt->type[r] == PETSCSF_PACKOPT_MULTICOPY) {                                              \
+          for (i=opt->copy_offset[r]; i<opt->copy_offset[r+1]; i++) { /* i-th piece */                       \
+            u2 = u + idx[opt->copy_start[i]]*MBS;                                                            \
+            l  = opt->copy_length[i]*MBS;                                                                    \
+            for (j=0; j<l; j++) {                                                                            \
+              t    = u2[j];                                                                                  \
+              APPLY (u2[j],t,op,p2[j]);                                                                      \
+              FILTER(p2[j] = t);                                                                             \
+            }                                                                                                \
+            p2 += l;                                                                                         \
+          }                                                                                                  \
+        } else if (opt->type[r] == PETSCSF_PACKOPT_STRIDE) {                                                 \
+          u2   = u + idx[opt->offset[r]]*MBS;                                                                \
+          step = opt->stride_step[r];                                                                        \
+          for (i=0; i<opt->stride_n[r]; i++)                                                                 \
+            for (j=0; j<M; j++)                                                                              \
+              for (k=0; k<BS; k++) {                                                                         \
+                t    = u2[i*step*MBS+j*BS+k];                                                                \
+                APPLY (u2[i*step*MBS+j*BS+k],t,op,p2[i*MBS+j*BS+k]);                                         \
+                FILTER(p2[i*MBS+j*BS+k] = t);                                                                \
+              }                                                                                              \
+        } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unknown SFPack optimzation type %D",opt->type[r]);   \
+      }                                                                                                      \
+    }                                                                                                        \
+    PetscFunctionReturn(0);                                                                                  \
   }
 
 /* DEF_ActionAndXloc - macro defining a Unpack(Fetch)AndMaxloc(Minloc) routine
@@ -209,200 +251,248 @@
   .type2      Type of the second data in a pair type, usually PetscMPIInt for MPI ranks.
   .op         > or <
   .FILTER     Macro defining what to do with a statement, either EXECUTE or IGNORE
-  .ctype      Type with or without the const qualifier, i.e., const PairType(type1,type2) or PairType(type1,type2)
-  -cvoid      void with or without the const qualifier, i.e., const void or void
+  .CType      Type with or without the const qualifier, i.e., const PairType(Type1,Type2) or PairType(Type1,Type2)
+  -Cvoid      void with or without the const qualifier, i.e., const void or void
  */
-#define DEF_ActionAndXloc(action,locname,type1,type2,op,FILTER,ctype,cvoid) \
-  static PetscErrorCode CPPJoin3_(action##And##locname##loc_,PairType(type1,type2),1)(PetscInt n,PetscInt bs,const PetscInt *idx,PetscInt r,PetscSFPackOpt opt,void *unpacked,cvoid *packed) { \
-    PairType(type1,type2) *u = (PairType(type1,type2)*)unpacked;                                           \
-    ctype                 *p = (ctype*)packed;                                                             \
-    PetscInt              i;                                                                               \
-    for (i=0; i<n; i++) {                                                                                  \
-      PetscInt j = idx[i];                                                                                 \
-      FILTER(PairType(type1,type2) v = u[j]);                                                              \
-      if (p[i].a op u[j].a) {                                                                              \
-        u[j] = p[i];                                                                                       \
-      } else if (p[i].a == u[j].a) {                                                                       \
-        u[j].b = PetscMin(u[j].b,p[i].b); /* Minimal rank. Ref MPI MAXLOC */                               \
-      }                                                                                                    \
-      FILTER(p[i] = v);                                                                                    \
-    }                                                                                                      \
-    PetscFunctionReturn(0);                                                                                \
+#define DEF_ActionAndXloc(action,locname,Type1,Type2,op,FILTER,CType,Cvoid) \
+  static PetscErrorCode CPPJoin4(action##And##locname##loc,PairType(Type1,Type2),1,1)(PetscInt count,const PetscInt *idx,PetscInt bs,PetscSFPackOpt opt,void *unpacked,Cvoid *packed) { \
+    PairType(Type1,Type2) *u = (PairType(Type1,Type2)*)unpacked;                                             \
+    CType                 *p = (CType*)packed;                                                               \
+    PetscInt              i,j;                                                                               \
+    for (i=0; i<count; i++) {                                                                                \
+      j = idx? idx[i] : i;                                                                                   \
+      FILTER(PairType(Type1,Type2) v = u[j]);                                                                \
+      if (p[i].a op u[j].a) {                                                                                \
+        u[j] = p[i];                                                                                         \
+      } else if (p[i].a == u[j].a) {                                                                         \
+        u[j].b = PetscMin(u[j].b,p[i].b); /* Minimal rank. Ref MPI MAXLOC */                                 \
+      }                                                                                                      \
+      FILTER(p[i] = v);                                                                                      \
+    }                                                                                                        \
+    PetscFunctionReturn(0);                                                                                  \
   }
 
-
-/* Pack/unpack/fetch ops for all types */
-#define DEF_PackNoInit(type,BS)                                                         \
-  DEF_PackFunc(type,BS)                                                                 \
-  DEF_Action(Unpack,type,BS,IGNORE,const type,const void)                               \
-  DEF_Action(Fetch, type,BS,EXECUTE,type,void)                                          \
-
-
-/* Extra addition ops for types supporting them */
-#define DEF_PackAddNoInit(type,BS)                                                      \
-  DEF_PackNoInit(type,BS)                                                               \
-  DEF_ActionAndOp(Unpack,Add, type,BS,+,BINARY_OP,IGNORE,const type,const void)         \
-  DEF_ActionAndOp(Unpack,Mult,type,BS,*,BINARY_OP,IGNORE,const type,const void)         \
-  DEF_ActionAndOp(Fetch, Add, type,BS,+,BINARY_OP,EXECUTE,type,void)                    \
-  DEF_ActionAndOp(Fetch, Mult,type,BS,*,BINARY_OP,EXECUTE,type,void)
-
-/* Basic types */
-#define DEF_Pack(type,BS)                                                               \
-  DEF_PackAddNoInit(type,BS)                                                            \
-  static void CPPJoin3_(PackInit_,type,BS)(PetscSFPack link) {                          \
-    link->Pack            = CPPJoin3_(Pack_,           type,BS);                        \
-    link->UnpackAndInsert = CPPJoin3_(UnpackAndInsert_,type,BS);                        \
-    link->UnpackAndAdd    = CPPJoin3_(UnpackAndAdd_,   type,BS);                        \
-    link->UnpackAndMult   = CPPJoin3_(UnpackAndMult_,  type,BS);                        \
-    link->FetchAndInsert  = CPPJoin3_(FetchAndInsert_, type,BS);                        \
-    link->FetchAndAdd     = CPPJoin3_(FetchAndAdd_,    type,BS);                        \
-    link->FetchAndMult    = CPPJoin3_(FetchAndMult_,   type,BS);                        \
-    link->unitbytes       = sizeof(type);                                               \
+/* Pack, Unpack/Fetch ops */
+#define DEF_Pack(Type,BS,EQ)                                                                   \
+  DEF_PackFunc(Type,BS,EQ)                                                                     \
+  DEF_Action(Unpack,Type,BS,EQ,IGNORE,const Type,const void)                                   \
+  DEF_Action(Fetch, Type,BS,EQ,EXECUTE,Type,void)                                              \
+  static void CPPJoin4(PackInit_Pack,Type,BS,EQ)(PetscSFPack link) {                           \
+    link->Pack            = CPPJoin4(Pack,           Type,BS,EQ);                              \
+    link->UnpackAndInsert = CPPJoin4(UnpackAndInsert,Type,BS,EQ);                              \
+    link->FetchAndInsert  = CPPJoin4(FetchAndInsert, Type,BS,EQ);                              \
+    link->unitbytes       = sizeof(Type);                                                      \
   }
 
-/* Comparable types */
-#define DEF_PackCmp(type)                                                               \
-  DEF_PackAddNoInit(type,1)                                                             \
-  DEF_ActionAndOp(Unpack,Max,type,1,PetscMax,FUNCTION_OP,IGNORE,const type,const void)  \
-  DEF_ActionAndOp(Unpack,Min,type,1,PetscMin,FUNCTION_OP,IGNORE,const type,const void)  \
-  DEF_ActionAndOp(Fetch, Max,type,1,PetscMax,FUNCTION_OP,EXECUTE,type,void)             \
-  DEF_ActionAndOp(Fetch, Min,type,1,PetscMin,FUNCTION_OP,EXECUTE,type,void)             \
-  static void CPPJoin2(PackInit_,type)(PetscSFPack link) {                              \
-    link->Pack            = CPPJoin3_(Pack_,           type,1);                         \
-    link->UnpackAndInsert = CPPJoin3_(UnpackAndInsert_,type,1);                         \
-    link->UnpackAndAdd    = CPPJoin3_(UnpackAndAdd_,   type,1);                         \
-    link->UnpackAndMult   = CPPJoin3_(UnpackAndMult_,  type,1);                         \
-    link->UnpackAndMax    = CPPJoin3_(UnpackAndMax_,   type,1);                         \
-    link->UnpackAndMin    = CPPJoin3_(UnpackAndMin_,   type,1);                         \
-    link->FetchAndInsert  = CPPJoin3_(FetchAndInsert_, type,1);                         \
-    link->FetchAndAdd     = CPPJoin3_(FetchAndAdd_ ,   type,1);                         \
-    link->FetchAndMult    = CPPJoin3_(FetchAndMult_,   type,1);                         \
-    link->FetchAndMax     = CPPJoin3_(FetchAndMax_ ,   type,1);                         \
-    link->FetchAndMin     = CPPJoin3_(FetchAndMin_ ,   type,1);                         \
-    link->unitbytes       = sizeof(type);                                               \
+/* Add, Mult ops */
+#define DEF_Add(Type,BS,EQ)                                                                    \
+  DEF_ActionAndOp(Unpack,Add, Type,BS,EQ,+,BINARY_OP,IGNORE,const Type,const void)             \
+  DEF_ActionAndOp(Unpack,Mult,Type,BS,EQ,*,BINARY_OP,IGNORE,const Type,const void)             \
+  DEF_ActionAndOp(Fetch, Add, Type,BS,EQ,+,BINARY_OP,EXECUTE,Type,void)                        \
+  DEF_ActionAndOp(Fetch, Mult,Type,BS,EQ,*,BINARY_OP,EXECUTE,Type,void)                        \
+  static void CPPJoin4(PackInit_Add,Type,BS,EQ)(PetscSFPack link) {                            \
+    link->UnpackAndAdd    = CPPJoin4(UnpackAndAdd,   Type,BS,EQ);                              \
+    link->UnpackAndMult   = CPPJoin4(UnpackAndMult,  Type,BS,EQ);                              \
+    link->FetchAndAdd     = CPPJoin4(FetchAndAdd,    Type,BS,EQ);                              \
+    link->FetchAndMult    = CPPJoin4(FetchAndMult,   Type,BS,EQ);                              \
   }
 
-/* Logical Types */
-/* The operator in LXOR_OP should be empty but is &. It is not used. Put here to avoid
-   the compilation warning "empty macro arguments are undefined in ISO C90"
+/* Max, Min ops */
+#define DEF_Cmp(Type,BS,EQ)                                                                    \
+  DEF_ActionAndOp(Unpack,Max,Type,BS,EQ,PetscMax,FUNCTION_OP,IGNORE,const Type,const void)     \
+  DEF_ActionAndOp(Unpack,Min,Type,BS,EQ,PetscMin,FUNCTION_OP,IGNORE,const Type,const void)     \
+  DEF_ActionAndOp(Fetch, Max,Type,BS,EQ,PetscMax,FUNCTION_OP,EXECUTE,Type,void)                \
+  DEF_ActionAndOp(Fetch, Min,Type,BS,EQ,PetscMin,FUNCTION_OP,EXECUTE,Type,void)                \
+  static void CPPJoin4(PackInit_Compare,Type,BS,EQ)(PetscSFPack link) {                        \
+    link->UnpackAndMax    = CPPJoin4(UnpackAndMax,   Type,BS,EQ);                              \
+    link->UnpackAndMin    = CPPJoin4(UnpackAndMin,   Type,BS,EQ);                              \
+    link->FetchAndMax     = CPPJoin4(FetchAndMax ,   Type,BS,EQ);                              \
+    link->FetchAndMin     = CPPJoin4(FetchAndMin ,   Type,BS,EQ);                              \
+  }
+
+/* Logical ops.
+  The operator in LXOR_OP should be empty but is &. It is not used. Put here to avoid
+  the compilation warning "empty macro arguments are undefined in ISO C90"
  */
-#define DEF_PackLog(type)                                                               \
-  DEF_ActionAndOp(Unpack,LAND,type,1,&&,BINARY_OP,IGNORE,const type,const void)         \
-  DEF_ActionAndOp(Unpack,LOR, type,1,||,BINARY_OP,IGNORE,const type,const void)         \
-  DEF_ActionAndOp(Unpack,LXOR,type,1,&, LXOR_OP,  IGNORE,const type,const void)         \
-  DEF_ActionAndOp(Fetch, LAND,type,1,&&,BINARY_OP,EXECUTE,type,void)                    \
-  DEF_ActionAndOp(Fetch, LOR, type,1,||,BINARY_OP,EXECUTE,type,void)                    \
-  DEF_ActionAndOp(Fetch, LXOR,type,1,&, LXOR_OP,  EXECUTE,type,void)                    \
-  static void CPPJoin2(PackInit_Logical_,type)(PetscSFPack link) {                      \
-    link->UnpackAndLAND   = CPPJoin3_(UnpackAndLAND_,type,1);                           \
-    link->UnpackAndLOR    = CPPJoin3_(UnpackAndLOR_, type,1);                           \
-    link->UnpackAndLXOR   = CPPJoin3_(UnpackAndLXOR_,type,1);                           \
-    link->FetchAndLAND    = CPPJoin3_(FetchAndLAND_, type,1);                           \
-    link->FetchAndLOR     = CPPJoin3_(FetchAndLOR_,  type,1);                           \
-    link->FetchAndLXOR    = CPPJoin3_(FetchAndLXOR_, type,1);                           \
+#define DEF_Log(Type,BS,EQ)                                                                    \
+  DEF_ActionAndOp(Unpack,LAND,Type,BS,EQ,&&,BINARY_OP,IGNORE,const Type,const void)            \
+  DEF_ActionAndOp(Unpack,LOR, Type,BS,EQ,||,BINARY_OP,IGNORE,const Type,const void)            \
+  DEF_ActionAndOp(Unpack,LXOR,Type,BS,EQ,&, LXOR_OP,  IGNORE,const Type,const void)            \
+  DEF_ActionAndOp(Fetch, LAND,Type,BS,EQ,&&,BINARY_OP,EXECUTE,Type,void)                       \
+  DEF_ActionAndOp(Fetch, LOR, Type,BS,EQ,||,BINARY_OP,EXECUTE,Type,void)                       \
+  DEF_ActionAndOp(Fetch, LXOR,Type,BS,EQ,&, LXOR_OP,  EXECUTE,Type,void)                       \
+  static void CPPJoin4(PackInit_Logical,Type,BS,EQ)(PetscSFPack link) {                        \
+    link->UnpackAndLAND   = CPPJoin4(UnpackAndLAND,Type,BS,EQ);                                \
+    link->UnpackAndLOR    = CPPJoin4(UnpackAndLOR, Type,BS,EQ);                                \
+    link->UnpackAndLXOR   = CPPJoin4(UnpackAndLXOR,Type,BS,EQ);                                \
+    link->FetchAndLAND    = CPPJoin4(FetchAndLAND, Type,BS,EQ);                                \
+    link->FetchAndLOR     = CPPJoin4(FetchAndLOR,  Type,BS,EQ);                                \
+    link->FetchAndLXOR    = CPPJoin4(FetchAndLXOR, Type,BS,EQ);                                \
   }
 
-
-/* Bitwise Types */
-#define DEF_PackBit(type)                                                               \
-  DEF_ActionAndOp(Unpack,BAND,type,1,&,BINARY_OP,IGNORE,const type,const void)          \
-  DEF_ActionAndOp(Unpack,BOR, type,1,|,BINARY_OP,IGNORE,const type,const void)          \
-  DEF_ActionAndOp(Unpack,BXOR,type,1,^,BINARY_OP,IGNORE,const type,const void)          \
-  DEF_ActionAndOp(Fetch, BAND,type,1,&,BINARY_OP,EXECUTE,type,void)                     \
-  DEF_ActionAndOp(Fetch, BOR, type,1,|,BINARY_OP,EXECUTE,type,void)                     \
-  DEF_ActionAndOp(Fetch, BXOR,type,1,^,BINARY_OP,EXECUTE,type,void)                     \
-  static void CPPJoin2(PackInit_Bitwise_,type)(PetscSFPack link) {                      \
-    link->UnpackAndBAND   = CPPJoin3_(UnpackAndBAND_,type,1);                           \
-    link->UnpackAndBOR    = CPPJoin3_(UnpackAndBOR_, type,1);                           \
-    link->UnpackAndBXOR   = CPPJoin3_(UnpackAndBXOR_,type,1);                           \
-    link->FetchAndBAND    = CPPJoin3_(FetchAndBAND_, type,1);                           \
-    link->FetchAndBOR     = CPPJoin3_(FetchAndBOR_,  type,1);                           \
-    link->FetchAndBXOR    = CPPJoin3_(FetchAndBXOR_, type,1);                           \
+/* Bitwise ops */
+#define DEF_Bit(Type,BS,EQ)                                                                    \
+  DEF_ActionAndOp(Unpack,BAND,Type,BS,EQ,&,BINARY_OP,IGNORE,const Type,const void)             \
+  DEF_ActionAndOp(Unpack,BOR, Type,BS,EQ,|,BINARY_OP,IGNORE,const Type,const void)             \
+  DEF_ActionAndOp(Unpack,BXOR,Type,BS,EQ,^,BINARY_OP,IGNORE,const Type,const void)             \
+  DEF_ActionAndOp(Fetch, BAND,Type,BS,EQ,&,BINARY_OP,EXECUTE,Type,void)                        \
+  DEF_ActionAndOp(Fetch, BOR, Type,BS,EQ,|,BINARY_OP,EXECUTE,Type,void)                        \
+  DEF_ActionAndOp(Fetch, BXOR,Type,BS,EQ,^,BINARY_OP,EXECUTE,Type,void)                        \
+  static void CPPJoin4(PackInit_Bitwise,Type,BS,EQ)(PetscSFPack link) {                        \
+    link->UnpackAndBAND   = CPPJoin4(UnpackAndBAND,Type,BS,EQ);                                \
+    link->UnpackAndBOR    = CPPJoin4(UnpackAndBOR, Type,BS,EQ);                                \
+    link->UnpackAndBXOR   = CPPJoin4(UnpackAndBXOR,Type,BS,EQ);                                \
+    link->FetchAndBAND    = CPPJoin4(FetchAndBAND, Type,BS,EQ);                                \
+    link->FetchAndBOR     = CPPJoin4(FetchAndBOR,  Type,BS,EQ);                                \
+    link->FetchAndBXOR    = CPPJoin4(FetchAndBXOR, Type,BS,EQ);                                \
   }
 
-
-/* Pair types */
-#define DEF_PackPair(type1,type2)                                                                                   \
-  typedef struct {type1 a; type2 b;} PairType(type1,type2);                                                         \
-  DEF_PackFunc(PairType(type1,type2),1)                                                                             \
-  DEF_Action(Unpack,PairType(type1,type2),1,IGNORE,const PairType(type1,type2),const void)                          \
-  DEF_Action(Fetch, PairType(type1,type2),1,EXECUTE,PairType(type1,type2),void)                                     \
-  DEF_ActionAndOp(Unpack,Add,PairType(type1,type2),1,+,PAIRTYPE_OP,IGNORE,const PairType(type1,type2),const void)   \
-  DEF_ActionAndOp(Fetch, Add,PairType(type1,type2),1,+,PAIRTYPE_OP,EXECUTE,PairType(type1,type2),void)              \
-  DEF_ActionAndXloc(Unpack,Max,type1,type2,>,IGNORE,const PairType(type1,type2),const void)                         \
-  DEF_ActionAndXloc(Unpack,Min,type1,type2,<,IGNORE,const PairType(type1,type2),const void)                         \
-  DEF_ActionAndXloc(Fetch, Max,type1,type2,>,EXECUTE,PairType(type1,type2),void)                                    \
-  DEF_ActionAndXloc(Fetch, Min,type1,type2,<,EXECUTE,PairType(type1,type2),void)                                    \
-  static void CPPJoin3_(PackInit_,type1,type2)(PetscSFPack link) {                                                  \
-    link->Pack            = CPPJoin3_(Pack_,           PairType(type1,type2),1);                                    \
-    link->UnpackAndInsert = CPPJoin3_(UnpackAndInsert_,PairType(type1,type2),1);                                    \
-    link->UnpackAndAdd    = CPPJoin3_(UnpackAndAdd_,   PairType(type1,type2),1);                                    \
-    link->UnpackAndMaxloc = CPPJoin3_(UnpackAndMaxloc_,PairType(type1,type2),1);                                    \
-    link->UnpackAndMinloc = CPPJoin3_(UnpackAndMinloc_,PairType(type1,type2),1);                                    \
-    link->FetchAndInsert  = CPPJoin3_(FetchAndInsert_, PairType(type1,type2),1);                                    \
-    link->FetchAndAdd     = CPPJoin3_(FetchAndAdd_,    PairType(type1,type2),1);                                    \
-    link->FetchAndMaxloc  = CPPJoin3_(FetchAndMaxloc_, PairType(type1,type2),1);                                    \
-    link->FetchAndMinloc  = CPPJoin3_(FetchAndMinloc_, PairType(type1,type2),1);                                    \
-    link->unitbytes       = sizeof(PairType(type1,type2));                                                          \
+/* Maxloc, Minloc */
+#define DEF_Xloc(Type1,Type2)                                                                  \
+  DEF_ActionAndXloc(Unpack,Max,Type1,Type2,>,IGNORE,const PairType(Type1,Type2),const void)    \
+  DEF_ActionAndXloc(Unpack,Min,Type1,Type2,<,IGNORE,const PairType(Type1,Type2),const void)    \
+  DEF_ActionAndXloc(Fetch, Max,Type1,Type2,>,EXECUTE,PairType(Type1,Type2),void)               \
+  DEF_ActionAndXloc(Fetch, Min,Type1,Type2,<,EXECUTE,PairType(Type1,Type2),void)               \
+  static void CPPJoin3(PackInit_Xloc,Type1,Type2)(PetscSFPack link) {                          \
+    link->UnpackAndMaxloc = CPPJoin4(UnpackAndMaxloc,PairType(Type1,Type2),1,1);               \
+    link->UnpackAndMinloc = CPPJoin4(UnpackAndMinloc,PairType(Type1,Type2),1,1);               \
+    link->FetchAndMaxloc  = CPPJoin4(FetchAndMaxloc, PairType(Type1,Type2),1,1);               \
+    link->FetchAndMinloc  = CPPJoin4(FetchAndMinloc, PairType(Type1,Type2),1,1);               \
   }
 
-
-/* Currently only dumb blocks of data */
-#define DEF_Block(type,count)                                                           \
-  typedef struct {type v[count];} BlockType(type,count);                                \
-  DEF_PackNoInit(BlockType(type,count),1)                                               \
-  static void CPPJoin3_(PackInit_block_,type,count)(PetscSFPack link) {                 \
-    link->Pack            = CPPJoin3_(Pack_,           BlockType(type,count),1);        \
-    link->UnpackAndInsert = CPPJoin3_(UnpackAndInsert_,BlockType(type,count),1);        \
-    link->FetchAndInsert  = CPPJoin3_(FetchAndInsert_, BlockType(type,count),1);        \
-    link->unitbytes       = sizeof(BlockType(type,count));                              \
+#define DEF_IntegerType(Type,BS,EQ)                                                            \
+  DEF_Pack(Type,BS,EQ)                                                                         \
+  DEF_Add(Type,BS,EQ)                                                                          \
+  DEF_Cmp(Type,BS,EQ)                                                                          \
+  DEF_Log(Type,BS,EQ)                                                                          \
+  DEF_Bit(Type,BS,EQ)                                                                          \
+  static void CPPJoin4(PackInit_IntegerType,Type,BS,EQ)(PetscSFPack link) {                    \
+    CPPJoin4(PackInit_Pack,Type,BS,EQ)(link);                                                  \
+    CPPJoin4(PackInit_Add,Type,BS,EQ)(link);                                                   \
+    CPPJoin4(PackInit_Compare,Type,BS,EQ)(link);                                               \
+    CPPJoin4(PackInit_Logical,Type,BS,EQ)(link);                                               \
+    CPPJoin4(PackInit_Bitwise,Type,BS,EQ)(link);                                               \
   }
 
-/* The typedef is used to get a typename without space that CPPJoin can handle */
-typedef signed char SignedChar;
-typedef unsigned char UnsignedChar;
+#define DEF_RealType(Type,BS,EQ)                                                               \
+  DEF_Pack(Type,BS,EQ)                                                                         \
+  DEF_Add(Type,BS,EQ)                                                                          \
+  DEF_Cmp(Type,BS,EQ)                                                                          \
+  DEF_Log(Type,BS,EQ)                                                                          \
+  static void CPPJoin4(PackInit_RealType,Type,BS,EQ)(PetscSFPack link) {                       \
+    CPPJoin4(PackInit_Pack,Type,BS,EQ)(link);                                                  \
+    CPPJoin4(PackInit_Add,Type,BS,EQ)(link);                                                   \
+    CPPJoin4(PackInit_Compare,Type,BS,EQ)(link);                                               \
+    CPPJoin4(PackInit_Logical,Type,BS,EQ)(link);                                               \
+  }
 
-DEF_PackCmp(SignedChar)
-DEF_PackBit(SignedChar)
-DEF_PackLog(SignedChar)
-DEF_PackCmp(UnsignedChar)
-DEF_PackBit(UnsignedChar)
-DEF_PackLog(UnsignedChar)
-DEF_PackCmp(int)
-DEF_PackBit(int)
-DEF_PackLog(int)
-DEF_PackCmp(PetscInt)
-DEF_PackBit(PetscInt)
-DEF_PackLog(PetscInt)
-DEF_Pack(PetscInt,2)
-DEF_Pack(PetscInt,3)
-DEF_Pack(PetscInt,4)
-DEF_Pack(PetscInt,5)
-DEF_Pack(PetscInt,7)
-DEF_PackCmp(PetscReal)
-DEF_PackLog(PetscReal)
-DEF_Pack(PetscReal,2)
-DEF_Pack(PetscReal,3)
-DEF_Pack(PetscReal,4)
-DEF_Pack(PetscReal,5)
-DEF_Pack(PetscReal,7)
 #if defined(PETSC_HAVE_COMPLEX)
-DEF_Pack(PetscComplex,1)
-DEF_Pack(PetscComplex,2)
-DEF_Pack(PetscComplex,3)
-DEF_Pack(PetscComplex,4)
-DEF_Pack(PetscComplex,5)
-DEF_Pack(PetscComplex,7)
+#define DEF_ComplexType(Type,BS,EQ)                                                            \
+  DEF_Pack(Type,BS,EQ)                                                                         \
+  DEF_Add(Type,BS,EQ)                                                                          \
+  static void CPPJoin4(PackInit_ComplexType,Type,BS,EQ)(PetscSFPack link) {                    \
+    CPPJoin4(PackInit_Pack,Type,BS,EQ)(link);                                                  \
+    CPPJoin4(PackInit_Add,Type,BS,EQ)(link);                                                   \
+  }
 #endif
-DEF_PackPair(int,int)
-DEF_PackPair(PetscInt,PetscInt)
-DEF_Block(int,1)
-DEF_Block(int,2)
-DEF_Block(int,4)
-DEF_Block(int,8)
-DEF_Block(char,1)
-DEF_Block(char,2)
-DEF_Block(char,4)
+
+#define DEF_DumbType(Type,BS,EQ)                                                               \
+  DEF_Pack(Type,BS,EQ)                                                                         \
+  static void CPPJoin4(PackInit_DumbType,Type,BS,EQ)(PetscSFPack link) {                       \
+    CPPJoin4(PackInit_Pack,Type,BS,EQ)(link);                                                  \
+  }
+
+/* Maxloc, Minloc */
+#define DEF_PairType(Type1,Type2)                                                              \
+  typedef struct {Type1 a; Type2 b;} PairType(Type1,Type2);                                    \
+  DEF_Pack(PairType(Type1,Type2),1,1)                                                          \
+  DEF_Xloc(Type1,Type2)                                                                        \
+  static void CPPJoin3(PackInit_PairType,Type1,Type2)(PetscSFPack link) {                      \
+    CPPJoin4(PackInit_Pack,PairType(Type1,Type2),1,1)(link);                                   \
+    CPPJoin3(PackInit_Xloc,Type1,Type2)(link);                                                 \
+  }
+
+DEF_IntegerType(PetscInt,1,1) /* unit = 1 MPIU_INT  */
+DEF_IntegerType(PetscInt,2,1) /* unit = 2 MPIU_INTs */
+DEF_IntegerType(PetscInt,4,1) /* unit = 4 MPIU_INTs */
+DEF_IntegerType(PetscInt,8,1) /* unit = 8 MPIU_INTs */
+DEF_IntegerType(PetscInt,1,0) /* unit = 1*n MPIU_INTs, n>1 */
+DEF_IntegerType(PetscInt,2,0) /* unit = 2*n MPIU_INTs, n>1 */
+DEF_IntegerType(PetscInt,4,0) /* unit = 4*n MPIU_INTs, n>1 */
+DEF_IntegerType(PetscInt,8,0) /* unit = 8*n MPIU_INTs, n>1. Routines with bigger BS are tried first. */
+
+#if defined(PETSC_USE_64BIT_INDICES) /* Do not need (though it is OK) to generate redundant functions if PetscInt is int */
+DEF_IntegerType(int,1,1)
+DEF_IntegerType(int,2,1)
+DEF_IntegerType(int,4,1)
+DEF_IntegerType(int,8,1)
+DEF_IntegerType(int,1,0)
+DEF_IntegerType(int,2,0)
+DEF_IntegerType(int,4,0)
+DEF_IntegerType(int,8,0)
+#endif
+
+/* The typedefs are used to get a typename without space that CPPJoin can handle */
+typedef signed char SignedChar;
+DEF_IntegerType(SignedChar,1,1)
+DEF_IntegerType(SignedChar,2,1)
+DEF_IntegerType(SignedChar,4,1)
+DEF_IntegerType(SignedChar,8,1)
+DEF_IntegerType(SignedChar,1,0)
+DEF_IntegerType(SignedChar,2,0)
+DEF_IntegerType(SignedChar,4,0)
+DEF_IntegerType(SignedChar,8,0)
+
+typedef unsigned char UnsignedChar;
+DEF_IntegerType(UnsignedChar,1,1)
+DEF_IntegerType(UnsignedChar,2,1)
+DEF_IntegerType(UnsignedChar,4,1)
+DEF_IntegerType(UnsignedChar,8,1)
+DEF_IntegerType(UnsignedChar,1,0)
+DEF_IntegerType(UnsignedChar,2,0)
+DEF_IntegerType(UnsignedChar,4,0)
+DEF_IntegerType(UnsignedChar,8,0)
+
+DEF_RealType(PetscReal,1,1)
+DEF_RealType(PetscReal,2,1)
+DEF_RealType(PetscReal,4,1)
+DEF_RealType(PetscReal,8,1)
+DEF_RealType(PetscReal,1,0)
+DEF_RealType(PetscReal,2,0)
+DEF_RealType(PetscReal,4,0)
+DEF_RealType(PetscReal,8,0)
+
+#if defined(PETSC_HAVE_COMPLEX)
+DEF_ComplexType(PetscComplex,1,1)
+DEF_ComplexType(PetscComplex,2,1)
+DEF_ComplexType(PetscComplex,4,1)
+DEF_ComplexType(PetscComplex,8,1)
+DEF_ComplexType(PetscComplex,1,0)
+DEF_ComplexType(PetscComplex,2,0)
+DEF_ComplexType(PetscComplex,4,0)
+DEF_ComplexType(PetscComplex,8,0)
+#endif
+
+DEF_PairType(int,int)
+DEF_PairType(PetscInt,PetscInt)
+
+/* If we don't know the basic type, we treat it as a stream of chars or ints */
+DEF_DumbType(char,1,1)
+DEF_DumbType(char,2,1)
+DEF_DumbType(char,4,1)
+DEF_DumbType(char,1,0)
+DEF_DumbType(char,2,0)
+DEF_DumbType(char,4,0)
+
+typedef int DumbInt; /* To differentiate with regular int used above */
+DEF_DumbType(DumbInt,1,1)
+DEF_DumbType(DumbInt,2,1)
+DEF_DumbType(DumbInt,4,1)
+DEF_DumbType(DumbInt,8,1)
+DEF_DumbType(DumbInt,1,0)
+DEF_DumbType(DumbInt,2,0)
+DEF_DumbType(DumbInt,4,0)
+DEF_DumbType(DumbInt,8,0)
 
 #if !defined(PETSC_HAVE_MPI_TYPE_DUP)
 PETSC_STATIC_INLINE int MPI_Type_dup(MPI_Datatype datatype,MPI_Datatype *newtype)
@@ -476,101 +566,117 @@ PetscErrorCode PetscSFPackSetErrorOnUnsupportedOverlap(PetscSF sf,MPI_Datatype u
 PetscErrorCode PetscSFPackSetupType(PetscSFPack link,MPI_Datatype unit)
 {
   PetscErrorCode ierr;
-  PetscBool      isInt,isPetscInt,isPetscReal,is2Int,is2PetscInt,isSignedChar,isUnsignedChar;
-  PetscInt       nPetscIntContig,nPetscRealContig;
+  PetscInt       nSignedChar=0,nUnsignedChar=0,nInt=0,nPetscInt=0,nPetscReal=0;
+  PetscBool      is2Int,is2PetscInt;
   PetscMPIInt    ni,na,nd,combiner;
 #if defined(PETSC_HAVE_COMPLEX)
-  PetscBool      isPetscComplex;
-  PetscInt       nPetscComplexContig;
+  PetscInt       nPetscComplex=0;
 #endif
 
   PetscFunctionBegin;
-  ierr = MPIPetsc_Type_compare(unit,MPI_SIGNED_CHAR,&isSignedChar);CHKERRQ(ierr);
-  ierr = MPIPetsc_Type_compare(unit,MPI_UNSIGNED_CHAR,&isUnsignedChar);CHKERRQ(ierr);
-  /* MPI_CHAR is treated below as a dumb block type that does not support reduction according to MPI standard */
-  ierr = MPIPetsc_Type_compare(unit,MPI_INT,&isInt);CHKERRQ(ierr);
-  ierr = MPIPetsc_Type_compare(unit,MPIU_INT,&isPetscInt);CHKERRQ(ierr);
-  ierr = MPIPetsc_Type_compare_contig(unit,MPIU_INT,&nPetscIntContig);CHKERRQ(ierr);
-  ierr = MPIPetsc_Type_compare(unit,MPIU_REAL,&isPetscReal);CHKERRQ(ierr);
-  ierr = MPIPetsc_Type_compare_contig(unit,MPIU_REAL,&nPetscRealContig);CHKERRQ(ierr);
+  ierr = MPIPetsc_Type_compare_contig(unit,MPI_SIGNED_CHAR,  &nSignedChar);CHKERRQ(ierr);
+  ierr = MPIPetsc_Type_compare_contig(unit,MPI_UNSIGNED_CHAR,&nUnsignedChar);CHKERRQ(ierr);
+  /* MPI_CHAR is treated below as a dumb type that does not support reduction according to MPI standard */
+  ierr = MPIPetsc_Type_compare_contig(unit,MPI_INT,  &nInt);CHKERRQ(ierr);
+  ierr = MPIPetsc_Type_compare_contig(unit,MPIU_INT, &nPetscInt);CHKERRQ(ierr);
+  ierr = MPIPetsc_Type_compare_contig(unit,MPIU_REAL,&nPetscReal);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_COMPLEX)
-  ierr = MPIPetsc_Type_compare(unit,MPIU_COMPLEX,&isPetscComplex);CHKERRQ(ierr);
-  ierr = MPIPetsc_Type_compare_contig(unit,MPIU_COMPLEX,&nPetscComplexContig);CHKERRQ(ierr);
+  ierr = MPIPetsc_Type_compare_contig(unit,MPIU_COMPLEX,&nPetscComplex);CHKERRQ(ierr);
 #endif
   ierr = MPIPetsc_Type_compare(unit,MPI_2INT,&is2Int);CHKERRQ(ierr);
   ierr = MPIPetsc_Type_compare(unit,MPIU_2INT,&is2PetscInt);CHKERRQ(ierr);
+  /* TODO: shaell we also handle Fortran MPI_2REAL? */
   ierr = MPI_Type_get_envelope(unit,&ni,&na,&nd,&combiner);CHKERRQ(ierr);
   link->isbuiltin = (combiner == MPI_COMBINER_NAMED) ? PETSC_TRUE : PETSC_FALSE;
-  link->bs = 1;
+  link->bs = 1; /* default */
 
-  if (isSignedChar) {PackInit_SignedChar(link); PackInit_Logical_SignedChar(link); PackInit_Bitwise_SignedChar(link); link->basicunit = MPI_SIGNED_CHAR;}
-  else if (isUnsignedChar) {PackInit_UnsignedChar(link); PackInit_Logical_UnsignedChar(link); PackInit_Bitwise_UnsignedChar(link); link->basicunit = MPI_UNSIGNED_CHAR;}
-  else if (isInt) {PackInit_int(link); PackInit_Logical_int(link); PackInit_Bitwise_int(link); link->basicunit = MPI_INT;}
-  else if (isPetscInt) {PackInit_PetscInt(link); PackInit_Logical_PetscInt(link); PackInit_Bitwise_PetscInt(link); link->basicunit = MPIU_INT;}
-  else if (isPetscReal) {PackInit_PetscReal(link); PackInit_Logical_PetscReal(link); link->basicunit = MPIU_REAL;}
-#if defined(PETSC_HAVE_COMPLEX)
-  else if (isPetscComplex) {PackInit_PetscComplex_1(link); link->basicunit = MPIU_COMPLEX;}
+  if (nPetscReal) {
+    if      (nPetscReal == 8) PackInit_RealType_PetscReal_8_1(link); else if (nPetscReal%8 == 0) PackInit_RealType_PetscReal_8_0(link);
+    else if (nPetscReal == 4) PackInit_RealType_PetscReal_4_1(link); else if (nPetscReal%4 == 0) PackInit_RealType_PetscReal_4_0(link);
+    else if (nPetscReal == 2) PackInit_RealType_PetscReal_2_1(link); else if (nPetscReal%2 == 0) PackInit_RealType_PetscReal_2_0(link);
+    else if (nPetscReal == 1) PackInit_RealType_PetscReal_1_1(link); else if (nPetscReal%1 == 0) PackInit_RealType_PetscReal_1_0(link);
+    link->bs         = nPetscReal;
+    link->unitbytes *= nPetscReal;
+    link->basicunit  = MPIU_REAL;
+  } else if (nPetscInt) {
+    if      (nPetscInt == 8) PackInit_IntegerType_PetscInt_8_1(link); else if (nPetscInt%8 == 0) PackInit_IntegerType_PetscInt_8_0(link);
+    else if (nPetscInt == 4) PackInit_IntegerType_PetscInt_4_1(link); else if (nPetscInt%4 == 0) PackInit_IntegerType_PetscInt_4_0(link);
+    else if (nPetscInt == 2) PackInit_IntegerType_PetscInt_2_1(link); else if (nPetscInt%2 == 0) PackInit_IntegerType_PetscInt_2_0(link);
+    else if (nPetscInt == 1) PackInit_IntegerType_PetscInt_1_1(link); else if (nPetscInt%1 == 0) PackInit_IntegerType_PetscInt_1_0(link);
+    link->bs         = nPetscInt;
+    link->unitbytes *= nPetscInt;
+    link->basicunit  = MPIU_INT;
+#if defined(PETSC_USE_64BIT_INDICES)
+  } else if (nInt) {
+    if      (nInt == 8) PackInit_IntegerType_int_8_1(link); else if (nInt%8 == 0) PackInit_IntegerType_int_8_0(link);
+    else if (nInt == 4) PackInit_IntegerType_int_4_1(link); else if (nInt%4 == 0) PackInit_IntegerType_int_4_0(link);
+    else if (nInt == 2) PackInit_IntegerType_int_2_1(link); else if (nInt%2 == 0) PackInit_IntegerType_int_2_0(link);
+    else if (nInt == 1) PackInit_IntegerType_int_1_1(link); else if (nInt%1 == 0) PackInit_IntegerType_int_1_0(link);
+    link->bs         = nInt;
+    link->unitbytes *= nInt;
+    link->basicunit  = MPI_INT;
 #endif
-  else if (is2Int) {PackInit_int_int(link); link->basicunit = MPI_2INT;}
-  else if (is2PetscInt) {PackInit_PetscInt_PetscInt(link); link->basicunit = MPIU_2INT;}
-  else if (nPetscIntContig) {
-    if (nPetscIntContig%7 == 0) PackInit_PetscInt_7(link);
-    else if (nPetscIntContig%5 == 0) PackInit_PetscInt_5(link);
-    else if (nPetscIntContig%4 == 0) PackInit_PetscInt_4(link);
-    else if (nPetscIntContig%3 == 0) PackInit_PetscInt_3(link);
-    else if (nPetscIntContig%2 == 0) PackInit_PetscInt_2(link);
-    else PackInit_PetscInt(link);
-    link->bs = nPetscIntContig;
-    link->unitbytes *= nPetscIntContig;
-    link->basicunit = MPIU_INT;
-  } else if (nPetscRealContig) {
-    if (nPetscRealContig%7 == 0) PackInit_PetscReal_7(link);
-    else if (nPetscRealContig%5 == 0) PackInit_PetscReal_5(link);
-    else if (nPetscRealContig%4 == 0) PackInit_PetscReal_4(link);
-    else if (nPetscRealContig%3 == 0) PackInit_PetscReal_3(link);
-    else if (nPetscRealContig%2 == 0) PackInit_PetscReal_2(link);
-    else PackInit_PetscReal(link);
-    link->bs = nPetscRealContig;
-    link->unitbytes *= nPetscRealContig;
-    link->basicunit = MPIU_REAL;
+  } else if (nSignedChar) {
+    if      (nSignedChar == 8) PackInit_IntegerType_SignedChar_8_1(link); else if (nSignedChar%8 == 0) PackInit_IntegerType_SignedChar_8_0(link);
+    else if (nSignedChar == 4) PackInit_IntegerType_SignedChar_4_1(link); else if (nSignedChar%4 == 0) PackInit_IntegerType_SignedChar_4_0(link);
+    else if (nSignedChar == 2) PackInit_IntegerType_SignedChar_2_1(link); else if (nSignedChar%2 == 0) PackInit_IntegerType_SignedChar_2_0(link);
+    else if (nSignedChar == 1) PackInit_IntegerType_SignedChar_1_1(link); else if (nSignedChar%1 == 0) PackInit_IntegerType_SignedChar_1_0(link);
+    link->bs         = nSignedChar;
+    link->unitbytes *= nSignedChar;
+    link->basicunit  = MPI_SIGNED_CHAR;
+  }  else if (nUnsignedChar) {
+    if      (nUnsignedChar == 8) PackInit_IntegerType_UnsignedChar_8_1(link); else if (nUnsignedChar%8 == 0) PackInit_IntegerType_UnsignedChar_8_0(link);
+    else if (nUnsignedChar == 4) PackInit_IntegerType_UnsignedChar_4_1(link); else if (nUnsignedChar%4 == 0) PackInit_IntegerType_UnsignedChar_4_0(link);
+    else if (nUnsignedChar == 2) PackInit_IntegerType_UnsignedChar_2_1(link); else if (nUnsignedChar%2 == 0) PackInit_IntegerType_UnsignedChar_2_0(link);
+    else if (nUnsignedChar == 1) PackInit_IntegerType_UnsignedChar_1_1(link); else if (nUnsignedChar%1 == 0) PackInit_IntegerType_UnsignedChar_1_0(link);
+    link->bs         = nUnsignedChar;
+    link->unitbytes *= nUnsignedChar;
+    link->basicunit  = MPI_UNSIGNED_CHAR;
 #if defined(PETSC_HAVE_COMPLEX)
-  } else if (nPetscComplexContig) {
-    if (nPetscComplexContig%7 == 0) PackInit_PetscComplex_7(link);
-    else if (nPetscComplexContig%5 == 0) PackInit_PetscComplex_5(link);
-    else if (nPetscComplexContig%4 == 0) PackInit_PetscComplex_4(link);
-    else if (nPetscComplexContig%3 == 0) PackInit_PetscComplex_3(link);
-    else if (nPetscComplexContig%2 == 0) PackInit_PetscComplex_2(link);
-    else PackInit_PetscComplex_1(link);
-    link->bs = nPetscComplexContig;
-    link->unitbytes *= nPetscComplexContig;
-    link->basicunit = MPIU_COMPLEX;
+  } else if (nPetscComplex) {
+    if      (nPetscComplex == 8) PackInit_ComplexType_PetscComplex_8_1(link); else if (nPetscComplex%8 == 0) PackInit_ComplexType_PetscComplex_8_0(link);
+    else if (nPetscComplex == 4) PackInit_ComplexType_PetscComplex_4_1(link); else if (nPetscComplex%4 == 0) PackInit_ComplexType_PetscComplex_4_0(link);
+    else if (nPetscComplex == 2) PackInit_ComplexType_PetscComplex_2_1(link); else if (nPetscComplex%2 == 0) PackInit_ComplexType_PetscComplex_2_0(link);
+    else if (nPetscComplex == 1) PackInit_ComplexType_PetscComplex_1_1(link); else if (nPetscComplex%1 == 0) PackInit_ComplexType_PetscComplex_1_0(link);
+    link->bs         = nPetscComplex;
+    link->unitbytes *= nPetscComplex;
+    link->basicunit  = MPIU_COMPLEX;
 #endif
+  } else if (is2Int) {
+    PackInit_PairType_int_int(link);
+    link->bs         = 1;
+    link->basicunit  = MPI_2INT;
+  } else if (is2PetscInt) {
+    PackInit_PairType_PetscInt_PetscInt(link);
+    link->bs         = 1;
+    link->basicunit  = MPIU_2INT;
   } else {
-    MPI_Aint lb,bytes;
-    ierr = MPI_Type_get_extent(unit,&lb,&bytes);CHKERRQ(ierr);
+    MPI_Aint lb,nbyte;
+    ierr = MPI_Type_get_extent(unit,&lb,&nbyte);CHKERRQ(ierr);
     if (lb != 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld\n",(long)lb);
-    if (bytes % sizeof(int)) { /* If the type size is not multiple of int */
-      if      (bytes%4 == 0) {PackInit_block_char_4(link); link->bs = bytes/4;} /* Note the basic type is char[4] */
-      else if (bytes%2 == 0) {PackInit_block_char_2(link); link->bs = bytes/2;}
-      else                   {PackInit_block_char_1(link); link->bs = bytes/1;}
-      link->unitbytes = bytes;
-      link->basicunit = MPI_CHAR;
+    if (nbyte % sizeof(DumbInt)) { /* If the type size is not multiple of int */
+      if      (nbyte == 4) {PackInit_DumbType_char_4_1(link); link->bs = nbyte/4;}  else if (nbyte%4 == 0) {PackInit_DumbType_char_4_0(link); link->bs = nbyte/4;} /* Note the basic type is char[4] */
+      else if (nbyte == 2) {PackInit_DumbType_char_2_1(link); link->bs = nbyte/2;}  else if (nbyte%2 == 0) {PackInit_DumbType_char_2_0(link); link->bs = nbyte/2;}
+      else if (nbyte == 1) {PackInit_DumbType_char_1_1(link); link->bs = nbyte/1;}  else if (nbyte%1 == 0) {PackInit_DumbType_char_1_0(link); link->bs = nbyte/1;}
+      link->unitbytes = nbyte;
+      link->basicunit = MPI_BYTE;
     } else {
-      PetscInt nInt = bytes / sizeof(int);
-      if      (nInt%8 == 0)  {PackInit_block_int_8(link);  link->bs = nInt/8;} /* Note the basic type is int[8] */
-      else if (nInt%4 == 0)  {PackInit_block_int_4(link);  link->bs = nInt/4;}
-      else if (nInt%2 == 0)  {PackInit_block_int_2(link);  link->bs = nInt/2;}
-      else                   {PackInit_block_int_1(link);  link->bs = nInt/1;}
-      link->unitbytes = bytes;
+      nInt = nbyte / sizeof(DumbInt);
+      if      (nInt == 8)  {PackInit_DumbType_DumbInt_8_1(link); link->bs = nInt/8;} else if (nInt%8 == 0) {PackInit_DumbType_DumbInt_8_0(link); link->bs = nInt/8;}
+      else if (nInt == 4)  {PackInit_DumbType_DumbInt_4_1(link); link->bs = nInt/4;} else if (nInt%4 == 0) {PackInit_DumbType_DumbInt_4_0(link); link->bs = nInt/4;}
+      else if (nInt == 2)  {PackInit_DumbType_DumbInt_2_1(link); link->bs = nInt/2;} else if (nInt%2 == 0) {PackInit_DumbType_DumbInt_2_0(link); link->bs = nInt/2;}
+      else if (nInt == 1)  {PackInit_DumbType_DumbInt_1_1(link); link->bs = nInt/1;} else if (nInt%1 == 0) {PackInit_DumbType_DumbInt_1_0(link); link->bs = nInt/1;}
+      link->unitbytes = nbyte;
       link->basicunit = MPI_INT;
     }
   }
+
   if (link->isbuiltin) link->unit = unit; /* builtin datatypes are common. Make it fast */
   else {ierr = MPI_Type_dup(unit,&link->unit);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSFPackGetUnpackAndOp(PetscSF sf,PetscSFPack link,MPI_Op op,PetscErrorCode (**UnpackAndOp)(PetscInt,PetscInt,const PetscInt*,PetscInt,PetscSFPackOpt,void*,const void*))
+PetscErrorCode PetscSFPackGetUnpackAndOp(PetscSF sf,PetscSFPack link,MPI_Op op,PetscErrorCode (**UnpackAndOp)(PetscInt,const PetscInt*,PetscInt,PetscSFPackOpt,void*,const void*))
 {
   PetscFunctionBegin;
   *UnpackAndOp = NULL;
@@ -591,7 +697,7 @@ PetscErrorCode PetscSFPackGetUnpackAndOp(PetscSF sf,PetscSFPack link,MPI_Op op,P
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSFPackGetFetchAndOp(PetscSF sf,PetscSFPack link,MPI_Op op,PetscErrorCode (**FetchAndOp)(PetscInt,PetscInt,const PetscInt*,PetscInt,PetscSFPackOpt,void*,void*))
+PetscErrorCode PetscSFPackGetFetchAndOp(PetscSF sf,PetscSFPack link,MPI_Op op,PetscErrorCode (**FetchAndOp)(PetscInt,const PetscInt*,PetscInt,PetscSFPackOpt,void*,void*))
 {
   PetscFunctionBegin;
   *FetchAndOp = NULL;
@@ -616,9 +722,9 @@ PetscErrorCode PetscSFPackGetFetchAndOp(PetscSF sf,PetscSFPack link,MPI_Op op,Pe
   Setup pack/unpack optimization plans based on indice patterns available
 
    Input Parameters:
-  +  n       - number of target processors
-  .  offset  - [n+1] for the i-th processor, its associated indices are idx[offset[i], offset[i+1])
-  -  idx     - [] array storing indices. Its length is offset[n+1]
+  +  n       - Number of target ranks
+  .  offset  - [n+1] For the i-th rank, its associated indices are idx[offset[i], offset[i+1]). offset[0] is not necessarily 0.
+  -  idx     - [*]   Array storing indices
 
    Output Parameters:
   +  opt    - the optimization
@@ -627,12 +733,21 @@ PetscErrorCode PetscSFPackSetupOptimization(PetscInt n,const PetscInt *offset,co
 {
   PetscErrorCode ierr;
   PetscInt       i,j,k,n_copies,tot_copies=0,step;
-  PetscBool      strided,has_strided=PETSC_FALSE,has_optimized=PETSC_FALSE;
+  PetscBool      strided,optimized=PETSC_FALSE;
   PetscSFPackOpt opt;
 
   PetscFunctionBegin;
+  if (!n) {
+    *out = NULL;
+    PetscFunctionReturn(0);
+  }
+
   ierr = PetscCalloc1(1,&opt);CHKERRQ(ierr);
-  ierr = PetscCalloc2(n,&opt->optimized,n+1,&opt->copy_offset);CHKERRQ(ierr);
+  ierr = PetscCalloc3(n,&opt->type,n+1,&opt->offset,n+1,&opt->copy_offset);CHKERRQ(ierr);
+  ierr = PetscArraycpy(opt->offset,offset,n+1);CHKERRQ(ierr);
+  if (offset[0]) {for (i=0; i<n+1; i++) opt->offset[i] -= offset[0];} /* Zero-base offset[]. Note the packing routine is Pack(count, idx[], ...*/
+
+  opt->n = n;
 
   /* Check if the indices are piece-wise contiguous (if yes, we can optimize a packing with mulitple memcpy's ) */
   for (i=0; i<n; i++) { /* for each target processor */
@@ -645,59 +760,55 @@ PetscErrorCode PetscSFPackSetupOptimization(PetscInt n,const PetscInt *offset,co
        then it is worth using memcpy for this target. 32 is an arbitrarily chosen number.
      */
     if ((offset[i+1]-offset[i])/n_copies >= 32) {
-      opt->optimized[i] = PETSC_TRUE;
-      has_optimized     = PETSC_TRUE;
-      tot_copies       += n_copies;
+      opt->type[i] = PETSCSF_PACKOPT_MULTICOPY;
+      optimized    = PETSC_TRUE;
+      tot_copies  += n_copies;
     }
   }
 
   /* Setup memcpy plan for each contiguous piece */
   k    = 0; /* k-th copy */
-  ierr = PetscMalloc2(tot_copies,&opt->copy_start,tot_copies,&opt->copy_length);CHKERRQ(ierr);
-  for (i=0; i<n; i++) { /* for each target processor procs[i] */
-    if (opt->optimized[i]) {
+  ierr = PetscMalloc4(tot_copies,&opt->copy_start,tot_copies,&opt->copy_length,n,&opt->stride_step,n,&opt->stride_n);CHKERRQ(ierr);
+  for (i=0; i<n; i++) { /* for each target processor */
+    if (opt->type[i] == PETSCSF_PACKOPT_MULTICOPY) {
       n_copies           = 1;
-      opt->copy_start[k] = idx[offset[i]];
+      opt->copy_start[k] = offset[i] - offset[0];
       for (j=offset[i]; j<offset[i+1]-1; j++) {
         if (idx[j]+1 != idx[j+1]) { /* meet end of a copy (and next copy must exist) */
           n_copies++;
-          opt->copy_start[k+1] = idx[j+1];
-          opt->copy_length[k]  = idx[j] - opt->copy_start[k] + 1;
+          opt->copy_start[k+1] = j-offset[0]+1;
+          opt->copy_length[k]  = opt->copy_start[k+1] - opt->copy_start[k];
           k++;
         }
       }
       /* Set copy length of the last copy for this target */
-      opt->copy_length[k] = idx[j] - opt->copy_start[k] + 1;
+      opt->copy_length[k] = j-offset[0]+1 - opt->copy_start[k];
       k++;
     }
-    /* Set offset for next target. When optimized[i]=false, copy_offsets[i]=copy_offsets[i+1] */
+    /* Set offset for next target. When opt->type[i]=PETSCSF_PACKOPT_NONE, copy_offsets[i]=copy_offsets[i+1] */
     opt->copy_offset[i+1] = k;
   }
 
   /* Last chance! If the indices do not have long contiguous pieces, are they strided? */
-  ierr = PetscMalloc3(n,&opt->stride_first,n,&opt->stride_step,n,&opt->stride_n);CHKERRQ(ierr);
   for (i=0; i<n; i++) { /* for each remote */
-    if (!opt->optimized[i] && (offset[i+1] - offset[i]) >= 16) { /* few indices (<16) are not worth striding */
+    if (opt->type[i]==PETSCSF_PACKOPT_NONE && (offset[i+1] - offset[i]) >= 16) { /* few indices (<16) are not worth striding */
       strided = PETSC_TRUE;
       step    = idx[offset[i]+1] - idx[offset[i]];
       for (j=offset[i]; j<offset[i+1]-1; j++) {
         if (idx[j]+step != idx[j+1]) { strided = PETSC_FALSE; break; }
       }
       if (strided) {
-        opt->optimized[i]    = PETSC_TRUE;
-        opt->stride_first[i] = idx[offset[i]];
+        opt->type[i]         = PETSCSF_PACKOPT_STRIDE;
         opt->stride_step[i]  = step;
         opt->stride_n[i]     = offset[i+1] - offset[i];
-        has_strided          = PETSC_TRUE;
-        has_optimized        = PETSC_TRUE;
+        optimized            = PETSC_TRUE;
       }
     }
   }
-  /* If no target has been stride-optimized or optimized, free related arrays to save memory */
-  if (!has_strided) {ierr = PetscFree3(opt->stride_first,opt->stride_step,opt->stride_n);CHKERRQ(ierr);}
-  if (!has_optimized) {
-    ierr = PetscFree2(opt->optimized,opt->copy_offset);CHKERRQ(ierr);
-    ierr = PetscFree2(opt->copy_start,opt->copy_length);CHKERRQ(ierr);
+  /* If no rank gets optimized, free arrays to save memory */
+  if (!optimized) {
+    ierr = PetscFree3(opt->type,opt->offset,opt->copy_offset);CHKERRQ(ierr);
+    ierr = PetscFree4(opt->copy_start,opt->copy_length,opt->stride_step,opt->stride_n);CHKERRQ(ierr);
     ierr = PetscFree(opt);CHKERRQ(ierr);
     *out = NULL;
   } else *out = opt;
@@ -711,9 +822,8 @@ PetscErrorCode PetscSFPackDestoryOptimization(PetscSFPackOpt *out)
 
   PetscFunctionBegin;
   if (opt) {
-    ierr = PetscFree2(opt->optimized,opt->copy_offset);CHKERRQ(ierr);
-    ierr = PetscFree2(opt->copy_start,opt->copy_length);CHKERRQ(ierr);
-    ierr = PetscFree3(opt->stride_first,opt->stride_step,opt->stride_n);CHKERRQ(ierr);
+    ierr = PetscFree3(opt->type,opt->offset,opt->copy_offset);CHKERRQ(ierr);
+    ierr = PetscFree4(opt->copy_start,opt->copy_length,opt->stride_step,opt->stride_n);CHKERRQ(ierr);
     ierr = PetscFree(opt);CHKERRQ(ierr);
     *out = NULL;
   }

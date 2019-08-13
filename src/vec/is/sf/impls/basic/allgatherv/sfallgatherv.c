@@ -115,8 +115,8 @@ PETSC_INTERN PetscErrorCode PetscSFReset_Allgatherv(PetscSF sf)
   for (link=(PetscSFPack_Allgatherv)dat->avail; link; link=next) {
     next = (PetscSFPack_Allgatherv)link->next;
     if (!link->isbuiltin) {ierr = MPI_Type_free(&link->unit);CHKERRQ(ierr);}
-    ierr = PetscFree(link->root);CHKERRQ(ierr);
-    ierr = PetscFree(link->leaf);CHKERRQ(ierr);
+    ierr = PetscFree(link->rootbuf);CHKERRQ(ierr);
+    ierr = PetscFree(link->leafbuf);CHKERRQ(ierr);
     ierr = PetscFree(link);CHKERRQ(ierr);
   }
   dat->avail = NULL;
@@ -150,8 +150,8 @@ static PetscErrorCode PetscSFBcastAndOpBegin_Allgatherv(PetscSF sf,MPI_Datatype 
   if (op == MPIU_REPLACE) {
     recvbuf = leafdata;
   } else {
-    if (!link->leaf) {ierr = PetscMalloc(sf->nleaves*link->unitbytes,&link->leaf);CHKERRQ(ierr);}
-    recvbuf = link->leaf;
+    if (!link->leafbuf) {ierr = PetscMalloc(sf->nleaves*link->unitbytes,&link->leafbuf);CHKERRQ(ierr);}
+    recvbuf = link->leafbuf;
   }
   ierr = MPIU_Iallgatherv(rootdata,sendcount,unit,recvbuf,dat->recvcounts,dat->displs,unit,comm,&link->request);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -159,26 +159,21 @@ static PetscErrorCode PetscSFBcastAndOpBegin_Allgatherv(PetscSF sf,MPI_Datatype 
 
 PETSC_INTERN PetscErrorCode PetscSFBcastAndOpEnd_Allgatherv(PetscSF sf,MPI_Datatype unit,const void *rootdata,void *leafdata,MPI_Op op)
 {
-  PetscErrorCode         ierr,(*UnpackAndOp)(PetscInt,PetscInt,const PetscInt*,PetscInt,PetscSFPackOpt,void*,const void*);
+  PetscErrorCode         ierr,(*UnpackAndOp)(PetscInt,const PetscInt*,PetscInt,PetscSFPackOpt,void*,const void*);
   PetscSFPack_Allgatherv link;
+  PetscMPIInt            count;
 
   PetscFunctionBegin;
   ierr = PetscSFPackGetInUse(sf,unit,rootdata,leafdata,PETSC_OWN_POINTER,(PetscSFPack*)&link);CHKERRQ(ierr);
-  ierr = PetscSFPackGetUnpackAndOp(sf,(PetscSFPack)link,op,&UnpackAndOp);CHKERRQ(ierr);
   ierr = MPI_Wait(&link->request,MPI_STATUS_IGNORE);CHKERRQ(ierr);
 
   if (op != MPIU_REPLACE) {
-    if (UnpackAndOp) {ierr = (*UnpackAndOp)(sf->nleaves,link->bs,NULL,0,NULL,leafdata,link->leaf);CHKERRQ(ierr);}
-#if defined(PETSC_HAVE_MPI_REDUCE_LOCAL)
-    else {
-      /* op might be user-defined */
-      PetscMPIInt count;
+    ierr = PetscSFPackGetUnpackAndOp(sf,(PetscSFPack)link,op,&UnpackAndOp);CHKERRQ(ierr);
+    if (UnpackAndOp) {ierr = (*UnpackAndOp)(sf->nleaves,NULL,link->bs,NULL,leafdata,link->leafbuf);CHKERRQ(ierr);}
+    else { /* op might be user-defined */
       ierr = PetscMPIIntCast(sf->nleaves,&count);CHKERRQ(ierr);
-      ierr = MPI_Reduce_local(link->leaf,leafdata,count,unit,op);CHKERRQ(ierr);
+      ierr = MPI_Reduce_local(link->leafbuf,leafdata,count,unit,op);CHKERRQ(ierr);
     }
-#else
-    else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No unpacking reduction operation for this MPI_Op");
-#endif
   }
   ierr = PetscSFPackReclaim(sf,(PetscSFPack*)&link);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -204,37 +199,32 @@ static PetscErrorCode PetscSFReduceBegin_Allgatherv(PetscSF sf,MPI_Datatype unit
     ierr = PetscMemcpy(rootdata,(const char*)leafdata+(size_t)rstart*link->unitbytes,(size_t)sf->nroots*link->unitbytes);CHKERRQ(ierr);
   } else {
     /* Reduce all leafdata on rank 0, then scatter the result to root buffer, then reduce root buffer to leafdata */
-    if (!rank && !link->leaf) {ierr = PetscMalloc(sf->nleaves*link->unitbytes,&link->leaf);CHKERRQ(ierr);}
+    if (!rank && !link->leafbuf) {ierr = PetscMalloc(sf->nleaves*link->unitbytes,&link->leafbuf);CHKERRQ(ierr);}
     ierr = PetscMPIIntCast(sf->nleaves*link->bs,&count);CHKERRQ(ierr);
     ierr = PetscMPIIntCast(sf->nroots,&recvcount);CHKERRQ(ierr);
-    ierr = MPI_Reduce(leafdata,link->leaf,count,link->basicunit,op,0,comm);CHKERRQ(ierr); /* Must do reduce with MPI builltin datatype basicunit */
-    if (!link->root) {ierr = PetscMalloc(sf->nroots*link->unitbytes,&link->root);CHKERRQ(ierr);}
-    ierr = MPIU_Iscatterv(link->leaf,dat->recvcounts,dat->displs,unit,link->root,recvcount,unit,0,comm,&link->request);CHKERRQ(ierr);
+    ierr = MPI_Reduce(leafdata,link->leafbuf,count,link->basicunit,op,0,comm);CHKERRQ(ierr); /* Must do reduce with MPI builltin datatype basicunit */
+    if (!link->rootbuf) {ierr = PetscMalloc(sf->nroots*link->unitbytes,&link->rootbuf);CHKERRQ(ierr);}
+    ierr = MPIU_Iscatterv(link->leafbuf,dat->recvcounts,dat->displs,unit,link->rootbuf,recvcount,unit,0,comm,&link->request);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 PETSC_INTERN PetscErrorCode PetscSFReduceEnd_Allgatherv(PetscSF sf,MPI_Datatype unit,const void *leafdata,void *rootdata,MPI_Op op)
 {
-  PetscErrorCode         ierr,(*UnpackAndOp)(PetscInt,PetscInt,const PetscInt*,PetscInt,PetscSFPackOpt,void*,const void*);
+  PetscErrorCode         ierr,(*UnpackAndOp)(PetscInt,const PetscInt*,PetscInt,PetscSFPackOpt,void*,const void*);
   PetscSFPack_Allgatherv link;
+  PetscMPIInt            count;
 
   PetscFunctionBegin;
   ierr = PetscSFPackGetInUse(sf,unit,rootdata,leafdata,PETSC_OWN_POINTER,(PetscSFPack*)&link);CHKERRQ(ierr);
   ierr = MPI_Wait(&link->request,MPI_STATUS_IGNORE);CHKERRQ(ierr);
   if (op != MPIU_REPLACE) {
     ierr = PetscSFPackGetUnpackAndOp(sf,(PetscSFPack)link,op,&UnpackAndOp);CHKERRQ(ierr);
-    if (UnpackAndOp) {ierr = (*UnpackAndOp)(sf->nroots,link->bs,NULL,0,NULL,rootdata,link->root);CHKERRQ(ierr);}
-#if defined(PETSC_HAVE_MPI_REDUCE_LOCAL)
+    if (UnpackAndOp) {ierr = (*UnpackAndOp)(sf->nroots,NULL,link->bs,NULL,rootdata,link->rootbuf);CHKERRQ(ierr);}
     else if (sf->nroots) {
-      /* op might be user-defined */
-      PetscMPIInt count;
       ierr = PetscMPIIntCast(sf->nroots,&count);CHKERRQ(ierr);
-      ierr = MPI_Reduce_local(link->root,rootdata,count,unit,op);CHKERRQ(ierr);
+      ierr = MPI_Reduce_local(link->rootbuf,rootdata,count,unit,op);CHKERRQ(ierr);
     }
-#else
-    else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No unpacking reduction operation for this MPI_Op");
-#endif
   }
   ierr = PetscSFPackReclaim(sf,(PetscSFPack*)&link);CHKERRQ(ierr);
   PetscFunctionReturn(0);
