@@ -414,9 +414,9 @@ static PetscErrorCode PCRedundantGetKSP_Redundant(PC pc,KSP *innerksp)
     ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)red->ksp);CHKERRQ(ierr);
     ierr = KSPSetType(red->ksp,KSPPREONLY);CHKERRQ(ierr);
     ierr = KSPGetPC(red->ksp,&red->pc);CHKERRQ(ierr);
-    ierr = PetscObjectTypeCompare((PetscObject)red->pc->pmat,MATSEQSBAIJ,&issbaij);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATSEQSBAIJ,&issbaij);CHKERRQ(ierr);
     if (!issbaij) {
-      ierr = PetscObjectTypeCompare((PetscObject)red->pc->pmat,MATMPISBAIJ,&issbaij);CHKERRQ(ierr);
+      ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATMPISBAIJ,&issbaij);CHKERRQ(ierr);
     }
     if (!issbaij) {
       ierr = PCSetType(red->pc,PCLU);CHKERRQ(ierr);
