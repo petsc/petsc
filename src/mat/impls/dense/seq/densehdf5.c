@@ -5,7 +5,7 @@
 #include <../src/mat/impls/dense/mpi/mpidense.h>
 #include <petsc/private/isimpl.h>
 #include <petsc/private/vecimpl.h>
-#include <petscviewerhdf5.h>
+#include <petsclayouthdf5.h>
 
 #if defined(PETSC_HAVE_HDF5)
 PetscErrorCode MatLoad_Dense_HDF5(Mat mat, PetscViewer viewer)
