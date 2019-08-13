@@ -764,6 +764,7 @@ int main(int argc, char **argv)
   test:
     suffix: med_3
     requires: med
+    TODO: MED
     nsize: 3
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cylinder.med -interpolate 1 -petscpartitioner_type simple -dm_view
 
