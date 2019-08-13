@@ -446,6 +446,8 @@ static PetscErrorCode SNESLineSearchSetFromOptions_BT(PetscOptionItems *PetscOpt
    Notes:
    This line search is taken from "Numerical Methods for Unconstrained
    Optimization and Nonlinear Equations" by Dennis and Schnabel, page 325.
+   
+   This line search will always produce a step that is less than or equal to, in length, the full step size. 
 
 .seealso: SNESLineSearchCreate(), SNESLineSearchSetType()
 M*/
