@@ -1287,7 +1287,7 @@ PetscErrorCode DMView_Swarm(DM dm, PetscViewer viewer)
  (c) the block size of the data.
 
  For example, suppose the application requires a unique id, energy, momentum and density to be stored
- on a set of of particles. Then the following code could be used
+ on a set of particles. Then the following code could be used
 
 $    DMSwarmInitializeFieldRegister(dm)
 $    DMSwarmRegisterPetscDatatypeField(dm,"uid",1,PETSC_LONG);
@@ -1307,8 +1307,8 @@ $    DMSwarmFinalizeFieldRegister(dm)
  before calling DMCreateGlobalVector() or DMCreateLocalVector(), the user must inform DMSwarm which
  fields should be used to define a Vec object via
    DMSwarmVectorDefineField()
- The specified field can can changed be changed at any time - thereby permitting vectors
- compatable with different fields to be created.
+ The specified field can be changed at any time - thereby permitting vectors
+ compatible with different fields to be created.
 
  A dual representation of fields in the DMSwarm and a Vec object is permitted via
    DMSwarmCreateGlobalVectorFromField()
