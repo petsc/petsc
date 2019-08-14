@@ -75,7 +75,7 @@ PetscErrorCode pic_advect(PetscInt ppcell,PetscInt meshtype)
     ierr = DMSetFromOptions(celldm);CHKERRQ(ierr);
     
     ierr = DMPlexCreateSection(celldm,NULL,numComp,numDof,numBC,NULL,NULL,NULL,NULL,&section);CHKERRQ(ierr);
-    ierr = DMSetSection(celldm,section);CHKERRQ(ierr);
+    ierr = DMSetLocalSection(celldm,section);CHKERRQ(ierr);
     
     ierr = DMSetUp(celldm);CHKERRQ(ierr);
     

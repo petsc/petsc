@@ -170,10 +170,10 @@ PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMSetDimension(*pdm, dim);CHKERRQ(ierr);
   ierr = DMCopyDisc(dm, *pdm);CHKERRQ(ierr);
-  ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
+  ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);
   if (section) {
     ierr = PetscSectionPermute(section, perm, &sectionNew);CHKERRQ(ierr);
-    ierr = DMSetSection(*pdm, sectionNew);CHKERRQ(ierr);
+    ierr = DMSetLocalSection(*pdm, sectionNew);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&sectionNew);CHKERRQ(ierr);
   }
   plexNew = (DM_Plex *) (*pdm)->data;
@@ -191,7 +191,7 @@ PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
     const char     *name;
 
     ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
-    ierr = DMGetSection(cdm, &csection);CHKERRQ(ierr);
+    ierr = DMGetLocalSection(cdm, &csection);CHKERRQ(ierr);
     ierr = PetscSectionPermute(csection, perm, &csectionNew);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
     ierr = VecDuplicate(coordinates, &coordinatesNew);CHKERRQ(ierr);
@@ -213,7 +213,7 @@ PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
     ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
     ierr = VecRestoreArray(coordinatesNew, &coordsNew);CHKERRQ(ierr);
     ierr = DMGetCoordinateDM(*pdm, &cdmNew);CHKERRQ(ierr);
-    ierr = DMSetSection(cdmNew, csectionNew);CHKERRQ(ierr);
+    ierr = DMSetLocalSection(cdmNew, csectionNew);CHKERRQ(ierr);
     ierr = DMSetCoordinatesLocal(*pdm, coordinatesNew);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&csectionNew);CHKERRQ(ierr);
     ierr = VecDestroy(&coordinatesNew);CHKERRQ(ierr);

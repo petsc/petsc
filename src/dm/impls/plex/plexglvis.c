@@ -87,7 +87,7 @@ PetscErrorCode DMSetUpGLVisViewer_Plex(PetscObject odm, PetscViewer viewer)
 
   ierr = DMCreateLocalVector(dm,&xlocal);CHKERRQ(ierr);
   ierr = VecGetLocalSize(xlocal,&totdofs);CHKERRQ(ierr);
-  ierr = DMGetSection(dm,&s);CHKERRQ(ierr);
+  ierr = DMGetLocalSection(dm,&s);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(s,&nfields);CHKERRQ(ierr);
   for (f=0,maxfields=0;f<nfields;f++) {
     PetscInt bs;

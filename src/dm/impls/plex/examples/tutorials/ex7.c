@@ -63,7 +63,7 @@ static PetscErrorCode SetupSection(DM dm)
     ierr = PetscSectionSetFieldDof(s, v, 0, 1);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(s);CHKERRQ(ierr);
-  ierr = DMSetSection(dm, s);CHKERRQ(ierr);
+  ierr = DMSetLocalSection(dm, s);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&s);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

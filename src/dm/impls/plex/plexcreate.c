@@ -3384,12 +3384,12 @@ PetscErrorCode DMPlexCreateReferenceCell(MPI_Comm comm, PetscInt dim, PetscBool 
     PetscSection cs;
     PetscInt     pEnd = -1;
 
-    ierr = DMGetSection(rdm->coordinateDM, &cs);CHKERRQ(ierr);
+    ierr = DMGetLocalSection(rdm->coordinateDM, &cs);CHKERRQ(ierr);
     if (cs) {ierr = PetscSectionGetChart(cs, NULL, &pEnd);CHKERRQ(ierr);}
     if (pEnd >= 0) {
       ierr = DMClone(*refdm, &ncdm);CHKERRQ(ierr);
       ierr = DMCopyDisc(rdm->coordinateDM, ncdm);CHKERRQ(ierr);
-      ierr = DMSetSection(ncdm, cs);CHKERRQ(ierr);
+      ierr = DMSetLocalSection(ncdm, cs);CHKERRQ(ierr);
       ierr = DMSetCoordinateDM(*refdm, ncdm);CHKERRQ(ierr);
       ierr = DMDestroy(&ncdm);CHKERRQ(ierr);
     }

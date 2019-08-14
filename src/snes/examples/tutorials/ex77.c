@@ -364,7 +364,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
       ierr = DMGetCoordinatesLocal(*dm, &coordinates);CHKERRQ(ierr);
       ierr = DMGetCoordinateDM(*dm, &cdm);CHKERRQ(ierr);
-      ierr = DMGetSection(cdm, &cs);CHKERRQ(ierr);
+      ierr = DMGetLocalSection(cdm, &cs);CHKERRQ(ierr);
 
       /* Check for each boundary face if any component of its centroid is either 0.0 or 1.0 */
       for (f = 0; f < Nf; ++f) {

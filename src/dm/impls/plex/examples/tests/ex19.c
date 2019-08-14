@@ -92,7 +92,7 @@ static PetscErrorCode ComputeMetric(DM dm, AppCtx *user, Vec *metric)
   ierr = PetscCalloc1(PetscMax(3, dim),&lambda);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
   ierr = DMClone(cdm, &mdm);CHKERRQ(ierr);
-  ierr = DMGetSection(cdm, &csec);CHKERRQ(ierr);
+  ierr = DMGetLocalSection(cdm, &csec);CHKERRQ(ierr);
 
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject) dm), &msec);CHKERRQ(ierr);
   ierr = PetscSectionSetNumFields(msec, 1);CHKERRQ(ierr);
@@ -104,7 +104,7 @@ static PetscErrorCode ComputeMetric(DM dm, AppCtx *user, Vec *metric)
     ierr = PetscSectionSetFieldDof(msec, p, 0, Nd);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(msec);CHKERRQ(ierr);
-  ierr = DMSetSection(mdm, msec);CHKERRQ(ierr);
+  ierr = DMSetLocalSection(mdm, msec);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&msec);CHKERRQ(ierr);
 
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);

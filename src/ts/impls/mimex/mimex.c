@@ -90,7 +90,7 @@ static PetscErrorCode SNESTSFormFunction_Mimex(SNES snes, Vec x, Vec y, TS ts)
 
     ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
     ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-    ierr = DMGetSection(dm, &s);CHKERRQ(ierr);
+    ierr = DMGetLocalSection(dm, &s);CHKERRQ(ierr);
     ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
     ierr = TSMimexGetXstarAndG(ts, dm, &Xstar, &G);CHKERRQ(ierr);
@@ -161,7 +161,7 @@ static PetscErrorCode TSStep_Mimex_Split(TS ts)
   PetscFunctionBegin;
   ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = DMGetSection(dm, &s);CHKERRQ(ierr);
+  ierr = DMGetLocalSection(dm, &s);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = TSPreStage(ts, ts->ptime);CHKERRQ(ierr);

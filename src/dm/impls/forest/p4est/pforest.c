@@ -4663,7 +4663,7 @@ static PetscErrorCode DMForestTransferVecFromBase_pforest(DM dm, Vec vecIn, Vec 
     PetscSection section;
     PetscInt     Nf;
 
-    ierr = DMGetSection(dmVecIn,&section);CHKERRQ(ierr);
+    ierr = DMGetLocalSection(dmVecIn,&section);CHKERRQ(ierr);
     ierr = PetscSectionGetNumFields(section,&Nf);CHKERRQ(ierr);
     if (Nf > 3) SETERRQ1(PetscObjectComm((PetscObject)dmVecIn),PETSC_ERR_SUP,"Number of fields %D are currently not supported! Send an email at petsc-dev@mcs.anl.gov",Nf);CHKERRQ(ierr);
   }
@@ -4683,7 +4683,7 @@ static PetscErrorCode DMForestTransferVecFromBase_pforest(DM dm, Vec vecIn, Vec 
     if (!sfRed) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not the DM set with DMForestSetBaseDM()");
     ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dmVecIn),&secInRed);CHKERRQ(ierr);
     ierr = VecCreate(PETSC_COMM_SELF,&vecInRed);CHKERRQ(ierr);
-    ierr = DMGetSection(dmVecIn,&secIn);CHKERRQ(ierr);
+    ierr = DMGetLocalSection(dmVecIn,&secIn);CHKERRQ(ierr);
     ierr = DMGetLocalVector(dmVecIn,&vecInLocal);CHKERRQ(ierr);
     ierr = DMGlobalToLocalBegin(dmVecIn,vecIn,INSERT_VALUES,vecInLocal);CHKERRQ(ierr);
     ierr = DMGlobalToLocalEnd(dmVecIn,vecIn,INSERT_VALUES,vecInLocal);CHKERRQ(ierr);
@@ -5090,8 +5090,8 @@ static PetscErrorCode DMCreateDefaultSection_pforest(DM dm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMPforestGetPlex(dm,&plex);CHKERRQ(ierr);
-  ierr = DMGetSection(plex,&section);CHKERRQ(ierr);
-  ierr = DMSetSection(dm,section);CHKERRQ(ierr);
+  ierr = DMGetLocalSection(plex,&section);CHKERRQ(ierr);
+  ierr = DMSetLocalSection(dm,section);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

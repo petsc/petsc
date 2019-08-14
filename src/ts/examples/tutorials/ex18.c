@@ -917,7 +917,7 @@ static PetscErrorCode MonitorFunctionals(TS ts, PetscInt stepnum, PetscReal time
   ierr = VecGetDM(X, &dm);CHKERRQ(ierr);
   ierr = DMPlexTSGetGeometryFVM(dm, NULL, &cellgeom, NULL);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
-  ierr = DMGetSection(dm, &s);CHKERRQ(ierr);
+  ierr = DMGetLocalSection(dm, &s);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(s, &Nf);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscCalloc1(Nf*2, &xnorms);CHKERRQ(ierr);
@@ -963,7 +963,7 @@ static PetscErrorCode MonitorFunctionals(TS ts, PetscInt stepnum, PetscReal time
       ierr = PetscSectionClone(s, &fs);CHKERRQ(ierr);
       ierr = PetscSectionSetFieldName(fs, 0, NULL);CHKERRQ(ierr);
       ierr = PetscSectionSetFieldName(fs, 1, name);CHKERRQ(ierr);
-      ierr = DMSetSection(fdm[f], fs);CHKERRQ(ierr);
+      ierr = DMSetLocalSection(fdm[f], fs);CHKERRQ(ierr);
       ierr = PetscSectionDestroy(&fs);CHKERRQ(ierr);
       ierr = DMGetGlobalVector(fdm[f], &fv[f]);CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject) fv[f], name);CHKERRQ(ierr);

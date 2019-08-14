@@ -959,7 +959,7 @@ PetscErrorCode SNESMonitorFields(SNES snes, PetscInt its, PetscReal fgnorm, Pets
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
   ierr = SNESGetFunction(snes, &res, 0, 0);CHKERRQ(ierr);
   ierr = SNESGetDM(snes, &dm);CHKERRQ(ierr);
-  ierr = DMGetSection(dm, &s);CHKERRQ(ierr);
+  ierr = DMGetLocalSection(dm, &s);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(s, &numFields);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscCalloc2(numFields, &lnorms, numFields, &norms);CHKERRQ(ierr);
@@ -1067,7 +1067,7 @@ static PetscErrorCode DMPlexComputeBdResidual_Single_Internal(DM dm, PetscReal t
 
   PetscFunctionBegin;
   ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
-  ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
+  ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject) dm, "A", (PetscObject *) &locA);CHKERRQ(ierr);
@@ -1078,7 +1078,7 @@ static PetscErrorCode DMPlexComputeBdResidual_Single_Internal(DM dm, PetscReal t
     ierr = DMConvert(dmAux, DMPLEX, &plexA);CHKERRQ(ierr);
     ierr = DMGetDS(plexA, &probAux);CHKERRQ(ierr);
     ierr = PetscDSGetTotalDimension(probAux, &totDimAux);CHKERRQ(ierr);
-    ierr = DMGetSection(plexA, &sectionAux);CHKERRQ(ierr);
+    ierr = DMGetLocalSection(plexA, &sectionAux);CHKERRQ(ierr);
   }
   for (v = 0; v < numValues; ++v) {
     PetscFEGeom    *fgeom;
@@ -1286,7 +1286,7 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, IS cellIS, PetscReal time, 
   ierr = ISGetPointRange(cellIS, &cStart, &cEnd, &cells);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
   /* 1: Get sizes from dm and dmAux */
-  ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
+  ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);
   ierr = DMGetLabel(dm, "ghost", &ghostLabel);CHKERRQ(ierr);
   ierr = DMGetCellDS(dm, cStart, &prob);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
@@ -1693,7 +1693,7 @@ PetscErrorCode DMPlexComputeBdJacobian_Single_Internal(DM dm, PetscReal t, DMLab
   ierr = DMHasBasisTransform(dm, &transform);CHKERRQ(ierr);
   ierr = DMGetBasisTransformDM_Internal(dm, &tdm);CHKERRQ(ierr);
   ierr = DMGetBasisTransformVec_Internal(dm, &tv);CHKERRQ(ierr);
-  ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
+  ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
   ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
@@ -1705,7 +1705,7 @@ PetscErrorCode DMPlexComputeBdJacobian_Single_Internal(DM dm, PetscReal t, DMLab
     ierr = DMConvert(dmAux, DMPLEX, &plexA);CHKERRQ(ierr);
     ierr = DMGetDS(plexA, &probAux);CHKERRQ(ierr);
     ierr = PetscDSGetTotalDimension(probAux, &totDimAux);CHKERRQ(ierr);
-    ierr = DMGetSection(plexA, &sectionAux);CHKERRQ(ierr);
+    ierr = DMGetLocalSection(plexA, &sectionAux);CHKERRQ(ierr);
   }
 
   ierr = PetscObjectTypeCompare((PetscObject) JacP, MATIS, &isMatISP);CHKERRQ(ierr);
@@ -1903,7 +1903,7 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, IS cellIS, PetscReal t, Pet
   ierr = DMHasBasisTransform(dm, &transform);CHKERRQ(ierr);
   ierr = DMGetBasisTransformDM_Internal(dm, &tdm);CHKERRQ(ierr);
   ierr = DMGetBasisTransformVec_Internal(dm, &tv);CHKERRQ(ierr);
-  ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
+  ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) JacP, MATIS, &isMatISP);CHKERRQ(ierr);
   ierr = DMGetGlobalSection(dm, &globalSection);CHKERRQ(ierr);
   if (isMatISP) {ierr = DMPlexGetSubdomainSection(dm, &subSection);CHKERRQ(ierr);}
@@ -1920,7 +1920,7 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, IS cellIS, PetscReal t, Pet
   ierr = PetscObjectQuery((PetscObject) dm, "A", (PetscObject *) &A);CHKERRQ(ierr);
   if (dmAux) {
     ierr = DMConvert(dmAux, DMPLEX, &plex);CHKERRQ(ierr);
-    ierr = DMGetSection(plex, &sectionAux);CHKERRQ(ierr);
+    ierr = DMGetLocalSection(plex, &sectionAux);CHKERRQ(ierr);
     ierr = DMGetDS(dmAux, &probAux);CHKERRQ(ierr);
     ierr = PetscDSGetTotalDimension(probAux, &totDimAux);CHKERRQ(ierr);
   }
@@ -2159,7 +2159,7 @@ PetscErrorCode DMPlexComputeJacobianAction(DM dm, IS cellIS, PetscReal t, PetscR
   } else {
     ierr = PetscObjectReference((PetscObject) cellIS);CHKERRQ(ierr);
   }
-  ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
+  ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);
   ierr = DMGetGlobalSection(dm, &globalSection);CHKERRQ(ierr);
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
@@ -2172,7 +2172,7 @@ PetscErrorCode DMPlexComputeJacobianAction(DM dm, IS cellIS, PetscReal t, PetscR
   ierr = PetscObjectQuery((PetscObject) dm, "A", (PetscObject *) &A);CHKERRQ(ierr);
   if (dmAux) {
     ierr = DMConvert(dmAux, DMPLEX, &plexAux);CHKERRQ(ierr);
-    ierr = DMGetSection(plexAux, &sectionAux);CHKERRQ(ierr);
+    ierr = DMGetLocalSection(plexAux, &sectionAux);CHKERRQ(ierr);
     ierr = DMGetDS(dmAux, &probAux);CHKERRQ(ierr);
     ierr = PetscDSGetTotalDimension(probAux, &totDimAux);CHKERRQ(ierr);
   }

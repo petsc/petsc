@@ -1132,7 +1132,7 @@ PetscErrorCode DMNetworkDistribute(DM *dm,PetscInt overlap)
   newDMnetwork->NEdges    = oldDMnetwork->NEdges;
 
   /* Set Dof section as the default section for dm */
-  ierr = DMSetSection(newDMnetwork->plex,newDMnetwork->DofSection);CHKERRQ(ierr);
+  ierr = DMSetLocalSection(newDMnetwork->plex,newDMnetwork->DofSection);CHKERRQ(ierr);
   ierr = DMGetGlobalSection(newDMnetwork->plex,&newDMnetwork->GlobalDofSection);CHKERRQ(ierr);
 
   /* Set up subnetwork info in the newDM */
@@ -1360,7 +1360,7 @@ PetscErrorCode DMSetUp_Network(DM dm)
   ierr = DMNetworkComponentSetUp(dm);CHKERRQ(ierr);
   ierr = DMNetworkVariablesSetUp(dm);CHKERRQ(ierr);
 
-  ierr = DMSetSection(network->plex,network->DofSection);CHKERRQ(ierr);
+  ierr = DMSetLocalSection(network->plex,network->DofSection);CHKERRQ(ierr);
   ierr = DMGetGlobalSection(network->plex,&network->GlobalDofSection);CHKERRQ(ierr);
 
   dm->setupcalled = PETSC_TRUE;

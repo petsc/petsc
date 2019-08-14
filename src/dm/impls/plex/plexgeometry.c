@@ -2104,7 +2104,7 @@ PetscErrorCode DMPlexComputeGeometryFEM(DM dm, Vec *cellgeom)
   /* TODO This needs to be multiplied by Nq for non-affine */
   for (c = cStart; c < cEnd; ++c) {ierr = PetscSectionSetDof(sectionCell, c, (PetscInt) PetscCeilReal(((PetscReal) sizeof(PetscFEGeom))/sizeof(PetscScalar)));CHKERRQ(ierr);}
   ierr = PetscSectionSetUp(sectionCell);CHKERRQ(ierr);
-  ierr = DMSetSection(dmCell, sectionCell);CHKERRQ(ierr);
+  ierr = DMSetLocalSection(dmCell, sectionCell);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&sectionCell);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(dmCell, cellgeom);CHKERRQ(ierr);
   ierr = VecGetArray(*cellgeom, &cgeom);CHKERRQ(ierr);
@@ -2159,7 +2159,7 @@ PetscErrorCode DMPlexComputeGeometryFVM(DM dm, Vec *cellgeom, Vec *facegeom)
   ierr = PetscSectionSetChart(sectionCell, cStart, cEnd);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {ierr = PetscSectionSetDof(sectionCell, c, (PetscInt) PetscCeilReal(((PetscReal) sizeof(PetscFVCellGeom))/sizeof(PetscScalar)));CHKERRQ(ierr);}
   ierr = PetscSectionSetUp(sectionCell);CHKERRQ(ierr);
-  ierr = DMSetSection(dmCell, sectionCell);CHKERRQ(ierr);
+  ierr = DMSetLocalSection(dmCell, sectionCell);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&sectionCell);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(dmCell, cellgeom);CHKERRQ(ierr);
   if (cEndInterior < 0) {
@@ -2180,7 +2180,7 @@ PetscErrorCode DMPlexComputeGeometryFVM(DM dm, Vec *cellgeom, Vec *facegeom)
   ierr = PetscSectionSetChart(sectionFace, fStart, fEnd);CHKERRQ(ierr);
   for (f = fStart; f < fEnd; ++f) {ierr = PetscSectionSetDof(sectionFace, f, (PetscInt) PetscCeilReal(((PetscReal) sizeof(PetscFVFaceGeom))/sizeof(PetscScalar)));CHKERRQ(ierr);}
   ierr = PetscSectionSetUp(sectionFace);CHKERRQ(ierr);
-  ierr = DMSetSection(dmFace, sectionFace);CHKERRQ(ierr);
+  ierr = DMSetLocalSection(dmFace, sectionFace);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&sectionFace);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(dmFace, facegeom);CHKERRQ(ierr);
   ierr = VecGetArray(*facegeom, &fgeom);CHKERRQ(ierr);
@@ -2540,7 +2540,7 @@ PetscErrorCode DMPlexComputeGradientFVM(DM dm, PetscFV fvm, Vec faceGeometry, Ve
   ierr = PetscSectionSetChart(sectionGrad, cStart, cEnd);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {ierr = PetscSectionSetDof(sectionGrad, c, pdim*dim);CHKERRQ(ierr);}
   ierr = PetscSectionSetUp(sectionGrad);CHKERRQ(ierr);
-  ierr = DMSetSection(*dmGrad, sectionGrad);CHKERRQ(ierr);
+  ierr = DMSetLocalSection(*dmGrad, sectionGrad);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&sectionGrad);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
