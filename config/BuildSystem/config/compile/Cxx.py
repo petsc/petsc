@@ -10,7 +10,7 @@ import config.setsOrdered as sets
 class Preprocessor(config.compile.processor.Processor):
   '''The C++ preprocessor'''
   def __init__(self, argDB):
-    config.compile.processor.Processor.__init__(self, argDB, 'CXXCPP', 'CXXCPPFLAGS', '.cpp', '.cc')
+    config.compile.processor.Processor.__init__(self, argDB, 'CXXPP', 'CXXPPFLAGS', '.cpp', '.cc')
     self.language = 'CXX'
     self.includeDirectories = sets.Set()
     return

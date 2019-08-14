@@ -79,8 +79,8 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-CFLAGS=<string>',       nargs.Arg(None, None, 'Specify the C compiler options'))
     help.addArgument('Compilers', '-CC_LINKER_FLAGS=<string>',        nargs.Arg(None, [], 'Specify the C linker flags'))
 
-    help.addArgument('Compilers', '-CXXCPP=<prog>',          nargs.Arg(None, None, 'Specify the C++ preprocessor'))
-    help.addArgument('Compilers', '-CXXCPPFLAGS=<string>',  nargs.Arg(None, None, 'Specify the C++ preprocessor options'))
+    help.addArgument('Compilers', '-CXXPP=<prog>',          nargs.Arg(None, None, 'Specify the C++ preprocessor'))
+    help.addArgument('Compilers', '-CXXPPFLAGS=<string>',   nargs.Arg(None, None, 'Specify the C++ preprocessor options'))
     help.addArgument('Compilers', '-with-cxx=<prog>', nargs.Arg(None, None, 'Specify the C++ compiler'))
     help.addArgument('Compilers', '-CXX=<prog>',            nargs.Arg(None, None, 'Specify the C++ compiler'))
     help.addArgument('Compilers', '-CXXFLAGS=<string>',     nargs.Arg(None, None, 'Specify the C++ compiler options, also passed to linker'))
@@ -455,7 +455,7 @@ class Configure(config.base.Configure):
         else: setattr(self, flagsArg, '')
         self.logPrint('Initialized '+flagsArg+' to '+str(getattr(self, flagsArg)))
       self.popLanguage()
-    for flagsArg in ['CPPFLAGS', 'FPPFLAGS', 'CUDAPPFLAGS', 'CXXCPPFLAGS', 'CC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'CUDAC_LINKER_FLAGS','sharedLibraryFlags', 'dynamicLibraryFlags']:
+    for flagsArg in ['CPPFLAGS', 'FPPFLAGS', 'CUDAPPFLAGS', 'CXXPPFLAGS', 'CC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'CUDAC_LINKER_FLAGS','sharedLibraryFlags', 'dynamicLibraryFlags']:
       if flagsArg in self.argDB: setattr(self, flagsArg, self.argDB[flagsArg])
       else: setattr(self, flagsArg, '')
       self.logPrint('Initialized '+flagsArg+' to '+str(getattr(self, flagsArg)))
@@ -794,11 +794,11 @@ class Configure(config.base.Configure):
     return
 
   def generateCxxPreprocessorGuesses(self):
-    '''Determines the Cxx preprocessor from CXXCPP, then --with-cxxcpp, then the Cxx compiler'''
-    if 'with-cxxcpp' in self.argDB:
-      yield self.argDB['with-cxxcpp']
-    elif 'CXXCPP' in self.argDB:
-      yield self.argDB['CXXCPP']
+    '''Determines the Cxx preprocessor from CXXPP, then --with-cxxpp, then the Cxx compiler'''
+    if 'with-cxxpp' in self.argDB:
+      yield self.argDB['with-cxxpp']
+    elif 'CXXPP' in self.argDB:
+      yield self.argDB['CXXPP']
     else:
       yield self.CXX+' -E'
       yield self.CXX+' --use cpp32'
@@ -810,20 +810,20 @@ class Configure(config.base.Configure):
       return
     for compiler in self.generateCxxPreprocessorGuesses():
       try:
-        if self.getExecutable(compiler, resultName = 'CXXCPP'):
+        if self.getExecutable(compiler, resultName = 'CXXPP'):
           self.pushLanguage('Cxx')
           if not self.checkPreprocess('#include <cstdlib>\n'):
-            raise RuntimeError('Cannot preprocess Cxx with '+self.CXXCPP+'.')
+            raise RuntimeError('Cannot preprocess Cxx with '+self.CXXPP+'.')
           self.popLanguage()
           break
       except RuntimeError as e:
         import os
 
-        if os.path.basename(self.CXXCPP) in ['mpicxx', 'mpiCC']:
+        if os.path.basename(self.CXXPP) in ['mpicxx', 'mpiCC']:
           self.logPrint('MPI installation '+self.getCompiler()+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI')
         self.popLanguage()
         self.delMakeMacro('CCCPP')
-        del self.CXXCPP
+        del self.CXXPP
     return
 
   def generateFortranCompilerGuesses(self):
@@ -1538,9 +1538,9 @@ if (dlclose(handle)) {
       self.addSubstitution('CXX_LINKER_SLFLAG', self.CxxSharedLinkerFlag)
     else:
       self.addSubstitution('CXX', '')
-    if hasattr(self, 'CXXCPP'):
-      self.addSubstitution('CXXCPP', self.CXXCPP)
-      self.addSubstitution('CXXCPPFLAGS', self.CXXCPPFLAGS)
+    if hasattr(self, 'CXXPP'):
+      self.addSubstitution('CXXPP', self.CXXPP)
+      self.addSubstitution('CXXPPFLAGS', self.CXXPPFLAGS)
     if hasattr(self, 'FC'):
       self.addSubstitution('FC', self.FC)
       self.addSubstitution('FFLAGS', self.FFLAGS)
@@ -1628,7 +1628,7 @@ if (dlclose(handle)) {
           self.logPrintBox('***** WARNING: '+envVal+' (set to '+os.environ[envVal]+') found in environment variables - ignoring \n use ./configure '+envVal+'=$'+envVal+' if you really want to use that value ******')
           del os.environ[envVal]
 
-    ignoreEnv = ['CFLAGS','CXXFLAGS','FCFLAGS','FFLAGS','F90FLAGS','CPP','CPPFLAGS','CXXCPP','CXXCPPFLAGS','LDFLAGS','LIBS','MPI_DIR','RM','MAKEFLAGS','AR']
+    ignoreEnv = ['CFLAGS','CXXFLAGS','FCFLAGS','FFLAGS','F90FLAGS','CPP','CPPFLAGS','CXXPP','CXXPPFLAGS','LDFLAGS','LIBS','MPI_DIR','RM','MAKEFLAGS','AR']
     for envVal in ignoreEnv:
       if envVal in os.environ:
         if envVal in self.framework.clArgDB:
@@ -1644,7 +1644,7 @@ if (dlclose(handle)) {
 
   def checkEnvCompilers(self):
     if 'with-environment-variables' in self.framework.clArgDB or 'with-xsdk-defaults' in self.framework.clArgDB:
-      envVarChecklist = ['CC','CFLAGS','CXX','CXXFLAGS','FC','FCFLAGS','F77','FFLAGS','F90','F90FLAGS','CPP','CPPFLAGS','CXXCPP','CXXCPPFLAGS','LDFLAGS','LIBS','MPI_DIR','RM','MAKEFLAGS','AR']
+      envVarChecklist = ['CC','CFLAGS','CXX','CXXFLAGS','FC','FCFLAGS','F77','FFLAGS','F90','F90FLAGS','CPP','CPPFLAGS','CXXPP','CXXPPFLAGS','LDFLAGS','LIBS','MPI_DIR','RM','MAKEFLAGS','AR']
       for ev in envVarChecklist:
         if ev in os.environ:
           self.argDB[ev] = os.environ[ev]

@@ -486,7 +486,7 @@ class Configure(script.Script):
     elif language == 'CUDA':
       flagsArg = 'CUDAPPFLAGS'
     elif language == 'Cxx':
-      flagsArg = 'CXXCPPFLAGS'
+      flagsArg = 'CXXPPFLAGS'
     elif language == 'FC':
       flagsArg = 'FPPFLAGS'
     else:

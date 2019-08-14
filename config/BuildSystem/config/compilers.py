@@ -58,7 +58,7 @@ class Configure(config.base.Configure):
     names['CUDAC'] = 'No CUDA compiler found.'
     names['CUDAPP'] = 'No CUDA preprocessor found.'
     names['CXX'] = 'No C++ compiler found.'
-    names['CXXCPP'] = 'No C++ preprocessor found.'
+    names['CXXPP'] = 'No C++ preprocessor found.'
     names['FC'] = 'No Fortran compiler found.'
     names['AR'] = 'No archiver found.'
     names['RANLIB'] = 'No ranlib found.'
@@ -77,7 +77,7 @@ class Configure(config.base.Configure):
     names['CPPFLAGS'] = 'No preprocessor flags found.'
     names['FPPFLAGS'] = 'No Fortran preprocessor flags found.'
     names['CUDAPPFLAGS'] = 'No CUDA preprocessor flags found.'
-    names['CXXCPPFLAGS'] = 'No C++ preprocessor flags found.'
+    names['CXXPPFLAGS'] = 'No C++ preprocessor flags found.'
     names['AR_FLAGS'] = 'No archiver flags found.'
     names['AR_LIB_SUFFIX'] = 'No static library suffix found.'
     names['LIBS'] = 'No extra libraries found.'
@@ -500,7 +500,7 @@ class Configure(config.base.Configure):
         self.logPrint('checkCxxDialect: checking CXX14 with flag: '+flag)
         self.setCompilers.saveLog()
         if self.setCompilers.checkCompilerFlag(flag, includes, body+body14):
-          self.setCompilers.CXXCPPFLAGS += ' ' + flag
+          self.setCompilers.CXXPPFLAGS += ' ' + flag
           self.cxxdialect = 'C++14'
           self.addDefine('HAVE_CXX_DIALECT_CXX14',1)
           self.addDefine('HAVE_CXX_DIALECT_CXX11',1)
@@ -518,7 +518,7 @@ class Configure(config.base.Configure):
         self.logPrint('checkCxxDialect: checking CXX11 with flag: '+flag)
         self.setCompilers.saveLog()
         if self.setCompilers.checkCompilerFlag(flag, includes, body):
-          self.setCompilers.CXXCPPFLAGS += ' ' + flag
+          self.setCompilers.CXXPPFLAGS += ' ' + flag
           self.cxxdialect = 'C++11'
           self.addDefine('HAVE_CXX_DIALECT_CXX11',1)
           break
