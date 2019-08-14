@@ -3795,7 +3795,37 @@ PetscErrorCode DMPrintLocalVec(DM dm, const char name[], PetscReal tol, Vec X)
 }
 
 /*@
-  DMGetSection - Get the PetscSection encoding the local data layout for the DM.
+  DMGetSection - Get the PetscSection encoding the local data layout for the DM.  This is equivalent to DMGetLocalSection() and included only for compatibility.
+
+  Input Parameter:
+. dm - The DM
+
+  Output Parameter:
+. section - The PetscSection
+
+  Options Database Keys:
+. -dm_petscsection_view - View the Section created by the DM
+
+  Level: advanced
+
+  Notes:
+  Use DMGetLocalSection() in new code.
+
+  This gets a borrowed reference, so the user should not destroy this PetscSection.
+
+.seealso: DMGetLocalSection(), DMSetLocalSection(), DMGetGlobalSection()
+@*/
+PetscErrorCode DMGetSection(DM dm, PetscSection *section)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetLocalSection(dm,section);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMGetLocalSection - Get the PetscSection encoding the local data layout for the DM.
 
   Input Parameter:
 . dm - The DM
@@ -3810,9 +3840,9 @@ PetscErrorCode DMPrintLocalVec(DM dm, const char name[], PetscReal tol, Vec X)
 
   Note: This gets a borrowed reference, so the user should not destroy this PetscSection.
 
-.seealso: DMSetSection(), DMGetGlobalSection()
+.seealso: DMSetLocalSection(), DMGetGlobalSection()
 @*/
-PetscErrorCode DMGetSection(DM dm, PetscSection *section)
+PetscErrorCode DMGetLocalSection(DM dm, PetscSection *section)
 {
   PetscErrorCode ierr;
 
@@ -3831,7 +3861,32 @@ PetscErrorCode DMGetSection(DM dm, PetscSection *section)
 }
 
 /*@
-  DMSetSection - Set the PetscSection encoding the local data layout for the DM.
+  DMSetSection - Set the PetscSection encoding the local data layout for the DM.  This is equivalent to DMSetLocalSection() and included only for compatibility.
+
+  Input Parameters:
++ dm - The DM
+- section - The PetscSection
+
+  Level: advanced
+
+  Notes:
+  Use DMSetLocalSection() in new code.
+
+  Any existing Section will be destroyed
+
+.seealso: DMSetLocalSection(), DMGetLocalSection(), DMSetGlobalSection()
+@*/
+PetscErrorCode DMSetSection(DM dm, PetscSection section)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMSetLocalSection(dm,section);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMSetLocalSection - Set the PetscSection encoding the local data layout for the DM.
 
   Input Parameters:
 + dm - The DM
@@ -3841,9 +3896,9 @@ PetscErrorCode DMGetSection(DM dm, PetscSection *section)
 
   Note: Any existing Section will be destroyed
 
-.seealso: DMSetSection(), DMGetGlobalSection()
+.seealso: DMGetLocalSection(), DMSetGlobalSection()
 @*/
-PetscErrorCode DMSetSection(DM dm, PetscSection section)
+PetscErrorCode DMSetLocalSection(DM dm, PetscSection section)
 {
   PetscInt       numFields = 0;
   PetscInt       f;
