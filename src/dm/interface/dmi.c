@@ -315,7 +315,7 @@ PetscErrorCode DMCreateSectionSuperDM(DM dms[], PetscInt len, IS **is, DM *super
     PetscInt     bs = -1, startf = 0;
 
     ierr = PetscMalloc1(len, is);CHKERRQ(ierr);
-    ierr = DMGetDefaultGlobalSection(*superdm, &supersectionGlobal);CHKERRQ(ierr);
+    ierr = DMGetGlobalSection(*superdm, &supersectionGlobal);CHKERRQ(ierr);
     for (i = 0 ; i < len; startf += Nfs[i], ++i) {
       PetscInt *subIndices;
       PetscInt  subSize, subOff, pStart, pEnd, p, start, end, dummy;

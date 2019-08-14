@@ -569,8 +569,8 @@ static PetscErrorCode DMPlexWriteCoordinates_Vertices_HDF5_Static(DM dm, PetscVi
   if (localized == PETSC_FALSE) PetscFunctionReturn(0);
   ierr = DMGetPeriodicity(dm, NULL, NULL, &L, &bd);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
-  ierr = DMGetDefaultSection(cdm, &cSection);CHKERRQ(ierr);
-  ierr = DMGetDefaultGlobalSection(cdm, &cGlobalSection);CHKERRQ(ierr);
+  ierr = DMGetSection(cdm, &cSection);CHKERRQ(ierr);
+  ierr = DMGetGlobalSection(cdm, &cGlobalSection);CHKERRQ(ierr);
   ierr = DMGetLabel(dm, "periodic_cut", &cutLabel);CHKERRQ(ierr);
   N    = 0;
 
