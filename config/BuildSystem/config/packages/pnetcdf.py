@@ -6,7 +6,7 @@ class Configure(config.package.GNUPackage):
     config.package.GNUPackage.__init__(self, framework)
     self.version          = '1.11.2'
     self.versionname      = 'PNETCDF_VERSION'
-    self.download         = ['http://cucis.ece.northwestern.edu/projects/PnetCDF/Release/pnetcdf-'+self.version+'.tar.gz',
+    self.download         = ['https://parallel-netcdf.github.io/Release/pnetcdf-'+self.version+'.tar.gz',
                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/pnetcdf-'+self.version+'.tar.gz']
     self.functions        = ['ncmpi_create']
     self.includes         = ['pnetcdf.h']
