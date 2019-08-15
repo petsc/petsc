@@ -96,8 +96,13 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
 
       ierr = MPI_Comm_size(subcomm,&size);CHKERRQ(ierr);
       if (size > 1) {
-        PetscBool foundpack;
-        ierr = MatGetFactorAvailable(red->pmats,NULL,MAT_FACTOR_LU,&foundpack);CHKERRQ(ierr);
+        PetscBool foundpack,issbaij;
+        ierr = PetscObjectTypeCompare((PetscObject)red->pmats,MATMPISBAIJ,&issbaij);CHKERRQ(ierr);
+        if (!issbaij) {
+          ierr = MatGetFactorAvailable(red->pmats,NULL,MAT_FACTOR_LU,&foundpack);CHKERRQ(ierr);
+        } else {
+          ierr = MatGetFactorAvailable(red->pmats,NULL,MAT_FACTOR_CHOLESKY,&foundpack);CHKERRQ(ierr);
+        }
         if (!foundpack) { /* reset default ksp and pc */
           ierr = KSPSetType(red->ksp,KSPGMRES);CHKERRQ(ierr);
           ierr = PCSetType(red->pc,PCBJACOBI);CHKERRQ(ierr);
@@ -385,6 +390,7 @@ static PetscErrorCode PCRedundantGetKSP_Redundant(PC pc,KSP *innerksp)
   PC_Redundant   *red = (PC_Redundant*)pc->data;
   MPI_Comm       comm,subcomm;
   const char     *prefix;
+  PetscBool      issbaij;
 
   PetscFunctionBegin;
   if (!red->psubcomm) {
@@ -408,7 +414,15 @@ static PetscErrorCode PCRedundantGetKSP_Redundant(PC pc,KSP *innerksp)
     ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)red->ksp);CHKERRQ(ierr);
     ierr = KSPSetType(red->ksp,KSPPREONLY);CHKERRQ(ierr);
     ierr = KSPGetPC(red->ksp,&red->pc);CHKERRQ(ierr);
-    ierr = PCSetType(red->pc,PCLU);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATSEQSBAIJ,&issbaij);CHKERRQ(ierr);
+    if (!issbaij) {
+      ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATMPISBAIJ,&issbaij);CHKERRQ(ierr);
+    }
+    if (!issbaij) {
+      ierr = PCSetType(red->pc,PCLU);CHKERRQ(ierr);
+    } else {
+      ierr = PCSetType(red->pc,PCCHOLESKY);CHKERRQ(ierr);
+    }
     if (red->shifttypeset) {
       ierr = PCFactorSetShiftType(red->pc,red->shifttype);CHKERRQ(ierr);
       red->shifttypeset = PETSC_FALSE;
@@ -495,7 +509,7 @@ PetscErrorCode PCRedundantGetOperators(PC pc,Mat *mat,Mat *pmat)
    Level: intermediate
 
    Notes:
-    The default KSP is preonly and the default PC is LU.
+    The default KSP is preonly and the default PC is LU or CHOLESKY if Pmat is of type MATSBAIJ.
 
    PCFactorSetShiftType() applied to this PC will convey they shift type into the inner PC if it is factorization based.
 
