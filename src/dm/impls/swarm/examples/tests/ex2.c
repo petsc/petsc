@@ -512,7 +512,7 @@ static PetscErrorCode InterpolateGradient(DM dm, Vec locX, Vec locC){
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dm, &coordDim);CHKERRQ(ierr);
   fegeom.dimEmbed = coordDim;
-  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
   for (field = 0; field < numFields; ++field) {
     PetscObject  obj;

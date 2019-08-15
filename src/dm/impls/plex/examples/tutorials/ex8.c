@@ -23,7 +23,7 @@ int main(int argc, char **argv)
   ierr = DMAddField(dm,NULL,(PetscObject)fe);CHKERRQ(ierr);
   ierr = DMCreateDS(dm);CHKERRQ(ierr);
   ierr = DMPlexSetClosurePermutationTensor(dm,PETSC_DETERMINE,NULL);CHKERRQ(ierr);
-  ierr = DMGetDefaultSection(dm,&section);CHKERRQ(ierr);
+  ierr = DMGetLocalSection(dm,&section);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
   for (c=cStart; c<cEnd; c++) {
     PetscInt numindices,*indices;

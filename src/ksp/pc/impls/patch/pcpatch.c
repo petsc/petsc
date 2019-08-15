@@ -518,7 +518,7 @@ PetscErrorCode PCPatchSetDiscretisationInfo(PC pc, PetscInt nsubspaces, DM *dms,
   patch->nsubspaces       = nsubspaces;
   patch->totalDofsPerCell = 0;
   for (i = 0; i < nsubspaces; ++i) {
-    ierr = DMGetDefaultSection(dms[i], &patch->dofSection[i]);CHKERRQ(ierr);
+    ierr = DMGetLocalSection(dms[i], &patch->dofSection[i]);CHKERRQ(ierr);
     ierr = PetscObjectReference((PetscObject) patch->dofSection[i]);CHKERRQ(ierr);
     ierr = DMGetDefaultSF(dms[i], &sfs[i]);CHKERRQ(ierr);
     patch->bs[i]              = bs[i];
@@ -554,7 +554,7 @@ PetscErrorCode PCPatchSetDiscretisationInfoCombined(PC pc, DM dm, PetscInt *node
   ierr = PetscMalloc1(patch->nsubspaces, &patch->nodesPerCell);CHKERRQ(ierr);
   ierr = PetscMalloc1(patch->nsubspaces, &patch->cellNodeMap);CHKERRQ(ierr);
   ierr = PetscCalloc1(patch->nsubspaces+1, &patch->subspaceOffsets);CHKERRQ(ierr);
-  ierr = DMGetDefaultSection(dm, &patch->dofSection[0]);CHKERRQ(ierr);
+  ierr = DMGetLocalSection(dm, &patch->dofSection[0]);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject) patch->dofSection[0]);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(patch->dofSection[0], &patch->subspaceOffsets[patch->nsubspaces]);CHKERRQ(ierr);
   patch->totalDofsPerCell = 0;
@@ -1932,7 +1932,7 @@ static PetscErrorCode PCPatchComputeFunction_DMPlex_Private(PC pc, PetscInt patc
   ierr = PCGetDM(pc, &dm);CHKERRQ(ierr);
   ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
   dm = plex;
-  ierr = DMGetDefaultSection(dm, &s);CHKERRQ(ierr);
+  ierr = DMGetLocalSection(dm, &s);CHKERRQ(ierr);
   /* Set offset into patch */
   ierr = PetscSectionGetDof(patch->pointCounts, patchNum, &Np);CHKERRQ(ierr);
   ierr = PetscSectionGetOffset(patch->pointCounts, patchNum, &poff);CHKERRQ(ierr);
@@ -2019,7 +2019,7 @@ static PetscErrorCode PCPatchComputeOperator_DMPlex_Private(PC pc, PetscInt patc
   ierr = PCGetDM(pc, &dm);CHKERRQ(ierr);
   ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
   dm = plex;
-  ierr = DMGetDefaultSection(dm, &s);CHKERRQ(ierr);
+  ierr = DMGetLocalSection(dm, &s);CHKERRQ(ierr);
   /* Set offset into patch */
   ierr = PetscSectionGetDof(patch->pointCounts, patchNum, &Np);CHKERRQ(ierr);
   ierr = PetscSectionGetOffset(patch->pointCounts, patchNum, &poff);CHKERRQ(ierr);
@@ -2530,7 +2530,7 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
       if (!dm) SETERRQ(PetscObjectComm((PetscObject) pc), PETSC_ERR_ARG_WRONG, "Must set DM for PCPATCH or call PCPatchSetDiscretisationInfo()");
       ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
       dm = plex;
-      ierr = DMGetDefaultSection(dm, &s);CHKERRQ(ierr);
+      ierr = DMGetLocalSection(dm, &s);CHKERRQ(ierr);
       ierr = PetscSectionGetNumFields(s, &Nf);CHKERRQ(ierr);
       ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
       for (p = pStart; p < pEnd; ++p) {

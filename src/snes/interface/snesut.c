@@ -592,7 +592,7 @@ PetscErrorCode SNESMonitorDefaultField(SNES snes, PetscInt its, PetscReal fgnorm
     PetscSection s, gs;
     PetscInt     Nf, f;
 
-    ierr = DMGetSection(dm, &s);CHKERRQ(ierr);
+    ierr = DMGetLocalSection(dm, &s);CHKERRQ(ierr);
     ierr = DMGetGlobalSection(dm, &gs);CHKERRQ(ierr);
     if (!s || !gs) {ierr = SNESMonitorDefault(snes, its, fgnorm, vf);CHKERRQ(ierr);}
     ierr = PetscSectionGetNumFields(s, &Nf);CHKERRQ(ierr);

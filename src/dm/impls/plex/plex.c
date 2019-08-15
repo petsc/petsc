@@ -160,11 +160,11 @@ static PetscErrorCode VecView_Plex_Local_Draw(Vec v, PetscViewer viewer)
   ierr = VecGetDM(v, &dm);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dm, &dim);CHKERRQ(ierr);
   if (dim != 2) SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Cannot draw meshes of dimension %D. Use PETSCVIEWERGLVIS", dim);
-  ierr = DMGetSection(dm, &s);CHKERRQ(ierr);
+  ierr = DMGetLocalSection(dm, &s);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(s, &Nf);CHKERRQ(ierr);
   ierr = DMGetCoarsenLevel(dm, &level);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
-  ierr = DMGetSection(cdm, &coordSection);CHKERRQ(ierr);
+  ierr = DMGetLocalSection(cdm, &coordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
@@ -290,7 +290,7 @@ static PetscErrorCode VecView_Plex_Local_VTK(Vec v, PetscViewer viewer)
   ierr = PetscObjectGetName((PetscObject) v, &name);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) locv, name);CHKERRQ(ierr);
   ierr = VecCopy(v, locv);CHKERRQ(ierr);
-  ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
+  ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);
   ierr = DMPlexGetFieldType_Internal(dm, section, PETSC_DETERMINE, &pStart, &pEnd, &ft);CHKERRQ(ierr);
   ierr = PetscViewerVTKAddField(viewer, (PetscObject) dm, DMPlexVTKWriteAll, ft, PETSC_TRUE,(PetscObject) locv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -610,7 +610,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
-  ierr = DMGetSection(cdm, &coordSection);CHKERRQ(ierr);
+  ierr = DMGetLocalSection(cdm, &coordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
   if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
@@ -1170,7 +1170,7 @@ static PetscErrorCode DMPlexView_Draw(DM dm, PetscViewer viewer)
   ierr = DMGetCoordinateDim(dm, &dim);CHKERRQ(ierr);
   if (dim != 2) SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Cannot draw meshes of dimension %D", dim);
   ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
-  ierr = DMGetSection(cdm, &coordSection);CHKERRQ(ierr);
+  ierr = DMGetLocalSection(cdm, &coordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
@@ -1409,7 +1409,7 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
       PetscSection section;
       PetscInt     size;
 
-      ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
+      ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);
       ierr = PetscSectionGetStorageSize(section, &size);CHKERRQ(ierr);
       ierr = PetscMalloc1(size,&ltogidx);CHKERRQ(ierr);
       ierr = DMPlexGetSubdomainSection(dm, &subSection);CHKERRQ(ierr);
@@ -1486,7 +1486,7 @@ PetscErrorCode DMPlexGetSubdomainSection(DM dm, PetscSection *subsection)
     PetscSF      sf;
 
     ierr = PetscSFCreate(PETSC_COMM_SELF,&sf);CHKERRQ(ierr);
-    ierr = DMGetSection(dm,&section);CHKERRQ(ierr);
+    ierr = DMGetLocalSection(dm,&section);CHKERRQ(ierr);
     ierr = PetscSectionCreateGlobalSection(section,sf,PETSC_FALSE,PETSC_TRUE,&mesh->subdomainSection);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
   }
@@ -2651,7 +2651,7 @@ PetscErrorCode DMCreateSubDM_Plex(DM dm, PetscInt numFields, const PetscInt fiel
 
     (*subdm)->sfMigration = dm->sfMigration;
     ierr = PetscObjectReference((PetscObject) dm->sfMigration);CHKERRQ(ierr);
-    ierr = DMGetSection((*subdm), &section);CHKERRQ(ierr);CHKERRQ(ierr);
+    ierr = DMGetLocalSection((*subdm), &section);CHKERRQ(ierr);CHKERRQ(ierr);
     ierr = PetscSFCreateInverseSF((*subdm)->sfMigration, &sfMigrationInv);CHKERRQ(ierr);
     ierr = PetscSectionCreate(PetscObjectComm((PetscObject) (*subdm)), &sectionSeq);CHKERRQ(ierr);
     ierr = PetscSFDistributeSection(sfMigrationInv, section, NULL, sectionSeq);CHKERRQ(ierr);
@@ -2681,7 +2681,7 @@ PetscErrorCode DMCreateSuperDM_Plex(DM dms[], PetscInt len, IS **is, DM *superdm
       (*superdm)->sfMigration = dms[i]->sfMigration;
       ierr = PetscObjectReference((PetscObject) dms[i]->sfMigration);CHKERRQ(ierr);
       (*superdm)->useNatural = PETSC_TRUE;
-      ierr = DMGetSection((*superdm), &section);CHKERRQ(ierr);
+      ierr = DMGetLocalSection((*superdm), &section);CHKERRQ(ierr);
       ierr = PetscSFCreateInverseSF((*superdm)->sfMigration, &sfMigrationInv);CHKERRQ(ierr);
       ierr = PetscSectionCreate(PetscObjectComm((PetscObject) (*superdm)), &sectionSeq);CHKERRQ(ierr);
       ierr = PetscSFDistributeSection(sfMigrationInv, section, NULL, sectionSeq);CHKERRQ(ierr);
@@ -3674,7 +3674,7 @@ PetscErrorCode DMCreateCoordinateDM_Plex(DM dm, DM *cdm)
   ierr = DMPlexGetMaxProjectionHeight(dm, &maxHeight);CHKERRQ(ierr);
   ierr = DMPlexSetMaxProjectionHeight(*cdm, maxHeight);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &section);CHKERRQ(ierr);
-  ierr = DMSetSection(*cdm, section);CHKERRQ(ierr);
+  ierr = DMSetLocalSection(*cdm, section);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PETSC_COMM_SELF, &s);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_SELF, &m);CHKERRQ(ierr);
@@ -3880,7 +3880,7 @@ static PetscErrorCode PetscSectionFieldGetTensorDegree_Private(PetscSection sect
 
   Level: developer
 
-.seealso: DMGetSection(), PetscSectionSetClosurePermutation()
+.seealso: DMGetLocalSection(), PetscSectionSetClosurePermutation()
 @*/
 PetscErrorCode DMPlexSetClosurePermutationTensor(DM dm, PetscInt point, PetscSection section)
 {
@@ -3907,7 +3907,7 @@ PetscErrorCode DMPlexSetClosurePermutationTensor(DM dm, PetscInt point, PetscSec
       eStart = cone2[0];
     } else SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %D of depth %D cannot be used to bootstrap spectral ordering for dim %D", point, depth, dim);
   } else SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %D of depth %D cannot be used to bootstrap spectral ordering for dim %D", point, depth, dim);
-  if (!section) {ierr = DMGetSection(dm, &section);CHKERRQ(ierr);}
+  if (!section) {ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);}
   {                             /* Determine whether the chart covers all points or just vertices. */
     PetscInt pStart,pEnd,cStart,cEnd;
     ierr = DMPlexGetDepthStratum(dm,0,&pStart,&pEnd);CHKERRQ(ierr);
@@ -4422,7 +4422,7 @@ PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt 
 
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (!section) {ierr = DMGetSection(dm, &section);CHKERRQ(ierr);}
+  if (!section) {ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);}
   PetscValidHeaderSpecific(section, PETSC_SECTION_CLASSID, 2);
   PetscValidHeaderSpecific(v, VEC_CLASSID, 3);
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
@@ -4845,7 +4845,7 @@ PetscErrorCode DMPlexVecSetClosure(DM dm, PetscSection section, Vec v, PetscInt 
 
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (!section) {ierr = DMGetSection(dm, &section);CHKERRQ(ierr);}
+  if (!section) {ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);}
   PetscValidHeaderSpecific(section, PETSC_SECTION_CLASSID, 2);
   PetscValidHeaderSpecific(v, VEC_CLASSID, 3);
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
@@ -4995,7 +4995,7 @@ PetscErrorCode DMPlexVecSetFieldClosure_Internal(DM dm, PetscSection section, Ve
 
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (!section) {ierr = DMGetSection(dm, &section);CHKERRQ(ierr);}
+  if (!section) {ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);}
   PetscValidHeaderSpecific(section, PETSC_SECTION_CLASSID, 2);
   PetscValidHeaderSpecific(v, VEC_CLASSID, 3);
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
@@ -5953,7 +5953,7 @@ PetscErrorCode DMPlexMatSetClosure(DM dm, PetscSection section, PetscSection glo
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (!section) {ierr = DMGetSection(dm, &section);CHKERRQ(ierr);}
+  if (!section) {ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);}
   PetscValidHeaderSpecific(section, PETSC_SECTION_CLASSID, 2);
   if (!globalSection) {ierr = DMGetGlobalSection(dm, &globalSection);CHKERRQ(ierr);}
   PetscValidHeaderSpecific(globalSection, PETSC_SECTION_CLASSID, 3);
@@ -6105,9 +6105,9 @@ PetscErrorCode DMPlexMatSetClosureRefined(DM dmf, PetscSection fsection, PetscSe
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dmf, DM_CLASSID, 1);
   PetscValidHeaderSpecific(dmc, DM_CLASSID, 4);
-  if (!fsection) {ierr = DMGetSection(dmf, &fsection);CHKERRQ(ierr);}
+  if (!fsection) {ierr = DMGetLocalSection(dmf, &fsection);CHKERRQ(ierr);}
   PetscValidHeaderSpecific(fsection, PETSC_SECTION_CLASSID, 2);
-  if (!csection) {ierr = DMGetSection(dmc, &csection);CHKERRQ(ierr);}
+  if (!csection) {ierr = DMGetLocalSection(dmc, &csection);CHKERRQ(ierr);}
   PetscValidHeaderSpecific(csection, PETSC_SECTION_CLASSID, 5);
   if (!globalFSection) {ierr = DMGetGlobalSection(dmf, &globalFSection);CHKERRQ(ierr);}
   PetscValidHeaderSpecific(globalFSection, PETSC_SECTION_CLASSID, 3);
@@ -6261,9 +6261,9 @@ PetscErrorCode DMPlexMatGetClosureIndicesRefined(DM dmf, PetscSection fsection, 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dmf, DM_CLASSID, 1);
   PetscValidHeaderSpecific(dmc, DM_CLASSID, 4);
-  if (!fsection) {ierr = DMGetSection(dmf, &fsection);CHKERRQ(ierr);}
+  if (!fsection) {ierr = DMGetLocalSection(dmf, &fsection);CHKERRQ(ierr);}
   PetscValidHeaderSpecific(fsection, PETSC_SECTION_CLASSID, 2);
-  if (!csection) {ierr = DMGetSection(dmc, &csection);CHKERRQ(ierr);}
+  if (!csection) {ierr = DMGetLocalSection(dmc, &csection);CHKERRQ(ierr);}
   PetscValidHeaderSpecific(csection, PETSC_SECTION_CLASSID, 5);
   if (!globalFSection) {ierr = DMGetGlobalSection(dmf, &globalFSection);CHKERRQ(ierr);}
   PetscValidHeaderSpecific(globalFSection, PETSC_SECTION_CLASSID, 3);
@@ -7616,7 +7616,7 @@ PetscErrorCode DMCreateDefaultConstraints_Plex(DM dm)
   if (anchorSection) {
     PetscInt Nf;
 
-    ierr = DMGetSection(dm,&section);CHKERRQ(ierr);
+    ierr = DMGetLocalSection(dm,&section);CHKERRQ(ierr);
     ierr = DMPlexCreateConstraintSection_Anchors(dm,section,&cSec);CHKERRQ(ierr);
     ierr = DMPlexCreateConstraintMatrix_Anchors(dm,section,cSec,&cMat);CHKERRQ(ierr);
     ierr = DMGetNumFields(dm,&Nf);CHKERRQ(ierr);
@@ -7635,7 +7635,7 @@ PetscErrorCode DMCreateSubDomainDM_Plex(DM dm, DMLabel label, PetscInt value, IS
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);
   if (!section) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Must set default section for DM before splitting subdomain");
   if (!subdm)   SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Must set output subDM for splitting subdomain");
   /* Create subdomain */
@@ -7644,7 +7644,7 @@ PetscErrorCode DMCreateSubDomainDM_Plex(DM dm, DMLabel label, PetscInt value, IS
   ierr = DMPlexCreateSubpointIS(*subdm, &subis);CHKERRQ(ierr);
   ierr = PetscSectionCreateSubmeshSection(section, subis, &subsection);CHKERRQ(ierr);
   ierr = ISDestroy(&subis);CHKERRQ(ierr);
-  ierr = DMSetDefaultSection(*subdm, subsection);CHKERRQ(ierr);
+  ierr = DMSetLocalSection(*subdm, subsection);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&subsection);CHKERRQ(ierr);
   ierr = DMCopyDisc(dm, *subdm);CHKERRQ(ierr);
   /* Create map from submodel to global model */
@@ -7659,8 +7659,8 @@ PetscErrorCode DMCreateSubDomainDM_Plex(DM dm, DMLabel label, PetscInt value, IS
     ierr = DMPlexCreateSubpointIS(*subdm, &spIS);CHKERRQ(ierr);
     ierr = ISGetIndices(spIS, &spmap);CHKERRQ(ierr);
     ierr = PetscSectionGetNumFields(section, &Nf);CHKERRQ(ierr);
-    ierr = DMGetDefaultGlobalSection(dm, &sectionGlobal);CHKERRQ(ierr);
-    ierr = DMGetDefaultGlobalSection(*subdm, &subsectionGlobal);CHKERRQ(ierr);
+    ierr = DMGetGlobalSection(dm, &sectionGlobal);CHKERRQ(ierr);
+    ierr = DMGetGlobalSection(*subdm, &subsectionGlobal);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(subsection, &pStart, &pEnd);CHKERRQ(ierr);
     for (p = pStart; p < pEnd; ++p) {
       PetscInt gdof, pSubSize  = 0;

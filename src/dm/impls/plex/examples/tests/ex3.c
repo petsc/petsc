@@ -445,7 +445,7 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
       Vec             local;
       const PetscInt *anchors;
 
-      ierr = DMGetSection(dm,&section);CHKERRQ(ierr);
+      ierr = DMGetLocalSection(dm,&section);CHKERRQ(ierr);
       /* this creates the matrix and preallocates the matrix structure: we
        * just have to fill in the values */
       ierr = DMGetDefaultConstraints(dm,&cSec,&cMat);CHKERRQ(ierr);

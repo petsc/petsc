@@ -205,8 +205,10 @@ PETSC_EXTERN PetscErrorCode DMGetNullSpaceConstructor(DM, PetscInt, PetscErrorCo
 PETSC_EXTERN PetscErrorCode DMSetNearNullSpaceConstructor(DM, PetscInt, PetscErrorCode (*)(DM, PetscInt, MatNullSpace *));
 PETSC_EXTERN PetscErrorCode DMGetNearNullSpaceConstructor(DM, PetscInt, PetscErrorCode (**)(DM, PetscInt, MatNullSpace *));
 
-PETSC_EXTERN PetscErrorCode DMGetSection(DM, PetscSection *);
-PETSC_EXTERN PetscErrorCode DMSetSection(DM, PetscSection);
+PETSC_EXTERN PetscErrorCode DMGetSection(DM, PetscSection *); /* Use DMGetLocalSection() in new code (since v3.12) */
+PETSC_EXTERN PetscErrorCode DMSetSection(DM, PetscSection);   /* Use DMSetLocalSection() in new code (since v3.12) */
+PETSC_EXTERN PetscErrorCode DMGetLocalSection(DM, PetscSection *);
+PETSC_EXTERN PetscErrorCode DMSetLocalSection(DM, PetscSection);
 PETSC_EXTERN PetscErrorCode DMGetDefaultConstraints(DM, PetscSection *, Mat *);
 PETSC_EXTERN PetscErrorCode DMSetDefaultConstraints(DM, PetscSection, Mat);
 PETSC_EXTERN PetscErrorCode DMGetGlobalSection(DM, PetscSection *);
@@ -217,10 +219,10 @@ PETSC_EXTERN PetscErrorCode DMCreateDefaultSF(DM, PetscSection, PetscSection);
 PETSC_EXTERN PetscErrorCode DMGetPointSF(DM, PetscSF *);
 PETSC_EXTERN PetscErrorCode DMSetPointSF(DM, PetscSF);
 
-PETSC_STATIC_INLINE PetscErrorCode DMGetDefaultSection(DM dm, PetscSection *s) {return DMGetSection(dm,s);}
-PETSC_STATIC_INLINE PetscErrorCode DMSetDefaultSection(DM dm, PetscSection s) {return DMSetSection(dm,s);}
-PETSC_STATIC_INLINE PetscErrorCode DMGetDefaultGlobalSection(DM dm, PetscSection *s) {return DMGetGlobalSection(dm,s);}
-PETSC_STATIC_INLINE PetscErrorCode DMSetDefaultGlobalSection(DM dm, PetscSection s) {return DMSetGlobalSection(dm,s);}
+PETSC_STATIC_INLINE PETSC_DEPRECATED_FUNCTION("Use DMGetSection() (since v3.9)") PetscErrorCode DMGetDefaultSection(DM dm, PetscSection *s) {return DMGetSection(dm,s);}
+PETSC_STATIC_INLINE PETSC_DEPRECATED_FUNCTION("Use DMSetSection() (since v3.9)") PetscErrorCode DMSetDefaultSection(DM dm, PetscSection s) {return DMSetSection(dm,s);}
+PETSC_STATIC_INLINE PETSC_DEPRECATED_FUNCTION("Use DMGetGlobalSection() (since v3.9)") PetscErrorCode DMGetDefaultGlobalSection(DM dm, PetscSection *s) {return DMGetGlobalSection(dm,s);}
+PETSC_STATIC_INLINE PETSC_DEPRECATED_FUNCTION("Use DMSetGlobalSection() (since v3.9)") PetscErrorCode DMSetDefaultGlobalSection(DM dm, PetscSection s) {return DMSetGlobalSection(dm,s);}
 
 
 PETSC_EXTERN PetscErrorCode DMGetOutputDM(DM, DM *);

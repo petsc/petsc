@@ -1131,7 +1131,7 @@ PetscErrorCode CreatePartitionVec(DM dm, DM *dmCell, Vec *partition)
     ierr = PetscSectionSetDof(sectionCell, c, 1);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(sectionCell);CHKERRQ(ierr);
-  ierr = DMSetSection(*dmCell, sectionCell);CHKERRQ(ierr);
+  ierr = DMSetLocalSection(*dmCell, sectionCell);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&sectionCell);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(*dmCell, partition);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)*partition, "partition");CHKERRQ(ierr);
@@ -1173,7 +1173,7 @@ PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
     ierr = PetscSectionSetDof(sectionMass, v, numFaces*numFaces);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(sectionMass);CHKERRQ(ierr);
-  ierr = DMSetSection(dmMass, sectionMass);CHKERRQ(ierr);
+  ierr = DMSetLocalSection(dmMass, sectionMass);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&sectionMass);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dmMass, massMatrix);CHKERRQ(ierr);
   ierr = VecGetArray(*massMatrix, &m);CHKERRQ(ierr);

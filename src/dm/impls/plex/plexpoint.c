@@ -17,7 +17,7 @@
 
    Level: intermediate
 
-.seealso: DMPlexGetPointLocalField(), DMGetSection(), PetscSectionGetOffset(), PetscSectionGetDof(), DMPlexPointLocalRead(), DMPlexPointLocalRead(), DMPlexPointLocalRef()
+.seealso: DMPlexGetPointLocalField(), DMGetLocalSection(), PetscSectionGetOffset(), PetscSectionGetDof(), DMPlexPointLocalRead(), DMPlexPointLocalRead(), DMPlexPointLocalRef()
 @*/
 PetscErrorCode DMPlexGetPointLocal(DM dm, PetscInt point, PetscInt *start, PetscInt *end)
 {
@@ -56,7 +56,7 @@ $  const struct { PetscScalar foo,bar,baz; } *ptr;
 $  DMPlexPointLocalRead(dm,point,array,&ptr);
 $  x = 2*ptr->foo + 3*ptr->bar + 5*ptr->baz;
 
-.seealso: DMGetSection(), PetscSectionGetOffset(), PetscSectionGetDof(), DMPlexGetPointLocal(), DMPlexPointGlobalRead()
+.seealso: DMGetLocalSection(), PetscSectionGetOffset(), PetscSectionGetDof(), DMPlexGetPointLocal(), DMPlexPointGlobalRead()
 @*/
 PetscErrorCode DMPlexPointLocalRead(DM dm,PetscInt point,const PetscScalar *array,void *ptr)
 {
@@ -94,7 +94,7 @@ $  struct { PetscScalar foo,bar,baz; } *ptr;
 $  DMPlexPointLocalRef(dm,point,array,&ptr);
 $  ptr->foo = 2; ptr->bar = 3; ptr->baz = 5;
 
-.seealso: DMGetSection(), PetscSectionGetOffset(), PetscSectionGetDof(), DMPlexGetPointLocal(), DMPlexPointGlobalRef()
+.seealso: DMGetLocalSection(), PetscSectionGetOffset(), PetscSectionGetDof(), DMPlexGetPointLocal(), DMPlexPointGlobalRef()
 @*/
 PetscErrorCode DMPlexPointLocalRef(DM dm,PetscInt point,PetscScalar *array,void *ptr)
 {
@@ -128,7 +128,7 @@ PetscErrorCode DMPlexPointLocalRef(DM dm,PetscInt point,PetscScalar *array,void 
 
   Level: intermediate
 
-.seealso: DMPlexGetPointLocal(), DMGetSection(), PetscSectionGetOffset(), PetscSectionGetDof(), DMPlexPointLocalRead(), DMPlexPointLocalRead(), DMPlexPointLocalRef()
+.seealso: DMPlexGetPointLocal(), DMGetLocalSection(), PetscSectionGetOffset(), PetscSectionGetDof(), DMPlexPointLocalRead(), DMPlexPointLocalRead(), DMPlexPointLocalRef()
 @*/
 PetscErrorCode DMPlexGetPointLocalField(DM dm, PetscInt point, PetscInt field, PetscInt *start, PetscInt *end)
 {
@@ -161,7 +161,7 @@ PetscErrorCode DMPlexGetPointLocalField(DM dm, PetscInt point, PetscInt field, P
 
    Level: intermediate
 
-.seealso: DMGetSection(), PetscSectionGetOffset(), PetscSectionGetDof(), DMPlexGetPointLocal(), DMPlexPointGlobalRef()
+.seealso: DMGetLocalSection(), PetscSectionGetOffset(), PetscSectionGetDof(), DMPlexGetPointLocal(), DMPlexPointGlobalRef()
 @*/
 PetscErrorCode DMPlexPointLocalFieldRead(DM dm, PetscInt point,PetscInt field,const PetscScalar *array,void *ptr)
 {
@@ -193,7 +193,7 @@ PetscErrorCode DMPlexPointLocalFieldRead(DM dm, PetscInt point,PetscInt field,co
 
    Level: intermediate
 
-.seealso: DMGetSection(), PetscSectionGetOffset(), PetscSectionGetDof(), DMPlexGetPointLocal(), DMPlexPointGlobalRef()
+.seealso: DMGetLocalSection(), PetscSectionGetOffset(), PetscSectionGetDof(), DMPlexGetPointLocal(), DMPlexPointGlobalRef()
 @*/
 PetscErrorCode DMPlexPointLocalFieldRef(DM dm,PetscInt point,PetscInt field,PetscScalar *array,void *ptr)
 {
@@ -226,7 +226,7 @@ PetscErrorCode DMPlexPointLocalFieldRef(DM dm,PetscInt point,PetscInt field,Pets
 
   Level: intermediate
 
-.seealso: DMPlexGetPointGlobalField(), DMGetSection(), PetscSectionGetOffset(), PetscSectionGetDof(), DMPlexPointGlobalRead(), DMPlexGetPointLocal(), DMPlexPointGlobalRead(), DMPlexPointGlobalRef()
+.seealso: DMPlexGetPointGlobalField(), DMGetLocalSection(), PetscSectionGetOffset(), PetscSectionGetDof(), DMPlexPointGlobalRead(), DMPlexGetPointLocal(), DMPlexPointGlobalRead(), DMPlexPointGlobalRef()
 @*/
 PetscErrorCode DMPlexGetPointGlobal(DM dm, PetscInt point, PetscInt *start, PetscInt *end)
 {
@@ -265,7 +265,7 @@ $  const struct { PetscScalar foo,bar,baz; } *ptr;
 $  DMPlexPointGlobalRead(dm,point,array,&ptr);
 $  x = 2*ptr->foo + 3*ptr->bar + 5*ptr->baz;
 
-.seealso: DMGetSection(), PetscSectionGetOffset(), PetscSectionGetDof(), DMPlexGetPointGlobal(), DMPlexPointLocalRead(), DMPlexPointGlobalRef()
+.seealso: DMGetLocalSection(), PetscSectionGetOffset(), PetscSectionGetDof(), DMPlexGetPointGlobal(), DMPlexPointLocalRead(), DMPlexPointGlobalRef()
 @*/
 PetscErrorCode DMPlexPointGlobalRead(DM dm,PetscInt point,const PetscScalar *array,const void *ptr)
 {
@@ -303,7 +303,7 @@ $  struct { PetscScalar foo,bar,baz; } *ptr;
 $  DMPlexPointGlobalRef(dm,point,array,&ptr);
 $  ptr->foo = 2; ptr->bar = 3; ptr->baz = 5;
 
-.seealso: DMGetSection(), PetscSectionGetOffset(), PetscSectionGetDof(), DMPlexGetPointGlobal(), DMPlexPointLocalRef(), DMPlexPointGlobalRead()
+.seealso: DMGetLocalSection(), PetscSectionGetOffset(), PetscSectionGetDof(), DMPlexGetPointGlobal(), DMPlexPointLocalRef(), DMPlexPointGlobalRead()
 @*/
 PetscErrorCode DMPlexPointGlobalRef(DM dm,PetscInt point,PetscScalar *array,void *ptr)
 {
@@ -337,7 +337,7 @@ PetscErrorCode DMPlexPointGlobalRef(DM dm,PetscInt point,PetscScalar *array,void
 
   Level: intermediate
 
-.seealso: DMPlexGetPointGlobal(), DMGetSection(), PetscSectionGetOffset(), PetscSectionGetDof(), DMPlexPointGlobalRead(), DMPlexGetPointLocal(), DMPlexPointGlobalRead(), DMPlexPointGlobalRef()
+.seealso: DMPlexGetPointGlobal(), DMGetLocalSection(), PetscSectionGetOffset(), PetscSectionGetDof(), DMPlexPointGlobalRead(), DMPlexGetPointLocal(), DMPlexPointGlobalRead(), DMPlexPointGlobalRef()
 @*/
 PetscErrorCode DMPlexGetPointGlobalField(DM dm, PetscInt point, PetscInt field, PetscInt *start, PetscInt *end)
 {
@@ -370,7 +370,7 @@ PetscErrorCode DMPlexGetPointGlobalField(DM dm, PetscInt point, PetscInt field, 
 
    Level: intermediate
 
-.seealso: DMGetSection(), PetscSectionGetOffset(), PetscSectionGetDof(), DMPlexGetPointGlobal(), DMPlexPointLocalRead(), DMPlexPointGlobalRef()
+.seealso: DMGetLocalSection(), PetscSectionGetOffset(), PetscSectionGetDof(), DMPlexGetPointGlobal(), DMPlexPointLocalRead(), DMPlexPointGlobalRef()
 @*/
 PetscErrorCode DMPlexPointGlobalFieldRead(DM dm,PetscInt point,PetscInt field,const PetscScalar *array,void *ptr)
 {
@@ -402,7 +402,7 @@ PetscErrorCode DMPlexPointGlobalFieldRead(DM dm,PetscInt point,PetscInt field,co
 
    Level: intermediate
 
-.seealso: DMGetSection(), PetscSectionGetOffset(), PetscSectionGetDof(), DMPlexGetPointGlobal(), DMPlexPointLocalRef(), DMPlexPointGlobalRead()
+.seealso: DMGetLocalSection(), PetscSectionGetOffset(), PetscSectionGetDof(), DMPlexGetPointGlobal(), DMPlexPointLocalRef(), DMPlexPointGlobalRead()
 @*/
 PetscErrorCode DMPlexPointGlobalFieldRef(DM dm,PetscInt point,PetscInt field,PetscScalar *array,void *ptr)
 {

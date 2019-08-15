@@ -171,6 +171,10 @@
           <li>Changed the APIs for integrand evaluations and corresponding derivative evaluations. TSSetCostIntegrand() is deprecated. (Instead a quadrature TS is used to handle the callbacks)</li>
         </ul>
       <h4>DM/DA:</h4>
+      <ul>
+        <li>Add DMGetLocalSection() to be used in preference to DMGetSection().</li>
+        <li>Add DMSetLocalSection() to be used in preference to DMSetSection().</li>
+      </ul>
       <h4>DMPlex:</h4>
         <ul>
           <li>Rename DMPlexCreateSpectralClosurePermutation() to DMPlexSetClosurePermutationTensor()</li>

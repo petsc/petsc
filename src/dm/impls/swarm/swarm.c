@@ -206,7 +206,7 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
   ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
   ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
   ierr = PetscMalloc3(dim, &v0, dim*dim, &J, dim*dim,&invJ);CHKERRQ(ierr);
-  ierr = DMGetSection(dmf, &fsection);CHKERRQ(ierr);
+  ierr = DMGetLocalSection(dmf, &fsection);CHKERRQ(ierr);
   ierr = DMGetGlobalSection(dmf, &globalFSection);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dmf, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = MatGetLocalSize(mass, &locRows, &locCols);CHKERRQ(ierr);

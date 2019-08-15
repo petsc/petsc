@@ -6027,7 +6027,7 @@ VecSetFromOptions(localVec);
 \end{lstlisting}
 though it is usually easier to use the \lstinline{DM} directly, which also provides global vectors,
 \begin{lstlisting}
-DMSetSection(dm, s);
+DMSetLocalSection(dm, s);
 DMGetLocalVector(dm, &localVec);
 DMGetGlobalVector(dm, &globalVec);
 \end{lstlisting}

@@ -112,7 +112,7 @@ static PetscErrorCode DMFieldEvaluateFE_DS(DMField field, IS pointIS, PetscQuadr
   ierr = PetscQuadratureGetData(quad,&dim,NULL,&nq,&qpoints,NULL);CHKERRQ(ierr);
   ierr = DMFieldDSGetHeightDisc(field,dsfield->height - 1 - dim,&disc);CHKERRQ(ierr);
   ierr = DMGetDimension(dm,&meshDim);CHKERRQ(ierr);
-  ierr = DMGetDefaultSection(dm,&section);CHKERRQ(ierr);
+  ierr = DMGetLocalSection(dm,&section);CHKERRQ(ierr);
   ierr = PetscSectionGetField(section,dsfield->fieldNum,&section);CHKERRQ(ierr);
   ierr = PetscObjectGetClassId(disc,&classid);CHKERRQ(ierr);
   /* TODO: batch */
@@ -203,7 +203,7 @@ static PetscErrorCode DMFieldEvaluate_DS(DMField field, Vec points, PetscDataTyp
 
   PetscFunctionBegin;
   nc   = field->numComponents;
-  ierr = DMGetDefaultSection(field->dm,&section);CHKERRQ(ierr);
+  ierr = DMGetLocalSection(field->dm,&section);CHKERRQ(ierr);
   ierr = DMFieldDSGetHeightDisc(field,0,&cellDisc);CHKERRQ(ierr);
   ierr = PetscObjectGetClassId(cellDisc, &discID);CHKERRQ(ierr);
   if (discID != PETSCFE_CLASSID) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Discretization type not supported\n");
@@ -1054,7 +1054,7 @@ PetscErrorCode DMFieldCreateDS(DM dm, PetscInt fieldNum, Vec vec,DMField *field)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetDefaultSection(dm,&section);CHKERRQ(ierr);
+  ierr = DMGetLocalSection(dm,&section);CHKERRQ(ierr);
   ierr = PetscSectionGetFieldComponents(section,fieldNum,&numComponents);CHKERRQ(ierr);
   ierr = DMGetNumFields(dm,&dsNumFields);CHKERRQ(ierr);
   if (dsNumFields) {ierr = DMGetField(dm,fieldNum,NULL,&disc);CHKERRQ(ierr);}

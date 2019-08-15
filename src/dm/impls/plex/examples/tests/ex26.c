@@ -169,7 +169,7 @@ int main(int argc, char **argv) {
   if (csIS) {ierr = ISRestoreIndices(csIS, &csID);CHKERRQ(ierr);}
   ierr = ISDestroy(&csIS);CHKERRQ(ierr);
   ierr = PetscSectionSetUp(section);CHKERRQ(ierr);
-  ierr = DMSetSection(dm, section);CHKERRQ(ierr);
+  ierr = DMSetLocalSection(dm, section);CHKERRQ(ierr);
   ierr = PetscObjectViewFromOptions((PetscObject) section, NULL, "-dm_section_view");CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
 
@@ -318,7 +318,7 @@ int main(int argc, char **argv) {
     PetscScalar *cval, *xyz;
     PetscInt     cdimCoord = 24;
 
-    ierr = DMGetSection(dmUA, &sectionUA);CHKERRQ(ierr);
+    ierr = DMGetLocalSection(dmUA, &sectionUA);CHKERRQ(ierr);
     ierr = DMGetLocalVector(dmUA, &UALoc);CHKERRQ(ierr);
     ierr = VecGetArray(UALoc, &cval);CHKERRQ(ierr);
     ierr = DMGetCoordinateSection(dmUA, &coordSection);CHKERRQ(ierr);

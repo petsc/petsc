@@ -120,7 +120,7 @@ PetscErrorCode DMPlexCreateGlobalToNaturalSF(DM dm, PetscSection section, PetscS
   ierr = PetscSFDistributeSection(sfMigration, section, &remoteOffsets, sectionDist);CHKERRQ(ierr);
   /* ierr = PetscPrintf(comm, "Distributed Section\n");CHKERRQ(ierr);
    ierr = PetscSectionView(sectionDist, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
-  ierr = DMSetSection(dm, sectionDist);CHKERRQ(ierr);
+  ierr = DMSetLocalSection(dm, sectionDist);CHKERRQ(ierr);
   /* Get a pruned version of migration SF */
   ierr = DMGetGlobalSection(dm, &gSection);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(gSection, &pStart, &pEnd);CHKERRQ(ierr);

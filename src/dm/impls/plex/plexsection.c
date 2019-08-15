@@ -551,7 +551,7 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
       ierr = PetscSectionSetFieldName(section, f, name);CHKERRQ(ierr);
     }
   }
-  ierr = DMSetSection(dm, section);CHKERRQ(ierr);
+  ierr = DMSetLocalSection(dm, section);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
   for (bc = 0; bc < numBC; ++bc) {ierr = ISDestroy(&bcPoints[bc]);CHKERRQ(ierr);ierr = ISDestroy(&bcComps[bc]);CHKERRQ(ierr);}
   ierr = PetscFree3(bcFields,bcPoints,bcComps);CHKERRQ(ierr);

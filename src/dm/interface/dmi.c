@@ -60,7 +60,7 @@ PetscErrorCode DMCreateLocalVector_Section_Private(DM dm,Vec *vec)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
+  ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; ++p) {
     PetscInt dof;
@@ -100,7 +100,7 @@ PetscErrorCode DMCreateLocalVector_Section_Private(DM dm,Vec *vec)
 
   Level: intermediate
 
-.seealso DMCreateSubDM(), DMGetSection(), DMPlexSetMigrationSF(), DMView()
+.seealso DMCreateSubDM(), DMGetLocalSection(), DMPlexSetMigrationSF(), DMView()
 @*/
 PetscErrorCode DMCreateSectionSubDM(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm)
 {
@@ -111,7 +111,7 @@ PetscErrorCode DMCreateSectionSubDM(DM dm, PetscInt numFields, const PetscInt fi
 
   PetscFunctionBegin;
   if (!numFields) PetscFunctionReturn(0);
-  ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
+  ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);
   ierr = DMGetGlobalSection(dm, &sectionGlobal);CHKERRQ(ierr);
   if (!section) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Must set default section for DM before splitting fields");
   if (!sectionGlobal) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Must set default global section for DM before splitting fields");
@@ -193,7 +193,7 @@ PetscErrorCode DMCreateSectionSubDM(DM dm, PetscInt numFields, const PetscInt fi
     PetscInt     f, nf = 0;
 
     ierr = PetscSectionCreateSubsection(section, numFields, fields, &subsection);CHKERRQ(ierr);
-    ierr = DMSetSection(*subdm, subsection);CHKERRQ(ierr);
+    ierr = DMSetLocalSection(*subdm, subsection);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&subsection);CHKERRQ(ierr);
     for (f = 0; f < numFields; ++f) {
       (*subdm)->nullspaceConstructors[f] = dm->nullspaceConstructors[fields[f]];
@@ -284,7 +284,7 @@ PetscErrorCode DMCreateSectionSubDM(DM dm, PetscInt numFields, const PetscInt fi
 
   Level: intermediate
 
-.seealso DMCreateSuperDM(), DMGetSection(), DMPlexSetMigrationSF(), DMView()
+.seealso DMCreateSuperDM(), DMGetLocalSection(), DMPlexSetMigrationSF(), DMView()
 @*/
 PetscErrorCode DMCreateSectionSuperDM(DM dms[], PetscInt len, IS **is, DM *superdm)
 {
@@ -299,7 +299,7 @@ PetscErrorCode DMCreateSectionSuperDM(DM dms[], PetscInt len, IS **is, DM *super
   /* Pull out local and global sections */
   ierr = PetscMalloc3(len, &Nfs, len, &sections, len, &sectionGlobals);CHKERRQ(ierr);
   for (i = 0 ; i < len; ++i) {
-    ierr = DMGetSection(dms[i], &sections[i]);CHKERRQ(ierr);
+    ierr = DMGetLocalSection(dms[i], &sections[i]);CHKERRQ(ierr);
     ierr = DMGetGlobalSection(dms[i], &sectionGlobals[i]);CHKERRQ(ierr);
     if (!sections[i]) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Must set default section for DM before splitting fields");
     if (!sectionGlobals[i]) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Must set default global section for DM before splitting fields");
@@ -308,14 +308,14 @@ PetscErrorCode DMCreateSectionSuperDM(DM dms[], PetscInt len, IS **is, DM *super
   }
   /* Create the supersection */
   ierr = PetscSectionCreateSupersection(sections, len, &supersection);CHKERRQ(ierr);
-  ierr = DMSetSection(*superdm, supersection);CHKERRQ(ierr);
+  ierr = DMSetLocalSection(*superdm, supersection);CHKERRQ(ierr);
   /* Create ISes */
   if (is) {
     PetscSection supersectionGlobal;
     PetscInt     bs = -1, startf = 0;
 
     ierr = PetscMalloc1(len, is);CHKERRQ(ierr);
-    ierr = DMGetDefaultGlobalSection(*superdm, &supersectionGlobal);CHKERRQ(ierr);
+    ierr = DMGetGlobalSection(*superdm, &supersectionGlobal);CHKERRQ(ierr);
     for (i = 0 ; i < len; startf += Nfs[i], ++i) {
       PetscInt *subIndices;
       PetscInt  subSize, subOff, pStart, pEnd, p, start, end, dummy;

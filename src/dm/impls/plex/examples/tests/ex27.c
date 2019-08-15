@@ -64,7 +64,7 @@ static PetscErrorCode TestLocalDofOrder(DM dm, AppCtx *ctx)
   ierr = DMSetField(dm, 1, NULL, (PetscObject) fe[1]);CHKERRQ(ierr);
   ierr = DMSetField(dm, 2, NULL, (PetscObject) fe[2]);CHKERRQ(ierr);
   ierr = DMCreateDS(dm);CHKERRQ(ierr);
-  ierr = DMGetSection(dm, &s);CHKERRQ(ierr);
+  ierr = DMGetLocalSection(dm, &s);CHKERRQ(ierr);
   ierr = PetscObjectViewFromOptions((PetscObject) s, NULL, "-dof_view");CHKERRQ(ierr);
 
   ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
