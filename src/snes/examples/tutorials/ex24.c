@@ -16,7 +16,7 @@ typedef struct {
   /* Domain and mesh definition */
   PetscInt  dim;     /* The topological mesh dimension */
   PetscBool simplex; /* Simplicial mesh */
-  SolType   solType; /* The tyoe of exact solution */
+  SolType   solType; /* The type of exact solution */
 } AppCtx;
 
 /* 2D Dirichlet potential example

@@ -418,8 +418,8 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Parmetis(MatPartitioning part)
 
    Input Parameter:
 +     mesh - the graph that represents the mesh
--     ncommonnodes - mesh elements that share this number of common nodes are considered neighbors, use 2 for triangules and
-                     quadralaterials, 3 for tetrahedrals and 4 for hexahedrals
+-     ncommonnodes - mesh elements that share this number of common nodes are considered neighbors, use 2 for triangles and
+                     quadrilaterials, 3 for tetrahedrals and 4 for hexahedrals
 
    Output Parameter:
 .     dual - the dual graph
@@ -451,8 +451,8 @@ PetscErrorCode MatMeshToVertexGraph(Mat mesh,PetscInt ncommonnodes,Mat *dual)
 
    Input Parameter:
 +     mesh - the graph that represents the mesh
--     ncommonnodes - mesh elements that share this number of common nodes are considered neighbors, use 2 for triangules and
-                     quadralaterials, 3 for tetrahedrals and 4 for hexahedrals
+-     ncommonnodes - mesh elements that share this number of common nodes are considered neighbors, use 2 for triangles and
+                     quadrilaterials, 3 for tetrahedrals and 4 for hexahedrals
 
    Output Parameter:
 .     dual - the dual graph
@@ -460,7 +460,7 @@ PetscErrorCode MatMeshToVertexGraph(Mat mesh,PetscInt ncommonnodes,Mat *dual)
    Notes:
      Currently requires ParMetis to be installed and uses ParMETIS_V3_Mesh2Dual()
 
-$     Each row of the mesh object represents a single cell in the mesh. For triangles it has 3 entries, quadralaterials 4 entries,
+$     Each row of the mesh object represents a single cell in the mesh. For triangles it has 3 entries, quadrilaterials 4 entries,
 $         tetrahedrals 4 entries and hexahedrals 8 entries. You can mix triangles and quadrilaterals in the same mesh, but cannot
 $         mix  tetrahedrals and hexahedrals
 $     The columns of each row of the Mat mesh are the global vertex numbers of the vertices of that row's cell.

@@ -655,7 +655,7 @@ PetscErrorCode MatRestoreRow(Mat mat,PetscInt row,PetscInt *ncols,const PetscInt
 .  mat - the matrix
 
    Notes:
-   The flag is to ensure that users are aware of MatGetRow() only provides the upper trianglular part of the row for the matrices in MATSBAIJ format.
+   The flag is to ensure that users are aware of MatGetRow() only provides the upper triangular part of the row for the matrices in MATSBAIJ format.
 
    Level: advanced
 

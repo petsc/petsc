@@ -1,7 +1,3 @@
-
-/*
-      Some PETSc utilites
-*/
 #include <petsc/private/petscimpl.h>             /*I    "petscsys.h"   I*/
 /* ---------------------------------------------------------------- */
 /*

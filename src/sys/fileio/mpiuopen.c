@@ -1,6 +1,6 @@
 #define PETSC_DESIRE_FEATURE_TEST_MACROS /* for popen() */
 /*
-      Some PETSc utilites routines to add simple parallel IO capability
+      Some PETSc utility routines to add simple parallel IO capabilities
 */
 #include <petscsys.h>
 

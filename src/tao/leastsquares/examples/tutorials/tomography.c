@@ -1,6 +1,6 @@
 /* XH:
     Todo: add cs1f.F90 and adjust makefile.
-    Todo: maybe provide code template to generate 1D/2D/3D gradient, DCT tranform matrix for D etc.
+    Todo: maybe provide code template to generate 1D/2D/3D gradient, DCT transform matrix for D etc.
 */
 /*
    Include "petsctao.h" so that we can use TAO solvers.  Note that this

@@ -1854,7 +1854,7 @@ PetscErrorCode MatSOR_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscR
 
   if (flag == SOR_APPLY_LOWER) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"SOR_APPLY_LOWER is not implemented");
   else if (flag & SOR_EISENSTAT) {
-    /* Let  A = L + U + D; where L is lower trianglar,
+    /* Let  A = L + U + D; where L is lower triangular,
     U is upper triangular, E = D/omega; This routine applies
 
             (L + E)^{-1} A (U + E)^{-1}

@@ -1310,7 +1310,7 @@ PetscErrorCode PCTelescopeGetSubcommType(PC pc, PetscSubcommType *subcommtype)
    a new (near) nullspace, defined on the sub-communicator, which is attached to B' (the B operator which was scattered to c')
 
    The telescoping preconditioner can re-partition an attached DM if it is a DMDA (2D or 3D -
-   support for 1D DMDAs is not provided). If a DMDA is found, a topolgically equivalent DMDA is created on c'
+   support for 1D DMDAs is not provided). If a DMDA is found, a topologically equivalent DMDA is created on c'
    and this new DM is attached the sub KSP. The design of telescope is such that it should be possible to extend support
    for re-partitioning other to DM's (e.g. DMPLEX). The user can supply a flag to ignore attached DMs.
    Alternatively, user-provided re-partitioned DMs can be used via -pc_telescope_use_coarse_dm.
