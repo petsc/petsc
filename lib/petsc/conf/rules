@@ -750,6 +750,9 @@ checkbadURLS:
           fi; \
         done
 
+checkbadSpelling:
+	-@x=`python3 ../bin/extract.py | aspell list | sort -u` ; 
+
 sourcelist:
 	-@for i in ${SOURCEALL}; do \
 	    /bin/echo -n ${LOCDIR}$${i} " " >> ${BASE_DIR}/files; \

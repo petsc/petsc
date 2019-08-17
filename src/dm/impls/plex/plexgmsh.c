@@ -631,7 +631,7 @@ static PetscErrorCode DMPlexCreateGmsh_ReadPeriodic_v40(GmshFile *gmsh, int shif
     if (fileFormat == 22 || !binary) {
       ierr = PetscViewerRead(viewer, line, 1, NULL, PETSC_STRING);CHKERRQ(ierr);
       snum = sscanf(line, "%ld", &nNodes);
-      if (snum != 1) { /* discard tranformation and try again */
+      if (snum != 1) { /* discard transformation and try again */
         ierr = PetscViewerRead(viewer, line, -PETSC_MAX_PATH_LEN, NULL, PETSC_STRING);CHKERRQ(ierr);
         ierr = PetscViewerRead(viewer, line, 1, NULL, PETSC_STRING);CHKERRQ(ierr);
         snum = sscanf(line, "%ld", &nNodes);
@@ -640,7 +640,7 @@ static PetscErrorCode DMPlexCreateGmsh_ReadPeriodic_v40(GmshFile *gmsh, int shif
     } else {
       ierr = PetscViewerRead(viewer, &nNodes, 1, NULL, PETSC_LONG);CHKERRQ(ierr);
       if (byteSwap) {ierr = PetscByteSwap(&nNodes, PETSC_LONG, 1);CHKERRQ(ierr);}
-      if (nNodes == -1) { /* discard tranformation and try again */
+      if (nNodes == -1) { /* discard transformation and try again */
         ierr = PetscViewerRead(viewer, affine, 16, NULL, PETSC_DOUBLE);CHKERRQ(ierr);
         ierr = PetscViewerRead(viewer, &nNodes, 1, NULL, PETSC_LONG);CHKERRQ(ierr);
         if (byteSwap) {ierr = PetscByteSwap(&nNodes, PETSC_LONG, 1);CHKERRQ(ierr);}

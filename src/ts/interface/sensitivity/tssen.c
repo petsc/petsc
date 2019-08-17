@@ -628,7 +628,7 @@ PetscErrorCode TSComputeIHessianProductFunctionPP(TS ts,PetscReal t,Vec U,Vec *V
 }
 
 /*@C
-  TSSetRHSHessianProduct - Sets the function that computes the vecotr-Hessian-vector product. The Hessian is the second-order derivative of G (RHSFunction) w.r.t. the state variable.
+  TSSetRHSHessianProduct - Sets the function that computes the vector-Hessian-vector product. The Hessian is the second-order derivative of G (RHSFunction) w.r.t. the state variable.
 
   Logically Collective on TS
 

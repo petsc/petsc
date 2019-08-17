@@ -167,7 +167,7 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2,PetscInt data_stride,
   ierr     = MatGetOwnershipRange(a_Prol, &Istart, &Iend);CHKERRQ(ierr);
   nFineLoc = (Iend-Istart)/bs; myFine0 = Istart/bs;
   nPlotPts = nFineLoc; /* locals */
-  /* traingle */
+  /* triangle */
   /* Define input points - in*/
   in.numberofpoints          = nselected_2;
   in.numberofpointattributes = 0;
