@@ -45,6 +45,7 @@ class Configure(config.package.Package):
     else:
       self.deps       = [self.scalapack,self.mpi,self.blasLapack,self.flibs]
       self.odeps      = [self.metis,self.parmetis,self.ptscotch]
+    self.openmp     = framework.require('config.packages.openmp',self)
     return
 
   def consistencyChecks(self):
@@ -59,6 +60,11 @@ class Configure(config.package.Package):
 
   def Install(self):
     import os
+
+    if self.openmp.found:
+      #  MUMPS has no make flags for turning on/off OpenMP it just uses it if it can
+      self.usesopenmp = 'yes'
+      # use OMP_NUM_THREADS to control the number of threads used
 
     if not hasattr(self.compilers, 'FC'):
       raise RuntimeError('Cannot install '+self.name+' without Fortran, make sure you do NOT have --with-fc=0')
