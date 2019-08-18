@@ -227,7 +227,7 @@ static void g3_elas_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   for (c = 0; c < Nc; ++c) {
     for (d = 0; d < dim; ++d) {
       g3[((c*Nc + c)*dim + d)*dim + d] += mu;
-      g3[((c*Nc + d)*dim + c)*dim + d] += mu;
+      g3[((c*Nc + d)*dim + d)*dim + c] += mu;
       g3[((c*Nc + d)*dim + c)*dim + d] += lambda;
     }
   }
