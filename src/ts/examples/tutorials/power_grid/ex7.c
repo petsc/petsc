@@ -428,7 +428,7 @@ PetscErrorCode Parameter_settings(AppCtx *user)
 
    test:
       suffix: 3
-      args: -ts_max_steps 2 -snes_mf
+      args: -ts_max_steps 2 -snes_mf -pc_type none
       output_file: output/ex7_1.out
       localrunfiles: petscopt_ex7
       timeoutfactor: 2

@@ -46,6 +46,7 @@ SNES Object: 4 MPI processes
   total number of linear solver iterations=33
   total number of function evaluations=0
   norm schedule ALWAYS
+  Jacobian is built using a DMDA local Jacobian
   SNESLineSearch Object: 4 MPI processes
     type: bt
       interpolation: cubic
@@ -70,6 +71,7 @@ SNES Object: 4 MPI processes
         total number of linear solver iterations=1
         total number of function evaluations=3
         norm schedule ALWAYS
+        Jacobian is built using a DMDA local Jacobian
         SNESLineSearch Object: (npc_sub_) 1 MPI processes
           type: bt
             interpolation: cubic
@@ -113,6 +115,7 @@ SNES Object: 4 MPI processes
         total number of linear solver iterations=1
         total number of function evaluations=3
         norm schedule ALWAYS
+        Jacobian is built using a DMDA local Jacobian
         SNESLineSearch Object: (npc_sub_) 1 MPI processes
           type: bt
             interpolation: cubic
@@ -156,6 +159,7 @@ SNES Object: 4 MPI processes
         total number of linear solver iterations=1
         total number of function evaluations=3
         norm schedule ALWAYS
+        Jacobian is built using a DMDA local Jacobian
         SNESLineSearch Object: (npc_sub_) 1 MPI processes
           type: bt
             interpolation: cubic
@@ -199,6 +203,7 @@ SNES Object: 4 MPI processes
         total number of linear solver iterations=1
         total number of function evaluations=3
         norm schedule ALWAYS
+        Jacobian is built using a DMDA local Jacobian
         SNESLineSearch Object: (npc_sub_) 1 MPI processes
           type: bt
             interpolation: cubic
@@ -237,6 +242,7 @@ SNES Object: 4 MPI processes
     maximum iterations=1, maximum function evaluations=10000
     tolerances: relative=0., absolute=0., solution=0.
     total number of function evaluations=4
+    Jacobian is built using a DMDA local Jacobian
   KSP Object: 4 MPI processes
     type: gmres
       restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
