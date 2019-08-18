@@ -1,7 +1,6 @@
 #include <petsc/private/viewerimpl.h>
 #include <petsc/private/viewerhdf5impl.h>
-#include <petscviewerhdf5.h>    /*I   "petscviewerhdf5.h"   I*/
-#include <petsc/private/isimpl.h> /* for PetscViewerHDF5Load_Private */
+#include <petsclayouthdf5.h>    /*I   "petsclayoutdf5.h"   I*/
 #include <petscis.h>    /*I   "petscis.h"   I*/
 
 #if defined(PETSC_HAVE_HDF5)
@@ -161,7 +160,31 @@ static PetscErrorCode PetscViewerHDF5ReadArray_Private(PetscViewer viewer, HDF5R
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscViewerHDF5Load_Private(PetscViewer viewer, const char *name, PetscLayout map, hid_t datatype, void **newarr)
+/*@C
+  PetscViewerHDF5Load - Read a raw array from the HDF5 dataset.
+
+  Input Parameters:
++ viewer   - The HDF5 viewer
+. name     - The dataset name
+. map      - The layout which specifies array partitioning
+- datatype - The HDF5 datatype of the items in the dataset
+
+  Output Parameter:
+. newarr   - The partitioned array, a memory image of the given dataset
+
+  Level: developer
+
+  Notes:
+  This is intended mainly for internal use; users should use higher level routines such as ISLoad(), VecLoad(), DMLoad().
+  The array is partitioned according to the given PetscLayout which is converted to an HDF5 hyperslab.
+  This name is relative to the current group returned by PetscViewerHDF5OpenGroup().
+
+  Fortran Notes:
+  This routine is not available in Fortran.
+
+.seealso PetscViewerHDF5Open(), PetscViewerHDF5PushGroup(), PetscViewerHDF5OpenGroup(), PetscViewerHDF5ReadSizes(), VecLoad(), ISLoad()
+*/
+PetscErrorCode PetscViewerHDF5Load(PetscViewer viewer, const char *name, PetscLayout map, hid_t datatype, void **newarr)
 {
   HDF5ReadCtx     h=NULL;
   hid_t           memspace=0;

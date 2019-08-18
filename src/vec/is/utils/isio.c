@@ -1,7 +1,7 @@
 #include <petscis.h>         /*I  "petscis.h"  I*/
 #include <petsc/private/isimpl.h>
 #include <petsc/private/viewerimpl.h>
-#include <petscviewerhdf5.h>
+#include <petsclayouthdf5.h>
 
 #if defined(PETSC_HAVE_HDF5)
 /*
@@ -23,7 +23,7 @@ PetscErrorCode ISLoad_HDF5(IS is, PetscViewer viewer)
   inttype = H5T_NATIVE_INT;
 #endif
   ierr = PetscObjectGetName((PetscObject)is, &isname);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5Load_Private(viewer, isname, is->map, inttype, (void**)&ind);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5Load(viewer, isname, is->map, inttype, (void**)&ind);CHKERRQ(ierr);
   ierr = ISGeneralSetIndices(is, is->map->n, ind, PETSC_OWN_POINTER);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -313,10 +313,6 @@ PETSC_EXTERN PetscErrorCode PetscLayoutSetISLocalToGlobalMapping(PetscLayout,ISL
 PETSC_EXTERN PetscErrorCode PetscLayoutMapLocal(PetscLayout,PetscInt,const PetscInt[],PetscInt*,PetscInt**,PetscInt**);
 PETSC_EXTERN PetscErrorCode PetscSFSetGraphLayout(PetscSF,PetscLayout,PetscInt,const PetscInt*,PetscCopyMode,const PetscInt*);
 
-/* Generic HDF5 I/O */
-#if defined(PETSC_HAVE_HDF5)
-PETSC_EXTERN PetscErrorCode PetscViewerHDF5ReadSizes(PetscViewer, const char[], PetscInt *, PetscInt *);
-#endif
 
 PETSC_EXTERN PetscClassId PETSC_SECTION_CLASSID;
 
