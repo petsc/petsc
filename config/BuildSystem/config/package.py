@@ -36,6 +36,7 @@ class Package(config.base.Configure):
     self.maxversion       = ''   # maximum version of the package that is supported
     self.foundversion     = ''   # version of the package actually found
     self.version_tuple    = ''   # version of the package actually found (tuple)
+    self.requiresversion  = 0    # error if the version information is not found
 
     # These are specified for the package
     self.required               = 0    # 1 means the package is required
@@ -940,9 +941,11 @@ If its a remote branch, use: origin/'+self.gitcommit+' for gitcommit.')
     else:
       self.pushLanguage(self.defaultLanguage)
     try:
-      output,err,ret  = self.preprocess('#include "'+self.versioninclude+'"\nversion='+self.versionname+'\n')
+      output = self.outputPreprocess('#include "'+self.versioninclude+'"\nversion='+self.versionname+'\n')
     except:
-      self.log.write('For '+self.package+' unable to run preprocessor to obtain version information: output below, skipping version check\n')
+      self.log.write('For '+self.package+' unable to run preprocessor to obtain version information, skipping version check\n')
+      self.popLanguage()
+      self.compilers.CPPFLAGS = oldFlags
       return
     self.popLanguage()
     self.compilers.CPPFLAGS = oldFlags
@@ -952,9 +955,14 @@ If its a remote branch, use: origin/'+self.gitcommit+' for gitcommit.')
       if i.startswith('version='):
         version = i[8:]
         break
+      if i.startswith('version ='):
+        version = i[9:]
+        break
     if not version:
       self.log.write('For '+self.package+' unable to find version information: output below, skipping version check\n')
       self.log.write(output)
+      if self.requiresversion:
+        raise RuntimeError('Configure must be able to determined the version information for '+self.name+'. It was unable to, please send configure.log to petsc-maint@mcs.anl.gov')
       return
     version = version.replace(' ','').replace('\"','')
     try:
@@ -962,6 +970,8 @@ If its a remote branch, use: origin/'+self.gitcommit+' for gitcommit.')
       self.version_tuple = self.versionToTuple(self.foundversion)
     except:
       self.log.write('For '+self.package+' unable to convert version to standard form, skipping version check\n')
+      if self.requiresversion:
+        raise RuntimeError('Configure must be able to determined the version information for '+self.name+'. It was unable to, please send configure.log to petsc-maint@mcs.anl.gov')
       return
 
     self.log.write('For '+self.package+' need '+self.minversion+' <= '+self.foundversion+' <= '+self.maxversion+'\n')
@@ -970,6 +980,8 @@ If its a remote branch, use: origin/'+self.gitcommit+' for gitcommit.')
       foundversiontuple = self.versionToTuple(self.foundversion)
     except:
       self.log.write('For '+self.package+' unable to convert version string to tuple, skipping version check\n')
+      if self.requiresversion:
+        raise RuntimeError('Configure must be able to determined the version information for '+self.name+'. It was unable to, please send configure.log to petsc-maint@mcs.anl.gov')
       return
 
     suggest = ''

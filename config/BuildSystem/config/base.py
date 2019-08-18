@@ -456,6 +456,7 @@ class Configure(script.Script):
     command = self.getPreprocessorCmd()
     if self.compilerDefines: self.framework.outputHeader(self.compilerDefines)
     self.framework.outputCHeader(self.compilerFixes)
+    self.logWrite('Preprocessing source:\n'+self.getCode(codeStr))
     f = open(self.compilerSource, 'w')
     f.write(self.getCode(codeStr))
     f.close()
@@ -467,7 +468,6 @@ class Configure(script.Script):
 
   def outputPreprocess(self, codeStr):
     '''Return the contents of stdout when preprocessing "codeStr"'''
-    self.logWrite('Source:\n'+self.getCode(codeStr))
     return self.preprocess(codeStr)[0]
 
   def checkPreprocess(self, codeStr, timeout = 600.0):
