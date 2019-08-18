@@ -1440,11 +1440,12 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
     ierr = PetscGlobalMinMaxInt(PetscObjectComm((PetscObject) dm), bsLocal, bsMinMax);CHKERRQ(ierr);
     if (bsMinMax[0] != bsMinMax[1]) {bs = 1;}
     else                            {bs = bsMinMax[0];}
-    bs = bs < 0 ? 1 : bs;
-    if (isMatIS) {
+    bs = PetscMax(1,bs);
+    if (isMatIS) { /* Must reduce indices by blocksize */
       PetscInt l;
-      /* Must reduce indices by blocksize */
-      if (bs > 1) for (l = 0; l < lsize; ++l) ltogidx[l] /= bs;
+
+      lsize = lsize/bs;
+      if (bs > 1) for (l = 0; l < lsize; ++l) ltogidx[l] = ltogidx[l*bs]/bs;
       ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)dm), bs, lsize, ltogidx, PETSC_OWN_POINTER, &ltog);CHKERRQ(ierr);
     }
     ierr = MatSetLocalToGlobalMapping(*J,ltog,ltog);CHKERRQ(ierr);
