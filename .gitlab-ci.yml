@@ -128,7 +128,7 @@ c89-mlib-static-py2:
 .linux_mcs_test:
   extends: .mcs_test
   tags:
-    - mcs-linux
+    - os:linux,name:pj02
   before_script:
     - hostname
     - grep PRETTY_NAME /etc/os-release
@@ -140,7 +140,7 @@ c89-mlib-static-py2:
 .freebsd_mcs_test:
   extends: .mcs_test
   tags:
-    - mcs-freebsd
+    - os:fbsd,name:petsc-fbsd
   before_script:
     - hostname
     - freebsd-version
@@ -152,7 +152,7 @@ c89-mlib-static-py2:
 .osx_mcs_test:
   extends: .mcs_test
   tags:
-    - mcs-osx
+    - os:osx,name:jpro
   variables:
 #  the stages definition defines the first line of PETSC_OPTIONS below. Do they have to be repeated here or can one use
 #  $PETSC_OPTIONS or another option so that they do not need to be repeated?
@@ -170,11 +170,13 @@ c89-mlib-static-py2:
 .opensolaris_mcs_test:
   extends: .mcs_test
   tags:
-    - mcs-opensolaris
+    - os:opensolaris,name:n-gage
   before_script:
     - hostname
     - uname -a
     - echo $(nproc)
+
+#####         These are the specific tests that map to the scripts in config/examples
 
 linux-gcc-complex-opt:
   extends: .linux_mcs_test
@@ -211,6 +213,33 @@ opensolaris-cmplx-pkgs-dbg:
   variables:
     TEST_ARCH: arch-ci-opensolaris-cmplx-pkgs-dbg
 
+osx-barry:
+  extends: .mcs_test
+  tags:
+    - os:osx
+  variables:
+#  the stages definition defines the first line of PETSC_OPTIONS below. Do they have to be repeated here or can one use
+#  $PETSC_OPTIONS or another option so that they do not need to be repeated?
+    PETSC_OPTIONS: <
+      -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
+      -vecscatter_mpi1 false -options_left false
+    TEST_ARCH: arch-ci-osx-prefix
+  before_script:
+    - hostname
+    - sw_vers -productVersion
+    - echo $(sysctl -n hw.ncpu)
+    - ccache --zero-stats
+  after_script:
+    - ccache --show-stats
+
+checksource:
+  extends: .test
+  stage: stage-1
+  script:
+    - ./configure --with-mpi=0 --with-fc=0 --with-cxx=0
+    - make checkbadSource
+
+
 #
 # The following tests are experimental; more tests by users at other sites may be added below this.  Experimental test
 # that fail produce a warning, but do not block execution of a pipeline.
@@ -220,26 +249,3 @@ opensolaris-cmplx-pkgs-dbg:
   extends: .test
   allow_failure: true
 
-barry-checksource:
-  extends: .test-experimental
-  stage: stage-1
-  variables:
-# the blank GIT_CLEAN_FLAGS below indicates that the CI should NOT clean the git directory before running the next test
-    GIT_CLEAN_FLAGS: -qn
-  tags:
-    - barry
-  script:
-    - PETSC_ARCH=arch-barry PETSC_DIR=`pwd` ./configure --with-mpi=0 --with-fc=0
-    - PETSC_ARCH=arch-barry PETSC_DIR=`pwd` make checkbadSource
-
-barry-arch-hash:
-  extends: .test-experimental
-  stage: stage-1
-  variables:
-# the blank GIT_CLEAN_FLAGS below indicates that the CI should NOT clean the git directory before running the next test
-    GIT_CLEAN_FLAGS: -qn
-  tags:
-    - barry
-  script:
-    - PETSC_DIR=`pwd` ./configure --with-mpi=0 --with-fc=0 --arch-hash
-    - PETSC_DIR=`pwd` make checkbadSource
