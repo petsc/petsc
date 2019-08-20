@@ -1384,6 +1384,76 @@ PetscErrorCode PetscSFReduceEnd(PetscSF sf,MPI_Datatype unit,const void *leafdat
 }
 
 /*@C
+   PetscSFFetchAndOpBegin - begin operation that fetches values from root and updates atomically by applying operation using my leaf value, to be completed with PetscSFFetchAndOpEnd()
+
+   Collective
+
+   Input Arguments:
++  sf - star forest
+.  unit - data type
+.  leafdata - leaf values to use in reduction
+-  op - operation to use for reduction
+
+   Output Arguments:
++  rootdata - root values to be updated, input state is seen by first process to perform an update
+-  leafupdate - state at each leaf's respective root immediately prior to my atomic update
+
+   Level: advanced
+
+   Note:
+   The update is only atomic at the granularity provided by the hardware. Different roots referenced by the same process
+   might be updated in a different order. Furthermore, if a composite type is used for the unit datatype, atomicity is
+   not guaranteed across the whole vertex. Therefore, this function is mostly only used with primitive types such as
+   integers.
+
+.seealso: PetscSFComputeDegreeBegin(), PetscSFReduceBegin(), PetscSFSetGraph()
+@*/
+PetscErrorCode PetscSFFetchAndOpBegin(PetscSF sf,MPI_Datatype unit,void *rootdata,const void *leafdata,void *leafupdate,MPI_Op op)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
+  ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(PETSCSF_FetchAndOpBegin,sf,0,0,0);CHKERRQ(ierr);
+  ierr = (*sf->ops->FetchAndOpBegin)(sf,unit,rootdata,leafdata,leafupdate,op);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PETSCSF_FetchAndOpBegin,sf,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   PetscSFFetchAndOpEnd - end operation started in matching call to PetscSFFetchAndOpBegin() to fetch values from roots and update atomically by applying operation using my leaf value
+
+   Collective
+
+   Input Arguments:
++  sf - star forest
+.  unit - data type
+.  leafdata - leaf values to use in reduction
+-  op - operation to use for reduction
+
+   Output Arguments:
++  rootdata - root values to be updated, input state is seen by first process to perform an update
+-  leafupdate - state at each leaf's respective root immediately prior to my atomic update
+
+   Level: advanced
+
+.seealso: PetscSFComputeDegreeEnd(), PetscSFReduceEnd(), PetscSFSetGraph()
+@*/
+PetscErrorCode PetscSFFetchAndOpEnd(PetscSF sf,MPI_Datatype unit,void *rootdata,const void *leafdata,void *leafupdate,MPI_Op op)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
+  ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(PETSCSF_FetchAndOpEnd,sf,0,0,0);CHKERRQ(ierr);
+  ierr = (*sf->ops->FetchAndOpEnd)(sf,unit,rootdata,leafdata,leafupdate,op);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PETSCSF_FetchAndOpEnd,sf,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
    PetscSFComputeDegreeBegin - begin computation of degree for each root vertex, to be completed with PetscSFComputeDegreeEnd()
 
    Collective
@@ -1505,76 +1575,6 @@ PetscErrorCode PetscSFComputeMultiRootOriginalNumbering(PetscSF sf, const PetscI
   if (PetscUnlikely(k != nmroots)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"sanity check fail");
 #endif
   if (nMultiRoots) *nMultiRoots = nmroots;
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   PetscSFFetchAndOpBegin - begin operation that fetches values from root and updates atomically by applying operation using my leaf value, to be completed with PetscSFFetchAndOpEnd()
-
-   Collective
-
-   Input Arguments:
-+  sf - star forest
-.  unit - data type
-.  leafdata - leaf values to use in reduction
--  op - operation to use for reduction
-
-   Output Arguments:
-+  rootdata - root values to be updated, input state is seen by first process to perform an update
--  leafupdate - state at each leaf's respective root immediately prior to my atomic update
-
-   Level: advanced
-
-   Note:
-   The update is only atomic at the granularity provided by the hardware. Different roots referenced by the same process
-   might be updated in a different order. Furthermore, if a composite type is used for the unit datatype, atomicity is
-   not guaranteed across the whole vertex. Therefore, this function is mostly only used with primitive types such as
-   integers.
-
-.seealso: PetscSFComputeDegreeBegin(), PetscSFReduceBegin(), PetscSFSetGraph()
-@*/
-PetscErrorCode PetscSFFetchAndOpBegin(PetscSF sf,MPI_Datatype unit,void *rootdata,const void *leafdata,void *leafupdate,MPI_Op op)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
-  ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(PETSCSF_FetchAndOpBegin,sf,0,0,0);CHKERRQ(ierr);
-  ierr = (*sf->ops->FetchAndOpBegin)(sf,unit,rootdata,leafdata,leafupdate,op);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(PETSCSF_FetchAndOpBegin,sf,0,0,0);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   PetscSFFetchAndOpEnd - end operation started in matching call to PetscSFFetchAndOpBegin() to fetch values from roots and update atomically by applying operation using my leaf value
-
-   Collective
-
-   Input Arguments:
-+  sf - star forest
-.  unit - data type
-.  leafdata - leaf values to use in reduction
--  op - operation to use for reduction
-
-   Output Arguments:
-+  rootdata - root values to be updated, input state is seen by first process to perform an update
--  leafupdate - state at each leaf's respective root immediately prior to my atomic update
-
-   Level: advanced
-
-.seealso: PetscSFComputeDegreeEnd(), PetscSFReduceEnd(), PetscSFSetGraph()
-@*/
-PetscErrorCode PetscSFFetchAndOpEnd(PetscSF sf,MPI_Datatype unit,void *rootdata,const void *leafdata,void *leafupdate,MPI_Op op)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
-  ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(PETSCSF_FetchAndOpEnd,sf,0,0,0);CHKERRQ(ierr);
-  ierr = (*sf->ops->FetchAndOpEnd)(sf,unit,rootdata,leafdata,leafupdate,op);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(PETSCSF_FetchAndOpEnd,sf,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
