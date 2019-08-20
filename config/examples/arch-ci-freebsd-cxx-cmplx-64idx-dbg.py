@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 
+import os
+petsc_hash_pkgs=os.path.join(os.getenv('HOME'),'petsc-hash-pkgs')
+if not os.path.isdir(petsc_hash_pkgs): os.mkdir(petsc_hash_pkgs)
+
 configure_options = [
-  '--with-cc=/home/petsc/soft/mpich-3.3b1/bin/mpicc',
-  '--with-fc=/home/petsc/soft/mpich-3.3b1/bin/mpif90',
-  '--with-cxx=/home/petsc/soft/mpich-3.3b1/bin/mpicxx',
+  '--package-prefix-hash='+petsc_hash_pkgs,
   '--with-debugging=1',
   'COPTFLAGS=-g -O',
   'FOPTFLAGS=-g -O',
@@ -11,7 +13,7 @@ configure_options = [
   '--with-clanguage=cxx',
   '--with-scalar-type=complex',
   '--with-64-bit-indices=1',
-  'DATAFILESPATH=/home/petsc/datafiles',
+  '--download-mpich',
   ]
 
 if __name__ == '__main__':

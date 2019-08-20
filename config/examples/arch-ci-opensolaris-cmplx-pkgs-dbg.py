@@ -1,25 +1,32 @@
 #!/usr/bin/env python
 
+import os
+petsc_hash_pkgs=os.path.join(os.getenv('HOME'),'petsc-hash-pkgs')
+if not os.path.isdir(petsc_hash_pkgs): os.mkdir(petsc_hash_pkgs)
+
 configure_options = [
+  '--package-prefix-hash='+petsc_hash_pkgs,
   'COPTFLAGS=-g -O',
   'FOPTFLAGS=-g -O',
   'CXXOPTFLAGS=-g -O',
+  'CC=cc',
+  'CXX=CC',
+  'FC=f90',
   '--with-scalar-type=complex',
   'FFLAGS=-ftrap=%none',
-  'DATAFILESPATH=/export/home/petsc/datafiles',
   '--with-c2html=0',
-  '--with-sowing-dir=/export/home/glci/soft/sowing-1.1.25-p1',
-  '--with-mpi-dir=/export/home/glci/soft/cmplx-pkgs-dbg',
-  '--with-metis-dir=/export/home/glci/soft/cmplx-pkgs-dbg',
-  '--with-parmetis-dir=/export/home/glci/soft/cmplx-pkgs-dbg',
-  '--with-triangle-dir=/export/home/glci/soft/cmplx-pkgs-dbg',
-  '--with-superlu-dir=/export/home/glci/soft/cmplx-pkgs-dbg',
-  '--with-blaslapack-dir=/export/home/glci/soft/cmplx-pkgs-dbg/lib',
-  '--with-scalapack-dir=/export/home/glci/soft/cmplx-pkgs-dbg',
-  '--with-mumps-dir=/export/home/glci/soft/cmplx-pkgs-dbg',
-  '--with-hdf5-dir=/export/home/glci/soft/cmplx-pkgs-dbg',
-  '--with-suitesparse-dir=/export/home/glci/soft/cmplx-pkgs-dbg',
-  '--with-chaco-dir=/export/home/glci/soft/cmplx-pkgs-dbg',
+  '--download-mpich',
+  '--download-metis',
+  '--download-parmetis',
+  '--download-triangle',
+  '--download-superlu',
+  '--download-fblaslapack',
+  '--download-scalapack',
+  '--download-mumps',
+  '--download-hdf5',
+  '-download-hdf5-fc=0', # as the compiler is not F2003 compilant
+  '--download-suitesparse',
+  '--download-chaco',
   ]
 
 if __name__ == '__main__':

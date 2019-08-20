@@ -1,30 +1,34 @@
 #!/usr/bin/env python
 
+import os
+petsc_hash_pkgs=os.path.join(os.getenv('HOME'),'petsc-hash-pkgs')
+if not os.path.isdir(petsc_hash_pkgs): os.mkdir(petsc_hash_pkgs)
+
 configure_options = [
+  '--package-prefix-hash='+petsc_hash_pkgs,
   '--with-clanguage=cxx',
   '--with-cxx-dialect=C++11',
   '--with-debugging=0',
-  'DATAFILESPATH=/Users/petsc/datafiles',
   'CXXFLAGS=-Wall -Wwrite-strings -Wno-strict-aliasing -Wno-unknown-pragmas -fstack-protector -Wno-deprecated',
   '--with-visibility=0', # CXXFLAGS disables this option
-  '--with-mpi-dir=/Users/glci/soft/cxx-pkgs-opt',
-  '--with-metis-dir=/Users/glci/soft/cxx-pkgs-opt',
-  '--with-parmetis-dir=/Users/glci/soft/cxx-pkgs-opt',
-  '--with-ptscotch-dir=/Users/glci/soft/cxx-pkgs-opt',
-  '--with-triangle-dir=/Users/glci/soft/cxx-pkgs-opt',
-  '--with-superlu-dir=/Users/glci/soft/cxx-pkgs-opt',
-  '--with-superlu_dist-dir=/Users/glci/soft/cxx-pkgs-opt',
-  '--with-scalapack-dir=/Users/glci/soft/cxx-pkgs-opt',
-  '--with-mumps-dir=/Users/glci/soft/cxx-pkgs-opt',
-  '--with-parms-dir=/Users/glci/soft/cxx-pkgs-opt',
-  '--with-hdf5-dir=/Users/glci/soft/cxx-pkgs-opt',
-  '--with-sundials-dir=/Users/glci/soft/cxx-pkgs-opt',
-  '--with-hypre-dir=/Users/glci/soft/cxx-pkgs-opt',
-  '--with-suitesparse-dir=/Users/glci/soft/cxx-pkgs-opt',
-  '--with-chaco-dir=/Users/glci/soft/cxx-pkgs-opt',
-  '--with-spai-dir=/Users/glci/soft/cxx-pkgs-opt',
-  '--with-saws-dir=/Users/glci/soft/cxx-pkgs-opt',
-  '--with-revolve-dir=/Users/glci/soft/cxx-pkgs-opt',
+  '--download-mpich',
+  '--download-metis',
+  '--download-parmetis',
+  '--download-ptscotch',
+  '--download-triangle',
+  '--download-superlu',
+  '--download-superlu_dist',
+  '--download-scalapack',
+  '--download-mumps',
+  '--download-parms',
+  '--download-hdf5',
+  '--download-sundials',
+  '--download-hypre',
+  '--download-suitesparse',
+  '--download-chaco',
+  '--download-spai',
+  '--download-saws',
+  '--download-revolve',
   ]
 
 if __name__ == '__main__':
