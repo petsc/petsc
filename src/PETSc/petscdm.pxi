@@ -104,10 +104,10 @@ cdef extern from * nogil:
 
     int DMGetLocalToGlobalMapping(PetscDM,PetscLGMap*)
 
-    int DMSetDefaultSection(PetscDM,PetscSection)
-    int DMGetDefaultSection(PetscDM,PetscSection*)
-    int DMSetDefaultGlobalSection(PetscDM,PetscSection)
-    int DMGetDefaultGlobalSection(PetscDM,PetscSection*)
+    int DMSetSection(PetscDM,PetscSection)
+    int DMGetSection(PetscDM,PetscSection*)
+    int DMSetGlobalSection(PetscDM,PetscSection)
+    int DMGetGlobalSection(PetscDM,PetscSection*)
     int DMCreateDefaultSF(PetscDM,PetscSection,PetscSection)
     int DMGetDefaultSF(PetscDM,PetscSF*)
     int DMSetDefaultSF(PetscDM,PetscSF)

@@ -405,23 +405,28 @@ cdef class DM(Object):
 
     #
 
-    def setDefaultSection(self, Section sec):
-        CHKERR( DMSetDefaultSection(self.dm, sec.sec) )
+    def setSection(self, Section sec):
+        CHKERR( DMSetSection(self.dm, sec.sec) )
 
-    def getDefaultSection(self):
+    def getSection(self):
         cdef Section sec = Section()
-        CHKERR( DMGetDefaultSection(self.dm, &sec.sec) )
+        CHKERR( DMGetSection(self.dm, &sec.sec) )
         PetscINCREF(sec.obj)
         return sec
 
-    def setDefaultGlobalSection(self, Section sec):
-        CHKERR( DMSetDefaultGlobalSection(self.dm, sec.sec) )
+    def setGlobalSection(self, Section sec):
+        CHKERR( DMSetGlobalSection(self.dm, sec.sec) )
 
-    def getDefaultGlobalSection(self):
+    def getGlobalSection(self):
         cdef Section sec = Section()
-        CHKERR( DMGetDefaultGlobalSection(self.dm, &sec.sec) )
+        CHKERR( DMGetGlobalSection(self.dm, &sec.sec) )
         PetscINCREF(sec.obj)
         return sec
+
+    setDefaultSection = setSection
+    getDefaultSection = getSection
+    setDefaultGlobalSection = setGlobalSection
+    getDefaultGlobalSection = getGlobalSection
 
     def createDefaultSF(self, Section localsec, Section globalsec):
         CHKERR( DMCreateDefaultSF(self.dm, localsec.sec, globalsec.sec) )

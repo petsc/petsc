@@ -52,7 +52,7 @@ origSect.setFieldName(0, 'TestField')
 origSect.setUp()
 origSect.view()
 
-plex.setDefaultSection(origSect)
+plex.setSection(origSect)
 origVec = plex.createGlobalVec()
 origVec.view()
 
