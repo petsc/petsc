@@ -562,6 +562,7 @@ struct  _p_MatFDColoring{
   PetscBool      setupcalled;      /* true if setup has been called */
   PetscBool      viewed;           /* true if the -mat_fd_coloring_view has been triggered already */
   void           (*ftn_func_pointer)(void),*ftn_func_cntx; /* serve the same purpose as *fortran_func_pointers in PETSc objects */
+  PetscObjectId  matid;            /* matrix this object was created with, must always be the same */
 };
 
 typedef struct _MatColoringOps *MatColoringOps;
