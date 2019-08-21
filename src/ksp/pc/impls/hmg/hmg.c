@@ -8,14 +8,15 @@ typedef struct {
   PC               innerpc;            /* A MG inner PC (Hypre or PCGAMG) to setup interpolations and coarse operators  */
   char*            innerpctype;        /* PCGAMG or PCHYPRE */
   PetscBool        reuseinterp;        /* A flag indicates if or not to reuse the interpolations */
-  PetscBool        subcoarsening;
-  PetscBool        usematmaij;
+  PetscBool        subcoarsening;      /* If or not to use a subspace-based coarsening algorithm */
+  PetscBool        usematmaij;         /* If or not to use MatMAIJ for saving memory */
+  PetscInt         component;          /* Which subspace is used for the subspace-based coarsening algorithm? */
 } PC_HMG;
 
 PetscErrorCode PCSetFromOptions_HMG(PetscOptionItems*,PC);
 PetscErrorCode PCReset_MG(PC);
 
-static PetscErrorCode PCHMGExtractSubMatrix_Private(Mat pmat,Mat *submat,MatReuse reuse,PetscInt blocksize)
+static PetscErrorCode PCHMGExtractSubMatrix_Private(Mat pmat,Mat *submat,MatReuse reuse,PetscInt component,PetscInt blocksize)
 {
   IS             isrow;
   PetscErrorCode ierr;
@@ -24,9 +25,10 @@ static PetscErrorCode PCHMGExtractSubMatrix_Private(Mat pmat,Mat *submat,MatReus
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)pmat,&comm);CHKERRQ(ierr);
+  if (component>=blocksize) SETERRQ3(comm,PETSC_ERR_ARG_INCOMP,"Component %d should be less than block size %d \n",component,blocksize);
   ierr = MatGetOwnershipRange(pmat,&rstart,&rend);CHKERRQ(ierr);
   if ((rend-rstart)%blocksize != 0) SETERRQ3(comm,PETSC_ERR_ARG_INCOMP,"Block size %d is inconsisent for [%d, %d) \n",blocksize,rstart,rend);
-  ierr = ISCreateStride(comm,(rend-rstart)/blocksize,rstart,blocksize,&isrow);
+  ierr = ISCreateStride(comm,(rend-rstart)/blocksize,rstart+component,blocksize,&isrow);
   ierr = MatCreateSubMatrix(pmat,isrow,isrow,reuse,submat);CHKERRQ(ierr);
   ierr = ISDestroy(&isrow);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -143,7 +145,7 @@ PetscErrorCode PCSetUp_HMG(PC pc)
   if (blocksize<=1) hmg->subcoarsening = PETSC_FALSE;
   /* Extract a submatrix for constructing subinterpolations */
   if (hmg->subcoarsening) {
-    ierr = PCHMGExtractSubMatrix_Private(PA,&submat,MAT_INITIAL_MATRIX,blocksize);CHKERRQ(ierr);
+    ierr = PCHMGExtractSubMatrix_Private(PA,&submat,MAT_INITIAL_MATRIX,hmg->component,blocksize);CHKERRQ(ierr);
     PA = submat;
   }
   ierr = PCSetOperators(hmg->innerpc,PA,PA);CHKERRQ(ierr);
@@ -266,6 +268,7 @@ PetscErrorCode PCSetFromOptions_HMG(PetscOptionItems *PetscOptionsObject,PC pc)
   ierr = PetscOptionsBool("-pc_hmg_reuse_interpolation","Reuse the interpolation operators when possible (cheaper, weaker when matrix entries change a lot)","None",hmg->reuseinterp,&hmg->reuseinterp,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_hmg_use_subspace_coarsening","Use the subspace coarsening to compute the interpolations","None",hmg->subcoarsening,&hmg->subcoarsening,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_hmg_use_matmaij","Use MatMAIJ store interpolation for saving memory","None",hmg->usematmaij,&hmg->usematmaij,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_hmg_coarsening_component","Which component is chosen for the subspace-based coarsening algorithm","None",hmg->component,&hmg->component,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -290,7 +293,7 @@ static PetscErrorCode PCHMGSetReuseInterpolation_HMG(PC pc, PetscBool reuse)
 -  reuse - True indicates that HMG will reuse the interpolations
 
    Options Database Keys:
-+  -pc_hmg_reuse_interpolation <true | false> - Whether or not to reuse the interpolations. If true, it potentially save the compute time.
+.  -pc_hmg_reuse_interpolation <true | false> - Whether or not to reuse the interpolations. If true, it potentially save the compute time.
 
    Level: beginner
 
@@ -328,7 +331,7 @@ static PetscErrorCode PCHMGSetUseSubspaceCoarsening_HMG(PC pc, PetscBool subspac
 -  reuse - True indicates that HMG will use the subspace coarsening
 
    Options Database Keys:
-+  -pc_hmg_use_subspace_coarsening  <true | false> - Whether or not to use subspace coarsening (that is, coarsen a submatrix).
+.  -pc_hmg_use_subspace_coarsening  <true | false> - Whether or not to use subspace coarsening (that is, coarsen a submatrix).
 
    Level: beginner
 
@@ -367,7 +370,7 @@ static PetscErrorCode PCHMGSetInnerPCType_HMG(PC pc, PCType type)
 -  type - <hypre, gamg> coarsening algorithm
 
    Options Database Keys:
-+  -hmg_inner_pc_type <hypre, gamg> - What method is used to coarsen matrix
+.  -hmg_inner_pc_type <hypre, gamg> - What method is used to coarsen matrix
 
    Level: beginner
 
@@ -382,6 +385,82 @@ PetscErrorCode PCHMGSetInnerPCType(PC pc, PCType type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   ierr = PetscUseMethod(pc,"PCHMGSetInnerPCType_C",(PC,PCType),(pc,type));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCHMGSetCoarseningComponent_HMG(PC pc, PetscInt component)
+{
+  PC_MG           *mg  = (PC_MG*)pc->data;
+  PC_HMG          *hmg = (PC_HMG*) mg->innerctx;
+
+  PetscFunctionBegin;
+  hmg->component = component;
+  PetscFunctionReturn(0);
+}
+
+/*MC
+   PCHMGSetCoarseningComponent - Set which component is used for the subspace-based coarsening algorithm
+
+   Logically Collective on PC
+
+   Input Parameters:
++  pc - the HMG context
+-  component - which component PC will coarsen
+
+   Options Database Keys:
+.  -pc_hmg_coarsening_component - Which component is chosen for the subspace-based coarsening algorithm
+
+   Level: beginner
+
+.keywords: HMG, multigrid, interpolation, coarsening, component
+
+.seealso: PCHMG, PCType
+M*/
+PetscErrorCode PCHMGSetCoarseningComponent(PC pc, PetscInt component)
+{
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscUseMethod(pc,"PCHMGSetCoarseningComponent_C",(PC,PetscInt),(pc,component));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCHMGUseMatMAIJ_HMG(PC pc, PetscBool usematmaij)
+{
+  PC_MG           *mg  = (PC_MG*)pc->data;
+  PC_HMG          *hmg = (PC_HMG*) mg->innerctx;
+
+  PetscFunctionBegin;
+  hmg->usematmaij = usematmaij;
+  PetscFunctionReturn(0);
+}
+
+/*MC
+   PCHMGUseMatMAIJ - Set a flag that indicates if or not to use MatMAIJ for interpolations for saving memory
+
+   Logically Collective on PC
+
+   Input Parameters:
++  pc - the HMG context
+-  usematmaij - if or not to use MatMAIJ for interpolations. By default, it is true for saving memory
+
+   Options Database Keys:
+.  -pc_hmg_use_matmaij - <true | false >
+
+   Level: beginner
+
+.keywords: HMG, multigrid, interpolation, coarsening, MatMAIJ
+
+.seealso: PCHMG, PCType
+M*/
+PetscErrorCode PCHMGUseMatMAIJ(PC pc, PetscBool usematmaij)
+{
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscUseMethod(pc,"PCHMGUseMatMAIJ_C",(PC,PetscBool),(pc,usematmaij));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -407,7 +486,7 @@ PetscErrorCode PCHMGSetInnerPCType(PC pc, PCType type)
    Concepts: Hybrid of ASM and MG, Subspace Coarsening
 
     References:
-+   1. - Fande Kong, Yaqi Wang, Derek R Gaston, Cody J Permann, Andrew E Slaughter, Alexander D Lindsay, Richard C Martineau, A highly parallel multilevel
+.   1. - Fande Kong, Yaqi Wang, Derek R Gaston, Cody J Permann, Andrew E Slaughter, Alexander D Lindsay, Richard C Martineau, A highly parallel multilevel
     Newton-Krylov-Schwarz method with subspace-based coarsening and partition-based balancing for the multigroup neutron transport equations on
     3D unstructured meshes, arXiv preprint arXiv:1903.03659, 2019
 
@@ -438,6 +517,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_HMG(PC pc)
   hmg->reuseinterp        = PETSC_FALSE;
   hmg->subcoarsening      = PETSC_FALSE;
   hmg->usematmaij         = PETSC_TRUE;
+  hmg->component          = 0;
   hmg->innerpc            = NULL;
 
   pc->ops->setfromoptions = PCSetFromOptions_HMG;
@@ -448,5 +528,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_HMG(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHMGSetReuseInterpolation_C",PCHMGSetReuseInterpolation_HMG);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHMGSetUseSubspaceCoarsening_C",PCHMGSetUseSubspaceCoarsening_HMG);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHMGSetInnerPCType_C",PCHMGSetInnerPCType_HMG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHMGSetCoarseningComponent_C",PCHMGSetCoarseningComponent_HMG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHMGUseMatMAIJ_C",PCHMGUseMatMAIJ_HMG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
