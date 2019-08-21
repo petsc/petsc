@@ -21,6 +21,7 @@ variables:
   GIT_STRATEGY: fetch
   GIT_CLEAN_FLAGS: -ffdxq
   PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
+  TIMEOUT: 600
 
 #
 # The most basic template that most tests will expand upon. In particular merge requests and branch pushes DO NOT trigger testing
@@ -53,7 +54,7 @@ variables:
   script:
     - ${PYTHON} ./configure --with-debugging=0 COPTFLAGS='-O -march=native' CXXOPTFLAGS='-O -march=native' FOPTFLAGS='-O -march=native' ${CONFIG_OPTS}
     - make CFLAGS=-Werror
-    - make allgtests-tap search="${TEST_SEARCH}" TIMEOUT=300
+    - make allgtests-tap search="${TEST_SEARCH}" TIMEOUT=${TIMEOUT}
   after_script:
     - CCACHE_DIR=$(pwd)/.ccache ccache --show-stats
   artifacts:
@@ -116,7 +117,7 @@ checksource:
     - ./config/examples/${TEST_ARCH}.py
     - make
     - make check
-    - make cleantest allgtests-tap TIMEOUT=300
+    - make cleantest allgtests-tap TIMEOUT=${TIMEOUT}
   artifacts:
     reports:
       junit: ${TEST_ARCH}/tests/testresults.xml
@@ -607,6 +608,7 @@ linux-pkgs-valgrind:
     - mcs-nfs,server
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-valgrind
+    TIMEOUT: 7200
 
 linux-xsdk-dbg:
   extends:
