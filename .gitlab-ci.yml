@@ -94,6 +94,14 @@ c89-mlib-static-py2:
       --with-single-library=0 --with-shared-libraries=0 'CFLAGS=-std=c89 -pedantic -Wno-long-long -Wno-overlength-strings'
     TEST_SEARCH: snes_tutorials-ex48%
 
+checksource:
+  extends: .test
+  image: jedbrown/mpich-ccache
+  stage: stage-1
+  script:
+    - python3 ./configure --with-mpi=0 --with-fc=0 --with-cxx=0
+    - make checkbadSource SHELL=bash
+
 #
 # This provides the basic order of operations and options template for stage-2 tests.
 # Not all stage-2 need to follow this template, but most will.
@@ -231,14 +239,6 @@ osx-barry:
     - ccache --zero-stats
   after_script:
     - ccache --show-stats
-
-checksource:
-  extends: .test
-  stage: stage-1
-  script:
-    - ./configure --with-mpi=0 --with-fc=0 --with-cxx=0
-    - make checkbadSource
-
 
 #
 # The following tests are experimental; more tests by users at other sites may be added below this.  Experimental test
