@@ -1119,4 +1119,10 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
       requires:  define(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
       args: -dm_mat_type baij -snes_monitor -ksp_monitor -snes_view
 
+   test:
+     suffix: cpardiso
+     nsize: 4
+     requires: mkl_cpardiso
+     args: -pc_type lu -pc_factor_mat_solver_type mkl_cpardiso -ksp_monitor
+
 TEST*/
