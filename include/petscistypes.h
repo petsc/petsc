@@ -66,7 +66,7 @@ typedef struct _n_PetscLayout* PetscLayout;
   count, which are set using PetscSectionSetOffset() and PetscSectionSetDof() respectively. Lookup is typically using
   accessors or routines like VecGetValuesSection().
 
-  Level: developer
+  Level: beginner
 
 .seealso:  PetscSectionCreate(), PetscSectionDestroy()
 S*/

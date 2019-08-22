@@ -179,7 +179,7 @@ $                        is called synchronously in parallel. This requires gene
 $   IS_COLORING_LOCAL - includes colors for ghost points, this is used when the function can be called
 $                         separately on individual processes with the ghost points already filled in. Does not
 $                         require a "parallel coloring", rather each process colors its local + ghost part.
-$                         Using this can result in much less parallel communication. Currently only works 
+$                         Using this can result in much less parallel communication. Currently only works
 $                         with DMDA and if you call MatFDColoringSetFunction() with the local function.
 
 .seealso: DMCreateColoring()
@@ -361,6 +361,7 @@ PETSC_EXTERN PetscErrorCode PetscSectionGetOffset(PetscSection, PetscInt, PetscI
 PETSC_EXTERN PetscErrorCode PetscSectionSetOffset(PetscSection, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode PetscSectionGetFieldOffset(PetscSection, PetscInt, PetscInt, PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscSectionSetFieldOffset(PetscSection, PetscInt, PetscInt, PetscInt);
+PETSC_EXTERN PetscErrorCode PetscSectionGetFieldPointOffset(PetscSection, PetscInt, PetscInt, PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscSectionGetOffsetRange(PetscSection, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscSectionView(PetscSection, PetscViewer);
 PETSC_STATIC_INLINE PetscErrorCode PetscSectionViewFromOptions(PetscSection A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
