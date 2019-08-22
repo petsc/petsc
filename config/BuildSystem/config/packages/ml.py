@@ -49,13 +49,9 @@ class Configure(config.package.GNUPackage):
       self.framework.popLanguage()
     else:
       args.append('F77=""')
-
-    if hasattr(self.compilers, 'CXX'):
-      self.framework.pushLanguage('Cxx')
-      args.append('--with-cxxflags="'+self.removeWarningFlags(self.framework.getCompilerFlags())+' -DMPICH_SKIP_MPICXX -DOMPI_SKIP_MPICXX '+ self.headers.toStringNoDupes(self.mpi.include)+'"')
-      self.framework.popLanguage()
-    else:
-      raise RuntimeError('Error: ML requires C++ compiler. None specified')
+    self.framework.pushLanguage('Cxx')
+    args.append('--with-cxxflags="'+self.removeWarningFlags(self.framework.getCompilerFlags())+' -DMPICH_SKIP_MPICXX -DOMPI_SKIP_MPICXX '+ self.headers.toStringNoDupes(self.mpi.include)+'"')
+    self.framework.popLanguage()
 
     # ML does not have --with-mpi-include - so specify includes with cflags,fflags,cxxflags,CPPFLAGS
     args.append('--enable-mpi')
