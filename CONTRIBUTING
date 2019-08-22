@@ -1,6 +1,6 @@
-Contributions are preferred via Bitbucket pull request to
+Contributions are preferred via GitLab merge request to
 
-  https://bitbucket.org/petsc/petsc
+  https://gitlab.com/petsc/petsc
 
 or via patches (`git send-email` or `git format-patch`) sent to
 petsc-dev@mcs.anl.gov.  If you are planning a large contribution, we

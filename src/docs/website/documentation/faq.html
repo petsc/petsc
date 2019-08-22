@@ -440,7 +440,7 @@ See https://www.mcs.anl.gov/petsc/documentation/faq.html
 
       <h3><a name="gpus">Can PETSc use GPUs to speedup computations?</a></h3>
 
-      The <a href="https://bitbucket.org/petsc/petsc">PETSc developer repository</a> has some support for running portions of the computation on
+      The <a href="https://gitlab.com/petsc/petsc">PETSc developer repository</a> has some support for running portions of the computation on
       GPUs. See <a href="https://www.mcs.anl.gov/petsc/features/gpus.html">PETSc GPUs</a> for
       more information. PETSc has Vec classes VECCUDA and VECVIENNACL which perform almost all
       the vector operations on the GPU. The Mat classes AIJCUSPARSE and AIJVIENNACL perform
@@ -2054,14 +2054,14 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh
       <ul>
         <li>get petsc development (master branch in git) sources:
           <ul>
-            <li><code>git clone https://bitbucket.org/petsc/petsc</code></li>
+            <li><code>git clone https://gitlab.com/petsc/petsc.git</code></li>
           </ul>
         </li>
 
         <li>
           Find the <b>good</b> and <b>bad</b> markers to
           start the bisection process. This can be done either by checking
-          <code>git log</code> or <code>gitk</code> or <a href="https://bitbucket.org/petsc/petsc">https://bitbucket.org/petsc/petsc</a>
+          <code>git log</code> or <code>gitk</code> or <a href="https://gitlab.com/petsc/petsc">https://gitlab.com/petsc/petsc</a>
           or the web history of petsc-release clones. Lets say the known bad
           commit is 21af4baa815c and known good commit is 5ae5ab319844
         </li>

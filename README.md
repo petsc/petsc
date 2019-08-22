@@ -13,7 +13,7 @@ Host the PETSc numerical library package. http://www.mcs.anl.gov/petsc
 ### Contribution guidelines ###
 
 * See the file CONTRIBUTING
-* https://bitbucket.org/petsc/petsc/wiki/Home
+* https://gitlab.com/petsc/petsc/wikis/Home
 
 ### Who do I talk to? ###
 

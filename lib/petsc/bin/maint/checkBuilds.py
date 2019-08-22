@@ -338,7 +338,7 @@ class BuildChecker(script.Script):
             email =  m.group('mail')
           m = re.match(r'^summary (?P<summary>.*)',bl)
           if m:
-            commit = "https://bitbucket.org/petsc/petsc/commits/" + commit + '\n' + m.group('summary')
+            commit = "https://gitlab.com/petsc/petsc/commit/" + commit + '\n' + m.group('summary')
         warnings = self.filelineDict[(key[0],key[1],lns[current])]
         fullauthor = author+' '+email
         if not fullauthor in self.blameDict:
