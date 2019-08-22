@@ -1,0 +1,11 @@
+<HTML>
+<HEAD>
+<TITLE>PetscFE Manual Pages</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+
+<H2> PetscFE <A HREF="PETSC_DIRsrc/dm/dt/fe/examples/tutorials/index.html">Examples</A></H2>
+
+The PetscFE class encapsulates a finite element space.
+
+<P>
