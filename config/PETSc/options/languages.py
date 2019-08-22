@@ -12,7 +12,7 @@ class Configure(config.base.Configure):
   def __str1__(self):
     if not hasattr(self, 'clanguage'):
       return ''
-    return '  Clanguage: ' + self.clanguage +'\n'
+    return '  Language used to compile PETSc: ' + self.clanguage +'\n'
 
   def setupHelp(self, help):
     import nargs

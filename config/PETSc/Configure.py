@@ -293,12 +293,7 @@ prepend-path PATH "%s"
 
       # executable linker values
       self.setCompilers.pushLanguage('FC')
-      # Cannot have NAG f90 as the linker - so use pcc_linker as fc_linker
-      fc_linker = self.setCompilers.getLinker()
-      if config.setCompilers.Configure.isNAG(fc_linker, self.log):
-        self.addMakeMacro('FC_LINKER',pcc_linker)
-      else:
-        self.addMakeMacro('FC_LINKER',fc_linker)
+      self.addMakeMacro('FC_LINKER',self.setCompilers.getLinker())
       self.addMakeMacro('FC_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
       # apple requires this shared library linker flag on SOME versions of the os
       if self.setCompilers.getLinkerFlags().find('-Wl,-commons,use_dylibs') > -1:

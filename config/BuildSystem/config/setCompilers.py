@@ -66,6 +66,7 @@ class Configure(config.base.Configure):
       desc.append('  Shared linker:   '+self.getSharedLinker()+' '+self.getSharedLinkerFlags())
     if hasattr(self, 'dynamicLinker'):
       desc.append('  Dynamic linker:   '+self.getDynamicLinker()+' '+self.getDynamicLinkerFlags())
+      desc.append('  Libraries linked against:   '+self.LIBS)
     return '\n'.join(desc)+'\n'
 
   def setupHelp(self, help):

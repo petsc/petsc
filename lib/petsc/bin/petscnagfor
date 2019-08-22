@@ -1,0 +1,154 @@
+#!/usr/bin/env python
+from __future__ import print_function
+import os
+import re
+import sys
+import subprocess
+#
+#             This script replaces the nagfor compiler wrapper that has design features
+#           that make it impossible to work directly with PETSc (or any standard Unix compile system)
+#
+#      It uses the nagfor option -dryrun to determine the programs nagfor would run and fixes the arguments to the calls
+#
+#   nagfor does not handle -Wl,-rpath,path correctly (MPICH claims -Wl,-Wl,, works, but we can't change all of PETSc for this))
+#   nagfor links against two of its own .o files, if the link results in multiple definitions then remove a set and try again
+#   nagfor cannot always handle -O0 so remove it
+#   nagfor checks the length of all character strings; PETSc does not pass in the character string lengths to BLAS/LAPACK
+#   nagfor does not handle -verbose or -v; uses -dryrun instead
+#   nagfor does not handle -shared; pass it to linker with -Wl,-shared
+#   nagfor does not hanlde --whole-archive, --no-whole-archive that MPICH insists on putting in
+#
+def runnagfor(args):
+  if not isinstance(args, list): args = args.strip().split(' ')
+  try:
+    sub = subprocess.Popen(args, stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    sub.wait()
+    output = sub.stdout.read()
+    error = sub.stderr.read()
+    status = sub.returncode
+  except:
+    print('petscnagfor: Unable to run process with job '+str(args))
+    exit(1)
+  return (output,error,status)
+
+if __name__ == '__main__':
+  linkerargs = ['-rpath', '--whole-archive', '--no-whole-archive', '-soname' ]
+  args = sys.argv[1:]
+  argst = args
+  args = []
+  i = 0
+  while i < len(argst):
+    flag = 1
+    if argst[i] == '-verbose':
+      args.append('-dryrun')
+      i = i + 1
+      continue
+    if argst[i] == '-v':
+      args.append('-dryrun')
+      i = i + 1
+      continue
+    if argst[i] == '-shared':
+      args.append('-Wl,-shared')
+      i = i + 1
+      continue
+    for j in linkerargs:
+      if argst[i].startswith(j):
+        args.append('-Wl,'+ argst[i] + ',' + argst[i+1])
+        i = i + 1
+        flag = 0
+        break
+    if flag: args.append(argst[i])
+    i = i + 1
+
+  if '-version' in args or '-V' in args or '-dryrun' in args or '-v' in args:
+    (output,error,status) = runnagfor(['nagfor']+args)
+    error = error.replace('-rpath ','-Wl,-rpath')
+    print(output)
+    print(error,file=sys.stderr)
+    exit(0)
+
+  # nagfor cannot handle -O0 when passed with with -c option so remove it
+  argst = args
+  args = [x for x in argst if not x == '-O0']
+
+  (output,error,status) = runnagfor(['nagfor','-dryrun']+args)
+  if status:
+    print(output)
+    print(error,file=sys.stderr)
+    exit(status)
+
+  # Run through the up to four commands that nagfor passes out from -dryrun
+  for i in (output+error).split('\n'):
+    if not i or i.startswith('stdout') or i.startswith('stderr') or i.startswith('NAG') or i.startswith('Loading'): continue
+    if os.path.isfile(i[0:-1]): continue
+    i = i.replace(';',' ')
+    for j in linkerargs:
+      i = i.replace(j+' ','-Wl,'+j+',').strip()
+    if i.find('forcomp') > -1:
+      i = i.replace(' -PIC','').strip()
+    js = [x for x in i.split(' ') if not x == '-Bstatic' and not x == '-Bdynamic']
+
+    # Save all the .c files generated so they may be seen in the debugger
+    if (i.find('/fpp') == -1 and i.find('quickfit.o') == -1):
+      if i.find('forcomp') > -1:
+        last = js[-2][5:]
+      else:
+        last = js[-1][5:]
+      f1 = last.find('.')
+      f2 = last.rfind('.')
+      last = last[0:f1] + last[f2:]
+      if i.find('forcomp') > -1:
+        js[-2] = last
+      else:
+        js[-1] = last
+
+    (suboutput,error,status) = runnagfor(js)
+
+    if (i.find('/fpp') == -1 and i.find('quickfit.o') == -1):
+      if i.find('forcomp') > -1:
+        if status:
+          print(suboutput)
+          print(error,file=sys.stderr)
+          exit(status)
+        fd = open(last)
+        f = fd.read()
+        fd.close()
+        fd = open(last,'w')
+        for i in f.split('\n'):
+          # comment out the next line if you want to see the generated C code in the debugger, not the Fortran
+          if i.find('# line') > -1: continue
+          if i.find('Len) __NAGf90_rterr') > -1: continue
+          fd.write(i+'\n')
+        fd.close()
+      else:
+        try:
+          # comment this out if you want to see the C code in the debugger (see also 7 lines above)
+          os.remove(last)
+        except:
+          pass
+
+    if status and (suboutput+error).find('multiple') > -1:
+      js = i.strip().split(' ')
+      ks = []
+      foundinit = 0
+      foundquickfit = 0
+      for x in js:
+        if not foundinit and x.endswith('init.o'):
+          foundinit = 1
+          continue
+        if not foundquickfit and x.endswith('quickfit.o'):
+
+          foundquickfit = 1
+          continue
+        ks.append(x)
+      (suboutput,error,status) = runnagfor(ks)
+      if status and (suboutput+error).find('multiple') > -1:
+        js = [x for x in js if not x.endswith('init.o') and not x.endswith('quickfit.o')]
+        (suboutput,error,status) = runnagfor(js)
+    if status:
+      print(suboutput)
+      print(error,file=sys.stderr)
+      exit(status)
+
+  exit(0)
+

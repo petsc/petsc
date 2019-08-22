@@ -31,9 +31,9 @@ class Configure(config.package.Package):
   def __str__(self):
     output  = config.package.Package.__str__(self)
     if self.has64bitindices:
-      output += '  uses 64 bit integers\n'
+      output += '  uses 8 byte integers\n'
     else:
-      output += '  uses 32 bit integers\n'
+      output += '  uses 4 byte integers\n'
     return output
 
   def setupHelp(self, help):

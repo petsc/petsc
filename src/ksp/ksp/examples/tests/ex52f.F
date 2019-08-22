@@ -18,7 +18,7 @@
       PC pc
       MatFactorError ferr
       PetscReal pivot
-      
+
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       if (ierr .ne. 0) then
         print*,'Unable to initialize PETSc'
@@ -73,8 +73,13 @@
       call PetscFinalize(ierr)
       end
 
+!  Nag compiler automatically turns on catching of floating point exceptions and prints message at 
+!  end of run about the exceptions seen
+!
 !/*TEST
 !
 !   test:
+!     args: -fp_trap 0
+!     filter: grep -v "Warning: Floating"
 !
 !TEST*/

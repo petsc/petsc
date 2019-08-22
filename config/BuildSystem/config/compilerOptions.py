@@ -288,7 +288,12 @@ class CompilerOptions(config.base.Configure):
           flags = "lslpp -L xlfcmp | grep xlfcmp | awk '{print $2}'"
         else:
           flags = compiler+' --version'
-      (output, error, status) = config.base.Configure.executeShellCommand(flags, log = self.log)
+      try:
+        (output, error, status) = config.base.Configure.executeShellCommand(flags, log = self.log)
+      except:
+        flags = compiler+' -v'
+        (output, error, status) = config.base.Configure.executeShellCommand(flags, log = self.log)
+        output = error + output
       if not status:
         if compiler.find('win32fe') > -1:
           version = '\\n'.join(output.split('\n')[0:2])

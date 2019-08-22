@@ -337,7 +337,7 @@ PetscErrorCode  PetscBinaryRead(int fd,void *data,PetscInt num,PetscInt *count,P
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
    PetscBinaryWrite - Writes to a binary file.
 
    Not Collective
