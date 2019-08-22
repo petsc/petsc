@@ -4,7 +4,7 @@
 /*S
   PetscSpace - PETSc object that manages a linear space, e.g. the space of d-dimensional polynomials of given degree
 
-  Level: intermediate
+  Level: beginner
 
 .seealso: PetscSpaceCreate(), PetscDualSpaceCreate(), PetscSpaceSetType(), PetscSpaceType
 S*/
@@ -22,7 +22,7 @@ $ PETSCSPACE_POLYNOMIALTYPE_PMINUS_HCURL - This is the smallest polynomial space
 $   P^-_q = P_{q-1} + P_{(q-1)} rot x
 $ where P_{(q-1)} is the space of homogeneous polynomials of degree q-1, and rot x is (-y, x) in 2D, and (z - y, x - z, y - x) in 3D, being the generators of the rotation algebra.
 
-  Level: intermediate
+  Level: beginner
 
 .seealso: PetscSpace
 M*/

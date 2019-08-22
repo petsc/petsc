@@ -127,7 +127,7 @@ PetscErrorCode PetscSpaceGetType(PetscSpace sp, PetscSpaceType *name)
 + sp - the PetscSpace object to view
 - v  - the viewer
 
-  Level: developer
+  Level: beginner
 
 .seealso PetscSpaceDestroy()
 @*/
@@ -162,7 +162,7 @@ PetscErrorCode PetscSpaceView(PetscSpace sp, PetscViewer v)
   Options Database:
 . -petscspace_degree the approximation order of the space
 
-  Level: developer
+  Level: intermediate
 
 .seealso PetscSpaceView()
 @*/
@@ -214,7 +214,7 @@ PetscErrorCode PetscSpaceSetFromOptions(PetscSpace sp)
   Input Parameter:
 . sp - the PetscSpace object to setup
 
-  Level: developer
+  Level: intermediate
 
 .seealso PetscSpaceView(), PetscSpaceDestroy()
 @*/
@@ -236,7 +236,7 @@ PetscErrorCode PetscSpaceSetUp(PetscSpace sp)
   Input Parameter:
 . sp - the PetscSpace object to destroy
 
-  Level: developer
+  Level: beginner
 
 .seealso PetscSpaceView()
 @*/
@@ -384,7 +384,7 @@ PetscErrorCode PetscSpaceSetDegree(PetscSpace sp, PetscInt degree, PetscInt maxD
 
   Level: intermediate
 
-.seealso: PetscSpaceSetNumComponents(), PetscSpaceGetDimension(), PetscSpaceCreate(), PetscSpace
+.seealso: PetscSpaceSetNumComponents(), PetscSpaceGetNumVariables(), PetscSpaceGetDimension(), PetscSpaceCreate(), PetscSpace
 @*/
 PetscErrorCode PetscSpaceGetNumComponents(PetscSpace sp, PetscInt *Nc)
 {
@@ -404,7 +404,7 @@ PetscErrorCode PetscSpaceGetNumComponents(PetscSpace sp, PetscInt *Nc)
 
   Level: intermediate
 
-.seealso: PetscSpaceGetNumComponents(), PetscSpaceCreate(), PetscSpace
+.seealso: PetscSpaceGetNumComponents(), PetscSpaceSetNumVariables(), PetscSpaceCreate(), PetscSpace
 @*/
 PetscErrorCode PetscSpaceSetNumComponents(PetscSpace sp, PetscInt Nc)
 {
@@ -414,6 +414,17 @@ PetscErrorCode PetscSpaceSetNumComponents(PetscSpace sp, PetscInt Nc)
   PetscFunctionReturn(0);
 }
 
+/*@
+  PetscSpaceSetNumVariables - Set the number of variables for this space
+
+  Input Parameters:
++ sp - The PetscSpace
+- n - The number of variables, e.g. x, y, z...
+
+  Level: intermediate
+
+.seealso: PetscSpaceGetNumVariables(), PetscSpaceSetNumComponents(), PetscSpaceCreate(), PetscSpace
+@*/
 PetscErrorCode PetscSpaceSetNumVariables(PetscSpace sp, PetscInt n)
 {
   PetscFunctionBegin;
@@ -422,6 +433,19 @@ PetscErrorCode PetscSpaceSetNumVariables(PetscSpace sp, PetscInt n)
   PetscFunctionReturn(0);
 }
 
+/*@
+  PetscSpaceGetNumVariables - Return the number of variables for this space
+
+  Input Parameter:
+. sp - The PetscSpace
+
+  Output Parameter:
+. Nc - The number of variables, e.g. x, y, z...
+
+  Level: intermediate
+
+.seealso: PetscSpaceSetNumVariables(), PetscSpaceGetNumComponents(), PetscSpaceGetDimension(), PetscSpaceCreate(), PetscSpace
+@*/
 PetscErrorCode PetscSpaceGetNumVariables(PetscSpace sp, PetscInt *n)
 {
   PetscFunctionBegin;
@@ -430,7 +454,6 @@ PetscErrorCode PetscSpaceGetNumVariables(PetscSpace sp, PetscInt *n)
   *n = sp->Nv;
   PetscFunctionReturn(0);
 }
-
 
 /*@C
   PetscSpaceEvaluate - Evaluate the basis functions and their derivatives (jet) at each point
@@ -448,7 +471,7 @@ PetscErrorCode PetscSpaceGetNumVariables(PetscSpace sp, PetscInt *n)
   Note: Above nfuncs is the dimension of the space, and dim is the spatial dimension. The coordinates are given
   on the reference cell, not in real space.
 
-  Level: advanced
+  Level: beginner
 
 .seealso: PetscFEGetTabulation(), PetscFEGetDefaultTabulation(), PetscSpaceCreate()
 @*/
@@ -502,4 +525,3 @@ PetscErrorCode PetscSpaceGetHeightSubspace(PetscSpace sp, PetscInt height, Petsc
   }
   PetscFunctionReturn(0);
 }
-
