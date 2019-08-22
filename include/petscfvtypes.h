@@ -4,7 +4,7 @@
 /*S
   PetscLimiter - PETSc object that manages a finite volume slope limiter
 
-  Level: intermediate
+  Level: beginner
 
 .seealso: PetscLimiterCreate(), PetscLimiterSetType(), PetscLimiterType
 S*/
@@ -13,7 +13,7 @@ typedef struct _p_PetscLimiter *PetscLimiter;
 /*S
   PetscFV - PETSc object that manages a finite volume discretization
 
-  Level: intermediate
+  Level: beginner
 
 .seealso: PetscFVCreate(), PetscFVSetType(), PetscFVType
 S*/
