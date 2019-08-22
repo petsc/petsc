@@ -32,7 +32,7 @@ PETSC_EXTERN const char * const PetscSpacePolynomialTypes[];
 /*S
   PetscDualSpace - PETSc object that manages the dual space to a linear space, e.g. the space of evaluation functionals at the vertices of a triangle
 
-  Level: intermediate
+  Level: beginner
 
 .seealso: PetscDualSpaceCreate(), PetscSpaceCreate(), PetscDualSpaceSetType(), PetscDualSpaceType
 S*/
@@ -43,7 +43,7 @@ typedef struct _p_PetscDualSpace *PetscDualSpace;
 
   Notes: This is used only for automatic creation of reference cells. A PetscDualSpace can accept an arbitary DM for a reference cell.
 
-  Level: intermediate
+  Level: beginner
 
 .seealso: PetscSpace
 M*/
@@ -60,7 +60,7 @@ $ Contravariant Piola: $\sigma^*(F) = 1/|J| J F \circ \phi^{-1)$
 
   Note: For details, please see Rognes, Kirby, and Logg, Efficient Assembly of Hdiv and Hrot Conforming Finite Elements, SISC, 31(6), 4130-4151, arXiv 1205.3085, 2010
 
-  Level: advanced
+  Level: beginner
 
 .seealso: PetscDualSpaceGetDeRahm()
 M*/
@@ -69,7 +69,7 @@ typedef enum {IDENTITY_TRANSFORM, COVARIANT_PIOLA_TRANSFORM, CONTRAVARIANT_PIOLA
 /*S
   PetscFE - PETSc object that manages a finite element space, e.g. the P_1 Lagrange element
 
-  Level: intermediate
+  Level: beginner
 
 .seealso: PetscFECreate(), PetscSpaceCreate(), PetscDualSpaceCreate(), PetscFESetType(), PetscFEType
 S*/
@@ -78,7 +78,7 @@ typedef struct _p_PetscFE *PetscFE;
 /*MC
   PetscFEJacobianType - indicates which pointwise functions should be used to fill the Jacobian matrix
 
-  Level: intermediate
+  Level: beginner
 
 .seealso: PetscFEIntegrateJacobian()
 M*/
