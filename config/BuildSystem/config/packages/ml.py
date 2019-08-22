@@ -11,6 +11,7 @@ class Configure(config.package.GNUPackage):
     self.liblist           = [['libml.a']]
     self.license           = 'http://trilinos.sandia.gov/'
     self.fc                = 0
+    self.cxx               = 1
     self.precisions        = ['double']
     self.complex           = 0
     self.downloadonWindows = 1
