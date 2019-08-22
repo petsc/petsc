@@ -1,7 +1,7 @@
 #include <petsc/private/petscfeimpl.h> /*I "petscfe.h" I*/
 #include <petscblaslapack.h>
 
-PetscErrorCode PetscFEDestroy_Basic(PetscFE fem)
+static PetscErrorCode PetscFEDestroy_Basic(PetscFE fem)
 {
   PetscFE_Basic *b = (PetscFE_Basic *) fem->data;
   PetscErrorCode ierr;
@@ -11,7 +11,7 @@ PetscErrorCode PetscFEDestroy_Basic(PetscFE fem)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscFEView_Basic_Ascii(PetscFE fe, PetscViewer v)
+static PetscErrorCode PetscFEView_Basic_Ascii(PetscFE fe, PetscViewer v)
 {
   PetscInt          dim, Nc;
   PetscSpace        basis = NULL;
@@ -34,7 +34,7 @@ PetscErrorCode PetscFEView_Basic_Ascii(PetscFE fe, PetscViewer v)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscFEView_Basic(PetscFE fe, PetscViewer v)
+static PetscErrorCode PetscFEView_Basic(PetscFE fe, PetscViewer v)
 {
   PetscBool      iascii;
   PetscErrorCode ierr;
@@ -46,7 +46,7 @@ PetscErrorCode PetscFEView_Basic(PetscFE fe, PetscViewer v)
 }
 
 /* Construct the change of basis from prime basis to nodal basis */
-PetscErrorCode PetscFESetUp_Basic(PetscFE fem)
+static PetscErrorCode PetscFESetUp_Basic(PetscFE fem)
 {
   PetscScalar   *work, *invVscalar;
   PetscBLASInt  *pivots;
@@ -103,7 +103,7 @@ PetscErrorCode PetscFEGetDimension_Basic(PetscFE fem, PetscInt *dim)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscFEGetTabulation_Basic(PetscFE fem, PetscInt npoints, const PetscReal points[], PetscReal *B, PetscReal *D, PetscReal *H)
+static PetscErrorCode PetscFEGetTabulation_Basic(PetscFE fem, PetscInt npoints, const PetscReal points[], PetscReal *B, PetscReal *D, PetscReal *H)
 {
   DM               dm;
   PetscInt         pdim; /* Dimension of FE space P */
@@ -175,8 +175,8 @@ PetscErrorCode PetscFEGetTabulation_Basic(PetscFE fem, PetscInt npoints, const P
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscFEIntegrate_Basic(PetscDS ds, PetscInt field, PetscInt Ne, PetscFEGeom *cgeom,
-                                      const PetscScalar coefficients[], PetscDS dsAux, const PetscScalar coefficientsAux[], PetscScalar integral[])
+static PetscErrorCode PetscFEIntegrate_Basic(PetscDS ds, PetscInt field, PetscInt Ne, PetscFEGeom *cgeom,
+                                             const PetscScalar coefficients[], PetscDS dsAux, const PetscScalar coefficientsAux[], PetscScalar integral[])
 {
   const PetscInt     debug = 0;
   PetscFE            fe;
@@ -267,9 +267,9 @@ PetscErrorCode PetscFEIntegrate_Basic(PetscDS ds, PetscInt field, PetscInt Ne, P
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscFEIntegrateBd_Basic(PetscDS ds, PetscInt field,
-                                        PetscBdPointFunc obj_func,
-                                        PetscInt Ne, PetscFEGeom *fgeom, const PetscScalar coefficients[], PetscDS dsAux, const PetscScalar coefficientsAux[], PetscScalar integral[])
+static PetscErrorCode PetscFEIntegrateBd_Basic(PetscDS ds, PetscInt field,
+                                               PetscBdPointFunc obj_func,
+                                               PetscInt Ne, PetscFEGeom *fgeom, const PetscScalar coefficients[], PetscDS dsAux, const PetscScalar coefficientsAux[], PetscScalar integral[])
 {
   const PetscInt     debug = 0;
   PetscFE            fe;
@@ -752,8 +752,8 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscDS ds, PetscFEJacobianType jt
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscDS ds, PetscInt fieldI, PetscInt fieldJ, PetscInt Ne, PetscFEGeom *fgeom,
-                                                const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS dsAux, const PetscScalar coefficientsAux[], PetscReal t, PetscReal u_tshift, PetscScalar elemMat[])
+static PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscDS ds, PetscInt fieldI, PetscInt fieldJ, PetscInt Ne, PetscFEGeom *fgeom,
+                                                       const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS dsAux, const PetscScalar coefficientsAux[], PetscReal t, PetscReal u_tshift, PetscScalar elemMat[])
 {
   const PetscInt     debug      = 0;
   PetscFE            feI, feJ;
@@ -908,7 +908,7 @@ PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscDS ds, PetscInt fieldI, Pet
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscFEInitialize_Basic(PetscFE fem)
+static PetscErrorCode PetscFEInitialize_Basic(PetscFE fem)
 {
   PetscFunctionBegin;
   fem->ops->setfromoptions          = NULL;
