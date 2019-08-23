@@ -1,5 +1,7 @@
 DMPlexIsDistributed: TRUE
 DMPlexIsInterpolatedCollective: full
+DMPlexCheckPointSFHeavy PASSED
+DMPlexCheckPointSFHeavy PASSED
 DMPlexIsDistributed: TRUE
 DMPlexIsInterpolatedCollective: full
 [0] (       0.000,        1.000,        0.000) --> points[0] = 36
