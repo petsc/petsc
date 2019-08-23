@@ -1,4 +1,5 @@
 #include <petsc/private/sfimpl.h> /*I "petscsf.h" I*/
+#include <petsc/private/hashseti.h>
 #include <petscctable.h>
 
 #if defined(PETSC_USE_DEBUG)
@@ -196,6 +197,34 @@ PetscErrorCode PetscSFDestroy(PetscSF *sf)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PetscSFCheckGraphValid_Private(PetscSF sf)
+{
+#if defined(PETSC_USE_DEBUG)
+  PetscInt           i, nleaves;
+  PetscMPIInt        size;
+  const PetscInt    *ilocal;
+  const PetscSFNode *iremote;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  if (!sf->graphset) PetscFunctionReturn(0);
+  ierr = PetscSFGetGraph(sf,NULL,&nleaves,&ilocal,&iremote);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)sf),&size);CHKERRQ(ierr);
+  for (i = 0; i < nleaves; i++) {
+    const PetscInt rank = iremote[i].rank;
+    const PetscInt remote = iremote[i].index;
+    const PetscInt leaf = ilocal ? ilocal[i] : i;
+    if (rank < 0 || rank >= size) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Provided rank (%D) for remote %D is invalid, should be in [0, %d)",rank,i,size);
+    if (remote < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Provided index (%D) for remote %D is invalid, should be >= 0",remote,i);
+    if (leaf < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Provided location (%D) for leaf %D is invalid, should be >= 0",leaf,i);
+  }
+  PetscFunctionReturn(0);
+#else
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+#endif
+}
+
 /*@
    PetscSFSetUp - set up communication structures
 
@@ -216,6 +245,7 @@ PetscErrorCode PetscSFSetUp(PetscSF sf)
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   PetscSFCheckGraphSet(sf,1);
   if (sf->setupcalled) PetscFunctionReturn(0);
+  ierr = PetscSFCheckGraphValid_Private(sf);CHKERRQ(ierr);
   if (!((PetscObject)sf)->type_name) {ierr = PetscSFSetType(sf,PETSCSFBASIC);CHKERRQ(ierr);}
   ierr = PetscLogEventBegin(PETSCSF_SetUp,sf,0,0,0);CHKERRQ(ierr);
   if (sf->ops->SetUp) {ierr = (*sf->ops->SetUp)(sf);CHKERRQ(ierr);}
@@ -292,9 +322,11 @@ PetscErrorCode PetscSFSetRankOrder(PetscSF sf,PetscBool flg)
 +  sf - star forest
 .  nroots - number of root vertices on the current process (these are possible targets for other process to attach leaves)
 .  nleaves - number of leaf vertices on the current process, each of these references a root on any process
-.  ilocal - locations of leaves in leafdata buffers, pass NULL for contiguous storage
+.  ilocal - locations of leaves in leafdata buffers, pass NULL for contiguous storage (locations must be >= 0, enforced
+during setup in debug mode)
 .  localmode - copy mode for ilocal
-.  iremote - remote locations of root vertices for each leaf on the current process
+.  iremote - remote locations of root vertices for each leaf on the current process (locations must be >= 0, enforced
+during setup in debug mode)
 -  remotemode - copy mode for iremote
 
    Level: intermediate
@@ -305,6 +337,9 @@ PetscErrorCode PetscSFSetRankOrder(PetscSF sf,PetscBool flg)
    Developers Note: Local indices which are the identity permutation in the range [0,nleaves) are discarded as they
    encode contiguous storage. In such case, if localmode is PETSC_OWN_POINTER, the memory is deallocated as it is not
    needed
+
+   Developers Note: This object does not necessarily encode a true star forest in the graph theoretic sense, since leaf
+   indices are not required to be unique. Some functions, however, rely on unique leaf indices (checked in debug mode).
 
 .seealso: PetscSFCreate(), PetscSFView(), PetscSFGetGraph()
 @*/
