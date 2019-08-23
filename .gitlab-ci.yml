@@ -109,6 +109,9 @@ checksource:
 .stage-23:
   extends: .test
   script:
+    - printf "$PATH\n"
+    - printf "./config/examples/${TEST_ARCH}.py\n"
+    - cat ./config/examples/${TEST_ARCH}.py
     - ./config/examples/${TEST_ARCH}.py
     - make
     - make check
