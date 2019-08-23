@@ -230,14 +230,14 @@ freebsd-cxx-cmplx-64idx-dbg:
   variables:
     TEST_ARCH: arch-ci-freebsd-cxx-cmplx-64idx-dbg
 
-opensolaris-cmplx-pkgs-dbg:
+opensolaris-misc:
   extends:
     - .stage-2
     - .opensolaris_test
   tags:
     - name:n-gage
   variables:
-    TEST_ARCH: arch-ci-opensolaris-cmplx-pkgs-dbg
+    TEST_ARCH: arch-ci-opensolaris-misc
 
 osx-cxx-pkgs-opt:
   extends:
@@ -301,6 +301,23 @@ arch-ci-mswin-opt-impi:
     TEST_ARCH: arch-ci-mswin-opt-impi
 
 
+opensolaris-cmplx-pkgs-dbg:
+  extends:
+    - .stage-3
+    - .opensolaris_test
+  tags:
+    - name:n-gage
+  variables:
+    TEST_ARCH: arch-ci-opensolaris-cmplx-pkgs-dbg
+
+opensolaris-pkgs-opt:
+  extends:
+    - .stage-3
+    - .opensolaris_test
+  tags:
+    - name:n-gage
+  variables:
+    TEST_ARCH: arch-ci-opensolaris-pkgs-opt
 #
 # The following tests are experimental; more tests by users at other sites may be added below this.  Experimental test
 # that fail produce a warning, but do not block execution of a pipeline.
