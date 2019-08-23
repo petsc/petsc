@@ -503,6 +503,24 @@ linux-pkgs-cxx-mlib:
       -saws_port_auto_select -saws_port_auto_select_silent
     TEST_ARCH: arch-ci-linux-pkgs-cxx-mlib
 
+linux-cxx-cmplx-pkgs-64idx:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - name:fedora
+  variables:
+    TEST_ARCH: arch-ci-linux-cxx-cmplx-pkgs-64idx
+
+linux-pkgs-dbg-ftn-interfaces:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - name:fedora
+  variables:
+    TEST_ARCH: arch-ci-linux-pkgs-dbg-ftn-interfaces
+
 #
 # The following tests are experimental; more tests by users at other sites may be added below this.  Experimental test
 # that fail produce a warning, but do not block execution of a pipeline.
