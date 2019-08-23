@@ -65,7 +65,7 @@ variables:
     key: "${CI_JOB_NAME}"
 
 #
-# The following tests run on the cloud as part of test-short.
+# The following tests run on the cloud as part of stage-1.
 #
 
 mpich-cxx-py3:
@@ -103,15 +103,11 @@ checksource:
     - make checkbadSource SHELL=bash
 
 #
-# This provides the basic order of operations and options template for stage-2 tests.
-# Not all stage-2 need to follow this template, but most will.
+# This provides the basic order of operations and options template for stage-2,3 tests.
+# Not all stage-2,3 need to follow this template, but most will.
 #
-.stage-2:
+.stage-23:
   extends: .test
-  stage: stage-2
-  only:
-    variables:
-      - $STAGE != "1"
   script:
     - ./config/examples/${TEST_ARCH}.py
     - make
@@ -121,22 +117,27 @@ checksource:
     reports:
       junit: ${TEST_ARCH}/tests/testresults.xml
 
+.stage-2:
+  extends: .stage-23
+  stage: stage-2
+  only:
+    variables:
+      - $STAGE != "1"
+      - $STAGE != "3"
+
+.stage-3:
+  extends: .stage-23
+  stage: stage-3
+  only:
+    variables:
+      - $STAGE != "1"
+      - $STAGE != "2"
+
 #
-# The following tests run on MCS systems as part of stage-2.
-#
-# The tags variable used in the tests below connects the particular test with the runners
-# listed on the left hand side of https://gitlab.com/petsc/petsc/-/settings/ci_cd.
-# For example the test linux-gcc-complex-opt which extends .linux_mcs_test will run on
-# any runner that has the tag (in a blue box beneath it) of mcs-linux.
+# The following provide templates for various OSes for pre/post info
 #
 
-.mcs_test:
-  extends: .stage-2
-
-.linux_mcs_test:
-  extends: .mcs_test
-  tags:
-    - os:linux,name:pj02
+.linux_test:
   before_script:
     - hostname
     - grep PRETTY_NAME /etc/os-release
@@ -145,10 +146,7 @@ checksource:
   after_script:
     - ccache --show-stats
 
-.freebsd_mcs_test:
-  extends: .mcs_test
-  tags:
-    - os:fbsd,name:petsc-fbsd
+.freebsd_test:
   before_script:
     - hostname
     - freebsd-version
@@ -157,16 +155,7 @@ checksource:
   after_script:
     - ccache --show-stats
 
-.osx_mcs_test:
-  extends: .mcs_test
-  tags:
-    - os:osx,name:jpro
-  variables:
-#  the stages definition defines the first line of PETSC_OPTIONS below. Do they have to be repeated here or can one use
-#  $PETSC_OPTIONS or another option so that they do not need to be repeated?
-    PETSC_OPTIONS: <
-      -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
-      -saws_port_auto_select -saws_port_auto_select_silent -vecscatter_mpi1 false -options_left false
+.osx_test:
   before_script:
     - hostname
     - sw_vers -productVersion
@@ -175,70 +164,95 @@ checksource:
   after_script:
     - ccache --show-stats
 
-.opensolaris_mcs_test:
-  extends: .mcs_test
-  tags:
-    - os:opensolaris,name:n-gage
+.opensolaris_test:
   before_script:
     - hostname
     - uname -a
     - echo $(nproc)
 
-#####         These are the specific tests that map to the scripts in config/examples
+#
+# The following tests run as part of stage-2.
+#
+# The tags variable used in the tests below connects the particular test with the runners
+# listed on the left hand side of https://gitlab.com/petsc/petsc/-/settings/ci_cd.
+# For example the test linux-gcc-complex-opt  any runner that has the tag 'name:pj02'
+# (in a blue box beneath it)
+#
 
 linux-gcc-complex-opt:
-  extends: .linux_mcs_test
+  extends:
+    - .stage-2
+    - .linux_test
+  tags:
+    - name:pj02
   variables:
     TEST_ARCH: arch-ci-linux-gcc-complex-opt
 
 linux-gcc-pkgs-opt:
-  extends: .linux_mcs_test
+  extends:
+    - .stage-2
+    - .linux_test
+  tags:
+    - name:pj02
   variables:
     TEST_ARCH: arch-ci-linux-gcc-pkgs-opt
 
 linux-gcc-quad-64idx-dbg:
-  extends: .linux_mcs_test
+  extends:
+    - .stage-2
+    - .linux_test
+  tags:
+    - name:pj02
   variables:
     TEST_ARCH: arch-ci-linux-gcc-quad-64idx-dbg
 
 freebsd-c-single-opt:
-  extends: .freebsd_mcs_test
+  extends:
+    - .stage-2
+    - .freebsd_test
+  tags:
+    - name:petsc-fbsd
   variables:
     TEST_ARCH: arch-ci-freebsd-c-single-opt
 
 freebsd-cxx-cmplx-64idx-dbg:
-  extends: .freebsd_mcs_test
+  extends:
+    - .stage-2
+    - .freebsd_test
+  tags:
+    - name:petsc-fbsd
   variables:
     TEST_ARCH: arch-ci-freebsd-cxx-cmplx-64idx-dbg
 
-osx-cxx-pkgs-opt:
-  extends: .osx_mcs_test
-  variables:
-    TEST_ARCH: arch-ci-osx-cxx-pkgs-opt
-
 opensolaris-cmplx-pkgs-dbg:
-  extends: .opensolaris_mcs_test
+  extends:
+    - .stage-2
+    - .opensolaris_test
+  tags:
+    - name:n-gage
   variables:
     TEST_ARCH: arch-ci-opensolaris-cmplx-pkgs-dbg
 
+osx-cxx-pkgs-opt:
+  extends:
+    - .stage-2
+    - .osx_test
+  tags:
+    - name:jpro
+  variables:
+    PETSC_OPTIONS: <
+      -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
+      -saws_port_auto_select -saws_port_auto_select_silent -vecscatter_mpi1 false -options_left false
+    TEST_ARCH: arch-ci-osx-cxx-pkgs-opt
+
 osx-barry:
-  extends: .mcs_test
+  extends:
+    - .stage-2
+    - .osx_test
   tags:
     - os:osx
   variables:
-#  the stages definition defines the first line of PETSC_OPTIONS below. Do they have to be repeated here or can one use
-#  $PETSC_OPTIONS or another option so that they do not need to be repeated?
-    PETSC_OPTIONS: <
-      -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
-      -vecscatter_mpi1 false -options_left false
     TEST_ARCH: arch-ci-osx-prefix
-  before_script:
-    - hostname
-    - sw_vers -productVersion
-    - echo $(sysctl -n hw.ncpu)
-    - ccache --zero-stats
-  after_script:
-    - ccache --show-stats
 
 #
 # The following tests are experimental; more tests by users at other sites may be added below this.  Experimental test
