@@ -410,6 +410,33 @@ linux-without-fc:
   variables:
     TEST_ARCH: arch-ci-linux-without-fc
 
+linux-clang-avx:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - name:isdp001
+  variables:
+    TEST_ARCH: arch-ci-linux-clang-avx
+
+linux-gcc-cxx-avx2:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - name:isdp001
+  variables:
+    TEST_ARCH: arch-ci-linux-gcc-cxx-avx2
+
+linux-knl:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - name:isdp001
+  variables:
+    TEST_ARCH: arch-ci-linux-knl
+
 #
 # The following tests are experimental; more tests by users at other sites may be added below this.  Experimental test
 # that fail produce a warning, but do not block execution of a pipeline.
