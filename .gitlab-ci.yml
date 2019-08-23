@@ -350,6 +350,33 @@ freebsd-cxx-pkgs-opt:
   variables:
     TEST_ARCH: arch-ci-freebsd-cxx-pkgs-opt
 
+osx-cxx-cmplx-pkgs-dbg:
+  extends:
+    - .stage-3
+    - .osx_test
+  tags:
+    - os:osx,name:jpro
+  variables:
+    TEST_ARCH: arch-ci-osx-cxx-cmplx-pkgs-dbg
+
+osx-dbg:
+  extends:
+    - .stage-3
+    - .osx_test
+  tags:
+    - os:osx
+  variables:
+    TEST_ARCH: arch-ci-osx-dbg
+
+osx-xsdk-opt:
+  extends:
+    - .stage-3
+    - .osx_test
+  tags:
+    - os:osx
+  variables:
+    TEST_ARCH: arch-ci-osx-xsdk-opt
+
 #
 # The following tests are experimental; more tests by users at other sites may be added below this.  Experimental test
 # that fail produce a warning, but do not block execution of a pipeline.
