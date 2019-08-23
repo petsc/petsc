@@ -215,6 +215,18 @@ linux-gcc-quad-64idx-dbg:
   variables:
     TEST_ARCH: arch-ci-linux-gcc-quad-64idx-dbg
 
+linux-cuda-double:
+  extends:
+    - .stage-2
+    - .linux_test
+  tags:
+    - name:frog
+  variables:
+    PETSC_OPTIONS: <
+      -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
+      -cuda_initialize 0
+    TEST_ARCH: arch-ci-linux-cuda-double
+
 freebsd-c-single-opt:
   extends:
     - .stage-2
@@ -436,6 +448,39 @@ linux-knl:
     - name:isdp001
   variables:
     TEST_ARCH: arch-ci-linux-knl
+
+linux-c-exodus-dbg:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - name:frog
+  variables:
+    PETSC_OPTIONS: <
+      -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
+      -cuda_initialize 0
+    TEST_ARCH: arch-ci-linux-c-exodus-dbg
+
+linux-cuda-single:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - name:frog
+  variables:
+    PETSC_OPTIONS: <
+      -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
+      -cuda_initialize 0
+    TEST_ARCH: arch-ci-linux-cuda-single
+
+linux-viennacl:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - name:frog
+  variables:
+    TEST_ARCH: arch-ci-linux-viennacl
 
 #
 # The following tests are experimental; more tests by users at other sites may be added below this.  Experimental test
