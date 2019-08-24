@@ -521,6 +521,126 @@ linux-pkgs-dbg-ftn-interfaces:
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-dbg-ftn-interfaces
 
+linux-analyzer:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - mcs-nfs
+  variables:
+    TEST_ARCH: arch-ci-linux-analyzer
+
+linux-gcc-ifc-cmplx:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - mcs-nfs
+  variables:
+    TEST_ARCH: arch-ci-linux-gcc-ifc-cmplx
+
+linux-gcov:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - mcs-nfs
+  variables:
+    TEST_ARCH: arch-ci-linux-gcov
+
+linux-IPL64:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - mcs-nfs
+  variables:
+    TEST_ARCH: arch-ci-linux-IPL64
+
+linux-matlab-ilp64-gcov:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - mcs-nfs
+  variables:
+    TEST_ARCH: arch-ci-linux-matlab-ilp64-gcov
+
+linux-opt-cxx-quad:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - mcs-nfs
+  variables:
+    TEST_ARCH: arch-ci-linux-opt-cxx-quad
+
+linux-pgi:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - mcs-nfs
+  variables:
+    TEST_ARCH: arch-ci-linux-pgi
+
+linux-pkgs-64idx:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - mcs-nfs
+  variables:
+    TEST_ARCH: arch-ci-linux-pkgs-64idx
+
+linux-pkgs-gcov:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - mcs-nfs
+  variables:
+    TEST_ARCH: arch-ci-linux-pkgs-gcov
+
+linux-pkgs-opt:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - mcs-nfs
+  variables:
+    PETSC_OPTIONS: <
+      -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
+      -saws_port_auto_select -saws_port_auto_select_silent
+    TEST_ARCH: arch-ci-linux-pkgs-opt
+
+linux-pkgs-valgrind:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - mcs-nfs,server
+  variables:
+    TEST_ARCH: arch-ci-linux-pkgs-valgrind
+
+linux-xsdk-dbg:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - mcs-nfs
+  variables:
+    TEST_ARCH: arch-ci-linux-xsdk-dbg
+
+linux-pardiso:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - mcs-nfs
+  variables:
+    TEST_ARCH: arch-ci-linux-pardiso
+
 #
 # The following tests are experimental; more tests by users at other sites may be added below this.  Experimental test
 # that fail produce a warning, but do not block execution of a pipeline.
