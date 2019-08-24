@@ -30,6 +30,6 @@ int main(int argc,char **argv)
  # Testing errors so only look for errors
    test:
      filter: Error: egrep "(PETSC ERROR)" | egrep "(Error Created|CreateError\(\)|main\(\))" | cut -f1,2,3,4,5,6 -d" "
-
+     TODO:  Does not always produce exactly expected output on all systems for all runs
 
 TEST*/

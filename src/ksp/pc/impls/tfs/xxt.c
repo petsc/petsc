@@ -353,7 +353,7 @@ static PetscInt xxt_generate(xxt_ADT xxt_handle)
 
 
     /* uu = X^T.u_l (comm portion) */
-    PCTFS_ssgl_radd  (uu, w, dim, stages);
+    ierr = PCTFS_ssgl_radd  (uu, w, dim, stages);CHKERRQ(ierr);
 
     /* z = X.uu */
     PCTFS_rvec_zero(z,n);
@@ -501,7 +501,7 @@ static PetscErrorCode do_xxt_solve(xxt_ADT xxt_handle,  PetscScalar *uc)
 
   /* comunication of beta */
   uu_ptr=solve_uu;
-  if (level) PCTFS_ssgl_radd(uu_ptr, solve_w, level, stages);
+  if (level) {ierr = PCTFS_ssgl_radd(uu_ptr, solve_w, level, stages);CHKERRQ(ierr);}
 
   PCTFS_rvec_zero(uc,n);
 

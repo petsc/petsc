@@ -141,7 +141,7 @@ int main(int argc,char **argv)
       suffix: yaml
       requires: yaml !complex
       args: -options_file_yaml bag.yml -options_view
-      filter:  grep -v saws_port_auto_select |grep -v malloc_dump | grep -v display
+      filter:  grep -v saws_port_auto_select |grep -v malloc_dump | grep -v display | grep -v check_pointer_intensity | grep -v error_output_stdout | grep -v nox | grep -v nox_warning
       localrunfiles: bag.yml
 
 TEST*/

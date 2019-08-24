@@ -30,6 +30,6 @@ int main(int argc,char **argv)
 
    test:
      filter: Error: egrep "(Caught signal number 11 SEGV|Caught signal number 4 Illegal)" | wc -l
-
+     TODO:  Does not always produce exactly expected output on all systems for all runs
 
 TEST*/
