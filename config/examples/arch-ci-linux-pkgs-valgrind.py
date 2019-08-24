@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 
+import os
+petsc_hash_pkgs=os.path.join(os.getenv('HOME'),'petsc-hash-pkgs')
+if not os.path.isdir(petsc_hash_pkgs): os.mkdir(petsc_hash_pkgs)
+
 configure_options = [
-  '--with-debugging=0',
-  #'--with-cc=mpicc.openmpi',
-  #'--with-cxx=mpicxx.openmpi',
-  #'--with-fc=mpif90.openmpi',
-  #'--with-mpiexec=mpiexec.openmpi',
-  '--download-openmpi=1',
+  '--package-prefix-hash='+petsc_hash_pkgs,
+  'COPTFLAGS=-g -O',
+  'FOPTFLAGS=-g -O',
+  'CXXOPTFLAGS=-g -O',
+  '--download-mpich=1',
   '--download-fblaslapack=1',
   '--download-hypre=1',
   '--download-cmake=1',
@@ -18,25 +21,18 @@ configure_options = [
   '--download-superlu=1',
   '--download-superlu_dist=1',
   '--download-scalapack=1',
+  '--download-strumpack=1',
   '--download-mumps=1',
   '--download-elemental=1',
-  '--download-spai=1',
+  #'--download-spai=1', valgrind leaks here will probably not get fixed in the near future
   '--download-parms=1',
   '--download-moab=1',
   '--download-chaco=1',
-  '--download-fftw=1',
-  '--download-petsc4py=1',
-  '--download-mpi4py=1',
-  '--download-saws',
-  '--download-concurrencykit=1',
   '--download-revolve=1',
+  '--download-codipack=1',
+  '--download-adblaslapack=1',
   '--download-p4est=1',
-  '--with-zlib=1',
-  '--download-mfem=1',
-  '--download-glvis=1',
-  '--with-opengl=1',
-  '--download-libpng=1',
-  '--download-libjpeg=1',
+  '--download-zlib=1',
   ]
 
 if __name__ == '__main__':

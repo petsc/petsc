@@ -1,5 +1,9 @@
 #!/usr/bin/python
 
+import os
+petsc_hash_pkgs=os.path.join(os.getenv('HOME'),'petsc-hash-pkgs')
+if not os.path.isdir(petsc_hash_pkgs): os.mkdir(petsc_hash_pkgs)
+
 # This test is done on grind.mcs.anl.gov. It uses IPL64 MKL/BLAS packaged
 # with MATLAB.
 
@@ -17,6 +21,7 @@ if __name__ == '__main__':
   sys.path.insert(0, os.path.abspath('config'))
   import configure
   configure_options = [
+    '--package-prefix-hash='+petsc_hash_pkgs,
     '--download-mpich=1', # /usr/bin/mpicc does not resolve '__gcov_merge_add'? and gcc-4.4 gives gcov errors
     '--with-display=140.221.10.20:0.0', # for matlab example with graphics
     '--with-blaslapack-dir=/soft/com/packages/MATLAB/R2016a',

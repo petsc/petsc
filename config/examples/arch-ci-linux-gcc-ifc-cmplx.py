@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+import os
+petsc_hash_pkgs=os.path.join(os.getenv('HOME'),'petsc-hash-pkgs')
+if not os.path.isdir(petsc_hash_pkgs): os.mkdir(petsc_hash_pkgs)
+
 # find the ifort libs location
 import os
 import distutils.spawn
@@ -8,6 +12,7 @@ mpich_install_dir='/homes/petsc/soft/linux-Ubuntu_14.04-x86_64/mpich-3.2-gcc-ifc
 mpich_lib_dir=os.path.join(mpich_install_dir,'lib')
 
 configure_options = [
+  '--package-prefix-hash='+petsc_hash_pkgs,
   # cannot use download-mpich with fortranlib-autodetect=0 so disabling
   #'--with-cc=gcc',
   #'--with-fc=ifort',
