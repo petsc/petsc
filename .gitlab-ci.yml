@@ -280,7 +280,7 @@ mswin-uni:
     - .stage-2
     - .mswin_test
   tags:
-    - name:ps4
+    - name:ps5
   variables:
     TEST_ARCH: arch-ci-mswin-uni
 
@@ -293,7 +293,7 @@ mswin-intel-cxx-cmplx:
     - .stage-3
     - .mswin_test
   tags:
-    - name:ps4
+    - name:ps5
   variables:
     TEST_ARCH: arch-ci-mswin-intel-cxx-cmplx
 
@@ -302,7 +302,7 @@ mswin-intel:
     - .stage-3
     - .mswin_test
   tags:
-    - name:ps4
+    - name:ps5
   variables:
     TEST_ARCH: arch-ci-mswin-intel
 
@@ -314,6 +314,7 @@ arch-ci-mswin-opt-impi:
     - name:ps4
   variables:
     TEST_ARCH: arch-ci-mswin-opt-impi
+  allow_failure: true
 
 
 opensolaris-cmplx-pkgs-dbg:
