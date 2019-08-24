@@ -956,9 +956,9 @@ PetscErrorCode DMStagSetBoundaryTypes(DM dm,DMBoundaryType boundaryType0,DMBound
   if (dim > 1) PetscValidLogicalCollectiveEnum(dm,boundaryType1,3);
   if (dim > 2) PetscValidLogicalCollectiveEnum(dm,boundaryType2,4);
   if (dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
-  if (boundaryType0           ) stag->boundaryType[0] = boundaryType0;
-  if (boundaryType1 && dim > 1) stag->boundaryType[1] = boundaryType1;
-  if (boundaryType2 && dim > 2) stag->boundaryType[2] = boundaryType2;
+               stag->boundaryType[0] = boundaryType0;
+  if (dim > 1) stag->boundaryType[1] = boundaryType1;
+  if (dim > 2) stag->boundaryType[2] = boundaryType2;
   PetscFunctionReturn(0);
 }
 
