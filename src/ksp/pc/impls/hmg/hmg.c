@@ -25,9 +25,9 @@ static PetscErrorCode PCHMGExtractSubMatrix_Private(Mat pmat,Mat *submat,MatReus
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)pmat,&comm);CHKERRQ(ierr);
-  if (component>=blocksize) SETERRQ2(comm,PETSC_ERR_ARG_INCOMP,"Component %d should be less than block size %d \n",component,blocksize);
+  if (component>=blocksize) SETERRQ2(comm,PETSC_ERR_ARG_INCOMP,"Component %D should be less than block size %D \n",component,blocksize);
   ierr = MatGetOwnershipRange(pmat,&rstart,&rend);CHKERRQ(ierr);
-  if ((rend-rstart)%blocksize != 0) SETERRQ3(comm,PETSC_ERR_ARG_INCOMP,"Block size %d is inconsisent for [%d, %d) \n",blocksize,rstart,rend);
+  if ((rend-rstart)%blocksize != 0) SETERRQ3(comm,PETSC_ERR_ARG_INCOMP,"Block size %D is inconsisent for [%D, %D) \n",blocksize,rstart,rend);
   ierr = ISCreateStride(comm,(rend-rstart)/blocksize,rstart+component,blocksize,&isrow);
   ierr = MatCreateSubMatrix(pmat,isrow,isrow,reuse,submat);CHKERRQ(ierr);
   ierr = ISDestroy(&isrow);CHKERRQ(ierr);
@@ -252,7 +252,7 @@ PetscErrorCode PCView_HMG(PC pc,PetscViewer viewer)
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer," Reuse interpolation: %s\n",hmg->reuseinterp? "true":"false");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer," Use subspace coarsening: %s\n",hmg->subcoarsening? "true":"false");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer," Coarsening component: %d \n",hmg->component);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer," Coarsening component: %D \n",hmg->component);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer," Use MatMAIJ: %s \n",hmg->usematmaij? "true":"false");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer," Inner PC type: %s \n",hmg->innerpctype);CHKERRQ(ierr);
   }
