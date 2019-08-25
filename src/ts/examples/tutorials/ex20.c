@@ -13,7 +13,7 @@ Input parameters include:\n";
        y' = z                 (1)
        z' = \mu ((1-y^2)z-y)
    on the domain 0 <= x <= 1, with the boundary conditions
-       y(0) = 2, y'(0) = −2/3 +10/(81*\mu) − 292/(2187*\mu^2),
+       y(0) = 2, y'(0) = - 2/3 +10/(81*\mu) - 292/(2187*\mu^2),
    and
        \mu = 10^6 ( y'(0) ~ -0.6666665432100101).
    This is a nonlinear equation. The well prepared initial condition gives errors that are not dominated by the first few steps of the method when \mu is large.

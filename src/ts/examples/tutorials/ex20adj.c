@@ -16,7 +16,7 @@ static char help[] = "Performs adjoint sensitivity analysis for the van der Pol 
       [ u_1' ] = [          u_2                ]  (2)
       [ u_2' ]   [ \mu ((1 - u_1^2) u_2 - u_1) ]
    on the domain 0 <= x <= 1, with the boundary conditions
-       u_1(0) = 2, u_2(0) = −2/3 +10/(81*\mu) − 292/(2187*\mu^2),
+       u_1(0) = 2, u_2(0) = - 2/3 +10/(81*\mu) - 292/(2187*\mu^2),
    and
        \mu = 10^6 ( y'(0) ~ -0.6666665432100101).,
    and computes the sensitivities of the final solution w.r.t. initial conditions and parameter \mu with the implicit theta method and its discrete adjoint.
