@@ -59,8 +59,8 @@ static PetscErrorCode do_xyt_solve(xyt_ADT xyt_handle, PetscScalar *rhs);
 static PetscErrorCode check_handle(xyt_ADT xyt_handle);
 static PetscErrorCode det_separators(xyt_ADT xyt_handle);
 static PetscErrorCode do_matvec(mv_info *A, PetscScalar *v, PetscScalar *u);
-static PetscInt xyt_generate(xyt_ADT xyt_handle);
-static PetscInt do_xyt_factor(xyt_ADT xyt_handle);
+static PetscErrorCode xyt_generate(xyt_ADT xyt_handle);
+static PetscErrorCode do_xyt_factor(xyt_ADT xyt_handle);
 static mv_info *set_mvi(PetscInt *local2global, PetscInt n, PetscInt m, PetscErrorCode (*matvec)(mv_info*,PetscScalar*,PetscScalar*), void *grid_data);
 
 /**************************************xyt.c***********************************/
@@ -79,7 +79,7 @@ xyt_ADT XYT_new(void)
 }
 
 /**************************************xyt.c***********************************/
-PetscInt XYT_factor(xyt_ADT xyt_handle,     /* prev. allocated xyt  handle */
+PetscErrorCode XYT_factor(xyt_ADT xyt_handle,     /* prev. allocated xyt  handle */
                     PetscInt *local2global, /* global column mapping       */
                     PetscInt n,             /* local num rows              */
                     PetscInt m,             /* local num cols              */
@@ -110,20 +110,18 @@ PetscInt XYT_factor(xyt_ADT xyt_handle,     /* prev. allocated xyt  handle */
 }
 
 /**************************************xyt.c***********************************/
-PetscInt XYT_solve(xyt_ADT xyt_handle, PetscScalar *x, PetscScalar *b)
+PetscErrorCode XYT_solve(xyt_ADT xyt_handle, PetscScalar *x, PetscScalar *b)
 {
   PCTFS_comm_init();
   check_handle(xyt_handle);
 
   /* need to copy b into x? */
   if (b) PCTFS_rvec_copy(x,b,xyt_handle->mvi->n);
-  do_xyt_solve(xyt_handle,x);
-
-  return(0);
+  return do_xyt_solve(xyt_handle,x);
 }
 
 /**************************************xyt.c***********************************/
-PetscInt XYT_free(xyt_ADT xyt_handle)
+PetscErrorCode XYT_free(xyt_ADT xyt_handle)
 {
   PCTFS_comm_init();
   check_handle(xyt_handle);
@@ -157,7 +155,7 @@ PetscInt XYT_free(xyt_ADT xyt_handle)
 }
 
 /**************************************xyt.c***********************************/
-PetscInt XYT_stats(xyt_ADT xyt_handle)
+PetscErrorCode XYT_stats(xyt_ADT xyt_handle)
 {
   PetscInt    op[]  = {NON_UNIFORM,GL_MIN,GL_MAX,GL_ADD,GL_MIN,GL_MAX,GL_ADD,GL_MIN,GL_MAX,GL_ADD};
   PetscInt    fop[] = {NON_UNIFORM,GL_MIN,GL_MAX,GL_ADD};
@@ -217,13 +215,13 @@ is a row dist. nxm matrix w/ n<m.
 mylocmatvec = my_ml->Amat[grid_tag].matvec->external;
 mylocmatvec (void :: void *data, double *in, double *out)
 **************************************xyt.c***********************************/
-static PetscInt do_xyt_factor(xyt_ADT xyt_handle)
+static PetscErrorCode do_xyt_factor(xyt_ADT xyt_handle)
 {
   return xyt_generate(xyt_handle);
 }
 
 /**************************************xyt.c***********************************/
-static PetscInt xyt_generate(xyt_ADT xyt_handle)
+static PetscErrorCode xyt_generate(xyt_ADT xyt_handle)
 {
   PetscInt       i,j,k,idx;
   PetscInt       dim, col;
