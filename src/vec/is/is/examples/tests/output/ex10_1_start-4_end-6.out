@@ -1,0 +1,12 @@
+IS Object: 4 MPI processes
+  type: general
+[0] Number of indices in set 0
+[1] Number of indices in set 1
+[1] 0 4
+[2] Number of indices in set 2
+[2] 0 4
+[2] 1 5
+[3] Number of indices in set 2
+[3] 0 4
+[3] 1 5
+global size: 5
