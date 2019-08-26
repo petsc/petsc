@@ -1267,8 +1267,8 @@ PetscErrorCode DMLabelClearStratum(DMLabel label, PetscInt value)
 
   Input Parameters:
 + label - the DMLabel
-. start - the first point
-- end - the last point
+. start - the first point kept
+- end - one more than the last point kept
 
   Level: intermediate
 
