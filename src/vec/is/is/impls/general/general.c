@@ -683,6 +683,8 @@ PetscErrorCode  ISGeneralSetIndices_General(IS is,PetscInt n,const PetscInt idx[
   if (n) PetscValidIntPointer(idx,3);
 
   ierr = PetscLayoutSetLocalSize(is->map,n);CHKERRQ(ierr);
+  /* TODO: Without this, global size wouldn't be recomputed. This shows PetscLayoutSetSize should rather set local and global at once. */
+  ierr = PetscLayoutSetSize(is->map,-1);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(is->map);CHKERRQ(ierr);
 
   if (sub->allocated) {ierr = PetscFree(sub->idx);CHKERRQ(ierr);}
