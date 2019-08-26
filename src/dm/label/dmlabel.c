@@ -1284,25 +1284,7 @@ PetscErrorCode DMLabelFilter(DMLabel label, PetscInt start, PetscInt end)
   ierr = DMLabelDestroyIndex(label);CHKERRQ(ierr);
   ierr = DMLabelMakeAllValid_Private(label);CHKERRQ(ierr);
   for (v = 0; v < label->numStrata; ++v) {
-    PetscInt off, q;
-    const PetscInt *points;
-    PetscInt numPointsNew = 0, *pointsNew = NULL;
-
-    ierr = ISGetIndices(label->points[v], &points);CHKERRQ(ierr);
-    for (q = 0; q < label->stratumSizes[v]; ++q)
-      if (points[q] >= start && points[q] < end)
-        numPointsNew++;
-    ierr = PetscMalloc1(numPointsNew, &pointsNew);CHKERRQ(ierr);
-    for (off = 0, q = 0; q < label->stratumSizes[v]; ++q) {
-      if (points[q] >= start && points[q] < end)
-        pointsNew[off++] = points[q];
-    }
-    ierr = ISRestoreIndices(label->points[v],&points);CHKERRQ(ierr);
-
-    label->stratumSizes[v] = numPointsNew;
-    ierr = ISDestroy(&label->points[v]);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,numPointsNew, pointsNew, PETSC_OWN_POINTER, &label->points[v]);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) label->points[v], "indices");CHKERRQ(ierr);
+    ierr = ISGeneralFilter(label->points[v], start, end);CHKERRQ(ierr);
   }
   ierr = DMLabelCreateIndex(label, start, end);CHKERRQ(ierr);
   PetscFunctionReturn(0);
