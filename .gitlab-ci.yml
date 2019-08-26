@@ -109,7 +109,8 @@ checksource:
 .stage-23:
   extends: .test
   script:
-    - printf "$PATH\n"
+    - printf "PATH:$PATH\n"
+    - printf "PETSC_OPTIONS:$PETSC_OPTIONS\n"
     - printf "./config/examples/${TEST_ARCH}.py\n"
     - cat ./config/examples/${TEST_ARCH}.py
     - ./config/examples/${TEST_ARCH}.py
@@ -222,9 +223,7 @@ linux-cuda-double:
   tags:
     - name:frog
   variables:
-    PETSC_OPTIONS: <
-      -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
-      -cuda_initialize 0
+    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -cuda_initialize 0
     TEST_ARCH: arch-ci-linux-cuda-double
 
 freebsd-c-single-opt:
@@ -261,9 +260,7 @@ osx-cxx-pkgs-opt:
   tags:
     - name:jpro
   variables:
-    PETSC_OPTIONS: <
-      -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
-      -saws_port_auto_select -saws_port_auto_select_silent -vecscatter_mpi1 false -options_left false
+    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -saws_port_auto_select -saws_port_auto_select_silent -vecscatter_mpi1 false -options_left false
     TEST_ARCH: arch-ci-osx-cxx-pkgs-opt
 
 osx-barry:
@@ -360,10 +357,7 @@ freebsd-cxx-pkgs-opt:
   tags:
     - os:fbsd
   variables:
-    PETSC_OPTIONS: <
-      -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
-      -saws_port_auto_select -saws_port_auto_select_silent -vecscatter_mpi1 false -options_left false
-  variables:
+    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -saws_port_auto_select -saws_port_auto_select_silent -vecscatter_mpi1 false -options_left false
     TEST_ARCH: arch-ci-freebsd-cxx-pkgs-opt
 
 osx-cxx-cmplx-pkgs-dbg:
@@ -400,9 +394,7 @@ linux-cmplx-gcov:
   tags:
     - name:si
   variables:
-    PETSC_OPTIONS: <
-      -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
-      -vecscatter_mpi1 false -options_left false
+    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -vecscatter_mpi1 false -options_left false
     TEST_ARCH: arch-ci-linux-cmplx-gcov
 
 linux-cmplx-single:
@@ -457,9 +449,7 @@ linux-c-exodus-dbg:
   tags:
     - name:frog
   variables:
-    PETSC_OPTIONS: <
-      -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
-      -cuda_initialize 0
+    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -cuda_initialize 0
     TEST_ARCH: arch-ci-linux-c-exodus-dbg
 
 linux-cuda-single:
@@ -469,9 +459,7 @@ linux-cuda-single:
   tags:
     - name:frog
   variables:
-    PETSC_OPTIONS: <
-      -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
-      -cuda_initialize 0
+    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -cuda_initialize 0
     TEST_ARCH: arch-ci-linux-cuda-single
 
 linux-viennacl:
@@ -499,9 +487,7 @@ linux-pkgs-cxx-mlib:
   tags:
     - name:asterix
   variables:
-    PETSC_OPTIONS: <
-      -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
-      -saws_port_auto_select -saws_port_auto_select_silent
+    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -saws_port_auto_select -saws_port_auto_select_silent
     TEST_ARCH: arch-ci-linux-pkgs-cxx-mlib
 
 linux-cxx-cmplx-pkgs-64idx:
@@ -610,9 +596,7 @@ linux-pkgs-opt:
   tags:
     - mcs-nfs
   variables:
-    PETSC_OPTIONS: <
-      -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
-      -saws_port_auto_select -saws_port_auto_select_silent
+    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -saws_port_auto_select -saws_port_auto_select_silent
     TEST_ARCH: arch-ci-linux-pkgs-opt
 
 linux-pkgs-valgrind:
