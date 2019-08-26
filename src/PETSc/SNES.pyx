@@ -246,6 +246,19 @@ cdef class SNES(Object):
 
     # --- user Function/Jacobian routines ---
 
+    def setLineSearchPreCheck(self, precheck, args=None, kargs=None):
+        cdef PetscSNESLineSearch snesls = NULL
+        SNESGetLineSearch(self.snes, &snesls)
+        if precheck is not None:
+            if args  is None: args  = ()
+            if kargs is None: kargs = {}
+            context = (precheck, args, kargs)
+            self.set_attr('__precheck__', context)
+            CHKERR( SNESLineSearchSetPreCheck(snesls, SNES_PreCheck, <void*> context) )
+        else:
+            self.set_attr('__precheck__', None)
+            CHKERR( SNESLineSearchSetPreCheck(snesls, NULL, NULL) )
+
     def setInitialGuess(self, initialguess, args=None, kargs=None):
         if initialguess is not None:
             if args  is None: args  = ()

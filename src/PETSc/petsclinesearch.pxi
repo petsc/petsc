@@ -11,3 +11,11 @@ cdef extern from * nogil:
     int SNESLineSearchSetFromOptions(PetscSNESLineSearch)
     int SNESLineSearchApply(PetscSNESLineSearch,PetscVec,PetscVec,PetscReal*,PetscVec)
     int SNESLineSearchDestroy(PetscSNESLineSearch*)
+
+    ctypedef int (*PetscSNESPreCheckFunction)(PetscSNESLineSearch,
+                                              PetscVec,PetscVec,
+                                              PetscBool*,
+                                              void*) except PETSC_ERR_PYTHON
+    int SNESLineSearchSetPreCheck(PetscSNESLineSearch,PetscSNESPreCheckFunction,void*)
+    int SNESLineSearchGetSNES(PetscSNESLineSearch,PetscSNES*)
+
