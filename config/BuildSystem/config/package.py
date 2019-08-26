@@ -325,7 +325,7 @@ class Package(config.base.Configure):
     if not self.packageDir: self.packageDir = self.downLoad()
     self.updateGitDir()
     self.updatehgDir()
-    if (self.publicInstall or 'package-prefix-hash' in self.argDB) and not ('package-prefix-hash' in self.argDB and hasattr(self,'postProcess')):
+    if (self.publicInstall or 'package-prefix-hash' in self.argDB) and not ('package-prefix-hash' in self.argDB and (hasattr(self,'postProcess') or self.builtafterpetsc)):
       self.installDir = self.defaultInstallDir
       self.installSudo= self.installDirProvider.installSudo
     else:
