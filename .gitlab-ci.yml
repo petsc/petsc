@@ -194,7 +194,7 @@ linux-gcc-complex-opt:
     - .stage-2
     - .linux_test
   tags:
-    - name:pj02
+    - linux-dell
   variables:
     TEST_ARCH: arch-ci-linux-gcc-complex-opt
 
@@ -203,7 +203,7 @@ linux-gcc-pkgs-opt:
     - .stage-2
     - .linux_test
   tags:
-    - name:pj02
+    - linux-dell
   variables:
     TEST_ARCH: arch-ci-linux-gcc-pkgs-opt
 
@@ -212,7 +212,7 @@ linux-gcc-quad-64idx-dbg:
     - .stage-2
     - .linux_test
   tags:
-    - name:pj02
+    - linux-dell
   variables:
     TEST_ARCH: arch-ci-linux-gcc-quad-64idx-dbg
 
@@ -258,7 +258,7 @@ osx-cxx-pkgs-opt:
     - .stage-2
     - .osx_test
   tags:
-    - name:jpro
+    - os:osx
   variables:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -saws_port_auto_select -saws_port_auto_select_silent -vecscatter_mpi1 false -options_left false
     TEST_ARCH: arch-ci-osx-cxx-pkgs-opt
@@ -365,7 +365,7 @@ osx-cxx-cmplx-pkgs-dbg:
     - .stage-3
     - .osx_test
   tags:
-    - os:osx,name:jpro
+    - os:osx
   variables:
     TEST_ARCH: arch-ci-osx-cxx-cmplx-pkgs-dbg
 
@@ -392,7 +392,7 @@ linux-cmplx-gcov:
     - .stage-3
     - .linux_test
   tags:
-    - name:si
+    - mcs-nfs
   variables:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -vecscatter_mpi1 false -options_left false
     TEST_ARCH: arch-ci-linux-cmplx-gcov
@@ -476,7 +476,7 @@ linux-opt-misc:
     - .stage-3
     - .linux_test
   tags:
-    - name:asterix
+    - mcs-nfs,name:cg
   variables:
     TEST_ARCH: arch-ci-linux-opt-misc
 
@@ -485,7 +485,7 @@ linux-pkgs-cxx-mlib:
     - .stage-3
     - .linux_test
   tags:
-    - name:asterix
+    - name:pj02
   variables:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -saws_port_auto_select -saws_port_auto_select_silent
     TEST_ARCH: arch-ci-linux-pkgs-cxx-mlib
@@ -495,7 +495,7 @@ linux-cxx-cmplx-pkgs-64idx:
     - .stage-3
     - .linux_test
   tags:
-    - name:fedora
+    - name:pj01
   variables:
     TEST_ARCH: arch-ci-linux-cxx-cmplx-pkgs-64idx
 
@@ -504,7 +504,7 @@ linux-pkgs-dbg-ftn-interfaces:
     - .stage-3
     - .linux_test
   tags:
-    - name:fedora
+    - name:pj02
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-dbg-ftn-interfaces
 
@@ -540,7 +540,7 @@ linux-IPL64:
     - .stage-3
     - .linux_test
   tags:
-    - mcs-nfs
+    - mcs-nfs,name:cg
   variables:
     TEST_ARCH: arch-ci-linux-IPL64
 
@@ -567,7 +567,7 @@ linux-pgi:
     - .stage-3
     - .linux_test
   tags:
-    - mcs-nfs
+    - mcs-nfs,name:petsc
   variables:
     TEST_ARCH: arch-ci-linux-pgi
 

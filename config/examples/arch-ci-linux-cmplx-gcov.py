@@ -14,7 +14,8 @@ configure_options = [
   '--download-parmetis',
   '--download-ptscotch',
   '--download-scalapack',
-  '--download-strumpack'
+  '--download-strumpack',
+  '--download-cmake',
   ]
 
 if __name__ == '__main__':
