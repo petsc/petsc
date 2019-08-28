@@ -110,6 +110,7 @@ typedef struct {
   PetscBool           NullSpace_corr[4];
   IS                  user_primal_vertices;
   IS                  user_primal_vertices_local;
+  PetscBool           use_nnsp;
   PetscBool           use_nnsp_true;
   PetscBool           use_qr_single;
   PetscBool           user_provided_isfordofs;
