@@ -4,6 +4,7 @@
 #include <petscsf.h>
 #include <petscbt.h>
 #include <petscds.h>
+#include <../src/mat/impls/dense/seq/dense.h> /*I "petscmat.h" I*/
 
 PetscLogEvent PC_Patch_CreatePatches, PC_Patch_ComputeOp, PC_Patch_Solve, PC_Patch_Scatter, PC_Patch_Apply, PC_Patch_Prealloc;
 
@@ -299,6 +300,22 @@ static PetscErrorCode PCPatchCreateDefaultSF_Private(PC pc, PetscInt n, const Pe
     ierr = PetscSFCreate(PetscObjectComm((PetscObject)pc), &patch->sectionSF);CHKERRQ(ierr);
     ierr = PetscSFSetGraph(patch->sectionSF, allRoots, allLeaves, ilocal, PETSC_OWN_POINTER, iremote, PETSC_OWN_POINTER);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PCPatchSetDenseInverse(PC pc, PetscBool flg)
+{
+  PC_PATCH *patch = (PC_PATCH *) pc->data;
+  PetscFunctionBegin;
+  patch->denseinverse = flg;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PCPatchGetDenseInverse(PC pc, PetscBool *flg)
+{
+  PC_PATCH *patch = (PC_PATCH *) pc->data;
+  PetscFunctionBegin;
+  *flg = patch->denseinverse;
   PetscFunctionReturn(0);
 }
 
@@ -2189,6 +2206,15 @@ PetscErrorCode PCPatchComputeOperator_Internal(PC pc, Vec x, Mat mat, PetscInt p
   ierr = MatAssemblyBegin(mat, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
+  if (!(withArtificial || isNonlinear) && patch->denseinverse) {
+    MatFactorInfo info;
+    PetscBool     flg;
+    ierr = PetscObjectTypeCompare((PetscObject)mat, MATSEQDENSE, &flg);CHKERRQ(ierr);
+    if (!flg) SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Invalid Mat type for dense inverse");
+    ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
+    ierr = MatLUFactor(mat, NULL, NULL, &info);CHKERRQ(ierr);
+    ierr = MatSeqDenseInvertFactors_Private(mat);CHKERRQ(ierr);
+  }
   PetscStackPop;
   ierr = ISDestroy(&patch->cellIS);CHKERRQ(ierr);
   if(withArtificial) {
@@ -2446,21 +2472,24 @@ static PetscErrorCode PCSetUp_PATCH_Linear(PC pc)
 
   PetscFunctionBegin;
   if (!pc->setupcalled) {
-    ierr = PetscMalloc1(patch->npatch, &patch->solver);CHKERRQ(ierr);
-    ierr = PCGetOptionsPrefix(pc, &prefix);CHKERRQ(ierr);
-    for (i = 0; i < patch->npatch; ++i) {
-      KSP ksp;
-      PC  subpc;
+    if (!patch->save_operators && patch->denseinverse) SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Can't have dense inverse without save operators");
+    if (!patch->denseinverse) {
+      ierr = PetscMalloc1(patch->npatch, &patch->solver);CHKERRQ(ierr);
+      ierr = PCGetOptionsPrefix(pc, &prefix);CHKERRQ(ierr);
+      for (i = 0; i < patch->npatch; ++i) {
+        KSP ksp;
+        PC  subpc;
 
-      ierr = KSPCreate(PETSC_COMM_SELF, &ksp);CHKERRQ(ierr);
-      ierr = KSPSetErrorIfNotConverged(ksp, pc->erroriffailure);CHKERRQ(ierr);
-      ierr = KSPSetOptionsPrefix(ksp, prefix);CHKERRQ(ierr);
-      ierr = KSPAppendOptionsPrefix(ksp, "sub_");CHKERRQ(ierr);
-      ierr = PetscObjectIncrementTabLevel((PetscObject) ksp, (PetscObject) pc, 1);CHKERRQ(ierr);
-      ierr = KSPGetPC(ksp, &subpc);CHKERRQ(ierr);
-      ierr = PetscObjectIncrementTabLevel((PetscObject) subpc, (PetscObject) pc, 1);CHKERRQ(ierr);
-      ierr = PetscLogObjectParent((PetscObject) pc, (PetscObject) ksp);CHKERRQ(ierr);
-      patch->solver[i] = (PetscObject) ksp;
+        ierr = KSPCreate(PETSC_COMM_SELF, &ksp);CHKERRQ(ierr);
+        ierr = KSPSetErrorIfNotConverged(ksp, pc->erroriffailure);CHKERRQ(ierr);
+        ierr = KSPSetOptionsPrefix(ksp, prefix);CHKERRQ(ierr);
+        ierr = KSPAppendOptionsPrefix(ksp, "sub_");CHKERRQ(ierr);
+        ierr = PetscObjectIncrementTabLevel((PetscObject) ksp, (PetscObject) pc, 1);CHKERRQ(ierr);
+        ierr = KSPGetPC(ksp, &subpc);CHKERRQ(ierr);
+        ierr = PetscObjectIncrementTabLevel((PetscObject) subpc, (PetscObject) pc, 1);CHKERRQ(ierr);
+        ierr = PetscLogObjectParent((PetscObject) pc, (PetscObject) ksp);CHKERRQ(ierr);
+        patch->solver[i] = (PetscObject) ksp;
+      }
     }
   }
   if (patch->save_operators) {
@@ -2469,7 +2498,9 @@ static PetscErrorCode PCSetUp_PATCH_Linear(PC pc)
     }
     for (i = 0; i < patch->npatch; ++i) {
       ierr = PCPatchComputeOperator_Internal(pc, NULL, patch->mat[i], i, PETSC_FALSE);CHKERRQ(ierr);
-      ierr = KSPSetOperators((KSP) patch->solver[i], patch->mat[i], patch->mat[i]);CHKERRQ(ierr);
+      if (!patch->denseinverse) {
+        ierr = KSPSetOperators((KSP) patch->solver[i], patch->mat[i], patch->mat[i]);CHKERRQ(ierr);
+      }
     }
   }
   if(patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE) {
@@ -2494,7 +2525,7 @@ static PetscErrorCode PCSetUp_PATCH_Linear(PC pc)
 
       ierr = MatGetSize(matSquare, &dof, NULL);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF, dof, 0, 1, &rowis); CHKERRQ(ierr);
-      if(pc->setupcalled) {
+      if (pc->setupcalled) {
         ierr = MatCreateSubMatrix(matSquare, rowis, patch->dofMappingWithoutToWithArtificial[i], MAT_REUSE_MATRIX, &patch->matWithArtificial[i]); CHKERRQ(ierr);
       } else {
         ierr = MatCreateSubMatrix(matSquare, rowis, patch->dofMappingWithoutToWithArtificial[i], MAT_INITIAL_MATRIX, &patch->matWithArtificial[i]); CHKERRQ(ierr);
@@ -2753,10 +2784,17 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
 static PetscErrorCode PCApply_PATCH_Linear(PC pc, PetscInt i, Vec x, Vec y)
 {
   PC_PATCH      *patch = (PC_PATCH *) pc->data;
-  KSP            ksp   = (KSP) patch->solver[i];
+  KSP            ksp;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (patch->denseinverse) {
+    ierr = PetscLogEventBegin(PC_Patch_Solve, pc, 0, 0, 0);CHKERRQ(ierr);
+    ierr = MatMult(patch->mat[i], x, y);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(PC_Patch_Solve, pc, 0, 0, 0);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+  ksp = (KSP) patch->solver[i];
   if (!patch->save_operators) {
     Mat mat;
 
@@ -3077,7 +3115,8 @@ static PetscErrorCode PCSetFromOptions_PATCH(PetscOptionItems *PetscOptionsObjec
   ierr = PetscSNPrintf(option, PETSC_MAX_PATH_LEN, "-%s_patch_local_type", patch->classname);CHKERRQ(ierr);
   ierr = PetscOptionsEnum(option,"Type of local solver composition (additive or multiplicative)","PCPatchSetLocalComposition",PCCompositeTypes,(PetscEnum)loctype,(PetscEnum*)&loctype,&flg);CHKERRQ(ierr);
   if(flg) { ierr = PCPatchSetLocalComposition(pc, loctype);CHKERRQ(ierr);}
-
+  ierr = PetscSNPrintf(option, PETSC_MAX_PATH_LEN, "-%s_patch_dense_inverse", patch->classname);CHKERRQ(ierr);
+  ierr = PetscOptionsBool(option, "Compute inverses of patch matrices and apply directly? Ignores KSP/PC settings on patch.", "PCPatchSetDenseInverse", patch->denseinverse, &patch->denseinverse, &flg);CHKERRQ(ierr);
   ierr = PetscSNPrintf(option, PETSC_MAX_PATH_LEN, "-%s_patch_construct_dim", patch->classname);CHKERRQ(ierr);
   ierr = PetscOptionsInt(option, "What dimension of mesh point to construct patches by? (0 = vertices)", "PCPATCH", patch->dim, &patch->dim, &dimflg);CHKERRQ(ierr);
   ierr = PetscSNPrintf(option, PETSC_MAX_PATH_LEN, "-%s_patch_construct_codim", patch->classname);CHKERRQ(ierr);
@@ -3154,6 +3193,10 @@ static PetscErrorCode PCSetUpOnBlocks_PATCH(PC pc)
     /* Can't do this here because the sub KSPs don't have an operator attached yet. */
     PetscFunctionReturn(0);
   }
+  if (patch->denseinverse) {
+    /* No solvers */
+    PetscFunctionReturn(0);
+  }
   for (i = 0; i < patch->npatch; ++i) {
     if (!((KSP) patch->solver[i])->setfromoptionscalled) {
       ierr = KSPSetFromOptions((KSP) patch->solver[i]);CHKERRQ(ierr);
@@ -3198,23 +3241,27 @@ static PetscErrorCode PCView_PATCH(PC pc, PetscViewer viewer)
   else if (patch->patchconstructop == PCPatchConstruct_User)  {ierr = PetscViewerASCIIPrintf(viewer, "Patch construction operator: user-specified\n");CHKERRQ(ierr);}
   else                                                        {ierr = PetscViewerASCIIPrintf(viewer, "Patch construction operator: unknown\n");CHKERRQ(ierr);}
 
-  if (patch->isNonlinear) {
-    ierr = PetscViewerASCIIPrintf(viewer, "SNES on patches (all same):\n");CHKERRQ(ierr);
+  if (patch->denseinverse) {
+    ierr = PetscViewerASCIIPrintf(viewer, "Expliciting forming dense inverse and applying patch solver via MatMult.\n");CHKERRQ(ierr);
   } else {
-    ierr = PetscViewerASCIIPrintf(viewer, "KSP on patches (all same):\n");CHKERRQ(ierr);
-  }
-  if (patch->solver) {
-    ierr = PetscViewerGetSubViewer(viewer, PETSC_COMM_SELF, &sviewer);CHKERRQ(ierr);
-    if (!rank) {
-      ierr = PetscViewerASCIIPushTab(sviewer);CHKERRQ(ierr);
-      ierr = PetscObjectView(patch->solver[0], sviewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPopTab(sviewer);CHKERRQ(ierr);
+    if (patch->isNonlinear) {
+      ierr = PetscViewerASCIIPrintf(viewer, "SNES on patches (all same):\n");CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer, "KSP on patches (all same):\n");CHKERRQ(ierr);
     }
-    ierr = PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &sviewer);CHKERRQ(ierr);
-  } else {
-    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "Solver not yet set.\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    if (patch->solver) {
+      ierr = PetscViewerGetSubViewer(viewer, PETSC_COMM_SELF, &sviewer);CHKERRQ(ierr);
+      if (!rank) {
+        ierr = PetscViewerASCIIPushTab(sviewer);CHKERRQ(ierr);
+        ierr = PetscObjectView(patch->solver[0], sviewer);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPopTab(sviewer);CHKERRQ(ierr);
+      }
+      ierr = PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &sviewer);CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "Solver not yet set.\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    }
   }
   ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);

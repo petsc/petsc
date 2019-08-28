@@ -98,6 +98,7 @@ typedef struct {
   IS                   iterationSet;       /* Index set specifying how we iterate over patches */
   PetscInt             currentPatch;       /* The current patch number when iterating */
   PetscObject         *solver;             /* Solvers for each patch TODO Do we need a new KSP for each patch? */
+  PetscBool            denseinverse;       /* Should the patch inverse by applied by computing the inverse and a matmult? (Skips KSP/PC etc...) */
   PetscErrorCode     (*setupsolver)(PC);
   PetscErrorCode     (*applysolver)(PC, PetscInt, Vec, Vec);
   PetscErrorCode     (*resetsolver)(PC);
