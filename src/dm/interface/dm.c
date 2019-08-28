@@ -882,7 +882,10 @@ PetscErrorCode  DMView(DM dm,PetscViewer v)
   if (!v) {
     ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)dm),&v);CHKERRQ(ierr);
   }
+  PetscValidHeaderSpecific(v,PETSC_VIEWER_CLASSID,2);
+  PetscCheckSameComm(dm,1,v,2);
   ierr = PetscViewerCheckWritable(v);CHKERRQ(ierr);
+  
   ierr = PetscViewerGetFormat(v,&format);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&size);CHKERRQ(ierr);
   if (size == 1 && format == PETSC_VIEWER_LOAD_BALANCE) PetscFunctionReturn(0);
