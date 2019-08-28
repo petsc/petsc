@@ -222,6 +222,9 @@ struct _n_PetscLayout{
                                        * positive. Do NOT multiply above numbers by bs */
   PetscInt               refcnt;      /* MPI Vecs obtained with VecDuplicate() and from MatCreateVecs() reuse map of input object */
   ISLocalToGlobalMapping mapping;     /* mapping used in Vec/MatSetValuesLocal() */
+  PetscBool              setupcalled; /* Forbid setup more than once */
+  PetscInt               oldn,oldN;   /* Checking if setup is allowed */
+  PetscInt               oldbs;       /* And again */
 };
 
 /*@C

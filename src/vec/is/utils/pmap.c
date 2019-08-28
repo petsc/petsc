@@ -62,6 +62,10 @@ PetscErrorCode PetscLayoutCreate(MPI_Comm comm,PetscLayout *map)
   (*map)->range_alloc = PETSC_TRUE;
   (*map)->rstart      = 0;
   (*map)->rend        = 0;
+  (*map)->setupcalled = PETSC_FALSE;
+  (*map)->oldn        = -1;
+  (*map)->oldN        = -1;
+  (*map)->oldbs       = -1;
   PetscFunctionReturn(0);
 }
 
@@ -202,6 +206,11 @@ PetscErrorCode PetscLayoutCreateFromRanges(MPI_Comm comm,const PetscInt range[],
     if (map->N % map->bs) SETERRQ2(map->comm,PETSC_ERR_PLIB,"Global size %D must be divisible by blocksize %D",map->N,map->bs);
   }
 #endif
+  /* lock the layout */
+  map->setupcalled = PETSC_TRUE;
+  map->oldn = map->n;
+  map->oldN = map->N;
+  map->oldbs = map->bs;
   *newmap = map;
   PetscFunctionReturn(0);
 }
@@ -239,7 +248,8 @@ PetscErrorCode PetscLayoutSetUp(PetscLayout map)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if ((map->n >= 0) && (map->N >= 0) && (map->range)) PetscFunctionReturn(0);
+  if (map->setupcalled && (map->n != map->oldn || map->N != map->oldN)) SETERRQ4(map->comm,PETSC_ERR_ARG_WRONGSTATE,"Layout is already setup with (local=%D,global=%D), cannot call setup again with (local=%D,global=%D)", map->oldn, map->oldN, map->n, map->N);
+  if (map->setupcalled) PetscFunctionReturn(0);
 
   if (map->n > 0 && map->bs > 1) {
     if (map->n % map->bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Local size %D must be divisible by blocksize %D",map->n,map->bs);
@@ -265,6 +275,12 @@ PetscErrorCode PetscLayoutSetUp(PetscLayout map)
 
   map->rstart = map->range[rank];
   map->rend   = map->range[rank+1];
+
+  /* lock the layout */
+  map->setupcalled = PETSC_TRUE;
+  map->oldn = map->n;
+  map->oldN = map->N;
+  map->oldbs = map->bs;
   PetscFunctionReturn(0);
 }
 

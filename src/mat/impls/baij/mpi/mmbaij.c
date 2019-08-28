@@ -59,9 +59,8 @@ PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat)
     }
   }
   B->nbs           = ec;
-  baij->B->cmap->n = baij->B->cmap->N = ec*mat->rmap->bs;
-
-  ierr = PetscLayoutSetUp((baij->B->cmap));CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(&baij->B->cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutCreateFromSizes(PetscObjectComm((PetscObject)baij->B),ec*mat->rmap->bs,ec*mat->rmap->bs,mat->rmap->bs,&baij->B->cmap);CHKERRQ(ierr);
   ierr = PetscTableDestroy(&gid1_lid1);CHKERRQ(ierr);
 #else
   /* Make an array as long as the number of columns */
@@ -95,9 +94,8 @@ PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat)
     }
   }
   B->nbs           = ec;
-  baij->B->cmap->n = baij->B->cmap->N  = ec*mat->rmap->bs;
-
-  ierr = PetscLayoutSetUp((baij->B->cmap));CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(&baij->B->cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutCreateFromSizes(PetscObjectComm((PetscObject)baij->B),ec*mat->rmap->bs,ec*mat->rmap->bs,mat->rmap->bs,&baij->B->cmap);CHKERRQ(ierr);
   ierr = PetscFree(indices);CHKERRQ(ierr);
 #endif
 

@@ -142,10 +142,8 @@ PetscErrorCode MatSetUpMultiply_MPISELL(Mat mat)
       }
     }
   }
-  sell->B->cmap->n = sell->B->cmap->N = ec;
-  sell->B->cmap->bs = 1;
-
-  ierr = PetscLayoutSetUp((sell->B->cmap));CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(&sell->B->cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutCreateFromSizes(PetscObjectComm((PetscObject)sell->B),ec,ec,1,&sell->B->cmap);CHKERRQ(ierr);
   ierr = PetscTableDestroy(&gid1_lid1);CHKERRQ(ierr);
 #else
   /* Make an array as long as the number of columns */
@@ -180,10 +178,8 @@ PetscErrorCode MatSetUpMultiply_MPISELL(Mat mat)
       if (isnonzero) bcolidx[j] = indices[bcolidx[j]];
     }
   }
-  sell->B->cmap->n = sell->B->cmap->N = ec; /* number of columns that are not all zeros */
-  sell->B->cmap->bs = 1;
-
-  ierr = PetscLayoutSetUp((sell->B->cmap));CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(&sell->B->cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutCreateFromSizes(PetscObjectComm((PetscObject)sell->B),ec,ec,1,&sell->B->cmap);CHKERRQ(ierr);
   ierr = PetscFree(indices);CHKERRQ(ierr);
 #endif
   /* create local vector that is used to scatter into */

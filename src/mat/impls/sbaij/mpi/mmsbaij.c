@@ -54,10 +54,8 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
     for (j=0; j<B->ilen[i]; j++) aj[B->i[i] + j] = indices[aj[B->i[i] + j]];
   }
   B->nbs = ec;
-
-  sbaij->B->cmap->n = sbaij->B->cmap->N = ec*mat->rmap->bs;
-
-  ierr = PetscLayoutSetUp((sbaij->B->cmap));CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(&sbaij->B->cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutCreateFromSizes(PetscObjectComm((PetscObject)sbaij->B),ec*mat->rmap->bs,ec*mat->rmap->bs,mat->rmap->bs,&sbaij->B->cmap);CHKERRQ(ierr);
   ierr = PetscFree(indices);CHKERRQ(ierr);
 
   /* create local vector that is used to scatter into */
@@ -196,10 +194,8 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
     }
   }
   B->nbs = ec;
-
-  baij->B->cmap->n = baij->B->cmap->N = ec*mat->rmap->bs;
-
-  ierr = PetscLayoutSetUp((baij->B->cmap));CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(&baij->B->cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutCreateFromSizes(PetscObjectComm((PetscObject)baij->B),ec*mat->rmap->bs,ec*mat->rmap->bs,mat->rmap->bs,&baij->B->cmap);CHKERRQ(ierr);
   ierr = PetscTableDestroy(&gid1_lid1);CHKERRQ(ierr);
 #else
   /* For the first stab we make an array as long as the number of columns */
