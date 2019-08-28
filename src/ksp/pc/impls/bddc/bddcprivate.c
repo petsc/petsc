@@ -3909,8 +3909,6 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
   PetscInt        *idx_V_B;
   PetscInt        lda_rhs,n,n_vertices,n_constraints,*p0_lidx_I;
   PetscInt        i,n_R,n_D,n_B;
-
-  /* some shortcuts to scalars */
   PetscScalar     one=1.0,m_one=-1.0;
 
   PetscFunctionBegin;
@@ -4696,6 +4694,8 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
   if (n_constraints) {
     ierr = MatDestroy(&C_CR);CHKERRQ(ierr);
   }
+  ierr = PetscLogEventEnd(PC_BDDC_CorrectionSetUp[pcbddc->current_level],pc,0,0,0);CHKERRQ(ierr);
+
   /* Checking coarse_sub_mat and coarse basis functios */
   /* Symmetric case     : It should be \Phi^{(j)^T} A^{(j)} \Phi^{(j)}=coarse_sub_mat */
   /* Non-symmetric case : It should be \Psi^{(j)^T} A^{(j)} \Phi^{(j)}=coarse_sub_mat */
@@ -4882,7 +4882,6 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
   }
   /* get back data */
   *coarse_submat_vals_n = coarse_submat_vals;
-  ierr = PetscLogEventEnd(PC_BDDC_CorrectionSetUp[pcbddc->current_level],pc,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -5620,6 +5619,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
     ierr = PetscViewerASCIIPushSynchronized(pcbddc->dbg_viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"--------------------------------------------------\n");CHKERRQ(ierr);
   }
+  ierr = PetscLogEventEnd(PC_BDDC_LocalSolvers[pcbddc->current_level],pc,0,0,0);CHKERRQ(ierr);
 
   /* adapt Dirichlet and Neumann solvers if a nullspace correction has been requested */
   if (pcbddc->NullSpace_corr[0]) {
@@ -5656,7 +5656,6 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
   }
   /* free Neumann problem's matrix */
   ierr = MatDestroy(&A_RR);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(PC_BDDC_LocalSolvers[pcbddc->current_level],pc,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

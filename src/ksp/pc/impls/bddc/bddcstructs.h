@@ -164,12 +164,13 @@ typedef struct _PCBDDCDeluxeScaling *PCBDDCDeluxeScaling;
 
 /* inexact solvers with nullspace correction */
 struct _NullSpaceCorrection_ctx {
-  Mat         basis_mat;
-  Mat         inv_smat;
-  PC          local_pc;
-  Vec         *fw;
-  Vec         *sw;
-  PetscScalar scale;
+  Mat           basis_mat;
+  Mat           inv_smat;
+  PC            local_pc;
+  Vec           *fw;
+  Vec           *sw;
+  PetscScalar   scale;
+  PetscLogEvent evapply;
 };
 typedef struct _NullSpaceCorrection_ctx *NullSpaceCorrection_ctx;
 
