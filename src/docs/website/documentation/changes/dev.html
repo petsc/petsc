@@ -138,6 +138,7 @@
       <ul>
           <li>VecCUDAGet/RestoreArrayReadWrite() changed to VecCUDAGet/RestoreArray()</li>
           <li>VecViennaCLGet/RestoreArrayReadWrite() changed to VecViennaCLGet/RestoreArray()</li>
+          <li>Added VecGet/RestoreArray/ReadInPlace() to get array of a vector where it is without copying from GPU to CPU. </li>
         </ul>
       <h4>PetscLayout:</h4>
       <ul>
@@ -146,18 +147,17 @@
         <li>Calling PetscLayoutSetUp() twice with different sizes is now forbidden</li>
       </ul>
       <h4>PetscSection:</h4>
-      <h4>VecScatter:</h4>
+      <h4>VecScatter & PetscSF:</h4>
       <ul>
         <li>The default VecScatter implementation is changed to PetscSF. In other words, the default VecScatter shares PetscSF's MPI communication code. One can use -vecscatter_type mpi1 to go back to the old implementation.</li>
         <li>Added new InsertMode MAX_VALUES and MIN_VALUES support in VecScatterBegin/End and VecGhostUpdateBegin/End. </li>
-      </ul>
-      <h4>PetscSF:</h4>
-      <ul>
         <li>PetscSFComputeMultiRootOriginalNumbering: add output argument with the number of multiroots for convenience</li>
         <li>Added an enum type PetscSFPattern for SF graph patterns. Valid values include PETSCSF_PATTERN_ALLGATHER, PETSCSF_PATTERN_GATHER and PETSCSF_PATTERN_ALLTOALL.</li>
         <li>Added PetscSFSetGraphWithPattern() to set SF graphs with predefined patterns.</li>
         <li>Added PetscSFComposeInverse() to compose a new SF by putting the inverse of an SF under the another SF.</li>
         <li>Added MPI-3.0 neighborhood collectives support. One can use command line option -sf_type neighbor to let SF use MPI-3.0 neighborhood collectives for communication instead of the default MPI_Send/Recv.</li>
+        <li>PetscSF is now CUDA-aware. The rootdata, leafdata arguments passed to SF routines can be either GPU pointers or CPU pointers. Use a CUDA-aware MPI and option -use_gpu_aware_mpi to enable it.</li>
+        <li>VecScatter is also CUDA-aware. You can do VecScatter on CUDA vectors without copying them from GPU to CPU. Again, you need a CUDA-aware MPI and option -use_gpu_aware_mpi.</li>
         <li>Removed PetscSFCreateFromZero. Instead, users should use PetscSFCreate() to create an SF, and then set its graph with PetscSFSetGraphWithPattern(..,PETSCSF_PATTERN_GATHER).</li>
         <li>Renamed PetscSFGetRanks() to PetscSFGetRootRanks().</li>
       </ul>
@@ -229,6 +229,9 @@
           <li>PetscViewerHDF5SetCollective() and -viewer_hdf5_collective can be used to switch between independent and collective transfer mode. Defaults now to false (independent).
         </ul>
       <h4>SYS:</h4>
+        <ul>
+          <li>Added PetscCheckDupsInt() to check if a PetscInt array has dups.</li>
+        </ul>
       <h4>AO:</h4>
       <h4>Sieve:</h4>
       <h4>Fortran:</h4>
