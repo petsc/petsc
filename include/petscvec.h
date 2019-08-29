@@ -470,6 +470,11 @@ PETSC_EXTERN PetscErrorCode VecRestoreLocalVector(Vec,Vec);
 PETSC_EXTERN PetscErrorCode VecGetLocalVectorRead(Vec,Vec);
 PETSC_EXTERN PetscErrorCode VecRestoreLocalVectorRead(Vec,Vec);
 
+PETSC_EXTERN PetscErrorCode VecGetArrayInPlace(Vec,PetscScalar**);
+PETSC_EXTERN PetscErrorCode VecRestoreArrayInPlace(Vec,PetscScalar**);
+PETSC_EXTERN PetscErrorCode VecGetArrayReadInPlace(Vec,const PetscScalar**);
+PETSC_EXTERN PetscErrorCode VecRestoreArrayReadInPlace(Vec,const PetscScalar**);
+
 /*@C
    VecGetArrayPair - Accesses a pair of pointers for two vectors that may be common. When not common the first is read only
 
