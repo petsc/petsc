@@ -75,8 +75,10 @@ static PetscErrorCode dm_view_geometry(DM dm, Vec cell_geom, Vec face_geom)
     ierr = VecGetArrayRead(cell_geom, &cell_array);CHKERRQ(ierr);
 
     for (c = start_cell; c < end_cell; ++c) {
-       ierr = PetscSectionGetOffset(cell_section, c, &offset);CHKERRQ(ierr);
-       ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "rank %d c %D centroid %g,%g,%g vol %g\n", rank, c, (double) PetscRealPart(cell_array[offset+0]), (double) PetscRealPart(cell_array[offset+1]), (double) PetscRealPart(cell_array[offset+2]), (double) PetscRealPart(cell_array[offset+3]));CHKERRQ(ierr);
+      const PetscFVCellGeom *geom;
+      ierr = PetscSectionGetOffset(cell_section, c, &offset);CHKERRQ(ierr);
+      geom = (PetscFVCellGeom*)&cell_array[offset];
+      ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "rank %d c %D centroid %g,%g,%g vol %g\n", rank, c, (double)geom->centroid[0], (double)geom->centroid[1], (double)geom->centroid[2], (double)geom->volume);CHKERRQ(ierr);
     }
     ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD, NULL);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(cell_geom, &cell_array);CHKERRQ(ierr);
