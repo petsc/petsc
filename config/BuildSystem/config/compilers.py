@@ -1736,6 +1736,7 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
         self.logWrite(self.setCompilers.restoreLog())
         restoredlog = 1
         self.framework.logPrint('Accepted C99 compile flag: '+flag)
+        if self.c99flag == '': self.addDefine('HAVE_C99', 1)
         break
     self.setCompilers.popLanguage()
     if not restoredlog:

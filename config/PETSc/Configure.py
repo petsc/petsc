@@ -370,7 +370,7 @@ prepend-path PATH "%s"
     includes = []
     self.packagelibs = []
     for i in self.framework.packages:
-      if i.useddirectly and not i.required:
+      if not i.required:
         self.addDefine('HAVE_'+i.PACKAGE.replace('-','_'), 1)  # ONLY list package if it is used directly by PETSc (and not only by another package)
       if not isinstance(i.lib, list):
         i.lib = [i.lib]
