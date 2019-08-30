@@ -460,6 +460,7 @@ linux-cuda-single:
   tags:
     - name:frog
   variables:
+    OPENBLAS_NUM_THREADS: 1
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -cuda_initialize 0
     TEST_ARCH: arch-ci-linux-cuda-single
 
@@ -479,6 +480,7 @@ linux-opt-misc:
   tags:
     - mcs-nfs,name:cg
   variables:
+    OPENBLAS_NUM_THREADS: 1
     TEST_ARCH: arch-ci-linux-opt-misc
 
 linux-pkgs-cxx-mlib:
@@ -543,6 +545,7 @@ linux-IPL64:
   tags:
     - mcs-nfs,name:cg
   variables:
+    OPENBLAS_NUM_THREADS: 1
     TEST_ARCH: arch-ci-linux-IPL64
 
 linux-matlab-ilp64-gcov:
