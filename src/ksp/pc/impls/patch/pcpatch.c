@@ -185,8 +185,8 @@ static PetscErrorCode PCPatchCreateDefaultSF_Private(PC pc, PetscInt n, const Pe
 
   PetscFunctionBegin;
   if (n == 1 && bs[0] == 1) {
-    patch->defaultSF = sf[0];
-    ierr = PetscObjectReference((PetscObject) patch->defaultSF);CHKERRQ(ierr);
+    patch->sectionSF = sf[0];
+    ierr = PetscObjectReference((PetscObject) patch->sectionSF);CHKERRQ(ierr);
   } else {
     PetscInt     allRoots = 0, allLeaves = 0;
     PetscInt     leafOffset = 0;
@@ -296,8 +296,8 @@ static PetscErrorCode PCPatchCreateDefaultSF_Private(PC pc, PetscInt n, const Pe
     }
     ierr = PetscHMapIDestroy(&rankToIndex);CHKERRQ(ierr);
     ierr = PetscFree(remoteOffsets);CHKERRQ(ierr);
-    ierr = PetscSFCreate(PetscObjectComm((PetscObject)pc), &patch->defaultSF);CHKERRQ(ierr);
-    ierr = PetscSFSetGraph(patch->defaultSF, allRoots, allLeaves, ilocal, PETSC_OWN_POINTER, iremote, PETSC_OWN_POINTER);CHKERRQ(ierr);
+    ierr = PetscSFCreate(PetscObjectComm((PetscObject)pc), &patch->sectionSF);CHKERRQ(ierr);
+    ierr = PetscSFSetGraph(patch->sectionSF, allRoots, allLeaves, ilocal, PETSC_OWN_POINTER, iremote, PETSC_OWN_POINTER);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -520,7 +520,7 @@ PetscErrorCode PCPatchSetDiscretisationInfo(PC pc, PetscInt nsubspaces, DM *dms,
   for (i = 0; i < nsubspaces; ++i) {
     ierr = DMGetLocalSection(dms[i], &patch->dofSection[i]);CHKERRQ(ierr);
     ierr = PetscObjectReference((PetscObject) patch->dofSection[i]);CHKERRQ(ierr);
-    ierr = DMGetDefaultSF(dms[i], &sfs[i]);CHKERRQ(ierr);
+    ierr = DMGetSectionSF(dms[i], &sfs[i]);CHKERRQ(ierr);
     patch->bs[i]              = bs[i];
     patch->nodesPerCell[i]    = nodesPerCell[i];
     patch->totalDofsPerCell  += nodesPerCell[i]*bs[i];
@@ -565,8 +565,8 @@ PetscErrorCode PCPatchSetDiscretisationInfoCombined(PC pc, DM dm, PetscInt *node
     ierr = PetscMalloc1((cEnd-cStart)*nodesPerCell[i], &patch->cellNodeMap[i]);CHKERRQ(ierr);
     for (j = 0; j < (cEnd-cStart)*nodesPerCell[i]; ++j) patch->cellNodeMap[i][j] = cellNodeMap[i][j];
   }
-  ierr = DMGetDefaultSF(dm, &patch->defaultSF);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject) patch->defaultSF);CHKERRQ(ierr);
+  ierr = DMGetSectionSF(dm, &patch->sectionSF);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject) patch->sectionSF);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF, numGhostBcs, ghostBcNodes, PETSC_COPY_VALUES, &patch->ghostBcNodes);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF, numGlobalBcs, globalBcNodes, PETSC_COPY_VALUES, &patch->globalBcNodes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2727,8 +2727,8 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
 
       ierr = VecGetArray(patch->dof_weights, &input);CHKERRQ(ierr);
       ierr = VecGetArray(global, &output);CHKERRQ(ierr);
-      ierr = PetscSFReduceBegin(patch->defaultSF, MPIU_SCALAR, input, output, MPI_SUM);CHKERRQ(ierr);
-      ierr = PetscSFReduceEnd(patch->defaultSF, MPIU_SCALAR, input, output, MPI_SUM);CHKERRQ(ierr);
+      ierr = PetscSFReduceBegin(patch->sectionSF, MPIU_SCALAR, input, output, MPI_SUM);CHKERRQ(ierr);
+      ierr = PetscSFReduceEnd(patch->sectionSF, MPIU_SCALAR, input, output, MPI_SUM);CHKERRQ(ierr);
       ierr = VecRestoreArray(patch->dof_weights, &input);CHKERRQ(ierr);
       ierr = VecRestoreArray(global, &output);CHKERRQ(ierr);
 
@@ -2736,8 +2736,8 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
 
       ierr = VecGetArray(patch->dof_weights, &output);CHKERRQ(ierr);
       ierr = VecGetArray(global, &input);CHKERRQ(ierr);
-      ierr = PetscSFBcastBegin(patch->defaultSF, MPIU_SCALAR, input, output);CHKERRQ(ierr);
-      ierr = PetscSFBcastEnd(patch->defaultSF, MPIU_SCALAR, input, output);CHKERRQ(ierr);
+      ierr = PetscSFBcastBegin(patch->sectionSF, MPIU_SCALAR, input, output);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(patch->sectionSF, MPIU_SCALAR, input, output);CHKERRQ(ierr);
       ierr = VecRestoreArray(patch->dof_weights, &output);CHKERRQ(ierr);
       ierr = VecRestoreArray(global, &input);CHKERRQ(ierr);
       ierr = VecDestroy(&global);CHKERRQ(ierr);
@@ -2846,8 +2846,8 @@ static PetscErrorCode PCApply_PATCH(PC pc, Vec x, Vec y)
   /* Scatter from global space into overlapped local spaces */
   ierr = VecGetArrayRead(x, &globalRHS);CHKERRQ(ierr);
   ierr = VecGetArray(patch->localRHS, &localRHS);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(patch->defaultSF, MPIU_SCALAR, globalRHS, localRHS);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(patch->defaultSF, MPIU_SCALAR, globalRHS, localRHS);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(patch->sectionSF, MPIU_SCALAR, globalRHS, localRHS);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(patch->sectionSF, MPIU_SCALAR, globalRHS, localRHS);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(x, &globalRHS);CHKERRQ(ierr);
   ierr = VecRestoreArray(patch->localRHS, &localRHS);CHKERRQ(ierr);
 
@@ -2880,8 +2880,8 @@ static PetscErrorCode PCApply_PATCH(PC pc, Vec x, Vec y)
   ierr = VecSet(y, 0.0);CHKERRQ(ierr);
   ierr = VecGetArray(y, &globalUpdate);CHKERRQ(ierr);
   ierr = VecGetArrayRead(patch->localUpdate, &localUpdate);CHKERRQ(ierr);
-  ierr = PetscSFReduceBegin(patch->defaultSF, MPIU_SCALAR, localUpdate, globalUpdate, MPI_SUM);CHKERRQ(ierr);
-  ierr = PetscSFReduceEnd(patch->defaultSF, MPIU_SCALAR, localUpdate, globalUpdate, MPI_SUM);CHKERRQ(ierr);
+  ierr = PetscSFReduceBegin(patch->sectionSF, MPIU_SCALAR, localUpdate, globalUpdate, MPI_SUM);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(patch->sectionSF, MPIU_SCALAR, localUpdate, globalUpdate, MPI_SUM);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(patch->localUpdate, &localUpdate);CHKERRQ(ierr);
 
   /* Now we need to send the global BC values through */
@@ -2924,7 +2924,7 @@ static PetscErrorCode PCReset_PATCH(PC pc)
 
   PetscFunctionBegin;
 
-  ierr = PetscSFDestroy(&patch->defaultSF);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&patch->sectionSF);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&patch->cellCounts);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&patch->pointCounts);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&patch->cellNumbering);CHKERRQ(ierr);

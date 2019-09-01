@@ -2211,21 +2211,21 @@ static PetscErrorCode DMShareDiscretization(DM dmA, DM dmB)
   if (newDS) {
     ierr = DMClearGlobalVectors(dmB);CHKERRQ(ierr);
     ierr = DMClearLocalVectors(dmB);CHKERRQ(ierr);
-    ierr = PetscObjectReference((PetscObject)dmA->defaultSection);CHKERRQ(ierr);
-    ierr = PetscSectionDestroy(&(dmB->defaultSection));CHKERRQ(ierr);
-    dmB->defaultSection = dmA->defaultSection;
+    ierr = PetscObjectReference((PetscObject)dmA->localSection);CHKERRQ(ierr);
+    ierr = PetscSectionDestroy(&(dmB->localSection));CHKERRQ(ierr);
+    dmB->localSection = dmA->localSection;
     ierr = PetscObjectReference((PetscObject)dmA->defaultConstraintSection);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&(dmB->defaultConstraintSection));CHKERRQ(ierr);
     dmB->defaultConstraintSection = dmA->defaultConstraintSection;
     ierr = PetscObjectReference((PetscObject)dmA->defaultConstraintMat);CHKERRQ(ierr);
     ierr = MatDestroy(&(dmB->defaultConstraintMat));CHKERRQ(ierr);
     dmB->defaultConstraintMat = dmA->defaultConstraintMat;
-    ierr = PetscObjectReference((PetscObject)dmA->defaultGlobalSection);CHKERRQ(ierr);
-    ierr = PetscSectionDestroy(&(dmB->defaultGlobalSection));CHKERRQ(ierr);
-    dmB->defaultGlobalSection = dmA->defaultGlobalSection;
-    ierr = PetscObjectReference((PetscObject)dmA->defaultSF);CHKERRQ(ierr);
-    ierr = PetscSFDestroy(&dmB->defaultSF);CHKERRQ(ierr);
-    dmB->defaultSF = dmA->defaultSF;
+    ierr = PetscObjectReference((PetscObject)dmA->globalSection);CHKERRQ(ierr);
+    ierr = PetscSectionDestroy(&(dmB->globalSection));CHKERRQ(ierr);
+    dmB->globalSection = dmA->globalSection;
+    ierr = PetscObjectReference((PetscObject)dmA->sectionSF);CHKERRQ(ierr);
+    ierr = PetscSFDestroy(&dmB->sectionSF);CHKERRQ(ierr);
+    dmB->sectionSF = dmA->sectionSF;
     if (dmA->map) {ierr = PetscLayoutReference(dmA->map,&dmB->map);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
@@ -4387,7 +4387,7 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
       DM                coordDM;
 
       ierr = DMGetCoordinateDM(newPlex,&coordDM);CHKERRQ(ierr);
-      ierr = DMGetDefaultSF(coordDM,&coordSF);CHKERRQ(ierr);
+      ierr = DMGetSectionSF(coordDM,&coordSF);CHKERRQ(ierr);
       ierr = DMGetCoordinates(newPlex, &coordsGlobal);CHKERRQ(ierr);
       ierr = DMGetCoordinatesLocal(newPlex, &coordsLocal);CHKERRQ(ierr);
       ierr = VecGetArrayRead(coordsGlobal, &globalArray);CHKERRQ(ierr);
@@ -5080,8 +5080,8 @@ PetscErrorCode DMComputeL2FieldDiff_pforest(DM dm, PetscReal time, PetscErrorCod
   PetscFunctionReturn(0);
 }
 
-#define DMCreateDefaultSection_pforest _append_pforest(DMCreateDefaultSection)
-static PetscErrorCode DMCreateDefaultSection_pforest(DM dm)
+#define DMCreatelocalsection_pforest _append_pforest(DMCreatelocalsection)
+static PetscErrorCode DMCreatelocalsection_pforest(DM dm)
 {
   DM             plex;
   PetscSection   section;
@@ -5234,7 +5234,7 @@ static PetscErrorCode DMInitialize_pforest(DM dm)
   dm->ops->projectfunctionlocal      = DMProjectFunctionLocal_pforest;
   dm->ops->projectfunctionlabellocal = DMProjectFunctionLabelLocal_pforest;
   dm->ops->projectfieldlocal         = DMProjectFieldLocal_pforest;
-  dm->ops->createdefaultsection      = DMCreateDefaultSection_pforest;
+  dm->ops->createlocalsection      = DMCreatelocalsection_pforest;
   dm->ops->createdefaultconstraints  = DMCreateDefaultConstraints_pforest;
   dm->ops->computel2diff             = DMComputeL2Diff_pforest;
   dm->ops->computel2fielddiff        = DMComputeL2FieldDiff_pforest;

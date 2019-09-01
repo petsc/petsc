@@ -143,7 +143,7 @@
       <h4>IS:</h4>
       <ul>
         <li>
-          PetscSection was moved to IS and has become a PetscObject, thus reference counting works as usual, with functions like DMSetDefaultSection() taking a reference to the PetscSection.
+          PetscSection was moved to IS and has become a PetscObject, thus reference counting works as usual, with functions like DMSetLocalSection() taking a reference to the PetscSection.
           The caller is thus obliged to release their reference using PetscSectionDestroy().
         </li>
       </ul>
