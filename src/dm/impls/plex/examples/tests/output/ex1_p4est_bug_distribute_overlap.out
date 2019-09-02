@@ -1,3 +1,4 @@
+Overlap: 1
 DM Object: Parallel Mesh 2 MPI processes
   type: plex
 Parallel Mesh in 2 dimensions:

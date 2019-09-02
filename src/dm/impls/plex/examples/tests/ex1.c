@@ -63,7 +63,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->bdfilename[0]     = '\0';
   options->extfilename[0]    = '\0';
   options->testPartition     = PETSC_FALSE;
-  options->overlap           = PETSC_FALSE;
+  options->overlap           = 0;
   options->testShape         = PETSC_FALSE;
   options->simplex2tensor    = PETSC_FALSE;
   options->extrude_layers    = 2;
@@ -361,14 +361,18 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   if (user->overlap) {
     DM overlapMesh = NULL;
 
-    /* Add the level-1 overlap to refined mesh */
+    /* Add the overlap to refined mesh */
     ierr = PetscLogStagePush(user->stages[STAGE_OVERLAP]);CHKERRQ(ierr);
-    ierr = DMPlexDistributeOverlap(*dm, 1, NULL, &overlapMesh);CHKERRQ(ierr);
+    ierr = DMViewFromOptions(*dm, NULL, "-dm_pre_overlap_view");CHKERRQ(ierr);
+    ierr = DMPlexDistributeOverlap(*dm, user->overlap, NULL, &overlapMesh);CHKERRQ(ierr);
     if (overlapMesh) {
-      ierr = DMView(overlapMesh, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+      PetscInt overlap;
+      ierr = DMPlexGetOverlap(overlapMesh, &overlap);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "Overlap: %D\n", overlap);CHKERRQ(ierr);
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm = overlapMesh;
     }
+    ierr = DMViewFromOptions(*dm, NULL, "-dm_post_overlap_view");CHKERRQ(ierr);
     ierr = PetscLogStagePop();CHKERRQ(ierr);
   }
 
@@ -485,24 +489,14 @@ int main(int argc, char **argv)
 
   # Parallel refinement tests with overlap
   test:
-    suffix: 1d_refine_overlap_0
+    suffix: refine_overlap_1d
     nsize: 2
-    args: -dim 1 -domain_box_sizes 4 -dm_refine 1 -overlap 0 -petscpartitioner_type simple -dm_view ascii::ascii_info_detail
+    args: -dim 1 -domain_box_sizes 4 -dm_refine 1 -overlap {{0 1 2}separate output} -petscpartitioner_type simple -dm_view ascii::ascii_info
   test:
-    suffix: 1d_refine_overlap_1
-    nsize: 2
-    args: -dim 1 -domain_box_sizes 4 -dm_refine 1 -overlap 1 -petscpartitioner_type simple -dm_view ascii::ascii_info_detail
-  test:
-    suffix: refine_overlap_0
+    suffix: refine_overlap_2d
     requires: triangle
-    nsize: 2
-    requires: triangle
-    args: -dim 2 -cell_simplex 1 -dm_refine 1 -interpolate 1 -test_partition -overlap 1 -dm_view ascii::ascii_info_detail
-  test:
-    suffix: refine_overlap_1
-    requires: triangle
-    nsize: 8
-    args: -dim 2 -cell_simplex 1 -dm_refine 1 -interpolate 1 -test_partition -overlap 1 -dm_view ascii::ascii_info_detail
+    nsize: {{2 8}separate output}
+    args: -dim 2 -cell_simplex 1 -dm_refine 1 -interpolate 1 -test_partition -overlap {{0 1 2}separate output} -dm_view ascii::ascii_info
 
   # Parallel simple partitioner tests
   test:
@@ -1006,6 +1000,7 @@ int main(int argc, char **argv)
     nsize: 2
     suffix: p4est_bug_distribute_overlap
     args: -interpolate -test_p4est_seq -test_shape -conv_seq_2_dm_plex_check_symmetry -conv_seq_2_dm_plex_check_skeleton -conv_seq_2_dm_plex_check_faces -conv_seq_1_dm_forest_minimum_refinement 0 -conv_seq_1_dm_forest_partition_overlap 0 -dim 2 -domain_shape box -cell_simplex 0 -domain_box_sizes 3,3 -conv_seq_1_dm_forest_initial_refinement 0 -conv_seq_1_dm_forest_maximum_refinement 2 -conv_seq_1_dm_p4est_refine_pattern hash -petscpartitioner_type simple -overlap 1 -dm_view ::load_balance
+    args: -dm_post_overlap_view
 
   test:
     suffix: glvis_2d_hyb
