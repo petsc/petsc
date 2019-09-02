@@ -1593,7 +1593,7 @@ PetscErrorCode DMPlexMigrate(DM dm, PetscSF sf, DM targetDM)
 
   Level: intermediate
 
-.seealso: DMPlexCreate(), DMSetAdjacency()
+.seealso: DMPlexCreate(), DMSetAdjacency(), DMPlexGetOverlap()
 @*/
 PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmParallel)
 {
@@ -1775,7 +1775,7 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
 
   Level: advanced
 
-.seealso: DMPlexCreate(), DMSetAdjacency(), DMPlexDistribute(), DMPlexCreateOverlapLabel()
+.seealso: DMPlexCreate(), DMSetAdjacency(), DMPlexDistribute(), DMPlexCreateOverlapLabel(), DMPlexGetOverlap()
 @*/
 PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, PetscSF *sf, DM *dmOverlap)
 {
@@ -1825,6 +1825,8 @@ PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, PetscSF *sf, DM 
   ierr = DMPlexCreate(comm, dmOverlap);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *dmOverlap, "Parallel Mesh");CHKERRQ(ierr);
   ierr = DMPlexMigrate(dm, sfOverlap, *dmOverlap);CHKERRQ(ierr);
+  /* Store the overlap in the new DM */
+  ((DM_Plex*)(*dmOverlap)->data)->overlap = overlap + ((DM_Plex*)dm->data)->overlap;
   /* Build the new point SF */
   ierr = DMPlexCreatePointSF(*dmOverlap, sfOverlap, PETSC_FALSE, &sfPoint);CHKERRQ(ierr);
   ierr = DMSetPointSF(*dmOverlap, sfPoint);CHKERRQ(ierr);
@@ -1838,6 +1840,41 @@ PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, PetscSF *sf, DM 
   ierr = PetscLogEventEnd(DMPLEX_DistributeOverlap, dm, 0, 0, 0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+PetscErrorCode DMPlexGetOverlap_Plex(DM dm, PetscInt *overlap)
+{
+  DM_Plex        *mesh  = (DM_Plex*) dm->data;
+
+  PetscFunctionBegin;
+  *overlap = mesh->overlap;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexGetOverlap - Get the DMPlex partition overlap.
+
+  Not collective
+
+  Input Parameter:
+. dm - The DM
+
+  Output Parameters:
+. overlap - The overlap of this DM
+
+  Level: intermediate
+
+.seealso: DMPlexDistribute(), DMPlexDistributeOverlap(), DMPlexCreateOverlapLabel()
+@*/
+PetscErrorCode DMPlexGetOverlap(DM dm, PetscInt *overlap)
+{
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = PetscUseMethod(dm,"DMPlexGetOverlap_C",(DM,PetscInt*),(dm,overlap));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 /*@C
   DMPlexGetGatherDM - Get a copy of the DMPlex that gathers all points on the
