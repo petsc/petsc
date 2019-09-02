@@ -885,11 +885,11 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
       Julia package.</p>
 
       <p>For other formats, either adapt one of the above libraries or see the
-      examples in src/mat/examples/tests, specifically ex72.c, ex78.c, and
-      ex32.c. You will likely need to modify the code slightly to match your
+      examples in src/mat/examples/tests, specifically ex72.c or ex78.c. 
+      You will likely need to modify the code slightly to match your
       required ASCII format. Note: Never read or write in parallel an ASCII
       matrix file, instead for reading: read in sequentially with a standalone
-      code based on ex72.c, ex78.c, or ex32.c then save the matrix with the
+      code based on ex72.c or ex78.c then save the matrix with the
       binary viewer PetscBinaryViewerOpen() and load the matrix in parallel in
       your "real" PETSc program with MatLoad(); for writing save with the binary
       viewer and then load with the sequential code to store it as ASCII.</p>
