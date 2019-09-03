@@ -1763,7 +1763,7 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
 
   Input Parameter:
 + dm  - The non-overlapping distrbuted DMPlex object
-- overlap - The overlap of partitions
+- overlap - The overlap of partitions (the same on all ranks)
 
   Output Parameter:
 + sf - The PetscSF used for point distribution
@@ -1792,6 +1792,7 @@ PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, PetscSF *sf, DM 
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidLogicalCollectiveInt(dm, overlap, 2);
   if (sf) PetscValidPointer(sf, 3);
   PetscValidPointer(dmOverlap, 4);
 
