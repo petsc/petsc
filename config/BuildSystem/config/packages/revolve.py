@@ -33,8 +33,8 @@ class Configure(config.package.Package):
 
     g.write('PREFIX           = '+self.installDir+'\n')
 
-    g.write('CXX              = '+self.setCompilers.getCompiler()+'\n')
-    g.write('CXXFLAGS         = '+self.removeWarningFlags(self.setCompilers.getCompilerFlags())+'\n')
+    g.write('CXX              = '+self.framework.getCompiler()+'\n')
+    g.write('CXXFLAGS         = '+self.removeWarningFlags(self.framework.getCompilerFlags())+'\n')
     g.close()
 
     self.framework.popLanguage()
