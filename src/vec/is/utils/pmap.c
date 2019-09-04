@@ -217,8 +217,10 @@ PetscErrorCode PetscLayoutDuplicate(PetscLayout in,PetscLayout *out)
   ierr = PetscLayoutCreate(comm,out);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = PetscMemcpy(*out,in,sizeof(struct _n_PetscLayout));CHKERRQ(ierr);
-  ierr = PetscMalloc1(size+1,&(*out)->range);CHKERRQ(ierr);
-  ierr = PetscArraycpy((*out)->range,in->range,size+1);CHKERRQ(ierr);
+  if (in->range) {
+    ierr = PetscMalloc1(size+1,&(*out)->range);CHKERRQ(ierr);
+    ierr = PetscArraycpy((*out)->range,in->range,size+1);CHKERRQ(ierr);
+  }
 
   (*out)->refcnt = 0;
   PetscFunctionReturn(0);
