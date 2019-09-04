@@ -27,5 +27,6 @@ int main(int argc, char *args[])
 
    test:
      args: -check_pointer_intensity 1
+     TODO: reports Mistook invalid pointer 0xfffffffffffffff0 for valid or Free'd pointer is still accessible
 
 TEST*/

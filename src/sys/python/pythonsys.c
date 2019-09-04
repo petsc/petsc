@@ -228,6 +228,14 @@ PetscErrorCode  PetscPythonInitialize(const char pyexe[],const char pylib[])
     if (sys_path) {
       ierr = PetscStrreplace(PETSC_COMM_SELF,"${PETSC_LIB_DIR}",path,sizeof(path));CHKERRQ(ierr);
       Py_DecRef(PyObject_CallMethod(sys_path,"insert","is",(int)0,(char*)path));
+#if defined(PETSC_PETSC4PY_INSTALL_PATH)
+      {
+        char *rpath;
+        ierr = PetscStrallocpy(PETSC_PETSC4PY_INSTALL_PATH,&rpath);CHKERRQ(ierr);
+        Py_DecRef(PyObject_CallMethod(sys_path,"insert","is",(int)0,rpath));
+        ierr = PetscFree(rpath);CHKERRQ(ierr);
+      }
+#endif
     }
     /* register finalizer */
     if (!registered) {

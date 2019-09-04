@@ -168,7 +168,7 @@ class Configure(config.package.Package):
     # check that user has used the options properly
     if self.f2cblaslapack.found:
       self.f2c = 1
-      libDir = self.f2cblaslapack.libDir
+      libDir = os.path.join(self.f2cblaslapack.directory,'lib')
       f2cBlas = [os.path.join(libDir,'libf2cblas.a')]
       f2cLapack = [os.path.join(libDir,'libf2clapack.a')]
       yield ('f2cblaslapack', f2cBlas, f2cLapack, '32','no')
@@ -176,12 +176,12 @@ class Configure(config.package.Package):
       raise RuntimeError('--download-f2cblaslapack libraries cannot be used')
     if self.fblaslapack.found:
       self.f2c = 0
-      libDir = self.fblaslapack.libDir
+      libDir = os.path.join(self.fblaslapack.directory,'lib')
       yield ('fblaslapack', os.path.join(libDir,'libfblas.a'), os.path.join(libDir,'libflapack.a'), '32','no')
       raise RuntimeError('--download-fblaslapack libraries cannot be used')
     if self.openblas.found:
       self.f2c = 0
-      libDir = self.openblas.libDir
+      libDir = os.path.join(self.openblas.directory,'lib')
       if self.argDB['download-openblas-64-bit-blas-indices'] or self.argDB['with-64-bit-blas-indices']: known = '64'
       else: known = '32'
       yield ('openblas', None, os.path.join(libDir,'libopenblas.a'),known,self.openblas.usesopenmp)

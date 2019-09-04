@@ -33,6 +33,6 @@ int main(int argc,char **argv)
 
    test:
      localrunfiles: optionsfile
-     filter: egrep -v "(malloc|nox|display|saws_port|vecscatter|options_left|check_pointer_intensity|cuda_initialize)"
+     filter: egrep -v "(malloc|nox|display|saws_port|vecscatter|options_left|check_pointer_intensity|cuda_initialize|error_output_stdout)"
 
 TEST*/

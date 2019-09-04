@@ -21,7 +21,10 @@ class Configure(config.package.Package):
     config.package.Package.setupDependencies(self, framework)
     self.mpi            = framework.require('config.packages.MPI',self)
     self.mathlib        = framework.require('config.packages.mathlib',self)
+    self.pthread        = framework.require('config.packages.pthread',self)
+    self.zlib           = framework.require('config.packages.zlib',self)
     self.deps           = [self.mpi, self.mathlib]
+    self.odeps          = [self.pthread,self.zlib]
     return
 
   def Install(self):
@@ -52,15 +55,12 @@ class Configure(config.package.Package):
 
     # Building cflags/ldflags
     self.cflags = self.removeWarningFlags(self.setCompilers.getCompilerFlags())+' '+self.headers.toString(self.mpi.include)
-    ldflags = self.libraries.toString(self.mpi.lib)
-    if self.libraries.add('-lz','gzwrite'):
+    ldflags = self.libraries.toString(self.dlib)
+    if self.zlib.found:
       self.cflags = self.cflags + ' -DCOMMON_FILE_COMPRESS_GZ'
-      ldflags += ' -lz'
-    # OSX does not have pthread_barrier_destroy - so check for that
-    if self.libraries.add('-lpthread','pthread_barrier_destroy'):
+    # OSX does not have pthread_barrier_destroy
+    if self.pthread.found and self.pthread.pthread_barrier:
       self.cflags = self.cflags + ' -DCOMMON_PTHREAD'
-      ldflags += ' -lpthread'
-    if self.libraries.add('-lm','sin'): ldflags += ' -lm'
     if self.libraries.add('-lrt','timer_create'): ldflags += ' -lrt'
     self.cflags = self.cflags + ' -DCOMMON_RANDOM_FIXED_SEED'
     # do not use -DSCOTCH_PTHREAD because requires MPI built for threads.
