@@ -259,6 +259,7 @@ int main(int argc,char **argv)
   ierr = TSSetType(appctx.ts,TSCN);CHKERRQ(ierr);
   ierr = TSSetDM(appctx.ts,da);CHKERRQ(ierr);
   ierr = TSSetProblemType(appctx.ts,TS_NONLINEAR);CHKERRQ(ierr);
+  ierr = TSSetEquationType(appctx.ts,TS_EQ_ODE_EXPLICIT);CHKERRQ(ierr); /* less Jacobian evaluations when adjoint BEuler is used, otherwise no effect */
   if (!implicitform) {
     ierr = TSSetRHSFunction(appctx.ts,NULL,RHSFunction,&appctx);CHKERRQ(ierr);
     ierr = TSSetRHSJacobian(appctx.ts,NULL,NULL,RHSJacobian,&appctx);CHKERRQ(ierr);
