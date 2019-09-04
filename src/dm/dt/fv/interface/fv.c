@@ -1595,7 +1595,7 @@ $ H[(((p*pdim + i)*Nc + c)*dim + d)*dim + e] is the value at point p for basis f
 
   Level: intermediate
 
-.seealso: PetscFEGetDefaultTabulation(), PetscFEGetTabulation(), PetscFERestoreTabulation()
+.seealso: PetscFEGetDefaultTabulation(), PetscFEGetTabulation(), PetscFERestoreTabulation(), PetscFVGetQuadrature(), PetscQuadratureGetData()
 @*/
 PetscErrorCode PetscFVGetDefaultTabulation(PetscFV fvm, PetscReal **B, PetscReal **D, PetscReal **H)
 {
