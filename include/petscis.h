@@ -215,6 +215,7 @@ struct _n_PetscLayout{
   PetscInt               n,N;         /* local, global vector size */
   PetscInt               rstart,rend; /* local start, local end + 1 */
   PetscInt               *range;      /* the offset of each processor */
+  PetscBool              range_alloc; /* should range be freed in Destroy? */
   PetscInt               bs;          /* number of elements in each block (generally for multi-component
                                        * problems). Defaults to -1 and can be arbitrarily lazy so always use
                                        * PetscAbs(map->bs) when accessing directly and expecting result to be
@@ -299,6 +300,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLayoutFindOwnerIndex(PetscLayout map,Pet
 }
 
 PETSC_EXTERN PetscErrorCode PetscLayoutCreate(MPI_Comm,PetscLayout*);
+PETSC_EXTERN PetscErrorCode PetscLayoutCreateFromSizes(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscLayout*);
+PETSC_EXTERN PetscErrorCode PetscLayoutCreateFromRanges(MPI_Comm,const PetscInt[],PetscCopyMode,PetscInt,PetscLayout*);
 PETSC_EXTERN PetscErrorCode PetscLayoutSetUp(PetscLayout);
 PETSC_EXTERN PetscErrorCode PetscLayoutDestroy(PetscLayout*);
 PETSC_EXTERN PetscErrorCode PetscLayoutDuplicate(PetscLayout,PetscLayout*);
