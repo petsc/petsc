@@ -1517,6 +1517,13 @@ class GNUPackage(Package):
       output1,err1,ret1  = config.base.Configure.executeShellCommand(dot+'/configure '+args, cwd=self.packageDir, timeout=2000, log = self.log)
     except RuntimeError as e:
       self.logPrint('Error running configure on ' + self.PACKAGE+': '+str(e))
+      try:
+        with open(os.path.join(self.packageDir,'config.log')) as fd:
+          conf = fd.read()
+          fd.close()
+          self.logPrint('Output in config.log for ' + self.PACKAGE+': '+conf)
+      except:
+        pass
       raise RuntimeError('Error running configure on ' + self.PACKAGE)
     try:
       self.logPrintBox('Running make on '+self.PACKAGE+'; this may take several minutes')
