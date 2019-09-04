@@ -103,6 +103,8 @@ PETSC_EXTERN PetscErrorCode ISOnComm(IS,MPI_Comm,PetscCopyMode,IS*);
 PETSC_EXTERN PetscErrorCode ISRenumber(IS,IS,PetscInt*,IS*);
 PETSC_EXTERN PetscErrorCode ISCreateSubIS(IS,IS,IS*);
 
+PETSC_EXTERN PetscErrorCode ISGeneralFilter(IS,PetscInt,PetscInt);
+
 /* --------------------------------------------------------------------------*/
 PETSC_EXTERN PetscClassId IS_LTOGM_CLASSID;
 

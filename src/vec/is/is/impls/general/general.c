@@ -26,6 +26,7 @@ static PetscErrorCode ISDestroy_General(IS is)
   PetscFunctionBegin;
   if (is_general->allocated) {ierr = PetscFree(is_general->idx);CHKERRQ(ierr);}
   ierr = PetscObjectComposeFunction((PetscObject)is,"ISGeneralSetIndices_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)is,"ISGeneralFilter_C",NULL);CHKERRQ(ierr);
   ierr = PetscFree(is->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -683,6 +684,8 @@ PetscErrorCode  ISGeneralSetIndices_General(IS is,PetscInt n,const PetscInt idx[
   if (n) PetscValidIntPointer(idx,3);
 
   ierr = PetscLayoutSetLocalSize(is->map,n);CHKERRQ(ierr);
+  /* TODO: Without this, global size wouldn't be recomputed. This shows PetscLayoutSetSize should rather set local and global at once. */
+  ierr = PetscLayoutSetSize(is->map,-1);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(is->map);CHKERRQ(ierr);
 
   if (sub->allocated) {ierr = PetscFree(sub->idx);CHKERRQ(ierr);}
@@ -705,6 +708,50 @@ PetscErrorCode  ISGeneralSetIndices_General(IS is,PetscInt n,const PetscInt idx[
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode ISGeneralFilter_General(IS is, PetscInt start, PetscInt end)
+{
+  IS_General     *sub = (IS_General*)is->data;
+  PetscInt       *idx = sub->idx,*idxnew;
+  PetscInt       i,n = is->map->n,nnew = 0,o;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  for (i=0; i<n; ++i)
+    if (idx[i] >= start && idx[i] < end)
+      nnew++;
+  ierr = PetscMalloc1(nnew, &idxnew);CHKERRQ(ierr);
+  for (o=0, i=0; i<n; i++) {
+    if (idx[i] >= start && idx[i] < end)
+      idxnew[o++] = idx[i];
+  }
+  ierr = ISGeneralSetIndices_General(is,nnew,idxnew,PETSC_OWN_POINTER);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   ISGeneralFilter - Remove all points outside of [start, end)
+
+   Collective on IS
+
+   Input Parameters:
++  is - the index set
+.  start - the lowest index kept
+-  end - one more than the highest index kept
+
+   Level: beginner
+
+.seealso: ISCreateGeneral(), ISGeneralSetIndices()
+@*/
+PetscErrorCode ISGeneralFilter(IS is, PetscInt start, PetscInt end)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
+  ierr = PetscUseMethod(is,"ISGeneralFilter_C",(IS,PetscInt,PetscInt),(is,start,end));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 PETSC_EXTERN PetscErrorCode ISCreate_General(IS is)
 {
   PetscErrorCode ierr;
@@ -715,5 +762,6 @@ PETSC_EXTERN PetscErrorCode ISCreate_General(IS is)
   is->data = (void *) sub;
   ierr = PetscMemcpy(is->ops,&myops,sizeof(myops));CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)is,"ISGeneralSetIndices_C",ISGeneralSetIndices_General);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)is,"ISGeneralFilter_C",ISGeneralFilter_General);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
