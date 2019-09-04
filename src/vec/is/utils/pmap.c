@@ -8,13 +8,15 @@
 #include <petsc/private/isimpl.h>
 
 /*@
-  PetscLayoutCreate - Allocates PetscLayout space and sets the map contents to the default.
+  PetscLayoutCreate - Allocates PetscLayout space and sets the PetscLayout contents to the default.
 
   Collective
 
   Input Parameters:
-+ comm - the MPI communicator
-- map - pointer to the map
+. comm - the MPI communicator
+
+  Output Parameters:
+. map - the new PetscLayout
 
   Level: advanced
 
@@ -22,8 +24,8 @@
   Typical calling sequence
 .vb
        PetscLayoutCreate(MPI_Comm,PetscLayout *);
-       PetscLayoutSetBlockSize(PetscLayout,1);
-       PetscLayoutSetSize(PetscLayout,N) // or PetscLayoutSetLocalSize(PetscLayout,n);
+       PetscLayoutSetBlockSize(PetscLayout,bs);
+       PetscLayoutSetSize(PetscLayout,N); // or PetscLayoutSetLocalSize(PetscLayout,n);
        PetscLayoutSetUp(PetscLayout);
 .ve
   Optionally use any of the following:
