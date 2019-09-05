@@ -486,7 +486,7 @@ int main(int argc,char **argv)
   /* Optimization starts */
   ierr = MatCreate(PETSC_COMM_WORLD,&user.H);CHKERRQ(ierr);
   ierr = MatSetSizes(user.H,PETSC_DECIDE,PETSC_DECIDE,1,1);CHKERRQ(ierr);
-  ierr = MatSetUp(user.H);CHKERRQ(ierr); /* Hessian should be symmetic. Do we need to do MatSetOption(user.H,MAT_SYMMETRIC,PETSC_TRUE) ? */
+  ierr = MatSetUp(user.H);CHKERRQ(ierr); /* Hessian should be symmetric. Do we need to do MatSetOption(user.H,MAT_SYMMETRIC,PETSC_TRUE) ? */
 
   /* Set initial solution guess */
   ierr = MatCreateVecs(user.Jacp,&P,NULL);CHKERRQ(ierr);

@@ -736,7 +736,7 @@ static PetscErrorCode TaoView_NTL(Tao tao, PetscViewer viewer)
 . -tao_ntl_gamma2_i - gamma2 interpolation init factor
 . -tao_ntl_gamma3_i - gamma3 interpolation init factor
 . -tao_ntl_gamma4_i - gamma4 interpolation init factor
-. -tao_ntl_theta_i - thetha1 interpolation init factor
+. -tao_ntl_theta_i - theta1 interpolation init factor
 . -tao_ntl_eta1 - eta1 reduction update factor
 . -tao_ntl_eta2 - eta2 reduction update factor
 . -tao_ntl_eta3 - eta3 reduction update factor
