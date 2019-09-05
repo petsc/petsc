@@ -8843,7 +8843,7 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
 
       ierr = DMGetCoordinateDM(rdm, &cdm);CHKERRQ(ierr);
       ierr = DMCreateGlobalVector(cdm, &aux);CHKERRQ(ierr);
-      ierr = DMGetDefaultSF(cdm, &sf);CHKERRQ(ierr);
+      ierr = DMGetSectionSF(cdm, &sf);CHKERRQ(ierr);
       ierr = VecGetArrayRead(coordinatesNew, &lArray);CHKERRQ(ierr);
       ierr = VecSet(aux, PETSC_MIN_REAL);CHKERRQ(ierr);
       ierr = VecGetArray(aux, &gArray);CHKERRQ(ierr);

@@ -173,7 +173,7 @@ PetscErrorCode  DMDAVecGetArrayWrite(DM da,Vec vec,void *array)
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1,DMDA);
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 2);
   PetscValidPointer(array, 3);
-  if (da->defaultSection) {
+  if (da->localSection) {
     ierr = VecGetArrayWrite(vec,(PetscScalar**)array);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
@@ -230,7 +230,7 @@ PetscErrorCode  DMDAVecRestoreArrayWrite(DM da,Vec vec,void *array)
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1,DMDA);
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 2);
   PetscValidPointer(array, 3);
-  if (da->defaultSection) {
+  if (da->localSection) {
     ierr = VecRestoreArray(vec,(PetscScalar**)array);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }

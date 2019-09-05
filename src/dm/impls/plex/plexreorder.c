@@ -178,7 +178,7 @@ PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
   }
   plexNew = (DM_Plex *) (*pdm)->data;
   /* Ignore ltogmap, ltogmapb */
-  /* Ignore sf, defaultSF */
+  /* Ignore sf, sectionSF */
   /* Ignore globalVertexNumbers, globalCellNumbers */
   /* Remap coordinates */
   {
