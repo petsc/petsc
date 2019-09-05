@@ -3830,7 +3830,7 @@ static PetscErrorCode PetscSectionFieldGetTensorDegree_Private(PetscSection sect
 
   DMPlexSetClosurePermutationTensor - Create a permutation from the default (BFS) point ordering in the closure, to a
   lexicographic ordering over the tensor product cell (i.e., line, quad, hex, etc.), and set this permutation in the
-  section provided (or default section of the DM).
+  section provided (or the section of the DM).
 
   Input Parameters:
 + dm      - The DM
@@ -3881,7 +3881,7 @@ static PetscErrorCode PetscSectionFieldGetTensorDegree_Private(PetscSection sect
 
   Level: developer
 
-.seealso: DMGetLocalSection(), PetscSectionSetClosurePermutation()
+.seealso: DMGetLocalSection(), PetscSectionSetClosurePermutation(), DMSetGlocalSection()
 @*/
 PetscErrorCode DMPlexSetClosurePermutationTensor(DM dm, PetscInt point, PetscSection section)
 {

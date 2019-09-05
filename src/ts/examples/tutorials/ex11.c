@@ -1393,7 +1393,7 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
       PetscInt              vtkVal = 0;
 
       /* not that these two routines as currently implemented work for any dm with a
-       * defaultSection/defaultGlobalSection */
+       * localSection/globalSection */
       ierr = DMPlexPointLocalRead(dmCell,c,cgeom,&cg);CHKERRQ(ierr);
       ierr = DMPlexPointGlobalRead(dm,c,x,&cx);CHKERRQ(ierr);
       if (vtkLabel) {ierr = DMLabelGetValue(vtkLabel,c,&vtkVal);CHKERRQ(ierr);}

@@ -444,7 +444,8 @@ int main(int argc,char **argv)
 
   /* Create timestepping solver context */
   ierr = TSCreate(PETSC_COMM_WORLD,&user.ts);CHKERRQ(ierr);
-    if (user.implicitform) {
+  ierr = TSSetEquationType(user.ts,TS_EQ_ODE_EXPLICIT);CHKERRQ(ierr); /* less Jacobian evaluations when adjoint BEuler is used, otherwise no effect */
+  if (user.implicitform) {
     ierr = TSSetIFunction(user.ts,NULL,IFunction,&user);CHKERRQ(ierr);
     ierr = TSSetIJacobian(user.ts,user.A,user.A,IJacobian,&user);CHKERRQ(ierr);
     ierr = TSSetType(user.ts,TSCN);CHKERRQ(ierr);

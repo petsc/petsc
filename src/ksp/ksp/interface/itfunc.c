@@ -888,6 +888,7 @@ PetscErrorCode  KSPSolveTranspose(KSP ksp,Vec b,Vec x)
 
   if (ksp->presolve) {ierr = (*ksp->presolve)(ksp,ksp->vec_rhs,ksp->vec_sol,ksp->prectx);CHKERRQ(ierr);}
 
+  ierr = PetscLogEventBegin(KSP_SolveTranspose,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
   if (ksp->guess) {
     PetscObjectState ostate,state;
 
@@ -925,6 +926,7 @@ PetscErrorCode  KSPSolveTranspose(KSP ksp,Vec b,Vec x)
   }
   if (!ksp->reason) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Internal error, solver returned without setting converged reason");
   if (ksp->viewReason) {ierr = KSPReasonView_Internal(ksp, ksp->viewerReason, ksp->formatReason);CHKERRQ(ierr);}
+  ierr = PetscLogEventEnd(KSP_SolveTranspose,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
   if (ksp->guess) {
     ierr = KSPGuessUpdate(ksp->guess,ksp->vec_rhs,ksp->vec_sol);CHKERRQ(ierr);
   }

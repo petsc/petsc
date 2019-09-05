@@ -366,6 +366,8 @@ static PetscErrorCode DMPlexCreateSectionBCIndices(DM dm, PetscSection section)
   Fortran Notes:
   A Fortran 90 version is available as DMPlexCreateSectionF90()
 
+  TODO: How is this related to DMCreateLocalSection()
+
 .seealso: DMPlexCreate(), PetscSectionCreate(), PetscSectionSetPermutation()
 @*/
 PetscErrorCode DMPlexCreateSection(DM dm, DMLabel label[], const PetscInt numComp[],const PetscInt numDof[], PetscInt numBC, const PetscInt bcField[], const IS bcComps[], const IS bcPoints[], IS perm, PetscSection *section)
@@ -389,7 +391,7 @@ PetscErrorCode DMPlexCreateSection(DM dm, DMLabel label[], const PetscInt numCom
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
+PetscErrorCode DMCreateLocalSection_Plex(DM dm)
 {
   PetscDS        probBC;
   PetscSection   section;

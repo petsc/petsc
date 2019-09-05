@@ -602,6 +602,7 @@ class generateExamples(Petsc):
       fh.write(loopFoot+"\n")
 
     fh.write(footer+"\n")
+    fh.close()
     os.chmod(os.path.join(runscript_dir,testname+".sh"),0o755)
     #if '10_9' in testname: sys.exit()
     return

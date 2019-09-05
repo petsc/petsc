@@ -1355,7 +1355,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Swarm(DM dm)
   dm->ops->setfromoptions                  = NULL;
   dm->ops->clone                           = NULL;
   dm->ops->setup                           = DMSetup_Swarm;
-  dm->ops->createdefaultsection            = NULL;
+  dm->ops->createlocalsection              = NULL;
   dm->ops->createdefaultconstraints        = NULL;
   dm->ops->createglobalvector              = DMCreateGlobalVector_Swarm;
   dm->ops->createlocalvector               = DMCreateLocalVector_Swarm;

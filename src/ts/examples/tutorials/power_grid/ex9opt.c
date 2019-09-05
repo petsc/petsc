@@ -254,6 +254,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ctx.ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ctx.ts,TS_NONLINEAR);CHKERRQ(ierr);
+  ierr = TSSetEquationType(ctx.ts,TS_EQ_ODE_EXPLICIT);CHKERRQ(ierr); /* less Jacobian evaluations when adjoint BEuler is used, otherwise no effect */
   ierr = TSSetType(ctx.ts,TSRK);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(ctx.ts,NULL,(TSRHSFunction)RHSFunction,&ctx);CHKERRQ(ierr);
   ierr = TSSetRHSJacobian(ctx.ts,A,A,(TSRHSJacobian)RHSJacobian,&ctx);CHKERRQ(ierr);

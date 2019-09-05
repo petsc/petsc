@@ -13,7 +13,7 @@ Input parameters include:\n\
    This program solves the van der Pol equation
        y'' - \mu ((1-y^2)*y' - y) = 0        (1)
    on the domain 0 <= x <= 1, with the boundary conditions
-       y(0) = 2, y'(0) = −2/3 +10/(81*\mu) − 292/(2187*\mu^2),
+       y(0) = 2, y'(0) = - 2/3 +10/(81*\mu) - 292/(2187*\mu^2),
    This is a nonlinear equation. The well prepared initial condition gives errors that are not dominated by the first few steps of the method when \mu is large.
 
    Notes:

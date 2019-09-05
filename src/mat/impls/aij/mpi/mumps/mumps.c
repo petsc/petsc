@@ -358,13 +358,12 @@ PetscErrorCode MatConvertToTriples_seqsbaij_seqsbaij(Mat A,int shift,MatReuse re
     nz   = aa->nz;
     ierr = PetscMalloc((2*bs2*nz*sizeof(PetscInt)+(bs>1?bs2*nz*sizeof(PetscScalar):0)), &row);CHKERRQ(ierr);
     col  = row + bs2*nz;
-    if (bs>1)
-      val = (PetscScalar*)(col + bs2*nz);
-    else
-      val = aa->a;
+    if (bs>1) val = (PetscScalar*)(col + bs2*nz);
+    else val = aa->a;
 
     *r = row; *c = col; *v = val;
   } else {
+    if (bs == 1) *v = aa->a;
     row = *r; col = *c; val = *v;
   }
 
@@ -397,7 +396,7 @@ PetscErrorCode MatConvertToTriples_seqsbaij_seqsbaij(Mat A,int shift,MatReuse re
     }
     if (nz != aa->nz) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Different numbers of nonzeros %D != %D",nz,aa->nz);
   }
-  *nnz = nz;
+  if (reuse == MAT_INITIAL_MATRIX) *nnz = nz;
   PetscFunctionReturn(0);
 }
 

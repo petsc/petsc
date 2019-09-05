@@ -3,6 +3,8 @@
 
 PetscLogEvent TS_AdjointStep,TS_ForwardStep,TS_JacobianPEval;
 
+/* #define TSADJOINT_STAGE */
+
 /* ------------------------ Sensitivity Context ---------------------------*/
 
 /*@C
@@ -1537,10 +1539,17 @@ PetscErrorCode TSAdjointStep(TS ts)
 @*/
 PetscErrorCode TSAdjointSolve(TS ts)
 {
-  PetscErrorCode    ierr;
+#if defined(TSADJOINT_STAGE)
+  PetscLogStage  adjoint_stage;
+#endif
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+#if defined(TSADJOINT_STAGE)
+  ierr = PetscLogStageRegister("TSAdjoint",&adjoint_stage);CHKERRQ(ierr);
+  ierr = PetscLogStagePush(adjoint_stage);CHKERRQ(ierr);
+#endif
   ierr = TSAdjointSetUp(ts);CHKERRQ(ierr);
 
   /* reset time step and iteration counters */
@@ -1569,6 +1578,9 @@ PetscErrorCode TSAdjointSolve(TS ts)
   ierr = TSTrajectoryViewFromOptions(ts->trajectory,NULL,"-ts_trajectory_view");CHKERRQ(ierr);
   ierr = VecViewFromOptions(ts->vecs_sensi[0],(PetscObject) ts, "-ts_adjoint_view_solution");CHKERRQ(ierr);
   ts->adjoint_max_steps = 0;
+#if defined(TSADJOINT_STAGE)
+  ierr = PetscLogStagePop();CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 

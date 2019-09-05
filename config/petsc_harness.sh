@@ -156,7 +156,11 @@ function petsc_testrun() {
     if "${verbose}"; then 
       printf "not ok $tlabel $cmd\n" | tee -a ${testlogfile}
     else
-      printf "not ok $tlabel\n" | tee -a ${testlogfile}
+        if [ -n "$timed_out" ]; then
+            printf "not ok timeout $tlabel\n" | tee -a ${testlogfile}
+        else
+            printf "not ok $tlabel\n" | tee -a ${testlogfile}
+        fi
     fi
     if [ -n "$timed_out" ]; then
       printf "#\tExceeded timeout limit of $MPIEXEC_TIMEOUT s\n" | tee -a ${testlogfile}

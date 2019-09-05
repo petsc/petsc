@@ -155,9 +155,7 @@ class Script(logger.Logger):
           out = out.decode(encoding='UTF-8',errors='replace')
           err = err.decode(encoding='UTF-8',errors='replace')
         ret = pipe.returncode
-      except OSError as e:
-        return ('', e.message, e.errno)
-      except FileNotFoundError as e:
+      except Exception as e:
         return ('', e.message, e.errno)
       output += out
       error += err

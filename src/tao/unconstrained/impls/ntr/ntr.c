@@ -159,7 +159,7 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
           tau_min = PetscMin(tau_1, tau_2);
           tau_max = PetscMax(tau_1, tau_2);
 
-          if (PetscAbsScalar(kappa - 1.0) <= tr->mu1_i) {
+          if (PetscAbsScalar(kappa - (PetscReal)1.0) <= tr->mu1_i) {
             /*  Great agreement */
             max_radius = PetscMax(max_radius, tao->trust);
 
@@ -173,7 +173,7 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
               tau = tau_max;
             }
           }
-          else if (PetscAbsScalar(kappa - 1.0) <= tr->mu2_i) {
+          else if (PetscAbsScalar(kappa - (PetscReal)1.0) <= tr->mu2_i) {
             /*  Good agreement */
             max_radius = PetscMax(max_radius, tao->trust);
 
