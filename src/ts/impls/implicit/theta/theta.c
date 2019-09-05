@@ -256,6 +256,28 @@ static PetscErrorCode TSStep_Theta(TS ts)
   PetscFunctionReturn(0);
 }
 
+/*
+  Use SNES to compute the Jacobian so that finite differencing could be used when TS Jacobian is not available.
+*/
+static PetscErrorCode KSPTSFormOperator_Private(KSP ksp,Vec x,Mat J,Mat Jpre,TS ts)
+{
+  SNES           snes = ts->snes;
+  MatFDColoring  color;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* Force MatFDColoringApply to evaluate the SNES residual function for the base vector */
+  ierr = PetscObjectQuery((PetscObject)Jpre,"SNESMatFDColoring",(PetscObject*)&color);CHKERRQ(ierr);
+  if (color) {
+    Vec f;
+    ierr = SNESGetFunction(snes,&f,NULL,NULL);CHKERRQ(ierr);
+    ierr = SNESComputeFunction(snes,x,f);CHKERRQ(ierr);
+  }
+  ierr = SNESComputeJacobian(snes,x,J,Jpre);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,J,Jpre);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode TSAdjointStepBEuler_Private(TS ts)
 {
   TS_Theta       *th = (TS_Theta*)ts->data;
@@ -265,7 +287,6 @@ static PetscErrorCode TSAdjointStepBEuler_Private(TS ts)
   PetscInt       nadj;
   Mat            J,Jpre,quadJ = NULL,quadJp = NULL;
   KSP            ksp;
-  PetscReal      shift;
   PetscScalar    *xarr;
   TSEquationType eqtype;
   PetscBool      isexplicitode = PETSC_FALSE;
@@ -309,9 +330,7 @@ static PetscErrorCode TSAdjointStepBEuler_Private(TS ts)
   }
 
   /* Build LHS for first-order adjoint */
-  shift = 1./th->time_step;
-  ierr = TSComputeIJacobian(ts,th->stage_time,th->X,th->Xdot,shift,J,Jpre,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,J,Jpre);CHKERRQ(ierr);
+  ierr = KSPTSFormOperator_Private(ksp,th->X,J,Jpre,ts);CHKERRQ(ierr);
 
   /* Solve stage equation LHS*lambda_s = RHS for first-order adjoint */
   for (nadj=0; nadj<ts->numcost; nadj++) {
@@ -334,7 +353,7 @@ static PetscErrorCode TSAdjointStepBEuler_Private(TS ts)
     ierr = TSComputeIHessianProductFunctionUP(ts,th->stage_time,th->X,VecsDeltaLam,ts->vec_dir,ts->vecs_fup);CHKERRQ(ierr);
     for (nadj=0; nadj<ts->numcost; nadj++) { /* compute the residual */
       ierr = VecCopy(ts->vecs_sensi2[nadj],VecsSensi2Temp[nadj]);CHKERRQ(ierr);
-      ierr = VecScale(VecsSensi2Temp[nadj],shift);CHKERRQ(ierr);
+      ierr = VecScale(VecsSensi2Temp[nadj],1./th->time_step);CHKERRQ(ierr);
       ierr = VecAXPY(VecsSensi2Temp[nadj],-1.,ts->vecs_fuu[nadj]);CHKERRQ(ierr);
       if (ts->vecs_fup) {
         ierr = VecAXPY(VecsSensi2Temp[nadj],-1.,ts->vecs_fup[nadj]);CHKERRQ(ierr);
@@ -354,7 +373,7 @@ static PetscErrorCode TSAdjointStepBEuler_Private(TS ts)
 
   /* Update sensitivities, and evaluate integrals if there is any */
   if (!isexplicitode) {
-    shift = 0.0;
+    PetscReal shift = 0.0;
     ierr  = TSComputeIJacobian(ts,th->stage_time,th->X,th->Xdot,shift,J,Jpre,PETSC_FALSE);CHKERRQ(ierr); /* get -f_U */
     ierr  = MatScale(J,-1.);CHKERRQ(ierr);
     for (nadj=0; nadj<ts->numcost; nadj++) {
@@ -370,6 +389,7 @@ static PetscErrorCode TSAdjointStepBEuler_Private(TS ts)
     }
   }
   if (ts->vecs_sensip) {
+    PetscReal shift = 1./th->time_step;;
     ierr = TSComputeIJacobianP(ts,th->stage_time,th->X,th->Xdot,shift,ts->Jacp,PETSC_FALSE);CHKERRQ(ierr); /* get -f_p */
     if (quadts) {
       ierr = TSComputeRHSJacobianP(quadts,th->stage_time,th->X,quadJp);CHKERRQ(ierr);
