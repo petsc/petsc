@@ -540,6 +540,7 @@ class Configure(config.base.Configure):
         self.logWrite(self.setCompilers.restoreLog())
         self.logPrint('C++ libraries are not needed when using C linker')
       else:
+        skipcxxlibraries = 0
         self.logWrite(self.setCompilers.restoreLog())
         if self.setCompilers.isDarwin(self.log) and config.setCompilers.Configure.isClang(self.getCompiler('C'), self.log):
           oldLibs = self.setCompilers.LIBS
@@ -548,19 +549,20 @@ class Configure(config.base.Configure):
           if self.checkCrossLink(body,"int main(int argc,char **args)\n{return 0;}\n",language1='C++',language2='C'):
             self.logWrite(self.setCompilers.restoreLog())
             self.logPrint('C++ requires -lc++ to link with C compiler', 3, 'compilers')
+            skipcxxlibraries = 1
           else:
             self.logWrite(self.setCompilers.restoreLog())
             self.setCompilers.LIBS = oldLibs
             self.logPrint('C++ code cannot directly be linked with C linker using -lc++, therefor will determine needed C++ libraries')
-            skipcxxlibaries = 0
-        if not skipcxxlibraries: 
+            skipcxxlibraries = 0
+        if not skipcxxlibraries:
           self.setCompilers.saveLog()
           oldLibs = self.setCompilers.LIBS
           self.setCompilers.LIBS = '-lstdc++ '+self.setCompilers.LIBS
           if self.checkCrossLink(body,"int main(int argc,char **args)\n{return 0;}\n",language1='C++',language2='C'):
             self.logWrite(self.setCompilers.restoreLog())
             self.logPrint('C++ requires -lstdc++ to link with C compiler', 3, 'compilers')
-            skipcxxlibaries = 1
+            skipcxxlibraries = 1
           else:
             self.logWrite(self.setCompilers.restoreLog())
             self.setCompilers.LIBS = oldLibs
@@ -578,15 +580,31 @@ class Configure(config.base.Configure):
           self.logWrite(self.setCompilers.restoreLog())
           self.logPrint('C++ libraries are not needed when using FC linker')
         else:
-          self.logWrite(self.setCompilers.restoreLog())
-          oldLibs = self.setCompilers.LIBS
-          self.setCompilers.LIBS = '-lstdc++ '+self.setCompilers.LIBS
-          if self.checkCrossLink(body,"     program main\n      print*,'testing'\n      stop\n      end\n",language1='C++',language2='FC'):
-            self.logPrint('C++ requires -lstdc++ to link with FC compiler', 3, 'compilers')
-          else:
-            self.setCompilers.LIBS = oldLibs
-            self.logPrint('C++ code cannot directly be linked with FC linker, therefor will determine needed C++ libraries')
-            skipcxxlibraries = 0
+          skipcxxlibraries = 0
+          if self.setCompilers.isDarwin(self.log) and config.setCompilers.Configure.isClang(self.getCompiler('C'), self.log):
+            oldLibs = self.setCompilers.LIBS
+            self.setCompilers.LIBS = '-lc++ '+self.setCompilers.LIBS
+            self.setCompilers.saveLog()
+            if self.checkCrossLink(body,"     program main\n      print*,'testing'\n      stop\n      end\n",language1='C++',language2='FC'):
+              self.logWrite(self.setCompilers.restoreLog())
+              self.logPrint('C++ requires -lc++ to link with FC compiler', 3, 'compilers')
+              skipcxxlibraries = 1
+            else:
+              self.logWrite(self.setCompilers.restoreLog())
+              self.setCompilers.LIBS = oldLibs
+              self.logPrint('C++ code cannot directly be linked with C linker using -lc++, therefor will determine needed C++ libraries')
+              skipcxxlibraries = 0
+          if not skipcxxlibraries:
+            self.logWrite(self.setCompilers.restoreLog())
+            oldLibs = self.setCompilers.LIBS
+            self.setCompilers.LIBS = '-lstdc++ '+self.setCompilers.LIBS
+            if self.checkCrossLink(body,"     program main\n      print*,'testing'\n      stop\n      end\n",language1='C++',language2='FC'):
+              self.logPrint('C++ requires -lstdc++ to link with FC compiler', 3, 'compilers')
+              skipcxxlibraries = 1
+            else:
+              self.setCompilers.LIBS = oldLibs
+              self.logPrint('C++ code cannot directly be linked with FC linker, therefor will determine needed C++ libraries')
+              skipcxxlibraries = 0
       except RuntimeError as e:
         self.logWrite(self.setCompilers.restoreLog())
         self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
