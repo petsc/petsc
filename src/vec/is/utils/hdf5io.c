@@ -171,7 +171,8 @@ static PetscErrorCode PetscViewerHDF5ReadArray_Private(PetscViewer viewer, HDF5R
 - datatype - The HDF5 datatype of the items in the dataset
 
   Output Parameter:
-. newarr   - The partitioned array, a memory image of the given dataset
++ map      - The set up layout (with global size and blocksize according to dataset)
+- newarr   - The partitioned array, a memory image of the given dataset
 
   Level: developer
 
