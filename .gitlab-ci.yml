@@ -264,15 +264,6 @@ osx-cxx-pkgs-opt:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -saws_port_auto_select -saws_port_auto_select_silent -vecscatter_mpi1 false -options_left false
     TEST_ARCH: arch-ci-osx-cxx-pkgs-opt
 
-osx-barry:
-  extends:
-    - .stage-2
-    - .osx_test
-  tags:
-    - os:osx
-  variables:
-    TEST_ARCH: arch-ci-osx-prefix
-
 mswin-uni:
   extends:
     - .stage-2
