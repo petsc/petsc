@@ -6603,7 +6603,7 @@ PetscErrorCode DMPlexCreateVertexNumbering_Internal(DM dm, PetscBool includeHybr
 }
 
 /*@
-  DMPlexGetVertexNumbering - Get a global certex numbering for all vertices on this process
+  DMPlexGetVertexNumbering - Get a global vertex numbering for all vertices on this process
 
   Input Parameter:
 . dm   - The DMPlex object
