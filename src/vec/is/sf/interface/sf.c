@@ -1698,6 +1698,30 @@ PetscErrorCode PetscSFScatterEnd(PetscSF sf,MPI_Datatype unit,const void *multir
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PetscSFCheckLeavesUnique_Private(PetscSF sf)
+{
+#if defined(PETSC_USE_DEBUG)
+  PetscInt        i, n, nleaves;
+  const PetscInt *ilocal = NULL;
+  PetscHSetI      seen;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSFGetGraph(sf,NULL,&nleaves,&ilocal,NULL);CHKERRQ(ierr);
+  ierr = PetscHSetICreate(&seen);CHKERRQ(ierr);
+  for (i = 0; i < nleaves; i++) {
+    const PetscInt leaf = ilocal ? ilocal[i] : i;
+    ierr = PetscHSetIAdd(seen,leaf);CHKERRQ(ierr);
+  }
+  ierr = PetscHSetIGetSize(seen,&n);CHKERRQ(ierr);
+  if (n != nleaves) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Provided leaves have repeated values: all leaves must be unique");
+  ierr = PetscHSetIDestroy(&seen);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+#else
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+#endif
+}
 /*@
   PetscSFCompose - Compose a new PetscSF by putting the second SF under the first one in a top (roots) down (leaves) view
 
@@ -1709,6 +1733,10 @@ PetscErrorCode PetscSFScatterEnd(PetscSF sf,MPI_Datatype unit,const void *multir
 . sfBA - The composite SF. Doing a Bcast on the new SF is equvalent to doing Bcast on sfA, then Bcast on sfB
 
   Level: developer
+
+  Notes:
+  For the resulting composed SF to be valid, the input SFs must be true star forests: the leaves must be unique. This is
+  checked in debug mode.
 
 .seealso: PetscSF, PetscSFComposeInverse(), PetscSFGetGraph(), PetscSFSetGraph()
 @*/
@@ -1731,8 +1759,11 @@ PetscErrorCode PetscSFCompose(PetscSF sfA,PetscSF sfB,PetscSF *sfBA)
   ierr = PetscSFGetGraph(sfA,&numRootsA,&numLeavesA,&localPointsA,&remotePointsA);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sfB,&numRootsB,&numLeavesB,&localPointsB,&remotePointsB);CHKERRQ(ierr);
   ierr = PetscSFGetLeafRange(sfA,&minleaf,&maxleaf);CHKERRQ(ierr);
-  if (maxleaf+1 != numLeavesA || minleaf) SETERRQ(comm,PETSC_ERR_ARG_INCOMP,"The first SF can not have sparse local space");
   if (numRootsB != numLeavesA) SETERRQ(comm,PETSC_ERR_ARG_INCOMP,"The second SF's number of roots must be equal to the first SF's number of leaves");
+  if (maxleaf+1 != numLeavesA || minleaf) SETERRQ(comm,PETSC_ERR_ARG_INCOMP,"The first SF can not have sparse local space");
+  /* The above check is fast, but not sufficient, since we cannot guarantee that the SF has unique leaves. So in debug
+   mode, check properly. */
+  ierr = PetscSFCheckLeavesUnique_Private(sfA);CHKERRQ(ierr);
   if (localPointsA) {
     /* Local space is dense permutation of identity. Need to rewire order of the remote points */
     ierr = PetscMalloc1(numLeavesA,&reorderedRemotePointsA);CHKERRQ(ierr);
@@ -1745,6 +1776,8 @@ PetscErrorCode PetscSFCompose(PetscSF sfA,PetscSF sfB,PetscSF *sfBA)
   ierr = PetscSFBcastEnd(sfB,MPIU_2INT,remotePointsA,leafdataB-minleaf);CHKERRQ(ierr);
   ierr = PetscFree(reorderedRemotePointsA);CHKERRQ(ierr);
 
+  /* sfB's leaves must be unique, otherwise BcastAndOp(B o A) != BcastAndOp(B) o BcastAndOp(A) */
+  ierr = PetscSFCheckLeavesUnique_Private(sfB);CHKERRQ(ierr);
   if (minleaf == 0 && maxleaf + 1 == numLeavesB) { /* Local space of sfB is an identity or permutation */
     localPointsBA  = NULL;
     remotePointsBA = leafdataB;
