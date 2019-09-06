@@ -136,7 +136,7 @@ PETSC_EXTERN PetscErrorCode PetscReallocAlign(size_t mem, int line, const char f
 #  endif
 
 #  if (defined(PETSC_HAVE_DOUBLE_ALIGN_MALLOC) && (PETSC_MEMALIGN == 8)) || defined(PETSC_HAVE_MEMALIGN)
-  *result = realloc(*request, mem);
+  *result = realloc(*result, mem);
 #  else
   {
     /*
