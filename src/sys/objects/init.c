@@ -362,7 +362,7 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     /*
       Setup the memory management; support for tracing malloc() usage
     */
-    PetscBool         mdebug = PETSC_FALSE, eachcall = PETSC_FALSE, initializenan = PETSC_FALSE, dump = PETSC_FALSE, mlog = PETSC_FALSE;
+    PetscBool         mdebug = PETSC_FALSE, eachcall = PETSC_FALSE, initializenan = PETSC_FALSE, mlog = PETSC_FALSE;
 
 #if defined(PETSC_USE_DEBUG)
     mdebug        = PETSC_TRUE;
@@ -378,7 +378,6 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
       mdebug        = PETSC_TRUE;
       eachcall      = PETSC_TRUE;
       initializenan = PETSC_TRUE;
-      dump          = PETSC_TRUE;
     }
 
     ierr = PetscOptionsHasName(NULL,NULL,"-malloc_view",&mlog);CHKERRQ(ierr);
