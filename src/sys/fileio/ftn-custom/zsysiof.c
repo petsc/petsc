@@ -1,15 +1,45 @@
 #include <petsc/private/fortranimpl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define petscbinaryopen_           PETSCBINARYOPEN
-#define petscbinaryread_           PETSCBINARYREAD
-#define petsctestfile_             PETSCTESTFILE
-#define petscbinarywrite_          PETSCBINARYWRITE
+#define petscbinaryopen_            PETSCBINARYOPEN
+#define petsctestfile_              PETSCTESTFILE
+#define petscbinaryreadint_         PETSCBINARYREADINT
+#define petscbinaryreadreal_        PETSCBINARYREADREAL
+#define petscbinaryreadcomplex_     PETSCBINARYREADCOMPLEX
+#define petscbinaryreadrealcnt_     PETSCBINARYREADREALCNT
+#define petscbinaryreadcomplexcnt_  PETSCBINARYREADCOMPLEXCNT
+#define petscbinaryreadint1_        PETSCBINARYREADINT1
+#define petscbinaryreadread1_       PETSCBINARYREADREAL1
+#define petscbinaryreadcomplex1_    PETSCBINARYREADCOMPLEX1
+#define petscbinaryreadintcnt1_     PETSCBINARYREADINT1CNT
+#define petscbinaryreadrealcnt1_    PETSCBINARYREADREAL1CNT
+#define petscbinaryreadcomplexcnt1_ PETSCBINARYREADCOMPLEX1CNT
+#define petscbinarywriteint_        PETSCBINARYWRITEINT
+#define petscbinarywritereal_       PETSCBINARYWRITEREAL
+#define petscbinarywritecomplex_    PETSCBINARYWRITECOMPLEX
+#define petscbinarywriteint1_       PETSCBINARYWRITEINT1
+#define petscbinarywritereal1_      PETSCBINARYWRITEREAL1
+#define petscbinarywritecomplex1_   PETSCBINARYWRITECOMPLEX1
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define petscbinarywrite_          petscbinarywrite
-#define petscbinaryopen_           petscbinaryopen
-#define petscbinaryread_           petscbinaryread
-#define petsctestfile_             petsctestfile
+#define petscbinaryopen_            petscbinaryopen
+#define petsctestfile_              petsctestfile
+#define petscbinaryreadint_         petscbinaryreadint
+#define petscbinaryreadreal_        petscbinaryreadreal
+#define petscbinaryreadcomplex_     petscbinaryreadcomplex
+#define petscbinaryreadrealcnt_     petscbinaryreadrealcnt
+#define petscbinaryreadcomplexcnt_  petscbinaryreadcomplexcnt
+#define petscbinaryreadint1_        petscbinaryreadint1
+#define petscbinaryreadread1_       petscbinaryreadread1
+#define petscbinaryreadcomplex1_    petscbinaryreadcomplex1
+#define petscbinaryreadintcnt1_     petscbinaryreadintcnt1
+#define petscbinaryreadrealcnt1_    petscbinaryreadrealcnt1
+#define petscbinaryreadcomplexcnt1_ petscbinaryreadcomplexcnt1
+#define petscbinarywriteint_        petscbinarywriteint
+#define petscbinarywritereal_       petscbinarywritereal
+#define petscbinarywritecomplex_    petscbinarywritecomplex
+#define petscbinarywriteint1_       petscbinarywriteint1
+#define petscbinarywritereal1_      petscbinarywritereal1
+#define petscbinarywritecomplex1_   petscbinarywritecomplex1
 #endif
 
 /* Definitions of Fortran Wrapper routines */
@@ -93,6 +123,42 @@ PETSC_EXTERN void PETSC_STDCALL  petscbinaryreadcomplex1_(int *fd,void *data,Pet
   *ierr = PetscBinaryRead(*fd,data,*num,count,*type);if (*ierr) return;
 }
 
+PETSC_EXTERN void PETSC_STDCALL  petscbinaryreadintcnt_(int *fd,void *data,PetscInt *num,PetscInt *count,PetscDataType *type,int *ierr)
+{
+  CHKFORTRANNULLINTEGER(count);
+  *ierr = PetscBinaryRead(*fd,data,*num,count,*type);if (*ierr) return;
+}
+
+PETSC_EXTERN void PETSC_STDCALL  petscbinaryreadrealcnt_(int *fd,void *data,PetscInt *num,PetscInt *count,PetscDataType *type,int *ierr)
+{
+  CHKFORTRANNULLINTEGER(count);
+  *ierr = PetscBinaryRead(*fd,data,*num,count,*type);if (*ierr) return;
+}
+
+PETSC_EXTERN void PETSC_STDCALL  petscbinaryreadcomplexcnt_(int *fd,void *data,PetscInt *num,PetscInt *count,PetscDataType *type,int *ierr)
+{
+  CHKFORTRANNULLINTEGER(count);
+  *ierr = PetscBinaryRead(*fd,data,*num,count,*type);if (*ierr) return;
+}
+
+PETSC_EXTERN void PETSC_STDCALL  petscbinaryreadint1cnt_(int *fd,void *data,PetscInt *num,PetscInt *count,PetscDataType *type,int *ierr)
+{
+  CHKFORTRANNULLINTEGER(count);
+  *ierr = PetscBinaryRead(*fd,data,*num,count,*type);if (*ierr) return;
+}
+
+PETSC_EXTERN void PETSC_STDCALL  petscbinaryreadreal1cnt_(int *fd,void *data,PetscInt *num,PetscInt *count,PetscDataType *type,int *ierr)
+{
+  CHKFORTRANNULLINTEGER(count);
+  *ierr = PetscBinaryRead(*fd,data,*num,count,*type);if (*ierr) return;
+}
+
+PETSC_EXTERN void PETSC_STDCALL  petscbinaryreadcomplex1cnt_(int *fd,void *data,PetscInt *num,PetscInt *count,PetscDataType *type,int *ierr)
+{
+  CHKFORTRANNULLINTEGER(count);
+  *ierr = PetscBinaryRead(*fd,data,*num,count,*type);if (*ierr) return;
+}
+
 PETSC_EXTERN void PETSC_STDCALL petsctestfile_(char* name PETSC_MIXED_LEN(len),char* mode PETSC_MIXED_LEN(len1),PetscBool *flg,PetscErrorCode *ierr PETSC_END_LEN(len) PETSC_END_LEN(len1))
 {
   char *c1;
@@ -101,3 +167,7 @@ PETSC_EXTERN void PETSC_STDCALL petsctestfile_(char* name PETSC_MIXED_LEN(len),c
   *ierr = PetscTestFile(c1,*mode,flg);if (*ierr) return;
   FREECHAR(name,c1);
 }
+
+#if defined(__cplusplus)
+}
+#endif

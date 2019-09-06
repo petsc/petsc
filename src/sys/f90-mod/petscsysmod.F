@@ -100,6 +100,60 @@
           PetscDataType type
           integer z
         end subroutine
+        subroutine petscbinaryreadcomplexcnt(fd,data,num,count,type,z)
+          use petscsysdefdummy
+          integer fd
+          PetscComplex data(*)
+          PetscInt num
+          PetscInt count(1)
+          PetscDataType type
+          integer z
+        end subroutine
+        subroutine petscbinaryreadrealcnt(fd,data,num,count,type,z)
+          use petscsysdefdummy
+          integer fd
+          PetscReal data(*)
+          PetscInt num
+          PetscInt count(1)
+          PetscDataType type
+          integer z
+        end subroutine
+        subroutine petscbinaryreadintcnt(fd,data,num,count,type,z)
+          use petscsysdefdummy
+          integer fd
+          PetscInt data(*)
+          PetscInt num
+          PetscInt count(1)
+          PetscDataType type
+          integer z
+        end subroutine
+        subroutine petscbinaryreadcomplex1cnt(fd,data,num,count,type,z)
+          use petscsysdefdummy
+          integer fd
+          PetscComplex data
+          PetscInt num
+          PetscInt count(1)
+          PetscDataType type
+          integer z
+        end subroutine
+        subroutine petscbinaryreadreal1cnt(fd,data,num,count,type,z)
+          use petscsysdefdummy
+          integer fd
+          PetscReal data
+          PetscInt num
+          PetscInt count(1)
+          PetscDataType type
+          integer z
+        end subroutine
+        subroutine petscbinaryreadint1cnt(fd,data,num,count,type,z)
+          use petscsysdefdummy
+          integer fd
+          PetscInt data
+          PetscInt num
+          PetscInt count(1)
+          PetscDataType type
+          integer z
+        end subroutine
         end Interface
 
         Interface petscbinarywrite
