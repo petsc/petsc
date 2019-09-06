@@ -1260,6 +1260,13 @@ PETSC_COMM_WORLD = NewComm;
         and SNES call <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/SNES/SNESSetFunctionDomainError.html">SNESSetFunctionDomainError</a>() when
         the solver passes an infeasible (out of domain) solution or state to your routines.
       </p>
+      
+      <p> If it occurs for DAEs, it is important to insure the algebraic 
+        constraints are well satisfied, which can prevent "breakdown" later. 
+        Thus, one can try using a tight tolerance for SNES(), using a dicrect
+        solver when possible, and reducing the timestep (or tightening TS
+        tolerances for adaptive time stepping).
+      </p>
 
       <hr>
 
