@@ -126,7 +126,7 @@
       ival  = 2
       call MatMumpsSetIcntl(F,icntl,ival,ierr)
 
-!     threshhold for row pivot detection
+!     threshold for row pivot detection
       call MatMumpsSetIcntl(F,24,1,ierr)
       icntl = 3
       val = 1.e-6
@@ -148,7 +148,7 @@
          write(6,98) cntl
          write(6,99) rinfo12,rinfo13,infog34
       endif
- 98   format('Mumps row pivot threshhold = ',1pe11.2)
+ 98   format('Mumps row pivot threshold = ',1pe11.2)
  99   format('Mumps determinant=(',1pe11.2,1pe11.2,')*2^',i3)
 #endif
       

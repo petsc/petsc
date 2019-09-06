@@ -4489,7 +4489,7 @@ static PetscErrorCode DMPlexTransferVecTree_Inject(DM fine, Vec vecFine, DM coar
 - time        - Used if boundary values are time dependent.
 
   Output Parameters:
-. vecOut      - Using interpolation and injection operators calculated on the reference tree, the transfered
+. vecOut      - Using interpolation and injection operators calculated on the reference tree, the transferred
                 projection of vecIn from dmIn to dmOut.  Note that any field discretized with a PetscFV finite volume
                 method that uses gradient reconstruction will use reconstructed gradients when interpolating from
                 coarse points to fine points.
