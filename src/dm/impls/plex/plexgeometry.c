@@ -59,6 +59,22 @@ PetscErrorCode DMPlexFindVertices(DM dm, PetscInt npoints, const PetscReal coord
     }
   }
 #endif
+  if (eps == 0.0) {
+    for (i=0,j=0; i < npoints; i++,j+=dim) {
+      dagPoints[i] = -1;
+      for (p = vStart,o=0; p < vEnd; p++,o+=dim) {
+        for (c = 0; c < dim; c++) {
+          if (coord[j+c] != PetscRealPart(allCoords[o+c])) break;
+        }
+        if (c == dim) {
+          dagPoints[i] = p;
+          break;
+        }
+      }
+    }
+    ierr = VecRestoreArrayRead(allCoordsVec, &allCoords);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
   for (i=0,j=0; i < npoints; i++,j+=dim) {
     dagPoints[i] = -1;
     for (p = vStart,o=0; p < vEnd; p++,o+=dim) {
