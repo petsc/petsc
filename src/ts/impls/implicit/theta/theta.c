@@ -487,9 +487,9 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
   /* Build LHS for first-order adjoint */
   th->shift = 1./(th->Theta*th->time_step);
   if (th->endpoint) {
-    ierr = TSComputeIJacobian(ts,th->stage_time,ts->vec_sol,th->Xdot,th->shift,J,Jpre,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = KSPTSFormOperator_Private(ksp,ts->vec_sol,J,Jpre,ts);CHKERRQ(ierr);
   } else {
-    ierr = TSComputeIJacobian(ts,th->stage_time,th->X,th->Xdot,th->shift,J,Jpre,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = KSPTSFormOperator_Private(ksp,th->X,J,Jpre,ts);CHKERRQ(ierr);
   }
   ierr = KSPSetOperators(ksp,J,Jpre);CHKERRQ(ierr);
 
@@ -538,8 +538,9 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
 
   /* Update sensitivities, and evaluate integrals if there is any */
   if(th->endpoint) { /* two-stage Theta methods with th->Theta!=1, th->Theta==1 leads to BEuler */
-    th->shift = 1./((th->Theta-1.)*th->time_step);
-    ierr  = TSComputeIJacobian(ts,th->ptime,th->X0,th->Xdot,th->shift,J,Jpre,PETSC_FALSE);CHKERRQ(ierr);
+    th->shift      = 1./((th->Theta-1.)*th->time_step);
+    th->stage_time = th->ptime;
+    ierr           = KSPTSFormOperator_Private(ksp,th->X0,J,Jpre,ts);CHKERRQ(ierr);
     /* R_U at t_n */
     if (quadts) {
       ierr = TSComputeRHSJacobian(quadts,th->ptime,th->X0,quadJ,NULL);CHKERRQ(ierr);
@@ -577,6 +578,8 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
         ierr = VecScale(ts->vecs_sensi2[nadj],1./th->shift);CHKERRQ(ierr);
       }
     }
+
+    th->stage_time = ts->ptime; /* recover the old value */
 
     if (ts->vecs_sensip) { /* sensitivities wrt parameters */
       /* U_{n+1} */
@@ -648,7 +651,7 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
     }
   } else { /* one-stage case */
     th->shift = 0.0;
-    ierr  = TSComputeIJacobian(ts,th->stage_time,th->X,th->Xdot,th->shift,J,Jpre,PETSC_FALSE);CHKERRQ(ierr); /* get -f_y */
+    ierr      = KSPTSFormOperator_Private(ksp,th->X,J,Jpre,ts);CHKERRQ(ierr); /* get -f_y*/
     if (quadts) {
       ierr  = TSComputeRHSJacobian(quadts,th->stage_time,th->X,quadJ,NULL);CHKERRQ(ierr);
     }
