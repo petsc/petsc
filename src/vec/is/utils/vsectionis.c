@@ -1350,6 +1350,8 @@ PetscErrorCode PetscSectionCreateGlobalSectionCensored(PetscSection s, PetscSF s
 /*@
   PetscSectionGetPointLayout - Get the PetscLayout associated with the section points
 
+  Collective on comm
+
   Input Parameters:
 + comm - The MPI_Comm
 - s    - The PetscSection
@@ -1386,6 +1388,8 @@ PetscErrorCode PetscSectionGetPointLayout(MPI_Comm comm, PetscSection s, PetscLa
 /*@
   PetscSectionGetValueLayout - Get the PetscLayout associated with the section dofs.
 
+  Collective on comm
+
   Input Parameters:
 + comm - The MPI_Comm
 - s    - The PetscSection
@@ -1393,7 +1397,7 @@ PetscErrorCode PetscSectionGetPointLayout(MPI_Comm comm, PetscSection s, PetscLa
   Output Parameter:
 . layout - The dof layout for the section
 
-  Note: This is usually caleld for the default global section.
+  Note: This is usually called for the default global section.
 
   Level: advanced
 
@@ -2445,8 +2449,8 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
 
   Input Parameters:
 + sf          - The SF
-. rootSection - Data layout of remote points for outgoing data (this is usually the serial section)
-- leafSection - Data layout of local points for incoming data  (this is the distributed section)
+. rootSection - Data layout of remote points for outgoing data (this is layout for SF roots)
+- leafSection - Data layout of local points for incoming data  (this is layout for SF leaves)
 
   Output Parameter:
 . remoteOffsets - Offsets for point data on remote processes (these are offsets from the root section), or NULL
