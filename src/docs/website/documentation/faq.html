@@ -132,6 +132,7 @@ See https://www.mcs.anl.gov/petsc/documentation/faq.html
         <li><a href="#cython">How do I get started with Cython so that I can extend petsc4py?</a></li>
         <li><a href="#customnormforksp">I would like to compute a custom norm for KSP to use as a convergence test or for monitoring?</a></li>
         <li><a href="#parallelsolvesequentialcode">If I have a sequential program can I use a parallel direct solver?</a></li>
+        <li><a href="#infeasible">TS or SNES produces infeasible (out of domain) solutions or states, how can I prevent this?</a></li>
       </ul>
 
       <h4><a href="#Execution">Execution</a></h4>
@@ -1251,6 +1252,21 @@ PETSC_COMM_WORLD = NewComm;
       <p> If your code is MPI parallel you can also use these same options to have SuperLU_dist utilize multiple threads per MPI process for
         the direct solver. Make sure that the OMP_NUM_THREADS you use per MPI process is less than or equal to the number of cores available
         for each MPI process. For example if your compute nodes have 6 cores and you use 2 MPI processes per node then set OMP_NUM_THREADS to 2 or 3.
+
+
+      <h3><a name="infeasible">TS or SNES produces infeasible (out of domain) solutions or states, how can I prevent this?</a></h3>
+
+      <p> For TS call  <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/TS/TSSetFunctionDomainError.html">TSSetFunctionDomainError</a>(). For both TS
+        and SNES call <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/SNES/SNESSetFunctionDomainError.html">SNESSetFunctionDomainError</a>() when
+        the solver passes an infeasible (out of domain) solution or state to your routines.
+      </p>
+      
+      <p> If it occurs for DAEs, it is important to insure the algebraic 
+        constraints are well satisfied, which can prevent "breakdown" later. 
+        Thus, one can try using a tight tolerance for SNES(), using a dicrect
+        solver when possible, and reducing the timestep (or tightening TS
+        tolerances for adaptive time stepping).
+      </p>
 
       <hr>
 
