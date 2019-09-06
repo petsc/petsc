@@ -137,8 +137,10 @@ PETSC_EXTERN PetscErrorCode SNESSetForceIteration(SNES,PetscBool);
 PETSC_EXTERN PetscErrorCode SNESGetIterationNumber(SNES,PetscInt*);
 PETSC_EXTERN PetscErrorCode SNESSetIterationNumber(SNES,PetscInt);
 
-PETSC_EXTERN PetscErrorCode SNESNewtonTRSetPostCheck(SNES, PetscErrorCode (*)(SNES,Vec,Vec,Vec,PetscBool*,void*),void *ctx);
-PETSC_EXTERN PetscErrorCode SNESNewtonTRGetPostCheck(SNES, PetscErrorCode (**)(SNES,Vec,Vec,Vec,PetscBool*,void*),void **ctx);
+PETSC_EXTERN PetscErrorCode SNESNewtonTRSetPreCheck(SNES, PetscErrorCode (*)(SNES,Vec,Vec,PetscBool*,void*),void *ctx);
+PETSC_EXTERN PetscErrorCode SNESNewtonTRGetPreCheck(SNES, PetscErrorCode (**)(SNES,Vec,Vec,PetscBool*,void*),void **ctx);
+PETSC_EXTERN PetscErrorCode SNESNewtonTRSetPostCheck(SNES, PetscErrorCode (*)(SNES,Vec,Vec,Vec,PetscBool*,PetscBool*,void*),void *ctx);
+PETSC_EXTERN PetscErrorCode SNESNewtonTRGetPostCheck(SNES, PetscErrorCode (**)(SNES,Vec,Vec,Vec,PetscBool*,PetscBool*,void*),void **ctx);
 
 PETSC_EXTERN PetscErrorCode SNESGetNonlinearStepFailures(SNES,PetscInt*);
 PETSC_EXTERN PetscErrorCode SNESSetMaxNonlinearStepFailures(SNES,PetscInt);
