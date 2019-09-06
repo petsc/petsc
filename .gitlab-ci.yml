@@ -529,7 +529,7 @@ linux-gcov:
   variables:
     TEST_ARCH: arch-ci-linux-gcov
 
-linux-IPL64:
+linux-ILP64:
   extends:
     - .stage-3
     - .linux_test
@@ -537,7 +537,7 @@ linux-IPL64:
     - name:compute004
   variables:
     OPENBLAS_NUM_THREADS: 1
-    TEST_ARCH: arch-ci-linux-IPL64
+    TEST_ARCH: arch-ci-linux-ILP64
 
 linux-matlab-ilp64-gcov:
   extends:
