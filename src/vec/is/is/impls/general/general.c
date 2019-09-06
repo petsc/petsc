@@ -156,24 +156,6 @@ static PetscErrorCode ISRestoreIndices_General(IS in,const PetscInt *idx[])
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode ISGetSize_General(IS is,PetscInt *size)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscLayoutGetSize(is->map, size);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode ISGetLocalSize_General(IS is,PetscInt *size)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscLayoutGetLocalSize(is->map, size);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode ISInvertPermutation_General(IS is,PetscInt nlocal,IS *isout)
 {
   IS_General     *sub = (IS_General*)is->data;
@@ -558,9 +540,7 @@ PetscErrorCode  ISToGeneral_General(IS is)
   PetscFunctionReturn(0);
 }
 
-static struct _ISOps myops = { ISGetSize_General,
-                               ISGetLocalSize_General,
-                               ISGetIndices_General,
+static struct _ISOps myops = { ISGetIndices_General,
                                ISRestoreIndices_General,
                                ISInvertPermutation_General,
                                ISSort_General,

@@ -500,12 +500,10 @@ PetscErrorCode  ISInvertPermutation(IS is,PetscInt nlocal,IS *isout)
 @*/
 PetscErrorCode  ISGetSize(IS is,PetscInt *size)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidIntPointer(size,2);
-  ierr = (*is->ops->getsize)(is,size);CHKERRQ(ierr);
+  *size = is->map->N;
   PetscFunctionReturn(0);
 }
 
@@ -525,12 +523,10 @@ PetscErrorCode  ISGetSize(IS is,PetscInt *size)
 @*/
 PetscErrorCode  ISGetLocalSize(IS is,PetscInt *size)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidIntPointer(size,2);
-  ierr = (*is->ops->getlocalsize)(is,size);CHKERRQ(ierr);
+  *size = is->map->n;
   PetscFunctionReturn(0);
 }
 
