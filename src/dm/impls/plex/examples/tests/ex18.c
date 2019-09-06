@@ -750,8 +750,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   if (boundary) {
     /* check DM which has been created in parallel and already interpolated */
     ierr = DMPlexCheckPointSFHeavy(*dm, boundary);CHKERRQ(ierr);
-    ierr = DMPlexOrientInterface_Internal(*dm);CHKERRQ(ierr); /* orient interface because it was deliberately skipped above */
   }
+  ierr = DMPlexOrientInterface_Internal(*dm);CHKERRQ(ierr); /* ensure interface is oriented because orientation might be deliberately skipped above */
   if (user->distribute) {
     DM               pdm = NULL;
 
