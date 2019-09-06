@@ -115,18 +115,21 @@ int main(int argc,char **argv)
 
    test:
       suffix: single
+      requires: !complex
       nsize: 2
       args: -single_block
       output_file: output/ex240_1.out
 
    test:
       suffix: two
+      requires: !complex
       nsize: 2
       args: -two_block
       output_file: output/ex240_1.out
 
    test:
       suffix: 2
+      requires: !complex
       nsize: 5
 
 TEST*/
