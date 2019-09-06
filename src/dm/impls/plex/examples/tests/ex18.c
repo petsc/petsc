@@ -1041,7 +1041,7 @@ static PetscErrorCode DMPlexExpandedVerticesCoordinatesToFaces_Private(DM ipdm, 
   ierr = VecToPetscReal_Private(bnd->coordinates, &rcoords);CHKERRQ(ierr);
   npoints = ncoords / dim;
   ierr = PetscMalloc1(npoints, &points);CHKERRQ(ierr);
-  ierr = DMPlexFindVertices(ipdm, npoints, rcoords, PETSC_DECIDE, points);CHKERRQ(ierr);
+  ierr = DMPlexFindVertices(ipdm, npoints, rcoords, 0.0, points);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF, npoints, points, PETSC_OWN_POINTER, &faces_expanded_is);CHKERRQ(ierr);
   ierr = DMPlexExpandedVerticesToFaces_Private(ipdm, faces_expanded_is, bnd->depth, bnd->sections, face_is);CHKERRQ(ierr);
   ierr = PetscFree(rcoords);CHKERRQ(ierr);
