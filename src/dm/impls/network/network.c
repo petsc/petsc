@@ -200,8 +200,8 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
   ctr = 0;
   for (i=0; i < nsubnet; i++) {
     for (j = 0; j < network->subnet[i].nedge; j++) {
-      edges[2*ctr]   = network->subnet[i].eStart + network->subnet[i].edgelist[2*j];
-      edges[2*ctr+1] = network->subnet[i].eStart + network->subnet[i].edgelist[2*j+1];
+      edges[2*ctr]   = network->subnet[i].vStart + network->subnet[i].edgelist[2*j];
+      edges[2*ctr+1] = network->subnet[i].vStart + network->subnet[i].edgelist[2*j+1];
       ctr++;
     }
   }
