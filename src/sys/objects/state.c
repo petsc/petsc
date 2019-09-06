@@ -232,7 +232,7 @@ PetscErrorCode PetscObjectGetId(PetscObject obj,PetscObjectId *id)
 }
 
 /*@
-   PetscObjectCompareID - compares the objects ID with a given id
+   PetscObjectCompareId - compares the objects ID with a given id
 
    Not Collective
 
