@@ -172,7 +172,7 @@ PetscErrorCode FVRHSFunctionslow(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
   for (i=xs-1; i<xs+xm+1; i++) {
     struct _LimitInfo info;
     PetscScalar       *cjmpL,*cjmpR;
-    if (i < len_slow) {
+    if (i < len_slow+1) {
       /* Determine the right eigenvectors R, where A = R \Lambda R^{-1} */
       ierr = (*ctx->physics.characteristic)(ctx->physics.user,dof,&x[i*dof],ctx->R,ctx->Rinv,ctx->speeds,ctx->xmin+hx*i);CHKERRQ(ierr);
       /* Evaluate jumps across interfaces (i-1, i) and (i, i+1), put in characteristic basis */
@@ -380,7 +380,7 @@ PetscErrorCode FVRHSFunctionslow2(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
   for (i=xs-1; i<xs+xm+1; i++) {
     struct _LimitInfo info;
     PetscScalar       *cjmpL,*cjmpR;
-    if (i < len_slow1+len_slow2 && i > len_slow1-2) {
+    if (i < len_slow1+len_slow2+1 && i > len_slow1-2) {
       ierr = (*ctx->physics.characteristic)(ctx->physics.user,dof,&x[i*dof],ctx->R,ctx->Rinv,ctx->speeds,ctx->xmin+hx*i);CHKERRQ(ierr);
       ierr  = PetscArrayzero(ctx->cjmpLR,2*dof);CHKERRQ(ierr);
       cjmpL = &ctx->cjmpLR[0];
