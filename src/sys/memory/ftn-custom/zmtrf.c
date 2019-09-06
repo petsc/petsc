@@ -4,12 +4,12 @@
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define petscmallocdump_               PETSCMALLOCDUMP
-#define petscmallocdumplog_            PETSCMALLOCDUMPLOG
+#define petscmallocview_               PETSCMALLOCVIEW
 #define petscmallocvalidate_           PETSCMALLOCVALIDATE
 #define petscmemoryview_               PETSCMEMORYVIEW
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscmallocdump_               petscmallocdump
-#define petscmallocdumplog_            petscmallocdumplog
+#define petscmallocview_               petscmallocview
 #define petscmallocvalidate_           petscmallocvalidate
 #define petscmemoryview_               petscmemoryview
 #endif
@@ -33,9 +33,9 @@ PETSC_EXTERN void PETSC_STDCALL petscmallocdump_(PetscErrorCode *ierr)
 {
   *ierr = PetscMallocDump(stdout);
 }
-PETSC_EXTERN void PETSC_STDCALL petscmallocdumplog_(PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL petscmallocview_(PetscErrorCode *ierr)
 {
-  *ierr = PetscMallocDumpLog(stdout);
+  *ierr = PetscMallocView(stdout);
 }
 
 PETSC_EXTERN void PETSC_STDCALL petscmallocvalidate_(PetscErrorCode *ierr)
