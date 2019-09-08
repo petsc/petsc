@@ -5286,7 +5286,7 @@ static PetscErrorCode MatNullSpacePropagateAny_Private(Mat A, IS is, Mat B)
   const Vec      *nullvecs;
   Vec            v,v2,*nullvecs2;
   VecScatter     sct = NULL;
-  PetscInt       k,nnsp_size,bsiz,n,N,bs;
+  PetscInt       k,nnsp_size,bsiz,bsiz2,n,N,bs;
   PetscBool      nnsp_has_cnst;
   PetscErrorCode ierr;
 
@@ -5318,7 +5318,7 @@ static PetscErrorCode MatNullSpacePropagateAny_Private(Mat A, IS is, Mat B)
     ierr = VecScatterCreate(v,is,v2,NULL,&sct);CHKERRQ(ierr);
   }
   ierr = MatNullSpaceGetVecs(NullSpace,&nnsp_has_cnst,&nnsp_size,(const Vec**)&nullvecs);CHKERRQ(ierr);
-  bsiz = nnsp_size+!!nnsp_has_cnst;
+  bsiz = bsiz2 = nnsp_size+!!nnsp_has_cnst;
   ierr = PetscMalloc1(bsiz,&nullvecs2);CHKERRQ(ierr);
   ierr = VecGetBlockSize(v2,&bs);CHKERRQ(ierr);
   ierr = VecGetSize(v2,&N);CHKERRQ(ierr);
@@ -5341,8 +5341,22 @@ static PetscErrorCode MatNullSpacePropagateAny_Private(Mat A, IS is, Mat B)
     ierr = VecSet(nullvecs2[nnsp_size],1.0);CHKERRQ(ierr);
     ierr = MatDenseRestoreColumn(dmat,&arr);CHKERRQ(ierr);
   }
-  ierr = PCBDDCOrthonormalizeVecs(bsiz,nullvecs2);CHKERRQ(ierr);
-  ierr = MatNullSpaceCreate(PetscObjectComm((PetscObject)B),PETSC_FALSE,bsiz,nullvecs2,&NullSpace);CHKERRQ(ierr);
+  ierr = PCBDDCOrthonormalizeVecs(&bsiz2,nullvecs2);CHKERRQ(ierr);
+  ierr = MatNullSpaceCreate(PetscObjectComm((PetscObject)B),PETSC_FALSE,bsiz2,nullvecs2,&NullSpace);CHKERRQ(ierr);
+  if (bsiz2 != bsiz) {
+    Mat      dmat2;
+    IS       r,c;
+    PetscInt rst,ren;
+
+    ierr = MatGetOwnershipRange(dmat,&rst,&ren);CHKERRQ(ierr);
+    ierr = ISCreateStride(PetscObjectComm((PetscObject)B),ren-rst,rst,1,&r);CHKERRQ(ierr);
+    ierr = ISCreateStride(PetscObjectComm((PetscObject)B),0,bsiz2,1,&c);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrix(dmat,r,c,MAT_INITIAL_MATRIX,&dmat2);CHKERRQ(ierr);
+    ierr = MatDestroy(&dmat);CHKERRQ(ierr);
+    ierr = ISDestroy(&r);CHKERRQ(ierr);
+    ierr = ISDestroy(&c);CHKERRQ(ierr);
+    dmat = dmat2;
+  }
   ierr = PetscObjectCompose((PetscObject)NullSpace,"_PBDDC_Null_dmat",(PetscObject)dmat);CHKERRQ(ierr);
   ierr = MatDestroy(&dmat);CHKERRQ(ierr);
   for (k=0;k<bsiz;k++) {
@@ -7187,30 +7201,50 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCBDDCOrthonormalizeVecs(PetscInt n, Vec vecs[])
+PetscErrorCode PCBDDCOrthonormalizeVecs(PetscInt *nio, Vec vecs[])
 {
-  PetscInt       i,j;
+  PetscInt       i,j,n;
   PetscScalar    *alphas;
-  PetscReal      norm;
+  PetscReal      norm,*onorms;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  n = *nio;
   if (!n) PetscFunctionReturn(0);
-  ierr = PetscMalloc1(n,&alphas);CHKERRQ(ierr);
+  ierr = PetscMalloc2(n,&alphas,n,&onorms);CHKERRQ(ierr);
   ierr = VecNormalize(vecs[0],&norm);CHKERRQ(ierr);
   if (norm < PETSC_SMALL) {
+    onorms[0] = 0.0;
     ierr = VecSet(vecs[0],0.0);CHKERRQ(ierr);
+  } else {
+    onorms[0] = norm;
   }
+
   for (i=1;i<n;i++) {
     ierr = VecMDot(vecs[i],i,vecs,alphas);CHKERRQ(ierr);
     for (j=0;j<i;j++) alphas[j] = PetscConj(-alphas[j]);
     ierr = VecMAXPY(vecs[i],i,alphas,vecs);CHKERRQ(ierr);
     ierr = VecNormalize(vecs[i],&norm);CHKERRQ(ierr);
     if (norm < PETSC_SMALL) {
+      onorms[i] = 0.0;
       ierr = VecSet(vecs[i],0.0);CHKERRQ(ierr);
+    } else {
+      onorms[i] = norm;
     }
   }
-  ierr = PetscFree(alphas);CHKERRQ(ierr);
+  /* push nonzero vectors at the beginning */
+  for (i=0;i<n;i++) {
+    if (onorms[i] == 0.0) {
+      for (j=i+1;j<n;j++) {
+        if (onorms[j] != 0.0) {
+          ierr = VecCopy(vecs[j],vecs[i]);CHKERRQ(ierr);
+          onorms[j] = 0.0;
+        }
+      }
+    }
+  }
+  for (i=0,*nio=0;i<n;i++) *nio += onorms[i] != 0.0 ? 1 : 0;
+  ierr = PetscFree2(alphas,onorms);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
