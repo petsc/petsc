@@ -46,7 +46,7 @@ static PetscErrorCode PetscFEView_Basic(PetscFE fe, PetscViewer v)
 }
 
 /* Construct the change of basis from prime basis to nodal basis */
-static PetscErrorCode PetscFESetUp_Basic(PetscFE fem)
+PetscErrorCode PetscFESetUp_Basic(PetscFE fem)
 {
   PetscScalar   *work, *invVscalar;
   PetscBLASInt  *pivots;
@@ -103,7 +103,7 @@ PetscErrorCode PetscFEGetDimension_Basic(PetscFE fem, PetscInt *dim)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscFEGetTabulation_Basic(PetscFE fem, PetscInt npoints, const PetscReal points[], PetscReal *B, PetscReal *D, PetscReal *H)
+PetscErrorCode PetscFEGetTabulation_Basic(PetscFE fem, PetscInt npoints, const PetscReal points[], PetscReal *B, PetscReal *D, PetscReal *H)
 {
   DM               dm;
   PetscInt         pdim; /* Dimension of FE space P */
