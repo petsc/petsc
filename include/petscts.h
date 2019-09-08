@@ -99,15 +99,15 @@ PETSC_EXTERN const char *const*TSEquationTypes;
 .seealso: TSGetConvergedReason()
 E*/
 typedef enum {
-  TS_CONVERGED_ITERATING      = 0,
-  TS_CONVERGED_TIME           = 1,
-  TS_CONVERGED_ITS            = 2,
-  TS_CONVERGED_USER           = 3,
-  TS_CONVERGED_EVENT          = 4,
-  TS_CONVERGED_PSEUDO_FATOL   = 5,
-  TS_CONVERGED_PSEUDO_FRTOL   = 6,
-  TS_DIVERGED_NONLINEAR_SOLVE = -1,
-  TS_DIVERGED_STEP_REJECTED   = -2,
+  TS_CONVERGED_ITERATING          = 0,
+  TS_CONVERGED_TIME               = 1,
+  TS_CONVERGED_ITS                = 2,
+  TS_CONVERGED_USER               = 3,
+  TS_CONVERGED_EVENT              = 4,
+  TS_CONVERGED_PSEUDO_FATOL       = 5,
+  TS_CONVERGED_PSEUDO_FRTOL       = 6,
+  TS_DIVERGED_NONLINEAR_SOLVE     = -1,
+  TS_DIVERGED_STEP_REJECTED       = -2,
   TSFORWARD_DIVERGED_LINEAR_SOLVE = -3,
   TSADJOINT_DIVERGED_LINEAR_SOLVE = -4
 } TSConvergedReason;
