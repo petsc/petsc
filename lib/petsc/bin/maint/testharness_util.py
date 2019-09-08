@@ -47,6 +47,8 @@ def walktree(top, action, datafilespath=None):
         for exfile in files:
             # Ignore emacs files
             if exfile.startswith("#") or exfile.startswith(".#"): continue
+            ext=os.path.splitext(exfile)[1]
+            if ext[1:] not in ['c','cxx','cpp','cu','F90','F']: continue
 
             # Convenience
             fullex = os.path.join(root, exfile)

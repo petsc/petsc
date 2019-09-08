@@ -99,6 +99,7 @@ checksource:
   script:
     - python3 ./configure --with-mpi=0 --with-fc=0 --with-cxx=0
     - make checkbadSource SHELL=bash
+    - make check_output SHELL=bash
 
 #
 # This provides the basic order of operations and options template for stage-2,3 tests.

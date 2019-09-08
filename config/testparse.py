@@ -54,6 +54,15 @@ appendlist="args requires comments".split()
 
 import re
 
+def getDefaultOutputFileRoot(testname):
+  """
+  Given testname, give DefaultRoot and DefaultOutputFilename
+  e.g., runex1 gives ex1_1, output/ex1_1.out
+  """
+  defroot=(re.sub("run","",testname) if testname.startswith("run") else testname)
+  if not "_" in defroot: defroot=defroot+"_1"
+  return defroot
+
 def _stripIndent(block,srcfile,entireBlock=False,fileNums=[]):
   """
   Go through and remove a level of indentation

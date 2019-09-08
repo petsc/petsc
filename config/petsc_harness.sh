@@ -40,6 +40,7 @@ OPTIONS
   -J <arg> .......... Pass -J to petscdiff (just use diff with arg)
   -m ................ Update results using petscdiff
   -M ................ Update alt files using petscdiff
+  -o <arg> .......... Output format: 'interactive', 'err_only'
   -t ................ Override the default timeout (default=$TIMEOUT sec)
   -V ................ run Valgrind
   -v ................ Verbose: Print commands
@@ -51,12 +52,13 @@ EOF
 ###
 ##  Arguments for overriding things
 #
+output_fmt="interactive"
 verbose=false
 cleanup=false
 debugger=false
 force=false
 diff_flags=""
-while getopts "a:cde:fhjJ:mMn:t:vV" arg
+while getopts "a:cde:fhjJ:mMn:o:t:vV" arg
 do
   case $arg in
     a ) args="$OPTARG"       ;;  
@@ -70,6 +72,7 @@ do
     J ) diff_flags="-J $OPTARG" ;;  
     m ) diff_flags="-m"      ;;  
     M ) diff_flags="-M"      ;;  
+    o ) output_fmt=$OPTARG   ;;  
     t ) TIMEOUT=$OPTARG      ;;  
     V ) mpiexec="petsc_mpiexec_valgrind $mpiexec" ;;  
     v ) verbose=true         ;;  
@@ -101,6 +104,28 @@ success=0; failed=0; failures=""; rmfiles=""
 total=0
 todo=-1; skip=-1
 job_level=0
+
+function petsc_report_tapoutput() {
+  notornot=$1
+  test_label=$2
+  comment=$3
+  if test -n "$comment"; then
+    comment=" # ${comment}"
+  fi
+
+  tap_message="${notornot} ok ${test_label}${comment}"
+
+  # Log messages
+  printf "${tap_message}\n" >> ${testlogtapfile}
+  
+  if test ${output_fmt} == "err_only"; then
+     if test -n "${notornot}"; then 
+        printf "${tap_message}\n" | tee -a ${testlogerrfile}
+     fi
+  else 
+     printf "${tap_message}\n"
+  fi
+}
 
 function petsc_testrun() {
   # First arg = Basic command
@@ -145,31 +170,28 @@ function petsc_testrun() {
   fi
 
   # Report errors
+  comment=""
   if test $cmd_res == 0; then
-    if "${verbose}"; then
-     printf "ok $tlabel $cmd\n" | tee -a ${testlogfile}
-    else
-     printf "ok $tlabel\n" | tee -a ${testlogfile}
-    fi
+     if "${verbose}"; then
+        comment="${cmd}"
+     fi
+    petsc_report_tapoutput "" "$tlabel" "$comment"
     let success=$success+1
   else
-    if "${verbose}"; then 
-      printf "not ok $tlabel $cmd\n" | tee -a ${testlogfile}
-    else
-        if [ -n "$timed_out" ]; then
-            printf "not ok timeout $tlabel\n" | tee -a ${testlogfile}
-        else
-            printf "not ok $tlabel\n" | tee -a ${testlogfile}
-        fi
-    fi
     if [ -n "$timed_out" ]; then
-      printf "#\tExceeded timeout limit of $MPIEXEC_TIMEOUT s\n" | tee -a ${testlogfile}
+      comment="Exceeded timeout limit of $MPIEXEC_TIMEOUT s"
     else
+      comment="Error code: ${cmd_res}"
+    fi
+    petsc_report_tapoutput "not" "$tlabel" "$comment"
+
+    # Report errors in detail
+    if [ -z "$timed_out" ]; then
       # We've had tests fail but stderr->stdout. Fix with this test.
       if test -s $3; then
-        awk '{print "#\t" $0}' < $3 | tee -a ${testlogfile}
+        awk '{print "#\t" $0}' < $3 | tee -a ${testlogerrfile}
       else
-        awk '{print "#\t" $0}' < $2 | tee -a ${testlogfile}
+        awk '{print "#\t" $0}' < $2 | tee -a ${testlogerrfile}
       fi
     fi
     let failed=$failed+1
