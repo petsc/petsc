@@ -218,12 +218,12 @@ class Configure(config.base.Configure):
           self.logPrint('C libraries are not needed when using Fortran linker')
         else:
           self.logWrite(self.setCompilers.restoreLog())
-          self.logPrint('C code cannot directly be linked with Fortran linker, therefor will determine needed C libraries')
+          self.logPrint('C code cannot directly be linked with Fortran linker, therefore will determine needed C libraries')
           skipclibraries = 0
       except RuntimeError as e:
         self.logWrite(self.setCompilers.restoreLog())
         self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
-        self.logPrint('C code cannot directly be linked with Fortran linker, therefor will determine needed C libraries')
+        self.logPrint('C code cannot directly be linked with Fortran linker, therefore will determine needed C libraries')
         skipclibraries = 0
     if hasattr(self.setCompilers, 'CXX'):
       self.setCompilers.saveLog()
@@ -233,12 +233,12 @@ class Configure(config.base.Configure):
           self.logPrint('C libraries are not needed when using C++ linker')
         else:
           self.logWrite(self.setCompilers.restoreLog())
-          self.logPrint('C code cannot directly be linked with C++ linker, therefor will determine needed C libraries')
+          self.logPrint('C code cannot directly be linked with C++ linker, therefore will determine needed C libraries')
           skipclibraries = 0
       except RuntimeError as e:
         self.logWrite(self.setCompilers.restoreLog())
         self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
-        self.logPrint('C code cannot directly be linked with C++ linker, therefor will determine needed C libraries')
+        self.logPrint('C code cannot directly be linked with C++ linker, therefore will determine needed C libraries')
         skipclibraries = 0
     if skipclibraries == 1: return
 
@@ -553,7 +553,7 @@ class Configure(config.base.Configure):
           else:
             self.logWrite(self.setCompilers.restoreLog())
             self.setCompilers.LIBS = oldLibs
-            self.logPrint('C++ code cannot directly be linked with C linker using -lc++, therefor will determine needed C++ libraries')
+            self.logPrint('C++ code cannot directly be linked with C linker using -lc++, therefore will determine needed C++ libraries')
             skipcxxlibraries = 0
         if not skipcxxlibraries:
           self.setCompilers.saveLog()
@@ -566,12 +566,12 @@ class Configure(config.base.Configure):
           else:
             self.logWrite(self.setCompilers.restoreLog())
             self.setCompilers.LIBS = oldLibs
-            self.logPrint('C++ code cannot directly be linked with C linker using -lstdc++, therefor will determine needed C++ libraries')
+            self.logPrint('C++ code cannot directly be linked with C linker using -lstdc++, therefore will determine needed C++ libraries')
             skipcxxlibraries = 0
     except RuntimeError as e:
       self.logWrite(self.setCompilers.restoreLog())
       self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
-      self.logPrint('C++ code cannot directly be linked with C linker, therefor will determine needed C++ libraries')
+      self.logPrint('C++ code cannot directly be linked with C linker, therefore will determine needed C++ libraries')
       skipcxxlibraries = 0
     if hasattr(self.setCompilers, 'FC'):
       self.setCompilers.saveLog()
@@ -592,7 +592,7 @@ class Configure(config.base.Configure):
             else:
               self.logWrite(self.setCompilers.restoreLog())
               self.setCompilers.LIBS = oldLibs
-              self.logPrint('C++ code cannot directly be linked with C linker using -lc++, therefor will determine needed C++ libraries')
+              self.logPrint('C++ code cannot directly be linked with C linker using -lc++, therefore will determine needed C++ libraries')
               skipcxxlibraries = 0
           if not skipcxxlibraries:
             self.logWrite(self.setCompilers.restoreLog())
@@ -603,12 +603,12 @@ class Configure(config.base.Configure):
               skipcxxlibraries = 1
             else:
               self.setCompilers.LIBS = oldLibs
-              self.logPrint('C++ code cannot directly be linked with FC linker, therefor will determine needed C++ libraries')
+              self.logPrint('C++ code cannot directly be linked with FC linker, therefore will determine needed C++ libraries')
               skipcxxlibraries = 0
       except RuntimeError as e:
         self.logWrite(self.setCompilers.restoreLog())
         self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
-        self.logPrint('C++ code cannot directly be linked with FC linker, therefor will determine needed C++ libraries')
+        self.logPrint('C++ code cannot directly be linked with FC linker, therefore will determine needed C++ libraries')
         skipcxxlibraries = 0
 
     if skipcxxlibraries: return
@@ -986,12 +986,12 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
         self.logPrint('Fortran libraries are not needed when using C linker')
       else:
         self.logWrite(self.setCompilers.restoreLog())
-        self.logPrint('Fortran code cannot directly be linked with C linker, therefor will determine needed Fortran libraries')
+        self.logPrint('Fortran code cannot directly be linked with C linker, therefore will determine needed Fortran libraries')
         skipfortranlibraries = 0
     except RuntimeError as e:
       self.logWrite(self.setCompilers.restoreLog())
       self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
-      self.logPrint('Fortran code cannot directly be linked with C linker, therefor will determine needed Fortran libraries')
+      self.logPrint('Fortran code cannot directly be linked with C linker, therefore will determine needed Fortran libraries')
       skipfortranlibraries = 0
     if hasattr(self.setCompilers, 'CXX'):
       self.setCompilers.saveLog()
@@ -1001,12 +1001,12 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
           self.logPrint('Fortran libraries are not needed when using C++ linker')
         else:
           self.logWrite(self.setCompilers.restoreLog())
-          self.logPrint('Fortran code cannot directly be linked with C++ linker, therefor will determine needed Fortran libraries')
+          self.logPrint('Fortran code cannot directly be linked with C++ linker, therefore will determine needed Fortran libraries')
           skipfortranlibraries = 0
       except RuntimeError as e:
         self.logWrite(self.setCompilers.restoreLog())
         self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
-        self.logPrint('Fortran code cannot directly be linked with CXX linker, therefor will determine needed Fortran libraries')
+        self.logPrint('Fortran code cannot directly be linked with CXX linker, therefore will determine needed Fortran libraries')
         skipfortranlibraries = 0
 
     if skipfortranlibraries == 1: return
@@ -1140,7 +1140,7 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
         # Check for system libraries
         m = re.match(r'^-l(ang.*|crt[0-9].o|crtbegin.o|c|gcc|gcc_ext(.[0-9]+)*|System|cygwin|crt[0-9].[0-9][0-9].[0-9].o)$', arg)
         if m:
-          self.logPrint('Found system library therefor skipping: '+arg, 4, 'compilers')
+          self.logPrint('Found system library therefore skipping: '+arg, 4, 'compilers')
           continue
         # Check for canonical library argument
         m = re.match(r'^-[lL]$', arg)
