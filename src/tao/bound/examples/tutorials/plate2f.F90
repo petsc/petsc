@@ -943,8 +943,6 @@
       PetscReal      xl_v(0:1)
       PetscOffset      xl_i
 
-      print *,'msa_plate'
-
       lb = PETSC_NINFINITY
       ub = PETSC_INFINITY
 
