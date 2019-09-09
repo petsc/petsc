@@ -236,6 +236,7 @@ PetscErrorCode PCDestroy_HMG(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHMGSetReuseInterpolation_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHMGSetUseSubspaceCoarsening_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHMGSetInnerPCType_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHMGSetCoarseningComponent_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -267,10 +268,10 @@ PetscErrorCode PCSetFromOptions_HMG(PetscOptionItems *PetscOptionsObject,PC pc)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"HMG");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-pc_hmg_reuse_interpolation","Reuse the interpolation operators when possible (cheaper, weaker when matrix entries change a lot)","None",hmg->reuseinterp,&hmg->reuseinterp,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-pc_hmg_use_subspace_coarsening","Use the subspace coarsening to compute the interpolations","None",hmg->subcoarsening,&hmg->subcoarsening,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-pc_hmg_use_matmaij","Use MatMAIJ store interpolation for saving memory","None",hmg->usematmaij,&hmg->usematmaij,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-pc_hmg_coarsening_component","Which component is chosen for the subspace-based coarsening algorithm","None",hmg->component,&hmg->component,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_hmg_reuse_interpolation","Reuse the interpolation operators when possible (cheaper, weaker when matrix entries change a lot)","PCHMGSetReuseInterpolation",hmg->reuseinterp,&hmg->reuseinterp,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_hmg_use_subspace_coarsening","Use the subspace coarsening to compute the interpolations","PCHMGSetUseSubspaceCoarsening",hmg->subcoarsening,&hmg->subcoarsening,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_hmg_use_matmaij","Use MatMAIJ store interpolation for saving memory","PCHMGSetInnerPCType",hmg->usematmaij,&hmg->usematmaij,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_hmg_coarsening_component","Which component is chosen for the subspace-based coarsening algorithm","PCHMGSetCoarseningComponent",hmg->component,&hmg->component,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -285,7 +286,7 @@ static PetscErrorCode PCHMGSetReuseInterpolation_HMG(PC pc, PetscBool reuse)
   PetscFunctionReturn(0);
 }
 
-/*MC
+/*@
    PCHMGSetReuseInterpolation - Reuse interpolation matrices in HMG
 
    Logically Collective on PC
@@ -302,7 +303,7 @@ static PetscErrorCode PCHMGSetReuseInterpolation_HMG(PC pc, PetscBool reuse)
 .keywords: HMG, multigrid, interpolation, reuse, set
 
 .seealso: PCHMG
-M*/
+@*/
 PetscErrorCode PCHMGSetReuseInterpolation(PC pc, PetscBool reuse)
 {
   PetscErrorCode ierr;
@@ -323,7 +324,7 @@ static PetscErrorCode PCHMGSetUseSubspaceCoarsening_HMG(PC pc, PetscBool subspac
   PetscFunctionReturn(0);
 }
 
-/*MC
+/*@
    PCHMGSetUseSubspaceCoarsening - Use subspace coarsening in HMG
 
    Logically Collective on PC
@@ -340,7 +341,7 @@ static PetscErrorCode PCHMGSetUseSubspaceCoarsening_HMG(PC pc, PetscBool subspac
 .keywords: HMG, multigrid, interpolation, subspace, coarsening
 
 .seealso: PCHMG
-M*/
+@*/
 PetscErrorCode PCHMGSetUseSubspaceCoarsening(PC pc, PetscBool subspace)
 {
   PetscErrorCode ierr;
@@ -362,7 +363,7 @@ static PetscErrorCode PCHMGSetInnerPCType_HMG(PC pc, PCType type)
   PetscFunctionReturn(0);
 }
 
-/*MC
+/*@C
    PCHMGSetInnerPCType - Set an inner PC type
 
    Logically Collective on PC
@@ -379,7 +380,7 @@ static PetscErrorCode PCHMGSetInnerPCType_HMG(PC pc, PCType type)
 .keywords: HMG, multigrid, interpolation, coarsening
 
 .seealso: PCHMG, PCType
-M*/
+@*/
 PetscErrorCode PCHMGSetInnerPCType(PC pc, PCType type)
 {
   PetscErrorCode  ierr;
@@ -400,7 +401,7 @@ static PetscErrorCode PCHMGSetCoarseningComponent_HMG(PC pc, PetscInt component)
   PetscFunctionReturn(0);
 }
 
-/*MC
+/*@
    PCHMGSetCoarseningComponent - Set which component is used for the subspace-based coarsening algorithm
 
    Logically Collective on PC
@@ -417,7 +418,7 @@ static PetscErrorCode PCHMGSetCoarseningComponent_HMG(PC pc, PetscInt component)
 .keywords: HMG, multigrid, interpolation, coarsening, component
 
 .seealso: PCHMG, PCType
-M*/
+@*/
 PetscErrorCode PCHMGSetCoarseningComponent(PC pc, PetscInt component)
 {
   PetscErrorCode  ierr;
@@ -438,7 +439,7 @@ static PetscErrorCode PCHMGUseMatMAIJ_HMG(PC pc, PetscBool usematmaij)
   PetscFunctionReturn(0);
 }
 
-/*MC
+/*@
    PCHMGUseMatMAIJ - Set a flag that indicates if or not to use MatMAIJ for interpolations for saving memory
 
    Logically Collective on PC
@@ -455,7 +456,7 @@ static PetscErrorCode PCHMGUseMatMAIJ_HMG(PC pc, PetscBool usematmaij)
 .keywords: HMG, multigrid, interpolation, coarsening, MatMAIJ
 
 .seealso: PCHMG, PCType
-M*/
+@*/
 PetscErrorCode PCHMGUseMatMAIJ(PC pc, PetscBool usematmaij)
 {
   PetscErrorCode  ierr;
