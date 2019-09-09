@@ -247,7 +247,7 @@ freebsd-cxx-cmplx-64idx-dbg:
 
 opensolaris-misc:
   extends:
-    - .stage-2
+    - .stage-3
     - .opensolaris_test
   tags:
     - name:n-gage
@@ -269,7 +269,7 @@ mswin-uni:
     - .stage-2
     - .mswin_test
   tags:
-    - name:ps5
+    - name:ps5-2
   variables:
     TEST_ARCH: arch-ci-mswin-uni
 
