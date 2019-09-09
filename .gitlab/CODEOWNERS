@@ -12,7 +12,7 @@
 /src/ksp/pc/impls/gamg/ @markadams4
 
 /src/vec/is/sf/         @jedbrown @jczhang07
-/src/vec/vscat          @jczhang07
+/src/vec/vscat/         @jczhang07
 
-/src/docs               @psanan
+/src/docs/              @psanan
 
