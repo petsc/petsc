@@ -226,9 +226,7 @@ PetscErrorCode DMPlexCreateRigidBody(DM dm, MatNullSpace *sp)
 
     ierr = VecNormalize(mode[i], NULL);CHKERRQ(ierr);
     for (j = i+1; j < mmin; ++j) {
-      Vec	temp;
 
-      ierr = VecDuplicate(mode[i], &temp);CHKERRQ(ierr);
       ierr = VecDot(mode[i], mode[j], &dots);CHKERRQ(ierr);
       dots *= -1.0;
       ierr = VecAXPY(mode[j], dots, mode[i]);CHKERRQ(ierr);
@@ -295,12 +293,23 @@ PetscErrorCode DMPlexCreateRigidBodies(DM dm, PetscInt nb, DMLabel label, const 
     }
   }
   for (i = 0; i < dim; ++i) {ierr = VecNormalize(mode[i], NULL);CHKERRQ(ierr);}
-  /* Orthonormalize system */
+  /* Orthonormalize system
   for (i = 0; i < m; ++i) {
     ierr = VecMDot(mode[i], i, mode, dots);CHKERRQ(ierr);
     for (j = 0; j < i; ++j) dots[j] *= -1.0;
     ierr = VecMAXPY(mode[i], i, dots, mode);CHKERRQ(ierr);
     ierr = VecNormalize(mode[i], NULL);CHKERRQ(ierr);
+   }*/
+  for (i = 0; i < m; ++i) {
+    PetscScalar dots;
+
+    ierr = VecNormalize(mode[i], NULL);CHKERRQ(ierr);
+    for (j = i+1; j < m; ++j) {
+
+      ierr = VecDot(mode[i], mode[j], &dots);CHKERRQ(ierr);
+      dots *= -1.0;
+      ierr = VecAXPY(mode[j], dots, mode[i]);CHKERRQ(ierr);
+    }
   }
   ierr = MatNullSpaceCreate(comm, PETSC_FALSE, m, mode, sp);CHKERRQ(ierr);
   for (i = 0; i< m; ++i) {ierr = VecDestroy(&mode[i]);CHKERRQ(ierr);}
