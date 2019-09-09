@@ -956,8 +956,11 @@ static PetscErrorCode SNESTSFormFunction_Theta(SNES snes,Vec x,Vec y,TS ts)
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   /* When using the endpoint variant, this is actually 1/Theta * Xdot */
   ierr = TSThetaGetX0AndXdot(ts,dm,&X0,&Xdot);CHKERRQ(ierr);
-  ierr = VecAXPBYPCZ(Xdot,-shift,shift,0,X0,x);CHKERRQ(ierr);
-
+  if (x != X0) {
+    ierr = VecAXPBYPCZ(Xdot,-shift,shift,0,X0,x);CHKERRQ(ierr);
+  } else {
+    ierr = VecZeroEntries(Xdot);CHKERRQ(ierr);
+  }
   /* DM monkey-business allows user code to call TSGetDM() inside of functions evaluated on levels of FAS */
   dmsave = ts->dm;
   ts->dm = dm;
