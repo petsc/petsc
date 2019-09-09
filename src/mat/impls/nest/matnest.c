@@ -739,7 +739,14 @@ static PetscErrorCode MatAXPY_Nest(Mat Y,PetscScalar a,Mat X,MatStructure str)
     for (j=0; j<nc; j++) {
       if (bY->m[i][j] && bX->m[i][j]) {
         ierr = MatAXPY(bY->m[i][j],a,bX->m[i][j],str);CHKERRQ(ierr);
-      } else if (bX->m[i][j]) SETERRQ2(PetscObjectComm((PetscObject)Y),PETSC_ERR_ARG_INCOMP,"Matrix block does not exist at %D,%D",i,j);
+      } else if (bX->m[i][j]) {
+        Mat M;
+
+        if (str != DIFFERENT_NONZERO_PATTERN) SETERRQ2(PetscObjectComm((PetscObject)Y),PETSC_ERR_ARG_INCOMP,"Matrix block does not exist at %D,%D",i,j);
+        ierr = MatDuplicate(bX->m[i][j],MAT_COPY_VALUES,&M);CHKERRQ(ierr);
+        ierr = MatNestSetSubMat(Y,i,j,M);CHKERRQ(ierr);
+        ierr = MatDestroy(&M);CHKERRQ(ierr);
+      }
     }
   }
   PetscFunctionReturn(0);
