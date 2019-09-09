@@ -519,13 +519,32 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
           if (jac->splitdefined) {ierr = PetscInfo(pc,"Splits defined using the options database\n");CHKERRQ(ierr);}
         }
         if ((fieldsplit_default || !jac->splitdefined) && !jac->isrestrict) {
+          PetscBool isnest;
+
           ierr = PetscInfo(pc,"Using default splitting of fields\n");CHKERRQ(ierr);
-          for (i=0; i<jac->bs; i++) {
-            char splitname[8];
-            ierr = PetscSNPrintf(splitname,sizeof(splitname),"%D",i);CHKERRQ(ierr);
-            ierr = PCFieldSplitSetFields(pc,splitname,1,&i,&i);CHKERRQ(ierr);
+          ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATNEST,&isnest);CHKERRQ(ierr);
+          if (!isnest) {
+            ierr = PetscObjectTypeCompare((PetscObject)pc->mat,MATNEST,&isnest);CHKERRQ(ierr);
           }
-          jac->defaultsplit = PETSC_TRUE;
+          if (isnest) {
+            IS       *fields;
+            PetscInt nf;
+
+            ierr = MatNestGetSize(pc->pmat,&nf,NULL);CHKERRQ(ierr);
+            ierr = PetscMalloc1(nf,&fields);CHKERRQ(ierr);
+            ierr = MatNestGetISs(pc->pmat,fields,NULL);CHKERRQ(ierr);
+            for (i=0;i<nf;i++) {
+              ierr = PCFieldSplitSetIS(pc,NULL,fields[i]);CHKERRQ(ierr);
+            }
+            ierr = PetscFree(fields);CHKERRQ(ierr);
+          } else {
+            for (i=0; i<jac->bs; i++) {
+              char splitname[8];
+              ierr = PetscSNPrintf(splitname,sizeof(splitname),"%D",i);CHKERRQ(ierr);
+              ierr = PCFieldSplitSetFields(pc,splitname,1,&i,&i);CHKERRQ(ierr);
+            }
+            jac->defaultsplit = PETSC_TRUE;
+          }
         }
       }
     }
@@ -1837,7 +1856,7 @@ static PetscErrorCode  PCFieldSplitSetIS_FieldSplit(PC pc,const char splitname[]
     ierr = PetscMalloc1(8,&ilink->splitname);CHKERRQ(ierr);
     ierr = PetscSNPrintf(ilink->splitname,7,"%D",jac->nsplits);CHKERRQ(ierr);
   }
-  ilink->event = jac->nsplits < 5 ? KSP_Solve_FS_0 + jac->nsplits : KSP_Solve_FS_0 + 4; /* Any split great than 4 gets logged in the 4th split */
+  ilink->event  = jac->nsplits < 5 ? KSP_Solve_FS_0 + jac->nsplits : KSP_Solve_FS_0 + 4; /* Any split great than 4 gets logged in the 4th split */
   ierr          = PetscObjectReference((PetscObject)is);CHKERRQ(ierr);
   ierr          = ISDestroy(&ilink->is);CHKERRQ(ierr);
   ilink->is     = is;
