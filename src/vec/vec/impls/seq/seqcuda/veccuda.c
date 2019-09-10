@@ -37,7 +37,7 @@ static PetscErrorCode PetscCUBLASGetHandle_Private(cublasHandle_t **handle)
 }
 
 /*
-    Initializing the cuBLAS handle can take 1/2 a second therefor
+    Initializing the cuBLAS handle can take 1/2 a second therefore
     initialize in PetscInitialize() before being timing so it does
     not distort the -log_view information
 */
