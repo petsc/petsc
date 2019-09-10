@@ -32,14 +32,14 @@
 !  The parallel version of this code is snes/examples/tutorials/ex5f.F
 !
 !  --------------------------------------------------------------------------
-      subroutine postcheck(snes,x,y,w,changed_w,ctx,ierr)
+      subroutine postcheck(snes,x,y,w,changed_y,changed_w,ctx,ierr)
 #include <petsc/finclude/petscsnes.h>
       use petscsnes
       implicit none
       SNES           snes
       PetscReal      norm
       Vec            tmp,x,y,w
-      PetscBool      changed_w
+      PetscBool      changed_w,changed_y
       PetscErrorCode ierr
       PetscInt       ctx
       PetscScalar    mone
@@ -50,6 +50,8 @@
       call VecNorm(tmp,NORM_2,norm,ierr)
       call VecDestroy(tmp,ierr)
       print*, 'Norm of search step ',norm
+      changed_y = PETSC_FALSE
+      changed_w = PETSC_FALSE
       return
       end
 
@@ -692,8 +694,6 @@
 !
 !   test:
 !     suffix: 4
-!     args: -pc -par 6.807 -snes_monitor -snes_converged_reason -nox
-!     filter: sort -b
-!     filter_output: sort -b
+!     args: -pc -par 6.807 -nox
 !
 !TEST*/

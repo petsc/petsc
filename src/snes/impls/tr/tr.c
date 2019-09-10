@@ -82,7 +82,7 @@ static PetscErrorCode SNESTR_Converged_Private(SNES snes,PetscInt it,PetscReal x
 
    Note: This function is called BEFORE the function evaluation within the SNESNEWTONTR solver.
 
-.seealso: SNESNewtonTRPreCheck(), SNESNewtonTRGetPreCheck()
+.seealso: SNESNewtonTRPreCheck(), SNESNewtonTRGetPreCheck(), SNESNewtonTRSetPostCheck(), SNESNewtonTRGetPostCheck()
 @*/
 PetscErrorCode  SNESNewtonTRSetPreCheck(SNES snes, PetscErrorCode (*func)(SNES,Vec,Vec,PetscBool*,void*),void *ctx)
 {
@@ -217,13 +217,14 @@ static PetscErrorCode SNESNewtonTRPreCheck(SNES snes,Vec X,Vec Y,PetscBool *chan
    Input Parameters:
 +  snes - the solver.  X - The last solution
 .  Y - The full step direction
--  W - The updated solution, W = X + tao*Y for some tao
+-  W - The updated solution, W = X - Y
 
    Output Parameters:
-.  changed_W - Indicator if the new candidate solution W has been changed.
++  changed_Y - indicator if step has been changed
+-  changed_W - Indicator if the new candidate solution W has been changed.
 
    Notes:
-     If Y is changed then W is recomputed as X + tao*Y where tao is the current update value in SNESNEWTONTR
+     If Y is changed then W is recomputed as X - Y
 
    Level: developer
 

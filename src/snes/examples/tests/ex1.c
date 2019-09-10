@@ -63,7 +63,7 @@ extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
 extern PetscErrorCode FormInitialGuess(AppCtx*,Vec);
 extern PetscErrorCode ConvergenceTest(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*);
 extern PetscErrorCode ConvergenceDestroy(void*);
-extern PetscErrorCode postcheck(SNES,Vec,Vec,Vec,PetscBool*,void*);
+extern PetscErrorCode postcheck(SNES,Vec,Vec,Vec,PetscBool*,PetscBool*,void*);
 
 int main(int argc,char **argv)
 {
@@ -490,7 +490,7 @@ PetscErrorCode ConvergenceDestroy(void* ctx)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode postcheck(SNES snes,Vec x,Vec y,Vec w,PetscBool *changed_w,void *ctx)
+PetscErrorCode postcheck(SNES snes,Vec x,Vec y,Vec w,PetscBool *changed_y,PetscBool *changed_w,void *ctx)
 {
   PetscErrorCode ierr;
   PetscReal      norm;
