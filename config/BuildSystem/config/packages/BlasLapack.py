@@ -271,7 +271,7 @@ class Configure(config.package.Package):
             for i in mkl_blacs_64:
               yield ('User specified MKL-C/Pardiso Intel-Linux64', None, [os.path.join(dir,libdir,'libmkl_intel'+ILP64+'.a'),'mkl_core','mkl_intel_thread']+i+['iomp5','dl','pthread'],known,'yes')
               yield ('User specified MKL-C/Pardiso GNU-Linux64', None, [os.path.join(dir,libdir,'libmkl_intel'+ILP64+'.a'),'mkl_core','mkl_gnu_thread']+i+['gomp','dl','pthread'],known,'yes')
-              yield ('User specified MKL-Pardiso Intel-Windows64', None, [os.path.join(dir,libdir,'mkl_core.lib'),'mkl_intel'+ILP64+'.lib','mkl_intel_thread.lib ']+i+['libiomp5md.lib'],known,'yes')
+              yield ('User specified MKL-Pardiso Intel-Windows64', None, [os.path.join(dir,libdir,'mkl_core.lib'),'mkl_intel'+ILP64+'.lib','mkl_intel_thread.lib']+i+['libiomp5md.lib'],known,'yes')
             for i in mkl_blacs_32:
               yield ('User specified MKL-C/Pardiso Intel-Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_core','mkl_intel_thread']+i+['iomp5','dl','pthread'],'32','yes')
               yield ('User specified MKL-C/Pardiso GNU-Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_core','mkl_gnu_thread']+i+['gomp','dl','pthread'],'32','yes')
