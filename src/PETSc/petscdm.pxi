@@ -108,9 +108,9 @@ cdef extern from * nogil:
     int DMGetSection(PetscDM,PetscSection*)
     int DMSetGlobalSection(PetscDM,PetscSection)
     int DMGetGlobalSection(PetscDM,PetscSection*)
-    int DMCreateDefaultSF(PetscDM,PetscSection,PetscSection)
-    int DMGetDefaultSF(PetscDM,PetscSF*)
-    int DMSetDefaultSF(PetscDM,PetscSF)
+    int DMCreateSectionSF(PetscDM,PetscSection,PetscSection)
+    int DMGetSectionSF(PetscDM,PetscSF*)
+    int DMSetSectionSF(PetscDM,PetscSF)
     int DMGetPointSF(PetscDM,PetscSF*)
     int DMSetPointSF(PetscDM,PetscSF)
 
