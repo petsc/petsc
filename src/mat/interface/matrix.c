@@ -41,7 +41,8 @@ PetscLogEvent MATCOLORING_Apply,MATCOLORING_Comm,MATCOLORING_Local,MATCOLORING_I
 const char *const MatFactorTypes[] = {"NONE","LU","CHOLESKY","ILU","ICC","ILUDT","MatFactorType","MAT_FACTOR_",0};
 
 /*@
-   MatSetRandom - Sets all components of a matrix to random numbers. For sparse matrices that have been preallocated but not been assembled it randomly selects appropriate locations
+   MatSetRandom - Sets all components of a matrix to random numbers. For sparse matrices that have been preallocated but not been assembled it randomly selects appropriate locations,
+                  for sparse matrices that already have locations it fills the locations with random numbers
 
    Logically Collective on Mat
 

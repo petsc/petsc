@@ -197,7 +197,8 @@ PETSC_EXTERN PetscErrorCode ISColoringGetIS(ISColoring,PetscCopyMode,PetscInt*,I
 PETSC_EXTERN PetscErrorCode ISColoringRestoreIS(ISColoring,PetscCopyMode,IS*[]);
 PETSC_EXTERN PetscErrorCode ISColoringReference(ISColoring);
 PETSC_EXTERN PetscErrorCode ISColoringSetType(ISColoring,ISColoringType);
-
+PETSC_EXTERN PetscErrorCode ISColoringGetType(ISColoring,ISColoringType*);
+PETSC_EXTERN PetscErrorCode ISColoringGetColors(ISColoring,PetscInt*,PetscInt*,const ISColoringValue**);
 
 /* --------------------------------------------------------------------------*/
 PETSC_EXTERN PetscErrorCode ISBuildTwoSided(IS,IS,IS*);

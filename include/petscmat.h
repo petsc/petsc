@@ -1290,7 +1290,7 @@ PETSC_EXTERN PetscErrorCode MatFDColoringSetF(MatFDColoring,Vec);
 PETSC_EXTERN PetscErrorCode MatFDColoringGetPerturbedColumns(MatFDColoring,PetscInt*,const PetscInt*[]);
 PETSC_EXTERN PetscErrorCode MatFDColoringSetUp(Mat,ISColoring,MatFDColoring);
 PETSC_EXTERN PetscErrorCode MatFDColoringSetBlockSize(MatFDColoring,PetscInt,PetscInt);
-
+PETSC_EXTERN PetscErrorCode MatFDColoringSetValues(Mat,MatFDColoring,const PetscScalar*);
 
 /*S
      MatTransposeColoring - Object for computing a sparse matrix product C=A*B^T via coloring

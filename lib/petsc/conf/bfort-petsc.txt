@@ -59,7 +59,7 @@ native TSConvergedReason
 native BCArrayPart
 native PetscLogDouble
 native PetscInt
-native PetscObjectID
+native PetscObjectId
 native PetscMPIInt
 native PetscErrorCode
 native PetscCookie
