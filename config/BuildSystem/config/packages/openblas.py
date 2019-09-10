@@ -9,7 +9,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.version                = '0.3.6'
+    self.version                = '0.3.7'
     self.gitcommit              = 'v'+self.version
     self.versionname            = 'OPENBLAS_VERSION'
     self.download               = ['git://https://github.com/xianyi/OpenBLAS.git','https://github.com/xianyi/OpenBLAS/archive/'+self.gitcommit+'.tar.gz']
@@ -72,10 +72,10 @@ class Configure(config.package.Package):
       cmdline += " USE_OPENMP=0 "
       if 'download-openblas-use-pthreads' in self.argDB and self.argDB['download-openblas-use-pthreads']:
         self.usespthreads = 1
-        cmdline += " USE_THREADS=1 "
+        cmdline += " USE_THREAD=1 "
         # use the environmental variable OPENBLAS_NUM_THREADS to control the number of threads used
       else:
-        cmdline += " USE_THREADS=0 "
+        cmdline += " USE_THREAD=0 "
     cmdline += " NO_EXPRECISION=1 "
 
     libdir = self.libDir
