@@ -1,0 +1,16 @@
+<HTML>
+<HEAD>
+<TITLE>PetscFE Manual Pages</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+
+<H2>There are many <A HREF="PETSC_DIRsrc/snes/examples/tutorials/index.html">SNES Examples</A> using PetscFE, such ex12, ex17, and ex62.</H2>
+
+The PetscFE class encapsulates a finite element discretization. Each PetscFE object contains a PetscSpace, PetscDualSpace, and DMPlex in the classic Ciarlet triple representation.
+
+<ul>
+  <li><a href="http://arxiv.org/abs/1309.1204">Achieving High Performance with Unified Residual Evaluation</a>, Matthew G. Knepley, Jed Brown, Karl Rupp, Barry F. Smith, 2013.</li>
+  <li><a href="http://arxiv.org/abs/1607.04245">Finite Element Integration with Quadrature on the GPU</a>, Matthew G. Knepley, Karl Rupp, Andy R. Terrel, 2016.</li>
+</ul>
+
+<P>
