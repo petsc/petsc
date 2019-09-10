@@ -56,10 +56,11 @@ class Configure(config.package.GNUPackage):
     if not self.sharedLibraries.useShared and config.setCompilers.Configure.isDarwin(self.log):
       args.append('--disable-opencl')
 
-    self.setCompilers.pushLanguage('FC')
-    if config.setCompilers.Configure.isNAG(self.setCompilers.getLinker(), self.log):
-      args = self.addArgStartsWith(args,'FFLAGS','-mismatch')
-    self.setCompilers.popLanguage()
+    if hasattr(self.compilers, 'FC'):
+      self.setCompilers.pushLanguage('FC')
+      if config.setCompilers.Configure.isNAG(self.setCompilers.getLinker(), self.log):
+        args = self.addArgStartsWith(args,'FFLAGS','-mismatch')
+      self.setCompilers.popLanguage()
 
     # MPICH configure errors out on certain standard configure arguments
     args = self.rmArgs(args,['--disable-f90','--enable-f90'])
