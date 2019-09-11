@@ -50,7 +50,7 @@ PetscErrorCode PCBDDCComputePrimalNumbering(PC,PetscInt*,PetscInt**);
 PetscErrorCode PCBDDCScatterCoarseDataBegin(PC,InsertMode,ScatterMode);
 PetscErrorCode PCBDDCScatterCoarseDataEnd(PC,InsertMode,ScatterMode);
 PetscErrorCode PCBDDCApplyInterfacePreconditioner(PC,PetscBool);
-PetscErrorCode PCBDDCOrthonormalizeVecs(PetscInt,Vec[]);
+PetscErrorCode PCBDDCOrthonormalizeVecs(PetscInt*,Vec[]);
 PetscErrorCode PCBDDCSetUseExactDirichlet(PC,PetscBool);
 PetscErrorCode PCBDDCSetLevel(PC,PetscInt);
 PetscErrorCode PCBDDCGlobalToLocal(VecScatter,Vec,Vec,IS,IS*);
