@@ -117,6 +117,7 @@ checksource:
     - ./config/examples/${TEST_ARCH}.py
     - make
     - make check
+    - make updatedatafiles
     - make cleantest allgtests-tap TIMEOUT=${TIMEOUT}
   artifacts:
     reports:
