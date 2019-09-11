@@ -203,7 +203,7 @@ PetscErrorCode  PetscTrMallocDefault(size_t a,PetscBool clear,int lineno,const c
     PetscReal *s = (PetscReal*) inew;
     /* from https://www.doc.ic.ac.uk/~eedwards/compsys/float/nan.html */
 #if defined(PETSC_USE_REAL_SINGLE)
-    int        nas = 0x0x7F800002;
+    int        nas = 0x7F800002;
 #else
     PetscInt64 nas = 0x7FF0000000000002;
 #endif
