@@ -52,7 +52,7 @@ PetscErrorCode  PetscMPIAbortErrorHandler(MPI_Comm comm,int line,const char *fun
     else {
       (*PetscErrorPrintf)("Memory allocated %.0f Memory used by process %.0f\n",mem,rss);
       if (flg1) PetscMallocDump(stdout);
-      else (*PetscErrorPrintf)("Try running with -malloc_dump or -malloc_log for info.\n");
+      else (*PetscErrorPrintf)("Try running with -malloc_dump or -malloc_view for info.\n");
     }
   } else if (n == PETSC_ERR_SUP) {
     (*PetscErrorPrintf)("%s() line %d in %s\n",fun,line,file);

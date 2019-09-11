@@ -118,7 +118,10 @@
           <li>PetscCalloc*() now calls the system calloc() routine instead of malloc() plus memzero()</li>
           <li>-malloc <yes,no> is now marked as deprecated, use -malloc_debug <yes,no> instead</li>
           <li>-malloc_log and -malloc_log_threshold are now -malloc_view and -malloc_view_threshold</li>
-          <li>With -malloc_test or -malloc_debug allocated memory is initialized with Nan to detect use of uninitialized numerical arrays</li>
+          <li>PetscMallocDebug() is now PetscMallocSetDebug()</li>
+          <li>PetscMallocDumpLog() is now PetscMallocView(), see also PetscMallocViewSet()</li>
+          <li>PetscMallocSetDumpLogThreshold() and PetscMallocSetDumpLog() are now PetscMallocViewSet()</li>
+          <li>With -malloc_test or -malloc_debug allocated memory is initialized with NaN to detect use of uninitialized numerical arrays</li>
           <li>PetscMallocSet() now takes three arguments instead of two</li>
         </ul>
       <h4>Configure/Build:</h4>

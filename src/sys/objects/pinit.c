@@ -694,9 +694,9 @@ PetscInt PetscNumOMPThreads;
 .  -debugger_pause [sleeptime] (in seconds) - Pauses debugger
 .  -stop_for_debugger - Print message on how to attach debugger manually to
                         process and wait (-debugger_pause) seconds for attachment
-.  -malloc - Indicates use of PETSc error-checking malloc (on by default for debug version of libraries) (depreciated, use -malloc_debug)
-.  -malloc no - Indicates not to use error-checking malloc (depreciated, use -malloc_debug no)
-.  -malloc_debug - check for memory corruption at EVERY malloc or free
+.  -malloc - Indicates use of PETSc error-checking malloc (on by default for debug version of libraries) (deprecated, use -malloc_debug)
+.  -malloc no - Indicates not to use error-checking malloc (deprecated, use -malloc_debug no)
+.  -malloc_debug - check for memory corruption at EVERY malloc or free, see PetscMallocSetDebug()
 .  -malloc_dump - prints a list of all unfreed memory at the end of the run
 .  -malloc_test - like -malloc_dump -malloc_debug, but only active for debugging builds, ignored in optimized build. May want to set in PETSC_OPTIONS environmental variable
 .  -malloc_view - show a list of all allocated memory during PetscFinalize()
@@ -718,6 +718,7 @@ PetscInt PetscNumOMPThreads;
 .  -log_trace [filename] - Print traces of all PETSc calls to the screen (useful to determine where a program
         hangs without running in the debugger).  See PetscLogTraceBegin().
 .  -log_view [:filename:format] - Prints summary of flop and timing information to screen or file, see PetscLogView().
+.  -log_view_memory - Includes in the summary from -log_view the memory used in each method, see PetscLogView().
 .  -log_summary [filename] - (Deprecated, use -log_view) Prints summary of flop and timing information to screen. If the filename is specified the
         summary is written to the file.  See PetscLogView().
 .  -log_exclude: <vec,mat,pc,ksp,snes> - excludes subset of object classes from logging

@@ -86,7 +86,7 @@ static const char **PetscLogMallocFile,**PetscLogMallocFunction;
    Level: advanced
 
    Notes:
-    This is only run if PetscMallocDebug() has been called which is set by -malloc_test (if debugging is turned on) or -malloc_debug (any time)
+    This is only run if PetscMallocSetDebug() has been called which is set by -malloc_test (if debugging is turned on) or -malloc_debug (any time)
 
     You should generally use CHKMEMQ as a short cut for calling this  routine.
 
@@ -810,7 +810,7 @@ PetscErrorCode  PetscMallocView(FILE *fp)
   err = fflush(fp);
   if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
 
-  if (PetscLogMalloc < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"PetscMallocView() called without call to PetscMallocViewSet() this is often due to\n                      setting the option -malloc_log AFTER PetscInitialize() with PetscOptionsInsert() or PetscOptionsInsertFile()");
+  if (PetscLogMalloc < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"PetscMallocView() called without call to PetscMallocViewSet() this is often due to\n                      setting the option -malloc_view AFTER PetscInitialize() with PetscOptionsInsert() or PetscOptionsInsertFile()");
 
   if (!fp) fp = PETSC_STDOUT;
   ierr = PetscMemoryGetMaximumUsage(&rss);CHKERRQ(ierr);
@@ -864,15 +864,15 @@ foundit:;
 
     Input Parameter:
 +   eachcall - checks the entire heap of allocated memory for issues on each call to PetscMalloc() and PetscFree()
--   intializenan - initializes all memory with Nan to catch use of unintialized floating point arrays
+-   intializenan - initializes all memory with NaN to catch use of unintialized floating point arrays
 
     Options Database:
-+   -malloc_debug - turns on or off debugging
++   -malloc_debug <true or false> - turns on or off debugging
 .   -malloc_test - turns on all debugging if PETSc was configured with debugging including -malloc_dump, otherwise ignored
-.   -malloc_log_threshold t - log only allocations larger than t
+.   -malloc_view_threshold t - log only allocations larger than t
 .   -malloc_dump <filename> - print a list of all memory that has not been freed
-.   -malloc b - (depreciated) same as -malloc_debug b,0,0
--   -malloc_log - (depreciated) same as -malloc_debug
+.   -malloc no - (deprecated) same as -malloc_debug no
+-   -malloc_log - (deprecated) same as -malloc_view
 
    Level: developer
 
@@ -908,20 +908,20 @@ PetscErrorCode PetscMallocSetDebug(PetscBool eachcall, PetscBool initializenan)
     Output Parameters:
 +    basic - doing basic debugging
 .    eachcall - checks the entire memory heap at each PetscMalloc()/PetscFree()
--    initializenan - initializes memory with Nan
+-    initializenan - initializes memory with NaN
 
    Level: intermediate
 
    Notes:
-     By default, the debug version always does some debugging unless you run with -malloc no
+     By default, the debug version always does some debugging unless you run with -malloc_debug no
 
 .seealso: CHKMEMQ(), PetscMallocValidate(), PetscMallocSetDebug()
 @*/
 PetscErrorCode PetscMallocGetDebug(PetscBool *basic, PetscBool *eachcall, PetscBool *initializenan)
 {
   PetscFunctionBegin;
-  *basic = (PetscTrMalloc == PetscTrMallocDefault) ? PETSC_TRUE : PETSC_FALSE;
-  *eachcall      = TRdebugLevel;
-  *initializenan = TRdebugIintializenan;
+  if (basic) *basic = (PetscTrMalloc == PetscTrMallocDefault) ? PETSC_TRUE : PETSC_FALSE;
+  if (eachcall) *eachcall           = TRdebugLevel;
+  if (initializenan) *initializenan = TRdebugIintializenan;
   PetscFunctionReturn(0);
 }
