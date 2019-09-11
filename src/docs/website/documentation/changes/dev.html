@@ -102,7 +102,8 @@
       </div>
 
       <h4>General:</h4>
-        <ul>
+      <ul>
+          <li>PetscRoundReal() has been removed, since the math routine round() is not supported on all systems: perhaps use PetscCeilReal() or PetscFloorReal()<\li>
           <li>The legacy and cmake compile systems (make all-legacy and all-cmake) are removed</li>
           <li>make gnumake is now make libs</li>
           <li>PetscArraycmp() should be used instead of PetscMemcmp(), it takes a count argument instead of a byte argument</li>
@@ -208,3 +209,4 @@
 
   </body>
 </html>
+
