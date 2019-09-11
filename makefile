@@ -4,19 +4,31 @@ default: build
 package = petsc4py
 MODULE  = PETSc
 
-PYTHON = python
+PYTHON  = python$(py)
+MPIEXEC = mpiexec
 
 # ----
 
 .PHONY: config build test
-config: 
+config:
 	${PYTHON} setup.py config ${CONFIGOPT}
 build:
 	${PYTHON} setup.py build ${BUILDOPT}
 test:
-	${MPIEXEC} ${VALGRIND} ${PYTHON} test/runtests.py < /dev/null
+	${VALGRIND} ${PYTHON} ${PWD}/test/runtests.py
+test-%:
+	${MPIEXEC} -n $* ${VALGRIND} ${PYTHON} ${PWD}/test/runtests.py
 
-.PHONY: clean distclean srcclean fullclean
+.PHONY: srcbuild srcclean
+srcbuild:
+	${PYTHON} setup.py build_src ${SRCOPT}
+srcclean:
+	-${RM} src/${package}.${MODULE}.c
+	-${RM} src/include/${package}/${package}.${MODULE}.h
+	-${RM} src/include/${package}/${package}.${MODULE}_api.h
+	-${RM} src/lib${package}/lib${package}.[ch]
+
+.PHONY: clean distclean fullclean
 clean:
 	${PYTHON} setup.py clean --all
 distclean: clean
@@ -24,12 +36,6 @@ distclean: clean
 	-${RM} -r MANIFEST dist ${package}.egg-info
 	-${RM} -r `find . -name '__pycache__'`
 	-${RM} `find . -name '*.py[co]'`
-	-${RM} `find . -name '*~'`
-srcclean:
-	-${RM} src/${package}.${MODULE}.c
-	-${RM} src/lib${package}/lib${package}.[ch]
-	-${RM} src/include/${package}/${package}.${MODULE}.h
-	-${RM} src/include/${package}/${package}.${MODULE}_api.h
 fullclean: distclean srcclean docsclean
 	-find . -name '*~' -exec rm -f {} ';'
 
@@ -69,6 +75,7 @@ sphinx-html:
 	mkdir -p build/doctrees docs/usrman
 	${SPHINXBUILD} -b html -d build/doctrees ${SPHINXOPTS} \
 	docs/source docs/usrman
+	${RM} docs/usrman/.buildinfo
 sphinx-pdf:
 	${PYTHON} -c 'import ${package}.${MODULE}'
 	mkdir -p build/doctrees build/latex
@@ -97,7 +104,7 @@ epydoc: epydoc-html epydoc-pdf
 epydoc-html:
 	${PYTHON} -c 'import ${package}.${MODULE}'
 	mkdir -p docs/apiref
-	${EPYDOCBUILD} ${EPYDOCOPTS} -o docs/apiref
+	${EPYDOCBUILD} ${EPYDOCOPTS} --html -o docs/apiref
 epydoc-pdf:
 
 .PHONY: docsclean
@@ -109,7 +116,7 @@ docsclean:
 # ----
 
 .PHONY: sdist
-sdist: src docs
+sdist: srcbuild docs
 	${PYTHON} setup.py sdist ${SDISTOPT}
 
 # ----
