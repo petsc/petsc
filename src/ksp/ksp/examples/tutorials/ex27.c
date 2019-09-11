@@ -321,7 +321,7 @@ int main(int argc,char **args)
      test:
         # Load square matrix, RHS and initial guess from HDF5 (Version 7.3 MAT-File)
         suffix: 3b_hdf5
-        requires: hdf5 zlib
+        requires: hdf5 define(PETSC_HDF5_HAVE_ZLIB)
         nsize: {{1 2}separate output}
         args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system_with_x0.mat -hdf5
 
@@ -350,7 +350,7 @@ int main(int argc,char **args)
       # Load rectangular matrix from HDF5 (Version 7.3 MAT-File)
       suffix: 4a_lsqr_hdf5
       nsize: {{1 2 4 8}}
-      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) hdf5 zlib
+      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) hdf5 define(PETSC_HDF5_HAVE_ZLIB)
       args: -f ${DATAFILESPATH}/matrices/matlab/rectangular_ultrasound_4889x841.mat -hdf5
       args: -ksp_converged_reason -ksp_monitor_short -ksp_rtol 1e-5 -ksp_max_it 100
       args: -solve_normal 0 -ksp_type lsqr
@@ -369,7 +369,7 @@ int main(int argc,char **args)
    # Load a matrix, RHS and solution from HDF5 (Version 7.3 MAT-File). Test immediate convergence.
    testset:
      nsize: {{1 2 4 8}}
-     requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) hdf5 zlib
+     requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) hdf5 define(PETSC_HDF5_HAVE_ZLIB)
      args: -ksp_converged_reason -ksp_monitor_short -ksp_rtol 1e-5 -ksp_max_it 10
      args: -solve_normal 0 -ksp_type lsqr
      args: -test_custom_layout {{0 1}}

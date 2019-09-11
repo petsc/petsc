@@ -67,4 +67,18 @@ class Configure(config.package.GNUPackage):
       # libraries, but fall back to linking only C.
       self.liblist = [['libhdf5hl_fortran.a','libhdf5_fortran.a'] + libs for libs in self.liblist] + self.liblist
     config.package.GNUPackage.configureLibrary(self)
-    return
+
+    for i in ['ZLIB_H','SZLIB_H','PARALLEL']:
+      oldFlags = self.compilers.CPPFLAGS
+      self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
+      try:
+        output = self.outputPreprocess('#include "H5pubconf.h"\n#if defined(H5_HAVE_'+i+')\nfoundbeast\n#endif\n')
+      except:
+        self.log.write('Unable to run preprocessor to obtain '+i+' information\n')
+        self.compilers.CPPFLAGS = oldFlags
+        return
+      self.compilers.CPPFLAGS = oldFlags
+      if output.find('foundbeast') > -1:
+        if i.endswith('_H'): i = i[0:-2]
+        self.addDefine('HDF5_HAVE_'+i, 1)
+
