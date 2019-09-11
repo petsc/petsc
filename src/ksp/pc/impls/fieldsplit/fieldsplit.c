@@ -1,5 +1,4 @@
 
-
 #include <petsc/private/pcimpl.h>     /*I "petscpc.h" I*/
 #include <petsc/private/kspimpl.h>    /*  This is needed to provide the appropriate PETSC_EXTERN for KSP_Solve_FS ....*/
 #include <petscdm.h>
@@ -519,20 +518,22 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
           if (jac->splitdefined) {ierr = PetscInfo(pc,"Splits defined using the options database\n");CHKERRQ(ierr);}
         }
         if ((fieldsplit_default || !jac->splitdefined) && !jac->isrestrict) {
+          Mat       M = pc->pmat;
           PetscBool isnest;
 
           ierr = PetscInfo(pc,"Using default splitting of fields\n");CHKERRQ(ierr);
           ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATNEST,&isnest);CHKERRQ(ierr);
           if (!isnest) {
+            M    = pc->mat;
             ierr = PetscObjectTypeCompare((PetscObject)pc->mat,MATNEST,&isnest);CHKERRQ(ierr);
           }
           if (isnest) {
             IS       *fields;
             PetscInt nf;
 
-            ierr = MatNestGetSize(pc->pmat,&nf,NULL);CHKERRQ(ierr);
+            ierr = MatNestGetSize(M,&nf,NULL);CHKERRQ(ierr);
             ierr = PetscMalloc1(nf,&fields);CHKERRQ(ierr);
-            ierr = MatNestGetISs(pc->pmat,fields,NULL);CHKERRQ(ierr);
+            ierr = MatNestGetISs(M,fields,NULL);CHKERRQ(ierr);
             for (i=0;i<nf;i++) {
               ierr = PCFieldSplitSetIS(pc,NULL,fields[i]);CHKERRQ(ierr);
             }
