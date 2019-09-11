@@ -147,6 +147,7 @@
           <li>MatShift(Mat,0); will no longer silently insure there are no missing diagonal entries. (Previously it would put 0 into any diagonal entry that was missing</li>
           <li>Renamed MatComputeExplicitOperator() into MatComputeOperator() and MatComputeExplicitOperatorTranpose() into MatComputeOperatorTranspose(). Added extra argument to select the desired matrix type</li>
           <li>MatLoad() now supports loading dense matrices from HDF5/MAT files.</li>
+          <li>Added new Mat type, MATKAIJ, for matrices that can be expressed in a particular Kronecker (tensor) product form.
         </ul>
       <h4>PC:</h4>
         <ul>
