@@ -55,8 +55,8 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   v->adjacency[0]             = PETSC_FALSE;
   v->adjacency[1]             = PETSC_TRUE;
   v->depthLabel               = NULL;
-  v->localSection           = NULL;
-  v->globalSection     = NULL;
+  v->localSection             = NULL;
+  v->globalSection            = NULL;
   v->defaultConstraintSection = NULL;
   v->defaultConstraintMat     = NULL;
   v->L                        = NULL;
