@@ -647,7 +647,7 @@ static PetscErrorCode MatCreateVecs_Nest(Mat A,Vec *right,Vec *left)
 static PetscErrorCode MatView_Nest(Mat A,PetscViewer viewer)
 {
   Mat_Nest       *bA = (Mat_Nest*)A->data;
-  PetscBool      isascii;
+  PetscBool      isascii,viewSub = PETSC_FALSE;
   PetscInt       i,j;
   PetscErrorCode ierr;
 
@@ -655,6 +655,7 @@ static PetscErrorCode MatView_Nest(Mat A,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
 
+    ierr = PetscOptionsGetBool(((PetscObject)A)->options,((PetscObject)A)->prefix,"-mat_view_nest_sub",&viewSub,NULL);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"Matrix object: \n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "type=nest, rows=%D, cols=%D \n",bA->nr,bA->nc);CHKERRQ(ierr);
@@ -679,7 +680,7 @@ static PetscErrorCode MatView_Nest(Mat A,PetscViewer viewer)
 
         ierr = PetscViewerASCIIPrintf(viewer,"(%D,%D) : %s%stype=%s, rows=%D, cols=%D \n",i,j,name,prefix,type,NR,NC);CHKERRQ(ierr);
 
-        if (isNest) {
+        if (isNest || viewSub) {
           ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);  /* push1 */
           ierr = MatView(bA->m[i][j],viewer);CHKERRQ(ierr);
           ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);    /* pop1 */
@@ -738,7 +739,14 @@ static PetscErrorCode MatAXPY_Nest(Mat Y,PetscScalar a,Mat X,MatStructure str)
     for (j=0; j<nc; j++) {
       if (bY->m[i][j] && bX->m[i][j]) {
         ierr = MatAXPY(bY->m[i][j],a,bX->m[i][j],str);CHKERRQ(ierr);
-      } else if (bX->m[i][j]) SETERRQ2(PetscObjectComm((PetscObject)Y),PETSC_ERR_ARG_INCOMP,"Matrix block does not exist at %D,%D",i,j);
+      } else if (bX->m[i][j]) {
+        Mat M;
+
+        if (str != DIFFERENT_NONZERO_PATTERN) SETERRQ2(PetscObjectComm((PetscObject)Y),PETSC_ERR_ARG_INCOMP,"Matrix block does not exist at %D,%D",i,j);
+        ierr = MatDuplicate(bX->m[i][j],MAT_COPY_VALUES,&M);CHKERRQ(ierr);
+        ierr = MatNestSetSubMat(Y,i,j,M);CHKERRQ(ierr);
+        ierr = MatDestroy(&M);CHKERRQ(ierr);
+      }
     }
   }
   PetscFunctionReturn(0);
