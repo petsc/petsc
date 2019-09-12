@@ -89,7 +89,7 @@ c89-mlib-static-py2:
   variables:
     PYTHON: python2
     CONFIG_OPTS: --with-mpi-dir=/usr/local --with-single-library=0 --with-shared-libraries=0 CFLAGS=-std=c89
-    TEST_SEARCH: snes_tutorials-ex48%
+    TEST_SEARCH: snes_tutorials-ex19%
 
 checksource:
   extends: .test
