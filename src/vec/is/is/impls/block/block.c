@@ -201,9 +201,8 @@ static PetscErrorCode ISSortRemoveDups_Block(IS is)
   } else {
     ierr = PetscSortRemoveDupsInt(&nb,sub->idx);CHKERRQ(ierr);
   }
-  ierr = PetscLayoutSetLocalSize(is->map, nb*bs);CHKERRQ(ierr);
-  ierr = PetscLayoutSetSize(is->map, PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(is->map);CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(&is->map);CHKERRQ(ierr);
+  ierr = PetscLayoutCreateFromSizes(PetscObjectComm((PetscObject)is), nb*bs, PETSC_DECIDE, bs, &is->map);CHKERRQ(ierr);
   sub->sorted = PETSC_TRUE;
   PetscFunctionReturn(0);
 }

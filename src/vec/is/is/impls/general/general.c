@@ -508,6 +508,7 @@ static PetscErrorCode ISSort_General(IS is)
 static PetscErrorCode ISSortRemoveDups_General(IS is)
 {
   IS_General     *sub = (IS_General*)is->data;
+  PetscLayout    map;
   PetscInt       n;
   PetscErrorCode ierr;
 
@@ -518,9 +519,9 @@ static PetscErrorCode ISSortRemoveDups_General(IS is)
   } else {
     ierr = PetscSortRemoveDupsInt(&n,sub->idx);CHKERRQ(ierr);
   }
-  ierr = PetscLayoutSetLocalSize(is->map, n);CHKERRQ(ierr);
-  ierr = PetscLayoutSetSize(is->map, PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(is->map);CHKERRQ(ierr);
+  ierr = PetscLayoutCreateFromSizes(PetscObjectComm((PetscObject)is), n, PETSC_DECIDE, is->map->bs, &map);CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(&is->map);CHKERRQ(ierr);
+  is->map = map;
   sub->sorted = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
