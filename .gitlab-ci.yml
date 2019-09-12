@@ -80,9 +80,7 @@ uni-complex-float-int64:
   extends: .stage-1
   variables:
     PYTHON: python3
-    CONFIG_OPTS: <
-      --with-mpi=0
-      --with-scalar-type=complex --with-precision=single --with-64-bit-indices
+    CONFIG_OPTS: --with-mpi=0 --with-scalar-type=complex --with-precision=single --with-64-bit-indices
     TEST_SEARCH: ts_tutorials-ex11_adv_2d_quad_%
 
 c89-mlib-static-py2:
@@ -90,10 +88,8 @@ c89-mlib-static-py2:
   image: jedbrown/mpich-ccache:python2
   variables:
     PYTHON: python2
-    CONFIG_OPTS: <
-      --with-mpi-dir=/usr/local
-      --with-single-library=0 --with-shared-libraries=0 'CFLAGS=-std=c89 -pedantic -Wno-long-long -Wno-overlength-strings'
-    TEST_SEARCH: snes_tutorials-ex48%
+    CONFIG_OPTS: --with-mpi-dir=/usr/local --with-single-library=0 --with-shared-libraries=0 CFLAGS=-std=c89
+    TEST_SEARCH: snes_tutorials-ex19%
 
 checksource:
   extends: .test
@@ -117,6 +113,7 @@ checksource:
     - ./config/examples/${TEST_ARCH}.py
     - make
     - make check
+    - make updatedatafiles
     - make cleantest allgtests-tap TIMEOUT=${TIMEOUT}
   artifacts:
     reports:
@@ -247,7 +244,7 @@ freebsd-cxx-cmplx-64idx-dbg:
 
 opensolaris-misc:
   extends:
-    - .stage-2
+    - .stage-3
     - .opensolaris_test
   tags:
     - name:n-gage
@@ -269,7 +266,7 @@ mswin-uni:
     - .stage-2
     - .mswin_test
   tags:
-    - name:ps5
+    - name:ps5-2
   variables:
     TEST_ARCH: arch-ci-mswin-uni
 
