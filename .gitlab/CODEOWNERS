@@ -16,3 +16,7 @@
 
 /src/docs/              @psanan @sbalay
 
+/config/*               @krugers
+gmakefile*              @krugers
+/lib/petsc              @krugers
+
