@@ -284,7 +284,10 @@ int main(int argc,char **argv)
     Tao tao;
     Vec P;
     Vec lambda[1];
+    PetscLogStage opt_stage;
 
+    ierr = PetscLogStageRegister("Optimization",&opt_stage);CHKERRQ(ierr);
+    ierr = PetscLogStagePush(opt_stage);CHKERRQ(ierr);
     if (perturbic == 1) {
       ierr = PerturbedInitialConditions(da,appctx.U);CHKERRQ(ierr);
     } else if (perturbic == 2) {
@@ -314,18 +317,11 @@ int main(int argc,char **argv)
     /* Check for any TAO command line options */
     ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
 
-    /*
-    ierr = TaoGetKSP(tao,&ksp);CHKERRQ(ierr);
-    if (ksp) {
-      ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-      ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
-    }
-    */
-
     ierr = TaoSolve(tao);CHKERRQ(ierr);
     ierr = TaoDestroy(&tao);CHKERRQ(ierr);
     ierr = VecDestroy(&lambda[0]);CHKERRQ(ierr);
     ierr = VecDestroy(&P);CHKERRQ(ierr);
+    ierr = PetscLogStagePop();CHKERRQ(ierr);
   }
 
   /* Free work space.  All PETSc objects should be destroyed when they
@@ -670,7 +666,6 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A,Mat 
 PetscErrorCode FormFunctionAndGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
 {
   AppCtx         *appctx = (AppCtx*)ctx;
-  TSTrajectory   tj;
   PetscReal      soberr,timestep;
   Vec            *lambda;
   Vec            SDiff;
@@ -710,8 +705,6 @@ PetscErrorCode FormFunctionAndGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ct
   ierr = VecCopy(lambda[0],G);CHKERRQ(ierr);
 
   ierr = VecDestroy(&SDiff);CHKERRQ(ierr);
-  ierr = TSGetTrajectory(appctx->ts,&tj);CHKERRQ(ierr);
-  ierr = TSTrajectoryReset(tj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
