@@ -462,7 +462,7 @@ int main(int argc, char **argv)
     requires: triangle !single
     args: -dm_plex_separate_marker -dm_refine 1 \
       -vel_petscspace_degree 2 -pres_petscspace_degree 1 \
-      -dmsnes_check -snes_error_if_not_converged \
+      -dmsnes_check .001 -snes_error_if_not_converged \
       -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
       -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full \
         -fieldsplit_velocity_pc_type lu \
@@ -472,7 +472,7 @@ int main(int argc, char **argv)
     requires: triangle !single
     args: -dm_plex_separate_marker -dm_refine 0 -u_0 0.125 -alpha 0.3927 \
       -vel_petscspace_degree 2 -pres_petscspace_degree 1 \
-      -dmsnes_check -snes_error_if_not_converged \
+      -dmsnes_check .001 -snes_error_if_not_converged \
       -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
       -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full \
         -fieldsplit_velocity_pc_type lu \
@@ -482,7 +482,7 @@ int main(int argc, char **argv)
     requires: triangle !single
     args: -dm_plex_separate_marker -cells 2,2 -dm_refine_hierarchy 1 \
       -vel_petscspace_degree 2 -pres_petscspace_degree 1 \
-      -dmsnes_check -snes_error_if_not_converged \
+      -dmsnes_check .001 -snes_error_if_not_converged \
       -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
       -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full \
         -fieldsplit_velocity_pc_type mg \

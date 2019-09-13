@@ -96,7 +96,7 @@ int main(int argc,char **argv)
      report the reason if the iteration did not converge so that the tests are
      reproducible.
   */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"%s number of SNES iterations = %D\n",reason>0 ? "CONVERGED" : (char*) SNESConvergedReasons[reason],its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"%s number of SNES iterations = %D\n",reason>0 ? "CONVERGED" : SNESConvergedReasons[reason],its);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
