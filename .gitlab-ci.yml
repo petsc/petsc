@@ -119,6 +119,8 @@ checksource:
   artifacts:
     reports:
       junit: ${TEST_ARCH}/tests/testresults.xml
+  variables:
+    OPENBLAS_NUM_THREADS: 1
 
 .stage-2:
   extends: .stage-23
@@ -449,7 +451,6 @@ linux-cuda-single:
   tags:
     - name:frog
   variables:
-    OPENBLAS_NUM_THREADS: 1
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -cuda_initialize 0
     TEST_ARCH: arch-ci-linux-cuda-single
 
@@ -469,7 +470,6 @@ linux-opt-misc:
   tags:
     - name:compute004
   variables:
-    OPENBLAS_NUM_THREADS: 1
     TEST_ARCH: arch-ci-linux-opt-misc
 
 linux-pkgs-cxx-mlib:
@@ -534,7 +534,6 @@ linux-ILP64:
   tags:
     - name:compute004
   variables:
-    OPENBLAS_NUM_THREADS: 1
     TEST_ARCH: arch-ci-linux-ILP64
 
 linux-matlab-ilp64-gcov:
