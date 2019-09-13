@@ -3738,6 +3738,94 @@ PetscErrorCode  DMLoad(DM newdm, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMGetLocalBoundingBox - Returns the bounding box for the piece of the DM on this process.
+
+  Not collective
+
+  Input Parameter:
+. dm - the DM
+
+  Output Parameters:
++ lmin - local minimum coordinates (length coord dim, optional)
+- lmax - local maximim coordinates (length coord dim, optional)
+
+  Level: beginner
+
+  Note: If the DM is a DMDA and has no coordinates, the index bounds are returned instead.
+
+  Not supported from Fortran
+
+.seealso: DMGetCoordinates(), DMGetCoordinatesLocal(), DMGetBoundingBox()
+@*/
+PetscErrorCode DMGetLocalBoundingBox(DM dm, PetscReal lmin[], PetscReal lmax[])
+{
+  Vec                coords = NULL;
+  PetscReal          min[3] = {PETSC_MAX_REAL, PETSC_MAX_REAL, PETSC_MAX_REAL};
+  PetscReal          max[3] = {PETSC_MIN_REAL, PETSC_MIN_REAL, PETSC_MIN_REAL};
+  const PetscScalar *local_coords;
+  PetscInt           N, Ni;
+  PetscInt           cdim, i, j;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMGetCoordinateDim(dm, &cdim);CHKERRQ(ierr);
+  ierr = DMGetCoordinates(dm, &coords);CHKERRQ(ierr);
+  if (coords) {
+    ierr = VecGetArrayRead(coords, &local_coords);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(coords, &N);CHKERRQ(ierr);
+    Ni   = N/cdim;
+    for (i = 0; i < Ni; ++i) {
+      for (j = 0; j < 3; ++j) {
+        min[j] = j < cdim ? PetscMin(min[j], PetscRealPart(local_coords[i*cdim+j])) : 0;
+        max[j] = j < cdim ? PetscMax(max[j], PetscRealPart(local_coords[i*cdim+j])) : 0;
+      }
+    }
+    ierr = VecRestoreArrayRead(coords, &local_coords);CHKERRQ(ierr);
+  } else {
+    PetscBool isda;
+
+    ierr = PetscObjectTypeCompare((PetscObject) dm, DMDA, &isda);CHKERRQ(ierr);
+    if (isda) {ierr = DMGetLocalBoundingIndices_DMDA(dm, min, max);CHKERRQ(ierr);}
+  }
+  if (lmin) {ierr = PetscArraycpy(lmin, min, cdim);CHKERRQ(ierr);}
+  if (lmax) {ierr = PetscArraycpy(lmax, max, cdim);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMGetBoundingBox - Returns the global bounding box for the DM.
+
+  Collective
+
+  Input Parameter:
+. dm - the DM
+
+  Output Parameters:
++ gmin - global minimum coordinates (length coord dim, optional)
+- gmax - global maximim coordinates (length coord dim, optional)
+
+  Level: beginner
+
+.seealso: DMGetLocalBoundingBox(), DMGetCoordinates(), DMGetCoordinatesLocal()
+@*/
+PetscErrorCode DMGetBoundingBox(DM dm, PetscReal gmin[], PetscReal gmax[])
+{
+  PetscReal      lmin[3], lmax[3];
+  PetscMPIInt    cdim, count;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMGetCoordinateDim(dm, &cdim);CHKERRQ(ierr);
+  ierr = PetscMPIIntCast(cdim, &count);CHKERRQ(ierr);
+  ierr = DMGetLocalBoundingBox(dm, lmin, lmax);CHKERRQ(ierr);
+  if (gmin) {ierr = MPIU_Allreduce(lmin, gmin, count, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject) dm));CHKERRQ(ierr);}
+  if (gmax) {ierr = MPIU_Allreduce(lmax, gmax, count, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject) dm));CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
 /******************************** FEM Support **********************************/
 
 PetscErrorCode DMPrintCellVector(PetscInt c, const char name[], PetscInt len, const PetscScalar x[])

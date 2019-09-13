@@ -465,4 +465,6 @@ PETSC_EXTERN PetscErrorCode DMGetBasisTransformDM_Internal(DM, DM *);
 PETSC_EXTERN PetscErrorCode DMGetBasisTransformVec_Internal(DM, Vec *);
 PETSC_INTERN PetscErrorCode DMConstructBasisTransform_Internal(DM);
 
+PETSC_INTERN PetscErrorCode DMGetLocalBoundingIndices_DMDA(DM, PetscReal[], PetscReal[]);
+
 #endif

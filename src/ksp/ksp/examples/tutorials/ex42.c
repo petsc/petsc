@@ -1161,7 +1161,7 @@ static PetscErrorCode DMDAIntegrateErrors3D(DM stokes_da,Vec X,Vec X_analytic)
   ierr = DMDAVecGetArray(stokes_da,X_local,&stokes);CHKERRQ(ierr);
 
   ierr = DMDAGetInfo(stokes_da,0,&M,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = DMDAGetBoundingBox(stokes_da,xymin,xymax);CHKERRQ(ierr);
+  ierr = DMGetBoundingBox(stokes_da,xymin,xymax);CHKERRQ(ierr);
 
   h = (xymax[0]-xymin[0])/((PetscReal)(M-1));
 
