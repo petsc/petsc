@@ -127,6 +127,12 @@
           <li>VecCUDAGet/RestoreArrayReadWrite() changed to VecCUDAGet/RestoreArray()</li>
           <li>VecViennaCLGet/RestoreArrayReadWrite() changed to VecViennaCLGet/RestoreArray()</li>
         </ul>
+      <h4>PetscLayout:</h4>
+      <ul>
+        <li>Added PetscLayoutCreateFromSizes()</li>
+        <li>Added PetscLayoutCreateFromRanges()</li>
+        <li>Calling PetscLayoutSetUp() twice with different sizes is now forbidden</li>
+      </ul>
       <h4>PetscSection:</h4>
       <h4>VecScatter:</h4>
       <ul>

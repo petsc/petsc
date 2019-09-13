@@ -215,12 +215,16 @@ struct _n_PetscLayout{
   PetscInt               n,N;         /* local, global vector size */
   PetscInt               rstart,rend; /* local start, local end + 1 */
   PetscInt               *range;      /* the offset of each processor */
+  PetscBool              range_alloc; /* should range be freed in Destroy? */
   PetscInt               bs;          /* number of elements in each block (generally for multi-component
                                        * problems). Defaults to -1 and can be arbitrarily lazy so always use
                                        * PetscAbs(map->bs) when accessing directly and expecting result to be
                                        * positive. Do NOT multiply above numbers by bs */
   PetscInt               refcnt;      /* MPI Vecs obtained with VecDuplicate() and from MatCreateVecs() reuse map of input object */
   ISLocalToGlobalMapping mapping;     /* mapping used in Vec/MatSetValuesLocal() */
+  PetscBool              setupcalled; /* Forbid setup more than once */
+  PetscInt               oldn,oldN;   /* Checking if setup is allowed */
+  PetscInt               oldbs;       /* And again */
 };
 
 /*@C
@@ -299,6 +303,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLayoutFindOwnerIndex(PetscLayout map,Pet
 }
 
 PETSC_EXTERN PetscErrorCode PetscLayoutCreate(MPI_Comm,PetscLayout*);
+PETSC_EXTERN PetscErrorCode PetscLayoutCreateFromSizes(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscLayout*);
+PETSC_EXTERN PetscErrorCode PetscLayoutCreateFromRanges(MPI_Comm,const PetscInt[],PetscCopyMode,PetscInt,PetscLayout*);
 PETSC_EXTERN PetscErrorCode PetscLayoutSetUp(PetscLayout);
 PETSC_EXTERN PetscErrorCode PetscLayoutDestroy(PetscLayout*);
 PETSC_EXTERN PetscErrorCode PetscLayoutDuplicate(PetscLayout,PetscLayout*);

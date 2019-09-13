@@ -15,8 +15,6 @@ PETSC_EXTERN PetscBool ISLocalToGlobalMappingRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode ISRegisterAll(void);
 
 struct _ISOps {
-  PetscErrorCode (*getsize)(IS,PetscInt*);
-  PetscErrorCode (*getlocalsize)(IS,PetscInt*);
   PetscErrorCode (*getindices)(IS,const PetscInt*[]);
   PetscErrorCode (*restoreindices)(IS,const PetscInt*[]);
   PetscErrorCode (*invertpermutation)(IS,PetscInt,IS*);

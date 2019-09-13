@@ -156,24 +156,6 @@ static PetscErrorCode ISRestoreIndices_General(IS in,const PetscInt *idx[])
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode ISGetSize_General(IS is,PetscInt *size)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscLayoutGetSize(is->map, size);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode ISGetLocalSize_General(IS is,PetscInt *size)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscLayoutGetLocalSize(is->map, size);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode ISInvertPermutation_General(IS is,PetscInt nlocal,IS *isout)
 {
   IS_General     *sub = (IS_General*)is->data;
@@ -526,6 +508,7 @@ static PetscErrorCode ISSort_General(IS is)
 static PetscErrorCode ISSortRemoveDups_General(IS is)
 {
   IS_General     *sub = (IS_General*)is->data;
+  PetscLayout    map;
   PetscInt       n;
   PetscErrorCode ierr;
 
@@ -536,9 +519,9 @@ static PetscErrorCode ISSortRemoveDups_General(IS is)
   } else {
     ierr = PetscSortRemoveDupsInt(&n,sub->idx);CHKERRQ(ierr);
   }
-  ierr = PetscLayoutSetLocalSize(is->map, n);CHKERRQ(ierr);
-  ierr = PetscLayoutSetSize(is->map, PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(is->map);CHKERRQ(ierr);
+  ierr = PetscLayoutCreateFromSizes(PetscObjectComm((PetscObject)is), n, PETSC_DECIDE, is->map->bs, &map);CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(&is->map);CHKERRQ(ierr);
+  is->map = map;
   sub->sorted = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -558,9 +541,7 @@ PetscErrorCode  ISToGeneral_General(IS is)
   PetscFunctionReturn(0);
 }
 
-static struct _ISOps myops = { ISGetSize_General,
-                               ISGetLocalSize_General,
-                               ISGetIndices_General,
+static struct _ISOps myops = { ISGetIndices_General,
                                ISRestoreIndices_General,
                                ISInvertPermutation_General,
                                ISSort_General,
@@ -676,6 +657,7 @@ PetscErrorCode  ISGeneralSetIndices(IS is,PetscInt n,const PetscInt idx[],PetscC
 
 PetscErrorCode  ISGeneralSetIndices_General(IS is,PetscInt n,const PetscInt idx[],PetscCopyMode mode)
 {
+  PetscLayout    map;
   PetscErrorCode ierr;
   IS_General     *sub = (IS_General*)is->data;
 
@@ -683,10 +665,9 @@ PetscErrorCode  ISGeneralSetIndices_General(IS is,PetscInt n,const PetscInt idx[
   if (n < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"length < 0");
   if (n) PetscValidIntPointer(idx,3);
 
-  ierr = PetscLayoutSetLocalSize(is->map,n);CHKERRQ(ierr);
-  /* TODO: Without this, global size wouldn't be recomputed. This shows PetscLayoutSetSize should rather set local and global at once. */
-  ierr = PetscLayoutSetSize(is->map,-1);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(is->map);CHKERRQ(ierr);
+  ierr = PetscLayoutCreateFromSizes(PetscObjectComm((PetscObject)is),n,PETSC_DECIDE,is->map->bs,&map);CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(&is->map);CHKERRQ(ierr);
+  is->map = map;
 
   if (sub->allocated) {ierr = PetscFree(sub->idx);CHKERRQ(ierr);}
   if (mode == PETSC_COPY_VALUES) {

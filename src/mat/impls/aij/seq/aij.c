@@ -3559,11 +3559,9 @@ PetscErrorCode  MatSeqAIJCompactOutExtraColumns_SeqAIJ(Mat mat, ISLocalToGlobalM
       aij->j[aij->i[i] + j] = lid;
     }
   }
-  mat->cmap->n = mat->cmap->N = ec;
-  mat->cmap->bs = 1;
-
+  ierr = PetscLayoutDestroy(&mat->cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutCreateFromSizes(PetscObjectComm((PetscObject)mat),ec,ec,1,&mat->cmap);CHKERRQ(ierr);
   ierr = PetscTableDestroy(&gid1_lid1);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp((mat->cmap));CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,mat->cmap->bs,mat->cmap->n,garray,PETSC_OWN_POINTER,mapping);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingSetType(*mapping,ISLOCALTOGLOBALMAPPINGHASH);CHKERRQ(ierr);
   PetscFunctionReturn(0);

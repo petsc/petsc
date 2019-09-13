@@ -7,7 +7,7 @@
 #include <petscviewer.h>
 
 typedef struct {
-  PetscInt N,n,first,step;
+  PetscInt first,step;
 } IS_Stride;
 
 PetscErrorCode ISIdentity_Stride(IS is,PetscBool  *ident)
@@ -40,21 +40,20 @@ PetscErrorCode ISDuplicate_Stride(IS is,IS *newIS)
   IS_Stride      *sub = (IS_Stride*)is->data;
 
   PetscFunctionBegin;
-  ierr = ISCreateStride(PetscObjectComm((PetscObject)is),sub->n,sub->first,sub->step,newIS);CHKERRQ(ierr);
+  ierr = ISCreateStride(PetscObjectComm((PetscObject)is),is->map->n,sub->first,sub->step,newIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode ISInvertPermutation_Stride(IS is,PetscInt nlocal,IS *perm)
 {
-  IS_Stride      *isstride = (IS_Stride*)is->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (is->isidentity) {
-    ierr = ISCreateStride(PETSC_COMM_SELF,isstride->n,0,1,perm);CHKERRQ(ierr);
+    ierr = ISCreateStride(PETSC_COMM_SELF,is->map->n,0,1,perm);CHKERRQ(ierr);
   } else {
     IS             tmp;
-    const PetscInt *indices,n = isstride->n;
+    const PetscInt *indices,n = is->map->n;
     ierr = ISGetIndices(is,&indices);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PetscObjectComm((PetscObject)is),n,indices,PETSC_COPY_VALUES,&tmp);CHKERRQ(ierr);
     ierr = ISSetPermutation(tmp);CHKERRQ(ierr);
@@ -140,7 +139,7 @@ PetscErrorCode ISLocate_Stride(IS is,PetscInt key,PetscInt *location)
   step      = sub->step;
   key      -= sub->first;
   rem       = key / step;
-  if ((rem < sub->n) && !(key % step)) {
+  if ((rem < is->map->n) && !(key % step)) {
     *location = rem;
   }
   PetscFunctionReturn(0);
@@ -150,17 +149,17 @@ PetscErrorCode ISLocate_Stride(IS is,PetscInt key,PetscInt *location)
      Returns a legitimate index memory even if
    the stride index set is empty.
 */
-PetscErrorCode ISGetIndices_Stride(IS in,const PetscInt *idx[])
+PetscErrorCode ISGetIndices_Stride(IS is,const PetscInt *idx[])
 {
-  IS_Stride      *sub = (IS_Stride*)in->data;
+  IS_Stride      *sub = (IS_Stride*)is->data;
   PetscErrorCode ierr;
   PetscInt       i,**dx = (PetscInt**)idx;
 
   PetscFunctionBegin;
-  ierr      = PetscMalloc1(sub->n,(PetscInt**)idx);CHKERRQ(ierr);
-  if (sub->n) {
+  ierr      = PetscMalloc1(is->map->n,(PetscInt**)idx);CHKERRQ(ierr);
+  if (is->map->n) {
     (*dx)[0] = sub->first;
-    for (i=1; i<sub->n; i++) (*dx)[i] = (*dx)[i-1] + sub->step;
+    for (i=1; i<is->map->n; i++) (*dx)[i] = (*dx)[i-1] + sub->step;
   }
   PetscFunctionReturn(0);
 }
@@ -174,28 +173,10 @@ PetscErrorCode ISRestoreIndices_Stride(IS in,const PetscInt *idx[])
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ISGetSize_Stride(IS is,PetscInt *size)
-{
-  IS_Stride *sub = (IS_Stride*)is->data;
-
-  PetscFunctionBegin;
-  *size = sub->N;
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode ISGetLocalSize_Stride(IS is,PetscInt *size)
-{
-  IS_Stride *sub = (IS_Stride*)is->data;
-
-  PetscFunctionBegin;
-  *size = sub->n;
-  PetscFunctionReturn(0);
-}
-
 PetscErrorCode ISView_Stride(IS is,PetscViewer viewer)
 {
   IS_Stride         *sub = (IS_Stride*)is->data;
-  PetscInt          i,n = sub->n;
+  PetscInt          i,n = is->map->n;
   PetscMPIInt       rank,size;
   PetscBool         iascii;
   PetscViewerFormat fmt;
@@ -255,7 +236,7 @@ PetscErrorCode ISSort_Stride(IS is)
 
   PetscFunctionBegin;
   if (sub->step >= 0) PetscFunctionReturn(0);
-  sub->first += (sub->n - 1)*sub->step;
+  sub->first += (is->map->n - 1)*sub->step;
   sub->step  *= -1;
   PetscFunctionReturn(0);
 }
@@ -276,7 +257,7 @@ static PetscErrorCode ISOnComm_Stride(IS is,MPI_Comm comm,PetscCopyMode mode,IS 
   IS_Stride      *sub = (IS_Stride*)is->data;
 
   PetscFunctionBegin;
-  ierr = ISCreateStride(comm,sub->n,sub->first,sub->step,newis);CHKERRQ(ierr);
+  ierr = ISCreateStride(comm,is->map->n,sub->first,sub->step,newis);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -296,7 +277,7 @@ static PetscErrorCode ISContiguousLocal_Stride(IS is,PetscInt gstart,PetscInt ge
   IS_Stride *sub = (IS_Stride*)is->data;
 
   PetscFunctionBegin;
-  if (sub->step == 1 && sub->first >= gstart && sub->first+sub->n <= gend) {
+  if (sub->step == 1 && sub->first >= gstart && sub->first+is->map->n <= gend) {
     *start  = sub->first - gstart;
     *contig = PETSC_TRUE;
   } else {
@@ -307,9 +288,7 @@ static PetscErrorCode ISContiguousLocal_Stride(IS is,PetscInt gstart,PetscInt ge
 }
 
 
-static struct _ISOps myops = { ISGetSize_Stride,
-                               ISGetLocalSize_Stride,
-                               ISGetIndices_Stride,
+static struct _ISOps myops = { ISGetIndices_Stride,
                                ISRestoreIndices_Stride,
                                ISInvertPermutation_Stride,
                                ISSort_Stride,
@@ -358,10 +337,13 @@ PetscErrorCode  ISStrideSetStride_Stride(IS is,PetscInt n,PetscInt first,PetscIn
   PetscErrorCode ierr;
   PetscInt       min,max;
   IS_Stride      *sub = (IS_Stride*)is->data;
+  PetscLayout    map;
 
   PetscFunctionBegin;
-  sub->n     = n;
-  ierr       = MPIU_Allreduce(&n,&sub->N,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)is));CHKERRQ(ierr);
+  ierr = PetscLayoutCreateFromSizes(PetscObjectComm((PetscObject)is),n,is->map->N,is->map->bs,&map);CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(&is->map);CHKERRQ(ierr);
+  is->map = map;
+
   sub->first = first;
   sub->step  = step;
   if (step > 0) {min = first; max = first + step*(n-1);}
