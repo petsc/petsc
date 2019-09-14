@@ -808,33 +808,6 @@ static PetscErrorCode TSAdjointSetUp_RK(TS ts)
 }
 
 /*
-  Use SNES to compute the Jacobian so that finite differencing could be used when TS Jacobian is not available.
-*/
-static PetscErrorCode TSFormRHSJacobian_Private(Vec x,Mat J,Mat Jpre,TS ts)
-{
-  SNES           snes = ts->snes;
-  PetscErrorCode (*jac)(SNES,Vec,Mat,Mat,void*) = NULL;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  /*
-    Unlike implicit methods, explicit methods do not have SNESMatFDColoring in the snes object
-    because SNESSolve() has not been called yet. Insteading of querying it, we check the
-    Jacobian compute function directly to determin if FD coloring is used.
-  */
-  ierr = SNESGetJacobian(snes,NULL,NULL,&jac,NULL);CHKERRQ(ierr);
-  if (jac == SNESComputeJacobianDefaultColor) {
-    Vec f;
-    ierr = SNESSetSolution(snes,x);CHKERRQ(ierr);
-    ierr = SNESGetFunction(snes,&f,NULL,NULL);CHKERRQ(ierr);
-    /* Force MatFDColoringApply to evaluate the SNES residual function for the base vector */
-    ierr = SNESComputeFunction(snes,x,f);CHKERRQ(ierr);
-  }
-  ierr = SNESComputeJacobian(snes,x,J,Jpre);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*
   Assumptions:
     - TSStep_RK() always evaluates the step with b, not bembed.
 */
@@ -868,7 +841,7 @@ static PetscErrorCode TSAdjointStep_RK(TS ts)
       continue;
     }
     rk->stage_time = t + h*(1.0-c[i]);
-    ierr = TSFormRHSJacobian_Private(Y[i],J,Jpre,ts);CHKERRQ(ierr);
+    ierr = TSComputeSNESJacobian(ts,Y[i],J,Jpre);CHKERRQ(ierr);
     if (quadts) {
       ierr = TSComputeRHSJacobian(quadts,rk->stage_time,Y[i],Jquad,Jquad);CHKERRQ(ierr); /* get r_u^T */
     }
