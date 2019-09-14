@@ -96,6 +96,7 @@ class Configure(config.package.Package):
 
   def checkLapack(self, lapackLibrary, otherLibs, fortranMangle, routinesIn = ['getrs', 'geev']):
     oldLibs = self.compilers.LIBS
+    if not isinstance(routinesIn, list): routinesIn = [routinesIn]
     routines = list(routinesIn)
     found   = 1
     prototypes = ['','']
