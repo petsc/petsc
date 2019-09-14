@@ -257,28 +257,6 @@ static PetscErrorCode TSStep_Theta(TS ts)
   PetscFunctionReturn(0);
 }
 
-/*
-  Use SNES to compute the Jacobian so that finite differencing could be used when TS Jacobian is not available.
-*/
-static PetscErrorCode KSPTSFormOperator_Private(KSP ksp,Vec x,Mat J,Mat Jpre,TS ts)
-{
-  SNES           snes = ts->snes;
-  MatFDColoring  color;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  /* Force MatFDColoringApply to evaluate the SNES residual function for the base vector */
-  ierr = PetscObjectQuery((PetscObject)Jpre,"SNESMatFDColoring",(PetscObject*)&color);CHKERRQ(ierr);
-  if (color) {
-    Vec f;
-    ierr = SNESGetFunction(snes,&f,NULL,NULL);CHKERRQ(ierr);
-    ierr = SNESComputeFunction(snes,x,f);CHKERRQ(ierr);
-  }
-  ierr = SNESComputeJacobian(snes,x,J,Jpre);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,J,Jpre);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode TSAdjointStepBEuler_Private(TS ts)
 {
   TS_Theta       *th = (TS_Theta*)ts->data;
@@ -331,7 +309,8 @@ static PetscErrorCode TSAdjointStepBEuler_Private(TS ts)
   }
 
   /* Build LHS for first-order adjoint */
-  ierr = KSPTSFormOperator_Private(ksp,th->X,J,Jpre,ts);CHKERRQ(ierr);
+  ierr = TSComputeSNESJacobian(ts,th->X,J,Jpre);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,J,Jpre);CHKERRQ(ierr);
 
   /* Solve stage equation LHS*lambda_s = RHS for first-order adjoint */
   for (nadj=0; nadj<ts->numcost; nadj++) {
@@ -375,8 +354,9 @@ static PetscErrorCode TSAdjointStepBEuler_Private(TS ts)
   /* Update sensitivities, and evaluate integrals if there is any */
   if (!isexplicitode) {
     th->shift = 0.0;
-    ierr  = KSPTSFormOperator_Private(ksp,th->X,J,Jpre,ts);CHKERRQ(ierr);
-    ierr  = MatScale(J,-1.);CHKERRQ(ierr);
+    ierr = TSComputeSNESJacobian(ts,th->X,J,Jpre);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp,J,Jpre);CHKERRQ(ierr);
+    ierr = MatScale(J,-1.);CHKERRQ(ierr);
     for (nadj=0; nadj<ts->numcost; nadj++) {
       /* Add f_U \lambda_s to the original RHS */
       ierr = MatMultTransposeAdd(J,VecsDeltaLam[nadj],VecsSensiTemp[nadj],VecsSensiTemp[nadj]);CHKERRQ(ierr);
@@ -487,9 +467,9 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
   /* Build LHS for first-order adjoint */
   th->shift = 1./(th->Theta*th->time_step);
   if (th->endpoint) {
-    ierr = KSPTSFormOperator_Private(ksp,ts->vec_sol,J,Jpre,ts);CHKERRQ(ierr);
+    ierr = TSComputeSNESJacobian(ts,ts->vec_sol,J,Jpre);CHKERRQ(ierr);
   } else {
-    ierr = KSPTSFormOperator_Private(ksp,th->X,J,Jpre,ts);CHKERRQ(ierr);
+    ierr = TSComputeSNESJacobian(ts,th->X,J,Jpre);CHKERRQ(ierr);
   }
   ierr = KSPSetOperators(ksp,J,Jpre);CHKERRQ(ierr);
 
@@ -540,7 +520,8 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
   if(th->endpoint) { /* two-stage Theta methods with th->Theta!=1, th->Theta==1 leads to BEuler */
     th->shift      = 1./((th->Theta-1.)*th->time_step);
     th->stage_time = th->ptime;
-    ierr           = KSPTSFormOperator_Private(ksp,th->X0,J,Jpre,ts);CHKERRQ(ierr);
+    ierr           = TSComputeSNESJacobian(ts,th->X0,J,Jpre);CHKERRQ(ierr);
+    ierr           = KSPSetOperators(ksp,J,Jpre);CHKERRQ(ierr);
     /* R_U at t_n */
     if (quadts) {
       ierr = TSComputeRHSJacobian(quadts,th->ptime,th->X0,quadJ,NULL);CHKERRQ(ierr);
@@ -651,7 +632,8 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
     }
   } else { /* one-stage case */
     th->shift = 0.0;
-    ierr      = KSPTSFormOperator_Private(ksp,th->X,J,Jpre,ts);CHKERRQ(ierr); /* get -f_y*/
+    ierr      = TSComputeSNESJacobian(ts,th->X,J,Jpre);CHKERRQ(ierr); /* get -f_y */
+    ierr      = KSPSetOperators(ksp,J,Jpre);CHKERRQ(ierr);
     if (quadts) {
       ierr  = TSComputeRHSJacobian(quadts,th->stage_time,th->X,quadJ,NULL);CHKERRQ(ierr);
     }
