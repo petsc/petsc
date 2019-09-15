@@ -150,9 +150,11 @@ static PetscErrorCode MatMumpsSolveSchur_Private(Mat F)
   ierr = MatFactorFactorizeSchurComplement(F);CHKERRQ(ierr);
   ierr = MatFactorGetSchurComplement(F,&S,&schurstatus);CHKERRQ(ierr);
   ierr = MatCreateSeqDense(PETSC_COMM_SELF,mumps->id.size_schur,mumps->id.nrhs,(PetscScalar*)mumps->id.redrhs,&B);CHKERRQ(ierr);
+  ierr = MatSetType(B,((PetscObject)S)->type_name);CHKERRQ(ierr);
   switch (schurstatus) {
   case MAT_FACTOR_SCHUR_FACTORED:
     ierr = MatCreateSeqDense(PETSC_COMM_SELF,mumps->id.size_schur,mumps->id.nrhs,(PetscScalar*)mumps->id.redrhs,&X);CHKERRQ(ierr);
+    ierr = MatSetType(X,((PetscObject)S)->type_name);CHKERRQ(ierr);
     if (!mumps->id.ICNTL(9)) { /* transpose solve */
       ierr = MatMatSolveTranspose(S,B,X);CHKERRQ(ierr);
     } else {
@@ -167,6 +169,7 @@ static PetscErrorCode MatMumpsSolveSchur_Private(Mat F)
       mumps->schur_sizesol = sizesol;
     }
     ierr = MatCreateSeqDense(PETSC_COMM_SELF,mumps->id.size_schur,mumps->id.nrhs,mumps->schur_sol,&X);CHKERRQ(ierr);
+    ierr = MatSetType(X,((PetscObject)S)->type_name);CHKERRQ(ierr);
     if (!mumps->id.ICNTL(9)) { /* transpose solve */
       ierr = MatTransposeMatMult(S,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&X);CHKERRQ(ierr);
     } else {
@@ -886,9 +889,9 @@ PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x)
     PetscFunctionReturn(0);
   }
 
-  mumps->id.ICNTL(20)= 0; /* dense RHS */
-  mumps->id.nrhs     = 1;
-  b_seq          = mumps->b_seq;
+  mumps->id.ICNTL(20) = 0; /* dense RHS */
+  mumps->id.nrhs      = 1;
+  b_seq               = mumps->b_seq;
   if (mumps->petsc_size > 1) {
     /* MUMPS only supports centralized rhs. Scatter b into a seqential rhs vector */
     ierr = VecScatterBegin(mumps->scat_rhs,b,b_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);

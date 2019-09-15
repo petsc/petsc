@@ -426,7 +426,7 @@ PetscErrorCode MatPinToCPU(Mat A,PetscBool flg)
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
   PetscErrorCode ierr;
 
-  if (A->pinnedtocpu == flg) return 0;
+  if (A->pinnedtocpu == flg) PetscFunctionReturn(0);
   A->pinnedtocpu = flg;
   if (A->ops->pintocpu) {
     ierr = (*A->ops->pintocpu)(A,flg);CHKERRQ(ierr);

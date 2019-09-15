@@ -3291,7 +3291,7 @@ PetscErrorCode MatSolve(Mat mat,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatMatSolve_Basic(Mat A,Mat B,Mat X, PetscBool trans)
+static PetscErrorCode MatMatSolve_Basic(Mat A,Mat B,Mat X,PetscBool trans)
 {
   PetscErrorCode ierr;
   Vec            b,x;
@@ -3299,7 +3299,7 @@ static PetscErrorCode MatMatSolve_Basic(Mat A,Mat B,Mat X, PetscBool trans)
   PetscScalar    *bb,*xx;
 
   PetscFunctionBegin;
-  ierr = MatDenseGetArray(B,&bb);CHKERRQ(ierr);
+  ierr = MatDenseGetArrayRead(B,(const PetscScalar**)&bb);CHKERRQ(ierr);
   ierr = MatDenseGetArray(X,&xx);CHKERRQ(ierr);
   ierr = MatGetLocalSize(B,&m,NULL);CHKERRQ(ierr);  /* number local rows */
   ierr = MatGetSize(B,NULL,&N);CHKERRQ(ierr);       /* total columns in dense matrix */
@@ -3317,7 +3317,7 @@ static PetscErrorCode MatMatSolve_Basic(Mat A,Mat B,Mat X, PetscBool trans)
   }
   ierr = VecDestroy(&b);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = MatDenseRestoreArray(B,&bb);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArrayRead(B,(const PetscScalar**)&bb);CHKERRQ(ierr);
   ierr = MatDenseRestoreArray(X,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -4044,9 +4044,8 @@ PetscErrorCode MatConvert(Mat mat, MatType newtype,MatReuse reuse,Mat *M)
   MatCheckPreallocated(mat,1);
 
   ierr = PetscOptionsGetString(((PetscObject)mat)->options,((PetscObject)mat)->prefix,"-matconvert_type",mtype,256,&flg);CHKERRQ(ierr);
-  if (flg) {
-    newtype = mtype;
-  }
+  if (flg) newtype = mtype;
+
   ierr = PetscObjectTypeCompare((PetscObject)mat,newtype,&sametype);CHKERRQ(ierr);
   ierr = PetscStrcmp(newtype,"same",&issame);CHKERRQ(ierr);
   if ((reuse == MAT_INPLACE_MATRIX) && (mat != *M)) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"MAT_INPLACE_MATRIX requires same input and output matrix");

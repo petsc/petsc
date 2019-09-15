@@ -569,7 +569,7 @@ PetscErrorCode VecScatterRestoreRemoteOrdered_Private(VecScatter ctx,PetscBool s
 
   Notes:
    Effectively, this function creates all the necessary indexing buffers and work
-   vectors needed to move data only those data points in a vector which need to
+   vectors needed to move only those data points in a vector which need to
    be communicated across ranks. This is done at the first time this function is
    called. Currently, this only used in the context of the parallel SpMV call in
    MatMult_MPIAIJCUSPARSE.
@@ -640,9 +640,8 @@ PETSC_EXTERN PetscErrorCode VecScatterInitializeForGPU(VecScatter inctx,Vec x)
 
   Notes:
    Effectively, this function resets the temporary buffer flags. Currently, this
-   only used in the context of the parallel SpMV call in in MatMult_MPIAIJCUDA
-   or MatMult_MPIAIJCUDAARSE. Once the MatMultAdd is finished, the GPU temporary
-   buffers used for messaging are no longer valid.
+   only used in the context of the parallel SpMV call in in MatMult_MPIAIJCUSPARSE
+   Once the MatMultAdd is finished, the GPU temporary buffers used for messaging are no longer valid.
 
 .seealso: VecScatterInitializeForGPU(), VecScatterCreate(), VecScatterEnd()
 @*/

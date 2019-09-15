@@ -102,13 +102,10 @@ static PetscErrorCode PCApply_SAVIENNACL(PC pc,Vec x,Vec y)
   if (!sac->SAVIENNACL) {
     ierr = PCSetUp_SAVIENNACL(pc);CHKERRQ(ierr);
   }
-  ierr = VecSet(y,0.0);CHKERRQ(ierr);
   ierr = VecViennaCLGetArrayRead(x,&xarray);CHKERRQ(ierr);
   ierr = VecViennaCLGetArrayWrite(y,&yarray);CHKERRQ(ierr);
   try {
-#if defined(PETSC_USE_COMPLEX)
-
-#else
+#if !defined(PETSC_USE_COMPLEX)
     *yarray = *xarray;
     sac->SAVIENNACL->apply(*yarray);
 #endif
