@@ -376,9 +376,9 @@ static PetscErrorCode ComputeSubdomainMatrix(DomainData dd, GLLData glldata, Mat
   /* set local matrices type: here we use SEQSBAIJ primarily for testing purpose */
   /* in order to avoid conversions inside the BDDC code, use SeqAIJ if possible */
   if (dd.DBC_zerorows && !dd.ipx) { /* in this case, we need to zero out some of the rows, so use seqaij */
-    ierr      = MatSetType(temp_local_mat,MATSEQAIJ);CHKERRQ(ierr);
+    ierr = MatSetType(temp_local_mat,MATSEQAIJ);CHKERRQ(ierr);
   } else {
-    ierr      = MatSetType(temp_local_mat,MATSEQSBAIJ);CHKERRQ(ierr);
+    ierr = MatSetType(temp_local_mat,MATSEQSBAIJ);CHKERRQ(ierr);
   }
   ierr = MatSetFromOptions(temp_local_mat);CHKERRQ(ierr);
 
@@ -1168,7 +1168,7 @@ int main(int argc,char **args)
      args: -npz 1 -nez 1
    test:
      suffix: bddc_fetidp_4
-     args: -npz 1 -nez 1 -physical_pc_bddc_use_change_of_basis -physical_pc_bddc_use_deluxe_scaling -physical_pc_bddc_deluxe_singlemat -fluxes_fetidp_ksp_type cg
+     args: -npz 1 -nez 1 -physical_pc_bddc_use_change_of_basis -physical_sub_schurs_mat_solver_type petsc -physical_pc_bddc_use_deluxe_scaling -physical_pc_bddc_deluxe_singlemat -fluxes_fetidp_ksp_type cg
 
  testset:
    nsize: 8
@@ -1192,7 +1192,7 @@ int main(int argc,char **args)
 
  testset:
    nsize: 9
-   args: -npx 3 -npy 3 -p 2 -nex 6 -ney 6 -physical_pc_bddc_deluxe_singlemat -physical_pc_bddc_use_deluxe_scaling -physical_pc_bddc_graph_maxcount 1 -physical_pc_bddc_levels 3 -physical_pc_bddc_coarsening_ratio 2 -physical_pc_bddc_coarse_ksp_type gmres
+   args: -npx 3 -npy 3 -p 2 -nex 6 -ney 6 -physical_pc_bddc_deluxe_singlemat -physical_sub_schurs_mat_solver_type petsc -physical_pc_bddc_use_deluxe_scaling -physical_pc_bddc_graph_maxcount 1 -physical_pc_bddc_levels 3 -physical_pc_bddc_coarsening_ratio 2 -physical_pc_bddc_coarse_ksp_type gmres
    output_file: output/ex59_bddc_fetidp_ml_eqlimit.out
    test:
      suffix: bddc_fetidp_ml_eqlimit_1
