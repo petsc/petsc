@@ -126,7 +126,7 @@ PETSc does not allow the simultaneous use of \lstinline{INSERT_VALUES} and
 You can call \lstinline{VecGetValues()} to pull local values from a vector (but
 not off-process values),
 an alternative method for extracting some components of a vector are
-the vector scatter routines.  
+the vector scatter routines.
 See Section~\ref{sec_scatter} for details; see also
 below for \lstinline{VecGetArray()}.
 
@@ -313,8 +313,8 @@ informing you of this. There are additional routines \lstinline{VecTDotBegin()} 
 Note: these routines use only MPI-1 functionality; they do not allow you to overlap
 computation and communication (assuming no threads are spawned within a MPI process).
 Once MPI-2 implementations are more common we'll improve these
-routines to allow overlap of inner product and norm calculations with other calculations. 
-Also currently these routines only work for the PETSc built in vector types. 
+routines to allow overlap of inner product and norm calculations with other calculations.
+Also currently these routines only work for the PETSc built in vector types.
 
 % ----------------------------------------------------------------------------------
 \section{Indexing and Ordering}
@@ -547,7 +547,7 @@ the number of processes in the MPI communicator, \lstinline{comm}.
 Instead of specifying the process layout, one may use
 \lstinline{PETSC_DECIDE} for \lstinline{m} and \lstinline{n}
 so that PETSc will determine the partition using MPI. The type of
-periodicity of the array is specified by \lstinline{xperiod} and \lstinline{yperiod}, which can be 
+periodicity of the array is specified by \lstinline{xperiod} and \lstinline{yperiod}, which can be
 \lstinline{DM_BOUNDARY_NONE} \findex{DM_BOUNDARY_NONE} (no periodicity),
 \lstinline{DM_BOUNDARY_PERIODIC} \findex{DM_BOUNDARY_PERIODIC} (periodic in that direction),
 \lstinline{DM_BOUNDARY_TWIST} \findex{DM_BOUNDARY_TWIST} (periodic in that direction, but identified in reverse order),
@@ -732,8 +732,8 @@ DMDAVecRestoreArray(DM da,Vec global,&f);
 \end{lstlisting}
 The recommended approach for multi-component PDEs is to declare a \lstinline{struct} representing the fields defined at each node of the grid, e.g.
 \begin{lstlisting}
-typedef struct { 
-  PetscScalar u,v,omega,temperature; 
+typedef struct {
+  PetscScalar u,v,omega,temperature;
 } Node;
 \end{lstlisting}
 and write residual evaluation using
@@ -747,7 +747,7 @@ DMDAVecGetArray(DM da,Vec global,&f);
 DMDAVecRestoreArray(DM da,Vec local,&u);
 DMDAVecRestoreArray(DM da,Vec global,&f);
 \end{lstlisting}
-See \href{https://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex5.c.html}{\trl{$PETSC_DIR/src/snes/examples/tutorials/ex5.c}} for a 
+See \href{https://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex5.c.html}{\trl{$PETSC_DIR/src/snes/examples/tutorials/ex5.c}} for a
 complete example and see \href{https://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex19.c.html}{\trl{$PETSC_DIR/src/snes/examples/tutorials/ex19.c}} for an
 example for a multi-component PDE.
 
@@ -835,7 +835,7 @@ It behaves much like \lstinline{DMDA}; see the \lstinline{DMSTAG} manual page fo
 To facilitate general vector scatters and gathers used, for example, in updating
 ghost points for problems defined on unstructured grids
 \footnote{Also see Chapter \ref{ch_unstructured} which describes \lstinline{DMPlex}, an abstraction for working with unstructured grids.},
-PETSc employs the concept of an {\em index set}, via the \lstinline{IS} class.  
+PETSc employs the concept of an {\em index set}, via the \lstinline{IS} class.
 An index set, which is a generalization of a
 set of integer indices, is used to define scatters, gathers, and similar
 operations on vectors and matrices.
@@ -900,7 +900,7 @@ PETSc vectors have full support for general scatters and
 gathers. One can select any subset of the components of a vector to
 insert or add to any subset of the components of another vector.
 We refer to these operations as {\em generalized scatters}, though they are
-actually a combination of scatters and gathers. 
+actually a combination of scatters and gathers.
 
 \findex{INSERT_VALUES} \findex{SCATTER_FORWARD}
 To copy selected components from one vector
@@ -911,7 +911,7 @@ VecScatterBegin(VecScatter ctx,Vec x,Vec y,INSERT_VALUES,SCATTER_FORWARD);
 VecScatterEnd(VecScatter ctx,Vec x,Vec y,INSERT_VALUES,SCATTER_FORWARD);
 VecScatterDestroy(VecScatter *ctx);
 \end{lstlisting}
-Here \lstinline{ix} denotes the index set of the first vector, while \lstinline{iy} 
+Here \lstinline{ix} denotes the index set of the first vector, while \lstinline{iy}
 indicates the index set of the destination vector.  The vectors
 can be parallel or sequential. The only requirements are that the
 number of entries in the index set of the first vector, \lstinline{ix},
@@ -927,7 +927,7 @@ components, rather than insert them, the user should select the option
 
 To perform a conventional gather operation, the user simply makes
  the destination index set,
-\lstinline{iy}, be a stride index set with a stride of one.  Similarly, a 
+\lstinline{iy}, be a stride index set with a stride of one.  Similarly, a
 conventional scatter can be done with an initial (sending) index set
 consisting of a stride.  The scatter routines are collective operations
 (i.e. all processes that own
@@ -993,7 +993,7 @@ VecScatterBegin(scatter,p,x,INSERT_VALUES,SCATTER_FORWARD);
 VecScatterEnd(scatter,p,x,INSERT_VALUES,SCATTER_FORWARD);
 VecGetArray(x,&values);
 ISDestroy(&from);
-ISDestroy(&to); 
+ISDestroy(&to);
 VecScatterDestroy(&scatter);
 \end{lstlisting}
 \caption{Example Code for Vector Scatters}
@@ -1266,7 +1266,7 @@ Note that problems with a single degree of freedom per grid node
 will automatically not use I-nodes.
 
 The internal data representation for the AIJ formats employs
-zero-based indexing. 
+zero-based indexing.
 
 \subsubsection{Preallocation of Memory for Sequential AIJ Sparse Matrices}
 
@@ -1487,14 +1487,14 @@ matrix assembly.  For the \lstinline{MATMPIAIJ} and \lstinline{MATMPIBAIJ} forma
 the number of elements owned by on each process that were generated
 on a different process.  For example, the statements
 \begin{outputlisting}
-MatAssemblyBegin_MPIAIJ:Stash has 10 entries, uses 0 mallocs 
-MatAssemblyBegin_MPIAIJ:Stash has 3 entries, uses 0 mallocs 
+MatAssemblyBegin_MPIAIJ:Stash has 10 entries, uses 0 mallocs
+MatAssemblyBegin_MPIAIJ:Stash has 3 entries, uses 0 mallocs
 MatAssemblyBegin_MPIAIJ:Stash has 5 entries, uses 0 mallocs
 \end{outputlisting}
 indicate that very few values have been generated on different processes.
 On the other hand, the statements
 \begin{outputlisting}
-MatAssemblyBegin_MPIAIJ:Stash has 100000 entries, uses 100 mallocs 
+MatAssemblyBegin_MPIAIJ:Stash has 100000 entries, uses 100 mallocs
 MatAssemblyBegin_MPIAIJ:Stash has 77777 entries, uses 70 mallocs
 \end{outputlisting}
 indicate that many values have been generated on the ``wrong'' processes.
@@ -1510,9 +1510,9 @@ one should organize the code in such a way that {\em most} values are generated 
 
 \subsubsection{Limited-Memory Variable Metric (LMVM) Matrices}
 
-Variable metric methods, also known as quasi-Newton methods, are frequently used for root finding problems 
-and approximate Jacobian matrices or their inverses via sequential nonlinear updates based on the secant condition. 
-The limited-memory variants do not store the full explicit Jacobian, and instead compute forward products and 
+Variable metric methods, also known as quasi-Newton methods, are frequently used for root finding problems
+and approximate Jacobian matrices or their inverses via sequential nonlinear updates based on the secant condition.
+The limited-memory variants do not store the full explicit Jacobian, and instead compute forward products and
 inverse applications based on a fixed number of stored update vectors.
 
 \begin{table}
@@ -1534,53 +1534,53 @@ Restricted Broyden Family (full-memory diagonal)        & \lstinline|MATLMVMDiag
 \label{tab_matlmvmimpl}
 \end{table}
 
-PETSc implements seven different LMVM matrices listed in the Table~\ref{tab_matlmvmimpl}. They can be created using 
-the \lstinline{MatCreate()} and \lstinline{MatSetType()} workflow, and share a number of common interface functions. 
+PETSc implements seven different LMVM matrices listed in the Table~\ref{tab_matlmvmimpl}. They can be created using
+the \lstinline{MatCreate()} and \lstinline{MatSetType()} workflow, and share a number of common interface functions.
 We will review the most important ones below:
 \begin{itemize}
-  \item \lstinline{MatLMVMAllocate(Mat B, Vec X, Vec F)} -- Creates the internal data structures necessary to store 
-  nonlinear updates and compute forward/inverse applications. The \lstinline{X} vector defines the solution space while 
+  \item \lstinline{MatLMVMAllocate(Mat B, Vec X, Vec F)} -- Creates the internal data structures necessary to store
+  nonlinear updates and compute forward/inverse applications. The \lstinline{X} vector defines the solution space while
   the \lstinline{F} defines the function space for the history of updates.
-  \item \lstinline{MatLMVMUpdate(MatB, Vec X, Vec F)} -- Applies a nonlinear update to the approximate Jacobian such 
+  \item \lstinline{MatLMVMUpdate(MatB, Vec X, Vec F)} -- Applies a nonlinear update to the approximate Jacobian such
   that $s_k = x_k - x_{k-1}$ and $y_k = f(x_k) - f(x_{k-1})$, where $k$ is the index for the update.
-  \item \lstinline{MatLMVMReset(Mat B, PetscBool destructive)} -- Flushes the accumulated nonlinear updates and resets 
-  the matrix to the initial state. If \lstinline{destructive = PETSC_TRUE}, the reset also destroys the internal data 
+  \item \lstinline{MatLMVMReset(Mat B, PetscBool destructive)} -- Flushes the accumulated nonlinear updates and resets
+  the matrix to the initial state. If \lstinline{destructive = PETSC_TRUE}, the reset also destroys the internal data
   structures and necessitates another allocation call before the matrix can be updated and used for products and solves.
-  \item \lstinline{MatLMVMSetJ0(Mat B, Mat J0)} -- Defines the initial Jacobian to apply the updates to. If no initial 
+  \item \lstinline{MatLMVMSetJ0(Mat B, Mat J0)} -- Defines the initial Jacobian to apply the updates to. If no initial
   Jacobian is provided, the updates are applied to an identity matrix.
 \end{itemize}
 
-LMVM matrices can be applied to vectors in forward mode via \lstinline{MatMult()} or \lstinline{MatMultAdd()}, and 
-in inverse mode via \lstinline{MatSolve()}. They also support \lstinline{MatGetVecs()}, \lstinline{MatDuplicate()} and 
-\lstinline{MatCopy()} operations. The maximum number of $s_k$ and $y_k$ update vectors stored can be changed via 
-\lstinline{-mat_lmvm_num_vecs} option. 
+LMVM matrices can be applied to vectors in forward mode via \lstinline{MatMult()} or \lstinline{MatMultAdd()}, and
+in inverse mode via \lstinline{MatSolve()}. They also support \lstinline{MatGetVecs()}, \lstinline{MatDuplicate()} and
+\lstinline{MatCopy()} operations. The maximum number of $s_k$ and $y_k$ update vectors stored can be changed via
+\lstinline{-mat_lmvm_num_vecs} option.
 
-Restricted Broyden Family, DFP and BFGS methods additionally implement special Jacobian initialization and scaling 
+Restricted Broyden Family, DFP and BFGS methods additionally implement special Jacobian initialization and scaling
 options available via \lstinline{-mat_lmvm_scale_type <none,scalar,diagonal>}. We describe these choices below:
 \begin{itemize}
-  \item \lstinline{none} -- Sets the initial Jacobian to be equal to the identity matrix. No extra computations are 
-  required when obtaining the search direction or updating the approximation. However, the number of function 
-  evaluations required to converge the Newton solution is typically much larger than what is required when using 
+  \item \lstinline{none} -- Sets the initial Jacobian to be equal to the identity matrix. No extra computations are
+  required when obtaining the search direction or updating the approximation. However, the number of function
+  evaluations required to converge the Newton solution is typically much larger than what is required when using
   other initializations.
-  \item \lstinline{scalar} -- Defines the initial Jacobian as a scalar multiple of the identity matrix. The scalar 
+  \item \lstinline{scalar} -- Defines the initial Jacobian as a scalar multiple of the identity matrix. The scalar
   value $\sigma$ is chosen by solving the one dimensional optimization problem
   \[
   \min_\sigma \|\sigma^\alpha Y - \sigma^{\alpha - 1} S\|_F^2,
   \]
-  where $S$ and $Y$ are the matrices whose columns contain a subset of update vectors $s_k$ and $y_k$, and 
-  $\alpha \in [0, 1]$ is defined by the user via \lstinline{-mat_lmvm_alpha} and has a different default value for 
-  each LMVM implementation (e.g.: default $\alpha = 1$ for BFGS produces the well-known $y_k^T s_k / y_k^T y_k$ 
-  scalar initialization). The number of updates to be used in the $S$ and $Y$ matrices is 1 by default 
-  (i.e.: the latest update only) and can be changed via \lstinline{-mat_lmvm_scalar_hist}. This technique is inspired 
+  where $S$ and $Y$ are the matrices whose columns contain a subset of update vectors $s_k$ and $y_k$, and
+  $\alpha \in [0, 1]$ is defined by the user via \lstinline{-mat_lmvm_alpha} and has a different default value for
+  each LMVM implementation (e.g.: default $\alpha = 1$ for BFGS produces the well-known $y_k^T s_k / y_k^T y_k$
+  scalar initialization). The number of updates to be used in the $S$ and $Y$ matrices is 1 by default
+  (i.e.: the latest update only) and can be changed via \lstinline{-mat_lmvm_scalar_hist}. This technique is inspired
   by Gilbert and Lemarechal~\cite{gilbert-lemarechal}.
-  \item \lstinline{diagonal} -- Uses a full-memory restricted Broyden update formula to construct a diagonal 
-  matrix for the Jacobian initialization. Although the full-memory formula is utilized, the actual memory footprint 
-  is restricted to only the vector representing the diagonal and some additional work vectors used in its construction. 
-  The diagonal terms are also re-scaled with every update as suggested in \cite{gilbert-lemarechal}. This 
-  initialization requires the most computational effort of the available choices but typically results in a significant 
-  reduction in the number of function evaluations taken to compute a solution. 
+  \item \lstinline{diagonal} -- Uses a full-memory restricted Broyden update formula to construct a diagonal
+  matrix for the Jacobian initialization. Although the full-memory formula is utilized, the actual memory footprint
+  is restricted to only the vector representing the diagonal and some additional work vectors used in its construction.
+  The diagonal terms are also re-scaled with every update as suggested in \cite{gilbert-lemarechal}. This
+  initialization requires the most computational effort of the available choices but typically results in a significant
+  reduction in the number of function evaluations taken to compute a solution.
 \end{itemize}
-Note that the user-provided initial Jacobian via \lstinline{MatLMVMSetJ0()} overrides and disables all built-in 
+Note that the user-provided initial Jacobian via \lstinline{MatLMVMSetJ0()} overrides and disables all built-in
 initialization methods.
 
 \subsection{Dense Matrices}
@@ -2005,7 +2005,7 @@ MatPartitioningCreate(MPI_Comm comm,MatPartitioning *part);
 MatPartitioningSetAdjacency(MatPartitioning part,Mat Adj);
 MatPartitioningSetFromOptions(MatPartitioning part);
 MatPartitioningApply(MatPartitioning part,IS *is);
-MatPartitioningDestroy(MatPartitioning *part); 
+MatPartitioningDestroy(MatPartitioning *part);
 MatDestroy(Mat *Adj);
 ISPartitioningToNumbering(IS is,IS *isg);
 \end{lstlisting}
@@ -2196,7 +2196,7 @@ be used, one calls the command
 KSPSetType(KSP ksp,KSPType method);
 \end{lstlisting}
 The type can be one of \lstinline{KSPRICHARDSON}, \lstinline{KSPCHEBYSHEV}, \lstinline{KSPCG}, \lstinline{KSPGMRES},
-\lstinline{KSPTCQMR}, \lstinline{KSPBCGS}, \lstinline{KSPCGS}, \lstinline{KSPTFQMR}, \lstinline{KSPCR}, \lstinline{KSPLSQR}, \lstinline{KSPBICG}, \lstinline{KSPPREONLY}. or others; see Table \ref{tab_kspdefaults} or the \lstinline{KSPType} man page for more. 
+\lstinline{KSPTCQMR}, \lstinline{KSPBCGS}, \lstinline{KSPCGS}, \lstinline{KSPTFQMR}, \lstinline{KSPCR}, \lstinline{KSPLSQR}, \lstinline{KSPBICG}, \lstinline{KSPPREONLY}. or others; see Table \ref{tab_kspdefaults} or the \lstinline{KSPType} man page for more.
 The \lstinline{KSP} method can also be set with the options database command
 \trl{-ksp_type},
 followed by one of the options \trl{richardson}, \trl{chebyshev}, \trl{cg}, \trl{gmres}, \trl{tcqmr},
@@ -2289,7 +2289,7 @@ is preserved.  In contrast, the residual is altered for left
 ($ M_R = I $) and symmetric preconditioning, as given by
   \[ r_L \equiv M_L^{-1} b - M_L^{-1} A x = M_L^{-1} r. \]
 By default, most KSP implementations use left preconditioning.
-Some more naturally use other options, though. For instance, \lstinline{KSPQCG} defaults to use symmetric preconditioning and \lstinline{KSPFGMRES} uses right preconditioning by default. 
+Some more naturally use other options, though. For instance, \lstinline{KSPQCG} defaults to use symmetric preconditioning and \lstinline{KSPFGMRES} uses right preconditioning by default.
 Right preconditioning can be activated for some methods by
 using the options database command \trl{-ksp_pc_side right} or
 calling the routine \findex{-ksp_pc_side}
@@ -2303,7 +2303,7 @@ KSPSetUp_Richardson:No right preconditioning for KSPRICHARDSON
 \end{outputlisting}
 
 We summarize the defaults for the residuals used in KSP convergence
-monitoring within Table~\ref{tab_kspdefaults}.  Details regarding 
+monitoring within Table~\ref{tab_kspdefaults}.  Details regarding
 specific convergence tests and monitoring routines are presented in
 the following sections.  The preconditioned residual is used by
 default for convergence testing of all left-preconditioned \lstinline{KSP}
@@ -2330,7 +2330,7 @@ KSPSetNormType(KSP ksp,KSP_NORM_UNPRECONDITIONED);
   \ Conjugate Gradients for the Normal Equations            & \lstinline|KSPCGNE|       & \trl{cgne}       \\
   \ Flexible Conjugate Gradients \cite{flexibleCG}          & \lstinline|KSPFCG|        & \trl{fcg}        \\
   \ Pipelined, Flexible Conjugate Gradient                  & \lstinline|KSPPIPEFCG|    & \trl{pipefcg}    \\
-  \ Conjugate Gradients for Least Squares                   & \lstinline|KSPCGLS|       & \trl{cgls}       \\ 
+  \ Conjugate Gradients for Least Squares                   & \lstinline|KSPCGLS|       & \trl{cgls}       \\
   \ Conjugate Gradients with Constraint (1)                 & \lstinline|KSPNASH|       & \trl{nash}       \\
   \ Conjugate Gradients with Constraint (2)                 & \lstinline|KSPSTCG|       & \trl{stcg}       \\
   \ Conjugate Gradients with Constraint (3)                 & \lstinline|KSPGLTR|       & \trl{gltr}       \\
@@ -2402,7 +2402,7 @@ specifying \lstinline{PETSC_DEFAULT} as the
 corresponding tolerance; the
 defaults are \lstinline{rtol=1e-5}, \lstinline{atol=1e-50},
 \lstinline{dtol=1e5}, and \lstinline{maxits=1e4}.
-These parameters can also be set from the options database with the 
+These parameters can also be set from the options database with the
 commands \trl{-ksp_rtol} \trl{<rtol>}, \trl{-ksp_atol} \trl{<atol>}, \trl{-ksp_divtol} \trl{<dtol>},
 \findex{-ksp_rtol} \findex{-ksp_atol} \findex{-ksp_divtol}
 and \trl{-ksp_max_it} \trl{<its>}. \findex{-ksp_max_it}
@@ -2578,7 +2578,7 @@ command \findex{-pc_type}
 PCSetType(PC pc,PCType method);
 \end{lstlisting}
 In Table~\ref{tab_pcdefaults} we summarize the basic
-preconditioning methods supported in PETSc. See the \lstinline{PCType} manual page for a complete list. 
+preconditioning methods supported in PETSc. See the \lstinline{PCType} manual page for a complete list.
 The \lstinline{PCSHELL} preconditioner uses a specific,
 application-provided preconditioner.  The direct preconditioner, \lstinline{PCLU}~,
 is, in fact, a direct solver for the linear system that uses LU
@@ -2617,7 +2617,7 @@ consistent interface among direct and iterative linear solvers.
 Each preconditioner may have associated with it a set of options,
 which can be set with routines and options database commands provided
 for this purpose.  Such routine names and commands are all of the form
-\trl{PC<TYPE><Option>} and \trl{-pc_<type>_<option> [value]}.  
+\trl{PC<TYPE><Option>} and \trl{-pc_<type>_<option> [value]}.
 A complete list can be found by consulting the \lstinline{PCType} manual page; we discuss
 just a few in the sections below.
 
@@ -2630,7 +2630,7 @@ PCFactorSetLevels(PC pc,PetscInt levels);
 PCFactorSetReuseOrdering(PC pc,PetscBool  flag);
 PCFactorSetDropTolerance(PC pc,PetscReal dt,PetscReal dtcol,PetscInt dtcount);
 PCFactorSetReuseFill(PC pc,PetscBool  flag);
-PCFactorSetUseInPlace(PC pc,PetscBool flg); 
+PCFactorSetUseInPlace(PC pc,PetscBool flg);
 PCFactorSetAllowDiagonalFill(PC pc,PetscBool flg);
 \end{lstlisting}
 
@@ -2792,7 +2792,7 @@ supported in parallel; however, only the uniprocess
 version of the block Gauss-Seidel method is currently in place.
 By default, the PETSc implementations of these methods
 employ ILU(0) factorization on each individual block (that is, the default solver on each
-subblock is \lstinline{PCType=PCILU}, \lstinline{KSPType=KSPPREONLY}); 
+subblock is \lstinline{PCType=PCILU}, \lstinline{KSPType=KSPPREONLY});
 the user can set alternative linear solvers via the options
 \findex{-sub_ksp_type} \findex{-sub_pc_type}
 \trl{-sub_ksp_type} and \trl{-sub_pc_type}. In fact, all of the \lstinline{KSP}
@@ -2939,7 +2939,7 @@ coalesced multi-rank subdomains. The \trl{runex62_2D_*} examples illustrate the 
 PETSc has a native algebraic multigrid preconditioner \lstinline{PCGAMG} -- {\it gamg} -- and interfaces to two
 external AMG packages: {\it hypre} and {\it ML}.
 {\it Hypre}  is relatively monolithic in that a PETSc matrix is into a hypre matrix and then {\it hypre} is called to do the entire solve.
-{\it ML} is more modular in that PETSc only has {\it ML} generate the coarse grid spaces (columns of the prolongation operator), which is core of an AMG method, and then constructs a \lstinline{PCMG} with Galerkin coarse grid operator construction. 
+{\it ML} is more modular in that PETSc only has {\it ML} generate the coarse grid spaces (columns of the prolongation operator), which is core of an AMG method, and then constructs a \lstinline{PCMG} with Galerkin coarse grid operator construction.
 GAMG is designed from the beginning to be modular, to allow for new components to be added easily and also populates a multigrid preconditioner \lstinline{PCMG} so generic multigrid parameters are used.
 PETSc provides a fully supported (smoothed) aggregation AMG, (\trl{-pc_type gamg -pc_gamg_type agg} or  \lstinline{PCSetType(pc,PCGAMG)} and \lstinline{PCGAMGSetType(pc,PCGAMGAGG)}, as well as reference implementations of a classical AMG method (\trl{-pc_gamg_type classical}), a hybrid geometric AMG method (\trl{-pc_gamg_type geo}), and a 2.5D AMG method DofColumns \cite{IsaacStadlerGhattas2015}.
 GAMG does require the use of (MPI)AIJ matrices.
@@ -2951,7 +2951,7 @@ GAMG provides unsmoothed aggregation (\trl{-pc_gamg_agg_nsmooths 0}) and smoothe
 Smoothed aggregation is recommended for symmetric positive definite
 systems.
 Unsmoothed aggregation can be useful for asymmetric
-problems and problems where highest eigen estimates are problematic. 
+problems and problems where highest eigen estimates are problematic.
 If poor convergence rates are observed using the smoothed version one can test unsmoothed aggregation.
 The parameters for the eigen estimator can be set with the prefix \trl{gamg_est}.
 For example CG is a much better KSP type than the default GMRES if your problem is symmetric positive definite; one can specify this with \trl{-gamg_est_ksp_type cg}, prepending any solver prefix that has been added to the solver.
@@ -2987,8 +2987,8 @@ There are additional parameters for changing the weights on coarse grids.
 Note, the parallel algorithm requires symmetric weights/matrix.
 You must use \trl{-pc_gamg_sym_graph <true>} to symmetrize the graph if your problem is not symmetric.
 
-{\bf Trouble shooting algebraic multigrid methods:}  
-If {\it GAMG}, {\it ML}, or {\it hypre} does not perform well the first thing to try is one of 
+{\bf Trouble shooting algebraic multigrid methods:}
+If {\it GAMG}, {\it ML}, or {\it hypre} does not perform well the first thing to try is one of
 the other methods. Often the default parameters or just the strengths of different algorithms can fix performance problems or provide useful information to guide further debugging.
 There are several sources of poor performance of
 AMG solvers and often special purpose methods must be developed to
@@ -3026,7 +3026,7 @@ coarse at about a rate of 3:1 in each dimension.  Coarsening too slow
 will result in large numbers of non-zeros per row on coarse grids
 (this is reported).  The number of non-zeros can go up very high, say
 about 300 (times the degrees-of-freedom per vertex) on a 3D hex mesh.
-One can also look at the grid complexity, which is also reported (the ration of the total number of matrix entries for all levels to the number of matrix entries on the fine level).  
+One can also look at the grid complexity, which is also reported (the ration of the total number of matrix entries for all levels to the number of matrix entries on the fine level).
 Grid complexity should be well under 2.0 and preferably around $1.3$ or lower.  If
 convergence is poor and the Galerkin coarse grid construction is much
 smaller than the time for each solve then one can safely decrease the
@@ -3070,7 +3070,7 @@ parallel finite element problems stored in unassembled format (see \lstinline{MA
 non-overlapping domain decomposition method which can be easily adapted to different problems
 and discretizations by means of few user customizations. The application of the preconditioner to a vector consists
 in the static condensation of the residual at the interior of the subdomains by means of local Dirichet solves, followed by an
-additive combination of Neumann local corrections and the solution of a global coupled coarse problem. 
+additive combination of Neumann local corrections and the solution of a global coupled coarse problem.
 Command line options for the underlying \lstinline{KSP} objects are prefixed by \trl{-pc_bddc_dirichlet}, \trl{-pc_bddc_neumann},
 and \trl{-pc_bddc_coarse} respectively.
 
@@ -3084,7 +3084,7 @@ If any of the local problems is singular, the nullspace of the local operator sh
 
 At the basis of the method there's the analysis of the connected components of the interface for the detection of vertices,
 edges and faces equivalence classes. Additional information on the degrees of freedom can be supplied to \lstinline{PCBDDC} by using
-the following functions: 
+the following functions:
 \begin{tightitemize}
 \item \lstinline{PCBDDCSetDofsSplitting()}
 \item \lstinline{PCBDDCSetLocalAdjacencyGraph()}
@@ -3266,14 +3266,14 @@ or at the command line with \trl{-pc_use_amat}. \findex{-pc_use_amat}
 
 Naturally, one can use a \lstinline{PCKSP} preconditioner inside a composite preconditioner. For example,
 \trl{-pc_type composite -pc_composite_pcs ilu,ksp -sub_1_pc_type jacobi -sub_1_ksp_max_it 10}
-uses two preconditioners: ILU(0) and 10 iterations of GMRES with Jacobi preconditioning. 
+uses two preconditioners: ILU(0) and 10 iterations of GMRES with Jacobi preconditioning.
 However, it is not clear whether one would ever wish to do such a thing.
 
 %----------------------------------------------------------------------
 \subsection{Multigrid Preconditioners} \sindex{multigrid} \label{sec_mg}
 
 A large suite of routines is available for using geometric multigrid as a
-preconditioner\footnote{See Section \ref{sec_amg} for information on using algebraic multigrid.}. 
+preconditioner\footnote{See Section \ref{sec_amg} for information on using algebraic multigrid.}.
 In the \lstinline{PC} framework, the user is required to provide
 the coarse grid solver, smoothers, restriction and interpolation operators,
 and code to calculate residuals. The \lstinline{PC} package
@@ -3673,7 +3673,7 @@ There are several variants of the Schur complement preconditioner obtained by dr
 \end{array} \right).
 \]
 This is done to ensure the preconditioner is positive definite for a common class of problems, saddle points with a positive definite $A_{00}$:
-for these the Schur complement is negative definite. 
+for these the Schur complement is negative definite.
 
 The effectiveness of the Schur complement preconditioner depends on the availability of a good preconditioner $\hat Sp$ for the Schur complement matrix.
 In general, you are responsible for supplying $\hat Sp$ via
@@ -3704,7 +3704,7 @@ Finally, you can use the \lstinline{PCLSC} preconditioner for the Schur compleme
 \]
  which, of course, introduces two additional inner solves for each application of the Schur complement. The options prefix for this inner \lstinline{KSP} is \trl{-fieldsplit_1_lsc_}. Instead of constructing the matrix $A_{10} A_{01}$ the user can provide their own matrix. This is done by attaching the matrix/matrices to the $ Sp $ matrix they provide with
 \begin{lstlisting}
-PetscObjectCompose((PetscObject)Sp,"LSC_L",(PetscObject)L); 
+PetscObjectCompose((PetscObject)Sp,"LSC_L",(PetscObject)L);
 PetscObjectCompose((PetscObject)Sp,"LSC_Lp",(PetscObject)Lp);
 \end{lstlisting}
 
@@ -3769,23 +3769,23 @@ For eg: \trl{-ksp_type preonly} \trl{-pc_type lu} \trl{-pc_factor_mat_solver_typ
   \trl{seqaij}       & \trl{lu}           &  \lstinline|MATSOLVERLUSOL|           & \trl{lusol}         \\
   \trl{seqaij}       & \trl{lu}           &  \lstinline|MATSOLVERMATLAB|          & \trl{matlab}        \\
   \trl{aij}          & \trl{lu}           &  \lstinline|MATSOLVERMUMPS|           & \trl{mumps}         \\
-  \trl{aij}          & \trl{cholesky}     &                                       &                     \\ 
-  \trl{sbaij}        & \trl{cholesky}     &                                       &                     \\ 
+  \trl{aij}          & \trl{cholesky}     &                                       &                     \\
+  \trl{sbaij}        & \trl{cholesky}     &                                       &                     \\
   \trl{seqaij}       & \trl{lu}           &  \lstinline|MATSOLVERSUPERLU|         & \trl{superlu}       \\
   \trl{aij}          & \trl{lu}           &  \lstinline|MATSOLVERSUPERLU_DIST|    & \trl{superlu_dist}  \\
-  \trl{seqaij}       & \trl{lu}           &  \lstinline|MATSOLVERUMFPACK|         & \trl{umfpack}       \\ 
+  \trl{seqaij}       & \trl{lu}           &  \lstinline|MATSOLVERUMFPACK|         & \trl{umfpack}       \\
   \trl{seqaij}       & \trl{cholesky}     &  \lstinline|MATSOLVERCHOLMOD|         & \trl{cholmod}       \\
-  \trl{aij}          & \trl{lu}           &  \lstinline|MATSOLVERCLIQUE|          & \trl{clique}        \\ 
+  \trl{aij}          & \trl{lu}           &  \lstinline|MATSOLVERCLIQUE|          & \trl{clique}        \\
   \trl{seqaij}       & \trl{lu}           &  \lstinline|MATSOLVERKLU|             & \trl{klu}           \\
-  \trl{dense}        & \trl{lu}           &  \lstinline|MATSOLVERELEMENTAL|       & \trl{elemental}     \\ 
-  \trl{dense}        & \trl{cholesky}     &                                       &                     \\ 
+  \trl{dense}        & \trl{lu}           &  \lstinline|MATSOLVERELEMENTAL|       & \trl{elemental}     \\
+  \trl{dense}        & \trl{cholesky}     &                                       &                     \\
   \trl{seqaij}       & \trl{lu}           &  \lstinline|MATSOLVERMKL_PARDISO|     & \trl{mkl_pardiso}   \\
-  \trl{aij}          & \trl{lu}           &  \lstinline|MATSOLVERMKL_CPARDISO|    & \trl{mkl_cpardiso}  \\ 
+  \trl{aij}          & \trl{lu}           &  \lstinline|MATSOLVERMKL_CPARDISO|    & \trl{mkl_cpardiso}  \\
   \trl{aij}          & \trl{lu}           &  \lstinline|MATSOLVERPASTIX|          & \trl{pastix}        \\
   \trl{aij}          & \trl{cholesky}     &  \lstinline|MATSOLVERBAS|             & \trl{bas}           \\
   \trl{aijcusparse}  & \trl{lu}           &  \lstinline|MATSOLVERCUSPARSE|        & \trl{cusparse}      \\
   \trl{aijcusparse}  & \trl{cholesky}     &                                       &                     \\
-  \trl{aij}          & \trl{lu}           &  \lstinline|MATSOLVERPETSC|           & \trl{petsc}         \\ 
+  \trl{aij}          & \trl{lu}           &  \lstinline|MATSOLVERPETSC|           & \trl{petsc}         \\
   \trl{baij}         &                    &                                       &                     \\
   \trl{aijcrl}       &                    &                                       &                     \\
   \trl{aijperm}      &                    &                                       &                     \\
@@ -3992,7 +3992,7 @@ The arguments of the routine \trl{
 FormJacobian()} are the current iterate, \trl{x}; the (approximate) Jacobian matrix,
 \trl{Amat}; the matrix from which the preconditioner is constructed, \trl{Pmat} (which is usually the same
 as \trl{Amat});  and an optional user-defined Jacobian
-context, \trl{ctx}, for application-specific data.  
+context, \trl{ctx}, for application-specific data.
 Note that the \lstinline{SNES} solvers are all data-structure neutral, so the full
 range of PETSc matrix formats (including ``matrix-free''
 methods) can be used.  Chapter~\ref{chapter_matrices} discusses
@@ -4234,7 +4234,7 @@ SNESFASGetLevels(SNES snes, PetscInt *levels);
 
 There are four \lstinline{SNESFAS} cycle
 types, \lstinline{SNES_FAS_MULTIPLICATIVE}, \lstinline{SNES_FAS_ADDITIVE}, \break\lstinline{SNES_FAS_FULL},
-and \lstinline{SNES_FAS_KASKADE}. 
+and \lstinline{SNES_FAS_KASKADE}.
 The type may be set with
 \begin{lstlisting}
 SNESFASSetType(SNES snes,SNESFASType fastype);.
@@ -4660,7 +4660,7 @@ MatColoring   coloring;
 FormJacobian(snes,x, &J, &J, &user);
 
 /*
-   Color the matrix, i.e. determine groups of columns that share no common 
+   Color the matrix, i.e. determine groups of columns that share no common
   rows. These columns in the Jacobian can all be computed simultaneously.
 */
 MatColoringCreate(J, &coloring);
@@ -4756,7 +4756,7 @@ below that uses the utility routine \lstinline{DMCreateColoring()}.
 
 \begin{lstlisting}
 DMCreateColoring(da,IS_COLORING_GHOSTED, &iscoloring);
-MatFDColoringCreate(J,iscoloring, &fdcoloring); 
+MatFDColoringCreate(J,iscoloring, &fdcoloring);
 MatFDColoringSetFromOptions(fdcoloring);
 ISColoringDestroy( &iscoloring);
 \end{lstlisting}
@@ -4766,7 +4766,7 @@ Note that the routine \lstinline{MatFDColoringCreate()} currently is only suppor
 \section{Variational Inequalities}
 \label{sec_vi}
 
-\lstinline{SNES} can also solve variational inequalities with box constraints. 
+\lstinline{SNES} can also solve variational inequalities with box constraints.
 These are nonlinear algebraic systems with additional inequality constraints on some or all of the variables: $ Lu_i \le u_i \le Hu_i $.
 Some or all of the lower bounds may be negative infinity (indicated to PETSc with \lstinline{SNES_VI_NINF}) and some or all of the upper bounds may be infinity (indicated by \lstinline{SNES_VI_INF}). The command
 \begin{lstlisting}
@@ -4862,7 +4862,7 @@ In general, this is a differential algebraic
 equation (DAE) \footnote{If the matrix $F_{\dot{u}}(t) = \partial F
 / \partial \dot{u}$ is nonsingular then it is an ODE and can be
 transformed to the standard explicit form, although this transformation
-may not lead to efficient algorithms.}. 
+may not lead to efficient algorithms.}.
 For ODE with nontrivial mass matrices such as arise in FEM, the implicit/DAE interface significantly
 reduces overhead to prepare the system for algebraic solvers (\lstinline{SNES}/\lstinline{KSP})
 by having the user assemble the correctly shifted matrix.  Therefore
@@ -5186,7 +5186,7 @@ The solution vector for a GLEE method is either [$y$, $\tilde{y}$] or
 [$y$,$\varepsilon$], where $y$ is the solution, $\tilde{y}$ is the
 ``auxiliary solution,'' and $\varepsilon$ is the error. The working
 vector that \lstinline{TSGLEE} uses is $Y$ = [$y$,$\tilde{y}$], or
-[$y$,$\varepsilon$]. A GLEE method is defined by 
+[$y$,$\varepsilon$]. A GLEE method is defined by
 %%%%%
 \begin{itemize}
 \item $(p,r,s)$: (order, steps, and stages),
@@ -5204,7 +5204,7 @@ from the working vector ($\varepsilon = F_\text{error} Y$).
 ($\tilde{y}$ or $\varepsilon$) from a specified error vector
 ($\varepsilon$). It is currently implemented only for $r = 2$. We have $y_\text{aux} =
 S_{error}[0]*\varepsilon + S_\text{error}[1]*y$, where $y_\text{aux}$ is the 2nd
-component of the working vector $Y$. 
+component of the working vector $Y$.
 \end{itemize}
 %%%%%%%
 The methods can be described in two mathematically equivalent forms:
@@ -5222,7 +5222,7 @@ The API used by this \lstinline{TS} method includes:
     \end{lstlisting}
     Call with \lstinline{NULL} as the last argument to get the total number of
     components in the working vector $Y$ (this is $r$ (not $r-1$)),
-    then call to get the $i$-th solution component. 
+    then call to get the $i$-th solution component.
   \item \lstinline{TSGetAuxSolution}: Returns the auxiliary solution $\tilde{y}$ (computed as $F_\text{embed} Y$)
     \begin{lstlisting}
     ierr = TSGetAuxSolution(TS,Vec*)
@@ -5234,7 +5234,7 @@ The API used by this \lstinline{TS} method includes:
     ierr = TSGetTimeError(TS,PetscInt n,Vec*)
     \end{lstlisting}
   \item \lstinline{TSSetTimeError}: Initializes the auxiliary solution ($\tilde{y}$
-or $\varepsilon$) for a specified initial error. 
+or $\varepsilon$) for a specified initial error.
     \begin{lstlisting}
     ierr = TSSetTimeError(TS,Vec)
     \end{lstlisting}
@@ -5242,13 +5242,13 @@ or $\varepsilon$) for a specified initial error.
 
 The local error is estimated as $\varepsilon(n+1)-\varepsilon(n)$.
 This is to be used in the error control. The error in $y\tilde{y}$
-GLEE is $\varepsilon(n) = \frac{1}{1-\gamma} * (\tilde{y}(n) - y(n))$. 
+GLEE is $\varepsilon(n) = \frac{1}{1-\gamma} * (\tilde{y}(n) - y(n))$.
 
 Note that $y$ and $\tilde{y}$ are reported to \lstinline{TSAdapt} \trl{basic} (\trl{TSADAPTBASIC}), and thus it
 computes the local error as $\varepsilon_{loc} = (\tilde{y} -
 y)$. However, the actual local error is  $\varepsilon_{loc}
 = \varepsilon_{n+1} - \varepsilon_n = \frac{1}{1-\gamma} * [(\tilde{y} -
-y)_{n+1} - (\tilde{y} - y)_n]$. 
+y)_{n+1} - (\tilde{y} - y)_n]$.
 
 %
 \begin{table}
@@ -5306,26 +5306,26 @@ method (\lstinline{TSRK1FE} - $1$st-order, $1$-stage forward Euler, \lstinline{T
 \item $ \dot{u} = A u.$ First compute the matrix $ A$ then call
 \begin{lstlisting}
 TSSetProblemType(ts,TS_LINEAR);
-TSSetRHSFunction(ts,NULL,TSComputeRHSFunctionLinear,NULL); 
+TSSetRHSFunction(ts,NULL,TSComputeRHSFunctionLinear,NULL);
 TSSetRHSJacobian(ts,A,A,TSComputeRHSJacobianConstant,NULL);
 \end{lstlisting}
 or
 \begin{lstlisting}
 TSSetProblemType(ts,TS_LINEAR);
-TSSetIFunction(ts,NULL,TSComputeIFunctionLinear,NULL); 
+TSSetIFunction(ts,NULL,TSComputeIFunctionLinear,NULL);
 TSSetIJacobian(ts,A,A,TSComputeIJacobianConstant,NULL);
 \end{lstlisting}
 
 \item $ \dot{u} = A(t) u.$ Use
 \begin{lstlisting}
 TSSetProblemType(ts,TS_LINEAR);
-TSSetRHSFunction(ts,NULL,TSComputeRHSFunctionLinear,NULL); 
+TSSetRHSFunction(ts,NULL,TSComputeRHSFunctionLinear,NULL);
 TSSetRHSJacobian(ts,A,A,YourComputeRHSJacobian, &appctx);
 \end{lstlisting}
 where {\tt YourComputeRHSJacobian()} is a function you provide that computes $A$ as a function of time. Or use
 \begin{lstlisting}
 TSSetProblemType(ts,TS_LINEAR);
-TSSetIFunction(ts,NULL,TSComputeIFunctionLinear,NULL); 
+TSSetIFunction(ts,NULL,TSComputeIFunctionLinear,NULL);
 TSSetIJacobian(ts,A,A,YourComputeIJacobian, &appctx);
 \end{lstlisting}
 
@@ -5380,7 +5380,7 @@ every step the algorithm verifies that the estimated local truncation
 error satisfies the tolerances provided by the user and computes a new
 step size to be taken. For multistage methods, the local truncation is
 obtained by comparing the solution $y$ to a lower order
-$\widehat{p}=p-1$ approximation, $\widehat{y}$, where $p$ 
+$\widehat{p}=p-1$ approximation, $\widehat{y}$, where $p$
 is the order of the method and $\widehat{p}$ the order of $\widehat{y}$.
 
 The adaptive controller at step $n$ computes a tolerance level
@@ -5389,7 +5389,7 @@ The adaptive controller at step $n$ computes a tolerance level
 Tol_n(i)&=&\TolA(i) +  \max(y_n(i),\widehat{y}_n(i)) \TolR(i)\,,
 \end{eqnarray*}
 %%%
-and forms the acceptable error level 
+and forms the acceptable error level
 %%%
 \begin{eqnarray*}
 \SErr_n&=& \frac{1}{m} \sum_{i=1}^{m}\sqrt{\frac{\left\|y_n(i)
@@ -5398,14 +5398,14 @@ and forms the acceptable error level
 %%%
 where the errors are computed componentwise, $m$ is the dimension of
 $y$ and \trl{-ts_adapt_wnormtype} is \trl{2} (default).
-If \trl{-ts_adapt_wnormtype} is \trl{infinity} (max norm), then 
+If \trl{-ts_adapt_wnormtype} is \trl{infinity} (max norm), then
 %%%
 \begin{eqnarray*}
 \SErr_n&=& \max_{1\dots m}\frac{\left\|y_n(i)
   -\widehat{y}_n(i)\right\|}{Tol(i)}\,.
 \end{eqnarray*}
 %%%
-The error tolerances are satisfied when $\SErr \le 1.0$. 
+The error tolerances are satisfied when $\SErr \le 1.0$.
 
 The next step size is based on this error estimate, and determined by
 %%%
@@ -5461,15 +5461,15 @@ The event monitoring functionality is only available with PETSc's implicit time-
 \section{Using TChem from PETSc}
 \label{sec_tchem}
 
-TChem\footnote{\href{https://bitbucket.org/jedbrown/tchem}{bitbucket.org/jedbrown/tchem}} 
-is a package originally developed at Sandia National Laboratory that can read in 
-CHEMKIN\footnote{\href{https://en.wikipedia.org/wiki/CHEMKIN}{en.wikipedia.org/wiki/CHEMKIN}} 
+TChem\footnote{\href{https://bitbucket.org/jedbrown/tchem}{bitbucket.org/jedbrown/tchem}}
+is a package originally developed at Sandia National Laboratory that can read in
+CHEMKIN\footnote{\href{https://en.wikipedia.org/wiki/CHEMKIN}{en.wikipedia.org/wiki/CHEMKIN}}
 data files and compute the right hand side function and its Jacobian for a reaction ODE system.
-To utilize PETSc's ODE solvers for these systems, first install PETSc with the additional 
+To utilize PETSc's ODE solvers for these systems, first install PETSc with the additional
 \trl{./configure} option \trl{--download-tchem}. We currently provide two examples of its use;
-one for single cell reaction and one for an ``artificial'' one dimensional problem with 
-periodic boundary conditions and diffusion of all species. The self-explanatory examples 
-are \href{https://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/extchem.c.html}{\trl{$PETSC_DIR/src/ts/examples/tutorials/extchem.c}} 
+one for single cell reaction and one for an ``artificial'' one dimensional problem with
+periodic boundary conditions and diffusion of all species. The self-explanatory examples
+are \href{https://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/extchem.c.html}{\trl{$PETSC_DIR/src/ts/examples/tutorials/extchem.c}}
 and \href{https://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/exchemfield.c.html}{\trl{$PETSC_DIR/src/ts/examples/tutorials/exchemfield.c}}.
 
 \section{Using Sundials from PETSc}
@@ -6221,15 +6221,15 @@ DMNetworkGetComponent(DM dm,PetscInt p, PetscInt compnum, PetscInt *compkey, voi
 \lstinline{compkey} is the key set by \lstinline{DMNetworkRegisterComponent}. An example of accessing and retrieving the components at nodes is:
 
 \begin{lstlisting}
-PetscInt Start, End, numcomps,key,v,compnum; 
+PetscInt Start, End, numcomps,key,v,compnum;
 void *component;
 
-DMNetworkGetVertexRange(dm, &Start, &End); 
-for(v=Start; v  < End; v++) { 
-  DMNetworkGetNumComponents(dm,v, &numcomps); 
+DMNetworkGetVertexRange(dm, &Start, &End);
+for(v=Start; v  < End; v++) {
+  DMNetworkGetNumComponents(dm,v, &numcomps);
   for(compnum=0; compnum < numcomps;compnum++) {
-    DMNetworkGetComponent(dm,v,compnum, &key, &component); 
-    compdata = (UserCompDataType)(component); 
+    DMNetworkGetComponent(dm,v,compnum, &key, &component);
+    compdata = (UserCompDataType)(component);
   }
 }
 \end{lstlisting}
@@ -6420,7 +6420,7 @@ PETSc programs.  In this makefile, one can compile and run a debugging version
 of the Fortran program \trl{ex3.F90} with the actions \trl{make}  \trl{ex3} and
 \trl{make} \trl{runex3}, respectively. The compilation command is restated below:
 \begin{makelisting}
-ex3: ex3.o 
+ex3: ex3.o
        -${FLINKER}} -o ex3 ex3.o ${PETSC_LIB}
         ${RM} ex3.o
 \end{makelisting}
@@ -6434,7 +6434,7 @@ manual pages and previous discussion in this chapter for details:
 PetscInitialize(char *filename,int ierr)
 PetscError(MPI_COMM,int err,char *message,int ierr)
 VecGetArray(), MatDenseGetArray()
-ISGetIndices(), 
+ISGetIndices(),
 VecDuplicateVecs(), VecDestroyVecs()
 PetscOptionsGetString()
 \end{lstlisting}
@@ -6470,7 +6470,7 @@ are given in Figures \ref{fig_vec-Fortran} {\em --} \ref{fig_SNES-Fortran},
 corresponding to
 \href{https://www.mcs.anl.gov/petsc/petsc-current/src/vec/vec/examples/tests/ex19f.F.html}{\trl{${PETSC_DIR}/src/vec/vec/examples/tests/ex19f.F}},
 \href{https://www.mcs.anl.gov/petsc/petsc-current/src/vec/vec/examples/tutorials/ex4f.F.html}{\trl{${PETSC_DIR}/src/vec/vec/examples/tutorials/ex4f.F}},
-\break 
+\break
 \href{https://www.mcs.anl.gov/petsc/petsc-current/src/sys/classes/draw/examples/tests/ex5f.F.html}{\trl{${PETSC_DIR}/src/sys/classes/draw/examples/tests/ex5f.F}}, and
 \href{https://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex1f.F90.html}{\trl{${PETSC_DIR}/src/snes/examples/ex1f.F90}}, respectively.  We also
 refer Fortran programmers to the C examples listed throughout the manual,
@@ -6484,7 +6484,7 @@ since PETSc usage within the two languages differs only slightly.
 
 \begin{figure}[H]
   \input{listing_vecex4ftmp.tex}
-\caption{Sample Fortran Program: Setting Vector Entries and Accessing A Raw Vector Array} 
+\caption{Sample Fortran Program: Setting Vector Entries and Accessing A Raw Vector Array}
 \label{fig_vec2-Fortran}
 \end{figure}
 
@@ -6522,7 +6522,7 @@ PetscOffset    ss_i, xx_i, aa_i, dd_i
 Vec            x
 Mat            A
 IS             s
-DM             d 
+DM             d
 
 call VecGetArray(x,xx_v,xx_i,ierr)
 call MatDenseGetArray(A,aa_v,aa_i,ierr)
@@ -6569,12 +6569,12 @@ is done with the \trl{-C} compiler option, so never use the \trl{-C} option with
 \chapter{Using MATLAB with PETSc}
 \label{ch_matlab}\sindex{MATLAB}
 
-There are three basic ways to use MATLAB with PETSc: 
+There are three basic ways to use MATLAB with PETSc:
 \begin{tightenumerate}
   \item (Section \ref{sec_matlabdump}) dumping files to be read into MATLAB,
   \item (Section \ref{sec_matlabsocket}) automatically sending data from a running PETSc program
 to a MATLAB process where you may interactively type MATLAB commands (or run
-scripts), and 
+scripts), and
 \item (Section \ref{sec_matlabengine}) automatically sending data back and forth between PETSc and
 MATLAB where MATLAB commands are issued not interactively but from a script or
 the PETSc program (this uses the MATLAB Engine).
@@ -6584,11 +6584,11 @@ the PETSc program (this uses the MATLAB Engine).
 \label{sec_matlabdump}
 \subsection{Dumping ASCII MATLAB data}
 One can dump PETSc matrices and vectors to the screen in an ASCII format that MATLAB can read in directly. This is done with the
-command line options \trl{-vec_view ::ascii_matlab} or \trl{-mat_view ::ascii_matlab}. 
+command line options \trl{-vec_view ::ascii_matlab} or \trl{-mat_view ::ascii_matlab}.
 To write a a file, use \trl{-vec_view :filename.m:ascii_matlab} or \trl{-mat_view :filename.m:ascii_matlab}.
 
 This causes the PETSc program
-to print the vectors and matrices every time \lstinline{VecAssemblyEnd()} or \lstinline{MatAssemblyEnd()} are called. \findex{-vec_view ::ascii_matlab} \findex{-mat_view ::ascii_matlab} 
+to print the vectors and matrices every time \lstinline{VecAssemblyEnd()} or \lstinline{MatAssemblyEnd()} are called. \findex{-vec_view ::ascii_matlab} \findex{-mat_view ::ascii_matlab}
 To provide finer control
 over when and what vectors and matrices are dumped one can use the \lstinline{VecView()} and
 \lstinline{MatView()} functions with a viewer type of ASCII (see \lstinline{PetscViewerASCIIOpen()},
@@ -6597,7 +6597,7 @@ the viewer set the output type with, for example,
 \begin{lstlisting}
 PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_MATLAB);
 VecView(A,PETSC_VIEWER_STDOUT_WORLD);
-PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);  
+PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);
 \end{lstlisting}
 The name of each PETSc variable printed for MATLAB may be set with
 \begin{lstlisting}
@@ -6610,10 +6610,10 @@ One can also read PETSc binary files (see Section \ref{sec_viewers}) directly in
 This requires less disk space and is recommended for all but the smallest data sizes.
 One can also use
 \begin{lstlisting}
-PetscViewerPushFormat(viewer,PETSC_VIEWER_BINARY_MATLAB} 
+PetscViewerPushFormat(viewer,PETSC_VIEWER_BINARY_MATLAB}
 \end{lstlisting}
-to dump both a PETSc binary file and a corresponding \trl{.info} file which 
-\lstinline{PetscReadBinaryMatlab.m} will use to format the binary file in more complex cases, such as using a \lstinline{DMDA}. 
+to dump both a PETSc binary file and a corresponding \trl{.info} file which
+\lstinline{PetscReadBinaryMatlab.m} will use to format the binary file in more complex cases, such as using a \lstinline{DMDA}.
 For an example, see \href{https://www.mcs.anl.gov/petsc/petsc-current/src/dm/examples/tutorials/ex7.c.html}{\trl{${PETSC_DIR}/src/dm/examples/tutorials/ex7.c}}.
 In MATLAB (R2015b), one may then generate a useful structure. For example:
 \begin{outputlisting}[\normalsize\ttfamily]
@@ -6647,7 +6647,7 @@ are in the MATLAB path. Use \break\lstinline{p = PetscOpenSocket();} (or \lstinl
 your call to \lstinline{PetscViewerSocketOpen()}), and then \lstinline{a = PetscBinaryRead(p);} returns the object passed from PETSc.
 \lstinline{PetscBinaryRead()} may be called any number of times. Each call should correspond on the PETSc side with
 viewing a single vector or matrix. \lstinline{close()} closes the connection from MATLAB.
-On the PETSc side, one should destroy the viewer object with \lstinline{PetscViewerDestroy()}. 
+On the PETSc side, one should destroy the viewer object with \lstinline{PetscViewerDestroy()}.
 
 For an example, which includes sending data back to PETSc, see \href{https://www.mcs.anl.gov/petsc/petsc-current/src/vec/vec/examples/tutorials/ex42.c.html}{\trl{${PETSC_DIR}/src/vec/vec/examples/tutorials/ex42.c}} and the associated \trl{.m} file.
 
@@ -6666,7 +6666,7 @@ PetscMatlabEnginePut(PetscMatlabEngine e,PetscObject obj);
 One can get objects
 via
 \begin{lstlisting}
-PetscMatlabEngineGet(PetscMatlabEngine e,PetscObject obj); 
+PetscMatlabEngineGet(PetscMatlabEngine e,PetscObject obj);
 \end{lstlisting}
 Similarly, one can send arrays via
 \begin{lstlisting}
@@ -6868,7 +6868,7 @@ Finally, a summary of memory usage and object creation and destruction
 is presented.
 
 \begin{figure}[tb]
-  \begin{outputlisting}[\tiny\ttfamily] 
+  \begin{outputlisting}[\tiny\ttfamily]
 mpiexec -n 4 ./ex10 -f0 medium -f1 arco6 -ksp_gmres_classicalgramschmidt -log_view -mat_type baij \
             -matload_block_size 3 -pc_type bjacobi -options_left
 
@@ -7026,7 +7026,7 @@ suggestions about achieving good performance with PETSc codes.
 \subsection{Using {\tt -log\_mpe} with Jumpshot}
 \label{sec_mpelogs}
 
-It is also possible to use the {\em Jumpshot} package 
+It is also possible to use the {\em Jumpshot} package
 \cite{upshot} \sindex{Jumpshot} to visualize PETSc events.
 This package comes with the MPE software, which is part of the MPICH
 \cite{mpich-web-page} implementation of MPI.
@@ -7037,7 +7037,7 @@ The option \findex{-log_mpe}
 creates a logfile of events appropriate for viewing with {\em Jumpshot}.
 The user can either use the default logging file or
 specify a name via \trl{logfile}.
-Events can be deactivated as described in Section 
+Events can be deactivated as described in Section
 \ref{sec_deactivate}.
 
 The user can also log MPI events.  To do this, simply consider the
@@ -7278,7 +7278,7 @@ noticeable in the log files generated by \trl{-log_mpe}, which is
 described in Section~\ref{sec_mpelogs}.)
 
 To eliminate the effects of paging when profiling the performance of a
-program, we have found an effective procedure is to run the \emph{exact same code} 
+program, we have found an effective procedure is to run the \emph{exact same code}
 on a small dummy problem before running it on the actual problem
 of interest. We thus ensure that all code required by a solver is
 loaded into memory during solution of the small problem.  When the
@@ -7545,51 +7545,51 @@ Please consult the respective manuals.
 
 \subsubsection{Additional Process Placement Considerations and Details}
 
-For a typical, memory bandwidth-limited PETSc application, the primary consideration in placing MPI processes is 
+For a typical, memory bandwidth-limited PETSc application, the primary consideration in placing MPI processes is
 ensuring that processes are evenly distributed among sockets, and hence using all available memory channels.
-Increasingly complex processor designs and cache hierarchies, however, mean that performance may also be sensitive to how 
+Increasingly complex processor designs and cache hierarchies, however, mean that performance may also be sensitive to how
 processes are bound to the resources within each socket.
-Performance on the two processor machine in the preceding example may be relatively insensitive to such placement decisions, 
-because one L3 cache is shared by all cores within a NUMA domain, and each core has its own L2 and L1 caches. 
+Performance on the two processor machine in the preceding example may be relatively insensitive to such placement decisions,
+because one L3 cache is shared by all cores within a NUMA domain, and each core has its own L2 and L1 caches.
 However, processors that are less ``flat'', with more complex hierarchies, may be more sensitive.
-In many AMD Opterons or the second-generation ``Knights Landing'' Intel Xeon Phi, for instance, L2 caches are shared 
+In many AMD Opterons or the second-generation ``Knights Landing'' Intel Xeon Phi, for instance, L2 caches are shared
 between two cores.
-On these processors, placing consecutive MPI ranks on cores that share the same L2 cache may benefit performance if 
-the two ranks communicate frequently with each other, because the latency between cores sharing an L2 
+On these processors, placing consecutive MPI ranks on cores that share the same L2 cache may benefit performance if
+the two ranks communicate frequently with each other, because the latency between cores sharing an L2
 cache may be roughly half that of two cores not sharing one.
-There may be benefit, however, in placing consecutive ranks on cores that do not share an L2 cache, because (if there 
+There may be benefit, however, in placing consecutive ranks on cores that do not share an L2 cache, because (if there
 are fewer MPI ranks than cores) this increases the total L2 cache capacity and bandwidth available to the application.
-There is a trade-off to be considered between placing processes close together (in terms of shared resources) to 
-optimize for efficient communication and synchronization vs.\ farther apart to maximize available resources (memory 
-channels, caches, I/O channels, etc.), and the best strategy will depend on the application and the software and 
+There is a trade-off to be considered between placing processes close together (in terms of shared resources) to
+optimize for efficient communication and synchronization vs.\ farther apart to maximize available resources (memory
+channels, caches, I/O channels, etc.), and the best strategy will depend on the application and the software and
 hardware stack.
 
-Different process placement strategies can affect performance at least as much as some commonly explored settings, 
+Different process placement strategies can affect performance at least as much as some commonly explored settings,
 such as compiler optimization levels.
-Unfortunately, exploration of this space is complicated by two factors: 
-First, processor and core numberings may be completely arbitrary, changing with BIOS version, etc., and second---as 
-already noted---there is no standard mechanism used by MPI implementations (or job schedulers) to specify 
+Unfortunately, exploration of this space is complicated by two factors:
+First, processor and core numberings may be completely arbitrary, changing with BIOS version, etc., and second---as
+already noted---there is no standard mechanism used by MPI implementations (or job schedulers) to specify
 process affinity.
-To overcome the first issue, we recommend using the \texttt{lstopo} utility of the Portable Hardware Locality 
-(\texttt{hwloc}) software package (which can be installed by configuring PETSc with \texttt{--download-hwloc}) to 
+To overcome the first issue, we recommend using the \texttt{lstopo} utility of the Portable Hardware Locality
+(\texttt{hwloc}) software package (which can be installed by configuring PETSc with \texttt{--download-hwloc}) to
 understand the processor topology of your machine.
-We cannot fully address the second issue---consult the documenation for your MPI implementation and/or job 
-scheduler---but we offer some general observations on understanding placement options: 
+We cannot fully address the second issue---consult the documenation for your MPI implementation and/or job
+scheduler---but we offer some general observations on understanding placement options:
 \begin{itemize}
 \item An MPI implementation may support a notion of {\it domains} in which a process may be pinned.
-  A domain may simply correspond to a single core; however, the MPI implementation may allow a deal of flexibility 
-  in specifying domains that encompass multiple cores, span sockets, etc. 
-  Some implementations, such as Intel MPI, provide means to specify whether domains should be ``compact''---composed 
-  of cores sharing resources such as caches---or ``scatter''-ed, with little resource sharing (possibly even spanning 
+  A domain may simply correspond to a single core; however, the MPI implementation may allow a deal of flexibility
+  in specifying domains that encompass multiple cores, span sockets, etc.
+  Some implementations, such as Intel MPI, provide means to specify whether domains should be ``compact''---composed
+  of cores sharing resources such as caches---or ``scatter''-ed, with little resource sharing (possibly even spanning
   sockets).
 \item Separate from the specification of domains, MPI implementations often support different {\it orderings} in which MPI
-  ranks should be bound to these domains. Intel MPI, for instance, supports 
-  ``compact'' ordering to place consecutive ranks close in terms of shared resources, ``scatter'' 
-  to place them far apart, and ``bunch'' to map proportionally to sockets while placing ranks as close together as 
+  ranks should be bound to these domains. Intel MPI, for instance, supports
+  ``compact'' ordering to place consecutive ranks close in terms of shared resources, ``scatter''
+  to place them far apart, and ``bunch'' to map proportionally to sockets while placing ranks as close together as
   possible within the sockets.
-\item An MPI implemenation that supports process pinning should offer some way to view the rank assignments. 
-  Use this output in conjunction with the topology obtained via \texttt{lstopo} or a similar tool to determine if the 
-  placements correspond to something you believe is reasonable for your application. 
+\item An MPI implemenation that supports process pinning should offer some way to view the rank assignments.
+  Use this output in conjunction with the topology obtained via \texttt{lstopo} or a similar tool to determine if the
+  placements correspond to something you believe is reasonable for your application.
   Do not assume that the MPI implementation is doing something sensible by default!
 \end{itemize}
 
@@ -7622,34 +7622,34 @@ In the case that a user requests profiling information via \lstinline|-log_view|
 Conversely, one way of checking whether a particular build of PETSc has debugging enabled is to inspect the output of \lstinline|-log_view|.
 
 Debug mode will generally be most useful for code development if appropriate compiler options are set to faciliate debugging.
-The compiler should be instructed to generate binaries with debug symbols (command line option \trl{-g} for most compilers), 
-and the optimization level chosen should either completely disable optimizations (\trl{-O0} for most compilers) or enable only 
-optimizations that do not interfere with debugging (GCC, for instance, supports a \trl{-Og} optimization level that does this). 
+The compiler should be instructed to generate binaries with debug symbols (command line option \trl{-g} for most compilers),
+and the optimization level chosen should either completely disable optimizations (\trl{-O0} for most compilers) or enable only
+optimizations that do not interfere with debugging (GCC, for instance, supports a \trl{-Og} optimization level that does this).
 
-Only once the new code is thoroughly tested and ready for production, one should disable debugging facilities by passing 
+Only once the new code is thoroughly tested and ready for production, one should disable debugging facilities by passing
 \lstinline|--with-debugging=no| to {\trl{./configure}.
 One should also ensure that an appropriate compiler optimization level is set.
-Note that some compilers (e.g., Intel) default to fairly comprehensive optimization levels, while others (e.g., GCC) default to no 
+Note that some compilers (e.g., Intel) default to fairly comprehensive optimization levels, while others (e.g., GCC) default to no
 optimization at all.
-The best optimization flags will depend on your code, the compiler, and the target architecture, but we offer a few guidelines for 
+The best optimization flags will depend on your code, the compiler, and the target architecture, but we offer a few guidelines for
 finding those that will offer the best performance:
 \begin{itemize}
-\item Most compilers have a number of optimization levels (with level n usually specified via \trl{-On}) that provide a quick way 
-  to enable sets of several optimization flags. 
-  We suggest trying the higher optimization levels (the highest level is not guaranteed to produce the fastest executable, 
+\item Most compilers have a number of optimization levels (with level n usually specified via \trl{-On}) that provide a quick way
+  to enable sets of several optimization flags.
+  We suggest trying the higher optimization levels (the highest level is not guaranteed to produce the fastest executable,
   so some experimentation may be merited).
-  With most recent processors now supporting some form of SIMD or vector instructions, it is important to choose a level that 
-  enables the compiler's auto-vectorizer; many compilers do not enable auto-vectorization at lower optimization levels 
+  With most recent processors now supporting some form of SIMD or vector instructions, it is important to choose a level that
+  enables the compiler's auto-vectorizer; many compilers do not enable auto-vectorization at lower optimization levels
   (e.g., GCC does not enable it below \trl{-O3} and the Intel compiler does not enable it below \trl{-O2}).
-\item For processors supporting newer vector instruction sets, such as Intel AVX2 and AVX-512, it is also important to direct the 
-compiler to generate code that targets these processors (.e.g., \trl{-march=knl} to generate AVX-512 binaries targeting the 
-Intel ``Knights Landing'' Xeon Phi processor); 
+\item For processors supporting newer vector instruction sets, such as Intel AVX2 and AVX-512, it is also important to direct the
+compiler to generate code that targets these processors (.e.g., \trl{-march=knl} to generate AVX-512 binaries targeting the
+Intel ``Knights Landing'' Xeon Phi processor);
 otherwise, the executables built will not utilize the newer instructions sets and will not take advantage of the vector processing units.
-\item Beyond choosing the optimization levels, some value-unsafe optimizations (such as using reciprocals of values instead of dividing 
-by those values, or allowing re-association of operands in a series of calculations) for floating point calculations may yield 
-significant performance gains. Compilers often provide flags (e.g., \trl{-ffast-math} in GCC) to enable a set of these optimizations, 
-and they may be turned on when using options for very aggressive optimization (\trl{-fast} or \trl{-Ofast} in many compilers). 
-These are worth exploring to maximize performance, but, if employed, it important to verify that these do not cause erroneous results 
+\item Beyond choosing the optimization levels, some value-unsafe optimizations (such as using reciprocals of values instead of dividing
+by those values, or allowing re-association of operands in a series of calculations) for floating point calculations may yield
+significant performance gains. Compilers often provide flags (e.g., \trl{-ffast-math} in GCC) to enable a set of these optimizations,
+and they may be turned on when using options for very aggressive optimization (\trl{-fast} or \trl{-Ofast} in many compilers).
+These are worth exploring to maximize performance, but, if employed, it important to verify that these do not cause erroneous results
 with your code, since calculations may violate the IEEE standard for floating-point arithmetic.
 \end{itemize}
 
@@ -7887,7 +7887,7 @@ overcoming them.
 \item {\bf Overhead of timing routines on certain machines}: On certain machines,
       even calling the system clock in order to time routines is
       slow; this skews all of the flop rates and timing results. The file
-      \href{https://www.mcs.anl.gov/petsc/petsc-current/src/benchmarks/PetscTime.c.html}{\trl{$PETSC_DIR/src/benchmarks/PetscTime.c}} contains a 
+      \href{https://www.mcs.anl.gov/petsc/petsc-current/src/benchmarks/PetscTime.c.html}{\trl{$PETSC_DIR/src/benchmarks/PetscTime.c}} contains a
       simple test problem that will approximate the amount of time
       required to get the current time in a running program. On good
       systems it will on the order of $10^{-6}$ seconds or less.
@@ -8012,11 +8012,11 @@ Comments can be placed in the \trl{.petscrc} file by using \lstinline{#} in the 
 \subsection{Options Prefixes}
 Options prefixes allow specific objects to be controlled from the options database.
 For instance, \lstinline{PCMG} gives prefixes to its nested \lstinline{KSP} objects;
-one may control the coarse grid solver by adding the \trl{mg_coarse} prefix, for example 
+one may control the coarse grid solver by adding the \trl{mg_coarse} prefix, for example
 \trl{-mg_coarse_ksp_type preonly}.
 One may also use \break \lstinline{KSPSetOptionsPrefix()},\lstinline{DMSetOptionsPrefix()}
-, \lstinline{SNESSetOptionsPrefix()}, \lstinline{TSSetOptionsPrefix()}, and similar 
-functions to assign custom prefixes, useful for applications with multiple or nested 
+, \lstinline{SNESSetOptionsPrefix()}, \lstinline{TSSetOptionsPrefix()}, and similar
+functions to assign custom prefixes, useful for applications with multiple or nested
 solvers.
 
 \subsection{User-Defined PetscOptions}
@@ -8084,7 +8084,7 @@ predefined viewers.
       causes the object to be printed to the screen.
     \item \lstinline{PETSC_VIEWER_DRAW_SELF}
       \lstinline{PETSC_VIEWER_DRAW_WORLD} causes the
-      object to be drawn in a default X window. 
+      object to be drawn in a default X window.
 \item Passing in a viewer obtained by
       \lstinline{PetscViewerDrawOpen()} causes the object to be displayed graphically.
       See Section \ref{sec_graphics} for more on PETSc's graphics support.
@@ -8160,7 +8160,7 @@ Command-line options provide a particularly convenient way to view PETSc objects
 All options of the form \trl{-xxx_view} accept colon(\trl{:})-separated compound arguments which
 specify a viewer type, format, and/or destination (e.g. file name or socket) if appropriate.
 For example, to quickly export a binary file containing a matrix, one may use
-\trl{-mat_view binary:matrix.out}, 
+\trl{-mat_view binary:matrix.out},
 or to output to a MATLAB-compatible ASCII file, one may use
 \trl{-mat_view ascii:matrix.m:ascii_matlab}.
 See the \lstinline{PetscOptionsGetViewer()} man page for full details,
@@ -8178,7 +8178,7 @@ will display
   Nonzeros: Min 162  avg 168  max 174
 \end{lstlisting}
 indicating that one process has 162 nonzero entries in the matrix, the average number of nonzeros per process is 168 and the maximum number of nonzeros is 174.
-Similar for vectors one can see the load balancing with, for example, 
+Similar for vectors one can see the load balancing with, for example,
 \begin{lstlisting}
 -n 4 ./ex32 -ksp_view_rhs ::load_balance
 \end{lstlisting}
@@ -8188,10 +8188,10 @@ The measurements of load balancing can also be done within the program with call
 
 \section{Using SAWs with PETSc} \label{sec_saws}
 \sindex{saws}
-The Scientific Application Web server, 
+The Scientific Application Web server,
 SAWs\footnote{\href{https://bitbucket.org/saws/saws/wiki/Home}{\trl{https://bitbucket.org/saws/saws/wiki/Home}}},
 allows one to monitor running PETSc applications from a browser.
-\trl{./configure} PETSc with the additional option \trl{--download-saws}. 
+\trl{./configure} PETSc with the additional option \trl{--download-saws}.
 Options to use SAWs include
 \begin{tightitemize}
   \item\trl{-saws_options} - allows setting values in the PETSc options database via the browser (works only on one process).
@@ -8230,7 +8230,7 @@ or \trl{-on_error_attach_debugger} is specified. \sindex{debugging}
 To employ either \trl{xxgdb} or the common UNIX debugger \trl{dbx}, one uses
 command line options as indicated above. On HP-UX machines the debugger
 \trl{xdb} should be used instead of \trl{dbx}; on RS/6000 machines the
-\trl{xldb} debugger is supported as well. 
+\trl{xldb} debugger is supported as well.
 On OS X systems with XCode tools, \trl{lldb} is available.
 By  default, the debugger will be started in a new xterm (to enable
 running separate debuggers on each process), unless the option
@@ -8347,7 +8347,7 @@ if desired by setting this macro before each user-defined routine
 that may call \lstinline{SETERRQ()}, \lstinline{CHKERRQ()}.
 A simple example of usage is given below.
 \begin{lstlisting}
-PetscErrorCode MyRoutine1() { 
+PetscErrorCode MyRoutine1() {
     /* Declarations Here */
     PetscFunctionBeginUser;
     /* code here */
@@ -8366,7 +8366,7 @@ libraries).  To work with complex numbers,
 the user should run \trl{./configure} with the additional option \trl{--with-scalar-type=complex}.
 The file \href{https://www.mcs.anl.gov/petsc/documentation/installation.html}{\trl{${PETSC_DIR}/src/docs/website/documentation/installation.html}}
 provides detailed instructions for installing PETSc.
-You can use \trl{--with-clanguage=c} (the default) to use the C99 complex numbers or \trl{--with-clanguage=c++} 
+You can use \trl{--with-clanguage=c} (the default) to use the C99 complex numbers or \trl{--with-clanguage=c++}
 to use the C++ complex type\footnote{Note that this option is not required to use PETSc with C++}.
 
 Recall that each variant of the PETSc libraries is stored in a
@@ -8417,7 +8417,7 @@ command
 PetscViewerDrawOpen(MPI_Comm comm,char *display,char *title,int x,int y,int w,int h,PetscViewer *viewer);
 \end{lstlisting}
 This viewer may be passed to any of the \lstinline{XXXView()} routines.
-Alternately, one may use command-line options to quickly specify viewer formats, 
+Alternately, one may use command-line options to quickly specify viewer formats,
 including \lstinline{PetscDraw}-based ones; see Section \ref{sec_viewfromoptions}.
 
 To draw directly into the viewer, one must obtain the \lstinline{PetscDraw} object with the
@@ -8726,8 +8726,8 @@ For further examples of using Eclipse with a PETSc-based application, see the do
 
 \section{Qt Creator Users} \sindex{Qt Creator}
 This information was provided by Mohammad Mirzadeh.
-The Qt Creator IDE is part of the Qt SDK, developed for cross-platform GUI programming using C++. 
-It is available under GPL v3, LGPL v2 and a commercial license and may be obtained, either as a 
+The Qt Creator IDE is part of the Qt SDK, developed for cross-platform GUI programming using C++.
+It is available under GPL v3, LGPL v2 and a commercial license and may be obtained, either as a
 part of Qt SDK or as an stand-alone software, via \url{http://qt.nokia.com/downloads/}.
 It supports automatic makefile generation using cross-platform \trl{qmake} and \trl{cmake}
 build systems as well as allowing one to import projects based on existing, possibly hand-written, makefiles.
@@ -8784,26 +8784,26 @@ In this example, keywords include:
 \item \lstinline{TARGET}: The name of the application executable.
 \item \lstinline{INCLUDEPATH}: Used at compile time to point to required include files. Essentially, it is used as an \trl{ -I \$\$INCLUDEPATH} flag for the compiler. This should include all application-specific header files and those related to PETSc (which may be found via \trl{make getincludedirs}).
 \item \lstinline{LIBS}: Defines all required external libraries to link with the application. To get PETSc's linking libraries, use \trl{make getlinklibs}.
-\item \lstinline{CONFIG}: Configuration options to be used by \trl{qmake}. Here, the option \lstinline{link_pkgconfig} instructs \trl{qmake} to internally 
+\item \lstinline{CONFIG}: Configuration options to be used by \trl{qmake}. Here, the option \lstinline{link_pkgconfig} instructs \trl{qmake} to internally
   use \lstinline{pkgconfig} to resolve \lstinline{INCLUDEPATH} and \lstinline{LIBS} variables.
-\item \lstinline{PKGCONFIG}: Name of the configuration file (the \trl{.pc} file -- here \trl{PETSc.pc}) to be passed to \trl{pkgconfig}. Note that for this functionality to work, \trl{PETSc.pc} must be in path which might require adjusting the \lstinline{PKG_CONFIG_PATH} enviroment variable. 
+\item \lstinline{PKGCONFIG}: Name of the configuration file (the \trl{.pc} file -- here \trl{PETSc.pc}) to be passed to \trl{pkgconfig}. Note that for this functionality to work, \trl{PETSc.pc} must be in path which might require adjusting the \lstinline{PKG_CONFIG_PATH} enviroment variable.
   For more information see \url{https://doc.qt.io/qtcreator/creator-build-settings.html#build-environment}.
 \item \lstinline{QMAKE_CC} and \lstinline{QMAKE_CXX}: Define which C/C++ compilers use.
 \item \lstinline{QMAKE_LINK}: Defines the proper linker to be used. Relevant if compiling C++ projects.
 \item \lstinline{QMAKE_CFLAGS}, \lstinline{QMAKE_CXXFLAGS} and \lstinline{QMAKE_LFLAGS}: Set the corresponding compile and linking flags.
 \item \lstinline{SOURCES}: Source files to be compiled.
-\item \lstinline{HEADERS}: Header files required by the application. 
+\item \lstinline{HEADERS}: Header files required by the application.
 \item \lstinline{OTHER_FILES}: Other files to include (source, header, or any other extension). Note that none of the source files placed here are compiled.
 \end{tightitemize}
 
-More options can be included in a \trl{.pro} file; see \url{https://doc.qt.io/qt-5/qmake-project-files.html}. 
-Once the \trl{.pro} file is generated, the user can simply open it via Qt Creator. 
-Upon opening, one has the option to create two different build options, debug and release, and switch between the two. 
+More options can be included in a \trl{.pro} file; see \url{https://doc.qt.io/qt-5/qmake-project-files.html}.
+Once the \trl{.pro} file is generated, the user can simply open it via Qt Creator.
+Upon opening, one has the option to create two different build options, debug and release, and switch between the two.
 For more information on using the Qt Creator interface and other more advanced aspects of the IDE, refer to \url{https://www.qt.io/qt-features-libraries-apis-tools-and-ide/}
 
 \section{Visual Studio Users} \sindex{visual studio}
 
-To use PETSc from MS Visual Studio, one would have to compile a PETSc example with its corresponding makefile and then transcribe all compiler and linker options used in this build into a Visual Studio project file, in the appropriate format in Visual Studio project settings. 
+To use PETSc from MS Visual Studio, one would have to compile a PETSc example with its corresponding makefile and then transcribe all compiler and linker options used in this build into a Visual Studio project file, in the appropriate format in Visual Studio project settings.
 
 \section{XCode Users (The Apple GUI Development System)} \sindex{xcode}
 \subsection{Mac OS X}
@@ -8818,6 +8818,249 @@ See the examples in \trl{$PETSC_DIR/systems/Apple/OSX/examples}.  When working i
 Follow the instructions in \trl{$PETSC_DIR/systems/Apple/iOS/bin/iosbuilder.py} to build the PETSc library for use on the iPhone/iPad.
 
 You can then use the PETSc static library in \trl{$PETSC_DIR/arch-osx/libPETSc.a} in the usual manner for Apple libraries inside your iOS XCode projects; see the examples in \trl{$PETSC_DIR/systems/Apple/iOS/examples}.  You must also link against the Apple \trl{Accelerate.framework}.
+
+%----------------------------------------------------------------------
+\cleardoublepage
+\chapter{BuildSystem}
+\label{ch_buildsystem}
+
+This chapter describes the system used by PETSc for configuration testing, named BuildSystem. The system is written solely in Python, and consists of a number of objects running in a coordinated fashion. Below we describe the main objects involved, and the organization of both the files and in-memory objects during the configure run. However, first we discuss the configure and build process at a higher level.
+
+\paragraph{What is a build?} The build stage compiles source to object files, stores them somehow (usually in archives), and links shared libraries and executables. These are mechanical operations that reduce to applying a construction rule to sets of files. The \href{http://www.gnu.org/software/make/}{make} tool is great at this job. However, other parts of make are not as useful, and we should distinguish the two.
+
+Make uses a single predicate, \textit{older than}, to decide whether to apply a rule. This is a disaster. A useful
+upgrade to make would expand the list of available predicates, including things like \textit{md5sum has changed} and
+\textit{flags have changed}. There have been attempts to use make to determine whether a file has changed, for example
+by using stamp files. However, it cannot be done without severe contortions which make it much harder to see what make
+is doing and maintain the system. Right now, we can combine make with the \href{https://ccache.samba.org/}{ccache}
+utility to minimize recompiling and relinking.
+
+\paragraph{Why is configure necessary?} The \textit{configure} program is designed to assemble all information and preconditions necessary for the build stage. This is a far more complicated task, heavily dependent on the local hardware and software environment. It is also the source of nearly every build problem. The most crucial aspect of a configure system is not performance, scalability, or even functionality, it is \textit{debuggability}. Configuration failure is at least as common as success, due to broken tools, operating system upgrades, hardware incompatibilities, user error, and a host of other reasons. Problem diagnosis is the single biggest bottleneck for development and maintenance time. Unfortunately, current systems are built to optimize the successful case rather than the unsuccessful. In PETSc, we have developed the \href{https://www.bitbucket.org/petsc/BuildSystem}{BuildSystem} package (BS) to remedy the shortcomings of configuration systems such as Autoconf, CMake, and SCons.
+
+First, BS provides consistent namespacing for tests and test results. Tests are encapsulated in modules, which also hold
+the test results. Thus you get the normal Python namespacing of results. Anyone familiar with Autoconf will recall the
+painful, manual namespacing using text prefixes inside the flat, global namespace. Also, this consistent hierarchical
+organization allows external command lines to be built up in a disciplined fashion, rather than the usual practice of
+dumping all flags into global reservoirs such as the \trl{INCLUDE} and \trl{LIBS} variables. This
+encapsulation makes it much easier to see which tests are responsible for donating offending flags and switches when
+tests fail, since errors can occur far away from the initial inclusion of a flag.
+
+\section{Why use PETSc BuildSystem?}
+
+PETSc provides a fully functional configure model implemented in Python, named BuildSystem (BS), which has also been
+used as the configuration tool for other open sources packages. As more than a few configuration tools currently exist,
+it is instructive to consider why PETSc would choose to create another from scratch. Below we list features and design
+considerations which lead us to prefer BuildSystem to the alternatives.
+
+\paragraph{Namespacing} BS wraps collections of related tests in Python modules, which also hold the test results. Thus
+results are accessed using normal Python namespacing. As rudimentary as this sounds, no namespacing beyond the use of
+variable name prefixes is present in SCons, CMake, or Autoconf. Instead, a flat namespace is used, mirroring the
+situation in C. This tendency appears again when composing command lines for extenral tools, such as the compiler and
+linker. In the traditional configure tools, options are aggregated in a single bucket variable, such as
+\trl{INCLUDE} or \trl{LIBS}, whereas in BS you trace the provenance of a flag before it is added to the
+command line. CMake also makes the unfortunate decision to force all link options to resolve to full paths, which causes
+havoc with compiler-private libraries.
+
+\paragraph{Explicit control flow} The BS configure modules mention above, containing one configure object per module,
+are organized explicitly into a directed acyclic graph (DAG). The user indicates dependence, an \textit{edge} in the
+dependence graph, with a single call, \trl{requires('path.to.other.test', self)}, which not only structures the
+DAG, but returns the configure object. The caller can then use this object to access the results of the tests run by the
+dependency, achieving test and result encapsulation simply.
+
+\paragraph{Multi-languages tests} BS maintains an explicit language stack, so that the current language can be
+manipulated by the test environment. A compile or link can be run using any language, complete with the proper
+compilers, flags, libraries, etc with a single call. This kind of automation is crucial for cross-language tests, which
+are very thinly supported in current tools. In fact, the design of these tools inhibits this kind of check. The
+\trl{check_function_exists()} call in Autoconf and CMake looks only for the presence of a particular symbol in
+a library, and fails in C++ and on Windows, whereas the equivalent BS test can also take a declaration. The
+\trl{try_compile()} test in Autoconf and CMake requires the entire list of libraries be present in the
+\trl{LIBS} variable, providing no good way to obtain libraries from other tests in a modular fashion. As another
+example, if the user has a dependent library that requires \trl{libstdc++}, but they are working with a C
+project, no straightforward method exists to add this dependency.
+
+\paragraph{Subpackages} The most complicated, but perhaps the most useful part of BS is the support for dependent
+packages. It provides an object scaffolding for including a 3rd party package (more than 60 are now available) so that
+PETSc downloads, builds, and tests the package for inclusion. The native configure and build system for the package is
+used, and special support exists for GNU and CMake packages. No similar system exists in the other tools, which rely on
+static declarations, such as \trl{pkg-config} or \trl{FindPackage.cmake} files, that are not tested and
+often become obsolete. They also require that any dependent packages use the same configuration and build system.
+
+\paragraph{Batch environments} Most systems, such as Autoconf and CMake, do not actually run tests in a batch
+environment, but rather require a direct specification, in CMake a ``platform file''. This requires a human expert to
+write and maintain the platform file. Alternatively, Buildsystem submits a dynamically generated set of tests to the
+batch system, enabling automatic cross-configuration and cross-compilation.
+
+\paragraph{Caching} Caching often seems like an attractive option since configuration can be quite
+time-consuming, and both Autoconf and CMake enable caching by default. However, no system has the ability to reliably
+invalidate the cache when the environment for the configuration changes. For example, a compiler or library dependency
+may be upgraded on the system. Moreover, dependencies between cached variables are not tracked, so that even if some
+variables are correctly updated after an upgrade, others which depend on them may not be. Moreover, CMake mixes together
+information which is discovered automatically with that explicitly provided by the user, which is often not tested.
+
+\subsection{Dealing with Errors} The most crucial piece of an effective configure system is good error reporting and
+recovery. Most of the configuration process involves errors, either in compiling, linking, or execution, but it can be
+extremely difficult to uncover the ultimate source of an error. For example, the configuration process might have
+checked the system BLAS library, and then tried to evaluate a package that depends on BLAS such as PETSc. It receives a
+link error and fails complaining about a problem with PETSc. However, close examination of the link error shows that
+BLAS with compiled without position-independent code, e.g. using the \trl{-fPIC} flag, but PETSc was built using
+the flag since it was intended for a shared library. This is sometimes hard to detect because many 32-bit systems
+silently proceeed, but most 64-bit systems fail in this case.
+
+When test command lines are built up from options gleaned from many prior tests, it is imperative that the system keep
+track of which tests were responible for a given flag or a given decision in the configure process. This failure to
+preserve the chain of reasoning is not unique to configure, but is ubiquitous in software and hardware interfaces. When
+your Wifi receiver fails to connect to a hub, or your cable modem to the ISP router, you are very often not told the
+specific reason, but rather given a generic error message which does not help distinguish between the many possible
+failure modes. It is essential for robust systems that error reports allow the user to track back all the way to the
+decision or test which produced a given problem, although it might involve voluminous logging. Thus the system must
+either be designed so that it creates actionable diagnostics when it fails or it must have unfailingly good support so
+that human intervention can resolve the problem. The longevity of Autoconf I think can be explained by the ability of
+expert users to gain access to enough information, possibly by adding \trl{set -x} to scripts and other invasive
+practices, to act to resolve problems. This ability has been nearly lost in follow-on systems such as SCons and CMake.
+
+Concision is also an important attribute, as the cognitive load is usually larger for larger code bases. The addition of
+logic to Autoconf and CMake is often quite cumbersome as they do not employ a modern, higher level language. For
+example, the Trilinos/TriBITS package from Sandia National Laboratory is quite similar to PETSc in the kinds of computations it
+performs. It contains 175,000 lines of CMakescript used to configure and build the project, whereas PETSc contains less
+than 30,000 lines of Python code to handle configuration and regression testing and one GNU Makefile of 130 lines.
+
+\section{High level organization}
+
+A minimal BuildSystem setup consists of a \trl{config} directory off the package root, which contains all the Python necessary run (in addition to the BuildSystem source). At minimum, the config directory contains a \trl{configure.py}, which is executed to run the configure process, and a module for the package itself. For example, PETSc contains \trl{config/PETSc/PETSc.py}. It is also common to include a toplevel \trl{configure} file to execute the configure, as this looks like Autotools,
+\begin{pythonlisting}
+#!/usr/bin/env python
+import os
+execfile(os.path.join(os.path.dirname(__file__), 'config', 'configure.py'))
+\end{pythonlisting}
+
+The \trl{configure.py} script constructs a tree of configure modules and executes the configure process over it. A minimal version of this would be
+\begin{pythonlisting}
+package = 'PETSc'
+
+def configure(configure_options):
+  # Command line arguments take precedence (but don't destroy argv[0])
+  sys.argv = sys.argv[:1] + configure_options + sys.argv[1:]
+  framework = config.framework.Framework(['--configModules='+package+'.Configure', '--optionsModule='+package+'.compilerOptions']+sys.argv[1:], loadArgDB = 0)
+  framework.setup()
+  framework.configure(out = sys.stdout)
+  framework.storeSubstitutions(framework.argDB)
+  framework.printSummary()
+  framework.argDB.save(force = True)
+  framework.logClear()
+  framework.closeLog()
+
+if __name__ == '__main__':
+  configure([])
+\end{pythonlisting}
+The PETSc \trl{configure.py} is quite a bit longer than this, but it is doing specialized command line processing and error handling, and integrating logging with the rest of PETSc.
+
+The \trl{config/package/Configure.py} module determines how the tree of configure objects is built and how the configure information is output. The \trl{configure} method of the nodule will be run by the \trl{framework} object created at the top level. A minimal configure method would look like
+\begin{pythonlisting}
+def configure(self):
+  self.framework.header          = self.arch.arch+'/include/'+self.project+'conf.h'
+  self.framework.makeMacroHeader = self.arch.arch+'/conf/'+self.project+'variables'
+  self.framework.makeRuleHeader  = self.arch.arch+'/conf/'+self.project+'rules'
+
+  self.Dump()
+  self.logClear()
+  return
+\end{pythonlisting}
+The \trl{Dump} method runs over the tree of configure modules, and outputs the data necessary for building, usually employing the \trl{addMakeMacro()}, \trl{addMakeRule()} and \trl{addDefine()} methods. These method funnel output to the include and make files defined by the framework object, and set at the beginning of this trl{configure()} method. There is also some simple information that is often used, which we define in the constructor,
+\begin{pythonlisting}
+def __init__(self, framework):
+  config.base.Configure.__init__(self, framework)
+  self.Project      = 'PETSc'
+  self.project      = self.Project.lower()
+  self.PROJECT      = self.Project.upper()
+  self.headerPrefix = self.PROJECT
+  self.substPrefix  = self.PROJECT
+  self.framework.Project = self.Project
+  return
+\end{pythonlisting}
+More sophisticated configure assemblies, like PETSc, output some other custom information, such as information about the machine, configure process, and a script to recreate the configure run.
+
+The package configure module has two other main functions. First, top level options can be defined in the \trl{setupHelp()} method,
+\begin{pythonlisting}
+def setupHelp(self, help):
+  import nargs
+  help.addArgument(self.Project, '-prefix=<path>', nargs.Arg(None, '', 'Specify location to install '+self.Project+' (eg. /usr/local)'))
+  help.addArgument(self.Project, '-load-path=<path>', nargs.Arg(None, os.path.join(os.getcwd(), 'modules'), 'Specify location of auxiliary modules'))
+  help.addArgument(self.Project, '-with-shared-libraries', nargs.ArgBool(None, 0, 'Make libraries shared'))
+  help.addArgument(self.Project, '-with-dynamic-loading', nargs.ArgBool(None, 0, 'Make libraries dynamic'))
+  return
+\end{pythonlisting}
+This uses the BuildSystem help facility that is used to define options for all configure modules. The first argument groups these options into a section named for the package. The second task is to build the tree of modules for the configure run, using the \trl{setupDependencies()} method. A simple way to do this is by explicitly declaring dependencies,
+\begin{pythonlisting}
+def setupDependencies(self, framework):
+    config.base.Configure.setupDependencies(self, framework)
+    self.setCompilers  = framework.require('config.setCompilers',                self)
+    self.arch          = framework.require(self.Project+'.utilities.arch',       self.setCompilers)
+    self.projectdir    = framework.require(self.Project+'.utilities.projectdir', self.arch)
+    self.compilers     = framework.require('config.compilers',                   self)
+    self.types         = framework.require('config.types',                       self)
+    self.headers       = framework.require('config.headers',                     self)
+    self.functions     = framework.require('config.functions',                   self)
+    self.libraries     = framework.require('config.libraries',                   self)
+
+    self.compilers.headerPrefix  = self.headerPrefix
+    self.types.headerPrefix      = self.headerPrefix
+    self.headers.headerPrefix    = self.headerPrefix
+    self.functions.headerPrefix  = self.headerPrefix
+    self.libraries.headerPrefix  = self.headerPrefix
+\end{pythonlisting}
+The \trl{projectdir} and \trl{arch} modules define the project root directory and a build name so that multiple independent builds can be managed. The \trl{Framework.require()} method creates an edge in the dependence graph for configure modules, and returns the module object so that it can be queried after the configure information is determined. Setting the header prefix routes all the defines made inside those modules to our package configure header. We can also automatically create configure modules based upon what we see on the filesystem,
+\begin{pythonlisting}
+for utility in os.listdir(os.path.join('config', self.Project, 'utilities')):
+  (utilityName, ext) = os.path.splitext(utility)
+  if not utilityName.startswith('.') and not utilityName.startswith('#') and ext == '.py' and not utilityName == '__init__':
+    utilityObj                    = self.framework.require(self.Project+'.utilities.'+utilityName, self)
+    utilityObj.headerPrefix       = self.headerPrefix
+    utilityObj.archProvider       = self.arch
+    utilityObj.languageProvider   = self.languages
+    utilityObj.precisionProvider  = self.scalartypes
+    utilityObj.installDirProvider = self.installdir
+    utilityObj.externalPackagesDirProvider = self.externalpackagesdir
+    setattr(self, utilityName.lower(), utilityObj)
+\end{pythonlisting}
+The provider modules customize the information given to the module based upon settings for our package. For example, PETSc can be compiled with a scalar type that is single, double, or quad precision, and thus has a \trl{precisionProvider}. If a package does not have this capability, the provider setting can be omitted.
+
+\section{Main objects}
+
+\subsection{Framework}
+
+The \trl{config.framework.Framework} object serves as the central control for a configure run. It maintains a graph of all the configure modules involved, which is also used to track dependencies between them. It initiates the run, compiles the results, and handles the final output. It maintains the help list for all options available in the run. The \trl{setup()} method preforms generic \trl{Script} setup and then is called recursively on all the child modules. The \trl{cleanup()} method performs the final output and logging actions,
+\begin{itemize}
+  \item Subtitute files
+  \item Output configure header
+  \item Log filesystem actions
+\end{itemize}
+Children may be added to the Framework using \trl{addChild()} or \trl{getChild()}, but the far more frequent method is to use \trl{require()}. Here a module is requested, as in \trl{getChild()}, but it is also required to run before another module, usually the one executing the \trl{require()}. This provides a simple local interface to establish dependencies between the child modules, and provides a partial order on the children to the Framework.
+
+A backwards compatibility mode is provided for which the user specifies a configure header and set of files to experience substitution, mirroring the common usage of Autoconf. Slight improvements have been made in that all defines are now guarded, various prefixes are allowed for defines and substitutions, and C specific constructs such as function prototypes and typedefs are removed to a separate header. However, this is not the intended future usage. The use of configure modules by other modules in the same run provides a model for the suggested interaction of a new build system with the Framework. If a module requires another, it merely executes a \trl{require()}. For instance, the PETSc configure module for HYPRE requires information about MPI, and thus contains
+\begin{pythonlisting}
+    self.mpi = self.framework.require("config.packages.MPI", self)
+\end{pythonlisting}
+Notice that passing self for the last arguments means that the MPI module will run before the HYPRE module. Furthermore, we save the resulting object as \trl{self.mpi} so that we may interogate it later. HYPRE can initially test whether MPI was indeed found using \trl{self.mpi.found}. When HYPRE requires the list of MPI libraries in order to link a test object, the module can use \trl{self.mpi.lib}.
+
+\subsection{Base}
+
+The \trl{config.base.Configure} is the base class for all configure objects. It handles several types of interaction. First, it has hooks that allow the Framework to initialize it correctly. The Framework will first instantiate the object and call \trl{setupDependencies()}. All \trl{require()} calls should be made in that method. The Framework will then call \trl{configure()}. If it succeeds, the object will be marked as configured. Second, all configure tests should be run using \trl{executeTest()} which formats the output and adds metadata for the log.
+
+Third, all tests that involve preprocessing, compiling, linking, and running operator through \trl{base}. Two forms of this check are provided for each operation. The first is an "output" form which is intended to provide the status and complete output of the command. The second, or "check" form will return a success or failure indication based upon the status and output. The routines are
+\begin{bashlisting}
+  outputPreprocess(), checkPreprocess(), preprocess()
+  outputCompile(),    checkCompile()
+  outputLink(),       checkLink()
+  outputRun(),        checkRun()
+\end{bashlisting}
+The language used for these operation is managed with a stack, similar to autoconf, using \trl{pushLanguage()} and \trl{popLanguage()}. We also provide special forms used to check for valid compiler and linker flags, optionally adding them to the defaults.
+\begin{bashlisting}
+  checkCompilerFlag(), addCompilerFlag()
+  checkLinkerFlag(),   addLinkerFlag()
+\end{bashlisting}
+You can also use \trl{getExecutable()} to search for executables.
+
+After configure tests have been run, various kinds of output can be generated.A \#define statement can be added to the configure header using \trl{addDefine()}, and \trl{addTypedef()} and \trl{addPrototype()} also put information in this header file. Using \trl{addMakeMacro()} and \trl{addMakeRule()} will add make macros and rules to the output makefiles specified in the framework. In addition we provide \trl{addSubstitution()} and \trl{addArgumentSubstitution()} to mimic the bahvior of Autoconf if necessary. The object may define a \trl{headerPrefix} member, which will be appended, followed by an underscore, to every define which is output from it. Similarly, a \trl{substPrefix} can be defined which applies to every substitution from the object. Typedefs and function prototypes are placed in a separate header in order to accommodate languages such as Fortran whose preprocessor can sometimes fail at these statements.
 
 %----------------------------------------------------------------------
 \cleardoublepage
@@ -8844,12 +9087,12 @@ variable.
 
 \subsection{Makefile Commands} \label{sec_common}
 
-The directory 
+The directory
 \trl{${PETSC_DIR}/lib/petsc/conf}
 contains virtually all
 makefile commands and customizations to enable portability across
 different architectures.  Most makefile commands for maintaining the
-PETSc system are defined in the file 
+PETSc system are defined in the file
 \trl{${PETSC_DIR}/lib/petsc/conf/rules}
 These commands, which process all appropriate files within the
 directory of execution, include
@@ -8868,7 +9111,7 @@ within a directory and all of its subdirectories.  The action is specified
 by \trl{ACTION=[action]}, where \trl{action} is one of the basic commands
 listed above. For example, if the command
 \trl{make ACTION=lib tree}
-were executed from the directory 
+were executed from the directory
 \trl{${PETSC_DIR}/src/ksp/ksp}
 the debugging library for all Krylov subspace solvers would be built.
 
@@ -8877,7 +9120,7 @@ the debugging library for all Krylov subspace solvers would be built.
 
 The directory \trl{${PETSC_DIR}/} contains a subdirectory for each
 architecture that contains machine-specific information, enabling the
-portability of our makefile system, these are 
+portability of our makefile system, these are
 \trl{${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf}
  Each architecture directory contains
 two makefiles:
@@ -8938,7 +9181,7 @@ within the makefile.
    include ${PETSC_DIR}/lib/petsc/conf/variables
    include ${PETSC_DIR}/lib/petsc/conf/rules
 
-   ex2: ex2.o 
+   ex2: ex2.o
            ${CLINKER} -o ex2 ex2.o  ${PETSC_LIB}
            ${RM} ex2.o
 \end{makelisting}
@@ -8971,7 +9214,7 @@ and \trl{PETSC_LIB} are defined by the included \trl{${PETSC_DIR}/lib/petsc/conf
 
 If you do not wish to include any PETSc makefiles in your makefile,
 you can use the following commands in the PETSc root directory to get the information
-needed by your makefile: 
+needed by your makefile:
 \begin{bashlisting}
 make getlinklibs getincludedirs getpetscflags
 \end{bashlisting}
@@ -9051,9 +9294,9 @@ ALL: lib
 
 CFLAGS   =
 SOURCEC  = sp1wd.c spinver.c spnd.c spqmd.c sprcm.c
-SOURCEF  = degree.F  fnroot.F genqmd.F qmdqt.F rcm.F fn1wd.F gen1wd.F \ 
+SOURCEF  = degree.F  fnroot.F genqmd.F qmdqt.F rcm.F fn1wd.F gen1wd.F \
           genrcm.F qmdrch.F rootls.F fndsep.F gennd.F qmdmrg.F qmdupd.F
-SOURCEH  = 
+SOURCEH  =
 LIBBASE  = libpetscmat
 MANSEC   = Mat
 
@@ -9399,7 +9642,7 @@ make -f gmakefile help-test
 
 \subsection{Understanding test output and more information}
 
-As discussed in Section~\ref{sec_running}, 
+As discussed in Section~\ref{sec_running},
 users should set \trl{PETSC_DIR} and \trl{PETSC_ARCH} before running
 the tests, or can provide them on the command line as below.
 
@@ -9408,7 +9651,7 @@ To check if the libraries are working do:
 make PETSC_DIR=<PETSC_DIR> PETSC_ARCH=<PETSC_ARCH> test
 \end{bashlisting}
 
-A comprehensive  set of tests can be run with 
+A comprehensive  set of tests can be run with
 \begin{bashlisting}
 make PETSC_DIR=<PETSC_DIR> PETSC_ARCH=<PETSC_ARCH> alltests
 \end{bashlisting}
@@ -9440,12 +9683,12 @@ In brief, the categories are
 
 The tests are a series of shell scripts, generated by information
 contained within the test source file, that are invoked by the makefile
-system.  The tests are run in 
+system.  The tests are run in
 \trl{${PETSC_DIR}/${PETSC_ARCH}/tests}
 with the same directory as the source tree underneath.
 For testing installs, the default location is
 \trl{${PREFIX_DIR}/tests} but this can be changed with the \trl{TESTDIR} location.
-(See Section~\ref{sec_directory}).  
+(See Section~\ref{sec_directory}).
 A label is used to denote where it can be found within the source tree.
 For example, test \trl{vec_vec_tutorials-ex6},
 which can be run e.g. with
