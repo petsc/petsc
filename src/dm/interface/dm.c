@@ -3813,7 +3813,8 @@ PetscErrorCode DMGetLocalBoundingBox(DM dm, PetscReal lmin[], PetscReal lmax[])
 PetscErrorCode DMGetBoundingBox(DM dm, PetscReal gmin[], PetscReal gmax[])
 {
   PetscReal      lmin[3], lmax[3];
-  PetscMPIInt    cdim, count;
+  PetscInt       cdim;
+  PetscMPIInt    count;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
