@@ -12,7 +12,11 @@ static PetscErrorCode PCBDDCNullSpaceCorrPreSolve(KSP ksp,Vec y,Vec x, void* ctx
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(corr_ctx->evapply,ksp,0,0,0);CHKERRQ(ierr);
   ierr = MatMultTranspose(corr_ctx->basis_mat,y,corr_ctx->sw[0]);CHKERRQ(ierr);
-  ierr = MatMultTranspose(corr_ctx->inv_smat,corr_ctx->sw[0],corr_ctx->sw[1]);CHKERRQ(ierr);
+  if (corr_ctx->symm) {
+    ierr = MatMult(corr_ctx->inv_smat,corr_ctx->sw[0],corr_ctx->sw[1]);CHKERRQ(ierr);
+  } else {
+    ierr = MatMultTranspose(corr_ctx->inv_smat,corr_ctx->sw[0],corr_ctx->sw[1]);CHKERRQ(ierr);
+  }
   ierr = VecScale(corr_ctx->sw[1],-1.0);CHKERRQ(ierr);
   ierr = MatMult(corr_ctx->basis_mat,corr_ctx->sw[1],corr_ctx->fw[0]);CHKERRQ(ierr);
   ierr = VecScale(corr_ctx->sw[1],-1.0);CHKERRQ(ierr);
@@ -32,7 +36,11 @@ static PetscErrorCode PCBDDCNullSpaceCorrPostSolve(KSP ksp,Vec y,Vec x, void* ct
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(corr_ctx->evapply,ksp,0,0,0);CHKERRQ(ierr);
   ierr = KSPGetOperators(ksp,&K,NULL);CHKERRQ(ierr);
-  ierr = MatMultTranspose(K,x,corr_ctx->fw[0]);CHKERRQ(ierr);
+  if (corr_ctx->symm) {
+    ierr = MatMult(K,x,corr_ctx->fw[0]);CHKERRQ(ierr);
+  } else {
+    ierr = MatMultTranspose(K,x,corr_ctx->fw[0]);CHKERRQ(ierr);
+  }
   ierr = MatMultTranspose(corr_ctx->basis_mat,corr_ctx->fw[0],corr_ctx->sw[0]);CHKERRQ(ierr);
   ierr = VecScale(corr_ctx->sw[0],-1.0);CHKERRQ(ierr);
   ierr = MatMult(corr_ctx->inv_smat,corr_ctx->sw[0],corr_ctx->sw[2]);CHKERRQ(ierr);
@@ -92,6 +100,8 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
   shell_ctx->basis_mat = dmat;
   ierr = MatGetSize(dmat,NULL,&basis_size);CHKERRQ(ierr);
   shell_ctx->evapply = PC_BDDC_ApproxApply[pcbddc->current_level];
+
+  ierr = MatGetOption(local_mat,MAT_SYMMETRIC,&shell_ctx->symm);CHKERRQ(ierr);
 
   /* explicit construct (Phi^T K Phi)^-1 */
   ierr = MatMatMult(local_mat,shell_ctx->basis_mat,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&Kbasis_mat);CHKERRQ(ierr);

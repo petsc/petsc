@@ -171,6 +171,7 @@ struct _NullSpaceCorrection_ctx {
   Vec           *sw;
   PetscScalar   scale;
   PetscLogEvent evapply;
+  PetscBool     symm;
 };
 typedef struct _NullSpaceCorrection_ctx *NullSpaceCorrection_ctx;
 
