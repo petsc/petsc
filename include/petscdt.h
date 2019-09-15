@@ -9,7 +9,7 @@
 /*S
   PetscQuadrature - Quadrature rule for integration.
 
-  Level: developer
+  Level: beginner
 
 .seealso:  PetscQuadratureCreate(), PetscQuadratureDestroy()
 S*/
