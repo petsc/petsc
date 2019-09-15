@@ -1,0 +1,8 @@
+Initial guess
+L_2 Error: 0.00130208
+Initial Residual
+L_2 Residual: 0.701561
+Au - b = Au + F(0)
+Linear L_2 Residual: 0.701561
+  Linear solve converged due to CONVERGED_RTOL iterations 15
+KSP Error: 6.9189e-10

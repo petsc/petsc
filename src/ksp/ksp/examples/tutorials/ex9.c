@@ -40,7 +40,7 @@ int main(int argc,char **args)
   PetscInt       ldim,low,high,iglobal,Istart,Iend,Istart2,Iend2;
   PetscInt       Ii,J,i,j,m = 3,n = 2,its,t;
   PetscErrorCode ierr;
-  PetscBool      flg = PETSC_FALSE;
+  PetscBool      flg = PETSC_FALSE, unsym = PETSC_TRUE;
   PetscScalar    v;
   PetscMPIInt    rank,size;
 #if defined(PETSC_USE_LOG)
@@ -50,6 +50,7 @@ int main(int argc,char **args)
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-t",&ntimes,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-unsym",&unsym,NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   n    = 2*size;
@@ -99,7 +100,7 @@ int main(int argc,char **args)
      Create first linear solver context.
      Set runtime options (e.g., -pc_type <type>).
      Note that the first linear system uses the default option
-     names, while the second linear systme uses a different
+     names, while the second linear system uses a different
      options prefix.
   */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp1);CHKERRQ(ierr);
@@ -196,11 +197,13 @@ int main(int argc,char **args)
       if (j<n-1) {J = Ii + 1; ierr = MatSetValues(C1,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
       v = 4.0; ierr = MatSetValues(C1,1,&Ii,1,&Ii,&v,ADD_VALUES);CHKERRQ(ierr);
     }
-    for (Ii=Istart; Ii<Iend; Ii++) { /* Make matrix nonsymmetric */
-      v = -1.0*(t+0.5); i = Ii/n;
-      if (i>0)   {J = Ii - n; ierr = MatSetValues(C1,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+    if (unsym) {
+      for (Ii=Istart; Ii<Iend; Ii++) { /* Make matrix nonsymmetric */
+        v = -1.0*(t+0.5); i = Ii/n;
+        if (i>0)   {J = Ii - n; ierr = MatSetValues(C1,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+      }
+      ierr = PetscLogFlops(2.0*(Iend-Istart));CHKERRQ(ierr);
     }
-    ierr = PetscLogFlops(2.0*(Iend-Istart));CHKERRQ(ierr);
 
     /*
        Assemble matrix, using the 2-step process:
@@ -289,9 +292,11 @@ int main(int argc,char **args)
         v = 6.0 + t*0.5; ierr = MatSetValues(C2,1,&Ii,1,&Ii,&v,ADD_VALUES);CHKERRQ(ierr);
       }
     }
-    for (Ii=Istart2; Ii<Iend2; Ii++) { /* Make matrix nonsymmetric */
-      v = -1.0*(t+0.5); i = Ii/n;
-      if (i>0)   {J = Ii - n; ierr = MatSetValues(C2,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+    if (unsym) {
+      for (Ii=Istart2; Ii<Iend2; Ii++) { /* Make matrix nonsymmetric */
+        v = -1.0*(t+0.5); i = Ii/n;
+        if (i>0)   {J = Ii - n; ierr = MatSetValues(C2,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+      }
     }
     ierr = MatAssemblyBegin(C2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(C2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -434,5 +439,29 @@ PetscErrorCode MyKSPMonitor(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
 
    test:
       args: -t 2 -pc_type jacobi -ksp_monitor_short -ksp_type gmres -ksp_gmres_cgs_refinement_type refine_always -s2_ksp_type bcgs -s2_pc_type jacobi -s2_ksp_monitor_short
+
+   test:
+      requires: hpddm
+      suffix: hpddm
+      args: -t 2 -pc_type jacobi -ksp_monitor_short -ksp_type {{gmres hpddm}} -s2_ksp_type {{gmres hpddm}} -s2_pc_type jacobi -s2_ksp_monitor_short
+
+   test:
+      requires: hpddm
+      suffix: hpddm_2
+      args: -t 2 -pc_type jacobi -ksp_monitor_short -ksp_type gmres -s2_ksp_type hpddm -s2_ksp_hpddm_krylov_method gcrodr -s2_ksp_hpddm_recycle 10 -s2_pc_type jacobi -s2_ksp_monitor_short
+
+   testset:
+      requires: hpddm
+      output_file: output/ex9_hpddm_cg.out
+      args: -unsym 0 -t 2 -pc_type jacobi -ksp_monitor_short -s2_pc_type jacobi -s2_ksp_monitor_short -ksp_rtol 1.e-2 -s2_ksp_rtol 1.e-2
+      test:
+         suffix: hpddm_cg_p_p
+         args: -ksp_type cg -s2_ksp_type cg
+      test:
+         suffix: hpddm_cg_p_h
+         args: -ksp_type cg -s2_ksp_type hpddm -s2_ksp_hpddm_krylov_method cg
+      test:
+         suffix: hpddm_cg_h_h
+         args: -ksp_type hpddm -ksp_hpddm_krylov_method cg -s2_ksp_type hpddm -s2_ksp_hpddm_krylov_method cg
 
 TEST*/
