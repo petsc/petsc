@@ -21,7 +21,6 @@ PETSC_INTERN PetscErrorCode MatFactorSetUpInPlaceSchur_Private(Mat F)
   S->ops->matsolvetranspose = St->ops->matsolvetranspose;
   S->ops->solveadd          = St->ops->solveadd;
   S->ops->solvetransposeadd = St->ops->solvetransposeadd;
-  S->factortype             = St->factortype;
 
   ierr = MatDestroy(&St);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -48,7 +47,6 @@ PETSC_INTERN PetscErrorCode MatFactorUpdateSchurStatus_Private(Mat F)
     }
     break;
   case MAT_FACTOR_SCHUR_FACTORED:
-    ierr = MatFactorSetUpInPlaceSchur_Private(F);CHKERRQ(ierr);
     break;
   default:
     SETERRQ1(PetscObjectComm((PetscObject)F),PETSC_ERR_SUP,"Unhandled MatFactorSchurStatus %D",F->schur_status);

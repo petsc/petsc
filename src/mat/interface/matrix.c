@@ -8772,12 +8772,9 @@ PetscErrorCode MatFactorSetSchurIS(Mat mat,IS is)
   if (!mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix");
   ierr = PetscObjectQueryFunction((PetscObject)mat,"MatFactorSetSchurIS_C",&f);CHKERRQ(ierr);
   if (!f) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"The selected MatSolverType does not support Schur complement computation. You should use MATSOLVERMUMPS or MATSOLVERMKL_PARDISO");
-  if (mat->schur) {
-    ierr = MatDestroy(&mat->schur);CHKERRQ(ierr);
-  }
+  ierr = MatDestroy(&mat->schur);CHKERRQ(ierr);
   ierr = (*f)(mat,is);CHKERRQ(ierr);
   if (!mat->schur) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_PLIB,"Schur complement has not been created");
-  ierr = MatFactorSetUpInPlaceSchur_Private(mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
