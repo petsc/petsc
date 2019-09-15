@@ -128,7 +128,7 @@ static PetscErrorCode MatMumpsResetSchur_Private(Mat_MUMPS* mumps)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFree2(mumps->id.listvar_schur,mumps->id.schur);CHKERRQ(ierr);
+  ierr = PetscFree(mumps->id.listvar_schur);CHKERRQ(ierr);
   ierr = PetscFree(mumps->id.redrhs);CHKERRQ(ierr);
   ierr = PetscFree(mumps->schur_sol);CHKERRQ(ierr);
   mumps->id.size_schur = 0;
@@ -151,10 +151,16 @@ static PetscErrorCode MatMumpsSolveSchur_Private(Mat F)
   ierr = MatFactorGetSchurComplement(F,&S,&schurstatus);CHKERRQ(ierr);
   ierr = MatCreateSeqDense(PETSC_COMM_SELF,mumps->id.size_schur,mumps->id.nrhs,(PetscScalar*)mumps->id.redrhs,&B);CHKERRQ(ierr);
   ierr = MatSetType(B,((PetscObject)S)->type_name);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+  ierr = MatPinToCPU(B,S->pinnedtocpu);CHKERRQ(ierr);
+#endif
   switch (schurstatus) {
   case MAT_FACTOR_SCHUR_FACTORED:
     ierr = MatCreateSeqDense(PETSC_COMM_SELF,mumps->id.size_schur,mumps->id.nrhs,(PetscScalar*)mumps->id.redrhs,&X);CHKERRQ(ierr);
     ierr = MatSetType(X,((PetscObject)S)->type_name);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+    ierr = MatPinToCPU(X,S->pinnedtocpu);CHKERRQ(ierr);
+#endif
     if (!mumps->id.ICNTL(9)) { /* transpose solve */
       ierr = MatMatSolveTranspose(S,B,X);CHKERRQ(ierr);
     } else {
@@ -170,6 +176,9 @@ static PetscErrorCode MatMumpsSolveSchur_Private(Mat F)
     }
     ierr = MatCreateSeqDense(PETSC_COMM_SELF,mumps->id.size_schur,mumps->id.nrhs,mumps->schur_sol,&X);CHKERRQ(ierr);
     ierr = MatSetType(X,((PetscObject)S)->type_name);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+    ierr = MatPinToCPU(X,S->pinnedtocpu);CHKERRQ(ierr);
+#endif
     if (!mumps->id.ICNTL(9)) { /* transpose solve */
       ierr = MatTransposeMatMult(S,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&X);CHKERRQ(ierr);
     } else {
@@ -244,14 +253,16 @@ static PetscErrorCode MatMumpsHandleSchur_Private(Mat F, PetscBool expansion)
 
 PetscErrorCode MatConvertToTriples_seqaij_seqaij(Mat A,int shift,MatReuse reuse,int *nnz,int **r, int **c, PetscScalar **v)
 {
-  const PetscInt *ai,*aj,*ajj,M=A->rmap->n;
-  PetscInt       nz,rnz,i,j;
-  PetscErrorCode ierr;
-  PetscInt       *row,*col;
-  Mat_SeqAIJ     *aa=(Mat_SeqAIJ*)A->data;
+  const PetscScalar *av;
+  const PetscInt    *ai,*aj,*ajj,M=A->rmap->n;
+  PetscInt          nz,rnz,i,j;
+  PetscErrorCode    ierr;
+  PetscInt          *row,*col;
+  Mat_SeqAIJ        *aa=(Mat_SeqAIJ*)A->data;
 
   PetscFunctionBegin;
-  *v=aa->a;
+  ierr = MatSeqAIJGetArrayRead(A,&av);CHKERRQ(ierr);
+  *v   = (PetscScalar*)av;
   if (reuse == MAT_INITIAL_MATRIX) {
     nz   = aa->nz;
     ai   = aa->i;
@@ -270,6 +281,7 @@ PetscErrorCode MatConvertToTriples_seqaij_seqaij(Mat A,int shift,MatReuse reuse,
     }
     *r = row; *c = col;
   }
+  ierr = MatSeqAIJRestoreArrayRead(A,&av);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -422,7 +434,8 @@ PetscErrorCode MatConvertToTriples_seqaij_seqsbaij(Mat A,int shift,MatReuse reus
   ierr = MatGetOption(A,MAT_HERMITIAN,&hermitian);CHKERRQ(ierr);
   if (hermitian) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MUMPS does not support Hermitian symmetric matrices for Choleksy");
 #endif
-  ai    = aa->i; aj = aa->j; av = aa->a;
+  ierr  = MatSeqAIJGetArrayRead(A,&av);CHKERRQ(ierr);
+  ai    = aa->i; aj = aa->j;
   adiag = aa->diag;
   ierr  = MatMissingDiagonal_SeqAIJ(A,&missing,&i);CHKERRQ(ierr);
   if (reuse == MAT_INITIAL_MATRIX) {
@@ -506,6 +519,7 @@ PetscErrorCode MatConvertToTriples_seqaij_seqsbaij(Mat A,int shift,MatReuse reus
       }
     }
   }
+  ierr = MatSeqAIJRestoreArrayRead(A,&av);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -618,20 +632,23 @@ PetscErrorCode MatConvertToTriples_mpiaij_mpiaij(Mat A,int shift,MatReuse reuse,
   PetscInt          *row,*col;
   const PetscScalar *av, *bv,*v1,*v2;
   PetscScalar       *val;
-  Mat_MPIAIJ        *mat = (Mat_MPIAIJ*)A->data;
-  Mat_SeqAIJ        *aa  = (Mat_SeqAIJ*)(mat->A)->data;
-  Mat_SeqAIJ        *bb  = (Mat_SeqAIJ*)(mat->B)->data;
+  Mat               Ad,Ao;
+  Mat_SeqAIJ        *aa;
+  Mat_SeqAIJ        *bb;
 
   PetscFunctionBegin;
-  rstart = A->rmap->rstart;
+  ierr = MatMPIAIJGetSeqAIJ(A,&Ad,&Ao,&garray);CHKERRQ(ierr);
+  ierr = MatSeqAIJGetArrayRead(Ad,&av);CHKERRQ(ierr);
+  ierr = MatSeqAIJGetArrayRead(Ao,&bv);CHKERRQ(ierr);
+
+  aa = (Mat_SeqAIJ*)(Ad)->data;
+  bb = (Mat_SeqAIJ*)(Ao)->data;
   ai = aa->i;
   aj = aa->j;
   bi = bb->i;
   bj = bb->j;
-  av = aa->a;
-  bv = bb->a;
 
-  garray = mat->garray;
+  rstart = A->rmap->rstart;
 
   if (reuse == MAT_INITIAL_MATRIX) {
     nz   = aa->nz + bb->nz;
@@ -671,6 +688,8 @@ PetscErrorCode MatConvertToTriples_mpiaij_mpiaij(Mat A,int shift,MatReuse reuse,
     }
     irow++;
   }
+  ierr = MatSeqAIJRestoreArrayRead(Ad,&av);CHKERRQ(ierr);
+  ierr = MatSeqAIJRestoreArrayRead(Ao,&bv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -751,9 +770,9 @@ PetscErrorCode MatConvertToTriples_mpiaij_mpisbaij(Mat A,int shift,MatReuse reus
   PetscInt          *row,*col;
   const PetscScalar *av, *bv,*v1,*v2;
   PetscScalar       *val;
-  Mat_MPIAIJ        *mat =  (Mat_MPIAIJ*)A->data;
-  Mat_SeqAIJ        *aa  =(Mat_SeqAIJ*)(mat->A)->data;
-  Mat_SeqAIJ        *bb  =(Mat_SeqAIJ*)(mat->B)->data;
+  Mat               Ad,Ao;
+  Mat_SeqAIJ        *aa;
+  Mat_SeqAIJ        *bb;
 #if defined(PETSC_USE_COMPLEX)
   PetscBool         hermitian;
 #endif
@@ -763,14 +782,17 @@ PetscErrorCode MatConvertToTriples_mpiaij_mpisbaij(Mat A,int shift,MatReuse reus
   ierr = MatGetOption(A,MAT_HERMITIAN,&hermitian);CHKERRQ(ierr);
   if (hermitian) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MUMPS does not support Hermitian symmetric matrices for Choleksy");
 #endif
-  ai     = aa->i;
-  aj     = aa->j;
-  adiag  = aa->diag;
-  bi     = bb->i;
-  bj     = bb->j;
-  garray = mat->garray;
-  av     = aa->a;
-  bv     = bb->a;
+  ierr = MatMPIAIJGetSeqAIJ(A,&Ad,&Ao,&garray);CHKERRQ(ierr);
+  ierr = MatSeqAIJGetArrayRead(Ad,&av);CHKERRQ(ierr);
+  ierr = MatSeqAIJGetArrayRead(Ao,&bv);CHKERRQ(ierr);
+
+  aa    = (Mat_SeqAIJ*)(Ad)->data;
+  bb    = (Mat_SeqAIJ*)(Ao)->data;
+  ai    = aa->i;
+  aj    = aa->j;
+  adiag = aa->diag;
+  bi    = bb->i;
+  bj    = bb->j;
 
   rstart = A->rmap->rstart;
 
@@ -825,6 +847,8 @@ PetscErrorCode MatConvertToTriples_mpiaij_mpisbaij(Mat A,int shift,MatReuse reus
     }
     irow++;
   }
+  ierr = MatSeqAIJRestoreArrayRead(Ad,&av);CHKERRQ(ierr);
+  ierr = MatSeqAIJRestoreArrayRead(Ao,&bv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1925,10 +1949,11 @@ PetscErrorCode MatGetInfo_MUMPS(Mat A,MatInfoType flag,MatInfo *info)
 /* -------------------------------------------------------------------------------------------*/
 PetscErrorCode MatFactorSetSchurIS_MUMPS(Mat F, IS is)
 {
-  Mat_MUMPS      *mumps =(Mat_MUMPS*)F->data;
-  const PetscInt *idxs;
-  PetscInt       size,i;
-  PetscErrorCode ierr;
+  Mat_MUMPS         *mumps =(Mat_MUMPS*)F->data;
+  const PetscScalar *arr;
+  const PetscInt    *idxs;
+  PetscInt          size,i;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = ISGetLocalSize(is,&size);CHKERRQ(ierr);
@@ -1939,20 +1964,22 @@ PetscErrorCode MatFactorSetSchurIS_MUMPS(Mat F, IS is)
     ierr = MPI_Allreduce(&ls,&gs,1,MPIU_BOOL,MPI_LAND,mumps->petsc_comm);CHKERRQ(ierr);
     if (!gs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MUMPS distributed parallel Schur complements not yet supported from PETSc\n");
   }
-  if (mumps->id.size_schur != size) {
-    ierr = PetscFree2(mumps->id.listvar_schur,mumps->id.schur);CHKERRQ(ierr);
-    mumps->id.size_schur = size;
-    mumps->id.schur_lld  = size;
-    ierr = PetscMalloc2(size,&mumps->id.listvar_schur,size*size,&mumps->id.schur);CHKERRQ(ierr);
-  }
 
   /* Schur complement matrix */
-  ierr = MatCreateSeqDense(PETSC_COMM_SELF,mumps->id.size_schur,mumps->id.size_schur,(PetscScalar*)mumps->id.schur,&F->schur);CHKERRQ(ierr);
+  ierr = MatDestroy(&F->schur);CHKERRQ(ierr);
+  ierr = MatCreateSeqDense(PETSC_COMM_SELF,size,size,NULL,&F->schur);CHKERRQ(ierr);
+  ierr = MatDenseGetArrayRead(F->schur,&arr);CHKERRQ(ierr);
+  mumps->id.schur      = (MumpsScalar*)arr;
+  mumps->id.size_schur = size;
+  mumps->id.schur_lld  = size;
+  ierr = MatDenseRestoreArrayRead(F->schur,&arr);CHKERRQ(ierr);
   if (mumps->sym == 1) {
     ierr = MatSetOption(F->schur,MAT_SPD,PETSC_TRUE);CHKERRQ(ierr);
   }
 
   /* MUMPS expects Fortran style indices */
+  ierr = PetscFree(mumps->id.listvar_schur);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size,&mumps->id.listvar_schur);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&idxs);CHKERRQ(ierr);
   ierr = PetscArraycpy(mumps->id.listvar_schur,idxs,size);CHKERRQ(ierr);
   for (i=0;i<size;i++) mumps->id.listvar_schur[i]++;
@@ -2619,7 +2646,7 @@ static PetscErrorCode MatGetFactor_aij_mumps(Mat A,MatFactorType ftype,Mat *F)
 
   PetscFunctionBegin;
   /* Create the factorization matrix */
-  ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&isSeqAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectBaseTypeCompare((PetscObject)A,MATSEQAIJ,&isSeqAIJ);CHKERRQ(ierr);
   ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
   ierr = PetscStrallocpy("mumps",&((PetscObject)B)->type_name);CHKERRQ(ierr);
@@ -2627,8 +2654,8 @@ static PetscErrorCode MatGetFactor_aij_mumps(Mat A,MatFactorType ftype,Mat *F)
 
   ierr = PetscNewLog(B,&mumps);CHKERRQ(ierr);
 
-  B->ops->view        = MatView_MUMPS;
-  B->ops->getinfo     = MatGetInfo_MUMPS;
+  B->ops->view    = MatView_MUMPS;
+  B->ops->getinfo = MatGetInfo_MUMPS;
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_mumps);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorSetSchurIS_C",MatFactorSetSchurIS_MUMPS);CHKERRQ(ierr);
