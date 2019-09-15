@@ -77,14 +77,20 @@ PETSC_INTERN PetscErrorCode MatFactorInvertSchurComplement_Private(Mat F)
   PetscFunctionBegin;
   if (S) {
     PetscMPIInt    size;
-    PetscBool      isdense;
+    PetscBool      isdense,isdensecuda;
     PetscErrorCode ierr;
 
     ierr = MPI_Comm_size(PetscObjectComm((PetscObject)S),&size);CHKERRQ(ierr);
     if (size > 1) SETERRQ(PetscObjectComm((PetscObject)S),PETSC_ERR_SUP,"Not yet implemented");
     ierr = PetscObjectTypeCompare((PetscObject)S,MATSEQDENSE,&isdense);CHKERRQ(ierr);
-    if (!isdense) SETERRQ1(PetscObjectComm((PetscObject)S),PETSC_ERR_SUP,"Not implemented for type %s",((PetscObject)S)->type_name);
-    ierr = MatSeqDenseInvertFactors_Private(S);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)S,MATSEQDENSECUDA,&isdensecuda);CHKERRQ(ierr);
+    if (isdense) {
+      ierr = MatSeqDenseInvertFactors_Private(S);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+    } else if (isdensecuda) {
+      ierr = MatSeqDenseCUDAInvertFactors_Private(S);CHKERRQ(ierr);
+#endif
+    } else SETERRQ1(PetscObjectComm((PetscObject)S),PETSC_ERR_SUP,"Not implemented for type %s",((PetscObject)S)->type_name);
   }
   PetscFunctionReturn(0);
 }
