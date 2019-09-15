@@ -389,7 +389,7 @@ PetscErrorCode VecPinToCPU_SeqCUDA(Vec V,PetscBool pin)
   V->pinnedtocpu = pin;
   if (pin) {
     ierr = VecCUDACopyFromGPU(V);CHKERRQ(ierr);
-    V->valid_GPU_array = PETSC_OFFLOAD_CPU; /* since the CPU code will likely change values in the vector */
+    V->valid_GPU_array             = PETSC_OFFLOAD_CPU; /* since the CPU code will likely change values in the vector */
     V->ops->dot                    = VecDot_Seq;
     V->ops->norm                   = VecNorm_Seq;
     V->ops->tdot                   = VecTDot_Seq;
