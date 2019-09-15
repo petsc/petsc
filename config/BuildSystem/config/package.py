@@ -609,13 +609,13 @@ class Package(config.base.Configure):
           config.base.Configure.executeShellCommand([self.sourceControl.git, 'fetch'], cwd=self.packageDir, log = self.log)
         except:
           raise RuntimeError('Unable to fetch '+self.gitcommit+' in repository '+self.packageDir+
-                             '.\nTo use previous git snapshot - use: --download-'+self.package+'gitcommit=HEAD')
+                             '.\nTo use previous git snapshot - use: --download-'+self.package+'-commit=HEAD')
       try:
         gitcommit_hash,err,ret = config.base.Configure.executeShellCommand([self.sourceControl.git, 'rev-parse', self.gitcommit], cwd=self.packageDir, log = self.log)
       except:
         raise RuntimeError('Unable to locate commit: '+self.gitcommit+' in repository: '+self.packageDir+'.\n\
 If its a commit/tag that is not found - perhaps the repo URL changed. If so, delete '+self.packageDir+' and rerun configure.\n\
-If its a remote branch, use: origin/'+self.gitcommit+' for gitcommit.')
+If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
       if self.gitcommit != 'HEAD':
         try:
           config.base.Configure.executeShellCommand([self.sourceControl.git, '-c', 'user.name=petsc-configure', '-c', 'user.email=petsc@configure', 'stash'], cwd=self.packageDir, log = self.log)
@@ -699,7 +699,7 @@ If its a remote branch, use: origin/'+self.gitcommit+' for gitcommit.')
     err =''
     for url in download_urls:
       if url.startswith('git://'):
-        if not self.gitcommit: raise RuntimeError(self.PACKAGE+': giturl specified but gitcommit not set')
+        if not self.gitcommit: raise RuntimeError(self.PACKAGE+': giturl specified but commit not set')
         if not self.gitPreReqCheck():
           err += 'Git prerequisite check failed for url: '+url+'\n'
           self.logPrint('Git prerequisite check failed - required for url: '+url+'\n')
@@ -1023,7 +1023,8 @@ If its a remote branch, use: origin/'+self.gitcommit+' for gitcommit.')
       self.libraries.pushLanguage(self.defaultLanguage)
       self.executeTest(self.checkDependencies)
       self.executeTest(self.configureLibrary)
-      self.executeTest(self.checkVersion)
+      if not self.builtafterpetsc:
+        self.executeTest(self.checkVersion)
       self.executeTest(self.checkSharedLibrary)
       self.libraries.popLanguage()
     else:
