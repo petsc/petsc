@@ -106,6 +106,8 @@ PETSC_INTERN PetscErrorCode MatDuplicate_SeqAIJ_Inode(Mat,MatDuplicateOption,Mat
 PETSC_INTERN PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat,Mat,MatDuplicateOption,PetscBool);
 PETSC_INTERN PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat,Mat,const MatFactorInfo*);
 PETSC_INTERN PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat,Mat,const MatFactorInfo*);
+PETSC_INTERN PetscErrorCode MatSeqAIJGetArray_SeqAIJ(Mat,PetscScalar**);
+PETSC_INTERN PetscErrorCode MatSeqAIJRestoreArray_SeqAIJ(Mat,PetscScalar**);
 
 typedef struct {
   SEQAIJHEADER(MatScalar);

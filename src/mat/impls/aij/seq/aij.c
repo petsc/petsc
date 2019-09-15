@@ -2894,7 +2894,7 @@ PetscErrorCode MatSetUp_SeqAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSeqAIJGetArray_SeqAIJ(Mat A,PetscScalar *array[])
+PETSC_INTERN PetscErrorCode MatSeqAIJGetArray_SeqAIJ(Mat A,PetscScalar *array[])
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
 
@@ -2903,9 +2903,10 @@ PetscErrorCode MatSeqAIJGetArray_SeqAIJ(Mat A,PetscScalar *array[])
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSeqAIJRestoreArray_SeqAIJ(Mat A,PetscScalar *array[])
+PETSC_INTERN PetscErrorCode MatSeqAIJRestoreArray_SeqAIJ(Mat A,PetscScalar *array[])
 {
   PetscFunctionBegin;
+  *array = NULL;
   PetscFunctionReturn(0);
 }
 
