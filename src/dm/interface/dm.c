@@ -7070,7 +7070,7 @@ PetscErrorCode DMAddLabel(DM dm, DMLabel label)
 }
 
 /*@C
-  DMRemoveLabel - Remove the label from this mesh
+  DMRemoveLabel - Remove the label given by name from this mesh
 
   Not Collective
 
@@ -7083,7 +7083,15 @@ PetscErrorCode DMAddLabel(DM dm, DMLabel label)
 
   Level: developer
 
-.seealso: DMCreateLabel(), DMHasLabel(), DMGetLabelValue(), DMSetLabelValue(), DMGetStratumIS()
+  Notes:
+  DMRemoveLabel(dm,name,NULL) removes the label from dm and calls
+  DMLabelDestroy() on the label.
+
+  DMRemoveLabel(dm,name,&label) removes the label from dm, but it DOES NOT
+  call DMLabelDestroy(). Instead, the label is returned and the user is
+  responsible of calling DMLabelDestroy() at some point.
+
+.seealso: DMCreateLabel(), DMHasLabel(), DMGetLabel(), DMGetLabelValue(), DMSetLabelValue(), DMLabelDestroy(), DMRemoveLabelBySelf()
 @*/
 PetscErrorCode DMRemoveLabel(DM dm, const char name[], DMLabel *label)
 {
@@ -7095,7 +7103,11 @@ PetscErrorCode DMRemoveLabel(DM dm, const char name[], DMLabel *label)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  *label = NULL;
+  PetscValidCharPointer(name, 2);
+  if (label) {
+    PetscValidPointer(label, 3);
+    *label = NULL;
+  }
   while (next) {
     ierr = PetscObjectGetName((PetscObject) next->label, &lname);CHKERRQ(ierr);
     ierr = PetscStrcmp(name, lname, &hasLabel);CHKERRQ(ierr);
@@ -7103,12 +7115,12 @@ PetscErrorCode DMRemoveLabel(DM dm, const char name[], DMLabel *label)
       if (last) last->next       = next->next;
       else      dm->labels->next = next->next;
       next->next = NULL;
-      *label     = next->label;
+      if (label) *label = next->label;
       ierr = PetscStrcmp(name, "depth", &hasLabel);CHKERRQ(ierr);
       if (hasLabel) {
         dm->depthLabel = NULL;
       }
-      ierr = DMLabelDestroy(&next->label);CHKERRQ(ierr);
+      if (!label) {ierr = DMLabelDestroy(&next->label);CHKERRQ(ierr);}
       ierr = PetscFree(next);CHKERRQ(ierr);
       break;
     }
