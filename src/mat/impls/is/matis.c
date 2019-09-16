@@ -1949,7 +1949,7 @@ PETSC_INTERN PetscErrorCode MatConvert_IS_XAIJ(Mat mat, MatType mtype, MatReuse 
       ierr = ISDestroy(&irows);CHKERRQ(ierr);
       goto general_assembly;
     }
-    ierr = MatConvert(matis->A,(rbs == cbs && rbs > 1) ? MATSEQBAIJ : MATSEQAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+    ierr = MatConvert(matis->A,mtype,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
     if (reuse != MAT_INPLACE_MATRIX) {
       ierr = MatCreateSubMatrix(B,irows,icols,reuse,M);CHKERRQ(ierr);
       ierr = PetscObjectCompose((PetscObject)(*M),"_MatIS_IS_XAIJ_irows",(PetscObject)irows);CHKERRQ(ierr);
@@ -2046,7 +2046,9 @@ general_assembly:
         PetscInt r;
 
         for (i=0,r=0;i<nb;i++) {
+#if defined(PETSC_USE_DEBUG)
           if (blocks[i] != xadj[r+1] - xadj[r]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Invalid block sizes prescribed for block %D: expected %D, got %D",i,blocks[i],xadj[r+1] - xadj[r]);
+#endif
           ierr = MatSetValuesLocal(MT,blocks[i],adjncy+xadj[r],blocks[i],adjncy+xadj[r],sarray+xadj[r],ADD_VALUES);CHKERRQ(ierr);
           r   += blocks[i];
         }
