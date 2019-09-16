@@ -51,6 +51,7 @@ variables:
     - export CCACHE_DIR=$(pwd)/.ccache
     - ccache --show-stats
     - ccache --zero-stats
+    - echo CONFIG_OPTS=$(CONFIG_OPTS)
   script:
     - ${PYTHON} ./configure --with-debugging=0 COPTFLAGS='-O -march=native' CXXOPTFLAGS='-O -march=native' FOPTFLAGS='-O -march=native' ${CONFIG_OPTS}
     - make CFLAGS=-Werror
