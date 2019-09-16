@@ -46,13 +46,13 @@ PetscErrorCode  PetscMPIAbortErrorHandler(MPI_Comm comm,int line,const char *fun
     (*PetscErrorPrintf)("destroying unneeded objects.\n");
     PetscMallocGetCurrentUsage(&mem); PetscMemoryGetCurrentUsage(&rss);
     PetscOptionsGetBool(NULL,NULL,"-malloc_dump",&flg1,NULL);
-    PetscOptionsGetBool(NULL,NULL,"-malloc_log",&flg2,NULL);
-    PetscOptionsHasName(NULL,NULL,"-malloc_log_threshold",&flg3);
-    if (flg2 || flg3) PetscMallocDumpLog(stdout);
+    PetscOptionsGetBool(NULL,NULL,"-malloc_view",&flg2,NULL);
+    PetscOptionsHasName(NULL,NULL,"-malloc_view_threshold",&flg3);
+    if (flg2 || flg3) PetscMallocView(stdout);
     else {
       (*PetscErrorPrintf)("Memory allocated %.0f Memory used by process %.0f\n",mem,rss);
       if (flg1) PetscMallocDump(stdout);
-      else (*PetscErrorPrintf)("Try running with -malloc_dump or -malloc_log for info.\n");
+      else (*PetscErrorPrintf)("Try running with -malloc_dump or -malloc_view for info.\n");
     }
   } else if (n == PETSC_ERR_SUP) {
     (*PetscErrorPrintf)("%s() line %d in %s\n",fun,line,file);

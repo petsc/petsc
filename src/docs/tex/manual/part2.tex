@@ -7774,14 +7774,14 @@ option \trl{-malloc_dump} merely activates a call to \lstinline{PetscMallocDump(
 \trl{PetscFinalize()} the user can also call \lstinline{PetscMallocDump()} elsewhere
 in a program.
 
-\findex{-malloc_log}
+\findex{-malloc_view}
 \item Another useful option for use with PETSc memory allocation
-routines is \trl{-malloc_log}, which activates logging of all calls
+routines is \trl{-malloc_view}, which activates logging of all calls
 to malloc and reports memory usage, including all Fortran arrays.
 This option provides a more complete picture than \trl{-malloc_dump} for
 codes that employ Fortran with hardwired arrays.  The option
-\trl{-malloc_log} activates logging by calling \lstinline{PetscMallocSetDumpLog()} in
-\lstinline{PetscInitialize()} and then prints the log by calling \lstinline{PetscMallocDumpLog()}
+\trl{-malloc_view} activates logging by calling \lstinline{PetscMallocViewSet()} in
+\lstinline{PetscInitialize()} and then prints the log by calling \lstinline{PetscMallocView()}
 in \lstinline{PetscFinalize()}.  The user can also call these routines elsewhere in a
 program.  When finer granularity is desired, the user should call
 \break\lstinline{PetscMallocGetCurrentUsage()} and \lstinline{PetscMallocGetMaximumUsage()} for memory
@@ -7878,7 +7878,7 @@ overcoming them.
       memory used by given process is with the UNIX \trl{getrusage} system routine.
       Also, the PETSc option \trl{-log_view} prints the amount of
       memory used by the basic PETSc objects, thus providing a lower
-      bound on the memory used.  Another useful option is \trl{-malloc_log}
+      bound on the memory used.  Another useful option is \trl{-malloc_view}
       which reports all memory, including any Fortran arrays in an
       application code.
 \item {\bf Effects of other users}:  If other users are running

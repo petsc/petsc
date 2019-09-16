@@ -463,7 +463,7 @@ M*/
 
    Input Parameters:
 +  m - number of bytes to allocate
--  result - initial memory allocated
+-  result - previous memory
 
    Output Parameter:
 .  result - new memory allocated
@@ -1131,7 +1131,7 @@ PETSC_EXTERN PetscErrorCode (*PetscTrMalloc)(size_t,PetscBool,int,const char[],c
 PETSC_EXTERN PetscErrorCode (*PetscTrFree)(void*,int,const char[],const char[]);
 PETSC_EXTERN PetscErrorCode (*PetscTrRealloc)(size_t,int,const char[],const char[],void**);
 PETSC_EXTERN PetscErrorCode PetscMallocSetCoalesce(PetscBool);
-PETSC_EXTERN PetscErrorCode PetscMallocSet(PetscErrorCode (*)(size_t,PetscBool,int,const char[],const char[],void**),PetscErrorCode (*)(void*,int,const char[],const char[]));
+PETSC_EXTERN PetscErrorCode PetscMallocSet(PetscErrorCode (*)(size_t,PetscBool,int,const char[],const char[],void**),PetscErrorCode (*)(void*,int,const char[],const char[]),PetscErrorCode (*)(size_t,int,const char[],const char[], void **));
 PETSC_EXTERN PetscErrorCode PetscMallocClear(void);
 
 /*
@@ -1147,17 +1147,16 @@ PETSC_EXTERN PetscErrorCode PetscMallocResetDRAM(void);
    Routines for tracing memory corruption/bleeding with default PETSc memory allocation
 */
 PETSC_EXTERN PetscErrorCode PetscMallocDump(FILE *);
-PETSC_EXTERN PetscErrorCode PetscMallocDumpLog(FILE *);
+PETSC_EXTERN PetscErrorCode PetscMallocView(FILE *);
 PETSC_EXTERN PetscErrorCode PetscMallocGetCurrentUsage(PetscLogDouble *);
 PETSC_EXTERN PetscErrorCode PetscMallocGetMaximumUsage(PetscLogDouble *);
 PETSC_EXTERN PetscErrorCode PetscMallocPushMaximumUsage(int);
 PETSC_EXTERN PetscErrorCode PetscMallocPopMaximumUsage(int,PetscLogDouble*);
-PETSC_EXTERN PetscErrorCode PetscMallocDebug(PetscBool);
-PETSC_EXTERN PetscErrorCode PetscMallocGetDebug(PetscBool*);
+PETSC_EXTERN PetscErrorCode PetscMallocSetDebug(PetscBool,PetscBool);
+PETSC_EXTERN PetscErrorCode PetscMallocGetDebug(PetscBool*,PetscBool*,PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscMallocValidate(int,const char[],const char[]);
-PETSC_EXTERN PetscErrorCode PetscMallocSetDumpLog(void);
-PETSC_EXTERN PetscErrorCode PetscMallocSetDumpLogThreshold(PetscLogDouble);
-PETSC_EXTERN PetscErrorCode PetscMallocGetDumpLog(PetscBool*);
+PETSC_EXTERN PetscErrorCode PetscMallocViewSet(PetscLogDouble);
+PETSC_EXTERN PetscErrorCode PetscMallocViewGet(PetscBool*);
 
 PETSC_EXTERN const char *const PetscDataTypes[];
 PETSC_EXTERN PetscErrorCode PetscDataTypeToMPIDataType(PetscDataType,MPI_Datatype*);

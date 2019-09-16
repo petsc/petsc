@@ -103,7 +103,7 @@ int main(int argc,char **argv)
   DM             da;
   Vec            x;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return(1);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
   PetscFunctionBeginUser;
   comm = PETSC_COMM_WORLD;

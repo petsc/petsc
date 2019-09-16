@@ -112,11 +112,18 @@
           <li>PetscArraymove() should be used instead of PetscMemmove(), it takes a count argument instead of a byte argument</li>
           <li>The ./configure options -with-gnu-compilers and -with-vendor-compilers are removed</li>
           <li>The order ./configure tests compilers has changed so there may be a different compiler selected if you do not provide them</li>
-          <li>Added --with-64-bit-blas-indices that will switch to 64 bit indices when using MKL libraries for BLAS/LAPACK</li>
+          <li>Added --with-64-bit-blas-indices that will switch to 64 bit indices when using MKL libraries for BLAS/LAPACK and build OpenBLAS with this support</li>
           <li>Changed PETSC_DEPRECATED() to PETSC_DEPRECATED_FUNCTION() and PETSC_DEPRECATED_TYPEDEF() to match naming of PETSC_DEPRECATED_ENUM() and PETSC_DEPRECATED_MACRO</li>
           <li>-help now causes the printing of the current value and the newly set value for PetscOptionsInt(), etc</li>
           <li>PetscFunctionListPrintTypes() takes an additional final argument after the current value, the set value</li>
-          <li>PetscCalloc*() now calls the system calloc() routine instead of malloc() plus memzero()
+          <li>PetscCalloc*() now calls the system calloc() routine instead of malloc() plus memzero()</li>
+          <li>-malloc <yes,no> is now marked as deprecated, use -malloc_debug <yes,no> instead</li>
+          <li>-malloc_log and -malloc_log_threshold are now -malloc_view and -malloc_view_threshold</li>
+          <li>PetscMallocDebug() is now PetscMallocSetDebug()</li>
+          <li>PetscMallocDumpLog() is now PetscMallocView(), see also PetscMallocViewSet()</li>
+          <li>PetscMallocSetDumpLogThreshold() and PetscMallocSetDumpLog() are now PetscMallocViewSet()</li>
+          <li>With -malloc_test or -malloc_debug allocated memory is initialized with NaN to detect use of uninitialized numerical arrays</li>
+          <li>PetscMallocSet() now takes three arguments instead of two</li>
         </ul>
       <h4>Configure/Build:</h4>
       <h4>IS:</h4>
