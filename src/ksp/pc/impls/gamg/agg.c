@@ -987,8 +987,8 @@ static PetscErrorCode PCGAMGProlongator_AGG(PC pc,Mat Amat,Mat Gmat,PetscCoarsen
   ierr = MatSetSizes(Prol,nloc*bs,nLocalSelected*col_bs,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetBlockSizes(Prol, bs, col_bs);CHKERRQ(ierr);
   ierr = MatSetType(Prol, mtype);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(Prol, col_bs, NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(Prol,col_bs, NULL,col_bs, NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(Prol,col_bs, NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(Prol,col_bs, NULL, col_bs, NULL);CHKERRQ(ierr);
 
   /* can get all points "removed" */
   ierr =  MatGetSize(Prol, &kk, &ii);CHKERRQ(ierr);
