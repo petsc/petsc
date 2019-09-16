@@ -10105,12 +10105,12 @@ PetscErrorCode   MatGetMultiProcBlock(Mat mat, MPI_Comm subComm, MatReuse scall,
    Not Collective
 
    Input Arguments:
-   mat - matrix to extract local submatrix from
-   isrow - local row indices for submatrix
-   iscol - local column indices for submatrix
++  mat - matrix to extract local submatrix from
+.  isrow - local row indices for submatrix
+-  iscol - local column indices for submatrix
 
    Output Arguments:
-   submat - the submatrix
+.  submat - the submatrix
 
    Level: intermediate
 
