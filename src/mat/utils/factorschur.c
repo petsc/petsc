@@ -61,11 +61,13 @@ PETSC_INTERN PetscErrorCode MatFactorFactorizeSchurComplement_Private(Mat F)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscLogEventBegin(MAT_FactorFactS,F,0,0,0);CHKERRQ(ierr);
   if (F->factortype == MAT_FACTOR_CHOLESKY) { /* LDL^t regarded as Cholesky */
     ierr = MatCholeskyFactor(F->schur,NULL,&info);CHKERRQ(ierr);
   } else {
     ierr = MatLUFactor(F->schur,NULL,NULL,&info);CHKERRQ(ierr);
   }
+  ierr = PetscLogEventEnd(MAT_FactorFactS,F,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -84,6 +86,7 @@ PETSC_INTERN PetscErrorCode MatFactorInvertSchurComplement_Private(Mat F)
     if (size > 1) SETERRQ(PetscObjectComm((PetscObject)S),PETSC_ERR_SUP,"Not yet implemented");
     ierr = PetscObjectTypeCompare((PetscObject)S,MATSEQDENSE,&isdense);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)S,MATSEQDENSECUDA,&isdensecuda);CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(MAT_FactorInvS,F,0,0,0);CHKERRQ(ierr);
     if (isdense) {
       ierr = MatSeqDenseInvertFactors_Private(S);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_CUDA)
@@ -91,6 +94,7 @@ PETSC_INTERN PetscErrorCode MatFactorInvertSchurComplement_Private(Mat F)
       ierr = MatSeqDenseCUDAInvertFactors_Private(S);CHKERRQ(ierr);
 #endif
     } else SETERRQ1(PetscObjectComm((PetscObject)S),PETSC_ERR_SUP,"Not implemented for type %s",((PetscObject)S)->type_name);
+    ierr = PetscLogEventEnd(MAT_FactorInvS,F,0,0,0);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

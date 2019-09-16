@@ -36,6 +36,7 @@ PetscLogEvent MAT_CUSPARSECopyToGPU, MAT_SetValuesBatch;
 PetscLogEvent MAT_ViennaCLCopyToGPU;
 PetscLogEvent MAT_DenseCopyToGPU, MAT_DenseCopyFromGPU;
 PetscLogEvent MAT_Merge,MAT_Residual,MAT_SetRandom;
+PetscLogEvent MAT_FactorFactS,MAT_FactorInvS;
 PetscLogEvent MATCOLORING_Apply,MATCOLORING_Comm,MATCOLORING_Local,MATCOLORING_ISCreate,MATCOLORING_SetUp,MATCOLORING_Weights;
 
 const char *const MatFactorTypes[] = {"NONE","LU","CHOLESKY","ILU","ICC","ILUDT","MatFactorType","MAT_FACTOR_",0};
