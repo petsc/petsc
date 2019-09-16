@@ -89,6 +89,13 @@ class Configure(config.package.GNUPackage):
     # hypre configure assumes the AR flags are passed in with AR
     args = [arg for arg in args if not arg.startswith('AR')]
     args.append('AR="'+self.setCompilers.AR+' '+self.setCompilers.AR_FLAGS+'"')
+
+    # On CRAY with shared libraries, libHYPRE.so is linked as
+    # $ cc -shared -o libHYPRE.so ...a bunch of .o files.... ...libraries.... -dynamic
+    # The -dynamic at the end makes cc think it is creating an executable
+    args = [arg for arg in args if not arg.startswith('LDFLAGS')]
+    args.append('LDFLAGS="'+self.setCompilers.LDFLAGS.replace('-dynamic','')+'"')
+
     return args
 
   def consistencyChecks(self):
