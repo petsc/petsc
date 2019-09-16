@@ -7130,6 +7130,56 @@ PetscErrorCode DMRemoveLabel(DM dm, const char name[], DMLabel *label)
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMRemoveLabelBySelf - Remove the label from this mesh
+
+  Not Collective
+
+  Input Parameters:
++ dm   - The DM object
+. label - (Optional) The DMLabel to be removed from the DM
+- failNotFound - Should it fail if the label is not found in the DM?
+
+  Level: developer
+
+  Notes:
+  Only exactly the same instance is removed if found, name match is ignored.
+  If the DM has an exclusive reference to the label, it gets destroyed and
+  *label nullified.
+
+.seealso: DMCreateLabel(), DMHasLabel(), DMGetLabel() DMGetLabelValue(), DMSetLabelValue(), DMLabelDestroy(), DMRemoveLabel()
+@*/
+PetscErrorCode DMRemoveLabelBySelf(DM dm, DMLabel *label, PetscBool failNotFound)
+{
+  DMLabelLink    next = dm->labels->next;
+  DMLabelLink    last = NULL;
+  PetscBool      hasLabel = PETSC_FALSE;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(label, 2);
+  PetscValidHeaderSpecific(*label, DMLABEL_CLASSID, 2);
+  PetscValidLogicalCollectiveBool(dm,failNotFound,3);
+  while (next) {
+    if (*label == next->label) {
+      hasLabel = PETSC_TRUE;
+      if (last) last->next       = next->next;
+      else      dm->labels->next = next->next;
+      next->next = NULL;
+      if (*label == dm->depthLabel) dm->depthLabel = NULL;
+      if (((PetscObject) next->label)->refct < 2) *label = NULL; /* nullify if exclusive reference */
+      ierr = DMLabelDestroy(&next->label);CHKERRQ(ierr);
+      ierr = PetscFree(next);CHKERRQ(ierr);
+      break;
+    }
+    last = next;
+    next = next->next;
+  }
+  if (!hasLabel && failNotFound) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Given label not found in DM");
+  PetscFunctionReturn(0);
+}
+
 /*@C
   DMGetLabelOutput - Get the output flag for a given label
 
