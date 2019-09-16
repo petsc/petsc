@@ -403,16 +403,17 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 {
   Mat                    F,A_II,A_IB,A_BI,A_BB,AE_II;
   Mat                    S_all;
-  Mat                    global_schur_subsets,work_mat,*submats;
-  ISLocalToGlobalMapping l2gmap_subsets;
+  Vec                    gstash,lstash;
+  VecScatter             sstash;
   IS                     is_I,is_I_layer;
   IS                     all_subsets,all_subsets_mult,all_subsets_n;
+  PetscScalar            *stasharray,*Bwork;
   PetscInt               *nnz,*all_local_idx_N;
   PetscInt               *auxnum1,*auxnum2;
   PetscInt               i,subset_size,max_subset_size;
   PetscInt               n_B,extra,local_size,global_size;
+  PetscInt               local_stash_size;
   PetscBLASInt           B_N,B_ierr,B_lwork,*pivots;
-  PetscScalar            *Bwork;
   MPI_Comm               comm_n;
   PetscBool              deluxe = PETSC_TRUE;
   PetscBool              use_potr = PETSC_FALSE, use_sytr = PETSC_FALSE;
@@ -612,6 +613,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 
   /* Get local indices in local numbering */
   local_size = 0;
+  local_stash_size = 0;
   for (i=0;i<sub_schurs->n_subs;i++) {
     PetscInt j;
     const    PetscInt *idxs;
@@ -620,12 +622,13 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     ierr = ISGetIndices(sub_schurs->is_subs[i],&idxs);CHKERRQ(ierr);
     /* start (smallest in global ordering) and multiplicity */
     auxnum1[i] = idxs[0];
-    auxnum2[i] = subset_size;
+    auxnum2[i] = subset_size*subset_size;
     /* subset indices in local numbering */
     ierr = PetscArraycpy(all_local_idx_N+local_size+extra,idxs,subset_size);CHKERRQ(ierr);
     ierr = ISRestoreIndices(sub_schurs->is_subs[i],&idxs);CHKERRQ(ierr);
     for (j=0;j<subset_size;j++) nnz[local_size+j] = subset_size;
     local_size += subset_size;
+    local_stash_size += subset_size*subset_size;
   }
 
   /* allocate extra workspace needed only for GETRI or SYTRF */
@@ -657,7 +660,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     pivots = NULL;
   }
 
-  /* prepare parallel matrices for summing up properly schurs on subsets */
+  /* prepare data for summing up properly schurs on subsets */
   ierr = ISCreateGeneral(comm_n,sub_schurs->n_subs,auxnum1,PETSC_OWN_POINTER,&all_subsets_n);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApplyIS(sub_schurs->l2gmap,all_subsets_n,&all_subsets);CHKERRQ(ierr);
   ierr = ISDestroy(&all_subsets_n);CHKERRQ(ierr);
@@ -666,13 +669,11 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
   ierr = ISDestroy(&all_subsets);CHKERRQ(ierr);
   ierr = ISDestroy(&all_subsets_mult);CHKERRQ(ierr);
   ierr = ISGetLocalSize(all_subsets_n,&i);CHKERRQ(ierr);
-  if (i != local_size) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Invalid size of new subset! %D != %D",i,local_size);
-  ierr = ISLocalToGlobalMappingCreateIS(all_subsets_n,&l2gmap_subsets);CHKERRQ(ierr);
-  ierr = MatCreateIS(comm_n,1,PETSC_DECIDE,PETSC_DECIDE,global_size,global_size,l2gmap_subsets,NULL,&work_mat);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&l2gmap_subsets);CHKERRQ(ierr);
-  ierr = MatCreate(PetscObjectComm((PetscObject)work_mat),&global_schur_subsets);CHKERRQ(ierr);
-  ierr = MatSetSizes(global_schur_subsets,PETSC_DECIDE,PETSC_DECIDE,global_size,global_size);CHKERRQ(ierr);
-  ierr = MatSetType(global_schur_subsets,MATMPIAIJ);CHKERRQ(ierr);
+  if (i != local_stash_size) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Invalid size of new subset! %D != %D",i,local_stash_size);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,local_stash_size,NULL,&lstash);CHKERRQ(ierr);
+  ierr = VecCreateMPI(comm_n,PETSC_DECIDE,global_size,&gstash);CHKERRQ(ierr);
+  ierr = VecScatterCreate(lstash,NULL,gstash,all_subsets_n,&sstash);CHKERRQ(ierr);
+  ierr = ISDestroy(&all_subsets_n);CHKERRQ(ierr);
 
   /* subset indices in local boundary numbering */
   if (!sub_schurs->is_Ej_all) {
@@ -1718,32 +1719,45 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
   }
   ierr = ISDestroy(&is_I_layer);CHKERRQ(ierr);
 
-  /* Global matrix of all assembled Schur on subsets */
-  ierr = MatISSetLocalMat(work_mat,sub_schurs->S_Ej_all);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(work_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(work_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatISSetMPIXAIJPreallocation_Private(work_mat,global_schur_subsets,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = MatConvert(work_mat,MATAIJ,MAT_REUSE_MATRIX,&global_schur_subsets);CHKERRQ(ierr);
-
   /* Get local part of (\sum_j S_Ej) */
-  ierr = MatCreateSubMatrices(global_schur_subsets,1,&all_subsets_n,&all_subsets_n,MAT_INITIAL_MATRIX,&submats);CHKERRQ(ierr);
   if (!sub_schurs->sum_S_Ej_all) {
-    ierr = MatDuplicate(submats[0],MAT_COPY_VALUES,&sub_schurs->sum_S_Ej_all);CHKERRQ(ierr);
-  } else {
-    ierr = MatCopy(submats[0],sub_schurs->sum_S_Ej_all,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = MatDuplicate(sub_schurs->S_Ej_all,MAT_DO_NOT_COPY_VALUES,&sub_schurs->sum_S_Ej_all);CHKERRQ(ierr);
   }
+  ierr = VecSet(gstash,0.0);CHKERRQ(ierr);
+  ierr = MatSeqAIJGetArray(sub_schurs->S_Ej_all,&stasharray);CHKERRQ(ierr);
+  ierr = VecPlaceArray(lstash,stasharray);CHKERRQ(ierr);
+  ierr = VecScatterBegin(sstash,lstash,gstash,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(sstash,lstash,gstash,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = MatSeqAIJRestoreArray(sub_schurs->S_Ej_all,&stasharray);CHKERRQ(ierr);
+  ierr = VecResetArray(lstash);CHKERRQ(ierr);
+  ierr = MatSeqAIJGetArray(sub_schurs->sum_S_Ej_all,&stasharray);CHKERRQ(ierr);
+  ierr = VecPlaceArray(lstash,stasharray);CHKERRQ(ierr);
+  ierr = VecScatterBegin(sstash,gstash,lstash,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd(sstash,gstash,lstash,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = MatSeqAIJRestoreArray(sub_schurs->sum_S_Ej_all,&stasharray);CHKERRQ(ierr);
+  ierr = VecResetArray(lstash);CHKERRQ(ierr);
 
   /* Get local part of (\sum_j S^-1_Ej) (\sum_j St^-1_Ej) */
   if (compute_Stilda) {
-    ierr = MatISSetLocalMat(work_mat,sub_schurs->sum_S_Ej_tilda_all);CHKERRQ(ierr);
-    ierr = MatConvert(work_mat,MATAIJ,MAT_REUSE_MATRIX,&global_schur_subsets);CHKERRQ(ierr);
-    ierr = MatCreateSubMatrices(global_schur_subsets,1,&all_subsets_n,&all_subsets_n,MAT_REUSE_MATRIX,&submats);CHKERRQ(ierr);
-    ierr = MatCopy(submats[0],sub_schurs->sum_S_Ej_tilda_all,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = VecSet(gstash,0.0);CHKERRQ(ierr);
+    ierr = MatSeqAIJGetArray(sub_schurs->sum_S_Ej_tilda_all,&stasharray);CHKERRQ(ierr);
+    ierr = VecPlaceArray(lstash,stasharray);CHKERRQ(ierr);
+    ierr = VecScatterBegin(sstash,lstash,gstash,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(sstash,lstash,gstash,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterBegin(sstash,gstash,lstash,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd(sstash,gstash,lstash,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = MatSeqAIJRestoreArray(sub_schurs->sum_S_Ej_tilda_all,&stasharray);CHKERRQ(ierr);
+    ierr = VecResetArray(lstash);CHKERRQ(ierr);
     if (deluxe) {
-      ierr = MatISSetLocalMat(work_mat,sub_schurs->sum_S_Ej_inv_all);CHKERRQ(ierr);
-      ierr = MatConvert(work_mat,MATAIJ,MAT_REUSE_MATRIX,&global_schur_subsets);CHKERRQ(ierr);
-      ierr = MatCreateSubMatrices(global_schur_subsets,1,&all_subsets_n,&all_subsets_n,MAT_REUSE_MATRIX,&submats);CHKERRQ(ierr);
-      ierr = MatCopy(submats[0],sub_schurs->sum_S_Ej_inv_all,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = VecSet(gstash,0.0);CHKERRQ(ierr);
+      ierr = MatSeqAIJGetArray(sub_schurs->sum_S_Ej_inv_all,&stasharray);CHKERRQ(ierr);
+      ierr = VecPlaceArray(lstash,stasharray);CHKERRQ(ierr);
+      ierr = VecScatterBegin(sstash,lstash,gstash,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(sstash,lstash,gstash,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterBegin(sstash,gstash,lstash,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterEnd(sstash,gstash,lstash,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = MatSeqAIJRestoreArray(sub_schurs->sum_S_Ej_inv_all,&stasharray);CHKERRQ(ierr);
+      ierr = VecResetArray(lstash);CHKERRQ(ierr);
     } else {
       PetscScalar *array;
       PetscInt    cum;
@@ -1780,7 +1794,10 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       sub_schurs->sum_S_Ej_inv_all = sub_schurs->sum_S_Ej_all;
     }
   }
-  ierr = MatDestroySubMatrices(1,&submats);CHKERRQ(ierr);
+  ierr = VecDestroy(&lstash);CHKERRQ(ierr);
+  ierr = VecDestroy(&gstash);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&sstash);CHKERRQ(ierr);
+
   if (matl_dbg_viewer) {
     PetscInt cum;
 
@@ -1816,11 +1833,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 
   /* free workspace */
   ierr = PetscViewerDestroy(&matl_dbg_viewer);CHKERRQ(ierr);
-  ierr = PetscFree(submats);CHKERRQ(ierr);
   ierr = PetscFree2(Bwork,pivots);CHKERRQ(ierr);
-  ierr = MatDestroy(&global_schur_subsets);CHKERRQ(ierr);
-  ierr = MatDestroy(&work_mat);CHKERRQ(ierr);
-  ierr = ISDestroy(&all_subsets_n);CHKERRQ(ierr);
   ierr = PetscCommDestroy(&comm_n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
