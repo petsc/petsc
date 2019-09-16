@@ -1,5 +1,3 @@
-[0] 27 global equations, 9 vertices
-[0] 27 equations in vector, 9 vertices
   0 SNES Function norm 122.396 
     0 KSP Residual norm 122.396 
     1 KSP Residual norm 10.5879 
@@ -29,8 +27,6 @@ Labels:
   depth: 4 strata with value/size (0 (8), 1 (12), 2 (6), 3 (1))
 Field deformation:
   adjacency FEM
-[0] 441 global equations, 147 vertices
-[0] 441 equations in vector, 147 vertices
   0 SNES Function norm 49.7106 
     0 KSP Residual norm 49.7106 
     1 KSP Residual norm 23.7057 

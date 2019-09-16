@@ -1,5 +1,3 @@
-[0] 27 global equations, 9 vertices
-[0] 27 equations in vector, 9 vertices
     0 KSP Residual norm 199.275 
     1 KSP Residual norm 61.0126 
     2 KSP Residual norm 9.09477 
@@ -13,8 +11,6 @@
    10 KSP Residual norm 2.54884e-07 
    11 KSP Residual norm 1.3959e-08 
   Linear solve converged due to CONVERGED_RTOL iterations 11
-[0] 441 global equations, 147 vertices
-[0] 441 equations in vector, 147 vertices
     0 KSP Residual norm 486.396 
     1 KSP Residual norm 33.2901 
     2 KSP Residual norm 6.50008 
