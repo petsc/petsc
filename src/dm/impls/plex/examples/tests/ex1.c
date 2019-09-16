@@ -424,7 +424,7 @@ int main(int argc, char **argv)
   ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &user.dm);CHKERRQ(ierr);
-  if (user.testShape) {ierr = DMPlexCheckCellShape(user.dm, PETSC_TRUE);CHKERRQ(ierr);}
+  if (user.testShape) {ierr = DMPlexCheckCellShape(user.dm, PETSC_TRUE, PETSC_DETERMINE);CHKERRQ(ierr);}
   ierr = DMDestroy(&user.dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;

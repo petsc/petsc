@@ -7124,11 +7124,12 @@ static void MPIAPI cell_stats_reduce(void *a, void *b, int * len, MPI_Datatype *
 }
 
 /*@
-  DMPlexCheckCellShape - Checks the Jacobian of the mapping and computes some minimal statistics.
+  DMPlexCheckCellShape - Checks the Jacobian of the mapping from reference to real cells and computes some minimal statistics.
 
   Input Parameters:
-+ dm - The DMPlex object
-- output - If true, statistics will be displayed on stdout
++ dm        - The DMPlex object
+. output    - If true, statistics will be displayed on stdout
+- condLimit - Display all cells above this condition number, or PETSC_DETERMINE for no cell output
 
   Note: This is mainly intended for debugging/testing purposes.
 
@@ -7136,14 +7137,15 @@ static void MPIAPI cell_stats_reduce(void *a, void *b, int * len, MPI_Datatype *
 
 .seealso: DMPlexCheckSymmetry(), DMPlexCheckSkeleton(), DMPlexCheckFaces()
 @*/
-PetscErrorCode DMPlexCheckCellShape(DM dm, PetscBool output)
+PetscErrorCode DMPlexCheckCellShape(DM dm, PetscBool output, PetscReal condLimit)
 {
-  PetscMPIInt    rank,size;
-  PetscInt       dim, c, cStart, cEnd, cMax, count = 0;
-  cell_stats_t   stats, globalStats;
-  PetscReal      *J, *invJ, min = 0, max = 0, mean = 0, stdev = 0;
-  MPI_Comm       comm = PetscObjectComm((PetscObject)dm);
   DM             dmCoarse;
+  cell_stats_t   stats, globalStats;
+  MPI_Comm       comm = PetscObjectComm((PetscObject)dm);
+  PetscReal      *J, *invJ, min = 0, max = 0, mean = 0, stdev = 0;
+  PetscReal      limit = condLimit > 0 ? condLimit : PETSC_MAX_REAL;
+  PetscInt       cdim, cStart, cEnd, cMax, c, eStart, eEnd, count = 0;
+  PetscMPIInt    rank,size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -7153,9 +7155,12 @@ PetscErrorCode DMPlexCheckCellShape(DM dm, PetscBool output)
   stats.sum   = stats.squaresum = 0.;
   stats.count = 0;
 
-  ierr = DMGetCoordinateDim(dm,&dim);CHKERRQ(ierr);
-  ierr = PetscMalloc2(dim * dim, &J, dim * dim, &invJ);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(dm,&cdim);CHKERRQ(ierr);
+  ierr = PetscMalloc2(PetscSqr(cdim), &J, PetscSqr(cdim), &invJ);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthStratum(dm,1,&eStart,&eEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm,&cMax,NULL,NULL,NULL);CHKERRQ(ierr);
   cMax = cMax < 0 ? cEnd : cMax;
   for (c = cStart; c < cMax; c++) {
@@ -7164,7 +7169,7 @@ PetscErrorCode DMPlexCheckCellShape(DM dm, PetscBool output)
 
     ierr = DMPlexComputeCellGeometryAffineFEM(dm,c,NULL,J,invJ,&detJ);CHKERRQ(ierr);
     if (detJ < 0.0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %D is inverted", c);
-    for (i = 0; i < dim * dim; i++) {
+    for (i = 0; i < PetscSqr(cdim); ++i) {
       frobJ    += J[i] * J[i];
       frobInvJ += invJ[i] * invJ[i];
     }
@@ -7176,9 +7181,41 @@ PetscErrorCode DMPlexCheckCellShape(DM dm, PetscBool output)
     stats.sum       += cond;
     stats.squaresum += cond2;
     stats.count++;
+    if (cond > limit) {
+      PetscSection coordSection;
+      Vec          coordsLocal;
+      PetscScalar *coords = NULL;
+      PetscInt     Nv, d, clSize, cl, *closure = NULL;
+
+      ierr = DMGetCoordinatesLocal(dm, &coordsLocal);CHKERRQ(ierr);
+      ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+      ierr = DMPlexVecGetClosure(dm, coordSection, coordsLocal, c, &Nv, &coords);CHKERRQ(ierr);
+      ierr = PetscSynchronizedPrintf(comm, "[%d] Cell %D cond %g\n", rank, c, cond);CHKERRQ(ierr);
+      for (i = 0; i < Nv/cdim; ++i) {
+        ierr = PetscSynchronizedPrintf(comm, "  Vertex %D: (", i);CHKERRQ(ierr);
+        for (d = 0; d < cdim; ++d) {
+          if (d > 0) {ierr = PetscSynchronizedPrintf(comm, ", ");CHKERRQ(ierr);}
+          ierr = PetscSynchronizedPrintf(comm, "%g", coords[i*cdim+d]);CHKERRQ(ierr);
+        }
+        ierr = PetscSynchronizedPrintf(comm, ")\n");CHKERRQ(ierr);
+      }
+      ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &clSize, &closure);CHKERRQ(ierr);
+      for (cl = 0; cl < clSize*2; cl += 2) {
+        const PetscInt edge = closure[cl];
+
+        if ((edge >= eStart) && (edge < eEnd)) {
+          PetscReal len;
+
+          ierr = DMPlexComputeCellGeometryFVM(dm, edge, &len, NULL, NULL);CHKERRQ(ierr);
+          ierr = PetscSynchronizedPrintf(comm, "  Edge %D: length %g\n", edge, len);CHKERRQ(ierr);
+        }
+      }
+      ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &clSize, &closure);CHKERRQ(ierr);
+      ierr = DMPlexVecRestoreClosure(dm, coordSection, coordsLocal, c, &Nv, &coords);CHKERRQ(ierr);
+    }
+    ierr = PetscSynchronizedFlush(comm, NULL);CHKERRQ(ierr);
   }
 
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size > 1) {
     PetscMPIInt   blockLengths[2] = {4,1};
     MPI_Aint      blockOffsets[2] = {offsetof(cell_stats_t,min),offsetof(cell_stats_t,count)};
@@ -7194,8 +7231,6 @@ PetscErrorCode DMPlexCheckCellShape(DM dm, PetscBool output)
   } else {
     ierr = PetscArraycpy(&globalStats,&stats,1);CHKERRQ(ierr);
   }
-
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     count = globalStats.count;
     min   = globalStats.min;
@@ -7215,7 +7250,7 @@ PetscErrorCode DMPlexCheckCellShape(DM dm, PetscBool output)
 
     ierr = PetscObjectTypeCompare((PetscObject)dmCoarse,DMPLEX,&isplex);CHKERRQ(ierr);
     if (isplex) {
-      ierr = DMPlexCheckCellShape(dmCoarse,output);CHKERRQ(ierr);
+      ierr = DMPlexCheckCellShape(dmCoarse,output,condLimit);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
