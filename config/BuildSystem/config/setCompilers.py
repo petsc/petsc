@@ -822,7 +822,7 @@ class Configure(config.base.Configure):
         if os.path.basename(self.CXXPP) in ['mpicxx', 'mpiCC']:
           self.logPrint('MPI installation '+self.getCompiler()+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI')
         self.popLanguage()
-        self.delMakeMacro('CCCPP')
+        self.delMakeMacro('CXXPP')
         del self.CXXPP
     return
 
@@ -924,6 +924,40 @@ class Configure(config.base.Configure):
       except:
         pass
     return
+
+  def generateFortranPreprocessorGuesses(self):
+    '''Determines the Fortran preprocessor from FPP, then --with-fpp, then the Fortran compiler'''
+    if 'with-fpp' in self.argDB:
+      yield self.argDB['with-fpp']
+    elif 'FPP' in self.argDB:
+      yield self.argDB['FPP']
+    else:
+      yield self.FC+' -E'
+      yield self.FC+' --use cpp32'
+    return
+
+  def checkFortranPreprocessor(self):
+    '''Locate a functional Fortran preprocessor'''
+    if not hasattr(self, 'FC'):
+      return
+    for compiler in self.generateFortranPreprocessorGuesses():
+      try:
+        if self.getExecutable(compiler, resultName = 'FPP'):
+          self.pushLanguage('FC')
+          if not self.checkPreprocess('#define foo 10\n'):
+            raise RuntimeError('Cannot preprocess Fortran with '+self.FPP+'.')
+          self.popLanguage()
+          break
+      except RuntimeError as e:
+        import os
+
+        if os.path.basename(self.FPP) in ['mpif90']:
+          self.logPrint('MPI installation '+self.getCompiler()+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI')
+        self.popLanguage()
+        self.delMakeMacro('FPP')
+        del self.FPP
+    return
+
 
   def checkFortranComments(self):
     '''Make sure fortran comment "!" works'''
@@ -1682,6 +1716,7 @@ if (dlclose(handle)) {
       self.executeTest(self.checkCxxPreprocessor)
     self.executeTest(self.checkFortranCompiler)
     if hasattr(self, 'FC'):
+      self.executeTest(self.checkFortranPreprocessor)
       self.executeTest(self.checkFortranComments)
     self.executeTest(self.checkLargeFileIO)
     self.executeTest(self.checkArchiver)

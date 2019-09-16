@@ -7,6 +7,11 @@ if not os.path.isdir(petsc_hash_pkgs): os.mkdir(petsc_hash_pkgs)
 configure_options = [
   '--package-prefix-hash='+petsc_hash_pkgs,
   '--with-debugging=0',
+  'CC=gcc',
+  'CXX=g++',
+  'FC=gfortran',
+  '--with-mpi-include=/usr/include/mpich',
+  '--with-mpi-lib=-L/usr/lib/x86_64-linux-gnu -lmpichf90 -lmpi',
   '--download-f2cblaslapack=1',
   '--with-precision=__float128',
   '--with-clanguage=cxx',
