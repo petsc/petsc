@@ -65,6 +65,11 @@ class Configure(config.package.Package):
     else:
       ghv = cxx
 
+    # On CRAY with shared libraries, libmfem.so is linked as
+    # $ cc -shared -o libmfem.so ...a bunch of .o files.... ...libraries.... -dynamic
+    # The -dynamic at the end makes cc think it is creating an executable
+    ldflags = self.setCompilers.LDFLAGS.replace('-dynamic','')
+
     with open(os.path.join(configDir,'user.mk'),'w') as g:
       g.write('PREFIX = '+prefix+'\n')
       g.write('MPICXX = '+cxx+'\n')
@@ -78,7 +83,7 @@ class Configure(config.package.Package):
         g.write('STATIC = YES\n')
       g.write('AR = '+self.setCompilers.AR+'\n')
       g.write('ARFLAGS = '+self.setCompilers.AR_FLAGS+'\n')
-      g.write('LDFLAGS = '+self.setCompilers.LDFLAGS+'\n')
+      g.write('LDFLAGS = '+ldflags+'\n')
       g.write('MFEM_USE_MPI = YES\n')
       g.write('MFEM_MPIEXEC = '+self.mpi.mpiexec+'\n')
       g.write('MFEM_USE_METIS_5 = YES\n')
