@@ -1481,6 +1481,10 @@ PetscErrorCode MatDestroy_SeqDense(Mat mat)
 #endif
 #if defined(PETSC_HAVE_CUDA)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_seqdense_seqdensecuda_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMult_seqaijcusparse_seqdense_C",NULL);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_VIENNACL)
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMult_seqaijviennacl_seqdense_C",NULL);CHKERRQ(ierr);
 #endif
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatSeqDenseSetPreallocation_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMult_seqaij_seqdense_C",NULL);CHKERRQ(ierr);
@@ -2833,9 +2837,13 @@ PetscErrorCode MatCreate_SeqDense(Mat B)
 #endif
 #if defined(PETSC_HAVE_CUDA)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqdense_seqdensecuda_C",MatConvert_SeqDense_SeqDenseCUDA);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_seqaijcusparse_seqdense_C",MatMatMult_SeqAIJ_SeqDense);CHKERRQ(ierr);
 #endif
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqDenseSetPreallocation_C",MatSeqDenseSetPreallocation_SeqDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_seqaij_seqdense_C",MatMatMult_SeqAIJ_SeqDense);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_VIENNACL)
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_seqaijviennacl_seqdense_C",MatMatMult_SeqAIJ_SeqDense);CHKERRQ(ierr);
+#endif
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultSymbolic_seqaij_seqdense_C",MatMatMultSymbolic_SeqAIJ_SeqDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultNumeric_seqaij_seqdense_C",MatMatMultNumeric_SeqAIJ_SeqDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_seqbaij_seqdense_C",MatMatMult_SeqBAIJ_SeqDense);CHKERRQ(ierr);
