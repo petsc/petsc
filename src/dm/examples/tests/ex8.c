@@ -56,21 +56,17 @@ int main(int argc, char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
-
-  ierr = DMShellCreate(PETSC_COMM_WORLD,&dm); CHKERRQ(ierr);
+  ierr = DMShellCreate(PETSC_COMM_WORLD,&dm);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)dm,"DMSetUpGLVisViewer_C",DMSetUpGLVisViewer_Shell);CHKERRQ(ierr);
-
   ierr = VecCreateMPI(PETSC_COMM_WORLD,1,PETSC_DECIDE,&v);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)v,"seed");CHKERRQ(ierr);
   ierr = VecSetOperation(v,VECOP_VIEW,(void (*)(void))VecView_Shell);CHKERRQ(ierr);
   ierr = DMShellSetGlobalVector(dm,v);CHKERRQ(ierr);
   ierr = VecDestroy(&v);CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm,NULL,"-dm_view");CHKERRQ(ierr);
-
   ierr = DMGetGlobalVector(dm,&v);CHKERRQ(ierr);
   ierr = VecViewFromOptions(v,NULL,"-vec_view");CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(dm,&v);CHKERRQ(ierr);
-
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
