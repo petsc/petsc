@@ -2390,7 +2390,7 @@ static PetscErrorCode DMPforestGetCellSFNodes(DM dm, PetscInt numClosureIndices,
   PetscFunctionReturn(0);
 }
 
-static void DMPforestMaxSFNode(void *a, void *b, PetscMPIInt *len, MPI_Datatype *type)
+static void MPIAPI DMPforestMaxSFNode(void *a, void *b, PetscMPIInt *len, MPI_Datatype *type)
 {
   PetscMPIInt i;
 
