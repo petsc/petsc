@@ -6745,7 +6745,7 @@ typedef struct cell_stats
   PetscInt  count;
 } cell_stats_t;
 
-static void cell_stats_reduce(void *a, void *b, int * len, MPI_Datatype *datatype)
+static void MPIAPI cell_stats_reduce(void *a, void *b, int * len, MPI_Datatype *datatype)
 {
   PetscInt i, N = *len;
 
