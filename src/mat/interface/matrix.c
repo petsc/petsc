@@ -9535,10 +9535,8 @@ PetscErrorCode MatMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
 
   fA = A->ops->matmult;
   fB = B->ops->matmult;
-  if (fB == fA) {
-    if (!fB) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MatMatMult not supported for B of type %s",((PetscObject)B)->type_name);
-    mult = fB;
-  } else {
+  if (fB == fA && fB) mult = fB;
+  else {
     /* dispatch based on the type of A and B from their PetscObject's PetscFunctionLists. */
     char multname[256];
     ierr = PetscStrncpy(multname,"MatMatMult_",sizeof(multname));CHKERRQ(ierr);
@@ -9547,6 +9545,9 @@ PetscErrorCode MatMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
     ierr = PetscStrlcat(multname,((PetscObject)B)->type_name,sizeof(multname));CHKERRQ(ierr);
     ierr = PetscStrlcat(multname,"_C",sizeof(multname));CHKERRQ(ierr); /* e.g., multname = "MatMatMult_seqdense_seqaij_C" */
     ierr = PetscObjectQueryFunction((PetscObject)B,multname,&mult);CHKERRQ(ierr);
+    if (!mult) {
+      ierr = PetscObjectQueryFunction((PetscObject)A,multname,&mult);CHKERRQ(ierr);
+    }
     if (!mult) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"MatMatMult requires A, %s, to be compatible with B, %s",((PetscObject)A)->type_name,((PetscObject)B)->type_name);
   }
   ierr = PetscLogEventBegin(MAT_MatMult,A,B,0,0);CHKERRQ(ierr);
@@ -9813,10 +9814,8 @@ PetscErrorCode MatTransposeMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat
   }
   fA = A->ops->transposematmult;
   fB = B->ops->transposematmult;
-  if (fB==fA) {
-    if (!fA) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MatTransposeMatMult not supported for A of type %s",((PetscObject)A)->type_name);
-    transposematmult = fA;
-  } else {
+  if (fB == fA && fA) transposematmult = fA;
+  else {
     /* dispatch based on the type of A and B from their PetscObject's PetscFunctionLists. */
     char multname[256];
     ierr = PetscStrncpy(multname,"MatTransposeMatMult_",sizeof(multname));CHKERRQ(ierr);
@@ -9825,6 +9824,9 @@ PetscErrorCode MatTransposeMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat
     ierr = PetscStrlcat(multname,((PetscObject)B)->type_name,sizeof(multname));CHKERRQ(ierr);
     ierr = PetscStrlcat(multname,"_C",sizeof(multname));CHKERRQ(ierr); /* e.g., multname = "MatMatMult_seqdense_seqaij_C" */
     ierr = PetscObjectQueryFunction((PetscObject)B,multname,&transposematmult);CHKERRQ(ierr);
+    if (!transposematmult) {
+      ierr = PetscObjectQueryFunction((PetscObject)A,multname,&transposematmult);CHKERRQ(ierr);
+    }
     if (!transposematmult) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"MatTransposeMatMult requires A, %s, to be compatible with B, %s",((PetscObject)A)->type_name,((PetscObject)B)->type_name);
   }
   ierr = PetscLogEventBegin(MAT_TransposeMatMult,A,B,0,0);CHKERRQ(ierr);
