@@ -1978,3 +1978,44 @@ PetscErrorCode TSGetQuadratureTS(TS ts,PetscBool *fwd,TS *quadts)
   if (quadts) *quadts = ts->quadraturets;
   PetscFunctionReturn(0);
 }
+
+/*@
+   TSComputeSNESJacobian - Compute the SNESJacobian
+
+   Input Parameters:
++  ts - the TS context obtained from TSCreate()
+-  x - state vector
+
+   Output Parameters:
++  J - Jacobian matrix
+-  Jpre - preconditioning matrix for J (may be same as J)
+
+   Level: developer
+
+   Notes:
+   Using SNES to compute the Jacobian enables finite differencing when TS Jacobian is not available.
+@*/
+PetscErrorCode TSComputeSNESJacobian(TS ts,Vec x,Mat J,Mat Jpre)
+{
+  SNES           snes = ts->snes;
+  PetscErrorCode (*jac)(SNES,Vec,Mat,Mat,void*) = NULL;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /*
+    Unlike implicit methods, explicit methods do not have SNESMatFDColoring in the snes object
+    because SNESSolve() has not been called yet; so querying SNESMatFDColoring does not work for
+    explicit methods. Instead, we check the Jacobian compute function directly to determin if FD
+    coloring is used.
+  */
+  ierr = SNESGetJacobian(snes,NULL,NULL,&jac,NULL);CHKERRQ(ierr);
+  if (jac == SNESComputeJacobianDefaultColor) {
+    Vec f;
+    ierr = SNESSetSolution(snes,x);CHKERRQ(ierr);
+    ierr = SNESGetFunction(snes,&f,NULL,NULL);CHKERRQ(ierr);
+    /* Force MatFDColoringApply to evaluate the SNES residual function for the base vector */
+    ierr = SNESComputeFunction(snes,x,f);CHKERRQ(ierr);
+  }
+  ierr = SNESComputeJacobian(snes,x,J,Jpre);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

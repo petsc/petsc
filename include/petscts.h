@@ -279,7 +279,7 @@ PETSC_EXTERN PetscErrorCode TSComputeRHSHessianProductFunctionPU(TS,PetscReal,Ve
 PETSC_EXTERN PetscErrorCode TSComputeRHSHessianProductFunctionPP(TS,PetscReal,Vec,Vec*,Vec,Vec*);
 PETSC_EXTERN PetscErrorCode TSSetCostHessianProducts(TS,PetscInt,Vec*,Vec*,Vec);
 PETSC_EXTERN PetscErrorCode TSGetCostHessianProducts(TS,PetscInt*,Vec**,Vec**,Vec*);
-
+PETSC_EXTERN PetscErrorCode TSComputeSNESJacobian(TS,Vec,Mat,Mat);
 
 /*S
      TSTrajectory - Abstract PETSc object that stores the trajectory (solution of ODE/DAE at each time step)

@@ -605,18 +605,30 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A,Mat 
       requires: !complex !single
 
    test:
-      args: -ts_max_steps 10 -ts_monitor -ts_adjoint_monitor -da_grid_x 16 -da_grid_y 16
+      args: -ts_max_steps 10 -ts_monitor -ts_adjoint_monitor -da_grid_x 20 -da_grid_y 20
       output_file: output/ex5adj_1.out
 
    test:
       suffix: 2
       nsize: 2
-      args: -ts_max_steps 10 -ts_monitor -ts_adjoint_monitor -ksp_monitor_short -da_grid_x 16 -da_grid_y 16 -ts_trajectory_dirname Test-dir -ts_trajectory_file_template test-%06D.cp
+      args: -ts_max_steps 10 -ts_dt 10 -ts_monitor -ts_adjoint_monitor -ksp_monitor_short -da_grid_x 20 -da_grid_y 20 -ts_trajectory_dirname Test-dir -ts_trajectory_file_template test-%06D.cp
 
    test:
       suffix: 3
       nsize: 2
       args: -ts_max_steps 10 -ts_dt 10 -ts_adjoint_monitor_draw_sensi
+
+   test:
+      suffix: 4
+      nsize: 2
+      args: -ts_max_steps 10 -ts_dt 10 -ts_monitor -ts_adjoint_monitor -ksp_monitor_short -da_grid_x 20 -da_grid_y 20 -snes_fd_color
+      output_file: output/ex5adj_2.out
+
+   test:
+      suffix: 5
+      nsize: 2
+      args: -ts_max_steps 10 -implicitform 0 -ts_type rk -ts_rk_type 4 -ts_monitor -ts_adjoint_monitor -da_grid_x 20 -da_grid_y 20 -snes_fd_color
+      output_file: output/ex5adj_1.out
 
    test:
       suffix: knl
