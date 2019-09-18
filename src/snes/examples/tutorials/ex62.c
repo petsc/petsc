@@ -1123,7 +1123,7 @@ int main(int argc, char **argv)
   test:
     requires: !single
     suffix: bddc_quad
-    nsize: 5
-    args: -run_type full -dm_refine 2 -bc_type dirichlet -interpolate 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -snes_view -snes_error_if_not_converged -dm_mat_type is -ksp_type gmres -ksp_rtol 1.e-8 -pc_type bddc -pc_bddc_corner_selection -pc_bddc_dirichlet_pc_type svd -pc_bddc_neumann_pc_type svd -pc_bddc_coarse_redundant_pc_type svd -simplex 0 -petscpartitioner_type simple -ksp_monitor_short -pc_bddc_symmetric 0
+    nsize: 2
+    args: -run_type full -dm_refine 1 -bc_type dirichlet -interpolate 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -snes_view -snes_error_if_not_converged -dm_mat_type is -ksp_type gmres -ksp_rtol 1.e-8 -pc_type bddc -pc_bddc_corner_selection -pc_bddc_dirichlet_pc_type svd -pc_bddc_neumann_pc_type svd -pc_bddc_coarse_redundant_pc_type svd -simplex 0 -petscpartitioner_type simple -ksp_monitor_short -pc_bddc_symmetric 0
 
 TEST*/
