@@ -11,7 +11,7 @@ configure_options = [
   'CXXOPTFLAGS=-g -O',
   '--download-openblas',
   '--download-openblas-64-bit-blas-indices=1',
-  '--download-openblas-make-options=CORE=generic TARGET=GENERIC',
+  '--download-openblas-make-options=TARGET=GENERIC',
   ]
 
 if __name__ == '__main__':
