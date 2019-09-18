@@ -147,6 +147,7 @@ checksource:
     - echo $(nproc)
     - ccache --zero-stats
   after_script:
+    - cp configure.log ../configure.log-${CI_JOB_NAME}-${CI_PIPELINE_ID}-${CI_JOB_ID}
     - ccache --show-stats
 
 .freebsd_test:
@@ -156,6 +157,7 @@ checksource:
     - echo $(sysctl -n hw.ncpu)
     - ccache --zero-stats
   after_script:
+    - cp configure.log ../configure.log-${CI_JOB_NAME}-${CI_PIPELINE_ID}-${CI_JOB_ID}
     - ccache --show-stats
 
 .osx_test:
@@ -165,6 +167,7 @@ checksource:
     - echo $(sysctl -n hw.ncpu)
     - ccache --zero-stats
   after_script:
+    - cp configure.log ../configure.log-${CI_JOB_NAME}-${CI_PIPELINE_ID}-${CI_JOB_ID}
     - ccache --show-stats
 
 .opensolaris_test:
@@ -172,12 +175,16 @@ checksource:
     - hostname
     - uname -a
     - echo $(nproc)
+  after_script:
+    - cp configure.log ../configure.log-${CI_JOB_NAME}-${CI_PIPELINE_ID}-${CI_JOB_ID}
 
 .mswin_test:
   before_script:
     - hostname
     - uname -a
     - echo $(nproc)
+  after_script:
+    - cp configure.log ../configure.log-${CI_JOB_NAME}-${CI_PIPELINE_ID}-${CI_JOB_ID}
 
 #
 # The following tests run as part of stage-2.
