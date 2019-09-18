@@ -1798,7 +1798,7 @@ PetscErrorCode DMPlexCreateSphereMesh(MPI_Comm comm, PetscInt dim, PetscBool sim
            (0, \pm 1/\phi+1, \pm \phi/\phi+1)
 
          where \phi^2 - \phi - 1 = 0, meaning \phi is the golden ratio \frac{1 + \sqrt{5}}{2}. The edge
-         length is then given by 2/\phi = 2 * 2.73606 = 5.47214.
+         length is then given by 2/\phi = 2 * 0.61803 = 1.23606.
        */
       /* Construct vertices */
       ierr = PetscCalloc1(numVerts * embedDim, &coordsIn);CHKERRQ(ierr);
@@ -1988,7 +1988,7 @@ PetscErrorCode DMPlexCreateSphereMesh(MPI_Comm comm, PetscInt dim, PetscBool sim
            1/2 (\pm 1, \pm phi, \pm 1/phi, 0)  all even permutations    96
 
          where \phi^2 - \phi - 1 = 0, meaning \phi is the golden ratio \frac{1 + \sqrt{5}}{2}. The edge
-         length is then given by 1/\phi = 2.73606.
+         length is then given by 1/\phi = 0.61803.
 
          http://buzzard.pugetsound.edu/sage-practice/ch03s03.html
          http://mathworld.wolfram.com/600-Cell.html
