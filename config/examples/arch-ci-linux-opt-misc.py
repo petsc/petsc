@@ -7,7 +7,7 @@ if not os.path.isdir(petsc_hash_pkgs): os.mkdir(petsc_hash_pkgs)
 configure_options = [
   '--package-prefix-hash='+petsc_hash_pkgs,
   '--with-debugging=0',
-  #'--prefix=petsc-install', temporarily disable for gitlab-ci
+  '--prefix=petsc-install',
   '--with-serialize-functions=1',
   '--download-mpich=1',
   '--download-mpich-configure-arguments=--enable-error-messages=all --enable-g', # note --enable-g=memit - used by --with-debugging=1 does not help
