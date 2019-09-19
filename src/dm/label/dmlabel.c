@@ -1,7 +1,8 @@
 #include <petscdm.h>
 #include <petsc/private/dmlabelimpl.h>   /*I      "petscdmlabel.h"   I*/
-#include <petsc/private/isimpl.h>        /*I      "petscis.h"        I*/
+#include <petsc/private/sectionimpl.h>   /*I      "petscsection.h"   I*/
 #include <petscsf.h>
+#include <petscsection.h>
 
 /*@C
   DMLabelCreate - Create a DMLabel object, which is a multimap

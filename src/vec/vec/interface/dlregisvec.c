@@ -3,6 +3,7 @@
 #include <petsc/private/isimpl.h>
 #include <petscpf.h>
 #include <petscsf.h>
+#include <petscsection.h>
 #include <petscao.h>
 
 static PetscBool         ISPackageInitialized = PETSC_FALSE;

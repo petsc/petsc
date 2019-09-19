@@ -3,6 +3,7 @@
 */
 #include <petsc/private/tsimpl.h>                /*I   "petscts.h"   I*/
 #include <petscds.h>
+#include <petscsection.h>
 #include <petscdmplex.h>
 
 typedef struct {

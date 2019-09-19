@@ -60,34 +60,4 @@ typedef struct _n_ISColoring* ISColoring;
 S*/
 typedef struct _n_PetscLayout* PetscLayout;
 
-/*S
-  PetscSection - Mapping from integers in a designated range to contiguous sets of integers.
-
-  In contrast to IS, which maps from integers to single integers, the range of a PetscSection is in the space of
-  contiguous sets of integers. These ranges are frequently interpreted as domains of other array-like objects,
-  especially other PetscSections, Vecs, and ISs. The domain is set with PetscSectionSetChart() and does not need to
-  start at 0. For each point in the domain of a PetscSection, the output set is represented through an offset and a
-  count, which are set using PetscSectionSetOffset() and PetscSectionSetDof() respectively. Lookup is typically using
-  accessors or routines like VecGetValuesSection().
-
-  Level: beginner
-
-.seealso:  PetscSectionCreate(), PetscSectionDestroy()
-S*/
-typedef struct _p_PetscSection *PetscSection;
-
-/*S
-  PetscSectionSym - Symmetries of the data referenced by a PetscSection.
-
-  Often the order of data index by a PetscSection is meaningful, and describes additional structure, such as points on a
-  line, grid, or lattice.  If the data is accessed from a different "orientation", then the image of the data under
-  access then undergoes a symmetry transformation.  A PetscSectionSym specifies these symmetries.  The types of
-  symmetries that can be specified are of the form R * P, where R is a diagonal matrix of scalars, and P is a permutation.
-
-  Level: developer
-
-.seealso: PetscSectionSymCreate(), PetscSectionSymDestroy(), PetscSectionSetSym(), PetscSectionGetSym(), PetscSectionSetFieldSym(), PetscSectionGetFieldSym(), PetscSectionGetSymPoints()
-S*/
-typedef struct _p_PetscSectionSym *PetscSectionSym;
-
 #endif
