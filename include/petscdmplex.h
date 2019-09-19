@@ -4,6 +4,7 @@
 #if !defined(PETSCDMPLEX_H)
 #define PETSCDMPLEX_H
 
+#include <petscsection.h>
 #include <petscdm.h>
 #include <petscdmplextypes.h>
 #include <petscdt.h>

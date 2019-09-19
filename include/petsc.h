@@ -10,6 +10,7 @@
 #include <petscdraw.h>
 
 #include <petscsf.h>
+#include <petscsection.h>
 #include <petscdmda.h>
 #include <petscdmcomposite.h>
 #include <petscdmpatch.h>
