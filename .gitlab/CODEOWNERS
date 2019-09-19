@@ -5,7 +5,7 @@
 /src/ts/                @caidao22 @jedbrown @emconsta @stefanozampini @BarrySmith
 
 /src/dm/impls/plex/     @knepley @wence @haplav @tisaac
-/src/dm/impls/network/  @hongzhangsun
+/src/dm/impls/network/  @hongzhangsun @BarrySmith
 /src/dm/impls/stag/     @psanan
 
 /src/ksp/pc/impls/bddc/ @stefanozampini
@@ -16,7 +16,7 @@
 
 /src/docs/              @psanan @sbalay @BarrySmith @knepley @jedbrown
 
-/config/*               @krugers @knepley @sbalay
-gmakefile*              @krugers @jedbrown
+/config/*               @krugers @knepley @sbalay @BarrySmith
+gmakefile*              @krugers @jedbrown @BarrySmith
 /lib/petsc              @krugers @sbalay
 
