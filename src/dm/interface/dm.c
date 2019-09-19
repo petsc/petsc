@@ -7159,6 +7159,7 @@ PetscErrorCode DMRemoveLabelBySelf(DM dm, DMLabel *label, PetscBool failNotFound
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(label, 2);
+  if (!*label && !failNotFound) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*label, DMLABEL_CLASSID, 2);
   PetscValidLogicalCollectiveBool(dm,failNotFound,3);
   while (next) {
