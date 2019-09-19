@@ -859,7 +859,7 @@ static PetscErrorCode SNESSolve_NASM(SNES snes)
    Level: advanced
 
    Developer Note: This is a non-Newton based nonlinear solver that does not directly require a Jacobian; hence the flag snes->usesksp is set to
-       false and SNESView() and -snes_view do not display a KSP object. However the flag nasm->finaljacobian is set (for example if
+       false and SNESView() and -snes_view do not display a KSP object. However, if the flag nasm->finaljacobian is set (for example, if
        NASM is used as a nonlinear preconditioner for  KSPASPIN) then SNESSetUpMatrices() is called to generate the Jacobian (needed by KSPASPIN)
        and this utilizes the KSP for storing the matrices, but the KSP is never used for solving a linear system. Note that when SNESNASM is
        used by SNESASPIN they share the same Jacobian matrices because SNESSetUp() (called on the outer SNES KSPASPIN) causes the inner SNES
