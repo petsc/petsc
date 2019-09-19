@@ -411,6 +411,7 @@ def petsc_configure(configure_options):
   import pickle
   import traceback
 
+  tbo = None
   framework = None
   try:
     framework = config.framework.Framework(['--configModules=PETSc.Configure','--optionsModule=config.compilerOptions']+sys.argv[1:], loadArgDB = 0)
@@ -439,6 +440,8 @@ def petsc_configure(configure_options):
     +emsg+'*******************************************************************************\n'
     se = ''
   except (TypeError, ValueError) as e:
+    # this exception is automatically deleted by Python so we need to save it to print below
+    tbo = sys.exc_info()[2]
     emsg = str(e)
     if not emsg.endswith('\n'): emsg = emsg+'\n'
     msg ='*******************************************************************************\n'\
@@ -490,15 +493,16 @@ def petsc_configure(configure_options):
           framework.outputCHeader(framework.log)
       except Exception as e:
         framework.log.write('Problem writing headers to log: '+str(e))
+      if sys.exc_info()[2]: tbo = sys.exc_info()[2]
       try:
         framework.log.write(msg+se)
-        traceback.print_tb(sys.exc_info()[2], file = framework.log)
+        traceback.print_tb(tbo, file = framework.log)
         print_final_timestamp(framework)
         if hasattr(framework,'log'): framework.log.close()
         move_configure_log(framework)
       except Exception as e:
         print('Error printing error message from exception or printing the traceback:'+str(e))
-        traceback.print_tb(sys.exc_info()[2])
+        traceback.print_tb(tbo)
       sys.exit(1)
     else:
       print(se)
