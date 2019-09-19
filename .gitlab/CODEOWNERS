@@ -12,9 +12,9 @@
 /src/ksp/pc/impls/gamg/ @markadams4
 
 /src/vec/is/sf/         @jedbrown @jczhang07
-/src/vec/vscat/         @jczhang07
+/src/vec/vscat/         @jczhang07 @BarrySmith
 
-/src/docs/              @psanan @sbalay @bsmith @knepley @jedbrown
+/src/docs/              @psanan @sbalay @BarrySmith @knepley @jedbrown
 
 /config/*               @krugers @knepley @sbalay
 gmakefile*              @krugers @jedbrown
