@@ -631,14 +631,18 @@ PetscErrorCode PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
 +   comm - the communicator
 -   format - the usual printf() format string
 
-   Level: intermediate
+    Level: intermediate
+
+    Notes:
+    PetscPrintf() supports some format specifiers that are unique to PETSc.
+    See the manual page for PetscFormatConvert() for details.
 
     Fortran Note:
     The call sequence is PetscPrintf(MPI_Comm, character(*), PetscErrorCode ierr) from Fortran.
     That is, you can only pass a single character string from Fortran.
 
 
-.seealso: PetscFPrintf(), PetscSynchronizedPrintf()
+.seealso: PetscFPrintf(), PetscSynchronizedPrintf(), PetscFormatConvert()
 @*/
 PetscErrorCode PetscPrintf(MPI_Comm comm,const char format[],...)
 {
