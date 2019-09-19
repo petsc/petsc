@@ -510,18 +510,18 @@ static PetscErrorCode SNESNASMGetSubdomainVecs_NASM(SNES snes,PetscInt *n,Vec **
 }
 
 /*@
-   SNESNASMSetComputeFinalJacobian - Schedules the computation of the global and subdomain jacobians upon convergence
+   SNESNASMSetComputeFinalJacobian - Schedules the computation of the global and subdomain Jacobians upon convergence
 
    Collective on SNES
 
    Input Parameters:
 +  SNES - the SNES context
--  flg - indication of whether to compute the jacobians or not
+-  flg - indication of whether to compute the Jacobians or not
 
    Level: developer
 
    Notes:
-    This is used almost exclusively in the implementation of ASPIN, where the converged subdomain and global jacobian
+   This is used almost exclusively in the implementation of ASPIN, where the converged subdomain and global Jacobian
    is needed at each linear iteration.
 
 .seealso: SNESNASM, SNESNASMGetSubdomains()
@@ -859,7 +859,7 @@ static PetscErrorCode SNESSolve_NASM(SNES snes)
    Level: advanced
 
    Developer Note: This is a non-Newton based nonlinear solver that does not directly require a Jacobian; hence the flag snes->usesksp is set to
-       false and SNESView() and -snes_view do not display a KSP object. However the flag nasm->finaljacobian is set (for example if
+       false and SNESView() and -snes_view do not display a KSP object. However, if the flag nasm->finaljacobian is set (for example, if
        NASM is used as a nonlinear preconditioner for  KSPASPIN) then SNESSetUpMatrices() is called to generate the Jacobian (needed by KSPASPIN)
        and this utilizes the KSP for storing the matrices, but the KSP is never used for solving a linear system. Note that when SNESNASM is
        used by SNESASPIN they share the same Jacobian matrices because SNESSetUp() (called on the outer SNES KSPASPIN) causes the inner SNES

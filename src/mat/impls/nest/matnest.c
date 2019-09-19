@@ -1123,7 +1123,7 @@ PetscErrorCode MatNestSetSubMats_Nest(Mat A,PetscInt nr,const IS is_row[],PetscI
    Collective on Mat
 
    Input Parameter:
-+  N - nested matrix
++  A - nested matrix
 .  nr - number of nested row blocks
 .  is_row - index sets for each nested row block, or NULL to make contiguous
 .  nc - number of nested column blocks
