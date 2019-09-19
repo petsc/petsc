@@ -89,7 +89,7 @@ static PetscErrorCode SNESDestroy_ASPIN(SNES snes)
     The code for this implementation is a bit confusing because the Amat of SNESSetJacobian() applies the Jacobian of the
     nonlinearly preconditioned function Jacobian while the Pmat provides the Jacobian of the original user provided function.
     Note that the original SNES and nonlinear preconditioner preconditioner (see SNESGetNPC()), in this case NASM, share
-    the same Jacobian matrices. SNESNASM computes the need Jacobian in SNESNASMComputeFinalJacobian_Private()
+    the same Jacobian matrices. SNESNASM computes the needed Jacobian in SNESNASMComputeFinalJacobian_Private().
 
    Level: intermediate
 
