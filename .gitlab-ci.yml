@@ -54,7 +54,7 @@ variables:
     - echo CONFIG_OPTS=$(CONFIG_OPTS)
   script:
     - ${PYTHON} ./configure --with-debugging=0 COPTFLAGS='-O -march=native' CXXOPTFLAGS='-O -march=native' FOPTFLAGS='-O -march=native' ${CONFIG_OPTS}
-    - make CFLAGS=-Werror
+    - make CFLAGS=-Werror CXXFLAGS=-Werror
     - make allgtests-tap search="${TEST_SEARCH}" TIMEOUT=${TIMEOUT}
   after_script:
     - CCACHE_DIR=$(pwd)/.ccache ccache --show-stats
@@ -112,7 +112,7 @@ checksource:
     - printf "./config/examples/${TEST_ARCH}.py\n"
     - cat ./config/examples/${TEST_ARCH}.py
     - ./config/examples/${TEST_ARCH}.py
-    - make
+    - make CFLAGS=${MAKE_CFLAGS} CXXFLAGS=${MAKE_CXXFLAGS}
     - make check
     - make updatedatafiles
     - make cleantest allgtests-tap TIMEOUT=${TIMEOUT}
@@ -140,7 +140,7 @@ checksource:
 # The following provide templates for various OSes for pre/post info
 #
 
-.linux_test:
+.linux_test_noflags:
   before_script:
     - hostname
     - grep PRETTY_NAME /etc/os-release
@@ -149,7 +149,16 @@ checksource:
   after_script:
     - ccache --show-stats
 
+.linux_test:
+  extends: .linux_test_noflags
+  variables:
+    MAKE_CFLAGS: -Werror
+    MAKE_CXXFLAGS: -Werror
+
 .freebsd_test:
+  variables:
+    MAKE_CFLAGS: -Werror
+    MAKE_CXXFLAGS: -Werror
   before_script:
     - hostname
     - freebsd-version
@@ -159,6 +168,9 @@ checksource:
     - ccache --show-stats
 
 .osx_test:
+  variables:
+    MAKE_CFLAGS: -Werror
+    MAKE_CXXFLAGS: -Werror
   before_script:
     - hostname
     - sw_vers -productVersion
@@ -558,7 +570,7 @@ linux-opt-cxx-quad:
 linux-pgi:
   extends:
     - .stage-3
-    - .linux_test
+    - .linux_test_noflags
   tags:
     - mcs-nfs,name:petsc
   variables:
