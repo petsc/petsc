@@ -55,8 +55,8 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   v->adjacency[0]             = PETSC_FALSE;
   v->adjacency[1]             = PETSC_TRUE;
   v->depthLabel               = NULL;
-  v->localSection           = NULL;
-  v->globalSection     = NULL;
+  v->localSection             = NULL;
+  v->globalSection            = NULL;
   v->defaultConstraintSection = NULL;
   v->defaultConstraintMat     = NULL;
   v->L                        = NULL;
@@ -889,9 +889,16 @@ PetscErrorCode  DMView(DM dm,PetscViewer v)
     ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)dm),&v);CHKERRQ(ierr);
   }
   PetscValidHeaderSpecific(v,PETSC_VIEWER_CLASSID,2);
-  PetscCheckSameComm(dm,1,v,2);
+  /* Ideally, we would like to have this test on.
+     However, it currently breaks socket viz via GLVis.
+     During DMView(parallel_mesh,glvis_viewer), each
+     process opens a sequential ASCII socket to visualize
+     the local mesh, and PetscObjectView(dm,local_socket)
+     is internally called inside VecView_GLVis, incurring
+     in an error here */
+  /* PetscCheckSameComm(dm,1,v,2); */
   ierr = PetscViewerCheckWritable(v);CHKERRQ(ierr);
-  
+
   ierr = PetscViewerGetFormat(v,&format);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&size);CHKERRQ(ierr);
   if (size == 1 && format == PETSC_VIEWER_LOAD_BALANCE) PetscFunctionReturn(0);
