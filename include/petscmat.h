@@ -285,6 +285,7 @@ PETSC_EXTERN PetscErrorCode MatCompositeSetMatStructure(Mat,MatStructure);
 PETSC_EXTERN PetscErrorCode MatCompositeGetMatStructure(Mat,MatStructure*);
 PETSC_EXTERN PetscErrorCode MatCompositeGetNumberMat(Mat,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatCompositeGetMat(Mat,PetscInt,Mat*);
+PETSC_EXTERN PetscErrorCode MatCompositeSetScalings(Mat,const PetscScalar*);
 
 PETSC_EXTERN PetscErrorCode MatCreateFFT(MPI_Comm,PetscInt,const PetscInt[],MatType,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateSeqCUFFT(MPI_Comm,PetscInt,const PetscInt[],Mat*);
