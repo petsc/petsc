@@ -919,8 +919,6 @@ PetscErrorCode ReportParams(Parameter *param, GridInfo *grid)
 
   if (!(param->quiet)) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"---------------------BEGIN ex30 PARAM REPORT-------------------\n");CHKERRQ(ierr);
-    /* PetscPrintf(PETSC_COMM_WORLD,"                   %s\n",&(date[0]));*/
-
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Domain: \n");CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  Width = %g km,         Depth = %g km\n",(double)param->width,(double)param->depth);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  Slab dip = %g degrees,  Slab velocity = %g cm/yr\n",(double)(param->slab_dip*180.0/PETSC_PI),(double)param->slab_velocity);CHKERRQ(ierr);

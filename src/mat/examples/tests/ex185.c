@@ -35,7 +35,7 @@ int main(int argc, char **args)
   ierr = MatLUFactorNumeric(Af,A,NULL);CHKERRQ(ierr);
   ierr = MatSolve(Af,X,Y);CHKERRQ(ierr);
   ierr = VecNorm(Y,NORM_2,&ynorm);CHKERRQ(ierr);
-  if (PetscAbsReal(ynorm - .25*xnorm) > PETSC_SMALL) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Expected norm %g actual norm %g\n",(double).25*xnorm,(double)ynorm);CHKERRQ(ierr);
+  if (PetscAbsReal(ynorm - xnorm/4) > PETSC_SMALL) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Expected norm %g actual norm %g\n",(double).25*xnorm,(double)ynorm);CHKERRQ(ierr);
 
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&Af);CHKERRQ(ierr);

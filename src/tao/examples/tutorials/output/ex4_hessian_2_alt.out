@@ -1,0 +1,38 @@
+  0 TAO,  Function value: 14.6462,  Residual: 14.2702 
+    Residual norms for tao_nls_ solve.
+    0 KSP Residual norm 1.427015495300e+01 
+    1 KSP Residual norm 1.396274328232e+00 
+    2 KSP Residual norm 2.213188111782e-01 
+    3 KSP Residual norm 2.647735923529e-02 
+    4 KSP Residual norm 3.359435591847e-03 
+    5 KSP Residual norm 4.722082521766e-04 
+    6 KSP Residual norm 5.297140160110e-05 
+  1 TAO,  Function value: 4.22724,  Residual: 5.32539e-05 
+    Residual norms for tao_nls_ solve.
+    0 KSP Residual norm 5.325390156941e-05 
+    1 KSP Residual norm 1.324390177615e-05 
+    2 KSP Residual norm 1.603577402420e-06 
+    3 KSP Residual norm 1.983242583492e-07 
+    4 KSP Residual norm 3.381039093142e-08 
+    5 KSP Residual norm 4.590589686160e-09 
+    6 KSP Residual norm 1.064777710447e-09 
+    7 KSP Residual norm 1.346820294179e-10 
+J(xhat): 98.3926, predicted: 4.22725, diff 94.1653
+J(xhat): 27.7686, predicted: 4.22724, diff 23.5413
+J(xhat): 10.1126, predicted: 4.22724, diff 5.88533
+J(xhat): 5.69858, predicted: 4.22724, diff 1.47133
+J(xhat): 4.59508, predicted: 4.22724, diff 0.367834
+J(xhat): 4.3192, predicted: 4.22724, diff 0.091959
+J(xhat): 4.25023, predicted: 4.22724, diff 0.0229907
+J(xhat): 4.23299, predicted: 4.22724, diff 0.0057478
+J(xhat): 4.22868, predicted: 4.22724, diff 0.00143766
+J(xhat): 4.2276, predicted: 4.22724, diff 0.000360012
+Convergence rate step 0: 2.
+Convergence rate step 1: 2.
+Convergence rate step 2: 2.
+Convergence rate step 3: 2.
+Convergence rate step 4: 1.99999
+Convergence rate step 5: 1.99994
+Convergence rate step 6: 1.99997
+Convergence rate step 7: 1.99928
+Convergence rate step 8: 1.99761

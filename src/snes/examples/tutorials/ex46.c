@@ -160,7 +160,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
         uxx     = (2.0*u - x[j][i-1] - x[j][i+1])*hydhx;
         uyy     = (2.0*u - x[j-1][i] - x[j+1][i])*hxdhy;
         f[j][i] = D*(uxx + uyy) - (K*funcA(x[j][i], user)*PetscSqrtScalar(ux*ux + uy*uy) + funcU(&coords[j][i]))*hx*hy;
-        if (PetscIsInfOrNanScalar(f[j][i])) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FP, "Invalid residual: %g", PetscRealPart(f[j][i]));
+        if (PetscIsInfOrNanScalar(f[j][i])) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FP, "Invalid residual: %g", (double)PetscRealPart(f[j][i]));
       }
     }
   }
@@ -211,7 +211,6 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,App
         ux        = (x[j][i+1] - x[j][i])/hx;
         uy        = (x[j+1][i] - x[j][i])/hy;
         normGradZ = PetscRealPart(PetscSqrtScalar(ux*ux + uy*uy));
-        /* PetscPrintf(PETSC_COMM_SELF, "i: %d j: %d normGradZ: %g\n", i, j, normGradZ); */
         if (normGradZ < 1.0e-8) normGradZ = 1.0e-8;
         A = funcA(x[j][i], user);
 
@@ -221,7 +220,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,App
         v[3] = -D*hydhx + K*A*hx*hy/(2.0*normGradZ);                                              col[3].j = j;     col[3].i = i+1;
         v[4] = -D*hxdhy + K*A*hx*hy/(2.0*normGradZ);                                              col[4].j = j + 1; col[4].i = i;
         for (k = 0; k < 5; ++k) {
-          if (PetscIsInfOrNanScalar(v[k])) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FP, "Invalid residual: %g", PetscRealPart(v[k]));
+          if (PetscIsInfOrNanScalar(v[k])) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FP, "Invalid residual: %g", (double)PetscRealPart(v[k]));
         }
         ierr = MatSetValuesStencil(jac,1,&row,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
       }

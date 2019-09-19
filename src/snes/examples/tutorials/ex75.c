@@ -537,9 +537,9 @@ PetscErrorCode MapleTest(MPI_Comm comm, AppCtx *ctx)
       norm = sqrt(PetscSqr(PetscAbsScalar(vx - vxMaple[i][j])) + PetscSqr(PetscAbsScalar(vz - vzMaple[i][j])));
       if (norm > 1.0e-10) {
         ierr = PetscPrintf(PETSC_COMM_SELF, "%0.17e %0.17e %0.17e %0.17e %0.17e %0.17e %0.17e %0.17e %0.17e\n",
-                           x[i], z[j], PetscAbsScalar(vx - vxMaple[i][j]), PetscAbsScalar(vz - vzMaple[i][j]), PetscAbsScalar(p - pMaple[i][j]),
-                           PetscAbsScalar(sxx - sxxMaple[i][j]), PetscAbsScalar(sxz - sxzMaple[i][j]), PetscAbsScalar(szz - szzMaple[i][j]), norm);
-        SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid solution, error %g", norm);
+                           (double)x[i], (double)z[j], (double)PetscAbsScalar(vx - vxMaple[i][j]), (double)PetscAbsScalar(vz - vzMaple[i][j]), (double)PetscAbsScalar(p - pMaple[i][j]),
+                           (double)PetscAbsScalar(sxx - sxxMaple[i][j]), (double)PetscAbsScalar(sxz - sxzMaple[i][j]), (double)PetscAbsScalar(szz - szzMaple[i][j]), (double)norm);
+        SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid solution, error %g", (double)norm);
       }
     }
   }
