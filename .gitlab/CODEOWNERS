@@ -14,7 +14,7 @@
 /src/vec/is/sf/         @jedbrown @jczhang07
 /src/vec/vscat/         @jczhang07
 
-/src/docs/              @psanan @sbalay
+/src/docs/              @psanan @sbalay @bsmith @knepley @jedbrown
 
 /config/*               @krugers @knepley @sbalay
 gmakefile*              @krugers @jedbrown
