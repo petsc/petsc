@@ -61,13 +61,7 @@ PETSC_INTERN PetscErrorCode MatShift_Basic(Mat Y,PetscScalar a)
    See the manpages for particular formats (e.g., MatCreateSeqAIJ())
    for additional format-specific options.
 
-   Notes:
-
    Level: beginner
-
-   User manual sections:
-+   sec_matcreate
--   chapter_matrices
 
 .seealso: MatCreateSeqAIJ(), MatCreateAIJ(),
           MatCreateSeqDense(), MatCreateDense(),
