@@ -223,7 +223,7 @@ int main(int argc, char **args)
 {
   PetscErrorCode ierr;
   PetscInt testid = 0;
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-test_id",&testid,NULL);CHKERRQ(ierr);
   switch (testid) {
     case 0:
