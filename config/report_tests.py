@@ -75,14 +75,18 @@ def summarize_results(directory,make,ntime,etime):
 
   if failstr.strip():
       fail_targets=(
-          re.sub('(?<=[0-9]_\w)_.*','',
           re.sub('cmd-','',
-          re.sub('diff-','',failstr+' ')))
+          re.sub('diff-','',failstr+' '))
           )
+      print(fail_targets)
       # Strip off characters from subtests
       fail_list=[]
       for failure in fail_targets.split():
-        if failure.count('-')>1:
+        if failure.split('-')[1].count('_')>1:
+            froot=failure.split('-')[0]
+            flabel='_'.join(failure.split('-')[1].split('_')[0:1])
+            fail_list.append(froot+'-'+flabel+'_*')
+        elif failure.count('-')>1:
             fail_list.append('-'.join(failure.split('-')[:-1]))
         else:
             fail_list.append(failure)
@@ -93,7 +97,7 @@ def summarize_results(directory,make,ntime,etime):
       makefile="gmakefile.test" if inInstallDir() else "gmakefile"
 
       print("#\n# To rerun failed tests: ")
-      print("#     "+make+" -f "+makefile+" test search='" + fail_targets.strip()+"'")
+      print("#     "+make+" -f "+makefile+" test globsearch='" + fail_targets.strip()+"'")
 
   if ntime>0:
       print("#\n# Timing summary (actual test time / total CPU time): ")

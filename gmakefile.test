@@ -12,7 +12,8 @@ include $(PETSC_DIR)/lib/petsc/conf/variables
 
 TESTDIR ?= ./$(PETSC_ARCH)/tests
 MODDIR := $(PETSC_DIR)/$(PETSC_ARCH)/include
-TESTLOGFILE ?= $(TESTDIR)/examples_$(PETSC_ARCH).log
+TESTLOGTAPFILE ?= $(TESTDIR)/test_$(PETSC_ARCH)_tap.log
+TESTLOGERRFILE ?= $(TESTDIR)/test_$(PETSC_ARCH)_err.log
 EXAMPLESDIR := $(TESTSRCDIR)
 
 pkgs := sys vec mat dm ksp snes ts tao
@@ -39,6 +40,7 @@ ifeq ($(V),)  # Default
 else ifeq ($(V),0)		# Suppress entire command
   quiet = @$($1)
   quiettest = @
+  TESTFLAGS += -o err_only
 else				# Show the full command line
   quiet = $($1)
   quiettest =
@@ -53,6 +55,9 @@ ifeq ($(VALGRIND),1)
 endif
 ifeq ($(REPLACE),1)
   TESTFLAGS += -m    # Replace results by passing -m to petscdiff
+endif
+ifeq ($(OUTPUT),1)
+  TESTFLAGS += -o 'err_only'    # Show only the errors on stdout
 endif
 ifeq ($(ALT),1)
   TESTFLAGS += -M    # Replace alt files by passing -M to petscdiff
@@ -177,15 +182,15 @@ $(foreach pkg, $(pkgs), $(call concattestlang,$(pkg),F F90)) : $(libpetscall)
 # Testing convenience targets
 .PHONY: test pre-clean
 
-test: report_tests
+test: report_tests check-test-errors
 
 pre-clean:
-	@$(RM) -rf $(TESTDIR)/counts $(TESTLOGFILE)
-	@touch $(TESTLOGFILE)
+	@$(RM) -rf $(TESTDIR)/counts $(TESTLOGTAPFILE) $(TESTLOGERRFILE)
+	@touch $(TESTLOGTAPFILE) $(TESTLOGERRFILE)
 	@echo "Using MAKEFLAGS:" ${MAKEFLAGS}
 
 check-test-errors:
-	@grep '^not ok' $(TESTLOGFILE) | grep -v 'not ok timeout' | tee $(TESTDIR)/allgtests-tap-err.log
+	@grep '^not ok' $(TESTLOGTAPFILE) | grep -v 'Exceeded timeout' | tee $(TESTDIR)/allgtests-tap-err.log
 	@test ! -s $(TESTDIR)/allgtests-tap-err.log
 
 .PHONY: $(foreach pkg, $(pkgs), test-$(pkg) $(foreach lang, $(testlangs), test-$(pkg).$(lang) test-rm-$(pkg).$(lang)))
@@ -267,7 +272,7 @@ else ifdef searchin
 else ifdef argsearch
   TESTTARGETS := $(foreach v,$(alltesttargets),$(if $(findstring $(argsearch),$($(v)_ARGS)),$(v)))
 else ifdef globsearch
-  TESTTARGETS := $(shell $(PYTHON) -c"import sys,fnmatch; print(' '.join(fnmatch.filter(sys.argv[2].split(),sys.argv[1])))" '$(globsearch)' '$(alltesttargets)')
+  TESTTARGETS := $(shell $(PYTHON) -c"import sys,fnmatch,itertools; m=[fnmatch.filter(sys.argv[2].split(),p) for p in sys.argv[1].split()]; print(' '.join(list(itertools.chain.from_iterable(m))))" '$(globsearch)' '$(alltesttargets)')
 else                            # No filter - run them all, but delete the executables as we go
   TESTTARGETS := $(testpkgs)
 endif
@@ -288,6 +293,9 @@ report_tests: starttime $(TESTTARGETS)
 	@$(eval ENDTIME := $(shell date +%s))
 	-@elapsed_time=$$(($(ENDTIME)- $(STARTTIME))) && \
 	$(PYTHON) $(CONFIGDIR)/report_tests.py -m $(MAKE) -d $(TESTDIR)/counts -t 5 -e $${elapsed_time}
+
+check_output: 
+	$(PYTHON) $(CONFIGDIR)/gmakegentest.py --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) --testdir=$(TESTDIR) --check-output
 
 # Do not how how to invoke test from makefile
 HASGMAKEFILE := $(filter gmakefile,$(MAKEFILE_LIST))
@@ -328,6 +336,7 @@ help-test:
 	-@echo "Options:"
 	-@echo "  NO_RM=1           Do not remove the executables after running"
 	-@echo "  REPLACE=1         Replace the output in PETSC_DIR source tree (-m to test scripts)"
+	-@echo "  OUTPUT=1          Show only the errors on stdout"
 	-@echo "  ALT=1             Replace 'alt' output in PETSC_DIR source tree (-M to test scripts)"
 	-@echo "  DIFF_NUMBERS=1    Diff the numbers in the output (-j to test scripts and petscdiff)"
 	-@echo "  VALGRIND=1        Execute the tests using valgrind (-V to test scripts)"

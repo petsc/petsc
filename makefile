@@ -452,6 +452,8 @@ includegraph:
 	-@${PETSC_DIR}/src/contrib/style/include-graph.sh includegraph.pdf
 	-@echo Include dependency graph written to includegraph.pdf
 
+check_output:
+	-@${OMAKE} -f gmakefile.test check_output
 #
 # -------------------------------------------------------------------------------
 #
