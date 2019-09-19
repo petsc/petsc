@@ -1,6 +1,7 @@
 
 #include <petsc/private/snesimpl.h>       /*I   "petsc/private/snesimpl.h"   I*/
 #include <petscdm.h>
+#include <petscsection.h>
 #include <petscblaslapack.h>
 
 /*@C
@@ -302,7 +303,7 @@ PetscErrorCode  SNESMonitorDefault(SNES snes,PetscInt its,PetscReal fgnorm,Petsc
 -  vf - viewer and format structure
 
    Notes:
-   This routine prints the largest value in each row of the Jacobian 
+   This routine prints the largest value in each row of the Jacobian
 
    Level: intermediate
 
@@ -483,7 +484,7 @@ PetscErrorCode  SNESMonitorRatio(SNES snes,PetscInt its,PetscReal fgnorm,PetscVi
   PetscInt                len;
   PetscReal               *history;
   PetscViewer             viewer = vf->viewer;
-  
+
   PetscFunctionBegin;
   ierr = SNESGetConvergenceHistory(snes,&history,NULL,&len);CHKERRQ(ierr);
   ierr = PetscViewerPushFormat(viewer,vf->format);CHKERRQ(ierr);
@@ -494,7 +495,7 @@ PetscErrorCode  SNESMonitorRatio(SNES snes,PetscInt its,PetscReal fgnorm,PetscVi
     PetscReal ratio = fgnorm/history[its-1];
     ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES Function norm %14.12e %14.12e \n",its,(double)fgnorm,(double)ratio);CHKERRQ(ierr);
   }
-  ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr); 
+  ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
   ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -685,7 +686,7 @@ PetscErrorCode  SNESConvergedDefault(SNES snes,PetscInt it,PetscReal xnorm,Petsc
       ierr    = PetscInfo3(snes,"Diverged due to increase in function norm: %14.12e > %14.12e * %14.12e\n",(double)fnorm,(double)snes->divtol,(double)snes->rnorm0);CHKERRQ(ierr);
       *reason = SNES_DIVERGED_DTOL;
     }
-    
+
   }
   PetscFunctionReturn(0);
 }

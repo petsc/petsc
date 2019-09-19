@@ -79,9 +79,12 @@ docs/license.html
 docs/exampleconcepts
 docs/faq.html
 docs/installation.html
+docs/intro.pdf
 docs/linearsolvertable.html
+docs/manconcepts
 docs/manual.pdf
 docs/developers.pdf
+docs/tao_manual.pdf
 docs/troubleshooting.html
 src/docs/website/publications/generated_topics.html
 src/dm/mesh/examples/tests/unitTests

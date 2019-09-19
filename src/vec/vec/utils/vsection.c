@@ -1,8 +1,8 @@
 /*
    This file contains routines for section object operations on Vecs
 */
-#include <petsc/private/isimpl.h>   /*I  "petscvec.h"   I*/
-#include <petsc/private/vecimpl.h>   /*I  "petscvec.h"   I*/
+#include <petsc/private/sectionimpl.h> /*I  "petscsection.h"   I*/
+#include <petsc/private/vecimpl.h>     /*I  "petscvec.h"   I*/
 
 static PetscErrorCode PetscSectionVecView_ASCII(PetscSection s, Vec v, PetscViewer viewer)
 {

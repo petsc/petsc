@@ -1,4 +1,4 @@
-#include <petscis.h>
+#include <petscsection.h>
 #include <petsc/private/f90impl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)

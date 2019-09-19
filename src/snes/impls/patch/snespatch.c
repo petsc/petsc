@@ -4,6 +4,7 @@
 #include <petsc/private/snesimpl.h> /*I "petscsnes.h" I*/
 #include <petsc/private/pcpatchimpl.h> /* We need internal access to PCPatch right now, until that part is moved to Plex */
 #include <petscsf.h>
+#include <petscsection.h>
 
 typedef struct {
   PC pc; /* The linear patch preconditioner */

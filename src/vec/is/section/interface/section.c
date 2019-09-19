@@ -2,7 +2,8 @@
    This file contains routines for basic section object implementation.
 */
 
-#include <petsc/private/isimpl.h>   /*I  "petscis.h"   I*/
+#include <petsc/private/sectionimpl.h>   /*I  "petscsection.h"   I*/
+#include <petscsection.h>
 #include <petscsf.h>
 #include <petscviewer.h>
 
