@@ -38,13 +38,13 @@ PetscErrorCode DMSetUpGLVisViewer_Shell(PetscObject odm, PetscViewer viewer)
   DM             dm = (DM)odm;
   Vec            V;
   PetscInt       dim = 2;
-  char           *fec_type[] = { "testme" };
+  const char     *fec_type = { "testme" };
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMGetGlobalVector(dm,&V);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)V,"sample");CHKERRQ(ierr);
-  ierr = PetscViewerGLVisSetFields(viewer,1,(const char**)fec_type,&dim,NULL,(PetscObject*)&V,NULL,NULL);CHKERRQ(ierr);
+  ierr = PetscViewerGLVisSetFields(viewer,1,&fec_type,&dim,NULL,(PetscObject*)&V,NULL,NULL);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(dm,&V);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
