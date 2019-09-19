@@ -80,7 +80,8 @@ class Configure(config.package.GNUPackage):
            self.installSudo+'chmod 750 '+installBinDir+'/glvis'
           ], cwd=self.packageDir, timeout=50, log = self.log)
       except RuntimeError as e:
-        raise RuntimeError('Error running make on GLVis: '+str(e))
+        self.logPrint('Error running make on GLVis: '+str(e))
+        raise RuntimeError('Error running make on GLVis')
       self.postInstall(output0+err0+output1+err1+output2+err2,'glvis_config.mk')
 
     return self.installDir

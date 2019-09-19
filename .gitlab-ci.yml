@@ -627,6 +627,15 @@ linux-pardiso:
   variables:
     TEST_ARCH: arch-ci-linux-pardiso
 
+linux-nagfor:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - mcs-nfs
+  variables:
+    TEST_ARCH: arch-ci-linux-nagfor
+
 #
 # The following tests are experimental; more tests by users at other sites may be added below this.  Experimental test
 # that fail produce a warning, but do not block execution of a pipeline.

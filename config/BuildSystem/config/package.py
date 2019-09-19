@@ -1080,6 +1080,18 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
       rejects.extend([arg for arg in args if arg.startswith(i)])
     return self.rmArgs(args,rejects)
 
+  def addArgStartsWith(self,args,sw,value):
+    keep = []
+    found = 0
+    for i in args:
+      if i.startswith(sw+'="'):
+        i = i[:-1] + ' ' + value + '"'
+        found = 1
+      keep.append(i)
+    if not found:
+      keep.append(sw+'="' + value + '"')
+    return keep
+
   def checkSharedLibrariesEnabled(self):
     if self.havePETSc:
       useShared = self.sharedLibraries.useShared
@@ -1505,7 +1517,15 @@ class GNUPackage(Package):
       self.logPrintBox('Running configure on ' +self.PACKAGE+'; this may take several minutes')
       output1,err1,ret1  = config.base.Configure.executeShellCommand(dot+'/configure '+args, cwd=self.packageDir, timeout=2000, log = self.log)
     except RuntimeError as e:
-      raise RuntimeError('Error running configure on ' + self.PACKAGE+': '+str(e))
+      self.logPrint('Error running configure on ' + self.PACKAGE+': '+str(e))
+      try:
+        with open(os.path.join(self.packageDir,'config.log')) as fd:
+          conf = fd.read()
+          fd.close()
+          self.logPrint('Output in config.log for ' + self.PACKAGE+': '+conf)
+      except:
+        pass
+      raise RuntimeError('Error running configure on ' + self.PACKAGE)
     try:
       self.logPrintBox('Running make on '+self.PACKAGE+'; this may take several minutes')
       if self.parallelMake: pmake = self.make.make_jnp+' '+self.makerulename+' '
@@ -1517,7 +1537,8 @@ class GNUPackage(Package):
       self.installDirProvider.printSudoPasswordMessage(self.installSudo)
       output4,err4,ret4  = config.base.Configure.executeShellCommand(self.installSudo+self.make.make+' install', cwd=self.packageDir, timeout=1000, log = self.log)
     except RuntimeError as e:
-      raise RuntimeError('Error running make; make install on '+self.PACKAGE+': '+str(e))
+      self.logPrint('Error running make; make install on '+self.PACKAGE+': '+str(e))
+      raise RuntimeError('Error running make; make install on '+self.PACKAGE)
     self.postInstall(output1+err1+output2+err2+output3+err3+output4+err4, conffile)
     return self.installDir
 
@@ -1608,13 +1629,15 @@ class CMakePackage(Package):
         self.logPrintBox('Configuring '+self.PACKAGE+' with cmake, this may take several minutes')
         output1,err1,ret1  = config.package.Package.executeShellCommand(self.cmake.cmake+' .. '+args, cwd=folder, timeout=900, log = self.log)
       except RuntimeError as e:
-        raise RuntimeError('Error configuring '+self.PACKAGE+' with cmake '+str(e))
+        self.logPrint('Error configuring '+self.PACKAGE+' with cmake '+str(e))
+        raise RuntimeError('Error configuring '+self.PACKAGE+' with cmake')
       try:
         self.logPrintBox('Compiling and installing '+self.PACKAGE+'; this may take several minutes')
         self.installDirProvider.printSudoPasswordMessage()
         output2,err2,ret2  = config.package.Package.executeShellCommand(self.make.make_jnp+' '+self.makerulename, cwd=folder, timeout=3000, log = self.log)
         output3,err3,ret3  = config.package.Package.executeShellCommand(self.installSudo+' '+self.make.make+' install', cwd=folder, timeout=3000, log = self.log)
       except RuntimeError as e:
-        raise RuntimeError('Error running make on  '+self.PACKAGE+': '+str(e))
+        self.logPrint('Error running make on  '+self.PACKAGE+': '+str(e))
+        raise RuntimeError('Error running make on  '+self.PACKAGE)
       self.postInstall(output1+err1+output2+err2+output3+err3,conffile)
     return self.installDir

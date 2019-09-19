@@ -90,13 +90,15 @@ class Configure(config.package.Package):
       self.logPrintBox('Compiling OpenBLAS; this may take several minutes')
       output1,err1,ret  = config.package.Package.executeShellCommand('cd '+blasDir+' && make '+cmdline, timeout=2500, log = self.log)
     except RuntimeError as e:
-      raise RuntimeError('Error running make on '+blasDir+': '+str(e))
+      self.logPrint('Error running make on '+blasDir+': '+str(e))
+      raise RuntimeError('Error running make on '+blasDir)
     try:
       self.logPrintBox('Installing OpenBLAS')
       self.installDirProvider.printSudoPasswordMessage()
       output2,err2,ret  = config.package.Package.executeShellCommand('cd '+blasDir+' && '+self.installSudo+' make PREFIX='+self.installDir+' install', timeout=30, log = self.log)
     except RuntimeError as e:
-      raise RuntimeError('Error moving '+blasDir+' libraries: '+str(e))
+      self.logPrint('Error moving '+blasDir+' libraries: '+str(e))
+      raise RuntimeError('Error moving '+blasDir+' libraries')
     self.postInstall(output1+err1+output2+err2,'tmpmakefile')
     return self.installDir
 

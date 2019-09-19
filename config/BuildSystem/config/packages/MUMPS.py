@@ -113,7 +113,10 @@ class Configure(config.package.Package):
     self.setCompilers.pushLanguage('FC')
     g.write('FC = '+self.setCompilers.getCompiler()+'\n')
     g.write('FL = '+self.setCompilers.getCompiler()+'\n')
-    g.write('OPTF    = ' + self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','').replace('-Mfree','') +'\n')
+    if config.setCompilers.Configure.isNAG(self.setCompilers.getLinker(), self.log):
+      g.write('OPTF    = -dusty -dcfuns '+ self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','').replace('-Mfree','') +'\n')
+    else:
+      g.write('OPTF    = '+ self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','').replace('-Mfree','') +'\n')
     g.write('OUTF = -o \n')
     self.setCompilers.popLanguage()
 
@@ -167,7 +170,8 @@ class Configure(config.package.Package):
         if self.argDB['with-mumps-serial']:
           output,err,ret = config.package.Package.executeShellCommand([self.installSudo+'cp', '-f', 'libseq/libmpiseq.a', libDir+'/.'], cwd=self.packageDir, timeout=25, log = self.log)
       except RuntimeError as e:
-        raise RuntimeError('Error running make on MUMPS: '+str(e))
+        self.logPrint('Error running make on MUMPS: '+str(e))
+        raise RuntimeError('Error running make on MUMPS')
       self.postInstall(output1+err1+output2+err2,'Makefile.inc')
     return self.installDir
 

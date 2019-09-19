@@ -391,6 +391,14 @@ def petsc_configure(configure_options):
   chkcygwinwindowscompilers()
   chktmpnoexec()
 
+  for l in range(1,len(sys.argv)):
+    if sys.argv[l].startswith('--with-fc=') and sys.argv[l].endswith('nagfor'):
+      # need a way to save this value and later CC so that petscnagfor may use them
+      name = sys.argv[l].split('=')[1]
+      sys.argv[l] = '--with-fc='+os.path.join(os.path.abspath('.'),'lib','petsc','bin','petscnagfor')
+      break
+
+
   # Should be run from the toplevel
   configDir = os.path.abspath('config')
   bsDir     = os.path.join(configDir, 'BuildSystem')

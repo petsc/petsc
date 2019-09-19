@@ -1014,11 +1014,9 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
 
     self.pushLanguage('FC')
     oldFlags = self.setCompilers.LDFLAGS
-    if config.setCompilers.Configure.isNAG(self.getCompiler(), self.log):
-      self.setCompilers.LDFLAGS += ' --verbose'
-    else:
-      self.setCompilers.LDFLAGS += ' -v'
+    self.setCompilers.LDFLAGS += ' -v'
     (output, returnCode) = self.outputLink('', '')
+    if returnCode: raise RuntimeError('Unable to run linker to determine needed Fortran libraries')
     self.setCompilers.LDFLAGS = oldFlags
     self.popLanguage()
 
@@ -1102,7 +1100,17 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
           if not arg in lflags:
             lflags.append(arg)
             self.logPrint('Found full library spec: '+arg, 4, 'compilers')
-            flibs.append(arg)
+#            # check for Nag Fortran library that must be handled as static because shared version does not have all the symbols
+            base = os.path.basename(arg)
+            m = re.match(r'libf[1-9][0-9]rts.a', base)
+            if m:
+              self.logPrint('Detected Nag Fortran compiler library; preserving as static library: '+arg, 4, 'compilers')
+              flibs.append(arg)
+              flibs.append('-Wl,-Bstatic')
+              flibs.append(arg)
+              flibs.append('-Wl,-Bdynamic')
+            else:
+              flibs.append(arg)
           else:
             self.logPrint('already in lflags: '+arg, 4, 'compilers')
           continue
@@ -1255,7 +1263,7 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
                 founddir = 1
           if founddir:
             continue
-        if arg.find('quickfit.o')>=0:
+        if arg.find('f61init.o')>=0 or arg.find('quickfit.o')>=0:
           flibs.append(arg)
           self.logPrint('Found quickfit.o in argument, adding it')
           continue
@@ -1324,7 +1332,6 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
         except:
           self.logWrite(self.setCompilers.restoreLog())
           self.logPrint(str(e), 4, 'compilers')
-          self.logWrite(self.setCompilers.restoreLog())
           raise RuntimeError('Fortran libraries cannot be used with C as linker')
       else:
         self.logWrite(self.setCompilers.restoreLog())

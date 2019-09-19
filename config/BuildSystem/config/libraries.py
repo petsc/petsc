@@ -21,6 +21,7 @@ class Configure(config.base.Configure):
   def getLibArgumentList(self, library, with_rpath=True):
     '''Return the proper link line argument for the given filename library as a list of options
       - If the path is empty, return it unchanged
+      - If starts with + then remove the + and return the rest unchanged (used, for example, to hard wire a static library)
       - If starts with - then return unchanged
       - If the path ends in ".lib" return it unchanged
       - If the path is absolute and the filename is "lib"<name>, return -L<dir> -l<name> (optionally including rpath flag)
@@ -36,6 +37,8 @@ class Configure(config.base.Configure):
       return [library] if with_rpath else []
     if library.lstrip()[0] == '-':
       return [library]
+    if library.lstrip()[0] == '+':
+      return [library[1:]]
     if len(library) > 3 and library[-4:] == '.lib':
       return [library.replace('\\ ',' ').replace(' ', '\\ ').replace('\\(','(').replace('(', '\\(').replace('\\)',')').replace(')', '\\)')]
     if os.path.basename(library).startswith('lib'):
@@ -128,14 +131,15 @@ class Configure(config.base.Configure):
     if hasattr(self.setCompilers, flagName) and not getattr(self.setCompilers, flagName) is None:
       dupflags.append(getattr(self.setCompilers, flagName))
     for j in libs:
-      # remove duplicate -L, -Wl,-rpath options - and only consecutive -l optipons
+      # remove duplicate -L, -Wl,-rpath options - and only consecutive -l options
       if j in newldflags and any([j.startswith(flg) for flg in dupflags]): continue
       if newlibs and j == newlibs[-1]: continue
-      if j.startswith('-l') or j.endswith('.lib'):
+      if j.startswith('-l') or j.endswith('.lib') or j.endswith('.a') or j.endswith('.o') or j == '-Wl,-Bstatic' or j == '-Wl,-Bdynamic':
         newlibs.append(j)
       else:
         newldflags.append(j)
-    return ' '.join(newldflags + newlibs)
+    liblist = ' '.join(newldflags + newlibs)
+    return liblist
 
   def getShortLibName(self,lib):
     '''returns the short name for the library. Valid names are foo -lfoo or libfoo.[a,so,lib]'''
