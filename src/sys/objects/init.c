@@ -203,7 +203,8 @@ void Petsc_MPI_DebuggerOnError(MPI_Comm *comm,PetscMPIInt *flag,...)
   comm - the MPI communicator that will utilize the CUDA devices
 
   Options Database:
-+  -cuda_initialize - do the initialization in PetscInitialize()
++  -cuda_initialize <default yes,no> - do the initialization in PetscInitialize(). If -cuda_initialize no is used then the default initialization is done automatically
+                               when the first CUDA call is made unless you call PetscCUDAInitialize() before any CUDA operations are performed
 .  -cuda_view - view information about the CUDA devices
 .  -cuda_synchronize - wait at the end of asynchronize CUDA calls so that their time gets credited to the current event; default with -log_view
 -  -cuda_set_device <gpu> - integer number of the device
