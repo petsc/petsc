@@ -61,8 +61,6 @@ int main(int argc,char **argv)
     b = PetscAtanhReal(a);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"atanh(%f) = %f\n",(double)a,(double)b);CHKERRQ(ierr);
 
-    b = PetscRoundReal(a);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"round(%f) = %f\n",(double)a,(double)b);CHKERRQ(ierr);
     b = PetscCeilReal(a);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"ceil(%f) = %f\n",(double)a,(double)b);CHKERRQ(ierr);
     b = PetscFloorReal(a);

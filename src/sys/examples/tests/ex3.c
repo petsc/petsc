@@ -28,7 +28,7 @@ int main(int argc,char **argv)
 /*
 
     Because this example may produce different output on different machines we filter out everything.
-    This makes the test uneffective but currently we don't have a good way to know which machines should handle
+    This makes the test ineffective but currently we don't have a good way to know which machines should handle
     the floating point exceptions properly.
 
 */

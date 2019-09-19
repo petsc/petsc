@@ -68,6 +68,61 @@ static PetscErrorCode SNESTR_Converged_Private(SNES snes,PetscInt it,PetscReal x
 }
 
 /*@C
+   SNESNewtonTRSetPreCheck - Sets a user function that is called before the search step has been determined. 
+       Allows the user a chance to change or override the decision of the line search routine.
+
+   Logically Collective on snes
+
+   Input Parameters:
++  snes - the nonlinear solver object
+.  func - [optional] function evaluation routine, see SNESNewtonTRPreCheck()  for the calling sequence
+-  ctx  - [optional] user-defined context for private data for the function evaluation routine (may be NULL)
+
+   Level: intermediate
+
+   Note: This function is called BEFORE the function evaluation within the SNESNEWTONTR solver.
+
+.seealso: SNESNewtonTRPreCheck(), SNESNewtonTRGetPreCheck(), SNESNewtonTRSetPostCheck(), SNESNewtonTRGetPostCheck()
+@*/
+PetscErrorCode  SNESNewtonTRSetPreCheck(SNES snes, PetscErrorCode (*func)(SNES,Vec,Vec,PetscBool*,void*),void *ctx)
+{
+  SNES_NEWTONTR  *tr = (SNES_NEWTONTR*)snes->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  if (func) tr->precheck    = func;
+  if (ctx)  tr->precheckctx = ctx;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   SNESNewtonTRGetPreCheck - Gets the pre-check function
+
+   Not collective
+
+   Input Parameter:
+.  snes - the nonlinear solver context
+
+   Output Parameters:
++  func - [optional] function evaluation routine, see for the calling sequence SNESNewtonTRPreCheck()
+-  ctx  - [optional] user-defined context for private data for the function evaluation routine (may be NULL)
+
+   Level: intermediate
+
+.seealso: SNESNewtonTRSetPreCheck(), SNESNewtonTRPreCheck()
+@*/
+PetscErrorCode  SNESNewtonTRGetPreCheck(SNES snes, PetscErrorCode (**func)(SNES,Vec,Vec,PetscBool*,void*),void **ctx)
+{
+  SNES_NEWTONTR  *tr = (SNES_NEWTONTR*)snes->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  if (func) *func = tr->precheck;
+  if (ctx)  *ctx  = tr->precheckctx;
+  PetscFunctionReturn(0);
+}
+
+/*@C
    SNESNewtonTRSetPostCheck - Sets a user function that is called after the search step has been determined but before the next 
        function evaluation. Allows the user a chance to change or override the decision of the line search routine
 
@@ -80,12 +135,12 @@ static PetscErrorCode SNESTR_Converged_Private(SNES snes,PetscInt it,PetscReal x
 
    Level: intermediate
 
-   Note: This function is called BEFORE the function evalaulation within the SNESNEWTONTR solver while the function set in
+   Note: This function is called BEFORE the function evaluation within the SNESNEWTONTR solver while the function set in
    SNESLineSearchSetPostCheck() is called AFTER the function evaluation.
 
 .seealso: SNESNewtonTRPostCheck(), SNESNewtonTRGetPostCheck()
 @*/
-PetscErrorCode  SNESNewtonTRSetPostCheck(SNES snes, PetscErrorCode (*func)(SNES,Vec,Vec,Vec,PetscBool*,void*),void *ctx)
+PetscErrorCode  SNESNewtonTRSetPostCheck(SNES snes, PetscErrorCode (*func)(SNES,Vec,Vec,Vec,PetscBool*,PetscBool*,void*),void *ctx)
 {
   SNES_NEWTONTR  *tr = (SNES_NEWTONTR*)snes->data;
 
@@ -112,7 +167,7 @@ PetscErrorCode  SNESNewtonTRSetPostCheck(SNES snes, PetscErrorCode (*func)(SNES,
 
 .seealso: SNESNewtonTRSetPostCheck(), SNESNewtonTRPostCheck()
 @*/
-PetscErrorCode  SNESNewtonTRGetPostCheck(SNES snes, PetscErrorCode (**func)(SNES,Vec,Vec,Vec,PetscBool*,void*),void **ctx)
+PetscErrorCode  SNESNewtonTRGetPostCheck(SNES snes, PetscErrorCode (**func)(SNES,Vec,Vec,Vec,PetscBool*,PetscBool*,void*),void **ctx)
 {
   SNES_NEWTONTR  *tr = (SNES_NEWTONTR*)snes->data;
 
@@ -124,6 +179,37 @@ PetscErrorCode  SNESNewtonTRGetPostCheck(SNES snes, PetscErrorCode (**func)(SNES
 }
 
 /*@C
+   SNESNewtonTRPreCheck - Called before the step has been determined in SNESNEWTONTR 
+
+   Logically Collective on snes
+
+   Input Parameters:
++  snes - the solver
+.  X - The last solution
+-  Y - The step direction
+
+   Output Parameters:
+.  changed_Y - Indicator that the step direction Y has been changed.
+
+   Level: developer
+
+.seealso: SNESNewtonTRSetPreCheck(), SNESNewtonTRGetPreCheck()
+@*/
+static PetscErrorCode SNESNewtonTRPreCheck(SNES snes,Vec X,Vec Y,PetscBool *changed_Y)
+{
+  SNES_NEWTONTR  *tr = (SNES_NEWTONTR*)snes->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *changed_Y = PETSC_FALSE;
+  if (tr->precheck) {
+    ierr = (*tr->precheck)(snes,X,Y,changed_Y,tr->precheckctx);CHKERRQ(ierr);
+    PetscValidLogicalCollectiveBool(snes,*changed_Y,4);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@C
    SNESNewtonTRPostCheck - Called after the step has been determined in SNESNEWTONTR but before the function evaluation
 
    Logically Collective on snes
@@ -131,27 +217,30 @@ PetscErrorCode  SNESNewtonTRGetPostCheck(SNES snes, PetscErrorCode (**func)(SNES
    Input Parameters:
 +  snes - the solver.  X - The last solution
 .  Y - The full step direction
--  W - The updated solution, W = X + tao*Y for some tao
+-  W - The updated solution, W = X - Y
 
    Output Parameters:
-.  changed_W - Indicator if the new candidate solution W has been changed.
++  changed_Y - indicator if step has been changed
+-  changed_W - Indicator if the new candidate solution W has been changed.
 
    Notes:
-     If Y is changed then W is recomputed as X + tao*Y where tao is the current update value in SNESNEWTONTR
+     If Y is changed then W is recomputed as X - Y
 
    Level: developer
 
 .seealso: SNESNewtonTRSetPostCheck(), SNESNewtonTRGetPostCheck()
 @*/
-static PetscErrorCode SNESNewtonTRPostCheck(SNES snes,Vec X,Vec Y,Vec W,PetscBool *changed_W)
+static PetscErrorCode SNESNewtonTRPostCheck(SNES snes,Vec X,Vec Y,Vec W,PetscBool *changed_Y,PetscBool *changed_W)
 {
   SNES_NEWTONTR  *tr = (SNES_NEWTONTR*)snes->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  *changed_Y = PETSC_FALSE;
   *changed_W = PETSC_FALSE;
   if (tr->postcheck) {
-    ierr = (*tr->postcheck)(snes,X,Y,W,changed_W,tr->postcheckctx);CHKERRQ(ierr);
+    ierr = (*tr->postcheck)(snes,X,Y,W,changed_Y,changed_W,tr->postcheckctx);CHKERRQ(ierr);
+    PetscValidLogicalCollectiveBool(snes,*changed_Y,5);
     PetscValidLogicalCollectiveBool(snes,*changed_W,6);
   }
   PetscFunctionReturn(0);
@@ -166,7 +255,7 @@ static PetscErrorCode SNESNewtonTRPostCheck(SNES snes,Vec X,Vec Y,Vec W,PetscBoo
 static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
 {
   SNES_NEWTONTR            *neP = (SNES_NEWTONTR*)snes->data;
-  Vec                      X,F,Y,G,Ytmp;
+  Vec                      X,F,Y,G,Ytmp,W;
   PetscErrorCode           ierr;
   PetscInt                 maxits,i,lits;
   PetscReal                rho,fnorm,gnorm,gpnorm,xnorm=0,delta,nrm,ynorm,norm1;
@@ -186,6 +275,7 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
   Y      = snes->work[0];               /* work vectors */
   G      = snes->work[1];
   Ytmp   = snes->work[2];
+  W      = snes->work[3];
 
   ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->iter = 0;
@@ -242,6 +332,7 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
     ierr  = VecNorm(Ytmp,NORM_2,&nrm);CHKERRQ(ierr);
     norm1 = nrm;
     while (1) {
+      PetscBool changed_y;
       PetscBool changed_w;
       ierr = VecCopy(Ytmp,Y);CHKERRQ(ierr);
       nrm  = norm1;
@@ -260,10 +351,13 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
         ierr   = PetscInfo(snes,"Direction is in Trust Region\n");CHKERRQ(ierr);
         ynorm  = nrm;
       }
+      /* PreCheck() allows for updates to Y prior to W <- X - Y */
+      ierr = SNESNewtonTRPreCheck(snes,X,Y,&changed_y);CHKERRQ(ierr);
+      ierr = VecWAXPY(W,-1.0,Y,X);CHKERRQ(ierr);         /* W <- X - Y */
+      ierr = SNESNewtonTRPostCheck(snes,X,Y,W,&changed_y,&changed_w);CHKERRQ(ierr);
+      if (changed_y) ierr = VecWAXPY(W,-1.0,Y,X);CHKERRQ(ierr);
       ierr = VecCopy(Y,snes->vec_sol_update);CHKERRQ(ierr);
-      ierr = VecAYPX(Y,-1.0,X);CHKERRQ(ierr);            /* Y <- X - Y */
-      ierr = SNESNewtonTRPostCheck(snes,X,Ytmp,Y,&changed_w);CHKERRQ(ierr);
-      ierr = SNESComputeFunction(snes,Y,G);CHKERRQ(ierr); /*  F(X) */
+      ierr = SNESComputeFunction(snes,W,G);CHKERRQ(ierr); /*  F(X) */
       ierr = VecNorm(G,NORM_2,&gnorm);CHKERRQ(ierr);      /* gnorm <- || g || */
       SNESCheckFunctionNorm(snes,gnorm);
       if (fnorm == gpnorm) rho = 0.0;
@@ -296,7 +390,7 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
       /* Update function and solution vectors */
       fnorm = gnorm;
       ierr  = VecCopy(G,F);CHKERRQ(ierr);
-      ierr  = VecCopy(Y,X);CHKERRQ(ierr);
+      ierr  = VecCopy(W,X);CHKERRQ(ierr);
       /* Monitor convergence */
       ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
       snes->iter = i+1;
@@ -328,7 +422,7 @@ static PetscErrorCode SNESSetUp_NEWTONTR(SNES snes)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = SNESSetWorkVecs(snes,3);CHKERRQ(ierr);
+  ierr = SNESSetWorkVecs(snes,4);CHKERRQ(ierr);
   ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

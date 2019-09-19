@@ -2716,6 +2716,7 @@ PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B,PetscInt bs,const Pet
   PetscScalar    *values=0;
   PetscBool      roworiented = ((Mat_MPIBAIJ*)B->data)->roworiented;
   PetscErrorCode ierr;
+  PetscBool      nooffprocentries;
 
   PetscFunctionBegin;
   ierr   = PetscLayoutSetBlockSize(B->rmap,bs);CHKERRQ(ierr);
@@ -2769,8 +2770,12 @@ PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B,PetscInt bs,const Pet
   }
 
   if (!V) { ierr = PetscFree(values);CHKERRQ(ierr); }
+  nooffprocentries    = B->nooffprocentries;
+  B->nooffprocentries = PETSC_TRUE;
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  B->nooffprocentries = nooffprocentries;
+
   ierr = MatSetOption(B,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

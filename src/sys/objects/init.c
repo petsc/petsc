@@ -304,7 +304,6 @@ PetscErrorCode  PetscEnd(void)
 }
 
 PetscBool PetscOptionsPublish = PETSC_FALSE;
-PETSC_INTERN PetscErrorCode PetscSetUseTrMalloc_Private(void);
 PETSC_INTERN PetscErrorCode PetscSetUseHBWMalloc_Private(void);
 PETSC_INTERN PetscBool      petscsetmallocvisited;
 static       char           emacsmachinename[256];
@@ -347,9 +346,6 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   int               i;
   PetscMPIInt       rank;
   char              version[256],helpoptions[256];
-#if !defined(PETSC_HAVE_THREADSAFETY)
-  PetscReal         logthreshold;
-#endif
 #if defined(PETSC_USE_LOG)
   PetscViewerFormat format;
   PetscBool         flg4 = PETSC_FALSE;
@@ -362,46 +358,52 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
 #if !defined(PETSC_HAVE_THREADSAFETY)
-  /*
+  if (!(PETSC_RUNNING_ON_VALGRIND)) {
+    /*
       Setup the memory management; support for tracing malloc() usage
-  */
-  ierr = PetscOptionsHasName(NULL,NULL,"-malloc_log",&flg3);CHKERRQ(ierr);
-  logthreshold = 0.0;
-  ierr = PetscOptionsGetReal(NULL,NULL,"-malloc_log_threshold",&logthreshold,&flg1);CHKERRQ(ierr);
-  if (flg1) flg3 = PETSC_TRUE;
+    */
+    PetscBool         mdebug = PETSC_FALSE, eachcall = PETSC_FALSE, initializenan = PETSC_FALSE, mlog = PETSC_FALSE;
+
 #if defined(PETSC_USE_DEBUG)
-  ierr = PetscOptionsGetBool(NULL,NULL,"-malloc",&flg1,&flg2);CHKERRQ(ierr);
-  if ((!flg2 || flg1) && !petscsetmallocvisited) {
-    if (flg2 || !(PETSC_RUNNING_ON_VALGRIND)) {
-      /* turn off default -malloc if valgrind is being used */
-      ierr = PetscSetUseTrMalloc_Private();CHKERRQ(ierr);
+    mdebug        = PETSC_TRUE;
+    initializenan = PETSC_TRUE;
+    ierr   = PetscOptionsHasName(NULL,NULL,"-malloc_test",&flg1);CHKERRQ(ierr);
+#else
+    /* don't warn about unused option */
+    ierr = PetscOptionsHasName(NULL,NULL,"-malloc_test",&flg1);CHKERRQ(ierr);
+    flg1 = PETSC_FALSE;
+#endif
+    ierr = PetscOptionsGetBool(NULL,NULL,"-malloc_debug",&flg2,&flg3);CHKERRQ(ierr);
+    if (flg1 || flg2) {
+      mdebug        = PETSC_TRUE;
+      eachcall      = PETSC_TRUE;
+      initializenan = PETSC_TRUE;
+    } else if (flg3 && !flg2) {
+      mdebug        = PETSC_FALSE;
+      eachcall      = PETSC_FALSE;
+      initializenan = PETSC_FALSE;
+    }
+
+    ierr = PetscOptionsHasName(NULL,NULL,"-malloc_view",&mlog);CHKERRQ(ierr);
+    if (mlog) {
+      mdebug = PETSC_TRUE;
+    }
+    /* the next line is deprecated */
+    ierr = PetscOptionsGetBool(NULL,NULL,"-malloc",&mdebug,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,NULL,"-malloc_dump",&mdebug,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,NULL,"-log_view_memory",&mdebug,NULL);CHKERRQ(ierr);
+    if (mdebug) {
+      ierr = PetscMallocSetDebug(eachcall,initializenan);CHKERRQ(ierr);
+    }
+    if (mlog) {
+      PetscReal logthreshold = 0;
+      ierr = PetscOptionsGetReal(NULL,NULL,"-malloc_view_threshold",&logthreshold,NULL);CHKERRQ(ierr);
+      ierr = PetscMallocViewSet(logthreshold);CHKERRQ(ierr);
     }
   }
-#else
-  ierr = PetscOptionsGetBool(NULL,NULL,"-malloc_dump",&flg1,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-malloc",&flg2,NULL);CHKERRQ(ierr);
-  if (flg1 || flg2 || flg3) {ierr = PetscSetUseTrMalloc_Private();CHKERRQ(ierr);}
-#endif
-  if (flg3) {
-    ierr = PetscMallocSetDumpLogThreshold((PetscLogDouble)logthreshold);CHKERRQ(ierr);
-  }
+
   ierr = PetscOptionsGetBool(NULL,NULL,"-malloc_coalesce",&flg1,&flg2);CHKERRQ(ierr);
   if (flg2) {ierr = PetscMallocSetCoalesce(flg1);CHKERRQ(ierr);}
-  flg1 = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-malloc_debug",&flg1,NULL);CHKERRQ(ierr);
-  if (flg1) {
-    ierr = PetscSetUseTrMalloc_Private();CHKERRQ(ierr);
-    ierr = PetscMallocDebug(PETSC_TRUE);CHKERRQ(ierr);
-  }
-  flg1 = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-malloc_test",&flg1,NULL);CHKERRQ(ierr);
-#if defined(PETSC_USE_DEBUG)
-  if (flg1 && !PETSC_RUNNING_ON_VALGRIND) {
-    ierr = PetscSetUseTrMalloc_Private();CHKERRQ(ierr);
-    ierr = PetscMallocSetDumpLog();CHKERRQ(ierr);
-    ierr = PetscMallocDebug(PETSC_TRUE);CHKERRQ(ierr);
-  }
-#endif
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,NULL,"-malloc_hbw",&flg1,NULL);CHKERRQ(ierr);
   /* ignore this option if malloc is already set */
@@ -626,11 +628,6 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     } else {
       ierr = PetscLogDefaultBegin();CHKERRQ(ierr);
     }
-    PetscLogMemory = PETSC_FALSE;
-    ierr = PetscOptionsGetBool(NULL,NULL,"-log_view_memory",&PetscLogMemory,NULL);CHKERRQ(ierr);
-    if (PetscLogMemory) {
-      ierr = PetscSetUseTrMalloc_Private();CHKERRQ(ierr);
-    }
   }
   if (flg4 && format == PETSC_VIEWER_ASCII_XML) {
     PetscReal threshold = PetscRealConstant(0.01);
@@ -674,11 +671,11 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     ierr = (*PetscHelpPrintf)(comm," -fp_trap: stop on floating point exceptions\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"           note on IBM RS6000 this slows run greatly\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -malloc_dump <optional filename>: dump list of unfreed memory at conclusion\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm," -malloc: use our error checking malloc\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm," -malloc no: don't use error checking malloc\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -malloc: use PETSc error checking malloc (deprecated, use -malloc_debug)\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -malloc no: don't use PETSc error checking malloc (deprecated, use -malloc_debug no)\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -malloc_info: prints total memory usage\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm," -malloc_log: keeps log of all memory allocations\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm," -malloc_debug: enables extended checking for memory corruption\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -malloc_view <optional filename>: keeps log of all memory allocations, displays in PetscFinalize()\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -malloc_debug <true or false>: enables or disables extended checking for memory corruption\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -options_view: dump list of options inputted\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -options_left: dump list of unused options\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -options_left no: don't dump list of unused options\n");CHKERRQ(ierr);

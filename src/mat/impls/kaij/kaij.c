@@ -1317,18 +1317,20 @@ PetscErrorCode  MatCreateKAIJ(Mat A,PetscInt p,PetscInt q,const PetscScalar S[],
 }
 
 /*MC
-  MATKAIJ - MATKAIJ = "kaij" - A matrix type to be used to evaluate matrices of the following form:
-
-    [I \otimes S + A \otimes T]
-
+  MATKAIJ - MATKAIJ = "kaij" - A matrix type to be used to evaluate matrices of form
+    [I \otimes S + A \otimes T],
   where
-    S is a dense (p \times q) matrix
-    T is a dense (p \times q) matrix
-    A is an AIJ  (n \times n) matrix
-    I is the identity matrix
-  The resulting matrix is (np \times nq)
+    S is a dense (p \times q) matrix,
+    T is a dense (p \times q) matrix,
+    A is an AIJ  (n \times n) matrix,
+    and I is the identity matrix.
+  The resulting matrix is (np \times nq).
   
   S and T are always stored independently on all processes as PetscScalar arrays in column-major format.
+
+  Notes:
+  A linear system with multiple right-hand sides, AX = B, can be expressed in the KAIJ-friendly form of (A \otimes I) x = b,
+  where x and b are column vectors containing the row-major representations of X and B.
 
   Level: advanced
 

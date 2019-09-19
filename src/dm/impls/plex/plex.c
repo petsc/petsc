@@ -6603,7 +6603,7 @@ PetscErrorCode DMPlexCreateVertexNumbering_Internal(DM dm, PetscBool includeHybr
 }
 
 /*@
-  DMPlexGetVertexNumbering - Get a global certex numbering for all vertices on this process
+  DMPlexGetVertexNumbering - Get a global vertex numbering for all vertices on this process
 
   Input Parameter:
 . dm   - The DMPlex object
@@ -7106,7 +7106,7 @@ typedef struct cell_stats
   PetscInt  count;
 } cell_stats_t;
 
-static void cell_stats_reduce(void *a, void *b, int * len, MPI_Datatype *datatype)
+static void MPIAPI cell_stats_reduce(void *a, void *b, int * len, MPI_Datatype *datatype)
 {
   PetscInt i, N = *len;
 

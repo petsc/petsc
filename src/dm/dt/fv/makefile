@@ -1,7 +1,7 @@
 
 ALL: lib
 
-SOURCEH   = ../../../../include/petscdt.h ../../../../include/petscfv.h ../../../../include/petscfvtypes.h
+SOURCEH   = ../../../../include/petscfv.h ../../../../include/petscfvtypes.h
 DIRS      = interface
 LOCDIR    = src/dm/dt/fv/
 MANSEC    = DM

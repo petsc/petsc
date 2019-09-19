@@ -197,7 +197,7 @@ PetscErrorCode  PetscViewerStringGetStringRead(PetscViewer viewer,const char *st
 .   string - the string to print data into
 -   len - the length of the string
 
-  Notes: The function does not copy the string, it uses it directly therefor you cannot free
+  Notes: The function does not copy the string, it uses it directly therefore you cannot free
    the string until the viewer is destroyed. If you call PetscViewerStringSetOwnString() the ownership
    passes to the viewer and it will be responsable for freeing it. In this case the string must be
    obtained with PetscMalloc().

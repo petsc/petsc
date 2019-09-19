@@ -104,6 +104,8 @@ int main(int argc,char **args)
     ierr = PCHMGSetInnerPCType(pc,PCGAMG);CHKERRQ(ierr);
     ierr = PCHMGSetReuseInterpolation(pc,PETSC_TRUE);CHKERRQ(ierr);
     ierr = PCHMGSetUseSubspaceCoarsening(pc,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = PCHMGUseMatMAIJ(pc,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PCHMGSetCoarseningComponent(pc,0);CHKERRQ(ierr);
   }
 
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
@@ -204,5 +206,10 @@ int main(int argc,char **args)
       suffix: reuse
       nsize: 2
       args: -ksp_monitor -ksp_rtol 1e-6   -pc_type hmg -pc_hmg_reuse_interpolation 1 -test_reuse_interpolation 1 -hmg_inner_pc_type gamg
+
+   test:
+      suffix: component
+      nsize: 2
+      args: -ksp_monitor -ksp_rtol 1e-6 -pc_type hmg -pc_hmg_coarsening_component 2  -pc_hmg_use_subspace_coarsening 1 -bs 4 -hmg_inner_pc_type gamg
 
 TEST*/

@@ -44,6 +44,8 @@ PetscLogEvent PC_BDDC_Topology[PETSC_PCBDDC_MAXLEVELS];
 PetscLogEvent PC_BDDC_LocalSolvers[PETSC_PCBDDC_MAXLEVELS];
 PetscLogEvent PC_BDDC_LocalWork[PETSC_PCBDDC_MAXLEVELS];
 PetscLogEvent PC_BDDC_CorrectionSetUp[PETSC_PCBDDC_MAXLEVELS];
+PetscLogEvent PC_BDDC_ApproxSetUp[PETSC_PCBDDC_MAXLEVELS];
+PetscLogEvent PC_BDDC_ApproxApply[PETSC_PCBDDC_MAXLEVELS];
 PetscLogEvent PC_BDDC_CoarseSetUp[PETSC_PCBDDC_MAXLEVELS];
 PetscLogEvent PC_BDDC_CoarseSolver[PETSC_PCBDDC_MAXLEVELS];
 PetscLogEvent PC_BDDC_AdaptiveSetUp[PETSC_PCBDDC_MAXLEVELS];
@@ -75,7 +77,8 @@ PetscErrorCode PCSetFromOptions_BDDC(PetscOptionItems *PetscOptionsObject,PC pc)
   ierr = PetscOptionsBool("-pc_bddc_use_edges","Use or not edge constraints in coarse space","none",pcbddc->use_edges,&pcbddc->use_edges,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_use_faces","Use or not face constraints in coarse space","none",pcbddc->use_faces,&pcbddc->use_faces,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_bddc_vertex_size","Connected components smaller or equal to vertex size will be considered as primal vertices","none",pcbddc->vertex_size,&pcbddc->vertex_size,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-pc_bddc_use_true_nnsp","Use near null space attached to the matrix without modifications","none",pcbddc->use_nnsp_true,&pcbddc->use_nnsp_true,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_bddc_use_nnsp","Use near null space attached to the matrix to compute constraints","none",pcbddc->use_nnsp,&pcbddc->use_nnsp,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_bddc_use_nnsp_true","Use near null space attached to the matrix to compute constraints as is","none",pcbddc->use_nnsp_true,&pcbddc->use_nnsp_true,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_use_qr_single","Use QR factorization for single constraints on cc (QR is always used when multiple constraints are present)","none",pcbddc->use_qr_single,&pcbddc->use_qr_single,NULL);CHKERRQ(ierr);
   /* Change of basis */
   ierr = PetscOptionsBool("-pc_bddc_use_change_of_basis","Use or not internal change of basis on local edge nodes","none",pcbddc->use_change_of_basis,&pcbddc->use_change_of_basis,NULL);CHKERRQ(ierr);
@@ -2995,6 +2998,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   ierr = PCBDDCGraphCreate(&pcbddc->mat_graph);CHKERRQ(ierr);
 
   /* BDDC nonzero defaults */
+  pcbddc->use_nnsp                  = PETSC_TRUE;
   pcbddc->use_local_adj             = PETSC_TRUE;
   pcbddc->use_vertices              = PETSC_TRUE;
   pcbddc->use_edges                 = PETSC_TRUE;
@@ -3081,6 +3085,8 @@ PetscErrorCode PCBDDCInitializePackage(void)
   ierr = PetscLogEventRegister("PCBDDCLKSP",PC_CLASSID,&PC_BDDC_LocalSolvers[0]);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("PCBDDCLWor",PC_CLASSID,&PC_BDDC_LocalWork[0]);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("PCBDDCCorr",PC_CLASSID,&PC_BDDC_CorrectionSetUp[0]);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("PCBDDCASet",PC_CLASSID,&PC_BDDC_ApproxSetUp[0]);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("PCBDDCAApp",PC_CLASSID,&PC_BDDC_ApproxApply[0]);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("PCBDDCCSet",PC_CLASSID,&PC_BDDC_CoarseSetUp[0]);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("PCBDDCCKSP",PC_CLASSID,&PC_BDDC_CoarseSolver[0]);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("PCBDDCAdap",PC_CLASSID,&PC_BDDC_AdaptiveSetUp[0]);CHKERRQ(ierr);
@@ -3097,6 +3103,10 @@ PetscErrorCode PCBDDCInitializePackage(void)
     ierr = PetscLogEventRegister(ename,PC_CLASSID,&PC_BDDC_LocalWork[i]);CHKERRQ(ierr);
     ierr = PetscSNPrintf(ename,sizeof(ename),"PCBDDCCorr l%02d",i);CHKERRQ(ierr);
     ierr = PetscLogEventRegister(ename,PC_CLASSID,&PC_BDDC_CorrectionSetUp[i]);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(ename,sizeof(ename),"PCBDDCASet l%02d",i);CHKERRQ(ierr);
+    ierr = PetscLogEventRegister(ename,PC_CLASSID,&PC_BDDC_ApproxSetUp[i]);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(ename,sizeof(ename),"PCBDDCAApp l%02d",i);CHKERRQ(ierr);
+    ierr = PetscLogEventRegister(ename,PC_CLASSID,&PC_BDDC_ApproxApply[i]);CHKERRQ(ierr);
     ierr = PetscSNPrintf(ename,sizeof(ename),"PCBDDCCSet l%02d",i);CHKERRQ(ierr);
     ierr = PetscLogEventRegister(ename,PC_CLASSID,&PC_BDDC_CoarseSetUp[i]);CHKERRQ(ierr);
     ierr = PetscSNPrintf(ename,sizeof(ename),"PCBDDCCKSP l%02d",i);CHKERRQ(ierr);

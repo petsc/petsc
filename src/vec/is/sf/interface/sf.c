@@ -1,4 +1,5 @@
 #include <petsc/private/sfimpl.h> /*I "petscsf.h" I*/
+#include <petsc/private/hashseti.h>
 #include <petscctable.h>
 
 #if defined(PETSC_USE_DEBUG)
@@ -196,6 +197,34 @@ PetscErrorCode PetscSFDestroy(PetscSF *sf)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PetscSFCheckGraphValid_Private(PetscSF sf)
+{
+#if defined(PETSC_USE_DEBUG)
+  PetscInt           i, nleaves;
+  PetscMPIInt        size;
+  const PetscInt    *ilocal;
+  const PetscSFNode *iremote;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  if (!sf->graphset) PetscFunctionReturn(0);
+  ierr = PetscSFGetGraph(sf,NULL,&nleaves,&ilocal,&iremote);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)sf),&size);CHKERRQ(ierr);
+  for (i = 0; i < nleaves; i++) {
+    const PetscInt rank = iremote[i].rank;
+    const PetscInt remote = iremote[i].index;
+    const PetscInt leaf = ilocal ? ilocal[i] : i;
+    if (rank < 0 || rank >= size) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Provided rank (%D) for remote %D is invalid, should be in [0, %d)",rank,i,size);
+    if (remote < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Provided index (%D) for remote %D is invalid, should be >= 0",remote,i);
+    if (leaf < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Provided location (%D) for leaf %D is invalid, should be >= 0",leaf,i);
+  }
+  PetscFunctionReturn(0);
+#else
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+#endif
+}
+
 /*@
    PetscSFSetUp - set up communication structures
 
@@ -216,6 +245,7 @@ PetscErrorCode PetscSFSetUp(PetscSF sf)
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   PetscSFCheckGraphSet(sf,1);
   if (sf->setupcalled) PetscFunctionReturn(0);
+  ierr = PetscSFCheckGraphValid_Private(sf);CHKERRQ(ierr);
   if (!((PetscObject)sf)->type_name) {ierr = PetscSFSetType(sf,PETSCSFBASIC);CHKERRQ(ierr);}
   ierr = PetscLogEventBegin(PETSCSF_SetUp,sf,0,0,0);CHKERRQ(ierr);
   if (sf->ops->SetUp) {ierr = (*sf->ops->SetUp)(sf);CHKERRQ(ierr);}
@@ -292,9 +322,11 @@ PetscErrorCode PetscSFSetRankOrder(PetscSF sf,PetscBool flg)
 +  sf - star forest
 .  nroots - number of root vertices on the current process (these are possible targets for other process to attach leaves)
 .  nleaves - number of leaf vertices on the current process, each of these references a root on any process
-.  ilocal - locations of leaves in leafdata buffers, pass NULL for contiguous storage
+.  ilocal - locations of leaves in leafdata buffers, pass NULL for contiguous storage (locations must be >= 0, enforced
+during setup in debug mode)
 .  localmode - copy mode for ilocal
-.  iremote - remote locations of root vertices for each leaf on the current process
+.  iremote - remote locations of root vertices for each leaf on the current process (locations must be >= 0, enforced
+during setup in debug mode)
 -  remotemode - copy mode for iremote
 
    Level: intermediate
@@ -305,6 +337,9 @@ PetscErrorCode PetscSFSetRankOrder(PetscSF sf,PetscBool flg)
    Developers Note: Local indices which are the identity permutation in the range [0,nleaves) are discarded as they
    encode contiguous storage. In such case, if localmode is PETSC_OWN_POINTER, the memory is deallocated as it is not
    needed
+
+   Developers Note: This object does not necessarily encode a true star forest in the graph theoretic sense, since leaf
+   indices are not required to be unique. Some functions, however, rely on unique leaf indices (checked in debug mode).
 
 .seealso: PetscSFCreate(), PetscSFView(), PetscSFGetGraph()
 @*/
@@ -1663,6 +1698,30 @@ PetscErrorCode PetscSFScatterEnd(PetscSF sf,MPI_Datatype unit,const void *multir
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PetscSFCheckLeavesUnique_Private(PetscSF sf)
+{
+#if defined(PETSC_USE_DEBUG)
+  PetscInt        i, n, nleaves;
+  const PetscInt *ilocal = NULL;
+  PetscHSetI      seen;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSFGetGraph(sf,NULL,&nleaves,&ilocal,NULL);CHKERRQ(ierr);
+  ierr = PetscHSetICreate(&seen);CHKERRQ(ierr);
+  for (i = 0; i < nleaves; i++) {
+    const PetscInt leaf = ilocal ? ilocal[i] : i;
+    ierr = PetscHSetIAdd(seen,leaf);CHKERRQ(ierr);
+  }
+  ierr = PetscHSetIGetSize(seen,&n);CHKERRQ(ierr);
+  if (n != nleaves) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Provided leaves have repeated values: all leaves must be unique");
+  ierr = PetscHSetIDestroy(&seen);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+#else
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+#endif
+}
 /*@
   PetscSFCompose - Compose a new PetscSF by putting the second SF under the first one in a top (roots) down (leaves) view
 
@@ -1675,6 +1734,10 @@ PetscErrorCode PetscSFScatterEnd(PetscSF sf,MPI_Datatype unit,const void *multir
 
   Level: developer
 
+  Notes:
+  For the resulting composed SF to be valid, the input SFs must be true star forests: the leaves must be unique. This is
+  checked in debug mode.
+
 .seealso: PetscSF, PetscSFComposeInverse(), PetscSFGetGraph(), PetscSFSetGraph()
 @*/
 PetscErrorCode PetscSFCompose(PetscSF sfA,PetscSF sfB,PetscSF *sfBA)
@@ -1682,9 +1745,9 @@ PetscErrorCode PetscSFCompose(PetscSF sfA,PetscSF sfB,PetscSF *sfBA)
   PetscErrorCode    ierr;
   MPI_Comm          comm;
   const PetscSFNode *remotePointsA,*remotePointsB;
-  PetscSFNode       *remotePointsBA;
-  const PetscInt    *localPointsA,*localPointsB;
-  PetscInt          numRootsA,numLeavesA,numRootsB,numLeavesB,minleaf,maxleaf;
+  PetscSFNode       *remotePointsBA=NULL,*reorderedRemotePointsA = NULL,*leafdataB;
+  const PetscInt    *localPointsA,*localPointsB,*localPointsBA;
+  PetscInt          i,numRootsA,numLeavesA,numRootsB,numLeavesB,minleaf,maxleaf;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sfA,PETSCSF_CLASSID,1);
@@ -1696,13 +1759,36 @@ PetscErrorCode PetscSFCompose(PetscSF sfA,PetscSF sfB,PetscSF *sfBA)
   ierr = PetscSFGetGraph(sfA,&numRootsA,&numLeavesA,&localPointsA,&remotePointsA);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sfB,&numRootsB,&numLeavesB,&localPointsB,&remotePointsB);CHKERRQ(ierr);
   ierr = PetscSFGetLeafRange(sfA,&minleaf,&maxleaf);CHKERRQ(ierr);
-  if (maxleaf+1-minleaf != numLeavesA) SETERRQ(comm,PETSC_ERR_ARG_INCOMP,"The first SF can not have sparse local space");
   if (numRootsB != numLeavesA) SETERRQ(comm,PETSC_ERR_ARG_INCOMP,"The second SF's number of roots must be equal to the first SF's number of leaves");
-  ierr = PetscMalloc1(numLeavesB,&remotePointsBA);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(sfB,MPIU_2INT,remotePointsA,remotePointsBA);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sfB,MPIU_2INT,remotePointsA,remotePointsBA);CHKERRQ(ierr);
+  if (maxleaf+1 != numLeavesA || minleaf) SETERRQ(comm,PETSC_ERR_ARG_INCOMP,"The first SF can not have sparse local space");
+  /* The above check is fast, but not sufficient, since we cannot guarantee that the SF has unique leaves. So in debug
+   mode, check properly. */
+  ierr = PetscSFCheckLeavesUnique_Private(sfA);CHKERRQ(ierr);
+  if (localPointsA) {
+    /* Local space is dense permutation of identity. Need to rewire order of the remote points */
+    ierr = PetscMalloc1(numLeavesA,&reorderedRemotePointsA);CHKERRQ(ierr);
+    for (i=0; i<numLeavesA; i++) reorderedRemotePointsA[localPointsA[i]-minleaf] = remotePointsA[i];
+    remotePointsA = reorderedRemotePointsA;
+  }
+  ierr = PetscSFGetLeafRange(sfB,&minleaf,&maxleaf);CHKERRQ(ierr);
+  ierr = PetscMalloc1(maxleaf-minleaf+1,&leafdataB);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sfB,MPIU_2INT,remotePointsA,leafdataB-minleaf);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sfB,MPIU_2INT,remotePointsA,leafdataB-minleaf);CHKERRQ(ierr);
+  ierr = PetscFree(reorderedRemotePointsA);CHKERRQ(ierr);
+
+  /* sfB's leaves must be unique, otherwise BcastAndOp(B o A) != BcastAndOp(B) o BcastAndOp(A) */
+  ierr = PetscSFCheckLeavesUnique_Private(sfB);CHKERRQ(ierr);
+  if (minleaf == 0 && maxleaf + 1 == numLeavesB) { /* Local space of sfB is an identity or permutation */
+    localPointsBA  = NULL;
+    remotePointsBA = leafdataB;
+  } else {
+    localPointsBA  = localPointsB;
+    ierr = PetscMalloc1(numLeavesB,&remotePointsBA);CHKERRQ(ierr);
+    for (i=0; i<numLeavesB; i++) remotePointsBA[i] = leafdataB[localPointsB[i]-minleaf];
+    ierr = PetscFree(leafdataB);CHKERRQ(ierr);
+  }
   ierr = PetscSFCreate(comm, sfBA);CHKERRQ(ierr);
-  ierr = PetscSFSetGraph(*sfBA,numRootsA,numLeavesB,localPointsB,PETSC_COPY_VALUES,remotePointsBA,PETSC_OWN_POINTER);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(*sfBA,numRootsA,numLeavesB,localPointsBA,PETSC_COPY_VALUES,remotePointsBA,PETSC_OWN_POINTER);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

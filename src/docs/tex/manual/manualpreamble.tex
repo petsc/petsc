@@ -34,7 +34,7 @@
 % General/default listing settings are for C code
 
 % Note : $ (not used in C) is an escape character,
-% so using this for languages that include this will give some 
+% so using this for languages that include this will give some
 % strange errors as you escape to LaTeX
 
 % Note : When using \lstinline inside a table,
@@ -71,6 +71,32 @@
 {\lstset{escapechar=,language=make,basicstyle=\ttfamily}}
 {}
 
+\usepackage{color}
+\definecolor{deepblue}{rgb}{0,0,0.5}
+\definecolor{deepred}{rgb}{0.6,0,0}
+\definecolor{deepgreen}{rgb}{0,0.5,0}
+
+% Default fixed font does not support bold face
+\DeclareFixedFont{\ttb}{T1}{cmtt}{bx}{n}{10} % for bold
+\DeclareFixedFont{\ttm}{T1}{cmtt}{m}{n}{10}  % for normal
+\DeclareFixedFont{\sttb}{T1}{cmtt}{bx}{n}{8} % for bold
+\DeclareFixedFont{\sttm}{T1}{cmtt}{m}{n}{8}  % for normal
+
+\lstnewenvironment{pythonlisting}
+{\lstset{
+language=Python,
+basicstyle=\sttm,
+otherkeywords={self},             % Add keywords here
+keywordstyle=\sttb\color{deepblue},
+emph={MyClass,__init__},          % Custom highlighting
+emphstyle=\sttb\color{deepred},    % Custom highlighting style
+commentstyle=\sttm\color{deepgreen},
+frame=tb,                         % Any extra options here
+showstringspaces=false,           %
+columns=fullflexible              % Necessary for proper cut/paste
+}}
+{}
+
 % Set all nested itemize labels to be the same
 \renewcommand{\labelitemi}{$\bullet$}
 \renewcommand{\labelitemii}{$\bullet$}
@@ -84,13 +110,13 @@
   \setlength{\itemsep}{1pt}
   \setlength{\parskip}{1pt}
   \setlength{\parsep}{1pt} }
-{ \end{itemize} } 
+{ \end{itemize} }
 \newenvironment{tightenumerate}
 { \begin{enumerate}
   \setlength{\itemsep}{1pt}
   \setlength{\parskip}{1pt}
   \setlength{\parsep}{1pt} }
-{ \end{enumerate} } 
+{ \end{enumerate} }
 
 \setlength{\textwidth}{6.5in}
 \setlength{\oddsidemargin}{0.0in}

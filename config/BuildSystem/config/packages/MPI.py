@@ -372,8 +372,8 @@ to remove this warning message *****')
     if not hasattr(self.compilers, 'CXX'):
       return 0
     self.libraries.pushLanguage('Cxx')
-    oldFlags = self.compilers.CPPFLAGS
-    self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
+    oldFlags = self.compilers.CXXPPFLAGS
+    self.compilers.CXXPPFLAGS += ' '+self.headers.toString(self.include)
     self.log.write('Checking for header mpi.h\n')
     if not self.libraries.checkCompile(includes = '#include <mpi.h>\n'):
       raise RuntimeError('C++ error! mpi.h could not be located at: '+str(self.include))
@@ -381,7 +381,7 @@ to remove this warning message *****')
     self.log.write('Checking for C++ MPI_Finalize()\n')
     if not self.libraries.check(self.lib, 'MPI_Finalize', prototype = '#include <mpi.h>', call = 'int ierr;\nierr = MPI_Finalize();', cxxMangle = 1):
       raise RuntimeError('C++ error! MPI_Finalize() could not be located!')
-    self.compilers.CPPFLAGS = oldFlags
+    self.compilers.CXXPPFLAGS = oldFlags
     self.libraries.popLanguage()
     return
 
@@ -391,8 +391,8 @@ to remove this warning message *****')
       return 0
     # Fortran compiler is being used - so make sure mpif.h exists
     self.libraries.pushLanguage('FC')
-    oldFlags = self.compilers.CPPFLAGS
-    self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
+    oldFlags = self.compilers.FPPFLAGS
+    self.compilers.FPPFLAGS += ' '+self.headers.toString(self.include)
     self.log.write('Checking for header mpif.h\n')
     if not self.libraries.checkCompile(body = '#include "mpif.h"'):
       raise RuntimeError('Fortran error! mpif.h could not be located at: '+str(self.include))
@@ -406,7 +406,7 @@ to remove this warning message *****')
       if self.libraries.check(self.lib,'', call = '       use mpi\n       integer ierr,rank\n       call mpi_init(ierr)\n       call mpi_comm_rank(MPI_COMM_WORLD,rank,ierr)\n'):
         self.havef90module = 1
         self.addDefine('HAVE_MPI_F90MODULE', 1)
-    self.compilers.CPPFLAGS = oldFlags
+    self.compilers.FPPFLAGS = oldFlags
     self.libraries.popLanguage()
     return 0
 

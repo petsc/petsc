@@ -17,7 +17,7 @@ PetscClassId PETSC_SECTION_CLASSID;
 + comm - the MPI communicator
 - s    - pointer to the section
 
-  Level: developer
+  Level: beginner
 
   Notes:
   Typical calling sequence
@@ -78,7 +78,7 @@ PetscErrorCode PetscSectionCreate(MPI_Comm comm, PetscSection *s)
   Output Parameter:
 . newSection - the copy
 
-  Level: developer
+  Level: intermediate
 
 .seealso: PetscSection, PetscSectionCreate(), PetscSectionDestroy()
 @*/
@@ -162,7 +162,7 @@ PetscErrorCode PetscSectionCopy(PetscSection section, PetscSection newSection)
   Output Parameter:
 . newSection - the copy
 
-  Level: developer
+  Level: beginner
 
 .seealso: PetscSection, PetscSectionCreate(), PetscSectionDestroy()
 @*/
@@ -218,9 +218,9 @@ PetscErrorCode PetscSectionSetFromOptions(PetscSection s)
 - s2 - the second PetscSection
 
   Output Parameter:
-. congruent - PETSC_TRUE if the two sections are congruent, PETSC_FALSE otherwise 
+. congruent - PETSC_TRUE if the two sections are congruent, PETSC_FALSE otherwise
 
-  Level: developer
+  Level: intermediate
 
   Notes:
   Field names are disregarded.
@@ -388,7 +388,7 @@ PetscErrorCode PetscSectionSetNumFields(PetscSection s, PetscInt numFields)
   Output Parameter:
 . fieldName - the field name
 
-  Level: developer
+  Level: intermediate
 
 .seealso: PetscSectionSetFieldName()
 @*/
@@ -412,7 +412,7 @@ PetscErrorCode PetscSectionGetFieldName(PetscSection s, PetscInt field, const ch
 . field - the field number
 - fieldName - the field name
 
-  Level: developer
+  Level: intermediate
 
 .seealso: PetscSectionGetFieldName()
 @*/
@@ -974,6 +974,18 @@ PetscErrorCode PetscSectionAddFieldConstraintDof(PetscSection s, PetscInt point,
   PetscFunctionReturn(0);
 }
 
+/*@
+  PetscSectionSetUpBC - Setup the subsections describing boundary conditions.
+
+  Not collective
+
+  Input Parameter:
+. s - the PetscSection
+
+  Level: advanced
+
+.seealso: PetscSectionSetUp(), PetscSectionCreate()
+@*/
 PetscErrorCode PetscSectionSetUpBC(PetscSection s)
 {
   PetscErrorCode ierr;
@@ -1152,7 +1164,7 @@ PetscErrorCode PetscSectionGetConstrainedStorageSize(PetscSection s, PetscInt *s
 
   Note: This gives negative sizes and offsets to points not owned by this process
 
-  Level: developer
+  Level: intermediate
 
 .seealso: PetscSectionCreate()
 @*/
@@ -1254,7 +1266,7 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
 
   Note: This gives negative sizes and offsets to points not owned by this process
 
-  Level: developer
+  Level: advanced
 
 .seealso: PetscSectionCreate()
 @*/
@@ -1335,6 +1347,24 @@ PetscErrorCode PetscSectionCreateGlobalSectionCensored(PetscSection s, PetscSF s
   PetscFunctionReturn(0);
 }
 
+/*@
+  PetscSectionGetPointLayout - Get the PetscLayout associated with the section points
+
+  Collective on comm
+
+  Input Parameters:
++ comm - The MPI_Comm
+- s    - The PetscSection
+
+  Output Parameter:
+. layout - The point layout for the section
+
+  Note: This is usually caleld for the default global section.
+
+  Level: advanced
+
+.seealso: PetscSectionGetValueLayout(), PetscSectionCreate()
+@*/
 PetscErrorCode PetscSectionGetPointLayout(MPI_Comm comm, PetscSection s, PetscLayout *layout)
 {
   PetscInt       pStart, pEnd, p, localSize = 0;
@@ -1356,18 +1386,22 @@ PetscErrorCode PetscSectionGetPointLayout(MPI_Comm comm, PetscSection s, PetscLa
 }
 
 /*@
-  PetscSectionGetValueLayout - Get the PetscLayout associated with a section, usually the default global section.
+  PetscSectionGetValueLayout - Get the PetscLayout associated with the section dofs.
+
+  Collective on comm
 
   Input Parameters:
 + comm - The MPI_Comm
 - s    - The PetscSection
 
   Output Parameter:
-. layout - The layout for the section
+. layout - The dof layout for the section
 
-  Level: developer
+  Note: This is usually called for the default global section.
 
-.seealso: PetscSectionCreate()
+  Level: advanced
+
+.seealso: PetscSectionGetPointLayout(), PetscSectionCreate()
 @*/
 PetscErrorCode PetscSectionGetValueLayout(MPI_Comm comm, PetscSection s, PetscLayout *layout)
 {
@@ -1502,7 +1536,26 @@ PetscErrorCode PetscSectionSetFieldOffset(PetscSection s, PetscInt point, PetscI
   PetscFunctionReturn(0);
 }
 
-/* This gives the offset on a point of the field, ignoring constraints */
+/*@
+  PetscSectionGetFieldPointOffset - Return the offset on the given point for the dof associated with the given point.
+
+  Not collective
+
+  Input Parameters:
++ s - the PetscSection
+. point - the point
+- field - the field
+
+  Output Parameter:
+. offset - the offset
+
+  Note: This gives the offset on a point of the field, ignoring constraints, meaning starting at the first dof for
+        this point, what number is the first dof with this field.
+
+  Level: advanced
+
+.seealso: PetscSectionGetOffset(), PetscSectionCreate()
+@*/
 PetscErrorCode PetscSectionGetFieldPointOffset(PetscSection s, PetscInt point, PetscInt field, PetscInt *offset)
 {
   PetscInt       off, foff;
@@ -1556,21 +1609,40 @@ PetscErrorCode PetscSectionGetOffsetRange(PetscSection s, PetscInt *start, Petsc
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt numFields, const PetscInt fields[], PetscSection *subs)
+/*@
+  PetscSectionCreateSubsection - Create a new, smaller section composed of only the selected fields
+
+  Collective on s
+
+  Input Parameter:
++ s      - the PetscSection
+. len    - the number of subfields
+- fields - the subfield numbers
+
+  Output Parameter:
+. subs   - the subsection
+
+  Note: The section offsets now refer to a new, smaller vector.
+
+  Level: advanced
+
+.seealso: PetscSectionCreateSupersection(), PetscSectionCreate()
+@*/
+PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt len, const PetscInt fields[], PetscSection *subs)
 {
   PetscInt       nF, f, pStart, pEnd, p, maxCdof = 0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!numFields) PetscFunctionReturn(0);
+  if (!len) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   PetscValidPointer(fields, 3);
   PetscValidPointer(subs, 4);
   ierr = PetscSectionGetNumFields(s, &nF);CHKERRQ(ierr);
-  if (numFields > nF) SETERRQ2(PetscObjectComm((PetscObject) s), PETSC_ERR_ARG_WRONG, "Number of requested fields %D greater than number of fields %D", numFields, nF);
+  if (len > nF) SETERRQ2(PetscObjectComm((PetscObject) s), PETSC_ERR_ARG_WRONG, "Number of requested fields %D greater than number of fields %D", len, nF);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject) s), subs);CHKERRQ(ierr);
-  ierr = PetscSectionSetNumFields(*subs, numFields);CHKERRQ(ierr);
-  for (f = 0; f < numFields; ++f) {
+  ierr = PetscSectionSetNumFields(*subs, len);CHKERRQ(ierr);
+  for (f = 0; f < len; ++f) {
     const char *name   = NULL;
     PetscInt   numComp = 0;
 
@@ -1584,7 +1656,7 @@ PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt numFields, 
   for (p = pStart; p < pEnd; ++p) {
     PetscInt dof = 0, cdof = 0, fdof = 0, cfdof = 0;
 
-    for (f = 0; f < numFields; ++f) {
+    for (f = 0; f < len; ++f) {
       ierr = PetscSectionGetFieldDof(s, p, fields[f], &fdof);CHKERRQ(ierr);
       ierr = PetscSectionSetFieldDof(*subs, p, f, fdof);CHKERRQ(ierr);
       ierr = PetscSectionGetFieldConstraintDof(s, p, fields[f], &cfdof);CHKERRQ(ierr);
@@ -1609,7 +1681,7 @@ PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt numFields, 
         const PetscInt *oldIndices = NULL;
         PetscInt       fdof = 0, cfdof = 0, fc, numConst = 0, fOff = 0;
 
-        for (f = 0; f < numFields; ++f) {
+        for (f = 0; f < len; ++f) {
           PetscInt oldFoff = 0, oldf;
 
           ierr = PetscSectionGetFieldDof(s, p, fields[f], &fdof);CHKERRQ(ierr);
@@ -1634,6 +1706,24 @@ PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt numFields, 
   PetscFunctionReturn(0);
 }
 
+/*@
+  PetscSectionCreateSupersection - Create a new, larger section composed of the input sections
+
+  Collective on s
+
+  Input Parameters:
++ s     - the input sections
+- len   - the number of input sections
+
+  Output Parameter:
+. supers - the supersection
+
+  Note: The section offsets now refer to a new, larger vector.
+
+  Level: advanced
+
+.seealso: PetscSectionCreateSubsection(), PetscSectionCreate()
+@*/
 PetscErrorCode PetscSectionCreateSupersection(PetscSection s[], PetscInt len, PetscSection *supers)
 {
   PetscInt       Nf = 0, f, pStart = PETSC_MAX_INT, pEnd = 0, p, maxCdof = 0, i;
@@ -1728,6 +1818,24 @@ PetscErrorCode PetscSectionCreateSupersection(PetscSection s[], PetscInt len, Pe
   PetscFunctionReturn(0);
 }
 
+/*@
+  PetscSectionCreateSubmeshSection - Create a new, smaller section with support on the submesh
+
+  Collective on s
+
+  Input Parameters:
++ s           - the PetscSection
+- subpointMap - a sorted list of points in the original mesh which are in the submesh
+
+  Output Parameter:
+. subs - the subsection
+
+  Note: The section offsets now refer to a new, smaller vector.
+
+  Level: advanced
+
+.seealso: PetscSectionCreateSubsection(), DMPlexGetSubpointMap(), PetscSectionCreate()
+@*/
 PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection s, IS subpointMap, PetscSection *subs)
 {
   const PetscInt *points = NULL, *indices = NULL;
@@ -1805,7 +1913,7 @@ PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection s, IS subpointMap, 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  PetscSectionView_ASCII(PetscSection s, PetscViewer viewer)
+static PetscErrorCode PetscSectionView_ASCII(PetscSection s, PetscViewer viewer)
 {
   PetscInt       p;
   PetscMPIInt    rank;
@@ -1847,7 +1955,7 @@ PetscErrorCode  PetscSectionView_ASCII(PetscSection s, PetscViewer viewer)
 + s - the PetscSection object to view
 - v - the viewer
 
-  Level: developer
+  Level: beginner
 
 .seealso PetscSectionCreate(), PetscSectionDestroy()
 @*/
@@ -1885,7 +1993,7 @@ PetscErrorCode PetscSectionView(PetscSection s, PetscViewer viewer)
   Input Parameters:
 . s - the PetscSection
 
-  Level: developer
+  Level: beginner
 
 .seealso: PetscSection, PetscSectionCreate()
 @*/
@@ -1930,10 +2038,7 @@ PetscErrorCode PetscSectionReset(PetscSection s)
   Input Parameters:
 . s - the PetscSection
 
-  Level: developer
-
-    The PetscSection object and methods are intended to be used in the PETSc Vec and Mat implementions; it is
-    recommended they not be used in user codes unless you really gain something in their use.
+  Level: beginner
 
 .seealso: PetscSection, PetscSectionCreate()
 @*/
@@ -2039,6 +2144,21 @@ PetscErrorCode VecIntSetValuesSection(PetscInt *baseArray, PetscSection s, Petsc
   PetscFunctionReturn(0);
 }
 
+/*@C
+  PetscSectionHasConstraints - Determine whether a section has constrained dofs
+
+  Not collective
+
+  Input Parameter:
+. s - The PetscSection
+
+  Output Parameter:
+. hasConstraints - flag indicating that the section has constrained dofs
+
+  Level: intermediate
+
+.seealso: PetscSectionSetConstraintIndices(), PetscSectionGetConstraintDof(), PetscSection
+@*/
 PetscErrorCode PetscSectionHasConstraints(PetscSection s, PetscBool *hasConstraints)
 {
   PetscFunctionBegin;
@@ -2051,6 +2171,8 @@ PetscErrorCode PetscSectionHasConstraints(PetscSection s, PetscBool *hasConstrai
 /*@C
   PetscSectionGetConstraintIndices - Get the point dof numbers, in [0, dof), which are constrained
 
+  Not collective
+
   Input Parameters:
 + s     - The PetscSection
 - point - The point
@@ -2060,7 +2182,7 @@ PetscErrorCode PetscSectionHasConstraints(PetscSection s, PetscBool *hasConstrai
 
   Note: In Fortran, you call PetscSectionGetConstraintIndicesF90() and PetscSectionRestoreConstraintIndicesF90()
 
-  Level: advanced
+  Level: intermediate
 
 .seealso: PetscSectionSetConstraintIndices(), PetscSectionGetConstraintDof(), PetscSection
 @*/
@@ -2079,6 +2201,8 @@ PetscErrorCode PetscSectionGetConstraintIndices(PetscSection s, PetscInt point, 
 /*@C
   PetscSectionSetConstraintIndices - Set the point dof numbers, in [0, dof), which are constrained
 
+  Not collective
+
   Input Parameters:
 + s     - The PetscSection
 . point - The point
@@ -2086,7 +2210,7 @@ PetscErrorCode PetscSectionGetConstraintIndices(PetscSection s, PetscInt point, 
 
   Note: The Fortran is PetscSectionSetConstraintIndicesF90()
 
-  Level: advanced
+  Level: intermediate
 
 .seealso: PetscSectionGetConstraintIndices(), PetscSectionGetConstraintDof(), PetscSection
 @*/
@@ -2102,6 +2226,25 @@ PetscErrorCode PetscSectionSetConstraintIndices(PetscSection s, PetscInt point, 
   PetscFunctionReturn(0);
 }
 
+/*@C
+  PetscSectionGetFieldConstraintIndices - Get the field dof numbers, in [0, fdof), which are constrained
+
+  Not collective
+
+  Input Parameters:
++ s     - The PetscSection
+.field  - The field number
+- point - The point
+
+  Output Parameter:
+. indices - The constrained dofs
+
+  Note: In Fortran, you call PetscSectionGetFieldConstraintIndicesF90() and PetscSectionRestoreFieldConstraintIndicesF90()
+
+  Level: intermediate
+
+.seealso: PetscSectionSetFieldConstraintIndices(), PetscSectionGetConstraintIndices(), PetscSectionGetConstraintDof(), PetscSection
+@*/
 PetscErrorCode PetscSectionGetFieldConstraintIndices(PetscSection s, PetscInt point, PetscInt field, const PetscInt **indices)
 {
   PetscErrorCode ierr;
@@ -2113,6 +2256,23 @@ PetscErrorCode PetscSectionGetFieldConstraintIndices(PetscSection s, PetscInt po
   PetscFunctionReturn(0);
 }
 
+/*@C
+  PetscSectionSetFieldConstraintIndices - Set the field dof numbers, in [0, fdof), which are constrained
+
+  Not collective
+
+  Input Parameters:
++ s       - The PetscSection
+. point   - The point
+. field   - The field number
+- indices - The constrained dofs
+
+  Note: The Fortran is PetscSectionSetFieldConstraintIndicesF90()
+
+  Level: intermediate
+
+.seealso: PetscSectionSetConstraintIndices(), PetscSectionGetFieldConstraintIndices(), PetscSectionGetConstraintDof(), PetscSection
+@*/
 PetscErrorCode PetscSectionSetFieldConstraintIndices(PetscSection s, PetscInt point, PetscInt field, const PetscInt indices[])
 {
   PetscErrorCode ierr;
@@ -2211,7 +2371,7 @@ PetscErrorCode PetscSectionPermute(PetscSection section, IS permutation, PetscSe
 /*@C
   PetscSFDistributeSection - Create a new PetscSection reorganized, moving from the root to the leaves of the SF
 
-  Collective
+  Collective on sf
 
   Input Parameters:
 + sf - The SF
@@ -2221,7 +2381,7 @@ PetscErrorCode PetscSectionPermute(PetscSection section, IS permutation, PetscSe
 + remoteOffsets - root offsets in leaf storage, or NULL
 - leafSection - Section defined on the leaf space
 
-  Level: intermediate
+  Level: advanced
 
 .seealso: PetscSFCreate()
 @*/
@@ -2282,6 +2442,23 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
   PetscFunctionReturn(0);
 }
 
+/*@C
+  PetscSFCreateRemoteOffsets - Create offsets for point data on remote processes
+
+  Collective on sf
+
+  Input Parameters:
++ sf          - The SF
+. rootSection - Data layout of remote points for outgoing data (this is layout for SF roots)
+- leafSection - Data layout of local points for incoming data  (this is layout for SF leaves)
+
+  Output Parameter:
+. remoteOffsets - Offsets for point data on remote processes (these are offsets from the root section), or NULL
+
+  Level: developer
+
+.seealso: PetscSFCreate()
+@*/
 PetscErrorCode PetscSFCreateRemoteOffsets(PetscSF sf, PetscSection rootSection, PetscSection leafSection, PetscInt **remoteOffsets)
 {
   PetscSF         embedSF;
@@ -2313,6 +2490,8 @@ PetscErrorCode PetscSFCreateRemoteOffsets(PetscSF sf, PetscSection rootSection, 
 /*@C
   PetscSFCreateSectionSF - Create an expanded SF of dofs, assuming the input SF relates points
 
+  Collective on sf
+
   Input Parameters:
 + sf - The SF
 . rootSection - Data layout of remote points for outgoing data (this is usually the serial section)
@@ -2324,7 +2503,7 @@ PetscErrorCode PetscSFCreateRemoteOffsets(PetscSF sf, PetscSection rootSection, 
 
   Note: Either rootSection or remoteOffsets can be specified
 
-  Level: intermediate
+  Level: advanced
 
 .seealso: PetscSFCreate()
 @*/
@@ -2392,6 +2571,8 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, Pets
 /*@
   PetscSectionSetClosureIndex - Set a cache of points in the closure of each point in the section
 
+  Collective on section
+
   Input Parameters:
 + section   - The PetscSection
 . obj       - A PetscObject which serves as the key for this index
@@ -2400,7 +2581,7 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, Pets
 
   Note: We compress out closure points with no dofs in this section
 
-  Level: intermediate
+  Level: advanced
 
 .seealso: PetscSectionGetClosureIndex(), DMPlexCreateClosureIndex()
 @*/
@@ -2421,6 +2602,8 @@ PetscErrorCode PetscSectionSetClosureIndex(PetscSection section, PetscObject obj
 /*@
   PetscSectionGetClosureIndex - Get the cache of points in the closure of each point in the section
 
+  Collective on section
+
   Input Parameters:
 + section   - The PetscSection
 - obj       - A PetscObject which serves as the key for this index
@@ -2431,7 +2614,7 @@ PetscErrorCode PetscSectionSetClosureIndex(PetscSection section, PetscObject obj
 
   Note: We compress out closure points with no dofs in this section
 
-  Level: intermediate
+  Level: advanced
 
 .seealso: PetscSectionSetClosureIndex(), DMPlexCreateClosureIndex()
 @*/
@@ -2477,6 +2660,8 @@ PetscErrorCode PetscSectionSetClosurePermutation_Internal(PetscSection section, 
 /*@
   PetscSectionSetClosurePermutation - Get the dof permutation for the closure of each cell in the section, meaning clPerm[newIndex] = oldIndex.
 
+  Not Collective
+
   Input Parameters:
 + section - The PetscSection
 . obj     - A PetscObject which serves as the key for this index
@@ -2521,6 +2706,8 @@ PetscErrorCode PetscSectionGetClosurePermutation_Internal(PetscSection section, 
 /*@
   PetscSectionGetClosurePermutation - Get the dof permutation for the closure of each cell in the section, meaning clPerm[newIndex] = oldIndex.
 
+  Not collective
+
   Input Parameters:
 + section   - The PetscSection
 - obj       - A PetscObject which serves as the key for this index
@@ -2564,6 +2751,8 @@ PetscErrorCode PetscSectionGetClosureInversePermutation_Internal(PetscSection se
 
 /*@
   PetscSectionGetClosureInversePermutation - Get the inverse dof permutation for the closure of each cell in the section, meaning clPerm[oldIndex] = newIndex.
+
+  Not collective
 
   Input Parameters:
 + section   - The PetscSection

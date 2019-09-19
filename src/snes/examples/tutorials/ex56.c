@@ -264,7 +264,7 @@ int main(int argc,char **args)
     ierr = DMCreateLabel(dm, "boundary");CHKERRQ(ierr);
     ierr = DMGetLabel(dm, "boundary", &label);CHKERRQ(ierr);
     ierr = DMPlexMarkBoundaryFaces(dm, 1, label);CHKERRQ(ierr);
-    if (run_type==0) {
+    if (!run_type) {
       ierr = DMGetStratumIS(dm, "boundary", 1,  &is);CHKERRQ(ierr);
       ierr = DMCreateLabel(dm,"Faces");CHKERRQ(ierr);
       if (is) {
@@ -346,18 +346,15 @@ int main(int argc,char **args)
       ierr = PetscObjectGetOptionsPrefix((PetscObject)dm,&prefix);CHKERRQ(ierr);
       ierr = PetscObjectSetOptionsPrefix((PetscObject)newdm,prefix);CHKERRQ(ierr);
       ierr = DMIsForest(newdm,&isForest);CHKERRQ(ierr);
-      if (isForest) {
-      } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_USER, "Converted to non Forest?");
+      if (!isForest) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_USER, "Converted to non Forest?");
       ierr = DMDestroy(&dm);CHKERRQ(ierr);
       dm   = newdm;
     } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_USER, "Convert failed?");
   } else {
     PetscPartitioner part;
     /* Plex Distribute mesh over processes */
-#if 1
     ierr = DMPlexGetPartitioner(dm,&part);CHKERRQ(ierr);
     ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
-#endif
     ierr = DMPlexDistribute(dm, 0, NULL, &distdm);CHKERRQ(ierr);
     if (distdm) {
       const char *prefix;
@@ -430,7 +427,7 @@ int main(int argc,char **args)
     ierr = DMCreateMatrix(dm, &Amat);CHKERRQ(ierr);
     ierr = VecGetSize(bb,&N);CHKERRQ(ierr);
     local_sizes[iter] = N;
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d] %D global equations, %D vertices\n",rank,N,N/dim);CHKERRQ(ierr);
+    ierr = PetscInfo2(snes,"%D global equations, %D vertices\n",N,N/dim);CHKERRQ(ierr);
     if ((use_nearnullspace || attach_nearnullspace) && N/dim > 1) {
       /* Set up the near null space (a.k.a. rigid body modes) that will be used by the multigrid preconditioner */
       DM           subdm;
@@ -459,21 +456,16 @@ int main(int argc,char **args)
     /* test BCs */
     ierr = VecZeroEntries(xx);CHKERRQ(ierr);
     if (test_nonzero_cols) {
-      if (rank==0) ierr = VecSetValue(xx,0,1.0,INSERT_VALUES);CHKERRQ(ierr);
+      if (!rank) {
+        ierr = VecSetValue(xx,0,1.0,INSERT_VALUES);CHKERRQ(ierr);
+      }
       ierr = VecAssemblyBegin(xx);CHKERRQ(ierr);
       ierr = VecAssemblyEnd(xx);CHKERRQ(ierr);
     }
     ierr = VecZeroEntries(bb);CHKERRQ(ierr);
     ierr = VecGetSize(bb,&i);CHKERRQ(ierr);
     local_sizes[iter] = i;
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d] %D equations in vector, %D vertices\n",rank,i,i/dim);CHKERRQ(ierr);
-    /* setup solver, dummy solve to really setup */
-    if (0) {
-      ierr = KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,1);CHKERRQ(ierr);
-      ierr = SNESSolve(snes, bb, xx);CHKERRQ(ierr);
-      ierr = KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,50);CHKERRQ(ierr);
-      ierr = VecZeroEntries(xx);CHKERRQ(ierr);
-    }
+    ierr = PetscInfo2(snes,"%D equations in vector, %D vertices\n",i,i/dim);CHKERRQ(ierr);
     ierr = PetscLogStagePop();CHKERRQ(ierr);
     /* solve */
     ierr = PetscLogStagePush(stage[1]);CHKERRQ(ierr);
@@ -501,19 +493,13 @@ int main(int argc,char **args)
     ierr = MatDestroy(&Amat);CHKERRQ(ierr);
   }
   ierr = DMDestroy(&basedm);CHKERRQ(ierr);
-  if (run_type==1) {
-    err[0] = 59.975208 - mdisp[0]; /* error with what I think is the exact solution */
-  } else {
-    err[0] = 171.038 - mdisp[0];
-  }
+  if (run_type==1) err[0] = 59.975208 - mdisp[0]; /* error with what I think is the exact solution */
+  else             err[0] = 171.038 - mdisp[0];
   for (iter=1 ; iter<max_conv_its ; iter++) {
-    if (run_type==1) {
-      err[iter] = 59.975208 - mdisp[iter];
-    } else {
-      err[iter] = 171.038 - mdisp[iter];
-    }
+    if (run_type==1) err[iter] = 59.975208 - mdisp[iter];
+    else             err[iter] = 171.038 - mdisp[iter];
     ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d] %D) N=%12D, max displ=%9.7e, disp diff=%9.2e, error=%4.3e, rate=%3.2g\n",rank,iter,local_sizes[iter],mdisp[iter],
-                mdisp[iter]-mdisp[iter-1],err[iter],PetscLogReal(err[iter-1]/err[iter])/PetscLogReal(2.));CHKERRQ(ierr);
+                (double)(mdisp[iter]-mdisp[iter-1]),(double)err[iter],(double)(PetscLogReal(err[iter-1]/err[iter])/PetscLogReal(2.)));CHKERRQ(ierr);
   }
 
   ierr = PetscFinalize();
@@ -552,6 +538,23 @@ int main(int argc,char **args)
     nsize: 4
     requires: !single
     args: -cells 2,2,1 -max_conv_its 2 -lx 1. -alpha .01 -ex56_dm_refine 1 -petscspace_degree 2 -ksp_type cg -ksp_monitor_short -ksp_rtol 1.e-8 -ksp_converged_reason -mat_block_size 3 -petscpartitioner_type simple -ex56_dm_mat_type is -matis_localmat_type {{sbaij baij aij}} -pc_type bddc
+
+  testset:
+    nsize: 4
+    requires: !single
+    args: -cells 2,2,1 -max_conv_its 2 -lx 1. -alpha .01 -ex56_dm_refine 1 -petscspace_degree 2 -ksp_type cg -ksp_monitor_short -ksp_rtol 1.e-10 -ksp_converged_reason -mat_block_size 3 -petscpartitioner_type simple -ex56_dm_mat_type is -matis_localmat_type aij -pc_type bddc -attach_mat_nearnullspace {{0 1}separate output}
+    test:
+      suffix: bddc_approx_gamg
+      args: -pc_bddc_switch_static -prefix_push pc_bddc_dirichlet_ -approximate -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -pc_gamg_square_graph 1 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 -mg_levels_ksp_max_it 1 -mg_levels_ksp_type chebyshev -mg_levels_esteig_ksp_type cg -mg_levels_esteig_ksp_max_it 10 -prefix_pop -prefix_push pc_bddc_neumann_ -approximate -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -pc_gamg_square_graph 1 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 -mg_levels_ksp_max_it 1 -mg_levels_ksp_type chebyshev -mg_levels_esteig_ksp_type cg -mg_levels_esteig_ksp_max_it 10 -prefix_pop
+    # HYPRE PtAP broken with complex numbers
+    test:
+      requires: hypre !complex
+      suffix: bddc_approx_hypre
+      args: -pc_bddc_switch_static -prefix_push pc_bddc_dirichlet_ -pc_type hypre -pc_hypre_boomeramg_no_CF true -pc_hypre_boomeramg_strong_threshold 0.75 -pc_hypre_boomeramg_agg_nl 1 -pc_hypre_boomeramg_coarsen_type HMIS -pc_hypre_boomeramg_interp_type ext+i -prefix_pop -prefix_push pc_bddc_neumann_ -pc_type hypre -pc_hypre_boomeramg_no_CF true -pc_hypre_boomeramg_strong_threshold 0.75 -pc_hypre_boomeramg_agg_nl 1 -pc_hypre_boomeramg_coarsen_type HMIS -pc_hypre_boomeramg_interp_type ext+i -prefix_pop
+    test:
+      requires: ml
+      suffix: bddc_approx_ml
+      args: -pc_bddc_switch_static -prefix_push pc_bddc_dirichlet_ -approximate -pc_type ml -mg_levels_ksp_max_it 1 -mg_levels_ksp_type chebyshev -mg_levels_esteig_ksp_type cg -mg_levels_esteig_ksp_max_it 10 -prefix_pop -prefix_push pc_bddc_neumann_ -approximate -pc_type ml -mg_levels_ksp_max_it 1 -mg_levels_ksp_type chebyshev -mg_levels_esteig_ksp_type cg -mg_levels_esteig_ksp_max_it 10 -prefix_pop
 
   test:
     suffix: fetidp

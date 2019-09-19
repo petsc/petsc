@@ -2067,9 +2067,9 @@ $     converge (KSP ksp, int it, PetscReal rnorm, KSPConvergedReason *reason,voi
 
    Level: advanced
 
-   Notes: This is intended to be used to allow transfering the convergence test (and its context) to another testing object (for example another KSP) and then calling
+   Notes: This is intended to be used to allow transferring the convergence test (and its context) to another testing object (for example another KSP) and then calling
           KSPSetConvergenceTest() on this original KSP. If you just called KSPGetConvergenceTest() followed by KSPSetConvergenceTest() the original context information
-          would be destroyed and hence the transfered context would be invalid and trigger a crash on use
+          would be destroyed and hence the transferred context would be invalid and trigger a crash on use
 
 .seealso: KSPConvergedDefault(), KSPGetConvergenceContext(), KSPSetTolerances(), KSP, KSPSetConvergenceTest(), KSPGetConvergenceTest()
 @*/

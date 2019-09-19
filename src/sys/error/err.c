@@ -394,6 +394,7 @@ PetscErrorCode PetscError(MPI_Comm comm,int line,const char *func,const char *fi
 PetscErrorCode  PetscIntView(PetscInt N,const PetscInt idx[],PetscViewer viewer)
 {
   PetscErrorCode ierr;
+  PetscMPIInt	 rank,size;
   PetscInt       j,i,n = N/20,p = N % 20;
   PetscBool      iascii,isbinary;
   MPI_Comm       comm;
@@ -403,32 +404,40 @@ PetscErrorCode  PetscIntView(PetscInt N,const PetscInt idx[],PetscViewer viewer)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,3);
   if (N) PetscValidIntPointer(idx,2);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%D:",20*i);CHKERRQ(ierr);
+      if (size > 1) {
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %D:", rank, 20*i);CHKERRQ(ierr);
+      } else {
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%D:",20*i);CHKERRQ(ierr);
+      }
       for (j=0; j<20; j++) {
         ierr = PetscViewerASCIISynchronizedPrintf(viewer," %D",idx[i*20+j]);CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
     }
     if (p) {
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%D:",20*n);CHKERRQ(ierr);
+      if (size > 1) {
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %D:",rank ,20*n);CHKERRQ(ierr);
+      } else {
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%D:",20*n);CHKERRQ(ierr);
+      }
       for (i=0; i<p; i++) { ierr = PetscViewerASCIISynchronizedPrintf(viewer," %D",idx[20*n+i]);CHKERRQ(ierr);}
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
   } else if (isbinary) {
-    PetscMPIInt rank,size,*sizes,Ntotal,*displs,NN;
+    PetscMPIInt *sizes,Ntotal,*displs,NN;
     PetscInt    *array;
 
     ierr = PetscMPIIntCast(N,&NN);CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
     if (size > 1) {
       if (rank) {
@@ -482,6 +491,7 @@ PetscErrorCode  PetscIntView(PetscInt N,const PetscInt idx[],PetscViewer viewer)
 PetscErrorCode  PetscRealView(PetscInt N,const PetscReal idx[],PetscViewer viewer)
 {
   PetscErrorCode ierr;
+  PetscMPIInt	 rank,size;
   PetscInt       j,i,n = N/5,p = N % 5;
   PetscBool      iascii,isbinary;
   MPI_Comm       comm;
@@ -491,32 +501,40 @@ PetscErrorCode  PetscRealView(PetscInt N,const PetscReal idx[],PetscViewer viewe
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,3);
   PetscValidScalarPointer(idx,2);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%2d:",(int)5*i);CHKERRQ(ierr);
+      if (size > 1) {
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %2d:",rank ,(int)5*i);CHKERRQ(ierr);
+      } else {
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%2d:",(int)5*i);CHKERRQ(ierr);
+      }
       for (j=0; j<5; j++) {
         ierr = PetscViewerASCIISynchronizedPrintf(viewer," %12.4e",(double)idx[i*5+j]);CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
     }
     if (p) {
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%2d:",(int)5*n);CHKERRQ(ierr);
+      if (size > 1) {
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %2d:",rank ,(int)5*n);CHKERRQ(ierr);
+      } else {
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%2d:",(int)5*n);CHKERRQ(ierr);
+      }
       for (i=0; i<p; i++) { PetscViewerASCIISynchronizedPrintf(viewer," %12.4e",(double)idx[5*n+i]);CHKERRQ(ierr);}
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
   } else if (isbinary) {
-    PetscMPIInt rank,size,*sizes,*displs, Ntotal,NN;
+    PetscMPIInt *sizes,*displs, Ntotal,NN;
     PetscReal   *array;
 
     ierr = PetscMPIIntCast(N,&NN);CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
     if (size > 1) {
       if (rank) {
@@ -570,6 +588,7 @@ PetscErrorCode  PetscRealView(PetscInt N,const PetscReal idx[],PetscViewer viewe
 PetscErrorCode  PetscScalarView(PetscInt N,const PetscScalar idx[],PetscViewer viewer)
 {
   PetscErrorCode ierr;
+  PetscMPIInt	 rank,size;
   PetscInt       j,i,n = N/3,p = N % 3;
   PetscBool      iascii,isbinary;
   MPI_Comm       comm;
@@ -579,13 +598,19 @@ PetscErrorCode  PetscScalarView(PetscInt N,const PetscScalar idx[],PetscViewer v
   PetscValidHeader(viewer,3);
   if (N) PetscValidScalarPointer(idx,2);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%2d:",3*i);CHKERRQ(ierr);
+      if (size > 1) {
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %2d:",rank ,3*i);CHKERRQ(ierr);
+      } else {
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%2d:",3*i);CHKERRQ(ierr);
+      }
       for (j=0; j<3; j++) {
 #if defined(PETSC_USE_COMPLEX)
         ierr = PetscViewerASCIISynchronizedPrintf(viewer," (%12.4e,%12.4e)", (double)PetscRealPart(idx[i*3+j]),(double)PetscImaginaryPart(idx[i*3+j]));CHKERRQ(ierr);
@@ -596,7 +621,11 @@ PetscErrorCode  PetscScalarView(PetscInt N,const PetscScalar idx[],PetscViewer v
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
     }
     if (p) {
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%2d:",3*n);CHKERRQ(ierr);
+      if (size > 1) {
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %2d:",rank ,3*n);CHKERRQ(ierr);
+      } else {
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%2d:",3*n);CHKERRQ(ierr);
+      }
       for (i=0; i<p; i++) {
 #if defined(PETSC_USE_COMPLEX)
         ierr = PetscViewerASCIISynchronizedPrintf(viewer," (%12.4e,%12.4e)", (double)PetscRealPart(idx[n*3+i]),(double)PetscImaginaryPart(idx[n*3+i]));CHKERRQ(ierr);
@@ -609,12 +638,10 @@ PetscErrorCode  PetscScalarView(PetscInt N,const PetscScalar idx[],PetscViewer v
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
   } else if (isbinary) {
-    PetscMPIInt size,rank,*sizes,Ntotal,*displs,NN;
+    PetscMPIInt *sizes,Ntotal,*displs,NN;
     PetscScalar *array;
 
     ierr = PetscMPIIntCast(N,&NN);CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
     if (size > 1) {
       if (rank) {

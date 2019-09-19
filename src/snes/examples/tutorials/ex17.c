@@ -432,6 +432,7 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
       ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "front",  "marker", 0, 1, &cmp, (void (*)(void)) zero, 1, &id, user);CHKERRQ(ierr);
     }
   } else {
+    id   = 1;
     ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) exact, 1, &id, user);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

@@ -816,7 +816,7 @@ static PetscErrorCode TSAdjointStep_RK(TS ts)
   TS_RK            *rk = (TS_RK*)ts->data;
   TS               quadts = ts->quadraturets;
   RKTableau        tab = rk->tableau;
-  Mat              J,Jquad;
+  Mat              J,Jpre,Jquad;
   const PetscInt   s = tab->s;
   const PetscReal  *A = tab->A,*b = tab->b,*c = tab->c;
   PetscScalar      *w = rk->work,*xarr;
@@ -825,13 +825,13 @@ static PetscErrorCode TSAdjointStep_RK(TS ts)
   Vec              VecDRDUTransCol = ts->vec_drdu_col,VecDRDPTransCol = ts->vec_drdp_col;
   PetscInt         i,j,nadj;
   PetscReal        t = ts->ptime;
-  PetscReal        h = ts->time_step,stage_time;
+  PetscReal        h = ts->time_step;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   rk->status = TS_STEP_INCOMPLETE;
 
-  ierr = TSGetRHSJacobian(ts,&J,NULL,NULL,NULL);CHKERRQ(ierr);
+  ierr = TSGetRHSJacobian(ts,&J,&Jpre,NULL,NULL);CHKERRQ(ierr);
   if (quadts) {
     ierr = TSGetRHSJacobian(quadts,&Jquad,NULL,NULL,NULL);CHKERRQ(ierr);
   }
@@ -840,15 +840,15 @@ static PetscErrorCode TSAdjointStep_RK(TS ts)
       /* VecsDeltaLam[nadj*s+s-1] are initialized with zeros and the values never change.*/
       continue;
     }
-    stage_time = t + h*(1.0-c[i]);
-    ierr = TSComputeRHSJacobian(ts,stage_time,Y[i],J,J);CHKERRQ(ierr);
+    rk->stage_time = t + h*(1.0-c[i]);
+    ierr = TSComputeSNESJacobian(ts,Y[i],J,Jpre);CHKERRQ(ierr);
     if (quadts) {
-      ierr = TSComputeRHSJacobian(quadts,stage_time,Y[i],Jquad,Jquad);CHKERRQ(ierr); /* get r_u^T */
+      ierr = TSComputeRHSJacobian(quadts,rk->stage_time,Y[i],Jquad,Jquad);CHKERRQ(ierr); /* get r_u^T */
     }
     if (ts->vecs_sensip) {
-      ierr = TSComputeRHSJacobianP(ts,stage_time,Y[i],ts->Jacprhs);CHKERRQ(ierr); /* get f_p */
+      ierr = TSComputeRHSJacobianP(ts,rk->stage_time,Y[i],ts->Jacprhs);CHKERRQ(ierr); /* get f_p */
       if (quadts) {
-        ierr = TSComputeRHSJacobianP(quadts,stage_time,Y[i],quadts->Jacprhs);CHKERRQ(ierr); /* get f_p for the quadrature */
+        ierr = TSComputeRHSJacobianP(quadts,rk->stage_time,Y[i],quadts->Jacprhs);CHKERRQ(ierr); /* get f_p for the quadrature */
       }
     }
 
@@ -905,29 +905,29 @@ static PetscErrorCode TSAdjointStep_RK(TS ts)
       ierr = MatDenseGetColumn(rk->MatsFwdStageSensip[i],0,&xarr);CHKERRQ(ierr);
       ierr = VecPlaceArray(ts->vec_sensip_col,xarr);CHKERRQ(ierr);
       /* lambda_s^T F_UU w_1 */
-      ierr = TSComputeRHSHessianProductFunctionUU(ts,stage_time,Y[i],VecsSensiTemp,ts->vec_sensip_col,ts->vecs_guu);CHKERRQ(ierr);
+      ierr = TSComputeRHSHessianProductFunctionUU(ts,rk->stage_time,Y[i],VecsSensiTemp,ts->vec_sensip_col,ts->vecs_guu);CHKERRQ(ierr);
       if (quadts)  {
         /* R_UU w_1 */
-        ierr = TSComputeRHSHessianProductFunctionUU(quadts,stage_time,Y[i],NULL,ts->vec_sensip_col,ts->vecs_guu);CHKERRQ(ierr);
+        ierr = TSComputeRHSHessianProductFunctionUU(quadts,rk->stage_time,Y[i],NULL,ts->vec_sensip_col,ts->vecs_guu);CHKERRQ(ierr);
       }
       if (ts->vecs_sensip) {
         /* lambda_s^T F_UP w_2 */
-        ierr = TSComputeRHSHessianProductFunctionUP(ts,stage_time,Y[i],VecsSensiTemp,ts->vec_dir,ts->vecs_gup);CHKERRQ(ierr);
+        ierr = TSComputeRHSHessianProductFunctionUP(ts,rk->stage_time,Y[i],VecsSensiTemp,ts->vec_dir,ts->vecs_gup);CHKERRQ(ierr);
         if (quadts)  {
           /* R_UP w_2 */
-          ierr = TSComputeRHSHessianProductFunctionUP(quadts,stage_time,Y[i],NULL,ts->vec_sensip_col,ts->vecs_gup);CHKERRQ(ierr);
+          ierr = TSComputeRHSHessianProductFunctionUP(quadts,rk->stage_time,Y[i],NULL,ts->vec_sensip_col,ts->vecs_gup);CHKERRQ(ierr);
         }
       }
       if (ts->vecs_sensi2p) {
         /* lambda_s^T F_PU w_1 */
-        ierr = TSComputeRHSHessianProductFunctionPU(ts,stage_time,Y[i],VecsSensiTemp,ts->vec_sensip_col,ts->vecs_gpu);CHKERRQ(ierr);
+        ierr = TSComputeRHSHessianProductFunctionPU(ts,rk->stage_time,Y[i],VecsSensiTemp,ts->vec_sensip_col,ts->vecs_gpu);CHKERRQ(ierr);
         /* lambda_s^T F_PP w_2 */
-        ierr = TSComputeRHSHessianProductFunctionPP(ts,stage_time,Y[i],VecsSensiTemp,ts->vec_dir,ts->vecs_gpp);CHKERRQ(ierr);
+        ierr = TSComputeRHSHessianProductFunctionPP(ts,rk->stage_time,Y[i],VecsSensiTemp,ts->vec_dir,ts->vecs_gpp);CHKERRQ(ierr);
         if (b[i] && quadts) {
           /* R_PU w_1 */
-          ierr = TSComputeRHSHessianProductFunctionPU(quadts,stage_time,Y[i],NULL,ts->vec_sensip_col,ts->vecs_gpu);CHKERRQ(ierr);
+          ierr = TSComputeRHSHessianProductFunctionPU(quadts,rk->stage_time,Y[i],NULL,ts->vec_sensip_col,ts->vecs_gpu);CHKERRQ(ierr);
           /* R_PP w_2 */
-          ierr = TSComputeRHSHessianProductFunctionPP(quadts,stage_time,Y[i],NULL,ts->vec_dir,ts->vecs_gpp);CHKERRQ(ierr);
+          ierr = TSComputeRHSHessianProductFunctionPP(quadts,rk->stage_time,Y[i],NULL,ts->vec_dir,ts->vecs_gpp);CHKERRQ(ierr);
         }
       }
       ierr = VecResetArray(ts->vec_sensip_col);CHKERRQ(ierr);
@@ -1313,6 +1313,41 @@ static PetscErrorCode TSDestroy_RK(TS ts)
   PetscFunctionReturn(0);
 }
 
+/*
+  This defines the nonlinear equation that is to be solved with SNES
+  We do not need to solve the equation; we just use SNES to approximate the Jacobian
+*/
+static PetscErrorCode SNESTSFormFunction_RK(SNES snes,Vec x,Vec y,TS ts)
+{
+  TS_RK          *rk = (TS_RK*)ts->data;
+  DM             dm,dmsave;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr   = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+  /* DM monkey-business allows user code to call TSGetDM() inside of functions evaluated on levels of FAS */
+  dmsave = ts->dm;
+  ts->dm = dm;
+  ierr   = TSComputeRHSFunction(ts,rk->stage_time,x,y);CHKERRQ(ierr);
+  ts->dm = dmsave;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode SNESTSFormJacobian_RK(SNES snes,Vec x,Mat A,Mat B,TS ts)
+{
+  TS_RK          *rk = (TS_RK*)ts->data;
+  DM             dm,dmsave;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr   = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+  dmsave = ts->dm;
+  ts->dm = dm;
+  ierr   = TSComputeRHSJacobian(ts,rk->stage_time,x,A,B);CHKERRQ(ierr);
+  ts->dm = dmsave;
+  PetscFunctionReturn(0);
+}
+
 /*@C
   TSRKSetMultirate - Use the interpolation-based multirate RK method
 
@@ -1400,6 +1435,8 @@ PETSC_EXTERN PetscErrorCode TSCreate_RK(TS ts)
   ts->ops->setfromoptions = TSSetFromOptions_RK;
   ts->ops->getstages      = TSGetStages_RK;
 
+  ts->ops->snesfunction    = SNESTSFormFunction_RK;
+  ts->ops->snesjacobian    = SNESTSFormJacobian_RK;
   ts->ops->adjointintegral = TSAdjointCostIntegral_RK;
   ts->ops->adjointsetup    = TSAdjointSetUp_RK;
   ts->ops->adjointstep     = TSAdjointStep_RK;

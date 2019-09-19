@@ -14,11 +14,12 @@ PetscErrorCode Assemble(MPI_Comm comm,PetscInt bs,MatType mtype)
                               49,50,51,52,53,54,55,56,
                               57,58,49,60,61,62,63,64};
   Mat               A;
-#if defined(PETSC_HAVE_MUMPS)
+#if defined(PETSC_HAVE_MUMPS) || defined(PETSC_HAVE_MKL_CPARDISO)
   Mat               F;
+  MatSolverType     stype;
   PetscRandom       rdm;
   Vec               b,x,y;
-  PetscInt          i;
+  PetscInt          i,j;
   PetscReal         norm2,tol=10*PETSC_SMALL;
   PetscBool         issbaij;
 #endif
@@ -42,16 +43,35 @@ PetscErrorCode Assemble(MPI_Comm comm,PetscInt bs,MatType mtype)
   ierr = MatView(A,viewer);CHKERRQ(ierr);
   ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   ierr = MatView(A,viewer);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MUMPS)
+#if defined(PETSC_HAVE_MUMPS) || defined(PETSC_HAVE_MKL_CPARDISO)
   ierr = PetscStrcmp(mtype,MATMPISBAIJ,&issbaij);CHKERRQ(ierr);
-  if (issbaij) {
-    ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rdm);CHKERRQ(ierr);
-    ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
-    ierr = MatCreateVecs(A,&x,&y);CHKERRQ(ierr);
-    ierr = VecDuplicate(x,&b);CHKERRQ(ierr);
-    ierr = MatGetFactor(A,MATSOLVERMUMPS,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
-    ierr = MatCholeskyFactorSymbolic(F,A,NULL,NULL);CHKERRQ(ierr);
-    ierr = MatCholeskyFactorNumeric(F,A,NULL);CHKERRQ(ierr);
+  if(!issbaij) {
+    ierr = MatShift(A,10);CHKERRQ(ierr);
+  }
+  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rdm);CHKERRQ(ierr);
+  ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&x,&y);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&b);CHKERRQ(ierr);
+  for (j=0; j<2; j++) {
+#if defined(PETSC_HAVE_MUMPS)
+    if (j==0) stype = MATSOLVERMUMPS;
+#else
+    if (j==0) continue;
+#endif
+#if defined(PETSC_HAVE_MKL_CPARDISO)
+    if (j==1) stype = MATSOLVERMKL_CPARDISO;
+#else
+    if (j==1) continue;
+#endif
+    if (issbaij) {
+      ierr = MatGetFactor(A,stype,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
+      ierr = MatCholeskyFactorSymbolic(F,A,NULL,NULL);CHKERRQ(ierr);
+      ierr = MatCholeskyFactorNumeric(F,A,NULL);CHKERRQ(ierr);
+    } else {
+      ierr = MatGetFactor(A,stype,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
+      ierr = MatLUFactorSymbolic(F,A,NULL,NULL,NULL);CHKERRQ(ierr);
+      ierr = MatLUFactorNumeric(F,A,NULL);CHKERRQ(ierr);
+    }
     for (i=0; i<10; i++) {
       ierr = VecSetRandom(b,rdm);CHKERRQ(ierr);
       ierr = MatSolve(F,b,y);CHKERRQ(ierr);
@@ -60,15 +80,15 @@ PetscErrorCode Assemble(MPI_Comm comm,PetscInt bs,MatType mtype)
       ierr = VecAXPY(x,-1.0,b);CHKERRQ(ierr);
       ierr = VecNorm(x,NORM_2,&norm2);CHKERRQ(ierr);
       if (norm2>tol) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"Error:MatSolve(),  norm2: %g\n",(double)norm2);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"Error:MatSolve(), norm2: %g\n",(double)norm2);CHKERRQ(ierr);
       }
     }
     ierr = MatDestroy(&F);CHKERRQ(ierr);
-    ierr = VecDestroy(&x);CHKERRQ(ierr);
-    ierr = VecDestroy(&y);CHKERRQ(ierr);
-    ierr = VecDestroy(&b);CHKERRQ(ierr);
-    ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
   }
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&y);CHKERRQ(ierr);
+  ierr = VecDestroy(&b);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
 #endif
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);

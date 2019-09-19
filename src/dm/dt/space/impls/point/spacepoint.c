@@ -1,7 +1,7 @@
 #include <petsc/private/petscfeimpl.h> /*I "petscfe.h" I*/
 #include <petsc/private/dtimpl.h> /*I "petscdt.h" I*/
 
-PetscErrorCode PetscSpacePointView_Ascii(PetscSpace sp, PetscViewer viewer)
+static PetscErrorCode PetscSpacePointView_Ascii(PetscSpace sp, PetscViewer viewer)
 {
   PetscSpace_Point *pt = (PetscSpace_Point *) sp->data;
   PetscViewerFormat format;
@@ -20,7 +20,7 @@ PetscErrorCode PetscSpacePointView_Ascii(PetscSpace sp, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSpaceView_Point(PetscSpace sp, PetscViewer viewer)
+static PetscErrorCode PetscSpaceView_Point(PetscSpace sp, PetscViewer viewer)
 {
   PetscBool      iascii;
   PetscErrorCode ierr;
@@ -33,7 +33,7 @@ PetscErrorCode PetscSpaceView_Point(PetscSpace sp, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSpaceSetUp_Point(PetscSpace sp)
+static PetscErrorCode PetscSpaceSetUp_Point(PetscSpace sp)
 {
   PetscSpace_Point *pt = (PetscSpace_Point *) sp->data;
   PetscErrorCode    ierr;
@@ -46,7 +46,7 @@ PetscErrorCode PetscSpaceSetUp_Point(PetscSpace sp)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSpaceDestroy_Point(PetscSpace sp)
+static PetscErrorCode PetscSpaceDestroy_Point(PetscSpace sp)
 {
   PetscSpace_Point *pt = (PetscSpace_Point *) sp->data;
   PetscErrorCode    ierr;
@@ -57,7 +57,7 @@ PetscErrorCode PetscSpaceDestroy_Point(PetscSpace sp)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSpaceGetDimension_Point(PetscSpace sp, PetscInt *dim)
+static PetscErrorCode PetscSpaceGetDimension_Point(PetscSpace sp, PetscInt *dim)
 {
   PetscSpace_Point *pt = (PetscSpace_Point *) sp->data;
 
@@ -66,7 +66,7 @@ PetscErrorCode PetscSpaceGetDimension_Point(PetscSpace sp, PetscInt *dim)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSpaceEvaluate_Point(PetscSpace sp, PetscInt npoints, const PetscReal points[], PetscReal B[], PetscReal D[], PetscReal H[])
+static PetscErrorCode PetscSpaceEvaluate_Point(PetscSpace sp, PetscInt npoints, const PetscReal points[], PetscReal B[], PetscReal D[], PetscReal H[])
 {
   PetscSpace_Point *pt  = (PetscSpace_Point *) sp->data;
   PetscInt          dim = sp->Nv, pdim = pt->quad->numPoints, d, p, i, c;
@@ -96,7 +96,7 @@ PetscErrorCode PetscSpaceEvaluate_Point(PetscSpace sp, PetscInt npoints, const P
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSpaceInitialize_Point(PetscSpace sp)
+static PetscErrorCode PetscSpaceInitialize_Point(PetscSpace sp)
 {
   PetscFunctionBegin;
   sp->ops->setfromoptions = NULL;
@@ -186,4 +186,3 @@ PetscErrorCode PetscSpacePointGetPoints(PetscSpace sp, PetscQuadrature *q)
   *q = pt->quad;
   PetscFunctionReturn(0);
 }
-

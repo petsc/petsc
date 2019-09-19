@@ -3937,7 +3937,7 @@ PetscErrorCode DMSetLocalSection(DM dm, PetscSection section)
 }
 
 /*@
-  DMGetDefaultConstraints - Get the PetscSection and Mat the specify the local constraint interpolation. See DMSetDefaultConstraints() for a description of the purpose of constraint interpolation.
+  DMGetDefaultConstraints - Get the PetscSection and Mat that specify the local constraint interpolation. See DMSetDefaultConstraints() for a description of the purpose of constraint interpolation.
 
   not collective
 
@@ -3967,7 +3967,7 @@ PetscErrorCode DMGetDefaultConstraints(DM dm, PetscSection *section, Mat *mat)
 }
 
 /*@
-  DMSetDefaultConstraints - Set the PetscSection and Mat the specify the local constraint interpolation.
+  DMSetDefaultConstraints - Set the PetscSection and Mat that specify the local constraint interpolation.
 
   If a constraint matrix is specified, then it is applied during DMGlobalToLocalEnd() when mode is INSERT_VALUES, INSERT_BC_VALUES, or INSERT_ALL_VALUES.  Without a constraint matrix, the local vector l returned by DMGlobalToLocalEnd() contains values that have been scattered from a global vector without modification; with a constraint matrix A, l is modified by computing c = A * l, l[s[i]] = c[i], where the scatter s is defined by the PetscSection returned by DMGetDefaultConstraintMatrix().
 

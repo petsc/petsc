@@ -51,6 +51,7 @@ variables:
     - export CCACHE_DIR=$(pwd)/.ccache
     - ccache --show-stats
     - ccache --zero-stats
+    - echo CONFIG_OPTS=$(CONFIG_OPTS)
   script:
     - ${PYTHON} ./configure --with-debugging=0 COPTFLAGS='-O -march=native' CXXOPTFLAGS='-O -march=native' FOPTFLAGS='-O -march=native' ${CONFIG_OPTS}
     - make CFLAGS=-Werror
@@ -80,9 +81,7 @@ uni-complex-float-int64:
   extends: .stage-1
   variables:
     PYTHON: python3
-    CONFIG_OPTS: <
-      --with-mpi=0
-      --with-scalar-type=complex --with-precision=single --with-64-bit-indices
+    CONFIG_OPTS: --with-mpi=0 --with-scalar-type=complex --with-precision=single --with-64-bit-indices
     TEST_SEARCH: ts_tutorials-ex11_adv_2d_quad_%
 
 c89-mlib-static-py2:
@@ -90,10 +89,8 @@ c89-mlib-static-py2:
   image: jedbrown/mpich-ccache:python2
   variables:
     PYTHON: python2
-    CONFIG_OPTS: <
-      --with-mpi-dir=/usr/local
-      --with-single-library=0 --with-shared-libraries=0 'CFLAGS=-std=c89 -pedantic -Wno-long-long -Wno-overlength-strings'
-    TEST_SEARCH: snes_tutorials-ex48%
+    CONFIG_OPTS: --with-mpi-dir=/usr/local --with-single-library=0 --with-shared-libraries=0 CFLAGS=-std=c89
+    TEST_SEARCH: snes_tutorials-ex19%
 
 checksource:
   extends: .test
@@ -117,6 +114,7 @@ checksource:
     - ./config/examples/${TEST_ARCH}.py
     - make
     - make check
+    - make updatedatafiles
     - make cleantest allgtests-tap TIMEOUT=${TIMEOUT}
   artifacts:
     reports:
@@ -149,6 +147,7 @@ checksource:
     - echo $(nproc)
     - ccache --zero-stats
   after_script:
+    - cp configure.log ../configure.log-${CI_JOB_NAME}-${CI_PIPELINE_ID}-${CI_JOB_ID}
     - ccache --show-stats
 
 .freebsd_test:
@@ -158,6 +157,7 @@ checksource:
     - echo $(sysctl -n hw.ncpu)
     - ccache --zero-stats
   after_script:
+    - cp configure.log ../configure.log-${CI_JOB_NAME}-${CI_PIPELINE_ID}-${CI_JOB_ID}
     - ccache --show-stats
 
 .osx_test:
@@ -167,6 +167,7 @@ checksource:
     - echo $(sysctl -n hw.ncpu)
     - ccache --zero-stats
   after_script:
+    - cp configure.log ../configure.log-${CI_JOB_NAME}-${CI_PIPELINE_ID}-${CI_JOB_ID}
     - ccache --show-stats
 
 .opensolaris_test:
@@ -174,12 +175,16 @@ checksource:
     - hostname
     - uname -a
     - echo $(nproc)
+  after_script:
+    - cp configure.log ../configure.log-${CI_JOB_NAME}-${CI_PIPELINE_ID}-${CI_JOB_ID}
 
 .mswin_test:
   before_script:
     - hostname
     - uname -a
     - echo $(nproc)
+  after_script:
+    - cp configure.log ../configure.log-${CI_JOB_NAME}-${CI_PIPELINE_ID}-${CI_JOB_ID}
 
 #
 # The following tests run as part of stage-2.
@@ -247,7 +252,7 @@ freebsd-cxx-cmplx-64idx-dbg:
 
 opensolaris-misc:
   extends:
-    - .stage-2
+    - .stage-3
     - .opensolaris_test
   tags:
     - name:n-gage
@@ -264,21 +269,12 @@ osx-cxx-pkgs-opt:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -saws_port_auto_select -saws_port_auto_select_silent -vecscatter_mpi1 false -options_left false
     TEST_ARCH: arch-ci-osx-cxx-pkgs-opt
 
-osx-barry:
-  extends:
-    - .stage-2
-    - .osx_test
-  tags:
-    - os:osx
-  variables:
-    TEST_ARCH: arch-ci-osx-prefix
-
 mswin-uni:
   extends:
     - .stage-2
     - .mswin_test
   tags:
-    - name:ps5
+    - name:ps5-2
   variables:
     TEST_ARCH: arch-ci-mswin-uni
 
@@ -478,7 +474,7 @@ linux-opt-misc:
     - .stage-3
     - .linux_test
   tags:
-    - mcs-nfs,name:cg
+    - name:compute004
   variables:
     OPENBLAS_NUM_THREADS: 1
     TEST_ARCH: arch-ci-linux-opt-misc
@@ -538,15 +534,15 @@ linux-gcov:
   variables:
     TEST_ARCH: arch-ci-linux-gcov
 
-linux-IPL64:
+linux-ILP64:
   extends:
     - .stage-3
     - .linux_test
   tags:
-    - mcs-nfs,name:cg
+    - name:compute004
   variables:
     OPENBLAS_NUM_THREADS: 1
-    TEST_ARCH: arch-ci-linux-IPL64
+    TEST_ARCH: arch-ci-linux-ILP64
 
 linux-matlab-ilp64-gcov:
   extends:
@@ -598,7 +594,7 @@ linux-pkgs-opt:
     - .stage-3
     - .linux_test
   tags:
-    - mcs-nfs
+    - name:compute004
   variables:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -saws_port_auto_select -saws_port_auto_select_silent
     TEST_ARCH: arch-ci-linux-pkgs-opt

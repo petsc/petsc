@@ -102,7 +102,8 @@
       </div>
 
       <h4>General:</h4>
-        <ul>
+      <ul>
+          <li>PetscRoundReal() has been removed, since the math routine round() is not supported on all systems: perhaps use PetscCeilReal() or PetscFloorReal()<\li>
           <li>The legacy and cmake compile systems (make all-legacy and all-cmake) are removed</li>
           <li>make gnumake is now make libs</li>
           <li>PetscArraycmp() should be used instead of PetscMemcmp(), it takes a count argument instead of a byte argument</li>
@@ -111,11 +112,18 @@
           <li>PetscArraymove() should be used instead of PetscMemmove(), it takes a count argument instead of a byte argument</li>
           <li>The ./configure options -with-gnu-compilers and -with-vendor-compilers are removed</li>
           <li>The order ./configure tests compilers has changed so there may be a different compiler selected if you do not provide them</li>
-          <li>Added --with-64-bit-blas-indices that will switch to 64 bit indices when using MKL libraries for BLAS/LAPACK</li>
+          <li>Added --with-64-bit-blas-indices that will switch to 64 bit indices when using MKL libraries for BLAS/LAPACK and build OpenBLAS with this support</li>
           <li>Changed PETSC_DEPRECATED() to PETSC_DEPRECATED_FUNCTION() and PETSC_DEPRECATED_TYPEDEF() to match naming of PETSC_DEPRECATED_ENUM() and PETSC_DEPRECATED_MACRO</li>
           <li>-help now causes the printing of the current value and the newly set value for PetscOptionsInt(), etc</li>
           <li>PetscFunctionListPrintTypes() takes an additional final argument after the current value, the set value</li>
-          <li>PetscCalloc*() now calls the system calloc() routine instead of malloc() plus memzero()
+          <li>PetscCalloc*() now calls the system calloc() routine instead of malloc() plus memzero()</li>
+          <li>-malloc <yes,no> is now marked as deprecated, use -malloc_debug <yes,no> instead</li>
+          <li>-malloc_log and -malloc_log_threshold are now -malloc_view and -malloc_view_threshold</li>
+          <li>PetscMallocDebug() is now PetscMallocSetDebug()</li>
+          <li>PetscMallocDumpLog() is now PetscMallocView(), see also PetscMallocViewSet()</li>
+          <li>PetscMallocSetDumpLogThreshold() and PetscMallocSetDumpLog() are now PetscMallocViewSet()</li>
+          <li>With -malloc_test or -malloc_debug allocated memory is initialized with NaN to detect use of uninitialized numerical arrays</li>
+          <li>PetscMallocSet() now takes three arguments instead of two</li>
         </ul>
       <h4>Configure/Build:</h4>
       <h4>IS:</h4>
@@ -126,6 +134,12 @@
           <li>VecCUDAGet/RestoreArrayReadWrite() changed to VecCUDAGet/RestoreArray()</li>
           <li>VecViennaCLGet/RestoreArrayReadWrite() changed to VecViennaCLGet/RestoreArray()</li>
         </ul>
+      <h4>PetscLayout:</h4>
+      <ul>
+        <li>Added PetscLayoutCreateFromSizes()</li>
+        <li>Added PetscLayoutCreateFromRanges()</li>
+        <li>Calling PetscLayoutSetUp() twice with different sizes is now forbidden</li>
+      </ul>
       <h4>PetscSection:</h4>
       <h4>VecScatter:</h4>
       <ul>
@@ -146,6 +160,7 @@
           <li>MatShift(Mat,0); will no longer silently insure there are no missing diagonal entries. (Previously it would put 0 into any diagonal entry that was missing</li>
           <li>Renamed MatComputeExplicitOperator() into MatComputeOperator() and MatComputeExplicitOperatorTranpose() into MatComputeOperatorTranspose(). Added extra argument to select the desired matrix type</li>
           <li>MatLoad() now supports loading dense matrices from HDF5/MAT files.</li>
+          <li>Added new Mat type, MATKAIJ, for matrices that can be expressed in a particular Kronecker (tensor) product form.
         </ul>
       <h4>PC:</h4>
         <ul>
@@ -208,3 +223,4 @@
 
   </body>
 </html>
+

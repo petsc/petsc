@@ -53,13 +53,13 @@ class Configure(config.package.CMakePackage):
     # we check this in two places, before doing a Trilinos install and (for when PETSc does not install Trilinos) when checking that
     # the the Trilinos libraries are valid
     if self.zoltan.found:
-      raise RuntimeError('Trilinos contains Zoltan, therefor do not provide/build a Zoltan if you are providing/building Trilinos')
+      raise RuntimeError('Trilinos contains Zoltan, therefore do not provide/build a Zoltan if you are providing/building Trilinos')
     if self.ml.found:
-      raise RuntimeError('Trilinos contains ml, therefor do not provide/build a ml if you are providing/building Trilinos')
+      raise RuntimeError('Trilinos contains ml, therefore do not provide/build a ml if you are providing/building Trilinos')
     if self.chaco.found:
-      raise RuntimeError('Trilinos contains chaco, therefor do not provide/build a chaco if you are providing/building Trilinos')
+      raise RuntimeError('Trilinos contains chaco, therefore do not provide/build a chaco if you are providing/building Trilinos')
     if self.exodusii.found:
-      raise RuntimeError('Trilinos contains Exodusii, therefor do not provide/build a Exodusii if you are providing/building Trilinos')
+      raise RuntimeError('Trilinos contains Exodusii, therefore do not provide/build a Exodusii if you are providing/building Trilinos')
 
   def configureLibrary(self):
     self.checkTrilinosDuplicates()

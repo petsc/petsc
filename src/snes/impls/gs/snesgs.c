@@ -306,27 +306,29 @@ PetscErrorCode SNESSolve_NGS(SNES snes)
    Level: advanced
 
   Options Database:
-+   -snes_ngs_sweeps - Number of sweeps of GS to apply
-.    -snes_ngs_atol - Absolute residual tolerance for GS iteration
-.    -snes_ngs_rtol - Relative residual tolerance for GS iteration
-.    -snes_ngs_stol - Absolute update tolerance for GS iteration
-.    -snes_ngs_max_it - Maximum number of sweeps of GS to apply
++   -snes_ngs_sweeps <n> - Number of sweeps of GS to apply
+.    -snes_ngs_atol <atol> - Absolute residual tolerance for GS iteration
+.    -snes_ngs_rtol <rtol> - Relative residual tolerance for GS iteration
+.    -snes_ngs_stol <stol> - Absolute update tolerance for GS iteration
+.    -snes_ngs_max_it <maxit> - Maximum number of sweeps of GS to apply
 .    -snes_ngs_secant - Use pointwise secant local Jacobian approximation with coloring instead of user provided Gauss-Seidel routine, this is
                         used by default if no user provided Gauss-Seidel routine is available. Requires either that a DM that can compute a coloring
                         is available or a Jacobian sparse matrix is provided (from which to get the coloring).
-.    -snes_ngs_secant_h - Differencing parameter for secant approximation
--    -snes_ngs_secant_mat_coloring - Use the graph coloring of the Jacobian for the secant GS even if a DM is available.
-
+.    -snes_ngs_secant_h <h> - Differencing parameter for secant approximation
+.    -snes_ngs_secant_mat_coloring - Use the graph coloring of the Jacobian for the secant GS even if a DM is available.
+-    -snes_norm_schedule <none, always, initialonly, finalonly, initalfinalonly> - how often the residual norms are computed
 
   Notes:
   the Gauss-Seidel smoother is inherited through composition.  If a solver has been created with SNESGetNPC(), it will have
   its parent's Gauss-Seidel routine associated with it.
 
+  By default this routine computes the solution norm at each iteration, this can be time consuming, you can turn this off with SNESSetNormSchedule() or -snes_norm_schedule
    References:
 .  1. - Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",
    SIAM Review, 57(4), 2015
 
-.seealso: SNESCreate(), SNES, SNESSetType(), SNESSetNGS(), SNESType (for list of available types), SNESNGSSetSweeps(), SNESNGSSetTolerances()
+.seealso: SNESCreate(), SNES, SNESSetType(), SNESSetNGS(), SNESType (for list of available types), SNESNGSSetSweeps(), SNESNGSSetTolerances(),
+          SNESSetNormSchedule()
 M*/
 
 PETSC_EXTERN PetscErrorCode SNESCreate_NGS(SNES snes)
@@ -356,10 +358,10 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NGS(SNES snes)
 
   gs->sweeps  = 1;
   gs->rtol    = 1e-5;
-  gs->abstol  = 1e-15;
-  gs->stol    = 1e-12;
+  gs->abstol  = PETSC_MACHINE_EPSILON;
+  gs->stol    = 1000*PETSC_MACHINE_EPSILON;
   gs->max_its = 50;
-  gs->h       = 1e-8;
+  gs->h       = PETSC_SQRT_MACHINE_EPSILON;
 
   snes->data = (void*) gs;
   PetscFunctionReturn(0);

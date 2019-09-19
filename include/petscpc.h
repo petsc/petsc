@@ -377,6 +377,8 @@ PETSC_EXTERN PetscErrorCode PCMGResidualDefault(Mat,Vec,Vec,Vec);
 PETSC_EXTERN PetscErrorCode PCHMGSetReuseInterpolation(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCHMGSetUseSubspaceCoarsening(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCHMGSetInnerPCType(PC,PCType);
+PETSC_EXTERN PetscErrorCode PCHMGSetCoarseningComponent(PC,PetscInt);
+PETSC_EXTERN PetscErrorCode PCHMGUseMatMAIJ(PC,PetscBool);
 
 PETSC_EXTERN PetscErrorCode PCTelescopeGetSubcommType(PC,PetscSubcommType*);
 PETSC_EXTERN PetscErrorCode PCTelescopeSetSubcommType(PC,PetscSubcommType);
@@ -428,4 +430,3 @@ PETSC_EXTERN PetscErrorCode PCDeflationSetCoarseMat(PC,Mat);
 PETSC_EXTERN PetscErrorCode PCDeflationGetPC(PC,PC*);
 
 #endif /* PETSCPC_H */
-

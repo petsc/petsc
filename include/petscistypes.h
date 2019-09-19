@@ -17,15 +17,15 @@ typedef struct _p_IS* IS;
 
    Level: intermediate
 
-   Note: mapping from Local to Global is scalable; but Global
-  to Local may not be if the range of global values represented locally
+   Note: mapping from local to global is scalable; but global
+  to local may not be if the range of global values represented locally
   is very large.
 
    Note: the ISLocalToGlobalMapping is actually a private object; it is included
   here for the inline function ISLocalToGlobalMappingApply() to allow it to be inlined since
   it is used so often.
 
-.seealso:  ISLocalToGlobalMappingCreate()
+.seealso:  ISLocalToGlobalMappingCreate(), ISLocalToGlobalMappingApply(), ISLocalToGlobalMappingDestroy()
 S*/
 typedef struct _p_ISLocalToGlobalMapping* ISLocalToGlobalMapping;
 
@@ -40,9 +40,13 @@ typedef struct _p_ISLocalToGlobalMapping* ISLocalToGlobalMapping;
     have been created. One should use ISColoringGetIS() to make sure they are
     created when needed.
 
+        When the coloring type is IS_COLORING_LOCAL the coloring is in the local ordering of the unknowns.
+    That is the matching the local (ghosted) vector; a local to global mapping must be applied to map
+    them to the global ordering.
+
     Developer Note: this is not a PetscObject
 
-.seealso:  ISColoringCreate(), ISColoringGetIS(), ISColoringView(), ISColoringGetIS()
+.seealso:  ISColoringCreate(), ISColoringGetIS(), ISColoringView()
 S*/
 typedef struct _n_ISColoring* ISColoring;
 
@@ -66,7 +70,7 @@ typedef struct _n_PetscLayout* PetscLayout;
   count, which are set using PetscSectionSetOffset() and PetscSectionSetDof() respectively. Lookup is typically using
   accessors or routines like VecGetValuesSection().
 
-  Level: developer
+  Level: beginner
 
 .seealso:  PetscSectionCreate(), PetscSectionDestroy()
 S*/

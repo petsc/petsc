@@ -218,7 +218,7 @@ static PetscErrorCode PetscDualSpaceView_ASCII(PetscDualSpace sp, PetscViewer v)
 + sp - the PetscDualSpace object to view
 - v  - the viewer
 
-  Level: developer
+  Level: beginner
 
 .seealso PetscDualSpaceDestroy()
 @*/
@@ -247,7 +247,7 @@ PetscErrorCode PetscDualSpaceView(PetscDualSpace sp, PetscViewer v)
   Options Database:
 . -petscspace_degree the approximation order of the space
 
-  Level: developer
+  Level: intermediate
 
 .seealso PetscDualSpaceView()
 @*/
@@ -307,7 +307,7 @@ PetscErrorCode PetscDualSpaceSetFromOptions(PetscDualSpace sp)
   Input Parameter:
 . sp - the PetscDualSpace object to setup
 
-  Level: developer
+  Level: intermediate
 
 .seealso PetscDualSpaceView(), PetscDualSpaceDestroy()
 @*/
@@ -332,7 +332,7 @@ PetscErrorCode PetscDualSpaceSetUp(PetscDualSpace sp)
   Input Parameter:
 . sp - the PetscDualSpace object to destroy
 
-  Level: developer
+  Level: beginner
 
 .seealso PetscDualSpaceView()
 @*/
@@ -646,6 +646,21 @@ PetscErrorCode PetscDualSpaceGetNumDof(PetscDualSpace sp, const PetscInt **numDo
   PetscFunctionReturn(0);
 }
 
+/*@
+  PetscDualSpaceCreateSection - Create a PetscSection over the reference cell with the layout from this space
+
+  Collective on sp
+
+  Input Parameters:
++ sp      - The PetscDualSpace
+
+  Output Parameter:
+. section - The section
+
+  Level: advanced
+
+.seealso: PetscDualSpaceCreate(), DMPLEX
+@*/
 PetscErrorCode PetscDualSpaceCreateSection(PetscDualSpace sp, PetscSection *section)
 {
   DM             dm;
@@ -697,7 +712,7 @@ PetscErrorCode PetscDualSpaceCreateSection(PetscDualSpace sp, PetscSection *sect
   Output Parameter:
 . refdm - The reference cell
 
-  Level: advanced
+  Level: intermediate
 
 .seealso: PetscDualSpaceCreate(), DMPLEX
 @*/
@@ -730,7 +745,7 @@ PetscErrorCode PetscDualSpaceCreateReferenceCell(PetscDualSpace sp, PetscInt dim
 $ func(PetscInt dim, PetscReal time, const PetscReal x[],
 $      PetscInt numComponents, PetscScalar values[], void *ctx)
 
-  Level: developer
+  Level: beginner
 
 .seealso: PetscDualSpaceCreate()
 @*/
@@ -756,7 +771,7 @@ PetscErrorCode PetscDualSpaceApply(PetscDualSpace sp, PetscInt f, PetscReal time
   Output Parameter:
 . spValue   - The values of all dual space functionals
 
-  Level: developer
+  Level: beginner
 
 .seealso: PetscDualSpaceCreate()
 @*/
@@ -796,7 +811,7 @@ $ n(f) = int dx n(x) . f(x)
 
 where both n and f have Nc components.
 
-  Level: developer
+  Level: beginner
 
 .seealso: PetscDualSpaceCreate()
 @*/
@@ -848,7 +863,7 @@ PetscErrorCode PetscDualSpaceApplyDefault(PetscDualSpace sp, PetscInt f, PetscRe
   Output Parameter:
 . spValue   - The values of all dual space functionals
 
-  Level: developer
+  Level: beginner
 
 .seealso: PetscDualSpaceCreate()
 @*/
@@ -880,6 +895,19 @@ PetscErrorCode PetscDualSpaceApplyAllDefault(PetscDualSpace sp, const PetscScala
   PetscFunctionReturn(0);
 }
 
+/*@
+  PetscDualSpaceGetAllPoints - Get all quadrature points from this space
+
+  Input Parameter:
+. sp - The dualspace
+
+  Output Parameter:
+. allPoints - A PetscQuadrature object containing all evaluation points
+
+  Level: advanced
+
+.seealso: PetscDualSpaceCreate()
+@*/
 PetscErrorCode PetscDualSpaceGetAllPoints(PetscDualSpace sp, PetscQuadrature *allPoints)
 {
   PetscErrorCode ierr;
@@ -894,6 +922,19 @@ PetscErrorCode PetscDualSpaceGetAllPoints(PetscDualSpace sp, PetscQuadrature *al
   PetscFunctionReturn(0);
 }
 
+/*@
+  PetscDualSpaceCreateAllPointsDefault - Create all evaluation points by examining functionals
+
+  Input Parameter:
+. sp - The dualspace
+
+  Output Parameter:
+. allPoints - A PetscQuadrature object containing all evaluation points
+
+  Level: advanced
+
+.seealso: PetscDualSpaceCreate()
+@*/
 PetscErrorCode PetscDualSpaceCreateAllPointsDefault(PetscDualSpace sp, PetscQuadrature *allPoints)
 {
   PetscInt        spdim;
@@ -961,7 +1002,7 @@ $ n(f) = int dx n(x) . f(x)
 
 where both n and f have Nc components.
 
-  Level: developer
+  Level: beginner
 
 .seealso: PetscDualSpaceCreate()
 @*/
@@ -1119,7 +1160,7 @@ PetscErrorCode PetscDualSpaceGetSymmetries(PetscDualSpace sp, const PetscInt ***
   Output Parameter:
 . k   - The simplex dimension
 
-  Level: advanced
+  Level: developer
 
   Note: Currently supported values are
 $ 0: These are H_1 methods that only transform coordinates
@@ -1153,7 +1194,7 @@ PetscErrorCode PetscDualSpaceGetDeRahm(PetscDualSpace dsp, PetscInt *k)
   Output Parameter:
 . vals      - The transformed function values
 
-  Level: developer
+  Level: intermediate
 
 .seealso: PetscDualSpaceTransformGradient(), PetscDualSpacePullback(), PetscDualSpacePushforward(), PetscDualSpaceTransformType
 @*/
@@ -1232,7 +1273,7 @@ PetscErrorCode PetscDualSpaceTransform(PetscDualSpace dsp, PetscDualSpaceTransfo
   Output Parameter:
 . vals      - The transformed function values
 
-  Level: developer
+  Level: intermediate
 
 .seealso: PetscDualSpaceTransform(), PetscDualSpacePullback(), PetscDualSpacePushforward(), PetscDualSpaceTransformType
 @*/

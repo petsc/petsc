@@ -353,9 +353,11 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
   }
 
   /* postcheck */
+  /* update Y to lambda*Y so that W is consistent with  X - lambda*Y */
+  ierr = VecScale(Y,lambda);CHKERRQ(ierr);
   ierr = SNESLineSearchPostCheck(linesearch,X,Y,W,&changed_y,&changed_w);CHKERRQ(ierr);
   if (changed_y) {
-    ierr = VecWAXPY(W,-lambda,Y,X);CHKERRQ(ierr);
+    ierr = VecWAXPY(W,-1.0,Y,X);CHKERRQ(ierr);
     if (linesearch->ops->viproject) {
       ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
     }

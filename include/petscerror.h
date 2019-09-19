@@ -529,7 +529,7 @@ M*/
     We highly recommend using valgrind https://www.mcs.anl.gov/petsc/documentation/faq.html#valgrind for finding memory problems. This is useful
     on systems that do not have valgrind, but much much less useful.
 
-    Must run with the option -malloc_debug (-malloc_test in debug mode; or if PetscMallocDebug() called) to enable this option
+    Must run with the option -malloc_debug (-malloc_test in debug mode; or if PetscMallocSetDebug() called) to enable this option
 
     Once the error handler is called the calling function is then returned from with the given error code.
 

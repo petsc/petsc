@@ -1,6 +1,8 @@
 #include <petsc/private/tsimpl.h>      /*I "petscts.h"  I*/
 
 const char *const TSConvergedReasons_Shifted[] = {
+  "FORWARD_DIVERGED_LINEAR_SOLVE",
+  "ADJOINT_DIVERGED_LINEAR_SOLVE",
   "DIVERGED_STEP_REJECTED",
   "DIVERGED_NONLINEAR_SOLVE",
   "CONVERGED_ITERATING",
@@ -11,7 +13,7 @@ const char *const TSConvergedReasons_Shifted[] = {
   "CONVERGED_PSEUDO_FATOL",
   "CONVERGED_PSEUDO_FATOL",
   "TSConvergedReason","TS_",0};
-const char *const*TSConvergedReasons = TSConvergedReasons_Shifted + 2;
+const char *const*TSConvergedReasons = TSConvergedReasons_Shifted + 4;
 
 /*@C
   TSCreate - This function creates an empty timestepper. The problem type can then be set with TSSetProblemType() and the

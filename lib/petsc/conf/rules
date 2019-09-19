@@ -771,5 +771,10 @@ uncrustify:
 	  uncrustify -c ${PETSC_DIR}/lib/petsc/conf/uncrustify.cfg $$i; \
 	done
 
+updatedatafiles:
+	-@if [ -d "${HOME}/datafiles" ]; then \
+            echo " ** Updating datafiles at ${HOME}/datafiles **"; \
+            cd "${HOME}/datafiles" && git pull -q; fi
+
 include ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscrules
 

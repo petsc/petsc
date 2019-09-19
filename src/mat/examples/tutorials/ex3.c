@@ -14,7 +14,7 @@ static char help[] = "Ilustration of MatIS using a 1D Laplacian assembly\n\n";
     /  1 -1 \
     \ -1  1 /
 
-  so that the assembled matrix has a triadiagonal [-1, 2, -1] pattern. We will use 1 cell per process for illustration,
+  so that the assembled matrix has a tridiagonal [-1, 2, -1] pattern. We will use 1 cell per process for illustration,
   and allow PETSc to decide the ownership.
 */
 

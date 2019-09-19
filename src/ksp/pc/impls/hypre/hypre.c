@@ -40,7 +40,7 @@ typedef struct {
 
   /* options for ParaSails */
   PetscInt  nlevels;
-  PetscReal threshhold;
+  PetscReal threshold;
   PetscReal filter;
   PetscInt  sym;
   PetscReal loadbal;
@@ -1026,8 +1026,8 @@ static PetscErrorCode PCSetFromOptions_HYPRE_ParaSails(PetscOptionItems *PetscOp
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"HYPRE ParaSails Options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_hypre_parasails_nlevels","Number of number of levels","None",jac->nlevels,&jac->nlevels,0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-pc_hypre_parasails_thresh","Threshold","None",jac->threshhold,&jac->threshhold,&flag);CHKERRQ(ierr);
-  if (flag) PetscStackCallStandard(HYPRE_ParaSailsSetParams,(jac->hsolver,jac->threshhold,jac->nlevels));
+  ierr = PetscOptionsReal("-pc_hypre_parasails_thresh","Threshold","None",jac->threshold,&jac->threshold,&flag);CHKERRQ(ierr);
+  if (flag) PetscStackCallStandard(HYPRE_ParaSailsSetParams,(jac->hsolver,jac->threshold,jac->nlevels));
 
   ierr = PetscOptionsReal("-pc_hypre_parasails_filter","filter","None",jac->filter,&jac->filter,&flag);CHKERRQ(ierr);
   if (flag) PetscStackCallStandard(HYPRE_ParaSailsSetFilter,(jac->hsolver,jac->filter));
@@ -1063,7 +1063,7 @@ static PetscErrorCode PCView_HYPRE_ParaSails(PC pc,PetscViewer viewer)
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE ParaSails preconditioning\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"    nlevels %d\n",jac->nlevels);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    threshold %g\n",(double)jac->threshhold);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"    threshold %g\n",(double)jac->threshold);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"    filter %g\n",(double)jac->filter);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"    load balance %g\n",(double)jac->loadbal);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"    reuse nonzero structure %s\n",PetscBools[jac->ruse]);CHKERRQ(ierr);
@@ -1749,16 +1749,16 @@ static PetscErrorCode  PCHYPRESetType_HYPRE(PC pc,const char name[])
     jac->setup              = HYPRE_ParaSailsSetup;
     jac->solve              = HYPRE_ParaSailsSolve;
     /* initialize */
-    jac->nlevels    = 1;
-    jac->threshhold = .1;
-    jac->filter     = .1;
-    jac->loadbal    = 0;
+    jac->nlevels   = 1;
+    jac->threshold = .1;
+    jac->filter    = .1;
+    jac->loadbal   = 0;
     if (PetscLogPrintInfo) jac->logging = (int) PETSC_TRUE;
     else jac->logging = (int) PETSC_FALSE;
 
     jac->ruse = (int) PETSC_FALSE;
     jac->symt = 0;
-    PetscStackCallStandard(HYPRE_ParaSailsSetParams,(jac->hsolver,jac->threshhold,jac->nlevels));
+    PetscStackCallStandard(HYPRE_ParaSailsSetParams,(jac->hsolver,jac->threshold,jac->nlevels));
     PetscStackCallStandard(HYPRE_ParaSailsSetFilter,(jac->hsolver,jac->filter));
     PetscStackCallStandard(HYPRE_ParaSailsSetLoadbal,(jac->hsolver,jac->loadbal));
     PetscStackCallStandard(HYPRE_ParaSailsSetLogging,(jac->hsolver,jac->logging));
