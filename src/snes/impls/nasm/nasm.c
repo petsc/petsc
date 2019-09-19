@@ -510,18 +510,18 @@ static PetscErrorCode SNESNASMGetSubdomainVecs_NASM(SNES snes,PetscInt *n,Vec **
 }
 
 /*@
-   SNESNASMSetComputeFinalJacobian - Schedules the computation of the global and subdomain jacobians upon convergence
+   SNESNASMSetComputeFinalJacobian - Schedules the computation of the global and subdomain Jacobians upon convergence
 
    Collective on SNES
 
    Input Parameters:
 +  SNES - the SNES context
--  flg - indication of whether to compute the jacobians or not
+-  flg - indication of whether to compute the Jacobians or not
 
    Level: developer
 
    Notes:
-    This is used almost exclusively in the implementation of ASPIN, where the converged subdomain and global jacobian
+   This is used almost exclusively in the implementation of ASPIN, where the converged subdomain and global Jacobian
    is needed at each linear iteration.
 
 .seealso: SNESNASM, SNESNASMGetSubdomains()
