@@ -7144,8 +7144,7 @@ PetscErrorCode DMRemoveLabel(DM dm, const char name[], DMLabel *label)
 @*/
 PetscErrorCode DMRemoveLabelBySelf(DM dm, DMLabel *label, PetscBool failNotFound)
 {
-  DMLabelLink    next = dm->labels->next;
-  DMLabelLink    last = NULL;
+  DMLabelLink    link, *pnext;
   PetscBool      hasLabel = PETSC_FALSE;
   PetscErrorCode ierr;
 
@@ -7155,20 +7154,16 @@ PetscErrorCode DMRemoveLabelBySelf(DM dm, DMLabel *label, PetscBool failNotFound
   if (!*label && !failNotFound) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*label, DMLABEL_CLASSID, 2);
   PetscValidLogicalCollectiveBool(dm,failNotFound,3);
-  while (next) {
-    if (*label == next->label) {
+  for (pnext=&dm->labels->next; (link=*pnext); pnext=&link->next) {
+    if (*label == link->label) {
       hasLabel = PETSC_TRUE;
-      if (last) last->next       = next->next;
-      else      dm->labels->next = next->next;
-      next->next = NULL;
+      *pnext = link->next; /* Remove from list */
       if (*label == dm->depthLabel) dm->depthLabel = NULL;
-      if (((PetscObject) next->label)->refct < 2) *label = NULL; /* nullify if exclusive reference */
-      ierr = DMLabelDestroy(&next->label);CHKERRQ(ierr);
-      ierr = PetscFree(next);CHKERRQ(ierr);
+      if (((PetscObject) link->label)->refct < 2) *label = NULL; /* nullify if exclusive reference */
+      ierr = DMLabelDestroy(&link->label);CHKERRQ(ierr);
+      ierr = PetscFree(link);CHKERRQ(ierr);
       break;
     }
-    last = next;
-    next = next->next;
   }
   if (!hasLabel && failNotFound) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Given label not found in DM");
   PetscFunctionReturn(0);
