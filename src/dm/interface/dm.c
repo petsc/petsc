@@ -7095,8 +7095,7 @@ PetscErrorCode DMAddLabel(DM dm, DMLabel label)
 @*/
 PetscErrorCode DMRemoveLabel(DM dm, const char name[], DMLabel *label)
 {
-  DMLabelLink    next = dm->labels->next;
-  DMLabelLink    last = NULL;
+  DMLabelLink    link, *pnext;
   PetscBool      hasLabel;
   const char    *lname;
   PetscErrorCode ierr;
@@ -7108,24 +7107,18 @@ PetscErrorCode DMRemoveLabel(DM dm, const char name[], DMLabel *label)
     PetscValidPointer(label, 3);
     *label = NULL;
   }
-  while (next) {
-    ierr = PetscObjectGetName((PetscObject) next->label, &lname);CHKERRQ(ierr);
+  for (pnext=&dm->labels->next; (link=*pnext); pnext=&link->next) {
+    ierr = PetscObjectGetName((PetscObject) link->label, &lname);CHKERRQ(ierr);
     ierr = PetscStrcmp(name, lname, &hasLabel);CHKERRQ(ierr);
     if (hasLabel) {
-      if (last) last->next       = next->next;
-      else      dm->labels->next = next->next;
-      next->next = NULL;
-      if (label) *label = next->label;
+      *pnext = link->next; /* Remove from list */
       ierr = PetscStrcmp(name, "depth", &hasLabel);CHKERRQ(ierr);
-      if (hasLabel) {
-        dm->depthLabel = NULL;
-      }
-      if (!label) {ierr = DMLabelDestroy(&next->label);CHKERRQ(ierr);}
-      ierr = PetscFree(next);CHKERRQ(ierr);
+      if (hasLabel) dm->depthLabel = NULL;
+      if (label) *label = link->label;
+      else       {ierr = DMLabelDestroy(&link->label);CHKERRQ(ierr);}
+      ierr = PetscFree(link);CHKERRQ(ierr);
       break;
     }
-    last = next;
-    next = next->next;
   }
   PetscFunctionReturn(0);
 }
