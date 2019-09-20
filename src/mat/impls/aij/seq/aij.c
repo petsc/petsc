@@ -2860,6 +2860,9 @@ PetscErrorCode MatPermute_SeqAIJ(Mat A,IS rowp,IS colp,Mat *B)
 
   (*B)->assembled = PETSC_FALSE;
 
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+  ierr = MatPinToCPU(*B,A->pinnedtocpu);CHKERRQ(ierr);
+#endif
   ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = ISRestoreIndices(irowp,&row);CHKERRQ(ierr);
