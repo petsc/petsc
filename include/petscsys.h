@@ -1718,7 +1718,7 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscMemzero(void *a,size_t n)
 .seealso: PetscMemcpy(), PetscMemcmp(), PetscArrayzero(), PetscMemzero(), PetscArraycpy(), PetscMemmove(), PetscStrallocpy(),
           PetscArraymove()
 M*/
-#define  PetscArraycmp(str1,str2,cnt,e) ((sizeof(*(str1)) != sizeof(*(str2))) || PetscMemcmp(str1,str2,(cnt)*sizeof(*(str1)),e))
+#define  PetscArraycmp(str1,str2,cnt,e) ((sizeof(*(str1)) != sizeof(*(str2))) || PetscMemcmp(str1,str2,(size_t)(cnt)*sizeof(*(str1)),e))
 
 /*MC
    PetscArraymove - Copies from one array in memory to another, the arrays may overlap. Use PetscArraycpy() when the arrays
@@ -1743,7 +1743,7 @@ M*/
 
 .seealso: PetscMemcpy(), PetscMemcmp(), PetscArrayzero(), PetscMemzero(), PetscArraycpy(), PetscMemmove(), PetscArraycmp(), PetscStrallocpy()
 M*/
-#define  PetscArraymove(str1,str2,cnt) ((sizeof(*(str1)) != sizeof(*(str2))) || PetscMemmove(str1,str2,(cnt)*sizeof(*(str1))))
+#define  PetscArraymove(str1,str2,cnt) ((sizeof(*(str1)) != sizeof(*(str2))) || PetscMemmove(str1,str2,(size_t)(cnt)*sizeof(*(str1))))
 
 /*MC
    PetscArraycpy - Copies from one array in memory to another
@@ -1767,7 +1767,7 @@ M*/
 
 .seealso: PetscMemcpy(), PetscMemcmp(), PetscArrayzero(), PetscMemzero(), PetscArraymove(), PetscMemmove(), PetscArraycmp(), PetscStrallocpy()
 M*/
-#define  PetscArraycpy(str1,str2,cnt) ((sizeof(*(str1)) != sizeof(*(str2))) || PetscMemcpy(str1,str2,(cnt)*sizeof(*(str1))))
+#define  PetscArraycpy(str1,str2,cnt) ((sizeof(*(str1)) != sizeof(*(str2))) || PetscMemcpy(str1,str2,(size_t)(cnt)*sizeof(*(str1))))
 
 /*MC
    PetscArrayzero - Zeros an array in memory.
@@ -1789,7 +1789,7 @@ M*/
 
 .seealso: PetscMemcpy(), PetscMemcmp(), PetscMemzero(), PetscArraycmp(), PetscArraycpy(), PetscMemmove(), PetscStrallocpy(), PetscArraymove()
 M*/
-#define  PetscArrayzero(str1,cnt) PetscMemzero(str1,(cnt)*sizeof(*(str1)))
+#define  PetscArrayzero(str1,cnt) PetscMemzero(str1,(size_t)(cnt)*sizeof(*(str1)))
 
 /*MC
    PetscPrefetchBlock - Prefetches a block of memory
