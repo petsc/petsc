@@ -6,7 +6,6 @@ static char help[] = "Solves -Laplacian u - exp(u) = 0,  0 < x < 1 using GPU\n\n
 #include <petscdm.h>
 #include <petscdmda.h>
 #include <petscsnes.h>
-#include <petsccuda.h>
 
 #include <thrust/device_ptr.h>
 #include <thrust/for_each.h>

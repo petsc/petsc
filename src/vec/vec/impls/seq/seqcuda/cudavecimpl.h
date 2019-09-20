@@ -3,7 +3,8 @@
 
 #if defined(__CUDACC__)
 
-#include <petsccuda.h>
+#include <petscvec.h>
+#include <petsccublas.h>
 #include <petsc/private/vecimpl.h>
 
 #include <cublas_v2.h>
