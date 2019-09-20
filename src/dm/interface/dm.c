@@ -574,7 +574,7 @@ static PetscErrorCode DMCountNonCyclicReferences(DM dm, PetscBool recurseCoarse,
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMDestroyLabelLinkList(DM dm)
+PetscErrorCode DMDestroyLabelLinkList_Internal(DM dm)
 {
   PetscErrorCode ierr;
 
@@ -704,20 +704,11 @@ PetscErrorCode  DMDestroy(DM *dm)
     }
     (*dm)->workin = NULL;
   }
-  if (!--((*dm)->labels->refct)) {
-    DMLabelLink next = (*dm)->labels->next;
-
-    /* destroy the labels */
-    while (next) {
-      DMLabelLink tmp = next->next;
-
-      ierr = DMLabelDestroy(&next->label);CHKERRQ(ierr);
-      ierr = PetscFree(next);CHKERRQ(ierr);
-      next = tmp;
-    }
-    ierr = PetscFree((*dm)->labels);CHKERRQ(ierr);
-  }
+  /* destroy the labels */
+  ierr = DMDestroyLabelLinkList_Internal(*dm);CHKERRQ(ierr);
+  /* destroy the fields */
   ierr = DMClearFields(*dm);CHKERRQ(ierr);
+  /* destroy the boundaries */
   {
     DMBoundary next = (*dm)->boundary;
     while (next) {

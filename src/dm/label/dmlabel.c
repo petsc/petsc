@@ -18,6 +18,10 @@
 
   Level: beginner
 
+  Notes:
+  The label name is actually usual PetscObject name.
+  One can get/set it with PetscObjectGetName()/PetscObjectSetName().
+
 .seealso: DMLabelDestroy()
 @*/
 PetscErrorCode DMLabelCreate(MPI_Comm comm, const char name[], DMLabel *label)
@@ -1148,6 +1152,10 @@ PetscErrorCode DMLabelGetStratumBounds(DMLabel label, PetscInt value, PetscInt *
 . points - The stratum points
 
   Level: intermediate
+
+  Notes:
+  The output IS should be destroyed when no longer needed.
+  Returns NULL if the stratum is empty.
 
 .seealso: DMLabelCreate(), DMLabelGetValue(), DMLabelSetValue(), DMLabelClearValue()
 @*/

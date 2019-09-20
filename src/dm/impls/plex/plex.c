@@ -7059,12 +7059,13 @@ static PetscErrorCode DMPlexAreAllConePointsInArray_Private(DM dm, PetscInt p, P
 }
 
 /*@
-  DMPlexCheckPointSF - Check that several sufficient conditions are met for the point SF of this plex.
+  DMPlexCheckPointSF - Check that several necessary conditions are met for the point SF of this plex.
 
   Input Parameters:
 . dm - The DMPlex object
 
-  Note: This is mainly intended for debugging/testing purposes.
+  Notes:
+  This is mainly intended for debugging/testing purposes.
 
   Level: developer
 
@@ -7072,10 +7073,10 @@ static PetscErrorCode DMPlexAreAllConePointsInArray_Private(DM dm, PetscInt p, P
 @*/
 PetscErrorCode DMPlexCheckPointSF(DM dm)
 {
-  PetscSF sf;
-  PetscInt d,depth,i,nleaves,p,plo,phi,missingPoint;
+  PetscSF         sf;
+  PetscInt        d,depth,i,nleaves,p,plo,phi,missingPoint;
   const PetscInt *locals;
-  PetscErrorCode ierr;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
