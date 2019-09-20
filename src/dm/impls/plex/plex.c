@@ -7126,6 +7126,8 @@ static void MPIAPI cell_stats_reduce(void *a, void *b, int * len, MPI_Datatype *
 /*@
   DMPlexCheckCellShape - Checks the Jacobian of the mapping from reference to real cells and computes some minimal statistics.
 
+  Collective on dm
+
   Input Parameters:
 + dm        - The DMPlex object
 . output    - If true, statistics will be displayed on stdout
@@ -7181,7 +7183,7 @@ PetscErrorCode DMPlexCheckCellShape(DM dm, PetscBool output, PetscReal condLimit
     stats.sum       += cond;
     stats.squaresum += cond2;
     stats.count++;
-    if (cond > limit) {
+    if (output && cond > limit) {
       PetscSection coordSection;
       Vec          coordsLocal;
       PetscScalar *coords = NULL;
@@ -7213,8 +7215,8 @@ PetscErrorCode DMPlexCheckCellShape(DM dm, PetscBool output, PetscReal condLimit
       ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &clSize, &closure);CHKERRQ(ierr);
       ierr = DMPlexVecRestoreClosure(dm, coordSection, coordsLocal, c, &Nv, &coords);CHKERRQ(ierr);
     }
-    ierr = PetscSynchronizedFlush(comm, NULL);CHKERRQ(ierr);
   }
+  if (output) {ierr = PetscSynchronizedFlush(comm, NULL);CHKERRQ(ierr);}
 
   if (size > 1) {
     PetscMPIInt   blockLengths[2] = {4,1};
