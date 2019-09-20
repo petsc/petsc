@@ -100,9 +100,9 @@ int main(int argc, char **argv)
     ierr = DMGetLabel(dm, "label1", &label1);CHKERRQ(ierr);
     if (!label0) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label0 must not be NULL now");
     if (!label1) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label1 must not be NULL now");
-    ierr = DMRemoveLabelBySelf(dm, &label0, PETSC_TRUE);CHKERRQ(ierr);
     ierr = DMRemoveLabel(dm, "label1", NULL);CHKERRQ(ierr);
     ierr = DMRemoveLabel(dm, "label2", &label2);CHKERRQ(ierr);
+    ierr = DMRemoveLabelBySelf(dm, &label0, PETSC_TRUE);CHKERRQ(ierr);
     ierr = DMGetLabel(dm, "label0", &label0);CHKERRQ(ierr);
     ierr = DMGetLabel(dm, "label1", &label1);CHKERRQ(ierr);
     if (label0) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label0 must be NULL now");
