@@ -765,6 +765,7 @@ static PetscErrorCode TestExpandPoints(DM dm, AppCtx *user)
   PetscInt          d,depth;
   PetscMPIInt       rank;
   PetscErrorCode    ierr;
+  PetscViewer       sviewer;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
@@ -774,14 +775,16 @@ static PetscErrorCode TestExpandPoints(DM dm, AppCtx *user)
     ierr = ISCreateGeneral(PETSC_COMM_SELF, user->nPointsToExpand, user->pointsToExpand, PETSC_USE_POINTER, &is);CHKERRQ(ierr);
   }
   ierr = DMPlexGetConeRecursive(dm, is, &depth, &iss, &sects);CHKERRQ(ierr);
-  ierr = PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF, "[%d] ==========================\n",rank);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPushSynchronized(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD, "[%d] ==========================\n",rank);CHKERRQ(ierr);
   for (d=depth-1; d>=0; d--) {
-    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF, "depth %D ---------------\n",d);CHKERRQ(ierr);
-    ierr = PetscSectionView(sects[d], PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-    ierr = ISView(iss[d], PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD, "depth %D ---------------\n",d);CHKERRQ(ierr);
+    ierr = PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
+    ierr = PetscSectionView(sects[d], sviewer);CHKERRQ(ierr);
+    ierr = ISView(iss[d], sviewer);CHKERRQ(ierr);
+    ierr = PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
   }
-  ierr = PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPopSynchronized(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = DMPlexRestoreConeRecursive(dm, is, &depth, &iss, &sects);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
