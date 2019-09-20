@@ -48,6 +48,11 @@ int main(int argc, char **argv)
 
   test:
     suffix: 0
+    requires: exodusii
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -report
+
+  test:
+    suffix: 1
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.msh -report
 
 TEST*/
