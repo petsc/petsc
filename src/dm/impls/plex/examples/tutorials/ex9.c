@@ -48,6 +48,6 @@ int main(int argc, char **argv)
 
   test:
     suffix: 0
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -report -cond_limit 4.0
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -report
 
 TEST*/
