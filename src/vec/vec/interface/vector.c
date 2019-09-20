@@ -1825,16 +1825,18 @@ PetscErrorCode VecSetInf(Vec xin)
 @*/
 PetscErrorCode VecPinToCPU(Vec v,PetscBool flg)
 {
-  PetscFunctionBegin;
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
   PetscErrorCode ierr;
 
-  if (v->pinnedtocpu == flg) return 0;
+  PetscFunctionBegin;
+  if (v->pinnedtocpu == flg) PetscFunctionReturn(0);
   v->pinnedtocpu = flg;
   if (v->ops->pintocpu) {
     ierr = (*v->ops->pintocpu)(v,flg);CHKERRQ(ierr);
   }
-#endif
   PetscFunctionReturn(0);
+#else
+  return 0;
+#endif
 }
 
