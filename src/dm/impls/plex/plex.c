@@ -585,7 +585,7 @@ PETSC_UNUSED static PetscErrorCode DMPlexView_Ascii_Geometry(DM dm, PetscViewer 
         ierr = PetscViewerASCIIPrintf(viewer, " (");CHKERRQ(ierr);
         for (d = 0; d < dim; ++d) {
           if (d > 0) {ierr = PetscViewerASCIIPrintf(viewer, ", ");CHKERRQ(ierr);}
-          ierr = PetscViewerASCIIPrintf(viewer, "%g", PetscRealPart(a[off+p*dim+d]));CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer, "%g", (double) PetscRealPart(a[off+p*dim+d]));CHKERRQ(ierr);
         }
         ierr = PetscViewerASCIIPrintf(viewer, ")");CHKERRQ(ierr);
       }
@@ -760,7 +760,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
       }
       ierr = PetscViewerASCIIPrintf(viewer, ".\n\n\n");CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(viewer, "\\begin{tikzpicture}[scale = %g,font=\\fontsize{8}{8}\\selectfont]\n", tikzscale);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "\\begin{tikzpicture}[scale = %g,font=\\fontsize{8}{8}\\selectfont]\n", (double) tikzscale);CHKERRQ(ierr);
 
     /* Plot vertices */
     ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
@@ -783,7 +783,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
       if (dim == 3) {PetscReal tmp = tcoords[1]; tcoords[1] = tcoords[2]; tcoords[2] = -tmp;}
       for (d = 0; d < dof; ++d) {
         if (d > 0) {ierr = PetscViewerASCIISynchronizedPrintf(viewer, ",");CHKERRQ(ierr);}
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer, "%g", tcoords[d]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, "%g", (double) tcoords[d]);CHKERRQ(ierr);
       }
       color = colors[rank%numColors];
       for (l = 0; l < numLabels; ++l) {
@@ -867,7 +867,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
       ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
       for (d = 0; d < dof; ++d) {
         if (d > 0) {ierr = PetscViewerASCIISynchronizedPrintf(viewer, ",");CHKERRQ(ierr);}
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer, "%g", ccoords[d]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, "%g", (double) ccoords[d]);CHKERRQ(ierr);
       }
       color = colors[rank%numColors];
       for (l = 0; l < numLabels; ++l) {
@@ -7192,12 +7192,12 @@ PetscErrorCode DMPlexCheckCellShape(DM dm, PetscBool output, PetscReal condLimit
       ierr = DMGetCoordinatesLocal(dm, &coordsLocal);CHKERRQ(ierr);
       ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
       ierr = DMPlexVecGetClosure(dm, coordSection, coordsLocal, c, &Nv, &coords);CHKERRQ(ierr);
-      ierr = PetscSynchronizedPrintf(comm, "[%d] Cell %D cond %g\n", rank, c, cond);CHKERRQ(ierr);
+      ierr = PetscSynchronizedPrintf(comm, "[%d] Cell %D cond %g\n", rank, c, (double) cond);CHKERRQ(ierr);
       for (i = 0; i < Nv/cdim; ++i) {
         ierr = PetscSynchronizedPrintf(comm, "  Vertex %D: (", i);CHKERRQ(ierr);
         for (d = 0; d < cdim; ++d) {
           if (d > 0) {ierr = PetscSynchronizedPrintf(comm, ", ");CHKERRQ(ierr);}
-          ierr = PetscSynchronizedPrintf(comm, "%g", coords[i*cdim+d]);CHKERRQ(ierr);
+          ierr = PetscSynchronizedPrintf(comm, "%g", (double) coords[i*cdim+d]);CHKERRQ(ierr);
         }
         ierr = PetscSynchronizedPrintf(comm, ")\n");CHKERRQ(ierr);
       }
@@ -7209,7 +7209,7 @@ PetscErrorCode DMPlexCheckCellShape(DM dm, PetscBool output, PetscReal condLimit
           PetscReal len;
 
           ierr = DMPlexComputeCellGeometryFVM(dm, edge, &len, NULL, NULL);CHKERRQ(ierr);
-          ierr = PetscSynchronizedPrintf(comm, "  Edge %D: length %g\n", edge, len);CHKERRQ(ierr);
+          ierr = PetscSynchronizedPrintf(comm, "  Edge %D: length %g\n", edge, (double) len);CHKERRQ(ierr);
         }
       }
       ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &clSize, &closure);CHKERRQ(ierr);

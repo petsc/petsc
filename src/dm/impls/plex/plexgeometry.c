@@ -349,7 +349,7 @@ PetscErrorCode PetscGridHashGetEnclosingBox(PetscGridHash box, PetscInt numPoint
       if (dbox == n[d] && PetscAbsReal(PetscRealPart(points[p*dim+d]) - upper[d]) < 1.0e-9) dbox = n[d]-1;
       if (dbox == -1   && PetscAbsReal(PetscRealPart(points[p*dim+d]) - lower[d]) < 1.0e-9) dbox = 0;
       if (dbox < 0 || dbox >= n[d]) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Input point %d (%g, %g, %g) is outside of our bounding box",
-                                             p, PetscRealPart(points[p*dim+0]), dim > 1 ? PetscRealPart(points[p*dim+1]) : 0.0, dim > 2 ? PetscRealPart(points[p*dim+2]) : 0.0);
+                                             p, (double) PetscRealPart(points[p*dim+0]), dim > 1 ? (double) PetscRealPart(points[p*dim+1]) : 0.0, dim > 2 ? (double) PetscRealPart(points[p*dim+2]) : 0.0);
       dboxes[p*dim+d] = dbox;
     }
     if (boxes) for (d = 1, boxes[p] = dboxes[p*dim]; d < dim; ++d) boxes[p] += dboxes[p*dim+d]*n[d-1];
@@ -2114,7 +2114,7 @@ PetscErrorCode DMPlexComputeGeometryFEM(DM dm, Vec *cellgeom)
     ierr = DMPlexPointLocalRef(dmCell, c, cgeom, &cg);CHKERRQ(ierr);
     ierr = PetscArrayzero(cg, 1);CHKERRQ(ierr);
     ierr = DMPlexComputeCellGeometryFEM(dmCell, c, NULL, cg->v, cg->J, cg->invJ, cg->detJ);CHKERRQ(ierr);
-    if (*cg->detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", cg->detJ, c);
+    if (*cg->detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %D", (double) *cg->detJ, c);
   }
   PetscFunctionReturn(0);
 }
@@ -2773,7 +2773,7 @@ static PetscErrorCode DMPlexCoordinatesToReference_Tensor(DM dm, PetscInt cell, 
         for (l = 0; l < dimC; l++) {
           maxAbs = PetscMax(maxAbs,PetscAbsReal(resNeg[l]));
         }
-        ierr = PetscInfo4(dm,"cell %D, point %D, iter %D: res %g\n",cell,j,i,maxAbs);CHKERRQ(ierr);
+        ierr = PetscInfo4(dm,"cell %D, point %D, iter %D: res %g\n",cell,j,i,(double) maxAbs);CHKERRQ(ierr);
       }
 #endif
 
@@ -2917,7 +2917,7 @@ static PetscErrorCode DMPlexCoordinatesToReference_FE(DM dm, PetscFE fe, PetscIn
         for (l = 0; l < Nc; l++) {
           maxAbs = PetscMax(maxAbs,PetscAbsReal(resNeg[l]));
         }
-        ierr = PetscInfo4(dm,"cell %D, point %D, iter %D: res %g\n",cell,j,i,maxAbs);CHKERRQ(ierr);
+        ierr = PetscInfo4(dm,"cell %D, point %D, iter %D: res %g\n",cell,j,i,(double) maxAbs);CHKERRQ(ierr);
       }
 #endif
       ierr = DMPlexCoordinatesToReference_NewtonUpdate(Nc,dimR,J,invJ,work,resNeg,guess);CHKERRQ(ierr);
@@ -3074,7 +3074,7 @@ PetscErrorCode DMPlexCoordinatesToReference(DM dm, PetscInt cell, PetscInt numPo
 . realCoords - (numPoints x coordinate dimension) array of coordinates (see DMGetCoordinateDim())
 
    Level: intermediate
-   
+
 .seealso: DMPlexCoordinatesToReference()
 @*/
 PetscErrorCode DMPlexReferenceToCoordinates(DM dm, PetscInt cell, PetscInt numPoints, const PetscReal refCoords[], PetscReal realCoords[])
