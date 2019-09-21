@@ -7197,7 +7197,7 @@ PetscErrorCode DMPlexCheckCellShape(DM dm, PetscBool output, PetscReal condLimit
         ierr = PetscSynchronizedPrintf(comm, "  Vertex %D: (", i);CHKERRQ(ierr);
         for (d = 0; d < cdim; ++d) {
           if (d > 0) {ierr = PetscSynchronizedPrintf(comm, ", ");CHKERRQ(ierr);}
-          ierr = PetscSynchronizedPrintf(comm, "%g", (double) coords[i*cdim+d]);CHKERRQ(ierr);
+          ierr = PetscSynchronizedPrintf(comm, "%g", (double) PetscRealPart(coords[i*cdim+d]));CHKERRQ(ierr);
         }
         ierr = PetscSynchronizedPrintf(comm, ")\n");CHKERRQ(ierr);
       }
