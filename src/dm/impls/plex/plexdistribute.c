@@ -1048,8 +1048,8 @@ static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmPa
   lsendDepth = mesh->depthState != depthState ? PETSC_TRUE : PETSC_FALSE;
   ierr = MPIU_Allreduce(&lsendDepth, &sendDepth, 1, MPIU_BOOL, MPI_LOR, comm);CHKERRQ(ierr);
   if (sendDepth) {
-    ierr = DMRemoveLabel(dmParallel, "depth", &depthLabel);CHKERRQ(ierr);
-    ierr = DMLabelDestroy(&depthLabel);CHKERRQ(ierr);
+    ierr = DMPlexGetDepthLabel(dmParallel, &dmParallel->depthLabel);CHKERRQ(ierr);
+    ierr = DMRemoveLabelBySelf(dmParallel, &dmParallel->depthLabel, PETSC_FALSE);CHKERRQ(ierr);
   }
   /* Everyone must have either the same number of labels, or none */
   ierr = DMGetNumLabels(dm, &numLocalLabels);CHKERRQ(ierr);
@@ -1089,6 +1089,7 @@ static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmPa
     ierr = MPIU_Allreduce(&lisOutput, &isOutput, 1, MPIU_BOOL, MPI_LAND, comm);CHKERRQ(ierr);
     ierr = PetscObjectGetName((PetscObject) labelNew, &name);CHKERRQ(ierr);
     ierr = DMSetLabelOutput(dmParallel, name, isOutput);CHKERRQ(ierr);
+    ierr = DMLabelDestroy(&labelNew);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(DMPLEX_DistributeLabels,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);

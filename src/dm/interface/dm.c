@@ -7065,11 +7065,12 @@ PetscErrorCode DMAddLabel(DM dm, DMLabel label)
   tmpLabel->output = PETSC_TRUE;
   tmpLabel->next   = dm->labels->next;
   dm->labels->next = tmpLabel;
+  ierr = PetscObjectReference((PetscObject)label);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*@C
-  DMRemoveLabel - Remove the label from this mesh
+  DMRemoveLabel - Remove the label given by name from this mesh
 
   Not Collective
 
@@ -7082,39 +7083,89 @@ PetscErrorCode DMAddLabel(DM dm, DMLabel label)
 
   Level: developer
 
-.seealso: DMCreateLabel(), DMHasLabel(), DMGetLabelValue(), DMSetLabelValue(), DMGetStratumIS()
+  Notes:
+  DMRemoveLabel(dm,name,NULL) removes the label from dm and calls
+  DMLabelDestroy() on the label.
+
+  DMRemoveLabel(dm,name,&label) removes the label from dm, but it DOES NOT
+  call DMLabelDestroy(). Instead, the label is returned and the user is
+  responsible of calling DMLabelDestroy() at some point.
+
+.seealso: DMCreateLabel(), DMHasLabel(), DMGetLabel(), DMGetLabelValue(), DMSetLabelValue(), DMLabelDestroy(), DMRemoveLabelBySelf()
 @*/
 PetscErrorCode DMRemoveLabel(DM dm, const char name[], DMLabel *label)
 {
-  DMLabelLink    next = dm->labels->next;
-  DMLabelLink    last = NULL;
+  DMLabelLink    link, *pnext;
   PetscBool      hasLabel;
   const char    *lname;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr   = DMHasLabel(dm, name, &hasLabel);CHKERRQ(ierr);
-  *label = NULL;
-  if (!hasLabel) PetscFunctionReturn(0);
-  while (next) {
-    ierr = PetscObjectGetName((PetscObject) next->label, &lname);CHKERRQ(ierr);
+  PetscValidCharPointer(name, 2);
+  if (label) {
+    PetscValidPointer(label, 3);
+    *label = NULL;
+  }
+  for (pnext=&dm->labels->next; (link=*pnext); pnext=&link->next) {
+    ierr = PetscObjectGetName((PetscObject) link->label, &lname);CHKERRQ(ierr);
     ierr = PetscStrcmp(name, lname, &hasLabel);CHKERRQ(ierr);
     if (hasLabel) {
-      if (last) last->next       = next->next;
-      else      dm->labels->next = next->next;
-      next->next = NULL;
-      *label     = next->label;
+      *pnext = link->next; /* Remove from list */
       ierr = PetscStrcmp(name, "depth", &hasLabel);CHKERRQ(ierr);
-      if (hasLabel) {
-        dm->depthLabel = NULL;
-      }
-      ierr = PetscFree(next);CHKERRQ(ierr);
+      if (hasLabel) dm->depthLabel = NULL;
+      if (label) *label = link->label;
+      else       {ierr = DMLabelDestroy(&link->label);CHKERRQ(ierr);}
+      ierr = PetscFree(link);CHKERRQ(ierr);
       break;
     }
-    last = next;
-    next = next->next;
   }
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMRemoveLabelBySelf - Remove the label from this mesh
+
+  Not Collective
+
+  Input Parameters:
++ dm   - The DM object
+. label - (Optional) The DMLabel to be removed from the DM
+- failNotFound - Should it fail if the label is not found in the DM?
+
+  Level: developer
+
+  Notes:
+  Only exactly the same instance is removed if found, name match is ignored.
+  If the DM has an exclusive reference to the label, it gets destroyed and
+  *label nullified.
+
+.seealso: DMCreateLabel(), DMHasLabel(), DMGetLabel() DMGetLabelValue(), DMSetLabelValue(), DMLabelDestroy(), DMRemoveLabel()
+@*/
+PetscErrorCode DMRemoveLabelBySelf(DM dm, DMLabel *label, PetscBool failNotFound)
+{
+  DMLabelLink    link, *pnext;
+  PetscBool      hasLabel = PETSC_FALSE;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(label, 2);
+  if (!*label && !failNotFound) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(*label, DMLABEL_CLASSID, 2);
+  PetscValidLogicalCollectiveBool(dm,failNotFound,3);
+  for (pnext=&dm->labels->next; (link=*pnext); pnext=&link->next) {
+    if (*label == link->label) {
+      hasLabel = PETSC_TRUE;
+      *pnext = link->next; /* Remove from list */
+      if (*label == dm->depthLabel) dm->depthLabel = NULL;
+      if (((PetscObject) link->label)->refct < 2) *label = NULL; /* nullify if exclusive reference */
+      ierr = DMLabelDestroy(&link->label);CHKERRQ(ierr);
+      ierr = PetscFree(link);CHKERRQ(ierr);
+      break;
+    }
+  }
+  if (!hasLabel && failNotFound) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Given label not found in DM");
   PetscFunctionReturn(0);
 }
 
@@ -7228,6 +7279,7 @@ PetscErrorCode DMCopyLabels(DM dmA, DM dmB)
     ierr = DMGetLabel(dmA, name, &label);CHKERRQ(ierr);
     ierr = DMLabelDuplicate(label, &labelNew);CHKERRQ(ierr);
     ierr = DMAddLabel(dmB, labelNew);CHKERRQ(ierr);
+    ierr = DMLabelDestroy(&labelNew);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
