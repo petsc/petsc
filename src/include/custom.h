@@ -158,8 +158,6 @@ PetscLogEventGetPerfInfo(int stage,PetscLogEvent event,PetscEventPerfInfo *info)
 
 /* ---------------------------------------------------------------- */
 
-#if defined(PETSC_HAVE_CUDA)
-
 PETSC_EXTERN PetscErrorCode VecCUDAGetArrayRead(Vec,const PetscScalar**);
 PETSC_EXTERN PetscErrorCode VecCUDAGetArrayWrite(Vec,PetscScalar**);
 PETSC_EXTERN PetscErrorCode VecCUDAGetArray(Vec,PetscScalar**);
@@ -167,36 +165,6 @@ PETSC_EXTERN PetscErrorCode VecCUDAGetArray(Vec,PetscScalar**);
 PETSC_EXTERN PetscErrorCode VecCUDARestoreArrayRead(Vec,const PetscScalar**);
 PETSC_EXTERN PetscErrorCode VecCUDARestoreArrayWrite(Vec,PetscScalar**);
 PETSC_EXTERN PetscErrorCode VecCUDARestoreArray(Vec,PetscScalar**);
-
-#else
-
-PETSC_STATIC_INLINE PetscErrorCode
-VecCUDAGetArray(Vec v,PetscScalar **a)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,VEC_CLASSID,1);
-  PetscValidType(v,1);
-  PetscValidPointer(a,2);
-  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"%s() requires VECCUDA",PETSC_FUNCTION_NAME);
-  PetscFunctionReturn(PETSC_ERR_SUP);
-}
-#define VecCUDAGetArrayRead(v,a) VecCUDAGetArray(v,(PetscScalar**)(a))
-#define VecCUDAGetArrayWrite     VecCUDAGetArray
-
-PETSC_STATIC_INLINE PetscErrorCode
-VecCUDARestoreArray(Vec v,PetscScalar **a)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,VEC_CLASSID,1);
-  PetscValidType(v,1);
-  PetscValidPointer(a,2);
-  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"%s() requires VECCUDA",PETSC_FUNCTION_NAME);
-  PetscFunctionReturn(PETSC_ERR_SUP);
-}
-#define VecCUDARestoreArrayRead(v,a) VecCUDARestoreArray(v,(PetscScalar**)(a))
-#define VecCUDARestoreArrayWrite     VecCUDARestoreArray
-
-#endif
 
 /* ---------------------------------------------------------------- */
 
