@@ -22,7 +22,8 @@ PETSC_INTERN PetscErrorCode PetscLogInitialize(void);
 #endif
 #if defined(PETSC_HAVE_CUDA)
 #include <cuda_runtime.h>
-extern PetscErrorCode PetscCUBLASInitializeHandle(void);
+PETSC_EXTERN PetscErrorCode PetscCUBLASInitializeHandle(void);
+PETSC_EXTERN PetscErrorCode PetscCUSOLVERDnInitializeHandle(void);
 #endif
 
 #if defined(PETSC_HAVE_VIENNACL)
@@ -263,11 +264,12 @@ PetscErrorCode PetscCUDAInitialize(MPI_Comm comm)
     if (err != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaSetDeviceFlags %s",cudaGetErrorString(err));
 
     ierr = PetscCUBLASInitializeHandle();CHKERRQ(ierr);
+    ierr = PetscCUSOLVERDnInitializeHandle();CHKERRQ(ierr);
     PetscCUDAInitialized = PETSC_TRUE;
   }
   if (cuda_view_flag) {
-    ierr   = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-    err = cudaGetDeviceCount(&devCount);
+    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+    err  = cudaGetDeviceCount(&devCount);
     if (err != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaGetDeviceCount %s",cudaGetErrorString(err));
     for (devicecnt = 0; devicecnt < devCount; ++devicecnt) {
       err = cudaGetDeviceProperties(&prop,devicecnt);

@@ -6,8 +6,6 @@
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/vec/vec/impls/seq/seqcuda/cudavecimpl.h>
 
-/* TODO: Move to a different include file */
-#include <cusolverDn.h>
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
 #define cusolverDnXpotrf(a,b,c,d,e,f,g,h)        cusolverDnCpotrf((a),(b),(c),(cuComplex*)(d),(e),(cuComplex*)(f),(g),(h))
@@ -76,7 +74,7 @@ static PetscErrorCode PetscCUSOLVERDnGetHandle_Private(cusolverDnHandle_t **hand
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscCUSOLVERDnInitializeHandle(void)
+PETSC_EXTERN PetscErrorCode PetscCUSOLVERDnInitializeHandle(void)
 {
   cusolverDnHandle_t *p_cusolverdnhandle;
   PetscErrorCode     ierr;
