@@ -22,7 +22,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsString("-filename", "The mesh file", "ex9.c", options->filename, options->filename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-report", "Output a mesh quality report", "ex9.c", options->report, &options->report, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-cond_limit", "Condition number limit for cell output", "ex9.c", options->condLimit, &options->condLimit, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   ierr = PetscStrlen(options->filename, &len);CHKERRQ(ierr);
   if (!len) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "You must specify an input mesh using -filename");
@@ -49,6 +49,7 @@ int main(int argc, char **argv)
   test:
     suffix: 0
     requires: exodusii
+    nsize: {{1 2}}
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -report
 
   test:
