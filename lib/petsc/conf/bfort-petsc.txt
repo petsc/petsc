@@ -69,6 +69,7 @@ native ISColoringValue
 native MatReal
 native PetscSysInt
 native MatSTRUMPACKReordering
+native PCGAMGLayoutType
 # Some structures are like arrays and can be treated as native types
 native MatInfo
 native MatStencil
