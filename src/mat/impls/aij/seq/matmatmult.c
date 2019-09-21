@@ -1445,7 +1445,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqDense(Mat A,Mat B,PetscReal fill,Mat
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
+PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
 {
   Mat_SeqAIJ        *a=(Mat_SeqAIJ*)A->data;
   Mat_SeqDense      *bd = (Mat_SeqDense*)B->data;
@@ -1458,9 +1458,7 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
 
   PetscFunctionBegin;
   if (!cm || !cn) PetscFunctionReturn(0);
-  if (B->rmap->n != A->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number columns in A %D not equal rows in B %D\n",A->cmap->n,B->rmap->n);
-  if (A->rmap->n != C->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number rows in C %D not equal rows in A %D\n",C->rmap->n,A->rmap->n);
-  if (B->cmap->n != C->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number columns in B %D not equal columns in C %D\n",B->cmap->n,C->cmap->n);
+
   b = bd->v;
   ierr = MatDenseGetArray(C,&c);CHKERRQ(ierr);
   b1 = b; b2 = b1 + bm; b3 = b2 + bm; b4 = b3 + bm;
@@ -1478,10 +1476,10 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
         r3 += aatmp*b3[ajtmp];
         r4 += aatmp*b4[ajtmp];
       }
-      c1[i] = r1;
-      c2[i] = r2;
-      c3[i] = r3;
-      c4[i] = r4;
+      c1[i] += r1;
+      c2[i] += r2;
+      c3[i] += r3;
+      c4[i] += r4;
     }
     b1 += bm4; b2 += bm4; b3 += bm4; b4 += bm4;
     c1 += am4; c2 += am4; c3 += am4; c4 += am4;
@@ -1495,7 +1493,7 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
       for (j=0; j<n; j++) {
         r1 += aa[j]*b1[aj[j]];
       }
-      c1[i] = r1;
+      c1[i] += r1;
     }
     b1 += bm;
     c1 += am;
@@ -1507,112 +1505,17 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
   PetscFunctionReturn(0);
 }
 
-/*
-   Note very similar to MatMult_SeqAIJ(), should generate both codes from same base
-*/
-PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
+PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
 {
-  Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data;
-  Mat_SeqDense   *bd = (Mat_SeqDense*)B->data;
   PetscErrorCode ierr;
-  PetscScalar    *b,*c,r1,r2,r3,r4,*b1,*b2,*b3,*b4;
-  MatScalar      *aa;
-  PetscInt       cm  = C->rmap->n, cn=B->cmap->n, bm=bd->lda, col, i,j,n,*aj, am = A->rmap->n,*ii,arm;
-  PetscInt       am2 = 2*am, am3 = 3*am,  bm4 = 4*bm,colam,*ridx;
 
   PetscFunctionBegin;
-  if (!cm || !cn) PetscFunctionReturn(0);
-  b = bd->v;
-  ierr = MatDenseGetArray(C,&c);CHKERRQ(ierr);
-  b1   = b; b2 = b1 + bm; b3 = b2 + bm; b4 = b3 + bm;
+  if (B->rmap->n != A->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number columns in A %D not equal rows in B %D\n",A->cmap->n,B->rmap->n);
+  if (A->rmap->n != C->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number rows in C %D not equal rows in A %D\n",C->rmap->n,A->rmap->n);
+  if (B->cmap->n != C->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number columns in B %D not equal columns in C %D\n",B->cmap->n,C->cmap->n);
 
-  if (a->compressedrow.use) { /* use compressed row format */
-    for (col=0; col<cn-4; col += 4) {  /* over columns of C */
-      colam = col*am;
-      arm   = a->compressedrow.nrows;
-      ii    = a->compressedrow.i;
-      ridx  = a->compressedrow.rindex;
-      for (i=0; i<arm; i++) {        /* over rows of C in those columns */
-        r1 = r2 = r3 = r4 = 0.0;
-        n  = ii[i+1] - ii[i];
-        aj = a->j + ii[i];
-        aa = a->a + ii[i];
-        for (j=0; j<n; j++) {
-          r1 += (*aa)*b1[*aj];
-          r2 += (*aa)*b2[*aj];
-          r3 += (*aa)*b3[*aj];
-          r4 += (*aa++)*b4[*aj++];
-        }
-        c[colam       + ridx[i]] += r1;
-        c[colam + am  + ridx[i]] += r2;
-        c[colam + am2 + ridx[i]] += r3;
-        c[colam + am3 + ridx[i]] += r4;
-      }
-      b1 += bm4;
-      b2 += bm4;
-      b3 += bm4;
-      b4 += bm4;
-    }
-    for (; col<cn; col++) {     /* over extra columns of C */
-      colam = col*am;
-      arm   = a->compressedrow.nrows;
-      ii    = a->compressedrow.i;
-      ridx  = a->compressedrow.rindex;
-      for (i=0; i<arm; i++) {  /* over rows of C in those columns */
-        r1 = 0.0;
-        n  = ii[i+1] - ii[i];
-        aj = a->j + ii[i];
-        aa = a->a + ii[i];
-
-        for (j=0; j<n; j++) {
-          r1 += (*aa++)*b1[*aj++];
-        }
-        c[colam + ridx[i]] += r1;
-      }
-      b1 += bm;
-    }
-  } else {
-    for (col=0; col<cn-4; col += 4) {  /* over columns of C */
-      colam = col*am;
-      for (i=0; i<am; i++) {        /* over rows of C in those columns */
-        r1 = r2 = r3 = r4 = 0.0;
-        n  = a->i[i+1] - a->i[i];
-        aj = a->j + a->i[i];
-        aa = a->a + a->i[i];
-        for (j=0; j<n; j++) {
-          r1 += (*aa)*b1[*aj];
-          r2 += (*aa)*b2[*aj];
-          r3 += (*aa)*b3[*aj];
-          r4 += (*aa++)*b4[*aj++];
-        }
-        c[colam + i]       += r1;
-        c[colam + am + i]  += r2;
-        c[colam + am2 + i] += r3;
-        c[colam + am3 + i] += r4;
-      }
-      b1 += bm4;
-      b2 += bm4;
-      b3 += bm4;
-      b4 += bm4;
-    }
-    for (; col<cn; col++) {     /* over extra columns of C */
-      colam = col*am;
-      for (i=0; i<am; i++) {  /* over rows of C in those columns */
-        r1 = 0.0;
-        n  = a->i[i+1] - a->i[i];
-        aj = a->j + a->i[i];
-        aa = a->a + a->i[i];
-
-        for (j=0; j<n; j++) {
-          r1 += (*aa++)*b1[*aj++];
-        }
-        c[colam + i] += r1;
-      }
-      b1 += bm;
-    }
-  }
-  ierr = PetscLogFlops(cn*2.0*a->nz);CHKERRQ(ierr);
-  ierr = MatDenseRestoreArray(C,&c);CHKERRQ(ierr);
+  ierr = MatZeroEntries(C);CHKERRQ(ierr);
+  ierr = MatMatMultNumericAdd_SeqAIJ_SeqDense(A,B,C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

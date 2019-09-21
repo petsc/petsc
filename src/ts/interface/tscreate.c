@@ -1,8 +1,8 @@
 #include <petsc/private/tsimpl.h>      /*I "petscts.h"  I*/
 
 const char *const TSConvergedReasons_Shifted[] = {
-  "FORWARD_DIVERGED_LINEAR_SOLVE",
   "ADJOINT_DIVERGED_LINEAR_SOLVE",
+  "FORWARD_DIVERGED_LINEAR_SOLVE",
   "DIVERGED_STEP_REJECTED",
   "DIVERGED_NONLINEAR_SOLVE",
   "CONVERGED_ITERATING",

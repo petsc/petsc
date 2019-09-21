@@ -1507,10 +1507,7 @@ PetscErrorCode TSAdjointStep(TS ts)
   ts->adjoint_steps++; ts->steps--;
 
   if (ts->reason < 0) {
-    if (ts->errorifstepfailed) {
-      if (ts->reason == TSADJOINT_DIVERGED_LINEAR_SOLVE) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSAdjointStep has failed due to %s",TSConvergedReasons[ts->reason]);
-      else SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSAdjointStep has failed due to %s",TSConvergedReasons[ts->reason]);
-    }
+    if (ts->errorifstepfailed) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSAdjointStep has failed due to %s",TSConvergedReasons[ts->reason]);
   } else if (!ts->reason) {
     if (ts->adjoint_steps >= ts->adjoint_max_steps) ts->reason = TS_CONVERGED_ITS;
   }
@@ -1776,6 +1773,7 @@ PetscErrorCode TSForwardStep(TS ts)
   ierr = PetscLogEventBegin(TS_ForwardStep,ts,0,0,0);CHKERRQ(ierr);
   ierr = (*ts->ops->forwardstep)(ts);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(TS_ForwardStep,ts,0,0,0);CHKERRQ(ierr);
+  if (ts->reason < 0 && ts->errorifstepfailed) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSFowardStep has failed due to %s",TSConvergedReasons[ts->reason]);
   PetscFunctionReturn(0);
 }
 

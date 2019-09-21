@@ -319,7 +319,7 @@ static PetscErrorCode TSAdjointStepBEuler_Private(TS ts)
     ierr = KSPGetConvergedReason(ksp,&kspreason);CHKERRQ(ierr);
     if (kspreason < 0) {
       ts->reason = TSADJOINT_DIVERGED_LINEAR_SOLVE;
-      ierr = PetscInfo2(ts,"Step=%D, %Dth cost function, transposed linear solve fails, stopping adjoint solve\n",ts->steps,nadj);CHKERRQ(ierr);
+      ierr = PetscInfo2(ts,"Step=%D, %Dth cost function, transposed linear solve fails, stopping 1st-order adjoint solve\n",ts->steps,nadj);CHKERRQ(ierr);
     }
   }
 
@@ -346,7 +346,7 @@ static PetscErrorCode TSAdjointStepBEuler_Private(TS ts)
       ierr = KSPGetConvergedReason(ksp,&kspreason);CHKERRQ(ierr);
       if (kspreason < 0) {
         ts->reason = TSADJOINT_DIVERGED_LINEAR_SOLVE;
-        ierr = PetscInfo2(ts,"Step=%D, %Dth cost function, transposed linear solve fails, stopping adjoint solve\n",ts->steps,nadj);CHKERRQ(ierr);
+        ierr = PetscInfo2(ts,"Step=%D, %Dth cost function, transposed linear solve fails, stopping 2nd-order adjoint solve\n",ts->steps,nadj);CHKERRQ(ierr);
       }
     }
   }
@@ -480,7 +480,7 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
     ierr = KSPGetConvergedReason(ksp,&kspreason);CHKERRQ(ierr);
     if (kspreason < 0) {
       ts->reason = TSADJOINT_DIVERGED_LINEAR_SOLVE;
-      ierr = PetscInfo2(ts,"Step=%D, %Dth cost function, transposed linear solve fails, stopping adjoint solve\n",ts->steps,nadj);CHKERRQ(ierr);
+      ierr = PetscInfo2(ts,"Step=%D, %Dth cost function, transposed linear solve fails, stopping 1st-order adjoint solve\n",ts->steps,nadj);CHKERRQ(ierr);
     }
   }
 
@@ -511,7 +511,7 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
       ierr = KSPGetConvergedReason(ksp,&kspreason);CHKERRQ(ierr);
       if (kspreason < 0) {
         ts->reason = TSADJOINT_DIVERGED_LINEAR_SOLVE;
-        ierr = PetscInfo2(ts,"Step=%D, %Dth cost function, transposed linear solve fails, stopping adjoint solve\n",ts->steps,nadj);CHKERRQ(ierr);
+        ierr = PetscInfo2(ts,"Step=%D, %Dth cost function, transposed linear solve fails, stopping 2nd-order adjoint solve\n",ts->steps,nadj);CHKERRQ(ierr);
       }
     }
   }
