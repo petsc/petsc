@@ -373,7 +373,6 @@ PETSC_EXTERN PetscErrorCode PCMGGetRScale(PC,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode PCMGSetResidual(PC,PetscInt,PetscErrorCode (*)(Mat,Vec,Vec,Vec),Mat);
 PETSC_EXTERN PetscErrorCode PCMGResidualDefault(Mat,Vec,Vec,Vec);
 
-
 PETSC_EXTERN PetscErrorCode PCHMGSetReuseInterpolation(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCHMGSetUseSubspaceCoarsening(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCHMGSetInnerPCType(PC,PCType);
@@ -428,5 +427,9 @@ PETSC_EXTERN PetscErrorCode PCDeflationSetSpace(PC,Mat,PetscBool);
 PETSC_EXTERN PetscErrorCode PCDeflationSetProjectionNullSpaceMat(PC,Mat);
 PETSC_EXTERN PetscErrorCode PCDeflationSetCoarseMat(PC,Mat);
 PETSC_EXTERN PetscErrorCode PCDeflationGetPC(PC,PC*);
+
+PETSC_EXTERN PetscErrorCode PCHPDDMSetAuxiliaryMat(PC,IS,Mat,PetscErrorCode (*)(Mat,PetscReal,Vec,Vec,PetscReal,IS,void*),void*);
+PETSC_EXTERN PetscErrorCode PCHPDDMSetCoarseCorrectionType(PC,PCHPDDMCoarseCorrectionType);
+PETSC_EXTERN PetscErrorCode PCHPDDMGetCoarseCorrectionType(PC,PCHPDDMCoarseCorrectionType*);
 
 #endif /* PETSCPC_H */
