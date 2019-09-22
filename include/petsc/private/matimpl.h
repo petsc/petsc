@@ -105,7 +105,7 @@ struct _MatOps {
   PetscErrorCode (*createsubmatrix)(Mat,IS,IS,MatReuse,Mat*);
   PetscErrorCode (*destroy)(Mat);
   PetscErrorCode (*view)(Mat,PetscViewer);
-  PetscErrorCode (*convertfrom)(Mat, MatType,MatReuse,Mat*);
+  PetscErrorCode (*convertfrom)(Mat,MatType,MatReuse,Mat*);
   PetscErrorCode (*matmatmult)(Mat,Mat,Mat,MatReuse,PetscReal,Mat*);
   /*64*/
   PetscErrorCode (*matmatmultsymbolic)(Mat,Mat,Mat,PetscReal,Mat*);

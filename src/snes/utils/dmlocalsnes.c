@@ -154,7 +154,7 @@ static PetscErrorCode SNESComputeJacobian_DMLocal(SNES snes,Vec X,Mat A,Mat B,vo
        */
       ierr = PetscObjectDereference((PetscObject)dm);CHKERRQ(ierr);
     }
-    ierr  = MatFDColoringApply(B,fdcoloring,X,snes);CHKERRQ(ierr);
+    ierr = MatFDColoringApply(B,fdcoloring,X,snes);CHKERRQ(ierr);
   }
   /* This will be redundant if the user called both, but it's too common to forget. */
   if (A != B) {
@@ -263,5 +263,98 @@ PetscErrorCode DMSNESSetJacobianLocal(DM dm,PetscErrorCode (*func)(DM,Vec,Mat,Ma
   dmlocalsnes->jacobianlocalctx = ctx;
 
   ierr = DMSNESSetJacobian(dm,SNESComputeJacobian_DMLocal,dmlocalsnes);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   DMSNESGetFunctionLocal - get the local residual evaluation function information set with DMSNESSetFunctionLocal.
+
+   Not Collective
+
+   Input Arguments:
++  dm - DM with the associated callback
+
+   Output Arguments:
++  func - local residual evaluation
+-  ctx - context for local residual evaluation
+
+   Level: beginner
+
+.seealso: DMSNESSetFunction(), DMSNESSetFunctionLocal(), DMDASNESSetJacobianLocal(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d()
+@*/
+PetscErrorCode DMSNESGetFunctionLocal(DM dm,PetscErrorCode (**func)(DM,Vec,Vec,void*),void **ctx)
+{
+  PetscErrorCode ierr;
+  DMSNES         sdm;
+  DMSNES_Local   *dmlocalsnes;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
+  ierr = DMLocalSNESGetContext(dm,sdm,&dmlocalsnes);CHKERRQ(ierr);
+  if (func) *func = dmlocalsnes->residuallocal;
+  if (ctx)  *ctx  = dmlocalsnes->residuallocalctx;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   DMSNESGetBoundaryLocal - get the local boundary value function set with DMSNESSetBoundaryLocal.
+
+   Not Collective
+
+   Input Arguments:
++  dm - DM with the associated callback
+
+   Output Arguments:
++  func - local boundary value evaluation
+-  ctx - context for local boundary value evaluation
+
+   Level: intermediate
+
+.seealso: DMSNESSetFunctionLocal(), DMSNESSetBoundaryLocal(), DMDASNESSetJacobianLocal()
+@*/
+PetscErrorCode DMSNESGetBoundaryLocal(DM dm,PetscErrorCode (**func)(DM,Vec,void*),void **ctx)
+{
+  PetscErrorCode ierr;
+  DMSNES         sdm;
+  DMSNES_Local   *dmlocalsnes;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
+  ierr = DMLocalSNESGetContext(dm,sdm,&dmlocalsnes);CHKERRQ(ierr);
+  if (func) *func = dmlocalsnes->boundarylocal;
+  if (ctx)  *ctx  = dmlocalsnes->boundarylocalctx;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   DMSNESGetJacobianLocal - the local Jacobian evaluation function set with DMSNESSetJacobianLocal.
+
+   Logically Collective
+
+   Input Arguments:
++  dm - DM with the associated callback
+
+   Output Arguments:
++  func - local Jacobian evaluation
+-  ctx - context for local Jacobian evaluation
+
+   Level: beginner
+
+.seealso: DMSNESSetJacobianLocal(), DMDASNESSetJacobian(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d()
+@*/
+PetscErrorCode DMSNESGetJacobianLocal(DM dm,PetscErrorCode (**func)(DM,Vec,Mat,Mat,void*),void **ctx)
+{
+  PetscErrorCode ierr;
+  DMSNES         sdm;
+  DMSNES_Local   *dmlocalsnes;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
+  ierr = DMLocalSNESGetContext(dm,sdm,&dmlocalsnes);CHKERRQ(ierr);
+  if (func) *func = dmlocalsnes->jacobianlocal;
+  if (ctx)  *ctx  = dmlocalsnes->jacobianlocalctx;
   PetscFunctionReturn(0);
 }

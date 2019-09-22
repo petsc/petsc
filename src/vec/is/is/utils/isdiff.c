@@ -330,13 +330,15 @@ PetscErrorCode ISIntersect(IS is1,IS is2,IS *isout)
   PetscInt       i,n1,n2,nout,*iout;
   const PetscInt *i1,*i2;
   IS             is1sorted = NULL, is2sorted = NULL;
-  PetscBool      sorted;
+  PetscBool      sorted, lsorted;
   MPI_Comm       comm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is1,IS_CLASSID,1);
   PetscValidHeaderSpecific(is2,IS_CLASSID,2);
+  PetscCheckSameComm(is1,1,is2,2);
   PetscValidPointer(isout,3);
+  ierr = PetscObjectGetComm((PetscObject)is1,&comm);CHKERRQ(ierr);
 
   ierr = ISGetLocalSize(is1,&n1);CHKERRQ(ierr);
   ierr = ISGetLocalSize(is2,&n2);CHKERRQ(ierr);
@@ -349,7 +351,8 @@ PetscErrorCode ISIntersect(IS is1,IS is2,IS *isout)
     n1  = n2;
     n2  = ntemp;
   }
-  ierr = ISSorted(is1,&sorted);CHKERRQ(ierr);
+  ierr = ISSorted(is1,&lsorted);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&lsorted,&sorted,1,MPIU_BOOL,MPI_LAND,comm);CHKERRQ(ierr);
   if (!sorted) {
     ierr = ISDuplicate(is1,&is1sorted);CHKERRQ(ierr);
     ierr = ISSort(is1sorted);CHKERRQ(ierr);
@@ -359,7 +362,8 @@ PetscErrorCode ISIntersect(IS is1,IS is2,IS *isout)
     ierr = PetscObjectReference((PetscObject)is1);CHKERRQ(ierr);
     ierr = ISGetIndices(is1,&i1);CHKERRQ(ierr);
   }
-  ierr = ISSorted(is2,&sorted);CHKERRQ(ierr);
+  ierr = ISSorted(is2,&lsorted);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&lsorted,&sorted,1,MPIU_BOOL,MPI_LAND,comm);CHKERRQ(ierr);
   if (!sorted) {
     ierr = ISDuplicate(is2,&is2sorted);CHKERRQ(ierr);
     ierr = ISSort(is2sorted);CHKERRQ(ierr);
@@ -386,7 +390,6 @@ PetscErrorCode ISIntersect(IS is1,IS is2,IS *isout)
   ierr = PetscRealloc(sizeof (PetscInt) * (size_t) nout,&iout);CHKERRQ(ierr);
 
   /* create the new IS containing the sum */
-  ierr = PetscObjectGetComm((PetscObject)is1,&comm);CHKERRQ(ierr);
   ierr = ISCreateGeneral(comm,nout,iout,PETSC_OWN_POINTER,isout);CHKERRQ(ierr);
 
   ierr = ISRestoreIndices(is2sorted,&i2);CHKERRQ(ierr);

@@ -2658,9 +2658,9 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat A,Mat B)
     PetscFunctionReturn(0);
   }
   if (snes->npc && snes->npcside== PC_LEFT) {
-      ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-      ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-      PetscFunctionReturn(0);
+    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
   }
 
   ierr = PetscLogEventBegin(SNES_JacobianEval,snes,X,A,B);CHKERRQ(ierr);
@@ -2670,6 +2670,9 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat A,Mat B)
   PetscStackPop;
   ierr = VecLockReadPop(X);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(SNES_JacobianEval,snes,X,A,B);CHKERRQ(ierr);
+
+  /* attach latest linearization point to the preconditioning matrix */
+  ierr = PetscObjectCompose((PetscObject)B,"__SNES_latest_X",(PetscObject)X);CHKERRQ(ierr);
 
   /* the next line ensures that snes->ksp exists */
   ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);

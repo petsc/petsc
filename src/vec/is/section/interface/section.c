@@ -997,7 +997,7 @@ PetscErrorCode PetscSectionSetUpBC(PetscSection s)
     const PetscInt last = (s->bc->pEnd-s->bc->pStart) - 1;
 
     ierr = PetscSectionSetUp(s->bc);CHKERRQ(ierr);
-    ierr = PetscMalloc1(s->bc->atlasOff[last] + s->bc->atlasDof[last], &s->bcIndices);CHKERRQ(ierr);
+    ierr = PetscMalloc1(last >= 0 ? s->bc->atlasOff[last] + s->bc->atlasDof[last] : 0, &s->bcIndices);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -2392,26 +2392,36 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
   const PetscInt *indices;
   IS             selected;
   PetscInt       numFields, nroots, rpStart, rpEnd, lpStart = PETSC_MAX_INT, lpEnd = -1, f;
-  PetscBool      sub,lsub;
+  PetscBool      *sub, hasc;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(PETSCSF_DistSect,sf,0,0,0);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(rootSection, &numFields);CHKERRQ(ierr);
   if (numFields) {ierr = PetscSectionSetNumFields(leafSection, numFields);CHKERRQ(ierr);}
+  ierr = PetscMalloc1(numFields+2, &sub);CHKERRQ(ierr);
+  sub[1] = rootSection->bc ? PETSC_TRUE : PETSC_FALSE;
   for (f = 0; f < numFields; ++f) {
-    PetscInt numComp = 0;
+    PetscSectionSym sym;
+    const char      *name   = NULL;
+    PetscInt        numComp = 0;
+
+    sub[2 + f] = rootSection->field[f]->bc ? PETSC_TRUE : PETSC_FALSE;
     ierr = PetscSectionGetFieldComponents(rootSection, f, &numComp);CHKERRQ(ierr);
+    ierr = PetscSectionGetFieldName(rootSection, f, &name);CHKERRQ(ierr);
+    ierr = PetscSectionGetFieldSym(rootSection, f, &sym);CHKERRQ(ierr);
     ierr = PetscSectionSetFieldComponents(leafSection, f, numComp);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldName(leafSection, f, name);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldSym(leafSection, f, sym);CHKERRQ(ierr);
   }
   ierr = PetscSectionGetChart(rootSection, &rpStart, &rpEnd);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sf,&nroots,NULL,NULL,NULL);CHKERRQ(ierr);
   rpEnd = PetscMin(rpEnd,nroots);
   rpEnd = PetscMax(rpStart,rpEnd);
   /* see if we can avoid creating the embedded SF, since it can cost more than an allreduce */
-  lsub = (PetscBool)(nroots != rpEnd - rpStart);
-  ierr = MPIU_Allreduce(&lsub,&sub,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)sf));CHKERRQ(ierr);
-  if (sub) {
+  sub[0] = (PetscBool)(nroots != rpEnd - rpStart);
+  ierr = MPIU_Allreduce(MPI_IN_PLACE, sub, 2+numFields, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)sf));CHKERRQ(ierr);
+  if (sub[0]) {
     ierr = ISCreateStride(PETSC_COMM_SELF, rpEnd - rpStart, rpStart, 1, &selected);CHKERRQ(ierr);
     ierr = ISGetIndices(selected, &indices);CHKERRQ(ierr);
     ierr = PetscSFCreateEmbeddedSF(sf, rpEnd - rpStart, indices, &embedSF);CHKERRQ(ierr);
@@ -2425,20 +2435,63 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
   lpEnd++;
 
   ierr = PetscSectionSetChart(leafSection, lpStart, lpEnd);CHKERRQ(ierr);
-  /* Could fuse these at the cost of a copy and extra allocation */
+
+  /* Constrained dof section */
+  hasc = sub[1];
+  for (f = 0; f < numFields; ++f) hasc = (PetscBool)(hasc || sub[2+f]);
+
+  /* Could fuse these at the cost of copies and extra allocation */
   ierr = PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->atlasDof[-rpStart], &leafSection->atlasDof[-lpStart]);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->atlasDof[-rpStart], &leafSection->atlasDof[-lpStart]);CHKERRQ(ierr);
+  if (sub[1]) {
+    ierr = PetscSectionCheckConstraints_Static(rootSection);CHKERRQ(ierr);
+    ierr = PetscSectionCheckConstraints_Static(leafSection);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->bc->atlasDof[-rpStart], &leafSection->bc->atlasDof[-lpStart]);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->bc->atlasDof[-rpStart], &leafSection->bc->atlasDof[-lpStart]);CHKERRQ(ierr);
+  }
   for (f = 0; f < numFields; ++f) {
     ierr = PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->field[f]->atlasDof[-rpStart], &leafSection->field[f]->atlasDof[-lpStart]);CHKERRQ(ierr);
     ierr = PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->field[f]->atlasDof[-rpStart], &leafSection->field[f]->atlasDof[-lpStart]);CHKERRQ(ierr);
+    if (sub[2+f]) {
+      ierr = PetscSectionCheckConstraints_Static(rootSection->field[f]);CHKERRQ(ierr);
+      ierr = PetscSectionCheckConstraints_Static(leafSection->field[f]);CHKERRQ(ierr);
+      ierr = PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->field[f]->bc->atlasDof[-rpStart], &leafSection->field[f]->bc->atlasDof[-lpStart]);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->field[f]->bc->atlasDof[-rpStart], &leafSection->field[f]->bc->atlasDof[-lpStart]);CHKERRQ(ierr);
+    }
   }
   if (remoteOffsets) {
     ierr = PetscMalloc1(lpEnd - lpStart, remoteOffsets);CHKERRQ(ierr);
     ierr = PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &(*remoteOffsets)[-lpStart]);CHKERRQ(ierr);
     ierr = PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &(*remoteOffsets)[-lpStart]);CHKERRQ(ierr);
   }
-  ierr = PetscSFDestroy(&embedSF);CHKERRQ(ierr);
   ierr = PetscSectionSetUp(leafSection);CHKERRQ(ierr);
+  if (hasc) { /* need to communicate bcIndices */
+    PetscSF  bcSF;
+    PetscInt *rOffBc;
+
+    ierr = PetscMalloc1(lpEnd - lpStart, &rOffBc);CHKERRQ(ierr);
+    if (sub[1]) {
+      ierr = PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->bc->atlasOff[-rpStart], &rOffBc[-lpStart]);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->bc->atlasOff[-rpStart], &rOffBc[-lpStart]);CHKERRQ(ierr);
+      ierr = PetscSFCreateSectionSF(embedSF, rootSection->bc, rOffBc, leafSection->bc, &bcSF);CHKERRQ(ierr);
+      ierr = PetscSFBcastBegin(bcSF, MPIU_INT, rootSection->bcIndices, leafSection->bcIndices);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(bcSF, MPIU_INT, rootSection->bcIndices, leafSection->bcIndices);CHKERRQ(ierr);
+      ierr = PetscSFDestroy(&bcSF);CHKERRQ(ierr);
+    }
+    for (f = 0; f < numFields; ++f) {
+      if (sub[2+f]) {
+        ierr = PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->field[f]->bc->atlasOff[-rpStart], &rOffBc[-lpStart]);CHKERRQ(ierr);
+        ierr = PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->field[f]->bc->atlasOff[-rpStart], &rOffBc[-lpStart]);CHKERRQ(ierr);
+        ierr = PetscSFCreateSectionSF(embedSF, rootSection->field[f]->bc, rOffBc, leafSection->field[f]->bc, &bcSF);CHKERRQ(ierr);
+        ierr = PetscSFBcastBegin(bcSF, MPIU_INT, rootSection->field[f]->bcIndices, leafSection->field[f]->bcIndices);CHKERRQ(ierr);
+        ierr = PetscSFBcastEnd(bcSF, MPIU_INT, rootSection->field[f]->bcIndices, leafSection->field[f]->bcIndices);CHKERRQ(ierr);
+        ierr = PetscSFDestroy(&bcSF);CHKERRQ(ierr);
+      }
+    }
+    ierr = PetscFree(rOffBc);CHKERRQ(ierr);
+  }
+  ierr = PetscSFDestroy(&embedSF);CHKERRQ(ierr);
+  ierr = PetscFree(sub);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PETSCSF_DistSect,sf,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -131,7 +131,7 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
   switch (ksp->normtype) {
     case KSP_NORM_PRECONDITIONED:
       ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);               /*    z <- Br                           */
-      ierr = VecNorm(Z,NORM_2,&dp);CHKERRQ(ierr);              /*    dp <- z'*z = e'*A'*B'*B*A'*e'     */
+      ierr = VecNorm(Z,NORM_2,&dp);CHKERRQ(ierr);              /*    dp <- z'*z = e'*A'*B'*B*A*e       */
       KSPCheckNorm(ksp,dp);
       break;
     case KSP_NORM_UNPRECONDITIONED:

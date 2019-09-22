@@ -2409,7 +2409,7 @@ static PetscErrorCode DMGetDimPoints_Plex(DM dm, PetscInt dim, PetscInt *pStart,
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMGetNeighors_Plex(DM dm, PetscInt *nranks, const PetscMPIInt *ranks[])
+static PetscErrorCode DMGetNeighbors_Plex(DM dm, PetscInt *nranks, const PetscMPIInt *ranks[])
 {
   PetscSF        sf;
   PetscErrorCode ierr;
@@ -2465,9 +2465,10 @@ static PetscErrorCode DMInitialize_Plex(DM dm)
   dm->ops->computel2diff                   = DMComputeL2Diff_Plex;
   dm->ops->computel2gradientdiff           = DMComputeL2GradientDiff_Plex;
   dm->ops->computel2fielddiff              = DMComputeL2FieldDiff_Plex;
-  dm->ops->getneighbors                    = DMGetNeighors_Plex;
+  dm->ops->getneighbors                    = DMGetNeighbors_Plex;
   ierr = PetscObjectComposeFunction((PetscObject)dm,"DMPlexInsertBoundaryValues_C",DMPlexInsertBoundaryValues_Plex);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)dm,"DMSetUpGLVisViewer_C",DMSetUpGLVisViewer_Plex);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)dm,"DMCreateNeumannOverlap_C",DMCreateNeumannOverlap_Plex);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
