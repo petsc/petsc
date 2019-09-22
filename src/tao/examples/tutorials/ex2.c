@@ -238,7 +238,6 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
   ierr = PetscFECreateDefault(comm, dim, 1, PETSC_TRUE, "potential_", -1, &fe[0]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[0], "potential");CHKERRQ(ierr);
-  ierr = PetscFEGetQuadrature(fe[0], &q);CHKERRQ(ierr);
   ierr = PetscFECreateDefault(comm, dim, 1, PETSC_TRUE, "charge_", -1, &fe[1]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[1], "charge");CHKERRQ(ierr);
   ierr = PetscFECopyQuadrature(fe[0], fe[1]);CHKERRQ(ierr);
