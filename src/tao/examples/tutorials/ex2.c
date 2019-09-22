@@ -229,7 +229,6 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   DM              cdm = dm;
   const PetscInt  dim = 2;
   PetscFE         fe[3];
-  PetscQuadrature q;
   PetscInt        f;
   MPI_Comm        comm;
   PetscErrorCode  ierr;
@@ -242,10 +241,10 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   ierr = PetscFEGetQuadrature(fe[0], &q);CHKERRQ(ierr);
   ierr = PetscFECreateDefault(comm, dim, 1, PETSC_TRUE, "charge_", -1, &fe[1]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[1], "charge");CHKERRQ(ierr);
-  ierr = PetscFESetQuadrature(fe[1], q);CHKERRQ(ierr);
+  ierr = PetscFECopyQuadrature(fe[0], fe[1]);CHKERRQ(ierr);
   ierr = PetscFECreateDefault(comm, dim, 1, PETSC_TRUE, "multiplier_", -1, &fe[2]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[2], "multiplier");CHKERRQ(ierr);
-  ierr = PetscFESetQuadrature(fe[2], q);CHKERRQ(ierr);
+  ierr = PetscFECopyQuadrature(fe[0], fe[2]);CHKERRQ(ierr);
   /* Set discretization and boundary conditions for each mesh */
   for (f = 0; f < 3; ++f) {ierr = DMSetField(dm, f, NULL, (PetscObject) fe[f]);CHKERRQ(ierr);}
   ierr = DMCreateDS(cdm);CHKERRQ(ierr);

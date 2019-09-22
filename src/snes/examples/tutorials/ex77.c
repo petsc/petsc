@@ -543,7 +543,6 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   const PetscInt  dim   = user->dim;
   const PetscBool simplex = user->simplex;
   PetscFE         fe[2], feAux[2];
-  PetscQuadrature q, fq;
   MPI_Comm        comm;
   PetscErrorCode  ierr;
 
@@ -552,23 +551,18 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   /* Create finite element */
   ierr = PetscFECreateDefault(comm, dim, dim, simplex, "def_", PETSC_DEFAULT, &fe[0]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[0], "deformation");CHKERRQ(ierr);
-  ierr = PetscFEGetQuadrature(fe[0], &q);CHKERRQ(ierr);
-  ierr = PetscFEGetFaceQuadrature(fe[0], &fq);CHKERRQ(ierr);
   ierr = PetscFECreateDefault(comm, dim, 1, simplex, "pres_", PETSC_DEFAULT, &fe[1]);CHKERRQ(ierr);
-  ierr = PetscFESetQuadrature(fe[1], q);CHKERRQ(ierr);
-  ierr = PetscFESetFaceQuadrature(fe[1], fq);CHKERRQ(ierr);
+  ierr = PetscFECopyQuadrature(fe[0], fe[1]);CHKERRQ(ierr);
 
   ierr = PetscObjectSetName((PetscObject) fe[1], "pressure");CHKERRQ(ierr);
 
   ierr = PetscFECreateDefault(comm, dim, 1, simplex, "elastMat_", PETSC_DEFAULT, &feAux[0]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) feAux[0], "elasticityMaterial");CHKERRQ(ierr);
-  ierr = PetscFESetQuadrature(feAux[0], q);CHKERRQ(ierr);
-  ierr = PetscFESetFaceQuadrature(feAux[0], fq);CHKERRQ(ierr);
+  ierr = PetscFECopyQuadrature(fe[0], feAux[0]);CHKERRQ(ierr);
   /* It is not yet possible to define a field on a submesh (e.g. a boundary), so we will use a normal finite element */
   ierr = PetscFECreateDefault(comm, dim, 1, simplex, "wall_pres_", PETSC_DEFAULT, &feAux[1]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) feAux[1], "wall_pressure");CHKERRQ(ierr);
-  ierr = PetscFESetQuadrature(feAux[1], q);CHKERRQ(ierr);
-  ierr = PetscFESetFaceQuadrature(feAux[1], fq);CHKERRQ(ierr);
+  ierr = PetscFECopyQuadrature(fe[0], feAux[1]);CHKERRQ(ierr);
 
   /* Set discretization and boundary conditions for each mesh */
   ierr = DMSetField(dm, 0, NULL, (PetscObject) fe[0]);CHKERRQ(ierr);

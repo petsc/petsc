@@ -697,6 +697,34 @@ PetscErrorCode PetscFESetFaceQuadrature(PetscFE fem, PetscQuadrature q)
   PetscFunctionReturn(0);
 }
 
+/*@
+  PetscFECopyQuadrature - Copy both volumetric and surface quadrature
+
+  Not collective
+
+  Input Parameters:
++ sfe - The PetscFE source for the quadratures
+- tfe - The PetscFE target for the quadratures
+
+  Level: intermediate
+
+.seealso: PetscFECreate(), PetscFESetQuadrature(), PetscFESetFaceQuadrature()
+@*/
+PetscErrorCode PetscFECopyQuadrature(PetscFE sfe, PetscFE tfe)
+{
+  PetscQuadrature q;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sfe, PETSCFE_CLASSID, 1);
+  PetscValidHeaderSpecific(tfe, PETSCFE_CLASSID, 2);
+  ierr = PetscFEGetQuadrature(sfe, &q);CHKERRQ(ierr);
+  ierr = PetscFESetQuadrature(tfe,  q);CHKERRQ(ierr);
+  ierr = PetscFEGetFaceQuadrature(sfe, &q);CHKERRQ(ierr);
+  ierr = PetscFESetFaceQuadrature(tfe,  q);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@C
   PetscFEGetNumDof - Returns the number of dofs (dual basis vectors) associated to mesh points on the reference cell of a given dimension
 

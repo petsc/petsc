@@ -24,7 +24,7 @@ For a vector quantity a, we likewise have
 
   SOR is completely unreliable as a smoother, use Jacobi
   r1: 8 MG
-  r2: 
+  r2:
 */
 
 #include <petscdmplex.h>
@@ -252,7 +252,6 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx* ctx)
   DM              cdm = dm;
   const PetscInt  dim = ctx->dim;
   PetscFE         fe,   feAux;
-  PetscQuadrature q;
   MPI_Comm        comm;
   PetscErrorCode  ierr;
 
@@ -263,8 +262,7 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx* ctx)
   ierr = PetscObjectSetName((PetscObject) fe, "phi");CHKERRQ(ierr);
   /* Create velocity */
   ierr = PetscFECreateDefault(comm, dim, dim, ctx->simplex, "vel_", -1, &feAux);CHKERRQ(ierr);
-  ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
-  ierr = PetscFESetQuadrature(feAux, q);CHKERRQ(ierr);
+  ierr = PetscFECopyQuadrature(fe, feAux);CHKERRQ(ierr);
   /* Set discretization and boundary conditions for each mesh */
   ierr = DMSetField(dm, 0, NULL, (PetscObject) fe);CHKERRQ(ierr);
   ierr = DMCreateDS(dm);CHKERRQ(ierr);

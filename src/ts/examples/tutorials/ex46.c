@@ -335,7 +335,6 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *ctx)
   DM              cdm = dm;
   const PetscInt  dim = ctx->dim;
   PetscFE         fe[2];
-  PetscQuadrature q;
   MPI_Comm        comm;
   PetscErrorCode  ierr;
 
@@ -344,9 +343,8 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *ctx)
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
   ierr = PetscFECreateDefault(comm, dim, dim, ctx->simplex, "vel_", PETSC_DEFAULT, &fe[0]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[0], "velocity");CHKERRQ(ierr);
-  ierr = PetscFEGetQuadrature(fe[0], &q);CHKERRQ(ierr);
   ierr = PetscFECreateDefault(comm, dim, 1, ctx->simplex, "pres_", PETSC_DEFAULT, &fe[1]);CHKERRQ(ierr);
-  ierr = PetscFESetQuadrature(fe[1], q);CHKERRQ(ierr);
+  ierr = PetscFECopyQuadrature(fe[0], fe[1]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[1], "pressure");CHKERRQ(ierr);
   /* Set discretization and boundary conditions for each mesh */
   ierr = DMSetField(dm, 0, NULL, (PetscObject) fe[0]);CHKERRQ(ierr);
