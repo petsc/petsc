@@ -2,8 +2,11 @@
      Defines the matrix operations for sequential dense with CUDA
 */
 #include <petscpkg_version.h>
+#define PETSC_SKIP_IMMINTRIN_H_CUDAWORKAROUND 1
 #include <../src/mat/impls/dense/seq/dense.h> /*I "petscmat.h" I*/
-#include <../src/mat/impls/aij/seq/aij.h>
+#include <petsccublas.h>
+
+/* cublas definitions are here */
 #include <../src/vec/vec/impls/seq/seqcuda/cudavecimpl.h>
 
 #if defined(PETSC_USE_COMPLEX)

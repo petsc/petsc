@@ -1,3 +1,5 @@
+#define PETSC_SKIP_IMMINTRIN_H_CUDAWORKAROUND 1
+
 #include <petscconf.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>   /*I "petscmat.h" I*/
 #include <../src/mat/impls/aij/seq/seqviennacl/viennaclmatimpl.h>

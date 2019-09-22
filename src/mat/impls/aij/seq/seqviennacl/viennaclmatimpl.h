@@ -1,6 +1,7 @@
 #if !defined(__VIENNACLMATIMPL)
 #define __VIENNACLMATIMPL
 
+#define PETSC_SKIP_IMMINTRIN_H_CUDAWORKAROUND 1
 #include <../src/mat/impls/aij/seq/aij.h>          /*I "petscmat.h" I*/
 
 /* Pulls in some ViennaCL includes as well as VIENNACL_WITH_OPENCL: */
