@@ -422,15 +422,17 @@ PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat A,Mat *C)
 @*/
 PetscErrorCode MatPinToCPU(Mat A,PetscBool flg)
 {
-  PetscFunctionBegin;
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
   PetscErrorCode ierr;
 
-  if (A->pinnedtocpu == flg) return 0;
+  PetscFunctionBegin;
+  if (A->pinnedtocpu == flg) PetscFunctionReturn(0);
   A->pinnedtocpu = flg;
   if (A->ops->pintocpu) {
     ierr = (*A->ops->pintocpu)(A,flg);CHKERRQ(ierr);
   }
-#endif
   PetscFunctionReturn(0);
+#else
+  return 0;
+#endif
 }

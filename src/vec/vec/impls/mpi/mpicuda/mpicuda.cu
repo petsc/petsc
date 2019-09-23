@@ -174,9 +174,11 @@ PetscErrorCode VecCreate_MPICUDA(Vec vv)
   PetscFunctionBegin;
   ierr = PetscLayoutSetUp(vv->map);CHKERRQ(ierr);
   ierr = VecCUDAAllocateCheck(vv);CHKERRCUDA(ierr);
-  vv->valid_GPU_array      = PETSC_OFFLOAD_GPU;
   ierr = VecCreate_MPICUDA_Private(vv,PETSC_FALSE,0,((Vec_CUDA*)vv->spptr)->GPUarray_allocated);CHKERRQ(ierr);
+  ierr = VecCUDAAllocateCheckHost(vv);CHKERRQ(ierr);
   ierr = VecSet(vv,0.0);CHKERRQ(ierr);
+  ierr = VecSet_Seq(vv,0.0);CHKERRQ(ierr);
+  vv->valid_GPU_array = PETSC_OFFLOAD_BOTH;
   PetscFunctionReturn(0);
 }
 
@@ -336,7 +338,10 @@ PetscErrorCode VecCreate_MPICUDA_Private(Vec vv,PetscBool alloc,PetscInt nghost,
   /* Later, functions check for the Vec_CUDA structure existence, so do not create it without array */
   if (alloc && !array) {
     ierr = VecCUDAAllocateCheck(vv);CHKERRQ(ierr);
+    ierr = VecCUDAAllocateCheckHost(vv);CHKERRQ(ierr);
     ierr = VecSet(vv,0.0);CHKERRQ(ierr);
+    ierr = VecSet_Seq(vv,0.0);CHKERRQ(ierr);
+    vv->valid_GPU_array = PETSC_OFFLOAD_BOTH;
   }
   if (array) {
     if (!vv->spptr) {

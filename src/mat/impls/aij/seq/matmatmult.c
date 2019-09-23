@@ -1450,17 +1450,17 @@ PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
   Mat_SeqAIJ        *a=(Mat_SeqAIJ*)A->data;
   Mat_SeqDense      *bd = (Mat_SeqDense*)B->data;
   PetscErrorCode    ierr;
-  PetscScalar       *c,*b,r1,r2,r3,r4,*c1,*c2,*c3,*c4,aatmp;
-  const PetscScalar *aa,*b1,*b2,*b3,*b4;
+  PetscScalar       *c,r1,r2,r3,r4,*c1,*c2,*c3,*c4,aatmp;
+  const PetscScalar *aa,*b,*b1,*b2,*b3,*b4,*av;
   const PetscInt    *aj;
   PetscInt          cm=C->rmap->n,cn=B->cmap->n,bm=bd->lda,am=A->rmap->n;
   PetscInt          am4=4*am,bm4=4*bm,col,i,j,n,ajtmp;
 
   PetscFunctionBegin;
   if (!cm || !cn) PetscFunctionReturn(0);
-
-  b = bd->v;
+  ierr = MatSeqAIJGetArrayRead(A,&av);CHKERRQ(ierr);
   ierr = MatDenseGetArray(C,&c);CHKERRQ(ierr);
+  ierr = MatDenseGetArrayRead(B,&b);CHKERRQ(ierr);
   b1 = b; b2 = b1 + bm; b3 = b2 + bm; b4 = b3 + bm;
   c1 = c; c2 = c1 + am; c3 = c2 + am; c4 = c3 + am;
   for (col=0; col<cn-4; col += 4) {  /* over columns of C */
@@ -1468,7 +1468,7 @@ PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
       r1 = r2 = r3 = r4 = 0.0;
       n  = a->i[i+1] - a->i[i];
       aj = a->j + a->i[i];
-      aa = a->a + a->i[i];
+      aa = av + a->i[i];
       for (j=0; j<n; j++) {
         aatmp = aa[j]; ajtmp = aj[j];
         r1 += aatmp*b1[ajtmp];
@@ -1489,7 +1489,7 @@ PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
       r1 = 0.0;
       n  = a->i[i+1] - a->i[i];
       aj = a->j + a->i[i];
-      aa = a->a + a->i[i];
+      aa = av + a->i[i];
       for (j=0; j<n; j++) {
         r1 += aa[j]*b1[aj[j]];
       }
@@ -1500,6 +1500,8 @@ PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
   }
   ierr = PetscLogFlops(cn*(2.0*a->nz));CHKERRQ(ierr);
   ierr = MatDenseRestoreArray(C,&c);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArrayRead(B,&b);CHKERRQ(ierr);
+  ierr = MatSeqAIJRestoreArrayRead(A,&av);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);

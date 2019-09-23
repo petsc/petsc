@@ -15,7 +15,7 @@ int main(int argc,char **args)
   PetscInt       isolver=0,size_schur,m,n,nfact,nsolve,nrhs;
   PetscReal      norm,tol=PETSC_SQRT_MACHINE_EPSILON;
   PetscRandom    rand;
-  PetscBool      data_provided,herm,symm,use_lu;
+  PetscBool      data_provided,herm,symm,use_lu,cuda = PETSC_FALSE;
   PetscReal      sratio = 5.1/12.;
   PetscViewer    fd;              /* viewer */
   char           solver[256];
@@ -30,6 +30,8 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetBool(NULL,NULL,"-symmetric_solve",&symm,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-hermitian_solve",&herm,NULL);CHKERRQ(ierr);
   if (herm) symm = PETSC_TRUE;
+  ierr = PetscOptionsGetBool(NULL,NULL,"-cuda_solve",&cuda,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-tol",&tol,NULL);CHKERRQ(ierr);
 
   /* Determine file from which we read the matrix A */
   ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,&data_provided);CHKERRQ(ierr);
@@ -130,12 +132,12 @@ int main(int argc,char **args)
 #if defined (PETSC_USE_COMPLEX)
   if (isolver == 1) use_lu = PETSC_TRUE;
 #endif
+  if (cuda && symm && !herm) use_lu = PETSC_TRUE;
 
   if (herm && !use_lu) { /* test also conversion routines inside the solver packages */
     ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatConvert(A,MATSEQSBAIJ,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
   }
-
 
   if (use_lu) {
     ierr = MatGetFactor(A,solver,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
@@ -151,6 +153,7 @@ int main(int argc,char **args)
   }
   ierr = ISCreateStride(PETSC_COMM_SELF,size_schur,m-size_schur,1,&is_schur);CHKERRQ(ierr);
   ierr = MatFactorSetSchurIS(F,is_schur);CHKERRQ(ierr);
+
   ierr = ISDestroy(&is_schur);CHKERRQ(ierr);
   if (use_lu) {
     ierr = MatLUFactorSymbolic(F,A,NULL,NULL,NULL);CHKERRQ(ierr);
@@ -173,10 +176,18 @@ int main(int argc,char **args)
     } else {
       ierr = MatCholeskyFactorNumeric(F,A,NULL);CHKERRQ(ierr);
     }
+    if (cuda) {
+      ierr = MatFactorGetSchurComplement(F,&S,NULL);CHKERRQ(ierr);
+      ierr = MatSetType(S,MATSEQDENSECUDA);CHKERRQ(ierr);
+      ierr = MatCreateVecs(S,&xschur,&bschur);CHKERRQ(ierr);
+      ierr = MatFactorRestoreSchurComplement(F,&S,MAT_FACTOR_SCHUR_UNFACTORED);CHKERRQ(ierr);
+    }
     ierr = MatFactorCreateSchurComplement(F,&S,NULL);CHKERRQ(ierr);
-    ierr = MatCreateVecs(S,&xschur,&bschur);CHKERRQ(ierr);
+    if (!cuda) {
+      ierr = MatCreateVecs(S,&xschur,&bschur);CHKERRQ(ierr);
+    }
     ierr = VecDuplicate(xschur,&uschur);CHKERRQ(ierr);
-    if (nfact == 1) {
+    if (nfact == 1 && (!cuda || (herm && symm))) {
       ierr = MatFactorInvertSchurComplement(F);CHKERRQ(ierr);
     }
     for (nsolve = 0; nsolve < 2; nsolve++) {
@@ -295,34 +306,64 @@ int main(int argc,char **args)
 
 /*TEST
 
-   test:
-      suffix: mkl_pardiso
-      requires: mkl_pardiso double !complex !define(PETSC_USE_64BIT_INDICES) 
-      args: -solver 1
+   testset:
+     requires: mkl_pardiso double !complex !define(PETSC_USE_64BIT_INDICES)
+     args: -solver 1
 
-   test:
-      suffix: mkl_pardiso_1
-      requires: mkl_pardiso double !complex !define(PETSC_USE_64BIT_INDICES) 
-      args: -symmetric_solve -solver 1
+     test:
+       suffix: mkl_pardiso
+     test:
+       requires: cuda
+       suffix: mkl_pardiso_cuda
+       args: -cuda_solve
+       output_file: output/ex192_mkl_pardiso.out
+     test:
+       suffix: mkl_pardiso_1
+       args: -symmetric_solve
+       output_file: output/ex192_mkl_pardiso_1.out
+     test:
+       requires: cuda
+       suffix: mkl_pardiso_cuda_1
+       args: -symmetric_solve -cuda_solve
+       output_file: output/ex192_mkl_pardiso_1.out
+     test:
+       suffix: mkl_pardiso_3
+       args: -symmetric_solve -hermitian_solve
+       output_file: output/ex192_mkl_pardiso_3.out
+     test:
+       requires: cuda
+       suffix: mkl_pardiso_cuda_3
+       args: -symmetric_solve -hermitian_solve -cuda_solve
+       output_file: output/ex192_mkl_pardiso_3.out
 
-   test:
-      suffix: mkl_pardiso_3
-      requires: mkl_pardiso double !complex !define(PETSC_USE_64BIT_INDICES) 
-      args: -symmetric_solve -hermitian_solve -solver 1
+   testset:
+     requires: mumps double !complex !define(PETSC_USE_64BIT_INDICES)
+     args: -solver 0
 
-   test:
-      suffix: mumps
-      requires: mumps double !complex !define(PETSC_USE_64BIT_INDICES)
-      args: -solver 0
-
-   test:
-      suffix: mumps_2
-      requires: mumps double !complex !define(PETSC_USE_64BIT_INDICES)
-      args: -symmetric_solve -solver 0
-
-   test:
-      suffix: mumps_3
-      requires: mumps double !complex !define(PETSC_USE_64BIT_INDICES)
-      args: -symmetric_solve -hermitian_solve -solver 0
+     test:
+       suffix: mumps
+     test:
+       requires: cuda
+       suffix: mumps_cuda
+       args: -cuda_solve
+       output_file: output/ex192_mumps.out
+     test:
+       suffix: mumps_2
+       args: -symmetric_solve
+       output_file: output/ex192_mumps_2.out
+     test:
+       requires: cuda
+       suffix: mumps_cuda_2
+       args: -symmetric_solve -cuda_solve
+       output_file: output/ex192_mumps_2.out
+     test:
+       suffix: mumps_3
+       args: -symmetric_solve -hermitian_solve
+       output_file: output/ex192_mumps_3.out
+     test:
+       requires: cuda
+       suffix: mumps_cuda_3
+       args: -symmetric_solve -hermitian_solve -cuda_solve
+       output_file: output/ex192_mumps_3.out
 
 TEST*/

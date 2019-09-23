@@ -1725,6 +1725,8 @@ PETSC_EXTERN PetscLogEvent MAT_DenseCopyFromGPU;
 PETSC_EXTERN PetscLogEvent MAT_Merge;
 PETSC_EXTERN PetscLogEvent MAT_Residual;
 PETSC_EXTERN PetscLogEvent MAT_SetRandom;
+PETSC_EXTERN PetscLogEvent MAT_FactorFactS;
+PETSC_EXTERN PetscLogEvent MAT_FactorInvS;
 PETSC_EXTERN PetscLogEvent MATCOLORING_Apply;
 PETSC_EXTERN PetscLogEvent MATCOLORING_Comm;
 PETSC_EXTERN PetscLogEvent MATCOLORING_Local;

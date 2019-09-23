@@ -186,7 +186,7 @@ int main(int argc,char **argv)
    test:
      requires: cuda
      suffix: seqdensecuda
-     args: -mat_type seqdensecuda -rhs_mat_type seqdensecuda -ldl {{0 1}} -solver_type {{petsc cuda}}
+     args: -mat_type seqdensecuda -rhs_mat_type seqdensecuda -ldl 0 -solver_type {{petsc cuda}}
      output_file: output/ex1_1.out
 
    test:

@@ -1174,8 +1174,10 @@ PETSC_EXTERN PetscErrorCode VecCreate_SeqViennaCL(Vec V)
   V->ops->pintocpu = VecPinToCPU_SeqAIJViennaCL;
 
   ierr = VecViennaCLAllocateCheck(V);CHKERRQ(ierr);
-  V->valid_GPU_array      = PETSC_OFFLOAD_GPU;
+  ierr = VecViennaCLAllocateCheckHost(V);CHKERRQ(ierr);
   ierr = VecSet(V,0.0);CHKERRQ(ierr);
+  ierr = VecSet_Seq(V,0.0);CHKERRQ(ierr);
+  V->valid_GPU_array = PETSC_OFFLOAD_BOTH;
   PetscFunctionReturn(0);
 }
 

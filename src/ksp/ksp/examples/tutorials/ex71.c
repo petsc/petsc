@@ -173,6 +173,9 @@ int main(int argc,char **args)
   const PetscInt         *e_loc;         /* Local indices of element nodes (in local element order) */
   PetscInt               *e_glo = NULL;  /* Global indices of element nodes (in local element order) */
   PetscBool              ismatis;
+#if defined(PETSC_USE_LOG)
+  PetscLogStage          stages[2];
+#endif
   PetscErrorCode         ierr;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
@@ -199,6 +202,10 @@ int main(int argc,char **args)
     break;
   default: SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unsupported dimension %D",user.dim);
   }
+
+  ierr = PetscLogStageRegister("KSPSetUp",&stages[0]);CHKERRQ(ierr);
+  ierr = PetscLogStageRegister("KSPSolve",&stages[1]);CHKERRQ(ierr);
+
   ierr = DMSetMatType(da,MATIS);CHKERRQ(ierr);
   ierr = DMSetFromOptions(da);CHKERRQ(ierr);
   ierr = DMDASetElementType(da,DMDA_ELEMENT_Q1);CHKERRQ(ierr);
@@ -221,6 +228,7 @@ int main(int argc,char **args)
   ierr = DMGetCoordinates(da,&xcoor);CHKERRQ(ierr);
 
   ierr = DMCreateMatrix(da,&A);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = DMGetLocalToGlobalMapping(da,&map);CHKERRQ(ierr);
   ierr = DMDAGetElements(da,&nel,&nen,&e_loc);CHKERRQ(ierr);
   if (user.useglobal) {
@@ -378,19 +386,22 @@ int main(int argc,char **args)
   ierr = PCSetType(pc,PCBDDC);CHKERRQ(ierr);
   /* ierr = PCBDDCSetDirichletBoundaries(pc,zero);CHKERRQ(ierr); */
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  ierr = PetscLogStagePush(stages[0]);CHKERRQ(ierr);
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
+  ierr = PetscLogStagePop();CHKERRQ(ierr);
 
-  ierr = DMGetGlobalVector(da,&x);CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(da,&b);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&x,&b);CHKERRQ(ierr);
   ierr = VecSetRandom(b,NULL);CHKERRQ(ierr);
   if (nullsp) {
     ierr = MatNullSpaceRemove(nullsp,b);CHKERRQ(ierr);
   }
+  ierr = PetscLogStagePush(stages[1]);CHKERRQ(ierr);
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(da,&x);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(da,&b);CHKERRQ(ierr);
+  ierr = PetscLogStagePop();CHKERRQ(ierr);
 
   /* cleanup */
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&b);CHKERRQ(ierr);
   ierr = ISDestroy(&zero);CHKERRQ(ierr);
   ierr = PetscFree(e_glo);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&nullsp);CHKERRQ(ierr);
@@ -515,5 +526,57 @@ int main(int argc,char **args)
      args: -dim 3 -cells 3,3,3 -pde_type Elasticity -use_global
      suffix: dmda_matis_elast_3d_glob
      output_file: output/ex71_dmda_matis_elast_3d.out
+ test:
+   nsize: 8
+   filter: grep -v "variant HERMITIAN"
+   suffix: bddc_elast_deluxe_layers_adapt
+   requires: mumps !complex
+   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_view -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -sub_schurs_mat_solver_type mumps -pc_bddc_use_deluxe_scaling -pc_bddc_adaptive_threshold 2.0 -pc_bddc_schur_layers {{1 10}separate_output} -pc_bddc_adaptive_userdefined {{0 1}separate output}
+ test:
+   nsize: 8
+   suffix: bddc_elast_deluxe_layers_adapt_mkl_pardiso
+   requires: mkl_pardiso !complex
+   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_converged_reason -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -sub_schurs_mat_solver_type mkl_pardiso -pc_bddc_use_deluxe_scaling -pc_bddc_adaptive_threshold 2.0 -pc_bddc_schur_layers {{1 10}separate_output} -pc_bddc_adaptive_userdefined {{0 1}separate output}
+ test:
+   nsize: 8
+   filter: grep -v "variant HERMITIAN"
+   suffix: bddc_cusparse
+   requires: cuda
+   args: -pde_type Poisson -cells 7,9,8 -dim 3 -ksp_view -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_dirichlet_pc_type cholesky -pc_bddc_dirichlet_pc_factor_mat_solver_type cusparse -pc_bddc_dirichlet_pc_factor_mat_ordering_type nd -pc_bddc_neumann_pc_type cholesky -pc_bddc_neumann_pc_factor_mat_solver_type cusparse -pc_bddc_neumann_pc_factor_mat_ordering_type nd -matis_localmat_type aijcusparse
+ test:
+   nsize: 8
+   filter: grep -v "variant HERMITIAN"
+   suffix: bddc_elast_deluxe_layers_adapt_cuda
+   requires: mumps cuda viennacl
+   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_view -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -sub_schurs_mat_solver_type mumps -pc_bddc_use_deluxe_scaling -pc_bddc_adaptive_threshold 2.0 -pc_bddc_schur_layers {{1 10}separate_output} -pc_bddc_adaptive_userdefined {{0 1}separate output} -matis_localmat_type seqaijviennacl -sub_schurs_schur_mat_type {{seqdensecuda seqdense}}
+ test:
+   nsize: 8
+   filter: grep -v "variant HERMITIAN" | grep -v "I-node routines" | sed -e "s/seqaijviennacl/seqaij/g"
+   suffix: bddc_elast_deluxe_layers_adapt_cuda_approx
+   requires: mumps cuda viennacl
+   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_view -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -sub_schurs_mat_solver_type mumps -pc_bddc_use_deluxe_scaling -pc_bddc_adaptive_threshold 2.0 -pc_bddc_schur_layers 1 -matis_localmat_type {{seqaij seqaijviennacl}} -sub_schurs_schur_mat_type {{seqdensecuda seqdense}} -pc_bddc_dirichlet_pc_type gamg -pc_bddc_dirichlet_approximate -pc_bddc_neumann_pc_type gamg -pc_bddc_neumann_approximate
+ test:
+   nsize: 8
+   suffix: bddc_elast_deluxe_layers_adapt_mkl_pardiso_cuda
+   requires: mkl_pardiso cuda viennacl
+   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_converged_reason -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -sub_schurs_mat_solver_type mkl_pardiso -pc_bddc_use_deluxe_scaling -pc_bddc_adaptive_threshold 2.0 -pc_bddc_schur_layers {{1 10}separate_output} -pc_bddc_adaptive_userdefined {{0 1}separate output} -matis_localmat_type seqaijviennacl -sub_schurs_schur_mat_type {{seqdensecuda seqdense}}
+
+ testset:
+   nsize: 2
+   output_file: output/ex71_aij_dmda_preall.out
+   filter: sed -e "s/CONVERGED_RTOL iterations 7/CONVERGED_RTOL iterations 6/g"
+   args: -pde_type Poisson -dim 1 -cells 6 -pc_type none -ksp_converged_reason
+   test:
+     suffix: aijviennacl_dmda_preall
+     requires: viennacl
+     args: -dm_mat_type aijviennacl -dm_preallocate_only {{0 1}} -dirichlet {{0 1}}
+   # -dm_preallocate_only 0 is broken
+   test:
+     suffix: aijcusparse_dmda_preall
+     requires: cuda
+     args: -dm_mat_type aijcusparse -dm_preallocate_only -dirichlet {{0 1}}
+   test:
+     suffix: aij_dmda_preall
+     args: -dm_mat_type aij -dm_preallocate_only {{0 1}} -dirichlet {{0 1}}
 
 TEST*/

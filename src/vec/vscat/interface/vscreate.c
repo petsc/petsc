@@ -237,6 +237,7 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   VecScatter        ctx;
   PetscErrorCode    ierr;
   PetscMPIInt       xsize,ysize,result;
+  PetscBool         vseq = PETSC_TRUE;
   MPI_Comm          comm,xcomm,ycomm;
 
   PetscFunctionBegin;
@@ -250,7 +251,8 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   ierr = MPI_Comm_size(xcomm,&xsize);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)yin,&ycomm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(ycomm,&ysize);CHKERRQ(ierr);
-
+  vseq = ysize > 1 ? PETSC_FALSE : vseq;
+  vseq = xsize > 1 ? PETSC_FALSE : vseq;
   if (xsize > 1 && ysize > 1) {
     ierr = MPI_Comm_compare(xcomm,ycomm,&result);CHKERRQ(ierr);
     if (result == MPI_UNEQUAL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMECOMM,"VecScatterCreate: parallel vectors xin and yin must have identical/congruent/similar communicators");
@@ -274,7 +276,7 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   ierr = VecGetLocalSize(yin,&ctx->to_n);CHKERRQ(ierr);
 
   /* Set default scatter type */
-  ierr = VecScatterSetType(ctx,VECSCATTERSF);CHKERRQ(ierr);
+  ierr = VecScatterSetType(ctx,vseq ? VECSCATTERSEQ : VECSCATTERSF);CHKERRQ(ierr);
 
   ierr = VecScatterSetFromOptions(ctx);CHKERRQ(ierr);
   ierr = VecScatterSetUp(ctx);CHKERRQ(ierr);
