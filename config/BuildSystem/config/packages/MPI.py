@@ -140,6 +140,9 @@ class Configure(config.package.Package):
     return
 
   def checkSharedLibrary_ThisIsBroken(self):
+  # TODO: Fix this routine, currently
+  #       * the visibility flag is passed to the compiling/linking so the symbols are not visable to the loader and the test fails (this is easily fixed)
+  #       * even with that fixed the dlsym() is unable to locate the checkInit symbol in the library even though nm shows it is there; I am not sure the cause
     '''Sets flag indicating if MPI libraries are shared or not and
     determines if MPI libraries CANNOT be used by shared libraries'''
     if self.argDB['with-batch']:

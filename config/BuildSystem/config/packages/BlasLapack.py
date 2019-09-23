@@ -94,7 +94,7 @@ class Configure(config.package.Package):
     self.compilers.LIBS = oldLibs
     return found
 
-  def checkLapack(self, lapackLibrary, otherLibs, fortranMangle, routinesIn = ['getrs']):
+  def checkLapack(self, lapackLibrary, otherLibs, fortranMangle, routinesIn = ['getrs','geev']):
     oldLibs = self.compilers.LIBS
     if not isinstance(routinesIn, list): routinesIn = [routinesIn]
     routines = list(routinesIn)
@@ -104,14 +104,16 @@ class Configure(config.package.Package):
     routines   = map(self.mangleBlas, routines)
 
     if fortranMangle=='stdcall':
-      if routines == ['dgetrs']:
-        prototypes = ['void __stdcall DGETRS(char*,int,int*,int*,double*,int*,int*,double*,int*,int*);']
-        calls      = ['DGETRS(0,0,0,0,0,0,0,0,0,0);']
-    self.libraries.saveLog()
+      if routines == ['dgetrs','dgeev']:
+        prototypes = ['void __stdcall DGETRS(char*,int,int*,int*,double*,int*,int*,double*,int*,int*);',
+                      'void __stdcall DGEEV(char*,int,char*,int,int*,double*,int*,double*,double*,double*,int*,double*,int*,double*,int*,int*);']
+        calls      = ['DGETRS(0,0,0,0,0,0,0,0,0,0);',
+                      'DGEEV(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);']
     for routine, prototype, call in zip(routines, prototypes, calls):
+      self.libraries.saveLog()
       found = found and self.libraries.check(lapackLibrary, routine, otherLibs = otherLibs, fortranMangle = fortranMangle, prototype = prototype, call = call)
+      self.logWrite(self.libraries.restoreLog())
       if not found: break
-    self.logWrite(self.libraries.restoreLog())
     self.compilers.LIBS = oldLibs
     return found
 
@@ -146,7 +148,7 @@ class Configure(config.package.Package):
       self.mangling = 'unchanged'
       foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'dot')
       if foundBlas:
-        foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'getrs')
+        foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, ['getrs','geev'])
         if foundLapack:
           self.logPrint('Found no name mangling on BLAS/LAPACK')
           return (foundBlas, foundLapack)
@@ -157,7 +159,7 @@ class Configure(config.package.Package):
       self.mangling = 'underscore'
       foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'dot')
       if foundBlas:
-        foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'getrs')
+        foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, ['getrs','geev'])
         if foundLapack:
           self.logPrint('Found underscore name mangling on BLAS/LAPACK')
           return (foundBlas, foundLapack)
@@ -595,7 +597,7 @@ class Configure(config.package.Package):
     '''Check for missing LAPACK routines'''
     if self.foundLapack:
       mangleFunc = hasattr(self.compilers, 'FC') and not self.f2c
-    routines = ['geev','gels','gelss','geqrf','gerfs','gesv','gesvd','getrf','getri','getrs','gges',
+    routines = ['gels','gelss','geqrf','gerfs','gesv','gesvd','getrf','getri','gges',
                 'hgeqz','hseqr','ormqr','potrf','potri','potrs','pttrf','pttrs',
                 'stebz','stein','steqr','syev','syevx','sygvx','sytrf','sytri','sytrs',
                 'tgsen','trsen','trtrs','orgqr']  # skip these: 'hetrf','hetri','hetrs',
