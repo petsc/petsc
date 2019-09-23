@@ -1,4 +1,3 @@
-
 /*
    This is where the abstract matrix operations are defined
 */
@@ -7770,7 +7769,7 @@ M*/
 .ve
 
 
-.seealso: MatCreateSubMatrices()
+.seealso: MatCreateSubMatrices(), MatCreateSubMatricesMPI(), MatCreateSubMatrixVirtual(), MatSubMatrixVirtualUpdate()
 @*/
 PetscErrorCode MatCreateSubMatrix(Mat mat,IS isrow,IS iscol,MatReuse cll,Mat *newmat)
 {
