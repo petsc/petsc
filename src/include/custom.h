@@ -158,16 +158,6 @@ PetscLogEventGetPerfInfo(int stage,PetscLogEvent event,PetscEventPerfInfo *info)
 
 /* ---------------------------------------------------------------- */
 
-PETSC_EXTERN PetscErrorCode VecCUDAGetArrayRead(Vec,const PetscScalar**);
-PETSC_EXTERN PetscErrorCode VecCUDAGetArrayWrite(Vec,PetscScalar**);
-PETSC_EXTERN PetscErrorCode VecCUDAGetArray(Vec,PetscScalar**);
-
-PETSC_EXTERN PetscErrorCode VecCUDARestoreArrayRead(Vec,const PetscScalar**);
-PETSC_EXTERN PetscErrorCode VecCUDARestoreArrayWrite(Vec,PetscScalar**);
-PETSC_EXTERN PetscErrorCode VecCUDARestoreArray(Vec,PetscScalar**);
-
-/* ---------------------------------------------------------------- */
-
 PETSC_STATIC_INLINE PetscErrorCode
 VecStrideSum(Vec v, PetscInt start, PetscScalar *a)
 {
