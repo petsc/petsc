@@ -142,8 +142,8 @@ static PetscErrorCode RHSHessianProductUP(TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr
   dJdP[1][1][0] = 1.-u[0]*u[0];
   for (j=0; j<2; j++) {
     vhv[j] = 0;
-    for (k=0; k<2; k++)
-      for (i=0; i<1; i++)
+    for (k=0; k<1; k++)
+      for (i=0; i<2; i++)
         vhv[j] += vl[i]*dJdP[i][j][k]*vr[k];
   }
 
