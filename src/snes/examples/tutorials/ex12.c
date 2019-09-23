@@ -51,6 +51,7 @@ typedef struct {
   PetscBool      bdIntegral;       /* Compute the integral of the solution on the boundary */
   /* Solver */
   PC             pcmg;              /* This is needed for error monitoring */
+  PetscBool      checkksp;          /* Whether to check the KSPSolve for runType == RUN_TEST */
 } AppCtx;
 
 static PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
@@ -441,6 +442,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->quiet               = PETSC_FALSE;
   options->nonzInit            = PETSC_FALSE;
   options->bdIntegral          = PETSC_FALSE;
+  options->checkksp            = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Poisson Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex12.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
@@ -481,6 +483,9 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-quiet", "Don't print any vecs", "ex12.c", options->quiet, &options->quiet, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-nonzero_initial_guess", "nonzero intial guess", "ex12.c", options->nonzInit, &options->nonzInit, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-bd_integral", "Compute the integral of the solution on the boundary", "ex12.c", options->bdIntegral, &options->bdIntegral, NULL);CHKERRQ(ierr);
+  if (options->runType == RUN_TEST) {
+    ierr = PetscOptionsBool("-run_test_check_ksp", "Check solution of KSP", "ex12.c", options->checkksp, &options->checkksp, NULL);CHKERRQ(ierr);
+  }
   ierr = PetscOptionsEnd();
   ierr = PetscLogEventRegister("CreateMesh", DM_CLASSID, &options->createMeshEvent);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -695,9 +700,11 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   default:
     SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
   }
-  ierr = PetscDSAddBoundary(prob, user->bcType == DIRICHLET ? (user->fieldBC ? DM_BC_ESSENTIAL_FIELD : DM_BC_ESSENTIAL) : DM_BC_NATURAL,
-                            "wall", user->bcType == DIRICHLET ? "marker" : "boundary", 0, 0, NULL,
-                            user->fieldBC ? (void (*)(void)) user->exactFields[0] : (void (*)(void)) user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
+  if (user->bcType != NONE) {
+    ierr = PetscDSAddBoundary(prob, user->bcType == DIRICHLET ? (user->fieldBC ? DM_BC_ESSENTIAL_FIELD : DM_BC_ESSENTIAL) : DM_BC_NATURAL,
+                              "wall", user->bcType == DIRICHLET ? "marker" : "boundary", 0, 0, NULL,
+                              user->fieldBC ? (void (*)(void)) user->exactFields[0] : (void (*)(void)) user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
+  }
   ierr = PetscDSSetExactSolution(prob, 0, user->exactFuncs[0], user);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -978,7 +985,9 @@ int main(int argc, char **argv)
   } else {
     A = J;
   }
-  if (user.bcType == NEUMANN) {
+
+  nullSpace = NULL;
+  if (user.bcType != DIRICHLET) {
     ierr = MatNullSpaceCreate(PetscObjectComm((PetscObject) dm), PETSC_TRUE, 0, NULL, &nullSpace);CHKERRQ(ierr);
     ierr = MatSetNullSpace(A, nullSpace);CHKERRQ(ierr);
   }
@@ -1051,6 +1060,7 @@ int main(int argc, char **argv)
       ierr = PetscPrintf(PETSC_COMM_WORLD, "Initial guess\n");CHKERRQ(ierr);
       ierr = VecView(u, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
+    ierr = VecViewFromOptions(u, NULL, "-guess_vec_view");CHKERRQ(ierr);
     ierr = SNESSolve(snes, NULL, u);CHKERRQ(ierr);
     ierr = SNESGetSolution(snes, &u);CHKERRQ(ierr);
     ierr = SNESGetDM(snes, &dm);CHKERRQ(ierr);
@@ -1099,12 +1109,28 @@ int main(int argc, char **argv)
       ierr = SNESComputeFunction(snes, r, b);CHKERRQ(ierr);
       ierr = MatMult(A, u, r);CHKERRQ(ierr);
       ierr = VecAXPY(r, 1.0, b);CHKERRQ(ierr);
-      ierr = VecDestroy(&b);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD, "Au - b = Au + F(0)\n");CHKERRQ(ierr);
       ierr = VecChop(r, 1.0e-10);CHKERRQ(ierr);
       if (!user.quiet) {ierr = VecView(r, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
       ierr = VecNorm(r, NORM_2, &res);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD, "Linear L_2 Residual: %g\n", (double)res);CHKERRQ(ierr);
+      /* check solver */
+      if (user.checkksp) {
+        KSP ksp;
+
+        if (nullSpace) {
+          ierr = MatNullSpaceRemove(nullSpace, u);CHKERRQ(ierr);
+        }
+        ierr = SNESComputeJacobian(snes, u, A, J);CHKERRQ(ierr);
+        ierr = MatMult(A, u, b);CHKERRQ(ierr);
+        ierr = SNESGetKSP(snes, &ksp);CHKERRQ(ierr);
+        ierr = KSPSetOperators(ksp, A, J);CHKERRQ(ierr);
+        ierr = KSPSolve(ksp, b, r);CHKERRQ(ierr);
+        ierr = VecAXPY(r, -1.0, u);CHKERRQ(ierr);
+        ierr = VecNorm(r, NORM_2, &res);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD, "KSP Error: %g\n", (double)res);CHKERRQ(ierr);
+      }
+      ierr = VecDestroy(&b);CHKERRQ(ierr);
     }
   }
   ierr = VecViewFromOptions(u, NULL, "-vec_view");CHKERRQ(ierr);
@@ -1121,7 +1147,7 @@ int main(int argc, char **argv)
     if (PetscAbsReal(PetscAbsScalar(bdInt) - exact) > PETSC_SQRT_MACHINE_EPSILON) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Invalid boundary integral %g != %g", (double) PetscAbsScalar(bdInt), (double)exact);
   }
 
-  if (user.bcType == NEUMANN) {ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);}
+  ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);
   if (user.jacobianMF) {ierr = VecDestroy(&userJ.u);CHKERRQ(ierr);}
   if (A != J) {ierr = MatDestroy(&A);CHKERRQ(ierr);}
   ierr = MatDestroy(&J);CHKERRQ(ierr);
@@ -1808,5 +1834,67 @@ int main(int argc, char **argv)
     suffix: glvis_2d_hex_p2_p4est
     requires: p4est
     args: -quiet -run_type test -interpolate 1 -bc_type dirichlet -petscspace_degree 2 -vec_view glvis: -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 1 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -cells 2,2 -viewer_glvis_dm_plex_enable_ncmesh
+  test:
+    suffix: glvis_2d_tet_p0
+    args: -run_type exact  -guess_vec_view glvis: -nonzero_initial_guess 1 -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -petscspace_degree 0
+  test:
+    suffix: glvis_2d_hex_p0
+    args: -run_type exact  -guess_vec_view glvis: -nonzero_initial_guess 1 -cells 5,7  -simplex 0 -petscspace_degree 0
 
+  # HPDDM tests
+  testset:
+    nsize: 4
+    requires: hpddm !single
+    args: -run_type test -run_test_check_ksp -quiet -petscspace_degree 1 -interpolate 1 -petscpartitioner_type simple -bc_type none -simplex 0 -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_nev 2 -pc_hpddm_coarse_p 1 -pc_hpddm_coarse_pc_type svd -ksp_rtol 1.e-10 -pc_hpddm_levels_1_st_pc_factor_shift_type INBLOCKS -ksp_converged_reason
+    test:
+      suffix: pchpddm_quad_singular
+      args: -cells 6,7
+    test:
+      requires: p4est
+      suffix: pchpddm_p4est_singular_2d
+      args: -dm_plex_convert_type p4est -dm_forest_minimum_refinement 1 -dm_forest_initial_refinement 3 -dm_forest_maximum_refinement 3
+    test:
+      requires: p4est
+      suffix: pchpddm_p4est_nc_singular_2d
+      args: -dm_plex_convert_type p4est -dm_forest_minimum_refinement 1 -dm_forest_initial_refinement 1 -dm_forest_maximum_refinement 3 -dm_p4est_refine_pattern hash
+  testset:
+    nsize: 4
+    requires: hpddm triangle !single
+    args: -run_type full -petscpartitioner_type simple -dm_refine 2 -bc_type dirichlet -interpolate 1 -petscspace_degree 2 -ksp_type gmres -ksp_gmres_restart 100 -pc_type hpddm -snes_monitor_short -ksp_monitor_short -snes_converged_reason ::ascii_info_detail -ksp_converged_reason -snes_view -show_solution 0 -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_nev 4 -pc_hpddm_coarse_p 2 -pc_hpddm_coarse_pc_type redundant -ksp_rtol 1.e-1
+    test:
+      args: -pc_hpddm_coarse_mat_type baij -options_left no
+      suffix: pchpddm_tri_reuse_baij
+    test:
+      requires: !complex
+      suffix: pchpddm_tri_reuse
+  testset:
+    nsize: 4
+    requires: hpddm !single
+    args: -run_type full -petscpartitioner_type simple -cells 7,5 -dm_refine 2 -simplex 0 -bc_type dirichlet -interpolate 1 -petscspace_degree 2 -ksp_type gmres -ksp_gmres_restart 100 -pc_type hpddm -snes_monitor_short -ksp_monitor_short -snes_converged_reason ::ascii_info_detail -ksp_converged_reason -snes_view -show_solution 0 -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_nev 4 -pc_hpddm_coarse_p 2 -pc_hpddm_coarse_pc_type redundant -ksp_rtol 1.e-1
+    test:
+      args: -pc_hpddm_coarse_mat_type baij -options_left no
+      suffix: pchpddm_quad_reuse_baij
+    test:
+      requires: !complex
+      suffix: pchpddm_quad_reuse
+  testset:
+    nsize: 4
+    requires: hpddm !single
+    args: -run_type full -petscpartitioner_type simple -cells 7,5 -dm_refine 2 -simplex 0 -bc_type dirichlet -interpolate 1 -petscspace_degree 1 -ksp_type gmres -ksp_gmres_restart 100 -pc_type hpddm -snes_monitor_short -ksp_monitor_short -snes_converged_reason ::ascii_info_detail -ksp_converged_reason -snes_view -show_solution 0 -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_threshold 0.1 -pc_hpddm_coarse_p 2 -pc_hpddm_coarse_pc_type redundant -ksp_rtol 1.e-1
+    test:
+      args: -pc_hpddm_coarse_mat_type baij -options_left no
+      suffix: pchpddm_quad_reuse_threshold_baij
+    test:
+      requires: !complex
+      suffix: pchpddm_quad_reuse_threshold
+  testset:
+    nsize: 4
+    requires: hpddm parmetis !single
+    args: -run_type full -petscpartitioner_type parmetis -dm_refine 3 -bc_type dirichlet -interpolate 1 -petscspace_degree 1 -ksp_type gmres -ksp_gmres_restart 100 -pc_type hpddm -snes_monitor_short -ksp_monitor_short -snes_converged_reason ::ascii_info_detail -ksp_converged_reason -snes_view -show_solution 0 -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type icc -pc_hpddm_levels_1_eps_nev 20 -pc_hpddm_coarse_p 2 -pc_hpddm_coarse_pc_type redundant -ksp_rtol 1.e-10 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -pc_hpddm_levels_1_sub_pc_factor_levels 3 -variable_coefficient circle -dm_plex_gmsh_periodic 0
+    test:
+      args: -pc_hpddm_coarse_mat_type baij -options_left no
+      suffix: pchpddm_tri_parmetis_baij
+    test:
+      requires: !complex
+      suffix: pchpddm_tri_parmetis
 TEST*/

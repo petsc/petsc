@@ -14,6 +14,7 @@
 #if defined(PETSC_HAVE_ELEMENTAL)
 PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_Elemental(Mat,MatType,MatReuse,Mat*);
 #endif
+PETSC_INTERN PetscErrorCode MatConvert_MPISBAIJ_Basic(Mat,MatType,MatReuse,Mat*);
 
 /*
      Checks for missing diagonals
@@ -243,7 +244,7 @@ PetscErrorCode MatSetOption_SeqSBAIJ(Mat A,MatOption op,PetscBool flg)
       A->ops->mult = MatMult_SeqSBAIJ_1_Hermitian_ushort;
     } else if (A->cmap->bs == 1) {
       A->ops->mult = MatMult_SeqSBAIJ_1_Hermitian;
-    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for Hermitian with block size greater than 1");
+    } else if (!A->symmetric) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for Hermitian with block size greater than 1");
 #endif
     break;
   case MAT_SPD:
@@ -1412,7 +1413,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
                                        0,
                                /* 69*/ MatGetRowMaxAbs_SeqSBAIJ,
                                        0,
-                                       0,
+                                       MatConvert_MPISBAIJ_Basic,
                                        0,
                                        0,
                                /* 74*/ 0,

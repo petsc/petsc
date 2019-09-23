@@ -434,6 +434,17 @@ int main(int argc,char **args)
    filter: grep -v "variant HERMITIAN"
    suffix: bddc_elast_3lev
    args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_view -pc_bddc_levels 1 -pc_bddc_coarsening_ratio 1 -ksp_error_if_not_converged -pc_bddc_monolithic -pc_bddc_use_faces -pc_bddc_coarse_pc_bddc_corner_selection
+ testset:
+   nsize: 8
+   requires: hpddm
+   filter: grep -v "variant HERMITIAN"
+   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_view -pc_bddc_levels 1 -pc_bddc_coarsening_ratio 1 -ksp_error_if_not_converged -pc_bddc_monolithic -pc_bddc_use_faces -pc_bddc_coarse_pc_type hpddm -prefix_push pc_bddc_coarse_ -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_eps_nev 5 -pc_hpddm_levels_1_st_pc_factor_shift_type INBLOCKS -prefix_pop -ksp_type fgmres -ksp_max_it 50 -ksp_converged_reason
+   test:
+     args: -pc_bddc_coarse_pc_hpddm_coarse_mat_type baij -options_left no
+     suffix: bddc_elast_3lev_hpddm_baij
+   test:
+     requires: !complex
+     suffix: bddc_elast_3lev_hpddm
  test:
    nsize: 8
    requires: !single
@@ -475,6 +486,11 @@ int main(int argc,char **args)
    filter: grep -v "variant HERMITIAN"
    suffix: fetidp_elast
    args: -pde_type Elasticity -cells 9,7,8 -dim 3 -ksp_view -ksp_type fetidp -fetidp_ksp_type cg -fetidp_bddc_pc_bddc_coarse_redundant_pc_type svd -ksp_fetidp_fullyredundant -ksp_error_if_not_converged -fetidp_bddc_pc_bddc_monolithic
+ test:
+   nsize: 8
+   suffix: hpddm
+   requires: hpddm !single
+   args: -pde_type Elasticity -cells 12,12 -dim 2 -ksp_converged_reason -pc_type hpddm -pc_hpddm_coarse_correction balanced -pc_hpddm_levels_1_pc_type asm -pc_hpddm_levels_1_pc_asm_overlap 1 -pc_hpddm_levels_1_pc_asm_type basic -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_eps_nev 10 -matis_localmat_type {{aij baij sbaij}shared output} -pc_hpddm_coarse_mat_type {{baij sbaij}shared output} -pc_hpddm_levels_1_st_pc_factor_shift_type INBLOCKS
  testset:
    nsize: 9
    args: -test_assembly -assembled_view -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged

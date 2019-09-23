@@ -733,9 +733,9 @@ Parallel Mesh in 2 dimensions:
 Labels:
   Cell Sets: 3 strata with value/size (1 (9), 2 (18), 3 (5))
   depth: 3 strata with value/size (0 (34), 1 (64), 2 (32))
-Field Field_0:
+Field U:
   adjacency FEM
-Field Field_1:
+Field Sigma:
   adjacency FEM
-Field Field_2:
+Field Alpha:
   adjacency FEM

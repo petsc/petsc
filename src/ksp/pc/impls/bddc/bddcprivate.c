@@ -8184,7 +8184,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   ierr = MPIU_Allreduce(&im_active,&active_procs,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
 
   /* determine number of processes partecipating to coarse solver and compute subassembling pattern */
-  /* restr : whether if we want to exclude senders (which are not receivers) from the subassembling pattern */
+  /* restr : whether we want to exclude senders (which are not receivers) from the subassembling pattern */
   /* full_restr : just use the receivers from the subassembling pattern */
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
   coarse_mat_is        = NULL;
@@ -8214,6 +8214,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
       }
     } else {
       PetscMPIInt rank;
+
       ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRQ(ierr);
       have_void = (active_procs == (PetscInt)size) ? PETSC_FALSE : PETSC_TRUE;
       ierr = ISCreateStride(PetscObjectComm((PetscObject)pc),1,rank,1,&pcbddc->coarse_subassembling);CHKERRQ(ierr);
@@ -8386,17 +8387,12 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     if (!multilevel_allowed) {
       ierr = MatConvert(coarse_mat_is,MATAIJ,coarse_mat_reuse,&coarse_mat);CHKERRQ(ierr);
     } else {
-      Mat A;
-
       /* if this matrix is present, it means we are not reusing the coarse matrix */
       if (coarse_mat_is) {
         if (coarse_mat) SETERRQ(PetscObjectComm((PetscObject)coarse_mat_is),PETSC_ERR_PLIB,"This should not happen");
         ierr = PetscObjectReference((PetscObject)coarse_mat_is);CHKERRQ(ierr);
         coarse_mat = coarse_mat_is;
       }
-      /* be sure we don't have MatSeqDENSE as local mat */
-      ierr = MatISGetLocalMat(coarse_mat,&A);CHKERRQ(ierr);
-      ierr = MatConvert(A,MATSEQAIJ,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
     }
   }
   ierr = MatDestroy(&t_coarse_mat_is);CHKERRQ(ierr);
@@ -8455,7 +8451,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
 
   /* create the coarse KSP object only once with defaults */
   if (coarse_mat) {
-    PetscBool   isredundant,isnn,isbddc;
+    PetscBool   isredundant,isbddc,force,valid;
     PetscViewer dbg_viewer = NULL;
 
     if (pcbddc->dbg_flag) {
@@ -8500,10 +8496,12 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
       ierr = KSPSetFromOptions(pcbddc->coarse_ksp);CHKERRQ(ierr);
       /* get some info after set from options */
       ierr = KSPGetPC(pcbddc->coarse_ksp,&pc_temp);CHKERRQ(ierr);
-      /* multilevel cannot be done with coarse PCs different from BDDC or NN */
+      /* multilevel cannot be done with coarse PC different from BDDC, NN, HPDDM, unless forced to */
+      force = PETSC_FALSE;
+      ierr = PetscOptionsGetBool(NULL,((PetscObject)pc_temp)->prefix,"-pc_type_forced",&force,NULL);CHKERRQ(ierr);
+      ierr = PetscObjectTypeCompareAny((PetscObject)pc_temp,&valid,PCBDDC,PCNN,PCHPDDM,"");CHKERRQ(ierr);
       ierr = PetscObjectTypeCompare((PetscObject)pc_temp,PCBDDC,&isbddc);CHKERRQ(ierr);
-      ierr = PetscObjectTypeCompare((PetscObject)pc_temp,PCNN,&isnn);CHKERRQ(ierr);
-      if (multilevel_allowed && !isbddc && !isnn) {
+      if (multilevel_allowed && !force && !valid) {
         isbddc = PETSC_TRUE;
         ierr   = PCSetType(pc_temp,PCBDDC);CHKERRQ(ierr);
         ierr   = PCBDDCSetLevel(pc_temp,pcbddc->current_level+1);CHKERRQ(ierr);
@@ -8543,14 +8541,14 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
 
     /* multilevel can only be requested via -pc_bddc_levels or PCBDDCSetLevels */
     if (isbddc && !multilevel_allowed) {
-      ierr   = PCSetType(pc_temp,coarse_pc_type);CHKERRQ(ierr);
-      isbddc = PETSC_FALSE;
+      ierr = PCSetType(pc_temp,coarse_pc_type);CHKERRQ(ierr);
     }
-    /* multilevel cannot be done with coarse PCs different from BDDC or NN */
-    ierr = PetscObjectTypeCompare((PetscObject)pc_temp,PCNN,&isnn);CHKERRQ(ierr);
-    if (multilevel_requested && multilevel_allowed && !isbddc && !isnn) {
-      ierr   = PCSetType(pc_temp,PCBDDC);CHKERRQ(ierr);
-      isbddc = PETSC_TRUE;
+    /* multilevel cannot be done with coarse PC different from BDDC, NN, HPDDM, unless forced to */
+    force = PETSC_FALSE;
+    ierr = PetscOptionsGetBool(NULL,((PetscObject)pc_temp)->prefix,"-pc_type_forced",&force,NULL);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompareAny((PetscObject)pc_temp,&valid,PCBDDC,PCNN,PCHPDDM,"");CHKERRQ(ierr);
+    if (multilevel_requested && multilevel_allowed && !valid && !force) {
+      ierr = PCSetType(pc_temp,PCBDDC);CHKERRQ(ierr);
     }
     ierr = PetscObjectTypeCompare((PetscObject)pc_temp,PCREDUNDANT,&isredundant);CHKERRQ(ierr);
     if (isredundant) {

@@ -321,7 +321,7 @@ PETSC_EXTERN PetscErrorCode DMPlexSetScale(DM, PetscUnit, PetscReal);
 
 typedef struct {
   DM    dm;
-  Vec   u; /* The base vector for the Jacbobian action J(u) x */
+  Vec   u; /* The base vector for the Jacobian action J(u) x */
   Mat   J; /* Preconditioner for testing */
   void *user;
 } JacActionCtx;

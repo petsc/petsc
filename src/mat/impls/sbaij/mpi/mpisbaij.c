@@ -56,7 +56,7 @@ static PetscErrorCode MatPreallocateWithMats_Private(Mat B, PetscInt nm, Mat X[]
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatConvert_MPISBAIJ_XAIJ(Mat A, MatType newtype, MatReuse reuse, Mat *newmat)
+PETSC_INTERN PetscErrorCode MatConvert_MPISBAIJ_Basic(Mat A, MatType newtype, MatReuse reuse, Mat *newmat)
 {
   Mat            B;
   PetscErrorCode ierr;
@@ -64,7 +64,7 @@ static PetscErrorCode MatConvert_MPISBAIJ_XAIJ(Mat A, MatType newtype, MatReuse 
 
   PetscFunctionBegin;
   if (reuse != MAT_REUSE_MATRIX) {
-    PetscBool symm = PETSC_TRUE;
+    PetscBool symm = PETSC_TRUE,isdense;
     PetscInt  bs;
 
     ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
@@ -74,10 +74,18 @@ static PetscErrorCode MatConvert_MPISBAIJ_XAIJ(Mat A, MatType newtype, MatReuse 
     ierr = MatSetBlockSize(B,bs);CHKERRQ(ierr);
     ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
     ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
-    ierr = MatGetRowUpperTriangular(A);CHKERRQ(ierr);
-    ierr = MatPreallocateWithMats_Private(B,1,&A,&symm,PETSC_TRUE);CHKERRQ(ierr);
-    ierr = MatRestoreRowUpperTriangular(A);CHKERRQ(ierr);
-  } else B = *newmat;
+    ierr = PetscObjectTypeCompareAny((PetscObject)B,&isdense,MATSEQDENSE,MATMPIDENSE,MATSEQDENSECUDA,"");CHKERRQ(ierr);
+    if (!isdense) {
+      ierr = MatGetRowUpperTriangular(A);CHKERRQ(ierr);
+      ierr = MatPreallocateWithMats_Private(B,1,&A,&symm,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = MatRestoreRowUpperTriangular(A);CHKERRQ(ierr);
+    } else {
+      ierr = MatSetUp(B);CHKERRQ(ierr);
+    }
+  } else {
+    B    = *newmat;
+    ierr = MatZeroEntries(B);CHKERRQ(ierr);
+  }
 
   ierr = MatGetRowUpperTriangular(A);CHKERRQ(ierr);
   for (r = A->rmap->rstart; r < A->rmap->rend; r++) {
@@ -2040,7 +2048,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPISBAIJ,
                                        0,
                                /* 69*/ MatGetRowMaxAbs_MPISBAIJ,
                                        0,
-                                       0,
+                                       MatConvert_MPISBAIJ_Basic,
                                        0,
                                        0,
                                /* 74*/ 0,
@@ -2361,8 +2369,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat B)
 #if defined(PETSC_HAVE_ELEMENTAL)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpisbaij_elemental_C",MatConvert_MPISBAIJ_Elemental);CHKERRQ(ierr);
 #endif
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpisbaij_mpiaij_C",MatConvert_MPISBAIJ_XAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpisbaij_mpibaij_C",MatConvert_MPISBAIJ_XAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpisbaij_mpiaij_C",MatConvert_MPISBAIJ_Basic);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpisbaij_mpibaij_C",MatConvert_MPISBAIJ_Basic);CHKERRQ(ierr);
 
   B->symmetric                  = PETSC_TRUE;
   B->structurally_symmetric     = PETSC_TRUE;

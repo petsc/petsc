@@ -714,6 +714,9 @@ PETSC_EXTERN PetscErrorCode DMPlexSNESGetGradientDM(DM,PetscFV,DM*);
 PETSC_EXTERN PetscErrorCode DMSNESSetBoundaryLocal(DM,PetscErrorCode (*)(DM,Vec,void*),void*);
 PETSC_EXTERN PetscErrorCode DMSNESSetFunctionLocal(DM,PetscErrorCode (*)(DM,Vec,Vec,void*),void*);
 PETSC_EXTERN PetscErrorCode DMSNESSetJacobianLocal(DM,PetscErrorCode (*)(DM,Vec,Mat,Mat,void*),void*);
+PETSC_EXTERN PetscErrorCode DMSNESGetBoundaryLocal(DM,PetscErrorCode (**)(DM,Vec,void*),void**);
+PETSC_EXTERN PetscErrorCode DMSNESGetFunctionLocal(DM,PetscErrorCode (**)(DM,Vec,Vec,void*),void**);
+PETSC_EXTERN PetscErrorCode DMSNESGetJacobianLocal(DM,PetscErrorCode (**)(DM,Vec,Mat,Mat,void*),void**);
 
 /* Routines for Multiblock solver */
 PETSC_EXTERN PetscErrorCode SNESMultiblockSetFields(SNES, const char [], PetscInt, const PetscInt *);

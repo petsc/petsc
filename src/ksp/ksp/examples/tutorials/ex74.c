@@ -54,11 +54,11 @@ T*/
 /*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
-  petscsys.h      - base PETSc routines   
+  petscsys.h      - base PETSc routines
   petscvec.h      - vectors
   petscmat.h      - matrices
-  petscis.h       - index sets            
-  petscviewer.h   - viewers               
+  petscis.h       - index sets
+  petscviewer.h   - viewers
   petscpc.h       - preconditioners
 */
 #include <petscksp.h>

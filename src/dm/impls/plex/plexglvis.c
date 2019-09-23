@@ -133,11 +133,11 @@ PetscErrorCode DMSetUpGLVisViewer_Plex(PetscObject odm, PetscViewer viewer)
           ierr = PetscStrcmp(spname,PETSCDUALSPACELAGRANGE,&islag);CHKERRQ(ierr);
           if (!islag) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported dual space");
           ierr = PetscDualSpaceLagrangeGetContinuity(sp,&continuous);CHKERRQ(ierr);
-          if (!continuous) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Discontinuous space visualization currently unsupported");
           ierr = PetscDualSpaceGetOrder(sp,&order);CHKERRQ(ierr);
-          if (continuous && order > 0) {
+          if (continuous && order > 0) { /* no support for high-order viz, still have to figure out the numbering */
             ierr = PetscSNPrintf(fec,64,"FiniteElementCollection: H1_%DD_P1",dim);CHKERRQ(ierr);
           } else {
+            if (!continuous && order) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Discontinuous space visualization currently unsupported for order %D",order);
             H1   = PETSC_FALSE;
             ierr = PetscSNPrintf(fec,64,"FiniteElementCollection: L2_%DD_P%D",dim,order);CHKERRQ(ierr);
           }
@@ -341,7 +341,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   PetscInt             cStart,cEnd,cEndInterior,vStart,vEnd,nvert;
   PetscMPIInt          size;
   PetscBool            localized,isascii;
-  PetscBool            enable_mfem,enable_boundary,enable_ncmesh;
+  PetscBool            enable_mfem,enable_boundary,enable_ncmesh,view_ovl = PETSC_FALSE;
   PetscBT              pown,vown;
   PetscErrorCode       ierr;
   PetscContainer       glvis_container;
@@ -401,6 +401,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   ierr = PetscOptionsBool("-viewer_glvis_dm_plex_enable_boundary","Enable boundary section in mesh representation",NULL,enable_boundary,&enable_boundary,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-viewer_glvis_dm_plex_enable_ncmesh","Enable vertex_parents section in mesh representation (allows derefinement)",NULL,enable_ncmesh,&enable_ncmesh,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-viewer_glvis_dm_plex_enable_mfem","Dump a mesh that can be used with MFEM's FiniteElementSpaces",NULL,enable_mfem,&enable_mfem,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-viewer_glvis_dm_plex_overlap","Include overlap region in local meshes",NULL,view_ovl,&view_ovl,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-viewer_glvis_dm_plex_emarker","String for the material id label",NULL,emark,emark,sizeof(emark),&enable_emark);CHKERRQ(ierr);
   ierr = PetscOptionsString("-viewer_glvis_dm_plex_bmarker","String for the boundary id label",NULL,bmark,bmark,sizeof(bmark),&enable_bmark);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
@@ -428,7 +429,11 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
 
     ierr = PetscObjectQuery((PetscObject)dm,"_glvis_plex_gnum",(PetscObject*)&globalNum);CHKERRQ(ierr);
     if (!globalNum) {
-      ierr = DMPlexCreateCellNumbering_Internal(dm,PETSC_TRUE,&globalNum);CHKERRQ(ierr);
+      if (view_ovl) {
+        ierr = ISCreateStride(PetscObjectComm((PetscObject)dm),cEnd-cStart,0,1,&globalNum);CHKERRQ(ierr);
+      } else {
+        ierr = DMPlexCreateCellNumbering_Internal(dm,PETSC_TRUE,&globalNum);CHKERRQ(ierr);
+      }
       ierr = PetscObjectCompose((PetscObject)dm,"_glvis_plex_gnum",(PetscObject)globalNum);CHKERRQ(ierr);
       ierr = PetscObjectDereference((PetscObject)globalNum);CHKERRQ(ierr);
     }

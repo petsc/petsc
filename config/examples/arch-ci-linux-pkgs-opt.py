@@ -42,6 +42,8 @@ configure_options = [
   '--with-opengl=1',
   '--download-libpng=1',
   '--download-libjpeg=1',
+  '--download-slepc=1',
+  '--download-hpddm=1'
   ]
 
 if __name__ == '__main__':

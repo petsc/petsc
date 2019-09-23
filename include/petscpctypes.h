@@ -70,6 +70,7 @@ typedef const char* PCType;
 #define PCLMVM            "lmvm"
 #define PCHMG             "hmg"
 #define PCDEFLATION       "deflation"
+#define PCHPDDM           "hpddm"
 
 /*E
     PCSide - If the preconditioner is to be applied to the left, right
@@ -343,6 +344,20 @@ typedef enum {
   PC_DEFLATION_SPACE_AGGREGATION,
   PC_DEFLATION_SPACE_USER
 } PCDeflationSpaceType;
+
+/*E
+    PCHPDDMCoarseCorrectionType - Type of coarse correction used by PCHPDDM
+
+    Level: intermediate
+
+    Values:
++   PC_HPDDM_COARSE_CORRECTION_DEFLATED - eq. (1) in PCHPDDMShellApply()
+-   PC_HPDDM_COARSE_CORRECTION_ADDITIVE - eq. (2)
+.   PC_HPDDM_COARSE_CORRECTION_BALANCED - eq. (3)
+
+.seealso: PCHPDDM, PCSetType(), PCHPDDMShellApply()
+E*/
+typedef enum { PC_HPDDM_COARSE_CORRECTION_DEFLATED, PC_HPDDM_COARSE_CORRECTION_ADDITIVE, PC_HPDDM_COARSE_CORRECTION_BALANCED } PCHPDDMCoarseCorrectionType;
 
 /*E
     PCFailedReason - indicates type of PC failure

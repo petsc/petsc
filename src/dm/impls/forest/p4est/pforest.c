@@ -395,6 +395,7 @@ static PetscErrorCode DMForestDestroy_pforest(DM dm)
   ierr            = DMFTopologyDestroy_pforest(&pforest->topo);CHKERRQ(ierr);
   ierr            = PetscObjectComposeFunction((PetscObject)dm,_pforest_string(DMConvert_plex_pforest) "_C",NULL);CHKERRQ(ierr);
   ierr            = PetscObjectComposeFunction((PetscObject)dm,_pforest_string(DMConvert_pforest_plex) "_C",NULL);CHKERRQ(ierr);
+  ierr            = PetscObjectComposeFunction((PetscObject)dm,"DMCreateNeumannOverlap_C",NULL);CHKERRQ(ierr);
   ierr            = PetscFree(pforest->ghostName);CHKERRQ(ierr);
   ierr            = DMDestroy(&pforest->plex);CHKERRQ(ierr);
   ierr            = PetscSFDestroy(&pforest->pointAdaptToSelfSF);CHKERRQ(ierr);
@@ -5009,6 +5010,7 @@ static PetscErrorCode DMCreateMatrix_pforest(DM dm,Mat *mat)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMPforestGetPlex(dm,&plex);CHKERRQ(ierr);
   ierr = DMCreateMatrix(plex,mat);CHKERRQ(ierr);
+  ierr = MatSetDM(*mat,dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -5216,6 +5218,23 @@ static PetscErrorCode DMForestCreateCellSF_pforest(DM dm, PetscSF *cellSF)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode DMCreateNeumannOverlap_pforest(DM dm, IS* ovl, Mat *J, PetscErrorCode (**setup)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void*), void **setup_ctx)
+{
+  DM             plex;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPforestGetPlex(dm,&plex);CHKERRQ(ierr);
+  ierr = DMCreateNeumannOverlap_Plex(plex,ovl,J,setup,setup_ctx);CHKERRQ(ierr);
+  if (!*setup) {
+    ierr = PetscObjectQueryFunction((PetscObject)dm, "MatComputeNeumannOverlap_C", setup);CHKERRQ(ierr);
+    if (*setup) {
+      ierr = PetscObjectCompose((PetscObject)*ovl, "_DM_Original_HPDDM", (PetscObject)dm);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode DMInitialize_pforest(DM dm)
 {
   PetscErrorCode ierr;
@@ -5242,6 +5261,7 @@ static PetscErrorCode DMInitialize_pforest(DM dm)
 
   ierr = PetscObjectComposeFunction((PetscObject)dm,_pforest_string(DMConvert_plex_pforest) "_C",DMConvert_plex_pforest);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)dm,_pforest_string(DMConvert_pforest_plex) "_C",DMConvert_pforest_plex);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)dm,"DMCreateNeumannOverlap_C",DMCreateNeumannOverlap_pforest);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
