@@ -285,7 +285,7 @@ PetscErrorCode DMPlexCreateRigidBodies(DM dm, PetscInt nb, DMLabel label, const 
   }
   for (i = 0; i < dim; ++i) {ierr = VecNormalize(mode[i], NULL);CHKERRQ(ierr);}
   /* Orthonormalize system	*/
-  for (i = 0; i < m; ++i) {
+  for (i = dim; i < m; ++i) {
     PetscScalar dots[6];
 
     ierr = VecNormalize(mode[i], NULL);CHKERRQ(ierr);
