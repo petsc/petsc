@@ -1,8 +1,6 @@
 #if !defined(__CUDAVECIMPL)
 #define __CUDAVECIMPL
 
-#if defined(__CUDACC__)
-
 #include <petscvec.h>
 #include <petsccublas.h>
 #include <petsc/private/vecimpl.h>
@@ -10,8 +8,6 @@
 #include <cublas_v2.h>
 
 #define WaitForGPU() PetscCUDASynchronize ? cudaDeviceSynchronize() : 0
-
-#endif
 
 typedef struct {
   PetscScalar  *GPUarray;           /* this always holds the GPU data */
