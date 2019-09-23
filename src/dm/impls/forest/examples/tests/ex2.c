@@ -363,7 +363,7 @@ int main(int argc, char **argv)
 
       ierr = DMConvert(postForest,DMPLEX,&dmConv);CHKERRQ(ierr);
       ierr = DMViewFromOptions(dmConv,NULL,"-dm_conv_view");CHKERRQ(ierr);
-      ierr = DMPlexCheckCellShape(dmConv,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = DMPlexCheckCellShape(dmConv,PETSC_TRUE,PETSC_DETERMINE);CHKERRQ(ierr);
       ierr = DMDestroy(&dmConv);CHKERRQ(ierr);
     }
 

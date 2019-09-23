@@ -30,7 +30,7 @@ int main(int argc, char **argv)
     ierr = DMConvert(dm,DMPLEX,&dmConv);CHKERRQ(ierr);
     ierr = DMLocalizeCoordinates(dmConv);CHKERRQ(ierr);
     ierr = DMViewFromOptions(dmConv,NULL,"-dm_conv_view");CHKERRQ(ierr);
-    ierr = DMPlexCheckCellShape(dmConv,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = DMPlexCheckCellShape(dmConv,PETSC_FALSE,PETSC_DETERMINE);CHKERRQ(ierr);
     ierr = DMDestroy(&dmConv);CHKERRQ(ierr);
   }
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
