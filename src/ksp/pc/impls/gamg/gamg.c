@@ -108,7 +108,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
     }
     /* we know that the grid structure can be reused in MatPtAP */
   } else { /* reduce active processors - we know that the grid structure can NOT be reused in MatPtAP */
-    PetscInt       *counts,*newproc_idx,ii,jj,kk,strideNew,*tidx,ncrs_new,ncrs_eq_new,nloc_old,expand_factor=1,rfactor;
+    PetscInt       *counts,*newproc_idx,ii,jj,kk,strideNew,*tidx,ncrs_new,ncrs_eq_new,nloc_old,expand_factor=1,rfactor=1;
     IS             is_eq_newproc,is_eq_num,is_eq_num_prim,new_eq_indices;
     nloc_old = ncrs_eq/cr_bs;
     if (ncrs_eq % cr_bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ncrs_eq %D not divisible by cr_bs %D",ncrs_eq,cr_bs);
