@@ -554,7 +554,6 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *ctx)
 {
   DM              cdm = dm;
   const PetscInt  dim = ctx->dim;
-  PetscQuadrature q;
   PetscFE         fe[5], feAux[3];
   PetscInt        Nf = 5, NfAux = 3, f;
   PetscBool       cell_simplex = ctx->cell_simplex;
@@ -568,25 +567,26 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *ctx)
   ierr = PetscObjectSetName((PetscObject) fe[0], "density");CHKERRQ(ierr);
   ierr = PetscFECreateDefault(comm, dim, 1, cell_simplex, NULL, -1, &fe[1]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[1], "vorticity");CHKERRQ(ierr);
+  ierr = PetscFECopyQuadrature(fe[0], fe[1]);CHKERRQ(ierr);
   ierr = PetscFECreateDefault(comm, dim, 1, cell_simplex, NULL, -1, &fe[2]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[2], "flux");CHKERRQ(ierr);
+  ierr = PetscFECopyQuadrature(fe[0], fe[2]);CHKERRQ(ierr);
   ierr = PetscFECreateDefault(comm, dim, 1, cell_simplex, NULL, -1, &fe[3]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[3], "potential");CHKERRQ(ierr);
+  ierr = PetscFECopyQuadrature(fe[0], fe[3]);CHKERRQ(ierr);
   ierr = PetscFECreateDefault(comm, dim, 1, cell_simplex, NULL, -1, &fe[4]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[4], "current");CHKERRQ(ierr);
+  ierr = PetscFECopyQuadrature(fe[0], fe[4]);CHKERRQ(ierr);
 
   ierr = PetscFECreateDefault(comm, dim, 1, cell_simplex, NULL, -1, &feAux[0]);CHKERRQ(ierr);
-  ierr = PetscFEGetQuadrature(fe[0], &q);CHKERRQ(ierr);
-  ierr = PetscFESetQuadrature(feAux[0], q);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) feAux[0], "n_0");CHKERRQ(ierr);
+  ierr = PetscFECopyQuadrature(fe[0], feAux[0]);CHKERRQ(ierr);
   ierr = PetscFECreateDefault(comm, dim, 1, cell_simplex, NULL, -1, &feAux[1]);CHKERRQ(ierr);
-  ierr = PetscFEGetQuadrature(fe[1], &q);CHKERRQ(ierr);
-  ierr = PetscFESetQuadrature(feAux[1], q);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) feAux[1], "vorticity_0");CHKERRQ(ierr);
+  ierr = PetscFECopyQuadrature(fe[0], feAux[1]);CHKERRQ(ierr);
   ierr = PetscFECreateDefault(comm, dim, 1, cell_simplex, NULL, -1, &feAux[2]);CHKERRQ(ierr);
-  ierr = PetscFEGetQuadrature(fe[2], &q);CHKERRQ(ierr);
-  ierr = PetscFESetQuadrature(feAux[2], q);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) feAux[2], "flux_0");CHKERRQ(ierr);
+  ierr = PetscFECopyQuadrature(fe[0], feAux[2]);CHKERRQ(ierr);
   /* Set discretization and boundary conditions for each mesh */
   for (f = 0; f < Nf; ++f) {ierr = DMSetField(dm, f, NULL, (PetscObject) fe[f]);CHKERRQ(ierr);}
   ierr = DMCreateDS(dm);CHKERRQ(ierr);

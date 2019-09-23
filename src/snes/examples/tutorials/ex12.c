@@ -769,17 +769,11 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   ierr = PetscFECreateDefault(comm, dim, 1, simplex, NULL, -1, &fe);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe, "potential");CHKERRQ(ierr);
   if (user->variableCoefficient == COEFF_FIELD) {
-    PetscQuadrature q;
-
     ierr = PetscFECreateDefault(comm, dim, 1, simplex, "mat_", -1, &feAux);CHKERRQ(ierr);
-    ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
-    ierr = PetscFESetQuadrature(feAux, q);CHKERRQ(ierr);
+    ierr = PetscFECopyQuadrature(fe, feAux);CHKERRQ(ierr);
   } else if (user->fieldBC) {
-    PetscQuadrature q;
-
     ierr = PetscFECreateDefault(comm, dim, 1, simplex, "bc_", -1, &feAux);CHKERRQ(ierr);
-    ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
-    ierr = PetscFESetQuadrature(feAux, q);CHKERRQ(ierr);
+    ierr = PetscFECopyQuadrature(fe, feAux);CHKERRQ(ierr);
   }
   /* Set discretization and boundary conditions for each mesh */
   ierr = DMSetField(dm, 0, NULL, (PetscObject) fe);CHKERRQ(ierr);

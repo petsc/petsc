@@ -323,7 +323,6 @@ static PetscErrorCode SetupDiscretization(DM dm, PetscErrorCode (*setup)(DM, App
 {
   DM              cdm = dm;
   PetscFE         feq, feu;
-  PetscQuadrature q;
   const PetscInt  dim = user->dim;
   PetscErrorCode  ierr;
 
@@ -333,8 +332,7 @@ static PetscErrorCode SetupDiscretization(DM dm, PetscErrorCode (*setup)(DM, App
   ierr = PetscObjectSetName((PetscObject) feq, "field");CHKERRQ(ierr);
   ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), dim, 1,   user->simplex, "potential_", -1, &feu);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) feu, "potential");CHKERRQ(ierr);
-  ierr = PetscFEGetQuadrature(feq, &q);CHKERRQ(ierr);
-  ierr = PetscFESetQuadrature(feu,  q);CHKERRQ(ierr);
+  ierr = PetscFECopyQuadrature(feq, feu);CHKERRQ(ierr);
   /* Set discretization and boundary conditions for each mesh */
   ierr = DMSetField(dm, 0, NULL, (PetscObject) feq);CHKERRQ(ierr);
   ierr = DMSetField(dm, 1, NULL, (PetscObject) feu);CHKERRQ(ierr);

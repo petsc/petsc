@@ -1385,7 +1385,6 @@ PetscErrorCode DMGetWorkArray(DM dm,PetscInt count,MPI_Datatype dtype,void *mem)
   if (((size_t)dsize*count) > link->bytes) {
     ierr        = PetscFree(link->mem);CHKERRQ(ierr);
     ierr        = PetscMalloc(dsize*count,&link->mem);CHKERRQ(ierr);
-    ierr        = PetscMemzero(link->mem,dsize*count);CHKERRQ(ierr);
     link->bytes = dsize*count;
   }
   link->next   = dm->workout;
