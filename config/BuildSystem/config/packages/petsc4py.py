@@ -39,7 +39,7 @@ class Configure(config.package.Package):
         archflags = "ARCHFLAGS=\'-arch x86_64\' "
 
     # if installing prefix location then need to set new value for PETSC_DIR/PETSC_ARCH
-    if self.argDB['prefix'] and not self.argDB['package-prefix-hash']:
+    if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
        newdir = 'PETSC_DIR='+os.path.abspath(os.path.expanduser(self.argDB['prefix']))+' '+'PETSC_ARCH= MPICC=${PCC} '
     else:
        newdir = 'MPICC=${PCC} '
@@ -75,7 +75,7 @@ class Configure(config.package.Package):
                           '@echo "====================================="',\
                           '@echo "To use petsc4py, add '+os.path.join(self.installdir.dir,'lib')+' to PYTHONPATH"',\
                           '@echo "====================================="'])
-    if self.argDB['prefix'] and not self.argDB['package-prefix-hash']:
+    if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
       self.addMakeRule('petsc4py-build','')
       # the build must be done at install time because PETSc shared libraries must be in final location before building petsc4py
       self.addMakeRule('petsc4py-install','petsc4pybuild petsc4pyinstall')

@@ -55,7 +55,7 @@ class Configure(config.package.Package):
                           '@echo "====================================="',\
                           '@echo "To use mpi4py, add '+os.path.join(self.installdir.dir,'lib')+' to PYTHONPATH"',\
                           '@echo "====================================="'])
-    if self.framework.argDB['prefix'] and not self.argDB['package-prefix-hash']:
+    if self.framework.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
       self.addMakeRule('mpi4py-build','mpi4pybuild')
       self.addMakeRule('mpi4py-install','mpi4pyinstall')
     else:
