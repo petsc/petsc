@@ -1029,7 +1029,8 @@ def main(petsc_dir=None, petsc_arch=None, pkg_dir=None, pkg_arch=None,
                          verbose=verbose, single_ex=single_ex, srcdir=srcdir,
                          testdir=testdir,check=check)
     dataDict=pEx.walktree(os.path.join(pEx.srcdir))
-    pEx.write_gnumake(dataDict, output)
+    if not pEx.check_output:
+        pEx.write_gnumake(dataDict, output)
 
 if __name__ == '__main__':
     import optparse
