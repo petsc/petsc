@@ -8,6 +8,7 @@ class Configure(config.package.Package):
     self.functions         = []
     self.includes          = []
     self.useddirectly      = 0
+    self.builtafterpetsc   = 1
     return
 
   def setupDependencies(self, framework):
