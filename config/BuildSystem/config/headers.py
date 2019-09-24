@@ -74,7 +74,7 @@ class Configure(config.base.Configure):
   def haveHeader(self, header):
     return self.getDefineName(header) in self.defines
 
-  def check(self, header, adddefine = 1):
+  def check(self,header, adddefine = 1):
     '''Checks for "header", and defines HAVE_"header" if found'''
     self.log.write('Checking for header: '+header+'\n')
     found = 0

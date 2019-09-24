@@ -30,6 +30,9 @@ def check_for_option_mistakes(opts):
       optval = opt.split('=')[1]
       if optval == 'ifneeded':
         raise ValueError('The option '+opt+' should probably be '+opt.replace('ifneeded', '1'));
+    for exc in ['mkl_sparse', 'mkl_sparse_optimize', 'mkl_cpardiso', 'mkl_pardiso', 'superlu_dist']:
+      if name.find(exc.replace('_','-')) > -1:
+        raise ValueError('The option '+opt+' should be '+opt.replace(exc.replace('_','-'),exc));
   return
 
 def check_for_unsupported_combinations(opts):

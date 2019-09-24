@@ -530,8 +530,7 @@ class Configure(script.Script):
     output = self.filterCompileOutput(output+'\n'+error)
     return not (returnCode or len(output))
 
-  # Should be static
-  def getCompilerFlagsName(self, language, compilerOnly = 0):
+  def getCompilerFlagsName(language, compilerOnly = 0):
     if language == 'C':
       flagsArg = 'CFLAGS'
     elif language == 'CUDA':
@@ -546,6 +545,7 @@ class Configure(script.Script):
     else:
       raise RuntimeError('Unknown language: '+language)
     return flagsArg
+  getCompilerFlagsName = staticmethod(getCompilerFlagsName)
 
   def getCompilerFlagsArg(self, compilerOnly = 0):
     '''Return the name of the argument which holds the compiler flags for the current language'''
@@ -600,19 +600,19 @@ class Configure(script.Script):
     output = self.filterLinkOutput(output)
     return not (returnCode or len(output))
 
-  # Should be static
-  def getLinkerFlagsName(self, language):
+  def getLinkerFlagsName(language):
     if language in ['C', 'CUDA', 'Cxx', 'FC']:
       flagsArg = 'LDFLAGS'
     else:
       raise RuntimeError('Unknown language: '+language)
     return flagsArg
+  getLinkerFlagsName = staticmethod(getLinkerFlagsName)
 
   def getLinkerFlagsArg(self):
     '''Return the name of the argument which holds the linker flags for the current language'''
     return self.getLinkerFlagsName(self.language[-1])
 
-  def outputRun(self, includes, body, cleanup = 1, defaultOutputArg = '', executor = None,linkLanguage=None):
+  def outputRun(self, includes, body, cleanup = 1, defaultOutputArg = '', executor = None,linkLanguage=None, timeout = 60, threads = 1):
     if not self.checkLink(includes, body, cleanup = 0, linkLanguage=linkLanguage): return ('', 1)
     self.logWrite('Testing executable '+self.linkerObj+' to see if it can be run\n')
     if not os.path.isfile(self.linkerObj):
@@ -639,9 +639,11 @@ class Configure(script.Script):
     status  = 1
     self.logWrite('Executing: '+command+'\n')
     try:
-      (output, error, status) = Configure.executeShellCommand(command, log = self.log)
+      (output, error, status) = Configure.executeShellCommand(command, log = self.log, timeout = timeout, threads = threads)
     except RuntimeError as e:
       self.logWrite('ERROR while running executable: '+str(e)+'\n')
+      if str(e).find('Runaway process exceeded time limit') > -1:
+        raise RuntimeError('Runaway process exceeded time limit')
     if os.path.isfile(self.compilerObj):
       try:
         os.remove(self.compilerObj)
@@ -655,8 +657,8 @@ class Configure(script.Script):
         self.logWrite('ERROR while removing executable file: '+str(e)+'\n')
     return (output+error, status)
 
-  def checkRun(self, includes = '', body = '', cleanup = 1, defaultArg = '', executor = None, linkLanguage=None):
-    (output, returnCode) = self.outputRun(includes, body, cleanup, defaultArg, executor,linkLanguage=linkLanguage)
+  def checkRun(self, includes = '', body = '', cleanup = 1, defaultArg = '', executor = None, linkLanguage=None, timeout = 60, threads = 1):
+    (output, returnCode) = self.outputRun(includes, body, cleanup, defaultArg, executor,linkLanguage=linkLanguage, timeout = timeout, threads = threads)
     return not returnCode
 
   def splitLibs(self,libArgs):

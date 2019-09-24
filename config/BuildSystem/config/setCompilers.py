@@ -34,6 +34,7 @@ class Configure(config.base.Configure):
     return
 
   def __str__(self):
+    self.compilerflags = self.framework.getChild('config.compilerFlags')
     desc = ['Compilers:']
     if hasattr(self, 'CC'):
       self.pushLanguage('C')
@@ -124,9 +125,9 @@ class Configure(config.base.Configure):
 
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
-    self.headers = framework.require('config.headers', None)
-    self.libraries = framework.require('config.libraries', None)
-    self.compilerflags = framework.require('config.compilerFlags', None)
+    self.languages = framework.require('PETSc.options.languages', self)
+    self.libraries = self.framework.getChild('config.libraries')
+    self.headers   = self.framework.getChild('config.headers')    
     return
 
   def isNAG(compiler, log):
@@ -168,7 +169,7 @@ class Configure(config.base.Configure):
   def isClang(compiler, log):
     '''Returns true if the compiler is a Clang/LLVM compiler'''
     try:
-      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help | head -n 500', log = log)
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help | head -n 500', log = log, logOutputflg = False)
       output = output + error
       return any([s in output for s in ['Emit Clang AST']])
     except RuntimeError:
@@ -451,7 +452,7 @@ class Configure(config.base.Configure):
     '''Initialize the compiler and linker flags'''
     for language in ['C', 'CUDA', 'Cxx', 'FC']:
       self.pushLanguage(language)
-      for flagsArg in [self.getCompilerFlagsName(language), self.getCompilerFlagsName(language, 1), self.getLinkerFlagsName(language)]:
+      for flagsArg in [config.base.Configure.getCompilerFlagsName(language), config.base.Configure.getCompilerFlagsName(language, 1), config.base.Configure.getLinkerFlagsName(language)]:
         if flagsArg in self.argDB: setattr(self, flagsArg, self.argDB[flagsArg])
         else: setattr(self, flagsArg, '')
         self.logPrint('Initialized '+flagsArg+' to '+str(getattr(self, flagsArg)))
@@ -997,6 +998,7 @@ class Configure(config.base.Configure):
     (output, error, status) = self.outputCompile(includes, body)
     output += error
     valid   = 1
+    setattr(self, flagsArg, oldFlags)
     # Please comment each entry and provide an example line
     if status:
       valid = 0
@@ -1007,7 +1009,6 @@ class Configure(config.base.Configure):
     if self.containsInvalidFlag(output):
       valid = 0
       self.logPrint('Rejecting compiler flag '+flag+' due to \n'+output)
-    setattr(self, flagsArg, oldFlags)
     return valid
 
   def insertCompilerFlag(self, flag, compilerOnly):
@@ -1051,7 +1052,8 @@ class Configure(config.base.Configure):
       # to fix it the capability to build shared libraries must be enabled in configure if --with-pic=true even if shared libraries are off and this
       # test must use that capability instead of using the default shared library build in that case which is static libraries
       raise RuntimeError("Cannot determine compiler PIC flags if shared libraries is turned off\nEither run using --with-shared-libraries or --with-pic=0 and supply the compiler PIC flag via CFLAGS, CXXXFLAGS, and FCFLAGS\n")
-    languages = ['C']
+    if self.sharedLibraries and self.mainLanguage == 'C': languages = []
+    else: languages = ['C']
     if hasattr(self, 'CXX'):
       languages.append('Cxx')
     if hasattr(self, 'FC'):
@@ -1482,13 +1484,10 @@ class Configure(config.base.Configure):
     # Mac OSX
     if Configure.isDarwin(self.log):
       if 'with-dynamic-ld' in self.argDB:
-        yield (self.argDB['with-dynamic-ld'], ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'dylib')
-      #yield ('libtool', ['-noprebind','-dynamic','-single_module','-flat_namespace -undefined warning','-multiply_defined suppress'], 'dylib')
+        yield (self.argDB['with-dynamic-ld'], ['-dynamiclib -single_module -undefined dynamic_lookup -multiply_defined suppress'], 'dylib')
       if hasattr(self, 'CXX') and self.mainLanguage == 'Cxx':
-#        yield ("g++", ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'dylib')
-        yield (self.CXX, ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'dylib')
-#      yield ("gcc", ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'dylib')
-      yield (self.CC, ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'dylib')
+        yield (self.CXX, ['-dynamiclib -single_module -undefined dynamic_lookup -multiply_defined suppress'], 'dylib')
+      yield (self.CC, ['-dynamiclib -single_module -undefined dynamic_lookup -multiply_defined suppress'], 'dylib')
     # Shared default
     if hasattr(self, 'sharedLinker'):
       yield (self.sharedLinker, self.sharedLibraryFlags, 'so')
@@ -1502,12 +1501,9 @@ class Configure(config.base.Configure):
   def checkDynamicLinker(self):
     '''Check that the linker can dynamicaly load shared libraries'''
     self.dynamicLibraries = 0
-    self.headers.saveLog()
     if not self.headers.check('dlfcn.h'):
-      self.logWrite(self.headers.restoreLog())
       self.logPrint('Dynamic loading disabled since dlfcn.h was missing')
       return
-    self.logWrite(self.headers.restoreLog())
     self.libraries.saveLog()
     if not self.libraries.add('dl', ['dlopen', 'dlsym', 'dlclose']):
       if not self.libraries.check('', ['dlopen', 'dlsym', 'dlclose']):
@@ -1702,6 +1698,7 @@ if (dlclose(handle)) {
     return ret
 
   def configure(self):
+    self.mainLanguage = self.languages.clanguage
     self.executeTest(self.printEnvVariables)
     self.executeTest(self.resetEnvCompilers)
     self.executeTest(self.checkEnvCompilers)

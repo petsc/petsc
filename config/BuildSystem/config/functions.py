@@ -64,12 +64,13 @@ builtin and then its argument prototype would still apply. */
 '''
     body = ''.join(map(genBody,funcs))
     if libraries:
+      #  TODO: Same code as libraries.toStringNoDupes() should call that and not repeat code here
       oldLibs = self.compilers.LIBS
       if not isinstance(libraries, list):
         libraries = [libraries]
       for library in libraries:
         root,ext=os.path.splitext(library)
-        if library.strip()[0] == '-' or ext == '.a' or ext == '.so' :
+        if library.strip()[0] == '-' or ext == '.a' or ext == '.so' or ext == '.o':
           self.compilers.LIBS += ' '+library
         else:
           self.compilers.LIBS += ' -l'+library
@@ -101,16 +102,6 @@ builtin and then its argument prototype would still apply. */
     import config
     found, missing = config.classify(funcs, functional)
     return found, missing
-
-  def checkMemcmp(self):
-    '''Check for 8-bit clean memcmp'''
-    if not self.argDB['with-batch']:
-      self.logPrint('Making executable to test memcmp()')
-      if not self.checkRun('#include <string.h>\nvoid exit(int);\n\n', 'char c0 = 0x40;\nchar c1 = (char) 0x80;\nchar c2 = (char) 0x81;\nexit(memcmp(&c0, &c2, 1) < 0 && memcmp(&c1, &c2, 1) < 0 ? 0 : 1);\n'):
-        raise RuntimeError('Failed to find 8-bit clean memcmp(). Cannot proceed.')
-    else:
-      self.log.write('Skipping testing of memcmp() on batch system\n')
-    return
 
   def checkSysinfo(self):
     '''Check whether sysinfo takes three arguments, and if it does define HAVE_SYSINFO_3ARG'''
@@ -192,7 +183,6 @@ builtin and then its argument prototype would still apply. */
     return
 
   def configure(self):
-    self.executeTest(self.checkMemcmp)
     self.executeTest(self.checkSysinfo)
     self.executeTest(self.checkVPrintf)
     self.executeTest(self.checkVFPrintf)

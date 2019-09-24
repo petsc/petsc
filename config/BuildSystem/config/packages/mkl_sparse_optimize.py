@@ -46,6 +46,7 @@ class Configure(config.package.Package):
 
 
   def configureLibrary(self):
+    if not self.blasLapack.mkl: return
     config.package.Package.configureLibrary(self)
     self.usesopenmp = self.blasLapack.usesopenmp
     if self.found:

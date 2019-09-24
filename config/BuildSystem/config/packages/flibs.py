@@ -11,11 +11,6 @@ class Configure(config.package.Package):
   def setupHelp(self,help):
     return
 
-  def setupDependencies(self, framework):
-    config.package.Package.setupDependencies(self, framework)
-    self.compilers       = framework.require('config.compilers', self)
-    return
-
   def configure(self):
     self.lib   = self.compilers.flibs
     self.dlib  = self.compilers.flibs

@@ -21,12 +21,12 @@ class Configure(config.base.Configure):
   def getLibArgumentList(self, library, with_rpath=True):
     '''Return the proper link line argument for the given filename library as a list of options
       - If the path is empty, return it unchanged
-      - If starts with + then remove the + and return the rest unchanged (used, for example, to hard wire a static library)
       - If starts with - then return unchanged
       - If the path ends in ".lib" return it unchanged
       - If the path is absolute and the filename is "lib"<name>, return -L<dir> -l<name> (optionally including rpath flag)
       - If the filename is "lib"<name>, return -l<name>
       - If the path ends in ".so" return it unchanged
+      - If the path ends in ".o" return it unchanged
       - If the path is absolute, return it unchanged
       - Otherwise return -l<library>'''
     if not library:
@@ -37,8 +37,6 @@ class Configure(config.base.Configure):
       return [library] if with_rpath else []
     if library.lstrip()[0] == '-':
       return [library]
-    if library.lstrip()[0] == '+':
-      return [library[1:]]
     if len(library) > 3 and library[-4:] == '.lib':
       return [library.replace('\\ ',' ').replace(' ', '\\ ').replace('\\(','(').replace('(', '\\(').replace('\\)',')').replace(')', '\\)')]
     if os.path.basename(library).startswith('lib'):
@@ -57,7 +55,7 @@ class Configure(config.base.Configure):
         return ['-L'+dirname,'-l'+name]
       else:
         return ['-l'+name]
-    if os.path.splitext(library)[1] == '.so':
+    if os.path.splitext(library)[1] == '.so' or os.path.splitext(library)[1] == '.o':
       return [library]
     if os.path.isabs(library):
       return [library]
@@ -111,6 +109,7 @@ class Configure(config.base.Configure):
 
   def toStringNoDupes(self,libs,with_rpath=True):
     '''Converts a list of libraries to a string suitable for a linker, removes duplicates'''
+    '''This moves the flags that can be moved to the beginning of the list but leaves the libraries in the same positions'''
     newlibs = []
     frame = 0
     for lib in libs:
@@ -339,7 +338,7 @@ extern "C" {
     self.headers.check('dlfcn.h')
     return
 
-  def checkShared(self, includes, initFunction, checkFunction, finiFunction = None, checkLink = None, libraries = [], initArgs = '&argc, &argv', boolType = 'int', noCheckArg = 0, defaultArg = '', executor = None):
+  def checkShared(self, includes, initFunction, checkFunction, finiFunction = None, checkLink = None, libraries = [], initArgs = '&argc, &argv', boolType = 'int', noCheckArg = 0, defaultArg = '', executor = None, timeout = 15):
     '''Determine whether a library is shared
        - initFunction(int *argc, char *argv[]) is called to initialize some static data
        - checkFunction(int *check) is called to verify that the static data wer set properly
@@ -464,8 +463,15 @@ int checkInit(void) {
     oldLibs = self.setCompilers.LIBS
     if self.haveLib('dl'):
       self.setCompilers.LIBS += ' -ldl'
-    if self.checkRun(defaultIncludes, body, defaultArg = defaultArg, executor = executor):
-      isShared = 1
+    isShared = 0
+    try:
+      isShared = self.checkRun(defaultIncludes, body, defaultArg = defaultArg, executor = executor, timeout = timeout)
+    except RuntimeError as e:
+      if executor and str(e).find('Runaway process exceeded time limit') > -1:
+        raise RuntimeError('Timeout: Unable to run MPI program with '+executor+'\n\
+    (1) make sure this is the correct program to run MPI jobs\n\
+    (2) your network may be misconfigured; see https://www.mcs.anl.gov/petsc/documentation/faq.html#PetscOptionsInsertFile\n')
+
     self.setCompilers.LIBS = oldLibs
     if os.path.isfile(lib1Name) and self.framework.doCleanup: os.remove(lib1Name)
     if os.path.isfile(lib2Name) and self.framework.doCleanup: os.remove(lib2Name)

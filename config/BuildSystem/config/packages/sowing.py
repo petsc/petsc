@@ -142,7 +142,7 @@ and run configure again\n')
           import generatefortranstubs
           del sys.path[0]
           generatefortranstubs.main(self.petscdir.dir, self.bfort, self.petscdir.dir,0)
-          if self.compilers.fortranIsF90:
+          if self.fortran.fortranIsF90:
             generatefortranstubs.processf90interfaces(self.petscdir.dir,0)
           self.framework.actions.addArgument('PETSc', 'File creation', 'Generated Fortran stubs')
         except RuntimeError as e:
