@@ -3754,7 +3754,6 @@ PetscErrorCode  DMLoad(DM newdm, PetscViewer viewer)
 
   Note: If the DM is a DMDA and has no coordinates, the index bounds are returned instead.
 
-  Not supported from Fortran
 
 .seealso: DMGetCoordinates(), DMGetCoordinatesLocal(), DMGetBoundingBox()
 @*/
