@@ -692,7 +692,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       help = child.help
     else:
       help = {}
-    for pair in child.defines.items():
+    for pair in sorted(child.defines.items()):
       if not pair[1]: continue
       if pair[0] in help:
         self.outputDefine(f, self.getFullDefineName(child, pair[0], prefix), pair[1], help[pair[0]])
