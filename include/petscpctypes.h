@@ -351,9 +351,9 @@ typedef enum {
     Level: intermediate
 
     Values:
-+   PC_HPDDM_COARSE_CORRECTION_DEFLATED - eq. (1) in PCHPDDMShellApply()
--   PC_HPDDM_COARSE_CORRECTION_ADDITIVE - eq. (2)
-.   PC_HPDDM_COARSE_CORRECTION_BALANCED - eq. (3)
++   PC_HPDDM_COARSE_CORRECTION_DEFLATED (default) - eq. (1) in PCHPDDMShellApply()
+.   PC_HPDDM_COARSE_CORRECTION_ADDITIVE - eq. (2)
+-   PC_HPDDM_COARSE_CORRECTION_BALANCED - eq. (3)
 
 .seealso: PCHPDDM, PCSetType(), PCHPDDMShellApply()
 E*/

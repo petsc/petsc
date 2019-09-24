@@ -86,7 +86,7 @@ static PetscErrorCode KSPSolve_HPDDM(KSP ksp)
 }
 
 /*MC
-     KSPHPDDM - Interface with the HPDDM library
+     KSPHPDDM - Interface with the HPDDM library.
 
    This KSP may be used to further select methods that are currently not implemented natively in PETSc, e.g., GCRODR [2006], a recycled Krylov method which is similar to KSPLGMRES, see [2016] for a comparison. ex75.c shows how to reproduce the results from the aforementioned paper [2006]. Here is a chronological bibliography of relevant publications linked with KSP available in HPDDM through KSPHPDDM, and not available directly in PETSc, like KSPCG and KSPGMRES.
 
@@ -102,7 +102,7 @@ static PetscErrorCode KSPSolve_HPDDM(KSP ksp)
 +   -ksp_richardson_scale <scale, default=1.0> - see KSPRICHARDSON
 .   -ksp_gmres_restart <restart, default=40> - see KSPGMRES
 .   -ksp_hpddm_krylov_method <type, default=gmres> - any of gmres, bgmres, cg, bcg, gcrodr, bgcrodr, or bfbcg
-.   -ksp_hpddm_deflation_tol <eps, default=-1.0> - tolerance when deflating right-hand sides inside block methods (no deflation by default, only relevant with block methods)
+.   -ksp_hpddm_deflation_tol <eps, default=\-1.0> - tolerance when deflating right-hand sides inside block methods (no deflation by default, only relevant with block methods)
 .   -ksp_hpddm_enlarge_krylov_subspace <p, default=1> - split the initial right-hand side into multiple vectors (only relevant with nonblock methods)
 .   -ksp_hpddm_orthogonalization <type, default=cgs> - any of cgs or mgs, see KSPGMRES
 .   -ksp_hpddm_qr <type, default=cholqr> - distributed QR factorizations with any of cholqr, cgs, or mgs (only relevant with block methods)
