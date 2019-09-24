@@ -79,8 +79,6 @@ PETSC_EXTERN PetscErrorCode DMDASetUniformCoordinates(DM,PetscReal,PetscReal,Pet
 PETSC_EXTERN PetscErrorCode DMDASetGLLCoordinates(DM,PetscInt,PetscReal*);
 PETSC_EXTERN PetscErrorCode DMDAGetCoordinateArray(DM,void*);
 PETSC_EXTERN PetscErrorCode DMDARestoreCoordinateArray(DM,void*);
-PETSC_EXTERN PetscErrorCode DMDAGetBoundingBox(DM,PetscReal[],PetscReal[]);
-PETSC_EXTERN PetscErrorCode DMDAGetLocalBoundingBox(DM,PetscReal[],PetscReal[]);
 PETSC_EXTERN PetscErrorCode DMDAGetLogicalCoordinate(DM,PetscScalar,PetscScalar,PetscScalar,PetscInt*,PetscInt*,PetscInt*,PetscScalar*,PetscScalar*,PetscScalar*);
 /* function to wrap coordinates around boundary */
 PETSC_EXTERN PetscErrorCode DMDAMapCoordsToPeriodicDomain(DM,PetscScalar*,PetscScalar*);
