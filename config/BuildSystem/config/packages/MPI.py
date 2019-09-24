@@ -278,6 +278,9 @@ shared libraries and run with --known-mpi-shared-libraries=1')
       self.addDefine('HAVE_MPI_REDUCE_LOCAL',1)
     if self.checkLink('#include <mpi.h>\n', 'char version[MPI_MAX_LIBRARY_VERSION_STRING];int verlen;if (MPI_Get_library_version(version,&verlen));\n'):
       self.addDefine('HAVE_MPI_GET_LIBRARY_VERSION', 1)
+    # Even MPI_Win_create is in MPI 2.0, we do this test to supress MPIUNI, which does not support MPI one-sided.
+    if self.checkLink('#include <mpi.h>\n', 'int base[100]; MPI_Win win; if (MPI_Win_create(base,100,4,MPI_INFO_NULL,MPI_COMM_WORLD,&win));\n'):
+      self.addDefine('HAVE_MPI_WIN_CREATE', 1)
     self.compilers.CPPFLAGS = oldFlags
     self.compilers.LIBS = oldLibs
     self.logWrite(self.framework.restoreLog())
@@ -290,16 +293,14 @@ shared libraries and run with --known-mpi-shared-libraries=1')
     self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
     self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.compilers.LIBS
     self.framework.saveLog()
-    if self.libraries.check(self.dlib, "MPI_Win_create"):
-      self.addDefine('HAVE_MPI_WIN_CREATE',1)
-    if self.checkLink('#include <mpi.h>\n', 'MPI_Comm scomm; if (MPI_Comm_split_type(MPI_COMM_WORLD, MPI_COMM_TYPE_SHARED, 0, MPI_INFO_NULL, &scomm));\n'):
-      self.haveMPISharedComm = 1
-      self.addDefine('HAVE_MPI_SHARED_COMM', 1)
-    else: self.haveMPISharedComm = 0
-    if 'HAVE_MPI_WIN_CREATE' in self.defines and 'HAVE_MPI_WIN_ALLOCATE_SHARED' in self.defines and 'HAVE_MPI_WIN_SHARED_QUERY' in self.defines:
-      if (hasattr(self, 'mpich_numversion') and int(self.mpich_numversion) > 30004300) or not hasattr(self, 'mpich_numversion'):
-        self.addDefine('HAVE_MPI_WIN_CREATE_FEATURE',1)
-        self.addDefine('HAVE_MPI_PROCESS_SHARED_MEMORY',1)
+    # Skip buggy MPICH versions
+    if (hasattr(self, 'mpich_numversion') and int(self.mpich_numversion) > 30004300) or not hasattr(self, 'mpich_numversion'):
+      if self.checkLink('#include <mpi.h>\n',
+                      'MPI_Comm scomm; MPI_Aint size=128; int disp_unit=8,*baseptr; MPI_Win win;\n\
+                       if (MPI_Comm_split_type(MPI_COMM_WORLD, MPI_COMM_TYPE_SHARED, 0, MPI_INFO_NULL, &scomm));\n\
+                       if (MPI_Win_allocate_shared(size,disp_unit,MPI_INFO_NULL,MPI_COMM_WORLD,&baseptr,&win));\n\
+                       if (MPI_Win_shared_query(win,0,&size,&disp_unit,&baseptr));\n'):
+        self.addDefine('HAVE_MPI_PROCESS_SHARED_MEMORY', 1)
         self.support_mpi3_shm = 1
     if self.checkLink('#include <mpi.h>\n',
                       'int send=0,recv,counts[2]={1,1},displs[2]={1,2}; MPI_Request req;\n\
