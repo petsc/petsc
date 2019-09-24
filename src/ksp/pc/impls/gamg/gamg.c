@@ -162,7 +162,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
         const PetscScalar *vals;
         const PetscInt    *idx;
         PetscInt          *d_nnz, *o_nnz, M, N;
-        static PetscInt   llev = 0;
+        static PetscInt   llev = 0; /* ugly but just used for debugging */
         MatType           mtype;
 
         ierr = PetscMalloc2(ncrs, &d_nnz,ncrs, &o_nnz);CHKERRQ(ierr);
@@ -408,8 +408,9 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
 
     /* pinning on reduced grids, not a bad heuristic and optimization gets folded into process reduction optimization */
     if (pc_gamg->cpu_pin_coarse_grids) {
+      static PetscInt llev = 2;
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-      ierr = PetscInfo(pc,"Pinning level to the CPU\n");CHKERRQ(ierr);
+      ierr = PetscInfo1(pc,"Pinning level %D to the CPU\n",llev++);CHKERRQ(ierr);
 #endif
       ierr = MatPinToCPU(*a_Amat_crs,PETSC_TRUE);CHKERRQ(ierr);
       ierr = MatPinToCPU(*a_P_inout,PETSC_TRUE);CHKERRQ(ierr);
@@ -947,7 +948,7 @@ static PetscErrorCode PCGAMGASMSetUseAggs_GAMG(PC pc, PetscBool flg)
 
    Level: intermediate
 
-.seealso: ()
+.seealso: PCGAMGSetCoarseGridLayoutType(), PCGAMGSetCpuPinCoarseGrids()
 @*/
 PetscErrorCode PCGAMGSetUseParallelCoarseGridSolve(PC pc, PetscBool flg)
 {
@@ -983,7 +984,7 @@ static PetscErrorCode PCGAMGSetUseParallelCoarseGridSolve_GAMG(PC pc, PetscBool 
 
    Level: intermediate
 
-.seealso: ()
+.seealso: PCGAMGSetCoarseGridLayoutType(), PCGAMGSetUseParallelCoarseGridSolve()
 @*/
 PetscErrorCode PCGAMGSetCpuPinCoarseGrids(PC pc, PetscBool flg)
 {
@@ -1019,7 +1020,7 @@ static PetscErrorCode PCGAMGSetCpuPinCoarseGrids_GAMG(PC pc, PetscBool flg)
 
    Level: intermediate
 
-.seealso: ()
+.seealso: PCGAMGSetUseParallelCoarseGridSolve(), PCGAMGSetCpuPinCoarseGrids()
 @*/
 PetscErrorCode PCGAMGSetCoarseGridLayoutType(PC pc, PCGAMGLayoutType flg)
 {
