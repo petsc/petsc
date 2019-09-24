@@ -45,6 +45,7 @@ variables:
   stage: stage-1
   image: jedbrown/mpich-ccache
   before_script:
+    - date
     - echo nproc=$(nproc)
     - cat /proc/cpuinfo
     - export CCACHE_COMPILERCHECK=content
@@ -57,6 +58,7 @@ variables:
     - make CFLAGS=-Werror CXXFLAGS=-Werror
     - make allgtests-tap search="${TEST_SEARCH}" TIMEOUT=${TIMEOUT}
   after_script:
+    - date
     - CCACHE_DIR=$(pwd)/.ccache ccache --show-stats
   artifacts:
     reports:
@@ -145,11 +147,13 @@ checksource:
 
 .linux_test_noflags:
   before_script:
+    - date
     - hostname
     - grep PRETTY_NAME /etc/os-release
     - echo $(nproc)
     - ccache --zero-stats
   after_script:
+    - date
     - cp configure.log ../configure.log-${CI_JOB_NAME}-${CI_PIPELINE_ID}-${CI_JOB_ID}
     - ccache --show-stats
 
@@ -164,11 +168,13 @@ checksource:
     MAKE_CFLAGS: -Werror
     MAKE_CXXFLAGS: -Werror
   before_script:
+    - date
     - hostname
     - freebsd-version
     - echo $(sysctl -n hw.ncpu)
     - ccache --zero-stats
   after_script:
+    - date
     - cp configure.log ../configure.log-${CI_JOB_NAME}-${CI_PIPELINE_ID}-${CI_JOB_ID}
     - ccache --show-stats
 
@@ -177,28 +183,34 @@ checksource:
     MAKE_CFLAGS: -Werror
     MAKE_CXXFLAGS: -Werror
   before_script:
+    - date
     - hostname
     - sw_vers -productVersion
     - echo $(sysctl -n hw.ncpu)
     - ccache --zero-stats
   after_script:
+    - date
     - cp configure.log ../configure.log-${CI_JOB_NAME}-${CI_PIPELINE_ID}-${CI_JOB_ID}
     - ccache --show-stats
 
 .opensolaris_test:
   before_script:
+    - date
     - hostname
     - uname -a
     - echo $(nproc)
   after_script:
+    - date
     - cp configure.log ../configure.log-${CI_JOB_NAME}-${CI_PIPELINE_ID}-${CI_JOB_ID}
 
 .mswin_test:
   before_script:
+    - date
     - hostname
     - uname -a
     - echo $(nproc)
   after_script:
+    - date
     - cp configure.log ../configure.log-${CI_JOB_NAME}-${CI_PIPELINE_ID}-${CI_JOB_ID}
 
 #
