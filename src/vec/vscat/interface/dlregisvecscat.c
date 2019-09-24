@@ -84,7 +84,7 @@ PetscErrorCode VecScatterRegisterAll(void)
   ierr = VecScatterRegister(VECSCATTERSEQ,        VecScatterCreate_Seq);CHKERRQ(ierr);
   ierr = VecScatterRegister(VECSCATTERMPI1,       VecScatterCreate_MPI1);CHKERRQ(ierr);
   ierr = VecScatterRegister(VECSCATTERSF,         VecScatterCreate_SF);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)
+#if defined(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY)
   ierr = VecScatterRegister(VECSCATTERMPI3,       VecScatterCreate_MPI3);CHKERRQ(ierr);
   ierr = VecScatterRegister(VECSCATTERMPI3NODE,   VecScatterCreate_MPI3Node);CHKERRQ(ierr);
 #endif

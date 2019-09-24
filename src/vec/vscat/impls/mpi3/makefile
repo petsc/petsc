@@ -1,4 +1,4 @@
-#requiresdefine 'PETSC_HAVE_MPI_WIN_CREATE_FEATURE'
+#requiresdefine 'PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY'
 
 
 ALL: lib
