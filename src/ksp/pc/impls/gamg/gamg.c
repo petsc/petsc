@@ -408,8 +408,8 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
 
     /* pinning on reduced grids, not a bad heuristic and optimization gets folded into process reduction optimization */
     if (pc_gamg->cpu_pin_coarse_grids) {
-      static PetscInt llev = 2;
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+      static PetscInt llev = 2;
       ierr = PetscInfo1(pc,"Pinning level %D to the CPU\n",llev++);CHKERRQ(ierr);
 #endif
       ierr = MatPinToCPU(*a_Amat_crs,PETSC_TRUE);CHKERRQ(ierr);
