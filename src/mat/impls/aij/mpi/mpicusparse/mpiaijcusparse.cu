@@ -220,7 +220,9 @@ PetscErrorCode MatDestroy_MPIAIJCUSPARSE(Mat A)
     ierr = MatCUSPARSEClearHandle(a->A);CHKERRQ(ierr);
     ierr = MatCUSPARSEClearHandle(a->B);CHKERRQ(ierr);
     stat = cusparseDestroy(cusparseStruct->handle);CHKERRCUDA(stat);
-    err = cudaStreamDestroy(cusparseStruct->stream);CHKERRCUDA(err);
+    if (cusparseStruct->stream) {
+      err = cudaStreamDestroy(cusparseStruct->stream);CHKERRCUDA(err);
+    }
     delete cusparseStruct;
   } catch(char *ex) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Mat_MPIAIJCUSPARSE error: %s", ex);
@@ -234,7 +236,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSPARSE(Mat A)
   PetscErrorCode     ierr;
   Mat_MPIAIJ         *a;
   Mat_MPIAIJCUSPARSE * cusparseStruct;
-  cudaError_t        err;
   cusparseStatus_t   stat;
 
   PetscFunctionBegin;
@@ -249,8 +250,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSPARSE(Mat A)
   cusparseStruct                      = (Mat_MPIAIJCUSPARSE*)a->spptr;
   cusparseStruct->diagGPUMatFormat    = MAT_CUSPARSE_CSR;
   cusparseStruct->offdiagGPUMatFormat = MAT_CUSPARSE_CSR;
+  cusparseStruct->stream              = 0;
   stat = cusparseCreate(&(cusparseStruct->handle));CHKERRCUDA(stat);
-  err = cudaStreamCreate(&(cusparseStruct->stream));CHKERRCUDA(err);
 
   A->ops->assemblyend    = MatAssemblyEnd_MPIAIJCUSPARSE;
   A->ops->mult           = MatMult_MPIAIJCUSPARSE;

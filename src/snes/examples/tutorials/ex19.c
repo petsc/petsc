@@ -1105,7 +1105,6 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
       nsize: 3
       requires: cuda !single
       args: -snes_monitor -dm_mat_type mpiaijcusparse -dm_vec_type mpicuda -pc_type gamg -ksp_monitor  -mg_levels_ksp_max_it 3
-      TODO: Produces very inconsistent results on frog in both single and double
 
    test:
       suffix: seqbaijmkl

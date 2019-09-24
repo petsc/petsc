@@ -1466,7 +1466,7 @@ static PetscErrorCode MatMultAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec zz)
                                dptr);CHKERRCUDA(stat);
     } else {
       if (cusparsestruct->workVector->size()) {
-	cusparseHybMat_t hybMat = (cusparseHybMat_t)matstruct->mat;
+        cusparseHybMat_t hybMat = (cusparseHybMat_t)matstruct->mat;
         stat = cusparse_hyb_spmv(cusparsestruct->handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
                                  matstruct->alpha, matstruct->descr, hybMat,
                                  xarray, beta,
@@ -1504,11 +1504,7 @@ static PetscErrorCode MatMultAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec zz)
   } catch(char *ex) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSPARSE error: %s", ex);
   }
-  if (!yy) { /* MatMult */
-    if (!cusparsestruct->stream) {
-      ierr = WaitForGPU();CHKERRCUDA(ierr);
-    }
-  }
+  ierr = WaitForGPU();CHKERRCUDA(ierr);
   ierr = PetscLogGpuFlops(2.0*a->nz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
