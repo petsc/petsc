@@ -185,6 +185,10 @@ class Script(logger.Logger):
     if status: raise RuntimeError('Could not execute "%s":\n%s' % (command,output+error))
   defaultCheckCommand = staticmethod(defaultCheckCommand)
 
+  def passCheckCommand(command, status, output, error):
+    '''Does not check the command results'''
+  passCheckCommand = staticmethod(passCheckCommand)
+
   @staticmethod
   def executeShellCommand(command, checkCommand = None, timeout = 600.0, log = None, lineLimit = 0, cwd=None, logOutputflg = True, threads = 0):
     '''Execute a shell command returning the output, and optionally provide a custom error checker

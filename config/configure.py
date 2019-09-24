@@ -292,6 +292,23 @@ def chktmpnoexec():
       os.environ['TMPDIR'] = newTmp
   return
 
+def check_cray_modules():
+  import script
+  '''For Cray systems check if the cc, CC, ftn compiler suite modules have been set'''
+  cray = os.getenv('CRAY_SITE_LIST_DIR')
+  if not cray: return
+  cray = os.getenv('CRAYPE_DIR')
+  if not cray:
+   print('************************************************************************')
+   print('* You are on a Cray system but no programming environments have been loaded')
+   print('* Perhaps you need:')
+   print('*       module load intel ; module load PrgEnv-intel')
+   print('*   or  module load PrgEnv-cray')
+   print('*   or  module load PrgEnv-gnu')
+   print('* See https://www.mcs.anl.gov/petsc/documentation/installation.html#doemachines')
+   print('************************************************************************')
+   sys.exit(4)
+
 def check_broken_configure_log_links():
   '''Sometime symlinks can get broken if the original files are deleted. Delete such broken links'''
   import os
@@ -413,6 +430,9 @@ def petsc_configure(configure_options):
   import config.framework
   import pickle
   import traceback
+
+  # Check Cray without modules
+  check_cray_modules()
 
   tbo = None
   framework = None

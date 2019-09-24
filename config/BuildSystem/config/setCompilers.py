@@ -424,7 +424,6 @@ class Configure(config.base.Configure):
   isWindows = staticmethod(isWindows)
 
   def addLdPath(path):
-    import os
     if 'LD_LIBRARY_PATH' in os.environ:
       ldPath=os.environ['LD_LIBRARY_PATH']
     else:
@@ -501,6 +500,55 @@ class Configure(config.base.Configure):
     self.popLanguage()
     return
 
+  def crayCrossCompiler(self,compiler):
+    import script
+    '''For Cray Intel KNL systems returns the underlying compiler line used by the wrapper compiler if is for KNL systems'''
+    '''This removes all the KNL specific options allowing the generated binary to run on the front-end'''
+    '''This is needed by some build systems include HDF5 that insist on running compiled programs during the configure and'''
+    '''make process. This does not work for the Cray compiler module, only intel and gcc'''
+
+    (output,error,status) = self.executeShellCommand(compiler+' -craype-verbose',checkCommand = script.Script.passCheckCommand,log=self.log)
+    output = output.split()
+    if output[0].strip().startswith('driver'): return ''
+    newoutput = [output[0]]
+    cross = 0
+    for i in output[1:-1]:
+      if i.find('mic') > -1 or i.find('knl') > -1 or i.find('KNL') > -1:
+        cross = 1
+        continue
+      if i.startswith('-L') or i.startswith('-l') or i.startswith('-Wl'):
+        continue
+      newoutput.append(i)
+    if cross:
+      return ' '.join(newoutput)
+    return ''
+
+  def crayCrossLIBS(self,compiler):
+    import script
+    '''For Cray Intel KNL systems returns the underlying linker options used by the wrapper compiler if is for KNL systems'''
+    (output,error,status) = self.executeShellCommand(compiler+' -craype-verbose',checkCommand = script.Script.passCheckCommand,log=self.log)
+    output = output.split()
+    newoutput = []
+    cross = 0
+    for i in output[1:-1]:
+      if i.find('mic') > -1 or i.find('knl') > -1 or i.find('KNL') > -1:
+        cross = 1
+        continue
+      if i.find('darshan') > -1:
+        cross = 1
+        continue
+      if i.find('static') > -1:
+        continue
+      if i.startswith('-I') or i.startswith('-D'):
+        continue
+      # the math libraries are not needed by external packages and cause errors in HDF5 with libgfortran.so.4 => not found
+      if i.startswith('-lsci_gnu'):
+        continue
+      newoutput.append(i)
+    if cross:
+      return ' '.join(newoutput)
+    return ''
+
   def generateCCompilerGuesses(self):
     '''Determine the C compiler '''
     if hasattr(self, 'CC'):
@@ -539,6 +587,18 @@ class Configure(config.base.Configure):
         self.argDB['with-mpi-compilers'] = 0
       if self.useMPICompilers():
         self.usedMPICompilers = 1
+        cray = os.getenv('CRAYPE_DIR')
+        if cray:
+          cross_cc = self.crayCrossCompiler('cc')
+          if cross_cc:
+            self.cross_cc = cross_cc
+            self.log.write('Cray system using C cross compiler:'+cross_cc+'\n')
+            self.cross_LIBS = self.crayCrossLIBS('cc')
+            self.log.write('Cray system using C cross LIBS:'+self.cross_LIBS+'\n')
+          yield 'cc'
+          if cross_cc:
+            delattr(self, 'cross_cc')
+            delattr(self, 'cross_LIBS')
         yield 'mpicc'
         yield 'mpiicc'
         yield 'mpcc_r'
@@ -727,6 +787,14 @@ class Configure(config.base.Configure):
     else:
       if self.useMPICompilers():
         self.usedMPICompilers = 1
+        cray = os.getenv('CRAYPE_DIR')
+        if cray:
+          cross_CC = self.crayCrossCompiler('CC')
+          if cross_CC:
+            self.cross_CC = cross_CC
+            self.log.write('Cray system using C++ cross compiler:'+cross_CC+'\n')
+          yield 'CC'
+          if cross_CC: delattr(self, 'cross_CC')
         yield 'mpicxx'
         yield 'mpiicpc'
         yield 'mpCC_r'
@@ -865,6 +933,14 @@ class Configure(config.base.Configure):
     else:
       if self.useMPICompilers():
         self.usedMPICompilers = 1
+        cray = os.getenv('CRAYPE_DIR')
+        if cray:
+          cross_fc = self.crayCrossCompiler('ftn')
+          if cross_fc:
+            self.cross_fc = cross_fc
+            self.log.write('Cray system using Fortran cross compiler:'+cross_fc+'\n')
+          yield 'ftn'
+          if cross_fc: delattr(self, 'cross_fc')
         yield 'mpif90'
         yield 'mpiifort'
         yield 'mpxlf_r'

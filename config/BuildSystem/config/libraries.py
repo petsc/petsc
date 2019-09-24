@@ -109,7 +109,7 @@ class Configure(config.base.Configure):
 
   def toStringNoDupes(self,libs,with_rpath=True):
     '''Converts a list of libraries to a string suitable for a linker, removes duplicates'''
-    '''This moves the flags that can be moved to the beginning of the list but leaves the libraries in the same positions'''
+    '''Moves the flags that can be moved to the beginning of the string but always leaves the libraries and other items that must remain in the same order'''
     newlibs = []
     frame = 0
     for lib in libs:
@@ -133,7 +133,7 @@ class Configure(config.base.Configure):
       # remove duplicate -L, -Wl,-rpath options - and only consecutive -l options
       if j in newldflags and any([j.startswith(flg) for flg in dupflags]): continue
       if newlibs and j == newlibs[-1]: continue
-      if j.startswith('-l') or j.endswith('.lib') or j.endswith('.a') or j.endswith('.o') or j == '-Wl,-Bstatic' or j == '-Wl,-Bdynamic':
+      if j.startswith('-l') or j.endswith('.lib') or j.endswith('.a') or j.endswith('.o') or j == '-Wl,-Bstatic' or j == '-Wl,-Bdynamic' or j == '-Wl,--start-group' or j == '-Wl,--end-group':
         newlibs.append(j)
       else:
         newldflags.append(j)

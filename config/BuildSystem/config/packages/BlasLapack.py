@@ -214,12 +214,24 @@ class Configure(config.package.Package):
       else:
         raise RuntimeError('You set a value for --with-blas-lib=<lib> and --with-lapack-lib=<lib>, but '+str(self.argDB['with-blas-lib'])+' and '+str(self.argDB['with-lapack-lib'])+' cannot be used\n')
 
+    if not 'with-blaslapack-dir' in self.argDB:
+      mkl = os.getenv('MKLROOT')
+      if mkl:
+        # Since user did not select MKL specifically first try compiler defaults and only if they fail use the MKL
+        yield ('Default compiler libraries', '', '','unknown','unknow')
+        yield ('Default compiler locations', 'libblas.a', 'liblapack.a','unknown','unknow')
+        yield ('Default compiler locations /usr/local/lib', os.path.join('/usr','local','lib','libblas.a'), os.path.join('/usr','local','lib','liblapack.a'),'unknown','unknow')
+        yield ('Default compiler locations with gfortran', None, ['liblapack.a', 'libblas.a','libgfortran.a'],'unknown','unknow')
+        self.logWrite('Did not detect default BLAS and LAPACK locations so using the value of MKLROOT to search as --with-blas-lapack-dir='+mkl)
+        self.argDB['with-blaslapack-dir'] = mkl
+
     if self.argDB['with-64-bit-blas-indices']:
       ILP64 = '_ilp64'
       known = '64'
     else:
       ILP64 = '_lp64'
       known = '32'
+
     if self.openmp.found:
       ITHREAD='intel_thread'
       ITHREADGNU='gnu_thread'
@@ -265,10 +277,7 @@ class Configure(config.package.Package):
           if not os.path.exists(os.path.join(dir,libdir)):
             self.logPrint('MKL Path not found.. skipping: '+os.path.join(dir,libdir))
           else:
-            try:
-              output,err,status = config.base.Configure.executeShellCommand('ls '+os.path.join(dir,libdir))
-            except:
-              pass
+            self.log.write('Files and directories in that directory:\n'+str(os.listdir(os.path.join(dir,libdir)))+'\n')
             #  iomp5 is provided by the Intel compilers on MacOS. Run source /opt/intel/bin/compilervars.sh intel64 to have it added to LIBRARY_PATH
             #  then locate libimp5.dylib in the LIBRARY_PATH and copy it to os.path.join(dir,libdir)
             for i in mkl_blacs_64:
@@ -281,10 +290,7 @@ class Configure(config.package.Package):
               yield ('User specified MKL-Pardiso Intel-Windows32', None, [os.path.join(dir,libdir,'mkl_core.lib'),'mkl_intel_c.lib','mkl_intel_thread.lib']+i+['libiomp5md.lib'],'32','yes')
         return
 
-      try:
-        output,err,status = config.base.Configure.executeShellCommand('ls '+dir)
-      except:
-        pass
+      self.log.write('Files and directories in that directory:\n'+str(os.listdir(dir))+'\n')
       yield ('User specified installation root (HPUX)', os.path.join(dir, 'libveclib.a'),  os.path.join(dir, 'liblapack.a'),'32','unkown')
       yield ('User specified installation root (F2CBLASLAPACK)', os.path.join(dir,'libf2cblas.a'), os.path.join(dir, 'libf2clapack.a'),'32','no')
       yield ('User specified installation root(FBLASLAPACK)', os.path.join(dir, 'libfblas.a'),   os.path.join(dir, 'libflapack.a'),'32','no')
@@ -294,35 +300,27 @@ class Configure(config.package.Package):
       self.setCompilers.LDFLAGS += '-Wl,-rpath,'+os.path.join(dir,'bin','maci64')
       yield ('User specified MATLAB [ILP64] MKL MacOS lib dir', None, [os.path.join(dir,'bin','maci64','mkl.dylib'), os.path.join(dir,'sys','os','maci64','libiomp5.dylib'), 'pthread'],'64','yes')
       self.setCompilers.LDFLAGS = oldFlags
-      yield ('User specified MKL11/12 and later', None, [os.path.join(dir,'libmkl_intel'+ILP64+'.a'),'mkl_'+ITHREAD,'mkl_core','pthread'],known,ompthread)
+      yield ('User specified MKL11/12 and later', None, [os.path.join(dir,'libmkl_intel'+ILP64+'.a'),'mkl_core','mkl_'+ITHREAD,'pthread'],known,ompthread)
       # Some new MKL 11/12 variations
       for libdir in [os.path.join('lib','intel64'),os.path.join('lib','32'),os.path.join('lib','ia32'),'32','ia32','']:
         if not os.path.exists(os.path.join(dir,libdir)):
           self.logPrint('MKL Path not found.. skipping: '+os.path.join(dir,libdir))
         else:
-          try:
-            output,err,status = config.base.Configure.executeShellCommand('ls '+os.path.join(dir,libdir))
-          except:
-            pass
-          yield ('User specified MKL11/12 Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_'+ITHREAD,'mkl_core','pthread'],'32',ompthread)
+          self.log.write('Files and directories in that directory:\n'+str(os.listdir(os.path.join(dir,libdir)))+'\n')
+          yield ('User specified MKL11/12 Linux32', None, [os.path.join(dir,libdir,'libmkl_intel'+ILP64+'.a'),'mkl_core','mkl_'+ITHREAD,'pthread'],known,ompthread)
+          yield ('User specified MKL11/12 Linux32 for static linking (Cray)', None, ['-Wl,--start-group',os.path.join(dir,libdir,'libmkl_intel'+ILP64+'.a'),'mkl_core','mkl_'+ITHREAD,'-Wl,--end-group','pthread'],known,ompthread)
       for libdir in [os.path.join('lib','intel64'),os.path.join('lib','64'),os.path.join('lib','ia64'),os.path.join('lib','em64t'),os.path.join('lib','intel64'),'lib','64','ia64','em64t','intel64','']:
         if not os.path.exists(os.path.join(dir,libdir)):
           self.logPrint('MKL Path not found.. skipping: '+os.path.join(dir,libdir))
         else:
-          try:
-            output,err,status = config.base.Configure.executeShellCommand('ls '+os.path.join(dir,libdir))
-          except:
-            pass
-          yield ('User specified MKL11+ Linux64', None, [os.path.join(dir,libdir,'libmkl_intel'+ILP64+'.a'),'mkl_'+ITHREAD,'mkl_core','mkl_def','pthread'],known,ompthread)
-          yield ('User specified MKL11+ Linux64 + Gnu', None, [os.path.join(dir,libdir,'libmkl_intel'+ILP64+'.a'),'mkl_'+ITHREADGNU,'mkl_core','mkl_def','pthread'],known,ompthread)
-          yield ('User specified MKL11+ Mac-64', None, [os.path.join(dir,libdir,'libmkl_intel'+ILP64+'.a'),'mkl_'+ITHREAD,'mkl_core','pthread'],known,ompthread)
+          self.log.write('Files and directories in that directory:\n'+str(os.listdir(os.path.join(dir,libdir)))+'\n')
+          yield ('User specified MKL11+ Linux64', None, [os.path.join(dir,libdir,'libmkl_intel'+ILP64+'.a'),'mkl_core','mkl_'+ITHREAD,'mkl_def','pthread'],known,ompthread)
+          yield ('User specified MKL11+ Linux64 + Gnu', None, [os.path.join(dir,libdir,'libmkl_intel'+ILP64+'.a'),'mkl_core','mkl_'+ITHREADGNU,'mkl_def','pthread'],known,ompthread)
+          yield ('User specified MKL11+ Mac-64', None, [os.path.join(dir,libdir,'libmkl_intel'+ILP64+'.a'),'mkl_core','mkl_'+ITHREAD,'pthread'],known,ompthread)
       # Older Linux MKL checks
       yield ('User specified MKL Linux lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'mkl', 'guide', 'pthread'],'32','no')
       for libdir in ['32','64','em64t']:
-        try:
-          output,err,status = config.base.Configure.executeShellCommand('ls '+os.path.join(dir,libdir))
-        except:
-          pass
+        self.log.write('Files and directories in that directory:\n'+str(os.listdir(os.path.join(dir,libdir)))+'\n')
         yield ('User specified MKL Linux installation root', None, [os.path.join(dir,'lib',libdir,'libmkl_lapack.a'),'mkl', 'guide', 'pthread'],'32','no')
       yield ('User specified MKL Linux-x86 lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'libmkl_def.a', 'guide', 'pthread'],'32','no')
       yield ('User specified MKL Linux-x86 lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'libmkl_def.a', 'guide', 'vml','pthread'],'32','no')
@@ -400,10 +398,10 @@ class Configure(config.package.Package):
     # /usr/local/lib
     dir = os.path.join('/usr','local','lib')
     yield ('Default compiler locations /usr/local/lib', os.path.join(dir,'libblas.a'), os.path.join(dir,'liblapack.a'),'unknown','unknow')
+    yield ('Default compiler locations with gfortran', None, ['liblapack.a', 'libblas.a','libgfortran.a'],'unknown','unknow')
     yield ('Default Atlas location',['libcblas.a','libf77blas.a','libatlas.a'],  ['liblapack.a'],'unknown','unknow')
     yield ('Default Atlas location',['libf77blas.a','libatlas.a'],  ['liblapack.a'],'unknown','unknow')
     yield ('Default compiler locations with G77', None, ['liblapack.a', 'libblas.a','libg2c.a'],'unknown','unknow')
-    yield ('Default compiler locations with gfortran', None, ['liblapack.a', 'libblas.a','libgfortran.a'],'unknown','unknow')
     # Try MacOSX location
     dir = os.path.join('/Library', 'Frameworks', 'Intel_MKL.framework','Libraries','32')
     yield ('MacOSX with Intel MKL', None, [os.path.join(dir,'libmkl_lapack.a'),'libmkl_ia32.a','libguide.a'],'32','no')
@@ -419,23 +417,14 @@ class Configure(config.package.Package):
         self.logPrint('MKL Path not found.. skipping: '+mklpath)
       else:
         mkldir = os.path.join(mklpath, 'ia32', 'lib')
-        try:
-          output,err,status = config.base.Configure.executeShellCommand('ls '+mkldir)
-        except:
-          pass
+        self.log.write('Files and directories in that directory:\n'+str(os.listdir(mkldir))+'\n')
         yield ('Microsoft Windows, Intel MKL library', None, os.path.join(mkldir,'mkl_c_dll.lib'),'32','no')
         yield ('Microsoft Windows, Intel MKL stdcall library', None, os.path.join(mkldir,'mkl_s_dll.lib'),'32','no')
         mkldir = os.path.join(mklpath, 'em64t', 'lib')
-        try:
-          output,err,status = config.base.Configure.executeShellCommand('ls '+mkldir)
-        except:
-          pass
+        self.log.write('Files and directories in that directory:\n'+str(os.listdir(mkldir))+'\n')
         yield ('Microsoft Windows, em64t Intel MKL library', None, os.path.join(mkldir,'mkl_dll.lib'),'32','no')
         mkldir = os.path.join(mklpath, 'ia64', 'lib')
-        try:
-          output,err,status = config.base.Configure.executeShellCommand('ls '+mkldir)
-        except:
-          pass
+        self.log.write('Files and directories in that directory:\n'+str(os.listdir(mkldir))+'\n')
         yield ('Microsoft Windows, ia64 Intel MKL library', None, os.path.join(mkldir,'mkl_dll.lib'),'32','no')
     return
 

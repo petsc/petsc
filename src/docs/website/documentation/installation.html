@@ -1158,11 +1158,21 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
             </li>
               <li>
                 Notes on usage:
-                <ul>
+                 <ul>
                   <li> Log into theta.alcf.anl.gov </li>
-                  <li> module load cray-hdf5-parallel cray-netcdf-hdf5parallel cray-parallel-netcdf</li>
-                  <li> Use config/examples/arch-cray-xc40-knl-opt.py as a template for running configure </li>
-                  <li> If you need to use exodusii then use the configure options --with-hdf5=1 --with-pnetcdf-dir=$PARALLEL_NETCDF_DIR --with-netcdf-dir=$NETCDF_DIR --download-chaco=1 --download-metis=1 --download-parmetis=1 --download-exodusii</li>
+                  <li> There are three compiler suites <a href="https://www.alcf.anl.gov/user-guides/compiling-and-linking-xc40">Modules</a>
+                 <ul>
+                  <li> module load PrgEnv-intel intel </li>
+                  <li>  module load PrgEnv-gnu gcc/7.1.0/</li>
+                  <li>  module load PrgEnv-cray </li>
+                </ul>
+                  <li> List currently loaded modules: module list                  </li>
+                  <li> List all available modules: module avail                  </li>
+                  <li> Blas/lapack will automatically be found so you do not need to provide it </li>
+                 <ul>
+                  <li> It is best not to use built-in modules for external packages (except blas/lapack) because they are often buggy.
+                       Most external packages can be built using the --download option with the intel or Gnu environment but not cray </li>
+                  <li> You can use config/examples/arch-cray-xc40-knl-opt.py as a template for running configure but it is outdated </li>
             </li>
             </ul>
           </li>

@@ -22,6 +22,7 @@ class Configure(config.package.GNUPackage):
     #self.complex           = 0
     self.hastests          = 1
     self.hastestsdatafiles = 1
+    self.installwithbatch  = 0
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)

@@ -12,6 +12,7 @@ class Configure(config.package.GNUPackage):
     self.includes         = ['pnetcdf.h']
     self.liblist          = [['libpnetcdf.a']]
     self.useddirectly     = 0
+    self.installwithbatch = 0
     return
 
   def setupDependencies(self, framework):
@@ -23,5 +24,5 @@ class Configure(config.package.GNUPackage):
 
   def formGNUConfigureArgs(self):
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
-    args.append('LIBS="'+self.libraries.toStringNoDupes(self.flibs.lib)+'"')
+    self.addToArgs(args,'LIBS',self.libraries.toStringNoDupes(self.flibs.lib))
     return args
