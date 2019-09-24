@@ -128,6 +128,9 @@
           <li>Moved VecCUDA*-routines from petsccuda.h into petscvec.h. Removed petsccuda.h</li>
         </ul>
       <h4>Configure/Build:</h4>
+      <ul>
+          <li>New option --download-hpddm to enable PCHPDDM and KSPHPDDM</li>
+        </ul>
       <h4>IS:</h4>
       <h4>PetscDraw:</h4>
       <h4>PF:</h4>
@@ -159,16 +162,20 @@
       </ul>
       <h4>Mat:</h4>
       <ul>
-          <li>MatShift(Mat,0); will no longer silently insure there are no missing diagonal entries. (Previously it would put 0 into any diagonal entry that was missing</li>
+          <li>MatShift(Mat,0); will no longer silently insure there are no missing diagonal entries. (Previously it would put 0 into any diagonal entry that was missing)</li>
           <li>Renamed MatComputeExplicitOperator() into MatComputeOperator() and MatComputeExplicitOperatorTranpose() into MatComputeOperatorTranspose(). Added extra argument to select the desired matrix type</li>
           <li>MatLoad() now supports loading dense matrices from HDF5/MAT files.</li>
           <li>Added new Mat type, MATKAIJ, for matrices that can be expressed in a particular Kronecker (tensor) product form.</li>
           <li>Added MatCompositeSetScalings() to set separate scaling factors for component matrices.</li>
-          <li>Added a boolean option -mat_composite_merge_mvctx to merge Mvctx of component matrices to optimize communication in MatMult() for ADDITIVE matrices. Default is true. </li>
+          <li>Added a Boolean option -mat_composite_merge_mvctx to merge Mvctx of component matrices to optimize communication in MatMult() for ADDITIVE matrices. Default is true. </li>
         </ul>
       <h4>PC:</h4>
         <ul>
           <li>Renamed PCComputeExplicitOperator() into PCComputeOperator(). Added extra argument to select the desired matrix type</li>
+          <li>Added support for PCCHOLESKY with MATSOLVERMUMPS and SBAIJ matrices with bs greater than 1</li>
+          <li>Added support for PCLU with MATSOLVERMKL_PARDISO (resp. MATSOLVERMKL_CPARDISO) and SEQBAIJ (resp. MPIBAIJ) matrices</li>
+          <li>Added support for PCCHOLESKY with MATSOLVERMKL_PARDISO (resp. MATSOLVERMKL_CPARDISO) and SEQSBAIJ (resp. MPISBAIJ) matrices</li>
+          <li>Added new preconditioner PCHPDDM, cf. src/ksp/ksp/examples/tutorials/ex71.c or src/snes/examples/tutorials/ex56.c</li>
         </ul>
       <h4>KSP:</h4>
         <ul>
@@ -176,6 +183,7 @@
           <li> KSPCGGLTRGetMinEig(KSP,PetscReal*) -> KSPGLTRGetMinEig(KSP,PetscReal*)</li>
           <li> KSPCGGLTRGetLambda(KSP,PetscReal*) ->  KSPGLTRGetLambda(KSP,PetscReal*)</li>
           <li> KSPCGNASH, KSPCGSTCG, KSPCGGLTR -> KSPNASH, KSPSTCG, KSPGLTR</li>
+          <li>Added new Krylov solver KSPHPDDM, cf. src/ksp/ksp/examples/tutorials/ex75.c or src/ksp/ksp/examples/tutorials/ex9.c</li>
         </ul>
       <h4>SNES:</h4>
         <ul>
