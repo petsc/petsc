@@ -224,7 +224,7 @@ shared libraries and run with --known-mpi-shared-libraries=1')
     elif  out.find('MPIR_CVAR_CH3') > -1:
       if hasattr(self,'ompi_major_version'): raise RuntimeError("Your libraries are from OpenMPI but it appears your mpiexec is from MPICH");
       self.addDefine('HAVE_MPIEXEC_ENVIRONMENTAL_VARIABLE', 'MPICH')
-    elif  out.find('OMPI') > -1:
+    elif out.find('OMPI_COMM_WORLD_SIZE') > -1:
       if hasattr(self,'mpich_numversion'): raise RuntimeError("Your libraries are from MPICH but it appears your mpiexec is from OpenMPI");
       self.addDefine('HAVE_MPIEXEC_ENVIRONMENTAL_VARIABLE', 'OMP')
     if self.argDB['with-batch']: return
