@@ -57,8 +57,8 @@ cdef extern from * nogil:
                                   PetscReal,PetscReal,
                                   PetscReal,PetscReal,
                                   PetscReal,PetscReal)
-    int DMDAGetBoundingBox(PetscDM,PetscReal[],PetscReal[])
-    int DMDAGetLocalBoundingBox(PetscDM,PetscReal[],PetscReal[])
+    int DMGetBoundingBox(PetscDM,PetscReal[],PetscReal[])
+    int DMGetLocalBoundingBox(PetscDM,PetscReal[],PetscReal[])
 
     int DMDACreateNaturalVector(PetscDM,PetscVec*)
     int DMDAGlobalToNaturalBegin(PetscDM,PetscVec,PetscInsertMode,PetscVec)

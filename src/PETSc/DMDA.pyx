@@ -369,7 +369,7 @@ cdef class DMDA(DM):
         cdef PetscInt i,dim=0
         CHKERR( DMDAGetDim(self.dm, &dim) )
         cdef PetscReal gmin[3], gmax[3]
-        CHKERR( DMDAGetBoundingBox(self.dm, gmin, gmax) )
+        CHKERR( DMGetBoundingBox(self.dm, gmin, gmax) )
         return tuple([(toReal(gmin[i]), toReal(gmax[i]))
                       for i from 0 <= i < dim])
 
@@ -377,7 +377,7 @@ cdef class DMDA(DM):
         cdef PetscInt i,dim=0
         CHKERR( DMDAGetDim(self.dm, &dim) )
         cdef PetscReal lmin[3], lmax[3]
-        CHKERR( DMDAGetLocalBoundingBox(self.dm, lmin, lmax) )
+        CHKERR( DMGetLocalBoundingBox(self.dm, lmin, lmax) )
         return tuple([(toReal(lmin[i]), toReal(lmax[i]))
                       for i from 0 <= i < dim])
 
