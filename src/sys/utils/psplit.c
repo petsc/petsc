@@ -89,7 +89,10 @@ PetscErrorCode  PetscSplitOwnership(MPI_Comm comm,PetscInt *n,PetscInt *N)
 #endif
 
   if (*N == PETSC_DECIDE) {
-    ierr = MPIU_Allreduce(n,N,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
+    PetscInt64 m = *n, M;
+    ierr = MPIU_Allreduce(&m,&M,1,MPIU_INT64,MPI_SUM,comm);CHKERRQ(ierr);
+    if (M > PETSC_MAX_INT) SETERRQ1(comm,PETSC_ERR_INT_OVERFLOW,"Global size overflow %" PetscInt64_FMT ". You may consider ./configure PETSc with --with-64-bit-indices for the case you are running", M);
+    else *N = (PetscInt)M;
   } else if (*n == PETSC_DECIDE) {
     ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
