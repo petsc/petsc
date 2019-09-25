@@ -283,6 +283,22 @@ cdef class DM(Object):
         PetscINCREF(c.obj)
         return c
 
+    def getBoundingBox(self):
+        cdef PetscInt i,dim=0
+        CHKERR( DMGetCoordinateDim(self.dm, &dim) )
+        cdef PetscReal gmin[3], gmax[3]
+        CHKERR( DMGetBoundingBox(self.dm, gmin, gmax) )
+        return tuple([(toReal(gmin[i]), toReal(gmax[i]))
+                      for i from 0 <= i < dim])
+
+    def getLocalBoundingBox(self):
+        cdef PetscInt i,dim=0
+        CHKERR( DMGetCoordinateDim(self.dm, &dim) )
+        cdef PetscReal lmin[3], lmax[3]
+        CHKERR( DMGetLocalBoundingBox(self.dm, lmin, lmax) )
+        return tuple([(toReal(lmin[i]), toReal(lmax[i]))
+                      for i from 0 <= i < dim])
+
     #
 
     def setMatType(self, mat_type):

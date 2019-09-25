@@ -365,22 +365,6 @@ cdef class DMDA(DM):
         CHKERR( DMDAGetCoordinateName(self.dm, ival, &cval) )
         return bytes2str(cval)
 
-    def getBoundingBox(self):
-        cdef PetscInt i,dim=0
-        CHKERR( DMDAGetDim(self.dm, &dim) )
-        cdef PetscReal gmin[3], gmax[3]
-        CHKERR( DMGetBoundingBox(self.dm, gmin, gmax) )
-        return tuple([(toReal(gmin[i]), toReal(gmax[i]))
-                      for i from 0 <= i < dim])
-
-    def getLocalBoundingBox(self):
-        cdef PetscInt i,dim=0
-        CHKERR( DMDAGetDim(self.dm, &dim) )
-        cdef PetscReal lmin[3], lmax[3]
-        CHKERR( DMGetLocalBoundingBox(self.dm, lmin, lmax) )
-        return tuple([(toReal(lmin[i]), toReal(lmax[i]))
-                      for i from 0 <= i < dim])
-
     #
 
     def createNaturalVec(self):
