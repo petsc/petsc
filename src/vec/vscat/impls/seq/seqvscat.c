@@ -639,8 +639,8 @@ PetscErrorCode VecScatterMemcpyPlanCreate_SGToSG(PetscInt bs,VecScatter_Seq_Gene
       j = 0;  /* j-th copy */
       for (i=0; i<n-1; i++) {
         if (to_slots[i]+bs != to_slots[i+1] || from_slots[i]+bs != from_slots[i+1]) {
-          to->memcpy_plan.copy_lengths[j]    = sizeof(PetscScalar)*(to_slots[i]+bs-to->memcpy_plan.copy_starts[j]);
-          from->memcpy_plan.copy_lengths[j]  = sizeof(PetscScalar)*(from_slots[i]+bs-from->memcpy_plan.copy_starts[j]);
+          to->memcpy_plan.copy_lengths[j]    = to_slots[i]+bs-to->memcpy_plan.copy_starts[j];
+          from->memcpy_plan.copy_lengths[j]  = from_slots[i]+bs-from->memcpy_plan.copy_starts[j];
           to->memcpy_plan.copy_starts[j+1]   = to_slots[i+1];
           from->memcpy_plan.copy_starts[j+1] = from_slots[i+1];
           j++;
@@ -649,8 +649,8 @@ PetscErrorCode VecScatterMemcpyPlanCreate_SGToSG(PetscInt bs,VecScatter_Seq_Gene
     }
 
     /* set up copy_lengths[] of the last copy */
-    to->memcpy_plan.copy_lengths[n_copies-1]   = sizeof(PetscScalar)*(to_slots[n-1]+bs-to->memcpy_plan.copy_starts[n_copies-1]);
-    from->memcpy_plan.copy_lengths[n_copies-1] = sizeof(PetscScalar)*(from_slots[n-1]+bs-from->memcpy_plan.copy_starts[n_copies-1]);
+    to->memcpy_plan.copy_lengths[n_copies-1]   = to_slots[n-1]+bs-to->memcpy_plan.copy_starts[n_copies-1];
+    from->memcpy_plan.copy_lengths[n_copies-1] = from_slots[n-1]+bs-from->memcpy_plan.copy_starts[n_copies-1];
 
     /* check if to and from have the same copy_starts[] values */
     same_copy_starts = PETSC_TRUE;

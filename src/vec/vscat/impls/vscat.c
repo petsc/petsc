@@ -294,12 +294,12 @@ PetscErrorCode VecScatterMemcpyPlanCreate_Index(PetscInt n,const PetscInt *start
         if (indices[j]+bs != indices[j+1]) { /* meet end of a copy (and next copy must exist) */
           my_copies++;
           plan->copy_starts[k+1] = indices[j+1];
-          plan->copy_lengths[k]  = sizeof(PetscScalar)*(indices[j]+bs-plan->copy_starts[k]);
+          plan->copy_lengths[k]  = indices[j]+bs-plan->copy_starts[k];
           k++;
         }
       }
       /* set copy length of the last copy for this remote proc */
-      plan->copy_lengths[k] = sizeof(PetscScalar)*(indices[j]+bs-plan->copy_starts[k]);
+      plan->copy_lengths[k] = indices[j]+bs-plan->copy_starts[k];
       k++;
     }
 
