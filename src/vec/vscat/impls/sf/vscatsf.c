@@ -3,6 +3,10 @@
 #include <../src/vec/is/sf/impls/basic/sfbasic.h> /* for VecScatterRemap_SF */
 #include <../src/vec/is/sf/impls/basic/sfpack.h>
 
+#if defined(PETSC_HAVE_CUDA)
+#include <../src/vec/vec/impls/seq/seqcuda/cudavecimpl.h>
+#endif
+
 typedef struct {
   PetscSF           sf;     /* the whole scatter, including local and remote */
   PetscSF           lsf;    /* the local part of the scatter, used for SCATTER_LOCAL */
@@ -21,7 +25,9 @@ static PetscErrorCode VecScatterBegin_SF(VecScatter vscat,Vec x,Vec y,InsertMode
   PetscFunctionBegin;
   if (x != y) {ierr = VecLockReadPush(x);CHKERRQ(ierr);}
 
-  {
+  if (use_gpu_aware_mpi) {
+    ierr = VecGetArrayReadInPlace(x,&vscat->xdata);CHKERRQ(ierr);
+  } else {
 #if defined(PETSC_HAVE_CUDA)
     PetscBool is_cudatype = PETSC_FALSE;
     ierr = PetscObjectTypeCompareAny((PetscObject)x,&is_cudatype,VECSEQCUDA,VECMPICUDA,VECCUDA,"");CHKERRQ(ierr);
@@ -34,13 +40,13 @@ static PetscErrorCode VecScatterBegin_SF(VecScatter vscat,Vec x,Vec y,InsertMode
       vscat->xdata = *((PetscScalar**)x->data);
     } else
 #endif
-    {
-      ierr = VecGetArrayRead(x,&vscat->xdata);CHKERRQ(ierr);
-    }
+    {ierr = VecGetArrayRead(x,&vscat->xdata);CHKERRQ(ierr);}
   }
 
-  if (x != y) {ierr = VecGetArray(y,&vscat->ydata);CHKERRQ(ierr);}
-  else vscat->ydata = (PetscScalar *)vscat->xdata;
+  if (x != y) {
+    if (use_gpu_aware_mpi) {ierr = VecGetArrayInPlace(y,&vscat->ydata);CHKERRQ(ierr);}
+    else {ierr = VecGetArray(y,&vscat->ydata);CHKERRQ(ierr);}
+  } else vscat->ydata = (PetscScalar *)vscat->xdata;
   ierr = VecLockWriteSet_Private(y,PETSC_TRUE);CHKERRQ(ierr);
 
   /* SCATTER_LOCAL indicates ignoring inter-process communication */
@@ -92,11 +98,15 @@ static PetscErrorCode VecScatterEnd_SF(VecScatter vscat,Vec x,Vec y,InsertMode a
   }
 
   if (x != y) {
-    ierr = VecRestoreArrayRead(x,&vscat->xdata);CHKERRQ(ierr);
+    if (use_gpu_aware_mpi) {ierr = VecRestoreArrayReadInPlace(x,&vscat->xdata);CHKERRQ(ierr);}
+    else {ierr = VecRestoreArrayRead(x,&vscat->xdata);CHKERRQ(ierr);}
     ierr = VecLockReadPop(x);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArray(y,&vscat->ydata);CHKERRQ(ierr);
+
+  if (use_gpu_aware_mpi) {ierr = VecRestoreArrayInPlace(y,&vscat->ydata);CHKERRQ(ierr);}
+  else {ierr = VecRestoreArray(y,&vscat->ydata);CHKERRQ(ierr);}
   ierr = VecLockWriteSet_Private(y,PETSC_FALSE);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 
@@ -204,10 +214,13 @@ static PetscErrorCode VecScatterRemap_SF(VecScatter vscat,const PetscInt *tomap,
    */
   bas = (PetscSF_Basic*)sf->data;
   for (i=0; i<bas->ioffset[bas->niranks]; i++) bas->irootloc[i] = tomap[bas->irootloc[i]*bs]/bs;
-
+#if defined(PETSC_HAVE_CUDA)
+  /* Free the irootloc copy on device. We allocate a new copy and get the updated value on demand. See PetscSFGetRootIndicesWithMemType_Basic() */
+  if (bas->irootloc_d) {cudaError_t err = cudaFree(bas->irootloc_d);CHKERRCUDA(err);bas->irootloc_d=NULL;}
+#endif
   /* Destroy and then rebuild root packing optimizations since indices are changed */
-  ierr = PetscSFPackDestroyOptimization_Basic(sf);CHKERRQ(ierr);
-  ierr = PetscSFPackSetupOptimization_Basic(sf);CHKERRQ(ierr);
+  ierr = PetscSFPackDestroyOptimizations_Basic(sf);CHKERRQ(ierr);
+  ierr = PetscSFPackSetupOptimizations_Basic(sf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

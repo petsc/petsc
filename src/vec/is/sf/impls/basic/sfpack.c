@@ -2,6 +2,9 @@
 #include <../src/vec/is/sf/impls/basic/sfpack.h>
 #include <../src/vec/is/sf/impls/basic/sfbasic.h>
 
+#if defined(PETSC_HAVE_CUDA)
+#include <cuda_runtime.h>
+#endif
 /*
  * MPI_Reduce_local is not really useful because it can't handle sparse data and it vectorizes "in the wrong direction",
  * therefore we pack data types manually. This file defines packing routines for the standard data types.
@@ -15,9 +18,9 @@
 #define EXECUTE(statement)    statement /* no braces since the statement might declare a variable; braces impose an unwanted scope */
 #define IGNORE(statement)     do {} while(0)
 
-#define BINARY_OP(r,s,op,t)   do {(r) = (s) op (t);  } while(0)  /* binary ops in the middle such as +, *, && etc. */
-#define FUNCTION_OP(r,s,op,t) do {(r) = op((s),(t)); } while(0)  /* ops like a function, such as PetscMax, PetscMin */
-#define LXOR_OP(r,s,op,t)     do {(r) = (!s) != (!t);} while(0)  /* logical exclusive OR */
+#define BINARY_OP(r,s,op,t)   do {(r) = (s) op (t);  } while(0)      /* binary ops in the middle such as +, *, && etc. */
+#define FUNCTION_OP(r,s,op,t) do {(r) = op((s),(t)); } while(0)      /* ops like a function, such as PetscMax, PetscMin */
+#define LXOR_OP(r,s,op,t)     do {(r) = (!(s)) != (!(t));} while(0)  /* logical exclusive OR */
 #define PAIRTYPE_OP(r,s,op,t) do {(r).a = (s).a op (t).a; (r).b = (s).b op (t).b;} while(0)
 
 #define PairType(Type1,Type2) Type1##_##Type2 /* typename for struct {Type1 a; Type2 b;} */
@@ -32,26 +35,26 @@
    Arguments of the Pack routine:
    +count     Number of indices in idx[]
    .idx       Indices of entries to packed. NULL means contiguous indices, that is [0,count)
-   .bs        Number of basic types in an entry. Ex. if unit is MPI_2INT, then bs=2 and the basic type is int
+   .link      Provide a context for the current call, such as link->bs, number of basic types in an entry. Ex. if unit is MPI_2INT, then bs=2 and the basic type is int.
    .opt       Pack optimization plans. NULL means no plan at all.
    .unpacked  Address of the unpacked data. The entries will be packed are unpacked[idx[i]],for i in [0,count)
    -packed    Address of the packed data for each rank
  */
 #define DEF_PackFunc(Type,BS,EQ) \
-  static PetscErrorCode CPPJoin4(Pack,Type,BS,EQ)(PetscInt count,const PetscInt *idx,PetscInt bs,PetscSFPackOpt opt,const void *unpacked,void *packed) \
+  static PetscErrorCode CPPJoin4(Pack,Type,BS,EQ)(PetscInt count,const PetscInt *idx,PetscSFPack link,PetscSFPackOpt opt,const void *unpacked,void *packed) \
   {                                                                                                          \
     PetscErrorCode ierr;                                                                                     \
     const Type     *u = (const Type*)unpacked,*u2;                                                           \
     Type           *p = (Type*)packed,*p2;                                                                   \
-    PetscInt       i,j,k,l,r,step;                                                                           \
+    PetscInt       i,j,k,l,r,step,bs=link->bs;                                                               \
     const PetscInt *idx2,M = (EQ) ? 1 : bs/BS; /* If EQ, then M=1 enables compiler's const-propagation */    \
     const PetscInt MBS = M*BS; /* MBS=bs. We turn MBS into a compile time const when EQ=1. */                \
     PetscFunctionBegin;                                                                                      \
     if (!idx) {ierr = PetscArraycpy(p,u,MBS*count);CHKERRQ(ierr);}  /* Indices are contiguous */             \
     else if (!opt) { /* No optimizations available */                                                        \
       for (i=0; i<count; i++)                                                                                \
-        for (j=0; j<M; j++)     /* Decent compilers should fuse this loop when M = const 1 */                \
-          for (k=0; k<BS; k++)  /* Compiler either fuses (BS=1) or vectorizes (BS=2,4,8,etc) this loop */    \
+        for (j=0; j<M; j++)     /* Decent compilers should eliminate this loop when M = const 1 */           \
+          for (k=0; k<BS; k++)  /* Compiler either unrolls (BS=1) or vectorizes (BS=2,4,8,etc) this loop */  \
             p[i*MBS+j*BS+k] = u[idx[i]*MBS+j*BS+k];                                                          \
     } else {                                                                                                 \
       for (r=0; r<opt->n; r++) {                                                                             \
@@ -100,12 +103,12 @@
    If action is Fetch, we may do Malloc/Free in the routine. It is costly but the expectation is that this case is really rare.
  */
 #define DEF_Action(action,Type,BS,EQ,FILTER,CType,Cvoid)               \
-  static PetscErrorCode CPPJoin4(action##AndInsert,Type,BS,EQ)(PetscInt count,const PetscInt *idx,PetscInt bs,PetscSFPackOpt opt,void *unpacked,Cvoid *packed) \
+  static PetscErrorCode CPPJoin4(action##AndInsert,Type,BS,EQ)(PetscInt count,const PetscInt *idx,PetscSFPack link,PetscSFPackOpt opt,void *unpacked,Cvoid *packed) \
   {                                                                                                          \
     PetscErrorCode ierr;                                                                                     \
     Type           *u = (Type*)unpacked,*u2;                                                                 \
     CType          *p = (CType*)packed,*p2;                                                                  \
-    PetscInt       i,j,k,l,r,step;                                                                           \
+    PetscInt       i,j,k,l,r,step,bs=link->bs;                                                               \
     const PetscInt *idx2,M = (EQ) ? 1 : bs/BS; /* If EQ, then M=1 enables compiler's const-propagation */    \
     const PetscInt MBS = M*BS; /* MBS=bs. We turn MBS into a compile time const when EQ=1. */                \
     PetscFunctionBegin;                                                                                      \
@@ -179,11 +182,11 @@
   -Cvoid      void with or without the const qualifier, i.e., const void or void
  */
 #define DEF_ActionAndOp(action,opname,Type,BS,EQ,op,APPLY,FILTER,CType,Cvoid) \
-  static PetscErrorCode CPPJoin4(action##And##opname,Type,BS,EQ)(PetscInt count,const PetscInt *idx,PetscInt bs,PetscSFPackOpt opt,void *unpacked,Cvoid *packed) \
+  static PetscErrorCode CPPJoin4(action##And##opname,Type,BS,EQ)(PetscInt count,const PetscInt *idx,PetscSFPack link,PetscSFPackOpt opt,void *unpacked,Cvoid *packed) \
   {                                                                                                          \
     Type           *u = (Type*)unpacked,*u2,t;                                                               \
     CType          *p = (CType*)packed,*p2;                                                                  \
-    PetscInt       i,j,k,l,r,step;                                                                           \
+    PetscInt       i,j,k,l,r,step,bs=link->bs;                                                               \
     const PetscInt *idx2,M = (EQ) ? 1 : bs/BS; /* If EQ, then M=1 enables compiler's const-propagation */    \
     const PetscInt MBS = M*BS; /* MBS=bs. We turn MBS into a compile time const when EQ=1. */                \
     PetscFunctionBegin;                                                                                      \
@@ -255,13 +258,14 @@
   -Cvoid      void with or without the const qualifier, i.e., const void or void
  */
 #define DEF_ActionAndXloc(action,locname,Type1,Type2,op,FILTER,CType,Cvoid) \
-  static PetscErrorCode CPPJoin4(action##And##locname##loc,PairType(Type1,Type2),1,1)(PetscInt count,const PetscInt *idx,PetscInt bs,PetscSFPackOpt opt,void *unpacked,Cvoid *packed) { \
+  static PetscErrorCode CPPJoin4(action##And##locname##loc,PairType(Type1,Type2),1,1)(PetscInt count,const PetscInt *idx,PetscSFPack link,PetscSFPackOpt opt,void *unpacked,Cvoid *packed) { \
     PairType(Type1,Type2) *u = (PairType(Type1,Type2)*)unpacked;                                             \
     CType                 *p = (CType*)packed;                                                               \
     PetscInt              i,j;                                                                               \
     for (i=0; i<count; i++) {                                                                                \
+      FILTER(PairType(Type1,Type2) v);                                                                       \
       j = idx? idx[i] : i;                                                                                   \
-      FILTER(PairType(Type1,Type2) v = u[j]);                                                                \
+      FILTER(v = u[j]);                                                                                      \
       if (p[i].a op u[j].a) {                                                                                \
         u[j] = p[i];                                                                                         \
       } else if (p[i].a == u[j].a) {                                                                         \
@@ -278,10 +282,9 @@
   DEF_Action(Unpack,Type,BS,EQ,IGNORE,const Type,const void)                                   \
   DEF_Action(Fetch, Type,BS,EQ,EXECUTE,Type,void)                                              \
   static void CPPJoin4(PackInit_Pack,Type,BS,EQ)(PetscSFPack link) {                           \
-    link->Pack            = CPPJoin4(Pack,           Type,BS,EQ);                              \
-    link->UnpackAndInsert = CPPJoin4(UnpackAndInsert,Type,BS,EQ);                              \
-    link->FetchAndInsert  = CPPJoin4(FetchAndInsert, Type,BS,EQ);                              \
-    link->unitbytes       = sizeof(Type);                                                      \
+    link->h_Pack            = CPPJoin4(Pack,           Type,BS,EQ);                            \
+    link->h_UnpackAndInsert = CPPJoin4(UnpackAndInsert,Type,BS,EQ);                            \
+    link->h_FetchAndInsert  = CPPJoin4(FetchAndInsert, Type,BS,EQ);                            \
   }
 
 /* Add, Mult ops */
@@ -291,10 +294,10 @@
   DEF_ActionAndOp(Fetch, Add, Type,BS,EQ,+,BINARY_OP,EXECUTE,Type,void)                        \
   DEF_ActionAndOp(Fetch, Mult,Type,BS,EQ,*,BINARY_OP,EXECUTE,Type,void)                        \
   static void CPPJoin4(PackInit_Add,Type,BS,EQ)(PetscSFPack link) {                            \
-    link->UnpackAndAdd    = CPPJoin4(UnpackAndAdd,   Type,BS,EQ);                              \
-    link->UnpackAndMult   = CPPJoin4(UnpackAndMult,  Type,BS,EQ);                              \
-    link->FetchAndAdd     = CPPJoin4(FetchAndAdd,    Type,BS,EQ);                              \
-    link->FetchAndMult    = CPPJoin4(FetchAndMult,   Type,BS,EQ);                              \
+    link->h_UnpackAndAdd    = CPPJoin4(UnpackAndAdd,   Type,BS,EQ);                            \
+    link->h_UnpackAndMult   = CPPJoin4(UnpackAndMult,  Type,BS,EQ);                            \
+    link->h_FetchAndAdd     = CPPJoin4(FetchAndAdd,    Type,BS,EQ);                            \
+    link->h_FetchAndMult    = CPPJoin4(FetchAndMult,   Type,BS,EQ);                            \
   }
 
 /* Max, Min ops */
@@ -304,10 +307,10 @@
   DEF_ActionAndOp(Fetch, Max,Type,BS,EQ,PetscMax,FUNCTION_OP,EXECUTE,Type,void)                \
   DEF_ActionAndOp(Fetch, Min,Type,BS,EQ,PetscMin,FUNCTION_OP,EXECUTE,Type,void)                \
   static void CPPJoin4(PackInit_Compare,Type,BS,EQ)(PetscSFPack link) {                        \
-    link->UnpackAndMax    = CPPJoin4(UnpackAndMax,   Type,BS,EQ);                              \
-    link->UnpackAndMin    = CPPJoin4(UnpackAndMin,   Type,BS,EQ);                              \
-    link->FetchAndMax     = CPPJoin4(FetchAndMax ,   Type,BS,EQ);                              \
-    link->FetchAndMin     = CPPJoin4(FetchAndMin ,   Type,BS,EQ);                              \
+    link->h_UnpackAndMax    = CPPJoin4(UnpackAndMax,   Type,BS,EQ);                            \
+    link->h_UnpackAndMin    = CPPJoin4(UnpackAndMin,   Type,BS,EQ);                            \
+    link->h_FetchAndMax     = CPPJoin4(FetchAndMax ,   Type,BS,EQ);                            \
+    link->h_FetchAndMin     = CPPJoin4(FetchAndMin ,   Type,BS,EQ);                            \
   }
 
 /* Logical ops.
@@ -322,12 +325,12 @@
   DEF_ActionAndOp(Fetch, LOR, Type,BS,EQ,||,BINARY_OP,EXECUTE,Type,void)                       \
   DEF_ActionAndOp(Fetch, LXOR,Type,BS,EQ,&, LXOR_OP,  EXECUTE,Type,void)                       \
   static void CPPJoin4(PackInit_Logical,Type,BS,EQ)(PetscSFPack link) {                        \
-    link->UnpackAndLAND   = CPPJoin4(UnpackAndLAND,Type,BS,EQ);                                \
-    link->UnpackAndLOR    = CPPJoin4(UnpackAndLOR, Type,BS,EQ);                                \
-    link->UnpackAndLXOR   = CPPJoin4(UnpackAndLXOR,Type,BS,EQ);                                \
-    link->FetchAndLAND    = CPPJoin4(FetchAndLAND, Type,BS,EQ);                                \
-    link->FetchAndLOR     = CPPJoin4(FetchAndLOR,  Type,BS,EQ);                                \
-    link->FetchAndLXOR    = CPPJoin4(FetchAndLXOR, Type,BS,EQ);                                \
+    link->h_UnpackAndLAND   = CPPJoin4(UnpackAndLAND,Type,BS,EQ);                              \
+    link->h_UnpackAndLOR    = CPPJoin4(UnpackAndLOR, Type,BS,EQ);                              \
+    link->h_UnpackAndLXOR   = CPPJoin4(UnpackAndLXOR,Type,BS,EQ);                              \
+    link->h_FetchAndLAND    = CPPJoin4(FetchAndLAND, Type,BS,EQ);                              \
+    link->h_FetchAndLOR     = CPPJoin4(FetchAndLOR,  Type,BS,EQ);                              \
+    link->h_FetchAndLXOR    = CPPJoin4(FetchAndLXOR, Type,BS,EQ);                              \
   }
 
 /* Bitwise ops */
@@ -339,12 +342,12 @@
   DEF_ActionAndOp(Fetch, BOR, Type,BS,EQ,|,BINARY_OP,EXECUTE,Type,void)                        \
   DEF_ActionAndOp(Fetch, BXOR,Type,BS,EQ,^,BINARY_OP,EXECUTE,Type,void)                        \
   static void CPPJoin4(PackInit_Bitwise,Type,BS,EQ)(PetscSFPack link) {                        \
-    link->UnpackAndBAND   = CPPJoin4(UnpackAndBAND,Type,BS,EQ);                                \
-    link->UnpackAndBOR    = CPPJoin4(UnpackAndBOR, Type,BS,EQ);                                \
-    link->UnpackAndBXOR   = CPPJoin4(UnpackAndBXOR,Type,BS,EQ);                                \
-    link->FetchAndBAND    = CPPJoin4(FetchAndBAND, Type,BS,EQ);                                \
-    link->FetchAndBOR     = CPPJoin4(FetchAndBOR,  Type,BS,EQ);                                \
-    link->FetchAndBXOR    = CPPJoin4(FetchAndBXOR, Type,BS,EQ);                                \
+    link->h_UnpackAndBAND   = CPPJoin4(UnpackAndBAND,Type,BS,EQ);                              \
+    link->h_UnpackAndBOR    = CPPJoin4(UnpackAndBOR, Type,BS,EQ);                              \
+    link->h_UnpackAndBXOR   = CPPJoin4(UnpackAndBXOR,Type,BS,EQ);                              \
+    link->h_FetchAndBAND    = CPPJoin4(FetchAndBAND, Type,BS,EQ);                              \
+    link->h_FetchAndBOR     = CPPJoin4(FetchAndBOR,  Type,BS,EQ);                              \
+    link->h_FetchAndBXOR    = CPPJoin4(FetchAndBXOR, Type,BS,EQ);                              \
   }
 
 /* Maxloc, Minloc */
@@ -354,10 +357,10 @@
   DEF_ActionAndXloc(Fetch, Max,Type1,Type2,>,EXECUTE,PairType(Type1,Type2),void)               \
   DEF_ActionAndXloc(Fetch, Min,Type1,Type2,<,EXECUTE,PairType(Type1,Type2),void)               \
   static void CPPJoin3(PackInit_Xloc,Type1,Type2)(PetscSFPack link) {                          \
-    link->UnpackAndMaxloc = CPPJoin4(UnpackAndMaxloc,PairType(Type1,Type2),1,1);               \
-    link->UnpackAndMinloc = CPPJoin4(UnpackAndMinloc,PairType(Type1,Type2),1,1);               \
-    link->FetchAndMaxloc  = CPPJoin4(FetchAndMaxloc, PairType(Type1,Type2),1,1);               \
-    link->FetchAndMinloc  = CPPJoin4(FetchAndMinloc, PairType(Type1,Type2),1,1);               \
+    link->h_UnpackAndMaxloc = CPPJoin4(UnpackAndMaxloc,PairType(Type1,Type2),1,1);             \
+    link->h_UnpackAndMinloc = CPPJoin4(UnpackAndMinloc,PairType(Type1,Type2),1,1);             \
+    link->h_FetchAndMaxloc  = CPPJoin4(FetchAndMaxloc, PairType(Type1,Type2),1,1);             \
+    link->h_FetchAndMinloc  = CPPJoin4(FetchAndMinloc, PairType(Type1,Type2),1,1);             \
   }
 
 #define DEF_IntegerType(Type,BS,EQ)                                                            \
@@ -378,12 +381,10 @@
   DEF_Pack(Type,BS,EQ)                                                                         \
   DEF_Add(Type,BS,EQ)                                                                          \
   DEF_Cmp(Type,BS,EQ)                                                                          \
-  DEF_Log(Type,BS,EQ)                                                                          \
   static void CPPJoin4(PackInit_RealType,Type,BS,EQ)(PetscSFPack link) {                       \
     CPPJoin4(PackInit_Pack,Type,BS,EQ)(link);                                                  \
     CPPJoin4(PackInit_Add,Type,BS,EQ)(link);                                                   \
     CPPJoin4(PackInit_Compare,Type,BS,EQ)(link);                                               \
-    CPPJoin4(PackInit_Logical,Type,BS,EQ)(link);                                               \
   }
 
 #if defined(PETSC_HAVE_COMPLEX)
@@ -484,7 +485,7 @@ DEF_DumbType(char,1,0)
 DEF_DumbType(char,2,0)
 DEF_DumbType(char,4,0)
 
-typedef int DumbInt; /* To differentiate with regular int used above */
+typedef int DumbInt; /* To have a different name than 'int' used above. The name is used to make routine names. */
 DEF_DumbType(DumbInt,1,1)
 DEF_DumbType(DumbInt,2,1)
 DEF_DumbType(DumbInt,4,1)
@@ -542,6 +543,37 @@ PetscErrorCode PetscSFPackReclaim(PetscSF sf,PetscSFPack *link)
   PetscFunctionReturn(0);
 }
 
+/* Destroy all links, i.e., PetscSFPacks in the linked list, usually named 'avail' */
+PetscErrorCode PetscSFPackDestoryAvailable(PetscSFPack *avail)
+{
+  PetscErrorCode    ierr;
+  PetscSFPack       link=*avail,next;
+  PetscInt          i;
+
+  PetscFunctionBegin;
+  for (; link; link=next) {
+    next = link->next;
+    if (!link->isbuiltin) {ierr = MPI_Type_free(&link->unit);CHKERRQ(ierr);}
+    for (i=0; i<(link->nrootreqs+link->nleafreqs)*4; i++) { /* Persistent reqs must be freed. */
+      if (link->reqs[i] != MPI_REQUEST_NULL) {ierr = MPI_Request_free(&link->reqs[i]);CHKERRQ(ierr);}
+    }
+    ierr = PetscFree(link->reqs);CHKERRQ(ierr);
+    ierr = PetscFreeWithMemType(PETSC_MEMTYPE_HOST,link->rootbuf[PETSC_MEMTYPE_HOST]);CHKERRQ(ierr);
+    ierr = PetscFreeWithMemType(PETSC_MEMTYPE_HOST,link->leafbuf[PETSC_MEMTYPE_HOST]);CHKERRQ(ierr);
+    ierr = PetscFreeWithMemType(PETSC_MEMTYPE_HOST,link->selfbuf[PETSC_MEMTYPE_HOST]);CHKERRQ(ierr);
+
+#if defined(PETSC_HAVE_CUDA)
+    ierr = PetscFreeWithMemType(PETSC_MEMTYPE_DEVICE,link->rootbuf[PETSC_MEMTYPE_DEVICE]);CHKERRQ(ierr);
+    ierr = PetscFreeWithMemType(PETSC_MEMTYPE_DEVICE,link->leafbuf[PETSC_MEMTYPE_DEVICE]);CHKERRQ(ierr);
+    ierr = PetscFreeWithMemType(PETSC_MEMTYPE_DEVICE,link->selfbuf[PETSC_MEMTYPE_DEVICE]);CHKERRQ(ierr);
+    if (link->stream) {cudaError_t err =  cudaStreamDestroy(link->stream);CHKERRCUDA(err); link->stream = NULL;}
+#endif
+    ierr = PetscFree(link);CHKERRQ(ierr);
+  }
+  *avail = NULL;
+  PetscFunctionReturn(0);
+}
+
 /* Error out on unsupported overlapped communications */
 PetscErrorCode PetscSFPackSetErrorOnUnsupportedOverlap(PetscSF sf,MPI_Datatype unit,const void *rkey,const void *lkey)
 {
@@ -563,7 +595,7 @@ PetscErrorCode PetscSFPackSetErrorOnUnsupportedOverlap(PetscSF sf,MPI_Datatype u
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSFPackSetupType(PetscSFPack link,MPI_Datatype unit)
+PetscErrorCode PetscSFPackSetUp_Host(PetscSF sf,PetscSFPack link,MPI_Datatype unit)
 {
   PetscErrorCode ierr;
   PetscInt       nSignedChar=0,nUnsignedChar=0,nInt=0,nPetscInt=0,nPetscReal=0;
@@ -590,82 +622,86 @@ PetscErrorCode PetscSFPackSetupType(PetscSFPack link,MPI_Datatype unit)
   link->isbuiltin = (combiner == MPI_COMBINER_NAMED) ? PETSC_TRUE : PETSC_FALSE;
   link->bs = 1; /* default */
 
-  if (nPetscReal) {
+  if (is2Int) {
+    PackInit_PairType_int_int(link);
+    link->bs        = 1;
+    link->unitbytes = 2*sizeof(int);
+    link->basicunit = MPI_2INT;
+  } else if (is2PetscInt) { /* TODO: when is2PetscInt and nPetscInt=2, we don't know which path to take. The two paths support different ops. */
+    PackInit_PairType_PetscInt_PetscInt(link);
+    link->bs        = 1;
+    link->unitbytes = 2*sizeof(PetscInt);
+    link->basicunit = MPIU_2INT;
+  } else if (nPetscReal) {
     if      (nPetscReal == 8) PackInit_RealType_PetscReal_8_1(link); else if (nPetscReal%8 == 0) PackInit_RealType_PetscReal_8_0(link);
     else if (nPetscReal == 4) PackInit_RealType_PetscReal_4_1(link); else if (nPetscReal%4 == 0) PackInit_RealType_PetscReal_4_0(link);
     else if (nPetscReal == 2) PackInit_RealType_PetscReal_2_1(link); else if (nPetscReal%2 == 0) PackInit_RealType_PetscReal_2_0(link);
     else if (nPetscReal == 1) PackInit_RealType_PetscReal_1_1(link); else if (nPetscReal%1 == 0) PackInit_RealType_PetscReal_1_0(link);
-    link->bs         = nPetscReal;
-    link->unitbytes *= nPetscReal;
-    link->basicunit  = MPIU_REAL;
+    link->bs        = nPetscReal;
+    link->unitbytes = nPetscReal*sizeof(PetscReal);
+    link->basicunit = MPIU_REAL;
   } else if (nPetscInt) {
     if      (nPetscInt == 8) PackInit_IntegerType_PetscInt_8_1(link); else if (nPetscInt%8 == 0) PackInit_IntegerType_PetscInt_8_0(link);
     else if (nPetscInt == 4) PackInit_IntegerType_PetscInt_4_1(link); else if (nPetscInt%4 == 0) PackInit_IntegerType_PetscInt_4_0(link);
     else if (nPetscInt == 2) PackInit_IntegerType_PetscInt_2_1(link); else if (nPetscInt%2 == 0) PackInit_IntegerType_PetscInt_2_0(link);
     else if (nPetscInt == 1) PackInit_IntegerType_PetscInt_1_1(link); else if (nPetscInt%1 == 0) PackInit_IntegerType_PetscInt_1_0(link);
-    link->bs         = nPetscInt;
-    link->unitbytes *= nPetscInt;
-    link->basicunit  = MPIU_INT;
+    link->bs        = nPetscInt;
+    link->unitbytes = nPetscInt*sizeof(PetscInt);
+    link->basicunit = MPIU_INT;
 #if defined(PETSC_USE_64BIT_INDICES)
   } else if (nInt) {
     if      (nInt == 8) PackInit_IntegerType_int_8_1(link); else if (nInt%8 == 0) PackInit_IntegerType_int_8_0(link);
     else if (nInt == 4) PackInit_IntegerType_int_4_1(link); else if (nInt%4 == 0) PackInit_IntegerType_int_4_0(link);
     else if (nInt == 2) PackInit_IntegerType_int_2_1(link); else if (nInt%2 == 0) PackInit_IntegerType_int_2_0(link);
     else if (nInt == 1) PackInit_IntegerType_int_1_1(link); else if (nInt%1 == 0) PackInit_IntegerType_int_1_0(link);
-    link->bs         = nInt;
-    link->unitbytes *= nInt;
-    link->basicunit  = MPI_INT;
+    link->bs        = nInt;
+    link->unitbytes = nInt*sizeof(int);
+    link->basicunit = MPI_INT;
 #endif
   } else if (nSignedChar) {
     if      (nSignedChar == 8) PackInit_IntegerType_SignedChar_8_1(link); else if (nSignedChar%8 == 0) PackInit_IntegerType_SignedChar_8_0(link);
     else if (nSignedChar == 4) PackInit_IntegerType_SignedChar_4_1(link); else if (nSignedChar%4 == 0) PackInit_IntegerType_SignedChar_4_0(link);
     else if (nSignedChar == 2) PackInit_IntegerType_SignedChar_2_1(link); else if (nSignedChar%2 == 0) PackInit_IntegerType_SignedChar_2_0(link);
     else if (nSignedChar == 1) PackInit_IntegerType_SignedChar_1_1(link); else if (nSignedChar%1 == 0) PackInit_IntegerType_SignedChar_1_0(link);
-    link->bs         = nSignedChar;
-    link->unitbytes *= nSignedChar;
-    link->basicunit  = MPI_SIGNED_CHAR;
+    link->bs        = nSignedChar;
+    link->unitbytes = nSignedChar*sizeof(SignedChar);
+    link->basicunit = MPI_SIGNED_CHAR;
   }  else if (nUnsignedChar) {
     if      (nUnsignedChar == 8) PackInit_IntegerType_UnsignedChar_8_1(link); else if (nUnsignedChar%8 == 0) PackInit_IntegerType_UnsignedChar_8_0(link);
     else if (nUnsignedChar == 4) PackInit_IntegerType_UnsignedChar_4_1(link); else if (nUnsignedChar%4 == 0) PackInit_IntegerType_UnsignedChar_4_0(link);
     else if (nUnsignedChar == 2) PackInit_IntegerType_UnsignedChar_2_1(link); else if (nUnsignedChar%2 == 0) PackInit_IntegerType_UnsignedChar_2_0(link);
     else if (nUnsignedChar == 1) PackInit_IntegerType_UnsignedChar_1_1(link); else if (nUnsignedChar%1 == 0) PackInit_IntegerType_UnsignedChar_1_0(link);
-    link->bs         = nUnsignedChar;
-    link->unitbytes *= nUnsignedChar;
-    link->basicunit  = MPI_UNSIGNED_CHAR;
+    link->bs        = nUnsignedChar;
+    link->unitbytes = nUnsignedChar*sizeof(UnsignedChar);
+    link->basicunit = MPI_UNSIGNED_CHAR;
 #if defined(PETSC_HAVE_COMPLEX)
   } else if (nPetscComplex) {
     if      (nPetscComplex == 8) PackInit_ComplexType_PetscComplex_8_1(link); else if (nPetscComplex%8 == 0) PackInit_ComplexType_PetscComplex_8_0(link);
     else if (nPetscComplex == 4) PackInit_ComplexType_PetscComplex_4_1(link); else if (nPetscComplex%4 == 0) PackInit_ComplexType_PetscComplex_4_0(link);
     else if (nPetscComplex == 2) PackInit_ComplexType_PetscComplex_2_1(link); else if (nPetscComplex%2 == 0) PackInit_ComplexType_PetscComplex_2_0(link);
     else if (nPetscComplex == 1) PackInit_ComplexType_PetscComplex_1_1(link); else if (nPetscComplex%1 == 0) PackInit_ComplexType_PetscComplex_1_0(link);
-    link->bs         = nPetscComplex;
-    link->unitbytes *= nPetscComplex;
-    link->basicunit  = MPIU_COMPLEX;
+    link->bs        = nPetscComplex;
+    link->unitbytes = nPetscComplex*sizeof(PetscComplex);
+    link->basicunit = MPIU_COMPLEX;
 #endif
-  } else if (is2Int) {
-    PackInit_PairType_int_int(link);
-    link->bs         = 1;
-    link->basicunit  = MPI_2INT;
-  } else if (is2PetscInt) {
-    PackInit_PairType_PetscInt_PetscInt(link);
-    link->bs         = 1;
-    link->basicunit  = MPIU_2INT;
   } else {
     MPI_Aint lb,nbyte;
     ierr = MPI_Type_get_extent(unit,&lb,&nbyte);CHKERRQ(ierr);
     if (lb != 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld\n",(long)lb);
-    if (nbyte % sizeof(DumbInt)) { /* If the type size is not multiple of int */
-      if      (nbyte == 4) {PackInit_DumbType_char_4_1(link); link->bs = nbyte/4;}  else if (nbyte%4 == 0) {PackInit_DumbType_char_4_0(link); link->bs = nbyte/4;} /* Note the basic type is char[4] */
-      else if (nbyte == 2) {PackInit_DumbType_char_2_1(link); link->bs = nbyte/2;}  else if (nbyte%2 == 0) {PackInit_DumbType_char_2_0(link); link->bs = nbyte/2;}
-      else if (nbyte == 1) {PackInit_DumbType_char_1_1(link); link->bs = nbyte/1;}  else if (nbyte%1 == 0) {PackInit_DumbType_char_1_0(link); link->bs = nbyte/1;}
+    if (nbyte % sizeof(int)) { /* If the type size is not multiple of int */
+      if      (nbyte == 4) PackInit_DumbType_char_4_1(link); else if (nbyte%4 == 0) PackInit_DumbType_char_4_0(link);
+      else if (nbyte == 2) PackInit_DumbType_char_2_1(link); else if (nbyte%2 == 0) PackInit_DumbType_char_2_0(link);
+      else if (nbyte == 1) PackInit_DumbType_char_1_1(link); else if (nbyte%1 == 0) PackInit_DumbType_char_1_0(link);
+      link->bs        = nbyte;
       link->unitbytes = nbyte;
       link->basicunit = MPI_BYTE;
     } else {
-      nInt = nbyte / sizeof(DumbInt);
-      if      (nInt == 8)  {PackInit_DumbType_DumbInt_8_1(link); link->bs = nInt/8;} else if (nInt%8 == 0) {PackInit_DumbType_DumbInt_8_0(link); link->bs = nInt/8;}
-      else if (nInt == 4)  {PackInit_DumbType_DumbInt_4_1(link); link->bs = nInt/4;} else if (nInt%4 == 0) {PackInit_DumbType_DumbInt_4_0(link); link->bs = nInt/4;}
-      else if (nInt == 2)  {PackInit_DumbType_DumbInt_2_1(link); link->bs = nInt/2;} else if (nInt%2 == 0) {PackInit_DumbType_DumbInt_2_0(link); link->bs = nInt/2;}
-      else if (nInt == 1)  {PackInit_DumbType_DumbInt_1_1(link); link->bs = nInt/1;} else if (nInt%1 == 0) {PackInit_DumbType_DumbInt_1_0(link); link->bs = nInt/1;}
+      nInt = nbyte / sizeof(int);
+      if      (nInt == 8) PackInit_DumbType_DumbInt_8_1(link); else if (nInt%8 == 0) PackInit_DumbType_DumbInt_8_0(link);
+      else if (nInt == 4) PackInit_DumbType_DumbInt_4_1(link); else if (nInt%4 == 0) PackInit_DumbType_DumbInt_4_0(link);
+      else if (nInt == 2) PackInit_DumbType_DumbInt_2_1(link); else if (nInt%2 == 0) PackInit_DumbType_DumbInt_2_0(link);
+      else if (nInt == 1) PackInit_DumbType_DumbInt_1_1(link); else if (nInt%1 == 0) PackInit_DumbType_DumbInt_1_0(link);
+      link->bs        = nInt;
       link->unitbytes = nbyte;
       link->basicunit = MPI_INT;
     }
@@ -676,60 +712,130 @@ PetscErrorCode PetscSFPackSetupType(PetscSFPack link,MPI_Datatype unit)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSFPackGetUnpackAndOp(PetscSF sf,PetscSFPack link,MPI_Op op,PetscErrorCode (**UnpackAndOp)(PetscInt,const PetscInt*,PetscInt,PetscSFPackOpt,void*,const void*))
+PetscErrorCode PetscSFPackGetUnpackAndOp(PetscSFPack link,PetscMemType mtype,MPI_Op op,PetscBool atomic,PetscErrorCode (**UnpackAndOp)(PetscInt,const PetscInt*,PetscSFPack,PetscSFPackOpt,void*,const void*))
 {
   PetscFunctionBegin;
   *UnpackAndOp = NULL;
-  if (op == MPIU_REPLACE) *UnpackAndOp = link->UnpackAndInsert;
-  else if (op == MPI_SUM || op == MPIU_SUM) *UnpackAndOp = link->UnpackAndAdd;
-  else if (op == MPI_PROD) *UnpackAndOp = link->UnpackAndMult;
-  else if (op == MPI_MAX || op == MPIU_MAX) *UnpackAndOp = link->UnpackAndMax;
-  else if (op == MPI_MIN || op == MPIU_MIN) *UnpackAndOp = link->UnpackAndMin;
-  else if (op == MPI_LAND)   *UnpackAndOp = link->UnpackAndLAND;
-  else if (op == MPI_BAND)   *UnpackAndOp = link->UnpackAndBAND;
-  else if (op == MPI_LOR)    *UnpackAndOp = link->UnpackAndLOR;
-  else if (op == MPI_BOR)    *UnpackAndOp = link->UnpackAndBOR;
-  else if (op == MPI_LXOR)   *UnpackAndOp = link->UnpackAndLXOR;
-  else if (op == MPI_BXOR)   *UnpackAndOp = link->UnpackAndBXOR;
-  else if (op == MPI_MAXLOC) *UnpackAndOp = link->UnpackAndMaxloc;
-  else if (op == MPI_MINLOC) *UnpackAndOp = link->UnpackAndMinloc;
-  else *UnpackAndOp = NULL;
+  if (mtype == PETSC_MEMTYPE_HOST) {
+    if      (op == MPIU_REPLACE)              *UnpackAndOp = link->h_UnpackAndInsert;
+    else if (op == MPI_SUM || op == MPIU_SUM) *UnpackAndOp = link->h_UnpackAndAdd;
+    else if (op == MPI_PROD)                  *UnpackAndOp = link->h_UnpackAndMult;
+    else if (op == MPI_MAX || op == MPIU_MAX) *UnpackAndOp = link->h_UnpackAndMax;
+    else if (op == MPI_MIN || op == MPIU_MIN) *UnpackAndOp = link->h_UnpackAndMin;
+    else if (op == MPI_LAND)                  *UnpackAndOp = link->h_UnpackAndLAND;
+    else if (op == MPI_BAND)                  *UnpackAndOp = link->h_UnpackAndBAND;
+    else if (op == MPI_LOR)                   *UnpackAndOp = link->h_UnpackAndLOR;
+    else if (op == MPI_BOR)                   *UnpackAndOp = link->h_UnpackAndBOR;
+    else if (op == MPI_LXOR)                  *UnpackAndOp = link->h_UnpackAndLXOR;
+    else if (op == MPI_BXOR)                  *UnpackAndOp = link->h_UnpackAndBXOR;
+    else if (op == MPI_MAXLOC)                *UnpackAndOp = link->h_UnpackAndMaxloc;
+    else if (op == MPI_MINLOC)                *UnpackAndOp = link->h_UnpackAndMinloc;
+  }
+#if defined(PETSC_HAVE_CUDA)
+  else if (mtype == PETSC_MEMTYPE_DEVICE && !atomic) {
+    if      (op == MPIU_REPLACE)              *UnpackAndOp = link->d_UnpackAndInsert;
+    else if (op == MPI_SUM || op == MPIU_SUM) *UnpackAndOp = link->d_UnpackAndAdd;
+    else if (op == MPI_PROD)                  *UnpackAndOp = link->d_UnpackAndMult;
+    else if (op == MPI_MAX || op == MPIU_MAX) *UnpackAndOp = link->d_UnpackAndMax;
+    else if (op == MPI_MIN || op == MPIU_MIN) *UnpackAndOp = link->d_UnpackAndMin;
+    else if (op == MPI_LAND)                  *UnpackAndOp = link->d_UnpackAndLAND;
+    else if (op == MPI_BAND)                  *UnpackAndOp = link->d_UnpackAndBAND;
+    else if (op == MPI_LOR)                   *UnpackAndOp = link->d_UnpackAndLOR;
+    else if (op == MPI_BOR)                   *UnpackAndOp = link->d_UnpackAndBOR;
+    else if (op == MPI_LXOR)                  *UnpackAndOp = link->d_UnpackAndLXOR;
+    else if (op == MPI_BXOR)                  *UnpackAndOp = link->d_UnpackAndBXOR;
+    else if (op == MPI_MAXLOC)                *UnpackAndOp = link->d_UnpackAndMaxloc;
+    else if (op == MPI_MINLOC)                *UnpackAndOp = link->d_UnpackAndMinloc;
+  } else if (mtype == PETSC_MEMTYPE_DEVICE && atomic) {
+    if      (op == MPIU_REPLACE)              *UnpackAndOp = link->da_UnpackAndInsert;
+    else if (op == MPI_SUM || op == MPIU_SUM) *UnpackAndOp = link->da_UnpackAndAdd;
+    else if (op == MPI_PROD)                  *UnpackAndOp = link->da_UnpackAndMult;
+    else if (op == MPI_MAX || op == MPIU_MAX) *UnpackAndOp = link->da_UnpackAndMax;
+    else if (op == MPI_MIN || op == MPIU_MIN) *UnpackAndOp = link->da_UnpackAndMin;
+    else if (op == MPI_LAND)                  *UnpackAndOp = link->da_UnpackAndLAND;
+    else if (op == MPI_BAND)                  *UnpackAndOp = link->da_UnpackAndBAND;
+    else if (op == MPI_LOR)                   *UnpackAndOp = link->da_UnpackAndLOR;
+    else if (op == MPI_BOR)                   *UnpackAndOp = link->da_UnpackAndBOR;
+    else if (op == MPI_LXOR)                  *UnpackAndOp = link->da_UnpackAndLXOR;
+    else if (op == MPI_BXOR)                  *UnpackAndOp = link->da_UnpackAndBXOR;
+    else if (op == MPI_MAXLOC)                *UnpackAndOp = link->da_UnpackAndMaxloc;
+    else if (op == MPI_MINLOC)                *UnpackAndOp = link->da_UnpackAndMinloc;
+  }
+#endif
+  else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong PetscMemType %D",mtype);
+
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSFPackGetFetchAndOp(PetscSF sf,PetscSFPack link,MPI_Op op,PetscErrorCode (**FetchAndOp)(PetscInt,const PetscInt*,PetscInt,PetscSFPackOpt,void*,void*))
+PetscErrorCode PetscSFPackGetFetchAndOp(PetscSFPack link,PetscMemType mtype,MPI_Op op,PetscBool atomic,PetscErrorCode (**FetchAndOp)(PetscInt,const PetscInt*,PetscSFPack,PetscSFPackOpt,void*,void*))
 {
   PetscFunctionBegin;
   *FetchAndOp = NULL;
-  if (op == MPIU_REPLACE) *FetchAndOp = link->FetchAndInsert;
-  else if (op == MPI_SUM || op == MPIU_SUM) *FetchAndOp = link->FetchAndAdd;
-  else if (op == MPI_MAX || op == MPIU_MAX) *FetchAndOp = link->FetchAndMax;
-  else if (op == MPI_MIN || op == MPIU_MIN) *FetchAndOp = link->FetchAndMin;
-  else if (op == MPI_MAXLOC) *FetchAndOp = link->FetchAndMaxloc;
-  else if (op == MPI_MINLOC) *FetchAndOp = link->FetchAndMinloc;
-  else if (op == MPI_PROD)   *FetchAndOp = link->FetchAndMult;
-  else if (op == MPI_LAND)   *FetchAndOp = link->FetchAndLAND;
-  else if (op == MPI_BAND)   *FetchAndOp = link->FetchAndBAND;
-  else if (op == MPI_LOR)    *FetchAndOp = link->FetchAndLOR;
-  else if (op == MPI_BOR)    *FetchAndOp = link->FetchAndBOR;
-  else if (op == MPI_LXOR)   *FetchAndOp = link->FetchAndLXOR;
-  else if (op == MPI_BXOR)   *FetchAndOp = link->FetchAndBXOR;
-  else SETERRQ(PetscObjectComm((PetscObject)sf),PETSC_ERR_SUP,"No support for MPI_Op");
+  if (mtype == PETSC_MEMTYPE_HOST) {
+    if (op == MPIU_REPLACE)                   *FetchAndOp = link->h_FetchAndInsert;
+    else if (op == MPI_SUM || op == MPIU_SUM) *FetchAndOp = link->h_FetchAndAdd;
+    else if (op == MPI_MAX || op == MPIU_MAX) *FetchAndOp = link->h_FetchAndMax;
+    else if (op == MPI_MIN || op == MPIU_MIN) *FetchAndOp = link->h_FetchAndMin;
+    else if (op == MPI_MAXLOC)                *FetchAndOp = link->h_FetchAndMaxloc;
+    else if (op == MPI_MINLOC)                *FetchAndOp = link->h_FetchAndMinloc;
+    else if (op == MPI_PROD)                  *FetchAndOp = link->h_FetchAndMult;
+    else if (op == MPI_LAND)                  *FetchAndOp = link->h_FetchAndLAND;
+    else if (op == MPI_BAND)                  *FetchAndOp = link->h_FetchAndBAND;
+    else if (op == MPI_LOR)                   *FetchAndOp = link->h_FetchAndLOR;
+    else if (op == MPI_BOR)                   *FetchAndOp = link->h_FetchAndBOR;
+    else if (op == MPI_LXOR)                  *FetchAndOp = link->h_FetchAndLXOR;
+    else if (op == MPI_BXOR)                  *FetchAndOp = link->h_FetchAndBXOR;
+    else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for MPI_Op");
+  }
+#if defined(PETSC_HAVE_CUDA)
+  else if (mtype == PETSC_MEMTYPE_DEVICE && !atomic) {
+    if (op == MPIU_REPLACE)                   *FetchAndOp = link->d_FetchAndInsert;
+    else if (op == MPI_SUM || op == MPIU_SUM) *FetchAndOp = link->d_FetchAndAdd;
+    else if (op == MPI_MAX || op == MPIU_MAX) *FetchAndOp = link->d_FetchAndMax;
+    else if (op == MPI_MIN || op == MPIU_MIN) *FetchAndOp = link->d_FetchAndMin;
+    else if (op == MPI_MAXLOC)                *FetchAndOp = link->d_FetchAndMaxloc;
+    else if (op == MPI_MINLOC)                *FetchAndOp = link->d_FetchAndMinloc;
+    else if (op == MPI_PROD)                  *FetchAndOp = link->d_FetchAndMult;
+    else if (op == MPI_LAND)                  *FetchAndOp = link->d_FetchAndLAND;
+    else if (op == MPI_BAND)                  *FetchAndOp = link->d_FetchAndBAND;
+    else if (op == MPI_LOR)                   *FetchAndOp = link->d_FetchAndLOR;
+    else if (op == MPI_BOR)                   *FetchAndOp = link->d_FetchAndBOR;
+    else if (op == MPI_LXOR)                  *FetchAndOp = link->d_FetchAndLXOR;
+    else if (op == MPI_BXOR)                  *FetchAndOp = link->d_FetchAndBXOR;
+    else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for MPI_Op");
+  } else if (mtype == PETSC_MEMTYPE_DEVICE && atomic) {
+    if (op == MPIU_REPLACE)                   *FetchAndOp = link->da_FetchAndInsert;
+    else if (op == MPI_SUM || op == MPIU_SUM) *FetchAndOp = link->da_FetchAndAdd;
+    else if (op == MPI_MAX || op == MPIU_MAX) *FetchAndOp = link->da_FetchAndMax;
+    else if (op == MPI_MIN || op == MPIU_MIN) *FetchAndOp = link->da_FetchAndMin;
+    else if (op == MPI_MAXLOC)                *FetchAndOp = link->da_FetchAndMaxloc;
+    else if (op == MPI_MINLOC)                *FetchAndOp = link->da_FetchAndMinloc;
+    else if (op == MPI_PROD)                  *FetchAndOp = link->da_FetchAndMult;
+    else if (op == MPI_LAND)                  *FetchAndOp = link->da_FetchAndLAND;
+    else if (op == MPI_BAND)                  *FetchAndOp = link->da_FetchAndBAND;
+    else if (op == MPI_LOR)                   *FetchAndOp = link->da_FetchAndLOR;
+    else if (op == MPI_BOR)                   *FetchAndOp = link->da_FetchAndBOR;
+    else if (op == MPI_LXOR)                  *FetchAndOp = link->da_FetchAndLXOR;
+    else if (op == MPI_BXOR)                  *FetchAndOp = link->da_FetchAndBXOR;
+    else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for MPI_Op");
+  }
+#endif
+  else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong PetscMemType %D",mtype);
   PetscFunctionReturn(0);
 }
 
 /*
-  Setup pack/unpack optimization plans based on indice patterns available
+  Create pack/unpack optimization plans based on indice patterns available
 
    Input Parameters:
   +  n       - Number of target ranks
-  .  offset  - [n+1] For the i-th rank, its associated indices are idx[offset[i], offset[i+1]). offset[0] is not necessarily 0.
+  .  offset  - [n+1] For the i-th rank, its associated indices are idx[offset[i], offset[i+1]). offset[0] needs not to be 0.
   -  idx     - [*]   Array storing indices
 
    Output Parameters:
-  +  opt    - the optimization
+  +  opt    - Optimization plans. Maybe NULL if no optimization can be built.
 */
-PetscErrorCode PetscSFPackSetupOptimization(PetscInt n,const PetscInt *offset,const PetscInt *idx,PetscSFPackOpt *out)
+PetscErrorCode PetscSFPackOptCreate(PetscInt n,const PetscInt *offset,const PetscInt *idx,PetscSFPackOpt *out)
 {
   PetscErrorCode ierr;
   PetscInt       i,j,k,n_copies,tot_copies=0,step;
@@ -815,7 +921,7 @@ PetscErrorCode PetscSFPackSetupOptimization(PetscInt n,const PetscInt *offset,co
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSFPackDestoryOptimization(PetscSFPackOpt *out)
+PetscErrorCode PetscSFPackOptDestory(PetscSFPackOpt *out)
 {
   PetscErrorCode ierr;
   PetscSFPackOpt opt = *out;

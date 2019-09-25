@@ -93,6 +93,9 @@ PetscErrorCode PetscSFReset(PetscSF sf)
   ierr = PetscFree(sf->remote_alloc);CHKERRQ(ierr);
   sf->nranks = -1;
   ierr = PetscFree4(sf->ranks,sf->roffset,sf->rmine,sf->rremote);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  if (sf->rmine_d) {cudaError_t err = cudaFree(sf->rmine_d);CHKERRCUDA(err);sf->rmine_d=NULL;}
+#endif
   sf->degreeknown = PETSC_FALSE;
   ierr = PetscFree(sf->degree);CHKERRQ(ierr);
   if (sf->ingroup  != MPI_GROUP_NULL) {ierr = MPI_Group_free(&sf->ingroup);CHKERRQ(ierr);}
@@ -1280,12 +1283,25 @@ PetscErrorCode PetscSFCreateEmbeddedLeafSF(PetscSF sf,PetscInt nselected,const P
 PetscErrorCode PetscSFBcastAndOpBegin(PetscSF sf,MPI_Datatype unit,const void *rootdata,void *leafdata,MPI_Op op)
 {
   PetscErrorCode ierr;
+  PetscMemType   rootmtype,leafmtype;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(PETSCSF_BcastAndOpBegin,sf,0,0,0);CHKERRQ(ierr);
-  ierr = (*sf->ops->BcastAndOpBegin)(sf,unit,rootdata,leafdata,op);CHKERRQ(ierr);
+  ierr = PetscGetMemType(rootdata,&rootmtype);CHKERRQ(ierr);
+  ierr = PetscGetMemType(leafdata,&leafmtype);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  /*  Shall we assume rootdata, leafdata are ready to use (instead of being computed by some asynchronous kernels)?
+    To be similar to MPI, I'd like to have this assumption, since MPI does not have a concept of stream.
+    But currently this assumption is not enforecd in Petsc. To be safe, I do synchronization here. Otherwise, if
+    we do not sync now and call the Pack kernel directly on the default NULL stream (assume petsc objects are also
+    computed on it), we have to sync the NULL stream before calling MPI routines. So, it looks a cudaDeviceSynchronize
+    is inevitable. We do it now and put pack/unpack kernels to non-NULL streams.
+   */
+  if (rootmtype == PETSC_MEMTYPE_DEVICE || leafmtype == PETSC_MEMTYPE_DEVICE) {cudaError_t err = cudaDeviceSynchronize();CHKERRCUDA(err);}
+#endif
+  ierr = (*sf->ops->BcastAndOpBegin)(sf,unit,rootmtype,rootdata,leafmtype,leafdata,op);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PETSCSF_BcastAndOpBegin,sf,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1311,12 +1327,15 @@ PetscErrorCode PetscSFBcastAndOpBegin(PetscSF sf,MPI_Datatype unit,const void *r
 PetscErrorCode PetscSFBcastAndOpEnd(PetscSF sf,MPI_Datatype unit,const void *rootdata,void *leafdata,MPI_Op op)
 {
   PetscErrorCode ierr;
+  PetscMemType   rootmtype,leafmtype;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(PETSCSF_BcastAndOpEnd,sf,0,0,0);CHKERRQ(ierr);
-  ierr = (*sf->ops->BcastAndOpEnd)(sf,unit,rootdata,leafdata,op);CHKERRQ(ierr);
+  ierr = PetscGetMemType(rootdata,&rootmtype);CHKERRQ(ierr);
+  ierr = PetscGetMemType(leafdata,&leafmtype);CHKERRQ(ierr);
+  ierr = (*sf->ops->BcastAndOpEnd)(sf,unit,rootmtype,rootdata,leafmtype,leafdata,op);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PETSCSF_BcastAndOpEnd,sf,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1342,12 +1361,18 @@ PetscErrorCode PetscSFBcastAndOpEnd(PetscSF sf,MPI_Datatype unit,const void *roo
 PetscErrorCode PetscSFReduceBegin(PetscSF sf,MPI_Datatype unit,const void *leafdata,void *rootdata,MPI_Op op)
 {
   PetscErrorCode ierr;
+  PetscMemType   rootmtype,leafmtype;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(PETSCSF_ReduceBegin,sf,0,0,0);CHKERRQ(ierr);
-  ierr = (sf->ops->ReduceBegin)(sf,unit,leafdata,rootdata,op);CHKERRQ(ierr);
+  ierr = PetscGetMemType(rootdata,&rootmtype);CHKERRQ(ierr);
+  ierr = PetscGetMemType(leafdata,&leafmtype);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  if (rootmtype == PETSC_MEMTYPE_DEVICE || leafmtype == PETSC_MEMTYPE_DEVICE) {cudaError_t err = cudaDeviceSynchronize();CHKERRCUDA(err);}
+#endif
+  ierr = (sf->ops->ReduceBegin)(sf,unit,leafmtype,leafdata,rootmtype,rootdata,op);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PETSCSF_ReduceBegin,sf,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1373,12 +1398,15 @@ PetscErrorCode PetscSFReduceBegin(PetscSF sf,MPI_Datatype unit,const void *leafd
 PetscErrorCode PetscSFReduceEnd(PetscSF sf,MPI_Datatype unit,const void *leafdata,void *rootdata,MPI_Op op)
 {
   PetscErrorCode ierr;
+  PetscMemType   rootmtype,leafmtype;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(PETSCSF_ReduceEnd,sf,0,0,0);CHKERRQ(ierr);
-  ierr = (*sf->ops->ReduceEnd)(sf,unit,leafdata,rootdata,op);CHKERRQ(ierr);
+  ierr = PetscGetMemType(rootdata,&rootmtype);CHKERRQ(ierr);
+  ierr = PetscGetMemType(leafdata,&leafmtype);CHKERRQ(ierr);
+  ierr = (*sf->ops->ReduceEnd)(sf,unit,leafmtype,leafdata,rootmtype,rootdata,op);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PETSCSF_ReduceEnd,sf,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1411,12 +1439,20 @@ PetscErrorCode PetscSFReduceEnd(PetscSF sf,MPI_Datatype unit,const void *leafdat
 PetscErrorCode PetscSFFetchAndOpBegin(PetscSF sf,MPI_Datatype unit,void *rootdata,const void *leafdata,void *leafupdate,MPI_Op op)
 {
   PetscErrorCode ierr;
+  PetscMemType   rootmtype,leafmtype,leafupdatemtype;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(PETSCSF_FetchAndOpBegin,sf,0,0,0);CHKERRQ(ierr);
-  ierr = (*sf->ops->FetchAndOpBegin)(sf,unit,rootdata,leafdata,leafupdate,op);CHKERRQ(ierr);
+  ierr = PetscGetMemType(rootdata,&rootmtype);CHKERRQ(ierr);
+  ierr = PetscGetMemType(leafdata,&leafmtype);CHKERRQ(ierr);
+  ierr = PetscGetMemType(leafupdate,&leafupdatemtype);CHKERRQ(ierr);
+  if (leafmtype != leafupdatemtype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for leafdata and leafupdate in different memory types");
+#if defined(PETSC_HAVE_CUDA)
+  if (rootmtype == PETSC_MEMTYPE_DEVICE || leafmtype == PETSC_MEMTYPE_DEVICE) {cudaError_t err = cudaDeviceSynchronize();CHKERRCUDA(err);}
+#endif
+  ierr = (*sf->ops->FetchAndOpBegin)(sf,unit,rootmtype,rootdata,leafmtype,leafdata,leafupdate,op);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PETSCSF_FetchAndOpBegin,sf,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1443,12 +1479,17 @@ PetscErrorCode PetscSFFetchAndOpBegin(PetscSF sf,MPI_Datatype unit,void *rootdat
 PetscErrorCode PetscSFFetchAndOpEnd(PetscSF sf,MPI_Datatype unit,void *rootdata,const void *leafdata,void *leafupdate,MPI_Op op)
 {
   PetscErrorCode ierr;
+  PetscMemType   rootmtype,leafmtype,leafupdatemtype;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(PETSCSF_FetchAndOpEnd,sf,0,0,0);CHKERRQ(ierr);
-  ierr = (*sf->ops->FetchAndOpEnd)(sf,unit,rootdata,leafdata,leafupdate,op);CHKERRQ(ierr);
+  ierr = PetscGetMemType(rootdata,&rootmtype);CHKERRQ(ierr);
+  ierr = PetscGetMemType(leafdata,&leafmtype);CHKERRQ(ierr);
+  ierr = PetscGetMemType(leafupdate,&leafupdatemtype);CHKERRQ(ierr);
+  if (leafmtype != leafupdatemtype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for leafdata and leafupdate in different memory types");
+  ierr = (*sf->ops->FetchAndOpEnd)(sf,unit,rootmtype,rootdata,leafmtype,leafdata,leafupdate,op);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PETSCSF_FetchAndOpEnd,sf,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1890,13 +1931,16 @@ PetscErrorCode PetscSFCreateLocalSF_Private(PetscSF sf,PetscSF *out)
 PetscErrorCode PetscSFBcastToZero_Private(PetscSF sf,MPI_Datatype unit,const void *rootdata,void *leafdata)
 {
   PetscErrorCode     ierr;
+  PetscMemType       rootmtype,leafmtype;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(PETSCSF_BcastAndOpBegin,sf,0,0,0);CHKERRQ(ierr);
+  ierr = PetscGetMemType(rootdata,&rootmtype);CHKERRQ(ierr);
+  ierr = PetscGetMemType(leafdata,&leafmtype);CHKERRQ(ierr);
   if (sf->ops->BcastToZero) {
-    ierr = (*sf->ops->BcastToZero)(sf,unit,rootdata,leafdata);CHKERRQ(ierr);
+    ierr = (*sf->ops->BcastToZero)(sf,unit,rootmtype,rootdata,leafmtype,leafdata);CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"PetscSFBcastToZero_Private is not supported on this SF type");
   ierr = PetscLogEventEnd(PETSCSF_BcastAndOpBegin,sf,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);

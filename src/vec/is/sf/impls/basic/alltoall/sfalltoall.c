@@ -2,7 +2,6 @@
 #include <../src/vec/is/sf/impls/basic/allgather/sfallgather.h>
 #include <../src/vec/is/sf/impls/basic/gatherv/sfgatherv.h>
 
-typedef PetscSFPack_Allgatherv PetscSFPack_Alltoall;
 #define PetscSFPackGet_Alltoall PetscSFPackGet_Allgatherv
 
 /* Reuse the type. The difference is some fields (i.e., displs, recvcounts) are not used, which is not a big deal */
@@ -34,45 +33,45 @@ static PetscErrorCode PetscSFGetGraph_Alltoall(PetscSF sf,PetscInt *nroots,Petsc
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFBcastAndOpBegin_Alltoall(PetscSF sf,MPI_Datatype unit,const void *rootdata,void *leafdata,MPI_Op op)
+static PetscErrorCode PetscSFBcastAndOpBegin_Alltoall(PetscSF sf,MPI_Datatype unit,PetscMemType rootmtype,const void *rootdata,PetscMemType leafmtype,void *leafdata,MPI_Op op)
 {
   PetscErrorCode       ierr;
-  PetscSFPack_Alltoall link;
+  PetscSFPack          link;
   MPI_Comm             comm;
-  void                 *recvbuf;
+  char                 *recvbuf;
 
   PetscFunctionBegin;
-  ierr = PetscSFPackGet_Alltoall(sf,unit,rootdata,leafdata,&link);CHKERRQ(ierr);
+  ierr = PetscSFPackGet_Alltoall(sf,unit,rootmtype,rootdata,leafmtype,leafdata,&link);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)sf,&comm);CHKERRQ(ierr);
 
   if (op != MPIU_REPLACE) {
-    if (!link->leafbuf) {ierr = PetscMalloc(sf->nleaves*link->unitbytes,&link->leafbuf);CHKERRQ(ierr);}
-    recvbuf = link->leafbuf;
+    if (!link->leafbuf[leafmtype]) {ierr = PetscMallocWithMemType(leafmtype,sf->nleaves*link->unitbytes,(void**)&link->leafbuf[leafmtype]);CHKERRQ(ierr);}
+    recvbuf = link->leafbuf[leafmtype];
   } else {
-    recvbuf = leafdata;
+    recvbuf = (char*)leafdata;
   }
-  ierr = MPIU_Ialltoall(rootdata,1,unit,recvbuf,1,unit,comm,&link->request);CHKERRQ(ierr);
+  ierr = MPIU_Ialltoall(rootdata,1,unit,recvbuf,1,unit,comm,link->rootreqs[PETSCSF_ROOT2LEAF_BCAST][rootmtype]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFReduceBegin_Alltoall(PetscSF sf,MPI_Datatype unit,const void *leafdata,void *rootdata,MPI_Op op)
+static PetscErrorCode PetscSFReduceBegin_Alltoall(PetscSF sf,MPI_Datatype unit,PetscMemType leafmtype,const void *leafdata,PetscMemType rootmtype,void *rootdata,MPI_Op op)
 {
   PetscErrorCode       ierr;
-  PetscSFPack_Alltoall link;
+  PetscSFPack          link;
   MPI_Comm             comm;
-  void                 *recvbuf;
+  char                 *recvbuf;
 
   PetscFunctionBegin;
-  ierr = PetscSFPackGet_Alltoall(sf,unit,rootdata,leafdata,&link);CHKERRQ(ierr);
+  ierr = PetscSFPackGet_Alltoall(sf,unit,rootmtype,rootdata,leafmtype,leafdata,&link);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)sf,&comm);CHKERRQ(ierr);
 
   if (op != MPIU_REPLACE) {
-    if (!link->rootbuf) {ierr = PetscMalloc(sf->nroots*link->unitbytes,&link->rootbuf);CHKERRQ(ierr);}
-    recvbuf = link->rootbuf;
+    if (!link->rootbuf[rootmtype]) {ierr = PetscMallocWithMemType(rootmtype,sf->nroots*link->unitbytes,(void**)&link->rootbuf[rootmtype]);CHKERRQ(ierr);}
+    recvbuf = link->rootbuf[rootmtype];
   } else {
-    recvbuf = rootdata;
+    recvbuf = (char*)rootdata;
   }
-  ierr = MPIU_Ialltoall(leafdata,1,unit,recvbuf,1,unit,comm,&link->request);CHKERRQ(ierr);
+  ierr = MPIU_Ialltoall(leafdata,1,unit,recvbuf,1,unit,comm,link->rootreqs[PETSCSF_LEAF2ROOT_REDUCE][rootmtype]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
