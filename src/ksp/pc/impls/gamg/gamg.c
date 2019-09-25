@@ -75,6 +75,8 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
   ierr = MatGetBlockSize(Amat_fine, &f_bs);CHKERRQ(ierr);
   ierr = MatPtAP(Amat_fine, Pold, MAT_INITIAL_MATRIX, 2.0, &Cmat);CHKERRQ(ierr);
 
+  if (Pcolumnperm) *Pcolumnperm = NULL;
+
   /* set 'ncrs' (nodes), 'ncrs_eq' (equations)*/
   ierr = MatGetLocalSize(Cmat, &ncrs_eq, NULL);CHKERRQ(ierr);
   if (pc_gamg->data_cell_rows>0) {
@@ -84,7 +86,6 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
     ierr = MatGetBlockSize(Cmat, &bs);CHKERRQ(ierr);
     ncrs = ncrs_eq/bs;
   }
-
   /* get number of PEs to make active 'new_size', reduce, can be any integer 1-P */
   if (is_last && !pc_gamg->use_parallel_coarse_grid_solver) new_size = 1;
   else {
@@ -95,27 +96,62 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
     else if (new_size >= nactive) new_size = nactive; /* no change, rare */
   }
 
-  if (Pcolumnperm) *Pcolumnperm = NULL;
-
   if (new_size==nactive) {
     *a_Amat_crs = Cmat; /* output - no repartitioning or reduction - could bail here */
+    if (new_size < size) {
+      /* odd case where multiple coarse grids are on one processor or no coarsening ... */
+      ierr = PetscInfo1(pc,"reduced grid using same number of processors (%d) as last grid (use larger coarse grid)\n",nactive);CHKERRQ(ierr);
+      if (pc_gamg->cpu_pin_coarse_grids) {
+        ierr = MatPinToCPU(*a_Amat_crs,PETSC_TRUE);CHKERRQ(ierr);
+        ierr = MatPinToCPU(*a_P_inout,PETSC_TRUE);CHKERRQ(ierr);
+      }
+    }
     /* we know that the grid structure can be reused in MatPtAP */
   } else { /* reduce active processors - we know that the grid structure can NOT be reused in MatPtAP */
-    PetscInt       *counts,*newproc_idx,ii,jj,kk,strideNew,*tidx,ncrs_new,ncrs_eq_new,nloc_old;
+    PetscInt       *counts,*newproc_idx,ii,jj,kk,strideNew,*tidx,ncrs_new,ncrs_eq_new,nloc_old,expand_factor=1,rfactor=1;
     IS             is_eq_newproc,is_eq_num,is_eq_num_prim,new_eq_indices;
     nloc_old = ncrs_eq/cr_bs;
     if (ncrs_eq % cr_bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ncrs_eq %D not divisible by cr_bs %D",ncrs_eq,cr_bs);
 #if defined PETSC_GAMG_USE_LOG
     ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET12],0,0,0,0);CHKERRQ(ierr);
 #endif
+    /* get new_size and rfactor */
+    if (pc_gamg->layout_type==PCGAMG_LAYOUT_SPREAD || !pc_gamg->repart) {
+      /* find factor */
+      if (new_size == 1) rfactor = size; /* don't modify */
+      else {
+        PetscReal best_fact = 0.;
+        jj = -1;
+        for (kk = 1 ; kk <= size ; kk++) {
+          if (!(size%kk)) { /* a candidate */
+            PetscReal nactpe = (PetscReal)size/(PetscReal)kk, fact = nactpe/(PetscReal)new_size;
+            if (fact > 1.0) fact = 1./fact; /* keep fact < 1 */
+            if (fact > best_fact) {
+              best_fact = fact; jj = kk;
+            }
+          }
+        }
+        if (jj != -1) rfactor = jj;
+        else rfactor = 1; /* a prime */
+        if (pc_gamg->layout_type == PCGAMG_LAYOUT_COMPACT) expand_factor = 1;
+        else expand_factor = rfactor;
+      }
+      new_size = size/rfactor; /* make new size one that is factor */
+      if (new_size==nactive) {
+        *a_Amat_crs = Cmat; /* output - no repartitioning or reduction, bail out because nested here */
+        ierr = PetscInfo2(pc,"Finding factorable processor set stopped reduction: new_size=%d, neq(loc)=%D\n",new_size,ncrs_eq);CHKERRQ(ierr);
+#if defined PETSC_GAMG_USE_LOG
+        ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET12],0,0,0,0);CHKERRQ(ierr);
+#endif
+        PetscFunctionReturn(0);
+      }
+    }
     /* make 'is_eq_newproc' */
     ierr = PetscMalloc1(size, &counts);CHKERRQ(ierr);
     if (pc_gamg->repart) {
       /* Repartition Cmat_{k} and move colums of P^{k}_{k-1} and coordinates of primal part accordingly */
-      Mat adj;
-
-      ierr = PetscInfo3(pc,"Repartition: size (active): %D --> %D, %D local equations\n",*a_nactive_proc,new_size,ncrs_eq);CHKERRQ(ierr);
-
+      Mat      adj;
+      ierr = PetscInfo4(pc,"Repartition: size (active): %d --> %d, %D local equations, using %s process layout\n",*a_nactive_proc, new_size, ncrs_eq, (pc_gamg->layout_type==PCGAMG_LAYOUT_COMPACT) ? "compact" : "spread");CHKERRQ(ierr);
       /* get 'adj' */
       if (cr_bs == 1) {
         ierr = MatConvert(Cmat, MATMPIADJ, MAT_INITIAL_MATRIX, &adj);CHKERRQ(ierr);
@@ -126,7 +162,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
         const PetscScalar *vals;
         const PetscInt    *idx;
         PetscInt          *d_nnz, *o_nnz, M, N;
-        static PetscInt   llev = 0;
+        static PetscInt   llev = 0; /* ugly but just used for debugging */
         MatType           mtype;
 
         ierr = PetscMalloc2(ncrs, &d_nnz,ncrs, &o_nnz);CHKERRQ(ierr);
@@ -179,7 +215,6 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
         const PetscInt  *is_idx;
         MatPartitioning mpart;
         IS              proc_is;
-        PetscInt        targetPE;
 
         ierr = MatPartitioningCreate(comm, &mpart);CHKERRQ(ierr);
         ierr = MatPartitioningSetAdjacency(mpart, adj);CHKERRQ(ierr);
@@ -194,11 +229,9 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
         /* collect IS info */
         ierr     = PetscMalloc1(ncrs_eq, &newproc_idx);CHKERRQ(ierr);
         ierr     = ISGetIndices(proc_is, &is_idx);CHKERRQ(ierr);
-        targetPE = 1; /* bring to "front" of machine */
-        /*targetPE = size/new_size;*/ /* spread partitioning across machine */
         for (kk = jj = 0 ; kk < nloc_old ; kk++) {
           for (ii = 0 ; ii < cr_bs ; ii++, jj++) {
-            newproc_idx[jj] = is_idx[kk] * targetPE; /* distribution */
+            newproc_idx[jj] = is_idx[kk] * expand_factor; /* distribution */
           }
         }
         ierr = ISRestoreIndices(proc_is, &is_idx);CHKERRQ(ierr);
@@ -208,40 +241,19 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
 
       ierr = ISCreateGeneral(comm, ncrs_eq, newproc_idx, PETSC_COPY_VALUES, &is_eq_newproc);CHKERRQ(ierr);
       ierr = PetscFree(newproc_idx);CHKERRQ(ierr);
-    } else { /* simple aggreagtion of parts -- 'is_eq_newproc' */
-      PetscInt rfactor,targetPE;
-
-      /* find factor */
-      if (new_size == 1) rfactor = size; /* easy */
-      else {
-        PetscReal best_fact = 0.;
-        jj = -1;
-        for (kk = 1 ; kk <= size ; kk++) {
-          if (!(size%kk)) { /* a candidate */
-            PetscReal nactpe = (PetscReal)size/(PetscReal)kk, fact = nactpe/(PetscReal)new_size;
-            if (fact > 1.0) fact = 1./fact; /* keep fact < 1 */
-            if (fact > best_fact) {
-              best_fact = fact; jj = kk;
-            }
-          }
-        }
-        if (jj != -1) rfactor = jj;
-        else rfactor = 1; /* does this happen .. a prime */
-      }
-      new_size = size/rfactor;
-
+    } else { /* simple aggregation of parts -- 'is_eq_newproc' */
+      PetscInt targetPE;
       if (new_size==nactive) {
         *a_Amat_crs = Cmat; /* output - no repartitioning or reduction, bail out because nested here */
         ierr        = PetscFree(counts);CHKERRQ(ierr);
-        ierr = PetscInfo2(pc,"Aggregate processors noop: new_size=%D, neq(loc)=%D\n",new_size,ncrs_eq);CHKERRQ(ierr);
+        ierr = PetscInfo2(pc,"Aggregate processors noop: new_size=%d, neq(loc)=%D\n",new_size,ncrs_eq);CHKERRQ(ierr);
 #if defined PETSC_GAMG_USE_LOG
         ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET12],0,0,0,0);CHKERRQ(ierr);
 #endif
         PetscFunctionReturn(0);
       }
-
       ierr = PetscInfo1(pc,"Number of equations (loc) %D with simple aggregation\n",ncrs_eq);CHKERRQ(ierr);
-      targetPE = rank/rfactor;
+      targetPE = (rank/rfactor)*expand_factor;
       ierr     = ISCreateStride(comm, ncrs_eq, targetPE, 0, &is_eq_newproc);CHKERRQ(ierr);
     } /* end simple 'is_eq_newproc' */
 
@@ -256,7 +268,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
     ierr        = ISPartitioningCount(is_eq_newproc, size, counts);CHKERRQ(ierr);
     ncrs_eq_new = counts[rank];
     ierr        = ISDestroy(&is_eq_newproc);CHKERRQ(ierr);
-    ncrs_new = ncrs_eq_new/cr_bs; /* eqs */
+    ncrs_new = ncrs_eq_new/cr_bs;
 
     ierr = PetscFree(counts);CHKERRQ(ierr);
 #if defined PETSC_GAMG_USE_LOG
@@ -318,10 +330,10 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
       */
       ierr = PetscFree(pc_gamg->data);CHKERRQ(ierr);
       ierr = PetscMalloc1(node_data_sz*ncrs_new, &pc_gamg->data);CHKERRQ(ierr);
-      
+
       pc_gamg->data_sz = node_data_sz*ncrs_new;
       strideNew        = ncrs_new*ndata_rows;
-      
+
       ierr = VecGetArray(dest_crd, &array);CHKERRQ(ierr);
       for (jj=0; jj<ndata_cols; jj++) {
 	for (ii=0; ii<ncrs_new; ii++) {
@@ -393,6 +405,26 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
     ierr = ISDestroy(&new_eq_indices);CHKERRQ(ierr);
 
     *a_nactive_proc = new_size; /* output */
+
+    /* pinning on reduced grids, not a bad heuristic and optimization gets folded into process reduction optimization */
+    if (pc_gamg->cpu_pin_coarse_grids) {
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+      static PetscInt llev = 2;
+      ierr = PetscInfo1(pc,"Pinning level %D to the CPU\n",llev++);CHKERRQ(ierr);
+#endif
+      ierr = MatPinToCPU(*a_Amat_crs,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = MatPinToCPU(*a_P_inout,PETSC_TRUE);CHKERRQ(ierr);
+      if (1) { /* lvec is created, need to pin it, this is done in MatSetUpMultiply_MPIAIJ. Hack */
+        Mat         A = *a_Amat_crs, P = *a_P_inout;
+        PetscMPIInt size;
+        ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
+        if (size > 1) {
+          Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data, *p = (Mat_MPIAIJ*)P->data;
+          ierr = VecPinToCPU(a->lvec,PETSC_TRUE);CHKERRQ(ierr);
+          ierr = VecPinToCPU(p->lvec,PETSC_TRUE);CHKERRQ(ierr);
+        }
+      }
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -721,7 +753,7 @@ PetscErrorCode PCDestroy_GAMG(PC pc)
 .  -pc_gamg_process_eq_limit <limit>
 
    Notes:
-    GAMG will reduce the number of MPI processes used directly on the coarse grids so that there are around <limit> equations on each process 
+    GAMG will reduce the number of MPI processes used directly on the coarse grids so that there are around <limit> equations on each process
           that has degrees of freedom
 
    Level: intermediate
@@ -760,7 +792,7 @@ static PetscErrorCode PCGAMGSetProcEqLim_GAMG(PC pc, PetscInt n)
    Options Database Key:
 .  -pc_gamg_coarse_eq_limit <limit>
 
-   Notes: For example -pc_gamg_coarse_eq_limit 1000 will stop coarsening once the coarse grid 
+   Notes: For example -pc_gamg_coarse_eq_limit 1000 will stop coarsening once the coarse grid
      has less than 1000 unknowns.
 
    Level: intermediate
@@ -916,7 +948,7 @@ static PetscErrorCode PCGAMGASMSetUseAggs_GAMG(PC pc, PetscBool flg)
 
    Level: intermediate
 
-.seealso: ()
+.seealso: PCGAMGSetCoarseGridLayoutType(), PCGAMGSetCpuPinCoarseGrids()
 @*/
 PetscErrorCode PCGAMGSetUseParallelCoarseGridSolve(PC pc, PetscBool flg)
 {
@@ -935,6 +967,78 @@ static PetscErrorCode PCGAMGSetUseParallelCoarseGridSolve_GAMG(PC pc, PetscBool 
 
   PetscFunctionBegin;
   pc_gamg->use_parallel_coarse_grid_solver = flg;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PCGAMGSetCpuPinCoarseGrids - pin reduced grids to CPU
+
+   Collective on PC
+
+   Input Parameters:
++  pc - the preconditioner context
+-  flg - PETSC_TRUE to pin coarse grids to CPU
+
+   Options Database Key:
+.  -pc_gamg_cpu_pin_coarse_grids
+
+   Level: intermediate
+
+.seealso: PCGAMGSetCoarseGridLayoutType(), PCGAMGSetUseParallelCoarseGridSolve()
+@*/
+PetscErrorCode PCGAMGSetCpuPinCoarseGrids(PC pc, PetscBool flg)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscTryMethod(pc,"PCGAMGSetCpuPinCoarseGrids_C",(PC,PetscBool),(pc,flg));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCGAMGSetCpuPinCoarseGrids_GAMG(PC pc, PetscBool flg)
+{
+  PC_MG   *mg      = (PC_MG*)pc->data;
+  PC_GAMG *pc_gamg = (PC_GAMG*)mg->innerctx;
+
+  PetscFunctionBegin;
+  pc_gamg->cpu_pin_coarse_grids = flg;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PCGAMGSetCoarseGridLayoutType - place reduce grids on processors with natural order (compact type)
+
+   Collective on PC
+
+   Input Parameters:
++  pc - the preconditioner context
+-  flg - Layout type
+
+   Options Database Key:
+.  -pc_gamg_coarse_grid_layout_type
+
+   Level: intermediate
+
+.seealso: PCGAMGSetUseParallelCoarseGridSolve(), PCGAMGSetCpuPinCoarseGrids()
+@*/
+PetscErrorCode PCGAMGSetCoarseGridLayoutType(PC pc, PCGAMGLayoutType flg)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscTryMethod(pc,"PCGAMGSetCoarseGridLayoutType_C",(PC,PCGAMGLayoutType),(pc,flg));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCGAMGSetCoarseGridLayoutType_GAMG(PC pc, PCGAMGLayoutType flg)
+{
+  PC_MG   *mg      = (PC_MG*)pc->data;
+  PC_GAMG *pc_gamg = (PC_GAMG*)mg->innerctx;
+
+  PetscFunctionBegin;
+  pc_gamg->layout_type = flg;
   PetscFunctionReturn(0);
 }
 
@@ -1192,6 +1296,16 @@ static PetscErrorCode PCView_GAMG(PC pc,PetscViewer viewer)
   if (pc_gamg->use_parallel_coarse_grid_solver) {
     ierr = PetscViewerASCIIPrintf(viewer,"      Using parallel coarse grid solver (all coarse grid equations not put on one process)\n");CHKERRQ(ierr);
   }
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+  if (pc_gamg->cpu_pin_coarse_grids) {
+    /* ierr = PetscViewerASCIIPrintf(viewer,"      Pinning coarse grids to the CPU)\n");CHKERRQ(ierr); */
+  }
+#endif
+  /* if (pc_gamg->layout_type==PCGAMG_LAYOUT_COMPACT) { */
+  /*   ierr = PetscViewerASCIIPrintf(viewer,"      Put reduced grids on processes in natural order (ie, 0,1,2...)\n");CHKERRQ(ierr); */
+  /* } else { */
+  /*   ierr = PetscViewerASCIIPrintf(viewer,"      Put reduced grids on whole machine (ie, 0,1*f,2*f...,np-f)\n");CHKERRQ(ierr); */
+  /* } */
   if (pc_gamg->ops->view) {
     ierr = (*pc_gamg->ops->view)(pc,viewer);CHKERRQ(ierr);
   }
@@ -1210,7 +1324,6 @@ PetscErrorCode PCSetFromOptions_GAMG(PetscOptionItems *PetscOptionsObject,PC pc)
   char           prefix[256];
   PetscInt       i,n;
   const char     *pcpre;
-
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
   ierr = PetscOptionsHead(PetscOptionsObject,"GAMG options");CHKERRQ(ierr);
@@ -1224,6 +1337,10 @@ PetscErrorCode PCSetFromOptions_GAMG(PetscOptionItems *PetscOptionsObject,PC pc)
     ierr = PetscOptionsBool("-pc_gamg_reuse_interpolation","Reuse prolongation operator","PCGAMGReuseInterpolation",pc_gamg->reuse_prol,&pc_gamg->reuse_prol,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-pc_gamg_asm_use_agg","Use aggregation aggregates for ASM smoother","PCGAMGASMSetUseAggs",pc_gamg->use_aggs_in_asm,&pc_gamg->use_aggs_in_asm,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-pc_gamg_use_parallel_coarse_grid_solver","Use parallel coarse grid solver (otherwise put last grid on one process)","PCGAMGSetUseParallelCoarseGridSolve",pc_gamg->use_parallel_coarse_grid_solver,&pc_gamg->use_parallel_coarse_grid_solver,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-pc_gamg_cpu_pin_coarse_grids","Pin coarse grids to the CPU","PCGAMGSetCpuPinCoarseGrids",pc_gamg->cpu_pin_coarse_grids,&pc_gamg->cpu_pin_coarse_grids,NULL);CHKERRQ(ierr);
+    i = (PetscInt)PCGAMG_LAYOUT_COMPACT;
+    ierr = PetscOptionsInt("-pc_gamg_coarse_grid_layout_type","0: place reduced grids on processes in natural order; 1: distribute to whole machine for more memory bandwidth","PCGAMGSetCoarseGridLayoutType",i,&i,NULL);CHKERRQ(ierr);
+    pc_gamg->layout_type = (PCGAMGLayoutType)i;
     ierr = PetscOptionsInt("-pc_gamg_process_eq_limit","Limit (goal) on number of equations per process on coarse grids","PCGAMGSetProcEqLim",pc_gamg->min_eq_proc,&pc_gamg->min_eq_proc,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-pc_gamg_coarse_eq_limit","Limit on number of equations for the coarse grid","PCGAMGSetCoarseEqLim",pc_gamg->coarse_eq_limit,&pc_gamg->coarse_eq_limit,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-pc_gamg_threshold_scale","Scaling of threshold for each level not specified","PCGAMGSetThresholdScale",pc_gamg->threshold_scale,&pc_gamg->threshold_scale,NULL);CHKERRQ(ierr);
@@ -1326,6 +1443,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetReuseInterpolation_C",PCGAMGSetReuseInterpolation_GAMG);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGASMSetUseAggs_C",PCGAMGASMSetUseAggs_GAMG);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetUseParallelCoarseGridSolve_C",PCGAMGSetUseParallelCoarseGridSolve_GAMG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetCpuPinCoarseGrids_C",PCGAMGSetCpuPinCoarseGrids_GAMG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetCoarseGridLayoutType_C",PCGAMGSetCoarseGridLayoutType_GAMG);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetThreshold_C",PCGAMGSetThreshold_GAMG);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetThresholdScale_C",PCGAMGSetThresholdScale_GAMG);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetType_C",PCGAMGSetType_GAMG);CHKERRQ(ierr);
@@ -1335,6 +1454,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
   pc_gamg->reuse_prol       = PETSC_FALSE;
   pc_gamg->use_aggs_in_asm  = PETSC_FALSE;
   pc_gamg->use_parallel_coarse_grid_solver = PETSC_FALSE;
+  pc_gamg->cpu_pin_coarse_grids = PETSC_TRUE;
+  pc_gamg->layout_type      = PCGAMG_LAYOUT_COMPACT;
   pc_gamg->min_eq_proc      = 50;
   pc_gamg->coarse_eq_limit  = 50;
   for (i=0;i<PETSC_GAMG_MAXLEVELS;i++) pc_gamg->threshold[i] = 0.;
