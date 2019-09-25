@@ -2958,7 +2958,7 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, PetscBool fully_redundant, con
       -pc_bddc_neumann_
       -pc_bddc_coarse_
 .ve
-   e.g. -pc_bddc_dirichlet_ksp_type richardson -pc_bddc_dirichlet_pc_type gamg. PCBDDC uses by default KPSPREONLY and PCLU.
+   e.g. -pc_bddc_dirichlet_ksp_type richardson -pc_bddc_dirichlet_pc_type gamg. PCBDDC uses by default KSPPREONLY and PCLU.
 
    When using a multilevel approach, solvers' options at the N-th level (N > 1) can be specified as
 .vb
