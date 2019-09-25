@@ -467,7 +467,6 @@ PetscErrorCode VecPinToCPU_SeqCUDA(Vec V,PetscBool pin)
 PetscErrorCode VecCreate_SeqCUDA_Private(Vec V,const PetscScalar *array)
 {
   PetscErrorCode ierr;
-  cudaError_t    err;
   Vec_CUDA       *veccuda;
   PetscMPIInt    size;
 
@@ -484,7 +483,7 @@ PetscErrorCode VecCreate_SeqCUDA_Private(Vec V,const PetscScalar *array)
     if (!V->spptr) {
       ierr = PetscMalloc(sizeof(Vec_CUDA),&V->spptr);CHKERRQ(ierr);
       veccuda = (Vec_CUDA*)V->spptr;
-      err = cudaStreamCreate(&veccuda->stream);CHKERRCUDA(err);
+      veccuda->stream = 0; /* using default stream */
       veccuda->GPUarray_allocated = 0;
       veccuda->hostDataRegisteredAsPageLocked = PETSC_FALSE;
       V->valid_GPU_array = PETSC_OFFLOAD_UNALLOCATED;

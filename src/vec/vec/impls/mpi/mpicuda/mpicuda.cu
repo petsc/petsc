@@ -20,7 +20,9 @@ PetscErrorCode VecDestroy_MPICUDA(Vec v)
       err = cudaFree(((Vec_CUDA*)v->spptr)->GPUarray_allocated);CHKERRCUDA(err);
       ((Vec_CUDA*)v->spptr)->GPUarray_allocated = NULL;
     }
-    err = cudaStreamDestroy(((Vec_CUDA*)v->spptr)->stream);CHKERRCUDA(err);
+    if (((Vec_CUDA*)v->spptr)->stream) {
+      err = cudaStreamDestroy(((Vec_CUDA*)v->spptr)->stream);CHKERRCUDA(err);
+    }
     ierr = PetscFree(v->spptr);CHKERRQ(ierr);
   }
   ierr = VecDestroy_MPI(v);CHKERRQ(ierr);
@@ -325,7 +327,6 @@ PetscErrorCode VecPinToCPU_MPICUDA(Vec V,PetscBool pin)
 PetscErrorCode VecCreate_MPICUDA_Private(Vec vv,PetscBool alloc,PetscInt nghost,const PetscScalar array[])
 {
   PetscErrorCode ierr;
-  cudaError_t    err;
   Vec_CUDA       *veccuda;
 
   PetscFunctionBegin;
@@ -348,7 +349,7 @@ PetscErrorCode VecCreate_MPICUDA_Private(Vec vv,PetscBool alloc,PetscInt nghost,
       /* Cannot use PetscNew() here because spptr is void* */
       ierr = PetscMalloc(sizeof(Vec_CUDA),&vv->spptr);CHKERRQ(ierr);
       veccuda = (Vec_CUDA*)vv->spptr;
-      err = cudaStreamCreate(&veccuda->stream);CHKERRCUDA(err);
+      veccuda->stream = 0; /* using default stream */
       veccuda->GPUarray_allocated = 0;
       veccuda->hostDataRegisteredAsPageLocked = PETSC_FALSE;
       vv->valid_GPU_array = PETSC_OFFLOAD_UNALLOCATED;

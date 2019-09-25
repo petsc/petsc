@@ -417,7 +417,7 @@ PetscErrorCode MatSeqAIJSetValuesLocalFast(Mat A,PetscInt m,const PetscInt im[],
     }
   }
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-  if (A->valid_GPU_matrix != PETSC_OFFLOAD_UNALLOCATED && m*n) A->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
+  if (A->valid_GPU_matrix != PETSC_OFFLOAD_UNALLOCATED && m && n) A->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
 #endif
   return 0;
 }
@@ -542,7 +542,7 @@ PetscErrorCode MatSetValues_SeqAIJ_SortedFull(Mat A,PetscInt m,const PetscInt im
     a->nz      += n;
   }
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-  if (A->valid_GPU_matrix != PETSC_OFFLOAD_UNALLOCATED && m*n) A->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
+  if (A->valid_GPU_matrix != PETSC_OFFLOAD_UNALLOCATED && m && n) A->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
 #endif
   PetscFunctionReturn(0);
 }
