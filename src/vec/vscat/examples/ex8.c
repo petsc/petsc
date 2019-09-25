@@ -67,22 +67,22 @@ int main(int argc,char **argv)
   ierr = VecScatterCreateToAll(x,&vscat,&y);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)y,"y");CHKERRQ(ierr);
 
-  /* Test PetscSFReduce with op = MPI_REPLACE, which does y = x on all ranks */
+  /* Test PetscSFBcastAndOp with op = MPI_REPLACE, which does y = x on all ranks */
   ierr = VecScatterBegin(vscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(vscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   if (!rank) {ierr = VecView(y,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
 
-  /* Test PetscSFReduce with op = MPI_SUM, which does y += x */
+  /* Test PetscSFBcastAndOp with op = MPI_SUM, which does y += x */
   ierr = VecScatterBegin(vscat,x,y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(vscat,x,y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   if (!rank) {ierr = VecView(y,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
 
-  /* Test PetscSFBcastAndOp with op = MPI_REPLACE, which does x = y */
+  /* Test PetscSFReduce with op = MPI_REPLACE, which does x = y */
   ierr = VecScatterBegin(vscat,y,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd(vscat,y,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  /* Test PetscSFBcastAndOp with op = MPI_SUM, which does x += size*y */
+  /* Test PetscSFReduce with op = MPI_SUM, which does x += size*y */
   ierr = VecScatterBegin(vscat,y,x,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd(vscat,y,x,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
