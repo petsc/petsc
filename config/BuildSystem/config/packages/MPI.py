@@ -1,11 +1,13 @@
-
-
 #!/usr/bin/env python
 from __future__ import generators
 import config.base
 import config.package
 import os
 from stat import *
+
+def noCheck(command, status, output, error):
+  ''' Do no check result'''
+  return
 
 class Configure(config.package.Package):
   def __init__(self, framework):
@@ -58,7 +60,7 @@ class Configure(config.package.Package):
   def setupHelp(self, help):
     config.package.Package.setupHelp(self,help)
     import nargs
-    help.addArgument('MPI', '-with-mpiexec=<prog>',                              nargs.Arg(None, None, 'The utility used to launch MPI jobs'))
+    help.addArgument('MPI', '-with-mpiexec=<prog>',                              nargs.Arg(None, None, 'The utility used to launch MPI jobs. (should support "-n <np>" option)'))
     help.addArgument('MPI', '-with-mpi-compilers=<bool>',                        nargs.ArgBool(None, 1, 'Try to use the MPI compilers, e.g. mpicc'))
     help.addArgument('MPI', '-known-mpi-shared-libraries=<bool>',                nargs.ArgBool(None, None, 'Indicates the MPI libraries are shared (the usual test will be skipped)'))
     return
@@ -71,7 +73,7 @@ class Configure(config.package.Package):
 
   def __str__(self):
     output  = config.package.Package.__str__(self)
-    if self.mpiexec: output  += '  Mpiexec: '+self.mpiexec+'\n'
+    if self.mpiexec: output  += '  Mpiexec: '+self.mpiexec.replace(' -n 1','')+'\n'
     return output+self.mpi_pkg_version
 
   def generateLibList(self, directory):
@@ -181,8 +183,10 @@ shared libraries and run with --known-mpi-shared-libraries=1')
       self.mpiexec = os.path.abspath(os.path.join('bin', 'mpiexec.poe'))
     elif self.argDB['with-batch']:
       self.mpiexec = 'Not_appropriate_for_batch_systems_You_must_use_your_batch_system_to_submit_MPI_jobs_speak_with_your_local_sys_admin'
+      self.addMakeMacro('MPIEXEC', self.mpiexec)
+      return
     else:
-      mpiexecs = ['mpiexec -n 1', 'mpirun -n 1', 'mprun -n 1', 'mpiexec', 'mpirun', 'mprun']
+      mpiexecs = ['mpiexec', 'mpirun', 'mprun']
       path    = []
       if 'with-mpi-dir' in self.argDB:
         path.append(os.path.join(os.path.abspath(self.argDB['with-mpi-dir']), 'bin'))
@@ -201,23 +205,19 @@ shared libraries and run with --known-mpi-shared-libraries=1')
       if not self.getExecutable(mpiexecs, path = path, useDefaultPath = 1, resultName = 'mpiexec',setMakeMacro=0):
         if not self.getExecutable('/bin/false', path = [], useDefaultPath = 0, resultName = 'mpiexec',setMakeMacro=0):
           raise RuntimeError('Could not locate MPIEXEC - please specify --with-mpiexec option')
-    # Support for spaces and () in executable names; also needs to handle optional arguments at the end
-    # TODO: This support for spaces and () should be moved to core BuildSystem
-    self.mpiexec = self.mpiexec.replace(' -n 1','').replace(' ', '\\ ').replace('(', '\\(').replace(')', '\\)').replace('\ -',' -')
-    if (hasattr(self, 'ompi_major_version') and int(self.ompi_major_version) >= 3):
-      self.mpiexec = self.mpiexec + ' --oversubscribe'
-    self.addMakeMacro('MPIEXEC', self.mpiexec)
-
-    # cannot use self.setCompilers.isWindows(self.setCompilers.getCompiler(),self.log) because it
-    # does not work when the compiler already has the win32fe wrapper on it and changing it to allow that
-    # breaks other code
-    if self.setCompilers.getCompiler().find('win32fe') > -1: return
+      # Support for spaces and () in executable names; also needs to handle optional arguments at the end
+      # TODO: This support for spaces and () should be moved to core BuildSystem
+      self.mpiexec = self.mpiexec.replace(' ', '\\ ').replace('(', '\\(').replace(')', '\\)').replace('\ -',' -')
+      if (hasattr(self, 'ompi_major_version') and int(self.ompi_major_version) >= 3):
+        (out, err, ret) = Configure.executeShellCommand(self.mpiexec+' -help all', checkCommand = noCheck, timeout = 10, log = self.log)
+        if out.find('--oversubscribe') >=0:
+          self.mpiexec = self.mpiexec + ' --oversubscribe'
 
     # using mpiexec environmental variables make sure mpiexec matches the MPI libraries and save the variables for testing in PetscInitialize()
     # the variable HAVE_MPIEXEC_ENVIRONMENTAL_VARIABLE is not currently used. PetscInitialize() can check the existence of the environmental variable to
     # determine if the program has been started with the correct mpiexec (will only be set for parallel runs so not clear how to check appropriately)
-    (out, err, ret) = Configure.executeShellCommand(self.mpiexec+' -n 1 printenv', checkCommand = None, timeout = 10, log = self.log)
-    if ret: return
+    (out, err, ret) = Configure.executeShellCommand(self.mpiexec+' -n 1 printenv', checkCommand = noCheck, timeout = 10, log = self.log)
+    if ret: raise RuntimeError('Unable to run '+self.mpiexec+' with option "-n 1"\n'+err)
     if out.find('MPIR_CVAR_CH3') > -1:
       if hasattr(self,'ompi_major_version'): raise RuntimeError("Your libraries are from OpenMPI but it appears your mpiexec is from MPICH");
       self.addDefine('HAVE_MPIEXEC_ENVIRONMENTAL_VARIABLE', 'MPIR_CVAR_CH3')
@@ -227,7 +227,8 @@ shared libraries and run with --known-mpi-shared-libraries=1')
     elif out.find('OMPI_COMM_WORLD_SIZE') > -1:
       if hasattr(self,'mpich_numversion'): raise RuntimeError("Your libraries are from MPICH but it appears your mpiexec is from OpenMPI");
       self.addDefine('HAVE_MPIEXEC_ENVIRONMENTAL_VARIABLE', 'OMP')
-    if self.argDB['with-batch']: return
+    self.addMakeMacro('MPIEXEC', self.mpiexec)
+    self.mpiexec = self.mpiexec + ' -n 1'
 
     # check that mpiexec runs an MPI program correctly
     includes = '#include <mpi.h>'
