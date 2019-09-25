@@ -85,6 +85,7 @@ typedef struct {
   PetscScalar *elemMat;
   PetscBool    use_composite_pc;
   PetscBool    random_initial_guess;
+  PetscBool    random_real;
 } AppCtx;
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
@@ -108,6 +109,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->per[2]    = PETSC_FALSE;
   options->use_composite_pc = PETSC_FALSE;
   options->random_initial_guess = PETSC_FALSE;
+  options->random_real = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm,NULL,"Problem Options",NULL);CHKERRQ(ierr);
   pde  = options->pde;
@@ -121,6 +123,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-test_assembly","Test MATIS assembly",__FILE__,options->test,&options->test,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-use_composite_pc","Multiplicative composite with BDDC + Richardson/Jacobi",__FILE__,options->use_composite_pc,&options->use_composite_pc,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-random_initial_guess","Solve A x = 0 with random initial guess, instead of A x = b with random b",__FILE__,options->random_initial_guess,&options->random_initial_guess,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-random_real","Use real-valued b (or x, if -random_initial_guess) instead of default scalar type",__FILE__,options->random_real,&options->random_real,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   for (n=options->dim;n<3;n++) options->cells[n] = 0;
@@ -421,6 +424,7 @@ int main(int argc,char **args)
      * complete Hessenberg matrix and more accurate eigenvalues. */
     ierr = VecZeroEntries(b);CHKERRQ(ierr);
     ierr = VecSetRandom(x,NULL);CHKERRQ(ierr);
+    if (user.random_real) {ierr = VecRealPart(x);CHKERRQ(ierr);}
     if (nullsp) {
       ierr = MatNullSpaceRemove(nullsp,x);CHKERRQ(ierr);
     }
@@ -429,6 +433,7 @@ int main(int argc,char **args)
     ierr = KSPGMRESSetRestart(ksp,100);CHKERRQ(ierr);
   } else {
     ierr = VecSetRandom(b,NULL);CHKERRQ(ierr);
+    if (user.random_real) {ierr = VecRealPart(x);CHKERRQ(ierr);}
     if (nullsp) {
       ierr = MatNullSpaceRemove(nullsp,b);CHKERRQ(ierr);
     }
@@ -634,7 +639,7 @@ int main(int argc,char **args)
      args: -dm_mat_type aij -dm_preallocate_only {{0 1}} -dirichlet {{0 1}}
  testset:
    nsize: 4
-   args: -dim 2 -cells 16,16 -periodicity 1,1 -random_initial_guess -sub_0_pc_bddc_switch_static -use_composite_pc -ksp_monitor -ksp_converged_reason -ksp_type gmres -ksp_view_singularvalues -ksp_view_eigenvalues -sub_0_pc_bddc_use_edges 0 -sub_0_pc_bddc_coarse_pc_type svd -sub_1_ksp_ksp_max_it 1 -sub_1_ksp_ksp_richardson_scale 2.3
+   args: -dim 2 -cells 16,16 -periodicity 1,1 -random_initial_guess -random_real -sub_0_pc_bddc_switch_static -use_composite_pc -ksp_monitor -ksp_converged_reason -ksp_type gmres -ksp_view_singularvalues -ksp_view_eigenvalues -sub_0_pc_bddc_use_edges 0 -sub_0_pc_bddc_coarse_pc_type svd -sub_1_ksp_ksp_max_it 1 -sub_1_ksp_ksp_richardson_scale 2.3
    test:
      args: -sub_0_pc_bddc_interface_ext_type lump
      suffix: composite_bddc_lumped
