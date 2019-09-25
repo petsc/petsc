@@ -607,7 +607,6 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     ierr = PetscArraycpy(all_local_idx_N,idxs,extra);CHKERRQ(ierr);
     ierr = ISRestoreIndices(is_I_layer,&idxs);CHKERRQ(ierr);
   }
-  ierr = PetscMalloc1(local_size,&nnz);CHKERRQ(ierr);
   ierr = PetscMalloc1(sub_schurs->n_subs,&auxnum1);CHKERRQ(ierr);
   ierr = PetscMalloc1(sub_schurs->n_subs,&auxnum2);CHKERRQ(ierr);
 
@@ -615,8 +614,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
   local_size = 0;
   local_stash_size = 0;
   for (i=0;i<sub_schurs->n_subs;i++) {
-    PetscInt j;
-    const    PetscInt *idxs;
+    const PetscInt *idxs;
 
     ierr = ISGetLocalSize(sub_schurs->is_subs[i],&subset_size);CHKERRQ(ierr);
     ierr = ISGetIndices(sub_schurs->is_subs[i],&idxs);CHKERRQ(ierr);
@@ -626,7 +624,6 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     /* subset indices in local numbering */
     ierr = PetscArraycpy(all_local_idx_N+local_size+extra,idxs,subset_size);CHKERRQ(ierr);
     ierr = ISRestoreIndices(sub_schurs->is_subs[i],&idxs);CHKERRQ(ierr);
-    for (j=0;j<subset_size;j++) nnz[local_size+j] = subset_size;
     local_size += subset_size;
     local_stash_size += subset_size*subset_size;
   }
@@ -729,10 +726,43 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 
   /* Local matrix of all local Schur on subsets (transposed) */
   if (!sub_schurs->S_Ej_all) {
-    ierr = MatCreate(PETSC_COMM_SELF,&sub_schurs->S_Ej_all);CHKERRQ(ierr);
-    ierr = MatSetSizes(sub_schurs->S_Ej_all,PETSC_DECIDE,PETSC_DECIDE,local_size,local_size);CHKERRQ(ierr);
-    ierr = MatSetType(sub_schurs->S_Ej_all,MATAIJ);CHKERRQ(ierr);
-    ierr = MatSeqAIJSetPreallocation(sub_schurs->S_Ej_all,0,nnz);CHKERRQ(ierr);
+    Mat         T;
+    PetscScalar *v;
+    PetscInt    *ii,*jj;
+    PetscInt    cum,i,j,k;
+
+    /* MatSeqAIJSetPreallocation + MatSetValues is slow for these kind of matrices (may have large blocks)
+       Allocate properly a representative matrix and duplicate */
+    ierr  = PetscMalloc3(local_size+1,&ii,local_stash_size,&jj,local_stash_size,&v);CHKERRQ(ierr);
+    ii[0] = 0;
+    cum   = 0;
+    for (i=0;i<sub_schurs->n_subs;i++) {
+      ierr = ISGetLocalSize(sub_schurs->is_subs[i],&subset_size);CHKERRQ(ierr);
+      for (j=0;j<subset_size;j++) {
+        const PetscInt row = cum+j;
+        PetscInt col = cum;
+
+        ii[row+1] = ii[row] + subset_size;
+        for (k=ii[row];k<ii[row+1];k++) {
+          jj[k] = col;
+          col++;
+        }
+      }
+      cum += subset_size;
+    }
+    ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,local_size,local_size,ii,jj,v,&T);CHKERRQ(ierr);
+    ierr = MatDuplicate(T,MAT_DO_NOT_COPY_VALUES,&sub_schurs->S_Ej_all);CHKERRQ(ierr);
+    ierr = MatDestroy(&T);CHKERRQ(ierr);
+    ierr = PetscFree3(ii,jj,v);CHKERRQ(ierr);
+  }
+  /* matrices for deluxe scaling and adaptive selection */
+  if (compute_Stilda) {
+    if (!sub_schurs->sum_S_Ej_tilda_all) {
+      ierr = MatDuplicate(sub_schurs->S_Ej_all,MAT_DO_NOT_COPY_VALUES,&sub_schurs->sum_S_Ej_tilda_all);CHKERRQ(ierr);
+    }
+    if (!sub_schurs->sum_S_Ej_inv_all && deluxe) {
+      ierr = MatDuplicate(sub_schurs->S_Ej_all,MAT_DO_NOT_COPY_VALUES,&sub_schurs->sum_S_Ej_inv_all);CHKERRQ(ierr);
+    }
   }
 
   /* Compute Schur complements explicitly */
@@ -830,8 +860,9 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     IS                is_A_all,*is_p_r = NULL;
     MatType           Stype;
     PetscScalar       *work,*S_data,*schur_factor,infty = PETSC_MAX_REAL;
+    PetscScalar       *SEj_arr = NULL,*SEjinv_arr = NULL;
     const PetscScalar *rS_data;
-    PetscInt          n,n_I,*dummy_idx,size_schur,size_active_schur,cum,cum2;
+    PetscInt          n,n_I,size_schur,size_active_schur,cum,cum2;
     PetscBool         economic,solver_S,S_lower_triangular = PETSC_FALSE;
     PetscBool         schur_has_vertices,factor_workaround;
     PetscBool         use_cholesky;
@@ -1313,21 +1344,15 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     ierr = ISDestroy(&is_A_all);CHKERRQ(ierr);
 
     /* Work arrays */
-    ierr = PetscMalloc2(max_subset_size,&dummy_idx,max_subset_size*max_subset_size,&work);CHKERRQ(ierr);
-
-    /* matrices for deluxe scaling and adaptive selection */
-    if (compute_Stilda) {
-      if (!sub_schurs->sum_S_Ej_tilda_all) {
-        ierr = MatDuplicate(sub_schurs->S_Ej_all,MAT_SHARE_NONZERO_PATTERN,&sub_schurs->sum_S_Ej_tilda_all);CHKERRQ(ierr);
-      }
-      if (!sub_schurs->sum_S_Ej_inv_all && deluxe) {
-        ierr = MatDuplicate(sub_schurs->S_Ej_all,MAT_SHARE_NONZERO_PATTERN,&sub_schurs->sum_S_Ej_inv_all);CHKERRQ(ierr);
-      }
-    }
+    ierr = PetscMalloc1(max_subset_size*max_subset_size,&work);CHKERRQ(ierr);
 
     /* S_Ej_all */
     cum = cum2 = 0;
     ierr = MatDenseGetArrayRead(S_all,&rS_data);CHKERRQ(ierr);
+    ierr = MatSeqAIJGetArray(sub_schurs->S_Ej_all,&SEj_arr);CHKERRQ(ierr);
+    if (compute_Stilda) {
+      ierr = MatSeqAIJGetArray(sub_schurs->sum_S_Ej_inv_all,&SEjinv_arr);CHKERRQ(ierr);
+    }
     for (i=0;i<sub_schurs->n_subs;i++) {
       PetscInt j;
 
@@ -1350,7 +1375,6 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
         }
       }
       /* insert S_E values */
-      for (j=0;j<subset_size;j++) dummy_idx[j] = cum+j;
       if (sub_schurs->change) {
         Mat change_sub,SEj,T;
 
@@ -1372,7 +1396,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
         ierr = MatDestroy(&SEj);CHKERRQ(ierr);
       }
       if (deluxe) {
-        ierr = MatSetValues(sub_schurs->S_Ej_all,subset_size,dummy_idx,subset_size,dummy_idx,work,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = PetscArraycpy(SEj_arr,work,subset_size*subset_size);CHKERRQ(ierr);
         /* if adaptivity is requested, invert S_E blocks */
         if (compute_Stilda) {
           Mat               M;
@@ -1400,7 +1424,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 #endif
           } else SETERRQ1(PetscObjectComm((PetscObject)M),PETSC_ERR_SUP,"Not implemented for type %s",Stype);
           ierr = MatDenseGetArrayRead(M,&vals);CHKERRQ(ierr);
-          ierr = MatSetValues(sub_schurs->sum_S_Ej_inv_all,subset_size,dummy_idx,subset_size,dummy_idx,vals,INSERT_VALUES);CHKERRQ(ierr);
+          ierr = PetscArraycpy(SEjinv_arr,vals,subset_size*subset_size);CHKERRQ(ierr);
           ierr = MatDenseRestoreArrayRead(M,&vals);CHKERRQ(ierr);
           ierr = MatDestroy(&M);CHKERRQ(ierr);
         }
@@ -1417,13 +1441,18 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
         ierr = MatDiagonalScale(SEj,D,D);CHKERRQ(ierr);
         ierr = MatDestroy(&SEj);CHKERRQ(ierr);
         ierr = VecDestroy(&D);CHKERRQ(ierr);
-        ierr = MatSetValues(sub_schurs->S_Ej_all,subset_size,dummy_idx,subset_size,dummy_idx,work,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = PetscArraycpy(SEj_arr,work,subset_size*subset_size);CHKERRQ(ierr);
       }
       cum += subset_size;
       cum2 += subset_size*(size_schur + 1);
+      SEj_arr += subset_size*subset_size;
+      if (SEjinv_arr) SEjinv_arr += subset_size*subset_size;
     }
     ierr = MatDenseRestoreArrayRead(S_all,&rS_data);CHKERRQ(ierr);
-
+    ierr = MatSeqAIJRestoreArray(sub_schurs->S_Ej_all,&SEj_arr);CHKERRQ(ierr);
+    if (compute_Stilda) {
+      ierr = MatSeqAIJRestoreArray(sub_schurs->sum_S_Ej_inv_all,&SEjinv_arr);CHKERRQ(ierr);
+    }
     if (solver_S) {
       ierr = MatFactorRestoreSchurComplement(F,&S_all,MAT_FACTOR_SCHUR_UNFACTORED);CHKERRQ(ierr);
     }
@@ -1446,11 +1475,9 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     schur_factor = NULL;
     if (compute_Stilda && size_active_schur) {
 
+      ierr = MatSeqAIJGetArray(sub_schurs->sum_S_Ej_tilda_all,&SEjinv_arr);CHKERRQ(ierr);
       if (sub_schurs->n_subs == 1 && size_schur == size_active_schur && deluxe) { /* we already computed the inverse */
-        PetscInt j;
-
-        for (j=0;j<size_schur;j++) dummy_idx[j] = j;
-        ierr = MatSetValues(sub_schurs->sum_S_Ej_tilda_all,size_schur,dummy_idx,size_schur,dummy_idx,work,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = PetscArraycpy(SEjinv_arr,work,size_schur*size_schur);CHKERRQ(ierr);
       } else {
         Mat S_all_inv=NULL;
 
@@ -1614,10 +1641,10 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
             ierr = MatZeroRowsColumnsIS(SEj,sub_schurs->change_primal_sub[i],1./PETSC_SMALL,NULL,NULL);CHKERRQ(ierr);
             ierr = MatDestroy(&SEj);CHKERRQ(ierr);
           }
-          for (j=0;j<subset_size;j++) dummy_idx[j] = cum+j;
-          ierr = MatSetValues(sub_schurs->sum_S_Ej_tilda_all,subset_size,dummy_idx,subset_size,dummy_idx,work,INSERT_VALUES);CHKERRQ(ierr);
+          ierr = PetscArraycpy(SEjinv_arr,work,subset_size*subset_size);CHKERRQ(ierr);
           cum += subset_size;
           cum2 += subset_size*(size_schur + 1);
+          SEjinv_arr += subset_size*subset_size;
         }
         ierr = MatDenseRestoreArrayRead(S_all_inv,&rS_data);CHKERRQ(ierr);
         if (solver_S) {
@@ -1629,6 +1656,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
         }
         ierr = MatDestroy(&S_all_inv);CHKERRQ(ierr);
       }
+      ierr = MatSeqAIJRestoreArray(sub_schurs->sum_S_Ej_tilda_all,&SEjinv_arr);CHKERRQ(ierr);
 
       /* move back factors if needed */
       if (schur_has_vertices) {
@@ -1686,11 +1714,10 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       ierr = MatDenseRestoreArray(S_all,&data);CHKERRQ(ierr);
       ierr = MatFactorRestoreSchurComplement(F,&S_all,MAT_FACTOR_SCHUR_UNFACTORED);CHKERRQ(ierr);
     }
-    ierr = PetscFree2(dummy_idx,work);CHKERRQ(ierr);
+    ierr = PetscFree(work);CHKERRQ(ierr);
     ierr = PetscFree(schur_factor);CHKERRQ(ierr);
     ierr = VecDestroy(&Dall);CHKERRQ(ierr);
   }
-  ierr = PetscFree(nnz);CHKERRQ(ierr);
   ierr = ISDestroy(&is_I_layer);CHKERRQ(ierr);
   ierr = MatDestroy(&S_all);CHKERRQ(ierr);
   ierr = MatDestroy(&A_BB);CHKERRQ(ierr);
@@ -1698,7 +1725,6 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
   ierr = MatDestroy(&A_BI);CHKERRQ(ierr);
   ierr = MatDestroy(&F);CHKERRQ(ierr);
 
-  /* speed up matrix assembly */
   ierr = PetscMalloc1(sub_schurs->n_subs,&nnz);CHKERRQ(ierr);
   for (i=0;i<sub_schurs->n_subs;i++) {
     ierr = ISGetLocalSize(sub_schurs->is_subs[i],&nnz[i]);CHKERRQ(ierr);

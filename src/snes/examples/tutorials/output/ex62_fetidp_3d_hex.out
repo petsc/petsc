@@ -323,13 +323,36 @@ SNES Object: 5 MPI processes
             maximum iterations=10000, initial guess is zero
             tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
             left preconditioning
-            using DEFAULT norm type for convergence test
+            using NONE norm type for convergence test
           PC Object: (fetidp_bddc_pc_bddc_dirichlet_) 1 MPI processes
             type: lu
-            PC has not been set up so information may be incomplete
               out-of-place factorization
               tolerance for zero pivot 2.22045e-14
               matrix ordering: nd
+              factor fill ratio given 0., needed 0.
+                Factored matrix follows:
+                  Mat Object: 1 MPI processes
+                    type: umfpack
+                    rows=749, cols=749
+                    package used to perform factorization: umfpack
+                    total: nonzeros=0, allocated nonzeros=0
+                    total number of mallocs used during MatSetValues calls =0
+                      UMFPACK run parameters:
+                        Control[UMFPACK_PRL]: 1.
+                        Control[UMFPACK_STRATEGY]: 0.
+                        Control[UMFPACK_DENSE_COL]: 0.2
+                        Control[UMFPACK_DENSE_ROW]: 0.2
+                        Control[UMFPACK_AMD_DENSE]: 10.
+                        Control[UMFPACK_BLOCK_SIZE]: 32.
+                        Control[UMFPACK_FIXQ]: 0.
+                        Control[UMFPACK_AGGRESSIVE]: 1.
+                        Control[UMFPACK_PIVOT_TOLERANCE]: 0.1
+                        Control[UMFPACK_SYM_PIVOT_TOLERANCE]: 0.001
+                        Control[UMFPACK_SCALE]: 1.
+                        Control[UMFPACK_ALLOC_INIT]: 0.7
+                        Control[UMFPACK_DROPTOL]: 0.
+                        Control[UMFPACK_IRSTEP]: 0.
+                        Control[UMFPACK_ORDERING]: AMD (not using the PETSc ordering)
             linear system matrix = precond matrix:
             Mat Object: (fetidp_bddc_pc_bddc_dirichlet_) 1 MPI processes
               type: seqaij
@@ -444,4 +467,4 @@ SNES Object: 5 MPI processes
       total: nonzeros=722206, allocated nonzeros=983974
       total number of mallocs used during MatSetValues calls =0
         has attached null space
-L_2 Error: 1.57156e-08 [5.28044e-10, 1.57067e-08]
+L_2 Error: 1.51468e-08 [4.89715e-10, 1.51389e-08]
