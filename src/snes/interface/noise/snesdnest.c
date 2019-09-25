@@ -65,7 +65,7 @@ PetscErrorCode SNESNoise_dnest_(PetscInt *nf, double *fval,double *h__,double *f
 
 /*     where */
 
-/*       nf is an int variable. */
+/*       nf is a PetscInt variable. */
 /*         On entry nf is the number of function values. */
 /*         On exit nf is unchanged. */
 
@@ -87,7 +87,7 @@ PetscErrorCode SNESNoise_dnest_(PetscInt *nf, double *fval,double *h__,double *f
 /*         On exit hopt is set to an estimate of the optimal difference */
 /*            parameter if noise is detected; otherwise hopt is set to zero. */
 
-/*       info is an int variable. */
+/*       info is a PetscInt variable. */
 /*         On entry info need not be specified. */
 /*         On exit info is set as follows: */
 

@@ -1194,7 +1194,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Shell(Mat A)
    Level: advanced
 
   Usage:
-$    extern int mult(Mat,Vec,Vec);
+$    extern PetscErrorCode mult(Mat,Vec,Vec);
 $    MatCreateShell(comm,m,n,M,N,ctx,&mat);
 $    MatShellSetOperation(mat,MATOP_MULT,(void(*)(void))mult);
 $    [ Use matrix for operations that have been set ]
@@ -1222,7 +1222,7 @@ $    MatDestroy(mat);
 
 $
 $     Vec x, y
-$     extern int mult(Mat,Vec,Vec);
+$     extern PetscErrorCode mult(Mat,Vec,Vec);
 $     Mat A
 $
 $     VecCreateMPI(comm,PETSC_DECIDE,M,&y);

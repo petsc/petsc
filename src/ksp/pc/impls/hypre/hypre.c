@@ -2170,8 +2170,7 @@ PetscErrorCode PCSetFromOptions_PFMG(PetscOptionItems *PetscOptionsObject,PC pc)
   ierr = PetscOptionsHead(PetscOptionsObject,"PFMG options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_pfmg_print_statistics","Print statistics","HYPRE_StructPFMGSetPrintLevel",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
-    int level=3;
-    PetscStackCallStandard(HYPRE_StructPFMGSetPrintLevel,(ex->hsolver,level));
+    PetscStackCallStandard(HYPRE_StructPFMGSetPrintLevel,(ex->hsolver,3));
   }
   ierr = PetscOptionsInt("-pc_pfmg_its","Number of iterations of PFMG to use as preconditioner","HYPRE_StructPFMGSetMaxIter",ex->its,&ex->its,NULL);CHKERRQ(ierr);
   PetscStackCallStandard(HYPRE_StructPFMGSetMaxIter,(ex->hsolver,ex->its));
@@ -2380,8 +2379,7 @@ PetscErrorCode PCSetFromOptions_SysPFMG(PetscOptionItems *PetscOptionsObject,PC 
   ierr = PetscOptionsHead(PetscOptionsObject,"SysPFMG options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_syspfmg_print_statistics","Print statistics","HYPRE_SStructSysPFMGSetPrintLevel",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
-    int level=3;
-    PetscStackCallStandard(HYPRE_SStructSysPFMGSetPrintLevel,(ex->ss_solver,level));
+    PetscStackCallStandard(HYPRE_SStructSysPFMGSetPrintLevel,(ex->ss_solver,3));
   }
   ierr = PetscOptionsInt("-pc_syspfmg_its","Number of iterations of SysPFMG to use as preconditioner","HYPRE_SStructSysPFMGSetMaxIter",ex->its,&ex->its,NULL);CHKERRQ(ierr);
   PetscStackCallStandard(HYPRE_SStructSysPFMGSetMaxIter,(ex->ss_solver,ex->its));

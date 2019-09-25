@@ -1132,12 +1132,12 @@ $ -viewer_type {binary,hdf5}
    But for anyone who's interested, the standard binary matrix storage
    format is
 
-$    int    MAT_FILE_CLASSID
-$    int    number of rows
-$    int    number of columns
-$    int    total number of nonzeros
-$    int    *number nonzeros in each row
-$    int    *column indices of all nonzeros (starting index is zero)
+$    PetscInt    MAT_FILE_CLASSID
+$    PetscInt    number of rows
+$    PetscInt    number of columns
+$    PetscInt    total number of nonzeros
+$    PetscInt    *number nonzeros in each row
+$    PetscInt    *column indices of all nonzeros (starting index is zero)
 $    PetscScalar *values of all nonzeros
 
    PETSc automatically does the byte swapping for
