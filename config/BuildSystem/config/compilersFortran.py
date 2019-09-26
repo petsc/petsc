@@ -410,9 +410,7 @@ class Configure(config.base.Configure):
     if not self.argDB['with-dependencies'] :
       self.logPrint("Skip checking dependency compiler options on user request")
       return
-    languages = []
-    if hasattr(self, 'FC'):
-      languages.append('FC')
+    languages = ['FC']
     for language in languages:
       self.generateDependencies[language] = 0
       self.setCompilers.saveLog()
@@ -488,5 +486,6 @@ class Configure(config.base.Configure):
       self.executeTest(self.checkFortranTypeStar)
       self.executeTest(self.checkFortranTypeInitialize)
       self.executeTest(self.configureFortranFlush)
+      self.executeTest(self.checkDependencyGenerationFlag)
     return
 
