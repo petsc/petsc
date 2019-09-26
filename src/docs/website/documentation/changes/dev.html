@@ -149,6 +149,7 @@
       <h4>VecScatter:</h4>
       <ul>
         <li>The default VecScatter implementation is changed to PetscSF. In other words, the default VecScatter shares PetscSF's MPI communication code. One can use -vecscatter_type mpi1 to go back to the old implementation.</li>
+        <li>Added new InsertMode MAX_VALUES and MIN_VALUES support in VecScatterBegin/End and VecGhostUpdateBegin/End. </li>
       </ul>
       <h4>PetscSF:</h4>
       <ul>
