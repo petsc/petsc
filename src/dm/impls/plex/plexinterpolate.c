@@ -1070,6 +1070,8 @@ PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF)
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(pointSF, &numRoots, &numLeaves, &localPoints, &remotePoints);CHKERRQ(ierr);
   if (size < 2 || numRoots < 0) PetscFunctionReturn(0);
+  ierr = DMPlexGetOverlap(dm, &r);CHKERRQ(ierr);
+  if (r) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Interpolation of overlapped DMPlex not implemented yet");
   ierr = PetscObjectViewFromOptions((PetscObject) dm, NULL, "-dm_interp_pre_view");CHKERRQ(ierr);
   ierr = PetscObjectViewFromOptions((PetscObject) pointSF, NULL, "-petscsf_interp_pre_view");CHKERRQ(ierr);
   ierr = PetscLogEventBegin(DMPLEX_InterpolateSF,dm,0,0,0);CHKERRQ(ierr);

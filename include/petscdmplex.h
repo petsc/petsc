@@ -185,6 +185,7 @@ PETSC_EXTERN PetscErrorCode DMPlexSetPartitionBalance(DM, PetscBool);
 PETSC_EXTERN PetscErrorCode DMPlexGetPartitionBalance(DM, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMPlexDistribute(DM, PetscInt, PetscSF*, DM*);
 PETSC_EXTERN PetscErrorCode DMPlexDistributeOverlap(DM, PetscInt, PetscSF *, DM *);
+PETSC_EXTERN PetscErrorCode DMPlexGetOverlap(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMPlexDistributeField(DM,PetscSF,PetscSection,Vec,PetscSection,Vec);
 PETSC_EXTERN PetscErrorCode DMPlexDistributeFieldIS(DM, PetscSF, PetscSection, IS, PetscSection, IS *);
 PETSC_EXTERN PetscErrorCode DMPlexDistributeData(DM,PetscSF,PetscSection,MPI_Datatype,void*,PetscSection,void**);
@@ -210,7 +211,7 @@ PETSC_EXTERN PetscErrorCode DMPlexPermute(DM, IS, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateProcessSF(DM, PetscSF, IS *, PetscSF *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateTwoSidedProcessSF(DM, PetscSF, PetscSection, IS, PetscSection, IS, IS *, PetscSF *);
 PETSC_EXTERN PetscErrorCode DMPlexDistributeOwnership(DM, PetscSection, IS *, PetscSection, IS *);
-PETSC_EXTERN PetscErrorCode DMPlexCreateOverlap(DM, PetscInt, PetscSection, IS, PetscSection, IS, DMLabel *);
+PETSC_EXTERN PetscErrorCode DMPlexCreateOverlapLabel(DM, PetscInt, PetscSection, IS, PetscSection, IS, DMLabel *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateOverlapMigrationSF(DM, PetscSF, PetscSF *);
 PETSC_EXTERN PetscErrorCode DMPlexStratifyMigrationSF(DM, PetscSF, PetscSF *);
 

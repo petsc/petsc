@@ -406,7 +406,7 @@ PetscErrorCode DMPlexCreateTwoSidedProcessSF(DM dm, PetscSF sfPoint, PetscSectio
 
   Level: developer
 
-.seealso: DMPlexCreateOverlap()
+.seealso: DMPlexCreateOverlapLabel(), DMPlexDistribute(), DMPlexDistributeOverlap()
 @*/
 PetscErrorCode DMPlexDistributeOwnership(DM dm, PetscSection rootSection, IS *rootrank, PetscSection leafSection, IS *leafrank)
 {
@@ -446,7 +446,7 @@ PetscErrorCode DMPlexDistributeOwnership(DM dm, PetscSection rootSection, IS *ro
 }
 
 /*@C
-  DMPlexCreateOverlap - Compute owner information for shared points. This basically gets two-sided for an SF.
+  DMPlexCreateOverlapLabel - Compute owner information for shared points. This basically gets two-sided for an SF.
 
   Collective on dm
 
@@ -458,14 +458,14 @@ PetscErrorCode DMPlexDistributeOwnership(DM dm, PetscSection rootSection, IS *ro
 . leafSection - The number of processes sharing a given leaf point
 - leafrank    - The rank of each process sharing a leaf point
 
-  Output Parameter:
+  Output Parameters:
 . ovLabel     - DMLabel containing remote overlap contributions as point/rank pairings
 
   Level: developer
 
 .seealso: DMPlexDistributeOwnership(), DMPlexDistribute()
 @*/
-PetscErrorCode DMPlexCreateOverlap(DM dm, PetscInt levels, PetscSection rootSection, IS rootrank, PetscSection leafSection, IS leafrank, DMLabel *ovLabel)
+PetscErrorCode DMPlexCreateOverlapLabel(DM dm, PetscInt levels, PetscSection rootSection, IS rootrank, PetscSection leafSection, IS leafrank, DMLabel *ovLabel)
 {
   MPI_Comm           comm;
   DMLabel            ovAdjByRank; /* A DMLabel containing all points adjacent to shared points, separated by rank (value in label) */
@@ -480,9 +480,11 @@ PetscErrorCode DMPlexCreateOverlap(DM dm, PetscInt levels, PetscSection rootSect
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
+  *ovLabel = NULL;
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  if (size == 1) PetscFunctionReturn(0);
   ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
   ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(leafSection, &sStart, &sEnd);CHKERRQ(ierr);
@@ -573,7 +575,7 @@ PetscErrorCode DMPlexCreateOverlap(DM dm, PetscInt levels, PetscSection rootSect
 
   Level: developer
 
-.seealso: DMPlexCreateOverlap(), DMPlexDistribute()
+.seealso: DMPlexCreateOverlapLabel(), DMPlexDistributeOverlap(), DMPlexDistribute()
 @*/
 PetscErrorCode DMPlexCreateOverlapMigrationSF(DM dm, PetscSF overlapSF, PetscSF *migrationSF)
 {
@@ -1593,7 +1595,7 @@ PetscErrorCode DMPlexMigrate(DM dm, PetscSF sf, DM targetDM)
 
   Level: intermediate
 
-.seealso: DMPlexCreate(), DMSetAdjacency()
+.seealso: DMPlexCreate(), DMSetAdjacency(), DMPlexGetOverlap()
 @*/
 PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmParallel)
 {
@@ -1761,20 +1763,21 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
 
   Input Parameter:
 + dm  - The non-overlapping distrbuted DMPlex object
-- overlap - The overlap of partitions
+- overlap - The overlap of partitions (the same on all ranks)
 
   Output Parameter:
 + sf - The PetscSF used for point distribution
 - dmOverlap - The overlapping distributed DMPlex object, or NULL
 
-  Note: If the mesh was not distributed, the return value is NULL.
+  Notes:
+  If the mesh was not distributed, the return value is NULL.
 
   The user can control the definition of adjacency for the mesh using DMSetAdjacency(). They should choose the combination appropriate for the function
   representation on the mesh.
 
-  Level: intermediate
+  Level: advanced
 
-.seealso: DMPlexCreate(), DMSetAdjacency()
+.seealso: DMPlexCreate(), DMSetAdjacency(), DMPlexDistribute(), DMPlexCreateOverlapLabel(), DMPlexGetOverlap()
 @*/
 PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, PetscSF *sf, DM *dmOverlap)
 {
@@ -1789,6 +1792,7 @@ PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, PetscSF *sf, DM 
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidLogicalCollectiveInt(dm, overlap, 2);
   if (sf) PetscValidPointer(sf, 3);
   PetscValidPointer(dmOverlap, 4);
 
@@ -1805,7 +1809,7 @@ PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, PetscSF *sf, DM 
   ierr = PetscSectionCreate(comm, &rootSection);CHKERRQ(ierr);
   ierr = PetscSectionCreate(comm, &leafSection);CHKERRQ(ierr);
   ierr = DMPlexDistributeOwnership(dm, rootSection, &rootrank, leafSection, &leafrank);CHKERRQ(ierr);
-  ierr = DMPlexCreateOverlap(dm, overlap, rootSection, rootrank, leafSection, leafrank, &lblOverlap);CHKERRQ(ierr);
+  ierr = DMPlexCreateOverlapLabel(dm, overlap, rootSection, rootrank, leafSection, leafrank, &lblOverlap);CHKERRQ(ierr);
   /* Convert overlap label to stratified migration SF */
   ierr = DMPlexPartitionLabelCreateSF(dm, lblOverlap, &sfOverlap);CHKERRQ(ierr);
   ierr = DMPlexStratifyMigrationSF(dm, sfOverlap, &sfStratified);CHKERRQ(ierr);
@@ -1824,6 +1828,8 @@ PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, PetscSF *sf, DM 
   ierr = DMPlexCreate(comm, dmOverlap);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *dmOverlap, "Parallel Mesh");CHKERRQ(ierr);
   ierr = DMPlexMigrate(dm, sfOverlap, *dmOverlap);CHKERRQ(ierr);
+  /* Store the overlap in the new DM */
+  ((DM_Plex*)(*dmOverlap)->data)->overlap = overlap + ((DM_Plex*)dm->data)->overlap;
   /* Build the new point SF */
   ierr = DMPlexCreatePointSF(*dmOverlap, sfOverlap, PETSC_FALSE, &sfPoint);CHKERRQ(ierr);
   ierr = DMSetPointSF(*dmOverlap, sfPoint);CHKERRQ(ierr);
@@ -1837,6 +1843,41 @@ PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, PetscSF *sf, DM 
   ierr = PetscLogEventEnd(DMPLEX_DistributeOverlap, dm, 0, 0, 0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+PetscErrorCode DMPlexGetOverlap_Plex(DM dm, PetscInt *overlap)
+{
+  DM_Plex        *mesh  = (DM_Plex*) dm->data;
+
+  PetscFunctionBegin;
+  *overlap = mesh->overlap;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexGetOverlap - Get the DMPlex partition overlap.
+
+  Not collective
+
+  Input Parameter:
+. dm - The DM
+
+  Output Parameters:
+. overlap - The overlap of this DM
+
+  Level: intermediate
+
+.seealso: DMPlexDistribute(), DMPlexDistributeOverlap(), DMPlexCreateOverlapLabel()
+@*/
+PetscErrorCode DMPlexGetOverlap(DM dm, PetscInt *overlap)
+{
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = PetscUseMethod(dm,"DMPlexGetOverlap_C",(DM,PetscInt*),(dm,overlap));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 /*@C
   DMPlexGetGatherDM - Get a copy of the DMPlex that gathers all points on the

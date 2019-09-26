@@ -7067,6 +7067,7 @@ static PetscErrorCode DMPlexAreAllConePointsInArray_Private(DM dm, PetscInt p, P
 
   Notes:
   This is mainly intended for debugging/testing purposes.
+  It currently checks only meshes with no partition overlapping.
 
   Level: developer
 
@@ -7083,6 +7084,11 @@ PetscErrorCode DMPlexCheckPointSF(DM dm)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
+  ierr = DMPlexGetOverlap(dm, &d);CHKERRQ(ierr);
+  if (d) {
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)dm), "Warning: DMPlexCheckPointSF() is currently not implemented for meshes with partition overlapping");
+    PetscFunctionReturn(0);
+  }
   ierr = PetscSFGetGraph(sf, NULL, &nleaves, &locals, NULL);CHKERRQ(ierr);
 
   /* 1) check there are no faces in 2D, cells in 3D, in interface */
