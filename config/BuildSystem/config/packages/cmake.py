@@ -74,9 +74,9 @@ class Configure(config.package.GNUPackage):
       try:
         (output, error, status) = config.base.Configure.executeShellCommand(self.cmake+' --version', log = self.log)
         if status:
-          self.log.write('cmake --version failed: '+str(e)+'\n')
+          self.log.write('cmake --version failed: '+str(error)+'\n')
           return
-      except:
+      except RuntimeError as e:
         self.log.write('cmake --version failed: '+str(e)+'\n')
         return
       output = output.replace('stdout: ','')
