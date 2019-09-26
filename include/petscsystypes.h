@@ -529,7 +529,7 @@ typedef enum {
           VecSetValuesLocal(), VecSetValuesBlockedLocal(), MatSetValuesBlocked(),
           MatSetValuesBlockedLocal(), MatSetValuesLocal(), VecScatterBegin(), VecScatterEnd()
 E*/
- typedef enum {NOT_SET_VALUES, INSERT_VALUES, ADD_VALUES, MAX_VALUES, INSERT_ALL_VALUES, ADD_ALL_VALUES, INSERT_BC_VALUES, ADD_BC_VALUES} InsertMode;
+ typedef enum {NOT_SET_VALUES, INSERT_VALUES, ADD_VALUES, MAX_VALUES, MIN_VALUES, INSERT_ALL_VALUES, ADD_ALL_VALUES, INSERT_BC_VALUES, ADD_BC_VALUES} InsertMode;
 
 /*MC
     INSERT_VALUES - Put a value into a vector or matrix, overwrites any previous value
