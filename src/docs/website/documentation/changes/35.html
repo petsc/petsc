@@ -170,7 +170,7 @@
       <h4>KSP:</h4>
       <ul>
         <li><tt>KSPSkipConverged()</tt> renamed to <tt>KSPConvergedSkip()</tt>.</li>
-        <li><tt>KSPSetOperators()</tt> no longer has the <tt>MatStructure</tt> argument. The Mat objects now track that information themselves. Use <tt>KPS/PCSetReusePreconditioner()</tt> to prevent the recomputation of the preconditioner if the operator changed in the way that <tt>SAME_PRECONDITIONER</tt> did with <tt>KSPSetOperators()</tt></li>
+        <li><tt>KSPSetOperators()</tt> no longer has the <tt>MatStructure</tt> argument. The Mat objects now track that information themselves. Use <tt>KSP/PCSetReusePreconditioner()</tt> to prevent the recomputation of the preconditioner if the operator changed in the way that <tt>SAME_PRECONDITIONER</tt> did with <tt>KSPSetOperators()</tt></li>
         <li><tt>KSPDefaultConverged()</tt>, <tt>KSPDefaultConvergedDestroy()</tt>, <tt>KSPDefaultConvergedCreate()</tt>, <tt>KSPDefaultConvergedSetUIRNorm()</tt>, and <tt>KSPDefaultConvergedSetUMIRNorm()</tt> are now <tt>KSPConvergedDefault()</tt>, <tt>KSPConvergedDefaultDestroy()</tt>, <tt>KSPConvergedDefaultCreate()</tt>, <tt>KSPConvergedDefaultSetUIRNorm()</tt>, and <tt>KSPConvergedDefaultSetUMIRNorm()</tt>. for consistency.</li>
       </ul>
       <h4>SNES:</h4>

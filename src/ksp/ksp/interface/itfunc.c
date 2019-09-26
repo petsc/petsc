@@ -603,7 +603,7 @@ static PetscErrorCode KSPViewFinalResidual_Internal(KSP ksp, PetscViewer viewer,
 .  -ksp_view_mat_explicit - for matrix-free operators, computes the matrix entries and views them
 .  -ksp_view_preconditioned_operator_explicit - computes the product of the preconditioner and matrix as an explicit matrix and views it
 .  -ksp_converged_reason - print reason for converged or diverged, also prints number of iterations
-.  -ksp_final_residual - print 2-norm of true linear system residual at the end of the solution process
+.  -ksp_view_final_residual - print 2-norm of true linear system residual at the end of the solution process
 -  -ksp_view - print the ksp data structure at the end of the system solution
 
    Notes:
