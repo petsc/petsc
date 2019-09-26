@@ -6,6 +6,7 @@ if __name__ == '__main__':
   sys.path.insert(0, os.path.abspath('config'))
   import configure
   configure_options = [
+    '--with-mpi-dir=/home/petsc/soft/openmpi-4.0.1-cuda',
     'COPTFLAGS=-g -O',
     'FOPTFLAGS=-g -O',
     'CXXOPTFLAGS=-g -O',
