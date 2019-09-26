@@ -12,8 +12,8 @@ include $(PETSC_DIR)/lib/petsc/conf/variables
 
 TESTDIR ?= ./$(PETSC_ARCH)/tests
 MODDIR := $(PETSC_DIR)/$(PETSC_ARCH)/include
-TESTLOGTAPFILE ?= $(TESTDIR)/test_$(PETSC_ARCH)_tap.log
-TESTLOGERRFILE ?= $(TESTDIR)/test_$(PETSC_ARCH)_err.log
+TESTLOGTAPFILE ?= $(TESTDIR)/test_tap.log
+TESTLOGERRFILE ?= $(TESTDIR)/test_err.log
 EXAMPLESDIR := $(TESTSRCDIR)
 
 pkgs := sys vec mat dm ksp snes ts tao
@@ -281,6 +281,10 @@ endif
 
 print-test:
 	-@echo $(TESTTARGETS)
+
+show-fail:
+	-@echo $(TESTTARGETS)
+
 
 # Don't start running tests until starttime has completed
 $(alltesttargets:%=$(TESTDIR)/counts/%.counts) : starttime
