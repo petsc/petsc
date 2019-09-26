@@ -563,6 +563,16 @@ M*/
 
 M*/
 
+/*MC
+    MIN_VALUES - Puts the minimal of the scattered/gathered value and the current value into each location
+
+    Level: beginner
+
+.seealso: InsertMode, VecScatterBegin(), VecScatterEnd(), ADD_VALUES, INSERT_VALUES
+
+M*/
+
+
 /*S
    PetscSubcomm - A decomposition of an MPI communicator into subcommunicators
 
