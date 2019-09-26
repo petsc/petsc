@@ -11,7 +11,7 @@
 -  fcn - orthogonalization function
 
    Calling Sequence of function:
-$   errorcode = int fcn(KSP ksp,int it);
+$   errorcode = PetscErrorCode fcn(KSP ksp,PetscInt it);
 $   it is one minus the number of GMRES iterations since last restart;
 $    i.e. the size of Krylov space minus one
 
@@ -56,7 +56,7 @@ PetscErrorCode  KSPGMRESSetOrthogonalization(KSP ksp,PetscErrorCode (*fcn)(KSP,P
 .  fcn - orthogonalization function
 
    Calling Sequence of function:
-$   errorcode = int fcn(KSP ksp,int it);
+$   errorcode = PetscErrorCode fcn(KSP ksp,PetscInt it);
 $   it is one minus the number of GMRES iterations since last restart;
 $    i.e. the size of Krylov space minus one
 

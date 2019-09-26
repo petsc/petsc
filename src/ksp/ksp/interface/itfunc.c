@@ -1751,7 +1751,7 @@ PetscErrorCode PetscMonitorCompare(PetscErrorCode (*nmon)(void),void *nmctx,Pets
           (may be NULL)
 
    Calling Sequence of monitor:
-$     monitor (KSP ksp, int it, PetscReal rnorm, void *mctx)
+$     monitor (KSP ksp, PetscInt it, PetscReal rnorm, void *mctx)
 
 +  ksp - iterative context obtained from KSPCreate()
 .  it - iteration number
@@ -1959,12 +1959,12 @@ PetscErrorCode  KSPGetResidualHistory(KSP ksp,PetscReal *a[],PetscInt *na)
 
    Input Parameters:
 +  ksp - iterative context obtained from KSPCreate()
-.  converge - pointer to int function
+.  converge - pointer to the function
 .  cctx    - context for private data for the convergence routine (may be null)
 -  destroy - a routine for destroying the context (may be null)
 
    Calling sequence of converge:
-$     converge (KSP ksp, int it, PetscReal rnorm, KSPConvergedReason *reason,void *mctx)
+$     converge (KSP ksp, PetscInt it, PetscReal rnorm, KSPConvergedReason *reason,void *mctx)
 
 +  ksp - iterative context obtained from KSPCreate()
 .  it - iteration number
@@ -2021,7 +2021,7 @@ PetscErrorCode  KSPSetConvergenceTest(KSP ksp,PetscErrorCode (*converge)(KSP,Pet
 -  destroy - a routine for destroying the context (may be null)
 
    Calling sequence of converge:
-$     converge (KSP ksp, int it, PetscReal rnorm, KSPConvergedReason *reason,void *mctx)
+$     converge (KSP ksp, PetscInt it, PetscReal rnorm, KSPConvergedReason *reason,void *mctx)
 
 +  ksp - iterative context obtained from KSPCreate()
 .  it - iteration number
@@ -2057,7 +2057,7 @@ PetscErrorCode  KSPGetConvergenceTest(KSP ksp,PetscErrorCode (**converge)(KSP,Pe
 -  destroy - a routine for destroying the context
 
    Calling sequence of converge:
-$     converge (KSP ksp, int it, PetscReal rnorm, KSPConvergedReason *reason,void *mctx)
+$     converge (KSP ksp, PetscInt it, PetscReal rnorm, KSPConvergedReason *reason,void *mctx)
 
 +  ksp - iterative context obtained from KSPCreate()
 .  it - iteration number

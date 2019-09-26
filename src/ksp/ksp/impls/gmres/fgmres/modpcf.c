@@ -13,7 +13,7 @@
 -  d - optional context destroy routine
 
    Calling Sequence of function:
-    ierr = int fcn(KSP ksp,int total_its,int loc_its,PetscReal res_norm,void*ctx);
+    PetscErrorCode fcn(KSP ksp,PetscInt total_its,PetscInt loc_its,PetscReal res_norm,void*ctx);
 
     ksp - the ksp context being used.
     total_its     - the total number of FGMRES iterations that have occurred.

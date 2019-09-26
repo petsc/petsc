@@ -24,7 +24,7 @@ typedef struct {
   else if (n == METIS_ERROR_MEMORY) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ParMETIS error due to insufficient memory in %s",func); \
   else if (n == METIS_ERROR) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ParMETIS general error in %s",func); \
 
-#define PetscStackCallParmetis(func,args) do {PetscStackPush(#func);status = func args;PetscStackPop; CHKERRQPARMETIS(status,#func);} while (0)
+#define PetscStackCallParmetis(func,args) do {PetscStackPush(#func);int status = func args;PetscStackPop; CHKERRQPARMETIS(status,#func);} while (0)
 
 static PetscErrorCode MatPartitioningApply_Parmetis_Private(MatPartitioning part, PetscBool useND, PetscBool isImprove, IS *partitioning)
 {
@@ -60,7 +60,6 @@ static PetscErrorCode MatPartitioningApply_Parmetis_Private(MatPartitioning part
     PetscInt   *NDorder = NULL;
     PetscInt   itmp     = 0,wgtflag=0, numflag=0, ncon=1, nparts=part->n, options[24], i, j;
     real_t     *tpwgts,*ubvec,itr=0.1;
-    int        status;
 
     ierr = PetscObjectGetComm((PetscObject)pmat,&pcomm);CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG)
@@ -70,7 +69,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis_Private(MatPartitioning part
       ierr = MatGetOwnershipRange(pmat,&rstart,NULL);CHKERRQ(ierr);
       for (i=0; i<pmat->rmap->n; i++) {
         for (j=xadj[i]; j<xadj[i+1]; j++) {
-          if (adjncy[j] == i+rstart) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Row %d has diagonal entry; Parmetis forbids diagonal entry",i+rstart);
+          if (adjncy[j] == i+rstart) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Row %D has diagonal entry; Parmetis forbids diagonal entry",i+rstart);
         }
       }
     }
@@ -83,19 +82,14 @@ static PetscErrorCode MatPartitioningApply_Parmetis_Private(MatPartitioning part
       const PetscInt *part_indices;
       PetscValidHeaderSpecific(*partitioning,IS_CLASSID,4);
       ierr = ISGetIndices(*partitioning,&part_indices);CHKERRQ(ierr);
-      for (i=0; i<pmat->rmap->n; i++) {
-        locals[i] = part_indices[i*bs];
-      }
+      for (i=0; i<pmat->rmap->n; i++) locals[i] = part_indices[i*bs];
       ierr = ISRestoreIndices(*partitioning,&part_indices);CHKERRQ(ierr);
       ierr = ISDestroy(partitioning);CHKERRQ(ierr);
     }
 
-    if (adj->values && !part->vertex_weights)
-      wgtflag = 1;
-    if (part->vertex_weights && !adj->values)
-      wgtflag = 2;
-    if (part->vertex_weights && adj->values)
-      wgtflag = 3;
+    if (adj->values && !part->vertex_weights) wgtflag = 1;
+    if (part->vertex_weights && !adj->values) wgtflag = 2;
+    if (part->vertex_weights && adj->values) wgtflag = 3;
 
     if (PetscLogPrintInfo) {itmp = pmetis->printout; pmetis->printout = 127;}
     ierr = PetscMalloc1(ncon*nparts,&tpwgts);CHKERRQ(ierr);
@@ -109,14 +103,10 @@ static PetscErrorCode MatPartitioningApply_Parmetis_Private(MatPartitioning part
       }
     }
     ierr = PetscMalloc1(ncon,&ubvec);CHKERRQ(ierr);
-    for (i=0; i<ncon; i++) {
-      ubvec[i] = 1.05;
-    }
+    for (i=0; i<ncon; i++) ubvec[i] = 1.05;
     /* This sets the defaults */
     options[0] = 0;
-    for (i=1; i<24; i++) {
-      options[i] = -1;
-    }
+    for (i=1; i<24; i++) options[i] = -1;
     /* Duplicate the communicator to be sure that ParMETIS attribute caching does not interfere with PETSc. */
     ierr = MPI_Comm_dup(pcomm,&comm);CHKERRQ(ierr);
     if (useND) {
@@ -248,7 +238,7 @@ PetscErrorCode MatPartitioningView_Parmetis(MatPartitioning part,PetscViewer vie
 {
   MatPartitioning_Parmetis *pmetis = (MatPartitioning_Parmetis*)part->data;
   PetscErrorCode           ierr;
-  int                      rank;
+  PetscMPIInt              rank;
   PetscBool                iascii;
 
   PetscFunctionBegin;
@@ -260,9 +250,9 @@ PetscErrorCode MatPartitioningView_Parmetis(MatPartitioning part,PetscViewer vie
     } else {
       ierr = PetscViewerASCIIPrintf(viewer,"  Using sequential coarse grid partitioner\n");CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(viewer,"  Using %d fold factor\n",pmetis->foldfactor);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Using %D fold factor\n",pmetis->foldfactor);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  [%d]Number of cuts found %d\n",rank,pmetis->cuts);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  [%d]Number of cuts found %D\n",rank,pmetis->cuts);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
   }
@@ -480,7 +470,6 @@ PetscErrorCode MatMeshToCellGraph(Mat mesh,PetscInt ncommonnodes,Mat *dual)
   PetscInt       numflag=0;
   Mat_MPIAdj     *adj   = (Mat_MPIAdj*)mesh->data,*newadj;
   PetscBool      flg;
-  int            status;
   MPI_Comm       comm;
 
   PetscFunctionBegin;

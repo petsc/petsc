@@ -343,8 +343,8 @@ PetscErrorCode ISIntersect(IS is1,IS is2,IS *isout)
   ierr = ISGetLocalSize(is1,&n1);CHKERRQ(ierr);
   ierr = ISGetLocalSize(is2,&n2);CHKERRQ(ierr);
   if (n1 < n2) {
-    IS tempis = is1;
-    int ntemp = n1;
+    IS       tempis = is1;
+    PetscInt ntemp = n1;
 
     is1 = is2;
     is2 = tempis;
@@ -387,7 +387,7 @@ PetscErrorCode ISIntersect(IS is1,IS is2,IS *isout)
       }
     }
   }
-  ierr = PetscRealloc(sizeof (PetscInt) * (size_t) nout,&iout);CHKERRQ(ierr);
+  ierr = PetscRealloc(nout*sizeof(PetscInt),&iout);CHKERRQ(ierr);
 
   /* create the new IS containing the sum */
   ierr = ISCreateGeneral(comm,nout,iout,PETSC_OWN_POINTER,isout);CHKERRQ(ierr);

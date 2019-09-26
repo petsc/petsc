@@ -1412,7 +1412,7 @@ PetscErrorCode TaoSetConvergenceTest(Tao tao, PetscErrorCode (*conv)(Tao,void*),
           monitor routine (may be NULL)
 
    Calling sequence of mymonitor:
-$     int mymonitor(Tao tao,void *mctx)
+$     PetscErrorCode mymonitor(Tao tao,void *mctx)
 
 +    tao - the Tao solver context
 -    mctx - [optional] monitoring context
@@ -2148,7 +2148,7 @@ PetscErrorCode TaoSetType(Tao tao, TaoType type)
    TaoRegister - Adds a method to the TAO package for unconstrained minimization.
 
    Synopsis:
-   TaoRegister(char *name_solver,char *path,char *name_Create,int (*routine_Create)(Tao))
+   TaoRegister(char *name_solver,char *path,char *name_Create,PetscErrorCode (*routine_Create)(Tao))
 
    Not collective
 

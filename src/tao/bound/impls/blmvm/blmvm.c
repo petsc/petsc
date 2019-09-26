@@ -193,7 +193,7 @@ static PetscErrorCode TaoSetFromOptions_BLMVM(PetscOptionItems* PetscOptionsObje
 
 
 /*------------------------------------------------------------*/
-static int TaoView_BLMVM(Tao tao, PetscViewer viewer)
+static PetscErrorCode TaoView_BLMVM(Tao tao, PetscViewer viewer)
 {
   TAO_BLMVM      *lmP = (TAO_BLMVM *)tao->data;
   PetscBool      isascii;
