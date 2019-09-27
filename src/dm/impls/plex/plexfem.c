@@ -211,15 +211,16 @@ PetscErrorCode DMPlexCreateRigidBody(DM dm, MatNullSpace *sp)
     ctx[1] = d;
     ierr = DMProjectFunction(dm, 0.0, &func, &voidctx, INSERT_VALUES, mode[d]);CHKERRQ(ierr);
   }
-  for (i = 0; i < PetscMin(dim, mmin); ++i) {ierr = VecNormalize(mode[i], NULL);CHKERRQ(ierr);}
   /* Orthonormalize system */
-  for (i = dim; i < mmin; ++i) {
+  for (i = 0; i < mmin; ++i) {
     PetscScalar dots[6];
 
-    ierr = VecMDot(mode[i], i, mode, dots);CHKERRQ(ierr);
-    for (j = 0; j < i; ++j) dots[j] *= -1.0;
-    ierr = VecMAXPY(mode[i], i, dots, mode);CHKERRQ(ierr);
     ierr = VecNormalize(mode[i], NULL);CHKERRQ(ierr);
+    ierr = VecMDot(mode[i], mmin-i-1, mode+i+1, dots+i+1);CHKERRQ(ierr);
+    for (j = i+1; j < mmin; ++j) {
+      dots[j] *= -1.0;
+      ierr = VecAXPY(mode[j], dots[j], mode[i]);CHKERRQ(ierr);
+    }
   }
   ierr = MatNullSpaceCreate(comm, PETSC_FALSE, mmin, mode, sp);CHKERRQ(ierr);
   for (i = 0; i < m; ++i) {ierr = VecDestroy(&mode[i]);CHKERRQ(ierr);}
@@ -281,13 +282,16 @@ PetscErrorCode DMPlexCreateRigidBodies(DM dm, PetscInt nb, DMLabel label, const 
       off   += nids[b];
     }
   }
-  for (i = 0; i < dim; ++i) {ierr = VecNormalize(mode[i], NULL);CHKERRQ(ierr);}
   /* Orthonormalize system */
   for (i = 0; i < m; ++i) {
-    ierr = VecMDot(mode[i], i, mode, dots);CHKERRQ(ierr);
-    for (j = 0; j < i; ++j) dots[j] *= -1.0;
-    ierr = VecMAXPY(mode[i], i, dots, mode);CHKERRQ(ierr);
+    PetscScalar dots[6];
+
     ierr = VecNormalize(mode[i], NULL);CHKERRQ(ierr);
+    ierr = VecMDot(mode[i], m-i-1, mode+i+1, dots+i+1);CHKERRQ(ierr);
+    for (j = i+1; j < m; ++j) {
+      dots[j] *= -1.0;
+      ierr = VecAXPY(mode[j], dots[j], mode[i]);CHKERRQ(ierr);
+    }
   }
   ierr = MatNullSpaceCreate(comm, PETSC_FALSE, m, mode, sp);CHKERRQ(ierr);
   for (i = 0; i< m; ++i) {ierr = VecDestroy(&mode[i]);CHKERRQ(ierr);}
