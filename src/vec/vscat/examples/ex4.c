@@ -168,5 +168,5 @@ int main(int argc,char **argv)
       # have this filter since some messages might go through shared memory and PETSc have not yet
       # implemented message logging for them. Add this test to just test mpi3 VecScatter type works.
       filter: grep -v "VecScatter(bs="
-      requires: double define(PETSC_USE_LOG) define(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)
+      requires: double define(PETSC_USE_LOG) define(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY)
 TEST*/

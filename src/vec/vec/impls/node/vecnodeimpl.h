@@ -4,7 +4,7 @@
 
 #include <petsc/private/vecimpl.h>
 
-#if defined(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)
+#if defined(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY)
 typedef struct {
   VECHEADER
   MPI_Win     win;

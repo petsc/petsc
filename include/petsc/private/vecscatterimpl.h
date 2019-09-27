@@ -99,7 +99,7 @@ typedef struct {
   MPI_Status             *sstatus,*rstatus;
   PetscInt               bs;
   PetscBool              contiq;
-#if defined(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)      /* these uses windows for communication only within each node */
+#if defined(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY)   /* these uses windows for communication only within each node */
   PetscMPIInt            msize,sharedcnt;           /* total to entries that are going to processes with the same shared memory space */
   PetscScalar            *sharedspace;              /* space each process puts data to be read from other processes; allocated by MPI */
   PetscScalar            **sharedspaces;            /* [msize] space other processes put data to be read from this processes. */

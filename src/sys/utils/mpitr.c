@@ -67,7 +67,7 @@ PetscErrorCode  PetscMPIDump(FILE *fd)
 
 #endif
 
-#if defined(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)
+#if defined(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY)
 /*
     OpenMPI version of MPI_Win_allocate_shared() does not provide __float128 alignment so we provide
     a utility that insures alignment up to data item size.
