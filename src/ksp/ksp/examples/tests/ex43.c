@@ -96,22 +96,35 @@ int main(int argc,char **argv)
       requires: cuda datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/cfd.2.10 -mat_type seqaijcusparse -pc_factor_mat_solver_type cusparse -mat_cusparse_storage_format csr -vec_type cuda -ksp_type bicg -pc_type ilu -pc_factor_mat_ordering_type nd
 
-   test:
-      suffix: 5
+   testset:
       nsize: 2
       requires: cuda datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/shallow_water1 -mat_type mpiaijcusparse -mat_cusparse_mult_diag_storage_format hyb -pc_type none -vec_type cuda
+      test:
+        suffix: 5
+      test:
+        suffix: 5_gpu_aware_mpi
+        args: -use_gpu_aware_mpi
+        requires: define(PETSC_HAVE_GPU_AWARE_MPI)
+        output_file: output/ex43_5.out
 
    test:
       suffix: 6
       requires: cuda datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/shallow_water1 -mat_type seqaijcusparse -pc_type none -vec_type cuda
 
-   test:
-      suffix: 7
+   testset:
       nsize: 2
       requires: cuda datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/shallow_water1 -mat_type mpiaijcusparse -pc_type none -vec_type cuda
+
+      test:
+        suffix: 7
+      test:
+        suffix: 7_gpu_aware_mpi
+        args: -use_gpu_aware_mpi
+        requires: define(PETSC_HAVE_GPU_AWARE_MPI)
+        output_file: output/ex43_7.out
 
    test:
       suffix: 8
