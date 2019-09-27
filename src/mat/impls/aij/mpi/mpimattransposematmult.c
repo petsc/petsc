@@ -2,7 +2,7 @@
 /*
   Defines matrix-matrix product routines for pairs of MPIAIJ matrices
           C = A^T * B
-  The routines are slightly modified from MatTransposeMatMultxxx_SeqAIJ_SeqDense(). 
+  The routines are slightly modified from MatTransposeMatMultxxx_SeqAIJ_SeqDense().
 */
 #include <../src/mat/impls/aij/seq/aij.h> /*I "petscmat.h" I*/
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
@@ -32,7 +32,7 @@ PetscErrorCode MatTransposeMatMult_MPIAIJ_MPIDense(Mat A,Mat B,MatReuse scall,Pe
     ierr = PetscLogEventBegin(MAT_TransposeMatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
     ierr = MatTransposeMatMultSymbolic_MPIAIJ_MPIDense(A,B,fill,C);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(MAT_TransposeMatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
-  } 
+  }
   ierr = PetscLogEventBegin(MAT_TransposeMatMultNumeric,A,B,0,0);CHKERRQ(ierr);
   ierr = MatTransposeMatMultNumeric_MPIAIJ_MPIDense(A,B,*C);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_TransposeMatMultNumeric,A,B,0,0);CHKERRQ(ierr);
@@ -47,7 +47,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal
   Mat                 Cdense;
   Vec                 bt,ct;
   Mat_MPIDense        *c;
-  
+
   PetscFunctionBegin;
   ierr = PetscNew(&atb);CHKERRQ(ierr);
 
@@ -78,10 +78,11 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal
 PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIDense(Mat A,Mat B,Mat C)
 {
   PetscErrorCode      ierr;
-  PetscInt            i,j,k,m=A->rmap->n,n=A->cmap->n,BN=B->cmap->N;
   const PetscScalar   *Barray,*ctarray;
   PetscScalar         *Carray,*btarray;
-  Mat_MPIDense        *c=(Mat_MPIDense*)C->data;
+  Mat_MPIDense        *b=(Mat_MPIDense*)B->data,*c=(Mat_MPIDense*)C->data;
+  Mat_SeqDense        *bseq=(Mat_SeqDense*)(b->A)->data,*cseq=(Mat_SeqDense*)(c->A)->data;
+  PetscInt            i,j,m=A->rmap->n,n=A->cmap->n,ldb=bseq->lda,BN=B->cmap->N,ldc=cseq->lda;
   Mat_MatTransMatMult *atb=c->atb;
   Vec                 bt=atb->bt,ct=atb->ct;
 
@@ -94,9 +95,8 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIDense(Mat A,Mat B,Mat C)
   ierr = MatDenseGetArrayRead(B,&Barray);CHKERRQ(ierr);
   ierr = VecGetArray(bt,&btarray);CHKERRQ(ierr);
 
-  k=0;
   for (j=0; j<BN; j++) {
-    for (i=0; i<m; i++) btarray[i*BN + j] = Barray[k++];
+    for (i=0; i<m; i++) btarray[i*BN + j] = Barray[j*ldb + i];
   }
   ierr = VecRestoreArray(bt,&btarray);CHKERRQ(ierr);
   ierr = MatDenseRestoreArrayRead(B,&Barray);CHKERRQ(ierr);
@@ -104,12 +104,12 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIDense(Mat A,Mat B,Mat C)
   /* compute ct = mA^T * cb */
   ierr = MatMultTranspose(atb->mA,bt,ct);CHKERRQ(ierr);
 
-  /* transpose local arry of ct to matrix C */
+  /* transpose local array of ct to matrix C */
   ierr = MatDenseGetArray(C,&Carray);CHKERRQ(ierr);
   ierr = VecGetArrayRead(ct,&ctarray);CHKERRQ(ierr);
-  k = 0;
+
   for (j=0; j<BN; j++) {
-    for (i=0; i<n; i++) Carray[k++] = ctarray[i*BN + j];
+    for (i=0; i<n; i++) Carray[j*ldc + i] = ctarray[i*BN + j];
   }
   ierr = VecRestoreArrayRead(ct,&ctarray);CHKERRQ(ierr);
   ierr = MatDenseRestoreArray(C,&Carray);CHKERRQ(ierr);
