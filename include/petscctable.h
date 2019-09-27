@@ -58,6 +58,9 @@ PETSC_STATIC_INLINE PetscErrorCode PetscTableAdd(PetscTable ta,PetscInt key,Pets
       case MAX_VALUES:
         ta->table[hash] = PetscMax(ta->table[hash],data);
         break;
+      case MIN_VALUES:
+        ta->table[hash] = PetscMin(ta->table[hash],data);
+        break;
       case NOT_SET_VALUES:
       case INSERT_ALL_VALUES:
       case ADD_ALL_VALUES:

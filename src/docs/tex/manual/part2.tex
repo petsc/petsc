@@ -924,6 +924,9 @@ vector elements will be inserted into the specified locations of the
 destination vector, overwriting any existing values.  To add the
 components, rather than insert them, the user should select the option
 \lstinline{ADD_VALUES} instead of \lstinline{INSERT_VALUES}.
+One can also use \lstinline{MAX_VALUES} or \lstinline{MIN_VALUES} to
+replace destination with the maximal or minimal of its current value and the scattered values.
+
 
 To perform a conventional gather operation, the user simply makes
  the destination index set,
@@ -1089,6 +1092,7 @@ process. The arguments \lstinline{ADD_VALUES} and \lstinline{SCATTER_REVERSE}
 update the ``local'' portions of the vector from all the other
 processes' ghost values.  This would be appropriate, for example,
 when performing a finite element assembly of a load vector.
+One can also use \lstinline{MAX_VALUES} or \lstinline{MIN_VALUES} with \lstinline{SCATTER_REVERSE}.
 
 Section \ref{sec_partitioning} discusses the important topic of partitioning
 an unstructured grid.
