@@ -897,7 +897,7 @@ PetscErrorCode DMPlexOrientInterface(DM dm)
     ierr = DMPlexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
     ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
     if (debug) {ierr = PetscSynchronizedPrintf(comm, "[%d]  %D: cone=[%D %D] leaves=[%D %D] roots=[%D %D] leavesRanks=[%D %D] rootsRanks=[%D %D]\n", rank, p, cone[0], cone[1], leaves[p][0], leaves[p][1], roots[p][0], roots[p][1], leavesRanks[p][0], leavesRanks[p][1], rootsRanks[p][0], rootsRanks[p][1]);CHKERRQ(ierr);}
-    if ((leaves[p][0] != roots[p][0]) || (leaves[p][1] != roots[p][1]) || (leavesRanks[p][0] != rootsRanks[p][0]) || (leavesRanks[p][0] != rootsRanks[p][0])) {
+    if ((leaves[p][0] != roots[p][0]) || (leaves[p][1] != roots[p][1]) || (leavesRanks[p][0] != rootsRanks[p][0]) || (leavesRanks[p][1] != rootsRanks[p][1])) {
       PetscInt masterCone[2];
       /* Translate these two cone points back to leave numbering */
       for (c = 0; c < 2; c++) {
