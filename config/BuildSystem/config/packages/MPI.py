@@ -320,6 +320,10 @@ shared libraries and run with --known-mpi-shared-libraries=1')
                        if (MPI_Neighbor_alltoallv(0,0,0,MPI_INT,0,0,0,MPI_INT,distcomm));\n\
                        if (MPI_Ineighbor_alltoallv(0,0,0,MPI_INT,0,0,0,MPI_INT,distcomm,&req));\n'):
       self.addDefine('HAVE_MPI_NEIGHBORHOOD_COLLECTIVES',1)
+    if hasattr(self, 'ompi_major_version'):
+      openmpi_cuda_test = '#include<mpi.h>\n #include <mpi-ext.h>\n #if defined(MPIX_CUDA_AWARE_SUPPORT) && MPIX_CUDA_AWARE_SUPPORT\n #else\n #error This OpenMPI is not CUDA-aware\n #endif\n'
+      if self.checkCompile(openmpi_cuda_test):
+        self.addDefine('HAVE_MPI_GPU_AWARE', 1)
     self.compilers.CPPFLAGS = oldFlags
     self.compilers.LIBS = oldLibs
     self.logWrite(self.framework.restoreLog())
