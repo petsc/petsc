@@ -111,6 +111,7 @@
           <li>PetscArrayzero() should be used instead of PetscMemzero(), it takes a count argument instead of a byte argument</li>
           <li>PetscArraymove() should be used instead of PetscMemmove(), it takes a count argument instead of a byte argument</li>
           <li>The ./configure options -with-gnu-compilers and -with-vendor-compilers are removed</li>
+          <li>The ./configure option --with-avx512-kernels defaults to true now so the manually optimized AVX-512 kernels are used by default</li>
           <li>The order ./configure tests compilers has changed so there may be a different compiler selected if you do not provide them</li>
           <li>Added --with-64-bit-blas-indices that will switch to 64 bit indices when using MKL libraries for BLAS/LAPACK and build OpenBLAS with this support</li>
           <li>Changed PETSC_DEPRECATED() to PETSC_DEPRECATED_FUNCTION() and PETSC_DEPRECATED_TYPEDEF() to match naming of PETSC_DEPRECATED_ENUM() and PETSC_DEPRECATED_MACRO</li>
@@ -201,6 +202,8 @@
           <li>Added second-order adjoint solvers based on Runge-Kutta methods and Theta methods</li>
           <li>Improved the usage of first-order adjoint solvers in an optimization context. (The TS object can be reused in the optimization loop)</li>
           <li>Changed the APIs for integrand evaluations and corresponding derivative evaluations. TSSetCostIntegrand() is deprecated. (Instead a quadrature TS is used to handle the callbacks)</li>
+          <li>TSTrajectory creates a unique name for folders that store the checkpoint data. Users can rerun adjoint codes without worrying about the folder names, and run multiple codes under the same directory.</li>
+          <li>Added support for using finite-differencing (and coloring) to approximate the Jacobians needed by the adjoint solvers. -snes_fd_color can be used for both implicit and explicit methods.</li>
         </ul>
       <h4>DM/DA:</h4>
       <ul>
