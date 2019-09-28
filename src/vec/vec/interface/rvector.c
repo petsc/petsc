@@ -1584,6 +1584,46 @@ PetscErrorCode VecGetArray(Vec x,PetscScalar **a)
 }
 
 /*@C
+   VecGetArrayInPlace - Like VecGetArray(), but if this is a CUDA vector and it is currently offloaded to GPU,
+   the returned pointer will be a GPU pointer to the GPU memory that contains this processor's portion of the
+   vector data. Otherwise, it functions as VecGetArray().
+
+   Logically Collective on Vec
+
+   Input Parameter:
+.  x - the vector
+
+   Output Parameter:
+.  a - location to put pointer to the array
+
+   Level: beginner
+
+.seealso: VecRestoreArrayInPlace(), VecRestoreArrayInPlace(), VecRestoreArray(), VecGetArrayRead(), VecGetArrays(), VecGetArrayF90(), VecGetArrayReadF90(),
+          VecPlaceArray(), VecGetArray2d(), VecGetArrayPair(), VecRestoreArrayPair(), VecGetArrayWrite(), VecRestoreArrayWrite()
+@*/
+PetscErrorCode VecGetArrayInPlace(Vec x,PetscScalar **a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  ierr = VecSetErrorIfLocked(x,1);CHKERRQ(ierr);
+
+#if defined(PETSC_HAVE_CUDA)
+  if (x->petscnative && x->valid_GPU_array == PETSC_OFFLOAD_GPU) {
+    PetscBool is_cudatype = PETSC_FALSE;
+    ierr = PetscObjectTypeCompareAny((PetscObject)x,&is_cudatype,VECSEQCUDA,VECMPICUDA,VECCUDA,"");CHKERRQ(ierr);
+    if (is_cudatype) {
+      ierr = VecCUDAGetArray(x,a);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    }
+  }
+#endif
+  ierr = VecGetArray(x,a);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
    VecGetArrayWrite - Returns a pointer to a contiguous array that WILL contains this
    processor's portion of the vector data. The values in this array are NOT valid, the routine calling this
    routine is responsible for putting values into the array; any values it does not set will be invalid
@@ -1676,6 +1716,47 @@ PetscErrorCode VecGetArrayRead(Vec x,const PetscScalar **a)
   } else {
     ierr = (*x->ops->getarray)(x,(PetscScalar**)a);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   VecGetArrayReadInPlace - Like VecGetArrayRead(), but if this is a CUDA vector and it is currently offloaded to GPU,
+   the returned pointer will be a GPU pointer to the GPU memory that contains this processor's portion of the
+   vector data. Otherwise, it functions as VecGetArrayRead().
+
+   Not Collective
+
+   Input Parameters:
+.  x - the vector
+
+   Output Parameter:
+.  a - the array
+
+   Level: beginner
+
+   Notes:
+   The array must be returned using a matching call to VecRestoreArrayReadInPlace().
+
+
+.seealso: VecRestoreArrayReadInPlace(), VecGetArray(), VecRestoreArray(), VecGetArrayPair(), VecRestoreArrayPair(), VecGetArrayInPlace()
+@*/
+PetscErrorCode VecGetArrayReadInPlace(Vec x,const PetscScalar **a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+#if defined(PETSC_HAVE_CUDA)
+  if (x->petscnative && x->valid_GPU_array == PETSC_OFFLOAD_GPU) {
+    PetscBool is_cudatype = PETSC_FALSE;
+    ierr = PetscObjectTypeCompareAny((PetscObject)x,&is_cudatype,VECSEQCUDA,VECMPICUDA,VECCUDA,"");CHKERRQ(ierr);
+    if (is_cudatype) {
+      ierr = VecCUDAGetArrayRead(x,a);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    }
+  }
+#endif
+  ierr = VecGetArrayRead(x,a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1794,6 +1875,41 @@ PetscErrorCode VecRestoreArray(Vec x,PetscScalar **a)
 }
 
 /*@C
+   VecRestoreArrayInPlace - Restores a vector after VecGetArrayInPlace() has been called.
+
+   Logically Collective on Vec
+
+   Input Parameters:
++  x - the vector
+-  a - location of pointer to array obtained from VecGetArrayInPlace()
+
+   Level: beginner
+
+.seealso: VecGetArrayInPlace(), VecGetArray(), VecRestoreArrayRead(), VecRestoreArrays(), VecRestoreArrayF90(), VecRestoreArrayReadF90(),
+          VecPlaceArray(), VecRestoreArray2d(), VecGetArrayPair(), VecRestoreArrayPair()
+@*/
+PetscErrorCode VecRestoreArrayInPlace(Vec x,PetscScalar **a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+#if defined(PETSC_HAVE_CUDA)
+  if (x->petscnative && x->valid_GPU_array == PETSC_OFFLOAD_GPU) {
+    PetscBool is_cudatype = PETSC_FALSE;
+    ierr = PetscObjectTypeCompareAny((PetscObject)x,&is_cudatype,VECSEQCUDA,VECMPICUDA,VECCUDA,"");CHKERRQ(ierr);
+    if (is_cudatype) {
+      ierr = VecCUDARestoreArray(x,a);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    }
+  }
+#endif
+  ierr = VecRestoreArray(x,a);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+/*@C
    VecRestoreArrayWrite - Restores a vector after VecGetArrayWrite() has been called.
 
    Logically Collective on Vec
@@ -1856,6 +1972,28 @@ PetscErrorCode VecRestoreArrayRead(Vec x,const PetscScalar **a)
     ierr = (*x->ops->restorearray)(x,(PetscScalar**)a);CHKERRQ(ierr);
   }
   if (a) *a = NULL;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   VecRestoreArrayReadInPlace - Restore array obtained with VecGetArrayReadInPlace()
+
+   Not Collective
+
+   Input Parameters:
++  vec - the vector
+-  array - the array
+
+   Level: beginner
+
+.seealso: VecGetArrayReadInPlace(), VecRestoreArrayInPlace(), VecGetArray(), VecRestoreArray(), VecGetArrayPair(), VecRestoreArrayPair()
+@*/
+PetscErrorCode VecRestoreArrayReadInPlace(Vec x,const PetscScalar **a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecRestoreArrayRead(x,a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -586,6 +586,7 @@ PETSC_EXTERN PetscErrorCode VecScatterInitializeForGPU(VecScatter inctx,Vec x)
   const PetscInt *sstarts,*rstarts,*sindices,*rindices;
 
   PetscFunctionBegin;
+  if (use_gpu_aware_mpi) PetscFunctionReturn(0);
   ierr = VecScatterGetRemote_Private(inctx,PETSC_TRUE/*send*/, &nsends,&sstarts,&sindices,NULL/*procs*/,&sbs);CHKERRQ(ierr);
   ierr = VecScatterGetRemote_Private(inctx,PETSC_FALSE/*recv*/,&nrecvs,&rstarts,&rindices,NULL/*procs*/,&rbs);CHKERRQ(ierr);
   ns   = nsends ? sstarts[nsends]-sstarts[0] : 0; /* s/rstarts[0] is not necessarily zero */

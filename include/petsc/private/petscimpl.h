@@ -921,4 +921,9 @@ PETSC_EXTERN PetscLogEvent PETSC_BuildTwoSidedF;
 PETSC_EXTERN int64_t Petsc_adios_group;
 #endif
 
+PETSC_EXTERN PetscBool use_gpu_aware_mpi;
+#if defined(PETSC_HAVE_CUDA)
+PETSC_EXTERN PetscBool sf_use_default_cuda_stream;
+#endif
+
 #endif /* PETSCIMPL_H */

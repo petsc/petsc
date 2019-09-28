@@ -200,14 +200,27 @@ int main(int argc,char **argv)
 
 /*TEST
 
-   test:
-      suffix: aijcusparse
+   testset:
       requires: cuda
       args: -dm_mat_type aijcusparse -dm_vec_type cuda -random_exact_sol
+      output_file: output/ex46_aijcusparse.out
 
-   test:
-      suffix: aijcusparse_2
+      test:
+        suffix: aijcusparse
+      test:
+        suffix: aijcusparse_mpi_gpu_aware
+        args: -use_gpu_aware_mpi
+        requires: define(PETSC_HAVE_MPI_GPU_AWARE)
+
+   testset:
       requires: cuda
       args: -dm_mat_type aijcusparse -dm_vec_type cuda -random_exact_sol -pc_type ilu -pc_factor_mat_solver_type cusparse
+      output_file: output/ex46_aijcusparse_2.out
+      test:
+        suffix: aijcusparse_2
+      test:
+        suffix: aijcusparse_2_mpi_gpu_aware
+        args: -use_gpu_aware_mpi
+        requires: define(PETSC_HAVE_MPI_GPU_AWARE)
 
 TEST*/

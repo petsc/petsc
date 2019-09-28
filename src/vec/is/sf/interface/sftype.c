@@ -133,14 +133,12 @@ PetscErrorCode MPIPetsc_Type_compare_contig(MPI_Datatype a,MPI_Datatype b,PetscI
   MPI_Datatype   atype,btype;
   PetscMPIInt    aintcount,aaddrcount,atypecount,acombiner;
   PetscBool      freeatype,freebtype;
+
   PetscFunctionBegin;
+  if (a == b) {*n = 1; PetscFunctionReturn(0);}
+  *n = 0;
   ierr = MPIPetsc_Type_unwrap(a,&atype,&freeatype);CHKERRQ(ierr);
   ierr = MPIPetsc_Type_unwrap(b,&btype,&freebtype);CHKERRQ(ierr);
-  *n = PETSC_FALSE;
-  if (atype == btype) {
-    *n = 1;
-    goto free_types;
-  }
   ierr = MPI_Type_get_envelope(atype,&aintcount,&aaddrcount,&atypecount,&acombiner);CHKERRQ(ierr);
   if (acombiner == MPI_COMBINER_CONTIGUOUS && aintcount >= 1) {
     PetscMPIInt  *aints;
@@ -163,7 +161,7 @@ PetscErrorCode MPIPetsc_Type_compare_contig(MPI_Datatype a,MPI_Datatype b,PetscI
     }
     ierr = PetscFree3(aints,aaddrs,atypes);CHKERRQ(ierr);
   }
-free_types:
+
   if (freeatype) {
     ierr = MPIPetsc_Type_free(&atype);CHKERRQ(ierr);
   }
