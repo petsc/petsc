@@ -376,6 +376,6 @@ typedef enum {PC_NOERROR,PC_FACTOR_STRUCT_ZEROPIVOT,PC_FACTOR_NUMERIC_ZEROPIVOT,
 .seealso: PCGAMGSetCoarseGridLayoutType()
     Any additions/changes here MUST also be made in include/petsc/finclude/petscpc.h
 E*/
-typedef enum {PCGAMG_LAYOUT_COMPACT=0,PCGAMG_LAYOUT_SPREAD} PCGAMGLayoutType;
+typedef enum {PCGAMG_LAYOUT_COMPACT,PCGAMG_LAYOUT_SPREAD} PCGAMGLayoutType;
 
 #endif

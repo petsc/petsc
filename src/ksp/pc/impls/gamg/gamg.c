@@ -1324,6 +1324,7 @@ PetscErrorCode PCSetFromOptions_GAMG(PetscOptionItems *PetscOptionsObject,PC pc)
   char           prefix[256];
   PetscInt       i,n;
   const char     *pcpre;
+  static const char *LayoutTypes[] = {"compact","spread",0};
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
   ierr = PetscOptionsHead(PetscOptionsObject,"GAMG options");CHKERRQ(ierr);
@@ -1338,9 +1339,7 @@ PetscErrorCode PCSetFromOptions_GAMG(PetscOptionItems *PetscOptionsObject,PC pc)
     ierr = PetscOptionsBool("-pc_gamg_asm_use_agg","Use aggregation aggregates for ASM smoother","PCGAMGASMSetUseAggs",pc_gamg->use_aggs_in_asm,&pc_gamg->use_aggs_in_asm,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-pc_gamg_use_parallel_coarse_grid_solver","Use parallel coarse grid solver (otherwise put last grid on one process)","PCGAMGSetUseParallelCoarseGridSolve",pc_gamg->use_parallel_coarse_grid_solver,&pc_gamg->use_parallel_coarse_grid_solver,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-pc_gamg_cpu_pin_coarse_grids","Pin coarse grids to the CPU","PCGAMGSetCpuPinCoarseGrids",pc_gamg->cpu_pin_coarse_grids,&pc_gamg->cpu_pin_coarse_grids,NULL);CHKERRQ(ierr);
-    i = (PetscInt)PCGAMG_LAYOUT_COMPACT;
-    ierr = PetscOptionsInt("-pc_gamg_coarse_grid_layout_type","0: place reduced grids on processes in natural order; 1: distribute to whole machine for more memory bandwidth","PCGAMGSetCoarseGridLayoutType",i,&i,NULL);CHKERRQ(ierr);
-    pc_gamg->layout_type = (PCGAMGLayoutType)i;
+    ierr = PetscOptionsEnum("-pc_gamg_coarse_grid_layout_type","compact: place reduced grids on processes in natural order; spread: distribute to whole machine for more memory bandwidth","PCGAMGSetCoarseGridLayoutType",LayoutTypes,(PetscEnum)pc_gamg->layout_type,(PetscEnum*)&pc_gamg->layout_type,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-pc_gamg_process_eq_limit","Limit (goal) on number of equations per process on coarse grids","PCGAMGSetProcEqLim",pc_gamg->min_eq_proc,&pc_gamg->min_eq_proc,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-pc_gamg_coarse_eq_limit","Limit on number of equations for the coarse grid","PCGAMGSetCoarseEqLim",pc_gamg->coarse_eq_limit,&pc_gamg->coarse_eq_limit,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-pc_gamg_threshold_scale","Scaling of threshold for each level not specified","PCGAMGSetThresholdScale",pc_gamg->threshold_scale,&pc_gamg->threshold_scale,NULL);CHKERRQ(ierr);
@@ -1454,8 +1453,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
   pc_gamg->reuse_prol       = PETSC_FALSE;
   pc_gamg->use_aggs_in_asm  = PETSC_FALSE;
   pc_gamg->use_parallel_coarse_grid_solver = PETSC_FALSE;
-  pc_gamg->cpu_pin_coarse_grids = PETSC_TRUE;
-  pc_gamg->layout_type      = PCGAMG_LAYOUT_COMPACT;
+  pc_gamg->cpu_pin_coarse_grids = PETSC_FALSE;
+  pc_gamg->layout_type      = PCGAMG_LAYOUT_SPREAD;
   pc_gamg->min_eq_proc      = 50;
   pc_gamg->coarse_eq_limit  = 50;
   for (i=0;i<PETSC_GAMG_MAXLEVELS;i++) pc_gamg->threshold[i] = 0.;
