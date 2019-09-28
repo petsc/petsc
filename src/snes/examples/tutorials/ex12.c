@@ -1386,7 +1386,7 @@ int main(int argc, char **argv)
     nsize: 2
     args: -run_type full -refinement_limit 0.0625 -variable_coefficient nonlinear -interpolate 1 -petscspace_degree 1 -snes_type fas -snes_fas_levels 3 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short  -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -dm_refine_hierarchy 2 -dm_plex_print_fem 0 -snes_view -fas_levels_1_snes_type newtonls -fas_levels_1_pc_type svd -fas_levels_1_ksp_rtol 1.0e-10 -fas_levels_1_snes_monitor_short -fas_levels_2_snes_type newtonls -fas_levels_2_pc_type svd -fas_levels_2_ksp_rtol 1.0e-10 -fas_levels_2_snes_atol 1.0e-11 -fas_levels_2_snes_monitor_short
 
-  # These tests use a loose tolerance just to exercise the PtAP operations for MATIS and multiple BDDC setup calls inside PCMG
+  # These tests use a loose tolerance just to exercise the PtAP operations for MATIS and multiple PCBDDC setup calls inside PCMG
   testset:
     requires: triangle !single
     nsize: 3
@@ -1527,16 +1527,16 @@ int main(int argc, char **argv)
     requires: ctetgen
     args: -run_type full -dim 3 -dm_refine 2 -bc_type dirichlet -interpolate 1 -petscspace_degree 2 -dm_view -snes_converged_reason ::ascii_info_detail -pc_type lu -cells 1,1,1
 
-  # Full solve simplex: BDDC
+  # Full solve simplex: PCBDDC
   test:
     suffix: tri_bddc
     requires: triangle !single
     nsize: 5
     args: -run_type full -petscpartitioner_type simple -dm_refine 2 -bc_type dirichlet -interpolate 1 -petscspace_degree 1 -ksp_type gmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -dm_mat_type is -pc_type bddc -snes_monitor_short -ksp_monitor_short -snes_converged_reason ::ascii_info_detail -ksp_converged_reason -snes_view -show_solution 0
 
-  # Full solve simplex: BDDC
+  # Full solve simplex: PCBDDC
   test:
-    suffix: tri_bddc_parmetis
+    suffix: tri_parmetis_bddc
     requires: triangle !single parmetis
     nsize: 4
     args: -run_type full -petscpartitioner_type parmetis -dm_refine 2 -bc_type dirichlet -interpolate 1 -petscspace_degree 1 -ksp_type gmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -dm_mat_type is -pc_type bddc -snes_monitor_short -ksp_monitor_short -snes_converged_reason ::ascii_info_detail -ksp_converged_reason -snes_view -show_solution 0
@@ -1841,21 +1841,21 @@ int main(int argc, char **argv)
     suffix: glvis_2d_hex_p0
     args: -run_type exact  -guess_vec_view glvis: -nonzero_initial_guess 1 -cells 5,7  -simplex 0 -petscspace_degree 0
 
-  # HPDDM tests
+  # PCHPDDM tests
   testset:
     nsize: 4
     requires: hpddm !single
     args: -run_type test -run_test_check_ksp -quiet -petscspace_degree 1 -interpolate 1 -petscpartitioner_type simple -bc_type none -simplex 0 -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_nev 2 -pc_hpddm_coarse_p 1 -pc_hpddm_coarse_pc_type svd -ksp_rtol 1.e-10 -pc_hpddm_levels_1_st_pc_factor_shift_type INBLOCKS -ksp_converged_reason
     test:
-      suffix: pchpddm_quad_singular
+      suffix: quad_singular_hpddm
       args: -cells 6,7
     test:
       requires: p4est
-      suffix: pchpddm_p4est_singular_2d
+      suffix: p4est_singular_2d_hpddm
       args: -dm_plex_convert_type p4est -dm_forest_minimum_refinement 1 -dm_forest_initial_refinement 3 -dm_forest_maximum_refinement 3
     test:
       requires: p4est
-      suffix: pchpddm_p4est_nc_singular_2d
+      suffix: p4est_nc_singular_2d_hpddm
       args: -dm_plex_convert_type p4est -dm_forest_minimum_refinement 1 -dm_forest_initial_refinement 1 -dm_forest_maximum_refinement 3 -dm_p4est_refine_pattern hash
   testset:
     nsize: 4
@@ -1863,38 +1863,38 @@ int main(int argc, char **argv)
     args: -run_type full -petscpartitioner_type simple -dm_refine 2 -bc_type dirichlet -interpolate 1 -petscspace_degree 2 -ksp_type gmres -ksp_gmres_restart 100 -pc_type hpddm -snes_monitor_short -ksp_monitor_short -snes_converged_reason ::ascii_info_detail -ksp_converged_reason -snes_view -show_solution 0 -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_nev 4 -pc_hpddm_coarse_p 2 -pc_hpddm_coarse_pc_type redundant -ksp_rtol 1.e-1
     test:
       args: -pc_hpddm_coarse_mat_type baij -options_left no
-      suffix: pchpddm_tri_reuse_baij
+      suffix: tri_hpddm_reuse_baij
     test:
       requires: !complex
-      suffix: pchpddm_tri_reuse
+      suffix: tri_hpddm_reuse
   testset:
     nsize: 4
     requires: hpddm !single
     args: -run_type full -petscpartitioner_type simple -cells 7,5 -dm_refine 2 -simplex 0 -bc_type dirichlet -interpolate 1 -petscspace_degree 2 -ksp_type gmres -ksp_gmres_restart 100 -pc_type hpddm -snes_monitor_short -ksp_monitor_short -snes_converged_reason ::ascii_info_detail -ksp_converged_reason -snes_view -show_solution 0 -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_nev 4 -pc_hpddm_coarse_p 2 -pc_hpddm_coarse_pc_type redundant -ksp_rtol 1.e-1
     test:
       args: -pc_hpddm_coarse_mat_type baij -options_left no
-      suffix: pchpddm_quad_reuse_baij
+      suffix: quad_hpddm_reuse_baij
     test:
       requires: !complex
-      suffix: pchpddm_quad_reuse
+      suffix: quad_hpddm_reuse
   testset:
     nsize: 4
     requires: hpddm !single
     args: -run_type full -petscpartitioner_type simple -cells 7,5 -dm_refine 2 -simplex 0 -bc_type dirichlet -interpolate 1 -petscspace_degree 1 -ksp_type gmres -ksp_gmres_restart 100 -pc_type hpddm -snes_monitor_short -ksp_monitor_short -snes_converged_reason ::ascii_info_detail -ksp_converged_reason -snes_view -show_solution 0 -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_threshold 0.1 -pc_hpddm_coarse_p 2 -pc_hpddm_coarse_pc_type redundant -ksp_rtol 1.e-1
     test:
       args: -pc_hpddm_coarse_mat_type baij -options_left no
-      suffix: pchpddm_quad_reuse_threshold_baij
+      suffix: quad_hpddm_reuse_threshold_baij
     test:
       requires: !complex
-      suffix: pchpddm_quad_reuse_threshold
+      suffix: quad_hpddm_reuse_threshold
   testset:
     nsize: 4
     requires: hpddm parmetis !single
     args: -run_type full -petscpartitioner_type parmetis -dm_refine 3 -bc_type dirichlet -interpolate 1 -petscspace_degree 1 -ksp_type gmres -ksp_gmres_restart 100 -pc_type hpddm -snes_monitor_short -ksp_monitor_short -snes_converged_reason ::ascii_info_detail -ksp_converged_reason -snes_view -show_solution 0 -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type icc -pc_hpddm_levels_1_eps_nev 20 -pc_hpddm_coarse_p 2 -pc_hpddm_coarse_pc_type redundant -ksp_rtol 1.e-10 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -pc_hpddm_levels_1_sub_pc_factor_levels 3 -variable_coefficient circle -dm_plex_gmsh_periodic 0
     test:
       args: -pc_hpddm_coarse_mat_type baij -options_left no
-      suffix: pchpddm_tri_parmetis_baij
+      suffix: tri_parmetis_hpddm_baij
     test:
       requires: !complex
-      suffix: pchpddm_tri_parmetis
+      suffix: tri_parmetis_hpddm
 TEST*/
