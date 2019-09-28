@@ -1822,6 +1822,7 @@ PetscErrorCode VecSetInf(Vec xin)
 +   v - the vector
 -   flg - pin to the CPU if value of PETSC_TRUE
 
+   Level: intermediate
 @*/
 PetscErrorCode VecPinToCPU(Vec v,PetscBool flg)
 {

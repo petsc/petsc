@@ -419,6 +419,7 @@ PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat A,Mat *C)
 +   A - the matrix
 -   flg - pin to the CPU if value of PETSC_TRUE
 
+   Level: intermediate
 @*/
 PetscErrorCode MatPinToCPU(Mat A,PetscBool flg)
 {

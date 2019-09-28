@@ -42,4 +42,4 @@ PETSC_EXTERN PetscFunctionList CharacteristicList;
 
 PETSC_EXTERN PetscErrorCode CharacteristicRegister(const char[],PetscErrorCode (*)(Characteristic));
 
-#endif /*PETSCCHARACTERISTICS_H*/
+#endif /* PETSCCHARACTERISTICS_H */

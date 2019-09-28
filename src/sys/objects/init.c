@@ -210,6 +210,8 @@ void Petsc_MPI_DebuggerOnError(MPI_Comm *comm,PetscMPIInt *flag,...)
 .  -cuda_synchronize - wait at the end of asynchronize CUDA calls so that their time gets credited to the current event; default with -log_view
 -  -cuda_set_device <gpu> - integer number of the device
 
+  Level: beginner
+
   Notes:
    Initializing cuBLAS takes about 1/2 second there it is done by default in PetscInitialize() before logging begins
 

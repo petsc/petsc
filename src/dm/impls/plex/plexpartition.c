@@ -2953,7 +2953,7 @@ static PetscErrorCode DMPlexViewDistribution(MPI_Comm comm, PetscInt n, PetscInt
   Output parameters:
   + success          - whether the graph partitioning was successful or not. If not, try useInitialGuess=True and parallel=True.
 
-  Level: user
+  Level: intermediate
 
 @*/
 
