@@ -221,7 +221,6 @@ static PetscErrorCode PCHPDDMGetComplexities(PC pc, PetscReal *gc, PetscReal *oc
 static PetscErrorCode PCView_HPDDM(PC pc, PetscViewer viewer)
 {
   PC_HPDDM       *data = (PC_HPDDM*)pc->data;
-  PC             inner;
   PetscViewer    subviewer;
   PetscSubcomm   subcomm;
   PetscReal      oc, gc;
@@ -252,10 +251,7 @@ static PetscErrorCode PCView_HPDDM(PC pc, PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer, "grid and operator complexities: %g %g\n", (double)gc, (double)oc);CHKERRQ(ierr);
     if (data->levels[0]->ksp) {
       ierr = KSPView(data->levels[0]->ksp, viewer);CHKERRQ(ierr);
-      if (data->N <= 1) {
-        ierr = KSPGetPC(data->levels[0]->ksp, &inner);CHKERRQ(ierr);
-        ierr = PCView(inner, viewer);CHKERRQ(ierr);
-      } else if (data->levels[0]->pc) {
+      if (data->levels[0]->pc) {
         ierr = PCView(data->levels[0]->pc, viewer);CHKERRQ(ierr);
       }
       for (i = 1; i < data->N; ++i) {
@@ -312,8 +308,29 @@ static PetscErrorCode PCHPDDMShellSetUp(PC pc)
   PetscFunctionReturn(0);
 }
 
-/*
+PETSC_STATIC_INLINE PetscErrorCode PCHPDDMDeflate_Private(PC pc, Vec x, Vec y)
+{
+  PC_HPDDM_Level *ctx;
+  PetscScalar    *out;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PCShellGetContext(pc, (void**)&ctx);CHKERRQ(ierr);
+  /* going from PETSc to HPDDM numbering */
+  ierr = VecScatterBegin(ctx->scatter, x, ctx->v[0][0], INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(ctx->scatter, x, ctx->v[0][0], INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecGetArray(ctx->v[0][0], &out);CHKERRQ(ierr);
+  ctx->P->deflation<false>(NULL, out, 1); /* y = Q x */
+  ierr = VecRestoreArray(ctx->v[0][0], &out);CHKERRQ(ierr);
+  /* going from HPDDM to PETSc numbering */
+  ierr = VecScatterBegin(ctx->scatter, ctx->v[0][0], y, INSERT_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd(ctx->scatter, ctx->v[0][0], y, INSERT_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*MC
      PCHPDDMShellApply - Applies a (2) deflated, (1) additive, or (3) balanced coarse correction. In what follows, E = Z Pmat Z^T and Q = Z^T E^-1 Z.
+
 .vb
    (1) y =                Pmat^-1              x + Q x,
    (2) y =                Pmat^-1 (I - Amat Q) x + Q x (default),
@@ -328,46 +345,35 @@ static PetscErrorCode PCHPDDMShellSetUp(PC pc)
    Application Interface Routine: PCApply()
 
    Notes:
-     The options of Pmat^1 = pc(Pmat) are prefixed by -pc_hpddm_levels_1_pc_. Z is a tall-and-skiny matrix assembled by HPDDM. The number of processes on which (Z Pmat Z^T) is aggregated is set via -pc_hpddm_coarse_p. The options of (Z Pmat Z^T)^-1 = ksp(Z Pmat Z^T) are prefixed by -pc_hpddm_coarse_ (KSPPREONLY and PCCHOLESKY by default), unless a multilevel correction is turned on, in which case, this function is called recursively at each level except the coarsest one. (1) and (2) visit the "next" level (in terms of coarsening) once per application, while (3) visits it twice, so it is asymptotically twice costlier. (2) is not symmetric even if both Amat and Pmat are symmetric.
-*/
+     The options of Pmat^1 = pc(Pmat) are prefixed by -pc_hpddm_levels_1_pc_. Z is a tall-and-skiny matrix assembled by HPDDM. The number of processes on which (Z Pmat Z^T) is aggregated is set via -pc_hpddm_coarse_p.
+     The options of (Z Pmat Z^T)^-1 = ksp(Z Pmat Z^T) are prefixed by -pc_hpddm_coarse_ (KSPPREONLY and PCCHOLESKY by default), unless a multilevel correction is turned on, in which case, this function is called recursively at each level except the coarsest one.
+     (1) and (2) visit the "next" level (in terms of coarsening) once per application, while (3) visits it twice, so it is asymptotically twice costlier. (2) is not symmetric even if both Amat and Pmat are symmetric.
+
+.seealso:  PCHPDDM, PCHPDDMCoarseCorrectionType
+M*/
 static PetscErrorCode PCHPDDMShellApply(PC pc, Vec x, Vec y)
 {
   PC_HPDDM_Level *ctx;
   Mat            A;
-  PetscScalar    *out;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PCShellGetContext(pc, (void**)&ctx);CHKERRQ(ierr);
   if (ctx->P) {
     ierr = KSPGetOperators(ctx->ksp, &A, NULL);CHKERRQ(ierr);
-    /* going from PETSc to HPDDM numbering */
-    ierr = VecScatterBegin(ctx->scatter, x, ctx->v[0][0], INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(ctx->scatter, x, ctx->v[0][0], INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecGetArray(ctx->v[0][0], &out);CHKERRQ(ierr);
-    ctx->P->deflation<false>(NULL, out, 1);                                   /* y = Q in                         */
-    ierr = VecRestoreArray(ctx->v[0][0], &out);CHKERRQ(ierr);
-    /* going from HPDDM to PETSc numbering */
-    ierr = VecScatterBegin(ctx->scatter, ctx->v[0][0], y, INSERT_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterEnd(ctx->scatter, ctx->v[0][0], y, INSERT_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = PCHPDDMDeflate_Private(pc, x, y);CHKERRQ(ierr);                    /* y = Q x                          */
     if (ctx->parent->correction == PC_HPDDM_COARSE_CORRECTION_DEFLATED || ctx->parent->correction == PC_HPDDM_COARSE_CORRECTION_BALANCED) {
       ierr = MatMult(A, y, ctx->v[1][0]);CHKERRQ(ierr);                       /* y = A Q x                        */
       ierr = VecWAXPY(ctx->v[1][1], -1.0, ctx->v[1][0], x);CHKERRQ(ierr);     /* y = (I - A Q) x                  */
       ierr = PCApply(ctx->pc, ctx->v[1][1], ctx->v[1][0]);CHKERRQ(ierr);      /* y = M^-1 (I - A Q) x             */
       if (ctx->parent->correction == PC_HPDDM_COARSE_CORRECTION_BALANCED) {
         ierr = MatMultTranspose(A, ctx->v[1][0], ctx->v[1][1]);CHKERRQ(ierr); /* z = A^T M^-1 (I - A Q) x         */
-        ierr = VecScatterBegin(ctx->scatter, ctx->v[1][1], ctx->v[0][0], INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
-        ierr = VecScatterEnd(ctx->scatter, ctx->v[1][1], ctx->v[0][0], INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
-        ierr = VecGetArray(ctx->v[0][0], &out);CHKERRQ(ierr);
-        ctx->P->deflation<false>(NULL, out, 1);                               /* z = Q A^T M^-1 (I - A Q) x       */
-        ierr = VecRestoreArray(ctx->v[0][0], &out);CHKERRQ(ierr);
-        ierr = VecScatterBegin(ctx->scatter, ctx->v[0][0], ctx->v[1][1], INSERT_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
-        ierr = VecScatterEnd(ctx->scatter, ctx->v[0][0], ctx->v[1][1], INSERT_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
-        ierr = VecAXPY(ctx->v[1][0], -1.0, ctx->v[1][1]);CHKERRQ(ierr);       /* y = (I - A^T Q) M^-1 (I - A Q) x */
+        ierr = PCHPDDMDeflate_Private(pc, ctx->v[1][1], ctx->v[1][1]);CHKERRQ(ierr);
+        ierr = VecAXPY(ctx->v[1][0], -1.0, ctx->v[1][1]);CHKERRQ(ierr);       /* y = (I - Q A^T) M^-1 (I - A Q) x */
       }
       ierr = VecAXPY(y, 1.0, ctx->v[1][0]);CHKERRQ(ierr);                     /* y = y + Q x                      */
     } else if (ctx->parent->correction == PC_HPDDM_COARSE_CORRECTION_ADDITIVE) {
-      ierr = PCApply(ctx->pc, x, ctx->v[1][0]);CHKERRQ(ierr);                 /* z = M^-1 x                       */
+      ierr = PCApply(ctx->pc, x, ctx->v[1][0]);CHKERRQ(ierr);
       ierr = VecAXPY(y, 1.0, ctx->v[1][0]);CHKERRQ(ierr);                     /* y = M^-1 x + Q x                 */
     } else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "PCSHELL from PCHPDDM called with an unknown PCHPDDMCoarseCorrectionType %d", ctx->parent->correction);
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "PCSHELL from PCHPDDM called with no HPDDM object");
@@ -604,7 +610,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
       }
     }
     ierr = ISDestroy(&loc);CHKERRQ(ierr);
-  }
+  } else data->N = 1; /* enforce this value to 1 if there is no way to build another level */
   if (requested != data->N) {
     PetscInfo4(pc, "%D levels requested, only %D built. Options for level(s) > %D, including -%spc_hpddm_coarse_ will not be taken into account.\n", requested, data->N, data->N, pcpre ? pcpre : "");
     PetscInfo2(pc, "It is best to tune parameters, e.g., a higher value for -%spc_hpddm_levels_%D_eps_threshold so that at least one local deflation vector will be selected.\n", pcpre ? pcpre : "", data->N);
@@ -707,11 +713,11 @@ static PetscErrorCode PCHPDDMGetCoarseCorrectionType_HPDDM(PC pc, PCHPDDMCoarseC
 /*MC
      PCHPDDM - Interface with the HPDDM library.
 
-   This PC may be used to build multilevel spectral domain decomposition methods based on the GenEO framework [2014, 2019]. It may be viewed as an alternative to spectral AMGE or PCBDDC with adaptive selection of constraints. Here is a chronological bibliography of relevant publications linked with PC available in HPDDM through PCHPDDM.
+   This PC may be used to build multilevel spectral domain decomposition methods based on the GenEO framework [2011, 2019]. It may be viewed as an alternative to spectral AMGE or PCBDDC with adaptive selection of constraints. Here is a chronological bibliography of relevant publications linked with PC available in HPDDM through PCHPDDM.
 
 .vb
+   [2011] A robust two-level domain decomposition preconditioner for systems of PDEs. Spillane, Dolean, Hauret, Nataf, Pechstein, and Scheichl. Comptes Rendus Mathematique.
    [2013] Scalable Domain Decomposition Preconditioners For Heterogeneous Elliptic Problems. Jolivet, Hecht, Nataf, and Prud'homme. SC13.
-   [2014] Abstract Robust Coarse Spaces for Systems of PDEs via Generalized Eigenproblems in the Overlap. Spillane, Dolean, Hauret, Nataf, Pechstein, and Scheichl. Numerische Mathematik.
    [2015] An Introduction to Domain Decomposition Methods: Algorithms, Theory, and Parallel Implementation. Dolean, Jolivet, and Nataf. SIAM.
    [2019] A Multilevel Schwarz Preconditioner Based on a Hierarchy of Robust Coarse Spaces. Al Daas, Grigori, Jolivet, and Tournier.
 .ve
@@ -720,7 +726,7 @@ static PetscErrorCode PCHPDDMGetCoarseCorrectionType_HPDDM(PC pc, PCHPDDMCoarseC
 
    Options Database Keys:
 +   -pc_hpddm_define_subdomains <true, false> - on the finest level, calls PCASMSetLocalSubdomains with the IS supplied in PCHPDDMSetAuxiliaryMat (only relevant with an assembled Pmat)
--   -pc_hpddm_coarse_correction <type, default=deflated> - determines whether additive, deflated, or balanced coarse corrections are computed when calling PCApply
+-   -pc_hpddm_coarse_correction <type, default=deflated> - determines the PCHPDDMCoarseCorrectionType when calling PCApply
 
    Options for subdomain solvers, subdomain eigensolvers (for computing deflation vectors), and the coarse solver can be set with
 .vb
@@ -737,7 +743,7 @@ static PetscErrorCode PCHPDDMGetCoarseCorrectionType_HPDDM(PC pc, PCHPDDMCoarseC
 
    In order to activate a "level N+1" coarse correction, it is mandatory to call -pc_hpddm_levels_N_eps_nev <nu> or -pc_hpddm_levels_N_eps_threshold <val>. The default -pc_hpddm_coarse_p value is 1, meaning that the coarse operator is aggregated on a single process.
 
-   This preconditioner requires that you build PETSc with SLEPc (--download-slepc=1). By default, the underlying concurrent eigenproblems are solved using SLEPc shift-and-invert spectral transformation. This is usually what gives the best performance for GenEO, cf. [2014, 2013]. As stated above, SLEPc options are available through -pc_hpddm_levels_%d_, e.g., -pc_hpddm_levels_1_eps_type arpack -pc_hpddm_levels_1_eps_threshold 0.1 -pc_hpddm_levels_1_st_type sinvert.
+   This preconditioner requires that you build PETSc with SLEPc (--download-slepc=1). By default, the underlying concurrent eigenproblems are solved using SLEPc shift-and-invert spectral transformation. This is usually what gives the best performance for GenEO, cf. [2011, 2013]. As stated above, SLEPc options are available through -pc_hpddm_levels_%d_, e.g., -pc_hpddm_levels_1_eps_type arpack -pc_hpddm_levels_1_eps_threshold 0.1 -pc_hpddm_levels_1_st_type sinvert.
 
    Level: intermediate
 

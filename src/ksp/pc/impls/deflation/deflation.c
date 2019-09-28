@@ -110,7 +110,7 @@ static PetscErrorCode PCDeflationSetReductionFactor_Deflation(PC pc,PetscInt red
 -  red - reduction factor (or PETSC_DETERMINE)
 
    Options Database Keys:
-.    -pc_deflation_reduction_factor <-1> - reduction factor on bottom level coarse problem for PCTELESCOPE
+.    -pc_deflation_reduction_factor <\-1> - reduction factor on bottom level coarse problem for PCTELESCOPE
 
    Notes:
      Default is computed based on the size of the coarse problem.
@@ -822,7 +822,7 @@ static PetscErrorCode PCSetFromOptions_Deflation(PetscOptionItems *PetscOptionsO
    Options Database Keys:
 +    -pc_deflation_init_only          <false> - if true computes only the special guess
 .    -pc_deflation_max_lvl            <0>     - maximum number of levels for multilevel deflation
-.    -pc_deflation_reduction_factor <-1>      - reduction factor on bottom level coarse problem for PCTELESCOPE (default based on the size of the coarse problem)
+.    -pc_deflation_reduction_factor <\-1>     - reduction factor on bottom level coarse problem for PCTELESCOPE (default based on the size of the coarse problem)
 .    -pc_deflation_correction         <false> - if true apply coarse problem correction
 .    -pc_deflation_correction_factor  <1.0>   - sets coarse problem correction factor
 .    -pc_deflation_compute_space      <haar>  - compute PCDeflationSpaceType deflation space
