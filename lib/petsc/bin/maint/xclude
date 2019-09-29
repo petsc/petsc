@@ -1,3 +1,8 @@
+petsc-dist/.travis.yml
+petsc-dist/Jenkinsfile
+petsc-dist/.gitmessage
+petsc-dist/.gitlab-ci.yml
+petsc-dist/.gitlab
 petsc-dist/.git
 petsc-dist/.mailmap
 petsc-dist/.gitignore
