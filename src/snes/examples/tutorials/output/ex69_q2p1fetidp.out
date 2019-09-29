@@ -106,6 +106,7 @@ SNES Object: 5 MPI processes
           Eliminate dirichlet boundary dofs: 1
           Switch on static condensation ops around the interface preconditioner: 0
           Use exact dirichlet trick: 1
+          Interface extension: DIRICHLET
           Multilevel max levels: 0
           Multilevel coarsening ratio: 8
           Use estimated eigs for coarse problem: 0

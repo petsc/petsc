@@ -134,6 +134,7 @@ typedef struct {
   PetscBool           use_coarse_estimates;
   PetscBool           symmetric_primal;
   PetscInt            vertex_size;
+  PCBDDCInterfaceExtType interface_extension;
 
   /* no-net-flux */
   PetscBool compute_nonetflux;

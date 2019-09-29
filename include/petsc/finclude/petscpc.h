@@ -87,5 +87,6 @@
 #define PCMGGalerkinType PetscEnum
 #define PCExoticType PetscEnum
 #define PCDeflationSpaceType PetscEnum
+#define PCBDDCInterfaceExtType PetscEnum
 #define PCFailedReason PetscEnum
 #endif

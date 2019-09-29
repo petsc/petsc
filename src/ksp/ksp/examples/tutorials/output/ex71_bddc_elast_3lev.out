@@ -22,6 +22,7 @@ PC Object: 8 MPI processes
     Eliminate dirichlet boundary dofs: 0
     Switch on static condensation ops around the interface preconditioner: 0
     Use exact dirichlet trick: 1
+    Interface extension: DIRICHLET
     Multilevel max levels: 1
     Multilevel coarsening ratio: 1
     Use estimated eigs for coarse problem: 0
@@ -135,6 +136,7 @@ PC Object: 8 MPI processes
         Eliminate dirichlet boundary dofs: 0
         Switch on static condensation ops around the interface preconditioner: 0
         Use exact dirichlet trick: 0
+        Interface extension: DIRICHLET
         Multilevel max levels: 1
         Multilevel coarsening ratio: 1
         Use estimated eigs for coarse problem: 0
