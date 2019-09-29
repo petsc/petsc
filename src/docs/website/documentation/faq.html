@@ -1540,6 +1540,7 @@ PETSC_COMM_WORLD = NewComm;
         <li>
           Change the units (nondimensionalization), boundary condition scaling,
           or formulation so that the Jacobian is better conditioned. See <a href="https://en.wikipedia.org/wiki/Buckingham_π_theorem">https://en.wikipedia.org/wiki/Buckinghamπ_theorem</a>
+          and <a href="https://epubs.siam.org/doi/pdf/10.1137/16M1107127">Dimensional and Scaling Analysis</a>
         </li>
 
         <li>
@@ -1643,6 +1644,12 @@ PETSC_COMM_WORLD = NewComm;
             <li>Try <code>-ksp_diagonal_scale -ksp_diagonal_scale_fix</code>.</li>
             <li>Perhaps change the formulation of the problem to produce more friendly algebraic equations.</li>
           </ul>
+        </li>
+        
+        <li>
+          Change the units (nondimensionalization), boundary condition scaling,
+          or formulation so that the matrix is better conditioned. See <a href="https://en.wikipedia.org/wiki/Buckingham_π_theorem">https://en.wikipedia.org/wiki/Buckinghamπ_theorem</a>
+          and <a href="https://epubs.siam.org/doi/pdf/10.1137/16M1107127">Dimensional and Scaling Analysis</a>
         </li>
 
         <li>
