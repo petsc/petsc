@@ -1399,6 +1399,11 @@ static PetscErrorCode MatMultTranspose_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy)
   }
   ierr = VecCUDAGetArrayRead(xx,&xarray);CHKERRQ(ierr);
   ierr = VecCUDAGetArrayWrite(yy,&yarray);CHKERRQ(ierr);
+  if (yy->map->n) {
+    PetscInt                     n = yy->map->n;
+    cudaError_t                  err;
+    err = cudaMemset(yarray,0,n*sizeof(PetscScalar));CHKERRCUDA(err); /* hack to fix numerical errors from reading output vector yy, apparently */
+  }
 
   ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
   if (cusparsestruct->format==MAT_CUSPARSE_CSR) {
