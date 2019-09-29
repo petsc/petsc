@@ -112,7 +112,7 @@ class Configure(config.package.GNUPackage):
           self.logPrintBox('***** WARNING: You have an older version of Gnu make, it will work,\n\
 but may not support all the parallel testing options. You can install the \n\
 latest Gnu make with your package manager, such as brew or macports, or use\n\
-the --download-make option to get the latest Gnu make warning message *****')
+the --download-make option to get the latest Gnu make *****')
         self.foundversion = ".".join([str(major),str(minor)])
     except RuntimeError as e:
       self.log.write('GNUMake check failed: '+str(e)+'\n')

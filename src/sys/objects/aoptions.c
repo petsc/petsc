@@ -891,7 +891,7 @@ PetscErrorCode  PetscOptionsInt_Private(PetscOptionItems *PetscOptionsObject,con
 
   PetscFunctionBegin;
   if (currentvalue < lb) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Current value %D less than allowed bound %D",currentvalue,lb);
-  if (currentvalue > ub ) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Newly set value %D greater than allowed bound %D",currentvalue,ub);
+  if (currentvalue > ub) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Current value %D greater than allowed bound %D",currentvalue,ub);
      if (!PetscOptionsObject->count) {
     ierr = PetscOptionItemCreate_Private(PetscOptionsObject,opt,text,man,OPTION_INT,&amsopt);CHKERRQ(ierr);
     ierr = PetscMalloc(sizeof(PetscInt),&amsopt->data);CHKERRQ(ierr);
@@ -903,8 +903,8 @@ PetscErrorCode  PetscOptionsInt_Private(PetscOptionItems *PetscOptionsObject,con
     }
   }
   ierr = PetscOptionsGetInt(PetscOptionsObject->options,PetscOptionsObject->prefix,opt,value,&wasset);CHKERRQ(ierr);
-  if (wasset && *value < lb ) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Newly set value %D less than allowed bound %D",*value,lb);
-  if (wasset && *value > ub ) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Newly set value %D greater than allowed bound %D",*value,ub);
+  if (wasset && *value < lb) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Newly set value %D less than allowed bound %D",*value,lb);
+  if (wasset && *value > ub) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Newly set value %D greater than allowed bound %D",*value,ub);
   if (set) *set = wasset;
   if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) {
     ierr = (*PetscHelpPrintf)(PetscOptionsObject->comm,"  -%s%s <now %D : formerly %D>: %s (%s)\n",PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "",opt+1,wasset && value ? *value : currentvalue,currentvalue,text,ManSection(man));CHKERRQ(ierr);

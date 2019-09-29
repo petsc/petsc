@@ -25,6 +25,7 @@ struct PC_HPDDM {
   IS                          is;         /* global numbering of the auxiliary matrix */
   PetscInt                    N;          /* number of levels */
   PCHPDDMCoarseCorrectionType correction; /* type of coarse correction */
+  PetscBool                   Neumann;    /* aux is the local Neumann matrix? */
   PetscErrorCode              (*setup)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void*); /* setup function for the auxiliary matrix */
   void*                       setup_ctx;  /* context for setup */
 };

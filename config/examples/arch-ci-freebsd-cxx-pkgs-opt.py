@@ -34,6 +34,7 @@ configure_options = [
   '--download-saws',
   '--download-codipack=1',
   '--download-adblaslapack=1',
+  '--download-hpddm=1'
   ]
 
 if __name__ == '__main__':

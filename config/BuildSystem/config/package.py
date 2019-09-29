@@ -89,7 +89,7 @@ class Package(config.base.Configure):
 
     self.isMPI                  = 0 # Is an MPI implementation, needed to check for compiler wrappers
     self.hastests               = 0 # indicates that PETSc make alltests has tests for this package
-    self.hastestsdatafiles      = 0 # indicates that PETSc make all tests has tests for this package that require DATAFILESPATH to be set
+    self.hastestsdatafiles      = 0 # indicates that PETSc make alltests has tests for this package that require DATAFILESPATH to be set
     self.makerulename           = '' # some packages do too many things with the make stage; this allows a package to limit to, for example, just building the libraries
     self.installedpetsc         = 0
     self.installwithbatch       = 1  # install the package even though configure in the batch mode; f2blaslapack and fblaslapack for example
