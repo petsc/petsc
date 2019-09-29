@@ -4,7 +4,7 @@ import re
 import nargs
 
 class CompilerOptions(config.base.Configure):
-  def getCFlags(self, compiler, bopt):
+  def getCFlags(self, compiler, bopt, language):
     import config.setCompilers
 
     if compiler.endswith('mpicc') or compiler.endswith('mpiicc') :
@@ -88,7 +88,7 @@ class CompilerOptions(config.base.Configure):
       elif bopt == 'O':
         flags.append('-O')
     if bopt == 'O':
-      self.logPrintBox('***** WARNING: Using default optimization C flags '+' '.join(flags)+'\nYou might consider manually setting optimal optimization flags for your system with\n COPTFLAGS="optimization flags" see config/examples/arch-*-opt.py for examples')
+      self.logPrintBox('***** WARNING: Using default optimization '+language+' flags '+' '.join(flags)+'\nYou might consider manually setting optimal optimization flags for your system with\n '+language.upper()+'OPTFLAGS="optimization flags" see config/examples/arch-*-opt.py for examples')
     return flags
 
   def getCxxFlags(self, compiler, bopt):
@@ -261,7 +261,7 @@ class CompilerOptions(config.base.Configure):
       raise RuntimeError('Having --with-gcov but the compiler is neither GCC nor Clang, we do not know how to do gcov')
     flags = ''
     if language == 'C' or language == 'CUDA':
-      flags = self.getCFlags(compiler, bopt)
+      flags = self.getCFlags(compiler, bopt, language)
     elif language == 'Cxx':
       flags = self.getCxxFlags(compiler, bopt)
     elif language in ['Fortran', 'FC']:
