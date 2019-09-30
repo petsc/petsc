@@ -7199,21 +7199,27 @@ static PetscErrorCode DMPlexAreAllConePointsInArray_Private(DM dm, PetscInt p, P
 @*/
 PetscErrorCode DMPlexCheckPointSF(DM dm)
 {
-  PetscSF         sf;
+  PetscSF         pointSF;
   PetscInt        d,depth,i,nleaves,p,plo,phi,missingPoint;
+  PetscInt        nroots,overlap;
   const PetscInt *locals;
+  PetscBool       distributed;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
-  ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
-  ierr = DMPlexGetOverlap(dm, &d);CHKERRQ(ierr);
-  if (d) {
+  ierr = DMGetPointSF(dm, &pointSF);CHKERRQ(ierr);
+  ierr = DMPlexIsDistributed(dm, &distributed);CHKERRQ(ierr);
+  if (!distributed) PetscFunctionReturn(0);
+  ierr = DMPlexGetOverlap(dm, &overlap);CHKERRQ(ierr);
+  if (overlap) {
     ierr = PetscPrintf(PetscObjectComm((PetscObject)dm), "Warning: DMPlexCheckPointSF() is currently not implemented for meshes with partition overlapping");
     PetscFunctionReturn(0);
   }
-  ierr = PetscSFGetGraph(sf, NULL, &nleaves, &locals, NULL);CHKERRQ(ierr);
+  if (!pointSF) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "This DMPlex is distributed but does not have PointSF attached");
+  ierr = PetscSFGetGraph(pointSF, &nroots, &nleaves, &locals, NULL);CHKERRQ(ierr);
+  if (nroots < 0) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "This DMPlex is distributed but its PointSF has no graph set");
 
   /* 1) check there are no faces in 2D, cells in 3D, in interface */
   ierr = DMPlexGetVTKCellHeight(dm, &d);CHKERRQ(ierr);
