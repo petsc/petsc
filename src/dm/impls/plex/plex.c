@@ -3817,7 +3817,10 @@ static PetscErrorCode PetscSectionFieldGetTensorDegree_Private(PetscSection sect
 
   PetscFunctionBeginHot;
   ierr = PetscSectionGetFieldComponents(section, field, Nc);CHKERRQ(ierr);
-  if (vertexchart) {            /* If we only have a vertex chart, we must have degree k=1 */
+  if (line < 0) {
+    *k = 0;
+    *Nc = 0;
+  } else if (vertexchart) {            /* If we only have a vertex chart, we must have degree k=1 */
     *k = 1;
   } else {                      /* Assume the full interpolated mesh is in the chart; lines in particular */
     /* An order k SEM disc has k-1 dofs on an edge */
@@ -3888,15 +3891,22 @@ PetscErrorCode DMPlexSetClosurePermutationTensor(DM dm, PetscInt point, PetscSec
 {
   DMLabel        label;
   PetscInt      *perm;
-  PetscInt       dim, depth, eStart, k, Nf, f, Nc, c, i, j, size = 0, offset = 0, foffset = 0;
+  PetscInt       dim, depth = -1, eStart = -1, k, Nf, f, Nc, c, i, j, size = 0, offset = 0, foffset = 0;
   PetscBool      vertexchart;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (point < 0) {ierr = DMPlexGetDepthStratum(dm, 1, &point, NULL);CHKERRQ(ierr);}
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  if (dim < 1) PetscFunctionReturn(0);
+  if (point < 0) {
+    PetscInt sStart,sEnd;
+
+    ierr = DMPlexGetDepthStratum(dm, 1, &sStart, &sEnd);CHKERRQ(ierr);
+    point = sEnd-sStart ? sStart : point;
+  }
   ierr = DMPlexGetDepthLabel(dm, &label);CHKERRQ(ierr);
-  ierr = DMLabelGetValue(label, point, &depth);CHKERRQ(ierr);
+  if (point >= 0) { ierr = DMLabelGetValue(label, point, &depth);CHKERRQ(ierr); }
+  if (!section) {ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);}
   if (depth == 1) {eStart = point;}
   else if  (depth == dim) {
     const PetscInt *cone;
@@ -3908,8 +3918,7 @@ PetscErrorCode DMPlexSetClosurePermutationTensor(DM dm, PetscInt point, PetscSec
       ierr = DMPlexGetCone(dm, cone[0], &cone2);CHKERRQ(ierr);
       eStart = cone2[0];
     } else SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %D of depth %D cannot be used to bootstrap spectral ordering for dim %D", point, depth, dim);
-  } else SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %D of depth %D cannot be used to bootstrap spectral ordering for dim %D", point, depth, dim);
-  if (!section) {ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);}
+  } else if (depth >= 0) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %D of depth %D cannot be used to bootstrap spectral ordering for dim %D", point, depth, dim);
   {                             /* Determine whether the chart covers all points or just vertices. */
     PetscInt pStart,pEnd,cStart,cEnd;
     ierr = DMPlexGetDepthStratum(dm,0,&pStart,&pEnd);CHKERRQ(ierr);
@@ -3918,7 +3927,6 @@ PetscErrorCode DMPlexSetClosurePermutationTensor(DM dm, PetscInt point, PetscSec
     else vertexchart = PETSC_FALSE;                                 /* Assume all interpolated points are in chart */
   }
   ierr = PetscSectionGetNumFields(section, &Nf);CHKERRQ(ierr);
-  if (dim < 1) PetscFunctionReturn(0);
   for (f = 0; f < Nf; ++f) {
     ierr = PetscSectionFieldGetTensorDegree_Private(section,f,eStart,vertexchart,&Nc,&k);CHKERRQ(ierr);
     size += PetscPowInt(k+1, dim)*Nc;
