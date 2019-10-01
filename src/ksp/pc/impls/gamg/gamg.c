@@ -1324,7 +1324,7 @@ PetscErrorCode PCSetFromOptions_GAMG(PetscOptionItems *PetscOptionsObject,PC pc)
   char           prefix[256];
   PetscInt       i,n;
   const char     *pcpre;
-  static const char *LayoutTypes[] = {"compact","spread",0};
+  static const char *LayoutTypes[] = {"compact","spread","PCGAMGLayoutType","PC_GAMG_LAYOUT",0};
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
   ierr = PetscOptionsHead(PetscOptionsObject,"GAMG options");CHKERRQ(ierr);
