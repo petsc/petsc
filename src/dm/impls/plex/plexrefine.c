@@ -8680,7 +8680,7 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
         ierr = DMPlexGetTransitiveClosure(rdm, newv, PETSC_FALSE, &rStarSize, &rStar);CHKERRQ(ierr);
         for (v = 0; v < eStarSize*2; v += 2) {
           if ((eStar[v] >= cStart) && (eStar[v] < cEnd)) {
-            PetscScalar     coordsNewAux[3];
+            PetscScalar     coordsNewAux[3] = {0., 0., 0.};
             PetscInt       *cellCone = NULL;
             PetscInt        cellClosureSize, s, cv, cdof;
             PetscBool       locvA = PETSC_TRUE, locvB = PETSC_TRUE;
