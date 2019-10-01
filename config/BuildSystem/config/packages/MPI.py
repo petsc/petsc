@@ -471,6 +471,7 @@ to remove this warning message *****')
     oldFlags = self.compilers.CPPFLAGS
     self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
 
+    # the following packages are all derived orginally from the MPICH implementation
     MPI_VER = ''
     # I_MPI_NUMVERSION is broken on Windows and only has a value of 0 so test also for the named version
     MPICHPKG = 'I_MPI'
@@ -499,6 +500,9 @@ to remove this warning message *****')
       self.compilers.CPPFLAGS = oldFlags
       self.mpi_pkg_version = MPI_VER+'\n'
       return
+  
+    # IBM Spectrum MPI is derived from OpenMPI, we do not yet have specific tests for it
+    # https://www.ibm.com/us-en/marketplace/spectrum-mpi
     openmpi_test = '#include <mpi.h>\nint ompi_major = OMPI_MAJOR_VERSION;\nint ompi_minor = OMPI_MINOR_VERSION;\nint ompi_release = OMPI_RELEASE_VERSION;\n'
     if self.checkCompile(openmpi_test):
       buf = self.outputPreprocess(openmpi_test)
