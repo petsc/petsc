@@ -3210,7 +3210,7 @@ static void f0_shear(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                      PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar coords[])
 {
   const PetscInt Nc = uOff[1]-uOff[0];
-  const PetscInt ax = (PetscInt) constants[0];
+  const PetscInt ax = (PetscInt) PetscRealPart(constants[0]);
   PetscInt       c;
 
   for (c = 0; c < Nc; ++c) {
