@@ -393,14 +393,14 @@ PetscErrorCode PetscError(MPI_Comm comm,int line,const char *func,const char *fi
   else     ierr = (*eh->handler)(comm,line,func,file,n,p,lbuf,eh->ctx);
 
   /*
-      If this is called from the main() routine we call MPI_Abort() instead of
+      If this is called from the main() routine we call PETSCABORT instead of
     return to allow the parallel program to be properly shutdown.
 
     Since this is in the error handler we don't check the errors below. Of course,
     PetscStrncmp() does its own error checking which is problamatic
   */
   PetscStrncmp(func,"main",4,&ismain);
-  if (ismain) MPI_Abort(PETSC_COMM_WORLD,(int)ierr);
+  if (ismain) PETSCABORT(PETSC_COMM_WORLD,(int)ierr);
 
 #if defined(PETSC_CLANGUAGE_CXX)
   if (p == PETSC_ERROR_IN_CXX) {
