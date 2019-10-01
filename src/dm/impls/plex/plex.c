@@ -5777,14 +5777,14 @@ PetscErrorCode DMPlexAnchorsModifyMat(DM dm, PetscSection section, PetscInt numP
 }
 
 /*@C
-  DMPlexGetClosureIndices - Get the global indices in a vector v for all points in the closure of the given point
+  DMPlexGetClosureIndices - Get the global indices for all local points in the closure of the given point
 
   Not collective
 
   Input Parameters:
 + dm - The DM
-. section - The section describing the layout in v, or NULL to use the default section
-. globalSection - The section describing the parallel layout in v, or NULL to use the default section
+. section - The section describing the local layout
+. globalSection - The section describing the parallel layout
 - point - The mesh point
 
   Output parameters:
@@ -5871,14 +5871,14 @@ PetscErrorCode DMPlexGetClosureIndices(DM dm, PetscSection section, PetscSection
     }
     for (p = 0; p < numPoints; p++) {
       ierr = PetscSectionGetOffset(globalSection, points[2*p], &globalOff);CHKERRQ(ierr);
-      DMPlexGetIndicesPointFields_Internal(section, points[2*p], globalOff < 0 ? -(globalOff+1) : globalOff, offsets, PETSC_FALSE, perms, p, clperm, *indices);
+      ierr = DMPlexGetIndicesPointFields_Internal(section, points[2*p], globalOff < 0 ? -(globalOff+1) : globalOff, offsets, PETSC_FALSE, perms, p, clperm, *indices);CHKERRQ(ierr);
     }
   } else {
     for (p = 0, off = 0; p < numPoints; p++) {
       const PetscInt *perm = perms[0] ? perms[0][p] : NULL;
 
       ierr = PetscSectionGetOffset(globalSection, points[2*p], &globalOff);CHKERRQ(ierr);
-      DMPlexGetIndicesPoint_Internal(section, points[2*p], globalOff < 0 ? -(globalOff+1) : globalOff, &off, PETSC_FALSE, perm, clperm, *indices);
+      ierr = DMPlexGetIndicesPoint_Internal(section, points[2*p], globalOff < 0 ? -(globalOff+1) : globalOff, &off, PETSC_FALSE, perm, clperm, *indices);CHKERRQ(ierr);
     }
   }
   /* Cleanup points */
