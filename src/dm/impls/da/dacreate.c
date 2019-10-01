@@ -346,11 +346,11 @@ static PetscErrorCode DMGetNeighbors_DA(DM dm, PetscInt *nranks, const PetscMPII
          In the local representation these rectangular regions (slabs) are extended in all directions by a stencil width.
 
          The vectors can be thought of as either cell centered or vertex centered on the mesh. But some variables cannot be cell centered and others
-         vertex centered.
+         vertex centered; see the documentation for DMSTAG, a similar DM implementation which supports these staggered grids.
 
   Level: intermediate
 
-.seealso: DMType, DMCOMPOSITE, DMDACreate(), DMCreate(), DMSetType()
+.seealso: DMType, DMCOMPOSITE, DMSTAG, DMDACreate(), DMCreate(), DMSetType()
 M*/
 
 extern PetscErrorCode DMLocatePoints_DA_Regular(DM,Vec,DMPointLocationType,PetscSF);

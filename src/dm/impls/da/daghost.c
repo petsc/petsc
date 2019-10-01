@@ -29,7 +29,7 @@
    grid point has (potentially) several degrees of freedom.
    Any of y, z, n, and p can be passed in as NULL if not needed.
 
-.seealso: DMDAGetCorners(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDAGetOwnershipRanges()
+.seealso: DMDAGetCorners(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDAGetOwnershipRanges(), DMStagGetGhostCorners()
 
 @*/
 PetscErrorCode  DMDAGetGhostCorners(DM da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p)

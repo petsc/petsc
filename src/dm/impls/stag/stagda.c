@@ -488,7 +488,7 @@ static PetscErrorCode DMStagStencilLocationCanonicalize(DMStagStencilLocation lo
 
   Level: advanced
 
-.seealso: DMSTAG, DMStagMigrateVec(), DMStagCreateCompatibleDMStag()
+.seealso: DMSTAG, DMDA, DMStagMigrateVec(), DMStagCreateCompatibleDMStag()
 @*/
 PetscErrorCode DMStagVecSplitToDMDA(DM dm,Vec vec,DMStagStencilLocation loc,PetscInt c,DM *pda,Vec *pdavec)
 {
