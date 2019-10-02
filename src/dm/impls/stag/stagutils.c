@@ -14,7 +14,7 @@
 
   Level: intermediate
 
-.seealso: DMSTAG
+.seealso: DMSTAG, DMDAGetBoundaryTypes()
 @*/
 PetscErrorCode DMStagGetBoundaryTypes(DM dm,DMBoundaryType *boundaryTypeX,DMBoundaryType *boundaryTypeY,DMBoundaryType *boundaryTypeZ)
 {
@@ -190,7 +190,7 @@ PETSC_EXTERN PetscErrorCode DMStagGet1dCoordinateLocationSlot(DM dm,DMStagStenci
 
   Level: beginner
 
-.seealso: DMSTAG, DMStagGetGhostCorners()
+.seealso: DMSTAG, DMStagGetGhostCorners(), DMDAGetCorners()
 @*/
 PetscErrorCode DMStagGetCorners(DM dm,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p,PetscInt *nExtrax,PetscInt *nExtray,PetscInt *nExtraz)
 {
@@ -226,7 +226,7 @@ PetscErrorCode DMStagGetCorners(DM dm,PetscInt *x,PetscInt *y,PetscInt *z,PetscI
 
   Level: beginner
 
-.seealso: DMSTAG, DMStagGetCorners(), DMStagGetGhostCorners(), DMStagGetGlobalSizes(), DMStagGetStencilWidth(), DMStagGetBoundaryTypes()
+.seealso: DMSTAG, DMStagGetCorners(), DMStagGetGhostCorners(), DMStagGetGlobalSizes(), DMStagGetStencilWidth(), DMStagGetBoundaryTypes(), DMStagGetLocationDof(), DMDAGetDof()
 @*/
 PetscErrorCode DMStagGetDOF(DM dm,PetscInt *dof0,PetscInt *dof1,PetscInt *dof2,PetscInt *dof3)
 {
@@ -258,7 +258,7 @@ PetscErrorCode DMStagGetDOF(DM dm,PetscInt *dof0,PetscInt *dof1,PetscInt *dof2,P
 
   Level: beginner
 
-.seealso: DMSTAG, DMStagGetCorners()
+.seealso: DMSTAG, DMStagGetCorners(), DMDAGetGhostCorners()
 @*/
 PetscErrorCode DMStagGetGhostCorners(DM dm,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p)
 {
@@ -291,7 +291,7 @@ PetscErrorCode DMStagGetGhostCorners(DM dm,PetscInt *x,PetscInt *y,PetscInt *z,P
 
   Level: beginner
 
-.seealso: DMSTAG, DMStagGetLocalSizes()
+.seealso: DMSTAG, DMStagGetLocalSizes(), DMDAGetInfo()
 @*/
 PetscErrorCode DMStagGetGlobalSizes(DM dm,PetscInt* M,PetscInt* N,PetscInt* P)
 {
@@ -383,7 +383,7 @@ PetscErrorCode DMStagGetIsLastRank(DM dm,PetscBool *isLastRank0,PetscBool *isLas
 
   Level: beginner
 
-.seealso: DMSTAG, DMStagGetGlobalSizes(), DMStagGetDOF(), DMStagGetNumRanks()
+.seealso: DMSTAG, DMStagGetGlobalSizes(), DMStagGetDOF(), DMStagGetNumRanks(), DMDAGetLocalInfo()
 @*/
 PetscErrorCode DMStagGetLocalSizes(DM dm,PetscInt* m,PetscInt* n,PetscInt* p)
 {
@@ -414,7 +414,7 @@ PetscErrorCode DMStagGetLocalSizes(DM dm,PetscInt* m,PetscInt* n,PetscInt* p)
 
   Level: beginner
 
-.seealso: DMSTAG, DMStagGetGlobalSizes(), DMStagGetLocalSize(), DMStagSetNumRank()
+.seealso: DMSTAG, DMStagGetGlobalSizes(), DMStagGetLocalSize(), DMStagSetNumRank(), DMDAGetInfo()
 @*/
 PetscErrorCode DMStagGetNumRanks(DM dm,PetscInt *nRanks0,PetscInt *nRanks1,PetscInt *nRanks2)
 {
@@ -470,7 +470,7 @@ PetscErrorCode DMStagGetEntriesPerElement(DM dm,PetscInt *entriesPerElement)
 
   Level: beginner
 
-.seealso: DMSTAG, DMStagSetStencilType(), DMStagStencilType
+.seealso: DMSTAG, DMStagSetStencilType(), DMStagStencilType, DMDAGetInfo()
 @*/
 PetscErrorCode DMStagGetStencilType(DM dm,DMStagStencilType *stencilType)
 {
@@ -495,7 +495,7 @@ PetscErrorCode DMStagGetStencilType(DM dm,DMStagStencilType *stencilType)
 
   Level: beginner
 
-.seealso: DMSTAG
+.seealso: DMSTAG, DMDAGetStencilWidth(), DMDAGetInfo()
 @*/
 PetscErrorCode DMStagGetStencilWidth(DM dm,PetscInt *stencilWidth)
 {
@@ -530,7 +530,7 @@ PetscErrorCode DMStagGetStencilWidth(DM dm,PetscInt *stencilWidth)
 
   Level: intermediate
 
-.seealso: DMSTAG, DMStagSetGlobalSizes(), DMStagSetOwnershipRanges(), DMStagCreate1d(), DMStagCreate2d(), DMStagCreate3d()
+.seealso: DMSTAG, DMStagSetGlobalSizes(), DMStagSetOwnershipRanges(), DMStagCreate1d(), DMStagCreate2d(), DMStagCreate3d(), DMDAGetOwnershipRanges()
 @*/
 PetscErrorCode DMStagGetOwnershipRanges(DM dm,const PetscInt *lx[],const PetscInt *ly[],const PetscInt *lz[])
 {
@@ -853,7 +853,7 @@ PetscErrorCode DMStagRestore1dCoordinateArraysDOFRead(DM dm,void *arrX,void *arr
 
   Level: advanced
 
-.seealso: DMSTAG, DMBoundaryType, DMStagCreate1d(), DMStagCreate2d(), DMStagCreate3d()
+.seealso: DMSTAG, DMBoundaryType, DMStagCreate1d(), DMStagCreate2d(), DMStagCreate3d(), DMDASetBoundaryType()
 @*/
 PetscErrorCode DMStagSetBoundaryTypes(DM dm,DMBoundaryType boundaryType0,DMBoundaryType boundaryType1,DMBoundaryType boundaryType2)
 {
@@ -911,7 +911,7 @@ PetscErrorCode DMStagSetCoordinateDMType(DM dm,DMType dmtype)
 
   Level: advanced
 
-.seealso: DMSTAG
+.seealso: DMSTAG, DMDASetDof()
 @*/
 PetscErrorCode DMStagSetDOF(DM dm,PetscInt dof0, PetscInt dof1,PetscInt dof2,PetscInt dof3)
 {
@@ -952,7 +952,7 @@ PetscErrorCode DMStagSetDOF(DM dm,PetscInt dof0, PetscInt dof1,PetscInt dof2,Pet
 
   Level: developer
 
-.seealso: DMSTAG
+.seealso: DMSTAG, DMDASetNumProcs()
 @*/
 PetscErrorCode DMStagSetNumRanks(DM dm,PetscInt nRanks0,PetscInt nRanks1,PetscInt nRanks2)
 {
@@ -987,7 +987,7 @@ PetscErrorCode DMStagSetNumRanks(DM dm,PetscInt nRanks0,PetscInt nRanks1,PetscIn
 
   Level: beginner
 
-.seealso: DMSTAG, DMStagGetStencilType(), DMStagStencilType
+.seealso: DMSTAG, DMStagGetStencilType(), DMStagStencilType, DMDASetStencilType()
 @*/
 PetscErrorCode DMStagSetStencilType(DM dm,DMStagStencilType stencilType)
 {
@@ -1012,7 +1012,7 @@ PetscErrorCode DMStagSetStencilType(DM dm,DMStagStencilType stencilType)
 
   Level: beginner
 
-.seealso: DMSTAG
+.seealso: DMSTAG, DMDASetStencilWidth()
 @*/
 PetscErrorCode DMStagSetStencilWidth(DM dm,PetscInt stencilWidth)
 {
@@ -1041,7 +1041,7 @@ PetscErrorCode DMStagSetStencilWidth(DM dm,PetscInt stencilWidth)
 
   Level: advanced
 
-.seealso: DMSTAG, DMStagGetGlobalSizes()
+.seealso: DMSTAG, DMStagGetGlobalSizes(), DMDASetSizes()
 @*/
 PetscErrorCode DMStagSetGlobalSizes(DM dm,PetscInt N0,PetscInt N1,PetscInt N2)
 {
@@ -1076,7 +1076,7 @@ PetscErrorCode DMStagSetGlobalSizes(DM dm,PetscInt N0,PetscInt N1,PetscInt N2)
 
   Level: developer
 
-.seealso: DMSTAG, DMStagSetGlobalSizes(), DMStagGetOwnershipRanges()
+.seealso: DMSTAG, DMStagSetGlobalSizes(), DMStagGetOwnershipRanges(), DMDASetOwnershipRanges()
 @*/
 PetscErrorCode DMStagSetOwnershipRanges(DM dm,PetscInt const *lx,PetscInt const *ly,PetscInt const *lz)
 {
@@ -1116,7 +1116,7 @@ PetscErrorCode DMStagSetOwnershipRanges(DM dm,PetscInt const *lx,PetscInt const 
 
   Level: advanced
 
-.seealso: DMSTAG, DMPRODUCT, DMStagSetUniformCoordinatesExplicit(), DMStagSetUniformCoordinatesProduct(), DMStagSetCoordinateDMType(), DMGetCoordinateDM(), DMGetCoordinates()
+.seealso: DMSTAG, DMPRODUCT, DMStagSetUniformCoordinatesExplicit(), DMStagSetUniformCoordinatesProduct(), DMStagSetCoordinateDMType(), DMGetCoordinateDM(), DMGetCoordinates(), DMDASetUniformCoordinates()
 @*/
 PetscErrorCode DMStagSetUniformCoordinates(DM dm,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax,PetscReal zmin,PetscReal zmax)
 {
@@ -1282,7 +1282,7 @@ PetscErrorCode DMStagSetUniformCoordinatesProduct(DM dm,PetscReal xmin,PetscReal
 
   Level: beginner
 
-.seealso: DMSTAG, DMStagVecGetArrayDOFRead(), DMStagGetLocationSlot(), DMGetLocalVector(), DMCreateLocalVector(), DMGetGlobalVector(), DMCreateGlobalVector()
+.seealso: DMSTAG, DMStagVecGetArrayDOFRead(), DMStagGetLocationSlot(), DMGetLocalVector(), DMCreateLocalVector(), DMGetGlobalVector(), DMCreateGlobalVector(), DMDAVecGetArrayDOF()
 @*/
 PetscErrorCode DMStagVecGetArrayDOF(DM dm,Vec vec,void *array)
 {
@@ -1330,7 +1330,7 @@ PetscErrorCode DMStagVecGetArrayDOF(DM dm,Vec vec,void *array)
 
   Level: beginner
 
-.seealso: DMSTAG, DMStagVecGetArrayDOFRead(), DMStagGetLocationSlot(), DMGetLocalVector(), DMCreateLocalVector(), DMGetGlobalVector(), DMCreateGlobalVector()
+.seealso: DMSTAG, DMStagVecGetArrayDOFRead(), DMStagGetLocationSlot(), DMGetLocalVector(), DMCreateLocalVector(), DMGetGlobalVector(), DMCreateGlobalVector(), DMDAVecGetArrayDOFRead()
 @*/
 PetscErrorCode DMStagVecGetArrayDOFRead(DM dm,Vec vec,void *array)
 {
@@ -1374,7 +1374,7 @@ PetscErrorCode DMStagVecGetArrayDOFRead(DM dm,Vec vec,void *array)
 
   Level: beginner
 
-.seealso: DMSTAG, DMStagVecGetArrayDOF()
+.seealso: DMSTAG, DMStagVecGetArrayDOF(), DMDAVecRestoreArrayDOFRead()
 @*/
 PetscErrorCode DMStagVecRestoreArrayDOF(DM dm,Vec vec,void *array)
 {
@@ -1418,7 +1418,7 @@ PetscErrorCode DMStagVecRestoreArrayDOF(DM dm,Vec vec,void *array)
 
   Level: beginner
 
-.seealso: DMSTAG, DMStagVecGetArrayDOFRead()
+.seealso: DMSTAG, DMStagVecGetArrayDOFRead(), DMDAVecRestoreArrayDOFRead()
 @*/
 PetscErrorCode DMStagVecRestoreArrayDOFRead(DM dm,Vec vec,void *array)
 {
