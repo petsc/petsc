@@ -146,6 +146,7 @@ def get_test_data(directory):
         if not os.path.exists(probdir):
             probfolder = probfolder.split('_')[0]
             probdir = os.path.join('..', prob_subdir, 'examples', testtype, probfolder)
+        probfullpath=os.path.normpath(os.path.join(directory,probdir))
         # assemble the final full folder path for problem outputs and read the files
         try:
             with open('%s/diff-%s.out'%(probdir, probfolder),'r') as probdiff:
@@ -186,7 +187,9 @@ def get_test_data(directory):
             'skipped':False,
             'diff':difflines,
             'stdout':stdoutlines,
-            'stderr':stderrlines
+            'stderr':stderrlines,
+            'probdir':probfullpath,
+            'fullname':fname
         }
         # process the *.counts file and increment problem status trackers
         if len(testdata[pkgname]['problems'][probname]['stderr'])>0:
@@ -218,18 +221,30 @@ def show_fail(testdata):
         testsuite = testdata[pkg]
         for prob in testsuite['problems'].keys():
             p = testsuite['problems'][prob]
+            cdbase='cd '+p['probdir']+' && '
             if p['skipped']:
                 # if we got here, the TAP output shows a skipped test
                 pass
             elif len(p['stderr'])>0:
                 # if we got here, the test crashed with an error
                 # we show the stderr output under <error>
-                print(p)
-                pass
+                shbase=os.path.join(p['probdir'], p['fullname'])
+                shfile=shbase+".sh"
+                if not os.path.exists(shfile):
+                    shfile=glob.glob(shbase+"*")[0]
+                with open(shfile, 'r') as sh:
+                    cmd = sh.read()
+                print(p['fullname']+': '+cdbase+cmd.split('>')[0])
             elif len(p['diff'])>0:
                 # if we got here, the test output did not match the stored output file
                 # we show the diff between new output and old output under <failure>
-                print(p)
+                shbase=os.path.join(p['probdir'], 'diff-'+p['fullname'])
+                shfile=shbase+".sh"
+                if not os.path.exists(shfile):
+                    shfile=glob.glob(shbase+"*")[0]
+                with open(shfile, 'r') as sh:
+                    cmd = sh.read()
+                print(p['fullname']+': '+cdbase+cmd.split('>')[0])
                 pass
     return
 

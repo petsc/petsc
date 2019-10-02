@@ -283,7 +283,8 @@ print-test:
 	-@echo $(TESTTARGETS)
 
 show-fail:
-	-@echo $(TESTTARGETS)
+	-@$(PYTHON) $(CONFIGDIR)/report_tests.py -d $(TESTDIR)/counts -f
+
 
 
 # Don't start running tests until starttime has completed
