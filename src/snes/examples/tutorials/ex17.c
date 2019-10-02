@@ -565,6 +565,7 @@ int main(int argc, char **argv)
     args: -sol_type elas_quad -simplex 0 -displacement_petscspace_degree 3 -dmsnes_check .0001
   test:
     suffix: 2d_q3_quad_elas_shear
+    requires: !single
     args: -sol_type elas_quad -simplex 0 -shear -displacement_petscspace_degree 3 -dmsnes_check
 
   test:
