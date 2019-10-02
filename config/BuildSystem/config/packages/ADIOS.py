@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.gitcommit         = 'master'
+    self.gitcommit         = '6f24c5e' # master may 23, 2019
     self.download          = ['git://https://github.com/ornladios/ADIOS.git']
     self.downloaddirnames  = ['adios']
     self.functions         = ['adios_open']
@@ -18,8 +18,9 @@ class Configure(config.package.GNUPackage):
     self.mpi            = framework.require('config.packages.MPI', self)
     self.hdf5           = framework.require('config.packages.hdf5', self)
     self.netcdf         = framework.require('config.packages.netcdf', self)
-    self.pthread         = framework.require('config.packages.pthread', self)
-    self.deps           = [self.mpi,self.pthread]
+    self.pthread        = framework.require('config.packages.pthread', self)
+    self.mathlib        = framework.require('config.packages.mathlib',self)
+    self.deps           = [self.mpi,self.pthread,self.mathlib]
     self.odeps          = [self.hdf5,self.netcdf,self.zlib]
     return
 
