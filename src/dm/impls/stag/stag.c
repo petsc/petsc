@@ -7,14 +7,6 @@
 #include <petsc/private/dmstagimpl.h>
 #include <petscsf.h>
 
-/*MC
-  DMSTAG = "stag"
-
-  Level: intermediate
-
-.seealso: DMType, DMCreate(), DMSetType()
-M*/
-
 static PetscErrorCode DMDestroy_Stag(DM dm)
 {
   PetscErrorCode ierr;
@@ -420,11 +412,14 @@ static PetscErrorCode DMSetFromOptions_Stag(PetscOptionItems *PetscOptionsObject
 }
 
 /*MC
-  DMSTAG = "stag" - A DM object, similar to DMDA, representing a "staggered grid" or a structured cell complex.
+  DMSTAG = "stag" - A DM object representing a "staggered grid" or a structured cell complex.
+
+  This implementation parallels the DMDA implementation in many ways, but allows degrees of freedom
+  to be associated with all "strata" in a logically-rectangular grid: vertices, edges, faces, and elements.
 
   Level: beginner
 
-.seealso: DM, DMPRODUCT, DMDA, DMPLEX, DMStagCreate1d(), DMStagCreate2d(), DMStagCreate3d()
+.seealso: DM, DMPRODUCT, DMDA, DMPLEX, DMStagCreate1d(), DMStagCreate2d(), DMStagCreate3d(), DMType, DMCreate(), DMSetType()
 M*/
 
 PETSC_EXTERN PetscErrorCode DMCreate_Stag(DM dm)

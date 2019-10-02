@@ -259,7 +259,7 @@ PetscErrorCode DMDAGetCoordinateName(DM dm,PetscInt nf,const char **name)
 
   Level: beginner
 
-.seealso: DMDAGetGhostCorners(), DMDAGetOwnershipRanges()
+.seealso: DMDAGetGhostCorners(), DMDAGetOwnershipRanges(), DMStagGetCorners()
 @*/
 PetscErrorCode  DMDAGetCorners(DM da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p)
 {
@@ -325,7 +325,7 @@ PetscErrorCode DMDAGetReducedDMDA(DM da,PetscInt nfields,DM *nda)
 
   Level: intermediate
 
-.seealso: DMDAGetGhostCorners(), DMSetCoordinates(), DMDASetUniformCoordinates(), DMGetCoordinates(), DMDAGetGhostedCoordinates()
+.seealso: DMDAGetGhostCorners(), DMSetCoordinates(), DMDASetUniformCoordinates(), DMGetCoordinates(), DMDAGetGhostedCoordinates(), DMStagCreateCompatibleDMStag()
 @*/
 PetscErrorCode  DMDACreateCompatibleDMDA(DM da,PetscInt nfields,DM *nda)
 {
