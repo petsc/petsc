@@ -42,7 +42,7 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
   ierr = PetscObjectTypeCompareAny((PetscObject)xin,&is_cudatype,VECSEQCUDA,VECMPICUDA,VECCUDA,"");CHKERRQ(ierr);
   if (is_cudatype) {
     VecCUDAAllocateCheckHost(xin);
-    if (xin->valid_GPU_array == PETSC_OFFLOAD_GPU) {
+    if (xin->offloadmask == PETSC_OFFLOAD_GPU) {
       if (xin->spptr && ctx->spptr) {
         ierr = VecCUDACopyFromGPUSome_Public(xin,(PetscCUDAIndices)ctx->spptr,mode);CHKERRQ(ierr);
       } else {

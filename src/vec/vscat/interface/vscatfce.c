@@ -592,7 +592,7 @@ PETSC_EXTERN PetscErrorCode VecScatterInitializeForGPU(VecScatter inctx,Vec x)
   ns   = nsends ? sstarts[nsends]-sstarts[0] : 0; /* s/rstarts[0] is not necessarily zero */
   nr   = nrecvs ? rstarts[nrecvs]-rstarts[0] : 0;
 
-  if (x->valid_GPU_array != PETSC_OFFLOAD_UNALLOCATED && (nsends>0 || nrecvs>0)) {
+  if (x->offloadmask != PETSC_OFFLOAD_UNALLOCATED && (nsends>0 || nrecvs>0)) {
     if (!inctx->spptr) {
       PetscInt k,*tindicesSends,*sindicesSends,*tindicesRecvs,*sindicesRecvs;
       /* Here we create indices for both the senders and receivers. */
