@@ -270,6 +270,9 @@ getautoconfargs:
 .cu.o:
 	${PETSC_CUCOMPILE_SINGLE} `pwd`/$<
 
+.F.o .F90.o .F95.o:
+	${PETSC_FCOMPILE} -o $@ $<
+
 #
 #  These rules are for compiling the test examples.
 #
