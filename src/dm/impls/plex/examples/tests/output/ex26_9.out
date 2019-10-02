@@ -5,8 +5,8 @@ cubit(FourSquareT-large.exo): 12/02/2017: 09:20:39 in 2 dimensions:
   1-cells: 156 0
   2-cells: 96 0
 Labels:
-  Cell Sets: 4 strata with value/size (1 (24), 2 (18), 3 (28), 5 (26))
   depth: 3 strata with value/size (0 (61), 1 (156), 2 (96))
+  Cell Sets: 4 strata with value/size (1 (24), 2 (18), 3 (28), 5 (26))
 PetscSection Object: 2 MPI processes
   type not yet set
 3 fields
@@ -965,8 +965,8 @@ Parallel Mesh in 2 dimensions:
   1-cells: 85 84
   2-cells: 48 48
 Labels:
-  Cell Sets: 3 strata with value/size (1 (24), 2 (18), 3 (6))
   depth: 3 strata with value/size (0 (40), 1 (85), 2 (48))
+  Cell Sets: 3 strata with value/size (1 (24), 2 (18), 3 (6))
 Field U:
   adjacency FEM
 Field Sigma:

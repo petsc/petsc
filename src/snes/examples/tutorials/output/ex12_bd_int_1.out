@@ -5,9 +5,9 @@ Mesh in 2 dimensions:
   1-cells: 208
   2-cells: 128
 Labels:
-  Face Sets: 1 strata with value/size (1 (56))
-  marker: 1 strata with value/size (1 (64))
   depth: 3 strata with value/size (0 (81), 1 (208), 2 (128))
+  marker: 1 strata with value/size (1 (64))
+  Face Sets: 1 strata with value/size (1 (56))
 Initial guess
 L_2 Error: < 1.0e-11
 Initial Residual

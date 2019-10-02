@@ -5,5 +5,5 @@ Simplicial Mesh in 2 dimensions:
   1-cells: 31 30 28
   2-cells: 14 14 14
 Labels:
-  Face Sets: 3 strata with value/size (-3 (1), -2 (1), -1 (2))
   depth: 3 strata with value/size (0 (18), 1 (31), 2 (14))
+  Face Sets: 3 strata with value/size (-3 (1), -2 (1), -1 (2))

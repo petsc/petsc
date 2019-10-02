@@ -147,12 +147,6 @@ struct _n_DMLabelLink {
 };
 typedef struct _n_DMLabelLink *DMLabelLink;
 
-struct _n_DMLabelLinkList {
-  PetscInt refct;
-  DMLabelLink next;
-};
-typedef struct _n_DMLabelLinkList *DMLabelLinkList;
-
 typedef struct _n_Boundary *DMBoundary;
 
 struct _n_Boundary {
@@ -182,7 +176,7 @@ struct _p_DM {
   DMNamedVecLink          namedglobal;
   DMNamedVecLink          namedlocal;
   DMWorkLink              workin,workout;
-  DMLabelLinkList         labels;            /* Linked list of labels */
+  DMLabelLink             labels;            /* Linked list of labels */
   DMLabel                 depthLabel;        /* Optimized access to depth label */
   void                    *ctx;    /* a user context */
   PetscErrorCode          (*ctxdestroy)(void**);

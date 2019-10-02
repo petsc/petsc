@@ -5,13 +5,13 @@ Mesh in 2 dimensions:
   1-cells: 24
   2-cells: 9
 Labels:
-  markerLeft: 1 strata with value/size (1 (7))
-  markerTop: 1 strata with value/size (1 (7))
-  markerRight: 1 strata with value/size (1 (7))
-  markerBottom: 1 strata with value/size (1 (7))
-  depth: 3 strata with value/size (0 (16), 1 (24), 2 (9))
-  Face Sets: 4 strata with value/size (4 (3), 2 (3), 1 (3), 3 (3))
   marker: 4 strata with value/size (4 (7), 2 (7), 1 (7), 3 (7))
+  Face Sets: 4 strata with value/size (4 (3), 2 (3), 1 (3), 3 (3))
+  depth: 3 strata with value/size (0 (16), 1 (24), 2 (9))
+  markerBottom: 1 strata with value/size (1 (7))
+  markerRight: 1 strata with value/size (1 (7))
+  markerTop: 1 strata with value/size (1 (7))
+  markerLeft: 1 strata with value/size (1 (7))
 Integral of pressure: 0.
 SNES Object: 1 MPI processes
   type: newtonls

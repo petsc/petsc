@@ -5,7 +5,7 @@ Simplicial Mesh in 2 dimensions:
   1-cells: 144
   2-cells: 64
 Labels:
-  Face Sets: 4 strata with value/size (4 (14), 2 (14), 1 (14), 3 (14))
-  marker: 1 strata with value/size (1 (64))
   depth: 3 strata with value/size (0 (81), 1 (144), 2 (64))
+  marker: 1 strata with value/size (1 (64))
+  Face Sets: 4 strata with value/size (4 (14), 2 (14), 1 (14), 3 (14))
 Mesh with 64 cells, shape condition numbers: min = 2., max = 2., mean = 2., stddev = 0.

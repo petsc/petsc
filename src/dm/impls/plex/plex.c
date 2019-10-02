@@ -3533,12 +3533,9 @@ PetscErrorCode DMPlexGetNumFaceVertices(DM dm, PetscInt cellDim, PetscInt numCor
 @*/
 PetscErrorCode DMPlexGetDepthLabel(DM dm, DMLabel *depthLabel)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(depthLabel, 2);
-  if (!dm->depthLabel) {ierr = DMGetLabel(dm, "depth", &dm->depthLabel);CHKERRQ(ierr);}
   *depthLabel = dm->depthLabel;
   PetscFunctionReturn(0);
 }
