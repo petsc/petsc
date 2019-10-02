@@ -971,7 +971,7 @@ PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF)
   ierr = DMPlexGetOverlap(dm, &r);CHKERRQ(ierr);
   if (r) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Interpolation of overlapped DMPlex not implemented yet");
   ierr = PetscSFGetGraph(pointSF, &numRoots, &numLeaves, &localPoints, &remotePoints);CHKERRQ(ierr);
-  if (numRoots < 0) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "This DMPlex is distributed but its PointSF has no graph set");
+  if (numRoots < 0) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "This DMPlex is distributed but input PointSF has no graph set");
   ierr = PetscObjectViewFromOptions((PetscObject) dm, NULL, "-dm_interp_pre_view");CHKERRQ(ierr);
   ierr = PetscObjectViewFromOptions((PetscObject) pointSF, NULL, "-petscsf_interp_pre_view");CHKERRQ(ierr);
   ierr = PetscLogEventBegin(DMPLEX_InterpolateSF,dm,0,0,0);CHKERRQ(ierr);
@@ -1287,7 +1287,11 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
       if (depth > 0) {
         ierr = DMPlexInterpolateFaces_Internal(odm, 1, idm);CHKERRQ(ierr);
         ierr = DMGetPointSF(odm, &sfPoint);CHKERRQ(ierr);
-        ierr = DMPlexInterpolatePointSF(idm, sfPoint);CHKERRQ(ierr);
+        {
+          PetscInt nroots;
+          ierr = PetscSFGetGraph(sfPoint, &nroots, NULL, NULL, NULL);CHKERRQ(ierr);
+          if (nroots >= 0) {ierr = DMPlexInterpolatePointSF(idm, sfPoint);CHKERRQ(ierr);}
+        }
       }
       if (odm != dm) {ierr = DMDestroy(&odm);CHKERRQ(ierr);}
       odm = idm;
