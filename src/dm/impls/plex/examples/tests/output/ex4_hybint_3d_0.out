@@ -6,10 +6,10 @@ Parallel Mesh in 3 dimensions:
   2-cells: 8 5 (3)
   3-cells: 2 1 (1)
 Labels:
-  ghost: 1 strata with value/size (1 (6))
-  vtk: 1 strata with value/size (1 (2))
-  fault: 1 strata with value/size (1 (6))
   depth: 4 strata with value/size (0 (8), 1 (12), 2 (8), 3 (2))
+  fault: 1 strata with value/size (1 (6))
+  vtk: 1 strata with value/size (1 (2))
+  ghost: 1 strata with value/size (1 (6))
 DM Object: Hybrid Mesh 2 MPI processes
   type: plex
 Hybrid Mesh in 3 dimensions:

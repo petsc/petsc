@@ -1058,7 +1058,7 @@ static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmPa
   numLabels = numLocalLabels;
   ierr = MPI_Bcast(&numLabels, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
   if (numLabels == numLocalLabels) hasLabels = PETSC_TRUE;
-  for (l = numLabels-1; l >= 0; --l) {
+  for (l = 0; l < numLabels; ++l) {
     DMLabel     label = NULL, labelNew = NULL;
     PetscBool   isDepth, lisOutput = PETSC_TRUE, isOutput;
     const char *name = NULL;

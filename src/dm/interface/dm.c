@@ -80,8 +80,6 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   v->outputSequenceVal = 0.0;
   ierr = DMSetVecType(v,VECSTANDARD);CHKERRQ(ierr);
   ierr = DMSetMatType(v,MATAIJ);CHKERRQ(ierr);
-  ierr = PetscNew(&(v->labels));CHKERRQ(ierr);
-  v->labels->refct = 1;
 
   *dm = v;
   PetscFunctionReturn(0);
@@ -119,10 +117,7 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(newdm,2);
   ierr = DMCreate(PetscObjectComm((PetscObject) dm), newdm);CHKERRQ(ierr);
-  ierr = PetscFree((*newdm)->labels);CHKERRQ(ierr);
-  dm->labels->refct++;
-  (*newdm)->labels = dm->labels;
-  (*newdm)->depthLabel = dm->depthLabel;
+  ierr = DMCopyLabels(dm, *newdm, PETSC_COPY_VALUES, PETSC_TRUE);CHKERRQ(ierr);
   (*newdm)->leveldown  = dm->leveldown;
   (*newdm)->levelup    = dm->levelup;
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
@@ -576,22 +571,20 @@ static PetscErrorCode DMCountNonCyclicReferences(DM dm, PetscBool recurseCoarse,
 
 PetscErrorCode DMDestroyLabelLinkList_Internal(DM dm)
 {
+  DMLabelLink    next = dm->labels;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!--(dm->labels->refct)) {
-    DMLabelLink next = dm->labels->next;
+  /* destroy the labels */
+  while (next) {
+    DMLabelLink tmp = next->next;
 
-    /* destroy the labels */
-    while (next) {
-      DMLabelLink tmp = next->next;
-
-      ierr = DMLabelDestroy(&next->label);CHKERRQ(ierr);
-      ierr = PetscFree(next);CHKERRQ(ierr);
-      next = tmp;
-    }
-    ierr = PetscFree(dm->labels);CHKERRQ(ierr);
+    if (next->label == dm->depthLabel) dm->depthLabel = NULL;
+    ierr = DMLabelDestroy(&next->label);CHKERRQ(ierr);
+    ierr = PetscFree(next);CHKERRQ(ierr);
+    next = tmp;
   }
+  dm->labels = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -6631,28 +6624,18 @@ PetscErrorCode DMSetUseNatural(DM dm, PetscBool useNatural)
 @*/
 PetscErrorCode DMCreateLabel(DM dm, const char name[])
 {
-  DMLabelLink    next  = dm->labels->next;
-  PetscBool      flg   = PETSC_FALSE;
-  const char    *lname;
+  PetscBool      flg;
+  DMLabel        label;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidCharPointer(name, 2);
-  while (next) {
-    ierr = PetscObjectGetName((PetscObject) next->label, &lname);CHKERRQ(ierr);
-    ierr = PetscStrcmp(name, lname, &flg);CHKERRQ(ierr);
-    if (flg) break;
-    next = next->next;
-  }
+  ierr = DMHasLabel(dm, name, &flg);CHKERRQ(ierr);
   if (!flg) {
-    DMLabelLink tmpLabel;
-
-    ierr = PetscCalloc1(1, &tmpLabel);CHKERRQ(ierr);
-    ierr = DMLabelCreate(PETSC_COMM_SELF, name, &tmpLabel->label);CHKERRQ(ierr);
-    tmpLabel->output = PETSC_TRUE;
-    tmpLabel->next   = dm->labels->next;
-    dm->labels->next = tmpLabel;
+    ierr = DMLabelCreate(PETSC_COMM_SELF, name, &label);CHKERRQ(ierr);
+    ierr = DMAddLabel(dm, label);CHKERRQ(ierr);
+    ierr = DMLabelDestroy(&label);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -6964,7 +6947,7 @@ PetscErrorCode DMClearLabelStratum(DM dm, const char name[], PetscInt value)
 @*/
 PetscErrorCode DMGetNumLabels(DM dm, PetscInt *numLabels)
 {
-  DMLabelLink next = dm->labels->next;
+  DMLabelLink next = dm->labels;
   PetscInt  n    = 0;
 
   PetscFunctionBegin;
@@ -6993,7 +6976,7 @@ PetscErrorCode DMGetNumLabels(DM dm, PetscInt *numLabels)
 @*/
 PetscErrorCode DMGetLabelName(DM dm, PetscInt n, const char **name)
 {
-  DMLabelLink    next = dm->labels->next;
+  DMLabelLink    next = dm->labels;
   PetscInt       l    = 0;
   PetscErrorCode ierr;
 
@@ -7029,7 +7012,7 @@ PetscErrorCode DMGetLabelName(DM dm, PetscInt n, const char **name)
 @*/
 PetscErrorCode DMHasLabel(DM dm, const char name[], PetscBool *hasLabel)
 {
-  DMLabelLink    next = dm->labels->next;
+  DMLabelLink    next = dm->labels;
   const char    *lname;
   PetscErrorCode ierr;
 
@@ -7065,7 +7048,7 @@ PetscErrorCode DMHasLabel(DM dm, const char name[], PetscBool *hasLabel)
 @*/
 PetscErrorCode DMGetLabel(DM dm, const char name[], DMLabel *label)
 {
-  DMLabelLink    next = dm->labels->next;
+  DMLabelLink    next = dm->labels;
   PetscBool      hasLabel;
   const char    *lname;
   PetscErrorCode ierr;
@@ -7105,7 +7088,7 @@ PetscErrorCode DMGetLabel(DM dm, const char name[], DMLabel *label)
 @*/
 PetscErrorCode DMGetLabelByNum(DM dm, PetscInt n, DMLabel *label)
 {
-  DMLabelLink next = dm->labels->next;
+  DMLabelLink next = dm->labels;
   PetscInt    l    = 0;
 
   PetscFunctionBegin;
@@ -7137,9 +7120,10 @@ PetscErrorCode DMGetLabelByNum(DM dm, PetscInt n, DMLabel *label)
 @*/
 PetscErrorCode DMAddLabel(DM dm, DMLabel label)
 {
-  DMLabelLink    tmpLabel;
+  DMLabelLink    l, *p, tmpLabel;
   PetscBool      hasLabel;
   const char    *lname;
+  PetscBool      flg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -7150,9 +7134,11 @@ PetscErrorCode DMAddLabel(DM dm, DMLabel label)
   ierr = PetscCalloc1(1, &tmpLabel);CHKERRQ(ierr);
   tmpLabel->label  = label;
   tmpLabel->output = PETSC_TRUE;
-  tmpLabel->next   = dm->labels->next;
-  dm->labels->next = tmpLabel;
+  for (p=&dm->labels; (l=*p); p=&l->next) {}
+  *p = tmpLabel;
   ierr = PetscObjectReference((PetscObject)label);CHKERRQ(ierr);
+  ierr = PetscStrcmp(lname, "depth", &flg);CHKERRQ(ierr);
+  if (flg) dm->depthLabel = label;
   PetscFunctionReturn(0);
 }
 
@@ -7194,7 +7180,7 @@ PetscErrorCode DMRemoveLabel(DM dm, const char name[], DMLabel *label)
     PetscValidPointer(label, 3);
     *label = NULL;
   }
-  for (pnext=&dm->labels->next; (link=*pnext); pnext=&link->next) {
+  for (pnext=&dm->labels; (link=*pnext); pnext=&link->next) {
     ierr = PetscObjectGetName((PetscObject) link->label, &lname);CHKERRQ(ierr);
     ierr = PetscStrcmp(name, lname, &hasLabel);CHKERRQ(ierr);
     if (hasLabel) {
@@ -7241,7 +7227,7 @@ PetscErrorCode DMRemoveLabelBySelf(DM dm, DMLabel *label, PetscBool failNotFound
   if (!*label && !failNotFound) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*label, DMLABEL_CLASSID, 2);
   PetscValidLogicalCollectiveBool(dm,failNotFound,3);
-  for (pnext=&dm->labels->next; (link=*pnext); pnext=&link->next) {
+  for (pnext=&dm->labels; (link=*pnext); pnext=&link->next) {
     if (*label == link->label) {
       hasLabel = PETSC_TRUE;
       *pnext = link->next; /* Remove from list */
@@ -7274,7 +7260,7 @@ PetscErrorCode DMRemoveLabelBySelf(DM dm, DMLabel *label, PetscBool failNotFound
 @*/
 PetscErrorCode DMGetLabelOutput(DM dm, const char name[], PetscBool *output)
 {
-  DMLabelLink    next = dm->labels->next;
+  DMLabelLink    next = dm->labels;
   const char    *lname;
   PetscErrorCode ierr;
 
@@ -7309,7 +7295,7 @@ PetscErrorCode DMGetLabelOutput(DM dm, const char name[], PetscBool *output)
 @*/
 PetscErrorCode DMSetLabelOutput(DM dm, const char name[], PetscBool output)
 {
-  DMLabelLink    next = dm->labels->next;
+  DMLabelLink    next = dm->labels;
   const char    *lname;
   PetscErrorCode ierr;
 
@@ -7327,46 +7313,56 @@ PetscErrorCode DMSetLabelOutput(DM dm, const char name[], PetscBool output)
   SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No label named %s was present in this dm", name);
 }
 
-
 /*@
   DMCopyLabels - Copy labels from one mesh to another with a superset of the points
 
   Collective on dmA
 
   Input Parameter:
-. dmA - The DM object with initial labels
-
-  Output Parameter:
++ dmA - The DM object with initial labels
 . dmB - The DM object with copied labels
+. mode - Copy labels by pointers (PETSC_OWN_POINTER) or duplicate them (PETSC_COPY_VALUES)
+- all  - Copy all labels including "depth" and "dim" (PETSC_TRUE) which are otherwise ignored (PETSC_FALSE)
 
   Level: intermediate
 
   Note: This is typically used when interpolating or otherwise adding to a mesh
 
-.seealso: DMGetCoordinates(), DMGetCoordinatesLocal(), DMGetCoordinateDM(), DMGetCoordinateSection()
+.seealso: DMGetCoordinates(), DMGetCoordinatesLocal(), DMGetCoordinateDM(), DMGetCoordinateSection(), DMShareLabels()
 @*/
-PetscErrorCode DMCopyLabels(DM dmA, DM dmB)
+PetscErrorCode DMCopyLabels(DM dmA, DM dmB, PetscCopyMode mode, PetscBool all)
 {
-  PetscInt       numLabels, l;
+  DMLabel        label, labelNew;
+  const char    *name;
+  PetscBool      flg;
+  DMLabelLink    link;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dmA, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(dmB, DM_CLASSID, 2);
+  PetscValidLogicalCollectiveEnum(dmA, mode,3);
+  PetscValidLogicalCollectiveBool(dmA, all, 4);
+  if (mode==PETSC_USE_POINTER) SETERRQ(PetscObjectComm((PetscObject)dmA), PETSC_ERR_SUP, "PETSC_USE_POINTER not supported for objects");
   if (dmA == dmB) PetscFunctionReturn(0);
-  ierr = DMGetNumLabels(dmA, &numLabels);CHKERRQ(ierr);
-  for (l = 0; l < numLabels; ++l) {
-    DMLabel     label, labelNew;
-    const char *name;
-    PetscBool   flg;
-
-    ierr = DMGetLabelName(dmA, l, &name);CHKERRQ(ierr);
-    ierr = PetscStrcmp(name, "depth", &flg);CHKERRQ(ierr);
-    if (flg) continue;
-    ierr = PetscStrcmp(name, "dim", &flg);CHKERRQ(ierr);
-    if (flg) continue;
-    ierr = DMGetLabel(dmA, name, &label);CHKERRQ(ierr);
-    ierr = DMLabelDuplicate(label, &labelNew);CHKERRQ(ierr);
+  for (link=dmA->labels; link; link=link->next) {
+    label=link->label;
+    ierr = PetscObjectGetName((PetscObject)label, &name);CHKERRQ(ierr);
+    if (!all) {
+      ierr = PetscStrcmp(name, "depth", &flg);CHKERRQ(ierr);
+      if (flg) continue;
+      ierr = PetscStrcmp(name, "dim", &flg);CHKERRQ(ierr);
+      if (flg) continue;
+    } else {
+      dmB->depthLabel = dmA->depthLabel;
+    }
+    if (mode==PETSC_COPY_VALUES) {
+      ierr = DMLabelDuplicate(label, &labelNew);CHKERRQ(ierr);
+    } else {
+      labelNew = label;
+    }
     ierr = DMAddLabel(dmB, labelNew);CHKERRQ(ierr);
-    ierr = DMLabelDestroy(&labelNew);CHKERRQ(ierr);
+    if (mode==PETSC_COPY_VALUES) {ierr = DMLabelDestroy(&labelNew);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
 }

@@ -224,7 +224,7 @@ PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
     DMLabel  label, labelNew;
 
     ierr = DMGetNumLabels(dm, &numLabels);CHKERRQ(ierr);
-    for (l = numLabels-1; l >= 0; --l) {
+    for (l = 0; l < numLabels; ++l) {
       ierr = DMGetLabelByNum(dm, l, &label);CHKERRQ(ierr);
       ierr = DMLabelPermute(label, perm, &labelNew);CHKERRQ(ierr);
       ierr = DMAddLabel(*pdm, labelNew);CHKERRQ(ierr);

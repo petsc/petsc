@@ -3144,7 +3144,7 @@ static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
   PetscInt          pStart, pEnd, pStartBase, pEndBase, p;
   DM                base;
   PetscInt          *star     = NULL, starSize;
-  DMLabelLink       next      = dm->labels->next;
+  DMLabelLink       next      = dm->labels;
   PetscInt          guess     = 0;
   p4est_topidx_t    num_trees = pforest->topo->conn->num_trees;
   PetscErrorCode    ierr;
@@ -3592,7 +3592,7 @@ static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex)
     PetscSF     transferForward, transferBackward, pointSF;
     PetscInt    pStart, pEnd, pStartA, pEndA;
     PetscInt    *values, *adaptValues;
-    DMLabelLink next = adapt->labels->next;
+    DMLabelLink next = adapt->labels;
     DMLabel     adaptLabel;
     DM          adaptPlex;
 
@@ -4284,12 +4284,11 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
     ierr = DMCreate(comm,&newPlex);CHKERRQ(ierr);
     ierr = DMSetType(newPlex,DMPLEX);CHKERRQ(ierr);
     ierr = DMSetMatType(newPlex,dm->mattype);CHKERRQ(ierr);
-    ierr = PetscFree(newPlex->labels);CHKERRQ(ierr); /* share labels */
-    dm->labels->refct++;
-    newPlex->labels = dm->labels;
-    ierr            = DMForestGetAdjacencyDimension(dm,&adjDim);CHKERRQ(ierr);
-    ierr            = DMForestGetAdjacencyCodimension(dm,&adjCodim);CHKERRQ(ierr);
-    ierr            = DMGetCoordinateDim(dm,&coordDim);CHKERRQ(ierr);
+    /* share labels */
+    ierr = DMCopyLabels(dm, newPlex, PETSC_OWN_POINTER, PETSC_TRUE);CHKERRQ(ierr);
+    ierr = DMForestGetAdjacencyDimension(dm,&adjDim);CHKERRQ(ierr);
+    ierr = DMForestGetAdjacencyCodimension(dm,&adjCodim);CHKERRQ(ierr);
+    ierr = DMGetCoordinateDim(dm,&coordDim);CHKERRQ(ierr);
     if (adjDim == 0) {
       ctype = P4EST_CONNECT_FULL;
     } else if (adjCodim == 1) {
@@ -4424,9 +4423,7 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
 
       /* share the labels back */
       ierr = DMDestroyLabelLinkList_Internal(dm);CHKERRQ(ierr);
-      newPlex->labels->refct++;
-      dm->labels = newPlex->labels;
-
+      ierr = DMCopyLabels(newPlex, dm, PETSC_OWN_POINTER, PETSC_TRUE);CHKERRQ(ierr);
       pforest->plex = newPlex;
     }
     ierr  = DMDestroy(&refTree);CHKERRQ(ierr);

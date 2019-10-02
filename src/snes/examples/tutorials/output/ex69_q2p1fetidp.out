@@ -5,13 +5,13 @@ Distributed Mesh in 2 dimensions:
   1-cells: 22 24 22 22 12
   2-cells: 8 8 8 8 4
 Labels:
+  depth: 3 strata with value/size (0 (15), 1 (22), 2 (8))
   marker: 2 strata with value/size (1 (9), 4 (5))
   Face Sets: 2 strata with value/size (1 (6), 4 (3))
   markerBottom: 1 strata with value/size (1 (9))
   markerRight: 0 strata with value/size ()
   markerTop: 0 strata with value/size ()
   markerLeft: 1 strata with value/size (1 (5))
-  depth: 3 strata with value/size (0 (15), 1 (22), 2 (8))
 Integral of pressure: -0.0387881
 SNES Object: 5 MPI processes
   type: newtonls

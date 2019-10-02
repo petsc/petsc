@@ -5,12 +5,12 @@ Mesh in 2 dimensions:
   1-cells: 20
   2-cells: 19 (12)
 Labels:
-  ghost: 0 strata with value/size ()
-  vtk: 1 strata with value/size (1 (7))
+  depth: 3 strata with value/size (0 (14), 1 (20), 2 (19))
   Cell Sets: 1 strata with value/size (1 (7))
   Face Sets: 4 strata with value/size (100 (4), 101 (4), 200 (1), 300 (3))
   : 4 strata with value/size (100 (4), 101 (4), 200 (1), 300 (3))
-  depth: 3 strata with value/size (0 (14), 1 (20), 2 (19))
+  vtk: 1 strata with value/size (1 (7))
+  ghost: 0 strata with value/size ()
   0  time        0  |x| (       0,    7.801) |x|_1 (       0,    32.63)  
   1  time   0.9934  |x| (       0,    3.435) |x|_1 (       0,    7.909)  
   2  time    1.987  |x| (       0,    1.547) |x|_1 (       0,    6.114)  

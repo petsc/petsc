@@ -2171,22 +2171,8 @@ static PetscErrorCode DMPlexReplace_Static(DM dm, DM dmNew)
   ierr = DMInitialize_Plex(dm);CHKERRQ(ierr);
   dm->data = dmNew->data;
   ((DM_Plex *) dmNew->data)->refct++;
-  dmNew->labels->refct++;
-  if (!--(dm->labels->refct)) {
-    DMLabelLink next = dm->labels->next;
-
-    /* destroy the labels */
-    while (next) {
-      DMLabelLink tmp = next->next;
-
-      ierr = DMLabelDestroy(&next->label);CHKERRQ(ierr);
-      ierr = PetscFree(next);CHKERRQ(ierr);
-      next = tmp;
-    }
-    ierr = PetscFree(dm->labels);CHKERRQ(ierr);
-  }
-  dm->labels = dmNew->labels;
-  dm->depthLabel = dmNew->depthLabel;
+  ierr = DMDestroyLabelLinkList_Internal(dm);CHKERRQ(ierr);
+  ierr = DMCopyLabels(dmNew, dm, PETSC_OWN_POINTER, PETSC_TRUE);CHKERRQ(ierr);
   ierr = DMGetCoarseDM(dmNew,&coarseDM);CHKERRQ(ierr);
   ierr = DMSetCoarseDM(dm,coarseDM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2203,7 +2189,7 @@ static PetscErrorCode DMPlexSwap_Static(DM dmA, DM dmB)
   Vec             coordsA,  coordsB;
   PetscSF         sfA,      sfB;
   void            *tmp;
-  DMLabelLinkList listTmp;
+  DMLabelLink     listTmp;
   DMLabel         depthTmp;
   PetscInt        tmpI;
   PetscErrorCode  ierr;
@@ -3229,7 +3215,7 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscB
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidPointer(filename, 2);
+  PetscValidCharPointer(filename, 2);
   PetscValidPointer(dm, 4);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);

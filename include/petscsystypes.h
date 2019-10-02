@@ -264,15 +264,22 @@ M*/
 #endif /* PETSC_USE_COMPLEX */
 
 /*E
-    PetscCopyMode  - Determines how an array passed to certain functions is copied or retained
+    PetscCopyMode  - Determines how an array or PetscObject passed to certain functions is copied or retained by the aggregate PetscObject
 
    Level: beginner
 
+   For the array input:
 $   PETSC_COPY_VALUES - the array values are copied into new space, the user is free to reuse or delete the passed in array
 $   PETSC_OWN_POINTER - the array values are NOT copied, the object takes ownership of the array and will free it later, the user cannot change or
 $                       delete the array. The array MUST have been obtained with PetscMalloc(). Hence this mode cannot be used in Fortran.
 $   PETSC_USE_POINTER - the array values are NOT copied, the object uses the array but does NOT take ownership of the array. The user cannot use
-                        the array but the user must delete the array after the object is destroyed.
+$                       the array but the user must delete the array after the object is destroyed.
+
+   For the PetscObject input:
+$   PETSC_COPY_VALUES - the input PetscObject is cloned into the aggregate PetscObject; the user is free to reuse/modify the input PetscObject without side effects.
+$   PETSC_OWN_POINTER - the input PetscObject is referenced by pointer (with reference count), thus should not be modified by the user. (Modification may cause errors or unintended side-effects in this or a future version of PETSc.)
+   For either case above, the input PetscObject should be destroyed by the user when no longer needed (the aggregate object increases its reference count).
+$   PETSC_USE_POINTER - invalid for PetscObject inputs.
 
 E*/
 typedef enum {PETSC_COPY_VALUES, PETSC_OWN_POINTER, PETSC_USE_POINTER} PetscCopyMode;

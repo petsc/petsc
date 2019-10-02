@@ -41,7 +41,7 @@ PetscErrorCode ViewLabels(DM dm, PetscViewer viewer)
 int main(int argc, char **argv)
 {
   DM             dm, dmDist;
-  char           filename[PETSC_MAX_PATH_LEN];
+  char           filename[PETSC_MAX_PATH_LEN]="";
   PetscBool      interpolate = PETSC_FALSE;
   PetscErrorCode ierr;
 
