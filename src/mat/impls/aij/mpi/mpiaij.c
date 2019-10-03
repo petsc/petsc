@@ -5645,9 +5645,9 @@ PetscErrorCode MatGetBrowsOfAoCols_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscInt **
   MPI_Comm               comm;
   const PetscMPIInt      *rprocs,*sprocs;
   const PetscInt         *srow,*rstarts,*sstarts;
-  PetscInt               *rowlen,*bufj,*bufJ,ncols,aBn=a->B->cmap->n,row,*b_othi,*b_othj,*rvalues=NULL,*svalues=NULL,*cols,sbs,rbs;
+  PetscInt               *rowlen,*bufj,*bufJ,ncols = 0,aBn=a->B->cmap->n,row,*b_othi,*b_othj,*rvalues=NULL,*svalues=NULL,*cols,sbs,rbs;
   PetscInt               i,j,k=0,l,ll,nrecvs,nsends,nrows,*rstartsj = 0,*sstartsj,len;
-  PetscScalar              *b_otha,*bufa,*bufA,*vals;
+  PetscScalar            *b_otha,*bufa,*bufA,*vals = NULL;
   MPI_Request            *rwaits = NULL,*swaits = NULL;
   MPI_Status             rstatus;
   PetscMPIInt            jj,size,tag,rank,nsends_mpi,nrecvs_mpi;

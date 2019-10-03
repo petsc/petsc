@@ -469,7 +469,6 @@ static PetscErrorCode DMPlexCreateGmsh_ReadNodes_v40(GmshFile *gmsh, int shift, 
   long           block, node, v, numEntityBlocks, numTotalNodes, numNodes;
   int            info[3], nid;
   double         *coordinates;
-  char           *cbuf;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -485,11 +484,12 @@ static PetscErrorCode DMPlexCreateGmsh_ReadNodes_v40(GmshFile *gmsh, int shift, 
     ierr = PetscViewerRead(viewer, &numNodes, 1, NULL, PETSC_LONG);CHKERRQ(ierr);
     if (byteSwap) {ierr = PetscByteSwap(&numNodes, PETSC_LONG, 1);CHKERRQ(ierr);}
     if (gmsh->binary) {
-      int nbytes = sizeof(int) + 3*sizeof(double);
+      size_t nbytes = sizeof(int) + 3*sizeof(double);
+      char   *cbuf = NULL; /* dummy value to prevent warning from compiler about possible unitilized value */
       ierr = GmshBufferGet(gmsh, numNodes, nbytes, &cbuf);CHKERRQ(ierr);
       ierr = PetscViewerRead(viewer, cbuf, numNodes*nbytes, NULL, PETSC_CHAR);CHKERRQ(ierr);
       for (node = 0; node < numNodes; ++node, ++v) {
-        char *cnid = cbuf + node*nbytes, *cxyz = cnid + sizeof(int);
+        char   *cnid = cbuf + node*nbytes, *cxyz = cnid + sizeof(int);
         double *xyz = coordinates + v*3;
         if (!PetscBinaryBigEndian()) {ierr = PetscByteSwap(cnid, PETSC_ENUM, 1);CHKERRQ(ierr);}
         if (!PetscBinaryBigEndian()) {ierr = PetscByteSwap(cxyz, PETSC_DOUBLE, 3);CHKERRQ(ierr);}
@@ -497,14 +497,14 @@ static PetscErrorCode DMPlexCreateGmsh_ReadNodes_v40(GmshFile *gmsh, int shift, 
         ierr = PetscMemcpy(xyz, cxyz, 3*sizeof(double));CHKERRQ(ierr);
         if (byteSwap) {ierr = PetscByteSwap(&nid, PETSC_ENUM, 1);CHKERRQ(ierr);}
         if (byteSwap) {ierr = PetscByteSwap(xyz, PETSC_DOUBLE, 3);CHKERRQ(ierr);}
-        if (nid != v+shift) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unexpected node number %d should be %d", nid, v+shift);
+        if ((long)nid != v+shift) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unexpected node number %d should be %ld", nid, v+shift);
       }
     } else {
       for (node = 0; node < numNodes; ++node, ++v) {
         double *xyz = coordinates + v*3;
         ierr = PetscViewerRead(viewer, &nid, 1, NULL, PETSC_ENUM);CHKERRQ(ierr);
         if (byteSwap) {ierr = PetscByteSwap(&nid, PETSC_ENUM, 1);CHKERRQ(ierr);}
-        if (nid != v+shift) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unexpected node number %d should be %d", nid, v+shift);
+        if ((long)nid != v+shift) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unexpected node number %d should be %ld", nid, v+shift);
         ierr = PetscViewerRead(viewer, xyz, 3, NULL, PETSC_DOUBLE);CHKERRQ(ierr);
         if (byteSwap) {ierr = PetscByteSwap(xyz, PETSC_DOUBLE, 3);CHKERRQ(ierr);}
       }

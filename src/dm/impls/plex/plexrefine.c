@@ -8779,7 +8779,7 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
         ierr = DMPlexGetTransitiveClosure(rdm, newv, PETSC_FALSE, &rStarSize, &rStar);CHKERRQ(ierr);
         for (p = 0; p < rStarSize*2; p += 2) {
           if ((rStar[p] >= cStartNew) && (rStar[p] < cEndNew)) {
-            PetscScalar  ocoords[3];
+            PetscScalar  ocoords[3] = {0,0,0}; /* dummy values for compiler warnings about uninitialized values */
             PetscInt    *cone = NULL, closureSize, lid, coff, s, oc, cdof;
 
             c    = rStar[p];

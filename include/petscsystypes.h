@@ -318,11 +318,16 @@ typedef double PetscLogDouble;
    Notes:
    Use of this should be avoided if one can directly use MPI_Datatype instead.
 
+   PETSC_INT is the datatype for a PetscInt, regardless of whether it is 4 or 8 bytes.
+   PETSC_REAL, PETSC_COMPLEX and PETSC_SCALAR are the datatypes for PetscReal, PetscComplex and PetscScalar, regardless of their sizes.
+
    Developer comment:
    It would be nice if we could always just use MPI Datatypes, why can we not?
 
    If you change any values in PetscDatatype make sure you update their usage in
    share/petsc/matlab/PetscBagRead.m
+
+   TODO: Add PETSC_INT32 and remove use of improper PETSC_ENUM
 
 .seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscDataTypeToMPIDataType(),
           PetscDataTypeGetSize()
