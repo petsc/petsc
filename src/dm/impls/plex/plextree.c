@@ -3734,7 +3734,7 @@ PetscErrorCode DMPlexComputeInjectorTree(DM coarse, DM fine, PetscSF coarseToFin
   PetscSection   globalCoarse, globalFine;
   PetscSection   localCoarse, localFine;
   PetscSection   cSecRef;
-  PetscInt       *rootIndices, *parentIndices, pRefStart, pRefEnd;
+  PetscInt       *rootIndices = NULL, *parentIndices, pRefStart, pRefEnd;
   Mat            injRef;
   PetscInt       numFields, maxDof;
   PetscInt       pStartC, pEndC, pStartF, pEndF, p;
