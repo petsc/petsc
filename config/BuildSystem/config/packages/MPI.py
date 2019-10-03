@@ -173,6 +173,12 @@ shared libraries and run with --known-mpi-shared-libraries=1')
 
   def configureMPIEXEC(self):
     '''Checking for location of mpiexec'''
+    if self.argDB['with-batch']:
+      if 'with-mpiexec' in self.argDB:
+        self.logPrintBox('--with-mpiexec is ignored since --with-batch is provided; one cannot run generated executables on the compile server')
+      self.mpiexec = 'Not_appropriate_for_batch_systems_You_must_use_your_batch_system_to_submit_MPI_jobs_speak_with_your_local_sys_admin'
+      self.addMakeMacro('MPIEXEC', self.mpiexec)
+      return
     self.mpiexec = None
     if 'with-mpiexec' in self.argDB:
       self.argDB['with-mpiexec'] = os.path.expanduser(self.argDB['with-mpiexec'])
@@ -181,10 +187,6 @@ shared libraries and run with --known-mpi-shared-libraries=1')
       self.mpiexec = self.argDB['with-mpiexec']
     elif self.isPOE:
       self.mpiexec = os.path.abspath(os.path.join('bin', 'mpiexec.poe'))
-    elif self.argDB['with-batch']:
-      self.mpiexec = 'Not_appropriate_for_batch_systems_You_must_use_your_batch_system_to_submit_MPI_jobs_speak_with_your_local_sys_admin'
-      self.addMakeMacro('MPIEXEC', self.mpiexec)
-      return
     else:
       mpiexecs = ['mpiexec', 'mpirun', 'mprun']
       path    = []

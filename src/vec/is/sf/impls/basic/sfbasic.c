@@ -317,7 +317,7 @@ static PetscErrorCode PetscSFReduceBegin_Basic(PetscSF sf,MPI_Datatype unit,Pets
   PetscErrorCode    ierr;
   PetscSFPack       link;
   const PetscInt    *leafloc = NULL;
-  MPI_Request       *rootreqs,*leafreqs;
+  MPI_Request       *rootreqs = NULL,*leafreqs = NULL; /* dummy values for compiler warnings about uninitialized value */
 
   PetscFunctionBegin;
   ierr = PetscSFGetLeafIndicesWithMemType_Basic(sf,leafmtype,&leafloc);

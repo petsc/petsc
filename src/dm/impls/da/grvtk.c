@@ -14,8 +14,8 @@ static PetscErrorCode DMDAGetFieldsNamed(DM da,PetscBool *fieldsnamed)
   PetscInt       f,bs;
 
   PetscFunctionBegin;
-  ierr = DMDAGetDof(da,&bs);CHKERRQ(ierr);
   *fieldsnamed = PETSC_FALSE;
+  ierr = DMDAGetDof(da,&bs);CHKERRQ(ierr);
   for (f=0; f<bs; ++f) {
     const char * fieldname;
     ierr = DMDAGetFieldName(da,f,&fieldname);CHKERRQ(ierr);
