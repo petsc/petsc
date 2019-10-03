@@ -626,9 +626,9 @@ class Configure(script.Script):
         if defaultOutputArg in self.argDB:
           return (self.argDB[defaultOutputArg], 0)
         else:
-          raise ConfigureSetupError('Must give a default value for '+defaultOutputArg+' since executables cannot be run')
+          raise ConfigureSetupError('Must give a default value for '+defaultOutputArg+' since generated executables cannot be run with the --with-batch option')
       else:
-        raise ConfigureSetupError('Running executables on this system is not supported')
+        raise ConfigureSetupError('Generated executables cannot be run with the --with-batch option')
     cleanup = cleanup and self.framework.doCleanup
     if executor:
       command = executor+' '+self.linkerObj
