@@ -8,7 +8,6 @@ static PetscErrorCode DMPlexMarkBoundaryFaces_Internal(DM dm, PetscInt val, Pets
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = DMPlexGetHeightStratum(dm, cellHeight+1, &fStart, &fEnd);CHKERRQ(ierr);
   for (f = fStart; f < fEnd; ++f) {
     PetscInt supportSize;
@@ -54,9 +53,13 @@ static PetscErrorCode DMPlexMarkBoundaryFaces_Internal(DM dm, PetscInt val, Pets
 @*/
 PetscErrorCode DMPlexMarkBoundaryFaces(DM dm, PetscInt val, DMLabel label)
 {
-  PetscErrorCode ierr;
+  DMPlexInterpolatedFlag  flg;
+  PetscErrorCode          ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMPlexIsInterpolated(dm, &flg);CHKERRQ(ierr);
+  if (flg != DMPLEX_INTERPOLATED_FULL) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "DM is not fully interpolated on this rank");
   ierr = DMPlexMarkBoundaryFaces_Internal(dm, val, 0, label);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3240,20 +3243,22 @@ static PetscErrorCode DMPlexCreateSubmesh_Interpolated(DM dm, DMLabel vertexLabe
 @*/
 PetscErrorCode DMPlexCreateSubmesh(DM dm, DMLabel vertexLabel, PetscInt value, PetscBool markedFaces, DM *subdm)
 {
-  PetscInt       dim, cdim, depth;
+  DMPlexInterpolatedFlag interpolated;
+  PetscInt       dim, cdim;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(subdm, 3);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMCreate(PetscObjectComm((PetscObject)dm), subdm);CHKERRQ(ierr);
   ierr = DMSetType(*subdm, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetDimension(*subdm, dim-1);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dm, &cdim);CHKERRQ(ierr);
   ierr = DMSetCoordinateDim(*subdm, cdim);CHKERRQ(ierr);
-  if (depth == dim) {
+  ierr = DMPlexIsInterpolated(dm, &interpolated);CHKERRQ(ierr);
+  if (interpolated == DMPLEX_INTERPOLATED_PARTIAL) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Not for partially interpolated meshes");
+  if (interpolated) {
     ierr = DMPlexCreateSubmesh_Interpolated(dm, vertexLabel, value, markedFaces, *subdm);CHKERRQ(ierr);
   } else {
     ierr = DMPlexCreateSubmesh_Uninterpolated(dm, vertexLabel, value, *subdm);CHKERRQ(ierr);

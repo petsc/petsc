@@ -1270,7 +1270,9 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
   ierr = PetscLogEventBegin(DMPLEX_Interpolate,dm,0,0,0);CHKERRQ(ierr);
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  if ((depth == dim) || (dim <= 1)) {
+  ierr = DMPlexIsInterpolated(dm, &interpolated);CHKERRQ(ierr);
+  if (interpolated == DMPLEX_INTERPOLATED_PARTIAL) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Not for partially interpolated meshes");
+  if (interpolated == DMPLEX_INTERPOLATED_FULL) {
     ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr);
     idm  = dm;
   } else {
@@ -1301,6 +1303,11 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
 
     ierr = DMGetPeriodicity(dm,&isper,&maxCell,&L,&bd);CHKERRQ(ierr);
     ierr = DMSetPeriodicity(idm,isper,maxCell,L,bd);CHKERRQ(ierr);
+  }
+  /* This function makes the mesh fully interpolated on all ranks */
+  {
+    DM_Plex *plex = (DM_Plex *) dm->data;
+    plex->interpolated = plex->interpolatedCollective = DMPLEX_INTERPOLATED_FULL;
   }
   *dmInt = idm;
   ierr = PetscLogEventEnd(DMPLEX_Interpolate,dm,0,0,0);CHKERRQ(ierr);
@@ -1447,6 +1454,7 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
 @*/
 PetscErrorCode DMPlexUninterpolate(DM dm, DM *dmUnint)
 {
+  DMPlexInterpolatedFlag interpolated;
   DM             udm;
   PetscInt       dim, vStart, vEnd, cStart, cEnd, cMax, c, maxConeSize = 0, *cone;
   PetscErrorCode ierr;
@@ -1455,7 +1463,10 @@ PetscErrorCode DMPlexUninterpolate(DM dm, DM *dmUnint)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(dmUnint, 2);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  if (dim <= 1) {
+  ierr = DMPlexIsInterpolated(dm, &interpolated);CHKERRQ(ierr);
+  if (interpolated == DMPLEX_INTERPOLATED_PARTIAL) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Not for partially interpolated meshes");
+  if (interpolated == DMPLEX_INTERPOLATED_NONE || dim <= 1) {
+    /* in case dim <= 1 just keep the DMPLEX_INTERPOLATED_FULL flag */
     ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr);
     *dmUnint = dm;
     PetscFunctionReturn(0);
@@ -1540,7 +1551,11 @@ PetscErrorCode DMPlexUninterpolate(DM dm, DM *dmUnint)
     ierr = DMGetPeriodicity(dm,&isper,&maxCell,&L,&bd);CHKERRQ(ierr);
     ierr = DMSetPeriodicity(udm,isper,maxCell,L,bd);CHKERRQ(ierr);
   }
-
+  /* This function makes the mesh fully uninterpolated on all ranks */
+  {
+    DM_Plex *plex = (DM_Plex *) dm->data;
+    plex->interpolated = plex->interpolatedCollective = DMPLEX_INTERPOLATED_NONE;
+  }
   *dmUnint = udm;
   PetscFunctionReturn(0);
 }
