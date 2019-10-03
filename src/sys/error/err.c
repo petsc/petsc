@@ -5,6 +5,44 @@
 #include <petsc/private/petscimpl.h>           /*I "petscsys.h" I*/
 #include <petscviewer.h>
 
+/* A table of Petsc source files containing calls to PETSCABORT. We assume this table will
+   stay stable for a while. When things changed, we just need to add new files to the table.
+ */
+static const char* PetscAbortSourceFiles[] = {
+  "NotFound",                       /* 0, not found in petsc, but may be in users' code if they called PETSCABORT. */
+  "sys/error/adebug.c",
+  "sys/error/err.c",
+  "src/sys/error/errstop.c",
+  "sys/error/fp.c",
+  "sys/error/signal.c",             /* 5 */
+  "sys/ftn-custom/zutils.c",
+  "sys/logging/utils/stagelog.c",
+  "sys/mpiuni/mpitime.c",
+  "sys/objects/init.c",
+  "sys/objects/pinit.c",            /* 10 */
+  "vec/vec/interface/dlregisvec.c",
+  "vec/vec/utils/comb.c"
+};
+
+/* Find index of the soure file where a PETSCABORT was called. */
+PetscErrorCode PetscAbortFindSourceFile_Private(const char* filepath, PetscInt *idx)
+{
+  PetscErrorCode  ierr;
+  PetscInt        i,n = sizeof(PetscAbortSourceFiles)/sizeof(PetscAbortSourceFiles[0]);
+  PetscBool       match;
+  char            subpath[256];
+
+  PetscFunctionBegin;
+  PetscValidIntPointer(idx,2);
+  *idx = 0;
+  for (i=1; i<n; i++) {
+    ierr = PetscFixFilename(PetscAbortSourceFiles[i],subpath);CHKERRQ(ierr);
+    ierr = PetscStrendswith(filepath,subpath,&match);CHKERRQ(ierr);
+    if (match) {*idx = i; break;}
+  }
+  PetscFunctionReturn(0);
+}
+
 typedef struct _EH *EH;
 struct _EH {
   PetscErrorCode (*handler)(MPI_Comm,int,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
@@ -355,14 +393,14 @@ PetscErrorCode PetscError(MPI_Comm comm,int line,const char *func,const char *fi
   else     ierr = (*eh->handler)(comm,line,func,file,n,p,lbuf,eh->ctx);
 
   /*
-      If this is called from the main() routine we call MPI_Abort() instead of
+      If this is called from the main() routine we call PETSCABORT instead of
     return to allow the parallel program to be properly shutdown.
 
     Since this is in the error handler we don't check the errors below. Of course,
     PetscStrncmp() does its own error checking which is problamatic
   */
   PetscStrncmp(func,"main",4,&ismain);
-  if (ismain) MPI_Abort(PETSC_COMM_WORLD,(int)ierr);
+  if (ismain) PETSCABORT(PETSC_COMM_WORLD,(int)ierr);
 
 #if defined(PETSC_CLANGUAGE_CXX)
   if (p == PETSC_ERROR_IN_CXX) {

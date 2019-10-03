@@ -2,7 +2,7 @@
 #include <petscsys.h>           /*I "petscsys.h" I*/
 
 /*@C
-   PetscMPIAbortErrorHandler - Calls MPI_abort() and exits.
+   PetscMPIAbortErrorHandler - Calls PETSCABORT and exits.
 
    Not Collective
 
@@ -61,7 +61,7 @@ PetscErrorCode  PetscMPIAbortErrorHandler(MPI_Comm comm,int line,const char *fun
   } else if (n == PETSC_ERR_SIG) (*PetscErrorPrintf)("%s() line %d in %s %s\n",fun,line,file,mess);
   else (*PetscErrorPrintf)("%s() line %d in %s\n    %s\n",fun,line,file,mess);
 
-  MPI_Abort(PETSC_COMM_WORLD,n);
+  PETSCABORT(PETSC_COMM_WORLD,n);
   PetscFunctionReturn(0);
 }
 

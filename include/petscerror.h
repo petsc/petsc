@@ -460,6 +460,38 @@ M*/
 #define CHKERRABORT(comm,ierr) do {if (PetscUnlikely(ierr)) {PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_REPEAT," ");MPI_Abort(comm,ierr);}} while (0)
 #define CHKERRCONTINUE(ierr)   do {if (PetscUnlikely(ierr)) {PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_REPEAT," ");}} while (0)
 
+PETSC_EXTERN PetscErrorCode PetscAbortFindSourceFile_Private(const char*,PetscInt*);
+
+/*MC
+   PETSCABORT - Call MPI_Abort with an informative error code
+
+   Synopsis:
+   #include <petscsys.h>
+   PETSCABORT(MPI_Comm comm, PetscErrorCode ierr)
+
+   Collective
+
+   Input Parameters:
++  comm - A communicator, so that the error can be collective
+-  ierr - nonzero error code, see the list of standard error codes in include/petscerror.h
+
+   Level: beginner
+
+   Notes: We pass MPI_Abort() an error code of format XX_YYYY_ZZZ, where XX, YYYY are index and line number of the file
+   where PETSCABORT is called, respectively. ZZZ is a PETSc error code.
+
+   Please look up the table PetscAbortSourceFiles[] in src/sys/error/err.c to map indices back to files. If XX is zero,
+   that means 1) the file is not in PETSc (may be in users code); OR 2) the file is in PETSc but PetscAbortSourceFiles[]
+   is out of date. PETSc developers have to update it.
+M*/
+#define PETSCABORT(comm,ierr)  \
+   do {                                                               \
+      PetscInt       idx = 0;                                         \
+      PetscMPIInt    errcode;                                         \
+      PetscAbortFindSourceFile_Private(__FILE__,&idx);                \
+      errcode = (PetscMPIInt)(idx*10000000 + __LINE__*1000 + ierr);   \
+      MPI_Abort(comm,errcode);                                        \
+   } while (0)
 
 /*MC
    CHKERRMPI - Checks error code, if non-zero it calls the error handler and then returns

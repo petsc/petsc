@@ -189,7 +189,7 @@ PETSC_INTERN void MPIAPI MPIU_MaxSum_Local(void *in,void *out,int *cnt,MPI_Datat
   PetscFunctionBegin;
   if (*datatype != MPIU_2INT) {
     (*PetscErrorPrintf)("Can only handle MPIU_2INT data types");
-    MPI_Abort(MPI_COMM_WORLD,1);
+    PETSCABORT(MPI_COMM_SELF,PETSC_ERR_ARG_WRONG);
   }
 
   for (i=0; i<count; i++) {
@@ -257,7 +257,7 @@ PETSC_EXTERN void PetscSum_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatyp
 #endif
   else {
     (*PetscErrorPrintf)("Can only handle MPIU_REAL or MPIU_COMPLEX data types");
-    MPI_Abort(MPI_COMM_WORLD,1);
+    PETSCABORT(MPI_COMM_SELF,PETSC_ERR_ARG_WRONG);
   }
   PetscFunctionReturnVoid();
 }
@@ -286,7 +286,7 @@ PETSC_EXTERN void PetscMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatyp
 #endif
   else {
     (*PetscErrorPrintf)("Can only handle MPIU_REAL or MPIU_COMPLEX data types");
-    MPI_Abort(MPI_COMM_WORLD,1);
+    PETSCABORT(MPI_COMM_SELF,PETSC_ERR_ARG_WRONG);
   }
   PetscFunctionReturnVoid();
 }
@@ -310,7 +310,7 @@ PETSC_EXTERN void PetscMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatyp
 #endif
   else {
     (*PetscErrorPrintf)("Can only handle MPIU_REAL or MPIU_SCALAR data (i.e. double or complex) types");
-    MPI_Abort(MPI_COMM_WORLD,1);
+    PETSCABORT(MPI_COMM_SELF,PETSC_ERR_ARG_WRONG);
   }
   PetscFunctionReturnVoid();
 }

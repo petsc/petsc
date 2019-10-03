@@ -191,7 +191,7 @@ void Petsc_MPI_DebuggerOnError(MPI_Comm *comm,PetscMPIInt *flag,...)
   PetscFunctionBegin;
   (*PetscErrorPrintf)("MPI error %d\n",*flag);
   ierr = PetscAttachDebugger();
-  if (ierr) MPI_Abort(*comm,*flag); /* hopeless so get out */
+  if (ierr) PETSCABORT(*comm,*flag); /* hopeless so get out */
 }
 
 #if defined(PETSC_HAVE_CUDA)

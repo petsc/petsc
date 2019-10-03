@@ -473,7 +473,6 @@ int FormJacobian(SNES snes,Vec x,Mat Jac,Mat pc_mat,void *dummy)
     ierr = PetscViewerBinaryOpen(MPI_COMM_WORLD,mat_file,FILE_MODE_WRITE,&viewer);
     ierr = MatView(pc_mat,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);
-    /*ierr = MPI_Abort(MPI_COMM_WORLD,1);*/
   }
 #endif
   PetscFunctionReturn(0);
