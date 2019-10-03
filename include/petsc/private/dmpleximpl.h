@@ -301,8 +301,9 @@ PETSC_EXTERN PetscErrorCode DMPlexAnchorsModifyMat(DM,PetscSection,PetscInt,Pets
 PETSC_EXTERN PetscErrorCode indicesPoint_private(PetscSection,PetscInt,PetscInt,PetscInt *,PetscBool,PetscInt,PetscInt []);
 PETSC_EXTERN PetscErrorCode indicesPointFields_private(PetscSection,PetscInt,PetscInt,PetscInt [],PetscBool,PetscInt,PetscInt []);
 PETSC_INTERN PetscErrorCode DMPlexLocatePoint_Internal(DM,PetscInt,const PetscScalar [],PetscInt,PetscInt *);
+/* these two are PETSC_EXTERN just because of src/dm/impls/plex/examples/tests/ex18.c */
 PETSC_EXTERN PetscErrorCode DMPlexOrientCell_Internal(DM,PetscInt,PetscInt,PetscBool);
-PETSC_EXTERN PetscErrorCode DMPlexOrientInterface(DM);
+PETSC_EXTERN PetscErrorCode DMPlexOrientInterface_Internal(DM);
 
 PETSC_INTERN PetscErrorCode DMPlexCreateCellNumbering_Internal(DM, PetscBool, IS *);
 PETSC_INTERN PetscErrorCode DMPlexCreateVertexNumbering_Internal(DM, PetscBool, IS *);
@@ -567,29 +568,6 @@ PETSC_STATIC_INLINE PetscReal DMPlex_DotD_Internal(PetscInt dim, const PetscScal
 PETSC_STATIC_INLINE PetscReal DMPlex_DotRealD_Internal(PetscInt dim, const PetscReal *x, const PetscReal *y) {PetscReal sum = 0.0; PetscInt d; for (d = 0; d < dim; ++d) sum += x[d]*y[d]; return sum;}
 
 PETSC_STATIC_INLINE PetscReal DMPlex_NormD_Internal(PetscInt dim, const PetscReal *x) {PetscReal sum = 0.0; PetscInt d; for (d = 0; d < dim; ++d) sum += x[d]*x[d]; return PetscSqrtReal(sum);}
-
-/* Compare cones of the master and slave face (with the same cone points modulo order), and return relative orientation of the slave. */
-PETSC_STATIC_INLINE PetscErrorCode DMPlexFixFaceOrientations_Orient_Private(PetscInt coneSize, PetscInt masterConeSize, const PetscInt masterCone[], const PetscInt slaveCone[], PetscInt *start, PetscBool *reverse)
-{
-  PetscInt        i;
-
-  PetscFunctionBegin;
-  *start = 0;
-  for (i=0; i<coneSize; i++) {
-    if (slaveCone[i] == masterCone[0]) {
-      *start = i;
-      break;
-    }
-  }
-  if (PetscUnlikely(i==coneSize)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "starting point of master cone not found in slave cone");
-  *reverse = PETSC_FALSE;
-  for (i=0; i<masterConeSize; i++) {if (slaveCone[((*start)+i)%coneSize] != masterCone[i]) break;}
-  if (i == masterConeSize) PetscFunctionReturn(0);
-  *reverse = PETSC_TRUE;
-  for (i=0; i<masterConeSize; i++) {if (slaveCone[(coneSize+(*start)-i)%coneSize] != masterCone[i]) break;}
-  if (i < masterConeSize) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "master and slave cone have non-conforming order of points");
-  PetscFunctionReturn(0);
-}
 
 PETSC_STATIC_INLINE PetscErrorCode DMPlexFixFaceOrientations_Translate_Private(PetscInt ornt, PetscInt *start, PetscBool *reverse)
 {

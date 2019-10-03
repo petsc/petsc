@@ -536,7 +536,7 @@ static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, PetscBool interpolate, App
     ierr = DMPlexFixFaceOrientations_Translate_Private(user->ornt[rank], &start, &reverse);CHKERRQ(ierr);
     ierr = DMPlexOrientCell_Internal(*dm, ifp[rank], start, reverse);CHKERRQ(ierr);
     ierr = DMPlexCheckFaces(*dm, 0);CHKERRQ(ierr);
-    ierr = DMPlexOrientInterface(*dm);CHKERRQ(ierr);
+    ierr = DMPlexOrientInterface_Internal(*dm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
