@@ -1650,7 +1650,7 @@ PetscErrorCode DMPlexIsInterpolated(DM dm, DMPlexInterpolatedFlag *interpolated)
 /*@
   DMPlexIsInterpolatedCollective - Find out whether this DM is interpolated, i.e. number of strata is equal to dimension.
 
-  Not Collective
+  Collective
 
   Input Parameter:
 . dm      - The DM object
