@@ -309,7 +309,7 @@ static PetscErrorCode TSEvaluateStep_RK_MultirateSplit(TS ts,PetscInt order,Vec 
     for (j=0; j<s; j++) w[j] = h*tab->b[j];
     ierr = VecGetSubVector(ts->vec_sol,rk->is_slow,&Xslow);CHKERRQ(ierr);
     ierr = VecMAXPY(Xslow,s,w,rk->YdotRHS_slow);CHKERRQ(ierr);
-    ierr = VecRestoreSubVector(ts->vec_sol,rk->is_slow,&Xslow);CHKERRQ(ierr);;
+    ierr = VecRestoreSubVector(ts->vec_sol,rk->is_slow,&Xslow);CHKERRQ(ierr);
   } else {
     for (j=0; j<s; j++) w[j] = h/rk->dtratio*tab->b[j];
     ierr = VecGetSubVector(X,rk->is_fast,&Xfast);CHKERRQ(ierr);

@@ -274,7 +274,7 @@ static PetscErrorCode Form2DElementMass(PetscInt P,PetscScalar *Me1D,PetscScalar
   PetscInt i1,j1,i2,j2;
   PetscInt indx1,indx2,indx3;
 
-  PetscFunctionBeginUser;;
+  PetscFunctionBeginUser;
   for (j2=0;j2<(P+1);++j2) {
     for (i2=0; i2<(P+1);++i2) {
       for (j1=0;j1<(P+1);++j1) {
@@ -422,7 +422,7 @@ and weights of the Gauss-Lobatto-Legendre n-point quadrature formula.
   } else {
     x[0] = x1;   /* Scale the root to the desired interval, */
     x[n] = x2;   /* and put in its symmetric counterpart.   */
-    w[0] = 2./(n*(n+1));;   /* Compute the weight */
+    w[0] = 2./(n*(n+1));   /* Compute the weight */
     w[n] = 2./(n*(n+1));   /* and its symmetric counterpart. */
     m    = (n+1)/2; /* The roots are symmetric, so we only find half of them. */
     xm   = 0.5*(x2+x1);

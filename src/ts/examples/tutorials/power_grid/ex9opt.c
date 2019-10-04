@@ -217,7 +217,7 @@ int main(int argc,char **argv)
     ctx.E       = PetscRealConstant(1.1378);
     ctx.V       = PetscRealConstant(1.0);
     ctx.X       = PetscRealConstant(0.545);
-    ctx.Pmax    = ctx.E*ctx.V/ctx.X;;
+    ctx.Pmax    = ctx.E*ctx.V/ctx.X;
     ierr        = PetscOptionsScalar("-Pmax","","",ctx.Pmax,&ctx.Pmax,NULL);CHKERRQ(ierr);
     ctx.Pm      = PetscRealConstant(1.0194);
     ierr        = PetscOptionsScalar("-Pm","","",ctx.Pm,&ctx.Pm,NULL);CHKERRQ(ierr);

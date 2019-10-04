@@ -435,7 +435,7 @@ static PetscErrorCode KSPView_PIPEFCG(KSP ksp,PetscViewer viewer)
 @*/
 PetscErrorCode KSPPIPEFCGSetMmax(KSP ksp,PetscInt mmax)
 {
-  KSP_PIPEFCG *pipefcg=(KSP_PIPEFCG*)ksp->data;;
+  KSP_PIPEFCG *pipefcg=(KSP_PIPEFCG*)ksp->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -466,7 +466,7 @@ PetscErrorCode KSPPIPEFCGSetMmax(KSP ksp,PetscInt mmax)
 @*/
 PetscErrorCode KSPPIPEFCGGetMmax(KSP ksp,PetscInt *mmax)
 {
-  KSP_PIPEFCG *pipefcg=(KSP_PIPEFCG*)ksp->data;;
+  KSP_PIPEFCG *pipefcg=(KSP_PIPEFCG*)ksp->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -492,7 +492,7 @@ PetscErrorCode KSPPIPEFCGGetMmax(KSP ksp,PetscInt *mmax)
 @*/
 PetscErrorCode KSPPIPEFCGSetNprealloc(KSP ksp,PetscInt nprealloc)
 {
-  KSP_PIPEFCG *pipefcg=(KSP_PIPEFCG*)ksp->data;;
+  KSP_PIPEFCG *pipefcg=(KSP_PIPEFCG*)ksp->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -521,7 +521,7 @@ PetscErrorCode KSPPIPEFCGSetNprealloc(KSP ksp,PetscInt nprealloc)
 @*/
 PetscErrorCode KSPPIPEFCGGetNprealloc(KSP ksp,PetscInt *nprealloc)
 {
-  KSP_PIPEFCG *pipefcg=(KSP_PIPEFCG*)ksp->data;;
+  KSP_PIPEFCG *pipefcg=(KSP_PIPEFCG*)ksp->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -550,7 +550,7 @@ PetscErrorCode KSPPIPEFCGGetNprealloc(KSP ksp,PetscInt *nprealloc)
 @*/
 PetscErrorCode KSPPIPEFCGSetTruncationType(KSP ksp,KSPFCDTruncationType truncstrat)
 {
-  KSP_PIPEFCG *pipefcg=(KSP_PIPEFCG*)ksp->data;;
+  KSP_PIPEFCG *pipefcg=(KSP_PIPEFCG*)ksp->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -579,7 +579,7 @@ PetscErrorCode KSPPIPEFCGSetTruncationType(KSP ksp,KSPFCDTruncationType truncstr
 @*/
 PetscErrorCode KSPPIPEFCGGetTruncationType(KSP ksp,KSPFCDTruncationType *truncstrat)
 {
-  KSP_PIPEFCG *pipefcg=(KSP_PIPEFCG*)ksp->data;;
+  KSP_PIPEFCG *pipefcg=(KSP_PIPEFCG*)ksp->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);

@@ -287,7 +287,7 @@ static PetscErrorCode  PCShellSetDestroy_Shell(PC pc, PetscErrorCode (*destroy)(
 
 static PetscErrorCode  PCShellSetSetUp_Shell(PC pc, PetscErrorCode (*setup)(PC))
 {
-  PC_Shell *shell = (PC_Shell*)pc->data;;
+  PC_Shell *shell = (PC_Shell*)pc->data;
 
   PetscFunctionBegin;
   shell->setup = setup;

@@ -993,7 +993,7 @@ PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
       sides[0] = faces[f];
       ierr = DMPlexPointLocalRead(dmFace, faces[f], fgeom, &fgA);CHKERRQ(ierr);
       for (g = 0; g < numFaces; ++g) {
-        const PetscInt *cells = NULL;;
+        const PetscInt *cells = NULL;
         PetscReal      area   = 0.0;
         PetscInt       numCells;
 
