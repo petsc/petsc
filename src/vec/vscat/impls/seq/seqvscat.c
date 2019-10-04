@@ -34,8 +34,8 @@ PetscErrorCode VecScatterDestroy_SGToSG(VecScatter ctx)
 
   PetscFunctionBegin;
   ierr = PetscFree2(((VecScatter_Seq_General*)ctx->todata)->vslots,((VecScatter_Seq_General*)ctx->fromdata)->vslots);CHKERRQ(ierr);
-  ierr = VecScatterMemcpyPlanDestroy(&((VecScatter_Seq_General*)ctx->fromdata)->memcpy_plan);CHKERRQ(ierr);;
-  ierr = VecScatterMemcpyPlanDestroy(&((VecScatter_Seq_General*)ctx->todata)->memcpy_plan);CHKERRQ(ierr);;
+  ierr = VecScatterMemcpyPlanDestroy(&((VecScatter_Seq_General*)ctx->fromdata)->memcpy_plan);CHKERRQ(ierr);
+  ierr = VecScatterMemcpyPlanDestroy(&((VecScatter_Seq_General*)ctx->todata)->memcpy_plan);CHKERRQ(ierr);
   ierr = PetscFree2(ctx->todata,ctx->fromdata);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -46,7 +46,7 @@ PetscErrorCode VecScatterDestroy_SGToSS(VecScatter ctx)
 
   PetscFunctionBegin;
   ierr = PetscFree(((VecScatter_Seq_General*)ctx->fromdata)->vslots);CHKERRQ(ierr);
-  ierr = VecScatterMemcpyPlanDestroy(&((VecScatter_Seq_General*)ctx->fromdata)->memcpy_plan);CHKERRQ(ierr);;
+  ierr = VecScatterMemcpyPlanDestroy(&((VecScatter_Seq_General*)ctx->fromdata)->memcpy_plan);CHKERRQ(ierr);
   ierr = PetscFree2(ctx->todata,ctx->fromdata);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -57,7 +57,7 @@ PetscErrorCode VecScatterDestroy_SSToSG(VecScatter ctx)
 
   PetscFunctionBegin;
   ierr = PetscFree(((VecScatter_Seq_General*)ctx->todata)->vslots);CHKERRQ(ierr);
-  ierr = VecScatterMemcpyPlanDestroy(&((VecScatter_Seq_General*)ctx->todata)->memcpy_plan);CHKERRQ(ierr);;
+  ierr = VecScatterMemcpyPlanDestroy(&((VecScatter_Seq_General*)ctx->todata)->memcpy_plan);CHKERRQ(ierr);
   ierr = PetscFree2(ctx->todata,ctx->fromdata);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

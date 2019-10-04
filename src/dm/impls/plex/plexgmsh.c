@@ -270,7 +270,7 @@ static PetscErrorCode DMPlexCreateGmsh_ReadElements_v22(GmshFile* gmsh, PETSC_UN
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscViewerRead(viewer, line, 1, NULL, PETSC_STRING);CHKERRQ(ierr);;
+  ierr = PetscViewerRead(viewer, line, 1, NULL, PETSC_STRING);CHKERRQ(ierr);
   snum = sscanf(line, "%d", &num);
   if (snum != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file");
   ierr = PetscMalloc1(num, &elements);CHKERRQ(ierr);
@@ -1110,7 +1110,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     ierr = GmshReadEndSection(gmsh, "$EndNodes", line);CHKERRQ(ierr);
 
     /* Read elements */
-    ierr = GmshReadSection(gmsh, line);CHKERRQ(ierr);;
+    ierr = GmshReadSection(gmsh, line);CHKERRQ(ierr);
     ierr = GmshExpect(gmsh, "$Elements", line);CHKERRQ(ierr);
     switch (gmsh->fileFormat) {
     case 41: ierr = DMPlexCreateGmsh_ReadElements_v41(gmsh, shift, entities, &numCells, &gmsh_elem);CHKERRQ(ierr); break;

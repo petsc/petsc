@@ -152,7 +152,7 @@ PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
     }
     /* x = inv_diagonal*x */
     x[idt]   = v[0]*s1 + v[4]*s2 + v[8]*s3 + v[12]*s4;
-    x[1+idt] = v[1]*s1 + v[5]*s2 + v[9]*s3 + v[13]*s4;;
+    x[1+idt] = v[1]*s1 + v[5]*s2 + v[9]*s3 + v[13]*s4;
     x[2+idt] = v[2]*s1 + v[6]*s2 + v[10]*s3 + v[14]*s4;
     x[3+idt] = v[3]*s1 + v[7]*s2 + v[11]*s3 + v[15]*s4;
 

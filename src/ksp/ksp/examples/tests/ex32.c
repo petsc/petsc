@@ -148,7 +148,7 @@ PetscErrorCode ComputeMatrix(DM da,Mat B)
         v[k3]          = 2.0*(HxHydHz + HxHzdHy + HyHzdHx);
         v_neighbor[k3] = -HxHydHz;
       } else {
-        v[k3]          = k1/(dof*dof);;
+        v[k3]          = k1/(dof*dof);
         v_neighbor[k3] = k2/(dof*dof);
       }
       k3++;

@@ -80,7 +80,7 @@ PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C,PetscInt is_max,IS is[],PetscIn
       /* 3) Column search */
       for (i=0; i<is_max; i++) {
         asub_i = (Mat_SeqSBAIJ*)submats[i]->data;
-        ai     = asub_i->i;;
+        ai     = asub_i->i;
 
         /* put is_new obtained from MatIncreaseOverlap_MPIBAIJ() to table */
         ierr = PetscBTMemzero(Mbs,table);CHKERRQ(ierr);

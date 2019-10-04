@@ -112,7 +112,7 @@ PetscErrorCode MatSolve_SeqBAIJ_6_NaturalOrdering(Mat A,Vec bb,Vec xx)
       x1  = x[jdx];x2 = x[1+jdx]; x3 =x[2+jdx];x4 =x[3+jdx];
       x5  = x[4+jdx]; x6 = x[5+jdx];
       s1 -= v[0]*x1 + v[6]*x2 + v[12]*x3 + v[18]*x4  + v[24]*x5 + v[30]*x6;
-      s2 -= v[1]*x1 + v[7]*x2 + v[13]*x3 + v[19]*x4  + v[25]*x5 + v[31]*x6;;
+      s2 -= v[1]*x1 + v[7]*x2 + v[13]*x3 + v[19]*x4  + v[25]*x5 + v[31]*x6;
       s3 -= v[2]*x1 + v[8]*x2 + v[14]*x3 + v[20]*x4  + v[26]*x5 + v[32]*x6;
       s4 -= v[3]*x1 + v[9]*x2 + v[15]*x3 + v[21]*x4  + v[27]*x5 + v[33]*x6;
       s5 -= v[4]*x1 + v[10]*x2 + v[16]*x3 + v[22]*x4  + v[28]*x5 + v[34]*x6;
@@ -141,7 +141,7 @@ PetscErrorCode MatSolve_SeqBAIJ_6_NaturalOrdering(Mat A,Vec bb,Vec xx)
       x1  = x[idx];   x2 = x[1+idx]; x3 = x[2+idx];x4 = x[3+idx];
       x5  = x[4+idx];x6 = x[5+idx];
       s1 -= v[0]*x1 + v[6]*x2 + v[12]*x3 + v[18]*x4  + v[24]*x5 + v[30]*x6;
-      s2 -= v[1]*x1 + v[7]*x2 + v[13]*x3 + v[19]*x4  + v[25]*x5 + v[31]*x6;;
+      s2 -= v[1]*x1 + v[7]*x2 + v[13]*x3 + v[19]*x4  + v[25]*x5 + v[31]*x6;
       s3 -= v[2]*x1 + v[8]*x2 + v[14]*x3 + v[20]*x4  + v[26]*x5 + v[32]*x6;
       s4 -= v[3]*x1 + v[9]*x2 + v[15]*x3 + v[21]*x4  + v[27]*x5 + v[33]*x6;
       s5 -= v[4]*x1 + v[10]*x2 + v[16]*x3 + v[22]*x4  + v[28]*x5 + v[34]*x6;

@@ -348,7 +348,7 @@ static PetscErrorCode FormRHSJacobian(TS ts,PetscReal t,Vec X,Mat Amat,Mat Pmat,
   User              user = (User)ptr;
   PetscErrorCode    ierr;
   const PetscScalar **x;
-  PetscInt          M = user->Nspec+1,i,j,xs,xm;;
+  PetscInt          M = user->Nspec+1,i,j,xs,xm;
   DM                dm;
 
   PetscFunctionBeginUser;

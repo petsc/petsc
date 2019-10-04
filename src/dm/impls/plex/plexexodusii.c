@@ -415,7 +415,7 @@ PetscErrorCode DMPlexView_ExodusII_Internal(DM dm, int exoid, PetscInt degree)
     ierr = DMLabelGetValueIS(fsLabel, &fsIS);CHKERRQ(ierr);
     ierr = ISGetIndices(fsIS, &fsIdx);CHKERRQ(ierr);
     for (fs=0; fs<num_fs; ++fs) {
-      ierr = DMLabelGetStratumIS(fsLabel, fsIdx[fs], &stratumIS);CHKERRQ(ierr);;
+      ierr = DMLabelGetStratumIS(fsLabel, fsIdx[fs], &stratumIS);CHKERRQ(ierr);
       ierr = ISGetSize(stratumIS, &fsSize);CHKERRQ(ierr);
       elem_list_size += fsSize;
       ierr = ISDestroy(&stratumIS);CHKERRQ(ierr);

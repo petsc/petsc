@@ -1028,7 +1028,7 @@ PetscErrorCode MatShellSetManageScalingShifts_Shell(Mat A)
 
 PetscErrorCode MatShellSetOperation_Shell(Mat mat,MatOperation op,void (*f)(void))
 {
-  Mat_Shell      *shell = (Mat_Shell*)mat->data;;
+  Mat_Shell      *shell = (Mat_Shell*)mat->data;
 
   PetscFunctionBegin;
   switch (op) {

@@ -343,7 +343,7 @@ PetscErrorCode  VecScatterRemap(VecScatter scat,PetscInt tomap[],PetscInt fromma
           ierr = VecScatterMemcpyPlanDestroy(&sgfrom->memcpy_plan);CHKERRQ(ierr);
           ierr = VecScatterMemcpyPlanCreate_Index(1,tmp,sgfrom->vslots,1/*bs*/,&sgfrom->memcpy_plan);CHKERRQ(ierr);
         } else if (sgto->format == VEC_SCATTER_SEQ_GENERAL) {
-          ierr = VecScatterMemcpyPlanDestroy(&sgto->memcpy_plan);CHKERRQ(ierr);;
+          ierr = VecScatterMemcpyPlanDestroy(&sgto->memcpy_plan);CHKERRQ(ierr);
           ierr = VecScatterMemcpyPlanDestroy(&sgfrom->memcpy_plan);CHKERRQ(ierr);
           ierr = VecScatterMemcpyPlanCreate_SGToSG(1/*bs*/,sgto,sgfrom);CHKERRQ(ierr);
         }
