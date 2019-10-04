@@ -9588,6 +9588,8 @@ PetscErrorCode MatMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
 @*/
 PetscErrorCode MatMatMultSymbolic(Mat A,Mat B,PetscReal fill,Mat *C)
 {
+  Mat            T = NULL;
+  PetscBool      istrans;
   PetscErrorCode ierr;
   PetscErrorCode (*Asymbolic)(Mat,Mat,PetscReal,Mat*);
   PetscErrorCode (*Bsymbolic)(Mat,Mat,PetscReal,Mat*);
@@ -9613,23 +9615,29 @@ PetscErrorCode MatMatMultSymbolic(Mat A,Mat B,PetscReal fill,Mat *C)
 
   Asymbolic = A->ops->matmultsymbolic;
   Bsymbolic = B->ops->matmultsymbolic;
-  if (Asymbolic == Bsymbolic) {
-    if (!Bsymbolic) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"C=A*B not implemented for B of type %s",((PetscObject)B)->type_name);
-    symbolic = Bsymbolic;
-  } else { /* dispatch based on the type of A and B */
+  if (Asymbolic == Bsymbolic && Asymbolic) symbolic = Bsymbolic;
+  else { /* dispatch based on the type of A and B */
     char symbolicname[256];
-    ierr = PetscStrncpy(symbolicname,"MatMatMultSymbolic_",sizeof(symbolicname));CHKERRQ(ierr);
-    ierr = PetscStrlcat(symbolicname,((PetscObject)A)->type_name,sizeof(symbolicname));CHKERRQ(ierr);
-    ierr = PetscStrlcat(symbolicname,"_",sizeof(symbolicname));CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)A,MATTRANSPOSEMAT,&istrans);CHKERRQ(ierr);
+    if (!istrans) {
+      ierr = PetscStrncpy(symbolicname,"MatMatMultSymbolic_",sizeof(symbolicname));CHKERRQ(ierr);
+      ierr = PetscStrlcat(symbolicname,((PetscObject)A)->type_name,sizeof(symbolicname));CHKERRQ(ierr);
+      ierr = PetscStrlcat(symbolicname,"_",sizeof(symbolicname));CHKERRQ(ierr);
+    } else {
+      ierr = PetscStrncpy(symbolicname,"MatTransposeMatMultSymbolic_",sizeof(symbolicname));CHKERRQ(ierr);
+      ierr = MatTransposeGetMat(A,&T);CHKERRQ(ierr);
+      ierr = PetscStrlcat(symbolicname,((PetscObject)T)->type_name,sizeof(symbolicname));CHKERRQ(ierr);
+      ierr = PetscStrlcat(symbolicname,"_",sizeof(symbolicname));CHKERRQ(ierr);
+    }
     ierr = PetscStrlcat(symbolicname,((PetscObject)B)->type_name,sizeof(symbolicname));CHKERRQ(ierr);
     ierr = PetscStrlcat(symbolicname,"_C",sizeof(symbolicname));CHKERRQ(ierr);
     ierr = PetscObjectQueryFunction((PetscObject)B,symbolicname,&symbolic);CHKERRQ(ierr);
     if (!symbolic) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"MatMatMultSymbolic requires A, %s, to be compatible with B, %s",((PetscObject)A)->type_name,((PetscObject)B)->type_name);
   }
-  ierr = PetscLogEventBegin(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(!T ? MAT_MatMultSymbolic : MAT_TransposeMatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
   *C = NULL;
-  ierr = (*symbolic)(A,B,fill,C);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
+  ierr = (*symbolic)(!T ? A : T,B,fill,C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(!T ? MAT_MatMultSymbolic : MAT_TransposeMatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -9663,7 +9671,7 @@ PetscErrorCode MatMatMultNumeric(Mat A,Mat B,Mat C)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatMatMult(A,B,MAT_REUSE_MATRIX,0.0,&C);CHKERRQ(ierr);
+  ierr = MatMatMult(A,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -9778,7 +9786,7 @@ PetscErrorCode MatMatTransposeMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat
 
    Level: intermediate
 
-.seealso: MatTransposeMatMultSymbolic(), MatTransposeMatMultNumeric(), MatMatMult(), MatMatTransposeMult(), MatPtAP()
+.seealso: MatMatMult(), MatMatTransposeMult(), MatPtAP()
 @*/
 PetscErrorCode MatTransposeMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
 {
@@ -9787,7 +9795,7 @@ PetscErrorCode MatTransposeMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat
   PetscErrorCode (*fB)(Mat,Mat,MatReuse,PetscReal,Mat*);
   PetscErrorCode (*transposematmult)(Mat,Mat,MatReuse,PetscReal,Mat*) = NULL;
   Mat            T;
-  PetscBool      istrans;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
@@ -9800,18 +9808,31 @@ PetscErrorCode MatTransposeMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat
   MatCheckPreallocated(B,2);
   if (!B->assembled) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (B->factortype) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-  PetscValidPointer(C,3);
   if (B->rmap->N!=A->rmap->N) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",B->rmap->N,A->rmap->N);
   if (fill == PETSC_DEFAULT || fill == PETSC_DECIDE) fill = 2.0;
   if (fill < 1.0) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Expected fill=%g must be > 1.0",(double)fill);
   MatCheckPreallocated(A,1);
 
-  ierr = PetscObjectTypeCompare((PetscObject)A,MATTRANSPOSEMAT,&istrans);CHKERRQ(ierr);
-  if (istrans) {
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATTRANSPOSEMAT,&flg);CHKERRQ(ierr);
+  if (flg) {
     ierr = MatTransposeGetMat(A,&T);CHKERRQ(ierr);
     ierr = MatMatMult(T,B,scall,fill,C);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
+  if (scall == MAT_REUSE_MATRIX) {
+    PetscValidPointer(*C,5);
+    PetscValidHeaderSpecific(*C,MAT_CLASSID,5);
+    ierr = PetscObjectTypeCompareAny((PetscObject)*C,&flg,MATDENSE,MATSEQDENSE,MATMPIDENSE,"");CHKERRQ(ierr);
+    if (flg) {
+      ierr = PetscLogEventBegin(MAT_TransposeMatMult,A,B,0,0);CHKERRQ(ierr);
+      ierr = PetscLogEventBegin(MAT_TransposeMatMultNumeric,A,B,0,0);CHKERRQ(ierr);
+      ierr = (*(*C)->ops->transposematmultnumeric)(A,B,*C);CHKERRQ(ierr);
+      ierr = PetscLogEventEnd(MAT_TransposeMatMultNumeric,A,B,0,0);CHKERRQ(ierr);
+      ierr = PetscLogEventEnd(MAT_TransposeMatMult,A,B,0,0);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    }
+  }
+
   fA = A->ops->transposematmult;
   fB = B->ops->transposematmult;
   if (fB == fA && fA) transposematmult = fA;

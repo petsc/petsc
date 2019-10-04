@@ -322,9 +322,9 @@ static PetscErrorCode KSPSolve_PIPEGCR(KSP ksp)
   }
 
   /* Is A symmetric? */
-  ierr = PetscObjectTypeCompareAny((PetscObject)A,&issym,"sbaij","seqsbaij","mpibaij","");CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompareAny((PetscObject)A,&issym,MATSBAIJ,MATSEQSBAIJ,MATMPISBAIJ,"");CHKERRQ(ierr);
   if (!issym) {
-    ierr = PetscInfo(A,"Matrix type is not any of MATSBAIJ,MATSEQSBAIJ,MATMPIBAIJ. Is matrix A symmetric (as required by CR methods)?");CHKERRQ(ierr);
+    ierr = PetscInfo(A,"Matrix type is not any of MATSBAIJ,MATSEQSBAIJ,MATMPISBAIJ. Is matrix A symmetric (as required by CR methods)?");CHKERRQ(ierr);
   }
 
   /* logging */

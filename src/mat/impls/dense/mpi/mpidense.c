@@ -599,6 +599,9 @@ PetscErrorCode MatDestroy_MPIDense(Mat mat)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMult_mpiaij_mpidense_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMultSymbolic_mpiaij_mpidense_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMultNumeric_mpiaij_mpidense_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMult_nest_mpidense_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMultSymbolic_nest_mpidense_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMultNumeric_nest_mpidense_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatTransposeMatMult_mpiaij_mpidense_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatTransposeMatMultSymbolic_mpiaij_mpidense_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatTransposeMatMultNumeric_mpiaij_mpidense_C",NULL);CHKERRQ(ierr);
@@ -681,7 +684,8 @@ static PetscErrorCode MatView_MPIDense_Binary(Mat mat,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MatView_SeqDense(Mat,PetscViewer);
+PETSC_INTERN PetscErrorCode MatView_SeqDense(Mat,PetscViewer);
+
 #include <petscdraw.h>
 static PetscErrorCode MatView_MPIDense_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
 {
@@ -992,9 +996,8 @@ PetscErrorCode MatTranspose_MPIDense(Mat A,MatReuse reuse,Mat *matout)
   PetscFunctionReturn(0);
 }
 
-
 static PetscErrorCode MatDuplicate_MPIDense(Mat,MatDuplicateOption,Mat*);
-extern PetscErrorCode MatScale_MPIDense(Mat,PetscScalar);
+PETSC_INTERN PetscErrorCode MatScale_MPIDense(Mat,PetscScalar);
 
 PetscErrorCode MatSetUp_MPIDense(Mat A)
 {
@@ -1064,7 +1067,8 @@ static PetscErrorCode MatGetColumnVector_MPIDense(Mat A,Vec v,PetscInt col)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MatGetColumnNorms_SeqDense(Mat,NormType,PetscReal*);
+PETSC_INTERN PetscErrorCode MatGetColumnNorms_SeqDense(Mat,NormType,PetscReal*);
+
 PetscErrorCode MatGetColumnNorms_MPIDense(Mat A,NormType type,PetscReal *norms)
 {
   PetscErrorCode ierr;
@@ -1108,7 +1112,7 @@ static PetscErrorCode  MatSetRandom_MPIDense(Mat x,PetscRandom rctx)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MatMatMultNumeric_MPIDense(Mat A,Mat,Mat);
+PETSC_INTERN PetscErrorCode MatMatMultNumeric_MPIDense(Mat A,Mat,Mat);
 
 static PetscErrorCode MatMissingDiagonal_MPIDense(Mat A,PetscBool  *missing,PetscInt *d)
 {
@@ -1427,6 +1431,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIDense(Mat mat)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMult_mpiaij_mpidense_C",MatMatMult_MPIAIJ_MPIDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMultSymbolic_mpiaij_mpidense_C",MatMatMultSymbolic_MPIAIJ_MPIDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMultNumeric_mpiaij_mpidense_C",MatMatMultNumeric_MPIAIJ_MPIDense);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMult_nest_mpidense_C",MatMatMult_Nest_Dense);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMultSymbolic_nest_mpidense_C",MatMatMultSymbolic_Nest_Dense);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMultNumeric_nest_mpidense_C",MatMatMultNumeric_Nest_Dense);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatTransposeMatMult_mpiaij_mpidense_C",MatTransposeMatMult_MPIAIJ_MPIDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatTransposeMatMultSymbolic_mpiaij_mpidense_C",MatTransposeMatMultSymbolic_MPIAIJ_MPIDense);CHKERRQ(ierr);
@@ -1449,7 +1456,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIDense(Mat mat)
   Level: beginner
 
 
-.seealso: MatCreateMPIDense,MATSEQDENSE,MATMPIDENSE
+.seealso: MATSEQDENSE,MATMPIDENSE
 M*/
 
 /*@C
@@ -2303,7 +2310,7 @@ PETSC_INTERN PetscErrorCode MatMatMult_MPIDense_MPIDense(Mat A,Mat B,MatReuse sc
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (scall == MAT_INITIAL_MATRIX) { /* simbolic product includes numeric product */
+  if (scall == MAT_INITIAL_MATRIX) { /* symbolic product includes numeric product */
     ierr = PetscLogEventBegin(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
     ierr = MatMatMultSymbolic_MPIDense_MPIDense(A,B,fill,C);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);

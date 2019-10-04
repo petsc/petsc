@@ -401,12 +401,21 @@ PetscErrorCode MatMPIAIJ_MPIDenseDestroy(void *ctx)
 
   It is the same as MatMatMultSymbolic_MPIAIJ_MPIDense() except does not create C
 */
-PetscErrorCode MatMatMultNumeric_MPIDense(Mat A,Mat B,Mat C)
+PETSC_INTERN PetscErrorCode MatMatMultNumeric_MPIDense(Mat A,Mat B,Mat C)
 {
+  PetscBool      flg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatMatMultSymbolic_MPIAIJ_MPIDense(A,B,0,&C);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATNEST,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscLogEventBegin(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
+    ierr = MatMatMultSymbolic_Nest_Dense(A,B,PETSC_DEFAULT,&C);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
+    C->ops->matmultnumeric = MatMatMultNumeric_Nest_Dense;
+  } else {
+    ierr = MatMatMultSymbolic_MPIAIJ_MPIDense(A,B,PETSC_DEFAULT,&C);CHKERRQ(ierr);
+  }
   ierr = (*C->ops->matmultnumeric)(A,B,C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -596,7 +605,7 @@ PetscErrorCode MatMPIDenseScatter(Mat A,Mat B,PetscInt Bbidx,Mat C,Mat *outworkB
   } else {
     workB = *outworkB = contents->workB1;
   }
-  if (nrows != workB->rmap->n) SETERRQ2(comm,PETSC_ERR_PLIB,"Number of rows of workB %D not equal to columns of aij->B %D",nrows,workB->cmap->n);
+  if (nrows != workB->rmap->n) SETERRQ2(comm,PETSC_ERR_PLIB,"Number of rows of workB %D not equal to columns of aij->B %D",workB->cmap->n,nrows);
   swaits  = contents->swaits;
   rwaits  = contents->rwaits;
 
