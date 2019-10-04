@@ -45,7 +45,7 @@ int main(int argc,char **args)
   }
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
-  
+
   /* create a dense matrix Bdense */
   ierr = MatCreate(PETSC_COMM_WORLD,&Bdense);CHKERRQ(ierr);
   ierr = MatSetSizes(Bdense,m,PETSC_DECIDE,PETSC_DECIDE,BN);CHKERRQ(ierr);
@@ -53,7 +53,7 @@ int main(int argc,char **args)
   ierr = MatSetFromOptions(Bdense);CHKERRQ(ierr);
   ierr = MatSetUp(Bdense);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(Bdense,&rstart,&rend);CHKERRQ(ierr);
- 
+
   ierr = PetscMalloc3(m,&rows,BN,&cols,m*BN,&array);CHKERRQ(ierr);
   for (i=0; i<m; i++) rows[i] = rstart + i;
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
@@ -109,7 +109,7 @@ int main(int argc,char **args)
     ierr = VecPlaceArray(y,Carray);CHKERRQ(ierr);
 
     ierr = MatMultTranspose(A,x,y);CHKERRQ(ierr);
-    
+
     ierr = VecResetArray(x);CHKERRQ(ierr);
     ierr = VecResetArray(y);CHKERRQ(ierr);
     Barray += m;

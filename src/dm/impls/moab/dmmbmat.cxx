@@ -23,7 +23,7 @@ PETSC_EXTERN PetscErrorCode DMCreateMatrix_Moab(DM dm, Mat *J)
 
   /* next, need to allocate the non-zero arrays to enable pre-allocation */
   mtype = dm->mattype;
-  ierr = PetscStrstr(mtype, "baij", &tmp);CHKERRQ(ierr);
+  ierr = PetscStrstr(mtype, MATBAIJ, &tmp);CHKERRQ(ierr);
   nlsiz = (tmp ? dmmoab->nloc : dmmoab->nloc * dmmoab->numFields);
 
   /* allocate the nnz, onz arrays based on block size and local nodes */

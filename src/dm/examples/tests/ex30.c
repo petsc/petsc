@@ -4,7 +4,7 @@ static char help[] = "Tests DMSLICED operations\n\n";
 
 int main(int argc,char *argv[])
 {
-  char           mat_type[256] = "aij"; /* default matrix type */
+  char           mat_type[256] = MATAIJ; /* default matrix type */
   PetscErrorCode ierr;
   MPI_Comm       comm;
   PetscMPIInt    rank,size;

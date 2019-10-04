@@ -68,10 +68,11 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal
   atb->ct = ct;
 
   *C = Cdense;
-  c                    = (Mat_MPIDense*)Cdense->data;
-  c->atb               = atb;
-  atb->destroy         = Cdense->ops->destroy;
-  Cdense->ops->destroy = MatDestroy_MPIDense_MatTransMatMult;
+  c                                    = (Mat_MPIDense*)Cdense->data;
+  c->atb                               = atb;
+  atb->destroy                         = Cdense->ops->destroy;
+  Cdense->ops->destroy                 = MatDestroy_MPIDense_MatTransMatMult;
+  Cdense->ops->transposematmultnumeric = MatTransposeMatMultNumeric_MPIAIJ_MPIDense;
   PetscFunctionReturn(0);
 }
 
