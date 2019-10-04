@@ -151,8 +151,8 @@ class Package(config.base.Configure):
     import nargs
     if not self.skippackagewithoptions:
       help.addArgument(self.PACKAGE,'-with-'+self.package+'=<bool>',nargs.ArgBool(None,self.required+self.lookforbydefault,'Indicate if you wish to test for '+self.name))
-      help.addArgument(self.PACKAGE,'-with-'+self.package+'-dir=<dir>',nargs.ArgDir(None,None,'Indicate the root directory of the '+self.name+' installation'))
-      help.addArgument(self.PACKAGE, '-with-'+self.package+'-pkg-config=<dir>', nargs.Arg(None, None, 'Look for '+self.name+' using pkg-config utility optional directory to look in'))
+      help.addArgument(self.PACKAGE,'-with-'+self.package+'-dir=<dir>',nargs.ArgDir(None,None,'Indicate the root directory of the '+self.name+' installation',mustExist = 1))
+      help.addArgument(self.PACKAGE,'-with-'+self.package+'-pkg-config=<dir>', nargs.ArgDir(None, None, 'Look for '+self.name+' using pkg-config utility optional directory to look in',mustExist = 1))
       help.addArgument(self.PACKAGE,'-with-'+self.package+'-include=<dirs>',nargs.ArgDirList(None,None,'Indicate the directory of the '+self.name+' include files'))
       help.addArgument(self.PACKAGE,'-with-'+self.package+'-lib=<libraries: e.g. [/Users/..../lib'+self.package+'.a,...]>',nargs.ArgLibrary(None,None,'Indicate the '+self.name+' libraries'))
     if self.download:
@@ -1025,7 +1025,7 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
       self.foundversion = self.versionToStandardForm(version)
       self.version_tuple = self.versionToTuple(self.foundversion)
     except:
-      self.log.write('For '+self.package+' unable to convert version to standard form, skipping version check\n')
+      self.log.write('For '+self.package+' unable to convert version information ('+version+') to standard form, skipping version check\n')
       if self.requiresversion:
         raise RuntimeError('Configure must be able to determined the version information for '+self.name+'. It was unable to, please send configure.log to petsc-maint@mcs.anl.gov')
       return
