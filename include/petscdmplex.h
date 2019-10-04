@@ -324,6 +324,13 @@ PETSC_EXTERN PetscErrorCode DMPlexInsertBoundaryValuesEssentialField(DM, PetscRe
                                                                               PetscReal, const PetscReal[], PetscInt, const PetscScalar[],
                                                                               PetscScalar[]),
                                                                      void *, Vec);
+PETSC_EXTERN PetscErrorCode DMPlexInsertBoundaryValuesEssentialBdField(DM, PetscReal, Vec, PetscInt, PetscInt, const PetscInt[], DMLabel, PetscInt, const PetscInt [],
+                                                                       void (*)(PetscInt, PetscInt, PetscInt,
+                                                                                const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                                                const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                                                PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[],
+                                                                                PetscScalar[]),
+                                                                       void *, Vec);
 PETSC_EXTERN PetscErrorCode DMPlexInsertBoundaryValuesRiemann(DM, PetscReal, Vec, Vec, Vec, PetscInt, PetscInt, const PetscInt[], DMLabel, PetscInt, const PetscInt [],
                                                               PetscErrorCode (*)(PetscReal,const PetscReal*,const PetscReal*,const PetscScalar*,PetscScalar*,void*), void *, Vec);
 PETSC_EXTERN PetscErrorCode DMPlexMarkBoundaryFaces(DM, PetscInt, DMLabel);

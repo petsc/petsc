@@ -561,7 +561,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
     } else SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", f);
   }
   ierr = DMGetCoordinateField(dm,&coordField);CHKERRQ(ierr);
-  if (type == DM_BC_ESSENTIAL_FIELD || type == DM_BC_NATURAL_FIELD) {
+  if (type == DM_BC_ESSENTIAL_FIELD || type == DM_BC_ESSENTIAL_BD_FIELD || type == DM_BC_NATURAL_FIELD) {
     PetscInt         effectiveHeight = auxBd ? minHeight : 0;
     PetscFE          fem, subfem;
     PetscBool        isfe;
@@ -727,7 +727,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
     ierr = DMRestoreWorkArray(dm, Nf, MPI_INT, &fieldActive);CHKERRQ(ierr);
   }
   /* Cleanup */
-  if (type == DM_BC_ESSENTIAL_FIELD || type == DM_BC_NATURAL_FIELD) {
+  if (type == DM_BC_ESSENTIAL_FIELD || type == DM_BC_ESSENTIAL_BD_FIELD || type == DM_BC_NATURAL_FIELD) {
     PetscInt  effectiveHeight = auxBd ? minHeight : 0;
     PetscFE   fem, subfem;
     PetscBool isfe;
@@ -800,5 +800,19 @@ PetscErrorCode DMProjectFieldLabelLocal_Plex(DM dm, PetscReal time, DMLabel labe
 
   PetscFunctionBegin;
   ierr = DMProjectLocal_Generic_Plex(dm, time, localU, Ncc, comps, label, numIds, ids, DM_BC_ESSENTIAL_FIELD, (void (**)(void)) funcs, NULL, mode, localX);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMProjectBdFieldLabelLocal_Plex(DM dm, PetscReal time, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscInt Ncc, const PetscInt comps[], Vec localU,
+                                               void (**funcs)(PetscInt, PetscInt, PetscInt,
+                                                              const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                              const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                              PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]),
+                                               InsertMode mode, Vec localX)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMProjectLocal_Generic_Plex(dm, time, localU, Ncc, comps, label, numIds, ids, DM_BC_ESSENTIAL_BD_FIELD, (void (**)(void)) funcs, NULL, mode, localX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
