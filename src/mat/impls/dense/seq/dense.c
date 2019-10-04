@@ -1495,6 +1495,9 @@ PetscErrorCode MatDestroy_SeqDense(Mat mat)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMult_seqbaij_seqdense_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMultSymbolic_seqbaij_seqdense_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMultNumeric_seqbaij_seqdense_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMult_seqsbaij_seqdense_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMultSymbolic_seqsbaij_seqdense_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMultNumeric_seqsbaij_seqdense_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatPtAP_seqaij_seqdense_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMult_seqaijperm_seqdense_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMultSymbolic_seqaijperm_seqdense_C",NULL);CHKERRQ(ierr);
@@ -2170,27 +2173,23 @@ PetscErrorCode MatMatMultNumeric_SeqDense_SeqDense(Mat A,Mat B,Mat C)
   const PetscScalar *av,*bv;
   PetscScalar       *cv;
   PetscScalar       _DOne=1.0,_DZero=0.0;
-  PetscErrorCode    ierr;
   PetscBool         flg;
+  PetscErrorCode    (*numeric)(Mat,Mat,Mat)=NULL;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   /* Handle case where where user provided the final C matrix rather than calling MatMatMult() with MAT_INITIAL_MATRIX*/
   ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&flg);CHKERRQ(ierr);
-  if (flg) {
-    C->ops->matmultnumeric = MatMatMultNumeric_SeqAIJ_SeqDense;
-    ierr = (*C->ops->matmultnumeric)(A,B,C);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
+  if (flg) numeric = MatMatMultNumeric_SeqAIJ_SeqDense;
   ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQBAIJ,&flg);CHKERRQ(ierr);
-  if (flg) {
-    C->ops->matmultnumeric = MatMatMultNumeric_SeqBAIJ_SeqDense;
-    ierr = (*C->ops->matmultnumeric)(A,B,C);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
+  if (flg) numeric = MatMatMultNumeric_SeqBAIJ_SeqDense;
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQSBAIJ,&flg);CHKERRQ(ierr);
+  if (flg) numeric = MatMatMultNumeric_SeqSBAIJ_SeqDense;
   ierr = PetscObjectTypeCompare((PetscObject)A,MATNEST,&flg);CHKERRQ(ierr);
-  if (flg) {
-    C->ops->matmultnumeric = MatMatMultNumeric_Nest_Dense;
-    ierr = (*C->ops->matmultnumeric)(A,B,C);CHKERRQ(ierr);
+  if (flg) numeric = MatMatMultNumeric_Nest_Dense;
+  if (numeric) {
+    C->ops->matmultnumeric = numeric;
+    ierr = (*numeric)(A,B,C);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   a = (Mat_SeqDense*)A->data;
@@ -2882,6 +2881,9 @@ PetscErrorCode MatCreate_SeqDense(Mat B)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_seqbaij_seqdense_C",MatMatMult_SeqBAIJ_SeqDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultSymbolic_seqbaij_seqdense_C",MatMatMultSymbolic_SeqBAIJ_SeqDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultNumeric_seqbaij_seqdense_C",MatMatMultNumeric_SeqBAIJ_SeqDense);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_seqsbaij_seqdense_C",MatMatMult_SeqSBAIJ_SeqDense);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultSymbolic_seqsbaij_seqdense_C",MatMatMultSymbolic_SeqSBAIJ_SeqDense);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultNumeric_seqsbaij_seqdense_C",MatMatMultNumeric_SeqSBAIJ_SeqDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatPtAP_seqaij_seqdense_C",MatPtAP_SeqDense_SeqDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_seqaijperm_seqdense_C",MatMatMult_SeqAIJ_SeqDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultSymbolic_seqaijperm_seqdense_C",MatMatMultSymbolic_SeqAIJ_SeqDense);CHKERRQ(ierr);
