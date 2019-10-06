@@ -490,7 +490,7 @@ static PetscErrorCode KSPDestroy_PIPEGCR(KSP ksp)
 @*/
 PetscErrorCode KSPPIPEGCRSetUnrollW(KSP ksp,PetscBool unroll_w)
 {
-  KSP_PIPEGCR *pipegcr=(KSP_PIPEGCR*)ksp->data;;
+  KSP_PIPEGCR *pipegcr=(KSP_PIPEGCR*)ksp->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -519,7 +519,7 @@ PetscErrorCode KSPPIPEGCRSetUnrollW(KSP ksp,PetscBool unroll_w)
 @*/
 PetscErrorCode KSPPIPEGCRGetUnrollW(KSP ksp,PetscBool *unroll_w)
 {
-  KSP_PIPEGCR *pipegcr=(KSP_PIPEGCR*)ksp->data;;
+  KSP_PIPEGCR *pipegcr=(KSP_PIPEGCR*)ksp->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -549,7 +549,7 @@ PetscErrorCode KSPPIPEGCRGetUnrollW(KSP ksp,PetscBool *unroll_w)
 @*/
 PetscErrorCode KSPPIPEGCRSetMmax(KSP ksp,PetscInt mmax)
 {
-  KSP_PIPEGCR *pipegcr=(KSP_PIPEGCR*)ksp->data;;
+  KSP_PIPEGCR *pipegcr=(KSP_PIPEGCR*)ksp->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -581,7 +581,7 @@ PetscErrorCode KSPPIPEGCRSetMmax(KSP ksp,PetscInt mmax)
 
 PetscErrorCode KSPPIPEGCRGetMmax(KSP ksp,PetscInt *mmax)
 {
-  KSP_PIPEGCR *pipegcr=(KSP_PIPEGCR*)ksp->data;;
+  KSP_PIPEGCR *pipegcr=(KSP_PIPEGCR*)ksp->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -607,7 +607,7 @@ PetscErrorCode KSPPIPEGCRGetMmax(KSP ksp,PetscInt *mmax)
 @*/
 PetscErrorCode KSPPIPEGCRSetNprealloc(KSP ksp,PetscInt nprealloc)
 {
-  KSP_PIPEGCR *pipegcr=(KSP_PIPEGCR*)ksp->data;;
+  KSP_PIPEGCR *pipegcr=(KSP_PIPEGCR*)ksp->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -636,7 +636,7 @@ PetscErrorCode KSPPIPEGCRSetNprealloc(KSP ksp,PetscInt nprealloc)
 @*/
 PetscErrorCode KSPPIPEGCRGetNprealloc(KSP ksp,PetscInt *nprealloc)
 {
-  KSP_PIPEGCR *pipegcr=(KSP_PIPEGCR*)ksp->data;;
+  KSP_PIPEGCR *pipegcr=(KSP_PIPEGCR*)ksp->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -665,7 +665,7 @@ PetscErrorCode KSPPIPEGCRGetNprealloc(KSP ksp,PetscInt *nprealloc)
 @*/
 PetscErrorCode KSPPIPEGCRSetTruncationType(KSP ksp,KSPFCDTruncationType truncstrat)
 {
-  KSP_PIPEGCR *pipegcr=(KSP_PIPEGCR*)ksp->data;;
+  KSP_PIPEGCR *pipegcr=(KSP_PIPEGCR*)ksp->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -697,7 +697,7 @@ PetscErrorCode KSPPIPEGCRSetTruncationType(KSP ksp,KSPFCDTruncationType truncstr
 @*/
 PetscErrorCode KSPPIPEGCRGetTruncationType(KSP ksp,KSPFCDTruncationType *truncstrat)
 {
-  KSP_PIPEGCR *pipegcr=(KSP_PIPEGCR*)ksp->data;;
+  KSP_PIPEGCR *pipegcr=(KSP_PIPEGCR*)ksp->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);

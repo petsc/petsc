@@ -370,7 +370,7 @@ static PetscErrorCode TSAdjointStepBEuler_Private(TS ts)
     }
   }
   if (ts->vecs_sensip) {
-    th->shift = 1./th->time_step;;
+    th->shift = 1./th->time_step;
     ierr = TSComputeIJacobianP(ts,th->stage_time,th->X,th->Xdot,th->shift,ts->Jacp,PETSC_FALSE);CHKERRQ(ierr); /* get -f_p */
     if (quadts) {
       ierr = TSComputeRHSJacobianP(quadts,th->stage_time,th->X,quadJp);CHKERRQ(ierr);

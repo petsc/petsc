@@ -1385,7 +1385,7 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
   mumps->matstruc = SAME_NONZERO_PATTERN;
   if (F->schur) { /* reset Schur status to unfactored */
 #if defined(PETSC_HAVE_CUDA)
-    F->schur->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
+    F->schur->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
     if (mumps->id.ICNTL(19) == 1) { /* stored by rows */
       mumps->id.ICNTL(19) = 2;

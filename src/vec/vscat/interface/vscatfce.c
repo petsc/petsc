@@ -343,7 +343,7 @@ PetscErrorCode  VecScatterRemap(VecScatter scat,PetscInt tomap[],PetscInt fromma
           ierr = VecScatterMemcpyPlanDestroy(&sgfrom->memcpy_plan);CHKERRQ(ierr);
           ierr = VecScatterMemcpyPlanCreate_Index(1,tmp,sgfrom->vslots,1/*bs*/,&sgfrom->memcpy_plan);CHKERRQ(ierr);
         } else if (sgto->format == VEC_SCATTER_SEQ_GENERAL) {
-          ierr = VecScatterMemcpyPlanDestroy(&sgto->memcpy_plan);CHKERRQ(ierr);;
+          ierr = VecScatterMemcpyPlanDestroy(&sgto->memcpy_plan);CHKERRQ(ierr);
           ierr = VecScatterMemcpyPlanDestroy(&sgfrom->memcpy_plan);CHKERRQ(ierr);
           ierr = VecScatterMemcpyPlanCreate_SGToSG(1/*bs*/,sgto,sgfrom);CHKERRQ(ierr);
         }
@@ -592,7 +592,7 @@ PETSC_EXTERN PetscErrorCode VecScatterInitializeForGPU(VecScatter inctx,Vec x)
   ns   = nsends ? sstarts[nsends]-sstarts[0] : 0; /* s/rstarts[0] is not necessarily zero */
   nr   = nrecvs ? rstarts[nrecvs]-rstarts[0] : 0;
 
-  if (x->valid_GPU_array != PETSC_OFFLOAD_UNALLOCATED && (nsends>0 || nrecvs>0)) {
+  if (x->offloadmask != PETSC_OFFLOAD_UNALLOCATED && (nsends>0 || nrecvs>0)) {
     if (!inctx->spptr) {
       PetscInt k,*tindicesSends,*sindicesSends,*tindicesRecvs,*sindicesRecvs;
       /* Here we create indices for both the senders and receivers. */

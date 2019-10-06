@@ -180,7 +180,7 @@ PetscErrorCode VecCreate_MPICUDA(Vec vv)
   ierr = VecCUDAAllocateCheckHost(vv);CHKERRQ(ierr);
   ierr = VecSet(vv,0.0);CHKERRQ(ierr);
   ierr = VecSet_Seq(vv,0.0);CHKERRQ(ierr);
-  vv->valid_GPU_array = PETSC_OFFLOAD_BOTH;
+  vv->offloadmask = PETSC_OFFLOAD_BOTH;
   PetscFunctionReturn(0);
 }
 
@@ -256,7 +256,7 @@ PetscErrorCode VecPinToCPU_MPICUDA(Vec V,PetscBool pin)
   V->pinnedtocpu = pin;
   if (pin) {
     ierr = VecCUDACopyFromGPU(V);CHKERRQ(ierr);
-    V->valid_GPU_array = PETSC_OFFLOAD_CPU; /* since the CPU code will likely change values in the vector */
+    V->offloadmask = PETSC_OFFLOAD_CPU; /* since the CPU code will likely change values in the vector */
     V->ops->dotnorm2               = NULL;
     V->ops->waxpy                  = VecWAXPY_Seq;
     V->ops->dot                    = VecDot_MPI;
@@ -342,7 +342,7 @@ PetscErrorCode VecCreate_MPICUDA_Private(Vec vv,PetscBool alloc,PetscInt nghost,
     ierr = VecCUDAAllocateCheckHost(vv);CHKERRQ(ierr);
     ierr = VecSet(vv,0.0);CHKERRQ(ierr);
     ierr = VecSet_Seq(vv,0.0);CHKERRQ(ierr);
-    vv->valid_GPU_array = PETSC_OFFLOAD_BOTH;
+    vv->offloadmask = PETSC_OFFLOAD_BOTH;
   }
   if (array) {
     if (!vv->spptr) {
@@ -352,7 +352,7 @@ PetscErrorCode VecCreate_MPICUDA_Private(Vec vv,PetscBool alloc,PetscInt nghost,
       veccuda->stream = 0; /* using default stream */
       veccuda->GPUarray_allocated = 0;
       veccuda->hostDataRegisteredAsPageLocked = PETSC_FALSE;
-      vv->valid_GPU_array = PETSC_OFFLOAD_UNALLOCATED;
+      vv->offloadmask = PETSC_OFFLOAD_UNALLOCATED;
     }
     veccuda = (Vec_CUDA*)vv->spptr;
     veccuda->GPUarray = (PetscScalar*)array;

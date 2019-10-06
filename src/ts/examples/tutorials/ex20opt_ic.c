@@ -236,7 +236,7 @@ static PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,voi
 
   ierr     = VecGetArrayRead(user_ptr->U,&x_ptr);CHKERRQ(ierr);
   ierr     = VecGetArray(user_ptr->Lambda[0],&y_ptr);CHKERRQ(ierr);
-  *f       = (x_ptr[0]-user_ptr->ob[0])*(x_ptr[0]-user_ptr->ob[0])+(x_ptr[1]-user_ptr->ob[1])*(x_ptr[1]-user_ptr->ob[1]);;
+  *f       = (x_ptr[0]-user_ptr->ob[0])*(x_ptr[0]-user_ptr->ob[0])+(x_ptr[1]-user_ptr->ob[1])*(x_ptr[1]-user_ptr->ob[1]);
   y_ptr[0] = 2.*(x_ptr[0]-user_ptr->ob[0]);
   y_ptr[1] = 2.*(x_ptr[1]-user_ptr->ob[1]);
   ierr     = VecRestoreArray(user_ptr->Lambda[0],&y_ptr);CHKERRQ(ierr);

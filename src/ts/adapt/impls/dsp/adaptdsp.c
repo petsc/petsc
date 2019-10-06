@@ -322,16 +322,16 @@ static PetscErrorCode TSAdaptSetFromOptions_DSP(PetscOptionItems *PetscOptionsOb
    Notes:
     Valid filter names are
 +  "basic" - similar to TSADAPTBASIC but with different criteria for step rejections.
-.  "PI30", "PI42", "PI33", "PI34" - PI controlers.
+.  "PI30", "PI42", "PI33", "PI34" - PI controllers.
 .  "PC11", "PC47", "PC36" - predictive controllers.
 .  "H0211", "H211b", "H211PI" - digital filters with orders dynamics=2, adaptivity=1, filter=1.
 .  "H0312", "H312b", "H312PID" - digital filters with orders dynamics=3, adaptivity=1, filter=2.
 -  "H0321", "H321" - digital filters with orders dynamics=3, adaptivity=2, filter=1.
 
    Options Database:
-.   -ts_adapt_dsp_filter <name>
+.   -ts_adapt_dsp_filter <name> - Sets predefined controller by name; use -help for a list of available controllers
 
-.seealso: TS, TSAdapt, TSGetAdapt(), TSAdaptDSPSetFilter()
+.seealso: TS, TSAdapt, TSGetAdapt(), TSAdaptDSPSetPID()
 @*/
 PetscErrorCode TSAdaptDSPSetFilter(TSAdapt adapt,const char *name)
 {
@@ -357,9 +357,9 @@ PetscErrorCode TSAdaptDSPSetFilter(TSAdapt adapt,const char *name)
    References: http://dx.doi.org/10.1016/j.cam.2005.03.008
 
    Options Database:
-.   -ts_adapt_dsp_pid <kkI,kkP,kkD>
+.   -ts_adapt_dsp_pid <kkI,kkP,kkD> - Sets PID controller parameters
 
-.seealso: TS, TSAdapt, TSGetAdapt(), TSAdaptDSPSetPID()
+.seealso: TS, TSAdapt, TSGetAdapt(), TSAdaptDSPSetFilter()
 @*/
 PetscErrorCode TSAdaptDSPSetPID(TSAdapt adapt,PetscReal kkI,PetscReal kkP,PetscReal kkD)
 {
@@ -381,12 +381,12 @@ PetscErrorCode TSAdaptDSPSetPID(TSAdapt adapt,PetscReal kkI,PetscReal kkP,PetscR
    References: http://dx.doi.org/10.1145/641876.641877 and http://dx.doi.org/10.1016/j.cam.2005.03.008
 
    Options Database:
-+   -ts_adapt_dsp_filter <name>
-.   -ts_adapt_dsp_pid <kkI,kkP,kkD>
-.   -ts_adapt_dsp_kbeta <b1,b2,b2>
--   -ts_adapt_dsp_alpha <a2,a3>
++   -ts_adapt_dsp_filter <name> - Sets predefined controller by name; use -help for a list of available controllers
+.   -ts_adapt_dsp_pid <kkI,kkP,kkD> - Sets PID controller parameters
+.   -ts_adapt_dsp_kbeta <b1,b2,b2> - Sets general filter parameters
+-   -ts_adapt_dsp_alpha <a2,a3> - Sets general filter parameters
 
-.seealso: TS, TSAdapt, TSGetAdapt()
+.seealso: TS, TSAdapt, TSGetAdapt(), TSAdaptDSPSetPID(), TSAdaptDSPSetFilter()
 M*/
 PETSC_EXTERN PetscErrorCode TSAdaptCreate_DSP(TSAdapt adapt)
 {

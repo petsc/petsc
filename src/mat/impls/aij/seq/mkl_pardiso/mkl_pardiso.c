@@ -669,7 +669,7 @@ PetscErrorCode MatFactorNumeric_MKL_PARDISO(Mat F,Mat A,const MatFactorInfo *inf
 
   if (F->schur) { /* schur output from pardiso is in row major format */
 #if defined(PETSC_HAVE_CUDA)
-    F->schur->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
+    F->schur->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
     ierr = MatFactorRestoreSchurComplement(F,NULL,MAT_FACTOR_SCHUR_UNFACTORED);CHKERRQ(ierr);
     ierr = MatTranspose(F->schur,MAT_INPLACE_MATRIX,&F->schur);CHKERRQ(ierr);

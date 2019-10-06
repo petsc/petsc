@@ -1163,7 +1163,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
           for (j=0; j<x_t; j++) idx[nn++] = s_t++;
         } else if (Ys-ys < 0) {
           if (by == DM_BOUNDARY_MIRROR) {
-            for (j=0; j<x; j++) idx[nn++] = bases[rank] + j + k*x*y + (s_y - i)*x;;
+            for (j=0; j<x; j++) idx[nn++] = bases[rank] + j + k*x*y + (s_y - i)*x;
           } else {
             for (j=0; j<x; j++) idx[nn++] = -1;
           }

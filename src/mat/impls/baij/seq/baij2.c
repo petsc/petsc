@@ -2542,7 +2542,7 @@ PetscErrorCode MatMatMult_SeqBAIJ_1_Private(Mat A,PetscScalar* b,PetscInt bm,Pet
         sum1 += v[0]*x1;
         v    += 1;
       }
-      z[0+k*cm] = sum1;;
+      z[0+k*cm] = sum1;
     }
     if (!usecprow) z += 1;
   }

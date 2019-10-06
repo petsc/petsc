@@ -1711,7 +1711,7 @@ PetscErrorCode TaoDefaultCMonitor(Tao tao, void *ctx)
 PetscErrorCode TaoSolutionMonitor(Tao tao, void *ctx)
 {
   PetscErrorCode ierr;
-  PetscViewer    viewer  = (PetscViewer)ctx;;
+  PetscViewer    viewer  = (PetscViewer)ctx;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);

@@ -316,7 +316,7 @@ PetscErrorCode SNESVIComputeInactiveSetFnorm(SNES snes,Vec F,Vec X, PetscReal *f
   PetscErrorCode    ierr;
   const PetscScalar *x,*xl,*xu,*f;
   PetscInt          i,n;
-  PetscReal         rnorm,zerotolerance = snes->vizerotolerance;;
+  PetscReal         rnorm,zerotolerance = snes->vizerotolerance;
 
   PetscFunctionBegin;
   ierr  = VecGetLocalSize(X,&n);CHKERRQ(ierr);

@@ -20,7 +20,7 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
   DM             da2D;
-  PetscInt       i,j,ixs, ixm, iys, iym;;
+  PetscInt       i,j,ixs, ixm, iys, iym;
   PetscViewer    H5viewer;
   PetscScalar    xm    = -1.0, xp=1.0;
   PetscScalar    ym    = -1.0, yp=1.0;

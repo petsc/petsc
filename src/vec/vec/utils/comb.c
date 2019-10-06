@@ -134,7 +134,7 @@ PetscErrorCode PetscCommSplitReductionBegin(MPI_Comm comm)
     PetscScalar    *lvalues = sr->lvalues,*gvalues = sr->gvalues;
     PetscInt       sum_flg = 0,max_flg = 0, min_flg = 0;
     MPI_Comm       comm = sr->comm;
-    PetscMPIInt    size,cmul = sizeof(PetscScalar)/sizeof(PetscReal);;
+    PetscMPIInt    size,cmul = sizeof(PetscScalar)/sizeof(PetscReal);
     ierr = PetscLogEventBegin(VEC_ReduceBegin,0,0,0,0);CHKERRQ(ierr);
     ierr = MPI_Comm_size(sr->comm,&size);CHKERRQ(ierr);
     if (size == 1) {
