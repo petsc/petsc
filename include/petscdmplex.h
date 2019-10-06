@@ -289,7 +289,7 @@ PETSC_EXTERN PetscErrorCode DMPlexComputeCellGeometryAffineFEM(DM, PetscInt, Pet
 PETSC_EXTERN PetscErrorCode DMPlexComputeCellGeometryFEM(DM, PetscInt, PetscQuadrature, PetscReal *, PetscReal *, PetscReal *, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMPlexCoordinatesToReference(DM, PetscInt, PetscInt, const PetscReal [], PetscReal[]);
 PETSC_EXTERN PetscErrorCode DMPlexReferenceToCoordinates(DM, PetscInt, PetscInt, const PetscReal [], PetscReal[]);
-PETSC_EXTERN PetscErrorCode DMPlexShearGeometry(DM, PetscInt, PetscReal[]);
+PETSC_EXTERN PetscErrorCode DMPlexShearGeometry(DM, DMDirection, PetscReal[]);
 PETSC_EXTERN PetscErrorCode DMPlexRemapGeometry(DM, PetscReal,
                                                 void (*)(PetscInt, PetscInt, PetscInt,
                                                          const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],

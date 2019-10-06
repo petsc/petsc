@@ -26,13 +26,4 @@
       PetscEnum DMDA_ELEMENT_Q1
       parameter(DMDA_ELEMENT_P1=0,DMDA_ELEMENT_Q1=1)
 !
-! DMDA Directions
-!
-      PetscEnum DMDA_X
-      PetscEnum DMDA_Y
-      PetscEnum DMDA_Z
-
-      parameter (DMDA_X = 0,DMDA_Y = 1,DMDA_Z = 2)
-!
 !  End of Fortran include file for the DM package in PETSc
-

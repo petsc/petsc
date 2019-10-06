@@ -16,6 +16,7 @@
 #define DMAdaptFlag         PetscEnum
 #define PetscUnit           PetscEnum
 #define DMAdaptationStrategy PetscEnum
+#define DMDirection PetscEnum
 
 #define DM               type(tDM)
 

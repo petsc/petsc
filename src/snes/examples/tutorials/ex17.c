@@ -352,7 +352,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       *dm  = ndm;
     }
   }
-  if (user->shear) {ierr = DMPlexShearGeometry(*dm, 0, NULL);CHKERRQ(ierr);}
+  if (user->shear) {ierr = DMPlexShearGeometry(*dm, DM_X, NULL);CHKERRQ(ierr);}
   ierr = DMLocalizeCoordinates(*dm);CHKERRQ(ierr);
 
   ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);

@@ -27,8 +27,8 @@ int main(int argc, char *argv[])
   ierr = DMDAGetOwnershipRanges(da, &lx, &ly, NULL);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(da, &info);CHKERRQ(ierr);
   /* Partitioning in the X direction makes a subcomm extending in the Y direction and vice-versa. */
-  ierr = DMDAGetProcessorSubsets(da, DMDA_X, &commY);CHKERRQ(ierr);
-  ierr = DMDAGetProcessorSubsets(da, DMDA_Y, &commX);CHKERRQ(ierr);
+  ierr = DMDAGetProcessorSubsets(da, DM_X, &commY);CHKERRQ(ierr);
+  ierr = DMDAGetProcessorSubsets(da, DM_Y, &commX);CHKERRQ(ierr);
   ierr = MPI_Comm_size(commX, &subsize);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(commX, &subrank);CHKERRQ(ierr);
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d]X subrank: %d subsize: %d\n", rank, subrank, subsize);CHKERRQ(ierr);

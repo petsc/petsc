@@ -3225,20 +3225,21 @@ static void f0_shear(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 
   Input Parameters:
 + dm          - The DM
-. dir         - The shear coordinate direction, e.g. 0 is the x-axis
+. direction   - The shear coordinate direction, e.g. 0 is the x-axis
 - multipliers - The multiplier m for each direction which is not the shear direction
 
   Level: intermediate
 
 .seealso: DMPlexRemapGeometry()
 @*/
-PetscErrorCode DMPlexShearGeometry(DM dm, PetscInt dir, PetscReal multipliers[])
+PetscErrorCode DMPlexShearGeometry(DM dm, DMDirection direction, PetscReal multipliers[])
 {
   DM             cdm;
   PetscDS        cds;
   PetscObject    obj;
   PetscClassId   id;
   PetscScalar   *moduli;
+  const PetscInt dir = (PetscInt) direction;
   PetscInt       dE, d, e;
   PetscErrorCode ierr;
 

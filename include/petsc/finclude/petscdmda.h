@@ -11,7 +11,6 @@
 #include "petsc/finclude/petscdm.h"
 
 #define DMDAStencilType PetscEnum
-#define DMDADirection PetscEnum
 
 #define DMDALocalInfo PetscInt
 !
