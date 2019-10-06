@@ -790,7 +790,7 @@ static PetscErrorCode MatSOR_SeqDense(Mat A,Vec bb,PetscReal omega,MatSORType fl
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_CUDA)
-  if (A->valid_GPU_matrix == PETSC_OFFLOAD_GPU) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not implemented");
+  if (A->offloadmask == PETSC_OFFLOAD_GPU) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not implemented");
 #endif
   if (shift == -1) shift = 0.0; /* negative shift indicates do not error on zero diagonal; this code never zeros on zero diagonal */
   ierr = PetscBLASIntCast(m,&bm);CHKERRQ(ierr);
@@ -959,7 +959,7 @@ static PetscErrorCode MatSetValues_SeqDense(Mat A,PetscInt m,const PetscInt inde
   PetscScalar      *av;
   PetscInt         i,j,idx=0;
 #if defined(PETSC_HAVE_CUDA)
-  PetscOffloadFlag oldf;
+  PetscOffloadMask oldf;
 #endif
   PetscErrorCode   ierr;
 
@@ -1028,12 +1028,12 @@ static PetscErrorCode MatSetValues_SeqDense(Mat A,PetscInt m,const PetscInt inde
   }
   /* hack to prevent unneeded copy to the GPU while returning the array */
 #if defined(PETSC_HAVE_CUDA)
-  oldf = A->valid_GPU_matrix;
-  A->valid_GPU_matrix = PETSC_OFFLOAD_GPU;
+  oldf = A->offloadmask;
+  A->offloadmask = PETSC_OFFLOAD_GPU;
 #endif
   ierr = MatDenseRestoreArray(A,&av);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_CUDA)
-  A->valid_GPU_matrix = (oldf == PETSC_OFFLOAD_UNALLOCATED ? PETSC_OFFLOAD_UNALLOCATED : PETSC_OFFLOAD_CPU);
+  A->offloadmask = (oldf == PETSC_OFFLOAD_UNALLOCATED ? PETSC_OFFLOAD_UNALLOCATED : PETSC_OFFLOAD_CPU);
 #endif
   PetscFunctionReturn(0);
 }
@@ -1435,7 +1435,7 @@ static PetscErrorCode MatDensePlaceArray_SeqDense(Mat A,const PetscScalar array[
   a->unplaced_user_alloc = a->user_alloc;
   a->v                   = (PetscScalar*) array;
 #if defined(PETSC_HAVE_CUDA)
-  A->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
+  A->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
   PetscFunctionReturn(0);
 }
@@ -1449,7 +1449,7 @@ static PetscErrorCode MatDenseResetArray_SeqDense(Mat A)
   a->user_alloc    = a->unplaced_user_alloc;
   a->unplacedarray = NULL;
 #if defined(PETSC_HAVE_CUDA)
-  A->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
+  A->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
   PetscFunctionReturn(0);
 }

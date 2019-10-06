@@ -33,7 +33,7 @@ PetscErrorCode MatViennaCLCopyToGPU(Mat A)
 
   PetscFunctionBegin;
   if (A->rmap->n > 0 && A->cmap->n > 0 && a->nz) { //some OpenCL SDKs have issues with buffers of size 0
-    if (A->valid_GPU_matrix == PETSC_OFFLOAD_UNALLOCATED || A->valid_GPU_matrix == PETSC_OFFLOAD_CPU) {
+    if (A->offloadmask == PETSC_OFFLOAD_UNALLOCATED || A->offloadmask == PETSC_OFFLOAD_CPU) {
       ierr = PetscLogEventBegin(MAT_ViennaCLCopyToGPU,A,0,0,0);CHKERRQ(ierr);
 
       try {
@@ -91,7 +91,7 @@ PetscErrorCode MatViennaCLCopyToGPU(Mat A)
         viennaclstruct->tempvec = new ViennaCLVector(A->rmap->n);
       }
 
-      A->valid_GPU_matrix = PETSC_OFFLOAD_BOTH;
+      A->offloadmask = PETSC_OFFLOAD_BOTH;
 
       ierr = PetscLogEventEnd(MAT_ViennaCLCopyToGPU,A,0,0,0);CHKERRQ(ierr);
     }
@@ -107,8 +107,8 @@ PetscErrorCode MatViennaCLCopyFromGPU(Mat A, const ViennaCLAIJMatrix *Agpu)
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  if (A->valid_GPU_matrix == PETSC_OFFLOAD_BOTH) PetscFunctionReturn(0);
-  if (A->valid_GPU_matrix == PETSC_OFFLOAD_UNALLOCATED && Agpu) {
+  if (A->offloadmask == PETSC_OFFLOAD_BOTH) PetscFunctionReturn(0);
+  if (A->offloadmask == PETSC_OFFLOAD_UNALLOCATED && Agpu) {
     try {
       if (a->compressedrow.use) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "ViennaCL: Cannot handle row compression for GPU matrices");
       else {
@@ -163,10 +163,10 @@ PetscErrorCode MatViennaCLCopyFromGPU(Mat A, const ViennaCLAIJMatrix *Agpu)
     } catch(std::exception const & ex) {
       SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "ViennaCL error: %s", ex.what());
     }
-  } else if (A->valid_GPU_matrix == PETSC_OFFLOAD_UNALLOCATED) {
+  } else if (A->offloadmask == PETSC_OFFLOAD_UNALLOCATED) {
     PetscFunctionReturn(0);
   } else {
-    if (!Agpu && A->valid_GPU_matrix != PETSC_OFFLOAD_GPU) PetscFunctionReturn(0);
+    if (!Agpu && A->offloadmask != PETSC_OFFLOAD_GPU) PetscFunctionReturn(0);
 
     if (a->compressedrow.use) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "ViennaCL: Cannot handle row compression for GPU matrices");
     if (!Agpu) {
@@ -175,7 +175,7 @@ PetscErrorCode MatViennaCLCopyFromGPU(Mat A, const ViennaCLAIJMatrix *Agpu)
       viennacl::backend::memory_read(Agpu->handle(), 0, sizeof(PetscScalar)*Agpu->nnz(), a->a);
     }
   }
-  A->valid_GPU_matrix = PETSC_OFFLOAD_BOTH;
+  A->offloadmask = PETSC_OFFLOAD_BOTH;
   /* This assembly prevents resetting the flag to PETSC_OFFLOAD_CPU and recopying */
   ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -334,7 +334,7 @@ PetscErrorCode MatDestroy_SeqAIJViennaCL(Mat A)
       delete viennaclcontainer->compressed_mat;
       delete viennaclcontainer;
     }
-    A->valid_GPU_matrix = PETSC_OFFLOAD_UNALLOCATED;
+    A->offloadmask = PETSC_OFFLOAD_UNALLOCATED;
   } catch(std::exception const & ex) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
   }
@@ -378,7 +378,7 @@ static PetscErrorCode MatDuplicate_SeqAIJViennaCL(Mat A,MatDuplicateOption cpval
 
   ierr = PetscObjectChangeTypeName((PetscObject)C,MATSEQAIJVIENNACL);CHKERRQ(ierr);
 
-  C->valid_GPU_matrix = PETSC_OFFLOAD_UNALLOCATED;
+  C->offloadmask = PETSC_OFFLOAD_UNALLOCATED;
 
   /* If the source matrix is already assembled, copy the destination matrix to the GPU */
   if (C->assembled) {
@@ -396,7 +396,7 @@ static PetscErrorCode MatSeqAIJGetArray_SeqAIJViennaCL(Mat A,PetscScalar *array[
   PetscFunctionBegin;
   ierr = MatViennaCLCopyFromGPU(A,(const ViennaCLAIJMatrix *)NULL);CHKERRQ(ierr);
   *array = a->a;
-  A->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
+  A->offloadmask = PETSC_OFFLOAD_CPU;
   PetscFunctionReturn(0);
 }
 
@@ -471,7 +471,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJViennaCL(Mat A,MatType type,
 
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqaij_seqaijviennacl_C",MatConvert_SeqAIJ_SeqAIJViennaCL);CHKERRQ(ierr);
 
-  B->valid_GPU_matrix = PETSC_OFFLOAD_UNALLOCATED;
+  B->offloadmask = PETSC_OFFLOAD_UNALLOCATED;
 
   /* If the source matrix is already assembled, copy the destination matrix to the GPU */
   if (B->assembled) {

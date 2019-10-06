@@ -404,7 +404,7 @@ struct _p_Mat {
   PetscBool              structure_only;
   PetscBool              sortedfull;       /* full, sorted rows are inserted */ 
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-  PetscOffloadFlag       valid_GPU_matrix; /* flag pointing to the matrix on the gpu*/
+  PetscOffloadMask       offloadmask;      /* a mask which indicates where the valid matrix data is (GPU, CPU or both) */
   PetscBool              pinnedtocpu;
 #endif
   void                   *spptr;          /* pointer for special library like SuperLU */

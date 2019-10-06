@@ -131,8 +131,8 @@ PetscErrorCode MatSeqDenseCUDACopyFromGPU(Mat A)
 
   PetscFunctionBegin;
   PetscCheckTypeName(A,MATSEQDENSECUDA);
-  ierr = PetscInfo3(A,"%s matrix %d x %d\n",A->valid_GPU_matrix == PETSC_OFFLOAD_GPU ? "Copy" : "Reusing",A->rmap->n,A->cmap->n);CHKERRQ(ierr);
-  if (A->valid_GPU_matrix == PETSC_OFFLOAD_GPU) {
+  ierr = PetscInfo3(A,"%s matrix %d x %d\n",A->offloadmask == PETSC_OFFLOAD_GPU ? "Copy" : "Reusing",A->rmap->n,A->cmap->n);CHKERRQ(ierr);
+  if (A->offloadmask == PETSC_OFFLOAD_GPU) {
     ierr = PetscLogEventBegin(MAT_DenseCopyFromGPU,A,0,0,0);CHKERRQ(ierr);
     if (cA->lda > A->rmap->n) {
       PetscInt j,m = A->rmap->n;
@@ -146,7 +146,7 @@ PetscErrorCode MatSeqDenseCUDACopyFromGPU(Mat A)
     ierr = PetscLogGpuToCpu(cA->lda*sizeof(PetscScalar)*A->cmap->n);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(MAT_DenseCopyFromGPU,A,0,0,0);CHKERRQ(ierr);
 
-    A->valid_GPU_matrix = PETSC_OFFLOAD_BOTH;
+    A->offloadmask = PETSC_OFFLOAD_BOTH;
   }
   PetscFunctionReturn(0);
 }
@@ -165,7 +165,7 @@ PetscErrorCode MatSeqDenseCUDACopyToGPU(Mat A)
   if (!dA->d_v) {
     cerr = cudaMalloc((void**)&dA->d_v,cA->lda*cA->Nmax*sizeof(PetscScalar));CHKERRCUDA(cerr);
   }
-  copy = (PetscBool)(A->valid_GPU_matrix == PETSC_OFFLOAD_CPU || A->valid_GPU_matrix == PETSC_OFFLOAD_UNALLOCATED);
+  copy = (PetscBool)(A->offloadmask == PETSC_OFFLOAD_CPU || A->offloadmask == PETSC_OFFLOAD_UNALLOCATED);
   ierr = PetscInfo3(A,"%s matrix %d x %d\n",copy ? "Copy" : "Reusing",A->rmap->n,A->cmap->n);CHKERRQ(ierr);
   if (copy) {
     ierr = PetscLogEventBegin(MAT_DenseCopyToGPU,A,0,0,0);CHKERRQ(ierr);
@@ -181,7 +181,7 @@ PetscErrorCode MatSeqDenseCUDACopyToGPU(Mat A)
     ierr = PetscLogCpuToGpu(cA->lda*sizeof(PetscScalar)*A->cmap->n);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(MAT_DenseCopyToGPU,A,0,0,0);CHKERRQ(ierr);
 
-    A->valid_GPU_matrix = PETSC_OFFLOAD_BOTH;
+    A->offloadmask = PETSC_OFFLOAD_BOTH;
   }
   PetscFunctionReturn(0);
 }
@@ -206,7 +206,7 @@ PetscErrorCode MatDenseCUDARestoreArrayWrite(Mat A, PetscScalar **a)
 {
   PetscFunctionBegin;
   *a = NULL;
-  A->valid_GPU_matrix = PETSC_OFFLOAD_GPU;
+  A->offloadmask = PETSC_OFFLOAD_GPU;
   PetscFunctionReturn(0);
 }
 
@@ -245,7 +245,7 @@ PetscErrorCode MatDenseCUDARestoreArray(Mat A, PetscScalar **a)
 {
   PetscFunctionBegin;
   *a = NULL;
-  A->valid_GPU_matrix = PETSC_OFFLOAD_GPU;
+  A->offloadmask = PETSC_OFFLOAD_GPU;
   PetscFunctionReturn(0);
 }
 
@@ -743,7 +743,7 @@ PetscErrorCode MatDenseGetArray_SeqDenseCUDA(Mat A,PetscScalar *array[])
   PetscFunctionBegin;
   ierr = MatSeqDenseCUDACopyFromGPU(A);CHKERRQ(ierr);
   *array = mat->v;
-  A->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
+  A->offloadmask = PETSC_OFFLOAD_CPU;
   PetscFunctionReturn(0);
 }
 
@@ -823,7 +823,7 @@ PetscErrorCode MatDestroy_SeqDenseCUDA(Mat A)
 
   PetscFunctionBegin;
   /* prevent to copy back data if we own the data pointer */
-  if (!a->user_alloc) { A->valid_GPU_matrix = PETSC_OFFLOAD_CPU; }
+  if (!a->user_alloc) { A->offloadmask = PETSC_OFFLOAD_CPU; }
   ierr = MatConvert_SeqDenseCUDA_SeqDense(A,MATSEQDENSE,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
   ierr = MatDestroy_SeqDense(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -862,7 +862,7 @@ PetscErrorCode MatSeqDenseSetPreallocation_SeqDenseCUDA(Mat B,PetscScalar *data)
     b->v                = data;
     b->user_alloc       = PETSC_TRUE;
   }
-  B->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
+  B->offloadmask = PETSC_OFFLOAD_CPU;
   B->preallocated     = PETSC_TRUE;
   B->assembled        = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -877,7 +877,7 @@ PetscErrorCode MatDuplicate_SeqDenseCUDA(Mat A,MatDuplicateOption cpvalues,Mat *
   ierr = MatSetSizes(*B,A->rmap->n,A->cmap->n,A->rmap->n,A->cmap->n);CHKERRQ(ierr);
   ierr = MatSetType(*B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatDuplicateNoCreate_SeqDense(*B,A,cpvalues);CHKERRQ(ierr);
-  if (cpvalues == MAT_COPY_VALUES && A->valid_GPU_matrix != PETSC_OFFLOAD_CPU) {
+  if (cpvalues == MAT_COPY_VALUES && A->offloadmask != PETSC_OFFLOAD_CPU) {
     Mat_SeqDense      *a = (Mat_SeqDense*)A->data;
     const PetscScalar *da;
     PetscScalar       *db;
@@ -896,7 +896,7 @@ PetscErrorCode MatDuplicate_SeqDenseCUDA(Mat A,MatDuplicateOption cpvalues,Mat *
     }
     ierr = MatDenseCUDARestoreArrayRead(A,&da);CHKERRQ(ierr);
     ierr = MatDenseCUDARestoreArrayWrite(*B,&db);CHKERRQ(ierr);
-    (*B)->valid_GPU_matrix = PETSC_OFFLOAD_BOTH;
+    (*B)->offloadmask = PETSC_OFFLOAD_BOTH;
   }
   PetscFunctionReturn(0);
 }
@@ -989,7 +989,7 @@ PetscErrorCode MatConvert_SeqDenseCUDA_SeqDense(Mat M,MatType type,MatReuse reus
 
   B->ops->pintocpu    = NULL;
   B->ops->destroy     = MatDestroy_SeqDense;
-  B->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
+  B->offloadmask = PETSC_OFFLOAD_CPU;
   PetscFunctionReturn(0);
 }
 
@@ -1016,7 +1016,7 @@ PetscErrorCode MatConvert_SeqDense_SeqDenseCUDA(Mat M,MatType type,MatReuse reus
   ierr     = PetscNewLog(B,&dB);CHKERRQ(ierr);
   B->spptr = dB;
 
-  B->valid_GPU_matrix = PETSC_OFFLOAD_UNALLOCATED;
+  B->offloadmask = PETSC_OFFLOAD_UNALLOCATED;
 
   ierr = MatPinToCPU_SeqDenseCUDA(B,PETSC_FALSE);CHKERRQ(ierr);
   B->ops->pintocpu = MatPinToCPU_SeqDenseCUDA;

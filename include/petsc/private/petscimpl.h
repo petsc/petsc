@@ -805,7 +805,7 @@ typedef struct {
 } PetscCommCounter;
 
 /*E
-    PetscOffloadFlag - indicates which memory (CPU, GPU, or none contains valid vector
+    PetscOffloadMask - indicates which memory (CPU, GPU, or none) contains valid data
 
    PETSC_OFFLOAD_UNALLOCATED  - no memory contains valid matrix entries; NEVER used for vectors
    PETSC_OFFLOAD_GPU - GPU has valid vector/matrix entries
@@ -814,7 +814,7 @@ typedef struct {
 
    Level: developer
 E*/
-typedef enum {PETSC_OFFLOAD_UNALLOCATED,PETSC_OFFLOAD_GPU,PETSC_OFFLOAD_CPU,PETSC_OFFLOAD_BOTH} PetscOffloadFlag;
+typedef enum {PETSC_OFFLOAD_UNALLOCATED=0x0,PETSC_OFFLOAD_CPU=0x1,PETSC_OFFLOAD_GPU=0x2,PETSC_OFFLOAD_BOTH=0x3} PetscOffloadMask;
 
 typedef enum {STATE_BEGIN, STATE_PENDING, STATE_END} SRState;
 
