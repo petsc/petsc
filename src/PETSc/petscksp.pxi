@@ -44,6 +44,7 @@ cdef extern from * nogil:
     PetscKSPType KSPTSIRM
     PetscKSPType KSPCGLS
     PetscKSPType KSPFETIDP
+    PetscKSPType KSPHPDDM
 
     ctypedef enum PetscKSPNormType "KSPNormType":
         KSP_NORM_DEFAULT

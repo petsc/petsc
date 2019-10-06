@@ -5,6 +5,9 @@ cdef extern from * nogil:
     PetscMatType MATMAIJ
     PetscMatType   MATSEQMAIJ
     PetscMatType   MATMPIMAIJ
+    PetscMatType MATKAIJ
+    PetscMatType   MATSEQKAIJ
+    PetscMatType   MATMPIKAIJ
     PetscMatType MATIS
     PetscMatType MATAIJ
     PetscMatType   MATSEQAIJ
@@ -21,15 +24,19 @@ cdef extern from * nogil:
     PetscMatType     MATAIJPERM
     PetscMatType       MATSEQAIJPERM
     PetscMatType       MATMPIAIJPERM
-    PetscMatType     MATAIJMKL
-    PetscMatType       MATSEQAIJMKL
-    PetscMatType       MATMPIAIJMKL
-    PetscMatType     MATBAIJMKL
-    PetscMatType       MATSEQBAIJMKL
-    PetscMatType       MATMPIBAIJMKL
+    PetscMatType MATAIJSELL
+    PetscMatType   MATSEQAIJSELL
+    PetscMatType   MATMPIAIJSELL
+    PetscMatType MATAIJMKL
+    PetscMatType    MATSEQAIJMKL
+    PetscMatType    MATMPIAIJMKL
+    PetscMatType MATBAIJMKL
+    PetscMatType    MATSEQBAIJMKL
+    PetscMatType    MATMPIBAIJMKL
     PetscMatType MATSHELL
     PetscMatType MATDENSE
     PetscMatType   MATSEQDENSE
+    PetscMatType   MATSEQDENSECUDA
     PetscMatType   MATMPIDENSE
     PetscMatType MATELEMENTAL
     PetscMatType MATBAIJ
@@ -65,6 +72,15 @@ cdef extern from * nogil:
     PetscMatType MATMPISELL
     PetscMatType MATDUMMY
     PetscMatType MATLMVM
+    PetscMatType MATLMVMDFP
+    PetscMatType MATLMVMBFGS
+    PetscMatType MATLMVMSR1
+    PetscMatType MATLMVMBRDN
+    PetscMatType MATLMVMBADBRDN
+    PetscMatType MATLMVMSYMBRDN
+    PetscMatType MATLMVMSYMBADBRDN
+    PetscMatType MATLMVMDIAGBRDN
+    PetscMatType MATCONSTANTDIAGONAL
 
     ctypedef char* PetscMatOrderingType "const char*"
     PetscMatOrderingType MATORDERINGNATURAL
@@ -96,6 +112,7 @@ cdef extern from * nogil:
     PetscMatSolverType MATSOLVERPETSC
     PetscMatSolverType MATSOLVERBAS
     PetscMatSolverType MATSOLVERCUSPARSE
+    PetscMatSolverType MATSOLVERCUDA
 
     ctypedef enum PetscMatReuse "MatReuse":
         MAT_INITIAL_MATRIX
@@ -135,6 +152,7 @@ cdef extern from * nogil:
         MAT_SUBSET_NONZERO_PATTERN    "SUBSET_NONZERO_PATTERN"
 
     ctypedef enum PetscMatOption "MatOption":
+        MAT_OPTION_MIN
         MAT_UNUSED_NONZERO_LOCATION_ERR
         MAT_ROW_ORIENTED
         MAT_SYMMETRIC
@@ -157,6 +175,10 @@ cdef extern from * nogil:
         MAT_NEW_NONZERO_LOCATIONS
         MAT_NEW_NONZERO_ALLOCATION_ERR
         MAT_SUBSET_OFF_PROC_ENTRIES
+        MAT_SUBMAT_SINGLEIS
+        MAT_STRUCTURE_ONLY
+        MAT_SORTED_FULL
+        MAT_OPTION_MAX
 
     int MatView(PetscMat,PetscViewer)
     int MatDestroy(PetscMat*)

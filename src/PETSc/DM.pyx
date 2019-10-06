@@ -6,8 +6,6 @@ class DMType(object):
     SLICED    = S_(DMSLICED)
     SHELL     = S_(DMSHELL)
     PLEX      = S_(DMPLEX)
-    STAG      = S_(DMSTAG)
-    PRODUCT   = S_(DMPRODUCT)
     REDUNDANT = S_(DMREDUNDANT)
     PATCH     = S_(DMPATCH)
     MOAB      = S_(DMMOAB)
@@ -16,6 +14,8 @@ class DMType(object):
     P4EST     = S_(DMP4EST)
     P8EST     = S_(DMP8EST)
     SWARM     = S_(DMSWARM)
+    PRODUCT   = S_(DMPRODUCT)
+    STAG      = S_(DMSTAG)
 
 class DMBoundaryType(object):
     NONE     = DM_BOUNDARY_NONE

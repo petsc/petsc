@@ -8,6 +8,7 @@ class PCType(object):
     LU                 = S_(PCLU)
     SHELL              = S_(PCSHELL)
     BJACOBI            = S_(PCBJACOBI)
+    VPBJACOBI          = S_(PCVPBJACOBI)
     MG                 = S_(PCMG)
     EISENSTAT          = S_(PCEISENSTAT)
     ILU                = S_(PCILU)
@@ -44,8 +45,11 @@ class PCType(object):
     BDDC               = S_(PCBDDC)
     KACZMARZ           = S_(PCKACZMARZ)
     TELESCOPE          = S_(PCTELESCOPE)
-    LMVM               = S_(PCLMVM)
     PATCH              = S_(PCPATCH)
+    LMVM               = S_(PCLMVM)
+    HMG                = S_(PCHMG)
+    DEFLATION          = S_(PCDEFLATION)
+    HPDDM              = S_(PCHPDDM)
 
 class PCSide(object):
     # native

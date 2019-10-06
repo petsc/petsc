@@ -5,6 +5,9 @@ class MatType(object):
     MAIJ            = S_(MATMAIJ)
     SEQMAIJ         = S_(MATSEQMAIJ)
     MPIMAIJ         = S_(MATMPIMAIJ)
+    KAIJ            = S_(MATKAIJ)
+    SEQKAIJ         = S_(MATSEQKAIJ)
+    MPIKAIJ         = S_(MATMPIKAIJ)
     IS              = S_(MATIS)
     AIJ             = S_(MATAIJ)
     SEQAIJ          = S_(MATSEQAIJ)
@@ -21,6 +24,9 @@ class MatType(object):
     AIJPERM         = S_(MATAIJPERM)
     SEQAIJPERM      = S_(MATSEQAIJPERM)
     MPIAIJPERM      = S_(MATMPIAIJPERM)
+    AIJSELL         = S_(MATAIJSELL)
+    SEQAIJSELL      = S_(MATSEQAIJSELL)
+    MPIAIJSELL      = S_(MATMPIAIJSELL)
     AIJMKL          = S_(MATAIJMKL)
     SEQAIJMKL       = S_(MATSEQAIJMKL)
     MPIAIJMKL       = S_(MATMPIAIJMKL)
@@ -30,6 +36,7 @@ class MatType(object):
     SHELL           = S_(MATSHELL)
     DENSE           = S_(MATDENSE)
     SEQDENSE        = S_(MATSEQDENSE)
+    SEQDENSECUDA    = S_(MATSEQDENSECUDA)
     MPIDENSE        = S_(MATMPIDENSE)
     ELEMENTAL       = S_(MATELEMENTAL)
     BAIJ            = S_(MATBAIJ)
@@ -65,8 +72,18 @@ class MatType(object):
     MPISELL         = S_(MATMPISELL)
     DUMMY           = S_(MATDUMMY)
     LMVM            = S_(MATLMVM)
+    LMVMDFP         = S_(MATLMVMDFP)
+    LMVMBFGS        = S_(MATLMVMBFGS)
+    LMVMSR1         = S_(MATLMVMSR1)
+    LMVMBRDN        = S_(MATLMVMBRDN)
+    LMVMBADBRDN     = S_(MATLMVMBADBRDN)
+    LMVMSYMBRDN     = S_(MATLMVMSYMBRDN)
+    LMVMSYMBADBRDN  = S_(MATLMVMSYMBADBRDN)
+    LMVMDIAGBRDN    = S_(MATLMVMDIAGBRDN)
+    CONSTANTDIAGONAL= S_(MATCONSTANTDIAGONAL)
 
 class MatOption(object):
+    OPTION_MIN                  = MAT_OPTION_MIN
     UNUSED_NONZERO_LOCATION_ERR = MAT_UNUSED_NONZERO_LOCATION_ERR
     ROW_ORIENTED                = MAT_ROW_ORIENTED
     SYMMETRIC                   = MAT_SYMMETRIC
@@ -89,6 +106,10 @@ class MatOption(object):
     NEW_NONZERO_LOCATIONS       = MAT_NEW_NONZERO_LOCATIONS
     NEW_NONZERO_ALLOCATION_ERR  = MAT_NEW_NONZERO_ALLOCATION_ERR
     SUBSET_OFF_PROC_ENTRIES     = MAT_SUBSET_OFF_PROC_ENTRIES
+    SUBMAT_SINGLEIS             = MAT_SUBMAT_SINGLEIS
+    STRUCTURE_ONLY              = MAT_STRUCTURE_ONLY
+    SORTED_FULL                 = MAT_SORTED_FULL
+    OPTION_MAX                  = MAT_OPTION_MAX
 
 class MatAssemblyType(object):
     # native
@@ -143,6 +164,7 @@ class MatSolverType(object):
     PETSC           = S_(MATSOLVERPETSC)
     BAS             = S_(MATSOLVERBAS)
     CUSPARSE        = S_(MATSOLVERCUSPARSE)
+    CUDA            = S_(MATSOLVERCUDA)
 
 class MatFactorShiftType(object):
     # native

@@ -3,6 +3,7 @@ cdef extern from * nogil:
     ctypedef char* PetscTSType "const char*"
     PetscTSType TSEULER
     PetscTSType TSBEULER
+    PetscTSType TSBASICSYMPLECTIC
     PetscTSType TSPSEUDO
     PetscTSType TSCN
     PetscTSType TSSUNDIALS
@@ -20,6 +21,7 @@ cdef extern from * nogil:
     PetscTSType TSMIMEX
     PetscTSType TSBDF
     PetscTSType TSRADAU5
+    PetscTSType TSMPRK
 
     ctypedef enum PetscTSProblemType "TSProblemType":
       TS_LINEAR

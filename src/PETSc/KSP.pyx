@@ -44,6 +44,7 @@ class KSPType(object):
     TSIRM      = S_(KSPTSIRM)
     CGLS       = S_(KSPCGLS)
     FETIDP     = S_(KSPFETIDP)
+    HPDDM      = S_(KSPHPDDM)
 
 class KSPNormType(object):
     # native

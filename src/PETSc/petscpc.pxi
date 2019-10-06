@@ -20,6 +20,7 @@ cdef extern from * nogil:
     PetscPCType PCNN
     PetscPCType PCCHOLESKY
     PetscPCType PCPBJACOBI
+    PetscPCType PCVPBJACOBI
     PetscPCType PCMAT
     PetscPCType PCHYPRE
     PetscPCType PCPARMS
@@ -43,8 +44,11 @@ cdef extern from * nogil:
     PetscPCType PCBDDC
     PetscPCType PCKACZMARZ
     PetscPCType PCTELESCOPE
-    PetscPCType PCLMVM
     PetscPCType PCPATCH
+    PetscPCType PCLMVM
+    PetscPCType PCHMG
+    PetscPCType PCDEFLATION
+    PetscPCType PCHPDDM
 
     ctypedef enum PetscPCSide "PCSide":
         PC_SIDE_DEFAULT
