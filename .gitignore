@@ -161,7 +161,6 @@ src/benchmarks/streams/CUDAVersion
 src/benchmarks/streams/OpenMPVersion
 src/benchmarks/streams/PthreadVersion
 src/benchmarks/streams/scaling.png
-ftn-auto-interfaces
 horse.ply
 src/docs/tex/manual/anchors
 src/docs/tex/manual/*.aux
