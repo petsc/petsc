@@ -101,7 +101,7 @@ PetscErrorCode DMPlexRefineSimplexToTensor(DM dm, DM *dmRefined)
 
 PetscErrorCode DMPlexGetFieldType_Internal(DM dm, PetscSection section, PetscInt field, PetscInt *sStart, PetscInt *sEnd, PetscViewerVTKFieldType *ft)
 {
-  PetscInt       dim, pStart, pEnd, vStart, vEnd, cStart, cEnd, cEndInterior;
+  PetscInt       dim, pStart, pEnd, vStart, vEnd, cStart, cEnd, cMax;
   PetscInt       vcdof[2] = {0,0}, globalvcdof[2];
   PetscErrorCode ierr;
 
@@ -110,8 +110,8 @@ PetscErrorCode DMPlexGetFieldType_Internal(DM dm, PetscSection section, PetscInt
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
-  cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
+  ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
+  cEnd = cMax < 0 ? cEnd : cMax;
   ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
   if (field >= 0) {
     if ((vStart >= pStart) && (vStart < pEnd)) {ierr = PetscSectionGetFieldDof(section, vStart, field, &vcdof[0]);CHKERRQ(ierr);}
@@ -1032,9 +1032,9 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     ierr  = VecDestroy(&acown);CHKERRQ(ierr);
   } else {
     MPI_Comm    comm;
-    PetscInt   *sizes, *hybsizes;
+    PetscInt   *sizes, *hybsizes, *ghostsizes;
     PetscInt    locDepth, depth, cellHeight, dim, d, pMax[4];
-    PetscInt    pStart, pEnd, p;
+    PetscInt    pStart, pEnd, p, gcStart, gcEnd, gcNum;
     PetscInt    numLabels, l;
     const char *name;
     PetscMPIInt size;
@@ -1050,13 +1050,16 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     ierr = DMPlexGetDepth(dm, &locDepth);CHKERRQ(ierr);
     ierr = MPIU_Allreduce(&locDepth, &depth, 1, MPIU_INT, MPI_MAX, comm);CHKERRQ(ierr);
     ierr = DMPlexGetHybridBounds(dm, &pMax[depth], depth > 0 ? &pMax[depth-1] : NULL, depth > 1 ? &pMax[depth - 2] : NULL, &pMax[0]);CHKERRQ(ierr);
-    ierr = PetscCalloc2(size,&sizes,size,&hybsizes);CHKERRQ(ierr);
+    ierr = DMPlexGetGhostCellStratum(dm, &gcStart, &gcEnd);CHKERRQ(ierr);
+    gcNum = gcEnd - gcStart;
+    ierr = PetscCalloc3(size,&sizes,size,&hybsizes,size,&ghostsizes);CHKERRQ(ierr);
     if (depth == 1) {
       ierr = DMPlexGetDepthStratum(dm, 0, &pStart, &pEnd);CHKERRQ(ierr);
       pEnd = pEnd - pStart;
       pMax[0] -= pStart;
       ierr = MPI_Gather(&pEnd, 1, MPIU_INT, sizes, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
       ierr = MPI_Gather(&pMax[0], 1, MPIU_INT, hybsizes, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
+      ierr = MPI_Gather(&gcNum, 1, MPIU_INT, ghostsizes, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer, "  %d-cells:", 0);CHKERRQ(ierr);
       for (p = 0; p < size; ++p) {
         if (hybsizes[p] >= 0) {ierr = PetscViewerASCIIPrintf(viewer, " %D (%D)", sizes[p], sizes[p] - hybsizes[p]);CHKERRQ(ierr);}
@@ -1070,8 +1073,9 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
       ierr = MPI_Gather(&pMax[depth], 1, MPIU_INT, hybsizes, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer, "  %D-cells:", dim);CHKERRQ(ierr);
       for (p = 0; p < size; ++p) {
-        if (hybsizes[p] >= 0) {ierr = PetscViewerASCIIPrintf(viewer, " %D (%D)", sizes[p], sizes[p] - hybsizes[p]);CHKERRQ(ierr);}
-        else                  {ierr = PetscViewerASCIIPrintf(viewer, " %D", sizes[p]);CHKERRQ(ierr);}
+        ierr = PetscViewerASCIIPrintf(viewer, " %D", sizes[p]);CHKERRQ(ierr);
+        if (hybsizes[p] >= 0)   {ierr = PetscViewerASCIIPrintf(viewer, " (%D)", sizes[p] - hybsizes[p]);CHKERRQ(ierr);}
+        if (ghostsizes[p] > 0) {ierr = PetscViewerASCIIPrintf(viewer, " [%D]", ghostsizes[p]);CHKERRQ(ierr);}
       }
       ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
     } else {
@@ -1083,17 +1087,19 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
         pMax[d] -= pStart;
         ierr = MPI_Gather(&pEnd, 1, MPIU_INT, sizes, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
         ierr = MPI_Gather(&pMax[d], 1, MPIU_INT, hybsizes, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
+        if (d == dim) {ierr = MPI_Gather(&gcNum, 1, MPIU_INT, ghostsizes, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);}
         ierr = PetscViewerASCIIPrintf(viewer, "  %D-cells:", d);CHKERRQ(ierr);
         for (p = 0; p < size; ++p) {
           if (!rank) {
-            if (hybsizes[p] >= 0) {ierr = PetscViewerASCIIPrintf(viewer, " %D (%D)", sizes[p], sizes[p] - hybsizes[p]);CHKERRQ(ierr);}
-            else                  {ierr = PetscViewerASCIIPrintf(viewer, " %D", sizes[p]);CHKERRQ(ierr);}
+            ierr = PetscViewerASCIIPrintf(viewer, " %D", sizes[p]);CHKERRQ(ierr);
+            if (hybsizes[p] >= 0) {ierr = PetscViewerASCIIPrintf(viewer, " (%D)", sizes[p] - hybsizes[p]);CHKERRQ(ierr);}
+            if (d == dim && ghostsizes[p] > 0) {ierr = PetscViewerASCIIPrintf(viewer, " [%D]", ghostsizes[p]);CHKERRQ(ierr);}
           }
         }
         ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
       }
     }
-    ierr = PetscFree2(sizes,hybsizes);CHKERRQ(ierr);
+    ierr = PetscFree3(sizes,hybsizes,ghostsizes);CHKERRQ(ierr);
     ierr = DMGetNumLabels(dm, &numLabels);CHKERRQ(ierr);
     if (numLabels) {ierr = PetscViewerASCIIPrintf(viewer, "Labels:\n");CHKERRQ(ierr);}
     for (l = 0; l < numLabels; ++l) {
@@ -6511,6 +6517,100 @@ PetscErrorCode DMPlexSetVTKCellHeight(DM dm, PetscInt cellHeight)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   mesh->vtkCellHeight = cellHeight;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexGetGhostCellStratum - Get the range of cells which are used to enforce FV boundary conditions
+
+  Input Parameter:
+. dm - The DMPlex object
+
+  Output Parameters:
++ gcStart - The first ghost cell, or NULL
+- gcEnd   - The upper bound on ghost cells, or NULL
+
+  Level: advanced
+
+.seealso DMPlexConstructGhostCells(), DMPlexSetGhostCellStratum(), DMPlexGetHybridBounds()
+@*/
+PetscErrorCode DMPlexGetGhostCellStratum(DM dm, PetscInt *gcStart, PetscInt *gcEnd)
+{
+  DM_Plex       *mesh = (DM_Plex*) dm->data;
+  PetscInt       dim;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  if (dim < 0) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DM dimension not yet set");
+  if (gcStart) {PetscValidIntPointer(gcStart, 2); *gcStart = mesh->ghostCellStart;}
+  if (gcEnd)   {
+    PetscValidIntPointer(gcEnd, 3);
+    if (mesh->ghostCellStart >= 0) {ierr = DMPlexGetHeightStratum(dm, 0, NULL, gcEnd);CHKERRQ(ierr);}
+    else                           {*gcEnd = -1;}
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexSetGhostCellStratum - Set the range of cells which are used to enforce FV boundary conditions
+
+  Input Parameters:
++ dm      - The DMPlex object
+. gcStart - The first ghost cell, or PETSC_DETERMINE
+- gcEnd   - The upper bound on ghost cells, or PETSC_DETERMINE
+
+  Level: advanced
+
+  Note: This is not usually called directly by a user.
+
+.seealso DMPlexConstructGhostCells(), DMPlexGetGhostCellStratum(), DMPlexSetHybridBounds()
+@*/
+PetscErrorCode DMPlexSetGhostCellStratum(DM dm, PetscInt gcStart, PetscInt gcEnd)
+{
+  DM_Plex       *mesh = (DM_Plex*) dm->data;
+  PetscInt       dim;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  if (dim < 0) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DM dimension not yet set");
+  mesh->ghostCellStart = gcStart;
+  if (gcEnd >= 0) {
+    PetscInt cEnd;
+    ierr = DMPlexGetHeightStratum(dm, 0, NULL, &cEnd);CHKERRQ(ierr);
+    if (gcEnd != cEnd) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Ghost cells must appear at the end of the cell range, but gcEnd %D is not equal to cEnd %D", gcEnd, cEnd);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexGetInteriorCellStratum - Get the range of cells which are neither hybrid nor ghost FV cells
+
+  Input Parameter:
+. dm - The DMPlex object
+
+  Output Parameters:
++ cStartInterior - The first ghost cell
+- cEndInterior   - The upper bound on ghost cells
+
+  Level: developer
+
+.seealso DMPlexConstructGhostCells(), DMPlexSetGhostCellStratum(), DMPlexGetHybridBounds()
+@*/
+PetscErrorCode DMPlexGetInteriorCellStratum(DM dm, PetscInt *cStartInterior, PetscInt *cEndInterior)
+{
+  PetscInt       gcEnd, cMax;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexGetHeightStratum(dm, 0, cStartInterior, cEndInterior);CHKERRQ(ierr);
+  ierr = DMPlexGetGhostCellStratum(dm, &gcEnd, NULL);CHKERRQ(ierr);
+  *cEndInterior = gcEnd < 0 ? *cEndInterior : gcEnd;
+  ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
+  *cEndInterior = cMax  < 0 ? *cEndInterior : cMax;
   PetscFunctionReturn(0);
 }
 

@@ -667,7 +667,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
   void          *ctx;
   MPI_Comm       comm;
   PetscInt       numAdapt = adaptor->numSeq, adaptIter;
-  PetscInt       dim, coordDim, numFields, cStart, cEnd, cEndInterior, c;
+  PetscInt       dim, coordDim, numFields, cStart, cEnd, c;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -723,9 +723,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
 
       ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
       ierr = DMLabelCreate(PETSC_COMM_SELF, "adapt", &adaptLabel);CHKERRQ(ierr);
-      ierr = DMPlexGetHeightStratum(plex, 0, &cStart, &cEnd);CHKERRQ(ierr);
-      ierr = DMPlexGetHybridBounds(plex, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
-      cEnd = (cEndInterior < 0) ? cEnd : cEndInterior;
+      ierr = DMPlexGetInteriorCellStratum(plex, &cStart, &cEnd);CHKERRQ(ierr);
 
       ierr = VecCreateMPI(PetscObjectComm((PetscObject) adaptor), cEnd-cStart, PETSC_DETERMINE, &errVec);CHKERRQ(ierr);
       ierr = VecSetUp(errVec);CHKERRQ(ierr);

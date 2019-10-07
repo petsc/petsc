@@ -2520,6 +2520,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
   mesh->supports          = NULL;
   mesh->refinementUniform = PETSC_TRUE;
   mesh->refinementLimit   = -1.0;
+  mesh->ghostCellStart    = -1;
 
   mesh->facesTmp = NULL;
 

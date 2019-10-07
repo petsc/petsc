@@ -542,7 +542,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
     if (!h) {
       PetscInt cEndInterior;
 
-      ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
+      ierr = DMPlexGetInteriorCellStratum(dm, NULL, &cEndInterior);CHKERRQ(ierr);
       pEnd = cEndInterior < 0 ? pEnd : cEndInterior;
     }
     if (pEnd <= pStart) {

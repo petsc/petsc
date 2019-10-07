@@ -143,10 +143,24 @@ struct _PetscGridHash {
   DMLabel      cellsSparse; /* Sparse storage for cell map */
 };
 
+/* Point Numbering in Plex:
+
+   Points are numbered contiguously by stratum. Strate are organized as follows:
+
+   First Stratum:  Cells [height 0]
+   Second Stratum: Vertices [depth 0]
+   Third Stratum:  Faces [height 1]
+   Fourth Stratum: Edges [depth 1]
+
+   We do this so that the numbering of a cell-vertex mesh does not change after interpolation. Within a given stratum,
+   we allow additional segregation of points. When hybrid, or prismatic, points are present, the first hybrid point in
+   a stratum is indicated by hybridPointMax[depth]. In addition, we allow ghost cells to be defined for use in finite
+   volume methods, and these do not have full cones. These cells occur after any hybrid cells, and this division is
+   indicated by ghostCellStart.
+*/
 typedef struct {
   PetscInt             refct;
 
-  /* Sieve */
   PetscSection         coneSection;       /* Layout of cones (inedges for DAG) */
   PetscInt             maxConeSize;       /* Cached for fast lookup */
   PetscInt            *cones;             /* Cone for each point */
@@ -159,6 +173,7 @@ typedef struct {
   PetscErrorCode     (*refinementFunc)(const PetscReal [], PetscReal *); /* Function giving the maximum volume for refined cell */
   PetscInt             hybridPointMax[8]; /* Allow segregation of some points, each dimension has a divider (used in VTK output and refinement) */
   PetscInt             overlap;           /* Overlap of the partitions as passed to DMPlexDistribute() or DMPlexDistributeOverlap() */
+  PetscInt             ghostCellStart;    /* The first ghost cell (for FV BC) or -1 */
 
   PetscInt            *facesTmp;          /* Work space for faces operation */
 

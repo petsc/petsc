@@ -3,7 +3,7 @@ DM Object: Mesh 1 MPI processes
 Mesh in 2 dimensions:
   0-cells: 12
   1-cells: 21
-  2-cells: 15 (6)
+  2-cells: 15 [6]
 Labels:
   depth: 3 strata with value/size (0 (12), 1 (21), 2 (15))
   marker: 1 strata with value/size (1 (12))

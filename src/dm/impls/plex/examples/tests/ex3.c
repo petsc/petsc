@@ -634,7 +634,7 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
   ierr = VecGetArrayRead(cellgeom,&cgeom);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dmgrad,&grad);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dmgrad,&locGrad);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dmgrad,&cEndInterior,NULL,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMPlexGetGhostCellStratum(dmgrad,&cEndInterior,NULL);CHKERRQ(ierr);
   cEndInterior = (cEndInterior < 0) ? cEnd: cEndInterior;
   for (v = 0; v < nvecs; v++) {
     Vec               locX;
