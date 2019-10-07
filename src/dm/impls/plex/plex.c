@@ -6527,10 +6527,10 @@ PetscErrorCode DMPlexSetVTKCellHeight(DM dm, PetscInt cellHeight)
 . dm - The DMPlex object
 
   Output Parameters:
-+ gcStart - The first ghost cell
-- gcEnd   - The upper bound on ghost cells
++ gcStart - The first ghost cell, or NULL
+- gcEnd   - The upper bound on ghost cells, or NULL
 
-  Level: developer
+  Level: advanced
 
 .seealso DMPlexConstructGhostCells(), DMPlexSetGhostCellStratum(), DMPlexGetHybridBounds()
 @*/
@@ -6558,10 +6558,12 @@ PetscErrorCode DMPlexGetGhostCellStratum(DM dm, PetscInt *gcStart, PetscInt *gcE
 
   Input Parameters:
 + dm      - The DMPlex object
-. gcStart - The first ghost cell
-- gcEnd   - The upper bound on ghost cells
+. gcStart - The first ghost cell, or PETSC_DETERMINE
+- gcEnd   - The upper bound on ghost cells, or PETSC_DETERMINE
 
-  Level: developer
+  Level: advanced
+
+  Note: This is not usually called directly by a user.
 
 .seealso DMPlexConstructGhostCells(), DMPlexGetGhostCellStratum(), DMPlexSetHybridBounds()
 @*/
