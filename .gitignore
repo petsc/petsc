@@ -70,22 +70,6 @@ makefile.html
 *.cpp.html
 *.hh.html
 *.sidl.html
-docs/manualpages/*
-docs/changes/*
-docs/bugreporting.html
-docs/codemanagement.html
-docs/copyright.html
-docs/license.html
-docs/exampleconcepts
-docs/faq.html
-docs/installation.html
-docs/intro.pdf
-docs/linearsolvertable.html
-docs/manconcepts
-docs/manual.pdf
-docs/developers.pdf
-docs/tao_manual.pdf
-docs/troubleshooting.html
 src/docs/website/publications/generated_topics.html
 src/dm/mesh/examples/tests/unitTests
 src/dm/mesh/examples/tutorials/*_quadrature.h
@@ -204,3 +188,4 @@ src/docs/tao_tex/manual/*.ind
 src/docs/tao_tex/manual/*.out
 src/docs/tao_tex/manual/*.toc
 src/docs/tao_tex/manual/*.dvi
+/docs/
