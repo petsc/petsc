@@ -1692,7 +1692,6 @@ PetscErrorCode DMPlexIsInterpolatedCollective(DM dm, DMPlexInterpolatedFlag *int
       ierr = PetscSynchronizedPrintf(comm, "[%d] interpolated=%s interpolatedCollective=%s\n", rank, DMPlexInterpolatedFlags[plex->interpolated], DMPlexInterpolatedFlags[plex->interpolatedCollective]);CHKERRQ(ierr);
       ierr = PetscSynchronizedFlush(comm, PETSC_STDOUT);CHKERRQ(ierr);
     }
-    if (PetscUnlikely(min < 0)) SETERRQ(comm, PETSC_ERR_PLIB, "Bug in DMPlexIsInterpolated: DMPlexInterpolatedFlag unitialized on some rank");
   }
   *interpolated = plex->interpolatedCollective;
   PetscFunctionReturn(0);
