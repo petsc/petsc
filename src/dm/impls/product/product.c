@@ -8,9 +8,7 @@ static PetscErrorCode DMDestroy_Product(DM dm)
 
   PetscFunctionBeginUser;
   for (d=0; d<DMPRODUCT_MAX_DIM; ++d) {
-    if (product->dm[d]) {
-      ierr = DMDestroy(&product->dm[d]);CHKERRQ(ierr);
-    }
+    ierr = DMDestroy(&product->dm[d]);CHKERRQ(ierr);
   }
   ierr = PetscFree(product);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -59,6 +59,7 @@ PETSC_EXTERN PetscErrorCode DMProductSetDM(DM dm,PetscInt slot,DM subdm)
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   if (slot >= dim || slot < 0) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"slot number must be in range 0-%D",dim-1);
   ierr = PetscObjectReference((PetscObject)subdm);CHKERRQ(ierr);
+  ierr = DMDestroy(&product->dm[slot]);CHKERRQ(ierr);
   product->dm[slot] = subdm;
   PetscFunctionReturn(0);
 }
