@@ -2467,9 +2467,11 @@ PetscErrorCode SNESTestJacobian(SNES snes)
   ierr = PetscOptionsReal("-snes_test_jacobian", "Threshold for element difference between hand-coded and finite difference being meaningful", "None", threshold, &threshold,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsViewer("-snes_test_jacobian_view","View difference between hand-coded and finite difference Jacobians element entries","None",&mviewer,&format,&complete_print);CHKERRQ(ierr);
   if (!complete_print) {
+    ierr = PetscOptionsDeprecated("-snes_test_jacobian_display","-snes_test_jacobian_view","3.13",NULL);CHKERRQ(ierr);
     ierr = PetscOptionsViewer("-snes_test_jacobian_display","Display difference between hand-coded and finite difference Jacobians","None",&mviewer,&format,&complete_print);CHKERRQ(ierr);
   }
   /* for compatibility with PETSc 3.9 and older. */
+  ierr = PetscOptionsDeprecated("-snes_test_jacobian_display_threshold","-snes_test_jacobian","3.13","-snes_test_jacobian accepts an optional threshold (since v3.10)");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-snes_test_jacobian_display_threshold", "Display difference between hand-coded and finite difference Jacobians which exceed input threshold", "None", threshold, &threshold, &threshold_print);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if (!test) PetscFunctionReturn(0);
@@ -2620,9 +2622,8 @@ PetscErrorCode SNESTestJacobian(SNES snes)
   Options Database Keys:
 +    -snes_lag_preconditioner <lag>
 .    -snes_lag_jacobian <lag>
-.    -snes_test_jacobian - compare the user provided Jacobian with one compute via finite differences to check for errors
-.    -snes_test_jacobian_display - display the user provided Jacobian, the finite difference Jacobian and the difference between them to help users detect the location of errors in the user provided Jacobian
-.    -snes_test_jacobian_display_threshold <numerical value>  - display entries in the difference between the user provided Jacobian and finite difference Jacobian that are greater than a certain value to help users detect errors
+.    -snes_test_jacobian <optional threshold> - compare the user provided Jacobian with one compute via finite differences to check for errors.  If a threshold is given, display only those entries whose difference is greater than the threshold.
+.    -snes_test_jacobian_view - display the user provided Jacobian, the finite difference Jacobian and the difference between them to help users detect the location of errors in the user provided Jacobian
 .    -snes_compare_explicit - Compare the computed Jacobian to the finite difference Jacobian and output the differences
 .    -snes_compare_explicit_draw  - Compare the computed Jacobian to the finite difference Jacobian and draw the result
 .    -snes_compare_explicit_contour  - Compare the computed Jacobian to the finite difference Jacobian and draw a contour plot with the result
