@@ -135,6 +135,12 @@ PetscErrorCode VecScatterSetFromOptions(VecScatter vscat)
     ierr = PetscInfo(vscat,"Using combined (merged) vector scatter begin and end\n");CHKERRQ(ierr);
   }
 
+  vscat->packongpu = PETSC_TRUE;
+  ierr = PetscOptionsBool("-vecscatter_packongpu","For GPU vectors, pack needed entries on GPU, then copy packed data to CPU, then do MPI","VecScatterCreate",vscat->packongpu,&vscat->packongpu,NULL);CHKERRQ(ierr);
+  if (vscat->packongpu) {
+    ierr = PetscInfo(vscat,"For GPU vectors, pack needed entries on GPU, then copy packed data to CPU, then do MPI\n");CHKERRQ(ierr);
+  }
+
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -202,9 +208,11 @@ PetscErrorCode VecScatterRegister(const char sname[], PetscErrorCode (*function)
 .  -vecscatter_view ::ascii_info    - Print less details about communication
 .  -vecscatter_merge        - VecScatterBegin() handles all of the communication, VecScatterEnd() is a nop
                               eliminates the chance for overlap of computation and communication
--  -vecscatter_packtogether - Pack all messages before sending, receive all messages before unpacking
+.  -vecscatter_packtogether - Pack all messages before sending, receive all messages before unpacking
                               will make the results of scatters deterministic when otherwise they are not (it may be slower also).
 .  -vecscatter_type sf      - Use the PetscSF implementation of vecscatter (Default). One can use PetscSF options to control the communication.
+.  -vecscatter_packongpu    - For GPU vectors, pack needed entries on GPU, then copy packed data to CPU, then do MPI.
+                              Otherwise, we might copy a segment encompassing needed entries. Default is TRUE.
 
     Level: intermediate
 

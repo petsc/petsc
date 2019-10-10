@@ -126,7 +126,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscGetMemType(const void *data,PetscMemType
   PetscValidPointer(mtype,2);
   *mtype = PETSC_MEMTYPE_HOST;
 #if defined(PETSC_HAVE_CUDA)
-  if (use_gpu_aware_mpi) {
+  {
     struct cudaPointerAttributes attr;
     if (data) {
 #if (CUDART_VERSION < 10000)

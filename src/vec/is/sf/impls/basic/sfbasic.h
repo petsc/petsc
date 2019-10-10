@@ -130,20 +130,27 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFPackRootData(PetscSF sf,PetscSFPack li
     p[0].atomic = PETSC_FALSE;                    p[1].atomic = PETSC_FALSE;
   } else {
     /* For SFAllgatherv etc collectives, which have a dense root space and do not differentiate self/remote communication. */
-    p[0].count  = sf->nroots;
-    p[0].idx    = NULL;
-    p[0].opt    = NULL;
-    p[0].buf    = link->rootbuf[link->rootmtype];
-    p[0].atomic = PETSC_FALSE;
-    p[1].count  = 0;
+    p[0].count  = 0; /* Setting to 0 to skip self, in other words, do not single out self communication */
+    p[1].count  = sf->nroots;
+    p[1].idx    = NULL;
+    p[1].opt    = NULL;
+    p[1].buf    = link->rootbuf[link->rootmtype];
+    p[1].atomic = PETSC_FALSE;
   }
 
   ierr = PetscSFPackGetPack(link,link->rootmtype,&Pack);CHKERRQ(ierr);
-  /* Only do packing when count != 0 so that we can avoid invoking CUDA kernels on GPU. */
+  /* Only do packing when count != 0 so that we can avoid invoking empty CUDA kernels */
   for (i=0; i<2; i++) {if (p[i].count) {ierr = (*Pack)(p[i].count,p[i].idx,link,p[i].opt,rootdata,p[i].buf);CHKERRQ(ierr);}}
+
 #if defined(PETSC_HAVE_CUDA)
-  /* Let's assume MPI does not do cudaDeviceSynchronize() at entrance, which I do not know. Then we have to sync the packing kernel to make rootbuf & selfbuf ready for MPI & self to self copy */
-  if (link->rootmtype == PETSC_MEMTYPE_DEVICE && (p[0].count || p[1].count)) {cudaError_t err = cudaStreamSynchronize(link->stream);CHKERRCUDA(err);}
+  if (link->rootmtype == PETSC_MEMTYPE_DEVICE && p[1].count) { /* We only care p[1], which is for remote and involves MPI */
+    /* Without use_gpu_aware_mpi, we need to copy rootbuf on device to rootbuf on host. The cudaStreamSynchronize()
+       is to make usre rootbuf is ready before MPI communicatioin starts.
+    */
+    cudaError_t err;
+    if (!use_gpu_aware_mpi) {err = cudaMemcpyAsync(link->rootbuf[PETSC_MEMTYPE_HOST],link->rootbuf[PETSC_MEMTYPE_DEVICE],link->rootbuflen*link->unitbytes,cudaMemcpyDeviceToHost,link->stream);CHKERRCUDA(err);}
+    err = cudaStreamSynchronize(link->stream);CHKERRCUDA(err);
+  }
 #endif
   PetscFunctionReturn(0);
 }
@@ -164,18 +171,22 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFPackLeafData(PetscSF sf,PetscSFPack li
     p[0].buf    = link->selfbuf[link->leafmtype]; p[1].buf    = link->leafbuf[link->leafmtype];
     p[0].atomic = PETSC_FALSE;                    p[1].atomic = PETSC_FALSE;
   } else {
-    p[0].count  = sf->nleaves;
-    p[0].idx    = NULL;
-    p[0].opt    = NULL;
-    p[0].buf    = link->leafbuf[link->leafmtype];
-    p[0].atomic = PETSC_FALSE;
-    p[1].count  = 0;
+    p[0].count  = 0;
+    p[1].count  = sf->nleaves;
+    p[1].idx    = NULL;
+    p[1].opt    = NULL;
+    p[1].buf    = link->leafbuf[link->leafmtype];
+    p[1].atomic = PETSC_FALSE;
   }
 
   ierr = PetscSFPackGetPack(link,link->leafmtype,&Pack);CHKERRQ(ierr);
   for (i=0; i<2; i++) {if (p[i].count) {ierr = (*Pack)(p[i].count,p[i].idx,link,p[i].opt,leafdata,p[i].buf);CHKERRQ(ierr);}}
 #if defined(PETSC_HAVE_CUDA)
-  if (link->leafmtype == PETSC_MEMTYPE_DEVICE && (p[0].count || p[1].count)) {cudaError_t err = cudaStreamSynchronize(link->stream);CHKERRCUDA(err);}
+  if (link->leafmtype == PETSC_MEMTYPE_DEVICE && p[1].count) {
+    cudaError_t err;
+    if (!use_gpu_aware_mpi) {err = cudaMemcpyAsync(link->leafbuf[PETSC_MEMTYPE_HOST],link->leafbuf[PETSC_MEMTYPE_DEVICE],link->leafbuflen*link->unitbytes,cudaMemcpyDeviceToHost,link->stream);CHKERRCUDA(err);}
+    err = cudaStreamSynchronize(link->stream);CHKERRCUDA(err);
+  }
 #endif
   PetscFunctionReturn(0);
 }
@@ -197,13 +208,19 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFUnpackAndOpRootData(PetscSF sf,PetscSF
     p[0].buf    = link->selfbuf[link->rootmtype]; p[1].buf    = link->rootbuf[link->rootmtype];
     p[0].atomic = bas->selfrootdups;              p[1].atomic = bas->remoterootdups;
   } else {
-    p[0].count  = sf->nroots;
-    p[0].idx    = NULL;
-    p[0].opt    = NULL;
-    p[0].buf    = link->rootbuf[link->rootmtype];
-    p[0].atomic = PETSC_FALSE;
-    p[1].count  = 0;
+    p[0].count  = 0;
+    p[1].count  = sf->nroots;
+    p[1].idx    = NULL;
+    p[1].opt    = NULL;
+    p[1].buf    = link->rootbuf[link->rootmtype];
+    p[1].atomic = PETSC_FALSE;
   }
+
+#if defined(PETSC_HAVE_CUDA)
+  if (!use_gpu_aware_mpi && link->rootmtype == PETSC_MEMTYPE_DEVICE && p[1].count) {
+    cudaError_t err = cudaMemcpyAsync(link->rootbuf[PETSC_MEMTYPE_DEVICE],link->rootbuf[PETSC_MEMTYPE_HOST],link->rootbuflen*link->unitbytes,cudaMemcpyHostToDevice,link->stream);CHKERRCUDA(err);
+  }
+#endif
 
   for (i=0; i<2; i++) {
     if (p[i].count) {
@@ -229,7 +246,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFUnpackAndOpRootData(PetscSF sf,PetscSF
     }
   }
 #if defined(PETSC_HAVE_CUDA)
-  if (link->rootmtype == PETSC_MEMTYPE_DEVICE && (p[0].count || p[1].count)) {cudaError_t err = cudaStreamSynchronize(link->stream);CHKERRCUDA(err);}
+  if (link->rootmtype == PETSC_MEMTYPE_DEVICE && p[1].count) {cudaError_t err = cudaStreamSynchronize(link->stream);CHKERRCUDA(err);}
 #endif
   PetscFunctionReturn(0);
 }
@@ -250,13 +267,19 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFUnpackAndOpLeafData(PetscSF sf,PetscSF
     p[0].buf    = link->selfbuf[link->leafmtype]; p[1].buf    = link->leafbuf[link->leafmtype];
     p[0].atomic = sf->selfleafdups;               p[1].atomic = sf->remoteleafdups;
   } else {
-    p[0].count  = sf->nleaves;
-    p[0].idx    = NULL;
-    p[0].opt    = NULL;
-    p[0].buf    = link->leafbuf[link->leafmtype];
-    p[0].atomic = PETSC_FALSE;
-    p[1].count  = 0;
+    p[0].count  = 0;
+    p[1].count  = sf->nleaves;
+    p[1].idx    = NULL;
+    p[1].opt    = NULL;
+    p[1].buf    = link->leafbuf[link->leafmtype];
+    p[1].atomic = PETSC_FALSE;
   }
+
+#if defined(PETSC_HAVE_CUDA)
+  if (!use_gpu_aware_mpi && link->leafmtype == PETSC_MEMTYPE_DEVICE && p[1].count) {
+    cudaError_t err = cudaMemcpyAsync(link->leafbuf[PETSC_MEMTYPE_DEVICE],link->leafbuf[PETSC_MEMTYPE_HOST],link->leafbuflen*link->unitbytes,cudaMemcpyHostToDevice,link->stream);CHKERRCUDA(err);
+  }
+#endif
 
   for (i=0; i<2; i++) {
     if (p[i].count) {
@@ -279,7 +302,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFUnpackAndOpLeafData(PetscSF sf,PetscSF
     }
   }
 #if defined(PETSC_HAVE_CUDA)
-  if (link->leafmtype == PETSC_MEMTYPE_DEVICE && (p[0].count || p[1].count)) {cudaError_t err = cudaStreamSynchronize(link->stream);CHKERRCUDA(err);}
+  if (link->leafmtype == PETSC_MEMTYPE_DEVICE && p[1].count) {cudaError_t err = cudaStreamSynchronize(link->stream);CHKERRCUDA(err);}
 #endif
   PetscFunctionReturn(0);
 }
@@ -302,13 +325,19 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFFetchAndOpRootData(PetscSF sf,PetscSFP
     p[0].buf    = link->selfbuf[link->rootmtype]; p[1].buf    = link->rootbuf[link->rootmtype];
     p[0].atomic = bas->selfrootdups;              p[1].atomic = bas->remoterootdups;
   } else {
-    p[0].count  = sf->nroots;
-    p[0].idx    = NULL;
-    p[0].opt    = NULL;
-    p[0].buf    = link->rootbuf[link->rootmtype];
-    p[0].atomic = PETSC_FALSE;
-    p[1].count  = 0;
+    p[0].count  = 0;
+    p[1].count  = sf->nroots;
+    p[1].idx    = NULL;
+    p[1].opt    = NULL;
+    p[1].buf    = link->rootbuf[link->rootmtype];
+    p[1].atomic = PETSC_FALSE;
   }
+
+#if defined(PETSC_HAVE_CUDA)
+  if (!use_gpu_aware_mpi && link->rootmtype == PETSC_MEMTYPE_DEVICE && p[1].count) {
+    cudaError_t err = cudaMemcpyAsync(link->rootbuf[PETSC_MEMTYPE_DEVICE],link->rootbuf[PETSC_MEMTYPE_HOST],link->rootbuflen*link->unitbytes,cudaMemcpyHostToDevice,link->stream);CHKERRCUDA(err);
+  }
+#endif
 
   for (i=0; i<2; i++) {
     if (p[i].count) {
@@ -317,7 +346,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFFetchAndOpRootData(PetscSF sf,PetscSFP
     }
   }
 #if defined(PETSC_HAVE_CUDA)
-  if (link->rootmtype == PETSC_MEMTYPE_DEVICE && (p[0].count || p[1].count)) {cudaError_t err = cudaStreamSynchronize(link->stream);CHKERRCUDA(err);}
+  if (link->rootmtype == PETSC_MEMTYPE_DEVICE && p[1].count) {cudaError_t err = cudaStreamSynchronize(link->stream);CHKERRCUDA(err);}
 #endif
   PetscFunctionReturn(0);
 }
@@ -367,10 +396,18 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFPackDestroyOptimizations_Basic(PetscSF
 PETSC_STATIC_INLINE PetscErrorCode PetscSFPackWaitall_Basic(PetscSFPack link,PetscSFDirection direction)
 {
   PetscErrorCode ierr;
+  PetscMemType   rootmtype,leafmtype;
 
   PetscFunctionBegin;
-  ierr = MPI_Waitall(link->nrootreqs,link->rootreqs[direction][link->rootmtype],MPI_STATUSES_IGNORE);CHKERRQ(ierr);
-  ierr = MPI_Waitall(link->nleafreqs,link->leafreqs[direction][link->leafmtype],MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+  if (use_gpu_aware_mpi) {
+    rootmtype = link->rootmtype;
+    leafmtype = link->leafmtype;
+  } else {
+    rootmtype = PETSC_MEMTYPE_HOST;
+    leafmtype = PETSC_MEMTYPE_HOST;
+  }
+  ierr = MPI_Waitall(link->nrootreqs,link->rootreqs[direction][rootmtype],MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+  ierr = MPI_Waitall(link->nleafreqs,link->leafreqs[direction][leafmtype],MPI_STATUSES_IGNORE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

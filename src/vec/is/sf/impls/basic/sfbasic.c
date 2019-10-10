@@ -17,9 +17,17 @@ static PetscErrorCode PetscSFPackGetReqs_Basic(PetscSF sf,PetscSFPack link,Petsc
   PetscMPIInt    n;
   MPI_Comm       comm = PetscObjectComm((PetscObject)sf);
   MPI_Datatype   unit = link->unit;
-  PetscMemType   rootmtype = link->rootmtype,leafmtype = link->leafmtype;
+  PetscMemType   rootmtype,leafmtype;
 
   PetscFunctionBegin;
+  if (use_gpu_aware_mpi) {
+    rootmtype = link->rootmtype;
+    leafmtype = link->leafmtype;
+  } else {
+    rootmtype = PETSC_MEMTYPE_HOST;
+    leafmtype = PETSC_MEMTYPE_HOST;
+  }
+
   if (rootreqs && !link->rootreqsinited[direction][rootmtype]) {
     ierr = PetscSFGetRootInfo_Basic(sf,&nrootranks,&ndrootranks,NULL,&rootoffset,NULL);CHKERRQ(ierr);
     if (direction == PETSCSF_LEAF2ROOT_REDUCE) {
@@ -110,7 +118,14 @@ found:
   link->rootmtype = rootmtype;
   link->leafmtype = leafmtype;
 #if defined(PETSC_HAVE_CUDA)
-  if (rootmtype == PETSC_MEMTYPE_DEVICE || leafmtype == PETSC_MEMTYPE_DEVICE) {ierr = PetscSFPackSetUp_Device(sf,link,unit);CHKERRQ(ierr);}
+  ierr = PetscSFPackSetUp_Device(sf,link,unit);CHKERRQ(ierr);
+  if (!use_gpu_aware_mpi) {
+    /* If not using GPU aware MPI, we always need buffers on host. In case root/leafdata is on device, we copy root/leafdata to/from
+       these buffers for MPI. We only need buffers for remote neighbors since self-to-self communication is not done via MPI.
+     */
+    if (!link->rootbuf[PETSC_MEMTYPE_HOST]) {ierr = PetscMallocWithMemType(PETSC_MEMTYPE_HOST,link->rootbuflen*link->unitbytes,(void**)&link->rootbuf[PETSC_MEMTYPE_HOST]);CHKERRQ(ierr);}
+    if (!link->leafbuf[PETSC_MEMTYPE_HOST]) {ierr = PetscMallocWithMemType(PETSC_MEMTYPE_HOST,link->leafbuflen*link->unitbytes,(void**)&link->leafbuf[PETSC_MEMTYPE_HOST]);CHKERRQ(ierr);}
+  }
 #endif
   if (!link->rootbuf[rootmtype]) {ierr = PetscMallocWithMemType(rootmtype,link->rootbuflen*link->unitbytes,(void**)&link->rootbuf[rootmtype]);CHKERRQ(ierr);}
   if (!link->leafbuf[leafmtype]) {ierr = PetscMallocWithMemType(leafmtype,link->leafbuflen*link->unitbytes,(void**)&link->leafbuf[leafmtype]);CHKERRQ(ierr);}

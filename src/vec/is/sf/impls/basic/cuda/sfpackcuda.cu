@@ -677,7 +677,7 @@ PetscErrorCode PetscSFPackSetUp_Device(PetscSF sf,PetscSFPack link,MPI_Datatype 
 #endif
 
   PetscFunctionBegin;
-  if (link->deviceinited) PetscFunctionReturn(0);
+  if ((link->rootmtype == PETSC_MEMTYPE_HOST && link->leafmtype == PETSC_MEMTYPE_HOST) || link->deviceinited) PetscFunctionReturn(0);
   ierr = MPIPetsc_Type_compare_contig(unit,MPI_SIGNED_CHAR,  &nSignedChar);CHKERRQ(ierr);
   ierr = MPIPetsc_Type_compare_contig(unit,MPI_UNSIGNED_CHAR,&nUnsignedChar);CHKERRQ(ierr);
   /* MPI_CHAR is treated below as a dumb type that does not support reduction according to MPI standard */
