@@ -24,7 +24,8 @@ PETSC_EXTERN PetscLogEvent PETSCSF_DistSect;
 PETSC_EXTERN PetscLogEvent PETSCSF_SectSF;
 PETSC_EXTERN PetscLogEvent PETSCSF_RemoteOff;
 
-typedef enum {PETSC_MEMTYPE_HOST=0, PETSC_MEMTYPE_DEVICE} PetscMemType;
+typedef enum {PETSCSF_LEAF2ROOT_REDUCE=0, PETSCSF_ROOT2LEAF_BCAST=1} PetscSFDirection;
+typedef enum {PETSC_MEMTYPE_HOST=0, PETSC_MEMTYPE_DEVICE=1} PetscMemType;
 
 struct _PetscSFOps {
   PetscErrorCode (*Reset)(PetscSF);

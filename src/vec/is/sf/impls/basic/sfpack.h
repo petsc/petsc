@@ -152,6 +152,7 @@ struct _n_PetscSFPack {
 PETSC_INTERN PetscErrorCode PetscSFPackGetInUse(PetscSF,MPI_Datatype,const void*,const void*,PetscCopyMode,PetscSFPack*);
 PETSC_INTERN PetscErrorCode PetscSFPackReclaim(PetscSF,PetscSFPack*);
 PETSC_INTERN PetscErrorCode PetscSFPackDestroyAvailable(PetscSFPack*);
+
 PETSC_STATIC_INLINE PetscErrorCode PetscSFPackGetPack(PetscSFPack link,PetscMemType mtype,PetscErrorCode (**Pack)(PetscInt,const PetscInt*,PetscSFPack,PetscSFPackOpt,const void*,void*))
 {
   PetscFunctionBegin;
@@ -160,12 +161,31 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFPackGetPack(PetscSFPack link,PetscMemT
 #if defined(PETSC_HAVE_CUDA)
   else if (mtype == PETSC_MEMTYPE_DEVICE) *Pack = link->d_Pack;
 #endif
-  else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong PetscMemType %D",mtype);
+  else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong PetscMemType %d",(int)mtype);
   PetscFunctionReturn(0);
 }
 PETSC_INTERN PetscErrorCode PetscSFPackGetUnpackAndOp(PetscSFPack,PetscMemType,MPI_Op,PetscBool,PetscErrorCode (**UnpackAndOp)(PetscInt,const PetscInt*,PetscSFPack,PetscSFPackOpt,void*,const void*));
 PETSC_INTERN PetscErrorCode PetscSFPackGetFetchAndOp (PetscSFPack,PetscMemType,MPI_Op,PetscBool,PetscErrorCode (**FetchAndOp) (PetscInt,const PetscInt*,PetscSFPack,PetscSFPackOpt,void*,void*));
 PETSC_INTERN PetscErrorCode PetscSFPackSetErrorOnUnsupportedOverlap(PetscSF,MPI_Datatype,const void*,const void*);
+
+PETSC_STATIC_INLINE PetscErrorCode PetscSFPackWaitall(PetscSFPack link,PetscSFDirection direction)
+{
+  PetscErrorCode ierr;
+  PetscMemType   rootmtype,leafmtype;
+
+  PetscFunctionBegin;
+  if (use_gpu_aware_mpi) {
+    rootmtype = link->rootmtype;
+    leafmtype = link->leafmtype;
+  } else {
+    rootmtype = PETSC_MEMTYPE_HOST;
+    leafmtype = PETSC_MEMTYPE_HOST;
+  }
+  ierr = MPI_Waitall(link->nrootreqs,link->rootreqs[direction][rootmtype],MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+  ierr = MPI_Waitall(link->nleafreqs,link->leafreqs[direction][leafmtype],MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 PETSC_INTERN PetscErrorCode PetscSFPackSetUp_Host(PetscSF,PetscSFPack,MPI_Datatype);
 #if defined(PETSC_HAVE_CUDA)
 PETSC_INTERN PetscErrorCode PetscSFPackSetUp_Device(PetscSF,PetscSFPack,MPI_Datatype);

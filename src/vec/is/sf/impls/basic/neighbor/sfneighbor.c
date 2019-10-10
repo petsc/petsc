@@ -182,7 +182,7 @@ static PetscErrorCode PetscSFFetchAndOpEnd_Neighbor(PetscSF sf,MPI_Datatype unit
 
   PetscFunctionBegin;
   ierr = PetscSFPackGetInUse(sf,unit,rootdata,leafdata,PETSC_OWN_POINTER,&link);CHKERRQ(ierr);
-  ierr = PetscSFPackWaitall_Basic(link,PETSCSF_LEAF2ROOT_REDUCE);CHKERRQ(ierr);
+  ierr = PetscSFPackWaitall(link,PETSCSF_LEAF2ROOT_REDUCE);CHKERRQ(ierr);
   ierr = PetscSFGetRootIndicesWithMemType_Basic(sf,rootmtype,&rootloc);CHKERRQ(ierr);
   ierr = PetscSFGetLeafIndicesWithMemType_Basic(sf,leafmtype,&leafloc);CHKERRQ(ierr);
   /* Process local fetch-and-op */

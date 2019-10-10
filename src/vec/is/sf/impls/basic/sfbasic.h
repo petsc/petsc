@@ -3,8 +3,6 @@
 
 #include <../src/vec/is/sf/impls/basic/sfpack.h>
 
-typedef enum {PETSCSF_LEAF2ROOT_REDUCE=0, PETSCSF_ROOT2LEAF_BCAST=1} PetscSFDirection;
-
 #define SFBASICHEADER \
   PetscMPIInt      niranks;         /* Number of incoming ranks (ranks accessing my roots) */                                      \
   PetscMPIInt      ndiranks;        /* Number of incoming ranks (ranks accessing my roots) in distinguished set */                 \
@@ -390,24 +388,6 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFPackDestroyOptimizations_Basic(PetscSF
   bas->selfrootdups   = PETSC_TRUE; /* The default is assuming there are dups so that atomics are used. */
   bas->remoterootdups = PETSC_TRUE;
 #endif
-  PetscFunctionReturn(0);
-}
-
-PETSC_STATIC_INLINE PetscErrorCode PetscSFPackWaitall_Basic(PetscSFPack link,PetscSFDirection direction)
-{
-  PetscErrorCode ierr;
-  PetscMemType   rootmtype,leafmtype;
-
-  PetscFunctionBegin;
-  if (use_gpu_aware_mpi) {
-    rootmtype = link->rootmtype;
-    leafmtype = link->leafmtype;
-  } else {
-    rootmtype = PETSC_MEMTYPE_HOST;
-    leafmtype = PETSC_MEMTYPE_HOST;
-  }
-  ierr = MPI_Waitall(link->nrootreqs,link->rootreqs[direction][rootmtype],MPI_STATUSES_IGNORE);CHKERRQ(ierr);
-  ierr = MPI_Waitall(link->nleafreqs,link->leafreqs[direction][leafmtype],MPI_STATUSES_IGNORE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
