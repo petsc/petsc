@@ -1,0 +1,7 @@
+Using a 12 x 7 x 11 mesh
+dx: 0.0833333
+dt: 0.001
+P-wave velocity: 1.73205
+V_p dt / dx: 0.0207846
+Timestep 1, t = 0.001
+Timestep 2, t = 0.002
