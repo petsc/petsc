@@ -42,7 +42,7 @@ static void PetscSignalHandler_Private(int sig)
     if (sh->classid != SIGNAL_CLASSID) SETERRABORT(PETSC_COMM_WORLD,PETSC_ERR_COR,"Signal object has been corrupted");
     ierr = (*sh->handler)(sig,sh->ctx);
   }
-  if (ierr) MPI_Abort(PETSC_COMM_WORLD,0);
+  if (ierr) PETSCABORT(PETSC_COMM_WORLD,PETSC_ERR_COR);
 }
 
 /*@
@@ -149,7 +149,7 @@ PetscErrorCode  PetscSignalHandlerDefault(int sig,void *ptr)
   (*PetscErrorPrintf)("to get more information on the crash.\n");
 #endif
   ierr =  PetscError(PETSC_COMM_SELF,0,"User provided function"," unknown file",PETSC_ERR_SIG,PETSC_ERROR_INITIAL,NULL);
-  MPI_Abort(PETSC_COMM_WORLD,(int)ierr);
+  PETSCABORT(PETSC_COMM_WORLD,(int)ierr);
   PetscFunctionReturn(0);
 }
 

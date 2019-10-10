@@ -3260,7 +3260,6 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   DM              cdm = dm;
   const PetscInt  dim = user->dim;
   PetscFE         fe[2];
-  PetscQuadrature q;
   MPI_Comm        comm;
   PetscErrorCode  ierr;
 
@@ -3269,9 +3268,8 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
   ierr = PetscFECreateDefault(comm, dim, dim, user->simplex, "vel_", PETSC_DEFAULT, &fe[0]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[0], "velocity");CHKERRQ(ierr);
-  ierr = PetscFEGetQuadrature(fe[0], &q);CHKERRQ(ierr);
   ierr = PetscFECreateDefault(comm, dim, 1, user->simplex, "pres_", PETSC_DEFAULT, &fe[1]);CHKERRQ(ierr);
-  ierr = PetscFESetQuadrature(fe[1], q);CHKERRQ(ierr);
+  ierr = PetscFECopyQuadrature(fe[0], fe[1]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[1], "pressure");CHKERRQ(ierr);
   /* Set discretization and boundary conditions for each mesh */
   ierr = DMSetField(dm, 0, NULL, (PetscObject) fe[0]);CHKERRQ(ierr);
@@ -3421,17 +3419,17 @@ int main(int argc, char **argv)
     suffix: 0
     requires: triangle
     filter: sed  -e "s/SNES iterations *= *[123]/SNES iterations=4/g" -e "s/solver iterations *= *[123]/solver iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
-    args: -dm_plex_separate_marker -vel_petscspace_degree 2 -pres_petscspace_degree 1 -pc_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition full -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type svd -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -dm_view -dmsnes_check -show_solution
+    args: -dm_plex_separate_marker -vel_petscspace_degree 2 -pres_petscspace_degree 1 -pc_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition full -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type svd -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -dm_view -dmsnes_check .001 -show_solution
   test:
     suffix: 1
     requires: triangle
     filter: sed  -e "s/SNES iterations *= *[123]/SNES iterations=4/g" -e "s/solver iterations *= *[123]/solver iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
-    args: -dm_plex_separate_marker -dm_refine 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -pc_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition full -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type svd -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -dm_view -dmsnes_check -show_solution
+    args: -dm_plex_separate_marker -dm_refine 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -pc_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition full -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type svd -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -dm_view -dmsnes_check .001 -show_solution
   test:
     suffix: 2
     requires: triangle
     filter: sed  -e "s/SNES iterations *= *[123]/SNES iterations=4/g" -e "s/solver iterations *= *[123]/solver iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
-    args: -dm_plex_separate_marker -dm_refine 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -pc_use_amat -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition a11 -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-9 -fieldsplit_pressure_pc_type lu -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -dm_view -dmsnes_check -show_solution
+    args: -dm_plex_separate_marker -dm_refine 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -pc_use_amat -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition a11 -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-9 -fieldsplit_pressure_pc_type lu -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -dm_view -dmsnes_check .001 -show_solution
   # 2D serial discretization tests
   test:
     suffix: p2p1
@@ -3473,54 +3471,106 @@ int main(int argc, char **argv)
     requires: !single
     filter: sed  -e "s/SNES iterations *= *[123]/SNES iterations=4/g" -e "s/solver iterations *= *[123]/solver iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
     args: -dm_plex_separate_marker -simplex 0 -dm_refine 2 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -pres_petscspace_poly_tensor 0 -pres_petscdualspace_lagrange_continuity 0 -pc_fieldsplit_diag_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition a11 -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type lu -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view
-  test:
+
+  # FETI-DP tests
+  testset:
+    output_file: output/ex69_q2p1fetidp.out
     suffix: q2p1fetidp
     requires: !single
     nsize: 5
-    filter: grep -v "variant HERMITIAN" | grep -v "SNES iterations" | grep -v "solver iterations" | grep -v "evaluations="
+    filter: grep -v "variant HERMITIAN" | grep -v "SNES iterations" | grep -v "solver iterations" | grep -v "evaluations=" | sed  -e "s/type: seqaijviennacl/type: seqaij/g" -e "s/type: seqaijcusparse/type: seqaij/g"
     args: -petscpartitioner_type simple -dm_plex_separate_marker -simplex 0 -dm_refine 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -pres_petscspace_poly_tensor 0 -pres_petscdualspace_lagrange_continuity 0 -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view -dm_mat_type is -ksp_type fetidp -ksp_fetidp_saddlepoint -ksp_fetidp_saddlepoint_flip -fetidp_ksp_type cg -fetidp_ksp_norm_type natural -fetidp_bddc_pc_bddc_detect_disconnected -fetidp_bddc_pc_bddc_symmetric -fetidp_bddc_pc_bddc_vertex_size 3 -fetidp_bddc_pc_bddc_graph_maxcount 2 -fetidp_bddc_pc_bddc_dirichlet_pc_type svd -fetidp_bddc_pc_bddc_neumann_pc_type svd -fetidp_bddc_pc_bddc_coarse_redundant_pc_type svd
-  test:
+    test:
+      suffix: aij
+      args: -matis_localmat_type aij
+    test:
+      requires: viennacl
+      suffix: aijviennacl
+      args: -matis_localmat_type aijviennacl
+    test:
+      requires: cuda
+      suffix: aijcusparse
+      args: -matis_localmat_type aijcusparse
+
+  testset:
     suffix: q2p1fetidp_deluxe
+    output_file: output/ex69_q2p1fetidp_deluxe.out
     requires: mumps double
     nsize: 5
-    filter: grep -v "variant HERMITIAN" | grep -v "SNES iterations" | grep -v "solver iterations" | grep -v "evaluations="
-    args: -petscpartitioner_type simple -dm_plex_separate_marker -simplex 0 -dm_refine 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -pres_petscspace_poly_tensor 0 -pres_petscdualspace_lagrange_continuity 0 -snes_error_if_not_converged -ksp_error_if_not_converged -dm_view -dm_mat_type is -ksp_type fetidp -ksp_fetidp_saddlepoint -ksp_fetidp_saddlepoint_flip -fetidp_ksp_type cg -fetidp_ksp_norm_type natural -fetidp_bddc_pc_bddc_detect_disconnected -fetidp_bddc_pc_bddc_symmetric -fetidp_bddc_pc_bddc_vertex_size 3 -fetidp_bddc_pc_bddc_graph_maxcount 2 -fetidp_bddc_pc_bddc_use_deluxe_scaling -fetidp_bddc_pc_bddc_deluxe_singlemat -fetidp_bddc_pc_bddc_deluxe_zerorows -fetidp_bddc_sub_schurs_mat_mumps_icntl_14 500 -fetidp_bddc_pc_bddc_coarse_redundant_pc_type svd
-  test:
+    filter: grep -v "variant HERMITIAN" | grep -v "SNES iterations" | grep -v "solver iterations" | grep -v "evaluations=" | sed  -e "s/type: seqaijviennacl/type: seqaij/g" -e "s/type: seqaijcusparse/type: seqaij/g"
+    args: -petscpartitioner_type simple -dm_plex_separate_marker -simplex 0 -dm_refine 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -pres_petscspace_poly_tensor 0 -pres_petscdualspace_lagrange_continuity 0 -snes_error_if_not_converged -ksp_error_if_not_converged -dm_view -dm_mat_type is -ksp_type fetidp -ksp_fetidp_saddlepoint -ksp_fetidp_saddlepoint_flip -fetidp_ksp_type cg -fetidp_ksp_norm_type natural -fetidp_bddc_pc_bddc_detect_disconnected -fetidp_bddc_pc_bddc_symmetric -fetidp_bddc_pc_bddc_vertex_size 3 -fetidp_bddc_pc_bddc_graph_maxcount 2 -fetidp_bddc_pc_bddc_use_deluxe_scaling -fetidp_bddc_pc_bddc_deluxe_singlemat -fetidp_bddc_pc_bddc_deluxe_zerorows -fetidp_bddc_sub_schurs_mat_solver_type mumps -fetidp_bddc_sub_schurs_mat_mumps_icntl_14 500 -fetidp_bddc_pc_bddc_coarse_redundant_pc_type svd
+    test:
+      suffix: aij
+      args: -matis_localmat_type aij
+    test:
+      suffix: aij_seqdense
+      args: -matis_localmat_type aij -fetidp_bddc_sub_schurs_schur_mat_type seqdense
+    test:
+      requires: viennacl
+      suffix: aijviennacl
+      args: -matis_localmat_type aijviennacl
+    test:
+      requires: cuda
+      suffix: aijcusparse
+      args: -matis_localmat_type aijcusparse
+
+  testset:
     suffix: q2p1fetidp_deluxe_adaptive
+    output_file: output/ex69_q2p1fetidp_deluxe_adaptive.out
     requires: mumps double
     nsize: 5
-    filter: grep -v "variant HERMITIAN" | grep -v "SNES iterations" | grep -v "solver iterations" | grep -v "evaluations="
-    args: -petscpartitioner_type simple -dm_plex_separate_marker -simplex 0 -dm_refine 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -pres_petscspace_poly_tensor 0 -pres_petscdualspace_lagrange_continuity 0 -snes_error_if_not_converged -ksp_error_if_not_converged -dm_view -dm_mat_type is -ksp_type fetidp -ksp_fetidp_saddlepoint -ksp_fetidp_saddlepoint_flip -fetidp_ksp_type cg -fetidp_ksp_norm_type natural -fetidp_bddc_pc_bddc_detect_disconnected -fetidp_bddc_pc_bddc_symmetric -fetidp_bddc_pc_bddc_vertex_size 3 -fetidp_bddc_pc_bddc_graph_maxcount 2 -fetidp_bddc_pc_bddc_use_deluxe_scaling -fetidp_bddc_pc_bddc_deluxe_singlemat -fetidp_bddc_pc_bddc_adaptive_userdefined -fetidp_bddc_pc_bddc_adaptive_threshold 1.3 -fetidp_bddc_sub_schurs_mat_mumps_icntl_14 500 -fetidp_bddc_pc_bddc_coarse_redundant_pc_type svd
+    filter: grep -v "variant HERMITIAN" | grep -v "SNES iterations" | grep -v "solver iterations" | grep -v "evaluations=" | sed  -e "s/type: seqaijviennacl/type: seqaij/g" -e "s/type: seqaijcusparse/type: seqaij/g"
+    args: -petscpartitioner_type simple -dm_plex_separate_marker -simplex 0 -dm_refine 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -pres_petscspace_poly_tensor 0 -pres_petscdualspace_lagrange_continuity 0 -snes_error_if_not_converged -ksp_error_if_not_converged -dm_view -dm_mat_type is -ksp_type fetidp -ksp_fetidp_saddlepoint -ksp_fetidp_saddlepoint_flip -fetidp_ksp_type cg -fetidp_ksp_norm_type natural -fetidp_bddc_pc_bddc_detect_disconnected -fetidp_bddc_pc_bddc_symmetric -fetidp_bddc_pc_bddc_vertex_size 3 -fetidp_bddc_pc_bddc_graph_maxcount 2 -fetidp_bddc_pc_bddc_use_deluxe_scaling -fetidp_bddc_pc_bddc_deluxe_singlemat -fetidp_bddc_pc_bddc_adaptive_userdefined -fetidp_bddc_sub_schurs_mat_solver_type mumps -fetidp_bddc_pc_bddc_adaptive_threshold 1.3 -fetidp_bddc_sub_schurs_mat_mumps_icntl_14 500 -fetidp_bddc_pc_bddc_coarse_redundant_pc_type svd
+    test:
+      suffix: aij
+      args: -matis_localmat_type aij
+    test:
+      suffix: aij_seqdense
+      args: -matis_localmat_type aij -fetidp_bddc_sub_schurs_schur_mat_type seqdense
+    test:
+      requires: viennacl
+      suffix: aijviennacl
+      args: -matis_localmat_type aijviennacl
+    test:
+      requires: cuda
+      suffix: aijcusparse
+      args: -matis_localmat_type aijcusparse
+
   test:
     suffix: p2p1fetidp
     requires: triangle
     nsize: 5
     filter: grep -v "variant HERMITIAN" | grep -v "SNES iterations" | grep -v "solver iterations" | grep -v "evaluations="
     args: -petscpartitioner_type simple -dm_plex_separate_marker -dm_refine 2 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view -dm_mat_type is -ksp_type fetidp -ksp_fetidp_saddlepoint -ksp_fetidp_saddlepoint_flip -fetidp_ksp_type cg -fetidp_ksp_norm_type natural -fetidp_bddc_pc_bddc_detect_disconnected -fetidp_bddc_pc_bddc_symmetric -fetidp_bddc_pc_bddc_vertex_size 3 -fetidp_bddc_pc_bddc_graph_maxcount 2 -fetidp_bddc_pc_bddc_dirichlet_pc_type svd -fetidp_bddc_pc_bddc_neumann_pc_type svd -fetidp_bddc_pc_bddc_coarse_redundant_pc_type cholesky -fetidp_pc_fieldsplit_schur_fact_type diag -fetidp_fieldsplit_p_pc_type jacobi -fetidp_fieldsplit_lag_ksp_type preonly -fetidp_fieldsplit_p_ksp_type preonly
+
   test:
     suffix: p2p1fetidp_allp
     requires: triangle
     nsize: 5
     filter: grep -v "variant HERMITIAN" | grep -v "SNES iterations" | grep -v "solver iterations" | grep -v "evaluations="
     args: -petscpartitioner_type simple -dm_plex_separate_marker -dm_refine 2 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view -dm_mat_type is -ksp_type fetidp -ksp_fetidp_saddlepoint -ksp_fetidp_saddlepoint_flip -fetidp_ksp_type cg -fetidp_ksp_norm_type natural -fetidp_bddc_pc_bddc_detect_disconnected -fetidp_bddc_pc_bddc_symmetric -fetidp_bddc_pc_bddc_vertex_size 3 -fetidp_bddc_pc_bddc_graph_maxcount 2 -fetidp_bddc_pc_bddc_dirichlet_pc_type svd -fetidp_bddc_pc_bddc_neumann_pc_type svd -fetidp_bddc_pc_bddc_coarse_redundant_pc_type cholesky -fetidp_pc_fieldsplit_schur_fact_type diag -fetidp_fieldsplit_p_pc_type jacobi -fetidp_fieldsplit_lag_ksp_type preonly -fetidp_fieldsplit_p_ksp_type preonly -ksp_fetidp_pressure_all
+
   test:
     suffix: p2p1fetidp_discharm
     requires: triangle
     nsize: 5
     filter: grep -v "variant HERMITIAN" | grep -v "SNES iterations" | grep -v "solver iterations" | grep -v "evaluations="
     args: -petscpartitioner_type simple -dm_plex_separate_marker -dm_refine 2 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view -dm_mat_type is -ksp_type fetidp -ksp_fetidp_saddlepoint -ksp_fetidp_saddlepoint_flip -fetidp_ksp_type cg -fetidp_ksp_norm_type natural -fetidp_bddc_pc_bddc_detect_disconnected -fetidp_bddc_pc_bddc_symmetric -fetidp_bddc_pc_bddc_vertex_size 3 -fetidp_bddc_pc_bddc_graph_maxcount 2 -fetidp_bddc_pc_bddc_dirichlet_pc_type none -fetidp_bddc_pc_bddc_neumann_pc_type svd -fetidp_bddc_pc_bddc_coarse_redundant_pc_type cholesky -fetidp_pc_fieldsplit_schur_fact_type diag -fetidp_fieldsplit_p_pc_type jacobi -fetidp_fieldsplit_lag_ksp_type preonly -fetidp_fieldsplit_p_ksp_type preonly -fetidp_pc_discrete_harmonic -fetidp_harmonic_pc_type cholesky
+
   test:
     suffix: p2p1fetidp_lumped
     requires: triangle
     nsize: 5
     filter: grep -v "variant HERMITIAN" | grep -v "SNES iterations" | grep -v "solver iterations" | grep -v "evaluations="
     args: -petscpartitioner_type simple -dm_plex_separate_marker -dm_refine 2 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view -dm_mat_type is -ksp_type fetidp -ksp_fetidp_saddlepoint -ksp_fetidp_saddlepoint_flip -fetidp_ksp_type cg -fetidp_ksp_norm_type natural -fetidp_bddc_pc_bddc_detect_disconnected -fetidp_bddc_pc_bddc_symmetric -fetidp_bddc_pc_bddc_vertex_size 3 -fetidp_bddc_pc_bddc_graph_maxcount 2 -fetidp_bddc_pc_bddc_dirichlet_pc_type none -fetidp_bddc_pc_bddc_neumann_pc_type svd -fetidp_bddc_pc_bddc_coarse_redundant_pc_type cholesky -fetidp_pc_fieldsplit_schur_fact_type diag -fetidp_fieldsplit_p_pc_type jacobi -fetidp_fieldsplit_lag_ksp_type preonly -fetidp_fieldsplit_p_ksp_type preonly -fetidp_pc_lumped
+
   test:
     suffix: p2p1fetidp_deluxe
     requires: triangle mumps
     nsize: 5
     filter: grep -v "variant HERMITIAN" | grep -v "SNES iterations" | grep -v "solver iterations" | grep -v "evaluations="
     args: -petscpartitioner_type simple -dm_plex_separate_marker -dm_refine 2 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -snes_error_if_not_converged -ksp_error_if_not_converged -dm_view -dm_mat_type is -ksp_type fetidp -ksp_fetidp_saddlepoint -ksp_fetidp_saddlepoint_flip -fetidp_ksp_type cg -fetidp_ksp_norm_type natural -fetidp_bddc_pc_bddc_detect_disconnected -fetidp_bddc_pc_bddc_symmetric -fetidp_bddc_pc_bddc_vertex_size 3 -fetidp_bddc_pc_bddc_graph_maxcount 2 -fetidp_bddc_pc_bddc_coarse_redundant_pc_type cholesky -fetidp_pc_fieldsplit_schur_fact_type diag -fetidp_fieldsplit_p_pc_type jacobi -fetidp_fieldsplit_lag_ksp_type preonly -fetidp_fieldsplit_p_ksp_type preonly -fetidp_bddc_pc_bddc_use_deluxe_scaling -fetidp_bddc_pc_bddc_deluxe_singlemat -fetidp_bddc_sub_schurs_mat_mumps_icntl_14 500 -fetidp_bddc_sub_schurs_posdef 0
+
   test:
     suffix: p2p1fetidp_deluxe_discharm
     requires: triangle mumps

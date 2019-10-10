@@ -8,7 +8,7 @@
 PetscClassId  KSP_CLASSID;
 PetscClassId  DMKSP_CLASSID;
 PetscClassId  KSPGUESS_CLASSID;
-PetscLogEvent KSP_GMRESOrthogonalization, KSP_SetUp, KSP_Solve;
+PetscLogEvent KSP_GMRESOrthogonalization, KSP_SetUp, KSP_Solve, KSP_SolveTranspose;
 
 /*
    Contains the list of registered KSP routines

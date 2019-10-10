@@ -1,0 +1,669 @@
+#
+# stage-1 take only a few minutes and generally run on the cloud; they do not run the full test suite or external packages.
+#
+# stage-2 runs on MCS systems and may take 10 to 15 minutes. They run the full test suite but with limited mixture of external packages
+#
+# stage-3 runs on MCS systems and may take an hour or more. They run the full test suite and heavily test external packages, utilize valgrind etc
+#         (not yet implemented)
+#
+# The stage-(n) tests are only started if all of the stage-(n-1) tests run without error
+#   You can limit the testing by using the variable STAGE with value 1 or 2
+#
+# By default the test branch is merged to master before testing. (not yet implemented)
+#   You can limite this by using the variable MERGETOMASTER with value 0 (not yet implemented)
+#
+
+stages:
+  - stage-1
+  - stage-2
+  - stage-3
+variables:
+  GIT_STRATEGY: fetch
+  GIT_CLEAN_FLAGS: -ffdxq
+  PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
+  TIMEOUT: 600
+
+#
+# The most basic template that most tests will expand upon. In particular merge requests and branch pushes DO NOT trigger testing
+#
+
+.test:
+  only:
+    refs:
+#     Set with CI/CD Shedules - New Schedule
+      - schedules
+#     Set with CI/CD Pipelines - Run Pipeline
+      - web
+
+#
+#  This provides the basic order of operations and options template for cloud based stage 1 tests.
+#  Not all test-short need to follow this template but most will.
+#
+
+.stage-1:
+  extends: .test
+  stage: stage-1
+  image: jedbrown/mpich-ccache
+  before_script:
+    - date
+    - echo nproc=$(nproc)
+    - cat /proc/cpuinfo
+    - export CCACHE_COMPILERCHECK=content
+    - export CCACHE_DIR=$(pwd)/.ccache
+    - ccache --show-stats
+    - ccache --zero-stats
+    - echo CONFIG_OPTS=$(CONFIG_OPTS)
+  script:
+    - ${PYTHON} ./configure --with-debugging=0 COPTFLAGS='-O -march=native' CXXOPTFLAGS='-O -march=native' FOPTFLAGS='-O -march=native' ${CONFIG_OPTS}
+    - make CFLAGS=-Werror CXXFLAGS=-Werror
+    - make allgtests-tap search="${TEST_SEARCH}" TIMEOUT=${TIMEOUT}
+  after_script:
+    - date
+    - CCACHE_DIR=$(pwd)/.ccache ccache --show-stats
+  artifacts:
+    reports:
+      junit: arch-*/tests/testresults.xml
+  cache:
+    paths:
+      - .ccache/
+    key: "${CI_JOB_NAME}"
+
+#
+# The following tests run on the cloud as part of stage-1.
+#
+
+mpich-cxx-py3:
+  extends: .stage-1
+  variables:
+    PYTHON: python3
+    CONFIG_OPTS: --with-mpi-dir=/usr/local --with-clanguage=cxx --with-fc=0
+    TEST_SEARCH: snes_tutorials-ex48%
+
+uni-complex-float-int64:
+  extends: .stage-1
+  variables:
+    PYTHON: python3
+    CONFIG_OPTS: --with-mpi=0 --with-scalar-type=complex --with-precision=single --with-64-bit-indices
+    TEST_SEARCH: ts_tutorials-ex11_adv_2d_quad_%
+
+c89-mlib-static-py2:
+  extends: .stage-1
+  image: jedbrown/mpich-ccache:python2
+  variables:
+    PYTHON: python2
+    CONFIG_OPTS: --with-mpi-dir=/usr/local --with-single-library=0 --with-shared-libraries=0 CFLAGS=-std=c89
+    TEST_SEARCH: snes_tutorials-ex19%
+
+checksource:
+  extends: .test
+  image: jedbrown/mpich-ccache
+  stage: stage-1
+  script:
+    - python3 ./configure --with-mpi=0 --with-fc=0 --with-cxx=0
+    - make checkbadSource SHELL=bash
+    - make check_output SHELL=bash
+
+#
+# This provides the basic order of operations and options template for stage-2,3 tests.
+# Not all stage-2,3 need to follow this template, but most will.
+#
+.stage-23:
+  extends: .test
+  script:
+    - printf "PATH:$PATH\n"
+    - printf "PETSC_OPTIONS:$PETSC_OPTIONS\n"
+    - printf "./config/examples/${TEST_ARCH}.py\n"
+    - cat ./config/examples/${TEST_ARCH}.py
+    - ./config/examples/${TEST_ARCH}.py
+    - make CFLAGS=${MAKE_CFLAGS} CXXFLAGS=${MAKE_CXXFLAGS}
+    - make check
+    - make updatedatafiles
+    - make cleantest allgtests-tap TIMEOUT=${TIMEOUT}
+  artifacts:
+    reports:
+      junit: ${TEST_ARCH}/tests/testresults.xml
+  variables:
+    OPENBLAS_NUM_THREADS: 1
+
+.stage-2:
+  extends: .stage-23
+  stage: stage-2
+  only:
+    variables:
+      - $STAGE != "1"
+      - $STAGE != "3"
+
+.stage-3:
+  extends: .stage-23
+  stage: stage-3
+  only:
+    variables:
+      - $STAGE != "1"
+      - $STAGE != "2"
+
+#
+# The following provide templates for various OSes for pre/post info
+#
+
+.linux_test_noflags:
+  before_script:
+    - date
+    - hostname
+    - grep PRETTY_NAME /etc/os-release
+    - echo $(nproc)
+    - ccache --zero-stats
+  after_script:
+    - date
+    - cp configure.log ../configure.log-${CI_JOB_NAME}-${CI_PIPELINE_ID}-${CI_JOB_ID}
+    - ccache --show-stats
+
+.linux_test:
+  extends: .linux_test_noflags
+  variables:
+    MAKE_CFLAGS: -Werror
+    MAKE_CXXFLAGS: -Werror
+
+.freebsd_test:
+  variables:
+    MAKE_CFLAGS: -Werror
+    MAKE_CXXFLAGS: -Werror
+  before_script:
+    - date
+    - hostname
+    - freebsd-version
+    - echo $(sysctl -n hw.ncpu)
+    - ccache --zero-stats
+  after_script:
+    - date
+    - cp configure.log ../configure.log-${CI_JOB_NAME}-${CI_PIPELINE_ID}-${CI_JOB_ID}
+    - ccache --show-stats
+
+.osx_test:
+  variables:
+    MAKE_CFLAGS: -Werror
+    MAKE_CXXFLAGS: -Werror
+  before_script:
+    - date
+    - hostname
+    - sw_vers -productVersion
+    - echo $(sysctl -n hw.ncpu)
+    - ccache --zero-stats
+  after_script:
+    - date
+    - cp configure.log ../configure.log-${CI_JOB_NAME}-${CI_PIPELINE_ID}-${CI_JOB_ID}
+    - ccache --show-stats
+
+.opensolaris_test:
+  before_script:
+    - date
+    - hostname
+    - uname -a
+    - echo $(nproc)
+  after_script:
+    - date
+    - cp configure.log ../configure.log-${CI_JOB_NAME}-${CI_PIPELINE_ID}-${CI_JOB_ID}
+
+.mswin_test:
+  before_script:
+    - date
+    - hostname
+    - uname -a
+    - echo $(nproc)
+  after_script:
+    - date
+    - cp configure.log ../configure.log-${CI_JOB_NAME}-${CI_PIPELINE_ID}-${CI_JOB_ID}
+
+#
+# The following tests run as part of stage-2.
+#
+# The tags variable used in the tests below connects the particular test with the runners
+# listed on the left hand side of https://gitlab.com/petsc/petsc/-/settings/ci_cd.
+# For example the test linux-gcc-complex-opt  any runner that has the tag 'name:pj02'
+# (in a blue box beneath it)
+#
+
+linux-gcc-complex-opt:
+  extends:
+    - .stage-2
+    - .linux_test
+  tags:
+    - linux-dell
+  variables:
+    TEST_ARCH: arch-ci-linux-gcc-complex-opt
+
+linux-gcc-pkgs-opt:
+  extends:
+    - .stage-2
+    - .linux_test
+  tags:
+    - linux-dell
+  variables:
+    TEST_ARCH: arch-ci-linux-gcc-pkgs-opt
+
+linux-gcc-quad-64idx-dbg:
+  extends:
+    - .stage-2
+    - .linux_test
+  tags:
+    - linux-dell
+  variables:
+    TEST_ARCH: arch-ci-linux-gcc-quad-64idx-dbg
+
+linux-cuda-double:
+  extends:
+    - .stage-2
+    - .linux_test
+  tags:
+    - name:frog
+  variables:
+    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -cuda_initialize 0
+    TEST_ARCH: arch-ci-linux-cuda-double
+
+freebsd-c-single-opt:
+  extends:
+    - .stage-2
+    - .freebsd_test
+  tags:
+    - os:fbsd
+  variables:
+    TEST_ARCH: arch-ci-freebsd-c-single-opt
+
+freebsd-cxx-cmplx-64idx-dbg:
+  extends:
+    - .stage-2
+    - .freebsd_test
+  tags:
+    - name:petsc-fbsd
+  variables:
+    TEST_ARCH: arch-ci-freebsd-cxx-cmplx-64idx-dbg
+
+opensolaris-misc:
+  extends:
+    - .stage-3
+    - .opensolaris_test
+  tags:
+    - name:n-gage
+  variables:
+    TEST_ARCH: arch-ci-opensolaris-misc
+
+osx-cxx-pkgs-opt:
+  extends:
+    - .stage-3
+    - .osx_test
+  tags:
+    - os:osx
+  variables:
+    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -saws_port_auto_select -saws_port_auto_select_silent -vecscatter_mpi1 false -options_left false
+    TEST_ARCH: arch-ci-osx-cxx-pkgs-opt
+
+mswin-uni:
+  extends:
+    - .stage-2
+    - .mswin_test
+  tags:
+    - name:ps5-2
+  variables:
+    TEST_ARCH: arch-ci-mswin-uni
+
+#
+# The following tests run as part of stage-3.
+#
+
+mswin-intel-cxx-cmplx:
+  extends:
+    - .stage-3
+    - .mswin_test
+  tags:
+    - name:ps5
+  variables:
+    TEST_ARCH: arch-ci-mswin-intel-cxx-cmplx
+
+mswin-intel:
+  extends:
+    - .stage-3
+    - .mswin_test
+  tags:
+    - name:ps5
+  variables:
+    TEST_ARCH: arch-ci-mswin-intel
+
+arch-ci-mswin-opt-impi:
+  extends:
+    - .stage-3
+    - .mswin_test
+  tags:
+    - name:ps4
+  variables:
+    TEST_ARCH: arch-ci-mswin-opt-impi
+
+opensolaris-cmplx-pkgs-dbg:
+  extends:
+    - .stage-3
+    - .opensolaris_test
+  tags:
+    - name:n-gage
+  variables:
+    TEST_ARCH: arch-ci-opensolaris-cmplx-pkgs-dbg
+
+opensolaris-pkgs-opt:
+  extends:
+    - .stage-3
+    - .opensolaris_test
+  tags:
+    - name:n-gage
+  variables:
+    TEST_ARCH: arch-ci-opensolaris-pkgs-opt
+
+freebsd-pkgs-opt:
+  extends:
+    - .stage-3
+    - .freebsd_test
+  tags:
+    - os:fbsd
+  variables:
+    TEST_ARCH: arch-ci-freebsd-pkgs-opt
+
+freebsd-cxx-cmplx-pkgs-dbg:
+  extends:
+    - .stage-3
+    - .freebsd_test
+  tags:
+    - os:fbsd
+  variables:
+    TEST_ARCH: arch-ci-freebsd-cxx-cmplx-pkgs-dbg
+
+freebsd-cxx-pkgs-opt:
+  extends:
+    - .stage-3
+    - .freebsd_test
+  tags:
+    - os:fbsd
+  variables:
+    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -saws_port_auto_select -saws_port_auto_select_silent -vecscatter_mpi1 false -options_left false
+    TEST_ARCH: arch-ci-freebsd-cxx-pkgs-opt
+
+osx-cxx-cmplx-pkgs-dbg:
+  extends:
+    - .stage-3
+    - .osx_test
+  tags:
+    - os:osx
+  variables:
+    TEST_ARCH: arch-ci-osx-cxx-cmplx-pkgs-dbg
+
+osx-dbg:
+  extends:
+    - .stage-3
+    - .osx_test
+  tags:
+    - os:osx
+  variables:
+    TEST_ARCH: arch-ci-osx-dbg
+
+osx-xsdk-opt:
+  extends:
+    - .stage-3
+    - .osx_test
+  tags:
+    - os:osx
+  variables:
+    TEST_ARCH: arch-ci-osx-xsdk-opt
+
+linux-cmplx-gcov:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - mcs-nfs
+  variables:
+    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -vecscatter_mpi1 false -options_left false
+    TEST_ARCH: arch-ci-linux-cmplx-gcov
+
+linux-cmplx-single:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - name:si
+  variables:
+    TEST_ARCH: arch-ci-linux-cmplx-single
+
+linux-without-fc:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - name:si
+  variables:
+    TEST_ARCH: arch-ci-linux-without-fc
+
+linux-clang-avx:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - name:isdp001
+  variables:
+    TEST_ARCH: arch-ci-linux-clang-avx
+
+linux-gcc-cxx-avx2:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - name:isdp001
+  variables:
+    TEST_ARCH: arch-ci-linux-gcc-cxx-avx2
+
+linux-knl:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - name:isdp001
+  variables:
+    TEST_ARCH: arch-ci-linux-knl
+
+linux-c-exodus-dbg:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - name:frog
+  variables:
+    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -cuda_initialize 0
+    TEST_ARCH: arch-ci-linux-c-exodus-dbg
+
+linux-cuda-single:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - name:frog
+  variables:
+    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -cuda_initialize 0
+    TEST_ARCH: arch-ci-linux-cuda-single
+
+linux-viennacl:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - name:frog
+  variables:
+    TEST_ARCH: arch-ci-linux-viennacl
+
+linux-opt-misc:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - name:compute004
+  variables:
+    TEST_ARCH: arch-ci-linux-opt-misc
+
+linux-pkgs-cxx-mlib:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - name:pj02
+  variables:
+    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -saws_port_auto_select -saws_port_auto_select_silent
+    TEST_ARCH: arch-ci-linux-pkgs-cxx-mlib
+
+linux-cxx-cmplx-pkgs-64idx:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - name:pj01
+  variables:
+    TEST_ARCH: arch-ci-linux-cxx-cmplx-pkgs-64idx
+
+linux-pkgs-dbg-ftn-interfaces:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - name:pj02
+  variables:
+    TEST_ARCH: arch-ci-linux-pkgs-dbg-ftn-interfaces
+
+linux-analyzer:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - mcs-nfs
+  variables:
+    TEST_ARCH: arch-ci-linux-analyzer
+
+linux-gcc-ifc-cmplx:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - mcs-nfs
+  variables:
+    TEST_ARCH: arch-ci-linux-gcc-ifc-cmplx
+
+linux-gcov:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - mcs-nfs
+  variables:
+    TEST_ARCH: arch-ci-linux-gcov
+
+linux-ILP64:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - name:compute004
+  variables:
+    TEST_ARCH: arch-ci-linux-ILP64
+
+linux-matlab-ilp64-gcov:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - mcs-nfs
+  variables:
+    TEST_ARCH: arch-ci-linux-matlab-ilp64-gcov
+
+linux-opt-cxx-quad:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - mcs-nfs
+  variables:
+    TEST_ARCH: arch-ci-linux-opt-cxx-quad
+
+linux-pgi:
+  extends:
+    - .stage-3
+    - .linux_test_noflags
+  tags:
+    - mcs-nfs,name:petsc
+  variables:
+    TEST_ARCH: arch-ci-linux-pgi
+
+linux-pkgs-64idx:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - mcs-nfs
+  variables:
+    TEST_ARCH: arch-ci-linux-pkgs-64idx
+
+linux-pkgs-gcov:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - mcs-nfs
+  variables:
+    TEST_ARCH: arch-ci-linux-pkgs-gcov
+
+linux-pkgs-opt:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - name:compute004
+  variables:
+    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -saws_port_auto_select -saws_port_auto_select_silent
+    TEST_ARCH: arch-ci-linux-pkgs-opt
+
+linux-pkgs-valgrind:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - mcs-nfs,server
+  variables:
+    TEST_ARCH: arch-ci-linux-pkgs-valgrind
+    TIMEOUT: 7200
+
+linux-xsdk-dbg:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - mcs-nfs
+  variables:
+    TEST_ARCH: arch-ci-linux-xsdk-dbg
+
+linux-pardiso:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - mcs-nfs
+  variables:
+    TEST_ARCH: arch-ci-linux-pardiso
+
+linux-nagfor:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - mcs-nfs
+  variables:
+    TEST_ARCH: arch-ci-linux-nagfor
+
+#
+# The following tests are experimental; more tests by users at other sites may be added below this.  Experimental test
+# that fail produce a warning, but do not block execution of a pipeline.
+#
+
+.test-experimental:
+  extends: .test
+  allow_failure: true
+

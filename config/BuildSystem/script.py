@@ -10,25 +10,42 @@ import pickle
 import subprocess
 
 import nargs
+
+# Uses threads to monitor running programs and time them out if they take too long
 useThreads = nargs.Arg.findArgument('useThreads', sys.argv[1:])
-if useThreads is None:
-  useThreads = 0 # workaround issue with parallel configure
-elif useThreads == 'no' or useThreads == '0':
+if useThreads == 'no' or useThreads == '0':
   useThreads = 0
-elif useThreads == 'yes' or useThreads == '1':
+elif useThreads == None or useThreads == 'yes' or useThreads == '1':
   useThreads = 1
 else:
   raise RuntimeError('Unknown option value for --useThreads ',useThreads)
 
 useSelect = nargs.Arg.findArgument('useSelect', sys.argv[1:])
-if useSelect is None:
-  useSelect = 1
-elif useSelect == 'no' or useSelect == '0':
+if useSelect == 'no' or useSelect == '0':
   useSelect = 0
-elif useSelect == 'yes' or useSelect == '1':
+elif  useSelect is None or useSelect == 'yes' or useSelect == '1':
   useSelect = 1
 else:
   raise RuntimeError('Unknown option value for --useSelect ',useSelect)
+
+#  Run parts of configure in parallel, does not currently work;
+#  see config/BuildSystem/config/framework.parallelQueueEvaluation()
+useParallel = nargs.Arg.findArgument('useParallel', sys.argv[1:])
+if useParallel == 'no' or useParallel == '0':
+  useParallel = 0
+elif  useParallel is None or useParallel == 'yes':
+  useParallel = 5
+else:
+  if useParallel == '1':
+    # handle case with --useParallel was used
+    found = 0
+    for i in sys.argv[1:]:
+      if i.startswith('--useParallel='):
+        found = 1
+        break
+    if found: useParallel = int(useParallel)
+    else: useParallel = 5
+useParallel = 0
 
 import logger
 
@@ -155,9 +172,7 @@ class Script(logger.Logger):
           out = out.decode(encoding='UTF-8',errors='replace')
           err = err.decode(encoding='UTF-8',errors='replace')
         ret = pipe.returncode
-      except OSError as e:
-        return ('', e.message, e.errno)
-      except FileNotFoundError as e:
+      except Exception as e:
         return ('', e.message, e.errno)
       output += out
       error += err
@@ -170,14 +185,18 @@ class Script(logger.Logger):
     if status: raise RuntimeError('Could not execute "%s":\n%s' % (command,output+error))
   defaultCheckCommand = staticmethod(defaultCheckCommand)
 
-  @staticmethod
-  def executeShellCommand(command, checkCommand = None, timeout = 600.0, log = None, lineLimit = 0, cwd=None, logOutputflg = True):
-    '''Execute a shell command returning the output, and optionally provide a custom error checker
-       - This returns a tuple of the (output, error, statuscode)'''
-    return Script.executeShellCommandSeq([command], checkCommand=checkCommand, timeout=timeout, log=log, lineLimit=lineLimit, cwd=cwd,logOutputflg = logOutputflg)
+  def passCheckCommand(command, status, output, error):
+    '''Does not check the command results'''
+  passCheckCommand = staticmethod(passCheckCommand)
 
   @staticmethod
-  def executeShellCommandSeq(commandseq, checkCommand = None, timeout = 600.0, log = None, lineLimit = 0, cwd=None, logOutputflg = True):
+  def executeShellCommand(command, checkCommand = None, timeout = 600.0, log = None, lineLimit = 0, cwd=None, logOutputflg = True, threads = 0):
+    '''Execute a shell command returning the output, and optionally provide a custom error checker
+       - This returns a tuple of the (output, error, statuscode)'''
+    return Script.executeShellCommandSeq([command], checkCommand=checkCommand, timeout=timeout, log=log, lineLimit=lineLimit, cwd=cwd,logOutputflg = logOutputflg, threads = threads)
+
+  @staticmethod
+  def executeShellCommandSeq(commandseq, checkCommand = None, timeout = 600.0, log = None, lineLimit = 0, cwd=None, logOutputflg = True, threads = 0):
     '''Execute a sequence of shell commands (an && chain) returning the output, and optionally provide a custom error checker
        - This returns a tuple of the (output, error, statuscode)'''
     if not checkCommand:
@@ -198,7 +217,7 @@ class Script(logger.Logger):
           log.write('stdout: '+output+'\n')
       return output
     def runInShell(commandseq, log, cwd):
-      if useThreads:
+      if useThreads and threads:
         import threading
         class InShell(threading.Thread):
           def __init__(self):

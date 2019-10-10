@@ -17,42 +17,91 @@ class Configure(config.package.Package):
     return
 
   def configureLibrary(self):
-    ''' Checks for -fopenmp compiler flag'''
+    ''' Checks for OpenMP compiler flags'''
+    ''' Note it may be different for the C, C++, and FC compilers'''
     ''' Needs to check if OpenMP actually exists and works '''
     self.found = 0
+    oflags = ["-fopenmp", # Gnu
+              "-qsmp=omp",# IBM XL C/C++
+              "-h omp",   # Cray. Must come after XL because XL interprets this option as meaning "-soname omp"
+              "-mp",      # Portland Group
+              "-Qopenmp", # Intel windows
+              "-openmp",  # Intel
+              "-xopenmp", # Sun
+              "+Oopenmp", # HP
+              "/openmp"   # Microsoft Visual Studio
+              ]
     self.setCompilers.pushLanguage('C')
-    #
-    for flag in ["-fopenmp", # Gnu
-                 "-qsmp=omp",# IBM XL C/C++
-                 "-h omp",   # Cray. Must come after XL because XL interprets this option as meaning "-soname omp"
-                 "-mp",      # Portland Group
-                 "-Qopenmp", # Intel windows
-                 "-openmp",  # Intel
-                 "-xopenmp", # Sun
-                 "+Oopenmp", # HP
-                 "/openmp"   # Microsoft Visual Studio
-                 #" ",        # Empty, if compiler automatically accepts openmp
-                 ]:
-      # here it should actually check if the OpenMP pragmas work here.
+
+    self.found = 0
+    for flag in oflags:
       if self.setCompilers.checkCompilerFlag(flag):
         ompflag = flag
         self.found = 1
         # Since clang on Apple doesn't work OpenMP, need to provide flag to GNU compiler that does the linking
         if self.setCompilers.isDarwin(self.log):
           self.setCompilers.LDFLAGS += ' '+ompflag
+        oldFlags = self.compilers.CPPFLAGS
+        self.compilers.CPPFLAGS += ompflag
+        try:
+          output,err,status  = self.preprocess('#if defined(_OPENMP)\nopmv=_OPENMP\n#else\n#error "No _OPENMP macro, something is wrong with the OpenMP install"\n#endif')
+        except:
+          raise RuntimeError('Unable to run preprocessor to determine if OpenMP compile flag worked')
+        loutput = output.split('\n')
+        for i in loutput:
+          if i.startswith('opmv='):
+            self.foundversion = i[5:]
+            break
+          if i.startswith('opmv ='):
+            self.foundversion = i[6:]
+            break
+        self.compilers.CPPFLAGS = oldFlags
         break
     if not self.found:
-      raise RuntimeError('Compiler has no support for OpenMP')
+      raise RuntimeError('C Compiler has no support for OpenMP')
     self.setCompilers.addCompilerFlag(ompflag)
     self.setCompilers.popLanguage()
+
     if hasattr(self.compilers, 'FC'):
       self.setCompilers.pushLanguage('FC')
+      self.found = 0
+      for flag in oflags:
+        if self.setCompilers.checkCompilerFlag(flag):
+          ompflag = flag
+          self.found = 1
+          oldFlags = self.compilers.CPPFLAGS
+          self.compilers.CPPFLAGS += ompflag
+          try:
+            output,err,status  = self.preprocess('#if !defined(_OPENMP)\n#error "No _OPENMP macro, something is wrong with the OpenMP install"\n#endif')
+          except:
+            raise RuntimeError('Unable to run preprocessor to determine if OpenMP compile flag worked')
+          self.compilers.CPPFLAGS = oldFlags
+          break
+      if not self.found:
+        raise RuntimeError('Fortran Compiler has no support for OpenMP')
       self.setCompilers.addCompilerFlag(ompflag)
       self.setCompilers.popLanguage()
+
     if hasattr(self.compilers, 'CXX'):
       self.setCompilers.pushLanguage('Cxx')
+      self.found = 0
+      for flag in oflags:
+        if self.setCompilers.checkCompilerFlag(flag):
+          ompflag = flag
+          self.found = 1
+          oldFlags = self.compilers.CPPFLAGS
+          self.compilers.CPPFLAGS += ompflag
+          try:
+            output,err,status  = self.preprocess('#if !defined(_OPENMP)\n#error "No _OPENMP macro, something is wrong with the OpenMP install"\n#endif')
+          except:
+            raise RuntimeError('Unable to run preprocessor to determine if OpenMP compile flag worked')
+          self.compilers.CPPFLAGS = oldFlags
+          break
+      if not self.found:
+        raise RuntimeError('CXX Compiler has no support for OpenMP')
       self.setCompilers.addCompilerFlag(ompflag)
       self.setCompilers.popLanguage()
+
     # register package since config.package.Package.configureLibrary(self) will not work since there is no library to find
     if not hasattr(self.framework, 'packages'):
       self.framework.packages = []

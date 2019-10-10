@@ -206,7 +206,7 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
   ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
   ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
   ierr = PetscMalloc3(dim, &v0, dim*dim, &J, dim*dim,&invJ);CHKERRQ(ierr);
-  ierr = DMGetSection(dmf, &fsection);CHKERRQ(ierr);
+  ierr = DMGetLocalSection(dmf, &fsection);CHKERRQ(ierr);
   ierr = DMGetGlobalSection(dmf, &globalFSection);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dmf, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = MatGetLocalSize(mass, &locRows, &locCols);CHKERRQ(ierr);
@@ -1287,7 +1287,7 @@ PetscErrorCode DMView_Swarm(DM dm, PetscViewer viewer)
  (c) the block size of the data.
 
  For example, suppose the application requires a unique id, energy, momentum and density to be stored
- on a set of of particles. Then the following code could be used
+ on a set of particles. Then the following code could be used
 
 $    DMSwarmInitializeFieldRegister(dm)
 $    DMSwarmRegisterPetscDatatypeField(dm,"uid",1,PETSC_LONG);
@@ -1307,8 +1307,8 @@ $    DMSwarmFinalizeFieldRegister(dm)
  before calling DMCreateGlobalVector() or DMCreateLocalVector(), the user must inform DMSwarm which
  fields should be used to define a Vec object via
    DMSwarmVectorDefineField()
- The specified field can can changed be changed at any time - thereby permitting vectors
- compatable with different fields to be created.
+ The specified field can be changed at any time - thereby permitting vectors
+ compatible with different fields to be created.
 
  A dual representation of fields in the DMSwarm and a Vec object is permitted via
    DMSwarmCreateGlobalVectorFromField()
@@ -1355,7 +1355,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Swarm(DM dm)
   dm->ops->setfromoptions                  = NULL;
   dm->ops->clone                           = NULL;
   dm->ops->setup                           = DMSetup_Swarm;
-  dm->ops->createdefaultsection            = NULL;
+  dm->ops->createlocalsection              = NULL;
   dm->ops->createdefaultconstraints        = NULL;
   dm->ops->createglobalvector              = DMCreateGlobalVector_Swarm;
   dm->ops->createlocalvector               = DMCreateLocalVector_Swarm;

@@ -71,7 +71,7 @@ static PetscErrorCode DMGlobalToLocalSolve_project1 (PetscInt dim, PetscReal tim
 PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
 {
   Mat                   CtC;
-  PetscInt              n, N, cStart, cEnd, cEndInterior, c;
+  PetscInt              n, N, cStart, cEnd, c;
   PetscBool             isPlex;
   KSP                   ksp;
   PC                    pc;
@@ -85,9 +85,7 @@ PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
     /* mark points in the closure */
     ierr = DMCreateLocalVector(dm,&mask);CHKERRQ(ierr);
     ierr = VecSet(mask,0.0);CHKERRQ(ierr);
-    ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
-    ierr = DMPlexGetHybridBounds(dm,&cEndInterior,NULL,NULL,NULL);CHKERRQ(ierr);
-    cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
+    ierr = DMPlexGetInteriorCellStratum(dm,&cStart,&cEnd);CHKERRQ(ierr);
     if (cEnd > cStart) {
       PetscScalar *ones;
       PetscInt numValues, i;
@@ -212,4 +210,3 @@ PetscErrorCode DMProjectField(DM dm, PetscReal time, Vec U,
   if (U != X) {ierr = DMRestoreLocalVector(dm, &localU);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
-

@@ -40,7 +40,7 @@ typedef struct {
 
   /* options for ParaSails */
   PetscInt  nlevels;
-  PetscReal threshhold;
+  PetscReal threshold;
   PetscReal filter;
   PetscInt  sym;
   PetscReal loadbal;
@@ -1026,8 +1026,8 @@ static PetscErrorCode PCSetFromOptions_HYPRE_ParaSails(PetscOptionItems *PetscOp
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"HYPRE ParaSails Options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_hypre_parasails_nlevels","Number of number of levels","None",jac->nlevels,&jac->nlevels,0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-pc_hypre_parasails_thresh","Threshold","None",jac->threshhold,&jac->threshhold,&flag);CHKERRQ(ierr);
-  if (flag) PetscStackCallStandard(HYPRE_ParaSailsSetParams,(jac->hsolver,jac->threshhold,jac->nlevels));
+  ierr = PetscOptionsReal("-pc_hypre_parasails_thresh","Threshold","None",jac->threshold,&jac->threshold,&flag);CHKERRQ(ierr);
+  if (flag) PetscStackCallStandard(HYPRE_ParaSailsSetParams,(jac->hsolver,jac->threshold,jac->nlevels));
 
   ierr = PetscOptionsReal("-pc_hypre_parasails_filter","filter","None",jac->filter,&jac->filter,&flag);CHKERRQ(ierr);
   if (flag) PetscStackCallStandard(HYPRE_ParaSailsSetFilter,(jac->hsolver,jac->filter));
@@ -1056,14 +1056,14 @@ static PetscErrorCode PCView_HYPRE_ParaSails(PC pc,PetscViewer viewer)
   PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
   PetscErrorCode ierr;
   PetscBool      iascii;
-  const char     *symt = 0;;
+  const char     *symt = 0;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE ParaSails preconditioning\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"    nlevels %d\n",jac->nlevels);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    threshold %g\n",(double)jac->threshhold);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"    threshold %g\n",(double)jac->threshold);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"    filter %g\n",(double)jac->filter);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"    load balance %g\n",(double)jac->loadbal);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"    reuse nonzero structure %s\n",PetscBools[jac->ruse]);CHKERRQ(ierr);
@@ -1749,16 +1749,16 @@ static PetscErrorCode  PCHYPRESetType_HYPRE(PC pc,const char name[])
     jac->setup              = HYPRE_ParaSailsSetup;
     jac->solve              = HYPRE_ParaSailsSolve;
     /* initialize */
-    jac->nlevels    = 1;
-    jac->threshhold = .1;
-    jac->filter     = .1;
-    jac->loadbal    = 0;
+    jac->nlevels   = 1;
+    jac->threshold = .1;
+    jac->filter    = .1;
+    jac->loadbal   = 0;
     if (PetscLogPrintInfo) jac->logging = (int) PETSC_TRUE;
     else jac->logging = (int) PETSC_FALSE;
 
     jac->ruse = (int) PETSC_FALSE;
     jac->symt = 0;
-    PetscStackCallStandard(HYPRE_ParaSailsSetParams,(jac->hsolver,jac->threshhold,jac->nlevels));
+    PetscStackCallStandard(HYPRE_ParaSailsSetParams,(jac->hsolver,jac->threshold,jac->nlevels));
     PetscStackCallStandard(HYPRE_ParaSailsSetFilter,(jac->hsolver,jac->filter));
     PetscStackCallStandard(HYPRE_ParaSailsSetLoadbal,(jac->hsolver,jac->loadbal));
     PetscStackCallStandard(HYPRE_ParaSailsSetLogging,(jac->hsolver,jac->logging));
@@ -2170,8 +2170,7 @@ PetscErrorCode PCSetFromOptions_PFMG(PetscOptionItems *PetscOptionsObject,PC pc)
   ierr = PetscOptionsHead(PetscOptionsObject,"PFMG options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_pfmg_print_statistics","Print statistics","HYPRE_StructPFMGSetPrintLevel",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
-    int level=3;
-    PetscStackCallStandard(HYPRE_StructPFMGSetPrintLevel,(ex->hsolver,level));
+    PetscStackCallStandard(HYPRE_StructPFMGSetPrintLevel,(ex->hsolver,3));
   }
   ierr = PetscOptionsInt("-pc_pfmg_its","Number of iterations of PFMG to use as preconditioner","HYPRE_StructPFMGSetMaxIter",ex->its,&ex->its,NULL);CHKERRQ(ierr);
   PetscStackCallStandard(HYPRE_StructPFMGSetMaxIter,(ex->hsolver,ex->its));
@@ -2380,8 +2379,7 @@ PetscErrorCode PCSetFromOptions_SysPFMG(PetscOptionItems *PetscOptionsObject,PC 
   ierr = PetscOptionsHead(PetscOptionsObject,"SysPFMG options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_syspfmg_print_statistics","Print statistics","HYPRE_SStructSysPFMGSetPrintLevel",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
-    int level=3;
-    PetscStackCallStandard(HYPRE_SStructSysPFMGSetPrintLevel,(ex->ss_solver,level));
+    PetscStackCallStandard(HYPRE_SStructSysPFMGSetPrintLevel,(ex->ss_solver,3));
   }
   ierr = PetscOptionsInt("-pc_syspfmg_its","Number of iterations of SysPFMG to use as preconditioner","HYPRE_SStructSysPFMGSetMaxIter",ex->its,&ex->its,NULL);CHKERRQ(ierr);
   PetscStackCallStandard(HYPRE_SStructSysPFMGSetMaxIter,(ex->ss_solver,ex->its));

@@ -30,6 +30,7 @@
 #define snesmonitorlgresidualnorm_       SNESMONITORLGRESIDUALNORM
 #define snesmonitorsolutionupdate_       SNESMONITORSOLUTIONUPDATE
 #define snesmonitorset_                  SNESMONITORSET
+#define snesnewtontrsetprecheck_         SNESNEWTONTRSETPRECHECK
 #define snesnewtontrsetpostcheck_        SNESNEWTONTRSETPOSTCHECK
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matmffdcomputejacobian_          matmffdcomputejacobian
@@ -58,6 +59,7 @@
 #define snesmonitorsolution_             snesmonitorsolution
 #define snesmonitorsolutionupdate_       snesmonitorsolutionupdate
 #define snesmonitorset_                  snesmonitorset
+#define snesnewtontrsetprecheck_        snesnewtontrsetprecheck
 #define snesnewtontrsetpostcheck_        snesnewtontrsetpostcheck
 #endif
 
@@ -70,23 +72,44 @@ static struct {
   PetscFortranCallbackId mondestroy;
   PetscFortranCallbackId ngs;
   PetscFortranCallbackId update;
+  PetscFortranCallbackId trprecheck;
   PetscFortranCallbackId trpostcheck;
 #if defined(PETSC_HAVE_F90_2PTR_ARG)
   PetscFortranCallbackId function_pgiptr;
+  PetscFortranCallbackId trprecheck_pgiptr;
   PetscFortranCallbackId trpostcheck_pgiptr;
 #endif
 } _cb;
 
-static PetscErrorCode ourtrpostcheckfunction(SNES snes,Vec x,Vec y,Vec w,PetscBool *changed_w,void *ctx)
+static PetscErrorCode ourtrprecheckfunction(SNES snes,Vec x,Vec y,PetscBool *changed_y,void *ctx)
+{
+#if defined(PETSC_HAVE_F90_2PTR_ARG)
+  void* ptr;
+  PetscObjectGetFortranCallback((PetscObject)snes,PETSC_FORTRAN_CALLBACK_CLASS,_cb.trprecheck_pgiptr,NULL,&ptr);
+#endif
+  PetscObjectUseFortranCallback(snes,_cb.trprecheck,(SNES*,Vec*,Vec*,PetscBool *,void*,PetscErrorCode* PETSC_F90_2PTR_PROTO_NOVAR),(&snes,&x,&y,changed_y,_ctx,&ierr PETSC_F90_2PTR_PARAM(ptr)));
+}
+
+PETSC_EXTERN void PETSC_STDCALL snesnewtontrsetprecheck_(SNES *snes, void (PETSC_STDCALL *func)(SNES,Vec,Vec,PetscBool*,void*),void *ctx,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptr))
+{
+  *ierr = PetscObjectSetFortranCallback((PetscObject)*snes,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.trprecheck,(PetscVoidFunction)func,ctx);if (*ierr) return;
+#if defined(PETSC_HAVE_F90_2PTR_ARG)
+  *ierr = PetscObjectSetFortranCallback((PetscObject)*snes,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.trprecheck_pgiptr,NULL,ptr);if (*ierr) return;
+#endif
+  SNESNewtonTRSetPreCheck(*snes,ourtrprecheckfunction,NULL);
+}
+
+
+static PetscErrorCode ourtrpostcheckfunction(SNES snes,Vec x,Vec y,Vec w,PetscBool *changed_y,PetscBool *changed_w,void *ctx)
 {
 #if defined(PETSC_HAVE_F90_2PTR_ARG)
   void* ptr;
   PetscObjectGetFortranCallback((PetscObject)snes,PETSC_FORTRAN_CALLBACK_CLASS,_cb.trpostcheck_pgiptr,NULL,&ptr);
 #endif
-  PetscObjectUseFortranCallback(snes,_cb.trpostcheck,(SNES*,Vec*,Vec*,Vec *,PetscBool *,void*,PetscErrorCode* PETSC_F90_2PTR_PROTO_NOVAR),(&snes,&x,&y,&w,changed_w,_ctx,&ierr PETSC_F90_2PTR_PARAM(ptr)));
+  PetscObjectUseFortranCallback(snes,_cb.trpostcheck,(SNES*,Vec*,Vec*,Vec *,PetscBool *,PetscBool *,void*,PetscErrorCode* PETSC_F90_2PTR_PROTO_NOVAR),(&snes,&x,&y,&w,changed_y,changed_w,_ctx,&ierr PETSC_F90_2PTR_PARAM(ptr)));
 }
 
-PETSC_EXTERN void PETSC_STDCALL snesnewtontrsetpostcheck_(SNES *snes, void (PETSC_STDCALL *func)(SNES,Vec,Vec,Vec,PetscBool*,void*),void *ctx,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptr))
+PETSC_EXTERN void PETSC_STDCALL snesnewtontrsetpostcheck_(SNES *snes, void (PETSC_STDCALL *func)(SNES,Vec,Vec,Vec,PetscBool*,PetscBool*,void*),void *ctx,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptr))
 {
   *ierr = PetscObjectSetFortranCallback((PetscObject)*snes,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.trpostcheck,(PetscVoidFunction)func,ctx);if (*ierr) return;
 #if defined(PETSC_HAVE_F90_2PTR_ARG)
@@ -94,8 +117,6 @@ PETSC_EXTERN void PETSC_STDCALL snesnewtontrsetpostcheck_(SNES *snes, void (PETS
 #endif
   SNESNewtonTRSetPostCheck(*snes,ourtrpostcheckfunction,NULL);
 }
-
-
 
 static PetscErrorCode oursnesfunction(SNES snes,Vec x,Vec f,void *ctx)
 {

@@ -309,7 +309,7 @@ ML beliefs/usage: move this to to ML_XXT_factor routine
 
 Usage:
 **************************************xxt.h***********************************/
-PETSC_INTERN PetscInt XXT_factor(xxt_ADT,     /* prev. allocated xxt  handle */
+PETSC_INTERN PetscErrorCode XXT_factor(xxt_ADT,     /* prev. allocated xxt  handle */
                            PetscInt*, /* global column mapping       */
                            PetscInt,             /* local num rows              */
                            PetscInt,             /* local num cols              */
@@ -329,14 +329,14 @@ XXT_solve(xxt_handle, double *x, double *b)
 XXT_solve(xxt_handle, double *x, NULL)
 assumes x has been initialized to be b
 **************************************xxt.h***********************************/
-PETSC_INTERN PetscInt XXT_solve(xxt_ADT,PetscScalar*,PetscScalar*);
+PETSC_INTERN PetscErrorCode XXT_solve(xxt_ADT,PetscScalar*,PetscScalar*);
 
 /*************************************xxt.h************************************
 Function: XXT_stats
 
 Input : handle
 **************************************xxt.h***********************************/
-PETSC_INTERN PetscInt XXT_stats(xxt_ADT);
+PETSC_INTERN PetscErrorCode XXT_stats(xxt_ADT);
 
 
 /*************************************xxt.h************************************
@@ -390,7 +390,7 @@ Input : pointer to ADT.
 Description: This function frees the storage associated with an xyt handle
 Usage: XYT_free(xyt_handle);
 **************************************xyt.h***********************************/
-PETSC_INTERN PetscInt XYT_free(xyt_ADT);
+PETSC_INTERN PetscErrorCode XYT_free(xyt_ADT);
 
 
 /*************************************xyt.h************************************
@@ -423,7 +423,7 @@ ML beliefs/usage: move this to to ML_XYT_factor routine
 
 Usage:
 **************************************xyt.h***********************************/
-PETSC_INTERN PetscInt XYT_factor(xyt_ADT,     /* prev. allocated xyt  handle */
+PETSC_INTERN PetscErrorCode XYT_factor(xyt_ADT,     /* prev. allocated xyt  handle */
                            PetscInt*, /* global column mapping       */
                            PetscInt,             /* local num rows              */
                            PetscInt,             /* local num cols              */
@@ -440,7 +440,7 @@ Return:
 Description: This function performs x = E^-1.b
 Usage: XYT_solve(xyt_handle, double *x, double *b)
 **************************************xyt.h***********************************/
-PETSC_INTERN PetscInt XYT_solve(xyt_ADT,PetscScalar*,PetscScalar*);
+PETSC_INTERN PetscErrorCode XYT_solve(xyt_ADT,PetscScalar*,PetscScalar*);
 
 
 /*************************************xyt.h************************************
@@ -448,7 +448,7 @@ Function: XYT_stats
 
 Input : handle
 **************************************xyt.h***********************************/
-PETSC_INTERN PetscInt XYT_stats(xyt_ADT);
+PETSC_INTERN PetscErrorCode XYT_stats(xyt_ADT);
 
 
 /********************************bit_mask.h************************************

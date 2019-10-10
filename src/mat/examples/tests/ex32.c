@@ -8,7 +8,7 @@ int main(int argc,char **argv)
   Mat            A,AC,B;
   PetscErrorCode ierr;
   PetscInt       m = 10,n = 10;
-  PetscReal      r,tol = PETSC_SMALL;
+  PetscReal      r,tol = 10*PETSC_SMALL;
 
   ierr = PetscInitialize(&argc,&argv,(char*) 0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);

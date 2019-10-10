@@ -42,6 +42,7 @@ SNES Object: 3 MPI processes
   total number of linear solver iterations=31
   total number of function evaluations=3
   norm schedule ALWAYS
+  Jacobian is built using colored finite differences on a DMDA
   SNESLineSearch Object: 3 MPI processes
     type: bt
       interpolation: cubic
@@ -61,190 +62,190 @@ SNES Object: 3 MPI processes
     type: fieldsplit
       FieldSplit with MULTIPLICATIVE composition: total splits = 4
       Solver info for each split is in the following KSP objects:
-      Split number 0 Defined by IS
-      KSP Object: (fieldsplit_x_velocity_) 3 MPI processes
+    Split number 0 Defined by IS
+    KSP Object: (fieldsplit_x_velocity_) 3 MPI processes
+      type: preonly
+      maximum iterations=10000, initial guess is zero
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using NONE norm type for convergence test
+    PC Object: (fieldsplit_x_velocity_) 3 MPI processes
+      type: bjacobi
+        number of blocks = 3
+        Local solve is same for all blocks, in the following KSP and PC objects:
+      KSP Object: (fieldsplit_x_velocity_sub_) 1 MPI processes
         type: preonly
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
-      PC Object: (fieldsplit_x_velocity_) 3 MPI processes
-        type: bjacobi
-          number of blocks = 3
-          Local solve is same for all blocks, in the following KSP and PC objects:
-        KSP Object: (fieldsplit_x_velocity_sub_) 1 MPI processes
-          type: preonly
-          maximum iterations=10000, initial guess is zero
-          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
-          left preconditioning
-          using NONE norm type for convergence test
-        PC Object: (fieldsplit_x_velocity_sub_) 1 MPI processes
-          type: ilu
-            out-of-place factorization
-            0 levels of fill
-            tolerance for zero pivot 2.22045e-14
-            matrix ordering: natural
-            factor fill ratio given 1., needed 1.
-              Factored matrix follows:
-                Mat Object: 1 MPI processes
-                  type: seqaij
-                  rows=21, cols=21
-                  package used to perform factorization: petsc
-                  total: nonzeros=85, allocated nonzeros=85
-                  total number of mallocs used during MatSetValues calls =0
-                    not using I-node routines
-          linear system matrix = precond matrix:
-          Mat Object: (fieldsplit_x_velocity_) 1 MPI processes
-            type: seqaij
-            rows=21, cols=21
-            total: nonzeros=85, allocated nonzeros=85
-            total number of mallocs used during MatSetValues calls =0
-              not using I-node routines
+      PC Object: (fieldsplit_x_velocity_sub_) 1 MPI processes
+        type: ilu
+          out-of-place factorization
+          0 levels of fill
+          tolerance for zero pivot 2.22045e-14
+          matrix ordering: natural
+          factor fill ratio given 1., needed 1.
+            Factored matrix follows:
+              Mat Object: 1 MPI processes
+                type: seqaij
+                rows=21, cols=21
+                package used to perform factorization: petsc
+                total: nonzeros=85, allocated nonzeros=85
+                total number of mallocs used during MatSetValues calls =0
+                  not using I-node routines
         linear system matrix = precond matrix:
-        Mat Object: (fieldsplit_x_velocity_) 3 MPI processes
-          type: mpiaij
-          rows=49, cols=49
-          total: nonzeros=217, allocated nonzeros=217
+        Mat Object: (fieldsplit_x_velocity_) 1 MPI processes
+          type: seqaij
+          rows=21, cols=21
+          total: nonzeros=85, allocated nonzeros=85
           total number of mallocs used during MatSetValues calls =0
-            not using I-node (on process 0) routines
-      Split number 1 Defined by IS
-      KSP Object: (fieldsplit_y_velocity_) 3 MPI processes
+            not using I-node routines
+      linear system matrix = precond matrix:
+      Mat Object: (fieldsplit_x_velocity_) 3 MPI processes
+        type: mpiaij
+        rows=49, cols=49
+        total: nonzeros=217, allocated nonzeros=217
+        total number of mallocs used during MatSetValues calls =0
+          not using I-node (on process 0) routines
+    Split number 1 Defined by IS
+    KSP Object: (fieldsplit_y_velocity_) 3 MPI processes
+      type: preonly
+      maximum iterations=10000, initial guess is zero
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using NONE norm type for convergence test
+    PC Object: (fieldsplit_y_velocity_) 3 MPI processes
+      type: bjacobi
+        number of blocks = 3
+        Local solve is same for all blocks, in the following KSP and PC objects:
+      KSP Object: (fieldsplit_y_velocity_sub_) 1 MPI processes
         type: preonly
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
-      PC Object: (fieldsplit_y_velocity_) 3 MPI processes
-        type: bjacobi
-          number of blocks = 3
-          Local solve is same for all blocks, in the following KSP and PC objects:
-        KSP Object: (fieldsplit_y_velocity_sub_) 1 MPI processes
-          type: preonly
-          maximum iterations=10000, initial guess is zero
-          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
-          left preconditioning
-          using NONE norm type for convergence test
-        PC Object: (fieldsplit_y_velocity_sub_) 1 MPI processes
-          type: ilu
-            out-of-place factorization
-            0 levels of fill
-            tolerance for zero pivot 2.22045e-14
-            matrix ordering: natural
-            factor fill ratio given 1., needed 1.
-              Factored matrix follows:
-                Mat Object: 1 MPI processes
-                  type: seqaij
-                  rows=21, cols=21
-                  package used to perform factorization: petsc
-                  total: nonzeros=85, allocated nonzeros=85
-                  total number of mallocs used during MatSetValues calls =0
-                    not using I-node routines
-          linear system matrix = precond matrix:
-          Mat Object: (fieldsplit_y_velocity_) 1 MPI processes
-            type: seqaij
-            rows=21, cols=21
-            total: nonzeros=85, allocated nonzeros=85
-            total number of mallocs used during MatSetValues calls =0
-              not using I-node routines
+      PC Object: (fieldsplit_y_velocity_sub_) 1 MPI processes
+        type: ilu
+          out-of-place factorization
+          0 levels of fill
+          tolerance for zero pivot 2.22045e-14
+          matrix ordering: natural
+          factor fill ratio given 1., needed 1.
+            Factored matrix follows:
+              Mat Object: 1 MPI processes
+                type: seqaij
+                rows=21, cols=21
+                package used to perform factorization: petsc
+                total: nonzeros=85, allocated nonzeros=85
+                total number of mallocs used during MatSetValues calls =0
+                  not using I-node routines
         linear system matrix = precond matrix:
-        Mat Object: (fieldsplit_y_velocity_) 3 MPI processes
-          type: mpiaij
-          rows=49, cols=49
-          total: nonzeros=217, allocated nonzeros=217
+        Mat Object: (fieldsplit_y_velocity_) 1 MPI processes
+          type: seqaij
+          rows=21, cols=21
+          total: nonzeros=85, allocated nonzeros=85
           total number of mallocs used during MatSetValues calls =0
-            not using I-node (on process 0) routines
-      Split number 2 Defined by IS
-      KSP Object: (fieldsplit_Omega_) 3 MPI processes
+            not using I-node routines
+      linear system matrix = precond matrix:
+      Mat Object: (fieldsplit_y_velocity_) 3 MPI processes
+        type: mpiaij
+        rows=49, cols=49
+        total: nonzeros=217, allocated nonzeros=217
+        total number of mallocs used during MatSetValues calls =0
+          not using I-node (on process 0) routines
+    Split number 2 Defined by IS
+    KSP Object: (fieldsplit_Omega_) 3 MPI processes
+      type: preonly
+      maximum iterations=10000, initial guess is zero
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using NONE norm type for convergence test
+    PC Object: (fieldsplit_Omega_) 3 MPI processes
+      type: bjacobi
+        number of blocks = 3
+        Local solve is same for all blocks, in the following KSP and PC objects:
+      KSP Object: (fieldsplit_Omega_sub_) 1 MPI processes
         type: preonly
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
-      PC Object: (fieldsplit_Omega_) 3 MPI processes
-        type: bjacobi
-          number of blocks = 3
-          Local solve is same for all blocks, in the following KSP and PC objects:
-        KSP Object: (fieldsplit_Omega_sub_) 1 MPI processes
-          type: preonly
-          maximum iterations=10000, initial guess is zero
-          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
-          left preconditioning
-          using NONE norm type for convergence test
-        PC Object: (fieldsplit_Omega_sub_) 1 MPI processes
-          type: ilu
-            out-of-place factorization
-            0 levels of fill
-            tolerance for zero pivot 2.22045e-14
-            matrix ordering: natural
-            factor fill ratio given 1., needed 1.
-              Factored matrix follows:
-                Mat Object: 1 MPI processes
-                  type: seqaij
-                  rows=21, cols=21
-                  package used to perform factorization: petsc
-                  total: nonzeros=85, allocated nonzeros=85
-                  total number of mallocs used during MatSetValues calls =0
-                    not using I-node routines
-          linear system matrix = precond matrix:
-          Mat Object: (fieldsplit_Omega_) 1 MPI processes
-            type: seqaij
-            rows=21, cols=21
-            total: nonzeros=85, allocated nonzeros=85
-            total number of mallocs used during MatSetValues calls =0
-              not using I-node routines
+      PC Object: (fieldsplit_Omega_sub_) 1 MPI processes
+        type: ilu
+          out-of-place factorization
+          0 levels of fill
+          tolerance for zero pivot 2.22045e-14
+          matrix ordering: natural
+          factor fill ratio given 1., needed 1.
+            Factored matrix follows:
+              Mat Object: 1 MPI processes
+                type: seqaij
+                rows=21, cols=21
+                package used to perform factorization: petsc
+                total: nonzeros=85, allocated nonzeros=85
+                total number of mallocs used during MatSetValues calls =0
+                  not using I-node routines
         linear system matrix = precond matrix:
-        Mat Object: (fieldsplit_Omega_) 3 MPI processes
-          type: mpiaij
-          rows=49, cols=49
-          total: nonzeros=217, allocated nonzeros=217
+        Mat Object: (fieldsplit_Omega_) 1 MPI processes
+          type: seqaij
+          rows=21, cols=21
+          total: nonzeros=85, allocated nonzeros=85
           total number of mallocs used during MatSetValues calls =0
-            not using I-node (on process 0) routines
-      Split number 3 Defined by IS
-      KSP Object: (fieldsplit_temperature_) 3 MPI processes
+            not using I-node routines
+      linear system matrix = precond matrix:
+      Mat Object: (fieldsplit_Omega_) 3 MPI processes
+        type: mpiaij
+        rows=49, cols=49
+        total: nonzeros=217, allocated nonzeros=217
+        total number of mallocs used during MatSetValues calls =0
+          not using I-node (on process 0) routines
+    Split number 3 Defined by IS
+    KSP Object: (fieldsplit_temperature_) 3 MPI processes
+      type: preonly
+      maximum iterations=10000, initial guess is zero
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using NONE norm type for convergence test
+    PC Object: (fieldsplit_temperature_) 3 MPI processes
+      type: bjacobi
+        number of blocks = 3
+        Local solve is same for all blocks, in the following KSP and PC objects:
+      KSP Object: (fieldsplit_temperature_sub_) 1 MPI processes
         type: preonly
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
-      PC Object: (fieldsplit_temperature_) 3 MPI processes
-        type: bjacobi
-          number of blocks = 3
-          Local solve is same for all blocks, in the following KSP and PC objects:
-        KSP Object: (fieldsplit_temperature_sub_) 1 MPI processes
-          type: preonly
-          maximum iterations=10000, initial guess is zero
-          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
-          left preconditioning
-          using NONE norm type for convergence test
-        PC Object: (fieldsplit_temperature_sub_) 1 MPI processes
-          type: ilu
-            out-of-place factorization
-            0 levels of fill
-            tolerance for zero pivot 2.22045e-14
-            matrix ordering: natural
-            factor fill ratio given 1., needed 1.
-              Factored matrix follows:
-                Mat Object: 1 MPI processes
-                  type: seqaij
-                  rows=21, cols=21
-                  package used to perform factorization: petsc
-                  total: nonzeros=85, allocated nonzeros=85
-                  total number of mallocs used during MatSetValues calls =0
-                    not using I-node routines
-          linear system matrix = precond matrix:
-          Mat Object: (fieldsplit_temperature_) 1 MPI processes
-            type: seqaij
-            rows=21, cols=21
-            total: nonzeros=85, allocated nonzeros=85
-            total number of mallocs used during MatSetValues calls =0
-              not using I-node routines
+      PC Object: (fieldsplit_temperature_sub_) 1 MPI processes
+        type: ilu
+          out-of-place factorization
+          0 levels of fill
+          tolerance for zero pivot 2.22045e-14
+          matrix ordering: natural
+          factor fill ratio given 1., needed 1.
+            Factored matrix follows:
+              Mat Object: 1 MPI processes
+                type: seqaij
+                rows=21, cols=21
+                package used to perform factorization: petsc
+                total: nonzeros=85, allocated nonzeros=85
+                total number of mallocs used during MatSetValues calls =0
+                  not using I-node routines
         linear system matrix = precond matrix:
-        Mat Object: (fieldsplit_temperature_) 3 MPI processes
-          type: mpiaij
-          rows=49, cols=49
-          total: nonzeros=217, allocated nonzeros=217
+        Mat Object: (fieldsplit_temperature_) 1 MPI processes
+          type: seqaij
+          rows=21, cols=21
+          total: nonzeros=85, allocated nonzeros=85
           total number of mallocs used during MatSetValues calls =0
-            not using I-node (on process 0) routines
+            not using I-node routines
+      linear system matrix = precond matrix:
+      Mat Object: (fieldsplit_temperature_) 3 MPI processes
+        type: mpiaij
+        rows=49, cols=49
+        total: nonzeros=217, allocated nonzeros=217
+        total number of mallocs used during MatSetValues calls =0
+          not using I-node (on process 0) routines
     linear system matrix = precond matrix:
     Mat Object: 3 MPI processes
       type: mpiaij

@@ -103,7 +103,7 @@ int main(int argc,char **argv)
   DM             da;
   Vec            x;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return(1);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
   PetscFunctionBeginUser;
   comm = PETSC_COMM_WORLD;
@@ -1103,7 +1103,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
    test:
       suffix: cuda_2
       nsize: 3
-      requires: cuda
+      requires: cuda !single
       args: -snes_monitor -dm_mat_type mpiaijcusparse -dm_vec_type mpicuda -pc_type gamg -ksp_monitor  -mg_levels_ksp_max_it 3
 
    test:
@@ -1117,5 +1117,11 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
       nsize: 2
       requires:  define(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
       args: -dm_mat_type baij -snes_monitor -ksp_monitor -snes_view
+
+   test:
+     suffix: cpardiso
+     nsize: 4
+     requires: mkl_cpardiso
+     args: -pc_type lu -pc_factor_mat_solver_type mkl_cpardiso -ksp_monitor
 
 TEST*/

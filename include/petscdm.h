@@ -146,6 +146,8 @@ PETSC_EXTERN PetscErrorCode DMGetCoordinatesLocalizedLocal(DM,PetscBool*);
 PETSC_EXTERN PetscErrorCode DMGetNeighbors(DM,PetscInt*,const PetscMPIInt**);
 PETSC_EXTERN PetscErrorCode DMGetCoordinateField(DM,DMField*);
 PETSC_EXTERN PetscErrorCode DMSetCoordinateField(DM,DMField);
+PETSC_EXTERN PetscErrorCode DMGetBoundingBox(DM,PetscReal[],PetscReal[]);
+PETSC_EXTERN PetscErrorCode DMGetLocalBoundingBox(DM,PetscReal[],PetscReal[]);
 
 /* block hook interface */
 PETSC_EXTERN PetscErrorCode DMSubDomainHookAdd(DM,PetscErrorCode (*)(DM,DM,void*),PetscErrorCode (*)(DM,VecScatter,VecScatter,DM,void*),void*);
@@ -205,23 +207,29 @@ PETSC_EXTERN PetscErrorCode DMGetNullSpaceConstructor(DM, PetscInt, PetscErrorCo
 PETSC_EXTERN PetscErrorCode DMSetNearNullSpaceConstructor(DM, PetscInt, PetscErrorCode (*)(DM, PetscInt, MatNullSpace *));
 PETSC_EXTERN PetscErrorCode DMGetNearNullSpaceConstructor(DM, PetscInt, PetscErrorCode (**)(DM, PetscInt, MatNullSpace *));
 
-PETSC_EXTERN PetscErrorCode DMGetSection(DM, PetscSection *);
-PETSC_EXTERN PetscErrorCode DMSetSection(DM, PetscSection);
-PETSC_EXTERN PetscErrorCode DMGetDefaultConstraints(DM, PetscSection *, Mat *);
-PETSC_EXTERN PetscErrorCode DMSetDefaultConstraints(DM, PetscSection, Mat);
+PETSC_EXTERN PetscErrorCode DMGetSection(DM, PetscSection *); /* Use DMGetLocalSection() in new code (since v3.12) */
+PETSC_EXTERN PetscErrorCode DMSetSection(DM, PetscSection);   /* Use DMSetLocalSection() in new code (since v3.12) */
+PETSC_EXTERN PetscErrorCode DMGetLocalSection(DM, PetscSection *);
+PETSC_EXTERN PetscErrorCode DMSetLocalSection(DM, PetscSection);
 PETSC_EXTERN PetscErrorCode DMGetGlobalSection(DM, PetscSection *);
 PETSC_EXTERN PetscErrorCode DMSetGlobalSection(DM, PetscSection);
-PETSC_EXTERN PetscErrorCode DMGetDefaultSF(DM, PetscSF *);
-PETSC_EXTERN PetscErrorCode DMSetDefaultSF(DM, PetscSF);
-PETSC_EXTERN PetscErrorCode DMCreateDefaultSF(DM, PetscSection, PetscSection);
+PETSC_STATIC_INLINE PETSC_DEPRECATED_FUNCTION("Use DMGetSection() (since v3.9)") PetscErrorCode DMGetDefaultSection(DM dm, PetscSection *s) {return DMGetSection(dm,s);}
+PETSC_STATIC_INLINE PETSC_DEPRECATED_FUNCTION("Use DMSetSection() (since v3.9)") PetscErrorCode DMSetDefaultSection(DM dm, PetscSection s) {return DMSetSection(dm,s);}
+PETSC_STATIC_INLINE PETSC_DEPRECATED_FUNCTION("Use DMGetGlobalSection() (since v3.9)") PetscErrorCode DMGetDefaultGlobalSection(DM dm, PetscSection *s) {return DMGetGlobalSection(dm,s);}
+PETSC_STATIC_INLINE PETSC_DEPRECATED_FUNCTION("Use DMSetGlobalSection() (since v3.9)") PetscErrorCode DMSetDefaultGlobalSection(DM dm, PetscSection s) {return DMSetGlobalSection(dm,s);}
+
+PETSC_EXTERN PetscErrorCode DMGetSectionSF(DM, PetscSF*);
+PETSC_EXTERN PetscErrorCode DMSetSectionSF(DM, PetscSF);
+PETSC_EXTERN PetscErrorCode DMCreateSectionSF(DM, PetscSection, PetscSection);
+PETSC_STATIC_INLINE PETSC_DEPRECATED_FUNCTION("Use DMGetSectionSF() (since v3.12)") PetscErrorCode DMGetDefaultSF(DM dm, PetscSF *s) {return DMGetSectionSF(dm,s);}
+PETSC_STATIC_INLINE PETSC_DEPRECATED_FUNCTION("Use DMSetSectionSF() (since v3.12)") PetscErrorCode DMSetDefaultSF(DM dm, PetscSF s) {return DMSetSectionSF(dm,s);}
+PETSC_STATIC_INLINE PETSC_DEPRECATED_FUNCTION("Use DMCreateSectionSF() (since v3.12)") PetscErrorCode DMCreateDefaultSF(DM dm, PetscSection l, PetscSection g ) {return DMCreateSectionSF(dm,l,g);}
 PETSC_EXTERN PetscErrorCode DMGetPointSF(DM, PetscSF *);
 PETSC_EXTERN PetscErrorCode DMSetPointSF(DM, PetscSF);
 
-PETSC_STATIC_INLINE PetscErrorCode DMGetDefaultSection(DM dm, PetscSection *s) {return DMGetSection(dm,s);}
-PETSC_STATIC_INLINE PetscErrorCode DMSetDefaultSection(DM dm, PetscSection s) {return DMSetSection(dm,s);}
-PETSC_STATIC_INLINE PetscErrorCode DMGetDefaultGlobalSection(DM dm, PetscSection *s) {return DMGetGlobalSection(dm,s);}
-PETSC_STATIC_INLINE PetscErrorCode DMSetDefaultGlobalSection(DM dm, PetscSection s) {return DMSetGlobalSection(dm,s);}
 
+PETSC_EXTERN PetscErrorCode DMGetDefaultConstraints(DM, PetscSection *, Mat *);
+PETSC_EXTERN PetscErrorCode DMSetDefaultConstraints(DM, PetscSection, Mat);
 
 PETSC_EXTERN PetscErrorCode DMGetOutputDM(DM, DM *);
 PETSC_EXTERN PetscErrorCode DMGetOutputSequenceNumber(DM, PetscInt *, PetscReal *);
@@ -313,7 +321,8 @@ PETSC_EXTERN PetscErrorCode DMGetLabel(DM, const char *, DMLabel *);
 PETSC_EXTERN PetscErrorCode DMGetLabelByNum(DM, PetscInt, DMLabel *);
 PETSC_EXTERN PetscErrorCode DMAddLabel(DM, DMLabel);
 PETSC_EXTERN PetscErrorCode DMRemoveLabel(DM, const char [], DMLabel *);
-PETSC_EXTERN PetscErrorCode DMCopyLabels(DM, DM);
+PETSC_EXTERN PetscErrorCode DMRemoveLabelBySelf(DM, DMLabel *, PetscBool);
+PETSC_EXTERN PetscErrorCode DMCopyLabels(DM, DM, PetscCopyMode, PetscBool);
 
 PETSC_EXTERN PetscErrorCode DMAddBoundary(DM, DMBoundaryConditionType, const char[], const char[], PetscInt, PetscInt, const PetscInt *, void (*)(void), PetscInt, const PetscInt *, void *);
 PETSC_EXTERN PetscErrorCode DMGetNumBoundary(DM, PetscInt *);

@@ -142,8 +142,8 @@ static PetscErrorCode RHSHessianProductUP(TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr
   dJdP[1][1][0] = 1.-u[0]*u[0];
   for (j=0; j<2; j++) {
     vhv[j] = 0;
-    for (k=0; k<2; k++)
-      for (i=0; i<1; i++)
+    for (k=0; k<1; k++)
+      for (i=0; i<2; i++)
         vhv[j] += vl[i]*dJdP[i][j][k]*vr[k];
   }
 
@@ -310,8 +310,8 @@ static PetscErrorCode IHessianProductUP(TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr,V
   dJdP[1][1][0] = u[0]*u[0]-1.;
   for (j=0; j<2; j++) {
     vhv[j] = 0;
-    for (k=0; k<2; k++)
-      for (i=0; i<1; i++)
+    for (k=0; k<1; k++)
+      for (i=0; i<2; i++)
         vhv[j] += vl[i]*dJdP[i][j][k]*vr[k];
   }
 
@@ -444,7 +444,8 @@ int main(int argc,char **argv)
 
   /* Create timestepping solver context */
   ierr = TSCreate(PETSC_COMM_WORLD,&user.ts);CHKERRQ(ierr);
-    if (user.implicitform) {
+  ierr = TSSetEquationType(user.ts,TS_EQ_ODE_EXPLICIT);CHKERRQ(ierr); /* less Jacobian evaluations when adjoint BEuler is used, otherwise no effect */
+  if (user.implicitform) {
     ierr = TSSetIFunction(user.ts,NULL,IFunction,&user);CHKERRQ(ierr);
     ierr = TSSetIJacobian(user.ts,user.A,user.A,IJacobian,&user);CHKERRQ(ierr);
     ierr = TSSetType(user.ts,TSCN);CHKERRQ(ierr);
@@ -485,7 +486,7 @@ int main(int argc,char **argv)
   /* Optimization starts */
   ierr = MatCreate(PETSC_COMM_WORLD,&user.H);CHKERRQ(ierr);
   ierr = MatSetSizes(user.H,PETSC_DECIDE,PETSC_DECIDE,1,1);CHKERRQ(ierr);
-  ierr = MatSetUp(user.H);CHKERRQ(ierr); /* Hessian should be symmetic. Do we need to do MatSetOption(user.H,MAT_SYMMETRIC,PETSC_TRUE) ? */
+  ierr = MatSetUp(user.H);CHKERRQ(ierr); /* Hessian should be symmetric. Do we need to do MatSetOption(user.H,MAT_SYMMETRIC,PETSC_TRUE) ? */
 
   /* Set initial solution guess */
   ierr = MatCreateVecs(user.Jacp,&P,NULL);CHKERRQ(ierr);
@@ -715,17 +716,17 @@ PetscErrorCode Adjoint2(Vec P,PetscScalar arr[],User ctx)
 
     test:
       suffix: 2
-      args:  -implicitform 0 -ts_type rk -ts_adapt_type none -mu 10 -ts_dt 0.1 -viewer_binary_skip_info -tao_monitor -tao_type bntr -tao_bnk_pc_type none
+      args:  -implicitform 0 -ts_type rk -ts_adapt_type none -mu 10 -ts_dt 0.01 -viewer_binary_skip_info -tao_monitor -tao_type bntr -tao_bnk_pc_type none
       output_file: output/ex20opt_p_2.out
 
     test:
       suffix: 3
-      args:  -ts_type cn -ts_adapt_type none -mu 100 -ts_dt 0.01 -viewer_binary_skip_info -tao_monitor -tao_view -mu 100 -ts_dt 0.01
+      args:  -ts_type cn -ts_adapt_type none -mu 100 -ts_dt 0.01 -viewer_binary_skip_info -tao_monitor -tao_view
       output_file: output/ex20opt_p_3.out
 
     test:
       suffix: 4
-      args:  -ts_type cn -ts_adapt_type none -mu 100 -ts_dt 0.01 -viewer_binary_skip_info -tao_monitor -mu 100 -ts_dt 0.01 -tao_type bntr -tao_bnk_pc_type none
+      args:  -ts_type cn -ts_adapt_type none -mu 100 -ts_dt 0.01 -viewer_binary_skip_info -tao_monitor -tao_type bntr -tao_bnk_pc_type none
       output_file: output/ex20opt_p_4.out
 
 TEST*/

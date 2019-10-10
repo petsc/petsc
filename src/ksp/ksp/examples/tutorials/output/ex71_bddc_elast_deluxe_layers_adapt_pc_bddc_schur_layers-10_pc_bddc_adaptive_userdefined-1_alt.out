@@ -1,0 +1,227 @@
+KSP Object: 8 MPI processes
+  type: cg
+  maximum iterations=10000, initial guess is zero
+  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  left preconditioning
+  using PRECONDITIONED norm type for convergence test
+PC Object: 8 MPI processes
+  type: bddc
+    Use verbose output: 0
+    Use user-defined CSR: 0
+    Use local mat graph: 1
+    Connectivity graph topological dimension: 3
+    Use vertices: 1 (vertex size 3)
+    Use edges: 1
+    Use faces: 1
+    Use true near null space: 0
+    Use QR for single constraints on cc: 0
+    Use change of basis on local edge nodes: 0
+    Use change of basis on local face nodes: 0
+    User defined change of basis matrix: 0
+    Has change of basis matrix: 0
+    Eliminate dirichlet boundary dofs: 0
+    Switch on static condensation ops around the interface preconditioner: 0
+    Use exact dirichlet trick: 1
+    Interface extension: DIRICHLET
+    Multilevel max levels: 0
+    Multilevel coarsening ratio: 8
+    Use estimated eigs for coarse problem: 0
+    Use deluxe scaling: 1
+    Use deluxe zerorows: 0
+    Use deluxe singlemat: 0
+    Rebuild interface graph for Schur principal minors: 0
+    Number of dofs' layers for the computation of principal minors: 10
+    Use user CSR graph to compute successive layers: 0
+    Adaptive constraint selection threshold (active 1, userdefined 1): 2.
+    Min constraints / connected component: 0
+    Max constraints / connected component: 0
+    Invert exact Schur complement for adaptive selection: 0
+    Symmetric computation of primal basis functions: 1
+    Num. Procs. to map coarse adjacency list: 0
+    Coarse eqs per proc (significant at the coarsest level): 1
+    Detect disconnected: 0 (filter 0)
+    Benign subspace trick: 0 (change explicit 0)
+    Benign subspace trick is active: 0
+    Algebraic computation of no-net-flux: 0
+  ********************************** STATISTICS AT LEVEL 0 **********************************
+    Global dofs sizes: all 2160 interface 648 coarse 162
+    Coarsening ratios: all/coarse 13 interface/coarse 4
+    Active processes : 8
+    Total subdomains : 8
+    Dofs type        :	MIN	MAX	MEAN
+    Interior  dofs   :	144	240	189
+    Interface dofs   :	156	210	182
+    Primal    dofs   :	54	56	54
+    Local     dofs   :	300	450	371
+    Local     subs   :	1	1
+  --- Interior solver (rank 0)
+    KSP Object: (pc_bddc_dirichlet_) 1 MPI processes
+      type: preonly
+      maximum iterations=10000, initial guess is zero
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using NONE norm type for convergence test
+    PC Object: 1 MPI processes
+      type: shell
+        Interior solver (w/o Schur factorization)
+        Mat Object: 1 MPI processes
+          type: mumps
+          rows=279, cols=279
+          package used to perform factorization: mumps
+          total: nonzeros=16677, allocated nonzeros=16677
+          total number of mallocs used during MatSetValues calls =0
+            MUMPS run parameters:
+              SYM (matrix type):                   1 
+              PAR (host participation):            1 
+              ICNTL(1) (output for error):         6 
+              ICNTL(2) (output of diagnostic msg): 0 
+              ICNTL(3) (output for global info):   0 
+              ICNTL(4) (level of printing):        0 
+              ICNTL(5) (input mat struct):         0 
+              ICNTL(6) (matrix prescaling):        0 
+              ICNTL(7) (sequential matrix ordering):7 
+              ICNTL(8) (scaling strategy):        77 
+              ICNTL(10) (max num of refinements):  0 
+              ICNTL(11) (error analysis):          0 
+              ICNTL(12) (efficiency control):                         1 
+              ICNTL(13) (efficiency control):                         0 
+              ICNTL(14) (percentage of estimated workspace increase): 5 
+              ICNTL(18) (input mat struct):                           0 
+              ICNTL(19) (Schur complement info):                      2 
+              ICNTL(20) (rhs sparse pattern):                         0 
+              ICNTL(21) (solution struct):                            0 
+              ICNTL(22) (in-core/out-of-core facility):               0 
+              ICNTL(23) (max size of memory can be allocated locally):0 
+              ICNTL(24) (detection of null pivot rows):               0 
+              ICNTL(25) (computation of a null space basis):          0 
+              ICNTL(26) (Schur options for rhs or solution):          -1 
+              ICNTL(27) (experimental parameter):                     -32 
+              ICNTL(28) (use parallel or sequential ordering):        1 
+              ICNTL(29) (parallel ordering):                          0 
+              ICNTL(30) (user-specified set of entries in inv(A)):    0 
+              ICNTL(31) (factors is discarded in the solve phase):    0 
+              ICNTL(33) (compute determinant):                        0 
+              ICNTL(35) (activate BLR based factorization):           0 
+              ICNTL(36) (choice of BLR factorization variant):        0 
+              ICNTL(38) (estimated compression rate of LU factors):   333 
+              CNTL(1) (relative pivoting threshold):      0. 
+              CNTL(2) (stopping criterion of refinement): 1.49012e-08 
+              CNTL(3) (absolute pivoting threshold):      0. 
+              CNTL(4) (value of static pivoting):         -1. 
+              CNTL(5) (fixation for null pivots):         0. 
+              CNTL(7) (dropping parameter for BLR):       0. 
+              RINFO(1) (local estimated flops for the elimination after analysis): 
+                [0] 3.04487e+06 
+              RINFO(2) (local estimated flops for the assembly after factorization): 
+                [0]  15462. 
+              RINFO(3) (local estimated flops for the elimination after factorization): 
+                [0]  2.21574e+06 
+              INFO(15) (estimated size of (in MB) MUMPS internal data for running numerical factorization): 
+              [0] 1 
+              INFO(16) (size of (in MB) MUMPS internal data used during numerical factorization): 
+                [0] 1 
+              INFO(23) (num of pivots eliminated on this processor after factorization): 
+                [0] 279 
+              RINFOG(1) (global estimated flops for the elimination after analysis): 3.04487e+06 
+              RINFOG(2) (global estimated flops for the assembly after factorization): 15462. 
+              RINFOG(3) (global estimated flops for the elimination after factorization): 2.21574e+06 
+              (RINFOG(12) RINFOG(13))*2^INFOG(34) (determinant): (0.,0.)*(2^0)
+              INFOG(3) (estimated real workspace for factors on all processors after analysis): 19008 
+              INFOG(4) (estimated integer workspace for factors on all processors after analysis): 1845 
+              INFOG(5) (estimated maximum front size in the complete tree): 189 
+              INFOG(6) (number of nodes in the complete tree): 9 
+              INFOG(7) (ordering option effectively use after analysis): 0 
+              INFOG(8) (structural symmetry in percent of the permuted matrix after analysis): 100 
+              INFOG(9) (total real/complex workspace to store the matrix factors after factorization): 19008 
+              INFOG(10) (total integer space store the matrix factors after factorization): 1845 
+              INFOG(11) (order of largest frontal matrix after factorization): 189 
+              INFOG(12) (number of off-diagonal pivots): 0 
+              INFOG(13) (number of delayed pivots after factorization): 0 
+              INFOG(14) (number of memory compress after factorization): 0 
+              INFOG(15) (number of steps of iterative refinement after solution): 0 
+              INFOG(16) (estimated size (in MB) of all MUMPS internal data for factorization after analysis: value on the most memory consuming processor): 1 
+              INFOG(17) (estimated size of all MUMPS internal data for factorization after analysis: sum over all processors): 1 
+              INFOG(18) (size of all MUMPS internal data allocated during factorization: value on the most memory consuming processor): 1 
+              INFOG(19) (size of all MUMPS internal data allocated during factorization: sum over all processors): 1 
+              INFOG(20) (estimated number of entries in the factors): 16677 
+              INFOG(21) (size in MB of memory effectively used during factorization - value on the most memory consuming processor): 1 
+              INFOG(22) (size in MB of memory effectively used during factorization - sum over all processors): 1 
+              INFOG(23) (after analysis: value of ICNTL(6) effectively used): 0 
+              INFOG(24) (after analysis: value of ICNTL(12) effectively used): 1 
+              INFOG(25) (after factorization: number of pivots modified by static pivoting): 0 
+              INFOG(28) (after factorization: number of null pivots encountered): 0
+              INFOG(29) (after factorization: effective number of entries in the factors (sum over all processors)): 16677
+              INFOG(30, 31) (after solution: size in Mbytes of memory used during solution phase): 0, 0
+              INFOG(32) (after analysis: type of analysis done): 1
+              INFOG(33) (value used for ICNTL(8)): 0
+              INFOG(34) (exponent of the determinant if determinant is requested): 0
+              INFOG(35) (after factorization: number of entries taking into account BLR factor compression - sum over all processors): 16677
+              INFOG(36) (after analysis: estimated size of all MUMPS internal data for running BLR in-core - value on the most memory consuming processor): 0 
+              INFOG(37) (after analysis: estimated size of all MUMPS internal data for running BLR in-core - sum over all processors): 0 
+              INFOG(38) (after analysis: estimated size of all MUMPS internal data for running BLR out-of-core - value on the most memory consuming processor): 0 
+              INFOG(39) (after analysis: estimated size of all MUMPS internal data for running BLR out-of-core - sum over all processors): 0 
+      linear system matrix = precond matrix:
+      Mat Object: (pc_bddc_dirichlet_) 1 MPI processes
+        type: seqaij
+        rows=144, cols=144, bs=3
+        total: nonzeros=6300, allocated nonzeros=6300
+        total number of mallocs used during MatSetValues calls =0
+          using I-node routines: found 48 nodes, limit used is 5
+  --- Correction solver (rank 0)
+    KSP Object: (pc_bddc_neumann_) 1 MPI processes
+      type: preonly
+      maximum iterations=10000, initial guess is zero
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using NONE norm type for convergence test
+    PC Object: 1 MPI processes
+      type: shell
+        Correction solver (with Schur factorization)
+      linear system matrix = precond matrix:
+      Mat Object: (pc_bddc_neumann_) 1 MPI processes
+        type: seqaij
+        rows=279, cols=279
+        total: nonzeros=0, allocated nonzeros=0
+        total number of mallocs used during MatSetValues calls =0
+          using I-node routines: found 56 nodes, limit used is 5
+  --- Coarse solver
+    KSP Object: (pc_bddc_coarse_) 8 MPI processes
+      type: preonly
+      maximum iterations=1, initial guess is zero
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using NONE norm type for convergence test
+    PC Object: (pc_bddc_coarse_) 8 MPI processes
+      type: redundant
+        First (color=0) of 8 PCs follows
+      linear system matrix = precond matrix:
+      Mat Object: (pc_bddc_coarse_) 8 MPI processes
+        type: mpiaij
+        rows=162, cols=162
+        total: nonzeros=15124, allocated nonzeros=19258
+        total number of mallocs used during MatSetValues calls =0
+          using I-node (on process 0) routines: found 5 nodes, limit used is 5
+          KSP Object:   (pc_bddc_coarse_redundant_)   1 MPI processes
+            type: preonly
+            maximum iterations=10000, initial guess is zero
+            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+            left preconditioning
+            using NONE norm type for convergence test
+          PC Object:   (pc_bddc_coarse_redundant_)   1 MPI processes
+            type: svd
+              All singular values smaller than 1e-12 treated as zero
+              Provided essential rank of the matrix 0 (all other eigenvalues are zeroed)
+            linear system matrix = precond matrix:
+            Mat Object:   1 MPI processes
+              type: seqaij
+              rows=162, cols=162
+              total: nonzeros=15124, allocated nonzeros=15124
+              total number of mallocs used during MatSetValues calls =0
+                using I-node routines: found 40 nodes, limit used is 5
+  linear system matrix = precond matrix:
+  Mat Object: 8 MPI processes
+    type: is
+    rows=2160, cols=2160, bs=3
+    total: nonzeros=156078, allocated nonzeros=195300
+    total number of mallocs used during MatSetValues calls =0
+      has attached near null space

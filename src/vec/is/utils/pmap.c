@@ -8,13 +8,15 @@
 #include <petsc/private/isimpl.h>
 
 /*@
-  PetscLayoutCreate - Allocates PetscLayout space and sets the map contents to the default.
+  PetscLayoutCreate - Allocates PetscLayout space and sets the PetscLayout contents to the default.
 
   Collective
 
   Input Parameters:
-+ comm - the MPI communicator
-- map - pointer to the map
+. comm - the MPI communicator
+
+  Output Parameters:
+. map - the new PetscLayout
 
   Level: advanced
 
@@ -22,10 +24,13 @@
   Typical calling sequence
 .vb
        PetscLayoutCreate(MPI_Comm,PetscLayout *);
-       PetscLayoutSetBlockSize(PetscLayout,1);
-       PetscLayoutSetSize(PetscLayout,N) // or PetscLayoutSetLocalSize(PetscLayout,n);
+       PetscLayoutSetBlockSize(PetscLayout,bs);
+       PetscLayoutSetSize(PetscLayout,N); // or PetscLayoutSetLocalSize(PetscLayout,n);
        PetscLayoutSetUp(PetscLayout);
 .ve
+  Alternatively,
+$      PetscLayoutCreateFromSizes(comm,n,N,bs,&layout);
+
   Optionally use any of the following:
 
 + PetscLayoutGetSize(PetscLayout,PetscInt *);
@@ -38,7 +43,8 @@
   user codes unless you really gain something in their use.
 
 .seealso: PetscLayoutSetLocalSize(), PetscLayoutSetSize(), PetscLayoutGetSize(), PetscLayoutGetLocalSize(), PetscLayout, PetscLayoutDestroy(),
-          PetscLayoutGetRange(), PetscLayoutGetRanges(), PetscLayoutSetBlockSize(), PetscLayoutGetBlockSize(), PetscLayoutSetUp()
+          PetscLayoutGetRange(), PetscLayoutGetRanges(), PetscLayoutSetBlockSize(), PetscLayoutGetBlockSize(), PetscLayoutSetUp(),
+          PetscLayoutCreateFromSizes()
 
 @*/
 PetscErrorCode PetscLayoutCreate(MPI_Comm comm,PetscLayout *map)
@@ -48,13 +54,62 @@ PetscErrorCode PetscLayoutCreate(MPI_Comm comm,PetscLayout *map)
   PetscFunctionBegin;
   ierr = PetscNew(map);CHKERRQ(ierr);
 
-  (*map)->comm   = comm;
-  (*map)->bs     = -1;
-  (*map)->n      = -1;
-  (*map)->N      = -1;
-  (*map)->range  = NULL;
-  (*map)->rstart = 0;
-  (*map)->rend   = 0;
+  (*map)->comm        = comm;
+  (*map)->bs          = -1;
+  (*map)->n           = -1;
+  (*map)->N           = -1;
+  (*map)->range       = NULL;
+  (*map)->range_alloc = PETSC_TRUE;
+  (*map)->rstart      = 0;
+  (*map)->rend        = 0;
+  (*map)->setupcalled = PETSC_FALSE;
+  (*map)->oldn        = -1;
+  (*map)->oldN        = -1;
+  (*map)->oldbs       = -1;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscLayoutCreateFromSizes - Allocates PetscLayout space, sets the layout sizes, and sets the layout up.
+
+  Collective
+
+  Input Parameters:
++ comm  - the MPI communicator
+. n     - the local size (or PETSC_DECIDE)
+. N     - the global size (or PETSC_DECIDE)
+. bs    - the block size (or PETSC_DECIDE)
+
+  Output Parameters:
+. map - the new PetscLayout
+
+  Level: advanced
+
+  Notes:
+$ PetscLayoutCreateFromSizes(comm,n,N,bs,&layout);
+  is a shorthand for
+.vb
+  PetscLayoutCreate(comm,&layout);
+  PetscLayoutSetLocalSize(layout,n);
+  PetscLayoutSetSize(layout,N);
+  PetscLayoutSetBlockSize(layout,bs);
+  PetscLayoutSetUp(layout);
+.ve
+
+.seealso: PetscLayoutCreate(), PetscLayoutSetLocalSize(), PetscLayoutSetSize(), PetscLayoutGetSize(), PetscLayoutGetLocalSize(), PetscLayout, PetscLayoutDestroy(),
+          PetscLayoutGetRange(), PetscLayoutGetRanges(), PetscLayoutSetBlockSize(), PetscLayoutGetBlockSize(), PetscLayoutSetUp(), PetscLayoutCreateFromRanges()
+
+@*/
+PetscErrorCode PetscLayoutCreateFromSizes(MPI_Comm comm,PetscInt n,PetscInt N,PetscInt bs,PetscLayout *map)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscLayoutCreate(comm, map);CHKERRQ(ierr);
+  ierr = PetscLayoutSetLocalSize(*map, n);CHKERRQ(ierr);
+  ierr = PetscLayoutSetSize(*map, N);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(*map, bs);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(*map);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -83,7 +138,7 @@ PetscErrorCode PetscLayoutDestroy(PetscLayout *map)
   PetscFunctionBegin;
   if (!*map) PetscFunctionReturn(0);
   if (!(*map)->refcnt--) {
-    ierr = PetscFree((*map)->range);CHKERRQ(ierr);
+    if ((*map)->range_alloc) {ierr = PetscFree((*map)->range);CHKERRQ(ierr);}
     ierr = ISLocalToGlobalMappingDestroy(&(*map)->mapping);CHKERRQ(ierr);
     ierr = PetscFree((*map));CHKERRQ(ierr);
   }
@@ -91,14 +146,48 @@ PetscErrorCode PetscLayoutDestroy(PetscLayout *map)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLayoutSetUp_SizesFromRanges_Private(PetscLayout map)
+/*@
+  PetscLayoutCreateFromRanges - Creates a new PetscLayout with the given ownership ranges and sets it up.
+
+  Collective
+
+  Input Parameters:
++ comm  - the MPI communicator
+. range - the array of ownership ranges for each rank with length commsize+1
+. mode  - the copy mode for range
+- bs    - the block size (or PETSC_DECIDE)
+
+  Output Parameters:
+. newmap - the new PetscLayout
+
+  Level: developer
+
+.seealso: PetscLayoutCreate(), PetscLayoutSetLocalSize(), PetscLayoutSetSize(), PetscLayoutGetSize(), PetscLayoutGetLocalSize(), PetscLayout, PetscLayoutDestroy(),
+          PetscLayoutGetRange(), PetscLayoutGetRanges(), PetscLayoutSetBlockSize(), PetscLayoutGetBlockSize(), PetscLayoutSetUp(), PetscLayoutCreateFromSizes()
+
+@*/
+PetscErrorCode PetscLayoutCreateFromRanges(MPI_Comm comm,const PetscInt range[],PetscCopyMode mode,PetscInt bs,PetscLayout *newmap)
 {
+  PetscLayout    map;
   PetscMPIInt    rank,size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(map->comm, &size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(map->comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = PetscLayoutCreate(comm, &map);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(map, bs);CHKERRQ(ierr);
+  switch (mode) {
+    case PETSC_COPY_VALUES:
+      ierr = PetscMalloc1(size+1, &map->range);CHKERRQ(ierr);
+      ierr = PetscArraycpy(map->range, range, size+1);CHKERRQ(ierr);
+      break;
+    case PETSC_USE_POINTER:
+      map->range_alloc = PETSC_FALSE;
+    default:
+      map->range = (PetscInt*) range;
+      break;
+  }
   map->rstart = map->range[rank];
   map->rend   = map->range[rank+1];
   map->n      = map->rend - map->rstart;
@@ -117,6 +206,12 @@ static PetscErrorCode PetscLayoutSetUp_SizesFromRanges_Private(PetscLayout map)
     if (map->N % map->bs) SETERRQ2(map->comm,PETSC_ERR_PLIB,"Global size %D must be divisible by blocksize %D",map->N,map->bs);
   }
 #endif
+  /* lock the layout */
+  map->setupcalled = PETSC_TRUE;
+  map->oldn = map->n;
+  map->oldN = map->N;
+  map->oldbs = map->bs;
+  *newmap = map;
   PetscFunctionReturn(0);
 }
 
@@ -153,11 +248,8 @@ PetscErrorCode PetscLayoutSetUp(PetscLayout map)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if ((map->n >= 0) && (map->N >= 0) && (map->range)) PetscFunctionReturn(0);
-  if (map->range && map->n < 0) {
-    ierr = PetscLayoutSetUp_SizesFromRanges_Private(map);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
+  if (map->setupcalled && (map->n != map->oldn || map->N != map->oldN)) SETERRQ4(map->comm,PETSC_ERR_ARG_WRONGSTATE,"Layout is already setup with (local=%D,global=%D), cannot call setup again with (local=%D,global=%D)", map->oldn, map->oldN, map->n, map->N);
+  if (map->setupcalled) PetscFunctionReturn(0);
 
   if (map->n > 0 && map->bs > 1) {
     if (map->n % map->bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Local size %D must be divisible by blocksize %D",map->n,map->bs);
@@ -183,6 +275,12 @@ PetscErrorCode PetscLayoutSetUp(PetscLayout map)
 
   map->rstart = map->range[rank];
   map->rend   = map->range[rank+1];
+
+  /* lock the layout */
+  map->setupcalled = PETSC_TRUE;
+  map->oldn = map->n;
+  map->oldN = map->N;
+  map->oldbs = map->bs;
   PetscFunctionReturn(0);
 }
 
@@ -215,8 +313,10 @@ PetscErrorCode PetscLayoutDuplicate(PetscLayout in,PetscLayout *out)
   ierr = PetscLayoutCreate(comm,out);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = PetscMemcpy(*out,in,sizeof(struct _n_PetscLayout));CHKERRQ(ierr);
-  ierr = PetscMalloc1(size+1,&(*out)->range);CHKERRQ(ierr);
-  ierr = PetscArraycpy((*out)->range,in->range,size+1);CHKERRQ(ierr);
+  if (in->range) {
+    ierr = PetscMalloc1(size+1,&(*out)->range);CHKERRQ(ierr);
+    ierr = PetscArraycpy((*out)->range,in->range,size+1);CHKERRQ(ierr);
+  }
 
   (*out)->refcnt = 0;
   PetscFunctionReturn(0);

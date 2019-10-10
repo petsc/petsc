@@ -13,8 +13,6 @@ class Configure(config.package.GNUPackage):
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
-    self.setCompilers = framework.require('config.setCompilers', self)
-    self.compilers    = framework.require('config.compilers', self)
     self.mpi  = framework.require('config.packages.MPI', self)
     self.hdf5 = framework.require('config.packages.hdf5', self)
     self.silo = framework.require('config.packages.silo', self)

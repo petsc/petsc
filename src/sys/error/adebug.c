@@ -188,7 +188,7 @@ PetscErrorCode  PetscAttachDebugger(void)
   (*PetscErrorPrintf)("System cannot start debugger\n");
   (*PetscErrorPrintf)("On Cray run program in Totalview debugger\n");
   (*PetscErrorPrintf)("On Windows use Developer Studio(MSDEV)\n");
-  MPI_Abort(PETSC_COMM_WORLD,1);
+  PETSCABORT(PETSC_COMM_WORLD,PETSC_ERR_SUP_SYS);
 #else
   ierr = PetscGetDisplay(display,128);CHKERRQ(ierr);
   ierr = PetscGetProgramName(program,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);

@@ -366,6 +366,8 @@ static PetscErrorCode DMPlexCreateSectionBCIndices(DM dm, PetscSection section)
   Fortran Notes:
   A Fortran 90 version is available as DMPlexCreateSectionF90()
 
+  TODO: How is this related to DMCreateLocalSection()
+
 .seealso: DMPlexCreate(), PetscSectionCreate(), PetscSectionSetPermutation()
 @*/
 PetscErrorCode DMPlexCreateSection(DM dm, DMLabel label[], const PetscInt numComp[],const PetscInt numDof[], PetscInt numBC, const PetscInt bcField[], const IS bcComps[], const IS bcPoints[], IS perm, PetscSection *section)
@@ -389,7 +391,7 @@ PetscErrorCode DMPlexCreateSection(DM dm, DMLabel label[], const PetscInt numCom
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
+PetscErrorCode DMCreateLocalSection_Plex(DM dm)
 {
   PetscDS        probBC;
   PetscSection   section;
@@ -419,7 +421,7 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
+  ierr = DMPlexGetGhostCellStratum(dm, &cEndInterior, NULL);CHKERRQ(ierr);
   ierr = DMGetDS(dm, &probBC);CHKERRQ(ierr);
   ierr = PetscDSGetNumBoundary(probBC, &numBd);CHKERRQ(ierr);
   if (!Nf && numBd) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "number of fields is zero and number of boundary conditions is nonzero (this should never happen)");
@@ -551,7 +553,7 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
       ierr = PetscSectionSetFieldName(section, f, name);CHKERRQ(ierr);
     }
   }
-  ierr = DMSetSection(dm, section);CHKERRQ(ierr);
+  ierr = DMSetLocalSection(dm, section);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
   for (bc = 0; bc < numBC; ++bc) {ierr = ISDestroy(&bcPoints[bc]);CHKERRQ(ierr);ierr = ISDestroy(&bcComps[bc]);CHKERRQ(ierr);}
   ierr = PetscFree3(bcFields,bcPoints,bcComps);CHKERRQ(ierr);

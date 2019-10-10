@@ -1,7 +1,3 @@
-#define c11 1.0
-#define c12 0
-#define c21 2.0
-#define c22 1.0
 static char help[] = "Performs adjoint sensitivity analysis for the van der Pol equation.\n";
 
 /*
@@ -16,7 +12,7 @@ static char help[] = "Performs adjoint sensitivity analysis for the van der Pol 
       [ u_1' ] = [          u_2                ]  (2)
       [ u_2' ]   [ \mu ((1 - u_1^2) u_2 - u_1) ]
    on the domain 0 <= x <= 1, with the boundary conditions
-       u_1(0) = 2, u_2(0) = −2/3 +10/(81*\mu) − 292/(2187*\mu^2),
+       u_1(0) = 2, u_2(0) = - 2/3 +10/(81*\mu) - 292/(2187*\mu^2),
    and
        \mu = 10^6 ( y'(0) ~ -0.6666665432100101).,
    and computes the sensitivities of the final solution w.r.t. initial conditions and parameter \mu with the implicit theta method and its discrete adjoint.
@@ -40,12 +36,6 @@ static char help[] = "Performs adjoint sensitivity analysis for the van der Pol 
    dp   [ (1 - u_1^2) u_2 - u_1 ].
 
    See ex20.c for more details on the Jacobian.
-
-   Many DAEs can be represented in a general form M u_t = f(u,t).
-   Thus both sides of (1) are multiplied by an artificial matrix
-   M = [ c11 c12 ]
-       [ c21 c22 ]
-   to turn (1) into the general form. This operation does not change the solution and it is intended for illustration only.
 
   ------------------------------------------------------------------------- */
 #include <petscts.h>
@@ -123,7 +113,7 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void *ctx
   ierr = VecGetArrayRead(Udot,&udot);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   f[0] = udot[0] - u[1];
-  f[1] = c21*(udot[0]-u[1]) + udot[1] - user->mu*((1.0-u[0]*u[0])*u[1] - u[0]);
+  f[1] = udot[1] - user->mu*((1.0-u[0]*u[0])*u[1] - u[0]);
   ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(Udot,&udot);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
@@ -142,7 +132,7 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat
   ierr    = VecGetArrayRead(U,&u);CHKERRQ(ierr);
 
   J[0][0] = a;     J[0][1] =  -1.0;
-  J[1][0] = c21*a + user->mu*(2.0*u[0]*u[1] + 1.0);   J[1][1] = -c21 + a - user->mu*(1.0-u[0]*u[0]);
+  J[1][0] = user->mu*(2.0*u[0]*u[1] + 1.0);   J[1][1] = a - user->mu*(1.0-u[0]*u[0]);
 
   ierr    = MatSetValues(B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
   ierr    = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
@@ -246,6 +236,7 @@ int main(int argc,char **argv)
      Create timestepping solver context
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
+  ierr = TSSetEquationType(ts,TS_EQ_ODE_EXPLICIT);CHKERRQ(ierr); /* less Jacobian evaluations when adjoint BEuler is used, otherwise no effect */
   if (implicitform) {
     ierr = TSSetIFunction(ts,NULL,IFunction,&user);CHKERRQ(ierr);
     ierr = TSSetIJacobian(ts,user.A,user.A,IJacobian,&user);CHKERRQ(ierr);
@@ -467,4 +458,8 @@ int main(int argc,char **argv)
       args: -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -ts_trajectory_type memory -ts_trajectory_max_cps_ram 3 -ts_trajectory_max_cps_disk 8 -ts_trajectory_stride 5 -ts_trajectory_solution_only 0 -ts_trajectory_save_stack 0
       output_file: output/ex20adj_2.out
 
+    test:
+      suffix: 22
+      args: -ts_type beuler -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -ts_trajectory_type memory -ts_trajectory_solution_only
+      output_file: output/ex20adj_2.out
 TEST*/

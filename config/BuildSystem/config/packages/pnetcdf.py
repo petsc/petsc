@@ -6,12 +6,13 @@ class Configure(config.package.GNUPackage):
     config.package.GNUPackage.__init__(self, framework)
     self.version          = '1.11.2'
     self.versionname      = 'PNETCDF_VERSION'
-    self.download         = ['http://cucis.ece.northwestern.edu/projects/PnetCDF/Release/pnetcdf-'+self.version+'.tar.gz',
+    self.download         = ['https://parallel-netcdf.github.io/Release/pnetcdf-'+self.version+'.tar.gz',
                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/pnetcdf-'+self.version+'.tar.gz']
     self.functions        = ['ncmpi_create']
     self.includes         = ['pnetcdf.h']
     self.liblist          = [['libpnetcdf.a']]
     self.useddirectly     = 0
+    self.installwithbatch = 0
     return
 
   def setupDependencies(self, framework):
@@ -23,5 +24,5 @@ class Configure(config.package.GNUPackage):
 
   def formGNUConfigureArgs(self):
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
-    args.append('LIBS="'+self.libraries.toStringNoDupes(self.flibs.lib)+'"')
+    self.addToArgs(args,'LIBS',self.libraries.toStringNoDupes(self.flibs.lib))
     return args

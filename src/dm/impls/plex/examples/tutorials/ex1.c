@@ -51,7 +51,7 @@ int main(int argc, char **argv)
   ierr = PetscSectionSetFieldName(section, 2, "w");CHKERRQ(ierr);
   ierr = PetscSectionView(section, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   /* Tell the DM to use this data layout */
-  ierr = DMSetSection(dm, section);CHKERRQ(ierr);
+  ierr = DMSetLocalSection(dm, section);CHKERRQ(ierr);
   /* Create a Vec with this layout and view it */
   ierr = DMGetGlobalVector(dm, &u);CHKERRQ(ierr);
   ierr = PetscViewerCreate(PETSC_COMM_WORLD, &viewer);CHKERRQ(ierr);

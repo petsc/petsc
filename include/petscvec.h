@@ -379,6 +379,7 @@ PETSC_EXTERN PetscErrorCode VecRestoreArray1dRead(Vec,PetscInt,PetscInt,PetscSca
 PETSC_EXTERN PetscErrorCode VecPlaceArray(Vec,const PetscScalar[]);
 PETSC_EXTERN PetscErrorCode VecResetArray(Vec);
 PETSC_EXTERN PetscErrorCode VecReplaceArray(Vec,const PetscScalar[]);
+
 PETSC_EXTERN PetscErrorCode VecGetArrays(const Vec[],PetscInt,PetscScalar**[]);
 PETSC_EXTERN PetscErrorCode VecRestoreArrays(const Vec[],PetscInt,PetscScalar**[]);
 
@@ -393,6 +394,19 @@ PETSC_EXTERN PetscErrorCode VecGetOwnershipRanges(Vec,const PetscInt *[]);
 
 PETSC_EXTERN PetscErrorCode VecSetLocalToGlobalMapping(Vec,ISLocalToGlobalMapping);
 PETSC_EXTERN PetscErrorCode VecSetValuesLocal(Vec,PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
+
+PETSC_EXTERN PetscErrorCode VecCUDAGetArray(Vec v, PetscScalar **a);
+PETSC_EXTERN PetscErrorCode VecCUDARestoreArray(Vec v, PetscScalar **a);
+
+PETSC_EXTERN PetscErrorCode VecCUDAGetArrayRead(Vec v, const PetscScalar **a);
+PETSC_EXTERN PetscErrorCode VecCUDARestoreArrayRead(Vec v, const PetscScalar **a);
+
+PETSC_EXTERN PetscErrorCode VecCUDAGetArrayWrite(Vec v, PetscScalar **a);
+PETSC_EXTERN PetscErrorCode VecCUDARestoreArrayWrite(Vec v, PetscScalar **a);
+
+PETSC_EXTERN PetscErrorCode VecCUDAPlaceArray(Vec, PetscScalar *);
+PETSC_EXTERN PetscErrorCode VecCUDAReplaceArray(Vec, PetscScalar *);
+PETSC_EXTERN PetscErrorCode VecCUDAResetArray(Vec);
 
 /*MC
    VecSetValueLocal - Set a single entry into a vector using the local numbering
@@ -455,6 +469,11 @@ PETSC_EXTERN PetscErrorCode VecGetLocalVector(Vec,Vec);
 PETSC_EXTERN PetscErrorCode VecRestoreLocalVector(Vec,Vec);
 PETSC_EXTERN PetscErrorCode VecGetLocalVectorRead(Vec,Vec);
 PETSC_EXTERN PetscErrorCode VecRestoreLocalVectorRead(Vec,Vec);
+
+PETSC_EXTERN PetscErrorCode VecGetArrayInPlace(Vec,PetscScalar**);
+PETSC_EXTERN PetscErrorCode VecRestoreArrayInPlace(Vec,PetscScalar**);
+PETSC_EXTERN PetscErrorCode VecGetArrayReadInPlace(Vec,const PetscScalar**);
+PETSC_EXTERN PetscErrorCode VecRestoreArrayReadInPlace(Vec,const PetscScalar**);
 
 /*@C
    VecGetArrayPair - Accesses a pair of pointers for two vectors that may be common. When not common the first is read only

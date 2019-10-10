@@ -353,7 +353,7 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,void 
   }
 
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-  if (J->valid_GPU_matrix != PETSC_OFFLOAD_UNALLOCATED) J->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
+  if (J->offloadmask != PETSC_OFFLOAD_UNALLOCATED) J->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
   ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -686,5 +686,57 @@ PetscErrorCode MatFDColoringCreate_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCo
   c->m       = mat->rmap->n/bs;
   c->rstart  = mat->rmap->rstart/bs;
   c->ncolors = nis;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+
+    MatFDColoringSetValues - takes a matrix in compressed color format and enters the matrix into a PETSc Mat
+
+   Collective on J
+
+   Input Parameters:
++    J - the sparse matrix
+.    coloring - created with MatFDColoringCreate() and a local coloring
+-    y - column major storage of matrix values with one color of values per column, the number of rows of y should match
+         the number of local rows of J and the number of columns is the number of colors.
+
+   Level: intermediate
+
+   Notes: the matrix in compressed color format may come from an AD code
+
+   The code will be slightly faster if MatFDColoringSetBlockSize(coloring,PETSC_DEFAULT,nc); is called immediately after creating the coloring
+
+.seealso: MatFDColoringCreate(), ISColoring, ISColoringCreate(), ISColoringSetType(), IS_COLORING_LOCAL, MatFDColoringSetBlockSize()
+
+@*/
+PetscErrorCode  MatFDColoringSetValues(Mat J,MatFDColoring coloring,const PetscScalar *y)
+{
+  PetscErrorCode    ierr;
+  MatEntry2         *Jentry2;
+  PetscInt          row,i,nrows_k,l,ncolors,nz = 0,bcols,nbcols = 0;
+  const PetscInt    *nrows;
+  PetscBool         eq;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(J,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(coloring,MAT_FDCOLORING_CLASSID,2);
+  ierr = PetscObjectCompareId((PetscObject)J,coloring->matid,&eq);CHKERRQ(ierr);
+  if (!eq) SETERRQ(PetscObjectComm((PetscObject)J),PETSC_ERR_ARG_WRONG,"Matrix used with MatFDColoringSetValues() must be that used with MatFDColoringCreate()");
+  Jentry2 = coloring->matentry2;
+  nrows   = coloring->nrows;
+  ncolors = coloring->ncolors;
+  bcols   = coloring->bcols;
+
+  for (i=0; i<ncolors; i+=bcols) {
+    nrows_k = nrows[nbcols++];
+    for (l=0; l<nrows_k; l++) {
+      row                      = Jentry2[nz].row;   /* local row index */
+      *(Jentry2[nz++].valaddr) = y[row];
+    }
+    y += bcols*coloring->m;
+  }
+  ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

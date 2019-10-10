@@ -6,8 +6,8 @@ cubit(aise/AeroFS/Development/DMPlex/EXO/FourBrickTet-large.exo): 12/08/2017: 17
   2-cells: 202 0
   3-cells: 89 0
 Labels:
-  Cell Sets: 4 strata with value/size (1 (24), 2 (23), 5 (24), 20 (18))
   depth: 4 strata with value/size (0 (34), 1 (146), 2 (202), 3 (89))
+  Cell Sets: 4 strata with value/size (1 (24), 2 (23), 5 (24), 20 (18))
 PetscSection Object: 2 MPI processes
   type not yet set
 3 fields
@@ -1441,11 +1441,11 @@ Parallel Mesh in 3 dimensions:
   2-cells: 108 108
   3-cells: 45 44
 Labels:
-  Cell Sets: 2 strata with value/size (1 (24), 2 (21))
   depth: 4 strata with value/size (0 (22), 1 (84), 2 (108), 3 (45))
-Field Field_0:
+  Cell Sets: 2 strata with value/size (1 (24), 2 (21))
+Field U:
   adjacency FEM
-Field Field_1:
+Field Sigma:
   adjacency FEM
-Field Field_2:
+Field Alpha:
   adjacency FEM

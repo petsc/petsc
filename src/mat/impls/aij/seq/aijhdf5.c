@@ -2,7 +2,7 @@
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <petsc/private/isimpl.h>
 #include <petsc/private/vecimpl.h>
-#include <petscviewerhdf5.h>
+#include <petsclayouthdf5.h>
 
 #if defined(PETSC_HAVE_HDF5)
 PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
@@ -16,6 +16,7 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
   const char      *mat_name = NULL;
   PetscInt        p, m, M, N;
   PetscInt        bs = mat->rmap->bs;
+  PetscInt        *range;
   PetscBool       flg;
   IS              is_i = NULL, is_j = NULL;
   Vec             vec_a = NULL;
@@ -103,18 +104,17 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
   M--;
 
   /* Create PetscLayout for j and a vectors; construct ranges first */
-  ierr = PetscLayoutCreate(comm,&jmap);CHKERRQ(ierr);
-  ierr = PetscMalloc1(size+1, &jmap->range);CHKERRQ(ierr);
-  ierr = MPI_Allgather(i, 1, MPIU_INT, jmap->range, 1, MPIU_INT, comm);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size+1, &range);CHKERRQ(ierr);
+  ierr = MPI_Allgather(i, 1, MPIU_INT, range, 1, MPIU_INT, comm);CHKERRQ(ierr);
   /* Last rank has global number of nonzeros (= length of j and a arrays) in i[m] (last i entry) so broadcast it */
-  jmap->range[size] = i[m];
-  ierr = MPI_Bcast(&jmap->range[size], 1, MPIU_INT, size-1, comm);CHKERRQ(ierr);
+  range[size] = i[m];
+  ierr = MPI_Bcast(&range[size], 1, MPIU_INT, size-1, comm);CHKERRQ(ierr);
   for (p=size-1; p>0; p--) {
-    if (!jmap->range[p]) jmap->range[p] = jmap->range[p+1]; /* for ranks with 0 rows, take the value from the next processor */
+    if (!range[p]) range[p] = range[p+1]; /* for ranks with 0 rows, take the value from the next processor */
   }
-  i[m] = jmap->range[rank+1]; /* i[m] (last i entry) is equal to next rank's offset */
+  i[m] = range[rank+1]; /* i[m] (last i entry) is equal to next rank's offset */
   /* Deduce rstart, rend, n and N from the ranges */
-  ierr = PetscLayoutSetUp(jmap);CHKERRQ(ierr);
+  ierr = PetscLayoutCreateFromRanges(comm,range,PETSC_OWN_POINTER,1,&jmap);CHKERRQ(ierr);
 
   /* Convert global to local indexing of rows */
   for (p=1; p<m+1; ++p) i[p] -= i[0];

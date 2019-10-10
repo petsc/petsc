@@ -35,7 +35,7 @@ int main(int argc, char **argv)
   numDof[0] = dim;
   ierr = DMSetNumFields(dm, numFields);CHKERRQ(ierr);
   ierr = DMPlexCreateSection(dm, NULL, numComp, numDof, numBC, bcFields, bcPoints, NULL, NULL, &section);CHKERRQ(ierr);
-  ierr = DMSetSection(dm, section);CHKERRQ(ierr);
+  ierr = DMSetLocalSection(dm, section);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
   ierr = DMSetUseNatural(dm, PETSC_TRUE);CHKERRQ(ierr);
   {

@@ -1,33 +1,22 @@
  Number of labels:            7  
- label            0  name: BottomBoundary 
+ label            0  name: depth 
+IS of values 
+IS Object: 1 MPI processes
+  type: general
+Number of indices in set 4
+0 0
+1 1
+2 2
+3 3
+ 
+ label            1  name: Cell Sets 
 IS of values 
 IS Object: 1 MPI processes
   type: general
 Number of indices in set 1
-0 201
+0 10
  
- label            1  name: TopBoundary 
-IS of values 
-IS Object: 1 MPI processes
-  type: general
-Number of indices in set 1
-0 200
- 
- label            2  name: InnerBoundary 
-IS of values 
-IS Object: 1 MPI processes
-  type: general
-Number of indices in set 1
-0 101
- 
- label            3  name: OuterBoundary 
-IS of values 
-IS Object: 1 MPI processes
-  type: general
-Number of indices in set 1
-0 100
- 
- label            4  name: Face Sets 
+ label            2  name: Face Sets 
 IS of values 
 IS Object: 1 MPI processes
   type: general
@@ -37,22 +26,33 @@ Number of indices in set 4
 2 200
 3 201
  
- label            5  name: Cell Sets 
+ label            3  name: OuterBoundary 
 IS of values 
 IS Object: 1 MPI processes
   type: general
 Number of indices in set 1
-0 10
+0 100
  
- label            6  name: depth 
+ label            4  name: InnerBoundary 
 IS of values 
 IS Object: 1 MPI processes
   type: general
-Number of indices in set 4
-0 0
-1 1
-2 2
-3 3
+Number of indices in set 1
+0 101
+ 
+ label            5  name: TopBoundary 
+IS of values 
+IS Object: 1 MPI processes
+  type: general
+Number of indices in set 1
+0 200
+ 
+ label            6  name: BottomBoundary 
+IS of values 
+IS Object: 1 MPI processes
+  type: general
+Number of indices in set 1
+0 201
  
  
  

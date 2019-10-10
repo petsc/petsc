@@ -5,13 +5,13 @@ Mesh in 2 dimensions:
   1-cells: 56
   2-cells: 32
 Labels:
+  depth: 3 strata with value/size (0 (25), 1 (56), 2 (32))
   marker: 4 strata with value/size (4 (9), 1 (7), 2 (9), 3 (7))
   Face Sets: 4 strata with value/size (1 (6), 4 (6), 2 (6), 3 (6))
   markerBottom: 1 strata with value/size (1 (7))
   markerRight: 1 strata with value/size (1 (9))
   markerTop: 1 strata with value/size (1 (7))
   markerLeft: 1 strata with value/size (1 (9))
-  depth: 3 strata with value/size (0 (25), 1 (56), 2 (32))
 Integral of pressure: 0.
 L_2 Error: [6.60367e-05, 0.0104876]
 L_2 Residual: 0.00859623

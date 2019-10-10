@@ -1,7 +1,3 @@
-#define c11 1.0
-#define c12 0
-#define c21 2.0
-#define c22 1.0
 static char help[] = "Solves a ODE-constrained optimization problem -- finding the optimal initial conditions for the van der Pol equation.\n";
 
 /**
@@ -132,7 +128,7 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void *ctx
   ierr = VecGetArrayRead(Udot,&udot);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   f[0] = udot[0] - u[1];
-  f[1] = c21*(udot[0]-u[1]) + udot[1] - user->mu*((1.0-u[0]*u[0])*u[1] - u[0]) ;
+  f[1] = udot[1] - user->mu*((1.0-u[0]*u[0])*u[1] - u[0]) ;
   ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(Udot,&udot);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
@@ -150,7 +146,7 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat
   PetscFunctionBeginUser;
   ierr    = VecGetArrayRead(U,&u);CHKERRQ(ierr);
   J[0][0] = a;     J[0][1] =  -1.0;
-  J[1][0] = c21*a + user->mu*(1.0 + 2.0*u[0]*u[1]);   J[1][1] = -c21 + a - user->mu*(1.0-u[0]*u[0]);
+  J[1][0] = user->mu*(1.0 + 2.0*u[0]*u[1]);   J[1][1] = a - user->mu*(1.0-u[0]*u[0]);
   ierr    = MatSetValues(B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
   ierr    = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
   ierr    = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -240,7 +236,7 @@ static PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,voi
 
   ierr     = VecGetArrayRead(user_ptr->U,&x_ptr);CHKERRQ(ierr);
   ierr     = VecGetArray(user_ptr->Lambda[0],&y_ptr);CHKERRQ(ierr);
-  *f       = (x_ptr[0]-user_ptr->ob[0])*(x_ptr[0]-user_ptr->ob[0])+(x_ptr[1]-user_ptr->ob[1])*(x_ptr[1]-user_ptr->ob[1]);;
+  *f       = (x_ptr[0]-user_ptr->ob[0])*(x_ptr[0]-user_ptr->ob[0])+(x_ptr[1]-user_ptr->ob[1])*(x_ptr[1]-user_ptr->ob[1]);
   y_ptr[0] = 2.*(x_ptr[0]-user_ptr->ob[0]);
   y_ptr[1] = 2.*(x_ptr[1]-user_ptr->ob[1]);
   ierr     = VecRestoreArray(user_ptr->Lambda[0],&y_ptr);CHKERRQ(ierr);
@@ -463,6 +459,7 @@ int main(int argc,char **argv)
 
   /* Create timestepping solver context */
   ierr = TSCreate(PETSC_COMM_WORLD,&user.ts);CHKERRQ(ierr);
+  ierr = TSSetEquationType(user.ts,TS_EQ_ODE_EXPLICIT);CHKERRQ(ierr); /* less Jacobian evaluations when adjoint BEuler is used, otherwise no effect */
   if (user.implicitform) {
     ierr = TSSetIFunction(user.ts,NULL,IFunction,&user);CHKERRQ(ierr);
     ierr = TSSetIJacobian(user.ts,user.A,user.A,IJacobian,&user);CHKERRQ(ierr);

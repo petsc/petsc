@@ -111,6 +111,8 @@ typedef const char* MatType;
 
    Level: beginner
 
+   Notes:  MATSOLVERUMFPACK, MATSOLVERCHOLMOD, MATSOLVERKLU form the SuiteSparse package for which you can use --download-suitesparse
+
 .seealso: MatGetFactor(), PCFactorSetMatSolverType(), PCFactorGetMatSolverType()
 J*/
 typedef const char* MatSolverType;
@@ -285,6 +287,7 @@ PETSC_EXTERN PetscErrorCode MatCompositeSetMatStructure(Mat,MatStructure);
 PETSC_EXTERN PetscErrorCode MatCompositeGetMatStructure(Mat,MatStructure*);
 PETSC_EXTERN PetscErrorCode MatCompositeGetNumberMat(Mat,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatCompositeGetMat(Mat,PetscInt,Mat*);
+PETSC_EXTERN PetscErrorCode MatCompositeSetScalings(Mat,const PetscScalar*);
 
 PETSC_EXTERN PetscErrorCode MatCreateFFT(MPI_Comm,PetscInt,const PetscInt[],MatType,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateSeqCUFFT(MPI_Comm,PetscInt,const PetscInt[],Mat*);
@@ -417,7 +420,9 @@ PETSC_EXTERN PetscErrorCode MatGetRowUpperTriangular(Mat);
 PETSC_EXTERN PetscErrorCode MatRestoreRowUpperTriangular(Mat);
 PETSC_EXTERN PetscErrorCode MatGetColumnVector(Mat,Vec,PetscInt);
 PETSC_EXTERN PetscErrorCode MatSeqAIJGetArray(Mat,PetscScalar *[]);
+PETSC_EXTERN PetscErrorCode MatSeqAIJGetArrayRead(Mat,const PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode MatSeqAIJRestoreArray(Mat,PetscScalar *[]);
+PETSC_EXTERN PetscErrorCode MatSeqAIJRestoreArrayRead(Mat,const PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode MatSeqAIJGetMaxRowNonzeros(Mat,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatSeqAIJSetValuesLocalFast(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
 PETSC_EXTERN PetscErrorCode MatSeqAIJSetType(Mat,MatType);
@@ -1290,7 +1295,7 @@ PETSC_EXTERN PetscErrorCode MatFDColoringSetF(MatFDColoring,Vec);
 PETSC_EXTERN PetscErrorCode MatFDColoringGetPerturbedColumns(MatFDColoring,PetscInt*,const PetscInt*[]);
 PETSC_EXTERN PetscErrorCode MatFDColoringSetUp(Mat,ISColoring,MatFDColoring);
 PETSC_EXTERN PetscErrorCode MatFDColoringSetBlockSize(MatFDColoring,PetscInt,PetscInt);
-
+PETSC_EXTERN PetscErrorCode MatFDColoringSetValues(Mat,MatFDColoring,const PetscScalar*);
 
 /*S
      MatTransposeColoring - Object for computing a sparse matrix product C=A*B^T via coloring

@@ -148,7 +148,7 @@ int main(int argc,char **argv)
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if (user.lambda > bratu_lambda_max || user.lambda < bratu_lambda_min) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"WARNING: lambda %g out of range for p=2\n",user.lambda);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"WARNING: lambda %g out of range for p=2\n",(double)user.lambda);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -904,7 +904,7 @@ x     Restore vector
 
    test:
       suffix: 4
-      args: -snes_monitor_short -snes_type newtonls -npc_snes_type ngs -snes_npc_side left -da_grid_x 20 -da_grid_y 20 -p 1.3 -lambda 1 -ksp_monitor_short
+      args: -snes_monitor_short -snes_type newtonls -npc_snes_type ngs -snes_npc_side left -da_grid_x 20 -da_grid_y 20 -p 1.3 -lambda 1 -ksp_monitor_short -pc_type none
       requires: !single
 
    test:

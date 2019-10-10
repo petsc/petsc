@@ -6,6 +6,7 @@
      pcimpl.h - private include file intended for use by all preconditioners
 */
 #define PETSC_SKIP_SPINLOCK
+#define PETSC_SKIP_IMMINTRIN_H_CUDAWORKAROUND 1
 #include <petsc/private/pcimpl.h>   /*I "petscpc.h" I*/
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/vec/vec/impls/dvecimpl.h>
@@ -102,13 +103,10 @@ static PetscErrorCode PCApply_SAVIENNACL(PC pc,Vec x,Vec y)
   if (!sac->SAVIENNACL) {
     ierr = PCSetUp_SAVIENNACL(pc);CHKERRQ(ierr);
   }
-  ierr = VecSet(y,0.0);CHKERRQ(ierr);
   ierr = VecViennaCLGetArrayRead(x,&xarray);CHKERRQ(ierr);
   ierr = VecViennaCLGetArrayWrite(y,&yarray);CHKERRQ(ierr);
   try {
-#if defined(PETSC_USE_COMPLEX)
-
-#else
+#if !defined(PETSC_USE_COMPLEX)
     *yarray = *xarray;
     sac->SAVIENNACL->apply(*yarray);
 #endif

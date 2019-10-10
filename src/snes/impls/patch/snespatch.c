@@ -4,6 +4,7 @@
 #include <petsc/private/snesimpl.h> /*I "petscsnes.h" I*/
 #include <petsc/private/pcpatchimpl.h> /* We need internal access to PCPatch right now, until that part is moved to Plex */
 #include <petscsf.h>
+#include <petscsection.h>
 
 typedef struct {
   PC pc; /* The linear patch preconditioner */
@@ -319,8 +320,8 @@ static PetscErrorCode SNESSolve_Patch(SNES snes)
        in PCApply_PATCH_Nonlinear. */
     ierr = VecGetArrayRead(state, &globalState);CHKERRQ(ierr);
     ierr = VecGetArray(pcpatch->localState, &localState);CHKERRQ(ierr);
-    ierr = PetscSFBcastBegin(pcpatch->defaultSF, MPIU_SCALAR, globalState, localState);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(pcpatch->defaultSF, MPIU_SCALAR, globalState, localState);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(pcpatch->sectionSF, MPIU_SCALAR, globalState, localState);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(pcpatch->sectionSF, MPIU_SCALAR, globalState, localState);CHKERRQ(ierr);
     ierr = VecRestoreArray(pcpatch->localState, &localState);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(state, &globalState);CHKERRQ(ierr);
 

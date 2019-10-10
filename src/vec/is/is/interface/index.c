@@ -46,7 +46,7 @@ PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n)
   if (!N && !subset_n) PetscFunctionReturn(0);
   ierr = ISGetLocalSize(subset,&n);CHKERRQ(ierr);
   if (subset_mult) {
-    ierr = ISGetLocalSize(subset,&i);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(subset_mult,&i);CHKERRQ(ierr);
     if (i != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Local subset and multiplicity sizes don't match! %d != %d",n,i);
   }
   /* create workspace layout for computing global indices of subset */
@@ -59,7 +59,8 @@ PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n)
   lbounds[0] = -lbounds[0];
   ierr = MPIU_Allreduce(lbounds,gbounds,2,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)subset));CHKERRQ(ierr);
   gbounds[0] = -gbounds[0];
-  N_n= gbounds[1] - gbounds[0] + 1;
+  N_n  = gbounds[1] - gbounds[0] + 1;
+
   ierr = PetscLayoutCreate(PetscObjectComm((PetscObject)subset),&map);CHKERRQ(ierr);
   ierr = PetscLayoutSetBlockSize(map,1);CHKERRQ(ierr);
   ierr = PetscLayoutSetSize(map,N_n);CHKERRQ(ierr);
@@ -500,12 +501,10 @@ PetscErrorCode  ISInvertPermutation(IS is,PetscInt nlocal,IS *isout)
 @*/
 PetscErrorCode  ISGetSize(IS is,PetscInt *size)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidIntPointer(size,2);
-  ierr = (*is->ops->getsize)(is,size);CHKERRQ(ierr);
+  *size = is->map->N;
   PetscFunctionReturn(0);
 }
 
@@ -525,12 +524,10 @@ PetscErrorCode  ISGetSize(IS is,PetscInt *size)
 @*/
 PetscErrorCode  ISGetLocalSize(IS is,PetscInt *size)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidIntPointer(size,2);
-  ierr = (*is->ops->getlocalsize)(is,size);CHKERRQ(ierr);
+  *size = is->map->n;
   PetscFunctionReturn(0);
 }
 

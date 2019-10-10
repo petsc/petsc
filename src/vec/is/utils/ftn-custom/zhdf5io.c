@@ -1,5 +1,5 @@
 #include <petsc/private/fortranimpl.h>
-#include <petscis.h>
+#include <petsclayouthdf5.h>
 #include <petscviewer.h>
 
 #if defined(PETSC_HAVE_HDF5)

@@ -2,7 +2,7 @@
 
 const char *const PetscSpacePolynomialTypes[] = {"P", "PMINUS_HDIV", "PMINUS_HCURL", "PetscSpacePolynomialType", "PETSCSPACE_POLYNOMIALTYPE_",0};
 
-PetscErrorCode PetscSpaceSetFromOptions_Polynomial(PetscOptionItems *PetscOptionsObject,PetscSpace sp)
+static PetscErrorCode PetscSpaceSetFromOptions_Polynomial(PetscOptionItems *PetscOptionsObject,PetscSpace sp)
 {
   PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
   PetscErrorCode   ierr;
@@ -26,7 +26,7 @@ static PetscErrorCode PetscSpacePolynomialView_Ascii(PetscSpace sp, PetscViewer 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSpaceView_Polynomial(PetscSpace sp, PetscViewer viewer)
+static PetscErrorCode PetscSpaceView_Polynomial(PetscSpace sp, PetscViewer viewer)
 {
   PetscBool      iascii;
   PetscErrorCode ierr;
@@ -39,7 +39,7 @@ PetscErrorCode PetscSpaceView_Polynomial(PetscSpace sp, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSpaceSetUp_Polynomial(PetscSpace sp)
+static PetscErrorCode PetscSpaceSetUp_Polynomial(PetscSpace sp)
 {
   PetscSpace_Poly *poly    = (PetscSpace_Poly *) sp->data;
   PetscInt         ndegree = sp->degree+1;
@@ -59,7 +59,7 @@ PetscErrorCode PetscSpaceSetUp_Polynomial(PetscSpace sp)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSpaceDestroy_Polynomial(PetscSpace sp)
+static PetscErrorCode PetscSpaceDestroy_Polynomial(PetscSpace sp)
 {
   PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
   PetscErrorCode   ierr;
@@ -81,7 +81,7 @@ PetscErrorCode PetscSpaceDestroy_Polynomial(PetscSpace sp)
 }
 
 /* We treat the space as a tensor product of scalar polynomial spaces, so the dimension is multiplied by Nc */
-PetscErrorCode PetscSpaceGetDimension_Polynomial(PetscSpace sp, PetscInt *dim)
+static PetscErrorCode PetscSpaceGetDimension_Polynomial(PetscSpace sp, PetscInt *dim)
 {
   PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
   PetscInt         deg  = sp->degree;
@@ -190,7 +190,7 @@ static PetscErrorCode TensorPoint_Internal(PetscInt len, PetscInt max, PetscInt 
 
   B[p][i][c] = B[p][i_scalar][c][c]
 */
-PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, const PetscReal points[], PetscReal B[], PetscReal D[], PetscReal H[])
+static PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, const PetscReal points[], PetscReal B[], PetscReal D[], PetscReal H[])
 {
   const PetscInt eps[3][3][3] = {{{0, 0, 0}, {0, 0, 1}, {0, -1, 0}}, {{0, 0, -1}, {0, 0, 0}, {1, 0, 0}}, {{0, 1, 0}, {-1, 0, 0}, {0, 0, 0}}};
   PetscSpace_Poly *poly    = (PetscSpace_Poly *) sp->data;
@@ -464,7 +464,7 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
   Options Database:
 . -petscspace_poly_tensor <bool> - Whether to use tensor product polynomials in higher dimension
 
-  Level: beginner
+  Level: intermediate
 
 .seealso: PetscSpacePolynomialGetTensor(), PetscSpaceSetDegree(), PetscSpaceSetNumVariables()
 @*/
@@ -489,7 +489,7 @@ PetscErrorCode PetscSpacePolynomialSetTensor(PetscSpace sp, PetscBool tensor)
   Output Parameters:
 . tensor - PETSC_TRUE for a tensor polynomial space, PETSC_FALSE for a polynomial space
 
-  Level: beginner
+  Level: intermediate
 
 .seealso: PetscSpacePolynomialSetTensor(), PetscSpaceSetDegree(), PetscSpaceSetNumVariables()
 @*/
@@ -561,7 +561,7 @@ static PetscErrorCode PetscSpaceGetHeightSubspace_Polynomial(PetscSpace sp, Pets
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSpaceInitialize_Polynomial(PetscSpace sp)
+static PetscErrorCode PetscSpaceInitialize_Polynomial(PetscSpace sp)
 {
   PetscErrorCode ierr;
 
@@ -606,6 +606,20 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Polynomial(PetscSpace sp)
   PetscFunctionReturn(0);
 }
 
+/*@
+  PetscSpacePolynomialSetSymmetric - Set whether a function space is a space of symmetric polynomials
+
+  Input Parameters:
++ sp  - the function space object
+- sym - flag for symmetric polynomials
+
+  Options Database:
+. -petscspace_poly_sym <bool> - Whether to use symmetric polynomials
+
+  Level: intermediate
+
+.seealso: PetscSpacePolynomialGetSymmetric(), PetscSpacePolynomialGetTensor(), PetscSpaceSetDegree(), PetscSpaceSetNumVariables()
+@*/
 PetscErrorCode PetscSpacePolynomialSetSymmetric(PetscSpace sp, PetscBool sym)
 {
   PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
@@ -616,6 +630,19 @@ PetscErrorCode PetscSpacePolynomialSetSymmetric(PetscSpace sp, PetscBool sym)
   PetscFunctionReturn(0);
 }
 
+/*@
+  PetscSpacePolynomialGetSymmetric - Get whether a function space is a space of symmetric polynomials
+
+  Input Parameter:
+. sp  - the function space object
+
+  Output Parameter:
+. sym - flag for symmetric polynomials
+
+  Level: intermediate
+
+.seealso: PetscSpacePolynomialSetSymmetric(), PetscSpacePolynomialGetTensor(), PetscSpaceSetDegree(), PetscSpaceSetNumVariables()
+@*/
 PetscErrorCode PetscSpacePolynomialGetSymmetric(PetscSpace sp, PetscBool *sym)
 {
   PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
@@ -626,4 +653,3 @@ PetscErrorCode PetscSpacePolynomialGetSymmetric(PetscSpace sp, PetscBool *sym)
   *sym = poly->symmetric;
   PetscFunctionReturn(0);
 }
-

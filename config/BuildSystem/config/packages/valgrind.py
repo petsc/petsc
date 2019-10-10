@@ -41,6 +41,7 @@ class Configure(config.package.Package):
         self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
         if self.checkCompile('#include <valgrind/valgrind.h>', 'RUNNING_ON_VALGRIND;\n'):
           found = 1
+          self.addDefine('HAVE_VALGRIND', 1)
         self.compilers.CPPFLAGS = oldFlags
       except:
         pass

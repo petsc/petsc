@@ -50,12 +50,9 @@ struct _p_MatMFFD {
   PetscErrorCode (*funci)(void*,PetscInt,Vec,PetscScalar*); /* Evaluates func_[i]() */
   PetscErrorCode (*funcisetbase)(void*,Vec);                /* Sets base for future evaluations of func_[i]() */
 
-  PetscScalar vscale,vshift;   /* diagonal scale and shift by scalars */
-  Vec         dlscale,drscale; /* diagonal scale */
-  Vec         dshift,dshiftw;  /* shift by vectors */
-  void        *ctx;            /* this is used by MatCreateSNESMF() to store the SNES object */
+  void           *ctx;            /* this is used by MatCreateSNESMF() to store the SNES object */
 #if defined(PETSC_USE_COMPLEX)
-  PetscBool   usecomplex;      /* use Lyness complex number trick to compute the matrix-vector product */
+  PetscBool      usecomplex;      /* use Lyness complex number trick to compute the matrix-vector product */
 #endif
 };
 

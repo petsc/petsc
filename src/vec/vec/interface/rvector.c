@@ -4,6 +4,10 @@
    These are the vector functions the user calls.
 */
 #include <petsc/private/vecimpl.h>       /*I  "petscvec.h"   I*/
+#if defined(PETSC_HAVE_CUDA)
+#include <../src/vec/vec/impls/dvecimpl.h>
+#include <../src/vec/vec/impls/seq/seqcuda/cudavecimpl.h>
+#endif
 static PetscInt VecGetSubVectorSavedStateId = -1;
 
 PETSC_EXTERN PetscErrorCode VecValidValues(Vec vec,PetscInt argnum,PetscBool begin)
@@ -15,7 +19,7 @@ PETSC_EXTERN PetscErrorCode VecValidValues(Vec vec,PetscInt argnum,PetscBool beg
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_VIENNACL)
-  if ((vec->petscnative || vec->ops->getarray) && (vec->valid_GPU_array == PETSC_OFFLOAD_CPU || vec->valid_GPU_array == PETSC_OFFLOAD_BOTH)) {
+  if ((vec->petscnative || vec->ops->getarray) && (vec->offloadmask & PETSC_OFFLOAD_CPU)) {
 #else
   if (vec->petscnative || vec->ops->getarray) {
 #endif
@@ -1544,7 +1548,7 @@ PetscErrorCode VecGetArray(Vec x,PetscScalar **a)
   ierr = VecSetErrorIfLocked(x,1);CHKERRQ(ierr);
   if (x->petscnative) {
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-    if (x->valid_GPU_array == PETSC_OFFLOAD_GPU) {
+    if (x->offloadmask == PETSC_OFFLOAD_GPU) {
 #if defined(PETSC_HAVE_VIENNACL)
       ierr = PetscObjectTypeCompareAny((PetscObject)x,&is_viennacltype,VECSEQVIENNACL,VECMPIVIENNACL,VECVIENNACL,"");CHKERRQ(ierr);
       if (is_viennacltype) {
@@ -1556,7 +1560,7 @@ PetscErrorCode VecGetArray(Vec x,PetscScalar **a)
         ierr = VecCUDACopyFromGPU(x);CHKERRQ(ierr);
 #endif
       }
-    } else if (x->valid_GPU_array == PETSC_OFFLOAD_UNALLOCATED) {
+    } else if (x->offloadmask == PETSC_OFFLOAD_UNALLOCATED) {
 #if defined(PETSC_HAVE_VIENNACL)
       ierr = PetscObjectTypeCompareAny((PetscObject)x,&is_viennacltype,VECSEQVIENNACL,VECMPIVIENNACL,VECVIENNACL,"");CHKERRQ(ierr);
       if (is_viennacltype) {
@@ -1576,6 +1580,47 @@ PetscErrorCode VecGetArray(Vec x,PetscScalar **a)
       ierr = (*x->ops->getarray)(x,a);CHKERRQ(ierr);
     } else SETERRQ1(PetscObjectComm((PetscObject)x),PETSC_ERR_SUP,"Cannot get array for vector type \"%s\"",((PetscObject)x)->type_name);
   }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   VecGetArrayInPlace - Like VecGetArray(), but if this is a CUDA vector and it is currently offloaded to GPU,
+   the returned pointer will be a GPU pointer to the GPU memory that contains this processor's portion of the
+   vector data. Otherwise, it functions as VecGetArray().
+
+   Logically Collective on Vec
+
+   Input Parameter:
+.  x - the vector
+
+   Output Parameter:
+.  a - location to put pointer to the array
+
+   Level: beginner
+
+.seealso: VecRestoreArrayInPlace(), VecRestoreArrayInPlace(), VecRestoreArray(), VecGetArrayRead(), VecGetArrays(), VecGetArrayF90(), VecGetArrayReadF90(),
+          VecPlaceArray(), VecGetArray2d(), VecGetArrayPair(), VecRestoreArrayPair(), VecGetArrayWrite(), VecRestoreArrayWrite()
+@*/
+PetscErrorCode VecGetArrayInPlace(Vec x,PetscScalar **a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  ierr = VecSetErrorIfLocked(x,1);CHKERRQ(ierr);
+
+#if defined(PETSC_HAVE_CUDA)
+  if (x->petscnative && (x->offloadmask & PETSC_OFFLOAD_GPU)) { /* Prefer working on GPU when offloadmask is PETSC_OFFLOAD_BOTH */
+    PetscBool is_cudatype = PETSC_FALSE;
+    ierr = PetscObjectTypeCompareAny((PetscObject)x,&is_cudatype,VECSEQCUDA,VECMPICUDA,VECCUDA,"");CHKERRQ(ierr);
+    if (is_cudatype) {
+      ierr = VecCUDAGetArray(x,a);CHKERRQ(ierr);
+      x->offloadmask = PETSC_OFFLOAD_GPU; /* Change the mask once GPU gets write access, don't wait until restore array */
+      PetscFunctionReturn(0);
+    }
+  }
+#endif
+  ierr = VecGetArray(x,a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1652,7 +1697,7 @@ PetscErrorCode VecGetArrayRead(Vec x,const PetscScalar **a)
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   if (x->petscnative) {
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-    if (x->valid_GPU_array == PETSC_OFFLOAD_GPU) {
+    if (x->offloadmask == PETSC_OFFLOAD_GPU) {
 #if defined(PETSC_HAVE_VIENNACL)
       ierr = PetscObjectTypeCompareAny((PetscObject)x,&is_viennacltype,VECSEQVIENNACL,VECMPIVIENNACL,VECVIENNACL,"");CHKERRQ(ierr);
       if (is_viennacltype) {
@@ -1672,6 +1717,47 @@ PetscErrorCode VecGetArrayRead(Vec x,const PetscScalar **a)
   } else {
     ierr = (*x->ops->getarray)(x,(PetscScalar**)a);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   VecGetArrayReadInPlace - Like VecGetArrayRead(), but if this is a CUDA vector and it is currently offloaded to GPU,
+   the returned pointer will be a GPU pointer to the GPU memory that contains this processor's portion of the
+   vector data. Otherwise, it functions as VecGetArrayRead().
+
+   Not Collective
+
+   Input Parameters:
+.  x - the vector
+
+   Output Parameter:
+.  a - the array
+
+   Level: beginner
+
+   Notes:
+   The array must be returned using a matching call to VecRestoreArrayReadInPlace().
+
+
+.seealso: VecRestoreArrayReadInPlace(), VecGetArray(), VecRestoreArray(), VecGetArrayPair(), VecRestoreArrayPair(), VecGetArrayInPlace()
+@*/
+PetscErrorCode VecGetArrayReadInPlace(Vec x,const PetscScalar **a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+#if defined(PETSC_HAVE_CUDA)
+  if (x->petscnative && x->offloadmask & PETSC_OFFLOAD_GPU) {
+    PetscBool is_cudatype = PETSC_FALSE;
+    ierr = PetscObjectTypeCompareAny((PetscObject)x,&is_cudatype,VECSEQCUDA,VECMPICUDA,VECCUDA,"");CHKERRQ(ierr);
+    if (is_cudatype) {
+      ierr = VecCUDAGetArrayRead(x,a);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    }
+  }
+#endif
+  ierr = VecGetArrayRead(x,a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1779,7 +1865,7 @@ PetscErrorCode VecRestoreArray(Vec x,PetscScalar **a)
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   if (x->petscnative) {
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-    x->valid_GPU_array = PETSC_OFFLOAD_CPU;
+    x->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
   } else {
     ierr = (*x->ops->restorearray)(x,a);CHKERRQ(ierr);
@@ -1788,6 +1874,41 @@ PetscErrorCode VecRestoreArray(Vec x,PetscScalar **a)
   ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/*@C
+   VecRestoreArrayInPlace - Restores a vector after VecGetArrayInPlace() has been called.
+
+   Logically Collective on Vec
+
+   Input Parameters:
++  x - the vector
+-  a - location of pointer to array obtained from VecGetArrayInPlace()
+
+   Level: beginner
+
+.seealso: VecGetArrayInPlace(), VecGetArray(), VecRestoreArrayRead(), VecRestoreArrays(), VecRestoreArrayF90(), VecRestoreArrayReadF90(),
+          VecPlaceArray(), VecRestoreArray2d(), VecGetArrayPair(), VecRestoreArrayPair()
+@*/
+PetscErrorCode VecRestoreArrayInPlace(Vec x,PetscScalar **a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+#if defined(PETSC_HAVE_CUDA)
+  if (x->petscnative && x->offloadmask == PETSC_OFFLOAD_GPU) {
+    PetscBool is_cudatype = PETSC_FALSE;
+    ierr = PetscObjectTypeCompareAny((PetscObject)x,&is_cudatype,VECSEQCUDA,VECMPICUDA,VECCUDA,"");CHKERRQ(ierr);
+    if (is_cudatype) {
+      ierr = VecCUDARestoreArray(x,a);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    }
+  }
+#endif
+  ierr = VecRestoreArray(x,a);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 /*@C
    VecRestoreArrayWrite - Restores a vector after VecGetArrayWrite() has been called.
@@ -1811,7 +1932,7 @@ PetscErrorCode VecRestoreArrayWrite(Vec x,PetscScalar **a)
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   if (x->petscnative) {
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-    x->valid_GPU_array = PETSC_OFFLOAD_CPU;
+    x->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
   } else {
     if (x->ops->restorearraywrite) {
@@ -1852,6 +1973,28 @@ PetscErrorCode VecRestoreArrayRead(Vec x,const PetscScalar **a)
     ierr = (*x->ops->restorearray)(x,(PetscScalar**)a);CHKERRQ(ierr);
   }
   if (a) *a = NULL;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   VecRestoreArrayReadInPlace - Restore array obtained with VecGetArrayReadInPlace()
+
+   Not Collective
+
+   Input Parameters:
++  vec - the vector
+-  array - the array
+
+   Level: beginner
+
+.seealso: VecGetArrayReadInPlace(), VecRestoreArrayInPlace(), VecGetArray(), VecRestoreArray(), VecGetArrayPair(), VecRestoreArrayPair()
+@*/
+PetscErrorCode VecRestoreArrayReadInPlace(Vec x,const PetscScalar **a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecRestoreArrayRead(x,a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1927,6 +2070,355 @@ PetscErrorCode  VecReplaceArray(Vec vec,const PetscScalar array[])
   ierr = PetscObjectStateIncrease((PetscObject)vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+
+/*@C
+   VecCUDAGetArray - Provides access to the CUDA buffer inside a vector.
+
+   This function has semantics similar to VecGetArray():  the pointer
+   returned by this function points to a consistent view of the vector
+   data.  This may involve a copy operation of data from the host to the
+   device if the data on the device is out of date.  If the device
+   memory hasn't been allocated previously it will be allocated as part
+   of this function call.  VecCUDAGetArray() assumes that
+   the user will modify the vector data.  This is similar to
+   intent(inout) in fortran.
+
+   The CUDA device pointer has to be released by calling
+   VecCUDARestoreArray().  Upon restoring the vector data
+   the data on the host will be marked as out of date.  A subsequent
+   access of the host data will thus incur a data transfer from the
+   device to the host.
+
+
+   Input Parameter:
+.  v - the vector
+
+   Output Parameter:
+.  a - the CUDA device pointer
+
+   Fortran note:
+   This function is not currently available from Fortran.
+
+   Level: intermediate
+
+.seealso: VecCUDARestoreArray(), VecCUDAGetArrayRead(), VecCUDAGetArrayWrite(), VecGetArray(), VecGetArrayRead()
+@*/
+PETSC_EXTERN PetscErrorCode VecCUDAGetArray(Vec v, PetscScalar **a)
+{
+#if defined(PETSC_HAVE_CUDA)
+  PetscErrorCode ierr;
+#endif
+
+  PetscFunctionBegin;
+  PetscCheckTypeNames(v,VECSEQCUDA,VECMPICUDA);
+#if defined(PETSC_HAVE_CUDA)
+  *a   = 0;
+  ierr = VecCUDACopyToGPU(v);CHKERRQ(ierr);
+  *a   = ((Vec_CUDA*)v->spptr)->GPUarray;
+#endif
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   VecCUDARestoreArray - Restore a CUDA device pointer previously acquired with VecCUDAGetArray().
+
+   This marks the host data as out of date.  Subsequent access to the
+   vector data on the host side with for instance VecGetArray() incurs a
+   data transfer.
+
+   Input Parameter:
++  v - the vector
+-  a - the CUDA device pointer.  This pointer is invalid after
+       VecCUDARestoreArray() returns.
+
+   Fortran note:
+   This function is not currently available from Fortran.
+
+   Level: intermediate
+
+.seealso: VecCUDAGetArray(), VecCUDAGetArrayRead(), VecCUDAGetArrayWrite(), VecGetArray(), VecRestoreArray(), VecGetArrayRead()
+@*/
+PETSC_EXTERN PetscErrorCode VecCUDARestoreArray(Vec v, PetscScalar **a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscCheckTypeNames(v,VECSEQCUDA,VECMPICUDA);
+#if defined(PETSC_HAVE_CUDA)
+  v->offloadmask = PETSC_OFFLOAD_GPU;
+#endif
+
+  ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   VecCUDAGetArrayRead - Provides read access to the CUDA buffer inside a vector.
+
+   This function is analogous to VecGetArrayRead():  The pointer
+   returned by this function points to a consistent view of the vector
+   data.  This may involve a copy operation of data from the host to the
+   device if the data on the device is out of date.  If the device
+   memory hasn't been allocated previously it will be allocated as part
+   of this function call.  VecCUDAGetArrayRead() assumes that the
+   user will not modify the vector data.  This is analgogous to
+   intent(in) in Fortran.
+
+   The CUDA device pointer has to be released by calling
+   VecCUDARestoreArrayRead().  If the data on the host side was
+   previously up to date it will remain so, i.e. data on both the device
+   and the host is up to date.  Accessing data on the host side does not
+   incur a device to host data transfer.
+
+   Input Parameter:
+.  v - the vector
+
+   Output Parameter:
+.  a - the CUDA pointer.
+
+   Fortran note:
+   This function is not currently available from Fortran.
+
+   Level: intermediate
+
+.seealso: VecCUDARestoreArrayRead(), VecCUDAGetArray(), VecCUDAGetArrayWrite(), VecGetArray(), VecGetArrayRead()
+@*/
+PETSC_EXTERN PetscErrorCode VecCUDAGetArrayRead(Vec v, const PetscScalar **a)
+{
+#if defined(PETSC_HAVE_CUDA)
+  PetscErrorCode ierr;
+#endif
+
+  PetscFunctionBegin;
+  PetscCheckTypeNames(v,VECSEQCUDA,VECMPICUDA);
+#if defined(PETSC_HAVE_CUDA)
+  *a   = 0;
+  ierr = VecCUDACopyToGPU(v);CHKERRQ(ierr);
+  *a   = ((Vec_CUDA*)v->spptr)->GPUarray;
+#endif
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   VecCUDARestoreArrayRead - Restore a CUDA device pointer previously acquired with VecCUDAGetArrayRead().
+
+   If the data on the host side was previously up to date it will remain
+   so, i.e. data on both the device and the host is up to date.
+   Accessing data on the host side e.g. with VecGetArray() does not
+   incur a device to host data transfer.
+
+   Input Parameter:
++  v - the vector
+-  a - the CUDA device pointer.  This pointer is invalid after
+       VecCUDARestoreArrayRead() returns.
+
+   Fortran note:
+   This function is not currently available from Fortran.
+
+   Level: intermediate
+
+.seealso: VecCUDAGetArrayRead(), VecCUDAGetArrayWrite(), VecCUDAGetArray(), VecGetArray(), VecRestoreArray(), VecGetArrayRead()
+@*/
+PETSC_EXTERN PetscErrorCode VecCUDARestoreArrayRead(Vec v, const PetscScalar **a)
+{
+  PetscFunctionBegin;
+  PetscCheckTypeNames(v,VECSEQCUDA,VECMPICUDA);
+  *a = NULL;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   VecCUDAGetArrayWrite - Provides write access to the CUDA buffer inside a vector.
+
+   The data pointed to by the device pointer is uninitialized.  The user
+   may not read from this data.  Furthermore, the entire array needs to
+   be filled by the user to obtain well-defined behaviour.  The device
+   memory will be allocated by this function if it hasn't been allocated
+   previously.  This is analogous to intent(out) in Fortran.
+
+   The device pointer needs to be released with
+   VecCUDARestoreArrayWrite().  When the pointer is released the
+   host data of the vector is marked as out of data.  Subsequent access
+   of the host data with e.g. VecGetArray() incurs a device to host data
+   transfer.
+
+
+   Input Parameter:
+.  v - the vector
+
+   Output Parameter:
+.  a - the CUDA pointer
+
+   Fortran note:
+   This function is not currently available from Fortran.
+
+   Level: advanced
+
+.seealso: VecCUDARestoreArrayWrite(), VecCUDAGetArray(), VecCUDAGetArrayRead(), VecCUDAGetArrayWrite(), VecGetArray(), VecGetArrayRead()
+@*/
+PETSC_EXTERN PetscErrorCode VecCUDAGetArrayWrite(Vec v, PetscScalar **a)
+{
+#if defined(PETSC_HAVE_CUDA)
+  PetscErrorCode ierr;
+#endif
+
+  PetscFunctionBegin;
+  PetscCheckTypeNames(v,VECSEQCUDA,VECMPICUDA);
+#if defined(PETSC_HAVE_CUDA)
+  *a   = 0;
+  ierr = VecCUDAAllocateCheck(v);CHKERRQ(ierr);
+  *a   = ((Vec_CUDA*)v->spptr)->GPUarray;
+#endif
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   VecCUDARestoreArrayWrite - Restore a CUDA device pointer previously acquired with VecCUDAGetArrayWrite().
+
+   Data on the host will be marked as out of date.  Subsequent access of
+   the data on the host side e.g. with VecGetArray() will incur a device
+   to host data transfer.
+
+   Input Parameter:
++  v - the vector
+-  a - the CUDA device pointer.  This pointer is invalid after
+       VecCUDARestoreArrayWrite() returns.
+
+   Fortran note:
+   This function is not currently available from Fortran.
+
+   Level: intermediate
+
+.seealso: VecCUDAGetArrayWrite(), VecCUDAGetArray(), VecCUDAGetArrayRead(), VecCUDAGetArrayWrite(), VecGetArray(), VecRestoreArray(), VecGetArrayRead()
+@*/
+PETSC_EXTERN PetscErrorCode VecCUDARestoreArrayWrite(Vec v, PetscScalar **a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscCheckTypeNames(v,VECSEQCUDA,VECMPICUDA);
+#if defined(PETSC_HAVE_CUDA)
+  v->offloadmask = PETSC_OFFLOAD_GPU;
+#endif
+
+  ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   VecCUDAPlaceArray - Allows one to replace the GPU array in a vector with a
+   GPU array provided by the user. This is useful to avoid copying an
+   array into a vector.
+
+   Not Collective
+
+   Input Parameters:
++  vec - the vector
+-  array - the GPU array
+
+   Notes:
+   You can return to the original GPU array with a call to VecCUDAResetArray()
+   It is not possible to use VecCUDAPlaceArray() and VecPlaceArray() at the
+   same time on the same vector.
+
+   Level: developer
+
+.seealso: VecPlaceArray(), VecGetArray(), VecRestoreArray(), VecReplaceArray(), VecResetArray(), VecCUDAResetArray(), VecCUDAReplaceArray()
+
+@*/
+PetscErrorCode VecCUDAPlaceArray(Vec vin,PetscScalar *a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscCheckTypeNames(vin,VECSEQCUDA,VECMPICUDA);
+#if defined(PETSC_HAVE_CUDA)
+  ierr = VecCUDACopyToGPU(vin);CHKERRQ(ierr);
+  if (((Vec_Seq*)vin->data)->unplacedarray) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"VecCUDAPlaceArray()/VecPlaceArray() was already called on this vector, without a call to VecCUDAResetArray()/VecResetArray()");
+  ((Vec_Seq*)vin->data)->unplacedarray  = (PetscScalar *) ((Vec_CUDA*)vin->spptr)->GPUarray; /* save previous GPU array so reset can bring it back */
+  ((Vec_CUDA*)vin->spptr)->GPUarray = a;
+  vin->offloadmask = PETSC_OFFLOAD_GPU;
+#endif
+  ierr = PetscObjectStateIncrease((PetscObject)vin);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   VecCUDAReplaceArray - Allows one to replace the GPU array in a vector
+   with a GPU array provided by the user. This is useful to avoid copying
+   a GPU array into a vector.
+
+   Not Collective
+
+   Input Parameters:
++  vec - the vector
+-  array - the GPU array
+
+   Notes:
+   This permanently replaces the GPU array and frees the memory associated
+   with the old GPU array.
+
+   The memory passed in CANNOT be freed by the user. It will be freed
+   when the vector is destroyed.
+
+   Not supported from Fortran
+
+   Level: developer
+
+.seealso: VecGetArray(), VecRestoreArray(), VecPlaceArray(), VecResetArray(), VecCUDAResetArray(), VecCUDAPlaceArray(), VecReplaceArray()
+
+@*/
+PetscErrorCode VecCUDAReplaceArray(Vec vin,PetscScalar *a)
+{
+#if defined(PETSC_HAVE_CUDA)
+  cudaError_t err;
+#endif
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscCheckTypeNames(vin,VECSEQCUDA,VECMPICUDA);
+#if defined(PETSC_HAVE_CUDA)
+  err = cudaFree(((Vec_CUDA*)vin->spptr)->GPUarray);CHKERRCUDA(err);
+  ((Vec_CUDA*)vin->spptr)->GPUarray = a;
+  vin->offloadmask = PETSC_OFFLOAD_GPU;
+#endif
+  ierr = PetscObjectStateIncrease((PetscObject)vin);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   VecCUDAResetArray - Resets a vector to use its default memory. Call this
+   after the use of VecCUDAPlaceArray().
+
+   Not Collective
+
+   Input Parameters:
+.  vec - the vector
+
+   Level: developer
+
+.seealso: VecGetArray(), VecRestoreArray(), VecReplaceArray(), VecPlaceArray(), VecResetArray(), VecCUDAPlaceArray(), VecCUDAReplaceArray()
+
+@*/
+PetscErrorCode VecCUDAResetArray(Vec vin)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscCheckTypeNames(vin,VECSEQCUDA,VECMPICUDA);
+#if defined(PETSC_HAVE_CUDA)
+  ierr = VecCUDACopyToGPU(vin);CHKERRQ(ierr);
+  ((Vec_CUDA*)vin->spptr)->GPUarray = (PetscScalar *) ((Vec_Seq*)vin->data)->unplacedarray;
+  ((Vec_Seq*)vin->data)->unplacedarray = 0;
+  vin->offloadmask = PETSC_OFFLOAD_GPU;
+#endif
+  ierr = PetscObjectStateIncrease((PetscObject)vin);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+
 
 /*MC
     VecDuplicateVecsF90 - Creates several vectors of the same type as an existing vector

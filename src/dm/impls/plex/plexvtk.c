@@ -528,7 +528,7 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
         DMLabel  subpointMap, subpointMapX;
         PetscInt dim, dimX, pStart, pEnd, qStart, qEnd;
 
-        ierr = DMGetSection(dmX, &section);CHKERRQ(ierr);
+        ierr = DMGetLocalSection(dmX, &section);CHKERRQ(ierr);
         /* Here is where we check whether dmX is a submesh of dm */
         ierr = DMGetDimension(dm,  &dim);CHKERRQ(ierr);
         ierr = DMGetDimension(dmX, &dimX);CHKERRQ(ierr);
@@ -596,7 +596,7 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
       ierr = PetscObjectGetName(link->vec, &name);CHKERRQ(ierr);
       ierr = VecGetDM(X, &dmX);CHKERRQ(ierr);
       if (dmX) {
-        ierr = DMGetSection(dmX, &section);CHKERRQ(ierr);
+        ierr = DMGetLocalSection(dmX, &section);CHKERRQ(ierr);
       } else {
         PetscContainer c;
 

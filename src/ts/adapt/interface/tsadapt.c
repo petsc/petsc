@@ -923,9 +923,8 @@ PetscErrorCode TSAdaptSetTimeStepIncreaseDelay(TSAdapt adapt,PetscInt cnt)
   PetscFunctionReturn(0);
 }
 
-  
 /*@
-   TSAdaptCheckStage - checks whether to accept a stage, (e.g. reject and change time step size if nonlinear solve fails)
+   TSAdaptCheckStage - checks whether to accept a stage, (e.g. reject and change time step size if nonlinear solve fails or solution vector is infeasible)
 
    Collective on TSAdapt
 
@@ -967,12 +966,20 @@ PetscErrorCode TSAdaptCheckStage(TSAdapt adapt,TS ts,PetscReal t,Vec Y,PetscBool
   } else {
     *accept = PETSC_TRUE;
     ierr = TSFunctionDomainError(ts,t,Y,accept);CHKERRQ(ierr);
-    if(*accept && adapt->checkstage) {
+    if (*accept && adapt->checkstage) {
       ierr = (*adapt->checkstage)(adapt,ts,t,Y,accept);CHKERRQ(ierr);
+      if (!*accept) {
+        ierr = PetscInfo1(ts,"Step=%D, solution rejected by user function provided by TSSetFunctionDomainError()\n",ts->steps);CHKERRQ(ierr);
+        if (adapt->monitor) {
+          ierr = PetscViewerASCIIAddTab(adapt->monitor,((PetscObject)adapt)->tablevel);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(adapt->monitor,"    TSAdapt %s step %3D stage rejected by user function provided by TSSetFunctionDomainError()\n",((PetscObject)adapt)->type_name,ts->steps);CHKERRQ(ierr);
+          ierr = PetscViewerASCIISubtractTab(adapt->monitor,((PetscObject)adapt)->tablevel);CHKERRQ(ierr);
+        }
+      }
     }
   }
 
-  if(!(*accept) && !ts->reason) {
+  if (!(*accept) && !ts->reason) {
     PetscReal dt,new_dt;
     ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
     new_dt = dt * adapt->scale_solve_failed;

@@ -216,7 +216,7 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,Pet
       for (j=il; j<iu; j++) {
         ierr = VecDot(evec[j],vt1,&dot);CHKERRQ(ierr);
         if (j == i) {
-          dot = PetscAbsScalar(dot - 1.0);
+          dot = PetscAbsScalar(dot - 1);
         } else {
           dot = PetscAbsScalar(dot);
         }

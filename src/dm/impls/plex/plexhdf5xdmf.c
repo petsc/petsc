@@ -1,7 +1,7 @@
 #include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 #include <petsc/private/isimpl.h>
 #include <petsc/private/vecimpl.h>
-#include <petscviewerhdf5.h>
+#include <petsclayouthdf5.h>
 
 #if defined(PETSC_HAVE_HDF5)
 static PetscErrorCode SplitPath_Private(char path[], char name[])

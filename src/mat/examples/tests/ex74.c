@@ -347,6 +347,24 @@ int main(int argc,char **args)
     if (norm2 < tol && lf != -1) break;
   }
 
+#if defined(PETSC_HAVE_MUMPS)
+  ierr = MatGetFactor(sA,MATSOLVERMUMPS,MAT_FACTOR_CHOLESKY,&sFactor);CHKERRQ(ierr);
+  ierr = MatCholeskyFactorSymbolic(sFactor,sA,NULL,NULL);CHKERRQ(ierr);
+  ierr = MatCholeskyFactorNumeric(sFactor,sA,NULL);CHKERRQ(ierr);
+  for (i=0; i<10; i++) {
+    ierr = VecSetRandom(b,rdm);CHKERRQ(ierr);
+    ierr = MatSolve(sFactor,b,y);CHKERRQ(ierr);
+    /* Check the error */
+    ierr = MatMult(sA,y,x);CHKERRQ(ierr);
+    ierr = VecAXPY(x,neg_one,b);CHKERRQ(ierr);
+    ierr = VecNorm(x,NORM_2,&norm2);CHKERRQ(ierr);
+    if (norm2>tol) {
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatSolve(),  norm2: %g\n",(double)norm2);CHKERRQ(ierr);
+    }
+  }
+  ierr = MatDestroy(&sFactor);CHKERRQ(ierr);
+#endif
+
   ierr = ISDestroy(&perm);CHKERRQ(ierr);
 
   ierr = MatDestroy(&A);CHKERRQ(ierr);

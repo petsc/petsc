@@ -85,7 +85,7 @@
       call PetscSectionSetFieldName(section, two,  'w', ierr);CHKERRA(ierr)
       call PetscSectionView(section, PETSC_VIEWER_STDOUT_WORLD, ierr);CHKERRA(ierr)
 !     Tell the DM to use this data layout
-      call DMSetSection(dm, section, ierr);CHKERRA(ierr)
+      call DMSetLocalSection(dm, section, ierr);CHKERRA(ierr)
 !     Create a Vec with this layout and view it
       call DMGetGlobalVector(dm, u, ierr);CHKERRA(ierr)
       call PetscViewerCreate(PETSC_COMM_WORLD, viewer, ierr);CHKERRA(ierr)

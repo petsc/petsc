@@ -459,6 +459,7 @@ PetscErrorCode PetscViewerGLVisRestoreWindow_Private(PetscViewer viewer,PetscInt
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecificType(viewer,PETSC_VIEWER_CLASSID,1,PETSCVIEWERGLVIS);
   PetscValidLogicalCollectiveInt(viewer,wid,2);
   PetscValidPointer(view,3);
   if (wid < 0 || wid > socket->nwindow-1) SETERRQ2(PetscObjectComm((PetscObject)viewer),PETSC_ERR_USER,"Cannot restore window id %D: allowed range [0,%D)",wid,socket->nwindow);

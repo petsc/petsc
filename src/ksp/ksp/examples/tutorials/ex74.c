@@ -54,11 +54,11 @@ T*/
 /*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
-  petscsys.h      - base PETSc routines   
+  petscsys.h      - base PETSc routines
   petscvec.h      - vectors
   petscmat.h      - matrices
-  petscis.h       - index sets            
-  petscviewer.h   - viewers               
+  petscis.h       - index sets
+  petscviewer.h   - viewers
   petscpc.h       - preconditioners
 */
 #include <petscksp.h>
@@ -385,6 +385,7 @@ static PetscErrorCode Assemble_AdvDiff(MPI_Comm comm,UserContext *user,Mat *J)
    args: -a 0.1 -dt .125 -niter 5 -imax 40 -ksp_monitor_short -pc_type pbjacobi -ksp_atol 1e-6 -irk_type gauss -irk_nstages 4 -ksp_gmres_restart 100
  test:
    suffix: 3
+   requires: !single
    args: -a 1 -dt .33 -niter 3 -imax 40 -ksp_monitor_short -pc_type pbjacobi -ksp_atol 1e-6 -irk_type gauss -irk_nstages 4 -ksp_gmres_restart 100 -physics_type advection
 
 TEST*/

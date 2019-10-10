@@ -1,5 +1,6 @@
 
 #include <petsc/private/isimpl.h>                    /*I "petscis.h"  I*/
+#include <petsc/private/sectionimpl.h>
 #include <petscbt.h>
 
 /*@
@@ -329,26 +330,29 @@ PetscErrorCode ISIntersect(IS is1,IS is2,IS *isout)
   PetscInt       i,n1,n2,nout,*iout;
   const PetscInt *i1,*i2;
   IS             is1sorted = NULL, is2sorted = NULL;
-  PetscBool      sorted;
+  PetscBool      sorted, lsorted;
   MPI_Comm       comm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is1,IS_CLASSID,1);
   PetscValidHeaderSpecific(is2,IS_CLASSID,2);
+  PetscCheckSameComm(is1,1,is2,2);
   PetscValidPointer(isout,3);
+  ierr = PetscObjectGetComm((PetscObject)is1,&comm);CHKERRQ(ierr);
 
   ierr = ISGetLocalSize(is1,&n1);CHKERRQ(ierr);
   ierr = ISGetLocalSize(is2,&n2);CHKERRQ(ierr);
   if (n1 < n2) {
-    IS tempis = is1;
-    int ntemp = n1;
+    IS       tempis = is1;
+    PetscInt ntemp = n1;
 
     is1 = is2;
     is2 = tempis;
     n1  = n2;
     n2  = ntemp;
   }
-  ierr = ISSorted(is1,&sorted);CHKERRQ(ierr);
+  ierr = ISSorted(is1,&lsorted);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&lsorted,&sorted,1,MPIU_BOOL,MPI_LAND,comm);CHKERRQ(ierr);
   if (!sorted) {
     ierr = ISDuplicate(is1,&is1sorted);CHKERRQ(ierr);
     ierr = ISSort(is1sorted);CHKERRQ(ierr);
@@ -358,7 +362,8 @@ PetscErrorCode ISIntersect(IS is1,IS is2,IS *isout)
     ierr = PetscObjectReference((PetscObject)is1);CHKERRQ(ierr);
     ierr = ISGetIndices(is1,&i1);CHKERRQ(ierr);
   }
-  ierr = ISSorted(is2,&sorted);CHKERRQ(ierr);
+  ierr = ISSorted(is2,&lsorted);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&lsorted,&sorted,1,MPIU_BOOL,MPI_LAND,comm);CHKERRQ(ierr);
   if (!sorted) {
     ierr = ISDuplicate(is2,&is2sorted);CHKERRQ(ierr);
     ierr = ISSort(is2sorted);CHKERRQ(ierr);
@@ -382,10 +387,9 @@ PetscErrorCode ISIntersect(IS is1,IS is2,IS *isout)
       }
     }
   }
-  ierr = PetscRealloc(sizeof (PetscInt) * (size_t) nout,&iout);CHKERRQ(ierr);
+  ierr = PetscRealloc(nout*sizeof(PetscInt),&iout);CHKERRQ(ierr);
 
   /* create the new IS containing the sum */
-  ierr = PetscObjectGetComm((PetscObject)is1,&comm);CHKERRQ(ierr);
   ierr = ISCreateGeneral(comm,nout,iout,PETSC_OWN_POINTER,isout);CHKERRQ(ierr);
 
   ierr = ISRestoreIndices(is2sorted,&i2);CHKERRQ(ierr);
@@ -739,20 +743,20 @@ PetscErrorCode ISEmbed(IS a, IS b, PetscBool drop, IS *c)
 
   Input arguments:
 + f      -  IS to sort
-- always -  build the permutation even when f's indices are nondecreasin.
+- always -  build the permutation even when f's indices are nondecreasing.
 
   Output argument:
-. h    -  permutation or NULL, if f is nondecreasing and always == PETSC_TRUE.
+. h    -  permutation or NULL, if f is nondecreasing and always == PETSC_FALSE.
 
 
   Note: Indices in f are unchanged. f[h[i]] is the i-th smallest f index.
         If always == PETSC_FALSE, an extra check is peformed to see whether
-	the f indices are nondecreasing. h is built on PETSC_COMM_SELF, since
-	the permutation has a local meaning only.
+        the f indices are nondecreasing. h is built on PETSC_COMM_SELF, since
+        the permutation has a local meaning only.
 
   Level: advanced
 
-.seealso ISLocalToGlobalMapping, ISSort(), PetscIntSortWithPermutation()
+.seealso ISLocalToGlobalMapping, ISSort()
  @*/
 PetscErrorCode ISSortPermutation(IS f,PetscBool always,IS *h)
 {
@@ -771,8 +775,8 @@ PetscErrorCode ISSortPermutation(IS f,PetscBool always,IS *h)
     isincreasing = PETSC_TRUE;
     for (i = 1; i < fsize; ++i) {
       if (findices[i] <= findices[i-1]) {
-	isincreasing = PETSC_FALSE;
-	break;
+        isincreasing = PETSC_FALSE;
+        break;
       }
     }
     if (isincreasing) {
@@ -785,5 +789,6 @@ PetscErrorCode ISSortPermutation(IS f,PetscBool always,IS *h)
   ierr = PetscSortIntWithPermutation(fsize,findices,hindices);CHKERRQ(ierr);
   ierr = ISRestoreIndices(f,&findices);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF,fsize,hindices,PETSC_OWN_POINTER,h);CHKERRQ(ierr);
+  (*h)->isperm = PETSC_TRUE;
   PetscFunctionReturn(0);
 }

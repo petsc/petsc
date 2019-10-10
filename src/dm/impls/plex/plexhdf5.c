@@ -2,6 +2,7 @@
 #include <petsc/private/isimpl.h>
 #include <petsc/private/vecimpl.h>
 #include <petsc/private/viewerhdf5impl.h>
+#include <petsclayouthdf5.h>
 
 PETSC_EXTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
 
@@ -127,7 +128,7 @@ PetscErrorCode VecView_Plex_Local_HDF5_Internal(Vec v, PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject) v, VECSEQ, &isseq);CHKERRQ(ierr);
   ierr = VecGetDM(v, &dm);CHKERRQ(ierr);
-  ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
+  ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);
   ierr = DMGetOutputSequenceNumber(dm, &seqnum, &seqval);CHKERRQ(ierr);
   ierr = PetscViewerHDF5SetTimestep(viewer, seqnum);CHKERRQ(ierr);
   ierr = DMSequenceView_HDF5(dm, "time", seqnum, (PetscScalar) seqval, viewer);CHKERRQ(ierr);
@@ -569,8 +570,8 @@ static PetscErrorCode DMPlexWriteCoordinates_Vertices_HDF5_Static(DM dm, PetscVi
   if (localized == PETSC_FALSE) PetscFunctionReturn(0);
   ierr = DMGetPeriodicity(dm, NULL, NULL, &L, &bd);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
-  ierr = DMGetDefaultSection(cdm, &cSection);CHKERRQ(ierr);
-  ierr = DMGetDefaultGlobalSection(cdm, &cGlobalSection);CHKERRQ(ierr);
+  ierr = DMGetLocalSection(cdm, &cSection);CHKERRQ(ierr);
+  ierr = DMGetGlobalSection(cdm, &cGlobalSection);CHKERRQ(ierr);
   ierr = DMGetLabel(dm, "periodic_cut", &cutLabel);CHKERRQ(ierr);
   N    = 0;
 

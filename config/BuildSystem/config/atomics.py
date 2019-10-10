@@ -82,6 +82,7 @@ class Configure(config.base.Configure):
     return
 
   def configure(self):
-    self.executeTest(self.configureCPURelax)
-    self.executeTest(self.configureMemoryBarriers)
+    # These are not currently used in PETSc
+    # self.executeTest(self.configureCPURelax)
+    # self.executeTest(self.configureMemoryBarriers)
     return

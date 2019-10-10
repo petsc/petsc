@@ -5,13 +5,13 @@ Distributed Mesh in 2 dimensions:
   1-cells: 60 60 60 30 30
   2-cells: 32 32 32 16 16
 Labels:
-  markerLeft: 1 strata with value/size (1 (17))
-  markerTop: 0 strata with value/size ()
-  markerRight: 0 strata with value/size ()
-  markerBottom: 1 strata with value/size (1 (8))
-  Face Sets: 2 strata with value/size (1 (7), 4 (14))
-  marker: 2 strata with value/size (1 (8), 4 (17))
   depth: 3 strata with value/size (0 (29), 1 (60), 2 (32))
+  marker: 2 strata with value/size (1 (8), 4 (17))
+  Face Sets: 2 strata with value/size (1 (7), 4 (14))
+  markerBottom: 1 strata with value/size (1 (8))
+  markerRight: 0 strata with value/size ()
+  markerTop: 0 strata with value/size ()
+  markerLeft: 1 strata with value/size (1 (17))
 Integral of pressure: 0.
 SNES Object: 5 MPI processes
   type: newtonls
@@ -233,6 +233,7 @@ SNES Object: 5 MPI processes
           Eliminate dirichlet boundary dofs: 1
           Switch on static condensation ops around the interface preconditioner: 1
           Use exact dirichlet trick: 0
+          Interface extension: DIRICHLET
           Multilevel max levels: 0
           Multilevel coarsening ratio: 8
           Use estimated eigs for coarse problem: 0
@@ -270,10 +271,9 @@ SNES Object: 5 MPI processes
             maximum iterations=10000, initial guess is zero
             tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
             left preconditioning
-            using DEFAULT norm type for convergence test
+            using NONE norm type for convergence test
           PC Object: (fetidp_bddc_pc_bddc_dirichlet_) 1 MPI processes
             type: none
-            PC has not been set up so information may be incomplete
             linear system matrix = precond matrix:
             Mat Object: (fetidp_bddc_pc_bddc_dirichlet_) 1 MPI processes
               type: seqaij

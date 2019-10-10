@@ -495,7 +495,6 @@ PetscErrorCode DMShellSetLocalVector(DM dm,Vec X)
 @*/
 PetscErrorCode DMShellSetCreateLocalVector(DM dm,PetscErrorCode (*func)(DM,Vec*))
 {
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   dm->ops->createlocalvector = func;
@@ -522,6 +521,7 @@ PetscErrorCode DMShellSetCreateLocalVector(DM dm,PetscErrorCode (*func)(DM,Vec*)
 @*/
 PetscErrorCode DMShellSetGlobalToLocal(DM dm,PetscErrorCode (*begin)(DM,Vec,InsertMode,Vec),PetscErrorCode (*end)(DM,Vec,InsertMode,Vec)) {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   dm->ops->globaltolocalbegin = begin;
   dm->ops->globaltolocalend = end;
   PetscFunctionReturn(0);
@@ -547,6 +547,7 @@ PetscErrorCode DMShellSetGlobalToLocal(DM dm,PetscErrorCode (*begin)(DM,Vec,Inse
 @*/
 PetscErrorCode DMShellSetLocalToGlobal(DM dm,PetscErrorCode (*begin)(DM,Vec,InsertMode,Vec),PetscErrorCode (*end)(DM,Vec,InsertMode,Vec)) {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   dm->ops->localtoglobalbegin = begin;
   dm->ops->localtoglobalend = end;
   PetscFunctionReturn(0);
@@ -572,6 +573,7 @@ PetscErrorCode DMShellSetLocalToGlobal(DM dm,PetscErrorCode (*begin)(DM,Vec,Inse
 @*/
 PetscErrorCode DMShellSetLocalToLocal(DM dm,PetscErrorCode (*begin)(DM,Vec,InsertMode,Vec),PetscErrorCode (*end)(DM,Vec,InsertMode,Vec)) {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   dm->ops->localtolocalbegin = begin;
   dm->ops->localtolocalend = end;
   PetscFunctionReturn(0);
@@ -596,8 +598,9 @@ PetscErrorCode DMShellSetGlobalToLocalVecScatter(DM dm, VecScatter gtol)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(gtol,VEC_SCATTER_CLASSID,2);
   ierr = PetscObjectReference((PetscObject)gtol);CHKERRQ(ierr);
-  /* Call VecScatterDestroy() to avoid a memory leak in case of re-setting. */
   ierr = VecScatterDestroy(&shell->gtol);CHKERRQ(ierr);
   shell->gtol = gtol;
   PetscFunctionReturn(0);
@@ -622,8 +625,9 @@ PetscErrorCode DMShellSetLocalToGlobalVecScatter(DM dm, VecScatter ltog)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(ltog,VEC_SCATTER_CLASSID,2);
   ierr = PetscObjectReference((PetscObject)ltog);CHKERRQ(ierr);
-  /* Call VecScatterDestroy() to avoid a memory leak in case of re-setting. */
   ierr = VecScatterDestroy(&shell->ltog);CHKERRQ(ierr);
   shell->ltog = ltog;
   PetscFunctionReturn(0);
@@ -648,8 +652,9 @@ PetscErrorCode DMShellSetLocalToLocalVecScatter(DM dm, VecScatter ltol)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(ltol,VEC_SCATTER_CLASSID,2);
   ierr = PetscObjectReference((PetscObject)ltol);CHKERRQ(ierr);
-  /* Call VecScatterDestroy() to avoid a memory leak in case of re-setting. */
   ierr = VecScatterDestroy(&shell->ltol);CHKERRQ(ierr);
   shell->ltol = ltol;
   PetscFunctionReturn(0);

@@ -42,7 +42,7 @@ PETSC_EXTERN PetscErrorCode DMLocalToGlobalEnd_Moab(DM, Vec, InsertMode, Vec);
 
 /* Un-implemented routines */
 /*
-PETSC_EXTERN PetscErrorCode DMCreateDefaultSection_Moab(DM dm);
+PETSC_EXTERN PetscErrorCode DMCreatelocalsection_Moab(DM dm);
 PETSC_EXTERN PetscErrorCode DMCreateInjection_Moab(DM dmCoarse, DM dmFine, Mat *mat);
 PETSC_EXTERN PetscErrorCode DMLoad_Moab(DM dm, PetscViewer viewer);
 PETSC_EXTERN PetscErrorCode DMGetDimPoints_Moab(DM dm, PetscInt dim, PetscInt *pStart, PetscInt *pEnd);
@@ -1481,7 +1481,7 @@ PETSC_EXTERN PetscErrorCode DMInitialize_Moab(DM dm)
   dm->ops->setfromoptions                  = DMSetFromOptions_Moab;
   dm->ops->clone                           = DMClone_Moab;
   dm->ops->setup                           = DMSetUp_Moab;
-  dm->ops->createdefaultsection            = NULL;
+  dm->ops->createlocalsection            = NULL;
   dm->ops->createdefaultconstraints        = NULL;
   dm->ops->createglobalvector              = DMCreateGlobalVector_Moab;
   dm->ops->createlocalvector               = DMCreateLocalVector_Moab;

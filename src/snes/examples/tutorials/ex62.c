@@ -536,7 +536,6 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   DM              cdm   = dm;
   const PetscInt  dim   = user->dim;
   PetscFE         fe[2];
-  PetscQuadrature q;
   MPI_Comm        comm;
   PetscErrorCode  ierr;
 
@@ -545,9 +544,8 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
   ierr = PetscFECreateDefault(comm, dim, dim, user->simplex, "vel_", PETSC_DEFAULT, &fe[0]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[0], "velocity");CHKERRQ(ierr);
-  ierr = PetscFEGetQuadrature(fe[0], &q);CHKERRQ(ierr);
   ierr = PetscFECreateDefault(comm, dim, 1, user->simplex, "pres_", PETSC_DEFAULT, &fe[1]);CHKERRQ(ierr);
-  ierr = PetscFESetQuadrature(fe[1], q);CHKERRQ(ierr);
+  ierr = PetscFECopyQuadrature(fe[0], fe[1]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[1], "pressure");CHKERRQ(ierr);
   /* Set discretization and boundary conditions for each mesh */
   ierr = DMSetField(dm, 0, NULL, (PetscObject) fe[0]);CHKERRQ(ierr);
@@ -686,7 +684,7 @@ int main(int argc, char **argv)
     ierr = SNESSolve(snes, NULL, u);CHKERRQ(ierr);
     ierr = DMComputeL2Diff(dm, 0.0, user.exactFuncs, NULL, u, &error);CHKERRQ(ierr);
     ierr = DMComputeL2FieldDiff(dm, 0.0, user.exactFuncs, NULL, u, ferrors);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g [%g, %g]\n", error, ferrors[0], ferrors[1]);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g [%g, %g]\n", (double)error, (double)ferrors[0], (double)ferrors[1]);CHKERRQ(ierr);
     if (user.showError) {
       Vec r;
 
@@ -704,7 +702,7 @@ int main(int argc, char **argv)
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Initial guess\n");CHKERRQ(ierr);
     ierr = VecView(u, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = DMComputeL2Diff(dm, 0.0, user.exactFuncs, NULL, u, &error);CHKERRQ(ierr);
-    if (error >= 1.0e-11) {ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g\n", error);CHKERRQ(ierr);}
+    if (error >= 1.0e-11) {ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g\n", (double)error);CHKERRQ(ierr);}
     else                  {ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: < 1.0e-11\n");CHKERRQ(ierr);}
     /* Check residual */
     ierr = SNESComputeFunction(snes, u, r);CHKERRQ(ierr);
@@ -712,7 +710,7 @@ int main(int argc, char **argv)
     ierr = VecChop(r, 1.0e-10);CHKERRQ(ierr);
     ierr = VecView(r, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = VecNorm(r, NORM_2, &res);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Residual: %g\n", res);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Residual: %g\n", (double)res);CHKERRQ(ierr);
     /* Check Jacobian */
     {
       Mat          J, M;
@@ -735,7 +733,7 @@ int main(int argc, char **argv)
       ierr = VecChop(r, 1.0e-10);CHKERRQ(ierr);
       ierr = VecView(r, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
       ierr = VecNorm(r, NORM_2, &res);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD, "Linear L_2 Residual: %g\n", res);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "Linear L_2 Residual: %g\n", (double)res);CHKERRQ(ierr);
     }
   }
   ierr = VecViewFromOptions(u, NULL, "-sol_vec_view");CHKERRQ(ierr);
@@ -1123,7 +1121,7 @@ int main(int argc, char **argv)
   test:
     requires: !single
     suffix: bddc_quad
-    nsize: 5
-    args: -run_type full -dm_refine 2 -bc_type dirichlet -interpolate 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -snes_view -snes_error_if_not_converged -dm_mat_type is -ksp_type gmres -ksp_rtol 1.e-8 -pc_type bddc -pc_bddc_corner_selection -pc_bddc_dirichlet_pc_type svd -pc_bddc_neumann_pc_type svd -pc_bddc_coarse_redundant_pc_type svd -simplex 0 -petscpartitioner_type simple -ksp_monitor_short -pc_bddc_symmetric 0
+    nsize: 2
+    args: -run_type full -dm_refine 1 -bc_type dirichlet -interpolate 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -snes_view -snes_error_if_not_converged -dm_mat_type is -ksp_type gmres -ksp_rtol 1.e-8 -pc_type bddc -pc_bddc_corner_selection -pc_bddc_dirichlet_pc_type svd -pc_bddc_neumann_pc_type svd -pc_bddc_coarse_redundant_pc_type svd -simplex 0 -petscpartitioner_type simple -ksp_monitor_short -pc_bddc_symmetric 0
 
 TEST*/

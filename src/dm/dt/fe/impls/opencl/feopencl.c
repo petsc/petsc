@@ -2,7 +2,7 @@
 
 #if defined(PETSC_HAVE_OPENCL)
 
-PetscErrorCode PetscFEDestroy_OpenCL(PetscFE fem)
+static PetscErrorCode PetscFEDestroy_OpenCL(PetscFE fem)
 {
   PetscFE_OpenCL *ocl = (PetscFE_OpenCL *) fem->data;
   PetscErrorCode  ierr;
@@ -34,7 +34,7 @@ enum {LAPLACIAN = 0, ELASTICITY = 1};
 /* N_{sqc} Number of serial     quadrature cells: N_{bs} / N_b        */
 /* N_{cb}  Number of serial cell batches:         input               */
 /* N_c     Number of total cells:                 N_{cb}*N_{t}/N_{comp} */
-PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_buffer, PetscInt buffer_length, PetscBool useAux, PetscInt N_bl)
+static PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_buffer, PetscInt buffer_length, PetscBool useAux, PetscInt N_bl)
 {
   PetscFE_OpenCL *ocl = (PetscFE_OpenCL *) fem->data;
   PetscQuadrature q;
@@ -448,7 +448,7 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscFEOpenCLGetIntegrationKernel(PetscFE fem, PetscBool useAux, cl_program *ocl_prog, cl_kernel *ocl_kernel)
+static PetscErrorCode PetscFEOpenCLGetIntegrationKernel(PetscFE fem, PetscBool useAux, cl_program *ocl_prog, cl_kernel *ocl_kernel)
 {
   PetscFE_OpenCL *ocl = (PetscFE_OpenCL *) fem->data;
   PetscInt        dim, N_bl;
@@ -478,13 +478,14 @@ PetscErrorCode PetscFEOpenCLGetIntegrationKernel(PetscFE fem, PetscBool useAux, 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscFEOpenCLCalculateGrid(PetscFE fem, PetscInt N, PetscInt blockSize, size_t *x, size_t *y, size_t *z)
+static PetscErrorCode PetscFEOpenCLCalculateGrid(PetscFE fem, PetscInt N, PetscInt blockSize, size_t *x, size_t *y, size_t *z)
 {
   const PetscInt Nblocks = N/blockSize;
 
   PetscFunctionBegin;
   if (N % blockSize) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid block size %d for %d elements", blockSize, N);
   *z = 1;
+  *y = 1;
   for (*x = (size_t) (PetscSqrtReal(Nblocks) + 0.5); *x > 0; --*x) {
     *y = Nblocks / *x;
     if (*x * *y == Nblocks) break;
@@ -493,7 +494,7 @@ PetscErrorCode PetscFEOpenCLCalculateGrid(PetscFE fem, PetscInt N, PetscInt bloc
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscFEOpenCLLogResidual(PetscFE fem, PetscLogDouble time, PetscLogDouble flops)
+static PetscErrorCode PetscFEOpenCLLogResidual(PetscFE fem, PetscLogDouble time, PetscLogDouble flops)
 {
   PetscFE_OpenCL   *ocl = (PetscFE_OpenCL *) fem->data;
   PetscStageLog     stageLog;
@@ -512,8 +513,8 @@ PetscErrorCode PetscFEOpenCLLogResidual(PetscFE fem, PetscLogDouble time, PetscL
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscDS prob, PetscInt field, PetscInt Ne, PetscFEGeom *cgeom,
-                                               const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscScalar elemVec[])
+static PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscDS prob, PetscInt field, PetscInt Ne, PetscFEGeom *cgeom,
+                                                      const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscScalar elemVec[])
 {
   /* Nbc = batchSize */
   PetscFE           fem;
@@ -775,7 +776,7 @@ PETSC_EXTERN PetscErrorCode PetscFESetUp_Basic(PetscFE);
 PETSC_EXTERN PetscErrorCode PetscFEGetTabulation_Basic(PetscFE, PetscInt, const PetscReal [],
                                                        PetscReal *, PetscReal *, PetscReal *);
 
-PetscErrorCode PetscFEInitialize_OpenCL(PetscFE fem)
+static PetscErrorCode PetscFEInitialize_OpenCL(PetscFE fem)
 {
   PetscFunctionBegin;
   fem->ops->setfromoptions          = NULL;
@@ -836,6 +837,17 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_OpenCL(PetscFE fem)
   PetscFunctionReturn(0);
 }
 
+/*@
+  PetscFEOpenCLSetRealType - Set the scalar type for running on the accelerator
+
+  Input Parameters:
++ fem      - The PetscFE
+- realType - The scalar type
+
+  Level: developer
+
+.seealso: PetscFEOpenCLGetRealType()
+@*/
 PetscErrorCode PetscFEOpenCLSetRealType(PetscFE fem, PetscDataType realType)
 {
   PetscFE_OpenCL *ocl = (PetscFE_OpenCL *) fem->data;
@@ -846,6 +858,19 @@ PetscErrorCode PetscFEOpenCLSetRealType(PetscFE fem, PetscDataType realType)
   PetscFunctionReturn(0);
 }
 
+/*@
+  PetscFEOpenCLGetRealType - Get the scalar type for running on the accelerator
+
+  Input Parameter:
+. fem      - The PetscFE
+
+  Output Parameter:
+. realType - The scalar type
+
+  Level: developer
+
+.seealso: PetscFEOpenCLSetRealType()
+@*/
 PetscErrorCode PetscFEOpenCLGetRealType(PetscFE fem, PetscDataType *realType)
 {
   PetscFE_OpenCL *ocl = (PetscFE_OpenCL *) fem->data;

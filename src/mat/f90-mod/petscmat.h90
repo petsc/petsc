@@ -457,7 +457,7 @@
         end subroutine
         subroutine MatSetValuesBlockedn1(a,b,c,d,e,f,g,z)
           use petscmatdef
-          Mat xa ! Mat
+          Mat a ! Mat
           PetscInt b ! PetscInt
           PetscInt c (*) ! PetscInt
           PetscInt d ! PetscInt

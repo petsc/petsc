@@ -25,13 +25,13 @@ PetscErrorCode MatDestroy_SeqDense_MatTransMatMult(Mat A)
 PetscErrorCode MatTransposeMatMult_SeqAIJ_SeqDense(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
- 
+
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
     ierr = PetscLogEventBegin(MAT_TransposeMatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
     ierr = MatTransposeMatMultSymbolic_SeqAIJ_SeqDense(A,B,fill,C);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(MAT_TransposeMatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
-  } 
+  }
   ierr = PetscLogEventBegin(MAT_TransposeMatMultNumeric,A,B,0,0);CHKERRQ(ierr);
   ierr = MatTransposeMatMultNumeric_SeqAIJ_SeqDense(A,B,*C);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_TransposeMatMultNumeric,A,B,0,0);CHKERRQ(ierr);
@@ -66,11 +66,12 @@ PetscErrorCode MatTransposeMatMultSymbolic_SeqAIJ_SeqDense(Mat A,Mat B,PetscReal
   atb->bt = bt;
   atb->ct = ct;
 
-  *C                   = Cdense;
-  c                    = (Mat_SeqDense*)Cdense->data;
-  c->atb               = atb;
-  atb->destroy         = Cdense->ops->destroy;
-  Cdense->ops->destroy = MatDestroy_SeqDense_MatTransMatMult;
+  *C                                   = Cdense;
+  c                                    = (Mat_SeqDense*)Cdense->data;
+  c->atb                               = atb;
+  atb->destroy                         = Cdense->ops->destroy;
+  Cdense->ops->destroy                 = MatDestroy_SeqDense_MatTransMatMult;
+  Cdense->ops->transposematmultnumeric = MatTransposeMatMultNumeric_SeqAIJ_SeqDense;
   PetscFunctionReturn(0);
 }
 

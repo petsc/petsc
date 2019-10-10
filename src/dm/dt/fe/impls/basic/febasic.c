@@ -1,7 +1,7 @@
 #include <petsc/private/petscfeimpl.h> /*I "petscfe.h" I*/
 #include <petscblaslapack.h>
 
-PetscErrorCode PetscFEDestroy_Basic(PetscFE fem)
+static PetscErrorCode PetscFEDestroy_Basic(PetscFE fem)
 {
   PetscFE_Basic *b = (PetscFE_Basic *) fem->data;
   PetscErrorCode ierr;
@@ -11,7 +11,7 @@ PetscErrorCode PetscFEDestroy_Basic(PetscFE fem)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscFEView_Basic_Ascii(PetscFE fe, PetscViewer v)
+static PetscErrorCode PetscFEView_Basic_Ascii(PetscFE fe, PetscViewer v)
 {
   PetscInt          dim, Nc;
   PetscSpace        basis = NULL;
@@ -34,7 +34,7 @@ PetscErrorCode PetscFEView_Basic_Ascii(PetscFE fe, PetscViewer v)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscFEView_Basic(PetscFE fe, PetscViewer v)
+static PetscErrorCode PetscFEView_Basic(PetscFE fe, PetscViewer v)
 {
   PetscBool      iascii;
   PetscErrorCode ierr;
@@ -82,10 +82,13 @@ PetscErrorCode PetscFESetUp_Basic(PetscFE fem)
     }
     ierr = PetscFree(Bf);CHKERRQ(ierr);
   }
+
   ierr = PetscMalloc2(pdim,&pivots,pdim,&work);CHKERRQ(ierr);
   n = pdim;
   PetscStackCallBLAS("LAPACKgetrf", LAPACKgetrf_(&n, &n, invVscalar, &n, pivots, &info));
+  if (info) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from LAPACKgetrf %D",(PetscInt)info);
   PetscStackCallBLAS("LAPACKgetri", LAPACKgetri_(&n, invVscalar, &n, pivots, work, &n, &info));
+  if (info) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from LAPACKgetri %D",(PetscInt)info);
 #if defined(PETSC_USE_COMPLEX)
   for (j = 0; j < pdim*pdim; j++) fem->invV[j] = PetscRealPart(invVscalar[j]);
   ierr = PetscFree(invVscalar);CHKERRQ(ierr);
@@ -175,8 +178,8 @@ PetscErrorCode PetscFEGetTabulation_Basic(PetscFE fem, PetscInt npoints, const P
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscFEIntegrate_Basic(PetscDS ds, PetscInt field, PetscInt Ne, PetscFEGeom *cgeom,
-                                      const PetscScalar coefficients[], PetscDS dsAux, const PetscScalar coefficientsAux[], PetscScalar integral[])
+static PetscErrorCode PetscFEIntegrate_Basic(PetscDS ds, PetscInt field, PetscInt Ne, PetscFEGeom *cgeom,
+                                             const PetscScalar coefficients[], PetscDS dsAux, const PetscScalar coefficientsAux[], PetscScalar integral[])
 {
   const PetscInt     debug = 0;
   PetscFE            fe;
@@ -267,9 +270,9 @@ PetscErrorCode PetscFEIntegrate_Basic(PetscDS ds, PetscInt field, PetscInt Ne, P
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscFEIntegrateBd_Basic(PetscDS ds, PetscInt field,
-                                        PetscBdPointFunc obj_func,
-                                        PetscInt Ne, PetscFEGeom *fgeom, const PetscScalar coefficients[], PetscDS dsAux, const PetscScalar coefficientsAux[], PetscScalar integral[])
+static PetscErrorCode PetscFEIntegrateBd_Basic(PetscDS ds, PetscInt field,
+                                               PetscBdPointFunc obj_func,
+                                               PetscInt Ne, PetscFEGeom *fgeom, const PetscScalar coefficients[], PetscDS dsAux, const PetscScalar coefficientsAux[], PetscScalar integral[])
 {
   const PetscInt     debug = 0;
   PetscFE            fe;
@@ -752,8 +755,8 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscDS ds, PetscFEJacobianType jt
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscDS ds, PetscInt fieldI, PetscInt fieldJ, PetscInt Ne, PetscFEGeom *fgeom,
-                                                const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS dsAux, const PetscScalar coefficientsAux[], PetscReal t, PetscReal u_tshift, PetscScalar elemMat[])
+static PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscDS ds, PetscInt fieldI, PetscInt fieldJ, PetscInt Ne, PetscFEGeom *fgeom,
+                                                       const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS dsAux, const PetscScalar coefficientsAux[], PetscReal t, PetscReal u_tshift, PetscScalar elemMat[])
 {
   const PetscInt     debug      = 0;
   PetscFE            feI, feJ;
@@ -790,6 +793,7 @@ PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscDS ds, PetscInt fieldI, Pet
   ierr = PetscDSGetFieldOffset(ds, fieldI, &offsetI);CHKERRQ(ierr);
   ierr = PetscDSGetFieldOffset(ds, fieldJ, &offsetJ);CHKERRQ(ierr);
   ierr = PetscDSGetBdJacobian(ds, fieldI, fieldJ, &g0_func, &g1_func, &g2_func, &g3_func);CHKERRQ(ierr);
+  if (!g0_func && !g1_func && !g2_func && !g3_func) PetscFunctionReturn(0);
   ierr = PetscDSGetEvaluationArrays(ds, &u, coefficients_t ? &u_t : NULL, &u_x);CHKERRQ(ierr);
   ierr = PetscDSGetWorkspace(ds, &x, &basisReal, &basisDerReal, &testReal, &testDerReal);CHKERRQ(ierr);
   ierr = PetscDSGetWeakFormArrays(ds, NULL, NULL, &g0, &g1, &g2, &g3);CHKERRQ(ierr);
@@ -819,6 +823,10 @@ PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscDS ds, PetscInt fieldI, Pet
   Np = fgeom->numPoints;
   dE = fgeom->dimEmbed;
   isAffine = fgeom->isAffine;
+  ierr = PetscArrayzero(g0, NcI*NcJ);CHKERRQ(ierr);
+  ierr = PetscArrayzero(g1, NcI*NcJ*dim);CHKERRQ(ierr);
+  ierr = PetscArrayzero(g2, NcI*NcJ*dim);CHKERRQ(ierr);
+  ierr = PetscArrayzero(g3, NcI*NcJ*dim*dim);CHKERRQ(ierr);
   for (e = 0; e < Ne; ++e) {
     PetscFEGeom    fegeom, cgeom;
     const PetscInt face = fgeom->face[e][0];
@@ -908,7 +916,7 @@ PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscDS ds, PetscInt fieldI, Pet
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscFEInitialize_Basic(PetscFE fem)
+static PetscErrorCode PetscFEInitialize_Basic(PetscFE fem)
 {
   PetscFunctionBegin;
   fem->ops->setfromoptions          = NULL;

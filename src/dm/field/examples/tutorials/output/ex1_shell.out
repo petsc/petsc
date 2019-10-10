@@ -9,9 +9,9 @@ DMField Object: field 1 MPI processes
     1-cells:   33  
     2-cells:   18  
   Labels:
-    Face Sets: 1 strata with value/size (1 (12))
-    marker: 1 strata with value/size (1 (24))
     depth: 3 strata with value/size (0 (16), 1 (33), 2 (18))
+    marker: 1 strata with value/size (1 (24))
+    Face Sets: 1 strata with value/size (1 (12))
 Vec Object: Test Points 1 MPI processes
   type: mpi
 Process [0]

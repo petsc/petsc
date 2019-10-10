@@ -270,6 +270,9 @@ getautoconfargs:
 .cu.o:
 	${PETSC_CUCOMPILE_SINGLE} `pwd`/$<
 
+.F.o .F90.o .F95.o:
+	${PETSC_FCOMPILE} -o $@ $<
+
 #
 #  These rules are for compiling the test examples.
 #
@@ -750,6 +753,9 @@ checkbadURLS:
           fi; \
         done
 
+checkbadSpelling:
+	-@x=`python3 ../bin/extract.py | aspell list | sort -u` ; 
+
 sourcelist:
 	-@for i in ${SOURCEALL}; do \
 	    /bin/echo -n ${LOCDIR}$${i} " " >> ${BASE_DIR}/files; \
@@ -767,6 +773,11 @@ uncrustify:
 	@for i in ${SOURCED} ${EXAMPLESC}; do \
 	  uncrustify -c ${PETSC_DIR}/lib/petsc/conf/uncrustify.cfg $$i; \
 	done
+
+updatedatafiles:
+	-@if [ -d "${HOME}/datafiles" ]; then \
+            echo " ** Updating datafiles at ${HOME}/datafiles **"; \
+            cd "${HOME}/datafiles" && git pull -q; fi
 
 include ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscrules
 

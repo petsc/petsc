@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit              = '484155e' #master jul-18-2019
+    self.gitcommit              = '921803d' #master sep-29-2019
     self.download               = ['git://https://bitbucket.org/petsc/petsc4py','https://bitbucket.org/petsc/petsc4py/get/'+self.gitcommit+'.tar.gz']
     self.functions              = []
     self.includes               = []
@@ -39,7 +39,7 @@ class Configure(config.package.Package):
         archflags = "ARCHFLAGS=\'-arch x86_64\' "
 
     # if installing prefix location then need to set new value for PETSC_DIR/PETSC_ARCH
-    if self.argDB['prefix']:
+    if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
        newdir = 'PETSC_DIR='+os.path.abspath(os.path.expanduser(self.argDB['prefix']))+' '+'PETSC_ARCH= MPICC=${PCC} '
     else:
        newdir = 'MPICC=${PCC} '
@@ -51,6 +51,7 @@ class Configure(config.package.Package):
        newuser = ''
 
     self.addDefine('HAVE_PETSC4PY',1)
+    self.addDefine('PETSC4PY_INSTALL_PATH','"'+os.path.join(self.installdir.dir,'lib')+'"')
     self.addMakeMacro('PETSC4PY','yes')
     self.addMakeRule('petsc4pybuild','', \
                        ['@echo "*** Building petsc4py ***"',\
@@ -74,7 +75,7 @@ class Configure(config.package.Package):
                           '@echo "====================================="',\
                           '@echo "To use petsc4py, add '+os.path.join(self.installdir.dir,'lib')+' to PYTHONPATH"',\
                           '@echo "====================================="'])
-    if self.argDB['prefix']:
+    if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
       self.addMakeRule('petsc4py-build','')
       # the build must be done at install time because PETSc shared libraries must be in final location before building petsc4py
       self.addMakeRule('petsc4py-install','petsc4pybuild petsc4pyinstall')

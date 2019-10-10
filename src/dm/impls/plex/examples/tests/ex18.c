@@ -536,7 +536,7 @@ static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, PetscBool interpolate, App
     ierr = DMPlexFixFaceOrientations_Translate_Private(user->ornt[rank], &start, &reverse);CHKERRQ(ierr);
     ierr = DMPlexOrientCell_Internal(*dm, ifp[rank], start, reverse);CHKERRQ(ierr);
     ierr = DMPlexCheckFaces(*dm, 0);CHKERRQ(ierr);
-    ierr = DMPlexOrientInterface(*dm);CHKERRQ(ierr);
+    ierr = DMPlexOrientInterface_Internal(*dm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -765,6 +765,7 @@ static PetscErrorCode TestExpandPoints(DM dm, AppCtx *user)
   PetscInt          d,depth;
   PetscMPIInt       rank;
   PetscErrorCode    ierr;
+  PetscViewer       sviewer;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
@@ -774,14 +775,16 @@ static PetscErrorCode TestExpandPoints(DM dm, AppCtx *user)
     ierr = ISCreateGeneral(PETSC_COMM_SELF, user->nPointsToExpand, user->pointsToExpand, PETSC_USE_POINTER, &is);CHKERRQ(ierr);
   }
   ierr = DMPlexGetConeRecursive(dm, is, &depth, &iss, &sects);CHKERRQ(ierr);
-  ierr = PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF, "[%d] ==========================\n",rank);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPushSynchronized(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD, "[%d] ==========================\n",rank);CHKERRQ(ierr);
   for (d=depth-1; d>=0; d--) {
-    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF, "depth %D ---------------\n",d);CHKERRQ(ierr);
-    ierr = PetscSectionView(sects[d], PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-    ierr = ISView(iss[d], PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD, "depth %D ---------------\n",d);CHKERRQ(ierr);
+    ierr = PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
+    ierr = PetscSectionView(sects[d], sviewer);CHKERRQ(ierr);
+    ierr = ISView(iss[d], sviewer);CHKERRQ(ierr);
+    ierr = PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
   }
-  ierr = PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPopSynchronized(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = DMPlexRestoreConeRecursive(dm, is, &depth, &iss, &sects);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -971,5 +974,36 @@ int main(int argc, char **argv)
     args: -distribute 0 -interpolate serial
     args: -view_vertices_from_coords 0.,1.,0.,-0.5,1.,0.,0.583,-0.644,0.,-2.,-2.,-2. -view_vertices_from_coords_tol 1e-3
 
+  testset:
+    requires: hdf5 !complex datafilespath
+    #TODO DMPlexCheckPointSF() fails for nsize 4
+    nsize: {{1 2}}
+    args: -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
+    args: -filename ${DATAFILESPATH}/meshes/cube-hexahedra-refined.h5 -dm_plex_create_from_hdf5_xdmf -dm_plex_hdf5_topology_path /cells -dm_plex_hdf5_geometry_path /coordinates
+    test:
+      suffix: 9_hdf5_seqload
+      args: -distribute -petscpartitioner_type simple
+      args: -interpolate {{none serial parallel}}
+      args: -dm_plex_hdf5_force_sequential
+    test:
+      suffix: 9_hdf5_seqload_metis
+      requires: parmetis
+      args: -distribute -petscpartitioner_type parmetis
+      args: -interpolate {{serial parallel}}
+      args: -dm_plex_hdf5_force_sequential
+    test:
+      suffix: 9_hdf5
+      args: -interpolate {{none serial}}  #TODO serial means before DMPlexDistribute but plex is already parallel from DMLoad - serial/parallel should be renamed
+    test:
+      suffix: 9_hdf5_repart
+      requires: parmetis
+      args: -distribute -petscpartitioner_type parmetis
+      args: -interpolate {{serial}}  #TODO parallel means after DMPlexDistribute but plex is already parallel from DMLoad - serial/parallel should be renamed
+    test:
+      TODO: Parallel partitioning of uninterpolated meshes not supported
+      suffix: 9_hdf5_repart_ppu
+      requires: parmetis
+      args: -distribute -petscpartitioner_type parmetis
+      args: -interpolate {{none parallel}}  #TODO parallel means after DMPlexDistribute but plex is already parallel from DMLoad - serial/parallel should be renamed
 
 TEST*/

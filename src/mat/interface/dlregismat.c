@@ -193,6 +193,8 @@ PetscErrorCode  MatInitializePackage(void)
   ierr = PetscLogEventRegister("MatCholeskyFctr",  MAT_CLASSID,&MAT_CholeskyFactor);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatCholFctrSym",   MAT_CLASSID,&MAT_CholeskyFactorSymbolic);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatCholFctrNum",   MAT_CLASSID,&MAT_CholeskyFactorNumeric);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatFctrFactSchur", MAT_CLASSID,&MAT_FactorFactS);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatFctrInvSchur",  MAT_CLASSID,&MAT_FactorInvS);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatILUFactor",     MAT_CLASSID,&MAT_ILUFactor);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatILUFactorSym",  MAT_CLASSID,&MAT_ILUFactorSymbolic);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatICCFactorSym",  MAT_CLASSID,&MAT_ICCFactorSymbolic);CHKERRQ(ierr);
@@ -242,7 +244,7 @@ PetscErrorCode  MatInitializePackage(void)
   ierr = PetscLogEventRegister("MatTrnMatMult",    MAT_CLASSID,&MAT_TransposeMatMult);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatTrnMatMultSym", MAT_CLASSID,&MAT_TransposeMatMultSymbolic);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatTrnMatMultNum", MAT_CLASSID,&MAT_TransposeMatMultNumeric);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatTrnColorCreate", MAT_CLASSID,&MAT_TransposeColoringCreate);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatTrnColorCreate",MAT_CLASSID,&MAT_TransposeColoringCreate);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatRedundantMat",  MAT_CLASSID,&MAT_RedundantMat);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatGetSeqNZStrct", MAT_CLASSID,&MAT_GetSequentialNonzeroStructure);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatGetMultiProcB", MAT_CLASSID,&MAT_GetMultiProcBlock);CHKERRQ(ierr);

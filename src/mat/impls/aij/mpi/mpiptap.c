@@ -569,7 +569,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,PetscReal fill
   for (k=0; k<nrecv; k++) {/* k-th received message */
     Jptr = buf_rj[k];
     for (j=0; j<len_r[k]; j++) {
-      ierr = PetscTableAdd(ta,*(Jptr+j)+1,1,INSERT_VALUES);CHKERRQ(ierr); 
+      ierr = PetscTableAdd(ta,*(Jptr+j)+1,1,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
   ierr = PetscTableGetCount(ta,&Crmax);CHKERRQ(ierr);
@@ -698,36 +698,42 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,PetscReal fill
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode MatPtAPSymbolicComputeOneRowOfAP_private(Mat A,Mat P,Mat P_oth,PetscInt i,PetscHSetI dht,PetscHSetI oht)
+PETSC_STATIC_INLINE PetscErrorCode MatPtAPSymbolicComputeOneRowOfAP_private(Mat A,Mat P,Mat P_oth,const PetscInt *map,PetscInt dof,PetscInt i,PetscHSetI dht,PetscHSetI oht)
 {
   Mat_MPIAIJ           *a=(Mat_MPIAIJ*)A->data,*p=(Mat_MPIAIJ*)P->data;
   Mat_SeqAIJ           *ad=(Mat_SeqAIJ*)(a->A)->data,*ao=(Mat_SeqAIJ*)(a->B)->data,*p_oth=(Mat_SeqAIJ*)P_oth->data,*pd=(Mat_SeqAIJ*)p->A->data,*po=(Mat_SeqAIJ*)p->B->data;
   PetscInt             *ai,nzi,j,*aj,row,col,*pi,*pj,pnz,nzpi,*p_othcols,k;
-  PetscInt             pcstart,pcend,column;
+  PetscInt             pcstart,pcend,column,offset;
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
-
   pcstart = P->cmap->rstart;
+  pcstart *= dof;
   pcend   = P->cmap->rend;
+  pcend   *= dof;
   /* diagonal portion: Ad[i,:]*P */
   ai = ad->i;
   nzi = ai[i+1] - ai[i];
   aj  = ad->j + ai[i];
   for (j=0; j<nzi; j++) {
     row  = aj[j];
+    offset = row%dof;
+    row   /= dof;
     nzpi = pd->i[row+1] - pd->i[row];
     pj  = pd->j + pd->i[row];
     for (k=0; k<nzpi; k++) {
-      ierr = PetscHSetIAdd(dht,pj[k]+pcstart);CHKERRQ(ierr);
+      ierr = PetscHSetIAdd(dht,pj[k]*dof+offset+pcstart);CHKERRQ(ierr);
     }
   }
+  /* off diag P */
   for (j=0; j<nzi; j++) {
     row  = aj[j];
+    offset = row%dof;
+    row   /= dof;
     nzpi = po->i[row+1] - po->i[row];
     pj  = po->j + po->i[row];
     for (k=0; k<nzpi; k++) {
-      ierr = PetscHSetIAdd(oht,p->garray[pj[k]]);CHKERRQ(ierr);
+      ierr = PetscHSetIAdd(oht,p->garray[pj[k]]*dof+offset);CHKERRQ(ierr);
     }
   }
 
@@ -739,10 +745,12 @@ PETSC_STATIC_INLINE PetscErrorCode MatPtAPSymbolicComputeOneRowOfAP_private(Mat 
     aj  = ao->j + ai[i];
     for (j=0; j<nzi; j++) {
       row  = aj[j];
+      offset = a->garray[row]%dof;
+      row  = map[row];
       pnz  = pi[row+1] - pi[row];
       p_othcols = p_oth->j + pi[row];
       for (col=0; col<pnz; col++) {
-        column = p_othcols[col];
+        column = p_othcols[col] * dof + offset;
         if (column>=pcstart && column<pcend) {
           ierr = PetscHSetIAdd(dht,column);CHKERRQ(ierr);
         } else {
@@ -754,45 +762,49 @@ PETSC_STATIC_INLINE PetscErrorCode MatPtAPSymbolicComputeOneRowOfAP_private(Mat 
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode MatPtAPNumericComputeOneRowOfAP_private(Mat A,Mat P,Mat P_oth,PetscInt i,PetscHMapIV hmap)
+PETSC_STATIC_INLINE PetscErrorCode MatPtAPNumericComputeOneRowOfAP_private(Mat A,Mat P,Mat P_oth,const PetscInt *map,PetscInt dof,PetscInt i,PetscHMapIV hmap)
 {
   Mat_MPIAIJ           *a=(Mat_MPIAIJ*)A->data,*p=(Mat_MPIAIJ*)P->data;
   Mat_SeqAIJ           *ad=(Mat_SeqAIJ*)(a->A)->data,*ao=(Mat_SeqAIJ*)(a->B)->data,*p_oth=(Mat_SeqAIJ*)P_oth->data,*pd=(Mat_SeqAIJ*)p->A->data,*po=(Mat_SeqAIJ*)p->B->data;
-  PetscInt             *ai,nzi,j,*aj,row,col,*pi,pnz,*p_othcols,pcstart,*pj,k,nzpi;
+  PetscInt             *ai,nzi,j,*aj,row,col,*pi,pnz,*p_othcols,pcstart,*pj,k,nzpi,offset;
   PetscScalar          ra,*aa,*pa;
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
   pcstart = P->cmap->rstart;
+  pcstart *= dof;
+
   /* diagonal portion: Ad[i,:]*P */
   ai  = ad->i;
   nzi = ai[i+1] - ai[i];
   aj  = ad->j + ai[i];
   aa  = ad->a + ai[i];
-
   for (j=0; j<nzi; j++) {
     ra   = aa[j];
     row  = aj[j];
+    offset = row%dof;
+    row    /= dof;
     nzpi = pd->i[row+1] - pd->i[row];
     pj = pd->j + pd->i[row];
     pa = pd->a + pd->i[row];
     for (k=0; k<nzpi; k++) {
-      ierr = PetscHMapIVAddValue(hmap,pj[k]+pcstart,ra*pa[k]);CHKERRQ(ierr);
+      ierr = PetscHMapIVAddValue(hmap,pj[k]*dof+offset+pcstart,ra*pa[k]);CHKERRQ(ierr);
     }
     ierr = PetscLogFlops(2.0*nzpi);CHKERRQ(ierr);
   }
   for (j=0; j<nzi; j++) {
     ra   = aa[j];
     row  = aj[j];
+    offset = row%dof;
+    row   /= dof;
     nzpi = po->i[row+1] - po->i[row];
     pj = po->j + po->i[row];
     pa = po->a + po->i[row];
     for (k=0; k<nzpi; k++) {
-      ierr = PetscHMapIVAddValue(hmap,p->garray[pj[k]],ra*pa[k]);CHKERRQ(ierr);
+      ierr = PetscHMapIVAddValue(hmap,p->garray[pj[k]]*dof+offset,ra*pa[k]);CHKERRQ(ierr);
     }
     ierr = PetscLogFlops(2.0*nzpi);CHKERRQ(ierr);
   }
-
 
   /* off diagonal part: Ao[i, :]*P_oth */
   if (ao) {
@@ -803,12 +815,14 @@ PETSC_STATIC_INLINE PetscErrorCode MatPtAPNumericComputeOneRowOfAP_private(Mat A
     aa  = ao->a + ai[i];
     for (j=0; j<nzi; j++) {
       row  = aj[j];
+      offset = a->garray[row]%dof;
+      row    = map[row];
       ra   = aa[j];
       pnz  = pi[row+1] - pi[row];
       p_othcols = p_oth->j + pi[row];
       pa   = p_oth->a + pi[row];
       for (col=0; col<pnz; col++) {
-        ierr = PetscHMapIVAddValue(hmap,p_othcols[col],ra*pa[col]);CHKERRQ(ierr);
+        ierr = PetscHMapIVAddValue(hmap,p_othcols[col]*dof+offset,ra*pa[col]);CHKERRQ(ierr);
       }
       ierr = PetscLogFlops(2.0*pnz);CHKERRQ(ierr);
     }
@@ -817,15 +831,20 @@ PETSC_STATIC_INLINE PetscErrorCode MatPtAPNumericComputeOneRowOfAP_private(Mat A
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_allatonce(Mat A,Mat P,Mat C)
+PetscErrorCode MatGetBrowsOfAcols_MPIXAIJ(Mat,Mat,PetscInt dof,MatReuse,Mat*);
+
+PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce(Mat A,Mat P,PetscInt dof,Mat C)
 {
   PetscErrorCode    ierr;
   Mat_MPIAIJ        *p=(Mat_MPIAIJ*)P->data,*c=(Mat_MPIAIJ*)C->data;
-  Mat_SeqAIJ        *cd,*co,*po,*pd;
+  Mat_SeqAIJ        *cd,*co,*po=(Mat_SeqAIJ*)p->B->data,*pd=(Mat_SeqAIJ*)p->A->data;
   Mat_APMPI         *ptap = c->ap;
   PetscHMapIV       hmap;
   PetscInt          i,j,jj,kk,nzi,*c_rmtj,voff,*c_othj,pn,pon,pcstart,pcend,ccstart,ccend,row,am,*poj,*pdj,*apindices,cmaxr,*c_rmtc,*c_rmtjj,*dcc,*occ,loc;
   PetscScalar       *c_rmta,*c_otha,*poa,*pda,*apvalues,*apvaluestmp,*c_rmtaa;
+  PetscInt          offset,ii,pocol;
+  const PetscInt    *mappingindices;
+  IS                map;
   MPI_Comm          comm;
 
   PetscFunctionBegin;
@@ -838,14 +857,12 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_allatonce(Mat A,Mat P,Mat C)
   /*-----------------------------------------------------*/
   if (ptap->reuse == MAT_REUSE_MATRIX) {
     /* P_oth and P_loc are obtained in MatPtASymbolic() when reuse == MAT_INITIAL_MATRIX */
-    ierr = MatGetBrowsOfAoCols_MPIAIJ(A,P,MAT_REUSE_MATRIX,&ptap->startsj_s,&ptap->startsj_r,&ptap->bufa,&ptap->P_oth);CHKERRQ(ierr);
+    ierr =  MatGetBrowsOfAcols_MPIXAIJ(A,P,dof,MAT_REUSE_MATRIX,&ptap->P_oth);CHKERRQ(ierr);
   }
-
-  po = (Mat_SeqAIJ*) p->B->data;
-  pd = (Mat_SeqAIJ*) p->A->data;
+  ierr = PetscObjectQuery((PetscObject)ptap->P_oth,"aoffdiagtopothmapping",(PetscObject*)&map);CHKERRQ(ierr);
 
   ierr = MatGetLocalSize(p->B,NULL,&pon);CHKERRQ(ierr);
-
+  pon *= dof;
   ierr = PetscCalloc2(ptap->c_rmti[pon],&c_rmtj,ptap->c_rmti[pon],&c_rmta);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&am,NULL);CHKERRQ(ierr);
   cmaxr = 0;
@@ -855,43 +872,47 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_allatonce(Mat A,Mat P,Mat C)
   ierr = PetscCalloc4(cmaxr,&apindices,cmaxr,&apvalues,cmaxr,&apvaluestmp,pon,&c_rmtc);CHKERRQ(ierr);
   ierr = PetscHMapIVCreate(&hmap);CHKERRQ(ierr);
   ierr = PetscHMapIVResize(hmap,cmaxr);CHKERRQ(ierr);
+  ierr = ISGetIndices(map,&mappingindices);CHKERRQ(ierr);
   for (i=0; i<am && pon; i++) {
     ierr = PetscHMapIVClear(hmap);CHKERRQ(ierr);
-    nzi = po->i[i+1] - po->i[i];
+    offset = i%dof;
+    ii     = i/dof;
+    nzi = po->i[ii+1] - po->i[ii];
     if (!nzi) continue;
-    ierr = MatPtAPNumericComputeOneRowOfAP_private(A,P,ptap->P_oth,i,hmap);CHKERRQ(ierr);
+    ierr = MatPtAPNumericComputeOneRowOfAP_private(A,P,ptap->P_oth,mappingindices,dof,i,hmap);CHKERRQ(ierr);
     voff = 0;
     ierr = PetscHMapIVGetPairs(hmap,&voff,apindices,apvalues);CHKERRQ(ierr);
     if (!voff) continue;
 
     /* Form C(ii, :) */
-    poj = po->j + po->i[i];
-    poa = po->a + po->i[i];
+    poj = po->j + po->i[ii];
+    poa = po->a + po->i[ii];
     for (j=0; j<nzi; j++) {
-      c_rmtjj = c_rmtj + ptap->c_rmti[poj[j]];
-      c_rmtaa = c_rmta + ptap->c_rmti[poj[j]];
+      pocol = poj[j]*dof+offset;
+      c_rmtjj = c_rmtj + ptap->c_rmti[pocol];
+      c_rmtaa = c_rmta + ptap->c_rmti[pocol];
       for (jj=0; jj<voff; jj++) {
         apvaluestmp[jj] = apvalues[jj]*poa[j];
         /*If the row is empty */
-        if (!c_rmtc[poj[j]]) {
+        if (!c_rmtc[pocol]) {
           c_rmtjj[jj] = apindices[jj];
           c_rmtaa[jj] = apvaluestmp[jj];
-          c_rmtc[poj[j]]++;
+          c_rmtc[pocol]++;
         } else {
-          ierr = PetscFindInt(apindices[jj],c_rmtc[poj[j]],c_rmtjj,&loc);CHKERRQ(ierr);
+          ierr = PetscFindInt(apindices[jj],c_rmtc[pocol],c_rmtjj,&loc);CHKERRQ(ierr);
           if (loc>=0){ /* hit */
             c_rmtaa[loc] += apvaluestmp[jj];
             ierr = PetscLogFlops(1.0);CHKERRQ(ierr);
           } else { /* new element */
             loc = -(loc+1);
             /* Move data backward */
-            for (kk=c_rmtc[poj[j]]; kk>loc; kk--) {
+            for (kk=c_rmtc[pocol]; kk>loc; kk--) {
               c_rmtjj[kk] = c_rmtjj[kk-1];
               c_rmtaa[kk] = c_rmtaa[kk-1];
             }/* End kk */
             c_rmtjj[loc] = apindices[jj];
             c_rmtaa[loc] = apvaluestmp[jj];
-            c_rmtc[poj[j]]++;
+            c_rmtc[pocol]++;
           }
         }
         ierr = PetscLogFlops(voff);CHKERRQ(ierr);
@@ -902,11 +923,14 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_allatonce(Mat A,Mat P,Mat C)
   ierr = PetscFree4(apindices,apvalues,apvaluestmp,c_rmtc);CHKERRQ(ierr);
 
   ierr = MatGetLocalSize(P,NULL,&pn);CHKERRQ(ierr);
+  pn *= dof;
   ierr = PetscCalloc2(ptap->c_othi[pn],&c_othj,ptap->c_othi[pn],&c_otha);CHKERRQ(ierr);
 
   ierr = PetscSFReduceBegin(ptap->sf,MPIU_INT,c_rmtj,c_othj,MPIU_REPLACE);CHKERRQ(ierr);
   ierr = PetscSFReduceBegin(ptap->sf,MPIU_SCALAR,c_rmta,c_otha,MPIU_REPLACE);CHKERRQ(ierr);
   ierr = MatGetOwnershipRangeColumn(P,&pcstart,&pcend);CHKERRQ(ierr);
+  pcstart = pcstart*dof;
+  pcend   = pcend*dof;
   cd = (Mat_SeqAIJ*)(c->A)->data;
   co = (Mat_SeqAIJ*)(c->B)->data;
 
@@ -919,17 +943,19 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_allatonce(Mat A,Mat P,Mat C)
   ierr = PetscHMapIVResize(hmap,cmaxr);CHKERRQ(ierr);
   for (i=0; i<am && pn; i++) {
     ierr = PetscHMapIVClear(hmap);CHKERRQ(ierr);
-    nzi = pd->i[i+1] - pd->i[i];
+    offset = i%dof;
+    ii     = i/dof;
+    nzi = pd->i[ii+1] - pd->i[ii];
     if (!nzi) continue;
-    ierr = MatPtAPNumericComputeOneRowOfAP_private(A,P,ptap->P_oth,i,hmap);CHKERRQ(ierr);
+    ierr = MatPtAPNumericComputeOneRowOfAP_private(A,P,ptap->P_oth,mappingindices,dof,i,hmap);CHKERRQ(ierr);
     voff = 0;
     ierr = PetscHMapIVGetPairs(hmap,&voff,apindices,apvalues);CHKERRQ(ierr);
     if (!voff) continue;
     /* Form C(ii, :) */
-    pdj = pd->j + pd->i[i];
-    pda = pd->a + pd->i[i];
+    pdj = pd->j + pd->i[ii];
+    pda = pd->a + pd->i[ii];
     for (j=0; j<nzi; j++) {
-      row = pcstart + pdj[j];
+      row = pcstart + pdj[j] * dof + offset;
       for (jj=0; jj<voff; jj++) {
         apvaluestmp[jj] = apvalues[jj]*pda[j];
       }
@@ -937,11 +963,161 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_allatonce(Mat A,Mat P,Mat C)
       ierr = MatSetValues(C,1,&row,voff,apindices,apvaluestmp,ADD_VALUES);CHKERRQ(ierr);
     }
   }
-
+  ierr = ISRestoreIndices(map,&mappingindices);CHKERRQ(ierr);
   ierr = MatGetOwnershipRangeColumn(C,&ccstart,&ccend);CHKERRQ(ierr);
   ierr = PetscFree5(apindices,apvalues,apvaluestmp,dcc,occ);CHKERRQ(ierr);
   ierr = PetscHMapIVDestroy(&hmap);CHKERRQ(ierr);
-  ierr = PetscSFReduceEnd(ptap->sf,MPIU_INT,c_rmtj,c_othj,MPI_SUM);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(ptap->sf,MPIU_INT,c_rmtj,c_othj,MPIU_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(ptap->sf,MPIU_SCALAR,c_rmta,c_otha,MPIU_REPLACE);CHKERRQ(ierr);
+  ierr = PetscFree2(c_rmtj,c_rmta);CHKERRQ(ierr);
+
+  /* Add contributions from remote */
+  for (i = 0; i < pn; i++) {
+    row = i + pcstart;
+    ierr = MatSetValues(C,1,&row,ptap->c_othi[i+1]-ptap->c_othi[i],c_othj+ptap->c_othi[i],c_otha+ptap->c_othi[i],ADD_VALUES);CHKERRQ(ierr);
+  }
+  ierr = PetscFree2(c_othj,c_otha);CHKERRQ(ierr);
+
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  ptap->reuse = MAT_REUSE_MATRIX;
+
+  /* supporting struct ptap consumes almost same amount of memory as C=PtAP, release it if C will not be updated by A and P */
+  if (ptap->freestruct) {
+    ierr = MatFreeIntermediateDataStructures(C);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_allatonce(Mat A,Mat P,Mat C)
+{
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+
+  ierr = MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce(A,P,1,C);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce_merged(Mat A,Mat P,PetscInt dof,Mat C)
+{
+  PetscErrorCode    ierr;
+  Mat_MPIAIJ        *p=(Mat_MPIAIJ*)P->data,*c=(Mat_MPIAIJ*)C->data;
+  Mat_SeqAIJ        *cd,*co,*po=(Mat_SeqAIJ*)p->B->data,*pd=(Mat_SeqAIJ*)p->A->data;
+  Mat_APMPI         *ptap = c->ap;
+  PetscHMapIV       hmap;
+  PetscInt          i,j,jj,kk,nzi,dnzi,*c_rmtj,voff,*c_othj,pn,pon,pcstart,pcend,row,am,*poj,*pdj,*apindices,cmaxr,*c_rmtc,*c_rmtjj,loc;
+  PetscScalar       *c_rmta,*c_otha,*poa,*pda,*apvalues,*apvaluestmp,*c_rmtaa;
+  PetscInt          offset,ii,pocol;
+  const PetscInt    *mappingindices;
+  IS                map;
+  MPI_Comm          comm;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+  if (!ptap->P_oth) SETERRQ(comm,PETSC_ERR_ARG_WRONGSTATE,"PtAP cannot be reused. Do not call MatFreeIntermediateDataStructures() or use '-mat_freeintermediatedatastructures'");
+
+  ierr = MatZeroEntries(C);CHKERRQ(ierr);
+
+  /* Get P_oth = ptap->P_oth  and P_loc = ptap->P_loc */
+  /*-----------------------------------------------------*/
+  if (ptap->reuse == MAT_REUSE_MATRIX) {
+    /* P_oth and P_loc are obtained in MatPtASymbolic() when reuse == MAT_INITIAL_MATRIX */
+    ierr =  MatGetBrowsOfAcols_MPIXAIJ(A,P,dof,MAT_REUSE_MATRIX,&ptap->P_oth);CHKERRQ(ierr);
+  }
+  ierr = PetscObjectQuery((PetscObject)ptap->P_oth,"aoffdiagtopothmapping",(PetscObject*)&map);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(p->B,NULL,&pon);CHKERRQ(ierr);
+  pon *= dof;
+  ierr = MatGetLocalSize(P,NULL,&pn);CHKERRQ(ierr);
+  pn  *= dof;
+
+  ierr = PetscCalloc2(ptap->c_rmti[pon],&c_rmtj,ptap->c_rmti[pon],&c_rmta);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(A,&am,NULL);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRangeColumn(P,&pcstart,&pcend);CHKERRQ(ierr);
+  pcstart *= dof;
+  pcend   *= dof;
+  cmaxr = 0;
+  for (i=0; i<pon; i++) {
+    cmaxr = PetscMax(cmaxr,ptap->c_rmti[i+1]-ptap->c_rmti[i]);
+  }
+  cd = (Mat_SeqAIJ*)(c->A)->data;
+  co = (Mat_SeqAIJ*)(c->B)->data;
+  for (i=0; i<pn; i++) {
+    cmaxr = PetscMax(cmaxr,(cd->i[i+1]-cd->i[i])+(co->i[i+1]-co->i[i]));
+  }
+  ierr = PetscCalloc4(cmaxr,&apindices,cmaxr,&apvalues,cmaxr,&apvaluestmp,pon,&c_rmtc);CHKERRQ(ierr);
+  ierr = PetscHMapIVCreate(&hmap);CHKERRQ(ierr);
+  ierr = PetscHMapIVResize(hmap,cmaxr);CHKERRQ(ierr);
+  ierr = ISGetIndices(map,&mappingindices);CHKERRQ(ierr);
+  for (i=0; i<am && (pon || pn); i++) {
+    ierr = PetscHMapIVClear(hmap);CHKERRQ(ierr);
+    offset = i%dof;
+    ii     = i/dof;
+    nzi  = po->i[ii+1] - po->i[ii];
+    dnzi = pd->i[ii+1] - pd->i[ii];
+    if (!nzi && !dnzi) continue;
+    ierr = MatPtAPNumericComputeOneRowOfAP_private(A,P,ptap->P_oth,mappingindices,dof,i,hmap);CHKERRQ(ierr);
+    voff = 0;
+    ierr = PetscHMapIVGetPairs(hmap,&voff,apindices,apvalues);CHKERRQ(ierr);
+    if (!voff) continue;
+
+    /* Form remote C(ii, :) */
+    poj = po->j + po->i[ii];
+    poa = po->a + po->i[ii];
+    for (j=0; j<nzi; j++) {
+      pocol = poj[j]*dof+offset;
+      c_rmtjj = c_rmtj + ptap->c_rmti[pocol];
+      c_rmtaa = c_rmta + ptap->c_rmti[pocol];
+      for (jj=0; jj<voff; jj++) {
+        apvaluestmp[jj] = apvalues[jj]*poa[j];
+        /*If the row is empty */
+        if (!c_rmtc[pocol]) {
+          c_rmtjj[jj] = apindices[jj];
+          c_rmtaa[jj] = apvaluestmp[jj];
+          c_rmtc[pocol]++;
+        } else {
+          ierr = PetscFindInt(apindices[jj],c_rmtc[pocol],c_rmtjj,&loc);CHKERRQ(ierr);
+          if (loc>=0){ /* hit */
+            c_rmtaa[loc] += apvaluestmp[jj];
+            ierr = PetscLogFlops(1.0);CHKERRQ(ierr);
+          } else { /* new element */
+            loc = -(loc+1);
+            /* Move data backward */
+            for (kk=c_rmtc[pocol]; kk>loc; kk--) {
+              c_rmtjj[kk] = c_rmtjj[kk-1];
+              c_rmtaa[kk] = c_rmtaa[kk-1];
+            }/* End kk */
+            c_rmtjj[loc] = apindices[jj];
+            c_rmtaa[loc] = apvaluestmp[jj];
+            c_rmtc[pocol]++;
+          }
+        }
+      } /* End jj */
+      ierr = PetscLogFlops(voff);CHKERRQ(ierr);
+    } /* End j */
+
+    /* Form local C(ii, :) */
+    pdj = pd->j + pd->i[ii];
+    pda = pd->a + pd->i[ii];
+    for (j=0; j<dnzi; j++) {
+      row = pcstart + pdj[j] * dof + offset;
+      for (jj=0; jj<voff; jj++) {
+        apvaluestmp[jj] = apvalues[jj]*pda[j];
+      }/* End kk */
+      ierr = PetscLogFlops(voff);CHKERRQ(ierr);
+      ierr = MatSetValues(C,1,&row,voff,apindices,apvaluestmp,ADD_VALUES);CHKERRQ(ierr);
+    }/* End j */
+  } /* End i */
+
+  ierr = ISRestoreIndices(map,&mappingindices);CHKERRQ(ierr);
+  ierr = PetscFree4(apindices,apvalues,apvaluestmp,c_rmtc);CHKERRQ(ierr);
+  ierr = PetscHMapIVDestroy(&hmap);CHKERRQ(ierr);
+  ierr = PetscCalloc2(ptap->c_othi[pn],&c_othj,ptap->c_othi[pn],&c_otha);CHKERRQ(ierr);
+
+  ierr = PetscSFReduceBegin(ptap->sf,MPIU_INT,c_rmtj,c_othj,MPIU_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceBegin(ptap->sf,MPIU_SCALAR,c_rmta,c_otha,MPIU_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(ptap->sf,MPIU_INT,c_rmtj,c_othj,MPIU_REPLACE);CHKERRQ(ierr);
   ierr = PetscSFReduceEnd(ptap->sf,MPIU_SCALAR,c_rmta,c_otha,MPIU_REPLACE);CHKERRQ(ierr);
   ierr = PetscFree2(c_rmtj,c_rmta);CHKERRQ(ierr);
 
@@ -966,142 +1142,21 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_allatonce(Mat A,Mat P,Mat C)
 
 PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_allatonce_merged(Mat A,Mat P,Mat C)
 {
-  PetscErrorCode    ierr;
-  Mat_MPIAIJ        *p=(Mat_MPIAIJ*)P->data,*c=(Mat_MPIAIJ*)C->data;
-  Mat_SeqAIJ        *cd,*co,*po,*pd;
-  Mat_APMPI         *ptap = c->ap;
-  PetscHMapIV       hmap;
-  PetscInt          i,j,jj,kk,nzi,dnzi,*c_rmtj,voff,*c_othj,pn,pon,pcstart,pcend,row,am,*poj,*pdj,*apindices,cmaxr,*c_rmtc,*c_rmtjj,loc;
-  PetscScalar       *c_rmta,*c_otha,*poa,*pda,*apvalues,*apvaluestmp,*c_rmtaa;
-  MPI_Comm          comm;
+  PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-  if (!ptap->P_oth) SETERRQ(comm,PETSC_ERR_ARG_WRONGSTATE,"PtAP cannot be reused. Do not call MatFreeIntermediateDataStructures() or use '-mat_freeintermediatedatastructures'");
 
-  ierr = MatZeroEntries(C);CHKERRQ(ierr);
-
-  /* Get P_oth = ptap->P_oth  and P_loc = ptap->P_loc */
-  /*-----------------------------------------------------*/
-  if (ptap->reuse == MAT_REUSE_MATRIX) {
-    /* P_oth and P_loc are obtained in MatPtASymbolic() when reuse == MAT_INITIAL_MATRIX */
-    ierr = MatGetBrowsOfAoCols_MPIAIJ(A,P,MAT_REUSE_MATRIX,&ptap->startsj_s,&ptap->startsj_r,&ptap->bufa,&ptap->P_oth);CHKERRQ(ierr);
-  }
-
-  po = (Mat_SeqAIJ*) p->B->data;
-  pd = (Mat_SeqAIJ*) p->A->data;
-
-  ierr = MatGetLocalSize(p->B,NULL,&pon);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(P,NULL,&pn);CHKERRQ(ierr);
-
-  ierr = PetscCalloc2(ptap->c_rmti[pon],&c_rmtj,ptap->c_rmti[pon],&c_rmta);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(A,&am,NULL);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRangeColumn(P,&pcstart,&pcend);CHKERRQ(ierr);
-  cmaxr = 0;
-  for (i=0; i<pon; i++) {
-    cmaxr = PetscMax(cmaxr,ptap->c_rmti[i+1]-ptap->c_rmti[i]);
-  }
-  cd = (Mat_SeqAIJ*)(c->A)->data;
-  co = (Mat_SeqAIJ*)(c->B)->data;
-  for (i=0; i<pn; i++) {
-    cmaxr = PetscMax(cmaxr,(cd->i[i+1]-cd->i[i])+(co->i[i+1]-co->i[i]));
-  }
-  ierr = PetscCalloc4(cmaxr,&apindices,cmaxr,&apvalues,cmaxr,&apvaluestmp,pon,&c_rmtc);CHKERRQ(ierr);
-  ierr = PetscHMapIVCreate(&hmap);CHKERRQ(ierr);
-  ierr = PetscHMapIVResize(hmap,cmaxr);CHKERRQ(ierr);
-  for (i=0; i<am && (pon || pn); i++) {
-    ierr = PetscHMapIVClear(hmap);CHKERRQ(ierr);
-    nzi  = po->i[i+1] - po->i[i];
-    dnzi = pd->i[i+1] - pd->i[i];
-    if (!nzi && !dnzi) continue;
-    ierr = MatPtAPNumericComputeOneRowOfAP_private(A,P,ptap->P_oth,i,hmap);CHKERRQ(ierr);
-    voff = 0;
-    ierr = PetscHMapIVGetPairs(hmap,&voff,apindices,apvalues);CHKERRQ(ierr);
-    if (!voff) continue;
-
-    /* Form remote C(ii, :) */
-    poj = po->j + po->i[i];
-    poa = po->a + po->i[i];
-    for (j=0; j<nzi; j++) {
-      c_rmtjj = c_rmtj + ptap->c_rmti[poj[j]];
-      c_rmtaa = c_rmta + ptap->c_rmti[poj[j]];
-      for (jj=0; jj<voff; jj++) {
-        apvaluestmp[jj] = apvalues[jj]*poa[j];
-        /*If the row is empty */
-        if (!c_rmtc[poj[j]]) {
-          c_rmtjj[jj] = apindices[jj];
-          c_rmtaa[jj] = apvaluestmp[jj];
-          c_rmtc[poj[j]]++;
-        } else {
-          ierr = PetscFindInt(apindices[jj],c_rmtc[poj[j]],c_rmtjj,&loc);CHKERRQ(ierr);
-          if (loc>=0){ /* hit */
-            c_rmtaa[loc] += apvaluestmp[jj];
-            ierr = PetscLogFlops(1.0);CHKERRQ(ierr);
-          } else { /* new element */
-            loc = -(loc+1);
-            /* Move data backward */
-            for (kk=c_rmtc[poj[j]]; kk>loc; kk--) {
-              c_rmtjj[kk] = c_rmtjj[kk-1];
-              c_rmtaa[kk] = c_rmtaa[kk-1];
-            }/* End kk */
-            c_rmtjj[loc] = apindices[jj];
-            c_rmtaa[loc] = apvaluestmp[jj];
-            c_rmtc[poj[j]]++;
-          }
-        }
-      } /* End jj */
-      ierr = PetscLogFlops(voff);CHKERRQ(ierr);
-    } /* End j */
-
-    /* Form local C(ii, :) */
-    pdj = pd->j + pd->i[i];
-    pda = pd->a + pd->i[i];
-    for (j=0; j<dnzi; j++) {
-      row = pcstart + pdj[j];
-      for (jj=0; jj<voff; jj++) {
-        apvaluestmp[jj] = apvalues[jj]*pda[j];
-      }/* End kk */
-      ierr = PetscLogFlops(voff);CHKERRQ(ierr);
-      ierr = MatSetValues(C,1,&row,voff,apindices,apvaluestmp,ADD_VALUES);CHKERRQ(ierr);
-    }/* End j */
-  } /* End i */
-
-  ierr = PetscFree4(apindices,apvalues,apvaluestmp,c_rmtc);CHKERRQ(ierr);
-  ierr = PetscHMapIVDestroy(&hmap);CHKERRQ(ierr);
-  ierr = PetscCalloc2(ptap->c_othi[pn],&c_othj,ptap->c_othi[pn],&c_otha);CHKERRQ(ierr);
-
-  ierr = PetscSFReduceBegin(ptap->sf,MPIU_INT,c_rmtj,c_othj,MPIU_REPLACE);CHKERRQ(ierr);
-  ierr = PetscSFReduceBegin(ptap->sf,MPIU_SCALAR,c_rmta,c_otha,MPIU_REPLACE);CHKERRQ(ierr);
-  ierr = PetscSFReduceEnd(ptap->sf,MPIU_INT,c_rmtj,c_othj,MPI_SUM);CHKERRQ(ierr);
-  ierr = PetscSFReduceEnd(ptap->sf,MPIU_SCALAR,c_rmta,c_otha,MPIU_REPLACE);CHKERRQ(ierr);
-  ierr = PetscFree2(c_rmtj,c_rmta);CHKERRQ(ierr);
-
-  /* Add contributions from remote */
-  for (i = 0; i < pn; i++) {
-    row = i + pcstart;
-    ierr = MatSetValues(C,1,&row,ptap->c_othi[i+1]-ptap->c_othi[i],c_othj+ptap->c_othi[i],c_otha+ptap->c_othi[i],ADD_VALUES);CHKERRQ(ierr);
-  }
-  ierr = PetscFree2(c_othj,c_otha);CHKERRQ(ierr);
-
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
-  ptap->reuse = MAT_REUSE_MATRIX;
-
-  /* supporting struct ptap consumes almost same amount of memory as C=PtAP, release it if C will not be updated by A and P */
-  if (ptap->freestruct) {
-    ierr = MatFreeIntermediateDataStructures(C);CHKERRQ(ierr);
-  }
+  ierr = MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce_merged(A,P,1,C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce(Mat A,Mat P,PetscReal fill,Mat *C)
+PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce(Mat A,Mat P,PetscInt dof,PetscReal fill,Mat *C)
 {
   Mat_APMPI           *ptap;
   Mat_MPIAIJ          *p=(Mat_MPIAIJ*)P->data,*c;
   MPI_Comm            comm;
   Mat                 Cmpi;
-  Mat_SeqAIJ          *pd,*po;
+  Mat_SeqAIJ          *pd=(Mat_SeqAIJ*)p->A->data,*po=(Mat_SeqAIJ*)p->B->data;
   MatType             mtype;
   PetscSF             sf;
   PetscSFNode         *iremote;
@@ -1110,9 +1165,11 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce(Mat A,Mat P,PetscReal fil
   PetscHSetI          ht,oht,*hta,*hto;
   PetscInt            pn,pon,*c_rmtc,i,j,nzi,htsize,htosize,*c_rmtj,off,*c_othj,rcvncols,sendncols,*c_rmtoffsets;
   PetscInt            owner,lidx,*rdj,col,pcstart,pcend,*dnz,*onz,am,arstart,arend,*poj,*pdj;
-  PetscInt            nalg=2,alg=0;
+  PetscInt            nalg=2,alg=0,offset,ii;
+  const PetscInt      *mappingindices;
   PetscBool           flg;
   const char          *algTypes[2] = {"overlapping","merged"};
+  IS                  map;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
@@ -1120,23 +1177,22 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce(Mat A,Mat P,PetscReal fil
 
   /* Create symbolic parallel matrix Cmpi */
   ierr = MatGetLocalSize(P,NULL,&pn);CHKERRQ(ierr);
+  pn *= dof;
   ierr = MatCreate(comm,&Cmpi);CHKERRQ(ierr);
   ierr = MatGetType(A,&mtype);CHKERRQ(ierr);
   ierr = MatSetType(Cmpi,mtype);CHKERRQ(ierr);
   ierr = MatSetSizes(Cmpi,pn,pn,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
 
-  ierr        = PetscNew(&ptap);CHKERRQ(ierr);
+  ierr = PetscNew(&ptap);CHKERRQ(ierr);
   ptap->reuse = MAT_INITIAL_MATRIX;
   ptap->algType = 2;
 
   /* Get P_oth by taking rows of P (= non-zero cols of local A) from other processors */
-  ierr = MatGetBrowsOfAoCols_MPIAIJ(A,P,MAT_INITIAL_MATRIX,&ptap->startsj_s,&ptap->startsj_r,&ptap->bufa,&ptap->P_oth);CHKERRQ(ierr);
-
-  po = (Mat_SeqAIJ*)p->B->data;
-  pd = (Mat_SeqAIJ*)p->A->data;
-
+  ierr = MatGetBrowsOfAcols_MPIXAIJ(A,P,dof,MAT_INITIAL_MATRIX,&ptap->P_oth);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject)ptap->P_oth,"aoffdiagtopothmapping",(PetscObject*)&map);CHKERRQ(ierr);
   /* This equals to the number of offdiag columns in P */
   ierr = MatGetLocalSize(p->B,NULL,&pon);CHKERRQ(ierr);
+  pon *= dof;
   /* offsets */
   ierr = PetscMalloc1(pon+1,&ptap->c_rmti);CHKERRQ(ierr);
   /* The number of columns we will send to remote ranks */
@@ -1150,23 +1206,26 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce(Mat A,Mat P,PetscReal fil
   /* Create hash table to merge all columns for C(i, :) */
   ierr = PetscHSetICreate(&ht);CHKERRQ(ierr);
 
+  ierr = ISGetIndices(map,&mappingindices);CHKERRQ(ierr);
   ptap->c_rmti[0] = 0;
   /* 2) Pass 1: calculate the size for C_rmt (a matrix need to be sent to other processors)  */
   for (i=0; i<am && pon; i++) {
     /* Form one row of AP */
     ierr = PetscHSetIClear(ht);CHKERRQ(ierr);
+    offset = i%dof;
+    ii     = i/dof;
     /* If the off diag is empty, we should not do any calculation */
-    nzi = po->i[i+1] - po->i[i];
+    nzi = po->i[ii+1] - po->i[ii];
     if (!nzi) continue;
 
-    ierr = MatPtAPSymbolicComputeOneRowOfAP_private(A,P,ptap->P_oth,i,ht,ht);CHKERRQ(ierr);
+    ierr = MatPtAPSymbolicComputeOneRowOfAP_private(A,P,ptap->P_oth,mappingindices,dof,i,ht,ht);CHKERRQ(ierr);
     ierr = PetscHSetIGetSize(ht,&htsize);CHKERRQ(ierr);
     /* If AP is empty, just continue */
     if (!htsize) continue;
     /* Form C(ii, :) */
-    poj = po->j + po->i[i];
+    poj = po->j + po->i[ii];
     for (j=0; j<nzi; j++) {
-      ierr = PetscHSetIUpdate(hta[poj[j]],ht);CHKERRQ(ierr);
+      ierr = PetscHSetIUpdate(hta[poj[j]*dof+offset],ht);CHKERRQ(ierr);
     }
   }
 
@@ -1188,8 +1247,10 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce(Mat A,Mat P,PetscReal fil
   ierr = PetscMalloc1(pon,&iremote);CHKERRQ(ierr);
   for (i=0; i<pon; i++) {
     owner = 0; lidx = 0;
-    ierr = PetscLayoutFindOwnerIndex(P->cmap,p->garray[i],&owner,&lidx);CHKERRQ(ierr);
-    iremote[i].index = lidx;
+    offset = i%dof;
+    ii     = i/dof;
+    ierr = PetscLayoutFindOwnerIndex(P->cmap,p->garray[ii],&owner,&lidx);CHKERRQ(ierr);
+    iremote[i].index = lidx*dof + offset;
     iremote[i].rank  = owner;
   }
 
@@ -1239,8 +1300,9 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce(Mat A,Mat P,PetscReal fil
   ierr = PetscCalloc1(ptap->c_rmti[pon],&iremote);CHKERRQ(ierr);
   nleaves = 0;
   for (i = 0; i<pon; i++) {
-    owner = 0; lidx = 0;
-    ierr = PetscLayoutFindOwnerIndex(P->cmap,p->garray[i],&owner,&lidx);CHKERRQ(ierr);
+    owner = 0;
+    ii = i/dof;
+    ierr = PetscLayoutFindOwnerIndex(P->cmap,p->garray[ii],&owner,NULL);CHKERRQ(ierr);
     sendncols = ptap->c_rmti[i+1] - ptap->c_rmti[i];
     for (j=0; j<sendncols; j++) {
       iremote[nleaves].rank = owner;
@@ -1259,6 +1321,8 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce(Mat A,Mat P,PetscReal fil
   ierr = PetscMalloc2(pn,&dnz,pn,&onz);CHKERRQ(ierr);
   ierr = PetscHSetICreate(&oht);CHKERRQ(ierr);
   ierr = MatGetOwnershipRangeColumn(P,&pcstart,&pcend);CHKERRQ(ierr);
+  pcstart *= dof;
+  pcend   *= dof;
   ierr = PetscMalloc2(pn,&hta,pn,&hto);CHKERRQ(ierr);
   for (i=0; i<pn; i++) {
     ierr = PetscHSetICreate(&hta[i]);CHKERRQ(ierr);
@@ -1269,20 +1333,24 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce(Mat A,Mat P,PetscReal fil
   for (i=0; i<am && pn; i++) {
     ierr = PetscHSetIClear(ht);CHKERRQ(ierr);
     ierr = PetscHSetIClear(oht);CHKERRQ(ierr);
-    nzi = pd->i[i+1] - pd->i[i];
+    offset = i%dof;
+    ii     = i/dof;
+    nzi = pd->i[ii+1] - pd->i[ii];
     if (!nzi) continue;
 
-    ierr = MatPtAPSymbolicComputeOneRowOfAP_private(A,P,ptap->P_oth,i,ht,oht);CHKERRQ(ierr);
+    ierr = MatPtAPSymbolicComputeOneRowOfAP_private(A,P,ptap->P_oth,mappingindices,dof,i,ht,oht);CHKERRQ(ierr);
     ierr = PetscHSetIGetSize(ht,&htsize);CHKERRQ(ierr);
     ierr = PetscHSetIGetSize(oht,&htosize);CHKERRQ(ierr);
     if (!(htsize+htosize)) continue;
     /* Form C(ii, :) */
-    pdj = pd->j + pd->i[i];
+    pdj = pd->j + pd->i[ii];
     for (j=0; j<nzi; j++) {
-      ierr = PetscHSetIUpdate(hta[pdj[j]],ht);CHKERRQ(ierr);
-      ierr = PetscHSetIUpdate(hto[pdj[j]],oht);CHKERRQ(ierr);
+      ierr = PetscHSetIUpdate(hta[pdj[j]*dof+offset],ht);CHKERRQ(ierr);
+      ierr = PetscHSetIUpdate(hto[pdj[j]*dof+offset],oht);CHKERRQ(ierr);
     }
   }
+
+  ierr = ISRestoreIndices(map,&mappingindices);CHKERRQ(ierr);
 
   ierr = PetscHSetIDestroy(&ht);CHKERRQ(ierr);
   ierr = PetscHSetIDestroy(&oht);CHKERRQ(ierr);
@@ -1316,8 +1384,9 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce(Mat A,Mat P,PetscReal fil
 
   /* local sizes and preallocation */
   ierr = MatSetSizes(Cmpi,pn,pn,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetBlockSizes(Cmpi,PetscAbs(P->cmap->bs),PetscAbs(P->cmap->bs));CHKERRQ(ierr);
+  ierr = MatSetBlockSizes(Cmpi,dof>1? dof: P->cmap->bs,dof>1? dof: P->cmap->bs);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(Cmpi,0,dnz,0,onz);CHKERRQ(ierr);
+  ierr = MatSetUp(Cmpi);CHKERRQ(ierr);
   ierr = PetscFree2(dnz,onz);CHKERRQ(ierr);
 
   /* attach the supporting struct to Cmpi for reuse */
@@ -1328,7 +1397,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce(Mat A,Mat P,PetscReal fil
   ptap->view      = Cmpi->ops->view;
 
   /* Cmpi is not ready for use - assembly will be done by MatPtAPNumeric() */
-  Cmpi->assembled        = PETSC_FALSE;
+  Cmpi->assembled = PETSC_FALSE;
   /* pick an algorithm */
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"MatPtAP","Mat");CHKERRQ(ierr);
   alg = 0;
@@ -1351,13 +1420,23 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce(Mat A,Mat P,PetscReal fil
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce_merged(Mat A,Mat P,PetscReal fill,Mat *C)
+PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce(Mat A,Mat P,PetscReal fill,Mat *C)
+{
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+
+  ierr = MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce(A,P,1,fill,C);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce_merged(Mat A,Mat P,PetscInt dof,PetscReal fill,Mat *C)
 {
   Mat_APMPI           *ptap;
   Mat_MPIAIJ          *p=(Mat_MPIAIJ*)P->data,*c;
   MPI_Comm            comm;
   Mat                 Cmpi;
-  Mat_SeqAIJ          *pd,*po;
+  Mat_SeqAIJ          *pd=(Mat_SeqAIJ*)p->A->data,*po=(Mat_SeqAIJ*)p->B->data;
   MatType             mtype;
   PetscSF             sf;
   PetscSFNode         *iremote;
@@ -1366,9 +1445,11 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce_merged(Mat A,Mat P,PetscR
   PetscHSetI          ht,oht,*hta,*hto,*htd;
   PetscInt            pn,pon,*c_rmtc,i,j,nzi,dnzi,htsize,htosize,*c_rmtj,off,*c_othj,rcvncols,sendncols,*c_rmtoffsets;
   PetscInt            owner,lidx,*rdj,col,pcstart,pcend,*dnz,*onz,am,arstart,arend,*poj,*pdj;
-  PetscInt            nalg=2,alg=0;
+  PetscInt            nalg=2,alg=0,offset,ii;
   PetscBool           flg;
   const char          *algTypes[2] = {"merged","overlapping"};
+  const PetscInt      *mappingindices;
+  IS                  map;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
@@ -1376,6 +1457,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce_merged(Mat A,Mat P,PetscR
 
   /* Create symbolic parallel matrix Cmpi */
   ierr = MatGetLocalSize(P,NULL,&pn);CHKERRQ(ierr);
+  pn *= dof;
   ierr = MatCreate(comm,&Cmpi);CHKERRQ(ierr);
   ierr = MatGetType(A,&mtype);CHKERRQ(ierr);
   ierr = MatSetType(Cmpi,mtype);CHKERRQ(ierr);
@@ -1386,13 +1468,12 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce_merged(Mat A,Mat P,PetscR
   ptap->algType = 3;
 
   /* 0) Get P_oth by taking rows of P (= non-zero cols of local A) from other processors */
-  ierr = MatGetBrowsOfAoCols_MPIAIJ(A,P,MAT_INITIAL_MATRIX,&ptap->startsj_s,&ptap->startsj_r,&ptap->bufa,&ptap->P_oth);CHKERRQ(ierr);
-
-  po = (Mat_SeqAIJ*)p->B->data;
-  pd = (Mat_SeqAIJ*)p->A->data;
+  ierr = MatGetBrowsOfAcols_MPIXAIJ(A,P,dof,MAT_INITIAL_MATRIX,&ptap->P_oth);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject)ptap->P_oth,"aoffdiagtopothmapping",(PetscObject*)&map);CHKERRQ(ierr);
 
   /* This equals to the number of offdiag columns in P */
   ierr = MatGetLocalSize(p->B,NULL,&pon);CHKERRQ(ierr);
+  pon *= dof;
   /* offsets */
   ierr = PetscMalloc1(pon+1,&ptap->c_rmti);CHKERRQ(ierr);
   /* The number of columns we will send to remote ranks */
@@ -1411,37 +1492,43 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce_merged(Mat A,Mat P,PetscR
     ierr = PetscHSetICreate(&htd[i]);CHKERRQ(ierr);
     ierr = PetscHSetICreate(&hto[i]);CHKERRQ(ierr);
   }
+
+  ierr = ISGetIndices(map,&mappingindices);CHKERRQ(ierr);
   ptap->c_rmti[0] = 0;
   /* 2) Pass 1: calculate the size for C_rmt (a matrix need to be sent to other processors)  */
   for (i=0; i<am && (pon || pn); i++) {
     /* Form one row of AP */
     ierr = PetscHSetIClear(ht);CHKERRQ(ierr);
     ierr = PetscHSetIClear(oht);CHKERRQ(ierr);
+    offset = i%dof;
+    ii     = i/dof;
     /* If the off diag is empty, we should not do any calculation */
-    nzi = po->i[i+1] - po->i[i];
-    dnzi = pd->i[i+1] - pd->i[i];
+    nzi = po->i[ii+1] - po->i[ii];
+    dnzi = pd->i[ii+1] - pd->i[ii];
     if (!nzi && !dnzi) continue;
 
-    ierr = MatPtAPSymbolicComputeOneRowOfAP_private(A,P,ptap->P_oth,i,ht,oht);CHKERRQ(ierr);
+    ierr = MatPtAPSymbolicComputeOneRowOfAP_private(A,P,ptap->P_oth,mappingindices,dof,i,ht,oht);CHKERRQ(ierr);
     ierr = PetscHSetIGetSize(ht,&htsize);CHKERRQ(ierr);
     ierr = PetscHSetIGetSize(oht,&htosize);CHKERRQ(ierr);
     /* If AP is empty, just continue */
     if (!(htsize+htosize)) continue;
 
     /* Form remote C(ii, :) */
-    poj = po->j + po->i[i];
+    poj = po->j + po->i[ii];
     for (j=0; j<nzi; j++) {
-      ierr = PetscHSetIUpdate(hta[poj[j]],ht);CHKERRQ(ierr);
-      ierr = PetscHSetIUpdate(hta[poj[j]],oht);CHKERRQ(ierr);
+      ierr = PetscHSetIUpdate(hta[poj[j]*dof+offset],ht);CHKERRQ(ierr);
+      ierr = PetscHSetIUpdate(hta[poj[j]*dof+offset],oht);CHKERRQ(ierr);
     }
 
     /* Form local C(ii, :) */
-    pdj = pd->j + pd->i[i];
+    pdj = pd->j + pd->i[ii];
     for (j=0; j<dnzi; j++) {
-      ierr = PetscHSetIUpdate(htd[pdj[j]],ht);CHKERRQ(ierr);
-      ierr = PetscHSetIUpdate(hto[pdj[j]],oht);CHKERRQ(ierr);
+      ierr = PetscHSetIUpdate(htd[pdj[j]*dof+offset],ht);CHKERRQ(ierr);
+      ierr = PetscHSetIUpdate(hto[pdj[j]*dof+offset],oht);CHKERRQ(ierr);
     }
   }
+
+  ierr = ISRestoreIndices(map,&mappingindices);CHKERRQ(ierr);
 
   ierr = PetscHSetIDestroy(&ht);CHKERRQ(ierr);
   ierr = PetscHSetIDestroy(&oht);CHKERRQ(ierr);
@@ -1464,8 +1551,10 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce_merged(Mat A,Mat P,PetscR
   ierr = PetscMalloc1(pon,&iremote);CHKERRQ(ierr);
   for (i=0; i<pon; i++) {
     owner = 0; lidx = 0;
-    ierr = PetscLayoutFindOwnerIndex(P->cmap,p->garray[i],&owner,&lidx);CHKERRQ(ierr);
-    iremote[i].index = lidx;
+    offset = i%dof;
+    ii     = i/dof;
+    ierr = PetscLayoutFindOwnerIndex(P->cmap,p->garray[ii],&owner,&lidx);CHKERRQ(ierr);
+    iremote[i].index = lidx*dof+offset;
     iremote[i].rank  = owner;
   }
 
@@ -1516,8 +1605,8 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce_merged(Mat A,Mat P,PetscR
   nleaves = 0;
   for (i = 0; i<pon; i++) {
     owner = 0;
-    lidx  = 0;
-    ierr  = PetscLayoutFindOwnerIndex(P->cmap,p->garray[i],&owner,&lidx);CHKERRQ(ierr);
+    ii    = i/dof;
+    ierr = PetscLayoutFindOwnerIndex(P->cmap,p->garray[ii],&owner,NULL);CHKERRQ(ierr);
     sendncols = ptap->c_rmti[i+1] - ptap->c_rmti[i];
     for (j=0; j<sendncols; j++) {
       iremote[nleaves].rank    = owner;
@@ -1537,7 +1626,8 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce_merged(Mat A,Mat P,PetscR
   ierr = PetscFree(c_rmtj);CHKERRQ(ierr);
   ierr = PetscMalloc2(pn,&dnz,pn,&onz);CHKERRQ(ierr);
   ierr = MatGetOwnershipRangeColumn(P,&pcstart,&pcend);CHKERRQ(ierr);
-
+  pcstart *= dof;
+  pcend   *= dof;
   for (i = 0; i < pn; i++) {
     nzi = ptap->c_othi[i+1] - ptap->c_othi[i];
     rdj = c_othj + ptap->c_othi[i];
@@ -1563,7 +1653,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce_merged(Mat A,Mat P,PetscR
 
   /* local sizes and preallocation */
   ierr = MatSetSizes(Cmpi,pn,pn,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetBlockSizes(Cmpi,PetscAbs(P->cmap->bs),PetscAbs(P->cmap->bs));CHKERRQ(ierr);
+  ierr = MatSetBlockSizes(Cmpi, dof>1? dof: P->cmap->bs,dof>1? dof: P->cmap->bs);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(Cmpi,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = PetscFree2(dnz,onz);CHKERRQ(ierr);
 
@@ -1595,6 +1685,16 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce_merged(Mat A,Mat P,PetscR
   Cmpi->ops->view        = MatView_MPIAIJ_PtAP;
   Cmpi->ops->freeintermediatedatastructures = MatFreeIntermediateDataStructures_MPIAIJ_AP;
   *C                     = Cmpi;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce_merged(Mat A,Mat P,PetscReal fill,Mat *C)
+{
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+
+  ierr = MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce_merged(A,P,1,fill,C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1828,7 +1928,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   for (k=0; k<nrecv; k++) {/* k-th received message */
     Jptr = buf_rj[k];
     for (j=0; j<len_r[k]; j++) {
-      ierr = PetscTableAdd(ta,*(Jptr+j)+1,1,INSERT_VALUES);CHKERRQ(ierr); 
+      ierr = PetscTableAdd(ta,*(Jptr+j)+1,1,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
   ierr = PetscTableGetCount(ta,&Crmax);CHKERRQ(ierr);

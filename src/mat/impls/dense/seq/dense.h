@@ -38,6 +38,8 @@ PETSC_INTERN PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqDense(Mat,Mat,PetscReal
 PETSC_INTERN PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqDense(Mat,Mat,Mat);
 PETSC_INTERN PetscErrorCode MatMatMultSymbolic_SeqBAIJ_SeqDense(Mat,Mat,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatMatMultNumeric_SeqBAIJ_SeqDense(Mat,Mat,Mat);
+PETSC_INTERN PetscErrorCode MatMatMultSymbolic_Nest_Dense(Mat,Mat,PetscReal,Mat*);
+PETSC_INTERN PetscErrorCode MatMatMultNumeric_Nest_Dense(Mat,Mat,Mat);
 
 PETSC_EXTERN PetscErrorCode MatCreate_SeqDense(Mat);
 
@@ -61,10 +63,17 @@ PETSC_INTERN PetscErrorCode MatCholeskyFactorSymbolic_SeqDense(Mat,Mat,IS,const 
 PETSC_INTERN PetscErrorCode MatLUFactorSymbolic_SeqDense(Mat,Mat,IS,IS,const MatFactorInfo*);
 PETSC_INTERN PetscErrorCode MatSeqDenseSymmetrize_Private(Mat,PetscBool);
 
+#if defined(PETSC_HAVE_CUDA)
+PETSC_EXTERN PetscErrorCode MatSeqDenseCUDAInvertFactors_Private(Mat);
+PETSC_INTERN PetscErrorCode MatConvert_SeqDenseCUDA_SeqDense(Mat,MatType,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatConvert_SeqDense_SeqDenseCUDA(Mat,MatType,MatReuse,Mat*);
+#endif
+
 PETSC_INTERN PetscErrorCode MatDestroy_SeqDense_MatTransMatMult(Mat);
 
 PETSC_INTERN PetscErrorCode MatMatMult_SeqAIJ_SeqDense(Mat,Mat,MatReuse,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatMatMult_SeqBAIJ_SeqDense(Mat,Mat,MatReuse,PetscReal,Mat*);
+PETSC_INTERN PetscErrorCode MatMatMult_Nest_Dense(Mat,Mat,MatReuse,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatMatMult_SeqDense_SeqDense(Mat,Mat,MatReuse,PetscReal,Mat*);
 PETSC_EXTERN PetscErrorCode MatSeqDenseInvertFactors_Private(Mat);
 

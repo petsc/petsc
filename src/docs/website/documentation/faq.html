@@ -132,6 +132,7 @@ See https://www.mcs.anl.gov/petsc/documentation/faq.html
         <li><a href="#cython">How do I get started with Cython so that I can extend petsc4py?</a></li>
         <li><a href="#customnormforksp">I would like to compute a custom norm for KSP to use as a convergence test or for monitoring?</a></li>
         <li><a href="#parallelsolvesequentialcode">If I have a sequential program can I use a parallel direct solver?</a></li>
+        <li><a href="#infeasible">TS or SNES produces infeasible (out of domain) solutions or states, how can I prevent this?</a></li>
       </ul>
 
       <h4><a href="#Execution">Execution</a></h4>
@@ -440,7 +441,7 @@ See https://www.mcs.anl.gov/petsc/documentation/faq.html
 
       <h3><a name="gpus">Can PETSc use GPUs to speedup computations?</a></h3>
 
-      The <a href="https://bitbucket.org/petsc/petsc">PETSc developer repository</a> has some support for running portions of the computation on
+      The <a href="https://gitlab.com/petsc/petsc">PETSc developer repository</a> has some support for running portions of the computation on
       GPUs. See <a href="https://www.mcs.anl.gov/petsc/features/gpus.html">PETSc GPUs</a> for
       more information. PETSc has Vec classes VECCUDA and VECVIENNACL which perform almost all
       the vector operations on the GPU. The Mat classes AIJCUSPARSE and AIJVIENNACL perform
@@ -885,11 +886,11 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
       Julia package.</p>
 
       <p>For other formats, either adapt one of the above libraries or see the
-      examples in src/mat/examples/tests, specifically ex72.c, ex78.c, and
-      ex32.c. You will likely need to modify the code slightly to match your
+      examples in src/mat/examples/tests, specifically ex72.c or ex78.c. 
+      You will likely need to modify the code slightly to match your
       required ASCII format. Note: Never read or write in parallel an ASCII
       matrix file, instead for reading: read in sequentially with a standalone
-      code based on ex72.c, ex78.c, or ex32.c then save the matrix with the
+      code based on ex72.c or ex78.c then save the matrix with the
       binary viewer PetscBinaryViewerOpen() and load the matrix in parallel in
       your "real" PETSc program with MatLoad(); for writing save with the binary
       viewer and then load with the sequential code to store it as ASCII.</p>
@@ -1252,6 +1253,21 @@ PETSC_COMM_WORLD = NewComm;
         the direct solver. Make sure that the OMP_NUM_THREADS you use per MPI process is less than or equal to the number of cores available
         for each MPI process. For example if your compute nodes have 6 cores and you use 2 MPI processes per node then set OMP_NUM_THREADS to 2 or 3.
 
+
+      <h3><a name="infeasible">TS or SNES produces infeasible (out of domain) solutions or states, how can I prevent this?</a></h3>
+
+      <p> For TS call  <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/TS/TSSetFunctionDomainError.html">TSSetFunctionDomainError</a>(). For both TS
+        and SNES call <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/SNES/SNESSetFunctionDomainError.html">SNESSetFunctionDomainError</a>() when
+        the solver passes an infeasible (out of domain) solution or state to your routines.
+      </p>
+      
+      <p> If it occurs for DAEs, it is important to insure the algebraic 
+        constraints are well satisfied, which can prevent "breakdown" later. 
+        Thus, one can try using a tight tolerance for SNES(), using a dicrect
+        solver when possible, and reducing the timestep (or tightening TS
+        tolerances for adaptive time stepping).
+      </p>
+
       <hr>
 
       <h2><a name="execution">Execution</a></h2>
@@ -1346,10 +1362,8 @@ PETSC_COMM_WORLD = NewComm;
       <h3><a name="datafiles">Where do I get the input matrices for the examples?</a></h3>
 
       Some examples use ${DATAFILESPATH}/matrices/medium and other files. These
-      test matrices in PETSc binary format can be found with anonymous ftp from
-      <a href="http://ftp.mcs.anl.gov">ftp.mcs.anl.gov</a> in the directory
-      pub/petsc/Datafiles/matrices. The are not included with the PETSc distribution in the
-      interest of reducing the distribution size. You can obtain many of the files in pub/petsc/Datafiles.tar.gz
+      test matrices in PETSc binary format can be found at
+      <a href="https://bitbucket.org/petsc/datafiles">https://bitbucket.org/petsc/petsc/datafiles</a>
 
       <h3><a name="info">When I dump some matrices and vectors to binary, I seem to be generating some empty files with .info extensions. What's the deal with these?</a></h3>
 
@@ -1365,7 +1379,7 @@ PETSC_COMM_WORLD = NewComm;
 
       <ul>
         <li>
-          First make sure it is truely the time in KSPSolve() that is slower (by
+          First make sure it is truly the time in KSPSolve() that is slower (by
           running the code with <a href="#log-view">-log_view</a>).
           Often the slower time is in <a href="#slow">generating the matrix</a>
           or some other operation.
@@ -1526,6 +1540,7 @@ PETSC_COMM_WORLD = NewComm;
         <li>
           Change the units (nondimensionalization), boundary condition scaling,
           or formulation so that the Jacobian is better conditioned. See <a href="https://en.wikipedia.org/wiki/Buckingham_π_theorem">https://en.wikipedia.org/wiki/Buckinghamπ_theorem</a>
+          and <a href="https://epubs.siam.org/doi/pdf/10.1137/16M1107127">Dimensional and Scaling Analysis</a>
         </li>
 
         <li>
@@ -1629,6 +1644,12 @@ PETSC_COMM_WORLD = NewComm;
             <li>Try <code>-ksp_diagonal_scale -ksp_diagonal_scale_fix</code>.</li>
             <li>Perhaps change the formulation of the problem to produce more friendly algebraic equations.</li>
           </ul>
+        </li>
+        
+        <li>
+          Change the units (nondimensionalization), boundary condition scaling,
+          or formulation so that the matrix is better conditioned. See <a href="https://en.wikipedia.org/wiki/Buckingham_π_theorem">https://en.wikipedia.org/wiki/Buckinghamπ_theorem</a>
+          and <a href="https://epubs.siam.org/doi/pdf/10.1137/16M1107127">Dimensional and Scaling Analysis</a>
         </li>
 
         <li>
@@ -2056,14 +2077,14 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh
       <ul>
         <li>get petsc development (master branch in git) sources:
           <ul>
-            <li><code>git clone https://bitbucket.org/petsc/petsc</code></li>
+            <li><code>git clone https://gitlab.com/petsc/petsc.git</code></li>
           </ul>
         </li>
 
         <li>
           Find the <b>good</b> and <b>bad</b> markers to
           start the bisection process. This can be done either by checking
-          <code>git log</code> or <code>gitk</code> or <a href="https://bitbucket.org/petsc/petsc">https://bitbucket.org/petsc/petsc</a>
+          <code>git log</code> or <code>gitk</code> or <a href="https://gitlab.com/petsc/petsc">https://gitlab.com/petsc/petsc</a>
           or the web history of petsc-release clones. Lets say the known bad
           commit is 21af4baa815c and known good commit is 5ae5ab319844
         </li>

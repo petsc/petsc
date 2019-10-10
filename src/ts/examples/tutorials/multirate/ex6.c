@@ -732,7 +732,7 @@ int main(int argc,char *argv[])
   PetscReal         ptime;
   PetscErrorCode    ierr;
 
-  ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
   ierr = PetscMemzero(&ctx,sizeof(ctx));CHKERRQ(ierr);
 

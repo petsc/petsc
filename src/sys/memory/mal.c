@@ -194,8 +194,8 @@ PETSC_EXTERN PetscErrorCode PetscReallocAlign(size_t mem, int line, const char f
 }
 
 PetscErrorCode (*PetscTrMalloc)(size_t,PetscBool,int,const char[],const char[],void**) = PetscMallocAlign;
-PetscErrorCode (*PetscTrFree)(void*,int,const char[],const char[])           = PetscFreeAlign;
-PetscErrorCode (*PetscTrRealloc)(size_t,int,const char[],const char[],void**) = PetscReallocAlign;
+PetscErrorCode (*PetscTrFree)(void*,int,const char[],const char[])                     = PetscFreeAlign;
+PetscErrorCode (*PetscTrRealloc)(size_t,int,const char[],const char[],void**)          = PetscReallocAlign;
 
 PETSC_INTERN PetscBool petscsetmallocvisited;
 PetscBool petscsetmallocvisited = PETSC_FALSE;
@@ -208,27 +208,28 @@ PetscBool petscsetmallocvisited = PETSC_FALSE;
    Not Collective
 
    Input Parameters:
-+  malloc - the malloc routine
--  free - the free routine
++ imalloc - the routine that provides the malloc (also provides calloc(), which is used depends on the second argument)
+. ifree - the routine that provides the free
+- iralloc - the routine that provides the realloc
 
    Level: developer
 
-
 @*/
 PetscErrorCode PetscMallocSet(PetscErrorCode (*imalloc)(size_t,PetscBool,int,const char[],const char[],void**),
-                              PetscErrorCode (*ifree)(void*,int,const char[],const char[]))
+                              PetscErrorCode (*ifree)(void*,int,const char[],const char[]),
+                              PetscErrorCode (*iralloc)(size_t, int, const char[], const char[], void **))
 {
   PetscFunctionBegin;
   if (petscsetmallocvisited && (imalloc != PetscTrMalloc || ifree != PetscTrFree)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"cannot call multiple times");
   PetscTrMalloc         = imalloc;
   PetscTrFree           = ifree;
+  PetscTrRealloc        = iralloc;
   petscsetmallocvisited = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
 /*@C
-   PetscMallocClear - Resets the routines used to do mallocs and frees to the
-        defaults.
+   PetscMallocClear - Resets the routines used to do mallocs and frees to the defaults.
 
    Not Collective
 
@@ -239,12 +240,15 @@ PetscErrorCode PetscMallocSet(PetscErrorCode (*imalloc)(size_t,PetscBool,int,con
     free() settings for different parts; this is because one NEVER wants to
     free() an address that was malloced by a different memory management system
 
+    Called in PetscFinalize() so that if PetscInitialize() is called again it starts with a fresh slate of allocation information
+
 @*/
 PetscErrorCode PetscMallocClear(void)
 {
   PetscFunctionBegin;
   PetscTrMalloc         = PetscMallocAlign;
   PetscTrFree           = PetscFreeAlign;
+  PetscTrRealloc        = PetscReallocAlign;
   petscsetmallocvisited = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -266,7 +270,8 @@ PetscErrorCode PetscMemoryTrace(const char label[])
 }
 
 static PetscErrorCode (*PetscTrMallocOld)(size_t,PetscBool,int,const char[],const char[],void**) = PetscMallocAlign;
-static PetscErrorCode (*PetscTrFreeOld)(void*,int,const char[],const char[])           = PetscFreeAlign;
+static PetscErrorCode (*PetscTrReallocOld)(size_t,int,const char[],const char[],void**)          = PetscReallocAlign;
+static PetscErrorCode (*PetscTrFreeOld)(void*,int,const char[],const char[])                     = PetscFreeAlign;
 
 /*@C
    PetscMallocSetDRAM - Set PetscMalloc to use DRAM.
@@ -294,10 +299,12 @@ PetscErrorCode PetscMallocSetDRAM(void)
 #endif
   } else {
     /* Save the previous choice */
-    PetscTrMallocOld = PetscTrMalloc;
-    PetscTrFreeOld   = PetscTrFree;
-    PetscTrMalloc    = PetscMallocAlign;
-    PetscTrFree      = PetscFreeAlign;
+    PetscTrMallocOld  = PetscTrMalloc;
+    PetscTrReallocOld = PetscTrRealloc;
+    PetscTrFreeOld    = PetscTrFree;
+    PetscTrMalloc     = PetscMallocAlign;
+    PetscTrFree       = PetscFreeAlign;
+    PetscTrRealloc    = PetscReallocAlign;
   }
   PetscFunctionReturn(0);
 }
@@ -320,8 +327,9 @@ PetscErrorCode PetscMallocResetDRAM(void)
 #endif
   } else {
     /* Reset to the previous choice */
-    PetscTrMalloc = PetscTrMallocOld;
-    PetscTrFree   = PetscTrFreeOld;
+    PetscTrMalloc  = PetscTrMallocOld;
+    PetscTrRealloc = PetscTrReallocOld;
+    PetscTrFree    = PetscTrFreeOld;
   }
   PetscFunctionReturn(0);
 }
@@ -346,6 +354,7 @@ static PetscBool petscmalloccoalesce =
 
    Note:
    PETSc uses coalesced malloc by default for optimized builds and not for debugging builds.  This default can be changed via the command-line option -malloc_coalesce or by calling this function.
+   This function can only be called immediately after PetscInitialize()
 
    Level: developer
 

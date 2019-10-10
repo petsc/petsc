@@ -172,7 +172,7 @@ PetscErrorCode PetscFEGetType(PetscFE fem, PetscFEType *name)
 + fem - the PetscFE object to view
 - viewer   - the viewer
 
-  Level: developer
+  Level: beginner
 
 .seealso PetscFEDestroy()
 @*/
@@ -203,7 +203,7 @@ PetscErrorCode PetscFEView(PetscFE fem, PetscViewer viewer)
 + -petscfe_num_blocks  - the number of cell blocks to integrate concurrently
 - -petscfe_num_batches - the number of cell batches to integrate serially
 
-  Level: developer
+  Level: intermediate
 
 .seealso PetscFEView()
 @*/
@@ -250,7 +250,7 @@ PetscErrorCode PetscFESetFromOptions(PetscFE fem)
   Input Parameter:
 . fem - the PetscFE object to setup
 
-  Level: developer
+  Level: intermediate
 
 .seealso PetscFEView(), PetscFEDestroy()
 @*/
@@ -274,7 +274,7 @@ PetscErrorCode PetscFESetUp(PetscFE fem)
   Input Parameter:
 . fem - the PetscFE object to destroy
 
-  Level: developer
+  Level: beginner
 
 .seealso PetscFEView()
 @*/
@@ -697,6 +697,34 @@ PetscErrorCode PetscFESetFaceQuadrature(PetscFE fem, PetscQuadrature q)
   PetscFunctionReturn(0);
 }
 
+/*@
+  PetscFECopyQuadrature - Copy both volumetric and surface quadrature
+
+  Not collective
+
+  Input Parameters:
++ sfe - The PetscFE source for the quadratures
+- tfe - The PetscFE target for the quadratures
+
+  Level: intermediate
+
+.seealso: PetscFECreate(), PetscFESetQuadrature(), PetscFESetFaceQuadrature()
+@*/
+PetscErrorCode PetscFECopyQuadrature(PetscFE sfe, PetscFE tfe)
+{
+  PetscQuadrature q;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sfe, PETSCFE_CLASSID, 1);
+  PetscValidHeaderSpecific(tfe, PETSCFE_CLASSID, 2);
+  ierr = PetscFEGetQuadrature(sfe, &q);CHKERRQ(ierr);
+  ierr = PetscFESetQuadrature(tfe,  q);CHKERRQ(ierr);
+  ierr = PetscFEGetFaceQuadrature(sfe, &q);CHKERRQ(ierr);
+  ierr = PetscFESetFaceQuadrature(tfe,  q);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@C
   PetscFEGetNumDof - Returns the number of dofs (dual basis vectors) associated to mesh points on the reference cell of a given dimension
 
@@ -764,6 +792,28 @@ PetscErrorCode PetscFEGetDefaultTabulation(PetscFE fem, PetscReal **B, PetscReal
   PetscFunctionReturn(0);
 }
 
+/*@C
+  PetscFEGetFaceTabulation - Returns the tabulation of the basis functions at the face quadrature points
+
+  Not collective
+
+  Input Parameter:
+. fem - The PetscFE object
+
+  Output Parameters:
++ B - The basis function values at face quadrature points
+. D - The basis function derivatives at face quadrature points
+- H - The basis function second derivatives at face quadrature points
+
+  Note:
+$ Bf[((f*Nq + q)*pdim + i)*Nc + c] is the value at point f,q for basis function i and component c
+$ Df[(((f*Nq + q)*pdim + i)*Nc + c)*dim + d] is the derivative value at point f,q for basis function i, component c, in direction d
+$ Hf[((((f*Nq + q)*pdim + i)*Nc + c)*dim + d)*dim + e] is the value at point f,q for basis function i, component c, in directions d and e
+
+  Level: intermediate
+
+.seealso: PetscFEGetDefaultTabulation(), PetscFEGetTabulation(), PetscFERestoreTabulation()
+@*/
 PetscErrorCode PetscFEGetFaceTabulation(PetscFE fem, PetscReal **Bf, PetscReal **Df, PetscReal **Hf)
 {
   PetscErrorCode   ierr;
@@ -807,6 +857,28 @@ PetscErrorCode PetscFEGetFaceTabulation(PetscFE fem, PetscReal **Bf, PetscReal *
   PetscFunctionReturn(0);
 }
 
+/*@C
+  PetscFEGetFaceTabulation - Returns the tabulation of the basis functions at the face centroid points
+
+  Not collective
+
+  Input Parameter:
+. fem - The PetscFE object
+
+  Output Parameters:
++ B - The basis function values at face centroid points
+. D - The basis function derivatives at face centroid points
+- H - The basis function second derivatives at face centroid points
+
+  Note:
+$ Bf[(f*pdim + i)*Nc + c] is the value at point f for basis function i and component c
+$ Df[((f*pdim + i)*Nc + c)*dim + d] is the derivative value at point f for basis function i, component c, in direction d
+$ Hf[(((f*pdim + i)*Nc + c)*dim + d)*dim + e] is the value at point f for basis function i, component c, in directions d and e
+
+  Level: intermediate
+
+.seealso: PetscFEGetFaceTabulation(), PetscFEGetDefaultTabulation(), PetscFEGetTabulation(), PetscFERestoreTabulation()
+@*/
 PetscErrorCode PetscFEGetFaceCentroidTabulation(PetscFE fem, PetscReal **F)
 {
   PetscErrorCode   ierr;
@@ -895,6 +967,28 @@ PetscErrorCode PetscFEGetTabulation(PetscFE fem, PetscInt npoints, const PetscRe
   PetscFunctionReturn(0);
 }
 
+/*@C
+  PetscFERestoreTabulation - Frees memory from the associated tabulation.
+
+  Not collective
+
+  Input Parameters:
++ fem     - The PetscFE object
+. npoints - The number of tabulation points
+. points  - The tabulation point coordinates
+. B - The basis function values at tabulation points
+. D - The basis function derivatives at tabulation points
+- H - The basis function second derivatives at tabulation points
+
+  Note:
+$ B[(p*pdim + i)*Nc + c] is the value at point p for basis function i and component c
+$ D[((p*pdim + i)*Nc + c)*dim + d] is the derivative value at point p for basis function i, component c, in direction d
+$ H[(((p*pdim + i)*Nc + c)*dim + d)*dim + e] is the value at point p for basis function i, component c, in directions d and e
+
+  Level: intermediate
+
+.seealso: PetscFEGetTabulation(), PetscFEGetDefaultTabulation()
+@*/
 PetscErrorCode PetscFERestoreTabulation(PetscFE fem, PetscInt npoints, const PetscReal points[], PetscReal **B, PetscReal **D, PetscReal **H)
 {
   DM             dm;
@@ -1178,7 +1272,7 @@ __kernel void integrateElementQuadrature(int N_cb, __global float *coefficients,
   Output Parameter
 . integral     - the integral for this field
 
-  Level: developer
+  Level: intermediate
 
 .seealso: PetscFEIntegrateResidual()
 @*/
@@ -1214,7 +1308,7 @@ PetscErrorCode PetscFEIntegrate(PetscDS prob, PetscInt field, PetscInt Ne, Petsc
   Output Parameter
 . integral     - the integral for this field
 
-  Level: developer
+  Level: intermediate
 
 .seealso: PetscFEIntegrateResidual()
 @*/
@@ -1263,7 +1357,7 @@ $     Call f_0 and f_1
 $   Loop over element vector entries (f,fc --> i):
 $     elemVec[i] += \psi^{fc}_f(q) f0_{fc}(u, \nabla u) + \nabla\psi^{fc}_f(q) \cdot f1_{fc,df}(u, \nabla u)
 
-  Level: developer
+  Level: intermediate
 
 .seealso: PetscFEIntegrateResidual()
 @*/
@@ -1300,7 +1394,7 @@ PetscErrorCode PetscFEIntegrateResidual(PetscDS prob, PetscInt field, PetscInt N
   Output Parameter
 . elemVec      - the element residual vectors from each element
 
-  Level: developer
+  Level: intermediate
 
 .seealso: PetscFEIntegrateResidual()
 @*/
@@ -1349,7 +1443,7 @@ $         elemMat[i,j] += \psi^{fc}_f(q) g0_{fc,gc}(u, \nabla u) \phi^{gc}_g(q)
 $                      + \psi^{fc}_f(q) \cdot g1_{fc,gc,dg}(u, \nabla u) \nabla\phi^{gc}_g(q)
 $                      + \nabla\psi^{fc}_f(q) \cdot g2_{fc,gc,df}(u, \nabla u) \phi^{gc}_g(q)
 $                      + \nabla\psi^{fc}_f(q) \cdot g3_{fc,gc,df,dg}(u, \nabla u) \nabla\phi^{gc}_g(q)
-  Level: developer
+  Level: intermediate
 
 .seealso: PetscFEIntegrateResidual()
 @*/
@@ -1396,7 +1490,7 @@ $         elemMat[i,j] += \psi^{fc}_f(q) g0_{fc,gc}(u, \nabla u) \phi^{gc}_g(q)
 $                      + \psi^{fc}_f(q) \cdot g1_{fc,gc,dg}(u, \nabla u) \nabla\phi^{gc}_g(q)
 $                      + \nabla\psi^{fc}_f(q) \cdot g2_{fc,gc,df}(u, \nabla u) \phi^{gc}_g(q)
 $                      + \nabla\psi^{fc}_f(q) \cdot g3_{fc,gc,df,dg}(u, \nabla u) \nabla\phi^{gc}_g(q)
-  Level: developer
+  Level: intermediate
 
 .seealso: PetscFEIntegrateJacobian(), PetscFEIntegrateResidual()
 @*/
@@ -1413,6 +1507,22 @@ PetscErrorCode PetscFEIntegrateBdJacobian(PetscDS prob, PetscInt fieldI, PetscIn
   PetscFunctionReturn(0);
 }
 
+/*@
+  PetscFEGetHeightSubspace - Get the subspace of this space for a mesh point of a given height
+
+  Input Parameters:
++ fe     - The finite element space
+- height - The height of the Plex point
+
+  Output Parameter:
+. subfe  - The subspace of this FE space
+
+  Note: For example, if we want the subspace of this space for a face, we would choose height = 1.
+
+  Level: advanced
+
+.seealso: PetscFECreateDefault()
+@*/
 PetscErrorCode PetscFEGetHeightSubspace(PetscFE fe, PetscInt height, PetscFE *subfe)
 {
   PetscSpace      P, subP;
@@ -1475,7 +1585,7 @@ PetscErrorCode PetscFEGetHeightSubspace(PetscFE fe, PetscInt height, PetscFE *su
   Output Parameter:
 . feRef - The refined PetscFE
 
-  Level: developer
+  Level: advanced
 
 .seealso: PetscFEType, PetscFECreate(), PetscFESetType()
 @*/
@@ -1613,7 +1723,7 @@ PetscErrorCode PetscFECreateDefault(MPI_Comm comm, PetscInt dim, PetscInt Nc, Pe
 + fe   - The PetscFE
 - name - The name
 
-  Level: beginner
+  Level: intermediate
 
 .seealso: PetscFECreate(), PetscSpaceCreate(), PetscDualSpaceCreate()
 @*/

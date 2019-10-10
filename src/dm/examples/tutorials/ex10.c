@@ -1,6 +1,3 @@
-#if !defined(PETSC_USE_CXX_COMPLEX_FLOAT_WORKAROUND)
-#define PETSC_USE_CXX_COMPLEX_FLOAT_WORKAROUND 1
-#endif
 /*
    Demonstrates using the HDF5 viewer with a DMDA Vec
  - create a global vector containing a gauss profile (exp(-x^2-y^2))
@@ -23,7 +20,7 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
   DM             da2D;
-  PetscInt       i,j,ixs, ixm, iys, iym;;
+  PetscInt       i,j,ixs, ixm, iys, iym;
   PetscViewer    H5viewer;
   PetscScalar    xm    = -1.0, xp=1.0;
   PetscScalar    ym    = -1.0, yp=1.0;

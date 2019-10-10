@@ -9,7 +9,7 @@ PETSC_INTERN PetscErrorCode SNESDiffParameterDestroy_More(void*);
 typedef struct {
   Vec      *workv;           /* work vectors */
   FILE     *fp;              /* output file */
-  int      function_count;   /* count of function evaluations for diff param estimation */
+  PetscInt function_count;   /* count of function evaluations for diff param estimation */
   double   fnoise_min;       /* minimim allowable noise */
   double   hopt_min;         /* minimum allowable hopt */
   double   h_first_try;      /* first try for h used in diff parameter estimate */

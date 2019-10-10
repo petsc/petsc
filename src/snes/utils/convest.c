@@ -289,7 +289,7 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal alpha[])
       PetscInt     lsize;
 
       /* Could use DMGetOutputDM() to add in Dirichlet dofs */
-      ierr = DMGetSection(dm[r], &s);CHKERRQ(ierr);
+      ierr = DMGetLocalSection(dm[r], &s);CHKERRQ(ierr);
       ierr = PetscSectionGetField(s, f, &fs);CHKERRQ(ierr);
       ierr = PetscSectionGetConstrainedStorageSize(fs, &lsize);CHKERRQ(ierr);
       ierr = MPI_Allreduce(&lsize, &dof[r*ce->Nf+f], 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject) ce->snes));CHKERRQ(ierr);

@@ -52,6 +52,7 @@ SNES Object: 2 MPI processes
   total number of linear solver iterations=43
   total number of function evaluations=2
   norm schedule ALWAYS
+  Jacobian is built using a DMDA local Jacobian
   SNESLineSearch Object: 2 MPI processes
     type: bt
       interpolation: cubic

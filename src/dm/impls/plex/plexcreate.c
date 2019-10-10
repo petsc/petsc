@@ -1798,7 +1798,7 @@ PetscErrorCode DMPlexCreateSphereMesh(MPI_Comm comm, PetscInt dim, PetscBool sim
            (0, \pm 1/\phi+1, \pm \phi/\phi+1)
 
          where \phi^2 - \phi - 1 = 0, meaning \phi is the golden ratio \frac{1 + \sqrt{5}}{2}. The edge
-         length is then given by 2/\phi = 2 * 2.73606 = 5.47214.
+         length is then given by 2/\phi = 2 * 0.61803 = 1.23606.
        */
       /* Construct vertices */
       ierr = PetscCalloc1(numVerts * embedDim, &coordsIn);CHKERRQ(ierr);
@@ -1988,7 +1988,7 @@ PetscErrorCode DMPlexCreateSphereMesh(MPI_Comm comm, PetscInt dim, PetscBool sim
            1/2 (\pm 1, \pm phi, \pm 1/phi, 0)  all even permutations    96
 
          where \phi^2 - \phi - 1 = 0, meaning \phi is the golden ratio \frac{1 + \sqrt{5}}{2}. The edge
-         length is then given by 1/\phi = 2.73606.
+         length is then given by 1/\phi = 0.61803.
 
          http://buzzard.pugetsound.edu/sage-practice/ch03s03.html
          http://mathworld.wolfram.com/600-Cell.html
@@ -2129,7 +2129,7 @@ PetscErrorCode DMPlexCreateSphereMesh(MPI_Comm comm, PetscInt dim, PetscBool sim
 extern PetscErrorCode DMCreateInterpolation_Plex(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling);
 extern PetscErrorCode DMCreateInjection_Plex(DM dmCoarse, DM dmFine, Mat *mat);
 extern PetscErrorCode DMCreateMassMatrix_Plex(DM dmCoarse, DM dmFine, Mat *mat);
-extern PetscErrorCode DMCreateDefaultSection_Plex(DM dm);
+extern PetscErrorCode DMCreateLocalSection_Plex(DM dm);
 extern PetscErrorCode DMCreateDefaultConstraints_Plex(DM dm);
 extern PetscErrorCode DMCreateMatrix_Plex(DM dm,  Mat *J);
 extern PetscErrorCode DMCreateCoordinateDM_Plex(DM dm, DM *cdm);
@@ -2171,22 +2171,8 @@ static PetscErrorCode DMPlexReplace_Static(DM dm, DM dmNew)
   ierr = DMInitialize_Plex(dm);CHKERRQ(ierr);
   dm->data = dmNew->data;
   ((DM_Plex *) dmNew->data)->refct++;
-  dmNew->labels->refct++;
-  if (!--(dm->labels->refct)) {
-    DMLabelLink next = dm->labels->next;
-
-    /* destroy the labels */
-    while (next) {
-      DMLabelLink tmp = next->next;
-
-      ierr = DMLabelDestroy(&next->label);CHKERRQ(ierr);
-      ierr = PetscFree(next);CHKERRQ(ierr);
-      next = tmp;
-    }
-    ierr = PetscFree(dm->labels);CHKERRQ(ierr);
-  }
-  dm->labels = dmNew->labels;
-  dm->depthLabel = dmNew->depthLabel;
+  ierr = DMDestroyLabelLinkList_Internal(dm);CHKERRQ(ierr);
+  ierr = DMCopyLabels(dmNew, dm, PETSC_OWN_POINTER, PETSC_TRUE);CHKERRQ(ierr);
   ierr = DMGetCoarseDM(dmNew,&coarseDM);CHKERRQ(ierr);
   ierr = DMSetCoarseDM(dm,coarseDM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2203,7 +2189,7 @@ static PetscErrorCode DMPlexSwap_Static(DM dmA, DM dmB)
   Vec             coordsA,  coordsB;
   PetscSF         sfA,      sfB;
   void            *tmp;
-  DMLabelLinkList listTmp;
+  DMLabelLink     listTmp;
   DMLabel         depthTmp;
   PetscInt        tmpI;
   PetscErrorCode  ierr;
@@ -2409,7 +2395,7 @@ static PetscErrorCode DMGetDimPoints_Plex(DM dm, PetscInt dim, PetscInt *pStart,
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMGetNeighors_Plex(DM dm, PetscInt *nranks, const PetscMPIInt *ranks[])
+static PetscErrorCode DMGetNeighbors_Plex(DM dm, PetscInt *nranks, const PetscMPIInt *ranks[])
 {
   PetscSF        sf;
   PetscErrorCode ierr;
@@ -2430,7 +2416,7 @@ static PetscErrorCode DMInitialize_Plex(DM dm)
   dm->ops->setfromoptions                  = DMSetFromOptions_Plex;
   dm->ops->clone                           = DMClone_Plex;
   dm->ops->setup                           = DMSetUp_Plex;
-  dm->ops->createdefaultsection            = DMCreateDefaultSection_Plex;
+  dm->ops->createlocalsection              = DMCreateLocalSection_Plex;
   dm->ops->createdefaultconstraints        = DMCreateDefaultConstraints_Plex;
   dm->ops->createglobalvector              = DMCreateGlobalVector_Plex;
   dm->ops->createlocalvector               = DMCreateLocalVector_Plex;
@@ -2465,9 +2451,11 @@ static PetscErrorCode DMInitialize_Plex(DM dm)
   dm->ops->computel2diff                   = DMComputeL2Diff_Plex;
   dm->ops->computel2gradientdiff           = DMComputeL2GradientDiff_Plex;
   dm->ops->computel2fielddiff              = DMComputeL2FieldDiff_Plex;
-  dm->ops->getneighbors                    = DMGetNeighors_Plex;
+  dm->ops->getneighbors                    = DMGetNeighbors_Plex;
   ierr = PetscObjectComposeFunction((PetscObject)dm,"DMPlexInsertBoundaryValues_C",DMPlexInsertBoundaryValues_Plex);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)dm,"DMSetUpGLVisViewer_C",DMSetUpGLVisViewer_Plex);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)dm,"DMCreateNeumannOverlap_C",DMCreateNeumannOverlap_Plex);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)dm,"DMPlexGetOverlap_C",DMPlexGetOverlap_Plex);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2532,6 +2520,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
   mesh->supports          = NULL;
   mesh->refinementUniform = PETSC_TRUE;
   mesh->refinementLimit   = -1.0;
+  mesh->ghostCellStart    = -1;
 
   mesh->facesTmp = NULL;
 
@@ -3227,7 +3216,7 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscB
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidPointer(filename, 2);
+  PetscValidCharPointer(filename, 2);
   PetscValidPointer(dm, 4);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
@@ -3384,12 +3373,12 @@ PetscErrorCode DMPlexCreateReferenceCell(MPI_Comm comm, PetscInt dim, PetscBool 
     PetscSection cs;
     PetscInt     pEnd = -1;
 
-    ierr = DMGetSection(rdm->coordinateDM, &cs);CHKERRQ(ierr);
+    ierr = DMGetLocalSection(rdm->coordinateDM, &cs);CHKERRQ(ierr);
     if (cs) {ierr = PetscSectionGetChart(cs, NULL, &pEnd);CHKERRQ(ierr);}
     if (pEnd >= 0) {
       ierr = DMClone(*refdm, &ncdm);CHKERRQ(ierr);
       ierr = DMCopyDisc(rdm->coordinateDM, ncdm);CHKERRQ(ierr);
-      ierr = DMSetSection(ncdm, cs);CHKERRQ(ierr);
+      ierr = DMSetLocalSection(ncdm, cs);CHKERRQ(ierr);
       ierr = DMSetCoordinateDM(*refdm, ncdm);CHKERRQ(ierr);
       ierr = DMDestroy(&ncdm);CHKERRQ(ierr);
     }

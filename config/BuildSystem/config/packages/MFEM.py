@@ -58,12 +58,17 @@ class Configure(config.package.Package):
     # MFEM uses the macro MFEM_BUILD_DIR that builds a path by combining the directory plus other stuff but if the
     # directory name contains  "-linux'" this is converted by CPP to the value 1 since that is defined in Linux header files
     # unless the -std=C++11 or -std=C++14 flag is used; we want to support MFEM without this flag
-    cxxflags += ' -Dlinux=linux'    
+    cxxflags += ' -Dlinux=linux'
     self.setCompilers.popLanguage()
     if 'download-mfem-ghv-cxx' in self.argDB and self.argDB['download-mfem-ghv-cxx']:
       ghv = self.argDB['download-mfem-ghv-cxx']
     else:
       ghv = cxx
+
+    # On CRAY with shared libraries, libmfem.so is linked as
+    # $ cc -shared -o libmfem.so ...a bunch of .o files.... ...libraries.... -dynamic
+    # The -dynamic at the end makes cc think it is creating an executable
+    ldflags = self.setCompilers.LDFLAGS.replace('-dynamic','')
 
     with open(os.path.join(configDir,'user.mk'),'w') as g:
       g.write('PREFIX = '+prefix+'\n')
@@ -78,7 +83,7 @@ class Configure(config.package.Package):
         g.write('STATIC = YES\n')
       g.write('AR = '+self.setCompilers.AR+'\n')
       g.write('ARFLAGS = '+self.setCompilers.AR_FLAGS+'\n')
-      g.write('LDFLAGS = '+self.setCompilers.LDFLAGS+'\n')
+      g.write('LDFLAGS = '+ldflags+'\n')
       g.write('MFEM_USE_MPI = YES\n')
       g.write('MFEM_MPIEXEC = '+self.mpi.mpiexec+'\n')
       g.write('MFEM_USE_METIS_5 = YES\n')

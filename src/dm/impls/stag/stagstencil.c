@@ -20,7 +20,7 @@ const char * const DMStagStencilLocations[] = {"NONE","BACK_DOWN_LEFT","BACK_DOW
 
   Level: intermediate
 
-.seealso: DMSTAG, DMStagStencilLocation, DMStagStencil
+.seealso: DMSTAG, DMStagStencilLocation, DMStagStencil, DMDAGetDof()
 @*/
 PetscErrorCode DMStagGetLocationDOF(DM dm,DMStagStencilLocation loc,PetscInt *dof)
 {

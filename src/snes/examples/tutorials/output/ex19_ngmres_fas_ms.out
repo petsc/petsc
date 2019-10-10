@@ -17,6 +17,7 @@ lid velocity = 200., prandtl # = 1., grashof # = 10000.
     total number of function evaluations=2
     norm schedule ALWAYS
     total number of grid sequence refinements=2
+    Jacobian is built using a DMDA local Jacobian
     SNESLineSearch Object: 2 MPI processes
       type: basic
       maxstep=1.000000e+08, minlambda=1.000000e-12
@@ -33,6 +34,7 @@ lid velocity = 200., prandtl # = 1., grashof # = 10000.
           tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
           total number of linear solver iterations=8
           total number of function evaluations=43
+          Jacobian is built using colored finite differences on a DMDA
           SNESLineSearch Object: (npc_fas_coarse_) 2 MPI processes
             type: bt
               interpolation: cubic
@@ -91,6 +93,7 @@ lid velocity = 200., prandtl # = 1., grashof # = 10000.
           tolerances: relative=0., absolute=0., solution=0.
           total number of function evaluations=4
           norm schedule FINALONLY
+          Jacobian is built using a DMDA local Jacobian
           SNESLineSearch Object: (npc_fas_levels_1_) 2 MPI processes
             type: l2
             maxstep=1.000000e+08, minlambda=1.000000e-12
@@ -101,4 +104,5 @@ lid velocity = 200., prandtl # = 1., grashof # = 10000.
       tolerances: relative=0., absolute=0., solution=0.
       total number of function evaluations=0
       norm schedule FINALONLY
+      Jacobian is built using a DMDA local Jacobian
 Number of SNES iterations = 1

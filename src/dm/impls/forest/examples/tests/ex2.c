@@ -96,7 +96,7 @@ static PetscErrorCode IdentifyBadPoints (DM dm, Vec vec, PetscReal tol)
   ierr = DMConvert(dm ,DMPLEX, &dmplex);CHKERRQ(ierr);
   ierr = DMPlexGetChart(dmplex, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = DMPlexGetDepthLabel(dmplex, &depthLabel);CHKERRQ(ierr);
-  ierr = DMGetDefaultSection(dmplex, &section);CHKERRQ(ierr);
+  ierr = DMGetLocalSection(dmplex, &section);CHKERRQ(ierr);
   ierr = PetscSectionGetMaxDof(section, &maxDof);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; p++) {
     PetscInt     s, c, cSize, parent, childID, numChildren;
@@ -363,7 +363,7 @@ int main(int argc, char **argv)
 
       ierr = DMConvert(postForest,DMPLEX,&dmConv);CHKERRQ(ierr);
       ierr = DMViewFromOptions(dmConv,NULL,"-dm_conv_view");CHKERRQ(ierr);
-      ierr = DMPlexCheckCellShape(dmConv,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = DMPlexCheckCellShape(dmConv,PETSC_TRUE,PETSC_DETERMINE);CHKERRQ(ierr);
       ierr = DMDestroy(&dmConv);CHKERRQ(ierr);
     }
 

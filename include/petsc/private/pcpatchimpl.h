@@ -31,7 +31,7 @@ typedef struct {
   /* Dof layout */
   PetscBool            combined;           /* Use a combined space with all fields */
   PetscInt             nsubspaces;         /* Number of fields */
-  PetscSF              defaultSF;          /* Combined SF mapping process local to global */
+  PetscSF              sectionSF;          /* Combined SF mapping process local to global */
   PetscSection        *dofSection;         /* ?? For each field, patch -> # dofs in patch */
   PetscInt            *subspaceOffsets;    /* Plex: NULL Firedrake: offset of each field in concatenated process local numbering for mixed spaces */
   PetscInt           **cellNodeMap;        /* [field][cell][dof in cell]: global dofs in cell TODO Free this after its use in PCPatchCreateCellPatchDiscretisationInfo() */

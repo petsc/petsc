@@ -264,7 +264,7 @@ static PetscErrorCode PCView_BJacobi(PC pc,PetscViewer viewer)
 
 static PetscErrorCode  PCBJacobiGetSubKSP_BJacobi(PC pc,PetscInt *n_local,PetscInt *first_local,KSP **ksp)
 {
-  PC_BJacobi *jac = (PC_BJacobi*)pc->data;;
+  PC_BJacobi *jac = (PC_BJacobi*)pc->data;
 
   PetscFunctionBegin;
   if (!pc->setupcalled) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must call KSPSetUp() or PCSetUp() first");

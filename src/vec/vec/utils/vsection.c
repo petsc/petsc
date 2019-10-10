@@ -1,10 +1,10 @@
 /*
    This file contains routines for section object operations on Vecs
 */
-#include <petsc/private/isimpl.h>   /*I  "petscvec.h"   I*/
-#include <petsc/private/vecimpl.h>   /*I  "petscvec.h"   I*/
+#include <petsc/private/sectionimpl.h> /*I  "petscsection.h"   I*/
+#include <petsc/private/vecimpl.h>     /*I  "petscvec.h"   I*/
 
-PetscErrorCode PetscSectionVecView_ASCII(PetscSection s, Vec v, PetscViewer viewer)
+static PetscErrorCode PetscSectionVecView_ASCII(PetscSection s, Vec v, PetscViewer viewer)
 {
   PetscScalar    *array;
   PetscInt       p, i;
@@ -65,6 +65,20 @@ PetscErrorCode PetscSectionVecView_ASCII(PetscSection s, Vec v, PetscViewer view
   PetscFunctionReturn(0);
 }
 
+/*@
+  PetscSectionVecView - View a vector, using the section to structure the values
+
+  Not collective
+
+  Input Parameters:
++ s      - the organizing PetscSection
+. v      - the Vec
+- viewer - the PetscViewer
+
+  Level: developer
+
+.seealso: PetscSection, PetscSectionCreate(), VecSetValuesSection()
+@*/
 PetscErrorCode PetscSectionVecView(PetscSection s, Vec v, PetscViewer viewer)
 {
   PetscBool      isascii;

@@ -328,7 +328,6 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   DM              cdm   = dm;
   const PetscInt  dim   = user->dim;
   PetscFE         fe[2];
-  PetscQuadrature q;
   Parameter      *param;
   MPI_Comm        comm;
   PetscErrorCode  ierr;
@@ -338,9 +337,8 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
   ierr = PetscFECreateDefault(comm, dim, dim, user->simplex, "vel_", PETSC_DEFAULT, &fe[0]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[0], "velocity");CHKERRQ(ierr);
-  ierr = PetscFEGetQuadrature(fe[0], &q);CHKERRQ(ierr);
   ierr = PetscFECreateDefault(comm, dim, 1, user->simplex, "pres_", PETSC_DEFAULT, &fe[1]);CHKERRQ(ierr);
-  ierr = PetscFESetQuadrature(fe[1], q);CHKERRQ(ierr);
+  ierr = PetscFECopyQuadrature(fe[0], fe[1]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[1], "pressure");CHKERRQ(ierr);
   /* Set discretization and boundary conditions for each mesh */
   ierr = DMSetField(dm, 0, NULL, (PetscObject) fe[0]);CHKERRQ(ierr);
@@ -462,7 +460,7 @@ int main(int argc, char **argv)
     requires: triangle !single
     args: -dm_plex_separate_marker -dm_refine 1 \
       -vel_petscspace_degree 2 -pres_petscspace_degree 1 \
-      -dmsnes_check -snes_error_if_not_converged \
+      -dmsnes_check .001 -snes_error_if_not_converged \
       -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
       -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full \
         -fieldsplit_velocity_pc_type lu \
@@ -472,7 +470,7 @@ int main(int argc, char **argv)
     requires: triangle !single
     args: -dm_plex_separate_marker -dm_refine 0 -u_0 0.125 -alpha 0.3927 \
       -vel_petscspace_degree 2 -pres_petscspace_degree 1 \
-      -dmsnes_check -snes_error_if_not_converged \
+      -dmsnes_check .001 -snes_error_if_not_converged \
       -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
       -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full \
         -fieldsplit_velocity_pc_type lu \
@@ -482,7 +480,7 @@ int main(int argc, char **argv)
     requires: triangle !single
     args: -dm_plex_separate_marker -cells 2,2 -dm_refine_hierarchy 1 \
       -vel_petscspace_degree 2 -pres_petscspace_degree 1 \
-      -dmsnes_check -snes_error_if_not_converged \
+      -dmsnes_check .001 -snes_error_if_not_converged \
       -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
       -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full \
         -fieldsplit_velocity_pc_type mg \

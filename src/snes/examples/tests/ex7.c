@@ -4,11 +4,13 @@ static char help[] = "Solves u`` + u^{2} = f with Newton-like methods. Using\n\
 
 #include <petscsnes.h>
 
-extern PetscErrorCode   FormJacobian(SNES,Vec,Mat,Mat,void*);
-extern PetscErrorCode   FormFunction(SNES,Vec,Vec,void*);
-extern PetscErrorCode   OtherFunctionForDifferencing(void*,Vec,Vec);
-extern PetscErrorCode   FormInitialGuess(SNES,Vec);
-extern PetscErrorCode   Monitor(SNES,PetscInt,PetscReal,void*);
+extern PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,void*);
+extern PetscErrorCode FormJacobianNoMatrix(SNES,Vec,Mat,Mat,void*);
+extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
+extern PetscErrorCode FormFunctioni(void *,PetscInt,Vec,PetscScalar *);
+extern PetscErrorCode OtherFunctionForDifferencing(void*,Vec,Vec);
+extern PetscErrorCode FormInitialGuess(SNES,Vec);
+extern PetscErrorCode Monitor(SNES,PetscInt,PetscReal,void*);
 
 typedef struct {
   PetscViewer viewer;
@@ -24,11 +26,11 @@ int main(int argc,char **argv)
   SNESType       type = SNESNEWTONLS;        /* default nonlinear solution method */
   Vec            x,r,F,U;              /* vectors */
   Mat            J,B;                  /* Jacobian matrix-free, explicit preconditioner */
-  MonitorCtx     monP;                 /* monitoring context */
   AppCtx         user;                 /* user-defined work context */
   PetscScalar    h,xp = 0.0,v;
   PetscInt       its,n = 5,i;
   PetscErrorCode ierr;
+  PetscBool      puremf = PETSC_FALSE;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
@@ -36,7 +38,6 @@ int main(int argc,char **argv)
   h    = 1.0/(n-1);
 
   /* Set up data structures */
-  ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,0,0,0,400,400,&monP.viewer);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)x,"Approximate Solution");CHKERRQ(ierr);
   ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
@@ -66,6 +67,10 @@ int main(int argc,char **argv)
     /* this approach is not normally needed, one should use the MatCreateSNESMF() below usually */
     ierr = MatCreateMFFD(PETSC_COMM_WORLD,n,n,n,n,&J);CHKERRQ(ierr);
     ierr = MatMFFDSetFunction(J,(PetscErrorCode (*)(void*, Vec, Vec))SNESComputeFunction,snes);CHKERRQ(ierr);
+    ierr = MatMFFDSetFunctioni(J,FormFunctioni);CHKERRQ(ierr);
+    /* Use the matrix free operator for both the Jacobian used to define the linear system and used to define the preconditioner */
+    /* This tests MatGetDiagonal() for MATMFFD */
+    ierr = PetscOptionsHasName(NULL,NULL,"-puremf",&puremf);CHKERRQ(ierr);
   } else {
     /* create matrix free matrix for Jacobian */
     ierr = MatCreateSNESMF(snes,&J);CHKERRQ(ierr);
@@ -75,8 +80,7 @@ int main(int argc,char **argv)
   }
 
   /* Set various routines and options */
-  ierr = SNESSetJacobian(snes,J,B,FormJacobian,&user);CHKERRQ(ierr);
-  ierr = SNESMonitorSet(snes,Monitor,&monP,0);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes,J,puremf ? J : B,puremf ? FormJacobianNoMatrix : FormJacobian,&user);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   /* Solve nonlinear system */
@@ -90,7 +94,6 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&U);CHKERRQ(ierr);  ierr = VecDestroy(&F);CHKERRQ(ierr);
   ierr = MatDestroy(&J);CHKERRQ(ierr);  ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&monP.viewer);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }
@@ -98,14 +101,14 @@ int main(int argc,char **argv)
 
 PetscErrorCode  FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 {
-  const PetscScalar *xx;
-  PetscScalar       *ff,*FF,d;  
+  const PetscScalar *xx,*FF;
+  PetscScalar       *ff,d;  
   PetscInt          i,n;
   PetscErrorCode    ierr;
 
   ierr  = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
   ierr  = VecGetArray(f,&ff);CHKERRQ(ierr);
-  ierr  = VecGetArray((Vec) dummy,&FF);CHKERRQ(ierr);
+  ierr  = VecGetArrayRead((Vec) dummy,&FF);CHKERRQ(ierr);
   ierr  = VecGetSize(x,&n);CHKERRQ(ierr);
   d     = (PetscReal)(n - 1); d = d*d;
   ff[0] = xx[0];
@@ -113,7 +116,33 @@ PetscErrorCode  FormFunction(SNES snes,Vec x,Vec f,void *dummy)
   ff[n-1] = xx[n-1] - 1.0;
   ierr    = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
   ierr    = VecRestoreArray(f,&ff);CHKERRQ(ierr);
-  ierr    = VecRestoreArray((Vec)dummy,&FF);CHKERRQ(ierr);
+  ierr    = VecRestoreArrayRead((Vec)dummy,&FF);CHKERRQ(ierr);
+  return 0;
+}
+
+PetscErrorCode  FormFunctioni(void *dummy,PetscInt i,Vec x,PetscScalar *s)
+{
+  const PetscScalar *xx,*FF;
+  PetscScalar       d;
+  PetscInt          n;
+  PetscErrorCode    ierr;
+  SNES              snes = (SNES) dummy;
+  Vec               F;
+
+  ierr  = SNESGetFunction(snes,NULL,NULL,(void**)&F);CHKERRQ(ierr);
+  ierr  = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
+  ierr  = VecGetArrayRead(F,&FF);CHKERRQ(ierr);
+  ierr  = VecGetSize(x,&n);CHKERRQ(ierr);
+  d     = (PetscReal)(n - 1); d = d*d;
+  if (i == 0) {
+    *s = xx[0];
+  } else if (i == n-1) {
+    *s = xx[n-1] - 1.0;
+  } else {
+    *s = d*(xx[i-1] - 2.0*xx[i] + xx[i+1]) + xx[i]*xx[i] - FF[i];
+  }
+  ierr    = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
+  ierr    = VecRestoreArrayRead(F,&FF);CHKERRQ(ierr);
   return 0;
 }
 
@@ -178,6 +207,20 @@ PetscErrorCode  FormJacobian(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   return 0;
 }
+
+PetscErrorCode  FormJacobianNoMatrix(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
+{
+  PetscErrorCode    ierr;
+  AppCtx            *user = (AppCtx*) dummy;
+
+  if (user->variant) {
+    ierr = MatMFFDSetBase(jac,x,NULL);CHKERRQ(ierr);
+  }
+  ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  return 0;
+}
+
 /* --------------------  User-defined monitor ----------------------- */
 
 PetscErrorCode  Monitor(SNES snes,PetscInt its,PetscReal fnorm,void *dummy)
@@ -198,13 +241,21 @@ PetscErrorCode  Monitor(SNES snes,PetscInt its,PetscReal fnorm,void *dummy)
 /*TEST
 
    test:
-      args: -ksp_gmres_cgs_refinement_type refine_always -snes_monitor_cancel -snes_monitor_short
-      requires: x
+      args: -ksp_gmres_cgs_refinement_type refine_always -snes_monitor_short
 
    test:
       suffix: 2
-      args: -variant -ksp_gmres_cgs_refinement_type refine_always -snes_monitor_cancel -snes_monitor_short
+      args: -variant -ksp_gmres_cgs_refinement_type refine_always  -snes_monitor_short
       output_file: output/ex7_1.out
-      requires: x
+
+   # uses AIJ matrix to define diagonal matrix for Jacobian preconditioning
+   test:
+      suffix: 3
+      args: -variant -pc_type jacobi -snes_view -ksp_monitor
+
+   # uses MATMFFD matrix to define diagonal matrix for Jacobian preconditioning
+   test:
+      suffix: 4
+      args: -variant -pc_type jacobi -puremf  -snes_view -ksp_monitor
 
 TEST*/

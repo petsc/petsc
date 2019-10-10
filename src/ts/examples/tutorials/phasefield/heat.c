@@ -338,7 +338,7 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   */
   ierr = PetscDrawViewPortsSet(ports,1);CHKERRQ(ierr);
   ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);
-  x    = xs*hx;;
+  x    = xs*hx;
   max  = 0.;
   for (i=xs; i<xs+xm; i++) {
     xx[0] = xx[1] = x;

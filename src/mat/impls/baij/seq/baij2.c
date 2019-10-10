@@ -719,55 +719,55 @@ PetscErrorCode MatMult_SeqBAIJ_9_AVX2(Mat A,Vec xx,Vec zz)
     z0 = _mm256_setzero_pd(); z1 = _mm256_setzero_pd(); z2 = _mm256_setzero_pd();
 
     for (j=0; j<n; j++) {
-      // first column of a
+      /* first column of a */
       w0 = _mm256_set1_pd(work[j*9  ]);
       a0 = _mm256_loadu_pd(&v[j*81  ]); z0 = _mm256_fmadd_pd(a0,w0,z0);
       a1 = _mm256_loadu_pd(&v[j*81+4]); z1 = _mm256_fmadd_pd(a1,w0,z1);
       a2 = _mm256_loadu_pd(&v[j*81+8]); z2 = _mm256_fmadd_pd(a2,w0,z2);
 
-      // second column of a
+      /* second column of a */
       w1 = _mm256_set1_pd(work[j*9+ 1]);
       a0 = _mm256_loadu_pd(&v[j*81+ 9]); z0 = _mm256_fmadd_pd(a0,w1,z0);
       a1 = _mm256_loadu_pd(&v[j*81+13]); z1 = _mm256_fmadd_pd(a1,w1,z1);
       a2 = _mm256_loadu_pd(&v[j*81+17]); z2 = _mm256_fmadd_pd(a2,w1,z2);
 
-      // third column of a
+      /* third column of a */
       w2 = _mm256_set1_pd(work[j*9 +2]);
       a3 = _mm256_loadu_pd(&v[j*81+18]); z0 = _mm256_fmadd_pd(a3,w2,z0);
       a4 = _mm256_loadu_pd(&v[j*81+22]); z1 = _mm256_fmadd_pd(a4,w2,z1);
       a5 = _mm256_loadu_pd(&v[j*81+26]); z2 = _mm256_fmadd_pd(a5,w2,z2);
 
-      // fourth column of a
+      /* fourth column of a */
       w3 = _mm256_set1_pd(work[j*9+ 3]);
       a0 = _mm256_loadu_pd(&v[j*81+27]); z0 = _mm256_fmadd_pd(a0,w3,z0);
       a1 = _mm256_loadu_pd(&v[j*81+31]); z1 = _mm256_fmadd_pd(a1,w3,z1);
       a2 = _mm256_loadu_pd(&v[j*81+35]); z2 = _mm256_fmadd_pd(a2,w3,z2);
 
-      // fifth column of a
+      /* fifth column of a */
       w0 = _mm256_set1_pd(work[j*9+ 4]);
       a3 = _mm256_loadu_pd(&v[j*81+36]); z0 = _mm256_fmadd_pd(a3,w0,z0);
       a4 = _mm256_loadu_pd(&v[j*81+40]); z1 = _mm256_fmadd_pd(a4,w0,z1);
       a5 = _mm256_loadu_pd(&v[j*81+44]); z2 = _mm256_fmadd_pd(a5,w0,z2);
 
-      // sixth column of a
+      /* sixth column of a */
       w1 = _mm256_set1_pd(work[j*9+ 5]);
       a0 = _mm256_loadu_pd(&v[j*81+45]); z0 = _mm256_fmadd_pd(a0,w1,z0);
       a1 = _mm256_loadu_pd(&v[j*81+49]); z1 = _mm256_fmadd_pd(a1,w1,z1);
       a2 = _mm256_loadu_pd(&v[j*81+53]); z2 = _mm256_fmadd_pd(a2,w1,z2);
 
-      // seventh column of a
+      /* seventh column of a */
       w2 = _mm256_set1_pd(work[j*9+ 6]);
       a0 = _mm256_loadu_pd(&v[j*81+54]); z0 = _mm256_fmadd_pd(a0,w2,z0);
       a1 = _mm256_loadu_pd(&v[j*81+58]); z1 = _mm256_fmadd_pd(a1,w2,z1);
       a2 = _mm256_loadu_pd(&v[j*81+62]); z2 = _mm256_fmadd_pd(a2,w2,z2);
 
-      // eigth column of a
+      /* eigth column of a */
       w3 = _mm256_set1_pd(work[j*9+ 7]);
       a3 = _mm256_loadu_pd(&v[j*81+63]); z0 = _mm256_fmadd_pd(a3,w3,z0);
       a4 = _mm256_loadu_pd(&v[j*81+67]); z1 = _mm256_fmadd_pd(a4,w3,z1);
       a5 = _mm256_loadu_pd(&v[j*81+71]); z2 = _mm256_fmadd_pd(a5,w3,z2);
 
-      // ninth column of a
+      /* ninth column of a */
       w0 = _mm256_set1_pd(work[j*9+ 8]);
       a0 = _mm256_loadu_pd(&v[j*81+72]); z0 = _mm256_fmadd_pd(a0,w0,z0);
       a1 = _mm256_loadu_pd(&v[j*81+76]); z1 = _mm256_fmadd_pd(a1,w0,z1);
@@ -1737,55 +1737,55 @@ PetscErrorCode MatMultAdd_SeqBAIJ_9_AVX2(Mat A,Vec xx,Vec yy,Vec zz)
     z0 = _mm256_loadu_pd(&z[ 0]); z1 = _mm256_loadu_pd(&z[ 4]); z2 = _mm256_set1_pd(z[ 8]);
 
     for (j=0; j<n; j++) {
-      // first column of a
+      /* first column of a */
       w0 = _mm256_set1_pd(work[j*9  ]);
       a0 = _mm256_loadu_pd(&v[j*81  ]); z0 = _mm256_fmadd_pd(a0,w0,z0);
       a1 = _mm256_loadu_pd(&v[j*81+4]); z1 = _mm256_fmadd_pd(a1,w0,z1);
       a2 = _mm256_loadu_pd(&v[j*81+8]); z2 = _mm256_fmadd_pd(a2,w0,z2);
 
-      // second column of a
+      /* second column of a */
       w1 = _mm256_set1_pd(work[j*9+ 1]);
       a0 = _mm256_loadu_pd(&v[j*81+ 9]); z0 = _mm256_fmadd_pd(a0,w1,z0);
       a1 = _mm256_loadu_pd(&v[j*81+13]); z1 = _mm256_fmadd_pd(a1,w1,z1);
       a2 = _mm256_loadu_pd(&v[j*81+17]); z2 = _mm256_fmadd_pd(a2,w1,z2);
 
-      // third column of a
+      /* third column of a */
       w2 = _mm256_set1_pd(work[j*9+ 2]);
       a3 = _mm256_loadu_pd(&v[j*81+18]); z0 = _mm256_fmadd_pd(a3,w2,z0);
       a4 = _mm256_loadu_pd(&v[j*81+22]); z1 = _mm256_fmadd_pd(a4,w2,z1);
       a5 = _mm256_loadu_pd(&v[j*81+26]); z2 = _mm256_fmadd_pd(a5,w2,z2);
 
-      // fourth column of a
+      /* fourth column of a */
       w3 = _mm256_set1_pd(work[j*9+ 3]);
       a0 = _mm256_loadu_pd(&v[j*81+27]); z0 = _mm256_fmadd_pd(a0,w3,z0);
       a1 = _mm256_loadu_pd(&v[j*81+31]); z1 = _mm256_fmadd_pd(a1,w3,z1);
       a2 = _mm256_loadu_pd(&v[j*81+35]); z2 = _mm256_fmadd_pd(a2,w3,z2);
 
-      // fifth column of a
+      /* fifth column of a */
       w0 = _mm256_set1_pd(work[j*9+ 4]);
       a3 = _mm256_loadu_pd(&v[j*81+36]); z0 = _mm256_fmadd_pd(a3,w0,z0);
       a4 = _mm256_loadu_pd(&v[j*81+40]); z1 = _mm256_fmadd_pd(a4,w0,z1);
       a5 = _mm256_loadu_pd(&v[j*81+44]); z2 = _mm256_fmadd_pd(a5,w0,z2);
 
-      // sixth column of a
+      /* sixth column of a */
       w1 = _mm256_set1_pd(work[j*9+ 5]);
       a0 = _mm256_loadu_pd(&v[j*81+45]); z0 = _mm256_fmadd_pd(a0,w1,z0);
       a1 = _mm256_loadu_pd(&v[j*81+49]); z1 = _mm256_fmadd_pd(a1,w1,z1);
       a2 = _mm256_loadu_pd(&v[j*81+53]); z2 = _mm256_fmadd_pd(a2,w1,z2);
 
-      // seventh column of a
+      /* seventh column of a */
       w2 = _mm256_set1_pd(work[j*9+ 6]);
       a0 = _mm256_loadu_pd(&v[j*81+54]); z0 = _mm256_fmadd_pd(a0,w2,z0);
       a1 = _mm256_loadu_pd(&v[j*81+58]); z1 = _mm256_fmadd_pd(a1,w2,z1);
       a2 = _mm256_loadu_pd(&v[j*81+62]); z2 = _mm256_fmadd_pd(a2,w2,z2);
 
-      // eigth column of a
+      /* eigth column of a */
       w3 = _mm256_set1_pd(work[j*9+ 7]);
       a3 = _mm256_loadu_pd(&v[j*81+63]); z0 = _mm256_fmadd_pd(a3,w3,z0);
       a4 = _mm256_loadu_pd(&v[j*81+67]); z1 = _mm256_fmadd_pd(a4,w3,z1);
       a5 = _mm256_loadu_pd(&v[j*81+71]); z2 = _mm256_fmadd_pd(a5,w3,z2);
 
-      // ninth column of a
+      /* ninth column of a */
       w0 = _mm256_set1_pd(work[j*9+ 8]);
       a0 = _mm256_loadu_pd(&v[j*81+72]); z0 = _mm256_fmadd_pd(a0,w0,z0);
       a1 = _mm256_loadu_pd(&v[j*81+76]); z1 = _mm256_fmadd_pd(a1,w0,z1);
@@ -2542,7 +2542,7 @@ PetscErrorCode MatMatMult_SeqBAIJ_1_Private(Mat A,PetscScalar* b,PetscInt bm,Pet
         sum1 += v[0]*x1;
         v    += 1;
       }
-      z[0+k*cm] = sum1;;
+      z[0+k*cm] = sum1;
     }
     if (!usecprow) z += 1;
   }

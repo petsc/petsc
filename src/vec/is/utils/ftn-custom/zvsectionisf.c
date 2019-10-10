@@ -1,5 +1,6 @@
 #include <petsc/private/fortranimpl.h>
 #include <petscis.h>
+#include <petscsection.h>
 #include <petscviewer.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)

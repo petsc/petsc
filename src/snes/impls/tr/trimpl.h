@@ -20,7 +20,9 @@ typedef struct {
   PetscReal      sigma;          /* used to detemine termination */
   PetscBool      itflag;         /* flag for convergence testing */
   PetscReal      rnorm0,ttol;    /* used for KSP convergence test */
-  PetscErrorCode (*postcheck)(SNES,Vec,Vec,Vec,PetscBool*,void*);
+  PetscErrorCode (*precheck)(SNES,Vec,Vec,PetscBool*,void*);
+  void           *precheckctx;
+  PetscErrorCode (*postcheck)(SNES,Vec,Vec,Vec,PetscBool*,PetscBool*,void*);
   void           *postcheckctx;
 } SNES_NEWTONTR;
 

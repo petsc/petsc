@@ -463,7 +463,7 @@ M*/
 
    Input Parameters:
 +  m - number of bytes to allocate
--  result - initial memory allocated
+-  result - previous memory
 
    Output Parameter:
 .  result - new memory allocated
@@ -1131,7 +1131,7 @@ PETSC_EXTERN PetscErrorCode (*PetscTrMalloc)(size_t,PetscBool,int,const char[],c
 PETSC_EXTERN PetscErrorCode (*PetscTrFree)(void*,int,const char[],const char[]);
 PETSC_EXTERN PetscErrorCode (*PetscTrRealloc)(size_t,int,const char[],const char[],void**);
 PETSC_EXTERN PetscErrorCode PetscMallocSetCoalesce(PetscBool);
-PETSC_EXTERN PetscErrorCode PetscMallocSet(PetscErrorCode (*)(size_t,PetscBool,int,const char[],const char[],void**),PetscErrorCode (*)(void*,int,const char[],const char[]));
+PETSC_EXTERN PetscErrorCode PetscMallocSet(PetscErrorCode (*)(size_t,PetscBool,int,const char[],const char[],void**),PetscErrorCode (*)(void*,int,const char[],const char[]),PetscErrorCode (*)(size_t,int,const char[],const char[], void **));
 PETSC_EXTERN PetscErrorCode PetscMallocClear(void);
 
 /*
@@ -1147,17 +1147,16 @@ PETSC_EXTERN PetscErrorCode PetscMallocResetDRAM(void);
    Routines for tracing memory corruption/bleeding with default PETSc memory allocation
 */
 PETSC_EXTERN PetscErrorCode PetscMallocDump(FILE *);
-PETSC_EXTERN PetscErrorCode PetscMallocDumpLog(FILE *);
+PETSC_EXTERN PetscErrorCode PetscMallocView(FILE *);
 PETSC_EXTERN PetscErrorCode PetscMallocGetCurrentUsage(PetscLogDouble *);
 PETSC_EXTERN PetscErrorCode PetscMallocGetMaximumUsage(PetscLogDouble *);
 PETSC_EXTERN PetscErrorCode PetscMallocPushMaximumUsage(int);
 PETSC_EXTERN PetscErrorCode PetscMallocPopMaximumUsage(int,PetscLogDouble*);
-PETSC_EXTERN PetscErrorCode PetscMallocDebug(PetscBool);
-PETSC_EXTERN PetscErrorCode PetscMallocGetDebug(PetscBool*);
+PETSC_EXTERN PetscErrorCode PetscMallocSetDebug(PetscBool,PetscBool);
+PETSC_EXTERN PetscErrorCode PetscMallocGetDebug(PetscBool*,PetscBool*,PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscMallocValidate(int,const char[],const char[]);
-PETSC_EXTERN PetscErrorCode PetscMallocSetDumpLog(void);
-PETSC_EXTERN PetscErrorCode PetscMallocSetDumpLogThreshold(PetscLogDouble);
-PETSC_EXTERN PetscErrorCode PetscMallocGetDumpLog(PetscBool*);
+PETSC_EXTERN PetscErrorCode PetscMallocViewSet(PetscLogDouble);
+PETSC_EXTERN PetscErrorCode PetscMallocViewGet(PetscBool*);
 
 PETSC_EXTERN const char *const PetscDataTypes[];
 PETSC_EXTERN PetscErrorCode PetscDataTypeToMPIDataType(PetscDataType,MPI_Datatype*);
@@ -1719,7 +1718,7 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscMemzero(void *a,size_t n)
 .seealso: PetscMemcpy(), PetscMemcmp(), PetscArrayzero(), PetscMemzero(), PetscArraycpy(), PetscMemmove(), PetscStrallocpy(),
           PetscArraymove()
 M*/
-#define  PetscArraycmp(str1,str2,cnt,e) ((sizeof(*(str1)) != sizeof(*(str2))) || PetscMemcmp(str1,str2,(cnt)*sizeof(*(str1)),e))
+#define  PetscArraycmp(str1,str2,cnt,e) ((sizeof(*(str1)) != sizeof(*(str2))) || PetscMemcmp(str1,str2,(size_t)(cnt)*sizeof(*(str1)),e))
 
 /*MC
    PetscArraymove - Copies from one array in memory to another, the arrays may overlap. Use PetscArraycpy() when the arrays
@@ -1744,7 +1743,7 @@ M*/
 
 .seealso: PetscMemcpy(), PetscMemcmp(), PetscArrayzero(), PetscMemzero(), PetscArraycpy(), PetscMemmove(), PetscArraycmp(), PetscStrallocpy()
 M*/
-#define  PetscArraymove(str1,str2,cnt) ((sizeof(*(str1)) != sizeof(*(str2))) || PetscMemmove(str1,str2,(cnt)*sizeof(*(str1))))
+#define  PetscArraymove(str1,str2,cnt) ((sizeof(*(str1)) != sizeof(*(str2))) || PetscMemmove(str1,str2,(size_t)(cnt)*sizeof(*(str1))))
 
 /*MC
    PetscArraycpy - Copies from one array in memory to another
@@ -1768,7 +1767,7 @@ M*/
 
 .seealso: PetscMemcpy(), PetscMemcmp(), PetscArrayzero(), PetscMemzero(), PetscArraymove(), PetscMemmove(), PetscArraycmp(), PetscStrallocpy()
 M*/
-#define  PetscArraycpy(str1,str2,cnt) ((sizeof(*(str1)) != sizeof(*(str2))) || PetscMemcpy(str1,str2,(cnt)*sizeof(*(str1))))
+#define  PetscArraycpy(str1,str2,cnt) ((sizeof(*(str1)) != sizeof(*(str2))) || PetscMemcpy(str1,str2,(size_t)(cnt)*sizeof(*(str1))))
 
 /*MC
    PetscArrayzero - Zeros an array in memory.
@@ -1790,7 +1789,7 @@ M*/
 
 .seealso: PetscMemcpy(), PetscMemcmp(), PetscMemzero(), PetscArraycmp(), PetscArraycpy(), PetscMemmove(), PetscStrallocpy(), PetscArraymove()
 M*/
-#define  PetscArrayzero(str1,cnt) PetscMemzero(str1,(cnt)*sizeof(*(str1)))
+#define  PetscArrayzero(str1,cnt) PetscMemzero(str1,(size_t)(cnt)*sizeof(*(str1)))
 
 /*MC
    PetscPrefetchBlock - Prefetches a block of memory
@@ -2308,6 +2307,7 @@ PETSC_EXTERN PetscErrorCode PetscGetVersionNumber(PetscInt*,PetscInt*,PetscInt*,
 PETSC_EXTERN PetscErrorCode PetscSortInt(PetscInt,PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscSortedRemoveDupsInt(PetscInt*,PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscSortRemoveDupsInt(PetscInt*,PetscInt[]);
+PETSC_EXTERN PetscErrorCode PetscCheckDupsInt(PetscInt,const PetscInt[],PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscFindInt(PetscInt, PetscInt, const PetscInt[], PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscFindMPIInt(PetscMPIInt, PetscInt, const PetscMPIInt[], PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscSortIntWithPermutation(PetscInt,const PetscInt[],PetscInt[]);
@@ -2603,7 +2603,7 @@ M*/
 #define MPIU_Allreduce(a,b,c,d,e,fcomm) MPI_Allreduce(a,b,c,d,e,fcomm)
 #endif
 
-#if defined(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)
+#if defined(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY)
 PETSC_EXTERN PetscErrorCode MPIU_Win_allocate_shared(MPI_Aint,PetscMPIInt,MPI_Info,MPI_Comm,void*,MPI_Win*);
 PETSC_EXTERN PetscErrorCode MPIU_Win_shared_query(MPI_Win,PetscMPIInt,MPI_Aint*,PetscMPIInt*,void*);
 #endif

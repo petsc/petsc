@@ -16,7 +16,7 @@ typedef struct {
   /* Domain and mesh definition */
   PetscInt  dim;     /* The topological mesh dimension */
   PetscBool simplex; /* Simplicial mesh */
-  SolType   solType; /* The tyoe of exact solution */
+  SolType   solType; /* The type of exact solution */
 } AppCtx;
 
 /* 2D Dirichlet potential example
@@ -323,7 +323,6 @@ static PetscErrorCode SetupDiscretization(DM dm, PetscErrorCode (*setup)(DM, App
 {
   DM              cdm = dm;
   PetscFE         feq, feu;
-  PetscQuadrature q;
   const PetscInt  dim = user->dim;
   PetscErrorCode  ierr;
 
@@ -333,8 +332,7 @@ static PetscErrorCode SetupDiscretization(DM dm, PetscErrorCode (*setup)(DM, App
   ierr = PetscObjectSetName((PetscObject) feq, "field");CHKERRQ(ierr);
   ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), dim, 1,   user->simplex, "potential_", -1, &feu);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) feu, "potential");CHKERRQ(ierr);
-  ierr = PetscFEGetQuadrature(feq, &q);CHKERRQ(ierr);
-  ierr = PetscFESetQuadrature(feu,  q);CHKERRQ(ierr);
+  ierr = PetscFECopyQuadrature(feq, feu);CHKERRQ(ierr);
   /* Set discretization and boundary conditions for each mesh */
   ierr = DMSetField(dm, 0, NULL, (PetscObject) feq);CHKERRQ(ierr);
   ierr = DMSetField(dm, 1, NULL, (PetscObject) feu);CHKERRQ(ierr);
@@ -389,7 +387,7 @@ int main(int argc, char **argv)
     requires: triangle
     args: -sol_type linear \
           -field_petscspace_degree 1 -field_petscdualspace_type bdm -dm_refine 0 -convest_num_refine 1 -snes_convergence_estimate \
-          -dmsnes_check -snes_error_if_not_converged \
+          -dmsnes_check .001 -snes_error_if_not_converged \
           -ksp_rtol 1e-10 -ksp_error_if_not_converged \
           -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition full \
             -fieldsplit_field_pc_type lu \
@@ -399,7 +397,7 @@ int main(int argc, char **argv)
     requires: triangle
     args: -sol_type quadratic \
           -field_petscspace_degree 1 -field_petscdualspace_type bdm -dm_refine 0 -convest_num_refine 1 -snes_convergence_estimate \
-          -dmsnes_check -snes_error_if_not_converged \
+          -dmsnes_check .001 -snes_error_if_not_converged \
           -ksp_rtol 1e-10 -ksp_error_if_not_converged \
           -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition full \
             -fieldsplit_field_pc_type lu \
@@ -423,7 +421,7 @@ TEST*/
     requires: triangle
     args: -simplex 0 -sol_type linear \
           -field_petscspace_poly_type pminus_hdiv -field_petscspace_degree 1 -field_petscdualspace_type bdm -dm_refine 0 -convest_num_refine 3 -snes_convergence_estimate \
-          -dmsnes_check -snes_error_if_not_converged \
+          -dmsnes_check .001 -snes_error_if_not_converged \
           -ksp_rtol 1e-10 -ksp_error_if_not_converged \
           -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition full \
             -fieldsplit_field_pc_type lu \
@@ -433,7 +431,7 @@ TEST*/
     requires: triangle
     args: -simplex 0 -sol_type quartic \
           -field_petscspace_poly_type_no pminus_hdiv -field_petscspace_degree 1 -field_petscdualspace_type bdm -dm_refine 0 -convest_num_refine 3 -snes_convergence_estimate \
-          -dmsnes_check -snes_error_if_not_converged \
+          -dmsnes_check .001 -snes_error_if_not_converged \
           -ksp_rtol 1e-10 -ksp_error_if_not_converged \
           -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition full \
             -fieldsplit_field_pc_type lu \

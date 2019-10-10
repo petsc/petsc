@@ -840,7 +840,7 @@ PetscErrorCode ConstructCellBoundary(DM dm, User user)
   PetscFunctionBeginUser;
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
+  ierr = DMPlexGetGhostCellStratum(dm, &cEndInterior, NULL);CHKERRQ(ierr);
 
   ierr = DMHasLabel(dm, name, &hasLabel);CHKERRQ(ierr);
   if (!hasLabel) PetscFunctionReturn(0);
@@ -937,7 +937,7 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
   ierr  = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
   pEnd += user->numSplitFaces;
   ierr  = DMPlexSetChart(sdm, pStart, pEnd);CHKERRQ(ierr);
-  ierr  = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
+  ierr  = DMPlexGetGhostCellStratum(dm, &cEndInterior, NULL);CHKERRQ(ierr);
   ierr  = DMPlexGetHeightStratum(dm, 0, NULL, &cEnd);CHKERRQ(ierr);
   numGhostCells = cEnd - cEndInterior;
   /* Set cone and support sizes */
@@ -1018,7 +1018,7 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
   ierr = ISRestoreIndices(idIS, &ids);CHKERRQ(ierr);
   ierr = ISDestroy(&idIS);CHKERRQ(ierr);
   ierr = DMPlexStratify(sdm);CHKERRQ(ierr);
-  ierr = DMPlexSetHybridBounds(sdm, cEndInterior, PETSC_DETERMINE, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = DMPlexSetGhostCellStratum(sdm, cEndInterior, PETSC_DETERMINE);CHKERRQ(ierr);
   /* Convert coordinates */
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
@@ -1131,7 +1131,7 @@ PetscErrorCode CreatePartitionVec(DM dm, DM *dmCell, Vec *partition)
     ierr = PetscSectionSetDof(sectionCell, c, 1);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(sectionCell);CHKERRQ(ierr);
-  ierr = DMSetSection(*dmCell, sectionCell);CHKERRQ(ierr);
+  ierr = DMSetLocalSection(*dmCell, sectionCell);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&sectionCell);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(*dmCell, partition);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)*partition, "partition");CHKERRQ(ierr);
@@ -1173,7 +1173,7 @@ PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
     ierr = PetscSectionSetDof(sectionMass, v, numFaces*numFaces);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(sectionMass);CHKERRQ(ierr);
-  ierr = DMSetSection(dmMass, sectionMass);CHKERRQ(ierr);
+  ierr = DMSetLocalSection(dmMass, sectionMass);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&sectionMass);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dmMass, massMatrix);CHKERRQ(ierr);
   ierr = VecGetArray(*massMatrix, &m);CHKERRQ(ierr);
@@ -1354,7 +1354,6 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
   PetscViewer    viewer;
   char           filename[PETSC_MAX_PATH_LEN],*ftable = NULL;
   PetscReal      xnorm;
-  PetscInt       cEndInterior;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
@@ -1382,18 +1381,17 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
       fintegral[i] = 0;
     }
     ierr = VecGetDM(cellgeom,&dmCell);CHKERRQ(ierr);
-    ierr = DMPlexGetHybridBounds(dmCell, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
-    ierr = DMPlexGetHeightStratum(dmCell,0,&cStart,&cEnd);CHKERRQ(ierr);
+    ierr = DMPlexGetInteriorCellStratum(dmCell,&cStart,&cEnd);CHKERRQ(ierr);
     ierr = VecGetArrayRead(cellgeom,&cgeom);CHKERRQ(ierr);
     ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
     ierr = DMGetLabel(dm,"vtk",&vtkLabel);CHKERRQ(ierr);
-    for (c = cStart; c < cEndInterior; ++c) {
+    for (c = cStart; c < cEnd; ++c) {
       PetscFVCellGeom       *cg;
       const PetscScalar     *cx    = NULL;
       PetscInt              vtkVal = 0;
 
       /* not that these two routines as currently implemented work for any dm with a
-       * defaultSection/defaultGlobalSection */
+       * localSection/globalSection */
       ierr = DMPlexPointLocalRead(dmCell,c,cgeom,&cg);CHKERRQ(ierr);
       ierr = DMPlexPointGlobalRead(dm,c,x,&cx);CHKERRQ(ierr);
       if (vtkLabel) {ierr = DMLabelGetValue(vtkLabel,c,&vtkVal);CHKERRQ(ierr);}
@@ -1489,7 +1487,7 @@ static PetscErrorCode adaptToleranceFVM(PetscFV fvm, TS ts, Vec sol, VecTagger r
   Vec               cellGeom, faceGeom;
   PetscBool         isForest, computeGradient;
   Vec               grad, locGrad, locX, errVec;
-  PetscInt          cStart, cEnd, cEndInterior, c, dim, nRefine, nCoarsen;
+  PetscInt          cStart, cEnd, c, dim, nRefine, nCoarsen;
   PetscReal         minMaxInd[2] = {PETSC_MAX_REAL, PETSC_MIN_REAL}, minMaxIndGlobal[2], minInd, maxInd, time;
   PetscScalar       *errArray;
   const PetscScalar *pointVals;
@@ -1518,9 +1516,7 @@ static PetscErrorCode adaptToleranceFVM(PetscFV fvm, TS ts, Vec sol, VecTagger r
   ierr = DMGlobalToLocalBegin(gradDM, grad, INSERT_VALUES, locGrad);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(gradDM, grad, INSERT_VALUES, locGrad);CHKERRQ(ierr);
   ierr = VecDestroy(&grad);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(plex,0,&cStart,&cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(plex,&cEndInterior,NULL,NULL,NULL);CHKERRQ(ierr);
-  cEnd = (cEndInterior < 0) ? cEnd : cEndInterior;
+  ierr = DMPlexGetInteriorCellStratum(plex,&cStart,&cEnd);CHKERRQ(ierr);
   ierr = VecGetArrayRead(locGrad,&pointGrads);CHKERRQ(ierr);
   ierr = VecGetArrayRead(cellGeom,&pointGeom);CHKERRQ(ierr);
   ierr = VecGetArrayRead(locX,&pointVals);CHKERRQ(ierr);

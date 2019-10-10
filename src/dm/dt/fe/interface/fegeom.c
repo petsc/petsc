@@ -1,5 +1,21 @@
 #include <petsc/private/petscfeimpl.h> /*I "petscfe.h" I*/
 
+/*@C
+  PetscFEGeomCreate - Create a PetscFEGeom object to manage geometry for a group of cells
+
+  Input Parameters:
++ quad     - A PetscQuadrature determining the tabulation
+. numCells - The number of cells in the group
+. dimEmbed - The coordinate dimension
+- faceData - Flag to construct geometry data for the faces
+
+  Output Parameter:
+. geom     - The PetscFEGeom object
+
+  Level: beginner
+
+.seealso: PetscFEGeomDestroy(), PetscFEGeomComplete()
+@*/
 PetscErrorCode PetscFEGeomCreate(PetscQuadrature quad, PetscInt numCells, PetscInt dimEmbed, PetscBool faceData, PetscFEGeom **geom)
 {
   PetscFEGeom     *g;
@@ -28,6 +44,16 @@ PetscErrorCode PetscFEGeomCreate(PetscQuadrature quad, PetscInt numCells, PetscI
   PetscFunctionReturn(0);
 }
 
+/*@C
+  PetscFEGeomDestroy - Destroy a PetscFEGeom object
+
+  Input Parameter:
+. geom - PetscFEGeom object
+
+  Level: beginner
+
+.seealso: PetscFEGeomCreate()
+@*/
 PetscErrorCode PetscFEGeomDestroy(PetscFEGeom **geom)
 {
   PetscErrorCode ierr;
@@ -42,6 +68,21 @@ PetscErrorCode PetscFEGeomDestroy(PetscFEGeom **geom)
   PetscFunctionReturn(0);
 }
 
+/*@C
+  PetscFEGeomGetChunk - Get a chunk of cells in the group as a PetscFEGeom
+
+  Input Parameters:
++ geom   - PetscFEGeom object
+. cStart - The first cell in the chunk
+- cEnd   - The first cell not in the chunk
+
+  Output Parameter:
+. chunkGeom - The chunk of cells
+
+  Level: intermediate
+
+.seealso: PetscFEGeomRestoreChunk(), PetscFEGeomCreate()
+@*/
 PetscErrorCode PetscFEGeomGetChunk(PetscFEGeom *geom, PetscInt cStart, PetscInt cEnd, PetscFEGeom **chunkGeom)
 {
   PetscInt       Nq;
@@ -77,6 +118,19 @@ PetscErrorCode PetscFEGeomGetChunk(PetscFEGeom *geom, PetscInt cStart, PetscInt 
   PetscFunctionReturn(0);
 }
 
+/*@C
+  PetscFEGeomRestoreChunk - Restore the chunk
+
+  Input Parameters:
++ geom      - PetscFEGeom object
+. cStart    - The first cell in the chunk
+. cEnd      - The first cell not in the chunk
+- chunkGeom - The chunk of cells
+
+  Level: intermediate
+
+.seealso: PetscFEGeomGetChunk(), PetscFEGeomCreate()
+@*/
 PetscErrorCode PetscFEGeomRestoreChunk(PetscFEGeom *geom, PetscInt cStart, PetscInt cEnd, PetscFEGeom **chunkGeom)
 {
   PetscErrorCode ierr;
@@ -86,6 +140,16 @@ PetscErrorCode PetscFEGeomRestoreChunk(PetscFEGeom *geom, PetscInt cStart, Petsc
   PetscFunctionReturn(0);
 }
 
+/*@
+  PetscFEGeomComplete - Calculate derived quntites from base geometry specification
+
+  Input Parameter:
+. geom - PetscFEGeom object
+
+  Level: intermediate
+
+.seealso: PetscFEGeomCreate()
+@*/
 PetscErrorCode PetscFEGeomComplete(PetscFEGeom *geom)
 {
   PetscInt i, j, N, dE;

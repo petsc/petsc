@@ -159,7 +159,7 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
           tau_min = PetscMin(tau_1, tau_2);
           tau_max = PetscMax(tau_1, tau_2);
 
-          if (PetscAbsScalar(kappa - 1.0) <= tr->mu1_i) {
+          if (PetscAbsScalar(kappa - (PetscReal)1.0) <= tr->mu1_i) {
             /*  Great agreement */
             max_radius = PetscMax(max_radius, tao->trust);
 
@@ -173,7 +173,7 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
               tau = tau_max;
             }
           }
-          else if (PetscAbsScalar(kappa - 1.0) <= tr->mu2_i) {
+          else if (PetscAbsScalar(kappa - (PetscReal)1.0) <= tr->mu2_i) {
             /*  Good agreement */
             max_radius = PetscMax(max_radius, tao->trust);
 
@@ -576,7 +576,7 @@ static PetscErrorCode TaoSetFromOptions_NTR(PetscOptionItems *PetscOptionsObject
 . -tao_ntr_gamma2_i - gamma2 interpolation init factor
 . -tao_ntr_gamma3_i - gamma3 interpolation init factor
 . -tao_ntr_gamma4_i - gamma4 interpolation init factor
-. -tao_ntr_theta_i - thetha1 interpolation init factor
+. -tao_ntr_theta_i - theta1 interpolation init factor
 . -tao_ntr_eta1 - eta1 reduction update factor
 . -tao_ntr_eta2 - eta2 reduction update factor
 . -tao_ntr_eta3 - eta3 reduction update factor

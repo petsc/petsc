@@ -170,7 +170,7 @@ PetscErrorCode  VecGhostRestoreLocalForm(Vec g,Vec *l)
 
    Input Parameters:
 +  g - the vector (obtained with VecCreateGhost() or VecDuplicate())
-.  insertmode - one of ADD_VALUES or INSERT_VALUES
+.  insertmode - one of ADD_VALUES, MAX_VALUES, MIN_VALUES or INSERT_VALUES
 -  scattermode - one of SCATTER_FORWARD or SCATTER_REVERSE
 
    Notes:
@@ -234,7 +234,7 @@ PetscErrorCode  VecGhostUpdateBegin(Vec g,InsertMode insertmode,ScatterMode scat
 
    Input Parameters:
 +  g - the vector (obtained with VecCreateGhost() or VecDuplicate())
-.  insertmode - one of ADD_VALUES or INSERT_VALUES
+.  insertmode - one of ADD_VALUES, MAX_VALUES, MIN_VALUES or INSERT_VALUES
 -  scattermode - one of SCATTER_FORWARD or SCATTER_REVERSE
 
    Notes:

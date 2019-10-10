@@ -239,7 +239,8 @@
       six = 6.0
       twelve = 12.0
       hx = one / mx
-      u0t(1) = one - sin(twelve*t)**four
+!     The Fortran standard only allows positive base for power functions; Nag compiler fails on this
+      u0t(1) = one - abs(sin(twelve*t))**four
       u0t(2) = 0.0
       half = one/two
       third = one / three

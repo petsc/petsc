@@ -42,7 +42,10 @@ class Configure(config.package.Package):
     g.write('CDEFS        = '+fdef+'\n')
     self.setCompilers.pushLanguage('FC')
     g.write('FC           = '+self.setCompilers.getCompiler()+'\n')
-    g.write('FCFLAGS      = '+self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','').replace('-Mfree','')+'\n')
+    if config.setCompilers.Configure.isNAG(self.setCompilers.getLinker(), self.log):
+      g.write('FCFLAGS      =  -dusty -dcfuns '+self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','').replace('-Mfree','')+'\n')
+    else:
+      g.write('FCFLAGS      = '+self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','').replace('-Mfree','')+'\n')
     g.write('FCLOADER     = '+self.setCompilers.getLinker()+'\n')
     g.write('FCLOADFLAGS  = '+self.setCompilers.getLinkerFlags()+'\n')
     self.setCompilers.popLanguage()
@@ -71,6 +74,7 @@ class Configure(config.package.Package):
         libDir = os.path.join(self.installDir, self.libdir)
         output,err,ret  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && '+self.make.make_jnp+' -f Makefile.parallel lib && '+self.installSudo+'mkdir -p '+libDir+' && '+self.installSudo+'cp libscalapack.* '+libDir, timeout=2500, log = self.log)
       except RuntimeError as e:
-        raise RuntimeError('Error running make on SCALAPACK: '+str(e))
+        self.logPrint('Error running make on SCALAPACK: '+str(e))
+        raise RuntimeError('Error running make on SCALAPACK')
       self.postInstall(output,'SLmake.inc')
     return self.installDir

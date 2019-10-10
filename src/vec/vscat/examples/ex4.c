@@ -1,5 +1,5 @@
 
-static char help[]= "Test event log of vescatter with various block sizes\n\n";
+static char help[]= "Test event log of VecScatter with various block sizes\n\n";
 
 #include <petscvec.h>
 
@@ -40,7 +40,7 @@ int main(int argc,char **argv)
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&y);CHKERRQ(ierr);
 
   /*=======================================
-     test vecscatter with bs = 1
+     test VecScatter with bs = 1
     ======================================*/
 
   /* the code works as if we are going to do 3-point stencil computations on a 1D domain x,
@@ -95,7 +95,7 @@ int main(int argc,char **argv)
   ierr = VecScatterDestroy(&ctx);CHKERRQ(ierr);
 
   /*=======================================
-     test vecscatter with bs = 4
+     test VecScatter with bs = 4
     ======================================*/
 
   /* similar to the 3-point stencil above, except that this time a ghost is a block */
@@ -166,7 +166,7 @@ int main(int argc,char **argv)
       nsize: 4
       args: -vecscatter_type mpi3
       # have this filter since some messages might go through shared memory and PETSc have not yet
-      # implemented message logging for them. Add this test to just test mpi3 vecscatter type works.
+      # implemented message logging for them. Add this test to just test mpi3 VecScatter type works.
       filter: grep -v "VecScatter(bs="
-      requires: double define(PETSC_USE_LOG) define(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)
+      requires: double define(PETSC_USE_LOG) define(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY)
 TEST*/

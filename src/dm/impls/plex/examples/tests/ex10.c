@@ -164,7 +164,7 @@ int main(int argc, char **argv)
     ierr = DMSetNumFields(dm, user.numFields);CHKERRQ(ierr);
     ierr = DMCreateDS(dm);CHKERRQ(ierr);
     ierr = DMPlexCreateSection(dm, NULL, user.numComponents, user.numDof, 0, NULL, NULL, NULL, NULL, &s);CHKERRQ(ierr);
-    ierr = DMSetSection(dm, s);CHKERRQ(ierr);
+    ierr = DMSetLocalSection(dm, s);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&s);CHKERRQ(ierr);
     ierr = TestReordering(dm, &user);CHKERRQ(ierr);
   } else {
@@ -173,7 +173,7 @@ int main(int argc, char **argv)
     ierr = DMSetNumFields(dm, user.numFields);CHKERRQ(ierr);
     ierr = DMCreateDS(dm);CHKERRQ(ierr);
     ierr = DMPlexCreateSection(dm, NULL, user.numComponents, user.numDof, 0, NULL, NULL, NULL, NULL, &s);CHKERRQ(ierr);
-    ierr = DMSetSection(dm, s);CHKERRQ(ierr);
+    ierr = DMSetLocalSection(dm, s);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&s);CHKERRQ(ierr);
     ierr = TestReorderingByGroup(dm, &user);CHKERRQ(ierr);
   }

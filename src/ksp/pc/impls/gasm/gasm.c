@@ -474,7 +474,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
     /* Merge inner subdomain ISs and construct a restriction onto the disjoint union of local inner subdomains. */
     {
       PetscInt        ini;           /* Number of indices the i-th a local inner subdomain. */
-      PetscInt        in;            /* Number of indices in the disjoint uniont of local inner subdomains. */
+      PetscInt        in;            /* Number of indices in the disjoint union of local inner subdomains. */
       PetscInt       *iidx;          /* Global indices in the merged local inner subdomain. */
       PetscInt       *ioidx;         /* Global indices of the disjoint union of inner subdomains within the disjoint union of outer subdomains. */
       IS              giis;          /* IS for the disjoint union of inner subdomains. */

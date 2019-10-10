@@ -200,8 +200,8 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
   ctr = 0;
   for (i=0; i < nsubnet; i++) {
     for (j = 0; j < network->subnet[i].nedge; j++) {
-      edges[2*ctr]   = network->subnet[i].eStart + network->subnet[i].edgelist[2*j];
-      edges[2*ctr+1] = network->subnet[i].eStart + network->subnet[i].edgelist[2*j+1];
+      edges[2*ctr]   = network->subnet[i].vStart + network->subnet[i].edgelist[2*j];
+      edges[2*ctr+1] = network->subnet[i].vStart + network->subnet[i].edgelist[2*j+1];
       ctr++;
     }
   }
@@ -748,7 +748,7 @@ PetscErrorCode DMNetworkGetVariableOffset(DM dm,PetscInt p,PetscInt *offset)
   DM_Network     *network = (DM_Network*)dm->data;
 
   PetscFunctionBegin;
-  ierr = PetscSectionGetOffset(network->plex->defaultSection,p,offset);CHKERRQ(ierr);
+  ierr = PetscSectionGetOffset(network->plex->localSection,p,offset);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -774,7 +774,7 @@ PetscErrorCode DMNetworkGetVariableGlobalOffset(DM dm,PetscInt p,PetscInt *offse
   DM_Network     *network = (DM_Network*)dm->data;
 
   PetscFunctionBegin;
-  ierr = PetscSectionGetOffset(network->plex->defaultGlobalSection,p,offsetg);CHKERRQ(ierr);
+  ierr = PetscSectionGetOffset(network->plex->globalSection,p,offsetg);CHKERRQ(ierr);
   if (*offsetg < 0) *offsetg = -(*offsetg + 1); /* Convert to actual global offset for ghost vertex */
   PetscFunctionReturn(0);
 }
@@ -1131,8 +1131,8 @@ PetscErrorCode DMNetworkDistribute(DM *dm,PetscInt overlap)
   newDMnetwork->NVertices = oldDMnetwork->NVertices;
   newDMnetwork->NEdges    = oldDMnetwork->NEdges;
 
-  /* Set Dof section as the default section for dm */
-  ierr = DMSetSection(newDMnetwork->plex,newDMnetwork->DofSection);CHKERRQ(ierr);
+  /* Set Dof section as the section for dm */
+  ierr = DMSetLocalSection(newDMnetwork->plex,newDMnetwork->DofSection);CHKERRQ(ierr);
   ierr = DMGetGlobalSection(newDMnetwork->plex,&newDMnetwork->GlobalDofSection);CHKERRQ(ierr);
 
   /* Set up subnetwork info in the newDM */
@@ -1360,7 +1360,7 @@ PetscErrorCode DMSetUp_Network(DM dm)
   ierr = DMNetworkComponentSetUp(dm);CHKERRQ(ierr);
   ierr = DMNetworkVariablesSetUp(dm);CHKERRQ(ierr);
 
-  ierr = DMSetSection(network->plex,network->DofSection);CHKERRQ(ierr);
+  ierr = DMSetLocalSection(network->plex,network->DofSection);CHKERRQ(ierr);
   ierr = DMGetGlobalSection(network->plex,&network->GlobalDofSection);CHKERRQ(ierr);
 
   dm->setupcalled = PETSC_TRUE;

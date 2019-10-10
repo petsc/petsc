@@ -164,6 +164,11 @@
       parameter (PC_DEFLATION_SPACE_MEYER = 6)
       parameter (PC_DEFLATION_SPACE_AGGREGATION = 7)
       parameter (PC_DEFLATION_SPACE_USER = 8)
+! PCBDDCInterfaceExtType
+      PetscEnum PC_BDDC_INTERFACE_EXT_DIRICHLET
+      PetscEnum PC_BDDC_INTERFACE_EXT_LUMP
+      parameter (PC_BDDC_INTERFACE_EXT_DIRICHLET=0)
+      parameter (PC_BDDC_INTERFACE_EXT_LUMP=1)
 
 !
 ! PCFailedReason

@@ -6,7 +6,7 @@ Simplicial Mesh in 3 dimensions:
   2-cells: 2256
   3-cells: 693
 Labels:
+  depth: 4 strata with value/size (0 (922), 1 (2484), 2 (2256), 3 (693))
   dim: 3 strata with value/size (3 (1485), 2 (2058), 1 (1080))
   Cell Sets: 1 strata with value/size (1 (2178))
-  depth: 4 strata with value/size (0 (922), 1 (2484), 2 (2256), 3 (693))
 Mesh with 693 cells, shape condition numbers: min = 3.10265, max = 11.2622, mean = 6.51596, stddev = 2.39343

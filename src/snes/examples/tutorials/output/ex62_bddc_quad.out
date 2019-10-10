@@ -1,30 +1,31 @@
-    0 KSP Residual norm 27.1976 
-    1 KSP Residual norm 7.12034 
-    2 KSP Residual norm 2.00517 
-    3 KSP Residual norm 0.228476 
-    4 KSP Residual norm 0.0406285 
-    5 KSP Residual norm 0.00618406 
-    6 KSP Residual norm 0.0011987 
-    7 KSP Residual norm 0.000142663 
-    8 KSP Residual norm 2.51304e-05 
-    9 KSP Residual norm 3.40343e-06 
-   10 KSP Residual norm 5.4907e-07 
-   11 KSP Residual norm 5.20507e-08 
-SNES Object: 5 MPI processes
+    0 KSP Residual norm 25.023 
+    1 KSP Residual norm 7.27811 
+    2 KSP Residual norm 3.42068 
+    3 KSP Residual norm 1.54628 
+    4 KSP Residual norm 0.916127 
+    5 KSP Residual norm 0.179909 
+    6 KSP Residual norm 0.0277273 
+    7 KSP Residual norm 0.00527711 
+    8 KSP Residual norm 0.00255316 
+    9 KSP Residual norm 0.000215588 
+   10 KSP Residual norm 3.96823e-05 
+   11 KSP Residual norm 1.59569e-06 
+   12 KSP Residual norm 2.38291e-07 
+SNES Object: 2 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=11
+  total number of linear solver iterations=12
   total number of function evaluations=2
   norm schedule ALWAYS
-  SNESLineSearch Object: 5 MPI processes
+  SNESLineSearch Object: 2 MPI processes
     type: bt
       interpolation: cubic
       alpha=1.000000e-04
     maxstep=1.000000e+08, minlambda=1.000000e-12
     tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
     maximum iterations=40
-  KSP Object: 5 MPI processes
+  KSP Object: 2 MPI processes
     type: gmres
       restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
       happy breakdown tolerance 1e-30
@@ -32,7 +33,7 @@ SNES Object: 5 MPI processes
     tolerances:  relative=1e-08, absolute=1e-50, divergence=10000.
     left preconditioning
     using PRECONDITIONED norm type for convergence test
-  PC Object: 5 MPI processes
+  PC Object: 2 MPI processes
     type: bddc
       Use verbose output: 0
       Use user-defined CSR: 0
@@ -50,6 +51,7 @@ SNES Object: 5 MPI processes
       Eliminate dirichlet boundary dofs: 0
       Switch on static condensation ops around the interface preconditioner: 0
       Use exact dirichlet trick: 0
+      Interface extension: DIRICHLET
       Multilevel max levels: 0
       Multilevel coarsening ratio: 8
       Use estimated eigs for coarse problem: 0
@@ -71,15 +73,15 @@ SNES Object: 5 MPI processes
       Benign subspace trick is active: 0
       Algebraic computation of no-net-flux: 0
     ********************************** STATISTICS AT LEVEL 0 **********************************
-      Global dofs sizes: all 1227 interface 171 coarse 45
-      Coarsening ratios: all/coarse 27 interface/coarse 3
-      Active processes : 5
-      Total subdomains : 5
+      Global dofs sizes: all 291 interface 39 coarse 5
+      Coarsening ratios: all/coarse 58 interface/coarse 7
+      Active processes : 2
+      Total subdomains : 2
       Dofs type        :	MIN	MAX	MEAN
-      Interior  dofs   :	114	242	211
-      Interface dofs   :	39	99	70
-      Primal    dofs   :	11	29	20
-      Local     dofs   :	153	333	282
+      Interior  dofs   :	108	144	126
+      Interface dofs   :	39	39	39
+      Primal    dofs   :	5	5	5
+      Local     dofs   :	147	183	165
       Local     subs   :	1	1
     --- Interior solver (rank 0)
       KSP Object: (pc_bddc_dirichlet_) 1 MPI processes
@@ -95,10 +97,10 @@ SNES Object: 5 MPI processes
         linear system matrix = precond matrix:
         Mat Object: (pc_bddc_dirichlet_) 1 MPI processes
           type: seqaij
-          rows=242, cols=242
-          total: nonzeros=7380, allocated nonzeros=7380
+          rows=144, cols=144
+          total: nonzeros=3890, allocated nonzeros=3890
           total number of mallocs used during MatSetValues calls =0
-            using I-node routines: found 116 nodes, limit used is 5
+            using I-node routines: found 72 nodes, limit used is 5
     --- Correction solver (rank 0)
       KSP Object: (pc_bddc_neumann_) 1 MPI processes
         type: preonly
@@ -113,27 +115,27 @@ SNES Object: 5 MPI processes
         linear system matrix = precond matrix:
         Mat Object: (pc_bddc_neumann_) 1 MPI processes
           type: seqaij
-          rows=293, cols=293
-          total: nonzeros=9617, allocated nonzeros=9617
+          rows=181, cols=181
+          total: nonzeros=5545, allocated nonzeros=5545
           total number of mallocs used during MatSetValues calls =0
-            using I-node routines: found 137 nodes, limit used is 5
+            using I-node routines: found 87 nodes, limit used is 5
     --- Coarse solver
-      KSP Object: (pc_bddc_coarse_) 5 MPI processes
+      KSP Object: (pc_bddc_coarse_) 2 MPI processes
         type: preonly
         maximum iterations=1, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
-      PC Object: (pc_bddc_coarse_) 5 MPI processes
+      PC Object: (pc_bddc_coarse_) 2 MPI processes
         type: redundant
-          First (color=0) of 5 PCs follows
+          First (color=0) of 2 PCs follows
         linear system matrix = precond matrix:
-        Mat Object: (pc_bddc_coarse_) 5 MPI processes
+        Mat Object: (pc_bddc_coarse_) 2 MPI processes
           type: mpiaij
-          rows=45, cols=45
-          total: nonzeros=1617, allocated nonzeros=1774
+          rows=5, cols=5
+          total: nonzeros=25, allocated nonzeros=25
           total number of mallocs used during MatSetValues calls =0
-            using I-node (on process 0) routines: found 2 nodes, limit used is 5
+            using I-node (on process 0) routines: found 1 nodes, limit used is 5
               KSP Object:     (pc_bddc_coarse_redundant_)     1 MPI processes
                 type: preonly
                 maximum iterations=10000, initial guess is zero
@@ -147,15 +149,15 @@ SNES Object: 5 MPI processes
                 linear system matrix = precond matrix:
                 Mat Object:     1 MPI processes
                   type: seqaij
-                  rows=45, cols=45
-                  total: nonzeros=1617, allocated nonzeros=1617
+                  rows=5, cols=5
+                  total: nonzeros=25, allocated nonzeros=25
                   total number of mallocs used during MatSetValues calls =0
-                    using I-node routines: found 16 nodes, limit used is 5
+                    using I-node routines: found 1 nodes, limit used is 5
     linear system matrix = precond matrix:
-    Mat Object: 5 MPI processes
+    Mat Object: 2 MPI processes
       type: is
-      rows=1227, cols=1227
-      total: nonzeros=46498, allocated nonzeros=53284
+      rows=291, cols=291
+      total: nonzeros=9754, allocated nonzeros=11128
       total number of mallocs used during MatSetValues calls =0
         has attached null space
-L_2 Error: 3.3062e-09 [1.97149e-10, 3.30032e-09]
+L_2 Error: 3.24173e-08 [3.55069e-09, 3.22222e-08]

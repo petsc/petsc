@@ -32,19 +32,20 @@ class Configure(config.package.Package):
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
-    self.flibs        = framework.require('config.packages.flibs',self)
-    self.blasLapack   = framework.require('config.packages.BlasLapack',self)
-    self.mpi          = framework.require('config.packages.MPI',self)
-    self.metis        = framework.require('config.packages.metis',self)
-    self.parmetis     = framework.require('config.packages.parmetis',self)
-    self.ptscotch     = framework.require('config.packages.PTScotch',self)
-    self.scalapack    = framework.require('config.packages.scalapack',self)
+    self.flibs            = framework.require('config.packages.flibs',self)
+    self.blasLapack       = framework.require('config.packages.BlasLapack',self)
+    self.mpi              = framework.require('config.packages.MPI',self)
+    self.metis            = framework.require('config.packages.metis',self)
+    self.parmetis         = framework.require('config.packages.parmetis',self)
+    self.ptscotch         = framework.require('config.packages.PTScotch',self)
+    self.scalapack        = framework.require('config.packages.scalapack',self)
     if self.argDB['with-mumps-serial']:
-      self.deps       = [self.blasLapack,self.flibs]
-      self.odeps      = [self.metis]
+      self.deps           = [self.blasLapack,self.flibs]
+      self.odeps          = [self.metis]
     else:
-      self.deps       = [self.scalapack,self.mpi,self.blasLapack,self.flibs]
-      self.odeps      = [self.metis,self.parmetis,self.ptscotch]
+      self.deps           = [self.scalapack,self.mpi,self.blasLapack,self.flibs]
+      self.odeps          = [self.metis,self.parmetis,self.ptscotch]
+    self.openmp           = framework.require('config.packages.openmp',self)
     return
 
   def consistencyChecks(self):
@@ -60,9 +61,14 @@ class Configure(config.package.Package):
   def Install(self):
     import os
 
+    if self.openmp.found:
+      #  MUMPS has no make flags for turning on/off OpenMP it just uses it if it can
+      self.usesopenmp = 'yes'
+      # use OMP_NUM_THREADS to control the number of threads used
+
     if not hasattr(self.compilers, 'FC'):
       raise RuntimeError('Cannot install '+self.name+' without Fortran, make sure you do NOT have --with-fc=0')
-    if not self.compilers.FortranDefineCompilerOption:
+    if not self.fortran.FortranDefineCompilerOption:
       raise RuntimeError('Fortran compiler cannot handle preprocessing directives from command line.')
     g = open(os.path.join(self.packageDir,'Makefile.inc'),'w')
     g.write('LPORDDIR   = $(topdir)/PORD/lib/\n')
@@ -70,7 +76,7 @@ class Configure(config.package.Package):
     g.write('LPORD      = -L$(LPORDDIR) -lpord\n')
     g.write('PLAT       = \n')
     orderingsc = '-Dpord'
-    orderingsf = self.compilers.FortranDefineCompilerOption+'pord'
+    orderingsf = self.fortran.FortranDefineCompilerOption+'pord'
     # Disable threads on BGL
     if self.libraries.isBGL():
       orderingsc += ' -DWITHOUT_PTHREAD'
@@ -78,17 +84,17 @@ class Configure(config.package.Package):
       g.write('IMETIS = '+self.headers.toString(self.metis.include)+'\n')
       g.write('LMETIS = '+self.libraries.toString(self.metis.lib)+'\n')
       orderingsc += ' -Dmetis'
-      orderingsf += ' '+self.compilers.FortranDefineCompilerOption+'metis'
+      orderingsf += ' '+self.fortran.FortranDefineCompilerOption+'metis'
     if self.parmetis.found:
       g.write('IPARMETIS = '+self.headers.toString(self.parmetis.include)+'\n')
       g.write('LPARMETIS = '+self.libraries.toString(self.parmetis.lib)+'\n')
       orderingsc += ' -Dparmetis'
-      orderingsf += ' '+self.compilers.FortranDefineCompilerOption+'parmetis'
+      orderingsf += ' '+self.fortran.FortranDefineCompilerOption+'parmetis'
     if self.ptscotch.found:
       g.write('ISCOTCH = '+self.headers.toString(self.ptscotch.include)+'\n')
       g.write('LSCOTCH = '+self.libraries.toString(self.ptscotch.lib)+'\n')
       orderingsc += ' -Dscotch  -Dptscotch'
-      orderingsf += ' '+self.compilers.FortranDefineCompilerOption+'scotch '+self.compilers.FortranDefineCompilerOption+'ptscotch'
+      orderingsf += ' '+self.fortran.FortranDefineCompilerOption+'scotch '+self.fortran.FortranDefineCompilerOption+'ptscotch'
 
     g.write('ORDERINGSC = '+orderingsc+'\n')
     g.write('ORDERINGSF = '+orderingsf+'\n')
@@ -102,12 +108,15 @@ class Configure(config.package.Package):
     g.write('OPTC    = ' + self.removeWarningFlags(self.setCompilers.getCompilerFlags())+'\n')
     g.write('OUTC = -o \n')
     self.setCompilers.popLanguage()
-    if not self.compilers.fortranIsF90:
+    if not self.fortran.fortranIsF90:
       raise RuntimeError('Installing MUMPS requires a F90 compiler')
     self.setCompilers.pushLanguage('FC')
     g.write('FC = '+self.setCompilers.getCompiler()+'\n')
     g.write('FL = '+self.setCompilers.getCompiler()+'\n')
-    g.write('OPTF    = ' + self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','').replace('-Mfree','') +'\n')
+    if config.setCompilers.Configure.isNAG(self.setCompilers.getLinker(), self.log):
+      g.write('OPTF    = -dusty -dcfuns '+ self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','').replace('-Mfree','') +'\n')
+    else:
+      g.write('OPTF    = '+ self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','').replace('-Mfree','') +'\n')
     g.write('OUTF = -o \n')
     self.setCompilers.popLanguage()
 
@@ -161,7 +170,8 @@ class Configure(config.package.Package):
         if self.argDB['with-mumps-serial']:
           output,err,ret = config.package.Package.executeShellCommand([self.installSudo+'cp', '-f', 'libseq/libmpiseq.a', libDir+'/.'], cwd=self.packageDir, timeout=25, log = self.log)
       except RuntimeError as e:
-        raise RuntimeError('Error running make on MUMPS: '+str(e))
+        self.logPrint('Error running make on MUMPS: '+str(e))
+        raise RuntimeError('Error running make on MUMPS')
       self.postInstall(output1+err1+output2+err2,'Makefile.inc')
     return self.installDir
 

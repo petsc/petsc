@@ -1,0 +1,11 @@
+Overlap: 1
+DM Object: Simplicial Mesh 8 MPI processes
+  type: plex
+Simplicial Mesh in 2 dimensions:
+  0-cells: 10 13 14 13 13 10 14 13
+  1-cells: 18 26 29 26 26 18 29 26
+  2-cells: 9 14 16 14 14 9 16 14
+Labels:
+  depth: 3 strata with value/size (0 (10), 1 (18), 2 (9))
+  marker: 1 strata with value/size (1 (13))
+  Face Sets: 1 strata with value/size (1 (10))

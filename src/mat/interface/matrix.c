@@ -1,4 +1,3 @@
-
 /*
    This is where the abstract matrix operations are defined
 */
@@ -36,12 +35,14 @@ PetscLogEvent MAT_CUSPARSECopyToGPU, MAT_SetValuesBatch;
 PetscLogEvent MAT_ViennaCLCopyToGPU;
 PetscLogEvent MAT_DenseCopyToGPU, MAT_DenseCopyFromGPU;
 PetscLogEvent MAT_Merge,MAT_Residual,MAT_SetRandom;
+PetscLogEvent MAT_FactorFactS,MAT_FactorInvS;
 PetscLogEvent MATCOLORING_Apply,MATCOLORING_Comm,MATCOLORING_Local,MATCOLORING_ISCreate,MATCOLORING_SetUp,MATCOLORING_Weights;
 
 const char *const MatFactorTypes[] = {"NONE","LU","CHOLESKY","ILU","ICC","ILUDT","MatFactorType","MAT_FACTOR_",0};
 
 /*@
-   MatSetRandom - Sets all components of a matrix to random numbers. For sparse matrices that have been preallocated but not been assembled it randomly selects appropriate locations
+   MatSetRandom - Sets all components of a matrix to random numbers. For sparse matrices that have been preallocated but not been assembled it randomly selects appropriate locations,
+                  for sparse matrices that already have locations it fills the locations with random numbers
 
    Logically Collective on Mat
 
@@ -655,7 +656,7 @@ PetscErrorCode MatRestoreRow(Mat mat,PetscInt row,PetscInt *ncols,const PetscInt
 .  mat - the matrix
 
    Notes:
-   The flag is to ensure that users are aware of MatGetRow() only provides the upper trianglular part of the row for the matrices in MATSBAIJ format.
+   The flag is to ensure that users are aware of MatGetRow() only provides the upper triangular part of the row for the matrices in MATSBAIJ format.
 
    Level: advanced
 
@@ -1131,12 +1132,12 @@ $ -viewer_type {binary,hdf5}
    But for anyone who's interested, the standard binary matrix storage
    format is
 
-$    int    MAT_FILE_CLASSID
-$    int    number of rows
-$    int    number of columns
-$    int    total number of nonzeros
-$    int    *number nonzeros in each row
-$    int    *column indices of all nonzeros (starting index is zero)
+$    PetscInt    MAT_FILE_CLASSID
+$    PetscInt    number of rows
+$    PetscInt    number of columns
+$    PetscInt    total number of nonzeros
+$    PetscInt    *number nonzeros in each row
+$    PetscInt    *column indices of all nonzeros (starting index is zero)
 $    PetscScalar *values of all nonzeros
 
    PETSc automatically does the byte swapping for
@@ -3290,7 +3291,7 @@ PetscErrorCode MatSolve(Mat mat,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatMatSolve_Basic(Mat A,Mat B,Mat X, PetscBool trans)
+static PetscErrorCode MatMatSolve_Basic(Mat A,Mat B,Mat X,PetscBool trans)
 {
   PetscErrorCode ierr;
   Vec            b,x;
@@ -3298,7 +3299,7 @@ static PetscErrorCode MatMatSolve_Basic(Mat A,Mat B,Mat X, PetscBool trans)
   PetscScalar    *bb,*xx;
 
   PetscFunctionBegin;
-  ierr = MatDenseGetArray(B,&bb);CHKERRQ(ierr);
+  ierr = MatDenseGetArrayRead(B,(const PetscScalar**)&bb);CHKERRQ(ierr);
   ierr = MatDenseGetArray(X,&xx);CHKERRQ(ierr);
   ierr = MatGetLocalSize(B,&m,NULL);CHKERRQ(ierr);  /* number local rows */
   ierr = MatGetSize(B,NULL,&N);CHKERRQ(ierr);       /* total columns in dense matrix */
@@ -3316,7 +3317,7 @@ static PetscErrorCode MatMatSolve_Basic(Mat A,Mat B,Mat X, PetscBool trans)
   }
   ierr = VecDestroy(&b);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = MatDenseRestoreArray(B,&bb);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArrayRead(B,(const PetscScalar**)&bb);CHKERRQ(ierr);
   ierr = MatDenseRestoreArray(X,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -4043,17 +4044,20 @@ PetscErrorCode MatConvert(Mat mat, MatType newtype,MatReuse reuse,Mat *M)
   MatCheckPreallocated(mat,1);
 
   ierr = PetscOptionsGetString(((PetscObject)mat)->options,((PetscObject)mat)->prefix,"-matconvert_type",mtype,256,&flg);CHKERRQ(ierr);
-  if (flg) {
-    newtype = mtype;
-  }
+  if (flg) newtype = mtype;
+
   ierr = PetscObjectTypeCompare((PetscObject)mat,newtype,&sametype);CHKERRQ(ierr);
   ierr = PetscStrcmp(newtype,"same",&issame);CHKERRQ(ierr);
   if ((reuse == MAT_INPLACE_MATRIX) && (mat != *M)) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"MAT_INPLACE_MATRIX requires same input and output matrix");
   if ((reuse == MAT_REUSE_MATRIX) && (mat == *M)) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"MAT_REUSE_MATRIX means reuse matrix in final argument, perhaps you mean MAT_INPLACE_MATRIX");
 
-  if ((reuse == MAT_INPLACE_MATRIX) && (issame || sametype)) PetscFunctionReturn(0);
+  if ((reuse == MAT_INPLACE_MATRIX) && (issame || sametype)) {
+    ierr = PetscInfo3(mat,"Early return for inplace %s %d %d\n",((PetscObject)mat)->type_name,sametype,issame);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
 
   if ((sametype || issame) && (reuse==MAT_INITIAL_MATRIX) && mat->ops->duplicate) {
+    ierr = PetscInfo3(mat,"Calling duplicate for initial matrix %s %d %d\n",((PetscObject)mat)->type_name,sametype,issame);CHKERRQ(ierr);
     ierr = (*mat->ops->duplicate)(mat,MAT_COPY_VALUES,M);CHKERRQ(ierr);
   } else {
     PetscErrorCode (*conv)(Mat, MatType,MatReuse,Mat*)=NULL;
@@ -7769,7 +7773,7 @@ M*/
 .ve
 
 
-.seealso: MatCreateSubMatrices()
+.seealso: MatCreateSubMatrices(), MatCreateSubMatricesMPI(), MatCreateSubMatrixVirtual(), MatSubMatrixVirtualUpdate()
 @*/
 PetscErrorCode MatCreateSubMatrix(Mat mat,IS isrow,IS iscol,MatReuse cll,Mat *newmat)
 {
@@ -8771,12 +8775,9 @@ PetscErrorCode MatFactorSetSchurIS(Mat mat,IS is)
   if (!mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix");
   ierr = PetscObjectQueryFunction((PetscObject)mat,"MatFactorSetSchurIS_C",&f);CHKERRQ(ierr);
   if (!f) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"The selected MatSolverType does not support Schur complement computation. You should use MATSOLVERMUMPS or MATSOLVERMKL_PARDISO");
-  if (mat->schur) {
-    ierr = MatDestroy(&mat->schur);CHKERRQ(ierr);
-  }
+  ierr = MatDestroy(&mat->schur);CHKERRQ(ierr);
   ierr = (*f)(mat,is);CHKERRQ(ierr);
   if (!mat->schur) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_PLIB,"Schur complement has not been created");
-  ierr = MatFactorSetUpInPlaceSchur_Private(mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -9533,10 +9534,8 @@ PetscErrorCode MatMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
 
   fA = A->ops->matmult;
   fB = B->ops->matmult;
-  if (fB == fA) {
-    if (!fB) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MatMatMult not supported for B of type %s",((PetscObject)B)->type_name);
-    mult = fB;
-  } else {
+  if (fB == fA && fB) mult = fB;
+  else {
     /* dispatch based on the type of A and B from their PetscObject's PetscFunctionLists. */
     char multname[256];
     ierr = PetscStrncpy(multname,"MatMatMult_",sizeof(multname));CHKERRQ(ierr);
@@ -9545,6 +9544,9 @@ PetscErrorCode MatMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
     ierr = PetscStrlcat(multname,((PetscObject)B)->type_name,sizeof(multname));CHKERRQ(ierr);
     ierr = PetscStrlcat(multname,"_C",sizeof(multname));CHKERRQ(ierr); /* e.g., multname = "MatMatMult_seqdense_seqaij_C" */
     ierr = PetscObjectQueryFunction((PetscObject)B,multname,&mult);CHKERRQ(ierr);
+    if (!mult) {
+      ierr = PetscObjectQueryFunction((PetscObject)A,multname,&mult);CHKERRQ(ierr);
+    }
     if (!mult) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"MatMatMult requires A, %s, to be compatible with B, %s",((PetscObject)A)->type_name,((PetscObject)B)->type_name);
   }
   ierr = PetscLogEventBegin(MAT_MatMult,A,B,0,0);CHKERRQ(ierr);
@@ -9586,6 +9588,8 @@ PetscErrorCode MatMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
 @*/
 PetscErrorCode MatMatMultSymbolic(Mat A,Mat B,PetscReal fill,Mat *C)
 {
+  Mat            T = NULL;
+  PetscBool      istrans;
   PetscErrorCode ierr;
   PetscErrorCode (*Asymbolic)(Mat,Mat,PetscReal,Mat*);
   PetscErrorCode (*Bsymbolic)(Mat,Mat,PetscReal,Mat*);
@@ -9611,22 +9615,29 @@ PetscErrorCode MatMatMultSymbolic(Mat A,Mat B,PetscReal fill,Mat *C)
 
   Asymbolic = A->ops->matmultsymbolic;
   Bsymbolic = B->ops->matmultsymbolic;
-  if (Asymbolic == Bsymbolic) {
-    if (!Bsymbolic) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"C=A*B not implemented for B of type %s",((PetscObject)B)->type_name);
-    symbolic = Bsymbolic;
-  } else { /* dispatch based on the type of A and B */
+  if (Asymbolic == Bsymbolic && Asymbolic) symbolic = Bsymbolic;
+  else { /* dispatch based on the type of A and B */
     char symbolicname[256];
-    ierr = PetscStrncpy(symbolicname,"MatMatMultSymbolic_",sizeof(symbolicname));CHKERRQ(ierr);
-    ierr = PetscStrlcat(symbolicname,((PetscObject)A)->type_name,sizeof(symbolicname));CHKERRQ(ierr);
-    ierr = PetscStrlcat(symbolicname,"_",sizeof(symbolicname));CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)A,MATTRANSPOSEMAT,&istrans);CHKERRQ(ierr);
+    if (!istrans) {
+      ierr = PetscStrncpy(symbolicname,"MatMatMultSymbolic_",sizeof(symbolicname));CHKERRQ(ierr);
+      ierr = PetscStrlcat(symbolicname,((PetscObject)A)->type_name,sizeof(symbolicname));CHKERRQ(ierr);
+      ierr = PetscStrlcat(symbolicname,"_",sizeof(symbolicname));CHKERRQ(ierr);
+    } else {
+      ierr = PetscStrncpy(symbolicname,"MatTransposeMatMultSymbolic_",sizeof(symbolicname));CHKERRQ(ierr);
+      ierr = MatTransposeGetMat(A,&T);CHKERRQ(ierr);
+      ierr = PetscStrlcat(symbolicname,((PetscObject)T)->type_name,sizeof(symbolicname));CHKERRQ(ierr);
+      ierr = PetscStrlcat(symbolicname,"_",sizeof(symbolicname));CHKERRQ(ierr);
+    }
     ierr = PetscStrlcat(symbolicname,((PetscObject)B)->type_name,sizeof(symbolicname));CHKERRQ(ierr);
     ierr = PetscStrlcat(symbolicname,"_C",sizeof(symbolicname));CHKERRQ(ierr);
     ierr = PetscObjectQueryFunction((PetscObject)B,symbolicname,&symbolic);CHKERRQ(ierr);
     if (!symbolic) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"MatMatMultSymbolic requires A, %s, to be compatible with B, %s",((PetscObject)A)->type_name,((PetscObject)B)->type_name);
   }
-  ierr = PetscLogEventBegin(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
-  ierr = (*symbolic)(A,B,fill,C);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(!T ? MAT_MatMultSymbolic : MAT_TransposeMatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
+  *C = NULL;
+  ierr = (*symbolic)(!T ? A : T,B,fill,C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(!T ? MAT_MatMultSymbolic : MAT_TransposeMatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -9660,7 +9671,7 @@ PetscErrorCode MatMatMultNumeric(Mat A,Mat B,Mat C)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatMatMult(A,B,MAT_REUSE_MATRIX,0.0,&C);CHKERRQ(ierr);
+  ierr = MatMatMult(A,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -9775,7 +9786,7 @@ PetscErrorCode MatMatTransposeMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat
 
    Level: intermediate
 
-.seealso: MatTransposeMatMultSymbolic(), MatTransposeMatMultNumeric(), MatMatMult(), MatMatTransposeMult(), MatPtAP()
+.seealso: MatMatMult(), MatMatTransposeMult(), MatPtAP()
 @*/
 PetscErrorCode MatTransposeMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
 {
@@ -9784,7 +9795,7 @@ PetscErrorCode MatTransposeMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat
   PetscErrorCode (*fB)(Mat,Mat,MatReuse,PetscReal,Mat*);
   PetscErrorCode (*transposematmult)(Mat,Mat,MatReuse,PetscReal,Mat*) = NULL;
   Mat            T;
-  PetscBool      istrans;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
@@ -9797,24 +9808,35 @@ PetscErrorCode MatTransposeMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat
   MatCheckPreallocated(B,2);
   if (!B->assembled) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (B->factortype) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-  PetscValidPointer(C,3);
   if (B->rmap->N!=A->rmap->N) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",B->rmap->N,A->rmap->N);
   if (fill == PETSC_DEFAULT || fill == PETSC_DECIDE) fill = 2.0;
   if (fill < 1.0) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Expected fill=%g must be > 1.0",(double)fill);
   MatCheckPreallocated(A,1);
 
-  ierr = PetscObjectTypeCompare((PetscObject)A,MATTRANSPOSEMAT,&istrans);CHKERRQ(ierr);
-  if (istrans) {
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATTRANSPOSEMAT,&flg);CHKERRQ(ierr);
+  if (flg) {
     ierr = MatTransposeGetMat(A,&T);CHKERRQ(ierr);
     ierr = MatMatMult(T,B,scall,fill,C);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
+  if (scall == MAT_REUSE_MATRIX) {
+    PetscValidPointer(*C,5);
+    PetscValidHeaderSpecific(*C,MAT_CLASSID,5);
+    ierr = PetscObjectTypeCompareAny((PetscObject)*C,&flg,MATDENSE,MATSEQDENSE,MATMPIDENSE,"");CHKERRQ(ierr);
+    if (flg) {
+      ierr = PetscLogEventBegin(MAT_TransposeMatMult,A,B,0,0);CHKERRQ(ierr);
+      ierr = PetscLogEventBegin(MAT_TransposeMatMultNumeric,A,B,0,0);CHKERRQ(ierr);
+      ierr = (*(*C)->ops->transposematmultnumeric)(A,B,*C);CHKERRQ(ierr);
+      ierr = PetscLogEventEnd(MAT_TransposeMatMultNumeric,A,B,0,0);CHKERRQ(ierr);
+      ierr = PetscLogEventEnd(MAT_TransposeMatMult,A,B,0,0);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    }
+  }
+
   fA = A->ops->transposematmult;
   fB = B->ops->transposematmult;
-  if (fB==fA) {
-    if (!fA) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MatTransposeMatMult not supported for A of type %s",((PetscObject)A)->type_name);
-    transposematmult = fA;
-  } else {
+  if (fB == fA && fA) transposematmult = fA;
+  else {
     /* dispatch based on the type of A and B from their PetscObject's PetscFunctionLists. */
     char multname[256];
     ierr = PetscStrncpy(multname,"MatTransposeMatMult_",sizeof(multname));CHKERRQ(ierr);
@@ -9823,6 +9845,9 @@ PetscErrorCode MatTransposeMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat
     ierr = PetscStrlcat(multname,((PetscObject)B)->type_name,sizeof(multname));CHKERRQ(ierr);
     ierr = PetscStrlcat(multname,"_C",sizeof(multname));CHKERRQ(ierr); /* e.g., multname = "MatMatMult_seqdense_seqaij_C" */
     ierr = PetscObjectQueryFunction((PetscObject)B,multname,&transposematmult);CHKERRQ(ierr);
+    if (!transposematmult) {
+      ierr = PetscObjectQueryFunction((PetscObject)A,multname,&transposematmult);CHKERRQ(ierr);
+    }
     if (!transposematmult) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"MatTransposeMatMult requires A, %s, to be compatible with B, %s",((PetscObject)A)->type_name,((PetscObject)B)->type_name);
   }
   ierr = PetscLogEventBegin(MAT_TransposeMatMult,A,B,0,0);CHKERRQ(ierr);
@@ -10104,12 +10129,12 @@ PetscErrorCode   MatGetMultiProcBlock(Mat mat, MPI_Comm subComm, MatReuse scall,
    Not Collective
 
    Input Arguments:
-   mat - matrix to extract local submatrix from
-   isrow - local row indices for submatrix
-   iscol - local column indices for submatrix
++  mat - matrix to extract local submatrix from
+.  isrow - local row indices for submatrix
+-  iscol - local column indices for submatrix
 
    Output Arguments:
-   submat - the submatrix
+.  submat - the submatrix
 
    Level: intermediate
 

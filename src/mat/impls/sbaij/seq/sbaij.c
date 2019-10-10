@@ -14,6 +14,7 @@
 #if defined(PETSC_HAVE_ELEMENTAL)
 PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_Elemental(Mat,MatType,MatReuse,Mat*);
 #endif
+PETSC_INTERN PetscErrorCode MatConvert_MPISBAIJ_Basic(Mat,MatType,MatReuse,Mat*);
 
 /*
      Checks for missing diagonals
@@ -243,7 +244,7 @@ PetscErrorCode MatSetOption_SeqSBAIJ(Mat A,MatOption op,PetscBool flg)
       A->ops->mult = MatMult_SeqSBAIJ_1_Hermitian_ushort;
     } else if (A->cmap->bs == 1) {
       A->ops->mult = MatMult_SeqSBAIJ_1_Hermitian;
-    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for Hermitian with block size greater than 1");
+    } else if (!A->symmetric) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for Hermitian with block size greater than 1");
 #endif
     break;
   case MAT_SPD:
@@ -1412,7 +1413,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
                                        0,
                                /* 69*/ MatGetRowMaxAbs_SeqSBAIJ,
                                        0,
-                                       0,
+                                       MatConvert_MPISBAIJ_Basic,
                                        0,
                                        0,
                                /* 74*/ 0,
@@ -1535,6 +1536,7 @@ static PetscErrorCode  MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,PetscInt bs,Pe
   ierr = MatSetBlockSize(B,PetscAbs(bs));CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
+  if (B->rmap->N > B->cmap->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"SEQSBAIJ matrix cannot have more rows %D than columns %D",B->rmap->N,B->cmap->N);
   ierr = PetscLayoutGetBlockSize(B->rmap,&bs);CHKERRQ(ierr);
 
   B->preallocated = PETSC_TRUE;
@@ -1674,10 +1676,11 @@ static PetscErrorCode  MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,PetscInt bs,Pe
 
 PetscErrorCode MatSeqSBAIJSetPreallocationCSR_SeqSBAIJ(Mat B,PetscInt bs,const PetscInt ii[],const PetscInt jj[], const PetscScalar V[])
 {
-  PetscInt       i,j,m,nz,nz_max=0,*nnz;
+  PetscInt       i,j,m,nz,anz, nz_max=0,*nnz;
   PetscScalar    *values=0;
   PetscBool      roworiented = ((Mat_SeqSBAIJ*)B->data)->roworiented;
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
   if (bs < 1) SETERRQ1(PetscObjectComm((PetscObject)B),PETSC_ERR_ARG_OUTOFRANGE,"Invalid block size specified, must be positive but it is %D",bs);
   ierr   = PetscLayoutSetBlockSize(B->rmap,bs);CHKERRQ(ierr);
@@ -1692,8 +1695,16 @@ PetscErrorCode MatSeqSBAIJSetPreallocationCSR_SeqSBAIJ(Mat B,PetscInt bs,const P
   for (i=0; i<m; i++) {
     nz = ii[i+1] - ii[i];
     if (nz < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row %D has a negative number of columns %D",i,nz);
-    nz_max = PetscMax(nz_max,nz);
-    nnz[i] = nz;
+    anz = 0;
+    for (j=0; j<nz; j++) {
+      /* count only values on the diagonal or above */
+      if (jj[ii[i] + j] >= i) {
+        anz = nz - j;
+        break;
+      }
+    }
+    nz_max = PetscMax(nz_max,anz);
+    nnz[i] = anz;
   }
   ierr = MatSeqSBAIJSetPreallocation(B,bs,0,nnz);CHKERRQ(ierr);
   ierr = PetscFree(nnz);CHKERRQ(ierr);
@@ -1882,10 +1893,11 @@ PetscErrorCode  MatSeqSBAIJRestoreArray(Mat A,PetscScalar **array)
      stored and it is assumed they symmetric to the upper triangular). If you call MatSetOption(Mat,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_FALSE) or use
      the options database -mat_ignore_lower_triangular false it will generate an error if you try to set a value in the lower triangular portion.
 
+    The number of rows in the matrix must be less than or equal to the number of columns
 
   Level: beginner
 
-  .seealso: MatCreateSeqSBAIJ
+  .seealso: MatCreateSeqSBAIJ(), MatType, MATMPISBAIJ
 M*/
 PETSC_EXTERN PetscErrorCode MatCreate_SeqSBAIJ(Mat B)
 {
@@ -2044,7 +2056,10 @@ PetscErrorCode  MatSeqSBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt nz,const 
    MAT_ROW_ORIENTED=PETSC_FALSE and use a Fortran array v(bs,bs,nnz) in which the first index is over rows within a
    block column and the second index is over columns within a block.
 
-   Though this routine has Preallocation() in the name it also sets the exact nonzero locations of the matrix entries and usually the numerical values as well
+   Any entries below the diagonal are ignored
+
+   Though this routine has Preallocation() in the name it also sets the exact nonzero locations of the matrix entries
+   and usually the numerical values as well
 
 .seealso: MatCreate(), MatCreateSeqSBAIJ(), MatSetValuesBlocked(), MatSeqSBAIJSetPreallocation(), MATSEQSBAIJ
 @*/

@@ -45,6 +45,9 @@ PETSC_EXTERN PetscErrorCode KSPCreate_DGMRES(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_TSIRM(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_CGLS(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_FETIDP(KSP);
+#if defined(PETSC_HAVE_HPDDM)
+PETSC_EXTERN PetscErrorCode KSPCreate_HPDDM(KSP);
+#endif
 
 /*@C
   KSPRegisterAll - Registers all of the Krylov subspace methods in the KSP package.
@@ -107,6 +110,9 @@ PetscErrorCode  KSPRegisterAll(void)
   ierr = KSPRegister(KSPTSIRM,       KSPCreate_TSIRM);CHKERRQ(ierr);
   ierr = KSPRegister(KSPCGLS,        KSPCreate_CGLS);CHKERRQ(ierr);
   ierr = KSPRegister(KSPFETIDP,      KSPCreate_FETIDP);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_HPDDM)
+  ierr = KSPRegister(KSPHPDDM,       KSPCreate_HPDDM);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 

@@ -2,7 +2,7 @@
    This file contains some simple default routines.
    These routines should be SHORT, since they will be included in every
    executable image that uses the iterative routines (note that, through
-   the registry system, we provide a way to load only the truely necessary
+   the registry system, we provide a way to load only the truly necessary
    files)
  */
 #include <petsc/private/kspimpl.h>   /*I "petscksp.h" I*/

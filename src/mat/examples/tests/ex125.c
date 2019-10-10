@@ -133,7 +133,7 @@ int main(int argc,char **args)
       icntl = 2;        /* sequential matrix ordering */
       ierr  = MatMumpsSetIcntl(F,7,icntl);CHKERRQ(ierr);
 
-      cntl = 1.e-6; /* threshhold for row pivot detection */
+      cntl = 1.e-6; /* threshold for row pivot detection */
       ierr = MatMumpsSetIcntl(F,24,1);CHKERRQ(ierr);
       ierr = MatMumpsSetCntl(F,3,cntl);CHKERRQ(ierr);
     }

@@ -473,7 +473,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   }
   ierr = KSPMonitorSetFromOptions(ksp,"-ksp_monitor","Monitor the (preconditioned) residual norm","KSPMonitorDefault",KSPMonitorDefault);CHKERRQ(ierr);
   ierr = KSPMonitorSetFromOptions(ksp,"-ksp_monitor_range","Monitor the percentage of large entries in the residual","KSPMonitorRange",KSPMonitorRange);CHKERRQ(ierr);
-  ierr = KSPMonitorSetFromOptions(ksp,"-ksp_monitor_true_residual","Monitor the unprecondiitoned residual norm","KSPMOnitorTrueResidual",KSPMonitorTrueResidualNorm);CHKERRQ(ierr);
+  ierr = KSPMonitorSetFromOptions(ksp,"-ksp_monitor_true_residual","Monitor the unpreconditioned residual norm","KSPMOnitorTrueResidual",KSPMonitorTrueResidualNorm);CHKERRQ(ierr);
   ierr = KSPMonitorSetFromOptions(ksp,"-ksp_monitor_max","Monitor the maximum norm of the residual","KSPMonitorTrueResidualMaxNorm",KSPMonitorTrueResidualMaxNorm);CHKERRQ(ierr);
   ierr = KSPMonitorSetFromOptions(ksp,"-ksp_monitor_short","Monitor preconditioned residual norm with fewer digits","KSPMonitorDefaultShort",KSPMonitorDefaultShort);CHKERRQ(ierr);
   ierr = KSPMonitorSetFromOptions(ksp,"-ksp_monitor_solution","Monitor the solution","KSPMonitorSolution",KSPMonitorSolution);CHKERRQ(ierr);

@@ -34,8 +34,8 @@ PetscErrorCode VecScatterDestroy_SGToSG(VecScatter ctx)
 
   PetscFunctionBegin;
   ierr = PetscFree2(((VecScatter_Seq_General*)ctx->todata)->vslots,((VecScatter_Seq_General*)ctx->fromdata)->vslots);CHKERRQ(ierr);
-  ierr = VecScatterMemcpyPlanDestroy(&((VecScatter_Seq_General*)ctx->fromdata)->memcpy_plan);CHKERRQ(ierr);;
-  ierr = VecScatterMemcpyPlanDestroy(&((VecScatter_Seq_General*)ctx->todata)->memcpy_plan);CHKERRQ(ierr);;
+  ierr = VecScatterMemcpyPlanDestroy(&((VecScatter_Seq_General*)ctx->fromdata)->memcpy_plan);CHKERRQ(ierr);
+  ierr = VecScatterMemcpyPlanDestroy(&((VecScatter_Seq_General*)ctx->todata)->memcpy_plan);CHKERRQ(ierr);
   ierr = PetscFree2(ctx->todata,ctx->fromdata);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -46,7 +46,7 @@ PetscErrorCode VecScatterDestroy_SGToSS(VecScatter ctx)
 
   PetscFunctionBegin;
   ierr = PetscFree(((VecScatter_Seq_General*)ctx->fromdata)->vslots);CHKERRQ(ierr);
-  ierr = VecScatterMemcpyPlanDestroy(&((VecScatter_Seq_General*)ctx->fromdata)->memcpy_plan);CHKERRQ(ierr);;
+  ierr = VecScatterMemcpyPlanDestroy(&((VecScatter_Seq_General*)ctx->fromdata)->memcpy_plan);CHKERRQ(ierr);
   ierr = PetscFree2(ctx->todata,ctx->fromdata);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -57,7 +57,7 @@ PetscErrorCode VecScatterDestroy_SSToSG(VecScatter ctx)
 
   PetscFunctionBegin;
   ierr = PetscFree(((VecScatter_Seq_General*)ctx->todata)->vslots);CHKERRQ(ierr);
-  ierr = VecScatterMemcpyPlanDestroy(&((VecScatter_Seq_General*)ctx->todata)->memcpy_plan);CHKERRQ(ierr);;
+  ierr = VecScatterMemcpyPlanDestroy(&((VecScatter_Seq_General*)ctx->todata)->memcpy_plan);CHKERRQ(ierr);
   ierr = PetscFree2(ctx->todata,ctx->fromdata);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -83,13 +83,14 @@ PetscErrorCode VecScatterBegin_SGToSG(VecScatter ctx,Vec x,Vec y,InsertMode addv
   PetscInt               i,n = gen_from->n,*fslots,*tslots;
   PetscScalar            *xv,*yv;
 #if defined(PETSC_HAVE_CUDA)
-  PetscBool              is_veccuda;
+  PetscBool              is_veccuda,isy_veccuda;
 #endif
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_CUDA)
   ierr = PetscObjectTypeCompareAny((PetscObject)x,&is_veccuda,VECSEQCUDA,VECMPICUDA,VECCUDA,"");CHKERRQ(ierr);
-  if (is_veccuda && x->valid_GPU_array == PETSC_OFFLOAD_GPU) {
+  ierr = PetscObjectTypeCompareAny((PetscObject)y,&isy_veccuda,VECSEQCUDA,VECMPICUDA,VECCUDA,"");CHKERRQ(ierr);
+  if (is_veccuda && isy_veccuda && x->offloadmask == PETSC_OFFLOAD_GPU) {
     /* create the scatter indices if not done already */
     if (!ctx->spptr) {
       PetscInt tofirst = 0,tostep = 0,fromfirst = 0,fromstep = 0;
@@ -134,13 +135,14 @@ PetscErrorCode VecScatterBegin_SGToSS_Stride1(VecScatter ctx,Vec x,Vec y,InsertM
   PetscInt               first = gen_to->first;
   PetscScalar            *xv,*yv;
 #if defined(PETSC_HAVE_CUDA)
-  PetscBool              is_veccuda;
+  PetscBool              is_veccuda,isy_veccuda;
 #endif
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_CUDA)
   ierr = PetscObjectTypeCompareAny((PetscObject)x,&is_veccuda,VECSEQCUDA,VECMPICUDA,VECCUDA,"");CHKERRQ(ierr);
-  if (is_veccuda && x->valid_GPU_array == PETSC_OFFLOAD_GPU) {
+  ierr = PetscObjectTypeCompareAny((PetscObject)y,&isy_veccuda,VECSEQCUDA,VECMPICUDA,VECCUDA,"");CHKERRQ(ierr);
+  if (is_veccuda && isy_veccuda && x->offloadmask == PETSC_OFFLOAD_GPU) {
     /* create the scatter indices if not done already */
     if (!ctx->spptr) {
       PetscInt tofirst = first,tostep = 1,fromfirst = 0,fromstep = 0;
@@ -189,13 +191,14 @@ PetscErrorCode VecScatterBegin_SGToSS(VecScatter ctx,Vec x,Vec y,InsertMode addv
   PetscInt               first = gen_to->first,step = gen_to->step;
   PetscScalar            *xv,*yv;
 #if defined(PETSC_HAVE_CUDA)
-  PetscBool              is_veccuda;
+  PetscBool              is_veccuda,isy_veccuda;
 #endif
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_CUDA)
   ierr = PetscObjectTypeCompareAny((PetscObject)x,&is_veccuda,VECSEQCUDA,VECMPICUDA,VECCUDA,"");CHKERRQ(ierr);
-  if (is_veccuda && x->valid_GPU_array == PETSC_OFFLOAD_GPU) {
+  ierr = PetscObjectTypeCompareAny((PetscObject)y,&isy_veccuda,VECSEQCUDA,VECMPICUDA,VECCUDA,"");CHKERRQ(ierr);
+  if (is_veccuda && isy_veccuda && x->offloadmask == PETSC_OFFLOAD_GPU) {
     /* create the scatter indices if not done already */
     if (!ctx->spptr) {
       PetscInt tofirst = first,tostep = step,fromfirst = 0,fromstep = 0;
@@ -246,13 +249,14 @@ PetscErrorCode VecScatterBegin_SSToSG_Stride1(VecScatter ctx,Vec x,Vec y,InsertM
   PetscInt               first = gen_from->first;
   PetscScalar            *xv,*yv;
 #if defined(PETSC_HAVE_CUDA)
-  PetscBool              is_veccuda;
+  PetscBool              is_veccuda,isy_veccuda;
 #endif
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_CUDA)
   ierr = PetscObjectTypeCompareAny((PetscObject)x,&is_veccuda,VECSEQCUDA,VECMPICUDA,VECCUDA,"");CHKERRQ(ierr);
-  if (is_veccuda && x->valid_GPU_array == PETSC_OFFLOAD_GPU) {
+  ierr = PetscObjectTypeCompareAny((PetscObject)y,&isy_veccuda,VECSEQCUDA,VECMPICUDA,VECCUDA,"");CHKERRQ(ierr);
+  if (is_veccuda && isy_veccuda && x->offloadmask == PETSC_OFFLOAD_GPU) {
     /* create the scatter indices if not done already */
     if (!ctx->spptr) {
       PetscInt tofirst = 0,tostep = 0,fromfirst = first,fromstep = 1;
@@ -301,13 +305,14 @@ PetscErrorCode VecScatterBegin_SSToSG(VecScatter ctx,Vec x,Vec y,InsertMode addv
   PetscInt               first = gen_from->first,step = gen_from->step;
   PetscScalar            *xv,*yv;
 #if defined(PETSC_HAVE_CUDA)
-  PetscBool              is_veccuda;
+  PetscBool              is_veccuda,isy_veccuda;
 #endif
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_CUDA)
   ierr = PetscObjectTypeCompareAny((PetscObject)x,&is_veccuda,VECSEQCUDA,VECMPICUDA,VECCUDA,"");CHKERRQ(ierr);
-  if (is_veccuda && x->valid_GPU_array == PETSC_OFFLOAD_GPU) {
+  ierr = PetscObjectTypeCompareAny((PetscObject)y,&isy_veccuda,VECSEQCUDA,VECMPICUDA,VECCUDA,"");CHKERRQ(ierr);
+  if (is_veccuda && isy_veccuda && x->offloadmask == PETSC_OFFLOAD_GPU) {
     /* create the scatter indices if not done already */
     if (!ctx->spptr) {
       PetscInt tofirst = 0,tostep = 0,fromfirst = first,fromstep = step;
@@ -379,13 +384,14 @@ PetscErrorCode VecScatterBegin_SSToSS(VecScatter ctx,Vec x,Vec y,InsertMode addv
   PetscInt              from_first = gen_from->first,from_step = gen_from->step;
   PetscScalar           *xv,*yv;
 #if defined(PETSC_HAVE_CUDA)
-  PetscBool              is_veccuda;
+  PetscBool              is_veccuda,isy_veccuda;
 #endif
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_CUDA)
   ierr = PetscObjectTypeCompareAny((PetscObject)x,&is_veccuda,VECSEQCUDA,VECMPICUDA,VECCUDA,"");CHKERRQ(ierr);
-  if (is_veccuda && x->valid_GPU_array == PETSC_OFFLOAD_GPU) {
+  ierr = PetscObjectTypeCompareAny((PetscObject)y,&isy_veccuda,VECSEQCUDA,VECMPICUDA,VECCUDA,"");CHKERRQ(ierr);
+  if (is_veccuda && isy_veccuda && x->offloadmask == PETSC_OFFLOAD_GPU) {
     /* create the scatter indices if not done already */
     if (!ctx->spptr) {
       PetscInt *tslots = 0,*fslots = 0;
@@ -633,8 +639,8 @@ PetscErrorCode VecScatterMemcpyPlanCreate_SGToSG(PetscInt bs,VecScatter_Seq_Gene
       j = 0;  /* j-th copy */
       for (i=0; i<n-1; i++) {
         if (to_slots[i]+bs != to_slots[i+1] || from_slots[i]+bs != from_slots[i+1]) {
-          to->memcpy_plan.copy_lengths[j]    = sizeof(PetscScalar)*(to_slots[i]+bs-to->memcpy_plan.copy_starts[j]);
-          from->memcpy_plan.copy_lengths[j]  = sizeof(PetscScalar)*(from_slots[i]+bs-from->memcpy_plan.copy_starts[j]);
+          to->memcpy_plan.copy_lengths[j]    = to_slots[i]+bs-to->memcpy_plan.copy_starts[j];
+          from->memcpy_plan.copy_lengths[j]  = from_slots[i]+bs-from->memcpy_plan.copy_starts[j];
           to->memcpy_plan.copy_starts[j+1]   = to_slots[i+1];
           from->memcpy_plan.copy_starts[j+1] = from_slots[i+1];
           j++;
@@ -643,8 +649,8 @@ PetscErrorCode VecScatterMemcpyPlanCreate_SGToSG(PetscInt bs,VecScatter_Seq_Gene
     }
 
     /* set up copy_lengths[] of the last copy */
-    to->memcpy_plan.copy_lengths[n_copies-1]   = sizeof(PetscScalar)*(to_slots[n-1]+bs-to->memcpy_plan.copy_starts[n_copies-1]);
-    from->memcpy_plan.copy_lengths[n_copies-1] = sizeof(PetscScalar)*(from_slots[n-1]+bs-from->memcpy_plan.copy_starts[n_copies-1]);
+    to->memcpy_plan.copy_lengths[n_copies-1]   = to_slots[n-1]+bs-to->memcpy_plan.copy_starts[n_copies-1];
+    from->memcpy_plan.copy_lengths[n_copies-1] = from_slots[n-1]+bs-from->memcpy_plan.copy_starts[n_copies-1];
 
     /* check if to and from have the same copy_starts[] values */
     same_copy_starts = PETSC_TRUE;

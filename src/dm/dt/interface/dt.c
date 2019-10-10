@@ -655,7 +655,7 @@ PetscErrorCode PetscDTGaussLobattoLegendreQuadrature(PetscInt npoints,PetscGauss
     if (npoints > 30) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"PETSCGAUSSLOBATTOLEGENDRE_VIA_NEWTON produces incorrect answers for n > 30");
     x[0]     = -1.0;
     x[npoints-1]   = 1.0;
-    w[0]   = w[npoints-1] = 2./(((PetscReal)npoints)*(((PetscReal)npoints)-1.0));;
+    w[0]   = w[npoints-1] = 2./(((PetscReal)npoints)*(((PetscReal)npoints)-1.0));
     m  = (npoints-1)/2; /* The roots are symmetric, so we only find half of them. */
     for (j=1; j<=m; j++) { /* Loop over the desired roots. */
       z = -1.0*PetscCosReal((PETSC_PI*((PetscReal)j)+0.25)/(((PetscReal)npoints)-1.0))-(3.0/(8.0*(((PetscReal)npoints)-1.0)*PETSC_PI))*(1.0/(((PetscReal)j)+0.25));

@@ -54,7 +54,7 @@ def read_xslfile():
         if os.path.isfile(filename):
             with open(filename, 'rb') as f:
                 return f.read()
-    giturl = "https://bitbucket.org/petsc/petsc/raw/maint/"
+    giturl = "https://gitlab.com/petsc/petsc/raw/maint/"
     filepath = posixpath.join('share', 'petsc', 'xml', xslfile)
     with urlopen(giturl + filepath) as f:
         return f.read()

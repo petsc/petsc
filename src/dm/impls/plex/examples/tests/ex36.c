@@ -16,7 +16,7 @@ static PetscErrorCode redistribute_vec(DM dist_dm, PetscSF sf, Vec *v)
 
     PetscFunctionBegin;
     ierr = VecGetDM(*v, &dm);CHKERRQ(ierr);
-    ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
+    ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);
     ierr = DMViewFromOptions(dm, NULL, "-rd_dm_view");CHKERRQ(ierr);
     ierr = DMViewFromOptions(dist_dm, NULL, "-rd2_dm_view");CHKERRQ(ierr);
 
@@ -24,7 +24,7 @@ static PetscErrorCode redistribute_vec(DM dist_dm, PetscSF sf, Vec *v)
     ierr = VecCreate(PetscObjectComm((PetscObject) *v), &dist_v);CHKERRQ(ierr);
     ierr = VecSetDM(dist_v, dist_v_dm);CHKERRQ(ierr);
     ierr = PetscSectionCreate(PetscObjectComm((PetscObject) *v), &dist_section);CHKERRQ(ierr);
-    ierr = DMSetSection(dist_v_dm, dist_section);CHKERRQ(ierr);
+    ierr = DMSetLocalSection(dist_v_dm, dist_section);CHKERRQ(ierr);
 
     ierr = PetscObjectViewFromOptions((PetscObject) section, NULL, "-rd_section_view");CHKERRQ(ierr);
     ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
@@ -71,12 +71,14 @@ static PetscErrorCode dm_view_geometry(DM dm, Vec cell_geom, Vec face_geom)
     /* cells */
     ierr = DMPlexGetHeightStratum(dm, 0, &start_cell, &end_cell);CHKERRQ(ierr);
     ierr = VecGetDM(cell_geom, &cell_dm);CHKERRQ(ierr);
-    ierr = DMGetSection(cell_dm, &cell_section);CHKERRQ(ierr);
+    ierr = DMGetLocalSection(cell_dm, &cell_section);CHKERRQ(ierr);
     ierr = VecGetArrayRead(cell_geom, &cell_array);CHKERRQ(ierr);
 
     for (c = start_cell; c < end_cell; ++c) {
-       ierr = PetscSectionGetOffset(cell_section, c, &offset);CHKERRQ(ierr);
-       ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "rank %d c %D centroid %g,%g,%g vol %g\n", rank, c, (double) PetscRealPart(cell_array[offset+0]), (double) PetscRealPart(cell_array[offset+1]), (double) PetscRealPart(cell_array[offset+2]), (double) PetscRealPart(cell_array[offset+3]));CHKERRQ(ierr);
+      const PetscFVCellGeom *geom;
+      ierr = PetscSectionGetOffset(cell_section, c, &offset);CHKERRQ(ierr);
+      geom = (PetscFVCellGeom*)&cell_array[offset];
+      ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "rank %d c %D centroid %g,%g,%g vol %g\n", rank, c, (double)geom->centroid[0], (double)geom->centroid[1], (double)geom->centroid[2], (double)geom->volume);CHKERRQ(ierr);
     }
     ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD, NULL);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(cell_geom, &cell_array);CHKERRQ(ierr);
@@ -84,7 +86,7 @@ static PetscErrorCode dm_view_geometry(DM dm, Vec cell_geom, Vec face_geom)
     /* faces */
     ierr = DMPlexGetHeightStratum(dm, 1, &start_face, &end_face);CHKERRQ(ierr);
     ierr = VecGetDM(face_geom, &face_dm);CHKERRQ(ierr);
-    ierr = DMGetSection(face_dm, &face_section);CHKERRQ(ierr);
+    ierr = DMGetLocalSection(face_dm, &face_section);CHKERRQ(ierr);
     ierr = VecGetArrayRead(face_geom, &face_array);CHKERRQ(ierr);
     for (f = start_face; f < end_face; ++f) {
        ierr = DMPlexGetSupport(dm, f, &cells);CHKERRQ(ierr);

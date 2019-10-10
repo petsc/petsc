@@ -18,6 +18,10 @@ PetscFPT PetscFPTData = 0;
 #if defined(PETSC_HAVE_SAWS)
 #include <petscviewersaws.h>
 #endif
+
+#if defined(PETSC_HAVE_OPENMPI_MAJOR)
+#include "mpi-ext.h" /* Needed for CUDA-aware check */
+#endif
 /* -----------------------------------------------------------------------------------------*/
 
 PETSC_INTERN FILE *petsc_history;
@@ -36,6 +40,12 @@ PetscMPIInt Petsc_Counter_keyval   = MPI_KEYVAL_INVALID;
 PetscMPIInt Petsc_InnerComm_keyval = MPI_KEYVAL_INVALID;
 PetscMPIInt Petsc_OuterComm_keyval = MPI_KEYVAL_INVALID;
 PetscMPIInt Petsc_ShmComm_keyval   = MPI_KEYVAL_INVALID;
+
+/* Do not need put this in a guard like PETSC_HAVE_CUDA. Without configuring PETSc --with-cuda, users can still use option -use_gpu_aware_mpi */
+PetscBool use_gpu_aware_mpi = PETSC_FALSE;
+#if defined(PETSC_HAVE_CUDA)
+PetscBool sf_use_default_cuda_stream = PETSC_FALSE;
+#endif
 
 /*
      Declare and set all the string names of the PETSc enums
@@ -179,7 +189,7 @@ PETSC_INTERN void MPIAPI MPIU_MaxSum_Local(void *in,void *out,int *cnt,MPI_Datat
   PetscFunctionBegin;
   if (*datatype != MPIU_2INT) {
     (*PetscErrorPrintf)("Can only handle MPIU_2INT data types");
-    MPI_Abort(MPI_COMM_WORLD,1);
+    PETSCABORT(MPI_COMM_SELF,PETSC_ERR_ARG_WRONG);
   }
 
   for (i=0; i<count; i++) {
@@ -247,7 +257,7 @@ PETSC_EXTERN void PetscSum_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatyp
 #endif
   else {
     (*PetscErrorPrintf)("Can only handle MPIU_REAL or MPIU_COMPLEX data types");
-    MPI_Abort(MPI_COMM_WORLD,1);
+    PETSCABORT(MPI_COMM_SELF,PETSC_ERR_ARG_WRONG);
   }
   PetscFunctionReturnVoid();
 }
@@ -276,7 +286,7 @@ PETSC_EXTERN void PetscMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatyp
 #endif
   else {
     (*PetscErrorPrintf)("Can only handle MPIU_REAL or MPIU_COMPLEX data types");
-    MPI_Abort(MPI_COMM_WORLD,1);
+    PETSCABORT(MPI_COMM_SELF,PETSC_ERR_ARG_WRONG);
   }
   PetscFunctionReturnVoid();
 }
@@ -300,7 +310,7 @@ PETSC_EXTERN void PetscMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatyp
 #endif
   else {
     (*PetscErrorPrintf)("Can only handle MPIU_REAL or MPIU_SCALAR data (i.e. double or complex) types");
-    MPI_Abort(MPI_COMM_WORLD,1);
+    PETSCABORT(MPI_COMM_SELF,PETSC_ERR_ARG_WRONG);
   }
   PetscFunctionReturnVoid();
 }
@@ -694,13 +704,14 @@ PetscInt PetscNumOMPThreads;
 .  -debugger_pause [sleeptime] (in seconds) - Pauses debugger
 .  -stop_for_debugger - Print message on how to attach debugger manually to
                         process and wait (-debugger_pause) seconds for attachment
-.  -malloc - Indicates use of PETSc error-checking malloc (on by default for debug version of libraries)
-.  -malloc no - Indicates not to use error-checking malloc
-.  -malloc_debug - check for memory corruption at EVERY malloc or free
+.  -malloc - Indicates use of PETSc error-checking malloc (on by default for debug version of libraries) (deprecated, use -malloc_debug)
+.  -malloc no - Indicates not to use error-checking malloc (deprecated, use -malloc_debug no)
+.  -malloc_debug - check for memory corruption at EVERY malloc or free, see PetscMallocSetDebug()
 .  -malloc_dump - prints a list of all unfreed memory at the end of the run
-.  -malloc_test - like -malloc_dump -malloc_debug, but only active for debugging builds
-.  -fp_trap - Stops on floating point exceptions (Note that on the
-              IBM RS6000 this slows code by at least a factor of 10.)
+.  -malloc_test - like -malloc_dump -malloc_debug, but only active for debugging builds, ignored in optimized build. May want to set in PETSC_OPTIONS environmental variable
+.  -malloc_view - show a list of all allocated memory during PetscFinalize()
+.  -malloc_view_threshold <t> - only list memory allocations of size greater than t with -malloc_view
+.  -fp_trap - Stops on floating point exceptions
 .  -no_signal_handler - Indicates not to trap error signals
 .  -shared_tmp - indicates /tmp directory is shared by all processors
 .  -not_shared_tmp - each processor has own /tmp
@@ -717,6 +728,7 @@ PetscInt PetscNumOMPThreads;
 .  -log_trace [filename] - Print traces of all PETSc calls to the screen (useful to determine where a program
         hangs without running in the debugger).  See PetscLogTraceBegin().
 .  -log_view [:filename:format] - Prints summary of flop and timing information to screen or file, see PetscLogView().
+.  -log_view_memory - Includes in the summary from -log_view the memory used in each method, see PetscLogView().
 .  -log_summary [filename] - (Deprecated, use -log_view) Prints summary of flop and timing information to screen. If the filename is specified the
         summary is written to the file.  See PetscLogView().
 .  -log_exclude: <vec,mat,pc,ksp,snes> - excludes subset of object classes from logging
@@ -1104,6 +1116,16 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 
   ierr = PetscOptionsHasName(NULL,NULL,"-python",&flg);CHKERRQ(ierr);
   if (flg) {ierr = PetscPythonInitialize(NULL,NULL);CHKERRQ(ierr);}
+
+#if defined(PETSC_HAVE_CUDA)
+  ierr = PetscOptionsGetBool(NULL,NULL,"-use_gpu_aware_mpi",&use_gpu_aware_mpi,NULL);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_OPENMPI_MAJOR) && defined(MPIX_CUDA_AWARE_SUPPORT)
+  /* OpenMPI supports compile time and runtime cuda support checking */
+  if (use_gpu_aware_mpi && 1 != MPIX_Query_cuda_support()) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"OpenMPI you used does not support CUDA while you requested -use_gpu_aware_mpi");
+#endif
+  ierr = PetscOptionsGetBool(NULL,NULL,"-sf_use_default_cuda_stream",&sf_use_default_cuda_stream,NULL);CHKERRQ(ierr);
+#endif
+
   PetscFunctionReturn(0);
 }
 
@@ -1166,9 +1188,9 @@ PetscErrorCode  PetscFreeMPIResources(void)
 .  -options_left - Prints unused options that remain in the database
 .  -objects_dump [all] - Prints list of objects allocated by the user that have not been freed, the option all cause all outstanding objects to be listed
 .  -mpidump - Calls PetscMPIDump()
-.  -malloc_dump - Calls PetscMallocDump()
+.  -malloc_dump <optional filename> - Calls PetscMallocDump(), displays all memory allocated that has not been freed
 .  -malloc_info - Prints total memory usage
--  -malloc_log - Prints summary of memory usage
+-  -malloc_view <optional filename> - Prints list of all memory allocated and where
 
    Level: beginner
 
@@ -1476,30 +1498,28 @@ PetscErrorCode  PetscFinalize(void)
   ierr = PetscInfoAllow(PETSC_FALSE,NULL);CHKERRQ(ierr);
 
 #if !defined(PETSC_HAVE_THREADSAFETY)
-  {
+  if (!(PETSC_RUNNING_ON_VALGRIND)) {
     char fname[PETSC_MAX_PATH_LEN];
+    char sname[PETSC_MAX_PATH_LEN];
     FILE *fd;
     int  err;
 
-    fname[0] = 0;
-
-    ierr = PetscOptionsGetString(NULL,NULL,"-malloc_dump",fname,250,&flg1);CHKERRQ(ierr);
     flg2 = PETSC_FALSE;
-    ierr = PetscOptionsGetBool(NULL,NULL,"-malloc_test",&flg2,NULL);CHKERRQ(ierr);
+    flg3 = PETSC_FALSE;
 #if defined(PETSC_USE_DEBUG)
-    if (PETSC_RUNNING_ON_VALGRIND) flg2 = PETSC_FALSE;
-#else
-    flg2 = PETSC_FALSE;         /* Skip reporting for optimized builds regardless of -malloc_test */
+    ierr = PetscOptionsGetBool(NULL,NULL,"-malloc_test",&flg2,NULL);CHKERRQ(ierr);
 #endif
+    ierr = PetscOptionsGetBool(NULL,NULL,"-malloc_debug",&flg3,NULL);CHKERRQ(ierr);
+    fname[0] = 0;
+    ierr = PetscOptionsGetString(NULL,NULL,"-malloc_dump",fname,250,&flg1);CHKERRQ(ierr);
     if (flg1 && fname[0]) {
-      char sname[PETSC_MAX_PATH_LEN];
 
       PetscSNPrintf(sname,PETSC_MAX_PATH_LEN,"%s_%d",fname,rank);
       fd   = fopen(sname,"w"); if (!fd) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open log file: %s",sname);
       ierr = PetscMallocDump(fd);CHKERRQ(ierr);
       err  = fclose(fd);
       if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
-    } else if (flg1 || flg2) {
+    } else if (flg1 || flg2 || flg3) {
       MPI_Comm local_comm;
 
       ierr = MPI_Comm_dup(MPI_COMM_WORLD,&local_comm);CHKERRQ(ierr);
@@ -1508,30 +1528,23 @@ PetscErrorCode  PetscFinalize(void)
       ierr = PetscSequentialPhaseEnd_Private(local_comm,1);CHKERRQ(ierr);
       ierr = MPI_Comm_free(&local_comm);CHKERRQ(ierr);
     }
-  }
-
-  {
-    char fname[PETSC_MAX_PATH_LEN];
-    FILE *fd = NULL;
-
     fname[0] = 0;
-
-    ierr = PetscOptionsGetString(NULL,NULL,"-malloc_log",fname,250,&flg1);CHKERRQ(ierr);
-    ierr = PetscOptionsHasName(NULL,NULL,"-malloc_log_threshold",&flg2);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,NULL,"-malloc_view",fname,250,&flg1);CHKERRQ(ierr);
     if (flg1 && fname[0]) {
-      int err;
 
-      if (!rank) {
-        fd = fopen(fname,"w");
-        if (!fd) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open log file: %s",fname);
-      }
-      ierr = PetscMallocDumpLog(fd);CHKERRQ(ierr);
-      if (fd) {
-        err = fclose(fd);
-        if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
-      }
-    } else if (flg1 || flg2) {
-      ierr = PetscMallocDumpLog(stdout);CHKERRQ(ierr);
+      PetscSNPrintf(sname,PETSC_MAX_PATH_LEN,"%s_%d",fname,rank);
+      fd   = fopen(sname,"w"); if (!fd) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open log file: %s",sname);
+      ierr = PetscMallocView(fd);CHKERRQ(ierr);
+      err  = fclose(fd);
+      if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
+    } else if (flg1) {
+      MPI_Comm local_comm;
+
+      ierr = MPI_Comm_dup(MPI_COMM_WORLD,&local_comm);CHKERRQ(ierr);
+      ierr = PetscSequentialPhaseBegin_Private(local_comm,1);CHKERRQ(ierr);
+      ierr = PetscMallocView(stdout);CHKERRQ(ierr);
+      ierr = PetscSequentialPhaseEnd_Private(local_comm,1);CHKERRQ(ierr);
+      ierr = MPI_Comm_free(&local_comm);CHKERRQ(ierr);
     }
   }
 #endif

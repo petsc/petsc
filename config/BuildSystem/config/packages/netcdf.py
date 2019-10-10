@@ -4,15 +4,17 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.version         = '4.5.0'
-    self.versionname     = 'NC_VERSION_MAJOR.NC_VERSION_MINOR.NC_VERSION_PATCH'
-    self.versioninclude  = 'netcdf_meta.h'
-    self.download        = ['ftp://ftp.unidata.ucar.edu/pub/netcdf/netcdf-'+self.version+'.tar.gz']
-    self.functions       = ['nccreate']
-    self.includes        = ['netcdf.h']
-    self.liblist         = [['libnetcdf.a']]
-    self.cxx             = 1
-    self.useddirectly    = 0
+    self.version          = '4.5.0'
+    self.versionname      = 'NC_VERSION_MAJOR.NC_VERSION_MINOR.NC_VERSION_PATCH'
+    self.versioninclude   = 'netcdf_meta.h'
+    self.download         = ['ftp://ftp.unidata.ucar.edu/pub/netcdf/netcdf-'+self.version+'.tar.gz',
+                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/netcdf-'+self.version+'.tar.gz']
+    self.functions        = ['nccreate']
+    self.includes         = ['netcdf.h']
+    self.liblist          = [['libnetcdf.a']]
+    self.cxx              = 1
+    self.useddirectly     = 0
+    self.installwithbatch = 0
     return
 
   def setupDependencies(self, framework):
@@ -29,7 +31,7 @@ class Configure(config.package.GNUPackage):
     ''' disable DAP and HDF4, enable NetCDF4'''
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
     args.append('CPPFLAGS="'+self.headers.toString(self.dinclude)+'"')
-    args.append('LIBS="'+self.libraries.toString(self.dlib)+' '+self.compilers.LIBS+'"')
+    self.addToArgs(args,'LIBS',self.libraries.toString(self.dlib)+' '+self.compilers.LIBS)
     args.append('--enable-netcdf-4')
     if self.pnetcdf.found:
       args.append('--enable-pnetcdf')

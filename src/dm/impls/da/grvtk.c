@@ -14,8 +14,8 @@ static PetscErrorCode DMDAGetFieldsNamed(DM da,PetscBool *fieldsnamed)
   PetscInt       f,bs;
 
   PetscFunctionBegin;
-  ierr = DMDAGetDof(da,&bs);CHKERRQ(ierr);
   *fieldsnamed = PETSC_FALSE;
+  ierr = DMDAGetDof(da,&bs);CHKERRQ(ierr);
   for (f=0; f<bs; ++f) {
     const char * fieldname;
     ierr = DMDAGetFieldName(da,f,&fieldname);CHKERRQ(ierr);
@@ -47,7 +47,6 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
   PetscInt                 dim,mx,my,mz,cdim,bs,boffset,maxnnodes,maxbs,i,j,k,r;
   PetscInt                 rloc[6],(*grloc)[6] = NULL;
   PetscScalar              *array,*array2;
-  PetscReal                gmin[3],gmax[3];
   PetscErrorCode           ierr;
 
   PetscFunctionBegin;
@@ -59,7 +58,6 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,&dim,&mx,&my,&mz,0,0,0,&bs,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
-  ierr = DMDAGetBoundingBox(da,gmin,gmax);CHKERRQ(ierr);
   ierr = DMGetCoordinates(da,&Coords);CHKERRQ(ierr);
   if (Coords) {
     PetscInt csize;
@@ -282,7 +280,6 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
   PetscInt                 dim,mx,my,mz,boffset,maxnnodes,maxbs,i,j,k,r;
   PetscInt                 rloc[6],(*grloc)[6] = NULL;
   PetscScalar              *array,*array2;
-  PetscReal                gmin[3],gmax[3];
   PetscErrorCode           ierr;
 
   PetscFunctionBegin;
@@ -294,7 +291,6 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,&dim,&mx,&my,&mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
-  ierr = DMDAGetBoundingBox(da,gmin,gmax);CHKERRQ(ierr);
   ierr = PetscFOpen(comm,vtk->filename,"wb",&fp);CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fp,"<?xml version=\"1.0\"?>\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fp,"<VTKFile type=\"RectilinearGrid\" version=\"0.1\" byte_order=\"%s\">\n",byte_order);CHKERRQ(ierr);

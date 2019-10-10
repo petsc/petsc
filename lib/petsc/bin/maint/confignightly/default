@@ -12,7 +12,7 @@
   set SCP=scp
   set DASHN=-n
   set GIT=yes
-  set URL=https://bitbucket.org/petsc/petsc
+  set URL=https://gitlab.com/petsc/petsc.git
   set TNAME=`echo ${TEST} | cut -d ':' -f 1`
   set BRANCH=`echo ${TEST} | cut -s -d ':' -f 2`
   if ("$BRANCH" == "") then

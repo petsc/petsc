@@ -30,6 +30,9 @@ def check_for_option_mistakes(opts):
       optval = opt.split('=')[1]
       if optval == 'ifneeded':
         raise ValueError('The option '+opt+' should probably be '+opt.replace('ifneeded', '1'));
+    for exc in ['mkl_sparse', 'mkl_sparse_optimize', 'mkl_cpardiso', 'mkl_pardiso', 'superlu_dist']:
+      if name.find(exc.replace('_','-')) > -1:
+        raise ValueError('The option '+opt+' should be '+opt.replace(exc.replace('_','-'),exc));
   return
 
 def check_for_unsupported_combinations(opts):
@@ -289,6 +292,23 @@ def chktmpnoexec():
       os.environ['TMPDIR'] = newTmp
   return
 
+def check_cray_modules():
+  import script
+  '''For Cray systems check if the cc, CC, ftn compiler suite modules have been set'''
+  cray = os.getenv('CRAY_SITE_LIST_DIR')
+  if not cray: return
+  cray = os.getenv('CRAYPE_DIR')
+  if not cray:
+   print('************************************************************************')
+   print('* You are on a Cray system but no programming environments have been loaded')
+   print('* Perhaps you need:')
+   print('*       module load intel ; module load PrgEnv-intel')
+   print('*   or  module load PrgEnv-cray')
+   print('*   or  module load PrgEnv-gnu')
+   print('* See https://www.mcs.anl.gov/petsc/documentation/installation.html#doemachines')
+   print('************************************************************************')
+   sys.exit(4)
+
 def check_broken_configure_log_links():
   '''Sometime symlinks can get broken if the original files are deleted. Delete such broken links'''
   import os
@@ -391,6 +411,14 @@ def petsc_configure(configure_options):
   chkcygwinwindowscompilers()
   chktmpnoexec()
 
+  for l in range(1,len(sys.argv)):
+    if sys.argv[l].startswith('--with-fc=') and sys.argv[l].endswith('nagfor'):
+      # need a way to save this value and later CC so that petscnagfor may use them
+      name = sys.argv[l].split('=')[1]
+      sys.argv[l] = '--with-fc='+os.path.join(os.path.abspath('.'),'lib','petsc','bin','petscnagfor')
+      break
+
+
   # Should be run from the toplevel
   configDir = os.path.abspath('config')
   bsDir     = os.path.join(configDir, 'BuildSystem')
@@ -403,6 +431,10 @@ def petsc_configure(configure_options):
   import pickle
   import traceback
 
+  # Check Cray without modules
+  check_cray_modules()
+
+  tbo = None
   framework = None
   try:
     framework = config.framework.Framework(['--configModules=PETSc.Configure','--optionsModule=config.compilerOptions']+sys.argv[1:], loadArgDB = 0)
@@ -431,6 +463,8 @@ def petsc_configure(configure_options):
     +emsg+'*******************************************************************************\n'
     se = ''
   except (TypeError, ValueError) as e:
+    # this exception is automatically deleted by Python so we need to save it to print below
+    tbo = sys.exc_info()[2]
     emsg = str(e)
     if not emsg.endswith('\n'): emsg = emsg+'\n'
     msg ='*******************************************************************************\n'\
@@ -482,15 +516,16 @@ def petsc_configure(configure_options):
           framework.outputCHeader(framework.log)
       except Exception as e:
         framework.log.write('Problem writing headers to log: '+str(e))
+      if sys.exc_info()[2]: tbo = sys.exc_info()[2]
       try:
         framework.log.write(msg+se)
-        traceback.print_tb(sys.exc_info()[2], file = framework.log)
+        traceback.print_tb(tbo, file = framework.log)
         print_final_timestamp(framework)
         if hasattr(framework,'log'): framework.log.close()
         move_configure_log(framework)
       except Exception as e:
         print('Error printing error message from exception or printing the traceback:'+str(e))
-        traceback.print_tb(sys.exc_info()[2])
+        traceback.print_tb(tbo)
       sys.exit(1)
     else:
       print(se)

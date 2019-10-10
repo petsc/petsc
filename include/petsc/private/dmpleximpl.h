@@ -143,10 +143,24 @@ struct _PetscGridHash {
   DMLabel      cellsSparse; /* Sparse storage for cell map */
 };
 
+/* Point Numbering in Plex:
+
+   Points are numbered contiguously by stratum. Strate are organized as follows:
+
+   First Stratum:  Cells [height 0]
+   Second Stratum: Vertices [depth 0]
+   Third Stratum:  Faces [height 1]
+   Fourth Stratum: Edges [depth 1]
+
+   We do this so that the numbering of a cell-vertex mesh does not change after interpolation. Within a given stratum,
+   we allow additional segregation of points. When hybrid, or prismatic, points are present, the first hybrid point in
+   a stratum is indicated by hybridPointMax[depth]. In addition, we allow ghost cells to be defined for use in finite
+   volume methods, and these do not have full cones. These cells occur after any hybrid cells, and this division is
+   indicated by ghostCellStart.
+*/
 typedef struct {
   PetscInt             refct;
 
-  /* Sieve */
   PetscSection         coneSection;       /* Layout of cones (inedges for DAG) */
   PetscInt             maxConeSize;       /* Cached for fast lookup */
   PetscInt            *cones;             /* Cone for each point */
@@ -158,6 +172,8 @@ typedef struct {
   PetscReal            refinementLimit;   /* Maximum volume for refined cell */
   PetscErrorCode     (*refinementFunc)(const PetscReal [], PetscReal *); /* Function giving the maximum volume for refined cell */
   PetscInt             hybridPointMax[8]; /* Allow segregation of some points, each dimension has a divider (used in VTK output and refinement) */
+  PetscInt             overlap;           /* Overlap of the partitions as passed to DMPlexDistribute() or DMPlexDistributeOverlap() */
+  PetscInt             ghostCellStart;    /* The first ghost cell (for FV BC) or -1 */
 
   PetscInt            *facesTmp;          /* Work space for faces operation */
 
@@ -300,8 +316,9 @@ PETSC_EXTERN PetscErrorCode DMPlexAnchorsModifyMat(DM,PetscSection,PetscInt,Pets
 PETSC_EXTERN PetscErrorCode indicesPoint_private(PetscSection,PetscInt,PetscInt,PetscInt *,PetscBool,PetscInt,PetscInt []);
 PETSC_EXTERN PetscErrorCode indicesPointFields_private(PetscSection,PetscInt,PetscInt,PetscInt [],PetscBool,PetscInt,PetscInt []);
 PETSC_INTERN PetscErrorCode DMPlexLocatePoint_Internal(DM,PetscInt,const PetscScalar [],PetscInt,PetscInt *);
+/* these two are PETSC_EXTERN just because of src/dm/impls/plex/examples/tests/ex18.c */
 PETSC_EXTERN PetscErrorCode DMPlexOrientCell_Internal(DM,PetscInt,PetscInt,PetscBool);
-PETSC_EXTERN PetscErrorCode DMPlexOrientInterface(DM);
+PETSC_EXTERN PetscErrorCode DMPlexOrientInterface_Internal(DM);
 
 PETSC_INTERN PetscErrorCode DMPlexCreateCellNumbering_Internal(DM, PetscBool, IS *);
 PETSC_INTERN PetscErrorCode DMPlexCreateVertexNumbering_Internal(DM, PetscBool, IS *);
@@ -309,6 +326,8 @@ PETSC_INTERN PetscErrorCode DMPlexCreateNumbering_Internal(DM, PetscInt, PetscIn
 PETSC_INTERN PetscErrorCode DMPlexRefine_Internal(DM, DMLabel, DM *);
 PETSC_INTERN PetscErrorCode DMPlexCoarsen_Internal(DM, DMLabel, DM *);
 PETSC_INTERN PetscErrorCode DMCreateMatrix_Plex(DM, Mat*);
+
+PETSC_INTERN PetscErrorCode DMPlexGetOverlap_Plex(DM, PetscInt *);
 
 /* invert dihedral symmetry: return a^-1,
  * using the representation described in
@@ -565,29 +584,6 @@ PETSC_STATIC_INLINE PetscReal DMPlex_DotRealD_Internal(PetscInt dim, const Petsc
 
 PETSC_STATIC_INLINE PetscReal DMPlex_NormD_Internal(PetscInt dim, const PetscReal *x) {PetscReal sum = 0.0; PetscInt d; for (d = 0; d < dim; ++d) sum += x[d]*x[d]; return PetscSqrtReal(sum);}
 
-/* Compare cones of the master and slave face (with the same cone points modulo order), and return relative orientation of the slave. */
-PETSC_STATIC_INLINE PetscErrorCode DMPlexFixFaceOrientations_Orient_Private(PetscInt coneSize, PetscInt masterConeSize, const PetscInt masterCone[], const PetscInt slaveCone[], PetscInt *start, PetscBool *reverse)
-{
-  PetscInt        i;
-
-  PetscFunctionBegin;
-  *start = 0;
-  for (i=0; i<coneSize; i++) {
-    if (slaveCone[i] == masterCone[0]) {
-      *start = i;
-      break;
-    }
-  }
-  if (PetscUnlikely(i==coneSize)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "starting point of master cone not found in slave cone");
-  *reverse = PETSC_FALSE;
-  for (i=0; i<masterConeSize; i++) {if (slaveCone[((*start)+i)%coneSize] != masterCone[i]) break;}
-  if (i == masterConeSize) PetscFunctionReturn(0);
-  *reverse = PETSC_TRUE;
-  for (i=0; i<masterConeSize; i++) {if (slaveCone[(coneSize+(*start)-i)%coneSize] != masterCone[i]) break;}
-  if (i < masterConeSize) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "master and slave cone have non-conforming order of points");
-  PetscFunctionReturn(0);
-}
-
 PETSC_STATIC_INLINE PetscErrorCode DMPlexFixFaceOrientations_Translate_Private(PetscInt ornt, PetscInt *start, PetscBool *reverse)
 {
   PetscFunctionBegin;
@@ -642,5 +638,6 @@ PETSC_INTERN PetscErrorCode DMPlexBasisTransformPoint_Internal(DM, DM, Vec, Pets
 PETSC_EXTERN PetscErrorCode DMPlexBasisTransformPointTensor_Internal(DM, DM, Vec, PetscInt, PetscBool, PetscInt, PetscScalar *);
 PETSC_INTERN PetscErrorCode DMPlexBasisTransformApplyReal_Internal(DM, const PetscReal[], PetscBool, PetscInt, const PetscReal *, PetscReal *, void *);
 PETSC_INTERN PetscErrorCode DMPlexBasisTransformApply_Internal(DM, const PetscReal[], PetscBool, PetscInt, const PetscScalar *, PetscScalar *, void *);
+PETSC_INTERN PetscErrorCode DMCreateNeumannOverlap_Plex(DM, IS*, Mat*, PetscErrorCode (**)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void*), void **);
 
 #endif /* _PLEXIMPL_H */

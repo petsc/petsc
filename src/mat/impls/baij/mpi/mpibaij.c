@@ -2716,6 +2716,7 @@ PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B,PetscInt bs,const Pet
   PetscScalar    *values=0;
   PetscBool      roworiented = ((Mat_MPIBAIJ*)B->data)->roworiented;
   PetscErrorCode ierr;
+  PetscBool      nooffprocentries;
 
   PetscFunctionBegin;
   ierr   = PetscLayoutSetBlockSize(B->rmap,bs);CHKERRQ(ierr);
@@ -2756,7 +2757,7 @@ PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B,PetscInt bs,const Pet
     PetscInt          row    = i + rstart;
     PetscInt          ncols  = ii[i+1] - ii[i];
     const PetscInt    *icols = jj + ii[i];
-    if (!roworiented) {         /* block ordering matches the non-nested layout of MatSetValues so we can insert entire rows */
+    if (bs == 1 || !roworiented) {         /* block ordering matches the non-nested layout of MatSetValues so we can insert entire rows */
       const PetscScalar *svals = values + (V ? (bs*bs*ii[i]) : 0);
       ierr = MatSetValuesBlocked_MPIBAIJ(B,1,&row,ncols,icols,svals,INSERT_VALUES);CHKERRQ(ierr);
     } else {                    /* block ordering does not match so we can only insert one block at a time. */
@@ -2769,8 +2770,12 @@ PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B,PetscInt bs,const Pet
   }
 
   if (!V) { ierr = PetscFree(values);CHKERRQ(ierr); }
+  nooffprocentries    = B->nooffprocentries;
+  B->nooffprocentries = PETSC_TRUE;
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  B->nooffprocentries = nooffprocentries;
+
   ierr = MatSetOption(B,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2984,7 +2989,11 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPIAIJ(Mat A,MatType newtype,MatR
 . -mat_block_size <bs> - set the blocksize used to store the matrix
 - -mat_use_hash_table <fact>
 
-  Level: beginner
+   Level: beginner
+
+   Notes:
+    MatSetOptions(,MAT_STRUCTURE_ONLY,PETSC_TRUE) may be called for this matrix type. In this no
+    space is allocated for the nonzero entries and any entries passed with MatSetValues() are ignored
 
 .seealso: MatCreateMPIBAIJ
 M*/

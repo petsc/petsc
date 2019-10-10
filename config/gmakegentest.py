@@ -78,11 +78,12 @@ class generateExamples(Petsc):
     gmakegen.py has basic structure for finding the files, writing out
       the dependencies, etc.
   """
-  def __init__(self,petsc_dir=None, petsc_arch=None, pkg_dir=None, pkg_arch=None, pkg_name=None, pkg_pkgs=None, testdir='tests', verbose=False, single_ex=False, srcdir=None):
+  def __init__(self,petsc_dir=None, petsc_arch=None, pkg_dir=None, pkg_arch=None, pkg_name=None, pkg_pkgs=None, testdir='tests', verbose=False, single_ex=False, srcdir=None, check=False):
     super(generateExamples, self).__init__(petsc_dir=petsc_dir, petsc_arch=petsc_arch, pkg_dir=pkg_dir, pkg_arch=pkg_arch, pkg_name=pkg_name, pkg_pkgs=pkg_pkgs, verbose=verbose)
 
     self.single_ex=single_ex
     self.srcdir=srcdir
+    self.check_output=check
 
     # Set locations to handle movement
     self.inInstallDir=self.getInInstallDir(thisscriptdir)
@@ -239,7 +240,7 @@ class generateExamples(Petsc):
 
     # For subtests, args are always substituted in (not top level)
     if isSubtest:
-      inDict['subargs'] += " ".join(newargs)
+      inDict['subargs'] += " "+" ".join(newargs)
       inDict['args']=''
       if 'label_suffix' in inDict:
         inDict['label_suffix']+=lsuffix.rstrip('_')
@@ -378,13 +379,12 @@ class generateExamples(Petsc):
     subst['wpetsc_dir']=self.conf['wPETSC_DIR']
 
     # Output file is special because of subtests override
-    defroot=(re.sub("run","",testname) if testname.startswith("run") else testname)
-    if not "_" in defroot: defroot=defroot+"_1"
-    subst['defroot']=defroot
-    subst['label']=self.nameSpace(defroot,self.srcrelpath(subst['srcdir']))
-    subst['redirect_file']=defroot+".tmp"
+    defroot = testparse.getDefaultOutputFileRoot(testname)
     if 'output_file' not in testDict:
       subst['output_file']="output/"+defroot+".out"
+    subst['redirect_file']=defroot+".tmp"
+    subst['label']=self.nameSpace(defroot,self.srcrelpath(subst['srcdir']))
+
     # Add in the full path here.
     subst['output_file']=os.path.join(subst['srcdir'],subst['output_file'])
     if not os.path.isfile(os.path.join(self.petsc_dir,subst['output_file'])):
@@ -463,7 +463,7 @@ class generateExamples(Petsc):
       cmd=diffindnt+self._substVars(subst,example_template.filterdifftest)
     cmdLines+=cmd+"\n"
     cmdLines+=cmdindnt+'else\n'
-    cmdLines+=diffindnt+'printf "ok ${label} # SKIP Command failed so no diff\\n"\n'
+    cmdLines+=diffindnt+'petsc_report_tapoutput "" ${label} "SKIP Command failed so no diff"\n'
     cmdLines+=cmdindnt+'fi\n'
     return cmdLines
 
@@ -602,6 +602,7 @@ class generateExamples(Petsc):
       fh.write(loopFoot+"\n")
 
     fh.write(footer+"\n")
+    fh.close()
     os.chmod(os.path.join(runscript_dir,testname+".sh"),0o755)
     #if '10_9' in testname: sys.exit()
     return
@@ -783,6 +784,29 @@ class generateExamples(Petsc):
             continue
     return testDict['SKIP'] == []
 
+  def  checkOutput(self,exfile,root,srcDict):
+    """
+     Check and make sure the output files are in the output director
+    """
+    debug=False
+    rpath=self.srcrelpath(root)
+    for test in srcDict:
+      if test in self.buildkeys: continue
+      if debug: print(rpath, exfile, test)
+      if 'output_file' in srcDict[test]:
+        output_file=srcDict[test]['output_file']
+      else:
+        defroot = testparse.getDefaultOutputFileRoot(test)
+        if 'TODO' in srcDict[test]: continue
+        output_file="output/"+defroot+".out"
+
+      fullout=os.path.join(root,output_file)
+      if debug: print("---> ",fullout)
+      if not os.path.exists(fullout):
+        self.missing_files.append(fullout)
+
+    return
+
   def genPetscTests_summarize(self,dataDict):
     """
     Required method to state what happened
@@ -850,7 +874,10 @@ class generateExamples(Petsc):
       if self.verbose: print('   --> '+fullex)
       dataDict[root].update(testparse.parseTestFile(fullex,0))
       if exfile in dataDict[root]:
-        self.genScriptsAndInfo(exfile,root,dataDict[root][exfile])
+        if not self.check_output:
+          self.genScriptsAndInfo(exfile,root,dataDict[root][exfile])
+        else:
+          self.checkOutput(exfile,root,dataDict[root][exfile])
 
     return
 
@@ -858,6 +885,10 @@ class generateExamples(Petsc):
     """
     Walk a directory tree, starting from 'top'
     """
+    if self.check_output:
+      print("Checking for missing output files")
+      self.missing_files=[]
+
     # Goal of action is to fill this dictionary
     dataDict={}
     for root, dirs, files in os.walk(top, topdown=True):
@@ -868,6 +899,14 @@ class generateExamples(Petsc):
       if os.path.basename(root.rstrip("/")) == 'output': continue
       if self.verbose: print(root)
       self.genPetscTests(root,dirs,files,dataDict)
+
+    # If checking output, report results
+    if self.check_output:
+      if self.missing_files:
+        for file in set(self.missing_files):  # set uniqifies
+          print(file)
+        sys.exit(1)
+
     # Now summarize this dictionary
     if self.verbose: self.genPetscTests_summarize(dataDict)
     return dataDict
@@ -974,7 +1013,9 @@ class generateExamples(Petsc):
     fd.close()
     return
 
-def main(petsc_dir=None, petsc_arch=None, pkg_dir=None, pkg_arch=None, pkg_name=None, pkg_pkgs=None, verbose=False, single_ex=False, srcdir=None, testdir=None):
+def main(petsc_dir=None, petsc_arch=None, pkg_dir=None, pkg_arch=None,
+         pkg_name=None, pkg_pkgs=None, verbose=False, single_ex=False,
+         srcdir=None, testdir=None, check=False):
     # Allow petsc_arch to have both petsc_dir and petsc_arch for convenience
     testdir=os.path.normpath(testdir)
     if petsc_arch:
@@ -986,9 +1027,10 @@ def main(petsc_dir=None, petsc_arch=None, pkg_dir=None, pkg_arch=None, pkg_name=
     pEx=generateExamples(petsc_dir=petsc_dir, petsc_arch=petsc_arch,
                          pkg_dir=pkg_dir, pkg_arch=pkg_arch, pkg_name=pkg_name, pkg_pkgs=pkg_pkgs,
                          verbose=verbose, single_ex=single_ex, srcdir=srcdir,
-                         testdir=testdir)
+                         testdir=testdir,check=check)
     dataDict=pEx.walktree(os.path.join(pEx.srcdir))
-    pEx.write_gnumake(dataDict, output)
+    if not pEx.check_output:
+        pEx.write_gnumake(dataDict, output)
 
 if __name__ == '__main__':
     import optparse
@@ -999,6 +1041,8 @@ if __name__ == '__main__':
     parser.add_option('--srcdir', help='Set location of sources different from PETSC_DIR/src', default=None)
     parser.add_option('-s', '--single_executable', dest='single_executable', action="store_false", help='Whether there should be single executable per src subdir.  Default is false')
     parser.add_option('-t', '--testdir', dest='testdir',  help='Test directory [$PETSC_ARCH/tests]')
+    parser.add_option('-c', '--check-output', dest='check_output', action="store_true", 
+                      help='Check whether output files are in output director')
     parser.add_option('--pkg-dir', help='Set the directory of the package (different from PETSc) you want to generate the makefile rules for', default=None)
     parser.add_option('--pkg-name', help='Set the name of the package you want to generate the makefile rules for', default=None)
     parser.add_option('--pkg-arch', help='Set the package arch name you want to generate the makefile rules for', default=None)
@@ -1016,4 +1060,4 @@ if __name__ == '__main__':
          pkg_dir=opts.pkg_dir,pkg_arch=opts.pkg_arch,pkg_name=opts.pkg_name,pkg_pkgs=opts.pkg_pkgs,
          verbose=opts.verbose,
          single_ex=opts.single_executable, srcdir=opts.srcdir,
-         testdir=opts.testdir)
+         testdir=opts.testdir, check=opts.check_output)

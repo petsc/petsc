@@ -108,6 +108,7 @@ Warning: Using from command-line or name of script: %s, ignoring environment: %s
     args = sorted(set(filter(lambda x: not (x.startswith('PETSC_ARCH') or x == '--force'),sys.argv[1:])))
     hash = 'args:\n' + '\n'.join('    '+a for a in args) + '\n'
     hash += 'PATH=' + os.environ.get('PATH', '') + '\n'
+    chash=''
     try:
       for root, dirs, files in os.walk('config'):
         if root == 'config':
@@ -117,11 +118,11 @@ Warning: Using from command-line or name of script: %s, ignoring environment: %s
             continue
           fname = os.path.join(root, f)
           with open(fname,'rb') as f:
-            hash += hashlib.sha256(f.read()).hexdigest() + '  ' + fname + '\n'
+            chash += hashlib.sha256(f.read()).hexdigest() + '  ' + fname + '\n'
     except:
       self.logPrint('Error generating file list/hash from config directory for configure hash, forcing new configuration')
       return
-
+    hash += '\n'.join(sorted(chash.splitlines()))
     hashfilepackages = None
     # Generate short hash to use for the arch so the same arch can be reused if the configuration files don't change
     if 'arch-hash' in self.argDB:
@@ -136,7 +137,7 @@ Warning: Using from command-line or name of script: %s, ignoring environment: %s
     if 'arch-hash' in self.argDB or 'package-prefix-hash' in self.argDB:
       import hashlib
       m = hashlib.md5()
-      m.update(hash)
+      m.update(hash.encode('utf-8'))
       hprefix = m.hexdigest()
       if 'arch-hash' in self.argDB:
         self.argDB['PETSC_ARCH'] = 'arch-'+hprefix[0:6]
@@ -163,7 +164,7 @@ Warning: Using from command-line or name of script: %s, ignoring environment: %s
 
     if self.argDB['force']:
       self.logPrint('Forcing a new configuration requested by use')
-      self.makeDependency(hash,hashfile,None)
+      self.makeDependency(hash,hashfile,hashfilepackages)
       return
     a = ''
     try:

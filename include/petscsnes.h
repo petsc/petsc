@@ -137,8 +137,10 @@ PETSC_EXTERN PetscErrorCode SNESSetForceIteration(SNES,PetscBool);
 PETSC_EXTERN PetscErrorCode SNESGetIterationNumber(SNES,PetscInt*);
 PETSC_EXTERN PetscErrorCode SNESSetIterationNumber(SNES,PetscInt);
 
-PETSC_EXTERN PetscErrorCode SNESNewtonTRSetPostCheck(SNES, PetscErrorCode (*)(SNES,Vec,Vec,Vec,PetscBool*,void*),void *ctx);
-PETSC_EXTERN PetscErrorCode SNESNewtonTRGetPostCheck(SNES, PetscErrorCode (**)(SNES,Vec,Vec,Vec,PetscBool*,void*),void **ctx);
+PETSC_EXTERN PetscErrorCode SNESNewtonTRSetPreCheck(SNES, PetscErrorCode (*)(SNES,Vec,Vec,PetscBool*,void*),void *ctx);
+PETSC_EXTERN PetscErrorCode SNESNewtonTRGetPreCheck(SNES, PetscErrorCode (**)(SNES,Vec,Vec,PetscBool*,void*),void **ctx);
+PETSC_EXTERN PetscErrorCode SNESNewtonTRSetPostCheck(SNES, PetscErrorCode (*)(SNES,Vec,Vec,Vec,PetscBool*,PetscBool*,void*),void *ctx);
+PETSC_EXTERN PetscErrorCode SNESNewtonTRGetPostCheck(SNES, PetscErrorCode (**)(SNES,Vec,Vec,Vec,PetscBool*,PetscBool*,void*),void **ctx);
 
 PETSC_EXTERN PetscErrorCode SNESGetNonlinearStepFailures(SNES,PetscInt*);
 PETSC_EXTERN PetscErrorCode SNESSetMaxNonlinearStepFailures(SNES,PetscInt);
@@ -712,6 +714,9 @@ PETSC_EXTERN PetscErrorCode DMPlexSNESGetGradientDM(DM,PetscFV,DM*);
 PETSC_EXTERN PetscErrorCode DMSNESSetBoundaryLocal(DM,PetscErrorCode (*)(DM,Vec,void*),void*);
 PETSC_EXTERN PetscErrorCode DMSNESSetFunctionLocal(DM,PetscErrorCode (*)(DM,Vec,Vec,void*),void*);
 PETSC_EXTERN PetscErrorCode DMSNESSetJacobianLocal(DM,PetscErrorCode (*)(DM,Vec,Mat,Mat,void*),void*);
+PETSC_EXTERN PetscErrorCode DMSNESGetBoundaryLocal(DM,PetscErrorCode (**)(DM,Vec,void*),void**);
+PETSC_EXTERN PetscErrorCode DMSNESGetFunctionLocal(DM,PetscErrorCode (**)(DM,Vec,Vec,void*),void**);
+PETSC_EXTERN PetscErrorCode DMSNESGetJacobianLocal(DM,PetscErrorCode (**)(DM,Vec,Mat,Mat,void*),void**);
 
 /* Routines for Multiblock solver */
 PETSC_EXTERN PetscErrorCode SNESMultiblockSetFields(SNES, const char [], PetscInt, const PetscInt *);

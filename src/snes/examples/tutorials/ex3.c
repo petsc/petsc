@@ -660,12 +660,12 @@ PetscErrorCode PostSetSubKSP(SNESLineSearch linesearch,Vec xcurrent,Vec y,Vec x,
   ierr    = KSPGetIterationNumber(sub_ksp,&sub_its);CHKERRQ(ierr); /* inner KSP iteration number */
 
   if (iter) {
-    ierr      = PetscPrintf(PETSC_COMM_WORLD,"    ...PostCheck snes iteration %D, ksp_it %d %d, subksp_it %d\n",iter,check->its0,its,sub_its);CHKERRQ(ierr);
+    ierr      = PetscPrintf(PETSC_COMM_WORLD,"    ...PostCheck snes iteration %D, ksp_it %D %D, subksp_it %D\n",iter,check->its0,its,sub_its);CHKERRQ(ierr);
     ksp_ratio = ((PetscReal)(its))/check->its0;
     maxit     = (PetscInt)(ksp_ratio*sub_its + 0.5);
     if (maxit < 2) maxit = 2;
     ierr = KSPSetTolerances(sub_ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,maxit);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"    ...ksp_ratio %g, new maxit %d\n\n",ksp_ratio,maxit);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"    ...ksp_ratio %g, new maxit %D\n\n",(double)ksp_ratio,maxit);CHKERRQ(ierr);
   }
   check->its0 = its; /* save current outer KSP iteration number */
   PetscFunctionReturn(0);

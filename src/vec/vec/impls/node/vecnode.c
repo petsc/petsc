@@ -2,7 +2,7 @@
 #include <../src/vec/vec/impls/node/vecnodeimpl.h>   /*I  "petscvec.h"   I*/
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>   /*I  "petscvec.h"   I*/
 
-#if defined(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)
+#if defined(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY)
 
 PetscErrorCode VecSetValues_Node(Vec xin,PetscInt ni,const PetscInt ix[],const PetscScalar y[],InsertMode addv)
 {

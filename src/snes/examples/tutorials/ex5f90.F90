@@ -305,7 +305,7 @@
 
       call FormInitialGuess(snes,x,ierr);CHKERRA(ierr)
       call SNESSolve(snes,PETSC_NULL_VEC,x,ierr);CHKERRA(ierr)
-      call SNESGetIterationNumber(snes,its,ierr);;CHKERRA(ierr)
+      call SNESGetIterationNumber(snes,its,ierr);CHKERRA(ierr)
       if (user%rank .eq. 0) then
          write(6,100) its
       endif
@@ -701,7 +701,7 @@
 !
 !   test:
 !      nsize: 4
-!      args: -snes_mf -da_processors_x 4 -da_processors_y 1 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+!      args: -snes_mf -pc_type none -da_processors_x 4 -da_processors_y 1 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always
 !      requires: !single
 !
 !   test:

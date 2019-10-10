@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit              = 'v3.11'
+    self.gitcommit              = 'v3.12'
     self.gitcommitmaster        = 'origin/master'
     self.download               = ['git://https://bitbucket.com/slepc/slepc.git']
     self.functions              = []
@@ -38,7 +38,7 @@ class Configure(config.package.Package):
        newuser = ''
 
     # if installing prefix location then need to set new value for PETSC_DIR/PETSC_ARCH
-    if self.argDB['prefix']:
+    if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
        iarch = 'installed-'+self.parch.nativeArch
        if self.scalartypes.scalartype != 'real':
          iarch += '-' + self.scalartypes.scalartype
@@ -71,7 +71,7 @@ class Configure(config.package.Package):
              echo "Error building slepc. Check ${PETSC_ARCH}/lib/petsc/conf/slepc.log" && \\\n\
              echo "********************************************************************" && \\\n\
              exit 1)'])
-    if self.argDB['prefix']:
+    if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
       self.addMakeRule('slepc-build','')
       # the build must be done at install time because PETSc shared libraries must be in final location before building slepc
       self.addMakeRule('slepc-install','slepcbuild slepcinstall')
@@ -79,7 +79,7 @@ class Configure(config.package.Package):
       self.addMakeRule('slepc-build','slepcbuild slepcinstall')
       self.addMakeRule('slepc-install','')
 
-    if self.argDB['prefix']:
+    if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
       self.logPrintBox('Slepc examples are available at '+os.path.join('${PETSC_DIR}',self.arch,'externalpackages','git.slepc')+'\nexport SLEPC_DIR='+prefix)
     else:
       self.logPrintBox('Slepc examples are available at '+os.path.join('${PETSC_DIR}',self.arch,'externalpackages','git.slepc')+'\nexport SLEPC_DIR='+os.path.join('${PETSC_DIR}',self.arch))

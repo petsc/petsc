@@ -100,7 +100,7 @@ PetscErrorCode  PCFactorSetZeroPivot(PC pc,PetscReal zero)
 -  shifttype - type of shift; one of MAT_SHIFT_NONE, MAT_SHIFT_NONZERO,  MAT_SHIFT_POSITIVE_DEFINITE, MAT_SHIFT_INBLOCKS
 
    Options Database Key:
-.  -pc_factor_shift_type <shifttype> - Sets shift type or PETSC_DECIDE for the default; use '-help' for a list of available types
+.  -pc_factor_shift_type <shifttype> - Sets shift type; use '-help' for a list of available types
 
    Level: intermediate
 

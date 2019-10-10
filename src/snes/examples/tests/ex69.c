@@ -435,7 +435,7 @@ PetscErrorCode SNESComputeJacobian_MyShell(SNES snes,Vec X,Mat A,Mat B,void *ctx
 
    test:
       suffix: 6
-      args: -snes_converged_reason -ksp_converged_reason -error_in_domainmf -snes_mf
+      args: -snes_converged_reason -ksp_converged_reason -error_in_domainmf -snes_mf -pc_type none
 
    test:
       suffix: 7
@@ -443,6 +443,6 @@ PetscErrorCode SNESComputeJacobian_MyShell(SNES snes,Vec X,Mat A,Mat B,void *ctx
 
    test:
       suffix: 8
-      args: -snes_converged_reason -ksp_converged_reason -error_in_domain -snes_mf
+      args: -snes_converged_reason -ksp_converged_reason -error_in_domain -snes_mf -pc_type none
 
 TEST*/

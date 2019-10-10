@@ -172,7 +172,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
             tau_min = PetscMin(tau_1, tau_2);
             tau_max = PetscMax(tau_1, tau_2);
 
-            if (PetscAbsScalar(kappa - 1.0) <= bnk->mu1_i) {
+            if (PetscAbsScalar(kappa - (PetscReal)1.0) <= bnk->mu1_i) {
               /*  Great agreement */
               max_radius = PetscMax(max_radius, tao->trust);
 
@@ -183,7 +183,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
               } else {
                 tau = tau_max;
               }
-            } else if (PetscAbsScalar(kappa - 1.0) <= bnk->mu2_i) {
+            } else if (PetscAbsScalar(kappa - (PetscReal)1.0) <= bnk->mu2_i) {
               /*  Good agreement */
               max_radius = PetscMax(max_radius, tao->trust);
 

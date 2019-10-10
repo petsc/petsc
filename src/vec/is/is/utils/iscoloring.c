@@ -8,14 +8,56 @@ const char *const ISColoringTypes[] = {"global","ghosted","ISColoringType","IS_C
 PetscErrorCode ISColoringReference(ISColoring coloring)
 {
   PetscFunctionBegin;
-  (coloring)->refct++;
+  coloring->refct++;
   PetscFunctionReturn(0);
 }
 
+/*@C
+
+    ISColoringSetType - indicates if the coloring is for the local representation (including ghost points) or the global representation
+
+   Collective on coloring
+
+   Input Parameters:
++    coloring - the coloring object
+-    type - either IS_COLORING_LOCAL or IS_COLORING_GLOBAL
+
+   Notes:
+     With IS_COLORING_LOCAL the coloring is in the numbering of the local vector, for IS_COLORING_GLOBAL it is in the number of the global vector
+
+   Level: intermediate
+
+.seealso: MatFDColoringCreate(), ISColoring, ISColoringCreate(), IS_COLORING_LOCAL, IS_COLORING_GLOBAL, ISColoringGetType()
+
+@*/
 PetscErrorCode ISColoringSetType(ISColoring coloring,ISColoringType type)
 {
   PetscFunctionBegin;
-  (coloring)->ctype = type;
+  coloring->ctype = type;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+
+    ISColoringGetType - gets if the coloring is for the local representation (including ghost points) or the global representation
+
+   Collective on coloring
+
+   Input Parameter:
+.   coloring - the coloring object
+
+   Output Parameter:
+.    type - either IS_COLORING_LOCAL or IS_COLORING_GLOBAL
+
+   Level: intermediate
+
+.seealso: MatFDColoringCreate(), ISColoring, ISColoringCreate(), IS_COLORING_LOCAL, IS_COLORING_GLOBAL, ISColoringSetType()
+
+@*/
+PetscErrorCode ISColoringGetType(ISColoring coloring,ISColoringType *type)
+{
+  PetscFunctionBegin;
+  *type = coloring->ctype;
   PetscFunctionReturn(0);
 }
 
@@ -124,6 +166,7 @@ PetscErrorCode  ISColoringView(ISColoring iscoloring,PetscViewer viewer)
     ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"ISColoring Object: %d MPI processes\n",size);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"ISColoringType: %s\n",ISColoringTypes[iscoloring->ctype]);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number of colors %d\n",rank,iscoloring->n);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
@@ -139,7 +182,35 @@ PetscErrorCode  ISColoringView(ISColoring iscoloring,PetscViewer viewer)
 }
 
 /*@C
-   ISColoringGetIS - Extracts index sets from the coloring context
+   ISColoringGetColors - Returns an array with the color for each node
+
+   Not Collective
+
+   Input Parameter:
+.  iscoloring - the coloring context
+
+   Output Parameters:
++  n - number of nodes
+.  nc - number of colors
+-  colors - color for each node
+
+   Level: advanced
+
+.seealso: ISColoringRestoreIS(), ISColoringView(), ISColoringGetIS()
+@*/
+PetscErrorCode  ISColoringGetColors(ISColoring iscoloring,PetscInt *n,PetscInt *nc,const ISColoringValue **colors)
+{
+  PetscFunctionBegin;
+  PetscValidPointer(iscoloring,1);
+
+  if (n) *n = iscoloring->N;
+  if (nc) *nc = iscoloring->n;
+  if (colors) *colors = iscoloring->colors;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   ISColoringGetIS - Extracts index sets from the coloring context. Each is contains the nodes of one color
 
    Collective on ISColoring
 
@@ -153,7 +224,7 @@ PetscErrorCode  ISColoringView(ISColoring iscoloring,PetscViewer viewer)
 
    Level: advanced
 
-.seealso: ISColoringRestoreIS(), ISColoringView()
+.seealso: ISColoringRestoreIS(), ISColoringView(), ISColoringGetColoring()
 @*/
 PetscErrorCode  ISColoringGetIS(ISColoring iscoloring,PetscCopyMode mode, PetscInt *nn,IS *isis[])
 {

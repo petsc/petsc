@@ -13,8 +13,8 @@ and eventually adaptivity.\n\n\n";
 #include <petscds.h>
 #include <petscconvest.h>
 
-typedef enum {SOL_VLAP_QUADRATIC, SOL_ELAS_QUADRATIC, SOL_VLAP_TRIG, SOL_ELAS_TRIG, NUM_SOLUTION_TYPES} SolutionType;
-const char *solutionTypes[NUM_SOLUTION_TYPES+1] = {"vlap_quad", "elas_quad", "vlap_trig", "elas_trig", "unknown"};
+typedef enum {SOL_VLAP_QUADRATIC, SOL_ELAS_QUADRATIC, SOL_VLAP_TRIG, SOL_ELAS_TRIG, SOL_ELAS_AXIAL_DISP, NUM_SOLUTION_TYPES} SolutionType;
+const char *solutionTypes[NUM_SOLUTION_TYPES+1] = {"vlap_quad", "elas_quad", "vlap_trig", "elas_trig", "elas_axial_disp", "unknown"};
 
 typedef struct {
   /* Domain and mesh definition */
@@ -27,6 +27,13 @@ typedef struct {
   /* Solver definition */
   PetscBool    useNearNullspace; /* Use the rigid body modes as a near nullspace for AMG */
 } AppCtx;
+
+static PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
+  PetscInt d;
+  for (d = 0; d < dim; ++d) u[d] = 0.0;
+  return 0;
+}
 
 static PetscErrorCode quadratic_2d_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
@@ -164,6 +171,58 @@ static void f0_elas_trig_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   for (d = 0; d < dim; ++d) f0[d] += -(2.0*mu + lambda) * fact*PetscSinReal(2.0*PETSC_PI*x[d]) - (d < dim-1 ? 2.0*(mu + lambda) : 0.0);
 }
 
+static PetscErrorCode axial_disp_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
+  const PetscReal mu     = 1.0;
+  const PetscReal lambda = 1.0;
+  const PetscReal N      = 1.0;
+  PetscInt d;
+
+  u[0] = (3.*lambda*lambda + 8.*lambda*mu + 4*mu*mu)/(4*mu*(3*lambda*lambda + 5.*lambda*mu + 2*mu*mu))*N*x[0];
+  u[1] = -0.25*lambda/mu/(lambda+mu)*N*x[1];
+  for (d = 2; d < dim; ++d) u[d] = 0.0;
+  return 0;
+}
+
+/*
+  We will pull/push on the right side of a block of linearly elastic material. The uniform traction conditions on the
+  right side of the box will result in a uniform strain along x and y. The Neumann BC is given by
+
+     n_i \sigma_{ij} = t_i
+
+  u = (1/(2\mu) - 1) x
+  v = -y
+  f = 0
+  t = <4\mu/\lambda (\lambda + \mu), 0>
+  \varepsilon = / 1/(2\mu) - 1   0 \
+                \ 0             -1 /
+  Tr(\varepsilon) = div u = 1/(2\mu) - 2
+  div \sigma = \partial_i \lambda \delta_{ij} \varepsilon_{kk} + \partial_i 2\mu\varepsilon_{ij}
+    = \lambda \partial_j (1/(2\mu) - 2) + 2\mu < 0, 0 >
+    = \lambda < 0, 0 > + \mu < 0, 0 > = 0
+  NBC =  <1,0> . <4\mu/\lambda (\lambda + \mu), 0> = 4\mu/\lambda (\lambda + \mu)
+
+  u = x - 1/2
+  v = 0
+  w = 0
+  \varepsilon = / x  0  0 \
+                | 0  0  0 |
+                \ 0  0  0 /
+  Tr(\varepsilon) = div u = x
+  div \sigma = \partial_i \lambda \delta_{ij} \varepsilon_{kk} + \partial_i 2\mu\varepsilon_{ij}
+    = \lambda \partial_j x + 2\mu < 1, 0, 0 >
+    = \lambda < 1, 0, 0 > + \mu < 2, 0, 0 >
+*/
+static void f0_elas_axial_disp_bd_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                                    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                                    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                                    PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
+  const PetscReal N = -1.0;
+
+  f0[0] = N;
+}
+
 static void f1_vlap_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                       const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                       const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
@@ -227,7 +286,7 @@ static void g3_elas_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   for (c = 0; c < Nc; ++c) {
     for (d = 0; d < dim; ++d) {
       g3[((c*Nc + c)*dim + d)*dim + d] += mu;
-      g3[((c*Nc + d)*dim + c)*dim + d] += mu;
+      g3[((c*Nc + d)*dim + d)*dim + c] += mu;
       g3[((c*Nc + d)*dim + c)*dim + d] += lambda;
     }
   }
@@ -303,7 +362,7 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
 {
   PetscErrorCode (*exact)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *);
   PetscDS        prob;
-  const PetscInt id = 1;
+  PetscInt       id;
   PetscInt       dim;
   PetscErrorCode ierr;
 
@@ -347,10 +406,35 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
     default: SETERRQ1(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Invalid dimension: %D", dim);
     }
     break;
+  case SOL_ELAS_AXIAL_DISP:
+    ierr = PetscDSSetResidual(prob, 0, NULL, f1_elas_u);CHKERRQ(ierr);
+    ierr = PetscDSSetBdResidual(prob, 0, f0_elas_axial_disp_bd_u, NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_elas_uu);CHKERRQ(ierr);
+    exact = axial_disp_u;
+    break;
   default: SETERRQ2(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Invalid solution type: %s (%D)", solutionTypes[PetscMin(user->solType, NUM_SOLUTION_TYPES)], user->solType);
   }
   ierr = PetscDSSetExactSolution(prob, 0, exact, user);CHKERRQ(ierr);
-  ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) exact, 1, &id, user);CHKERRQ(ierr);
+  if (user->solType == SOL_ELAS_AXIAL_DISP) {
+    PetscInt cmp;
+
+    id   = dim == 3 ? 5 : 2;
+    ierr = PetscDSAddBoundary(prob,   DM_BC_NATURAL,   "right",  "marker", 0, 0, NULL, (void (*)(void)) zero, 1, &id, user);CHKERRQ(ierr);
+    id   = dim == 3 ? 6 : 4;
+    cmp  = 0;
+    ierr = PetscDSAddBoundary(prob,   DM_BC_ESSENTIAL, "left",   "marker", 0, 1, &cmp, (void (*)(void)) zero, 1, &id, user);CHKERRQ(ierr);
+    cmp  = dim == 3 ? 2 : 1;
+    id   = dim == 3 ? 1 : 1;
+    ierr = PetscDSAddBoundary(prob,   DM_BC_ESSENTIAL, "bottom", "marker", 0, 1, &cmp, (void (*)(void)) zero, 1, &id, user);CHKERRQ(ierr);
+    if (dim == 3) {
+      cmp  = 1;
+      id   = 3;
+      ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "front",  "marker", 0, 1, &cmp, (void (*)(void)) zero, 1, &id, user);CHKERRQ(ierr);
+    }
+  } else {
+    id = 1;
+    ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) exact, 1, &id, user);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -433,21 +517,21 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_p2_quad_vlap
     requires: triangle
-    args: -displacement_petscspace_degree 2 -dm_refine 2 -dmsnes_check
+    args: -displacement_petscspace_degree 2 -dm_refine 2 -dmsnes_check .0001
   test:
     suffix: 2d_p3_quad_vlap
     requires: triangle
-    args: -displacement_petscspace_degree 3 -dm_refine 2 -dmsnes_check
+    args: -displacement_petscspace_degree 3 -dm_refine 2 -dmsnes_check .0001
   test:
     suffix: 2d_q1_quad_vlap
     args: -simplex 0 -displacement_petscspace_degree 1 -dm_refine 2 -convest_num_refine 3 -snes_convergence_estimate
   test:
     suffix: 2d_q2_quad_vlap
-    args: -simplex 0 -displacement_petscspace_degree 2 -dm_refine 2 -dmsnes_check
+    args: -simplex 0 -displacement_petscspace_degree 2 -dm_refine 2 -dmsnes_check .0001
   test:
     suffix: 2d_q3_quad_vlap
     requires: !single
-    args: -simplex 0 -displacement_petscspace_degree 3 -dm_refine 2 -dmsnes_check
+    args: -simplex 0 -displacement_petscspace_degree 3 -dm_refine 2 -dmsnes_check .0001
   test:
     suffix: 2d_p1_quad_elas
     requires: triangle
@@ -455,20 +539,20 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_p2_quad_elas
     requires: triangle
-    args: -sol_type elas_quad -displacement_petscspace_degree 2 -dmsnes_check
+    args: -sol_type elas_quad -displacement_petscspace_degree 2 -dmsnes_check .0001
   test:
     suffix: 2d_p3_quad_elas
     requires: triangle
-    args: -sol_type elas_quad -displacement_petscspace_degree 3 -dmsnes_check
+    args: -sol_type elas_quad -displacement_petscspace_degree 3 -dmsnes_check .0001
   test:
     suffix: 2d_q1_quad_elas
     args: -sol_type elas_quad -simplex 0 -displacement_petscspace_degree 1 -dm_refine 1 -convest_num_refine 3 -snes_convergence_estimate
   test:
     suffix: 2d_q2_quad_elas
-    args: -sol_type elas_quad -simplex 0 -displacement_petscspace_degree 2 -dmsnes_check
+    args: -sol_type elas_quad -simplex 0 -displacement_petscspace_degree 2 -dmsnes_check .0001
   test:
     suffix: 2d_q3_quad_elas
-    args: -sol_type elas_quad -simplex 0 -displacement_petscspace_degree 3 -dmsnes_check
+    args: -sol_type elas_quad -simplex 0 -displacement_petscspace_degree 3 -dmsnes_check .0001
 
   test:
     suffix: 3d_p1_quad_vlap
@@ -477,20 +561,20 @@ int main(int argc, char **argv)
   test:
     suffix: 3d_p2_quad_vlap
     requires: ctetgen
-    args: -dim 3 -displacement_petscspace_degree 2 -dm_refine 1 -dmsnes_check
+    args: -dim 3 -displacement_petscspace_degree 2 -dm_refine 1 -dmsnes_check .0001
   test:
     suffix: 3d_p3_quad_vlap
     requires: ctetgen
-    args: -dim 3 -displacement_petscspace_degree 3 -dm_refine 0 -dmsnes_check
+    args: -dim 3 -displacement_petscspace_degree 3 -dm_refine 0 -dmsnes_check .0001
   test:
     suffix: 3d_q1_quad_vlap
     args: -dim 3 -cells 2,2,2 -simplex 0 -displacement_petscspace_degree 1 -convest_num_refine 2 -snes_convergence_estimate
   test:
     suffix: 3d_q2_quad_vlap
-    args: -dim 3 -simplex 0 -displacement_petscspace_degree 2 -dm_refine 1 -dmsnes_check
+    args: -dim 3 -simplex 0 -displacement_petscspace_degree 2 -dm_refine 1 -dmsnes_check .0001
   test:
     suffix: 3d_q3_quad_vlap
-    args: -dim 3 -simplex 0 -displacement_petscspace_degree 3 -dm_refine 0 -dmsnes_check
+    args: -dim 3 -simplex 0 -displacement_petscspace_degree 3 -dm_refine 0 -dmsnes_check .0001
   test:
     suffix: 3d_p1_quad_elas
     requires: ctetgen
@@ -498,21 +582,21 @@ int main(int argc, char **argv)
   test:
     suffix: 3d_p2_quad_elas
     requires: ctetgen
-    args: -sol_type elas_quad -dim 3 -displacement_petscspace_degree 2 -dm_refine 1 -dmsnes_check
+    args: -sol_type elas_quad -dim 3 -displacement_petscspace_degree 2 -dm_refine 1 -dmsnes_check .0001
   test:
     suffix: 3d_p3_quad_elas
     requires: ctetgen
-    args: -sol_type elas_quad -dim 3 -displacement_petscspace_degree 3 -dm_refine 0 -dmsnes_check
+    args: -sol_type elas_quad -dim 3 -displacement_petscspace_degree 3 -dm_refine 0 -dmsnes_check .0001
   test:
     suffix: 3d_q1_quad_elas
     args: -sol_type elas_quad -dim 3 -cells 2,2,2 -simplex 0 -displacement_petscspace_degree 1 -convest_num_refine 2 -snes_convergence_estimate
   test:
     suffix: 3d_q2_quad_elas
-    args: -sol_type elas_quad -dim 3 -simplex 0 -displacement_petscspace_degree 2 -dm_refine 1 -dmsnes_check
+    args: -sol_type elas_quad -dim 3 -simplex 0 -displacement_petscspace_degree 2 -dm_refine 1 -dmsnes_check .0001
   test:
     suffix: 3d_q3_quad_elas
     requires: !single
-    args: -sol_type elas_quad -dim 3 -simplex 0 -displacement_petscspace_degree 3 -dm_refine 0 -dmsnes_check
+    args: -sol_type elas_quad -dim 3 -simplex 0 -displacement_petscspace_degree 3 -dm_refine 0 -dmsnes_check .0001
 
   test:
     suffix: 2d_p1_trig_vlap
@@ -601,5 +685,27 @@ int main(int argc, char **argv)
     suffix: 3d_q3_trig_elas
     requires: !__float128
     args: -sol_type elas_trig -dim 3 -simplex 0 -displacement_petscspace_degree 3 -dm_refine 0 -convest_num_refine 1 -snes_convergence_estimate
+
+  test:
+    suffix: 2d_p1_axial_elas
+    requires: triangle
+    args: -sol_type elas_axial_disp -displacement_petscspace_degree 1 -dm_plex_separate_marker -dm_refine 2 -dmsnes_check .0001 -pc_type lu
+  test:
+    suffix: 2d_p2_axial_elas
+    requires: triangle
+    args: -sol_type elas_axial_disp -displacement_petscspace_degree 2 -dm_plex_separate_marker -dmsnes_check .0001 -pc_type lu
+  test:
+    suffix: 2d_p3_axial_elas
+    requires: triangle
+    args: -sol_type elas_axial_disp -displacement_petscspace_degree 3 -dm_plex_separate_marker -dmsnes_check .0001 -pc_type lu
+  test:
+    suffix: 2d_q1_axial_elas
+    args: -sol_type elas_axial_disp -simplex 0 -displacement_petscspace_degree 1 -dm_plex_separate_marker -dm_refine 1 -dmsnes_check .0001 -pc_type lu
+  test:
+    suffix: 2d_q2_axial_elas
+    args: -sol_type elas_axial_disp -simplex 0 -displacement_petscspace_degree 2 -dm_plex_separate_marker -dmsnes_check .0001 -pc_type lu
+  test:
+    suffix: 2d_q3_axial_elas
+    args: -sol_type elas_axial_disp -simplex 0 -displacement_petscspace_degree 3 -dm_plex_separate_marker -dmsnes_check .0001 -pc_type lu
 
 TEST*/

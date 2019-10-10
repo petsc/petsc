@@ -1,0 +1,178 @@
+  0 SNES Function norm 18.865 
+  1 SNES Function norm 2.0663e-05 
+L_2 Error: 6.02714e-06
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+SNES Object: 7 MPI processes
+  type: newtonls
+  maximum iterations=20, maximum function evaluations=10000
+  tolerances: relative=1e-05, absolute=1e-25, solution=1e-05
+  total number of linear solver iterations=7
+  total number of function evaluations=2
+  norm schedule ALWAYS
+  SNESLineSearch Object: 7 MPI processes
+    type: basic
+    maxstep=1.000000e+08, minlambda=1.000000e-12
+    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+    maximum iterations=40
+  KSP Object: 7 MPI processes
+    type: cg
+    maximum iterations=10000, initial guess is zero
+    tolerances:  relative=1e-05, absolute=1e-25, divergence=10000.
+    left preconditioning
+    using PRECONDITIONED norm type for convergence test
+  PC Object: 7 MPI processes
+    type: bddc
+      Use verbose output: 0
+      Use user-defined CSR: 0
+      Use local mat graph: 1
+      Connectivity graph topological dimension: 2
+      Use vertices: 1 (vertex size 1)
+      Use edges: 1
+      Use faces: 0
+      Use true near null space: 0
+      Use QR for single constraints on cc: 0
+      Use change of basis on local edge nodes: 0
+      Use change of basis on local face nodes: 0
+      User defined change of basis matrix: 0
+      Has change of basis matrix: 0
+      Eliminate dirichlet boundary dofs: 0
+      Switch on static condensation ops around the interface preconditioner: 0
+      Use exact dirichlet trick: 1
+      Interface extension: DIRICHLET
+      Multilevel max levels: 0
+      Multilevel coarsening ratio: 8
+      Use estimated eigs for coarse problem: 0
+      Use deluxe scaling: 0
+      Use deluxe zerorows: 0
+      Use deluxe singlemat: 0
+      Rebuild interface graph for Schur principal minors: 0
+      Number of dofs' layers for the computation of principal minors: -1
+      Use user CSR graph to compute successive layers: 0
+      Adaptive constraint selection threshold (active 0, userdefined 0): 0.
+      Min constraints / connected component: 0
+      Max constraints / connected component: 0
+      Invert exact Schur complement for adaptive selection: 0
+      Symmetric computation of primal basis functions: 1
+      Num. Procs. to map coarse adjacency list: 0
+      Coarse eqs per proc (significant at the coarsest level): 1
+      Detect disconnected: 0 (filter 0)
+      Benign subspace trick: 0 (change explicit 0)
+      Benign subspace trick is active: 0
+      Algebraic computation of no-net-flux: 0
+    ********************************** STATISTICS AT LEVEL 0 **********************************
+      Global dofs sizes: all 1485 interface 171 coarse 21
+      Coarsening ratios: all/coarse 70 interface/coarse 8
+      Active processes : 7
+      Total subdomains : 7
+      Dofs type        :	MIN	MAX	MEAN
+      Interior  dofs   :	182	195	187
+      Interface dofs   :	29	66	50
+      Primal    dofs   :	3	10	7
+      Local     dofs   :	216	254	237
+      Local     subs   :	1	1
+    --- Interior solver (rank 0)
+      KSP Object: (pc_bddc_dirichlet_) 1 MPI processes
+        type: preonly
+        maximum iterations=10000, initial guess is zero
+        tolerances:  relative=1e-05, absolute=1e-25, divergence=10000.
+        left preconditioning
+        using NONE norm type for convergence test
+      PC Object: (pc_bddc_dirichlet_) 1 MPI processes
+        type: lu
+          out-of-place factorization
+          tolerance for zero pivot 1.19209e-05
+          matrix ordering: nd
+          factor fill ratio given 5., needed 1.7887
+            Factored matrix follows:
+              Mat Object: 1 MPI processes
+                type: seqaij
+                rows=195, cols=195
+                package used to perform factorization: petsc
+                total: nonzeros=4495, allocated nonzeros=4495
+                total number of mallocs used during MatSetValues calls =0
+                  not using I-node routines
+        linear system matrix = precond matrix:
+        Mat Object: (pc_bddc_dirichlet_) 1 MPI processes
+          type: seqaij
+          rows=195, cols=195
+          total: nonzeros=2513, allocated nonzeros=2513
+          total number of mallocs used during MatSetValues calls =0
+            not using I-node routines
+    --- Correction solver (rank 0)
+      KSP Object: (pc_bddc_neumann_) 1 MPI processes
+        type: preonly
+        maximum iterations=10000, initial guess is zero
+        tolerances:  relative=1e-05, absolute=1e-25, divergence=10000.
+        left preconditioning
+        using NONE norm type for convergence test
+      PC Object: (pc_bddc_neumann_) 1 MPI processes
+        type: lu
+          out-of-place factorization
+          tolerance for zero pivot 1.19209e-05
+          matrix ordering: nd
+          factor fill ratio given 5., needed 1.77676
+            Factored matrix follows:
+              Mat Object: 1 MPI processes
+                type: seqaij
+                rows=225, cols=225
+                package used to perform factorization: petsc
+                total: nonzeros=5627, allocated nonzeros=5627
+                total number of mallocs used during MatSetValues calls =0
+                  not using I-node routines
+        linear system matrix = precond matrix:
+        Mat Object: (pc_bddc_neumann_) 1 MPI processes
+          type: seqaij
+          rows=225, cols=225
+          total: nonzeros=3167, allocated nonzeros=3167
+          total number of mallocs used during MatSetValues calls =0
+            not using I-node routines
+    --- Coarse solver
+      KSP Object: (pc_bddc_coarse_) 7 MPI processes
+        type: preonly
+        maximum iterations=1, initial guess is zero
+        tolerances:  relative=1e-05, absolute=1e-25, divergence=10000.
+        left preconditioning
+        using NONE norm type for convergence test
+      PC Object: (pc_bddc_coarse_) 7 MPI processes
+        type: redundant
+          First (color=0) of 7 PCs follows
+        linear system matrix = precond matrix:
+        Mat Object: (pc_bddc_coarse_) 7 MPI processes
+          type: mpiaij
+          rows=21, cols=21
+          total: nonzeros=267, allocated nonzeros=319
+          total number of mallocs used during MatSetValues calls =0
+            using I-node (on process 0) routines: found 1 nodes, limit used is 5
+              KSP Object:     (pc_bddc_coarse_redundant_)     1 MPI processes
+                type: preonly
+                maximum iterations=10000, initial guess is zero
+                tolerances:  relative=1e-05, absolute=1e-25, divergence=10000.
+                left preconditioning
+                using NONE norm type for convergence test
+              PC Object:     (pc_bddc_coarse_redundant_)     1 MPI processes
+                type: lu
+                  out-of-place factorization
+                  tolerance for zero pivot 1.19209e-05
+                  matrix ordering: nd
+                  factor fill ratio given 5., needed 1.35955
+                    Factored matrix follows:
+                      Mat Object:     1 MPI processes
+                        type: seqaij
+                        rows=21, cols=21
+                        package used to perform factorization: petsc
+                        total: nonzeros=363, allocated nonzeros=363
+                        total number of mallocs used during MatSetValues calls =0
+                          using I-node routines: found 10 nodes, limit used is 5
+                linear system matrix = precond matrix:
+                Mat Object:     1 MPI processes
+                  type: seqaij
+                  rows=21, cols=21
+                  total: nonzeros=267, allocated nonzeros=267
+                  total number of mallocs used during MatSetValues calls =0
+                    using I-node routines: found 16 nodes, limit used is 5
+    linear system matrix = precond matrix:
+    Mat Object: 7 MPI processes
+      type: is
+      rows=1485, cols=1485
+      total: nonzeros=23366, allocated nonzeros=26623
+      total number of mallocs used during MatSetValues calls =0

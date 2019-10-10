@@ -1,0 +1,24 @@
+*                         @petsc/integrators
+
+/src/tao/                 @adener @tmunson
+
+/src/ts/                  @caidao22 @jedbrown @emconsta @stefanozampini @BarrySmith
+
+/src/dm/impls/plex/       @knepley @wence @haplav @tisaac
+/src/dm/impls/network/    @hongzhangsun @BarrySmith
+/src/dm/impls/stag/       @psanan
+
+/src/ksp/pc/impls/bddc/   @stefanozampini
+/src/ksp/pc/impls/gamg/   @markadams4
+/src/ksp/pc/impls/hpddm/  @prj- @stefanozampini
+/src/ksp/ksp/impls/hpddm/ @prj- @stefanozampini
+
+/src/vec/is/sf/           @jedbrown @jczhang07
+/src/vec/vscat/           @jczhang07 @BarrySmith
+
+/src/docs/                @psanan @sbalay @BarrySmith @knepley @jedbrown
+
+/config/*                 @krugers @knepley @sbalay @BarrySmith
+gmakefile*                @krugers @jedbrown @BarrySmith
+/lib/petsc                @krugers @sbalay
+

@@ -26,7 +26,7 @@ PetscErrorCode DMCreateCoordinateField_DA(DM dm, DMField *field)
   PetscFunctionBegin;
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   /* TODO: this is wrong if coordinates are not rectilinear */
-  ierr = DMDAGetBoundingBox(dm,gmin,gmax);CHKERRQ(ierr);
+  ierr = DMGetBoundingBox(dm,gmin,gmax);CHKERRQ(ierr);
   for (i = 0; i < (1 << dim); i++) {
     for (j = 0; j < dim; j++) {
       corners[i*dim + j] = (i & (1 << j)) ? gmax[j] : gmin[j];
@@ -214,7 +214,7 @@ PetscErrorCode DMDASetCoordinateName(DM dm,PetscInt nf,const char name[])
 
   Notes:
     It must be called after having called DMSetUp().
-    
+
 
   Level: intermediate
 
@@ -259,7 +259,7 @@ PetscErrorCode DMDAGetCoordinateName(DM dm,PetscInt nf,const char **name)
 
   Level: beginner
 
-.seealso: DMDAGetGhostCorners(), DMDAGetOwnershipRanges()
+.seealso: DMDAGetGhostCorners(), DMDAGetOwnershipRanges(), DMStagGetCorners()
 @*/
 PetscErrorCode  DMDAGetCorners(DM da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p)
 {
@@ -281,91 +281,19 @@ PetscErrorCode  DMDAGetCorners(DM da,PetscInt *x,PetscInt *y,PetscInt *z,PetscIn
   PetscFunctionReturn(0);
 }
 
-/*@
-   DMDAGetLocalBoundingBox - Returns the local bounding box for the DMDA.
-
-   Not collective
-
-   Input Parameter:
-.  dm - the DM
-
-   Output Parameters:
-+  lmin - local minimum coordinates (length dim, optional)
--  lmax - local maximim coordinates (length dim, optional)
-
-  Level: beginner
-
-  Not supported from Fortran
-
-.seealso: DMDAGetCoordinateDA(), DMGetCoordinates(), DMDAGetBoundingBox()
-@*/
-PetscErrorCode DMDAGetLocalBoundingBox(DM dm,PetscReal lmin[],PetscReal lmax[])
+PetscErrorCode DMGetLocalBoundingIndices_DMDA(DM dm, PetscReal lmin[], PetscReal lmax[])
 {
-  PetscErrorCode    ierr;
-  Vec               coords = NULL;
-  PetscInt          dim,i,j;
-  const PetscScalar *local_coords;
-  PetscReal         min[3]={PETSC_MAX_REAL,PETSC_MAX_REAL,PETSC_MAX_REAL},max[3]={PETSC_MIN_REAL,PETSC_MIN_REAL,PETSC_MIN_REAL};
-  PetscInt          N,Ni;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMDA);
-  dim  = dm->dim;
-  ierr = DMGetCoordinates(dm,&coords);CHKERRQ(ierr);
-  if (coords) {
-    ierr = VecGetArrayRead(coords,&local_coords);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(coords,&N);CHKERRQ(ierr);
-    Ni   = N/dim;
-    for (i=0; i<Ni; i++) {
-      for (j=0; j<3; j++) {
-        min[j] = j < dim ? PetscMin(min[j],PetscRealPart(local_coords[i*dim+j])) : 0;
-        max[j] = j < dim ? PetscMax(max[j],PetscRealPart(local_coords[i*dim+j])) : 0;
-      }
-    }
-    ierr = VecRestoreArrayRead(coords,&local_coords);CHKERRQ(ierr);
-  } else {                      /* Just use grid indices */
-    DMDALocalInfo info;
-    ierr   = DMDAGetLocalInfo(dm,&info);CHKERRQ(ierr);
-    min[0] = info.xs;
-    min[1] = info.ys;
-    min[2] = info.zs;
-    max[0] = info.xs + info.xm-1;
-    max[1] = info.ys + info.ym-1;
-    max[2] = info.zs + info.zm-1;
-  }
-  if (lmin) {ierr = PetscArraycpy(lmin,min,dim);CHKERRQ(ierr);}
-  if (lmax) {ierr = PetscArraycpy(lmax,max,dim);CHKERRQ(ierr);}
-  PetscFunctionReturn(0);
-}
-
-/*@
-   DMDAGetBoundingBox - Returns the global bounding box for the DMDA.
-
-   Collective
-
-   Input Parameter:
-.  dm - the DM
-
-   Output Parameters:
-+  gmin - global minimum coordinates (length dim, optional)
--  gmax - global maximim coordinates (length dim, optional)
-
-  Level: beginner
-
-.seealso: DMDAGetCoordinateDA(), DMGetCoordinates(), DMDAGetLocalBoundingBox()
-@*/
-PetscErrorCode DMDAGetBoundingBox(DM dm,PetscReal gmin[],PetscReal gmax[])
-{
+  DMDALocalInfo  info;
   PetscErrorCode ierr;
-  PetscMPIInt    count;
-  PetscReal      lmin[3],lmax[3];
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = PetscMPIIntCast(dm->dim,&count);CHKERRQ(ierr);
-  ierr = DMDAGetLocalBoundingBox(dm,lmin,lmax);CHKERRQ(ierr);
-  if (gmin) {ierr = MPIU_Allreduce(lmin,gmin,count,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);}
-  if (gmax) {ierr = MPIU_Allreduce(lmax,gmax,count,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);}
+  ierr   = DMDAGetLocalInfo(dm, &info);CHKERRQ(ierr);
+  lmin[0] = info.xs;
+  lmin[1] = info.ys;
+  lmin[2] = info.zs;
+  lmax[0] = info.xs + info.xm-1;
+  lmax[1] = info.ys + info.ym-1;
+  lmax[2] = info.zs + info.zm-1;
   PetscFunctionReturn(0);
 }
 
@@ -397,7 +325,7 @@ PetscErrorCode DMDAGetReducedDMDA(DM da,PetscInt nfields,DM *nda)
 
   Level: intermediate
 
-.seealso: DMDAGetGhostCorners(), DMSetCoordinates(), DMDASetUniformCoordinates(), DMGetCoordinates(), DMDAGetGhostedCoordinates()
+.seealso: DMDAGetGhostCorners(), DMSetCoordinates(), DMDASetUniformCoordinates(), DMGetCoordinates(), DMDAGetGhostedCoordinates(), DMStagCreateCompatibleDMStag()
 @*/
 PetscErrorCode  DMDACreateCompatibleDMDA(DM da,PetscInt nfields,DM *nda)
 {

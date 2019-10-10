@@ -9,8 +9,8 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.version                = '0.3.6'
-    self.gitcommit              = 'v'+self.version
+    self.version                = '0.3.7'
+    self.gitcommit              = 'e7c4d6705a41910240dd19b9e7082a422563bf15'
     self.versionname            = 'OPENBLAS_VERSION'
     self.download               = ['git://https://github.com/xianyi/OpenBLAS.git','https://github.com/xianyi/OpenBLAS/archive/'+self.gitcommit+'.tar.gz']
     self.includes               = ['openblas_config.h']
@@ -72,10 +72,10 @@ class Configure(config.package.Package):
       cmdline += " USE_OPENMP=0 "
       if 'download-openblas-use-pthreads' in self.argDB and self.argDB['download-openblas-use-pthreads']:
         self.usespthreads = 1
-        cmdline += " USE_THREADS=1 "
+        cmdline += " USE_THREAD=1 "
         # use the environmental variable OPENBLAS_NUM_THREADS to control the number of threads used
       else:
-        cmdline += " USE_THREADS=0 "
+        cmdline += " USE_THREAD=0 "
     cmdline += " NO_EXPRECISION=1 "
 
     libdir = self.libDir
@@ -90,13 +90,15 @@ class Configure(config.package.Package):
       self.logPrintBox('Compiling OpenBLAS; this may take several minutes')
       output1,err1,ret  = config.package.Package.executeShellCommand('cd '+blasDir+' && make '+cmdline, timeout=2500, log = self.log)
     except RuntimeError as e:
-      raise RuntimeError('Error running make on '+blasDir+': '+str(e))
+      self.logPrint('Error running make on '+blasDir+': '+str(e))
+      raise RuntimeError('Error running make on '+blasDir)
     try:
       self.logPrintBox('Installing OpenBLAS')
       self.installDirProvider.printSudoPasswordMessage()
       output2,err2,ret  = config.package.Package.executeShellCommand('cd '+blasDir+' && '+self.installSudo+' make PREFIX='+self.installDir+' install', timeout=30, log = self.log)
     except RuntimeError as e:
-      raise RuntimeError('Error moving '+blasDir+' libraries: '+str(e))
+      self.logPrint('Error moving '+blasDir+' libraries: '+str(e))
+      raise RuntimeError('Error moving '+blasDir+' libraries')
     self.postInstall(output1+err1+output2+err2,'tmpmakefile')
     return self.installDir
 

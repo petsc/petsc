@@ -36,6 +36,7 @@ class Package(config.base.Configure):
     self.maxversion       = ''   # maximum version of the package that is supported
     self.foundversion     = ''   # version of the package actually found
     self.version_tuple    = ''   # version of the package actually found (tuple)
+    self.requiresversion  = 0    # error if the version information is not found
 
     # These are specified for the package
     self.required               = 0    # 1 means the package is required
@@ -83,7 +84,7 @@ class Package(config.base.Configure):
     self.usesopenmp             = 'no'  # yes, no, unknow package is built to use OpenMP
 
     # Outside coupling
-    self.defaultInstallDir      = os.path.abspath('externalpackages')
+    self.defaultInstallDir      = ''
     self.installSudo            = '' # if user does not have write access to prefix directory then this is set to sudo
 
     self.isMPI                  = 0 # Is an MPI implementation, needed to check for compiler wrappers
@@ -121,6 +122,7 @@ class Package(config.base.Configure):
     config.base.Configure.setupDependencies(self, framework)
     self.setCompilers    = framework.require('config.setCompilers', self)
     self.compilers       = framework.require('config.compilers', self)
+    self.fortran         = framework.require('config.compilersFortran', self)
     self.compilerFlags   = framework.require('config.compilerFlags', self)
     self.types           = framework.require('config.types', self)
     self.headers         = framework.require('config.headers', self)
@@ -252,7 +254,7 @@ class Package(config.base.Configure):
   def removeWarningFlags(self,flags):
     outflags = []
     for flag in flags.split():
-      if not flag in ['-Wall','-Wwrite-strings','-Wno-strict-aliasing','-Wno-unknown-pragmas','-Wno-unused-variable','-Wno-unused-dummy-argument','-fvisibility=hidden']:
+      if not flag in ['-Wall','-Wwrite-strings','-Wno-strict-aliasing','-Wno-unknown-pragmas','-Wno-unused-variable','-Wno-unused-dummy-argument','-fvisibility=hidden','-std=c89','-pedantic']:
         outflags.append(flag)
     return ' '.join(outflags)
 
@@ -286,13 +288,12 @@ class Package(config.base.Configure):
     return
   arch = property(getArch, setArch, doc = 'The architecture identifier')
 
+  # This construct should be removed and just have getInstallDir() handle the process
   def getDefaultInstallDir(self):
     '''The installation directroy of the library'''
     if hasattr(self, 'installDirProvider'):
       if hasattr(self.installDirProvider, 'dir'):
         return self.installDirProvider.dir
-    elif not self.framework.externalPackagesDir is None:
-      return self.framework.externalPackagesDir
     return self._defaultInstallDir
   def setDefaultInstallDir(self, defaultInstallDir):
     '''The installation directory of the library'''
@@ -319,12 +320,15 @@ class Package(config.base.Configure):
     return ['']
 
   def getInstallDir(self):
+    '''Returns --prefix (or the value computed from --package-prefix-hash) if provided otherwise $PETSC_DIR/$PETSC_ARCH'''
+    '''Special case for packages such as sowing that are have self.publicInstall == 0 it always locates them in $PETSC_DIR/$PETSC_ARCH'''
+    '''Special special case if --package-prefix-hash then even self.publicInstall == 0 are installed in the prefix location'''
     self.confDir    = self.installDirProvider.confDir  # private install location; $PETSC_DIR/$PETSC_ARCH for PETSc
     self.packageDir = self.getDir()
     if not self.packageDir: self.packageDir = self.downLoad()
     self.updateGitDir()
     self.updatehgDir()
-    if self.publicInstall or 'package-prefix-hash' in self.argDB:
+    if (self.publicInstall or 'package-prefix-hash' in self.argDB) and not ('package-prefix-hash' in self.argDB and (hasattr(self,'postProcess') or self.builtafterpetsc)):
       self.installDir = self.defaultInstallDir
       self.installSudo= self.installDirProvider.installSudo
     else:
@@ -382,7 +386,60 @@ class Package(config.base.Configure):
       return [inc for inc in iDirs if os.path.exists(inc)]
     return os.path.join(prefix, includeDir)
 
+  def checkPackageInDefaultLocations(self,mess):
+    '''This does not work for the reasons below so is turned off; perhaps the simplier model of just use ls'''
+    '''to look for the offending library files and includes files would work'''
+    '''Errors if the package is found by the compiler in a default location, such as /usr/local'''
+    '''This will miss some cases with libraries, for example if --download-hdf5 --download-pnetcdf is used because'''
+    '''it has to remove the current install directory from the search path where hdf5 is stored, hence even if pnetcdf is in /usr/lib'''
+    '''the test will fail since its required dependency hdf5 cannot be found. If the include file is found it will still detect the problem'''
+    self.logPrint(self.PACKAGE+': Checking if package is already installed in default locations, will error if this is the case')
+
+    # need to remove the PETSc prefix library and include locations from the search otherwise it will find the packages
+    # own previous install and think it is in the default location. Note: The configure model for handling libs and include
+    # directories by simply shoving them into global variables is terrible, but we are stuck with it.
+    self.pushLanguage('Cxx')
+    flagsArg = self.getPreprocessorFlagsArg()
+    oldLibs = self.setCompilers.LIBS
+    oldincludes = getattr(self.compilers, flagsArg)
+    loc = self.defaultInstallDir
+    newLibs = ' '.join([x for x in oldLibs.split(' ') if not x == '-L'+loc])
+    newincludes = ' '.join([x for x in oldincludes.split(' ') if not x == '-I'+loc])
+    self.setCompilers.LIBS = newLibs
+    setattr(self.compilers, flagsArg, newincludes)
+
+    for lib in self.generateLibList(''):
+      if not lib: continue
+      self.logWrite('Checking for '+str(lib)+' in "default locations" '+newLibs+'\n')
+      self.logWrite('Checking for '+str(self.includes)+' in "default locations" '+newincludes+'\n')
+      self.libraries.saveLog()
+      if self.executeTest(self.libraries.check,[lib, self.functions],{'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2], 'cxxLink': self.cxx}) or (self.includes and self.checkInclude([], self.includes)):
+        self.logWrite(self.libraries.restoreLog())
+        raise RuntimeError('You requested that PETSc '+mess+' but configure has detected the package already installed in a compiler default location\n\
+(for example /usr/ or /usr/local) you must remove this installation to use the install you desire')
+      else:
+        self.logWrite(self.libraries.restoreLog())
+
+    self.logPrint(self.PACKAGE+': Not already installed in default locations')
+    # put back the old list of libs and includes
+    setattr(self.compilers, flagsArg, oldincludes)
+    self.setCompilers.LIBS = oldLibs
+    self.popLanguage()
+
+  def addToArgs(self,args,key,value):
+    found = 0
+    for i in range(0,len(args)):
+      if args[i].startswith(key+'='):
+        args[i] = args[i][0:-1] + ' '+ value +'"'
+        found = 1
+    if not found: args.append(key+'="'+value+'"')
+
   def generateGuesses(self):
+    #if 'download-'+self.package in self.argDB and self.argDB['download-'+self.package]:
+      #self.checkPackageInDefaultLocations('install '+self.package)
+    #if not self.package == 'mpi' and 'with-'+self.package+'-dir' in self.argDB and not self.argDB['with-'+self.package+'-dir'] == os.path.join('/usr','local'):
+      #self.checkPackageInDefaultLocations('use '+self.package+' installed at '+self.argDB['with-'+self.package+'-dir'])
+
     d = self.checkDownload()
     if d:
       if not self.liblist or not self.liblist[0] or self.builtafterpetsc :
@@ -502,11 +559,11 @@ class Package(config.base.Configure):
     '''Check if we should download the package, returning the install directory or the empty string indicating installation'''
     if not self.download:
       return ''
-    if self.argDB['with-batch'] and self.argDB['download-'+self.package] and not self.installwithbatch: raise RuntimeError('--download-'+self.name+' cannot be used on batch systems. You must either\n\
+    if self.argDB['with-batch'] and self.argDB['download-'+self.package] and not (hasattr(self.setCompilers,'cross_cc') or self.installwithbatch): raise RuntimeError('--download-'+self.name+' cannot be used on batch systems. You must either\n\
     1) load the appropriate module on your system and use --with-'+self.name+' or \n\
     2) locate its installation on your machine or install it yourself and use --with-'+self.name+'-dir=path\n')
 
-    if 'package-prefix-hash' in self.argDB and self.argDB['package-prefix-hash'] == 'reuse': # package already built in prefix hash location so reuse it
+    if 'package-prefix-hash' in self.argDB and self.argDB['package-prefix-hash'] == 'reuse' and not hasattr(self,'postProcess') and not self.builtafterpetsc: # package already built in prefix hash location so reuse it
       self.installDir = self.defaultInstallDir
       return self.defaultInstallDir
     if self.argDB['download-'+self.package]:
@@ -608,13 +665,13 @@ class Package(config.base.Configure):
           config.base.Configure.executeShellCommand([self.sourceControl.git, 'fetch'], cwd=self.packageDir, log = self.log)
         except:
           raise RuntimeError('Unable to fetch '+self.gitcommit+' in repository '+self.packageDir+
-                             '.\nTo use previous git snapshot - use: --download-'+self.package+'gitcommit=HEAD')
+                             '.\nTo use previous git snapshot - use: --download-'+self.package+'-commit=HEAD')
       try:
         gitcommit_hash,err,ret = config.base.Configure.executeShellCommand([self.sourceControl.git, 'rev-parse', self.gitcommit], cwd=self.packageDir, log = self.log)
       except:
         raise RuntimeError('Unable to locate commit: '+self.gitcommit+' in repository: '+self.packageDir+'.\n\
 If its a commit/tag that is not found - perhaps the repo URL changed. If so, delete '+self.packageDir+' and rerun configure.\n\
-If its a remote branch, use: origin/'+self.gitcommit+' for gitcommit.')
+If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
       if self.gitcommit != 'HEAD':
         try:
           config.base.Configure.executeShellCommand([self.sourceControl.git, '-c', 'user.name=petsc-configure', '-c', 'user.email=petsc@configure', 'stash'], cwd=self.packageDir, log = self.log)
@@ -698,7 +755,7 @@ If its a remote branch, use: origin/'+self.gitcommit+' for gitcommit.')
     err =''
     for url in download_urls:
       if url.startswith('git://'):
-        if not self.gitcommit: raise RuntimeError(self.PACKAGE+': giturl specified but gitcommit not set')
+        if not self.gitcommit: raise RuntimeError(self.PACKAGE+': giturl specified but commit not set')
         if not self.gitPreReqCheck():
           err += 'Git prerequisite check failed for url: '+url+'\n'
           self.logPrint('Git prerequisite check failed - required for url: '+url+'\n')
@@ -830,7 +887,7 @@ If its a remote branch, use: origin/'+self.gitcommit+' for gitcommit.')
         self.executeTest(self.libraries.check,[lib, self.functionsDefine],{'otherLibs' : self.dlib, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2], 'cxxLink': self.cxx, 'functionDefine': 1})
         self.logWrite(self.libraries.restoreLog())
         self.logPrint('Checking for headers '+location+': '+str(incl))
-        if (not self.includes) or self.checkInclude(incl, self.includes, self.dinclude, timeout = 1800.0):
+        if (not self.includes) or self.checkInclude(incl, self.includes, self.dinclude, timeout = 40.0):
           if self.includes:
             self.include = testedincl
           self.found     = 1
@@ -940,9 +997,11 @@ If its a remote branch, use: origin/'+self.gitcommit+' for gitcommit.')
     else:
       self.pushLanguage(self.defaultLanguage)
     try:
-      output,err,ret  = self.preprocess('#include "'+self.versioninclude+'"\nversion='+self.versionname+'\n')
+      output = self.outputPreprocess('#include "'+self.versioninclude+'"\nversion='+self.versionname+'\n')
     except:
-      self.log.write('For '+self.package+' unable to run preprocessor to obtain version information: output below, skipping version check\n')
+      self.log.write('For '+self.package+' unable to run preprocessor to obtain version information, skipping version check\n')
+      self.popLanguage()
+      self.compilers.CPPFLAGS = oldFlags
       return
     self.popLanguage()
     self.compilers.CPPFLAGS = oldFlags
@@ -952,9 +1011,14 @@ If its a remote branch, use: origin/'+self.gitcommit+' for gitcommit.')
       if i.startswith('version='):
         version = i[8:]
         break
+      if i.startswith('version ='):
+        version = i[9:]
+        break
     if not version:
       self.log.write('For '+self.package+' unable to find version information: output below, skipping version check\n')
       self.log.write(output)
+      if self.requiresversion:
+        raise RuntimeError('Configure must be able to determined the version information for '+self.name+'. It was unable to, please send configure.log to petsc-maint@mcs.anl.gov')
       return
     version = version.replace(' ','').replace('\"','')
     try:
@@ -962,6 +1026,8 @@ If its a remote branch, use: origin/'+self.gitcommit+' for gitcommit.')
       self.version_tuple = self.versionToTuple(self.foundversion)
     except:
       self.log.write('For '+self.package+' unable to convert version to standard form, skipping version check\n')
+      if self.requiresversion:
+        raise RuntimeError('Configure must be able to determined the version information for '+self.name+'. It was unable to, please send configure.log to petsc-maint@mcs.anl.gov')
       return
 
     self.log.write('For '+self.package+' need '+self.minversion+' <= '+self.foundversion+' <= '+self.maxversion+'\n')
@@ -970,6 +1036,8 @@ If its a remote branch, use: origin/'+self.gitcommit+' for gitcommit.')
       foundversiontuple = self.versionToTuple(self.foundversion)
     except:
       self.log.write('For '+self.package+' unable to convert version string to tuple, skipping version check\n')
+      if self.requiresversion:
+        raise RuntimeError('Configure must be able to determined the version information for '+self.name+'. It was unable to, please send configure.log to petsc-maint@mcs.anl.gov')
       return
 
     suggest = ''
@@ -1011,7 +1079,8 @@ If its a remote branch, use: origin/'+self.gitcommit+' for gitcommit.')
       self.libraries.pushLanguage(self.defaultLanguage)
       self.executeTest(self.checkDependencies)
       self.executeTest(self.configureLibrary)
-      self.executeTest(self.checkVersion)
+      if not self.builtafterpetsc:
+        self.executeTest(self.checkVersion)
       self.executeTest(self.checkSharedLibrary)
       self.libraries.popLanguage()
     else:
@@ -1039,7 +1108,7 @@ If its a remote branch, use: origin/'+self.gitcommit+' for gitcommit.')
       mpicxx = os.path.join(installDir,"bin",mpicxxName)
       if not os.path.isfile(mpicxx): raise RuntimeError('Could not locate installed MPI compiler: '+mpicxx)
     if hasattr(self.compilers, 'FC'):
-      if self.compilers.fortranIsF90:
+      if self.fortran.fortranIsF90:
         mpifc = os.path.join(installDir,"bin",mpif90Name)
       else:
         mpifc = os.path.join(installDir,"bin",mpif77Name)
@@ -1066,6 +1135,18 @@ If its a remote branch, use: origin/'+self.gitcommit+' for gitcommit.')
     for i in rejectstarts:
       rejects.extend([arg for arg in args if arg.startswith(i)])
     return self.rmArgs(args,rejects)
+
+  def addArgStartsWith(self,args,sw,value):
+    keep = []
+    found = 0
+    for i in args:
+      if i.startswith(sw+'="'):
+        i = i[:-1] + ' ' + value + '"'
+        found = 1
+      keep.append(i)
+    if not found:
+      keep.append(sw+'="' + value + '"')
+    return keep
 
   def checkSharedLibrariesEnabled(self):
     if self.havePETSc:
@@ -1396,17 +1477,24 @@ class GNUPackage(Package):
     args.append('--libdir='+os.path.join(self.installDir,self.libdir))
     ## compiler args
     self.pushLanguage('C')
-    compiler = self.getCompiler()
-    args.append('CC="'+self.getCompiler()+'"')
+    if not self.installwithbatch and hasattr(self.setCompilers,'cross_cc'):
+      args.append('CC="'+self.setCompilers.cross_cc+'"')
+    else:
+      args.append('CC="'+self.getCompiler()+'"')
     args.append('CFLAGS="'+self.removeWarningFlags(self.getCompilerFlags())+'"')
     args.append('AR="'+self.setCompilers.AR+'"')
     args.append('ARFLAGS="'+self.setCompilers.AR_FLAGS+'"')
+    if not self.installwithbatch and hasattr(self.setCompilers,'cross_LIBS'):
+      args.append('LIBS="'+self.setCompilers.cross_LIBS+'"')
     if self.setCompilers.LDFLAGS:
       args.append('LDFLAGS="'+self.setCompilers.LDFLAGS+'"')
     self.popLanguage()
     if hasattr(self.compilers, 'CXX'):
       self.pushLanguage('Cxx')
-      args.append('CXX="'+self.getCompiler()+'"')
+      if not self.installwithbatch and hasattr(self.setCompilers,'cross_CC'):
+        args.append('CXX="'+self.setCompilers.cross_CC+'"')
+      else:
+        args.append('CXX="'+self.getCompiler()+'"')
       args.append('CXXFLAGS="'+self.removeWarningFlags(self.getCompilerFlags())+'"')
       self.popLanguage()
     else:
@@ -1414,7 +1502,7 @@ class GNUPackage(Package):
     if hasattr(self.compilers, 'FC'):
       self.pushLanguage('FC')
       fc = self.getCompiler()
-      if self.compilers.fortranIsF90:
+      if self.fortran.fortranIsF90:
         try:
           output, error, status = self.executeShellCommand(fc+' -v', log = self.log)
           output += error
@@ -1424,13 +1512,20 @@ class GNUPackage(Package):
           fc = os.path.join(os.path.dirname(fc), 'xlf')
           self.log.write('Using IBM f90 compiler, switching to xlf for compiling ' + self.PACKAGE + '\n')
         # now set F90
-        args.append('F90="'+fc+'"')
+        if not self.installwithbatch and hasattr(self.setCompilers,'cross_fc'):
+          args.append('F90="'+self.setCompilers.cross_fc+'"')
+        else:
+          args.append('F90="'+fc+'"')
         args.append('F90FLAGS="'+self.removeWarningFlags(self.getCompilerFlags()).replace('-Mfree','')+'"')
       else:
         args.append('--disable-f90')
-      args.append('F77="'+fc+'"')
       args.append('FFLAGS="'+self.removeWarningFlags(self.getCompilerFlags()).replace('-Mfree','')+'"')
-      args.append('FC="'+fc+'"')
+      if not self.installwithbatch and hasattr(self.setCompilers,'cross_fc'):
+        args.append('FC="'+self.setCompilers.cross_fc+'"')
+        args.append('F77="'+self.setCompilers.cross_fc+'"')
+      else:
+        args.append('FC="'+fc+'"')
+        args.append('F77="'+fc+'"')
       args.append('FCFLAGS="'+self.removeWarningFlags(self.getCompilerFlags()).replace('-Mfree','')+'"')
       self.popLanguage()
     else:
@@ -1492,7 +1587,15 @@ class GNUPackage(Package):
       self.logPrintBox('Running configure on ' +self.PACKAGE+'; this may take several minutes')
       output1,err1,ret1  = config.base.Configure.executeShellCommand(dot+'/configure '+args, cwd=self.packageDir, timeout=2000, log = self.log)
     except RuntimeError as e:
-      raise RuntimeError('Error running configure on ' + self.PACKAGE+': '+str(e))
+      self.logPrint('Error running configure on ' + self.PACKAGE+': '+str(e))
+      try:
+        with open(os.path.join(self.packageDir,'config.log')) as fd:
+          conf = fd.read()
+          fd.close()
+          self.logPrint('Output in config.log for ' + self.PACKAGE+': '+conf)
+      except:
+        pass
+      raise RuntimeError('Error running configure on ' + self.PACKAGE)
     try:
       self.logPrintBox('Running make on '+self.PACKAGE+'; this may take several minutes')
       if self.parallelMake: pmake = self.make.make_jnp+' '+self.makerulename+' '
@@ -1504,7 +1607,8 @@ class GNUPackage(Package):
       self.installDirProvider.printSudoPasswordMessage(self.installSudo)
       output4,err4,ret4  = config.base.Configure.executeShellCommand(self.installSudo+self.make.make+' install', cwd=self.packageDir, timeout=1000, log = self.log)
     except RuntimeError as e:
-      raise RuntimeError('Error running make; make install on '+self.PACKAGE+': '+str(e))
+      self.logPrint('Error running make; make install on '+self.PACKAGE+': '+str(e))
+      raise RuntimeError('Error running make; make install on '+self.PACKAGE)
     self.postInstall(output1+err1+output2+err2+output3+err3+output4+err4, conffile)
     return self.installDir
 
@@ -1595,13 +1699,15 @@ class CMakePackage(Package):
         self.logPrintBox('Configuring '+self.PACKAGE+' with cmake, this may take several minutes')
         output1,err1,ret1  = config.package.Package.executeShellCommand(self.cmake.cmake+' .. '+args, cwd=folder, timeout=900, log = self.log)
       except RuntimeError as e:
-        raise RuntimeError('Error configuring '+self.PACKAGE+' with cmake '+str(e))
+        self.logPrint('Error configuring '+self.PACKAGE+' with cmake '+str(e))
+        raise RuntimeError('Error configuring '+self.PACKAGE+' with cmake')
       try:
         self.logPrintBox('Compiling and installing '+self.PACKAGE+'; this may take several minutes')
         self.installDirProvider.printSudoPasswordMessage()
         output2,err2,ret2  = config.package.Package.executeShellCommand(self.make.make_jnp+' '+self.makerulename, cwd=folder, timeout=3000, log = self.log)
         output3,err3,ret3  = config.package.Package.executeShellCommand(self.installSudo+' '+self.make.make+' install', cwd=folder, timeout=3000, log = self.log)
       except RuntimeError as e:
-        raise RuntimeError('Error running make on  '+self.PACKAGE+': '+str(e))
+        self.logPrint('Error running make on  '+self.PACKAGE+': '+str(e))
+        raise RuntimeError('Error running make on  '+self.PACKAGE)
       self.postInstall(output1+err1+output2+err2+output3+err3,conffile)
     return self.installDir

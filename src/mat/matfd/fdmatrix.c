@@ -221,16 +221,21 @@ PetscErrorCode MatFDColoringSetBlockSize(MatFDColoring matfd,PetscInt brows,Pets
 
    Level: beginner
 
+   Notes: When the coloring type is IS_COLORING_LOCAL the coloring is in the local ordering of the unknowns. 
+
 .seealso: MatFDColoringCreate(), MatFDColoringDestroy()
 @*/
 PetscErrorCode MatFDColoringSetUp(Mat mat,ISColoring iscoloring,MatFDColoring color)
 {
   PetscErrorCode ierr;
+  PetscBool      eq;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidHeaderSpecific(color,MAT_FDCOLORING_CLASSID,3);
   if (color->setupcalled) PetscFunctionReturn(0);
+  ierr = PetscObjectCompareId((PetscObject)mat,color->matid,&eq);CHKERRQ(ierr);
+  if (!eq) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONG,"Matrix used with MatFDColoringSetUp() must be that used with MatFDColoringCreate()");
 
   ierr = PetscLogEventBegin(MAT_FDColoringSetUp,mat,0,0,0);CHKERRQ(ierr);
   if (mat->ops->fdcoloringsetup) {
@@ -459,6 +464,7 @@ PetscErrorCode  MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring 
   ierr = PetscHeaderCreate(c,MAT_FDCOLORING_CLASSID,"MatFDColoring","Jacobian computation via finite differences with coloring","Mat",comm,MatFDColoringDestroy,MatFDColoringView);CHKERRQ(ierr);
 
   c->ctype = iscoloring->ctype;
+  ierr     = PetscObjectGetId((PetscObject)mat,&c->matid);CHKERRQ(ierr);
 
   if (mat->ops->fdcoloringcreate) {
     ierr = (*mat->ops->fdcoloringcreate)(mat,iscoloring,c);CHKERRQ(ierr);
@@ -599,11 +605,14 @@ PetscErrorCode  MatFDColoringGetPerturbedColumns(MatFDColoring coloring,PetscInt
 PetscErrorCode  MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,void *sctx)
 {
   PetscErrorCode ierr;
+  PetscBool      eq;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(J,MAT_CLASSID,1);
   PetscValidHeaderSpecific(coloring,MAT_FDCOLORING_CLASSID,2);
   PetscValidHeaderSpecific(x1,VEC_CLASSID,3);
+  ierr = PetscObjectCompareId((PetscObject)J,coloring->matid,&eq);CHKERRQ(ierr);
+  if (!eq) SETERRQ(PetscObjectComm((PetscObject)J),PETSC_ERR_ARG_WRONG,"Matrix used with MatFDColoringApply() must be that used with MatFDColoringCreate()");
   if (!coloring->f) SETERRQ(PetscObjectComm((PetscObject)J),PETSC_ERR_ARG_WRONGSTATE,"Must call MatFDColoringSetFunction()");
   if (!J->ops->fdcoloringapply) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not supported for this matrix type %s",((PetscObject)J)->type_name);
   if (!coloring->setupcalled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call MatFDColoringSetUp()");

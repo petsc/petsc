@@ -3,6 +3,8 @@
 
 PetscLogEvent TS_AdjointStep,TS_ForwardStep,TS_JacobianPEval;
 
+/* #define TSADJOINT_STAGE */
+
 /* ------------------------ Sensitivity Context ---------------------------*/
 
 /*@C
@@ -628,7 +630,7 @@ PetscErrorCode TSComputeIHessianProductFunctionPP(TS ts,PetscReal t,Vec U,Vec *V
 }
 
 /*@C
-  TSSetRHSHessianProduct - Sets the function that computes the vecotr-Hessian-vector product. The Hessian is the second-order derivative of G (RHSFunction) w.r.t. the state variable.
+  TSSetRHSHessianProduct - Sets the function that computes the vector-Hessian-vector product. The Hessian is the second-order derivative of G (RHSFunction) w.r.t. the state variable.
 
   Logically Collective on TS
 
@@ -1505,10 +1507,7 @@ PetscErrorCode TSAdjointStep(TS ts)
   ts->adjoint_steps++; ts->steps--;
 
   if (ts->reason < 0) {
-    if (ts->errorifstepfailed) {
-      if (ts->reason == TSADJOINT_DIVERGED_LINEAR_SOLVE) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSAdjointStep has failed due to %s",TSConvergedReasons[ts->reason]);
-      else SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSAdjointStep has failed due to %s",TSConvergedReasons[ts->reason]);
-    }
+    if (ts->errorifstepfailed) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSAdjointStep has failed due to %s",TSConvergedReasons[ts->reason]);
   } else if (!ts->reason) {
     if (ts->adjoint_steps >= ts->adjoint_max_steps) ts->reason = TS_CONVERGED_ITS;
   }
@@ -1537,10 +1536,17 @@ PetscErrorCode TSAdjointStep(TS ts)
 @*/
 PetscErrorCode TSAdjointSolve(TS ts)
 {
-  PetscErrorCode    ierr;
+#if defined(TSADJOINT_STAGE)
+  PetscLogStage  adjoint_stage;
+#endif
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+#if defined(TSADJOINT_STAGE)
+  ierr = PetscLogStageRegister("TSAdjoint",&adjoint_stage);CHKERRQ(ierr);
+  ierr = PetscLogStagePush(adjoint_stage);CHKERRQ(ierr);
+#endif
   ierr = TSAdjointSetUp(ts);CHKERRQ(ierr);
 
   /* reset time step and iteration counters */
@@ -1569,6 +1575,9 @@ PetscErrorCode TSAdjointSolve(TS ts)
   ierr = TSTrajectoryViewFromOptions(ts->trajectory,NULL,"-ts_trajectory_view");CHKERRQ(ierr);
   ierr = VecViewFromOptions(ts->vecs_sensi[0],(PetscObject) ts, "-ts_adjoint_view_solution");CHKERRQ(ierr);
   ts->adjoint_max_steps = 0;
+#if defined(TSADJOINT_STAGE)
+  ierr = PetscLogStagePop();CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -1764,6 +1773,7 @@ PetscErrorCode TSForwardStep(TS ts)
   ierr = PetscLogEventBegin(TS_ForwardStep,ts,0,0,0);CHKERRQ(ierr);
   ierr = (*ts->ops->forwardstep)(ts);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(TS_ForwardStep,ts,0,0,0);CHKERRQ(ierr);
+  if (ts->reason < 0 && ts->errorifstepfailed) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSFowardStep has failed due to %s",TSConvergedReasons[ts->reason]);
   PetscFunctionReturn(0);
 }
 
@@ -1964,5 +1974,46 @@ PetscErrorCode TSGetQuadratureTS(TS ts,PetscBool *fwd,TS *quadts)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (fwd) *fwd = ts->costintegralfwd;
   if (quadts) *quadts = ts->quadraturets;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   TSComputeSNESJacobian - Compute the SNESJacobian
+
+   Input Parameters:
++  ts - the TS context obtained from TSCreate()
+-  x - state vector
+
+   Output Parameters:
++  J - Jacobian matrix
+-  Jpre - preconditioning matrix for J (may be same as J)
+
+   Level: developer
+
+   Notes:
+   Using SNES to compute the Jacobian enables finite differencing when TS Jacobian is not available.
+@*/
+PetscErrorCode TSComputeSNESJacobian(TS ts,Vec x,Mat J,Mat Jpre)
+{
+  SNES           snes = ts->snes;
+  PetscErrorCode (*jac)(SNES,Vec,Mat,Mat,void*) = NULL;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /*
+    Unlike implicit methods, explicit methods do not have SNESMatFDColoring in the snes object
+    because SNESSolve() has not been called yet; so querying SNESMatFDColoring does not work for
+    explicit methods. Instead, we check the Jacobian compute function directly to determin if FD
+    coloring is used.
+  */
+  ierr = SNESGetJacobian(snes,NULL,NULL,&jac,NULL);CHKERRQ(ierr);
+  if (jac == SNESComputeJacobianDefaultColor) {
+    Vec f;
+    ierr = SNESSetSolution(snes,x);CHKERRQ(ierr);
+    ierr = SNESGetFunction(snes,&f,NULL,NULL);CHKERRQ(ierr);
+    /* Force MatFDColoringApply to evaluate the SNES residual function for the base vector */
+    ierr = SNESComputeFunction(snes,x,f);CHKERRQ(ierr);
+  }
+  ierr = SNESComputeJacobian(snes,x,J,Jpre);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

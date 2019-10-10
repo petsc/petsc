@@ -38,7 +38,7 @@ typedef struct {
   PetscBool *optimized;       /* [n] is the scatter to procs[i] optimized? */
   PetscInt  *copy_offsets;    /* [n+1] we number all copies. Scatter to procs[i] is optimized into copies in [copy_offsets[i],copy_offsets[i+1]) */
   PetscInt  *copy_starts;     /* [*] j-th copy starts at index copy_starts[j] of the vector */
-  PetscInt  *copy_lengths;    /* [*] with length copy_lengths[j] in bytes */
+  PetscInt  *copy_lengths;    /* [*] with length copy_lengths[j] in units of PetscScalar */
   PetscInt  *stride_first;    /* [n] if optimized[i] is TRUE but copy_offsets[i] = copy_offsets[i+1], then scatter to procs[i] is strided. The first */
   PetscInt  *stride_step;     /* [n]   index is stride_first[i], step is stride_step[i], */
   PetscInt  *stride_n;        /* [n]   and total stride_n[i] steps */
@@ -99,7 +99,7 @@ typedef struct {
   MPI_Status             *sstatus,*rstatus;
   PetscInt               bs;
   PetscBool              contiq;
-#if defined(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)      /* these uses windows for communication only within each node */
+#if defined(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY)   /* these uses windows for communication only within each node */
   PetscMPIInt            msize,sharedcnt;           /* total to entries that are going to processes with the same shared memory space */
   PetscScalar            *sharedspace;              /* space each process puts data to be read from other processes; allocated by MPI */
   PetscScalar            **sharedspaces;            /* [msize] space other processes put data to be read from this processes. */
@@ -147,8 +147,8 @@ PETSC_STATIC_INLINE PetscErrorCode VecScatterMemcpyPlanExecute_Pack(PetscInt i,c
     } else {
       for (j=xplan->copy_offsets[i]; j<xplan->copy_offsets[i+1]; j++) {
         len  = xplan->copy_lengths[j];
-        ierr = PetscMemcpy(y,x+xplan->copy_starts[j],len);CHKERRQ(ierr);
-        y    = (PetscScalar*)((PetscChar*)y + len);
+        ierr = PetscArraycpy(y,x+xplan->copy_starts[j],len);CHKERRQ(ierr);
+        y   += len;
       }
     }
   } else if (addv == ADD_VALUES) {
@@ -157,7 +157,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecScatterMemcpyPlanExecute_Pack(PetscInt i,c
         for (k=0; k<bs; k++) y[j*bs+k] += xv[j*step+k];
     } else {
       for (j=xplan->copy_offsets[i]; j<xplan->copy_offsets[i+1]; j++) {
-        len  = xplan->copy_lengths[j]/sizeof(PetscScalar);
+        len  = xplan->copy_lengths[j];
         xv   = x+xplan->copy_starts[j];
         for (k=0; k<len; k++) y[k] += xv[k];
         y   += len;
@@ -171,7 +171,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecScatterMemcpyPlanExecute_Pack(PetscInt i,c
         for (k=0; k<bs; k++) y[j*bs+k] = PetscMax(y[j*bs+k],xv[j*step+k]);
     } else {
       for (j=xplan->copy_offsets[i]; j<xplan->copy_offsets[i+1]; j++) {
-        len  = xplan->copy_lengths[j]/sizeof(PetscScalar);
+        len  = xplan->copy_lengths[j];
         xv   = x+xplan->copy_starts[j];
         for (k=0; k<len; k++) y[k] = PetscMax(y[k],xv[k]);
         y   += len;
@@ -208,8 +208,8 @@ PETSC_STATIC_INLINE PetscErrorCode VecScatterMemcpyPlanExecute_Unpack(PetscInt i
     } else {
       for (j=yplan->copy_offsets[i]; j<yplan->copy_offsets[i+1]; j++) {
         len  = yplan->copy_lengths[j];
-        ierr = PetscMemcpy(y+yplan->copy_starts[j],x,len);CHKERRQ(ierr);
-        x    = (PetscScalar*)((PetscChar*)x + len);
+        ierr = PetscArraycpy(y+yplan->copy_starts[j],x,len);CHKERRQ(ierr);
+        x   += len;
       }
     }
   } else if (addv == ADD_VALUES) {
@@ -218,7 +218,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecScatterMemcpyPlanExecute_Unpack(PetscInt i
         for (k=0; k<bs; k++) yv[j*step+k] += x[j*bs+k];
     } else {
       for (j=yplan->copy_offsets[i]; j<yplan->copy_offsets[i+1]; j++) {
-        len  = yplan->copy_lengths[j]/sizeof(PetscScalar);
+        len  = yplan->copy_lengths[j];
         yv   = y+yplan->copy_starts[j];
         for (k=0; k<len; k++) yv[k] += x[k];
         x   += len;
@@ -232,7 +232,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecScatterMemcpyPlanExecute_Unpack(PetscInt i
         for (k=0; k<bs; k++) yv[j*step+k] = PetscMax(yv[j*step+k],x[j*bs+k]);
     } else {
       for (j=yplan->copy_offsets[i]; j<yplan->copy_offsets[i+1]; j++) {
-        len  = yplan->copy_lengths[j]/sizeof(PetscScalar);
+        len  = yplan->copy_lengths[j];
         yv   = y+yplan->copy_starts[j];
         for (k=0; k<len; k++) yv[k] = PetscMax(yv[k],x[k]);
         x   += len;
@@ -257,11 +257,11 @@ PETSC_STATIC_INLINE PetscErrorCode VecScatterMemcpyPlanExecute_Scatter(PetscInt 
   PetscFunctionBegin;
   if (addv == INSERT_VALUES) {
     for (j=xplan->copy_offsets[i]; j<xplan->copy_offsets[i+1]; j++) {
-      ierr = PetscMemcpy(y+yplan->copy_starts[j],x+xplan->copy_starts[j],xplan->copy_lengths[j]);CHKERRQ(ierr);
+      ierr = PetscArraycpy(y+yplan->copy_starts[j],x+xplan->copy_starts[j],xplan->copy_lengths[j]);CHKERRQ(ierr);
     }
   } else if (addv == ADD_VALUES) {
     for (j=xplan->copy_offsets[i]; j<xplan->copy_offsets[i+1]; j++) {
-      len = xplan->copy_lengths[j]/sizeof(PetscScalar);
+      len = xplan->copy_lengths[j];
       xv  = x+xplan->copy_starts[j];
       yv  = y+yplan->copy_starts[j];
       for (k=0; k<len; k++) yv[k] += xv[k];
@@ -270,7 +270,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecScatterMemcpyPlanExecute_Scatter(PetscInt 
 #if !defined(PETSC_USE_COMPLEX)
   else if (addv == MAX_VALUES) {
     for (j=xplan->copy_offsets[i]; j<xplan->copy_offsets[i+1]; j++) {
-      len = xplan->copy_lengths[j]/sizeof(PetscScalar);
+      len = xplan->copy_lengths[j];
       xv  = x+xplan->copy_starts[j];
       yv  = y+yplan->copy_starts[j];
       for (k=0; k<len; k++) yv[k] = PetscMax(yv[k],xv[k]);

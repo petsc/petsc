@@ -4,6 +4,7 @@
    One can use src/sys/examples/tests/ex52.c for benchmarking.
  */
 #include <petsc/private/petscimpl.h>                /*I  "petscsys.h"  I*/
+#include <petsc/private/hashseti.h>
 
 #define MEDIAN3(v,a,b,c)                                                        \
   (v[a]<v[b]                                                                    \
@@ -267,6 +268,45 @@ PetscErrorCode PetscFindInt(PetscInt key, PetscInt n, const PetscInt X[], PetscI
     else               lo = mid;
   }
   *loc = key == X[lo] ? lo : -(lo + (key > X[lo]) + 1);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscCheckDupsInt - Checks if an integer array has duplicates
+
+   Not Collective
+
+   Input Parameters:
++  n  - number of values in the array
+-  X  - array of integers
+
+
+   Output Parameter:
+.  dups - True if the array has dups, otherwise false
+
+   Level: intermediate
+
+.seealso: PetscSortRemoveDupsInt()
+@*/
+PetscErrorCode PetscCheckDupsInt(PetscInt n,const PetscInt X[],PetscBool *dups)
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+  PetscHSetI     ht;
+  PetscBool      missing;
+
+  PetscFunctionBegin;
+  PetscValidPointer(dups,3);
+  *dups = PETSC_FALSE;
+  if (n > 1) {
+    ierr = PetscHSetICreate(&ht);CHKERRQ(ierr);
+    ierr = PetscHSetIResize(ht,n);CHKERRQ(ierr);
+    for (i=0; i<n; i++) {
+      ierr = PetscHSetIQueryAdd(ht,X[i],&missing);CHKERRQ(ierr);
+      if(!missing) {*dups = PETSC_TRUE; break;}
+    }
+    ierr = PetscHSetIDestroy(&ht);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

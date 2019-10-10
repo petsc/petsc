@@ -1,0 +1,56 @@
+    0 KSP Residual norm 7.280029654503e-01 
+    1 KSP Residual norm 3.337686359882e-01 
+    2 KSP Residual norm 8.313584327698e-02 
+    3 KSP Residual norm 5.251736193895e-02 
+    4 KSP Residual norm 1.542242534924e-05 
+    5 KSP Residual norm 4.166617983969e-08 
+    0 KSP Residual norm 9.233929216862e-03 
+    1 KSP Residual norm 5.044257268310e-03 
+    2 KSP Residual norm 1.899459050037e-03 
+    3 KSP Residual norm 2.069697586649e-07 
+    4 KSP Residual norm 1.956514728008e-09 
+    0 KSP Residual norm 1.483853793616e-05 
+    1 KSP Residual norm 6.195468358783e-06 
+    2 KSP Residual norm 2.369386720602e-06 
+    3 KSP Residual norm 3.775136292461e-07 
+    4 KSP Residual norm 2.217341544750e-12 
+SNES Object: 1 MPI processes
+  type: newtonls
+  maximum iterations=50, maximum function evaluations=10000
+  tolerances: relative=1e-05, absolute=1e-25, solution=1e-05
+  total number of linear solver iterations=13
+  total number of function evaluations=23
+  norm schedule ALWAYS
+  SNESLineSearch Object: 1 MPI processes
+    type: bt
+      interpolation: cubic
+      alpha=1.000000e-04
+    maxstep=1.000000e+08, minlambda=1.000000e-12
+    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+    maximum iterations=40
+  KSP Object: 1 MPI processes
+    type: gmres
+      restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+      happy breakdown tolerance 1e-30
+    maximum iterations=10000, initial guess is zero
+    tolerances:  relative=1e-05, absolute=1e-25, divergence=10000.
+    left preconditioning
+    using PRECONDITIONED norm type for convergence test
+  PC Object: 1 MPI processes
+    type: jacobi
+    linear system matrix followed by preconditioner matrix:
+    Mat Object: 1 MPI processes
+      type: mffd
+      rows=5, cols=5
+        Matrix-free approximation:
+          err=0.000345267 (relative error in function evaluation)
+          Using wp compute h routine
+              Does not compute normU
+    Mat Object: 1 MPI processes
+      type: seqaij
+      rows=5, cols=5
+      total: nonzeros=11, allocated nonzeros=15
+      total number of mallocs used during MatSetValues calls =0
+        not using I-node routines
+number of SNES iterations = 3
+

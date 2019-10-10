@@ -982,8 +982,8 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A,MatType type,MatRe
 
   /* Parse command line options. */
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"AIJMKL Options","Mat");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-mat_aijmkl_no_spmv2","NoSPMV2","None",(PetscBool)aijmkl->no_SpMV2,(PetscBool*)&aijmkl->no_SpMV2,&set);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-mat_aijmkl_eager_inspection","Eager Inspection","None",(PetscBool)aijmkl->eager_inspection,(PetscBool*)&aijmkl->eager_inspection,&set);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-mat_aijmkl_no_spmv2","Disable use of inspector-executor (SpMV 2) routines","None",(PetscBool)aijmkl->no_SpMV2,(PetscBool*)&aijmkl->no_SpMV2,&set);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-mat_aijmkl_eager_inspection","Run inspection at matrix assembly time, instead of waiting until needed by an operation","None",(PetscBool)aijmkl->eager_inspection,(PetscBool*)&aijmkl->eager_inspection,&set);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 #if !defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
   if(!aijmkl->no_SpMV2) {

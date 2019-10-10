@@ -1,0 +1,14 @@
+  0 KSP Residual norm 5.365429124496e+00 
+  1 KSP Residual norm 1.621921786146e+00 
+  2 KSP Residual norm 3.834857013094e-02 
+  3 KSP Residual norm 1.509520246796e-03 
+  4 KSP Residual norm 1.539718938274e-04 
+  5 KSP Residual norm 4.770566387795e-06 
+Linear solve converged due to CONVERGED_RTOL iterations 5
+Iteratively computed eigenvalues
+0.816052 + 0.i
+0.882676 + 0.i
+0.994442 + 0.i
+0.999696 + 0.i
+1.31672 + 0.i
+Iteratively computed extreme singular values: max 1.62809 min 0.736665 max/min 2.21009

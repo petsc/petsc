@@ -68,7 +68,7 @@ static PetscErrorCode DMPlexLabelToMetricConstraint(DM dm, DMLabel adaptLabel, P
   ierr = DMPlexUninterpolate(dm, &udm);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(dm, &coordDM);CHKERRQ(ierr);
-  ierr = DMGetSection(coordDM, &coordSection);CHKERRQ(ierr);
+  ierr = DMGetLocalSection(coordDM, &coordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   Nv   = vEnd - vStart;
   ierr = VecCreateSeq(PETSC_COMM_SELF, Nv*PetscSqr(dim), metricVec);CHKERRQ(ierr);
@@ -423,7 +423,7 @@ PetscErrorCode DMAdaptMetric_Plex(DM dm, Vec vertexMetric, DMLabel bdLabel, DM *
   ierr = ISRestoreIndices(globalVertexNum, &gV);CHKERRQ(ierr);
   ierr = DMDestroy(&udm);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
-  ierr = DMGetSection(cdm, &coordSection);CHKERRQ(ierr);
+  ierr = DMGetLocalSection(cdm, &coordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = VecGetArrayRead(coordinates, &coords);CHKERRQ(ierr);
   for (v = vStart; v < vEnd; ++v) {

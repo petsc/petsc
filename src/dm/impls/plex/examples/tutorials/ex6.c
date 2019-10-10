@@ -113,7 +113,7 @@ static PetscErrorCode CheckPoint(DM dm, Vec u, PetscInt point, AppCtx *user)
   PetscErrorCode     ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetSection(dm, &s);CHKERRQ(ierr);
+  ierr = DMGetLocalSection(dm, &s);CHKERRQ(ierr);
   ierr = VecGetArrayRead(u, &array);CHKERRQ(ierr);
   ierr = DMPlexPointLocalRead(dm, point, array, &a);CHKERRQ(ierr);
   ierr = PetscSectionGetDof(s, point, &dof);CHKERRQ(ierr);
@@ -360,7 +360,7 @@ int main(int argc, char **argv)
     ierr = SetSymmetries(dm, s, &user);CHKERRQ(ierr);
     ierr = PetscFree(numDof);CHKERRQ(ierr);
   }
-  ierr = DMSetSection(dm, s);CHKERRQ(ierr);
+  ierr = DMSetLocalSection(dm, s);CHKERRQ(ierr);
   /* Create spectral ordering and load in data */
   ierr = DMPlexSetClosurePermutationTensor(dm, PETSC_DETERMINE, NULL);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm, &u);CHKERRQ(ierr);

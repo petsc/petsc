@@ -98,7 +98,7 @@ static PetscErrorCode DMProjectPoint_Field_Private(DM dm, PetscDS prob, DM dmAux
   ierr = PetscDSGetWorkspace(prob, &x, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
   ierr = PetscDSGetConstants(prob, &numConstants, &constants);CHKERRQ(ierr);
   ierr = DMHasBasisTransform(dm, &transform);CHKERRQ(ierr);
-  ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
+  ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);
   ierr = DMPlexVecGetClosure(dm, section, localU, p, NULL, &coefficients);CHKERRQ(ierr);
   if (dmAux) {
     PetscInt subp;
@@ -108,7 +108,7 @@ static PetscErrorCode DMProjectPoint_Field_Private(DM dm, PetscDS prob, DM dmAux
     ierr = PetscDSGetNumFields(probAux, &NfAux);CHKERRQ(ierr);
     ierr = PetscDSGetDimensions(probAux, &NbAux);CHKERRQ(ierr);
     ierr = PetscDSGetComponents(probAux, &NcAux);CHKERRQ(ierr);
-    ierr = DMGetSection(dmAux, &sectionAux);CHKERRQ(ierr);
+    ierr = DMGetLocalSection(dmAux, &sectionAux);CHKERRQ(ierr);
     ierr = PetscDSGetComponentOffsets(probAux, &aOff);CHKERRQ(ierr);
     ierr = PetscDSGetComponentDerivativeOffsets(probAux, &aOff_x);CHKERRQ(ierr);
     ierr = PetscDSGetEvaluationArrays(probAux, &a, NULL /*&a_t*/, &a_x);CHKERRQ(ierr);
@@ -193,7 +193,7 @@ static PetscErrorCode DMProjectPoint_BdField_Private(DM dm, PetscDS prob, DM dmA
   ierr = PetscDSGetEvaluationArrays(prob, &u, &bc /*&u_t*/, &u_x);CHKERRQ(ierr);
   ierr = PetscDSGetWorkspace(prob, &x, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
   ierr = PetscDSGetConstants(prob, &numConstants, &constants);CHKERRQ(ierr);
-  ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
+  ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);
   ierr = DMPlexVecGetClosure(dm, section, localU, p, NULL, &coefficients);CHKERRQ(ierr);
   if (dmAux) {
     DMLabel  spmap;
@@ -206,7 +206,7 @@ static PetscErrorCode DMProjectPoint_BdField_Private(DM dm, PetscDS prob, DM dmA
     ierr = PetscDSGetNumFields(probAux, &NfAux);CHKERRQ(ierr);
     ierr = PetscDSGetDimensions(probAux, &NbAux);CHKERRQ(ierr);
     ierr = PetscDSGetComponents(probAux, &NcAux);CHKERRQ(ierr);
-    ierr = DMGetSection(dmAux, &sectionAux);CHKERRQ(ierr);
+    ierr = DMGetLocalSection(dmAux, &sectionAux);CHKERRQ(ierr);
     ierr = PetscDSGetComponentOffsets(probAux, &aOff);CHKERRQ(ierr);
     ierr = PetscDSGetComponentDerivativeOffsets(probAux, &aOff_x);CHKERRQ(ierr);
     ierr = PetscDSGetEvaluationArrays(probAux, &a, NULL /*&a_t*/, &a_x);CHKERRQ(ierr);
@@ -466,7 +466,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
   if (!prob) {ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);}
   ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dm, &dimEmbed);CHKERRQ(ierr);
-  ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
+  ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);
   if (dmAux) {
     ierr = DMGetDS(dmAux, &probAux);CHKERRQ(ierr);
     ierr = PetscDSGetNumFields(probAux, &NfAux);CHKERRQ(ierr);
@@ -542,7 +542,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
     if (!h) {
       PetscInt cEndInterior;
 
-      ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
+      ierr = DMPlexGetInteriorCellStratum(dm, NULL, &cEndInterior);CHKERRQ(ierr);
       pEnd = cEndInterior < 0 ? pEnd : cEndInterior;
     }
     if (pEnd <= pStart) {

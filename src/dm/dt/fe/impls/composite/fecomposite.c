@@ -3,7 +3,7 @@
 #include <petsc/private/dmpleximpl.h> /* For CellRefiner */
 #include <petscblaslapack.h>
 
-PetscErrorCode PetscFEDestroy_Composite(PetscFE fem)
+static PetscErrorCode PetscFEDestroy_Composite(PetscFE fem)
 {
   PetscFE_Composite *cmp = (PetscFE_Composite *) fem->data;
   PetscErrorCode     ierr;
@@ -15,7 +15,7 @@ PetscErrorCode PetscFEDestroy_Composite(PetscFE fem)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscFESetUp_Composite(PetscFE fem)
+static PetscErrorCode PetscFESetUp_Composite(PetscFE fem)
 {
   PetscFE_Composite *cmp = (PetscFE_Composite *) fem->data;
   DM                 K;
@@ -97,7 +97,7 @@ PetscErrorCode PetscFESetUp_Composite(PetscFE fem)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscFEGetTabulation_Composite(PetscFE fem, PetscInt npoints, const PetscReal points[], PetscReal *B, PetscReal *D, PetscReal *H)
+static PetscErrorCode PetscFEGetTabulation_Composite(PetscFE fem, PetscInt npoints, const PetscReal points[], PetscReal *B, PetscReal *D, PetscReal *H)
 {
   PetscFE_Composite *cmp = (PetscFE_Composite *) fem->data;
   DM                 dm;
@@ -191,7 +191,7 @@ PetscErrorCode PetscFEGetTabulation_Composite(PetscFE fem, PetscInt npoints, con
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscFEInitialize_Composite(PetscFE fem)
+static PetscErrorCode PetscFEInitialize_Composite(PetscFE fem)
 {
   PetscFunctionBegin;
   fem->ops->setfromoptions          = NULL;

@@ -2,7 +2,7 @@
   1 SNES Function norm 21.1059 
   2 SNES Function norm 1.48791 
   3 SNES Function norm 0.0100216 
-  4 SNES Function norm 4.67479e-07 
+  4 SNES Function norm 4.67469e-07 
 SNES Object: 1 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
@@ -10,6 +10,7 @@ SNES Object: 1 MPI processes
   total number of linear solver iterations=4
   total number of function evaluations=22
   norm schedule ALWAYS
+  Jacobian is built using colored finite differences on a DMDA
   SNESLineSearch Object: 1 MPI processes
     type: bt
       interpolation: cubic

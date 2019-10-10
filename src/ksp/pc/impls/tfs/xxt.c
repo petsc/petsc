@@ -56,8 +56,8 @@ static PetscErrorCode do_xxt_solve(xxt_ADT xxt_handle, PetscScalar *rhs);
 static PetscErrorCode check_handle(xxt_ADT xxt_handle);
 static PetscErrorCode det_separators(xxt_ADT xxt_handle);
 static PetscErrorCode do_matvec(mv_info *A, PetscScalar *v, PetscScalar *u);
-static PetscInt xxt_generate(xxt_ADT xxt_handle);
-static PetscInt do_xxt_factor(xxt_ADT xxt_handle);
+static PetscErrorCode xxt_generate(xxt_ADT xxt_handle);
+static PetscErrorCode do_xxt_factor(xxt_ADT xxt_handle);
 static mv_info *set_mvi(PetscInt *local2global, PetscInt n, PetscInt m, PetscErrorCode (*matvec)(mv_info*,PetscScalar*,PetscScalar*), void *grid_data);
 
 /**************************************xxt.c***********************************/
@@ -75,7 +75,7 @@ xxt_ADT XXT_new(void)
 }
 
 /**************************************xxt.c***********************************/
-PetscInt XXT_factor(xxt_ADT xxt_handle,     /* prev. allocated xxt  handle */
+PetscErrorCode XXT_factor(xxt_ADT xxt_handle,     /* prev. allocated xxt  handle */
                     PetscInt *local2global, /* global column mapping       */
                     PetscInt n,             /* local num rows              */
                     PetscInt m,             /* local num cols              */
@@ -105,7 +105,7 @@ PetscInt XXT_factor(xxt_ADT xxt_handle,     /* prev. allocated xxt  handle */
 }
 
 /**************************************xxt.c***********************************/
-PetscInt XXT_solve(xxt_ADT xxt_handle, PetscScalar *x, PetscScalar *b)
+PetscErrorCode XXT_solve(xxt_ADT xxt_handle, PetscScalar *x, PetscScalar *b)
 {
 
   PCTFS_comm_init();
@@ -113,9 +113,7 @@ PetscInt XXT_solve(xxt_ADT xxt_handle, PetscScalar *x, PetscScalar *b)
 
   /* need to copy b into x? */
   if (b) PCTFS_rvec_copy(x,b,xxt_handle->mvi->n);
-  do_xxt_solve(xxt_handle,x);
-
-  return(0);
+  return do_xxt_solve(xxt_handle,x);
 }
 
 /**************************************xxt.c***********************************/
@@ -149,7 +147,7 @@ PetscInt XXT_free(xxt_ADT xxt_handle)
 }
 
 /**************************************xxt.c***********************************/
-PetscInt XXT_stats(xxt_ADT xxt_handle)
+PetscErrorCode XXT_stats(xxt_ADT xxt_handle)
 {
   PetscInt       op[]  = {NON_UNIFORM,GL_MIN,GL_MAX,GL_ADD,GL_MIN,GL_MAX,GL_ADD,GL_MIN,GL_MAX,GL_ADD};
   PetscInt       fop[] = {NON_UNIFORM,GL_MIN,GL_MAX,GL_ADD};
@@ -209,13 +207,13 @@ is a row dist. nxm matrix w/ n<m.
 mylocmatvec = my_ml->Amat[grid_tag].matvec->external;
 mylocmatvec (void :: void *data, double *in, double *out)
 **************************************xxt.c***********************************/
-static PetscInt do_xxt_factor(xxt_ADT xxt_handle)
+static PetscErrorCode do_xxt_factor(xxt_ADT xxt_handle)
 {
   return xxt_generate(xxt_handle);
 }
 
 /**************************************xxt.c***********************************/
-static PetscInt xxt_generate(xxt_ADT xxt_handle)
+static PetscErrorCode xxt_generate(xxt_ADT xxt_handle)
 {
   PetscInt       i,j,k,idex;
   PetscInt       dim, col;
@@ -353,7 +351,7 @@ static PetscInt xxt_generate(xxt_ADT xxt_handle)
 
 
     /* uu = X^T.u_l (comm portion) */
-    PCTFS_ssgl_radd  (uu, w, dim, stages);
+    ierr = PCTFS_ssgl_radd  (uu, w, dim, stages);CHKERRQ(ierr);
 
     /* z = X.uu */
     PCTFS_rvec_zero(z,n);
@@ -501,7 +499,7 @@ static PetscErrorCode do_xxt_solve(xxt_ADT xxt_handle,  PetscScalar *uc)
 
   /* comunication of beta */
   uu_ptr=solve_uu;
-  if (level) PCTFS_ssgl_radd(uu_ptr, solve_w, level, stages);
+  if (level) {ierr = PCTFS_ssgl_radd(uu_ptr, solve_w, level, stages);CHKERRQ(ierr);}
 
   PCTFS_rvec_zero(uc,n);
 

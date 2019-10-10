@@ -60,7 +60,7 @@ int main(int argc,char **argv)
   }
 
   ierr = MatComputeOperatorTranspose(A,etype,&Aet);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)Aet,"Explicit matrix tranpose");CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)Aet,"Explicit matrix transpose");CHKERRQ(ierr);
   ierr = MatViewFromOptions(Aet,NULL,"-view_expl");CHKERRQ(ierr);
 
   ierr = PetscFree(etype);CHKERRQ(ierr);

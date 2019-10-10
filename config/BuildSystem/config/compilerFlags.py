@@ -85,13 +85,12 @@ class Configure(config.base.Configure):
     options = self.getOptionsObject()
     if not options:
       return
-    self.setCompilers.saveLog()
     options.saveLog()
     for language, compiler in [('C', 'CC'), ('Cxx', 'CXX'), ('FC', 'FC'), ('CUDA', 'CUDAC')]:
       if not hasattr(self.setCompilers, compiler):
         continue
       self.setCompilers.pushLanguage(language)
-      flagsName = self.getCompilerFlagsName(language)
+      flagsName = config.base.Configure.getCompilerFlagsName(language)
       try:
         self.version[language] = self.argDB[language.upper()+'_VERSION']
         if self.version[language] == 'Unknown':
@@ -118,15 +117,16 @@ class Configure(config.base.Configure):
               testFlag = ' '.join(testFlag)
             try:
               self.logPrint('Trying '+language+' compiler flag '+testFlag)
+              self.setCompilers.saveLog()
               self.setCompilers.addCompilerFlag(testFlag)
+              self.logWrite(self.setCompilers.restoreLog())
             except RuntimeError:
+              self.logWrite(self.setCompilers.restoreLog())
               self.logPrint('Rejected '+language+' compiler flag '+testFlag)
               self.rejected[language].append(testFlag)
       except RuntimeError:
         pass
       self.setCompilers.popLanguage()
-    self.logWrite(self.setCompilers.restoreLog())
-    self.logWrite(options.restoreLog())
     return
 
   def configure(self):

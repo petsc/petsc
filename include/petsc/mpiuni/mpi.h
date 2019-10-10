@@ -1012,6 +1012,14 @@ typedef int MPI_Offset;
    MPIUNI_ARG(newtype),\
    MPIUni_Abort(MPI_COMM_WORLD,0))
 
+#define MPI_Type_create_indexed_block(count,blocklength,array_of_displacements,oldtype,newtype) \
+  (MPIUNI_ARG(count),\
+   MPIUNI_ARG(blocklength),\
+   MPIUNI_ARG(array_of_displacements),\
+   MPIUNI_ARG(oldtype),\
+   MPIUNI_ARG(newtype),\
+   MPIUni_Abort(MPI_COMM_WORLD,0))
+
 #if defined(__cplusplus)
 }
 #endif

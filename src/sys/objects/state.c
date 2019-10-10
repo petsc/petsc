@@ -221,12 +221,39 @@ PetscErrorCode  PetscObjectComposedDataIncreaseScalarstar(PetscObject obj)
    Notes:
    The object ID may be different on different processes, but object IDs are never reused so local equality implies global equality.
 
-.seealso: PetscObjectStateGet()
+.seealso: PetscObjectStateGet(), PetscObjectCompareId()
 @*/
 PetscErrorCode PetscObjectGetId(PetscObject obj,PetscObjectId *id)
 {
 
   PetscFunctionBegin;
   *id = obj->id;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PetscObjectCompareId - compares the objects ID with a given id
+
+   Not Collective
+
+   Input Arguments:
++  obj - object
+-  id - integer ID
+
+   Output Argument;
+.  eq - the ids are equal
+
+   Level: developer
+
+   Notes:
+   The object ID may be different on different processes, but object IDs are never reused so local equality implies global equality.
+
+.seealso: PetscObjectStateGet(), PetscObjectGetId()
+@*/
+PetscErrorCode PetscObjectCompareId(PetscObject obj,PetscObjectId id,PetscBool *eq)
+{
+
+  PetscFunctionBegin;
+  *eq = (id == obj->id) ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(0);
 }

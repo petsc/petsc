@@ -48,7 +48,8 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
   ierr = MatDestroy(&jac->A);CHKERRQ(ierr);
   ierr = MPI_Comm_size(((PetscObject)pc->pmat)->comm,&size);CHKERRQ(ierr);
   if (size > 1) {
-    Mat          redmat;
+    Mat redmat;
+
     ierr = MatCreateRedundantMatrix(pc->pmat,size,PETSC_COMM_SELF,MAT_INITIAL_MATRIX,&redmat);CHKERRQ(ierr);
     ierr = MatConvert(redmat,MATSEQDENSE,MAT_INITIAL_MATRIX,&jac->A);CHKERRQ(ierr);
     ierr = MatDestroy(&redmat);CHKERRQ(ierr);

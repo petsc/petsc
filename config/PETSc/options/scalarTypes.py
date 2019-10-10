@@ -58,22 +58,22 @@ class Configure(config.base.Configure):
         self.addDefine('HAVE_ISNORMAL',1)
       if self.checkLink('#include <math.h>\n#include <complex>\n','double b = 2.0;int a = isnan(b);\n'):
         self.addDefine('HAVE_ISNAN',1)
+      elif self.checkLink('#include <float.h>\n#include <complex>\n','double b = 2.0;int a = _isnan(b);\n'):
+        self.addDefine('HAVE__ISNAN',1)
       if self.checkLink('#include <math.h>\n#include <complex>\n','double b = 2.0;int a = isinf(b);\n'):
         self.addDefine('HAVE_ISINF',1)
-      if self.checkLink('#include <float.h>\n#include <complex>\n','double b = 2.0;int a = _isnan(b);\n'):
-        self.addDefine('HAVE__ISNAN',1)
-      if self.checkLink('#include <float.h>\n#include <complex>\n','double b = 2.0;int a = _finite(b);\n'):
+      elif self.checkLink('#include <float.h>\n#include <complex>\n','double b = 2.0;int a = _finite(b);\n'):
         self.addDefine('HAVE__FINITE',1)
     else:
       if self.checkLink('#include <math.h>\n','double b = 2.0; int a = isnormal(b);\n'):
         self.addDefine('HAVE_ISNORMAL',1)
       if self.checkLink('#include <math.h>\n','double b = 2.0; int a = isnan(b);\n'):
         self.addDefine('HAVE_ISNAN',1)
+      elif self.checkLink('#include <float.h>\n','double b = 2.0;int a = _isnan(b);\n'):
+        self.addDefine('HAVE__ISNAN',1)
       if self.checkLink('#include <math.h>\n','double b = 2.0; int a = isinf(b);\n'):
         self.addDefine('HAVE_ISINF',1)
-      if self.checkLink('#include <float.h>\n','double b = 2.0;int a = _isnan(b);\n'):
-        self.addDefine('HAVE__ISNAN',1)
-      if self.checkLink('#include <float.h>\n','double b = 2.0;int a = _finite(b);\n'):
+      elif self.checkLink('#include <float.h>\n','double b = 2.0;int a = _finite(b);\n'):
         self.addDefine('HAVE__FINITE',1)
     self.popLanguage()
     return

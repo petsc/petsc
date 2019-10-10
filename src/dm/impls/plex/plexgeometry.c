@@ -349,7 +349,7 @@ PetscErrorCode PetscGridHashGetEnclosingBox(PetscGridHash box, PetscInt numPoint
       if (dbox == n[d] && PetscAbsReal(PetscRealPart(points[p*dim+d]) - upper[d]) < 1.0e-9) dbox = n[d]-1;
       if (dbox == -1   && PetscAbsReal(PetscRealPart(points[p*dim+d]) - lower[d]) < 1.0e-9) dbox = 0;
       if (dbox < 0 || dbox >= n[d]) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Input point %d (%g, %g, %g) is outside of our bounding box",
-                                             p, PetscRealPart(points[p*dim+0]), dim > 1 ? PetscRealPart(points[p*dim+1]) : 0.0, dim > 2 ? PetscRealPart(points[p*dim+2]) : 0.0);
+                                             p, (double) PetscRealPart(points[p*dim+0]), dim > 1 ? (double) PetscRealPart(points[p*dim+1]) : 0.0, dim > 2 ? (double) PetscRealPart(points[p*dim+2]) : 0.0);
       dboxes[p*dim+d] = dbox;
     }
     if (boxes) for (d = 1, boxes[p] = dboxes[p*dim]; d < dim; ++d) boxes[p] += dboxes[p*dim+d]*n[d-1];
@@ -1807,30 +1807,30 @@ static PetscErrorCode DMPlexComputeGeometryFVM_1D_Internal(DM dm, PetscInt dim, 
   Vec            coordinates;
   PetscScalar   *coords = NULL;
   PetscScalar    tmp[2];
-  PetscInt       coordSize;
+  PetscInt       coordSize, d;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, cell, &coordSize, &coords);CHKERRQ(ierr);
-  if (dim != 2) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "We only support 2D edges right now");
   ierr = DMLocalizeCoordinate_Internal(dm, dim, coords, &coords[dim], tmp);CHKERRQ(ierr);
   if (centroid) {
-    centroid[0] = 0.5*PetscRealPart(coords[0] + tmp[0]);
-    centroid[1] = 0.5*PetscRealPart(coords[1] + tmp[1]);
+    for (d = 0; d < dim; ++d) centroid[d] = 0.5*PetscRealPart(coords[d] + tmp[d]);
   }
   if (normal) {
     PetscReal norm;
 
+    if (dim != 2) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "We only support 2D edges right now");
     normal[0]  = -PetscRealPart(coords[1] - tmp[1]);
     normal[1]  =  PetscRealPart(coords[0] - tmp[0]);
-    norm       = PetscSqrtReal(normal[0]*normal[0] + normal[1]*normal[1]);
-    normal[0] /= norm;
-    normal[1] /= norm;
+    norm       = DMPlex_NormD_Internal(dim, normal);
+    for (d = 0; d < dim; ++d) normal[d] /= norm;
   }
   if (vol) {
-    *vol = PetscSqrtReal(PetscSqr(PetscRealPart(coords[0] - tmp[0])) + PetscSqr(PetscRealPart(coords[1] - tmp[1])));
+    *vol = 0.0;
+    for (d = 0; d < dim; ++d) *vol += PetscSqr(PetscRealPart(coords[d] - tmp[d]));
+    *vol = PetscSqrtReal(*vol);
   }
   ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, cell, &coordSize, &coords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1846,7 +1846,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_2D_Internal(DM dm, PetscInt dim, 
   PetscReal      vsum = 0.0, csum[3] = {0.0, 0.0, 0.0}, vtmp, ctmp[4], v0[3], R[9];
   PetscBool      isHybrid = PETSC_FALSE;
   PetscInt       fv[4] = {0, 1, 2, 3};
-  PetscInt       cdepth, pEndInterior[4], tdim = 2, coordSize, numCorners, p, d, e;
+  PetscInt       pEndInterior[4], cdepth, tdim = 2, coordSize, numCorners, p, d, e;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1855,7 +1855,6 @@ static PetscErrorCode DMPlexComputeGeometryFVM_2D_Internal(DM dm, PetscInt dim, 
   ierr = DMLabelGetValue(depth, cell, &cdepth);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &pEndInterior[3], &pEndInterior[2], &pEndInterior[1], &pEndInterior[0]);CHKERRQ(ierr);
   if ((pEndInterior[cdepth]) >=0 && (cell >= pEndInterior[cdepth])) isHybrid = PETSC_TRUE;
-
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMPlexGetConeSize(dm, cell, &numCorners);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
@@ -2104,7 +2103,7 @@ PetscErrorCode DMPlexComputeGeometryFEM(DM dm, Vec *cellgeom)
   /* TODO This needs to be multiplied by Nq for non-affine */
   for (c = cStart; c < cEnd; ++c) {ierr = PetscSectionSetDof(sectionCell, c, (PetscInt) PetscCeilReal(((PetscReal) sizeof(PetscFEGeom))/sizeof(PetscScalar)));CHKERRQ(ierr);}
   ierr = PetscSectionSetUp(sectionCell);CHKERRQ(ierr);
-  ierr = DMSetSection(dmCell, sectionCell);CHKERRQ(ierr);
+  ierr = DMSetLocalSection(dmCell, sectionCell);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&sectionCell);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(dmCell, cellgeom);CHKERRQ(ierr);
   ierr = VecGetArray(*cellgeom, &cgeom);CHKERRQ(ierr);
@@ -2114,7 +2113,7 @@ PetscErrorCode DMPlexComputeGeometryFEM(DM dm, Vec *cellgeom)
     ierr = DMPlexPointLocalRef(dmCell, c, cgeom, &cg);CHKERRQ(ierr);
     ierr = PetscArrayzero(cg, 1);CHKERRQ(ierr);
     ierr = DMPlexComputeCellGeometryFEM(dmCell, c, NULL, cg->v, cg->J, cg->invJ, cg->detJ);CHKERRQ(ierr);
-    if (*cg->detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", cg->detJ, c);
+    if (*cg->detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %D", (double) *cg->detJ, c);
   }
   PetscFunctionReturn(0);
 }
@@ -2155,16 +2154,14 @@ PetscErrorCode DMPlexComputeGeometryFVM(DM dm, Vec *cellgeom, Vec *facegeom)
   ierr = DMSetCoordinatesLocal(dmCell, coordinates);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject) dm), &sectionCell);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
+  ierr = DMPlexGetGhostCellStratum(dm, &cEndInterior, NULL);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(sectionCell, cStart, cEnd);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {ierr = PetscSectionSetDof(sectionCell, c, (PetscInt) PetscCeilReal(((PetscReal) sizeof(PetscFVCellGeom))/sizeof(PetscScalar)));CHKERRQ(ierr);}
   ierr = PetscSectionSetUp(sectionCell);CHKERRQ(ierr);
-  ierr = DMSetSection(dmCell, sectionCell);CHKERRQ(ierr);
+  ierr = DMSetLocalSection(dmCell, sectionCell);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&sectionCell);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(dmCell, cellgeom);CHKERRQ(ierr);
-  if (cEndInterior < 0) {
-    cEndInterior = cEnd;
-  }
+  if (cEndInterior < 0) cEndInterior = cEnd;
   ierr = VecGetArray(*cellgeom, &cgeom);CHKERRQ(ierr);
   for (c = cStart; c < cEndInterior; ++c) {
     PetscFVCellGeom *cg;
@@ -2180,7 +2177,7 @@ PetscErrorCode DMPlexComputeGeometryFVM(DM dm, Vec *cellgeom, Vec *facegeom)
   ierr = PetscSectionSetChart(sectionFace, fStart, fEnd);CHKERRQ(ierr);
   for (f = fStart; f < fEnd; ++f) {ierr = PetscSectionSetDof(sectionFace, f, (PetscInt) PetscCeilReal(((PetscReal) sizeof(PetscFVFaceGeom))/sizeof(PetscScalar)));CHKERRQ(ierr);}
   ierr = PetscSectionSetUp(sectionFace);CHKERRQ(ierr);
-  ierr = DMSetSection(dmFace, sectionFace);CHKERRQ(ierr);
+  ierr = DMSetLocalSection(dmFace, sectionFace);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&sectionFace);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(dmFace, facegeom);CHKERRQ(ierr);
   ierr = VecGetArray(*facegeom, &fgeom);CHKERRQ(ierr);
@@ -2330,7 +2327,7 @@ static PetscErrorCode BuildGradientReconstruction_Internal(DM dm, PetscFV fvm, D
   PetscFunctionBegin;
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
+  ierr = DMPlexGetGhostCellStratum(dm, &cEndInterior, NULL);CHKERRQ(ierr);
   ierr = DMPlexGetMaxSizes(dm, &maxNumFaces, NULL);CHKERRQ(ierr);
   ierr = PetscFVLeastSquaresSetMaxFaces(fvm, maxNumFaces);CHKERRQ(ierr);
   ierr = DMGetLabel(dm, "ghost", &ghostLabel);CHKERRQ(ierr);
@@ -2390,10 +2387,8 @@ static PetscErrorCode BuildGradientReconstruction_Internal_Tree(DM dm, PetscFV f
   PetscFunctionBegin;
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
-  if (cEndInterior < 0) {
-    cEndInterior = cEnd;
-  }
+  ierr = DMPlexGetGhostCellStratum(dm, &cEndInterior, NULL);CHKERRQ(ierr);
+  if (cEndInterior < 0) cEndInterior = cEnd;
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm),&neighSec);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(neighSec,cStart,cEndInterior);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
@@ -2520,7 +2515,7 @@ PetscErrorCode DMPlexComputeGradientFVM(DM dm, PetscFV fvm, Vec faceGeometry, Ve
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = PetscFVGetNumComponents(fvm, &pdim);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
+  ierr = DMPlexGetGhostCellStratum(dm, &cEndInterior, NULL);CHKERRQ(ierr);
   /* Construct the interpolant corresponding to each face from the least-square solution over the cell neighborhood */
   ierr = VecGetDM(faceGeometry, &dmFace);CHKERRQ(ierr);
   ierr = VecGetDM(cellGeometry, &dmCell);CHKERRQ(ierr);
@@ -2540,7 +2535,7 @@ PetscErrorCode DMPlexComputeGradientFVM(DM dm, PetscFV fvm, Vec faceGeometry, Ve
   ierr = PetscSectionSetChart(sectionGrad, cStart, cEnd);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {ierr = PetscSectionSetDof(sectionGrad, c, pdim*dim);CHKERRQ(ierr);}
   ierr = PetscSectionSetUp(sectionGrad);CHKERRQ(ierr);
-  ierr = DMSetSection(*dmGrad, sectionGrad);CHKERRQ(ierr);
+  ierr = DMSetLocalSection(*dmGrad, sectionGrad);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&sectionGrad);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2773,7 +2768,7 @@ static PetscErrorCode DMPlexCoordinatesToReference_Tensor(DM dm, PetscInt cell, 
         for (l = 0; l < dimC; l++) {
           maxAbs = PetscMax(maxAbs,PetscAbsReal(resNeg[l]));
         }
-        ierr = PetscInfo4(dm,"cell %D, point %D, iter %D: res %g\n",cell,j,i,maxAbs);CHKERRQ(ierr);
+        ierr = PetscInfo4(dm,"cell %D, point %D, iter %D: res %g\n",cell,j,i,(double) maxAbs);CHKERRQ(ierr);
       }
 #endif
 
@@ -2917,7 +2912,7 @@ static PetscErrorCode DMPlexCoordinatesToReference_FE(DM dm, PetscFE fe, PetscIn
         for (l = 0; l < Nc; l++) {
           maxAbs = PetscMax(maxAbs,PetscAbsReal(resNeg[l]));
         }
-        ierr = PetscInfo4(dm,"cell %D, point %D, iter %D: res %g\n",cell,j,i,maxAbs);CHKERRQ(ierr);
+        ierr = PetscInfo4(dm,"cell %D, point %D, iter %D: res %g\n",cell,j,i,(double) maxAbs);CHKERRQ(ierr);
       }
 #endif
       ierr = DMPlexCoordinatesToReference_NewtonUpdate(Nc,dimR,J,invJ,work,resNeg,guess);CHKERRQ(ierr);
@@ -2995,7 +2990,7 @@ static PetscErrorCode DMPlexReferenceToCoordinates_FE(DM dm, PetscFE fe, PetscIn
 @*/
 PetscErrorCode DMPlexCoordinatesToReference(DM dm, PetscInt cell, PetscInt numPoints, const PetscReal realCoords[], PetscReal refCoords[])
 {
-  PetscInt       dimC, dimR, depth, cStart, cEnd, cEndInterior, i;
+  PetscInt       dimC, dimR, depth, cStart, cEnd, i;
   DM             coordDM = NULL;
   Vec            coords;
   PetscFE        fe = NULL;
@@ -3024,9 +3019,7 @@ PetscErrorCode DMPlexCoordinatesToReference(DM dm, PetscInt cell, PetscInt numPo
       }
     }
   }
-  ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm,&cEndInterior,NULL,NULL,NULL);CHKERRQ(ierr);
-  cEnd = cEndInterior > 0 ? cEndInterior : cEnd;
+  ierr = DMPlexGetInteriorCellStratum(dm,&cStart,&cEnd);CHKERRQ(ierr);
   if (cell < cStart || cell >= cEnd) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"point %D not in cell range [%D,%D)",cell,cStart,cEnd);
   if (!fe) { /* implicit discretization: affine or multilinear */
     PetscInt  coneSize;
@@ -3074,12 +3067,12 @@ PetscErrorCode DMPlexCoordinatesToReference(DM dm, PetscInt cell, PetscInt numPo
 . realCoords - (numPoints x coordinate dimension) array of coordinates (see DMGetCoordinateDim())
 
    Level: intermediate
-   
+
 .seealso: DMPlexCoordinatesToReference()
 @*/
 PetscErrorCode DMPlexReferenceToCoordinates(DM dm, PetscInt cell, PetscInt numPoints, const PetscReal refCoords[], PetscReal realCoords[])
 {
-  PetscInt       dimC, dimR, depth, cStart, cEnd, cEndInterior, i;
+  PetscInt       dimC, dimR, depth, cStart, cEnd, i;
   DM             coordDM = NULL;
   Vec            coords;
   PetscFE        fe = NULL;
@@ -3108,9 +3101,7 @@ PetscErrorCode DMPlexReferenceToCoordinates(DM dm, PetscInt cell, PetscInt numPo
       }
     }
   }
-  ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm,&cEndInterior,NULL,NULL,NULL);CHKERRQ(ierr);
-  cEnd = cEndInterior > 0 ? cEndInterior : cEnd;
+  ierr = DMPlexGetInteriorCellStratum(dm,&cStart,&cEnd);CHKERRQ(ierr);
   if (cell < cStart || cell >= cEnd) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"point %D not in cell range [%D,%D)",cell,cStart,cEnd);
   if (!fe) { /* implicit discretization: affine or multilinear */
     PetscInt  coneSize;

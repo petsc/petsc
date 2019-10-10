@@ -341,7 +341,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     else SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONG,"Unknown ray %s",dir);
     sscanf(dir+2,"%d",&ray);
 
-    ierr = PetscInfo2(((PetscObject)ts),"Displaying DMDA ray %c = %D\n",dir[0],ray);CHKERRQ(ierr);
+    ierr = PetscInfo2(((PetscObject)ts),"Displaying DMDA ray %c = %d\n",dir[0],ray);CHKERRQ(ierr);
     ierr = PetscNew(&rayctx);CHKERRQ(ierr);
     ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
     ierr = DMDAGetRay(da,ddir,ray,&rayctx->ray,&rayctx->scatter);CHKERRQ(ierr);
@@ -366,7 +366,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     else SETERRQ1(PetscObjectComm((PetscObject) ts), PETSC_ERR_ARG_WRONG, "Unknown ray direction %s", dir);
     sscanf(dir+2, "%d", &ray);
 
-    ierr = PetscInfo2(((PetscObject) ts),"Displaying LG DMDA ray %c = %D\n", dir[0], ray);CHKERRQ(ierr);
+    ierr = PetscInfo2(((PetscObject) ts),"Displaying LG DMDA ray %c = %d\n", dir[0], ray);CHKERRQ(ierr);
     ierr = PetscNew(&rayctx);CHKERRQ(ierr);
     ierr = TSGetDM(ts, &da);CHKERRQ(ierr);
     ierr = DMDAGetRay(da, ddir, ray, &rayctx->ray, &rayctx->scatter);CHKERRQ(ierr);
@@ -1058,7 +1058,7 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shi
           function evaluation routine (may be NULL)
 
     Calling sequence of func:
-$     func (TS ts,PetscReal t,Vec u,Vec F,void *ctx);
+$     PetscErrorCode func (TS ts,PetscReal t,Vec u,Vec F,void *ctx);
 
 +   t - current timestep
 .   u - input vector
@@ -1107,7 +1107,7 @@ PetscErrorCode  TSSetRHSFunction(TS ts,Vec r,PetscErrorCode (*f)(TS,PetscReal,Ve
           function evaluation routine (may be NULL)
 
     Calling sequence of func:
-$     func (TS ts,PetscReal t,Vec u,void *ctx);
+$     PetscErrorCode func (TS ts,PetscReal t,Vec u,void *ctx);
 
 +   t - current timestep
 .   u - output vector
@@ -1152,7 +1152,7 @@ PetscErrorCode  TSSetSolutionFunction(TS ts,PetscErrorCode (*f)(TS,PetscReal,Vec
           function evaluation routine (may be NULL)
 
     Calling sequence of func:
-$     func (TS ts,PetscReal t,Vec f,void *ctx);
+$     PetscErrorCode func (TS ts,PetscReal t,Vec f,void *ctx);
 
 +   t - current timestep
 .   f - output vector
@@ -1201,7 +1201,7 @@ PetscErrorCode  TSSetForcingFunction(TS ts,TSForcingFunction func,void *ctx)
          Jacobian evaluation routine (may be NULL)
 
    Calling sequence of f:
-$     func (TS ts,PetscReal t,Vec u,Mat A,Mat B,void *ctx);
+$     PetscErrorCode func (TS ts,PetscReal t,Vec u,Mat A,Mat B,void *ctx);
 
 +  t - current timestep
 .  u - input vector
@@ -1270,7 +1270,7 @@ PetscErrorCode  TSSetRHSJacobian(TS ts,Mat Amat,Mat Pmat,TSRHSJacobian f,void *c
 -  ctx - user-defined context for private data for the function evaluation routine (may be NULL)
 
    Calling sequence of f:
-$  f(TS ts,PetscReal t,Vec u,Vec u_t,Vec F,ctx);
+$     PetscErrorCode f(TS ts,PetscReal t,Vec u,Vec u_t,Vec F,ctx);
 
 +  t   - time at step/stage being solved
 .  u   - state vector
@@ -1387,7 +1387,7 @@ PetscErrorCode TSGetRHSFunction(TS ts,Vec *r,TSRHSFunction *func,void **ctx)
 -  ctx - user-defined context for private data for the Jacobian evaluation routine (may be NULL)
 
    Calling sequence of f:
-$  f(TS ts,PetscReal t,Vec U,Vec U_t,PetscReal a,Mat Amat,Mat Pmat,void *ctx);
+$    PetscErrorCode f(TS ts,PetscReal t,Vec U,Vec U_t,PetscReal a,Mat Amat,Mat Pmat,void *ctx);
 
 +  t    - time at step/stage being solved
 .  U    - state vector
@@ -1476,7 +1476,7 @@ PetscErrorCode TSRHSJacobianSetReuse(TS ts,PetscBool reuse)
 -  ctx - user-defined context for private data for the function evaluation routine (may be NULL)
 
    Calling sequence of fun:
-$  fun(TS ts,PetscReal t,Vec U,Vec U_t,Vec U_tt,Vec F,ctx);
+$     PetscErrorCode fun(TS ts,PetscReal t,Vec U,Vec U_t,Vec U_tt,Vec F,ctx);
 
 +  t    - time at step/stage being solved
 .  U    - state vector
@@ -1549,7 +1549,7 @@ PetscErrorCode TSGetI2Function(TS ts,Vec *r,TSI2Function *fun,void **ctx)
 -  ctx - user-defined context for private data for the Jacobian evaluation routine (may be NULL)
 
    Calling sequence of jac:
-$  jac(TS ts,PetscReal t,Vec U,Vec U_t,Vec U_tt,PetscReal v,PetscReal a,Mat J,Mat P,void *ctx);
+$    PetscErrorCode jac(TS ts,PetscReal t,Vec U,Vec U_t,Vec U_tt,PetscReal v,PetscReal a,Mat J,Mat P,void *ctx);
 
 +  t    - time at step/stage being solved
 .  U    - state vector
@@ -3043,7 +3043,7 @@ PetscErrorCode  TSSetSolution(TS ts,Vec u)
 - func - The function
 
   Calling sequence of func:
-. func (TS ts);
+.   PetscErrorCode func (TS ts);
 
   Level: intermediate
 
@@ -3103,7 +3103,7 @@ PetscErrorCode  TSPreStep(TS ts)
 - func - The function
 
   Calling sequence of func:
-. PetscErrorCode func(TS ts, PetscReal stagetime);
+.    PetscErrorCode func(TS ts, PetscReal stagetime);
 
   Level: intermediate
 
@@ -7027,15 +7027,33 @@ PetscErrorCode TSComputeIJacobianDefaultColor(TS ts,PetscReal t,Vec U,Vec Udot,P
 }
 
 /*@
-    TSSetFunctionDomainError - Set the function testing if the current state vector is valid
+    TSSetFunctionDomainError - Set a function that tests if the current state vector is valid
 
     Input Parameters:
-    ts - the TS context
-    func - function called within TSFunctionDomainError
++    ts - the TS context
+-    func - function called within TSFunctionDomainError
+
+    Calling sequence of func:
+$     PetscErrorCode func(TS ts,PetscReal time,Vec state,PetscBool reject)
+
++   ts - the TS context
+.   time - the current time (of the stage)
+.   state - the state to check if it is valid
+-   reject - (output parameter) PETSC_FALSE if the state is acceptable, PETSC_TRUE if not acceptable
 
     Level: intermediate
 
-.seealso: TSAdaptCheckStage(), TSFunctionDomainError()
+    Notes:
+      If an implicit ODE solver is being used then, in addition to providing this routine, the
+      user's code should call SNESSetFunctionDomainError() when domain errors occur during
+      function evaluations where the functions are provided by TSSetIFunction() or TSSetRHSFunction().
+      Use TSGetSNES() to obtain the SNES object
+
+    Developer Notes:
+      The naming of this function is inconsistent with the SNESSetFunctionDomainError()
+      since one takes a function pointer and the other does not.
+
+.seealso: TSAdaptCheckStage(), TSFunctionDomainError(), SNESSetFunctionDomainError(), TSGetSNES()
 @*/
 
 PetscErrorCode TSSetFunctionDomainError(TS ts, PetscErrorCode (*func)(TS,PetscReal,Vec,PetscBool*))
@@ -7047,21 +7065,23 @@ PetscErrorCode TSSetFunctionDomainError(TS ts, PetscErrorCode (*func)(TS,PetscRe
 }
 
 /*@
-    TSFunctionDomainError - Check if the current state is valid
+    TSFunctionDomainError - Checks if the current state is valid
 
     Input Parameters:
-    ts - the TS context
-    stagetime - time of the simulation
-    Y - state vector to check.
++    ts - the TS context
+.    stagetime - time of the simulation
+-    Y - state vector to check.
 
     Output Parameter:
-    accept - Set to PETSC_FALSE if the current state vector is valid.
+.    accept - Set to PETSC_FALSE if the current state vector is valid.
 
     Note:
-    This function should be used to ensure the state is in a valid part of the space.
-    For example, one can ensure here all values are positive.
+    This function is called by the TS integration routines and calls the user provided function (set with TSSetFunctionDomainError())
+    to check if the current state is valid.
 
-    Level: advanced
+    Level: developer
+
+.seealso: TSSetFunctionDomainError()
 @*/
 PetscErrorCode TSFunctionDomainError(TS ts,PetscReal stagetime,Vec Y,PetscBool* accept)
 {

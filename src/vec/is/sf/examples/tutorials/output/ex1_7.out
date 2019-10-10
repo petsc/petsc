@@ -60,10 +60,10 @@ PetscSF Object: 4 MPI processes
   [3] 1 <- (0,0)
   [3] 2 <- (0,4)
 ## Multi-SF roots indices in original SF roots numbering
-0: 0 1 2 2 2
-0: 0 1
-0: 0 1
-0: 0 1
+[0] 0: 0 1 2 2 2
+[1] 0: 0 1
+[2] 0: 0 1
+[3] 0: 0 1
 ## Inverse of Multi-SF
 PetscSF Object: 4 MPI processes
   type: window

@@ -131,7 +131,7 @@ typedef struct _n_CDFStats
   PetscReal moment[3];
 } CDFStats;
 
-static void VecTaggerCDFStatsReduce(void *a, void *b, int * len, MPI_Datatype *datatype)
+static void MPIAPI VecTaggerCDFStatsReduce(void *a, void *b, int * len, MPI_Datatype *datatype)
 {
   PetscInt  i, j, N = *len;
   CDFStats *A = (CDFStats *) a;

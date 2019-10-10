@@ -217,7 +217,7 @@ int main(int argc,char **argv)
     ctx.E       = PetscRealConstant(1.1378);
     ctx.V       = PetscRealConstant(1.0);
     ctx.X       = PetscRealConstant(0.545);
-    ctx.Pmax    = ctx.E*ctx.V/ctx.X;;
+    ctx.Pmax    = ctx.E*ctx.V/ctx.X;
     ierr        = PetscOptionsScalar("-Pmax","","",ctx.Pmax,&ctx.Pmax,NULL);CHKERRQ(ierr);
     ctx.Pm      = PetscRealConstant(1.0194);
     ierr        = PetscOptionsScalar("-Pm","","",ctx.Pm,&ctx.Pm,NULL);CHKERRQ(ierr);
@@ -254,6 +254,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ctx.ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ctx.ts,TS_NONLINEAR);CHKERRQ(ierr);
+  ierr = TSSetEquationType(ctx.ts,TS_EQ_ODE_EXPLICIT);CHKERRQ(ierr); /* less Jacobian evaluations when adjoint BEuler is used, otherwise no effect */
   ierr = TSSetType(ctx.ts,TSRK);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(ctx.ts,NULL,(TSRHSFunction)RHSFunction,&ctx);CHKERRQ(ierr);
   ierr = TSSetRHSJacobian(ctx.ts,A,A,(TSRHSJacobian)RHSJacobian,&ctx);CHKERRQ(ierr);

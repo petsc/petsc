@@ -907,7 +907,7 @@ PetscErrorCode PCTFS_gs_free(PCTFS_gs_id *gs)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_free(&gs->PCTFS_gs_comm);CHKERRABORT(PETSC_COMM_WORLD,ierr);
+  ierr = MPI_Comm_free(&gs->PCTFS_gs_comm);CHKERRQ(ierr);
   if (gs->nghs) free((void*) gs->nghs);
   if (gs->pw_nghs) free((void*) gs->pw_nghs);
 

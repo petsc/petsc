@@ -26,7 +26,7 @@ int main(int argc,char **argv)
   PetscMPIInt    rank,size;
   PetscInt       nlocal = 6,nghost = 2,ifrom[2],i,rstart,rend;
   PetscErrorCode ierr;
-  PetscBool      flg,flg2;
+  PetscBool      flg,flg2,flg3;
   PetscScalar    value,*array,*tarray=0;
   Vec            lx,gx,gxs;
 
@@ -69,6 +69,7 @@ int main(int argc,char **argv)
   */
   ierr = PetscOptionsHasName(NULL,NULL,"-allocate",&flg);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(NULL,NULL,"-vecmpisetghost",&flg2);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-minvalues",&flg3);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscMalloc1(nlocal+nghost,&tarray);CHKERRQ(ierr);
     ierr = VecCreateGhostWithArray(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,nghost,ifrom,tarray,&gxs);CHKERRQ(ierr);
@@ -115,12 +116,36 @@ int main(int argc,char **argv)
   }
   ierr = VecRestoreArray(lx,&array);CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
-
   ierr = VecGhostRestoreLocalForm(gx,&lx);CHKERRQ(ierr);
+
+  /* Another test that sets ghost values and then accumulates onto the owning processors using MIN_VALUES */
+  if (flg3) {
+    if (!rank){ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\nTesting VecGhostUpdate with MIN_VALUES\n");CHKERRQ(ierr);}
+    ierr = VecGhostGetLocalForm(gx,&lx);CHKERRQ(ierr);
+    ierr = VecGetArray(lx,&array);CHKERRQ(ierr);
+    for (i=0; i<nghost; i++) array[nlocal+i] = rank ? (PetscScalar)4 : (PetscScalar)8;
+    ierr = VecRestoreArray(lx,&array);CHKERRQ(ierr);
+    ierr = VecGhostRestoreLocalForm(gx,&lx);CHKERRQ(ierr);
+
+    ierr = VecGhostUpdateBegin(gx,MIN_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecGhostUpdateEnd(gx,MIN_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+
+    ierr = VecGhostGetLocalForm(gx,&lx);CHKERRQ(ierr);
+    ierr = VecGetArray(lx,&array);CHKERRQ(ierr);
+
+    for (i=0; i<nlocal+nghost; i++) {
+      ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%D %g\n",i,(double)PetscRealPart(array[i]));CHKERRQ(ierr);
+    }
+    ierr = VecRestoreArray(lx,&array);CHKERRQ(ierr);
+    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
+    ierr = VecGhostRestoreLocalForm(gx,&lx);CHKERRQ(ierr);
+  }
+
   ierr = VecDestroy(&gx);CHKERRQ(ierr);
+
   if (flg) {ierr = PetscFree(tarray);CHKERRQ(ierr);}
   ierr = PetscFinalize();
-  return ierr; 
+  return ierr;
 }
 
 /*TEST
@@ -132,11 +157,20 @@ int main(int argc,char **argv)
        suffix: 2
        nsize: 2
        args: -allocate
+       output_file: output/ex9_1.out
 
      test:
        suffix: 3
        nsize: 2
        args: -vecmpisetghost
+       output_file: output/ex9_1.out
+
+     test:
+       suffix: 4
+       nsize: 2
+       args: -minvalues
+       output_file: output/ex9_2.out
+       requires: !complex
 
 TEST*/
 

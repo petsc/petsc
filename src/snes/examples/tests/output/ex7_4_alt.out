@@ -1,0 +1,49 @@
+    0 KSP Residual norm 7.280770540237e-01 
+    1 KSP Residual norm 3.337812721729e-01 
+    2 KSP Residual norm 8.313739299774e-02 
+    3 KSP Residual norm 5.251831933856e-02 
+    4 KSP Residual norm 1.542615245853e-05 
+    5 KSP Residual norm 9.020985913821e-08 
+    0 KSP Residual norm 9.231724776328e-03 
+    1 KSP Residual norm 5.040032789111e-03 
+    2 KSP Residual norm 1.891976920888e-03 
+    3 KSP Residual norm 8.513155336232e-08 
+    0 KSP Residual norm 1.452666856494e-05 
+    1 KSP Residual norm 1.038508253259e-05 
+    2 KSP Residual norm 5.428066742752e-06 
+    3 KSP Residual norm 5.770967845820e-07 
+    4 KSP Residual norm 3.353276423895e-12 
+SNES Object: 1 MPI processes
+  type: newtonls
+  maximum iterations=50, maximum function evaluations=10000
+  tolerances: relative=1e-05, absolute=1e-25, solution=1e-05
+  total number of linear solver iterations=12
+  total number of function evaluations=25
+  norm schedule ALWAYS
+  SNESLineSearch Object: 1 MPI processes
+    type: bt
+      interpolation: cubic
+      alpha=1.000000e-04
+    maxstep=1.000000e+08, minlambda=1.000000e-12
+    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+    maximum iterations=40
+  KSP Object: 1 MPI processes
+    type: gmres
+      restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+      happy breakdown tolerance 1e-30
+    maximum iterations=10000, initial guess is zero
+    tolerances:  relative=1e-05, absolute=1e-25, divergence=10000.
+    left preconditioning
+    using PRECONDITIONED norm type for convergence test
+  PC Object: 1 MPI processes
+    type: jacobi
+    linear system matrix = precond matrix:
+    Mat Object: 1 MPI processes
+      type: mffd
+      rows=5, cols=5
+        Matrix-free approximation:
+          err=0.000345267 (relative error in function evaluation)
+          Using wp compute h routine
+              Does not compute normU
+number of SNES iterations = 3
+

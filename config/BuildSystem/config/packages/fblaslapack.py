@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit              = 'v3.4.2-p1'
+    self.gitcommit              = 'origin/barry/2019-08-22/fix-syntax-for-nag'
     self.download               = ['git://https://bitbucket.org/petsc/pkg-fblaslapack','https://bitbucket.org/petsc/pkg-fblaslapack/get/'+self.gitcommit+'.tar.gz']
     self.precisions             = ['single','double']
     self.downloadonWindows      = 1
@@ -24,11 +24,6 @@ class Configure(config.package.Package):
 
   def Install(self):
     import os
-
-    self.setCompilers.pushLanguage('FC')
-    if config.setCompilers.Configure.isNAG(self.setCompilers.getLinker(), self.log):
-      raise RuntimeError('Cannot compile fortran blaslapack with NAG compiler')
-    self.setCompilers.popLanguage()
 
     libdir = self.libDir
     confdir = self.confDir
@@ -59,12 +54,18 @@ class Configure(config.package.Package):
         line = 'FC = '+fc+'\n'
       if line.startswith('FOPTFLAGS '):
         self.setCompilers.pushLanguage('FC')
-        line = 'FOPTFLAGS  = '+self.setCompilers.getCompilerFlags().replace('-Mfree','')+'\n'
+        line = 'FOPTFLAGS  = '+self.setCompilers.getCompilerFlags().replace('-Mfree','')
+        if config.setCompilers.Configure.isNAG(self.setCompilers.getLinker(), self.log):
+          line = line + ' -dusty -dcfuns'
+        line = line + '\n'
         noopt = self.checkNoOptFlag()
         self.setCompilers.popLanguage()
       if line.startswith('FNOOPT'):
         self.setCompilers.pushLanguage('FC')
-        line = 'FNOOPT = '+noopt+' '+self.getSharedFlag(self.setCompilers.getCompilerFlags())+' '+self.getPointerSizeFlag(self.setCompilers.getCompilerFlags())+' '+self.getWindowsNonOptFlags(self.setCompilers.getCompilerFlags())+'\n'
+        line = 'FNOOPT = '+noopt+' '+self.getSharedFlag(self.setCompilers.getCompilerFlags())+' '+self.getPointerSizeFlag(self.setCompilers.getCompilerFlags())+' '+self.getWindowsNonOptFlags(self.setCompilers.getCompilerFlags())
+        if config.setCompilers.Configure.isNAG(self.setCompilers.getLinker(), self.log):
+          line = line + ' -dusty -dcfuns'
+        line = line + '\n'
         self.setCompilers.popLanguage()
       if line.startswith('AR  '):
         line = 'AR      = '+self.setCompilers.AR+'\n'
@@ -92,14 +93,16 @@ class Configure(config.package.Package):
 
     try:
       self.logPrintBox('Compiling FBLASLAPACK; this may take several minutes')
-      output1,err1,ret  = config.package.Package.executeShellCommand('cd '+blasDir+' && make -f tmpmakefile cleanblaslapck cleanlib && '+self.make.make_jnp+' -f tmpmakefile', timeout=2500, log = self.log)
+      output1,err1,ret  = config.package.Package.executeShellCommand('cd '+blasDir+' && rm -rf */*.c && make -f tmpmakefile cleanblaslapck cleanlib && '+self.make.make_jnp+' -f tmpmakefile', timeout=2500, log = self.log)
     except RuntimeError as e:
-      raise RuntimeError('Error running make on '+blasDir+': '+str(e))
+      self.logPrint('Error running make on '+blasDir+': '+str(e))
+      raise RuntimeError('Error running make on '+blasDir)
     try:
       self.installDirProvider.printSudoPasswordMessage()
       output2,err2,ret  = config.package.Package.executeShellCommand('cd '+blasDir+' && '+self.installSudo+'mkdir -p '+libdir+' && '+self.installSudo+'cp -f libfblas.'+self.setCompilers.AR_LIB_SUFFIX+' libflapack.'+self.setCompilers.AR_LIB_SUFFIX+' '+ libdir, timeout=300, log = self.log)
     except RuntimeError as e:
-      raise RuntimeError('Error moving '+blasDir+' libraries: '+str(e))
+      self.logPrint('Error moving '+blasDir+' libraries: '+str(e))
+      raise RuntimeError('Error moving '+blasDir+' libraries')
     self.postInstall(output1+err1+output2+err2,'tmpmakefile')
     return self.installDir
 

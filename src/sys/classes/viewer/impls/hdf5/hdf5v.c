@@ -544,9 +544,11 @@ PetscErrorCode  PetscViewerHDF5GetFileId(PetscViewer viewer, hid_t *file_id)
 
   Level: intermediate
 
+  Note: The group name being NULL, empty string, or a sequence of all slashes (e.g. "///") is always internally stored as NULL and interpreted as "/".
+
 .seealso: PetscViewerHDF5Open(),PetscViewerHDF5PopGroup(),PetscViewerHDF5GetGroup(),PetscViewerHDF5OpenGroup()
 @*/
-PetscErrorCode  PetscViewerHDF5PushGroup(PetscViewer viewer, const char *name)
+PetscErrorCode  PetscViewerHDF5PushGroup(PetscViewer viewer, const char name[])
 {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
   PetscViewerHDF5GroupList *groupNode;
@@ -554,10 +556,15 @@ PetscErrorCode  PetscViewerHDF5PushGroup(PetscViewer viewer, const char *name)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  PetscValidCharPointer(name,2);
+  if (name) PetscValidCharPointer(name,2);
+  if (name && name[0]) {
+     size_t i,len;
+     ierr = PetscStrlen(name, &len);CHKERRQ(ierr);
+     for (i=0; i<len; i++) if (name[i] != '/') break;
+     if (i == len) name = NULL;
+  } else name = NULL;
   ierr = PetscNew(&groupNode);CHKERRQ(ierr);
   ierr = PetscStrallocpy(name, (char**) &groupNode->name);CHKERRQ(ierr);
-
   groupNode->next = hdf5->groups;
   hdf5->groups    = groupNode;
   PetscFunctionReturn(0);
@@ -607,7 +614,7 @@ PetscErrorCode  PetscViewerHDF5PopGroup(PetscViewer viewer)
 
 .seealso: PetscViewerHDF5Open(),PetscViewerHDF5PushGroup(),PetscViewerHDF5PopGroup(),PetscViewerHDF5OpenGroup()
 @*/
-PetscErrorCode  PetscViewerHDF5GetGroup(PetscViewer viewer, const char **name)
+PetscErrorCode  PetscViewerHDF5GetGroup(PetscViewer viewer, const char *name[])
 {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5 *) viewer->data;
 

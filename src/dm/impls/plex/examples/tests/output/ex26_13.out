@@ -6,8 +6,8 @@ cubit(aise/AeroFS/Development/DMPlex/EXO/FourBrickTet-large.exo): 12/08/2017: 17
   2-cells: 202
   3-cells: 89
 Labels:
-  Cell Sets: 4 strata with value/size (1 (24), 2 (23), 5 (24), 20 (18))
   depth: 4 strata with value/size (0 (34), 1 (146), 2 (202), 3 (89))
+  Cell Sets: 4 strata with value/size (1 (24), 2 (23), 5 (24), 20 (18))
 PetscSection Object: 1 MPI processes
   type not yet set
 3 fields

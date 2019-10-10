@@ -5,8 +5,8 @@ Mesh in 2 dimensions:
   1-cells: 4
   2-cells: 1
 Labels:
-  depth: 3 strata with value/size (0 (4), 1 (4), 2 (1))
   Face Sets: 4 strata with value/size (4 (1), 2 (1), 1 (1), 3 (1))
+  depth: 3 strata with value/size (0 (4), 1 (4), 2 (1))
   DMSWARM_PIC: Using method CellDM->LocatePoints
   DMSWARM_PIC: Using method CellDM->GetNeigbors
 DM Object: Particles 1 MPI processes

@@ -30,7 +30,7 @@ PetscErrorCode PetscLogGetStageLog(PetscStageLog *stageLog)
   PetscValidPointer(stageLog,1);
   if (!petsc_stageLog) {
     fprintf(stderr, "PETSC ERROR: Logging has not been enabled.\nYou might have forgotten to call PetscInitialize().\n");
-    MPI_Abort(MPI_COMM_WORLD, PETSC_ERR_SUP);
+    PETSCABORT(MPI_COMM_WORLD, PETSC_ERR_SUP);
   }
   *stageLog = petsc_stageLog;
   PetscFunctionReturn(0);

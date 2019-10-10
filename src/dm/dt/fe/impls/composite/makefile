@@ -1,14 +1,15 @@
 
 ALL: lib
 
-CFLAGS   =
-FFLAGS   =
-SOURCEC  = fecomposite.c
-SOURCEF  =
-LIBBASE  = libpetscdm
-DIRS     = 
-LOCDIR   = src/dm/dt/fe/impls/composite/
-MANSEC   = DM
+CFLAGS    =
+FFLAGS    =
+SOURCEC   = fecomposite.c
+SOURCEF   =
+LIBBASE   = libpetscdm
+DIRS      =
+LOCDIR    = src/dm/dt/fe/impls/composite/
+MANSEC    = DM
+SUBMANSEC = FE
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

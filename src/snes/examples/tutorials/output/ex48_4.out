@@ -52,6 +52,7 @@ SNES Object: 6 MPI processes
   total number of function evaluations=6
   norm schedule ALWAYS
   total number of grid sequence refinements=3
+  Jacobian is built using a DMDA local Jacobian
   SNESLineSearch Object: 6 MPI processes
     type: bt
       interpolation: cubic

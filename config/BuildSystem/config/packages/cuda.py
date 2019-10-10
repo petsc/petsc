@@ -7,6 +7,7 @@ class Configure(config.package.Package):
     self.minversion       = '7.5'
     self.versionname      = 'CUDA_VERSION'
     self.versioninclude   = 'cuda.h'
+    self.requiresversion  = 1
     self.functions        = ['cublasInit', 'cufftDestroy']
     self.includes         = ['cublas.h','cufft.h','cusparse.h','cusolverDn.h','thrust/version.h']
     self.liblist          = [['libcufft.a', 'libcublas.a','libcudart.a','libcusparse.a','libcusolver.a'],

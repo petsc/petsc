@@ -412,7 +412,7 @@ PetscErrorCode MatCreateSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatScale_MPIDense(Mat inA,PetscScalar alpha)
+PETSC_INTERN PetscErrorCode MatScale_MPIDense(Mat inA,PetscScalar alpha)
 {
   Mat_MPIDense   *A     = (Mat_MPIDense*)inA->data;
   Mat_SeqDense   *a     = (Mat_SeqDense*)A->A->data;

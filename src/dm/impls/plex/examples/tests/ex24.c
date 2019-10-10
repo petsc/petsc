@@ -251,6 +251,7 @@ int main(int argc, char **argv)
     # repartition mesh already partitioned naively by MED loader
     suffix: 1
     nsize: {{1 2 3 4 8}}
+    TODO: MED
     requires: parmetis ptscotch med
     args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/cylinder.med -interpolate
     args: -repartition 0 -partitioning {{parmetis ptscotch}}

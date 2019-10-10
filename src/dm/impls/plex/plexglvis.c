@@ -87,7 +87,7 @@ PetscErrorCode DMSetUpGLVisViewer_Plex(PetscObject odm, PetscViewer viewer)
 
   ierr = DMCreateLocalVector(dm,&xlocal);CHKERRQ(ierr);
   ierr = VecGetLocalSize(xlocal,&totdofs);CHKERRQ(ierr);
-  ierr = DMGetSection(dm,&s);CHKERRQ(ierr);
+  ierr = DMGetLocalSection(dm,&s);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(s,&nfields);CHKERRQ(ierr);
   for (f=0,maxfields=0;f<nfields;f++) {
     PetscInt bs;
@@ -133,11 +133,11 @@ PetscErrorCode DMSetUpGLVisViewer_Plex(PetscObject odm, PetscViewer viewer)
           ierr = PetscStrcmp(spname,PETSCDUALSPACELAGRANGE,&islag);CHKERRQ(ierr);
           if (!islag) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported dual space");
           ierr = PetscDualSpaceLagrangeGetContinuity(sp,&continuous);CHKERRQ(ierr);
-          if (!continuous) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Discontinuous space visualization currently unsupported");
           ierr = PetscDualSpaceGetOrder(sp,&order);CHKERRQ(ierr);
-          if (continuous && order > 0) {
+          if (continuous && order > 0) { /* no support for high-order viz, still have to figure out the numbering */
             ierr = PetscSNPrintf(fec,64,"FiniteElementCollection: H1_%DD_P1",dim);CHKERRQ(ierr);
           } else {
+            if (!continuous && order) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Discontinuous space visualization currently unsupported for order %D",order);
             H1   = PETSC_FALSE;
             ierr = PetscSNPrintf(fec,64,"FiniteElementCollection: L2_%DD_P%D",dim,order);CHKERRQ(ierr);
           }
@@ -338,10 +338,10 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   Vec                  coordinates,hovec;
   const PetscScalar    *array;
   PetscInt             bf,p,sdim,dim,depth,novl,minl;
-  PetscInt             cStart,cEnd,cEndInterior,vStart,vEnd,nvert;
+  PetscInt             cStart,cEnd,cMax,vStart,vEnd,nvert;
   PetscMPIInt          size;
   PetscBool            localized,isascii;
-  PetscBool            enable_mfem,enable_boundary,enable_ncmesh;
+  PetscBool            enable_mfem,enable_boundary,enable_ncmesh,view_ovl = PETSC_FALSE;
   PetscBT              pown,vown;
   PetscErrorCode       ierr;
   PetscContainer       glvis_container;
@@ -373,9 +373,9 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
      DMPlex does not currently support HO meshes, so there's no API for this */
   ierr = PetscObjectQuery((PetscObject)dm,"_glvis_mesh_coords",(PetscObject*)&hovec);CHKERRQ(ierr);
 
-  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
-  cEndInterior = cEndInterior < 0 ? cEnd : cEndInterior;
+  cMax = cMax < 0 ? cEnd : cMax;
   ierr = DMPlexGetDepthStratum(dm,0,&vStart,&vEnd);CHKERRQ(ierr);
   ierr = DMGetPeriodicity(dm,&periodic,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocalized(dm,&localized);CHKERRQ(ierr);
@@ -401,6 +401,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   ierr = PetscOptionsBool("-viewer_glvis_dm_plex_enable_boundary","Enable boundary section in mesh representation",NULL,enable_boundary,&enable_boundary,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-viewer_glvis_dm_plex_enable_ncmesh","Enable vertex_parents section in mesh representation (allows derefinement)",NULL,enable_ncmesh,&enable_ncmesh,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-viewer_glvis_dm_plex_enable_mfem","Dump a mesh that can be used with MFEM's FiniteElementSpaces",NULL,enable_mfem,&enable_mfem,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-viewer_glvis_dm_plex_overlap","Include overlap region in local meshes",NULL,view_ovl,&view_ovl,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-viewer_glvis_dm_plex_emarker","String for the material id label",NULL,emark,emark,sizeof(emark),&enable_emark);CHKERRQ(ierr);
   ierr = PetscOptionsString("-viewer_glvis_dm_plex_bmarker","String for the boundary id label",NULL,bmark,bmark,sizeof(bmark),&enable_bmark);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
@@ -428,7 +429,11 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
 
     ierr = PetscObjectQuery((PetscObject)dm,"_glvis_plex_gnum",(PetscObject*)&globalNum);CHKERRQ(ierr);
     if (!globalNum) {
-      ierr = DMPlexCreateCellNumbering_Internal(dm,PETSC_TRUE,&globalNum);CHKERRQ(ierr);
+      if (view_ovl) {
+        ierr = ISCreateStride(PetscObjectComm((PetscObject)dm),cEnd-cStart,0,1,&globalNum);CHKERRQ(ierr);
+      } else {
+        ierr = DMPlexCreateCellNumbering_Internal(dm,PETSC_TRUE,&globalNum);CHKERRQ(ierr);
+      }
       ierr = PetscObjectCompose((PetscObject)dm,"_glvis_plex_gnum",(PetscObject)globalNum);CHKERRQ(ierr);
       ierr = PetscObjectDereference((PetscObject)globalNum);CHKERRQ(ierr);
     }
@@ -480,7 +485,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
       PetscScalar *array,*ptr;
 
       ierr = PetscSNPrintf(fec,sizeof(fec),"FiniteElementCollection: L2_T1_%DD_P1",dim);CHKERRQ(ierr);
-      if (cEndInterior < cEnd) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Support for hybrid meshed not currently implemented");
+      if (cMax < cEnd) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Support for hybrid meshed not currently implemented");
       if (cEnd-cStart) {
         PetscInt fpc;
 
@@ -598,7 +603,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
     ierr = DMPlexGetPointMFEMCellID_Internal(dm,label,minl,p,&mid,&cid);CHKERRQ(ierr);
     ierr = DMPlexGetPointMFEMVertexIDs_Internal(dm,p,(localized && !hovec) ? coordSection : NULL,&nv,vids);CHKERRQ(ierr);
     ierr = DMPlexInvertCell(dim,nv,vids);CHKERRQ(ierr);
-    if (p >= cEndInterior) {
+    if (p >= cMax) {
       ierr = DMPlexGlvisInvertHybrid(cid,vids);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer,"%D %D",mid,cid);CHKERRQ(ierr);
@@ -648,10 +653,10 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
 
     /* determine orientation of boundary mesh */
     if (cEnd-cStart) {
-      if (cEndInterior < cEnd) {
-        ierr = DMPlexGetConeSize(dm,cEndInterior,&fpcH);CHKERRQ(ierr);
+      if (cMax < cEnd) {
+        ierr = DMPlexGetConeSize(dm,cMax,&fpcH);CHKERRQ(ierr);
       }
-      if (cEndInterior > cStart) {
+      if (cMax > cStart) {
         ierr = DMPlexGetConeSize(dm,cStart,&fpc);CHKERRQ(ierr);
       }
       switch(dim) {
@@ -730,7 +735,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
         if (dof) {
           PetscInt    v,csize,cellClosureSize,*cellClosure = NULL,*vidxs = NULL;
           PetscScalar *vals = NULL;
-          if (p < cEndInterior) uvpc = vpc;
+          if (p < cMax) uvpc = vpc;
           else uvpc = vpcH;
           if (dof%sdim) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Incompatible number of cell dofs %D and space dimension %D",dof,sdim);
           if (dof/sdim != uvpc) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_SUP,"Incompatible number of cell dofs %D, vertices %D and space dim %D",dof/sdim,uvpc,sdim);
@@ -926,7 +931,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
           ierr = PetscViewerASCIIPrintf(viewer,"%D %D",mid,cid);CHKERRQ(ierr);
           /* vertex ids */
           ierr = DMPlexGetPointMFEMVertexIDs_Internal(dm,cell,(localized && !hovec) ? coordSection : NULL,&nv,vids);CHKERRQ(ierr);
-          if (cell >= cEndInterior) {
+          if (cell >= cMax) {
             PetscInt nv = vpfH, inc = vpfH;
             if (vpfH < 0) { /* Wedge */
               if (cl == 0 || cl == 1) nv = 3;

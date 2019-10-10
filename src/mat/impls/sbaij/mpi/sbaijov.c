@@ -67,7 +67,10 @@ PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C,PetscInt is_max,IS is[],PetscIn
         else if (pos == is_max) max_no = 0;
         else                    max_no = is_max-pos;
         c->ijonly = PETSC_TRUE; /* only matrix data structures are requested */
+        /* The resulting submatrices should be BAIJ, not SBAIJ, hence we change this value to trigger that */
+        ierr      = PetscStrcpy(((PetscObject)c->A)->type_name,MATSEQBAIJ);CHKERRQ(ierr);
         ierr      = MatCreateSubMatrices_MPIBAIJ_local(C,max_no,is_row+pos,is_new+pos,MAT_INITIAL_MATRIX,submats+pos);CHKERRQ(ierr);
+        ierr      = PetscStrcpy(((PetscObject)c->A)->type_name,MATSEQSBAIJ);CHKERRQ(ierr);
         pos      += max_no;
       }
 
@@ -77,7 +80,7 @@ PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C,PetscInt is_max,IS is[],PetscIn
       /* 3) Column search */
       for (i=0; i<is_max; i++) {
         asub_i = (Mat_SeqSBAIJ*)submats[i]->data;
-        ai     = asub_i->i;;
+        ai     = asub_i->i;
 
         /* put is_new obtained from MatIncreaseOverlap_MPIBAIJ() to table */
         ierr = PetscBTMemzero(Mbs,table);CHKERRQ(ierr);

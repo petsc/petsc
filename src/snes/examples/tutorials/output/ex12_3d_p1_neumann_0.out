@@ -6,9 +6,9 @@ Mesh in 3 dimensions:
   2-cells: 18
   3-cells: 6
 Labels:
-  boundary: 1 strata with value/size (1 (12))
-  marker: 1 strata with value/size (1 (20))
   depth: 4 strata with value/size (0 (8), 1 (19), 2 (18), 3 (6))
+  marker: 1 strata with value/size (1 (20))
+  boundary: 1 strata with value/size (1 (12))
 Local function:
 Vec Object: 1 MPI processes
   type: seq

@@ -20,8 +20,6 @@ static char help[] = "Time-dependent PDE in 2d for calculating joint PDF. \n";
 #include <petscdmda.h>
 #include <petscts.h>
 
-static const char *const BoundaryTypes[] = {"NONE","GHOSTED","MIRROR","PERIODIC","DMBoundaryType","DM_BOUNDARY_",0};
-
 /*
    User-defined data structures and routines
 */
@@ -375,8 +373,8 @@ PetscErrorCode Parameter_settings(AppCtx *user)
   ierr = PetscOptionsGetScalar(NULL,NULL,"-ymin",&user->ymin,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetScalar(NULL,NULL,"-ymax",&user->ymax,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-stencil_width",&user->st_width,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetEnum(NULL,NULL,"-bx",BoundaryTypes,(PetscEnum*)&user->bx,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetEnum(NULL,NULL,"-by",BoundaryTypes,(PetscEnum*)&user->by,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetEnum(NULL,NULL,"-bx",DMBoundaryTypes,(PetscEnum*)&user->bx,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetEnum(NULL,NULL,"-by",DMBoundaryTypes,(PetscEnum*)&user->by,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,NULL,"-tf",&user->tf,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,NULL,"-tcl",&user->tcl,&flg);CHKERRQ(ierr);
   PetscFunctionReturn(0);

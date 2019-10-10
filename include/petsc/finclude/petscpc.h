@@ -24,6 +24,7 @@
 #define CoarseProblemType PetscEnum
 #define PCGAMGType character*(80)
 #define PCGAMGClassicalType character*(80)
+#define PCGAMGLayoutType PetscEnum
 !
 ! GAMG types
 !
@@ -86,5 +87,6 @@
 #define PCMGGalerkinType PetscEnum
 #define PCExoticType PetscEnum
 #define PCDeflationSpaceType PetscEnum
+#define PCBDDCInterfaceExtType PetscEnum
 #define PCFailedReason PetscEnum
 #endif

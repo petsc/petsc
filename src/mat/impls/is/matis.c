@@ -1949,7 +1949,7 @@ PETSC_INTERN PetscErrorCode MatConvert_IS_XAIJ(Mat mat, MatType mtype, MatReuse 
       ierr = ISDestroy(&irows);CHKERRQ(ierr);
       goto general_assembly;
     }
-    ierr = MatConvert(matis->A,(rbs == cbs && rbs > 1) ? MATSEQBAIJ : MATSEQAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+    ierr = MatConvert(matis->A,mtype,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
     if (reuse != MAT_INPLACE_MATRIX) {
       ierr = MatCreateSubMatrix(B,irows,icols,reuse,M);CHKERRQ(ierr);
       ierr = PetscObjectCompose((PetscObject)(*M),"_MatIS_IS_XAIJ_irows",(PetscObject)irows);CHKERRQ(ierr);
@@ -2046,7 +2046,9 @@ general_assembly:
         PetscInt r;
 
         for (i=0,r=0;i<nb;i++) {
+#if defined(PETSC_USE_DEBUG)
           if (blocks[i] != xadj[r+1] - xadj[r]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Invalid block sizes prescribed for block %D: expected %D, got %D",i,blocks[i],xadj[r+1] - xadj[r]);
+#endif
           ierr = MatSetValuesLocal(MT,blocks[i],adjncy+xadj[r],blocks[i],adjncy+xadj[r],sarray+xadj[r],ADD_VALUES);CHKERRQ(ierr);
           r   += blocks[i];
         }
@@ -2379,12 +2381,14 @@ static PetscErrorCode MatISSetUpScatters_Private(Mat A)
   ierr = VecScatterDestroy(&is->rctx);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&is->cctx);CHKERRQ(ierr);
   ierr = MatCreateVecs(is->A,&is->x,&is->y);CHKERRQ(ierr);
+  ierr = VecPinToCPU(is->y,PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)is->y,VECSEQCUDA,&iscuda);CHKERRQ(ierr);
   if (iscuda) {
     ierr = PetscFree(A->defaultvectype);CHKERRQ(ierr);
     ierr = PetscStrallocpy(VECCUDA,&A->defaultvectype);CHKERRQ(ierr);
   }
   ierr = MatCreateVecs(A,&cglobal,&rglobal);CHKERRQ(ierr);
+  ierr = VecPinToCPU(rglobal,PETSC_TRUE);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingGetBlockIndices(A->rmap->mapping,&garray);CHKERRQ(ierr);
   ierr = ISCreateBlock(PetscObjectComm((PetscObject)A),rbs,nr/rbs,garray,PETSC_USE_POINTER,&from);CHKERRQ(ierr);
   ierr = VecScatterCreate(rglobal,from,is->y,NULL,&is->rctx);CHKERRQ(ierr);
@@ -2404,11 +2408,14 @@ static PetscErrorCode MatISSetUpScatters_Private(Mat A)
 
   /* interface counter vector (local) */
   ierr = VecDuplicate(is->y,&is->counter);CHKERRQ(ierr);
+  ierr = VecPinToCPU(is->counter,PETSC_TRUE);CHKERRQ(ierr);
   ierr = VecSet(is->y,1.);CHKERRQ(ierr);
   ierr = VecScatterBegin(is->rctx,is->y,rglobal,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd(is->rctx,is->y,rglobal,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterBegin(is->rctx,rglobal,is->counter,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(is->rctx,rglobal,is->counter,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecPinToCPU(is->y,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = VecPinToCPU(is->counter,PETSC_FALSE);CHKERRQ(ierr);
 
   /* special functions for block-diagonal matrices */
   ierr = VecSum(rglobal,&sum);CHKERRQ(ierr);

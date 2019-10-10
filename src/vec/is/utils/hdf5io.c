@@ -1,7 +1,6 @@
 #include <petsc/private/viewerimpl.h>
 #include <petsc/private/viewerhdf5impl.h>
-#include <petscviewerhdf5.h>    /*I   "petscviewerhdf5.h"   I*/
-#include <petsc/private/isimpl.h> /* for PetscViewerHDF5Load_Private */
+#include <petsclayouthdf5.h>    /*I   "petsclayoutdf5.h"   I*/
 #include <petscis.h>    /*I   "petscis.h"   I*/
 
 #if defined(PETSC_HAVE_HDF5)
@@ -49,7 +48,7 @@ static PetscErrorCode PetscViewerHDF5ReadFinalize_Private(PetscViewer viewer, HD
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscViewerHDF5ReadSizes_Private(PetscViewer viewer, HDF5ReadCtx ctx, PetscLayout *map_)
+static PetscErrorCode PetscViewerHDF5ReadSizes_Private(PetscViewer viewer, HDF5ReadCtx ctx, PetscBool setup, PetscLayout *map_)
 {
   PetscInt       bs, len, N;
   PetscLayout    map;
@@ -113,6 +112,7 @@ static PetscErrorCode PetscViewerHDF5ReadSizes_Private(PetscViewer viewer, HDF5R
   if (map->N < 0) {
     ierr = PetscLayoutSetSize(map, N);CHKERRQ(ierr);
   } else if (map->N != N) SETERRQ2(PetscObjectComm((PetscObject)viewer),PETSC_ERR_FILE_UNEXPECTED, "Global size of array in file is %D, not %D as expected",N,map->N);
+  if (setup) {ierr = PetscLayoutSetUp(map);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -161,7 +161,32 @@ static PetscErrorCode PetscViewerHDF5ReadArray_Private(PetscViewer viewer, HDF5R
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscViewerHDF5Load_Private(PetscViewer viewer, const char *name, PetscLayout map, hid_t datatype, void **newarr)
+/*@C
+  PetscViewerHDF5Load - Read a raw array from the HDF5 dataset.
+
+  Input Parameters:
++ viewer   - The HDF5 viewer
+. name     - The dataset name
+. map      - The layout which specifies array partitioning
+- datatype - The HDF5 datatype of the items in the dataset
+
+  Output Parameter:
++ map      - The set up layout (with global size and blocksize according to dataset)
+- newarr   - The partitioned array, a memory image of the given dataset
+
+  Level: developer
+
+  Notes:
+  This is intended mainly for internal use; users should use higher level routines such as ISLoad(), VecLoad(), DMLoad().
+  The array is partitioned according to the given PetscLayout which is converted to an HDF5 hyperslab.
+  This name is relative to the current group returned by PetscViewerHDF5OpenGroup().
+
+  Fortran Notes:
+  This routine is not available in Fortran.
+
+.seealso PetscViewerHDF5Open(), PetscViewerHDF5PushGroup(), PetscViewerHDF5OpenGroup(), PetscViewerHDF5ReadSizes(), VecLoad(), ISLoad()
+*/
+PetscErrorCode PetscViewerHDF5Load(PetscViewer viewer, const char *name, PetscLayout map, hid_t datatype, void **newarr)
 {
   HDF5ReadCtx     h=NULL;
   hid_t           memspace=0;
@@ -180,8 +205,7 @@ PetscErrorCode PetscViewerHDF5Load_Private(PetscViewer viewer, const char *name,
   if (h->complexVal) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"File contains complex numbers but PETSc not configured for them. Configure with --with-scalar-type=complex.");
 #endif
 
-  ierr = PetscViewerHDF5ReadSizes_Private(viewer, h, &map);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(map);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5ReadSizes_Private(viewer, h, PETSC_TRUE, &map);CHKERRQ(ierr);
   ierr = PetscViewerHDF5ReadSelectHyperslab_Private(viewer, h, map, &memspace);CHKERRQ(ierr);
 
   unitsize = H5Tget_size(datatype);
@@ -226,7 +250,7 @@ PetscErrorCode PetscViewerHDF5ReadSizes(PetscViewer viewer, const char name[], P
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   ierr = PetscViewerHDF5ReadInitialize_Private(viewer, name, &h);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5ReadSizes_Private(viewer, h, &map);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5ReadSizes_Private(viewer, h, PETSC_FALSE, &map);CHKERRQ(ierr);
   ierr = PetscViewerHDF5ReadFinalize_Private(viewer, &h);CHKERRQ(ierr);
   if (bs) *bs = map->bs;
   if (N) *N = map->N;

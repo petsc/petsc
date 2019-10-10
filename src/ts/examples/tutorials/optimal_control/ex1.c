@@ -295,6 +295,7 @@ int main(int argc,char **argv)
   ierr = TSSetRHSJacobian(aircraft.ts,aircraft.A,aircraft.A,TSComputeRHSJacobianConstant,&aircraft);CHKERRQ(ierr);
   ierr = TSSetRHSJacobianP(aircraft.ts,aircraft.Jacp,RHSJacobianP,&aircraft);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(aircraft.ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
+  ierr = TSSetEquationType(aircraft.ts,TS_EQ_ODE_EXPLICIT);CHKERRQ(ierr); /* less Jacobian evaluations when adjoint BEuler is used, otherwise no effect */
 
   /* Set initial conditions */
   ierr = MatCreateVecs(aircraft.A,&aircraft.U,NULL);CHKERRQ(ierr);

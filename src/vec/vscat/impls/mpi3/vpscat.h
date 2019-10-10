@@ -42,7 +42,7 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
   ierr = PetscObjectTypeCompareAny((PetscObject)xin,&is_cudatype,VECSEQCUDA,VECMPICUDA,VECCUDA,"");CHKERRQ(ierr);
   if (is_cudatype) {
     VecCUDAAllocateCheckHost(xin);
-    if (xin->valid_GPU_array == PETSC_OFFLOAD_GPU) {
+    if (xin->offloadmask == PETSC_OFFLOAD_GPU) {
       if (xin->spptr && ctx->spptr) {
         ierr = VecCUDACopyFromGPUSome_Public(xin,(PetscCUDAIndices)ctx->spptr,mode);CHKERRQ(ierr);
       } else {
@@ -90,7 +90,7 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
           /* Do we need to take care of overlaps? We could but overlaps sound more like a bug than a requirement,
              so I just leave it and let PetscMemcpy detect this bug.
            */
-          ierr = PetscMemcpy(yv + from->local.memcpy_plan.copy_starts[i],xv + to->local.memcpy_plan.copy_starts[i],to->local.memcpy_plan.copy_lengths[i]);CHKERRQ(ierr);
+          ierr = PetscArraycpy(yv + from->local.memcpy_plan.copy_starts[i],xv + to->local.memcpy_plan.copy_starts[i],to->local.memcpy_plan.copy_lengths[i]);CHKERRQ(ierr);
         }
       }
     } else {
@@ -228,7 +228,7 @@ PetscErrorCode PETSCMAP1(VecScatterBeginMPI3Node)(VecScatter ctx,Vec xin,Vec yin
           /* Do we need to take care of overlaps? We could but overlaps sound more like a bug than a requirement,
              so I just leave it and let PetscMemcpy detect this bug.
            */
-          ierr = PetscMemcpy(yv + from->local.memcpy_plan.copy_starts[i],xv + to->local.memcpy_plan.copy_starts[i],to->local.memcpy_plan.copy_lengths[i]);CHKERRQ(ierr);
+          ierr = PetscArraycpy(yv + from->local.memcpy_plan.copy_starts[i],xv + to->local.memcpy_plan.copy_starts[i],to->local.memcpy_plan.copy_lengths[i]);CHKERRQ(ierr);
         }
       }
     } else {

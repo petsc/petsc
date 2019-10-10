@@ -10,13 +10,19 @@ static PetscErrorCode PCBDDCNullSpaceCorrPreSolve(KSP ksp,Vec y,Vec x, void* ctx
   PetscErrorCode          ierr;
 
   PetscFunctionBegin;
+  ierr = PetscLogEventBegin(corr_ctx->evapply,ksp,0,0,0);CHKERRQ(ierr);
   ierr = MatMultTranspose(corr_ctx->basis_mat,y,corr_ctx->sw[0]);CHKERRQ(ierr);
-  ierr = MatMultTranspose(corr_ctx->inv_smat,corr_ctx->sw[0],corr_ctx->sw[1]);CHKERRQ(ierr);
+  if (corr_ctx->symm) {
+    ierr = MatMult(corr_ctx->inv_smat,corr_ctx->sw[0],corr_ctx->sw[1]);CHKERRQ(ierr);
+  } else {
+    ierr = MatMultTranspose(corr_ctx->inv_smat,corr_ctx->sw[0],corr_ctx->sw[1]);CHKERRQ(ierr);
+  }
   ierr = VecScale(corr_ctx->sw[1],-1.0);CHKERRQ(ierr);
   ierr = MatMult(corr_ctx->basis_mat,corr_ctx->sw[1],corr_ctx->fw[0]);CHKERRQ(ierr);
   ierr = VecScale(corr_ctx->sw[1],-1.0);CHKERRQ(ierr);
   ierr = KSPGetOperators(ksp,&K,NULL);CHKERRQ(ierr);
   ierr = MatMultAdd(K,corr_ctx->fw[0],y,y);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(corr_ctx->evapply,ksp,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -28,8 +34,13 @@ static PetscErrorCode PCBDDCNullSpaceCorrPostSolve(KSP ksp,Vec y,Vec x, void* ct
   Mat                     K;
 
   PetscFunctionBegin;
+  ierr = PetscLogEventBegin(corr_ctx->evapply,ksp,0,0,0);CHKERRQ(ierr);
   ierr = KSPGetOperators(ksp,&K,NULL);CHKERRQ(ierr);
-  ierr = MatMultTranspose(K,x,corr_ctx->fw[0]);CHKERRQ(ierr);
+  if (corr_ctx->symm) {
+    ierr = MatMult(K,x,corr_ctx->fw[0]);CHKERRQ(ierr);
+  } else {
+    ierr = MatMultTranspose(K,x,corr_ctx->fw[0]);CHKERRQ(ierr);
+  }
   ierr = MatMultTranspose(corr_ctx->basis_mat,corr_ctx->fw[0],corr_ctx->sw[0]);CHKERRQ(ierr);
   ierr = VecScale(corr_ctx->sw[0],-1.0);CHKERRQ(ierr);
   ierr = MatMult(corr_ctx->inv_smat,corr_ctx->sw[0],corr_ctx->sw[2]);CHKERRQ(ierr);
@@ -37,6 +48,7 @@ static PetscErrorCode PCBDDCNullSpaceCorrPostSolve(KSP ksp,Vec y,Vec x, void* ct
   ierr = VecScale(corr_ctx->fw[0],corr_ctx->scale);CHKERRQ(ierr);
   /* Sum contributions from approximate solver and projected system */
   ierr = MatMultAdd(corr_ctx->basis_mat,corr_ctx->sw[1],corr_ctx->fw[0],x);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(corr_ctx->evapply,ksp,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -68,11 +80,8 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
   PetscErrorCode           ierr;
 
   PetscFunctionBegin;
-  if (isdir) { /* Dirichlet solver */
-    local_ksp = pcbddc->ksp_D;
-  } else { /* Neumann solver */
-    local_ksp = pcbddc->ksp_R;
-  }
+  if (isdir) local_ksp = pcbddc->ksp_D; /* Dirichlet solver */
+  else local_ksp = pcbddc->ksp_R; /* Neumann solver */
   ierr = KSPGetOperators(local_ksp,&local_mat,&local_pmat);CHKERRQ(ierr);
   ierr = MatGetNearNullSpace(local_pmat,&NullSpace);CHKERRQ(ierr);
   if (!NullSpace) {
@@ -83,12 +92,16 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
   }
   ierr = PetscObjectQuery((PetscObject)NullSpace,"_PBDDC_Null_dmat",(PetscObject*)&dmat);CHKERRQ(ierr);
   if (!dmat) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing dense matrix");CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(PC_BDDC_ApproxSetUp[pcbddc->current_level],pc,0,0,0);CHKERRQ(ierr);
 
   ierr = PetscNew(&shell_ctx);CHKERRQ(ierr);
   shell_ctx->scale = 1.0;
   ierr = PetscObjectReference((PetscObject)dmat);CHKERRQ(ierr);
   shell_ctx->basis_mat = dmat;
   ierr = MatGetSize(dmat,NULL,&basis_size);CHKERRQ(ierr);
+  shell_ctx->evapply = PC_BDDC_ApproxApply[pcbddc->current_level];
+
+  ierr = MatGetOption(local_mat,MAT_SYMMETRIC,&shell_ctx->symm);CHKERRQ(ierr);
 
   /* explicit construct (Phi^T K Phi)^-1 */
   ierr = MatMatMult(local_mat,shell_ctx->basis_mat,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&Kbasis_mat);CHKERRQ(ierr);
@@ -222,6 +235,7 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
     ierr = VecDestroy(&work1);CHKERRQ(ierr);
     ierr = VecDestroy(&work2);CHKERRQ(ierr);
   }
+  ierr = PetscLogEventEnd(PC_BDDC_ApproxSetUp[pcbddc->current_level],pc,0,0,0);CHKERRQ(ierr);
 
   if (pcbddc->dbg_flag) {
     Vec       work1,work2,work3;

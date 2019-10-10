@@ -384,6 +384,7 @@ SNES Object: 5 MPI processes
           Eliminate dirichlet boundary dofs: 1
           Switch on static condensation ops around the interface preconditioner: 1
           Use exact dirichlet trick: 0
+          Interface extension: DIRICHLET
           Multilevel max levels: 0
           Multilevel coarsening ratio: 8
           Use estimated eigs for coarse problem: 0
@@ -421,10 +422,9 @@ SNES Object: 5 MPI processes
             maximum iterations=10000, initial guess is zero
             tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
             left preconditioning
-            using DEFAULT norm type for convergence test
+            using NONE norm type for convergence test
           PC Object: 1 MPI processes
             type: shell
-            PC has not been set up so information may be incomplete
               Interior solver (w/o Schur factorization)
               Mat Object: 1 MPI processes
                 type: mumps

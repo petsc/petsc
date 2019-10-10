@@ -222,7 +222,7 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
           <li>
             specify enviornment variable for csh/tcsh [can be specified in ~/.cshrc]
             <ul>
-              <li>setenv PETSC_DIR /home/balay/petsc-3.11.0</li>
+              <li>setenv PETSC_DIR /home/balay/petsc-3.12.0</li>
               <li>setenv PETSC_ARCH linux-gnu-c-debug</li>
             </ul>
           </li>
@@ -230,7 +230,7 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
           <li>
             specify enviornment variable for bash [can be specified in ~/.bashrc]
             <ul>
-              <li>export PETSC_DIR=/home/balay/petsc-3.11.0</li>
+              <li>export PETSC_DIR=/home/balay/petsc-3.12.0</li>
               <li>export PETSC_ARCH=linux-gnu-c-debug</li>
             </ul>
           </li>
@@ -238,14 +238,14 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
           <li>
             specify variable on commandline to configure
             <ul>
-              <li>./configure PETSC_DIR=/home/balay/petsc-3.11.0 PETSC_ARCH=linux-gnu-c-debug [other configure options]</li>
+              <li>./configure PETSC_DIR=/home/balay/petsc-3.12.0 PETSC_ARCH=linux-gnu-c-debug [other configure options]</li>
             </ul>
           </li>
 
           <li>
             specify variables on command line to make
             <ul>
-              <li>make PETSC_DIR=/home/balay/petsc-3.11.0 PETSC_ARCH=linux-gnu-c-debug [other make options]</li>
+              <li>make PETSC_DIR=/home/balay/petsc-3.12.0 PETSC_ARCH=linux-gnu-c-debug [other make options]</li>
             </ul>
           </li>
         </ul>
@@ -831,7 +831,22 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
         <p> <strong>Using MPI:</strong>
         We support both <a href="https://www.microsoft.com/en-us/download/details.aspx?id=57467">MS-MPI</a> [64-bit] and <a href="https://software.intel.com/en-us/mpi-library">Intel MPI</a> on Windows (MPICH2 does not work, do not use it). For example usages, check <code>config/examples/arch-mswin*.py</code></p>
 
-
+        <p> <strong>Avoiding spaces in PATHs:</strong>
+        Its best to avoid spaces or similar special chars when specifying configure options. On windows - this usually affects specifying MPI or MKL. Windows supports <b>dos short form</b> for dir names - so its best to use this notation. And cygwin tool <code>cygpath</code> can be used to get paths in this notation. for ex:
+         <code><br><br>
+           $ cygpath -u `cygpath -ms '/cygdrive/c/Program Files (x86)/Microsoft SDKs/MPI'`<br>
+           /cygdrive/c/PROGRA~2/MICROS~2/MPI<br>
+           $ cygpath -u `cygpath -ms '/cygdrive/c/Program Files (x86)/IntelSWTools/compilers_and_libraries/windows/mkl/lib/intel64'`<br>
+           /cygdrive/c/PROGRA~2/INTELS~1/COMPIL~2/windows/mkl/lib/intel64<br><br>
+         </code>
+         i.e use:
+         <ul>
+	   <li><code>./configure --with-cc='win32fe cl' --with-fc='win32fe ifort' --with-cxx='win32fe cl' --with-shared-libraries=0 \<br>
+               --with-mpi-include='[/cygdrive/c/PROGRA~2/MICROS~2/MPI/Include,/cygdrive/c/PROGRA~2/MICROS~2/MPI/Include/x64]' \<br>
+               --with-mpi-lib='-L/cygdrive/c/PROGRA~2/MICROS~2/MPI/lib/x64 msmpifec.lib msmpi.lib' \<br>
+               --with-mpiexec=/cygdrive/c/PROGRA~1/MICROS~2/Bin/mpiexec \<br>
+               --with-blaslapack-lib='-L/cygdrive/c/PROGRA~2/INTELS~1/COMPIL~2/windows/mkl/lib/intel64 mkl_intel_lp64_dll.lib mkl_sequential_dll.lib mkl_core_dll.lib'</code>
+         </ul>
         <p>
           <strong>ExternalPackages</strong>: The <code>--download-package
           </code> option does not work with many external packages on Microsoft
@@ -933,8 +948,8 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
           <li>sudo mkdir /opt/petsc</li>
           <li>sudo chown user:group /opt/petsc</li>
           <li>cd /opt/petsc</li>
-          <li>tar -xzf petsc-3.11.0.tar.gz</li>
-          <li>cd petsc-3.11.0</li>
+          <li>tar -xzf petsc-3.12.0.tar.gz</li>
+          <li>cd petsc-3.12.0</li>
           <li>./configure</li>
           <li>make</li>
         </ul>
@@ -943,14 +958,14 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
         <p>One can also use the GNU <b>--prefix</b> install mode.</p>
 
         <ul class="code">
-          <li>./configure --prefix=/opt/petsc/petsc-3.11.0  [other configure options]</li>
+          <li>./configure --prefix=/opt/petsc/petsc-3.12.0  [other configure options]</li>
           <li>make</li>
           <li>[sudo] make install</li>
-          <li>[user can now use this PETSc install with:] make PETSC_DIR=/opt/petsc/petsc-3.11.0 ex1</li>
+          <li>[user can now use this PETSc install with:] make PETSC_DIR=/opt/petsc/petsc-3.12.0 ex1</li>
         </ul>
 
         <p>
-          Note: one has to switch to using <code>PETSC_DIR=/opt/petsc/petsc-3.11.0</code> after
+          Note: one has to switch to using <code>PETSC_DIR=/opt/petsc/petsc-3.12.0</code> after
           install is done - and <b>NOT</b> use PETSC_ARCH anymore.
         </p>
 
@@ -962,11 +977,11 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
         </p>
 
         <ul class="code">
-          <li>./configure --prefix=/opt/petsc/petsc-3.11.0</li>
+          <li>./configure --prefix=/opt/petsc/petsc-3.12.0</li>
           <li>make</li>
           <li>make install DESTDIR=/tmp/petsc-pkg</li>
-          <li>[package up /tmp/petsc-pkg The package should then be installed at /opt/petsc/petsc-3.11.0]</li>
-          <li>[user can now use this PETSc install with:] make PETSC_DIR=/opt/petsc/petsc-3.11.0 ex1</li>
+          <li>[package up /tmp/petsc-pkg The package should then be installed at /opt/petsc/petsc-3.12.0]</li>
+          <li>[user can now use this PETSc install with:] make PETSC_DIR=/opt/petsc/petsc-3.12.0 ex1</li>
         </ul>
 
         <h4>Multiple installs using --prefix and DESTDIR:</h4>
@@ -975,11 +990,11 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
 
         <ul class="code">
           <li>untar petsc tar ball</li>
-          <li>./configure --prefix=/opt/petsc/petsc-3.11.0-mpich --with-mpi-dir=/opt/mpich</li>
+          <li>./configure --prefix=/opt/petsc/petsc-3.12.0-mpich --with-mpi-dir=/opt/mpich</li>
           <li>make</li>
           <li>make install DESTDIR=/tmp/petsc-pkg</li>
           <li>untar petsc tar ball</li>
-          <li>./configure --prefix=/opt/petsc/petsc-3.11.0-openmpi --with-mpi-dir=/opt/openmpi</li>
+          <li>./configure --prefix=/opt/petsc/petsc-3.12.0-openmpi --with-mpi-dir=/opt/openmpi</li>
           <li>make</li>
           <li>make install DESTDIR=/tmp/petsc-pkg</li>
         </ul>
@@ -1158,11 +1173,21 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
             </li>
               <li>
                 Notes on usage:
-                <ul>
+                 <ul>
                   <li> Log into theta.alcf.anl.gov </li>
-                  <li> module load cray-hdf5-parallel cray-netcdf-hdf5parallel cray-parallel-netcdf</li>
-                  <li> Use config/examples/arch-cray-xc40-knl-opt.py as a template for running configure </li>
-                  <li> If you need to use exodusii then use the configure options --with-hdf5=1 --with-pnetcdf-dir=$PARALLEL_NETCDF_DIR --with-netcdf-dir=$NETCDF_DIR --download-chaco=1 --download-metis=1 --download-parmetis=1 --download-exodusii</li>
+                  <li> There are three compiler suites <a href="https://www.alcf.anl.gov/user-guides/compiling-and-linking-xc40">Modules</a>
+                 <ul>
+                  <li> module load PrgEnv-intel intel </li>
+                  <li>  module load PrgEnv-gnu gcc/7.1.0/</li>
+                  <li>  module load PrgEnv-cray </li>
+                </ul>
+                  <li> List currently loaded modules: module list                  </li>
+                  <li> List all available modules: module avail                  </li>
+                  <li> Blas/lapack will automatically be found so you do not need to provide it </li>
+                 <ul>
+                  <li> It is best not to use built-in modules for external packages (except blas/lapack) because they are often buggy.
+                       Most external packages can be built using the --download option with the intel or Gnu environment but not cray </li>
+                  <li> You can use config/examples/arch-cray-xc40-knl-opt.py as a template for running configure but it is outdated </li>
             </li>
             </ul>
           </li>

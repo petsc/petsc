@@ -288,6 +288,7 @@ PetscErrorCode PCBDDCScalingSetUp(PC pc)
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCScalingRestriction_C",PCBDDCScalingRestriction_Basic);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCScalingExtension_C",PCBDDCScalingExtension_Basic);CHKERRQ(ierr);
   }
+  ierr = PetscLogEventEnd(PC_BDDC_Scaling[pcbddc->current_level],pc,0,0,0);CHKERRQ(ierr);
 
   /* test */
   if (pcbddc->dbg_flag) {
@@ -349,7 +350,6 @@ PetscErrorCode PCBDDCScalingSetUp(PC pc)
     ierr = VecDestroy(&B0_Bv);CHKERRQ(ierr);
     ierr = VecDestroy(&B0_Bv2);CHKERRQ(ierr);
   }
-  ierr = PetscLogEventEnd(PC_BDDC_Scaling[pcbddc->current_level],pc,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

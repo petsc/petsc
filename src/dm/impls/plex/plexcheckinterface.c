@@ -232,31 +232,36 @@ PetscErrorCode DMPlexCheckConesConformOnInterfaces(DM dm)
   /* verbose output */
   ierr = PetscOptionsGetBool(((PetscObject)dm)->options, ((PetscObject)dm)->prefix, "-dm_plex_check_cones_conform_on_interfaces_verbose", &verbose, NULL);CHKERRQ(ierr);
   if (verbose) {
-    PetscViewer v = PETSC_VIEWER_STDOUT_SELF;
-    ierr = PetscSequentialPhaseBegin(comm,1);CHKERRQ(ierr);
-    if (!myrank) {ierr = PetscViewerASCIIPrintf(v, "============\nDMPlexCheckConesConformOnInterfaces output\n============\n");CHKERRQ(ierr);}
-    ierr = PetscViewerASCIIPrintf(v, "[%d] --------\n", myrank);CHKERRQ(ierr);
+    PetscViewer sv, v = PETSC_VIEWER_STDOUT_WORLD;
+    ierr = PetscViewerASCIIPrintf(v, "============\nDMPlexCheckConesConformOnInterfaces output\n============\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPushSynchronized(v);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(v, "[%d] --------\n", myrank);CHKERRQ(ierr);
     for (r=0; r<nranks; r++) {
-      ierr = PetscViewerASCIIPrintf(v, "  r=%D ranks[r]=%d sntCoordinatesPerRank[r]:\n", r, ranks[r]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(v, "  r=%D ranks[r]=%d sntCoordinatesPerRank[r]:\n", r, ranks[r]);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
-      ierr = VecView(sntCoordinatesPerRank[r], v);CHKERRQ(ierr);
+      ierr = PetscViewerGetSubViewer(v,PETSC_COMM_SELF,&sv);CHKERRQ(ierr);
+      ierr = VecView(sntCoordinatesPerRank[r], sv);CHKERRQ(ierr);
+      ierr = PetscViewerRestoreSubViewer(v,PETSC_COMM_SELF,&sv);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(v);CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(v, "  ----------\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(v, "  ----------\n");CHKERRQ(ierr);
     for (r=0; r<niranks; r++) {
-      ierr = PetscViewerASCIIPrintf(v, "  r=%D iranks[r]=%d refCoordinatesPerRank[r]:\n", r, iranks[r]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(v, "  r=%D iranks[r]=%d refCoordinatesPerRank[r]:\n", r, iranks[r]);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
-      ierr = VecView(refCoordinatesPerRank[r], v);CHKERRQ(ierr);
+      ierr = PetscViewerGetSubViewer(v,PETSC_COMM_SELF,&sv);CHKERRQ(ierr);
+      ierr = VecView(refCoordinatesPerRank[r], sv);CHKERRQ(ierr);
+      ierr = PetscViewerRestoreSubViewer(v,PETSC_COMM_SELF,&sv);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(v);CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(v, "  ----------\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(v, "  ----------\n");CHKERRQ(ierr);
     for (r=0; r<niranks; r++) {
-      ierr = PetscViewerASCIIPrintf(v, "  r=%D iranks[r]=%d recCoordinatesPerRank[r]:\n", r, iranks[r]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(v, "  r=%D iranks[r]=%d recCoordinatesPerRank[r]:\n", r, iranks[r]);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
-      ierr = VecView(recCoordinatesPerRank[r], v);CHKERRQ(ierr);
+      ierr = PetscViewerGetSubViewer(v,PETSC_COMM_SELF,&sv);CHKERRQ(ierr);
+      ierr = VecView(recCoordinatesPerRank[r], sv);CHKERRQ(ierr);
+      ierr = PetscViewerRestoreSubViewer(v,PETSC_COMM_SELF,&sv);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(v);CHKERRQ(ierr);
     }
-    ierr = PetscSequentialPhaseEnd(comm,1);CHKERRQ(ierr);
   }
 
   /* Compare recCoordinatesPerRank with refCoordinatesPerRank */

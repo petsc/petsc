@@ -603,7 +603,7 @@ static PetscErrorCode KSPViewFinalResidual_Internal(KSP ksp, PetscViewer viewer,
 .  -ksp_view_mat_explicit - for matrix-free operators, computes the matrix entries and views them
 .  -ksp_view_preconditioned_operator_explicit - computes the product of the preconditioner and matrix as an explicit matrix and views it
 .  -ksp_converged_reason - print reason for converged or diverged, also prints number of iterations
-.  -ksp_final_residual - print 2-norm of true linear system residual at the end of the solution process
+.  -ksp_view_final_residual - print 2-norm of true linear system residual at the end of the solution process
 -  -ksp_view - print the ksp data structure at the end of the system solution
 
    Notes:
@@ -888,6 +888,7 @@ PetscErrorCode  KSPSolveTranspose(KSP ksp,Vec b,Vec x)
 
   if (ksp->presolve) {ierr = (*ksp->presolve)(ksp,ksp->vec_rhs,ksp->vec_sol,ksp->prectx);CHKERRQ(ierr);}
 
+  ierr = PetscLogEventBegin(KSP_SolveTranspose,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
   if (ksp->guess) {
     PetscObjectState ostate,state;
 
@@ -925,6 +926,7 @@ PetscErrorCode  KSPSolveTranspose(KSP ksp,Vec b,Vec x)
   }
   if (!ksp->reason) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Internal error, solver returned without setting converged reason");
   if (ksp->viewReason) {ierr = KSPReasonView_Internal(ksp, ksp->viewerReason, ksp->formatReason);CHKERRQ(ierr);}
+  ierr = PetscLogEventEnd(KSP_SolveTranspose,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
   if (ksp->guess) {
     ierr = KSPGuessUpdate(ksp->guess,ksp->vec_rhs,ksp->vec_sol);CHKERRQ(ierr);
   }
@@ -1749,7 +1751,7 @@ PetscErrorCode PetscMonitorCompare(PetscErrorCode (*nmon)(void),void *nmctx,Pets
           (may be NULL)
 
    Calling Sequence of monitor:
-$     monitor (KSP ksp, int it, PetscReal rnorm, void *mctx)
+$     monitor (KSP ksp, PetscInt it, PetscReal rnorm, void *mctx)
 
 +  ksp - iterative context obtained from KSPCreate()
 .  it - iteration number
@@ -1957,12 +1959,12 @@ PetscErrorCode  KSPGetResidualHistory(KSP ksp,PetscReal *a[],PetscInt *na)
 
    Input Parameters:
 +  ksp - iterative context obtained from KSPCreate()
-.  converge - pointer to int function
+.  converge - pointer to the function
 .  cctx    - context for private data for the convergence routine (may be null)
 -  destroy - a routine for destroying the context (may be null)
 
    Calling sequence of converge:
-$     converge (KSP ksp, int it, PetscReal rnorm, KSPConvergedReason *reason,void *mctx)
+$     converge (KSP ksp, PetscInt it, PetscReal rnorm, KSPConvergedReason *reason,void *mctx)
 
 +  ksp - iterative context obtained from KSPCreate()
 .  it - iteration number
@@ -2019,7 +2021,7 @@ PetscErrorCode  KSPSetConvergenceTest(KSP ksp,PetscErrorCode (*converge)(KSP,Pet
 -  destroy - a routine for destroying the context (may be null)
 
    Calling sequence of converge:
-$     converge (KSP ksp, int it, PetscReal rnorm, KSPConvergedReason *reason,void *mctx)
+$     converge (KSP ksp, PetscInt it, PetscReal rnorm, KSPConvergedReason *reason,void *mctx)
 
 +  ksp - iterative context obtained from KSPCreate()
 .  it - iteration number
@@ -2055,7 +2057,7 @@ PetscErrorCode  KSPGetConvergenceTest(KSP ksp,PetscErrorCode (**converge)(KSP,Pe
 -  destroy - a routine for destroying the context
 
    Calling sequence of converge:
-$     converge (KSP ksp, int it, PetscReal rnorm, KSPConvergedReason *reason,void *mctx)
+$     converge (KSP ksp, PetscInt it, PetscReal rnorm, KSPConvergedReason *reason,void *mctx)
 
 +  ksp - iterative context obtained from KSPCreate()
 .  it - iteration number
@@ -2065,9 +2067,9 @@ $     converge (KSP ksp, int it, PetscReal rnorm, KSPConvergedReason *reason,voi
 
    Level: advanced
 
-   Notes: This is intended to be used to allow transfering the convergence test (and its context) to another testing object (for example another KSP) and then calling
+   Notes: This is intended to be used to allow transferring the convergence test (and its context) to another testing object (for example another KSP) and then calling
           KSPSetConvergenceTest() on this original KSP. If you just called KSPGetConvergenceTest() followed by KSPSetConvergenceTest() the original context information
-          would be destroyed and hence the transfered context would be invalid and trigger a crash on use
+          would be destroyed and hence the transferred context would be invalid and trigger a crash on use
 
 .seealso: KSPConvergedDefault(), KSPGetConvergenceContext(), KSPSetTolerances(), KSP, KSPSetConvergenceTest(), KSPGetConvergenceTest()
 @*/

@@ -1,5 +1,5 @@
 
-static char help[] = "Creates a matrix using 9 pt stencil, and uses it to test MatIncreaseOverlap (needed for aditive schwarts preconditioner. \n\
+static char help[] = "Creates a matrix using 9 pt stencil, and uses it to test MatIncreaseOverlap (needed for additive Schwarz preconditioner). \n\
   -m <size>       : problem size\n\
   -x1, -x2 <size> : no of subdomains in x and y directions\n\n";
 

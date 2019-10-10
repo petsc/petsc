@@ -56,7 +56,7 @@ PetscErrorCode PCTelescopeTestValidSubcomm(MPI_Comm comm_f,MPI_Comm comm_c,Petsc
   MPI_Group      group_f,group_c;
   PetscErrorCode ierr;
   PetscMPIInt    count,k,size_f = 0,size_c = 0,size_c_sum = 0;
-  int            *ranks_f = NULL,*ranks_c = NULL;
+  PetscMPIInt    *ranks_f,*ranks_c;
 
   PetscFunctionBegin;
   if (comm_f == MPI_COMM_NULL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"comm_f cannot be MPI_COMM_NULL");
@@ -74,19 +74,13 @@ PetscErrorCode PCTelescopeTestValidSubcomm(MPI_Comm comm_f,MPI_Comm comm_c,Petsc
   /* check not all comm_c's are NULL */
   size_c_sum = size_c;
   ierr = MPI_Allreduce(MPI_IN_PLACE,&size_c_sum,1,MPI_INT,MPI_SUM,comm_f);CHKERRQ(ierr);
-  if (size_c_sum == 0) {
-    valid = 0;
-  }
+  if (size_c_sum == 0) valid = 0;
 
   /* check we can map at least 1 rank in comm_c to comm_f */
   ierr = PetscMalloc1(size_f,&ranks_f);CHKERRQ(ierr);
   ierr = PetscMalloc1(size_c,&ranks_c);CHKERRQ(ierr);
-  for (k=0; k<size_f; k++) {
-    ranks_f[k] = MPI_UNDEFINED;
-  }
-  for (k=0; k<size_c; k++) {
-    ranks_c[k] = (int)k;
-  }
+  for (k=0; k<size_f; k++) ranks_f[k] = MPI_UNDEFINED;
+  for (k=0; k<size_c; k++) ranks_c[k] = k;
 
   /*
    MPI_Group_translate_ranks() returns a non-zero exit code if any rank cannot be translated.
@@ -104,13 +98,11 @@ PetscErrorCode PCTelescopeTestValidSubcomm(MPI_Comm comm_f,MPI_Comm comm_c,Petsc
       }
     }
   }
-  if (count == size_f) {
-    valid = 0;
-  }
+  if (count == size_f) valid = 0;
 
   ierr = MPI_Allreduce(MPI_IN_PLACE,&valid,1,MPIU_INT,MPI_MIN,comm_f);CHKERRQ(ierr);
-  if (valid == 1) { *isvalid = PETSC_TRUE; }
-  else { *isvalid = PETSC_FALSE; }
+  if (valid == 1) *isvalid = PETSC_TRUE;
+  else *isvalid = PETSC_FALSE;
 
   ierr = PetscFree(ranks_f);CHKERRQ(ierr);
   ierr = PetscFree(ranks_c);CHKERRQ(ierr);
@@ -1310,7 +1302,7 @@ PetscErrorCode PCTelescopeGetSubcommType(PC pc, PetscSubcommType *subcommtype)
    a new (near) nullspace, defined on the sub-communicator, which is attached to B' (the B operator which was scattered to c')
 
    The telescoping preconditioner can re-partition an attached DM if it is a DMDA (2D or 3D -
-   support for 1D DMDAs is not provided). If a DMDA is found, a topolgically equivalent DMDA is created on c'
+   support for 1D DMDAs is not provided). If a DMDA is found, a topologically equivalent DMDA is created on c'
    and this new DM is attached the sub KSP. The design of telescope is such that it should be possible to extend support
    for re-partitioning other to DM's (e.g. DMPLEX). The user can supply a flag to ignore attached DMs.
    Alternatively, user-provided re-partitioned DMs can be used via -pc_telescope_use_coarse_dm.

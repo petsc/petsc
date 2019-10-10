@@ -105,7 +105,7 @@ struct _MatOps {
   PetscErrorCode (*createsubmatrix)(Mat,IS,IS,MatReuse,Mat*);
   PetscErrorCode (*destroy)(Mat);
   PetscErrorCode (*view)(Mat,PetscViewer);
-  PetscErrorCode (*convertfrom)(Mat, MatType,MatReuse,Mat*);
+  PetscErrorCode (*convertfrom)(Mat,MatType,MatReuse,Mat*);
   PetscErrorCode (*matmatmult)(Mat,Mat,Mat,MatReuse,PetscReal,Mat*);
   /*64*/
   PetscErrorCode (*matmatmultsymbolic)(Mat,Mat,Mat,PetscReal,Mat*);
@@ -404,7 +404,7 @@ struct _p_Mat {
   PetscBool              structure_only;
   PetscBool              sortedfull;       /* full, sorted rows are inserted */ 
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-  PetscOffloadFlag       valid_GPU_matrix; /* flag pointing to the matrix on the gpu*/
+  PetscOffloadMask       offloadmask;      /* a mask which indicates where the valid matrix data is (GPU, CPU or both) */
   PetscBool              pinnedtocpu;
 #endif
   void                   *spptr;          /* pointer for special library like SuperLU */
@@ -562,6 +562,7 @@ struct  _p_MatFDColoring{
   PetscBool      setupcalled;      /* true if setup has been called */
   PetscBool      viewed;           /* true if the -mat_fd_coloring_view has been triggered already */
   void           (*ftn_func_pointer)(void),*ftn_func_cntx; /* serve the same purpose as *fortran_func_pointers in PETSc objects */
+  PetscObjectId  matid;            /* matrix this object was created with, must always be the same */
 };
 
 typedef struct _MatColoringOps *MatColoringOps;
@@ -1724,6 +1725,8 @@ PETSC_EXTERN PetscLogEvent MAT_DenseCopyFromGPU;
 PETSC_EXTERN PetscLogEvent MAT_Merge;
 PETSC_EXTERN PetscLogEvent MAT_Residual;
 PETSC_EXTERN PetscLogEvent MAT_SetRandom;
+PETSC_EXTERN PetscLogEvent MAT_FactorFactS;
+PETSC_EXTERN PetscLogEvent MAT_FactorInvS;
 PETSC_EXTERN PetscLogEvent MATCOLORING_Apply;
 PETSC_EXTERN PetscLogEvent MATCOLORING_Comm;
 PETSC_EXTERN PetscLogEvent MATCOLORING_Local;

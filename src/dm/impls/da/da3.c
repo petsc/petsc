@@ -1163,7 +1163,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
           for (j=0; j<x_t; j++) idx[nn++] = s_t++;
         } else if (Ys-ys < 0) {
           if (by == DM_BOUNDARY_MIRROR) {
-            for (j=0; j<x; j++) idx[nn++] = bases[rank] + j + k*x*y + (s_y - i)*x;;
+            for (j=0; j<x; j++) idx[nn++] = bases[rank] + j + k*x*y + (s_y - i)*x;
           } else {
             for (j=0; j<x; j++) idx[nn++] = -1;
           }
@@ -1428,7 +1428,8 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
 
 .seealso: DMDestroy(), DMView(), DMDACreate1d(), DMDACreate2d(), DMGlobalToLocalBegin(), DMDAGetRefinementFactor(),
           DMGlobalToLocalEnd(), DMLocalToGlobalBegin(), DMLocalToLocalBegin(), DMLocalToLocalEnd(), DMDASetRefinementFactor(),
-          DMDAGetInfo(), DMCreateGlobalVector(), DMCreateLocalVector(), DMDACreateNaturalVector(), DMLoad(), DMDAGetOwnershipRanges()
+          DMDAGetInfo(), DMCreateGlobalVector(), DMCreateLocalVector(), DMDACreateNaturalVector(), DMLoad(), DMDAGetOwnershipRanges(),
+          DMStagCreate3d()
 
 @*/
 PetscErrorCode  DMDACreate3d(MPI_Comm comm,DMBoundaryType bx,DMBoundaryType by,DMBoundaryType bz,DMDAStencilType stencil_type,PetscInt M,

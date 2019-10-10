@@ -3107,7 +3107,9 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIMAIJ(Mat A,Mat PP,Mat C)
   SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MatPtAPNumeric is not implemented for MPIMAIJ matrix yet");
   PetscFunctionReturn(0);
 }
+
 PETSC_INTERN PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
+
 PETSC_INTERN PetscErrorCode MatPtAP_MPIAIJ_MPIMAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
@@ -3118,6 +3120,111 @@ PETSC_INTERN PetscErrorCode MatPtAP_MPIAIJ_MPIMAIJ(Mat A,Mat P,MatReuse scall,Pe
     ierr = MatConvert(P,MATMPIAIJ,MAT_INPLACE_MATRIX,&P);CHKERRQ(ierr);
   }
   ierr = MatPtAP_MPIAIJ_MPIAIJ(A,P,scall,fill,C);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce(Mat,Mat,PetscInt,Mat);
+
+PETSC_INTERN PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIMAIJ_allatonce(Mat A,Mat P,Mat C)
+{
+  Mat_MPIMAIJ     *maij = (Mat_MPIMAIJ*)P->data;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+
+  ierr = MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce(A,maij->A,maij->dof,C);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce(Mat,Mat,PetscInt,PetscReal,Mat*);
+
+PETSC_INTERN PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIMAIJ_allatonce(Mat A,Mat P,PetscReal fill,Mat *C)
+{
+  Mat_MPIMAIJ     *maij = (Mat_MPIMAIJ*)P->data;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+
+  ierr = MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce(A,maij->A,maij->dof,fill,C);CHKERRQ(ierr);
+  (*C)->ops->ptapnumeric = MatPtAPNumeric_MPIAIJ_MPIMAIJ_allatonce;
+  PetscFunctionReturn(0);
+}
+
+PETSC_INTERN PetscErrorCode MatPtAP_MPIAIJ_MPIMAIJ_allatonce(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
+{
+  PetscErrorCode   ierr;
+  Mat_MPIAIJ       *c;
+  Mat_APMPI        *ap;
+  PetscFunctionBegin;
+  if (scall == MAT_INITIAL_MATRIX) {
+    ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
+    ierr = MatPtAPSymbolic_MPIAIJ_MPIMAIJ_allatonce(A,P,fill,C);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
+  }
+
+  c  = (Mat_MPIAIJ*)(*C)->data;
+  ap = c->ap;
+  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)(*C)),((PetscObject)(*C))->prefix,"MatFreeIntermediateDataStructures","Mat");CHKERRQ(ierr);
+  ap->freestruct = PETSC_FALSE;
+  ierr = PetscOptionsBool("-mat_freeintermediatedatastructures","Free intermediate data structures", "MatFreeIntermediateDataStructures",ap->freestruct,&ap->freestruct, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+
+  ierr = PetscLogEventBegin(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
+  ierr = (*(*C)->ops->ptapnumeric)(A,P,*C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce_merged(Mat,Mat,PetscInt,Mat);
+
+PETSC_INTERN PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIMAIJ_allatonce_merged(Mat A,Mat P,Mat C)
+{
+  Mat_MPIMAIJ     *maij = (Mat_MPIMAIJ*)P->data;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+
+  ierr = MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce_merged(A,maij->A,maij->dof,C);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce_merged(Mat,Mat,PetscInt,PetscReal,Mat*);
+
+PETSC_INTERN PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIMAIJ_allatonce_merged(Mat A,Mat P,PetscReal fill,Mat *C)
+{
+  Mat_MPIMAIJ     *maij = (Mat_MPIMAIJ*)P->data;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+
+  ierr = MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce_merged(A,maij->A,maij->dof,fill,C);CHKERRQ(ierr);
+  (*C)->ops->ptapnumeric = MatPtAPNumeric_MPIAIJ_MPIMAIJ_allatonce_merged;
+  PetscFunctionReturn(0);
+}
+
+PETSC_INTERN PetscErrorCode MatPtAP_MPIAIJ_MPIMAIJ_allatonce_merged(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
+{
+  PetscErrorCode ierr;
+  Mat_MPIAIJ     *c;
+  Mat_APMPI      *ap;
+
+  PetscFunctionBegin;
+  if (scall == MAT_INITIAL_MATRIX) {
+    ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
+    ierr = MatPtAPSymbolic_MPIAIJ_MPIMAIJ_allatonce_merged(A,P,fill,C);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
+  }
+
+  c  = (Mat_MPIAIJ*)(*C)->data;
+  ap = c->ap;
+  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)(*C)),((PetscObject)(*C))->prefix,"MatFreeIntermediateDataStructures","Mat");CHKERRQ(ierr);
+  ap->freestruct = PETSC_FALSE;
+  ierr = PetscOptionsBool("-mat_freeintermediatedatastructures","Free intermediate data structures", "MatFreeIntermediateDataStructures",ap->freestruct,&ap->freestruct, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+
+  ierr = PetscLogEventBegin(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
+  ierr = (*(*C)->ops->ptapnumeric)(A,P,*C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3261,6 +3368,37 @@ PetscErrorCode MatCreateSubMatrices_MAIJ(Mat mat,PetscInt n,const IS irow[],cons
   ierr = MatConvert(mat,MATAIJ,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
   ierr = MatCreateSubMatrices(A,n,irow,icol,scall,submat);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatSetFromOptions_MAIJ(PetscOptionItems *PetscOptionsObject,Mat A)
+{
+  PetscErrorCode       ierr;
+  /* By default, we convert MAIJ to MPIAIJ and then do PtAP.
+   * If we convert it to MPIAIJ, it is better to use MPIAIJ at the first place.
+   * However, not sure other PETSc developers want to change it or not. So I
+   * still leave it as is.
+   */
+  const char          *algTypes[3] = {"mpiaij","allatonce","allatonce_merged"};
+  PetscInt             nalg=3,alg=0;
+  PetscMPIInt          size;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
+  if (size <= 1) PetscFunctionReturn(0);
+  ierr = PetscOptionsHead(PetscOptionsObject,"MPIMAIJ options");CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-matmaijptap_via","Algorithmic approach","MatPtAP",algTypes,nalg,algTypes[alg],&alg,NULL);CHKERRQ(ierr);
+  switch (alg) {
+  case 0: /* Do not do anything */
+    break;
+  case 1:
+    ierr = PetscObjectComposeFunction((PetscObject)A,"MatPtAP_mpiaij_mpimaij_C",MatPtAP_MPIAIJ_MPIMAIJ_allatonce);CHKERRQ(ierr);
+    break;
+  case 2:
+    ierr = PetscObjectComposeFunction((PetscObject)A,"MatPtAP_mpiaij_mpimaij_C",MatPtAP_MPIAIJ_MPIMAIJ_allatonce_merged);CHKERRQ(ierr);
+    break;
+  }
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3415,9 +3553,9 @@ PetscErrorCode  MatCreateMAIJ(Mat A,PetscInt dof,Mat *maij)
 
       ierr = MatSetType(B,MATMPIMAIJ);CHKERRQ(ierr);
 
-      B->ops->setup   = NULL;
-      B->ops->destroy = MatDestroy_MPIMAIJ;
-      B->ops->view    = MatView_MPIMAIJ;
+      B->ops->setup            = NULL;
+      B->ops->destroy          = MatDestroy_MPIMAIJ;
+      B->ops->view             = MatView_MPIMAIJ;
 
       b      = (Mat_MPIMAIJ*)B->data;
       b->dof = dof;
@@ -3460,6 +3598,8 @@ PetscErrorCode  MatCreateMAIJ(Mat A,PetscInt dof,Mat *maij)
     }
     B->ops->createsubmatrix   = MatCreateSubMatrix_MAIJ;
     B->ops->createsubmatrices = MatCreateSubMatrices_MAIJ;
+    B->ops->setfromoptions    = MatSetFromOptions_MAIJ;
+    ierr  = MatSetFromOptions(B);CHKERRQ(ierr);
     ierr  = MatSetUp(B);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_CUDA)
     /* temporary until we have CUDA implementation of MAIJ */

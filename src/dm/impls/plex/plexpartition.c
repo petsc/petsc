@@ -1776,7 +1776,7 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
   }
   ubvec[0] = pm->imbalanceRatio;
   /* Weight cells by dofs on cell by default */
-  ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
+  ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);
   for (v = 0; v < nvtxs; ++v) vwgt[v] = 1;
   if (section) {
     PetscInt cStart, cEnd, dof;
@@ -2093,7 +2093,7 @@ static PetscErrorCode PetscPartitionerPartition_PTScotch(PetscPartitioner part, 
     /* To do this properly, we should use the cell numbering created in DMPlexCreatePartitionerGraph. */
     ierr = PetscMalloc1(PetscMax(nvtxs,1),&vwgt);CHKERRQ(ierr);
     for (v = 0; v < PetscMax(nvtxs,1); ++v) vwgt[v] = 1;
-    ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
+    ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);
     if (section) {
       PetscInt vStart, vEnd, dof;
       ierr = DMPlexGetHeightStratum(dm, part->height, &vStart, &vEnd);CHKERRQ(ierr);
@@ -2953,7 +2953,7 @@ static PetscErrorCode DMPlexViewDistribution(MPI_Comm comm, PetscInt n, PetscInt
   Output parameters:
   + success          - whether the graph partitioning was successful or not. If not, try useInitialGuess=True and parallel=True.
 
-  Level: user
+  Level: intermediate
 
 @*/
 

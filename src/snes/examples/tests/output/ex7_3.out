@@ -1,0 +1,53 @@
+    0 KSP Residual norm 7.280029743643e-01 
+    1 KSP Residual norm 3.337699703998e-01 
+    2 KSP Residual norm 8.311740393601e-02 
+    3 KSP Residual norm 5.246933530538e-02 
+    4 KSP Residual norm 4.966507134009e-10 
+    0 KSP Residual norm 9.243455441942e-03 
+    1 KSP Residual norm 5.047059971537e-03 
+    2 KSP Residual norm 1.832182661334e-03 
+    3 KSP Residual norm 3.923724867924e-12 
+    0 KSP Residual norm 1.415224283158e-05 
+    1 KSP Residual norm 8.046855087544e-06 
+    2 KSP Residual norm 3.150105943273e-06 
+    3 KSP Residual norm 1.614829587474e-14 
+SNES Object: 1 MPI processes
+  type: newtonls
+  maximum iterations=50, maximum function evaluations=10000
+  tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+  total number of linear solver iterations=10
+  total number of function evaluations=20
+  norm schedule ALWAYS
+  SNESLineSearch Object: 1 MPI processes
+    type: bt
+      interpolation: cubic
+      alpha=1.000000e-04
+    maxstep=1.000000e+08, minlambda=1.000000e-12
+    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+    maximum iterations=40
+  KSP Object: 1 MPI processes
+    type: gmres
+      restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+      happy breakdown tolerance 1e-30
+    maximum iterations=10000, initial guess is zero
+    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+    left preconditioning
+    using PRECONDITIONED norm type for convergence test
+  PC Object: 1 MPI processes
+    type: jacobi
+    linear system matrix followed by preconditioner matrix:
+    Mat Object: 1 MPI processes
+      type: mffd
+      rows=5, cols=5
+        Matrix-free approximation:
+          err=1.49012e-08 (relative error in function evaluation)
+          Using wp compute h routine
+              Does not compute normU
+    Mat Object: 1 MPI processes
+      type: seqaij
+      rows=5, cols=5
+      total: nonzeros=11, allocated nonzeros=15
+      total number of mallocs used during MatSetValues calls =0
+        not using I-node routines
+number of SNES iterations = 3
+

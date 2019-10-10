@@ -26,6 +26,7 @@ class Configure(config.base.Configure):
       - If the path is absolute and the filename is "lib"<name>, return -L<dir> -l<name> (optionally including rpath flag)
       - If the filename is "lib"<name>, return -l<name>
       - If the path ends in ".so" return it unchanged
+      - If the path ends in ".o" return it unchanged
       - If the path is absolute, return it unchanged
       - Otherwise return -l<library>'''
     if not library:
@@ -54,7 +55,7 @@ class Configure(config.base.Configure):
         return ['-L'+dirname,'-l'+name]
       else:
         return ['-l'+name]
-    if os.path.splitext(library)[1] == '.so':
+    if os.path.splitext(library)[1] == '.so' or os.path.splitext(library)[1] == '.o':
       return [library]
     if os.path.isabs(library):
       return [library]
@@ -108,6 +109,7 @@ class Configure(config.base.Configure):
 
   def toStringNoDupes(self,libs,with_rpath=True):
     '''Converts a list of libraries to a string suitable for a linker, removes duplicates'''
+    '''Moves the flags that can be moved to the beginning of the string but always leaves the libraries and other items that must remain in the same order'''
     newlibs = []
     frame = 0
     for lib in libs:
@@ -128,14 +130,15 @@ class Configure(config.base.Configure):
     if hasattr(self.setCompilers, flagName) and not getattr(self.setCompilers, flagName) is None:
       dupflags.append(getattr(self.setCompilers, flagName))
     for j in libs:
-      # remove duplicate -L, -Wl,-rpath options - and only consecutive -l optipons
+      # remove duplicate -L, -Wl,-rpath options - and only consecutive -l options
       if j in newldflags and any([j.startswith(flg) for flg in dupflags]): continue
       if newlibs and j == newlibs[-1]: continue
-      if j.startswith('-l'):
+      if j.startswith('-l') or j.endswith('.lib') or j.endswith('.a') or j.endswith('.o') or j == '-Wl,-Bstatic' or j == '-Wl,-Bdynamic' or j == '-Wl,--start-group' or j == '-Wl,--end-group':
         newlibs.append(j)
       else:
         newldflags.append(j)
-    return ' '.join(newldflags + newlibs)
+    liblist = ' '.join(newldflags + newlibs)
+    return liblist
 
   def getShortLibName(self,lib):
     '''returns the short name for the library. Valid names are foo -lfoo or libfoo.[a,so,lib]'''
@@ -335,7 +338,7 @@ extern "C" {
     self.headers.check('dlfcn.h')
     return
 
-  def checkShared(self, includes, initFunction, checkFunction, finiFunction = None, checkLink = None, libraries = [], initArgs = '&argc, &argv', boolType = 'int', noCheckArg = 0, defaultArg = '', executor = None):
+  def checkShared(self, includes, initFunction, checkFunction, finiFunction = None, checkLink = None, libraries = [], initArgs = '&argc, &argv', boolType = 'int', noCheckArg = 0, defaultArg = '', executor = None, timeout = 15):
     '''Determine whether a library is shared
        - initFunction(int *argc, char *argv[]) is called to initialize some static data
        - checkFunction(int *check) is called to verify that the static data wer set properly
@@ -460,8 +463,15 @@ int checkInit(void) {
     oldLibs = self.setCompilers.LIBS
     if self.haveLib('dl'):
       self.setCompilers.LIBS += ' -ldl'
-    if self.checkRun(defaultIncludes, body, defaultArg = defaultArg, executor = executor):
-      isShared = 1
+    isShared = 0
+    try:
+      isShared = self.checkRun(defaultIncludes, body, defaultArg = defaultArg, executor = executor, timeout = timeout)
+    except RuntimeError as e:
+      if executor and str(e).find('Runaway process exceeded time limit') > -1:
+        raise RuntimeError('Timeout: Unable to run MPI program with '+executor+'\n\
+    (1) make sure this is the correct program to run MPI jobs\n\
+    (2) your network may be misconfigured; see https://www.mcs.anl.gov/petsc/documentation/faq.html#PetscOptionsInsertFile\n')
+
     self.setCompilers.LIBS = oldLibs
     if os.path.isfile(lib1Name) and self.framework.doCleanup: os.remove(lib1Name)
     if os.path.isfile(lib2Name) and self.framework.doCleanup: os.remove(lib2Name)

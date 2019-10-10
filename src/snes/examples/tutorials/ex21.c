@@ -192,7 +192,7 @@ PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal rnorm,void *dummy)
 
    test:
       nsize: 4
-      args: -snes_linesearch_monitor -snes_mf -snes_monitor_short -nox -ksp_monitor_short -snes_converged_reason
+      args: -snes_linesearch_monitor -snes_mf -pc_type none -snes_monitor_short -nox -ksp_monitor_short -snes_converged_reason
       requires: !single
 
 TEST*/

@@ -201,7 +201,7 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
                                             geotype[facetID], &fidfilter, facetIDs);CHKERRQ(ierr);
     {
       /* Send facets and IDs to a rendezvous partition that is based on the initial vertex partitioning. */
-      PetscInt           p, r;
+      PetscInt           r;
       DMLabel            lblFacetRendezvous, lblFacetMigration;
       PetscSection       facetSection, facetSectionRendezvous;
       PetscSF            sfProcess, sfFacetMigration;

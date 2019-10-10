@@ -2,7 +2,7 @@ static char help[] = "Tests for cell geometry\n\n";
 
 #include <petscdmplex.h>
 
-typedef enum {RUN_REFERENCE, RUN_FILE} RunType;
+typedef enum {RUN_REFERENCE, RUN_FILE, RUN_DISPLAY} RunType;
 
 typedef struct {
   DM        dm;
@@ -28,7 +28,7 @@ static PetscErrorCode ReadMesh(MPI_Comm comm, const char *filename, AppCtx *user
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  const char    *runTypes[2] = {"reference", "file"};
+  const char    *runTypes[3] = {"reference", "file", "display"};
   PetscInt       run;
   PetscErrorCode ierr;
 
@@ -40,7 +40,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
   ierr = PetscOptionsBegin(comm, "", "Geometry Test Options", "DMPLEX");CHKERRQ(ierr);
   run  = options->runType;
-  ierr = PetscOptionsEList("-run_type", "The run type", "ex8.c", runTypes, 2, runTypes[options->runType], &run, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-run_type", "The run type", "ex8.c", runTypes, 3, runTypes[options->runType], &run, NULL);CHKERRQ(ierr);
   options->runType = (RunType) run;
   ierr = PetscOptionsString("-filename", "The mesh file", "ex8.c", options->filename, options->filename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-interpolate", "Interpolate the mesh", "ex8.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
@@ -77,6 +77,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
     n    = numCells;
     ierr = PetscOptionsRealArray("-vol", "Input volume for each cell", "ex8.c", options->vol, &n, &flag);CHKERRQ(ierr);
     if (flag && n != numCells) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid size of vol %D should be %D", n, numCells);
+  } else if (options->runType == RUN_DISPLAY) {
+    ierr = ReadMesh(PETSC_COMM_WORLD, options->filename, options, &options->dm);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();
 
@@ -624,6 +626,7 @@ static PetscErrorCode TestHexahedron(MPI_Comm comm, PetscBool interpolate, Petsc
   PetscFunctionReturn(0);
 }
 
+/* This wedge is a tensor product cell, rather than a normal wedge */
 static PetscErrorCode TestWedge(MPI_Comm comm, PetscBool interpolate, PetscBool transform)
 {
   DM             dm;
@@ -706,6 +709,39 @@ int main(int argc, char **argv)
       ierr = CheckCell(user.dm, c+cStart, PETSC_FALSE, &user.v0[c*dim], &user.J[c*dim*dim], &user.invJ[c*dim*dim], user.detJ[c], &user.centroid[c*dim], &user.normal[c*dim], user.vol[c], NULL, NULL, NULL);CHKERRQ(ierr);
     }
     ierr = PetscFree7(user.v0,user.J,user.invJ,user.detJ,user.centroid,user.normal,user.vol);CHKERRQ(ierr);
+    ierr = DMDestroy(&user.dm);CHKERRQ(ierr);
+  } else if (user.runType == RUN_DISPLAY) {
+    DM                 gdm, dmCell;
+    Vec                cellgeom, facegeom;
+    const PetscScalar *cgeom;
+    PetscInt           dim, d, cStart, cEnd, cEndInterior, c;
+
+    ierr = DMGetCoordinateDim(user.dm, &dim);CHKERRQ(ierr);
+    ierr = DMPlexConstructGhostCells(user.dm, NULL, NULL, &gdm);CHKERRQ(ierr);
+    if (gdm) {
+      ierr = DMDestroy(&user.dm);CHKERRQ(ierr);
+      user.dm = gdm;
+    }
+    ierr = DMPlexComputeGeometryFVM(user.dm, &cellgeom, &facegeom);CHKERRQ(ierr);
+    ierr = DMPlexGetHeightStratum(user.dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+    ierr = DMPlexGetGhostCellStratum(user.dm, &cEndInterior, NULL);CHKERRQ(ierr);
+    if (cEndInterior >= 0) cEnd = cEndInterior;
+    ierr = VecGetDM(cellgeom, &dmCell);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(cellgeom, &cgeom);CHKERRQ(ierr);
+    for (c = 0; c < cEnd-cStart; ++c) {
+      PetscFVCellGeom *cg;
+
+      ierr = DMPlexPointLocalRead(dmCell, c, cgeom, &cg);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF, "Cell %4D: Centroid (", c);CHKERRQ(ierr);
+      for (d = 0; d < dim; ++d) {
+        if (d > 0) {ierr = PetscPrintf(PETSC_COMM_SELF, ", ");CHKERRQ(ierr);}
+        ierr = PetscPrintf(PETSC_COMM_SELF, "%12.2g", cg->centroid[d]);CHKERRQ(ierr);
+      }
+      ierr = PetscPrintf(PETSC_COMM_SELF, ") Vol %12.2g\n", cg->volume);CHKERRQ(ierr);
+    }
+    ierr = VecRestoreArrayRead(cellgeom, &cgeom);CHKERRQ(ierr);
+    ierr = VecDestroy(&cellgeom);CHKERRQ(ierr);
+    ierr = VecDestroy(&facegeom);CHKERRQ(ierr);
     ierr = DMDestroy(&user.dm);CHKERRQ(ierr);
   }
   ierr = PetscFinalize();

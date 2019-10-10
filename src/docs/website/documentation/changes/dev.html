@@ -34,6 +34,7 @@
               <a href="index.html">Changes</a>
               <ul>
                 <li><span class="current">dev</span></li>
+                <li><a href="312.html">3.12</a></li>
                 <li><a href="311.html">3.11</a></li>
                 <li><a href="310.html">3.10</a></li>
                 <li><a href="39.html">3.9</a></li>
@@ -102,89 +103,29 @@
       </div>
 
       <h4>General:</h4>
-        <ul>
-          <li>The legacy and cmake compile systems (make all-legacy and all-cmake) are removed</li>
-          <li>make gnumake is now make libs</li>
-          <li>PetscArraycmp() should be used instead of PetscMemcmp(), it takes a count argument instead of a byte argument</li>
-          <li>PetscArraycpy() should be used instead of PetscMemcpy(), it takes a count argument instead of a byte argument</li>
-          <li>PetscArrayzero() should be used instead of PetscMemzero(), it takes a count argument instead of a byte argument</li>
-          <li>PetscArraymove() should be used instead of PetscMemmove(), it takes a count argument instead of a byte argument</li>
-          <li>The ./configure options -with-gnu-compilers and -with-vendor-compilers are removed</li>
-          <li>The order ./configure tests compilers has changed so there may be a different compiler selected if you do not provide them</li>
-          <li>Added --with-64-bit-blas-indices that will switch to 64 bit indices when using MKL libraries for BLAS/LAPACK</li>
-          <li>Changed PETSC_DEPRECATED() to PETSC_DEPRECATED_FUNCTION() and PETSC_DEPRECATED_TYPEDEF() to match naming of PETSC_DEPRECATED_ENUM() and PETSC_DEPRECATED_MACRO</li>
-          <li>-help now causes the printing of the current value and the newly set value for PetscOptionsInt(), etc</li>
-          <li>PetscFunctionListPrintTypes() takes an additional final argument after the current value, the set value</li>
-          <li>PetscCalloc*() now calls the system calloc() routine instead of malloc() plus memzero()
-        </ul>
       <h4>Configure/Build:</h4>
       <h4>IS:</h4>
       <h4>PetscDraw:</h4>
       <h4>PF:</h4>
       <h4>Vec:</h4>
-      <ul>
-          <li>VecCUDAGet/RestoreArrayReadWrite() changed to VecCUDAGet/RestoreArray()</li>
-          <li>VecViennaCLGet/RestoreArrayReadWrite() changed to VecViennaCLGet/RestoreArray()</li>
-        </ul>
-      <h4>PetscSection:</h4>
       <h4>VecScatter:</h4>
-      <ul>
-        <li>The default VecScatter implementation is changed to PetscSF. In other words, the default VecScatter shares PetscSF's MPI communication code. One can use -vecscatter_type mpi1 to go back to the old implementation.</li>
-      </ul>
-      <h4>PetscSF:</h4>
-      <ul>
-        <li>PetscSFComputeMultiRootOriginalNumbering: add output argument with the number of multiroots for convenience</li>
-        <li>Added an enum type PetscSFPattern for SF graph patterns. Valid values include PETSCSF_PATTERN_ALLGATHER, PETSCSF_PATTERN_GATHER and PETSCSF_PATTERN_ALLTOALL.</li>
-        <li>Added PetscSFSetGraphWithPattern() to set SF graphs with predefined patterns.</li>
-        <li>Added PetscSFComposeInverse() to compose a new SF by putting the inverse of an SF under the another SF.</li>
-        <li>Added MPI-3.0 neighborhood collectives support. One can use command line option -sf_type neighbor to let SF use MPI-3.0 neighborhood collectives for communication instead of the default MPI_Send/Recv.</li>
-        <li>Removed PetscSFCreateFromZero. Instead, users should use PetscSFCreate() to create an SF, and then set its graph with PetscSFSetGraphWithPattern(..,PETSCSF_PATTERN_GATHER).</li>
-        <li>Renamed PetscSFGetRanks() to PetscSFGetRootRanks().</li>
-      </ul>
+      <h4>PetscSection:</h4>
       <h4>Mat:</h4>
-      <ul>
-          <li>MatShift(Mat,0); will no longer silently insure there are no missing diagonal entries. (Previously it would put 0 into any diagonal entry that was missing</li>
-          <li>Renamed MatComputeExplicitOperator() into MatComputeOperator() and MatComputeExplicitOperatorTranpose() into MatComputeOperatorTranspose(). Added extra argument to select the desired matrix type</li>
-          <li>MatLoad() now supports loading dense matrices from HDF5/MAT files.</li>
-        </ul>
       <h4>PC:</h4>
-        <ul>
-          <li>Renamed PCComputeExplicitOperator() into PCComputeOperator(). Added extra argument to select the desired matrix type</li>
-        </ul>
       <h4>KSP:</h4>
-        <ul>
-          <li>Renamed KSPComputeExplicitOperator() into KSPComputeOperator(). Added extra argument to select the desired matrix type</li>
-          <li> KSPCGGLTRGetMinEig(KSP,PetscReal*) -> KSPGLTRGetMinEig(KSP,PetscReal*)</li>
-          <li> KSPCGGLTRGetLambda(KSP,PetscReal*) ->  KSPGLTRGetLambda(KSP,PetscReal*)</li>
-          <li> KSPCGNASH, KSPCGSTCG, KSPCGGLTR -> KSPNASH, KSPSTCG, KSPGLTR</li>
-        </ul>
       <h4>SNES:</h4>
-        <ul>
-          <li>Changed DIVERGED_TR_DELTA to negative value to indicate diverged, unclear why it would be positive since tiny trust region would indicate trouble, not converged</li>
-        </ul>
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>
-        <ul>
-          <li>Added tangent linear models for Runge-Kutta methods</li>
-          <li>Added second-order adjoint solvers based on Runge-Kutta methods and Theta methods</li>
-          <li>Improved the usage of first-order adjoint solvers in an optimization context. (The TS object can be reused in the optimization loop)</li>
-          <li>Changed the APIs for integrand evaluations and corresponding derivative evaluations. TSSetCostIntegrand() is deprecated. (Instead a quadrature TS is used to handle the callbacks)</li>
-        </ul>
       <h4>DM/DA:</h4>
+        <ul>
+          <li>DMCopyLabels(): add two additional input flags.</li>
+        </ul>
       <h4>DMPlex:</h4>
         <ul>
-          <li>Rename DMPlexCreateSpectralClosurePermutation() to DMPlexSetClosurePermutationTensor()</li>
-          <li>Add DMPlexFindVertices() for vertex coordinates -> DAG point lookup</li>
-        </ul>
-      <h4>DMNetwork:</h4>
-        <ul>
-          <li>Changed prototypes for DMNetworkSetSizes()</li>
+          <li>Add DMPlexOrientCell() which orients a single cell</li>
+          <li>Add DMPlexCompareOrientations() which compares the cone point order of a single cell with the given reference cone</li>
         </ul>
       <h4>PetscViewer:</h4>
-        <ul>
-          <li>Removed PetscViewerHDF5{Get,Set}AIJNames() which are likely not really needed</li>
-          <li>PetscViewerHDF5SetCollective() and -viewer_hdf5_collective can be used to switch between independent and collective transfer mode. Defaults now to false (independent).
-        </ul>
       <h4>SYS:</h4>
       <h4>AO:</h4>
       <h4>Sieve:</h4>

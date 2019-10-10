@@ -70,7 +70,6 @@ class Configure(config.base.Configure):
     self.indexTypes    = framework.require('PETSc.options.indexTypes',  self)
     self.languages     = framework.require('PETSc.options.languages',   self.setCompilers)
     self.indexTypes    = framework.require('PETSc.options.indexTypes',  self.compilers)
-    self.compilers     = framework.require('config.compilers',          self)
     self.types         = framework.require('config.types',              self)
     self.headers       = framework.require('config.headers',            self)
     self.functions     = framework.require('config.functions',          self)
@@ -78,8 +77,9 @@ class Configure(config.base.Configure):
     self.atomics       = framework.require('config.atomics',            self)
     self.make          = framework.require('config.packages.make',      self)
     self.blasLapack    = framework.require('config.packages.BlasLapack',self)
+    self.mpi           = framework.require('config.packages.MPI',       self)
+    self.fortran       = framework.require('config.compilersFortran',   self)
     self.externalpackagesdir = framework.require('PETSc.options.externalpackagesdir',self)
-    self.mpi           = framework.require('config.packages.MPI',self)
 
     for utility in sorted(os.listdir(os.path.join('config','PETSc','options'))):
       self.registerPythonFile(utility,'PETSc.options')
@@ -105,6 +105,7 @@ class Configure(config.base.Configure):
 
     self.programs.headerPrefix   = self.headerPrefix
     self.compilers.headerPrefix  = self.headerPrefix
+    self.fortran.headerPrefix    = self.headerPrefix
     self.types.headerPrefix      = self.headerPrefix
     self.headers.headerPrefix    = self.headerPrefix
     self.functions.headerPrefix  = self.headerPrefix
@@ -293,12 +294,7 @@ prepend-path PATH "%s"
 
       # executable linker values
       self.setCompilers.pushLanguage('FC')
-      # Cannot have NAG f90 as the linker - so use pcc_linker as fc_linker
-      fc_linker = self.setCompilers.getLinker()
-      if config.setCompilers.Configure.isNAG(fc_linker, self.log):
-        self.addMakeMacro('FC_LINKER',pcc_linker)
-      else:
-        self.addMakeMacro('FC_LINKER',fc_linker)
+      self.addMakeMacro('FC_LINKER',self.setCompilers.getLinker())
       self.addMakeMacro('FC_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
       # apple requires this shared library linker flag on SOME versions of the os
       if self.setCompilers.getLinkerFlags().find('-Wl,-commons,use_dylibs') > -1:
@@ -370,7 +366,7 @@ prepend-path PATH "%s"
     includes = []
     self.packagelibs = []
     for i in self.framework.packages:
-      if i.useddirectly and not i.required:
+      if not i.required:
         self.addDefine('HAVE_'+i.PACKAGE.replace('-','_'), 1)  # ONLY list package if it is used directly by PETSc (and not only by another package)
       if not isinstance(i.lib, list):
         i.lib = [i.lib]
@@ -398,7 +394,7 @@ prepend-path PATH "%s"
     self.addMakeMacro('PETSC_CC_INCLUDES_INSTALL', self.PETSC_CC_INCLUDES_INSTALL)
     if hasattr(self.compilers, 'FC'):
       def modinc(includes):
-        return includes if self.compilers.fortranIsF90 else []
+        return includes if self.fortran.fortranIsF90 else []
       self.addMakeMacro('PETSC_FC_INCLUDES',self.headers.toStringNoDupes(allincludes,modinc(allincludes)))
       self.addMakeMacro('PETSC_FC_INCLUDES_INSTALL',self.headers.toStringNoDupes(allincludes_install,modinc(allincludes_install)))
 
