@@ -1,0 +1,60 @@
+PetscSF Object: sfA 1 MPI processes
+  type: basic
+    sort=rank-order
+  [0] Number of roots=4, leaves=4, remote ranks=1
+  [0] 2 <- (0,0)
+  [0] 3 <- (0,1)
+  [0] 4 <- (0,2)
+  [0] 5 <- (0,3)
+PetscSF Object: sfB 1 MPI processes
+  type: basic
+    sort=rank-order
+  [0] Number of roots=8, leaves=2, remote ranks=1
+  [0] 3 <- (0,2)
+  [0] 2 <- (0,3)
+BcastB(BcastA)
+A: root data
+0: 0 1 2 3
+A: leaf data (all)
+0: -1 -1 0 1 2 3 -1 -1
+B: leaf data (all)
+0: -1 -1 1 0 -1 -1
+PetscSF Object: sfBA 1 MPI processes
+  type: basic
+    sort=rank-order
+  [0] Number of roots=4, leaves=2, remote ranks=1
+  [0] 3 <- (0,0)
+  [0] 2 <- (0,1)
+BcastBA
+BA: root data
+0: 0 1 2 3
+BA: leaf data (all)
+0: -1 -1 1 0 -1 -1
+PetscSF Object: sfAm 1 MPI processes
+  type: basic
+    sort=rank-order
+  [0] Number of roots=6, leaves=4, remote ranks=1
+  [0] 0 <- (0,2)
+  [0] 1 <- (0,3)
+  [0] 2 <- (0,4)
+  [0] 3 <- (0,5)
+PetscSF Object: sfAAm 1 MPI processes
+  type: basic
+    sort=rank-order
+  [0] Number of roots=4, leaves=4, remote ranks=1
+  [0] 0 <- (0,0)
+  [0] 1 <- (0,1)
+  [0] 2 <- (0,2)
+  [0] 3 <- (0,3)
+PetscSF Object: sfBm 1 MPI processes
+  type: basic
+    sort=rank-order
+  [0] Number of roots=4, leaves=2, remote ranks=1
+  [0] 2 <- (0,3)
+  [0] 3 <- (0,2)
+PetscSF Object: sfBBm 1 MPI processes
+  type: basic
+    sort=rank-order
+  [0] Number of roots=8, leaves=2, remote ranks=1
+  [0] 2 <- (0,2)
+  [0] 3 <- (0,3)

@@ -4,7 +4,7 @@ FFLAGS	         =
 CPPFLAGS         =
 FPPFLAGS         =
 LOCDIR           = src/vec/is/sf/examples/tests/
-EXAMPLESC        = ex1.c ex2.c ex3.c
+EXAMPLESC        = ex1.c ex2.c ex3.c ex4.c ex5.c
 EXAMPLESF        =
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
