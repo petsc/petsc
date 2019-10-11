@@ -125,9 +125,9 @@ struct _n_PetscSFPack {
   cudaStream_t   stream;                 /* Stream to launch pack/unapck kernels if not using the default stream */
 #endif
   PetscMPIInt    tag;                    /* Each link has a tag so we can perform multiple SF ops at the same time */
-  MPI_Datatype   unit;
+  MPI_Datatype   unit;                   /* The MPI datatype this PetscSFPack is built for */
   MPI_Datatype   basicunit;              /* unit is made of MPI builtin dataype basicunit */
-  PetscBool      isbuiltin;              /* Is unit an MPI builtin datatype? If it is true, basicunit=unit, bs=1 */
+  PetscBool      isbuiltin;              /* Is unit an MPI/PETSc builtin datatype? If it is true, basicunit=unit, bs=1 */
   size_t         unitbytes;              /* Number of bytes in a unit */
   PetscInt       bs;                     /* Number of basic units in a unit */
   const void     *rkey,*lkey;            /* rootdata and leafdata used as keys for operation */

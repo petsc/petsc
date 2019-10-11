@@ -619,19 +619,23 @@ PetscErrorCode PetscSFPackSetUp_Host(PetscSF sf,PetscSFPack link,MPI_Datatype un
   ierr = MPIPetsc_Type_compare(unit,MPIU_2INT,&is2PetscInt);CHKERRQ(ierr);
   /* TODO: shaell we also handle Fortran MPI_2REAL? */
   ierr = MPI_Type_get_envelope(unit,&ni,&na,&nd,&combiner);CHKERRQ(ierr);
-  link->isbuiltin = (combiner == MPI_COMBINER_NAMED) ? PETSC_TRUE : PETSC_FALSE;
+  link->isbuiltin = (combiner == MPI_COMBINER_NAMED) ? PETSC_TRUE : PETSC_FALSE; /* unit is MPI builtin */
   link->bs = 1; /* default */
 
   if (is2Int) {
     PackInit_PairType_int_int(link);
     link->bs        = 1;
     link->unitbytes = 2*sizeof(int);
+    link->isbuiltin = PETSC_TRUE; /* unit is PETSc builtin */
     link->basicunit = MPI_2INT;
+    link->unit      = MPI_2INT;
   } else if (is2PetscInt) { /* TODO: when is2PetscInt and nPetscInt=2, we don't know which path to take. The two paths support different ops. */
     PackInit_PairType_PetscInt_PetscInt(link);
     link->bs        = 1;
     link->unitbytes = 2*sizeof(PetscInt);
     link->basicunit = MPIU_2INT;
+    link->isbuiltin = PETSC_TRUE; /* unit is PETSc builtin */
+    link->unit      = MPIU_2INT;
   } else if (nPetscReal) {
     if      (nPetscReal == 8) PackInit_RealType_PetscReal_8_1(link); else if (nPetscReal%8 == 0) PackInit_RealType_PetscReal_8_0(link);
     else if (nPetscReal == 4) PackInit_RealType_PetscReal_4_1(link); else if (nPetscReal%4 == 0) PackInit_RealType_PetscReal_4_0(link);
@@ -640,6 +644,7 @@ PetscErrorCode PetscSFPackSetUp_Host(PetscSF sf,PetscSFPack link,MPI_Datatype un
     link->bs        = nPetscReal;
     link->unitbytes = nPetscReal*sizeof(PetscReal);
     link->basicunit = MPIU_REAL;
+    if (link->bs == 1) {link->isbuiltin = PETSC_TRUE; link->unit = MPIU_REAL;}
   } else if (nPetscInt) {
     if      (nPetscInt == 8) PackInit_IntegerType_PetscInt_8_1(link); else if (nPetscInt%8 == 0) PackInit_IntegerType_PetscInt_8_0(link);
     else if (nPetscInt == 4) PackInit_IntegerType_PetscInt_4_1(link); else if (nPetscInt%4 == 0) PackInit_IntegerType_PetscInt_4_0(link);
@@ -648,6 +653,7 @@ PetscErrorCode PetscSFPackSetUp_Host(PetscSF sf,PetscSFPack link,MPI_Datatype un
     link->bs        = nPetscInt;
     link->unitbytes = nPetscInt*sizeof(PetscInt);
     link->basicunit = MPIU_INT;
+    if (link->bs == 1) {link->isbuiltin = PETSC_TRUE; link->unit = MPIU_INT;}
 #if defined(PETSC_USE_64BIT_INDICES)
   } else if (nInt) {
     if      (nInt == 8) PackInit_IntegerType_int_8_1(link); else if (nInt%8 == 0) PackInit_IntegerType_int_8_0(link);
@@ -657,6 +663,7 @@ PetscErrorCode PetscSFPackSetUp_Host(PetscSF sf,PetscSFPack link,MPI_Datatype un
     link->bs        = nInt;
     link->unitbytes = nInt*sizeof(int);
     link->basicunit = MPI_INT;
+    if (link->bs == 1) {link->isbuiltin = PETSC_TRUE; link->unit = MPI_INT;}
 #endif
   } else if (nSignedChar) {
     if      (nSignedChar == 8) PackInit_IntegerType_SignedChar_8_1(link); else if (nSignedChar%8 == 0) PackInit_IntegerType_SignedChar_8_0(link);
@@ -666,6 +673,7 @@ PetscErrorCode PetscSFPackSetUp_Host(PetscSF sf,PetscSFPack link,MPI_Datatype un
     link->bs        = nSignedChar;
     link->unitbytes = nSignedChar*sizeof(SignedChar);
     link->basicunit = MPI_SIGNED_CHAR;
+    if (link->bs == 1) {link->isbuiltin = PETSC_TRUE; link->unit = MPI_SIGNED_CHAR;}
   }  else if (nUnsignedChar) {
     if      (nUnsignedChar == 8) PackInit_IntegerType_UnsignedChar_8_1(link); else if (nUnsignedChar%8 == 0) PackInit_IntegerType_UnsignedChar_8_0(link);
     else if (nUnsignedChar == 4) PackInit_IntegerType_UnsignedChar_4_1(link); else if (nUnsignedChar%4 == 0) PackInit_IntegerType_UnsignedChar_4_0(link);
@@ -674,6 +682,7 @@ PetscErrorCode PetscSFPackSetUp_Host(PetscSF sf,PetscSFPack link,MPI_Datatype un
     link->bs        = nUnsignedChar;
     link->unitbytes = nUnsignedChar*sizeof(UnsignedChar);
     link->basicunit = MPI_UNSIGNED_CHAR;
+    if (link->bs == 1) {link->isbuiltin = PETSC_TRUE; link->unit = MPI_UNSIGNED_CHAR;}
 #if defined(PETSC_HAVE_COMPLEX)
   } else if (nPetscComplex) {
     if      (nPetscComplex == 8) PackInit_ComplexType_PetscComplex_8_1(link); else if (nPetscComplex%8 == 0) PackInit_ComplexType_PetscComplex_8_0(link);
@@ -683,6 +692,7 @@ PetscErrorCode PetscSFPackSetUp_Host(PetscSF sf,PetscSFPack link,MPI_Datatype un
     link->bs        = nPetscComplex;
     link->unitbytes = nPetscComplex*sizeof(PetscComplex);
     link->basicunit = MPIU_COMPLEX;
+    if (link->bs == 1) {link->isbuiltin = PETSC_TRUE; link->unit = MPIU_COMPLEX;}
 #endif
   } else {
     MPI_Aint lb,nbyte;
@@ -705,10 +715,10 @@ PetscErrorCode PetscSFPackSetUp_Host(PetscSF sf,PetscSFPack link,MPI_Datatype un
       link->unitbytes = nbyte;
       link->basicunit = MPI_INT;
     }
+    if (link->isbuiltin) link->unit = unit;
   }
 
-  if (link->isbuiltin) link->unit = unit; /* builtin datatypes are common. Make it fast */
-  else {ierr = MPI_Type_dup(unit,&link->unit);CHKERRQ(ierr);}
+  if (!link->isbuiltin) {ierr = MPI_Type_dup(unit,&link->unit);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
