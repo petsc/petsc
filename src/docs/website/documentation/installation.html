@@ -128,7 +128,7 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
         <li><a href="#pkgconfig">PETSc ./configure automatically generates Pkgconfig and module files for each install</a></li>
         <li><a href="#SP">Installing on machine requiring cross compiler or a job scheduler, such as IBM SP or IBM Blue Gene</a></li>
         <li><a href="#usingtau">Installing with TAU instrumentation package</a></li>
-        <li><a href="#CUDA">Installing PETSc to use NVidia GPUs (aka CUDA)</a></li>
+        <li><a href="#CUDA">Installing PETSc to use NVIDIA GPUs (aka CUDA)</a></li>
         <li><a href="#OpenCL">Installing PETSc to use GPUs and accelerators via OpenCL (NVIDIA, AMD, Intel MIC)</a></li>
         <li><a href="#doemachines">Installing on large scale DOE systems</a></li>
         <li><a href="#iosandroid">Installing PETSc on an iOS or Android platform</a></li>
@@ -1093,7 +1093,7 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
       <hr>
 
       <div>
-        <h3><a name="CUDA">Installing PETSc to use NVidia GPUs (aka CUDA)</a></h3>
+        <h3><a name="CUDA">Installing PETSc to use NVIDIA GPUs (aka CUDA)</a></h3>
 
         <ul>
           <li>
@@ -1101,15 +1101,15 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
           </li>
 
           <li>
-            On Linux - make sure you have  compatible <a href="https://developer.nvidia.com/cuda-downloads"> NVidia driver</a>
+            On Linux - make sure you have compatible <a href="https://developer.nvidia.com/cuda-downloads"> NVIDIA driver</a>
             installed.
           </li>
 
-          <li>In most cases you need only pass the configure option --with-cuda, check <code>config/examples/arch-cuda-double.py</code> for example usage.</li>
+          <li>In most cases you need only pass the configure option --with-cuda; check <code>config/examples/arch-ci-linux-cuda-double.py</code> for example usage.</li>
         </ul>
 
         <p>
-          CUDA build of PETSc curently works on Apple OSX, Linux [Ubuntu 10.04], Microsoft Windows [Server 2003].
+          CUDA build of PETSc currently works on Mac OS X, Linux, Microsoft Windows.
         </p>
 
         <a href="#" target="_top">Return to Installation Instructions</a>
@@ -1122,7 +1122,7 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
 
         <ul>
           <li>
-            Requires the OpenCL shared library, which is shipped in the vendor graphics driver and the OpenCL headers, if need be you downloading them
+            Requires the OpenCL shared library, which is shipped in the vendor graphics driver and the OpenCL headers; if needed you can download them
             from the <a href="https://www.khronos.org/opencl/">Khronos Group</a> directly.
             Package managers on Linux provide these headers through a package named 'opencl-headers' or similar.
             On Apple systems the OpenCL drivers and headers are always available and do not need to be downloaded.
@@ -1132,11 +1132,11 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
             Always make sure you have the latest GPU driver installed. There are several known issues with older driver versions.
           </li>
 
-          <li>Run configure with --download-viennacl or heck <code>config/examples/arch-viennacl.py</code> for example usage.</li>
+          <li>Run configure with --download-viennacl; check <code>config/examples/arch-ci-linux-viennacl.py</code> for example usage.</li>
         </ul>
 
         <p>
-          OpenCL/ViennaCL builds of PETSc currently work on Apple OSX, Linux, and Microsoft Windows.
+          OpenCL/ViennaCL builds of PETSc currently work on Mac OS X, Linux, and Microsoft Windows.
         </p>
 
         <a href="#" target="_top">Return to Installation Instructions</a>
@@ -1193,7 +1193,7 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
           </li>
             </ul>
           <li>
-            OLCF - Oak Ridge National Laboratory - Summit machine - Nvidia GPUs and IBM Power PC processors
+            OLCF - Oak Ridge National Laboratory - Summit machine - NVIDIA GPUs and IBM Power PC processors
             <ul>
               <li>
                 Project ID: CSC314
