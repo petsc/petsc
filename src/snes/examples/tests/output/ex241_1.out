@@ -1,0 +1,49 @@
+Vec Object: 1 MPI processes
+  type: seq
+1.
+DOMAIN ERROR: x=0.50005
+      Line search: objective function at lambdas = 1. is Inf or Nan, cutting lambda
+      Line search: Using full step: fnorm 9.999000000000e-01 gnorm 5.624375006250e-01
+Vec Object: 1 MPI processes
+  type: seq
+0.750025
+      Line search: Using full step: fnorm 5.624375006250e-01 gnorm 1.405843796004e-01
+Vec Object: 1 MPI processes
+  type: seq
+0.375079
+      Line search: Using full step: fnorm 1.405843796004e-01 gnorm 3.512111267037e-02
+Vec Object: 1 MPI processes
+  type: seq
+0.187673
+      Line search: Using full step: fnorm 3.512111267037e-02 gnorm 8.755349147747e-03
+Vec Object: 1 MPI processes
+  type: seq
+0.0941029
+      Line search: Using full step: fnorm 8.755349147747e-03 gnorm 2.164119602175e-03
+Vec Object: 1 MPI processes
+  type: seq
+0.0475828
+      Line search: Using full step: fnorm 2.164119602175e-03 gnorm 5.171340824948e-04
+Vec Object: 1 MPI processes
+  type: seq
+0.0248422
+      Line search: Using full step: fnorm 5.171340824948e-04 gnorm 1.083345041472e-04
+Vec Object: 1 MPI processes
+  type: seq
+0.0144338
+      Line search: Using full step: fnorm 1.083345041472e-04 gnorm 1.408355859831e-05
+Vec Object: 1 MPI processes
+  type: seq
+0.010681
+      Line search: Using full step: fnorm 1.408355859831e-05 gnorm 4.346520770148e-07
+Vec Object: 1 MPI processes
+  type: seq
+0.0100217
+      Line search: Using full step: fnorm 4.346520770148e-07 gnorm 4.702620662805e-10
+Vec Object: 1 MPI processes
+  type: seq
+0.01
+Number of SNES iterations = 10
+Vec Object: 1 MPI processes
+  type: seq
+0.01

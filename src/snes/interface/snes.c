@@ -2340,6 +2340,8 @@ PetscErrorCode  SNESComputeFunction(SNES snes,Vec x,Vec y)
     }
     ierr = VecLockReadPush(x);CHKERRQ(ierr);
     PetscStackPush("SNES user function");
+    /* ensure domainerror is false prior to computefunction evaluation (may not have been reset) */
+    snes->domainerror = PETSC_FALSE;
     ierr = (*sdm->ops->computefunction)(snes,x,y,sdm->functionctx);CHKERRQ(ierr);
     PetscStackPop;
     ierr = VecLockReadPop(x);CHKERRQ(ierr);

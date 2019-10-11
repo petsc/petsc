@@ -441,18 +441,24 @@ See https://www.mcs.anl.gov/petsc/documentation/faq.html
 
       <h3><a name="gpus">Can PETSc use GPUs to speedup computations?</a></h3>
 
-      The <a href="https://gitlab.com/petsc/petsc">PETSc developer repository</a> has some support for running portions of the computation on
-      GPUs. See <a href="https://www.mcs.anl.gov/petsc/features/gpus.html">PETSc GPUs</a> for
-      more information. PETSc has Vec classes VECCUDA and VECVIENNACL which perform almost all
+      Recent releases of PETSc have support for running portions of the computation on GPUs.
+      As GPU support is rapidly evolving target, however, we suggest using the
+      <a href="https://gitlab.com/petsc/petsc">PETSc developer repository</a>  for serious work with GPUs.
+      See <a href="https://www.mcs.anl.gov/petsc/features/gpus.html">PETSc GPUs</a> for
+      more information. PETSc has Vec classes VECCUDA and VECVIENNACL, which perform almost all
       the vector operations on the GPU. The Mat classes AIJCUSPARSE and AIJVIENNACL perform
-      matrix-vector products on the GPU but do not have matrix assembly on the
+      matrix-vector products on the GPU but do not support matrix assembly on the
       GPU yet. Both of these classes run in parallel with MPI. All KSP methods,
-      except KSPIBCGS, run all their vector operations on the GPU thus, for
-      example Jacobi preconditioned Krylov methods run completely on the GPU.
-      Preconditioners are a problem, we could do with some help for these. The
+      except KSPIBCGS, run all their vector operations on the GPU; thus, for
+      example, Jacobi preconditioned Krylov methods run completely on the GPU.
+      Preconditioners are a problem; we could do with some help for these. The
       example <a href="https://www.mcs.anl.gov/petsc/petsc-master/src/snes/examples/tutorials/ex47cu.cu.html">src/snes/examples/tutorials/ex47cu.cu</a>
       demonstates how the nonlinear function evaluation can be done on the
       GPU.
+
+      We plan a significant refactorization of the GPU code in the near future that will make it easier to use and easier to extend. There is no need to wait for that refactorization however since the user API and interaction with the GPU will be almost identical.
+
+      Please contact us if you would like examples for a particular programming model, such as Kokkos, OpenMP, etc. We will prioritize based on user input.
 
       <h3><a name="precision">Can I run PETSc with extended precision?</a></h3>
 

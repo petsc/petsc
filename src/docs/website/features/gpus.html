@@ -40,14 +40,14 @@
     <div id="main">
 
       <p>
-        PETSc algebraic solvers now run on GPU systems from NVIDIA and AMD. This sometimes provides an
+        PETSc algebraic solvers now run on GPU systems from NVIDIA, AMD, and Intel. This sometimes provides an
         alternative high-performance, low-cost solution technique.
       </p>
 
       <p>
         We recommend
         working with <a href="../developers/index.html">petsc master (git branch)</a> if you wish
-        to work witht his feature.
+        to work with this feature.
       </p>
 
       <span class="warning">
@@ -69,19 +69,19 @@
             <li>
               The VecType <code>VECSEQCUDA</code>, <code>VECMPICUDA</code>, or
               <code>VECCUDA</code> may be used with <code>VecSetType()</code> or
-              -vec_type seqcuda,mpicuda, or cuda when <code>VecSetFromOptions()</code> is used.
+              -vec_type seqcuda, mpicuda, or cuda when <code>VecSetFromOptions()</code> is used.
             </li>
 
             <li>
               The MatType <code>MATSEQAIJCUSPARSE</code>, <code>MATMPIAIJCUSPARSE</code>, or
               <code>MATAIJCUSPARSE</code> maybe used with MatSetType or -mat_type
-              seqaijcusparse,mpiaijcusparse, or aijcusparse when <code>MatSetOptions()</code>
+              seqaijcusparse, mpiaijcusparse, or aijcusparse when <code>MatSetOptions()</code>
               is used.
             </li>
 
             <li>
               If you are creating the vectors and matrices with a
-              DM, you can use -dm_vec_type cuda and -dm_mat_type aijcuda
+              DM, you can use -dm_vec_type cuda and -dm_mat_type aijcusparse
             </li>
           </ul>
         </li>
@@ -92,13 +92,13 @@
             <li>
               The VecType <code>VECSEQVIENNACL</code>, <code>VECMPIVIENNACL</code>, or
               <code>VECVIENNACL</code> may be used with <code>VecSetType()</code> or
-              -vec_type seqviennacl,mpiviennacl, or viennacl when <code>VecSetFromOptions()</code> is used.
+              -vec_type seqviennacl, mpiviennacl, or viennacl when <code>VecSetFromOptions()</code> is used.
             </li>
 
             <li>
               The MatType <code>MATSEQAIJVIENNACL</code>, <code>MATMPIAIJVIENNACL</code>, or
               <code>MATAIJVIENNACL</code> maybe used with MatSetType or -mat_type
-              seqaijviennacl,mpiaijviennacl, or aijviennacl when <code>MatSetOptions()</code>
+              seqaijviennacl, mpiaijviennacl, or aijviennacl when <code>MatSetOptions()</code>
               is used.
             </li>
 
@@ -125,7 +125,7 @@
 
             <li>
               The only preconditioners to run directly on the GPU are <code>PCJACOBI</code>,
-              <code>PCSACUSP</code>, <code>PCSACUSPPOLY</code>, and <code>PCAINVCUSP</code>.
+              <code>PCSAViennaCL</code>, <code>PCCHOWILUViennaCL</code>, and <code>PCRowScalingViennaCL</code>.
               The <code>PCBJACOBI</code> and <code>PCASM</code> are just containers,
               so if the subsolver runs on the GPU, they can also be considered to run on the GPU.
             </li>
