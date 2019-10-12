@@ -869,6 +869,7 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
   ierr = MatMumpsResetSchur_Private(mumps);CHKERRQ(ierr);
   mumps->id.job = JOB_END;
   PetscMUMPS_c(mumps);
+  if (mumps->id.INFOG(1) < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in MatDestroy_MUMPS: INFOG(1)=%d\n",mumps->id.INFOG(1));
 #if defined(PETSC_HAVE_OPENMP_SUPPORT)
   if (mumps->use_petsc_omp_support) { ierr = PetscOmpCtrlDestroy(&mumps->omp_ctrl);CHKERRQ(ierr); }
 #endif
@@ -1542,6 +1543,7 @@ PetscErrorCode PetscInitializeMUMPS(Mat A,Mat_MUMPS *mumps)
   mumps->id.sym = mumps->sym;
 
   PetscMUMPS_c(mumps);
+  if (mumps->id.INFOG(1) < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in PetscInitializeMUMPS: INFOG(1)=%d\n",mumps->id.INFOG(1));
 
   /* copy MUMPS default control values from master to slaves. Although slaves do not call MUMPS, they may access these values in code.
      For example, ICNTL(9) is initialized to 1 by MUMPS and slaves check ICNTL(9) in MatSolve_MUMPS.
