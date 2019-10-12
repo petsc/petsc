@@ -107,7 +107,7 @@ PETSC_EXTERN PetscErrorCode DMPlexPointGlobalFieldRead(DM,PetscInt,PetscInt,cons
 /* Topological interpolation */
 PETSC_EXTERN const char * const DMPlexInterpolatedFlags[];
 typedef enum {
-  DMPLEX_INTERPOLATED_UNINITIALIZED = -1,
+  DMPLEX_INTERPOLATED_INVALID = -1,
   DMPLEX_INTERPOLATED_NONE = 0,
   DMPLEX_INTERPOLATED_PARTIAL,
   DMPLEX_INTERPOLATED_MIXED,
