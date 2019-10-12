@@ -2049,7 +2049,7 @@ PetscErrorCode PetscSectionDestroy(PetscSection *s)
 
   PetscFunctionBegin;
   if (!*s) PetscFunctionReturn(0);
-  PetscValidHeaderSpecific((*s),PETSC_SECTION_CLASSID,1);
+  PetscValidHeaderSpecific(*s,PETSC_SECTION_CLASSID,1);
   if (--((PetscObject)(*s))->refct > 0) {
     *s = NULL;
     PetscFunctionReturn(0);

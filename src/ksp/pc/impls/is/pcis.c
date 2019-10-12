@@ -168,7 +168,7 @@ PetscErrorCode  PCISSetUp(PC pc, PetscBool computematrices, PetscBool computesol
     ierr = PetscBTCreate(pcis->n,&bt);CHKERRQ(ierr);
     for (i=0;i<pcis->n_neigh;i++)
       for (j=0;j<pcis->n_shared[i];j++) {
-          ierr = PetscBTSet(bt,pcis->shared[i][j]);CHKERRQ(ierr);
+        ierr = PetscBTSet(bt,pcis->shared[i][j]);CHKERRQ(ierr);
       }
 
     /* Creating local and global index sets for interior and inteface nodes. */

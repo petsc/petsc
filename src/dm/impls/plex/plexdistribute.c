@@ -217,7 +217,7 @@ PetscErrorCode DMPlexGetAdjacency_Internal(DM dm, PetscInt p, PetscBool useCone,
   if (*adjSize < 0) *adjSize = asiz;
   maxAdjSize = *adjSize;
   if (mesh->useradjacency) {
-    ierr = mesh->useradjacency(dm, p, adjSize, *adj, mesh->useradjacencyctx);CHKERRQ(ierr);
+    ierr = (*mesh->useradjacency)(dm, p, adjSize, *adj, mesh->useradjacencyctx);CHKERRQ(ierr);
   } else if (useTransitiveClosure) {
     ierr = DMPlexGetAdjacency_Transitive_Internal(dm, p, useCone, adjSize, *adj);CHKERRQ(ierr);
   } else if (useCone) {
