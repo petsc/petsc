@@ -1,4 +1,3 @@
-
 /*
     We define the string operations here. The reason we just do not use
   the standard string routines in the PETSc code is that on some machines
@@ -169,6 +168,11 @@ PetscErrorCode  PetscStrlen(const char s[],size_t *len)
       Null string returns a new null string
 
       Not for use in Fortran
+      
+      Warning: If t has previously been allocated then that memory is lost, you may need to PetscFree() 
+      the array before calling this routine.
+
+.seealso: PetscStrArrayallocpy(), PetscStrcpy(), PetscStrNArrayallocpy()
 
 @*/
 PetscErrorCode  PetscStrallocpy(const char s[],char *t[])
@@ -203,7 +207,10 @@ PetscErrorCode  PetscStrallocpy(const char s[],char *t[])
    Note:
       Not for use in Fortran
 
-.seealso: PetscStrallocpy() PetscStrArrayDestroy()
+      Warning: If t has previously been allocated then that memory is lost, you may need to PetscStrArrayDestroy() 
+      the array before calling this routine.
+      
+.seealso: PetscStrallocpy(), PetscStrArrayDestroy(), PetscStrNArrayallocpy()
 
 @*/
 PetscErrorCode  PetscStrArrayallocpy(const char *const *list,char ***t)
@@ -269,7 +276,7 @@ PetscErrorCode PetscStrArrayDestroy(char ***list)
    Note:
       Not for use in Fortran
 
-.seealso: PetscStrallocpy() PetscStrArrayDestroy()
+.seealso: PetscStrallocpy(), PetscStrArrayallocpy(), PetscStrNArrayDestroy()
 
 @*/
 PetscErrorCode  PetscStrNArrayallocpy(PetscInt n,const char *const *list,char ***t)
@@ -333,6 +340,8 @@ PetscErrorCode PetscStrNArrayDestroy(PetscInt n,char ***list)
      Null string returns a string starting with zero
 
      Not for use in Fortran
+     
+     It is recommended you use PetscStrncpy() instead of this routine
 
 .seealso: PetscStrncpy(), PetscStrcat(), PetscStrlcat()
 
@@ -402,6 +411,8 @@ PetscErrorCode  PetscStrncpy(char s[],const char t[],size_t n)
 
    Notes:
     Not for use in Fortran
+    
+    It is recommended you use PetscStrlcat() instead of this routine
 
 .seealso: PetscStrcpy(), PetscStrncpy(), PetscStrlcat()
 
