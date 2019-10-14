@@ -1036,6 +1036,7 @@ static PetscErrorCode TSSetUp_Theta(TS ts)
   }
 
   th->order = (th->Theta == 0.5) ? 2 : 1;
+  th->shift = 1/(th->Theta*ts->time_step);
 
   ierr = TSGetDM(ts,&ts->dm);CHKERRQ(ierr);
   ierr = DMCoarsenHookAdd(ts->dm,DMCoarsenHook_TSTheta,DMRestrictHook_TSTheta,ts);CHKERRQ(ierr);
