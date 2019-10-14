@@ -54,6 +54,14 @@ EXTERN_C_END
         ierr = PetscOmpCtrlOmpRegionOnMasterEnd(mumps->omp_ctrl);CHKERRQ(ierr); \
       } \
       ierr = PetscOmpCtrlBarrier(mumps->omp_ctrl);CHKERRQ(ierr); \
+      /* Global info is same on all processes so we Bcast it within omp_comm. Local info is specific      \
+         to processes, so we only Bcast info[1], an error code and leave others (since they do not have   \
+         an easy translation between omp_comm and petsc_comm). See MUMPS-5.1.2 manual p82.                   \
+         omp_comm is a small shared memory communicator, hence doing multiple Bcast as shown below is OK. \
+      */ \
+      ierr = MPI_Bcast(mumps->id.infog, 40,MPI_INT, 0,mumps->omp_comm);CHKERRQ(ierr);  \
+      ierr = MPI_Bcast(mumps->id.rinfog,20,MPIU_REAL,0,mumps->omp_comm);CHKERRQ(ierr); \
+      ierr = MPI_Bcast(mumps->id.info,  1, MPI_INT, 0,mumps->omp_comm);CHKERRQ(ierr);  \
     } else { \
       MUMPS_c(&mumps->id); \
     } \
@@ -1548,7 +1556,7 @@ PetscErrorCode PetscInitializeMUMPS(Mat A,Mat_MUMPS *mumps)
   /* copy MUMPS default control values from master to slaves. Although slaves do not call MUMPS, they may access these values in code.
      For example, ICNTL(9) is initialized to 1 by MUMPS and slaves check ICNTL(9) in MatSolve_MUMPS.
    */
-  ierr = MPI_Bcast(mumps->id.icntl,60,MPIU_INT, 0,mumps->omp_comm);CHKERRQ(ierr); /* see MUMPS-5.1.2 Manual Section 9 */
+  ierr = MPI_Bcast(mumps->id.icntl,40,MPI_INT,  0,mumps->omp_comm);CHKERRQ(ierr); /* see MUMPS-5.1.2 Manual Section 9 */
   ierr = MPI_Bcast(mumps->id.cntl, 15,MPIU_REAL,0,mumps->omp_comm);CHKERRQ(ierr);
 
   mumps->scat_rhs     = NULL;
@@ -1580,8 +1588,6 @@ PetscErrorCode MatFactorSymbolic_MUMPS_ReportIfError(Mat F,Mat A,const MatFactor
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Bcast(mumps->id.infog, 80,MPIU_INT, 0,mumps->omp_comm);CHKERRQ(ierr); /* see MUMPS-5.1.2 manual p82 */
-  ierr = MPI_Bcast(mumps->id.rinfog,20,MPIU_REAL,0,mumps->omp_comm);CHKERRQ(ierr);
   if (mumps->id.INFOG(1) < 0) {
     if (A->erroriffailure) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in analysis phase: INFOG(1)=%d\n",mumps->id.INFOG(1));
