@@ -2521,6 +2521,8 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
   mesh->refinementUniform = PETSC_TRUE;
   mesh->refinementLimit   = -1.0;
   mesh->ghostCellStart    = -1;
+  mesh->interpolated      = DMPLEX_INTERPOLATED_INVALID;
+  mesh->interpolatedCollective = DMPLEX_INTERPOLATED_INVALID;
 
   mesh->facesTmp = NULL;
 

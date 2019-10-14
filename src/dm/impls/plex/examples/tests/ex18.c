@@ -198,6 +198,7 @@ typedef struct {
   InterpType interpolate;                  /* Interpolate the mesh before or after DMPlexDistribute() */
   PetscBool  useGenerator;                 /* Construct mesh with a mesh generator */
   PetscBool  testOrientIF;                 /* Test for different original interface orientations */
+  PetscBool  customView;                   /* Show results of DMPlexIsInterpolated() etc. */
   PetscInt   ornt[2];                      /* Orientation of interface on rank 0 and rank 1 */
   PetscInt   faces[3];                     /* Number of faces per dimension for generator */
   PetscReal  coords[128];
@@ -225,6 +226,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->interpolate  = NONE;
   options->useGenerator = PETSC_FALSE;
   options->testOrientIF = PETSC_FALSE;
+  options->customView   = PETSC_FALSE;
   options->testExpandPointsEmpty = PETSC_FALSE;
   options->ornt[0]      = 0;
   options->ornt[1]      = 0;
@@ -256,6 +258,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   if (options->nPointsToExpand) {
     ierr = PetscOptionsBool("-test_expand_points_empty", "For -test_expand_points, rank 0 will have empty input array", "ex18.c", options->testExpandPointsEmpty, &options->testExpandPointsEmpty, NULL);CHKERRQ(ierr);
   }
+  ierr = PetscOptionsBool("-custom_view", "Custom DMPlex view", "ex18.c", options->customView, &options->customView, NULL);CHKERRQ(ierr);
   if (options->testOrientIF) {
     PetscInt i;
     for (i=0; i<2; i++) {
@@ -627,6 +630,19 @@ static PetscErrorCode CreateHex_3D(MPI_Comm comm, PetscBool interpolate, AppCtx 
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode CustomView(DM dm, PetscViewer v)
+{
+  MPI_Comm       comm;
+  DMPlexInterpolatedFlag interpolated;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
+  ierr = DMPlexIsInterpolatedCollective(dm, &interpolated);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(v, "DMPlexIsInterpolatedCollective: %s\n", DMPlexInterpolatedFlags[interpolated]);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   PetscInt       dim            = user->dim;
@@ -675,6 +691,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = PetscObjectSetName((PetscObject) *dm, "Original Mesh");CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-orig_dm_view");CHKERRQ(ierr);
 
+  if (user->customView) {ierr = CustomView(*dm, PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);}
+
   if (user->distribute) {
     DM               pdm = NULL;
     PetscPartitioner part;
@@ -706,6 +724,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = PetscObjectSetName((PetscObject) *dm, "Parallel Mesh");CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
+
+  if (user->customView) {ierr = CustomView(*dm, PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -879,14 +899,20 @@ int main(int argc, char **argv)
 
   testset:
     requires: exodusii
-    nsize: 2
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/TwoQuads.exo
     args: -dm_view ascii::ascii_info_detail -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
+    args: -custom_view
+    test:
+      suffix: 5_seq
+      nsize: 1
+      args: -distribute 0 -interpolate {{none serial}separate output}
     test:
       suffix: 5_dist0
+      nsize: 2
       args: -distribute 0 -interpolate {{none serial}separate output}
     test:
       suffix: 5_dist1
+      nsize: 2
       args: -distribute 1 -interpolate {{none serial parallel}separate output}
 
   testset:
@@ -973,6 +999,7 @@ int main(int argc, char **argv)
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5 -dm_plex_create_from_hdf5_xdmf
     args: -distribute 0 -interpolate serial
     args: -view_vertices_from_coords 0.,1.,0.,-0.5,1.,0.,0.583,-0.644,0.,-2.,-2.,-2. -view_vertices_from_coords_tol 1e-3
+    args: -custom_view
 
   testset:
     requires: hdf5 !complex datafilespath

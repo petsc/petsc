@@ -174,6 +174,8 @@ typedef struct {
   PetscInt             hybridPointMax[8]; /* Allow segregation of some points, each dimension has a divider (used in VTK output and refinement) */
   PetscInt             overlap;           /* Overlap of the partitions as passed to DMPlexDistribute() or DMPlexDistributeOverlap() */
   PetscInt             ghostCellStart;    /* The first ghost cell (for FV BC) or -1 */
+  DMPlexInterpolatedFlag interpolated;
+  DMPlexInterpolatedFlag interpolatedCollective;
 
   PetscInt            *facesTmp;          /* Work space for faces operation */
 

@@ -90,9 +90,6 @@ PETSC_EXTERN PetscErrorCode DMPlexReverseCell(DM, PetscInt);
 PETSC_EXTERN PetscErrorCode DMPlexOrientCell(DM,PetscInt,PetscInt,const PetscInt[]);
 PETSC_EXTERN PetscErrorCode DMPlexCompareOrientations(DM, PetscInt, PetscInt, const PetscInt [], PetscInt *, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMPlexOrient(DM);
-PETSC_EXTERN PetscErrorCode DMPlexInterpolate(DM, DM *);
-PETSC_EXTERN PetscErrorCode DMPlexUninterpolate(DM, DM *);
-PETSC_EXTERN PetscErrorCode DMPlexInterpolatePointSF(DM, PetscSF);
 PETSC_EXTERN PetscErrorCode DMPlexPreallocateOperator(DM, PetscInt, PetscInt[], PetscInt[], PetscInt[], PetscInt[], Mat, PetscBool);
 PETSC_EXTERN PetscErrorCode DMPlexGetPointLocal(DM,PetscInt,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMPlexPointLocalRead(DM,PetscInt,const PetscScalar*,void*);
@@ -106,6 +103,21 @@ PETSC_EXTERN PetscErrorCode DMPlexPointGlobalRef(DM,PetscInt,PetscScalar*,void*)
 PETSC_EXTERN PetscErrorCode DMPlexGetPointGlobalField(DM,PetscInt,PetscInt,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMPlexPointGlobalFieldRef(DM,PetscInt,PetscInt,PetscScalar*,void*);
 PETSC_EXTERN PetscErrorCode DMPlexPointGlobalFieldRead(DM,PetscInt,PetscInt,const PetscScalar*, void*);
+
+/* Topological interpolation */
+PETSC_EXTERN const char * const DMPlexInterpolatedFlags[];
+typedef enum {
+  DMPLEX_INTERPOLATED_INVALID = -1,
+  DMPLEX_INTERPOLATED_NONE = 0,
+  DMPLEX_INTERPOLATED_PARTIAL,
+  DMPLEX_INTERPOLATED_MIXED,
+  DMPLEX_INTERPOLATED_FULL
+} DMPlexInterpolatedFlag;
+PETSC_EXTERN PetscErrorCode DMPlexInterpolate(DM, DM *);
+PETSC_EXTERN PetscErrorCode DMPlexUninterpolate(DM, DM *);
+PETSC_EXTERN PetscErrorCode DMPlexInterpolatePointSF(DM, PetscSF);
+PETSC_EXTERN PetscErrorCode DMPlexIsInterpolated(DM, DMPlexInterpolatedFlag *);
+PETSC_EXTERN PetscErrorCode DMPlexIsInterpolatedCollective(DM, DMPlexInterpolatedFlag *);
 
 PETSC_EXTERN PetscErrorCode DMPlexFilter(DM, DMLabel, PetscInt, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexGetCellNumbering(DM, IS *);
