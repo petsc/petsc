@@ -1642,7 +1642,7 @@ PetscErrorCode PetscFERefine(PetscFE fe, PetscFE *feRef)
 . Nc        - The number of components
 . isSimplex - Flag for simplex reference cell, otherwise its a tensor product
 . prefix    - The options prefix, or NULL
-- qorder    - The quadrature order
+- qorder    - The quadrature order or PETSC_DETERMINE to use PetscSpace polynomial degree
 
   Output Parameter:
 . fem - The PetscFE object
