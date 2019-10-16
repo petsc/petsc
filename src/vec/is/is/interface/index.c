@@ -530,6 +530,30 @@ PetscErrorCode  ISGetLocalSize(IS is,PetscInt *size)
   PetscFunctionReturn(0);
 }
 
+/*@
+   ISGetLayout - get PetscLayout describing index set layout
+
+   Not Collective
+
+   Input Arguments:
+.  is - the index set
+
+   Output Arguments:
+.  map - the layout
+
+   Level: developer
+
+.seealso: ISGetSize(), ISGetLocalSize()
+@*/
+PetscErrorCode ISGetLayout(IS is,PetscLayout *map)
+{
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
+  *map = is->map;
+  PetscFunctionReturn(0);
+}
+
 /*@C
    ISGetIndices - Returns a pointer to the indices.  The user should call
    ISRestoreIndices() after having looked at the indices.  The user should
