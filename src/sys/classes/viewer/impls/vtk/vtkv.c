@@ -295,7 +295,7 @@ PetscErrorCode PetscViewerVTKOpen(MPI_Comm comm,const char name[],PetscFileMode 
    Notes:
     If PetscScalar is __float128 then the binary files are written in double precision
 
-.seealso: DMDAVTKWriteAll(), DMComplexVTKWriteAll(), PetscViewerPushFormat(), PetscViewerVTKOpen(), PetscBinaryWrite()
+.seealso: DMDAVTKWriteAll(), DMPlexVTKWriteAll(), PetscViewerPushFormat(), PetscViewerVTKOpen(), PetscBinaryWrite()
 @*/
 PetscErrorCode PetscViewerVTKFWrite(PetscViewer viewer,FILE *fp,const void *data,PetscInt n,MPI_Datatype dtype)
 {
