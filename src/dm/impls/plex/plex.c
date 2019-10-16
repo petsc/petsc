@@ -5270,8 +5270,9 @@ PetscErrorCode DMPlexSetClosurePermutationTensor(DM dm, PetscInt point, PetscSec
     PetscInt pStart,pEnd,cStart,cEnd;
     ierr = DMPlexGetDepthStratum(dm,0,&pStart,&pEnd);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(section,&cStart,&cEnd);CHKERRQ(ierr);
-    if (pStart == cStart && pEnd == cEnd) vertexchart = PETSC_TRUE; /* Just vertices */
-    else vertexchart = PETSC_FALSE;                                 /* Assume all interpolated points are in chart */
+    if (pStart == cStart && pEnd == cEnd) vertexchart = PETSC_TRUE;      /* Only vertices are in the chart */
+    else if (cStart <= point && point < cEnd) vertexchart = PETSC_FALSE; /* Some interpolated points exist in the chart */
+    else vertexchart = PETSC_TRUE;                                       /* Some interpolated points are not in chart; assume dofs only at cells and vertices */
   }
   ierr = PetscSectionGetNumFields(section, &Nf);CHKERRQ(ierr);
   for (PetscInt d=1; d<=dim; d++) {
