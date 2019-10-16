@@ -194,21 +194,24 @@ int main(int argc,char **args)
       output_file: output/ex5_21.out
       requires: cuda
 
+
    test:
-      suffix: 2_aijcusparse_2
       nsize: 3
-      args: -mat_type mpiaijcusparse -vec_type cuda
+      suffix: 2_aijcusparse_2
       filter: grep -v type
+      args: -mat_type mpiaijcusparse -vec_type cuda
+      args: -sf_type {{basic neighbor}} -vecscatter_packongpu {{0 1}}
       output_file: output/ex5_23.out
       requires: cuda
 
    test:
-      suffix: 2_aijcusparse_3
       nsize: 3
-      args: -mat_type mpiaijcusparse -vec_type cuda -vecscatter_type sf
+      suffix: 2_aijcusparse_3
       filter: grep -v type
+      args: -mat_type mpiaijcusparse -vec_type cuda
+      args: -sf_type {{basic neighbor}}  -use_gpu_aware_mpi
       output_file: output/ex5_23.out
-      requires: cuda
+      requires: cuda define(PETSC_HAVE_MPI_GPU_AWARE)
 
    test:
       suffix: 31
