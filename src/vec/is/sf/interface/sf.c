@@ -1763,52 +1763,62 @@ static PetscErrorCode PetscSFCheckLeavesUnique_Private(PetscSF sf)
   PetscFunctionReturn(0);
 #endif
 }
+
 /*@
   PetscSFCompose - Compose a new PetscSF by putting the second SF under the first one in a top (roots) down (leaves) view
 
   Input Parameters:
-+ sfA - The first PetscSF, whose local space may be a permutation, but can not be sparse.
-- sfB - The second PetscSF, whose number of roots must be equal to number of leaves of sfA on each processor
++ sfA - The first PetscSF
+- sfB - The second PetscSF
 
   Output Parameters:
-. sfBA - The composite SF. Doing a Bcast on the new SF is equvalent to doing Bcast on sfA, then Bcast on sfB
+. sfBA - The composite SF
 
   Level: developer
 
   Notes:
-  For the resulting composed SF to be valid, the input SFs must be true star forests: the leaves must be unique. This is
-  checked in debug mode.
+  Currently, the two SFs must be defined on congruent communicators and they must be true star
+  forests, i.e. the same leaf is not connected with different roots.
+
+  sfA's leaf space and sfB's root space might be partially overlapped. The composition builds
+  a graph with sfA's roots and sfB's leaves only when there is a path between them. Unconnected
+  nodes (roots or leaves) are not in sfBA. Doing a Bcast on the new SF is equivalent to doing a
+  Bcast on sfA, then a Bcast on sfB, on connected nodes.
 
 .seealso: PetscSF, PetscSFComposeInverse(), PetscSFGetGraph(), PetscSFSetGraph()
 @*/
 PetscErrorCode PetscSFCompose(PetscSF sfA,PetscSF sfB,PetscSF *sfBA)
 {
   PetscErrorCode    ierr;
-  MPI_Comm          comm;
   const PetscSFNode *remotePointsA,*remotePointsB;
   PetscSFNode       *remotePointsBA=NULL,*reorderedRemotePointsA = NULL,*leafdataB;
-  const PetscInt    *localPointsA,*localPointsB,*localPointsBA;
-  PetscInt          i,numRootsA,numLeavesA,numRootsB,numLeavesB,minleaf,maxleaf;
+  const PetscInt    *localPointsA,*localPointsB;
+  PetscInt          *localPointsBA;
+  PetscInt          i,numRootsA,numLeavesA,numRootsB,numLeavesB,minleaf,maxleaf,numLeavesBA;
+  PetscBool         denseB;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sfA,PETSCSF_CLASSID,1);
   PetscSFCheckGraphSet(sfA,1);
   PetscValidHeaderSpecific(sfB,PETSCSF_CLASSID,2);
   PetscSFCheckGraphSet(sfB,2);
+  PetscCheckSameComm(sfA,1,sfB,2);
   PetscValidPointer(sfBA,3);
-  ierr = PetscObjectGetComm((PetscObject)sfA,&comm);CHKERRQ(ierr);
+  ierr = PetscSFCheckLeavesUnique_Private(sfA);CHKERRQ(ierr);
+  ierr = PetscSFCheckLeavesUnique_Private(sfB);CHKERRQ(ierr);
+
   ierr = PetscSFGetGraph(sfA,&numRootsA,&numLeavesA,&localPointsA,&remotePointsA);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sfB,&numRootsB,&numLeavesB,&localPointsB,&remotePointsB);CHKERRQ(ierr);
-  ierr = PetscSFGetLeafRange(sfA,&minleaf,&maxleaf);CHKERRQ(ierr);
-  if (numRootsB != numLeavesA) SETERRQ(comm,PETSC_ERR_ARG_INCOMP,"The second SF's number of roots must be equal to the first SF's number of leaves");
-  if (maxleaf+1 != numLeavesA || minleaf) SETERRQ(comm,PETSC_ERR_ARG_INCOMP,"The first SF can not have sparse local space");
-  /* The above check is fast, but not sufficient, since we cannot guarantee that the SF has unique leaves. So in debug
-   mode, check properly. */
-  ierr = PetscSFCheckLeavesUnique_Private(sfA);CHKERRQ(ierr);
   if (localPointsA) {
-    /* Local space is dense permutation of identity. Need to rewire order of the remote points */
-    ierr = PetscMalloc1(numLeavesA,&reorderedRemotePointsA);CHKERRQ(ierr);
-    for (i=0; i<numLeavesA; i++) reorderedRemotePointsA[localPointsA[i]-minleaf] = remotePointsA[i];
+    ierr = PetscMalloc1(numRootsB,&reorderedRemotePointsA);CHKERRQ(ierr);
+    for (i=0; i<numRootsB; i++) {
+      reorderedRemotePointsA[i].rank = -1;
+      reorderedRemotePointsA[i].index = -1;
+    }
+    for (i=0; i<numLeavesA; i++) {
+      if (localPointsA[i] >= numRootsB) continue;
+      reorderedRemotePointsA[localPointsA[i]] = remotePointsA[i];
+    }
     remotePointsA = reorderedRemotePointsA;
   }
   ierr = PetscSFGetLeafRange(sfB,&minleaf,&maxleaf);CHKERRQ(ierr);
@@ -1817,62 +1827,118 @@ PetscErrorCode PetscSFCompose(PetscSF sfA,PetscSF sfB,PetscSF *sfBA)
   ierr = PetscSFBcastEnd(sfB,MPIU_2INT,remotePointsA,leafdataB-minleaf);CHKERRQ(ierr);
   ierr = PetscFree(reorderedRemotePointsA);CHKERRQ(ierr);
 
-  /* sfB's leaves must be unique, otherwise BcastAndOp(B o A) != BcastAndOp(B) o BcastAndOp(A) */
-  ierr = PetscSFCheckLeavesUnique_Private(sfB);CHKERRQ(ierr);
-  if (minleaf == 0 && maxleaf + 1 == numLeavesB) { /* Local space of sfB is an identity or permutation */
+  denseB = (PetscBool)!localPointsB;
+  for (i=0,numLeavesBA=0; i<numLeavesB; i++) {
+    if (leafdataB[localPointsB ? localPointsB[i]-minleaf : i].rank == -1) denseB = PETSC_FALSE;
+    else numLeavesBA++;
+  }
+  if (denseB) {
     localPointsBA  = NULL;
     remotePointsBA = leafdataB;
   } else {
-    localPointsBA  = localPointsB;
-    ierr = PetscMalloc1(numLeavesB,&remotePointsBA);CHKERRQ(ierr);
-    for (i=0; i<numLeavesB; i++) remotePointsBA[i] = leafdataB[localPointsB[i]-minleaf];
+    ierr = PetscMalloc1(numLeavesBA,&localPointsBA);CHKERRQ(ierr);
+    ierr = PetscMalloc1(numLeavesBA,&remotePointsBA);CHKERRQ(ierr);
+    for (i=0,numLeavesBA=0; i<numLeavesB; i++) {
+      const PetscInt l = localPointsB ? localPointsB[i] : i;
+
+      if (leafdataB[l-minleaf].rank == -1) continue;
+      remotePointsBA[numLeavesBA] = leafdataB[l-minleaf];
+      localPointsBA[numLeavesBA] = l;
+      numLeavesBA++;
+    }
     ierr = PetscFree(leafdataB);CHKERRQ(ierr);
   }
-  ierr = PetscSFCreate(comm, sfBA);CHKERRQ(ierr);
-  ierr = PetscSFSetGraph(*sfBA,numRootsA,numLeavesB,localPointsBA,PETSC_COPY_VALUES,remotePointsBA,PETSC_OWN_POINTER);CHKERRQ(ierr);
+  ierr = PetscSFCreate(PetscObjectComm((PetscObject)sfA),sfBA);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(*sfBA,numRootsA,numLeavesBA,localPointsBA,PETSC_OWN_POINTER,remotePointsBA,PETSC_OWN_POINTER);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*@
-  PetscSFComposeInverse - Compose a new PetscSF by putting inverse of the second SF under the first one
+  PetscSFComposeInverse - Compose a new PetscSF by putting the inverse of the second SF under the first one
 
   Input Parameters:
-+ sfA - The first PetscSF, whose local space may be a permutation, but can not be sparse.
-- sfB - The second PetscSF, whose number of leaves must be equal to number of leaves of sfA on each processor. All roots must have degree 1.
++ sfA - The first PetscSF
+- sfB - The second PetscSF
 
   Output Parameters:
-. sfBA - The composite SF. Doing a Bcast on the new SF is equvalent to doing Bcast on sfA, then Bcast on inverse of sfB
+. sfBA - The composite SF.
 
   Level: developer
 
-.seealso: PetscSF, PetscSFCompose(), PetscSFGetGraph(), PetscSFSetGraph()
+  Notes:
+  Currently, the two SFs must be defined on congruent communicators and they must be true star
+  forests, i.e. the same leaf is not connected with different roots. Even more, all roots of the
+  second SF must have a degree of 1, i.e., no roots have more than one leaf connected.
+
+  sfA's leaf space and sfB's leaf space might be partially overlapped. The composition builds
+  a graph with sfA's roots and sfB's roots only when there is a path between them. Unconnected
+  roots are not in sfBA. Doing a Bcast on the new SF is equivalent to doing a Bcast on sfA, then
+  a Reduce on sfB, on connected roots.
+
+.seealso: PetscSF, PetscSFCompose(), PetscSFGetGraph(), PetscSFSetGraph(), PetscSFCreateInverseSF()
 @*/
 PetscErrorCode PetscSFComposeInverse(PetscSF sfA,PetscSF sfB,PetscSF *sfBA)
 {
   PetscErrorCode    ierr;
-  MPI_Comm          comm;
   const PetscSFNode *remotePointsA,*remotePointsB;
   PetscSFNode       *remotePointsBA;
   const PetscInt    *localPointsA,*localPointsB;
-  PetscInt          numRootsA,numLeavesA,numRootsB,numLeavesB,minleaf,maxleaf;
+  PetscSFNode       *reorderedRemotePointsA = NULL;
+  PetscInt          i,numRootsA,numLeavesA,numLeavesBA,numRootsB,numLeavesB,minleaf,maxleaf,*localPointsBA;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sfA,PETSCSF_CLASSID,1);
   PetscSFCheckGraphSet(sfA,1);
   PetscValidHeaderSpecific(sfB,PETSCSF_CLASSID,2);
   PetscSFCheckGraphSet(sfB,2);
+  PetscCheckSameComm(sfA,1,sfB,2);
   PetscValidPointer(sfBA,3);
-  ierr = PetscObjectGetComm((PetscObject) sfA, &comm);CHKERRQ(ierr);
+  ierr = PetscSFCheckLeavesUnique_Private(sfA);CHKERRQ(ierr);
+  ierr = PetscSFCheckLeavesUnique_Private(sfB);CHKERRQ(ierr);
+  /* TODO: Check roots of sfB have degree of 1 */
+
   ierr = PetscSFGetGraph(sfA, &numRootsA, &numLeavesA, &localPointsA, &remotePointsA);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sfB, &numRootsB, &numLeavesB, &localPointsB, &remotePointsB);CHKERRQ(ierr);
-  ierr = PetscSFGetLeafRange(sfA,&minleaf,&maxleaf);CHKERRQ(ierr);
-  if (maxleaf+1-minleaf != numLeavesA) SETERRQ(comm,PETSC_ERR_ARG_INCOMP,"The first SF can not have sparse local space");
-  if (numLeavesA != numLeavesB) SETERRQ(comm,PETSC_ERR_ARG_INCOMP,"The second SF's number of leaves must be equal to the first SF's number of leaves");
+  ierr = PetscSFGetLeafRange(sfB, &minleaf, &maxleaf);CHKERRQ(ierr);
+  ierr = PetscMalloc1(maxleaf - minleaf + 1,&reorderedRemotePointsA);CHKERRQ(ierr);
+  for (i=0; i<maxleaf - minleaf + 1; i++) {
+    reorderedRemotePointsA[i].rank = -1;
+    reorderedRemotePointsA[i].index = -1;
+  }
+  if (localPointsA) {
+    for (i=0; i<numLeavesA; i++) {
+      if (localPointsA[i] > maxleaf || localPointsA[i] < minleaf) continue;
+      reorderedRemotePointsA[localPointsA[i] - minleaf] = remotePointsA[i];
+    }
+  } else {
+    for (i=0; i<numLeavesA; i++) {
+      if (i > maxleaf || i < minleaf) continue;
+      reorderedRemotePointsA[i - minleaf] = remotePointsA[i];
+    }
+  }
+
+  ierr = PetscMalloc1(numRootsB,&localPointsBA);CHKERRQ(ierr);
   ierr = PetscMalloc1(numRootsB,&remotePointsBA);CHKERRQ(ierr);
-  ierr = PetscSFReduceBegin(sfB,MPIU_2INT,remotePointsA,remotePointsBA,MPIU_REPLACE);CHKERRQ(ierr);
-  ierr = PetscSFReduceEnd(sfB,MPIU_2INT,remotePointsA,remotePointsBA,MPIU_REPLACE);CHKERRQ(ierr);
-  ierr = PetscSFCreate(comm,sfBA);CHKERRQ(ierr);
-  ierr = PetscSFSetGraph(*sfBA,numRootsA,numRootsB,NULL,PETSC_COPY_VALUES,remotePointsBA,PETSC_OWN_POINTER);CHKERRQ(ierr);
+  for (i=0; i<numRootsB; i++) {
+    remotePointsBA[i].rank = -1;
+    remotePointsBA[i].index = -1;
+  }
+
+  /* Once we implement the TODO above (check all roots of sfB have degree of 1), we can replace the MPI_MAXLOC
+     with MPIU_REPLACE. In that case, MPI_MAXLOC and MPIU_REPLACE have the same effect.
+   */
+  ierr = PetscSFReduceBegin(sfB,MPIU_2INT,reorderedRemotePointsA-minleaf,remotePointsBA,MPI_MAXLOC);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(sfB,MPIU_2INT,reorderedRemotePointsA-minleaf,remotePointsBA,MPI_MAXLOC);CHKERRQ(ierr);
+  ierr = PetscFree(reorderedRemotePointsA);CHKERRQ(ierr);
+  for (i=0,numLeavesBA=0; i<numRootsB; i++) {
+    if (remotePointsBA[i].rank == -1) continue;
+    remotePointsBA[numLeavesBA].rank = remotePointsBA[i].rank;
+    remotePointsBA[numLeavesBA].index = remotePointsBA[i].index;
+    localPointsBA[numLeavesBA] = i;
+    numLeavesBA++;
+  }
+  ierr = PetscSFCreate(PetscObjectComm((PetscObject)sfA),sfBA);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(*sfBA,numRootsA,numLeavesBA,localPointsBA,PETSC_OWN_POINTER,remotePointsBA,PETSC_OWN_POINTER);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
