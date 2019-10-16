@@ -1439,11 +1439,11 @@ PetscErrorCode MatGetInfo_SeqSELL(Mat A,MatInfoType flag,MatInfo *info)
 
   PetscFunctionBegin;
   info->block_size   = 1.0;
-  info->nz_allocated = (double)a->maxallocmat;
-  info->nz_used      = (double)a->sliidx[a->totalslices]; /* include padding zeros */
-  info->nz_unneeded  = (double)(a->maxallocmat-a->sliidx[a->totalslices]);
-  info->assemblies   = (double)A->num_ass;
-  info->mallocs      = (double)A->info.mallocs;
+  info->nz_allocated = a->maxallocmat;
+  info->nz_used      = a->sliidx[a->totalslices]; /* include padding zeros */
+  info->nz_unneeded  = (a->maxallocmat-a->sliidx[a->totalslices]);
+  info->assemblies   = A->num_ass;
+  info->mallocs      = A->info.mallocs;
   info->memory       = ((PetscObject)A)->mem;
   if (A->factortype) {
     info->fill_ratio_given  = A->info.fill_ratio_given;

@@ -1632,7 +1632,7 @@ PetscErrorCode MatGetInfo_MPISBAIJ(Mat matin,MatInfoType flag,MatInfo *info)
   Mat_MPISBAIJ   *a = (Mat_MPISBAIJ*)matin->data;
   Mat            A  = a->A,B = a->B;
   PetscErrorCode ierr;
-  PetscReal      isend[5],irecv[5];
+  PetscLogDouble isend[5],irecv[5];
 
   PetscFunctionBegin;
   info->block_size = (PetscReal)matin->rmap->bs;
@@ -1653,7 +1653,7 @@ PetscErrorCode MatGetInfo_MPISBAIJ(Mat matin,MatInfoType flag,MatInfo *info)
     info->memory       = isend[3];
     info->mallocs      = isend[4];
   } else if (flag == MAT_GLOBAL_MAX) {
-    ierr = MPIU_Allreduce(isend,irecv,5,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)matin));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(isend,irecv,5,MPIU_PETSCLOGDOUBLE,MPI_MAX,PetscObjectComm((PetscObject)matin));CHKERRQ(ierr);
 
     info->nz_used      = irecv[0];
     info->nz_allocated = irecv[1];
@@ -1661,7 +1661,7 @@ PetscErrorCode MatGetInfo_MPISBAIJ(Mat matin,MatInfoType flag,MatInfo *info)
     info->memory       = irecv[3];
     info->mallocs      = irecv[4];
   } else if (flag == MAT_GLOBAL_SUM) {
-    ierr = MPIU_Allreduce(isend,irecv,5,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)matin));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(isend,irecv,5,MPIU_PETSCLOGDOUBLE,MPI_SUM,PetscObjectComm((PetscObject)matin));CHKERRQ(ierr);
 
     info->nz_used      = irecv[0];
     info->nz_allocated = irecv[1];
