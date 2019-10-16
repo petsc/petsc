@@ -1,6 +1,7 @@
 /*
       Defines a SNES that can consist of a collection of SNESes on patches of the domain
 */
+#include <petsc/private/vecimpl.h>         /* For vec->map */
 #include <petsc/private/snesimpl.h> /*I "petscsnes.h" I*/
 #include <petsc/private/pcpatchimpl.h> /* We need internal access to PCPatch right now, until that part is moved to Plex */
 #include <petscsf.h>
@@ -118,7 +119,7 @@ static PetscErrorCode PCSetUp_PATCH_Nonlinear(PC pc)
 static PetscErrorCode PCApply_PATCH_Nonlinear(PC pc, PetscInt i, Vec patchRHS, Vec patchUpdate)
 {
   PC_PATCH      *patch = (PC_PATCH *) pc->data;
-  PetscInt       pStart;
+  PetscInt       pStart, n;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -130,6 +131,13 @@ static PetscErrorCode PCApply_PATCH_Nonlinear(PC pc, PetscInt i, Vec patchRHS, V
   ierr = PCPatch_ScatterLocal_Private(pc, i+pStart, patch->localState, patch->patchState, INSERT_VALUES, SCATTER_FORWARD, SCATTER_INTERIOR);CHKERRQ(ierr);
   ierr = PCPatch_ScatterLocal_Private(pc, i+pStart, patch->localState, patch->patchStateWithAll, INSERT_VALUES, SCATTER_FORWARD, SCATTER_WITHALL);CHKERRQ(ierr);
 
+  ierr = MatGetLocalSize(patch->mat[i], NULL, &n);CHKERRQ(ierr);
+  patch->patchState->map->n = n;
+  patch->patchState->map->N = n;
+  patchUpdate->map->n = n;
+  patchUpdate->map->N = n;
+  patchRHS->map->n = n;
+  patchRHS->map->N = n;
   /* Set initial guess to be current state*/
   ierr = VecCopy(patch->patchState, patchUpdate);CHKERRQ(ierr);
   /* Solve for new state */
