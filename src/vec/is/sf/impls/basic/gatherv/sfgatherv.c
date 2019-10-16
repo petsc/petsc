@@ -54,12 +54,12 @@ PETSC_INTERN PetscErrorCode PetscSFReducePrepareMPIBuffers_Gatherv(PetscSF sf,Pe
 
   if (link->leafmtype == PETSC_MEMTYPE_DEVICE && !use_gpu_aware_mpi) { /* Need to copy leafdata to leafbuf on every rank */
     if (!rank && !link->leafbuf[PETSC_MEMTYPE_HOST]) {ierr = PetscMallocWithMemType(PETSC_MEMTYPE_HOST,link->leafbuflen*link->unitbytes,(void**)&link->leafbuf[PETSC_MEMTYPE_HOST]);CHKERRQ(ierr);}
-    ierr = PetscMemcpyWithMemType(PETSC_MEMTYPE_HOST,PETSC_MEMTYPE_DEVICE,link->leafbuf[PETSC_MEMTYPE_HOST],link->lkey,link->leafbuflen*link->unitbytes);CHKERRQ(ierr);
+    ierr = PetscMemcpyWithMemType(PETSC_MEMTYPE_HOST,PETSC_MEMTYPE_DEVICE,link->leafbuf[PETSC_MEMTYPE_HOST],link->leafdata,link->leafbuflen*link->unitbytes);CHKERRQ(ierr);
     *leafmtype_mpi = PETSC_MEMTYPE_HOST;
     *leafbuf_mpi   = link->leafbuf[*leafmtype_mpi];
   } else {
     *leafmtype_mpi = link->leafmtype;
-    *leafbuf_mpi   = (char*)link->lkey;
+    *leafbuf_mpi   = (char*)link->leafdata;
   }
 
   if (link->rootmtype == PETSC_MEMTYPE_DEVICE && !use_gpu_aware_mpi) {  /* If rootdata is on device but no gpu-aware mpi, we need a rootbuf on host to receive reduced data */
@@ -67,7 +67,7 @@ PETSC_INTERN PetscErrorCode PetscSFReducePrepareMPIBuffers_Gatherv(PetscSF sf,Pe
     *rootbuf_mpi   = link->rootbuf[PETSC_MEMTYPE_HOST];
     *rootmtype_mpi = PETSC_MEMTYPE_HOST;
   } else if (op == MPIU_REPLACE) { /* Directly use rootdata's memory to receive reduced data. No intermediate buffer needed. */
-    *rootbuf_mpi   = (char *)link->rkey;
+    *rootbuf_mpi   = (char *)link->rootdata;
     *rootmtype_mpi = link->rootmtype;
   } else { /* op is a reduction. Have to allocate a buffer aside rootdata to apply it. The buffer is either on host or device, depending on where rootdata is. */
     if (!link->rootbuf[link->rootmtype]) {ierr = PetscMallocWithMemType(link->rootmtype,link->rootbuflen*link->unitbytes,(void**)&link->rootbuf[link->rootmtype]);CHKERRQ(ierr);}

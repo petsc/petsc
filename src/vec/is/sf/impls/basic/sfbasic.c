@@ -131,12 +131,11 @@ found:
   if (!link->leafbuf[leafmtype]) {ierr = PetscMallocWithMemType(leafmtype,link->leafbuflen*link->unitbytes,(void**)&link->leafbuf[leafmtype]);CHKERRQ(ierr);}
   if (!link->selfbuf[rootmtype]) {ierr = PetscMallocWithMemType(rootmtype,link->selfbuflen*link->unitbytes,(void**)&link->selfbuf[rootmtype]);CHKERRQ(ierr);}
   if (rootmtype != leafmtype && !link->selfbuf[leafmtype]) {ierr = PetscMallocWithMemType(leafmtype,link->selfbuflen*link->unitbytes,(void**)&link->selfbuf[leafmtype]);CHKERRQ(ierr);}
-  link->rkey = rootdata;
-  link->lkey = leafdata;
-  link->next = bas->inuse;
-  bas->inuse = link;
-
-  *mylink    = link;
+  link->rootdata = rootdata;
+  link->leafdata = leafdata;
+  link->next     = bas->inuse;
+  bas->inuse     = link;
+  *mylink        = link;
   PetscFunctionReturn(0);
 }
 

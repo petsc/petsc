@@ -130,7 +130,7 @@ struct _n_PetscSFPack {
   PetscBool      isbuiltin;              /* Is unit an MPI/PETSc builtin datatype? If it is true, basicunit=unit, bs=1 */
   size_t         unitbytes;              /* Number of bytes in a unit */
   PetscInt       bs;                     /* Number of basic units in a unit */
-  const void     *rkey,*lkey;            /* rootdata and leafdata used as keys for operation */
+  const void     *rootdata,*leafdata;    /* rootdata and leafdata used as keys for operation */
   char           *rootbuf[2];            /* Buffer for packed roots on Host (0 or PETSC_MEMTYPE_HOST) or Device (1 or PETSC_MEMTYPE_DEVICE) */
   char           *leafbuf[2];            /* Buffer for packed leaves on Host (0) or Device (1) */
   char           *selfbuf[2];            /* Buffer for roots in self to self communication on Host (0) or Device (1) */

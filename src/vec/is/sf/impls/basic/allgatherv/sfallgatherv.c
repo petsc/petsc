@@ -48,8 +48,8 @@ found:
 #if defined(PETSC_HAVE_CUDA)
   ierr = PetscSFPackSetUp_Device(sf,link,unit);CHKERRQ(ierr);
 #endif
-  link->rkey      = rootdata;
-  link->lkey      = leafdata;
+  link->rootdata  = rootdata;
+  link->leafdata  = leafdata;
   link->next      = dat->inuse;
   dat->inuse      = link;
 
@@ -166,11 +166,11 @@ PETSC_INTERN PetscErrorCode PetscSFBcastPrepareMPIBuffers_Allgatherv(PetscSF sf,
   /* If rootdata is on device but no gpu-aware mpi, we need to copy rootdata to rootbuf on host before bcast; otherwise we directly bcast from leafdata */
   if (link->rootmtype == PETSC_MEMTYPE_DEVICE && !use_gpu_aware_mpi) {
     if (!link->rootbuf[PETSC_MEMTYPE_HOST]) {ierr = PetscMallocWithMemType(PETSC_MEMTYPE_HOST,link->rootbuflen*link->unitbytes,(void**)&link->rootbuf[PETSC_MEMTYPE_HOST]);CHKERRQ(ierr);}
-    ierr           = PetscMemcpyWithMemType(PETSC_MEMTYPE_HOST,PETSC_MEMTYPE_DEVICE,link->rootbuf[PETSC_MEMTYPE_HOST],link->rkey,link->rootbuflen*link->unitbytes);CHKERRQ(ierr);
+    ierr           = PetscMemcpyWithMemType(PETSC_MEMTYPE_HOST,PETSC_MEMTYPE_DEVICE,link->rootbuf[PETSC_MEMTYPE_HOST],link->rootdata,link->rootbuflen*link->unitbytes);CHKERRQ(ierr);
     *rootbuf_mpi   = link->rootbuf[PETSC_MEMTYPE_HOST];
     *rootmtype_mpi = PETSC_MEMTYPE_HOST;
   } else {
-    *rootbuf_mpi   = link->rkey;
+    *rootbuf_mpi   = link->rootdata;
     *rootmtype_mpi = link->rootmtype;
   }
 
@@ -179,7 +179,7 @@ PETSC_INTERN PetscErrorCode PetscSFBcastPrepareMPIBuffers_Allgatherv(PetscSF sf,
     *leafbuf_mpi   = link->leafbuf[PETSC_MEMTYPE_HOST];
     *leafmtype_mpi = PETSC_MEMTYPE_HOST;
   } else if (op == MPIU_REPLACE) { /* If op is MPIU_REPLACE, we can directly bcast to leafdata. No intermediate buffer is needed. */
-    *leafbuf_mpi   = (char *)link->lkey;
+    *leafbuf_mpi   = (char *)link->leafdata;
     *leafmtype_mpi = link->leafmtype;
   } else { /* Otherwise, op is a reduction. Have to allocate a buffer aside leafdata to apply the op. The buffer is either on host or device, depending on where leafdata is. */
     if (!link->leafbuf[link->leafmtype]) {ierr = PetscMallocWithMemType(link->leafmtype,link->leafbuflen*link->unitbytes,(void**)&link->leafbuf[link->leafmtype]);CHKERRQ(ierr);}
@@ -258,12 +258,12 @@ PETSC_INTERN PetscErrorCode PetscSFReducePrepareMPIBuffers_Allgatherv(PetscSF sf
   /* Step 1: Reduce leafdata on all ranks to leafbuf on rank 0 */
   if (link->leafmtype == PETSC_MEMTYPE_DEVICE && !use_gpu_aware_mpi) { /* Need to copy leafdata to leafbuf on every rank */
     if (!link->leafbuf[PETSC_MEMTYPE_HOST]) {ierr = PetscMallocWithMemType(PETSC_MEMTYPE_HOST,link->leafbuflen*link->unitbytes,(void**)&link->leafbuf[PETSC_MEMTYPE_HOST]);CHKERRQ(ierr);}
-    ierr = PetscMemcpyWithMemType(PETSC_MEMTYPE_HOST,PETSC_MEMTYPE_DEVICE,link->leafbuf[PETSC_MEMTYPE_HOST],link->lkey,link->leafbuflen*link->unitbytes);CHKERRQ(ierr);
+    ierr = PetscMemcpyWithMemType(PETSC_MEMTYPE_HOST,PETSC_MEMTYPE_DEVICE,link->leafbuf[PETSC_MEMTYPE_HOST],link->leafdata,link->leafbuflen*link->unitbytes);CHKERRQ(ierr);
     leafdata_mpi   = !rank ? MPI_IN_PLACE : link->leafbuf[PETSC_MEMTYPE_HOST];
     *leafmtype_mpi = PETSC_MEMTYPE_HOST;
   } else { /* Only need to allocate a leafbuf on rank 0. Then directly reduce leafdata to the leafbuf */
     if (!rank && !link->leafbuf[link->leafmtype]) {ierr = PetscMallocWithMemType(link->leafmtype,link->leafbuflen*link->unitbytes,(void**)&link->leafbuf[link->leafmtype]);CHKERRQ(ierr);}
-    leafdata_mpi   = link->lkey;
+    leafdata_mpi   = link->leafdata;
     *leafmtype_mpi = link->leafmtype;
   }
   *leafbuf_mpi = (const char*)link->leafbuf[*leafmtype_mpi];
