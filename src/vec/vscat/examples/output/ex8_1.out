@@ -1,7 +1,6 @@
 
 Testing VecScatterCreateToZero
 Vec Object: y 1 MPI processes
-  type: seq
 0.
 1.
 2.
@@ -13,7 +12,6 @@ Vec Object: y 1 MPI processes
 8.
 9.
 Vec Object: y 1 MPI processes
-  type: seq
 0.
 2.
 4.
@@ -25,7 +23,6 @@ Vec Object: y 1 MPI processes
 16.
 18.
 Vec Object: x 2 MPI processes
-  type: mpi
 Process [0]
 0.
 2.
@@ -39,7 +36,6 @@ Process [1]
 16.
 18.
 Vec Object: x 2 MPI processes
-  type: mpi
 Process [0]
 0.
 4.
@@ -55,7 +51,6 @@ Process [1]
 
 Testing VecScatterCreateToAll
 Vec Object: y 1 MPI processes
-  type: seq
 0.
 1.
 2.
@@ -67,7 +62,6 @@ Vec Object: y 1 MPI processes
 8.
 9.
 Vec Object: y 1 MPI processes
-  type: seq
 0.
 2.
 4.
@@ -79,7 +73,6 @@ Vec Object: y 1 MPI processes
 16.
 18.
 Vec Object: x 2 MPI processes
-  type: mpi
 Process [0]
 0.
 2.
@@ -93,7 +86,6 @@ Process [1]
 16.
 18.
 Vec Object: x 2 MPI processes
-  type: mpi
 Process [0]
 0.
 6.

@@ -96,18 +96,44 @@ int main(int argc,char **argv)
 
 /*TEST
 
-   test:
+   testset:
       # N=10 is divisible by nsize, to trigger Allgather/Gather in SF
       nsize: 2
-      args:
-      requires:
+      filter: grep -v "type"
+      output_file: output/ex8_1.out
 
-   test:
+      test:
+        suffix: 1_standard
+
+      test:
+        suffix: 1_cuda
+        args: -vec_type cuda -vecscatter_packongpu true
+        requires: cuda
+
+      test:
+        suffix: 1_cuda_aware_mpi
+        args: -vec_type cuda -vecscatter_packongpu false
+        requires: cuda define(PETSC_HAVE_MPI_GPU_AWARE)
+
+   testset:
       # N=10 is not divisible by nsize, to trigger Allgatherv/Gatherv in SF
       suffix: 2
       nsize: 3
-      args:
-      requires:
+      filter: grep -v "type"
+      output_file: output/ex8_2.out
+
+      test:
+        suffix: 2_standard
+
+      test:
+        suffix: 2_cuda
+        args: -vec_type cuda -vecscatter_packongpu true
+        requires: cuda
+
+      test:
+        suffix: 2_cuda_aware_mpi
+        args: -vec_type cuda -vecscatter_packongpu false
+        requires: cuda define(PETSC_HAVE_MPI_GPU_AWARE)
 
 TEST*/
 
