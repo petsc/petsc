@@ -8872,7 +8872,7 @@ $        PetscReal time, const PetscReal x[], PetscScalar bcval[])
 . constants - constant parameters
 - bcval - output values at the current point
 
-  Level: developer
+  Level: intermediate
 
 .seealso: DSGetBoundary(), PetscDSAddBoundary()
 @*/
