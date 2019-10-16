@@ -38,19 +38,15 @@ static PetscErrorCode PetscSFBcastAndOpBegin_Alltoall(PetscSF sf,MPI_Datatype un
   PetscErrorCode       ierr;
   PetscSFPack          link;
   MPI_Comm             comm;
-  char                 *recvbuf;
+  const void           *rootbuf_mpi; /* buffer used by MPI */
+  void                 *leafbuf_mpi;
+  PetscMemType         rootmtype_mpi,leafmtype_mpi;
 
   PetscFunctionBegin;
   ierr = PetscSFPackGet_Alltoall(sf,unit,rootmtype,rootdata,leafmtype,leafdata,&link);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)sf,&comm);CHKERRQ(ierr);
-
-  if (op != MPIU_REPLACE) {
-    if (!link->leafbuf[leafmtype]) {ierr = PetscMallocWithMemType(leafmtype,sf->nleaves*link->unitbytes,(void**)&link->leafbuf[leafmtype]);CHKERRQ(ierr);}
-    recvbuf = link->leafbuf[leafmtype];
-  } else {
-    recvbuf = (char*)leafdata;
-  }
-  ierr = MPIU_Ialltoall(rootdata,1,unit,recvbuf,1,unit,comm,link->rootreqs[PETSCSF_ROOT2LEAF_BCAST][rootmtype]);CHKERRQ(ierr);
+  ierr = PetscSFBcastPrepareMPIBuffers_Allgatherv(sf,link,op,&rootmtype_mpi,&rootbuf_mpi,&leafmtype_mpi,&leafbuf_mpi);CHKERRQ(ierr);
+  ierr = MPIU_Ialltoall(rootbuf_mpi,1,unit,leafbuf_mpi,1,unit,comm,link->rootreqs[PETSCSF_ROOT2LEAF_BCAST][rootmtype_mpi]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -59,11 +55,12 @@ static PetscErrorCode PetscSFReduceBegin_Alltoall(PetscSF sf,MPI_Datatype unit,P
   PetscErrorCode       ierr;
   PetscSFPack          link;
   MPI_Comm             comm;
-  char                 *recvbuf;
+  void                 *recvbuf;
 
   PetscFunctionBegin;
-  ierr = PetscSFPackGet_Alltoall(sf,unit,rootmtype,rootdata,leafmtype,leafdata,&link);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)sf,&comm);CHKERRQ(ierr);
+  if (!use_gpu_aware_mpi && (rootmtype == PETSC_MEMTYPE_DEVICE || leafmtype == PETSC_MEMTYPE_DEVICE)) SETERRQ(comm,PETSC_ERR_SUP,"No support for PetscSFReduce"); /* No known uses */
+  ierr = PetscSFPackGet_Alltoall(sf,unit,rootmtype,rootdata,leafmtype,leafdata,&link);CHKERRQ(ierr);
 
   if (op != MPIU_REPLACE) {
     if (!link->rootbuf[rootmtype]) {ierr = PetscMallocWithMemType(rootmtype,sf->nroots*link->unitbytes,(void**)&link->rootbuf[rootmtype]);CHKERRQ(ierr);}
