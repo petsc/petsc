@@ -130,7 +130,6 @@ static PetscErrorCode CreateSystem(DM dmSol,Mat *pA,Vec *pRhs, PetscBool pinPres
 {
   PetscErrorCode ierr;
   PetscInt       N[2];
-  PetscBool      isLastRankx,isLastRanky,isFirstRankx,isFirstRanky;
   PetscInt       ex,ey,startx,starty,nx,ny;
   PetscInt       iprev,icenter,inext;
   Mat            A;
@@ -154,8 +153,6 @@ static PetscErrorCode CreateSystem(DM dmSol,Mat *pA,Vec *pRhs, PetscBool pinPres
   rhs = *pRhs;
   ierr = DMStagGetCorners(dmSol,&startx,&starty,NULL,&nx,&ny,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = DMStagGetGlobalSizes(dmSol,&N[0],&N[1],NULL);CHKERRQ(ierr);
-  ierr = DMStagGetIsLastRank(dmSol,&isLastRankx,&isLastRanky,NULL);CHKERRQ(ierr);
-  ierr = DMStagGetIsFirstRank(dmSol,&isFirstRankx,&isFirstRanky,NULL);CHKERRQ(ierr);
   hx = 1.0/N[0]; hy = 1.0/N[1];
   ierr = DMStagGetProductCoordinateArraysRead(dmSol,&cArrX,&cArrY,NULL);CHKERRQ(ierr);
   ierr = DMStagGetProductCoordinateLocationSlot(dmSol,ELEMENT,&icenter);CHKERRQ(ierr);
