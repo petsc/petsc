@@ -330,7 +330,9 @@ static PetscErrorCode MatMatSolve_SeqDenseCUDA(Mat A,Mat B,Mat X)
   if (A->factortype == MAT_FACTOR_NONE) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix must be factored to solve");
   if (!dA->d_fact_work) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix must be factored to solve");
   ierr = PetscObjectTypeCompareAny((PetscObject)X,&iscuda,VECSEQCUDA,VECMPICUDA,"");CHKERRQ(ierr);
-  ierr = MatCopy(B,X,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  if (X != B) {
+    ierr = MatCopy(B,X,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  }
   ierr = MatDenseCUDAGetArrayRead(A,&da);CHKERRQ(ierr);
   /* MatMatSolve does not have a dispatching mechanism, we may end up with a MATSEQDENSE here */
   ierr = PetscObjectTypeCompare((PetscObject)X,MATSEQDENSECUDA,&iscuda);CHKERRQ(ierr);

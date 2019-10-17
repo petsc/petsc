@@ -458,7 +458,6 @@ PetscErrorCode MatMatSolve_MKL_CPARDISO(Mat A,Mat B,Mat X)
   }
   mat_mkl_cpardiso->CleanUp = PETSC_TRUE;
   PetscFunctionReturn(0);
-
 }
 
 /*
