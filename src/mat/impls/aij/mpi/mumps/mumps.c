@@ -1023,6 +1023,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
     if (B->rmap->n != X->rmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Matrix B and X must have same row distribution");
     mumps->id.ICNTL(20)= 0; /* dense RHS */
   } else { /* sparse B */
+    if (X == B) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_IDN,"X and B must be different matrices");
     ierr = PetscObjectTypeCompare((PetscObject)B,MATTRANSPOSEMAT,&flgT);CHKERRQ(ierr);
     if (flgT) { /* input B is transpose of actural RHS matrix,
                  because mumps requires sparse compressed COLUMN storage! See MatMatTransposeSolve_MUMPS() */

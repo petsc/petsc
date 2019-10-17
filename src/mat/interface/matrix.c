@@ -3329,25 +3329,20 @@ static PetscErrorCode MatMatSolve_Basic(Mat A,Mat B,Mat X,PetscBool trans)
 
    Input Parameters:
 +  A - the factored matrix
--  B - the right-hand-side matrix  (dense matrix)
+-  B - the right-hand-side matrix MATDENSE (or sparse -- when using MUMPS)
 
    Output Parameter:
 .  X - the result matrix (dense matrix)
 
    Notes:
-   The matrices b and x cannot be the same.  I.e., one cannot
-   call MatMatSolve(A,x,x).
+   If B is a MATDENSE matrix then one can call MatMatSolve(A,B,B);
+   otherwise, B and X cannot be the same.
 
    Notes:
    Most users should usually employ the simplified KSP interface for linear solvers
    instead of working directly with matrix algebra routines such as this.
    See, e.g., KSPCreate(). However KSP can only solve for one vector (column of X)
    at a time.
-
-   When using SuperLU_Dist as a parallel solver PETSc will use the SuperLU_Dist functionality to solve multiple right hand sides simultaneously. For MUMPS
-   it calls a separate solve for each right hand side since MUMPS does not yet support distributed right hand sides.
-
-   Since the resulting matrix X must always be dense we do not support sparse representation of the matrix B.
 
    Level: developer
 
@@ -3364,10 +3359,9 @@ PetscErrorCode MatMatSolve(Mat A,Mat B,Mat X)
   PetscValidHeaderSpecific(X,MAT_CLASSID,3);
   PetscCheckSameComm(A,1,B,2);
   PetscCheckSameComm(A,1,X,3);
-  if (X == B) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_IDN,"X and B must be different matrices");
   if (A->cmap->N != X->rmap->N) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Mat A,Mat X: global dim %D %D",A->cmap->N,X->rmap->N);
   if (A->rmap->N != B->rmap->N) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Mat A,Mat B: global dim %D %D",A->rmap->N,B->rmap->N);
-  if (X->cmap->N < B->cmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Solution matrix must have same number of columns as rhs matrix");
+  if (X->cmap->N != B->cmap->N) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Solution matrix must have same number of columns as rhs matrix");
   if (!A->rmap->N && !A->cmap->N) PetscFunctionReturn(0);
   if (!A->factortype) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Unfactored matrix");
   MatCheckPreallocated(A,1);
