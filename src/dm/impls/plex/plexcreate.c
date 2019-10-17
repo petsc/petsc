@@ -1799,14 +1799,16 @@ PetscErrorCode DMPlexCreateSphereMesh(MPI_Comm comm, PetscInt dim, PetscBool sim
 
          where \phi^2 - \phi - 1 = 0, meaning \phi is the golden ratio \frac{1 + \sqrt{5}}{2}. The edge
          length is then given by 2/\phi = 2 * 0.61803 = 1.23606.
-       */
+      */
       /* Construct vertices */
       ierr = PetscCalloc1(numVerts * embedDim, &coordsIn);CHKERRQ(ierr);
-      for (p = 0, i = 0; p < embedDim; ++p) {
-        for (s[1] = -1; s[1] < 2; s[1] += 2) {
-          for (s[2] = -1; s[2] < 2; s[2] += 2) {
-            for (d = 0; d < embedDim; ++d) coordsIn[i*embedDim+d] = s[(d+p)%embedDim]*vertex[(d+p)%embedDim];
-            ++i;
+      if (!rank) {
+        for (p = 0, i = 0; p < embedDim; ++p) {
+          for (s[1] = -1; s[1] < 2; s[1] += 2) {
+            for (s[2] = -1; s[2] < 2; s[2] += 2) {
+              for (d = 0; d < embedDim; ++d) coordsIn[i*embedDim+d] = s[(d+p)%embedDim]*vertex[(d+p)%embedDim];
+              ++i;
+            }
           }
         }
       }
@@ -1895,73 +1897,77 @@ PetscErrorCode DMPlexCreateSphereMesh(MPI_Comm comm, PetscInt dim, PetscBool sim
         ierr = DMPlexSetConeSize(*dm, e, 2);CHKERRQ(ierr);
       }
       ierr = DMSetUp(*dm);CHKERRQ(ierr); /* Allocate space for cones */
-      /* Cell 0 */
-      cone[0] = 14; cone[1] = 15; cone[2] = 16; cone[3] = 17;
-      ierr = DMPlexSetCone(*dm, 0, cone);CHKERRQ(ierr);
-      ornt[0] = 0; ornt[1] = 0; ornt[2] = 0; ornt[3] = 0;
-      ierr = DMPlexSetConeOrientation(*dm, 0, ornt);CHKERRQ(ierr);
-      /* Cell 1 */
-      cone[0] = 18; cone[1] = 19; cone[2] = 14; cone[3] = 20;
-      ierr = DMPlexSetCone(*dm, 1, cone);CHKERRQ(ierr);
-      ornt[0] = 0; ornt[1] = 0; ornt[2] = -2; ornt[3] = 0;
-      ierr = DMPlexSetConeOrientation(*dm, 1, ornt);CHKERRQ(ierr);
-      /* Cell 2 */
-      cone[0] = 21; cone[1] = 22; cone[2] = 18; cone[3] = 23;
-      ierr = DMPlexSetCone(*dm, 2, cone);CHKERRQ(ierr);
-      ornt[0] = 0; ornt[1] = 0; ornt[2] = -2; ornt[3] = 0;
-      ierr = DMPlexSetConeOrientation(*dm, 2, ornt);CHKERRQ(ierr);
-      /* Cell 3 */
-      cone[0] = 19; cone[1] = 22; cone[2] = 24; cone[3] = 15;
-      ierr = DMPlexSetCone(*dm, 3, cone);CHKERRQ(ierr);
-      ornt[0] = -2; ornt[1] = -2; ornt[2] = 0; ornt[3] = -2;
-      ierr = DMPlexSetConeOrientation(*dm, 3, ornt);CHKERRQ(ierr);
-      /* Cell 4 */
-      cone[0] = 16; cone[1] = 24; cone[2] = 21; cone[3] = 25;
-      ierr = DMPlexSetCone(*dm, 4, cone);CHKERRQ(ierr);
-      ornt[0] = -2; ornt[1] = -2; ornt[2] = -2; ornt[3] = 0;
-      ierr = DMPlexSetConeOrientation(*dm, 4, ornt);CHKERRQ(ierr);
-      /* Cell 5 */
-      cone[0] = 20; cone[1] = 17; cone[2] = 25; cone[3] = 23;
-      ierr = DMPlexSetCone(*dm, 5, cone);CHKERRQ(ierr);
-      ornt[0] = -2; ornt[1] = -2; ornt[2] = -2; ornt[3] = -2;
-      ierr = DMPlexSetConeOrientation(*dm, 5, ornt);CHKERRQ(ierr);
-      /* Edges */
-      cone[0] =  6; cone[1] =  7;
-      ierr = DMPlexSetCone(*dm, 14, cone);CHKERRQ(ierr);
-      cone[0] =  7; cone[1] =  8;
-      ierr = DMPlexSetCone(*dm, 15, cone);CHKERRQ(ierr);
-      cone[0] =  8; cone[1] =  9;
-      ierr = DMPlexSetCone(*dm, 16, cone);CHKERRQ(ierr);
-      cone[0] =  9; cone[1] =  6;
-      ierr = DMPlexSetCone(*dm, 17, cone);CHKERRQ(ierr);
-      cone[0] = 10; cone[1] = 11;
-      ierr = DMPlexSetCone(*dm, 18, cone);CHKERRQ(ierr);
-      cone[0] = 11; cone[1] =  7;
-      ierr = DMPlexSetCone(*dm, 19, cone);CHKERRQ(ierr);
-      cone[0] =  6; cone[1] = 10;
-      ierr = DMPlexSetCone(*dm, 20, cone);CHKERRQ(ierr);
-      cone[0] = 12; cone[1] = 13;
-      ierr = DMPlexSetCone(*dm, 21, cone);CHKERRQ(ierr);
-      cone[0] = 13; cone[1] = 11;
-      ierr = DMPlexSetCone(*dm, 22, cone);CHKERRQ(ierr);
-      cone[0] = 10; cone[1] = 12;
-      ierr = DMPlexSetCone(*dm, 23, cone);CHKERRQ(ierr);
-      cone[0] = 13; cone[1] =  8;
-      ierr = DMPlexSetCone(*dm, 24, cone);CHKERRQ(ierr);
-      cone[0] = 12; cone[1] =  9;
-      ierr = DMPlexSetCone(*dm, 25, cone);CHKERRQ(ierr);
+      if (!rank) {
+        /* Cell 0 */
+        cone[0] = 14; cone[1] = 15; cone[2] = 16; cone[3] = 17;
+        ierr = DMPlexSetCone(*dm, 0, cone);CHKERRQ(ierr);
+        ornt[0] = 0; ornt[1] = 0; ornt[2] = 0; ornt[3] = 0;
+        ierr = DMPlexSetConeOrientation(*dm, 0, ornt);CHKERRQ(ierr);
+        /* Cell 1 */
+        cone[0] = 18; cone[1] = 19; cone[2] = 14; cone[3] = 20;
+        ierr = DMPlexSetCone(*dm, 1, cone);CHKERRQ(ierr);
+        ornt[0] = 0; ornt[1] = 0; ornt[2] = -2; ornt[3] = 0;
+        ierr = DMPlexSetConeOrientation(*dm, 1, ornt);CHKERRQ(ierr);
+        /* Cell 2 */
+        cone[0] = 21; cone[1] = 22; cone[2] = 18; cone[3] = 23;
+        ierr = DMPlexSetCone(*dm, 2, cone);CHKERRQ(ierr);
+        ornt[0] = 0; ornt[1] = 0; ornt[2] = -2; ornt[3] = 0;
+        ierr = DMPlexSetConeOrientation(*dm, 2, ornt);CHKERRQ(ierr);
+        /* Cell 3 */
+        cone[0] = 19; cone[1] = 22; cone[2] = 24; cone[3] = 15;
+        ierr = DMPlexSetCone(*dm, 3, cone);CHKERRQ(ierr);
+        ornt[0] = -2; ornt[1] = -2; ornt[2] = 0; ornt[3] = -2;
+        ierr = DMPlexSetConeOrientation(*dm, 3, ornt);CHKERRQ(ierr);
+        /* Cell 4 */
+        cone[0] = 16; cone[1] = 24; cone[2] = 21; cone[3] = 25;
+        ierr = DMPlexSetCone(*dm, 4, cone);CHKERRQ(ierr);
+        ornt[0] = -2; ornt[1] = -2; ornt[2] = -2; ornt[3] = 0;
+        ierr = DMPlexSetConeOrientation(*dm, 4, ornt);CHKERRQ(ierr);
+        /* Cell 5 */
+        cone[0] = 20; cone[1] = 17; cone[2] = 25; cone[3] = 23;
+        ierr = DMPlexSetCone(*dm, 5, cone);CHKERRQ(ierr);
+        ornt[0] = -2; ornt[1] = -2; ornt[2] = -2; ornt[3] = -2;
+        ierr = DMPlexSetConeOrientation(*dm, 5, ornt);CHKERRQ(ierr);
+        /* Edges */
+        cone[0] =  6; cone[1] =  7;
+        ierr = DMPlexSetCone(*dm, 14, cone);CHKERRQ(ierr);
+        cone[0] =  7; cone[1] =  8;
+        ierr = DMPlexSetCone(*dm, 15, cone);CHKERRQ(ierr);
+        cone[0] =  8; cone[1] =  9;
+        ierr = DMPlexSetCone(*dm, 16, cone);CHKERRQ(ierr);
+        cone[0] =  9; cone[1] =  6;
+        ierr = DMPlexSetCone(*dm, 17, cone);CHKERRQ(ierr);
+        cone[0] = 10; cone[1] = 11;
+        ierr = DMPlexSetCone(*dm, 18, cone);CHKERRQ(ierr);
+        cone[0] = 11; cone[1] =  7;
+        ierr = DMPlexSetCone(*dm, 19, cone);CHKERRQ(ierr);
+        cone[0] =  6; cone[1] = 10;
+        ierr = DMPlexSetCone(*dm, 20, cone);CHKERRQ(ierr);
+        cone[0] = 12; cone[1] = 13;
+        ierr = DMPlexSetCone(*dm, 21, cone);CHKERRQ(ierr);
+        cone[0] = 13; cone[1] = 11;
+        ierr = DMPlexSetCone(*dm, 22, cone);CHKERRQ(ierr);
+        cone[0] = 10; cone[1] = 12;
+        ierr = DMPlexSetCone(*dm, 23, cone);CHKERRQ(ierr);
+        cone[0] = 13; cone[1] =  8;
+        ierr = DMPlexSetCone(*dm, 24, cone);CHKERRQ(ierr);
+        cone[0] = 12; cone[1] =  9;
+        ierr = DMPlexSetCone(*dm, 25, cone);CHKERRQ(ierr);
+      }
       ierr = DMPlexSymmetrize(*dm);CHKERRQ(ierr);
       ierr = DMPlexStratify(*dm);CHKERRQ(ierr);
       /* Build coordinates */
       ierr = PetscCalloc1(numVerts * embedDim, &coordsIn);CHKERRQ(ierr);
-      coordsIn[0*embedDim+0] = -dist; coordsIn[0*embedDim+1] =  dist; coordsIn[0*embedDim+2] = -dist;
-      coordsIn[1*embedDim+0] =  dist; coordsIn[1*embedDim+1] =  dist; coordsIn[1*embedDim+2] = -dist;
-      coordsIn[2*embedDim+0] =  dist; coordsIn[2*embedDim+1] = -dist; coordsIn[2*embedDim+2] = -dist;
-      coordsIn[3*embedDim+0] = -dist; coordsIn[3*embedDim+1] = -dist; coordsIn[3*embedDim+2] = -dist;
-      coordsIn[4*embedDim+0] = -dist; coordsIn[4*embedDim+1] =  dist; coordsIn[4*embedDim+2] =  dist;
-      coordsIn[5*embedDim+0] =  dist; coordsIn[5*embedDim+1] =  dist; coordsIn[5*embedDim+2] =  dist;
-      coordsIn[6*embedDim+0] = -dist; coordsIn[6*embedDim+1] = -dist; coordsIn[6*embedDim+2] =  dist;
-      coordsIn[7*embedDim+0] =  dist; coordsIn[7*embedDim+1] = -dist; coordsIn[7*embedDim+2] =  dist;
+      if (!rank) {
+        coordsIn[0*embedDim+0] = -dist; coordsIn[0*embedDim+1] =  dist; coordsIn[0*embedDim+2] = -dist;
+        coordsIn[1*embedDim+0] =  dist; coordsIn[1*embedDim+1] =  dist; coordsIn[1*embedDim+2] = -dist;
+        coordsIn[2*embedDim+0] =  dist; coordsIn[2*embedDim+1] = -dist; coordsIn[2*embedDim+2] = -dist;
+        coordsIn[3*embedDim+0] = -dist; coordsIn[3*embedDim+1] = -dist; coordsIn[3*embedDim+2] = -dist;
+        coordsIn[4*embedDim+0] = -dist; coordsIn[4*embedDim+1] =  dist; coordsIn[4*embedDim+2] =  dist;
+        coordsIn[5*embedDim+0] =  dist; coordsIn[5*embedDim+1] =  dist; coordsIn[5*embedDim+2] =  dist;
+        coordsIn[6*embedDim+0] = -dist; coordsIn[6*embedDim+1] = -dist; coordsIn[6*embedDim+2] =  dist;
+        coordsIn[7*embedDim+0] =  dist; coordsIn[7*embedDim+1] = -dist; coordsIn[7*embedDim+2] =  dist;
+      }
     }
     break;
   case 3:
@@ -1992,34 +1998,36 @@ PetscErrorCode DMPlexCreateSphereMesh(MPI_Comm comm, PetscInt dim, PetscBool sim
 
          http://buzzard.pugetsound.edu/sage-practice/ch03s03.html
          http://mathworld.wolfram.com/600-Cell.html
-       */
+      */
       /* Construct vertices */
       ierr = PetscCalloc1(numVerts * embedDim, &coordsIn);CHKERRQ(ierr);
       i    = 0;
-      for (s[0] = -1; s[0] < 2; s[0] += 2) {
-        for (s[1] = -1; s[1] < 2; s[1] += 2) {
-          for (s[2] = -1; s[2] < 2; s[2] += 2) {
-            for (s[3] = -1; s[3] < 2; s[3] += 2) {
-              for (d = 0; d < embedDim; ++d) coordsIn[i*embedDim+d] = s[d]*vertexA[d];
-              ++i;
-            }
-          }
-        }
-      }
-      for (p = 0; p < embedDim; ++p) {
-        s[1] = s[2] = s[3] = 1;
-        for (s[0] = -1; s[0] < 2; s[0] += 2) {
-          for (d = 0; d < embedDim; ++d) coordsIn[i*embedDim+d] = s[(d+p)%embedDim]*vertexB[(d+p)%embedDim];
-          ++i;
-        }
-      }
-      for (p = 0; p < 12; ++p) {
-        s[3] = 1;
+      if (!rank) {
         for (s[0] = -1; s[0] < 2; s[0] += 2) {
           for (s[1] = -1; s[1] < 2; s[1] += 2) {
             for (s[2] = -1; s[2] < 2; s[2] += 2) {
-              for (d = 0; d < embedDim; ++d) coordsIn[i*embedDim+d] = s[evenPerm[p][d]]*vertexC[evenPerm[p][d]];
-              ++i;
+              for (s[3] = -1; s[3] < 2; s[3] += 2) {
+                for (d = 0; d < embedDim; ++d) coordsIn[i*embedDim+d] = s[d]*vertexA[d];
+                ++i;
+              }
+            }
+          }
+        }
+        for (p = 0; p < embedDim; ++p) {
+          s[1] = s[2] = s[3] = 1;
+          for (s[0] = -1; s[0] < 2; s[0] += 2) {
+            for (d = 0; d < embedDim; ++d) coordsIn[i*embedDim+d] = s[(d+p)%embedDim]*vertexB[(d+p)%embedDim];
+            ++i;
+          }
+        }
+        for (p = 0; p < 12; ++p) {
+          s[3] = 1;
+          for (s[0] = -1; s[0] < 2; s[0] += 2) {
+            for (s[1] = -1; s[1] < 2; s[1] += 2) {
+              for (s[2] = -1; s[2] < 2; s[2] += 2) {
+                for (d = 0; d < embedDim; ++d) coordsIn[i*embedDim+d] = s[evenPerm[p][d]]*vertexC[evenPerm[p][d]];
+                ++i;
+              }
             }
           }
         }
@@ -2040,50 +2048,52 @@ PetscErrorCode DMPlexCreateSphereMesh(MPI_Comm comm, PetscInt dim, PetscBool sim
       }
       ierr = DMSetUp(*dm);CHKERRQ(ierr); /* Allocate space for cones */
       /* Cells */
-      for (i = 0, c = 0; i < numVerts; ++i) {
-        for (j = 0; j < i; ++j) {
-          for (k = 0; k < j; ++k) {
-            for (l = 0; l < k; ++l) {
-              if (graph[i*numVerts+j] && graph[j*numVerts+k] && graph[k*numVerts+i] &&
-                  graph[l*numVerts+i] && graph[l*numVerts+j] && graph[l*numVerts+k]) {
-                cone[0] = firstVertex+i; cone[1] = firstVertex+j; cone[2] = firstVertex+k; cone[3] = firstVertex+l;
-                /* Check orientation: https://ef.gy/linear-algebra:normal-vectors-in-higher-dimensional-spaces */
-                {
-                  const PetscInt epsilon[4][4][4][4] = {{{{0,  0,  0,  0}, { 0, 0,  0,  0}, { 0,  0, 0,  0}, { 0,  0,  0, 0}},
-                                                         {{0,  0,  0,  0}, { 0, 0,  0,  0}, { 0,  0, 0,  1}, { 0,  0, -1, 0}},
-                                                         {{0,  0,  0,  0}, { 0, 0,  0, -1}, { 0,  0, 0,  0}, { 0,  1,  0, 0}},
-                                                         {{0,  0,  0,  0}, { 0, 0,  1,  0}, { 0, -1, 0,  0}, { 0,  0,  0, 0}}},
+      if (!rank) {
+        for (i = 0, c = 0; i < numVerts; ++i) {
+          for (j = 0; j < i; ++j) {
+            for (k = 0; k < j; ++k) {
+              for (l = 0; l < k; ++l) {
+                if (graph[i*numVerts+j] && graph[j*numVerts+k] && graph[k*numVerts+i] &&
+                    graph[l*numVerts+i] && graph[l*numVerts+j] && graph[l*numVerts+k]) {
+                  cone[0] = firstVertex+i; cone[1] = firstVertex+j; cone[2] = firstVertex+k; cone[3] = firstVertex+l;
+                  /* Check orientation: https://ef.gy/linear-algebra:normal-vectors-in-higher-dimensional-spaces */
+                  {
+                    const PetscInt epsilon[4][4][4][4] = {{{{0,  0,  0,  0}, { 0, 0,  0,  0}, { 0,  0, 0,  0}, { 0,  0,  0, 0}},
+                                                           {{0,  0,  0,  0}, { 0, 0,  0,  0}, { 0,  0, 0,  1}, { 0,  0, -1, 0}},
+                                                           {{0,  0,  0,  0}, { 0, 0,  0, -1}, { 0,  0, 0,  0}, { 0,  1,  0, 0}},
+                                                           {{0,  0,  0,  0}, { 0, 0,  1,  0}, { 0, -1, 0,  0}, { 0,  0,  0, 0}}},
 
-                                                        {{{0,  0,  0,  0}, { 0, 0,  0,  0}, { 0,  0, 0, -1}, { 0,  0,  1, 0}},
-                                                         {{0,  0,  0,  0}, { 0, 0,  0,  0}, { 0,  0, 0,  0}, { 0,  0,  0, 0}},
-                                                         {{0,  0,  0,  1}, { 0, 0,  0,  0}, { 0,  0, 0,  0}, {-1,  0,  0, 0}},
-                                                         {{0,  0, -1,  0}, { 0, 0,  0,  0}, { 1,  0, 0,  0}, { 0,  0,  0, 0}}},
+                                                          {{{0,  0,  0,  0}, { 0, 0,  0,  0}, { 0,  0, 0, -1}, { 0,  0,  1, 0}},
+                                                           {{0,  0,  0,  0}, { 0, 0,  0,  0}, { 0,  0, 0,  0}, { 0,  0,  0, 0}},
+                                                           {{0,  0,  0,  1}, { 0, 0,  0,  0}, { 0,  0, 0,  0}, {-1,  0,  0, 0}},
+                                                           {{0,  0, -1,  0}, { 0, 0,  0,  0}, { 1,  0, 0,  0}, { 0,  0,  0, 0}}},
 
-                                                        {{{0,  0,  0,  0}, { 0, 0,  0,  1}, { 0,  0, 0,  0}, { 0, -1,  0, 0}},
-                                                         {{0,  0,  0, -1}, { 0, 0,  0,  0}, { 0,  0, 0,  0}, { 1,  0,  0, 0}},
-                                                         {{0,  0,  0,  0}, { 0, 0,  0,  0}, { 0,  0, 0,  0}, { 0,  0,  0, 0}},
-                                                         {{0,  1,  0,  0}, {-1, 0,  0,  0}, { 0,  0, 0,  0}, { 0,  0,  0, 0}}},
+                                                          {{{0,  0,  0,  0}, { 0, 0,  0,  1}, { 0,  0, 0,  0}, { 0, -1,  0, 0}},
+                                                           {{0,  0,  0, -1}, { 0, 0,  0,  0}, { 0,  0, 0,  0}, { 1,  0,  0, 0}},
+                                                           {{0,  0,  0,  0}, { 0, 0,  0,  0}, { 0,  0, 0,  0}, { 0,  0,  0, 0}},
+                                                           {{0,  1,  0,  0}, {-1, 0,  0,  0}, { 0,  0, 0,  0}, { 0,  0,  0, 0}}},
 
-                                                        {{{0,  0,  0,  0}, { 0, 0, -1,  0}, { 0,  1, 0,  0}, { 0,  0,  0, 0}},
-                                                         {{0,  0,  1,  0}, { 0, 0,  0,  0}, {-1,  0, 0,  0}, { 0,  0,  0, 0}},
-                                                         {{0, -1,  0,  0}, { 1, 0,  0,  0}, { 0,  0, 0,  0}, { 0,  0,  0, 0}},
-                                                         {{0,  0,  0,  0}, { 0, 0,  0,  0}, { 0,  0, 0,  0}, { 0,  0,  0, 0}}}};
-                  PetscReal normal[4];
-                  PetscInt  e, f, g;
+                                                          {{{0,  0,  0,  0}, { 0, 0, -1,  0}, { 0,  1, 0,  0}, { 0,  0,  0, 0}},
+                                                           {{0,  0,  1,  0}, { 0, 0,  0,  0}, {-1,  0, 0,  0}, { 0,  0,  0, 0}},
+                                                           {{0, -1,  0,  0}, { 1, 0,  0,  0}, { 0,  0, 0,  0}, { 0,  0,  0, 0}},
+                                                           {{0,  0,  0,  0}, { 0, 0,  0,  0}, { 0,  0, 0,  0}, { 0,  0,  0, 0}}}};
+                    PetscReal normal[4];
+                    PetscInt  e, f, g;
 
-                  for (d = 0; d < embedDim; ++d) {
-                    normal[d] = 0.0;
-                    for (e = 0; e < embedDim; ++e) {
-                      for (f = 0; f < embedDim; ++f) {
-                        for (g = 0; g < embedDim; ++g) {
-                          normal[d] += epsilon[d][e][f][g]*(coordsIn[j*embedDim+e] - coordsIn[i*embedDim+e])*(coordsIn[k*embedDim+f] - coordsIn[i*embedDim+f])*(coordsIn[l*embedDim+f] - coordsIn[i*embedDim+f]);
+                    for (d = 0; d < embedDim; ++d) {
+                      normal[d] = 0.0;
+                      for (e = 0; e < embedDim; ++e) {
+                        for (f = 0; f < embedDim; ++f) {
+                          for (g = 0; g < embedDim; ++g) {
+                            normal[d] += epsilon[d][e][f][g]*(coordsIn[j*embedDim+e] - coordsIn[i*embedDim+e])*(coordsIn[k*embedDim+f] - coordsIn[i*embedDim+f])*(coordsIn[l*embedDim+f] - coordsIn[i*embedDim+f]);
+                          }
                         }
                       }
                     }
+                    if (DotReal(embedDim, normal, &coordsIn[i*embedDim]) < 0) {PetscInt tmp = cone[1]; cone[1] = cone[2]; cone[2] = tmp;}
                   }
-                  if (DotReal(embedDim, normal, &coordsIn[i*embedDim]) < 0) {PetscInt tmp = cone[1]; cone[1] = cone[2]; cone[2] = tmp;}
+                  ierr = DMPlexSetCone(*dm, c++, cone);CHKERRQ(ierr);
                 }
-                ierr = DMPlexSetCone(*dm, c++, cone);CHKERRQ(ierr);
               }
             }
           }
