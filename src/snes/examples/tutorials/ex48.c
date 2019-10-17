@@ -890,7 +890,7 @@ static PetscErrorCode THISurfaceStatistics(DM da,Vec X,PetscReal *min,PetscReal 
   *min = *max = *mean = 0;
   ierr = DMDAGetInfo(da,0, &mz,&my,&mx, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&zs,&ys,&xs,&zm,&ym,&xm);CHKERRQ(ierr);
-  if (zs != 0 || zm != mz) SETERRQ(PETSC_COMM_SELF,1,"Unexpected decomposition");
+  if (zs != 0 || zm != mz) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected decomposition");
   ierr = DMDAVecGetArray(da,X,&x);CHKERRQ(ierr);
   for (i=xs; i<xs+xm; i++) {
     for (j=ys; j<ys+ym; j++) {
@@ -1318,7 +1318,7 @@ static PetscErrorCode DMCreateInterpolation_DA_THI(DM dac,DM daf,Mat *A,Vec *sca
 
     ierr = DMDAGetInfo(daf,0, &mz,&my,&mx, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
     ierr = DMDAGetCorners(daf,&zs,&ys,&xs,&zm,&ym,&xm);CHKERRQ(ierr);
-    if (zs != 0) SETERRQ(PETSC_COMM_SELF,1,"unexpected");
+    if (zs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"unexpected");
     ierr = MatCreate(PetscObjectComm((PetscObject)daf),&B);CHKERRQ(ierr);
     ierr = MatSetSizes(B,xm*ym*zm,xm*ym,mx*my*mz,mx*my);CHKERRQ(ierr);
 
@@ -1409,11 +1409,11 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM da,Vec X,const char filena
         ierr = MPI_Recv(range,6,MPIU_INT,r,tag,comm,MPI_STATUS_IGNORE);CHKERRQ(ierr);
       }
       zs = range[0];ys = range[1];xs = range[2];zm = range[3];ym = range[4];xm = range[5];
-      if (xm*ym*zm*dof > nmax) SETERRQ(PETSC_COMM_SELF,1,"should not happen");
+      if (xm*ym*zm*dof > nmax) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"should not happen");
       if (r) {
         ierr = MPI_Recv(array,nmax,MPIU_SCALAR,r,tag,comm,&status);CHKERRQ(ierr);
         ierr = MPI_Get_count(&status,MPIU_SCALAR,&nn);CHKERRQ(ierr);
-        if (nn != xm*ym*zm*dof) SETERRQ(PETSC_COMM_SELF,1,"should not happen");
+        if (nn != xm*ym*zm*dof) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"should not happen");
         ptr = array;
       } else ptr = x;
       ierr = PetscViewerASCIIPrintf(viewer,"    <Piece Extent=\"%D %D %D %D %D %D\">\n",zs,zs+zm-1,ys,ys+ym-1,xs,xs+xm-1);CHKERRQ(ierr);

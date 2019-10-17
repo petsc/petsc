@@ -41,7 +41,7 @@ static PetscErrorCode PetscPythonFindLibraryName(const char pythonexe[PETSC_MAX_
   if (!fgets(pythonlib,PETSC_MAX_PATH_LEN,fp)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Python: bad output from executable: %s",pythonexe);
   ierr = PetscPClose(PETSC_COMM_SELF,fp);CHKERRQ(ierr);
 #else
-  SETERRQ(PETSC_COMM_SELF,1,"Python: Aborted due to missing popen()");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Python: Aborted due to missing popen()");
 #endif
   /* remove newlines */
   ierr = PetscStrchr(pythonlib,'\n',&eol);CHKERRQ(ierr);

@@ -588,7 +588,7 @@ PetscErrorCode FVSample(FVCtx *ctx,DM da,PetscReal time,Vec U)
   PetscInt       i,j,k,dof,xs,xm,Mx;
 
   PetscFunctionBeginUser;
-  if (!ctx->physics.sample) SETERRQ(PETSC_COMM_SELF,1,"Physics has not provided a sampling function");
+  if (!ctx->physics.sample) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Physics has not provided a sampling function");
   ierr = DMDAGetInfo(da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);
@@ -640,6 +640,6 @@ PetscErrorCode SolutionStatsView(DM da,Vec X,PetscViewer viewer)
     ierr = VecMax(X,&imax,&xmax);CHKERRQ(ierr);
     ierr = VecSum(X,&sum);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"Solution range [%8.5f,%8.5f] with minimum at %D, mean %8.5f, ||x||_TV %8.5f\n",(double)xmin,(double)xmax,imin,(double)(sum/Mx),(double)(tvgsum/Mx));CHKERRQ(ierr);
-  } else SETERRQ(PETSC_COMM_SELF,1,"Viewer type not supported");
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type not supported");
   PetscFunctionReturn(0);
 }

@@ -37,12 +37,12 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if (size != 1) SETERRQ(PETSC_COMM_WORLD,1,"This is a uniprocessor example only!");
+  if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
 
   ierr = PetscOptionsGetString(NULL,NULL,"-fin",filein,PETSC_MAX_PATH_LEN,&flag);CHKERRQ(ierr);
-  if (!flag) SETERRQ(PETSC_COMM_SELF,1,"Please use -fin <filename> to specify the input file name!");
+  if (!flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER_INPUT,"Please use -fin <filename> to specify the input file name!");
   ierr = PetscOptionsGetString(NULL,NULL,"-fout",fileout,PETSC_MAX_PATH_LEN,&flag);CHKERRQ(ierr);
-  if (!flag) SETERRQ(PETSC_COMM_SELF,1,"Please use -fout <filename> to specify the output file name!");
+  if (!flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER_INPUT,"Please use -fout <filename> to specify the output file name!");
   ierr = PetscOptionsGetBool(NULL,NULL,"-aij_only",&aijonly,NULL);CHKERRQ(ierr);
 
   /* Read in matrix */
@@ -80,11 +80,11 @@ int main(int argc,char **argv)
   for (i=0; i<nz; i++){
     if (pattern) {
       ninput = fscanf(file, "%d %d\n", &ia[i], &ja[i]);
-      if (ninput < 2) SETERRQ(PETSC_COMM_SELF,1,"Badly formatted input file\n");
+      if (ninput < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Badly formatted input file\n");
       val[i] = 1.0;
     } else if (real) {
       ninput = fscanf(file, "%d %d %lg\n", &ia[i], &ja[i], &val[i]);
-      if (ninput < 3) SETERRQ(PETSC_COMM_SELF,1,"Badly formatted input file\n");
+      if (ninput < 3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Badly formatted input file\n");
     }
     ia[i]--; ja[i]--;     /* adjust from 1-based to 0-based */
     if (ia[i] != ja[i]) { /* already counted the diagonals above */

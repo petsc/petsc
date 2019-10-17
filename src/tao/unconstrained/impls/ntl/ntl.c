@@ -62,9 +62,7 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
   ierr = PetscStrcmp(ksp_type,KSPNASH,&is_nash);CHKERRQ(ierr);
   ierr = PetscStrcmp(ksp_type,KSPSTCG,&is_stcg);CHKERRQ(ierr);
   ierr = PetscStrcmp(ksp_type,KSPGLTR,&is_gltr);CHKERRQ(ierr);
-  if (!is_nash && !is_stcg && !is_gltr) {
-    SETERRQ(PETSC_COMM_SELF,1,"TAO_NTR requires nash, stcg, or gltr for the KSP");
-  }
+  if (!is_nash && !is_stcg && !is_gltr) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_SUP,"TAO_NTR requires nash, stcg, or gltr for the KSP");
 
   /* Initialize the radius and modify if it is too large or small */
   tao->trust = tao->trust0;
@@ -91,7 +89,7 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
   /* Check convergence criteria */
   ierr = TaoComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient);CHKERRQ(ierr);
   ierr = VecNorm(tao->gradient, NORM_2, &gnorm);CHKERRQ(ierr);
-  if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
+if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
   needH = 1;
 
   tao->reason = TAO_CONTINUE_ITERATING;
@@ -200,7 +198,7 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
         ierr = TaoComputeGradient(tao, tao->solution, tao->gradient);CHKERRQ(ierr);
 
         ierr = VecNorm(tao->gradient, NORM_2, &gnorm);CHKERRQ(ierr);
-        if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
+        if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
         needH = 1;
 
         ierr = TaoLogConvergenceHistory(tao,f,gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
@@ -279,7 +277,7 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
         tao->ksp_tot_its+=its;
         ierr = KSPCGGetNormD(tao->ksp, &norm_d);CHKERRQ(ierr);
 
-        if (norm_d == 0.0) SETERRQ(PETSC_COMM_SELF,1, "Initial direction zero");
+        if (norm_d == 0.0) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_PLIB, "Initial direction zero");
       }
     }
 
@@ -602,7 +600,7 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
 
     /* Check for converged */
     ierr = VecNorm(tao->gradient, NORM_2, &gnorm);CHKERRQ(ierr);
-    if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1,"User provided compute function generated Not-a-Number");
+    if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_USER,"User provided compute function generated Not-a-Number");
     needH = 1;
 
     ierr = TaoLogConvergenceHistory(tao,f,gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);

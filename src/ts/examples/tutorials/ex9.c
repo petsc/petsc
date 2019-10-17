@@ -302,7 +302,7 @@ static PetscErrorCode PhysicsSample_Advect(void *vctx,PetscInt initial,FVBCType 
   switch (bctype) {
     case FVBC_OUTFLOW:   x0 = x-a*t; break;
     case FVBC_PERIODIC: x0 = RangeMod(x-a*t,xmin,xmax); break;
-    default: SETERRQ(PETSC_COMM_SELF,1,"unknown BCType");
+    default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"unknown BCType");
   }
   switch (initial) {
     case 0: u[0] = (x0 < 0) ? 1 : -1; break;
@@ -313,7 +313,7 @@ static PetscErrorCode PhysicsSample_Advect(void *vctx,PetscInt initial,FVBCType 
     case 5: u[0] = (x0 < 0 || x0 > 0.5) ? 0 : PetscSqr(PetscSinReal(2*PETSC_PI*x0)); break;
     case 6: u[0] = (x0 < 0) ? 0 : ((x0 < 1) ? x0 : ((x0 < 2) ? 2-x0 : 0)); break;
     case 7: u[0] = PetscPowReal(PetscSinReal(PETSC_PI*x0),10.0);break;
-    default: SETERRQ(PETSC_COMM_SELF,1,"unknown initial condition");
+    default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"unknown initial condition");
   }
   PetscFunctionReturn(0);
 }
@@ -350,7 +350,7 @@ typedef struct {
 static PetscErrorCode PhysicsSample_Burgers(void *vctx,PetscInt initial,FVBCType bctype,PetscReal xmin,PetscReal xmax,PetscReal t,PetscReal x,PetscReal *u)
 {
   PetscFunctionBeginUser;
-  if (bctype == FVBC_PERIODIC && t > 0) SETERRQ(PETSC_COMM_SELF,1,"Exact solution not implemented for periodic");
+  if (bctype == FVBC_PERIODIC && t > 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Exact solution not implemented for periodic");
   switch (initial) {
     case 0: u[0] = (x < 0) ? 1 : -1; break;
     case 1:
@@ -370,14 +370,14 @@ static PetscErrorCode PhysicsSample_Burgers(void *vctx,PetscInt initial,FVBCType
       else             u[0] = 1;
       break;
     case 4:
-      if (t > 0) SETERRQ(PETSC_COMM_SELF,1,"Only initial condition available");
+      if (t > 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only initial condition available");
       u[0] = 0.7 + 0.3*PetscSinReal(2*PETSC_PI*((x-xmin)/(xmax-xmin)));
       break;
     case 5:                     /* Pure shock solution */
       if (x < 0.5*t) u[0] = 1;
       else u[0] = 0;
       break;
-    default: SETERRQ(PETSC_COMM_SELF,1,"unknown initial condition");
+    default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"unknown initial condition");
   }
   PetscFunctionReturn(0);
 }
@@ -489,7 +489,7 @@ static PetscErrorCode PhysicsSample_Traffic(void *vctx,PetscInt initial,FVBCType
   PetscReal a = ((TrafficCtx*)vctx)->a;
 
   PetscFunctionBeginUser;
-  if (bctype == FVBC_PERIODIC && t > 0) SETERRQ(PETSC_COMM_SELF,1,"Exact solution not implemented for periodic");
+  if (bctype == FVBC_PERIODIC && t > 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Exact solution not implemented for periodic");
   switch (initial) {
     case 0:
       u[0] = (-a*t < x) ? 2 : 0; break;
@@ -499,10 +499,10 @@ static PetscErrorCode PhysicsSample_Traffic(void *vctx,PetscInt initial,FVBCType
       else                                  u[0] = 1;
       break;
     case 2:
-      if (t > 0) SETERRQ(PETSC_COMM_SELF,1,"Only initial condition available");
+      if (t > 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only initial condition available");
       u[0] = 0.7 + 0.3*PetscSinReal(2*PETSC_PI*((x-xmin)/(xmax-xmin)));
       break;
-    default: SETERRQ(PETSC_COMM_SELF,1,"unknown initial condition");
+    default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"unknown initial condition");
   }
   PetscFunctionReturn(0);
 }
@@ -653,7 +653,7 @@ static PetscErrorCode PhysicsSample_Acoustics_Initial(AcousticsCtx *phys,PetscIn
     u[0] = PetscCosReal(3 * 2*PETSC_PI*x/(xmax-xmin));
     u[1] = PetscExpReal(-PetscSqr(x - (xmax + xmin)/2) / (2*PetscSqr(0.2*(xmax - xmin)))) - 0.5;
     break;
-  default: SETERRQ(PETSC_COMM_SELF,1,"unknown initial condition");
+  default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"unknown initial condition");
   }
   PetscFunctionReturn(0);
 }
@@ -676,7 +676,7 @@ static PetscErrorCode PhysicsSample_Acoustics(void *vctx,PetscInt initial,FVBCTy
     x0a = RangeMod(x+c*t,xmin,xmax);
     x0b = RangeMod(x-c*t,xmin,xmax);
     break;
-  default: SETERRQ(PETSC_COMM_SELF,1,"unknown BCType");
+  default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"unknown BCType");
   }
   ierr   = PhysicsSample_Acoustics_Initial(phys,initial,xmin,xmax,x0a,u0a);CHKERRQ(ierr);
   ierr   = PhysicsSample_Acoustics_Initial(phys,initial,xmin,xmax,x0b,u0b);CHKERRQ(ierr);
@@ -758,7 +758,7 @@ PETSC_STATIC_INLINE void IsoGasFlux(PetscReal c,const PetscScalar *u,PetscScalar
 static PetscErrorCode PhysicsSample_IsoGas(void *vctx,PetscInt initial,FVBCType bctype,PetscReal xmin,PetscReal xmax,PetscReal t,PetscReal x,PetscReal *u)
 {
   PetscFunctionBeginUser;
-  if (t > 0) SETERRQ(PETSC_COMM_SELF,1,"Exact solutions not implemented for t > 0");
+  if (t > 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Exact solutions not implemented for t > 0");
   switch (initial) {
     case 0:
       u[0] = (x < 0) ? 1 : 0.5;
@@ -768,7 +768,7 @@ static PetscErrorCode PhysicsSample_IsoGas(void *vctx,PetscInt initial,FVBCType 
       u[0] = 1+0.5*PetscSinReal(2*PETSC_PI*x);
       u[1] = 1*u[0];
       break;
-    default: SETERRQ(PETSC_COMM_SELF,1,"unknown initial condition");
+    default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"unknown initial condition");
   }
   PetscFunctionReturn(0);
 }
@@ -826,7 +826,7 @@ static PetscErrorCode PhysicsRiemann_IsoGas_Exact(void *vctx,PetscInt m,const Pe
   PetscInt                    i;
 
   PetscFunctionBeginUser;
-  if (!(L.rho > 0 && R.rho > 0)) SETERRQ(PETSC_COMM_SELF,1,"Reconstructed density is negative");
+  if (!(L.rho > 0 && R.rho > 0)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Reconstructed density is negative");
   {
     /* Solve for star state */
     PetscScalar res,tmp,rho = 0.5*(L.rho + R.rho); /* initial guess */
@@ -887,7 +887,7 @@ static PetscErrorCode PhysicsRiemann_IsoGas_Rusanov(void *vctx,PetscInt m,const 
   struct {PetscScalar rho,u;} L = {uL[0],uL[1]/uL[0]},R = {uR[0],uR[1]/uR[0]};
 
   PetscFunctionBeginUser;
-  if (!(L.rho > 0 && R.rho > 0)) SETERRQ(PETSC_COMM_SELF,1,"Reconstructed density is negative");
+  if (!(L.rho > 0 && R.rho > 0)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Reconstructed density is negative");
   IsoGasFlux(c,uL,fL);
   IsoGasFlux(c,uR,fR);
   s         = PetscMax(PetscAbs(L.u),PetscAbs(R.u))+c;
@@ -970,7 +970,7 @@ static PetscErrorCode PhysicsRiemann_Shallow_Exact(void *vctx,PetscInt m,const P
   PetscInt                  i;
 
   PetscFunctionBeginUser;
-  if (!(L.h > 0 && R.h > 0)) SETERRQ(PETSC_COMM_SELF,1,"Reconstructed thickness is negative");
+  if (!(L.h > 0 && R.h > 0)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Reconstructed thickness is negative");
   cL = PetscSqrtScalar(g*L.h);
   cR = PetscSqrtScalar(g*R.h);
   c  = PetscMax(cL,cR);
@@ -1043,7 +1043,7 @@ static PetscErrorCode PhysicsRiemann_Shallow_Rusanov(void *vctx,PetscInt m,const
   struct {PetscScalar h,u;} L = {uL[0],uL[1]/uL[0]},R = {uR[0],uR[1]/uR[0]};
 
   PetscFunctionBeginUser;
-  if (!(L.h > 0 && R.h > 0)) SETERRQ(PETSC_COMM_SELF,1,"Reconstructed thickness is negative");
+  if (!(L.h > 0 && R.h > 0)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Reconstructed thickness is negative");
   ShallowFlux(phys,uL,fL);
   ShallowFlux(phys,uR,fR);
   s         = PetscMax(PetscAbs(L.u)+PetscSqrtScalar(g*L.h),PetscAbs(R.u)+PetscSqrtScalar(g*R.h));
@@ -1273,7 +1273,7 @@ static PetscErrorCode FVSample(FVCtx *ctx,DM da,PetscReal time,Vec U)
   PetscInt       i,j,k,dof,xs,xm,Mx;
 
   PetscFunctionBeginUser;
-  if (!ctx->physics.sample) SETERRQ(PETSC_COMM_SELF,1,"Physics has not provided a sampling function");
+  if (!ctx->physics.sample) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Physics has not provided a sampling function");
   ierr = DMDAGetInfo(da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);
@@ -1326,7 +1326,7 @@ static PetscErrorCode SolutionStatsView(DM da,Vec X,PetscViewer viewer)
     ierr = VecMax(X,&imax,&xmax);CHKERRQ(ierr);
     ierr = VecSum(X,&sum);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"Solution range [%8.5f,%8.5f] with extrema at %D and %D, mean %8.5f, ||x||_TV %8.5f\n",(double)xmin,(double)xmax,imin,imax,(double)(sum/Mx),(double)(tvgsum/Mx));CHKERRQ(ierr);
-  } else SETERRQ(PETSC_COMM_SELF,1,"Viewer type not supported");
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type not supported");
   PetscFunctionReturn(0);
 }
 

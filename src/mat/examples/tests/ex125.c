@@ -30,7 +30,7 @@ int main(int argc,char **args)
 
   /* Determine file from which we read the matrix A */
   ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate binary file with the -f option");
+  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f option");
 
   /* Load matrix A */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
@@ -104,14 +104,14 @@ int main(int argc,char **args)
   switch (ipack) {
 #if defined(PETSC_HAVE_SUPERLU)
   case 0:
-    if (chol) SETERRQ(PETSC_COMM_WORLD,1,"SuperLU does not provide Cholesky!");
+    if (chol) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"SuperLU does not provide Cholesky!");
     ierr = PetscPrintf(PETSC_COMM_WORLD," SUPERLU LU:\n");CHKERRQ(ierr);
     ierr = MatGetFactor(A,MATSOLVERSUPERLU,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
     break;
 #endif
 #if defined(PETSC_HAVE_SUPERLU_DIST)
   case 1:
-    if (chol) SETERRQ(PETSC_COMM_WORLD,1,"SuperLU does not provide Cholesky!");
+    if (chol) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"SuperLU does not provide Cholesky!");
     ierr = PetscPrintf(PETSC_COMM_WORLD," SUPERLU_DIST LU:\n");CHKERRQ(ierr);
     ierr = MatGetFactor(A,MATSOLVERSUPERLU_DIST,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
     break;

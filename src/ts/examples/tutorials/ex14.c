@@ -1013,7 +1013,7 @@ static PetscErrorCode THISurfaceStatistics(DM pack,Vec X,PetscReal *min,PetscRea
   *min = *max = *mean = 0;
   ierr = DMDAGetInfo(da3,0, &mz,&my,&mx, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da3,&zs,&ys,&xs,&zm,&ym,&xm);CHKERRQ(ierr);
-  if (zs != 0 || zm != mz) SETERRQ(PETSC_COMM_SELF,1,"Unexpected decomposition");
+  if (zs != 0 || zm != mz) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Unexpected decomposition");
   ierr = DMDAVecGetArray(da3,X3,&x);CHKERRQ(ierr);
   for (i=xs; i<xs+xm; i++) {
     for (j=ys; j<ys+ym; j++) {
@@ -1422,30 +1422,31 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM pack,Vec X,const char file
     PetscScalar *array,*array2;
     ierr = PetscMalloc2(nmax,&array,nmax2,&array2);CHKERRQ(ierr);
     for (r=0; r<size; r++) {
-      PetscInt i,j,k,f,xs,xm,ys,ym,zs,zm;
-      Node     *y3;
+      PetscInt    i,j,k,f,xs,xm,ys,ym,zs,zm;
+      Node        *y3;
       PetscScalar (*y2)[PRMNODE_SIZE];
       MPI_Status status;
+
       if (r) {
         ierr = MPI_Recv(range,6,MPIU_INT,r,tag,comm,MPI_STATUS_IGNORE);CHKERRQ(ierr);
       }
       zs = range[0];ys = range[1];xs = range[2];zm = range[3];ym = range[4];xm = range[5];
-      if (xm*ym*zm*dof > nmax) SETERRQ(PETSC_COMM_SELF,1,"should not happen");
+      if (xm*ym*zm*dof > nmax) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"should not happen");
       if (r) {
         ierr = MPI_Recv(array,nmax,MPIU_SCALAR,r,tag,comm,&status);CHKERRQ(ierr);
         ierr = MPI_Get_count(&status,MPIU_SCALAR,&nn);CHKERRQ(ierr);
-        if (nn != xm*ym*zm*dof) SETERRQ(PETSC_COMM_SELF,1,"corrupt da3 send");
+        if (nn != xm*ym*zm*dof) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"corrupt da3 send");
         y3   = (Node*)array;
         ierr = MPI_Recv(array2,nmax2,MPIU_SCALAR,r,tag,comm,&status);CHKERRQ(ierr);
         ierr = MPI_Get_count(&status,MPIU_SCALAR,&nn2);CHKERRQ(ierr);
-        if (nn2 != xm*ym*dof2) SETERRQ(PETSC_COMM_SELF,1,"corrupt da2 send");
+        if (nn2 != xm*ym*dof2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"corrupt da2 send");
         y2 = (PetscScalar(*)[PRMNODE_SIZE])array2;
       } else {
         y3 = (Node*)x;
         y2 = (PetscScalar(*)[PRMNODE_SIZE])x2;
       }
-      ierr = PetscViewerASCIIPrintf(viewer3,"    <Piece Extent=\"%d %d %d %d %d %d\">\n",zs,zs+zm-1,ys,ys+ym-1,xs,xs+xm-1);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer2,"    <Piece Extent=\"%d %d %d %d %d %d\">\n",0,0,ys,ys+ym-1,xs,xs+xm-1);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer3,"    <Piece Extent=\"%D %D %D %D %D %D\">\n",zs,zs+zm-1,ys,ys+ym-1,xs,xs+xm-1);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer2,"    <Piece Extent=\"%d %d %D %D %D %D\">\n",0,0,ys,ys+ym-1,xs,xs+xm-1);CHKERRQ(ierr);
 
       ierr = PetscViewerASCIIPrintf(viewer3,"      <Points>\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer2,"      <Points>\n");CHKERRQ(ierr);
@@ -1480,7 +1481,7 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM pack,Vec X,const char file
 
         ierr = PetscViewerASCIIPrintf(viewer3,"        <DataArray type=\"Int32\" Name=\"rank\" NumberOfComponents=\"1\" format=\"ascii\">\n");CHKERRQ(ierr);
         for (i=0; i<nn; i+=dof) {
-          ierr = PetscViewerASCIIPrintf(viewer3,"%d\n",r);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer3,"%D\n",r);CHKERRQ(ierr);
         }
         ierr = PetscViewerASCIIPrintf(viewer3,"        </DataArray>\n");CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(viewer3,"      </PointData>\n");CHKERRQ(ierr);
@@ -1616,7 +1617,7 @@ int main(int argc,char *argv[])
     PetscInt  Mx,My,Mz;
     ierr = DMCompositeGetEntries(pack,&da3,&da2);CHKERRQ(ierr);
     ierr = DMDAGetInfo(da3,0, &Mz,&My,&Mx, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
-    ierr = PetscPrintf(PetscObjectComm((PetscObject)thi),"Level %d domain size (m) %8.2g x %8.2g x %8.2g, num elements %3d x %3d x %3d (%8d), size (m) %g x %g x %g\n",i,Lx,Ly,Lz,Mx,My,Mz,Mx*My*Mz,Lx/Mx,Ly/My,1000./(Mz-1));CHKERRQ(ierr);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)thi),"Level %D domain size (m) %8.2g x %8.2g x %8.2g, num elements %3d x %3d x %3d (%8d), size (m) %g x %g x %g\n",i,Lx,Ly,Lz,Mx,My,Mz,Mx*My*Mz,Lx/Mx,Ly/My,1000./(Mz-1));CHKERRQ(ierr);
   }
 
   ierr = DMCreateGlobalVector(pack,&X);CHKERRQ(ierr);

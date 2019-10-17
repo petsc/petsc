@@ -79,14 +79,14 @@ PetscErrorCode MatSolve_SeqSBAIJ_N_inplace(Mat A,Vec bb,Vec xx)
 PetscErrorCode MatForwardSolve_SeqSBAIJ_N_inplace(Mat A,Vec bb,Vec xx)
 {
   PetscFunctionBegin;
-  SETERRQ(PETSC_COMM_SELF,1,"not implemented yet");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"not implemented yet");
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatBackwardSolve_SeqSBAIJ_N_inplace(Mat A,Vec bb,Vec xx)
 {
   PetscFunctionBegin;
-  SETERRQ(PETSC_COMM_SELF,1,"not implemented yet");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not yet implemented");
   PetscFunctionReturn(0);
 }
 

@@ -76,7 +76,7 @@ int main(int argc,char **argv)
   N  = user.mx*user.my;
   dt = .5/PetscMax(user.mx,user.my);
   PetscOptionsGetReal(NULL,NULL,"-param",&user.param,NULL);
-  if (user.param >= param_max || user.param <= param_min) SETERRQ(PETSC_COMM_SELF,1,"Parameter is out of range");
+  if (user.param >= param_max || user.param <= param_min) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Parameter is out of range");
 
   /*
       Create vectors to hold the solution and function value

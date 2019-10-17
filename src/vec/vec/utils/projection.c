@@ -883,7 +883,7 @@ PetscErrorCode VecStepMax(Vec X, Vec DX, PetscReal *step)
   ierr = VecGetArrayRead(X,&xx);CHKERRQ(ierr);
   ierr = VecGetArrayRead(DX,&dx);CHKERRQ(ierr);
   for (i=0;i<nn;++i){
-    if (PetscRealPart(xx[i]) < 0) SETERRQ(PETSC_COMM_SELF,1,"Vector must be positive");
+    if (PetscRealPart(xx[i]) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Vector must be positive");
     else if (PetscRealPart(dx[i])<0) stepmax=PetscMin(stepmax,PetscRealPart(-xx[i]/dx[i]));
   }
   ierr = VecRestoreArrayRead(X,&xx);CHKERRQ(ierr);

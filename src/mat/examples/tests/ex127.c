@@ -21,10 +21,6 @@ int main(int argc,char **args)
   PetscInt       dim,Ii,J,n = 3,rstart,rend;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-#if !defined(PETSC_USE_COMPLEX)
-  SETERRQ(PETSC_COMM_WORLD,1,"This example requires complex build");
-#endif
-
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(NULL,NULL, "-display_mat", &disp_mat);CHKERRQ(ierr);

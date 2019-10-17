@@ -57,9 +57,10 @@
 #define PETSC_ERR_FLOP_COUNT       90
 #define PETSC_ERR_NOT_CONVERGED    91  /* solver did not converge */
 #define PETSC_ERR_MISSING_FACTOR   92  /* MatGetFactor() failed */
-#define PETSC_ERR_OPT_OVERWRITE    93  /* attempted to over wrote options which should not be changed */
-
-#define PETSC_ERR_MAX_VALUE        94  /* this is always the one more than the largest error code */
+#define PETSC_ERR_OPT_OVERWRITE    93  /* attempted to over write options which should not be changed */
+#define PETSC_ERR_WRONG_MPI_SIZE   94  /* example/application run with number of MPI ranks it does not support */
+#define PETSC_ERR_USER_INPUT       95  /* missing or incorrect user input */
+#define PETSC_ERR_MAX_VALUE        96  /* this is always the one more than the largest error code */
 
 #define PetscStringizeArg(a) #a
 #define PetscStringize(a) PetscStringizeArg(a)

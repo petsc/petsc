@@ -23,7 +23,7 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&nproc);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
-  if (nproc != 2) SETERRQ(PETSC_COMM_SELF,1,"This test must run with exactly two MPI ranks\n");
+  if (nproc != 2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This test must run with exactly two MPI ranks\n");
 
   /* ====================================================================
      (1) test VecScatterRemap on a parallel to parallel (PtoP) vecscatter

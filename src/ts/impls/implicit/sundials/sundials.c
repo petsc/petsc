@@ -218,7 +218,7 @@ static PetscErrorCode TSInterpolate_Sundials(TS ts,PetscReal t,Vec X)
 
   /* allocate the memory for N_Vec y */
   y = N_VNew_Parallel(cvode->comm_sundials,locsize,glosize);
-  if (!y) SETERRQ(PETSC_COMM_SELF,1,"Interpolated y is not allocated");
+  if (!y) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Interpolated y is not allocated");
 
   ierr = VecGetArray(X,&x_data);CHKERRQ(ierr);
   N_VSetArrayPointer((realtype*)x_data,y);
@@ -283,7 +283,7 @@ PetscErrorCode TSSetUp_Sundials(TS ts)
 
   /* allocate the memory for N_Vec y */
   cvode->y = N_VNew_Parallel(cvode->comm_sundials,locsize,glosize);
-  if (!cvode->y) SETERRQ(PETSC_COMM_SELF,1,"cvode->y is not allocated");
+  if (!cvode->y) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"cvode->y is not allocated");
 
   /* initialize N_Vec y: copy ts->vec_sol to cvode->y */
   ierr   = VecGetArray(ts->vec_sol,&parray);CHKERRQ(ierr);

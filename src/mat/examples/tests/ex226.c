@@ -32,7 +32,7 @@ int main(int argc,char **argv)
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
 
   /* Consistency checks */
-  if (o < 1 || m < 1 || n < 1) SETERRQ(PETSC_COMM_WORLD,1,"Dimensions need to be larger than zero!");
+  if (o < 1 || m < 1 || n < 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Dimensions need to be larger than zero!");
 
   /************ 2D stencils ***************/
   ierr = PetscStrcmp(stencil, "2d5point", &equal);CHKERRQ(ierr);
