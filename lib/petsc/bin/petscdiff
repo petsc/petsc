@@ -103,11 +103,11 @@ if [ "x${1}" = "x-" ]; then
   ${RM} -f ${file1}
 fi
 
-if ${mvfile}; then
+if ${mvfile} && test ${err} -gt 0; then
   echo "mv'ing $file2 --> $file1"
   mv "$file2" "$file1"
 fi
-if ${mvfile_ifalt}; then
+if ${mvfile_ifalt} && test ${err} -gt 0; then
   if echo $file1 | grep '_alt.out'; then 
     echo "mv'ing $file2 --> $file1"
     mv "$file2" "$file1"
