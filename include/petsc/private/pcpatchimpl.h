@@ -86,10 +86,10 @@ typedef struct {
   Mat                 *mat;                /* System matrix for each patch */
   Mat                 *matWithArtificial;   /* System matrix including dofs with artificial bcs for each patch */
   MatType              sub_mat_type;       /* Matrix type for patch systems */
-  Vec                 *patchRHS, *patchUpdate;  /* RHS and solution for each patch */
+  Vec                  patchRHS, patchUpdate;  /* Work vectors for RHS and solution on each patch */
   IS                  *dofMappingWithoutToWithArtificial;
   IS                  *dofMappingWithoutToWithAll;
-  Vec                 *patchRHSWithArtificial;    /* like patchRHS but extra entries to include dofs with artificial bcs*/
+  Vec                 patchRHSWithArtificial;    /* like patchRHS but extra entries to include dofs with artificial bcs*/
   Vec                 *patch_dof_weights;  /* Weighting for dof in each patch */
   Vec                  localRHS, localUpdate;     /* ??? */
   Vec                  dof_weights;        /* In how many patches does each dof lie? */
@@ -98,6 +98,8 @@ typedef struct {
   IS                   iterationSet;       /* Index set specifying how we iterate over patches */
   PetscInt             currentPatch;       /* The current patch number when iterating */
   PetscObject         *solver;             /* Solvers for each patch TODO Do we need a new KSP for each patch? */
+  PetscBool            denseinverse;       /* Should the patch inverse by applied by computing the inverse and a matmult? (Skips KSP/PC etc...) */
+  PetscErrorCode      (*densesolve)(Mat, Vec, Vec); /* Matmult for dense solve (used with denseinverse) */
   PetscErrorCode     (*setupsolver)(PC);
   PetscErrorCode     (*applysolver)(PC, PetscInt, Vec, Vec);
   PetscErrorCode     (*resetsolver)(PC);
@@ -124,10 +126,10 @@ typedef struct {
   PetscViewer          viewerMatrix;       /*   Viewer for patch matrix */
   PetscViewerFormat    formatMatrix;       /*   Format for patch matrix */
   /* Extra variables for SNESPATCH */
-  Vec                 *patchState;         /* State vectors for patch solvers */
-  Vec                 *patchStateWithAll;  /* State vectors for patch solvers with all boundary data */
+  Vec                  patchState;         /* State vectors for patch solvers */
+  Vec                  patchStateWithAll;  /* State vectors for patch solvers with all boundary data */
   Vec                  localState;         /* Scatter vector for state */
-  Vec                 *patchResidual;      /* Work vectors for patch residual evaluation*/
+  Vec                  patchResidual;      /* Work vectors for patch residual evaluation*/
   const char          *classname;          /* "snes" or "pc" for options */
   PetscBool            isNonlinear;        /* we need to do some things differently in nonlinear mode */
 } PC_PATCH;
@@ -135,7 +137,6 @@ typedef struct {
 PETSC_EXTERN PetscLogEvent PC_Patch_CreatePatches;
 PETSC_EXTERN PetscLogEvent PC_Patch_ComputeOp;
 PETSC_EXTERN PetscLogEvent PC_Patch_Solve;
-PETSC_EXTERN PetscLogEvent PC_Patch_Scatter;
 PETSC_EXTERN PetscLogEvent PC_Patch_Apply;
 PETSC_EXTERN PetscLogEvent PC_Patch_Prealloc;
 

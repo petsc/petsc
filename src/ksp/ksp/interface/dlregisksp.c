@@ -74,7 +74,6 @@ PetscErrorCode  PCInitializePackage(void)
   ierr = PetscLogEventRegister("PCPATCHComputeOp", PC_CLASSID, &PC_Patch_ComputeOp);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("PCPATCHSolve",     PC_CLASSID, &PC_Patch_Solve);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("PCPATCHApply",     PC_CLASSID, &PC_Patch_Apply);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("PCPATCHScatter",   PC_CLASSID, &PC_Patch_Scatter);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("PCPATCHPrealloc",  PC_CLASSID, &PC_Patch_Prealloc);CHKERRQ(ierr);
 
   ierr = PetscLogEventRegister("KSPSolve_FS_0",    KSP_CLASSID,&KSP_Solve_FS_0);CHKERRQ(ierr);

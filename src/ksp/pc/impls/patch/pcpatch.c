@@ -1,11 +1,13 @@
 #include <petsc/private/pcpatchimpl.h>     /*I "petscpc.h" I*/
 #include <petsc/private/kspimpl.h>         /* For ksp->setfromoptionscalled */
+#include <petsc/private/vecimpl.h>         /* For vec->map */
 #include <petsc/private/dmpleximpl.h> /* For DMPlexComputeJacobian_Patch_Internal() */
 #include <petscsf.h>
 #include <petscbt.h>
 #include <petscds.h>
+#include <../src/mat/impls/dense/seq/dense.h> /*I "petscmat.h" I*/
 
-PetscLogEvent PC_Patch_CreatePatches, PC_Patch_ComputeOp, PC_Patch_Solve, PC_Patch_Scatter, PC_Patch_Apply, PC_Patch_Prealloc;
+PetscLogEvent PC_Patch_CreatePatches, PC_Patch_ComputeOp, PC_Patch_Solve, PC_Patch_Apply, PC_Patch_Prealloc;
 
 PETSC_STATIC_INLINE PetscErrorCode ObjectView(PetscObject obj, PetscViewer viewer, PetscViewerFormat format)
 {
@@ -299,6 +301,22 @@ static PetscErrorCode PCPatchCreateDefaultSF_Private(PC pc, PetscInt n, const Pe
     ierr = PetscSFCreate(PetscObjectComm((PetscObject)pc), &patch->sectionSF);CHKERRQ(ierr);
     ierr = PetscSFSetGraph(patch->sectionSF, allRoots, allLeaves, ilocal, PETSC_OWN_POINTER, iremote, PETSC_OWN_POINTER);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PCPatchSetDenseInverse(PC pc, PetscBool flg)
+{
+  PC_PATCH *patch = (PC_PATCH *) pc->data;
+  PetscFunctionBegin;
+  patch->denseinverse = flg;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PCPatchGetDenseInverse(PC pc, PetscBool *flg)
+{
+  PC_PATCH *patch = (PC_PATCH *) pc->data;
+  PetscFunctionBegin;
+  *flg = patch->denseinverse;
   PetscFunctionReturn(0);
 }
 
@@ -1724,7 +1742,6 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
 static PetscErrorCode PCPatchCreateMatrix_Private(PC pc, PetscInt point, Mat *mat, PetscBool withArtificial)
 {
   PC_PATCH      *patch = (PC_PATCH *) pc->data;
-  Vec            x, y;
   PetscBool      flg;
   PetscInt       csize, rsize;
   const char    *prefix = NULL;
@@ -1733,15 +1750,17 @@ static PetscErrorCode PCPatchCreateMatrix_Private(PC pc, PetscInt point, Mat *ma
   PetscFunctionBegin;
   if(withArtificial) {
     /* would be nice if we could create a rectangular matrix of size numDofsWithArtificial x numDofs here */
-    x = patch->patchRHSWithArtificial[point];
-    y = patch->patchRHSWithArtificial[point];
+    PetscInt pStart;
+    ierr = PetscSectionGetChart(patch->gtolCountsWithArtificial, &pStart, NULL);CHKERRQ(ierr);
+    ierr = PetscSectionGetDof(patch->gtolCountsWithArtificial, point + pStart, &rsize);CHKERRQ(ierr);
+    csize = rsize;
   } else {
-    x = patch->patchRHS[point];
-    y = patch->patchUpdate[point];
+    PetscInt pStart;
+    ierr = PetscSectionGetChart(patch->gtolCounts, &pStart, NULL);CHKERRQ(ierr);
+    ierr = PetscSectionGetDof(patch->gtolCounts, point + pStart, &rsize);CHKERRQ(ierr);
+    csize = rsize;
   }
 
-  ierr = VecGetSize(x, &csize);CHKERRQ(ierr);
-  ierr = VecGetSize(y, &rsize);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_SELF, mat);CHKERRQ(ierr);
   ierr = PCGetOptionsPrefix(pc, &prefix);CHKERRQ(ierr);
   ierr = MatSetOptionsPrefix(*mat, prefix);CHKERRQ(ierr);
@@ -2189,6 +2208,15 @@ PetscErrorCode PCPatchComputeOperator_Internal(PC pc, Vec x, Mat mat, PetscInt p
   ierr = MatAssemblyBegin(mat, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
+  if (!(withArtificial || isNonlinear) && patch->denseinverse) {
+    MatFactorInfo info;
+    PetscBool     flg;
+    ierr = PetscObjectTypeCompare((PetscObject)mat, MATSEQDENSE, &flg);CHKERRQ(ierr);
+    if (!flg) SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Invalid Mat type for dense inverse");
+    ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
+    ierr = MatLUFactor(mat, NULL, NULL, &info);CHKERRQ(ierr);
+    ierr = MatSeqDenseInvertFactors_Private(mat);CHKERRQ(ierr);
+  }
   PetscStackPop;
   ierr = ISDestroy(&patch->cellIS);CHKERRQ(ierr);
   if(withArtificial) {
@@ -2400,7 +2428,6 @@ PetscErrorCode PCPatch_ScatterLocal_Private(PC pc, PetscInt p, Vec x, Vec y, Ins
   PetscErrorCode     ierr;
 
   PetscFunctionBeginHot;
-  ierr = PetscLogEventBegin(PC_Patch_Scatter, pc, 0, 0, 0);CHKERRQ(ierr);
   ierr = VecGetArrayRead(x, &xArray);CHKERRQ(ierr);
   ierr = VecGetArray(y, &yArray);CHKERRQ(ierr);
   if (scattertype == SCATTER_WITHARTIFICIAL) {
@@ -2433,7 +2460,6 @@ PetscErrorCode PCPatch_ScatterLocal_Private(PC pc, PetscInt p, Vec x, Vec y, Ins
   }
   ierr = VecRestoreArrayRead(x, &xArray);CHKERRQ(ierr);
   ierr = VecRestoreArray(y, &yArray);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(PC_Patch_Scatter, pc, 0, 0, 0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2446,21 +2472,24 @@ static PetscErrorCode PCSetUp_PATCH_Linear(PC pc)
 
   PetscFunctionBegin;
   if (!pc->setupcalled) {
-    ierr = PetscMalloc1(patch->npatch, &patch->solver);CHKERRQ(ierr);
-    ierr = PCGetOptionsPrefix(pc, &prefix);CHKERRQ(ierr);
-    for (i = 0; i < patch->npatch; ++i) {
-      KSP ksp;
-      PC  subpc;
+    if (!patch->save_operators && patch->denseinverse) SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Can't have dense inverse without save operators");
+    if (!patch->denseinverse) {
+      ierr = PetscMalloc1(patch->npatch, &patch->solver);CHKERRQ(ierr);
+      ierr = PCGetOptionsPrefix(pc, &prefix);CHKERRQ(ierr);
+      for (i = 0; i < patch->npatch; ++i) {
+        KSP ksp;
+        PC  subpc;
 
-      ierr = KSPCreate(PETSC_COMM_SELF, &ksp);CHKERRQ(ierr);
-      ierr = KSPSetErrorIfNotConverged(ksp, pc->erroriffailure);CHKERRQ(ierr);
-      ierr = KSPSetOptionsPrefix(ksp, prefix);CHKERRQ(ierr);
-      ierr = KSPAppendOptionsPrefix(ksp, "sub_");CHKERRQ(ierr);
-      ierr = PetscObjectIncrementTabLevel((PetscObject) ksp, (PetscObject) pc, 1);CHKERRQ(ierr);
-      ierr = KSPGetPC(ksp, &subpc);CHKERRQ(ierr);
-      ierr = PetscObjectIncrementTabLevel((PetscObject) subpc, (PetscObject) pc, 1);CHKERRQ(ierr);
-      ierr = PetscLogObjectParent((PetscObject) pc, (PetscObject) ksp);CHKERRQ(ierr);
-      patch->solver[i] = (PetscObject) ksp;
+        ierr = KSPCreate(PETSC_COMM_SELF, &ksp);CHKERRQ(ierr);
+        ierr = KSPSetErrorIfNotConverged(ksp, pc->erroriffailure);CHKERRQ(ierr);
+        ierr = KSPSetOptionsPrefix(ksp, prefix);CHKERRQ(ierr);
+        ierr = KSPAppendOptionsPrefix(ksp, "sub_");CHKERRQ(ierr);
+        ierr = PetscObjectIncrementTabLevel((PetscObject) ksp, (PetscObject) pc, 1);CHKERRQ(ierr);
+        ierr = KSPGetPC(ksp, &subpc);CHKERRQ(ierr);
+        ierr = PetscObjectIncrementTabLevel((PetscObject) subpc, (PetscObject) pc, 1);CHKERRQ(ierr);
+        ierr = PetscLogObjectParent((PetscObject) pc, (PetscObject) ksp);CHKERRQ(ierr);
+        patch->solver[i] = (PetscObject) ksp;
+      }
     }
   }
   if (patch->save_operators) {
@@ -2469,7 +2498,12 @@ static PetscErrorCode PCSetUp_PATCH_Linear(PC pc)
     }
     for (i = 0; i < patch->npatch; ++i) {
       ierr = PCPatchComputeOperator_Internal(pc, NULL, patch->mat[i], i, PETSC_FALSE);CHKERRQ(ierr);
-      ierr = KSPSetOperators((KSP) patch->solver[i], patch->mat[i], patch->mat[i]);CHKERRQ(ierr);
+      if (!patch->denseinverse) {
+        ierr = KSPSetOperators((KSP) patch->solver[i], patch->mat[i], patch->mat[i]);CHKERRQ(ierr);
+      } else if (patch->mat[i] && !patch->densesolve) {
+        /* Setup matmult callback */
+        ierr = MatGetOperation(patch->mat[i], MATOP_MULT, (void (**)(void))&patch->densesolve);CHKERRQ(ierr);
+      }
     }
   }
   if(patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE) {
@@ -2494,7 +2528,7 @@ static PetscErrorCode PCSetUp_PATCH_Linear(PC pc)
 
       ierr = MatGetSize(matSquare, &dof, NULL);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF, dof, 0, 1, &rowis); CHKERRQ(ierr);
-      if(pc->setupcalled) {
+      if (pc->setupcalled) {
         ierr = MatCreateSubMatrix(matSquare, rowis, patch->dofMappingWithoutToWithArtificial[i], MAT_REUSE_MATRIX, &patch->matWithArtificial[i]); CHKERRQ(ierr);
       } else {
         ierr = MatCreateSubMatrix(matSquare, rowis, patch->dofMappingWithoutToWithArtificial[i], MAT_INITIAL_MATRIX, &patch->matWithArtificial[i]); CHKERRQ(ierr);
@@ -2510,7 +2544,8 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
 {
   PC_PATCH      *patch = (PC_PATCH *) pc->data;
   PetscInt       i;
-  PetscBool       isNonlinear;
+  PetscBool      isNonlinear;
+  PetscInt       maxDof = -1, maxDofWithArtificial = -1;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2599,11 +2634,8 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
 
     /* OK, now build the work vectors */
     ierr = PetscSectionGetChart(patch->gtolCounts, &pStart, &pEnd);CHKERRQ(ierr);
-    ierr = PetscMalloc1(patch->npatch, &patch->patchRHS);CHKERRQ(ierr);
-    ierr = PetscMalloc1(patch->npatch, &patch->patchUpdate);CHKERRQ(ierr);
 
     if (patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE) {
-      ierr = PetscMalloc1(patch->npatch, &patch->patchRHSWithArtificial);CHKERRQ(ierr);
       ierr = PetscMalloc1(patch->npatch, &patch->dofMappingWithoutToWithArtificial);CHKERRQ(ierr);
     }
     if (isNonlinear) {
@@ -2613,10 +2645,7 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
       PetscInt dof;
 
       ierr = PetscSectionGetDof(patch->gtolCounts, p, &dof);CHKERRQ(ierr);
-      ierr = VecCreateSeq(PETSC_COMM_SELF, dof, &patch->patchRHS[p-pStart]);CHKERRQ(ierr);
-      ierr = VecSetUp(patch->patchRHS[p-pStart]);CHKERRQ(ierr);
-      ierr = VecCreateSeq(PETSC_COMM_SELF, dof, &patch->patchUpdate[p-pStart]);CHKERRQ(ierr);
-      ierr = VecSetUp(patch->patchUpdate[p-pStart]);CHKERRQ(ierr);
+      maxDof = PetscMax(maxDof, dof);CHKERRQ(ierr);
       if (patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE) {
         const PetscInt    *gtolArray, *gtolArrayWithArtificial = NULL;
         PetscInt           numPatchDofs, offset;
@@ -2625,8 +2654,7 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
         PetscInt          *patchWithoutArtificialToWithArtificialArray;
 
         ierr = PetscSectionGetDof(patch->gtolCountsWithArtificial, p, &dof);CHKERRQ(ierr);
-        ierr = VecCreateSeq(PETSC_COMM_SELF, dof, &patch->patchRHSWithArtificial[p-pStart]);CHKERRQ(ierr);
-        ierr = VecSetUp(patch->patchRHSWithArtificial[p-pStart]);CHKERRQ(ierr);
+        maxDofWithArtificial = PetscMax(maxDofWithArtificial, dof);
 
         /* Now build the mapping that for a dof in a patch WITHOUT dofs that have artificial bcs gives the */
         /* the index in the patch with all dofs */
@@ -2693,6 +2721,12 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
         ierr = ISRestoreIndices(patch->gtolWithAll, &gtolArrayWithAll);CHKERRQ(ierr);
       }
     }
+    ierr = VecCreateSeq(PETSC_COMM_SELF, maxDofWithArtificial, &patch->patchRHSWithArtificial);CHKERRQ(ierr);
+    ierr = VecSetUp(patch->patchRHSWithArtificial);CHKERRQ(ierr);
+    ierr = VecCreateSeq(PETSC_COMM_SELF, maxDof, &patch->patchRHS);CHKERRQ(ierr);
+    ierr = VecSetUp(patch->patchRHS);CHKERRQ(ierr);
+    ierr = VecCreateSeq(PETSC_COMM_SELF, maxDof, &patch->patchUpdate);CHKERRQ(ierr);
+    ierr = VecSetUp(patch->patchUpdate);CHKERRQ(ierr);
     if (patch->save_operators) {
       ierr = PetscMalloc1(patch->npatch, &patch->mat);CHKERRQ(ierr);
       for (i = 0; i < patch->npatch; ++i) {
@@ -2714,8 +2748,8 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
 
           ierr = PetscSectionGetDof(patch->gtolCounts, i+pStart, &dof);CHKERRQ(ierr);
           if (dof <= 0) continue;
-          ierr = VecSet(patch->patchRHS[i], 1.0);CHKERRQ(ierr);
-          ierr = PCPatch_ScatterLocal_Private(pc, i+pStart, patch->patchRHS[i], patch->dof_weights, ADD_VALUES, SCATTER_REVERSE, SCATTER_INTERIOR);CHKERRQ(ierr);
+          ierr = VecSet(patch->patchRHS, 1.0);CHKERRQ(ierr);
+          ierr = PCPatch_ScatterLocal_Private(pc, i+pStart, patch->patchRHS, patch->dof_weights, ADD_VALUES, SCATTER_REVERSE, SCATTER_INTERIOR);CHKERRQ(ierr);
         }
       } else {
         /* multiplicative is actually only locally multiplicative and globally additive. need the pou where the mesh decomposition overlaps */
@@ -2753,10 +2787,17 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
 static PetscErrorCode PCApply_PATCH_Linear(PC pc, PetscInt i, Vec x, Vec y)
 {
   PC_PATCH      *patch = (PC_PATCH *) pc->data;
-  KSP            ksp   = (KSP) patch->solver[i];
+  KSP            ksp;
+  Mat            op;
+  PetscInt       m, n;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (patch->denseinverse) {
+    ierr = (*patch->densesolve)(patch->mat[i], x, y);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+  ksp = (KSP) patch->solver[i];
   if (!patch->save_operators) {
     Mat mat;
 
@@ -2771,6 +2812,13 @@ static PetscErrorCode PCApply_PATCH_Linear(PC pc, PetscInt i, Vec x, Vec y)
   if (!ksp->setfromoptionscalled) {
     ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   }
+  /* Disgusting trick to reuse work vectors */
+  ierr = KSPGetOperators(ksp, &op, NULL);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(op, &m, &n);CHKERRQ(ierr);
+  x->map->n = m;
+  y->map->n = n;
+  x->map->N = m;
+  y->map->N = n;
   ierr = KSPSolve(ksp, x, y);CHKERRQ(ierr);
   ierr = KSPCheckSolve(ksp, pc, y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PC_Patch_Solve, pc, 0, 0, 0);CHKERRQ(ierr);
@@ -2788,6 +2836,7 @@ static PetscErrorCode PCUpdateMultiplicative_PATCH_Linear(PC pc, PetscInt i, Pet
 {
   PC_PATCH      *patch = (PC_PATCH *) pc->data;
   Mat multMat;
+  PetscInt n, m;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2807,9 +2856,15 @@ static PetscErrorCode PCUpdateMultiplicative_PATCH_Linear(PC pc, PetscInt i, Pet
     ierr = MatDestroy(&matSquare);CHKERRQ(ierr);
     ierr = ISDestroy(&rowis); CHKERRQ(ierr);
   }
-  ierr = MatMult(multMat, patch->patchUpdate[i], patch->patchRHSWithArtificial[i]); CHKERRQ(ierr);
-  ierr = VecScale(patch->patchRHSWithArtificial[i], -1.0); CHKERRQ(ierr);
-  ierr = PCPatch_ScatterLocal_Private(pc, i + pStart, patch->patchRHSWithArtificial[i], patch->localRHS, ADD_VALUES, SCATTER_REVERSE, SCATTER_WITHARTIFICIAL); CHKERRQ(ierr);
+  /* Disgusting trick to reuse work vectors */
+  ierr = MatGetLocalSize(multMat, &m, &n);CHKERRQ(ierr);
+  patch->patchUpdate->map->n = n;
+  patch->patchRHSWithArtificial->map->n = m;
+  patch->patchUpdate->map->N = n;
+  patch->patchRHSWithArtificial->map->N = m;
+  ierr = MatMult(multMat, patch->patchUpdate, patch->patchRHSWithArtificial); CHKERRQ(ierr);
+  ierr = VecScale(patch->patchRHSWithArtificial, -1.0); CHKERRQ(ierr);
+  ierr = PCPatch_ScatterLocal_Private(pc, i + pStart, patch->patchRHSWithArtificial, patch->localRHS, ADD_VALUES, SCATTER_REVERSE, SCATTER_WITHARTIFICIAL); CHKERRQ(ierr);
   if (!patch->save_operators) {
     ierr = MatDestroy(&multMat); CHKERRQ(ierr);
   }
@@ -2853,6 +2908,7 @@ static PetscErrorCode PCApply_PATCH(PC pc, Vec x, Vec y)
 
   ierr = VecSet(patch->localUpdate, 0.0);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(patch->gtolCounts, &pStart, NULL);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(PC_Patch_Solve, pc, 0, 0, 0);CHKERRQ(ierr);
   for (sweep = 0; sweep < nsweep; sweep++) {
     for (j = start[sweep]; j*inc[sweep] < end[sweep]*inc[sweep]; j += inc[sweep]) {
       PetscInt i       = patch->user_patches ? iterationSet[j] : j;
@@ -2863,14 +2919,15 @@ static PetscErrorCode PCApply_PATCH(PC pc, Vec x, Vec y)
       /* TODO: Squash out these guys in the setup as well. */
       if (len <= 0) continue;
       /* TODO: Do we need different scatters for X and Y? */
-      ierr = PCPatch_ScatterLocal_Private(pc, i+pStart, patch->localRHS, patch->patchRHS[i], INSERT_VALUES, SCATTER_FORWARD, SCATTER_INTERIOR);CHKERRQ(ierr);
-      ierr = (*patch->applysolver)(pc, i, patch->patchRHS[i], patch->patchUpdate[i]);CHKERRQ(ierr);
-      ierr = PCPatch_ScatterLocal_Private(pc, i+pStart, patch->patchUpdate[i], patch->localUpdate, ADD_VALUES, SCATTER_REVERSE, SCATTER_INTERIOR);CHKERRQ(ierr);
+      ierr = PCPatch_ScatterLocal_Private(pc, i+pStart, patch->localRHS, patch->patchRHS, INSERT_VALUES, SCATTER_FORWARD, SCATTER_INTERIOR);CHKERRQ(ierr);
+      ierr = (*patch->applysolver)(pc, i, patch->patchRHS, patch->patchUpdate);CHKERRQ(ierr);
+      ierr = PCPatch_ScatterLocal_Private(pc, i+pStart, patch->patchUpdate, patch->localUpdate, ADD_VALUES, SCATTER_REVERSE, SCATTER_INTERIOR);CHKERRQ(ierr);
       if(patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE) {
         ierr = (*patch->updatemultiplicative)(pc, i, pStart);CHKERRQ(ierr);
       }
     }
   }
+  ierr = PetscLogEventEnd(PC_Patch_Solve, pc, 0, 0, 0);CHKERRQ(ierr);
   if (patch->user_patches) {ierr = ISRestoreIndices(patch->iterationSet, &iterationSet);CHKERRQ(ierr);}
   /* XXX: should we do this on the global vector? */
   if (patch->partition_of_unity) {
@@ -2970,14 +3027,8 @@ static PetscErrorCode PCReset_PATCH(PC pc)
 
   ierr = VecDestroy(&patch->localRHS);CHKERRQ(ierr);
   ierr = VecDestroy(&patch->localUpdate);CHKERRQ(ierr);
-  if (patch->patchRHS) {
-    for (i = 0; i < patch->npatch; ++i) {ierr = VecDestroy(&patch->patchRHS[i]);CHKERRQ(ierr);}
-    ierr = PetscFree(patch->patchRHS);CHKERRQ(ierr);
-  }
-  if (patch->patchUpdate) {
-    for (i = 0; i < patch->npatch; ++i) {ierr = VecDestroy(&patch->patchUpdate[i]);CHKERRQ(ierr);}
-    ierr = PetscFree(patch->patchUpdate);CHKERRQ(ierr);
-  }
+  ierr = VecDestroy(&patch->patchRHS);CHKERRQ(ierr);
+  ierr = VecDestroy(&patch->patchUpdate);CHKERRQ(ierr);
   ierr = VecDestroy(&patch->dof_weights);CHKERRQ(ierr);
   if (patch->patch_dof_weights) {
     for (i = 0; i < patch->npatch; ++i) {ierr = VecDestroy(&patch->patch_dof_weights[i]);CHKERRQ(ierr);}
@@ -2991,10 +3042,7 @@ static PetscErrorCode PCReset_PATCH(PC pc)
     for (i = 0; i < patch->npatch; ++i) {ierr = MatDestroy(&patch->matWithArtificial[i]);CHKERRQ(ierr);}
     ierr = PetscFree(patch->matWithArtificial);CHKERRQ(ierr);
   }
-  if (patch->patchRHSWithArtificial) {
-    for (i = 0; i < patch->npatch; ++i) {ierr = VecDestroy(&patch->patchRHSWithArtificial[i]);CHKERRQ(ierr);}
-    ierr = PetscFree(patch->patchRHSWithArtificial);CHKERRQ(ierr);
-  }
+  ierr = VecDestroy(&patch->patchRHSWithArtificial);CHKERRQ(ierr);
   if(patch->dofMappingWithoutToWithArtificial) {
     for (i = 0; i < patch->npatch; ++i) {ierr = ISDestroy(&patch->dofMappingWithoutToWithArtificial[i]);CHKERRQ(ierr);}
     ierr = PetscFree(patch->dofMappingWithoutToWithArtificial);CHKERRQ(ierr);
@@ -3077,7 +3125,8 @@ static PetscErrorCode PCSetFromOptions_PATCH(PetscOptionItems *PetscOptionsObjec
   ierr = PetscSNPrintf(option, PETSC_MAX_PATH_LEN, "-%s_patch_local_type", patch->classname);CHKERRQ(ierr);
   ierr = PetscOptionsEnum(option,"Type of local solver composition (additive or multiplicative)","PCPatchSetLocalComposition",PCCompositeTypes,(PetscEnum)loctype,(PetscEnum*)&loctype,&flg);CHKERRQ(ierr);
   if(flg) { ierr = PCPatchSetLocalComposition(pc, loctype);CHKERRQ(ierr);}
-
+  ierr = PetscSNPrintf(option, PETSC_MAX_PATH_LEN, "-%s_patch_dense_inverse", patch->classname);CHKERRQ(ierr);
+  ierr = PetscOptionsBool(option, "Compute inverses of patch matrices and apply directly? Ignores KSP/PC settings on patch.", "PCPatchSetDenseInverse", patch->denseinverse, &patch->denseinverse, &flg);CHKERRQ(ierr);
   ierr = PetscSNPrintf(option, PETSC_MAX_PATH_LEN, "-%s_patch_construct_dim", patch->classname);CHKERRQ(ierr);
   ierr = PetscOptionsInt(option, "What dimension of mesh point to construct patches by? (0 = vertices)", "PCPATCH", patch->dim, &patch->dim, &dimflg);CHKERRQ(ierr);
   ierr = PetscSNPrintf(option, PETSC_MAX_PATH_LEN, "-%s_patch_construct_codim", patch->classname);CHKERRQ(ierr);
@@ -3154,6 +3203,10 @@ static PetscErrorCode PCSetUpOnBlocks_PATCH(PC pc)
     /* Can't do this here because the sub KSPs don't have an operator attached yet. */
     PetscFunctionReturn(0);
   }
+  if (patch->denseinverse) {
+    /* No solvers */
+    PetscFunctionReturn(0);
+  }
   for (i = 0; i < patch->npatch; ++i) {
     if (!((KSP) patch->solver[i])->setfromoptionscalled) {
       ierr = KSPSetFromOptions((KSP) patch->solver[i]);CHKERRQ(ierr);
@@ -3198,23 +3251,27 @@ static PetscErrorCode PCView_PATCH(PC pc, PetscViewer viewer)
   else if (patch->patchconstructop == PCPatchConstruct_User)  {ierr = PetscViewerASCIIPrintf(viewer, "Patch construction operator: user-specified\n");CHKERRQ(ierr);}
   else                                                        {ierr = PetscViewerASCIIPrintf(viewer, "Patch construction operator: unknown\n");CHKERRQ(ierr);}
 
-  if (patch->isNonlinear) {
-    ierr = PetscViewerASCIIPrintf(viewer, "SNES on patches (all same):\n");CHKERRQ(ierr);
+  if (patch->denseinverse) {
+    ierr = PetscViewerASCIIPrintf(viewer, "Explicitly forming dense inverse and applying patch solver via MatMult.\n");CHKERRQ(ierr);
   } else {
-    ierr = PetscViewerASCIIPrintf(viewer, "KSP on patches (all same):\n");CHKERRQ(ierr);
-  }
-  if (patch->solver) {
-    ierr = PetscViewerGetSubViewer(viewer, PETSC_COMM_SELF, &sviewer);CHKERRQ(ierr);
-    if (!rank) {
-      ierr = PetscViewerASCIIPushTab(sviewer);CHKERRQ(ierr);
-      ierr = PetscObjectView(patch->solver[0], sviewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPopTab(sviewer);CHKERRQ(ierr);
+    if (patch->isNonlinear) {
+      ierr = PetscViewerASCIIPrintf(viewer, "SNES on patches (all same):\n");CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer, "KSP on patches (all same):\n");CHKERRQ(ierr);
     }
-    ierr = PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &sviewer);CHKERRQ(ierr);
-  } else {
-    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "Solver not yet set.\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    if (patch->solver) {
+      ierr = PetscViewerGetSubViewer(viewer, PETSC_COMM_SELF, &sviewer);CHKERRQ(ierr);
+      if (!rank) {
+        ierr = PetscViewerASCIIPushTab(sviewer);CHKERRQ(ierr);
+        ierr = PetscObjectView(patch->solver[0], sviewer);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPopTab(sviewer);CHKERRQ(ierr);
+      }
+      ierr = PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &sviewer);CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "Solver not yet set.\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    }
   }
   ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -3276,6 +3333,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Patch(PC pc)
   patch->viewPoints         = PETSC_FALSE;
   patch->viewSection        = PETSC_FALSE;
   patch->viewMatrix         = PETSC_FALSE;
+  patch->densesolve         = NULL;
   patch->setupsolver        = PCSetUp_PATCH_Linear;
   patch->applysolver        = PCApply_PATCH_Linear;
   patch->resetsolver        = PCReset_PATCH_Linear;
