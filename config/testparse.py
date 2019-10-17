@@ -176,9 +176,8 @@ def _getNewArgs(args):
   if not args.strip(): return args
   for varset in re.split('(^|\W)-(?=[a-zA-Z])',args):
     if not varset.strip(): continue
-    if '{{' not in varset:
-      if 'separate' not in varset:
-        newargs+="-"+varset.strip()+" "
+    if '{{' in varset and 'separate' in varset: continue
+    newargs+="-"+varset.strip()+" "
 
   return newargs
 
