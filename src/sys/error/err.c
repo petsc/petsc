@@ -9,12 +9,12 @@
    stay stable for a while. When things changed, we just need to add new files to the table.
  */
 static const char* PetscAbortSourceFiles[] = {
-  "NotFound",                       /* 0, not found in petsc, but may be in users' code if they called PETSCABORT. */
+  "Souce code of main",          /* 0 */
+  "Not Found",                  /* 1, not found in petsc, but may be in users' code if they called PETSCABORT. */
   "sys/error/adebug.c",
-  "sys/error/err.c",
   "src/sys/error/errstop.c",
   "sys/error/fp.c",
-  "sys/error/signal.c",             /* 5 */
+  "sys/error/signal.c",           /* 5 */
   "sys/ftn-custom/zutils.c",
   "sys/logging/utils/stagelog.c",
   "sys/mpiuni/mpitime.c",
@@ -34,8 +34,8 @@ PetscErrorCode PetscAbortFindSourceFile_Private(const char* filepath, PetscInt *
 
   PetscFunctionBegin;
   PetscValidIntPointer(idx,2);
-  *idx = 0;
-  for (i=1; i<n; i++) {
+  *idx = 1;
+  for (i=2; i<n; i++) {
     ierr = PetscFixFilename(PetscAbortSourceFiles[i],subpath);CHKERRQ(ierr);
     ierr = PetscStrendswith(filepath,subpath,&match);CHKERRQ(ierr);
     if (match) {*idx = i; break;}
@@ -365,7 +365,7 @@ $    PetscError(MPI_Comm comm,PetscErrorCode n,PetscErrorType p,char *message)
    BUT this routine does call regular PETSc functions that may call error handlers, this is problematic and could be fixed by never calling other PETSc routines
    but this annoying.
 
-.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), SETERRQ(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), PetscErrorMessage()
+.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), SETERRQ(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), PetscErrorMessage(), PETSCABORT()
 @*/
 PetscErrorCode PetscError(MPI_Comm comm,int line,const char *func,const char *file,PetscErrorCode n,PetscErrorType p,const char *mess,...)
 {
@@ -393,14 +393,17 @@ PetscErrorCode PetscError(MPI_Comm comm,int line,const char *func,const char *fi
   else     ierr = (*eh->handler)(comm,line,func,file,n,p,lbuf,eh->ctx);
 
   /*
-      If this is called from the main() routine we call PETSCABORT instead of
+      If this is called from the main() routine we call MPI_Abort() instead of
     return to allow the parallel program to be properly shutdown.
 
-    Since this is in the error handler we don't check the errors below. Of course,
-    PetscStrncmp() does its own error checking which is problamatic
+    Does not call PETSCABORT() since that would provide the wrong source file and line number information
   */
   PetscStrncmp(func,"main",4,&ismain);
-  if (ismain) PETSCABORT(PETSC_COMM_WORLD,(int)ierr);
+  if (ismain) {
+    PetscMPIInt    errcode;                                         \
+    errcode = (PetscMPIInt)(0 + line*1000 + ierr);   \
+    MPI_Abort(comm,errcode);
+  }
 
 #if defined(PETSC_CLANGUAGE_CXX)
   if (p == PETSC_ERROR_IN_CXX) {
