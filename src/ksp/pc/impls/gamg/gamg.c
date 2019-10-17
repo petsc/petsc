@@ -112,9 +112,6 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
     IS             is_eq_newproc,is_eq_num,is_eq_num_prim,new_eq_indices;
     nloc_old = ncrs_eq/cr_bs;
     if (ncrs_eq % cr_bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ncrs_eq %D not divisible by cr_bs %D",ncrs_eq,cr_bs);
-#if defined PETSC_GAMG_USE_LOG
-    ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET12],0,0,0,0);CHKERRQ(ierr);
-#endif
     /* get new_size and rfactor */
     if (pc_gamg->layout_type==PCGAMG_LAYOUT_SPREAD || !pc_gamg->repart) {
       /* find factor */
@@ -137,15 +134,15 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
         else expand_factor = rfactor;
       }
       new_size = size/rfactor; /* make new size one that is factor */
-      if (new_size==nactive) {
-        *a_Amat_crs = Cmat; /* output - no repartitioning or reduction, bail out because nested here */
+      if (new_size==nactive) { /* no repartitioning or reduction, bail out because nested here (rare) */
+        *a_Amat_crs = Cmat;
         ierr = PetscInfo2(pc,"Finding factorable processor set stopped reduction: new_size=%d, neq(loc)=%D\n",new_size,ncrs_eq);CHKERRQ(ierr);
-#if defined PETSC_GAMG_USE_LOG
-        ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET12],0,0,0,0);CHKERRQ(ierr);
-#endif
         PetscFunctionReturn(0);
       }
     }
+#if defined PETSC_GAMG_USE_LOG
+    ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET12],0,0,0,0);CHKERRQ(ierr);
+#endif
     /* make 'is_eq_newproc' */
     ierr = PetscMalloc1(size, &counts);CHKERRQ(ierr);
     if (pc_gamg->repart) {
@@ -243,15 +240,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
       ierr = PetscFree(newproc_idx);CHKERRQ(ierr);
     } else { /* simple aggregation of parts -- 'is_eq_newproc' */
       PetscInt targetPE;
-      if (new_size==nactive) {
-        *a_Amat_crs = Cmat; /* output - no repartitioning or reduction, bail out because nested here */
-        ierr        = PetscFree(counts);CHKERRQ(ierr);
-        ierr = PetscInfo2(pc,"Aggregate processors noop: new_size=%d, neq(loc)=%D\n",new_size,ncrs_eq);CHKERRQ(ierr);
-#if defined PETSC_GAMG_USE_LOG
-        ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET12],0,0,0,0);CHKERRQ(ierr);
-#endif
-        PetscFunctionReturn(0);
-      }
+      if (new_size==nactive) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"new_size==nactive. Should not happen");
       ierr = PetscInfo1(pc,"Number of equations (loc) %D with simple aggregation\n",ncrs_eq);CHKERRQ(ierr);
       targetPE = (rank/rfactor)*expand_factor;
       ierr     = ISCreateStride(comm, ncrs_eq, targetPE, 0, &is_eq_newproc);CHKERRQ(ierr);
@@ -271,9 +260,6 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
     ncrs_new = ncrs_eq_new/cr_bs;
 
     ierr = PetscFree(counts);CHKERRQ(ierr);
-#if defined PETSC_GAMG_USE_LOG
-    ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET12],0,0,0,0);CHKERRQ(ierr);
-#endif
     /* data movement scope -- this could be moved to subclasses so that we don't try to cram all auxilary data into some complex abstracted thing */
     {
       Vec            src_crd, dest_crd;
@@ -425,6 +411,9 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
         }
       }
     }
+#if defined PETSC_GAMG_USE_LOG
+    ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET12],0,0,0,0);CHKERRQ(ierr);
+#endif
   }
   PetscFunctionReturn(0);
 }
