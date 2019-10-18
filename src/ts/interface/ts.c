@@ -3740,7 +3740,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
     ts->steprestart       = PETSC_TRUE;
     ts->steprollback      = PETSC_FALSE;
   }
-  if (ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP && ts->ptime + ts->time_step > ts->max_time) ts->time_step = ts->max_time - ts->ptime;
+  if (ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP && ts->ptime < ts->max_time && ts->ptime + ts->time_step > ts->max_time) ts->time_step = ts->max_time - ts->ptime;
   ts->reason = TS_CONVERGED_ITERATING;
 
   ierr = TSViewFromOptions(ts,NULL,"-ts_view_pre");CHKERRQ(ierr);
