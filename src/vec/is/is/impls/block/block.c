@@ -216,6 +216,92 @@ static PetscErrorCode ISSorted_Block(IS is,PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode ISSortedLocal_Block(IS is,PetscBool *flg)
+{
+  IS_Block       *sub = (IS_Block*)is->data;
+  PetscInt       n, bs, i, *idx;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscLayoutGetLocalSize(is->map, &n);CHKERRQ(ierr);
+  ierr = PetscLayoutGetBlockSize(is->map, &bs);CHKERRQ(ierr);
+  n   /= bs;
+  idx  = sub->idx;
+  for (i = 1; i < n; i++) if (idx[i] < (idx[i - 1] + bs - 1)) break;
+  if (i < n) *flg = PETSC_FALSE;
+  else       *flg = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode ISUniqueLocal_Block(IS is,PetscBool *flg)
+{
+  IS_Block       *sub = (IS_Block*)is->data;
+  PetscInt       n, bs, i, *idx, *idxcopy = NULL;
+  PetscBool      sortedLocal;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscLayoutGetLocalSize(is->map, &n);CHKERRQ(ierr);
+  ierr = PetscLayoutGetBlockSize(is->map, &bs);CHKERRQ(ierr);
+  n   /= bs;
+  idx  = sub->idx;
+  ierr = ISGetInfo(is,IS_SORTED,IS_LOCAL,&sortedLocal);CHKERRQ(ierr);
+  if (!sortedLocal) {
+    ierr = PetscMalloc1(n, &idxcopy);CHKERRQ(ierr);
+    ierr = PetscMemcpy(idxcopy, idx, n * sizeof(*idxcopy));CHKERRQ(ierr);
+    ierr = PetscSortInt(n, idxcopy);CHKERRQ(ierr);
+    idx = idxcopy;
+  }
+  for (i = 1; i < n; i++) if (idx[i] <= (idx[i - 1] + bs - 1)) break;
+  if (i < n) *flg = PETSC_FALSE;
+  else       *flg = PETSC_TRUE;
+  ierr = PetscFree(idxcopy);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode ISPermutationLocal_Block(IS is,PetscBool *flg)
+{
+  IS_Block       *sub = (IS_Block*)is->data;
+  PetscInt       n, bs, i, *idx, *idxcopy = NULL;
+  PetscBool      sortedLocal;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscLayoutGetLocalSize(is->map, &n);CHKERRQ(ierr);
+  ierr = PetscLayoutGetBlockSize(is->map, &bs);CHKERRQ(ierr);
+  n   /= bs;
+  idx  = sub->idx;
+  ierr = ISGetInfo(is,IS_SORTED,IS_LOCAL,&sortedLocal);CHKERRQ(ierr);
+  if (!sortedLocal) {
+    ierr = PetscMalloc1(n, &idxcopy);CHKERRQ(ierr);
+    ierr = PetscMemcpy(idxcopy, idx, n * sizeof(*idxcopy));CHKERRQ(ierr);
+    ierr = PetscSortInt(n, idxcopy);CHKERRQ(ierr);
+    idx = idxcopy;
+  }
+  for (i = 0; i < n; i++) if (idx[i] != i*bs) break;
+  if (i < n) *flg = PETSC_FALSE;
+  else       *flg = PETSC_TRUE;
+  ierr = PetscFree(idxcopy);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode ISIntervalLocal_Block(IS is,PetscBool *flg)
+{
+  IS_Block       *sub = (IS_Block*)is->data;
+  PetscInt       n, bs, i, *idx;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscLayoutGetLocalSize(is->map, &n);CHKERRQ(ierr);
+  ierr = PetscLayoutGetBlockSize(is->map, &bs);CHKERRQ(ierr);
+  n   /= bs;
+  idx  = sub->idx;
+  for (i = 1; i < n; i++) if (idx[i] != (idx[i - 1] + bs)) break;
+  if (i < n) *flg = PETSC_FALSE;
+  else       *flg = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode ISDuplicate_Block(IS is,IS *newIS)
 {
   PetscErrorCode ierr;
@@ -334,7 +420,19 @@ static struct _ISOps myops = { ISGetIndices_Block,
                                ISOnComm_Block,
                                ISSetBlockSize_Block,
                                0,
-                               ISLocate_Block};
+                               ISLocate_Block,
+                               /* we can have specialized local routines for determining properties,
+                                * but unless the block size is the same on each process (which is not guaranteed at
+                                * the moment), then trying to do something specialized for global properties is too
+                                * complicated */
+                               ISSortedLocal_Block,
+                               NULL,
+                               ISUniqueLocal_Block,
+                               NULL,
+                               ISPermutationLocal_Block,
+                               NULL,
+                               ISIntervalLocal_Block,
+                               NULL};
 
 /*@
    ISBlockSetIndices - The indices are relative to entries, not blocks.

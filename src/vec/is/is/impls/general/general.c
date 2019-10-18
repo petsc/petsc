@@ -557,7 +557,18 @@ static struct _ISOps myops = { ISGetIndices_General,
                                ISOnComm_General,
                                ISSetBlockSize_General,
                                ISContiguousLocal_General,
-                               ISLocate_General};
+                               ISLocate_General,
+                               /* no specializations of {sorted,unique,perm,interval}{local,global}
+                                * because the default checks in ISGetInfo_XXX in index.c are exactly
+                                * what we would do for ISGeneral */
+                               NULL,
+                               NULL,
+                               NULL,
+                               NULL,
+                               NULL,
+                               NULL,
+                               NULL,
+                               NULL};
 
 PETSC_INTERN PetscErrorCode ISSetUp_General(IS);
 

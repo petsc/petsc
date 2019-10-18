@@ -38,8 +38,8 @@ struct _ISOps {
   PetscErrorCode (*uniqueglobal)(IS,PetscBool*);
   PetscErrorCode (*permlocal)(IS,PetscBool*);
   PetscErrorCode (*permglobal)(IS,PetscBool*);
-  PetscErrorCode (*intervalglobal)(IS,PetscBool*);
   PetscErrorCode (*intervallocal)(IS,PetscBool*);
+  PetscErrorCode (*intervalglobal)(IS,PetscBool*);
 };
 
 typedef enum {IS_INFO_UNKNOWN=0, IS_INFO_FALSE=1, IS_INFO_TRUE=2} ISInfoBool;

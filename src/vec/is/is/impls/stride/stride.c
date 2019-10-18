@@ -251,6 +251,36 @@ PetscErrorCode ISSorted_Stride(IS is,PetscBool * flg)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode ISUniqueLocal_Stride(IS is, PetscBool *flg)
+{
+  IS_Stride *sub = (IS_Stride*)is->data;
+
+  PetscFunctionBegin;
+  if (!(is->map->n) || sub->step != 0) *flg = PETSC_TRUE;
+  else *flg = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode ISPermutationLocal_Stride(IS is, PetscBool *flg)
+{
+  IS_Stride *sub = (IS_Stride*)is->data;
+
+  PetscFunctionBegin;
+  if (!(is->map->n) || (PetscAbsInt(sub->step) == 1 && is->min == 0)) *flg = PETSC_TRUE;
+  else *flg = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode ISIntervalLocal_Stride(IS is, PetscBool *flg)
+{
+  IS_Stride *sub = (IS_Stride*)is->data;
+
+  PetscFunctionBegin;
+  if (!(is->map->n) || sub->step == 1) *flg = PETSC_TRUE;
+  else *flg = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode ISOnComm_Stride(IS is,MPI_Comm comm,PetscCopyMode mode,IS *newis)
 {
   PetscErrorCode ierr;
@@ -304,7 +334,15 @@ static struct _ISOps myops = { ISGetIndices_Stride,
                                ISOnComm_Stride,
                                ISSetBlockSize_Stride,
                                ISContiguousLocal_Stride,
-                               ISLocate_Stride};
+                               ISLocate_Stride,
+                               ISSorted_Stride,
+                               NULL,
+                               ISUniqueLocal_Stride,
+                               NULL,
+                               ISPermutationLocal_Stride,
+                               NULL,
+                               ISIntervalLocal_Stride,
+                               NULL};
 
 
 /*@
