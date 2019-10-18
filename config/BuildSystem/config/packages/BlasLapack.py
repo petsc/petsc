@@ -172,6 +172,7 @@ class Configure(config.package.Package):
     # check that user has used the options properly
     if self.f2cblaslapack.found:
       self.f2c = 1
+      # TODO: use self.f2cblaslapack.libDir directly
       libDir = os.path.join(self.f2cblaslapack.directory,'lib')
       f2cBlas = [os.path.join(libDir,'libf2cblas.a')]
       f2cLapack = [os.path.join(libDir,'libf2clapack.a')]
@@ -180,15 +181,16 @@ class Configure(config.package.Package):
       raise RuntimeError('--download-f2cblaslapack libraries cannot be used')
     if self.fblaslapack.found:
       self.f2c = 0
+      # TODO: use self.fblaslapack.libDir directly
       libDir = os.path.join(self.fblaslapack.directory,'lib')
       yield ('fblaslapack', os.path.join(libDir,'libfblas.a'), os.path.join(libDir,'libflapack.a'), '32','no')
       raise RuntimeError('--download-fblaslapack libraries cannot be used')
     if self.openblas.found:
       self.f2c = 0
-      libDir = os.path.join(self.openblas.directory,'lib')
-      if self.argDB['download-openblas-64-bit-blas-indices'] or self.argDB['with-64-bit-blas-indices']: known = '64'
-      else: known = '32'
-      yield ('openblas', None, os.path.join(libDir,'libopenblas.a'),known,self.openblas.usesopenmp)
+      if self.openblas.libDir:
+        yield ('OpenBLAS with full path', None, os.path.join(self.openblas.libDir,'libopenblas.a'),self.openblas.known64,self.openblas.usesopenmp)
+      else:
+        yield ('OpenBLAS', None, self.openblas.lib,self.openblas.known64,self.openblas.usesopenmp)
       raise RuntimeError('--download-openblas libraries cannot be used')
     if 'with-blas-lib' in self.argDB and not 'with-lapack-lib' in self.argDB:
       raise RuntimeError('If you use the --with-blas-lib=<lib> you must also use --with-lapack-lib=<lib> option')
@@ -221,6 +223,8 @@ class Configure(config.package.Package):
         yield ('Default compiler libraries', '', '','unknown','unknow')
         yield ('Default compiler locations', 'libblas.a', 'liblapack.a','unknown','unknow')
         yield ('Default compiler locations /usr/local/lib', os.path.join('/usr','local','lib','libblas.a'), os.path.join('/usr','local','lib','liblapack.a'),'unknown','unknow')
+        yield ('OpenBLAS default compiler locations', None, 'libopenblas.a','unknown','unknow')
+        yield ('OpenBLAS default compiler locations /usr/local/lib', None, os.path.join('/usr','local','lib','libopenblas.a'),'unknown','unknow')
         yield ('Default compiler locations with gfortran', None, ['liblapack.a', 'libblas.a','libgfortran.a'],'unknown','unknow')
         self.logWrite('Did not detect default BLAS and LAPACK locations so using the value of MKLROOT to search as --with-blas-lapack-dir='+mkl)
         self.argDB['with-blaslapack-dir'] = mkl
@@ -292,6 +296,7 @@ class Configure(config.package.Package):
 
       self.log.write('Files and directories in that directory:\n'+str(os.listdir(dir))+'\n')
       yield ('User specified installation root (HPUX)', os.path.join(dir, 'libveclib.a'),  os.path.join(dir, 'liblapack.a'),'32','unkown')
+      yield ('User specified OpenBLAS', None, os.path.join(dir, 'libopenblas.a'),'unknown','unkown')     
       yield ('User specified installation root (F2CBLASLAPACK)', os.path.join(dir,'libf2cblas.a'), os.path.join(dir, 'libf2clapack.a'),'32','no')
       yield ('User specified installation root(FBLASLAPACK)', os.path.join(dir, 'libfblas.a'),   os.path.join(dir, 'libflapack.a'),'32','no')
       # Check MATLAB [ILP64] MKL
@@ -364,7 +369,7 @@ class Configure(config.package.Package):
       yield ('User specified ATLAS Linux installation root', [os.path.join(dir, 'libcblas.a'),os.path.join(dir, 'libf77blas.a'), os.path.join(dir, 'libatlas.a')],  [os.path.join(dir, 'liblapack.a')],'32','no')
       yield ('User specified ATLAS Linux installation root', [os.path.join(dir, 'libf77blas.a'), os.path.join(dir, 'libatlas.a')],  [os.path.join(dir, 'liblapack.a')],'32','no')
       # Search for liblapack.a and libblas.a after the implementations with more specific name to avoid
-      # finding these in /usr/lib despite using -L<blaslapack-dir> while attempting to get a different library.
+      # finding these in /usr/lib despite using -L<blaslapack-dir> while attesmpting to get a different library.
       yield ('User specified installation root', os.path.join(dir, 'libblas.a'),    os.path.join(dir, 'liblapack.a'),'unknown','unknow')
       raise RuntimeError('You set a value for --with-blaslapack-dir=<dir>, but '+self.argDB['with-blaslapack-dir']+' cannot be used\n')
     if self.defaultPrecision == '__float128':
@@ -372,6 +377,7 @@ class Configure(config.package.Package):
     # Try compiler defaults
     yield ('Default compiler libraries', '', '','unknown','unknow')
     yield ('Default compiler locations', 'libblas.a', 'liblapack.a','unknown','unknow')
+    yield ('Default OpenBLAS', None, 'libopenblas.a','unknown','unkown')
     # Intel on Mac
     yield ('User specified MKL Mac-64', None, [os.path.join('/opt','intel','mkl','lib','libmkl_intel'+ILP64+'.a'),'mkl_'+ITHREAD,'mkl_core','pthread'],known,ompthread)
     # Try Microsoft Windows location
@@ -398,6 +404,7 @@ class Configure(config.package.Package):
     # /usr/local/lib
     dir = os.path.join('/usr','local','lib')
     yield ('Default compiler locations /usr/local/lib', os.path.join(dir,'libblas.a'), os.path.join(dir,'liblapack.a'),'unknown','unknow')
+    yield ('Default compiler locations /usr/local/lib', None, os.path.join(dir,'libopenblas.a'),'unknown','unknow')
     yield ('Default compiler locations with gfortran', None, ['liblapack.a', 'libblas.a','libgfortran.a'],'unknown','unknow')
     yield ('Default Atlas location',['libcblas.a','libf77blas.a','libatlas.a'],  ['liblapack.a'],'unknown','unknow')
     yield ('Default Atlas location',['libf77blas.a','libatlas.a'],  ['liblapack.a'],'unknown','unknow')
