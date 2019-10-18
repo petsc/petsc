@@ -483,7 +483,7 @@ PETSC_EXTERN PetscErrorCode PetscAbortFindSourceFile_Private(const char*,PetscIn
    If XX is zero, this means that the call was made in the routine main().
    If XX is one, that means 1) the file is not in PETSc (it may be in users code); OR 2) the file is in PETSc but PetscAbortSourceFiles[]
      is out of date. PETSc developers have to update it.
-   Othersize, look up the value of XX in the table PetscAbortSourceFiles[] in src/sys/error/err.c to map XX back to the source file where the PETSCABORT() was called.
+   Otherwise, look up the value of XX in the table PetscAbortSourceFiles[] in src/sys/error/err.c to map XX back to the source file where the PETSCABORT() was called.
 
 M*/
 #define PETSCABORT(comm,ierr)  \

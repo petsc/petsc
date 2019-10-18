@@ -400,8 +400,8 @@ PetscErrorCode PetscError(MPI_Comm comm,int line,const char *func,const char *fi
   */
   PetscStrncmp(func,"main",4,&ismain);
   if (ismain) {
-    PetscMPIInt    errcode;                                         \
-    errcode = (PetscMPIInt)(0 + line*1000 + ierr);   \
+    PetscMPIInt    errcode;
+    errcode = (PetscMPIInt)(0 + line*1000 + ierr);
     MPI_Abort(comm,errcode);
   }
 
