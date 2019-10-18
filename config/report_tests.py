@@ -112,7 +112,10 @@ def summarize_results(directory,make,ntime,etime):
   os.chdir(startdir)
   return
   
-def generate_xml(directory):
+def get_test_data(directory):
+    """
+    Create dictionary structure with test data
+    """
     startdir= os.getcwd()
     try:
         os.chdir(directory)
@@ -143,6 +146,7 @@ def generate_xml(directory):
         if not os.path.exists(probdir):
             probfolder = probfolder.split('_')[0]
             probdir = os.path.join('..', prob_subdir, 'examples', testtype, probfolder)
+        probfullpath=os.path.normpath(os.path.join(directory,probdir))
         # assemble the final full folder path for problem outputs and read the files
         try:
             with open('%s/diff-%s.out'%(probdir, probfolder),'r') as probdiff:
@@ -183,7 +187,9 @@ def generate_xml(directory):
             'skipped':False,
             'diff':difflines,
             'stdout':stdoutlines,
-            'stderr':stderrlines
+            'stderr':stderrlines,
+            'probdir':probfullpath,
+            'fullname':fname
         }
         # process the *.counts file and increment problem status trackers
         if len(testdata[pkgname]['problems'][probname]['stderr'])>0:
@@ -205,8 +211,52 @@ def generate_xml(directory):
                     continue
                 else:
                     testdata[pkgname][l[0]] += 1
-    # at this point we have the complete test results in dictionary structures
-    # we can now write this information into a jUnit formatted XLM file
+    os.chdir(startdir)  # Keep function in good state
+    return testdata
+
+def show_fail(testdata):
+    """ Show the failures and commands to run them
+    """
+    for pkg in testdata.keys():
+        testsuite = testdata[pkg]
+        for prob in testsuite['problems'].keys():
+            p = testsuite['problems'][prob]
+            cdbase='cd '+p['probdir']+' && '
+            if p['skipped']:
+                # if we got here, the TAP output shows a skipped test
+                pass
+            elif len(p['stderr'])>0:
+                # if we got here, the test crashed with an error
+                # we show the stderr output under <error>
+                shbase=os.path.join(p['probdir'], p['fullname'])
+                shfile=shbase+".sh"
+                if not os.path.exists(shfile):
+                    shfile=glob.glob(shbase+"*")[0]
+                with open(shfile, 'r') as sh:
+                    cmd = sh.read()
+                print(p['fullname']+': '+cdbase+cmd.split('>')[0])
+            elif len(p['diff'])>0:
+                # if we got here, the test output did not match the stored output file
+                # we show the diff between new output and old output under <failure>
+                shbase=os.path.join(p['probdir'], 'diff-'+p['fullname'])
+                shfile=shbase+".sh"
+                if not os.path.exists(shfile):
+                    shfile=glob.glob(shbase+"*")[0]
+                with open(shfile, 'r') as sh:
+                    cmd = sh.read()
+                print(p['fullname']+': '+cdbase+cmd.split('>')[0])
+                pass
+    return
+
+def generate_xml(testdata,directory):
+    """ write testdata information into a jUnit formatted XLM file
+    """
+    startdir= os.getcwd()
+    try:
+        os.chdir(directory)
+    except OSError:
+        print('# No tests run')
+        return
     junit = open('../testresults.xml', 'w')
     junit.write('<?xml version="1.0" ?>\n')
     junit.write('<testsuites>\n')
@@ -274,16 +324,24 @@ def main():
     parser.add_option('-t', '--time', dest='time',
                       help='-t n: Report on the n number expensive jobs',
                       default=0)
+    parser.add_option('-f', '--fail', dest='show_fail', action="store_true", 
+                      help='Show the failed tests and how to run them')
     options, args = parser.parse_args()
 
     # Process arguments
     if len(args) > 0:
       parser.print_usage()
       return
-
-    summarize_results(options.directory,options.make,int(options.time),options.elapsed_time)
     
-    generate_xml(options.directory)
+
+    if not options.show_fail:
+      summarize_results(options.directory,options.make,int(options.time),options.elapsed_time)
+    testresults=get_test_data(options.directory)
+
+    if options.show_fail:
+      show_fail(testresults)
+    else:
+      generate_xml(testresults, options.directory)
 
 if __name__ == "__main__":
         main()

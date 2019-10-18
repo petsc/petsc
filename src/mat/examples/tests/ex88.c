@@ -63,7 +63,7 @@ static PetscErrorCode TestMatrix(Mat A,Vec X,Vec Y,Vec Z)
   PetscScalar    multadd[2]  = {-6.8966198500000000e+08,-2.0310609940000000e+09};
   PetscScalar    multtadd[2] = {-9.1052873900000000e+08,-1.8101942400000000e+09};
   PetscReal      nrm;
-    
+
   PetscFunctionBegin;
   ierr = PetscObjectGetType((PetscObject)A,&mattypename);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"\nMatrix of type: %s\n",mattypename);CHKERRQ(ierr);

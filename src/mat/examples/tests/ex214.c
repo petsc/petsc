@@ -97,12 +97,20 @@ int main(int argc,char **args)
     /* ---------------------------------------------------------- */
     ierr = MatMatMult(A,C,MAT_INITIAL_MATRIX,2.0,&RHS);CHKERRQ(ierr);
     ierr = MatMatSolve(F,RHS,X);CHKERRQ(ierr);
-
     /* Check the error */
     ierr = MatAXPY(X,-1.0,C,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatNorm(X,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
     if (norm > tol) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"(1) MatMatSolve: Norm of error %g\n",norm);CHKERRQ(ierr);
+    }
+
+    /* Test X=RHS */
+    ierr = MatMatSolve(F,RHS,RHS);CHKERRQ(ierr);
+    /* Check the error */
+    ierr = MatAXPY(RHS,-1.0,C,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = MatNorm(RHS,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
+    if (norm > tol) {
+      ierr = PetscPrintf(PETSC_COMM_SELF,"(1.1) MatMatSolve: Norm of error %g\n",norm);CHKERRQ(ierr);
     }
 
     /* (2) Test MatMatSolve() for inv(A) with dense RHS:

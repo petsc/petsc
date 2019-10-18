@@ -1,4 +1,4 @@
-static char help[] = "Tests MatZeroRows and MatZeroRowsColumns for MatShell()\n\n";
+static char help[] = "Tests various routines for MATSHELL\n\n";
 
 #include <petscmat.h>
 
@@ -49,11 +49,11 @@ int main(int argc,char **args)
   PetscInt       i,j,m = PETSC_DECIDE,n = PETSC_DECIDE,M = 17,N = 15,s1,s2;
   PetscInt       test, ntest = 2;
   PetscMPIInt    rank,size;
-  PetscBool      nc = PETSC_FALSE, cong;
+  PetscBool      nc = PETSC_FALSE, cong, flg;
   PetscBool      ronl = PETSC_TRUE;
-  PetscBool      randomize = PETSC_FALSE;
+  PetscBool      randomize = PETSC_FALSE, submat = PETSC_FALSE;
   PetscBool      keep = PETSC_FALSE;
-  PetscBool      testzerorows = PETSC_TRUE, testdiagscale = PETSC_TRUE, testgetdiag = PETSC_TRUE;
+  PetscBool      testzerorows = PETSC_TRUE, testdiagscale = PETSC_TRUE, testgetdiag = PETSC_TRUE, testsubmat = PETSC_TRUE;
   PetscBool      testshift = PETSC_TRUE, testscale = PETSC_TRUE, testdup = PETSC_TRUE, testreset = PETSC_TRUE;
   PetscErrorCode ierr;
 
@@ -67,6 +67,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetBool(NULL,NULL,"-square_nc",&nc,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-rows_only",&ronl,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-randomize",&randomize,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-submat",&submat,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-test_zerorows",&testzerorows,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-test_diagscale",&testdiagscale,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-test_getdiag",&testgetdiag,NULL);CHKERRQ(ierr);
@@ -74,6 +75,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetBool(NULL,NULL,"-test_scale",&testscale,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-test_dup",&testdup,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-test_reset",&testreset,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-test_submat",&testsubmat,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-loop",&ntest,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,NULL,"-tol",&tol,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetScalar(NULL,NULL,"-diag",&diag,NULL);CHKERRQ(ierr);
@@ -89,7 +91,6 @@ int main(int argc,char **args)
   ierr = MatCreateDense(PETSC_COMM_WORLD,m,n,M,N,NULL,&A);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
-  ierr = MatHasCongruentLayouts(A,&cong);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A,&s1,NULL);CHKERRQ(ierr);
   s2   = 1;
   while (s2 < M) s2 *= 10;
@@ -101,6 +102,26 @@ int main(int argc,char **args)
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  if (submat) {
+    Mat      A2;
+    IS       r,c;
+    PetscInt rst,ren,cst,cen;
+
+    ierr = MatGetOwnershipRange(A,&rst,&ren);CHKERRQ(ierr);
+    ierr = MatGetOwnershipRangeColumn(A,&cst,&cen);CHKERRQ(ierr);
+    ierr = ISCreateStride(PetscObjectComm((PetscObject)A),(ren-rst)/2,rst,1,&r);CHKERRQ(ierr);
+    ierr = ISCreateStride(PetscObjectComm((PetscObject)A),(cen-cst)/2,cst,1,&c);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrix(A,r,c,MAT_INITIAL_MATRIX,&A2);CHKERRQ(ierr);
+    ierr = ISDestroy(&r);CHKERRQ(ierr);
+    ierr = ISDestroy(&c);CHKERRQ(ierr);
+    ierr = MatDestroy(&A);CHKERRQ(ierr);
+    A = A2;
+  }
+
+  ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
+  ierr = MatHasCongruentLayouts(A,&cong);CHKERRQ(ierr);
 
   ierr = MatConvert(A,MATAIJ,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
   ierr = MatSetOption(A,MAT_KEEP_NONZERO_PATTERN,keep);CHKERRQ(ierr);
@@ -122,6 +143,14 @@ int main(int argc,char **args)
   for (test = 0; test < ntest; test++) {
     PetscReal err;
 
+    ierr = MatMultAddEqual(A,S,10,&flg);CHKERRQ(ierr);
+    if (!flg) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %D] Error mult add\n",test);CHKERRQ(ierr);
+    }
+    ierr = MatMultTransposeAddEqual(A,S,10,&flg);CHKERRQ(ierr);
+    if (!flg) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %D] Error mult add (T)\n",test);CHKERRQ(ierr);
+    }
     if (testzerorows) {
       Mat       ST,B,C,BT,BTT;
       IS        zr;
@@ -288,6 +317,65 @@ int main(int argc,char **args)
       S = S2;
     }
 
+    if (testsubmat) {
+      Mat      sA,sS,dA,dS,At,St;
+      IS       r,c;
+      PetscInt rst,ren,cst,cen;
+
+      ierr = MatGetOwnershipRange(A,&rst,&ren);CHKERRQ(ierr);
+      ierr = MatGetOwnershipRangeColumn(A,&cst,&cen);CHKERRQ(ierr);
+      ierr = ISCreateStride(PetscObjectComm((PetscObject)A),(ren-rst)/2,rst,1,&r);CHKERRQ(ierr);
+      ierr = ISCreateStride(PetscObjectComm((PetscObject)A),(cen-cst)/2,cst,1,&c);CHKERRQ(ierr);
+      ierr = MatCreateSubMatrix(A,r,c,MAT_INITIAL_MATRIX,&sA);CHKERRQ(ierr);
+      ierr = MatCreateSubMatrix(S,r,c,MAT_INITIAL_MATRIX,&sS);CHKERRQ(ierr);
+      ierr = MatMultAddEqual(sA,sS,10,&flg);CHKERRQ(ierr);
+      if (!flg) {
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %D] Error submatrix mult add\n",test);CHKERRQ(ierr);
+      }
+      ierr = MatMultTransposeAddEqual(sA,sS,10,&flg);CHKERRQ(ierr);
+      if (!flg) {
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %D] Error submatrix mult add (T)\n",test);CHKERRQ(ierr);
+      }
+      ierr = MatConvert(sA,MATDENSE,MAT_INITIAL_MATRIX,&dA);CHKERRQ(ierr);
+      ierr = MatConvert(sS,MATDENSE,MAT_INITIAL_MATRIX,&dS);CHKERRQ(ierr);
+      ierr = MatAXPY(dA,-1.0,dS,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = MatNorm(dA,NORM_FROBENIUS,&err);CHKERRQ(ierr);
+      if (err >= tol) {
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %D] Error mat submatrix %g\n",test,(double)err);CHKERRQ(ierr);
+      }
+      ierr = MatDestroy(&sA);CHKERRQ(ierr);
+      ierr = MatDestroy(&sS);CHKERRQ(ierr);
+      ierr = MatDestroy(&dA);CHKERRQ(ierr);
+      ierr = MatDestroy(&dS);CHKERRQ(ierr);
+      ierr = MatCreateTranspose(A,&At);CHKERRQ(ierr);
+      ierr = MatCreateTranspose(S,&St);CHKERRQ(ierr);
+      ierr = MatCreateSubMatrix(At,c,r,MAT_INITIAL_MATRIX,&sA);CHKERRQ(ierr);
+      ierr = MatCreateSubMatrix(St,c,r,MAT_INITIAL_MATRIX,&sS);CHKERRQ(ierr);
+      ierr = MatMultAddEqual(sA,sS,10,&flg);CHKERRQ(ierr);
+      if (!flg) {
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %D] Error submatrix (T) mult add\n",test);CHKERRQ(ierr);
+      }
+      ierr = MatMultTransposeAddEqual(sA,sS,10,&flg);CHKERRQ(ierr);
+      if (!flg) {
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %D] Error submatrix (T) mult add (T)\n",test);CHKERRQ(ierr);
+      }
+      ierr = MatConvert(sA,MATDENSE,MAT_INITIAL_MATRIX,&dA);CHKERRQ(ierr);
+      ierr = MatConvert(sS,MATDENSE,MAT_INITIAL_MATRIX,&dS);CHKERRQ(ierr);
+      ierr = MatAXPY(dA,-1.0,dS,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = MatNorm(dA,NORM_FROBENIUS,&err);CHKERRQ(ierr);
+      if (err >= tol) {
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %D] Error mat submatrix (T) %g\n",test,(double)err);CHKERRQ(ierr);
+      }
+      ierr = MatDestroy(&sA);CHKERRQ(ierr);
+      ierr = MatDestroy(&sS);CHKERRQ(ierr);
+      ierr = MatDestroy(&dA);CHKERRQ(ierr);
+      ierr = MatDestroy(&dS);CHKERRQ(ierr);
+      ierr = MatDestroy(&At);CHKERRQ(ierr);
+      ierr = MatDestroy(&St);CHKERRQ(ierr);
+      ierr = ISDestroy(&r);CHKERRQ(ierr);
+      ierr = ISDestroy(&c);CHKERRQ(ierr);
+    }
+
     if (testreset && (ntest == 1 || test == ntest-2)) {
       /* reset MATSHELL */
       ierr = MatAssemblyBegin(S,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -313,12 +401,12 @@ int main(int argc,char **args)
      requires: !single
      output_file: output/ex221_1.out
      nsize: {{1 3}}
-     args: -keep {{0 1}} -M {{12 19}} -N {{19 12}}
+     args: -keep {{0 1}} -M {{12 19}} -N {{19 12}} -submat {{0 1}}
 
    testset:
      suffix: square
      requires: !single
      output_file: output/ex221_1.out
      nsize: {{1 3}}
-     args: -M 21 -N 21 -loop 4 -rows_only {{0 1}} -keep {{0 1}}
+     args: -M 21 -N 21 -loop 4 -rows_only {{0 1}} -keep {{0 1}} -submat {{0 1}}
 TEST*/

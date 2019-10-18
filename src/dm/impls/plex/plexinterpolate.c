@@ -2,6 +2,8 @@
 #include <petsc/private/hashmapi.h>
 #include <petsc/private/hashmapij.h>
 
+const char * const DMPlexInterpolatedFlags[] = {"none", "partial", "mixed", "full", "DMPlexInterpolatedFlag", "DMPLEX_INTERPOLATED_", 0};
+
 /* HashIJKL */
 
 #include <petsc/private/hashmap.h>
@@ -1254,6 +1256,7 @@ PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF)
 @*/
 PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
 {
+  DMPlexInterpolatedFlag interpolated;
   DM             idm, odm = dm;
   PetscSF        sfPoint;
   PetscInt       depth, dim, d;
@@ -1267,7 +1270,9 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
   ierr = PetscLogEventBegin(DMPLEX_Interpolate,dm,0,0,0);CHKERRQ(ierr);
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  if ((depth == dim) || (dim <= 1)) {
+  ierr = DMPlexIsInterpolated(dm, &interpolated);CHKERRQ(ierr);
+  if (interpolated == DMPLEX_INTERPOLATED_PARTIAL) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Not for partially interpolated meshes");
+  if (interpolated == DMPLEX_INTERPOLATED_FULL) {
     ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr);
     idm  = dm;
   } else {
@@ -1298,6 +1303,11 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
 
     ierr = DMGetPeriodicity(dm,&isper,&maxCell,&L,&bd);CHKERRQ(ierr);
     ierr = DMSetPeriodicity(idm,isper,maxCell,L,bd);CHKERRQ(ierr);
+  }
+  /* This function makes the mesh fully interpolated on all ranks */
+  {
+    DM_Plex *plex = (DM_Plex *) dm->data;
+    plex->interpolated = plex->interpolatedCollective = DMPLEX_INTERPOLATED_FULL;
   }
   *dmInt = idm;
   ierr = PetscLogEventEnd(DMPLEX_Interpolate,dm,0,0,0);CHKERRQ(ierr);
@@ -1444,6 +1454,7 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
 @*/
 PetscErrorCode DMPlexUninterpolate(DM dm, DM *dmUnint)
 {
+  DMPlexInterpolatedFlag interpolated;
   DM             udm;
   PetscInt       dim, vStart, vEnd, cStart, cEnd, cMax, c, maxConeSize = 0, *cone;
   PetscErrorCode ierr;
@@ -1452,7 +1463,10 @@ PetscErrorCode DMPlexUninterpolate(DM dm, DM *dmUnint)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(dmUnint, 2);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  if (dim <= 1) {
+  ierr = DMPlexIsInterpolated(dm, &interpolated);CHKERRQ(ierr);
+  if (interpolated == DMPLEX_INTERPOLATED_PARTIAL) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Not for partially interpolated meshes");
+  if (interpolated == DMPLEX_INTERPOLATED_NONE || dim <= 1) {
+    /* in case dim <= 1 just keep the DMPLEX_INTERPOLATED_FULL flag */
     ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr);
     *dmUnint = dm;
     PetscFunctionReturn(0);
@@ -1537,7 +1551,148 @@ PetscErrorCode DMPlexUninterpolate(DM dm, DM *dmUnint)
     ierr = DMGetPeriodicity(dm,&isper,&maxCell,&L,&bd);CHKERRQ(ierr);
     ierr = DMSetPeriodicity(udm,isper,maxCell,L,bd);CHKERRQ(ierr);
   }
-
+  /* This function makes the mesh fully uninterpolated on all ranks */
+  {
+    DM_Plex *plex = (DM_Plex *) dm->data;
+    plex->interpolated = plex->interpolatedCollective = DMPLEX_INTERPOLATED_NONE;
+  }
   *dmUnint = udm;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMPlexIsInterpolated_Internal(DM dm, DMPlexInterpolatedFlag *interpolated)
+{
+  PetscInt       coneSize, depth, dim, h, p, pStart, pEnd;
+  MPI_Comm       comm;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
+  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+
+  if (depth == dim) {
+    *interpolated = DMPLEX_INTERPOLATED_FULL;
+    if (!dim) goto finish;
+
+    /* Check points at height = dim are vertices (have no cones) */
+    ierr = DMPlexGetHeightStratum(dm, dim, &pStart, &pEnd);CHKERRQ(ierr);
+    for (p=pStart; p<pEnd; p++) {
+      ierr = DMPlexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
+      if (coneSize) {
+        *interpolated = DMPLEX_INTERPOLATED_PARTIAL;
+        goto finish;
+      }
+    }
+
+    /* Check points at height < dim have cones */
+    for (h=0; h<dim; h++) {
+      ierr = DMPlexGetHeightStratum(dm, h, &pStart, &pEnd);CHKERRQ(ierr);
+      for (p=pStart; p<pEnd; p++) {
+        ierr = DMPlexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
+        if (!coneSize) {
+          *interpolated = DMPLEX_INTERPOLATED_PARTIAL;
+          goto finish;
+        }
+      }
+    }
+  } else if (depth == 1) {
+    *interpolated = DMPLEX_INTERPOLATED_NONE;
+  } else {
+    *interpolated = DMPLEX_INTERPOLATED_PARTIAL;
+  }
+finish:
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexIsInterpolated - Find out whether this DM is interpolated, i.e. number of strata is equal to dimension.
+
+  Not Collective
+
+  Input Parameter:
+. dm      - The DM object
+
+  Output Parameter:
+. interpolated - Flag whether the DM is interpolated
+
+  Level: intermediate
+
+  Notes:
+  This is NOT collective so the results can be different on different ranks in special cases.
+  However, DMPlexInterpolate() guarantees the result is the same on all.
+  Unlike DMPlexIsInterpolatedCollective(), this cannot return DMPLEX_INTERPOLATED_MIXED.
+
+.seealso: DMPlexInterpolate(), DMPlexIsInterpolatedCollective()
+@*/
+PetscErrorCode DMPlexIsInterpolated(DM dm, DMPlexInterpolatedFlag *interpolated)
+{
+  DM_Plex        *plex = (DM_Plex *) dm->data;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(interpolated,2);
+  if (plex->interpolated < 0) {
+    ierr = DMPlexIsInterpolated_Internal(dm, &plex->interpolated);CHKERRQ(ierr);
+  } else {
+#if defined (PETSC_USE_DEBUG)
+    DMPlexInterpolatedFlag flg;
+
+    ierr = DMPlexIsInterpolated_Internal(dm, &flg);CHKERRQ(ierr);
+    if (flg != plex->interpolated) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "stashed DMPlexInterpolatedFlag is inconsistent");
+#endif
+  }
+  *interpolated = plex->interpolated;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexIsInterpolatedCollective - Find out whether this DM is interpolated, i.e. number of strata is equal to dimension.
+
+  Collective
+
+  Input Parameter:
+. dm      - The DM object
+
+  Output Parameter:
+. interpolated - Flag whether the DM is interpolated
+
+  Level: intermediate
+
+  Notes:
+  This is collective so the results are always guaranteed to be the same on all ranks.
+  Unlike DMPlexIsInterpolated(), this will return DMPLEX_INTERPOLATED_MIXED if the results of DMPlexIsInterpolated() are different on different ranks.
+
+.seealso: DMPlexInterpolate(), DMPlexIsInterpolated()
+@*/
+PetscErrorCode DMPlexIsInterpolatedCollective(DM dm, DMPlexInterpolatedFlag *interpolated)
+{
+  DM_Plex        *plex = (DM_Plex *) dm->data;
+  PetscBool       debug=PETSC_FALSE;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(interpolated,2);
+  ierr = PetscOptionsGetBool(((PetscObject) dm)->options, ((PetscObject) dm)->prefix, "-dm_plex_is_interpolated_collective_debug", &debug, NULL);CHKERRQ(ierr);
+  if (plex->interpolatedCollective < 0) {
+    DMPlexInterpolatedFlag  min, max;
+    MPI_Comm                comm;
+
+    ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
+    ierr = DMPlexIsInterpolated(dm, &plex->interpolatedCollective);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&plex->interpolatedCollective, &min, 1, MPIU_ENUM, MPI_MIN, comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&plex->interpolatedCollective, &max, 1, MPIU_ENUM, MPI_MAX, comm);CHKERRQ(ierr);
+    if (min != max) plex->interpolatedCollective = DMPLEX_INTERPOLATED_MIXED;
+    if (debug) {
+      PetscMPIInt rank;
+
+      ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+      ierr = PetscSynchronizedPrintf(comm, "[%d] interpolated=%s interpolatedCollective=%s\n", rank, DMPlexInterpolatedFlags[plex->interpolated], DMPlexInterpolatedFlags[plex->interpolatedCollective]);CHKERRQ(ierr);
+      ierr = PetscSynchronizedFlush(comm, PETSC_STDOUT);CHKERRQ(ierr);
+    }
+  }
+  *interpolated = plex->interpolatedCollective;
   PetscFunctionReturn(0);
 }

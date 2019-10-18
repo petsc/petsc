@@ -15,6 +15,10 @@
 #include <_hypre_parcsr_ls.h>
 #include <_hypre_sstruct_ls.h>
 
+#if PETSC_PKG_HYPRE_VERSION_LT(2,18,0)
+#define  hypre_ParCSRMatrixClone(A,B) hypre_ParCSRMatrixCompleteClone(A)
+#endif
+
 PETSC_INTERN PetscErrorCode MatPtAP_IS_XAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 
 static PetscErrorCode MatHYPRE_CreateFromMat(Mat,Mat_HYPRE*);
@@ -1469,7 +1473,7 @@ PETSC_EXTERN PetscErrorCode MatCreateFromParCSR(hypre_ParCSRMatrix *parcsr, MatT
     hypre_ParCSRMatrix *new_parcsr;
     hypre_CSRMatrix    *hdiag,*hoffd,*ndiag,*noffd;
 
-    new_parcsr = hypre_ParCSRMatrixCompleteClone(parcsr);
+    new_parcsr = hypre_ParCSRMatrixClone(parcsr,0);
     hdiag      = hypre_ParCSRMatrixDiag(parcsr);
     hoffd      = hypre_ParCSRMatrixOffd(parcsr);
     ndiag      = hypre_ParCSRMatrixDiag(new_parcsr);
@@ -1882,7 +1886,7 @@ static PetscErrorCode MatDuplicate_HYPRE(Mat A,MatDuplicateOption op, Mat *B)
   PetscFunctionBegin;
   ierr = MatHYPREGetParCSR_HYPRE(A,&parcsr);CHKERRQ(ierr);
   if (op == MAT_DO_NOT_COPY_VALUES || op == MAT_SHARE_NONZERO_PATTERN) {
-    parcsr = hypre_ParCSRMatrixCompleteClone(parcsr);
+    parcsr = hypre_ParCSRMatrixClone(parcsr,0);
     cpmode = PETSC_OWN_POINTER;
   } else {
     cpmode = PETSC_COPY_VALUES;

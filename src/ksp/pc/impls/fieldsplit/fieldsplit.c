@@ -1,4 +1,3 @@
-
 #include <petsc/private/pcimpl.h>     /*I "petscpc.h" I*/
 #include <petsc/private/kspimpl.h>    /*  This is needed to provide the appropriate PETSC_EXTERN for KSP_Solve_FS ....*/
 #include <petscdm.h>
@@ -1545,22 +1544,22 @@ static PetscErrorCode PCReset_FieldSplit(PC pc)
   if (jac->pmat) {ierr = MatDestroyMatrices(jac->nsplits,&jac->pmat);CHKERRQ(ierr);}
   if (jac->Afield) {ierr = MatDestroyMatrices(jac->nsplits,&jac->Afield);CHKERRQ(ierr);}
   jac->nsplits = 0;
-  ierr       = VecDestroy(&jac->w1);CHKERRQ(ierr);
-  ierr       = VecDestroy(&jac->w2);CHKERRQ(ierr);
-  ierr       = MatDestroy(&jac->schur);CHKERRQ(ierr);
-  ierr       = MatDestroy(&jac->schurp);CHKERRQ(ierr);
-  ierr       = MatDestroy(&jac->schur_user);CHKERRQ(ierr);
-  ierr       = KSPDestroy(&jac->kspschur);CHKERRQ(ierr);
-  ierr       = KSPDestroy(&jac->kspupper);CHKERRQ(ierr);
-  ierr       = MatDestroy(&jac->B);CHKERRQ(ierr);
-  ierr       = MatDestroy(&jac->C);CHKERRQ(ierr);
-  ierr       = MatDestroy(&jac->H);CHKERRQ(ierr);
-  ierr       = VecDestroy(&jac->u);CHKERRQ(ierr);
-  ierr       = VecDestroy(&jac->v);CHKERRQ(ierr);
-  ierr       = VecDestroy(&jac->Hu);CHKERRQ(ierr);
-  ierr       = VecDestroy(&jac->d);CHKERRQ(ierr);
-  ierr       = PetscFree(jac->vecz);CHKERRQ(ierr);
-  ierr       = PetscViewerDestroy(&jac->gkbviewer);CHKERRQ(ierr);
+  ierr = VecDestroy(&jac->w1);CHKERRQ(ierr);
+  ierr = VecDestroy(&jac->w2);CHKERRQ(ierr);
+  ierr = MatDestroy(&jac->schur);CHKERRQ(ierr);
+  ierr = MatDestroy(&jac->schurp);CHKERRQ(ierr);
+  ierr = MatDestroy(&jac->schur_user);CHKERRQ(ierr);
+  ierr = KSPDestroy(&jac->kspschur);CHKERRQ(ierr);
+  ierr = KSPDestroy(&jac->kspupper);CHKERRQ(ierr);
+  ierr = MatDestroy(&jac->B);CHKERRQ(ierr);
+  ierr = MatDestroy(&jac->C);CHKERRQ(ierr);
+  ierr = MatDestroy(&jac->H);CHKERRQ(ierr);
+  ierr = VecDestroy(&jac->u);CHKERRQ(ierr);
+  ierr = VecDestroy(&jac->v);CHKERRQ(ierr);
+  ierr = VecDestroy(&jac->Hu);CHKERRQ(ierr);
+  ierr = VecDestroy(&jac->d);CHKERRQ(ierr);
+  ierr = PetscFree(jac->vecz);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&jac->gkbviewer);CHKERRQ(ierr);
   jac->isrestrict = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -2286,8 +2285,8 @@ PetscErrorCode  PCFieldSplitSchurGetSubKSP(PC pc,PetscInt *n,KSP *subksp[])
 }
 
 /*@
-    PCFieldSplitSetSchurPre -  Indicates what operator is used to construct the preconditioner for the Schur complement.
-      A11 matrix. Otherwise no preconditioner is used.
+    PCFieldSplitSetSchurPre -  Indicates from what operator the preconditioner is constructucted for the Schur complement.
+      The default is the A11 matrix. 
 
     Collective on PC
 
@@ -2298,21 +2297,22 @@ PetscErrorCode  PCFieldSplitSchurGetSubKSP(PC pc,PetscInt *n,KSP *subksp[])
 -   userpre - matrix to use for preconditioning, or NULL
 
     Options Database:
-.     -pc_fieldsplit_schur_precondition <self,selfp,user,a11,full> - default is a11. See notes for meaning of various arguments
++    -pc_fieldsplit_schur_precondition <self,selfp,user,a11,full> - default is a11. See notes for meaning of various arguments
+-    -fieldsplit_1_pc_type <pctype> - the preconditioner algorithm that is used to construct the preconditioner from the operator
 
     Notes:
 $    If ptype is
-$        a11 then the preconditioner for the Schur complement is generated from the block diagonal part of the preconditioner
-$             matrix associated with the Schur complement (i.e. A11), not the Schur complement matrix
-$        self the preconditioner for the Schur complement is generated from the symbolic representation of the Schur complement matrix:
+$        a11 - the preconditioner for the Schur complement is generated from the block diagonal part of the preconditioner
+$        matrix associated with the Schur complement (i.e. A11), not the Schur complement matrix
+$        self - the preconditioner for the Schur complement is generated from the symbolic representation of the Schur complement matrix:
 $             The only preconditioner that currently works with this symbolic respresentation matrix object is the PCLSC
 $             preconditioner
-$        user then the preconditioner for the Schur complement is generated from the user provided matrix (pre argument
+$        user - the preconditioner for the Schur complement is generated from the user provided matrix (pre argument
 $             to this function).
-$        selfp then the preconditioning for the Schur complement is generated from an explicitly-assembled approximation Sp = A11 - A10 inv(diag(A00)) A01
+$        selfp - the preconditioning for the Schur complement is generated from an explicitly-assembled approximation Sp = A11 - A10 inv(diag(A00)) A01
 $             This is only a good preconditioner when diag(A00) is a good preconditioner for A00. Optionally, A00 can be
 $             lumped before extracting the diagonal using the additional option -fieldsplit_1_mat_schur_complement_ainv_type lump
-$        full then the preconditioner for the Schur complement is generated from the exact Schur complement matrix representation computed internally by PCFIELDSPLIT (this is expensive)
+$        full - the preconditioner for the Schur complement is generated from the exact Schur complement matrix representation computed internally by PCFIELDSPLIT (this is expensive)
 $             useful mostly as a test that the Schur complement approach can work for your problem
 
      When solving a saddle point problem, where the A11 block is identically zero, using a11 as the ptype only makes sense

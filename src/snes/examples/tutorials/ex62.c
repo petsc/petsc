@@ -1078,6 +1078,16 @@ int main(int argc, char **argv)
       -ksp_type gmres -ksp_rtol 1.0e-5 -ksp_error_if_not_converged -ksp_converged_reason \
       -pc_type patch -pc_patch_partition_of_unity 0 -pc_patch_construct_codim 0 -pc_patch_construct_type vanka \
         -sub_ksp_type preonly -sub_pc_type lu
+  # Vanka solver, forming dense inverses on patches
+  test:
+    suffix: 2d_quad_q1_p0_vanka_add_dense_inverse
+    requires: double !complex
+    filter: sed -e "s/linear solver iterations=[0-9][0-9]*""/linear solver iterations=49/g" -e "s/Linear solve converged due to CONVERGED_RTOL iterations [0-9][0-9]*""/Linear solve converged due to CONVERGED_RTOL iterations 49/g"
+    args: -run_type full -bc_type dirichlet -simplex 0 -dm_refine 1 -interpolate 1 -vel_petscspace_degree 1 -pres_petscspace_degree 0 -petscds_jac_pre 0 \
+      -snes_rtol 1.0e-4 -snes_error_if_not_converged -snes_view -snes_monitor -snes_converged_reason \
+      -ksp_type gmres -ksp_rtol 1.0e-5 -ksp_error_if_not_converged -ksp_converged_reason \
+      -pc_type patch -pc_patch_partition_of_unity 0 -pc_patch_construct_codim 0 -pc_patch_construct_type vanka \
+        -pc_patch_dense_inverse -pc_patch_sub_mat_type seqdense
   test:
     suffix: 2d_quad_q1_p0_vanka_add_unity
     requires: double !complex

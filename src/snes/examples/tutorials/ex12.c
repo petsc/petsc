@@ -428,7 +428,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->cells[1]            = 2;
   options->cells[2]            = 2;
   options->filename[0]         = '\0';
-  options->interpolate         = PETSC_FALSE;
+  options->interpolate         = PETSC_TRUE;
   options->refinementLimit     = 0.0;
   options->bcType              = DIRICHLET;
   options->variableCoefficient = COEFF_NONE;
@@ -553,17 +553,19 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       *dm  = distributedMesh;
     }
   }
-  if (user->bcType == NEUMANN) {
-    DMLabel   label;
+  if (interpolate) {
+    if (user->bcType == NEUMANN) {
+      DMLabel   label;
 
-    ierr = DMCreateLabel(*dm, "boundary");CHKERRQ(ierr);
-    ierr = DMGetLabel(*dm, "boundary", &label);CHKERRQ(ierr);
-    ierr = DMPlexMarkBoundaryFaces(*dm, 1, label);CHKERRQ(ierr);
-  } else if (user->bcType == DIRICHLET) {
-    PetscBool hasLabel;
+      ierr = DMCreateLabel(*dm, "boundary");CHKERRQ(ierr);
+      ierr = DMGetLabel(*dm, "boundary", &label);CHKERRQ(ierr);
+      ierr = DMPlexMarkBoundaryFaces(*dm, 1, label);CHKERRQ(ierr);
+    } else if (user->bcType == DIRICHLET) {
+      PetscBool hasLabel;
 
-    ierr = DMHasLabel(*dm,"marker",&hasLabel);CHKERRQ(ierr);
-    if (!hasLabel) {ierr = CreateBCLabel(*dm, "marker");CHKERRQ(ierr);}
+      ierr = DMHasLabel(*dm,"marker",&hasLabel);CHKERRQ(ierr);
+      if (!hasLabel) {ierr = CreateBCLabel(*dm, "marker");CHKERRQ(ierr);}
+    }
   }
   {
     char      convType[256];
@@ -789,7 +791,7 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   while (cdm) {
     ierr = DMCopyDisc(dm, cdm);CHKERRQ(ierr);
     ierr = SetupAuxDM(cdm, feAux, user);CHKERRQ(ierr);
-    if (user->bcType == DIRICHLET) {
+    if (user->bcType == DIRICHLET && user->interpolate) {
       PetscBool hasLabel;
 
       ierr = DMHasLabel(cdm, "marker", &hasLabel);CHKERRQ(ierr);
@@ -1836,10 +1838,10 @@ int main(int argc, char **argv)
     args: -quiet -run_type test -interpolate 1 -bc_type dirichlet -petscspace_degree 2 -vec_view glvis: -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 1 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -cells 2,2 -viewer_glvis_dm_plex_enable_ncmesh
   test:
     suffix: glvis_2d_tet_p0
-    args: -run_type exact  -guess_vec_view glvis: -nonzero_initial_guess 1 -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -petscspace_degree 0
+    args: -run_type exact  -interpolate 1 -guess_vec_view glvis: -nonzero_initial_guess 1 -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -petscspace_degree 0
   test:
     suffix: glvis_2d_hex_p0
-    args: -run_type exact  -guess_vec_view glvis: -nonzero_initial_guess 1 -cells 5,7  -simplex 0 -petscspace_degree 0
+    args: -run_type exact  -interpolate 1 -guess_vec_view glvis: -nonzero_initial_guess 1 -cells 5,7  -simplex 0 -petscspace_degree 0
 
   # PCHPDDM tests
   testset:

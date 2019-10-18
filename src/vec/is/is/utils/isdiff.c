@@ -22,9 +22,7 @@
 
    Level: intermediate
 
-
 .seealso: ISDestroy(), ISView(), ISSum(), ISExpand()
-
 @*/
 PetscErrorCode  ISDifference(IS is1,IS is2,IS *isout)
 {
@@ -321,8 +319,6 @@ PetscErrorCode ISExpand(IS is1,IS is2,IS *isout)
    Level: intermediate
 
 .seealso: ISDestroy(), ISView(), ISDifference(), ISSum(), ISExpand()
-
-
 @*/
 PetscErrorCode ISIntersect(IS is1,IS is2,IS *isout)
 {

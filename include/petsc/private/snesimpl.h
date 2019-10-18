@@ -271,7 +271,8 @@ PETSC_INTERN PetscBool SNEScite;
 PETSC_INTERN const char SNESCitation[];
 
 /*
-    Either generate an error or mark as diverged when a real from a SNES function norm is Nan or Inf
+    Either generate an error or mark as diverged when a real from a SNES function norm is Nan or Inf.
+    domainerror is reset here, once reason is set, to allow subsequent iterations to be feasible (e.g. line search).
 */
 #define SNESCheckFunctionNorm(snes,beta) do { \
   if (PetscIsInfOrNanReal(beta)) {\
@@ -279,8 +280,10 @@ PETSC_INTERN const char SNESCitation[];
     else {\
       PetscBool domainerror;\
       PetscErrorCode ierr = MPIU_Allreduce((int*)&snes->domainerror,(int*)&domainerror,1,MPI_INT,MPI_MAX,PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);\
-      if (domainerror)  snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;\
-      else              snes->reason = SNES_DIVERGED_FNORM_NAN;\
+      if (domainerror)  {\
+        snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;\
+        snes->domainerror = PETSC_FALSE;\
+      } else snes->reason = SNES_DIVERGED_FNORM_NAN;\
       PetscFunctionReturn(0);\
     }\
   } } while (0)

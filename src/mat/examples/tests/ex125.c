@@ -223,9 +223,19 @@ int main(int argc,char **args)
         ierr = MatAXPY(X,-1.0,C,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
         ierr = MatNorm(X,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
         if (norm > tol) {
-          ierr = PetscPrintf(PETSC_COMM_WORLD,"%D-the MatMatSolve: Norm of error %g, nsolve %D\n",nsolve,norm,nsolve);CHKERRQ(ierr);CHKERRQ(ierr);
+          ierr = PetscPrintf(PETSC_COMM_WORLD,"%D-the MatMatSolve: Norm of error %g, nsolve %D\n",nsolve,(double)norm,nsolve);CHKERRQ(ierr);
         }
       }
+      /* Test MatMatSolve(F,RHS,RHS), RHS is a dense matrix */
+      ierr = MatCopy(RHS,X,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = MatMatSolve(F,X,X);CHKERRQ(ierr);
+      /* Check the error */
+      ierr = MatAXPY(X,-1.0,C,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = MatNorm(X,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
+      if (norm > tol) {
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"MatMatSolve(F,RHS,RHS): Norm of error %g\n",(double)norm);CHKERRQ(ierr);
+      }
+
       if (ipack == 2 && size == 1) {
         Mat spRHS,spRHST,RHST;
 
@@ -240,7 +250,7 @@ int main(int argc,char **args)
           ierr = MatAXPY(X,-1.0,C,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
           ierr = MatNorm(X,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
           if (norm > tol) {
-            ierr = PetscPrintf(PETSC_COMM_WORLD,"%D-the sparse MatMatSolve: Norm of error %g, nsolve %D\n",nsolve,norm,nsolve);CHKERRQ(ierr);
+            ierr = PetscPrintf(PETSC_COMM_WORLD,"%D-the sparse MatMatSolve: Norm of error %g, nsolve %D\n",nsolve,(double)norm,nsolve);CHKERRQ(ierr);
           }
         }
         ierr = MatDestroy(&spRHST);CHKERRQ(ierr);
@@ -272,7 +282,7 @@ int main(int argc,char **args)
           ierr = MatMult(A,x,u);CHKERRQ(ierr); /* u = A*x */
           ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);  /* u <- (-1.0)b + u */
           ierr = VecNorm(u,NORM_2,&resi);CHKERRQ(ierr);
-          ierr = PetscPrintf(PETSC_COMM_WORLD,"MatSolve: Norm of error %g, resi %g, numfact %D\n",norm,resi,nfact);CHKERRQ(ierr);
+          ierr = PetscPrintf(PETSC_COMM_WORLD,"MatSolve: Norm of error %g, resi %g, numfact %D\n",(double)norm,resi,nfact);CHKERRQ(ierr);
         }
       }
     }
