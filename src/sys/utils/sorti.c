@@ -951,6 +951,7 @@ PetscErrorCode PetscParallelSortedInt(MPI_Comm comm, PetscInt n, const PetscInt 
 {
   PetscBool      sorted;
   PetscInt       i, min, max, prevmax;
+  PetscMPIInt    rank;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -969,6 +970,8 @@ PetscErrorCode PetscParallelSortedInt(MPI_Comm comm, PetscInt n, const PetscInt 
   if (i < n) sorted = PETSC_FALSE;
   prevmax = PETSC_MIN_INT;
   ierr = MPI_Exscan(&max, &prevmax, 1, MPIU_INT, MPI_MAX, comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  if (!rank) prevmax = PETSC_MIN_INT;
   if (prevmax > min) sorted = PETSC_FALSE;
   ierr = MPI_Allreduce(&sorted, is_sorted, 1, MPIU_BOOL, MPI_LAND, comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);

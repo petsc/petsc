@@ -50,6 +50,32 @@ PETSC_EXTERN PetscErrorCode ISSetIdentity(IS);
 PETSC_EXTERN PetscErrorCode ISIdentity(IS,PetscBool *);
 PETSC_EXTERN PetscErrorCode ISContiguousLocal(IS,PetscInt,PetscInt,PetscInt*,PetscBool*);
 
+/*E
+    ISInfo - Info that may either be computed or set as known for an index set
+
+    Level: beginner
+
+   Any additions/changes here MUST also be made in include/petsc/finclude/petscis.h
+   Any additions/changes here must also be made in src/vec/vec/interface/dlregisvec.c in ISInfos[]
+
+   Developer Notes:
+    Entries that are negative need not be called collectively by all processes.
+
+.seealso: ISSetInfo()
+E*/
+typedef enum {IS_INFO_MIN = -1,
+              IS_SORTED = 0,
+              IS_UNIQUE = 1,
+              IS_PERMUTATION = 2,
+              IS_INTERVAL = 3,
+              IS_IDENTITY = 4,
+              IS_INFO_MAX = 5} ISInfo;
+
+typedef enum {IS_LOCAL, IS_GLOBAL} ISInfoType;
+
+PETSC_EXTERN PetscErrorCode ISSetInfo(IS,ISInfo,ISInfoType,PetscBool,PetscBool);
+PETSC_EXTERN PetscErrorCode ISGetInfo(IS,ISInfo,ISInfoType,PetscBool*);
+PETSC_EXTERN PetscErrorCode ISClearInfoCache(IS,PetscBool);
 PETSC_EXTERN PetscErrorCode ISGetIndices(IS,const PetscInt *[]);
 PETSC_EXTERN PetscErrorCode ISRestoreIndices(IS,const PetscInt *[]);
 PETSC_EXTERN PetscErrorCode ISGetTotalIndices(IS,const PetscInt *[]);

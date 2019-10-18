@@ -17,6 +17,7 @@
 #define PetscLayout PetscFortranAddr
 
 #define ISType character*(80)
+#define ISInfo PetscEnum
 #define ISLocalToGlobalMapping PetscFortranAddr
 #define ISGlobalToLocalType character*(80)
 #define ISGlobalToLocalMappingMode PetscEnum
