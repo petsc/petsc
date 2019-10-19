@@ -2727,9 +2727,9 @@ static PetscErrorCode MatGetFactor_sbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
     mumps->ConvertToTriples = MatConvertToTriples_mpisbaij_mpisbaij;
   }
 
-  B->ops->getinfo                = MatGetInfo_External;
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_MUMPS;
   B->ops->view                   = MatView_MUMPS;
+  B->ops->getinfo                = MatGetInfo_MUMPS;
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_mumps);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorSetSchurIS_C",MatFactorSetSchurIS_MUMPS);CHKERRQ(ierr);
@@ -2790,8 +2790,8 @@ static PetscErrorCode MatGetFactor_baij_mumps(Mat A,MatFactorType ftype,Mat *F)
     mumps->sym = 0;
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot use PETSc BAIJ matrices with MUMPS Cholesky, use SBAIJ or AIJ matrix instead\n");
 
-  B->ops->getinfo     = MatGetInfo_External;
   B->ops->view        = MatView_MUMPS;
+  B->ops->getinfo     = MatGetInfo_MUMPS;
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_mumps);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorSetSchurIS_C",MatFactorSetSchurIS_MUMPS);CHKERRQ(ierr);
