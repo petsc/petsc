@@ -80,12 +80,12 @@ TS Object: 1 MPI processes
               rows=8450, cols=8450, bs=2
               package used to perform factorization: petsc
               total: nonzeros=84500, allocated nonzeros=84500
-              total number of mallocs used during MatSetValues calls =0
+              total number of mallocs used during MatSetValues calls=0
                 using I-node routines: found 4225 nodes, limit used is 5
       linear system matrix = precond matrix:
       Mat Object: 1 MPI processes
         type: seqaij
         rows=8450, cols=8450, bs=2
         total: nonzeros=84500, allocated nonzeros=84500
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           using I-node routines: found 4225 nodes, limit used is 5

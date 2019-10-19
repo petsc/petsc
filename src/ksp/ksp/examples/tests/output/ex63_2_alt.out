@@ -36,7 +36,7 @@ PC Object: 1 MPI processes
           rows=12, cols=12
           package used to perform factorization: superlu_dist
           total: nonzeros=0, allocated nonzeros=0
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             SuperLU_DIST run parameters:
               Process grid nprow 1 x npcol 1 
               Equilibrate matrix TRUE 
@@ -52,5 +52,5 @@ PC Object: 1 MPI processes
     type: seqaij
     rows=12, cols=12
     total: nonzeros=46, allocated nonzeros=46
-    total number of mallocs used during MatSetValues calls =0
+    total number of mallocs used during MatSetValues calls=0
       not using I-node routines

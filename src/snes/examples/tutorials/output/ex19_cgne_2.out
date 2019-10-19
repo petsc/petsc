@@ -67,7 +67,7 @@ PC Object: 1 MPI processes
     type: seqaij
     rows=64, cols=64, bs=4
     total: nonzeros=1024, allocated nonzeros=1024
-    total number of mallocs used during MatSetValues calls =0
+    total number of mallocs used during MatSetValues calls=0
       using I-node routines: found 16 nodes, limit used is 5
     0 KSP Residual norm 9.8805e-05 
     1 KSP Residual norm 8.19186e-05 
@@ -150,7 +150,7 @@ PC Object: 1 MPI processes
     type: seqaij
     rows=64, cols=64, bs=4
     total: nonzeros=1024, allocated nonzeros=1024
-    total number of mallocs used during MatSetValues calls =0
+    total number of mallocs used during MatSetValues calls=0
       using I-node routines: found 16 nodes, limit used is 5
     0 KSP Residual norm 8.088e-10 
     1 KSP Residual norm 1.41572e-09 
@@ -240,6 +240,6 @@ PC Object: 1 MPI processes
     type: seqaij
     rows=64, cols=64, bs=4
     total: nonzeros=1024, allocated nonzeros=1024
-    total number of mallocs used during MatSetValues calls =0
+    total number of mallocs used during MatSetValues calls=0
       using I-node routines: found 16 nodes, limit used is 5
 Number of SNES iterations = 3

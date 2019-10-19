@@ -39,14 +39,14 @@ PC Object: 4 MPI processes
             type: seqaij
             rows=121, cols=121
             total: nonzeros=583, allocated nonzeros=583
-            total number of mallocs used during MatSetValues calls =0
+            total number of mallocs used during MatSetValues calls=0
               not using I-node routines
       linear system matrix = precond matrix:
       Mat Object: 4 MPI processes
         type: mpiaij
         rows=121, cols=121
         total: nonzeros=583, allocated nonzeros=583
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           has attached null space
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (mg_levels_1_) 4 MPI processes
@@ -75,7 +75,7 @@ PC Object: 4 MPI processes
         type: mpiaij
         rows=462, cols=462
         total: nonzeros=2266, allocated nonzeros=2266
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           has attached null space
   Up solver (post-smoother) same as down solver (pre-smoother)
   Down solver (pre-smoother) on level 2 -------------------------------
@@ -105,7 +105,7 @@ PC Object: 4 MPI processes
         type: mpiaij
         rows=1804, cols=1804
         total: nonzeros=8932, allocated nonzeros=8932
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           has attached null space
   Up solver (post-smoother) same as down solver (pre-smoother)
   Down solver (pre-smoother) on level 3 -------------------------------
@@ -135,7 +135,7 @@ PC Object: 4 MPI processes
         type: mpiaij
         rows=7128, cols=7128
         total: nonzeros=35464, allocated nonzeros=35464
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           has attached null space
   Up solver (post-smoother) same as down solver (pre-smoother)
   linear system matrix = precond matrix:
@@ -143,5 +143,5 @@ PC Object: 4 MPI processes
     type: mpiaij
     rows=7128, cols=7128
     total: nonzeros=35464, allocated nonzeros=35464
-    total number of mallocs used during MatSetValues calls =0
+    total number of mallocs used during MatSetValues calls=0
       has attached null space

@@ -56,7 +56,7 @@ SNES Object: 1 MPI processes
             type: seqaij
             rows=86, cols=86
             total: nonzeros=1112, allocated nonzeros=1112
-            total number of mallocs used during MatSetValues calls =0
+            total number of mallocs used during MatSetValues calls=0
               using I-node routines: found 61 nodes, limit used is 5
     Down solver (pre-smoother) on level 1 -------------------------------
       KSP Object: (mg_levels_1_) 1 MPI processes
@@ -94,19 +94,19 @@ SNES Object: 1 MPI processes
                   rows=3, cols=3
                   package used to perform factorization: petsc
                   total: nonzeros=9, allocated nonzeros=9
-                  total number of mallocs used during MatSetValues calls =0
+                  total number of mallocs used during MatSetValues calls=0
           linear system matrix = precond matrix:
           Mat Object: (mg_levels_1_pc_patch_sub_) 1 MPI processes
             type: seqdense
             rows=3, cols=3
             total: nonzeros=9, allocated nonzeros=9
-            total number of mallocs used during MatSetValues calls =0
+            total number of mallocs used during MatSetValues calls=0
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
           type: seqaij
           rows=386, cols=386
           total: nonzeros=5924, allocated nonzeros=5924
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             using I-node routines: found 265 nodes, limit used is 5
     Up solver (post-smoother) same as down solver (pre-smoother)
     Down solver (pre-smoother) on level 2 -------------------------------
@@ -145,19 +145,19 @@ SNES Object: 1 MPI processes
                 rows=3, cols=3
                 package used to perform factorization: petsc
                 total: nonzeros=9, allocated nonzeros=9
-                total number of mallocs used during MatSetValues calls =0
+                total number of mallocs used during MatSetValues calls=0
         linear system matrix = precond matrix:
         Mat Object: (mg_levels_2_pc_patch_sub_) 1 MPI processes
           type: seqdense
           rows=3, cols=3
           total: nonzeros=9, allocated nonzeros=9
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
       linear system matrix = precond matrix:
       Mat Object: 1 MPI processes
         type: seqaij
         rows=1634, cols=1634
         total: nonzeros=26996, allocated nonzeros=26996
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           has attached null space
           using I-node routines: found 1105 nodes, limit used is 5
     Up solver (post-smoother) same as down solver (pre-smoother)
@@ -166,7 +166,7 @@ SNES Object: 1 MPI processes
       type: seqaij
       rows=1634, cols=1634
       total: nonzeros=26996, allocated nonzeros=26996
-      total number of mallocs used during MatSetValues calls =0
+      total number of mallocs used during MatSetValues calls=0
         has attached null space
         using I-node routines: found 1105 nodes, limit used is 5
 L_2 Error: 0.280424 [0.000814457, 0.280423]

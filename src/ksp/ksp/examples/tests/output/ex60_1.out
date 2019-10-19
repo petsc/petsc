@@ -30,20 +30,20 @@ PC Object: 4 MPI processes
             rows=36, cols=36
             package used to perform factorization: petsc
             total: nonzeros=158, allocated nonzeros=158
-            total number of mallocs used during MatSetValues calls =0
+            total number of mallocs used during MatSetValues calls=0
               not using I-node routines
     linear system matrix = precond matrix:
     Mat Object: 1 MPI processes
       type: seqaij
       rows=36, cols=36
       total: nonzeros=158, allocated nonzeros=158
-      total number of mallocs used during MatSetValues calls =0
+      total number of mallocs used during MatSetValues calls=0
         not using I-node routines
   linear system matrix = precond matrix:
   Mat Object: 4 MPI processes
     type: mpiaij
     rows=64, cols=64
     total: nonzeros=288, allocated nonzeros=640
-    total number of mallocs used during MatSetValues calls =0
+    total number of mallocs used during MatSetValues calls=0
       not using I-node (on process 0) routines
 Infinity norm of the error: 2.53816e-06

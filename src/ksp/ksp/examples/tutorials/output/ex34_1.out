@@ -36,14 +36,14 @@ PC Object: 1 MPI processes
               rows=27, cols=27
               package used to perform factorization: petsc
               total: nonzeros=299, allocated nonzeros=299
-              total number of mallocs used during MatSetValues calls =0
+              total number of mallocs used during MatSetValues calls=0
                 not using I-node routines
       linear system matrix = precond matrix:
       Mat Object: 1 MPI processes
         type: seqaij
         rows=27, cols=27
         total: nonzeros=135, allocated nonzeros=135
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           has attached null space
           not using I-node routines
   Down solver (pre-smoother) on level 1 -------------------------------
@@ -73,7 +73,7 @@ PC Object: 1 MPI processes
         type: seqaij
         rows=216, cols=216
         total: nonzeros=1296, allocated nonzeros=1296
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           has attached null space
           not using I-node routines
   Up solver (post-smoother) same as down solver (pre-smoother)
@@ -104,7 +104,7 @@ PC Object: 1 MPI processes
         type: seqaij
         rows=1728, cols=1728
         total: nonzeros=11232, allocated nonzeros=11232
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           has attached null space
           not using I-node routines
   Up solver (post-smoother) same as down solver (pre-smoother)
@@ -113,7 +113,7 @@ PC Object: 1 MPI processes
     type: seqaij
     rows=1728, cols=1728
     total: nonzeros=11232, allocated nonzeros=11232
-    total number of mallocs used during MatSetValues calls =0
+    total number of mallocs used during MatSetValues calls=0
       has attached null space
       not using I-node routines
 Residual norm 8.71845e-07

@@ -16,6 +16,6 @@ Mat Object: 2 MPI processes
   type: mpidense
   rows=12, cols=12
   total: nonzeros=144, allocated nonzeros=144
-  total number of mallocs used during MatSetValues calls =0
+  total number of mallocs used during MatSetValues calls=0
     PetscSF Object: 2 MPI processes
       type: allgather

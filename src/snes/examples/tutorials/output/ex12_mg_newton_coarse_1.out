@@ -219,14 +219,14 @@ PC Object: 1 MPI processes
               rows=396, cols=396
               package used to perform factorization: petsc
               total: nonzeros=10832, allocated nonzeros=10832
-              total number of mallocs used during MatSetValues calls =0
+              total number of mallocs used during MatSetValues calls=0
                 not using I-node routines
       linear system matrix = precond matrix:
       Mat Object: 1 MPI processes
         type: seqaij
         rows=396, cols=396
         total: nonzeros=2628, allocated nonzeros=2628
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           not using I-node routines
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (mg_levels_1_) 1 MPI processes
@@ -255,7 +255,7 @@ PC Object: 1 MPI processes
         type: seqaij
         rows=1196, cols=1196
         total: nonzeros=8090, allocated nonzeros=8090
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           not using I-node routines
   Up solver (post-smoother) same as down solver (pre-smoother)
   Down solver (pre-smoother) on level 2 -------------------------------
@@ -285,7 +285,7 @@ PC Object: 1 MPI processes
         type: seqaij
         rows=4160, cols=4160
         total: nonzeros=28606, allocated nonzeros=28606
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           not using I-node routines
   Up solver (post-smoother) same as down solver (pre-smoother)
   linear system matrix = precond matrix:
@@ -293,7 +293,7 @@ PC Object: 1 MPI processes
     type: seqaij
     rows=4160, cols=4160
     total: nonzeros=28606, allocated nonzeros=28606
-    total number of mallocs used during MatSetValues calls =0
+    total number of mallocs used during MatSetValues calls=0
       not using I-node routines
   1 SNES Function norm 4.165180020529e-11 
 L_2 Error: 1.8925

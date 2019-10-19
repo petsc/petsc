@@ -67,19 +67,19 @@ SNES Object: 2 MPI processes
               rows=32, cols=32, bs=4
               package used to perform factorization: petsc
               total: nonzeros=448, allocated nonzeros=448
-              total number of mallocs used during MatSetValues calls =0
+              total number of mallocs used during MatSetValues calls=0
                   block size is 4
       linear system matrix = precond matrix:
       Mat Object: 1 MPI processes
         type: seqbaij
         rows=32, cols=32, bs=4
         total: nonzeros=448, allocated nonzeros=448
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
             block size is 4
     linear system matrix = precond matrix:
     Mat Object: 2 MPI processes
       type: mpibaij
       rows=64, cols=64, bs=4
       total: nonzeros=1024, allocated nonzeros=1024
-      total number of mallocs used during MatSetValues calls =0
+      total number of mallocs used during MatSetValues calls=0
 Number of SNES iterations = 2

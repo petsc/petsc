@@ -167,7 +167,7 @@ PC Object: 2 MPI processes
     type: mpiaij
     rows=4889, cols=841
     total: nonzeros=110171, allocated nonzeros=110171
-    total number of mallocs used during MatSetValues calls =0
+    total number of mallocs used during MatSetValues calls=0
       using I-node (on process 0) routines: found 1844 nodes, limit used is 5
 KSP type: lsqr
 Number of iterations = 151

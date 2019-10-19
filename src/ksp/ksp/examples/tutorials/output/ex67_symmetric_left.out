@@ -24,7 +24,7 @@ PC Object: 1 MPI processes
     type: seqaij
     rows=10, cols=10
     total: nonzeros=50, allocated nonzeros=50
-    total number of mallocs used during MatSetValues calls =0
+    total number of mallocs used during MatSetValues calls=0
       has attached null space
       not using I-node routines
   0 KSP preconditioned resid norm 2.673348029835e-02 true resid norm 2.236067977500e+00 ||r(i)||/||b|| 1.000000000000e+00
@@ -53,6 +53,6 @@ PC Object: 1 MPI processes
     type: seqaij
     rows=10, cols=10
     total: nonzeros=50, allocated nonzeros=50
-    total number of mallocs used during MatSetValues calls =0
+    total number of mallocs used during MatSetValues calls=0
       has attached null space
       not using I-node routines

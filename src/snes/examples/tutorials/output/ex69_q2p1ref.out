@@ -63,20 +63,20 @@ SNES Object: 1 MPI processes
                   rows=1150, cols=1150
                   package used to perform factorization: petsc
                   total: nonzeros=77218, allocated nonzeros=77218
-                  total number of mallocs used during MatSetValues calls =0
+                  total number of mallocs used during MatSetValues calls=0
                     using I-node routines: found 543 nodes, limit used is 5
           linear system matrix followed by preconditioner matrix:
           Mat Object: 1 MPI processes
             type: seqaij
             rows=1150, cols=1150
             total: nonzeros=33440, allocated nonzeros=33440
-            total number of mallocs used during MatSetValues calls =0
+            total number of mallocs used during MatSetValues calls=0
               using I-node routines: found 621 nodes, limit used is 5
           Mat Object: (fieldsplit_velocity_) 1 MPI processes
             type: seqaij
             rows=1150, cols=1150
             total: nonzeros=33440, allocated nonzeros=33440
-            total number of mallocs used during MatSetValues calls =0
+            total number of mallocs used during MatSetValues calls=0
               using I-node routines: found 621 nodes, limit used is 5
       KSP solver for S = A11 - A10 inv(A00) A01 
         KSP Object: (fieldsplit_pressure_) 1 MPI processes
@@ -99,7 +99,7 @@ SNES Object: 1 MPI processes
                   rows=432, cols=432
                   package used to perform factorization: petsc
                   total: nonzeros=1296, allocated nonzeros=1296
-                  total number of mallocs used during MatSetValues calls =0
+                  total number of mallocs used during MatSetValues calls=0
                     using I-node routines: found 144 nodes, limit used is 5
           linear system matrix followed by preconditioner matrix:
           Mat Object: (fieldsplit_pressure_) 1 MPI processes
@@ -112,7 +112,7 @@ SNES Object: 1 MPI processes
                   type: seqaij
                   rows=432, cols=432
                   total: nonzeros=1296, allocated nonzeros=1296
-                  total number of mallocs used during MatSetValues calls =0
+                  total number of mallocs used during MatSetValues calls=0
                     has attached null space
                     using I-node routines: found 144 nodes, limit used is 5
               A10
@@ -120,7 +120,7 @@ SNES Object: 1 MPI processes
                   type: seqaij
                   rows=432, cols=1150
                   total: nonzeros=7344, allocated nonzeros=7344
-                  total number of mallocs used during MatSetValues calls =0
+                  total number of mallocs used during MatSetValues calls=0
                     using I-node routines: found 144 nodes, limit used is 5
               KSP of A00
                 KSP Object: (fieldsplit_velocity_) 1 MPI processes
@@ -143,47 +143,47 @@ SNES Object: 1 MPI processes
                           rows=1150, cols=1150
                           package used to perform factorization: petsc
                           total: nonzeros=77218, allocated nonzeros=77218
-                          total number of mallocs used during MatSetValues calls =0
+                          total number of mallocs used during MatSetValues calls=0
                             using I-node routines: found 543 nodes, limit used is 5
                   linear system matrix followed by preconditioner matrix:
                   Mat Object: 1 MPI processes
                     type: seqaij
                     rows=1150, cols=1150
                     total: nonzeros=33440, allocated nonzeros=33440
-                    total number of mallocs used during MatSetValues calls =0
+                    total number of mallocs used during MatSetValues calls=0
                       using I-node routines: found 621 nodes, limit used is 5
                   Mat Object: (fieldsplit_velocity_) 1 MPI processes
                     type: seqaij
                     rows=1150, cols=1150
                     total: nonzeros=33440, allocated nonzeros=33440
-                    total number of mallocs used during MatSetValues calls =0
+                    total number of mallocs used during MatSetValues calls=0
                       using I-node routines: found 621 nodes, limit used is 5
               A01
                 Mat Object: 1 MPI processes
                   type: seqaij
                   rows=1150, cols=432
                   total: nonzeros=7344, allocated nonzeros=7344
-                  total number of mallocs used during MatSetValues calls =0
+                  total number of mallocs used during MatSetValues calls=0
                     using I-node routines: found 621 nodes, limit used is 5
           Mat Object: (fieldsplit_pressure_) 1 MPI processes
             type: seqaij
             rows=432, cols=432
             total: nonzeros=1296, allocated nonzeros=1296
-            total number of mallocs used during MatSetValues calls =0
+            total number of mallocs used during MatSetValues calls=0
               using I-node routines: found 144 nodes, limit used is 5
     linear system matrix followed by preconditioner matrix:
     Mat Object: 1 MPI processes
       type: seqaij
       rows=1582, cols=1582
       total: nonzeros=49424, allocated nonzeros=49424
-      total number of mallocs used during MatSetValues calls =0
+      total number of mallocs used during MatSetValues calls=0
         has attached null space
         using I-node routines: found 621 nodes, limit used is 5
     Mat Object: 1 MPI processes
       type: seqaij
       rows=1582, cols=1582
       total: nonzeros=49424, allocated nonzeros=49424
-      total number of mallocs used during MatSetValues calls =0
+      total number of mallocs used during MatSetValues calls=0
         using I-node routines: found 621 nodes, limit used is 5
 Number of SNES iterations=4
 L_2 Error: 0.00174 [1.53e-06, 0.00174]

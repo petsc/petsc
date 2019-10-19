@@ -24,6 +24,6 @@ PC Object: 1 MPI processes
     type: seqaij
     rows=10, cols=10
     total: nonzeros=28, allocated nonzeros=50
-    total number of mallocs used during MatSetValues calls =0
+    total number of mallocs used during MatSetValues calls=0
       not using I-node routines
 Norm of error 4.28168e-07, Iterations 8

@@ -51,6 +51,6 @@ TS Object: 1 MPI processes
         type: seqaij
         rows=35, cols=35
         total: nonzeros=447, allocated nonzeros=447
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           using I-node routines: found 19 nodes, limit used is 5
 CONVERGED_TIME at time 2.98018 after 3 steps

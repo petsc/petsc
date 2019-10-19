@@ -44,6 +44,6 @@ TS Object: 1 MPI processes
         type: seqaij
         rows=90, cols=90
         total: nonzeros=990, allocated nonzeros=1770
-        total number of mallocs used during MatSetValues calls =100
+        total number of mallocs used during MatSetValues calls=100
           has attached null space
           using I-node routines: found 30 nodes, limit used is 5

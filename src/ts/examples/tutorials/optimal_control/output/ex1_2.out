@@ -43,7 +43,7 @@ Tao Object: 1 MPI processes
       type: seqdense
       rows=10, cols=10
       total: nonzeros=100, allocated nonzeros=100
-      total number of mallocs used during MatSetValues calls =0
+      total number of mallocs used during MatSetValues calls=0
   total KSP iterations: 48
   Active Set subset type: subvec
   convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.

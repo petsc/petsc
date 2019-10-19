@@ -2,7 +2,7 @@ Mat Object: 3 MPI processes
   type: mpiaij
   rows=18, cols=18
   total: nonzeros=74, allocated nonzeros=180
-  total number of mallocs used during MatSetValues calls =0
+  total number of mallocs used during MatSetValues calls=0
     not using I-node (on process 0) routines
 matrix information (global sums):
 nonzeros = 74, allocated nonzeros = 180

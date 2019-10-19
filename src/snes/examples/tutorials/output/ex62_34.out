@@ -48,14 +48,14 @@ SNES Object: 1 MPI processes
                   rows=962, cols=962, bs=2
                   package used to perform factorization: petsc
                   total: nonzeros=68692, allocated nonzeros=68692
-                  total number of mallocs used during MatSetValues calls =0
+                  total number of mallocs used during MatSetValues calls=0
                     using I-node routines: found 456 nodes, limit used is 5
           linear system matrix = precond matrix:
           Mat Object: (fieldsplit_velocity_) 1 MPI processes
             type: seqaij
             rows=962, cols=962, bs=2
             total: nonzeros=19908, allocated nonzeros=19908
-            total number of mallocs used during MatSetValues calls =0
+            total number of mallocs used during MatSetValues calls=0
               using I-node routines: found 481 nodes, limit used is 5
       KSP solver for S = A11 - A10 inv(A00) A01 
         KSP Object: (fieldsplit_pressure_) 1 MPI processes
@@ -79,7 +79,7 @@ SNES Object: 1 MPI processes
                   type: seqaij
                   rows=145, cols=145
                   total: nonzeros=945, allocated nonzeros=945
-                  total number of mallocs used during MatSetValues calls =0
+                  total number of mallocs used during MatSetValues calls=0
                     has attached null space
                     not using I-node routines
               A10
@@ -87,7 +87,7 @@ SNES Object: 1 MPI processes
                   type: seqaij
                   rows=145, cols=962
                   total: nonzeros=4466, allocated nonzeros=4466
-                  total number of mallocs used during MatSetValues calls =0
+                  total number of mallocs used during MatSetValues calls=0
                     not using I-node routines
               KSP of A00
                 KSP Object: (fieldsplit_velocity_) 1 MPI processes
@@ -110,27 +110,27 @@ SNES Object: 1 MPI processes
                           rows=962, cols=962, bs=2
                           package used to perform factorization: petsc
                           total: nonzeros=68692, allocated nonzeros=68692
-                          total number of mallocs used during MatSetValues calls =0
+                          total number of mallocs used during MatSetValues calls=0
                             using I-node routines: found 456 nodes, limit used is 5
                   linear system matrix = precond matrix:
                   Mat Object: (fieldsplit_velocity_) 1 MPI processes
                     type: seqaij
                     rows=962, cols=962, bs=2
                     total: nonzeros=19908, allocated nonzeros=19908
-                    total number of mallocs used during MatSetValues calls =0
+                    total number of mallocs used during MatSetValues calls=0
                       using I-node routines: found 481 nodes, limit used is 5
               A01
                 Mat Object: 1 MPI processes
                   type: seqaij
                   rows=962, cols=145, rbs=2, cbs=1
                   total: nonzeros=4466, allocated nonzeros=4466
-                  total number of mallocs used during MatSetValues calls =0
+                  total number of mallocs used during MatSetValues calls=0
                     using I-node routines: found 481 nodes, limit used is 5
           Mat Object: (fieldsplit_pressure_) 1 MPI processes
             type: seqaij
             rows=145, cols=145
             total: nonzeros=945, allocated nonzeros=945
-            total number of mallocs used during MatSetValues calls =0
+            total number of mallocs used during MatSetValues calls=0
               has attached null space
               not using I-node routines
     linear system matrix = precond matrix:
@@ -138,7 +138,7 @@ SNES Object: 1 MPI processes
       type: seqaij
       rows=1107, cols=1107
       total: nonzeros=29785, allocated nonzeros=29785
-      total number of mallocs used during MatSetValues calls =0
+      total number of mallocs used during MatSetValues calls=0
         has attached null space
         using I-node routines: found 513 nodes, limit used is 5
 L_2 Error: 7.53727e-10 [2.28039e-11, 7.53382e-10]

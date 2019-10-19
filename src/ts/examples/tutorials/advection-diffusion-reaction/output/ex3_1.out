@@ -107,14 +107,14 @@ TS Object: 1 MPI processes
                   rows=60, cols=60
                   package used to perform factorization: petsc
                   total: nonzeros=294, allocated nonzeros=294
-                  total number of mallocs used during MatSetValues calls =0
+                  total number of mallocs used during MatSetValues calls=0
                     not using I-node routines
           linear system matrix = precond matrix:
           Mat Object: 1 MPI processes
             type: seqaij
             rows=60, cols=60
             total: nonzeros=180, allocated nonzeros=180
-            total number of mallocs used during MatSetValues calls =0
+            total number of mallocs used during MatSetValues calls=0
               not using I-node routines
       Down solver (pre-smoother) on level 1 -------------------------------
         KSP Object: (mg_levels_1_) 1 MPI processes
@@ -143,7 +143,7 @@ TS Object: 1 MPI processes
             type: seqaij
             rows=120, cols=120
             total: nonzeros=360, allocated nonzeros=360
-            total number of mallocs used during MatSetValues calls =0
+            total number of mallocs used during MatSetValues calls=0
               not using I-node routines
       Up solver (post-smoother) same as down solver (pre-smoother)
       Down solver (pre-smoother) on level 2 -------------------------------
@@ -173,7 +173,7 @@ TS Object: 1 MPI processes
             type: seqaij
             rows=240, cols=240
             total: nonzeros=720, allocated nonzeros=720
-            total number of mallocs used during MatSetValues calls =0
+            total number of mallocs used during MatSetValues calls=0
               not using I-node routines
       Up solver (post-smoother) same as down solver (pre-smoother)
       linear system matrix = precond matrix:
@@ -181,5 +181,5 @@ TS Object: 1 MPI processes
         type: seqaij
         rows=240, cols=240
         total: nonzeros=720, allocated nonzeros=720
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           not using I-node routines

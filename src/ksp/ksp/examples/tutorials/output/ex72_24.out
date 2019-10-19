@@ -94,14 +94,14 @@ PC Object: 1 MPI processes
       type: mpiaij
       rows=181, cols=181
       total: nonzeros=2245, allocated nonzeros=2245
-      total number of mallocs used during MatSetValues calls =0
+      total number of mallocs used during MatSetValues calls=0
         using I-node (on process 0) routines: found 31 nodes, limit used is 5
   linear system matrix = precond matrix:
   Mat Object: 1 MPI processes  
     type: seqaij
     rows=181, cols=181
     total: nonzeros=2245, allocated nonzeros=2245
-    total number of mallocs used during MatSetValues calls =0
+    total number of mallocs used during MatSetValues calls=0
       using I-node routines: found 61 nodes, limit used is 5
 Number of iterations =   2
 Residual norm 3.45716e-07
