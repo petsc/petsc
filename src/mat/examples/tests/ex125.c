@@ -1,4 +1,3 @@
-
 static char help[] = "Tests MatSolve() and MatMatSolve() (interface to superlu_dist, mumps and mkl_pardiso).\n\
 Example: mpiexec -n <np> ./ex125 -f <matrix binary file> -nrhs 4 \n\n";
 
@@ -182,7 +181,7 @@ int main(int argc,char **args)
 #if !defined(PETSC_USE_COMPLEX)
       /* Test MatGetInertia() */
       ierr = MatGetInertia(F,&nneg,&nzero,&npos);CHKERRQ(ierr);
-      ierr = PetscViewerACSCIIPrintf(PETSC_VIEWER_STDOUT_WORLD," MatInertia: nneg: %D, nzero: %D, npos: %D\n",nneg,nzero,npos);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD," MatInertia: nneg: %D, nzero: %D, npos: %D\n",nneg,nzero,npos);CHKERRQ(ierr);
 #endif
     }
 #endif
