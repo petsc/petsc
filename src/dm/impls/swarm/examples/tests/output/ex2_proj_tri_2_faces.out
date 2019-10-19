@@ -7,8 +7,6 @@ Mesh in 2 dimensions:
 Labels:
   depth: 3 strata with value/size (0 (9), 1 (16), 2 (8))
   Face Sets: 1 strata with value/size (1 (8))
-  DMSWARM_PIC: Using method CellDM->LocatePoints
-  DMSWARM_PIC: Using method CellDM->GetNeigbors
 DM Object: Particles 1 MPI processes
   type: swarm
 DMSwarmDataBucketView: 

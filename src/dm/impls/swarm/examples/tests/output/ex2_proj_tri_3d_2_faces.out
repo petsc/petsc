@@ -7,8 +7,6 @@ Mesh in 3 dimensions:
   3-cells: 48
 Labels:
   depth: 4 strata with value/size (0 (27), 1 (98), 2 (120), 3 (48))
-  DMSWARM_PIC: Using method CellDM->LocatePoints
-  DMSWARM_PIC: Using method CellDM->GetNeigbors
 DM Object: Particles 1 MPI processes
   type: swarm
 DMSwarmDataBucketView: 
