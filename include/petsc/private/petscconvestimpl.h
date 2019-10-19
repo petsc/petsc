@@ -10,22 +10,27 @@ struct _PetscConvEstOps {
   PetscErrorCode (*setup)(PetscConvEst);
   PetscErrorCode (*view)(PetscConvEst,PetscViewer);
   PetscErrorCode (*destroy)(PetscConvEst);
+  PetscErrorCode (*setsolver)(PetscConvEst, PetscObject);
+  PetscErrorCode (*initguess)(PetscConvEst, PetscInt, DM, Vec);
+  PetscErrorCode (*computeerror)(PetscConvEst, PetscInt, DM, Vec, PetscReal[]);
+  PetscErrorCode (*getconvrate)(PetscConvEst, PetscReal[]);
 };
 
 struct _p_PetscConvEst
 {
   PETSCHEADER(struct _PetscConvEstOps);
   /* Inputs */
-  DM                idm;  /* Initial grid */
-  SNES              snes; /* Solver */
-  PetscInt          Nr;   /* The number of refinements */
-  PetscInt          Nf;   /* The number of fields in the DM */
+  DM                idm;    /* Initial grid */
+  PetscObject       solver; /* Solver */
+  PetscInt          Nr;     /* The number of refinements */
+  PetscInt          Nf;     /* The number of fields in the DM */
   PetscErrorCode (**initGuess)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *);
   PetscErrorCode (**exactSol)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *);
   void            **ctxs;
   /* Outputs */
-  PetscBool  monitor;
-  PetscReal *errors;
+  PetscLogEvent event;
+  PetscBool     monitor;
+  PetscReal    *errors;
 };
 
 #endif

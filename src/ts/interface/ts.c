@@ -3,6 +3,7 @@
 #include <petscdmda.h>
 #include <petscviewer.h>
 #include <petscdraw.h>
+#include <petscconvest.h>
 
 #define SkipSmallValue(a,b,tol) if(PetscAbsScalar(a)< tol || PetscAbsScalar(b)< tol) continue;
 
@@ -3923,6 +3924,42 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   }
   if (ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP && ts->ptime < ts->max_time && ts->ptime + ts->time_step > ts->max_time) ts->time_step = ts->max_time - ts->ptime;
   ts->reason = TS_CONVERGED_ITERATING;
+
+  {
+    PetscViewer       viewer;
+    PetscViewerFormat format;
+    PetscBool         flg;
+    static PetscBool  incall = PETSC_FALSE;
+
+    if (!incall) {
+      /* Estimate the convergence rate of the time discretization */
+      ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject) ts),((PetscObject)ts)->options, ((PetscObject) ts)->prefix, "-ts_convergence_estimate", &viewer, &format, &flg);CHKERRQ(ierr);
+      if (flg) {
+        PetscConvEst conv;
+        DM           dm;
+        PetscReal   *alpha; /* Convergence rate of the solution error for each field in the L_2 norm */
+        PetscInt     Nf;
+
+        incall = PETSC_TRUE;
+        ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
+        ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
+        ierr = PetscCalloc1(PetscMax(Nf, 1), &alpha);CHKERRQ(ierr);
+        ierr = PetscConvEstCreate(PetscObjectComm((PetscObject) ts), &conv);CHKERRQ(ierr);
+        ierr = PetscConvEstUseTS(conv);CHKERRQ(ierr);
+        ierr = PetscConvEstSetSolver(conv, (PetscObject) ts);CHKERRQ(ierr);
+        ierr = PetscConvEstSetFromOptions(conv);CHKERRQ(ierr);
+        ierr = PetscConvEstSetUp(conv);CHKERRQ(ierr);
+        ierr = PetscConvEstGetConvRate(conv, alpha);CHKERRQ(ierr);
+        ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
+        ierr = PetscConvEstRateView(conv, alpha, viewer);CHKERRQ(ierr);
+        ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+        ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+        ierr = PetscConvEstDestroy(&conv);CHKERRQ(ierr);
+        ierr = PetscFree(alpha);CHKERRQ(ierr);
+        incall = PETSC_FALSE;
+      }
+    }
+  }
 
   ierr = TSViewFromOptions(ts,NULL,"-ts_view_pre");CHKERRQ(ierr);
 

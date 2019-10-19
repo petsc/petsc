@@ -5,6 +5,7 @@
 #if !defined(PETSCTS_H)
 #define PETSCTS_H
 #include <petscsnes.h>
+#include <petscconvest.h>
 
 /*S
      TS - Abstract PETSc object that manages all time-steppers (ODE integrators)
@@ -1009,4 +1010,5 @@ PETSC_EXTERN PetscErrorCode TSSetComputeInitialGuess(TS, PetscErrorCode (*)(TS, 
 PETSC_EXTERN PetscErrorCode TSComputeInitialGuess(TS, Vec);
 PETSC_EXTERN PetscErrorCode TSSetComputeExactError(TS, PetscErrorCode (*)(TS, Vec, Vec));
 PETSC_EXTERN PetscErrorCode TSComputeExactError(TS, Vec, Vec);
+PETSC_EXTERN PetscErrorCode PetscConvEstUseTS(PetscConvEst);
 #endif
