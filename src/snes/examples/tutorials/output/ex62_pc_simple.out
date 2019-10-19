@@ -124,7 +124,7 @@ SNES Object: 1 MPI processes
               A01
                 Mat Object: 1 MPI processes
                   type: seqaij
-                  rows=962, cols=145, rbs=2, cbs = 1
+                  rows=962, cols=145, rbs=2, cbs=1
                   total: nonzeros=4466, allocated nonzeros=4466
                   total number of mallocs used during MatSetValues calls =0
                     using I-node routines: found 481 nodes, limit used is 5

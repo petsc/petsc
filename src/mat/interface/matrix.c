@@ -994,7 +994,7 @@ PetscErrorCode MatView(Mat mat,PetscViewer viewer)
       ierr = MatGetSize(mat,&rows,&cols);CHKERRQ(ierr);
       ierr = MatGetBlockSizes(mat,&rbs,&cbs);CHKERRQ(ierr);
       if (rbs != 1 || cbs != 1) {
-        if (rbs != cbs) {ierr = PetscViewerASCIIPrintf(viewer,"rows=%D, cols=%D, rbs=%D, cbs = %D\n",rows,cols,rbs,cbs);CHKERRQ(ierr);}
+        if (rbs != cbs) {ierr = PetscViewerASCIIPrintf(viewer,"rows=%D, cols=%D, rbs=%D, cbs=%D\n",rows,cols,rbs,cbs);CHKERRQ(ierr);}
         else            {ierr = PetscViewerASCIIPrintf(viewer,"rows=%D, cols=%D, bs=%D\n",rows,cols,rbs);CHKERRQ(ierr);}
       } else {
         ierr = PetscViewerASCIIPrintf(viewer,"rows=%D, cols=%D\n",rows,cols);CHKERRQ(ierr);
