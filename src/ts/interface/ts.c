@@ -3677,6 +3677,187 @@ PetscErrorCode TSEvaluateStep(TS ts,PetscInt order,Vec U,PetscBool *done)
   PetscFunctionReturn(0);
 }
 
+/*@C
+  TSGetComputeInitialGuess - Get the function used to automatically compute an initial guess for the timestepping.
+
+  Not collective
+
+  Input Argument:
+. ts        - time stepping context
+
+  Output Argument:
+. initGuess - The function which computes an initial guess
+
+   Level: advanced
+
+   Notes:
+   The calling sequence for the function is
+$ initGuess(TS ts, Vec u)
+$ ts - The timestepping context
+$ u  - The input vector in which the initial guess is stored
+
+.seealso: TSSetComputeInitialGuess(), TSComputeInitialGuess()
+@*/
+PetscErrorCode TSGetComputeInitialGuess(TS ts, PetscErrorCode (**initGuess)(TS, Vec))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscValidPointer(initGuess, 2);
+  *initGuess = ts->ops->initguess;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  TSSetComputeInitialGuess - Set the function used to automatically compute an initial guess for the timestepping.
+
+  Logically collective on ts
+
+  Input Arguments:
++ ts        - time stepping context
+- initGuess - The function which computes an initial guess
+
+  Level: advanced
+
+  Notes:
+  The calling sequence for the function is
+$ initGuess(TS ts, Vec u)
+$ ts - The timestepping context
+$ u  - The input vector in which the initial guess is stored
+
+.seealso: TSGetComputeInitialGuess(), TSComputeInitialGuess()
+@*/
+PetscErrorCode TSSetComputeInitialGuess(TS ts, PetscErrorCode (*initGuess)(TS, Vec))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscValidPointer(initGuess, 2);
+  ts->ops->initguess = initGuess;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  TSComputeInitialGuess - Compute an initial guess for the timestepping using the function previously set.
+
+  Collective on ts
+
+  Input Arguments:
++ ts - time stepping context
+- u  - The Vec to store the guess in which will be used in TSSolve()
+
+  Level: advanced
+
+  Notes:
+  The calling sequence for the function is
+$ initGuess(TS ts, Vec u)
+$ ts - The timestepping context
+$ u  - The input vector in which the initial guess is stored
+
+.seealso: TSGetComputeInitialGuess(), TSSetComputeInitialGuess(), TSSolve()
+@*/
+PetscErrorCode TSComputeInitialGuess(TS ts, Vec u)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscValidHeaderSpecific(u, VEC_CLASSID, 2);
+  if (ts->ops->initguess) {ierr = (*ts->ops->initguess)(ts, u);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  TSGetComputeExactError - Get the function used to automatically compute the exact error for the timestepping.
+
+  Not collective
+
+  Input Argument:
+. ts         - time stepping context
+
+  Output Argument:
+. exactError - The function which computes the solution error
+
+  Level: advanced
+
+  Notes:
+  The calling sequence for the function is
+$ exactError(TS ts, Vec u)
+$ ts - The timestepping context
+$ u  - The approximate solution vector
+$ e  - The input vector in which the error is stored
+
+.seealso: TSGetComputeExactError(), TSComputeExactError()
+@*/
+PetscErrorCode TSGetComputeExactError(TS ts, PetscErrorCode (**exactError)(TS, Vec, Vec))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscValidPointer(exactError, 2);
+  *exactError = ts->ops->exacterror;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  TSSetComputeExactError - Set the function used to automatically compute the exact error for the timestepping.
+
+  Logically collective on ts
+
+  Input Arguments:
++ ts         - time stepping context
+- exactError - The function which computes the solution error
+
+  Level: advanced
+
+  Notes:
+  The calling sequence for the function is
+$ exactError(TS ts, Vec u)
+$ ts - The timestepping context
+$ u  - The approximate solution vector
+$ e  - The input vector in which the error is stored
+
+.seealso: TSGetComputeExactError(), TSComputeExactError()
+@*/
+PetscErrorCode TSSetComputeExactError(TS ts, PetscErrorCode (*exactError)(TS, Vec, Vec))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscValidPointer(exactError, 2);
+  ts->ops->exacterror = exactError;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  TSComputeExactError - Compute the solution error for the timestepping using the function previously set.
+
+  Collective on ts
+
+  Input Arguments:
++ ts - time stepping context
+. u  - The approximate solution
+- e  - The Vec used to store the error
+
+  Level: advanced
+
+  Notes:
+  The calling sequence for the function is
+$ exactError(TS ts, Vec u)
+$ ts - The timestepping context
+$ u  - The approximate solution vector
+$ e  - The input vector in which the error is stored
+
+.seealso: TSGetComputeInitialGuess(), TSSetComputeInitialGuess(), TSSolve()
+@*/
+PetscErrorCode TSComputeExactError(TS ts, Vec u, Vec e)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscValidHeaderSpecific(u, VEC_CLASSID, 2);
+  PetscValidHeaderSpecific(e, VEC_CLASSID, 3);
+  if (ts->ops->exacterror) {ierr = (*ts->ops->exacterror)(ts, u, e);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
 /*@
    TSSolve - Steps the requested number of timesteps.
 
