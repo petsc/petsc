@@ -1984,11 +1984,11 @@ PetscErrorCode MatGetInfo_SeqAIJ(Mat A,MatInfoType flag,MatInfo *info)
 
   PetscFunctionBegin;
   info->block_size   = 1.0;
-  info->nz_allocated = (double)a->maxnz;
-  info->nz_used      = (double)a->nz;
-  info->nz_unneeded  = (double)(a->maxnz - a->nz);
-  info->assemblies   = (double)A->num_ass;
-  info->mallocs      = (double)A->info.mallocs;
+  info->nz_allocated = a->maxnz;
+  info->nz_used      = a->nz;
+  info->nz_unneeded  = (a->maxnz - a->nz);
+  info->assemblies   = A->num_ass;
+  info->mallocs      = A->info.mallocs;
   info->memory       = ((PetscObject)A)->mem;
   if (A->factortype) {
     info->fill_ratio_given  = A->info.fill_ratio_given;

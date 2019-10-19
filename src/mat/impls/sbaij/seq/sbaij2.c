@@ -1405,7 +1405,7 @@ PetscErrorCode MatGetInfo_SeqSBAIJ(Mat A,MatInfoType flag,MatInfo *info)
   info->block_size   = a->bs2;
   info->nz_allocated = a->bs2*a->maxnz;   /*num. of nonzeros in upper triangular part */
   info->nz_used      = a->bs2*a->nz;   /*num. of nonzeros in upper triangular part */
-  info->nz_unneeded  = (double)(info->nz_allocated - info->nz_used);
+  info->nz_unneeded  = info->nz_allocated - info->nz_used;
   info->assemblies   = A->num_ass;
   info->mallocs      = A->info.mallocs;
   info->memory       = ((PetscObject)A)->mem;
