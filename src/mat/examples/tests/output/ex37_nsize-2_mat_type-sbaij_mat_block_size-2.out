@@ -48,28 +48,28 @@ Mat Object: symm_initial 2 MPI processes
     using I-node (on process 0) routines: found 3 nodes, limit used is 5
 Mat Object: symm_conv_init 2 MPI processes
   type: mpisbaij
-  rows=10, cols=10
-  total: nonzeros=31, allocated nonzeros=35
+  rows=10, cols=10, bs=2
+  total: nonzeros=36, allocated nonzeros=40
   total number of mallocs used during MatSetValues calls=0
-      block size is 1
+      block size is 2
 Mat Object: symm_conv_reuse 2 MPI processes
   type: mpisbaij
-  rows=10, cols=10
-  total: nonzeros=31, allocated nonzeros=35
+  rows=10, cols=10, bs=2
+  total: nonzeros=36, allocated nonzeros=40
   total number of mallocs used during MatSetValues calls=0
-      block size is 1
+      block size is 2
 Mat Object: symm_conv_copy_samennz 2 MPI processes
   type: mpisbaij
-  rows=10, cols=10
-  total: nonzeros=31, allocated nonzeros=35
+  rows=10, cols=10, bs=2
+  total: nonzeros=36, allocated nonzeros=40
   total number of mallocs used during MatSetValues calls=0
-      block size is 1
+      block size is 2
 Mat Object: symm_conv_copy_subnnz 2 MPI processes
   type: mpisbaij
-  rows=10, cols=10
-  total: nonzeros=31, allocated nonzeros=35
+  rows=10, cols=10, bs=2
+  total: nonzeros=36, allocated nonzeros=40
   total number of mallocs used during MatSetValues calls=0
-      block size is 1
+      block size is 2
 Mat Object: symm_conv_copy_diffnnz 2 MPI processes
   type: mpisbaij
   rows=10, cols=10
