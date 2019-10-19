@@ -276,6 +276,8 @@ static const char *PetscErrorStrings[] = {
   /*   */ "  ",
   /*92 */ "See https://www.mcs.anl.gov/petsc/documentation/linearsolvertable.html for possible LU and Cholesky solvers",
   /*93 */ "You cannot overwrite this option since that will conflict with other previously set options",
+  /*94 */ "Example/application run with number of MPI ranks it does not support",
+  /*95 */ "Missing or incorrect user input ",
 };
 
 /*@C

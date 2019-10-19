@@ -61,7 +61,7 @@ int main( int argc, char **argv )
   ierr = PetscInitialize( &argc, &argv,(char *)0,help );if (ierr) return ierr;
 
   ierr = MPI_Comm_size(MPI_COMM_WORLD,&size);CHKERRQ(ierr);
-  if (size >1) SETERRQ(PETSC_COMM_SELF,1,"Incorrect number of processors");
+  if (size >1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Incorrect number of processors");
 
   /* Specify default dimension of the problem */
   user.mx = 4; user.my = 4;

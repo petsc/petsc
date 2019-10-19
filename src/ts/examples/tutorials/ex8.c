@@ -79,7 +79,7 @@ static PetscErrorCode RoberSolution(PetscReal t,Vec X,void *ctx)
   PetscScalar    *x;
 
   PetscFunctionBeginUser;
-  if (t != 0) SETERRQ(PETSC_COMM_SELF,1,"not implemented");
+  if (t != 0) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"not implemented");
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   x[0] = 1;
   x[1] = 0;
@@ -263,7 +263,7 @@ static PetscErrorCode OregoSolution(PetscReal t,Vec X,void *ctx)
   PetscScalar    *x;
 
   PetscFunctionBeginUser;
-  if (t != 0) SETERRQ(PETSC_COMM_SELF,1,"not implemented");
+  if (t != 0) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"not implemented");
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   x[0] = 1;
   x[1] = 2;
@@ -337,7 +337,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if (size > 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for sequential runs");
+  if (size > 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Only for sequential runs");
 
   /* Register the available problems */
   ierr = PetscFunctionListAdd(&plist,"rober",&RoberCreate);CHKERRQ(ierr);

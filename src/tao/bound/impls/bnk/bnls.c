@@ -166,7 +166,7 @@ PetscErrorCode TaoSolve_BNLS(Tao tao)
     /*  Check for termination */
     ierr = VecFischer(tao->solution, bnk->unprojected_gradient, tao->XL, tao->XU, bnk->W);CHKERRQ(ierr);
     ierr = VecNorm(bnk->W, NORM_2, &resnorm);CHKERRQ(ierr);
-    if (PetscIsInfOrNanReal(resnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
+    if (PetscIsInfOrNanReal(resnorm)) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
     ierr = TaoLogConvergenceHistory(tao, bnk->f, resnorm, 0.0, tao->ksp_its);CHKERRQ(ierr);
     ierr = TaoMonitor(tao, tao->niter, bnk->f, resnorm, 0.0, steplen);CHKERRQ(ierr);
     ierr = (*tao->ops->convergencetest)(tao, tao->cnvP);CHKERRQ(ierr);

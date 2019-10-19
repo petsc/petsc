@@ -66,9 +66,7 @@ template <class T> PetscErrorCode GiveGhostPoints(DM da,T *cgs,void *array)
     ierr = GiveGhostPoints1d(da,(T**)array);CHKERRQ(ierr);
   } else if (dim == 2) {
     ierr = GiveGhostPoints2d(da,cgs,(T***)array);CHKERRQ(ierr);
-  } else if (dim == 3) {
-    SETERRQ(PETSC_COMM_SELF,1,"GiveGhostPoints3d not yet implemented\n"); // TODO
-  }
+  } else if (dim == 3) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"GiveGhostPoints3d not yet implemented\n"); // TODO
   PetscFunctionReturn(0);
 }
 

@@ -39,10 +39,10 @@ int main (int argc, char** argv)
   if (size > 2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This example is for <=2 procs");
 
   ierr = PetscOptionsGetString(NULL,NULL,"-f0",file[0],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate dof indices file for rank 0 with -f0 option");
+  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate dof indices file for rank 0 with -f0 option");
   if (size == 2) {
     ierr = PetscOptionsGetString(NULL,NULL,"-f1",file[1],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate dof indices file for rank 1 with -f1 option");
+    if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate dof indices file for rank 1 with -f1 option");
   }
 
   if (size == 1) {

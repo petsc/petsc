@@ -17,7 +17,7 @@ int main(int argc,char **args)
 
   /* This example does not work correctly for np > 2 */
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if (size > 2) SETERRQ(PETSC_COMM_WORLD,1,"Use np <= 2");
+  if (size > 2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Use np <= 2");
 
   /* Create the matrix for the five point stencil, YET AGAIN */
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);

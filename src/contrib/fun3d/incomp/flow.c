@@ -520,7 +520,7 @@ int Update(SNES snes,void *ctx)
     ierr = PetscOptionsGetInt(NULL,NULL,"-e1",&event1,&flg);CHKERRQ(ierr);
     ierr = PetscTime(&time_start_counters);CHKERRQ(ierr);
     if ((gen_start = start_counters(event0,event1)) < 0)
-    SETERRQ(PETSC_COMM_SELF,1,"Error in start_counters\n");
+    SETERRQ(PETSC_COMM_SELF,1,>"Error in start_counters\n");
   }*/
 #endif
   /*cpu_ini = PetscGetCPUTime();*/

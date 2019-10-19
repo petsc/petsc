@@ -75,7 +75,7 @@ static PetscErrorCode PhysicsSample_Advect(void *vctx,PetscInt initial,FVBCType 
     switch (bctype) {
       case FVBC_OUTFLOW:  x0 = x-a[0]*t; break;
       case FVBC_PERIODIC: x0 = RangeMod(x-a[0]*t,xmin,xmax); break;
-      default: SETERRQ(PETSC_COMM_SELF,1,"unknown BCType");
+      default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"unknown BCType");
     }
     switch (initial) {
       case 0: u[0] = (x0 < 0) ? 1 : -1; break;
@@ -86,14 +86,14 @@ static PetscErrorCode PhysicsSample_Advect(void *vctx,PetscInt initial,FVBCType 
       case 5: u[0] = (x0 < 0 || x0 > 0.5) ? 0 : PetscSqr(PetscSinReal(2*PETSC_PI*x0)); break;
       case 6: u[0] = (x0 < 0) ? 0 : ((x0 < 1) ? x0 : ((x0 < 2) ? 2-x0 : 0)); break;
       case 7: u[0] = PetscPowReal(PetscSinReal(PETSC_PI*x0),10.0);break;
-      default: SETERRQ(PETSC_COMM_SELF,1,"unknown initial condition");
+      default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"unknown initial condition");
     }
   }
   else{
     switch (bctype) {
       case FVBC_OUTFLOW:  x0 = x-a[1]*t; break;
       case FVBC_PERIODIC: x0 = RangeMod(x-a[1]*t,xmin,xmax); break;
-      default: SETERRQ(PETSC_COMM_SELF,1,"unknown BCType");
+      default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"unknown BCType");
     }
     switch (initial) {
       case 0: u[0] = (x0 < 0) ? 1 : -1; break;
@@ -104,7 +104,7 @@ static PetscErrorCode PhysicsSample_Advect(void *vctx,PetscInt initial,FVBCType 
       case 5: u[0] = (x0 < 0 || x0 > 0.5) ? 0 : PetscSqr(PetscSinReal(2*PETSC_PI*x0)); break;
       case 6: u[0] = (x0 < 0) ? 0 : ((x0 < 1) ? x0 : ((x0 < 2) ? 2-x0 : 0)); break;
       case 7: u[0] = PetscPowReal(PetscSinReal(PETSC_PI*x0),10.0);break;
-      default: SETERRQ(PETSC_COMM_SELF,1,"unknown initial condition");
+      default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"unknown initial condition");
     }
   }
   PetscFunctionReturn(0);
@@ -736,7 +736,7 @@ int main(int argc,char *argv[])
       PetscReal    nrm1,nrmsup;
       PetscBool    flg;
       ierr = PetscOptionsGetString(NULL,NULL,"-f",filename,sizeof(filename),&flg);CHKERRQ(ierr);
-      if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate binary file with the -f option");
+      if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f option");
       ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&fd);CHKERRQ(ierr);
       ierr = VecDuplicate(X0,&XR);CHKERRQ(ierr);
       ierr = VecLoad(XR,fd);CHKERRQ(ierr);
