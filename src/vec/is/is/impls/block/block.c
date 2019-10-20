@@ -248,7 +248,7 @@ static PetscErrorCode ISUniqueLocal_Block(IS is,PetscBool *flg)
   ierr = ISGetInfo(is,IS_SORTED,IS_LOCAL,&sortedLocal);CHKERRQ(ierr);
   if (!sortedLocal) {
     ierr = PetscMalloc1(n, &idxcopy);CHKERRQ(ierr);
-    ierr = PetscMemcpy(idxcopy, idx, n * sizeof(*idxcopy));CHKERRQ(ierr);
+    ierr = PetscArraycpy(idxcopy, idx, n);CHKERRQ(ierr);
     ierr = PetscSortInt(n, idxcopy);CHKERRQ(ierr);
     idx = idxcopy;
   }
