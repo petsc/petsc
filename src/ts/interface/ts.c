@@ -3731,7 +3731,7 @@ PetscErrorCode TSSetComputeInitialGuess(TS ts, PetscErrorCode (*initGuess)(TS, V
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(initGuess, 2);
+  PetscValidFunction(initGuess, 2);
   ts->ops->initguess = initGuess;
   PetscFunctionReturn(0);
 }
@@ -3821,7 +3821,7 @@ PetscErrorCode TSSetComputeExactError(TS ts, PetscErrorCode (*exactError)(TS, Ve
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(exactError, 2);
+  PetscValidFunction(exactError, 2);
   ts->ops->exacterror = exactError;
   PetscFunctionReturn(0);
 }
