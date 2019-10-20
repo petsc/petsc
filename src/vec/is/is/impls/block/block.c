@@ -32,6 +32,7 @@ static PetscErrorCode ISLocate_Block(IS is,PetscInt key,PetscInt *location)
 {
   IS_Block       *sub = (IS_Block*)is->data;
   PetscInt       numIdx, i, bs, bkey, mkey;
+  PetscBool      sorted;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -44,7 +45,8 @@ static PetscErrorCode ISLocate_Block(IS is,PetscInt key,PetscInt *location)
     bkey--;
     mkey += bs;
   }
-  if (sub->sorted) {
+  ierr = ISGetInfo(is,IS_SORTED,IS_LOCAL,&sorted);CHKERRQ(ierr);
+  if (sorted) {
     ierr = PetscFindInt(bkey,numIdx,sub->idx,location);CHKERRQ(ierr);
   } else {
     const PetscInt *idx = sub->idx;
@@ -154,8 +156,11 @@ static PetscErrorCode ISView_Block(IS is, PetscViewer viewer)
       ierr = ISDestroy(&ist);CHKERRQ(ierr);
       ierr = ISRestoreIndices(is,&idx);CHKERRQ(ierr);
     } else {
+      PetscBool isperm;
+
       ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
-      if (is->isperm) {
+      ierr = ISGetInfo(is,IS_PERMUTATION,IS_LOCAL,&isperm);CHKERRQ(ierr);
+      if (isperm) {
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Block Index set is permutation\n");CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Block size %D\n",bs);CHKERRQ(ierr);
@@ -178,11 +183,9 @@ static PetscErrorCode ISSort_Block(IS is)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (sub->sorted) PetscFunctionReturn(0);
   ierr = PetscLayoutGetBlockSize(is->map, &bs);CHKERRQ(ierr);
   ierr = PetscLayoutGetLocalSize(is->map, &n);CHKERRQ(ierr);
   ierr = PetscSortInt(n/bs,sub->idx);CHKERRQ(ierr);
-  sub->sorted = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -190,29 +193,30 @@ static PetscErrorCode ISSortRemoveDups_Block(IS is)
 {
   IS_Block       *sub = (IS_Block*)is->data;
   PetscInt       bs, n, nb;
+  PetscBool      sorted;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscLayoutGetBlockSize(is->map, &bs);CHKERRQ(ierr);
   ierr = PetscLayoutGetLocalSize(is->map, &n);CHKERRQ(ierr);
   nb   = n/bs;
-  if (sub->sorted) {
+  ierr = ISGetInfo(is,IS_SORTED,IS_LOCAL,&sorted);CHKERRQ(ierr);
+  if (sorted) {
     ierr = PetscSortedRemoveDupsInt(&nb,sub->idx);CHKERRQ(ierr);
   } else {
     ierr = PetscSortRemoveDupsInt(&nb,sub->idx);CHKERRQ(ierr);
   }
   ierr = PetscLayoutDestroy(&is->map);CHKERRQ(ierr);
   ierr = PetscLayoutCreateFromSizes(PetscObjectComm((PetscObject)is), nb*bs, PETSC_DECIDE, bs, &is->map);CHKERRQ(ierr);
-  sub->sorted = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode ISSorted_Block(IS is,PetscBool  *flg)
 {
-  IS_Block *sub = (IS_Block*)is->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  *flg = sub->sorted;
+  ierr = ISGetInfo(is,IS_SORTED,IS_LOCAL,flg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -318,23 +322,10 @@ static PetscErrorCode ISDuplicate_Block(IS is,IS *newIS)
 
 static PetscErrorCode ISIdentity_Block(IS is,PetscBool  *ident)
 {
-  IS_Block      *is_block = (IS_Block*)is->data;
-  PetscInt       i,bs,n,*idx = is_block->idx;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscLayoutGetBlockSize(is->map, &bs);CHKERRQ(ierr);
-  ierr = PetscLayoutGetLocalSize(is->map, &n);CHKERRQ(ierr);
-  n   /= bs;
-  is->isidentity = PETSC_TRUE;
-  *ident         = PETSC_TRUE;
-  for (i=0; i<n; i++) {
-    if (idx[i] != i) {
-      is->isidentity = PETSC_FALSE;
-      *ident         = PETSC_FALSE;
-      PetscFunctionReturn(0);
-    }
-  }
+  ierr = ISGetInfo(is,IS_IDENTITY,IS_LOCAL,ident);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -352,7 +343,6 @@ static PetscErrorCode ISCopy_Block(IS is,IS isy)
   ierr = PetscLayoutGetLocalSize(isy->map, &ny);CHKERRQ(ierr);
   ierr = PetscLayoutGetSize(isy->map, &Ny);CHKERRQ(ierr);
   if (n != ny || N != Ny || bs != bsy) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Index sets incompatible");
-  isy_block->sorted = is_block->sorted;
   ierr = PetscArraycpy(isy_block->idx,is_block->idx,(n/bs));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -502,10 +492,6 @@ static PetscErrorCode  ISBlockSetIndices_Block(IS is,PetscInt bs,PetscInt n,cons
     sub->allocated = PETSC_FALSE;
   }
 
-  sub->sorted = PETSC_TRUE;
-  for (i=1; i<n; i++) {
-    if (idx[i] < idx[i-1]) {sub->sorted = PETSC_FALSE; break;}
-  }
   if (n) {
     min = max = idx[0];
     for (i=1; i<n; i++) {
@@ -518,8 +504,6 @@ static PetscErrorCode  ISBlockSetIndices_Block(IS is,PetscInt bs,PetscInt n,cons
     is->min = PETSC_MAX_INT;
     is->max = PETSC_MIN_INT;
   }
-  is->isperm     = PETSC_FALSE;
-  is->isidentity = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 

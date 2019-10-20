@@ -12,15 +12,10 @@ typedef struct {
 
 PetscErrorCode ISIdentity_Stride(IS is,PetscBool  *ident)
 {
-  IS_Stride *is_stride = (IS_Stride*)is->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  is->isidentity = PETSC_FALSE;
-  *ident         = PETSC_FALSE;
-  if (is_stride->first != 0) PetscFunctionReturn(0);
-  if (is_stride->step  != 1) PetscFunctionReturn(0);
-  *ident         = PETSC_TRUE;
-  is->isidentity = PETSC_TRUE;
+  ierr = ISGetInfo(is,IS_IDENTITY,IS_LOCAL,ident);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -46,10 +41,12 @@ PetscErrorCode ISDuplicate_Stride(IS is,IS *newIS)
 
 PetscErrorCode ISInvertPermutation_Stride(IS is,PetscInt nlocal,IS *perm)
 {
+  PetscBool      isident;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (is->isidentity) {
+  ierr = ISGetInfo(is,IS_IDENTITY,IS_LOCAL,&isident);CHKERRQ(ierr);
+  if (isident) {
     ierr = ISCreateStride(PETSC_COMM_SELF,is->map->n,0,1,perm);CHKERRQ(ierr);
   } else {
     IS             tmp;
@@ -198,7 +195,10 @@ PetscErrorCode ISView_Stride(IS is,PetscViewer viewer)
         ierr = PetscObjectGetName((PetscObject)is,&name);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(viewer,"%s = [%D : %D : %D];\n",name,sub->first+1,sub->step,sub->first + sub->step*(n-1)+1);CHKERRQ(ierr);
       } else {
-        if (is->isperm) {
+        PetscBool isperm;
+
+        ierr = ISGetInfo(is,IS_PERMUTATION,IS_LOCAL,&isperm);CHKERRQ(ierr);
+        if (isperm) {
           ierr = PetscViewerASCIIPrintf(viewer,"Index set is permutation\n");CHKERRQ(ierr);
         }
         ierr = PetscViewerASCIIPrintf(viewer,"Number of indices in (stride) set %D\n",n);CHKERRQ(ierr);
@@ -215,7 +215,10 @@ PetscErrorCode ISView_Stride(IS is,PetscViewer viewer)
         ierr = PetscObjectGetName((PetscObject)is,&name);CHKERRQ(ierr);
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%s_%d = [%D : %D : %D];\n",name,rank,sub->first+1,sub->step,sub->first + sub->step*(n-1)+1);CHKERRQ(ierr);
       } else {
-        if (is->isperm) {
+        PetscBool isperm;
+
+        ierr = ISGetInfo(is,IS_PERMUTATION,IS_LOCAL,&isperm);CHKERRQ(ierr);
+        if (isperm) {
           ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Index set is permutation\n",rank);CHKERRQ(ierr);
         }
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number of indices in (stride) set %D\n",rank,n);CHKERRQ(ierr);
@@ -391,10 +394,6 @@ PetscErrorCode  ISStrideSetStride_Stride(IS is,PetscInt n,PetscInt first,PetscIn
   is->min  = n > 0 ? min : PETSC_MAX_INT;
   is->max  = n > 0 ? max : PETSC_MIN_INT;
   is->data = (void*)sub;
-
-  if ((!first && step == 1) || (first == max && step == -1 && !min)) is->isperm = PETSC_TRUE;
-  else is->isperm = PETSC_FALSE;
-  is->isidentity = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
