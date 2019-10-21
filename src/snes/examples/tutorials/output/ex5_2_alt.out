@@ -66,14 +66,14 @@ SNESLineSearch Object: 1 MPI processes
                 rows=16, cols=16
                 package used to perform factorization: petsc
                 total: nonzeros=142, allocated nonzeros=142
-                total number of mallocs used during MatSetValues calls =0
+                total number of mallocs used during MatSetValues calls=0
                   using I-node routines: found 11 nodes, limit used is 5
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
           type: seqaij
           rows=16, cols=16
           total: nonzeros=100, allocated nonzeros=100
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             not using I-node routines
     Down solver (pre-smoother) on level 1 -------------------------------
       KSP Object: (mg_levels_1_) 1 MPI processes
@@ -102,7 +102,7 @@ SNESLineSearch Object: 1 MPI processes
           type: seqaij
           rows=49, cols=49
           total: nonzeros=361, allocated nonzeros=361
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             not using I-node routines
     Up solver (post-smoother) same as down solver (pre-smoother)
     Down solver (pre-smoother) on level 2 -------------------------------
@@ -132,7 +132,7 @@ SNESLineSearch Object: 1 MPI processes
           type: seqaij
           rows=169, cols=169
           total: nonzeros=1369, allocated nonzeros=1369
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             not using I-node routines
     Up solver (post-smoother) same as down solver (pre-smoother)
     Down solver (pre-smoother) on level 3 -------------------------------
@@ -162,7 +162,7 @@ SNESLineSearch Object: 1 MPI processes
           type: seqaij
           rows=625, cols=625
           total: nonzeros=3025, allocated nonzeros=3025
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             not using I-node routines
     Up solver (post-smoother) same as down solver (pre-smoother)
     linear system matrix = precond matrix:
@@ -170,5 +170,5 @@ SNESLineSearch Object: 1 MPI processes
       type: seqaij
       rows=625, cols=625
       total: nonzeros=3025, allocated nonzeros=3025
-      total number of mallocs used during MatSetValues calls =0
+      total number of mallocs used during MatSetValues calls=0
         not using I-node routines

@@ -39,21 +39,21 @@ PC Object: 2 MPI processes
             rows=18, cols=18
             package used to perform factorization: petsc
             total: nonzeros=72, allocated nonzeros=72
-            total number of mallocs used during MatSetValues calls =0
+            total number of mallocs used during MatSetValues calls=0
               not using I-node routines
     linear system matrix = precond matrix:
     Mat Object: 1 MPI processes
       type: seqaijperm
       rows=18, cols=18
       total: nonzeros=72, allocated nonzeros=72
-      total number of mallocs used during MatSetValues calls =0
+      total number of mallocs used during MatSetValues calls=0
         not using I-node routines
   linear system matrix = precond matrix:
   Mat Object: 2 MPI processes
     type: mpiaijperm
     rows=36, cols=36
     total: nonzeros=156, allocated nonzeros=156
-    total number of mallocs used during MatSetValues calls =0
+    total number of mallocs used during MatSetValues calls=0
       not using I-node (on process 0) routines
 Number of iterations =   9
 Residual norm 0.001523

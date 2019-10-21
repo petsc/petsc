@@ -37,7 +37,7 @@ SNES Object: 4 MPI processes
           type: mpiaij
           rows=211, cols=211
           total: nonzeros=2817, allocated nonzeros=2817
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             not using I-node (on process 0) routines
     Down solver (pre-smoother) on level 1 -------------------------------
     SNES Object: (fas_levels_1_) 4 MPI processes

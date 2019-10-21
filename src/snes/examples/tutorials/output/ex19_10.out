@@ -85,21 +85,21 @@ SNES Object: 3 MPI processes
                 rows=21, cols=21
                 package used to perform factorization: petsc
                 total: nonzeros=85, allocated nonzeros=85
-                total number of mallocs used during MatSetValues calls =0
+                total number of mallocs used during MatSetValues calls=0
                   not using I-node routines
         linear system matrix = precond matrix:
         Mat Object: (fieldsplit_x_velocity_) 1 MPI processes
           type: seqaij
           rows=21, cols=21
           total: nonzeros=85, allocated nonzeros=85
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             not using I-node routines
       linear system matrix = precond matrix:
       Mat Object: (fieldsplit_x_velocity_) 3 MPI processes
         type: mpiaij
         rows=49, cols=49
         total: nonzeros=217, allocated nonzeros=217
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           not using I-node (on process 0) routines
     Split number 1 Defined by IS
     KSP Object: (fieldsplit_y_velocity_) 3 MPI processes
@@ -131,21 +131,21 @@ SNES Object: 3 MPI processes
                 rows=21, cols=21
                 package used to perform factorization: petsc
                 total: nonzeros=85, allocated nonzeros=85
-                total number of mallocs used during MatSetValues calls =0
+                total number of mallocs used during MatSetValues calls=0
                   not using I-node routines
         linear system matrix = precond matrix:
         Mat Object: (fieldsplit_y_velocity_) 1 MPI processes
           type: seqaij
           rows=21, cols=21
           total: nonzeros=85, allocated nonzeros=85
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             not using I-node routines
       linear system matrix = precond matrix:
       Mat Object: (fieldsplit_y_velocity_) 3 MPI processes
         type: mpiaij
         rows=49, cols=49
         total: nonzeros=217, allocated nonzeros=217
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           not using I-node (on process 0) routines
     Split number 2 Defined by IS
     KSP Object: (fieldsplit_Omega_) 3 MPI processes
@@ -177,21 +177,21 @@ SNES Object: 3 MPI processes
                 rows=21, cols=21
                 package used to perform factorization: petsc
                 total: nonzeros=85, allocated nonzeros=85
-                total number of mallocs used during MatSetValues calls =0
+                total number of mallocs used during MatSetValues calls=0
                   not using I-node routines
         linear system matrix = precond matrix:
         Mat Object: (fieldsplit_Omega_) 1 MPI processes
           type: seqaij
           rows=21, cols=21
           total: nonzeros=85, allocated nonzeros=85
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             not using I-node routines
       linear system matrix = precond matrix:
       Mat Object: (fieldsplit_Omega_) 3 MPI processes
         type: mpiaij
         rows=49, cols=49
         total: nonzeros=217, allocated nonzeros=217
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           not using I-node (on process 0) routines
     Split number 3 Defined by IS
     KSP Object: (fieldsplit_temperature_) 3 MPI processes
@@ -223,26 +223,26 @@ SNES Object: 3 MPI processes
                 rows=21, cols=21
                 package used to perform factorization: petsc
                 total: nonzeros=85, allocated nonzeros=85
-                total number of mallocs used during MatSetValues calls =0
+                total number of mallocs used during MatSetValues calls=0
                   not using I-node routines
         linear system matrix = precond matrix:
         Mat Object: (fieldsplit_temperature_) 1 MPI processes
           type: seqaij
           rows=21, cols=21
           total: nonzeros=85, allocated nonzeros=85
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             not using I-node routines
       linear system matrix = precond matrix:
       Mat Object: (fieldsplit_temperature_) 3 MPI processes
         type: mpiaij
         rows=49, cols=49
         total: nonzeros=217, allocated nonzeros=217
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           not using I-node (on process 0) routines
     linear system matrix = precond matrix:
     Mat Object: 3 MPI processes
       type: mpiaij
       rows=196, cols=196, bs=4
       total: nonzeros=3472, allocated nonzeros=3472
-      total number of mallocs used during MatSetValues calls =0
+      total number of mallocs used during MatSetValues calls=0
 Number of SNES iterations = 2

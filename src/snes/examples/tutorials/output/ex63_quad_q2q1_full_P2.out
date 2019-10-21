@@ -87,21 +87,21 @@ SNES Object: 2 MPI processes
                         rows=46, cols=46, bs=2
                         package used to perform factorization: petsc
                         total: nonzeros=1388, allocated nonzeros=1388
-                        total number of mallocs used during MatSetValues calls =0
+                        total number of mallocs used during MatSetValues calls=0
                           using I-node routines: found 17 nodes, limit used is 5
                 linear system matrix = precond matrix:
                 Mat Object: 1 MPI processes
                   type: seqaij
                   rows=46, cols=46, bs=2
                   total: nonzeros=1084, allocated nonzeros=1084
-                  total number of mallocs used during MatSetValues calls =0
+                  total number of mallocs used during MatSetValues calls=0
                     using I-node routines: found 23 nodes, limit used is 5
               linear system matrix = precond matrix:
               Mat Object: 2 MPI processes
                 type: mpiaij
                 rows=46, cols=46, bs=2
                 total: nonzeros=1084, allocated nonzeros=1084
-                total number of mallocs used during MatSetValues calls =0
+                total number of mallocs used during MatSetValues calls=0
                   using I-node (on process 0) routines: found 23 nodes, limit used is 5
           Down solver (pre-smoother) on level 1 -------------------------------
             KSP Object: (fieldsplit_velocity_mg_levels_1_) 2 MPI processes
@@ -130,7 +130,7 @@ SNES Object: 2 MPI processes
                 type: mpiaij
                 rows=1058, cols=1058, bs=2
                 total: nonzeros=30276, allocated nonzeros=30276
-                total number of mallocs used during MatSetValues calls =0
+                total number of mallocs used during MatSetValues calls=0
                   using I-node (on process 0) routines: found 217 nodes, limit used is 5
           Up solver (post-smoother) same as down solver (pre-smoother)
           linear system matrix = precond matrix:
@@ -138,7 +138,7 @@ SNES Object: 2 MPI processes
             type: mpiaij
             rows=1058, cols=1058, bs=2
             total: nonzeros=30276, allocated nonzeros=30276
-            total number of mallocs used during MatSetValues calls =0
+            total number of mallocs used during MatSetValues calls=0
               using I-node (on process 0) routines: found 217 nodes, limit used is 5
       KSP solver for S = A11 - A10 inv(A00) A01 
         KSP Object: (fieldsplit_pressure_) 2 MPI processes
@@ -162,7 +162,7 @@ SNES Object: 2 MPI processes
                   type: mpiaij
                   rows=169, cols=169
                   total: nonzeros=1369, allocated nonzeros=1369
-                  total number of mallocs used during MatSetValues calls =0
+                  total number of mallocs used during MatSetValues calls=0
                     has attached null space
                     not using I-node (on process 0) routines
               A10
@@ -170,7 +170,7 @@ SNES Object: 2 MPI processes
                   type: mpiaij
                   rows=169, cols=1058
                   total: nonzeros=6498, allocated nonzeros=6498
-                  total number of mallocs used during MatSetValues calls =0
+                  total number of mallocs used during MatSetValues calls=0
                     not using I-node (on process 0) routines
               KSP of A00
                 KSP Object: (fieldsplit_velocity_) 2 MPI processes
@@ -223,21 +223,21 @@ SNES Object: 2 MPI processes
                                 rows=46, cols=46, bs=2
                                 package used to perform factorization: petsc
                                 total: nonzeros=1388, allocated nonzeros=1388
-                                total number of mallocs used during MatSetValues calls =0
+                                total number of mallocs used during MatSetValues calls=0
                                   using I-node routines: found 17 nodes, limit used is 5
                         linear system matrix = precond matrix:
                         Mat Object: 1 MPI processes
                           type: seqaij
                           rows=46, cols=46, bs=2
                           total: nonzeros=1084, allocated nonzeros=1084
-                          total number of mallocs used during MatSetValues calls =0
+                          total number of mallocs used during MatSetValues calls=0
                             using I-node routines: found 23 nodes, limit used is 5
                       linear system matrix = precond matrix:
                       Mat Object: 2 MPI processes
                         type: mpiaij
                         rows=46, cols=46, bs=2
                         total: nonzeros=1084, allocated nonzeros=1084
-                        total number of mallocs used during MatSetValues calls =0
+                        total number of mallocs used during MatSetValues calls=0
                           using I-node (on process 0) routines: found 23 nodes, limit used is 5
                   Down solver (pre-smoother) on level 1 -------------------------------
                     KSP Object: (fieldsplit_velocity_mg_levels_1_) 2 MPI processes
@@ -266,7 +266,7 @@ SNES Object: 2 MPI processes
                         type: mpiaij
                         rows=1058, cols=1058, bs=2
                         total: nonzeros=30276, allocated nonzeros=30276
-                        total number of mallocs used during MatSetValues calls =0
+                        total number of mallocs used during MatSetValues calls=0
                           using I-node (on process 0) routines: found 217 nodes, limit used is 5
                   Up solver (post-smoother) same as down solver (pre-smoother)
                   linear system matrix = precond matrix:
@@ -274,20 +274,20 @@ SNES Object: 2 MPI processes
                     type: mpiaij
                     rows=1058, cols=1058, bs=2
                     total: nonzeros=30276, allocated nonzeros=30276
-                    total number of mallocs used during MatSetValues calls =0
+                    total number of mallocs used during MatSetValues calls=0
                       using I-node (on process 0) routines: found 217 nodes, limit used is 5
               A01
                 Mat Object: 2 MPI processes
                   type: mpiaij
-                  rows=1058, cols=169, rbs=2, cbs = 1
+                  rows=1058, cols=169, rbs=2, cbs=1
                   total: nonzeros=6498, allocated nonzeros=6498
-                  total number of mallocs used during MatSetValues calls =0
+                  total number of mallocs used during MatSetValues calls=0
                     using I-node (on process 0) routines: found 216 nodes, limit used is 5
           Mat Object: (fieldsplit_pressure_) 2 MPI processes
             type: mpiaij
             rows=169, cols=169
             total: nonzeros=1369, allocated nonzeros=1369
-            total number of mallocs used during MatSetValues calls =0
+            total number of mallocs used during MatSetValues calls=0
               has attached null space
               not using I-node (on process 0) routines
     linear system matrix = precond matrix:
@@ -295,7 +295,7 @@ SNES Object: 2 MPI processes
       type: mpiaij
       rows=1227, cols=1227
       total: nonzeros=44641, allocated nonzeros=44641
-      total number of mallocs used during MatSetValues calls =0
+      total number of mallocs used during MatSetValues calls=0
         has attached null space
         using I-node (on process 0) routines: found 240 nodes, limit used is 5
 Number of SNES iterations = 1

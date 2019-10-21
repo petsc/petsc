@@ -43,14 +43,14 @@ SNES Object: 1 MPI processes
               rows=962, cols=962, bs=2
               package used to perform factorization: petsc
               total: nonzeros=68692, allocated nonzeros=68692
-              total number of mallocs used during MatSetValues calls =0
+              total number of mallocs used during MatSetValues calls=0
                 using I-node routines: found 456 nodes, limit used is 5
       linear system matrix = precond matrix:
       Mat Object: (fieldsplit_velocity_) 1 MPI processes
         type: seqaij
         rows=962, cols=962, bs=2
         total: nonzeros=19908, allocated nonzeros=19908
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           using I-node routines: found 481 nodes, limit used is 5
     Split number 1 Defined by IS
     KSP Object: (fieldsplit_pressure_) 1 MPI processes
@@ -66,7 +66,7 @@ SNES Object: 1 MPI processes
         type: seqaij
         rows=145, cols=145
         total: nonzeros=945, allocated nonzeros=945
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           has attached null space
           not using I-node routines
     linear system matrix = precond matrix:
@@ -74,7 +74,7 @@ SNES Object: 1 MPI processes
       type: seqaij
       rows=1107, cols=1107
       total: nonzeros=29785, allocated nonzeros=29785
-      total number of mallocs used during MatSetValues calls =0
+      total number of mallocs used during MatSetValues calls=0
         has attached null space
         using I-node routines: found 513 nodes, limit used is 5
 L_2 Error: 6.4744e-07 [1.52739e-08, 6.4726e-07]

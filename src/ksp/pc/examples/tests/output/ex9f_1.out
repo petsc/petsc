@@ -32,14 +32,14 @@ PC Object: 1 MPI processes
             rows=10, cols=10
             package used to perform factorization: petsc
             total: nonzeros=28, allocated nonzeros=28
-            total number of mallocs used during MatSetValues calls =0
+            total number of mallocs used during MatSetValues calls=0
               not using I-node routines
     linear system matrix = precond matrix:
     Mat Object: (fieldsplit_splitname_) 1 MPI processes
       type: seqaij
       rows=10, cols=10
       total: nonzeros=28, allocated nonzeros=50
-      total number of mallocs used during MatSetValues calls =0
+      total number of mallocs used during MatSetValues calls=0
         not using I-node routines
   Split number 1 Defined by IS
   KSP Object: (fieldsplit_1_) 1 MPI processes
@@ -61,20 +61,20 @@ PC Object: 1 MPI processes
             rows=0, cols=0
             package used to perform factorization: petsc
             total: nonzeros=0, allocated nonzeros=0
-            total number of mallocs used during MatSetValues calls =0
+            total number of mallocs used during MatSetValues calls=0
               not using I-node routines
     linear system matrix = precond matrix:
     Mat Object: (fieldsplit_1_) 1 MPI processes
       type: seqaij
       rows=0, cols=0
       total: nonzeros=0, allocated nonzeros=0
-      total number of mallocs used during MatSetValues calls =0
+      total number of mallocs used during MatSetValues calls=0
         not using I-node routines
   linear system matrix = precond matrix:
   Mat Object: (fieldsplit_splitname_) 1 MPI processes
     type: seqaij
     rows=10, cols=10
     total: nonzeros=28, allocated nonzeros=50
-    total number of mallocs used during MatSetValues calls =0
+    total number of mallocs used during MatSetValues calls=0
       not using I-node routines
 Norm of error < 1.e-12, Iterations =     1

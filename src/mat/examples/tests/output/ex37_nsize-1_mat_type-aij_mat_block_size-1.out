@@ -14,65 +14,65 @@ Mat Object: initial 1 MPI processes
   type: seqaij
   rows=10, cols=10
   total: nonzeros=28, allocated nonzeros=30
-  total number of mallocs used during MatSetValues calls =0
+  total number of mallocs used during MatSetValues calls=0
     not using I-node routines
 Mat Object: duplicate_copy 1 MPI processes
   type: seqaij
   rows=10, cols=10
   total: nonzeros=28, allocated nonzeros=28
-  total number of mallocs used during MatSetValues calls =0
+  total number of mallocs used during MatSetValues calls=0
     not using I-node routines
 Mat Object: copy_diffnnz 1 MPI processes
   type: seqaij
   rows=10, cols=10
   total: nonzeros=28, allocated nonzeros=28
-  total number of mallocs used during MatSetValues calls =0
+  total number of mallocs used during MatSetValues calls=0
     not using I-node routines
 Mat Object: copy_samennz 1 MPI processes
   type: seqaij
   rows=10, cols=10
   total: nonzeros=28, allocated nonzeros=28
-  total number of mallocs used during MatSetValues calls =0
+  total number of mallocs used during MatSetValues calls=0
     not using I-node routines
 Mat Object: copy_subnnz 1 MPI processes
   type: seqaij
   rows=10, cols=10
   total: nonzeros=28, allocated nonzeros=28
-  total number of mallocs used during MatSetValues calls =0
+  total number of mallocs used during MatSetValues calls=0
     not using I-node routines
 Mat Object: symm_initial 1 MPI processes
   type: seqaij
   rows=10, cols=10
   total: nonzeros=28, allocated nonzeros=28
-  total number of mallocs used during MatSetValues calls =0
+  total number of mallocs used during MatSetValues calls=0
     not using I-node routines
 Mat Object: symm_conv_init 1 MPI processes
   type: seqaij
   rows=10, cols=10
   total: nonzeros=28, allocated nonzeros=28
-  total number of mallocs used during MatSetValues calls =0
+  total number of mallocs used during MatSetValues calls=0
     not using I-node routines
 Mat Object: symm_conv_reuse 1 MPI processes
   type: seqaij
   rows=10, cols=10
   total: nonzeros=28, allocated nonzeros=28
-  total number of mallocs used during MatSetValues calls =0
+  total number of mallocs used during MatSetValues calls=0
     not using I-node routines
 Mat Object: symm_conv_copy_samennz 1 MPI processes
   type: seqaij
   rows=10, cols=10
   total: nonzeros=28, allocated nonzeros=28
-  total number of mallocs used during MatSetValues calls =0
+  total number of mallocs used during MatSetValues calls=0
     not using I-node routines
 Mat Object: symm_conv_copy_subnnz 1 MPI processes
   type: seqaij
   rows=10, cols=10
   total: nonzeros=28, allocated nonzeros=28
-  total number of mallocs used during MatSetValues calls =0
+  total number of mallocs used during MatSetValues calls=0
     not using I-node routines
 Mat Object: symm_conv_copy_diffnnz 1 MPI processes
   type: seqaij
   rows=10, cols=10
   total: nonzeros=28, allocated nonzeros=28
-  total number of mallocs used during MatSetValues calls =0
+  total number of mallocs used during MatSetValues calls=0
     not using I-node routines

@@ -59,14 +59,14 @@ SNES Object: 1 MPI processes
                 rows=1, cols=1
                 package used to perform factorization: petsc
                 total: nonzeros=1, allocated nonzeros=1
-                total number of mallocs used during MatSetValues calls =0
+                total number of mallocs used during MatSetValues calls=0
                   not using I-node routines
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
           type: seqaij
           rows=1, cols=1
           total: nonzeros=1, allocated nonzeros=1
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             not using I-node routines
     Down solver (pre-smoother) on level 1 -------------------------------
       KSP Object: (mg_levels_1_) 1 MPI processes
@@ -95,7 +95,7 @@ SNES Object: 1 MPI processes
           type: seqaij
           rows=9, cols=9
           total: nonzeros=41, allocated nonzeros=41
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             not using I-node routines
     Up solver (post-smoother) same as down solver (pre-smoother)
     linear system matrix = precond matrix:
@@ -103,7 +103,7 @@ SNES Object: 1 MPI processes
       type: seqaij
       rows=9, cols=9
       total: nonzeros=41, allocated nonzeros=41
-      total number of mallocs used during MatSetValues calls =0
+      total number of mallocs used during MatSetValues calls=0
         not using I-node routines
 Timestep: 0001 time = 0.1      	 L_2 Error: 0.042609
 1 TS dt 0.1 time 0.1
@@ -166,14 +166,14 @@ SNES Object: 1 MPI processes
                 rows=1, cols=1
                 package used to perform factorization: petsc
                 total: nonzeros=1, allocated nonzeros=1
-                total number of mallocs used during MatSetValues calls =0
+                total number of mallocs used during MatSetValues calls=0
                   not using I-node routines
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
           type: seqaij
           rows=1, cols=1
           total: nonzeros=1, allocated nonzeros=1
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             not using I-node routines
     Down solver (pre-smoother) on level 1 -------------------------------
       KSP Object: (mg_levels_1_) 1 MPI processes
@@ -202,7 +202,7 @@ SNES Object: 1 MPI processes
           type: seqaij
           rows=9, cols=9
           total: nonzeros=41, allocated nonzeros=41
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             not using I-node routines
     Up solver (post-smoother) same as down solver (pre-smoother)
     linear system matrix = precond matrix:
@@ -210,7 +210,7 @@ SNES Object: 1 MPI processes
       type: seqaij
       rows=9, cols=9
       total: nonzeros=41, allocated nonzeros=41
-      total number of mallocs used during MatSetValues calls =0
+      total number of mallocs used during MatSetValues calls=0
         not using I-node routines
 Timestep: 0002 time = 0.2      	 L_2 Error: 0.084372
 2 TS dt 0.1 time 0.2
@@ -273,14 +273,14 @@ SNES Object: 1 MPI processes
                 rows=1, cols=1
                 package used to perform factorization: petsc
                 total: nonzeros=1, allocated nonzeros=1
-                total number of mallocs used during MatSetValues calls =0
+                total number of mallocs used during MatSetValues calls=0
                   not using I-node routines
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
           type: seqaij
           rows=1, cols=1
           total: nonzeros=1, allocated nonzeros=1
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             not using I-node routines
     Down solver (pre-smoother) on level 1 -------------------------------
       KSP Object: (mg_levels_1_) 1 MPI processes
@@ -309,7 +309,7 @@ SNES Object: 1 MPI processes
           type: seqaij
           rows=9, cols=9
           total: nonzeros=41, allocated nonzeros=41
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             not using I-node routines
     Up solver (post-smoother) same as down solver (pre-smoother)
     linear system matrix = precond matrix:
@@ -317,7 +317,7 @@ SNES Object: 1 MPI processes
       type: seqaij
       rows=9, cols=9
       total: nonzeros=41, allocated nonzeros=41
-      total number of mallocs used during MatSetValues calls =0
+      total number of mallocs used during MatSetValues calls=0
         not using I-node routines
 Timestep: 0003 time = 0.3      	 L_2 Error: 0.12562
 3 TS dt 0.1 time 0.3
@@ -380,14 +380,14 @@ SNES Object: 1 MPI processes
                 rows=1, cols=1
                 package used to perform factorization: petsc
                 total: nonzeros=1, allocated nonzeros=1
-                total number of mallocs used during MatSetValues calls =0
+                total number of mallocs used during MatSetValues calls=0
                   not using I-node routines
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
           type: seqaij
           rows=1, cols=1
           total: nonzeros=1, allocated nonzeros=1
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             not using I-node routines
     Down solver (pre-smoother) on level 1 -------------------------------
       KSP Object: (mg_levels_1_) 1 MPI processes
@@ -416,7 +416,7 @@ SNES Object: 1 MPI processes
           type: seqaij
           rows=9, cols=9
           total: nonzeros=41, allocated nonzeros=41
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             not using I-node routines
     Up solver (post-smoother) same as down solver (pre-smoother)
     linear system matrix = precond matrix:
@@ -424,7 +424,7 @@ SNES Object: 1 MPI processes
       type: seqaij
       rows=9, cols=9
       total: nonzeros=41, allocated nonzeros=41
-      total number of mallocs used during MatSetValues calls =0
+      total number of mallocs used during MatSetValues calls=0
         not using I-node routines
 Timestep: 0004 time = 0.4      	 L_2 Error: 0.16664
 4 TS dt 0.1 time 0.4
@@ -487,14 +487,14 @@ SNES Object: 1 MPI processes
                 rows=1, cols=1
                 package used to perform factorization: petsc
                 total: nonzeros=1, allocated nonzeros=1
-                total number of mallocs used during MatSetValues calls =0
+                total number of mallocs used during MatSetValues calls=0
                   not using I-node routines
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
           type: seqaij
           rows=1, cols=1
           total: nonzeros=1, allocated nonzeros=1
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             not using I-node routines
     Down solver (pre-smoother) on level 1 -------------------------------
       KSP Object: (mg_levels_1_) 1 MPI processes
@@ -523,7 +523,7 @@ SNES Object: 1 MPI processes
           type: seqaij
           rows=9, cols=9
           total: nonzeros=41, allocated nonzeros=41
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             not using I-node routines
     Up solver (post-smoother) same as down solver (pre-smoother)
     linear system matrix = precond matrix:
@@ -531,7 +531,7 @@ SNES Object: 1 MPI processes
       type: seqaij
       rows=9, cols=9
       total: nonzeros=41, allocated nonzeros=41
-      total number of mallocs used during MatSetValues calls =0
+      total number of mallocs used during MatSetValues calls=0
         not using I-node routines
 Timestep: 0005 time = 0.5      	 L_2 Error: 0.2076
 5 TS dt 0.1 time 0.5
@@ -594,14 +594,14 @@ SNES Object: 1 MPI processes
                 rows=1, cols=1
                 package used to perform factorization: petsc
                 total: nonzeros=1, allocated nonzeros=1
-                total number of mallocs used during MatSetValues calls =0
+                total number of mallocs used during MatSetValues calls=0
                   not using I-node routines
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
           type: seqaij
           rows=1, cols=1
           total: nonzeros=1, allocated nonzeros=1
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             not using I-node routines
     Down solver (pre-smoother) on level 1 -------------------------------
       KSP Object: (mg_levels_1_) 1 MPI processes
@@ -630,7 +630,7 @@ SNES Object: 1 MPI processes
           type: seqaij
           rows=9, cols=9
           total: nonzeros=41, allocated nonzeros=41
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             not using I-node routines
     Up solver (post-smoother) same as down solver (pre-smoother)
     linear system matrix = precond matrix:
@@ -638,7 +638,7 @@ SNES Object: 1 MPI processes
       type: seqaij
       rows=9, cols=9
       total: nonzeros=41, allocated nonzeros=41
-      total number of mallocs used during MatSetValues calls =0
+      total number of mallocs used during MatSetValues calls=0
         not using I-node routines
 Timestep: 0006 time = 0.6      	 L_2 Error: 0.24859
 6 TS dt 0.1 time 0.6
@@ -701,14 +701,14 @@ SNES Object: 1 MPI processes
                 rows=1, cols=1
                 package used to perform factorization: petsc
                 total: nonzeros=1, allocated nonzeros=1
-                total number of mallocs used during MatSetValues calls =0
+                total number of mallocs used during MatSetValues calls=0
                   not using I-node routines
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
           type: seqaij
           rows=1, cols=1
           total: nonzeros=1, allocated nonzeros=1
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             not using I-node routines
     Down solver (pre-smoother) on level 1 -------------------------------
       KSP Object: (mg_levels_1_) 1 MPI processes
@@ -737,7 +737,7 @@ SNES Object: 1 MPI processes
           type: seqaij
           rows=9, cols=9
           total: nonzeros=41, allocated nonzeros=41
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             not using I-node routines
     Up solver (post-smoother) same as down solver (pre-smoother)
     linear system matrix = precond matrix:
@@ -745,7 +745,7 @@ SNES Object: 1 MPI processes
       type: seqaij
       rows=9, cols=9
       total: nonzeros=41, allocated nonzeros=41
-      total number of mallocs used during MatSetValues calls =0
+      total number of mallocs used during MatSetValues calls=0
         not using I-node routines
 Timestep: 0007 time = 0.7      	 L_2 Error: 0.28962
 7 TS dt 0.1 time 0.7
@@ -808,14 +808,14 @@ SNES Object: 1 MPI processes
                 rows=1, cols=1
                 package used to perform factorization: petsc
                 total: nonzeros=1, allocated nonzeros=1
-                total number of mallocs used during MatSetValues calls =0
+                total number of mallocs used during MatSetValues calls=0
                   not using I-node routines
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
           type: seqaij
           rows=1, cols=1
           total: nonzeros=1, allocated nonzeros=1
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             not using I-node routines
     Down solver (pre-smoother) on level 1 -------------------------------
       KSP Object: (mg_levels_1_) 1 MPI processes
@@ -844,7 +844,7 @@ SNES Object: 1 MPI processes
           type: seqaij
           rows=9, cols=9
           total: nonzeros=41, allocated nonzeros=41
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             not using I-node routines
     Up solver (post-smoother) same as down solver (pre-smoother)
     linear system matrix = precond matrix:
@@ -852,7 +852,7 @@ SNES Object: 1 MPI processes
       type: seqaij
       rows=9, cols=9
       total: nonzeros=41, allocated nonzeros=41
-      total number of mallocs used during MatSetValues calls =0
+      total number of mallocs used during MatSetValues calls=0
         not using I-node routines
 Timestep: 0008 time = 0.8      	 L_2 Error: 0.33068
 8 TS dt 0.1 time 0.8
@@ -915,14 +915,14 @@ SNES Object: 1 MPI processes
                 rows=1, cols=1
                 package used to perform factorization: petsc
                 total: nonzeros=1, allocated nonzeros=1
-                total number of mallocs used during MatSetValues calls =0
+                total number of mallocs used during MatSetValues calls=0
                   not using I-node routines
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
           type: seqaij
           rows=1, cols=1
           total: nonzeros=1, allocated nonzeros=1
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             not using I-node routines
     Down solver (pre-smoother) on level 1 -------------------------------
       KSP Object: (mg_levels_1_) 1 MPI processes
@@ -951,7 +951,7 @@ SNES Object: 1 MPI processes
           type: seqaij
           rows=9, cols=9
           total: nonzeros=41, allocated nonzeros=41
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             not using I-node routines
     Up solver (post-smoother) same as down solver (pre-smoother)
     linear system matrix = precond matrix:
@@ -959,7 +959,7 @@ SNES Object: 1 MPI processes
       type: seqaij
       rows=9, cols=9
       total: nonzeros=41, allocated nonzeros=41
-      total number of mallocs used during MatSetValues calls =0
+      total number of mallocs used during MatSetValues calls=0
         not using I-node routines
 Timestep: 0009 time = 0.9      	 L_2 Error: 0.37179
 9 TS dt 0.1 time 0.9
@@ -1022,14 +1022,14 @@ SNES Object: 1 MPI processes
                 rows=1, cols=1
                 package used to perform factorization: petsc
                 total: nonzeros=1, allocated nonzeros=1
-                total number of mallocs used during MatSetValues calls =0
+                total number of mallocs used during MatSetValues calls=0
                   not using I-node routines
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
           type: seqaij
           rows=1, cols=1
           total: nonzeros=1, allocated nonzeros=1
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             not using I-node routines
     Down solver (pre-smoother) on level 1 -------------------------------
       KSP Object: (mg_levels_1_) 1 MPI processes
@@ -1058,7 +1058,7 @@ SNES Object: 1 MPI processes
           type: seqaij
           rows=9, cols=9
           total: nonzeros=41, allocated nonzeros=41
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             not using I-node routines
     Up solver (post-smoother) same as down solver (pre-smoother)
     linear system matrix = precond matrix:
@@ -1066,7 +1066,7 @@ SNES Object: 1 MPI processes
       type: seqaij
       rows=9, cols=9
       total: nonzeros=41, allocated nonzeros=41
-      total number of mallocs used during MatSetValues calls =0
+      total number of mallocs used during MatSetValues calls=0
         not using I-node routines
 Timestep: 0010 time = 1        	 L_2 Error: 0.41293
 10 TS dt 0.1 time 1.

@@ -2,12 +2,12 @@ Mat Object: 7 MPI processes
   type: mpibaij
   rows=122880, cols=122880, bs=5
   total: nonzeros=4134400, allocated nonzeros=4134400
-  total number of mallocs used during MatSetValues calls =0
+  total number of mallocs used during MatSetValues calls=0
       block size is 5
 Mat Object: 7 MPI processes
   type: mpibaij
   rows=122880, cols=122880, bs=5
   total: nonzeros=4134400, allocated nonzeros=4134400
-  total number of mallocs used during MatSetValues calls =0
+  total number of mallocs used during MatSetValues calls=0
       block size is 5
 Matrices are equal

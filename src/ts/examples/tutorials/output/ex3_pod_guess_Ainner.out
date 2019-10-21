@@ -236,5 +236,5 @@ TS Object: 1 MPI processes
         type: seqaij
         rows=60, cols=60
         total: nonzeros=176, allocated nonzeros=176
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           not using I-node routines
