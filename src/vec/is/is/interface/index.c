@@ -823,11 +823,7 @@ PetscErrorCode  ISIdentity(IS is,PetscBool  *ident)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidIntPointer(ident,2);
-  *ident = is->isidentity;
-  if (*ident) PetscFunctionReturn(0);
-  if (is->ops->identity) {
-    ierr = (*is->ops->identity)(is,ident);CHKERRQ(ierr);
-  }
+  ierr = ISGetInfo(is,IS_IDENTITY,IS_GLOBAL,ident);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -909,10 +905,12 @@ PetscErrorCode  ISContiguousLocal(IS is,PetscInt gstart,PetscInt gend,PetscInt *
 @*/
 PetscErrorCode  ISPermutation(IS is,PetscBool  *perm)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidIntPointer(perm,2);
-  *perm = (PetscBool) is->isperm;
+  ierr = ISGetInfo(is,IS_PERMUTATION,IS_GLOBAL,perm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1023,13 +1021,16 @@ PetscErrorCode  ISDestroy(IS *is)
 @*/
 PetscErrorCode  ISInvertPermutation(IS is,PetscInt nlocal,IS *isout)
 {
+  PetscBool      isperm, isidentity;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(isout,3);
-  if (!is->isperm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a permutation, must call ISSetPermutation() on the IS first");
-  if (is->isidentity) {
+  ierr = ISGetInfo(is,IS_PERMUTATION,IS_GLOBAL,&isperm);CHKERRQ(ierr);
+  if (!isperm) SETERRQ(PetscObjectComm((PetscObject)is),PETSC_ERR_ARG_WRONG,"Not a permutation, must call ISSetPermutation() on the IS first");
+  ierr = ISGetInfo(is,IS_IDENTITY,IS_GLOBAL,&isidentity);CHKERRQ(ierr);
+  if (isidentity) {
     ierr = ISDuplicate(is,isout);CHKERRQ(ierr);
   } else {
     ierr = (*is->ops->invertpermutation)(is,nlocal,isout);CHKERRQ(ierr);
@@ -1734,8 +1735,6 @@ PetscErrorCode  ISDuplicate(IS is,IS *newIS)
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(newIS,2);
   ierr = (*is->ops->duplicate)(is,newIS);CHKERRQ(ierr);
-  (*newIS)->isidentity = is->isidentity;
-  (*newIS)->isperm     = is->isperm;
   ierr = ISCopyInfo(is,*newIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1768,8 +1767,6 @@ PetscErrorCode  ISCopy(IS is,IS isy)
   isy->max        = is->max;
   isy->min        = is->min;
   ierr = (*is->ops->copy)(is,isy);CHKERRQ(ierr);
-  isy->isperm     = is->isperm;
-  isy->isidentity = is->isidentity;
   PetscFunctionReturn(0);
 }
 
