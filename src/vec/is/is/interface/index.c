@@ -583,8 +583,13 @@ static PetscErrorCode ISGetInfo_Permutation(IS is, ISInfoType type, PetscBool *f
     ierr = ISGetLocalSize(is, &n);CHKERRQ(ierr);
     ierr = PetscMalloc1(n, &idx);CHKERRQ(ierr);
     ierr = ISGetIndicesCopy(is, idx);CHKERRQ(ierr);
-    ierr = PetscParallelSortInt(is->map, is->map, idx, idx);CHKERRQ(ierr);
-    ierr = PetscLayoutGetRange(is->map, &rStart, NULL);CHKERRQ(ierr);
+    if (type == IS_GLOBAL) {
+      ierr = PetscParallelSortInt(is->map, is->map, idx, idx);CHKERRQ(ierr);
+      ierr = PetscLayoutGetRange(is->map, &rStart, NULL);CHKERRQ(ierr);
+    } else {
+      ierr = PetscSortInt(n, idx);CHKERRQ(ierr);
+      rStart = 0;
+    }
     permLocal = PETSC_TRUE;
     for (i = 0; i < n; i++) {
       if (idx[i] != rStart + i) break;
