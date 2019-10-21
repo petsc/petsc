@@ -46,8 +46,8 @@ int main(int argc,char **argv)
      Check identity and permutation
   */
   ierr = ISPermutation(is,&flg);CHKERRQ(ierr);
-  /* locally, this is a permutation, but depending on the implementation, ISPermutation() doesn't know that yet */
-  if (flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISPermutation");
+  if (!rank && !flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISPermutation");
+  if (rank && flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISPermutation");
   ierr = ISGetInfo(is,IS_PERMUTATION,IS_LOCAL,&flg);CHKERRQ(ierr);
   if (!rank && !flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_PERMUTATION,IS_LOCAL)");
   if (rank && flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_PERMUTATION,IS_LOCAL)");
@@ -57,19 +57,9 @@ int main(int argc,char **argv)
   ierr = ISGetInfo(is,IS_IDENTITY,IS_LOCAL,&flg);CHKERRQ(ierr);
   if (!rank && !flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_IDENTITY,IS_LOCAL)");
   if (rank && flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_IDENTITY,IS_LOCAL)");
-  if (!rank) {
-    ierr = ISSetPermutation(is);CHKERRQ(ierr);
-    ierr = ISSetIdentity(is);CHKERRQ(ierr);
-  }
   /* we can override the computed values with ISSetInfo() */
   ierr = ISSetInfo(is,IS_PERMUTATION,IS_LOCAL,permanent,PETSC_TRUE);CHKERRQ(ierr);
   ierr = ISSetInfo(is,IS_IDENTITY,IS_LOCAL,permanent,PETSC_TRUE);CHKERRQ(ierr);
-  if (!rank) {
-    ierr = ISPermutation(is,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISPermutation");
-    ierr = ISIdentity(is,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISIdentity");
-  }
   ierr = ISGetInfo(is,IS_PERMUTATION,IS_LOCAL,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_PERMUTATION,IS_LOCAL)");
   ierr = ISGetInfo(is,IS_IDENTITY,IS_LOCAL,&flg);CHKERRQ(ierr);
