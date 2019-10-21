@@ -153,7 +153,7 @@ static PetscErrorCode PetscParallelSampleSelect(PetscLayout mapin, PetscLayout m
       size_t sample_rank = sample / (size - 1);
 
       keys_per[sample_rank]++;
-      if (my_first < 0 && sample_rank == rank) {
+      if (my_first < 0 && (PetscMPIInt) sample_rank == rank) {
         my_first = (PetscInt) (sample - sample_rank * (size - 1));
       }
     }
