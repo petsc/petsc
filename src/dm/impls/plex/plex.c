@@ -1213,8 +1213,11 @@ static PetscErrorCode DMPlexView_Draw(DM dm, PetscViewer viewer)
                                PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS-2) + 2);CHKERRQ(ierr);
       break;
     case 4:
-      ierr = PetscDrawRectangle(draw, PetscRealPart(coords[0]), PetscRealPart(coords[1]), PetscRealPart(coords[4]), PetscRealPart(coords[5]),
+      ierr = PetscDrawTriangle(draw, PetscRealPart(coords[0]), PetscRealPart(coords[1]), PetscRealPart(coords[2]), PetscRealPart(coords[3]), PetscRealPart(coords[4]), PetscRealPart(coords[5]),
                                 PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS-2) + 2,
+                                PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS-2) + 2,
+                                PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS-2) + 2);CHKERRQ(ierr);
+      ierr = PetscDrawTriangle(draw, PetscRealPart(coords[0]), PetscRealPart(coords[1]), PetscRealPart(coords[4]), PetscRealPart(coords[5]), PetscRealPart(coords[6]), PetscRealPart(coords[7]),
                                 PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS-2) + 2,
                                 PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS-2) + 2,
                                 PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS-2) + 2);CHKERRQ(ierr);

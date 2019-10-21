@@ -48,3 +48,11 @@
       parameter (DM_ADAPT_REFINE=1)
       parameter (DM_ADAPT_COARSEN=2)
       parameter (DM_ADAPT_RESERVED_COUNT=3)
+!
+! DMDA Directions
+!
+      PetscEnum DM_X
+      PetscEnum DM_Y
+      PetscEnum DM_Z
+
+      parameter (DM_X = 0,DM_Y = 1,DM_Z = 2)

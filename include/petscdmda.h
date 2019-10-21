@@ -42,8 +42,6 @@ PETSC_EXTERN PetscErrorCode DMDAGetElementsCorners(DM,PetscInt*,PetscInt*,PetscI
 PETSC_EXTERN PetscErrorCode DMDAGetSubdomainCornersIS(DM,IS*);
 PETSC_EXTERN PetscErrorCode DMDARestoreSubdomainCornersIS(DM,IS*);
 
-typedef enum { DMDA_X,DMDA_Y,DMDA_Z } DMDADirection;
-
 #define MATSEQUSFFT        "sequsfft"
 
 PETSC_EXTERN PetscErrorCode DMDACreate(MPI_Comm,DM*);
@@ -63,9 +61,9 @@ PETSC_EXTERN PetscErrorCode DMDACreateNaturalVector(DM,Vec *);
 PETSC_EXTERN PetscErrorCode DMDAGetCorners(DM,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMDAGetGhostCorners(DM,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMDAGetInfo(DM,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,DMBoundaryType*,DMBoundaryType*,DMBoundaryType*,DMDAStencilType*);
-PETSC_EXTERN PetscErrorCode DMDAGetProcessorSubset(DM,DMDADirection,PetscInt,MPI_Comm*);
-PETSC_EXTERN PetscErrorCode DMDAGetProcessorSubsets(DM,DMDADirection,MPI_Comm*);
-PETSC_EXTERN PetscErrorCode DMDAGetRay(DM,DMDADirection,PetscInt,Vec*,VecScatter*);
+PETSC_EXTERN PetscErrorCode DMDAGetProcessorSubset(DM,DMDirection,PetscInt,MPI_Comm*);
+PETSC_EXTERN PetscErrorCode DMDAGetProcessorSubsets(DM,DMDirection,MPI_Comm*);
+PETSC_EXTERN PetscErrorCode DMDAGetRay(DM,DMDirection,PetscInt,Vec*,VecScatter*);
 
 PETSC_EXTERN PetscErrorCode DMDAGlobalToNaturalAllCreate(DM,VecScatter*);
 PETSC_EXTERN PetscErrorCode DMDANaturalAllToGlobalCreate(DM,VecScatter*);

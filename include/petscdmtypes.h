@@ -20,7 +20,7 @@ typedef struct _p_DM* DM;
 
   A boundary may be of type DM_BOUNDARY_NONE (no ghost nodes), DM_BOUNDARY_GHOSTED (ghost vertices/cells
   exist but aren't filled; you can put values into them and then apply a stencil that uses those ghost locations),
-  DM_BOUNDARY_MIRROR (the ghost value is the same as the value 1 grid point in; that is, the 0th grid point in the real mesh acts like a mirror to define the ghost point value; 
+  DM_BOUNDARY_MIRROR (the ghost value is the same as the value 1 grid point in; that is, the 0th grid point in the real mesh acts like a mirror to define the ghost point value;
   not yet implemented for 3d), DM_BOUNDARY_PERIODIC (ghost vertices/cells filled by the opposite
   edge of the domain), or DM_BOUNDARY_TWIST (like periodic, only glued backwards like a Mobius strip).
 
@@ -34,7 +34,7 @@ typedef struct _p_DM* DM;
     Should DM_BOUNDARY_MIRROR have the same meaning with DMDA_Q0, that is a staggered grid? In that case should the ghost point have the same value
   as the 0th grid point where the physical boundary serves as the mirror?
 
-  References: 
+  References:
   https://scicomp.stackexchange.com/questions/5355/writing-the-poisson-equation-finite-difference-matrix-with-neumann-boundary-cond
 
 .seealso: DMDASetBoundaryType(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDACreate()
@@ -108,6 +108,15 @@ typedef enum {DM_ADAPTATION_NONE, DM_ADAPTATION_REFINE, DM_ADAPTATION_LABEL, DM_
 .seealso: DMAdaptLabel()
 E*/
 typedef enum {DM_ADAPT_DETERMINE = PETSC_DETERMINE, DM_ADAPT_KEEP = 0, DM_ADAPT_REFINE, DM_ADAPT_COARSEN, DM_ADAPT_COARSEN_LAST, DM_ADAPT_RESERVED_COUNT} DMAdaptFlag;
+
+/*E
+  DMDirection - Indicates a coordinate direction
+
+  Level: beginner
+
+.seealso: DMDAGetRay(), DMDAGetProcessorSubset(), DMPlexShearGeometry()
+E*/
+typedef enum {DM_X, DM_Y, DM_Z} DMDirection;
 
 /*S
   PetscPartitioner - PETSc object that manages a graph partitioner
