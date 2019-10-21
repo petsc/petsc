@@ -889,11 +889,13 @@ PetscErrorCode DMStagSetBoundaryTypes(DM dm,DMBoundaryType boundaryType0,DMBound
 @*/
 PetscErrorCode DMStagSetCoordinateDMType(DM dm,DMType dmtype)
 {
+  PetscErrorCode  ierr;
   DM_Stag * const stag = (DM_Stag*)dm->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
-  stag->coordinateDMType = dmtype;
+  ierr = PetscFree(stag->coordinateDMType);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(dmtype,(char**)&stag->coordinateDMType);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
