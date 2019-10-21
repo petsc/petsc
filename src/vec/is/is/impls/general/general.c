@@ -36,7 +36,7 @@ static PetscErrorCode ISIdentity_General(IS is, PetscBool *ident)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = ISGetInfo(is,IS_IDENTITY,IS_GLOBAL,ident);CHKERRQ(ierr);
+  ierr = ISGetInfo(is,IS_IDENTITY,IS_GLOBAL,PETSC_TRUE,ident);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -112,7 +112,7 @@ static PetscErrorCode ISLocate_General(IS is,PetscInt key,PetscInt *location)
 
   PetscFunctionBegin;
   ierr = PetscLayoutGetLocalSize(is->map,&numIdx);CHKERRQ(ierr);
-  ierr = ISGetInfo(is,IS_SORTED,IS_LOCAL,&sorted);CHKERRQ(ierr);
+  ierr = ISGetInfo(is,IS_SORTED,IS_LOCAL,PETSC_TRUE,&sorted);CHKERRQ(ierr);
   if (sorted) {ierr = PetscFindInt(key,numIdx,sub->idx,location);CHKERRQ(ierr);}
   else {
     const PetscInt *idx = sub->idx;
@@ -417,12 +417,15 @@ static PetscErrorCode ISView_General(IS is,PetscViewer viewer)
     MPI_Comm          comm;
     PetscMPIInt       rank,size;
     PetscViewerFormat fmt;
+    PetscBool         isperm;
 
     ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
     ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
     ierr = PetscViewerGetFormat(viewer,&fmt);CHKERRQ(ierr);
+    ierr = ISGetInfo(is,IS_PERMUTATION,IS_LOCAL,PETSC_FALSE,&isperm);CHKERRQ(ierr);
+    if (isperm && fmt != PETSC_VIEWER_ASCII_MATLAB) {ierr = PetscViewerASCIIPrintf(viewer,"Index set is permutation\n");CHKERRQ(ierr);}
     ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
     if (size > 1) {
       if (fmt == PETSC_VIEWER_ASCII_MATLAB) {
@@ -436,13 +439,8 @@ static PetscErrorCode ISView_General(IS is,PetscViewer viewer)
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"];\n");CHKERRQ(ierr);
       } else {
         PetscInt  st = 0;
-        PetscBool isperm;
 
         if (fmt == PETSC_VIEWER_ASCII_INDEX) st = is->map->rstart;
-        ierr = ISGetInfo(is,IS_PERMUTATION,IS_LOCAL,&isperm);CHKERRQ(ierr);
-        if (isperm) {
-          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Index set is permutation\n",rank);CHKERRQ(ierr);
-        }
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number of indices in set %D\n",rank,n);CHKERRQ(ierr);
         for (i=0; i<n; i++) {
           ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %D %D\n",rank,i + st,idx[i]);CHKERRQ(ierr);
@@ -460,13 +458,8 @@ static PetscErrorCode ISView_General(IS is,PetscViewer viewer)
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"];\n");CHKERRQ(ierr);
       } else {
         PetscInt  st = 0;
-        PetscBool isperm;
 
         if (fmt == PETSC_VIEWER_ASCII_INDEX) st = is->map->rstart;
-        ierr = ISGetInfo(is,IS_PERMUTATION,IS_LOCAL,&isperm);CHKERRQ(ierr);
-        if (isperm) {
-          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Index set is permutation\n");CHKERRQ(ierr);
-        }
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Number of indices in set %D\n",n);CHKERRQ(ierr);
         for (i=0; i<n; i++) {
           ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%D %D\n",i + st,idx[i]);CHKERRQ(ierr);
@@ -507,7 +500,7 @@ static PetscErrorCode ISSortRemoveDups_General(IS is)
 
   PetscFunctionBegin;
   ierr = PetscLayoutGetLocalSize(is->map, &n);CHKERRQ(ierr);
-  ierr = ISGetInfo(is,IS_SORTED,IS_LOCAL,&sorted);CHKERRQ(ierr);
+  ierr = ISGetInfo(is,IS_SORTED,IS_LOCAL,PETSC_TRUE,&sorted);CHKERRQ(ierr);
   if (sorted) {
     ierr = PetscSortedRemoveDupsInt(&n,sub->idx);CHKERRQ(ierr);
   } else {
@@ -524,7 +517,7 @@ static PetscErrorCode ISSorted_General(IS is,PetscBool  *flg)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = ISGetInfo(is,IS_SORTED,IS_LOCAL,flg);CHKERRQ(ierr);
+  ierr = ISGetInfo(is,IS_SORTED,IS_LOCAL,PETSC_TRUE,flg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

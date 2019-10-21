@@ -457,7 +457,7 @@ static PetscErrorCode ISGetInfo_Sorted(IS is, ISInfoType type, PetscBool *flg)
     /* determine if the array is locally sorted */
     if (type == IS_GLOBAL && size > 1) {
       /* call ISGetInfo so that a cached value will be used if possible */
-      ierr = ISGetInfo(is, IS_SORTED, IS_LOCAL, &sortedLocal);CHKERRQ(ierr);
+      ierr = ISGetInfo(is, IS_SORTED, IS_LOCAL, PETSC_TRUE, &sortedLocal);CHKERRQ(ierr);
     } else if (is->ops->sortedlocal) {
       ierr = (*is->ops->sortedlocal)(is,&sortedLocal);CHKERRQ(ierr);
     } else {
@@ -516,7 +516,7 @@ static PetscErrorCode ISGetInfo_Unique(IS is, ISInfoType type, PetscBool *flg)
     /* determine if the array is locally unique */
     if (type == IS_GLOBAL && size > 1) {
       /* call ISGetInfo so that a cached value will be used if possible */
-      ierr = ISGetInfo(is, IS_UNIQUE, IS_LOCAL, &uniqueLocal);CHKERRQ(ierr);
+      ierr = ISGetInfo(is, IS_UNIQUE, IS_LOCAL, PETSC_TRUE, &uniqueLocal);CHKERRQ(ierr);
     } else if (is->ops->uniquelocal) {
       ierr = (*is->ops->uniquelocal)(is,&uniqueLocal);CHKERRQ(ierr);
     } else {
@@ -624,7 +624,7 @@ static PetscErrorCode ISGetInfo_Interval(IS is, ISInfoType type, PetscBool *flg)
     /* determine if the array is locally an interval */
     if (type == IS_GLOBAL && size > 1) {
       /* call ISGetInfo so that a cached value will be used if possible */
-      ierr = ISGetInfo(is, IS_INTERVAL, IS_LOCAL, &intervalLocal);CHKERRQ(ierr);
+      ierr = ISGetInfo(is, IS_INTERVAL, IS_LOCAL, PETSC_TRUE, &intervalLocal);CHKERRQ(ierr);
     } else if (is->ops->intervallocal) {
       ierr = (*is->ops->intervallocal)(is,&intervalLocal);CHKERRQ(ierr);
     } else {
@@ -724,6 +724,7 @@ static PetscErrorCode ISGetInfo_Identity(IS is, ISInfoType type, PetscBool *flg)
    Input Parameters:
 +  is - the index set
 .  info - describing a property of the index set, one of those listed in the documentation of ISSetInfo()
+.  compute - if PETSC_FALSE, the property will not be computed if it is not already known and the property will be assumed to be false
 -  type - whether the property is local (IS_LOCAL) or global (IS_GLOBAL)
 
    Output Parameter:
@@ -736,12 +737,13 @@ static PetscErrorCode ISGetInfo_Identity(IS is, ISInfoType type, PetscBool *flg)
 .seealso:  ISInfo, ISInfoType, ISSetInfo(), ISClearInfoCache()
 
 @*/
-PetscErrorCode ISGetInfo(IS is, ISInfo info, ISInfoType type, PetscBool *flg)
+PetscErrorCode ISGetInfo(IS is, ISInfo info, ISInfoType type, PetscBool compute, PetscBool *flg)
 {
   MPI_Comm       comm, errcomm;
   PetscMPIInt    rank, size;
   PetscInt       itype;
   PetscBool      hasprop;
+  PetscBool      infer;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -761,14 +763,18 @@ PetscErrorCode ISGetInfo(IS is, ISInfo info, ISInfoType type, PetscBool *flg)
   if (((int) info) <= IS_INFO_MIN || ((int) info) >= IS_INFO_MAX) SETERRQ1(errcomm,PETSC_ERR_ARG_OUTOFRANGE,"Options %d is out of range",(int)info);
   if (size == 1) type = IS_LOCAL;
   itype = (type == IS_LOCAL) ? 0 : 1;
+  hasprop = PETSC_FALSE;
+  infer = PETSC_FALSE;
   if (is->info_permanent[itype][(int)info]) {
     hasprop = (is->info[itype][(int)info] == IS_INFO_TRUE) ? PETSC_TRUE : PETSC_FALSE;
+    infer = PETSC_TRUE;
   } else if ((itype == IS_LOCAL) && (is->info[IS_LOCAL][info] != IS_INFO_UNKNOWN)) {
     /* we can cache local properties as long as we clear them when the IS changes */
     /* NOTE: we only cache local values because there is no ISAssemblyBegin()/ISAssemblyEnd(),
      so we have no way of knowing when a cached value has been invalidated by changes on a different process */
     hasprop = (is->info[itype][(int)info] == IS_INFO_TRUE) ? PETSC_TRUE : PETSC_FALSE;
-  } else {
+    infer = PETSC_TRUE;
+  } else if (compute) {
     switch (info) {
     case IS_SORTED:
       ierr = ISGetInfo_Sorted(is, type, &hasprop);CHKERRQ(ierr);
@@ -788,9 +794,10 @@ PetscErrorCode ISGetInfo(IS is, ISInfo info, ISInfoType type, PetscBool *flg)
     default:
       SETERRQ(errcomm, PETSC_ERR_ARG_OUTOFRANGE, "Unknown IS property");
     }
+    infer = PETSC_TRUE;
   }
   /* call ISSetInfo_Internal to keep all of the implications straight */
-  ierr = ISSetInfo_Internal(is, info, type, IS_INFO_UNKNOWN, hasprop);CHKERRQ(ierr);
+  if (infer) {ierr = ISSetInfo_Internal(is, info, type, IS_INFO_UNKNOWN, hasprop);CHKERRQ(ierr);}
   *flg = hasprop;
   PetscFunctionReturn(0);
 }
@@ -828,7 +835,7 @@ PetscErrorCode  ISIdentity(IS is,PetscBool  *ident)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidIntPointer(ident,2);
-  ierr = ISGetInfo(is,IS_IDENTITY,IS_GLOBAL,ident);CHKERRQ(ierr);
+  ierr = ISGetInfo(is,IS_IDENTITY,IS_GLOBAL,PETSC_TRUE,ident);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -915,7 +922,7 @@ PetscErrorCode  ISPermutation(IS is,PetscBool  *perm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidIntPointer(perm,2);
-  ierr = ISGetInfo(is,IS_PERMUTATION,IS_GLOBAL,perm);CHKERRQ(ierr);
+  ierr = ISGetInfo(is,IS_PERMUTATION,IS_GLOBAL,PETSC_FALSE,perm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1032,9 +1039,9 @@ PetscErrorCode  ISInvertPermutation(IS is,PetscInt nlocal,IS *isout)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(isout,3);
-  ierr = ISGetInfo(is,IS_PERMUTATION,IS_GLOBAL,&isperm);CHKERRQ(ierr);
-  if (!isperm) SETERRQ(PetscObjectComm((PetscObject)is),PETSC_ERR_ARG_WRONG,"Not a permutation, must call ISSetPermutation() on the IS first");
-  ierr = ISGetInfo(is,IS_IDENTITY,IS_GLOBAL,&isidentity);CHKERRQ(ierr);
+  ierr = ISGetInfo(is,IS_PERMUTATION,IS_GLOBAL,PETSC_TRUE,&isperm);CHKERRQ(ierr);
+  if (!isperm) SETERRQ(PetscObjectComm((PetscObject)is),PETSC_ERR_ARG_WRONG,"Not a permutation");
+  ierr = ISGetInfo(is,IS_IDENTITY,IS_GLOBAL,PETSC_TRUE,&isidentity);CHKERRQ(ierr);
   if (isidentity) {
     ierr = ISDuplicate(is,isout);CHKERRQ(ierr);
   } else {

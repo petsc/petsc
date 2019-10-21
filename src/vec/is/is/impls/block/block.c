@@ -45,7 +45,7 @@ static PetscErrorCode ISLocate_Block(IS is,PetscInt key,PetscInt *location)
     bkey--;
     mkey += bs;
   }
-  ierr = ISGetInfo(is,IS_SORTED,IS_LOCAL,&sorted);CHKERRQ(ierr);
+  ierr = ISGetInfo(is,IS_SORTED,IS_LOCAL,PETSC_TRUE,&sorted);CHKERRQ(ierr);
   if (sorted) {
     ierr = PetscFindInt(bkey,numIdx,sub->idx,location);CHKERRQ(ierr);
   } else {
@@ -158,11 +158,9 @@ static PetscErrorCode ISView_Block(IS is, PetscViewer viewer)
     } else {
       PetscBool isperm;
 
+      ierr = ISGetInfo(is,IS_PERMUTATION,IS_GLOBAL,PETSC_FALSE,&isperm);CHKERRQ(ierr);
+      if (isperm) {ierr = PetscViewerASCIIPrintf(viewer,"Block Index set is permutation\n");CHKERRQ(ierr);}
       ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
-      ierr = ISGetInfo(is,IS_PERMUTATION,IS_LOCAL,&isperm);CHKERRQ(ierr);
-      if (isperm) {
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Block Index set is permutation\n");CHKERRQ(ierr);
-      }
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Block size %D\n",bs);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Number of block indices in set %D\n",n);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"The first indices of each block are\n");CHKERRQ(ierr);
@@ -200,7 +198,7 @@ static PetscErrorCode ISSortRemoveDups_Block(IS is)
   ierr = PetscLayoutGetBlockSize(is->map, &bs);CHKERRQ(ierr);
   ierr = PetscLayoutGetLocalSize(is->map, &n);CHKERRQ(ierr);
   nb   = n/bs;
-  ierr = ISGetInfo(is,IS_SORTED,IS_LOCAL,&sorted);CHKERRQ(ierr);
+  ierr = ISGetInfo(is,IS_SORTED,IS_LOCAL,PETSC_TRUE,&sorted);CHKERRQ(ierr);
   if (sorted) {
     ierr = PetscSortedRemoveDupsInt(&nb,sub->idx);CHKERRQ(ierr);
   } else {
@@ -216,7 +214,7 @@ static PetscErrorCode ISSorted_Block(IS is,PetscBool  *flg)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = ISGetInfo(is,IS_SORTED,IS_LOCAL,flg);CHKERRQ(ierr);
+  ierr = ISGetInfo(is,IS_SORTED,IS_LOCAL,PETSC_TRUE,flg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -249,7 +247,7 @@ static PetscErrorCode ISUniqueLocal_Block(IS is,PetscBool *flg)
   ierr = PetscLayoutGetBlockSize(is->map, &bs);CHKERRQ(ierr);
   n   /= bs;
   idx  = sub->idx;
-  ierr = ISGetInfo(is,IS_SORTED,IS_LOCAL,&sortedLocal);CHKERRQ(ierr);
+  ierr = ISGetInfo(is,IS_SORTED,IS_LOCAL,PETSC_TRUE,&sortedLocal);CHKERRQ(ierr);
   if (!sortedLocal) {
     ierr = PetscMalloc1(n, &idxcopy);CHKERRQ(ierr);
     ierr = PetscArraycpy(idxcopy, idx, n);CHKERRQ(ierr);
@@ -275,7 +273,7 @@ static PetscErrorCode ISPermutationLocal_Block(IS is,PetscBool *flg)
   ierr = PetscLayoutGetBlockSize(is->map, &bs);CHKERRQ(ierr);
   n   /= bs;
   idx  = sub->idx;
-  ierr = ISGetInfo(is,IS_SORTED,IS_LOCAL,&sortedLocal);CHKERRQ(ierr);
+  ierr = ISGetInfo(is,IS_SORTED,IS_LOCAL,PETSC_TRUE,&sortedLocal);CHKERRQ(ierr);
   if (!sortedLocal) {
     ierr = PetscMalloc1(n, &idxcopy);CHKERRQ(ierr);
     ierr = PetscArraycpy(idxcopy, idx, n);CHKERRQ(ierr);
@@ -325,7 +323,7 @@ static PetscErrorCode ISIdentity_Block(IS is,PetscBool  *ident)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = ISGetInfo(is,IS_IDENTITY,IS_GLOBAL,ident);CHKERRQ(ierr);
+  ierr = ISGetInfo(is,IS_IDENTITY,IS_GLOBAL,PETSC_TRUE,ident);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -74,7 +74,7 @@ typedef enum {IS_INFO_MIN = -1,
 typedef enum {IS_LOCAL, IS_GLOBAL} ISInfoType;
 
 PETSC_EXTERN PetscErrorCode ISSetInfo(IS,ISInfo,ISInfoType,PetscBool,PetscBool);
-PETSC_EXTERN PetscErrorCode ISGetInfo(IS,ISInfo,ISInfoType,PetscBool*);
+PETSC_EXTERN PetscErrorCode ISGetInfo(IS,ISInfo,ISInfoType,PetscBool,PetscBool*);
 PETSC_EXTERN PetscErrorCode ISClearInfoCache(IS,PetscBool);
 PETSC_EXTERN PetscErrorCode ISGetIndices(IS,const PetscInt *[]);
 PETSC_EXTERN PetscErrorCode ISRestoreIndices(IS,const PetscInt *[]);

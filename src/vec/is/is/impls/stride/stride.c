@@ -15,7 +15,7 @@ PetscErrorCode ISIdentity_Stride(IS is,PetscBool  *ident)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = ISGetInfo(is,IS_IDENTITY,IS_GLOBAL,ident);CHKERRQ(ierr);
+  ierr = ISGetInfo(is,IS_IDENTITY,IS_GLOBAL,PETSC_TRUE,ident);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -45,12 +45,16 @@ PetscErrorCode ISInvertPermutation_Stride(IS is,PetscInt nlocal,IS *perm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = ISGetInfo(is,IS_IDENTITY,IS_LOCAL,&isident);CHKERRQ(ierr);
+  ierr = ISGetInfo(is,IS_IDENTITY,IS_GLOBAL,PETSC_TRUE,&isident);CHKERRQ(ierr);
   if (isident) {
-    ierr = ISCreateStride(PETSC_COMM_SELF,is->map->n,0,1,perm);CHKERRQ(ierr);
+    PetscInt rStart, rEnd;
+
+    ierr = PetscLayoutGetRange(is->map, &rStart, &rEnd);CHKERRQ(ierr);
+    ierr = ISCreateStride(PETSC_COMM_SELF,PetscMax(rEnd - rStart, 0),rStart,1,perm);CHKERRQ(ierr);
   } else {
     IS             tmp;
     const PetscInt *indices,n = is->map->n;
+
     ierr = ISGetIndices(is,&indices);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PetscObjectComm((PetscObject)is),n,indices,PETSC_COPY_VALUES,&tmp);CHKERRQ(ierr);
     ierr = ISSetPermutation(tmp);CHKERRQ(ierr);
@@ -182,12 +186,14 @@ PetscErrorCode ISView_Stride(IS is,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    PetscBool matl;
+    PetscBool matl, isperm;
 
     ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)is),&rank);CHKERRQ(ierr);
     ierr = MPI_Comm_size(PetscObjectComm((PetscObject)is),&size);CHKERRQ(ierr);
     ierr = PetscViewerGetFormat(viewer,&fmt);CHKERRQ(ierr);
     matl = (PetscBool)(fmt == PETSC_VIEWER_ASCII_MATLAB);
+    ierr = ISGetInfo(is,IS_PERMUTATION,IS_GLOBAL,PETSC_FALSE,&isperm);CHKERRQ(ierr);
+    if (isperm && !matl) {ierr = PetscViewerASCIIPrintf(viewer,"Index set is permutation\n");CHKERRQ(ierr);}
     if (size == 1) {
       if (matl) {
         const char* name;
@@ -195,12 +201,6 @@ PetscErrorCode ISView_Stride(IS is,PetscViewer viewer)
         ierr = PetscObjectGetName((PetscObject)is,&name);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(viewer,"%s = [%D : %D : %D];\n",name,sub->first+1,sub->step,sub->first + sub->step*(n-1)+1);CHKERRQ(ierr);
       } else {
-        PetscBool isperm;
-
-        ierr = ISGetInfo(is,IS_PERMUTATION,IS_LOCAL,&isperm);CHKERRQ(ierr);
-        if (isperm) {
-          ierr = PetscViewerASCIIPrintf(viewer,"Index set is permutation\n");CHKERRQ(ierr);
-        }
         ierr = PetscViewerASCIIPrintf(viewer,"Number of indices in (stride) set %D\n",n);CHKERRQ(ierr);
         for (i=0; i<n; i++) {
           ierr = PetscViewerASCIIPrintf(viewer,"%D %D\n",i,sub->first + i*sub->step);CHKERRQ(ierr);
@@ -215,12 +215,6 @@ PetscErrorCode ISView_Stride(IS is,PetscViewer viewer)
         ierr = PetscObjectGetName((PetscObject)is,&name);CHKERRQ(ierr);
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%s_%d = [%D : %D : %D];\n",name,rank,sub->first+1,sub->step,sub->first + sub->step*(n-1)+1);CHKERRQ(ierr);
       } else {
-        PetscBool isperm;
-
-        ierr = ISGetInfo(is,IS_PERMUTATION,IS_LOCAL,&isperm);CHKERRQ(ierr);
-        if (isperm) {
-          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Index set is permutation\n",rank);CHKERRQ(ierr);
-        }
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number of indices in (stride) set %D\n",rank,n);CHKERRQ(ierr);
         for (i=0; i<n; i++) {
           ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %D %D\n",rank,i,sub->first + i*sub->step);CHKERRQ(ierr);
