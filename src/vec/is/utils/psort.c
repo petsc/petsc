@@ -1,6 +1,6 @@
 
 #include <petsc/private/petscimpl.h>
-#include <petscis.h>
+#include <petscis.h> /*I "petscis.h" I*/
 
 /* This is the bitonic merge that works on non-power-of-2 sizes found at http://www.iti.fh-flensburg.de/lang/algorithmen/sortieren/bitonic/oddn.htm */
 static PetscErrorCode PetscParallelSortInt_Bitonic_Merge(MPI_Comm comm, PetscMPIInt tag, PetscMPIInt rankStart, PetscMPIInt rankEnd, PetscMPIInt rank, PetscMPIInt n, PetscInt keys[], PetscInt buffer[], PetscBool forward)
