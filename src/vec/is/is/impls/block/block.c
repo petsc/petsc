@@ -231,7 +231,7 @@ static PetscErrorCode ISSortedLocal_Block(IS is,PetscBool *flg)
   ierr = PetscLayoutGetBlockSize(is->map, &bs);CHKERRQ(ierr);
   n   /= bs;
   idx  = sub->idx;
-  for (i = 1; i < n; i++) if (idx[i] < (idx[i - 1] + bs - 1)) break;
+  for (i = 1; i < n; i++) if (idx[i] < idx[i - 1]) break;
   if (i < n) *flg = PETSC_FALSE;
   else       *flg = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -256,7 +256,7 @@ static PetscErrorCode ISUniqueLocal_Block(IS is,PetscBool *flg)
     ierr = PetscSortInt(n, idxcopy);CHKERRQ(ierr);
     idx = idxcopy;
   }
-  for (i = 1; i < n; i++) if (idx[i] <= (idx[i - 1] + bs - 1)) break;
+  for (i = 1; i < n; i++) if (idx[i] == idx[i - 1]) break;
   if (i < n) *flg = PETSC_FALSE;
   else       *flg = PETSC_TRUE;
   ierr = PetscFree(idxcopy);CHKERRQ(ierr);
@@ -282,7 +282,7 @@ static PetscErrorCode ISPermutationLocal_Block(IS is,PetscBool *flg)
     ierr = PetscSortInt(n, idxcopy);CHKERRQ(ierr);
     idx = idxcopy;
   }
-  for (i = 0; i < n; i++) if (idx[i] != i*bs) break;
+  for (i = 0; i < n; i++) if (idx[i] != i) break;
   if (i < n) *flg = PETSC_FALSE;
   else       *flg = PETSC_TRUE;
   ierr = PetscFree(idxcopy);CHKERRQ(ierr);
@@ -300,7 +300,7 @@ static PetscErrorCode ISIntervalLocal_Block(IS is,PetscBool *flg)
   ierr = PetscLayoutGetBlockSize(is->map, &bs);CHKERRQ(ierr);
   n   /= bs;
   idx  = sub->idx;
-  for (i = 1; i < n; i++) if (idx[i] != (idx[i - 1] + bs)) break;
+  for (i = 1; i < n; i++) if (idx[i] != idx[i - 1] + 1) break;
   if (i < n) *flg = PETSC_FALSE;
   else       *flg = PETSC_TRUE;
   PetscFunctionReturn(0);
