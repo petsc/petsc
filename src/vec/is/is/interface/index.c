@@ -790,6 +790,16 @@ PetscErrorCode ISGetInfo(IS is, ISInfo info, ISInfoType type, PetscBool *flg)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode ISCopyInfo(IS source, IS dest)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscArraycpy(&dest->info[0], &source->info[0], 2);CHKERRQ(ierr);
+  ierr = PetscArraycpy(&dest->info_permanent[0], &source->info_permanent[0], 2);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@
    ISIdentity - Determines whether index set is the identity mapping.
 
@@ -1726,6 +1736,7 @@ PetscErrorCode  ISDuplicate(IS is,IS *newIS)
   ierr = (*is->ops->duplicate)(is,newIS);CHKERRQ(ierr);
   (*newIS)->isidentity = is->isidentity;
   (*newIS)->isperm     = is->isperm;
+  ierr = ISCopyInfo(is,*newIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1753,10 +1764,11 @@ PetscErrorCode  ISCopy(IS is,IS isy)
   PetscValidHeaderSpecific(isy,IS_CLASSID,2);
   PetscCheckSameComm(is,1,isy,2);
   if (is == isy) PetscFunctionReturn(0);
-  ierr = (*is->ops->copy)(is,isy);CHKERRQ(ierr);
-  isy->isperm     = is->isperm;
+  ierr = ISCopyInfo(is,isy);CHKERRQ(ierr);
   isy->max        = is->max;
   isy->min        = is->min;
+  ierr = (*is->ops->copy)(is,isy);CHKERRQ(ierr);
+  isy->isperm     = is->isperm;
   isy->isidentity = is->isidentity;
   PetscFunctionReturn(0);
 }
