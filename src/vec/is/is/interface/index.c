@@ -1881,7 +1881,7 @@ PetscErrorCode ISGetIndicesCopy(IS is, PetscInt idx[])
   const PetscInt *ptr;
 
   PetscFunctionBegin;
-  ierr = ISGetSize(is,&len);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(is,&len);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&ptr);CHKERRQ(ierr);
   for (i=0; i<len; i++) idx[i] = ptr[i];
   ierr = ISRestoreIndices(is,&ptr);CHKERRQ(ierr);
