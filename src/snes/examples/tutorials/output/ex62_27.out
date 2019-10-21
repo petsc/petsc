@@ -27,7 +27,7 @@ SNES Object: 2 MPI processes
       type: mpiaij
       rows=63, cols=63
       total: nonzeros=1213, allocated nonzeros=1213
-      total number of mallocs used during MatSetValues calls =0
+      total number of mallocs used during MatSetValues calls=0
         has attached null space
         using I-node (on process 0) routines: found 6 nodes, limit used is 5
 L_2 Error: 1.33273e-10 [1.78201e-11, 1.32076e-10]

@@ -82,7 +82,7 @@ SNES Object: 4 MPI processes
           type: mpiaij
           rows=211, cols=211
           total: nonzeros=2817, allocated nonzeros=2817
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             not using I-node (on process 0) routines
     Down solver (pre-smoother) on level 1 -------------------------------
     SNES Object: (fas_levels_1_) 4 MPI processes
@@ -112,7 +112,7 @@ SNES Object: 4 MPI processes
           type: mpiaij
           rows=515, cols=515
           total: nonzeros=7445, allocated nonzeros=7445
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             not using I-node (on process 0) routines
     Up solver (post-smoother) same as down solver (pre-smoother)
     Down solver (pre-smoother) on level 2 -------------------------------
@@ -143,7 +143,7 @@ SNES Object: 4 MPI processes
           type: mpiaij
           rows=1477, cols=1477
           total: nonzeros=22453, allocated nonzeros=22453
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             not using I-node (on process 0) routines
     Up solver (post-smoother) same as down solver (pre-smoother)
   maximum iterations=10, maximum function evaluations=30000

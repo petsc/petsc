@@ -18,4 +18,4 @@ Mat Object: 2 MPI processes
   type: mpiaij
   rows=14, cols=14, bs=2
   total: nonzeros=42, allocated nonzeros=42
-  total number of mallocs used during MatSetValues calls =0
+  total number of mallocs used during MatSetValues calls=0

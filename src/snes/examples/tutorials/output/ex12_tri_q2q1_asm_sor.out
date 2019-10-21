@@ -73,12 +73,12 @@ SNES Object: 1 MPI processes
           type: seqaij
           rows=223, cols=223
           total: nonzeros=1447, allocated nonzeros=1447
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             not using I-node routines
     linear system matrix = precond matrix:
     Mat Object: 1 MPI processes
       type: seqaij
       rows=225, cols=225
       total: nonzeros=1457, allocated nonzeros=1457
-      total number of mallocs used during MatSetValues calls =0
+      total number of mallocs used during MatSetValues calls=0
         not using I-node routines

@@ -181,7 +181,6 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     help.addArgument('Framework', '-ignoreLinkOutput=<bool>',    nargs.ArgBool(None, 1, 'Ignore linker output'))
     help.addArgument('Framework', '-ignoreWarnings=<bool>',      nargs.ArgBool(None, 0, 'Ignore compiler and linker warnings'))
     help.addArgument('Framework', '-doCleanup=<bool>',           nargs.ArgBool(None, 1, 'Delete any configure generated files (turn off for debugging)'))
-    help.addArgument('Framework', '-with-alternatives=<bool>',   nargs.ArgBool(None, 0, 'Provide a choice among alternative package installations'))
     help.addArgument('Framework', '-with-executables-search-path', nargs.Arg(None, searchdirs, 'A list of directories used to search for executables'))
     help.addArgument('Framework', '-with-packages-search-path',  nargs.Arg(None, packagedirs, 'A list of directories used to search for packages'))
     help.addArgument('Framework', '-with-packages-build-dir=<dir>', nargs.Arg(None, None, 'Location to unpack and run the build process for downloaded packages'))

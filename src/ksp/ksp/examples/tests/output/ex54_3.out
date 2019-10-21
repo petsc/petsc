@@ -28,7 +28,7 @@ PC Object: 2 MPI processes
     type: mpidense
     rows=4, cols=3
     total: nonzeros=12, allocated nonzeros=12
-    total number of mallocs used during MatSetValues calls =0
+    total number of mallocs used during MatSetValues calls=0
 Vec Object: 2 MPI processes
   type: mpi
 Process [0]

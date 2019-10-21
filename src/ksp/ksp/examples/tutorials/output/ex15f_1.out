@@ -14,6 +14,6 @@ PC Object: 2 MPI processes
     type: mpiaij
     rows=56, cols=56
     total: nonzeros=250, allocated nonzeros=560
-    total number of mallocs used during MatSetValues calls =0
+    total number of mallocs used during MatSetValues calls=0
       not using I-node (on process 0) routines
 Norm of error  5.9071E-08 iterations    15

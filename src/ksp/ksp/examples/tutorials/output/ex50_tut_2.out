@@ -20,7 +20,7 @@ PC Object: 4 MPI processes
           rows=14400, cols=14400
           package used to perform factorization: superlu_dist
           total: nonzeros=0, allocated nonzeros=0
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             SuperLU_DIST run parameters:
               Process grid nprow 2 x npcol 2 
               Equilibrate matrix TRUE 
@@ -36,5 +36,5 @@ PC Object: 4 MPI processes
     type: mpiaij
     rows=14400, cols=14400
     total: nonzeros=71520, allocated nonzeros=71520
-    total number of mallocs used during MatSetValues calls =0
+    total number of mallocs used during MatSetValues calls=0
       has attached null space

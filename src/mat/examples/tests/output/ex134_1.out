@@ -3,7 +3,7 @@ Mat Object: 2 MPI processes
   type: mpibaij
   rows=8, cols=8, bs=2
   total: nonzeros=64, allocated nonzeros=64
-  total number of mallocs used during MatSetValues calls =0
+  total number of mallocs used during MatSetValues calls=0
     [0] Local rows 4 nz 32 nz alloced 32 bs 2 mem.
     [0] on-diagonal part: nz 16 
     [0] off-diagonal part: nz 16 
@@ -43,7 +43,7 @@ Mat Object: 2 MPI processes
   type: mpisbaij
   rows=8, cols=8, bs=2
   total: nonzeros=40, allocated nonzeros=64
-  total number of mallocs used during MatSetValues calls =0
+  total number of mallocs used during MatSetValues calls=0
     [0] Local rows 4 nz 28 nz alloced 32 bs 2 mem.
     [0] on-diagonal part: nz 12 
     [0] off-diagonal part: nz 16 
@@ -78,7 +78,7 @@ Mat Object: 2 MPI processes
   type: mpibaij
   rows=4, cols=4
   total: nonzeros=16, allocated nonzeros=16
-  total number of mallocs used during MatSetValues calls =0
+  total number of mallocs used during MatSetValues calls=0
     [0] Local rows 2 nz 8 nz alloced 8 bs 1 mem.
     [0] on-diagonal part: nz 4 
     [0] off-diagonal part: nz 4 
@@ -114,7 +114,7 @@ Mat Object: 2 MPI processes
   type: mpisbaij
   rows=4, cols=4
   total: nonzeros=10, allocated nonzeros=16
-  total number of mallocs used during MatSetValues calls =0
+  total number of mallocs used during MatSetValues calls=0
     [0] Local rows 2 nz 7 nz alloced 8 bs 1 mem.
     [0] on-diagonal part: nz 3 
     [0] off-diagonal part: nz 4 

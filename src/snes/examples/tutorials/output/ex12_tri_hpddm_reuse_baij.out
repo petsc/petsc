@@ -103,21 +103,21 @@ SNES Object: 4 MPI processes
                 rows=42, cols=42
                 package used to perform factorization: petsc
                 total: nonzeros=378, allocated nonzeros=378
-                total number of mallocs used during MatSetValues calls =0
+                total number of mallocs used during MatSetValues calls=0
                   not using I-node routines
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
           type: seqaij
           rows=42, cols=42
           total: nonzeros=282, allocated nonzeros=282
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             not using I-node routines
       linear system matrix = precond matrix:
       Mat Object: 4 MPI processes
         type: mpiaij
         rows=225, cols=225
         total: nonzeros=2229, allocated nonzeros=2229
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           not using I-node (on process 0) routines
       KSP Object: (pc_hpddm_coarse_) 2 MPI processes
         type: preonly
@@ -133,7 +133,7 @@ SNES Object: 4 MPI processes
           type: mpibaij
           rows=16, cols=16, bs=4
           total: nonzeros=224, allocated nonzeros=224
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
               block size is 4
                 KSP Object:       (pc_hpddm_coarse_redundant_)       1 MPI processes
                   type: preonly
@@ -153,19 +153,19 @@ SNES Object: 4 MPI processes
                           rows=16, cols=16, bs=4
                           package used to perform factorization: petsc
                           total: nonzeros=224, allocated nonzeros=224
-                          total number of mallocs used during MatSetValues calls =0
+                          total number of mallocs used during MatSetValues calls=0
                               block size is 4
                   linear system matrix = precond matrix:
                   Mat Object:       1 MPI processes
                     type: seqbaij
                     rows=16, cols=16, bs=4
                     total: nonzeros=224, allocated nonzeros=224
-                    total number of mallocs used during MatSetValues calls =0
+                    total number of mallocs used during MatSetValues calls=0
                         block size is 4
     linear system matrix = precond matrix:
     Mat Object: 4 MPI processes
       type: mpiaij
       rows=225, cols=225
       total: nonzeros=2229, allocated nonzeros=2229
-      total number of mallocs used during MatSetValues calls =0
+      total number of mallocs used during MatSetValues calls=0
         not using I-node (on process 0) routines

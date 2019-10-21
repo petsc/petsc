@@ -3,13 +3,12 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit       = '388077c' #master oct-01-2019
-    self.gitcommitmaster = 'origin/master'
-    self.download        = ['git://https://github.com/SciCompKL/CoDiPack.git']
-    self.includes        = ['codi/adjointInterface.hpp']
-    self.liblist         = []
-    self.cxx             = 1
-    self.requirescxx11   = 1
+    self.gitcommit     = '388077c' #master oct-01-2019
+    self.download      = ['git://https://github.com/SciCompKL/CoDiPack.git']
+    self.includes      = ['codi/adjointInterface.hpp']
+    self.liblist       = []
+    self.cxx           = 1
+    self.requirescxx11 = 1
     return
 
   def setupDependencies(self, framework):

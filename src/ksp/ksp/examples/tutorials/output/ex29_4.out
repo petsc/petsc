@@ -31,14 +31,14 @@ PC Object: 1 MPI processes
               rows=9, cols=9
               package used to perform factorization: petsc
               total: nonzeros=51, allocated nonzeros=51
-              total number of mallocs used during MatSetValues calls =0
+              total number of mallocs used during MatSetValues calls=0
                 not using I-node routines
       linear system matrix = precond matrix:
       Mat Object: 1 MPI processes
         type: seqaij
         rows=9, cols=9
         total: nonzeros=33, allocated nonzeros=33
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           not using I-node routines
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (mg_levels_1_) 1 MPI processes
@@ -67,7 +67,7 @@ PC Object: 1 MPI processes
         type: seqaij
         rows=25, cols=25
         total: nonzeros=105, allocated nonzeros=105
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           not using I-node routines
   Up solver (post-smoother) on level 1 -------------------------------
     KSP Object: (mg_levels_1_up_) 1 MPI processes
@@ -96,7 +96,7 @@ PC Object: 1 MPI processes
         type: seqaij
         rows=25, cols=25
         total: nonzeros=105, allocated nonzeros=105
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           not using I-node routines
   Down solver (pre-smoother) on level 2 -------------------------------
     KSP Object: (mg_levels_2_) 1 MPI processes
@@ -125,7 +125,7 @@ PC Object: 1 MPI processes
         type: seqaij
         rows=81, cols=81
         total: nonzeros=369, allocated nonzeros=369
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           not using I-node routines
   Up solver (post-smoother) on level 2 -------------------------------
     KSP Object: (mg_levels_2_up_) 1 MPI processes
@@ -154,12 +154,12 @@ PC Object: 1 MPI processes
         type: seqaij
         rows=81, cols=81
         total: nonzeros=369, allocated nonzeros=369
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           not using I-node routines
   linear system matrix = precond matrix:
   Mat Object: 1 MPI processes
     type: seqaij
     rows=81, cols=81
     total: nonzeros=369, allocated nonzeros=369
-    total number of mallocs used during MatSetValues calls =0
+    total number of mallocs used during MatSetValues calls=0
       not using I-node routines

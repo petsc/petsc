@@ -20,7 +20,7 @@ PC Object: 1 MPI processes
           rows=512, cols=512
           package used to perform factorization: cholmod
           total: nonzeros=0, allocated nonzeros=0
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             CHOLMOD run parameters:
               Pack factors after symbolic factorization: TRUE
               Common.dbound            0.  (Smallest absolute value of diagonal entries of D)
@@ -59,5 +59,5 @@ PC Object: 1 MPI processes
     type: seqaij
     rows=512, cols=512
     total: nonzeros=3200, allocated nonzeros=3200
-    total number of mallocs used during MatSetValues calls =0
+    total number of mallocs used during MatSetValues calls=0
       not using I-node routines

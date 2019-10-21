@@ -116,7 +116,7 @@ PetscErrorCode MatGetInfo_ConstantDiagonal(Mat A,MatInfoType flag,MatInfo *info)
   info->nz_allocated = 1.0;
   info->nz_used      = 1.0;
   info->nz_unneeded  = 0.0;
-  info->assemblies   = (double)A->num_ass;
+  info->assemblies   = A->num_ass;
   info->mallocs      = 0.0;
   info->memory       = ((PetscObject)A)->mem;
   if (A->factortype) {

@@ -1249,19 +1249,21 @@ static PetscErrorCode PCMGGetGridComplexity(PC pc, PetscReal *gc)
   PetscErrorCode ierr;
   PC_MG          *mg      = (PC_MG*)pc->data;
   PC_MG_Levels   **mglevels = mg->levels;
-  PetscInt       lev, nnz0 = -1;
+  PetscInt       lev;
+  PetscLogDouble nnz0 = 0, sgc = 0;
   MatInfo        info;
+
   PetscFunctionBegin;
   if (!mg->nlevels) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MG has no levels");
-  for (lev=0, *gc=0; lev<mg->nlevels; lev++) {
+  for (lev=0; lev<mg->nlevels; lev++) {
     Mat dB;
     ierr = KSPGetOperators(mglevels[lev]->smoothd,NULL,&dB);CHKERRQ(ierr);
     ierr = MatGetInfo(dB,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr); /* global reduction */
-    *gc += (PetscReal)info.nz_used;
+    sgc += info.nz_used;
     if (lev==mg->nlevels-1) nnz0 = info.nz_used;
   }
-  if (nnz0) *gc /= (PetscReal)nnz0;
-  else *gc = 0;
+  if (nnz0 > 0) *gc = (PetscReal)(sgc/nnz0);
+  else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number for grid points on finest level is not available");
   PetscFunctionReturn(0);
 }
 

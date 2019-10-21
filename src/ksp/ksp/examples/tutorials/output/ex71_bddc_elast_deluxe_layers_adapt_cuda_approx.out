@@ -104,19 +104,19 @@ PC Object: 8 MPI processes
                       rows=18, cols=18, bs=6
                       package used to perform factorization: petsc
                       total: nonzeros=324, allocated nonzeros=324
-                      total number of mallocs used during MatSetValues calls =0
+                      total number of mallocs used during MatSetValues calls=0
               linear system matrix = precond matrix:
               Mat Object: 1 MPI processes
                 type: seqaij
                 rows=18, cols=18, bs=6
                 total: nonzeros=324, allocated nonzeros=324
-                total number of mallocs used during MatSetValues calls =0
+                total number of mallocs used during MatSetValues calls=0
           linear system matrix = precond matrix:
           Mat Object: 1 MPI processes
             type: seqaij
             rows=18, cols=18, bs=6
             total: nonzeros=324, allocated nonzeros=324
-            total number of mallocs used during MatSetValues calls =0
+            total number of mallocs used during MatSetValues calls=0
       Down solver (pre-smoother) on level 1 -------------------------------
         KSP Object: (pc_bddc_dirichlet_mg_levels_1_) 1 MPI processes
           type: chebyshev
@@ -144,7 +144,7 @@ PC Object: 8 MPI processes
             type: seqaij
             rows=144, cols=144, bs=3
             total: nonzeros=6300, allocated nonzeros=6300
-            total number of mallocs used during MatSetValues calls =0
+            total number of mallocs used during MatSetValues calls=0
               has attached near null space
       Up solver (post-smoother) same as down solver (pre-smoother)
       linear system matrix = precond matrix:
@@ -152,7 +152,7 @@ PC Object: 8 MPI processes
         type: seqaij
         rows=144, cols=144, bs=3
         total: nonzeros=6300, allocated nonzeros=6300
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           has attached near null space
   --- Correction solver (rank 0)
     KSP Object: (pc_bddc_neumann_) 1 MPI processes
@@ -204,19 +204,19 @@ PC Object: 8 MPI processes
                       rows=18, cols=18, bs=6
                       package used to perform factorization: petsc
                       total: nonzeros=324, allocated nonzeros=324
-                      total number of mallocs used during MatSetValues calls =0
+                      total number of mallocs used during MatSetValues calls=0
               linear system matrix = precond matrix:
               Mat Object: 1 MPI processes
                 type: seqaij
                 rows=18, cols=18, bs=6
                 total: nonzeros=324, allocated nonzeros=324
-                total number of mallocs used during MatSetValues calls =0
+                total number of mallocs used during MatSetValues calls=0
           linear system matrix = precond matrix:
           Mat Object: 1 MPI processes
             type: seqaij
             rows=18, cols=18, bs=6
             total: nonzeros=324, allocated nonzeros=324
-            total number of mallocs used during MatSetValues calls =0
+            total number of mallocs used during MatSetValues calls=0
       Down solver (pre-smoother) on level 1 -------------------------------
         KSP Object: (pc_bddc_neumann_mg_levels_1_) 1 MPI processes
           type: chebyshev
@@ -244,7 +244,7 @@ PC Object: 8 MPI processes
             type: seqaij
             rows=279, cols=279, bs=3
             total: nonzeros=14265, allocated nonzeros=14265
-            total number of mallocs used during MatSetValues calls =0
+            total number of mallocs used during MatSetValues calls=0
               has attached near null space
       Up solver (post-smoother) same as down solver (pre-smoother)
       linear system matrix = precond matrix:
@@ -252,7 +252,7 @@ PC Object: 8 MPI processes
         type: seqaij
         rows=279, cols=279, bs=3
         total: nonzeros=14265, allocated nonzeros=14265
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           has attached near null space
   --- Coarse solver
     KSP Object: (pc_bddc_coarse_) 8 MPI processes
@@ -269,7 +269,7 @@ PC Object: 8 MPI processes
         type: mpiaij
         rows=82, cols=82
         total: nonzeros=3962, allocated nonzeros=4997
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           using I-node (on process 0) routines: found 3 nodes, limit used is 5
           KSP Object:   (pc_bddc_coarse_redundant_)   1 MPI processes
             type: preonly
@@ -286,11 +286,11 @@ PC Object: 8 MPI processes
               type: seqaij
               rows=82, cols=82
               total: nonzeros=3962, allocated nonzeros=3962
-              total number of mallocs used during MatSetValues calls =0
+              total number of mallocs used during MatSetValues calls=0
   linear system matrix = precond matrix:
   Mat Object: 8 MPI processes
     type: is
     rows=2160, cols=2160, bs=3
     total: nonzeros=156078, allocated nonzeros=195300
-    total number of mallocs used during MatSetValues calls =0
+    total number of mallocs used during MatSetValues calls=0
       has attached near null space

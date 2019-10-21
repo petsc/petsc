@@ -74,7 +74,7 @@ Tao Object: 1 MPI processes
       type: seqaij
       rows=40, cols=40
       total: nonzeros=190, allocated nonzeros=190
-      total number of mallocs used during MatSetValues calls =0
+      total number of mallocs used during MatSetValues calls=0
         not using I-node routines
   total KSP iterations: 39
   Active Set subset type: subvec

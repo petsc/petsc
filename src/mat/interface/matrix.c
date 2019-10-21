@@ -994,7 +994,7 @@ PetscErrorCode MatView(Mat mat,PetscViewer viewer)
       ierr = MatGetSize(mat,&rows,&cols);CHKERRQ(ierr);
       ierr = MatGetBlockSizes(mat,&rbs,&cbs);CHKERRQ(ierr);
       if (rbs != 1 || cbs != 1) {
-        if (rbs != cbs) {ierr = PetscViewerASCIIPrintf(viewer,"rows=%D, cols=%D, rbs=%D, cbs = %D\n",rows,cols,rbs,cbs);CHKERRQ(ierr);}
+        if (rbs != cbs) {ierr = PetscViewerASCIIPrintf(viewer,"rows=%D, cols=%D, rbs=%D, cbs=%D\n",rows,cols,rbs,cbs);CHKERRQ(ierr);}
         else            {ierr = PetscViewerASCIIPrintf(viewer,"rows=%D, cols=%D, bs=%D\n",rows,cols,rbs);CHKERRQ(ierr);}
       } else {
         ierr = PetscViewerASCIIPrintf(viewer,"rows=%D, cols=%D\n",rows,cols);CHKERRQ(ierr);
@@ -1008,7 +1008,7 @@ PetscErrorCode MatView(Mat mat,PetscViewer viewer)
         MatInfo info;
         ierr = MatGetInfo(mat,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(viewer,"total: nonzeros=%.f, allocated nonzeros=%.f\n",info.nz_used,info.nz_allocated);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"total number of mallocs used during MatSetValues calls =%D\n",(PetscInt)info.mallocs);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"total number of mallocs used during MatSetValues calls=%D\n",(PetscInt)info.mallocs);CHKERRQ(ierr);
       }
       ierr = MatGetNullSpace(mat,&nullsp);CHKERRQ(ierr);
       ierr = MatGetTransposeNullSpace(mat,&transnullsp);CHKERRQ(ierr);

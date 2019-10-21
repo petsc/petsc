@@ -22,14 +22,14 @@ KSP Object: 8 MPI processes
                   type: seqaij
                   rows=36, cols=36
                   total: nonzeros=310, allocated nonzeros=310
-                  total number of mallocs used during MatSetValues calls =0
+                  total number of mallocs used during MatSetValues calls=0
                     not using I-node routines
               A10
                 Mat Object: 1 MPI processes
                   type: seqaij
                   rows=36, cols=24
                   total: nonzeros=160, allocated nonzeros=160
-                  total number of mallocs used during MatSetValues calls =0
+                  total number of mallocs used during MatSetValues calls=0
                     not using I-node routines
               KSP of A00
                 KSP Object: (fetidp_bddc_pc_bddc_dirichlet_) 1 MPI processes
@@ -50,21 +50,21 @@ KSP Object: 8 MPI processes
                           rows=24, cols=24
                           package used to perform factorization: petsc
                           total: nonzeros=328, allocated nonzeros=328
-                          total number of mallocs used during MatSetValues calls =0
+                          total number of mallocs used during MatSetValues calls=0
                             using I-node routines: found 13 nodes, limit used is 5
                   linear system matrix = precond matrix:
                   Mat Object: (fetidp_bddc_pc_bddc_dirichlet_) 1 MPI processes
                     type: seqaij
                     rows=24, cols=24
                     total: nonzeros=280, allocated nonzeros=280
-                    total number of mallocs used during MatSetValues calls =0
+                    total number of mallocs used during MatSetValues calls=0
                       not using I-node routines
               A01
                 Mat Object: 1 MPI processes
                   type: seqaij
                   rows=24, cols=36
                   total: nonzeros=160, allocated nonzeros=160
-                  total number of mallocs used during MatSetValues calls =0
+                  total number of mallocs used during MatSetValues calls=0
                     not using I-node routines
       linear system matrix = precond matrix:
       Mat Object: F (fetidp_) 8 MPI processes
@@ -140,14 +140,14 @@ KSP Object: 8 MPI processes
                   rows=24, cols=24
                   package used to perform factorization: petsc
                   total: nonzeros=328, allocated nonzeros=328
-                  total number of mallocs used during MatSetValues calls =0
+                  total number of mallocs used during MatSetValues calls=0
                     using I-node routines: found 13 nodes, limit used is 5
           linear system matrix = precond matrix:
           Mat Object: (fetidp_bddc_pc_bddc_dirichlet_) 1 MPI processes
             type: seqaij
             rows=24, cols=24
             total: nonzeros=280, allocated nonzeros=280
-            total number of mallocs used during MatSetValues calls =0
+            total number of mallocs used during MatSetValues calls=0
               not using I-node routines
       --- Correction solver (rank 0)
         KSP Object: (fetidp_bddc_pc_bddc_neumann_) 1 MPI processes
@@ -168,14 +168,14 @@ KSP Object: 8 MPI processes
                   rows=52, cols=52
                   package used to perform factorization: petsc
                   total: nonzeros=1306, allocated nonzeros=1306
-                  total number of mallocs used during MatSetValues calls =0
+                  total number of mallocs used during MatSetValues calls=0
                     using I-node routines: found 33 nodes, limit used is 5
           linear system matrix = precond matrix:
           Mat Object: (fetidp_bddc_pc_bddc_neumann_) 1 MPI processes
             type: seqaij
             rows=52, cols=52
             total: nonzeros=786, allocated nonzeros=786
-            total number of mallocs used during MatSetValues calls =0
+            total number of mallocs used during MatSetValues calls=0
               not using I-node routines
       --- Coarse solver
         KSP Object: (fetidp_bddc_pc_bddc_coarse_) 8 MPI processes
@@ -192,7 +192,7 @@ KSP Object: 8 MPI processes
             type: mpiaij
             rows=25, cols=25
             total: nonzeros=421, allocated nonzeros=540
-            total number of mallocs used during MatSetValues calls =0
+            total number of mallocs used during MatSetValues calls=0
               using I-node (on process 0) routines: found 1 nodes, limit used is 5
                   KSP Object:       (fetidp_bddc_pc_bddc_coarse_redundant_)       1 MPI processes
                     type: preonly
@@ -209,14 +209,14 @@ KSP Object: 8 MPI processes
                       type: seqaij
                       rows=25, cols=25
                       total: nonzeros=421, allocated nonzeros=421
-                      total number of mallocs used during MatSetValues calls =0
+                      total number of mallocs used during MatSetValues calls=0
                         not using I-node routines
       linear system matrix = precond matrix:
       Mat Object: 8 MPI processes
         type: is
         rows=315, cols=315
         total: nonzeros=7280, allocated nonzeros=9856
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           has attached null space
   maximum iterations=10000, initial guess is zero
   tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
@@ -229,5 +229,5 @@ PC Object: 8 MPI processes
     type: is
     rows=315, cols=315
     total: nonzeros=7280, allocated nonzeros=9856
-    total number of mallocs used during MatSetValues calls =0
+    total number of mallocs used during MatSetValues calls=0
       has attached null space

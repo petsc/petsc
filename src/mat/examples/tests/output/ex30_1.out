@@ -2,7 +2,7 @@ original matrix:
   type: seqaij
   rows=25, cols=25
   total: nonzeros=113, allocated nonzeros=125
-  total number of mallocs used during MatSetValues calls =0
+  total number of mallocs used during MatSetValues calls=0
     not using I-node routines
   type: seqaij
 row 0: (0, 4.)  (1, -1.)  (5, -1.) 

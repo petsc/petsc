@@ -69,7 +69,7 @@ PC Object: 8 MPI processes
           rows=279, cols=279
           package used to perform factorization: mumps
           total: nonzeros=16677, allocated nonzeros=16677
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             MUMPS run parameters:
               SYM (matrix type):                   1 
               PAR (host participation):            1 
@@ -165,7 +165,7 @@ PC Object: 8 MPI processes
         type: seqaijviennacl
         rows=144, cols=144, bs=3
         total: nonzeros=6300, allocated nonzeros=6300
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           not using I-node routines
   --- Correction solver (rank 0)
     KSP Object: (pc_bddc_neumann_) 1 MPI processes
@@ -182,7 +182,7 @@ PC Object: 8 MPI processes
         type: seqaij
         rows=279, cols=279
         total: nonzeros=0, allocated nonzeros=0
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           using I-node routines: found 56 nodes, limit used is 5
   --- Coarse solver
     KSP Object: (pc_bddc_coarse_) 8 MPI processes
@@ -199,7 +199,7 @@ PC Object: 8 MPI processes
         type: mpiaij
         rows=109, cols=109
         total: nonzeros=7043, allocated nonzeros=9001
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           using I-node (on process 0) routines: found 3 nodes, limit used is 5
           KSP Object:   (pc_bddc_coarse_redundant_)   1 MPI processes
             type: preonly
@@ -216,12 +216,12 @@ PC Object: 8 MPI processes
               type: seqaij
               rows=109, cols=109
               total: nonzeros=7043, allocated nonzeros=7043
-              total number of mallocs used during MatSetValues calls =0
+              total number of mallocs used during MatSetValues calls=0
                 using I-node routines: found 33 nodes, limit used is 5
   linear system matrix = precond matrix:
   Mat Object: 8 MPI processes
     type: is
     rows=2160, cols=2160, bs=3
     total: nonzeros=156078, allocated nonzeros=195300
-    total number of mallocs used during MatSetValues calls =0
+    total number of mallocs used during MatSetValues calls=0
       has attached near null space
