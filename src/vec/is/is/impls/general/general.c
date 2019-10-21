@@ -36,7 +36,7 @@ static PetscErrorCode ISIdentity_General(IS is, PetscBool *ident)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = ISGetInfo(is,IS_IDENTITY,IS_LOCAL,ident);CHKERRQ(ierr);
+  ierr = ISGetInfo(is,IS_IDENTITY,IS_GLOBAL,ident);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
