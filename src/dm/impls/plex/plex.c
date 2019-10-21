@@ -2820,10 +2820,22 @@ static PetscErrorCode DMPlexCreateDimStratum(DM,DMLabel,DMLabel,PetscInt,PetscIn
   Output Parameter:
 
   Notes:
-  Concretely, DMPlexStratify() creates a new label named "depth" containing the dimension of each element: 0 for vertices,
-  1 for edges, and so on.  The depth label can be accessed through DMPlexGetDepthLabel() or DMPlexGetDepthStratum(), or
+  Concretely, DMPlexStratify() creates a new label named "depth" containing the depth in the DAG of each point. For cell-vertex
+  meshes, vertices are depth 0 and cells are depth 1. For fully interpolated meshes, depth 0 for vertices, 1 for edges, and so on
+  until cells have depth equal to the dimension of the mesh. The depth label can be accessed through DMPlexGetDepthLabel() or DMPlexGetDepthStratum(), or
   manually via DMGetLabel().  The height is defined implicitly by height = maxDimension - depth, and can be accessed
   via DMPlexGetHeightStratum().  For example, cells have height 0 and faces have height 1.
+
+  The depth of a point is calculated by executing a breadth-first search (BFS) on the DAG. This could produce surprising results
+  if run on a partially interpolated mesh, meaning one that had some edges and faces, but not others. For example, suppose that
+  we had a mesh consisting of one triangle (c0) and three vertices (v0, v1, v2), and only one edge is on the boundary so we choose
+  to interpolate only that one (e0), so that
+  $  cone(c0) = {e0, v2}
+  $  cone(e0) = {v0, v1}
+  If DMPlexStratify() is run on this mesh, it will give depths
+  $  depth 0 = {v0, v1, v2}
+  $  depth 1 = {e0, c0}
+  where the triangle has been given depth 1, instead of 2, because it is reachable from vertex v2.
 
   DMPlexStratify() should be called after all calls to DMPlexSymmetrize()
 
@@ -3562,7 +3574,11 @@ PetscErrorCode DMPlexGetDepthLabel(DM dm, DMLabel *depthLabel)
 
   Level: developer
 
-.seealso: DMPlexGetDepthLabel(), DMPlexGetHeightStratum(), DMPlexGetDepthStratum()
+  Notes:
+  This returns maximum of point depths over all points, i.e. maximum value of the label returned by DMPlexGetDepthLabel().
+  The point depth is described more in detail in DMPlexSymmetrize().
+
+.seealso: DMPlexGetDepthLabel(), DMPlexGetHeightStratum(), DMPlexGetDepthStratum(), DMPlexSymmetrize()
 @*/
 PetscErrorCode DMPlexGetDepth(DM dm, PetscInt *depth)
 {

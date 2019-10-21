@@ -18,6 +18,9 @@ PETSC_EXTERN PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer, hid_t *, hid_t
 /* On 32 bit systems HDF5 is limited by size of integer, because hsize_t is defined as size_t */
 #define PETSC_HDF5_INT_MAX  (~(hsize_t)0)
 
+/* As per https://portal.hdfgroup.org/display/HDF5/Chunking+in+HDF5, max. chunk size is 4GB */
+#define PETSC_HDF5_MAX_CHUNKSIZE 2147483647
+
 PETSC_STATIC_INLINE PetscErrorCode PetscHDF5IntCast(PetscInt a,hsize_t *b)
 {
   PetscFunctionBegin;
