@@ -166,7 +166,7 @@ static PetscErrorCode ISLocalToGlobalMappingDestroy_Hash(ISLocalToGlobalMapping 
 #define GTOLBS mapping->bs
 #define GTOL(g, local) do {                  \
     local = map->globals[g/bs - start];      \
-    local = bs*local + (g % bs);             \
+    if (local >= 0) local = bs*local + (g % bs); \
   } while (0)
 
 #include <../src/vec/is/utils/isltog.h>
@@ -184,7 +184,7 @@ static PetscErrorCode ISLocalToGlobalMappingDestroy_Hash(ISLocalToGlobalMapping 
 #define GTOLBS mapping->bs
 #define GTOL(g, local) do {                         \
     (void)PetscHMapIGet(map->globalht,g/bs,&local); \
-    local = bs*local + (g % bs);                    \
+    if (local >= 0) local = bs*local + (g % bs);   \
    } while (0)
 #include <../src/vec/is/utils/isltog.h>
 
@@ -776,7 +776,7 @@ PetscErrorCode ISLocalToGlobalMappingApplyBlock(ISLocalToGlobalMapping mapping,P
 
     Input Parameters:
 +   mapping - mapping between local and global numbering
-.   type - IS_GTOLM_MASK - replaces global indices with no local value with -1
+.   type - IS_GTOLM_MASK - maps global indices with no local value to -1 in the output list (i.e., mask them)
            IS_GTOLM_DROP - drops the indices with no local value from the output list
 .   n - number of global indices to map
 -   idx - global indices to map
@@ -826,7 +826,7 @@ PetscErrorCode  ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlo
 
     Input Parameters:
 +   mapping - mapping between local and global numbering
-.   type - IS_GTOLM_MASK - replaces global indices with no local value with -1
+.   type - IS_GTOLM_MASK - maps global indices with no local value to -1 in the output list (i.e., mask them)
            IS_GTOLM_DROP - drops the indices with no local value from the output list
 -   is - index set in global numbering
 
@@ -874,7 +874,7 @@ PetscErrorCode  ISGlobalToLocalMappingApplyIS(ISLocalToGlobalMapping mapping,ISG
 
     Input Parameters:
 +   mapping - mapping between local and global numbering
-.   type - IS_GTOLM_MASK - replaces global indices with no local value with -1
+.   type - IS_GTOLM_MASK - maps global indices with no local value to -1 in the output list (i.e., mask them)
            IS_GTOLM_DROP - drops the indices with no local value from the output list
 .   n - number of global indices to map
 -   idx - global indices to map

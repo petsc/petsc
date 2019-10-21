@@ -110,9 +110,9 @@ PETSC_EXTERN PetscErrorCode ISGeneralFilter(IS,PetscInt,PetscInt);
 PETSC_EXTERN PetscClassId IS_LTOGM_CLASSID;
 
 /*E
-    ISGlobalToLocalMappingMode - Indicates if missing global indices are
+    ISGlobalToLocalMappingMode - Indicates mapping behavior if global indices are missing
 
-   IS_GTOLM_MASK - missing global indices are replaced with -1
+   IS_GTOLM_MASK - missing global indices are masked by mapping them to a local index of -1
    IS_GTOLM_DROP - missing global indices are dropped
 
    Level: beginner
