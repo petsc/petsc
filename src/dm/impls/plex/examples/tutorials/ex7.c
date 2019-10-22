@@ -114,7 +114,7 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_quad_parallel
     requires: !__float128
-    args: -dm_view
+    args: -dm_view -petscpartitioner_type simple
     nsize: 2
 
   test:
@@ -125,7 +125,7 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_tri_parallel
     requires: !__float128
-    args: -simplex -dm_view
+    args: -simplex -dm_view -petscpartitioner_type simple
     nsize: 2
 
   test:
@@ -136,7 +136,7 @@ int main(int argc, char **argv)
   test:
     suffix: 3d_tri_parallel
     requires: !__float128
-    args: -dim 3 -simplex -dm_view
+    args: -dim 3 -simplex -dm_view -petscpartitioner_type simple
     nsize: 2
 
 TEST*/
