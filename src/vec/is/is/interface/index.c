@@ -1720,7 +1720,7 @@ PetscErrorCode  ISSorted(IS is,PetscBool  *flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidBoolPointer(flg,2);
-  ierr = (*is->ops->sorted)(is,flg);CHKERRQ(ierr);
+  ierr = ISGetInfo(is,IS_SORTED,IS_LOCAL,PETSC_TRUE,flg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
