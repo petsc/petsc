@@ -89,13 +89,9 @@ IS Object: 5 MPI processes
 [0] 1 7
 [0] 2 8
 [0] 3 9
-[1] Index set is permutation
 [1] Number of indices in (stride) set 0
-[2] Index set is permutation
 [2] Number of indices in (stride) set 0
-[3] Index set is permutation
 [3] Number of indices in (stride) set 0
-[4] Index set is permutation
 [4] Number of indices in (stride) set 0
 Test MatZeroRows (diag zero)
 Test MatMissingDiagonal

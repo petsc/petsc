@@ -65,11 +65,8 @@ IS Object: 4 MPI processes
 [0] 0 4
 [0] 1 5
 [0] 2 6
-[1] Index set is permutation
 [1] Number of indices in (stride) set 0
-[2] Index set is permutation
 [2] Number of indices in (stride) set 0
-[3] Index set is permutation
 [3] Number of indices in (stride) set 0
 Test MatZeroRows (diag nonzero)
 Test MatZeroRowsColumns (diag nonzero)
@@ -84,11 +81,8 @@ IS Object: 4 MPI processes
 [0] 0 4
 [0] 1 5
 [0] 2 6
-[1] Index set is permutation
 [1] Number of indices in (stride) set 0
-[2] Index set is permutation
 [2] Number of indices in (stride) set 0
-[3] Index set is permutation
 [3] Number of indices in (stride) set 0
 Test MatZeroRows (diag zero)
 Test MatZeroRowsColumns (diag zero)

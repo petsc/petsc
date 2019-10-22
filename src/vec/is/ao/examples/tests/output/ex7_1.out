@@ -28,7 +28,6 @@ IS Object: 2 MPI processes
 [1] 4 9
 IS Object: 2 MPI processes
   type: stride
-[0] Index set is permutation
 [0] Number of indices in (stride) set 5
 [0] 0 0
 [0] 1 1
@@ -43,7 +42,6 @@ IS Object: 2 MPI processes
 [1] 4 9
 IS Object: 2 MPI processes
   type: stride
-[0] Index set is permutation
 [0] Number of indices in (stride) set 5
 [0] 0 0
 [0] 1 1

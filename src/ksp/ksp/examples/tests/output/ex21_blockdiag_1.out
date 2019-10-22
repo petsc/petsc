@@ -6,7 +6,6 @@ row 2: (0, 10.)  (2, 12.)
 row 3: (1, 13.)  (3, 15.) 
 IS Object: 1 MPI processes
   type: stride
-Index set is permutation
 Number of indices in (stride) set 2
 0 0
 1 1
