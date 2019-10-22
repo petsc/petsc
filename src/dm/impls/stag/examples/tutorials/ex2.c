@@ -157,10 +157,10 @@ static PetscErrorCode CreateSystem(DM dmSol,Mat *pA,Vec *pRhs, PetscBool pinPres
   ierr = DMStagGetIsLastRank(dmSol,&isLastRankx,&isLastRanky,NULL);CHKERRQ(ierr);
   ierr = DMStagGetIsFirstRank(dmSol,&isFirstRankx,&isFirstRanky,NULL);CHKERRQ(ierr);
   hx = 1.0/N[0]; hy = 1.0/N[1];
-  ierr = DMStagGet1dCoordinateArraysDOFRead(dmSol,&cArrX,&cArrY,NULL);CHKERRQ(ierr);
-  ierr = DMStagGet1dCoordinateLocationSlot(dmSol,ELEMENT,&icenter);CHKERRQ(ierr);
-  ierr = DMStagGet1dCoordinateLocationSlot(dmSol,LEFT,&iprev);CHKERRQ(ierr);
-  ierr = DMStagGet1dCoordinateLocationSlot(dmSol,RIGHT,&inext);CHKERRQ(ierr);
+  ierr = DMStagGetProductCoordinateArraysRead(dmSol,&cArrX,&cArrY,NULL);CHKERRQ(ierr);
+  ierr = DMStagGetProductCoordinateLocationSlot(dmSol,ELEMENT,&icenter);CHKERRQ(ierr);
+  ierr = DMStagGetProductCoordinateLocationSlot(dmSol,LEFT,&iprev);CHKERRQ(ierr);
+  ierr = DMStagGetProductCoordinateLocationSlot(dmSol,RIGHT,&inext);CHKERRQ(ierr);
 
   /* Loop over all local elements. Note that it may be more efficient in real
      applications to loop over each boundary separately */
@@ -318,7 +318,7 @@ static PetscErrorCode CreateSystem(DM dmSol,Mat *pA,Vec *pRhs, PetscBool pinPres
       }
     }
   }
-  ierr = DMStagRestore1dCoordinateArraysDOFRead(dmSol,&cArrX,&cArrY,NULL);CHKERRQ(ierr);
+  ierr = DMStagRestoreProductCoordinateArraysRead(dmSol,&cArrX,&cArrY,NULL);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(rhs);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -377,9 +377,9 @@ static PetscErrorCode CreateReferenceSolution(DM dmSol,Vec *pSolRef)
   ierr = DMStagGetLocationSlot(dmSol,ELEMENT,0,&ip);CHKERRQ(ierr);
 
   /* Use high-level convenience functions to get raw arrays and indices for 1d coordinates */
-  ierr = DMStagGet1dCoordinateArraysDOFRead(dmSol,&cArrX,&cArrY,NULL);CHKERRQ(ierr);
-  ierr = DMStagGet1dCoordinateLocationSlot(dmSol,ELEMENT,&icenter);CHKERRQ(ierr);
-  ierr = DMStagGet1dCoordinateLocationSlot(dmSol,LEFT,&iprev);CHKERRQ(ierr);
+  ierr = DMStagGetProductCoordinateArraysRead(dmSol,&cArrX,&cArrY,NULL);CHKERRQ(ierr);
+  ierr = DMStagGetProductCoordinateLocationSlot(dmSol,ELEMENT,&icenter);CHKERRQ(ierr);
+  ierr = DMStagGetProductCoordinateLocationSlot(dmSol,LEFT,&iprev);CHKERRQ(ierr);
 
   ierr = DMStagVecGetArrayDOF(dmSol,solRefLocal,&arrSol);CHKERRQ(ierr);
   ierr = DMStagGetCorners(dmSol,&startx,&starty,NULL,&nx,&ny,NULL,&nExtra[0],&nExtra[1],NULL);CHKERRQ(ierr);
@@ -393,7 +393,7 @@ static PetscErrorCode CreateReferenceSolution(DM dmSol,Vec *pSolRef)
     }
   }
   ierr = DMStagVecRestoreArrayDOF(dmSol,solRefLocal,&arrSol);CHKERRQ(ierr);
-  ierr = DMStagRestore1dCoordinateArraysDOFRead(dmSol,&cArrX,&cArrY,NULL);CHKERRQ(ierr);
+  ierr = DMStagRestoreProductCoordinateArraysRead(dmSol,&cArrX,&cArrY,NULL);CHKERRQ(ierr);
   ierr = DMLocalToGlobal(dmSol,solRefLocal,INSERT_VALUES,*pSolRef);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dmSol,&solRefLocal);CHKERRQ(ierr);
   PetscFunctionReturn(0);

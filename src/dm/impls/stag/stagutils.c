@@ -31,27 +31,7 @@ PetscErrorCode DMStagGetBoundaryTypes(DM dm,DMBoundaryType *boundaryTypeX,DMBoun
   PetscFunctionReturn(0);
 }
 
-/*@C
-  DMStagGet1dCoordinateArraysDOFRead - extract 1D coordinate arrays
-
-  Logically Collective
-
-  A high-level helper function to quickly extract raw 1D local coordinate arrays.
-  Checks that the coordinate DM is a DMProduct or 1D DMStags, with the same number of dof.
-  Check on the number of dof and dimension ensures that the elementwise data
-  is the same for each, so the same indexing can be used on the arrays.
-
-  Input Parameter:
-. dm - the DMStag object
-
-  Output Parameters:
-. arrX,arrY,arrX - local 1D coordinate arrays
-
-  Level: intermediate
-
-.seealso: DMSTAG, DMPRODUCT, DMStagSetUniformCoordinates(), DMStagSetUniformCoordinatesProduct(), DMStagGet1dCoordinateLocationSlot()
-@*/
-PetscErrorCode DMStagGet1dCoordinateArraysDOFRead(DM dm,void* arrX,void* arrY,void* arrZ)
+static PetscErrorCode DMStagGetProductCoordinateArrays_Private(DM dm,void* arrX,void* arrY,void* arrZ,PetscBool read)
 {
   PetscErrorCode ierr;
   PetscInt       dim,d,dofCheck[DMSTAG_MAX_STRATA],s;
@@ -78,7 +58,8 @@ PetscErrorCode DMStagGet1dCoordinateArraysDOFRead(DM dm,void* arrX,void* arrY,vo
     DMType    dmType;
     PetscBool isStag;
     PetscInt  dof[DMSTAG_MAX_STRATA],subDim;
-    Vec       coord1d;
+    Vec       coord1d_local;
+
     ierr = DMProductGetDM(dmCoord,d,&subDM);CHKERRQ(ierr);
     if (!subDM) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Coordinate DM is missing sub DM %D",d);
     ierr = DMGetDimension(subDM,&subDim);CHKERRQ(ierr);
@@ -94,19 +75,85 @@ PetscErrorCode DMStagGet1dCoordinateArraysDOFRead(DM dm,void* arrX,void* arrY,vo
         if (dofCheck[s] != dof[s]) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Coordinate sub-DMs have different dofs");
       }
     }
-    ierr = DMGetCoordinatesLocal(subDM,&coord1d);CHKERRQ(ierr);
-    ierr = DMStagVecGetArrayDOFRead(subDM,coord1d,arr[d]);CHKERRQ(ierr);
+    ierr = DMGetCoordinatesLocal(subDM,&coord1d_local);CHKERRQ(ierr);
+    if (read) {
+      ierr = DMStagVecGetArrayDOFRead(subDM,coord1d_local,arr[d]);CHKERRQ(ierr);
+    } else {
+      ierr = DMStagVecGetArrayDOF(subDM,coord1d_local,arr[d]);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
 
 /*@C
-  DMStagGet1dCoordinateLocationSlot - get slot for use with local 1D coordinate arrays
+  DMStagGetProductCoordinateArrays - extract local product coordinate arrays, one per dimension
 
-  High-level helper function to get slot ids for 1D coordinate DMs.
-  For use with DMStagGetIDCoordinateArraysDOFRead() and related functions.
+  Logically Collective
+
+  A high-level helper function to quickly extract local coordinate arrays.
+
+  Note that 2-dimensional arrays are returned. See
+  DMStagVecGetArray(), which is called internally to produce these arrays
+  representing coordinates on elements and vertices (element boundaries)
+  for a 1-dimensional DMStag in each coordinate direction.
+
+  One should use DMStagGetProductCoordinateSlot() to determine appropriate
+  indices for the second dimension in these returned arrays. This function
+  checks that the coordinate array is a suitable product of 1-dimensional
+  DMStag objects.
+
+  Input Parameter:
+. dm - the DMStag object
+
+  Output Parameters:
+. arrX,arrY,arrZ - local 1D coordinate arrays
+
+  Level: intermediate
+
+.seealso: DMSTAG, DMPRODUCT, DMStagGetProductCoordinateArraysRead(), DMStagSetUniformCoordinates(), DMStagSetUniformCoordinatesProduct(), DMStagGetProductCoordinateLocationSlot()
+@*/
+PetscErrorCode DMStagGetProductCoordinateArrays(DM dm,void* arrX,void* arrY,void* arrZ)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMStagGetProductCoordinateArrays_Private(dm,arrX,arrY,arrZ,PETSC_FALSE);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMStagGetProductCoordinateArraysRead - extract product coordinate arrays, read-only
+
+  Logically Collective
+
+  See the man page for DMStagGetProductCoordinateArrays() for more information.
+
+  Input Parameter:
+. dm - the DMStag object
+
+  Output Parameters:
+. arrX,arrY,arrZ - local 1D coordinate arrays
+
+  Level: intermediate
+
+.seealso: DMSTAG, DMPRODUCT, DMStagGetProductCoordinateArrays(), DMStagSetUniformCoordinates(), DMStagSetUniformCoordinatesProduct(), DMStagGetProductCoordinateLocationSlot()
+@*/
+PetscErrorCode DMStagGetProductCoordinateArraysRead(DM dm,void* arrX,void* arrY,void* arrZ)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMStagGetProductCoordinateArrays_Private(dm,arrX,arrY,arrZ,PETSC_TRUE);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMStagGetProductCoordinateLocationSlot - get slot for use with local product coordinate arrays
 
   Not Collective
+
+  High-level helper function to get slot indices for 1D coordinate DMs,
+  for use with DMStagGetProductCoordinateArrays() and related functions.
 
   Input Parameters:
 + dm - the DMStag object
@@ -121,9 +168,9 @@ PetscErrorCode DMStagGet1dCoordinateArraysDOFRead(DM dm,void* arrX,void* arrY,vo
 
   Level: intermediate
 
-.seealso: DMSTAG, DMPRODUCT, DMStagGet1dCoordinateArraysDOFRead(), DMStagSetUniformCoordinates()
+.seealso: DMSTAG, DMPRODUCT, DMStagGetProductCoordinateArrays(), DMStagGetProductCoordinateArraysRead(), DMStagSetUniformCoordinates()
 @*/
-PETSC_EXTERN PetscErrorCode DMStagGet1dCoordinateLocationSlot(DM dm,DMStagStencilLocation loc,PetscInt *slot)
+PETSC_EXTERN PetscErrorCode DMStagGetProductCoordinateLocationSlot(DM dm,DMStagStencilLocation loc,PetscInt *slot)
 {
   PetscErrorCode ierr;
   DM             dmCoord;
@@ -801,22 +848,7 @@ PetscErrorCode DMStagPopulateLocalToGlobalInjective(DM dm)
   PetscFunctionReturn(0);
 }
 
-/*@C
-  DMStagRestore1dCoordinateArraysDOFRead - restore local array access
-
-  Logically Collective
-
-  Input Parameter:
-. dm - the DMStag object
-
-  Output Parameters:
-. arrX,arrY,arrX - local 1D coordinate arrays
-
-  Level: intermediate
-
-.seealso: DMSTAG, DMStagGet1dCoordinateArraysDOFRead()
-@*/
-PetscErrorCode DMStagRestore1dCoordinateArraysDOFRead(DM dm,void *arrX,void *arrY,void *arrZ)
+static PetscErrorCode DMStagRestoreProductCoordinateArrays_Private(DM dm,void *arrX,void *arrY,void *arrZ,PetscBool read)
 {
   PetscErrorCode  ierr;
   PetscInt        dim,d;
@@ -830,12 +862,81 @@ PetscErrorCode DMStagRestore1dCoordinateArraysDOFRead(DM dm,void *arrX,void *arr
   arr[0] = arrX; arr[1] = arrY; arr[2] = arrZ;
   ierr = DMGetCoordinateDM(dm,&dmCoord);CHKERRQ(ierr);
   for (d=0; d<dim; ++d) {
-    DM        subDM;
-    Vec       coord1d;
+    DM  subDM;
+    Vec coord1d_local;
+
     ierr = DMProductGetDM(dmCoord,d,&subDM);CHKERRQ(ierr);
-    ierr = DMGetCoordinatesLocal(subDM,&coord1d);CHKERRQ(ierr);
-    ierr = DMStagVecRestoreArrayDOFRead(subDM,coord1d,arr[d]);CHKERRQ(ierr);
+    ierr = DMGetCoordinatesLocal(subDM,&coord1d_local);CHKERRQ(ierr);
+    if (read) {
+      ierr = DMStagVecRestoreArrayDOFRead(subDM,coord1d_local,arr[d]);CHKERRQ(ierr);
+    } else {
+      ierr = DMStagVecRestoreArrayDOF(subDM,coord1d_local,arr[d]);CHKERRQ(ierr);
+    }
   }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMStagRestoreProductCoordinateArrays - restore local array access
+
+  Logically Collective
+
+  Input Parameter:
+. dm - the DMStag object
+
+  Output Parameters:
+. arrX,arrY,arrZ - local 1D coordinate arrays
+
+  Level: intermediate
+
+  Notes:
+  This function does not automatically perform a local->global scatter to populate global coordinates from the local coordinates. Thus, it may be required to explicitly perform these operations in some situations, as in the following partial example:
+
+$   ierr = DMGetCoordinateDM(dm,&cdm);CHKERRQ(ierr);
+$   for (d=0; d<3; ++d) {
+$     DM  subdm;
+$     Vec coor,coor_local;
+
+$     ierr = DMProductGetDM(cdm,d,&subdm);CHKERRQ(ierr);
+$     ierr = DMGetCoordinates(subdm,&coor);CHKERRQ(ierr);
+$     ierr = DMGetCoordinatesLocal(subdm,&coor_local);CHKERRQ(ierr);
+$     ierr = DMLocalToGlobal(subdm,coor_local,INSERT_VALUES,coor);CHKERRQ(ierr);
+$     ierr = PetscPrintf(PETSC_COMM_WORLD,"Coordinates dim %D:\n",d);CHKERRQ(ierr);
+$     ierr = VecView(coor,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+$   }
+
+.seealso: DMSTAG, DMStagGetProductCoordinateArrays(), DMStagGetProductCoordinateArraysRead()
+@*/
+PetscErrorCode DMStagRestoreProductCoordinateArrays(DM dm,void *arrX,void *arrY,void *arrZ)
+{
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = DMStagRestoreProductCoordinateArrays_Private(dm,arrX,arrY,arrZ,PETSC_FALSE);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMStagRestoreProductCoordinateArraysRead - restore local product array access, read-only
+
+  Logically Collective
+
+  Input Parameter:
+. dm - the DMStag object
+
+  Output Parameters:
+. arrX,arrY,arrZ - local 1D coordinate arrays
+
+  Level: intermediate
+
+.seealso: DMSTAG, DMStagGetProductCoordinateArrays(), DMStagGetProductCoordinateArraysRead()
+@*/
+PetscErrorCode DMStagRestoreProductCoordinateArraysRead(DM dm,void *arrX,void *arrY,void *arrZ)
+{
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = DMStagRestoreProductCoordinateArrays_Private(dm,arrX,arrY,arrZ,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
