@@ -138,8 +138,7 @@ PetscErrorCode  MatCoarsenSetAdjacency(MatCoarsen agg, Mat adj)
 
    Input Parameters:
 +  agg - the coarsen context
--  str - the adjacency matrix
-
+-  str - PETSC_TRUE keep strict aggregates, PETSC_FALSE allow overlap
    Level: advanced
 
 .seealso: MatCoarsenCreate()
