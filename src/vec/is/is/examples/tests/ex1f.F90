@@ -27,7 +27,7 @@
        n = 0
        call ISCreateGeneral(PETSC_COMM_SELF,n,indices,PETSC_COPY_VALUES,is,ierr);CHKERRA(ierr);
        call ISGetLocalSize(is,n,ierr);CHKERRA(ierr);
-       if (n .ne. 0) then; SETERRA(PETSC_COMM_SELF,1,'Error getting size of zero IS'); endif
+       if (n .ne. 0) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error getting size of zero IS'); endif
        call ISDestroy(is,ierr)
 
 
@@ -40,40 +40,40 @@
       call ISCreateGeneral(PETSC_COMM_SELF,n,indices,PETSC_COPY_VALUES,is,ierr);CHKERRA(ierr)
       call ISGetIndices(is,ii,iis,ierr);CHKERRA(ierr)
       do 20, i=1,n
-        if (ii(i+iis) .ne. indices(i)) then; SETERRA(PETSC_COMM_SELF,1,'Error getting indices'); endif
+        if (ii(i+iis) .ne. indices(i)) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error getting indices'); endif
  20   continue
       call ISRestoreIndices(is,ii,iis,ierr);CHKERRA(ierr)
 
 !     Check identity and permutation
 
       call ISPermutation(is,flag,ierr);CHKERRA(ierr)
-      if (flag) then; SETERRA(PETSC_COMM_SELF,1,'Error checking permutation'); endif
+      if (flag) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error checking permutation'); endif
       call ISIdentity(is,flag,ierr);CHKERRA(ierr)
-      if (.not. flag) then; SETERRA(PETSC_COMM_SELF,1,'Error checking identity'); endif
+      if (.not. flag) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error checking identity'); endif
       call ISSetPermutation(is,ierr);CHKERRA(ierr)
       call ISSetIdentity(is,ierr);CHKERRA(ierr)
       call ISPermutation(is,flag,ierr);CHKERRA(ierr)
-      if (.not. flag) then; SETERRA(PETSC_COMM_SELF,1,'Error checking permutation second time'); endif
+      if (.not. flag) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error checking permutation second time'); endif
       call ISIdentity(is,flag,ierr);CHKERRA(ierr)
-      if (.not. flag) then; SETERRA(PETSC_COMM_SELF,1,'Error checking identity second time'); endif
+      if (.not. flag) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error checking identity second time'); endif
 
 !     Check equality of index sets
 
       call ISEqual(is,is,flag,ierr);CHKERRA(ierr)
-      if (.not. flag) then; SETERRA(PETSC_COMM_SELF,1,'Error checking equal'); endif
+      if (.not. flag) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error checking equal'); endif
 
 !     Sorting
 
       call ISSort(is,ierr);CHKERRA(ierr)
       call ISSorted(is,flag,ierr);CHKERRA(ierr)
-      if (.not. flag) then; SETERRA(PETSC_COMM_SELF,1,'Error checking sorted'); endif
+      if (.not. flag) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error checking sorted'); endif
 
 !     Thinks it is a different type?
 
       call PetscObjectTypeCompare(is,ISSTRIDE,flag,ierr);CHKERRA(ierr)
-      if (flag) then; SETERRA(PETSC_COMM_SELF,1,'Error checking stride'); endif
+      if (flag) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error checking stride'); endif
       call PetscObjectTypeCompare(is,ISBLOCK,flag,ierr);CHKERRA(ierr)
-      if (flag) then; SETERRA(PETSC_COMM_SELF,1,'Error checking block'); endif
+      if (flag) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error checking block'); endif
 
       call ISDestroy(is,ierr);CHKERRA(ierr)
 
@@ -88,7 +88,7 @@
       call ISInvertPermutation(is,PETSC_DECIDE,newis,ierr);CHKERRA(ierr)
       call ISGetIndices(newis,ii,iis,ierr);CHKERRA(ierr)
       do 40, i=1,n
-        if (ii(iis+i) .ne. n - i) then; SETERRA(PETSC_COMM_SELF,1,'Error getting permutation indices'); endif
+        if (ii(iis+i) .ne. n - i) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error getting permutation indices'); endif
  40   continue
       call ISRestoreIndices(newis,ii,iis,ierr);CHKERRA(ierr)
       call ISDestroy(newis,ierr);CHKERRA(ierr)
