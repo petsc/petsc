@@ -1368,9 +1368,27 @@ PetscErrorCode DMStagSetUniformCoordinatesProduct(DM dm,PetscReal xmin,PetscReal
 }
 
 /*@C
-  DMStagVecGetArrayDOF - get access to raw local array
+  DMStagVecGetArrayDOF - get access to local array
 
   Logically Collective
+
+  This function returns a (dim+1)-dimensional array for a dim-dimensional
+  DMStag.
+
+  The first 1-3 dimensions indicate an element in the global
+  numbering, using the standard C ordering.
+
+  The final dimension in this array corresponds to a degree
+  of freedom with respect to this element, for example corresponding to
+  the element or one of its neighboring faces, edges, or vertices.
+
+  For example, for a 3D DMStag, indexing is array[k][j][i][idx], where k is the
+  index in the z-direction, j is the index in the y-direction, and i is the
+  index in the x-direction.
+
+  "idx" is obtained with DMStagGetLocationSlot(), since the correct offset
+  into the (dim+1)-dimensional C array depends on the grid size and the number
+  of dof stored at each location.
 
   Input Parameters:
 + dm - the DMStag object
@@ -1380,8 +1398,7 @@ PetscErrorCode DMStagSetUniformCoordinatesProduct(DM dm,PetscReal xmin,PetscReal
 . array - the array
 
   Notes:
-  Indexing is array[k][j][i][idx].
-  Obtain idx with DMStagGetLocationSlot().
+  DMStagVecRestoreArrayDOF() must be called, once finished with the array
 
   Level: beginner
 
@@ -1416,20 +1433,21 @@ PetscErrorCode DMStagVecGetArrayDOF(DM dm,Vec vec,void *array)
 }
 
 /*@C
-  DMStagVecGetArrayDOFRead - get read-only access to raw local array
+  DMStagVecGetArrayDOFRead - get read-only access to a local array
 
   Logically Collective
+
+  See the man page for DMStagVecGetArrayDOF() for more information.
 
   Input Parameters:
 + dm - the DMStag object
 - vec - the Vec object
 
   Output Parameters:
-. array - read-only the array
+. array - the read-only array
 
   Notes:
-  Indexing is array[k][j][i][idx].
-  Obtain idx with DMStagGetLocationSlot()
+  DMStagVecRestoreArrayDOFRead() must be called, once finished with the array
 
   Level: beginner
 
