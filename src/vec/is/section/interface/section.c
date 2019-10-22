@@ -2234,7 +2234,7 @@ PetscErrorCode PetscSectionSetConstraintIndices(PetscSection s, PetscInt point, 
 
   Input Parameters:
 + s     - The PetscSection
-.field  - The field number
+. field  - The field number
 - point - The point
 
   Output Parameter:
