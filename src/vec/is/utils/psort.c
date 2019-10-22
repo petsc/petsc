@@ -72,7 +72,7 @@ static PetscErrorCode PetscParallelSortInt_Bitonic_Recursive(MPI_Comm comm, Pets
   mid = rankStart + diff / 2;
   /* divide and conquer */
   if (rank < mid) {
-    ierr = PetscParallelSortInt_Bitonic_Recursive(comm, tag, rankStart, mid, rank, n, keys, buffer, !forward);CHKERRQ(ierr);
+    ierr = PetscParallelSortInt_Bitonic_Recursive(comm, tag, rankStart, mid, rank, n, keys, buffer, (PetscBool) !forward);CHKERRQ(ierr);
   } else {
     ierr = PetscParallelSortInt_Bitonic_Recursive(comm, tag, mid, rankEnd, rank, n, keys, buffer, forward);CHKERRQ(ierr);
   }
