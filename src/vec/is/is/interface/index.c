@@ -858,7 +858,7 @@ PetscErrorCode  ISSetIdentity(IS is)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
-  ierr = ISSetInfo(is,IS_IDENTITY,IS_GLOBAL,PETSC_FALSE,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = ISSetInfo(is,IS_IDENTITY,IS_GLOBAL,PETSC_TRUE,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
