@@ -396,17 +396,17 @@ static PetscErrorCode ISSetInfo_Internal(IS is, ISInfo info, ISInfoType type, IS
   Info Describing IS Structure:
 +    IS_SORTED - the [local part of the] index set is sorted in ascending order
 .    IS_UNIQUE - each entry in the [local part of the] index set is unique
-.    IS_SORTED_UNIQUE - both IS_SORTED and IS_UNIQUE are true
 .    IS_PERMUTATION - the [local part of the] index set is a permutation of the integers {0, 1, ..., N-1}, where N is the size of the [local part of the] index set
+.    IS_INTERVAL - the [local part of the] index set is equal to a contiguous range of integers {f, f + 1, ..., f + N-1}
 -    IS_IDENTITY - the [local part of the] index set is equal to the integers {0, 1, ..., N-1}
 
 
    Notes:
-   If type is IS_GLOBAL, all processes that share the index set must pass the same value in flg!
+   If type is IS_GLOBAL, all processes that share the index set must pass the same value in flg
 
    It is possible to set a property with ISSetInfo() that contradicts what would be previously computed with ISGetInfo()
 
-   Level: intermediate
+   Level: advanced
 
 .seealso:  ISInfo, ISInfoType, IS
 
@@ -732,7 +732,7 @@ static PetscErrorCode ISGetInfo_Identity(IS is, ISInfoType type, PetscBool *flg)
 
    Note: ISGetInfo uses cached values when possible, which will be incorrect if ISSetInfo() has been called with incorrect information.  To clear cached values, use ISClearInfoCache().
 
-   Level: intermediate
+   Level: advanced
 
 .seealso:  ISInfo, ISInfoType, ISSetInfo(), ISClearInfoCache()
 
@@ -825,8 +825,13 @@ static PetscErrorCode ISCopyInfo(IS source, IS dest)
 
    Level: intermediate
 
+   Note: If ISSetIdentity() (or ISSetInfo() for a permanent property) has been called,
+   ISIdentity() will return its answer without communication between processes, but
+   otherwise the output ident will be computed from ISGetInfo(),
+   which may require synchronization on the communicator of IS.  To avoid this computation,
+   call ISGetInfo() directly with the compute flag set to PETSC_FALSE, and ident will be assumed false.
 
-.seealso: ISSetIdentity()
+.seealso: ISSetIdentity(), ISGetInfo()
 @*/
 PetscErrorCode  ISIdentity(IS is,PetscBool  *ident)
 {
@@ -849,8 +854,11 @@ PetscErrorCode  ISIdentity(IS is,PetscBool  *ident)
 
    Level: intermediate
 
+   Note: The IS will be considered the identity permanently, even if indices have been changes (for example, with
+   ISGeneralSetIndices()).  It's a good idea to only set this property if the IS will not change in the future.
+   To clear this property, use ISClearInfoCache().
 
-.seealso: ISIdentity()
+.seealso: ISIdentity(), ISSetInfo(), ISClearInfoCache()
 @*/
 PetscErrorCode  ISSetIdentity(IS is)
 {
@@ -911,8 +919,13 @@ PetscErrorCode  ISContiguousLocal(IS is,PetscInt gstart,PetscInt gend,PetscInt *
 
    Level: intermediate
 
+   Note: If it is not alread known that the IS is a permutation (if ISSetPermutation()
+   or ISSetInfo() has not been called), this routine will not attempt to compute
+   whether the index set is a permutation and will assume perm is PETSC_FALSE.
+   To compute the value when it is not already known, use ISGetInfo() with
+   the compute flag set to PETSC_TRUE.
 
-.seealso: ISSetPermutation()
+.seealso: ISSetPermutation(), ISGetInfo()
 @*/
 PetscErrorCode  ISPermutation(IS is,PetscBool  *perm)
 {
@@ -939,7 +952,11 @@ PetscErrorCode  ISPermutation(IS is,PetscBool  *perm)
    The debug version of the libraries (./configure --with-debugging=1) checks if the
   index set is actually a permutation. The optimized version just believes you.
 
-.seealso: ISPermutation()
+   Note: The IS will be considered a permutation permanently, even if indices have been changes (for example, with
+   ISGeneralSetIndices()).  It's a good idea to only set this property if the IS will not change in the future.
+   To clear this property, use ISClearInfoCache().
+
+.seealso: ISPermutation(), ISSetInfo(), ISClearInfoCache().
 @*/
 PetscErrorCode  ISSetPermutation(IS is)
 {
