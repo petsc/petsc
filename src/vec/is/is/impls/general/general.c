@@ -31,15 +31,6 @@ static PetscErrorCode ISDestroy_General(IS is)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode ISIdentity_General(IS is, PetscBool *ident)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = ISGetInfo(is,IS_IDENTITY,IS_GLOBAL,PETSC_TRUE,ident);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode ISCopy_General(IS is,IS isy)
 {
   IS_General     *is_general = (IS_General*)is->data,*isy_general = (IS_General*)isy->data;
@@ -537,7 +528,6 @@ static struct _ISOps myops = { ISGetIndices_General,
                                ISDestroy_General,
                                ISView_General,
                                ISLoad_Default,
-                               ISIdentity_General,
                                ISCopy_General,
                                ISToGeneral_General,
                                ISOnComm_General,

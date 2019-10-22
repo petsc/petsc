@@ -318,15 +318,6 @@ static PetscErrorCode ISDuplicate_Block(IS is,IS *newIS)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode ISIdentity_Block(IS is,PetscBool  *ident)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = ISGetInfo(is,IS_IDENTITY,IS_GLOBAL,PETSC_TRUE,ident);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode ISCopy_Block(IS is,IS isy)
 {
   IS_Block       *is_block = (IS_Block*)is->data,*isy_block = (IS_Block*)isy->data;
@@ -402,7 +393,6 @@ static struct _ISOps myops = { ISGetIndices_Block,
                                ISDestroy_Block,
                                ISView_Block,
                                ISLoad_Default,
-                               ISIdentity_Block,
                                ISCopy_Block,
                                ISToGeneral_Block,
                                ISOnComm_Block,

@@ -25,7 +25,6 @@ struct _ISOps {
   PetscErrorCode (*destroy)(IS);
   PetscErrorCode (*view)(IS,PetscViewer);
   PetscErrorCode (*load)(IS,PetscViewer);
-  PetscErrorCode (*identity)(IS,PetscBool*);
   PetscErrorCode (*copy)(IS,IS);
   PetscErrorCode (*togeneral)(IS);
   PetscErrorCode (*oncomm)(IS,MPI_Comm,PetscCopyMode,IS*);
@@ -47,10 +46,8 @@ typedef enum {IS_INFO_UNKNOWN=0, IS_INFO_FALSE=1, IS_INFO_TRUE=2} ISInfoBool;
 struct _p_IS {
   PETSCHEADER(struct _ISOps);
   PetscLayout  map;
-  PetscBool    isperm;          /* if is a permutation */
   PetscInt     max,min;         /* range of possible values */
   void         *data;
-  PetscBool    isidentity;
   PetscInt     *total, *nonlocal;   /* local representation of ALL indices across the comm as well as the nonlocal part. */
   PetscInt     local_offset;        /* offset to the local part within the total index set */
   IS           complement;          /* IS wrapping nonlocal indices. */

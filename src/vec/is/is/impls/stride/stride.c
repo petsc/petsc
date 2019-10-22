@@ -10,15 +10,6 @@ typedef struct {
   PetscInt first,step;
 } IS_Stride;
 
-PetscErrorCode ISIdentity_Stride(IS is,PetscBool  *ident)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = ISGetInfo(is,IS_IDENTITY,IS_GLOBAL,PETSC_TRUE,ident);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode ISCopy_Stride(IS is,IS isy)
 {
   IS_Stride      *is_stride = (IS_Stride*)is->data,*isy_stride = (IS_Stride*)isy->data;
@@ -325,7 +316,6 @@ static struct _ISOps myops = { ISGetIndices_Stride,
                                ISDestroy_Stride,
                                ISView_Stride,
                                ISLoad_Default,
-                               ISIdentity_Stride,
                                ISCopy_Stride,
                                ISToGeneral_Stride,
                                ISOnComm_Stride,
