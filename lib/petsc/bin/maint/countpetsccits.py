@@ -5,7 +5,6 @@
 import os
 import re
 import sys
-from string import *
 
 def main():
   tcount = 0

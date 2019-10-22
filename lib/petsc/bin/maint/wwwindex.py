@@ -13,20 +13,19 @@ import os
 import glob
 import posixpath
 from sys import *
-from string import *
 
 # This routine reorders the entries int he list in such a way, so that
 # When they are printed in a row order, the entries are sorted by columns
 # In this subroutine row,col,nrow,ncol correspond to the new layout
 # of a given data-value
 def maketranspose(data,ncol):
-      nrow = (len(data)+ncol-1)/ncol
+      nrow = (len(data)+ncol-1)//ncol
       newdata = []
       # use the complete nrow by ncol matrix
       for i in range(nrow*ncol):
             newdata.append('')
       for i in range(len(data)):
-            col           = i/nrow
+            col           = i//nrow
             row           = i%nrow
             newi          = row*ncol+col
             newdata[newi] = data[i]
@@ -45,7 +44,7 @@ def printindex(outfilename,headfilename,levels,titles,tables):
                   print('Error reading file',headfilename)
                   exit()
             headbuf = fd.read()
-            headbuf = replace(headbuf,'PETSC_DIR','../../../')
+            headbuf = headbuf.replace('PETSC_DIR','../../../')
             fd.close()
       else:
             print('Header file \'' + headfilename + '\' does not exist')
@@ -108,7 +107,7 @@ def printsingleindex(outfilename,alphabet_dict):
             print('Error writing to file',outfilename)
             exit()
 
-      alphabet_index = alphabet_dict.keys()
+      alphabet_index = list(alphabet_dict.keys())
       alphabet_index.sort()
 
       # Now print each section, begining with a title
@@ -121,10 +120,10 @@ def printsingleindex(outfilename,alphabet_dict):
             fd.write('<H3> <CENTER> | ')
             for key_tmp in alphabet_index:
                   if key == key_tmp:
-                        fd.write( '<FONT COLOR="#CC3333">' + upper(key_tmp) + '</FONT> | \n' )
+                        fd.write( '<FONT COLOR="#CC3333">' + key_tmp.upper() + '</FONT> | \n' )
                   else:
                         fd.write('<A HREF="singleindex.html#' + key_tmp + '"> ' + \
-                                 upper(key_tmp) + ' </A> | \n')
+                                 key_tmp.upper() + ' </A> | \n')
             fd.write('</CENTER></H3> \n')
 
             # Now write the table entries
@@ -132,7 +131,7 @@ def printsingleindex(outfilename,alphabet_dict):
             fd.write('<TR><TD WIDTH=250 COLSPAN="3">')
             fd.write('</TD></TR>\n')
             function_dict  = alphabet_dict[key]
-            function_index = function_dict.keys()
+            function_index = list(function_dict.keys())
             function_index.sort()
             function_index = maketranspose(function_index,3)
             for name in function_index:
@@ -215,8 +214,8 @@ def createtable(dirname,levels,secname):
       for filename in htmlfiles:
             level = modifylevel(filename,secname)
             #if not level: continue
-            if lower(level) in levels:
-                  table[levels.index(lower(level))].append(filename)
+            if level.lower() in levels:
+                  table[levels.index(level.lower())].append(filename)
             else:
                   print('Error! Unknown level \''+ level + '\' in', filename)
       return table
@@ -248,7 +247,7 @@ def createdict(singlelist):
             path,name     = posixpath.split(filename)
             # grab the short path Mat from /wired/path/Mat
             junk,path     = posixpath.split(path)
-            index_char    = lower(name[0:1])
+            index_char    = name[0:1].lower()
             # remove the .name suffix from name
             func_name,ext = posixpath.splitext(name)
             if index_char not in newdict:
