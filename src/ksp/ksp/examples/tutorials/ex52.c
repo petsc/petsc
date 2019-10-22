@@ -212,13 +212,13 @@ int main(int argc,char **args)
     }
     if (size == 1) {
 #if !defined(PETSC_HAVE_SUPERLU)
-      SETERRQ(PETSC_COMM_WORLD,1,"This test requires SUPERLU");
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This test requires SUPERLU");
 #else
       ierr = PCFactorSetMatSolverType(pc,MATSOLVERSUPERLU);CHKERRQ(ierr);
 #endif
     } else {
 #if !defined(PETSC_HAVE_SUPERLU_DIST)
-      SETERRQ(PETSC_COMM_WORLD,1,"This test requires SUPERLU_DIST");
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This test requires SUPERLU_DIST");
 #else
       ierr = PCFactorSetMatSolverType(pc,MATSOLVERSUPERLU_DIST);CHKERRQ(ierr);
 #endif
@@ -264,7 +264,7 @@ int main(int argc,char **args)
       ierr = PCSetType(pc,PCILU);CHKERRQ(ierr);
     }
 #if !defined(PETSC_HAVE_STRUMPACK)
-    SETERRQ(PETSC_COMM_WORLD,1,"This test requires STRUMPACK");
+    SETERRQ(PETSC_COMM_WORLD,PETSC_,"This test requires STRUMPACK");
 #endif
     ierr = PCFactorSetMatSolverType(pc,MATSOLVERSTRUMPACK);CHKERRQ(ierr);
     ierr = PCFactorSetUpMatSolverType(pc);CHKERRQ(ierr); /* call MatGetFactor() to create F */

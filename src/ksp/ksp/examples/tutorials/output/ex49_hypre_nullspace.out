@@ -50,6 +50,6 @@ PC Object: (elas_) 1 MPI processes
     type: seqaij
     rows=966, cols=966, bs=2
     total: nonzeros=16348, allocated nonzeros=16348
-    total number of mallocs used during MatSetValues calls =0
+    total number of mallocs used during MatSetValues calls=0
       has attached near null space
       using I-node routines: found 483 nodes, limit used is 5

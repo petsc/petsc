@@ -14,6 +14,6 @@ PC Object: 1 MPI processes
     type: seqaij
     rows=2, cols=2
     total: nonzeros=4, allocated nonzeros=4
-    total number of mallocs used during MatSetValues calls =0
+    total number of mallocs used during MatSetValues calls=0
       using I-node routines: found 1 nodes, limit used is 5
 Norm of error 0., Iterations 1

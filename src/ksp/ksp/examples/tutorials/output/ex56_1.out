@@ -48,7 +48,7 @@ PC Object: 8 MPI processes
         type: mpiaij
         rows=60, cols=60, bs=6
         total: nonzeros=3600, allocated nonzeros=3600
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           using I-node (on process 0) routines: found 6 nodes, limit used is 5
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (mg_levels_1_) 8 MPI processes
@@ -90,21 +90,21 @@ PC Object: 8 MPI processes
                 rows=30, cols=30
                 package used to perform factorization: petsc
                 total: nonzeros=900, allocated nonzeros=900
-                total number of mallocs used during MatSetValues calls =0
+                total number of mallocs used during MatSetValues calls=0
                   using I-node routines: found 6 nodes, limit used is 5
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
           type: seqaij
           rows=30, cols=30
           total: nonzeros=900, allocated nonzeros=900
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             using I-node routines: found 6 nodes, limit used is 5
       linear system matrix = precond matrix:
       Mat Object: 8 MPI processes
         type: mpiaij
         rows=474, cols=474, bs=6
         total: nonzeros=64476, allocated nonzeros=64476
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           using nonscalable MatPtAP() implementation
           using I-node (on process 0) routines: found 10 nodes, limit used is 5
   Up solver (post-smoother) same as down solver (pre-smoother)
@@ -148,21 +148,21 @@ PC Object: 8 MPI processes
                 rows=48, cols=48
                 package used to perform factorization: petsc
                 total: nonzeros=1440, allocated nonzeros=1440
-                total number of mallocs used during MatSetValues calls =0
+                total number of mallocs used during MatSetValues calls=0
                   using I-node routines: found 14 nodes, limit used is 5
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
           type: seqaij
           rows=48, cols=48
           total: nonzeros=1368, allocated nonzeros=1368
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             using I-node routines: found 16 nodes, limit used is 5
       linear system matrix = precond matrix:
       Mat Object: 8 MPI processes
         type: mpiaij
         rows=8232, cols=8232, bs=3
         total: nonzeros=576000, allocated nonzeros=666792
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           has attached near null space
           using I-node (on process 0) routines: found 343 nodes, limit used is 5
   Up solver (post-smoother) same as down solver (pre-smoother)
@@ -171,7 +171,7 @@ PC Object: 8 MPI processes
     type: mpiaij
     rows=8232, cols=8232, bs=3
     total: nonzeros=576000, allocated nonzeros=666792
-    total number of mallocs used during MatSetValues calls =0
+    total number of mallocs used during MatSetValues calls=0
       has attached near null space
       using I-node (on process 0) routines: found 343 nodes, limit used is 5
   0 KSP Residual norm 0.0127948 
@@ -224,7 +224,7 @@ PC Object: 8 MPI processes
         type: mpiaij
         rows=60, cols=60, bs=6
         total: nonzeros=3600, allocated nonzeros=3600
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           using nonscalable MatPtAP() implementation
           using I-node (on process 0) routines: found 6 nodes, limit used is 5
   Down solver (pre-smoother) on level 1 -------------------------------
@@ -267,21 +267,21 @@ PC Object: 8 MPI processes
                 rows=30, cols=30
                 package used to perform factorization: petsc
                 total: nonzeros=900, allocated nonzeros=900
-                total number of mallocs used during MatSetValues calls =0
+                total number of mallocs used during MatSetValues calls=0
                   using I-node routines: found 6 nodes, limit used is 5
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
           type: seqaij
           rows=30, cols=30
           total: nonzeros=900, allocated nonzeros=900
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             using I-node routines: found 6 nodes, limit used is 5
       linear system matrix = precond matrix:
       Mat Object: 8 MPI processes
         type: mpiaij
         rows=474, cols=474, bs=6
         total: nonzeros=64476, allocated nonzeros=64476
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           using nonscalable MatPtAP() implementation
           using I-node (on process 0) routines: found 10 nodes, limit used is 5
   Up solver (post-smoother) same as down solver (pre-smoother)
@@ -325,21 +325,21 @@ PC Object: 8 MPI processes
                 rows=48, cols=48
                 package used to perform factorization: petsc
                 total: nonzeros=1440, allocated nonzeros=1440
-                total number of mallocs used during MatSetValues calls =0
+                total number of mallocs used during MatSetValues calls=0
                   using I-node routines: found 14 nodes, limit used is 5
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
           type: seqaij
           rows=48, cols=48
           total: nonzeros=1368, allocated nonzeros=1368
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             using I-node routines: found 16 nodes, limit used is 5
       linear system matrix = precond matrix:
       Mat Object: 8 MPI processes
         type: mpiaij
         rows=8232, cols=8232, bs=3
         total: nonzeros=576000, allocated nonzeros=666792
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           has attached near null space
           using I-node (on process 0) routines: found 343 nodes, limit used is 5
   Up solver (post-smoother) same as down solver (pre-smoother)
@@ -348,7 +348,7 @@ PC Object: 8 MPI processes
     type: mpiaij
     rows=8232, cols=8232, bs=3
     total: nonzeros=576000, allocated nonzeros=666792
-    total number of mallocs used during MatSetValues calls =0
+    total number of mallocs used during MatSetValues calls=0
       has attached near null space
       using I-node (on process 0) routines: found 343 nodes, limit used is 5
   0 KSP Residual norm 0.0127948 
@@ -401,7 +401,7 @@ PC Object: 8 MPI processes
         type: mpiaij
         rows=60, cols=60, bs=6
         total: nonzeros=3600, allocated nonzeros=3600
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           using nonscalable MatPtAP() implementation
           using I-node (on process 0) routines: found 6 nodes, limit used is 5
   Down solver (pre-smoother) on level 1 -------------------------------
@@ -444,21 +444,21 @@ PC Object: 8 MPI processes
                 rows=30, cols=30
                 package used to perform factorization: petsc
                 total: nonzeros=900, allocated nonzeros=900
-                total number of mallocs used during MatSetValues calls =0
+                total number of mallocs used during MatSetValues calls=0
                   using I-node routines: found 6 nodes, limit used is 5
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
           type: seqaij
           rows=30, cols=30
           total: nonzeros=900, allocated nonzeros=900
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             using I-node routines: found 6 nodes, limit used is 5
       linear system matrix = precond matrix:
       Mat Object: 8 MPI processes
         type: mpiaij
         rows=474, cols=474, bs=6
         total: nonzeros=64476, allocated nonzeros=64476
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           using nonscalable MatPtAP() implementation
           using I-node (on process 0) routines: found 10 nodes, limit used is 5
   Up solver (post-smoother) same as down solver (pre-smoother)
@@ -502,21 +502,21 @@ PC Object: 8 MPI processes
                 rows=48, cols=48
                 package used to perform factorization: petsc
                 total: nonzeros=1440, allocated nonzeros=1440
-                total number of mallocs used during MatSetValues calls =0
+                total number of mallocs used during MatSetValues calls=0
                   using I-node routines: found 14 nodes, limit used is 5
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
           type: seqaij
           rows=48, cols=48
           total: nonzeros=1368, allocated nonzeros=1368
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             using I-node routines: found 16 nodes, limit used is 5
       linear system matrix = precond matrix:
       Mat Object: 8 MPI processes
         type: mpiaij
         rows=8232, cols=8232, bs=3
         total: nonzeros=576000, allocated nonzeros=666792
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           has attached near null space
           using I-node (on process 0) routines: found 343 nodes, limit used is 5
   Up solver (post-smoother) same as down solver (pre-smoother)
@@ -525,7 +525,7 @@ PC Object: 8 MPI processes
     type: mpiaij
     rows=8232, cols=8232, bs=3
     total: nonzeros=576000, allocated nonzeros=666792
-    total number of mallocs used during MatSetValues calls =0
+    total number of mallocs used during MatSetValues calls=0
       has attached near null space
       using I-node (on process 0) routines: found 343 nodes, limit used is 5
 [0]main |b-Ax|/|b|=1.936335e-04, |b|=4.631005e+00, emax=9.968135e-01

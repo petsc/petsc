@@ -468,15 +468,17 @@ def petsc_configure(configure_options):
     emsg = str(e)
     if not emsg.endswith('\n'): emsg = emsg+'\n'
     msg ='*******************************************************************************\n'\
-    +'    TypeError or ValueError possibly related to ERROR in COMMAND LINE ARGUMENT to ./configure \n' \
+    +'    TypeError or ValueError possibly related to ERROR in COMMAND LINE ARGUMENT while running ./configure \n' \
     +'-------------------------------------------------------------------------------\n'  \
     +emsg+'*******************************************************************************\n'
     se = ''
   except ImportError as e :
+    # this exception is automatically deleted by Python so we need to save it to print below
+    tbo = sys.exc_info()[2]
     emsg = str(e)
     if not emsg.endswith('\n'): emsg = emsg+'\n'
     msg ='*******************************************************************************\n'\
-    +'                     UNABLE to FIND MODULE for ./configure \n' \
+    +'                     ImportError while runing ./configure \n' \
     +'-------------------------------------------------------------------------------\n'  \
     +emsg+'*******************************************************************************\n'
     se = ''
@@ -484,7 +486,7 @@ def petsc_configure(configure_options):
     emsg = str(e)
     if not emsg.endswith('\n'): emsg = emsg+'\n'
     msg ='*******************************************************************************\n'\
-    +'                    UNABLE to EXECUTE BINARIES for ./configure \n' \
+    +'                    OSError while running ./configure \n' \
     +'-------------------------------------------------------------------------------\n'  \
     +emsg+'*******************************************************************************\n'
     se = ''

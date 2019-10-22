@@ -72,7 +72,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(&Atrans);CHKERRQ(ierr);
   ierr = MatTranspose(A,MAT_INITIAL_MATRIX, &Atrans);CHKERRQ(ierr);
   ierr = MatEqual(A, Atrans, &flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_SELF,1,"A+A^T is non-symmetric");
+  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"A+A^T is non-symmetric");
   ierr = MatDestroy(&Atrans);CHKERRQ(ierr);
 
   /* create a SeqSBAIJ matrix sA (= A) */

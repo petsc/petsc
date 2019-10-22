@@ -56,15 +56,15 @@ int main(int argc,char **args)
 
   /*  Load the matrices A_save and B */
   ierr = PetscOptionsGetString(NULL,NULL,"-f0",file[0],sizeof(file[0]),&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate a file name for small matrix A with the -f0 option.");
+  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate a file name for small matrix A with the -f0 option.");
   ierr = PetscOptionsGetString(NULL,NULL,"-f1",file[1],sizeof(file[1]),&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate a file name for small matrix B with the -f1 option.");
+  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate a file name for small matrix B with the -f1 option.");
   ierr = PetscOptionsGetString(NULL,NULL,"-f2",file[2],sizeof(file[2]),&flg);CHKERRQ(ierr);
   if (!flg) {
     preload = PETSC_FALSE;
   } else {
     ierr = PetscOptionsGetString(NULL,NULL,"-f3",file[3],128,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate a file name for test matrix B with the -f3 option.");
+    if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate a file name for test matrix B with the -f3 option.");
   }
 
   PetscPreLoadBegin(preload,"Load system");

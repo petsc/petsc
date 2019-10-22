@@ -100,7 +100,7 @@ static PetscErrorCode PhysicsSample_Advect(void *vctx,PetscInt initial,FVBCType 
   switch (bctype) {
     case FVBC_OUTFLOW:   x0 = x-a*t; break;
     case FVBC_PERIODIC: x0 = RangeMod(x-a*t,xmin,xmax); break;
-    default: SETERRQ(PETSC_COMM_SELF,1,"unknown BCType");
+    default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"unknown BCType");
   }
   switch (initial) {
     case 0: u[0] = (x0 < 0) ? 1 : -1; break;
@@ -111,7 +111,7 @@ static PetscErrorCode PhysicsSample_Advect(void *vctx,PetscInt initial,FVBCType 
     case 5: u[0] = (x0 < 0 || x0 > 0.5) ? 0 : PetscSqr(PetscSinReal(2*PETSC_PI*x0)); break;
     case 6: u[0] = (x0 < 0) ? 0 : ((x0 < 1) ? x0 : ((x0 < 2) ? 2-x0 : 0)); break;
     case 7: u[0] = PetscPowReal(PetscSinReal(PETSC_PI*x0),10.0);break;
-    default: SETERRQ(PETSC_COMM_SELF,1,"unknown initial condition");
+    default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"unknown initial condition");
   }
   PetscFunctionReturn(0);
 }
@@ -532,7 +532,7 @@ PetscErrorCode FVSample(FVCtx *ctx,DM da,PetscReal time,Vec U)
   const PetscInt N=200;
 
   PetscFunctionBeginUser;
-  if (!ctx->physics.sample) SETERRQ(PETSC_COMM_SELF,1,"Physics has not provided a sampling function");
+  if (!ctx->physics.sample) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Physics has not provided a sampling function");
   ierr = DMDAGetInfo(da,0,&Mx,0,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);
@@ -608,7 +608,7 @@ static PetscErrorCode SolutionStatsView(DM da,Vec X,PetscViewer viewer)
     ierr = VecMax(X,&imax,&xmax);CHKERRQ(ierr);
     ierr = VecSum(X,&sum);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"Solution range [%g,%g] with minimum at %D, mean %g, ||x||_TV %g\n",(double)xmin,(double)xmax,imin,(double)(sum/Mx),(double)(tvgsum/Mx));CHKERRQ(ierr);
-  } else SETERRQ(PETSC_COMM_SELF,1,"Viewer type not supported");
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type not supported");
   PetscFunctionReturn(0);
 }
 
@@ -712,7 +712,7 @@ int main(int argc,char *argv[])
 
   /* create index for slow parts and fast parts*/
   count_slow = Mx/(1+ctx.hratio);
-  if (count_slow%2) SETERRQ(PETSC_COMM_WORLD,1,"Please adjust grid size Mx (-da_grid_x) and hratio (-hratio) so that Mx/(1+hartio) is even");
+  if (count_slow%2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Please adjust grid size Mx (-da_grid_x) and hratio (-hratio) so that Mx/(1+hartio) is even");
   count_fast = Mx-count_slow;
   ctx.sf = count_slow/2;
   ctx.fs = ctx.sf + count_fast;
@@ -789,7 +789,7 @@ int main(int argc,char *argv[])
       PetscBool         flg;
       const PetscScalar *ptr_XR;
       ierr = PetscOptionsGetString(NULL,NULL,"-f",filename,sizeof(filename),&flg);CHKERRQ(ierr);
-      if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate binary file with the -f option");
+      if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f option");
       ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&fd);CHKERRQ(ierr);
       ierr = VecDuplicate(X0,&XR);CHKERRQ(ierr);
       ierr = VecLoad(XR,fd);CHKERRQ(ierr);

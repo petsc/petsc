@@ -14,8 +14,9 @@ class Configure(config.package.Package):
     self.versionname            = 'OPENBLAS_VERSION'
     self.download               = ['git://https://github.com/xianyi/OpenBLAS.git','https://github.com/xianyi/OpenBLAS/archive/'+self.gitcommit+'.tar.gz']
     self.includes               = ['openblas_config.h']
+    self.functions              = ['openblas_get_config']
+    self.liblist                = [['libopenblas.a']]
     self.precisions             = ['single','double']
-    self.skippackagewithoptions = 1
     self.fc                     = 1
     self.installwithbatch       = 1
     self.usespthreads           = 0
@@ -28,7 +29,7 @@ class Configure(config.package.Package):
   def setupHelp(self, help):
     config.package.Package.setupHelp(self,help)
     import nargs
-    help.addArgument('OpenBLAS', '-download-openblas-64-bit-blas-indices', nargs.ArgBool(None, 0, 'Use 64 bit integers for OpenBLAS'))
+    help.addArgument('OpenBLAS', '-download-openblas-64-bit-blas-indices', nargs.ArgBool(None, 0, 'Use 64 bit integers for OpenBLAS (deprecated: use --with-64-bit-blas-indices'))
     help.addArgument('OpenBLAS', '-download-openblas-use-pthreads', nargs.ArgBool(None, 0, 'Use pthreads for OpenBLAS'))
     help.addArgument('OpenBLAS', '-download-openblas-make-options=<options>', nargs.Arg(None, None, 'additional options for building OpenBLAS'))
     return
@@ -43,13 +44,21 @@ class Configure(config.package.Package):
     config.package.Package.configureLibrary(self)
     self.checkVersion()
     if self.found:
-      self.libDir = os.path.join(self.directory,'lib')
+      # TODO: Use openblas_get_config() or openblas_config.h to determine use of OpenMP and 64 bit indices for prebuilt OpenBLAS libraries
+      if not hasattr(self,'usesopenmp'): self.usesopenmp = 'unknown'
+      if  self.directory:
+        self.libDir = os.path.join(self.directory,'lib')
+      else:
+        self.libDir = None
+    if not hasattr(self,'known64'): self.known64 = 'unknown'
     return
 
   def versionToStandardForm(self,ver):
-    '''Converts from " OpenBLAS 0.3.6 " to standard 0.3.6 format'''
+    '''Converts from " OpenBLAS 0.3.6<.dev> " to standard 0.3.6 format'''
     import re
-    return re.match("\s*OpenBLAS\s*([0-9\.]+)\s*",ver).group(1)
+    ver = re.match("\s*OpenBLAS\s*([0-9\.]+)\s*",ver).group(1)
+    if ver.endswith('.'): ver = ver[0:-1]
+    return ver
 
   def Install(self):
     import os
@@ -59,6 +68,9 @@ class Configure(config.package.Package):
     cmdline += 'FC='+self.compilers.FC+' '
     if self.argDB['download-openblas-64-bit-blas-indices'] or self.argDB['with-64-bit-blas-indices']:
       cmdline += " INTERFACE64=1 "
+      self.known64 = 'yes'
+    else:
+      self.known64 = 'no'
     if 'download-openblas-make-options' in self.argDB and self.argDB['download-openblas-make-options']:
       cmdline+=" "+self.argDB['download-openblas-make-options']
     if not self.argDB['with-shared-libraries']:
@@ -70,6 +82,7 @@ class Configure(config.package.Package):
       # use the environmental variable OMP_NUM_THREADS to control the number of threads used
     else:
       cmdline += " USE_OPENMP=0 "
+      self.usesopenmp = 'no'
       if 'download-openblas-use-pthreads' in self.argDB and self.argDB['download-openblas-use-pthreads']:
         self.usespthreads = 1
         cmdline += " USE_THREAD=1 "

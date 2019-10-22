@@ -45,7 +45,7 @@ int main(int argc,char **argv)
   Mat                H;
   Tao                tao;                   /* Tao solver context */
   PetscBool          flg, test_lmvm = PETSC_FALSE;
-  PetscMPIInt        size,rank;                  /* number of processes running */
+  PetscMPIInt        size;                  /* number of processes running */
   AppCtx             user;                  /* user-defined application context */
   TaoConvergedReason reason;
   PetscInt           its, recycled_its=0, oneshot_its=0;
@@ -53,8 +53,7 @@ int main(int argc,char **argv)
   /* Initialize TAO and PETSc */
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  if (size >1) SETERRQ(PETSC_COMM_SELF,1,"Incorrect number of processors");
+  if (size >1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Incorrect number of processors");
 
   /* Initialize problem parameters */
   user.n = 2; user.alpha = 99.0; user.chained = PETSC_FALSE;

@@ -66,20 +66,20 @@ SNES Object: 1 MPI processes
                 rows=16, cols=16
                 package used to perform factorization: petsc
                 total: nonzeros=92, allocated nonzeros=92
-                total number of mallocs used during MatSetValues calls =0
+                total number of mallocs used during MatSetValues calls=0
                   not using I-node routines
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
           type: seqaij
           rows=16, cols=16
           total: nonzeros=60, allocated nonzeros=60
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
             not using I-node routines
     linear system matrix = precond matrix:
     Mat Object: 1 MPI processes
       type: seqaij
       rows=32, cols=32
       total: nonzeros=136, allocated nonzeros=136
-      total number of mallocs used during MatSetValues calls =0
+      total number of mallocs used during MatSetValues calls=0
         not using I-node routines
 N: 32 error L2 1.41356e-11 inf 2.94655e-11

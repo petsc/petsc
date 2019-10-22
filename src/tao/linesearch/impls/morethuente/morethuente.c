@@ -400,9 +400,9 @@ static PetscErrorCode Tao_mcstep(TaoLineSearch ls,PetscReal *stx,PetscReal *fx,P
   PetscFunctionBegin;
   /* Check the input parameters for errors */
   mtP->infoc = 0;
-  if (mtP->bracket && (*stp <= PetscMin(*stx,*sty) || (*stp >= PetscMax(*stx,*sty)))) SETERRQ(PETSC_COMM_SELF,1,"bad stp in bracket");
-  if (*dx * (*stp-*stx) >= 0.0) SETERRQ(PETSC_COMM_SELF,1,"dx * (stp-stx) >= 0.0");
-  if (ls->stepmax < ls->stepmin) SETERRQ(PETSC_COMM_SELF,1,"stepmax > stepmin");
+  if (mtP->bracket && (*stp <= PetscMin(*stx,*sty) || (*stp >= PetscMax(*stx,*sty)))) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"bad stp in bracket");
+  if (*dx * (*stp-*stx) >= 0.0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"dx * (stp-stx) >= 0.0");
+  if (ls->stepmax < ls->stepmin) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"stepmax > stepmin");
 
   /* Determine if the derivatives have opposite sign */
   sgnd = *dp * (*dx / PetscAbsReal(*dx));

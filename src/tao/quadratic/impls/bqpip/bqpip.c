@@ -47,7 +47,7 @@ static PetscErrorCode  QPIPSetInitialPoint(TAO_BQPIP *qp, Tao tao)
   ierr = VecDot(tao->solution,qp->Work,&fff);CHKERRQ(ierr);
   qp->pobj = fff + qp->d;
 
-  if (PetscIsInfOrNanReal(qp->pobj)) SETERRQ(PETSC_COMM_SELF,1, "User provided data contains Inf or NaN");
+  if (PetscIsInfOrNanReal(qp->pobj)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER, "User provided data contains Inf or NaN");
 
   /* Initialize slack vectors */
   /* T = XU - X; G = X - XL */

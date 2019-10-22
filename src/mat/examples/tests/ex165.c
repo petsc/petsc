@@ -16,7 +16,7 @@ int main(int argc,char **args)
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetString(NULL,NULL,"-fA",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Input fileA not specified");
+  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Input fileA not specified");
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
@@ -24,7 +24,7 @@ int main(int argc,char **args)
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetString(NULL,NULL,"-fB",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Input fileB not specified");
+  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Input fileB not specified");
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
   ierr = MatSetType(B,MATDENSE);CHKERRQ(ierr);

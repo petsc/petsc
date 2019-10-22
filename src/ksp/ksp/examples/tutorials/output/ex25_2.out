@@ -165,21 +165,21 @@ PC Object: 2 MPI processes
                   rows=128, cols=128
                   package used to perform factorization: petsc
                   total: nonzeros=612, allocated nonzeros=612
-                  total number of mallocs used during MatSetValues calls =0
+                  total number of mallocs used during MatSetValues calls=0
                     not using I-node routines
           linear system matrix = precond matrix:
           Mat Object: 1 MPI processes
             type: seqaij
             rows=128, cols=128
             total: nonzeros=382, allocated nonzeros=382
-            total number of mallocs used during MatSetValues calls =0
+            total number of mallocs used during MatSetValues calls=0
               not using I-node routines
       linear system matrix = precond matrix:
       Mat Object: 2 MPI processes
         type: mpiaij
         rows=128, cols=128
         total: nonzeros=382, allocated nonzeros=768
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (mg_levels_1_) 2 MPI processes
       type: chebyshev
@@ -207,7 +207,7 @@ PC Object: 2 MPI processes
         type: mpiaij
         rows=255, cols=255
         total: nonzeros=763, allocated nonzeros=1530
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
   Up solver (post-smoother) same as down solver (pre-smoother)
   Down solver (pre-smoother) on level 2 -------------------------------
     KSP Object: (mg_levels_2_) 2 MPI processes
@@ -236,12 +236,12 @@ PC Object: 2 MPI processes
         type: mpiaij
         rows=509, cols=509
         total: nonzeros=1525, allocated nonzeros=3054
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
   Up solver (post-smoother) same as down solver (pre-smoother)
   linear system matrix = precond matrix:
   Mat Object: 2 MPI processes
     type: mpiaij
     rows=509, cols=509
     total: nonzeros=1525, allocated nonzeros=3054
-    total number of mallocs used during MatSetValues calls =0
+    total number of mallocs used during MatSetValues calls=0
 Residual norm 6.6474e-08

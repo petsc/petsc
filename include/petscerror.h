@@ -57,9 +57,10 @@
 #define PETSC_ERR_FLOP_COUNT       90
 #define PETSC_ERR_NOT_CONVERGED    91  /* solver did not converge */
 #define PETSC_ERR_MISSING_FACTOR   92  /* MatGetFactor() failed */
-#define PETSC_ERR_OPT_OVERWRITE    93  /* attempted to over wrote options which should not be changed */
-
-#define PETSC_ERR_MAX_VALUE        94  /* this is always the one more than the largest error code */
+#define PETSC_ERR_OPT_OVERWRITE    93  /* attempted to over write options which should not be changed */
+#define PETSC_ERR_WRONG_MPI_SIZE   94  /* example/application run with number of MPI ranks it does not support */
+#define PETSC_ERR_USER_INPUT       95  /* missing or incorrect user input */
+#define PETSC_ERR_MAX_VALUE        96  /* this is always the one more than the largest error code */
 
 #define PetscStringizeArg(a) #a
 #define PetscStringize(a) PetscStringizeArg(a)
@@ -477,12 +478,14 @@ PETSC_EXTERN PetscErrorCode PetscAbortFindSourceFile_Private(const char*,PetscIn
 
    Level: beginner
 
-   Notes: We pass MPI_Abort() an error code of format XX_YYYY_ZZZ, where XX, YYYY are index and line number of the file
-   where PETSCABORT is called, respectively. ZZZ is a PETSc error code.
+   Notes: We pass MPI_Abort() an error code of format XX_YYYY_ZZZ, where XX, YYYY are an index and line number of the file
+   where PETSCABORT is called, respectively. ZZZ is the PETSc error code.
 
-   Please look up the table PetscAbortSourceFiles[] in src/sys/error/err.c to map indices back to files. If XX is zero,
-   that means 1) the file is not in PETSc (may be in users code); OR 2) the file is in PETSc but PetscAbortSourceFiles[]
-   is out of date. PETSc developers have to update it.
+   If XX is zero, this means that the call was made in the routine main().
+   If XX is one, that means 1) the file is not in PETSc (it may be in users code); OR 2) the file is in PETSc but PetscAbortSourceFiles[]
+     is out of date. PETSc developers have to update it.
+   Otherwise, look up the value of XX in the table PetscAbortSourceFiles[] in src/sys/error/err.c to map XX back to the source file where the PETSCABORT() was called.
+
 M*/
 #define PETSCABORT(comm,ierr)  \
    do {                                                               \

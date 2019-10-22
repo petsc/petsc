@@ -73,14 +73,14 @@ PC Object: 8 MPI processes
               rows=48, cols=48
               package used to perform factorization: cusparse
               total: nonzeros=567, allocated nonzeros=567
-              total number of mallocs used during MatSetValues calls =0
+              total number of mallocs used during MatSetValues calls=0
                 not using I-node routines
       linear system matrix = precond matrix:
       Mat Object: (pc_bddc_dirichlet_) 1 MPI processes
         type: seqaijcusparse
         rows=48, cols=48
         total: nonzeros=700, allocated nonzeros=700
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           not using I-node routines
   --- Correction solver (rank 0)
     KSP Object: (pc_bddc_neumann_) 1 MPI processes
@@ -101,14 +101,14 @@ PC Object: 8 MPI processes
               rows=93, cols=93
               package used to perform factorization: cusparse
               total: nonzeros=1764, allocated nonzeros=1764
-              total number of mallocs used during MatSetValues calls =0
+              total number of mallocs used during MatSetValues calls=0
                 not using I-node routines
       linear system matrix = precond matrix:
       Mat Object: (pc_bddc_neumann_) 1 MPI processes
         type: seqaijcusparse
         rows=93, cols=93
         total: nonzeros=1585, allocated nonzeros=1585
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           not using I-node routines
   --- Coarse solver
     KSP Object: (pc_bddc_coarse_) 8 MPI processes
@@ -125,7 +125,7 @@ PC Object: 8 MPI processes
         type: mpiaij
         rows=25, cols=25
         total: nonzeros=421, allocated nonzeros=540
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0
           using I-node (on process 0) routines: found 1 nodes, limit used is 5
           KSP Object:   (pc_bddc_coarse_redundant_)   1 MPI processes
             type: preonly
@@ -142,11 +142,11 @@ PC Object: 8 MPI processes
               type: seqaij
               rows=25, cols=25
               total: nonzeros=421, allocated nonzeros=421
-              total number of mallocs used during MatSetValues calls =0
+              total number of mallocs used during MatSetValues calls=0
                 not using I-node routines
   linear system matrix = precond matrix:
   Mat Object: 8 MPI processes
     type: is
     rows=720, cols=720
     total: nonzeros=17342, allocated nonzeros=21700
-    total number of mallocs used during MatSetValues calls =0
+    total number of mallocs used during MatSetValues calls=0

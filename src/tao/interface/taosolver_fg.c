@@ -153,7 +153,7 @@ PetscErrorCode TaoComputeGradient(Tao tao, Vec X, Vec G)
     PetscStackPop;
     ierr = PetscLogEventEnd(TAO_ObjGradEval,tao,X,G,NULL);CHKERRQ(ierr);
     tao->nfuncgrads++;
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"TaoSetGradientRoutine() has not been called");
+  } else SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONGSTATE,"TaoSetGradientRoutine() has not been called");
   ierr = VecLockReadPop(X);CHKERRQ(ierr);
 
   ierr = TaoTestGradient(tao,X,G);CHKERRQ(ierr);
@@ -207,7 +207,7 @@ PetscErrorCode TaoComputeObjective(Tao tao, Vec X, PetscReal *f)
     ierr = PetscLogEventEnd(TAO_ObjGradEval,tao,X,NULL,NULL);CHKERRQ(ierr);
     ierr = VecDestroy(&temp);CHKERRQ(ierr);
     tao->nfuncgrads++;
-  }  else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"TaoSetObjectiveRoutine() has not been called");
+  }  else SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONGSTATE,"TaoSetObjectiveRoutine() has not been called");
   ierr = PetscInfo1(tao,"TAO Function evaluation: %20.19e\n",(double)(*f));CHKERRQ(ierr);
   ierr = VecLockReadPop(X);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -270,7 +270,7 @@ PetscErrorCode TaoComputeObjectiveAndGradient(Tao tao, Vec X, PetscReal *f, Vec 
     PetscStackPop;
     ierr = PetscLogEventEnd(TAO_GradientEval,tao,X,G,NULL);CHKERRQ(ierr);
     tao->ngrads++;
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"TaoSetObjectiveRoutine() or TaoSetGradientRoutine() not set");
+  } else SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONGSTATE,"TaoSetObjectiveRoutine() or TaoSetGradientRoutine() not set");
   ierr = PetscInfo1(tao,"TAO Function evaluation: %20.19e\n",(double)(*f));CHKERRQ(ierr);
   ierr = VecLockReadPop(X);CHKERRQ(ierr);
 
@@ -444,7 +444,7 @@ PetscErrorCode TaoComputeResidual(Tao tao, Vec X, Vec F)
     PetscStackPop;
     ierr = PetscLogEventEnd(TAO_ObjectiveEval,tao,X,NULL,NULL);CHKERRQ(ierr);
     tao->nfuncs++;
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"TaoSetResidualRoutine() has not been called");
+  } else SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONGSTATE,"TaoSetResidualRoutine() has not been called");
   ierr = PetscInfo(tao,"TAO least-squares residual evaluation.\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -22,7 +22,7 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
-  if (size <2) SETERRQ(PETSC_COMM_SELF,1,"Must run more than one processor");
+  if (size <2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Must run more than one processor");
 
   ierr = PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL);CHKERRQ(ierr);
   n    = bs*n;

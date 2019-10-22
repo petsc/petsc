@@ -88,7 +88,7 @@ static PetscErrorCode estsv(PetscInt n, PetscReal *r, PetscInt ldr, PetscReal *s
 /*
 c     ***********
 c
-c     Subroutine dgqt
+c     Subroutine gqt
 c
 c     Given an n by n symmetric matrix A, an n-vector b, and a
 c     positive number delta, this subroutine determines a vector
@@ -116,7 +116,7 @@ c            f(x) <= ((1 - rtol)**2)*f(xsol)
 c
 c     The subroutine statement is
 c
-c       subroutine dgqt(n,a,lda,b,delta,rtol,atol,itmax,
+c       subroutine gqt(n,a,lda,b,delta,rtol,atol,itmax,
 c                        par,f,x,info,z,wa1,wa2)
 c
 c     where

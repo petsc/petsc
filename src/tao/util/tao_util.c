@@ -64,7 +64,7 @@ PetscErrorCode VecFischer(Vec X, Vec F, Vec L, Vec U, Vec FB)
   ierr = VecGetOwnershipRange(FB, low + 4, high + 4);CHKERRQ(ierr);
 
   for (i = 1; i < 4; ++i) {
-    if (low[0] != low[i] || high[0] != high[i]) SETERRQ(PETSC_COMM_SELF,1,"Vectors must be identically loaded over processors");
+    if (low[0] != low[i] || high[0] != high[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Vectors must be identically loaded over processors");
   }
 
   ierr = VecGetArrayRead(X, &x);CHKERRQ(ierr);
@@ -165,7 +165,7 @@ PetscErrorCode VecSFischer(Vec X, Vec F, Vec L, Vec U, PetscReal mu, Vec FB)
   ierr = VecGetOwnershipRange(FB, low + 4, high + 4);CHKERRQ(ierr);
 
   for (i = 1; i < 4; ++i) {
-    if (low[0] != low[i] || high[0] != high[i]) SETERRQ(PETSC_COMM_SELF,1,"Vectors must be identically loaded over processors");
+    if (low[0] != low[i] || high[0] != high[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Vectors must be identically loaded over processors");
   }
 
   ierr = VecGetArrayRead(X, &x);CHKERRQ(ierr);

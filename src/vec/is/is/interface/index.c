@@ -1,4 +1,3 @@
-
 /*
    Defines the abstract operations on index sets, i.e. the public interface.
 */
@@ -1242,8 +1241,14 @@ PetscErrorCode  ISOnComm(IS is,MPI_Comm comm,PetscCopyMode mode,IS *newis)
 - bs - block size
 
    Level: intermediate
+   
+   Notes: 
+   This is much like the block size for Vecs. It indicates that one can think of the indices as 
+   being in a collection of equal size blocks. For ISBlock() these collections of blocks are all contiquous
+   within a block but this is not the case for other IS.
+   ISBlockGetIndices() only works for ISBlock IS, not others.
 
-.seealso: ISGetBlockSize(), ISCreateBlock()
+.seealso: ISGetBlockSize(), ISCreateBlock(), ISBlockGetIndices(), 
 @*/
 PetscErrorCode  ISSetBlockSize(IS is,PetscInt bs)
 {
@@ -1270,6 +1275,11 @@ PetscErrorCode  ISSetBlockSize(IS is,PetscInt bs)
 
    Level: intermediate
 
+Notes: 
+   This is much like the block size for Vecs. It indicates that one can think of the indices as 
+   being in a collection of equal size blocks. For ISBlock() these collections of blocks are all contiquous
+   within a block but this is not the case for other IS.
+   ISBlockGetIndices() only works for ISBlock IS, not others.
 
 .seealso: ISBlockGetSize(), ISGetSize(), ISCreateBlock(), ISSetBlockSize()
 @*/

@@ -39,4 +39,4 @@ TS Object: 1 MPI processes
         type: seqdense
         rows=1, cols=1
         total: nonzeros=1, allocated nonzeros=1
-        total number of mallocs used during MatSetValues calls =0
+        total number of mallocs used during MatSetValues calls=0

@@ -104,7 +104,7 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
   /* Compute the objective function and gradient */
   ierr = TaoComputeObjectiveAndGradient(tao,tao->solution,&tron->f,tao->gradient);CHKERRQ(ierr);
   ierr = VecNorm(tao->gradient,NORM_2,&tron->gnorm);CHKERRQ(ierr);
-  if (PetscIsInfOrNanReal(tron->f) || PetscIsInfOrNanReal(tron->gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
+  if (PetscIsInfOrNanReal(tron->f) || PetscIsInfOrNanReal(tron->gnorm)) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
 
   /* Project the gradient and calculate the norm */
   ierr = VecBoundGradientProjection(tao->gradient,tao->solution,tao->XL,tao->XU,tao->gradient);CHKERRQ(ierr);

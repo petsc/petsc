@@ -87,5 +87,5 @@ SNES Object: 4 MPI processes
       type: mpiaij
       rows=37636, cols=37636, bs=4
       total: nonzeros=746512, allocated nonzeros=746512
-      total number of mallocs used during MatSetValues calls =0
+      total number of mallocs used during MatSetValues calls=0
 Number of SNES iterations = 3

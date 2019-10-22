@@ -48,13 +48,9 @@ int main(int argc,char **args)
   PetscScalar    rand;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-#if defined(PETSC_USE_COMPLEX)
-  SETERRQ(PETSC_COMM_WORLD,1,"This example does not work with complex numbers");
-#else
-
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must use -f filename to indicate a file containing a PETSc binary matrix");
+  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must use -f filename to indicate a file containing a PETSc binary matrix");
   ierr = PetscOptionsGetInt(NULL,NULL,"-nd",&nd,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-ov",&ov,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-nested_dissection",&useND,NULL);CHKERRQ(ierr);
@@ -143,7 +139,6 @@ int main(int argc,char **args)
   ierr = PetscFree(is2);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
-#endif
   ierr = PetscFinalize();
   return ierr;
 }

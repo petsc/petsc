@@ -331,13 +331,13 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   if (flg) {
     TSMonitorDMDARayCtx *rayctx;
     int                  ray = 0;
-    DMDADirection        ddir;
+    DMDirection          ddir;
     DM                   da;
     PetscMPIInt          rank;
 
     if (dir[1] != '=') SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONG,"Unknown ray %s",dir);
-    if (dir[0] == 'x') ddir = DMDA_X;
-    else if (dir[0] == 'y') ddir = DMDA_Y;
+    if (dir[0] == 'x') ddir = DM_X;
+    else if (dir[0] == 'y') ddir = DM_Y;
     else SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONG,"Unknown ray %s",dir);
     sscanf(dir+2,"%d",&ray);
 
@@ -356,13 +356,13 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   if (flg) {
     TSMonitorDMDARayCtx *rayctx;
     int                 ray = 0;
-    DMDADirection       ddir;
+    DMDirection         ddir;
     DM                  da;
     PetscInt            howoften = 1;
 
     if (dir[1] != '=') SETERRQ1(PetscObjectComm((PetscObject) ts), PETSC_ERR_ARG_WRONG, "Malformed ray %s", dir);
-    if      (dir[0] == 'x') ddir = DMDA_X;
-    else if (dir[0] == 'y') ddir = DMDA_Y;
+    if      (dir[0] == 'x') ddir = DM_X;
+    else if (dir[0] == 'y') ddir = DM_Y;
     else SETERRQ1(PetscObjectComm((PetscObject) ts), PETSC_ERR_ARG_WRONG, "Unknown ray direction %s", dir);
     sscanf(dir+2, "%d", &ray);
 
@@ -3486,7 +3486,7 @@ PetscErrorCode TSMonitorExtreme(TS ts,PetscInt step,PetscReal ptime,Vec v,PetscV
   PetscBool      iascii;
   PetscReal      max,min;
 
-  
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -3740,7 +3740,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
     ts->steprestart       = PETSC_TRUE;
     ts->steprollback      = PETSC_FALSE;
   }
-  if (ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP && ts->ptime + ts->time_step > ts->max_time) ts->time_step = ts->max_time - ts->ptime;
+  if (ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP && ts->ptime < ts->max_time && ts->ptime + ts->time_step > ts->max_time) ts->time_step = ts->max_time - ts->ptime;
   ts->reason = TS_CONVERGED_ITERATING;
 
   ierr = TSViewFromOptions(ts,NULL,"-ts_view_pre");CHKERRQ(ierr);
@@ -3969,7 +3969,7 @@ PetscErrorCode  TSMonitorLGCtxDestroy(TSMonitorLGCtx *ctx)
 }
 
 /*
-  
+
   Creates a TS Monitor SPCtx for use with DM Swarm particle visualizations
 
 */
@@ -3989,18 +3989,18 @@ PetscErrorCode TSMonitorSPCtxCreate(MPI_Comm comm,const char host[],const char l
 
 }
 
-/* 
-  Destroys a TSMonitorSPCtx that was created with TSMonitorSPCtxCreate 
+/*
+  Destroys a TSMonitorSPCtx that was created with TSMonitorSPCtxCreate
 */
 PetscErrorCode TSMonitorSPCtxDestroy(TSMonitorSPCtx *ctx)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  
+
   ierr = PetscDrawSPDestroy(&(*ctx)->sp);CHKERRQ(ierr);
   ierr = PetscFree(*ctx);CHKERRQ(ierr);
-  
+
   PetscFunctionReturn(0);
 
 }
@@ -6560,7 +6560,7 @@ PetscErrorCode TSMonitorSPSwarmSolution(TS ts,PetscInt step,PetscReal ptime,Vec 
   DM                dm;
 
   PetscFunctionBegin;
-  
+
   if (step < 0) PetscFunctionReturn(0); /* -1 indicates interpolated solution */
   if (!step) {
     PetscDrawAxis axis;
@@ -6576,7 +6576,7 @@ PetscErrorCode TSMonitorSPSwarmSolution(TS ts,PetscInt step,PetscReal ptime,Vec 
     ierr = PetscDrawSPSetDimension(ctx->sp, Np);CHKERRQ(ierr);
     ierr = PetscDrawSPReset(ctx->sp);CHKERRQ(ierr);
   }
-  
+
   ierr = VecGetLocalSize(u, &Np);CHKERRQ(ierr);
   Np /= 2*dim;
   ierr = VecGetArrayRead(u,&yy);CHKERRQ(ierr);
@@ -6584,10 +6584,10 @@ PetscErrorCode TSMonitorSPSwarmSolution(TS ts,PetscInt step,PetscReal ptime,Vec 
   /* get points from solution vector */
   for (p=0; p<Np; ++p){
     x[p] = PetscRealPart(yy[2*dim*p]);
-    y[p] = PetscRealPart(yy[2*dim*p+1]); 
+    y[p] = PetscRealPart(yy[2*dim*p+1]);
   }
   ierr = VecRestoreArrayRead(u,&yy);CHKERRQ(ierr);
-  
+
   if (((ctx->howoften > 0) && (!(step % ctx->howoften))) || ((ctx->howoften == -1) && ts->reason)) {
     ierr = PetscDrawSPAddPoint(ctx->sp,x,y);CHKERRQ(ierr);
     ierr = PetscDrawSPDraw(ctx->sp,PETSC_FALSE);CHKERRQ(ierr);

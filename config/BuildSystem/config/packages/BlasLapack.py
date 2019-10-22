@@ -172,6 +172,7 @@ class Configure(config.package.Package):
     # check that user has used the options properly
     if self.f2cblaslapack.found:
       self.f2c = 1
+      # TODO: use self.f2cblaslapack.libDir directly
       libDir = os.path.join(self.f2cblaslapack.directory,'lib')
       f2cBlas = [os.path.join(libDir,'libf2cblas.a')]
       f2cLapack = [os.path.join(libDir,'libf2clapack.a')]
@@ -180,15 +181,16 @@ class Configure(config.package.Package):
       raise RuntimeError('--download-f2cblaslapack libraries cannot be used')
     if self.fblaslapack.found:
       self.f2c = 0
+      # TODO: use self.fblaslapack.libDir directly
       libDir = os.path.join(self.fblaslapack.directory,'lib')
       yield ('fblaslapack', os.path.join(libDir,'libfblas.a'), os.path.join(libDir,'libflapack.a'), '32','no')
       raise RuntimeError('--download-fblaslapack libraries cannot be used')
     if self.openblas.found:
       self.f2c = 0
-      libDir = os.path.join(self.openblas.directory,'lib')
-      if self.argDB['download-openblas-64-bit-blas-indices'] or self.argDB['with-64-bit-blas-indices']: known = '64'
-      else: known = '32'
-      yield ('openblas', None, os.path.join(libDir,'libopenblas.a'),known,self.openblas.usesopenmp)
+      if self.openblas.libDir:
+        yield ('OpenBLAS with full path', None, os.path.join(self.openblas.libDir,'libopenblas.a'),self.openblas.known64,self.openblas.usesopenmp)
+      else:
+        yield ('OpenBLAS', None, self.openblas.lib,self.openblas.known64,self.openblas.usesopenmp)
       raise RuntimeError('--download-openblas libraries cannot be used')
     if 'with-blas-lib' in self.argDB and not 'with-lapack-lib' in self.argDB:
       raise RuntimeError('If you use the --with-blas-lib=<lib> you must also use --with-lapack-lib=<lib> option')
@@ -221,7 +223,11 @@ class Configure(config.package.Package):
         yield ('Default compiler libraries', '', '','unknown','unknow')
         yield ('Default compiler locations', 'libblas.a', 'liblapack.a','unknown','unknow')
         yield ('Default compiler locations /usr/local/lib', os.path.join('/usr','local','lib','libblas.a'), os.path.join('/usr','local','lib','liblapack.a'),'unknown','unknow')
+        yield ('OpenBLAS default compiler locations', None, 'libopenblas.a','unknown','unknow')
+        yield ('OpenBLAS default compiler locations /usr/local/lib', None, os.path.join('/usr','local','lib','libopenblas.a'),'unknown','unknow')
         yield ('Default compiler locations with gfortran', None, ['liblapack.a', 'libblas.a','libgfortran.a'],'unknown','unknow')
+        yield ('Default compiler locations', 'libblis.a', 'liblapack.a','unknown','unknown')
+        yield ('Default compiler locations /usr/local/lib', os.path.join('/usr','local','lib','libblis.a'), os.path.join('/usr','local','lib','liblapack.a'),'unknown','unknown')
         self.logWrite('Did not detect default BLAS and LAPACK locations so using the value of MKLROOT to search as --with-blas-lapack-dir='+mkl)
         self.argDB['with-blaslapack-dir'] = mkl
 
@@ -292,6 +298,7 @@ class Configure(config.package.Package):
 
       self.log.write('Files and directories in that directory:\n'+str(os.listdir(dir))+'\n')
       yield ('User specified installation root (HPUX)', os.path.join(dir, 'libveclib.a'),  os.path.join(dir, 'liblapack.a'),'32','unkown')
+      yield ('User specified OpenBLAS', None, os.path.join(dir, 'libopenblas.a'),'unknown','unkown')     
       yield ('User specified installation root (F2CBLASLAPACK)', os.path.join(dir,'libf2cblas.a'), os.path.join(dir, 'libf2clapack.a'),'32','no')
       yield ('User specified installation root(FBLASLAPACK)', os.path.join(dir, 'libfblas.a'),   os.path.join(dir, 'libflapack.a'),'32','no')
       # Check MATLAB [ILP64] MKL
@@ -320,8 +327,11 @@ class Configure(config.package.Package):
       # Older Linux MKL checks
       yield ('User specified MKL Linux lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'mkl', 'guide', 'pthread'],'32','no')
       for libdir in ['32','64','em64t']:
-        self.log.write('Files and directories in that directory:\n'+str(os.listdir(os.path.join(dir,libdir)))+'\n')
-        yield ('User specified MKL Linux installation root', None, [os.path.join(dir,'lib',libdir,'libmkl_lapack.a'),'mkl', 'guide', 'pthread'],'32','no')
+        if not os.path.exists(os.path.join(dir,libdir)):
+          self.logPrint('MKL Path not found.. skipping: '+os.path.join(dir,libdir))
+        else:
+          self.log.write('Files and directories in that directory:\n'+str(os.listdir(os.path.join(dir,libdir)))+'\n')
+          yield ('User specified MKL Linux installation root', None, [os.path.join(dir,'lib',libdir,'libmkl_lapack.a'),'mkl', 'guide', 'pthread'],'32','no')
       yield ('User specified MKL Linux-x86 lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'libmkl_def.a', 'guide', 'pthread'],'32','no')
       yield ('User specified MKL Linux-x86 lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'libmkl_def.a', 'guide', 'vml','pthread'],'32','no')
       yield ('User specified MKL Linux-ia64 lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'libmkl_ipf.a', 'guide', 'pthread'],'32','no')
@@ -366,12 +376,14 @@ class Configure(config.package.Package):
       # Search for liblapack.a and libblas.a after the implementations with more specific name to avoid
       # finding these in /usr/lib despite using -L<blaslapack-dir> while attempting to get a different library.
       yield ('User specified installation root', os.path.join(dir, 'libblas.a'),    os.path.join(dir, 'liblapack.a'),'unknown','unknow')
+      yield ('User specified installation root', os.path.join(dir, 'libblis.a'),    os.path.join(dir, 'liblapack.a'),'unknown','unknown')
       raise RuntimeError('You set a value for --with-blaslapack-dir=<dir>, but '+self.argDB['with-blaslapack-dir']+' cannot be used\n')
     if self.defaultPrecision == '__float128':
       raise RuntimeError('__float128 precision requires f2c libraries; suggest --download-f2cblaslapack\n')
     # Try compiler defaults
-    yield ('Default compiler libraries', '', '','unknown','unknow')
-    yield ('Default compiler locations', 'libblas.a', 'liblapack.a','unknown','unknow')
+    yield ('Default compiler libraries', '', '','unknown','unknown')
+    yield ('Default compiler locations', 'libblas.a', 'liblapack.a','unknown','unknown')
+    yield ('Default OpenBLAS', None, 'libopenblas.a','unknown','unknown')
     # Intel on Mac
     yield ('User specified MKL Mac-64', None, [os.path.join('/opt','intel','mkl','lib','libmkl_intel'+ILP64+'.a'),'mkl_'+ITHREAD,'mkl_core','pthread'],known,ompthread)
     # Try Microsoft Windows location
@@ -388,20 +400,21 @@ class Configure(config.package.Package):
         mkldir = os.path.join(mklpath, 'ia64', 'lib')
         yield ('Microsoft Windows, ia64 Intel MKL library', None, os.path.join(mkldir,'mkl_dll.lib'),'32','no')
     # IRIX locations
-    yield ('IRIX Mathematics library', None, 'libcomplib.sgimath.a','32','unknow')
-    yield ('Another IRIX Mathematics library', None, 'libscs.a','32','unknow')
-    yield ('Compaq/Alpha Mathematics library', None, 'libcxml.a','32','unknow')
+    yield ('IRIX Mathematics library', None, 'libcomplib.sgimath.a','32','unknown')
+    yield ('Another IRIX Mathematics library', None, 'libscs.a','32','unknown')
+    yield ('Compaq/Alpha Mathematics library', None, 'libcxml.a','32','unknown')
     # IBM ESSL locations
-    yield ('IBM ESSL Mathematics library', None, 'libessl.a','32','unknow')
-    yield ('IBM ESSL Mathematics library for Blue Gene', None, 'libesslbg.a','32','unknow')
-    yield ('HPUX', 'libveclib.a', 'liblapack.a','unknown','unknow')
+    yield ('IBM ESSL Mathematics library', None, 'libessl.a','32','unknown')
+    yield ('IBM ESSL Mathematics library for Blue Gene', None, 'libesslbg.a','32','unknown')
+    yield ('HPUX', 'libveclib.a', 'liblapack.a','unknown','unknown')
     # /usr/local/lib
     dir = os.path.join('/usr','local','lib')
-    yield ('Default compiler locations /usr/local/lib', os.path.join(dir,'libblas.a'), os.path.join(dir,'liblapack.a'),'unknown','unknow')
-    yield ('Default compiler locations with gfortran', None, ['liblapack.a', 'libblas.a','libgfortran.a'],'unknown','unknow')
-    yield ('Default Atlas location',['libcblas.a','libf77blas.a','libatlas.a'],  ['liblapack.a'],'unknown','unknow')
-    yield ('Default Atlas location',['libf77blas.a','libatlas.a'],  ['liblapack.a'],'unknown','unknow')
-    yield ('Default compiler locations with G77', None, ['liblapack.a', 'libblas.a','libg2c.a'],'unknown','unknow')
+    yield ('Default compiler locations /usr/local/lib', os.path.join(dir,'libblas.a'), os.path.join(dir,'liblapack.a'),'unknown','unknown')
+    yield ('Default compiler locations /usr/local/lib', None, os.path.join(dir,'libopenblas.a'),'unknown','unknown')
+    yield ('Default compiler locations with gfortran', None, ['liblapack.a', 'libblas.a','libgfortran.a'],'unknown','unknown')
+    yield ('Default Atlas location',['libcblas.a','libf77blas.a','libatlas.a'],  ['liblapack.a'],'unknown','unknown')
+    yield ('Default Atlas location',['libf77blas.a','libatlas.a'],  ['liblapack.a'],'unknown','unknown')
+    yield ('Default compiler locations with G77', None, ['liblapack.a', 'libblas.a','libg2c.a'],'unknown','unknown')
     # Try MacOSX location
     dir = os.path.join('/Library', 'Frameworks', 'Intel_MKL.framework','Libraries','32')
     yield ('MacOSX with Intel MKL', None, [os.path.join(dir,'libmkl_lapack.a'),'libmkl_ia32.a','libguide.a'],'32','no')
@@ -417,63 +430,56 @@ class Configure(config.package.Package):
         self.logPrint('MKL Path not found.. skipping: '+mklpath)
       else:
         mkldir = os.path.join(mklpath, 'ia32', 'lib')
-        self.log.write('Files and directories in that directory:\n'+str(os.listdir(mkldir))+'\n')
-        yield ('Microsoft Windows, Intel MKL library', None, os.path.join(mkldir,'mkl_c_dll.lib'),'32','no')
-        yield ('Microsoft Windows, Intel MKL stdcall library', None, os.path.join(mkldir,'mkl_s_dll.lib'),'32','no')
+        if os.path.exists(mkldir):
+          self.log.write('Files and directories in that directory:\n'+str(os.listdir(mkldir))+'\n')
+          yield ('Microsoft Windows, Intel MKL library', None, os.path.join(mkldir,'mkl_c_dll.lib'),'32','no')
+          yield ('Microsoft Windows, Intel MKL stdcall library', None, os.path.join(mkldir,'mkl_s_dll.lib'),'32','no')
         mkldir = os.path.join(mklpath, 'em64t', 'lib')
-        self.log.write('Files and directories in that directory:\n'+str(os.listdir(mkldir))+'\n')
-        yield ('Microsoft Windows, em64t Intel MKL library', None, os.path.join(mkldir,'mkl_dll.lib'),'32','no')
+        if os.path.exists(mkldir):
+          self.log.write('Files and directories in that directory:\n'+str(os.listdir(mkldir))+'\n')
+          yield ('Microsoft Windows, em64t Intel MKL library', None, os.path.join(mkldir,'mkl_dll.lib'),'32','no')
         mkldir = os.path.join(mklpath, 'ia64', 'lib')
-        self.log.write('Files and directories in that directory:\n'+str(os.listdir(mkldir))+'\n')
-        yield ('Microsoft Windows, ia64 Intel MKL library', None, os.path.join(mkldir,'mkl_dll.lib'),'32','no')
+        if os.path.exists(mkldir):
+          self.log.write('Files and directories in that directory:\n'+str(os.listdir(mkldir))+'\n')
+          yield ('Microsoft Windows, ia64 Intel MKL library', None, os.path.join(mkldir,'mkl_dll.lib'),'32','no')
     return
 
   def configureLibrary(self):
-
     if hasattr(self.compilers, 'FC'):
       self.alternativedownload = 'fblaslapack'
-
-    self.functionalBlasLapack = []
-    self.foundBlas   = 0
-    self.foundLapack = 0
-    for (name, blasLibrary, lapackLibrary, self.known64, self.usesopenmp) in self.generateGuesses():
+    for (name, self.blasLibrary, self.lapackLibrary, self.known64, self.usesopenmp) in self.generateGuesses():
+      self.foundBlas   = 0
+      self.foundLapack = 0
       self.log.write('================================================================================\n')
-      self.log.write('Checking for a functional BLAS and LAPACK in '+name+'\n')
-      (foundBlas, foundLapack) = self.executeTest(self.checkLib, [lapackLibrary, blasLibrary])
-      if foundBlas:   self.foundBlas   = 1
-      if foundLapack: self.foundLapack = 1
-      if foundBlas and foundLapack:
-        self.functionalBlasLapack.append((name, blasLibrary, lapackLibrary))
-        if not self.argDB['with-alternatives']:
-          break
-    if self.foundBlas and self.foundLapack:
-      name, self.blasLibrary, self.lapackLibrary = self.functionalBlasLapack[0]
-      if not isinstance(self.blasLibrary,   list): self.blasLibrary   = [self.blasLibrary]
-      if not isinstance(self.lapackLibrary, list): self.lapackLibrary = [self.lapackLibrary]
-      self.lib = []
-      if self.lapackLibrary[0]: self.lib.extend(self.lapackLibrary)
-      if self.blasLibrary[0]:   self.lib.extend(self.blasLibrary)
-      self.dlib = self.lib+self.dlib
-      self.framework.packages.append(self)
-    else:
-      if not self.foundBlas:
-        # check for split blas/blas-dev packages
-        import glob
-        blib = glob.glob('/usr/lib/libblas.*')
-        if blib != [] and not (os.path.isfile('/usr/lib/libblas.so') or os.path.isfile('/usr/lib/libblas.a')):
-          raise RuntimeError('Incomplete system BLAS install detected. Perhaps you need to install blas-dev or blas-devel package - that contains /usr/lib/libblas.so using apt or yum or equivalent package manager?')
-        if hasattr(self.compilers, 'FC') and (self.defaultPrecision != '__float128') and (self.defaultPrecision != '__fp16') : pkg = 'fblaslapack'
-        else: pkg = 'f2cblaslapack'
-        raise RuntimeError('Could not find a functional BLAS. Run with --with-blas-lib=<lib> to indicate the library containing BLAS.\n Or --download-'+pkg+'=1 to have one automatically downloaded and installed\n')
-      if not self.foundLapack:
-        # check for split blas/blas-dev packages
-        import glob
-        llib = glob.glob('/usr/lib/liblapack.*')
-        if llib != [] and not (os.path.isfile('/usr/lib/liblapack.so') or os.path.isfile('/usr/lib/liblapack.a')):
-          raise RuntimeError('Incomplete system LAPACK install detected. Perhaps you need to install lapack-dev or lapack-devel package - that contains /usr/lib/liblapack.so using apt or yum or equivalent package manager?')
-        if hasattr(self.compilers, 'FC') and (self.defaultPrecision != '__float128') and (self.defaultPrecision != '__fp16') : pkg = 'fblaslapack'
-        else: pkg = 'f2cblaslapack'
-        raise RuntimeError('Could not find a functional LAPACK. Run with --with-lapack-lib=<lib> to indicate the library containing LAPACK.\n Or --download-'+pkg+'=1 to have one automatically downloaded and installed\n')
+      self.log.write('Checking for BLAS and LAPACK in '+name+'\n')
+      (self.foundBlas, self.foundLapack) = self.executeTest(self.checkLib, [self.lapackLibrary, self.blasLibrary])
+      if self.foundBlas and self.foundLapack:
+        if not isinstance(self.blasLibrary,   list): self.blasLibrary   = [self.blasLibrary]
+        if not isinstance(self.lapackLibrary, list): self.lapackLibrary = [self.lapackLibrary]
+        self.lib = []
+        if self.lapackLibrary[0]: self.lib.extend(self.lapackLibrary)
+        if self.blasLibrary[0]:   self.lib.extend(self.blasLibrary)
+        self.dlib = self.lib+self.dlib
+        self.framework.packages.append(self)
+        break
+    if not self.foundBlas:
+      # check for split blas/blas-dev packages
+      import glob
+      blib = glob.glob('/usr/lib/libblas.*')
+      if blib != [] and not (os.path.isfile('/usr/lib/libblas.so') or os.path.isfile('/usr/lib/libblas.a')):
+        raise RuntimeError('Incomplete system BLAS install detected. Perhaps you need to install blas-dev or blas-devel package - that contains /usr/lib/libblas.so using apt or yum or equivalent package manager?')
+      if hasattr(self.compilers, 'FC') and (self.defaultPrecision != '__float128') and (self.defaultPrecision != '__fp16') : pkg = 'fblaslapack'
+      else: pkg = 'f2cblaslapack'
+      raise RuntimeError('Could not find a functional BLAS. Run with --with-blas-lib=<lib> to indicate the library containing BLAS.\n Or --download-'+pkg+'=1 to have one automatically downloaded and installed\n')
+    if not self.foundLapack:
+      # check for split blas/blas-dev packages
+      import glob
+      llib = glob.glob('/usr/lib/liblapack.*')
+      if llib != [] and not (os.path.isfile('/usr/lib/liblapack.so') or os.path.isfile('/usr/lib/liblapack.a')):
+        raise RuntimeError('Incomplete system LAPACK install detected. Perhaps you need to install lapack-dev or lapack-devel package - that contains /usr/lib/liblapack.so using apt or yum or equivalent package manager?')
+      if hasattr(self.compilers, 'FC') and (self.defaultPrecision != '__float128') and (self.defaultPrecision != '__fp16') : pkg = 'fblaslapack'
+      else: pkg = 'f2cblaslapack'
+      raise RuntimeError('Could not find a functional LAPACK. Run with --with-lapack-lib=<lib> to indicate the library containing LAPACK.\n Or --download-'+pkg+'=1 to have one automatically downloaded and installed\n')
 
     #  allow user to dictate which blas/lapack mangling to use (some blas/lapack libraries, like on Apple, provide several)
     if 'known-blaslapack-mangling' in self.argDB:

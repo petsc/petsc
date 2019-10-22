@@ -30,8 +30,9 @@ static PetscErrorCode pounders_feval(Tao tao, Vec x, Vec F, PetscReal *fsum)
 {
   PetscErrorCode ierr;
   TAO_POUNDERS   *mfqP = (TAO_POUNDERS*)tao->data;
-  PetscInt i,row,col;
-  PetscReal fr,fc;
+  PetscInt       i,row,col;
+  PetscReal      fr,fc;
+
   PetscFunctionBegin;
   ierr = TaoComputeResidual(tao,x,F);CHKERRQ(ierr);
   if (tao->res_weights_v) {
@@ -50,11 +51,11 @@ static PetscErrorCode pounders_feval(Tao tao, Vec x, Vec F, PetscReal *fsum)
     ierr = VecDot(F,F,fsum);CHKERRQ(ierr);
   }
   ierr = PetscInfo1(tao,"Least-squares residual norm: %20.19e\n",(double)*fsum);CHKERRQ(ierr);
-  if (PetscIsInfOrNanReal(*fsum)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
+  if (PetscIsInfOrNanReal(*fsum)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode gqtwrap(Tao tao,PetscReal *gnorm, PetscReal *qmin)
+static PetscErrorCode gqtwrap(Tao tao,PetscReal *gnorm, PetscReal *qmin)
 {
   PetscErrorCode ierr;
 #if defined(PETSC_USE_REAL_SINGLE)
@@ -110,17 +111,17 @@ PetscErrorCode gqtwrap(Tao tao,PetscReal *gnorm, PetscReal *qmin)
     ierr = VecCopy(mfqP->subxl,mfqP->subpdel);CHKERRQ(ierr);
     ierr = VecAXPY(mfqP->subpdel,-1.0,mfqP->subxu);CHKERRQ(ierr);
     ierr = VecMax(mfqP->subpdel,NULL,&maxval);CHKERRQ(ierr);
-    if (maxval > 1e-10) SETERRQ(PETSC_COMM_WORLD,1,"upper bound < lower bound in subproblem");
+    if (maxval > 1e-10) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_OUTOFRANGE,"upper bound < lower bound in subproblem");
     /* Make sure xu > tao->solution > xl */
     ierr = VecCopy(mfqP->subxl,mfqP->subpdel);CHKERRQ(ierr);
     ierr = VecAXPY(mfqP->subpdel,-1.0,mfqP->subx);CHKERRQ(ierr);
     ierr = VecMax(mfqP->subpdel,NULL,&maxval);CHKERRQ(ierr);
-    if (maxval > 1e-10) SETERRQ(PETSC_COMM_WORLD,1,"initial guess < lower bound in subproblem");
+    if (maxval > 1e-10) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_OUTOFRANGE,"initial guess < lower bound in subproblem");
 
     ierr = VecCopy(mfqP->subx,mfqP->subpdel);CHKERRQ(ierr);
     ierr = VecAXPY(mfqP->subpdel,-1.0,mfqP->subxu);CHKERRQ(ierr);
     ierr = VecMax(mfqP->subpdel,NULL,&maxval);CHKERRQ(ierr);
-    if (maxval > 1e-10) SETERRQ(PETSC_COMM_WORLD,1,"initial guess > upper bound in subproblem");
+    if (maxval > 1e-10) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_OUTOFRANGE,"initial guess > upper bound in subproblem");
 
     ierr = TaoSolve(mfqP->subtao);CHKERRQ(ierr);
     ierr = TaoGetSolutionStatus(mfqP->subtao,NULL,qmin,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
@@ -151,12 +152,12 @@ PetscErrorCode gqtwrap(Tao tao,PetscReal *gnorm, PetscReal *qmin)
 static PetscErrorCode pounders_update_res(Tao tao)
 {
   TAO_POUNDERS   *mfqP = (TAO_POUNDERS*)tao->data;
-  PetscInt i,row,col;
-  PetscBLASInt blasn=mfqP->n,blasn2=blasn*blasn,blasm=mfqP->m,ione=1;
-  PetscReal zero=0.0,one=1.0,wii,factor;
+  PetscInt       i,row,col;
+  PetscBLASInt   blasn=mfqP->n,blasn2=blasn*blasn,blasm=mfqP->m,ione=1;
+  PetscReal      zero=0.0,one=1.0,wii,factor;
   PetscErrorCode ierr;
-  PetscFunctionBegin;
 
+  PetscFunctionBegin;
   for (i=0;i<mfqP->n;i++) {
     mfqP->Gres[i]=0;
   }
@@ -241,7 +242,7 @@ static PetscErrorCode pounders_update_res(Tao tao)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode phi2eval(PetscReal *x, PetscInt n, PetscReal *phi)
+static PetscErrorCode phi2eval(PetscReal *x, PetscInt n, PetscReal *phi)
 {
 /* Phi = .5*[x(1)^2  sqrt(2)*x(1)*x(2) ... sqrt(2)*x(1)*x(n) ... x(2)^2 sqrt(2)*x(2)*x(3) .. x(n)^2] */
   PetscInt  i,j,k;
@@ -260,7 +261,7 @@ PetscErrorCode phi2eval(PetscReal *x, PetscInt n, PetscReal *phi)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode getquadpounders(TAO_POUNDERS *mfqP)
+static PetscErrorCode getquadpounders(TAO_POUNDERS *mfqP)
 {
 /* Computes the parameters of the quadratic Q(x) = c + g'*x + 0.5*x*G*x'
    that satisfies the interpolation conditions Q(X[:,j]) = f(j)
@@ -343,7 +344,7 @@ PetscErrorCode getquadpounders(TAO_POUNDERS *mfqP)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode morepoints(TAO_POUNDERS *mfqP)
+static PetscErrorCode morepoints(TAO_POUNDERS *mfqP)
 {
   /* Assumes mfqP->model_indices[0]  is minimum index
    Finishes adding points to mfqP->model_indices (up to npmax)
@@ -496,7 +497,7 @@ PetscErrorCode morepoints(TAO_POUNDERS *mfqP)
 }
 
 /* Only call from modelimprove, addpoint() needs ->Q_tmp and ->work to be set */
-PetscErrorCode addpoint(Tao tao, TAO_POUNDERS *mfqP, PetscInt index)
+static PetscErrorCode addpoint(Tao tao, TAO_POUNDERS *mfqP, PetscInt index)
 {
   PetscErrorCode ierr;
 
@@ -525,7 +526,7 @@ PetscErrorCode addpoint(Tao tao, TAO_POUNDERS *mfqP, PetscInt index)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode modelimprove(Tao tao, TAO_POUNDERS *mfqP, PetscInt addallpoints)
+static PetscErrorCode modelimprove(Tao tao, TAO_POUNDERS *mfqP, PetscInt addallpoints)
 {
   /* modeld = Q(:,np+1:n)' */
   PetscErrorCode ierr;
@@ -575,8 +576,7 @@ PetscErrorCode modelimprove(Tao tao, TAO_POUNDERS *mfqP, PetscInt addallpoints)
   PetscFunctionReturn(0);
 }
 
-
-PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin,PetscReal c)
+static PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin,PetscReal c)
 {
   PetscInt        i,j;
   PetscBLASInt    blasm=mfqP->m,blasj,blask,blasn=mfqP->n,ione=1,info;
@@ -667,13 +667,13 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
     ierr = VecCopy(tao->solution,mfqP->Xhist[0]);CHKERRQ(ierr);
     ierr = VecAXPY(mfqP->Xhist[0],-1.0,tao->XU);CHKERRQ(ierr);
     ierr = VecMax(mfqP->Xhist[0],NULL,&val);CHKERRQ(ierr);
-    if (val > 1e-10) SETERRQ(PETSC_COMM_WORLD,1,"X0 > upper bound");
+    if (val > 1e-10) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_OUTOFRANGE,"X0 > upper bound");
 
     /* Check x0 >= xl */
     ierr = VecCopy(tao->XL,mfqP->Xhist[0]);CHKERRQ(ierr);
     ierr = VecAXPY(mfqP->Xhist[0],-1.0,tao->solution);CHKERRQ(ierr);
     ierr = VecMax(mfqP->Xhist[0],NULL,&val);CHKERRQ(ierr);
-    if (val > 1e-10) SETERRQ(PETSC_COMM_WORLD,1,"X0 < lower bound");
+    if (val > 1e-10) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_OUTOFRANGE,"X0 < lower bound");
 
     /* Check x0 + delta < XU  -- should be able to get around this eventually */
 
@@ -681,7 +681,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
     ierr = VecAXPY(mfqP->Xhist[0],1.0,tao->solution);CHKERRQ(ierr);
     ierr = VecAXPY(mfqP->Xhist[0],-1.0,tao->XU);CHKERRQ(ierr);
     ierr = VecMax(mfqP->Xhist[0],NULL,&val);CHKERRQ(ierr);
-    if (val > 1e-10) SETERRQ(PETSC_COMM_WORLD,1,"X0 + delta > upper bound");
+    if (val > 1e-10) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_OUTOFRANGE,"X0 + delta > upper bound");
   }
 
   blasm = mfqP->m; blasn=mfqP->n; blasnpmax = mfqP->npmax;
@@ -1087,10 +1087,10 @@ static PetscErrorCode TaoSetUp_POUNDERS(Tao tao)
   }
   ierr = MPI_Comm_size(((PetscObject)tao)->comm,&mfqP->size);CHKERRQ(ierr);
   if (mfqP->size > 1) {
-    VecCreateSeq(PETSC_COMM_SELF,mfqP->n,&mfqP->localx);CHKERRQ(ierr);
-    VecCreateSeq(PETSC_COMM_SELF,mfqP->n,&mfqP->localxmin);CHKERRQ(ierr);
-    VecCreateSeq(PETSC_COMM_SELF,mfqP->m,&mfqP->localf);CHKERRQ(ierr);
-    VecCreateSeq(PETSC_COMM_SELF,mfqP->m,&mfqP->localfmin);CHKERRQ(ierr);
+    ierr = VecCreateSeq(PETSC_COMM_SELF,mfqP->n,&mfqP->localx);CHKERRQ(ierr);
+    ierr = VecCreateSeq(PETSC_COMM_SELF,mfqP->n,&mfqP->localxmin);CHKERRQ(ierr);
+    ierr = VecCreateSeq(PETSC_COMM_SELF,mfqP->m,&mfqP->localf);CHKERRQ(ierr);
+    ierr = VecCreateSeq(PETSC_COMM_SELF,mfqP->m,&mfqP->localfmin);CHKERRQ(ierr);
     ierr = ISCreateStride(MPI_COMM_SELF,mfqP->n,0,1,&isxloc);CHKERRQ(ierr);
     ierr = ISCreateStride(MPI_COMM_SELF,mfqP->n,0,1,&isxglob);CHKERRQ(ierr);
     ierr = ISCreateStride(MPI_COMM_SELF,mfqP->m,0,1,&isfloc);CHKERRQ(ierr);

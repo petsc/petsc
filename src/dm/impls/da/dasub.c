@@ -82,7 +82,7 @@ PetscErrorCode  DMDAGetLogicalCoordinate(DM da,PetscScalar x,PetscScalar y,Petsc
    Input Parameters:
 +  da - the distributed array
 .  vec - the vector
-.  dir - Cartesian direction, either DMDA_X, DMDA_Y, or DMDA_Z
+.  dir - Cartesian direction, either DM_X, DM_Y, or DM_Z
 -  gp - global grid point number in this direction
 
    Output Parameters:
@@ -95,7 +95,7 @@ PetscErrorCode  DMDAGetLogicalCoordinate(DM da,PetscScalar x,PetscScalar y,Petsc
    All processors that share the DMDA must call this with the same gp value
 
 @*/
-PetscErrorCode  DMDAGetRay(DM da,DMDADirection dir,PetscInt gp,Vec *newvec,VecScatter *scatter)
+PetscErrorCode  DMDAGetRay(DM da,DMDirection dir,PetscInt gp,Vec *newvec,VecScatter *scatter)
 {
   PetscMPIInt    rank;
   DM_DA          *dd = (DM_DA*)da->data;
@@ -111,7 +111,7 @@ PetscErrorCode  DMDAGetRay(DM da,DMDADirection dir,PetscInt gp,Vec *newvec,VecSc
   ierr = DMDAGetAO(da, &ao);CHKERRQ(ierr);
   if (!rank) {
     if (da->dim == 1) {
-      if (dir == DMDA_X) {
+      if (dir == DM_X) {
         ierr = PetscMalloc1(dd->w, &indices);CHKERRQ(ierr);
         indices[0] = dd->w*gp;
         for (i = 1; i < dd->w; ++i) indices[i] = indices[i-1] + 1;
@@ -121,10 +121,10 @@ PetscErrorCode  DMDAGetRay(DM da,DMDADirection dir,PetscInt gp,Vec *newvec,VecSc
         ierr = VecSetSizes(*newvec, dd->w, PETSC_DETERMINE);CHKERRQ(ierr);
         ierr = VecSetType(*newvec, VECSEQ);CHKERRQ(ierr);
         ierr = ISCreateGeneral(PETSC_COMM_SELF, dd->w, indices, PETSC_OWN_POINTER, &is);CHKERRQ(ierr);
-      } else if (dir == DMDA_Y) SETERRQ(PetscObjectComm((PetscObject) da), PETSC_ERR_SUP, "Cannot get Y slice from 1d DMDA");
-      else SETERRQ(PetscObjectComm((PetscObject) da), PETSC_ERR_ARG_OUTOFRANGE, "Unknown DMDADirection");
+      } else if (dir == DM_Y) SETERRQ(PetscObjectComm((PetscObject) da), PETSC_ERR_SUP, "Cannot get Y slice from 1d DMDA");
+      else SETERRQ(PetscObjectComm((PetscObject) da), PETSC_ERR_ARG_OUTOFRANGE, "Unknown DMDirection");
     } else {
-      if (dir == DMDA_Y) {
+      if (dir == DM_Y) {
         ierr       = PetscMalloc1(dd->w*dd->M,&indices);CHKERRQ(ierr);
         indices[0] = gp*dd->M*dd->w;
         for (i=1; i<dd->M*dd->w; i++) indices[i] = indices[i-1] + 1;
@@ -135,7 +135,7 @@ PetscErrorCode  DMDAGetRay(DM da,DMDADirection dir,PetscInt gp,Vec *newvec,VecSc
         ierr = VecSetSizes(*newvec,dd->M*dd->w,PETSC_DETERMINE);CHKERRQ(ierr);
         ierr = VecSetType(*newvec,VECSEQ);CHKERRQ(ierr);
         ierr = ISCreateGeneral(PETSC_COMM_SELF,dd->w*dd->M,indices,PETSC_OWN_POINTER,&is);CHKERRQ(ierr);
-      } else if (dir == DMDA_X) {
+      } else if (dir == DM_X) {
         ierr       = PetscMalloc1(dd->w*dd->N,&indices);CHKERRQ(ierr);
         indices[0] = dd->w*gp;
         for (j=1; j<dd->w; j++) indices[j] = indices[j-1] + 1;
@@ -149,7 +149,7 @@ PetscErrorCode  DMDAGetRay(DM da,DMDADirection dir,PetscInt gp,Vec *newvec,VecSc
         ierr = VecSetSizes(*newvec,dd->N*dd->w,PETSC_DETERMINE);CHKERRQ(ierr);
         ierr = VecSetType(*newvec,VECSEQ);CHKERRQ(ierr);
         ierr = ISCreateGeneral(PETSC_COMM_SELF,dd->w*dd->N,indices,PETSC_OWN_POINTER,&is);CHKERRQ(ierr);
-      } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown DMDADirection");
+      } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown DMDirection");
     }
   } else {
     ierr = VecCreateSeq(PETSC_COMM_SELF, 0, newvec);CHKERRQ(ierr);
@@ -171,7 +171,7 @@ PetscErrorCode  DMDAGetRay(DM da,DMDADirection dir,PetscInt gp,Vec *newvec,VecSc
 
    Input Parameters:
 +  da - the distributed array
-.  dir - Cartesian direction, either DMDA_X, DMDA_Y, or DMDA_Z
+.  dir - Cartesian direction, either DM_X, DM_Y, or DM_Z
 -  gp - global grid point number in this direction
 
    Output Parameters:
@@ -191,7 +191,7 @@ PetscErrorCode  DMDAGetRay(DM da,DMDADirection dir,PetscInt gp,Vec *newvec,VecSc
    Not supported from Fortran
 
 @*/
-PetscErrorCode  DMDAGetProcessorSubset(DM da,DMDADirection dir,PetscInt gp,MPI_Comm *comm)
+PetscErrorCode  DMDAGetProcessorSubset(DM da,DMDirection dir,PetscInt gp,MPI_Comm *comm)
 {
   MPI_Group      group,subgroup;
   PetscErrorCode ierr;
@@ -204,15 +204,15 @@ PetscErrorCode  DMDAGetProcessorSubset(DM da,DMDADirection dir,PetscInt gp,MPI_C
   flag = 0;
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)da),&size);CHKERRQ(ierr);
-  if (dir == DMDA_Z) {
-    if (da->dim < 3) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"DMDA_Z invalid for DMDA dim < 3");
+  if (dir == DM_Z) {
+    if (da->dim < 3) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"DM_Z invalid for DMDA dim < 3");
     if (gp < 0 || gp > dd->P) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"invalid grid point");
     if (gp >= zs && gp < zs+zm) flag = 1;
-  } else if (dir == DMDA_Y) {
-    if (da->dim == 1) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"DMDA_Y invalid for DMDA dim = 1");
+  } else if (dir == DM_Y) {
+    if (da->dim == 1) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"DM_Y invalid for DMDA dim = 1");
     if (gp < 0 || gp > dd->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"invalid grid point");
     if (gp >= ys && gp < ys+ym) flag = 1;
-  } else if (dir == DMDA_X) {
+  } else if (dir == DM_X) {
     if (gp < 0 || gp > dd->M) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"invalid grid point");
     if (gp >= xs && gp < xs+xm) flag = 1;
   } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Invalid direction");
@@ -246,7 +246,7 @@ PetscErrorCode  DMDAGetProcessorSubset(DM da,DMDADirection dir,PetscInt gp,MPI_C
 
    Input Parameters:
 +  da - the distributed array
--  dir - Cartesian direction, either DMDA_X, DMDA_Y, or DMDA_Z
+-  dir - Cartesian direction, either DM_X, DM_Y, or DM_Z
 
    Output Parameters:
 .  subcomm - new communicator
@@ -261,7 +261,7 @@ PetscErrorCode  DMDAGetProcessorSubset(DM da,DMDADirection dir,PetscInt gp,MPI_C
    Not supported from Fortran
 
 @*/
-PetscErrorCode  DMDAGetProcessorSubsets(DM da, DMDADirection dir, MPI_Comm *subcomm)
+PetscErrorCode  DMDAGetProcessorSubsets(DM da, DMDirection dir, MPI_Comm *subcomm)
 {
   MPI_Comm       comm;
   MPI_Group      group, subgroup;
@@ -276,13 +276,13 @@ PetscErrorCode  DMDAGetProcessorSubsets(DM da, DMDADirection dir, MPI_Comm *subc
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da, &xs, &ys, &zs, &xm, &ym, &zm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-  if (dir == DMDA_Z) {
-    if (da->dim < 3) SETERRQ(comm,PETSC_ERR_ARG_OUTOFRANGE,"DMDA_Z invalid for DMDA dim < 3");
+  if (dir == DM_Z) {
+    if (da->dim < 3) SETERRQ(comm,PETSC_ERR_ARG_OUTOFRANGE,"DM_Z invalid for DMDA dim < 3");
     firstPoint = zs;
-  } else if (dir == DMDA_Y) {
-    if (da->dim == 1) SETERRQ(comm,PETSC_ERR_ARG_OUTOFRANGE,"DMDA_Y invalid for DMDA dim = 1");
+  } else if (dir == DM_Y) {
+    if (da->dim == 1) SETERRQ(comm,PETSC_ERR_ARG_OUTOFRANGE,"DM_Y invalid for DMDA dim = 1");
     firstPoint = ys;
-  } else if (dir == DMDA_X) {
+  } else if (dir == DM_X) {
     firstPoint = xs;
   } else SETERRQ(comm,PETSC_ERR_ARG_OUTOFRANGE,"Invalid direction");
 

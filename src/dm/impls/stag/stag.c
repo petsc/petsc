@@ -22,6 +22,7 @@ static PetscErrorCode DMDestroy_Stag(DM dm)
   ierr = VecScatterDestroy(&stag->ltog_injective);CHKERRQ(ierr);
   ierr = PetscFree(stag->neighbors);CHKERRQ(ierr);
   ierr = PetscFree(stag->locationOffsets);CHKERRQ(ierr);
+  ierr = PetscFree(stag->coordinateDMType);CHKERRQ(ierr);
   ierr = PetscFree(stag);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

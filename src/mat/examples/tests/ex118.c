@@ -10,7 +10,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
 #if defined(PETSC_USE_COMPLEX) || defined(PETSC_MISSING_LAPACK_DSTEBZ) || defined(PETSC_MISSING_LAPACK_STEIN)
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  SETERRQ(PETSC_COMM_WORLD,1,"This example requires LAPACK routines dstebz and stien and real numbers");
+  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP_SYS,"This example requires LAPACK routines dstebz and stien and real numbers");
 #else
   PetscReal      *work,tols[2];
   PetscInt       i,j;
@@ -25,7 +25,7 @@ int main(int argc,char **args)
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
+  if (size != 1) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
 
   n      = 100;
   nevs   = iu - il;

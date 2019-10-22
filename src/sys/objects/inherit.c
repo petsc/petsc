@@ -1,4 +1,3 @@
-
 /*
      Provides utility routines for manipulating any type of PETSc object.
 */
@@ -716,7 +715,7 @@ PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject obj,const char name[],
    user-provided pointer that may then be composed with PETSc objects.
 
 
-.seealso: PetscObjectQuery(), PetscContainerCreate()
+.seealso: PetscObjectQuery(), PetscContainerCreate(), PetscObjectComposeFunction(), PetscObjectQueryFunction()
 @*/
 PetscErrorCode  PetscObjectCompose(PetscObject obj,const char name[],PetscObject ptr)
 {
@@ -749,7 +748,7 @@ PetscErrorCode  PetscObjectCompose(PetscObject obj,const char name[],PetscObject
    The reference count of neither object is increased in this call
 
 
-.seealso: PetscObjectCompose()
+.seealso: PetscObjectCompose(), PetscObjectComposeFunction(), PetscObjectQueryFunction()
 @*/
 PetscErrorCode  PetscObjectQuery(PetscObject obj,const char name[],PetscObject *ptr)
 {
@@ -787,7 +786,7 @@ PetscErrorCode  PetscObjectQuery(PetscObject obj,const char name[],PetscObject *
    PetscObjectComposeFunction() can be used with any PETSc object (such as
    Mat, Vec, KSP, SNES, etc.) or any user-provided object.
 
-.seealso: PetscObjectQueryFunction(), PetscContainerCreate()
+.seealso: PetscObjectQueryFunction(), PetscContainerCreate() PetscObjectCompose(), PetscObjectQuery()
 M*/
 
 PetscErrorCode  PetscObjectComposeFunction_Private(PetscObject obj,const char name[],void (*fptr)(void))
@@ -820,7 +819,7 @@ PetscErrorCode  PetscObjectComposeFunction_Private(PetscObject obj,const char na
 
    Level: advanced
 
-.seealso: PetscObjectComposeFunction(), PetscFunctionListFind()
+.seealso: PetscObjectComposeFunction(), PetscFunctionListFind(), PetscObjectCompose(), PetscObjectQuery()
 M*/
 PETSC_EXTERN PetscErrorCode PetscObjectQueryFunction_Private(PetscObject obj,const char name[],void (**ptr)(void))
 {
@@ -976,7 +975,7 @@ PetscClassId PETSC_CONTAINER_CLASSID;
 
    Level: advanced
 
-.seealso: PetscContainerDestroy(), PetscContainerSetPointer(), PetscContainerGetPointer()
+.seealso: PetscContainerDestroy(), PetscContainerSetPointer(), PetscContainerGetPointer(), PetscObjectCompose(), PetscObjectQuery()
 @*/
 PetscErrorCode  PetscContainerCreate(MPI_Comm comm,PetscContainer *container)
 {

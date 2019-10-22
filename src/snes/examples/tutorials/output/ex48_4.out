@@ -102,21 +102,21 @@ SNES Object: 6 MPI processes
                     rows=64, cols=64, bs=2
                     package used to perform factorization: petsc
                     total: nonzeros=3264, allocated nonzeros=3264
-                    total number of mallocs used during MatSetValues calls =0
+                    total number of mallocs used during MatSetValues calls=0
                       using I-node routines: found 16 nodes, limit used is 5
             linear system matrix = precond matrix:
             Mat Object: 1 MPI processes
               type: seqaij
               rows=64, cols=64, bs=2
               total: nonzeros=2304, allocated nonzeros=2304
-              total number of mallocs used during MatSetValues calls =0
+              total number of mallocs used during MatSetValues calls=0
                 using I-node routines: found 16 nodes, limit used is 5
         linear system matrix = precond matrix:
         Mat Object: 6 MPI processes
           type: mpiaij
           rows=64, cols=64, bs=2
           total: nonzeros=2304, allocated nonzeros=2304
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
     Down solver (pre-smoother) on level 1 -------------------------------
       KSP Object: (mg_levels_1_) 6 MPI processes
         type: gmres
@@ -148,21 +148,21 @@ SNES Object: 6 MPI processes
                   rows=48, cols=48, bs=2
                   package used to perform factorization: petsc
                   total: nonzeros=804, allocated nonzeros=804
-                  total number of mallocs used during MatSetValues calls =0
+                  total number of mallocs used during MatSetValues calls=0
                       block size is 2
           linear system matrix = precond matrix:
           Mat Object: 1 MPI processes
             type: seqsbaij
             rows=48, cols=48, bs=2
             total: nonzeros=608, allocated nonzeros=608
-            total number of mallocs used during MatSetValues calls =0
+            total number of mallocs used during MatSetValues calls=0
                 block size is 2
         linear system matrix = precond matrix:
         Mat Object: 6 MPI processes
           type: mpisbaij
           rows=256, cols=256, bs=2
           total: nonzeros=4864, allocated nonzeros=4864
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
     Up solver (post-smoother) same as down solver (pre-smoother)
     Down solver (pre-smoother) on level 2 -------------------------------
       KSP Object: (mg_levels_2_) 6 MPI processes
@@ -197,21 +197,21 @@ SNES Object: 6 MPI processes
                   rows=192, cols=192, bs=2
                   package used to perform factorization: petsc
                   total: nonzeros=3012, allocated nonzeros=3012
-                  total number of mallocs used during MatSetValues calls =0
+                  total number of mallocs used during MatSetValues calls=0
                       block size is 2
           linear system matrix = precond matrix:
           Mat Object: 1 MPI processes
             type: seqsbaij
             rows=192, cols=192, bs=2
             total: nonzeros=3008, allocated nonzeros=3008
-            total number of mallocs used during MatSetValues calls =0
+            total number of mallocs used during MatSetValues calls=0
                 block size is 2
         linear system matrix = precond matrix:
         Mat Object: 6 MPI processes
           type: mpisbaij
           rows=1024, cols=1024, bs=2
           total: nonzeros=19456, allocated nonzeros=19456
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
     Up solver (post-smoother) same as down solver (pre-smoother)
     Down solver (pre-smoother) on level 3 -------------------------------
       KSP Object: (mg_levels_3_) 6 MPI processes
@@ -246,28 +246,28 @@ SNES Object: 6 MPI processes
                   rows=384, cols=384, bs=2
                   package used to perform factorization: petsc
                   total: nonzeros=7428, allocated nonzeros=7428
-                  total number of mallocs used during MatSetValues calls =0
+                  total number of mallocs used during MatSetValues calls=0
                       block size is 2
           linear system matrix = precond matrix:
           Mat Object: 1 MPI processes
             type: seqsbaij
             rows=384, cols=384, bs=2
             total: nonzeros=7424, allocated nonzeros=7424
-            total number of mallocs used during MatSetValues calls =0
+            total number of mallocs used during MatSetValues calls=0
                 block size is 2
         linear system matrix = precond matrix:
         Mat Object: 6 MPI processes
           type: mpisbaij
           rows=2048, cols=2048, bs=2
           total: nonzeros=48128, allocated nonzeros=48128
-          total number of mallocs used during MatSetValues calls =0
+          total number of mallocs used during MatSetValues calls=0
     Up solver (post-smoother) same as down solver (pre-smoother)
     linear system matrix = precond matrix:
     Mat Object: 6 MPI processes
       type: mpisbaij
       rows=2048, cols=2048, bs=2
       total: nonzeros=48128, allocated nonzeros=48128
-      total number of mallocs used during MatSetValues calls =0
+      total number of mallocs used during MatSetValues calls=0
 Solution statistics after solve: Full
 CONVERGED_FNORM_RELATIVE: Number of SNES iterations = 5, total linear iterations = 22
 |X|_2 564267.   -187.04 <= u <=  23814.8   -979.938 <= v <=  5720.23   3.24766 <= c <=  23904.5 

@@ -79,6 +79,18 @@ int main(int argc, char **argv)
   ierr = ProcessOptions(PETSC_COMM_WORLD, &ctx);CHKERRQ(ierr);
   ierr = DMPlexCreateSphereMesh(PETSC_COMM_WORLD, ctx.dim, ctx.simplex, &dm);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) dm, "Sphere");CHKERRQ(ierr);
+  /* Distribute mesh over processes */
+  {
+     DM dmDist = NULL;
+     PetscPartitioner part;
+     ierr = DMPlexGetPartitioner(dm, &part);CHKERRQ(ierr);
+     ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
+     ierr = DMPlexDistribute(dm, 0, NULL, &dmDist);CHKERRQ(ierr);
+     if (dmDist) {
+       ierr = DMDestroy(&dm);CHKERRQ(ierr);
+       dm  = dmDist;
+     }
+  }
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
   ierr = ProjectToUnitSphere(dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
@@ -100,13 +112,31 @@ int main(int argc, char **argv)
     args: -dm_view
 
   test:
+    suffix: 2d_quad_parallel
+    requires: !__float128
+    args: -dm_view
+    nsize: 2
+
+  test:
     suffix: 2d_tri
     requires: !__float128
     args: -simplex -dm_view
 
   test:
+    suffix: 2d_tri_parallel
+    requires: !__float128
+    args: -simplex -dm_view
+    nsize: 2
+
+  test:
     suffix: 3d_tri
     requires: !__float128
     args: -dim 3 -simplex -dm_view
+
+  test:
+    suffix: 3d_tri_parallel
+    requires: !__float128
+    args: -dim 3 -simplex -dm_view
+    nsize: 2
 
 TEST*/
