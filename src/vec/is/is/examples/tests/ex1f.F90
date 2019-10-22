@@ -8,11 +8,11 @@
       implicit none
 
        PetscErrorCode ierr
-       PetscInt i,n,indices(1000),ii(1)
+       PetscInt i,n,indices(1004),ii(1)
        PetscMPIInt size,rank
        PetscOffset iis
        IS          is,newis
-       PetscBool   flag
+       PetscBool   flag,compute,permanent
 
        call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
        if (ierr .ne. 0) then
@@ -33,9 +33,9 @@
 
 !     Create large IS and test ISGetIndices(,ierr)
 !     fortran indices start from 1 - but IS indices start from 0
-      n = 1000
+      n = 1000 + rank
       do 10, i=1,n
-        indices(i) = i-1
+        indices(i) = rank + i-1
  10   continue
       call ISCreateGeneral(PETSC_COMM_SELF,n,indices,PETSC_COPY_VALUES,is,ierr);CHKERRA(ierr)
       call ISGetIndices(is,ii,iis,ierr);CHKERRA(ierr)
@@ -46,16 +46,23 @@
 
 !     Check identity and permutation
 
+      compute = PETSC_TRUE
+      permanent = PETSC_FALSE
       call ISPermutation(is,flag,ierr);CHKERRA(ierr)
       if (flag) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error checking permutation'); endif
+      call ISGetInfo(is,IS_PERMUTATION,IS_LOCAL,compute,flag,ierr);CHKERRA(ierr)
+      !if ((rank .eq. 0) .and. (.not. flag)) SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_PERMUTATION,IS_LOCAL)")
+      !if (rank .eq. 0 .and. flag) SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_PERMUTATION,IS_LOCAL)")
       call ISIdentity(is,flag,ierr);CHKERRA(ierr)
-      if (.not. flag) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error checking identity'); endif
-      call ISSetPermutation(is,ierr);CHKERRA(ierr)
-      call ISSetIdentity(is,ierr);CHKERRA(ierr)
-      call ISPermutation(is,flag,ierr);CHKERRA(ierr)
+      if ((rank .eq. 0) .and. (.not. flag)) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error checking identity'); endif
+      if ((rank .ne. 0) .and. flag) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error checking identity'); endif
+      call ISSetInfo(is,IS_PERMUTATION,IS_LOCAL,permanent,PETSC_TRUE,ierr);CHKERRA(ierr)
+      call ISSetInfo(is,IS_IDENTITY,IS_LOCAL,permanent,PETSC_TRUE,ierr);CHKERRA(ierr)
+      call ISGetInfo(is,IS_PERMUTATION,IS_LOCAL,compute,flag,ierr);CHKERRA(ierr)
       if (.not. flag) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error checking permutation second time'); endif
-      call ISIdentity(is,flag,ierr);CHKERRA(ierr)
+      call ISGetInfo(is,IS_IDENTITY,IS_LOCAL,compute,flag,ierr);CHKERRA(ierr)
       if (.not. flag) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error checking identity second time'); endif
+      call ISClearInfoCache(is,PETSC_TRUE,ierr);CHKERRA(ierr)
 
 !     Check equality of index sets
 
@@ -99,6 +106,7 @@
 !/*TEST
 !
 !   test:
+!     nsize: {{1 2 3 4 5}}
 !     output_file: output/ex1_1.out
 !
 !TEST*/

@@ -46,6 +46,33 @@
       parameter (IS_GTOLM_MASK =0,IS_GTOLM_DROP = 1)
 
 !
+!  ISInfo; must match those in include/petscis.h
+!
+      PetscEnum IS_INFO_MIN
+      PetscEnum IS_SORTED
+      PetscEnum IS_UNIQUE
+      PetscEnum IS_PERMUTATION
+      PetscEnum IS_INTERVAL
+      PetscEnum IS_IDENTITY
+      PetscEnum IS_INFO_MAX
+
+      parameter(IS_INFO_MIN = -1)
+      parameter(IS_SORTED = 0)
+      parameter(IS_UNIQUE = 1)
+      parameter(IS_PERMUTATION = 2)
+      parameter(IS_INTERVAL = 3)
+      parameter(IS_IDENTITY = 4)
+      parameter(IS_INFO_MAX = 5)
+
+!
+!  ISInfoType; must match those in include/petscis.h
+!
+      PetscEnum IS_LOCAL
+      PetscEnum IS_GLOBAL
+      parameter(IS_LOCAL = 0)
+      parameter(IS_GLOBAL = 1)
+
+!
 !  End of Fortran include file for the IS package in PETSc
 
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
