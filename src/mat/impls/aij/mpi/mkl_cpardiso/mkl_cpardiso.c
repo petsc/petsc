@@ -430,6 +430,8 @@ PetscErrorCode MatMatSolve_MKL_CPARDISO(Mat A,Mat B,Mat X)
     ierr = MatDenseGetArrayRead(B,&barray);
     ierr = MatDenseGetArray(X,&xarray);
 
+    if (barray == xarray) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"B and X cannot share the same memory location");
+
     /* solve phase */
     /*-------------*/
     mat_mkl_cpardiso->phase = JOB_SOLVE_ITERATIVE_REFINEMENT;
