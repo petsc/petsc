@@ -253,7 +253,7 @@ static PetscErrorCode PetscParallelRedistribute(PetscLayout map, PetscInt n, Pet
 static PetscErrorCode PetscParallelSortInt_Samplesort(PetscLayout mapin, PetscLayout mapout, PetscInt keysin[], PetscInt keysout[])
 {
   PetscMPIInt    size, rank;
-  PetscInt       *pivots, *buffer;
+  PetscInt       *pivots = NULL, *buffer;
   PetscInt       i, j;
   PetscMPIInt    *keys_per_snd, *keys_per_rcv, *offsets_snd, *offsets_rcv, nrecv;
   PetscErrorCode ierr;
