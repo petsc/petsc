@@ -132,14 +132,13 @@ PetscErrorCode  MatCoarsenSetAdjacency(MatCoarsen agg, Mat adj)
 }
 
 /*@
-   MatCoarsenSetStrictAggs - WHAT IS THIS?
+   MatCoarsenSetStrictAggs - Set whether to keep strict (non overlapping) aggregates in the linked list of aggregates for a coarsen context
 
    Logically Collective on MatCoarsen
 
    Input Parameters:
 +  agg - the coarsen context
--  str - the adjacency matrix
-
+-  str - PETSC_TRUE keep strict aggregates, PETSC_FALSE allow overlap
    Level: advanced
 
 .seealso: MatCoarsenCreate()
