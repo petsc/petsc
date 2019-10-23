@@ -551,7 +551,6 @@ PetscErrorCode MatMatSolve_MKL_PARDISO(Mat A,Mat B,Mat X)
     if (barray == xarray) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"B and X cannot share the same memory location");
     if (!mat_mkl_pardiso->schur) mat_mkl_pardiso->phase = JOB_SOLVE_ITERATIVE_REFINEMENT;
     else mat_mkl_pardiso->phase = JOB_SOLVE_FORWARD_SUBSTITUTION;
-    mat_mkl_pardiso->iparm[6-1] = 0;
 
     MKL_PARDISO (mat_mkl_pardiso->pt,
       &mat_mkl_pardiso->maxfct,
