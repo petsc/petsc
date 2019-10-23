@@ -89,6 +89,10 @@
 
     Experienced users can set the error handler with PetscPushErrorHandler().
 
+   Fortran Notes:
+      SETERRQ() may be called from Fortran subroutines but SETERRA() must be called from the 
+      Fortran main program.
+
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ3()
 M*/
 #define SETERRQ(comm,ierr,s) return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_INITIAL,s)
