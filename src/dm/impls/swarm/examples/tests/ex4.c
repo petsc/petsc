@@ -379,11 +379,11 @@ int main(int argc,char **argv)
   ierr = ISDestroy(&is2);CHKERRQ(ierr);
   ierr = TSRHSSplitSetRHSFunction(ts, "position", NULL, RHSFunction1, &user);CHKERRQ(ierr);
   ierr = TSRHSSplitSetRHSFunction(ts, "momentum", NULL, RHSFunction2, &user);CHKERRQ(ierr);
-  ierr = TSSetComputeInitialGuess(ts, InitializeSolve);CHKERRQ(ierr);
+  ierr = TSSetComputeInitialCondition(ts, InitializeSolve);CHKERRQ(ierr);
   ierr = TSSetComputeExactError(ts, ComputeError);CHKERRQ(ierr);
 
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
-  ierr = TSComputeInitialGuess(ts, u);CHKERRQ(ierr);
+  ierr = TSComputeInitialCondition(ts, u);CHKERRQ(ierr);
   ierr = TSSolve(ts, u);CHKERRQ(ierr);
   ierr = DMSwarmDestroyGlobalVectorFromField(sw, "kinematics", &u);CHKERRQ(ierr);
 

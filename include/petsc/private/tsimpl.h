@@ -61,7 +61,7 @@ struct _TSOps {
   PetscErrorCode (*gettimeerror)(TS,PetscInt,Vec*);
   PetscErrorCode (*settimeerror)(TS,Vec);
   PetscErrorCode (*startingmethod) (TS);
-  PetscErrorCode (*initguess)(TS,Vec);
+  PetscErrorCode (*initcondition)(TS,Vec);
   PetscErrorCode (*exacterror)(TS,Vec,Vec);
 };
 

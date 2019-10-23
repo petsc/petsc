@@ -22,6 +22,7 @@ struct _p_PetscConvEst
   /* Inputs */
   DM                idm;    /* Initial grid */
   PetscObject       solver; /* Solver */
+  PetscReal         r;      /* The refinement factor (spatial check requires r = 2) */
   PetscInt          Nr;     /* The number of refinements */
   PetscInt          Nf;     /* The number of fields in the DM */
   PetscErrorCode (**initGuess)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *);

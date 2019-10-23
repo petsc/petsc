@@ -3679,7 +3679,7 @@ PetscErrorCode TSEvaluateStep(TS ts,PetscInt order,Vec U,PetscBool *done)
 }
 
 /*@C
-  TSGetComputeInitialGuess - Get the function used to automatically compute an initial guess for the timestepping.
+  TSGetComputeInitialCondition - Get the function used to automatically compute an initial condition for the timestepping.
 
   Not collective
 
@@ -3687,82 +3687,82 @@ PetscErrorCode TSEvaluateStep(TS ts,PetscInt order,Vec U,PetscBool *done)
 . ts        - time stepping context
 
   Output Argument:
-. initGuess - The function which computes an initial guess
+. initConditions - The function which computes an initial condition
 
    Level: advanced
 
    Notes:
    The calling sequence for the function is
-$ initGuess(TS ts, Vec u)
+$ initCondition(TS ts, Vec u)
 $ ts - The timestepping context
-$ u  - The input vector in which the initial guess is stored
+$ u  - The input vector in which the initial condition is stored
 
-.seealso: TSSetComputeInitialGuess(), TSComputeInitialGuess()
+.seealso: TSSetComputeInitialCondition(), TSComputeInitialCondition()
 @*/
-PetscErrorCode TSGetComputeInitialGuess(TS ts, PetscErrorCode (**initGuess)(TS, Vec))
+PetscErrorCode TSGetComputeInitialCondition(TS ts, PetscErrorCode (**initCondition)(TS, Vec))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(initGuess, 2);
-  *initGuess = ts->ops->initguess;
+  PetscValidPointer(initCondition, 2);
+  *initCondition = ts->ops->initcondition;
   PetscFunctionReturn(0);
 }
 
 /*@C
-  TSSetComputeInitialGuess - Set the function used to automatically compute an initial guess for the timestepping.
+  TSSetComputeInitialCondition - Set the function used to automatically compute an initial condition for the timestepping.
 
   Logically collective on ts
 
   Input Arguments:
 + ts        - time stepping context
-- initGuess - The function which computes an initial guess
+- initCondition - The function which computes an initial condition
 
   Level: advanced
 
   Notes:
   The calling sequence for the function is
-$ initGuess(TS ts, Vec u)
+$ initCondition(TS ts, Vec u)
 $ ts - The timestepping context
-$ u  - The input vector in which the initial guess is stored
+$ u  - The input vector in which the initial condition is stored
 
-.seealso: TSGetComputeInitialGuess(), TSComputeInitialGuess()
+.seealso: TSGetComputeInitialCondition(), TSComputeInitialCondition()
 @*/
-PetscErrorCode TSSetComputeInitialGuess(TS ts, PetscErrorCode (*initGuess)(TS, Vec))
+PetscErrorCode TSSetComputeInitialCondition(TS ts, PetscErrorCode (*initCondition)(TS, Vec))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidFunction(initGuess, 2);
-  ts->ops->initguess = initGuess;
+  PetscValidFunction(initCondition, 2);
+  ts->ops->initcondition = initCondition;
   PetscFunctionReturn(0);
 }
 
 /*@
-  TSComputeInitialGuess - Compute an initial guess for the timestepping using the function previously set.
+  TSComputeInitialCondition - Compute an initial condition for the timestepping using the function previously set.
 
   Collective on ts
 
   Input Arguments:
 + ts - time stepping context
-- u  - The Vec to store the guess in which will be used in TSSolve()
+- u  - The Vec to store the condition in which will be used in TSSolve()
 
   Level: advanced
 
   Notes:
   The calling sequence for the function is
-$ initGuess(TS ts, Vec u)
+$ initCondition(TS ts, Vec u)
 $ ts - The timestepping context
-$ u  - The input vector in which the initial guess is stored
+$ u  - The input vector in which the initial condition is stored
 
-.seealso: TSGetComputeInitialGuess(), TSSetComputeInitialGuess(), TSSolve()
+.seealso: TSGetComputeInitialCondition(), TSSetComputeInitialCondition(), TSSolve()
 @*/
-PetscErrorCode TSComputeInitialGuess(TS ts, Vec u)
+PetscErrorCode TSComputeInitialCondition(TS ts, Vec u)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(u, VEC_CLASSID, 2);
-  if (ts->ops->initguess) {ierr = (*ts->ops->initguess)(ts, u);CHKERRQ(ierr);}
+  if (ts->ops->initcondition) {ierr = (*ts->ops->initcondition)(ts, u);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -3845,7 +3845,7 @@ $ ts - The timestepping context
 $ u  - The approximate solution vector
 $ e  - The input vector in which the error is stored
 
-.seealso: TSGetComputeInitialGuess(), TSSetComputeInitialGuess(), TSSolve()
+.seealso: TSGetComputeInitialCondition(), TSSetComputeInitialCondition(), TSSolve()
 @*/
 PetscErrorCode TSComputeExactError(TS ts, Vec u, Vec e)
 {

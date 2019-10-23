@@ -20,7 +20,7 @@ static PetscErrorCode PetscConvEstInitGuessTS_Private(PetscConvEst ce, PetscInt 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = TSComputeInitialGuess((TS) ce->solver, u);CHKERRQ(ierr);
+  ierr = TSComputeInitialCondition((TS) ce->solver, u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -53,8 +53,8 @@ static PetscErrorCode PetscConvEstGetConvRateTS_Private(PetscConvEst ce, PetscRe
   Ns   = oNs;
   for (r = 0; r <= Nr; ++r) {
     if (r > 0) {
-      dt[r] = dt[r-1]/2.0;
-      Ns   *= 2;
+      dt[r] = dt[r-1]/ce->r;
+      Ns    = PetscCeilReal(Ns*ce->r);
     }
     ierr = TSSetTime(ts, 0.0);CHKERRQ(ierr);
     ierr = TSSetStepNumber(ts, 0);CHKERRQ(ierr);
