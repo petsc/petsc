@@ -36,10 +36,10 @@ int main(int argc,char **argv)
   ierr = DMCreateGlobalVector(dmSol,&solRef);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dmSol,&solRefLocal);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dmSol,&rhsLocal);CHKERRQ(ierr);
-  ierr = DMStagVecGetArrayDOF(dmSol,solRefLocal,&arrSol);CHKERRQ(ierr);
+  ierr = DMStagVecGetArray(dmSol,solRefLocal,&arrSol);CHKERRQ(ierr);
 
   ierr = DMStagGetCorners(dmSol,&start,NULL,NULL,&n,NULL,NULL,&nExtra,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMStagVecGetArrayDOF(dmSol,rhsLocal,&arrRHS);CHKERRQ(ierr);
+  ierr = DMStagVecGetArray(dmSol,rhsLocal,&arrRHS);CHKERRQ(ierr);
 
   /* Get the correct entries for each of our variables in local element-wise storage */
   ierr = DMStagGetLocationSlot(dmSol,LEFT,0,&iu);CHKERRQ(ierr);
@@ -54,10 +54,10 @@ int main(int argc,char **argv)
       arrRHS[e][ip] = PRESSURE_CONST;
     }
   }
-  ierr = DMStagVecRestoreArrayDOF(dmSol,rhsLocal,&arrRHS);CHKERRQ(ierr);
+  ierr = DMStagVecRestoreArray(dmSol,rhsLocal,&arrRHS);CHKERRQ(ierr);
   ierr = DMLocalToGlobalBegin(dmSol,rhsLocal,INSERT_VALUES,rhs);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(dmSol,rhsLocal,INSERT_VALUES,rhs);CHKERRQ(ierr);
-  ierr = DMStagVecRestoreArrayDOF(dmSol,solRefLocal,&arrSol);CHKERRQ(ierr);
+  ierr = DMStagVecRestoreArray(dmSol,solRefLocal,&arrSol);CHKERRQ(ierr);
   ierr = DMLocalToGlobalBegin(dmSol,solRefLocal,INSERT_VALUES,solRef);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(dmSol,solRefLocal,INSERT_VALUES,solRef);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dmSol,&solRefLocal);CHKERRQ(ierr);
@@ -126,8 +126,8 @@ PetscErrorCode ApplyOperator(Mat A,Vec in,Vec out)
   ierr = DMGlobalToLocalEnd(dm,in,INSERT_VALUES,inLocal);CHKERRQ(ierr);
   ierr = DMStagGetCorners(dm,&start,NULL,NULL,&n,NULL,NULL,&nExtra,NULL,NULL);CHKERRQ(ierr);
   ierr = DMStagGetGhostCorners(dm,&startGhost,NULL,NULL,&nGhost,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMStagVecGetArrayDOFRead(dm,inLocal,&arrIn);CHKERRQ(ierr);
-  ierr = DMStagVecGetArrayDOF(dm,outLocal,&arrOut);CHKERRQ(ierr);
+  ierr = DMStagVecGetArrayRead(dm,inLocal,&arrIn);CHKERRQ(ierr);
+  ierr = DMStagVecGetArray(dm,outLocal,&arrOut);CHKERRQ(ierr);
   ierr = DMStagGetLocationSlot(dm,LEFT,0,&idxU);CHKERRQ(ierr);
   ierr = DMStagGetLocationSlot(dm,ELEMENT,0,&idxP);CHKERRQ(ierr);
   ierr = DMStagGetIsFirstRank(dm,&isFirst,NULL,NULL);CHKERRQ(ierr);
@@ -148,8 +148,8 @@ PetscErrorCode ApplyOperator(Mat A,Vec in,Vec out)
     }
     arrOut[ex][idxU] = arrIn[ex][idxP] + arrIn[ex-1][idxP] - arrIn[ex][idxU];
   }
-  ierr = DMStagVecRestoreArrayDOFRead(dm,inLocal,&arrIn);CHKERRQ(ierr);
-  ierr = DMStagVecRestoreArrayDOF(dm,outLocal,&arrOut);CHKERRQ(ierr);
+  ierr = DMStagVecRestoreArrayRead(dm,inLocal,&arrIn);CHKERRQ(ierr);
+  ierr = DMStagVecRestoreArray(dm,outLocal,&arrOut);CHKERRQ(ierr);
   ierr = DMLocalToGlobalBegin(dm,outLocal,INSERT_VALUES,out);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(dm,outLocal,INSERT_VALUES,out);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm,&inLocal);CHKERRQ(ierr);

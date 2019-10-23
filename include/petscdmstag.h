@@ -114,11 +114,11 @@ PETSC_EXTERN PetscErrorCode DMStagSetStencilWidth(DM,PetscInt);
 PETSC_EXTERN PetscErrorCode DMStagSetUniformCoordinates(DM,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit(DM,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode DMStagSetUniformCoordinatesProduct(DM,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal);
-PETSC_EXTERN PetscErrorCode DMStagVecGetArrayDOF(DM,Vec,void*);
-PETSC_EXTERN PetscErrorCode DMStagVecGetArrayDOFRead(DM,Vec,void*);
+PETSC_EXTERN PetscErrorCode DMStagVecGetArray(DM,Vec,void*);
+PETSC_EXTERN PetscErrorCode DMStagVecGetArrayRead(DM,Vec,void*);
 PETSC_EXTERN PetscErrorCode DMStagVecGetValuesStencil(DM,Vec,PetscInt,const DMStagStencil*,PetscScalar*);
-PETSC_EXTERN PetscErrorCode DMStagVecRestoreArrayDOF(DM,Vec,void*);
-PETSC_EXTERN PetscErrorCode DMStagVecRestoreArrayDOFRead(DM,Vec,void*);
+PETSC_EXTERN PetscErrorCode DMStagVecRestoreArray(DM,Vec,void*);
+PETSC_EXTERN PetscErrorCode DMStagVecRestoreArrayRead(DM,Vec,void*);
 PETSC_EXTERN PetscErrorCode DMStagVecSetValuesStencil(DM,Vec,PetscInt,const DMStagStencil*,const PetscScalar*,InsertMode);
 PETSC_EXTERN PetscErrorCode DMStagVecSplitToDMDA(DM,Vec,DMStagStencilLocation,PetscInt,DM*,Vec*);
 
@@ -127,5 +127,9 @@ PETSC_DEPRECATED_FUNCTION("Use DMStagGetProductCoordinateLocationSlot() (since v
 PETSC_DEPRECATED_FUNCTION("Use DMStagGetStencilType() (since version 3.11)") PETSC_STATIC_INLINE PetscErrorCode DMStagGetGhostType(DM dm,DMStagStencilType *s) {return DMStagGetStencilType(dm,s);}
 PETSC_DEPRECATED_FUNCTION("Use DMStagRestoreProductCoordinateArraysRead() (since version 3.13") PETSC_STATIC_INLINE PetscErrorCode DMStagRestore1dCoordinateArraysDOFRead(DM dm,void *ax,void *ay,void *az) {return DMStagRestoreProductCoordinateArraysRead(dm,ax,ay,az);}
 PETSC_DEPRECATED_FUNCTION("Use DMStagSetStencilType() (since version 3.11)") PETSC_STATIC_INLINE PetscErrorCode DMStagSetGhostType(DM dm,DMStagStencilType *s) {return DMStagGetStencilType(dm,s);}
+PETSC_DEPRECATED_FUNCTION("Use DMStagVecGetArray() (since version 3.13") PETSC_STATIC_INLINE PetscErrorCode DMStagVecGetArrayDOF(DM dm,Vec v,void *a) {return DMStagVecGetArray(dm,v,a);}
+PETSC_DEPRECATED_FUNCTION("Use DMStagVecGetArrayRead() (since version 3.13") PETSC_STATIC_INLINE PetscErrorCode DMStagVecGetArrayDOFRead(DM dm,Vec v,void *a) {return DMStagVecGetArrayRead(dm,v,a);}
+PETSC_DEPRECATED_FUNCTION("Use DMStagVecRestoreArray() (since version 3.13") PETSC_STATIC_INLINE PetscErrorCode DMStagVecRestoreArrayDOF(DM dm,Vec v,void *a) {return DMStagVecRestoreArray(dm,v,a);}
+PETSC_DEPRECATED_FUNCTION("Use DMStagVecRestoreArrayRead() (since version 3.13") PETSC_STATIC_INLINE PetscErrorCode DMStagVecRestoreArrayDOFRead(DM dm,Vec v,void *a) {return DMStagVecRestoreArrayRead(dm,v,a);}
 
 #endif

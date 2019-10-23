@@ -77,9 +77,9 @@ static PetscErrorCode DMStagGetProductCoordinateArrays_Private(DM dm,void* arrX,
     }
     ierr = DMGetCoordinatesLocal(subDM,&coord1d_local);CHKERRQ(ierr);
     if (read) {
-      ierr = DMStagVecGetArrayDOFRead(subDM,coord1d_local,arr[d]);CHKERRQ(ierr);
+      ierr = DMStagVecGetArrayRead(subDM,coord1d_local,arr[d]);CHKERRQ(ierr);
     } else {
-      ierr = DMStagVecGetArrayDOF(subDM,coord1d_local,arr[d]);CHKERRQ(ierr);
+      ierr = DMStagVecGetArray(subDM,coord1d_local,arr[d]);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -650,13 +650,13 @@ PetscErrorCode DMStagCreateCompatibleDMStag(DM dm,PetscInt dof0,PetscInt dof1,Pe
 . slot - index to use
 
   Notes:
-  Provides an appropriate index to use with DMStagVecGetArrayDOF() and friends.
+  Provides an appropriate index to use with DMStagVecGetArray() and friends.
   This is required so that the user doesn't need to know about the ordering of
   dof associated with each local element.
 
   Level: beginner
 
-.seealso: DMSTAG, DMStagVecGetArrayDOF(), DMStagVecGetArrayDOFRead(), DMStagGetDOF(), DMStagGetEntriesPerElement()
+.seealso: DMSTAG, DMStagVecGetArray(), DMStagVecGetArrayRead(), DMStagGetDOF(), DMStagGetEntriesPerElement()
 @*/
 PetscErrorCode DMStagGetLocationSlot(DM dm,DMStagStencilLocation loc,PetscInt c,PetscInt *slot)
 {
@@ -868,9 +868,9 @@ static PetscErrorCode DMStagRestoreProductCoordinateArrays_Private(DM dm,void *a
     ierr = DMProductGetDM(dmCoord,d,&subDM);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(subDM,&coord1d_local);CHKERRQ(ierr);
     if (read) {
-      ierr = DMStagVecRestoreArrayDOFRead(subDM,coord1d_local,arr[d]);CHKERRQ(ierr);
+      ierr = DMStagVecRestoreArrayRead(subDM,coord1d_local,arr[d]);CHKERRQ(ierr);
     } else {
-      ierr = DMStagVecRestoreArrayDOF(subDM,coord1d_local,arr[d]);CHKERRQ(ierr);
+      ierr = DMStagVecRestoreArray(subDM,coord1d_local,arr[d]);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -1368,7 +1368,7 @@ PetscErrorCode DMStagSetUniformCoordinatesProduct(DM dm,PetscReal xmin,PetscReal
 }
 
 /*@C
-  DMStagVecGetArrayDOF - get access to local array
+  DMStagVecGetArray - get access to local array
 
   Logically Collective
 
@@ -1398,13 +1398,13 @@ PetscErrorCode DMStagSetUniformCoordinatesProduct(DM dm,PetscReal xmin,PetscReal
 . array - the array
 
   Notes:
-  DMStagVecRestoreArrayDOF() must be called, once finished with the array
+  DMStagVecRestoreArray() must be called, once finished with the array
 
   Level: beginner
 
-.seealso: DMSTAG, DMStagVecGetArrayDOFRead(), DMStagGetLocationSlot(), DMGetLocalVector(), DMCreateLocalVector(), DMGetGlobalVector(), DMCreateGlobalVector(), DMDAVecGetArrayDOF()
+.seealso: DMSTAG, DMStagVecGetArrayRead(), DMStagGetLocationSlot(), DMGetLocalVector(), DMCreateLocalVector(), DMGetGlobalVector(), DMCreateGlobalVector(), DMDAVecGetArray(), DMDAVecGetArrayDOF()
 @*/
-PetscErrorCode DMStagVecGetArrayDOF(DM dm,Vec vec,void *array)
+PetscErrorCode DMStagVecGetArray(DM dm,Vec vec,void *array)
 {
   PetscErrorCode  ierr;
   DM_Stag * const stag = (DM_Stag*)dm->data;
@@ -1433,11 +1433,11 @@ PetscErrorCode DMStagVecGetArrayDOF(DM dm,Vec vec,void *array)
 }
 
 /*@C
-  DMStagVecGetArrayDOFRead - get read-only access to a local array
+  DMStagVecGetArrayRead - get read-only access to a local array
 
   Logically Collective
 
-  See the man page for DMStagVecGetArrayDOF() for more information.
+  See the man page for DMStagVecGetArray() for more information.
 
   Input Parameters:
 + dm - the DMStag object
@@ -1447,13 +1447,13 @@ PetscErrorCode DMStagVecGetArrayDOF(DM dm,Vec vec,void *array)
 . array - the read-only array
 
   Notes:
-  DMStagVecRestoreArrayDOFRead() must be called, once finished with the array
+  DMStagVecRestoreArrayRead() must be called, once finished with the array
 
   Level: beginner
 
-.seealso: DMSTAG, DMStagVecGetArrayDOFRead(), DMStagGetLocationSlot(), DMGetLocalVector(), DMCreateLocalVector(), DMGetGlobalVector(), DMCreateGlobalVector(), DMDAVecGetArrayDOFRead()
+.seealso: DMSTAG, DMStagVecGetArrayRead(), DMStagGetLocationSlot(), DMGetLocalVector(), DMCreateLocalVector(), DMGetGlobalVector(), DMCreateGlobalVector(), DMDAVecGetArrayRead(), DMDAVecGetArrayDOFRead()
 @*/
-PetscErrorCode DMStagVecGetArrayDOFRead(DM dm,Vec vec,void *array)
+PetscErrorCode DMStagVecGetArrayRead(DM dm,Vec vec,void *array)
 {
   PetscErrorCode  ierr;
   DM_Stag * const stag = (DM_Stag*)dm->data;
@@ -1482,7 +1482,7 @@ PetscErrorCode DMStagVecGetArrayDOFRead(DM dm,Vec vec,void *array)
 }
 
 /*@C
-  DMStagVecRestoreArrayDOF - restore read-only access to a raw array
+  DMStagVecRestoreArray - restore access to a raw array
 
   Logically Collective
 
@@ -1495,9 +1495,9 @@ PetscErrorCode DMStagVecGetArrayDOFRead(DM dm,Vec vec,void *array)
 
   Level: beginner
 
-.seealso: DMSTAG, DMStagVecGetArrayDOF(), DMDAVecRestoreArrayDOFRead()
+.seealso: DMSTAG, DMStagVecGetArray(), DMDAVecRestoreArray(), DMDAVecRestoreArrayDOF()
 @*/
-PetscErrorCode DMStagVecRestoreArrayDOF(DM dm,Vec vec,void *array)
+PetscErrorCode DMStagVecRestoreArray(DM dm,Vec vec,void *array)
 {
   PetscErrorCode  ierr;
   DM_Stag * const stag = (DM_Stag*)dm->data;
@@ -1526,7 +1526,7 @@ PetscErrorCode DMStagVecRestoreArrayDOF(DM dm,Vec vec,void *array)
 }
 
 /*@C
-  DMStagVecRestoreArrayDOFRead - restore read-only access to a raw array
+  DMStagVecRestoreArrayRead - restore read-only access to a raw array
 
   Logically Collective
 
@@ -1539,9 +1539,9 @@ PetscErrorCode DMStagVecRestoreArrayDOF(DM dm,Vec vec,void *array)
 
   Level: beginner
 
-.seealso: DMSTAG, DMStagVecGetArrayDOFRead(), DMDAVecRestoreArrayDOFRead()
+.seealso: DMSTAG, DMStagVecGetArrayRead(), DMDAVecRestoreArrayRead(), DMDAVecRestoreArrayDOFRead()
 @*/
-PetscErrorCode DMStagVecRestoreArrayDOFRead(DM dm,Vec vec,void *array)
+PetscErrorCode DMStagVecRestoreArrayRead(DM dm,Vec vec,void *array)
 {
   PetscErrorCode  ierr;
   DM_Stag * const stag = (DM_Stag*)dm->data;

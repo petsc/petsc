@@ -141,7 +141,7 @@ static PetscErrorCode CreateSystem(DM dmSol,Mat *pA,Vec *pRhs, PetscBool pinPres
   /* Here, we showcase two different methods for manipulating local vector entries.
      One can use DMStagStencil objects with DMStagVecSetValuesStencil(),
      making sure to call VecAssemble[Begin/End]() after all values are set.
-     Alternately, one can use DMStagVecGetArrayDOF[Read]() and DMStagVecRestoreArrayDOF[Read]().
+     Alternately, one can use DMStagVecGetArray[Read]() and DMStagVecRestoreArray[Read]().
      The first approach is used to build the rhs, and the second is used to
      obtain coordinate values. Working with the array is almost certainly more efficient,
      but only allows setting local entries, requires understanding which "slot" to use,
@@ -381,7 +381,7 @@ static PetscErrorCode CreateReferenceSolution(DM dmSol,Vec *pSolRef)
   ierr = DMStagGetProductCoordinateLocationSlot(dmSol,ELEMENT,&icenter);CHKERRQ(ierr);
   ierr = DMStagGetProductCoordinateLocationSlot(dmSol,LEFT,&iprev);CHKERRQ(ierr);
 
-  ierr = DMStagVecGetArrayDOF(dmSol,solRefLocal,&arrSol);CHKERRQ(ierr);
+  ierr = DMStagVecGetArray(dmSol,solRefLocal,&arrSol);CHKERRQ(ierr);
   ierr = DMStagGetCorners(dmSol,&startx,&starty,NULL,&nx,&ny,NULL,&nExtra[0],&nExtra[1],NULL);CHKERRQ(ierr);
   for (ey=starty; ey<starty + ny + nExtra[1]; ++ey) {
     for (ex=startx; ex<startx + nx + nExtra[0]; ++ex) {
@@ -392,7 +392,7 @@ static PetscErrorCode CreateReferenceSolution(DM dmSol,Vec *pSolRef)
       }
     }
   }
-  ierr = DMStagVecRestoreArrayDOF(dmSol,solRefLocal,&arrSol);CHKERRQ(ierr);
+  ierr = DMStagVecRestoreArray(dmSol,solRefLocal,&arrSol);CHKERRQ(ierr);
   ierr = DMStagRestoreProductCoordinateArraysRead(dmSol,&cArrX,&cArrY,NULL);CHKERRQ(ierr);
   ierr = DMLocalToGlobal(dmSol,solRefLocal,INSERT_VALUES,*pSolRef);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dmSol,&solRefLocal);CHKERRQ(ierr);

@@ -36,8 +36,8 @@ int main(int argc,char **argv)
   ierr = DMGlobalToLocalEnd(dm,vec,INSERT_VALUES,vecLocal1);CHKERRQ(ierr);
 
   ierr = DMStagGetCorners(dm,&startx,&starty,&startz,&nx,&ny,&nz,NULL,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMStagVecGetArrayDOFRead(dm,vecLocal1,&a1);CHKERRQ(ierr);
-  ierr = DMStagVecGetArrayDOF(dm,vecLocal2,&a2);CHKERRQ(ierr);
+  ierr = DMStagVecGetArrayRead(dm,vecLocal1,&a1);CHKERRQ(ierr);
+  ierr = DMStagVecGetArray(dm,vecLocal2,&a2);CHKERRQ(ierr);
   for (k=startz; k<startz + nz; ++k) {
     for (j=starty; j<starty + ny; ++j) {
       for (i=startx; i<startx + nx; ++i) {
@@ -57,8 +57,8 @@ int main(int argc,char **argv)
       }
     }
   }
-  ierr = DMStagVecRestoreArrayDOFRead(dm,vecLocal1,&a1);CHKERRQ(ierr);
-  ierr = DMStagVecRestoreArrayDOF(dm,vecLocal2,&a2);CHKERRQ(ierr);
+  ierr = DMStagVecRestoreArrayRead(dm,vecLocal1,&a1);CHKERRQ(ierr);
+  ierr = DMStagVecRestoreArray(dm,vecLocal2,&a2);CHKERRQ(ierr);
 
   ierr = DMLocalToGlobalBegin(dm,vecLocal2,INSERT_VALUES,vec);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(dm,vecLocal2,INSERT_VALUES,vec);CHKERRQ(ierr);
@@ -75,7 +75,7 @@ int main(int argc,char **argv)
     }
     ierr = VecRestoreArray(vec,&a);CHKERRQ(ierr);
   } else {
-    ierr = DMStagVecGetArrayDOFRead(dm,vecLocal2,&a2);CHKERRQ(ierr);
+    ierr = DMStagVecGetArrayRead(dm,vecLocal2,&a2);CHKERRQ(ierr);
     ierr = DMStagGetGlobalSizes(dm,&Nx,&Ny,&Nz);CHKERRQ(ierr);
     if (stencilWidth > 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Check implemented assuming stencilWidth = 1");
     for (k=startz; k<startz + nz; ++k) {
@@ -164,7 +164,7 @@ int main(int argc,char **argv)
         }
       }
     }
-    ierr = DMStagVecRestoreArrayDOFRead(dm,vecLocal2,&a2);CHKERRQ(ierr);
+    ierr = DMStagVecRestoreArrayRead(dm,vecLocal2,&a2);CHKERRQ(ierr);
   }
 
   ierr = VecDestroy(&vec);CHKERRQ(ierr);

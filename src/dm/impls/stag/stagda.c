@@ -323,11 +323,11 @@ static PetscErrorCode DMStagTransferCoordinatesToDMDA(DM dmstag,DMStagStencilLoc
       PetscInt slot;
       PetscScalar **cArrStag;
       ierr = DMStagGetLocationSlot(dmstagCoord,loc,0,&slot);CHKERRQ(ierr);
-      ierr = DMStagVecGetArrayDOFRead(dmstagCoord,stagCoord,&cArrStag);CHKERRQ(ierr);
+      ierr = DMStagVecGetArrayRead(dmstagCoord,stagCoord,&cArrStag);CHKERRQ(ierr);
       for (ex=start[0]; ex<start[0] + n[0] + extraPoint[0]; ++ex) {
         cArrDa[ex][0] = cArrStag[ex][slot];
       }
-      ierr = DMStagVecRestoreArrayDOFRead(dmstagCoord,stagCoord,&cArrStag);CHKERRQ(ierr);
+      ierr = DMStagVecRestoreArrayRead(dmstagCoord,stagCoord,&cArrStag);CHKERRQ(ierr);
     } else if (daCoordIsProduct) {
       PetscScalar **cArrX;
       ierr = DMStagGetProductCoordinateArraysRead(dmstag,&cArrX,NULL,NULL);CHKERRQ(ierr);
@@ -345,7 +345,7 @@ static PetscErrorCode DMStagTransferCoordinatesToDMDA(DM dmstag,DMStagStencilLoc
       PetscInt slot;
       PetscScalar ***cArrStag;
       ierr = DMStagGetLocationSlot(dmstagCoord,loc,0,&slot);CHKERRQ(ierr);
-      ierr = DMStagVecGetArrayDOFRead(dmstagCoord,stagCoord,&cArrStag);CHKERRQ(ierr);
+      ierr = DMStagVecGetArrayRead(dmstagCoord,stagCoord,&cArrStag);CHKERRQ(ierr);
       for (ey=start[1]; ey<start[1] + n[1] + extraPoint[1]; ++ey) {
         for (ex=start[0]; ex<start[0] + n[0] + extraPoint[0]; ++ex) {
           for (d=0; d<2; ++d) {
@@ -353,7 +353,7 @@ static PetscErrorCode DMStagTransferCoordinatesToDMDA(DM dmstag,DMStagStencilLoc
           }
         }
       }
-      ierr = DMStagVecRestoreArrayDOFRead(dmstagCoord,stagCoord,&cArrStag);CHKERRQ(ierr);
+      ierr = DMStagVecRestoreArrayRead(dmstagCoord,stagCoord,&cArrStag);CHKERRQ(ierr);
     } else if (daCoordIsProduct) {
       PetscScalar **cArrX,**cArrY;
       ierr = DMStagGetProductCoordinateArraysRead(dmstag,&cArrX,&cArrY,NULL);CHKERRQ(ierr);
@@ -374,7 +374,7 @@ static PetscErrorCode DMStagTransferCoordinatesToDMDA(DM dmstag,DMStagStencilLoc
       PetscInt slot;
       PetscScalar ****cArrStag;
       ierr = DMStagGetLocationSlot(dmstagCoord,loc,0,&slot);CHKERRQ(ierr);
-      ierr = DMStagVecGetArrayDOFRead(dmstagCoord,stagCoord,&cArrStag);CHKERRQ(ierr);
+      ierr = DMStagVecGetArrayRead(dmstagCoord,stagCoord,&cArrStag);CHKERRQ(ierr);
       for (ez=start[2]; ez<start[2] + n[2] + extraPoint[2]; ++ez) {
         for (ey=start[1]; ey<start[1] + n[1] + extraPoint[1]; ++ey) {
           for (ex=start[0]; ex<start[0] + n[0] + extraPoint[0]; ++ex) {
@@ -384,7 +384,7 @@ static PetscErrorCode DMStagTransferCoordinatesToDMDA(DM dmstag,DMStagStencilLoc
           }
         }
       }
-      ierr = DMStagVecRestoreArrayDOFRead(dmstagCoord,stagCoord,&cArrStag);CHKERRQ(ierr);
+      ierr = DMStagVecRestoreArrayRead(dmstagCoord,stagCoord,&cArrStag);CHKERRQ(ierr);
     } else if (daCoordIsProduct) {
       PetscScalar **cArrX,**cArrY,**cArrZ;
       ierr = DMStagGetProductCoordinateArraysRead(dmstag,&cArrX,&cArrY,&cArrZ);CHKERRQ(ierr);
