@@ -85,7 +85,7 @@ struct _p_PetscSF {
   PetscLayout     map;             /* Layout of leaves over all processes when building a patterned graph */
 #if defined(PETSC_HAVE_CUDA)
   PetscInt        *rmine_d;        /* A copy of rmine in device memory */
-  PetscInt        MAX_CORESIDENT_THREADS;
+  PetscInt        maxResidentThreadsPerGPU;
 #endif
   void *data;                      /* Pointer to implementation */
 };

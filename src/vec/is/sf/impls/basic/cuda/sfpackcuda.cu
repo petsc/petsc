@@ -479,7 +479,7 @@ static PetscErrorCode Pack(PetscInt count,const PetscInt *idx,PetscSFPack link,P
   PetscInt    nblocks=(count+nthreads-1)/nthreads;
 
   PetscFunctionBegin;
-  if (nblocks > link->MAX_CORESIDENT_THREADS/nthreads) nblocks = link->MAX_CORESIDENT_THREADS/nthreads;
+  nblocks = PetscMin(nblocks,link->maxResidentThreadsPerGPU/nthreads);
   d_Pack<Type,BS,EQ><<<nblocks,nthreads,0,link->stream>>>(count,idx,link->bs,unpacked,packed);
   err = cudaGetLastError();CHKERRCUDA(err);
   PetscFunctionReturn(0);
@@ -493,7 +493,7 @@ static PetscErrorCode UnpackAndOp(PetscInt count,const PetscInt *idx,PetscSFPack
   PetscInt    nblocks=(count+nthreads-1)/nthreads;
 
   PetscFunctionBegin;
-  if (nblocks > link->MAX_CORESIDENT_THREADS/nthreads) nblocks = link->MAX_CORESIDENT_THREADS/nthreads;
+  nblocks = PetscMin(nblocks,link->maxResidentThreadsPerGPU/nthreads);
   d_UnpackAndOp<Type,Op,BS,EQ><<<nblocks,nthreads,0,link->stream>>>(count,idx,link->bs,unpacked,packed);
   err = cudaGetLastError();CHKERRCUDA(err);
   PetscFunctionReturn(0);
@@ -507,7 +507,7 @@ static PetscErrorCode FetchAndOp(PetscInt count,const PetscInt *idx,PetscSFPack 
   PetscInt    nblocks=(count+nthreads-1)/nthreads;
 
   PetscFunctionBegin;
-  if (nblocks > link->MAX_CORESIDENT_THREADS/nthreads) nblocks = link->MAX_CORESIDENT_THREADS/nthreads;
+  nblocks = PetscMin(nblocks,link->maxResidentThreadsPerGPU/nthreads);
   d_FetchAndOp<Type,Op,BS,EQ><<<nblocks,nthreads,0,link->stream>>>(count,idx,link->bs,unpacked,packed);
   err = cudaGetLastError();CHKERRCUDA(err);
   PetscFunctionReturn(0);
@@ -746,15 +746,14 @@ PetscErrorCode PetscSFPackSetUp_Device(PetscSF sf,PetscSFPack link,MPI_Datatype 
   }
 
   if (!sf_use_default_cuda_stream) {err = cudaStreamCreate(&link->stream);CHKERRCUDA(err);}
-  if (!sf->MAX_CORESIDENT_THREADS) {
+  if (!sf->maxResidentThreadsPerGPU) { /* Not initialized */
     int                   device;
     struct cudaDeviceProp props;
     err = cudaGetDevice(&device);CHKERRCUDA(err);
     err = cudaGetDeviceProperties(&props,device);CHKERRCUDA(err);
-    sf->MAX_CORESIDENT_THREADS = props.maxThreadsPerMultiProcessor;
+    sf->maxResidentThreadsPerGPU = props.maxThreadsPerMultiProcessor*props.multiProcessorCount;
   }
-  link->MAX_CORESIDENT_THREADS = sf->MAX_CORESIDENT_THREADS;
-
-  link->deviceinited = PETSC_TRUE;
+  link->maxResidentThreadsPerGPU = sf->maxResidentThreadsPerGPU;
+  link->deviceinited             = PETSC_TRUE;
   PetscFunctionReturn(0);
 }

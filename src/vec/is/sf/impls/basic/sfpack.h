@@ -121,7 +121,7 @@ struct _n_PetscSFPack {
   PetscErrorCode (*da_FetchAndLXOR)   (PetscInt,const PetscInt*,PetscSFPack,PetscSFPackOpt,void*,      void*);
   PetscErrorCode (*da_FetchAndBXOR)   (PetscInt,const PetscInt*,PetscSFPack,PetscSFPackOpt,void*,      void*);
 
-  PetscInt       MAX_CORESIDENT_THREADS; /* It is a copy from SF for convenience. */
+  PetscInt       maxResidentThreadsPerGPU; /* It is a copy from SF for convenience */
   cudaStream_t   stream;                 /* Stream to launch pack/unapck kernels if not using the default stream */
 #endif
   PetscMPIInt    tag;                    /* Each link has a tag so we can perform multiple SF ops at the same time */
