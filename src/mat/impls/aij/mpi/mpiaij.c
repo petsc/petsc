@@ -1271,6 +1271,7 @@ PetscErrorCode MatDestroy_MPIAIJ(Mat mat)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatResetPreallocation_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIAIJSetPreallocationCSR_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDiagonalScaleLocal_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpiaij_mpibaij_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpiaij_mpisbaij_C",NULL);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_ELEMENTAL)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpiaij_elemental_C",NULL);CHKERRQ(ierr);
@@ -5898,6 +5899,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJSELL(Mat,MatType,MatReuse,Ma
 #if defined(PETSC_HAVE_MKL_SPARSE)
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJMKL(Mat,MatType,MatReuse,Mat*);
 #endif
+PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIBAIJ(Mat,MatType,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPISBAIJ(Mat,MatType,MatReuse,Mat*);
 #if defined(PETSC_HAVE_ELEMENTAL)
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_Elemental(Mat,MatType,MatReuse,Mat*);
@@ -6045,6 +6047,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat B)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_mpiaijmkl_C",MatConvert_MPIAIJ_MPIAIJMKL);CHKERRQ(ierr);
 #endif
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_mpiaijcrl_C",MatConvert_MPIAIJ_MPIAIJCRL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_mpibaij_C",MatConvert_MPIAIJ_MPIBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_mpisbaij_C",MatConvert_MPIAIJ_MPISBAIJ);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_ELEMENTAL)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_elemental_C",MatConvert_MPIAIJ_Elemental);CHKERRQ(ierr);

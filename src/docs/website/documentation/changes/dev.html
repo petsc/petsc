@@ -111,6 +111,10 @@
       <h4>VecScatter:</h4>
       <h4>PetscSection:</h4>
       <h4>Mat:</h4>
+        <ul>
+          <li>Improved the performance of MatConvert_AIJ_BAIJ by preallocating the Mat before dispatching to MatConvert_Basic</li>
+          <li>Changed the behavior of MatConvert_AIJ_SBAIJ for block size greater than one, the block structure is now preserved (even for the diagonal entries)</li>
+        </ul>
       <h4>PC:</h4>
       <h4>KSP:</h4>
       <h4>SNES:</h4>
@@ -118,14 +122,14 @@
       <h4>TS:</h4>
       <h4>DM/DA:</h4>
         <ul>
-          <li>DMCopyLabels(): add two additional input flags.</li>
+          <li>DMCopyLabels(): added two additional input flags</li>
         </ul>
       <h4>DMPlex:</h4>
         <ul>
-          <li>Add DMPlexOrientCell() which orients a single cell</li>
-          <li>Add DMPlexCompareOrientations() which compares the cone point order of a single cell with the given reference cone</li>
-          <li>Add DMPlexIsInterpolated() which finds out whether the plex is interpolated</li>
-          <li>Add DMPlexIsInterpolatedCollective() which finds out whether the plex is interpolated on all ranks</li>
+          <li>Added DMPlexOrientCell() which orients a single cell</li>
+          <li>Added DMPlexCompareOrientations() which compares the cone point order of a single cell with the given reference cone</li>
+          <li>Added DMPlexIsInterpolated() which finds out whether the plex is interpolated</li>
+          <li>Added DMPlexIsInterpolatedCollective() which finds out whether the plex is interpolated on all ranks</li>
         </ul>
       <h4>PetscViewer:</h4>
       <h4>SYS:</h4>

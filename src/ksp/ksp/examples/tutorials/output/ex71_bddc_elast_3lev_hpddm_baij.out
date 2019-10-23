@@ -124,6 +124,7 @@ PC Object: 8 MPI processes
     PC Object: (pc_bddc_coarse_) 8 MPI processes
       type: hpddm
       levels: 2
+      Neumann matrix attached? PETSC_FALSE
       coarse correction: deflated
       on process #0, value (+ threshold if available) for selecting deflation vectors: 5
       grid and operator complexities: 1.25157 1.10931

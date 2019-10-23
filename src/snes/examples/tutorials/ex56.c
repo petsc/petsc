@@ -532,7 +532,7 @@ int main(int argc,char **args)
 
   test:
     suffix: hpddm
-    requires: hpddm !single
+    requires: hpddm slepc !single
     nsize: 4
     args: -cells 2,2,1 -max_conv_its 2 -lx 1. -alpha .01 -ex56_dm_refine 1 -petscspace_degree 2 -ksp_type fgmres -ksp_monitor_short -ksp_converged_reason -ksp_rtol 1.e-8 -pc_type hpddm -mat_block_size 3 -petscpartitioner_type simple -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_nev 6 -pc_hpddm_coarse_p 1 -pc_hpddm_coarse_pc_type svd
 

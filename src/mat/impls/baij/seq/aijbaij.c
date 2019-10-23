@@ -61,9 +61,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqAIJ(Mat A, MatType newtype,Mat
 
   if (reuse == MAT_INPLACE_MATRIX) {
     ierr = MatHeaderReplace(A,&B);CHKERRQ(ierr);
-  } else {
-    *newmat = B;
-  }
+  } else *newmat = B;
   PetscFunctionReturn(0);
 }
 
@@ -75,41 +73,41 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqBAIJ(Mat A,MatType newtype,MatR
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   Mat_SeqBAIJ    *b;
   PetscErrorCode ierr;
-  PetscInt       *ai=a->i,m=A->rmap->N,n=A->cmap->N,i,*rowlengths;
+  PetscInt       *ai=a->i,m=A->rmap->N,n=A->cmap->N,i,*rowlengths,bs=PetscAbs(A->rmap->bs);
 
   PetscFunctionBegin;
-  if (A->rmap->bs > 1) {
-    ierr = MatConvert_Basic(A,newtype,reuse,newmat);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
   if (reuse != MAT_REUSE_MATRIX) {
-    ierr = PetscMalloc1(m,&rowlengths);CHKERRQ(ierr);
-    for (i=0; i<m; i++) {
-      rowlengths[i] = ai[i+1] - ai[i];
+    ierr = PetscMalloc1(m/bs,&rowlengths);CHKERRQ(ierr);
+    for (i=0; i<m/bs; i++) {
+      rowlengths[i] = (ai[i*bs+1] - ai[i*bs])/bs;
     }
     ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
     ierr = MatSetSizes(B,m,n,m,n);CHKERRQ(ierr);
     ierr = MatSetType(B,MATSEQBAIJ);CHKERRQ(ierr);
-    ierr = MatSeqBAIJSetPreallocation(B,1,0,rowlengths);CHKERRQ(ierr);
+    ierr = MatSeqBAIJSetPreallocation(B,bs,0,rowlengths);CHKERRQ(ierr);
     ierr = PetscFree(rowlengths);CHKERRQ(ierr);
   } else B = *newmat;
 
-  ierr = MatSetOption(B,MAT_ROW_ORIENTED,PETSC_TRUE);CHKERRQ(ierr);
+  if (bs == 1) {
+    b = (Mat_SeqBAIJ*)(B->data);
 
-  b = (Mat_SeqBAIJ*)(B->data);
+    ierr = PetscArraycpy(b->i,a->i,m+1);CHKERRQ(ierr);
+    ierr = PetscArraycpy(b->ilen,a->ilen,m);CHKERRQ(ierr);
+    ierr = PetscArraycpy(b->j,a->j,a->nz);CHKERRQ(ierr);
+    ierr = PetscArraycpy(b->a,a->a,a->nz);CHKERRQ(ierr);
 
-  ierr = PetscArraycpy(b->i,a->i,m+1);CHKERRQ(ierr);
-  ierr = PetscArraycpy(b->ilen,a->ilen,m);CHKERRQ(ierr);
-  ierr = PetscArraycpy(b->j,a->j,a->nz);CHKERRQ(ierr);
-  ierr = PetscArraycpy(b->a,a->a,a->nz);CHKERRQ(ierr);
-
-  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatSetOption(B,MAT_ROW_ORIENTED,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  } else {
+    /* reuse may not be equal to MAT_REUSE_MATRIX, but the basic converter will reallocate or replace newmat if this value is not used */
+    /* if reuse is equal to MAT_INITIAL_MATRIX, it has been appropriately preallocated before                                          */
+    /*                      MAT_INPLACE_MATRIX, it will be replaced with MatHeaderReplace below                                        */
+    ierr = MatConvert_Basic(A,newtype,MAT_REUSE_MATRIX,&B);CHKERRQ(ierr);
+  }
 
   if (reuse == MAT_INPLACE_MATRIX) {
     ierr = MatHeaderReplace(A,&B);CHKERRQ(ierr);
-  } else {
-    *newmat = B;
-  }
+  } else *newmat = B;
   PetscFunctionReturn(0);
 }

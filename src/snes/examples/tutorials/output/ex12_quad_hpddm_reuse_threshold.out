@@ -107,6 +107,7 @@ SNES Object: 4 MPI processes
   PC Object: 4 MPI processes
     type: hpddm
     levels: 2
+    Neumann matrix attached? PETSC_TRUE
     coarse correction: deflated
     on process #0, value (+ threshold if available) for selecting deflation vectors: 0 (0.1)
     grid and operator complexities: 1.0039 1.00046

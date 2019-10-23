@@ -254,18 +254,18 @@ PetscErrorCode  MatMultTransposeAddEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
 }
 
 /*@
-   MatMatMultEqual - Test A*B*x = C*x for n random vector x 
+   MatMatMultEqual - Test A*B*x = C*x for n random vector x
 
    Collective on Mat
 
    Input Parameters:
 +  A - the first matrix
--  B - the second matrix
--  C - the third matrix
+.  B - the second matrix
+.  C - the third matrix
 -  n - number of random vectors to be tested
 
    Output Parameter:
-.  flg - PETSC_TRUE if the products are equal; PETSC_FALSE otherwise.
++  flg - PETSC_TRUE if the products are equal; PETSC_FALSE otherwise.
 
    Level: intermediate
 

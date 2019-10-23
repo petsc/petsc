@@ -1,51 +1,51 @@
   0 SNES Function norm 11.2854 
-    0 KSP Residual norm 10.6576 
-    1 KSP Residual norm 0.938175 
+    0 KSP Residual norm 10.7468 
+    1 KSP Residual norm 0.859968 
   Linear solve converged due to CONVERGED_RTOL iterations 1
-  1 SNES Function norm 3.17992 
-    0 KSP Residual norm 0.938175 
-    1 KSP Residual norm 0.433097 
-    2 KSP Residual norm 0.194654 
-    3 KSP Residual norm 0.0461003 
+  1 SNES Function norm 2.37215 
+    0 KSP Residual norm 0.859968 
+    1 KSP Residual norm 0.36619 
+    2 KSP Residual norm 0.156019 
+    3 KSP Residual norm 0.0404001 
   Linear solve converged due to CONVERGED_RTOL iterations 3
-  2 SNES Function norm 0.147887 
-    0 KSP Residual norm 0.0461003 
-    1 KSP Residual norm 0.0191065 
-    2 KSP Residual norm 0.00792577 
-    3 KSP Residual norm 0.00257359 
+  2 SNES Function norm 0.126042 
+    0 KSP Residual norm 0.0404001 
+    1 KSP Residual norm 0.0222502 
+    2 KSP Residual norm 0.00654102 
+    3 KSP Residual norm 0.00287769 
   Linear solve converged due to CONVERGED_RTOL iterations 3
-  3 SNES Function norm 0.00930594 
-    0 KSP Residual norm 0.00257359 
-    1 KSP Residual norm 0.00131697 
-    2 KSP Residual norm 0.000597297 
-    3 KSP Residual norm 0.000242414 
+  3 SNES Function norm 0.00959685 
+    0 KSP Residual norm 0.00287769 
+    1 KSP Residual norm 0.00144493 
+    2 KSP Residual norm 0.000645135 
+    3 KSP Residual norm 0.000207281 
   Linear solve converged due to CONVERGED_RTOL iterations 3
-  4 SNES Function norm 0.000786763 
-    0 KSP Residual norm 0.000242414 
-    1 KSP Residual norm 0.00010891 
-    2 KSP Residual norm 4.4473e-05 
-    3 KSP Residual norm 1.85256e-05 
+  4 SNES Function norm 0.000601202 
+    0 KSP Residual norm 0.000207281 
+    1 KSP Residual norm 9.98348e-05 
+    2 KSP Residual norm 3.38896e-05 
+    3 KSP Residual norm 1.59084e-05 
   Linear solve converged due to CONVERGED_RTOL iterations 3
-  5 SNES Function norm 7.02789e-05 
-    0 KSP Residual norm 1.85256e-05 
-    1 KSP Residual norm 9.41271e-06 
-    2 KSP Residual norm 4.06362e-06 
-    3 KSP Residual norm 1.84755e-06 
+  5 SNES Function norm 5.11301e-05 
+    0 KSP Residual norm 1.59084e-05 
+    1 KSP Residual norm 8.95606e-06 
+    2 KSP Residual norm 3.85819e-06 
+    3 KSP Residual norm 1.12629e-06 
   Linear solve converged due to CONVERGED_RTOL iterations 3
-  6 SNES Function norm 6.08057e-06 
-    0 KSP Residual norm 1.84755e-06 
-    1 KSP Residual norm 8.28874e-07 
-    2 KSP Residual norm 3.36689e-07 
-    3 KSP Residual norm 1.4509e-07 
+  6 SNES Function norm 3.41277e-06 
+    0 KSP Residual norm 1.12629e-06 
+    1 KSP Residual norm 5.16268e-07 
+    2 KSP Residual norm 1.69075e-07 
+    3 KSP Residual norm 8.34073e-08 
   Linear solve converged due to CONVERGED_RTOL iterations 3
-  7 SNES Function norm 5.46765e-07 
-    0 KSP Residual norm 1.4509e-07 
-    1 KSP Residual norm 7.25897e-08 
-    2 KSP Residual norm 3.08455e-08 
-    3 KSP Residual norm 1.41943e-08 
+  7 SNES Function norm 2.68082e-07 
+    0 KSP Residual norm 8.34073e-08 
+    1 KSP Residual norm 4.84996e-08 
+    2 KSP Residual norm 1.99918e-08 
+    3 KSP Residual norm 5.65355e-09 
   Linear solve converged due to CONVERGED_RTOL iterations 3
-  8 SNES Function norm 4.71977e-08 
-L_2 Error: 1.71494e-09
+  8 SNES Function norm 1.79858e-08 
+L_2 Error: 5.33424e-10
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 8
 SNES Object: 4 MPI processes
   type: newtonls
@@ -72,9 +72,10 @@ SNES Object: 4 MPI processes
   PC Object: 4 MPI processes
     type: hpddm
     levels: 2
+    Neumann matrix attached? PETSC_TRUE
     coarse correction: deflated
     on process #0, value (+ threshold if available) for selecting deflation vectors: 4
-    grid and operator complexities: 1.07111 1.0646
+    grid and operator complexities: 1.07111 1.07178
     KSP Object: (pc_hpddm_levels_1_) 4 MPI processes
       type: preonly
       maximum iterations=10000, initial guess is zero
@@ -132,7 +133,7 @@ SNES Object: 4 MPI processes
         Mat Object: (pc_hpddm_coarse_) 2 MPI processes
           type: mpisbaij
           rows=16, cols=16, bs=4
-          total: nonzeros=144, allocated nonzeros=144
+          total: nonzeros=160, allocated nonzeros=160
           total number of mallocs used during MatSetValues calls=0
               block size is 4
                 KSP Object:       (pc_hpddm_coarse_redundant_)       1 MPI processes
@@ -146,20 +147,20 @@ SNES Object: 4 MPI processes
                     out-of-place factorization
                     tolerance for zero pivot 2.22045e-14
                     matrix ordering: natural
-                    factor fill ratio given 5., needed 1.11111
+                    factor fill ratio given 5., needed 1.1
                       Factored matrix follows:
                         Mat Object:       1 MPI processes
                           type: seqsbaij
                           rows=16, cols=16, bs=4
                           package used to perform factorization: petsc
-                          total: nonzeros=160, allocated nonzeros=160
+                          total: nonzeros=176, allocated nonzeros=176
                           total number of mallocs used during MatSetValues calls=0
                               block size is 4
                   linear system matrix = precond matrix:
                   Mat Object:       1 MPI processes
                     type: seqsbaij
                     rows=16, cols=16, bs=4
-                    total: nonzeros=144, allocated nonzeros=144
+                    total: nonzeros=160, allocated nonzeros=160
                     total number of mallocs used during MatSetValues calls=0
                         block size is 4
     linear system matrix = precond matrix:
