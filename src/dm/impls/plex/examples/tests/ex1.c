@@ -738,7 +738,6 @@ int main(int argc, char **argv)
   test:
     suffix: fluent_3
     requires: !complex
-    TODO: broken
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_5tets.cas -interpolate 1 -dm_view -final_diagnostics 0
 
   # Med mesh reader tests, including parallel file reads
