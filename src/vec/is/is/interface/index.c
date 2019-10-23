@@ -1050,7 +1050,7 @@ PetscErrorCode  ISDestroy(IS *is)
 @*/
 PetscErrorCode  ISInvertPermutation(IS is,PetscInt nlocal,IS *isout)
 {
-  PetscBool      isperm, isidentity;
+  PetscBool      isperm, isidentity, issame;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1059,7 +1059,17 @@ PetscErrorCode  ISInvertPermutation(IS is,PetscInt nlocal,IS *isout)
   ierr = ISGetInfo(is,IS_PERMUTATION,IS_GLOBAL,PETSC_TRUE,&isperm);CHKERRQ(ierr);
   if (!isperm) SETERRQ(PetscObjectComm((PetscObject)is),PETSC_ERR_ARG_WRONG,"Not a permutation");
   ierr = ISGetInfo(is,IS_IDENTITY,IS_GLOBAL,PETSC_TRUE,&isidentity);CHKERRQ(ierr);
+  issame = PETSC_FALSE;
   if (isidentity) {
+    PetscInt n;
+    PetscBool isallsame;
+
+    ierr = ISGetLocalSize(is, &n);CHKERRQ(ierr);
+    issame = (PetscBool) (n == nlocal);
+    ierr = MPI_Allreduce(&issame, &isallsame, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)is));CHKERRQ(ierr);
+    issame = isallsame;
+  }
+  if (issame) {
     ierr = ISDuplicate(is,isout);CHKERRQ(ierr);
   } else {
     ierr = (*is->ops->invertpermutation)(is,nlocal,isout);CHKERRQ(ierr);
