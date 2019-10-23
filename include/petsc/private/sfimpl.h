@@ -178,9 +178,13 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMemcpyWithMemType(PetscMemType dstmtype,
   if (n) {
     if (dstmtype == PETSC_MEMTYPE_HOST && srcmtype == PETSC_MEMTYPE_HOST) {PetscErrorCode ierr = PetscMemcpy(dst,src,n);CHKERRQ(ierr);}
 #if defined(PETSC_HAVE_CUDA)
-    else if (dstmtype == PETSC_MEMTYPE_DEVICE && srcmtype == PETSC_MEMTYPE_HOST)   {cudaError_t err = cudaMemcpy(dst,src,n,cudaMemcpyHostToDevice);CHKERRCUDA(err);}
-    else if (dstmtype == PETSC_MEMTYPE_HOST   && srcmtype == PETSC_MEMTYPE_DEVICE) {cudaError_t err = cudaMemcpy(dst,src,n,cudaMemcpyDeviceToHost);CHKERRCUDA(err);}
-    else if (dstmtype == PETSC_MEMTYPE_DEVICE && srcmtype == PETSC_MEMTYPE_DEVICE) {cudaError_t err = cudaMemcpy(dst,src,n,cudaMemcpyDeviceToDevice);CHKERRCUDA(err);}
+    else if (dstmtype == PETSC_MEMTYPE_DEVICE && srcmtype == PETSC_MEMTYPE_HOST)   {
+      cudaError_t    err  = cudaMemcpy(dst,src,n,cudaMemcpyHostToDevice);CHKERRCUDA(err);
+      PetscErrorCode ierr = PetscLogCpuToGpu(n);CHKERRQ(ierr);
+    } else if (dstmtype == PETSC_MEMTYPE_HOST && srcmtype == PETSC_MEMTYPE_DEVICE) {
+      cudaError_t     err = cudaMemcpy(dst,src,n,cudaMemcpyDeviceToHost);CHKERRCUDA(err);
+      PetscErrorCode ierr = PetscLogGpuToCpu(n);CHKERRQ(ierr);
+    } else if (dstmtype == PETSC_MEMTYPE_DEVICE && srcmtype == PETSC_MEMTYPE_DEVICE) {cudaError_t err = cudaMemcpy(dst,src,n,cudaMemcpyDeviceToDevice);CHKERRCUDA(err);}
 #endif
     else SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong PetscMemType for dst %d and src %d",(int)dstmtype,(int)srcmtype);
   }
