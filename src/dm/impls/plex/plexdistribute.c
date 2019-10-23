@@ -2003,3 +2003,40 @@ PetscErrorCode DMPlexGetRedundantDM(DM dm, PetscSF *sf, DM *redundantMesh)
   ierr = DMDestroy(&gatherDM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/*@
+  DMPlexIsDistributed - Find out whether this DM is distributed, i.e. more than one rank owns some points.
+
+  Collective
+
+  Input Parameter:
+. dm      - The DM object
+
+  Output Parameter:
+. distributed - Flag whether the DM is distributed
+
+  Level: intermediate
+
+  Notes:
+  This currently finds out whether at least two ranks have any DAG points.
+  This involves MPI_Allreduce() with one integer.
+  The result is currently not stashed so every call to this routine involves this global communication.
+
+.seealso: DMPlexDistribute(), DMPlexGetOverlap(), DMPlexIsInterpolated()
+@*/
+PetscErrorCode DMPlexIsDistributed(DM dm, PetscBool *distributed)
+{
+  PetscInt          pStart, pEnd, count;
+  MPI_Comm          comm;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(distributed,2);
+  ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
+  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+  count = !!(pEnd - pStart);
+  ierr = MPI_Allreduce(MPI_IN_PLACE, &count, 1, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr);
+  *distributed = count > 1 ? PETSC_TRUE : PETSC_FALSE;
+  PetscFunctionReturn(0);
+}

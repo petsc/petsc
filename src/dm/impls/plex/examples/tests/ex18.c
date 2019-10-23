@@ -632,13 +632,14 @@ static PetscErrorCode CreateHex_3D(MPI_Comm comm, PetscBool interpolate, AppCtx 
 
 static PetscErrorCode CustomView(DM dm, PetscViewer v)
 {
-  MPI_Comm       comm;
   DMPlexInterpolatedFlag interpolated;
+  PetscBool      distributed;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
+  ierr = DMPlexIsDistributed(dm, &distributed);CHKERRQ(ierr);
   ierr = DMPlexIsInterpolatedCollective(dm, &interpolated);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(v, "DMPlexIsDistributed: %s\n", PetscBools[distributed]);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(v, "DMPlexIsInterpolatedCollective: %s\n", DMPlexInterpolatedFlags[interpolated]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

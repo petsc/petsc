@@ -1,3 +1,4 @@
+DMPlexIsDistributed: FALSE
 DMPlexIsInterpolatedCollective: none
 DM Object: Parallel Mesh 2 MPI processes
   type: plex
@@ -38,4 +39,5 @@ PetscSF Object: 2 MPI processes
   type: basic
     sort=rank-order
   PetscSFSetGraph() has not been called yet
+DMPlexIsDistributed: FALSE
 DMPlexIsInterpolatedCollective: none

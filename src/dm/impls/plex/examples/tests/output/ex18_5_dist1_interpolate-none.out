@@ -1,3 +1,4 @@
+DMPlexIsDistributed: FALSE
 DMPlexIsInterpolatedCollective: none
 DM Object: Parallel Mesh 2 MPI processes
   type: plex
@@ -48,4 +49,5 @@ PetscSF Object: 2 MPI processes
   [0]    1 <- 1
   [0]    2 <- 2
   [1] Roots referenced by my leaves, by rank
+DMPlexIsDistributed: TRUE
 DMPlexIsInterpolatedCollective: none
