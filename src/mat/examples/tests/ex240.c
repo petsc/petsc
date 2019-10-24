@@ -1,4 +1,3 @@
-
 static char help[] ="Tests MatFDColoringSetValues()\n\n";
 
 

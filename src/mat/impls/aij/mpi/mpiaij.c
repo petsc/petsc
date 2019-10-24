@@ -593,10 +593,10 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
 
       for (j=0; j<n; j++) {
         if (v)  value = roworiented ? v[i*n+j] : v[i+j*m];
+        if (ignorezeroentries && value == 0.0 && (addv == ADD_VALUES) && im[i] != in[j]) continue;
         if (in[j] >= cstart && in[j] < cend) {
           col   = in[j] - cstart;
           nonew = a->nonew;
-          if (ignorezeroentries && value == 0.0 && (addv == ADD_VALUES) && row != col) continue;
           MatSetValues_SeqAIJ_A_Private(row,col,value,addv,im[i],in[j]);
         } else if (in[j] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
@@ -6228,9 +6228,9 @@ PETSC_EXTERN void PETSC_STDCALL matsetvaluesmpiaij_(Mat *mmat,PetscInt *mm,const
         for (j=0; j<n; j++) {
           if (roworiented) value = v[i*n+j];
           else value = v[i+j*m];
+          if (ignorezeroentries && value == 0.0 && (addv == ADD_VALUES) && im[i] != in[j]) continue;
           if (in[j] >= cstart && in[j] < cend) {
             col = in[j] - cstart;
-            if (ignorezeroentries && value == 0.0 && (addv == ADD_VALUES) && row != col) continue;
             MatSetValues_SeqAIJ_A_Private(row,col,value,addv,im[i],in[j]);
           } else if (in[j] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
@@ -6248,7 +6248,6 @@ PETSC_EXTERN void PETSC_STDCALL matsetvaluesmpiaij_(Mat *mmat,PetscInt *mm,const
 #else
               col = aij->colmap[in[j]] - 1;
 #endif
-              if (ignorezeroentries && value == 0.0 && (addv == ADD_VALUES) && row != col) continue;
               if (col < 0 && !((Mat_SeqAIJ*)(aij->A->data))->nonew) {
                 ierr = MatDisAssemble_MPIAIJ(mat);CHKERRQ(ierr);
                 col  =  in[j];
