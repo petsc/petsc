@@ -197,20 +197,17 @@ def get_test_data(directory):
         with open(cfile, 'r') as f:
             for line in f:
                 l = line.split()
-                if l[0] == 'failed':
-                    testdata[pkgname]['problems'][probname][l[0]] = True
-                    testdata[pkgname][l[0]] += 1
-                elif l[0] == 'time':
+                if l[0] == 'time':
                     if len(l)==1: continue
                     testdata[pkgname]['problems'][probname][l[0]] = float(l[1])
                     testdata[pkgname][l[0]] += float(l[1])
-                elif l[0] == 'skip':
-                    testdata[pkgname]['problems'][probname][l[0]] = True
-                    testdata[pkgname][l[0]] += 1
-                elif l[0] not in testdata[pkgname].keys():
-                    continue
+                elif l[0] in testdata[pkgname].keys():
+                    num_int=int(l[1])
+                    testdata[pkgname][l[0]] += num_int
+                    if l[0] in ['failed','skip'] and num_int:
+                        testdata[pkgname]['problems'][probname][l[0]] = True
                 else:
-                    testdata[pkgname][l[0]] += 1
+                    continue
     os.chdir(startdir)  # Keep function in good state
     return testdata
 
