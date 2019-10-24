@@ -169,7 +169,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscFreeWithMemType_Private(PetscMemType mty
 }
 
 /* Free memory and set ptr to NULL when succeeded */
-#define PetscFreeWithMemType(t,p) ((p) && (PetscFreeWithMemType_Private((t),(p)) || ((p)=0,0)))
+#define PetscFreeWithMemType(t,p) ((p) && (PetscFreeWithMemType_Private((t),(p)) || ((p)=NULL,0)))
 
 PETSC_STATIC_INLINE PetscErrorCode PetscMemcpyWithMemType(PetscMemType dstmtype,PetscMemType srcmtype,void* dst,const void*src,size_t n)
 {

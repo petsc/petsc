@@ -967,7 +967,7 @@ M*/
 .seealso: PetscNew(), PetscMalloc(), PetscNewLog(), PetscMalloc1(), PetscCalloc1()
 
 M*/
-#define PetscFree(a)   ((*PetscTrFree)((void*)(a),__LINE__,PETSC_FUNCTION_NAME,__FILE__) || ((a) = 0,0))
+#define PetscFree(a)   ((*PetscTrFree)((void*)(a),__LINE__,PETSC_FUNCTION_NAME,__FILE__) || ((a) = NULL,0))
 
 /*MC
    PetscFree2 - Frees 2 chunks of memory obtained with PetscMalloc2()

@@ -62,7 +62,7 @@ PETSC_EXTERN void (*PETSC_NULL_FUNCTION_Fortran)(void);
 #define FIXCHAR(a,n,b) \
 {\
   if (a == PETSC_NULL_CHARACTER_Fortran) { \
-    b = a = 0; \
+    b = a = NULL; \
   } else { \
     while((n > 0) && (a[n-1] == ' ')) n--; \
     *ierr = PetscMalloc1(n+1,&b); \

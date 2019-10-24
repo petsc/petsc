@@ -731,8 +731,8 @@ PETSC_STATIC_INLINE PetscBool PetscStackActive(void)
     PetscStackSAWsTakeAccess();                                          \
     if (petscstack && petscstack->currentsize > 0) {                  \
       petscstack->currentsize--;                                       \
-      petscstack->function[petscstack->currentsize]  = 0;             \
-      petscstack->file[petscstack->currentsize]      = 0;             \
+      petscstack->function[petscstack->currentsize]  = NULL;             \
+      petscstack->file[petscstack->currentsize]      = NULL;             \
       petscstack->line[petscstack->currentsize]      = 0;             \
       petscstack->petscroutine[petscstack->currentsize] = PETSC_FALSE;\
     }                                                                   \
