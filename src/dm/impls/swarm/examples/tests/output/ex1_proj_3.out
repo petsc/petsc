@@ -1,5 +1,3 @@
-  DMSWARM_PIC: Using method CellDM->LocatePoints
-  DMSWARM_PIC: Using method CellDM->GetNeigbors
 DM Object: Mesh 1 MPI processes
   type: plex
 Mesh in 2 dimensions:
