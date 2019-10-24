@@ -1313,7 +1313,7 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
   }
   /* This function makes the mesh fully interpolated on all ranks */
   {
-    DM_Plex *plex = (DM_Plex *) dm->data;
+    DM_Plex *plex = (DM_Plex *) idm->data;
     plex->interpolated = plex->interpolatedCollective = DMPLEX_INTERPOLATED_FULL;
   }
   *dmInt = idm;
@@ -1560,7 +1560,7 @@ PetscErrorCode DMPlexUninterpolate(DM dm, DM *dmUnint)
   }
   /* This function makes the mesh fully uninterpolated on all ranks */
   {
-    DM_Plex *plex = (DM_Plex *) dm->data;
+    DM_Plex *plex = (DM_Plex *) udm->data;
     plex->interpolated = plex->interpolatedCollective = DMPLEX_INTERPOLATED_NONE;
   }
   *dmUnint = udm;
