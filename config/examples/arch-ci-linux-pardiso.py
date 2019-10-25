@@ -23,6 +23,7 @@ if __name__ == '__main__':
     '--download-mpich=1',
     '--download-triangle=1',
     '--download-ctetgen=1',
+    '--download-tetgen=1',
     '--download-p4est=1',
     '--download-zlib=1',
     '--download-codipack=1',
