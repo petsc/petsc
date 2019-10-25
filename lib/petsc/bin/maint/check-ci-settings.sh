@@ -1,6 +1,6 @@
 #!/bin/bash -ex
 
-git fetch --shallow-exclude=v3.12 --no-tags origin +maint:remotes/origin/maint +master:remotes/origin/master HEAD
+git fetch --unshallow --no-tags origin +maint:remotes/origin/maint +master:remotes/origin/master HEAD
 base_maint=$(git merge-base --octopus origin/maint origin/master HEAD)
 base_master=$(git merge-base origin/master HEAD)
 if [ ${base_maint} = ${base_master} ]; then

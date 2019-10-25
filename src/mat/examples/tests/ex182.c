@@ -1,4 +1,3 @@
-
 static char help[] = "Tests using MatShift() to create a constant diagonal matrix\n\n";
 
 #include <petscmat.h>
@@ -79,5 +78,68 @@ int main(int argc,char **argv)
       requires: define(PETSC_USE_INFO)
       args: -info ex182info -mat_type sbaij
       filter: grep -h malloc "ex182info.0" | sort -b
+
+   test:
+     suffix: 7
+     nsize: 1
+     requires: define(PETSC_USE_INFO)
+     args: -info ex182info
+     filter: grep -h malloc "ex182info.0" | grep -v Running | sort -b
+
+   test:
+     suffix: 8
+     nsize: 2
+     requires: define(PETSC_USE_INFO)
+     args: -info ex182info:mat
+     filter: grep -h malloc "ex182info.1" | sort -b
+
+   test:
+     suffix: 9
+     nsize: 1
+     requires: define(PETSC_USE_INFO)
+     args: -info ex182info:sys
+     filter: grep -h -ve Running -ve MPI_Comm -ve Initialize -ve communicator -ve HostName "ex182info.0" | sort -b
+
+   test:
+     suffix: 10
+     nsize: 1
+     requires: define(PETSC_USE_INFO)
+     args: -info :~sys
+     filter: grep -h malloc | sort -b
+
+   test:
+     suffix: 11
+     nsize: 2
+     requires: define(PETSC_USE_INFO)
+     args: -info :~sys,mat
+     filter: sort -b
+
+   test:
+     suffix: 12
+     nsize: 2
+     requires: define(PETSC_USE_INFO)
+     args: -info ex182info:sys,mat
+     filter: grep -h -ve Running -ve MPI_Comm -ve Initialize -ve communicator -ve HostName "ex182info.1" | sort -b
+
+   test:
+     suffix: 13
+     nsize: 2
+     requires: define(PETSC_USE_INFO)
+     args: -info ex182info:mat:~self
+     filter: grep -h "ex182info.1" | sort -b
+
+   test:
+     suffix: 14
+     nsize: 2
+     requires: define(PETSC_USE_INFO)
+     args: -info ex182info::~self
+     filter: grep -h -ve Running -ve MPI_Comm -ve Initialize -ve communicator -ve HostName "ex182info.1" | sort -b
+
+   test:
+     suffix: 15
+     nsize: 2
+     requires: define(PETSC_USE_INFO)
+     args: -info ex182info::self
+     filter: grep -h -ve Running -ve MPI_Comm -ve Initialize -ve communicator -ve HostName "ex182info.1" | sort -b
 
 TEST*/

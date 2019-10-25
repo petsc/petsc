@@ -491,16 +491,12 @@ int main(int argc, char **argv)
   test:
     suffix: 0
     requires: ctetgen
-    args: -dim 3 -ctetgen_verbose 4 -dm_view ascii::ascii_info_detail -info -info_exclude null
+    args: -dim 3 -ctetgen_verbose 4 -dm_view ascii::ascii_info_detail -info :~sys
   test:
     suffix: 1
     requires: ctetgen
-    args: -dim 3 -ctetgen_verbose 4 -refinement_limit 0.0625 -dm_view ascii::ascii_info_detail -info -info_exclude null
-  test:
-    # -dm_view exodusii:$PWD/mesh.exo -bd_dm_refine 2
-    suffix: ball_0
-    requires: ctetgen
-    args: -dim 3 -domain_shape ball -interpolate -dm_view
+    args: -dim 3 -ctetgen_verbose 4 -refinement_limit 0.0625 -dm_view ascii::ascii_info_detail -info :~sys
+
 
   # 2D LaTex and ASCII output 2-9
   test:

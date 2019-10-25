@@ -22,6 +22,35 @@ static PetscErrorCode PetscFixSlashN(const char *in, char **out)
   PetscFunctionReturn(0);
 }
 
+PETSC_EXTERN void petscinfosetfile_(char* filename, char* mode,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len1,PETSC_FORTRAN_CHARLEN_T len2)
+{
+  char *t1, *t2;
+
+  FIXCHAR(filename,len1,t1);
+  FIXCHAR(mode,len2,t2);
+  *ierr = PetscInfoSetFile(t1,t2); if (*ierr) return;
+  FREECHAR(filename,t1);
+  FREECHAR(mode,t2);
+}
+
+PETSC_EXTERN void petscinfogetclass_(char *classname,PetscBool **found,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
+{
+  char *t;
+
+  FIXCHAR(classname,len,t);
+  *ierr = PetscInfoGetClass(t,*found);if (*ierr) return;
+  FREECHAR(classname,t);
+}
+
+PETSC_EXTERN void petscinfoprocessclass_(char *classname,PetscInt *numClassID,PetscClassId *classIDs[],PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
+{
+  char *t;
+
+  FIXCHAR(classname,len,t);
+  *ierr = PetscInfoProcessClass(t,*numClassID,*classIDs); if (*ierr) return;
+  FREECHAR(classname,t);
+}
+
 PETSC_EXTERN void petscinfo_(char* text,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len1)
 {
   char *c1,*tmp;

@@ -3,7 +3,7 @@
       Some PETSc utility routines to add simple parallel IO capabilities
 */
 #include <petscsys.h>
-
+#include <petsc/private/logimpl.h>
 #include <errno.h>
 
 /*@C
@@ -55,7 +55,7 @@ PetscErrorCode  PetscFOpen(MPI_Comm comm,const char name[],const char mode[],FIL
       if (devnull) {
         ierr = PetscStrcpy(fname,"/dev/null");CHKERRQ(ierr);
       }
-      ierr = PetscInfo1(NULL,"Opening file %s\n",fname);CHKERRQ(ierr);
+      ierr = PetscInfo1(0,"Opening file %s\n",fname);CHKERRQ(ierr);
       fd   = fopen(fname,mode);
       if (!fd) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open file %s\n",fname);
     }

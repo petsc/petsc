@@ -11,7 +11,7 @@ A visualization of the adaptation can be accomplished using:
 
 Information on refinement:
 
-   -info -info_exclude null,sys,vec,is,mat,ksp,snes,ts
+   -info :~sys,vec,is,mat,ksp,snes,ts
 */
 
 #include <petscdmplex.h>

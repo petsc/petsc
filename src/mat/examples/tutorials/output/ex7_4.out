@@ -1,0 +1,17 @@
+[0] main(): Mat info on PETSC_COMM_WORLD with no arguments
+[0] main(): Mat info on PETSC_COMM_WORLD with 1 argument equal to 1234: 1234
+[0] main(): Vec info on PETSC_COMM_WORLD with no arguments
+[0] main(): Vec info on PETSC_COMM_WORLD with 1 argument equal to 1234: 1234
+[0] main(): Mat info on PETSC_COMM_SELF with no arguments
+[0] main(): Mat info on PETSC_COMM_SELF with 1 argument equal to 1234: 1234
+[0] main(): Vec info on PETSC_COMM_SELF with no arguments
+[0] main(): Vec info on PETSC_COMM_SELF with 1 argument equal to 1234: 1234
+[0] main(): Mat info is enabled
+[0] main(): Vec info is enabled
+[0] main(): Mat info is enabled again through PetscInfoActivateClass
+[0] main(): Vec info is enabled again through PetscInfoActivateClass
+[0] main(): Sys info is enabled again through PetscInfoActivateClass
+[0] main(): Mat info is enabled again through PetscInfoSetClasses
+[0] main(): Vec info is enabled again through PetscInfoSetClasses
+[0] main(): Sys info is enabled again through PetscInfoSetClasses
+[0] main(): Mat info is enabled again through inverted PetscInfoSetClasses

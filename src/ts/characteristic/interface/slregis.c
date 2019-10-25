@@ -53,11 +53,12 @@ PetscErrorCode CharacteristicInitializePackage(void)
   ierr = PetscLogEventRegister("MOCFullTimeLocal", CHARACTERISTIC_CLASSID,&CHARACTERISTIC_FullTimeLocal);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MOCFullTimeRemot", CHARACTERISTIC_CLASSID,&CHARACTERISTIC_FullTimeRemote);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MOCFullTimeExchg", CHARACTERISTIC_CLASSID,&CHARACTERISTIC_FullTimeExchange);CHKERRQ(ierr);
-  /* Process info exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL,"-info_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
-  if (opt) {
-    ierr = PetscStrInList("characteristic",logList,',',&pkg);CHKERRQ(ierr);
-    if (pkg) {ierr = PetscInfoDeactivateClass(CHARACTERISTIC_CLASSID);CHKERRQ(ierr);}
+  /* Process Info */
+  {
+    PetscClassId  classids[1];
+
+    classids[0] = CHARACTERISTIC_CLASSID;
+    ierr = PetscInfoProcessClass("characteristic", 1, classids);CHKERRQ(ierr);
   }
   /* Process summary exclusions */
   ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);

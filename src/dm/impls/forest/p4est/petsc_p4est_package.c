@@ -64,11 +64,12 @@ PetscErrorCode PetscP4estInitialize(void)
 
   /* Register Classes */
   ierr = PetscClassIdRegister("p4est logging",&P4ESTLOGGING_CLASSID);CHKERRQ(ierr);
-  /* Process info exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL,"-info_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
-  if (opt) {
-    ierr = PetscStrInList("p4est",logList,',',&pkg);CHKERRQ(ierr);
-    if (pkg) {ierr = PetscInfoDeactivateClass(P4ESTLOGGING_CLASSID);CHKERRQ(ierr);}
+  /* Process Info */
+  {
+    PetscClassId  classids[1];
+
+    classids[0] = P4ESTLOGGING_CLASSID;
+    ierr = PetscInfoProcessClass("p4est", 1, classids);CHKERRQ(ierr);
   }
   /* Process summary exclusions */
   ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
