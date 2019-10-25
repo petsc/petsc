@@ -630,6 +630,7 @@ linux-pkgs-valgrind:
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-valgrind
     TIMEOUT: 7200
+  allow_failure: true
 
 linux-xsdk-dbg:
   extends:
