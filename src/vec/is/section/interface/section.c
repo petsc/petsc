@@ -1155,13 +1155,13 @@ PetscErrorCode PetscSectionGetConstrainedStorageSize(PetscSection s, PetscInt *s
   the local section and an SF describing the section point overlap.
 
   Input Parameters:
-  + s - The PetscSection for the local field layout
-  . sf - The SF describing parallel layout of the section points (leaves are unowned local points)
-  . includeConstraints - By default this is PETSC_FALSE, meaning that the global field vector will not possess constrained dofs
-  - localOffsets - If PETSC_TRUE, use local rather than global offsets for the points
++ s - The PetscSection for the local field layout
+. sf - The SF describing parallel layout of the section points (leaves are unowned local points)
+. includeConstraints - By default this is PETSC_FALSE, meaning that the global field vector will not possess constrained dofs
+- localOffsets - If PETSC_TRUE, use local rather than global offsets for the points
 
   Output Parameter:
-  . gsection - The PetscSection for the global field layout
+. gsection - The PetscSection for the global field layout
 
   Note: This gives negative sizes and offsets to points not owned by this process
 
