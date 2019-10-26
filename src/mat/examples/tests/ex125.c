@@ -19,7 +19,7 @@ int main(int argc,char **args)
   PetscBool      flg,testMatSolve=PETSC_TRUE,testMatMatSolve=PETSC_TRUE;
   PetscBool      chol=PETSC_FALSE,view=PETSC_FALSE;
 #if defined(PETSC_HAVE_MUMPS)
-  PetscBool      test_mumps_opts;
+  PetscBool      test_mumps_opts=PETSC_FALSE;
 #endif
   PetscViewer    fd;              /* viewer */
   char           file[PETSC_MAX_PATH_LEN]; /* input file name */
