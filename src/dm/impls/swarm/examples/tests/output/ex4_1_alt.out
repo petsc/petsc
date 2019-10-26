@@ -10,43 +10,77 @@ Labels:
   Face Sets: 1 strata with value/size (1 (4))
 DM Object: Particles 1 MPI processes
   type: swarm
-DMSwarmDataBucketView: 
-  L                  = 2 
-  buffer             = 0 
-  allocated          = 2 
-  nfields registered = 6 
+DMSwarmDataBucketView:
+  L                  = 2
+  buffer             = 0
+  allocated          = 2
+  nfields registered = 5
     [  0]     DMSwarm_pid : Mem. usage       = 8.00e-06 (MB) [rank0]
-                            blocksize        = 1 
-                            atomic size      = 4 
+                            blocksize        = 1
+                            atomic size      = 4
     [  1]    DMSwarm_rank : Mem. usage       = 8.00e-06 (MB) [rank0]
-                            blocksize        = 1 
-                            atomic size      = 4 
+                            blocksize        = 1
+                            atomic size      = 4
     [  2] DMSwarmPIC_coor : Mem. usage       = 3.20e-05 (MB) [rank0]
-                            blocksize        = 2 
+                            blocksize        = 2
                             atomic size      = 16 [full block, bs=2]
-                            atomic size/item = 8 
+                            atomic size/item = 8
     [  3]  DMSwarm_cellid : Mem. usage       = 8.00e-06 (MB) [rank0]
-                            blocksize        = 1 
-                            atomic size      = 4 
-    [  4]             w_q : Mem. usage       = 1.60e-05 (MB) [rank0]
-                            blocksize        = 1 
-                            atomic size      = 8 
-    [  5]      kinematics : Mem. usage       = 3.20e-05 (MB) [rank0]
-                            blocksize        = 2 
+                            blocksize        = 1
+                            atomic size      = 4
+    [  4]      kinematics : Mem. usage       = 3.20e-05 (MB) [rank0]
+                            blocksize        = 2
                             atomic size      = 16 [full block, bs=2]
-                            atomic size/item = 8 
+                            atomic size/item = 8
   Total mem. usage                           = 1.04e-04 (MB) (collective)
-Energy: 81.92
-Modified energy: 81.92
-Energy: 2949.12
-Modified energy: 2949.12
-Energy: 81.9167
-Modified energy: 81.92
-Energy: 2949.
-Modified energy: 2949.12
-The particle solution for (xp, vp) at time 0.001000 is [0.199586 -0.818641]
-The exact solution for (xp, vp) at time 0.001000 is [0.199591 -0.818641]
-Exact Particle Energy: 81.92
-The particle solution for (xp, vp) at time 0.001000 is [1.19752 -4.91185]
-The exact solution for (xp, vp) at time 0.001000 is [1.19754 -4.91185]
-Exact Particle Energy: 2949.12
+Time     Step Part     Energy Mod Energy
+0.000000    0    0   455.1111   455.1111
+0.000000    0    1  1820.4444  1820.4444
+0.000500   50    0   455.1018   455.1111
+0.000500   50    1  1820.4072  1820.4444
+0.001000  100    0   455.0925   455.1111
+0.001000  100    1  1820.3701  1820.4444
+p0 error [9.6e-06 1.3e-07] sol [0.470430 -1.929555] exact [0.470439 -1.929555] energy/exact energy 455.093 / 455.111
+p1 error [1.9e-05 2.6e-07] sol [0.940860 -3.859110] exact [0.940879 -3.859110] energy/exact energy 1820.37 / 1820.44
+Time     Step Part     Energy Mod Energy
+0.000000    0    0   455.1111   455.1111
+0.000000    0    1  1820.4444  1820.4444
+0.000250   50    0   455.1088   455.1111
+0.000250   50    1  1820.4351  1820.4444
+0.000500  100    0   455.1065   455.1111
+0.000500  100    1  1820.4258  1820.4444
+0.000750  150    0   455.1041   455.1111
+0.000750  150    1  1820.4165  1820.4444
+0.001000  200    0   455.1018   455.1111
+0.001000  200    1  1820.4073  1820.4444
+p0 error [4.8e-06 3.3e-08] sol [0.470435 -1.929555] exact [0.470439 -1.929555] energy/exact energy 455.102 / 455.111
+p1 error [9.6e-06 6.6e-08] sol [0.940869 -3.859110] exact [0.940879 -3.859110] energy/exact energy 1820.41 / 1820.44
+Time     Step Part     Energy Mod Energy
+0.000000    0    0   455.1111   455.1111
+0.000000    0    1  1820.4444  1820.4444
+0.000125   50    0   455.1105   455.1111
+0.000125   50    1  1820.4421  1820.4444
+0.000250  100    0   455.1099   455.1111
+0.000250  100    1  1820.4398  1820.4444
+0.000375  150    0   455.1094   455.1111
+0.000375  150    1  1820.4375  1820.4444
+0.000500  200    0   455.1088   455.1111
+0.000500  200    1  1820.4351  1820.4444
+0.000625  250    0   455.1082   455.1111
+0.000625  250    1  1820.4328  1820.4444
+0.000750  300    0   455.1076   455.1111
+0.000750  300    1  1820.4305  1820.4444
+0.000875  350    0   455.1070   455.1111
+0.000875  350    1  1820.4282  1820.4444
+0.001000  400    0   455.1065   455.1111
+0.001000  400    1  1820.4259  1820.4444
+p0 error [2.4e-06 8.2e-09] sol [0.470437 -1.929555] exact [0.470439 -1.929555] energy/exact energy 455.106 / 455.111
+p1 error [4.8e-06 1.6e-08] sol [0.940874 -3.859110] exact [0.940879 -3.859110] energy/exact energy 1820.43 / 1820.44
+L_2 convergence rate: 1.0
+Time     Step Part     Energy Mod Energy
+0.000000    0    0   455.1111   455.1111
+0.000000    0    1  1820.4444  1820.4444
+0.000500   50    0   455.1018   455.1111
+0.000500   50    1  1820.4072  1820.4444
+0.001000  100    0   455.0925   455.1111
+0.001000  100    1  1820.3701  1820.4444

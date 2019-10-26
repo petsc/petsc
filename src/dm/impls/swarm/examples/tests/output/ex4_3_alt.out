@@ -17,7 +17,7 @@ DMSwarmDataBucketView:
   nfields registered = 5
     [  0]     DMSwarm_pid : Mem. usage       = 1.60e-05 (MB) [rank0]
                             blocksize        = 1
-                            atomic size      = 8
+                            atomic size      = 4
     [  1]    DMSwarm_rank : Mem. usage       = 8.00e-06 (MB) [rank0]
                             blocksize        = 1
                             atomic size      = 4
