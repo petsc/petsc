@@ -34,6 +34,10 @@ variables:
       - schedules
 #     Set with CI/CD Pipelines - Run Pipeline
       - web
+      - merge_requests
+    variables:
+      - $CI_MERGE_REQUEST_EVENT_TYPE == "merge_train"
+      - $CI_MERGE_REQUEST_EVENT_TYPE == null
   dependencies: []
 
 check-ci-settings:
@@ -153,18 +157,10 @@ checksource:
 .stage-2:
   extends: .stage-23
   stage: stage-2
-  only:
-    variables:
-      - $STAGE != "1"
-      - $STAGE != "3"
 
 .stage-3:
   extends: .stage-23
   stage: stage-3
-  only:
-    variables:
-      - $STAGE != "1"
-      - $STAGE != "2"
 
 #
 # The following provide templates for various OSes for pre/post info
