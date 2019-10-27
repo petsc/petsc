@@ -53,6 +53,8 @@ class Configure(config.package.GNUPackage):
 
     try:
       self.logPrintBox('Configure Pflotran; this may take several minutes')
+      # TODO: remove this prefix code and use the mechanisms in package.py for selecting the destination directory; currently if postProcess is used
+      # TODO: package.py may not allow installing in prefix location
       if self.framework.argDB['prefix']:
         PDIR   = 'PETSC_DIR='+self.framework.argDB['prefix']
         PARCH  = ''
@@ -70,6 +72,7 @@ class Configure(config.package.GNUPackage):
 
       self.logPrintBox('Installing Pflotran; this may take several minutes')
       self.installDirProvider.printSudoPasswordMessage(1)
+      # TODO: Once the prefix code above is handled correctly thgis should use self.installSudo
       output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+self.packageDir+' && '+self.installDirProvider.installSudo+' make install',timeout=100, log = self.log)
       self.log.write(output+err)
     except RuntimeError as e:

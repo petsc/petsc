@@ -330,9 +330,11 @@ def move_configure_log(framework):
 
     # Just in case - confdir is not created
     lib_dir = os.path.join(petsc_arch,'lib')
+    petsc_dir = os.path.join(petsc_arch,'lib','petsc')
     conf_dir = os.path.join(petsc_arch,'lib','petsc','conf')
     if not os.path.isdir(petsc_arch): os.mkdir(petsc_arch)
     if not os.path.isdir(lib_dir): os.mkdir(lib_dir)
+    if not os.path.isdir(petsc_dir): os.mkdir(petsc_dir)
     if not os.path.isdir(conf_dir): os.mkdir(conf_dir)
 
     curr_bkp  = curr_file + '.bkp'

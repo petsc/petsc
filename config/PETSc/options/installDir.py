@@ -43,7 +43,8 @@ class Configure(config.base.Configure):
       try:
         os.makedirs(os.path.join(self.dir,'PETScTestDirectory'))
         os.rmdir(os.path.join(self.dir,'PETScTestDirectory'))
-      except:
+      except Exception as e:
+        self.logPrint('Error trying to to test write permissions on directory '+str(e))
         self.installSudoMessage = 'You do not have write permissions to the --prefix directory '+self.dir+'\nYou will be prompted for the sudo password for any external package installs'
         self.installSudo = 'sudo '
     else:
