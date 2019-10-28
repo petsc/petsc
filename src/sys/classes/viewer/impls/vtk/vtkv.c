@@ -104,6 +104,7 @@ static PetscErrorCode PetscViewerFlush_VTK(PetscViewer viewer)
   }
   ierr       = PetscObjectDestroy(&vtk->dm);CHKERRQ(ierr);
   vtk->write = NULL;
+  vtk->link  = NULL;
   PetscFunctionReturn(0);
 }
 
