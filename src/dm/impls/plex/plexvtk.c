@@ -515,65 +515,79 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
     ierr = PetscFPrintf(comm, fp, "POINT_DATA %D\n", totVertices);CHKERRQ(ierr);
     for (link = vtk->link; link; link = link->next) {
       Vec          X = (Vec) link->vec;
-      DM           dmX;
-      PetscSection section, globalSection, newSection = NULL;
+      PetscSection section = NULL, globalSection, newSection = NULL;
+      char         namebuf[256];
       const char   *name;
       PetscInt     enforceDof = PETSC_DETERMINE;
 
       if ((link->ft != PETSC_VTK_POINT_FIELD) && (link->ft != PETSC_VTK_POINT_VECTOR_FIELD)) continue;
       if (link->ft == PETSC_VTK_POINT_VECTOR_FIELD) enforceDof = 3;
       ierr = PetscObjectGetName(link->vec, &name);CHKERRQ(ierr);
-      ierr = VecGetDM(X, &dmX);CHKERRQ(ierr);
-      if (dmX) {
-        DMLabel  subpointMap, subpointMapX;
-        PetscInt dim, dimX, pStart, pEnd, qStart, qEnd;
+      ierr = PetscObjectQuery(link->vec, "section", (PetscObject*) &section);CHKERRQ(ierr);
+      if (!section) {
+        DM           dmX;
 
-        ierr = DMGetLocalSection(dmX, &section);CHKERRQ(ierr);
-        /* Here is where we check whether dmX is a submesh of dm */
-        ierr = DMGetDimension(dm,  &dim);CHKERRQ(ierr);
-        ierr = DMGetDimension(dmX, &dimX);CHKERRQ(ierr);
-        ierr = DMPlexGetChart(dm,  &pStart, &pEnd);CHKERRQ(ierr);
-        ierr = DMPlexGetChart(dmX, &qStart, &qEnd);CHKERRQ(ierr);
-        ierr = DMPlexGetSubpointMap(dm,  &subpointMap);CHKERRQ(ierr);
-        ierr = DMPlexGetSubpointMap(dmX, &subpointMapX);CHKERRQ(ierr);
-        if (((dim != dimX) || ((pEnd-pStart) < (qEnd-qStart))) && subpointMap && !subpointMapX) {
-          const PetscInt *ind = NULL;
-          IS              subpointIS;
-          PetscInt        n = 0, q;
+        ierr = VecGetDM(X, &dmX);CHKERRQ(ierr);
+        if (dmX) {
+          DMLabel  subpointMap, subpointMapX;
+          PetscInt dim, dimX, pStart, pEnd, qStart, qEnd;
 
-          ierr = PetscSectionGetChart(section, &qStart, &qEnd);CHKERRQ(ierr);
-          ierr = DMPlexCreateSubpointIS(dm, &subpointIS);CHKERRQ(ierr);
-          if (subpointIS) {
-            ierr = ISGetLocalSize(subpointIS, &n);CHKERRQ(ierr);
-            ierr = ISGetIndices(subpointIS, &ind);CHKERRQ(ierr);
-          }
-          ierr = PetscSectionCreate(comm, &newSection);CHKERRQ(ierr);
-          ierr = PetscSectionSetChart(newSection, pStart, pEnd);CHKERRQ(ierr);
-          for (q = qStart; q < qEnd; ++q) {
-            PetscInt dof, off, p;
+          ierr = DMGetLocalSection(dmX, &section);CHKERRQ(ierr);
+          /* Here is where we check whether dmX is a submesh of dm */
+          ierr = DMGetDimension(dm,  &dim);CHKERRQ(ierr);
+          ierr = DMGetDimension(dmX, &dimX);CHKERRQ(ierr);
+          ierr = DMPlexGetChart(dm,  &pStart, &pEnd);CHKERRQ(ierr);
+          ierr = DMPlexGetChart(dmX, &qStart, &qEnd);CHKERRQ(ierr);
+          ierr = DMPlexGetSubpointMap(dm,  &subpointMap);CHKERRQ(ierr);
+          ierr = DMPlexGetSubpointMap(dmX, &subpointMapX);CHKERRQ(ierr);
+          if (((dim != dimX) || ((pEnd-pStart) < (qEnd-qStart))) && subpointMap && !subpointMapX) {
+            const PetscInt *ind = NULL;
+            IS              subpointIS;
+            PetscInt        n = 0, q;
 
-            ierr = PetscSectionGetDof(section, q, &dof);CHKERRQ(ierr);
-            if (dof) {
-              ierr = PetscFindInt(q, n, ind, &p);CHKERRQ(ierr);
-              if (p >= pStart) {
-                ierr = PetscSectionSetDof(newSection, p, dof);CHKERRQ(ierr);
-                ierr = PetscSectionGetOffset(section, q, &off);CHKERRQ(ierr);
-                ierr = PetscSectionSetOffset(newSection, p, off);CHKERRQ(ierr);
+            ierr = PetscSectionGetChart(section, &qStart, &qEnd);CHKERRQ(ierr);
+            ierr = DMPlexCreateSubpointIS(dm, &subpointIS);CHKERRQ(ierr);
+            if (subpointIS) {
+              ierr = ISGetLocalSize(subpointIS, &n);CHKERRQ(ierr);
+              ierr = ISGetIndices(subpointIS, &ind);CHKERRQ(ierr);
+            }
+            ierr = PetscSectionCreate(comm, &newSection);CHKERRQ(ierr);
+            ierr = PetscSectionSetChart(newSection, pStart, pEnd);CHKERRQ(ierr);
+            for (q = qStart; q < qEnd; ++q) {
+              PetscInt dof, off, p;
+
+              ierr = PetscSectionGetDof(section, q, &dof);CHKERRQ(ierr);
+              if (dof) {
+                ierr = PetscFindInt(q, n, ind, &p);CHKERRQ(ierr);
+                if (p >= pStart) {
+                  ierr = PetscSectionSetDof(newSection, p, dof);CHKERRQ(ierr);
+                  ierr = PetscSectionGetOffset(section, q, &off);CHKERRQ(ierr);
+                  ierr = PetscSectionSetOffset(newSection, p, off);CHKERRQ(ierr);
+                }
               }
             }
+            if (subpointIS) {
+              ierr = ISRestoreIndices(subpointIS, &ind);CHKERRQ(ierr);
+              ierr = ISDestroy(&subpointIS);CHKERRQ(ierr);
+            }
+            /* No need to setup section */
+            section = newSection;
           }
-          if (subpointIS) {
-            ierr = ISRestoreIndices(subpointIS, &ind);CHKERRQ(ierr);
-            ierr = ISDestroy(&subpointIS);CHKERRQ(ierr);
-          }
-          /* No need to setup section */
-          section = newSection;
         }
-      } else {
-        ierr = PetscObjectQuery(link->vec, "section", (PetscObject*) &section);CHKERRQ(ierr);
-        if (!section) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Vector %s had no PetscSection composed with it", name);
       }
-      if (!section) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Vector %s had no PetscSection composed with it", name);
+      if (!section) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Vector %s had no PetscSection composed with it and could not create one from VecGetDM()", name);
+      if (link->field >= 0) {
+        const char *fieldname;
+
+        ierr = PetscSectionGetFieldName(section, link->field, &fieldname);CHKERRQ(ierr);
+        ierr = PetscSectionGetField(section, link->field, &section);CHKERRQ(ierr);
+        if (fieldname) {
+          ierr = PetscSNPrintf(namebuf, 255, "%s%s", name, fieldname);CHKERRQ(ierr);
+        } else {
+          ierr = PetscSNPrintf(namebuf, 255, "%s%D", name, link->field);CHKERRQ(ierr);
+        }
+        name = &namebuf[0];
+      }
       ierr = PetscSectionCreateGlobalSection(section, dm->sf, PETSC_FALSE, PETSC_FALSE, &globalSection);CHKERRQ(ierr);
       ierr = DMPlexVTKWriteField_ASCII(dm, section, globalSection, X, name, fp, enforceDof, PETSC_DETERMINE, 1.0);CHKERRQ(ierr);
       ierr = PetscSectionDestroy(&globalSection);CHKERRQ(ierr);
@@ -586,25 +600,36 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
     ierr = PetscFPrintf(comm, fp, "CELL_DATA %D\n", totCells);CHKERRQ(ierr);
     for (link = vtk->link; link; link = link->next) {
       Vec          X = (Vec) link->vec;
-      DM           dmX;
-      PetscSection section, globalSection;
+      PetscSection section = NULL, globalSection;
       const char   *name;
+      char         namebuf[256];
       PetscInt     enforceDof = PETSC_DETERMINE;
 
       if ((link->ft != PETSC_VTK_CELL_FIELD) && (link->ft != PETSC_VTK_CELL_VECTOR_FIELD)) continue;
       if (link->ft == PETSC_VTK_CELL_VECTOR_FIELD) enforceDof = 3;
       ierr = PetscObjectGetName(link->vec, &name);CHKERRQ(ierr);
-      ierr = VecGetDM(X, &dmX);CHKERRQ(ierr);
-      if (dmX) {
-        ierr = DMGetLocalSection(dmX, &section);CHKERRQ(ierr);
-      } else {
-        PetscContainer c;
+      ierr = PetscObjectQuery(link->vec, "section", (PetscObject*) &section);CHKERRQ(ierr);
+      if (!section) {
+        DM           dmX;
 
-        ierr = PetscObjectQuery(link->vec, "section", (PetscObject*) &c);CHKERRQ(ierr);
-        if (!c) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Vector %s had no PetscSection composed with it", name);
-        ierr = PetscContainerGetPointer(c, (void**) &section);CHKERRQ(ierr);
+        ierr = VecGetDM(X, &dmX);CHKERRQ(ierr);
+        if (dmX) {
+          ierr = DMGetLocalSection(dmX, &section);CHKERRQ(ierr);
+        }
       }
-      if (!section) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Vector %s had no PetscSection composed with it", name);
+      if (!section) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Vector %s had no PetscSection composed with it and could not create one from VecGetDM()", name);
+      if (link->field >= 0) {
+        const char *fieldname;
+
+        ierr = PetscSectionGetFieldName(section, link->field, &fieldname);CHKERRQ(ierr);
+        ierr = PetscSectionGetField(section, link->field, &section);CHKERRQ(ierr);
+        if (fieldname) {
+          ierr = PetscSNPrintf(namebuf, 255, "%s%s", name, fieldname);CHKERRQ(ierr);
+        } else {
+          ierr = PetscSNPrintf(namebuf, 255, "%s%D", name, link->field);CHKERRQ(ierr);
+        }
+        name = &namebuf[0];
+      }
       ierr = PetscSectionCreateGlobalSection(section, dm->sf, PETSC_FALSE, PETSC_FALSE, &globalSection);CHKERRQ(ierr);
       ierr = DMPlexVTKWriteField_ASCII(dm, section, globalSection, X, name, fp, enforceDof, PETSC_DETERMINE, 1.0);CHKERRQ(ierr);
       ierr = PetscSectionDestroy(&globalSection);CHKERRQ(ierr);

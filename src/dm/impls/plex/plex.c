@@ -106,7 +106,7 @@ PetscErrorCode DMPlexGetFieldType_Internal(DM dm, PetscSection section, PetscInt
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  *ft  = PETSC_VTK_POINT_FIELD;
+  *ft  = PETSC_VTK_INVALID;
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
@@ -131,7 +131,16 @@ PetscErrorCode DMPlexGetFieldType_Internal(DM dm, PetscSection section, PetscInt
     *sEnd   = cEnd;
     if (globalvcdof[1] == dim) *ft = PETSC_VTK_CELL_VECTOR_FIELD;
     else                       *ft = PETSC_VTK_CELL_FIELD;
-  } else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Could not classify input Vec for VTK");
+  } else {
+    if (field >= 0) {
+      const char *fieldname;
+
+      ierr = PetscSectionGetFieldName(section, field, &fieldname);CHKERRQ(ierr);
+      ierr = PetscInfo2((PetscObject) dm, "Could not classify VTK output type of section field %D \"%s\"\n", field, fieldname);CHKERRQ(ierr);
+    } else {
+      ierr = PetscInfo((PetscObject) dm, "Could not classify VTK output typp of section\"%s\"\n");CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -281,6 +290,7 @@ static PetscErrorCode VecView_Plex_Local_VTK(Vec v, PetscViewer viewer)
   const char              *name;
   PetscSection            section;
   PetscInt                pStart, pEnd;
+  PetscInt                numFields;
   PetscViewerVTKFieldType ft;
   PetscErrorCode          ierr;
 
@@ -291,8 +301,21 @@ static PetscErrorCode VecView_Plex_Local_VTK(Vec v, PetscViewer viewer)
   ierr = PetscObjectSetName((PetscObject) locv, name);CHKERRQ(ierr);
   ierr = VecCopy(v, locv);CHKERRQ(ierr);
   ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);
-  ierr = DMPlexGetFieldType_Internal(dm, section, PETSC_DETERMINE, &pStart, &pEnd, &ft);CHKERRQ(ierr);
-  ierr = PetscViewerVTKAddField(viewer, (PetscObject) dm, DMPlexVTKWriteAll, ft, PETSC_TRUE,(PetscObject) locv);CHKERRQ(ierr);
+  ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
+  if (!numFields) {
+    ierr = DMPlexGetFieldType_Internal(dm, section, PETSC_DETERMINE, &pStart, &pEnd, &ft);CHKERRQ(ierr);
+    ierr = PetscViewerVTKAddField(viewer, (PetscObject) dm, DMPlexVTKWriteAll, PETSC_DEFAULT, ft, PETSC_TRUE,(PetscObject) locv);CHKERRQ(ierr);
+  } else {
+    PetscInt f;
+
+    for (f = 0; f < numFields; f++) {
+      ierr = DMPlexGetFieldType_Internal(dm, section, f, &pStart, &pEnd, &ft);CHKERRQ(ierr);
+      if (ft == PETSC_VTK_INVALID) continue;
+      ierr = PetscObjectReference((PetscObject)locv);CHKERRQ(ierr);
+      ierr = PetscViewerVTKAddField(viewer, (PetscObject) dm, DMPlexVTKWriteAll, f, ft, PETSC_TRUE,(PetscObject) locv);CHKERRQ(ierr);
+    }
+    ierr = VecDestroy(&locv);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

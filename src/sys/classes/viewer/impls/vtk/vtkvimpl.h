@@ -8,6 +8,7 @@ struct _n_PetscViewerVTKObjectLink {
   PetscViewerVTKFieldType  ft;
   PetscObject              vec;
   PetscViewerVTKObjectLink next;
+  PetscInt                 field;
 };
 
 typedef struct {
