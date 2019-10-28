@@ -18,10 +18,11 @@ class Configure(config.package.CMakePackage):
     self.sharedLibraries = framework.require('PETSc.options.sharedLibraries', self)
     self.scalartypes     = framework.require('PETSc.options.scalarTypes',self)
     self.indexTypes      = framework.require('PETSc.options.indexTypes', self)
+    self.mpi             = framework.require('config.packages.MPI',self)
     self.metis           = framework.require('config.packages.metis', self)
     self.eigen           = framework.require('config.packages.eigen', self)
     self.mathlib         = framework.require('config.packages.mathlib',self)
-    self.deps            = [self.metis, self.eigen, self.mathlib]
+    self.deps            = [self.mpi, self.metis, self.eigen, self.mathlib]
     return
 
   def formCMakeConfigureArgs(self):
@@ -33,6 +34,19 @@ class Configure(config.package.CMakePackage):
     args.append('-DENABLE_VTK=OFF')
     args.append('-DENABLE_OPENMP=OFF')
     args.append('-DEIGEN_INCLUDE_DIR='+self.eigen.include[0])
+
+    # prevent Pragmatic from linking to MPI it finds by itself
+    args.append('-DMPI_C_COMPILER:STRING="'+self.framework.getCompiler()+'"')
+    args.append('-DMPI_C_INCLUDE_PATH:STRING=""')
+    args.append('-DMPI_C_COMPILE_FLAGS:STRING=""')
+    args.append('-DMPI_C_LINK_FLAGS:STRING=""')
+    args.append('-DMPI_C_LIBRARIES:STRING=""')
+    args.append('-DMPI_CXX_COMPILER:STRING="'+self.framework.getCompiler('Cxx')+'"')
+    args.append('-DMPI_CXX_INCLUDE_PATH:STRING=""')
+    args.append('-DMPI_CXX_COMPILE_FLAGS:STRING=""')
+    args.append('-DMPI_CXX_LINK_FLAGS:STRING=""')
+    args.append('-DMPI_CXX_LIBRARIES:STRING=""')
+
     if not self.compilerFlags.debugging:
       args.append('-DCMAKE_BUILD_TYPE=Release')
     if self.checkSharedLibrariesEnabled():

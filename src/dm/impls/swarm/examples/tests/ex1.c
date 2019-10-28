@@ -199,18 +199,22 @@ int main (int argc, char * argv[]) {
   test:
     suffix: proj_0
     requires: pragmatic
+    TODO: broken
     args: -dim 2 -nbrVerEdge 3 -dm_plex_separate_marker 0 -dm_view -sw_view -petscspace_degree 1 -petscfe_default_quadrature_order 1 -pc_type lu
   test:
     suffix: proj_1
     requires: pragmatic
+    TODO: broken
     args: -dim 2 -simplex 0 -nbrVerEdge 3 -dm_plex_separate_marker 0 -dm_view -sw_view -petscspace_degree 1 -petscfe_default_quadrature_order 1 -pc_type lu
   test:
     suffix: proj_2
     requires: pragmatic
+    TODO: broken
     args: -dim 3 -nbrVerEdge 3 -dm_view -sw_view -petscspace_degree 1 -petscfe_default_quadrature_order 1 -pc_type lu
   test:
     suffix: proj_3
     requires: pragmatic
+    TODO: broken
     args: -dim 2 -simplex 0 -nbrVerEdge 3 -dm_plex_separate_marker 0 -dm_view -sw_view -petscspace_degree 1 -petscfe_default_quadrature_order 1 -pc_type lu
 
 TEST*/
