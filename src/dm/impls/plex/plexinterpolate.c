@@ -1313,7 +1313,7 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
   }
   /* This function makes the mesh fully interpolated on all ranks */
   {
-    DM_Plex *plex = (DM_Plex *) dm->data;
+    DM_Plex *plex = (DM_Plex *) idm->data;
     plex->interpolated = plex->interpolatedCollective = DMPLEX_INTERPOLATED_FULL;
   }
   *dmInt = idm;
@@ -1560,7 +1560,7 @@ PetscErrorCode DMPlexUninterpolate(DM dm, DM *dmUnint)
   }
   /* This function makes the mesh fully uninterpolated on all ranks */
   {
-    DM_Plex *plex = (DM_Plex *) dm->data;
+    DM_Plex *plex = (DM_Plex *) udm->data;
     plex->interpolated = plex->interpolatedCollective = DMPLEX_INTERPOLATED_NONE;
   }
   *dmUnint = udm;
@@ -1647,7 +1647,7 @@ PetscErrorCode DMPlexIsInterpolated(DM dm, DMPlexInterpolatedFlag *interpolated)
     DMPlexInterpolatedFlag flg;
 
     ierr = DMPlexIsInterpolated_Internal(dm, &flg);CHKERRQ(ierr);
-    if (flg != plex->interpolated) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "stashed DMPlexInterpolatedFlag is inconsistent");
+    if (flg != plex->interpolated) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Stashed DMPlexInterpolatedFlag %s is inconsistent with current %s", DMPlexInterpolatedFlags[plex->interpolated], DMPlexInterpolatedFlags[flg]);
 #endif
   }
   *interpolated = plex->interpolated;
