@@ -32,12 +32,12 @@
 #define islocaltoglobalmappingrestoreblockindices_ islocaltoglobalmappingrestoreblockindices
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL petsclayoutfindowner_(PetscLayout *map,PetscInt *idx,PetscInt *owner, int *ierr)
+PETSC_EXTERN void PETSC_STDCALL petsclayoutfindowner_(PetscLayout *map,PetscInt *idx,PetscMPIInt *owner,int *ierr)
 {
   *ierr = PetscLayoutFindOwner(*map,*idx,owner);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petsclayoutfindownerindex_(PetscLayout *map,PetscInt *idx,PetscInt *owner, PetscInt *ridx,int *ierr)
+PETSC_EXTERN void PETSC_STDCALL petsclayoutfindownerindex_(PetscLayout *map,PetscInt *idx,PetscMPIInt *owner,PetscInt *ridx,int *ierr)
 {
   *ierr = PetscLayoutFindOwnerIndex(*map,*idx,owner,ridx);
 }

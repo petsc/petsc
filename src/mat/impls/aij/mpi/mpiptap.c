@@ -1164,8 +1164,9 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce(Mat A,Mat P,PetscInt dof
   const PetscInt      *rootdegrees;
   PetscHSetI          ht,oht,*hta,*hto;
   PetscInt            pn,pon,*c_rmtc,i,j,nzi,htsize,htosize,*c_rmtj,off,*c_othj,rcvncols,sendncols,*c_rmtoffsets;
-  PetscInt            owner,lidx,*rdj,col,pcstart,pcend,*dnz,*onz,am,arstart,arend,*poj,*pdj;
+  PetscInt            lidx,*rdj,col,pcstart,pcend,*dnz,*onz,am,arstart,arend,*poj,*pdj;
   PetscInt            nalg=2,alg=0,offset,ii;
+  PetscMPIInt         owner;
   const PetscInt      *mappingindices;
   PetscBool           flg;
   const char          *algTypes[2] = {"overlapping","merged"};
@@ -1444,8 +1445,9 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce_merged(Mat A,Mat P,Petsc
   const PetscInt      *rootdegrees;
   PetscHSetI          ht,oht,*hta,*hto,*htd;
   PetscInt            pn,pon,*c_rmtc,i,j,nzi,dnzi,htsize,htosize,*c_rmtj,off,*c_othj,rcvncols,sendncols,*c_rmtoffsets;
-  PetscInt            owner,lidx,*rdj,col,pcstart,pcend,*dnz,*onz,am,arstart,arend,*poj,*pdj;
+  PetscInt            lidx,*rdj,col,pcstart,pcend,*dnz,*onz,am,arstart,arend,*poj,*pdj;
   PetscInt            nalg=2,alg=0,offset,ii;
+  PetscMPIInt         owner;
   PetscBool           flg;
   const char          *algTypes[2] = {"merged","overlapping"};
   const PetscInt      *mappingindices;

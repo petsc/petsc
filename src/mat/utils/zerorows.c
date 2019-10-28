@@ -9,8 +9,8 @@ PETSC_INTERN PetscErrorCode MatZeroRowsMapLocal_Private(Mat A,PetscInt N,const P
   PetscSF        sf;
   PetscInt      *lrows;
   PetscSFNode   *rrows;
-  PetscMPIInt    rank;
-  PetscInt       r, p = 0, len = 0;
+  PetscMPIInt    rank, p = 0;
+  PetscInt       r, len = 0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

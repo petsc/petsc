@@ -50,12 +50,12 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_Scalable(Mat mat,PetscInt n
 {
   PetscErrorCode ierr;
   MPI_Comm       comm;
-  PetscInt       *length,length_i,tlength,*remoterows,nrrows,reducednrrows,*rrow_ranks,*rrow_isids,i,j,owner;
+  PetscInt       *length,length_i,tlength,*remoterows,nrrows,reducednrrows,*rrow_ranks,*rrow_isids,i,j;
   PetscInt       *tosizes,*tosizes_temp,*toffsets,*fromsizes,*todata,*fromdata;
   PetscInt       nrecvrows,*sbsizes = 0,*sbdata = 0;
   const PetscInt *indices_i,**indices;
   PetscLayout    rmap;
-  PetscMPIInt    rank,size,*toranks,*fromranks,nto,nfrom;
+  PetscMPIInt    rank,size,*toranks,*fromranks,nto,nfrom,owner;
   PetscSF        sf;
   PetscSFNode    *remote;
 
@@ -366,8 +366,8 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Local_Scalable(Mat mat,PetscInt 
 {
   const PetscInt   *gcols,*ai,*aj,*bi,*bj, *indices;
   PetscInt          tnz,an,bn,i,j,row,start,end,rstart,cstart,col,k,*indices_temp;
-  PetscInt          lsize,lsize_tmp,owner;
-  PetscMPIInt       rank;
+  PetscInt          lsize,lsize_tmp;
+  PetscMPIInt       rank,owner;
   Mat               amat,bmat;
   PetscBool         done;
   PetscLayout       cmap,rmap;
@@ -467,8 +467,8 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C,PetscInt imax,IS is[]
   PetscInt       *data_i,*d_p;
 #endif
   PetscErrorCode ierr;
-  PetscMPIInt    size,rank,tag1,tag2;
-  PetscInt       M,i,j,k,**rbuf,row,proc = 0,nrqs,msz,**outdat,**ptr;
+  PetscMPIInt    size,rank,tag1,tag2,proc = 0;
+  PetscInt       M,i,j,k,**rbuf,row,nrqs,msz,**outdat,**ptr;
   PetscInt       *ctr,*pa,*tmp,*isz,*isz1,**xdata,**rbuf2;
   PetscBT        *table;
   MPI_Comm       comm;

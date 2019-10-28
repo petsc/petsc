@@ -1851,9 +1851,10 @@ PETSC_INTERN PetscErrorCode MatConvert_Nest_AIJ(Mat A,MatType newtype,MatReuse r
        */
       ierr = MatGetOwnershipRange(B,&rstart,NULL);CHKERRQ(ierr);
       for (br = 0; br < bm; ++br) {
-        PetscInt       row = bmindices[br], rowowner = 0, brncols, col;
+        PetscInt       row = bmindices[br], brncols, col;
         const PetscInt *brcols;
         PetscInt       rowrel = 0; /* row's relative index on its owner rank */
+        PetscMPIInt    rowowner = 0;
         ierr      = PetscLayoutFindOwnerIndex(A->rmap,row,&rowowner,&rowrel);CHKERRQ(ierr);
         /* how many roots  */
         iremote[br].rank = rowowner; iremote[br].index = rowrel;           /* edge from bmdnnz to dnnz */

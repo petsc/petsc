@@ -7,7 +7,7 @@
         Subroutine PetscLayoutFindOwner(a,b,z)
           use petscisdef
           PetscLayout a
-          PetscInt b
+          PetscMPIInt b
           PetscErrorCode  z
         End Subroutine
       End Interface
@@ -16,7 +16,8 @@
         Subroutine PetscLayoutFindOwnerIndex(a,b,c,z)
           use petscisdef
           PetscLayout a
-          PetscInt b,c
+          PetscMPIInt b
+          PetscInt c
           PetscErrorCode  z
         End Subroutine
       End Interface
