@@ -124,6 +124,7 @@ PetscErrorCode PetscObjectViewFromOptions(PetscObject obj,PetscObject bobj,const
   if (flg) {
     ierr = PetscViewerPushFormat(viewer,format);CHKERRQI(incall,ierr);
     ierr = PetscObjectView(obj,viewer);CHKERRQI(incall,ierr);
+    ierr = PetscViewerFlush(viewer);CHKERRQI(incall,ierr);
     ierr = PetscViewerPopFormat(viewer);CHKERRQI(incall,ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQI(incall,ierr);
   }
