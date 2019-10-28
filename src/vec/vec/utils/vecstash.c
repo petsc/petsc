@@ -442,9 +442,10 @@ PetscErrorCode VecStashSortCompress_Private(VecStash *stash)
 
 PetscErrorCode VecStashGetOwnerList_Private(VecStash *stash,PetscLayout map,PetscMPIInt *nowners,PetscMPIInt **owners)
 {
-  PetscErrorCode ierr;
-  PetscInt i,bs = stash->bs,r;
+  PetscInt       i,bs = stash->bs;
+  PetscMPIInt    r;
   PetscSegBuffer seg;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (bs != 1 && bs != map->bs) SETERRQ2(map->comm,PETSC_ERR_PLIB,"Stash block size %D does not match layout block size %D",bs,map->bs);

@@ -691,9 +691,10 @@ static PetscErrorCode VecScatterSetUp_SF(VecScatter vscat)
     ierr    = MPI_Comm_rank(ycomm,&yrank);CHKERRQ(ierr);
     for (i=disp=0; i<nrecv; i++) {
       for (j=0; j<rlens[i]; j++) {
-        k         = disp + j; /* k-th index pair */
-        ilocal[k] = ryindices[k] - yrange[yrank]; /* Convert y's global index to local index */
-        ierr      = PetscLayoutFindOwnerIndex(xlayout,rxindices[k],&iremote[k].rank,&iremote[k].index);CHKERRQ(ierr); /* Convert x's global index to (rank, index) */
+        k               = disp + j; /* k-th index pair */
+        ilocal[k]       = ryindices[k] - yrange[yrank]; /* Convert y's global index to local index */
+        ierr            = PetscLayoutFindOwnerIndex(xlayout,rxindices[k],&rank,&iremote[k].index);CHKERRQ(ierr); /* Convert x's global index to (rank, index) */
+        iremote[k].rank = rank;
       }
       disp += rlens[i];
     }
@@ -712,7 +713,10 @@ static PetscErrorCode VecScatterSetUp_SF(VecScatter vscat)
     ierr = PetscMalloc1(nleaves,&ilocal);CHKERRQ(ierr);
     ierr = PetscMalloc1(nleaves,&iremote);CHKERRQ(ierr);
     ierr = PetscArraycpy(ilocal,yindices,nleaves);CHKERRQ(ierr);
-    for (i=0; i<nleaves; i++) {ierr = PetscLayoutFindOwnerIndex(xlayout,xindices[i],&iremote[i].rank,&iremote[i].index);CHKERRQ(ierr);}
+    for (i=0; i<nleaves; i++) {
+      ierr = PetscLayoutFindOwnerIndex(xlayout,xindices[i],&rank,&iremote[i].index);CHKERRQ(ierr);
+      iremote[i].rank = rank;
+    }
   }
 
   /* MUST build SF on xx's comm, which is not necessarily identical to yy's comm.

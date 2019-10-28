@@ -198,7 +198,8 @@ PetscErrorCode ISCreateSubIS(IS is,IS comps,IS *subis)
 {
   PetscSF         sf;
   const PetscInt  *is_indices,*comps_indices;
-  PetscInt        *subis_indices,nroots,nleaves,*mine,i,owner,lidx;
+  PetscInt        *subis_indices,nroots,nleaves,*mine,i,lidx;
+  PetscMPIInt     owner;
   PetscSFNode     *remote;
   PetscErrorCode  ierr;
   MPI_Comm        comm;
@@ -225,7 +226,7 @@ PetscErrorCode ISCreateSubIS(IS is,IS comps,IS *subis)
      * */
     owner = -1;
     lidx =  -1;
-    ierr = PetscLayoutFindOwnerIndex(is->map,comps_indices[i],&owner, &lidx);CHKERRQ(ierr);
+    ierr = PetscLayoutFindOwnerIndex(is->map,comps_indices[i],&owner,&lidx);CHKERRQ(ierr);
     remote[i].rank = owner;
     remote[i].index = lidx;
   }

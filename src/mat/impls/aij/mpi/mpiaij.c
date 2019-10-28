@@ -972,8 +972,9 @@ PetscErrorCode MatZeroRowsColumns_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],
   Mat_MPIAIJ        *l = (Mat_MPIAIJ*)A->data;
   PetscErrorCode    ierr;
   PetscMPIInt       n = A->rmap->n;
-  PetscInt          i,j,r,m,p = 0,len = 0;
+  PetscInt          i,j,r,m,len = 0;
   PetscInt          *lrows,*owners = A->rmap->range;
+  PetscMPIInt       p = 0;
   PetscSFNode       *rrows;
   PetscSF           sf;
   const PetscScalar *xx;
@@ -1715,16 +1716,19 @@ PetscErrorCode MatPermute_MPIAIJ(Mat A,IS rowp,IS colp,Mat *B)
   ierr = MatGetRowIJ(aA,0,PETSC_FALSE,PETSC_FALSE,&anz,&ai,&aj,&done);CHKERRQ(ierr);
   ierr = MatGetRowIJ(aB,0,PETSC_FALSE,PETSC_FALSE,&bnz,&bi,&bj,&done);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
-    PetscInt row = rdest[i],rowner;
+    PetscInt    row = rdest[i];
+    PetscMPIInt rowner;
     ierr = PetscLayoutFindOwner(A->rmap,row,&rowner);CHKERRQ(ierr);
     for (j=ai[i]; j<ai[i+1]; j++) {
-      PetscInt cowner,col = cdest[aj[j]];
+      PetscInt    col = cdest[aj[j]];
+      PetscMPIInt cowner;
       ierr = PetscLayoutFindOwner(A->cmap,col,&cowner);CHKERRQ(ierr); /* Could build an index for the columns to eliminate this search */
       if (rowner == cowner) dnnz[i]++;
       else onnz[i]++;
     }
     for (j=bi[i]; j<bi[i+1]; j++) {
-      PetscInt cowner,col = gcdest[bj[j]];
+      PetscInt    col = gcdest[bj[j]];
+      PetscMPIInt cowner;
       ierr = PetscLayoutFindOwner(A->cmap,col,&cowner);CHKERRQ(ierr);
       if (rowner == cowner) dnnz[i]++;
       else onnz[i]++;
@@ -5308,7 +5312,8 @@ PetscErrorCode MatCreateSeqSubMatrixWithRows_Private(Mat P,IS rows,Mat *P_oth)
 {
   Mat_MPIAIJ               *p=(Mat_MPIAIJ*)P->data;
   Mat_SeqAIJ               *pd=(Mat_SeqAIJ*)(p->A)->data,*po=(Mat_SeqAIJ*)(p->B)->data,*p_oth;
-  PetscInt                 plocalsize,nrows,*ilocal,*oilocal,i,owner,lidx,*nrcols,*nlcols,ncol;
+  PetscInt                 plocalsize,nrows,*ilocal,*oilocal,i,lidx,*nrcols,*nlcols,ncol;
+  PetscMPIInt              owner;
   PetscSFNode              *iremote,*oiremote;
   const PetscInt           *lrowindices;
   PetscErrorCode           ierr;

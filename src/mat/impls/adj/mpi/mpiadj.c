@@ -10,10 +10,11 @@
  * */
 static PetscErrorCode MatCreateSubMatrix_MPIAdj_data(Mat adj,IS irows, IS icols, PetscInt **sadj_xadj,PetscInt **sadj_adjncy,PetscInt **sadj_values)
 {
-  PetscInt           nlrows_is,icols_n,i,j,nroots,nleaves,owner,rlocalindex,*ncols_send,*ncols_recv;
+  PetscInt           nlrows_is,icols_n,i,j,nroots,nleaves,rlocalindex,*ncols_send,*ncols_recv;
   PetscInt           nlrows_mat,*adjncy_recv,Ncols_recv,Ncols_send,*xadj_recv,*values_recv;
   PetscInt          *ncols_recv_offsets,loc,rnclos,*sadjncy,*sxadj,*svalues;
   const PetscInt    *irows_indices,*icols_indices,*xadj, *adjncy;
+  PetscMPIInt        owner;
   Mat_MPIAdj        *a = (Mat_MPIAdj*)adj->data;
   PetscLayout        rmap;
   MPI_Comm           comm;
