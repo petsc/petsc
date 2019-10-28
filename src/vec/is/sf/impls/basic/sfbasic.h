@@ -351,10 +351,10 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFPackDestroyOptimizations_Basic(PetscSF
   PetscSF_Basic  *bas = (PetscSF_Basic*)sf->data;
 
   PetscFunctionBegin;
-  ierr = PetscSFPackOptDestory(&sf->leafpackopt);CHKERRQ(ierr);
-  ierr = PetscSFPackOptDestory(&sf->selfleafpackopt);CHKERRQ(ierr);
-  ierr = PetscSFPackOptDestory(&bas->rootpackopt);CHKERRQ(ierr);
-  ierr = PetscSFPackOptDestory(&bas->selfrootpackopt);CHKERRQ(ierr);
+  ierr = PetscSFPackOptDestroy(&sf->leafpackopt);CHKERRQ(ierr);
+  ierr = PetscSFPackOptDestroy(&sf->selfleafpackopt);CHKERRQ(ierr);
+  ierr = PetscSFPackOptDestroy(&bas->rootpackopt);CHKERRQ(ierr);
+  ierr = PetscSFPackOptDestroy(&bas->selfrootpackopt);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_CUDA)
   sf->selfleafdups    = PETSC_TRUE;
   sf->remoteleafdups  = PETSC_TRUE;
