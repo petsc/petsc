@@ -23,4 +23,8 @@ if __name__ == '__main__':
     # on Mac OS X, MSVC on Windows), you must set -ccbin appropriately in CUDAFLAGS, as in the example for PGI below:
     # 'CUDAFLAGS=-ccbin pgc++',
   ]
+  import platform
+  if platform.node() == 'p1':
+    configure_options.append('--with-make-test-np=4')
+
   configure.petsc_configure(configure_options)
