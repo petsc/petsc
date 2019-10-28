@@ -445,6 +445,8 @@ PetscErrorCode VecTaggerComputeIS_FromBoxes(VecTagger tagger, Vec vec, IS *is)
   numTagged = 0;
   offset = 0;
   tagged = NULL;
+  if (n % bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"blocksize %D does not divide vector length %D", bs, n);
+  n /= bs;
   for (i = 0; i < 2; i++) {
     if (i) {
       ierr = PetscMalloc1(numTagged,&tagged);CHKERRQ(ierr);

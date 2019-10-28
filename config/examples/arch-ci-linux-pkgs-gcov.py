@@ -38,6 +38,8 @@ configure_options = [
   '--download-ml',
   '--download-sundials',
   '--download-p4est=1',
+  '--download-eigen',
+  '--download-pragmatic',
   ]
 
 if __name__ == '__main__':

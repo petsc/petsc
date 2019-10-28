@@ -5326,6 +5326,8 @@ static PetscErrorCode MatNullSpacePropagateAny_Private(Mat A, IS is, Mat B)
   const Vec      *nullvecs;
   Vec            v,v2,*nullvecs2;
   VecScatter     sct = NULL;
+  PetscContainer c;
+  PetscScalar    *ddata;
   PetscInt       k,nnsp_size,bsiz,bsiz2,n,N,bs;
   PetscBool      nnsp_has_cnst;
   PetscErrorCode ierr;
@@ -5363,42 +5365,28 @@ static PetscErrorCode MatNullSpacePropagateAny_Private(Mat A, IS is, Mat B)
   ierr = VecGetBlockSize(v2,&bs);CHKERRQ(ierr);
   ierr = VecGetSize(v2,&N);CHKERRQ(ierr);
   ierr = VecGetLocalSize(v2,&n);CHKERRQ(ierr);
-  ierr = MatCreateDense(PetscObjectComm((PetscObject)B),n,PETSC_DECIDE,N,bsiz,NULL,&dmat);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n*bsiz,&ddata);CHKERRQ(ierr);
   for (k=0;k<nnsp_size;k++) {
-    PetscScalar *arr;
-
-    ierr = MatDenseGetColumn(dmat,k,&arr);CHKERRQ(ierr);
-    ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)B),bs,n,N,arr,&nullvecs2[k]);CHKERRQ(ierr);
+    ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)B),bs,n,N,ddata + n*k,&nullvecs2[k]);CHKERRQ(ierr);
     ierr = VecScatterBegin(sct,nullvecs[k],nullvecs2[k],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(sct,nullvecs[k],nullvecs2[k],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = MatDenseRestoreColumn(dmat,&arr);CHKERRQ(ierr);
   }
   if (nnsp_has_cnst) {
-    PetscScalar *arr;
-
-    ierr = MatDenseGetColumn(dmat,nnsp_size,&arr);CHKERRQ(ierr);
-    ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)B),bs,n,N,arr,&nullvecs2[nnsp_size]);CHKERRQ(ierr);
+    ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)B),bs,n,N,ddata + n*nnsp_size,&nullvecs2[nnsp_size]);CHKERRQ(ierr);
     ierr = VecSet(nullvecs2[nnsp_size],1.0);CHKERRQ(ierr);
-    ierr = MatDenseRestoreColumn(dmat,&arr);CHKERRQ(ierr);
   }
   ierr = PCBDDCOrthonormalizeVecs(&bsiz2,nullvecs2);CHKERRQ(ierr);
   ierr = MatNullSpaceCreate(PetscObjectComm((PetscObject)B),PETSC_FALSE,bsiz2,nullvecs2,&NullSpace);CHKERRQ(ierr);
-  if (bsiz2 != bsiz) {
-    Mat      dmat2;
-    IS       r,c;
-    PetscInt rst,ren;
 
-    ierr = MatGetOwnershipRange(dmat,&rst,&ren);CHKERRQ(ierr);
-    ierr = ISCreateStride(PetscObjectComm((PetscObject)B),ren-rst,rst,1,&r);CHKERRQ(ierr);
-    ierr = ISCreateStride(PetscObjectComm((PetscObject)B),0,bsiz2,1,&c);CHKERRQ(ierr);
-    ierr = MatCreateSubMatrix(dmat,r,c,MAT_INITIAL_MATRIX,&dmat2);CHKERRQ(ierr);
-    ierr = MatDestroy(&dmat);CHKERRQ(ierr);
-    ierr = ISDestroy(&r);CHKERRQ(ierr);
-    ierr = ISDestroy(&c);CHKERRQ(ierr);
-    dmat = dmat2;
-  }
+  ierr = MatCreateDense(PetscObjectComm((PetscObject)B),n,PETSC_DECIDE,N,bsiz2,ddata,&dmat);CHKERRQ(ierr);
+  ierr = PetscContainerCreate(PetscObjectComm((PetscObject)B),&c);CHKERRQ(ierr);
+  ierr = PetscContainerSetPointer(c,ddata);CHKERRQ(ierr);
+  ierr = PetscContainerSetUserDestroy(c,PetscContainerUserDestroyDefault);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)dmat,"_PBDDC_Null_dmat_arr",(PetscObject)c);CHKERRQ(ierr);
+  ierr = PetscContainerDestroy(&c);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)NullSpace,"_PBDDC_Null_dmat",(PetscObject)dmat);CHKERRQ(ierr);
   ierr = MatDestroy(&dmat);CHKERRQ(ierr);
+
   for (k=0;k<bsiz;k++) {
     ierr = VecDestroy(&nullvecs2[k]);CHKERRQ(ierr);
   }
