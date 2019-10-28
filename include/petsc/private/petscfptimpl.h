@@ -110,7 +110,7 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscFPTFind(void* key,char const **data)
 {
   PetscInt hash,ii = 0;
 
-  *data = 0;
+  *data = NULL;
   if (!PetscFPTData) return(0);
   hash  = PetscHashPointer(key);
   while (ii++ < PetscFPTData->tablesize) {
