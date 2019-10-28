@@ -14,7 +14,6 @@ row 10: (2, 2012.)  (8, 2010.)  (10, 2011.)
 row 11: (3, 2015.)  (9, 2013.)  (11, 2014.) 
 IS Object: 3 MPI processes
   type: stride
-[0] Index set is permutation
 [0] Number of indices in (stride) set 2
 [0] 0 0
 [0] 1 1

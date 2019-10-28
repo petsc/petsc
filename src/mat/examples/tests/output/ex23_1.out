@@ -58,7 +58,6 @@ Test MatDiagonalSet
 Test MatShift
 IS Object: 1 MPI processes
   type: stride
-Index set is permutation
 Number of indices in (stride) set 1
 0 0
 Test MatZeroRows (diag nonzero)
@@ -67,7 +66,6 @@ Test MatMissingDiagonal
 [0] [0,2) Missing 0, row -1 (diag nonzero)
 IS Object: 1 MPI processes
   type: stride
-Index set is permutation
 Number of indices in (stride) set 1
 0 0
 Test MatZeroRows (diag zero)

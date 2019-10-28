@@ -10,20 +10,6 @@ typedef struct {
   PetscInt first,step;
 } IS_Stride;
 
-PetscErrorCode ISIdentity_Stride(IS is,PetscBool  *ident)
-{
-  IS_Stride *is_stride = (IS_Stride*)is->data;
-
-  PetscFunctionBegin;
-  is->isidentity = PETSC_FALSE;
-  *ident         = PETSC_FALSE;
-  if (is_stride->first != 0) PetscFunctionReturn(0);
-  if (is_stride->step  != 1) PetscFunctionReturn(0);
-  *ident         = PETSC_TRUE;
-  is->isidentity = PETSC_TRUE;
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode ISCopy_Stride(IS is,IS isy)
 {
   IS_Stride      *is_stride = (IS_Stride*)is->data,*isy_stride = (IS_Stride*)isy->data;
@@ -46,14 +32,20 @@ PetscErrorCode ISDuplicate_Stride(IS is,IS *newIS)
 
 PetscErrorCode ISInvertPermutation_Stride(IS is,PetscInt nlocal,IS *perm)
 {
+  PetscBool      isident;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (is->isidentity) {
-    ierr = ISCreateStride(PETSC_COMM_SELF,is->map->n,0,1,perm);CHKERRQ(ierr);
+  ierr = ISGetInfo(is,IS_IDENTITY,IS_GLOBAL,PETSC_TRUE,&isident);CHKERRQ(ierr);
+  if (isident) {
+    PetscInt rStart, rEnd;
+
+    ierr = PetscLayoutGetRange(is->map, &rStart, &rEnd);CHKERRQ(ierr);
+    ierr = ISCreateStride(PETSC_COMM_SELF,PetscMax(rEnd - rStart, 0),rStart,1,perm);CHKERRQ(ierr);
   } else {
     IS             tmp;
     const PetscInt *indices,n = is->map->n;
+
     ierr = ISGetIndices(is,&indices);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PetscObjectComm((PetscObject)is),n,indices,PETSC_COPY_VALUES,&tmp);CHKERRQ(ierr);
     ierr = ISSetPermutation(tmp);CHKERRQ(ierr);
@@ -185,12 +177,14 @@ PetscErrorCode ISView_Stride(IS is,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    PetscBool matl;
+    PetscBool matl, isperm;
 
     ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)is),&rank);CHKERRQ(ierr);
     ierr = MPI_Comm_size(PetscObjectComm((PetscObject)is),&size);CHKERRQ(ierr);
     ierr = PetscViewerGetFormat(viewer,&fmt);CHKERRQ(ierr);
     matl = (PetscBool)(fmt == PETSC_VIEWER_ASCII_MATLAB);
+    ierr = ISGetInfo(is,IS_PERMUTATION,IS_GLOBAL,PETSC_FALSE,&isperm);CHKERRQ(ierr);
+    if (isperm && !matl) {ierr = PetscViewerASCIIPrintf(viewer,"Index set is permutation\n");CHKERRQ(ierr);}
     if (size == 1) {
       if (matl) {
         const char* name;
@@ -198,9 +192,6 @@ PetscErrorCode ISView_Stride(IS is,PetscViewer viewer)
         ierr = PetscObjectGetName((PetscObject)is,&name);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(viewer,"%s = [%D : %D : %D];\n",name,sub->first+1,sub->step,sub->first + sub->step*(n-1)+1);CHKERRQ(ierr);
       } else {
-        if (is->isperm) {
-          ierr = PetscViewerASCIIPrintf(viewer,"Index set is permutation\n");CHKERRQ(ierr);
-        }
         ierr = PetscViewerASCIIPrintf(viewer,"Number of indices in (stride) set %D\n",n);CHKERRQ(ierr);
         for (i=0; i<n; i++) {
           ierr = PetscViewerASCIIPrintf(viewer,"%D %D\n",i,sub->first + i*sub->step);CHKERRQ(ierr);
@@ -215,9 +206,6 @@ PetscErrorCode ISView_Stride(IS is,PetscViewer viewer)
         ierr = PetscObjectGetName((PetscObject)is,&name);CHKERRQ(ierr);
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%s_%d = [%D : %D : %D];\n",name,rank,sub->first+1,sub->step,sub->first + sub->step*(n-1)+1);CHKERRQ(ierr);
       } else {
-        if (is->isperm) {
-          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Index set is permutation\n",rank);CHKERRQ(ierr);
-        }
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number of indices in (stride) set %D\n",rank,n);CHKERRQ(ierr);
         for (i=0; i<n; i++) {
           ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %D %D\n",rank,i,sub->first + i*sub->step);CHKERRQ(ierr);
@@ -247,6 +235,36 @@ PetscErrorCode ISSorted_Stride(IS is,PetscBool * flg)
 
   PetscFunctionBegin;
   if (sub->step >= 0) *flg = PETSC_TRUE;
+  else *flg = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode ISUniqueLocal_Stride(IS is, PetscBool *flg)
+{
+  IS_Stride *sub = (IS_Stride*)is->data;
+
+  PetscFunctionBegin;
+  if (!(is->map->n) || sub->step != 0) *flg = PETSC_TRUE;
+  else *flg = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode ISPermutationLocal_Stride(IS is, PetscBool *flg)
+{
+  IS_Stride *sub = (IS_Stride*)is->data;
+
+  PetscFunctionBegin;
+  if (!(is->map->n) || (PetscAbsInt(sub->step) == 1 && is->min == 0)) *flg = PETSC_TRUE;
+  else *flg = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode ISIntervalLocal_Stride(IS is, PetscBool *flg)
+{
+  IS_Stride *sub = (IS_Stride*)is->data;
+
+  PetscFunctionBegin;
+  if (!(is->map->n) || sub->step == 1) *flg = PETSC_TRUE;
   else *flg = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -298,13 +316,20 @@ static struct _ISOps myops = { ISGetIndices_Stride,
                                ISDestroy_Stride,
                                ISView_Stride,
                                ISLoad_Default,
-                               ISIdentity_Stride,
                                ISCopy_Stride,
                                ISToGeneral_Stride,
                                ISOnComm_Stride,
                                ISSetBlockSize_Stride,
                                ISContiguousLocal_Stride,
-                               ISLocate_Stride};
+                               ISLocate_Stride,
+                               ISSorted_Stride,
+                               NULL,
+                               ISUniqueLocal_Stride,
+                               NULL,
+                               ISPermutationLocal_Stride,
+                               NULL,
+                               ISIntervalLocal_Stride,
+                               NULL};
 
 
 /*@
@@ -327,7 +352,8 @@ PetscErrorCode  ISStrideSetStride(IS is,PetscInt n,PetscInt first,PetscInt step)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (n < 0) SETERRQ1(PetscObjectComm((PetscObject)is), PETSC_ERR_ARG_OUTOFRANGE, "Negative length %d not valid", n);
+  if (n < 0) SETERRQ1(PetscObjectComm((PetscObject)is), PETSC_ERR_ARG_OUTOFRANGE, "Negative length %D not valid", n);
+  ierr = ISClearInfoCache(is,PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscUseMethod(is,"ISStrideSetStride_C",(IS,PetscInt,PetscInt,PetscInt),(is,n,first,step));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -352,10 +378,6 @@ PetscErrorCode  ISStrideSetStride_Stride(IS is,PetscInt n,PetscInt first,PetscIn
   is->min  = n > 0 ? min : PETSC_MAX_INT;
   is->max  = n > 0 ? max : PETSC_MIN_INT;
   is->data = (void*)sub;
-
-  if ((!first && step == 1) || (first == max && step == -1 && !min)) is->isperm = PETSC_TRUE;
-  else is->isperm = PETSC_FALSE;
-  is->isidentity = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 

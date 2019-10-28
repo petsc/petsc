@@ -785,6 +785,6 @@ PetscErrorCode ISSortPermutation(IS f,PetscBool always,IS *h)
   ierr = PetscSortIntWithPermutation(fsize,findices,hindices);CHKERRQ(ierr);
   ierr = ISRestoreIndices(f,&findices);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF,fsize,hindices,PETSC_OWN_POINTER,h);CHKERRQ(ierr);
-  (*h)->isperm = PETSC_TRUE;
+  ierr = ISSetInfo(*h,IS_PERMUTATION,IS_LOCAL,PETSC_FALSE,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -25,25 +25,34 @@ struct _ISOps {
   PetscErrorCode (*destroy)(IS);
   PetscErrorCode (*view)(IS,PetscViewer);
   PetscErrorCode (*load)(IS,PetscViewer);
-  PetscErrorCode (*identity)(IS,PetscBool*);
   PetscErrorCode (*copy)(IS,IS);
   PetscErrorCode (*togeneral)(IS);
   PetscErrorCode (*oncomm)(IS,MPI_Comm,PetscCopyMode,IS*);
   PetscErrorCode (*setblocksize)(IS,PetscInt);
   PetscErrorCode (*contiguous)(IS,PetscInt,PetscInt,PetscInt*,PetscBool*);
   PetscErrorCode (*locate)(IS,PetscInt,PetscInt *);
+  PetscErrorCode (*sortedlocal)(IS,PetscBool*);
+  PetscErrorCode (*sortedglobal)(IS,PetscBool*);
+  PetscErrorCode (*uniquelocal)(IS,PetscBool*);
+  PetscErrorCode (*uniqueglobal)(IS,PetscBool*);
+  PetscErrorCode (*permlocal)(IS,PetscBool*);
+  PetscErrorCode (*permglobal)(IS,PetscBool*);
+  PetscErrorCode (*intervallocal)(IS,PetscBool*);
+  PetscErrorCode (*intervalglobal)(IS,PetscBool*);
 };
+
+typedef enum {IS_INFO_UNKNOWN=0, IS_INFO_FALSE=1, IS_INFO_TRUE=2} ISInfoBool;
 
 struct _p_IS {
   PETSCHEADER(struct _ISOps);
   PetscLayout  map;
-  PetscBool    isperm;          /* if is a permutation */
   PetscInt     max,min;         /* range of possible values */
   void         *data;
-  PetscBool    isidentity;
   PetscInt     *total, *nonlocal;   /* local representation of ALL indices across the comm as well as the nonlocal part. */
   PetscInt     local_offset;        /* offset to the local part within the total index set */
   IS           complement;          /* IS wrapping nonlocal indices. */
+  PetscBool    info_permanent[2][IS_INFO_MAX]; /* whether local / global properties are permanent */
+  ISInfoBool   info[2][IS_INFO_MAX];         /* local / global properties */
 };
 
 extern PetscErrorCode ISLoad_Default(IS, PetscViewer);
