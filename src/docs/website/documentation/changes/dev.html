@@ -102,6 +102,7 @@
         <h2><a name="CHANGES">CHANGES in the PETSc Development Version</a></h2>
       </div>
 
+      <!-- Please use Imperative with first letter cap, e.g. Add, Improve, Change etc. WITHOUT dot at the end -->
       <h4>General:</h4>
       <h4>Configure/Build:</h4>
       <h4>IS:</h4>
@@ -112,8 +113,8 @@
       <h4>PetscSection:</h4>
       <h4>Mat:</h4>
         <ul>
-          <li>Improved the performance of MatConvert_AIJ_BAIJ by preallocating the Mat before dispatching to MatConvert_Basic</li>
-          <li>Changed the behavior of MatConvert_AIJ_SBAIJ for block size greater than one, the block structure is now preserved (even for the diagonal entries)</li>
+          <li>Improve the performance of MatConvert_AIJ_BAIJ by preallocating the Mat before dispatching to MatConvert_Basic</li>
+          <li>Change the behavior of MatConvert_AIJ_SBAIJ for block size greater than one, the block structure is now preserved (even for the diagonal entries)</li>
         </ul>
       <h4>PC:</h4>
       <h4>KSP:</h4>
@@ -122,15 +123,15 @@
       <h4>TS:</h4>
       <h4>DM/DA:</h4>
         <ul>
-          <li>DMCopyLabels(): added two additional input flags</li>
+          <li>DMCopyLabels(): Add two additional input flags</li>
         </ul>
       <h4>DMPlex:</h4>
         <ul>
-          <li>Added DMPlexOrientCell() which orients a single cell</li>
-          <li>Added DMPlexCompareOrientations() which compares the cone point order of a single cell with the given reference cone</li>
-          <li>Added DMPlexIsInterpolated() which finds out whether the plex is interpolated</li>
-          <li>Added DMPlexIsInterpolatedCollective() which finds out whether the plex is interpolated on all ranks</li>
-          <li>Added DMPlexIsDistributed() which finds out whether the plex is distributed</li>
+          <li>Add DMPlexOrientCell() which orients a single cell</li>
+          <li>Add DMPlexCompareOrientations() which compares the cone point order of a single cell with the given reference cone</li>
+          <li>Add DMPlexIsInterpolated() which finds out whether the plex is interpolated</li>
+          <li>Add DMPlexIsInterpolatedCollective() which finds out whether the plex is interpolated on all ranks</li>
+          <li>Add DMPlexIsDistributed() which finds out whether the plex is distributed</li>
         </ul>
       <h4>PetscViewer:</h4>
       <h4>SYS:</h4>
