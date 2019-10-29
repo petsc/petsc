@@ -254,7 +254,7 @@ linux-cuda-double:
     - .stage-2
     - .linux_test
   tags:
-    - name:frog
+    - gpu:nvidia, os:linux
   variables:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -cuda_initialize 0
     TEST_ARCH: arch-ci-linux-cuda-double
@@ -469,7 +469,7 @@ linux-c-exodus-dbg:
     - .stage-3
     - .linux_test
   tags:
-    - name:frog
+    - gpu:nvidia, os:linux
   variables:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -cuda_initialize 0
     TEST_ARCH: arch-ci-linux-c-exodus-dbg
@@ -479,7 +479,7 @@ linux-cuda-single:
     - .stage-3
     - .linux_test
   tags:
-    - name:frog
+    - gpu:nvidia, os:linux
   variables:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -cuda_initialize 0
     TEST_ARCH: arch-ci-linux-cuda-single
@@ -489,7 +489,7 @@ linux-viennacl:
     - .stage-3
     - .linux_test
   tags:
-    - name:frog
+    - gpu:nvidia, os:linux, name:frog
   variables:
     TEST_ARCH: arch-ci-linux-viennacl
 
