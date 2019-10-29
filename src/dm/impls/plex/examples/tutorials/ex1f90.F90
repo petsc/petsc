@@ -108,11 +108,13 @@
 !
 !  test:
 !    suffix: 0
+!    TODO: face field not included in sol.vtk
 !    requires: triangle
 !
 !  test:
 !    suffix: 1
 !    requires: ctetgen
+!    TODO: face field not included in sol.vtk
 !    args: -dim 3
 !
 !TEST*/
