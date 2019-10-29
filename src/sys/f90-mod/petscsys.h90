@@ -28,6 +28,11 @@
           character(*) :: str
           PetscErrorCode :: ierr
         end Subroutine PetscObjectQuery
+      subroutine PetscBarrier(a,z)
+      use petscsysdef
+       type(*) :: a
+       PetscErrorCode :: z
+       end subroutine
       end Interface
 #endif
 
