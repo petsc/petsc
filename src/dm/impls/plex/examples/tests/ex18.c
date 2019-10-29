@@ -219,6 +219,7 @@ typedef struct _n_PortableBoundary * PortableBoundary;
 static PetscErrorCode DMPlexCheckPointSFHeavy(DM, PortableBoundary);
 static PetscErrorCode DMPlexSetOrientInterface_Private(DM,PetscBool);
 static PetscErrorCode DMPlexGetExpandedBoundary_Private(DM, PortableBoundary *);
+static PetscErrorCode DMPlexExpandedConesToFaces_Private(DM, IS, PetscSection, IS *);
 
 static PetscErrorCode PortableBoundaryDestroy(PortableBoundary *bnd)
 {
@@ -850,7 +851,7 @@ static PetscErrorCode TestExpandPoints(DM dm, AppCtx *user)
   PetscInt          d,depth;
   PetscMPIInt       rank;
   PetscErrorCode    ierr;
-  PetscViewer       sviewer;
+  PetscViewer       viewer=PETSC_VIEWER_STDOUT_WORLD, sviewer;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
@@ -860,16 +861,25 @@ static PetscErrorCode TestExpandPoints(DM dm, AppCtx *user)
     ierr = ISCreateGeneral(PETSC_COMM_SELF, user->nPointsToExpand, user->pointsToExpand, PETSC_USE_POINTER, &is);CHKERRQ(ierr);
   }
   ierr = DMPlexGetConeRecursive(dm, is, &depth, &iss, &sects);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPushSynchronized(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD, "[%d] ==========================\n",rank);CHKERRQ(ierr);
+  ierr = PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(sviewer, "[%d] ==========================\n",rank);CHKERRQ(ierr);
   for (d=depth-1; d>=0; d--) {
-    ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD, "depth %D ---------------\n",d);CHKERRQ(ierr);
-    ierr = PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
+    IS          checkIS;
+    PetscBool   flg;
+
+    ierr = PetscViewerASCIIPrintf(sviewer, "depth %D ---------------\n",d);CHKERRQ(ierr);
     ierr = PetscSectionView(sects[d], sviewer);CHKERRQ(ierr);
     ierr = ISView(iss[d], sviewer);CHKERRQ(ierr);
-    ierr = PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
+    /* check reverse operation */
+    if (d < depth-1) {
+      ierr = DMPlexExpandedConesToFaces_Private(dm, iss[d], sects[d], &checkIS);CHKERRQ(ierr);
+      ierr = ISEqualUnsorted(checkIS, iss[d+1], &flg);CHKERRQ(ierr);
+      if (!flg) SETERRQ(PetscObjectComm((PetscObject) checkIS), PETSC_ERR_PLIB, "DMPlexExpandedConesToFaces_Private produced wrong IS");
+      ierr = ISDestroy(&checkIS);CHKERRQ(ierr);
+    }
   }
-  ierr = PetscViewerASCIIPopSynchronized(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
+  ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   ierr = DMPlexRestoreConeRecursive(dm, is, &depth, &iss, &sects);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
