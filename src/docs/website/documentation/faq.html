@@ -1901,7 +1901,7 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh
       <ul>
         <li>Recommend building PETSc with <code>--download-mpich --with-debugging</code> [debugging is enabled by default]</li>
         <li>Compile application code with this build of PETSc</li>
-        <li>run with valgrind using: <code>${PETSC_DIR}/lib/petsc/bin/petscmpiexec -valgrind -n NPROC PETSCPROGRAMNAME -malloc off PROGRAMOPTIONS</code></li>
+        <li>run with valgrind using: <code>${PETSC_DIR}/lib/petsc/bin/petscmpiexec -valgrind -n NPROC PETSCPROGRAMNAME  PROGRAMOPTIONS</code></li>
         <li>or invoke valgrind directly with: <code>mpiexec -n NPROC valgrind --tool=memcheck -q --num-callers=20 --log-file=valgrind.log.%p PETSCPROGRAMNAME -malloc off PROGRAMOPTIONS</code></li>
       </ul>
 
