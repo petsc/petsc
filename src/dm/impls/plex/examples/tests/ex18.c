@@ -1826,6 +1826,14 @@ int main(int argc, char **argv)
       suffix: 9_seq_hdf5_simple_int
       nsize: {{2 4 5}}
       args: -interpolate parallel
+    test: # seq load, simple partitioner, par interpolation
+      # This is like 9_seq_hdf5_simple_int but testing error output of DMPlexCheckPointSFHeavy().
+      # Once 9_seq_hdf5_simple_int gets fixed, this one gets broken.
+      # We can then provide an intentionally broken mesh instead.
+      suffix: 9_seq_hdf5_simple_int_err
+      nsize: 4
+      args: -interpolate parallel
+      filter: sed -e "/PETSC ERROR/,$$d"
     test: # seq load, metis partitioner, par interpolation
       nsize: {{2 4 5}}
       TODO: DMPlexCheckPointSFHeavy() fails for nsize 5
