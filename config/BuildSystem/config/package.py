@@ -2,6 +2,7 @@ from __future__ import generators
 import config.base
 
 import os
+import re
 
 try:
   from hashlib import md5 as new_md5
@@ -997,7 +998,7 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
     else:
       self.pushLanguage(self.defaultLanguage)
     try:
-      output = self.outputPreprocess('#include "'+self.versioninclude+'"\nversion='+self.versionname+'\n')
+      output = self.outputPreprocess('#include "'+self.versioninclude+'"\n;petscpkgver('+self.versionname+');\n')
     except:
       self.log.write('For '+self.package+' unable to run preprocessor to obtain version information, skipping version check\n')
       self.popLanguage()
@@ -1005,14 +1006,16 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
       return
     self.popLanguage()
     self.compilers.CPPFLAGS = oldFlags
-    loutput = output.split('\n')
+    #strip #lines
+    output = re.sub('#.*\n','\n',output)
+    #strip newlines,spaces,quotes
+    output = re.sub('[\n "]*','',output)
+    #now split over ';'
+    loutput = output.split(';')
     version = ''
     for i in loutput:
-      if i.startswith('version='):
-        version = i[8:]
-        break
-      if i.startswith('version ='):
-        version = i[9:]
+      if i.find('petscpkgver') >=0:
+        version = i.split('(')[1].split(')')[0]
         break
     if not version:
       self.log.write('For '+self.package+' unable to find version information: output below, skipping version check\n')
@@ -1020,7 +1023,6 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
       if self.requiresversion:
         raise RuntimeError('Configure must be able to determined the version information for '+self.name+'. It was unable to, please send configure.log to petsc-maint@mcs.anl.gov')
       return
-    version = version.replace(' ','').replace('\"','')
     try:
       self.foundversion = self.versionToStandardForm(version)
       self.version_tuple = self.versionToTuple(self.foundversion)
