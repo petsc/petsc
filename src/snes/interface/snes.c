@@ -4371,7 +4371,7 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
         ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
         ierr = PetscCalloc1(Nf, &alpha);CHKERRQ(ierr);
         ierr = PetscConvEstCreate(PetscObjectComm((PetscObject) snes), &conv);CHKERRQ(ierr);
-        ierr = PetscConvEstSetSolver(conv, snes);CHKERRQ(ierr);
+        ierr = PetscConvEstSetSolver(conv, (PetscObject) snes);CHKERRQ(ierr);
         ierr = PetscConvEstSetFromOptions(conv);CHKERRQ(ierr);
         ierr = PetscConvEstSetUp(conv);CHKERRQ(ierr);
         ierr = PetscConvEstGetConvRate(conv, alpha);CHKERRQ(ierr);

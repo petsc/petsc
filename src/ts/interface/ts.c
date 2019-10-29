@@ -3,6 +3,7 @@
 #include <petscdmda.h>
 #include <petscviewer.h>
 #include <petscdraw.h>
+#include <petscconvest.h>
 
 #define SkipSmallValue(a,b,tol) if(PetscAbsScalar(a)< tol || PetscAbsScalar(b)< tol) continue;
 
@@ -3677,6 +3678,187 @@ PetscErrorCode TSEvaluateStep(TS ts,PetscInt order,Vec U,PetscBool *done)
   PetscFunctionReturn(0);
 }
 
+/*@C
+  TSGetComputeInitialCondition - Get the function used to automatically compute an initial condition for the timestepping.
+
+  Not collective
+
+  Input Argument:
+. ts        - time stepping context
+
+  Output Argument:
+. initConditions - The function which computes an initial condition
+
+   Level: advanced
+
+   Notes:
+   The calling sequence for the function is
+$ initCondition(TS ts, Vec u)
+$ ts - The timestepping context
+$ u  - The input vector in which the initial condition is stored
+
+.seealso: TSSetComputeInitialCondition(), TSComputeInitialCondition()
+@*/
+PetscErrorCode TSGetComputeInitialCondition(TS ts, PetscErrorCode (**initCondition)(TS, Vec))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscValidPointer(initCondition, 2);
+  *initCondition = ts->ops->initcondition;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  TSSetComputeInitialCondition - Set the function used to automatically compute an initial condition for the timestepping.
+
+  Logically collective on ts
+
+  Input Arguments:
++ ts        - time stepping context
+- initCondition - The function which computes an initial condition
+
+  Level: advanced
+
+  Notes:
+  The calling sequence for the function is
+$ initCondition(TS ts, Vec u)
+$ ts - The timestepping context
+$ u  - The input vector in which the initial condition is stored
+
+.seealso: TSGetComputeInitialCondition(), TSComputeInitialCondition()
+@*/
+PetscErrorCode TSSetComputeInitialCondition(TS ts, PetscErrorCode (*initCondition)(TS, Vec))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscValidFunction(initCondition, 2);
+  ts->ops->initcondition = initCondition;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  TSComputeInitialCondition - Compute an initial condition for the timestepping using the function previously set.
+
+  Collective on ts
+
+  Input Arguments:
++ ts - time stepping context
+- u  - The Vec to store the condition in which will be used in TSSolve()
+
+  Level: advanced
+
+  Notes:
+  The calling sequence for the function is
+$ initCondition(TS ts, Vec u)
+$ ts - The timestepping context
+$ u  - The input vector in which the initial condition is stored
+
+.seealso: TSGetComputeInitialCondition(), TSSetComputeInitialCondition(), TSSolve()
+@*/
+PetscErrorCode TSComputeInitialCondition(TS ts, Vec u)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscValidHeaderSpecific(u, VEC_CLASSID, 2);
+  if (ts->ops->initcondition) {ierr = (*ts->ops->initcondition)(ts, u);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  TSGetComputeExactError - Get the function used to automatically compute the exact error for the timestepping.
+
+  Not collective
+
+  Input Argument:
+. ts         - time stepping context
+
+  Output Argument:
+. exactError - The function which computes the solution error
+
+  Level: advanced
+
+  Notes:
+  The calling sequence for the function is
+$ exactError(TS ts, Vec u)
+$ ts - The timestepping context
+$ u  - The approximate solution vector
+$ e  - The input vector in which the error is stored
+
+.seealso: TSGetComputeExactError(), TSComputeExactError()
+@*/
+PetscErrorCode TSGetComputeExactError(TS ts, PetscErrorCode (**exactError)(TS, Vec, Vec))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscValidPointer(exactError, 2);
+  *exactError = ts->ops->exacterror;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  TSSetComputeExactError - Set the function used to automatically compute the exact error for the timestepping.
+
+  Logically collective on ts
+
+  Input Arguments:
++ ts         - time stepping context
+- exactError - The function which computes the solution error
+
+  Level: advanced
+
+  Notes:
+  The calling sequence for the function is
+$ exactError(TS ts, Vec u)
+$ ts - The timestepping context
+$ u  - The approximate solution vector
+$ e  - The input vector in which the error is stored
+
+.seealso: TSGetComputeExactError(), TSComputeExactError()
+@*/
+PetscErrorCode TSSetComputeExactError(TS ts, PetscErrorCode (*exactError)(TS, Vec, Vec))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscValidFunction(exactError, 2);
+  ts->ops->exacterror = exactError;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  TSComputeExactError - Compute the solution error for the timestepping using the function previously set.
+
+  Collective on ts
+
+  Input Arguments:
++ ts - time stepping context
+. u  - The approximate solution
+- e  - The Vec used to store the error
+
+  Level: advanced
+
+  Notes:
+  The calling sequence for the function is
+$ exactError(TS ts, Vec u)
+$ ts - The timestepping context
+$ u  - The approximate solution vector
+$ e  - The input vector in which the error is stored
+
+.seealso: TSGetComputeInitialCondition(), TSSetComputeInitialCondition(), TSSolve()
+@*/
+PetscErrorCode TSComputeExactError(TS ts, Vec u, Vec e)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscValidHeaderSpecific(u, VEC_CLASSID, 2);
+  PetscValidHeaderSpecific(e, VEC_CLASSID, 3);
+  if (ts->ops->exacterror) {ierr = (*ts->ops->exacterror)(ts, u, e);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
 /*@
    TSSolve - Steps the requested number of timesteps.
 
@@ -3742,6 +3924,42 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   }
   if (ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP && ts->ptime < ts->max_time && ts->ptime + ts->time_step > ts->max_time) ts->time_step = ts->max_time - ts->ptime;
   ts->reason = TS_CONVERGED_ITERATING;
+
+  {
+    PetscViewer       viewer;
+    PetscViewerFormat format;
+    PetscBool         flg;
+    static PetscBool  incall = PETSC_FALSE;
+
+    if (!incall) {
+      /* Estimate the convergence rate of the time discretization */
+      ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject) ts),((PetscObject)ts)->options, ((PetscObject) ts)->prefix, "-ts_convergence_estimate", &viewer, &format, &flg);CHKERRQ(ierr);
+      if (flg) {
+        PetscConvEst conv;
+        DM           dm;
+        PetscReal   *alpha; /* Convergence rate of the solution error for each field in the L_2 norm */
+        PetscInt     Nf;
+
+        incall = PETSC_TRUE;
+        ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
+        ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
+        ierr = PetscCalloc1(PetscMax(Nf, 1), &alpha);CHKERRQ(ierr);
+        ierr = PetscConvEstCreate(PetscObjectComm((PetscObject) ts), &conv);CHKERRQ(ierr);
+        ierr = PetscConvEstUseTS(conv);CHKERRQ(ierr);
+        ierr = PetscConvEstSetSolver(conv, (PetscObject) ts);CHKERRQ(ierr);
+        ierr = PetscConvEstSetFromOptions(conv);CHKERRQ(ierr);
+        ierr = PetscConvEstSetUp(conv);CHKERRQ(ierr);
+        ierr = PetscConvEstGetConvRate(conv, alpha);CHKERRQ(ierr);
+        ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
+        ierr = PetscConvEstRateView(conv, alpha, viewer);CHKERRQ(ierr);
+        ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+        ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+        ierr = PetscConvEstDestroy(&conv);CHKERRQ(ierr);
+        ierr = PetscFree(alpha);CHKERRQ(ierr);
+        incall = PETSC_FALSE;
+      }
+    }
+  }
 
   ierr = TSViewFromOptions(ts,NULL,"-ts_view_pre");CHKERRQ(ierr);
 

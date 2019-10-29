@@ -8,8 +8,6 @@ Labels:
   Face Sets: 1 strata with value/size (1 (4))
   marker: 1 strata with value/size (1 (8))
   depth: 3 strata with value/size (0 (4), 1 (5), 2 (2))
-  DMSWARM_PIC: Using method CellDM->LocatePoints
-  DMSWARM_PIC: Using method CellDM->GetNeigbors
 DM Object: Particles 1 MPI processes
   type: swarm
 DMSwarmDataBucketView: 

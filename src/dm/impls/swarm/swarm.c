@@ -34,9 +34,9 @@ const char DMSwarmPICField_cellid[] = "DMSwarm_cellid";
    Level: beginner
 
    Notes:
- 
+
    The field with name fieldname must be defined as having a data type of PetscScalar.
- 
+
    This function must be called prior to calling DMCreateLocalVector(), DMCreateGlobalVector().
    Mutiple calls to DMSwarmVectorDefineField() are permitted.
 
@@ -227,7 +227,7 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
 
   ierr = PetscCalloc2(locRows, &dnz, locRows, &onz);CHKERRQ(ierr);
   ierr = PetscHSetIJCreate(&ht);CHKERRQ(ierr);
-  
+
   ierr = PetscSynchronizedFlush(comm, NULL);CHKERRQ(ierr);
   /* count non-zeros */
   ierr = DMSwarmSortGetAccess(dmc);CHKERRQ(ierr);
@@ -941,23 +941,23 @@ PETSC_EXTERN PetscErrorCode DMSwarmRemovePointAtIndex(DM dm,PetscInt idx)
 
 /*@C
    DMSwarmCopyPoint - Copy point pj to point pi in the DMSwarm
- 
+
    Not collective
- 
+
    Input parameters:
 +  dm - a DMSwarm
 .  pi - the index of the point to copy
 -  pj - the point index where the copy should be located
- 
+
  Level: beginner
- 
+
 .seealso: DMSwarmRemovePoint()
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmCopyPoint(DM dm,PetscInt pi,PetscInt pj)
 {
   DM_Swarm       *swarm = (DM_Swarm*)dm->data;
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   if (!swarm->issetup) {ierr = DMSetUp(dm);CHKERRQ(ierr);}
   ierr = DMSwarmDataBucketCopyPoint(swarm->db,pi,swarm->db,pj);CHKERRQ(ierr);
@@ -1163,16 +1163,16 @@ PetscErrorCode DMSetup_Swarm(DM dm)
 
     if (swarm->dmcell->ops->locatepointssubdomain) {
       /* check methods exists for exact ownership identificiation */
-      ierr = PetscPrintf(PetscObjectComm((PetscObject)dm),"  DMSWARM_PIC: Using method CellDM->ops->LocatePointsSubdomain\n");CHKERRQ(ierr);
+      ierr = PetscInfo(dm, "DMSWARM_PIC: Using method CellDM->ops->LocatePointsSubdomain\n");CHKERRQ(ierr);
       swarm->migrate_type = DMSWARM_MIGRATE_DMCELLEXACT;
     } else {
       /* check methods exist for point location AND rank neighbor identification */
       if (swarm->dmcell->ops->locatepoints) {
-        ierr = PetscPrintf(PetscObjectComm((PetscObject)dm),"  DMSWARM_PIC: Using method CellDM->LocatePoints\n");CHKERRQ(ierr);
+        ierr = PetscInfo(dm, "DMSWARM_PIC: Using method CellDM->LocatePoints\n");CHKERRQ(ierr);
       } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"DMSWARM_PIC requires the method CellDM->ops->locatepoints be defined");
 
       if (swarm->dmcell->ops->getneighbors) {
-        ierr = PetscPrintf(PetscObjectComm((PetscObject)dm),"  DMSWARM_PIC: Using method CellDM->GetNeigbors\n");CHKERRQ(ierr);
+        ierr = PetscInfo(dm, "DMSWARM_PIC: Using method CellDM->GetNeigbors\n");CHKERRQ(ierr);
       } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"DMSWARM_PIC requires the method CellDM->ops->getneighbors be defined");
 
       swarm->migrate_type = DMSWARM_MIGRATE_DMCELLNSCATTER;
@@ -1318,9 +1318,9 @@ $    DMSwarmFinalizeFieldRegister(dm)
  If the local size of the DMSwarm does not match the local size of the global vector
  when DMSwarmDestroyGlobalVectorFromField() is called, an error is thrown.
 
- Additional high-level support is provided for Particle-In-Cell methods. 
+ Additional high-level support is provided for Particle-In-Cell methods.
  Please refer to the man page for DMSwarmSetType().
- 
+
  Level: beginner
 
 .seealso: DMType, DMCreate(), DMSetType()

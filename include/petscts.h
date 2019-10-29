@@ -5,6 +5,7 @@
 #if !defined(PETSCTS_H)
 #define PETSCTS_H
 #include <petscsnes.h>
+#include <petscconvest.h>
 
 /*S
      TS - Abstract PETSc object that manages all time-steppers (ODE integrators)
@@ -1004,4 +1005,12 @@ PETSC_EXTERN PetscErrorCode SNESTSFormJacobian(SNES,Vec,Mat,Mat,void*);
 
 PETSC_EXTERN PetscErrorCode TSRHSJacobianTest(TS,PetscBool*);
 PETSC_EXTERN PetscErrorCode TSRHSJacobianTestTranspose(TS,PetscBool*);
+
+PETSC_EXTERN PetscErrorCode TSGetComputeInitialCondition(TS, PetscErrorCode (**)(TS, Vec));
+PETSC_EXTERN PetscErrorCode TSSetComputeInitialCondition(TS, PetscErrorCode (*)(TS, Vec));
+PETSC_EXTERN PetscErrorCode TSComputeInitialCondition(TS, Vec);
+PETSC_EXTERN PetscErrorCode TSGetComputeExactError(TS, PetscErrorCode (**)(TS, Vec, Vec));
+PETSC_EXTERN PetscErrorCode TSSetComputeExactError(TS, PetscErrorCode (*)(TS, Vec, Vec));
+PETSC_EXTERN PetscErrorCode TSComputeExactError(TS, Vec, Vec);
+PETSC_EXTERN PetscErrorCode PetscConvEstUseTS(PetscConvEst);
 #endif
