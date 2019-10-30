@@ -151,7 +151,7 @@ struct _n_PetscSFPack {
 
 PETSC_INTERN PetscErrorCode PetscSFPackGetInUse(PetscSF,MPI_Datatype,const void*,const void*,PetscCopyMode,PetscSFPack*);
 PETSC_INTERN PetscErrorCode PetscSFPackReclaim(PetscSF,PetscSFPack*);
-PETSC_INTERN PetscErrorCode PetscSFPackDestoryAvailable(PetscSFPack*);
+PETSC_INTERN PetscErrorCode PetscSFPackDestroyAvailable(PetscSFPack*);
 PETSC_STATIC_INLINE PetscErrorCode PetscSFPackGetPack(PetscSFPack link,PetscMemType mtype,PetscErrorCode (**Pack)(PetscInt,const PetscInt*,PetscSFPack,PetscSFPackOpt,const void*,void*))
 {
   PetscFunctionBegin;
@@ -171,5 +171,5 @@ PETSC_INTERN PetscErrorCode PetscSFPackSetUp_Host(PetscSF,PetscSFPack,MPI_Dataty
 PETSC_INTERN PetscErrorCode PetscSFPackSetUp_Device(PetscSF,PetscSFPack,MPI_Datatype);
 #endif
 PETSC_INTERN PetscErrorCode PetscSFPackOptCreate(PetscInt,const PetscInt*,const PetscInt*,PetscSFPackOpt*);
-PETSC_INTERN PetscErrorCode PetscSFPackOptDestory(PetscSFPackOpt *out);
+PETSC_INTERN PetscErrorCode PetscSFPackOptDestroy(PetscSFPackOpt *out);
 #endif

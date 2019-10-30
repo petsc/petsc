@@ -432,7 +432,7 @@ PetscErrorCode PetscOmpCtrlCreate(MPI_Comm petsc_comm,PetscInt nthreads,PetscOmp
 }
 
 /*@C
-    PetscOmpCtrlDestroy - destory the PETSc OpenMP controller
+    PetscOmpCtrlDestroy - destroy the PETSc OpenMP controller
 
     Input Parameter:
 .   pctrl  - a PETSc OpenMP controller

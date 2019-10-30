@@ -73,6 +73,10 @@
         call VecView(x,PETSC_VIEWER_STDOUT_SELF,ierr)
       endif
 
+#if defined(PETSC_HAVE_FORTRAN_TYPE_STAR)
+      call PetscBarrier(y,ierr)
+      call PetscBarrier(is1,ierr)
+#endif
       call VecDestroy(x,ierr)
       call VecDestroy(y,ierr)
       call ISDestroy(is1,ierr)

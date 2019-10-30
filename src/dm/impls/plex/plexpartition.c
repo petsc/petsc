@@ -3062,6 +3062,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   ierr = PetscLayoutGetRanges(layout, &cumSumVertices);CHKERRQ(ierr);
 
   ierr = PetscMalloc1(pEnd-pStart, &globalNumbersOfLocalOwnedVertices);CHKERRQ(ierr);
+  for (i=0; i<pEnd-pStart; i++) {globalNumbersOfLocalOwnedVertices[i] = pStart - 1;}
   offset = cumSumVertices[rank];
   counter = 0;
   for (i=0; i<pEnd-pStart; i++) {

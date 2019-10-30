@@ -246,7 +246,7 @@ PETSC_INTERN PetscErrorCode PetscSFReset_Basic(PetscSF sf)
 #if defined(PETSC_HAVE_CUDA)
   if (bas->irootloc_d) {cudaError_t err = cudaFree(bas->irootloc_d);CHKERRCUDA(err);bas->irootloc_d=NULL;}
 #endif
-  ierr = PetscSFPackDestoryAvailable(&bas->avail);CHKERRQ(ierr);
+  ierr = PetscSFPackDestroyAvailable(&bas->avail);CHKERRQ(ierr);
   ierr = PetscSFPackDestroyOptimizations_Basic(sf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

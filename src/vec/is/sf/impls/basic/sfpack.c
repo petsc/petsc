@@ -544,7 +544,7 @@ PetscErrorCode PetscSFPackReclaim(PetscSF sf,PetscSFPack *link)
 }
 
 /* Destroy all links, i.e., PetscSFPacks in the linked list, usually named 'avail' */
-PetscErrorCode PetscSFPackDestoryAvailable(PetscSFPack *avail)
+PetscErrorCode PetscSFPackDestroyAvailable(PetscSFPack *avail)
 {
   PetscErrorCode    ierr;
   PetscSFPack       link=*avail,next;
@@ -931,7 +931,7 @@ PetscErrorCode PetscSFPackOptCreate(PetscInt n,const PetscInt *offset,const Pets
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSFPackOptDestory(PetscSFPackOpt *out)
+PetscErrorCode PetscSFPackOptDestroy(PetscSFPackOpt *out)
 {
   PetscErrorCode ierr;
   PetscSFPackOpt opt = *out;
