@@ -284,7 +284,7 @@ PETSC_EXTERN PetscErrorCode MatSeqDenseCUDAInvertFactors_Private(Mat A)
       }
       ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
       cerr = cusolverDnXpotri(handle,CUBLAS_FILL_MODE_LOWER,n,da,lda,dA->d_fact_work,dA->fact_lwork,dA->d_fact_info);CHKERRCUSOLVER(cerr);
-      ierr = WaitForGPU();CHKERRCUDA(ierr);
+      ccer = WaitForGPU();CHKERRCUDA(ccer);
       ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
       ierr = MatDenseCUDARestoreArray(A,&da);CHKERRQ(ierr);
       /* TODO (write cuda kernel) */
@@ -321,8 +321,8 @@ static PetscErrorCode MatMatSolve_SeqDenseCUDA(Mat A,Mat B,Mat X)
   int                nrhs,n,lda,ldx;
 #if defined(PETSC_USE_DEBUG)
   int                info;
-  cudaError_t        ccer;
 #endif
+  cudaError_t        ccer;
   cusolverStatus_t   cerr;
   PetscErrorCode     ierr;
 
@@ -356,7 +356,7 @@ static PetscErrorCode MatMatSolve_SeqDenseCUDA(Mat A,Mat B,Mat X)
       cerr = cusolverDnXpotrs(handle,CUBLAS_FILL_MODE_LOWER,n,nrhs,da,lda,dx,ldx,dA->d_fact_info);CHKERRCUSOLVER(cerr);
     } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"cusolverDnsytrs not implemented");
   } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unknown factor type %d",A->factortype);
-  ierr = WaitForGPU();CHKERRCUDA(ierr);
+  ccer = WaitForGPU();CHKERRCUDA(ccer);
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
   ierr = MatDenseCUDARestoreArrayRead(A,&da);CHKERRQ(ierr);
   ierr = MatDenseCUDARestoreArray(X,&dx);CHKERRQ(ierr);
@@ -382,8 +382,8 @@ static PetscErrorCode MatSolve_SeqDenseCUDA_Private(Mat A,Vec xx,Vec yy,PetscBoo
   int                one = 1,n,lda;
 #if defined(PETSC_USE_DEBUG)
   int                info;
-  cudaError_t        ccer;
 #endif
+  cudaError_t        ccer;
   cusolverStatus_t   cerr;
   PetscBool          iscuda;
   PetscErrorCode     ierr;
@@ -418,7 +418,7 @@ static PetscErrorCode MatSolve_SeqDenseCUDA_Private(Mat A,Vec xx,Vec yy,PetscBoo
       cerr = cusolverDnXpotrs(handle,CUBLAS_FILL_MODE_LOWER,n,one,da,lda,y,n,dA->d_fact_info);CHKERRCUSOLVER(cerr);
     } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"cusolverDnsytrs not implemented");
   } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unknown factor type %d",A->factortype);
-  ierr = WaitForGPU();CHKERRCUDA(ierr);
+  ccer = WaitForGPU();CHKERRCUDA(ccer);
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
   if (iscuda) {
     ierr = VecCUDARestoreArray(yy,&y);CHKERRQ(ierr);
@@ -488,7 +488,7 @@ static PetscErrorCode MatLUFactor_SeqDenseCUDA(Mat A,IS rperm,IS cperm,const Mat
   }
   ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
   cerr = cusolverDnXgetrf(handle,m,n,da,lda,dA->d_fact_work,dA->d_fact_ipiv,dA->d_fact_info);CHKERRCUSOLVER(cerr);
-  ierr = WaitForGPU();CHKERRCUDA(ierr);
+  ccer = WaitForGPU();CHKERRCUDA(ccer);
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
   ierr = MatDenseCUDARestoreArray(A,&da);CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG)
@@ -539,7 +539,7 @@ static PetscErrorCode MatCholeskyFactor_SeqDenseCUDA(Mat A,IS perm,const MatFact
     }
     ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
     cerr = cusolverDnXpotrf(handle,CUBLAS_FILL_MODE_LOWER,n,da,lda,dA->d_fact_work,dA->fact_lwork,dA->d_fact_info);CHKERRCUSOLVER(cerr);
-    ierr = WaitForGPU();CHKERRCUDA(ierr);
+    ccer = WaitForGPU();CHKERRCUDA(ccer);
     ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
 
     ierr = MatDenseCUDARestoreArray(A,&da);CHKERRQ(ierr);
@@ -591,6 +591,7 @@ static PetscErrorCode MatMatMultNumeric_SeqDenseCUDA_SeqDenseCUDA_Private(Mat A,
   PetscErrorCode    ierr;
   cublasHandle_t    cublasv2handle;
   cublasStatus_t    berr;
+  cudaError_t       cerr;
 
   PetscFunctionBegin;
   ierr = PetscMPIIntCast(C->rmap->n,&m);CHKERRQ(ierr);
@@ -612,7 +613,7 @@ static PetscErrorCode MatMatMultNumeric_SeqDenseCUDA_SeqDenseCUDA_Private(Mat A,
   ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
   berr = cublasXgemm(cublasv2handle,tA ? CUBLAS_OP_T : CUBLAS_OP_N,tB ? CUBLAS_OP_T : CUBLAS_OP_N,
                      m,n,k,&one,da,alda,db,blda,&zero,dc,clda);CHKERRCUBLAS(berr);
-  ierr = WaitForGPU();CHKERRCUDA(ierr);
+  cerr = WaitForGPU();CHKERRCUDA(cerr);
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
   ierr = PetscLogGpuFlops(1.0*m*n*k + 1.0*m*n*(k-1));CHKERRQ(ierr);
   ierr = MatDenseCUDARestoreArrayRead(A,&da);CHKERRQ(ierr);
@@ -765,6 +766,7 @@ PetscErrorCode MatAXPY_SeqDenseCUDA(Mat Y,PetscScalar alpha,Mat X,MatStructure s
   cublasHandle_t    cublasv2handle;
   cublasStatus_t    berr;
   PetscErrorCode    ierr;
+  cudaError_t       cerr;
 
   PetscFunctionBegin;
   if (!X->rmap->n || !X->cmap->n) PetscFunctionReturn(0);
@@ -788,7 +790,7 @@ PetscErrorCode MatAXPY_SeqDenseCUDA(Mat Y,PetscScalar alpha,Mat X,MatStructure s
   } else {
     berr = cublasXaxpy(cublasv2handle,N,&alpha,dx,one,dy,one);CHKERRCUBLAS(berr);
   }
-  ierr = WaitForGPU();CHKERRCUDA(ierr);
+  cerr = WaitForGPU();CHKERRCUDA(cerr);
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
   ierr = PetscLogGpuFlops(PetscMax(2.*N-1,0));CHKERRQ(ierr);
   ierr = MatDenseCUDARestoreArrayRead(X,&dx);CHKERRQ(ierr);
