@@ -149,9 +149,44 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFGetRanks(PetscSF sf,PetscInt *nranks,c
   return PetscSFGetRootRanks(sf,nranks,ranks,roffset,rmine,rremote);
 }
 
+/*@C
+   PetscSFBcastBegin - begin pointwise broadcast to be concluded with call to PetscSFBcastEnd()
+
+   Collective on PetscSF
+
+   Input Arguments:
++  sf - star forest on which to communicate
+.  unit - data type associated with each node
+-  rootdata - buffer to broadcast
+
+   Output Arguments:
+.  leafdata - buffer to update with values from each leaf's respective root
+
+   Level: intermediate
+
+.seealso: PetscSFCreate(), PetscSFSetGraph(), PetscSFView(), PetscSFBcastEnd(), PetscSFReduceBegin()
+@*/
 PETSC_STATIC_INLINE PetscErrorCode PetscSFBcastBegin(PetscSF sf,MPI_Datatype unit,const void* rootdata,void* leafdata) {
   return PetscSFBcastAndOpBegin(sf,unit,rootdata,leafdata,MPIU_REPLACE);
 }
+
+/*@C
+   PetscSFBcastEnd - end a broadcast operation started with PetscSFBcastBegin()
+
+   Collective
+
+   Input Arguments:
++  sf - star forest
+.  unit - data type
+-  rootdata - buffer to broadcast
+
+   Output Arguments:
+.  leafdata - buffer to update with values from each leaf's respective root
+
+   Level: intermediate
+
+.seealso: PetscSFSetGraph(), PetscSFReduceEnd()
+@*/
 PETSC_STATIC_INLINE PetscErrorCode PetscSFBcastEnd(PetscSF sf,MPI_Datatype unit,const void* rootdata,void* leafdata) {
   return PetscSFBcastAndOpEnd(sf,unit,rootdata,leafdata,MPIU_REPLACE);
 }
