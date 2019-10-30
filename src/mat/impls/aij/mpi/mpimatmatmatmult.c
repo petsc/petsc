@@ -89,10 +89,12 @@ PetscErrorCode MatMatMatMultSymbolic_MPIAIJ_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C,Pets
   switch (alg) {
   case 0: /* scalable */
     ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ(B,C,fill,&BC);CHKERRQ(ierr);
+    ierr = MatZeroEntries(BC);CHKERRQ(ierr); /* initialize value entries of BC */
     ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ(A,BC,fill,D);CHKERRQ(ierr);
     break;
   case 1:
     ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(B,C,fill,&BC);CHKERRQ(ierr);
+    ierr = MatZeroEntries(BC);CHKERRQ(ierr); /* initialize value entries of BC */
     ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(A,BC,fill,D);CHKERRQ(ierr);
     break;
   default:
