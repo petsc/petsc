@@ -175,7 +175,7 @@ PetscErrorCode VecCreate_MPICUDA(Vec vv)
 
   PetscFunctionBegin;
   ierr = PetscLayoutSetUp(vv->map);CHKERRQ(ierr);
-  ierr = VecCUDAAllocateCheck(vv);CHKERRCUDA(ierr);
+  ierr = VecCUDAAllocateCheck(vv);CHKERRQ(ierr);
   ierr = VecCreate_MPICUDA_Private(vv,PETSC_FALSE,0,((Vec_CUDA*)vv->spptr)->GPUarray_allocated);CHKERRQ(ierr);
   ierr = VecCUDAAllocateCheckHost(vv);CHKERRQ(ierr);
   ierr = VecSet(vv,0.0);CHKERRQ(ierr);

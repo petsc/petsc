@@ -6,7 +6,7 @@
 #include <petscviewer.h>
 
 #if defined(PETSC_HAVE_CUDA)
-#include <cuda_runtime.h>
+#include <../src/vec/vec/impls/seq/seqcuda/cudavecimpl.h>
 #endif
 
 PETSC_EXTERN PetscLogEvent PETSCSF_SetGraph;

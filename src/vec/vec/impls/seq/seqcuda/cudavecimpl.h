@@ -7,7 +7,27 @@
 
 #include <cublas_v2.h>
 
-#define WaitForGPU() PetscCUDASynchronize ? cudaDeviceSynchronize() : 0
+#define WaitForGPU() PetscCUDASynchronize ? cudaDeviceSynchronize() : cudaSuccess;
+
+/* cuBLAS does not have cublasGetErrorName(). We create one on our own. */
+PETSC_INTERN const char* PetscCUBLASGetErrorName_Private(cublasStatus_t);
+
+#define CHKERRCUDA(cerr) \
+do { \
+   if (PetscUnlikely(cerr)) { \
+      const char *name  = cudaGetErrorName(cerr); \
+      const char *descr = cudaGetErrorString(cerr); \
+      SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_LIB,"cuda error %d (%s) : %s",(int)cerr,name,descr); \
+   } \
+} while(0)
+
+#define CHKERRCUBLAS(stat) \
+do { \
+   if (PetscUnlikely(stat)) { \
+      const char *name = PetscCUBLASGetErrorName_Private(stat); \
+      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"cuBLAS error %d (%s)",(int)stat,name); \
+   } \
+} while(0)
 
 typedef struct {
   PetscScalar  *GPUarray;           /* this always holds the GPU data */
@@ -15,7 +35,6 @@ typedef struct {
   cudaStream_t stream;              /* A stream for doing asynchronous data transfers */
   PetscBool    hostDataRegisteredAsPageLocked;
 } Vec_CUDA;
-
 
 #include <cuda_runtime.h>
 

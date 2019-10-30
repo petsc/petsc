@@ -15,6 +15,15 @@
 #include <thrust/functional.h>
 #include <thrust/sequence.h>
 
+#define CHKERRCUSPARSE(stat) \
+do { \
+   if (PetscUnlikely(stat)) { \
+      const char *name  = cusparseGetErrorName(stat); \
+      const char *descr = cusparseGetErrorString(stat); \
+      SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_LIB,"cuSPARSE error %d (%s) : %s",(int)stat,name,descr); \
+   } \
+} while(0)
+
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)  
 #define cusparse_solve(a,b,c,d,e,f,g,h,i,j,k)        cusparseCcsrsv_solve((a),(b),(c),(cuComplex*)(d),(e),(cuComplex*)(f),(g),(h),(i),(cuComplex*)(j),(cuComplex*)(k))
@@ -24,8 +33,8 @@
 #define cusparse_hyb_spmv(a,b,c,d,e,f,g,h)           cusparseChybmv((a),(b),(cuComplex*)(c),(d),(e),(cuComplex*)(f),(cuComplex*)(g),(cuComplex*)(h))
 #define cusparse_csr2hyb(a,b,c,d,e,f,g,h,i,j)        cusparseCcsr2hyb((a),(b),(c),(d),(cuComplex*)(e),(f),(g),(h),(i),(j))
 #define cusparse_hyb2csr(a,b,c,d,e,f)                cusparseChyb2csr((a),(b),(c),(cuComplex*)(d),(e),(f))
-cuFloatComplex PETSC_CUSPARSE_ONE  = {1.0f, 0.0f};
-cuFloatComplex PETSC_CUSPARSE_ZERO = {0.0f, 0.0f};
+const cuFloatComplex PETSC_CUSPARSE_ONE  = {1.0f, 0.0f};
+const cuFloatComplex PETSC_CUSPARSE_ZERO = {0.0f, 0.0f};
 #elif defined(PETSC_USE_REAL_DOUBLE)
 #define cusparse_solve(a,b,c,d,e,f,g,h,i,j,k)        cusparseZcsrsv_solve((a),(b),(c),(cuDoubleComplex*)(d),(e),(cuDoubleComplex*)(f),(g),(h),(i),(cuDoubleComplex*)(j),(cuDoubleComplex*)(k))
 #define cusparse_analysis(a,b,c,d,e,f,g,h,i)         cusparseZcsrsv_analysis((a),(b),(c),(d),(e),(cuDoubleComplex*)(f),(g),(h),(i))
@@ -34,12 +43,12 @@ cuFloatComplex PETSC_CUSPARSE_ZERO = {0.0f, 0.0f};
 #define cusparse_hyb_spmv(a,b,c,d,e,f,g,h)           cusparseZhybmv((a),(b),(cuDoubleComplex*)(c),(d),(e),(cuDoubleComplex*)(f),(cuDoubleComplex*)(g),(cuDoubleComplex*)(h))
 #define cusparse_csr2hyb(a,b,c,d,e,f,g,h,i,j)        cusparseZcsr2hyb((a),(b),(c),(d),(cuDoubleComplex*)(e),(f),(g),(h),(i),(j))
 #define cusparse_hyb2csr(a,b,c,d,e,f)                cusparseZhyb2csr((a),(b),(c),(cuDoubleComplex*)(d),(e),(f))
-cuDoubleComplex PETSC_CUSPARSE_ONE  = {1.0, 0.0};
-cuDoubleComplex PETSC_CUSPARSE_ZERO = {0.0, 0.0};
+const cuDoubleComplex PETSC_CUSPARSE_ONE  = {1.0, 0.0};
+const cuDoubleComplex PETSC_CUSPARSE_ZERO = {0.0, 0.0};
 #endif
 #else
-PetscScalar PETSC_CUSPARSE_ONE  = 1.0;
-PetscScalar PETSC_CUSPARSE_ZERO = 0.0;
+const PetscScalar PETSC_CUSPARSE_ONE  = 1.0;
+const PetscScalar PETSC_CUSPARSE_ZERO = 0.0;
 #if defined(PETSC_USE_REAL_SINGLE)  
 #define cusparse_solve    cusparseScsrsv_solve
 #define cusparse_analysis cusparseScsrsv_analysis

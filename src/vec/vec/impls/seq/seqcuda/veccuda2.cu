@@ -217,7 +217,7 @@ PetscErrorCode VecAYPX_SeqCUDA(Vec yin,PetscScalar alpha,Vec xin)
     cberr = cublasXaxpy(cublasv2handle,bn,&sone,xarray,one,yarray,one);CHKERRCUBLAS(cberr);
     ierr = PetscLogGpuFlops(2.0*yin->map->n);CHKERRQ(ierr);
   }
-  ierr = WaitForGPU();CHKERRCUDA(ierr);
+  err  = WaitForGPU();CHKERRCUDA(err);
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
   ierr = VecCUDARestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
   ierr = VecCUDARestoreArray(yin,&yarray);CHKERRQ(ierr);
@@ -232,6 +232,7 @@ PetscErrorCode VecAXPY_SeqCUDA(Vec yin,PetscScalar alpha,Vec xin)
   PetscBLASInt      one=1,bn;
   cublasHandle_t    cublasv2handle;
   cublasStatus_t    cberr;
+  cudaError_t       err;
 
   PetscFunctionBegin;
   ierr = PetscCUBLASGetHandle(&cublasv2handle);CHKERRQ(ierr);
@@ -241,7 +242,7 @@ PetscErrorCode VecAXPY_SeqCUDA(Vec yin,PetscScalar alpha,Vec xin)
     ierr = VecCUDAGetArray(yin,&yarray);CHKERRQ(ierr);
     ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
     cberr = cublasXaxpy(cublasv2handle,bn,&alpha,xarray,one,yarray,one);CHKERRCUBLAS(cberr);
-    ierr = WaitForGPU();CHKERRCUDA(ierr);
+    err  = WaitForGPU();CHKERRCUDA(err);
     ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
     ierr = VecCUDARestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
     ierr = VecCUDARestoreArray(yin,&yarray);CHKERRQ(ierr);
@@ -258,6 +259,7 @@ PetscErrorCode VecPointwiseDivide_SeqCUDA(Vec win, Vec xin, Vec yin)
   thrust::device_ptr<const PetscScalar> xptr,yptr;
   thrust::device_ptr<PetscScalar>       wptr;
   PetscErrorCode                        ierr;
+  cudaError_t                           err;
 
   PetscFunctionBegin;
   ierr = VecCUDAGetArrayWrite(win,&warray);CHKERRQ(ierr);
@@ -269,7 +271,7 @@ PetscErrorCode VecPointwiseDivide_SeqCUDA(Vec win, Vec xin, Vec yin)
     xptr = thrust::device_pointer_cast(xarray);
     yptr = thrust::device_pointer_cast(yarray);
     thrust::transform(xptr,xptr+n,yptr,wptr,thrust::divides<PetscScalar>());
-    ierr = WaitForGPU();CHKERRCUDA(ierr);
+    err  = WaitForGPU();CHKERRCUDA(err);
   } catch (char *ex) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
   }
@@ -303,7 +305,7 @@ PetscErrorCode VecWAXPY_SeqCUDA(Vec win,PetscScalar alpha,Vec xin, Vec yin)
     ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
     err = cudaMemcpy(warray,yarray,win->map->n*sizeof(PetscScalar),cudaMemcpyDeviceToDevice);CHKERRCUDA(err);
     cberr = cublasXaxpy(cublasv2handle,bn,&alpha,xarray,one,warray,one);CHKERRCUBLAS(cberr);
-    ierr = WaitForGPU();CHKERRCUDA(ierr);
+    err  = WaitForGPU();CHKERRCUDA(err);
     ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
     ierr = PetscLogGpuFlops(2*win->map->n);CHKERRQ(ierr);
     ierr = VecCUDARestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
@@ -316,6 +318,7 @@ PetscErrorCode VecWAXPY_SeqCUDA(Vec win,PetscScalar alpha,Vec xin, Vec yin)
 PetscErrorCode VecMAXPY_SeqCUDA(Vec xin, PetscInt nv,const PetscScalar *alpha,Vec *y)
 {
   PetscErrorCode ierr;
+  cudaError_t    err;
   PetscInt       n = xin->map->n,j,j_rem;
   PetscScalar    alpha0,alpha1,alpha2,alpha3;
 
@@ -358,7 +361,7 @@ PetscErrorCode VecMAXPY_SeqCUDA(Vec xin, PetscInt nv,const PetscScalar *alpha,Ve
     ierr   = VecAXPY_SeqCUDA(xin,alpha3,y[3]);CHKERRQ(ierr);
     y   += 4;
   }
-  ierr = WaitForGPU();CHKERRCUDA(ierr);
+  err  = WaitForGPU();CHKERRCUDA(err);
   PetscFunctionReturn(0);
 }
 
@@ -369,6 +372,7 @@ PetscErrorCode VecDot_SeqCUDA(Vec xin,Vec yin,PetscScalar *z)
   PetscBLASInt      one=1,bn;
   cublasHandle_t    cublasv2handle;
   cublasStatus_t    cberr;
+  cudaError_t       err;
 
   PetscFunctionBegin;
   ierr = PetscCUBLASGetHandle(&cublasv2handle);CHKERRQ(ierr);
@@ -378,7 +382,7 @@ PetscErrorCode VecDot_SeqCUDA(Vec xin,Vec yin,PetscScalar *z)
   /* arguments y, x are reversed because BLAS complex conjugates the first argument, PETSc the second */
   ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
   cberr = cublasXdot(cublasv2handle,bn,yarray,one,xarray,one,z);CHKERRCUBLAS(cberr);
-  ierr = WaitForGPU();CHKERRCUDA(ierr);
+  err  = WaitForGPU();CHKERRCUDA(err);
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
   if (xin->map->n >0) {
     ierr = PetscLogGpuFlops(2.0*xin->map->n-1);CHKERRQ(ierr);
@@ -802,7 +806,7 @@ PetscErrorCode VecSet_SeqCUDA(Vec xin,PetscScalar alpha)
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
     }
   }
-  ierr = WaitForGPU();CHKERRCUDA(ierr);
+  err  = WaitForGPU();CHKERRCUDA(err);
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
   ierr = VecCUDARestoreArrayWrite(xin,&xarray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -815,11 +819,12 @@ PetscErrorCode VecScale_SeqCUDA(Vec xin,PetscScalar alpha)
   PetscBLASInt   one=1,bn;
   cublasHandle_t cublasv2handle;
   cublasStatus_t cberr;
+  cudaError_t    err;
 
   PetscFunctionBegin;
   if (alpha == (PetscScalar)0.0) {
     ierr = VecSet_SeqCUDA(xin,alpha);CHKERRQ(ierr);
-    ierr = WaitForGPU();CHKERRCUDA(ierr);
+    err  = WaitForGPU();CHKERRCUDA(err);
   } else if (alpha != (PetscScalar)1.0) {
     ierr = PetscCUBLASGetHandle(&cublasv2handle);CHKERRQ(ierr);
     ierr = PetscBLASIntCast(xin->map->n,&bn);CHKERRQ(ierr);
@@ -827,7 +832,7 @@ PetscErrorCode VecScale_SeqCUDA(Vec xin,PetscScalar alpha)
     ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
     cberr = cublasXscal(cublasv2handle,bn,&alpha,xarray,one);CHKERRCUBLAS(cberr);
     ierr = VecCUDARestoreArray(xin,&xarray);CHKERRQ(ierr);
-    ierr = WaitForGPU();CHKERRCUDA(ierr);
+    err  = WaitForGPU();CHKERRCUDA(err);
     ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
   }
   ierr = PetscLogGpuFlops(xin->map->n);CHKERRQ(ierr);
@@ -841,6 +846,7 @@ PetscErrorCode VecTDot_SeqCUDA(Vec xin,Vec yin,PetscScalar *z)
   PetscBLASInt      one=1,bn;
   cublasHandle_t    cublasv2handle;
   cublasStatus_t    cberr;
+  cudaError_t       err;
 
   PetscFunctionBegin;
   ierr = PetscCUBLASGetHandle(&cublasv2handle);CHKERRQ(ierr);
@@ -849,7 +855,7 @@ PetscErrorCode VecTDot_SeqCUDA(Vec xin,Vec yin,PetscScalar *z)
   ierr = VecCUDAGetArrayRead(yin,&yarray);CHKERRQ(ierr);
   ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
   cberr = cublasXdotu(cublasv2handle,bn,xarray,one,yarray,one,z);CHKERRCUBLAS(cberr);
-  ierr = WaitForGPU();CHKERRCUDA(ierr);
+  err  = WaitForGPU();CHKERRCUDA(err);
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
   if (xin->map->n > 0) {
     ierr = PetscLogGpuFlops(2.0*xin->map->n-1);CHKERRQ(ierr);
@@ -884,7 +890,7 @@ PetscErrorCode VecCopy_SeqCUDA(Vec xin,Vec yin)
       } else {
         err = cudaMemcpy(yarray,xarray,yin->map->n*sizeof(PetscScalar),cudaMemcpyDeviceToHost);CHKERRCUDA(err);
       }
-      ierr = WaitForGPU();CHKERRCUDA(ierr);
+      err  = WaitForGPU();CHKERRCUDA(err);
       ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
       ierr = VecCUDARestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
       if (yiscuda) {
@@ -934,6 +940,7 @@ PetscErrorCode VecSwap_SeqCUDA(Vec xin,Vec yin)
   PetscScalar    *xarray,*yarray;
   cublasHandle_t cublasv2handle;
   cublasStatus_t cberr;
+  cudaError_t    err;
 
   PetscFunctionBegin;
   ierr = PetscCUBLASGetHandle(&cublasv2handle);CHKERRQ(ierr);
@@ -943,7 +950,7 @@ PetscErrorCode VecSwap_SeqCUDA(Vec xin,Vec yin)
     ierr = VecCUDAGetArray(yin,&yarray);CHKERRQ(ierr);
     ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
     cberr = cublasXswap(cublasv2handle,bn,xarray,one,yarray,one);CHKERRCUBLAS(cberr);
-    ierr = WaitForGPU();CHKERRCUDA(ierr);
+    err  = WaitForGPU();CHKERRCUDA(err);
     ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
     ierr = VecCUDARestoreArray(xin,&xarray);CHKERRQ(ierr);
     ierr = VecCUDARestoreArray(yin,&yarray);CHKERRQ(ierr);
@@ -977,7 +984,7 @@ PetscErrorCode VecAXPBY_SeqCUDA(Vec yin,PetscScalar alpha,PetscScalar beta,Vec x
     ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
     err = cudaMemcpy(yarray,xarray,yin->map->n*sizeof(PetscScalar),cudaMemcpyDeviceToDevice);CHKERRCUDA(err);
     cberr = cublasXscal(cublasv2handle,bn,&alpha,yarray,one);CHKERRCUBLAS(cberr);
-    ierr = WaitForGPU();CHKERRCUDA(ierr);
+    err  = WaitForGPU();CHKERRCUDA(err);
     ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
     ierr = PetscLogGpuFlops(xin->map->n);CHKERRQ(ierr);
     ierr = VecCUDARestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
@@ -990,7 +997,7 @@ PetscErrorCode VecAXPBY_SeqCUDA(Vec yin,PetscScalar alpha,PetscScalar beta,Vec x
     cberr = cublasXaxpy(cublasv2handle,bn,&alpha,xarray,one,yarray,one);CHKERRCUBLAS(cberr);
     ierr = VecCUDARestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
     ierr = VecCUDARestoreArray(yin,&yarray);CHKERRQ(ierr);
-    ierr = WaitForGPU();CHKERRCUDA(ierr);
+    err  = WaitForGPU();CHKERRCUDA(err);
     ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
     ierr = PetscLogGpuFlops(3.0*xin->map->n);CHKERRQ(ierr);
   }
@@ -1000,6 +1007,7 @@ PetscErrorCode VecAXPBY_SeqCUDA(Vec yin,PetscScalar alpha,PetscScalar beta,Vec x
 PetscErrorCode VecAXPBYPCZ_SeqCUDA(Vec zin,PetscScalar alpha,PetscScalar beta,PetscScalar gamma,Vec xin,Vec yin)
 {
   PetscErrorCode ierr;
+  cudaError_t    err;
   PetscInt       n = zin->map->n;
 
   PetscFunctionBegin;
@@ -1015,7 +1023,7 @@ PetscErrorCode VecAXPBYPCZ_SeqCUDA(Vec zin,PetscScalar alpha,PetscScalar beta,Pe
     ierr = VecAXPY_SeqCUDA(zin,beta,yin);CHKERRQ(ierr);
     ierr = PetscLogGpuFlops(5.0*n);CHKERRQ(ierr);
   }
-  ierr = WaitForGPU();CHKERRCUDA(ierr);
+  err  = WaitForGPU();CHKERRCUDA(err);
   PetscFunctionReturn(0);
 }
 
@@ -1027,6 +1035,7 @@ PetscErrorCode VecPointwiseMult_SeqCUDA(Vec win,Vec xin,Vec yin)
   thrust::device_ptr<const PetscScalar> xptr,yptr;
   thrust::device_ptr<PetscScalar>       wptr;
   PetscErrorCode                        ierr;
+  cudaError_t                           err;
 
   PetscFunctionBegin;
   ierr = VecCUDAGetArray(win,&warray);CHKERRQ(ierr);
@@ -1038,7 +1047,7 @@ PetscErrorCode VecPointwiseMult_SeqCUDA(Vec win,Vec xin,Vec yin)
     xptr = thrust::device_pointer_cast(xarray);
     yptr = thrust::device_pointer_cast(yarray);
     thrust::transform(xptr,xptr+n,yptr,wptr,thrust::multiplies<PetscScalar>());
-    ierr = WaitForGPU();CHKERRCUDA(ierr);
+    err  = WaitForGPU();CHKERRCUDA(err);
   } catch (char *ex) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
   }
@@ -1069,7 +1078,7 @@ PetscErrorCode VecNorm_SeqCUDA(Vec xin,NormType type,PetscReal *z)
     ierr = VecCUDAGetArrayRead(xin,&xarray);CHKERRQ(ierr);
     ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
     cberr = cublasXnrm2(cublasv2handle,bn,xarray,one,z);CHKERRCUBLAS(cberr);
-    ierr = WaitForGPU();CHKERRCUDA(ierr);
+    err  = WaitForGPU();CHKERRCUDA(err);
     ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
     ierr = VecCUDARestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
     ierr = PetscLogGpuFlops(PetscMax(2.0*n-1,0.0));CHKERRQ(ierr);
@@ -1090,7 +1099,7 @@ PetscErrorCode VecNorm_SeqCUDA(Vec xin,NormType type,PetscReal *z)
     ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
     cberr = cublasXasum(cublasv2handle,bn,xarray,one,z);CHKERRCUBLAS(cberr);
     ierr = VecCUDARestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
-    ierr = WaitForGPU();CHKERRCUDA(ierr);
+    err  = WaitForGPU();CHKERRCUDA(err);
     ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
     ierr = PetscLogGpuFlops(PetscMax(n-1.0,0.0));CHKERRQ(ierr);
   } else if (type == NORM_1_AND_2) {
@@ -1103,6 +1112,7 @@ PetscErrorCode VecNorm_SeqCUDA(Vec xin,NormType type,PetscReal *z)
 PetscErrorCode VecDotNorm2_SeqCUDA(Vec s, Vec t, PetscScalar *dp, PetscScalar *nm)
 {
   PetscErrorCode    ierr;
+  cudaError_t       err;
   PetscReal         n=s->map->n;
   const PetscScalar *sarray,*tarray;
 
@@ -1113,7 +1123,7 @@ PetscErrorCode VecDotNorm2_SeqCUDA(Vec s, Vec t, PetscScalar *dp, PetscScalar *n
   ierr = VecDot_SeqCUDA(t,t,nm);CHKERRQ(ierr);
   ierr = VecCUDARestoreArrayRead(s,&sarray);CHKERRQ(ierr);
   ierr = VecCUDARestoreArrayRead(t,&tarray);CHKERRQ(ierr);
-  ierr = WaitForGPU();CHKERRCUDA(ierr);
+  err  = WaitForGPU();CHKERRCUDA(err);
   ierr = PetscLogGpuFlops(4.0*n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1156,6 +1166,7 @@ PetscErrorCode VecConjugate_SeqCUDA(Vec xin)
 #if defined(PETSC_USE_COMPLEX)
   PetscInt                        n = xin->map->n;
   thrust::device_ptr<PetscScalar> xptr;
+  cudaError_t                     err;
 #endif
 
   PetscFunctionBegin;
@@ -1165,7 +1176,7 @@ PetscErrorCode VecConjugate_SeqCUDA(Vec xin)
   try {
     xptr = thrust::device_pointer_cast(xarray);
     thrust::transform(xptr,xptr+n,xptr,conjugate());
-    ierr = WaitForGPU();CHKERRCUDA(ierr);
+    err  = WaitForGPU();CHKERRCUDA(err);
   } catch (char *ex) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
   }
