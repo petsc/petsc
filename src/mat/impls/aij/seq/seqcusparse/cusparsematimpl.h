@@ -15,6 +15,7 @@
 #include <thrust/functional.h>
 #include <thrust/sequence.h>
 
+#if (CUDART_VERSION >= 10010) /* CUDA 10.1 */
 #define CHKERRCUSPARSE(stat) \
 do { \
    if (PetscUnlikely(stat)) { \
@@ -23,6 +24,9 @@ do { \
       SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_LIB,"cuSPARSE error %d (%s) : %s",(int)stat,name,descr); \
    } \
 } while(0)
+#else
+#define CHKERRCUSPARSE(stat) do {if (PetscUnlikely(cerr)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"cusparse error %d",(int)cerr);} while(0)
+#endif
 
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)  

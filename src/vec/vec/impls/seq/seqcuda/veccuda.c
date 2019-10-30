@@ -83,9 +83,10 @@ PetscErrorCode PetscCUBLASDestroyHandle()
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN const char* PetscCUBLASGetErrorName_Private(cublasStatus_t status)
+PETSC_EXTERN const char* PetscCUBLASGetErrorName(cublasStatus_t status)
 {
   switch(status) {
+#if (CUDART_VERSION >= 8000) /* At least CUDA 8.0 of Sep. 2016 had these */
     case CUBLAS_STATUS_SUCCESS:          return "CUBLAS_STATUS_SUCCESS";
     case CUBLAS_STATUS_NOT_INITIALIZED:  return "CUBLAS_STATUS_NOT_INITIALIZED";
     case CUBLAS_STATUS_ALLOC_FAILED:     return "CUBLAS_STATUS_ALLOC_FAILED";
@@ -96,6 +97,7 @@ PETSC_INTERN const char* PetscCUBLASGetErrorName_Private(cublasStatus_t status)
     case CUBLAS_STATUS_INTERNAL_ERROR:   return "CUBLAS_STATUS_INTERNAL_ERROR";
     case CUBLAS_STATUS_NOT_SUPPORTED:    return "CUBLAS_STATUS_NOT_SUPPORTED";
     case CUBLAS_STATUS_LICENSE_ERROR:    return "CUBLAS_STATUS_LICENSE_ERROR";
+#endif
     default:                             return "unknown error";
   }
 }
