@@ -327,7 +327,7 @@ mswin-intel:
   variables:
     TEST_ARCH: arch-ci-mswin-intel
 
-arch-ci-mswin-opt-impi:
+mswin-opt-impi:
   extends:
     - .stage-3
     - .mswin_test
@@ -626,7 +626,7 @@ linux-pkgs-valgrind:
     - .stage-3
     - .linux_test
   tags:
-    - mcs-nfs,server
+    - valgrind
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-valgrind
     TIMEOUT: 7200
