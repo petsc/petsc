@@ -211,6 +211,29 @@
   } while(0)
 
 /*@
+   PetscSortedInt - Determines whether the array is sorted.
+
+   Not Collective
+
+   Input Parameters:
++  n  - number of values
+-  X  - array of integers
+
+   Output Parameters:
+.  sorted - flag whether the array is sorted
+
+   Level: intermediate
+
+.seealso: PetscSortInt(), PetscSortedMPIInt(), PetscSortedReal()
+@*/
+PetscErrorCode  PetscSortedInt(PetscInt n,const PetscInt X[],PetscBool *sorted)
+{
+  PetscFunctionBegin;
+  PetscSorted(n,X,*sorted);
+  PetscFunctionReturn(0);
+}
+
+/*@
    PetscSortInt - Sorts an array of integers in place in increasing order.
 
    Not Collective
@@ -338,6 +361,7 @@ PetscErrorCode PetscFindInt(PetscInt key, PetscInt n, const PetscInt X[], PetscI
   PetscValidPointer(loc,4);
   if (!n) {*loc = -1; PetscFunctionReturn(0);}
   PetscValidPointer(X,3);
+  PetscCheckSorted(n,X);
   while (hi - lo > 1) {
     PetscInt mid = lo + (hi - lo)/2;
     if (key < X[mid]) hi = mid;
@@ -411,6 +435,7 @@ PetscErrorCode PetscFindMPIInt(PetscMPIInt key, PetscInt n, const PetscMPIInt X[
   PetscValidPointer(loc,4);
   if (!n) {*loc = -1; PetscFunctionReturn(0);}
   PetscValidPointer(X,3);
+  PetscCheckSorted(n,X);
   while (hi - lo > 1) {
     PetscInt mid = lo + (hi - lo)/2;
     if (key < X[mid]) hi = mid;
@@ -468,6 +493,29 @@ PetscErrorCode  PetscSortIntWithArrayPair(PetscInt n,PetscInt X[],PetscInt Y[],P
 
   PetscFunctionBegin;
   QuickSort3(PetscSortIntWithArrayPair,X,Y,Z,n,pivot,t1,t2,t3,ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PetscSortedMPIInt - Determines whether the array is sorted.
+
+   Not Collective
+
+   Input Parameters:
++  n  - number of values
+-  X  - array of integers
+
+   Output Parameters:
+.  sorted - flag whether the array is sorted
+
+   Level: intermediate
+
+.seealso: PetscSortMPIInt(), PetscSortedInt(), PetscSortedReal()
+@*/
+PetscErrorCode  PetscSortedMPIInt(PetscInt n,const PetscMPIInt X[],PetscBool *sorted)
+{
+  PetscFunctionBegin;
+  PetscSorted(n,X,*sorted);
   PetscFunctionReturn(0);
 }
 

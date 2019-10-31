@@ -464,13 +464,11 @@ static PetscErrorCode ISGetInfo_Sorted(IS is, ISInfoType type, PetscBool *flg)
     } else {
       /* default: get the local indices and directly check */
       const PetscInt *idx;
-      PetscInt n, i;
+      PetscInt n;
 
       ierr = ISGetIndices(is, &idx);CHKERRQ(ierr);
       ierr = ISGetLocalSize(is, &n);CHKERRQ(ierr);
-      sortedLocal = PETSC_TRUE;
-      for (i = 1; i < n; i++) if (idx[i] < idx[i - 1]) break;
-      if (i < n) sortedLocal = PETSC_FALSE;
+      ierr = PetscSortedInt(n, idx, &sortedLocal);CHKERRQ(ierr);
       ierr = ISRestoreIndices(is, &idx);CHKERRQ(ierr);
     }
 
