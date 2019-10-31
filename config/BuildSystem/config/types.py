@@ -197,9 +197,12 @@ class Configure(config.base.Configure):
         includes += mpiFix
       includes += '#include <' + otherInclude + '>\n'
     size = None
+    checkName = typeName
+    if typeName == 'enum':
+      checkName = 'enum{ENUM_DUMMY}'
     with self.Language(lang):
       for s in typeSizes:
-        body = 'char assert_sizeof[(sizeof({0})=={1})*2-1];'.format(typeName, s)
+        body = 'char assert_sizeof[(sizeof({0})=={1})*2-1];'.format(checkName, s)
         if self.checkCompile(includes, body, codeBegin=codeBegin, codeEnd='\n'):
           size = s
           break
@@ -253,6 +256,7 @@ class Configure(config.base.Configure):
                      'int': (4, 8, 2),
                      'long': (8, 4),
                      'long long': (8,),
+                     'enum': (4, 8),
                      'size_t': (8, 4)}.items():
       self.executeTest(self.checkSizeof, args=[t, sizes])
     self.executeTest(self.checkVisibility)
