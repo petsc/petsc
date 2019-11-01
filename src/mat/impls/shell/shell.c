@@ -473,6 +473,7 @@ PetscErrorCode MatDestroy_Shell(Mat mat)
   ierr = PetscFree(mat->data);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatShellGetContext_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatShellSetContext_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatShellSetVecType_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatShellSetManageScalingShifts_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatShellSetOperation_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatShellGetOperation_C",NULL);CHKERRQ(ierr);
@@ -1012,6 +1013,16 @@ PetscErrorCode  MatShellSetContext_Shell(Mat mat,void *ctx)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatShellSetVecType_Shell(Mat mat,VecType vtype)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(mat->defaultvectype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(vtype,(char**)&mat->defaultvectype);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatShellSetManageScalingShifts_Shell(Mat A)
 {
   Mat_Shell      *shell = (Mat_Shell*)A->data;
@@ -1167,6 +1178,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Shell(Mat A)
 
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatShellGetContext_C",MatShellGetContext_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatShellSetContext_C",MatShellSetContext_Shell);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatShellSetVecType_C",MatShellSetVecType_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatShellSetManageScalingShifts_C",MatShellSetManageScalingShifts_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatShellSetOperation_C",MatShellSetOperation_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatShellGetOperation_C",MatShellGetOperation_Shell);CHKERRQ(ierr);
@@ -1303,6 +1315,30 @@ PetscErrorCode  MatShellSetContext(Mat mat,void *ctx)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   ierr = PetscUseMethod(mat,"MatShellSetContext_C",(Mat,void*),(mat,ctx));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+ MatShellSetVecType - Sets the type of Vec returned by MatCreateVecs()
+
+ Logically collective
+
+    Input Parameters:
++   mat   - the shell matrix
+-   vtype - type to use for creating vectors
+
+ Notes:
+
+ Level: advanced
+
+.seealso: MatCreateVecs()
+@*/
+PetscErrorCode  MatShellSetVecType(Mat mat,VecType vtype)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscTryMethod(mat,"MatShellSetVecType_C",(Mat,VecType),(mat,vtype));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
