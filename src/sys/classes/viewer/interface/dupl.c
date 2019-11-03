@@ -16,7 +16,12 @@
    Level: advanced
 
    Notes:
-    Call PetscViewerRestoreSubViewer() to return this PetscViewer, NOT PetscViewerDestroy()
+    The output of the subviewers is synchronized against the original viewer. For example, if a
+    viewer on two MPI ranks is decomposed into two subviewers, the output from the first viewer is
+    all printed before the output from the second viewer. You must call PetscViewerFlush() after
+    the call to PetscViewerRestoreSubViewer().
+
+    Call PetscViewerRestoreSubViewer() to destroy this PetscViewer, NOT PetscViewerDestroy()
 
      This is most commonly used to view a sequential object that is part of a
     parallel object. For example block Jacobi PC view could use this to obtain a
@@ -32,6 +37,9 @@
     There is currently incomplete error checking that the user does not use the original viewer between the
     the calls to PetscViewerGetSubViewer() and PetscViewerRestoreSubViewer(). If the user does there
     could be errors in the viewing that go undetected or crash the code.
+
+    It would be nice if the call to PetscViewerFlush() was not required and was handled by 
+    PetscViewerRestoreSubViewer()
 
 .seealso: PetscViewerSocketOpen(), PetscViewerASCIIOpen(), PetscViewerDrawOpen(), PetscViewerRestoreSubViewer()
 @*/
