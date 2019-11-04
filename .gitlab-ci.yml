@@ -273,7 +273,7 @@ freebsd-cxx-cmplx-64idx-dbg:
     - .stage-2
     - .freebsd_test
   tags:
-    - name:petsc-fbsd
+    - os:fbsd
   variables:
     TEST_ARCH: arch-ci-freebsd-cxx-cmplx-64idx-dbg
 
@@ -291,7 +291,7 @@ osx-cxx-pkgs-opt:
     - .stage-3
     - .osx_test
   tags:
-    - os:osx
+    - os:macos
   variables:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -saws_port_auto_select -saws_port_auto_select_silent -vecscatter_mpi1 false -options_left false
     TEST_ARCH: arch-ci-osx-cxx-pkgs-opt
@@ -387,7 +387,7 @@ osx-cxx-cmplx-pkgs-dbg:
     - .stage-3
     - .osx_test
   tags:
-    - os:osx
+    - os:macos
   variables:
     TEST_ARCH: arch-ci-osx-cxx-cmplx-pkgs-dbg
 
@@ -396,7 +396,7 @@ osx-dbg:
     - .stage-3
     - .osx_test
   tags:
-    - os:osx
+    - os:macos
   variables:
     TEST_ARCH: arch-ci-osx-dbg
 
@@ -405,7 +405,7 @@ osx-xsdk-opt:
     - .stage-3
     - .osx_test
   tags:
-    - os:osx
+    - os:macos
   variables:
     TEST_ARCH: arch-ci-osx-xsdk-opt
 
