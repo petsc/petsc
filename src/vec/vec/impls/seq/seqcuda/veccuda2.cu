@@ -371,8 +371,7 @@ PetscErrorCode VecDot_SeqCUDA(Vec xin,Vec yin,PetscScalar *z)
   PetscErrorCode    ierr;
   PetscBLASInt      one=1,bn;
   cublasHandle_t    cublasv2handle;
-  cublasStatus_t    cberr;
-  cudaError_t       err;
+  cublasStatus_t    cerr;
 
   PetscFunctionBegin;
   ierr = PetscCUBLASGetHandle(&cublasv2handle);CHKERRQ(ierr);
@@ -381,7 +380,7 @@ PetscErrorCode VecDot_SeqCUDA(Vec xin,Vec yin,PetscScalar *z)
   ierr = VecCUDAGetArrayRead(yin,&yarray);CHKERRQ(ierr);
   /* arguments y, x are reversed because BLAS complex conjugates the first argument, PETSc the second */
   ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
-  cberr = cublasXdot(cublasv2handle,bn,yarray,one,xarray,one,z);CHKERRCUBLAS(cberr);
+  cerr = cublasXdot(cublasv2handle,bn,yarray,one,xarray,one,z);CHKERRCUBLAS(cerr);
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
   if (xin->map->n >0) {
     ierr = PetscLogGpuFlops(2.0*xin->map->n-1);CHKERRQ(ierr);
@@ -844,8 +843,7 @@ PetscErrorCode VecTDot_SeqCUDA(Vec xin,Vec yin,PetscScalar *z)
   PetscErrorCode    ierr;
   PetscBLASInt      one=1,bn;
   cublasHandle_t    cublasv2handle;
-  cublasStatus_t    cberr;
-  cudaError_t       err;
+  cublasStatus_t    cerr;
 
   PetscFunctionBegin;
   ierr = PetscCUBLASGetHandle(&cublasv2handle);CHKERRQ(ierr);
@@ -853,7 +851,7 @@ PetscErrorCode VecTDot_SeqCUDA(Vec xin,Vec yin,PetscScalar *z)
   ierr = VecCUDAGetArrayRead(xin,&xarray);CHKERRQ(ierr);
   ierr = VecCUDAGetArrayRead(yin,&yarray);CHKERRQ(ierr);
   ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
-  cberr = cublasXdotu(cublasv2handle,bn,xarray,one,yarray,one,z);CHKERRCUBLAS(cberr);
+  cerr = cublasXdotu(cublasv2handle,bn,xarray,one,yarray,one,z);CHKERRCUBLAS(cerr);
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
   if (xin->map->n > 0) {
     ierr = PetscLogGpuFlops(2.0*xin->map->n-1);CHKERRQ(ierr);
