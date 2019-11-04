@@ -7086,24 +7086,44 @@ PetscErrorCode DMPlexCheckSkeleton(DM dm, PetscInt cellHeight)
 /*@
   DMPlexCheckFaces - Check that the faces of each cell give a vertex order this is consistent with what we expect from the cell type
 
+  Not Collective
+
   Input Parameters:
 + dm - The DMPlex object
 - cellHeight - Normally 0
 
-  Note: This is a useful diagnostic when creating meshes programmatically.
+  Note: This routine is only relevant for meshes that are fully interpolated across all ranks, and will error out if a non-interpolated mesh is
+  given. This is a useful diagnostic when creating meshes programmatically.
+
+  Options Database Keys:
+. -dm_plex_force_check_faces <bool>	: Force DMPlexCheckFaces() to run even on uninterpolated meshes
 
   Level: developer
 
-.seealso: DMCreate(), DMPlexCheckSymmetry(), DMPlexCheckSkeleton()
+.seealso: DMCreate(), DMPlexGetVTKCellHeight(), DMPlexCheckSymmetry(), DMPlexCheckSkeleton(), DMPlexInterpolate(), DMPlexIsInterpolated()
 @*/
 PetscErrorCode DMPlexCheckFaces(DM dm, PetscInt cellHeight)
 {
   PetscInt       pMax[4];
   PetscInt       dim, depth, vStart, vEnd, cStart, cEnd, c, h;
   PetscErrorCode ierr;
+  DMPlexInterpolatedFlag interpEnum;
+  PetscBool	 override = PETSC_FALSE, oset = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+
+  ierr = DMPlexIsInterpolated(dm, &interpEnum);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL, NULL, "-dm_plex_force_check_faces", &override, &oset);CHKERRQ(ierr);
+  if (interpEnum != DMPLEX_INTERPOLATED_FULL && !(override && oset)) {
+    PetscMPIInt	rank;
+    MPI_Comm	comm;
+
+    ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Mesh is not fully interpolated on rank %d!", rank);
+  }
+
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
