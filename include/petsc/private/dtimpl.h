@@ -13,4 +13,32 @@ struct _p_PetscQuadrature {
   const PetscReal *weights;   /* The quadrature weights */
 };
 
+PETSC_STATIC_INLINE PetscErrorCode PetscDTFactorial_Internal(PetscInt n, PetscReal *factorial)
+{
+  PetscReal f = 1.0;
+  PetscInt  i;
+
+  PetscFunctionBegin;
+  for (i = 1; i < n+1; ++i) f *= i;
+  *factorial = f;
+  PetscFunctionReturn(0);
+}
+
+PETSC_STATIC_INLINE PetscErrorCode PetscDTFactorialInt_Internal(PetscInt n, PetscInt *factorial)
+{
+  PetscFunctionBeginHot;
+  if (n <= 3) {
+    PetscInt facLookup[4] = {1, 1, 2, 6};
+
+    *factorial = facLookup[n];
+  } else {
+    PetscInt f = 1;
+    PetscInt i;
+
+    for (i = 1; i < n+1; ++i) f *= i;
+    *factorial = f;
+  }
+  PetscFunctionReturn(0);
+}
+
 #endif
