@@ -1,4 +1,3 @@
-#define PETSC_USE_FORTRAN_MODULES
 
         module petscmatdefdummy
         use petscvecdef
