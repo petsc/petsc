@@ -56,7 +56,7 @@ variables:
   script:
     - ${PYTHON} ./configure --with-debugging=0 COPTFLAGS='-O -march=native' CXXOPTFLAGS='-O -march=native' FOPTFLAGS='-O -march=native' ${CONFIG_OPTS}
     - make CFLAGS=-Werror CXXFLAGS=-Werror
-    - make allgtests-tap search="${TEST_SEARCH}" TIMEOUT=${TIMEOUT}
+    - make CFLAGS=-Werror CXXFLAGS=-Werror allgtests-tap search="${TEST_SEARCH}" TIMEOUT=${TIMEOUT}
   after_script:
     - date
     - CCACHE_DIR=$(pwd)/.ccache ccache --show-stats
@@ -116,9 +116,9 @@ checksource:
     - cat ./config/examples/${TEST_ARCH}.py
     - ./config/examples/${TEST_ARCH}.py
     - make CFLAGS=${MAKE_CFLAGS} CXXFLAGS=${MAKE_CXXFLAGS}
-    - make check
+    - make CFLAGS=${MAKE_CFLAGS} CXXFLAGS=${MAKE_CXXFLAGS} check
     - make updatedatafiles
-    - make cleantest allgtests-tap TIMEOUT=${TIMEOUT}
+    - make CFLAGS=${MAKE_CFLAGS} CXXFLAGS=${MAKE_CXXFLAGS} cleantest allgtests-tap TIMEOUT=${TIMEOUT}
   artifacts:
     reports:
       junit: ${TEST_ARCH}/tests/testresults.xml
