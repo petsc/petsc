@@ -2,9 +2,7 @@ Linear solve converged due to CONVERGED_RTOL iterations 20
 KSP Object: 8 MPI processes
   type: fgmres
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-    happy breakdown tolerance 1e-30
   maximum iterations=50, initial guess is zero
-  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
   right preconditioning
   using UNPRECONDITIONED norm type for convergence test
 PC Object: 8 MPI processes
@@ -61,13 +59,11 @@ PC Object: 8 MPI processes
     KSP Object: (pc_bddc_dirichlet_) 1 MPI processes
       type: preonly
       maximum iterations=10000, initial guess is zero
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
     PC Object: (pc_bddc_dirichlet_) 1 MPI processes
       type: lu
         out-of-place factorization
-        tolerance for zero pivot 2.22045e-14
         matrix ordering: nd
         factor fill ratio given 5., needed 1.55143
           Factored matrix follows:
@@ -89,13 +85,11 @@ PC Object: 8 MPI processes
     KSP Object: (pc_bddc_neumann_) 1 MPI processes
       type: preonly
       maximum iterations=10000, initial guess is zero
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
     PC Object: (pc_bddc_neumann_) 1 MPI processes
       type: lu
         out-of-place factorization
-        tolerance for zero pivot 2.22045e-14
         matrix ordering: nd
         factor fill ratio given 5., needed 2.16719
           Factored matrix follows:
@@ -118,20 +112,18 @@ PC Object: 8 MPI processes
       type: richardson
         damping factor=1.
       maximum iterations=1, initial guess is zero
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
     PC Object: (pc_bddc_coarse_) 8 MPI processes
       type: hpddm
       levels: 2
-      Neumann matrix attached? PETSC_FALSE
+      Neumann matrix attached? FALSE
       coarse correction: deflated
-      on process #0, value (+ threshold if available) for selecting deflation vectors: 5
-      grid and operator complexities: 1.25157 1.10931
+      on process #0, value (+ threshold if available) for selecting deflation vectors: 6
+      grid and operator complexities: 1.30189 1.15741
       KSP Object: (pc_bddc_coarse_pc_hpddm_levels_1_) 8 MPI processes
         type: preonly
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (pc_bddc_coarse_pc_hpddm_levels_1_) 8 MPI processes
@@ -153,13 +145,11 @@ PC Object: 8 MPI processes
           KSP Object:   (pc_bddc_coarse_pc_hpddm_levels_1_sub_)   1 MPI processes
             type: preonly
             maximum iterations=10000, initial guess is zero
-            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
             left preconditioning
             using NONE norm type for convergence test
           PC Object:   (pc_bddc_coarse_pc_hpddm_levels_1_sub_)   1 MPI processes
             type: cholesky
               out-of-place factorization
-              tolerance for zero pivot 2.22045e-14
               matrix ordering: natural
               factor fill ratio given 5., needed 1.
                 Factored matrix follows:
@@ -180,30 +170,28 @@ PC Object: 8 MPI processes
           KSP Object:   (pc_bddc_coarse_pc_hpddm_coarse_)   1 MPI processes
             type: preonly
             maximum iterations=10000, initial guess is zero
-            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
             left preconditioning
             using NONE norm type for convergence test
           PC Object:   (pc_bddc_coarse_pc_hpddm_coarse_)   1 MPI processes
             type: lu
               out-of-place factorization
-              tolerance for zero pivot 2.22045e-14
               matrix ordering: nd
               factor fill ratio given 5., needed 1.
                 Factored matrix follows:
                   Mat Object:   1 MPI processes
                     type: seqbaij
-                    rows=40, cols=40, bs=5
+                    rows=48, cols=48, bs=6
                     package used to perform factorization: petsc
-                    total: nonzeros=1600, allocated nonzeros=1600
+                    total: nonzeros=2304, allocated nonzeros=2304
                     total number of mallocs used during MatSetValues calls=0
-                        block size is 5
+                        block size is 6
             linear system matrix = precond matrix:
             Mat Object:   (pc_bddc_coarse_pc_hpddm_coarse_)   1 MPI processes
               type: seqbaij
-              rows=40, cols=40, bs=5
-              total: nonzeros=1600, allocated nonzeros=1600
+              rows=48, cols=48, bs=6
+              total: nonzeros=2304, allocated nonzeros=2304
               total number of mallocs used during MatSetValues calls=0
-                  block size is 5
+                  block size is 6
       linear system matrix = precond matrix:
       Mat Object: (pc_bddc_coarse_) 8 MPI processes
         type: is
