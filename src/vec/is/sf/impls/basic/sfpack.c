@@ -544,7 +544,7 @@ PetscErrorCode PetscSFPackReclaim(PetscSF sf,PetscSFPack *link)
 }
 
 /* Destroy all links, i.e., PetscSFPacks in the linked list, usually named 'avail' */
-PetscErrorCode PetscSFPackDestroyAvailable(PetscSFPack *avail)
+PetscErrorCode PetscSFPackDestroyAvailable(PetscSF sf,PetscSFPack *avail)
 {
   PetscErrorCode    ierr;
   PetscSFPack       link=*avail,next;
@@ -558,6 +558,14 @@ PetscErrorCode PetscSFPackDestroyAvailable(PetscSFPack *avail)
       if (link->reqs[i] != MPI_REQUEST_NULL) {ierr = MPI_Request_free(&link->reqs[i]);CHKERRQ(ierr);}
     }
     ierr = PetscFree(link->reqs);CHKERRQ(ierr);
+
+#if defined(PETSC_HAVE_CUDA)
+    if (!use_gpu_aware_mpi && sf->use_pinned_buf) { /* In case the buffers are allocated specially */
+      if (link->rootmtype == PETSC_MEMTYPE_DEVICE) {ierr = PetscFreePinnedMemory(link->rootbuf[PETSC_MEMTYPE_HOST]);CHKERRQ(ierr);}
+      if (link->leafmtype == PETSC_MEMTYPE_DEVICE) {ierr = PetscFreePinnedMemory(link->leafbuf[PETSC_MEMTYPE_HOST]);CHKERRQ(ierr);}
+    }
+#endif
+
     ierr = PetscFreeWithMemType(PETSC_MEMTYPE_HOST,link->rootbuf[PETSC_MEMTYPE_HOST]);CHKERRQ(ierr);
     ierr = PetscFreeWithMemType(PETSC_MEMTYPE_HOST,link->leafbuf[PETSC_MEMTYPE_HOST]);CHKERRQ(ierr);
     ierr = PetscFreeWithMemType(PETSC_MEMTYPE_HOST,link->selfbuf[PETSC_MEMTYPE_HOST]);CHKERRQ(ierr);

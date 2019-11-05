@@ -405,4 +405,5 @@ PETSC_INTERN PetscErrorCode PetscSFCreateEmbeddedSF_Basic(PetscSF,PetscInt,const
 PETSC_INTERN PetscErrorCode PetscSFCreateEmbeddedLeafSF_Basic(PetscSF,PetscInt,const PetscInt*,PetscSF*);
 PETSC_INTERN PetscErrorCode PetscSFGetLeafRanks_Basic(PetscSF,PetscInt*,const PetscMPIInt**,const PetscInt**,const PetscInt**);
 PETSC_INTERN PetscErrorCode PetscSFPackGet_Basic_Common(PetscSF,MPI_Datatype,PetscMemType,const void*,PetscMemType,const void*,PetscInt,PetscInt,PetscSFPack*);
+PETSC_INTERN PetscErrorCode PetscSFSetFromOptions_Basic(PetscOptionItems*,PetscSF);
 #endif

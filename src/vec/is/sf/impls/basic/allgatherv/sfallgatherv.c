@@ -126,7 +126,7 @@ PETSC_INTERN PetscErrorCode PetscSFReset_Allgatherv(PetscSF sf)
   ierr = PetscFree(dat->recvcounts);CHKERRQ(ierr);
   ierr = PetscFree(dat->displs);CHKERRQ(ierr);
   if (dat->inuse) SETERRQ(PetscObjectComm((PetscObject)sf),PETSC_ERR_ARG_WRONGSTATE,"Outstanding operation has not been completed");
-  ierr = PetscSFPackDestroyAvailable(&dat->avail);CHKERRQ(ierr);
+  ierr = PetscSFPackDestroyAvailable(sf,&dat->avail);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

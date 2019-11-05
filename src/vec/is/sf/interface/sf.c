@@ -266,8 +266,10 @@ PetscErrorCode PetscSFSetUp(PetscSF sf)
 .  sf - star forest
 
    Options Database Keys:
-+  -sf_type - implementation type, see PetscSFSetType()
--  -sf_rank_order - sort composite points for gathers and scatters in rank order, gathers are non-deterministic otherwise
++  -sf_type              - implementation type, see PetscSFSetType()
+.  -sf_rank_order        - sort composite points for gathers and scatters in rank order, gathers are non-deterministic otherwise
+-  -sf_use_pinned_buffer - use pinned (nonpagable) memory for send/recv buffers on host when communicating GPU data but GPU-aware MPI is not used.
+                           Only available for SF types of basic and neighbor.
 
    Level: intermediate
 

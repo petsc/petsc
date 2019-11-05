@@ -83,6 +83,7 @@ struct _p_PetscSF {
 
   PetscSFPattern  pattern;         /* Pattern of the graph */
   PetscLayout     map;             /* Layout of leaves over all processes when building a patterned graph */
+  PetscBool       use_pinned_buf;  /* Whether use pinned (i.e., non-pagable) host memory for send/recv buffers */
 #if defined(PETSC_HAVE_CUDA)
   PetscInt        *rmine_d;        /* A copy of rmine in device memory */
   PetscInt        maxResidentThreadsPerGPU;
@@ -146,6 +147,25 @@ PETSC_STATIC_INLINE PetscErrorCode PetscGetMemType(const void *data,PetscMemType
 #endif
   PetscFunctionReturn(0);
 }
+
+#if defined(PETSC_HAVE_CUDA)
+PETSC_STATIC_INLINE PetscErrorCode PetscMallocPinnedMemory(size_t size,void** ptr)
+{
+  cudaError_t cerr;
+  PetscFunctionBegin;
+  cerr = cudaMallocHost(ptr,size);CHKERRCUDA(cerr);
+  PetscFunctionReturn(0);
+}
+
+PETSC_STATIC_INLINE PetscErrorCode PetscFreePinnedMemory_Private(void* ptr)
+{
+  cudaError_t cerr;
+  PetscFunctionBegin;
+  cerr = cudaFreeHost(ptr);CHKERRCUDA(cerr);
+  PetscFunctionReturn(0);
+}
+#define PetscFreePinnedMemory(p) ((p) && (PetscFreePinnedMemory_Private(p) || ((p)=NULL,0)))
+#endif
 
 PETSC_STATIC_INLINE PetscErrorCode PetscMallocWithMemType(PetscMemType mtype,size_t size,void** ptr)
 {

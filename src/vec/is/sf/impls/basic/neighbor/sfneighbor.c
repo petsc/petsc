@@ -217,6 +217,7 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Neighbor(PetscSF sf)
   sf->ops->FetchAndOpBegin      = PetscSFFetchAndOpBegin_Basic;
   sf->ops->GetLeafRanks         = PetscSFGetLeafRanks_Basic;
   sf->ops->View                 = PetscSFView_Basic;
+  sf->ops->SetFromOptions       = PetscSFSetFromOptions_Basic;
 
   sf->ops->SetUp                = PetscSFSetUp_Neighbor;
   sf->ops->Reset                = PetscSFReset_Neighbor;

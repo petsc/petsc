@@ -123,8 +123,20 @@ found:
     /* If not using GPU aware MPI, we always need buffers on host. In case root/leafdata is on device, we copy root/leafdata to/from
        these buffers for MPI. We only need buffers for remote neighbors since self-to-self communication is not done via MPI.
      */
-    if (!link->rootbuf[PETSC_MEMTYPE_HOST]) {ierr = PetscMallocWithMemType(PETSC_MEMTYPE_HOST,link->rootbuflen*link->unitbytes,(void**)&link->rootbuf[PETSC_MEMTYPE_HOST]);CHKERRQ(ierr);}
-    if (!link->leafbuf[PETSC_MEMTYPE_HOST]) {ierr = PetscMallocWithMemType(PETSC_MEMTYPE_HOST,link->leafbuflen*link->unitbytes,(void**)&link->leafbuf[PETSC_MEMTYPE_HOST]);CHKERRQ(ierr);}
+    if (!link->rootbuf[PETSC_MEMTYPE_HOST]) {
+      if (rootmtype == PETSC_MEMTYPE_DEVICE && sf->use_pinned_buf) {
+        ierr = PetscMallocPinnedMemory(link->rootbuflen*link->unitbytes,(void**)&link->rootbuf[PETSC_MEMTYPE_HOST]);CHKERRQ(ierr);
+      } else {
+        ierr = PetscMallocWithMemType(PETSC_MEMTYPE_HOST,link->rootbuflen*link->unitbytes,(void**)&link->rootbuf[PETSC_MEMTYPE_HOST]);CHKERRQ(ierr);
+      }
+    }
+    if (!link->leafbuf[PETSC_MEMTYPE_HOST]) {
+      if (leafmtype == PETSC_MEMTYPE_DEVICE && sf->use_pinned_buf) {
+        ierr = PetscMallocPinnedMemory(link->leafbuflen*link->unitbytes,(void**)&link->leafbuf[PETSC_MEMTYPE_HOST]);CHKERRQ(ierr);
+      } else {
+        ierr = PetscMallocWithMemType(PETSC_MEMTYPE_HOST,link->leafbuflen*link->unitbytes,(void**)&link->leafbuf[PETSC_MEMTYPE_HOST]);CHKERRQ(ierr);
+      }
+    }
   }
 #endif
   if (!link->rootbuf[rootmtype]) {ierr = PetscMallocWithMemType(rootmtype,link->rootbuflen*link->unitbytes,(void**)&link->rootbuf[rootmtype]);CHKERRQ(ierr);}
@@ -238,12 +250,13 @@ PETSC_INTERN PetscErrorCode PetscSFSetUp_Basic(PetscSF sf)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFSetFromOptions_Basic(PetscOptionItems *PetscOptionsObject,PetscSF sf)
+PETSC_INTERN PetscErrorCode PetscSFSetFromOptions_Basic(PetscOptionItems *PetscOptionsObject,PetscSF sf)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"PetscSF Basic options");CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-sf_use_pinned_buffer","Use pinned (nonpagable) memory for send/recv buffers on host","PetscSFSetFromOptions",sf->use_pinned_buf,&sf->use_pinned_buf,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -260,7 +273,7 @@ PETSC_INTERN PetscErrorCode PetscSFReset_Basic(PetscSF sf)
 #if defined(PETSC_HAVE_CUDA)
   if (bas->irootloc_d) {cudaError_t err = cudaFree(bas->irootloc_d);CHKERRCUDA(err);bas->irootloc_d=NULL;}
 #endif
-  ierr = PetscSFPackDestroyAvailable(&bas->avail);CHKERRQ(ierr);
+  ierr = PetscSFPackDestroyAvailable(sf,&bas->avail);CHKERRQ(ierr);
   ierr = PetscSFPackDestroyOptimizations_Basic(sf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
