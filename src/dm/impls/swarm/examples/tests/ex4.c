@@ -344,7 +344,7 @@ int main(int argc,char **argv)
   DM             dm, sw; /* Mesh and particle managers */
   Vec            u;      /* swarm vector */
   IS             is1, is2;
-  PetscInt       n, Np;
+  PetscInt       n;
   MPI_Comm       comm;
   AppCtx         user;
   PetscErrorCode ierr;
@@ -357,7 +357,6 @@ int main(int argc,char **argv)
   ierr = CreateMesh(comm, &dm, &user);CHKERRQ(ierr);
   ierr = CreateParticles(dm, &sw, &user);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(sw, &user);CHKERRQ(ierr);
-  Np   = user.particlesPerCell;
 
   ierr = TSCreate(comm, &ts);CHKERRQ(ierr);
   ierr = TSSetType(ts, TSBASICSYMPLECTIC);CHKERRQ(ierr);
