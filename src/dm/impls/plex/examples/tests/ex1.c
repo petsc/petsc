@@ -738,6 +738,7 @@ int main(int argc, char **argv)
   test:
     suffix: fluent_3
     requires: !complex
+    TODO: Fails on non-linux: fseek(), fileno() ? https://gitlab.com/petsc/petsc/merge_requests/2206#note_238166382
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_5tets.cas -interpolate 1 -dm_view -final_diagnostics 0
 
   # Med mesh reader tests, including parallel file reads
