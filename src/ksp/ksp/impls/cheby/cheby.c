@@ -325,8 +325,6 @@ static PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
   if (cheb->kspest) {
     PetscObjectId    amatid,    pmatid;
     PetscObjectState amatstate, pmatstate;
-    PCFailedReason   pcreason;
-    PC               pc;
 
     ierr = PetscObjectGetId((PetscObject)Amat,&amatid);CHKERRQ(ierr);
     ierr = PetscObjectGetId((PetscObject)Pmat,&pmatid);CHKERRQ(ierr);
@@ -367,23 +365,25 @@ static PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
       }
       ierr = KSPSolve(cheb->kspest,B,ksp->work[0]);CHKERRQ(ierr);
       ierr = KSPGetConvergedReason(cheb->kspest,&reason);CHKERRQ(ierr);
-      ierr = KSPGetPC(cheb->kspest,&pc);CHKERRQ(ierr);
-      ierr = PCGetFailedReason(pc,&pcreason);CHKERRQ(ierr);
-      if (reason < 0 || pcreason) {
-        if (reason == KSP_DIVERGED_ITS) {
+      if (reason == KSP_DIVERGED_ITS) {
           ierr = PetscInfo(ksp,"Eigen estimator ran for prescribed number of iterations\n");CHKERRQ(ierr);
-        } else {
-          PetscInt its;
+      } else if (reason == KSP_DIVERGED_PC_FAILED) {
+          PetscInt       its;
+          PCFailedReason pcreason;
+          PC             pc;
+
           ierr = KSPGetIterationNumber(cheb->kspest,&its);CHKERRQ(ierr);
+          ierr = KSPGetPC(cheb->kspest,&pc);CHKERRQ(ierr);
+          ierr = PCGetFailedReason(pc,&pcreason);CHKERRQ(ierr);
+          if (!pcreason) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"KSP has KSP_DIVERGED_PC_FAILED but PC has no error flag");
           ksp->reason = KSP_DIVERGED_PC_FAILED;
           ierr = VecSetInf(ksp->vec_sol);CHKERRQ(ierr);
           ierr = PetscInfo3(ksp,"Eigen estimator failed: %s %s at iteration %D",KSPConvergedReasons[reason],PCFailedReasons[pcreason],its);CHKERRQ(ierr);
           PetscFunctionReturn(0);
-        }
       } else if (reason==KSP_CONVERGED_RTOL ||reason==KSP_CONVERGED_ATOL) {
         ierr = PetscInfo(ksp,"Eigen estimator converged prematurely. Should not happen except for small or low rank problem\n");CHKERRQ(ierr);
-      } else {
-        ierr = PetscInfo1(ksp,"Eigen estimator did not converge by iteration: %s\n",KSPConvergedReasons[reason]);CHKERRQ(ierr);
+      } else if (reason < 0) {
+        ierr = PetscInfo1(ksp,"Eigen estimator failed %s, using estimates anyway\n",KSPConvergedReasons[reason]);CHKERRQ(ierr);
       }
 
       ierr = KSPChebyshevComputeExtremeEigenvalues_Private(cheb->kspest,&min,&max);CHKERRQ(ierr);

@@ -297,10 +297,6 @@ class Configure(config.package.Package):
         return
 
       self.log.write('Files and directories in that directory:\n'+str(os.listdir(dir))+'\n')
-      yield ('User specified installation root (HPUX)', os.path.join(dir, 'libveclib.a'),  os.path.join(dir, 'liblapack.a'),'32','unkown')
-      yield ('User specified OpenBLAS', None, os.path.join(dir, 'libopenblas.a'),'unknown','unkown')     
-      yield ('User specified installation root (F2CBLASLAPACK)', os.path.join(dir,'libf2cblas.a'), os.path.join(dir, 'libf2clapack.a'),'32','no')
-      yield ('User specified installation root(FBLASLAPACK)', os.path.join(dir, 'libfblas.a'),   os.path.join(dir, 'libflapack.a'),'32','no')
       # Check MATLAB [ILP64] MKL
       yield ('User specified MATLAB [ILP64] MKL Linux lib dir', None, [os.path.join(dir,'bin','glnxa64','mkl.so'), os.path.join(dir,'sys','os','glnxa64','libiomp5.so'), 'pthread'],'64','yes')
       oldFlags = self.setCompilers.LDFLAGS
@@ -370,9 +366,15 @@ class Configure(config.package.Package):
       yield ('User specified AMD ACML lib dir', None, [os.path.join(dir,'lib','libacml.a'), os.path.join(dir,'lib','libacml_mv.a')],'32','unknown')
       yield ('User specified AMD ACML lib dir', None, os.path.join(dir,'lib','libacml_mp.a'),'32','unknown')
       yield ('User specified AMD ACML lib dir', None, [os.path.join(dir,'lib','libacml_mp.a'), os.path.join(dir,'lib','libacml_mv.a')],'32','unknown')
+      # Search for OpenBLAS
+      yield ('User specified OpenBLAS', None, os.path.join(dir, 'libopenblas.a'),'unknown','unkown')
       # Search for atlas
       yield ('User specified ATLAS Linux installation root', [os.path.join(dir, 'libcblas.a'),os.path.join(dir, 'libf77blas.a'), os.path.join(dir, 'libatlas.a')],  [os.path.join(dir, 'liblapack.a')],'32','no')
       yield ('User specified ATLAS Linux installation root', [os.path.join(dir, 'libf77blas.a'), os.path.join(dir, 'libatlas.a')],  [os.path.join(dir, 'liblapack.a')],'32','no')
+
+      yield ('User specified installation root (HPUX)', os.path.join(dir, 'libveclib.a'),  os.path.join(dir, 'liblapack.a'),'32','unkown')
+      yield ('User specified installation root (F2CBLASLAPACK)', os.path.join(dir,'libf2cblas.a'), os.path.join(dir, 'libf2clapack.a'),'32','no')
+      yield ('User specified installation root(FBLASLAPACK)', os.path.join(dir, 'libfblas.a'),   os.path.join(dir, 'libflapack.a'),'32','no')
       # Search for liblapack.a and libblas.a after the implementations with more specific name to avoid
       # finding these in /usr/lib despite using -L<blaslapack-dir> while attempting to get a different library.
       yield ('User specified installation root', os.path.join(dir, 'libblas.a'),    os.path.join(dir, 'liblapack.a'),'unknown','unknow')
@@ -380,6 +382,8 @@ class Configure(config.package.Package):
       raise RuntimeError('You set a value for --with-blaslapack-dir=<dir>, but '+self.argDB['with-blaslapack-dir']+' cannot be used\n')
     if self.defaultPrecision == '__float128':
       raise RuntimeError('__float128 precision requires f2c libraries; suggest --download-f2cblaslapack\n')
+
+
     # Try compiler defaults
     yield ('Default compiler libraries', '', '','unknown','unknown')
     yield ('Default compiler locations', 'libblas.a', 'liblapack.a','unknown','unknown')
