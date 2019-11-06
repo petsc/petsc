@@ -29,11 +29,11 @@ PETSC_STATIC_INLINE PetscErrorCode ObjectView(PetscObject obj, PetscViewer viewe
 .  emin, emax - extreme singular values
 
    Options Database Keys:
-.  -ksp_compute_singularvalues - compute extreme singular values and print when KSPSolve completes.
+.  -ksp_view_singularvalues - compute extreme singular values and print when KSPSolve completes.
 
    Notes:
    One must call KSPSetComputeSingularValues() before calling KSPSetUp()
-   (or use the option -ksp_compute_eigenvalues) in order for this routine to work correctly.
+   (or use the option -ksp_view_eigenvalues) in order for this routine to work correctly.
 
    Many users may just want to use the monitoring routine
    KSPMonitorSingularValue() (which can be set with option -ksp_monitor_singular_value)
@@ -86,8 +86,7 @@ PetscErrorCode  KSPComputeExtremeSingularValues(KSP ksp,PetscReal *emax,PetscRea
 -  neig - actual number of eigenvalues computed (will be less than or equal to n)
 
    Options Database Keys:
-+  -ksp_compute_eigenvalues - Prints eigenvalues to stdout
--  -ksp_plot_eigenvalues - Plots eigenvalues in an x-window display
++  -ksp_view_eigenvalues - Prints eigenvalues to stdout
 
    Notes:
    The number of eigenvalues estimated depends on the size of the Krylov space
@@ -590,11 +589,8 @@ static PetscErrorCode KSPViewFinalResidual_Internal(KSP ksp, PetscViewer viewer,
 -  x - the solution  (this may be the same vector as b, then b will be overwritten with answer)
 
    Options Database Keys:
-+  -ksp_compute_eigenvalues - compute preconditioned operators eigenvalues
-.  -ksp_plot_eigenvalues - plot the computed eigenvalues in an X-window
-.  -ksp_plot_eigencontours - plot the computed eigenvalues in an X-window with contours
-.  -ksp_compute_eigenvalues_explicitly - compute the eigenvalues by forming the dense operator and using LAPACK
-.  -ksp_plot_eigenvalues_explicitly - plot the explicitly computing eigenvalues
++  -ksp_view_eigenvalues - compute preconditioned operators eigenvalues
+.  -ksp_view_eigenvalues_explicitly - compute the eigenvalues by forming the dense operator and using LAPACK
 .  -ksp_view_mat binary - save matrix to the default binary viewer
 .  -ksp_view_pmat binary - save matrix used to build preconditioner to the default binary viewer
 .  -ksp_view_rhs binary - save right hand side vector to the default binary viewer
