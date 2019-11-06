@@ -7092,11 +7092,11 @@ PetscErrorCode DMPlexCheckSkeleton(DM dm, PetscInt cellHeight)
 + dm - The DMPlex object
 - cellHeight - Normally 0
 
-  Note: This routine is only relevant for meshes that are fully interpolated across all ranks, and will error out if a non-interpolated mesh is
-  given. This is a useful diagnostic when creating meshes programmatically.
-
-  Options Database Keys:
-. -dm_plex_force_check_faces <bool>	: Force DMPlexCheckFaces() to run even on uninterpolated meshes
+  Notes:
+  This is a useful diagnostic when creating meshes programmatically.
+  This routine is only relevant for meshes that are fully interpolated across all ranks.
+  It will error out if a partially interpolated mesh is given on some rank.
+  It will do nothing for locally uninterpolated mesh (as there is nothing to check).
 
   Level: developer
 
@@ -7108,20 +7108,18 @@ PetscErrorCode DMPlexCheckFaces(DM dm, PetscInt cellHeight)
   PetscInt       dim, depth, vStart, vEnd, cStart, cEnd, c, h;
   PetscErrorCode ierr;
   DMPlexInterpolatedFlag interpEnum;
-  PetscBool	 override = PETSC_FALSE, oset = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-
   ierr = DMPlexIsInterpolated(dm, &interpEnum);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL, NULL, "-dm_plex_force_check_faces", &override, &oset);CHKERRQ(ierr);
-  if (interpEnum != DMPLEX_INTERPOLATED_FULL && !(override && oset)) {
+  if (interpEnum == DMPLEX_INTERPOLATED_NONE) PetscFunctionReturn(0);
+  if (interpEnum == DMPLEX_INTERPOLATED_PARTIAL) {
     PetscMPIInt	rank;
     MPI_Comm	comm;
 
     ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Mesh is not fully interpolated on rank %d!", rank);
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Mesh is only partially interpolated on rank %d, this is currently not supported", rank);
   }
 
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);

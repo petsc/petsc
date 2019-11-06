@@ -790,7 +790,7 @@ int main(int argc, char **argv)
 
   test:
     suffix: cylinder_wedge
-    args: -dim 3 -cell_simplex 0 -interpolate 0 -cell_wedge -domain_shape cylinder -dm_view vtk: -dm_plex_check_symmetry -dm_plex_check_faces -dm_plex_check_skeleton -dm_plex_force_check_faces
+    args: -dim 3 -cell_simplex 0 -interpolate 0 -cell_wedge -domain_shape cylinder -dm_view vtk: -dm_plex_check_symmetry -dm_plex_check_faces -dm_plex_check_skeleton
 
   test:
     suffix: cylinder_wedge_int
