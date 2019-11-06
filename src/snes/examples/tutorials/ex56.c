@@ -375,8 +375,12 @@ int main(int argc,char **args)
     ierr = DMClone(basedm, &dm);CHKERRQ(ierr);
     ierr = PetscObjectSetOptionsPrefix((PetscObject) dm, "ex56_");CHKERRQ(ierr);
     ierr = PetscObjectSetName( (PetscObject)dm,"Mesh");CHKERRQ(ierr);
-    ierr = PetscOptionsClearValue(NULL,"-ex56_dm_refine");CHKERRQ(ierr);
-    ierr = PetscOptionsInsertString(NULL,options[iter]);CHKERRQ(ierr);
+    if (max_conv_its > 1) {
+      /* If max_conv_its == 1, then we are not doing a convergence study. In this case, do not overwrite the -ex56_dm_refine
+       * options with the values in the options[] array; instead, use the user-specified value. */
+      ierr = PetscOptionsClearValue(NULL,"-ex56_dm_refine");CHKERRQ(ierr);
+      ierr = PetscOptionsInsertString(NULL,options[iter]);CHKERRQ(ierr);
+    }
     ierr = DMSetFromOptions(dm);CHKERRQ(ierr); /* refinement done here in Plex, p4est */
     /* snes */
     ierr = SNESCreate(comm, &snes);CHKERRQ(ierr);
