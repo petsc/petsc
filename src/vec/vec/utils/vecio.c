@@ -148,7 +148,7 @@ PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
 PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
 {
   hid_t          scalartype; /* scalar type (H5T_NATIVE_FLOAT or H5T_NATIVE_DOUBLE) */
-  PetscScalar    *x;
+  PetscScalar    *x,*arr;
   const char     *vecname;
   PetscErrorCode ierr;
 
@@ -164,9 +164,16 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
   scalartype = H5T_NATIVE_DOUBLE;
 #endif
   ierr = PetscObjectGetName((PetscObject)xin, &vecname);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5Load(viewer, vecname, xin->map, scalartype, (void**)&x);CHKERRQ(ierr);
-  ierr = VecSetUp(xin);CHKERRQ(ierr);
-  ierr = VecReplaceArray(xin, x);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5Load(viewer,vecname,xin->map,scalartype,(void**)&x);CHKERRQ(ierr);
+  ierr = VecSetUp(xin);CHKERRQ(ierr); /* VecSetSizes might have not been called so ensure ops->create has been called */
+  if (!xin->ops->replacearray) {
+    ierr = VecGetArray(xin,&arr);CHKERRQ(ierr);
+    ierr = PetscArraycpy(arr,x,xin->map->n);CHKERRQ(ierr);
+    ierr = PetscFree(x);CHKERRQ(ierr);
+    ierr = VecRestoreArray(xin,&arr);CHKERRQ(ierr);
+  } else {
+    ierr = VecReplaceArray(xin,x);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 #endif
