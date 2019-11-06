@@ -157,22 +157,25 @@ static PetscErrorCode PetscSFComputeMultiRootOriginalNumberingByRank_Private(Pet
 }
 
 /*@
-  DMPlexCheckConesConformOnInterfaces - Check that points on inter-partition interfaces have conforming order of cone points.
-    For example, if there is an edge (rank,index)=(0,2) connecting points cone(0,2)=[(0,0),(0,1)] in this order, and the point SF containts connections 0 <- (1,0), 1 <- (1,1) and 2 <- (1,2),
-    then this check would pass if the edge (1,2) has cone(1,2)=[(1,0),(1,1)]. By contrast, if cone(1,2)=[(1,1),(1,0)], then this check would fail.
+  DMPlexCheckInterfaceCones - Check that points on inter-partition interfaces have conforming order of cone points.
 
   Input Parameters:
 . dm - The DMPlex object
 
-  Note: This is mainly intended for debugging/testing purposes. Does not check cone orientation, for this purpose use DMPlexCheckFaces().
+  Notes:
+  For example, if there is an edge (rank,index)=(0,2) connecting points cone(0,2)=[(0,0),(0,1)] in this order, and the point SF containts connections 0 <- (1,0), 1 <- (1,1) and 2 <- (1,2),
+  then this check would pass if the edge (1,2) has cone(1,2)=[(1,0),(1,1)]. By contrast, if cone(1,2)=[(1,1),(1,0)], then this check would fail.
 
-  Developer Note: Interface cones are expanded into vertices and then their coordinates are compared.
+  This is mainly intended for debugging/testing purposes. Does not check cone orientation, for this purpose use DMPlexCheckFaces().
+
+  Developer Note:
+  Interface cones are expanded into vertices and then their coordinates are compared.
 
   Level: developer
 
 .seealso: DMPlexGetCone(), DMPlexGetConeSize(), DMGetPointSF(), DMGetCoordinates(), DMPlexCheckFaces(), DMPlexCheckPointSF(), DMPlexCheckSymmetry(), DMPlexCheckSkeleton()
 @*/
-PetscErrorCode DMPlexCheckConesConformOnInterfaces(DM dm)
+PetscErrorCode DMPlexCheckInterfaceCones(DM dm)
 {
   PetscSF             sf;
   PetscInt            nleaves, nranks, nroots;
@@ -233,7 +236,7 @@ PetscErrorCode DMPlexCheckConesConformOnInterfaces(DM dm)
   ierr = PetscOptionsGetBool(((PetscObject)dm)->options, ((PetscObject)dm)->prefix, "-dm_plex_check_cones_conform_on_interfaces_verbose", &verbose, NULL);CHKERRQ(ierr);
   if (verbose) {
     PetscViewer sv, v = PETSC_VIEWER_STDOUT_WORLD;
-    ierr = PetscViewerASCIIPrintf(v, "============\nDMPlexCheckConesConformOnInterfaces output\n============\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(v, "============\nDMPlexCheckInterfaceCones output\n============\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushSynchronized(v);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedPrintf(v, "[%d] --------\n", myrank);CHKERRQ(ierr);
     for (r=0; r<nranks; r++) {
