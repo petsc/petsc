@@ -4343,6 +4343,10 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
     ierr = DMPlexSetTree(newPlex,parentSection,(PetscInt*)parents->array,(PetscInt*)childids->array);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&parentSection);CHKERRQ(ierr);
     ierr = PetscSFCreate(comm,&pointSF);CHKERRQ(ierr);
+    /* 
+       These arrays defining the sf are from the p4est library, but the code there shows the leaves being populated in increasing order.
+       https://gitlab.com/petsc/petsc/merge_requests/2248#note_240186391
+    */
     ierr = PetscSFSetGraph(pointSF,pEnd - pStart,(PetscInt)leaves->elem_count,(PetscInt*)leaves->array,PETSC_COPY_VALUES,(PetscSFNode*)remotes->array,PETSC_COPY_VALUES);CHKERRQ(ierr);
     ierr = DMSetPointSF(newPlex,pointSF);CHKERRQ(ierr);
     ierr = DMSetPointSF(dm,pointSF);CHKERRQ(ierr);

@@ -1386,6 +1386,9 @@ static void MaxLocCarry(void *in_, void *inout_, PetscMPIInt *len_, MPI_Datatype
   Output Parameter:
 - pointSF     - The star forest describing the point overlap in the remapped DM
 
+  Notes:
+  Output pointSF is guaranteed to have the array of local indices (leaves) sorted.
+
   Level: developer
 
 .seealso: DMPlexDistribute(), DMPlexDistributeOverlap()
@@ -1485,6 +1488,7 @@ PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownersh
   ierr = PetscMalloc1(npointLeaves, &pointRemote);CHKERRQ(ierr);
   for (idx = 0, p = 0; p < nleaves; p++) {
     if (leafNodes[p].rank != rank) {
+      /* Note that pointLocal is automatically sorted as it is sublist of 0, ..., nleaves-1 */
       pointLocal[idx] = p;
       pointRemote[idx] = leafNodes[p];
       idx++;
