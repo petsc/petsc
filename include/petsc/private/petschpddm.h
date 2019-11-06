@@ -22,6 +22,7 @@ struct PC_HPDDM_Level {
 struct PC_HPDDM {
   PC_HPDDM_Level              **levels;   /* array of shells */
   Mat                         aux;        /* local auxiliary matrix defined at the finest level on PETSC_COMM_SELF */
+  Mat                         B;          /* right-hand side matrix defined at the finest level on PETSC_COMM_SELF */
   IS                          is;         /* global numbering of the auxiliary matrix */
   PetscInt                    N;          /* number of levels */
   PCHPDDMCoarseCorrectionType correction; /* type of coarse correction */

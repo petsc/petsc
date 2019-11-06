@@ -29,6 +29,7 @@ static PetscErrorCode PCReset_HPDDM(PC pc)
 
   ierr = ISDestroy(&data->is);CHKERRQ(ierr);
   ierr = MatDestroy(&data->aux);CHKERRQ(ierr);
+  ierr = MatDestroy(&data->B);CHKERRQ(ierr);
   data->correction = PC_HPDDM_COARSE_CORRECTION_DEFLATED;
   data->Neumann    = PETSC_FALSE;
   data->setup      = NULL;
@@ -47,6 +48,7 @@ static PetscErrorCode PCDestroy_HPDDM(PC pc)
   ierr = PetscObjectChangeTypeName((PetscObject)pc, 0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMSetAuxiliaryMat_C", NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMHasNeumannMat_C", NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMSetRHSMat_C", NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMSetCoarseCorrectionType_C", NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMGetCoarseCorrectionType_C", NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -91,7 +93,7 @@ static PetscErrorCode PCHPDDMSetAuxiliaryMat_HPDDM(PC pc, IS is, Mat A, PetscErr
 
    Level: intermediate
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, MATIS
+.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCHPDDMSetRHSMat(), MATIS
 M*/
 PetscErrorCode PCHPDDMSetAuxiliaryMat(PC pc, IS is, Mat A, PetscErrorCode (*setup)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void*), void* setup_ctx)
 {
@@ -132,6 +134,42 @@ PetscErrorCode PCHPDDMHasNeumannMat(PC pc, PetscBool has)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   ierr = PetscTryMethod(pc, "PCHPDDMHasNeumannMat_C", (PC, PetscBool), (pc, has));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCHPDDMSetRHSMat_HPDDM(PC pc, Mat B)
+{
+  PC_HPDDM       *data = (PC_HPDDM*)pc->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectReference((PetscObject)B);CHKERRQ(ierr);
+  ierr = MatDestroy(&data->B);CHKERRQ(ierr);
+  data->B = B;
+  PetscFunctionReturn(0);
+}
+
+/*MC
+     PCHPDDMSetRHSMat - Sets the right-hand side matrix used by PCHPDDM for the concurrent GenEO eigenproblems at the finest level. Must be used in conjuction with PCHPDDMSetAuxiliaryMat(N), so that Nv = lambda Bv is solved using EPSSetOperators(N, B). It is assumed that N and B are provided using the same numbering. This provides a means to try more advanced methods such as GenEO-II or H-GenEO.
+
+   Input Parameters:
++     pc - preconditioner context
+-     B - right-hand side sequential matrix
+
+   Level: advanced
+
+.seealso:  PCHPDDMSetAuxiliaryMat(), PCHPDDM
+M*/
+PetscErrorCode PCHPDDMSetRHSMat(PC pc, Mat B)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
+  if (B) {
+    PetscValidHeaderSpecific(B, MAT_CLASSID, 2);
+    ierr = PetscTryMethod(pc, "PCHPDDMSetRHSMat_C", (PC, Mat), (pc, B));CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -570,7 +608,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
         ierr = MatConvert(P, MATMPIBAIJ, MAT_INITIAL_MATRIX, &C);CHKERRQ(ierr);
         break;
       case 1:
-        /* MatCreateSubMatrices does not work with [Seq|MPI]SBAIJ and unsorted ISes, so convert to MPIBAIJ */
+        /* MatCreateSubMatrices does not work with MATSBAIJ and unsorted ISes, so convert to MPIBAIJ */
         ierr = MatConvert(P, MATMPIBAIJ, MAT_INITIAL_MATRIX, &C);CHKERRQ(ierr);
         ierr = MatSetOption(C, MAT_SYMMETRIC, PETSC_TRUE);CHKERRQ(ierr);
         break;
@@ -853,6 +891,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_HPDDM(PC pc)
   pc->ops->applysymmetricright = 0;
   ierr = PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMSetAuxiliaryMat_C", PCHPDDMSetAuxiliaryMat_HPDDM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMHasNeumannMat_C", PCHPDDMHasNeumannMat_HPDDM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMSetRHSMat_C", PCHPDDMSetRHSMat_HPDDM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMSetCoarseCorrectionType_C", PCHPDDMSetCoarseCorrectionType_HPDDM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMGetCoarseCorrectionType_C", PCHPDDMGetCoarseCorrectionType_HPDDM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
