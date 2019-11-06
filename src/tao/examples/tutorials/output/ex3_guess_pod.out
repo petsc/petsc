@@ -1,6 +1,6 @@
 Linear laplace_ solve converged due to CONVERGED_ATOL iterations 0
-Linear laplace_ solve converged due to CONVERGED_RTOL iterations 5
-  0 TAO,  Function value: 0.000316722,  Residual: 4.87344e-06 
+Linear laplace_ solve converged due to CONVERGED_RTOL iterations 6
+  0 TAO,  Function value: 0.000316722,  Residual: 4.87343e-06 
 Linear laplace_ solve converged due to CONVERGED_RTOL iterations 1
 Linear laplace_ solve converged due to CONVERGED_RTOL iterations 0
 Linear laplace_ solve converged due to CONVERGED_RTOL iterations 0
@@ -9,8 +9,8 @@ Linear laplace_ solve converged due to CONVERGED_RTOL iterations 0
 Linear laplace_ solve converged due to CONVERGED_RTOL iterations 0
 Linear laplace_ solve converged due to CONVERGED_RTOL iterations 0
 Linear laplace_ solve converged due to CONVERGED_RTOL iterations 0
-  1 TAO,  Function value: 0.000195676,  Residual: 3.83011e-06 
-Linear laplace_ solve converged due to CONVERGED_RTOL iterations 3
-Linear laplace_ solve converged due to CONVERGED_RTOL iterations 3
-  2 TAO,  Function value: 1.05284e-06,  Residual: 1.77223e-07 
+  1 TAO,  Function value: 0.000195676,  Residual: 3.8301e-06 
+Linear laplace_ solve converged due to CONVERGED_RTOL iterations 4
+Linear laplace_ solve converged due to CONVERGED_RTOL iterations 4
+  2 TAO,  Function value: 1.05282e-06,  Residual: 1.77221e-07 
 TAO solve converged due to CONVERGED_GATOL iterations 2

@@ -5,7 +5,7 @@
 #define __MG_IMPL
 #include <petsc/private/pcimpl.h>
 #include <petscksp.h>
-
+#define PETSC_MG_MAXLEVELS 10
 /*
      Each level has its own copy of this data.
      Level (0) is always the coarsest level and Level (levels-1) is the finest.
@@ -39,7 +39,6 @@ typedef struct {
 typedef struct {
   PCMGType         am;                        /* Multiplicative, additive or full */
   PetscInt         cyclesperpcapply;          /* Number of cycles to use in each PCApply(), multiplicative only*/
-  PetscInt         maxlevels;                 /* total number of levels allocated */
   PCMGGalerkinType galerkin;                  /* use Galerkin process to compute coarser matrices */
   PetscBool        usedmfornumberoflevels;    /* sets the number of levels by getting this information out of the DM */
 
@@ -52,6 +51,8 @@ typedef struct {
   void          *innerctx;                    /* optional data for preconditioner, like PCEXOTIC that inherits off of PCMG */
   PetscLogStage stageApply;
   PetscErrorCode (*view)(PC,PetscViewer);     /* GAMG and other objects that use PCMG can set their own viewer here */
+  PetscReal      min_eigen_DinvA[PETSC_MG_MAXLEVELS];
+  PetscReal      max_eigen_DinvA[PETSC_MG_MAXLEVELS];
 } PC_MG;
 
 PETSC_INTERN PetscErrorCode PCSetUp_MG(PC);

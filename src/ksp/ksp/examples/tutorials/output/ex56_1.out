@@ -1,17 +1,17 @@
-  0 KSP Residual norm 1279.48 
-  1 KSP Residual norm 178.674 
-  2 KSP Residual norm 148.871 
-  3 KSP Residual norm 49.2774 
-  4 KSP Residual norm 40.3056 
-  5 KSP Residual norm 9.12121 
-  6 KSP Residual norm 4.97858 
-  7 KSP Residual norm 1.95325 
-  8 KSP Residual norm 1.44373 
-  9 KSP Residual norm 0.574068 
- 10 KSP Residual norm 0.26276 
- 11 KSP Residual norm 0.0580745 
- 12 KSP Residual norm 0.0216093 
- 13 KSP Residual norm 0.00675462 
+  0 KSP Residual norm 1299.73 
+  1 KSP Residual norm 183.884 
+  2 KSP Residual norm 155.706 
+  3 KSP Residual norm 54.0993 
+  4 KSP Residual norm 40.329 
+  5 KSP Residual norm 9.41714 
+  6 KSP Residual norm 5.09461 
+  7 KSP Residual norm 2.0148 
+  8 KSP Residual norm 1.31144 
+  9 KSP Residual norm 0.631799 
+ 10 KSP Residual norm 0.223355 
+ 11 KSP Residual norm 0.0620895 
+ 12 KSP Residual norm 0.0201817 
+ 13 KSP Residual norm 0.00716774 
 Linear solve converged due to CONVERGED_RTOL iterations 13
 KSP Object: 8 MPI processes
   type: cg
@@ -53,11 +53,13 @@ PC Object: 8 MPI processes
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (mg_levels_1_) 8 MPI processes
       type: chebyshev
-        eigenvalue estimates used:  min = 0.364032, max = 1.91117
-        eigenvalues estimate via cg min 0.0516467, max 1.82016
-        eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
+        eigenvalue estimates used:  min = 0.363947, max = 1.91072
+        eigenvalues estimate via gmres min 0.0488357, max 1.81973
+        eigenvalues estimated using gmres with translations  [0. 0.2; 0. 1.05]
         KSP Object: (mg_levels_1_esteig_) 8 MPI processes
-          type: cg
+          type: gmres
+            restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+            happy breakdown tolerance 1e-30
           maximum iterations=10, initial guess is zero
           tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
@@ -111,11 +113,13 @@ PC Object: 8 MPI processes
   Down solver (pre-smoother) on level 2 -------------------------------
     KSP Object: (mg_levels_2_) 8 MPI processes
       type: chebyshev
-        eigenvalue estimates used:  min = 0.386231, max = 2.02771
-        eigenvalues estimate via cg min 0.0227137, max 1.93116
-        eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
+        eigenvalue estimates used:  min = 0.364878, max = 1.91561
+        eigenvalues estimate via gmres min 0.0388908, max 1.82439
+        eigenvalues estimated using gmres with translations  [0. 0.2; 0. 1.05]
         KSP Object: (mg_levels_2_esteig_) 8 MPI processes
-          type: cg
+          type: gmres
+            restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+            happy breakdown tolerance 1e-30
           maximum iterations=10, initial guess is zero
           tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
@@ -174,20 +178,20 @@ PC Object: 8 MPI processes
     total number of mallocs used during MatSetValues calls=0
       has attached near null space
       using I-node (on process 0) routines: found 343 nodes, limit used is 5
-  0 KSP Residual norm 0.0127948 
-  1 KSP Residual norm 0.00178674 
-  2 KSP Residual norm 0.00148871 
-  3 KSP Residual norm 0.000492774 
-  4 KSP Residual norm 0.000403056 
-  5 KSP Residual norm 9.12121e-05 
-  6 KSP Residual norm 4.97858e-05 
-  7 KSP Residual norm 1.95325e-05 
-  8 KSP Residual norm 1.44373e-05 
-  9 KSP Residual norm 5.74068e-06 
- 10 KSP Residual norm 2.6276e-06 
- 11 KSP Residual norm 5.80745e-07 
- 12 KSP Residual norm 2.16093e-07 
- 13 KSP Residual norm 6.75462e-08 
+  0 KSP Residual norm 0.0129973 
+  1 KSP Residual norm 0.00183884 
+  2 KSP Residual norm 0.00155706 
+  3 KSP Residual norm 0.000540993 
+  4 KSP Residual norm 0.00040329 
+  5 KSP Residual norm 9.41714e-05 
+  6 KSP Residual norm 5.09461e-05 
+  7 KSP Residual norm 2.0148e-05 
+  8 KSP Residual norm 1.31144e-05 
+  9 KSP Residual norm 6.31799e-06 
+ 10 KSP Residual norm 2.23355e-06 
+ 11 KSP Residual norm 6.20895e-07 
+ 12 KSP Residual norm 2.01817e-07 
+ 13 KSP Residual norm 7.16774e-08 
 Linear solve converged due to CONVERGED_RTOL iterations 13
 KSP Object: 8 MPI processes
   type: cg
@@ -230,11 +234,13 @@ PC Object: 8 MPI processes
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (mg_levels_1_) 8 MPI processes
       type: chebyshev
-        eigenvalue estimates used:  min = 0.364032, max = 1.91117
-        eigenvalues estimate via cg min 0.0516467, max 1.82016
-        eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
+        eigenvalue estimates used:  min = 0.363947, max = 1.91072
+        eigenvalues estimate via gmres min 0.0488357, max 1.81973
+        eigenvalues estimated using gmres with translations  [0. 0.2; 0. 1.05]
         KSP Object: (mg_levels_1_esteig_) 8 MPI processes
-          type: cg
+          type: gmres
+            restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+            happy breakdown tolerance 1e-30
           maximum iterations=10, initial guess is zero
           tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
@@ -288,11 +294,13 @@ PC Object: 8 MPI processes
   Down solver (pre-smoother) on level 2 -------------------------------
     KSP Object: (mg_levels_2_) 8 MPI processes
       type: chebyshev
-        eigenvalue estimates used:  min = 0.386231, max = 2.02771
-        eigenvalues estimate via cg min 0.0227137, max 1.93116
-        eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
+        eigenvalue estimates used:  min = 0.364878, max = 1.91561
+        eigenvalues estimate via gmres min 0.0388908, max 1.82439
+        eigenvalues estimated using gmres with translations  [0. 0.2; 0. 1.05]
         KSP Object: (mg_levels_2_esteig_) 8 MPI processes
-          type: cg
+          type: gmres
+            restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+            happy breakdown tolerance 1e-30
           maximum iterations=10, initial guess is zero
           tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
@@ -351,20 +359,20 @@ PC Object: 8 MPI processes
     total number of mallocs used during MatSetValues calls=0
       has attached near null space
       using I-node (on process 0) routines: found 343 nodes, limit used is 5
-  0 KSP Residual norm 0.0127948 
-  1 KSP Residual norm 0.00178674 
-  2 KSP Residual norm 0.00148871 
-  3 KSP Residual norm 0.000492774 
-  4 KSP Residual norm 0.000403056 
-  5 KSP Residual norm 9.12121e-05 
-  6 KSP Residual norm 4.97858e-05 
-  7 KSP Residual norm 1.95325e-05 
-  8 KSP Residual norm 1.44373e-05 
-  9 KSP Residual norm 5.74068e-06 
- 10 KSP Residual norm 2.6276e-06 
- 11 KSP Residual norm 5.80745e-07 
- 12 KSP Residual norm 2.16093e-07 
- 13 KSP Residual norm 6.75462e-08 
+  0 KSP Residual norm 0.0129973 
+  1 KSP Residual norm 0.00183884 
+  2 KSP Residual norm 0.00155706 
+  3 KSP Residual norm 0.000540993 
+  4 KSP Residual norm 0.00040329 
+  5 KSP Residual norm 9.41714e-05 
+  6 KSP Residual norm 5.09461e-05 
+  7 KSP Residual norm 2.0148e-05 
+  8 KSP Residual norm 1.31144e-05 
+  9 KSP Residual norm 6.31799e-06 
+ 10 KSP Residual norm 2.23355e-06 
+ 11 KSP Residual norm 6.20895e-07 
+ 12 KSP Residual norm 2.01817e-07 
+ 13 KSP Residual norm 7.16774e-08 
 Linear solve converged due to CONVERGED_RTOL iterations 13
 KSP Object: 8 MPI processes
   type: cg
@@ -407,11 +415,13 @@ PC Object: 8 MPI processes
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (mg_levels_1_) 8 MPI processes
       type: chebyshev
-        eigenvalue estimates used:  min = 0.364032, max = 1.91117
-        eigenvalues estimate via cg min 0.0516467, max 1.82016
-        eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
+        eigenvalue estimates used:  min = 0.363947, max = 1.91072
+        eigenvalues estimate via gmres min 0.0488357, max 1.81973
+        eigenvalues estimated using gmres with translations  [0. 0.2; 0. 1.05]
         KSP Object: (mg_levels_1_esteig_) 8 MPI processes
-          type: cg
+          type: gmres
+            restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+            happy breakdown tolerance 1e-30
           maximum iterations=10, initial guess is zero
           tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
@@ -465,11 +475,13 @@ PC Object: 8 MPI processes
   Down solver (pre-smoother) on level 2 -------------------------------
     KSP Object: (mg_levels_2_) 8 MPI processes
       type: chebyshev
-        eigenvalue estimates used:  min = 0.386231, max = 2.02771
-        eigenvalues estimate via cg min 0.0227137, max 1.93116
-        eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
+        eigenvalue estimates used:  min = 0.364878, max = 1.91561
+        eigenvalues estimate via gmres min 0.0388908, max 1.82439
+        eigenvalues estimated using gmres with translations  [0. 0.2; 0. 1.05]
         KSP Object: (mg_levels_2_esteig_) 8 MPI processes
-          type: cg
+          type: gmres
+            restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+            happy breakdown tolerance 1e-30
           maximum iterations=10, initial guess is zero
           tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
@@ -528,4 +540,4 @@ PC Object: 8 MPI processes
     total number of mallocs used during MatSetValues calls=0
       has attached near null space
       using I-node (on process 0) routines: found 343 nodes, limit used is 5
-[0]main |b-Ax|/|b|=1.936335e-04, |b|=4.631005e+00, emax=9.968135e-01
+[0]main |b-Ax|/|b|=1.840827e-04, |b|=4.630910e+00, emax=9.973188e-01

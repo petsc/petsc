@@ -218,7 +218,7 @@ int main(int argc,char **args)
 
    test:
       nsize: 4
-      args: -ne 49 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -ksp_converged_reason -mg_levels_esteig_ksp_type cg
+      args: -ne 49 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -ksp_converged_reason -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.1 -mg_levels_esteig_ksp_type cg -mg_levels_esteig_ksp_max_it 10 -mg_levels_pc_type sor -pc_gamg_use_sa_esteig
 
    test:
       suffix: seqaijmkl
