@@ -598,15 +598,17 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
         ierr = PetscSectionGetFieldName(section, link->field, &fieldname);CHKERRQ(ierr);
         ierr = PetscSectionGetField(section, link->field, &section);CHKERRQ(ierr);
         if (fieldname) {
-          ierr = PetscSNPrintf(namebuf, 255, "%s%s", name, fieldname);CHKERRQ(ierr);
+          ierr = PetscSNPrintf(namebuf, sizeof(namebuf), "%s%s", name, fieldname);CHKERRQ(ierr);
         } else {
-          ierr = PetscSNPrintf(namebuf, 255, "%s%D", name, link->field);CHKERRQ(ierr);
+          ierr = PetscSNPrintf(namebuf, sizeof(namebuf), "%s%D", name, link->field);CHKERRQ(ierr);
         }
-        name = &namebuf[0];
+      } else {
+        ierr = PetscSNPrintf(namebuf, sizeof(namebuf), "%s", name);CHKERRQ(ierr);
       }
+      ierr = PetscViewerVTKSanitizeName_Internal(namebuf, sizeof(namebuf));CHKERRQ(ierr);
       ierr = PetscSectionCreateGlobalSection(section, dm->sf, PETSC_FALSE, PETSC_FALSE, &globalSection);CHKERRQ(ierr);
       for (l = 0; l < loops_per_scalar; l++) {
-        ierr = DMPlexVTKWriteField_ASCII(dm, section, globalSection, X, name, fp, enforceDof, PETSC_DETERMINE, 1.0, writeComplex, l);CHKERRQ(ierr);
+        ierr = DMPlexVTKWriteField_ASCII(dm, section, globalSection, X, namebuf, fp, enforceDof, PETSC_DETERMINE, 1.0, writeComplex, l);CHKERRQ(ierr);
       }
       ierr = PetscSectionDestroy(&globalSection);CHKERRQ(ierr);
       if (newSection) {ierr = PetscSectionDestroy(&newSection);CHKERRQ(ierr);}
@@ -619,7 +621,7 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
     for (link = vtk->link; link; link = link->next) {
       Vec          X = (Vec) link->vec;
       PetscSection section = NULL, globalSection;
-      const char   *name;
+      const char   *name = "";
       char         namebuf[256];
       PetscInt     enforceDof = PETSC_DETERMINE;
 
@@ -642,15 +644,17 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
         ierr = PetscSectionGetFieldName(section, link->field, &fieldname);CHKERRQ(ierr);
         ierr = PetscSectionGetField(section, link->field, &section);CHKERRQ(ierr);
         if (fieldname) {
-          ierr = PetscSNPrintf(namebuf, 255, "%s%s", name, fieldname);CHKERRQ(ierr);
+          ierr = PetscSNPrintf(namebuf, sizeof(namebuf), "%s%s", name, fieldname);CHKERRQ(ierr);
         } else {
-          ierr = PetscSNPrintf(namebuf, 255, "%s%D", name, link->field);CHKERRQ(ierr);
+          ierr = PetscSNPrintf(namebuf, sizeof(namebuf), "%s%D", name, link->field);CHKERRQ(ierr);
         }
-        name = &namebuf[0];
+      } else {
+        ierr = PetscSNPrintf(namebuf, sizeof(namebuf), "%s", name);CHKERRQ(ierr);
       }
+      ierr = PetscViewerVTKSanitizeName_Internal(namebuf, sizeof(namebuf));CHKERRQ(ierr);
       ierr = PetscSectionCreateGlobalSection(section, dm->sf, PETSC_FALSE, PETSC_FALSE, &globalSection);CHKERRQ(ierr);
       for (l = 0; l < loops_per_scalar; l++) {
-        ierr = DMPlexVTKWriteField_ASCII(dm, section, globalSection, X, name, fp, enforceDof, PETSC_DETERMINE, 1.0, writeComplex, l);CHKERRQ(ierr);
+        ierr = DMPlexVTKWriteField_ASCII(dm, section, globalSection, X, namebuf, fp, enforceDof, PETSC_DETERMINE, 1.0, writeComplex, l);CHKERRQ(ierr);
       }
       ierr = PetscSectionDestroy(&globalSection);CHKERRQ(ierr);
     }
