@@ -168,12 +168,14 @@ static PetscErrorCode PetscSFComputeMultiRootOriginalNumberingByRank_Private(Pet
 
   This is mainly intended for debugging/testing purposes. Does not check cone orientation, for this purpose use DMPlexCheckFaces().
 
+  For the complete list of DMPlexCheck* functions, see DMSetFromOptions().
+
   Developer Note:
   Interface cones are expanded into vertices and then their coordinates are compared.
 
   Level: developer
 
-.seealso: DMPlexGetCone(), DMPlexGetConeSize(), DMGetPointSF(), DMGetCoordinates(), DMPlexCheckFaces(), DMPlexCheckPointSF(), DMPlexCheckSymmetry(), DMPlexCheckSkeleton()
+.seealso: DMPlexGetCone(), DMPlexGetConeSize(), DMGetPointSF(), DMGetCoordinates(), DMSetFromOptions()
 @*/
 PetscErrorCode DMPlexCheckInterfaceCones(DM dm)
 {

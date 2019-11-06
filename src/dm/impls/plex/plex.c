@@ -6935,11 +6935,14 @@ PetscErrorCode DMPlexCreateLabelField(DM dm, DMLabel label, Vec *val)
   Input Parameter:
 . dm - The DMPlex object
 
-  Note: This is a useful diagnostic when creating meshes programmatically.
+  Notes:
+  This is a useful diagnostic when creating meshes programmatically.
+
+  For the complete list of DMPlexCheck* functions, see DMSetFromOptions().
 
   Level: developer
 
-.seealso: DMCreate(), DMPlexCheckSkeleton(), DMPlexCheckFaces()
+.seealso: DMCreate(), DMSetFromOptions()
 @*/
 PetscErrorCode DMPlexCheckSymmetry(DM dm)
 {
@@ -7027,12 +7030,15 @@ PetscErrorCode DMPlexCheckSymmetry(DM dm)
 + dm - The DMPlex object
 - cellHeight - Normally 0
 
-  Note: This is a useful diagnostic when creating meshes programmatically.
+  Notes:
+  This is a useful diagnostic when creating meshes programmatically.
   Currently applicable only to homogeneous simplex or tensor meshes.
+
+  For the complete list of DMPlexCheck* functions, see DMSetFromOptions().
 
   Level: developer
 
-.seealso: DMCreate(), DMPlexCheckSymmetry(), DMPlexCheckFaces()
+.seealso: DMCreate(), DMSetFromOptions()
 @*/
 PetscErrorCode DMPlexCheckSkeleton(DM dm, PetscInt cellHeight)
 {
@@ -7098,9 +7104,11 @@ PetscErrorCode DMPlexCheckSkeleton(DM dm, PetscInt cellHeight)
   It will error out if a partially interpolated mesh is given on some rank.
   It will do nothing for locally uninterpolated mesh (as there is nothing to check).
 
+  For the complete list of DMPlexCheck* functions, see DMSetFromOptions().
+
   Level: developer
 
-.seealso: DMCreate(), DMPlexGetVTKCellHeight(), DMPlexCheckSymmetry(), DMPlexCheckSkeleton(), DMPlexInterpolate(), DMPlexIsInterpolated()
+.seealso: DMCreate(), DMPlexGetVTKCellHeight(), DMSetFromOptions()
 @*/
 PetscErrorCode DMPlexCheckFaces(DM dm, PetscInt cellHeight)
 {
@@ -7171,11 +7179,14 @@ PetscErrorCode DMPlexCheckFaces(DM dm, PetscInt cellHeight)
   Input Parameter:
 . dm - The DMPlex object
 
-  Note: This is a useful diagnostic when creating meshes programmatically.
+  Notes:
+  This is a useful diagnostic when creating meshes programmatically.
+
+  For the complete list of DMPlexCheck* functions, see DMSetFromOptions().
 
   Level: developer
 
-.seealso: DMCreate(), DMCheckSymmetry(), DMCheckSkeleton(), DMCheckFaces()
+.seealso: DMCreate(), DMSetFromOptions()
 @*/
 PetscErrorCode DMPlexCheckGeometry(DM dm)
 {
@@ -7214,9 +7225,11 @@ PetscErrorCode DMPlexCheckGeometry(DM dm)
   This is mainly intended for debugging/testing purposes.
   It currently checks only meshes with no partition overlapping.
 
+  For the complete list of DMPlexCheck* functions, see DMSetFromOptions().
+
   Level: developer
 
-.seealso: DMGetPointSF(), DMPlexCheckSymmetry(), DMPlexCheckSkeleton(), DMPlexCheckFaces()
+.seealso: DMGetPointSF(), DMSetFromOptions()
 @*/
 PetscErrorCode DMPlexCheckPointSF(DM dm)
 {
@@ -7301,11 +7314,14 @@ static void MPIAPI cell_stats_reduce(void *a, void *b, int * len, MPI_Datatype *
 . output    - If true, statistics will be displayed on stdout
 - condLimit - Display all cells above this condition number, or PETSC_DETERMINE for no cell output
 
-  Note: This is mainly intended for debugging/testing purposes.
+  Notes:
+  This is mainly intended for debugging/testing purposes.
+
+  For the complete list of DMPlexCheck* functions, see DMSetFromOptions().
 
   Level: developer
 
-.seealso: DMPlexCheckSymmetry(), DMPlexCheckSkeleton(), DMPlexCheckFaces()
+.seealso: DMSetFromOptions()
 @*/
 PetscErrorCode DMPlexCheckCellShape(DM dm, PetscBool output, PetscReal condLimit)
 {
