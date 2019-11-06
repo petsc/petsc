@@ -1,4 +1,3 @@
-#define PETSC_USE_FORTRAN_MODULES 1
 
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscbag.h>
