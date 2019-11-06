@@ -416,7 +416,7 @@ int main(int argc, char **argv)
     test:
       suffix: guess_pod
       requires: double triangle
-      args: -laplace_ksp_type cg -laplace_pc_type gamg -laplace_ksp_converged_reason -mat_lmvm_ksp_type cg -mat_lmvm_pc_type gamg -tao_monitor -petscspace_degree 1 -tao_converged_reason -dm_refine 3 -laplace_ksp_guess_type pod -tao_gatol 1e-6
+      args: -laplace_ksp_type cg -laplace_pc_type gamg  -laplace_pc_gamg_esteig_ksp_type cg -laplace_ksp_converged_reason -mat_lmvm_ksp_type cg -mat_lmvm_pc_type gamg -tao_monitor -petscspace_degree 1 -tao_converged_reason -dm_refine 3 -laplace_ksp_guess_type pod -tao_gatol 1e-6 -mat_lmvm_pc_gamg_esteig_ksp_type cg
       filter: sed -e "s/-nan/nan/g"
 
 TEST*/

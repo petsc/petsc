@@ -2952,25 +2952,39 @@ One can use AIJ instead of BAIJ without changing any code other than the constru
 For instance, \lstinline{MatSetValuesBlocked} works with AIJ matrices.
 
 GAMG provides unsmoothed aggregation (\trl{-pc_gamg_agg_nsmooths 0}) and smoothed aggregation (\trl{-pc_gamg_agg_nsmooths 1} or \lstinline{PCGAMGSetNSmooths(pc,1)}).
-Smoothed aggregation is recommended for symmetric positive definite
-systems.
+Smoothed aggregation (SA) is recommended for symmetric positive
+definite systems.
 Unsmoothed aggregation can be useful for asymmetric
 problems and problems where highest eigen estimates are problematic.
-If poor convergence rates are observed using the smoothed version one can test unsmoothed aggregation.
-The parameters for the eigen estimator can be set with the prefix \trl{gamg_est}.
-For example CG is a much better KSP type than the default GMRES if your problem is symmetric positive definite; one can specify this with \trl{-gamg_est_ksp_type cg}, prepending any solver prefix that has been added to the solver.
+If poor convergence rates are observed using the smoothed version one
+can test unsmoothed aggregation.
+
+{\bf Eigenvalue estimates:}
+The parameters for the KSP eigen estimator, use for SA, can be set with \trl{-pc_gamg_esteig_ksp_max_it} and \trl{-pc_gamg_esteig_ksp_type}.
+For example CG generally converges to the highest eigenvalue fast than GMRES (the default
+for KSP) if your problem is symmetric positive definite.
+One can specify CG with \trl{-pc_gamg_esteig_ksp_type cg}.
+The default for \trl{-pc_gamg_esteig_ksp_max_it} is 10, which we have
+found is pretty safe with a (default) safety factor of 1.1.
+One can specify the range of real eigenvalues, in the same way that
+one can for Chebyshev KSP solvers (smoothers), with
+\trl{-pc_gamg_eigenvalues <emin,emax>}.
+GAMG sets the MG smoother type to chebyshev by default.
+By default, GAMG uses its eigen estimate, if it has one, for Chebyshev
+smoothers if the smoother uses Jacobi preconditioning.
+This can be overridden with \trl{-pc_gamg_use_sa_esteig  <true,false>}.
 
 AMG methods requires knowledge of the number of degrees of
 freedom per vertex, the default is one (a scalar problem).
 Vector problems like elasticity should set the block size of the matrix appropriately with \trl{-mat_block_size bs}  or \lstinline{MatSetBlockSize(mat,bs)}.
 Equations must be ordered in ``vertex-major'' ordering (e.g., $x_1,y_1,z_1,x_2,y_2,...$).
 
-Smoothed aggregation requires an explicit representation of the (near) null space of the operator for optimal performance.
+{\bf Near null space:} Smoothed aggregation requires an explicit representation of the (near) null space of the operator for optimal performance.
 One can provide an orthonormal set of null space vectors with \lstinline{MatSetNearNullSpace()}.
 The vector of all ones is the default, for each variable given by the block size (e.g., the translational rigid  body modes).
 For elasticity, where rotational rigid body modes are required to complete the near null space you can use \lstinline{MatNullSpaceCreateRigidBody()} to create the null space vectors and then \lstinline{MatSetNearNullSpace()}.
 
-The GAMG framework provides for reducing the number of active processes on coarse grids to reduce communication costs when there is not enough parallelism to keep relative communication costs down.
+{\bf Coarse grid data model:} The GAMG framework provides for reducing the number of active processes on coarse grids to reduce communication costs when there is not enough parallelism to keep relative communication costs down.
 Most AMG solver reduce to just one active process on the coarsest grid (the PETSc MG framework also supports redundantly solving the coarse grid on all processes to potentially reduce communication  costs), although this forcing to one process can be overridden if one wishes to use a parallel coarse grid solver.
 GAMG generalizes this by reducing the active number of processes on other coarse grids as well.
 GAMG will select the number of active processors by fitting the desired number of equation per process (set with \trl{-pc_gamg_process_eq_limit <50>,}) at each level given that size of each level.
@@ -2979,9 +2993,9 @@ One can, and probably should, repartition the coarse grids with \trl{-pc_gamg_re
 As mentioned multigrid generally coarsens the problem until it is small enough to be solved with an exact solver (eg, LU or SVD) in a relatively small time.
 GAMG will stop coarsening when the number of equation on a grid falls below at threshold give by \trl{-pc_gamg_coarse_eq_limit <50>,}.
 
-There are several options to provide parameters to the coarsening algorithm and parallel data layout.
+{\bf Coarse grid parameters:} There are several options to provide parameters to the coarsening algorithm and parallel data layout.
 Run a code that uses GAMG with \trl{-help} to get full listing of GAMG parameters with short parameter descriptions.
-The rate of coarsening is critical in AMG performance -- too slow of coarsening will result in an overly expensive solver per iteration and too fast coarsening will result in decrease in the convergence rate. \trl{-pc_gamg_threshold <0>} and  \trl{-pc_gamg_square_graph <1>,} are the primary parameters that control coarsening rates, which is very important for AMG perforamance.
+The rate of coarsening is critical in AMG performance -- too slow of coarsening will result in an overly expensive solver per iteration and too fast coarsening will result in decrease in the convergence rate. \trl{-pc_gamg_threshold <0>} and  \trl{-pc_gamg_square_graph <1>,} are the primary parameters that control coarsening rates, which is very important for AMG performance.
 A greedy maximal independent set (MIS) algorithm is used in coarsening.
 Squaring the graph implements so called MIS-2, the root vertex in an aggregate is more than two edges away from another root vertex, instead of more than one in MIS.
 The threshold parameter sets a normalized threshold for which edges are removed from the MIS graph, thereby coarsening slower.
