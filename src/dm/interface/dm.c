@@ -817,6 +817,7 @@ PetscErrorCode  DMSetUp(DM dm)
     -dm_plex_check_geometry        - Check that cells have positive volume - DMPlexCheckGeometry()
     -dm_plex_check_pointsf         - Check some necessary conditions for PointSF - DMPlexCheckPointSF()
     -dm_plex_check_interface_cones - Check points on inter-partition interfaces have conforming order of cone points - DMPlexCheckInterfaceCones()
+    -dm_plex_check_all             - Perform all the checks above
 
     Level: intermediate
 
