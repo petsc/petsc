@@ -235,6 +235,7 @@ $      testing with -pc_type lu to eliminate the linear solver as the cause of t
 
 .seealso: SNESSolve(), SNESGetConvergedReason(), KSPConvergedReason, SNESSetConvergenceTest()
 E*/
+#define SNES_CONVERGED_TR_DELTA_DEPRECATED SNES_CONVERGED_TR_DELTA PETSC_DEPRECATED_ENUM("Use SNES_DIVERGED_TR_DELTA (since version 3.12)")
 typedef enum {/* converged */
               SNES_CONVERGED_FNORM_ABS         =  2, /* ||F|| < atol */
               SNES_CONVERGED_FNORM_RELATIVE    =  3, /* ||F|| < rtol*||F_initial|| */
@@ -252,6 +253,7 @@ typedef enum {/* converged */
               SNES_DIVERGED_DTOL                = -9, /* || F || > divtol*||F_initial|| */
               SNES_DIVERGED_JACOBIAN_DOMAIN     = -10, /* Jacobian calculation does not make sense */
               SNES_DIVERGED_TR_DELTA            = -11,
+              SNES_CONVERGED_TR_DELTA_DEPRECATED = -11,
 
               SNES_CONVERGED_ITERATING          =  0} SNESConvergedReason;
 PETSC_EXTERN const char *const*SNESConvergedReasons;
