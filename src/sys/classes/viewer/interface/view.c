@@ -331,6 +331,29 @@ PetscErrorCode  PetscViewerSetUp(PetscViewer viewer)
 }
 
 /*@C
+   PetscViewerViewFromOptions - View from Options
+
+   Collective on PetscViewer
+
+   Input Parameters:
++  A - the PetscViewer context
+-  obj - Optional object
+.  name - command line option
+
+   Level: intermediate
+.seealso:  PetscViewer, PetscViewerView, PetscObjectViewFromOptions(), PetscViewerCreate()
+@*/
+PetscErrorCode  PetscViewerViewFromOptions(PetscViewer A,PetscObject obj,const char name[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,PETSC_VIEWER_CLASSID,1);
+  ierr = PetscObjectViewFromOptions((PetscObject)A,obj,name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
    PetscViewerView - Visualizes a viewer object.
 
    Collective on PetscViewer

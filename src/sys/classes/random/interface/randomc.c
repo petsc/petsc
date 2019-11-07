@@ -205,6 +205,30 @@ PetscErrorCode  PetscRandomSetFromOptions(PetscRandom rnd)
 #if defined(PETSC_HAVE_SAWS)
 #include <petscviewersaws.h>
 #endif
+
+/*@C
+   PetscRandomViewFromOptions - View from Options
+
+   Collective on PetscRandom
+
+   Input Parameters:
++  A - the  random number generator context
+-  obj - Optional object
+.  name - command line option
+
+   Level: intermediate
+.seealso:  PetscRandom, PetscRandomView, PetscObjectViewFromOptions(), PetscRandomCreate()
+@*/
+PetscErrorCode  PetscRandomViewFromOptions(PetscRandom A,PetscObject obj,const char name[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,PETSC_RANDOM_CLASSID,1);
+  ierr = PetscObjectViewFromOptions((PetscObject)A,obj,name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@C
    PetscRandomView - Views a random number generator object.
 

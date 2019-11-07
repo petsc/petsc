@@ -1948,6 +1948,29 @@ static PetscErrorCode PetscSectionView_ASCII(PetscSection s, PetscViewer viewer)
 }
 
 /*@C
+   PetscSectionViewFromOptions - View from Options
+
+   Collective on PetscSection
+
+   Input Parameters:
++  A - the PetscSection object to view
+-  obj - Optional object
+.  name - command line option
+
+   Level: intermediate
+.seealso:  PetscSection, PetscSectionView, PetscObjectViewFromOptions(), PetscSectionCreate()
+@*/
+PetscErrorCode  PetscSectionViewFromOptions(PetscSection A,PetscObject obj,const char name[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,PETSC_SECTION_CLASSID,1);
+  ierr = PetscObjectViewFromOptions((PetscObject)A,obj,name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
   PetscSectionView - Views a PetscSection
 
   Collective on PetscSection

@@ -1885,6 +1885,30 @@ PetscErrorCode  TSLoad(TS ts, PetscViewer viewer)
 #if defined(PETSC_HAVE_SAWS)
 #include <petscviewersaws.h>
 #endif
+
+/*@C
+   TSViewFromOptions - View from Options
+
+   Collective on TS
+
+   Input Parameters:
++  A - the application ordering context
+-  obj - Optional object
+.  name - command line option
+
+   Level: intermediate
+.seealso:  TS, TSView, PetscObjectViewFromOptions(), TSCreate()
+@*/
+PetscErrorCode  TSViewFromOptions(TS A,PetscObject obj,const char name[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,TS_CLASSID,1);
+  ierr = PetscObjectViewFromOptions((PetscObject)A,obj,name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@C
     TSView - Prints the TS data structure.
 

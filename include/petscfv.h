@@ -34,7 +34,7 @@ PETSC_EXTERN PetscErrorCode PetscLimiterSetType(PetscLimiter, PetscLimiterType);
 PETSC_EXTERN PetscErrorCode PetscLimiterGetType(PetscLimiter, PetscLimiterType *);
 PETSC_EXTERN PetscErrorCode PetscLimiterSetUp(PetscLimiter);
 PETSC_EXTERN PetscErrorCode PetscLimiterSetFromOptions(PetscLimiter);
-PETSC_STATIC_INLINE PetscErrorCode PetscLimiterViewFromOptions(PetscLimiter A,PetscObject B,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,B,name);}
+PETSC_EXTERN PetscErrorCode PetscLimiterViewFromOptions(PetscLimiter,PetscObject,const char[]);
 PETSC_EXTERN PetscErrorCode PetscLimiterView(PetscLimiter, PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscLimiterRegister(const char [], PetscErrorCode (*)(PetscLimiter));
 PETSC_EXTERN PetscErrorCode PetscLimiterRegisterDestroy(void);
@@ -64,7 +64,7 @@ PETSC_EXTERN PetscErrorCode PetscFVSetType(PetscFV, PetscFVType);
 PETSC_EXTERN PetscErrorCode PetscFVGetType(PetscFV, PetscFVType *);
 PETSC_EXTERN PetscErrorCode PetscFVSetUp(PetscFV);
 PETSC_EXTERN PetscErrorCode PetscFVSetFromOptions(PetscFV);
-PETSC_STATIC_INLINE PetscErrorCode PetscFVViewFromOptions(PetscFV A,PetscObject B,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,B,name);}
+PETSC_EXTERN PetscErrorCode PetscFVViewFromOptions(PetscFV,PetscObject,const char[]);
 PETSC_EXTERN PetscErrorCode PetscFVView(PetscFV, PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscFVRegister(const char [], PetscErrorCode (*)(PetscFV));
 PETSC_EXTERN PetscErrorCode PetscFVRegisterDestroy(void);

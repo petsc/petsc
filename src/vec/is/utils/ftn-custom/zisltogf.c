@@ -44,3 +44,12 @@ PETSC_EXTERN void PETSC_STDCALL islocaltoglobalmappinggetinfo_(ISLocalToGlobalMa
   *ierr  = ISLocalToGlobalMappingRestoreInfo(*mapping,size,&sprocs,&snumprocs,&sindices); if (*ierr) return;
   called = PETSC_FALSE;
 }
+
+PETSC_EXTERN void PETSC_STDCALL islocaltoglobalmappingviewfromoptions_(ISLocalToGlobalMapping *ao,PetscObject obj,char* type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+{
+  char *t;
+
+  FIXCHAR(type,len,t);
+  *ierr = ISLocalToGlobalMappingViewFromOptions(*ao,obj,t);if (*ierr) return;
+  FREECHAR(type,t);
+}

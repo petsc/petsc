@@ -47,7 +47,7 @@ PETSC_EXTERN PetscErrorCode PetscDSSetType(PetscDS, PetscDSType);
 PETSC_EXTERN PetscErrorCode PetscDSGetType(PetscDS, PetscDSType *);
 PETSC_EXTERN PetscErrorCode PetscDSSetUp(PetscDS);
 PETSC_EXTERN PetscErrorCode PetscDSSetFromOptions(PetscDS);
-PETSC_STATIC_INLINE PetscErrorCode PetscDSViewFromOptions(PetscDS A,PetscObject B,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,B,name);}
+PETSC_EXTERN PetscErrorCode PetscDSViewFromOptions(PetscDS,PetscObject,const char[]);
 
 PETSC_EXTERN PetscErrorCode PetscDSView(PetscDS,PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscDSRegister(const char [], PetscErrorCode (*)(PetscDS));

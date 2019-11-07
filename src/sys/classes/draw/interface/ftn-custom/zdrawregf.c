@@ -5,10 +5,12 @@
 #define petscdrawsettype_          PETSCDRAWSETTYPE
 #define petscdrawcreate_           PETSCDRAWCREATE
 #define petscdrawsetoptionsprefix_ PETSCDRAWSETOPTIONSPREFIX
+#define petscdrawviewfromoptions_  PETSCDRAWVIEWFROMOPTIONS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscdrawsettype_          petscdrawsettype
 #define petscdrawcreate_           petscdrawcreate
 #define petscdrawsetoptionsprefix_ petscdrawsetoptionsprefix
+#define petscdrawviewfromoptions_  petscdrawviewfromoptions
 #endif
 
 PETSC_EXTERN void PETSC_STDCALL petscdrawsettype_(PetscDraw *ctx,char* text PETSC_MIXED_LEN(len),
@@ -41,3 +43,13 @@ PETSC_EXTERN void PETSC_STDCALL petscdrawsetoptionsprefix_(PetscDraw *ctx,char* 
   *ierr = PetscDrawSetOptionsPrefix(*ctx,t);if (*ierr) return;
   FREECHAR(text,t);
 }
+
+PETSC_EXTERN void PETSC_STDCALL petscdrawviewfromoptions_(PetscDraw *draw,PetscObject obj,char* type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+{
+  char *t;
+
+  FIXCHAR(type,len,t);
+  *ierr = PetscDrawViewFromOptions(*draw,obj,t);if (*ierr) return;
+  FREECHAR(type,t);
+}
+

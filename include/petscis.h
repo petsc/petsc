@@ -88,7 +88,7 @@ PETSC_EXTERN PetscErrorCode ISGetSize(IS,PetscInt *);
 PETSC_EXTERN PetscErrorCode ISGetLocalSize(IS,PetscInt *);
 PETSC_EXTERN PetscErrorCode ISInvertPermutation(IS,PetscInt,IS*);
 PETSC_EXTERN PetscErrorCode ISView(IS,PetscViewer);
-PETSC_STATIC_INLINE PetscErrorCode ISViewFromOptions(IS A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
+PETSC_EXTERN PetscErrorCode ISViewFromOptions(IS,PetscObject,const char[]);
 PETSC_EXTERN PetscErrorCode ISLoad(IS,PetscViewer);
 PETSC_EXTERN PetscErrorCode ISEqual(IS,IS,PetscBool  *);
 PETSC_EXTERN PetscErrorCode ISEqualUnsorted(IS,IS,PetscBool *);
@@ -168,7 +168,7 @@ PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingCreateSF(PetscSF,PetscInt,ISLo
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingSetFromOptions(ISLocalToGlobalMapping);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingSetUp(ISLocalToGlobalMapping);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingView(ISLocalToGlobalMapping,PetscViewer);
-PETSC_STATIC_INLINE PetscErrorCode ISLocalToGlobalMappingViewFromOptions(ISLocalToGlobalMapping A,PetscObject B,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,B,name);}
+PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingViewFromOptions(ISLocalToGlobalMapping,PetscObject,const char[]);
 
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping*);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingApply(ISLocalToGlobalMapping,PetscInt,const PetscInt[],PetscInt[]);

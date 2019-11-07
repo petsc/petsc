@@ -1580,6 +1580,29 @@ PetscErrorCode  ISRestoreNonlocalIS(IS is, IS *complement)
 }
 
 /*@C
+   ISViewFromOptions - View from Options
+
+   Collective on IS
+
+   Input Parameters:
++  A - the index set
+-  obj - Optional object
+.  name - command line option
+
+   Level: intermediate
+.seealso:  IS, ISView, PetscObjectViewFromOptions(), ISCreate()
+@*/
+PetscErrorCode  ISViewFromOptions(IS A,PetscObject obj,const char name[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,IS_CLASSID,1);
+  ierr = PetscObjectViewFromOptions((PetscObject)A,obj,name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
    ISView - Displays an index set.
 
    Collective on IS

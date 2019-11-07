@@ -98,6 +98,7 @@
 #define matgetownershiprange11_          MATGETOWNERSHIPRANGE11
 #define matgetownershipis_               MATGETOWNERSHIPIS
 #define matgetownershiprangecolumn_      MATGETOWNERSHIPRANGECOLUMN
+#define matviewfromoptions_              MATVIEWFROMOPTIONS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matsetvalues_                    matsetvalues
 #define matsetvaluesnnnn_                matsetvaluesnnnn
@@ -192,6 +193,7 @@
 #define matgetownershiprange11_          matgetownershiprange11
 #define matgetownershipis_               matgetownershipis
 #define matgetownershiprangecolumn_      matgetownershiprangecolumn
+#define matviewfromoptions_              matviewfromoptions
 #endif
 
 PETSC_EXTERN void PETSC_STDCALL  matgetownershiprange_(Mat *mat,PetscInt *m,PetscInt *n, int *ierr )
@@ -786,4 +788,12 @@ PETSC_EXTERN void PETSC_STDCALL  matzerorowslocal0_(Mat *mat,PetscInt *numRows, 
 PETSC_EXTERN void PETSC_STDCALL  matzerorowslocal1_(Mat *mat,PetscInt *numRows, PetscInt rows[],PetscScalar *diag,Vec *x,Vec *b, int *ierr)
 {
   matzerorowslocal_(mat,numRows,rows,diag,x,b,ierr);
+}
+PETSC_EXTERN void PETSC_STDCALL matviewfromoptions_(Mat *ao,PetscObject obj,char* type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+{
+  char *t;
+
+  FIXCHAR(type,len,t);
+  *ierr = MatViewFromOptions(*ao,obj,t);if (*ierr) return;
+  FREECHAR(type,t);
 }

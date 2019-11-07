@@ -25,6 +25,7 @@
 #define tsmonitordefault_                    TSMONITORDEFAULT
 #define tssetprestep_                        TSSETPRESTEP
 #define tssetpoststep_                       TSSETPOSTSTEP
+#define tsviewfromoptions_                   TSVIEWFROMOPTIONS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define tsmonitorlgsettransform_             tsmonitorlgsettransform
 #define tssetrhsfunction_                    tssetrhsfunction
@@ -47,6 +48,7 @@
 #define tsmonitordefault_                    tsmonitordefault
 #define tssetprestep_                        tssetprestep
 #define tssetpoststep_                       tssetpoststep
+#define tsviewfromoptions_                   tsviewfromoptions
 #endif
 
 static struct {
@@ -304,3 +306,11 @@ PETSC_EXTERN void PETSC_STDCALL tsappendoptionsprefix_(TS *ts,char* prefix PETSC
   FREECHAR(prefix,t);
 }
 
+PETSC_EXTERN void PETSC_STDCALL tsviewfromoptions_(TS *ao,PetscObject obj,char* type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+{
+  char *t;
+
+  FIXCHAR(type,len,t);
+  *ierr = TSViewFromOptions(*ao,obj,t);if (*ierr) return;
+  FREECHAR(type,t);
+}

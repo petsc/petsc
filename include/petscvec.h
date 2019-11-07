@@ -145,7 +145,7 @@ PETSC_EXTERN PetscErrorCode VecCreateShared(MPI_Comm,PetscInt,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode VecCreateNode(MPI_Comm,PetscInt,PetscInt,Vec*);
 
 PETSC_EXTERN PetscErrorCode VecSetFromOptions(Vec);
-PETSC_STATIC_INLINE PetscErrorCode VecViewFromOptions(Vec A,PetscObject B,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,B,name);}
+PETSC_EXTERN PetscErrorCode VecViewFromOptions(Vec,PetscObject,const char[]);
 
 PETSC_EXTERN PetscErrorCode VecSetUp(Vec);
 PETSC_EXTERN PetscErrorCode VecDestroy(Vec*);
@@ -344,7 +344,7 @@ PETSC_EXTERN PetscErrorCode VecScatterDestroy(VecScatter*);
 PETSC_EXTERN PetscErrorCode VecScatterSetUp(VecScatter);
 PETSC_EXTERN PetscErrorCode VecScatterCopy(VecScatter,VecScatter *);
 PETSC_EXTERN PetscErrorCode VecScatterView(VecScatter,PetscViewer);
-PETSC_STATIC_INLINE PetscErrorCode VecScatterViewFromOptions(VecScatter A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
+PETSC_EXTERN PetscErrorCode VecScatterViewFromOptions(VecScatter,PetscObject,const char[]);
 PETSC_EXTERN PetscErrorCode VecScatterRemap(VecScatter,PetscInt[],PetscInt[]);
 PETSC_EXTERN PetscErrorCode VecScatterGetMerged(VecScatter,PetscBool *);
 

@@ -38,7 +38,7 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerSetType(PetscPartitioner, PetscParti
 PETSC_EXTERN PetscErrorCode PetscPartitionerGetType(PetscPartitioner, PetscPartitionerType *);
 PETSC_EXTERN PetscErrorCode PetscPartitionerSetUp(PetscPartitioner);
 PETSC_EXTERN PetscErrorCode PetscPartitionerSetFromOptions(PetscPartitioner);
-PETSC_STATIC_INLINE PetscErrorCode PetscPartitionerViewFromOptions(PetscPartitioner A,PetscObject B,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,B,name);}
+PETSC_EXTERN PetscErrorCode PetscPartitionerViewFromOptions(PetscPartitioner,PetscObject,const char[]);
 PETSC_EXTERN PetscErrorCode PetscPartitionerView(PetscPartitioner, PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscPartitionerRegister(const char [], PetscErrorCode (*)(PetscPartitioner));
 PETSC_EXTERN PetscErrorCode PetscPartitionerRegisterDestroy(void);

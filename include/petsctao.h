@@ -126,7 +126,7 @@ PETSC_EXTERN PetscErrorCode TaoDestroy(Tao*);
 
 PETSC_EXTERN PetscErrorCode TaoSetOptionsPrefix(Tao,const char []);
 PETSC_EXTERN PetscErrorCode TaoView(Tao, PetscViewer);
-PETSC_STATIC_INLINE PetscErrorCode TaoViewFromOptions(Tao A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
+PETSC_EXTERN PetscErrorCode TaoViewFromOptions(Tao,PetscObject,const char[]);
 
 PETSC_EXTERN PetscErrorCode TaoSolve(Tao);
 

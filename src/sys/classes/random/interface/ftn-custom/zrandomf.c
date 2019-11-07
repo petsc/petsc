@@ -6,11 +6,13 @@
 #define petscrandomgettype_                PETSCRANDOMGETTYPE
 #define petscrandomsetseed_                PETSCRANDOMSETSEED
 #define petscrandomgetseed_                PETSCRANDOMGETSEED
+#define petscrandomviewfromoptions_        PETSCRANDOMVIEWFROMOPTIONS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscrandomsettype_                petscrandomsettype
 #define petscrandomgettype_                petscrandomgettype
 #define petscrandomsetseed_                petscrandomsetseed
 #define petscrandomgetseed_                petscrandomgetseed
+#define petscrandomviewfromoptions_        petscrandomviewfromoptions
 #endif
 
 PETSC_EXTERN void PETSC_STDCALL  petscrandomgetseed_(PetscRandom *r,unsigned long *seed, PetscErrorCode *ierr )
@@ -39,4 +41,12 @@ PETSC_EXTERN void PETSC_STDCALL petscrandomgettype_(PetscRandom *petscrandom,cha
   *ierr = PetscStrncpy(name,tname,len);if (*ierr) return;
   FIXRETURNCHAR(PETSC_TRUE,name,len);
 
+}
+PETSC_EXTERN void PETSC_STDCALL petscrandomviewfromoptions_(PetscRandom *ao,PetscObject obj,char* type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+{
+  char *t;
+
+  FIXCHAR(type,len,t);
+  *ierr = PetscRandomViewFromOptions(*ao,obj,t);if (*ierr) return;
+  FREECHAR(type,t);
 }

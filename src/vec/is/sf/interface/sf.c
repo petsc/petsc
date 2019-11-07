@@ -705,6 +705,29 @@ PetscErrorCode PetscSFGetLeafRange(PetscSF sf,PetscInt *minleaf,PetscInt *maxlea
 }
 
 /*@C
+   PetscSFViewFromOptions - View from Options
+
+   Collective on PetscSF
+
+   Input Parameters:
++  A - the star forest
+-  obj - Optional object
+.  name - command line option
+
+   Level: intermediate
+.seealso:  PetscSF, PetscSFView, PetscObjectViewFromOptions(), PetscSFCreate()
+@*/
+PetscErrorCode  PetscSFViewFromOptions(PetscSF A,PetscObject obj,const char name[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,PETSCSF_CLASSID,1);
+  ierr = PetscObjectViewFromOptions((PetscObject)A,obj,name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
    PetscSFView - view a star forest
 
    Collective
