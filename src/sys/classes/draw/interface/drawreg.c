@@ -89,6 +89,29 @@ PetscErrorCode  PetscDrawView(PetscDraw indraw,PetscViewer viewer)
 }
 
 /*@C
+   PetscDrawViewFromOptions - View from Options
+
+   Collective on PetscDraw
+
+   Input Parameters:
++  A - the PetscDraw context
+-  obj - Optional object
+.  name - command line option
+
+   Level: intermediate
+.seealso:  PetscDraw, PetscDrawView, PetscObjectViewFromOptions(), PetscDrawCreate()
+@*/
+PetscErrorCode  PetscDrawViewFromOptions(PetscDraw A,PetscObject obj,const char name[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,PETSC_DRAW_CLASSID,1);
+  ierr = PetscObjectViewFromOptions((PetscObject)A,obj,name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
    PetscDrawCreate - Creates a graphics context.
 
    Collective

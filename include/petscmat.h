@@ -205,7 +205,7 @@ PETSC_EXTERN PetscErrorCode MatCreate(MPI_Comm,Mat*);
 PETSC_EXTERN PetscErrorCode MatSetSizes(Mat,PetscInt,PetscInt,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode MatSetType(Mat,MatType);
 PETSC_EXTERN PetscErrorCode MatSetFromOptions(Mat);
-PETSC_STATIC_INLINE PetscErrorCode MatViewFromOptions(Mat A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
+PETSC_EXTERN PetscErrorCode MatViewFromOptions(Mat,PetscObject,const char[]);
 PETSC_EXTERN PetscErrorCode MatRegister(const char[],PetscErrorCode(*)(Mat));
 PETSC_EXTERN PetscErrorCode MatRegisterRootName(const char[],const char[],const char[]);
 PETSC_EXTERN PetscErrorCode MatSetOptionsPrefix(Mat,const char[]);
@@ -1362,7 +1362,7 @@ PETSC_EXTERN PetscErrorCode MatPartitioningRegister(const char[],PetscErrorCode 
 
 
 PETSC_EXTERN PetscErrorCode MatPartitioningView(MatPartitioning,PetscViewer);
-PETSC_STATIC_INLINE PetscErrorCode MatPartitioningViewFromOptions(MatPartitioning A,PetscObject B,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,B,name);}
+PETSC_EXTERN PetscErrorCode MatPartitioningViewFromOptions(MatPartitioning,PetscObject,const char[]);
 
 PETSC_EXTERN PetscErrorCode MatPartitioningSetFromOptions(MatPartitioning);
 PETSC_EXTERN PetscErrorCode MatPartitioningGetType(MatPartitioning,MatPartitioningType*);

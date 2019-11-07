@@ -468,6 +468,29 @@ PetscErrorCode  VecDestroyVecs(PetscInt m,Vec *vv[])
 }
 
 /*@C
+   VecViewFromOptions - View from Options
+
+   Collective on Vec
+
+   Input Parameters:
++  A - the vector
+-  obj - Optional object
+.  name - command line option
+
+   Level: intermediate
+.seealso:  Vec, VecView, PetscObjectViewFromOptions(), VecCreate()
+@*/
+PetscErrorCode  VecViewFromOptions(Vec A,PetscObject obj,const char name[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,VEC_CLASSID,1);
+  ierr = PetscObjectViewFromOptions((PetscObject)A,obj,name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
    VecView - Views a vector object.
 
    Collective on Vec

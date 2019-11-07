@@ -434,7 +434,7 @@ PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *nu
 /*@C
   DMPlexCreateNeighborCSR - Create a mesh graph (cell-cell adjacency) in parallel CSR format.
 
-  Collective
+  Collective on DM
 
   Input Arguments:
 + dm - The DMPlex
@@ -674,7 +674,7 @@ PetscErrorCode PetscPartitionerRegister(const char sname[], PetscErrorCode (*fun
 /*@C
   PetscPartitionerSetType - Builds a particular PetscPartitioner
 
-  Collective on part
+  Collective on PetscPartitioner
 
   Input Parameters:
 + part - The PetscPartitioner object
@@ -740,9 +740,32 @@ PetscErrorCode PetscPartitionerGetType(PetscPartitioner part, PetscPartitionerTy
 }
 
 /*@C
+   PetscPartitionerViewFromOptions - View from Options
+
+   Collective on PetscPartitioner
+
+   Input Parameters:
++  A - the PetscPartitioner object
+.  obj - Optional object
+-  name - command line option
+
+   Level: intermediate
+.seealso:  PetscPartitionerView(), PetscObjectViewFromOptions()
+@*/
+PetscErrorCode PetscPartitionerViewFromOptions(PetscPartitioner A,PetscObject obj,const char name[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,PETSCPARTITIONER_CLASSID,1);
+  ierr = PetscObjectViewFromOptions((PetscObject)A,obj,name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
   PetscPartitionerView - Views a PetscPartitioner
 
-  Collective on part
+  Collective on PetscPartitioner
 
   Input Parameter:
 + part - the PetscPartitioner object to view
@@ -797,7 +820,7 @@ static PetscErrorCode PetscPartitionerGetDefaultType(const char *currentType, co
 /*@
   PetscPartitionerSetFromOptions - sets parameters in a PetscPartitioner from the options database
 
-  Collective on part
+  Collective on PetscPartitioner
 
   Input Parameter:
 . part - the PetscPartitioner object to set options for
@@ -838,7 +861,7 @@ PetscErrorCode PetscPartitionerSetFromOptions(PetscPartitioner part)
 /*@C
   PetscPartitionerSetUp - Construct data structures for the PetscPartitioner
 
-  Collective on part
+  Collective on PetscPartitioner
 
   Input Parameter:
 . part - the PetscPartitioner object to setup
@@ -860,7 +883,7 @@ PetscErrorCode PetscPartitionerSetUp(PetscPartitioner part)
 /*@
   PetscPartitionerDestroy - Destroys a PetscPartitioner object
 
-  Collective on part
+  Collective on PetscPartitioner
 
   Input Parameter:
 . part - the PetscPartitioner object to destroy
@@ -926,7 +949,7 @@ PetscErrorCode PetscPartitionerCreate(MPI_Comm comm, PetscPartitioner *part)
 /*@
   PetscPartitionerPartition - Create a non-overlapping partition of the cells in the mesh
 
-  Collective on dm
+  Collective on PetscPartitioner
 
   Input Parameters:
 + part    - The PetscPartitioner
@@ -1179,7 +1202,7 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Shell(PetscPartitioner part)
 /*@C
   PetscPartitionerShellSetPartition - Set an artifical partition for a mesh
 
-  Collective on part
+  Collective on PetscPartitioner
 
   Input Parameters:
 + part   - The PetscPartitioner
@@ -1223,7 +1246,7 @@ PetscErrorCode PetscPartitionerShellSetPartition(PetscPartitioner part, PetscInt
 /*@
   PetscPartitionerShellSetRandom - Set the flag to use a random partition
 
-  Collective on part
+  Collective on PetscPartitioner
 
   Input Parameters:
 + part   - The PetscPartitioner
@@ -1246,7 +1269,7 @@ PetscErrorCode PetscPartitionerShellSetRandom(PetscPartitioner part, PetscBool r
 /*@
   PetscPartitionerShellGetRandom - get the flag to use a random partition
 
-  Collective on part
+  Collective on PetscPartitioner
 
   Input Parameter:
 . part   - The PetscPartitioner
@@ -2208,7 +2231,7 @@ PetscErrorCode DMPlexGetPartitioner(DM dm, PetscPartitioner *part)
 /*@
   DMPlexSetPartitioner - Set the mesh partitioner
 
-  logically collective on dm
+  logically collective on DM
 
   Input Parameters:
 + dm - The DM
@@ -2540,10 +2563,10 @@ PetscErrorCode DMPlexPartitionLabelPropagate(DM dm, DMLabel label)
   Input Parameters:
 + dm        - The DM
 . rootLabel - DMLabel assinging ranks to local roots
-. processSF - A star forest mapping into the local index on each remote rank
+- processSF - A star forest mapping into the local index on each remote rank
 
   Output Parameter:
-- leafLabel - DMLabel assinging ranks to remote roots
+. leafLabel - DMLabel assinging ranks to remote roots
 
   Note: The rootLabel defines a send pattern by mapping local points to remote target ranks. The
   resulting leafLabel is a receiver mapping of remote roots to their parent rank.
@@ -2678,7 +2701,7 @@ PetscErrorCode DMPlexPartitionLabelInvert(DM dm, DMLabel rootLabel, PetscSF proc
 . label - DMLabel assinging ranks to remote roots
 
   Output Parameter:
-- sf    - The star forest communication context encapsulating the defined mapping
+. sf    - The star forest communication context encapsulating the defined mapping
 
   Note: The incoming label is a receiver mapping of remote points to their parent rank.
 
@@ -2763,11 +2786,11 @@ PetscErrorCode DMPlexPartitionLabelCreateSF(DM dm, DMLabel label, PetscSF *sf)
   DMPlexRewriteSF - Rewrites the ownership of the SF of a DM (in place).
 
   Input parameters:
-  + dm                - The DMPlex object.
-  + n                 - The number of points.
-  + pointsToRewrite   - The points in the SF whose ownership will change.
-  + targetOwners      - New owner for each element in pointsToRewrite.
-  + degrees           - Degrees of the points in the SF as obtained by PetscSFComputeDegreeBegin/PetscSFComputeDegreeEnd.
++ dm                - The DMPlex object.
+. n                 - The number of points.
+. pointsToRewrite   - The points in the SF whose ownership will change.
+. targetOwners      - New owner for each element in pointsToRewrite.
+- degrees           - Degrees of the points in the SF as obtained by PetscSFComputeDegreeBegin/PetscSFComputeDegreeEnd.
 
   Level: developer
 
@@ -2945,13 +2968,13 @@ static PetscErrorCode DMPlexViewDistribution(MPI_Comm comm, PetscInt n, PetscInt
   DMPlexRebalanceSharedPoints - Redistribute points in the plex that are shared in order to achieve better balancing. This routine updates the PointSF of the DM inplace.
 
   Input parameters:
-  + dm               - The DMPlex object.
-  + entityDepth      - depth of the entity to balance (0 -> balance vertices).
-  + useInitialGuess  - whether to use the current distribution as initial guess (only used by ParMETIS).
-  + parallel         - whether to use ParMETIS and do the partition in parallel or whether to gather the graph onto a single process and use METIS.
++ dm               - The DMPlex object.
+. entityDepth      - depth of the entity to balance (0 -> balance vertices).
+. useInitialGuess  - whether to use the current distribution as initial guess (only used by ParMETIS).
+- parallel         - whether to use ParMETIS and do the partition in parallel or whether to gather the graph onto a single process and use METIS.
 
   Output parameters:
-  + success          - whether the graph partitioning was successful or not. If not, try useInitialGuess=True and parallel=True.
+. success          - whether the graph partitioning was successful or not. If not, try useInitialGuess=True and parallel=True.
 
   Level: intermediate
 

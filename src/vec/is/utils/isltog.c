@@ -246,6 +246,29 @@ PetscErrorCode  ISLocalToGlobalMappingGetSize(ISLocalToGlobalMapping mapping,Pet
 }
 
 /*@C
+   ISLocalToGlobalMappingViewFromOptions - View from Options
+
+   Collective on ISLocalToGlobalMapping
+
+   Input Parameters:
++  A - the local to global mapping object
+-  obj - Optional object
+.  name - command line option
+
+   Level: intermediate
+.seealso:  ISLocalToGlobalMapping, ISLocalToGlobalMappingView, PetscObjectViewFromOptions(), ISLocalToGlobalMappingCreate()
+@*/
+PetscErrorCode  ISLocalToGlobalMappingViewFromOptions(ISLocalToGlobalMapping A,PetscObject obj,const char name[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,IS_LTOGM_CLASSID,1);
+  ierr = PetscObjectViewFromOptions((PetscObject)A,obj,name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
     ISLocalToGlobalMappingView - View a local to global mapping
 
     Not Collective

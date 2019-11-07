@@ -124,6 +124,29 @@ PetscErrorCode PetscLimiterGetType(PetscLimiter lim, PetscLimiterType *name)
 }
 
 /*@C
+   PetscLimiterViewFromOptions - View from Options
+
+   Collective on PetscLimiter
+
+   Input Parameters:
++  A - the PetscLimiter object to view
+-  obj - Optional object
+.  name - command line option
+
+   Level: intermediate
+.seealso:  PetscLimiter, PetscLimiterView, PetscObjectViewFromOptions(), PetscLimiterCreate()
+@*/
+PetscErrorCode  PetscLimiterViewFromOptions(PetscLimiter A,PetscObject obj,const char name[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,PETSCLIMITER_CLASSID,1);
+  ierr = PetscObjectViewFromOptions((PetscObject)A,obj,name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
   PetscLimiterView - Views a PetscLimiter
 
   Collective on lim
@@ -1015,6 +1038,29 @@ PetscErrorCode PetscFVGetType(PetscFV fvm, PetscFVType *name)
   PetscValidPointer(name, 2);
   ierr = PetscFVRegisterAll();CHKERRQ(ierr);
   *name = ((PetscObject) fvm)->type_name;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   PetscFVViewFromOptions - View from Options
+
+   Collective on PetscFV
+
+   Input Parameters:
++  A - the PetscFV object
+-  obj - Optional object
+.  name - command line option
+
+   Level: intermediate
+.seealso:  PetscFV, PetscFVView, PetscObjectViewFromOptions(), PetscFVCreate()
+@*/
+PetscErrorCode  PetscFVViewFromOptions(PetscFV A,PetscObject obj,const char name[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,PETSCFV_CLASSID,1);
+  ierr = PetscObjectViewFromOptions((PetscObject)A,obj,name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

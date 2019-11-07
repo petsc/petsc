@@ -333,7 +333,7 @@ PETSC_EXTERN PetscErrorCode KSPGetDiagonalScaleFix(KSP,PetscBool*);
 
 PETSC_EXTERN PetscErrorCode KSPView(KSP,PetscViewer);
 PETSC_EXTERN PetscErrorCode KSPLoad(KSP,PetscViewer);
-PETSC_STATIC_INLINE PetscErrorCode KSPViewFromOptions(KSP A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
+PETSC_EXTERN PetscErrorCode KSPViewFromOptions(KSP,PetscObject,const char[]);
 PETSC_EXTERN PetscErrorCode KSPReasonView(KSP,PetscViewer);
 PETSC_EXTERN PetscErrorCode KSPReasonViewFromOptions(KSP);
 

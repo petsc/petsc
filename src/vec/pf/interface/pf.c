@@ -213,6 +213,29 @@ PetscErrorCode  PFApply(PF pf,PetscInt n,const PetscScalar *x,PetscScalar *y)
   PetscFunctionReturn(0);
 }
 
+/*@C
+   PFViewFromOptions - View from Options
+
+   Collective on PF
+
+   Input Parameters:
++  A - the PF context
+-  obj - Optional object
+.  name - command line option
+
+   Level: intermediate
+.seealso:  PF, PFView, PetscObjectViewFromOptions(), PFCreate()
+@*/
+PetscErrorCode  PFViewFromOptions(PF A,PetscObject obj,const char name[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,PF_CLASSID,1);
+  ierr = PetscObjectViewFromOptions((PetscObject)A,obj,name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@
    PFView - Prints information about a mathematical function
 

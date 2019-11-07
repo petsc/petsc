@@ -847,6 +847,29 @@ PetscErrorCode DMSetFromOptions(DM dm)
 }
 
 /*@C
+   DMViewFromOptions - View from Options
+
+   Collective on DM
+
+   Input Parameters:
++  dm - the DM object
+-  obj - Optional object
+.  name - command line option
+
+   Level: intermediate
+.seealso:  DM, DMView, PetscObjectViewFromOptions(), DMCreate()
+@*/
+PetscErrorCode  DMViewFromOptions(DM dm,PetscObject obj,const char name[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = PetscObjectViewFromOptions((PetscObject)dm,obj,name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
     DMView - Views a DM
 
     Collective on dm

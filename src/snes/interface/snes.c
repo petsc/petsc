@@ -308,6 +308,29 @@ PetscErrorCode  SNESLoad(SNES snes, PetscViewer viewer)
 #include <petscviewersaws.h>
 #endif
 
+/*@C
+   SNESViewFromOptions - View from Options
+
+   Collective on SNES
+
+   Input Parameters:
++  A - the application ordering context
+-  obj - Optional object
+.  name - command line option
+
+   Level: intermediate
+.seealso:  SNES, SNESView, PetscObjectViewFromOptions(), SNESCreate()
+@*/
+PetscErrorCode  SNESViewFromOptions(SNES A,PetscObject obj,const char name[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,SNES_CLASSID,1);
+  ierr = PetscObjectViewFromOptions((PetscObject)A,obj,name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 PETSC_EXTERN PetscErrorCode SNESComputeJacobian_DMDA(SNES,Vec,Mat,Mat,void*);
 
 /*@C

@@ -244,6 +244,29 @@ PetscErrorCode  VecScatterCopy(VecScatter sctx,VecScatter *ctx)
   PetscFunctionReturn(0);
 }
 
+/*@C
+   VecScatterViewFromOptions - View from Options
+
+   Collective on VecScatter
+
+   Input Parameters:
++  A - the scatter context
+-  obj - Optional object
+.  name - command line option
+
+   Level: intermediate
+.seealso:  VecScatter, VecScatterView, PetscObjectViewFromOptions(), VecScatterCreate()
+@*/
+PetscErrorCode  VecScatterViewFromOptions(VecScatter A,PetscObject obj,const char name[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,VEC_SCATTER_CLASSID,1);
+  ierr = PetscObjectViewFromOptions((PetscObject)A,obj,name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* ------------------------------------------------------------------*/
 /*@C
    VecScatterView - Views a vector scatter context.

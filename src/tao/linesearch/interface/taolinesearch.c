@@ -9,6 +9,29 @@ PetscLogEvent TAOLINESEARCH_Apply;
 PetscLogEvent TAOLINESEARCH_Eval;
 
 /*@C
+   TaoLineSearchViewFromOptions - View from Options
+
+   Collective on TaoLineSearch
+
+   Input Parameters:
++  A - the Tao context
+-  obj - Optional object
+.  name - command line option
+
+   Level: intermediate
+.seealso:  TaoLineSearch, TaoLineSearchView, PetscObjectViewFromOptions(), TaoLineSearchCreate()
+@*/
+PetscErrorCode  TaoLineSearchViewFromOptions(TaoLineSearch A,PetscObject obj,const char name[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,TAOLINESEARCH_CLASSID,1);
+  ierr = PetscObjectViewFromOptions((PetscObject)A,obj,name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
   TaoLineSearchView - Prints information about the TaoLineSearch
 
   Collective on TaoLineSearch

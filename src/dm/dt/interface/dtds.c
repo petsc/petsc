@@ -224,6 +224,29 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS prob, PetscViewer viewer)
 }
 
 /*@C
+   PetscDSViewFromOptions - View from Options
+
+   Collective on PetscDS
+
+   Input Parameters:
++  A - the PetscDS object
+-  obj - Optional object
+.  name - command line option
+
+   Level: intermediate
+.seealso:  PetscDS, PetscDSView, PetscObjectViewFromOptions(), PetscDSCreate()
+@*/
+PetscErrorCode  PetscDSViewFromOptions(PetscDS A,PetscObject obj,const char name[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,PETSCDS_CLASSID,1);
+  ierr = PetscObjectViewFromOptions((PetscObject)A,obj,name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
   PetscDSView - Views a PetscDS
 
   Collective on prob

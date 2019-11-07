@@ -164,6 +164,29 @@ PetscErrorCode PetscFEGetType(PetscFE fem, PetscFEType *name)
 }
 
 /*@C
+   PetscFEViewFromOptions - View from Options
+
+   Collective on PetscFE
+
+   Input Parameters:
++  A - the PetscFE object
+.  obj - Optional object
+-  name - command line option
+
+   Level: intermediate
+.seealso:  PetscFE(), PetscFEView(), PetscObjectViewFromOptions(), PetscFECreate()
+@*/
+PetscErrorCode  PetscFEViewFromOptions(PetscFE A,PetscObject obj,const char name[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,PETSCFE_CLASSID,1);
+  ierr = PetscObjectViewFromOptions((PetscObject)A,obj,name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
   PetscFEView - Views a PetscFE
 
   Collective on fem

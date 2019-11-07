@@ -8,7 +8,7 @@
 #define taolinesearchsetobjectiveandgtsroutine_      TAOLINESEARCHSETOBJECTIVEANDGTSROUTINE
 #define taolinesearchview_                           TAOLINESEARCHVIEW
 #define taolinesearchsettype_                        TAOLINESEARCHSETTYPE
-
+#define taolinesearchviewfromoptions_                TAOLINESEARCHVIEWFROMOPTIONS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 
 #define taolinesearchsetobjectiveroutine_            taolinesearchsetobjectiveroutine
@@ -17,7 +17,7 @@
 #define taolinesearchsetobjectiveandgtsroutine_      taolinesearchsetobjectiveandgtsroutine
 #define taolinesearchview_                           taolinesearchview
 #define taolinesearchsettype_                        taolinesearchsettype
-
+#define taolinesearchviewfromoptions_                taolinesearchviewfromoptions
 #endif
 
 static int OBJ=0;
@@ -157,4 +157,12 @@ PETSC_EXTERN void PETSC_STDCALL taolinesearchgettype_(TaoLineSearch *ls, char* n
   *ierr = PetscStrncpy(name,tname,len); if (*ierr) return;
   FIXRETURNCHAR(PETSC_TRUE,name,len);
 
+}
+PETSC_EXTERN void PETSC_STDCALL taolinesearchviewfromoptions_(TaoLineSearch *ao,PetscObject obj,char* type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+{
+  char *t;
+
+  FIXCHAR(type,len,t);
+  *ierr = TaoLineSearchViewFromOptions(*ao,obj,t);if (*ierr) return;
+  FREECHAR(type,t);
 }

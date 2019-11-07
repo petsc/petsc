@@ -217,6 +217,29 @@ PetscErrorCode  MatCoarsenCreate(MPI_Comm comm, MatCoarsen *newcrs)
 }
 
 /*@C
+   MatCoarsenViewFromOptions - View from Options
+
+   Collective on MatCoarsen
+
+   Input Parameters:
++  A - the coarsen context
+-  obj - Optional object
+.  name - command line option
+
+   Level: intermediate
+.seealso:  MatCoarsen, MatCoarsenView, PetscObjectViewFromOptions(), MatCoarsenCreate()
+@*/
+PetscErrorCode  MatCoarsenViewFromOptions(MatCoarsen A,PetscObject obj,const char name[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_COARSEN_CLASSID,1);
+  ierr = PetscObjectViewFromOptions((PetscObject)A,obj,name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
    MatCoarsenView - Prints the coarsen data structure.
 
    Collective on MatCoarsen

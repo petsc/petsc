@@ -32,6 +32,7 @@
 #define snesmonitorset_                  SNESMONITORSET
 #define snesnewtontrsetprecheck_         SNESNEWTONTRSETPRECHECK
 #define snesnewtontrsetpostcheck_        SNESNEWTONTRSETPOSTCHECK
+#define snesviewfromoptions_             SNESVIEWFROMOPTIONS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matmffdcomputejacobian_          matmffdcomputejacobian
 #define snessolve_                       snessolve
@@ -41,10 +42,10 @@
 #define snesgetoptionsprefix_            snesgetoptionsprefix
 #define snesgettype_                     snesgettype
 #define snessetfunction_                 snessetfunction
-#define snessetngs_                       snessetngs
-#define snessetupdate_                    snessetupdate
+#define snessetngs_                      snessetngs
+#define snessetupdate_                   snessetupdate
 #define snesgetfunction_                 snesgetfunction
-#define snesgetngs_                       snesgetngs
+#define snesgetngs_                      snesgetngs
 #define snessetconvergencetest_          snessetconvergencetest
 #define snesconvergeddefault_            snesconvergeddefault
 #define snesconvergedskip_               snesconvergedskip
@@ -59,8 +60,9 @@
 #define snesmonitorsolution_             snesmonitorsolution
 #define snesmonitorsolutionupdate_       snesmonitorsolutionupdate
 #define snesmonitorset_                  snesmonitorset
-#define snesnewtontrsetprecheck_        snesnewtontrsetprecheck
+#define snesnewtontrsetprecheck_         snesnewtontrsetprecheck
 #define snesnewtontrsetpostcheck_        snesnewtontrsetpostcheck
+#define snesviewfromoptions_             snesviewfromoptions
 #endif
 
 static struct {
@@ -386,3 +388,11 @@ PETSC_EXTERN void PETSC_STDCALL snesmonitorset_(SNES *snes,void (PETSC_STDCALL *
   }
 }
 
+PETSC_EXTERN void PETSC_STDCALL snesviewfromoptions_(SNES *ao,PetscObject obj,char* type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+{
+  char *t;
+
+  FIXCHAR(type,len,t);
+  *ierr = SNESViewFromOptions(*ao,obj,t);if (*ierr) return;
+  FREECHAR(type,t);
+}

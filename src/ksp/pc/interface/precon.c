@@ -1529,6 +1529,30 @@ PetscErrorCode  PCLoad(PC newdm, PetscViewer viewer)
 #if defined(PETSC_HAVE_SAWS)
 #include <petscviewersaws.h>
 #endif
+
+/*@C
+   PCViewFromOptions - View from Options
+
+   Collective on PC
+
+   Input Parameters:
++  A - the PC context
+-  obj - Optional object
+.  name - command line option
+
+   Level: intermediate
+.seealso:  PC, PCView, PetscObjectViewFromOptions(), PCCreate()
+@*/
+PetscErrorCode  PCViewFromOptions(PC A,PetscObject obj,const char name[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,PC_CLASSID,1);
+  ierr = PetscObjectViewFromOptions((PetscObject)A,obj,name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@C
    PCView - Prints the PC data structure.
 

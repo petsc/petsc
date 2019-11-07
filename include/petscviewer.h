@@ -96,7 +96,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerRestoreSubViewer(PetscViewer,MPI_Comm,Pet
 
 PETSC_EXTERN PetscErrorCode PetscViewerSetUp(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerView(PetscViewer,PetscViewer);
-PETSC_STATIC_INLINE PetscErrorCode PetscViewerViewFromOptions(PetscViewer A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
+PETSC_EXTERN PetscErrorCode PetscViewerViewFromOptions(PetscViewer,PetscObject,const char[]);
 
 PETSC_EXTERN PetscErrorCode PetscViewerSetOptionsPrefix(PetscViewer,const char[]);
 PETSC_EXTERN PetscErrorCode PetscViewerAppendOptionsPrefix(PetscViewer,const char[]);

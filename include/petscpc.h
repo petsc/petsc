@@ -77,7 +77,7 @@ PETSC_EXTERN PetscErrorCode PCGetOperatorsSet(PC,PetscBool *,PetscBool *);
 
 PETSC_EXTERN PetscErrorCode PCView(PC,PetscViewer);
 PETSC_EXTERN PetscErrorCode PCLoad(PC,PetscViewer);
-PETSC_STATIC_INLINE PetscErrorCode PCViewFromOptions(PC A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
+PETSC_EXTERN PetscErrorCode PCViewFromOptions(PC,PetscObject,const char[]);
 
 PETSC_EXTERN PetscErrorCode PCSetOptionsPrefix(PC,const char[]);
 PETSC_EXTERN PetscErrorCode PCAppendOptionsPrefix(PC,const char[]);

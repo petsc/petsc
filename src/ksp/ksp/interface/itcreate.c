@@ -224,6 +224,28 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+/*@C
+   KSPViewFromOptions - View from Options
+
+   Collective on KSP
+
+   Input Parameters:
++  A - Krylov solver context
+-  obj - Optional object
+.  name - command line option
+
+   Level: intermediate
+.seealso:  KSP, KSPView, PetscObjectViewFromOptions(), KSPCreate()
+@*/
+PetscErrorCode  KSPViewFromOptions(KSP A,PetscObject obj,const char name[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,KSP_CLASSID,1);
+  ierr = PetscObjectViewFromOptions((PetscObject)A,obj,name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 /*@
    KSPSetNormType - Sets the norm that is used for convergence testing.

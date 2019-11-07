@@ -603,6 +603,29 @@ PetscErrorCode  MatPartitioningCreate(MPI_Comm comm,MatPartitioning *newp)
 }
 
 /*@C
+   MatPartitioningViewFromOptions - View from Options
+
+   Collective on MatPartitioning
+
+   Input Parameters:
++  A - the partitioning context
+-  obj - Optional object
+.  name - command line option
+
+   Level: intermediate
+.seealso:  MatPartitioning, MatPartitioningView, PetscObjectViewFromOptions(), MatPartitioningCreate()
+@*/
+PetscErrorCode  MatPartitioningViewFromOptions(MatPartitioning A,PetscObject obj,const char name[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_PARTITIONING_CLASSID,1);
+  ierr = PetscObjectViewFromOptions((PetscObject)A,obj,name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
    MatPartitioningView - Prints the partitioning data structure.
 
    Collective on MatPartitioning

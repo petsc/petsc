@@ -869,6 +869,30 @@ PetscErrorCode MatSetUp(Mat A)
 #if defined(PETSC_HAVE_SAWS)
 #include <petscviewersaws.h>
 #endif
+
+/*@C
+   MatViewFromOptions - View from Options
+
+   Collective on Mat
+
+   Input Parameters:
++  A - the Mat context
+-  obj - Optional object
+.  name - command line option
+
+   Level: intermediate
+.seealso:  Mat, MatView, PetscObjectViewFromOptions(), MatCreate()
+@*/
+PetscErrorCode  MatViewFromOptions(Mat A,PetscObject obj,const char name[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  ierr = PetscObjectViewFromOptions((PetscObject)A,obj,name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@C
    MatView - Visualizes a matrix object.
 

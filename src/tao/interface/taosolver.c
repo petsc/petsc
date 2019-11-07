@@ -555,6 +555,29 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
 }
 
 /*@C
+   TaoViewFromOptions - View from Options
+
+   Collective on Tao
+
+   Input Parameters:
++  A - the  Tao context
+-  obj - Optional object
+.  name - command line option
+
+   Level: intermediate
+.seealso:  Tao, TaoView, PetscObjectViewFromOptions(), TaoCreate()
+@*/
+PetscErrorCode  TaoViewFromOptions(Tao A,PetscObject obj,const char name[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,TAO_CLASSID,1);
+  ierr = PetscObjectViewFromOptions((PetscObject)A,obj,name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
   TaoView - Prints information about the Tao
 
   Collective on Tao

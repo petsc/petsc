@@ -35,6 +35,8 @@
 #define vecgetownershiprange3_    VECGETOWNERSHIPRANGE3
 #define vecgetownershipranges_    VECGETOWNERSHIPRANGES
 #define vecsetoptionsprefix_      VECSETOPTIONSPREFIX
+#define vecviewfromoptions_       VECVIEWFROMOPTIONS
+#define vecstashviewfromoptions_  VECSTASHVIEWFROMOPTIONS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define vecsetrandom_             vecsetrandom
 #define vecsetvalueslocal0_       vecsetvalueslocal0
@@ -69,6 +71,8 @@
 #define vecgetownershiprange3_    vecgetownershiprange3
 #define vecgetownershipranges_    vecgetownershipranges
 #define vecsetoptionsprefix_      vecsetoptionsprefix
+#define vecviewfromoptions_       vecviewfromoptions
+#define vecstashviewfromoptions_  vecstashviewfromoptions
 #endif
 
 PETSC_EXTERN void PETSC_STDCALL vecsetvalueslocal_(Vec *x,PetscInt *ni, PetscInt ix[], PetscScalar y[],InsertMode *iora, int *ierr )
@@ -331,4 +335,20 @@ PETSC_EXTERN void PETSC_STDCALL vecsetoptionsprefix_(Vec *v,char* prefix PETSC_M
   FIXCHAR(prefix,len,t);
   *ierr = VecSetOptionsPrefix(*v,t);if (*ierr) return;
   FREECHAR(prefix,t);
+}
+PETSC_EXTERN void PETSC_STDCALL vecviewfromoptions_(Vec *ao,PetscObject obj,char* type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+{
+  char *t;
+
+  FIXCHAR(type,len,t);
+  *ierr = VecViewFromOptions(*ao,obj,t);if (*ierr) return;
+  FREECHAR(type,t);
+}
+PETSC_EXTERN void PETSC_STDCALL vecstashviewfromoptions_(Vec *ao,PetscObject obj,char* type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+{
+  char *t;
+
+  FIXCHAR(type,len,t);
+  *ierr = VecStashViewFromOptions(*ao,obj,t);if (*ierr) return;
+  FREECHAR(type,t);
 }
