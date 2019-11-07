@@ -455,6 +455,7 @@ def petsc_configure(configure_options):
       pass
     return 0
   except (RuntimeError, config.base.ConfigureSetupError) as e:
+    tbo = sys.exc_info()[2]
     emsg = str(e)
     if not emsg.endswith('\n'): emsg = emsg+'\n'
     msg ='*******************************************************************************\n'\
@@ -483,6 +484,7 @@ def petsc_configure(configure_options):
     +emsg+'*******************************************************************************\n'
     se = ''
   except OSError as e :
+    tbo = sys.exc_info()[2]
     emsg = str(e)
     if not emsg.endswith('\n'): emsg = emsg+'\n'
     msg ='*******************************************************************************\n'\
@@ -491,6 +493,7 @@ def petsc_configure(configure_options):
     +emsg+'*******************************************************************************\n'
     se = ''
   except SystemExit as e:
+    tbo = sys.exc_info()[2]
     if e.code is None or e.code == 0:
       return
     if e.code is 10:
@@ -500,6 +503,7 @@ def petsc_configure(configure_options):
     +'*******************************************************************************\n'
     se  = str(e)
   except Exception as e:
+    tbo = sys.exc_info()[2]
     msg ='*******************************************************************************\n'\
     +'        CONFIGURATION CRASH  (Please send configure.log to petsc-maint@mcs.anl.gov)\n' \
     +'*******************************************************************************\n'
@@ -518,7 +522,6 @@ def petsc_configure(configure_options):
           framework.outputCHeader(framework.log)
       except Exception as e:
         framework.log.write('Problem writing headers to log: '+str(e))
-      if sys.exc_info()[2]: tbo = sys.exc_info()[2]
       try:
         framework.log.write(msg+se)
         traceback.print_tb(tbo, file = framework.log)
@@ -527,14 +530,14 @@ def petsc_configure(configure_options):
         move_configure_log(framework)
       except Exception as e:
         print('Error printing error message from exception or printing the traceback:'+str(e))
-        traceback.print_tb(tbo)
+        traceback.print_tb(sys.exc_info()[2])
       sys.exit(1)
     else:
       print(se)
-      traceback.print_tb(sys.exc_info()[2])
+      traceback.print_tb(tbo)
   else:
     print(se)
-    traceback.print_tb(sys.exc_info()[2])
+    traceback.print_tb(tbo)
   if hasattr(framework,'log'): framework.log.close()
 
 if __name__ == '__main__':
