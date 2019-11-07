@@ -521,7 +521,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
   char                     prefix[256];
   const char               *pcpre;
   const PetscScalar* const *ev;
-  PetscInt                 n, requested = data->N;
+  PetscInt                 n, requested = data->N, reused = 0;
   PetscBool                subdomains = PETSC_FALSE, flag = PETSC_FALSE, ismatis;
   DM                       dm;
   PetscErrorCode           ierr;
@@ -536,10 +536,35 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
     ierr = PetscSNPrintf(prefix, sizeof(prefix), "%spc_hpddm_%s_", pcpre ? pcpre : "", data->N > 1 ? "levels_1" : "coarse");CHKERRQ(ierr);
     ierr = KSPSetOptionsPrefix(data->levels[0]->ksp, prefix);CHKERRQ(ierr);
     ierr = KSPSetType(data->levels[0]->ksp, KSPPREONLY);CHKERRQ(ierr);
+  } else if(data->levels[0]->ksp->pc && data->levels[0]->ksp->pc->setupcalled == 1 && data->levels[0]->ksp->pc->reusepreconditioner) {
+    /* if the fine level PCSHELL exists, its setup has succeeded, and one wants to reuse it, */
+    /* then just propagate the appropriate flag to the coarser levels                        */
+    for (n = 0; n < PETSC_HPDDM_MAXLEVELS && data->levels[n]; ++n) {
+      /* the following KSP and PC may be NULL for some processes, hence the check            */
+      if (data->levels[n]->ksp) {
+        ierr = KSPSetReusePreconditioner(data->levels[n]->ksp, PETSC_TRUE);CHKERRQ(ierr);
+      }
+      if (data->levels[n]->pc) {
+        ierr = PCSetReusePreconditioner(data->levels[n]->pc, PETSC_TRUE);CHKERRQ(ierr);
+      }
+    }
+    /* early bail out because there is nothing to do */
+    PetscFunctionReturn(0);
   } else {
+    /* reset coarser levels */
+    for (n = 1; n < PETSC_HPDDM_MAXLEVELS && data->levels[n]; ++n) {
+      if(data->levels[n]->ksp && data->levels[n]->ksp->pc && data->levels[n]->ksp->pc->setupcalled == 1 && data->levels[n]->ksp->pc->reusepreconditioner && n < data->N) {
+        reused = data->N - n;
+        break;
+      }
+      ierr = KSPDestroy(&data->levels[n]->ksp);CHKERRQ(ierr);
+      ierr = PCDestroy(&data->levels[n]->pc);CHKERRQ(ierr);
+    }
+    /* check if some coarser levels are being reused */
+    ierr = MPI_Allreduce(MPI_IN_PLACE, &reused, 1, MPIU_INT, MPI_MAX, comm);CHKERRQ(ierr);
     const int *addr = data->levels[0]->P ? data->levels[0]->P->getAddrLocal() : &HPDDM::i__0;
 
-    if (addr != &HPDDM::i__0) {
+    if (addr != &HPDDM::i__0 && reused != data->N - 1) {
       /* reuse previously computed eigenvectors */
       ev = data->levels[0]->P->getVectors();
       if (ev) {
@@ -555,12 +580,8 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
         ierr = VecDestroy(&xin);CHKERRQ(ierr);
       }
     }
-    /* reset coarser levels */
-    for (n = 1; n < PETSC_HPDDM_MAXLEVELS && data->levels[n]; ++n) {
-      ierr = KSPDestroy(&data->levels[n]->ksp);CHKERRQ(ierr);
-      ierr = PCDestroy(&data->levels[n]->pc);CHKERRQ(ierr);
-    }
   }
+  data->N -= reused;
   ierr = KSPSetOperators(data->levels[0]->ksp, A, P);CHKERRQ(ierr);
 
   ierr = PetscObjectTypeCompare((PetscObject)P, MATIS, &ismatis);CHKERRQ(ierr);
@@ -698,7 +719,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
       if (!data->Neumann)
         ierr = MatDestroySubMatrices(1, &sub);CHKERRQ(ierr);
       if (ismatis) data->is = NULL;
-      for (n = 0; n < data->N - 1; ++n) {
+      for (n = 0; n < data->N - 1 + (reused > 0); ++n) {
         if (data->levels[n]->P) {
           PC spc;
 
@@ -713,22 +734,30 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
           if (!data->levels[n]->pc) {
             ierr = PCCreate(PetscObjectComm((PetscObject)data->levels[n]->ksp), &data->levels[n]->pc);CHKERRQ(ierr);
           }
+          if (n < reused) {
+            ierr = PCSetReusePreconditioner(spc, PETSC_TRUE);CHKERRQ(ierr);
+            ierr = PCSetReusePreconditioner(data->levels[n]->pc, PETSC_TRUE);CHKERRQ(ierr);
+          }
           ierr = PCSetUp(spc);CHKERRQ(ierr);
         }
       }
-    } else flag = PETSC_TRUE;
+    } else flag = reused ? PETSC_FALSE : PETSC_TRUE;
     if (!ismatis && subdomains) {
       if (flag) {
         ierr = KSPGetPC(data->levels[0]->ksp, &inner);CHKERRQ(ierr);
       } else inner = data->levels[0]->pc;
-      ierr = PCSetType(inner, PCASM);CHKERRQ(ierr);
-      ierr = PCASMSetLocalSubdomains(inner, 1, is, &loc);CHKERRQ(ierr);
+      if (inner) {
+        ierr = PCSetType(inner, PCASM);CHKERRQ(ierr);
+        if (!inner->setupcalled) {
+          ierr = PCASMSetLocalSubdomains(inner, 1, is, &loc);CHKERRQ(ierr);
+        }
+      }
     }
     ierr = ISDestroy(&loc);CHKERRQ(ierr);
-  } else data->N = 1; /* enforce this value to 1 if there is no way to build another level */
-  if (requested != data->N) {
-    PetscInfo4(pc, "HPDDM: %D levels requested, only %D built. Options for level(s) > %D, including -%spc_hpddm_coarse_ will not be taken into account.\n", requested, data->N, data->N, pcpre ? pcpre : "");
-    PetscInfo2(pc, "HPDDM: It is best to tune parameters, e.g., a higher value for -%spc_hpddm_levels_%D_eps_threshold so that at least one local deflation vector will be selected.\n", pcpre ? pcpre : "", data->N);
+  } else data->N = 1 + reused; /* enforce this value to 1 + reused if there is no way to build another level */
+  if (requested != data->N + reused) {
+    PetscInfo5(pc, "%D levels requested, only %D built + %D reused. Options for level(s) > %D, including -%spc_hpddm_coarse_ will not be taken into account.\n", requested, data->N, reused, data->N, pcpre ? pcpre : "");
+    PetscInfo2(pc, "It is best to tune parameters, e.g., a higher value for -%spc_hpddm_levels_%D_eps_threshold so that at least one local deflation vector will be selected.\n", pcpre ? pcpre : "", data->N);
     /* cannot use PCHPDDMShellDestroy because PCSHELL not set for unassembled levels */
     for (n = data->N - 1; n < requested - 1; ++n) {
       if (data->levels[n]->P) {
@@ -739,8 +768,14 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
         ierr = VecScatterDestroy(&data->levels[n]->scatter);CHKERRQ(ierr);
       }
     }
+    if (reused) {
+      for (n = reused; n < PETSC_HPDDM_MAXLEVELS && data->levels[n]; ++n) {
+        ierr = KSPDestroy(&data->levels[n]->ksp);CHKERRQ(ierr);
+        ierr = PCDestroy(&data->levels[n]->pc);CHKERRQ(ierr);
+      }
+    }
 #if defined(PETSC_USE_DEBUG)
-    SETERRQ6(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "%D levels requested, only %D built. Options for level(s) > %D, including -%spc_hpddm_coarse_ will not be taken into account. It is best to tune parameters, e.g., a higher value for -%spc_hpddm_levels_%D_eps_threshold so that at least one local deflation vector will be selected. If you don't want this to error out, compile --with-debugging=0", requested, data->N, data->N, pcpre ? pcpre : "", pcpre ? pcpre : "", data->N);
+    SETERRQ7(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "%D levels requested, only %D built + %D reused. Options for level(s) > %D, including -%spc_hpddm_coarse_ will not be taken into account. It is best to tune parameters, e.g., a higher value for -%spc_hpddm_levels_%D_eps_threshold so that at least one local deflation vector will be selected. If you don't want this to error out, compile --with-debugging=0", requested, data->N, reused, data->N, pcpre ? pcpre : "", pcpre ? pcpre : "", data->N);
 #endif
   }
 
@@ -756,6 +791,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
     }
     pc->setfromoptionscalled = 0;
   }
+  data->N += reused;
   PetscFunctionReturn(0);
 }
 
@@ -918,14 +954,18 @@ PetscErrorCode PCHPDDMInitializePackage(void)
   if (PCHPDDMPackageInitialized) PetscFunctionReturn(0);
   PCHPDDMPackageInitialized = PETSC_TRUE;
   ierr = PetscRegisterFinalize(PCHPDDMFinalizePackage);CHKERRQ(ierr);
-  /* general events                                             */
-  /* domain decomposition structure from Pmat sparsity pattern  */
+  /* general events registered once during package initialization */
+  /* these events are not triggered in libpetsc,                  */
+  /* but rather directly in libhpddm_petsc,                       */
+  /* which is in charge of performing the following operations    */
+
+  /* domain decomposition structure from Pmat sparsity pattern    */
   ierr = PetscLogEventRegister("PCHPDDMStrc", PC_CLASSID, &PC_HPDDM_Strc);CHKERRQ(ierr);
-  /* Galerkin product, redistribution, and setup                */
+  /* Galerkin product, redistribution, and setup                  */
   ierr = PetscLogEventRegister("PCHPDDMPtAP", PC_CLASSID, &PC_HPDDM_PtAP);CHKERRQ(ierr);
-  /* Galerkin product with summation, redistribution, and setup */
+  /* Galerkin product with summation, redistribution, and setup   */
   ierr = PetscLogEventRegister("PCHPDDMPtBP", PC_CLASSID, &PC_HPDDM_PtBP);CHKERRQ(ierr);
-  /* next level construction using PtAP and PtBP                */
+  /* next level construction using PtAP and PtBP                  */
   ierr = PetscLogEventRegister("PCHPDDMNext", PC_CLASSID, &PC_HPDDM_Next);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
