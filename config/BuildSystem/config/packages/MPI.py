@@ -219,16 +219,19 @@ shared libraries and run with --known-mpi-shared-libraries=1')
     # the variable HAVE_MPIEXEC_ENVIRONMENTAL_VARIABLE is not currently used. PetscInitialize() can check the existence of the environmental variable to
     # determine if the program has been started with the correct mpiexec (will only be set for parallel runs so not clear how to check appropriately)
     (out, err, ret) = Configure.executeShellCommand(self.mpiexec+' -n 1 printenv', checkCommand = noCheck, timeout = 10, log = self.log)
-    if ret: raise RuntimeError('Unable to run '+self.mpiexec+' with option "-n 1"\n'+err)
-    if out.find('MPIR_CVAR_CH3') > -1:
-      if hasattr(self,'ompi_major_version'): raise RuntimeError("Your libraries are from OpenMPI but it appears your mpiexec is from MPICH");
-      self.addDefine('HAVE_MPIEXEC_ENVIRONMENTAL_VARIABLE', 'MPIR_CVAR_CH3')
-    elif  out.find('MPIR_CVAR_CH3') > -1:
-      if hasattr(self,'ompi_major_version'): raise RuntimeError("Your libraries are from OpenMPI but it appears your mpiexec is from MPICH");
-      self.addDefine('HAVE_MPIEXEC_ENVIRONMENTAL_VARIABLE', 'MPICH')
-    elif out.find('OMPI_COMM_WORLD_SIZE') > -1:
-      if hasattr(self,'mpich_numversion'): raise RuntimeError("Your libraries are from MPICH but it appears your mpiexec is from OpenMPI");
-      self.addDefine('HAVE_MPIEXEC_ENVIRONMENTAL_VARIABLE', 'OMP')
+    if ret:
+      self.logWrite('Unable to run '+self.mpiexec+' with option "-n 1 printenv"\nThis could be ok, some MPI implementations such as SGI produce a non-zero status with non-MPI programs\n'+out+err)
+    else:
+      if out.find('MPIR_CVAR_CH3') > -1:
+        if hasattr(self,'ompi_major_version'): raise RuntimeError("Your libraries are from OpenMPI but it appears your mpiexec is from MPICH");
+        self.addDefine('HAVE_MPIEXEC_ENVIRONMENTAL_VARIABLE', 'MPIR_CVAR_CH3')
+      elif  out.find('MPIR_CVAR_CH3') > -1:
+        if hasattr(self,'ompi_major_version'): raise RuntimeError("Your libraries are from OpenMPI but it appears your mpiexec is from MPICH");
+        self.addDefine('HAVE_MPIEXEC_ENVIRONMENTAL_VARIABLE', 'MPICH')
+      elif out.find('OMPI_COMM_WORLD_SIZE') > -1:
+        if hasattr(self,'mpich_numversion'): raise RuntimeError("Your libraries are from MPICH but it appears your mpiexec is from OpenMPI");
+        self.addDefine('HAVE_MPIEXEC_ENVIRONMENTAL_VARIABLE', 'OMP')
+
     self.addMakeMacro('MPIEXEC', self.mpiexec)
     self.mpiexec = self.mpiexec + ' -n 1'
 
@@ -239,7 +242,6 @@ shared libraries and run with --known-mpi-shared-libraries=1')
       ok = self.checkRun(includes, body, executor = self.mpiexec, timeout = 20)
       if not ok: raise RuntimeError('Unable to run MPI program with '+self.mpiexec+' make sure this is the correct program to run MPI jobs')
     except RuntimeError as e:
-      print(str(e))
       if str(e).find('Runaway process exceeded time limit') > -1:
         raise RuntimeError('Timeout: Unable to run MPI program with '+self.mpiexec+'\n\
     (1) make sure this is the correct program to run MPI jobs\n\
