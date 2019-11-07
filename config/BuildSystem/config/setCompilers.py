@@ -404,6 +404,15 @@ class Configure(config.base.Configure):
     return 0
   isDarwin = staticmethod(isDarwin)
 
+  def isDarwinCatalina(log):
+    '''Returns true if system is Darwin/MacOSX Version Catalina or higher'''
+    import platform
+    if platform.system() != 'Darwin': return 0
+    v1,v2,v3=platform.mac_ver()[0].split('.')
+    if (v1,v2,v3) < (10,15,0): return 0
+    return 1
+  isDarwinCatalina = staticmethod(isDarwinCatalina)
+
   def isFreeBSD(log):
     '''Returns true if system is FreeBSD'''
     (output, error, status) = config.base.Configure.executeShellCommand('uname -s', log = log)

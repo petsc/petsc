@@ -12,7 +12,7 @@ configure_options = [
   '--with-cxx=clang++',
   '--with-fc=gfortran', # https://brew.sh/
 
-  'CXXFLAGS=-Wall -Wwrite-strings -Wno-strict-aliasing -Wno-unknown-pragmas -fstack-protector -Wno-deprecated',
+  'CXXFLAGS=-Wall -Wwrite-strings -Wno-strict-aliasing -Wno-unknown-pragmas -fstack-protector -Wno-deprecated -fno-stack-check',
   '--with-clanguage=cxx',
   '--with-debugging=0',
   '--with-visibility=0', # CXXFLAGS disables this option

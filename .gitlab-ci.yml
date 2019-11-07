@@ -56,7 +56,7 @@ variables:
   script:
     - ${PYTHON} ./configure --with-debugging=0 COPTFLAGS='-O -march=native' CXXOPTFLAGS='-O -march=native' FOPTFLAGS='-O -march=native' ${CONFIG_OPTS}
     - make CFLAGS=-Werror CXXFLAGS=-Werror
-    - make allgtests-tap search="${TEST_SEARCH}" TIMEOUT=${TIMEOUT}
+    - make CFLAGS=-Werror CXXFLAGS=-Werror allgtests-tap search="${TEST_SEARCH}" TIMEOUT=${TIMEOUT}
   after_script:
     - date
     - CCACHE_DIR=$(pwd)/.ccache ccache --show-stats
@@ -116,9 +116,9 @@ checksource:
     - cat ./config/examples/${TEST_ARCH}.py
     - ./config/examples/${TEST_ARCH}.py
     - make CFLAGS=${MAKE_CFLAGS} CXXFLAGS=${MAKE_CXXFLAGS}
-    - make check
+    - make CFLAGS=${MAKE_CFLAGS} CXXFLAGS=${MAKE_CXXFLAGS} check
     - make updatedatafiles
-    - make cleantest allgtests-tap TIMEOUT=${TIMEOUT}
+    - make CFLAGS=${MAKE_CFLAGS} CXXFLAGS=${MAKE_CXXFLAGS} cleantest allgtests-tap TIMEOUT=${TIMEOUT}
   artifacts:
     reports:
       junit: ${TEST_ARCH}/tests/testresults.xml
@@ -273,7 +273,7 @@ freebsd-cxx-cmplx-64idx-dbg:
     - .stage-2
     - .freebsd_test
   tags:
-    - name:petsc-fbsd
+    - os:fbsd
   variables:
     TEST_ARCH: arch-ci-freebsd-cxx-cmplx-64idx-dbg
 
@@ -291,7 +291,7 @@ osx-cxx-pkgs-opt:
     - .stage-3
     - .osx_test
   tags:
-    - os:osx
+    - os:macos
   variables:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -saws_port_auto_select -saws_port_auto_select_silent -vecscatter_mpi1 false -options_left false
     TEST_ARCH: arch-ci-osx-cxx-pkgs-opt
@@ -387,7 +387,7 @@ osx-cxx-cmplx-pkgs-dbg:
     - .stage-3
     - .osx_test
   tags:
-    - os:osx
+    - os:macos
   variables:
     TEST_ARCH: arch-ci-osx-cxx-cmplx-pkgs-dbg
 
@@ -396,7 +396,7 @@ osx-dbg:
     - .stage-3
     - .osx_test
   tags:
-    - os:osx
+    - os:macos
   variables:
     TEST_ARCH: arch-ci-osx-dbg
 
@@ -405,7 +405,7 @@ osx-xsdk-opt:
     - .stage-3
     - .osx_test
   tags:
-    - os:osx
+    - os:macos
   variables:
     TEST_ARCH: arch-ci-osx-xsdk-opt
 
