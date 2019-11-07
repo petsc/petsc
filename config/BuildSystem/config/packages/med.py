@@ -3,8 +3,9 @@ import config.package
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit         = 'origin/maint-4.0.0'
-    self.download          = ['git://https://bitbucket.org/petsc/pkg-med.git','https://bitbucket.org/petsc/pkg-med/get/'+self.gitcommit+'.tar.gz']
+    self.gitbranch         = 'maint-4.0.0'
+    self.gitcommit         = 'origin/'+self.gitbranch
+    self.download          = ['git://https://bitbucket.org/petsc/pkg-med.git','https://bitbucket.org/petsc/pkg-med/get/'+self.gitbranch+'.tar.gz']
     self.functions         = ['MEDfileOpen']
     self.includes          = ['med.h']
     self.liblist           = [['libmedC.a','libmed.a']]
