@@ -794,12 +794,13 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
     return ret
 
   def checkPackageLink(self, includes, body, cleanup = 1, codeBegin = None, codeEnd = None, shared = 0):
-    oldFlags = self.compilers.CPPFLAGS
+    flagsArg = self.getPreprocessorFlagsArg()
+    oldFlags = getattr(self.compilers, flagsArg)
     oldLibs  = self.compilers.LIBS
-    self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
+    setattr(self.compilers, flagsArg, oldFlags+' '+self.headers.toString(self.include))
     self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.compilers.LIBS
     result = self.checkLink(includes, body, cleanup, codeBegin, codeEnd, shared)
-    self.compilers.CPPFLAGS = oldFlags
+    setattr(self.compilers, flagsArg,oldFlags)
     self.compilers.LIBS = oldLibs
     return result
 
@@ -991,21 +992,22 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
     if not self.versioninclude:
       if not self.includes: return
       self.versioninclude = self.includes[0]
-    oldFlags = self.compilers.CPPFLAGS
-    self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
     if self.cxx:
       self.pushLanguage('C++')
     else:
       self.pushLanguage(self.defaultLanguage)
+    flagsArg = self.getPreprocessorFlagsArg()
+    oldFlags = getattr(self.compilers, flagsArg)
+    setattr(self.compilers, flagsArg, oldFlags+' '+self.headers.toString(self.include))
     try:
       output = self.outputPreprocess('#include "'+self.versioninclude+'"\n;petscpkgver('+self.versionname+');\n')
     except:
       self.log.write('For '+self.package+' unable to run preprocessor to obtain version information, skipping version check\n')
       self.popLanguage()
-      self.compilers.CPPFLAGS = oldFlags
+      setattr(self.compilers, flagsArg,oldFlags)
       return
     self.popLanguage()
-    self.compilers.CPPFLAGS = oldFlags
+    setattr(self.compilers, flagsArg,oldFlags)
     #strip #lines
     output = re.sub('#.*\n','\n',output)
     #strip newlines,spaces,quotes
