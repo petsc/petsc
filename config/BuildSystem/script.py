@@ -173,7 +173,10 @@ class Script(logger.Logger):
           err = err.decode(encoding='UTF-8',errors='replace')
         ret = pipe.returncode
       except Exception as e:
-        return ('', e.message, e.errno)
+        if hasattr(e,'message') and hasattr(e,'errno'):
+          return ('', e.message, e.errno)
+        else:
+          return ('', str(e),1)
       output += out
       error += err
       if ret:

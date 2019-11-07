@@ -163,7 +163,7 @@ class Configure(config.package.Package):
         self.logPrintBox('Installing Mumps; this may take several minutes')
         self.installDirProvider.printSudoPasswordMessage()
         output,err,ret = config.package.Package.executeShellCommandSeq(
-          [[self.installSudo+'mkdir', '-p', libDir, includeDir],
+          [self.installSudo+'mkdir -p '+libDir+' '+includeDir,
            self.installSudo+'cp -f lib/*.* '+libDir+'/.',
            self.installSudo+'cp -f include/*.* '+includeDir+'/.'
           ], cwd=self.packageDir, timeout=50, log = self.log)

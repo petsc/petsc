@@ -42,8 +42,8 @@ class Configure(config.package.Package):
            self.setCompilers.AR+' '+self.setCompilers.AR_FLAGS+' '+'libchaco.'+
            self.setCompilers.AR_LIB_SUFFIX+' `ls */*.o |grep -v main/main.o`',
            self.setCompilers.RANLIB+' libchaco.'+self.setCompilers.AR_LIB_SUFFIX,
-           [self.installSudo+'mkdir', '-p', os.path.join(self.installDir,self.libdir)],
-           [self.installSudo+'cp', 'libchaco.'+self.setCompilers.AR_LIB_SUFFIX, os.path.join(self.installDir,self.libdir)]
+           self.installSudo+'mkdir -p '+os.path.join(self.installDir,self.libdir),
+           self.installSudo+'cp libchaco.'+self.setCompilers.AR_LIB_SUFFIX+' '+os.path.join(self.installDir,self.libdir)
           ], cwd=os.path.join(self.packageDir, 'code'), timeout=2500, log = self.log)
 
       except RuntimeError as e:
