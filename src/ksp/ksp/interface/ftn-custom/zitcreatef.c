@@ -6,12 +6,12 @@
 #define kspgettype_                KSPGETTYPE
 #define kspsettype_                KSPSETTYPE
 #define kspview_                   KSPVIEW
-#define kspviewfromoptions_        kspviewfromoptions
+#define kspviewfromoptions_        KSPVIEWFROMOPTIONS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define kspgettype_                kspgettype
 #define kspsettype_                kspsettype
 #define kspview_                   kspview
-#define kspviewfromoptions_        KSPVIEWFROMOPTIONS
+#define kspviewfromoptions_        kspviewfromoptions
 #endif
 
 PETSC_EXTERN void PETSC_STDCALL kspgettype_(KSP *ksp,char* name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
