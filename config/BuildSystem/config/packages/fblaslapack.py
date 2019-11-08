@@ -5,6 +5,7 @@ class Configure(config.package.Package):
     config.package.Package.__init__(self, framework)
     self.gitcommit              = 'v3.4.2-p2'
     self.download               = ['git://https://bitbucket.org/petsc/pkg-fblaslapack','https://bitbucket.org/petsc/pkg-fblaslapack/get/'+self.gitcommit+'.tar.gz']
+    self.downloaddirnames       = ['petsc-pkg-fblaslapack']
     self.precisions             = ['single','double']
     self.downloadonWindows      = 1
     self.skippackagewithoptions = 1
