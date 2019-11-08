@@ -75,7 +75,7 @@ class Configure(config.package.GNUPackage):
         self.logPrintBox('Installing GLVis; this may take several minutes')
         self.installDirProvider.printSudoPasswordMessage()
         output2,err2,ret2 = config.package.Package.executeShellCommandSeq(
-          [[self.installSudo+'mkdir', '-p', installBinDir],
+          [self.installSudo+'mkdir -p '+installBinDir,
            self.installSudo+'cp -f glvis '+installBinDir+'/.',
            self.installSudo+'chmod 750 '+installBinDir+'/glvis'
           ], cwd=self.packageDir, timeout=50, log = self.log)

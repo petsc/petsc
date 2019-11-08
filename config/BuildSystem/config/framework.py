@@ -1050,6 +1050,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
         # the handling of logs, error messages, and tracebacks from errors in children
         # does not work correctly.
         except (RuntimeError, config.base.ConfigureSetupError) as e:
+          tbo = sys.exc_info()[2]
           emsg = str(e)
           if not emsg.endswith('\n'): emsg = emsg+'\n'
           msg ='*******************************************************************************\n'\
@@ -1067,6 +1068,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
               +emsg+'*******************************************************************************\n'
           se = ''
         except ImportError as e :
+          tbo = sys.exc_info()[2]
           emsg = str(e)
           if not emsg.endswith('\n'): emsg = emsg+'\n'
           msg ='*******************************************************************************\n'\
@@ -1075,6 +1077,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
               +emsg+'*******************************************************************************\n'
           se = ''
         except OSError as e :
+          tbo = sys.exc_info()[2]
           emsg = str(e)
           if not emsg.endswith('\n'): emsg = emsg+'\n'
           msg ='*******************************************************************************\n'\
@@ -1083,6 +1086,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
               +emsg+'*******************************************************************************\n'
           se = ''
         except SystemExit as e:
+          tbo = sys.exc_info()[2]
           if e.code is None or e.code == 0:
             return
           msg ='*******************************************************************************\n'\
@@ -1090,6 +1094,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
               +'*******************************************************************************\n'
           se  = str(e)
         except Exception as e:
+          tbo = sys.exc_info()[2]
           msg ='*******************************************************************************\n'\
               +'        CONFIGURATION CRASH  (Please send configure.log to petsc-maint@mcs.anl.gov)\n' \
               +'*******************************************************************************\n'

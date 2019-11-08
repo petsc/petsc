@@ -253,6 +253,7 @@ prepend-path PATH "%s"
     if hasattr(self.compilers, 'CXX'):
       self.setCompilers.pushLanguage('Cxx')
       self.addDefine('HAVE_CXX','1')
+      self.addMakeMacro('CXXPP_FLAGS',self.setCompilers.CXXPPFLAGS)
       self.addMakeMacro('CXX_FLAGS',self.setCompilers.getCompilerFlags())
       cxx_linker = self.setCompilers.getLinker()
       self.addMakeMacro('CXX_LINKER',cxx_linker)
@@ -266,6 +267,12 @@ prepend-path PATH "%s"
     self.setCompilers.pushLanguage(self.languages.clanguage)
     self.addMakeMacro('PCC',self.setCompilers.getCompiler())
     self.addMakeMacro('PCC_FLAGS',self.setCompilers.getCompilerFlags())
+    self.addMakeMacro('PCPP_FLAGS',getattr(self.setCompilers,self.languages.clanguage.upper()+'PPFLAGS'))
+    self.addMakeMacro('PFLAGS','${'+self.languages.clanguage.upper()+'FLAGS}')
+    self.addMakeMacro('PPPFLAGS','${'+self.languages.clanguage.upper()+'PPFLAGS}')
+    # ugly work-around for python3 distutils parse_makefile() issue with the above 2 lines
+    self.addMakeMacro('PY_'+self.languages.clanguage.upper()+'FLAGS','')
+    self.addMakeMacro('PY_'+self.languages.clanguage.upper()+'PPFLAGS','')
     self.setCompilers.popLanguage()
     # .o or .obj
     self.addMakeMacro('CC_SUFFIX','o')
@@ -284,7 +291,7 @@ prepend-path PATH "%s"
         self.addDefine('HAVE_FORTRAN','1')
       self.setCompilers.pushLanguage('FC')
       # need FPPFLAGS in config/setCompilers
-      self.addMakeMacro('FPP_FLAGS',self.setCompilers.CPPFLAGS)
+      self.addMakeMacro('FPP_FLAGS',self.setCompilers.FPPFLAGS)
 
       # compiler values
       self.addMakeMacro('FC_FLAGS',self.setCompilers.getCompilerFlags())

@@ -677,8 +677,11 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
         try:
           config.base.Configure.executeShellCommand([self.sourceControl.git, '-c', 'user.name=petsc-configure', '-c', 'user.email=petsc@configure', 'stash'], cwd=self.packageDir, log = self.log)
           config.base.Configure.executeShellCommand([self.sourceControl.git, 'clean', '-f', '-d', '-x'], cwd=self.packageDir, log = self.log)
-        except:
-          raise RuntimeError('Unable to run git stash/clean in repository: '+self.packageDir+'.\nPerhaps its a git error!')
+        except RuntimeError as e:
+          if str(e).find("Unknown option: -c") >= 0:
+            self.logPrintBox('***** WARNING: Unable to "git stash". Likely due to antique git version (<1.8). Proceeding without stashing!')
+          else:
+            raise RuntimeError('Unable to run git stash/clean in repository: '+self.packageDir+'.\nPerhaps its a git error!')
         try:
           config.base.Configure.executeShellCommand([self.sourceControl.git, 'checkout', '-f', gitcommit_hash], cwd=self.packageDir, log = self.log)
         except:
