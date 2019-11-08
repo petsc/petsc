@@ -1,5 +1,5 @@
 
-static char help[] = "Tests DMDALocalToGlocal() for dof > 1\n\n";
+static char help[] = "Tests DMLocalToGlobal() for dof > 1\n\n";
 
 #include <petscdm.h>
 #include <petscdmda.h>
