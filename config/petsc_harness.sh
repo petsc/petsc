@@ -187,12 +187,11 @@ function petsc_testrun() {
 
     # Report errors in detail
     if [ -z "$timed_out" ]; then
-      # We've had tests fail but stderr->stdout. Fix with this test.
-      if test -s $3; then
-        awk '{print "#\t" $0}' < $3 | tee -a ${testlogerrfile}
-      else
-        awk '{print "#\t" $0}' < $2 | tee -a ${testlogerrfile}
-      fi
+      # We've had tests fail but stderr->stdout, as well as having
+      # mpi_abort go to stderr which throws this test off.  Show both
+      # with stdout first
+      awk '{print "#\t" $0}' < $2 | tee -a ${testlogerrfile}
+      awk '{print "#\t" $0}' < $3 | tee -a ${testlogerrfile}
     fi
     let failed=$failed+1
     failures="$failures $tlabel"
