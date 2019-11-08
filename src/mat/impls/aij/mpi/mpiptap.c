@@ -921,6 +921,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce(Mat A,Mat P,PetscInt dof,
   } /* End i */
 
   ierr = PetscFree4(apindices,apvalues,apvaluestmp,c_rmtc);CHKERRQ(ierr);
+  ierr = PetscHMapIVDestroy(&hmap);CHKERRQ(ierr);
 
   ierr = MatGetLocalSize(P,NULL,&pn);CHKERRQ(ierr);
   pn *= dof;
