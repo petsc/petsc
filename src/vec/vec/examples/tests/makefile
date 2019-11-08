@@ -1,4 +1,3 @@
-
 CFLAGS	        =
 FFLAGS	        =
 CPPFLAGS        =
@@ -18,6 +17,6 @@ include ${PETSC_DIR}/lib/petsc/conf/test
 runex47: ex47.PETSc
 	-@${MPIEXEC} -n 1 ./ex47  > ex47_1.tmp 2>&1; \
 	   if (${DIFF} output/ex47_1.out ex47_1.tmp) then \
-           echo "C/C++ example src/vec/vec/examples/tutorials/ex47 run successfully with hdf5"; \
+           echo "C/C++ example src/vec/vec/examples/tests/ex47 run successfully with hdf5"; \
            else  printf "${PWD}\nPossible problem with ex47 running with hdf5, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex47_1.tmp
