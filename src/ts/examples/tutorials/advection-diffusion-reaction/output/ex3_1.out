@@ -11,31 +11,30 @@
 10 TS dt 0.0134319 time 0.0890911
 11 TS dt 0.0134682 time 0.102523
 12 TS dt 0.0134977 time 0.115991
-13 TS dt 0.0135236 time 0.129489
-14 TS dt 0.00490283 time 0.133771
-15 TS dt 0.010059 time 0.138673
-16 TS dt 0.0135705 time 0.148732
-17 TS dt 0.0136071 time 0.162303
-18 TS dt 0.00444167 time 0.165942
-19 TS dt 0.00853521 time 0.170383
-20 TS dt 0.0135377 time 0.178919
-21 TS dt 0.0136942 time 0.192456
-22 TS dt 0.00534909 time 0.197132
-23 TS dt 0.0109325 time 0.202481
-24 TS dt 0.013745 time 0.213414
-25 TS dt 0.0137591 time 0.227159
-26 TS dt 0.00363144 time 0.229682
-27 TS dt 0.00577092 time 0.233314
-28 TS dt 0.0111812 time 0.239085
-29 TS dt 0.0138292 time 0.250266
-30 TS dt 0.0137754 time 0.264095
-31 TS dt 0.00307127 time 0.266054
-32 TS dt 0.00439941 time 0.269125
-33 TS dt 0.00773179 time 0.273524
-34 TS dt 0.0135763 time 0.281256
-35 TS dt 0.0139791 time 0.294833
-36 TS dt 0.00573678 time 0.29961
-37 TS dt 0.0115563 time 0.305347
+13 TS dt 0.0135237 time 0.129489
+14 TS dt 0.00491431 time 0.133773
+15 TS dt 0.0100893 time 0.138687
+16 TS dt 0.0135711 time 0.148777
+17 TS dt 0.0136066 time 0.162348
+18 TS dt 0.00442413 time 0.165974
+19 TS dt 0.00848341 time 0.170398
+20 TS dt 0.0135303 time 0.178881
+21 TS dt 0.0136941 time 0.192411
+22 TS dt 0.0053962 time 0.197183
+23 TS dt 0.010941 time 0.20258
+24 TS dt 0.0137452 time 0.213521
+25 TS dt 0.0137594 time 0.227266
+26 TS dt 0.0035759 time 0.229752
+27 TS dt 0.00563902 time 0.233328
+28 TS dt 0.0108807 time 0.238967
+29 TS dt 0.0138263 time 0.249848
+30 TS dt 0.0138145 time 0.263674
+31 TS dt 0.00325521 time 0.2658
+32 TS dt 0.00480587 time 0.269055
+33 TS dt 0.0087816 time 0.273861
+34 TS dt 0.0138188 time 0.282642
+35 TS dt 0.0139722 time 0.296461
+36 TS dt 0.00473778 time 0.300051
 TS Object: 1 MPI processes
   type: arkimex
     ARK IMEX 3
@@ -46,8 +45,8 @@ TS Object: 1 MPI processes
     Nonstiff abscissa     c =  0.000000  0.871733  0.600000  1.000000 
   maximum steps=1000
   maximum time=0.3
-  total number of nonlinear solver iterations=294
-  total number of linear solver iterations=588
+  total number of nonlinear solver iterations=288
+  total number of linear solver iterations=576
   total number of nonlinear solve failures=0
   total number of rejected steps=12
   using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001

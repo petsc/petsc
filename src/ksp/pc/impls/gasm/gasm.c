@@ -319,7 +319,6 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
 {
   PC_GASM        *osm = (PC_GASM*)pc->data;
   PetscErrorCode ierr;
-  PetscBool      symset,flg;
   PetscInt       i,nInnerIndices,nTotalInnerIndices;
   PetscMPIInt    rank, size;
   MatReuse       scall = MAT_REUSE_MATRIX;
@@ -349,11 +348,6 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
     if(osm->hierarchicalpartitioning){
       ierr = PCGASMSetHierarchicalPartitioning(pc);CHKERRQ(ierr);
     }
-    if (!osm->type_set) {
-      ierr = MatIsSymmetricKnown(pc->pmat,&symset,&flg);CHKERRQ(ierr);
-      if (symset && flg) osm->type = PC_GASM_BASIC;
-    }
-
     if (osm->n == PETSC_DETERMINE) {
       if (osm->N != PETSC_DETERMINE) {
 	   /* No local subdomains given, but the desired number of total subdomains is known, so construct them accordingly. */
@@ -842,15 +836,10 @@ static PetscErrorCode PCSetFromOptions_GASM(PetscOptionItems *PetscOptionsObject
   PC_GASM        *osm = (PC_GASM*)pc->data;
   PetscErrorCode ierr;
   PetscInt       blocks,ovl;
-  PetscBool      symset,flg;
+  PetscBool      flg;
   PCGASMType     gasmtype;
 
   PetscFunctionBegin;
-  /* set the type to symmetric if matrix is symmetric */
-  if (!osm->type_set && pc->pmat) {
-    ierr = MatIsSymmetricKnown(pc->pmat,&symset,&flg);CHKERRQ(ierr);
-    if (symset && flg) osm->type = PC_GASM_BASIC;
-  }
   ierr = PetscOptionsHead(PetscOptionsObject,"Generalized additive Schwarz options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_gasm_use_dm_subdomains","If subdomains aren't set, use DMCreateDomainDecomposition() to define subdomains.","PCGASMSetUseDMSubdomains",osm->dm_subdomains,&osm->dm_subdomains,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_gasm_total_subdomains","Total number of subdomains across communicator","PCGASMSetTotalSubdomains",osm->N,&blocks,&flg);CHKERRQ(ierr);
