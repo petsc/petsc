@@ -2721,8 +2721,10 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
         ierr = ISRestoreIndices(patch->gtolWithAll, &gtolArrayWithAll);CHKERRQ(ierr);
       }
     }
-    ierr = VecCreateSeq(PETSC_COMM_SELF, maxDofWithArtificial, &patch->patchRHSWithArtificial);CHKERRQ(ierr);
-    ierr = VecSetUp(patch->patchRHSWithArtificial);CHKERRQ(ierr);
+    if (patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE) {
+      ierr = VecCreateSeq(PETSC_COMM_SELF, maxDofWithArtificial, &patch->patchRHSWithArtificial);CHKERRQ(ierr);
+      ierr = VecSetUp(patch->patchRHSWithArtificial);CHKERRQ(ierr);
+    }
     ierr = VecCreateSeq(PETSC_COMM_SELF, maxDof, &patch->patchRHS);CHKERRQ(ierr);
     ierr = VecSetUp(patch->patchRHS);CHKERRQ(ierr);
     ierr = VecCreateSeq(PETSC_COMM_SELF, maxDof, &patch->patchUpdate);CHKERRQ(ierr);
