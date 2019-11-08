@@ -6,8 +6,14 @@
 
 static PetscErrorCode (*loadedSym)(HPDDM::Schwarz<PetscScalar>* const, IS const, IS, const Mat, Mat, std::vector<Vec>, PetscInt* const, PC_HPDDM_Level** const) = NULL;
 
+static PetscBool PCHPDDMPackageInitialized = PETSC_FALSE;
 static PetscBool citePC = PETSC_FALSE;
 static const char hpddmCitationPC[] = "@inproceedings{jolivet2013scalable,\n\tTitle = {{Scalable Domain Decomposition Preconditioners For Heterogeneous Elliptic Problems}},\n\tAuthor = {Jolivet, Pierre and Hecht, Fr\'ed\'eric and Nataf, Fr\'ed\'eric and Prud'homme, Christophe},\n\tOrganization = {ACM},\n\tYear = {2013},\n\tSeries = {SC13},\n\tBooktitle = {Proceedings of the 2013 International Conference for High Performance Computing, Networking, Storage and Analysis}\n}\n";
+
+PetscLogEvent PC_HPDDM_Strc;
+PetscLogEvent PC_HPDDM_PtAP;
+PetscLogEvent PC_HPDDM_PtBP;
+PetscLogEvent PC_HPDDM_Next;
 
 static const char *PCHPDDMCoarseCorrectionTypes[] = { "deflated", "additive", "balanced" };
 
@@ -822,7 +828,7 @@ static PetscErrorCode PCHPDDMGetCoarseCorrectionType_HPDDM(PC pc, PCHPDDMCoarseC
 /*MC
      PCHPDDM - Interface with the HPDDM library.
 
-   This PC may be used to build multilevel spectral domain decomposition methods based on the GenEO framework [2011, 2019]. It may be viewed as an alternative to spectral AMGE or PCBDDC with adaptive selection of constraints. Here is a chronological bibliography of relevant publications linked with PC available in HPDDM through PCHPDDM.
+   This PC may be used to build multilevel spectral domain decomposition methods based on the GenEO framework [2011, 2019]. It may be viewed as an alternative to spectral AMGe or PCBDDC with adaptive selection of constraints. Here is a chronological bibliography of relevant publications linked with PC available in HPDDM through PCHPDDM.
 
 .vb
    [2011] A robust two-level domain decomposition preconditioner for systems of PDEs. Spillane, Dolean, Hauret, Nataf, Pechstein, and Scheichl. Comptes Rendus Mathematique.
@@ -894,5 +900,46 @@ PETSC_EXTERN PetscErrorCode PCCreate_HPDDM(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMSetRHSMat_C", PCHPDDMSetRHSMat_HPDDM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMSetCoarseCorrectionType_C", PCHPDDMSetCoarseCorrectionType_HPDDM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMGetCoarseCorrectionType_C", PCHPDDMGetCoarseCorrectionType_HPDDM);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+     PCHPDDMInitializePackage - This function initializes everything in the PCHPDDM package. It is called from PCInitializePackage().
+
+   Level: intermediate
+
+.seealso:  PetscInitialize()
+@*/
+PetscErrorCode PCHPDDMInitializePackage(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (PCHPDDMPackageInitialized) PetscFunctionReturn(0);
+  PCHPDDMPackageInitialized = PETSC_TRUE;
+  ierr = PetscRegisterFinalize(PCHPDDMFinalizePackage);CHKERRQ(ierr);
+  /* general events                                             */
+  /* domain decomposition structure from Pmat sparsity pattern  */
+  ierr = PetscLogEventRegister("PCHPDDMStrc", PC_CLASSID, &PC_HPDDM_Strc);CHKERRQ(ierr);
+  /* Galerkin product, redistribution, and setup                */
+  ierr = PetscLogEventRegister("PCHPDDMPtAP", PC_CLASSID, &PC_HPDDM_PtAP);CHKERRQ(ierr);
+  /* Galerkin product with summation, redistribution, and setup */
+  ierr = PetscLogEventRegister("PCHPDDMPtBP", PC_CLASSID, &PC_HPDDM_PtBP);CHKERRQ(ierr);
+  /* next level construction using PtAP and PtBP                */
+  ierr = PetscLogEventRegister("PCHPDDMNext", PC_CLASSID, &PC_HPDDM_Next);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+     PCHPDDMFinalizePackage - This function frees everything from the PCHPDDM package. It is called from PetscFinalize().
+
+   Level: intermediate
+
+.seealso:  PetscFinalize()
+@*/
+PetscErrorCode PCHPDDMFinalizePackage(void)
+{
+  PetscFunctionBegin;
+  PCHPDDMPackageInitialized = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

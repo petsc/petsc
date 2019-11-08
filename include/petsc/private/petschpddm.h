@@ -3,6 +3,11 @@
 
 #include <petsc/private/kspimpl.h>
 
+PETSC_EXTERN PetscLogEvent PC_HPDDM_Strc;
+PETSC_EXTERN PetscLogEvent PC_HPDDM_PtAP;
+PETSC_EXTERN PetscLogEvent PC_HPDDM_PtBP;
+PETSC_EXTERN PetscLogEvent PC_HPDDM_Next;
+
 namespace HPDDM {
   template<class K> class Schwarz;       /* forward definition of the HPDDM class */
 }

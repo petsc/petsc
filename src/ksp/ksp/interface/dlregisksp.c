@@ -55,6 +55,9 @@ PetscErrorCode  PCInitializePackage(void)
   /* Initialize subpackages */
   ierr = PCGAMGInitializePackage();CHKERRQ(ierr);
   ierr = PCBDDCInitializePackage();CHKERRQ(ierr);
+#if defined(PETSC_HAVE_HPDDM)
+  ierr = PCHPDDMInitializePackage();CHKERRQ(ierr);
+#endif
   /* Register Classes */
   ierr = PetscClassIdRegister("Preconditioner",&PC_CLASSID);CHKERRQ(ierr);
   /* Register Constructors */
