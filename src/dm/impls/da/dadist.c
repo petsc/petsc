@@ -64,7 +64,7 @@ PetscErrorCode  DMCreateGlobalVector_DA(DM da,Vec *g)
 
 .seealso: DMCreateLocalVector(), VecDuplicate(), VecDuplicateVecs(),
           DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMGlobalToLocalBegin(),
-          DMGlobalToLocalEnd(), DMDALocalToGlobalBegin()
+          DMGlobalToLocalEnd(), DMLocalToGlobalBegin()
 @*/
 PetscErrorCode  DMDACreateNaturalVector(DM da,Vec *g)
 {

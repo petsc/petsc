@@ -660,8 +660,8 @@ vector (including ghost points that contain irrelevant values) to
 a local vector with correct ghost point values.
 This scatter may be done with the commands
 \begin{lstlisting}
-DMDALocalToLocalBegin(DM da,Vec l1,InsertMode iora,Vec l2);
-DMDALocalToLocalEnd(DM da,Vec l1,InsertMode iora,Vec l2);
+DMLocalToLocalBegin(DM da,Vec l1,InsertMode iora,Vec l2);
+DMLocalToLocalEnd(DM da,Vec l1,InsertMode iora,Vec l2);
 \end{lstlisting}
 Since both local vectors, \lstinline{l1} and \lstinline{l2},
 must be compatible with the distributed array, \lstinline{da}, they should be
