@@ -1954,8 +1954,8 @@ static PetscErrorCode PetscSectionView_ASCII(PetscSection s, PetscViewer viewer)
 
    Input Parameters:
 +  A - the PetscSection object to view
--  obj - Optional object
-.  name - command line option
+.  obj - Optional object
+-  name - command line option
 
    Level: intermediate
 .seealso:  PetscSection, PetscSectionView, PetscObjectViewFromOptions(), PetscSectionCreate()

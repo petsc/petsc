@@ -1537,8 +1537,8 @@ PetscErrorCode  PCLoad(PC newdm, PetscViewer viewer)
 
    Input Parameters:
 +  A - the PC context
--  obj - Optional object
-.  name - command line option
+.  obj - Optional object
+-  name - command line option
 
    Level: intermediate
 .seealso:  PC, PCView, PetscObjectViewFromOptions(), PCCreate()

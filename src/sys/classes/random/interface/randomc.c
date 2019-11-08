@@ -213,8 +213,8 @@ PetscErrorCode  PetscRandomSetFromOptions(PetscRandom rnd)
 
    Input Parameters:
 +  A - the  random number generator context
--  obj - Optional object
-.  name - command line option
+.  obj - Optional object
+-  name - command line option
 
    Level: intermediate
 .seealso:  PetscRandom, PetscRandomView, PetscObjectViewFromOptions(), PetscRandomCreate()

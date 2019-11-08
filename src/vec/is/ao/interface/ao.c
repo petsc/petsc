@@ -58,8 +58,8 @@ PetscErrorCode  AOView(AO ao,PetscViewer viewer)
 
    Input Parameters:
 +  ao - the application ordering context
--  obj - Optional object
-.  name - command line option
+.  obj - Optional object
+-  name - command line option
 
    Level: intermediate
 .seealso:  AO, AOView, PetscObjectViewFromOptions(), AOCreate()

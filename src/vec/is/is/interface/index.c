@@ -1586,8 +1586,8 @@ PetscErrorCode  ISRestoreNonlocalIS(IS is, IS *complement)
 
    Input Parameters:
 +  A - the index set
--  obj - Optional object
-.  name - command line option
+.  obj - Optional object
+-  name - command line option
 
    Level: intermediate
 .seealso:  IS, ISView, PetscObjectViewFromOptions(), ISCreate()

@@ -315,8 +315,8 @@ PetscErrorCode  SNESLoad(SNES snes, PetscViewer viewer)
 
    Input Parameters:
 +  A - the application ordering context
--  obj - Optional object
-.  name - command line option
+.  obj - Optional object
+-  name - command line option
 
    Level: intermediate
 .seealso:  SNES, SNESView, PetscObjectViewFromOptions(), SNESCreate()

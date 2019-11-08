@@ -130,8 +130,8 @@ PetscErrorCode PetscLimiterGetType(PetscLimiter lim, PetscLimiterType *name)
 
    Input Parameters:
 +  A - the PetscLimiter object to view
--  obj - Optional object
-.  name - command line option
+.  obj - Optional object
+-  name - command line option
 
    Level: intermediate
 .seealso:  PetscLimiter, PetscLimiterView, PetscObjectViewFromOptions(), PetscLimiterCreate()
@@ -1048,8 +1048,8 @@ PetscErrorCode PetscFVGetType(PetscFV fvm, PetscFVType *name)
 
    Input Parameters:
 +  A - the PetscFV object
--  obj - Optional object
-.  name - command line option
+.  obj - Optional object
+-  name - command line option
 
    Level: intermediate
 .seealso:  PetscFV, PetscFVView, PetscObjectViewFromOptions(), PetscFVCreate()

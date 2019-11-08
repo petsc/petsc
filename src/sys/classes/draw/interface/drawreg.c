@@ -95,8 +95,8 @@ PetscErrorCode  PetscDrawView(PetscDraw indraw,PetscViewer viewer)
 
    Input Parameters:
 +  A - the PetscDraw context
--  obj - Optional object
-.  name - command line option
+.  obj - Optional object
+-  name - command line option
 
    Level: intermediate
 .seealso:  PetscDraw, PetscDrawView, PetscObjectViewFromOptions(), PetscDrawCreate()

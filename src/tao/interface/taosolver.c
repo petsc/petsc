@@ -561,8 +561,8 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
 
    Input Parameters:
 +  A - the  Tao context
--  obj - Optional object
-.  name - command line option
+.  obj - Optional object
+-  name - command line option
 
    Level: intermediate
 .seealso:  Tao, TaoView, PetscObjectViewFromOptions(), TaoCreate()

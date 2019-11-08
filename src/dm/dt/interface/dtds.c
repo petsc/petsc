@@ -230,8 +230,8 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS prob, PetscViewer viewer)
 
    Input Parameters:
 +  A - the PetscDS object
--  obj - Optional object
-.  name - command line option
+.  obj - Optional object
+-  name - command line option
 
    Level: intermediate
 .seealso:  PetscDS, PetscDSView, PetscObjectViewFromOptions(), PetscDSCreate()
