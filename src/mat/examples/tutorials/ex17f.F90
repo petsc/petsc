@@ -46,6 +46,9 @@ implicit none
     if (rank == bigranks(i)) m = 5
   end do
 
+  deallocate(emptyranks)
+  deallocate(bigranks)
+
   call MatCreate(PETSC_COMM_WORLD,A,ierr);CHKERRA(ierr)
   call MatSetsizes(A,m,m,PETSC_DECIDE,PETSC_DECIDE,ierr);CHKERRA(ierr)
   call MatSetFromOptions(A,ierr);CHKERRA(ierr)
@@ -59,15 +62,16 @@ implicit none
   call MatGetSize(A,PETSC_NULL_INTEGER,N,ierr);CHKERRA(ierr)
   call MatGetOwnershipRange(A,rstart,rend,ierr);CHKERRA(ierr)
   
+  allocate(cols(0:3))
+  allocate(vals(0:3))
   do i=rstart,rend-1 
-    allocate(cols(0:3))
-    allocate(vals(0:3))
     
     cols = (/mod((i+N-1),N),i,mod((i+1),N)/)
     vals = [1.0,1.0,1.0]
     call MatSetValues(A,one,i,three,cols,vals,INSERT_VALUES,ierr);CHKERRA(ierr)
   end do
-
+  deallocate(cols)
+  deallocate(vals)
   call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr);CHKERRA(ierr)
   call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr);CHKERRA(ierr)
   call MatView(A,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)

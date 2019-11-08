@@ -103,6 +103,7 @@
          if (gremote(i)%index .ne. remote(i)%index) then; SETERRA(PETSC_COMM_WORLD,PETSC_ERR_PLIB,'Leaf from PetscSFGetGraph() does not match that set with PetscSFSetGraph()'); endif
       enddo
 
+      deallocate(gremote)
 !    Clean storage for star forest.
       call PetscSFDestroy(sf,ierr);CHKERRA(ierr);
       call PetscFinalize(ierr);
