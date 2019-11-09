@@ -273,6 +273,8 @@ else ifdef argsearch
   TESTTARGETS := $(foreach v,$(alltesttargets),$(if $(findstring $(argsearch),$($(v)_ARGS)),$(v)))
 else ifdef globsearch
   TESTTARGETS := $(shell $(PYTHON) -c"import sys,fnmatch,itertools; m=[fnmatch.filter(sys.argv[2].split(),p) for p in sys.argv[1].split()]; print(' '.join(list(itertools.chain.from_iterable(m))))" '$(globsearch)' '$(alltesttargets)')
+else ifdef test-fail
+  TESTTARGETS := $(shell $(PETSC_ARCH)/tests/echofailures.sh)
 else                            # No filter - run them all, but delete the executables as we go
   TESTTARGETS := $(testpkgs)
 endif
@@ -371,6 +373,9 @@ help-test:
 	-@echo "  For general glob-style searching using python:"
 	-@echo "   NOTE: uses shell which is possibly slower and more brittle"
 	-@echo "    make -f ${makefile} test globsearch='sys*ex2*'"
+	-@echo
+	-@echo "  To re-run the last tests which failed:"
+	-@echo "    make -f ${makefile} test test-fail='1'"
 	-@echo
 	-@echo "  To see which targets match a given pattern (useful for doing a specific target):"
 	-@echo "    make -f ${makefile} print-test search=sys%"

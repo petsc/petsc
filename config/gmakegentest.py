@@ -206,7 +206,7 @@ class generateExamples(Petsc):
     subst should be passed in instead of inDict
     """
     loopVars={}; newargs=[]
-    lsuffix='_'
+    lsuffix='+'
     argregex = re.compile(' (?=-[a-zA-Z])')
     from testparse import parseLoopArgs
     for key in inDict:
@@ -243,13 +243,13 @@ class generateExamples(Petsc):
       inDict['subargs'] += " "+" ".join(newargs)
       inDict['args']=''
       if 'label_suffix' in inDict:
-        inDict['label_suffix']+=lsuffix.rstrip('_')
+        inDict['label_suffix']+=lsuffix.rstrip('+').rstrip('_')
       else:
-        inDict['label_suffix']=lsuffix.rstrip('_')
+        inDict['label_suffix']=lsuffix.rstrip('+').rstrip('_')
     else:
       if loopVars:
         inDict['args'] = ' '.join(newargs)
-        inDict['label_suffix']=lsuffix.rstrip('_')
+        inDict['label_suffix']=lsuffix.rstrip('+').rstrip('_')
     return loopVars
 
   def getArgLabel(self,testDict):
@@ -584,7 +584,7 @@ class generateExamples(Petsc):
       for stest in testDict["subtests"]:
         subst=substP.copy()
         subst.update(testDict[stest])
-        subst['label_suffix']='-'+string.ascii_letters[k]; k+=1
+        subst['label_suffix']='+'+string.ascii_letters[k]; k+=1
         sLoopVars = self._getLoopVars(subst,testname,isSubtest=True)
         if sLoopVars:
           (sLoopHead,j) = self.getLoopVarsHead(sLoopVars,j,allLoopVars)
