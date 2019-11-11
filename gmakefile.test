@@ -182,7 +182,7 @@ $(foreach pkg, $(pkgs), $(call concattestlang,$(pkg),F F90)) : $(libpetscall)
 # Testing convenience targets
 .PHONY: test pre-clean
 
-test: report_tests check-test-errors
+test: report_tests
 
 pre-clean:
 	@$(RM) -rf $(TESTDIR)/counts $(TESTLOGTAPFILE) $(TESTLOGERRFILE)
