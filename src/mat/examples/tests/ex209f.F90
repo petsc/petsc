@@ -41,6 +41,7 @@
 
       call MatDestroy(A,ierr);CHKERRA(ierr)
 
+      deallocate(km)
       call PetscFinalize(ierr)
       end
 

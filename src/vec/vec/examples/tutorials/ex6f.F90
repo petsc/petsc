@@ -57,7 +57,8 @@ program main
   
   ! Destroy the output viewer and work array
   call PetscViewerDestroy(view_out,ierr);CHKERRA(ierr)
-  
+  deallocate(array)
+
   ! ----------------------------------------------------------------------
   !          PART 2: Read data from file and form a vector                
   ! ---------------------------------------------------------------------- 
@@ -92,6 +93,7 @@ program main
   call VecView(vec,PETSC_VIEWER_STDOUT_SELF,ierr);CHKERRA(ierr)
 
   ! Free data structures 
+  deallocate(t)
   call VecDestroy(vec,ierr);CHKERRA(ierr)
   call PetscViewerDestroy(view_in,ierr);CHKERRA(ierr)
   call PetscFinalize(ierr);CHKERRA(ierr)

@@ -2853,11 +2853,11 @@ static PetscErrorCode DMPlexCreateDimStratum(DM,DMLabel,DMLabel,PetscInt,PetscIn
   if run on a partially interpolated mesh, meaning one that had some edges and faces, but not others. For example, suppose that
   we had a mesh consisting of one triangle (c0) and three vertices (v0, v1, v2), and only one edge is on the boundary so we choose
   to interpolate only that one (e0), so that
-  $  cone(c0) = {e0, v2}
-  $  cone(e0) = {v0, v1}
+$  cone(c0) = {e0, v2}
+$  cone(e0) = {v0, v1}
   If DMPlexStratify() is run on this mesh, it will give depths
-  $  depth 0 = {v0, v1, v2}
-  $  depth 1 = {e0, c0}
+$  depth 0 = {v0, v1, v2}
+$  depth 1 = {e0, c0}
   where the triangle has been given depth 1, instead of 2, because it is reachable from vertex v2.
 
   DMPlexStratify() should be called after all calls to DMPlexSymmetrize()

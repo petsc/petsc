@@ -99,8 +99,8 @@ static PetscErrorCode DMPlexCreateSectionDof(DM dm, DMLabel label[],const PetscI
 
     ierr = DMGetField(dm, f, NULL, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
-    if (id == PETSCFE_CLASSID)      {isFE[f] = PETSC_TRUE;}
-    else if (id == PETSCFV_CLASSID) {isFE[f] = PETSC_FALSE;}
+    /* User is allowed to put a "placeholder" field in (c.f. DMCreateDS) */
+    isFE[f] = id == PETSCFE_CLASSID ? PETSC_TRUE : PETSC_FALSE;
   }
 
   ierr = PetscMalloc1(depth+1, &pMax);CHKERRQ(ierr);

@@ -417,6 +417,10 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2,PetscInt data_stride,
 #endif
   free(mid.trianglelist);
   free(mid.neighborlist);
+  free(mid.segmentlist);
+  free(mid.segmentmarkerlist);
+  free(mid.pointlist);
+  free(mid.pointmarkerlist);
   ierr = PetscFree(in.pointlist);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 #else
