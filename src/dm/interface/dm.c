@@ -853,8 +853,8 @@ PetscErrorCode DMSetFromOptions(DM dm)
 
    Input Parameters:
 +  dm - the DM object
--  obj - Optional object
-.  name - command line option
+.  obj - Optional object
+-  name - command line option
 
    Level: intermediate
 .seealso:  DM, DMView, PetscObjectViewFromOptions(), DMCreate()

@@ -252,8 +252,8 @@ PetscErrorCode  ISLocalToGlobalMappingGetSize(ISLocalToGlobalMapping mapping,Pet
 
    Input Parameters:
 +  A - the local to global mapping object
--  obj - Optional object
-.  name - command line option
+.  obj - Optional object
+-  name - command line option
 
    Level: intermediate
 .seealso:  ISLocalToGlobalMapping, ISLocalToGlobalMappingView, PetscObjectViewFromOptions(), ISLocalToGlobalMappingCreate()

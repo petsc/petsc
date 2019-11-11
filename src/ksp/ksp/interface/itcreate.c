@@ -231,8 +231,8 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
 
    Input Parameters:
 +  A - Krylov solver context
--  obj - Optional object
-.  name - command line option
+.  obj - Optional object
+-  name - command line option
 
    Level: intermediate
 .seealso:  KSP, KSPView, PetscObjectViewFromOptions(), KSPCreate()

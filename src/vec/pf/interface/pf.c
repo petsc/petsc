@@ -220,8 +220,8 @@ PetscErrorCode  PFApply(PF pf,PetscInt n,const PetscScalar *x,PetscScalar *y)
 
    Input Parameters:
 +  A - the PF context
--  obj - Optional object
-.  name - command line option
+.  obj - Optional object
+-  name - command line option
 
    Level: intermediate
 .seealso:  PF, PFView, PetscObjectViewFromOptions(), PFCreate()

@@ -125,8 +125,8 @@ PetscErrorCode PetscSpaceGetType(PetscSpace sp, PetscSpaceType *name)
 
    Input Parameters:
 +  A - the PetscSpace object
--  obj - Optional object
-.  name - command line option
+.  obj - Optional object
+-  name - command line option
 
    Level: intermediate
 .seealso:  PetscSpace, PetscSpaceView, PetscObjectViewFromOptions(), PetscSpaceCreate()

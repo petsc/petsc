@@ -251,8 +251,8 @@ PetscErrorCode  VecScatterCopy(VecScatter sctx,VecScatter *ctx)
 
    Input Parameters:
 +  A - the scatter context
--  obj - Optional object
-.  name - command line option
+.  obj - Optional object
+-  name - command line option
 
    Level: intermediate
 .seealso:  VecScatter, VecScatterView, PetscObjectViewFromOptions(), VecScatterCreate()

@@ -337,8 +337,8 @@ PetscErrorCode  PetscViewerSetUp(PetscViewer viewer)
 
    Input Parameters:
 +  A - the PetscViewer context
--  obj - Optional object
-.  name - command line option
+.  obj - Optional object
+-  name - command line option
 
    Level: intermediate
 .seealso:  PetscViewer, PetscViewerView, PetscObjectViewFromOptions(), PetscViewerCreate()

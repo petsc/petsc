@@ -15,8 +15,8 @@ PetscLogEvent TAOLINESEARCH_Eval;
 
    Input Parameters:
 +  A - the Tao context
--  obj - Optional object
-.  name - command line option
+.  obj - Optional object
+-  name - command line option
 
    Level: intermediate
 .seealso:  TaoLineSearch, TaoLineSearchView, PetscObjectViewFromOptions(), TaoLineSearchCreate()

@@ -216,8 +216,8 @@ static PetscErrorCode PetscDualSpaceView_ASCII(PetscDualSpace sp, PetscViewer v)
 
    Input Parameters:
 +  A - the PetscDualSpace object
--  obj - Optional object, proivides prefix
-.  name - command line option
+.  obj - Optional object, proivides prefix
+-  name - command line option
 
    Level: intermediate
 .seealso:  PetscDualSpace, PetscDualSpaceView(), PetscObjectViewFromOptions(), PetscDualSpaceCreate()

@@ -1893,8 +1893,8 @@ PetscErrorCode  TSLoad(TS ts, PetscViewer viewer)
 
    Input Parameters:
 +  A - the application ordering context
--  obj - Optional object
-.  name - command line option
+.  obj - Optional object
+-  name - command line option
 
    Level: intermediate
 .seealso:  TS, TSView, PetscObjectViewFromOptions(), TSCreate()

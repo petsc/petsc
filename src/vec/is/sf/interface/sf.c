@@ -714,8 +714,8 @@ PetscErrorCode PetscSFGetLeafRange(PetscSF sf,PetscInt *minleaf,PetscInt *maxlea
 
    Input Parameters:
 +  A - the star forest
--  obj - Optional object
-.  name - command line option
+.  obj - Optional object
+-  name - command line option
 
    Level: intermediate
 .seealso:  PetscSF, PetscSFView, PetscObjectViewFromOptions(), PetscSFCreate()

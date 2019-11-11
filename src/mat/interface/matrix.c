@@ -877,8 +877,8 @@ PetscErrorCode MatSetUp(Mat A)
 
    Input Parameters:
 +  A - the Mat context
--  obj - Optional object
-.  name - command line option
+.  obj - Optional object
+-  name - command line option
 
    Level: intermediate
 .seealso:  Mat, MatView, PetscObjectViewFromOptions(), MatCreate()

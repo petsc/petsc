@@ -223,8 +223,8 @@ PetscErrorCode  MatCoarsenCreate(MPI_Comm comm, MatCoarsen *newcrs)
 
    Input Parameters:
 +  A - the coarsen context
--  obj - Optional object
-.  name - command line option
+.  obj - Optional object
+-  name - command line option
 
    Level: intermediate
 .seealso:  MatCoarsen, MatCoarsenView, PetscObjectViewFromOptions(), MatCoarsenCreate()

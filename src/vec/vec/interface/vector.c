@@ -474,8 +474,8 @@ PetscErrorCode  VecDestroyVecs(PetscInt m,Vec *vv[])
 
    Input Parameters:
 +  A - the vector
--  obj - Optional object
-.  name - command line option
+.  obj - Optional object
+-  name - command line option
 
    Level: intermediate
 .seealso:  Vec, VecView, PetscObjectViewFromOptions(), VecCreate()

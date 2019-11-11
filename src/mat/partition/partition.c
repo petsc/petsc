@@ -609,8 +609,8 @@ PetscErrorCode  MatPartitioningCreate(MPI_Comm comm,MatPartitioning *newp)
 
    Input Parameters:
 +  A - the partitioning context
--  obj - Optional object
-.  name - command line option
+.  obj - Optional object
+-  name - command line option
 
    Level: intermediate
 .seealso:  MatPartitioning, MatPartitioningView, PetscObjectViewFromOptions(), MatPartitioningCreate()
