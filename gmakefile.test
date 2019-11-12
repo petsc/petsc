@@ -275,6 +275,8 @@ else ifdef globsearch
   TESTTARGETS := $(shell $(PYTHON) -c"import sys,fnmatch,itertools; m=[fnmatch.filter(sys.argv[2].split(),p) for p in sys.argv[1].split()]; print(' '.join(list(itertools.chain.from_iterable(m))))" '$(globsearch)' '$(alltesttargets)')
 else ifdef test-fail
   TESTTARGETS := $(shell $(PETSC_ARCH)/tests/echofailures.sh)
+else ifdef query
+  TESTTARGETS := $(shell $(PYTHON) config/query_tests.py '$(query)' '$(queryval)')
 else                            # No filter - run them all, but delete the executables as we go
   TESTTARGETS := $(testpkgs)
 endif
@@ -376,6 +378,9 @@ help-test:
 	-@echo
 	-@echo "  To re-run the last tests which failed:"
 	-@echo "    make -f ${makefile} test test-fail='1'"
+	-@echo
+	-@echo "  To search for fields from the original test definitions:"
+	-@echo "    make -f ${makefile} test query='requires' queryval='*MPI_PROCESS_SHARED_MEMORY*'"
 	-@echo
 	-@echo "  To see which targets match a given pattern (useful for doing a specific target):"
 	-@echo "    make -f ${makefile} print-test search=sys%"
