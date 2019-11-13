@@ -550,6 +550,9 @@ M*/
 
 #endif
 
+#if defined(PETSC_HAVE_CUDA)
+#define CHKERRCUSOLVER(err) do {if (PetscUnlikely(err)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSOLVER error %d",err);} while(0)
+#endif
 /*MC
    CHKMEMQ - Checks the memory for corruption, calls error handler if any is detected
 
