@@ -22,8 +22,7 @@ PETSC_INTERN PetscErrorCode PetscLogInitialize(void);
 #endif
 #if defined(PETSC_HAVE_CUDA)
 #include <cuda_runtime.h>
-PETSC_EXTERN PetscErrorCode PetscCUBLASInitializeHandle(void);
-PETSC_EXTERN PetscErrorCode PetscCUSOLVERDnInitializeHandle(void);
+#include <petsccublas.h>
 #endif
 
 #if defined(PETSC_HAVE_VIENNACL)
