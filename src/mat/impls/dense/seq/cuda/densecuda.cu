@@ -59,58 +59,6 @@
 #endif
 #endif
 
-/* copy and pasted from the CUBLAS implementation */
-#define CHKERRCUSOLVER(err) do {if (PetscUnlikely(err)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSOLVER error %d",err);} while(0)
-static PetscErrorCode PetscCUSOLVERDnDestroyHandle();
-static PetscErrorCode PetscCUSOLVERDnGetHandle_Private(cusolverDnHandle_t **handle)
-{
-  static cusolverDnHandle_t cusolverdnhandle = NULL;
-  cusolverStatus_t          cerr;
-  PetscErrorCode            ierr;
-
-  PetscFunctionBegin;
-  if (!cusolverdnhandle) {
-    cerr = cusolverDnCreate(&cusolverdnhandle);CHKERRCUSOLVER(cerr);
-    ierr = PetscRegisterFinalize(PetscCUSOLVERDnDestroyHandle);CHKERRQ(ierr);
-  }
-  *handle = &cusolverdnhandle;
-  PetscFunctionReturn(0);
-}
-
-PETSC_EXTERN PetscErrorCode PetscCUSOLVERDnInitializeHandle(void)
-{
-  cusolverDnHandle_t *p_cusolverdnhandle;
-  PetscErrorCode     ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscCUSOLVERDnGetHandle_Private(&p_cusolverdnhandle);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode PetscCUSOLVERDnGetHandle(cusolverDnHandle_t *handle)
-{
-  cusolverDnHandle_t *p_cusolverdnhandle;
-  PetscErrorCode     ierr;
-
-  PetscFunctionBegin;
-  ierr    = PetscCUSOLVERDnGetHandle_Private(&p_cusolverdnhandle);CHKERRQ(ierr);
-  *handle = *p_cusolverdnhandle;
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode PetscCUSOLVERDnDestroyHandle()
-{
-  cusolverDnHandle_t *p_cusolverdnhandle;
-  cusolverStatus_t cerr;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscCUSOLVERDnGetHandle_Private(&p_cusolverdnhandle);CHKERRQ(ierr);
-  cerr = cusolverDnDestroy(*p_cusolverdnhandle);CHKERRCUSOLVER(cerr);
-  *p_cusolverdnhandle = NULL;  /* Ensures proper reinitialization */
-  PetscFunctionReturn(0);
-}
-
 typedef struct {
   PetscScalar *d_v;   /* pointer to the matrix on the GPU */
   /* factorization support */
