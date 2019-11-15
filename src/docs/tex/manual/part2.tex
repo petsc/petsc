@@ -6161,96 +6161,105 @@ The general flow of an application code using \lstinline{DMNetwork} is as follow
 \begin{enumerate}
   \item Create a network object
 \begin{lstlisting}
-DMNetworkCreate(MPI_Comm, DM*);
-\end{lstlisting} 
-  \item Create components and register them with the network. A ``component'' is specific application data at a node/edge of the network required for its residual evaluation. For example, components could be resistor, inductor data for circuit applications, edge weights for graph problems, generator/transmission line data for power grids. Components are registered by calling
-\begin{lstlisting}
-DMNetworkRegisterComponent(DM,const char* name, PetscInt size, PetscInt* compkey);
+DMNetworkCreate(MPI_Comm comm, DM* dm);
 \end{lstlisting}
-  Here, \lstinline{name} is the component name,\lstinline{size} is the size of component data type, and \lstinline{compkey} is an integer key that can be used for setting/getting the component at a node or an edge.
+  \item Create components and register them with the network. A ``component'' is specific application data at a vertex/edge of the network required for its residual evaluation. For example, components could be resistor, inductor data for circuit applications, edge weights for graph problems, generator/transmission line data for power grids. Components are registered by calling
+\begin{lstlisting}
+DMNetworkRegisterComponent(DM dm, const char* name, size_t size, PetscInt* compkey);
+\end{lstlisting}
+  Here, \lstinline{name} is the component name, \lstinline{size} is the size of component data type, and \lstinline{compkey} is an integer key that can be used for setting/getting the component at a vertex or an edge.
   \item DMNetwork supports networks that comprise of a single or multiple coupled subnetworks. The topological sizes of the network are set by calling
 \begin{lstlisting}
 DMNetworkSetSizes(DM dm, PetscInt Nsubnet, PetscInt nV[], PetscInt nE[], PetscInt NsubnetCouple, PetscInt nec[]);
 \end{lstlisting}
-Here, \lstinline{Nsubnet} is the number of subnetworks, \lstinline{nV} and \lstinline{nE} is the number of nodes and edges for each subnetwork, \lstinline{NsubnetCouple} is the number of coupled subnetworks, and \lstinline{nec} is the number of coupling edges. DMNetwork assumes coupling between the networks through coupling edges. For a single network, set \lstinline{Nsubnet} = 1, \lstinline{NsubnetCouple} = 0,and \lstinline{nec} = NULL.
-  \item The next step is to set up the connectivity for the network. This is done by specifying the connectivity within each subnetwork (\lstinline{edgelist}) and between subnetworks (\lstinline{edgelist}).
+Here, \lstinline{Nsubnet} is the number of subnetworks, \lstinline{nV} and \lstinline{nE} is the number of vertices and edges for each subnetwork, \lstinline{NsubnetCouple} is the number of coupled subnetworks (currently not being defined and used), and \lstinline{nec} is the number of coupling edges. DMNetwork assumes coupling between the networks through coupling edges. For a single network, set \lstinline{Nsubnet} = 1, \lstinline{NsubnetCouple} = 0,and \lstinline{nec} = NULL.
+  \item The next step is to set up the connectivity for the network. This is done by specifying the connectivity within each subnetwork (\lstinline{edgelist}) and between subnetworks (\lstinline{edgelistCouple}).
 \begin{lstlisting}
-DMNetworkSetEdgeList(DM dm, PetscInt *edgelist[],PetscInt *edgelistCouple[]);
+DMNetworkSetEdgeList(DM dm, PetscInt *edgelist[], PetscInt *edgelistCouple[]);
 \end{lstlisting}
-Each element of \lstinline{edgelist} is an integer array of size 2*nE[i] containing the edge connectivity for each subnetwork. Each element in \lstinline{edgelistCouple} has four entries - {from subnetwork number, from subnetwork vertex number, to subnetwork number, to subetwork vertex number}.
+Each element of \lstinline{edgelist} is an integer array of size 2*nE[i] containing the edge connectivity for the i-th subnetwork. Each element in \lstinline{edgelistCouple} has four entries - {from subnetwork number (net.id), from subnetwork vertex number (vertex.id), to subnetwork number (net.id), to subetwork vertex number (vertex.id)}.
 
 As an example, consider a network comprising of 2 subnetworks that are coupled. The topological information for the network is as follows: \\
 subnetwork 0: v0 --- v1 --- v2 --- v3 \\
 subnetwork 1: v1 --- v2 --- v0 \\
 coupling between subnetworks: subnetwork 1: v2 --- subnetwork 0: v0 \\
-The \lstinline{edgelist} and \lstinline{edgeCouplelist} for this network is \\
+The \lstinline{edgelist} and \lstinline{edgelistCouple} for this network is \\
 edgelist[0] = \{0,1,1,2,2,3\} \\
 edgelist[1] = \{1,2,2,0\} \\
-edgelistCouple[0] = \{1,2,0,0\}
+edgelistCouple[0] = \{1,2,0,0\}.
 
-\item The next step is for DMNetwork to create a bare layout (graph) of the network
+\item The next step is for DMNetwork to create a bare layout (graph) of the network.
 \begin{lstlisting}
 DMNetworkLayoutSetUp(DM dm);
 \end{lstlisting}
 
-\item After completing the previous step, the network graph is set up, but no physics is associated yet. This is done by adding the components and setting the number of variables for the nodes and edges.
+\item After completing the previous steps, the network graph is set up, but no physics is associated yet. This is done by adding the components and setting the number of variables for the vertices and edges.
 \begin{lstlisting}
-DMNetworkAddComponent(DM dm, PetscInt p,PetscInt component,void* component);
+DMNetworkAddComponent(DM dm, PetscInt p, PetscInt compkey, void* component);
 \end{lstlisting}
-  DMNetwork supports setting multiple components at a node/edge.
+  %DMNetwork supports setting multiple components at a vertex/edge.
+%\begin{lstlisting}
+%DMNetworkSetNumVariables(DM dm, PetscInt p, PetscInt nvar);
+%\end{lstlisting}
 \begin{lstlisting}
-DMNetworkSetNumVariables(DM dm,PetscInt p,PetscInt nvar);
+DMNetworkAddNumVariables(DM dm, PetscInt p, PetscInt nvar);
 \end{lstlisting}
-\begin{lstlisting}
-DMNetworkAddNumVariables(DM dm,PetscInt p,PetscInt nvar);
-\end{lstlisting}
-  \item Signal network ready to be distributed.
+DMNetwork supports setting multiple components at a vertex/edge.
+
+  \item Set up network internal data structures.
+  %Signal network ready to be distributed.
 \begin{lstlisting}
 DMSetUp(DM dm);
 \end{lstlisting}
-  \item Distribute the network (also moves components attached with nodes/edges)
+  \item Distribute the network (also moves components attached with vertices/edges) to multiple processors.
 \begin{lstlisting}
-DMNetworkDistribute(DM oldDM, const char partitioner[], PetscInt overlap,DM *distDM);
+DMNetworkDistribute(DM dm, const char partitioner[], PetscInt overlap, DM *distDM);
 \end{lstlisting}
-\item Hook up the \lstinline{DM} with the solver: \lstinline{KSPSetDM()}, \lstinline{SNESSetDM()}, \lstinline{TSSetDM()}
+\item Associate the \lstinline{DM} with a PETSc solver:
+\begin{lstlisting}
+KSPSetDM(KSP ksp, DM dm) or SNESSetDM(SNES snes, DM dm) or TSSetDM(TS ts, DM dm).
+\end{lstlisting}
 \end{enumerate}
 
 \subsection{Utility functions}
-  \lstinline{DMNetwork} provides several utility functions for operating on the network. The mostly commonly used functions are:
-obtaining iterators for nodes/edges,
+  \lstinline{DMNetwork} provides several utility functions for operations on the network. The mostly commonly used functions are:
+obtaining iterators for vertices/edges,
 \begin{lstlisting}
-DMNetworkGetEdgeRange(DM dm,PetscInt *eStart,PetscInt *eEnd);
+DMNetworkGetEdgeRange(DM dm, PetscInt *eStart, PetscInt *eEnd);
 \end{lstlisting}
 \begin{lstlisting}
-DMNetworkGetVertexRange(DM dm,PetscInt *vStart, PetscInt *vEnd);
+DMNetworkGetVertexRange(DM dm, PetscInt *vStart, PetscInt *vEnd);
 \end{lstlisting}
-checking the ``ghost'' status of a node (vertex), 
 \begin{lstlisting}
-DMNetworkIsGhostVertex(DM dm,PetscInt p,PetscBool *isghost);
+DMNetworkGetSubnetworkInfo(DM dm, PetscInt netid, PetscInt *nv, PetscInt *ne, const PetscInt **vtx, const PetscInt **edge));
 \end{lstlisting}
-and retrieving local/global indices of node/edge variables for inserting
+Checking the ``ghost'' status of a vertex,
+\begin{lstlisting}
+DMNetworkIsGhostVertex(DM dm, PetscInt p, PetscBool *isghost);
+\end{lstlisting}
+and retrieving local/global indices of vertex/edge variables for inserting
   elements in vectors/matrices.
 \begin{lstlisting}
-DMNetworkGetVariableOffset(DM dm,PetscInt p,PetscInt *offset);
+DMNetworkGetVariableOffset(DM dm, PetscInt p, PetscInt *offset);
 \end{lstlisting}
 \begin{lstlisting}
-DMNetworkGetVariableGlobalOffset(DM dm,PetscInt p,PetscInt *offsetg);
+DMNetworkGetVariableGlobalOffset(DM dm, PetscInt p, PetscInt *offsetg);
 \end{lstlisting}
-In network applications, one frequently needs to find the supporting edges for a node or
-the connecting nodes covering an edge. These can be obtained by the following two routines.
+In network applications, one frequently needs to find the supporting edges for a vertex or
+the connecting vertices covering an edge. These can be obtained by the following two routines.
 \begin{lstlisting}
-DMNetworkGetConnectedVertices(DM dm,PetscInt edge,const PetscInt *vertices[]);
+DMNetworkGetConnectedVertices(DM dm, PetscInt edge, const PetscInt *vertices[]);
 \end{lstlisting}
 \begin{lstlisting}
-DMNetworkGetSupportingEdges(DM dm,PetscInt vertex,PetscInt *nedges,const PetscInt *edges[]) ;
+DMNetworkGetSupportingEdges(DM dm, PetscInt vertex, PetscInt *nedges, const PetscInt *edges[]) ;
 \end{lstlisting}
 
 \subsection{Retrieving components}
-The components set at nodes/edges be accessed by
+The components set at vertices/edges be accessed by
 \begin{lstlisting}
-DMNetworkGetComponent(DM dm,PetscInt p, PetscInt compnum, PetscInt *compkey, void** component);
+DMNetworkGetComponent(DM dm, PetscInt p, PetscInt compnum, PetscInt *compkey, void** component);
 \end{lstlisting}
-\lstinline{compkey} is the key set by \lstinline{DMNetworkRegisterComponent}. An example of accessing and retrieving the components at nodes is:
+\lstinline{compkey} is the key set by \lstinline{DMNetworkRegisterComponent}. An example of accessing and retrieving the components at vertices is:
 
 \begin{lstlisting}
 PetscInt Start, End, numcomps,key,v,compnum;
@@ -6265,7 +6274,7 @@ for(v=Start; v  < End; v++) {
   }
 }
 \end{lstlisting}
-The above example does not explicitly make use the component key. It is used when different component types are set at different nodes. In this case, the {compkey} is the used to differentiate the component type.
+The above example does not explicitly make use the component key. It is used when different component types are set at different vertices. In this case, the {compkey} is used to differentiate the component type.
 
 % --------------------------------------------------------------------
 %                            PART 3
