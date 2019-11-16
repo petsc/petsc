@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.version          = '6.0.8'
+    self.version          = '6.0.9'
     self.versionname      = 'SCOTCH_VERSION.SCOTCH_RELEASE.SCOTCH_PATCHLEVEL'
     self.gitcommit        = 'v'+self.version
     self.download         = ['git:https://gitlab.inria.fr/scotch/scotch',
