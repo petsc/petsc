@@ -61,8 +61,8 @@ PetscErrorCode  CholmodStart(Mat F)
 } while (0)
 
 #define CHOLMOD_OPTION_SIZE_T(name,help) do {                            \
-    PetscInt tmp = (PetscInt)c->name;                                    \
-    ierr = PetscOptionsInt("-mat_cholmod_" #name,help,"None",tmp,&tmp,NULL);CHKERRQ(ierr); \
+    PetscReal tmp = (PetscInt)c->name;                                   \
+    ierr = PetscOptionsReal("-mat_cholmod_" #name,help,"None",tmp,&tmp,NULL);CHKERRQ(ierr); \
     if (tmp < 0) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_OUTOFRANGE,"value must be positive"); \
     c->name = (size_t)tmp;                                               \
 } while (0)
@@ -74,14 +74,17 @@ PetscErrorCode  CholmodStart(Mat F)
 } while (0)
 
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)F),((PetscObject)F)->prefix,"CHOLMOD Options","Mat");CHKERRQ(ierr);
-  /* CHOLMOD handles first-time packing and refactor-packing separately, but we usually want them to be the same. */
-  chol->pack = (PetscBool)c->final_pack;
+  CHOLMOD_OPTION_INT(nmethods,"Number of different ordering methods to try");
 
 #if defined(PETSC_USE_SUITESPARSE_GPU)
   c->useGPU = 1;
   CHOLMOD_OPTION_INT(useGPU,"Use GPU for BLAS 1, otherwise 0");
+  CHOLMOD_OPTION_SIZE_T(maxGpuMemBytes,"Maximum memory to allocate on the GPU");
+  CHOLMOD_OPTION_DOUBLE(maxGpuMemFraction,"Fraction of available GPU memory to allocate");
 #endif
 
+  /* CHOLMOD handles first-time packing and refactor-packing separately, but we usually want them to be the same. */
+  chol->pack = (PetscBool)c->final_pack;
   ierr = PetscOptionsBool("-mat_cholmod_pack","Pack factors after factorization [disable for frequent repeat factorization]","None",chol->pack,&chol->pack,NULL);CHKERRQ(ierr);
   c->final_pack = (int)chol->pack;
 
