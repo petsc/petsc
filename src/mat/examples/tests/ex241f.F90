@@ -77,6 +77,9 @@ end program test_assembly
 
 !/*TEST
 !
+!   build:
+!      requires: complex
+!
 !   test:
 !      nsize: 2
 !

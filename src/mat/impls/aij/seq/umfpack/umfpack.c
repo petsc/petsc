@@ -462,9 +462,9 @@ PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SuiteSparse(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatSolverTypeRegister(MATSOLVERUMFPACK,MATSEQAIJ,      MAT_FACTOR_LU,MatGetFactor_seqaij_umfpack);CHKERRQ(ierr);
-  ierr = MatSolverTypeRegister(MATSOLVERCHOLMOD,MATSEQAIJ,      MAT_FACTOR_CHOLESKY,MatGetFactor_seqaij_cholmod);CHKERRQ(ierr);
-  ierr = MatSolverTypeRegister(MATSOLVERCHOLMOD,MATSEQSBAIJ,     MAT_FACTOR_CHOLESKY,MatGetFactor_seqsbaij_cholmod);CHKERRQ(ierr);
-  ierr = MatSolverTypeRegister(MATSOLVERKLU,MATSEQAIJ,          MAT_FACTOR_LU,MatGetFactor_seqaij_klu);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERUMFPACK,MATSEQAIJ,  MAT_FACTOR_LU,MatGetFactor_seqaij_umfpack);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERCHOLMOD,MATSEQAIJ,  MAT_FACTOR_CHOLESKY,MatGetFactor_seqaij_cholmod);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERCHOLMOD,MATSEQSBAIJ,MAT_FACTOR_CHOLESKY,MatGetFactor_seqsbaij_cholmod);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERKLU,MATSEQAIJ,      MAT_FACTOR_LU,MatGetFactor_seqaij_klu);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

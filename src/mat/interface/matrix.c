@@ -765,7 +765,7 @@ PetscErrorCode MatAppendOptionsPrefix(Mat A,const char prefix[])
 }
 
 /*@C
-   MatGetOptionsPrefix - Sets the prefix used for searching for all
+   MatGetOptionsPrefix - Gets the prefix used for searching for all
    Mat options in the database.
 
    Not Collective
@@ -4327,9 +4327,9 @@ PetscErrorCode MatSolverTypeRegister(MatSolverType package,MatType mtype,MatFact
 @*/
 PetscErrorCode MatSolverTypeGet(MatSolverType package,MatType mtype,MatFactorType ftype,PetscBool *foundpackage,PetscBool *foundmtype,PetscErrorCode (**getfactor)(Mat,MatFactorType,Mat*))
 {
-  PetscErrorCode                 ierr;
+  PetscErrorCode              ierr;
   MatSolverTypeHolder         next = MatSolverTypeHolders;
-  PetscBool                      flg;
+  PetscBool                   flg;
   MatSolverTypeForSpecifcType inext;
 
   PetscFunctionBegin;
@@ -4443,7 +4443,7 @@ PetscErrorCode MatGetFactor(Mat mat, MatSolverType type,MatFactorType ftype,Mat 
   }
 
   if (!foundmtype) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_MISSING_FACTOR,"MatSolverType %s does not support matrix type %s",type,((PetscObject)mat)->type_name);
-  if (!conv) SETERRQ3(PetscObjectComm((PetscObject)mat),PETSC_ERR_MISSING_FACTOR,"MatSolverType %s does not support factorization type %s for  matrix type %s",type,MatFactorTypes[ftype],((PetscObject)mat)->type_name);
+  if (!conv) SETERRQ3(PetscObjectComm((PetscObject)mat),PETSC_ERR_MISSING_FACTOR,"MatSolverType %s does not support factorization type %s for matrix type %s",type,MatFactorTypes[ftype],((PetscObject)mat)->type_name);
 
 #if defined(PETSC_USE_COMPLEX)
   if (mat->hermitian && !mat->symmetric && (ftype == MAT_FACTOR_CHOLESKY||ftype == MAT_FACTOR_ICC)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Hermitian CHOLESKY or ICC Factor is not supported");

@@ -67,8 +67,8 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_cholmod(Mat A,MatFactorType ftyp
   ierr = MatSetUp(B);CHKERRQ(ierr);
   ierr = PetscNewLog(B,&chol);CHKERRQ(ierr);
 
-  chol->Wrap    = MatWrapCholmod_seqaij;
-  B->data       = chol;
+  chol->Wrap = MatWrapCholmod_seqaij;
+  B->data    = chol;
 
   B->ops->getinfo                = MatGetInfo_External;
   B->ops->matsolve               = NULL;
