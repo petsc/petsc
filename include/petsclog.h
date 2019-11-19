@@ -59,7 +59,7 @@ PETSC_EXTERN PetscLogDouble petsc_TotalFlops;
 PETSC_EXTERN PetscLogDouble petsc_tmp_flops;
 
 /* Global GPU counters */
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) 
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
 PETSC_EXTERN PetscLogDouble petsc_ctog_ct;
 PETSC_EXTERN PetscLogDouble petsc_gtoc_ct;
 PETSC_EXTERN PetscLogDouble petsc_ctog_sz;
@@ -236,19 +236,24 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLogFlops(PetscLogDouble n)
 }
 
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-PETSC_STATIC_INLINE PetscErrorCode PetscLogCpuToGpu(PetscLogDouble size){
+PETSC_STATIC_INLINE PetscErrorCode PetscLogCpuToGpu(PetscLogDouble size)
+{
   PetscFunctionBegin;
   petsc_ctog_ct += 1;
   petsc_ctog_sz += size;
   PetscFunctionReturn(0);
 }
-PETSC_STATIC_INLINE PetscErrorCode PetscLogGpuToCpu(PetscLogDouble size){
+
+PETSC_STATIC_INLINE PetscErrorCode PetscLogGpuToCpu(PetscLogDouble size)
+{
   PetscFunctionBegin;
   petsc_gtoc_ct += 1;
   petsc_gtoc_sz += size;
   PetscFunctionReturn(0);
 }
-PETSC_STATIC_INLINE PetscErrorCode PetscLogGpuFlops(PetscLogDouble n){
+
+PETSC_STATIC_INLINE PetscErrorCode PetscLogGpuFlops(PetscLogDouble n)
+{
   PetscFunctionBegin;
 #if defined(PETSC_USE_DEBUG)
   if (n < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Cannot log negative flops");
@@ -257,16 +262,27 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLogGpuFlops(PetscLogDouble n){
   petsc_gflops += PETSC_FLOPS_PER_OP*n;
   PetscFunctionReturn(0);
 }
-PETSC_STATIC_INLINE PetscErrorCode PetscLogGpuTimeBegin(){
+
+PETSC_STATIC_INLINE PetscErrorCode PetscLogGpuTimeBegin()
+{
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = PetscTimeSubtract(&petsc_gtime);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-PETSC_STATIC_INLINE PetscErrorCode PetscLogGpuTimeEnd(){
+
+PETSC_STATIC_INLINE PetscErrorCode PetscLogGpuTimeEnd()
+{
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = PetscTimeAdd(&petsc_gtime);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PETSC_STATIC_INLINE PetscErrorCode PetscLogGpuTimeAdd(PetscLogDouble t)
+{
+  PetscFunctionBegin;
+  petsc_gtime += t;
   PetscFunctionReturn(0);
 }
 #endif
