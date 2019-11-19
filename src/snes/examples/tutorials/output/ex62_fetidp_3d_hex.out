@@ -71,47 +71,15 @@ SNES Object: 5 MPI processes
                             out-of-place factorization
                             tolerance for zero pivot 2.22045e-14
                             matrix ordering: natural
-                            factor fill ratio given 0., needed 0.
+                            factor fill ratio given 5., needed 5.24512
                               Factored matrix follows:
                                 Mat Object: 1 MPI processes
-                                  type: cholmod
+                                  type: seqsbaij
                                   rows=693, cols=693
-                                  package used to perform factorization: cholmod
-                                  total: nonzeros=0, allocated nonzeros=0
+                                  package used to perform factorization: petsc
+                                  total: nonzeros=150021, allocated nonzeros=150021
                                   total number of mallocs used during MatSetValues calls=0
-                                    CHOLMOD run parameters:
-                                      Pack factors after symbolic factorization: TRUE
-                                      Common.dbound            0.  (Smallest absolute value of diagonal entries of D)
-                                      Common.grow0             1.2
-                                      Common.grow1             1.2
-                                      Common.grow2             5
-                                      Common.maxrank           8
-                                      Common.supernodal_switch 40.
-                                      Common.supernodal        1
-                                      Common.final_asis        1
-                                      Common.final_super       1
-                                      Common.final_ll          0
-                                      Common.final_pack        1
-                                      Common.final_monotonic   1
-                                      Common.final_resymbol    0
-                                      Common.zrelax            [0.8,0.1,0.05]
-                                      Common.nrelax            [4,16,48]
-                                      Common.prefer_upper      1
-                                      Common.print             3
-                                      Common.postorder         1
-                                      Common.default_nesdis    0 (use NESDIS instead of METIS for nested dissection)
-                                      Common.fl                3.6763e+06 (flop count from most recent analysis)
-                                      Common.lnz               46404. (fundamental nz in L)
-                                      Common.anz               28602.
-                                      Common.modfl             -1. (flop count from most recent update)
-                                      Common.malloc_count      12. (number of live objects)
-                                      Common.memory_usage      980024. (peak memory usage in bytes)
-                                      Common.memory_inuse      555472. (current memory usage in bytes)
-                                      Common.nrealloc_col      0. (number of column reallocations)
-                                      Common.nrealloc_factor   0. (number of factor reallocations due to column reallocations)
-                                      Common.ndbounds_hit      0. (number of times diagonal was modified by dbound)
-                                      Common.rowfacfl          0. (number of flops in last call to cholmod_rowfac)
-                                      Common.aatfl             0. (number of flops to compute A(:,f)*A(:,f)')
+                                      block size is 1
                           linear system matrix = precond matrix:
                           Mat Object: 1 MPI processes
                             type: seqaij
@@ -194,47 +162,15 @@ SNES Object: 5 MPI processes
                                     out-of-place factorization
                                     tolerance for zero pivot 2.22045e-14
                                     matrix ordering: natural
-                                    factor fill ratio given 0., needed 0.
+                                    factor fill ratio given 5., needed 5.24512
                                       Factored matrix follows:
                                         Mat Object: 1 MPI processes
-                                          type: cholmod
+                                          type: seqsbaij
                                           rows=693, cols=693
-                                          package used to perform factorization: cholmod
-                                          total: nonzeros=0, allocated nonzeros=0
+                                          package used to perform factorization: petsc
+                                          total: nonzeros=150021, allocated nonzeros=150021
                                           total number of mallocs used during MatSetValues calls=0
-                                            CHOLMOD run parameters:
-                                              Pack factors after symbolic factorization: TRUE
-                                              Common.dbound            0.  (Smallest absolute value of diagonal entries of D)
-                                              Common.grow0             1.2
-                                              Common.grow1             1.2
-                                              Common.grow2             5
-                                              Common.maxrank           8
-                                              Common.supernodal_switch 40.
-                                              Common.supernodal        1
-                                              Common.final_asis        1
-                                              Common.final_super       1
-                                              Common.final_ll          0
-                                              Common.final_pack        1
-                                              Common.final_monotonic   1
-                                              Common.final_resymbol    0
-                                              Common.zrelax            [0.8,0.1,0.05]
-                                              Common.nrelax            [4,16,48]
-                                              Common.prefer_upper      1
-                                              Common.print             3
-                                              Common.postorder         1
-                                              Common.default_nesdis    0 (use NESDIS instead of METIS for nested dissection)
-                                              Common.fl                3.6763e+06 (flop count from most recent analysis)
-                                              Common.lnz               46404. (fundamental nz in L)
-                                              Common.anz               28602.
-                                              Common.modfl             -1. (flop count from most recent update)
-                                              Common.malloc_count      12. (number of live objects)
-                                              Common.memory_usage      980024. (peak memory usage in bytes)
-                                              Common.memory_inuse      555472. (current memory usage in bytes)
-                                              Common.nrealloc_col      0. (number of column reallocations)
-                                              Common.nrealloc_factor   0. (number of factor reallocations due to column reallocations)
-                                              Common.ndbounds_hit      0. (number of times diagonal was modified by dbound)
-                                              Common.rowfacfl          0. (number of flops in last call to cholmod_rowfac)
-                                              Common.aatfl             0. (number of flops to compute A(:,f)*A(:,f)')
+                                              block size is 1
                                   linear system matrix = precond matrix:
                                   Mat Object: 1 MPI processes
                                     type: seqaij
@@ -468,4 +404,4 @@ SNES Object: 5 MPI processes
       total: nonzeros=722206, allocated nonzeros=983974
       total number of mallocs used during MatSetValues calls=0
         has attached null space
-L_2 Error: 1.51468e-08 [4.89715e-10, 1.51389e-08]
+L_2 Error: 1.52049e-08 [4.93337e-10, 1.51969e-08]
