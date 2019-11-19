@@ -275,7 +275,7 @@ static PetscErrorCode  PetscViewerHDF5SetCollective_HDF5(PetscViewer viewer, Pet
   PetscFunctionBegin;
   /* H5FD_MPIO_COLLECTIVE is wrong in hdf5 1.10.2, and is the same as H5FD_MPIO_INDEPENDENT in earlier versions
      - see e.g. https://gitlab.cosma.dur.ac.uk/swift/swiftsim/issues/431 */
-#if H5_VERSION_GE(1,10,3)
+#if H5_VERSION_GE(1,10,3) && defined(H5_HAVE_PARALLEL)
   {
     PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
     PetscStackCallHDF5(H5Pset_dxpl_mpio,(hdf5->dxpl_id, flg ? H5FD_MPIO_COLLECTIVE : H5FD_MPIO_INDEPENDENT));
@@ -283,7 +283,7 @@ static PetscErrorCode  PetscViewerHDF5SetCollective_HDF5(PetscViewer viewer, Pet
 #else
   if (flg) {
     PetscErrorCode ierr;
-    ierr = PetscPrintf(PetscObjectComm((PetscObject)viewer), "Warning: PetscViewerHDF5SetCollective(viewer,PETSC_TRUE) is ignored for HDF5 versions prior to 1.10.3\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)viewer), "Warning: PetscViewerHDF5SetCollective(viewer,PETSC_TRUE) is ignored for HDF5 versions prior to 1.10.3 or if built without MPI support\n");CHKERRQ(ierr);
   }
 #endif
   PetscFunctionReturn(0);
@@ -303,7 +303,7 @@ static PetscErrorCode  PetscViewerHDF5SetCollective_HDF5(PetscViewer viewer, Pet
 
   Notes:
   Collective mode gives the MPI-IO layer underneath HDF5 a chance to do some additional collective optimizations and hence can perform better.
-  However, this works correctly only since HDF5 1.10.3; hence, we ignore this setting for older versions.
+  However, this works correctly only since HDF5 1.10.3 and if HDF5 is installed for MPI hence, we ignore this setting for older versions.
 
   Developer notes:
   In the HDF5 layer, PETSC_TRUE / PETSC_FALSE means H5Pset_dxpl_mpio() is called with H5FD_MPIO_COLLECTIVE / H5FD_MPIO_INDEPENDENT, respectively.
@@ -328,12 +328,18 @@ PetscErrorCode PetscViewerHDF5SetCollective(PetscViewer viewer,PetscBool flg)
 
 static PetscErrorCode  PetscViewerHDF5GetCollective_HDF5(PetscViewer viewer, PetscBool *flg)
 {
+#if defined(H5_HAVE_PARALLEL)
   PetscViewer_HDF5  *hdf5 = (PetscViewer_HDF5*) viewer->data;
   H5FD_mpio_xfer_t  mode;
+#endif
 
   PetscFunctionBegin;
+#if !defined(H5_HAVE_PARALLEL)
+  *flg = PETSC_FALSE;
+#else
   PetscStackCallHDF5(H5Pget_dxpl_mpio,(hdf5->dxpl_id, &mode));
   *flg = (mode == H5FD_MPIO_COLLECTIVE) ? PETSC_TRUE : PETSC_FALSE;
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -351,7 +357,7 @@ static PetscErrorCode  PetscViewerHDF5GetCollective_HDF5(PetscViewer viewer, Pet
   Level: intermediate
 
   Notes:
-  This setting works correctly only since HDF5 1.10.3. For older versions, PETSC_FALSE will be always returned.
+  This setting works correctly only since HDF5 1.10.3 and if HDF5 was installed for MPI. For older versions, PETSC_FALSE will be always returned.
   For more details, see PetscViewerHDF5SetCollective().
 
 .seealso: PetscViewerHDF5SetCollective(), PetscViewerCreate(), PetscViewerSetType(), PetscViewerHDF5Open()
@@ -381,7 +387,9 @@ static PetscErrorCode  PetscViewerFileSetName_HDF5(PetscViewer viewer, const cha
   ierr = PetscStrallocpy(name, &hdf5->filename);CHKERRQ(ierr);
   /* Set up file access property list with parallel I/O access */
   PetscStackCallHDF5Return(plist_id,H5Pcreate,(H5P_FILE_ACCESS));
+#if defined(H5_HAVE_PARALLEL)
   PetscStackCallHDF5(H5Pset_fapl_mpio,(plist_id, PetscObjectComm((PetscObject)viewer), MPI_INFO_NULL));
+#endif
   /* Create or open the file collectively */
   switch (hdf5->btype) {
   case FILE_MODE_READ:
