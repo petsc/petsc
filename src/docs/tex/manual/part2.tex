@@ -6167,12 +6167,13 @@ DMNetworkCreate(MPI_Comm comm, DM* dm);
 \begin{lstlisting}
 DMNetworkRegisterComponent(DM dm, const char* name, size_t size, PetscInt* compkey);
 \end{lstlisting}
-  Here, \lstinline{name} is the component name, \lstinline{size} is the size of component data type, and \lstinline{compkey} is an integer key that can be used for setting/getting the component at a vertex or an edge.
-  \item DMNetwork supports networks that comprise of a single or multiple coupled subnetworks. The topological sizes of the network are set by calling
+  Here, \lstinline{name} is the component name, \lstinline{size} is the size of component data type, and \lstinline{compkey} is an integer key that can be used for setting/getting the component at a vertex or an edge. DMNetwork currently allows upto 16 components to be registered for a network.
+
+  \item A DMNetwork can consist of one or more {\em physical} subnetworks. When multiple physical subnetworks are used one can (optionally) provide {\em coupling information between subnetworks} which consist only of edges connecting the vertices of the physical subnetworks. The topological sizes of the network are set by calling
 \begin{lstlisting}
 DMNetworkSetSizes(DM dm, PetscInt Nsubnet, PetscInt nV[], PetscInt nE[], PetscInt NsubnetCouple, PetscInt nec[]);
 \end{lstlisting}
-Here, \lstinline{Nsubnet} is the number of subnetworks, \lstinline{nV} and \lstinline{nE} is the number of vertices and edges for each subnetwork, \lstinline{NsubnetCouple} is the number of coupled subnetworks (currently not being defined and used), and \lstinline{nec} is the number of coupling edges. DMNetwork assumes coupling between the networks through coupling edges. For a single network, set \lstinline{Nsubnet} = 1, \lstinline{NsubnetCouple} = 0,and \lstinline{nec} = NULL.
+Here, \lstinline{Nsubnet} is the number of subnetworks, \lstinline{nV} and \lstinline{nE} is the number of vertices and edges for each subnetwork, \lstinline{NsubnetCouple} is the number of pairs of subnetworks that are coupled, and \lstinline{nec} is the number of edges coupling each subnetwork pair. DMNetwork assumes coupling between the subnetworks through coupling edges. For a single network, set \lstinline{Nsubnet} = 1, \lstinline{NsubnetCouple} = 0,and \lstinline{nec} = NULL. Note that the coupling between subnetworks is still an experimental feature and under development.
   \item The next step is to set up the connectivity for the network. This is done by specifying the connectivity within each subnetwork (\lstinline{edgelist}) and between subnetworks (\lstinline{edgelistCouple}).
 \begin{lstlisting}
 DMNetworkSetEdgeList(DM dm, PetscInt *edgelist[], PetscInt *edgelistCouple[]);
@@ -6188,25 +6189,30 @@ edgelist[0] = \{0,1,1,2,2,3\} \\
 edgelist[1] = \{1,2,2,0\} \\
 edgelistCouple[0] = \{1,2,0,0\}.
 
-\item The next step is for DMNetwork to create a bare layout (graph) of the network.
+\item The next step is to have DMNetwork to create a bare layout (graph) of the network by calling
 \begin{lstlisting}
 DMNetworkLayoutSetUp(DM dm);
 \end{lstlisting}
 
 \item After completing the previous steps, the network graph is set up, but no physics is associated yet. This is done by adding the components and setting the number of variables for the vertices and edges.
+
+A component is added to a vertex/edge by calling
 \begin{lstlisting}
-DMNetworkAddComponent(DM dm, PetscInt p, PetscInt compkey, void* component);
+DMNetworkAddComponent(DM dm, PetscInt p, PetscInt compkey, void* compdata);
 \end{lstlisting}
-  %DMNetwork supports setting multiple components at a vertex/edge.
-%\begin{lstlisting}
-%DMNetworkSetNumVariables(DM dm, PetscInt p, PetscInt nvar);
-%\end{lstlisting}
+where \lstinline{p} is the network vertex/edge point in the range obtained by either DMNetworkGetEdgeRange or DMNetworkGetVertexRange, \lstinline{compkey} is the component key returned when registering the component (DMNetworkRegisterComponent), and \lstinline{compdata} holds the data for the component. DMNetwork supports setting multiple components (max. 36) at a vertex/edge. 
+
+DMNetwork currently assumes the component data to be stored in a contiguous chunk of memory. As such, it does not do any packing/unpacking before/after the component data gets distributed. Any such serialization (packing/unpacking) should be done by the application.
+ 
+The number of variables at each vertex/edge are set by
+\begin{lstlisting}
+DMNetworkSetNumVariables(DM dm, PetscInt p, PetscInt nvar);
+\end{lstlisting} or
 \begin{lstlisting}
 DMNetworkAddNumVariables(DM dm, PetscInt p, PetscInt nvar);
 \end{lstlisting}
-DMNetwork supports setting multiple components at a vertex/edge.
 
-  \item Set up network internal data structures.
+\item Set up network internal data structures.
   %Signal network ready to be distributed.
 \begin{lstlisting}
 DMSetUp(DM dm);
