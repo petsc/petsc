@@ -480,7 +480,7 @@ int main(int argc,char **args)
  testset:
    nsize: 8
    requires: hpddm slepc
-   filter: grep -v "variant HERMITIAN"
+   filter: grep -v "variant HERMITIAN" | sed -e "s/iterations 2[0-9]/iterations 20/g"
    args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_view -pc_bddc_levels 1 -pc_bddc_coarsening_ratio 1 -ksp_error_if_not_converged -pc_bddc_monolithic -pc_bddc_use_faces -pc_bddc_coarse_pc_type hpddm -prefix_push pc_bddc_coarse_ -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_eps_nev 5 -pc_hpddm_levels_1_st_pc_factor_shift_type INBLOCKS -prefix_pop -ksp_type fgmres -ksp_max_it 50 -ksp_converged_reason
    test:
      args: -pc_bddc_coarse_pc_hpddm_coarse_mat_type baij -options_left no
