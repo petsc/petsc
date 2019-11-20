@@ -2654,6 +2654,9 @@ static PetscErrorCode MatGetFactor_aij_mumps(Mat A,MatFactorType ftype,Mat *F)
   PetscBool      isSeqAIJ;
 
   PetscFunctionBegin;
+ #if defined(PETSC_USE_COMPLEX)
+  if (A->hermitian && !A->symmetric && ftype == MAT_FACTOR_CHOLESKY) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Hermitian CHOLESKY Factor is not supported");
+ #endif
   /* Create the factorization matrix */
   ierr = PetscObjectBaseTypeCompare((PetscObject)A,MATSEQAIJ,&isSeqAIJ);CHKERRQ(ierr);
   ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
@@ -2721,15 +2724,16 @@ static PetscErrorCode MatGetFactor_sbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
   PetscBool      isSeqSBAIJ;
 
   PetscFunctionBegin;
-  if (ftype != MAT_FACTOR_CHOLESKY) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Cannot use PETSc SBAIJ matrices with MUMPS LU, use AIJ matrix");
-  ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQSBAIJ,&isSeqSBAIJ);CHKERRQ(ierr);
-  /* Create the factorization matrix */
+ #if defined(PETSC_USE_COMPLEX)
+  if (A->hermitian && !A->symmetric) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Hermitian CHOLESKY Factor is not supported");
+ #endif
   ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
   ierr = PetscStrallocpy("mumps",&((PetscObject)B)->type_name);CHKERRQ(ierr);
   ierr = MatSetUp(B);CHKERRQ(ierr);
 
   ierr = PetscNewLog(B,&mumps);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQSBAIJ,&isSeqSBAIJ);CHKERRQ(ierr);
   if (isSeqSBAIJ) {
     mumps->ConvertToTriples = MatConvertToTriples_seqsbaij_seqsbaij;
   } else {

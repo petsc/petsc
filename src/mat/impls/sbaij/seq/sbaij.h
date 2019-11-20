@@ -132,8 +132,6 @@ PETSC_INTERN PetscErrorCode MatMult_SeqSBAIJ_6(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMult_SeqSBAIJ_7(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMult_SeqSBAIJ_N(Mat,Vec,Vec);
 
-PETSC_INTERN PetscErrorCode MatMult_SeqSBAIJ_1_Hermitian(Mat,Vec,Vec);
-
 PETSC_INTERN PetscErrorCode MatMultAdd_SeqSBAIJ_1(Mat,Vec,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMultAdd_SeqSBAIJ_2(Mat,Vec,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMultAdd_SeqSBAIJ_3(Mat,Vec,Vec,Vec);

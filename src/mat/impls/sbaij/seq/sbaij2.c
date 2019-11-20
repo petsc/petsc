@@ -719,6 +719,11 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_1(Mat A,Vec xx,Vec yy,Vec zz)
   PetscInt          mbs =a->mbs,i,n,cval,j,jmin;
   const PetscInt    *aj=a->j,*ai=a->i,*ib;
   PetscInt          nonzerorow=0;
+#if defined(PETSC_USE_COMPLEX)
+  const int         aconj = A->hermitian;
+#else
+  const int         aconj = 0;
+#endif
 
   PetscFunctionBegin;
   ierr = VecCopy(yy,zz);CHKERRQ(ierr);
@@ -737,10 +742,18 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_1(Mat A,Vec xx,Vec yy,Vec zz)
     if (*ib == i) {            /* (diag of A)*x */
       z[i] += *v++ * x[*ib++]; jmin++;
     }
-    for (j=jmin; j<n; j++) {
-      cval    = *ib;
-      z[cval] += *v * x1;      /* (strict lower triangular part of A)*x  */
-      z[i] += *v++ * x[*ib++]; /* (strict upper triangular part of A)*x  */
+    if (aconj) {
+      for (j=jmin; j<n; j++) {
+        cval    = *ib;
+        z[cval] += PetscConj(*v) * x1; /* (strict lower triangular part of A)*x  */
+        z[i]    += *v++ * x[*ib++];    /* (strict upper triangular part of A)*x  */
+      }
+    } else {
+      for (j=jmin; j<n; j++) {
+        cval    = *ib;
+        z[cval] += *v * x1;         /* (strict lower triangular part of A)*x  */
+        z[i]    += *v++ * x[*ib++]; /* (strict upper triangular part of A)*x  */
+      }
     }
     xb++; ai++;
   }

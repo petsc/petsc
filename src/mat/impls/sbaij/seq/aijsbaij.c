@@ -12,6 +12,11 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newtype,Ma
   PetscInt       *ai=a->i,*aj=a->j,m=A->rmap->N,n=A->cmap->n,i,j,k,*bi,*bj,*rowlengths,nz,*rowstart,itmp;
   PetscInt       bs =A->rmap->bs,bs2=bs*bs,mbs=A->rmap->N/bs,diagcnt=0;
   MatScalar      *av,*bv;
+#if defined(PETSC_USE_COMPLEX)
+  const int      aconj = A->hermitian ? 1 : 0;
+#else
+  const int      aconj = 0;
+#endif
 
   PetscFunctionBegin;
   /* compute rowlengths of newmat */
@@ -83,7 +88,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newtype,Ma
         itmp = (*aj)*bs+j;
         for (k=0; k<bs; k++) { /* col i*bs+k */
           *(bj + rowstart[itmp]) = i*bs+k;
-          *(bv + rowstart[itmp]) = *(av+j*bs+k);
+          *(bv + rowstart[itmp]) = aconj ? PetscConj(*(av+j*bs+k)) : *(av+j*bs+k);
           rowstart[itmp]++;
         }
       }
@@ -177,6 +182,11 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType newtype,M
   PetscInt       *ai=a->i,*aj=a->j,m=A->rmap->N,n=A->cmap->n,i,k,*bi,*bj,*browlengths,nz,*browstart,itmp;
   PetscInt       bs =A->rmap->bs,bs2=bs*bs,mbs=m/bs,col,row;
   MatScalar      *av,*bv;
+#if defined(PETSC_USE_COMPLEX)
+  const int      aconj = A->hermitian ? 1 : 0;
+#else
+  const int      aconj = 0;
+#endif
 
   PetscFunctionBegin;
   /* compute browlengths of newmat */
@@ -233,7 +243,8 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType newtype,M
       for (col=0; col<bs; col++) {
         k = col;
         for (row=0; row<bs; row++) {
-          bv[itmp + col*bs+row] = av[k]; k+=bs;
+          bv[itmp + col*bs+row] = aconj ? PetscConj(av[k]) : av[k];
+          k+=bs;
         }
       }
       browstart[*aj]++;
