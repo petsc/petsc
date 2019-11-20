@@ -1035,33 +1035,6 @@ static PetscErrorCode DMPlexGetConeMinimum(DM dm, PetscInt p, PetscSFNode *cpmin
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexCheckSharedFaces(DM dm)
-{
-  PetscInt       fStart, fEnd, f;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
-  for (f = fStart; f < fEnd; ++f) {
-    const PetscInt *cone;
-    PetscInt        coneSize, c;
-    PetscBool       faceShared, shouldShare = PETSC_TRUE;
-
-    ierr = DMPlexGetConeSize(dm, f, &coneSize);CHKERRQ(ierr);
-    ierr = DMPlexGetCone(dm, f, &cone);CHKERRQ(ierr);
-    for (c = 0; c < coneSize; ++c) {
-      PetscBool pointShared;
-
-      ierr = DMPlexPointIsShared(dm, cone[c], &pointShared);CHKERRQ(ierr);
-      shouldShare = (PetscBool) (shouldShare && pointShared);
-    }
-    ierr = DMPlexPointIsShared(dm, f, &faceShared);CHKERRQ(ierr);
-    if (faceShared && !shouldShare) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Face %D is shared, but its cone is not completely shared", f);
-    if (!faceShared && shouldShare) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Face %D is not shared, but its cone is completely shared", f);
-  }
-  PetscFunctionReturn(0);
-}
-
 /*
   Each shared face has an entry in the candidates array:
     (-1, coneSize-1), {(global cone point)}
