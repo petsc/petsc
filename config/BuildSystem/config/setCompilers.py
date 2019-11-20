@@ -408,8 +408,8 @@ class Configure(config.base.Configure):
     '''Returns true if system is Darwin/MacOSX Version Catalina or higher'''
     import platform
     if platform.system() != 'Darwin': return 0
-    v1,v2,v3=platform.mac_ver()[0].split('.')
-    if (v1,v2,v3) < (10,15,0): return 0
+    v = tuple([int(a) for a in platform.mac_ver()[0].split('.')])
+    if v < (10,15,0): return 0
     return 1
   isDarwinCatalina = staticmethod(isDarwinCatalina)
 
