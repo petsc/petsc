@@ -3,10 +3,14 @@
 /src/tao/                 @adener @tmunson
 
 /src/ts/                  @caidao22 @jedbrown @emconsta @stefanozampini @BarrySmith
+src/ts/event/             @abhyshr @caidao22 @BarrySmith
 
 /src/dm/impls/plex/       @knepley @wence @haplav @tisaac
 /src/dm/impls/network/    @hongzhangsun @BarrySmith
 /src/dm/impls/stag/       @psanan
+
+src/dm/impls/network/     @abhyshr @hongzhangsun
+*/examples/*/network/     @abhyshr @hongzhangsun
 
 /src/ksp/pc/impls/bddc/   @stefanozampini
 /src/ksp/pc/impls/gamg/   @markadams4

@@ -473,6 +473,7 @@ class Configure(config.base.Configure):
     includes = """
           #include <random>
           #include <iostream>
+          #include <complex>
           template<typename T> constexpr T Cubed( T x ) { return x*x*x; }
           """
     body = """
@@ -483,6 +484,7 @@ class Configure(config.base.Configure):
           std::cout << x;
           """
     body14 = """
+          constexpr std::complex<double> I(0.0,1.0);
           auto lambda = [](auto x, auto y) {return x + y;};
           return lambda(3,4);
           """
