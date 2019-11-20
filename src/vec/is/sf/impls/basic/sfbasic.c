@@ -92,7 +92,7 @@ PETSC_INTERN PetscErrorCode PetscSFPackGet_Basic_Common(PetscSF sf,MPI_Datatype 
   /* Allocate root, leaf, self buffers, and MPI requests */
   link->rootbuflen = rootoffset[nrootranks]-rootoffset[ndrootranks];
   link->leafbuflen = leafoffset[nleafranks]-leafoffset[ndleafranks];
-  link->selfbuflen = rootoffset[ndrootranks]*link->unitbytes;
+  link->selfbuflen = rootoffset[ndrootranks];
   link->nrootreqs  = nrootreqs;
   link->nleafreqs  = nleafreqs;
   nreqs            = (nrootreqs+nleafreqs)*4; /* Quadruple the requests since there are two communication directions and two memory types */
