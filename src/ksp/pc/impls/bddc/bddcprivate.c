@@ -6011,8 +6011,6 @@ PetscErrorCode PCBDDCScatterCoarseDataEnd(PC pc, InsertMode imode, ScatterMode s
   PetscFunctionReturn(0);
 }
 
-/* uncomment for testing purposes */
-/* #define PETSC_MISSING_LAPACK_GESVD 1 */
 PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
 {
   PetscErrorCode    ierr;
@@ -6076,13 +6074,15 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
 #if defined(PETSC_USE_COMPLEX)
     PetscReal    *rwork;
 #endif
-#if defined(PETSC_MISSING_LAPACK_GESVD)
-    PetscScalar  *temp_basis,*correlation_mat;
-#else
+    PetscScalar  *temp_basis = NULL,*correlation_mat = NULL;
     PetscBLASInt dummy_int=1;
     PetscScalar  dummy_scalar=1.;
-#endif
+    PetscBool    use_pod = PETSC_FALSE;
 
+    /* MKL SVD with same input gives different results on different processes! */
+#if defined(PETSC_MISSING_LAPACK_GESVD) || defined(PETSC_HAVE_MKL)
+    use_pod = PETSC_TRUE;
+#endif
     /* Get index sets for faces, edges and vertices from graph */
     ierr = PCBDDCGraphGetCandidatesIS(pcbddc->mat_graph,&n_ISForFaces,&ISForFaces,&n_ISForEdges,&ISForEdges,&ISForVertices);CHKERRQ(ierr);
     /* print some info */
@@ -6193,53 +6193,57 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     if (!skip_lapack) {
       PetscScalar temp_work;
 
-#if defined(PETSC_MISSING_LAPACK_GESVD)
-      /* Proper Orthogonal Decomposition (POD) using the snapshot method */
-      ierr = PetscMalloc1(max_constraints*max_constraints,&correlation_mat);CHKERRQ(ierr);
-      ierr = PetscMalloc1(max_constraints,&singular_vals);CHKERRQ(ierr);
-      ierr = PetscMalloc1(max_size_of_constraint*max_constraints,&temp_basis);CHKERRQ(ierr);
+      if (use_pod) {
+        /* Proper Orthogonal Decomposition (POD) using the snapshot method */
+        ierr = PetscMalloc1(max_constraints*max_constraints,&correlation_mat);CHKERRQ(ierr);
+        ierr = PetscMalloc1(max_constraints,&singular_vals);CHKERRQ(ierr);
+        ierr = PetscMalloc1(max_size_of_constraint*max_constraints,&temp_basis);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
-      ierr = PetscMalloc1(3*max_constraints,&rwork);CHKERRQ(ierr);
+        ierr = PetscMalloc1(3*max_constraints,&rwork);CHKERRQ(ierr);
 #endif
-      /* now we evaluate the optimal workspace using query with lwork=-1 */
-      ierr = PetscBLASIntCast(max_constraints,&Blas_N);CHKERRQ(ierr);
-      ierr = PetscBLASIntCast(max_constraints,&Blas_LDA);CHKERRQ(ierr);
-      lwork = -1;
-      ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
+        /* now we evaluate the optimal workspace using query with lwork=-1 */
+        ierr = PetscBLASIntCast(max_constraints,&Blas_N);CHKERRQ(ierr);
+        ierr = PetscBLASIntCast(max_constraints,&Blas_LDA);CHKERRQ(ierr);
+        lwork = -1;
+        ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
-      PetscStackCallBLAS("LAPACKsyev",LAPACKsyev_("V","U",&Blas_N,correlation_mat,&Blas_LDA,singular_vals,&temp_work,&lwork,&lierr));
+        PetscStackCallBLAS("LAPACKsyev",LAPACKsyev_("V","U",&Blas_N,correlation_mat,&Blas_LDA,singular_vals,&temp_work,&lwork,&lierr));
 #else
-      PetscStackCallBLAS("LAPACKsyev",LAPACKsyev_("V","U",&Blas_N,correlation_mat,&Blas_LDA,singular_vals,&temp_work,&lwork,rwork,&lierr));
+        PetscStackCallBLAS("LAPACKsyev",LAPACKsyev_("V","U",&Blas_N,correlation_mat,&Blas_LDA,singular_vals,&temp_work,&lwork,rwork,&lierr));
 #endif
-      ierr = PetscFPTrapPop();CHKERRQ(ierr);
-      if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to SYEV Lapack routine %d",(int)lierr);
-#else /* on missing GESVD */
-      /* SVD */
-      PetscInt max_n,min_n;
-      max_n = max_size_of_constraint;
-      min_n = max_constraints;
-      if (max_size_of_constraint < max_constraints) {
-        min_n = max_size_of_constraint;
-        max_n = max_constraints;
-      }
-      ierr = PetscMalloc1(min_n,&singular_vals);CHKERRQ(ierr);
+        ierr = PetscFPTrapPop();CHKERRQ(ierr);
+        if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to SYEV Lapack routine %d",(int)lierr);
+      } else {
+#if !defined(PETSC_MISSING_LAPACK_GESVD)
+        /* SVD */
+        PetscInt max_n,min_n;
+        max_n = max_size_of_constraint;
+        min_n = max_constraints;
+        if (max_size_of_constraint < max_constraints) {
+          min_n = max_size_of_constraint;
+          max_n = max_constraints;
+        }
+        ierr = PetscMalloc1(min_n,&singular_vals);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
-      ierr = PetscMalloc1(5*min_n,&rwork);CHKERRQ(ierr);
+        ierr = PetscMalloc1(5*min_n,&rwork);CHKERRQ(ierr);
 #endif
-      /* now we evaluate the optimal workspace using query with lwork=-1 */
-      lwork = -1;
-      ierr = PetscBLASIntCast(max_n,&Blas_M);CHKERRQ(ierr);
-      ierr = PetscBLASIntCast(min_n,&Blas_N);CHKERRQ(ierr);
-      ierr = PetscBLASIntCast(max_n,&Blas_LDA);CHKERRQ(ierr);
-      ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
+        /* now we evaluate the optimal workspace using query with lwork=-1 */
+        lwork = -1;
+        ierr = PetscBLASIntCast(max_n,&Blas_M);CHKERRQ(ierr);
+        ierr = PetscBLASIntCast(min_n,&Blas_N);CHKERRQ(ierr);
+        ierr = PetscBLASIntCast(max_n,&Blas_LDA);CHKERRQ(ierr);
+        ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
-      PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("O","N",&Blas_M,&Blas_N,&constraints_data[0],&Blas_LDA,singular_vals,&dummy_scalar,&dummy_int,&dummy_scalar,&dummy_int,&temp_work,&lwork,&lierr));
+        PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("O","N",&Blas_M,&Blas_N,&constraints_data[0],&Blas_LDA,singular_vals,&dummy_scalar,&dummy_int,&dummy_scalar,&dummy_int,&temp_work,&lwork,&lierr));
 #else
-      PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("O","N",&Blas_M,&Blas_N,&constraints_data[0],&Blas_LDA,singular_vals,&dummy_scalar,&dummy_int,&dummy_scalar,&dummy_int,&temp_work,&lwork,rwork,&lierr));
+        PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("O","N",&Blas_M,&Blas_N,&constraints_data[0],&Blas_LDA,singular_vals,&dummy_scalar,&dummy_int,&dummy_scalar,&dummy_int,&temp_work,&lwork,rwork,&lierr));
 #endif
-      ierr = PetscFPTrapPop();CHKERRQ(ierr);
-      if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to GESVD Lapack routine %d",(int)lierr);
+        ierr = PetscFPTrapPop();CHKERRQ(ierr);
+        if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to GESVD Lapack routine %d",(int)lierr);
+#else
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"This should not happen");
 #endif /* on missing GESVD */
+      }
       /* Allocate optimal workspace */
       ierr = PetscBLASIntCast((PetscInt)PetscRealPart(temp_work),&lwork);CHKERRQ(ierr);
       ierr = PetscMalloc1(lwork,&work);CHKERRQ(ierr);
@@ -6335,77 +6339,81 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
         } else { /* perform SVD */
           PetscScalar *ptr_to_data = &constraints_data[constraints_data_ptr[total_counts_cc]];
 
-#if defined(PETSC_MISSING_LAPACK_GESVD)
-          /* SVD: Y = U*S*V^H                -> U (eigenvectors of Y*Y^H) = Y*V*(S)^\dag
-             POD: Y^H*Y = V*D*V^H, D = S^H*S -> U = Y*V*D^(-1/2)
-             -> When PETSC_USE_COMPLEX and PETSC_MISSING_LAPACK_GESVD are defined
-                the constraints basis will differ (by a complex factor with absolute value equal to 1)
-                from that computed using LAPACKgesvd
-             -> This is due to a different computation of eigenvectors in LAPACKheev
-             -> The quality of the POD-computed basis will be the same */
-          ierr = PetscArrayzero(correlation_mat,temp_constraints*temp_constraints);CHKERRQ(ierr);
-          /* Store upper triangular part of correlation matrix */
-          ierr = PetscBLASIntCast(size_of_constraint,&Blas_N);CHKERRQ(ierr);
-          ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-          for (j=0;j<temp_constraints;j++) {
-            for (k=0;k<j+1;k++) {
-              PetscStackCallBLAS("BLASdot",correlation_mat[j*temp_constraints+k] = BLASdot_(&Blas_N,ptr_to_data+k*size_of_constraint,&Blas_one,ptr_to_data+j*size_of_constraint,&Blas_one));
-            }
-          }
-          /* compute eigenvalues and eigenvectors of correlation matrix */
-          ierr = PetscBLASIntCast(temp_constraints,&Blas_N);CHKERRQ(ierr);
-          ierr = PetscBLASIntCast(temp_constraints,&Blas_LDA);CHKERRQ(ierr);
-#if !defined(PETSC_USE_COMPLEX)
-          PetscStackCallBLAS("LAPACKsyev",LAPACKsyev_("V","U",&Blas_N,correlation_mat,&Blas_LDA,singular_vals,work,&lwork,&lierr));
-#else
-          PetscStackCallBLAS("LAPACKsyev",LAPACKsyev_("V","U",&Blas_N,correlation_mat,&Blas_LDA,singular_vals,work,&lwork,rwork,&lierr));
-#endif
-          ierr = PetscFPTrapPop();CHKERRQ(ierr);
-          if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYEV Lapack routine %d",(int)lierr);
-          /* retain eigenvalues greater than tol: note that LAPACKsyev gives eigs in ascending order */
-          j = 0;
-          while (j < temp_constraints && singular_vals[j]/singular_vals[temp_constraints-1] < tol) j++;
-          total_counts = total_counts-j;
-          valid_constraints = temp_constraints-j;
-          /* scale and copy POD basis into used quadrature memory */
-          ierr = PetscBLASIntCast(size_of_constraint,&Blas_M);CHKERRQ(ierr);
-          ierr = PetscBLASIntCast(temp_constraints,&Blas_N);CHKERRQ(ierr);
-          ierr = PetscBLASIntCast(temp_constraints,&Blas_K);CHKERRQ(ierr);
-          ierr = PetscBLASIntCast(size_of_constraint,&Blas_LDA);CHKERRQ(ierr);
-          ierr = PetscBLASIntCast(temp_constraints,&Blas_LDB);CHKERRQ(ierr);
-          ierr = PetscBLASIntCast(size_of_constraint,&Blas_LDC);CHKERRQ(ierr);
-          if (j<temp_constraints) {
-            PetscInt ii;
-            for (k=j;k<temp_constraints;k++) singular_vals[k] = 1.0/PetscSqrtReal(singular_vals[k]);
+          if (use_pod) {
+            /* SVD: Y = U*S*V^H                -> U (eigenvectors of Y*Y^H) = Y*V*(S)^\dag
+               POD: Y^H*Y = V*D*V^H, D = S^H*S -> U = Y*V*D^(-1/2)
+               -> When PETSC_USE_COMPLEX and PETSC_MISSING_LAPACK_GESVD are defined
+                  the constraints basis will differ (by a complex factor with absolute value equal to 1)
+                  from that computed using LAPACKgesvd
+               -> This is due to a different computation of eigenvectors in LAPACKheev
+               -> The quality of the POD-computed basis will be the same */
+            ierr = PetscArrayzero(correlation_mat,temp_constraints*temp_constraints);CHKERRQ(ierr);
+            /* Store upper triangular part of correlation matrix */
+            ierr = PetscBLASIntCast(size_of_constraint,&Blas_N);CHKERRQ(ierr);
             ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-            PetscStackCallBLAS("BLASgemm",BLASgemm_("N","N",&Blas_M,&Blas_N,&Blas_K,&one,ptr_to_data,&Blas_LDA,correlation_mat,&Blas_LDB,&zero,temp_basis,&Blas_LDC));
-            ierr = PetscFPTrapPop();CHKERRQ(ierr);
-            for (k=0;k<temp_constraints-j;k++) {
-              for (ii=0;ii<size_of_constraint;ii++) {
-                ptr_to_data[k*size_of_constraint+ii] = singular_vals[temp_constraints-1-k]*temp_basis[(temp_constraints-1-k)*size_of_constraint+ii];
+            for (j=0;j<temp_constraints;j++) {
+              for (k=0;k<j+1;k++) {
+                PetscStackCallBLAS("BLASdot",correlation_mat[j*temp_constraints+k] = BLASdot_(&Blas_N,ptr_to_data+k*size_of_constraint,&Blas_one,ptr_to_data+j*size_of_constraint,&Blas_one));
               }
             }
-          }
-#else  /* on missing GESVD */
-          ierr = PetscBLASIntCast(size_of_constraint,&Blas_M);CHKERRQ(ierr);
-          ierr = PetscBLASIntCast(temp_constraints,&Blas_N);CHKERRQ(ierr);
-          ierr = PetscBLASIntCast(size_of_constraint,&Blas_LDA);CHKERRQ(ierr);
-          ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
+            /* compute eigenvalues and eigenvectors of correlation matrix */
+            ierr = PetscBLASIntCast(temp_constraints,&Blas_N);CHKERRQ(ierr);
+            ierr = PetscBLASIntCast(temp_constraints,&Blas_LDA);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
-          PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("O","N",&Blas_M,&Blas_N,ptr_to_data,&Blas_LDA,singular_vals,&dummy_scalar,&dummy_int,&dummy_scalar,&dummy_int,work,&lwork,&lierr));
+            PetscStackCallBLAS("LAPACKsyev",LAPACKsyev_("V","U",&Blas_N,correlation_mat,&Blas_LDA,singular_vals,work,&lwork,&lierr));
 #else
-          PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("O","N",&Blas_M,&Blas_N,ptr_to_data,&Blas_LDA,singular_vals,&dummy_scalar,&dummy_int,&dummy_scalar,&dummy_int,work,&lwork,rwork,&lierr));
+            PetscStackCallBLAS("LAPACKsyev",LAPACKsyev_("V","U",&Blas_N,correlation_mat,&Blas_LDA,singular_vals,work,&lwork,rwork,&lierr));
 #endif
-          if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GESVD Lapack routine %d",(int)lierr);
-          ierr = PetscFPTrapPop();CHKERRQ(ierr);
-          /* retain eigenvalues greater than tol: note that LAPACKgesvd gives eigs in descending order */
-          k = temp_constraints;
-          if (k > size_of_constraint) k = size_of_constraint;
-          j = 0;
-          while (j < k && singular_vals[k-j-1]/singular_vals[0] < tol) j++;
-          valid_constraints = k-j;
-          total_counts = total_counts-temp_constraints+valid_constraints;
+            ierr = PetscFPTrapPop();CHKERRQ(ierr);
+            if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYEV Lapack routine %d",(int)lierr);
+            /* retain eigenvalues greater than tol: note that LAPACKsyev gives eigs in ascending order */
+            j = 0;
+            while (j < temp_constraints && singular_vals[j]/singular_vals[temp_constraints-1] < tol) j++;
+            total_counts = total_counts-j;
+            valid_constraints = temp_constraints-j;
+            /* scale and copy POD basis into used quadrature memory */
+            ierr = PetscBLASIntCast(size_of_constraint,&Blas_M);CHKERRQ(ierr);
+            ierr = PetscBLASIntCast(temp_constraints,&Blas_N);CHKERRQ(ierr);
+            ierr = PetscBLASIntCast(temp_constraints,&Blas_K);CHKERRQ(ierr);
+            ierr = PetscBLASIntCast(size_of_constraint,&Blas_LDA);CHKERRQ(ierr);
+            ierr = PetscBLASIntCast(temp_constraints,&Blas_LDB);CHKERRQ(ierr);
+            ierr = PetscBLASIntCast(size_of_constraint,&Blas_LDC);CHKERRQ(ierr);
+            if (j<temp_constraints) {
+              PetscInt ii;
+              for (k=j;k<temp_constraints;k++) singular_vals[k] = 1.0/PetscSqrtReal(singular_vals[k]);
+              ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
+              PetscStackCallBLAS("BLASgemm",BLASgemm_("N","N",&Blas_M,&Blas_N,&Blas_K,&one,ptr_to_data,&Blas_LDA,correlation_mat,&Blas_LDB,&zero,temp_basis,&Blas_LDC));
+              ierr = PetscFPTrapPop();CHKERRQ(ierr);
+              for (k=0;k<temp_constraints-j;k++) {
+                for (ii=0;ii<size_of_constraint;ii++) {
+                  ptr_to_data[k*size_of_constraint+ii] = singular_vals[temp_constraints-1-k]*temp_basis[(temp_constraints-1-k)*size_of_constraint+ii];
+                }
+              }
+            }
+          } else {
+#if !defined(PETSC_MISSING_LAPACK_GESVD)
+            ierr = PetscBLASIntCast(size_of_constraint,&Blas_M);CHKERRQ(ierr);
+            ierr = PetscBLASIntCast(temp_constraints,&Blas_N);CHKERRQ(ierr);
+            ierr = PetscBLASIntCast(size_of_constraint,&Blas_LDA);CHKERRQ(ierr);
+            ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
+#if !defined(PETSC_USE_COMPLEX)
+            PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("O","N",&Blas_M,&Blas_N,ptr_to_data,&Blas_LDA,singular_vals,&dummy_scalar,&dummy_int,&dummy_scalar,&dummy_int,work,&lwork,&lierr));
+#else
+            PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("O","N",&Blas_M,&Blas_N,ptr_to_data,&Blas_LDA,singular_vals,&dummy_scalar,&dummy_int,&dummy_scalar,&dummy_int,work,&lwork,rwork,&lierr));
+#endif
+            if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GESVD Lapack routine %d",(int)lierr);
+            ierr = PetscFPTrapPop();CHKERRQ(ierr);
+            /* retain eigenvalues greater than tol: note that LAPACKgesvd gives eigs in descending order */
+            k = temp_constraints;
+            if (k > size_of_constraint) k = size_of_constraint;
+            j = 0;
+            while (j < k && singular_vals[k-j-1]/singular_vals[0] < tol) j++;
+            valid_constraints = k-j;
+            total_counts = total_counts-temp_constraints+valid_constraints;
+#else
+            SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"This should not happen");
 #endif /* on missing GESVD */
+          }
         }
       }
       /* update pointers information */
@@ -6427,10 +6435,8 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       ierr = PetscFree(rwork);CHKERRQ(ierr);
 #endif
       ierr = PetscFree(singular_vals);CHKERRQ(ierr);
-#if defined(PETSC_MISSING_LAPACK_GESVD)
       ierr = PetscFree(correlation_mat);CHKERRQ(ierr);
       ierr = PetscFree(temp_basis);CHKERRQ(ierr);
-#endif
     }
     for (k=0;k<nnsp_size;k++) {
       ierr = VecDestroy(&localnearnullsp[k]);CHKERRQ(ierr);
@@ -7127,7 +7133,6 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   }
   PetscFunctionReturn(0);
 }
-/* #undef PETSC_MISSING_LAPACK_GESVD */
 
 PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
 {
