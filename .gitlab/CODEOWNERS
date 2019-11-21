@@ -17,6 +17,8 @@ src/dm/impls/network/     @abhyshr @hongzhangsun
 /src/ksp/pc/impls/hpddm/  @prj- @stefanozampini
 /src/ksp/ksp/impls/hpddm/ @prj- @stefanozampini
 
+/src/sys/classes/viewer/  @petsc/integrators @haplav
+
 /src/vec/is/sf/           @jedbrown @jczhang07
 /src/vec/vscat/           @jczhang07 @BarrySmith
 
