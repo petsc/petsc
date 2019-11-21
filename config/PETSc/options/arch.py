@@ -152,7 +152,11 @@ Warning: Using from command-line or name of script: %s, ignoring environment: %s
           raise RuntimeError('--package-prefix-hash '+self.argDB['package-prefix-hash']+' directory does not exist\n')
         self.argDB['prefix'] = os.path.join(self.argDB['package-prefix-hash'],hprefix[0:6])
         if not os.path.isdir(self.argDB['prefix']):
-          os.mkdir(self.argDB['prefix'])
+          try:
+            os.mkdir(self.argDB['prefix'])
+          except Exception as e:
+            self.logPrint('Error creating package-prefix-hash directory '+self.argDB['prefix']+': '+str(e))
+            raise RuntimeError('You must have write permission on --package-prefix-hash='+self.argDB['package-prefix-hash']+' directory')
           hashfilepackages = os.path.join(self.argDB['prefix'],'configure-hash')
         else:
           try:
