@@ -2,7 +2,6 @@
 
 import os
 petsc_hash_pkgs=os.path.join(os.getenv('HOME'),'petsc-hash-pkgs')
-if not os.path.isdir(petsc_hash_pkgs): os.mkdir(petsc_hash_pkgs)
 
 # This test is done on grind.mcs.anl.gov. It uses ILP64 MKL/BLAS packaged
 # with MATLAB.

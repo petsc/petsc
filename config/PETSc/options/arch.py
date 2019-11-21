@@ -149,7 +149,8 @@ Warning: Using from command-line or name of script: %s, ignoring environment: %s
         self.arch = 'arch-'+hprefix[0:6]
       else:
         if not os.path.isdir(self.argDB['package-prefix-hash']):
-          raise RuntimeError('--package-prefix-hash '+self.argDB['package-prefix-hash']+' directory does not exist\n')
+          self.logPrintBox('Specified package-prefix-hash location %s not found! Attemping to create this dir!' % self.argDB['package-prefix-hash'])
+          os.makedirs(self.argDB['package-prefix-hash'])
         self.argDB['prefix'] = os.path.join(self.argDB['package-prefix-hash'],hprefix[0:6])
         if not os.path.isdir(self.argDB['prefix']):
           try:
