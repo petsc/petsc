@@ -2170,7 +2170,7 @@ make -f gmakefile test
 # Approximate time (not incl. build time): 429 sec
 #
 # To rerun failed tests:
-#     /opt/local/bin/gmake -f gmakefile test search='ts_tutorials-ex11_adv_2d_quad_0 sys_classes_viewer_tests-ex4_4 ts_tutorials-ex11_adv_2d_quad'
+#     /opt/local/bin/gmake -f gmakefile test test-fail=1
 \end{outputlisting}
 This output indicates that three tests have failed and should be investigated.
 \item Rerun one of the failed tests, with additional verbosity.
@@ -2238,6 +2238,55 @@ To see the full timing information for the five most expensive tests use
 \begin{bashlisting}
 config/report_tests.py -t 5
 \end{bashlisting}
+
+\subsection{Querying the Tests}
+
+PETSc has thousands of tests.  As can be imagined, managing such a large test
+suite can be challenging.  To enable exploring the test system more thoroughly,
+there exists the script 
+\begin{bashlisting}
+config/query_tests.py
+\end{bashlisting}
+This script by default generates a listing of files suitable for invocation by
+\trl{gmakefile.test}.  An example invocation would be:
+\begin{bashlisting}
+config/query_tests.py config/query_tests.py requires '*MPI_PROCESS_SHARED_MEMORY*'
+\end{bashlisting}
+The first argument is the field and can be any field that is part of the normal
+test language specification.
+
+By default, the search is based on a given configure specification as
+encapsulated by specifying \trl{PETSC_ARCH}.  Technically speaking,
+\trl{gmakegentest.py} writes out a Python pickle file of the dictionary
+structure used by \trl{gmakegentest.py}.  With the \trl{--use-source} argument
+to this script, the entire set of test cases can be searched.
+
+More interestingly, \trl{query_tests.py} is meant to be used by ipython to
+enable a featureful and rich exploration of the data structures.  See the 
+\trl{do_query} method in \trl{query_tests.py} for more details.  Here is an
+example session:
+\begin{bashlisting}
+In [1]: import sys, os; sys.path.append('config')
+
+In [2]: import query_tests
+
+In [3]: dataDict=query_tests.walktree('src/vec') # Do only vec tests
+
+In [4]: srcdir=os.path.join(os.path.abspath(os.curdir),'src') # Need for correct labels
+
+In [5]: invDict=query_tests.get_inverse_dictionary(dataDict,'requires',srcdir)
+
+In [6]: results=query_tests.query(invDict,'cuda')
+
+In [7]: print(results)
+['vec_vec_tests-ex22_cuda', 'vec_vec_tests-ex22_cuda_sf', 'vec_vec_tests-ex23_cuda', 'vec_vec_tests-ex24_cuda', 'vec_vec_tests-ex28_2_cuda', 'vec_vec_tests-ex28_cuda', 'vec_vec_tests-ex34_cuda', 'vec_vec_tests-ex38_cuda', 'vec_vec_tests-ex4_cuda', 'vec_vec_tests-ex4_cuda2', 'vec_vec_tests-ex43_cuda', 'vec_vec_tests-ex44_cuda', 'vec_vec_tutorials-ex1_2_cuda', 'vec_vec_tutorials-ex1_cuda']
+\end{bashlisting}
+As can be seen, with the dictionaries available within ipython, a rich querying
+of the data within the source files can be performed.
+
+As always, to see the full usage of the python script \trl{query_tests.py}, use
+the help flag:  \trl{query_tests.py --help}.
+
 \bibliographystyle{plain}
 \bibliography{../petsc,../petscapp}
 
