@@ -1021,14 +1021,14 @@ int main(int argc, char **argv)
       suffix: hybint_3d_0
       args: -dim 3 -dm_refine 1
     test:
-      TODO: fails due to wrong SF
+      TODO: fails due to Cone size 10 not supported for dimension 3
       suffix: hybint_3d_s2t_0
       args: -dim 3 -dm_refine 1 -simplex2tensor
     test:
       suffix: hybint_3d_1
       args: -dim 3 -dm_refine 1 -test_num 1
     test:
-      TODO: fails due to wrong SF
+      TODO: fails due to Cone size 12 not supported for dimension 3
       suffix: hybint_3d_s2t_1
       args: -dim 3 -dm_refine 1  -simplex2tensor -test_num 1
 
