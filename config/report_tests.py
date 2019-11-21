@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from __future__ import print_function
-import glob, os, re
+import glob, os, re, stat
 import optparse
 import inspect
 
@@ -82,22 +82,22 @@ def summarize_results(directory,make,ntime,etime):
       # Strip off characters from subtests
       fail_list=[]
       for failure in fail_targets.split():
-        if failure.split('-')[1].count('_')>1:
-            froot=failure.split('-')[0]
-            flabel='_'.join(failure.split('-')[1].split('_')[0:1])
-            fail_list.append(froot+'-'+flabel+'_*')
-        elif failure.count('-')>1:
-            fail_list.append('-'.join(failure.split('-')[:-1]))
-        else:
-            fail_list.append(failure)
+         fail_list.append(failure.split('+')[0])
       fail_list=list(set(fail_list))
       fail_targets=' '.join(fail_list)
+
+      # create simple little script
+      sfile=os.path.join(os.path.dirname(os.path.abspath(os.curdir)),'echofailures.sh')
+      with open(sfile,'w') as f:
+          f.write('echo '+fail_targets.strip())
+      st = os.stat(sfile)
+      os.chmod(sfile, st.st_mode | stat.S_IEXEC)
 
       #Make the message nice
       makefile="gmakefile.test" if inInstallDir() else "gmakefile"
 
       print("#\n# To rerun failed tests: ")
-      print("#     "+make+" -f "+makefile+" test globsearch='" + fail_targets.strip()+"'")
+      print("#     "+make+" -f "+makefile+" test test-fail=1")
 
   if ntime>0:
       print("#\n# Timing summary (actual test time / total CPU time): ")
