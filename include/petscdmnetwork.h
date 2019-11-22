@@ -16,6 +16,7 @@ typedef PetscInt DMNetworkComponentGenericDataType;
 
 PETSC_EXTERN PetscErrorCode DMNetworkCreate(MPI_Comm,DM*);
 PETSC_EXTERN PetscErrorCode DMNetworkSetSizes(DM,PetscInt,PetscInt[],PetscInt[],PetscInt,PetscInt[]);
+PETSC_EXTERN PetscErrorCode DMNetworkGetSizes(DM,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMNetworkSetEdgeList(DM,PetscInt*[],PetscInt*[]);
 PETSC_EXTERN PetscErrorCode DMNetworkLayoutSetUp(DM);
 PETSC_EXTERN PetscErrorCode DMNetworkRegisterComponent(DM,const char*,size_t,PetscInt*);
