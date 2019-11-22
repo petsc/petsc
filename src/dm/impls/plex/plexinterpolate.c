@@ -1255,6 +1255,9 @@ PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF)
   Notes:
     It does not copy over the coordinates.
 
+  Developer Notes:
+    It sets plex->interpolated = DMPLEX_INTERPOLATED_FULL.
+
 .seealso: DMPlexUninterpolate(), DMPlexCreateFromCellList(), DMPlexCopyCoordinates()
 @*/
 PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
@@ -1457,6 +1460,9 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
   Notes:
     It does not copy over the coordinates.
 
+  Developer Notes:
+    It sets plex->interpolated = DMPLEX_INTERPOLATED_NONE.
+
 .seealso: DMPlexInterpolate(), DMPlexCreateFromCellList(), DMPlexCopyCoordinates()
 @*/
 PetscErrorCode DMPlexUninterpolate(DM dm, DM *dmUnint)
@@ -1613,7 +1619,7 @@ finish:
 }
 
 /*@
-  DMPlexIsInterpolated - Find out whether this DM is interpolated, i.e. number of strata is equal to dimension.
+  DMPlexIsInterpolated - Find out to what extent the DMPlex is topologically interpolated.
 
   Not Collective
 
@@ -1626,9 +1632,23 @@ finish:
   Level: intermediate
 
   Notes:
-  This is NOT collective so the results can be different on different ranks in special cases.
+  Unlike DMPlexIsInterpolatedCollective(), this is NOT collective
+  so the results can be different on different ranks in special cases.
   However, DMPlexInterpolate() guarantees the result is the same on all.
+
   Unlike DMPlexIsInterpolatedCollective(), this cannot return DMPLEX_INTERPOLATED_MIXED.
+
+  Developer Notes:
+  Initially, plex->interpolated = DMPLEX_INTERPOLATED_INVALID.
+
+  If plex->interpolated == DMPLEX_INTERPOLATED_INVALID, DMPlexIsInterpolated_Internal() is called.
+  It checks the actual topology and sets plex->interpolated on each rank separately to one of
+  DMPLEX_INTERPOLATED_NONE, DMPLEX_INTERPOLATED_PARTIAL or DMPLEX_INTERPOLATED_FULL.
+
+  If plex->interpolated != DMPLEX_INTERPOLATED_INVALID, this function just returns plex->interpolated.
+
+  DMPlexInterpolate() sets plex->interpolated = DMPLEX_INTERPOLATED_FULL,
+  and DMPlexUninterpolate() sets plex->interpolated = DMPLEX_INTERPOLATED_NONE.
 
 .seealso: DMPlexInterpolate(), DMPlexIsInterpolatedCollective()
 @*/
@@ -1655,7 +1675,7 @@ PetscErrorCode DMPlexIsInterpolated(DM dm, DMPlexInterpolatedFlag *interpolated)
 }
 
 /*@
-  DMPlexIsInterpolatedCollective - Find out whether this DM is interpolated, i.e. number of strata is equal to dimension.
+  DMPlexIsInterpolatedCollective - Find out to what extent the DMPlex is topologically interpolated (in collective manner).
 
   Collective
 
@@ -1668,8 +1688,19 @@ PetscErrorCode DMPlexIsInterpolated(DM dm, DMPlexInterpolatedFlag *interpolated)
   Level: intermediate
 
   Notes:
-  This is collective so the results are always guaranteed to be the same on all ranks.
-  Unlike DMPlexIsInterpolated(), this will return DMPLEX_INTERPOLATED_MIXED if the results of DMPlexIsInterpolated() are different on different ranks.
+  Unlike DMPlexIsInterpolated(), this is collective so the results are guaranteed to be the same on all ranks.
+
+  This function will return DMPLEX_INTERPOLATED_MIXED if the results of DMPlexIsInterpolated() are different on different ranks.
+
+  Developer Notes:
+  Initially, plex->interpolatedCollective = DMPLEX_INTERPOLATED_INVALID.
+
+  If plex->interpolatedCollective == DMPLEX_INTERPOLATED_INVALID, this function calls DMPlexIsInterpolated() which sets plex->interpolated.
+  MPI_Allreduce() is then called and collectively consistent flag plex->interpolatedCollective is set and returned;
+  if plex->interpolated varies on different ranks, plex->interpolatedCollective = DMPLEX_INTERPOLATED_MIXED,
+  otherwise sets plex->interpolatedCollective = plex->interpolated.
+
+  If plex->interpolatedCollective != DMPLEX_INTERPOLATED_INVALID, this function just returns plex->interpolatedCollective.
 
 .seealso: DMPlexInterpolate(), DMPlexIsInterpolated()
 @*/
