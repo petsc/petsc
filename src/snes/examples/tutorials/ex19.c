@@ -712,7 +712,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
    test:
       suffix: 2_bcols1
       nsize: 4
-      args: -da_refine 3 -snes_converged_reason -pc_type mg -mat_fd_type ds -mat_fd_coloring_bcols 1> ex19_1.tmp 2>&1
+      args: -da_refine 3 -snes_converged_reason -pc_type mg -mat_fd_type ds -mat_fd_coloring_bcols
       output_file: output/ex19_2.out
       requires: !single
 

@@ -338,8 +338,13 @@ class generateExamples(Petsc):
 
     # Now do other variables
     subst['execname']=testDict['execname']
+    subst['error']=''
     if 'filter' in testDict:
-      subst['filter']="'"+testDict['filter']+"'"   # Quotes are tricky - overwrite
+      if testDict['filter'].startswith("Error:"):
+        subst['error']="Error"
+        subst['filter']=testDict['filter'].lstrip("Error:")
+      else:
+        subst['filter']=testDict['filter']
 
     # Others
     subst['subargs']=''  # Default.  For variables override
@@ -438,24 +443,21 @@ class generateExamples(Petsc):
 
     cmdLines+=cmdindnt+'if test $res = 0; then\n'
     diffindnt=self.indent*(nindnt+1)
-    if not subst['filter_output']:
-      if 'altfiles' not in subst:
-        cmd=diffindnt+self._substVars(subst,example_template.difftest)
-      else:
-        # Have to do it by hand a bit because of variable number of alt files
-        rf=subst['redirect_file']
-        cmd=diffindnt+example_template.difftest.split('@')[0]
-        for i in range(len(subst['altfiles'])):
-          af=subst['altfiles'][i]
-          cmd+=af+' '+rf
-          if i!=len(subst['altfiles'])-1:
-            cmd+=' > diff-${testname}-'+str(i)+'.out 2> diff-${testname}-'+str(i)+'.out'
-            cmd+=' || ${diff_exe} '
-          else:
-            cmd+='" diff-${testname}.out diff-${testname}.out diff-${label}'
-            cmd+=subst['label_suffix']+' ""'  # Quotes are painful
+    if 'altfiles' not in subst:
+      cmd=diffindnt+self._substVars(subst,example_template.difftest)
     else:
-      cmd=diffindnt+self._substVars(subst,example_template.filterdifftest)
+      # Have to do it by hand a bit because of variable number of alt files
+      rf=subst['redirect_file']
+      cmd=diffindnt+example_template.difftest.split('@')[0]
+      for i in range(len(subst['altfiles'])):
+        af=subst['altfiles'][i]
+        cmd+=af+' '+rf
+        if i!=len(subst['altfiles'])-1:
+          cmd+=' > diff-${testname}-'+str(i)+'.out 2> diff-${testname}-'+str(i)+'.out'
+          cmd+=' || ${diff_exe} '
+        else:
+          cmd+='" diff-${testname}.out diff-${testname}.out diff-${label}'
+          cmd+=subst['label_suffix']+' ""'  # Quotes are painful
     cmdLines+=cmd+"\n"
     cmdLines+=cmdindnt+'else\n'
     cmdLines+=diffindnt+'petsc_report_tapoutput "" ${label} "SKIP Command failed so no diff"\n'
