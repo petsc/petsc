@@ -23,6 +23,30 @@ PetscErrorCode DMNetworkGetPlex(DM netdm, DM *plexdm)
 }
 
 /*@
+  DMNetworkGetSizes - Gets the the number of subnetworks and coupling subnetworks
+
+  Collective on dm
+
+  Input Parameters:
++ dm - the dm object
+. Nsubnet - global number of subnetworks
+- NsubnetCouple - global number of coupling subnetworks
+
+  Level: Intermediate
+
+.seealso: DMNetworkCreate()
+@*/
+PetscErrorCode DMNetworkGetSizes(DM netdm, PetscInt *Nsubnet, PetscInt *Ncsubnet)
+{
+  DM_Network *network = (DM_Network*) netdm->data;
+
+  PetscFunctionBegin;
+  *Nsubnet = network->nsubnet;
+  *Ncsubnet = network->ncsubnet;
+  PetscFunctionReturn(0);
+}
+
+/*@
   DMNetworkSetSizes - Sets the number of subnetworks, local and global vertices and edges for each subnetwork.
 
   Collective on dm
@@ -143,18 +167,14 @@ PetscErrorCode DMNetworkSetSizes(DM dm,PetscInt Nsubnet,PetscInt nV[], PetscInt 
 PetscErrorCode DMNetworkSetEdgeList(DM dm,PetscInt *edgelist[],PetscInt *edgelistCouple[])
 {
   DM_Network *network = (DM_Network*) dm->data;
-  PetscInt   i,nsubnet,ncsubnet=network->ncsubnet;
+  PetscInt   i;
 
   PetscFunctionBegin;
-  nsubnet = network->nsubnet - ncsubnet;
-  for(i=0; i < nsubnet; i++) {
-    network->subnet[i].edgelist = edgelist[i];
-  }
-  if (edgelistCouple) {
-    PetscInt j;
-    j = 0;
-    nsubnet = network->nsubnet;
-    while (i < nsubnet) network->subnet[i++].edgelist = edgelistCouple[j++];
+  for (i=0; i < (network->nsubnet-network->ncsubnet); i++) network->subnet[i].edgelist = edgelist[i];
+  if (network->ncsubnet) {
+    PetscInt j = 0;
+    if (!edgelistCouple) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Must provide edgelist_couple");
+    while (i < network->nsubnet) network->subnet[i++].edgelist = edgelistCouple[j++];
   }
   PetscFunctionReturn(0);
 }
@@ -211,6 +231,7 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
   nsubnet = network->nsubnet;
   while (i < nsubnet) {
     edgelist_couple = network->subnet[i].edgelist;
+
     k = 0;
     for (j = 0; j < network->subnet[i].nedge; j++) {
       netid = edgelist_couple[k]; vid = edgelist_couple[k+1];
@@ -381,6 +402,7 @@ PetscErrorCode DMNetworkGetSubnetworkInfo(DM dm,PetscInt id,PetscInt *nv, PetscI
   DM_Network *network = (DM_Network*)dm->data;
 
   PetscFunctionBegin;
+  if (id >= network->nsubnet) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Subnet ID %D exceeds the num of subnets %D",id,network->nsubnet);
   *nv   = network->subnet[id].nvtx;
   *ne   = network->subnet[id].nedge;
   *vtx  = network->subnet[id].vertices;
@@ -409,11 +431,19 @@ PetscErrorCode DMNetworkGetSubnetworkInfo(DM dm,PetscInt id,PetscInt *nv, PetscI
 PetscErrorCode DMNetworkGetSubnetworkCoupleInfo(DM dm,PetscInt id,PetscInt *ne,const PetscInt **edge)
 {
   DM_Network *net = (DM_Network*)dm->data;
-  PetscInt   id1 = id + net->nsubnet - net->ncsubnet;
+  PetscInt   id1;
 
   PetscFunctionBegin;
-  *ne   = net->subnet[id1].nedge;
-  *edge = net->subnet[id1].edges;
+  if (net->ncsubnet) {
+    if (id >= net->ncsubnet) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Subnet ID %D exceeds the num of coupling subnets %D",id,net->ncsubnet);
+
+    id1   = id + net->nsubnet - net->ncsubnet;
+    *ne   = net->subnet[id1].nedge;
+    *edge = net->subnet[id1].edges;
+  } else {
+    *ne   = 0;
+    *edge = NULL;
+  }
   PetscFunctionReturn(0);
 }
 
