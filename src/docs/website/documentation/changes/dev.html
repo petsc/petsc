@@ -122,6 +122,11 @@
         <ul>
           <li>Improve the performance of MatConvert_AIJ_BAIJ by preallocating the Mat before dispatching to MatConvert_Basic</li>
           <li>Change the behavior of MatConvert_AIJ_SBAIJ for block size greater than one, the block structure is now preserved (even for the diagonal entries)</li>
+          <li>Fix various bugs related with matrix conversions from Hermitian SBAIJ matrices with complex numbers</li>
+          <li>Add MatPropagateSymmetryOptions to propagate symmetry information from one matrix to another</li>
+          <li>Fix a bug in MATSUPERLU_DIST interface when MATMPIAIJ with commsize 1 is used</li>
+          <li>Add MATCHOLMOD support for block solves</li>
+          <li>--download-suitesparse now uses the official SuiteSparse repository</li>
         </ul>
       <h4>PC:</h4>
       <h4>KSP:</h4>
