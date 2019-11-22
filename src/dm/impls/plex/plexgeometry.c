@@ -28,12 +28,13 @@
 
   The tolerance is interpreted as the maximum Euclidean (L2) distance of the sought point from the specified coordinates.
 
+  Complexity of this function is currently O(mn) with m number of vertices to find and n number of vertices in the local mesh. This could probably be improved.
+
 .seealso: DMPlexCreate(), DMGetCoordinates()
 @*/
 PetscErrorCode DMPlexFindVertices(DM dm, PetscInt npoints, const PetscReal coord[], PetscReal eps, PetscInt dagPoints[])
 {
-  PetscInt          c, dim, i, j, ndof, o, p, vStart, vEnd;
-  PetscSection      cs;
+  PetscInt          c, dim, i, j, o, p, vStart, vEnd;
   Vec               allCoordsVec;
   const PetscScalar *allCoords;
   PetscReal         norm;
@@ -42,16 +43,41 @@ PetscErrorCode DMPlexFindVertices(DM dm, PetscInt npoints, const PetscReal coord
   PetscFunctionBegin;
   if (eps < 0) eps = PETSC_SQRT_MACHINE_EPSILON;
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMGetCoordinateSection(dm, &cs);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &allCoordsVec);CHKERRQ(ierr);
   ierr = VecGetArrayRead(allCoordsVec, &allCoords);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  for (i=0,j=0; i < npoints; i++,j+=dim) {
-    dagPoints[i] = -1;
+#if defined(PETSC_USE_DEBUG)
+  /* check coordinate section is consistent with DM dimension */
+  {
+    PetscSection      cs;
+    PetscInt          ndof;
+
+    ierr = DMGetCoordinateSection(dm, &cs);CHKERRQ(ierr);
     for (p = vStart; p < vEnd; p++) {
-      ierr = PetscSectionGetOffset(cs, p, &o);CHKERRQ(ierr);
       ierr = PetscSectionGetDof(cs, p, &ndof);CHKERRQ(ierr);
       if (PetscUnlikely(ndof != dim)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "point %D: ndof = %D != %D = dim", p, ndof, dim);
+    }
+  }
+#endif
+  if (eps == 0.0) {
+    for (i=0,j=0; i < npoints; i++,j+=dim) {
+      dagPoints[i] = -1;
+      for (p = vStart,o=0; p < vEnd; p++,o+=dim) {
+        for (c = 0; c < dim; c++) {
+          if (coord[j+c] != PetscRealPart(allCoords[o+c])) break;
+        }
+        if (c == dim) {
+          dagPoints[i] = p;
+          break;
+        }
+      }
+    }
+    ierr = VecRestoreArrayRead(allCoordsVec, &allCoords);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+  for (i=0,j=0; i < npoints; i++,j+=dim) {
+    dagPoints[i] = -1;
+    for (p = vStart,o=0; p < vEnd; p++,o+=dim) {
       norm = 0.0;
       for (c = 0; c < dim; c++) {
         norm += PetscSqr(coord[j+c] - PetscRealPart(allCoords[o+c]));

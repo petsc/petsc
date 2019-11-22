@@ -1,3 +1,4 @@
+DMPlexCheckPointSFHeavy PASSED
 Graph Partitioner: 3 MPI Processes
   type: matpartitioning
   edge cut: 0
@@ -17,3 +18,4 @@ MatPartitioning Graph Partitioner:
       type: ptscotch
         Strategy=Default behavior
         Load imbalance ratio=0.01
+DMPlexCheckPointSFHeavy PASSED
