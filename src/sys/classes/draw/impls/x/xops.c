@@ -628,7 +628,7 @@ finally:
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDrawXGetDisplaySize_Private(const char name[],int *width,int *height)
+static PetscErrorCode PetscDrawXGetDisplaySize_Private(const char name[],int *width,int *height,PetscBool *has_display)
 {
   Display *display;
 
@@ -636,11 +636,14 @@ static PetscErrorCode PetscDrawXGetDisplaySize_Private(const char name[],int *wi
   display = XOpenDisplay(name);
   if (!display) {
     *width  = *height = 0;
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to open display on %s\n\
+    (*PetscErrorPrintf)("Unable to open display on %s\n\
     Make sure your COMPUTE NODES are authorized to connect\n\
     to this X server and either your DISPLAY variable\n\
     is set or you use the -display name option\n",name);
+    *has_display = PETSC_FALSE;
+    PetscFunctionReturn(0);
   }
+  *has_display = PETSC_TRUE;
   *width  = (int)DisplayWidth(display,DefaultScreen(display));
   *height = (int)DisplayHeight(display,DefaultScreen(display));
   XCloseDisplay(display);
@@ -672,7 +675,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
   PetscMPIInt    rank;
   int            x = draw->x,y = draw->y,w = draw->w,h = draw->h;
   static int     xavailable = 0,yavailable = 0,ybottom = 0,xmax = 0,ymax = 0;
-  PetscBool      set,dvirtual = PETSC_FALSE,doublebuffer = PETSC_TRUE;
+  PetscBool      set,dvirtual = PETSC_FALSE,doublebuffer = PETSC_TRUE,has_display;
   PetscInt       xywh[4],osize = 4,nsizes=2;
   PetscReal      sizes[2] = {.3,.3};
 
@@ -685,9 +688,9 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
 
   /* initialize the display size */
   if (!xmax) {
-    ierr = PetscDrawXGetDisplaySize_Private(draw->display,&xmax,&ymax);
+    PetscDrawXGetDisplaySize_Private(draw->display,&xmax,&ymax,&has_display);
     /* if some processors fail on this and others succed then this is a problem ! */
-    if (ierr) {
+    if (!has_display) {
       (*PetscErrorPrintf)("PETSc unable to use X windows\nproceeding without graphics\n");
       ierr = PetscDrawSetType(draw,PETSC_DRAW_NULL);CHKERRQ(ierr);
       PetscFunctionReturn(0);
