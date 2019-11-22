@@ -106,6 +106,23 @@ PETSC_EXTERN PetscErrorCode DMPlexPointGlobalFieldRead(DM,PetscInt,PetscInt,cons
 
 /* Topological interpolation */
 PETSC_EXTERN const char * const DMPlexInterpolatedFlags[];
+/*E
+   DMPlexInterpolatedFlag - Describes level of topological interpolatedness.
+     It is a local or collective property depending on whether it is returned by DMPlexIsInterpolated() or DMPlexIsInterpolatedCollective().
+
+$  DMPLEX_INTERPOLATED_INVALID - Uninitialized value (internal use only; never returned by DMPlexIsInterpolated() or DMPlexIsInterpolatedCollective())
+$  DMPLEX_INTERPOLATED_NONE    - Mesh is not interpolated
+$  DMPLEX_INTERPOLATED_PARTIAL - Mesh is partially interpolated. This can e.g. mean DMPlex with cells, faces and vertices but no edges represented, or a mesh with mixed cones (see DMPlexStratify() for an example)
+$  DMPLEX_INTERPOLATED_MIXED   - Can be returned only by DMPlexIsInterpolatedCollective(), meaning that DMPlexIsInterpolated() returns different interpolatedness on different ranks
+$  DMPLEX_INTERPOLATED_FULL    - Mesh is fully interpolated
+
+   Level: intermediate
+
+   Developer Note:
+   Any additions/changes here MUST also be made in include/petsc/finclude/petscdmplex.h and src/dm/f90-mod/petscdmplex.h
+
+.seealso: DMPlexIsInterpolated(), DMPlexIsInterpolatedCollective(), DMPlexInterpolate(), DMPlexUninterpolate()
+E*/
 typedef enum {
   DMPLEX_INTERPOLATED_INVALID = -1,
   DMPLEX_INTERPOLATED_NONE = 0,
