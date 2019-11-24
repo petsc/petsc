@@ -34,6 +34,7 @@ variables:
       - schedules
 #     Set with CI/CD Pipelines - Run Pipeline
       - web
+  dependencies: []
 
 #
 #  This provides the basic order of operations and options template for cloud based stage 1 tests.
@@ -63,6 +64,15 @@ variables:
   artifacts:
     reports:
       junit: arch-*/tests/testresults.xml
+    name: "$CI_JOB_NAME"
+    when: always
+    paths:
+    - arch-*/lib/petsc/conf/configure.log
+    - arch-*/lib/petsc/conf/make.log
+    - arch-*/tests/testresults.xml
+    - arch-*/tests/test_*_tap.log
+    - arch-*/tests/test_*_err.log
+    expire_in: 4 days
   cache:
     paths:
       - .ccache/
@@ -122,6 +132,15 @@ checksource:
   artifacts:
     reports:
       junit: ${TEST_ARCH}/tests/testresults.xml
+    name: "$CI_JOB_NAME"
+    when: always
+    paths:
+    - ${TEST_ARCH}/lib/petsc/conf/configure.log
+    - ${TEST_ARCH}/lib/petsc/conf/make.log
+    - ${TEST_ARCH}/tests/testresults.xml
+    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_tap.log
+    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_err.log
+    expire_in: 4 days
   variables:
     OPENBLAS_NUM_THREADS: 1
 
@@ -154,7 +173,6 @@ checksource:
     - ccache --zero-stats
   after_script:
     - date
-    - cp configure.log ../configure.log-${CI_JOB_NAME}-${CI_PIPELINE_ID}-${CI_JOB_ID}
     - ccache --show-stats
 
 .linux_test:
@@ -175,7 +193,6 @@ checksource:
     - ccache --zero-stats
   after_script:
     - date
-    - cp configure.log ../configure.log-${CI_JOB_NAME}-${CI_PIPELINE_ID}-${CI_JOB_ID}
     - ccache --show-stats
 
 .osx_test:
@@ -190,7 +207,6 @@ checksource:
     - ccache --zero-stats
   after_script:
     - date
-    - cp configure.log ../configure.log-${CI_JOB_NAME}-${CI_PIPELINE_ID}-${CI_JOB_ID}
     - ccache --show-stats
 
 .opensolaris_test:
@@ -201,7 +217,6 @@ checksource:
     - echo $(nproc)
   after_script:
     - date
-    - cp configure.log ../configure.log-${CI_JOB_NAME}-${CI_PIPELINE_ID}-${CI_JOB_ID}
 
 .mswin_test:
   before_script:
@@ -211,7 +226,6 @@ checksource:
     - echo $(nproc)
   after_script:
     - date
-    - cp configure.log ../configure.log-${CI_JOB_NAME}-${CI_PIPELINE_ID}-${CI_JOB_ID}
 
 #
 # The following tests run as part of stage-2.
@@ -418,6 +432,19 @@ linux-cmplx-gcov:
   variables:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -vecscatter_mpi1 false -options_left false
     TEST_ARCH: arch-ci-linux-cmplx-gcov
+  after_script:
+    - make gcov
+  artifacts:
+    when: always
+    paths:
+    - ${TEST_ARCH}/lib/petsc/conf/configure.log
+    - ${TEST_ARCH}/lib/petsc/conf/make.log
+    - ${TEST_ARCH}/tests/testresults.xml
+    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_tap.log
+    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_err.log
+    - gcov.tar.gz
+    expire_in: 4 days
+
 
 linux-cmplx-single:
   extends:
@@ -556,6 +583,19 @@ linux-gcov:
     - mcs-nfs
   variables:
     TEST_ARCH: arch-ci-linux-gcov
+  after_script:
+    - make gcov
+  artifacts:
+    when: always
+    paths:
+    - ${TEST_ARCH}/lib/petsc/conf/configure.log
+    - ${TEST_ARCH}/lib/petsc/conf/make.log
+    - ${TEST_ARCH}/tests/testresults.xml
+    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_tap.log
+    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_err.log
+    - gcov.tar.gz
+    expire_in: 4 days
+
 
 linux-ILP64:
   extends:
@@ -574,6 +614,19 @@ linux-matlab-ilp64-gcov:
     - mcs-nfs
   variables:
     TEST_ARCH: arch-ci-linux-matlab-ilp64-gcov
+  after_script:
+    - make gcov
+  artifacts:
+    when: always
+    paths:
+    - ${TEST_ARCH}/lib/petsc/conf/configure.log
+    - ${TEST_ARCH}/lib/petsc/conf/make.log
+    - ${TEST_ARCH}/tests/testresults.xml
+    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_tap.log
+    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_err.log
+    - gcov.tar.gz
+    expire_in: 4 days
+
 
 linux-opt-cxx-quad:
   extends:
@@ -610,6 +663,18 @@ linux-pkgs-gcov:
     - mcs-nfs
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-gcov
+  after_script:
+    - make gcov
+  artifacts:
+    when: always
+    paths:
+    - ${TEST_ARCH}/lib/petsc/conf/configure.log
+    - ${TEST_ARCH}/lib/petsc/conf/make.log
+    - ${TEST_ARCH}/tests/testresults.xml
+    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_tap.log
+    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_err.log
+    - gcov.tar.gz
+    expire_in: 4 days
 
 linux-pkgs-opt:
   extends:
