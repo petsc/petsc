@@ -1639,7 +1639,7 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
   ierr = PetscLogEventBegin(DMPLEX_Partition,dm,0,0,0);CHKERRQ(ierr);
   ierr = PetscSectionCreate(comm, &cellPartSection);CHKERRQ(ierr);
   ierr = DMPlexGetPartitioner(dm, &partitioner);CHKERRQ(ierr);
-  ierr = PetscPartitionerPartition(partitioner, dm, cellPartSection, &cellPart);CHKERRQ(ierr);
+  ierr = PetscPartitionerDMPlexPartition(partitioner, dm, NULL, cellPartSection, &cellPart);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(DMPLEX_PartSelf,dm,0,0,0);CHKERRQ(ierr);
   {
     /* Convert partition to DMLabel */

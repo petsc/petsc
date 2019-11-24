@@ -118,6 +118,11 @@
       <h4>Vec:</h4>
       <h4>VecScatter:</h4>
       <h4>PetscSection:</h4>
+      <h4>PetscPartitioner:</h4>
+        <ul>
+          <li>PetscPartitionerPartition() does not longer gets a DM as input. Vertex weights can be specified through PetscSection.</li>
+          <li>Add support for target partition weights for PETSCPARTITIONERSIMPLE, PETSCPARTITIONERPARMETIS and PETSCPARTITIONERPTSCOTCH.</li>
+        </ul>
       <h4>Mat:</h4>
         <ul>
           <li>Improve the performance of MatConvert_AIJ_BAIJ by preallocating the Mat before dispatching to MatConvert_Basic</li>
@@ -136,6 +141,8 @@
       <h4>DM/DA:</h4>
         <ul>
           <li>DMCopyLabels(): Add two additional input flags</li>
+          <li>DMPlexDistribute(): fixed bug associated with vertex partition weights and overlapped meshes</li>
+          <li>DMPlexDistribute(): vertex partition weights are now computed by summing all the local section dofs in the transitive closure of each cell</li>
         </ul>
       <h4>DMPlex:</h4>
         <ul>
