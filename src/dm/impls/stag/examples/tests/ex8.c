@@ -25,7 +25,7 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   /* Note: these defaults are chosen to suit the problem. We allow adjusting
-     them to check that things still work when you add ununsed extra dof */
+     them to check that things still work when you add unused extra dof */
   dof0 = 0;
   dof1 = 0;
   dof2 = 1;

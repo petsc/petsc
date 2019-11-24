@@ -141,7 +141,7 @@ int main(int argc, char **argv) {
           dofA = dofAP2Hex;
         }
         break;
-        default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Unkown element with closure size %D\n", closureSize);
+        default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Unknown element with closure size %D\n", closureSize);
       }
       ierr = DMPlexRestoreTransitiveClosure(dm, cellID[0], PETSC_TRUE, &closureSize, &closureA);CHKERRQ(ierr);
 
