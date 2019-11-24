@@ -303,7 +303,7 @@ static PetscErrorCode  PetscViewerHDF5SetCollective_HDF5(PetscViewer viewer, Pet
 
   Notes:
   Collective mode gives the MPI-IO layer underneath HDF5 a chance to do some additional collective optimizations and hence can perform better.
-  However, this works correctly only since HDF5 1.10.3 and if HDF5 is installed for MPI hence, we ignore this setting for older versions.
+  However, this works correctly only since HDF5 1.10.3 and if HDF5 is installed for MPI; hence, we ignore this setting for older versions.
 
   Developer notes:
   In the HDF5 layer, PETSC_TRUE / PETSC_FALSE means H5Pset_dxpl_mpio() is called with H5FD_MPIO_COLLECTIVE / H5FD_MPIO_INDEPENDENT, respectively.
