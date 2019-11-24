@@ -309,7 +309,7 @@ static PetscErrorCode  PCCompositeSetType_Composite(PC pc,PCCompositeType type)
   } else if (type ==  PC_COMPOSITE_SPECIAL) {
     pc->ops->apply          = PCApply_Composite_Special;
     pc->ops->applytranspose = NULL;
-  } else SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Unkown composite preconditioner type");
+  } else SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Unknown composite preconditioner type");
   jac->type = type;
   PetscFunctionReturn(0);
 }
