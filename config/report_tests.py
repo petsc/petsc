@@ -273,6 +273,10 @@ def generate_xml(testdata,directory):
                 # we show the stderr output under <error>
                 junit.write('      <error type="crash">\n')
                 junit.write("<![CDATA[\n") # CDATA is necessary to preserve whitespace
+                # many times error messages also go to stdout so we print both
+                if len(p['stdout'])>0:
+                    for line in p['stdout']:
+                        junit.write("%s\n"%line.rstrip())
                 for line in p['stderr']:
                     junit.write("%s\n"%line.rstrip())
                 junit.write("]]>")
@@ -286,19 +290,6 @@ def generate_xml(testdata,directory):
                     junit.write("%s\n"%line.rstrip())
                 junit.write("]]>")
                 junit.write('      </failure>\n')
-            elif len(p['stdout'])>0:
-                # if we got here, the test succeeded so we just show the stdout 
-                # for manual sanity-checks
-                junit.write('      <system-out>\n')
-                junit.write("<![CDATA[\n") # CDATA is necessary to preserve whitespace
-                count = 0
-                for line in p['stdout']:
-                    junit.write("%s\n"%line.rstrip())
-                    count += 1
-                    if count >= 1024: 
-                        break
-                junit.write("]]>")
-                junit.write('      </system-out>\n')
             junit.write('    </testcase>\n')
         junit.write('  </testsuite>\n')
     junit.write('</testsuites>')
