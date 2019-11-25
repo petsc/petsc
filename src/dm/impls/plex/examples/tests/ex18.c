@@ -1675,7 +1675,6 @@ int main(int argc, char **argv)
     args: -use_generator -dm_plex_check_symmetry -dm_plex_check_geometry
     args: -distribute -interpolate parallel
     test:
-      TODO: DMPlexCheckPointSFHeavy() fails for nsize 4
       suffix: 6_parint_tri
       requires: triangle
       args: -faces {{2,2  1,3  7,4}} -cell_simplex 1 -dm_plex_generator triangle -dm_plex_check_skeleton
@@ -1683,7 +1682,6 @@ int main(int argc, char **argv)
       suffix: 6_parint_quad
       args: -faces {{2,2  1,3  7,4}} -cell_simplex 0 -dm_plex_check_skeleton
     test:
-      TODO: DMPlexCheckPointSFHeavy() fails for nsize 4
       suffix: 6_parint_tet
       requires: ctetgen
       args: -faces {{2,2,2  1,3,5  3,4,7}} -cell_simplex 1 -dm_plex_generator ctetgen -dm_plex_check_skeleton
@@ -1715,7 +1713,6 @@ int main(int argc, char **argv)
       nsize: {{2 4 5}}
       args: -interpolate parallel
     test: # seq load, metis partitioner, par interpolation
-      TODO: DMPlexCheckPointSFHeavy() fails for nsize 5
       suffix: 7_exo_metis_int
       requires: parmetis
       nsize: {{2 4 5}}
@@ -1822,7 +1819,6 @@ int main(int argc, char **argv)
       args: -interpolate serial
       args: -petscpartitioner_type parmetis
     test: # seq load, simple partitioner, par interpolation
-      TODO: DMPlexCheckPointSFHeavy() fails for nsize 4,5
       suffix: 9_seq_hdf5_simple_int
       nsize: {{2 4 5}}
       args: -interpolate parallel
@@ -1830,13 +1826,13 @@ int main(int argc, char **argv)
       # This is like 9_seq_hdf5_simple_int but testing error output of DMPlexCheckPointSFHeavy().
       # Once 9_seq_hdf5_simple_int gets fixed, this one gets broken.
       # We can then provide an intentionally broken mesh instead.
+      TODO: This test is broken because PointSF is fixed.
       suffix: 9_seq_hdf5_simple_int_err
       nsize: 4
       args: -interpolate parallel
       filter: sed -e "/PETSC ERROR/,$$d"
     test: # seq load, metis partitioner, par interpolation
       nsize: {{2 4 5}}
-      TODO: DMPlexCheckPointSFHeavy() fails for nsize 5
       suffix: 9_seq_hdf5_metis_int
       requires: parmetis
       args: -interpolate parallel
@@ -1851,7 +1847,6 @@ int main(int argc, char **argv)
       suffix: 9_par_hdf5
       args: -interpolate none
     test: # par load, par interpolation
-      TODO: DMPlexCheckPointSFHeavy() fails for nsize 4,5
       suffix: 9_par_hdf5_int
       args: -interpolate serial             #TODO serial means before DMPlexDistribute but plex is already parallel from DMLoad - serial/parallel should be renamed
     test: # par load, parmetis repartitioner
@@ -1861,7 +1856,6 @@ int main(int argc, char **argv)
       args: -distribute -petscpartitioner_type parmetis
       args: -interpolate none
     test: # par load, par interpolation, parmetis repartitioner
-      TODO: DMPlexCheckPointSFHeavy() fails for nsize 4,5
       suffix: 9_par_hdf5_int_parmetis
       requires: parmetis
       args: -distribute -petscpartitioner_type parmetis
