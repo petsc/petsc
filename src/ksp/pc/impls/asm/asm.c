@@ -854,7 +854,7 @@ static PetscErrorCode  PCASMGetSubKSP_ASM(PC pc,PetscInt *n_local,PetscInt *firs
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (osm->n_local_true < 1) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ORDER,"Need to call PCSetUP() on PC (or KSPSetUp() on the outer KSP object) before calling here");
+  if (osm->n_local_true < 1) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ORDER,"Need to call PCSetUp() on PC (or KSPSetUp() on the outer KSP object) before calling here");
 
   if (n_local) *n_local = osm->n_local_true;
   if (first_local) {
@@ -1276,7 +1276,7 @@ PetscErrorCode  PCASMGetSubKSP(PC pc,PetscInt *n_local,PetscInt *first_local,KSP
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            PCBJACOBI, PCASMGetSubKSP(), PCASMSetLocalSubdomains(), PCASMType, PCASMGetType(), PCASMSetLocalType(), PCASMGetLocalType()
-           PCASMSetTotalSubdomains(), PCSetModifySubmatrices(), PCASMSetOverlap(), PCASMSetType(), PCCompositeType
+           PCASMSetTotalSubdomains(), PCSetModifySubMatrices(), PCASMSetOverlap(), PCASMSetType(), PCCompositeType
 
 M*/
 
@@ -1685,12 +1685,12 @@ PetscErrorCode  PCASMGetLocalSubdomains(PC pc,PetscInt *n,IS *is[],IS *is_local[
     Level: advanced
 
     Notes:
-    Call after PCSetUp() (or KSPSetUp()) but before PCApply() (or KSPApply()) and before PCSetUpOnBlocks())
+    Call after PCSetUp() (or KSPSetUp()) but before PCApply() and before PCSetUpOnBlocks())
 
-           Usually one would use PCSetModifySubmatrices() to change the submatrices in building the preconditioner.
+           Usually one would use PCSetModifySubMatrices() to change the submatrices in building the preconditioner.
 
 .seealso: PCASMSetTotalSubdomains(), PCASMSetOverlap(), PCASMGetSubKSP(),
-          PCASMCreateSubdomains2D(), PCASMSetLocalSubdomains(), PCASMGetLocalSubdomains(), PCSetModifySubmatrices()
+          PCASMCreateSubdomains2D(), PCASMSetLocalSubdomains(), PCASMGetLocalSubdomains(), PCSetModifySubMatrices()
 @*/
 PetscErrorCode  PCASMGetLocalSubmatrices(PC pc,PetscInt *n,Mat *mat[])
 {
@@ -1702,7 +1702,7 @@ PetscErrorCode  PCASMGetLocalSubmatrices(PC pc,PetscInt *n,Mat *mat[])
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidIntPointer(n,2);
   if (mat) PetscValidPointer(mat,3);
-  if (!pc->setupcalled) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must call after KSPSetUP() or PCSetUp().");
+  if (!pc->setupcalled) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must call after KSPSetUp() or PCSetUp().");
   ierr = PetscObjectTypeCompare((PetscObject)pc,PCASM,&match);CHKERRQ(ierr);
   if (!match) {
     if (n) *n = 0;
