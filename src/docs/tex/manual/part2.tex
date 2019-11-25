@@ -3017,8 +3017,8 @@ large jumps in material coefficients with complex geometry (AMG is
 particularly well suited to jumps in coefficients but it is not a
 perfect solution), highly incompressible elasticity, not to mention
 ill-posed problems, and many others. For Grad-Div and Curl-Curl operators,
-you may want to try the Auxilary Maxwell Space (AMS, \trl{-pc_type hypre -pc_hypre_set_type ams})
-or the Auxilary Divergence Space (ADS, \trl{-pc_type hypre -pc_hypre_set_type ads}) solvers.
+you may want to try the Auxiliary-space Maxwell Solver (AMS, \trl{-pc_type hypre -pc_hypre_type ams})
+or the Auxiliary-space Divergence Solver (ADS, \trl{-pc_type hypre -pc_hypre_type ads}) solvers.
 These solvers need some additional information on the underlying mesh;
 specifically, AMS needs the discrete gradient operator, which can be specified via
 \lstinline{PCHYPRESetDiscreteGradient()}. In addition to the discrete gradient, ADS also needs the
@@ -3076,7 +3076,7 @@ graph (\trl{-pc_gamg_square_graph <N>}, squares the graph on the finest N levels
 Likewise if your \lstinline{MatPtAP} time is small and your convergence rate is not ideal then you could decrease the coarsening rate.
 
 PETSc's AMG solver is constructed as a framework for developers to
-easily add AMG capabilities, like a new AMG methods or anAMG component like a matrix
+easily add AMG capabilities, like a new AMG methods or an AMG component like a matrix
 triple product. Contact us directly if you are interested in contributing.
 
 %----------------------------------------------------------------------
