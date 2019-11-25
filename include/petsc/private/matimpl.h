@@ -400,7 +400,7 @@ struct _p_Mat {
   PetscBool              symmetric_eternal;
   PetscBool              nooffprocentries,nooffproczerorows;
   PetscBool              assembly_subset;  /* set by MAT_SUBSET_OFF_PROC_ENTRIES */
-  PetscBool              submat_singleis;  /* for efficient PCSetUP_ASM() */
+  PetscBool              submat_singleis;  /* for efficient PCSetUp_ASM() */
   PetscBool              structure_only;
   PetscBool              sortedfull;       /* full, sorted rows are inserted */ 
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)

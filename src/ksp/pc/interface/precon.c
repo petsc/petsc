@@ -960,7 +960,7 @@ $     func (PC pc,PetscInt nsub,IS *row,IS *col,Mat *submat,void *ctx);
 
    Level: advanced
 
-.seealso: PCModifySubMatrices(), PCASMGetSubMatrices()
+.seealso: PCModifySubMatrices()
 @*/
 PetscErrorCode  PCSetModifySubMatrices(PC pc,PetscErrorCode (*func)(PC,PetscInt,const IS[],const IS[],Mat[],void*),void *ctx)
 {
@@ -973,7 +973,7 @@ PetscErrorCode  PCSetModifySubMatrices(PC pc,PetscErrorCode (*func)(PC,PetscInt,
 
 /*@C
    PCModifySubMatrices - Calls an optional user-defined routine within
-   certain preconditioners if one has been set with PCSetModifySubMarices().
+   certain preconditioners if one has been set with PCSetModifySubMatrices().
 
    Collective on PC
 
