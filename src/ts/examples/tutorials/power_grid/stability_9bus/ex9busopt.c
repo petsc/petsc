@@ -880,12 +880,12 @@ static PetscErrorCode RHSJacobianP(TS ts,PetscReal t,Vec X,Mat A, void *ctx0)
 
 static PetscErrorCode CostIntegrand(TS ts,PetscReal t,Vec U,Vec R,Userctx *user)
 {
-  PetscErrorCode ierr;
-  PetscScalar    *u,*r;
-  PetscInt       idx;
-  Vec            Xgen,Xnet;
-  PetscScalar    *xgen;
-  PetscInt       i;
+  PetscErrorCode    ierr;
+  const PetscScalar *u;
+  PetscInt          idx;
+  Vec               Xgen,Xnet;
+  PetscScalar       *r,*xgen;
+  PetscInt          i;
 
   PetscFunctionBegin;
   ierr = DMCompositeGetLocalVectors(user->dmpgrid,&Xgen,&Xnet);CHKERRQ(ierr);
@@ -893,7 +893,7 @@ static PetscErrorCode CostIntegrand(TS ts,PetscReal t,Vec U,Vec R,Userctx *user)
 
   ierr = VecGetArray(Xgen,&xgen);CHKERRQ(ierr);
 
-  ierr = VecGetArray(U,&u);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecGetArray(R,&r);CHKERRQ(ierr);
   r[0] = 0.;
   idx = 0;
@@ -901,6 +901,7 @@ static PetscErrorCode CostIntegrand(TS ts,PetscReal t,Vec U,Vec R,Userctx *user)
     r[0] += PetscPowScalarInt(PetscMax(0.,PetscMax(xgen[idx+3]/(2.*PETSC_PI)-user->freq_u,user->freq_l-xgen[idx+3]/(2.*PETSC_PI))),user->pow);
     idx  += 9;
   }
+  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecRestoreArray(R,&r);CHKERRQ(ierr);
   ierr = DMCompositeRestoreLocalVectors(user->dmpgrid,&Xgen,&Xnet);CHKERRQ(ierr);
   PetscFunctionReturn(0);

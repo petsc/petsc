@@ -685,9 +685,11 @@ PetscErrorCode TSComputeRHSFunction(TS ts,PetscReal t,Vec U,Vec y)
 
   ierr = PetscLogEventBegin(TS_FunctionEval,ts,U,y,0);CHKERRQ(ierr);
   if (rhsfunction) {
+    ierr = VecLockReadPush(U);CHKERRQ(ierr);
     PetscStackPush("TS user right-hand-side function");
     ierr = (*rhsfunction)(ts,t,U,y,ctx);CHKERRQ(ierr);
     PetscStackPop;
+    ierr = VecLockReadPop(U);CHKERRQ(ierr);
   } else {
     ierr = VecZeroEntries(y);CHKERRQ(ierr);
   }
