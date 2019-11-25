@@ -40,7 +40,7 @@ static PetscErrorCode DMPlexCreateFluent_ReadString(PetscViewer viewer, char *bu
   PetscFunctionBegin;
   do {ierr = PetscViewerRead(viewer, &(buffer[i++]), 1, &ret, PETSC_CHAR);CHKERRQ(ierr);}
   while (ret > 0 && buffer[i-1] != '\0' && buffer[i-1] != delim);
-  buffer[i] = '\0';
+  if (!ret) buffer[i-1] = '\0'; else buffer[i] = '\0';
   PetscFunctionReturn(0);
 }
 
