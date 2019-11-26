@@ -12,7 +12,7 @@ static PetscErrorCode PetscSFPackGetReqs_Basic(PetscSF sf,PetscSFPack link,Petsc
 {
   PetscErrorCode ierr;
   PetscSF_Basic  *bas = (PetscSF_Basic*)sf->data;
-  PetscInt       i,j,nrootranks,ndrootranks,nleafranks,ndleafranks,disp;
+  PetscInt       i,j,nrootranks,ndrootranks,nleafranks,ndleafranks;
   const PetscInt *rootoffset,*leafoffset;
   PetscMPIInt    n;
   MPI_Comm       comm = PetscObjectComm((PetscObject)sf);
@@ -24,13 +24,13 @@ static PetscErrorCode PetscSFPackGetReqs_Basic(PetscSF sf,PetscSFPack link,Petsc
     ierr = PetscSFGetRootInfo_Basic(sf,&nrootranks,&ndrootranks,NULL,&rootoffset,NULL);CHKERRQ(ierr);
     if (direction == PETSCSF_LEAF2ROOT_REDUCE) {
       for (i=ndrootranks,j=0; i<nrootranks; i++,j++) {
-        disp = (rootoffset[i] - rootoffset[ndrootranks])*link->unitbytes;
+        MPI_Aint disp = (rootoffset[i] - rootoffset[ndrootranks])*link->unitbytes;
         ierr = PetscMPIIntCast(rootoffset[i+1]-rootoffset[i],&n);CHKERRQ(ierr);
         ierr = MPI_Recv_init(link->rootbuf[rootmtype]+disp,n,unit,bas->iranks[i],link->tag,comm,&link->rootreqs[direction][rootmtype][j]);CHKERRQ(ierr);
       }
     } else if (direction == PETSCSF_ROOT2LEAF_BCAST) {
       for (i=ndrootranks,j=0; i<nrootranks; i++,j++) {
-        disp = (rootoffset[i] - rootoffset[ndrootranks])*link->unitbytes;
+        MPI_Aint disp = (rootoffset[i] - rootoffset[ndrootranks])*link->unitbytes;
         ierr = PetscMPIIntCast(rootoffset[i+1]-rootoffset[i],&n);CHKERRQ(ierr);
         ierr = MPI_Send_init(link->rootbuf[rootmtype]+disp,n,unit,bas->iranks[i],link->tag,comm,&link->rootreqs[direction][rootmtype][j]);CHKERRQ(ierr);
       }
@@ -42,13 +42,13 @@ static PetscErrorCode PetscSFPackGetReqs_Basic(PetscSF sf,PetscSFPack link,Petsc
     ierr = PetscSFGetLeafInfo_Basic(sf,&nleafranks,&ndleafranks,NULL,&leafoffset,NULL,NULL);CHKERRQ(ierr);
     if (direction == PETSCSF_LEAF2ROOT_REDUCE) {
       for (i=ndleafranks,j=0; i<nleafranks; i++,j++) {
-        disp = (leafoffset[i] - leafoffset[ndleafranks])*link->unitbytes;
+        MPI_Aint disp = (leafoffset[i] - leafoffset[ndleafranks])*link->unitbytes;
         ierr = PetscMPIIntCast(leafoffset[i+1]-leafoffset[i],&n);CHKERRQ(ierr);
         ierr = MPI_Send_init(link->leafbuf[leafmtype]+disp,n,unit,sf->ranks[i],link->tag,comm,&link->leafreqs[direction][leafmtype][j]);CHKERRQ(ierr);
       }
     } else if (direction == PETSCSF_ROOT2LEAF_BCAST) {
       for (i=ndleafranks,j=0; i<nleafranks; i++,j++) {
-        disp = (leafoffset[i] - leafoffset[ndleafranks])*link->unitbytes;
+        MPI_Aint disp = (leafoffset[i] - leafoffset[ndleafranks])*link->unitbytes;
         ierr = PetscMPIIntCast(leafoffset[i+1]-leafoffset[i],&n);CHKERRQ(ierr);
         ierr = MPI_Recv_init(link->leafbuf[leafmtype]+disp,n,unit,sf->ranks[i],link->tag,comm,&link->leafreqs[direction][leafmtype][j]);CHKERRQ(ierr);
       }
