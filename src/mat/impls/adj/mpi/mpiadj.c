@@ -907,10 +907,3 @@ PetscErrorCode  MatCreateMPIAdj(MPI_Comm comm,PetscInt m,PetscInt N,PetscInt *i,
   ierr = MatMPIAdjSetPreallocation(*A,i,j,values);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
-
-
-
-
-
