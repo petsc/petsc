@@ -431,7 +431,7 @@ static PetscErrorCode CreateConesIS_Private(DM dm, PetscInt cStart, PetscInt cEn
     ierr = PetscObjectReference((PetscObject) sfPoint);CHKERRQ(ierr);
   }
   /* Number all vertices */
-  ierr = DMPlexCreateNumbering_Internal(dm, vStart, vEnd+vExtra, 0, NULL, sfPoint, &globalVertexNumbers);CHKERRQ(ierr);
+  ierr = DMPlexCreateNumbering_Plex(dm, vStart, vEnd+vExtra, 0, NULL, sfPoint, &globalVertexNumbers);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sfPoint);CHKERRQ(ierr);
   /* Create cones */
   ierr = ISGetIndices(globalVertexNumbers, &gvertex);CHKERRQ(ierr);

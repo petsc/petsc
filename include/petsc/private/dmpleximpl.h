@@ -322,9 +322,11 @@ PETSC_INTERN PetscErrorCode DMPlexLocatePoint_Internal(DM,PetscInt,const PetscSc
 PETSC_EXTERN PetscErrorCode DMPlexOrientCell_Internal(DM,PetscInt,PetscInt,PetscBool);
 PETSC_EXTERN PetscErrorCode DMPlexOrientInterface_Internal(DM);
 
+/* Applications may use this function */
+PETSC_EXTERN PetscErrorCode DMPlexCreateNumbering_Plex(DM, PetscInt, PetscInt, PetscInt, PetscInt *, PetscSF, IS *);
+
 PETSC_INTERN PetscErrorCode DMPlexCreateCellNumbering_Internal(DM, PetscBool, IS *);
 PETSC_INTERN PetscErrorCode DMPlexCreateVertexNumbering_Internal(DM, PetscBool, IS *);
-PETSC_INTERN PetscErrorCode DMPlexCreateNumbering_Internal(DM, PetscInt, PetscInt, PetscInt, PetscInt *, PetscSF, IS *);
 PETSC_INTERN PetscErrorCode DMPlexRefine_Internal(DM, DMLabel, DM *);
 PETSC_INTERN PetscErrorCode DMPlexCoarsen_Internal(DM, DMLabel, DM *);
 PETSC_INTERN PetscErrorCode DMCreateMatrix_Plex(DM, Mat*);

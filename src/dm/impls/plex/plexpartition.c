@@ -72,7 +72,7 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_Native(DM dm, PetscInt height
   /* Always use FVM adjacency to create partitioner graph */
   ierr = DMGetBasicAdjacency(dm, &useCone, &useClosure);CHKERRQ(ierr);
   ierr = DMSetBasicAdjacency(dm, PETSC_TRUE, PETSC_FALSE);CHKERRQ(ierr);
-  ierr = DMPlexCreateNumbering_Internal(dm, pStart, pEnd, 0, NULL, sfPoint, &cellNumbering);CHKERRQ(ierr);
+  ierr = DMPlexCreateNumbering_Plex(dm, pStart, pEnd, 0, NULL, sfPoint, &cellNumbering);CHKERRQ(ierr);
   if (globalNumbering) {
     ierr = PetscObjectReference((PetscObject)cellNumbering);CHKERRQ(ierr);
     *globalNumbering = cellNumbering;
@@ -269,8 +269,8 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_ViaMat(DM dm, PetscInt height
   ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, height, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, height+1, &fStart, &fEnd);CHKERRQ(ierr);
-  ierr = DMPlexCreateNumbering_Internal(dm, cStart, cEnd, 0, &N, sfPoint, &cis);CHKERRQ(ierr);
-  ierr = DMPlexCreateNumbering_Internal(dm, fStart, fEnd, 0, &M, sfPoint, &fis);CHKERRQ(ierr);
+  ierr = DMPlexCreateNumbering_Plex(dm, cStart, cEnd, 0, &N, sfPoint, &cis);CHKERRQ(ierr);
+  ierr = DMPlexCreateNumbering_Plex(dm, fStart, fEnd, 0, &M, sfPoint, &fis);CHKERRQ(ierr);
   if (globalNumbering) {
     ierr = ISDuplicate(cis, globalNumbering);CHKERRQ(ierr);
   }
@@ -1005,7 +1005,7 @@ PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, DM dm, PetscSect
       PetscInt       p, pStart, pEnd;
 
       ierr = DMPlexGetHeightStratum(dm, part->height, &pStart, &pEnd);CHKERRQ(ierr);
-      ierr = DMPlexCreateNumbering_Internal(dm, pStart, pEnd, 0, NULL, dm->sf, &globalNumbering);CHKERRQ(ierr);
+      ierr = DMPlexCreateNumbering_Plex(dm, pStart, pEnd, 0, NULL, dm->sf, &globalNumbering);CHKERRQ(ierr);
       ierr = ISGetIndices(globalNumbering, &idxs);CHKERRQ(ierr);
       for (p = 0; p < pEnd - pStart; p++) numVertices += idxs[p] < 0 ? 0 : 1;
       ierr = ISRestoreIndices(globalNumbering, &idxs);CHKERRQ(ierr);
