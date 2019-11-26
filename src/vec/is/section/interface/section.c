@@ -93,6 +93,7 @@ PetscErrorCode PetscSectionCopy(PetscSection section, PetscSection newSection)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, PETSC_SECTION_CLASSID, 1);
   PetscValidHeaderSpecific(newSection, PETSC_SECTION_CLASSID, 2);
+  ierr = PetscSectionReset(newSection);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
   if (numFields) {ierr = PetscSectionSetNumFields(newSection, numFields);CHKERRQ(ierr);}
   for (f = 0; f < numFields; ++f) {
