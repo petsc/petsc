@@ -826,7 +826,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
           ierr = PCSetType(schurpc,PCLU);CHKERRQ(ierr);
         }
         ierr = ISGetSize(is_I,&n_internal);CHKERRQ(ierr);
-        if (n_internal) { /* UMFPACK gives error with 0 sized problems */
+        if (!n_internal) { /* UMFPACK gives error with 0 sized problems */
           MatSolverType solver = NULL;
           ierr = PCFactorGetMatSolverType(origpc,(MatSolverType*)&solver);CHKERRQ(ierr);
           if (solver) {
@@ -1868,7 +1868,7 @@ PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs sub_schurs, const char* prefi
 {
   IS              *faces,*edges,*all_cc,vertices;
   PetscInt        i,n_faces,n_edges,n_all_cc;
-  PetscBool       is_sorted,ispetsc;
+  PetscBool       is_sorted,ispardiso,ismumps;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -1934,8 +1934,9 @@ PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs sub_schurs, const char* prefi
   ierr = PetscOptionsBool("-sub_schurs_restrictcomm","Restrict communicator on active processes only",NULL,sub_schurs->restrict_comm,&sub_schurs->restrict_comm,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-sub_schurs_debug","Debug output",NULL,sub_schurs->debug,&sub_schurs->debug,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  ierr = PetscStrcmp(sub_schurs->mat_solver_type,MATSOLVERPETSC,&ispetsc);CHKERRQ(ierr);
-  sub_schurs->schur_explicit = (PetscBool)!ispetsc;
+  ierr = PetscStrcmp(sub_schurs->mat_solver_type,MATSOLVERMUMPS,&ismumps);CHKERRQ(ierr);
+  ierr = PetscStrcmp(sub_schurs->mat_solver_type,MATSOLVERMKL_PARDISO,&ispardiso);CHKERRQ(ierr);
+  sub_schurs->schur_explicit = (PetscBool)(ispardiso || ismumps);
 
   /* for reals, symmetric and hermitian are synonims */
 #if !defined(PETSC_USE_COMPLEX)

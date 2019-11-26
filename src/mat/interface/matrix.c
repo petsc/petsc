@@ -765,7 +765,7 @@ PetscErrorCode MatAppendOptionsPrefix(Mat A,const char prefix[])
 }
 
 /*@C
-   MatGetOptionsPrefix - Sets the prefix used for searching for all
+   MatGetOptionsPrefix - Gets the prefix used for searching for all
    Mat options in the database.
 
    Not Collective
@@ -4322,9 +4322,9 @@ PetscErrorCode MatSolverTypeRegister(MatSolverType package,MatType mtype,MatFact
 @*/
 PetscErrorCode MatSolverTypeGet(MatSolverType package,MatType mtype,MatFactorType ftype,PetscBool *foundpackage,PetscBool *foundmtype,PetscErrorCode (**getfactor)(Mat,MatFactorType,Mat*))
 {
-  PetscErrorCode                 ierr;
+  PetscErrorCode              ierr;
   MatSolverTypeHolder         next = MatSolverTypeHolders;
-  PetscBool                      flg;
+  PetscBool                   flg;
   MatSolverTypeForSpecifcType inext;
 
   PetscFunctionBegin;
@@ -4438,11 +4438,7 @@ PetscErrorCode MatGetFactor(Mat mat, MatSolverType type,MatFactorType ftype,Mat 
   }
 
   if (!foundmtype) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_MISSING_FACTOR,"MatSolverType %s does not support matrix type %s",type,((PetscObject)mat)->type_name);
-  if (!conv) SETERRQ3(PetscObjectComm((PetscObject)mat),PETSC_ERR_MISSING_FACTOR,"MatSolverType %s does not support factorization type %s for  matrix type %s",type,MatFactorTypes[ftype],((PetscObject)mat)->type_name);
-
-#if defined(PETSC_USE_COMPLEX)
-  if (mat->hermitian && !mat->symmetric && (ftype == MAT_FACTOR_CHOLESKY||ftype == MAT_FACTOR_ICC)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Hermitian CHOLESKY or ICC Factor is not supported");
-#endif
+  if (!conv) SETERRQ3(PetscObjectComm((PetscObject)mat),PETSC_ERR_MISSING_FACTOR,"MatSolverType %s does not support factorization type %s for matrix type %s",type,MatFactorTypes[ftype],((PetscObject)mat)->type_name);
 
   ierr = (*conv)(mat,ftype,f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -6706,17 +6702,9 @@ PetscErrorCode MatCreateSubMatrices(Mat mat,PetscInt n,const IS irow[],const IS 
   ierr = PetscLogEventEnd(MAT_CreateSubMats,mat,0,0,0);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     (*submat)[i]->factortype = MAT_FACTOR_NONE;  /* in case in place factorization was previously done on submatrix */
-    if (mat->symmetric || mat->structurally_symmetric || mat->hermitian) {
-      ierr = ISEqual(irow[i],icol[i],&eq);CHKERRQ(ierr);
-      if (eq) {
-        if (mat->symmetric) {
-          ierr = MatSetOption((*submat)[i],MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-        } else if (mat->hermitian) {
-          ierr = MatSetOption((*submat)[i],MAT_HERMITIAN,PETSC_TRUE);CHKERRQ(ierr);
-        } else if (mat->structurally_symmetric) {
-          ierr = MatSetOption((*submat)[i],MAT_STRUCTURALLY_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-        }
-      }
+    ierr = ISEqualUnsorted(irow[i],icol[i],&eq);CHKERRQ(ierr);
+    if (eq) {
+      ierr = MatPropagateSymmetryOptions(mat,(*submat)[i]);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -6770,17 +6758,9 @@ PetscErrorCode MatCreateSubMatricesMPI(Mat mat,PetscInt n,const IS irow[],const 
   ierr = (*mat->ops->createsubmatricesmpi)(mat,n,irow,icol,scall,submat);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_CreateSubMats,mat,0,0,0);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    if (mat->symmetric || mat->structurally_symmetric || mat->hermitian) {
-      ierr = ISEqual(irow[i],icol[i],&eq);CHKERRQ(ierr);
-      if (eq) {
-        if (mat->symmetric) {
-          ierr = MatSetOption((*submat)[i],MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-        } else if (mat->hermitian) {
-          ierr = MatSetOption((*submat)[i],MAT_HERMITIAN,PETSC_TRUE);CHKERRQ(ierr);
-        } else if (mat->structurally_symmetric) {
-          ierr = MatSetOption((*submat)[i],MAT_STRUCTURALLY_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-        }
-      }
+    ierr = ISEqualUnsorted(irow[i],icol[i],&eq);CHKERRQ(ierr);
+    if (eq) {
+      ierr = MatPropagateSymmetryOptions(mat,(*submat)[i]);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -7802,6 +7782,7 @@ PetscErrorCode MatCreateSubMatrix(Mat mat,IS isrow,IS iscol,MatReuse cll,Mat *ne
   PetscMPIInt    size;
   Mat            *local;
   IS             iscoltmp;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
@@ -7880,25 +7861,51 @@ PetscErrorCode MatCreateSubMatrix(Mat mat,IS isrow,IS iscol,MatReuse cll,Mat *ne
   ierr = (*mat->ops->createsubmatrix)(mat,isrow,iscoltmp,cll,newmat);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_CreateSubMat,mat,0,0,0);CHKERRQ(ierr);
 
-  /* Propagate symmetry information for diagonal blocks */
 setproperties:
-  if (isrow == iscoltmp) {
-    if (mat->symmetric_set && mat->symmetric) {
-      ierr = MatSetOption(*newmat,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-    }
-    if (mat->structurally_symmetric_set && mat->structurally_symmetric) {
-      ierr = MatSetOption(*newmat,MAT_STRUCTURALLY_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-    }
-    if (mat->hermitian_set && mat->hermitian) {
-      ierr = MatSetOption(*newmat,MAT_HERMITIAN,PETSC_TRUE);CHKERRQ(ierr);
-    }
-    if (mat->spd_set && mat->spd) {
-      ierr = MatSetOption(*newmat,MAT_SPD,PETSC_TRUE);CHKERRQ(ierr);
-    }
+  ierr = ISEqualUnsorted(isrow,iscoltmp,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = MatPropagateSymmetryOptions(mat,*newmat);CHKERRQ(ierr);
   }
-
   if (!iscol) {ierr = ISDestroy(&iscoltmp);CHKERRQ(ierr);}
   if (*newmat && cll == MAT_INITIAL_MATRIX) {ierr = PetscObjectStateIncrease((PetscObject)*newmat);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+/*@
+   MatPropagateSymmetryOptions - Propagates symmetry options set on a matrix to another matrix
+
+   Not Collective
+
+   Input Parameters:
++  A - the matrix we wish to propagate options from
+-  B - the matrix we wish to propagate options to
+
+   Level: beginner
+
+   Notes: Propagates the options associated to MAT_SYMMETRY_ETERNAL, MAT_STRUCTURALLY_SYMMETRIC, MAT_HERMITIAN, MAT_SPD and MAT_SYMMETRIC
+
+.seealso: MatSetOption()
+@*/
+PetscErrorCode MatPropagateSymmetryOptions(Mat A, Mat B)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(B,MAT_CLASSID,1);
+  ierr = MatSetOption(B,MAT_SYMMETRY_ETERNAL,A->symmetric_eternal);CHKERRQ(ierr);
+  if (A->structurally_symmetric_set) {
+    ierr = MatSetOption(B,MAT_STRUCTURALLY_SYMMETRIC,A->structurally_symmetric);CHKERRQ(ierr);
+  }
+  if (A->hermitian_set) {
+    ierr = MatSetOption(B,MAT_HERMITIAN,A->hermitian);CHKERRQ(ierr);
+  }
+  if (A->spd_set) {
+    ierr = MatSetOption(B,MAT_SPD,A->spd);CHKERRQ(ierr);
+  }
+  if (A->symmetric_set) {
+    ierr = MatSetOption(B,MAT_SYMMETRIC,A->symmetric);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -8469,12 +8476,7 @@ PetscErrorCode MatIsSymmetric(Mat A,PetscReal tol,PetscBool  *flg)
     }
     ierr = (*A->ops->issymmetric)(A,tol,flg);CHKERRQ(ierr);
     if (!tol) {
-      A->symmetric_set = PETSC_TRUE;
-      A->symmetric     = *flg;
-      if (A->symmetric) {
-        A->structurally_symmetric_set = PETSC_TRUE;
-        A->structurally_symmetric     = PETSC_TRUE;
-      }
+      ierr = MatSetOption(A,MAT_SYMMETRIC,*flg);CHKERRQ(ierr);
     }
   } else if (A->symmetric) {
     *flg = PETSC_TRUE;
@@ -8524,12 +8526,7 @@ PetscErrorCode MatIsHermitian(Mat A,PetscReal tol,PetscBool  *flg)
     }
     ierr = (*A->ops->ishermitian)(A,tol,flg);CHKERRQ(ierr);
     if (!tol) {
-      A->hermitian_set = PETSC_TRUE;
-      A->hermitian     = *flg;
-      if (A->hermitian) {
-        A->structurally_symmetric_set = PETSC_TRUE;
-        A->structurally_symmetric     = PETSC_TRUE;
-      }
+      ierr = MatSetOption(A,MAT_HERMITIAN,*flg);CHKERRQ(ierr);
     }
   } else if (A->hermitian) {
     *flg = PETSC_TRUE;
@@ -8638,11 +8635,9 @@ PetscErrorCode MatIsStructurallySymmetric(Mat A,PetscBool *flg)
   PetscValidBoolPointer(flg,2);
   if (!A->structurally_symmetric_set) {
     if (!A->ops->isstructurallysymmetric) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Matrix does not support checking for structural symmetric");
-    ierr = (*A->ops->isstructurallysymmetric)(A,&A->structurally_symmetric);CHKERRQ(ierr);
-
-    A->structurally_symmetric_set = PETSC_TRUE;
-  }
-  *flg = A->structurally_symmetric;
+    ierr = (*A->ops->isstructurallysymmetric)(A,flg);CHKERRQ(ierr);
+    ierr = MatSetOption(A,MAT_STRUCTURALLY_SYMMETRIC,*flg);CHKERRQ(ierr);
+  } else *flg = A->structurally_symmetric;
   PetscFunctionReturn(0);
 }
 

@@ -39,63 +39,6 @@
 
 
 #if defined(USESHORT)
-PetscErrorCode MatMult_SeqSBAIJ_1_Hermitian_ushort(Mat A,Vec xx,Vec zz)
-#else
-PetscErrorCode MatMult_SeqSBAIJ_1_Hermitian(Mat A,Vec xx,Vec zz)
-#endif
-{
-  Mat_SeqSBAIJ      *a = (Mat_SeqSBAIJ*)A->data;
-  const PetscScalar *x;
-  PetscScalar       *z,x1,sum;
-  const MatScalar   *v;
-  MatScalar         vj;
-  PetscErrorCode    ierr;
-  PetscInt          mbs=a->mbs,i,j,nz;
-  const PetscInt    *ai=a->i;
-#if defined(USESHORT)
-  const unsigned short *ib=a->jshort;
-  unsigned short       ibt;
-#else
-  const PetscInt *ib=a->j;
-  PetscInt       ibt;
-#endif
-  PetscInt nonzerorow = 0,jmin;
-
-  PetscFunctionBegin;
-  ierr = VecSet(zz,0.0);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
-
-  v = a->a;
-  for (i=0; i<mbs; i++) {
-    nz = ai[i+1] - ai[i];    /* length of i_th row of A */
-    if (!nz) continue; /* Move to the next row if the current row is empty */
-    nonzerorow++;
-    x1   = x[i];
-    sum  = 0.0;
-    jmin = 0;
-    if (ib[0] == i) {
-      sum = v[0]*x1;           /* diagonal term */
-      jmin++;
-    }
-    for (j=jmin; j<nz; j++) {
-      ibt     = ib[j];
-      vj      = v[j];
-      sum    += vj * x[ibt]; /* (strict upper triangular part of A)*x  */
-      z[ibt] += PetscConj(v[j]) * x1;    /* (strict lower triangular part of A)*x  */
-    }
-    z[i] += sum;
-    v    +=    nz;
-    ib   += nz;
-  }
-
-  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2.0*(2.0*a->nz - nonzerorow) - nonzerorow);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#if defined(USESHORT)
 PetscErrorCode MatMult_SeqSBAIJ_1_ushort(Mat A,Vec xx,Vec zz)
 #else
 PetscErrorCode MatMult_SeqSBAIJ_1(Mat A,Vec xx,Vec zz)
@@ -117,6 +60,11 @@ PetscErrorCode MatMult_SeqSBAIJ_1(Mat A,Vec xx,Vec zz)
   PetscInt       ibt;
 #endif
   PetscInt nonzerorow=0,jmin;
+#if defined(PETSC_USE_COMPLEX)
+  const int aconj = A->hermitian;
+#else
+  const int aconj = 0;
+#endif
 
   PetscFunctionBegin;
   ierr = VecSet(zz,0.0);CHKERRQ(ierr);
@@ -137,11 +85,20 @@ PetscErrorCode MatMult_SeqSBAIJ_1(Mat A,Vec xx,Vec zz)
     }
     PetscPrefetchBlock(ib+nz,nz,0,PETSC_PREFETCH_HINT_NTA); /* Indices for the next row (assumes same size as this one) */
     PetscPrefetchBlock(v+nz,nz,0,PETSC_PREFETCH_HINT_NTA);  /* Entries for the next row */
-    for (j=jmin; j<nz; j++) {
-      ibt     = ib[j];
-      vj      = v[j];
-      z[ibt] += vj * x1;       /* (strict lower triangular part of A)*x  */
-      sum    += vj * x[ibt];   /* (strict upper triangular part of A)*x  */
+    if (aconj) {
+      for (j=jmin; j<nz; j++) {
+        ibt     = ib[j];
+        vj      = v[j];
+        z[ibt] += PetscConj(vj) * x1; /* (strict lower triangular part of A)*x  */
+        sum    += vj * x[ibt];        /* (strict upper triangular part of A)*x  */
+      }
+    } else {
+      for (j=jmin; j<nz; j++) {
+        ibt     = ib[j];
+        vj      = v[j];
+        z[ibt] += vj * x1;       /* (strict lower triangular part of A)*x  */
+        sum    += vj * x[ibt];   /* (strict upper triangular part of A)*x  */
+      }
     }
     z[i] += sum;
     v    += nz;

@@ -3,19 +3,32 @@
 #include <petscdm.h>
 #include <petscblaslapack.h>
 
-static PetscErrorCode MatMult_KSP(Mat A,Vec X,Vec Y)
+typedef struct {
+  KSP ksp;
+  Vec work;
+} Mat_KSP;
+
+static PetscErrorCode MatCreateVecs_KSP(Mat A,Vec *X,Vec *Y)
 {
-  KSP            ksp;
-  DM             dm;
-  Vec            work;
+  Mat_KSP        *ctx;
+  Mat            M;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(A,&ksp);CHKERRQ(ierr);
-  ierr = KSPGetDM(ksp,&dm);CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(dm,&work);CHKERRQ(ierr);
-  ierr = KSP_PCApplyBAorAB(ksp,X,Y,work);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(dm,&work);CHKERRQ(ierr);
+  ierr = MatShellGetContext(A,&ctx);CHKERRQ(ierr);
+  ierr = KSPGetOperators(ctx->ksp,&M,NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(M,X,Y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatMult_KSP(Mat A,Vec X,Vec Y)
+{
+  Mat_KSP        *ctx;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatShellGetContext(A,&ctx);CHKERRQ(ierr);
+  ierr = KSP_PCApplyBAorAB(ctx->ksp,X,Y,ctx->work);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -47,6 +60,7 @@ PetscErrorCode  KSPComputeOperator(KSP ksp, MatType mattype, Mat *mat)
 {
   PetscErrorCode ierr;
   PetscInt       N,M,m,n;
+  Mat_KSP        ctx;
   Mat            A,Aksp;
 
   PetscFunctionBegin;
@@ -55,9 +69,13 @@ PetscErrorCode  KSPComputeOperator(KSP ksp, MatType mattype, Mat *mat)
   ierr = KSPGetOperators(ksp,&A,NULL);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
-  ierr = MatCreateShell(PetscObjectComm((PetscObject)ksp),m,n,M,N,ksp,&Aksp);CHKERRQ(ierr);
+  ierr = MatCreateShell(PetscObjectComm((PetscObject)ksp),m,n,M,N,&ctx,&Aksp);CHKERRQ(ierr);
   ierr = MatShellSetOperation(Aksp,MATOP_MULT,(void (*)(void))MatMult_KSP);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(Aksp,MATOP_CREATE_VECS,(void (*)(void))MatCreateVecs_KSP);CHKERRQ(ierr);
+  ctx.ksp = ksp;
+  ierr = MatCreateVecs(A,&ctx.work,NULL);CHKERRQ(ierr);
   ierr = MatComputeOperator(Aksp,mattype,mat);CHKERRQ(ierr);
+  ierr = VecDestroy(&ctx.work);CHKERRQ(ierr);
   ierr = MatDestroy(&Aksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

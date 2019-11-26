@@ -209,9 +209,15 @@ PetscErrorCode MatDestroy_SeqSBAIJ(Mat A)
 PetscErrorCode MatSetOption_SeqSBAIJ(Mat A,MatOption op,PetscBool flg)
 {
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data;
+#if defined(PETSC_USE_COMPLEX)
+  PetscInt       bs;
+#endif
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+#if defined(PETSC_USE_COMPLEX)
+  ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
+#endif
   switch (op) {
   case MAT_ROW_ORIENTED:
     a->roworiented = flg;
@@ -238,19 +244,25 @@ PetscErrorCode MatSetOption_SeqSBAIJ(Mat A,MatOption op,PetscBool flg)
     ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
     break;
   case MAT_HERMITIAN:
-#if defined(PETSC_USE_COMPLEX) /* MAT_HERMITIAN is a synonym for MAT_SYMMETRIC with reals */
-    if (!A->assembled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call MatAssemblyEnd() first");
-    if (A->cmap->n < 65536 && A->cmap->bs == 1) {
-      A->ops->mult = MatMult_SeqSBAIJ_1_Hermitian_ushort;
-    } else if (A->cmap->bs == 1) {
-      A->ops->mult = MatMult_SeqSBAIJ_1_Hermitian;
-    } else if (!A->symmetric) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for Hermitian with block size greater than 1");
+#if defined(PETSC_USE_COMPLEX)
+    if (flg) { /* disable transpose ops */
+      if (bs > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for Hermitian with block size greater than 1");
+      A->ops->multtranspose    = NULL;
+      A->ops->multtransposeadd = NULL;
+      A->symmetric             = PETSC_FALSE;
+    }
 #endif
     break;
-  case MAT_SPD:
-    /* These options are handled directly by MatSetOption() */
-    break;
   case MAT_SYMMETRIC:
+  case MAT_SPD:
+#if defined(PETSC_USE_COMPLEX)
+    if (flg) { /* An hermitian and symmetric matrix has zero imaginary part (restore back transpose ops) */
+      A->ops->multtranspose    = A->ops->mult;
+      A->ops->multtransposeadd = A->ops->multadd;
+    }
+#endif
+    break;
+    /* These options are handled directly by MatSetOption() */
   case MAT_STRUCTURALLY_SYMMETRIC:
   case MAT_SYMMETRY_ETERNAL:
   case MAT_STRUCTURE_ONLY:
@@ -1815,8 +1827,9 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqsbaij_petsc(Mat A,MatFactorType ftyp
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
-  if (A->hermitian) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Hermitian Factor is not supported");
+  if (A->hermitian && !A->symmetric && (ftype == MAT_FACTOR_CHOLESKY||ftype == MAT_FACTOR_ICC)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Hermitian CHOLESKY or ICC Factor is not supported");
 #endif
+
   ierr = MatCreate(PetscObjectComm((PetscObject)A),B);CHKERRQ(ierr);
   ierr = MatSetSizes(*B,n,n,n,n);CHKERRQ(ierr);
   if (ftype == MAT_FACTOR_CHOLESKY || ftype == MAT_FACTOR_ICC) {
@@ -1884,7 +1897,7 @@ PetscErrorCode  MatSeqSBAIJRestoreArray(Mat A,PetscScalar **array)
   based on block compressed sparse row format.  Only the upper triangular portion of the matrix is stored.
 
   For complex numbers by default this matrix is symmetric, NOT Hermitian symmetric. To make it Hermitian symmetric you
-  can call MatSetOption(Mat, MAT_HERMITIAN); after MatAssemblyEnd()
+  can call MatSetOption(Mat, MAT_HERMITIAN).
 
   Options Database Keys:
   . -mat_type seqsbaij - sets the matrix type to "seqsbaij" during a call to MatSetFromOptions()
@@ -1965,9 +1978,13 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqSBAIJ(Mat B)
   B->symmetric_set              = PETSC_TRUE;
   B->structurally_symmetric_set = PETSC_TRUE;
   B->symmetric_eternal          = PETSC_TRUE;
-
+#if defined(PETSC_USE_COMPLEX)
   B->hermitian                  = PETSC_FALSE;
   B->hermitian_set              = PETSC_FALSE;
+#else
+  B->hermitian                  = PETSC_TRUE;
+  B->hermitian_set              = PETSC_TRUE;
+#endif
 
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQSBAIJ);CHKERRQ(ierr);
 
