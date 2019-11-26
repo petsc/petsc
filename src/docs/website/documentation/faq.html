@@ -135,6 +135,8 @@ See https://www.mcs.anl.gov/petsc/documentation/faq.html
         <li><a href="#infeasible">TS or SNES produces infeasible (out of domain) solutions or states, how can I prevent this?</a></li>
         <li><a href="#hermitian">Can PETSc work with Hermitian matrices?</a></li>
       </ul>
+        <li><a href="#resize">Can one resize or change the size of PETSc matrices or vectors?</a></li>
+      </ul>
 
       <h4><a href="#Execution">Execution</a></h4>
 
@@ -1295,6 +1297,10 @@ PETSC_COMM_WORLD = NewComm;
         </li>
     </ol>
 
+
+     <h3><a name="resize">Can one resize or change the size of PETSc matrices or vectors?</a></h3>
+
+      No, once the vector or matrices sizes have been set and the matrices or vectors are fully usuable one cannot change the size of the matrices or vectors or number of processors they live on. One may create new vectors and copy, for example using VecScatterCreate(), the old values from the previous vector.
 
       <hr>
 
