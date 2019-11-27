@@ -460,7 +460,7 @@ PETSC_INTERN PetscErrorCode PetscSFCreateEmbeddedSF_Basic(PetscSF sf,PetscInt ns
     buffer    = i < ndranks? (PetscInt*)link->selfbuf[PETSC_MEMTYPE_HOST] : (PetscInt*)link->leafbuf[PETSC_MEMTYPE_HOST] + (roffset[i] - roffset[ndranks]);
     connected = PETSC_FALSE;
     for (j=roffset[i],k=0; j<roffset[i+1]; j++,k++) {
-        if (buffer[k]) {
+      if (buffer[k]) {
         esf_rmine[q]         = new_ilocal[q] = rmine[j];
         esf_rremote[q]       = rremote[j];
         new_iremote[q].index = rremote[j];
