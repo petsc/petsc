@@ -218,7 +218,7 @@ PetscErrorCode  PCMGGetInterpolation(PC pc,PetscInt l,Mat *mat)
          If you do not set this, the transpose of the Mat set with PCMGSetInterpolation()
     is used.
 
-.seealso: PCMGSetInterpolation(), PCMGetSetInjection()
+.seealso: PCMGSetInterpolation()
 @*/
 PetscErrorCode  PCMGSetRestriction(PC pc,PetscInt l,Mat mat)
 {
