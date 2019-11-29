@@ -25,7 +25,7 @@ static PetscErrorCode VecScatterBegin_SF(VecScatter vscat,Vec x,Vec y,InsertMode
   PetscFunctionBegin;
   if (x != y) {ierr = VecLockReadPush(x);CHKERRQ(ierr);}
 
-  if (use_gpu_aware_mpi) {
+  if (use_gpu_aware_mpi || vscat->packongpu) {
     ierr = VecGetArrayReadInPlace(x,&vscat->xdata);CHKERRQ(ierr);
   } else {
 #if defined(PETSC_HAVE_CUDA)
@@ -44,7 +44,7 @@ static PetscErrorCode VecScatterBegin_SF(VecScatter vscat,Vec x,Vec y,InsertMode
   }
 
   if (x != y) {
-    if (use_gpu_aware_mpi) {ierr = VecGetArrayInPlace(y,&vscat->ydata);CHKERRQ(ierr);}
+    if (use_gpu_aware_mpi || vscat->packongpu) {ierr = VecGetArrayInPlace(y,&vscat->ydata);CHKERRQ(ierr);}
     else {ierr = VecGetArray(y,&vscat->ydata);CHKERRQ(ierr);}
   } else vscat->ydata = (PetscScalar *)vscat->xdata;
   ierr = VecLockWriteSet_Private(y,PETSC_TRUE);CHKERRQ(ierr);
@@ -98,12 +98,12 @@ static PetscErrorCode VecScatterEnd_SF(VecScatter vscat,Vec x,Vec y,InsertMode a
   }
 
   if (x != y) {
-    if (use_gpu_aware_mpi) {ierr = VecRestoreArrayReadInPlace(x,&vscat->xdata);CHKERRQ(ierr);}
+    if (use_gpu_aware_mpi || vscat->packongpu) {ierr = VecRestoreArrayReadInPlace(x,&vscat->xdata);CHKERRQ(ierr);}
     else {ierr = VecRestoreArrayRead(x,&vscat->xdata);CHKERRQ(ierr);}
     ierr = VecLockReadPop(x);CHKERRQ(ierr);
   }
 
-  if (use_gpu_aware_mpi) {ierr = VecRestoreArrayInPlace(y,&vscat->ydata);CHKERRQ(ierr);}
+  if (use_gpu_aware_mpi || vscat->packongpu) {ierr = VecRestoreArrayInPlace(y,&vscat->ydata);CHKERRQ(ierr);}
   else {ierr = VecRestoreArray(y,&vscat->ydata);CHKERRQ(ierr);}
   ierr = VecLockWriteSet_Private(y,PETSC_FALSE);CHKERRQ(ierr);
 

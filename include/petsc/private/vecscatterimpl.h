@@ -312,6 +312,7 @@ struct _p_VecScatter {
   PetscInt          to_n,from_n;
   PetscBool         inuse;                /* prevents corruption from mixing two scatters */
   PetscBool         beginandendtogether;  /* indicates that the scatter begin and end  function are called together, VecScatterEnd() is then treated as a nop */
+  PetscBool         packongpu;            /* For GPU vectors, pack needed entries on GPU, then copy packed data to CPU, then do MPI. Otherwise, we might copy a segment encompassing needed entries */
   void              *fromdata,*todata;
   void              *spptr;
   PetscBool         is_duplicate;         /* IS has duplicate indices, would cause writing error in the case StoP of VecScatterEndMPI3Node */

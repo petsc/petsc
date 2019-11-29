@@ -105,7 +105,7 @@ int main(int argc,char **argv)
       test:
         suffix: 5_gpu_aware_mpi
         args: -use_gpu_aware_mpi
-        requires: define(PETSC_HAVE_GPU_AWARE_MPI)
+        requires: define(PETSC_HAVE_MPI_GPU_AWARE)
         output_file: output/ex43_5.out
 
    test:
@@ -123,7 +123,7 @@ int main(int argc,char **argv)
       test:
         suffix: 7_gpu_aware_mpi
         args: -use_gpu_aware_mpi
-        requires: define(PETSC_HAVE_GPU_AWARE_MPI)
+        requires: define(PETSC_HAVE_MPI_GPU_AWARE)
         output_file: output/ex43_7.out
 
    test:
