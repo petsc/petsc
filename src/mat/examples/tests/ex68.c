@@ -5,11 +5,12 @@ static char help[] = "Tests MatReorderForNonzeroDiagonal().\n\n";
 
 int main(int argc,char **argv)
 {
-  Mat            mat,B;
+  Mat            mat,B,C;
   PetscErrorCode ierr;
   PetscInt       i,j;
+  PetscMPIInt    size;
   PetscScalar    v;
-  IS             isrow,iscol;
+  IS             isrow,iscol,identity;
   PetscViewer    viewer;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
@@ -100,14 +101,22 @@ int main(int argc,char **argv)
   ierr = MatPermute(mat,isrow,iscol,&B);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"Original matrix permuted by RCM + NonzeroDiagonal()\n");CHKERRQ(ierr);
   ierr = MatView(B,viewer);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"RCM + NonzeroDiagonal() row permutation\n");CHKERRQ(ierr);
   ierr = ISView(isrow,viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"RCM + NonzeroDiagonal() column permutation\n");CHKERRQ(ierr);
   ierr = ISView(iscol,viewer);CHKERRQ(ierr);
-
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  if (size == 1) {
+    ierr = MatSetOption(B,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = ISCreateStride(PETSC_COMM_SELF,4,0,1,&identity);CHKERRQ(ierr);
+    ierr = MatPermute(B,identity,identity,&C);CHKERRQ(ierr);
+    ierr = MatConvert(C,MATSEQSBAIJ,MAT_INPLACE_MATRIX,&C);CHKERRQ(ierr);
+    ierr = MatDestroy(&C);CHKERRQ(ierr);
+    ierr = ISDestroy(&identity);CHKERRQ(ierr);
+  }
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
   /* Test MatLUFactor(); set diagonal as zeros as requested by PETSc matrix factorization */
-  for (i=0; i<4; i++) { 
+  for (i=0; i<4; i++) {
     v = 0.0;
     ierr = MatSetValues(mat,1,&i,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
   }
