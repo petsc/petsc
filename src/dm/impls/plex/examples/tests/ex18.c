@@ -1,4 +1,4 @@
-static char help[] = "Tests for parallel mesh loading\n\n";
+static char help[] = "Tests for parallel mesh loading and parallel topological interpolation\n\n";
 
 #include <petsc/private/dmpleximpl.h>
 /* List of test meshes
@@ -1544,11 +1544,6 @@ int main(int argc, char **argv)
   if (user.ncoords) {
     ierr = ViewVerticesFromCoords(dm, user.ncoords/user.dim, user.coords, user.coordsTol, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
-  if (user.interpolate != NONE) {
-    ierr = DMPlexCheckPointSF(dm);CHKERRQ(ierr);
-    ierr = DMPlexCheckFaces(dm, 0);CHKERRQ(ierr);
-  }
-  ierr = DMPlexCheckConesConformOnInterfaces(dm);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
@@ -1558,7 +1553,8 @@ int main(int argc, char **argv)
 
   testset:
     nsize: 2
-    args: -dm_view ascii::ascii_info_detail -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
+    args: -dm_view ascii::ascii_info_detail
+    args: -dm_plex_check_all
     test:
       suffix: 1_tri_dist0
       args: -distribute 0 -interpolate {{none serial}separate output}
@@ -1577,7 +1573,8 @@ int main(int argc, char **argv)
 
   testset:
     nsize: 3
-    args: -testnum 1 -interpolate serial -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
+    args: -testnum 1 -interpolate serial
+    args: -dm_plex_check_all
     test:
       suffix: 2
       args: -dm_view ascii::ascii_info_detail 
@@ -1595,6 +1592,7 @@ int main(int argc, char **argv)
     # the same as 1% for 3D
     nsize: 2
     args: -dim 3 -dm_view ascii::ascii_info_detail
+    args: -dm_plex_check_all
     test:
       suffix: 4_tet_dist0
       args: -distribute 0 -interpolate {{none serial}separate output}
@@ -1612,14 +1610,16 @@ int main(int argc, char **argv)
     # the same as 4_tet_dist0 but test different initial orientations
     suffix: 4_tet_test_orient
     nsize: 2
-    args: -dim 3 -distribute 0 -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
+    args: -dim 3 -distribute 0
+    args: -dm_plex_check_all
     args: -rotate_interface_0 {{0 1 2 11 12 13}}
     args: -rotate_interface_1 {{0 1 2 11 12 13}}
 
   testset:
     requires: exodusii
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/TwoQuads.exo
-    args: -dm_view ascii::ascii_info_detail -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
+    args: -dm_view ascii::ascii_info_detail
+    args: -dm_plex_check_all
     args: -custom_view
     test:
       suffix: 5_seq
@@ -1636,62 +1636,65 @@ int main(int argc, char **argv)
 
   testset:
     nsize: {{1 2 4}}
-    args: -use_generator -dm_plex_check_symmetry -dm_plex_check_geometry
+    args: -use_generator
+    args: -dm_plex_check_all
     args: -distribute -interpolate none
     test:
       suffix: 6_tri
       requires: triangle
-      args: -faces {{2,2  1,3  7,4}} -cell_simplex 1 -dm_plex_generator triangle -dm_plex_check_skeleton
+      args: -faces {{2,2  1,3  7,4}} -cell_simplex 1 -dm_plex_generator triangle
     test:
       suffix: 6_quad
-      args: -faces {{2,2  1,3  7,4}} -cell_simplex 0 -dm_plex_check_skeleton
+      args: -faces {{2,2  1,3  7,4}} -cell_simplex 0
     test:
       suffix: 6_tet
       requires: ctetgen
-      args: -faces {{2,2,2  1,3,5  3,4,7}} -cell_simplex 1 -dm_plex_generator ctetgen -dm_plex_check_skeleton
+      args: -faces {{2,2,2  1,3,5  3,4,7}} -cell_simplex 1 -dm_plex_generator ctetgen
     test:
       suffix: 6_hex
-      args: -faces {{2,2,2  1,3,5  3,4,7}} -cell_simplex 0 -dm_plex_check_skeleton
+      args: -faces {{2,2,2  1,3,5  3,4,7}} -cell_simplex 0
   testset:
     nsize: {{1 2 4}}
-    args: -use_generator -dm_plex_check_symmetry -dm_plex_check_geometry
+    args: -use_generator
+    args: -dm_plex_check_all
     args: -distribute -interpolate serial
     test:
       suffix: 6_int_tri
       requires: triangle
-      args: -faces {{2,2  1,3  7,4}} -cell_simplex 1 -dm_plex_generator triangle -dm_plex_check_skeleton
+      args: -faces {{2,2  1,3  7,4}} -cell_simplex 1 -dm_plex_generator triangle
     test:
       suffix: 6_int_quad
-      args: -faces {{2,2  1,3  7,4}} -cell_simplex 0 -dm_plex_check_skeleton
+      args: -faces {{2,2  1,3  7,4}} -cell_simplex 0
     test:
       suffix: 6_int_tet
       requires: ctetgen
-      args: -faces {{2,2,2  1,3,5  3,4,7}} -cell_simplex 1 -dm_plex_generator ctetgen -dm_plex_check_skeleton
+      args: -faces {{2,2,2  1,3,5  3,4,7}} -cell_simplex 1 -dm_plex_generator ctetgen
     test:
       suffix: 6_int_hex
-      args: -faces {{2,2,2  1,3,5  3,4,7}} -cell_simplex 0 -dm_plex_check_skeleton
+      args: -faces {{2,2,2  1,3,5  3,4,7}} -cell_simplex 0
   testset:
     nsize: {{2 4}}
-    args: -use_generator -dm_plex_check_symmetry -dm_plex_check_geometry
+    args: -use_generator
+    args: -dm_plex_check_all
     args: -distribute -interpolate parallel
     test:
       suffix: 6_parint_tri
       requires: triangle
-      args: -faces {{2,2  1,3  7,4}} -cell_simplex 1 -dm_plex_generator triangle -dm_plex_check_skeleton
+      args: -faces {{2,2  1,3  7,4}} -cell_simplex 1 -dm_plex_generator triangle
     test:
       suffix: 6_parint_quad
-      args: -faces {{2,2  1,3  7,4}} -cell_simplex 0 -dm_plex_check_skeleton
+      args: -faces {{2,2  1,3  7,4}} -cell_simplex 0
     test:
       suffix: 6_parint_tet
       requires: ctetgen
-      args: -faces {{2,2,2  1,3,5  3,4,7}} -cell_simplex 1 -dm_plex_generator ctetgen -dm_plex_check_skeleton
+      args: -faces {{2,2,2  1,3,5  3,4,7}} -cell_simplex 1 -dm_plex_generator ctetgen
     test:
       suffix: 6_parint_hex
-      args: -faces {{2,2,2  1,3,5  3,4,7}} -cell_simplex 0 -dm_plex_check_skeleton
+      args: -faces {{2,2,2  1,3,5  3,4,7}} -cell_simplex 0
 
   testset: # 7 EXODUS
     requires: exodusii
-    args: -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
+    args: -dm_plex_check_all
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo
     args: -distribute
     test: # seq load, simple partitioner
@@ -1721,7 +1724,7 @@ int main(int argc, char **argv)
 
   testset: # 7 HDF5 SEQUANTIAL LOAD
     requires: hdf5 !complex
-    args: -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
+    args: -dm_plex_check_all
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5 -dm_plex_create_from_hdf5_xdmf
     args: -dm_plex_hdf5_force_sequential
     args: -distribute
@@ -1753,7 +1756,7 @@ int main(int argc, char **argv)
   testset: # 7 HDF5 PARALLEL LOAD
     requires: hdf5 !complex
     nsize: {{2 4 5}}
-    args: -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
+    args: -dm_plex_check_all
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5 -dm_plex_create_from_hdf5_xdmf
     test: # par load
       suffix: 7_par_hdf5
@@ -1796,11 +1799,12 @@ int main(int argc, char **argv)
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5 -dm_plex_create_from_hdf5_xdmf
     args: -distribute 0 -interpolate serial
     args: -view_vertices_from_coords 0.,1.,0.,-0.5,1.,0.,0.583,-0.644,0.,-2.,-2.,-2. -view_vertices_from_coords_tol 1e-3
+    args: -dm_plex_check_all
     args: -custom_view
 
   testset: # 9 HDF5 SEQUANTIAL LOAD
     requires: hdf5 !complex datafilespath
-    args: -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
+    args: -dm_plex_check_all
     args: -filename ${DATAFILESPATH}/meshes/cube-hexahedra-refined.h5 -dm_plex_create_from_hdf5_xdmf -dm_plex_hdf5_topology_path /cells -dm_plex_hdf5_geometry_path /coordinates
     args: -dm_plex_hdf5_force_sequential
     args: -distribute
@@ -1841,7 +1845,7 @@ int main(int argc, char **argv)
   testset: # 9 HDF5 PARALLEL LOAD
     requires: hdf5 !complex datafilespath
     nsize: {{2 4 5}}
-    args: -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
+    args: -dm_plex_check_all
     args: -filename ${DATAFILESPATH}/meshes/cube-hexahedra-refined.h5 -dm_plex_create_from_hdf5_xdmf -dm_plex_hdf5_topology_path /cells -dm_plex_hdf5_geometry_path /coordinates
     test: # par load
       suffix: 9_par_hdf5

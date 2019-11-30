@@ -2263,16 +2263,21 @@ PetscErrorCode DMSetFromOptions_NonRefinement_Plex(PetscOptionItems *PetscOption
   ierr = PetscOptionsBool("-dm_plex_regular_refinement", "Use special nested projection algorithm for regular refinement", "DMPlexSetRegularRefinement", mesh->regularRefinement, &mesh->regularRefinement, NULL);CHKERRQ(ierr);
   /* Checking structure */
   {
-    PetscBool   flg = PETSC_FALSE, flg2 = PETSC_FALSE;
+    PetscBool   flg = PETSC_FALSE, flg2 = PETSC_FALSE, all = PETSC_FALSE;
 
+    ierr = PetscOptionsBool("-dm_plex_check_all", "Perform all checks", NULL, PETSC_FALSE, &all, &flg2);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-dm_plex_check_symmetry", "Check that the adjacency information in the mesh is symmetric", "DMPlexCheckSymmetry", PETSC_FALSE, &flg, &flg2);CHKERRQ(ierr);
-    if (flg && flg2) {ierr = DMPlexCheckSymmetry(dm);CHKERRQ(ierr);}
+    if (all || (flg && flg2)) {ierr = DMPlexCheckSymmetry(dm);CHKERRQ(ierr);}
     ierr = PetscOptionsBool("-dm_plex_check_skeleton", "Check that each cell has the correct number of vertices (only for homogeneous simplex or tensor meshes)", "DMPlexCheckSkeleton", PETSC_FALSE, &flg, &flg2);CHKERRQ(ierr);
-    if (flg && flg2) {ierr = DMPlexCheckSkeleton(dm, 0);CHKERRQ(ierr);}
+    if (all || (flg && flg2)) {ierr = DMPlexCheckSkeleton(dm, 0);CHKERRQ(ierr);}
     ierr = PetscOptionsBool("-dm_plex_check_faces", "Check that the faces of each cell give a vertex order this is consistent with what we expect from the cell type", "DMPlexCheckFaces", PETSC_FALSE, &flg, &flg2);CHKERRQ(ierr);
-    if (flg && flg2) {ierr = DMPlexCheckFaces(dm, 0);CHKERRQ(ierr);}
+    if (all || (flg && flg2)) {ierr = DMPlexCheckFaces(dm, 0);CHKERRQ(ierr);}
     ierr = PetscOptionsBool("-dm_plex_check_geometry", "Check that cells have positive volume", "DMPlexCheckGeometry", PETSC_FALSE, &flg, &flg2);CHKERRQ(ierr);
-    if (flg && flg2) {ierr = DMPlexCheckGeometry(dm);CHKERRQ(ierr);}
+    if (all || (flg && flg2)) {ierr = DMPlexCheckGeometry(dm);CHKERRQ(ierr);}
+    ierr = PetscOptionsBool("-dm_plex_check_pointsf", "Check some necessary conditions for PointSF", "DMPlexCheckPointSF", PETSC_FALSE, &flg, &flg2);CHKERRQ(ierr);
+    if (all || (flg && flg2)) {ierr = DMPlexCheckPointSF(dm);CHKERRQ(ierr);}
+    ierr = PetscOptionsBool("-dm_plex_check_interface_cones", "Check points on inter-partition interfaces have conforming order of cone points", "DMPlexCheckInterfaceCones", PETSC_FALSE, &flg, &flg2);CHKERRQ(ierr);
+    if (all || (flg && flg2)) {ierr = DMPlexCheckInterfaceCones(dm);CHKERRQ(ierr);}
   }
 
   ierr = PetscPartitionerSetFromOptions(mesh->partitioner);CHKERRQ(ierr);
