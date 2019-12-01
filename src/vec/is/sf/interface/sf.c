@@ -117,7 +117,7 @@ PetscErrorCode PetscSFReset(PetscSF sf)
 
    Options Database Key:
 .  -sf_type <type> - Sets the method; use -help for a list
-   of available methods (for instance, window, pt2pt, neighbor)
+   of available methods (for instance, window, basic, neighbor)
 
    Notes:
    See "include/petscsf.h" for available methods (for instance)
@@ -949,7 +949,7 @@ PetscErrorCode PetscSFSetUpRanks(PetscSF sf,MPI_Group dgroup)
       if (!InList(ranks[sf->ndranks],groupsize,groupranks)) break;
     }
     if (sf->ndranks < i) {                         /* Swap ranks[sf->ndranks] with ranks[i] */
-      PetscInt    tmprank,tmpcount;
+      PetscInt tmprank,tmpcount;
 
       tmprank             = ranks[i];
       tmpcount            = rcount[i];
