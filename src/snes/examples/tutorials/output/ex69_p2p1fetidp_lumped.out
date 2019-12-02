@@ -233,7 +233,7 @@ SNES Object: 5 MPI processes
                         type: cholesky
                           out-of-place factorization
                           tolerance for zero pivot 2.22045e-14
-                          matrix ordering: natural
+                          matrix ordering: nd
                           factor fill ratio given 5., needed 1.
                             Factored matrix follows:
                               Mat Object:         1 MPI processes

@@ -136,13 +136,13 @@ SNES Object: 5 MPI processes
                                       RINFOG(3) (global estimated flops for the elimination after factorization): 241360. 
                                       (RINFOG(12) RINFOG(13))*2^INFOG(34) (determinant): (0.,0.)*(2^0)
                                       INFOG(3) (estimated real workspace for factors on all processors after analysis): 10386 
-                                      INFOG(4) (estimated integer workspace for factors on all processors after analysis): 2471 
+                                      INFOG(4) (estimated integer workspace for factors on all processors after analysis): 2553 
                                       INFOG(5) (estimated maximum front size in the complete tree): 36 
                                       INFOG(6) (number of nodes in the complete tree): 41 
                                       INFOG(7) (ordering option effectively use after analysis): 2 
                                       INFOG(8) (structural symmetry in percent of the permuted matrix after analysis): 100 
                                       INFOG(9) (total real/complex workspace to store the matrix factors after factorization): 10386 
-                                      INFOG(10) (total integer space store the matrix factors after factorization): 2471 
+                                      INFOG(10) (total integer space store the matrix factors after factorization): 2553 
                                       INFOG(11) (order of largest frontal matrix after factorization): 36 
                                       INFOG(12) (number of off-diagonal pivots): 1 
                                       INFOG(13) (number of delayed pivots after factorization): 0 
@@ -153,8 +153,8 @@ SNES Object: 5 MPI processes
                                       INFOG(18) (size of all MUMPS internal data allocated during factorization: value on the most memory consuming processor): 1 
                                       INFOG(19) (size of all MUMPS internal data allocated during factorization: sum over all processors): 1 
                                       INFOG(20) (estimated number of entries in the factors): 10386 
-                                      INFOG(21) (size in MB of memory effectively used during factorization - value on the most memory consuming processor): 1 
-                                      INFOG(22) (size in MB of memory effectively used during factorization - sum over all processors): 1 
+                                      INFOG(21) (size in MB of memory effectively used during factorization - value on the most memory consuming processor): 0 
+                                      INFOG(22) (size in MB of memory effectively used during factorization - sum over all processors): 0 
                                       INFOG(23) (after analysis: value of ICNTL(6) effectively used): 0 
                                       INFOG(24) (after analysis: value of ICNTL(12) effectively used): 1 
                                       INFOG(25) (after factorization: number of pivots modified by static pivoting): 0 
@@ -316,13 +316,13 @@ SNES Object: 5 MPI processes
                                               RINFOG(3) (global estimated flops for the elimination after factorization): 241360. 
                                               (RINFOG(12) RINFOG(13))*2^INFOG(34) (determinant): (0.,0.)*(2^0)
                                               INFOG(3) (estimated real workspace for factors on all processors after analysis): 10386 
-                                              INFOG(4) (estimated integer workspace for factors on all processors after analysis): 2471 
+                                              INFOG(4) (estimated integer workspace for factors on all processors after analysis): 2553 
                                               INFOG(5) (estimated maximum front size in the complete tree): 36 
                                               INFOG(6) (number of nodes in the complete tree): 41 
                                               INFOG(7) (ordering option effectively use after analysis): 2 
                                               INFOG(8) (structural symmetry in percent of the permuted matrix after analysis): 100 
                                               INFOG(9) (total real/complex workspace to store the matrix factors after factorization): 10386 
-                                              INFOG(10) (total integer space store the matrix factors after factorization): 2471 
+                                              INFOG(10) (total integer space store the matrix factors after factorization): 2553 
                                               INFOG(11) (order of largest frontal matrix after factorization): 36 
                                               INFOG(12) (number of off-diagonal pivots): 1 
                                               INFOG(13) (number of delayed pivots after factorization): 0 
@@ -333,8 +333,8 @@ SNES Object: 5 MPI processes
                                               INFOG(18) (size of all MUMPS internal data allocated during factorization: value on the most memory consuming processor): 1 
                                               INFOG(19) (size of all MUMPS internal data allocated during factorization: sum over all processors): 1 
                                               INFOG(20) (estimated number of entries in the factors): 10386 
-                                              INFOG(21) (size in MB of memory effectively used during factorization - value on the most memory consuming processor): 1 
-                                              INFOG(22) (size in MB of memory effectively used during factorization - sum over all processors): 1 
+                                              INFOG(21) (size in MB of memory effectively used during factorization - value on the most memory consuming processor): 0 
+                                              INFOG(22) (size in MB of memory effectively used during factorization - sum over all processors): 0 
                                               INFOG(23) (after analysis: value of ICNTL(6) effectively used): 0 
                                               INFOG(24) (after analysis: value of ICNTL(12) effectively used): 1 
                                               INFOG(25) (after factorization: number of pivots modified by static pivoting): 0 
@@ -509,13 +509,13 @@ SNES Object: 5 MPI processes
                         RINFOG(3) (global estimated flops for the elimination after factorization): 241360. 
                         (RINFOG(12) RINFOG(13))*2^INFOG(34) (determinant): (0.,0.)*(2^0)
                         INFOG(3) (estimated real workspace for factors on all processors after analysis): 10386 
-                        INFOG(4) (estimated integer workspace for factors on all processors after analysis): 2471 
+                        INFOG(4) (estimated integer workspace for factors on all processors after analysis): 2553 
                         INFOG(5) (estimated maximum front size in the complete tree): 36 
                         INFOG(6) (number of nodes in the complete tree): 41 
                         INFOG(7) (ordering option effectively use after analysis): 2 
                         INFOG(8) (structural symmetry in percent of the permuted matrix after analysis): 100 
                         INFOG(9) (total real/complex workspace to store the matrix factors after factorization): 10386 
-                        INFOG(10) (total integer space store the matrix factors after factorization): 2471 
+                        INFOG(10) (total integer space store the matrix factors after factorization): 2553 
                         INFOG(11) (order of largest frontal matrix after factorization): 36 
                         INFOG(12) (number of off-diagonal pivots): 1 
                         INFOG(13) (number of delayed pivots after factorization): 0 
@@ -526,8 +526,8 @@ SNES Object: 5 MPI processes
                         INFOG(18) (size of all MUMPS internal data allocated during factorization: value on the most memory consuming processor): 1 
                         INFOG(19) (size of all MUMPS internal data allocated during factorization: sum over all processors): 1 
                         INFOG(20) (estimated number of entries in the factors): 10386 
-                        INFOG(21) (size in MB of memory effectively used during factorization - value on the most memory consuming processor): 1 
-                        INFOG(22) (size in MB of memory effectively used during factorization - sum over all processors): 1 
+                        INFOG(21) (size in MB of memory effectively used during factorization - value on the most memory consuming processor): 0 
+                        INFOG(22) (size in MB of memory effectively used during factorization - sum over all processors): 0 
                         INFOG(23) (after analysis: value of ICNTL(6) effectively used): 0 
                         INFOG(24) (after analysis: value of ICNTL(12) effectively used): 1 
                         INFOG(25) (after factorization: number of pivots modified by static pivoting): 0 
@@ -626,13 +626,13 @@ SNES Object: 5 MPI processes
                         RINFOG(3) (global estimated flops for the elimination after factorization): 395969. 
                         (RINFOG(12) RINFOG(13))*2^INFOG(34) (determinant): (0.,0.)*(2^0)
                         INFOG(3) (estimated real workspace for factors on all processors after analysis): 14655 
-                        INFOG(4) (estimated integer workspace for factors on all processors after analysis): 2872 
+                        INFOG(4) (estimated integer workspace for factors on all processors after analysis): 2956 
                         INFOG(5) (estimated maximum front size in the complete tree): 43 
                         INFOG(6) (number of nodes in the complete tree): 42 
                         INFOG(7) (ordering option effectively use after analysis): 2 
                         INFOG(8) (structural symmetry in percent of the permuted matrix after analysis): 100 
                         INFOG(9) (total real/complex workspace to store the matrix factors after factorization): 14655 
-                        INFOG(10) (total integer space store the matrix factors after factorization): 2872 
+                        INFOG(10) (total integer space store the matrix factors after factorization): 2956 
                         INFOG(11) (order of largest frontal matrix after factorization): 43 
                         INFOG(12) (number of off-diagonal pivots): 1 
                         INFOG(13) (number of delayed pivots after factorization): 0 
@@ -730,4 +730,4 @@ SNES Object: 5 MPI processes
       total: nonzeros=46498, allocated nonzeros=53284
       total number of mallocs used during MatSetValues calls=0
         has attached null space
-L_2 Error: 2.9428e-09 [2.41835e-10, 2.93284e-09]
+L_2 Error: 2.71552e-09 [1.36966e-10, 2.71206e-09]

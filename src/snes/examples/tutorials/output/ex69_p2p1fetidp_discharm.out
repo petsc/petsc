@@ -83,14 +83,14 @@ SNES Object: 5 MPI processes
                           type: cholesky
                             out-of-place factorization
                             tolerance for zero pivot 2.22045e-14
-                            matrix ordering: natural
-                            factor fill ratio given 5., needed 3.17143
+                            matrix ordering: nd
+                            factor fill ratio given 5., needed 1.4236
                               Factored matrix follows:
                                 Mat Object: 1 MPI processes
                                   type: seqsbaij
                                   rows=105, cols=105
                                   package used to perform factorization: petsc
-                                  total: nonzeros=2553, allocated nonzeros=2553
+                                  total: nonzeros=1146, allocated nonzeros=1146
                                   total number of mallocs used during MatSetValues calls=0
                                       block size is 1
                           linear system matrix = precond matrix:
@@ -173,14 +173,14 @@ SNES Object: 5 MPI processes
                                   type: cholesky
                                     out-of-place factorization
                                     tolerance for zero pivot 2.22045e-14
-                                    matrix ordering: natural
-                                    factor fill ratio given 5., needed 3.17143
+                                    matrix ordering: nd
+                                    factor fill ratio given 5., needed 1.4236
                                       Factored matrix follows:
                                         Mat Object: 1 MPI processes
                                           type: seqsbaij
                                           rows=105, cols=105
                                           package used to perform factorization: petsc
-                                          total: nonzeros=2553, allocated nonzeros=2553
+                                          total: nonzeros=1146, allocated nonzeros=1146
                                           total number of mallocs used during MatSetValues calls=0
                                               block size is 1
                                   linear system matrix = precond matrix:
@@ -327,7 +327,7 @@ SNES Object: 5 MPI processes
                         type: cholesky
                           out-of-place factorization
                           tolerance for zero pivot 2.22045e-14
-                          matrix ordering: natural
+                          matrix ordering: nd
                           factor fill ratio given 5., needed 1.
                             Factored matrix follows:
                               Mat Object:         1 MPI processes

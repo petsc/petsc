@@ -1087,15 +1087,16 @@ PETSC_EXTERN PetscErrorCode MatFindZeroRows(Mat,IS*);
 .seealso: MatGetOrdering()
 J*/
 typedef const char* MatOrderingType;
-#define MATORDERINGNATURAL     "natural"
-#define MATORDERINGND          "nd"
-#define MATORDERING1WD         "1wd"
-#define MATORDERINGRCM         "rcm"
-#define MATORDERINGQMD         "qmd"
-#define MATORDERINGROWLENGTH   "rowlength"
-#define MATORDERINGWBM         "wbm"
-#define MATORDERINGSPECTRAL    "spectral"
-#define MATORDERINGAMD         "amd"            /* only works if UMFPACK is installed with PETSc */
+#define MATORDERINGNATURAL        "natural"
+#define MATORDERINGND             "nd"
+#define MATORDERING1WD            "1wd"
+#define MATORDERINGRCM            "rcm"
+#define MATORDERINGQMD            "qmd"
+#define MATORDERINGROWLENGTH      "rowlength"
+#define MATORDERINGWBM            "wbm"
+#define MATORDERINGSPECTRAL       "spectral"
+#define MATORDERINGAMD            "amd"            /* only works if UMFPACK is installed with PETSc */
+#define MATORDERINGNATURAL_OR_ND  "natural_or_nd"  /* special coase used for Cholesky and ICC, allows ND when AIJ matrix is used but Natural when SBAIJ is used */
 
 PETSC_EXTERN PetscErrorCode MatGetOrdering(Mat,MatOrderingType,IS*,IS*);
 PETSC_EXTERN PetscErrorCode MatGetOrderingList(PetscFunctionList*);
