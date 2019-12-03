@@ -7893,7 +7893,9 @@ PetscErrorCode MatPropagateSymmetryOptions(Mat A, Mat B)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidHeaderSpecific(B,MAT_CLASSID,1);
-  ierr = MatSetOption(B,MAT_SYMMETRY_ETERNAL,A->symmetric_eternal);CHKERRQ(ierr);
+  if (A->symmetric_eternal) { /* symmetric_eternal does not have a corresponding *set flag */
+    ierr = MatSetOption(B,MAT_SYMMETRY_ETERNAL,A->symmetric_eternal);CHKERRQ(ierr);
+  }
   if (A->structurally_symmetric_set) {
     ierr = MatSetOption(B,MAT_STRUCTURALLY_SYMMETRIC,A->structurally_symmetric);CHKERRQ(ierr);
   }
