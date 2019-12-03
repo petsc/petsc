@@ -209,7 +209,9 @@ PetscErrorCode PCTelescopeMatCreate_default(PC pc,PC_Telescope sred,MatReuse reu
   ierr = PCGetOperators(pc,NULL,&B);CHKERRQ(ierr);
   ierr = MatGetSize(B,&nr,&nc);CHKERRQ(ierr);
   isrow = sred->isin;
-  ierr = ISCreateStride(comm,nc,0,1,&iscol);CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,nc,0,1,&iscol);CHKERRQ(ierr);
+  ierr = ISSetIdentity(iscol);CHKERRQ(ierr);
+  ierr = MatSetOption(B,MAT_SUBMAT_SINGLEIS,PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatCreateSubMatrices(B,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&_Blocal);CHKERRQ(ierr);
   Blocal = *_Blocal;
   ierr = PetscFree(_Blocal);CHKERRQ(ierr);
