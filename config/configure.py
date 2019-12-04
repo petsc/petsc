@@ -498,7 +498,7 @@ def petsc_configure(configure_options):
     tbo = sys.exc_info()[2]
     if e.code is None or e.code == 0:
       return
-    if e.code is 10:
+    if e.code == 10:
       sys.exit(10)
     msg ='*******************************************************************************\n'\
     +'         CONFIGURATION FAILURE  (Please send configure.log to petsc-maint@mcs.anl.gov)\n' \

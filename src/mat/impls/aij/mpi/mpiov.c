@@ -1977,7 +1977,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ(Mat C,PetscInt ismax,const IS isrow[]
   /* Check for special case: each processor has a single IS */
   if (C->submat_singleis) { /* flag is set in PCSetUp_ASM() to skip MPIU_Allreduce() */
     ierr = MatCreateSubMatrices_MPIAIJ_SingleIS(C,ismax,isrow,iscol,scall,submat);CHKERRQ(ierr);
-    C->submat_singleis = PETSC_FALSE; /* resume its default value in case C will be used for non-singlis */
+    C->submat_singleis = PETSC_FALSE; /* resume its default value in case C will be used for non-single IS */
     PetscFunctionReturn(0);
   }
 
