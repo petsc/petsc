@@ -2045,6 +2045,8 @@ PetscErrorCode PetscSectionReset(PetscSection s)
   ierr = PetscFree(s->clPerm);CHKERRQ(ierr);
   ierr = PetscFree(s->clInvPerm);CHKERRQ(ierr);
   ierr = PetscSectionSymDestroy(&s->sym);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&s->clSection);CHKERRQ(ierr);
+  ierr = ISDestroy(&s->clPoints);CHKERRQ(ierr);
 
   s->pStart    = -1;
   s->pEnd      = -1;
@@ -2668,8 +2670,13 @@ PetscErrorCode PetscSectionSetClosureIndex(PetscSection section, PetscObject obj
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,1);
+  PetscValidHeaderSpecific(clSection,PETSC_SECTION_CLASSID,3);
+  PetscValidHeaderSpecific(clPoints,IS_CLASSID,4);
   if (section->clObj != obj) {ierr = PetscFree(section->clPerm);CHKERRQ(ierr);ierr = PetscFree(section->clInvPerm);CHKERRQ(ierr);}
   section->clObj     = obj;
+  ierr = PetscObjectReference((PetscObject)clSection);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)clPoints);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&section->clSection);CHKERRQ(ierr);
   ierr = ISDestroy(&section->clPoints);CHKERRQ(ierr);
   section->clSection = clSection;
