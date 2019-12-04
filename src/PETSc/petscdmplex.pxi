@@ -45,7 +45,7 @@ cdef extern from * nogil:
     #int DMPlexPointGlobalRead(PetscDM,PetscInt,const_PetscScalar*,const_void*)
     int DMPlexGetPointLocalField(PetscDM,PetscInt,PetscInt,PetscInt*,PetscInt*)
     int DMPlexGetPointGlobalField(PetscDM,PetscInt,PetscInt,PetscInt*,PetscInt*)
-
+    int DMPlexCreateClosureIndex(PetscDM,PetscSection)
     #int PetscSectionCreateGlobalSectionLabel(PetscSection,PetscSF,PetscBool,PetscDMLabel,PetscInt,PetscSection*)
 
     int DMPlexGetCellNumbering(PetscDM,PetscIS*)
