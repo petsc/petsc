@@ -225,13 +225,17 @@ PetscErrorCode  PetscDrawSetType(PetscDraw draw,PetscDrawType type)
   }
 #endif
   if (flg) {
+    ierr = PetscStrcmp(type,"tikz",&flg);CHKERRQ(ierr);
+    if (!flg) type = PETSC_DRAW_NULL;
+  }
+
+  ierr = PetscStrcmp(type,PETSC_DRAW_NULL,&match);CHKERRQ(ierr);
+  if (match) {
     ierr = PetscOptionsHasName(NULL,NULL,"-draw_double_buffer",NULL);CHKERRQ(ierr);
     ierr = PetscOptionsHasName(NULL,NULL,"-draw_virtual",NULL);CHKERRQ(ierr);
     ierr = PetscOptionsHasName(NULL,NULL,"-draw_fast",NULL);CHKERRQ(ierr);
     ierr = PetscOptionsHasName(NULL,NULL,"-draw_ports",NULL);CHKERRQ(ierr);
     ierr = PetscOptionsHasName(NULL,NULL,"-draw_coordinates",NULL);CHKERRQ(ierr);
-    ierr = PetscStrcmp(type,"tikz",&flg);CHKERRQ(ierr);
-    if (!flg) type = PETSC_DRAW_NULL;
   }
 
   ierr =  PetscFunctionListFind(PetscDrawList,type,&r);CHKERRQ(ierr);
