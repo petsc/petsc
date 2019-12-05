@@ -4,9 +4,11 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.version          = '1.11.2'
+    self.version          = '1.12.1'
     self.versionname      = 'PNETCDF_VERSION'
-    self.download         = ['https://parallel-netcdf.github.io/Release/pnetcdf-'+self.version+'.tar.gz',
+    self.gitcommit        = 'checkpoint.1.12.1' # 1.12.1 is first to include MPI1 deprecated fix
+    self.download         = ['git://https://github.com/parallel-netcdf/pnetcdf',
+                             'https://parallel-netcdf.github.io/Release/pnetcdf-'+self.version+'.tar.gz',
                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/pnetcdf-'+self.version+'.tar.gz']
     self.functions        = ['ncmpi_create']
     self.includes         = ['pnetcdf.h']
