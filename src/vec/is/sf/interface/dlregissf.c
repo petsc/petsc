@@ -18,6 +18,8 @@ PetscLogEvent PETSCSF_EmbedSF;
 PetscLogEvent PETSCSF_DistSect;
 PetscLogEvent PETSCSF_SectSF;
 PetscLogEvent PETSCSF_RemoteOff;
+PetscLogEvent PETSCSF_Pack;
+PetscLogEvent PETSCSF_Unpack;
 
 /*@C
    PetscSFInitializePackage - Initialize SF package
@@ -56,6 +58,8 @@ PetscErrorCode PetscSFInitializePackage(void)
   ierr = PetscLogEventRegister("SFDistSection"  , PETSCSF_CLASSID, &PETSCSF_DistSect);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("SFSectionSF"    , PETSCSF_CLASSID, &PETSCSF_SectSF);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("SFRemoteOff"    , PETSCSF_CLASSID, &PETSCSF_RemoteOff);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SFPack"         , PETSCSF_CLASSID, &PETSCSF_Pack);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SFUnpack"       , PETSCSF_CLASSID, &PETSCSF_Unpack);CHKERRQ(ierr);
   /* Process info exclusions */
   ierr = PetscOptionsGetString(NULL,NULL,"-info_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {

@@ -23,9 +23,12 @@ PETSC_EXTERN PetscLogEvent PETSCSF_EmbedSF;
 PETSC_EXTERN PetscLogEvent PETSCSF_DistSect;
 PETSC_EXTERN PetscLogEvent PETSCSF_SectSF;
 PETSC_EXTERN PetscLogEvent PETSCSF_RemoteOff;
+PETSC_EXTERN PetscLogEvent PETSCSF_Pack;
+PETSC_EXTERN PetscLogEvent PETSCSF_Unpack;
 
-typedef enum {PETSCSF_LEAF2ROOT_REDUCE=0, PETSCSF_ROOT2LEAF_BCAST=1} PetscSFDirection;
-typedef enum {PETSC_MEMTYPE_HOST=0, PETSC_MEMTYPE_DEVICE=1} PetscMemType;
+typedef enum {PETSCSF_ROOT2LEAF=0, PETSCSF_LEAF2ROOT} PetscSFDirection;
+typedef enum {PETSCSF_BCAST=0, PETSCSF_REDUCE, PETSCSF_FETCH} PetscSFOperation;
+typedef enum {PETSC_MEMTYPE_HOST=0, PETSC_MEMTYPE_DEVICE} PetscMemType;
 
 struct _PetscSFOps {
   PetscErrorCode (*Reset)(PetscSF);
@@ -65,6 +68,16 @@ struct _p_PetscSF {
   PetscMPIInt     *ranks;          /* List of ranks referenced by "remote" */
   PetscInt        *roffset;        /* Array of length nranks+1, offset in rmine/rremote for each rank */
   PetscInt        *rmine;          /* Concatenated array holding local indices referencing each remote rank */
+  PetscInt        *rmine_d[2];     /* A copy of rmine[local/remote] in device memory if needed */
+
+  /* Some results useful in packing by analyzing rmine[] */
+  PetscInt        leafbuflen[2];   /* Length (in unit) of leaf buffers, in layout of [PETSCSF_LOCAL/REMOTE] */
+  PetscBool       leafcontig[2];   /* True means indices in rmine[self part] or rmine[remote part] are contiguous, and they start from ... */
+  PetscInt        leafstart[2];    /* ... leafstart[0] and leafstart[1] respectively */
+  PetscSFPackOpt  leafpackopt[2];  /* Optimization plans to (un)pack leaves connected to remote roots, based on index patterns in rmine[]. NULL for no optimization */
+  PetscBool       leafdups[2];     /* Indices in rmine[] for self(0)/remote(1) communication have dups? TRUE implies theads working on them in parallel may have data race. */
+
+  PetscInt        nleafreqs;       /* Number of MPI reqests for leaves */
   PetscInt        *rremote;        /* Concatenated array holding remote indices referenced for each remote rank */
   PetscBool       degreeknown;     /* The degree is currently known, do not have to recompute */
   PetscInt        *degree;         /* Degree of each of my root vertices */
@@ -75,17 +88,11 @@ struct _p_PetscSF {
   PetscSF         multi;           /* Internal graph used to implement gather and scatter operations */
   PetscBool       graphset;        /* Flag indicating that the graph has been set, required before calling communication routines */
   PetscBool       setupcalled;     /* Type and communication structures have been set up */
-  PetscSFPackOpt  leafpackopt;     /* Optimization plans to (un)pack leaves connected to remote roots, based on index patterns in rmine[]. NULL for no optimization */
-  PetscSFPackOpt  selfleafpackopt; /* Optimization plans to (un)pack leaves connected to local roots */
-  PetscBool       selfleafdups;    /* Indices of leaves in rmine[0,roffset[ndranks]) have dups, implying theads working ... */
-                                   /* ... on these leaves in parallel may have data race. */
-  PetscBool       remoteleafdups;  /* Indices of leaves in rmine[roffset[ndranks],roffset[nranks]) have dups */
-
   PetscSFPattern  pattern;         /* Pattern of the graph */
+  PetscBool       persistent;      /* Does this SF use MPI persistent requests for communication */
   PetscLayout     map;             /* Layout of leaves over all processes when building a patterned graph */
-  PetscBool       use_pinned_buf;  /* Whether use pinned (i.e., non-pagable) host memory for send/recv buffers */
+  PetscBool       use_default_stream;  /* If true, SF assumes root/leafdata is on the default stream upon input and will also leave them there upon output */
 #if defined(PETSC_HAVE_CUDA)
-  PetscInt        *rmine_d;        /* A copy of rmine in device memory */
   PetscInt        maxResidentThreadsPerGPU;
 #endif
   void *data;                      /* Pointer to implementation */

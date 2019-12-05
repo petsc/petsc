@@ -15,49 +15,81 @@
   For the common case in VecScatter, bs=1, BS=1, EQ=1, MBS=1, the inner for-loops below will be totally unrolled.
 */
 template<class Type,PetscInt BS,PetscInt EQ>
-__global__ static void d_Pack(PetscInt count,const PetscInt *idx,PetscInt bs,const void *unpacked,void *packed)
+__global__ static void d_Pack(PetscInt bs,PetscInt count,PetscInt start,const PetscInt *idx,const Type *unpacked,Type *packed)
 {
   PetscInt        i,tid = blockIdx.x*blockDim.x + threadIdx.x;
   const PetscInt  grid_size = gridDim.x * blockDim.x;
-  const Type      *u = (const Type*)unpacked;
-  Type            *p = (Type*)packed;
+  const Type      *u = unpacked;
+  Type            *p = packed;
   const PetscInt  M = (EQ) ? 1 : bs/BS; /* If EQ, then M=1 enables compiler's const-propagation */
   const PetscInt  MBS = M*BS;  /* MBS=bs. We turn MBS into a compile-time const when EQ=1. */
 
   for (; tid<count; tid += grid_size) {
-    if (!idx) {for (i=0; i<MBS; i++) p[tid*MBS+i] = u[tid*MBS+i];}
+    if (!idx) {for (i=0; i<MBS; i++) p[tid*MBS+i] = u[(start+tid)*MBS+i];}
     else      {for (i=0; i<MBS; i++) p[tid*MBS+i] = u[idx[tid]*MBS+i];}
   }
 }
 
 template<class Type,class Op,PetscInt BS,PetscInt EQ>
-__global__ static void d_UnpackAndOp(PetscInt count,const PetscInt *idx,PetscInt bs,void *unpacked,const void *packed)
+__global__ static void d_UnpackAndOp(PetscInt bs,PetscInt count,PetscInt start,const PetscInt *idx,Type *unpacked,const Type *packed)
 {
   PetscInt        i,tid = blockIdx.x*blockDim.x + threadIdx.x;
   const PetscInt  grid_size = gridDim.x * blockDim.x;
-  Type            *u = (Type*)unpacked;
-  const Type      *p = (const Type*)packed;
+  Type            *u = unpacked;
+  const Type      *p = packed;
   const PetscInt  M = (EQ) ? 1 : bs/BS, MBS = M*BS;
   Op              op;
 
   for (; tid<count; tid += grid_size) {
-    if (!idx) {for (i=0; i<MBS; i++) op(u[tid*MBS+i],     p[tid*MBS+i]);}
+    if (!idx) {for (i=0; i<MBS; i++) op(u[(start+tid)*MBS+i],p[tid*MBS+i]);}
     else      {for (i=0; i<MBS; i++) op(u[idx[tid]*MBS+i],p[tid*MBS+i]);}
   }
 }
 
 template<class Type,class Op,PetscInt BS,PetscInt EQ>
-__global__ static void d_FetchAndOp(PetscInt count,const PetscInt *idx,PetscInt bs,void *unpacked,void *packed)
+__global__ static void d_FetchAndOp(PetscInt bs,PetscInt count,PetscInt start,const PetscInt *idx,Type *unpacked,Type *packed)
 {
   PetscInt        i,tid = blockIdx.x*blockDim.x + threadIdx.x;
   const PetscInt  grid_size = gridDim.x * blockDim.x;
-  Type            *u = (Type*)unpacked,*p;
+  Type            *u = unpacked,*p = packed;
   const PetscInt  M = (EQ) ? 1 : bs/BS, MBS = M*BS;
   Op              op;
 
   for (; tid<count; tid += grid_size) {
-    if (!idx) {for (i=0; i<MBS; i++) p[tid*MBS+i] = op(u[tid*MBS+i],p[tid*MBS+i]);}
+    if (!idx) {for (i=0; i<MBS; i++) p[tid*MBS+i] = op(u[(start+tid)*MBS+i],p[tid*MBS+i]);}
     else      {for (i=0; i<MBS; i++) p[tid*MBS+i] = op(u[idx[tid]*MBS+i],p[tid*MBS+i]);}
+  }
+}
+
+template<class Type,class Op,PetscInt BS,PetscInt EQ>
+__global__ static void d_ScatterAndOp(PetscInt bs,PetscInt count,PetscInt startx,const PetscInt *idx,const Type *xdata,PetscInt starty,const PetscInt *idy,Type *ydata)
+{
+  PetscInt        i,tid = blockIdx.x*blockDim.x + threadIdx.x;
+  const PetscInt  grid_size = gridDim.x * blockDim.x;
+  const Type      *x = xdata;
+  Type            *y = ydata;
+  const PetscInt  M = (EQ) ? 1 : bs/BS, MBS = M*BS;
+  Op              op;
+
+  for (; tid<count; tid += grid_size) {
+    if (!idy) {for (i=0; i<MBS; i++) op(y[(starty+tid)*MBS+i],x[idx[tid]*MBS+i]);}
+    else      {for (i=0; i<MBS; i++) op(y[idy[tid]*MBS+i],x[idx[tid]*MBS+i]);}
+  }
+}
+
+template<class Type,class Op,PetscInt BS,PetscInt EQ>
+__global__ static void d_FetchAndOpLocal(PetscInt bs,PetscInt count,PetscInt startx,const PetscInt *idx,Type *xdata,PetscInt starty,const PetscInt *idy,const Type *ydata,Type *yupdate)
+{
+  PetscInt        i,tid = blockIdx.x*blockDim.x + threadIdx.x;
+  const PetscInt  grid_size = gridDim.x * blockDim.x;
+  const Type      *y = ydata;
+  Type            *x = xdata,*y2 = yupdate;
+  const PetscInt  M = (EQ) ? 1 : bs/BS, MBS = M*BS;
+  Op              op;
+
+  for (; tid<count; tid += grid_size) {
+    if (!idy) {for (i=0; i<MBS; i++) y2[(starty+tid)*MBS+i] = op(x[idx[tid]*MBS+i],y[(starty+tid)*MBS+i]);}
+    else      {for (i=0; i<MBS; i++) y2[idy[tid]*MBS+i]     = op(x[idx[tid]*MBS+i],y[idy[tid]*MBS+i]);}
   }
 }
 
@@ -469,46 +501,111 @@ template<typename Type> struct AtomicLOR  {__device__ Type operator()(Type& x,Ty
 template<typename Type> struct AtomicLXOR {__device__ Type operator()(Type& x,Type y) const {AtomicLogical<Type,lxor<Type>,sizeof(Type)> op; return op(x,y);}};
 
 /*====================================================================================*/
-/*  Wrapper functions on cuda kernels. Function pointers are stored in 'link'         */
+/*  Wrapper functions of cuda kernels. Function pointers are stored in 'link'         */
 /*====================================================================================*/
 template<typename Type,PetscInt BS,PetscInt EQ>
-static PetscErrorCode Pack(PetscInt count,const PetscInt *idx,PetscSFPack link,PetscSFPackOpt opt,const void *unpacked,void *packed)
+static PetscErrorCode Pack(PetscSFLink link,PetscInt count,PetscInt start,const PetscInt *idx,PetscSFPackOpt opt,const void *unpacked,void *packed)
 {
   cudaError_t err;
   PetscInt    nthreads=256;
   PetscInt    nblocks=(count+nthreads-1)/nthreads;
 
   PetscFunctionBegin;
+  if (!count) PetscFunctionReturn(0);
   nblocks = PetscMin(nblocks,link->maxResidentThreadsPerGPU/nthreads);
-  d_Pack<Type,BS,EQ><<<nblocks,nthreads,0,link->stream>>>(count,idx,link->bs,unpacked,packed);
+  d_Pack<Type,BS,EQ><<<nblocks,nthreads,0,link->stream>>>(link->bs,count,start,idx,(const Type*)unpacked,(Type*)packed);
   err = cudaGetLastError();CHKERRCUDA(err);
   PetscFunctionReturn(0);
 }
 
 template<typename Type,class Op,PetscInt BS,PetscInt EQ>
-static PetscErrorCode UnpackAndOp(PetscInt count,const PetscInt *idx,PetscSFPack link,PetscSFPackOpt opt,void *unpacked,const void *packed)
+static PetscErrorCode UnpackAndOp(PetscSFLink link,PetscInt count,PetscInt start,const PetscInt *idx,PetscSFPackOpt opt,void *unpacked,const void *packed)
 {
   cudaError_t err;
   PetscInt    nthreads=256;
   PetscInt    nblocks=(count+nthreads-1)/nthreads;
 
   PetscFunctionBegin;
+  if (!count) PetscFunctionReturn(0);
   nblocks = PetscMin(nblocks,link->maxResidentThreadsPerGPU/nthreads);
-  d_UnpackAndOp<Type,Op,BS,EQ><<<nblocks,nthreads,0,link->stream>>>(count,idx,link->bs,unpacked,packed);
+  d_UnpackAndOp<Type,Op,BS,EQ><<<nblocks,nthreads,0,link->stream>>>(link->bs,count,start,idx,(Type*)unpacked,(const Type*)packed);
   err = cudaGetLastError();CHKERRCUDA(err);
   PetscFunctionReturn(0);
 }
 
 template<typename Type,class Op,PetscInt BS,PetscInt EQ>
-static PetscErrorCode FetchAndOp(PetscInt count,const PetscInt *idx,PetscSFPack link,PetscSFPackOpt opt,void *unpacked,void *packed)
+static PetscErrorCode FetchAndOp(PetscSFLink link,PetscInt count,PetscInt start,const PetscInt *idx,PetscSFPackOpt opt,void *unpacked,void *packed)
 {
   cudaError_t err;
   PetscInt    nthreads=256;
   PetscInt    nblocks=(count+nthreads-1)/nthreads;
 
   PetscFunctionBegin;
+  if (!count) PetscFunctionReturn(0);
   nblocks = PetscMin(nblocks,link->maxResidentThreadsPerGPU/nthreads);
-  d_FetchAndOp<Type,Op,BS,EQ><<<nblocks,nthreads,0,link->stream>>>(count,idx,link->bs,unpacked,packed);
+  d_FetchAndOp<Type,Op,BS,EQ><<<nblocks,nthreads,0,link->stream>>>(link->bs,count,start,idx,(Type*)unpacked,(Type*)packed);
+  err = cudaGetLastError();CHKERRCUDA(err);
+  PetscFunctionReturn(0);
+}
+
+template<typename Type,class Op,PetscInt BS,PetscInt EQ>
+static PetscErrorCode ScatterAndOp(PetscSFLink link,PetscInt count,PetscInt startx,const PetscInt *idx,const void *xdata,PetscInt starty,const PetscInt *idy,void *ydata)
+{
+  cudaError_t err;
+  PetscInt    nthreads=256;
+  PetscInt    nblocks=(count+nthreads-1)/nthreads;
+  const Type  *xdata2;
+
+  PetscFunctionBegin;
+  if (!count) PetscFunctionReturn(0);
+  nblocks = PetscMin(nblocks,link->maxResidentThreadsPerGPU/nthreads);
+  if (!idx) {
+    xdata2 = (const Type*)xdata + startx*link->bs;
+    d_UnpackAndOp<Type,Op,BS,EQ><<<nblocks,nthreads,0,link->stream>>>(link->bs,count,starty,idy,(Type*)ydata,(const Type*)xdata2);
+  } else {
+    d_ScatterAndOp<Type,Op,BS,EQ><<<nblocks,nthreads,0,link->stream>>>(link->bs,count,startx,idx,(const Type*)xdata,starty,idy,(Type*)ydata);
+  }
+  err = cudaGetLastError();CHKERRCUDA(err);
+  PetscFunctionReturn(0);
+}
+
+/* Specialization for Insert since we may use cudaMemcpyAsync */
+template<typename Type,PetscInt BS,PetscInt EQ>
+static PetscErrorCode ScatterAndInsert(PetscSFLink link,PetscInt count,PetscInt startx,const PetscInt *idx,const void *xdata,PetscInt starty,const PetscInt *idy,void *ydata)
+{
+  cudaError_t err;
+  PetscInt    nthreads=256;
+  PetscInt    nblocks=(count+nthreads-1)/nthreads;
+  const Type  *xdata2;
+
+  PetscFunctionBegin;
+  if (!count) PetscFunctionReturn(0);
+  nblocks = PetscMin(nblocks,link->maxResidentThreadsPerGPU/nthreads);
+  if (!idx && !idy) {
+    if (!(startx == starty && xdata == ydata)) { /* Only do the copy when source and destination are different */
+      err  = cudaMemcpyAsync((Type*)ydata+starty*link->bs,(const Type*)xdata+startx*link->bs,count*link->unitbytes,cudaMemcpyDeviceToDevice,link->stream);CHKERRCUDA(err);
+    }
+  } else if (!idx) {
+    xdata2 = (const Type*)xdata + startx*link->bs;
+    d_UnpackAndOp <Type,Insert<Type>,BS,EQ><<<nblocks,nthreads,0,link->stream>>>(link->bs,count,starty,idy,(Type*)ydata,(const Type*)xdata2);
+  } else {
+    d_ScatterAndOp<Type,Insert<Type>,BS,EQ><<<nblocks,nthreads,0,link->stream>>>(link->bs,count,startx,idx,(const Type*)xdata,starty,idy,(Type*)ydata);
+  }
+  err = cudaGetLastError();CHKERRCUDA(err);
+  PetscFunctionReturn(0);
+}
+
+template<typename Type,class Op,PetscInt BS,PetscInt EQ>
+static PetscErrorCode FetchAndOpLocal(PetscSFLink link,PetscInt count,PetscInt rootstart,const PetscInt *rootindices,void *rootdata,PetscInt leafstart,const PetscInt *leafindices,const void *leafdata,void *leafupdate)
+{
+  cudaError_t err;
+  PetscInt    nthreads=256;
+  PetscInt    nblocks=(count+nthreads-1)/nthreads;
+
+  PetscFunctionBegin;
+  if (!count) PetscFunctionReturn(0);
+  nblocks = PetscMin(nblocks,link->maxResidentThreadsPerGPU/nthreads);
+  d_FetchAndOpLocal<Type,Op,BS,EQ><<<nblocks,nthreads,0,link->stream>>>(link->bs,count,rootstart,rootindices,(Type*)rootdata,leafstart,leafindices,(const Type*)leafdata,(Type*)leafupdate);
   err = cudaGetLastError();CHKERRCUDA(err);
   PetscFunctionReturn(0);
 }
@@ -517,73 +614,81 @@ static PetscErrorCode FetchAndOp(PetscInt count,const PetscInt *idx,PetscSFPack 
 /*  Init various types and instantiate pack/unpack function pointers                  */
 /*====================================================================================*/
 template<typename Type,PetscInt BS,PetscInt EQ>
-static void PackInit_RealType(PetscSFPack link)
+static void PackInit_RealType(PetscSFLink link)
 {
-  link->d_Pack             = Pack<Type,BS,EQ>;
-  link->d_UnpackAndInsert  = UnpackAndOp<Type,Insert<Type>,BS,EQ>;
-  link->d_UnpackAndAdd     = UnpackAndOp<Type,Add<Type>   ,BS,EQ>;
-  link->d_UnpackAndMult    = UnpackAndOp<Type,Mult<Type>  ,BS,EQ>;
-  link->d_UnpackAndMin     = UnpackAndOp<Type,Min<Type>   ,BS,EQ>;
-  link->d_UnpackAndMax     = UnpackAndOp<Type,Max<Type>   ,BS,EQ>;
+  /* Pack/unpack for remote communication */
+  link->d_Pack              = Pack<Type,BS,EQ>;
+  link->d_UnpackAndInsert   = UnpackAndOp     <Type,Insert<Type>      ,BS,EQ>;
+  link->d_UnpackAndAdd      = UnpackAndOp     <Type,Add<Type>         ,BS,EQ>;
+  link->d_UnpackAndMult     = UnpackAndOp     <Type,Mult<Type>        ,BS,EQ>;
+  link->d_UnpackAndMin      = UnpackAndOp     <Type,Min<Type>         ,BS,EQ>;
+  link->d_UnpackAndMax      = UnpackAndOp     <Type,Max<Type>         ,BS,EQ>;
+  link->d_FetchAndAdd       = FetchAndOp      <Type,Add<Type>         ,BS,EQ>;
 
-  link->d_FetchAndInsert   = FetchAndOp <Type,Insert<Type>,BS,EQ>;
-  link->d_FetchAndAdd      = FetchAndOp <Type,Add<Type>   ,BS,EQ>;
-  link->d_FetchAndMult     = FetchAndOp <Type,Mult<Type>  ,BS,EQ>;
-  link->d_FetchAndMin      = FetchAndOp <Type,Min<Type>   ,BS,EQ>;
-  link->d_FetchAndMax      = FetchAndOp <Type,Max<Type>   ,BS,EQ>;
+  /* Scatter for local communication */
+  link->d_ScatterAndInsert  = ScatterAndInsert<Type                   ,BS,EQ>; /* Has special optimizations */
+  link->d_ScatterAndAdd     = ScatterAndOp    <Type,Add<Type>         ,BS,EQ>;
+  link->d_ScatterAndMult    = ScatterAndOp    <Type,Mult<Type>        ,BS,EQ>;
+  link->d_ScatterAndMin     = ScatterAndOp    <Type,Min<Type>         ,BS,EQ>;
+  link->d_ScatterAndMax     = ScatterAndOp    <Type,Max<Type>         ,BS,EQ>;
+  link->d_FetchAndAddLocal  = FetchAndOpLocal <Type,Add <Type>        ,BS,EQ>;
 
-  /* Pack() is always data race free */
-  link->da_UnpackAndInsert = UnpackAndOp<Type,AtomicInsert<Type>,BS,EQ>;
-  link->da_UnpackAndAdd    = UnpackAndOp<Type,AtomicAdd<Type>   ,BS,EQ>;
-  link->da_UnpackAndMult   = UnpackAndOp<Type,AtomicMult<Type>  ,BS,EQ>;
-  link->da_UnpackAndMin    = UnpackAndOp<Type,AtomicMin<Type>   ,BS,EQ>;
-  link->da_UnpackAndMax    = UnpackAndOp<Type,AtomicMax<Type>   ,BS,EQ>;
+  /* Atomic versions when there are data-race possibilities */
+  link->da_UnpackAndInsert  = UnpackAndOp     <Type,AtomicInsert<Type>,BS,EQ>;
+  link->da_UnpackAndAdd     = UnpackAndOp     <Type,AtomicAdd<Type>   ,BS,EQ>;
+  link->da_UnpackAndMult    = UnpackAndOp     <Type,AtomicMult<Type>  ,BS,EQ>;
+  link->da_UnpackAndMin     = UnpackAndOp     <Type,AtomicMin<Type>   ,BS,EQ>;
+  link->da_UnpackAndMax     = UnpackAndOp     <Type,AtomicMax<Type>   ,BS,EQ>;
+  link->da_FetchAndAdd      = FetchAndOp      <Type,AtomicAdd<Type>   ,BS,EQ>;
 
-  link->da_FetchAndInsert  = FetchAndOp <Type,AtomicInsert<Type>,BS,EQ>;
-  link->da_FetchAndAdd     = FetchAndOp <Type,AtomicAdd<Type>   ,BS,EQ>;
-  link->da_FetchAndMult    = FetchAndOp <Type,AtomicMult<Type>  ,BS,EQ>;
-  link->da_FetchAndMin     = FetchAndOp <Type,AtomicMin<Type>   ,BS,EQ>;
-  link->da_FetchAndMax     = FetchAndOp <Type,AtomicMax<Type>   ,BS,EQ>;
+  link->da_ScatterAndInsert = ScatterAndOp    <Type,AtomicInsert<Type>,BS,EQ>;
+  link->da_ScatterAndAdd    = ScatterAndOp    <Type,AtomicAdd<Type>   ,BS,EQ>;
+  link->da_ScatterAndMult   = ScatterAndOp    <Type,AtomicMult<Type>  ,BS,EQ>;
+  link->da_ScatterAndMin    = ScatterAndOp    <Type,AtomicMin<Type>   ,BS,EQ>;
+  link->da_ScatterAndMax    = ScatterAndOp    <Type,AtomicMax<Type>   ,BS,EQ>;
+  link->da_FetchAndAddLocal = FetchAndOpLocal <Type,AtomicAdd<Type>   ,BS,EQ>;
 }
 
 /* Have this templated class to specialize for char integers */
 template<typename Type,PetscInt BS,PetscInt EQ,PetscInt size/*sizeof(Type)*/>
 struct PackInit_IntegerType_Atomic {
-  static void Init(PetscSFPack link) {
-    link->da_UnpackAndInsert = UnpackAndOp<Type,AtomicInsert<Type>,BS,EQ>;
-    link->da_UnpackAndAdd    = UnpackAndOp<Type,AtomicAdd<Type>   ,BS,EQ>;
-    link->da_UnpackAndMult   = UnpackAndOp<Type,AtomicMult<Type>  ,BS,EQ>;
-    link->da_UnpackAndMin    = UnpackAndOp<Type,AtomicMin<Type>   ,BS,EQ>;
-    link->da_UnpackAndMax    = UnpackAndOp<Type,AtomicMax<Type>   ,BS,EQ>;
-    link->da_UnpackAndLAND   = UnpackAndOp<Type,AtomicLAND<Type>  ,BS,EQ>;
-    link->da_UnpackAndLOR    = UnpackAndOp<Type,AtomicLOR<Type>   ,BS,EQ>;
-    link->da_UnpackAndLXOR   = UnpackAndOp<Type,AtomicLXOR<Type>  ,BS,EQ>;
-    link->da_UnpackAndBAND   = UnpackAndOp<Type,AtomicBAND<Type>  ,BS,EQ>;
-    link->da_UnpackAndBOR    = UnpackAndOp<Type,AtomicBOR<Type>   ,BS,EQ>;
-    link->da_UnpackAndBXOR   = UnpackAndOp<Type,AtomicBXOR<Type>  ,BS,EQ>;
+  static void Init(PetscSFLink link) {
+    link->da_UnpackAndInsert  = UnpackAndOp<Type,AtomicInsert<Type>,BS,EQ>;
+    link->da_UnpackAndAdd     = UnpackAndOp<Type,AtomicAdd<Type>   ,BS,EQ>;
+    link->da_UnpackAndMult    = UnpackAndOp<Type,AtomicMult<Type>  ,BS,EQ>;
+    link->da_UnpackAndMin     = UnpackAndOp<Type,AtomicMin<Type>   ,BS,EQ>;
+    link->da_UnpackAndMax     = UnpackAndOp<Type,AtomicMax<Type>   ,BS,EQ>;
+    link->da_UnpackAndLAND    = UnpackAndOp<Type,AtomicLAND<Type>  ,BS,EQ>;
+    link->da_UnpackAndLOR     = UnpackAndOp<Type,AtomicLOR<Type>   ,BS,EQ>;
+    link->da_UnpackAndLXOR    = UnpackAndOp<Type,AtomicLXOR<Type>  ,BS,EQ>;
+    link->da_UnpackAndBAND    = UnpackAndOp<Type,AtomicBAND<Type>  ,BS,EQ>;
+    link->da_UnpackAndBOR     = UnpackAndOp<Type,AtomicBOR<Type>   ,BS,EQ>;
+    link->da_UnpackAndBXOR    = UnpackAndOp<Type,AtomicBXOR<Type>  ,BS,EQ>;
+    link->da_FetchAndAdd      = FetchAndOp <Type,AtomicAdd<Type>   ,BS,EQ>;
 
-    link->da_FetchAndInsert  = FetchAndOp <Type,AtomicInsert<Type>,BS,EQ>;
-    link->da_FetchAndAdd     = FetchAndOp <Type,AtomicAdd<Type>   ,BS,EQ>;
-    link->da_FetchAndMult    = FetchAndOp <Type,AtomicMult<Type>  ,BS,EQ>;
-    link->da_FetchAndMin     = FetchAndOp <Type,AtomicMin<Type>   ,BS,EQ>;
-    link->da_FetchAndMax     = FetchAndOp <Type,AtomicMax<Type>   ,BS,EQ>;
-    link->da_FetchAndLAND    = FetchAndOp <Type,AtomicLAND<Type>  ,BS,EQ>;
-    link->da_FetchAndLOR     = FetchAndOp <Type,AtomicLOR<Type>   ,BS,EQ>;
-    link->da_FetchAndLXOR    = FetchAndOp <Type,AtomicLXOR<Type>  ,BS,EQ>;
-    link->da_FetchAndBAND    = FetchAndOp <Type,AtomicBAND<Type>  ,BS,EQ>;
-    link->da_FetchAndBOR     = FetchAndOp <Type,AtomicBOR<Type>   ,BS,EQ>;
-    link->da_FetchAndBXOR    = FetchAndOp <Type,AtomicBXOR<Type>  ,BS,EQ>;
+    link->da_ScatterAndInsert = ScatterAndOp<Type,AtomicInsert<Type>,BS,EQ>;
+    link->da_ScatterAndAdd    = ScatterAndOp<Type,AtomicAdd<Type>   ,BS,EQ>;
+    link->da_ScatterAndMult   = ScatterAndOp<Type,AtomicMult<Type>  ,BS,EQ>;
+    link->da_ScatterAndMin    = ScatterAndOp<Type,AtomicMin<Type>   ,BS,EQ>;
+    link->da_ScatterAndMax    = ScatterAndOp<Type,AtomicMax<Type>   ,BS,EQ>;
+    link->da_ScatterAndLAND   = ScatterAndOp<Type,AtomicLAND<Type>  ,BS,EQ>;
+    link->da_ScatterAndLOR    = ScatterAndOp<Type,AtomicLOR<Type>   ,BS,EQ>;
+    link->da_ScatterAndLXOR   = ScatterAndOp<Type,AtomicLXOR<Type>  ,BS,EQ>;
+    link->da_ScatterAndBAND   = ScatterAndOp<Type,AtomicBAND<Type>  ,BS,EQ>;
+    link->da_ScatterAndBOR    = ScatterAndOp<Type,AtomicBOR<Type>   ,BS,EQ>;
+    link->da_ScatterAndBXOR   = ScatterAndOp<Type,AtomicBXOR<Type>  ,BS,EQ>;
+    link->da_FetchAndAddLocal = FetchAndOpLocal<Type,AtomicAdd<Type>,BS,EQ>;
   }
 };
 
 /* CUDA does not support atomics on chars. It is TBD in PETSc. */
 template<typename Type,PetscInt BS,PetscInt EQ>
 struct PackInit_IntegerType_Atomic<Type,BS,EQ,1> {
-  static void Init(PetscSFPack link) {/* Nothing to leave function pointers NULL */}
+  static void Init(PetscSFLink link) {/* Nothing to leave function pointers NULL */}
 };
 
 template<typename Type,PetscInt BS,PetscInt EQ>
-static void PackInit_IntegerType(PetscSFPack link)
+static void PackInit_IntegerType(PetscSFLink link)
 {
   link->d_Pack            = Pack<Type,BS,EQ>;
   link->d_UnpackAndInsert = UnpackAndOp<Type,Insert<Type>,BS,EQ>;
@@ -597,38 +702,42 @@ static void PackInit_IntegerType(PetscSFPack link)
   link->d_UnpackAndBAND   = UnpackAndOp<Type,BAND<Type>  ,BS,EQ>;
   link->d_UnpackAndBOR    = UnpackAndOp<Type,BOR<Type>   ,BS,EQ>;
   link->d_UnpackAndBXOR   = UnpackAndOp<Type,BXOR<Type>  ,BS,EQ>;
-
-  link->d_FetchAndInsert  = FetchAndOp <Type,Insert<Type>,BS,EQ>;
   link->d_FetchAndAdd     = FetchAndOp <Type,Add<Type>   ,BS,EQ>;
-  link->d_FetchAndMult    = FetchAndOp <Type,Mult<Type>  ,BS,EQ>;
-  link->d_FetchAndMin     = FetchAndOp <Type,Min<Type>   ,BS,EQ>;
-  link->d_FetchAndMax     = FetchAndOp <Type,Max<Type>   ,BS,EQ>;
-  link->d_FetchAndLAND    = FetchAndOp <Type,LAND<Type>  ,BS,EQ>;
-  link->d_FetchAndLOR     = FetchAndOp <Type,LOR<Type>   ,BS,EQ>;
-  link->d_FetchAndLXOR    = FetchAndOp <Type,LXOR<Type>  ,BS,EQ>;
-  link->d_FetchAndBAND    = FetchAndOp <Type,BAND<Type>  ,BS,EQ>;
-  link->d_FetchAndBOR     = FetchAndOp <Type,BOR<Type>   ,BS,EQ>;
-  link->d_FetchAndBXOR    = FetchAndOp <Type,BXOR<Type>  ,BS,EQ>;
 
+  link->d_ScatterAndInsert = ScatterAndInsert<Type,BS,EQ>;
+  link->d_ScatterAndAdd    = ScatterAndOp<Type,Add<Type>   ,BS,EQ>;
+  link->d_ScatterAndMult   = ScatterAndOp<Type,Mult<Type>  ,BS,EQ>;
+  link->d_ScatterAndMin    = ScatterAndOp<Type,Min<Type>   ,BS,EQ>;
+  link->d_ScatterAndMax    = ScatterAndOp<Type,Max<Type>   ,BS,EQ>;
+  link->d_ScatterAndLAND   = ScatterAndOp<Type,LAND<Type>  ,BS,EQ>;
+  link->d_ScatterAndLOR    = ScatterAndOp<Type,LOR<Type>   ,BS,EQ>;
+  link->d_ScatterAndLXOR   = ScatterAndOp<Type,LXOR<Type>  ,BS,EQ>;
+  link->d_ScatterAndBAND   = ScatterAndOp<Type,BAND<Type>  ,BS,EQ>;
+  link->d_ScatterAndBOR    = ScatterAndOp<Type,BOR<Type>   ,BS,EQ>;
+  link->d_ScatterAndBXOR   = ScatterAndOp<Type,BXOR<Type>  ,BS,EQ>;
+  link->d_FetchAndAddLocal = FetchAndOpLocal<Type,Add<Type>,BS,EQ>;
   PackInit_IntegerType_Atomic<Type,BS,EQ,sizeof(Type)>::Init(link);
 }
 
 #if defined(PETSC_HAVE_COMPLEX)
 template<typename Type,PetscInt BS,PetscInt EQ>
-static void PackInit_ComplexType(PetscSFPack link)
+static void PackInit_ComplexType(PetscSFLink link)
 {
-  link->d_Pack            = Pack<Type,BS,EQ>;
+  link->d_Pack             = Pack<Type,BS,EQ>;
+  link->d_UnpackAndInsert  = UnpackAndOp<Type,Insert<Type>,BS,EQ>;
+  link->d_UnpackAndAdd     = UnpackAndOp<Type,Add<Type>   ,BS,EQ>;
+  link->d_UnpackAndMult    = UnpackAndOp<Type,Mult<Type>  ,BS,EQ>;
+  link->d_FetchAndAdd      = FetchAndOp <Type,Add<Type>   ,BS,EQ>;
 
-  link->d_UnpackAndInsert = UnpackAndOp<Type,Insert<Type>,BS,EQ>;
-  link->d_UnpackAndAdd    = UnpackAndOp<Type,Add<Type>   ,BS,EQ>;
-  link->d_UnpackAndMult   = UnpackAndOp<Type,Mult<Type>  ,BS,EQ>;
-  link->d_FetchAndInsert  = FetchAndOp <Type,Insert<Type>,BS,EQ>;
-  link->d_FetchAndAdd     = FetchAndOp <Type,Add<Type>   ,BS,EQ>;
-  link->d_FetchAndMult    = FetchAndOp <Type,Mult<Type>  ,BS,EQ>;
+  link->d_ScatterAndInsert = ScatterAndInsert<Type,BS,EQ>;
+  link->d_ScatterAndAdd    = ScatterAndOp<Type,Add<Type>   ,BS,EQ>;
+  link->d_ScatterAndMult   = ScatterAndOp<Type,Mult<Type>  ,BS,EQ>;
+  link->d_FetchAndAddLocal = FetchAndOpLocal<Type,Add<Type>,BS,EQ>;
 
-  link->da_UnpackAndAdd   = UnpackAndOp<Type,AtomicAdd<Type>,BS,EQ>;
-  link->da_UnpackAndMult  = NULL; /* Not implemented yet */
-  link->da_FetchAndAdd    = NULL; /* Return value of atomicAdd on complex is not atomic */
+  link->da_UnpackAndAdd    = UnpackAndOp<Type,AtomicAdd<Type>,BS,EQ>;
+  link->da_UnpackAndMult   = NULL; /* Not implemented yet */
+  link->da_FetchAndAdd     = NULL; /* Return value of atomicAdd on complex is not atomic */
+  link->da_ScatterAndAdd   = ScatterAndOp<Type,AtomicAdd<Type>,BS,EQ>;
 }
 #endif
 
@@ -638,26 +747,25 @@ typedef struct {int a;      int b;     } PairInt;
 typedef struct {PetscInt a; PetscInt b;} PairPetscInt;
 
 template<typename Type>
-static void PackInit_PairType(PetscSFPack link)
+static void PackInit_PairType(PetscSFLink link)
 {
   link->d_Pack            = Pack<Type,1,1>;
   link->d_UnpackAndInsert = UnpackAndOp<Type,Insert<Type>,1,1>;
+  link->d_UnpackAndMaxloc = UnpackAndOp<Type,Maxloc<Type>,1,1>;
   link->d_UnpackAndMinloc = UnpackAndOp<Type,Minloc<Type>,1,1>;
-  link->d_UnpackAndMinloc = UnpackAndOp<Type,Minloc<Type>,1,1>;
-  link->d_FetchAndInsert  = FetchAndOp <Type,Insert<Type>,1,1>;
-  link->d_FetchAndMinloc  = FetchAndOp <Type,Minloc<Type>,1,1>;
-  link->d_FetchAndMinloc  = FetchAndOp <Type,Minloc<Type>,1,1>;
 
+  link->d_ScatterAndInsert = ScatterAndOp<Type,Insert<Type>,1,1>;
+  link->d_ScatterAndMaxloc = ScatterAndOp<Type,Maxloc<Type>,1,1>;
+  link->d_ScatterAndMinloc = ScatterAndOp<Type,Minloc<Type>,1,1>;
   /* Atomics for pair types are not implemented yet */
 }
 
 template<typename Type,PetscInt BS,PetscInt EQ>
-static void PackInit_DumbType(PetscSFPack link)
+static void PackInit_DumbType(PetscSFLink link)
 {
-  link->d_Pack            = Pack<Type,BS,EQ>;
-  link->d_UnpackAndInsert = UnpackAndOp<Type,Insert<Type>,BS,EQ>;
-  link->d_FetchAndInsert  = FetchAndOp <Type,Insert<Type>,BS,EQ>;
-
+  link->d_Pack             = Pack<Type,BS,EQ>;
+  link->d_UnpackAndInsert  = UnpackAndOp<Type,Insert<Type>,BS,EQ>;
+  link->d_ScatterAndInsert = ScatterAndInsert<Type,BS,EQ>;
   /* Atomics for dumb types are not implemented yet */
 }
 
@@ -666,7 +774,7 @@ static void PackInit_DumbType(PetscSFPack link)
 /*====================================================================================*/
 
 /* Some fields of link are initialized by PetscSFPackSetUp_Host. This routine only does what needed on device */
-PetscErrorCode PetscSFPackSetUp_Device(PetscSF sf,PetscSFPack link,MPI_Datatype unit)
+PetscErrorCode PetscSFLinkSetUp_Device(PetscSF sf,PetscSFLink link,MPI_Datatype unit)
 {
   PetscErrorCode ierr;
   cudaError_t    err;
@@ -677,7 +785,7 @@ PetscErrorCode PetscSFPackSetUp_Device(PetscSF sf,PetscSFPack link,MPI_Datatype 
 #endif
 
   PetscFunctionBegin;
-  if ((link->rootmtype == PETSC_MEMTYPE_HOST && link->leafmtype == PETSC_MEMTYPE_HOST) || link->deviceinited) PetscFunctionReturn(0);
+  if (link->deviceinited) PetscFunctionReturn(0);
   ierr = MPIPetsc_Type_compare_contig(unit,MPI_SIGNED_CHAR,  &nSignedChar);CHKERRQ(ierr);
   ierr = MPIPetsc_Type_compare_contig(unit,MPI_UNSIGNED_CHAR,&nUnsignedChar);CHKERRQ(ierr);
   /* MPI_CHAR is treated below as a dumb type that does not support reduction according to MPI standard */
@@ -745,7 +853,7 @@ PetscErrorCode PetscSFPackSetUp_Device(PetscSF sf,PetscSFPack link,MPI_Datatype 
     }
   }
 
-  if (!sf_use_default_cuda_stream) {err = cudaStreamCreate(&link->stream);CHKERRCUDA(err);}
+  if (!sf->use_default_stream) {err = cudaStreamCreate(&link->stream);CHKERRCUDA(err);}
   if (!sf->maxResidentThreadsPerGPU) { /* Not initialized */
     int                   device;
     struct cudaDeviceProp props;
