@@ -2158,7 +2158,7 @@ PetscErrorCode PetscOptionsGetBool(PetscOptions options,const char pre[],const c
 PetscErrorCode PetscOptionsGetEList(PetscOptions options,const char pre[],const char opt[],const char * const *list,PetscInt ntext,PetscInt *value,PetscBool *set)
 {
   PetscErrorCode ierr;
-  size_t         alen,len = 0;
+  size_t         alen,len = 0, tlen = 0;
   char           *svalue;
   PetscBool      aset,flg = PETSC_FALSE;
   PetscInt       i;
@@ -2168,13 +2168,28 @@ PetscErrorCode PetscOptionsGetEList(PetscOptions options,const char pre[],const 
   for (i=0; i<ntext; i++) {
     ierr = PetscStrlen(list[i],&alen);CHKERRQ(ierr);
     if (alen > len) len = alen;
+    tlen += len + 1;
   }
   len += 5; /* a little extra space for user mistypes */
   ierr = PetscMalloc1(len,&svalue);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(options,pre,opt,svalue,len,&aset);CHKERRQ(ierr);
   if (aset) {
     ierr = PetscEListFind(ntext,list,svalue,value,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_USER,"Unknown option %s for -%s%s",svalue,pre ? pre : "",opt+1);
+    if (!flg) {
+      char *avail,*pavl;
+
+      ierr = PetscMalloc1(tlen,&avail);CHKERRQ(ierr);
+      pavl = avail;
+      for (i=0; i<ntext; i++) {
+        ierr = PetscStrlen(list[i],&alen);CHKERRQ(ierr);
+        ierr = PetscStrcpy(pavl,list[i]);CHKERRQ(ierr);
+        pavl += alen;
+        ierr = PetscStrcpy(pavl," ");CHKERRQ(ierr);
+        pavl += 1;
+      }
+      ierr = PetscStrtolower(avail);CHKERRQ(ierr);
+      SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_USER,"Unknown option %s for -%s%s. Available options: %s",svalue,pre ? pre : "",opt+1,avail);
+    }
     if (set) *set = PETSC_TRUE;
   } else if (set) *set = PETSC_FALSE;
   ierr = PetscFree(svalue);CHKERRQ(ierr);
