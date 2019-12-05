@@ -57,7 +57,7 @@ PetscErrorCode  PetscSetDebugTerminal(const char terminal[])
 
    Input Parameters:
 +  debugger - name of debugger, which should be in your path,
-              usually "lldb", "dbx", "gdb", "idb", "xxgdb", "kdgb" or "ddd". Also, HP-UX
+              usually "lldb", "dbx", "gdb", "cuda-gdb", "idb", "xxgdb", "kdgb" or "ddd". Also, HP-UX
               supports "xdb", and IBM rs6000 supports "xldb".
 
 -  xterm - flag to indicate debugger window, set to either PETSC_TRUE (to indicate
@@ -147,6 +147,7 @@ PetscErrorCode  PetscSetDebuggerFromString(const char *string)
   ierr = PetscCheckDebugger_Private("dbx",      string, &debugger);CHKERRQ(ierr);
   ierr = PetscCheckDebugger_Private("xldb",     string, &debugger);CHKERRQ(ierr);
   ierr = PetscCheckDebugger_Private("gdb",      string, &debugger);CHKERRQ(ierr);
+  ierr = PetscCheckDebugger_Private("cuda-gdb", string, &debugger);CHKERRQ(ierr);
   ierr = PetscCheckDebugger_Private("idb",      string, &debugger);CHKERRQ(ierr);
   ierr = PetscCheckDebugger_Private("xxgdb",    string, &debugger);CHKERRQ(ierr);
   ierr = PetscCheckDebugger_Private("ddd",      string, &debugger);CHKERRQ(ierr);
@@ -403,7 +404,7 @@ PetscErrorCode  PetscAttachDebugger(void)
    Level: developer
 
    Notes:
-   By default the GNU debugger, gdb, is used.  Alternatives are lldb, dbx and
+   By default the GNU debugger, gdb, is used.  Alternatives are cuda-gdb, lldb, dbx and
    xxgdb,xldb (on IBM rs6000), xdb (on HP-UX).
 
    Most users need not directly employ this routine and the other error
