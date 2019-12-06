@@ -247,13 +247,14 @@ class TestObjectAOMapping(BaseTestObject, unittest.TestCase):
     FACTORY = 'createMapping'
     TARGS = ([], [])
 
-class TestObjectFE(BaseTestObject, unittest.TestCase):
-    CLASS  = PETSc.FE
-    FACTORY = 'create'
+# class TestObjectFE(BaseTestObject, unittest.TestCase):
+#     CLASS  = PETSc.FE
+#     FACTORY = 'create'
+#
+# class TestObjectQuad(BaseTestObject, unittest.TestCase):
+#     CLASS  = PETSc.Quad
+#     FACTORY = 'create'
 
-class TestObjectQuad(BaseTestObject, unittest.TestCase):
-    CLASS  = PETSc.Quad
-    FACTORY = 'create'
 # --------------------------------------------------------------------
 
 import numpy
