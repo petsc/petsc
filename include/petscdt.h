@@ -6,6 +6,8 @@
 
 #include <petscsys.h>
 
+PETSC_EXTERN PetscClassId PETSCQUADRATURE_CLASSID;
+
 /*S
   PetscQuadrature - Quadrature rule for integration.
 
