@@ -850,16 +850,16 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature1D_Internal(PetscInt npoints, 
     ia = (PetscInt) a;
     ib = (PetscInt) b;
     if (ia == a && ib == b && ia + npoints + 1 > 0 && ib + npoints + 1 > 0 && ia + ib + npoints + 1 > 0) { /* All gamma(x) terms are (x-1)! terms */
-      ierr = PetscDTFactorial_Internal(ia + npoints, &a2);CHKERRQ(ierr);
-      ierr = PetscDTFactorial_Internal(ib + npoints, &a3);CHKERRQ(ierr);
-      ierr = PetscDTFactorial_Internal(ia + ib + npoints, &a4);CHKERRQ(ierr);
+      ierr = PetscDTFactorial(ia + npoints, &a2);CHKERRQ(ierr);
+      ierr = PetscDTFactorial(ib + npoints, &a3);CHKERRQ(ierr);
+      ierr = PetscDTFactorial(ia + ib + npoints, &a4);CHKERRQ(ierr);
     } else {
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"tgamma() - math routine is unavailable.");
     }
   }
 #endif
 
-  ierr = PetscDTFactorial_Internal(npoints, &a5);CHKERRQ(ierr);
+  ierr = PetscDTFactorial(npoints, &a5);CHKERRQ(ierr);
   a6   = a1 * a2 * a3 / a4 / a5;
   /* Computes the m roots of P_{m}^{a,b} on [-1,1] by Newton's method with Chebyshev points as initial guesses.
    Algorithm implemented from the pseudocode given by Karniadakis and Sherwin and Python in FIAT */

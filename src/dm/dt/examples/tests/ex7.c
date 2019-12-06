@@ -16,8 +16,8 @@ static PetscErrorCode CheckPullback(PetscInt N, PetscInt M, const PetscReal *L, 
 
   PetscFunctionBegin;
   k = PetscAbsInt(k);
-  ierr = PetscDTBinomial(N, k, &Nk);CHKERRQ(ierr);
-  ierr = PetscDTBinomial(M, k, &Mk);CHKERRQ(ierr);
+  ierr = PetscDTBinomialInt(N, k, &Nk);CHKERRQ(ierr);
+  ierr = PetscDTBinomialInt(M, k, &Mk);CHKERRQ(ierr);
   if (negative) {
     ierr = PetscMalloc1(Mk, &walloc);CHKERRQ(ierr);
     ierr = PetscDTAltVStar(M, M - k, 1, w, walloc);CHKERRQ(ierr);
@@ -111,10 +111,10 @@ int main(int argc, char **argv)
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
 
     if (verbose) {
-      PetscInt *work, *perm;
+      PetscInt *perm;
       PetscInt fac = 1;
 
-      ierr = PetscMalloc2(N, &perm, N, &work);CHKERRQ(ierr);
+      ierr = PetscMalloc1(N, &perm);CHKERRQ(ierr);
 
       for (k = 1; k <= N; k++) fac *= k;
       ierr = PetscViewerASCIIPrintf(viewer, "Permutations of %D:\n", N);CHKERRQ(ierr);
@@ -123,7 +123,7 @@ int main(int argc, char **argv)
         PetscBool isOdd;
         PetscInt  j;
 
-        ierr = PetscDTEnumPerm(N, k, work, perm, &isOdd);CHKERRQ(ierr);
+        ierr = PetscDTEnumPerm(N, k, perm, &isOdd);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(viewer, "%D:", k);CHKERRQ(ierr);
         for (j = 0; j < N; j++) {
           ierr = PetscPrintf(PETSC_COMM_WORLD, " %D", perm[j]);CHKERRQ(ierr);
@@ -131,14 +131,14 @@ int main(int argc, char **argv)
         ierr = PetscPrintf(PETSC_COMM_WORLD, ", %s\n", isOdd ? "odd" : "even");CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-      ierr = PetscFree2(perm,work);CHKERRQ(ierr);
+      ierr = PetscFree(perm);CHKERRQ(ierr);
     }
     for (k = 0; k <= N; k++) {
       PetscInt   j, Nk, M;
       PetscReal *w, *v, wv;
       PetscInt  *subset;
 
-      ierr = PetscDTBinomial(N, k, &Nk);CHKERRQ(ierr);
+      ierr = PetscDTBinomialInt(N, k, &Nk);CHKERRQ(ierr);
       if (verbose) {ierr = PetscViewerASCIIPrintf(viewer, "k = %D:\n", k);CHKERRQ(ierr);}
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       if (verbose) {ierr = PetscViewerASCIIPrintf(viewer, "(%D choose %D): %D\n", N, k, Nk);CHKERRQ(ierr);}
@@ -300,8 +300,8 @@ int main(int argc, char **argv)
 
         if (verbose) {ierr = PetscViewerASCIIPrintf(viewer, "wedge j = %D:\n", j);CHKERRQ(ierr);}
         ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-        ierr = PetscDTBinomial(N, j,   &Nj);CHKERRQ(ierr);
-        ierr = PetscDTBinomial(N, j+k, &Njk);CHKERRQ(ierr);
+        ierr = PetscDTBinomialInt(N, j,   &Nj);CHKERRQ(ierr);
+        ierr = PetscDTBinomialInt(N, j+k, &Njk);CHKERRQ(ierr);
         ierr = PetscMalloc4(Nj, &u, Njk, &uWw, N*(j+k), &x, N*(j+k), &xsplit);CHKERRQ(ierr);
         ierr = PetscMalloc1(j+k,&split);CHKERRQ(ierr);
         for (l = 0; l < Nj; l++) {ierr = PetscRandomGetValueReal(rand, &u[l]);CHKERRQ(ierr);}
@@ -325,7 +325,7 @@ int main(int argc, char **argv)
         }
         /* verify wedge formula */
         uWwxcheck = 0.;
-        ierr = PetscDTBinomial(j+k, j, &JKj);CHKERRQ(ierr);
+        ierr = PetscDTBinomialInt(j+k, j, &JKj);CHKERRQ(ierr);
         for (l = 0; l < JKj; l++) {
           PetscBool isOdd;
           PetscReal ux, wx;
@@ -370,7 +370,7 @@ int main(int argc, char **argv)
         PetscReal   *L, *u, *x;
         PetscInt     Mk, l;
 
-        ierr = PetscDTBinomial(M, k, &Mk);CHKERRQ(ierr);
+        ierr = PetscDTBinomialInt(M, k, &Mk);CHKERRQ(ierr);
         ierr = PetscMalloc3(M*N, &L, Mk, &u, M*k, &x);CHKERRQ(ierr);
         for (l = 0; l < M*N; l++) {ierr = PetscRandomGetValueReal(rand, &L[l]);CHKERRQ(ierr);}
         for (l = 0; l < Mk; l++) {ierr = PetscRandomGetValueReal(rand, &u[l]);CHKERRQ(ierr);}
@@ -395,7 +395,7 @@ int main(int argc, char **argv)
         PetscReal  *intv0mat, *matcheck;
         PetscInt  (*indices)[3];
 
-        ierr = PetscDTBinomial(N, k-1, &Nkm);CHKERRQ(ierr);
+        ierr = PetscDTBinomialInt(N, k-1, &Nkm);CHKERRQ(ierr);
         ierr = PetscMalloc5(Nkm, &wIntv0, Nkm, &wIntv0check, Nk * Nkm, &intv0mat, Nk * Nkm, &matcheck, Nk * k, &indices);CHKERRQ(ierr);
         ierr = PetscDTAltVInterior(N, k, w, v, wIntv0);CHKERRQ(ierr);
         ierr = PetscDTAltVInteriorMatrix(N, k, v, intv0mat);CHKERRQ(ierr);
