@@ -26,10 +26,17 @@ cdef class FE(Object):
         PetscCLEAR(self.obj); self.fe = newfe
         return self
 
-    def createDefault(self, dim, Nc, isSimplex, qorder, comm=None):
+    def createDefault(self, dim, nc, isSimplex, qorder, prefix=None, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscFE newfe = NULL
-        CHKERR( PetscFECreateDefault(ccomm, dim, Nc, isSimplex, NULL, qorder, &newfe))
+        cdef PetscInt cdim = asInt(dim)
+        cdef PetscInt cnc = asInt(nc)
+        cdef PetscInt cqorder = asInt(qorder)
+        cdef PetscBool cisSimplex = asBool(isSimplex)
+        cdef const_char *cprefix = NULL
+        if prefix:
+             prefix = str2bytes(prefix, &cprefix)
+        CHKERR( PetscFECreateDefault(ccomm, cdim, cnc, cisSimplex, cprefix, cqorder, &newfe))
         PetscCLEAR(self.obj); self.fe = newfe
         return self
 
