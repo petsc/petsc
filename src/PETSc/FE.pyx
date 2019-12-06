@@ -1,17 +1,15 @@
+# --------------------------------------------------------------------
 
 class FEType(object):
     BASIC     = S_(PETSCFEBASIC)
     OPENCL    = S_(PETSCFEOPENCL)
     COMPOSITE = S_(PETSCFECOMPOSITE)
 
-class FEOption(object):
-    pass
-
+# --------------------------------------------------------------------
 
 cdef class FE(Object):
 
     Type = FEType
-    Option = FEOption
 
     def __cinit__(self):
         self.obj = <PetscObject*> &self.fe
@@ -57,5 +55,8 @@ cdef class FE(Object):
         CHKERR( PetscFESetType(self.fe, typeFE) )
         return self
 
+# --------------------------------------------------------------------
+
 del FEType
-del FEOption
+
+# --------------------------------------------------------------------
