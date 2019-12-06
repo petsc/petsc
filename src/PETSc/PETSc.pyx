@@ -129,6 +129,8 @@ include "petscrand.pxi"
 include "petscis.pxi"
 include "petscsf.pxi"
 include "petscvec.pxi"
+include "petscdt.pxi"
+include "petscfe.pxi"
 include "petscsct.pxi"
 include "petscsec.pxi"
 include "petscmat.pxi"
@@ -166,6 +168,8 @@ include "Random.pyx"
 include "IS.pyx"
 include "SF.pyx"
 include "Vec.pyx"
+include "DT.pyx"
+include "FE.pyx"
 include "Scatter.pyx"
 include "Section.pyx"
 include "Mat.pyx"
@@ -373,6 +377,7 @@ cdef extern from *:
     PetscClassId PETSC_DM_CLASSID          "DM_CLASSID"
     PetscClassId PETSC_DS_CLASSID          "PETSCDS_CLASSID"
     PetscClassId PETSC_PARTITIONER_CLASSID "PETSCPARTITIONER_CLASSID"
+    PetscClassId PETSC_FE_CLASSID          "PETSCFE_CLASSID"
 
 cdef bint registercalled = 0
 
@@ -422,6 +427,7 @@ cdef int register() except -1:
     PyPetscType_Register(PETSC_DM_CLASSID,          DM)
     PyPetscType_Register(PETSC_DS_CLASSID,          DS)
     PyPetscType_Register(PETSC_PARTITIONER_CLASSID, Partitioner)
+    PyPetscType_Register(PETSC_FE_CLASSID,          FE)
     return 0 # and we are done, enjoy !!
 
 # --------------------------------------------------------------------
