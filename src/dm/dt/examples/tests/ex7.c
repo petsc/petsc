@@ -120,8 +120,8 @@ int main(int argc, char **argv)
       ierr = PetscViewerASCIIPrintf(viewer, "Permutations of %D:\n", N);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       for (k = 0; k < fac; k++) {
-        PetscBool isOdd;
-        PetscInt  j;
+        PetscBool isOdd, isOddCheck;
+        PetscInt  j, kCheck;
 
         ierr = PetscDTEnumPerm(N, k, perm, &isOdd);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(viewer, "%D:", k);CHKERRQ(ierr);
@@ -129,6 +129,8 @@ int main(int argc, char **argv)
           ierr = PetscPrintf(PETSC_COMM_WORLD, " %D", perm[j]);CHKERRQ(ierr);
         }
         ierr = PetscPrintf(PETSC_COMM_WORLD, ", %s\n", isOdd ? "odd" : "even");CHKERRQ(ierr);
+        ierr = PetscDTPermIndex(N, perm, &kCheck, &isOddCheck);CHKERRQ(ierr);
+        if (kCheck != k || isOddCheck != isOdd) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscDTEnumPerm / PetscDTPermIndex mismatch for (%D, %D)\n", N, k);
       }
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       ierr = PetscFree(perm);CHKERRQ(ierr);
@@ -147,10 +149,12 @@ int main(int argc, char **argv)
       ierr = PetscMalloc1(N, &subset);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       for (j = 0; j < Nk; j++) {
-        PetscBool isOdd;
-        PetscInt  jCheck;
+        PetscBool isOdd, isOddCheck;
+        PetscInt  jCheck, kCheck;
 
         ierr = PetscDTEnumSplit(N, k, j, subset, &isOdd);CHKERRQ(ierr);
+        ierr = PetscDTPermIndex(N, subset, &kCheck, &isOddCheck);CHKERRQ(ierr);
+        if (isOddCheck != isOdd) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscDTEnumSplit sign does not mmatch PetscDTPermIndex sign");
         if (verbose) {
           PetscInt l;
 

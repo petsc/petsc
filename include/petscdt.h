@@ -216,13 +216,12 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTBinomialInt(PetscInt n, PetscInt k, Pe
    Input Arguments:
 
 +  n - a non-negative integer (see note about limits below)
-.  k - an integer in [0, n!)
--  work - a workspace of n integers
+-  k - an integer in [0, n!)
 
    Output Arguments:
 
 +  perm - the permuted list of the integers [0, ..., n-1]
-.  isOdd - if not NULL, returns wether the permutation used an even or odd number of swaps.
+-  isOdd - if not NULL, returns wether the permutation used an even or odd number of swaps.
 
    Note: this is limited to n such that n! can be represented by PetscInt, which is 12 if PetscInt is a signed 32-bit integer and 20 if PetscInt is a signed 64-bit integer.
 
@@ -251,6 +250,53 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTEnumPerm(PetscInt n, PetscInt k, Petsc
     perm[i + s] = swap;
     odd ^= (!!s);
   }
+  if (isOdd) *isOdd = odd ? PETSC_TRUE : PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+/*MC
+   PetscDTPermIndex - Encode a permutation of n into an integer in [0, n!).  This inverts PetscDTEnumPerm.
+
+   Input Arguments:
+
++  n - a non-negative integer (see note about limits below)
+-  perm - the permuted list of the integers [0, ..., n-1]
+
+   Output Arguments:
+
++  k - an integer in [0, n!)
+.  isOdd - if not NULL, returns wether the permutation used an even or odd number of swaps.
+
+   Note: this is limited to n such that n! can be represented by PetscInt, which is 12 if PetscInt is a signed 32-bit integer and 20 if PetscInt is a signed 64-bit integer.
+
+   Level: beginner
+M*/
+PETSC_STATIC_INLINE PetscErrorCode PetscDTPermIndex(PetscInt n, const PetscInt *perm, PetscInt *k, PetscBool *isOdd)
+{
+  PetscInt  odd = 0;
+  PetscInt  i, idx;
+  PetscInt  work[PETSC_FACTORIAL_MAX];
+  PetscInt  iwork[PETSC_FACTORIAL_MAX];
+
+  PetscFunctionBeginHot;
+  if (n < 0 || n > PETSC_FACTORIAL_MAX) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of elements %D is not in supported range [0,%D]\n",n,PETSC_FACTORIAL_MAX);
+  for (i = 0; i < n; i++) work[i] = i;  /* partial permutation */
+  for (i = 0; i < n; i++) iwork[i] = i; /* partial permutation inverse */
+  for (idx = 0, i = 0; i < n - 1; i++) {
+    PetscInt j = perm[i];
+    PetscInt icur = work[i];
+    PetscInt jloc = iwork[j];
+    PetscInt diff = jloc - i;
+
+    idx = idx * (n - i) + diff;
+    /* swap (i, jloc) */
+    work[i] = j;
+    work[jloc] = icur;
+    iwork[j] = i;
+    iwork[icur] = jloc;
+    odd ^= (!!diff);
+  }
+  *k = idx;
   if (isOdd) *isOdd = odd ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(0);
 }
