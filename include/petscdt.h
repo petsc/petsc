@@ -84,11 +84,9 @@ PETSC_EXTERN PetscErrorCode PetscDTAltVStar(PetscInt, PetscInt, PetscInt, const 
    PetscDTFactorial - Approximate n! as a real number
 
    Input Arguments:
-
 .  n - a non-negative integer
 
-   Output Arguments;
-
+   Output Arguments:
 .  factorial - n!
 
    Level: beginner
@@ -99,6 +97,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTFactorial(PetscInt n, PetscReal *facto
   PetscInt  i;
 
   PetscFunctionBegin;
+  *factorial = -1.;
+  if (n < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Factorial called with negative number %D\n", n);
   for (i = 1; i < n+1; ++i) f *= i;
   *factorial = f;
   PetscFunctionReturn(0);
@@ -108,11 +108,9 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTFactorial(PetscInt n, PetscReal *facto
    PetscDTFactorialInt - Compute n! as an integer
 
    Input Arguments:
-
 .  n - a non-negative integer
 
-   Output Arguments;
-
+   Output Arguments:
 .  factorial - n!
 
    Level: beginner
@@ -123,7 +121,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTFactorialInt(PetscInt n, PetscInt *fac
 {
   PetscInt facLookup[13] = {1, 1, 2, 6, 24, 120, 720, 5040, 40320, 362880, 3628800, 39916800, 479001600};
 
-  PetscFunctionBeginHot;
+  PetscFunctionBegin;
+  *factorial = -1;
   if (n < 0 || n > PETSC_FACTORIAL_MAX) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of elements %D is not in supported range [0,%D]\n",n,PETSC_FACTORIAL_MAX);
   if (n <= 12) {
     *factorial = facLookup[n];
@@ -141,12 +140,10 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTFactorialInt(PetscInt n, PetscInt *fac
    PetscDTBinomial - Approximate the binomial coefficient "n choose k"
 
    Input Arguments:
-
 +  n - a non-negative integer
 -  k - an integer between 0 and n, inclusive
 
-   Output Arguments;
-
+   Output Arguments:
 .  binomial - approximation of the binomial coefficient n choose k
 
    Level: beginner
@@ -174,12 +171,10 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTBinomial(PetscInt n, PetscInt k, Petsc
    PetscDTBinomialInt - Compute the binomial coefficient "n choose k"
 
    Input Arguments:
-
 +  n - a non-negative integer
 -  k - an integer between 0 and n, inclusive
 
-   Output Arguments;
-
+   Output Arguments:
 .  binomial - the binomial coefficient n choose k
 
    Note: this is limited by integers that can be represented by PetscInt
@@ -188,21 +183,25 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTBinomial(PetscInt n, PetscInt k, Petsc
 M*/
 PETSC_STATIC_INLINE PetscErrorCode PetscDTBinomialInt(PetscInt n, PetscInt k, PetscInt *binomial)
 {
-  PetscFunctionBeginHot;
+  PetscInt bin;
+
+  PetscFunctionBegin;
+  *binomial = -1;
   if (n < 0 || k < 0 || k > n) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Binomial arguments (%D %D) must be non-negative, k <= n\n", n, k);
   if (n > PETSC_BINOMIAL_MAX) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Binomial elements %D is larger than max for PetscInt, %D\n", n, PETSC_BINOMIAL_MAX);
   if (n <= 3) {
     PetscInt binomLookup[4][4] = {{1, 0, 0, 0}, {1, 1, 0, 0}, {1, 2, 1, 0}, {1, 3, 3, 1}};
 
-    *binomial = binomLookup[n][k];
+    bin = binomLookup[n][k];
   } else {
     PetscInt  binom = 1;
     PetscInt  i;
 
     k = PetscMin(k, n - k);
     for (i = 0; i < k; i++) binom = (binom * (n - i)) / (i + 1);
-    *binomial = binom;
+    bin = binom;
   }
+  *binomial = bin;
   PetscFunctionReturn(0);
 }
 
@@ -211,17 +210,15 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTBinomialInt(PetscInt n, PetscInt k, Pe
 
    A permutation can be described by the operations that convert the lists [0, 1, ..., n-1] into the permutation,
    by a sequence of swaps, where the ith step swaps whatever number is in ith position with a number that is in
-   some position j >= i.  We encode this swap as the difference (j - i).  The difference d_i at step i is less than
-   (n - i).  We encode this sequence of n-1 differences [d_0, ..., d_{n-2}] as the number
+   some position j >= i.  This swap is encoded as the difference (j - i).  The difference d_i at step i is less than
+   (n - i).  This sequence of n-1 differences [d_0, ..., d_{n-2}] is encoded as the number
    (n-1)! * d_0 + (n-2)! * d_1 + ... + 1! * d_{n-2}.
 
    Input Arguments:
-
 +  n - a non-negative integer (see note about limits below)
 -  k - an integer in [0, n!)
 
    Output Arguments:
-
 +  perm - the permuted list of the integers [0, ..., n-1]
 -  isOdd - if not NULL, returns wether the permutation used an even or odd number of swaps.
 
@@ -236,7 +233,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTEnumPerm(PetscInt n, PetscInt k, Petsc
   PetscInt  work[PETSC_FACTORIAL_MAX];
   PetscInt *w;
 
-  PetscFunctionBeginHot;
+  PetscFunctionBegin;
+  if (isOdd) *isOdd = PETSC_FALSE;
   if (n < 0 || n > PETSC_FACTORIAL_MAX) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of elements %D is not in supported range [0,%D]\n",n,PETSC_FACTORIAL_MAX);
   w = &work[n - 2];
   for (i = 2; i <= n; i++) {
@@ -260,12 +258,10 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTEnumPerm(PetscInt n, PetscInt k, Petsc
    PetscDTPermIndex - Encode a permutation of n into an integer in [0, n!).  This inverts PetscDTEnumPerm.
 
    Input Arguments:
-
 +  n - a non-negative integer (see note about limits below)
 -  perm - the permuted list of the integers [0, ..., n-1]
 
    Output Arguments:
-
 +  k - an integer in [0, n!)
 .  isOdd - if not NULL, returns wether the permutation used an even or odd number of swaps.
 
@@ -281,6 +277,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTPermIndex(PetscInt n, const PetscInt *
   PetscInt  iwork[PETSC_FACTORIAL_MAX];
 
   PetscFunctionBeginHot;
+  *k = -1;
+  if (isOdd) *isOdd = PETSC_FALSE;
   if (n < 0 || n > PETSC_FACTORIAL_MAX) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of elements %D is not in supported range [0,%D]\n",n,PETSC_FACTORIAL_MAX);
   for (i = 0; i < n; i++) work[i] = i;  /* partial permutation */
   for (i = 0; i < n; i++) iwork[i] = i; /* partial permutation inverse */
@@ -308,13 +306,11 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTPermIndex(PetscInt n, const PetscInt *
    The encoding is in lexicographic order.
 
    Input Arguments:
-
 +  n - a non-negative integer (see note about limits below)
 .  k - an integer in [0, n]
 -  j - an index in [0, n choose k)
 
    Output Arguments:
-
 .  subset - the jth subset of size k of the integers [0, ..., n - 1]
 
    Note: this is limited by arguments such that n choose k can be represented by PetscInt
@@ -349,13 +345,11 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTEnumSubset(PetscInt n, PetscInt k, Pet
    PetscDTSubsetIndex - Convert an ordered subset of k integers from the set [0, ..., n - 1] to its encoding as an integers in [0, n choose k) in lexicographic order.  This is the inverse of PetscDTEnumSubset.
 
    Input Arguments:
-
 +  n - a non-negative integer (see note about limits below)
 .  k - an integer in [0, n]
 -  subset - an ordered subset of the integers [0, ..., n - 1]
 
    Output Arguments:
-
 .  index - the rank of the subset in lexicographic order
 
    Note: this is limited by arguments such that n choose k can be represented by PetscInt
@@ -369,7 +363,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTSubsetIndex(PetscInt n, PetscInt k, co
   PetscInt       i, j = 0, l, Nk;
   PetscErrorCode ierr;
 
-  PetscFunctionBeginHot;
+  PetscFunctionBegin;
+  *index = -1;
   ierr = PetscDTBinomialInt(n, k, &Nk);CHKERRQ(ierr);
   for (i = 0, l = 0; i < n && l < k; i++) {
     PetscInt Nminuskminus = (Nk * (k - l)) / (n - i);
@@ -387,20 +382,17 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTSubsetIndex(PetscInt n, PetscInt k, co
   PetscFunctionReturn(0);
 }
 
-
 /*MC
-   PetscDTEnumSubset - Split the integers [0, ..., n - 1] into two complementary ordered subsets, the first of size k and beingthe jth in lexicographic order.
+   PetscDTEnumSubset - Split the integers [0, ..., n - 1] into two complementary ordered subsets, the first subset of size k and being the jth subset of that size in lexicographic order.
 
    Input Arguments:
-
 +  n - a non-negative integer (see note about limits below)
 .  k - an integer in [0, n]
 -  j - an index in [0, n choose k)
 
    Output Arguments:
-
 +  perm - the jth subset of size k of the integers [0, ..., n - 1], followed by its complementary set.
--  isOdd - if not NULL, return whether the permutation is even or odd.
+-  isOdd - if not NULL, return whether perm is an even or odd permutation.
 
    Note: this is limited by arguments such that n choose k can be represented by PetscInt
 
@@ -414,7 +406,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTEnumSplit(PetscInt n, PetscInt k, Pets
   PetscInt       odd;
   PetscErrorCode ierr;
 
-  PetscFunctionBeginHot;
+  PetscFunctionBegin;
+  if (isOdd) *isOdd = PETSC_FALSE;
   ierr = PetscDTBinomialInt(n, k, &Nk);CHKERRQ(ierr);
   odd = 0;
   subcomp = &perm[k];

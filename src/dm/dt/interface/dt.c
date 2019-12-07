@@ -274,7 +274,7 @@ static PetscErrorCode PetscDTJacobianInverse_Internal(PetscInt m, PetscInt n, co
   ierr = PetscBLASIntCast(n, &bn);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
   ierr = PetscMalloc2(m*n, &Js, m*n, &Jinvs);CHKERRQ(ierr);
-  for (i = 0; i < m*n; j++) Js[i] = J[i];
+  for (i = 0; i < m*n; i++) Js[i] = J[i];
 #else
   Js = (PetscReal *) J;
   Jinvs = Jinv;
@@ -353,7 +353,7 @@ static PetscErrorCode PetscDTJacobianInverse_Internal(PetscInt m, PetscInt n, co
     ierr = PetscFree(JTJ);CHKERRQ(ierr);
   }
 #if defined(PETSC_USE_COMPLEX)
-  for (i = 0; i < m*n; j++) Jinv[i] = PetscRealPart(Jinvs[i]);
+  for (i = 0; i < m*n; i++) Jinv[i] = PetscRealPart(Jinvs[i]);
   ierr = PetscFree2(Js, Jinvs);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
@@ -370,7 +370,7 @@ static PetscErrorCode PetscDTJacobianInverse_Internal(PetscInt m, PetscInt n, co
 .  origin - a point in the original space
 .  originImage - the image of the origin under the transformation
 .  J - the Jacobian of the image: an [imageDim x dim] matrix in row major order
--  formIndex - transform the quadrature weights as k-forms of this index (if the number of components is a multiple of (dim choose formIndex), it is assumed that they represent multiple k-forms) [see PetscDTAltVPullback() for interpretation of formIndex]
+-  formDegree - transform the quadrature weights as k-forms of this form degree (if the number of components is a multiple of (dim choose formDegree), it is assumed that they represent multiple k-forms) [see PetscDTAltVPullback() for interpretation of formDegree]
 
    Output Arguments:
 .  Jinvstarq - a quadrature rule where each point is the image of a point in the original quadrature rule, and where the k-form weights have been pulled-back by the pseudoinverse of J to the k-form weights in the image space.
@@ -379,7 +379,7 @@ static PetscErrorCode PetscDTJacobianInverse_Internal(PetscInt m, PetscInt n, co
 
 .seealso: PetscDTAltVPullback(), PetscDTAltVPullbackMatrix()
 @*/
-PetscErrorCode PetscQuadraturePushForward(PetscQuadrature q, PetscInt imageDim, const PetscReal origin[], const PetscReal originImage[], const PetscReal J[], PetscInt formIndex, PetscQuadrature *Jinvstarq)
+PetscErrorCode PetscQuadraturePushForward(PetscQuadrature q, PetscInt imageDim, const PetscReal origin[], const PetscReal originImage[], const PetscReal J[], PetscInt formDegree, PetscQuadrature *Jinvstarq)
 {
   PetscInt         dim, Nc, imageNc, formSize, Ncopies, imageFormSize, Npoints, pt, i, j, c;
   const PetscReal *points;
@@ -391,18 +391,18 @@ PetscErrorCode PetscQuadraturePushForward(PetscQuadrature q, PetscInt imageDim, 
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(q, PETSC_OBJECT_CLASSID, 1);
-  if (imageDim < PetscAbsInt(formIndex)) SETERRQ2(PetscObjectComm((PetscObject)q), PETSC_ERR_ARG_INCOMP, "Cannot represent a %D form in %D dimensions", PetscAbsInt(formIndex), imageDim);
+  if (imageDim < PetscAbsInt(formDegree)) SETERRQ2(PetscObjectComm((PetscObject)q), PETSC_ERR_ARG_INCOMP, "Cannot represent a %D-form in %D dimensions", PetscAbsInt(formDegree), imageDim);
   ierr = PetscQuadratureGetData(q, &dim, &Nc, &Npoints, &points, &weights);CHKERRQ(ierr);
+  ierr = PetscDTBinomialInt(dim, PetscAbsInt(formDegree), &formSize);CHKERRQ(ierr);
   if (Nc % formSize) SETERRQ2(PetscObjectComm((PetscObject)q), PETSC_ERR_ARG_INCOMP, "Number of components %D is not a multiple of formSize %D\n", Nc, formSize);
   Ncopies = Nc / formSize;
-  ierr = PetscDTBinomialInt(dim, PetscAbsInt(formIndex), &formSize);CHKERRQ(ierr);
-  ierr = PetscDTBinomialInt(imageDim, PetscAbsInt(formIndex), &imageFormSize);CHKERRQ(ierr);
+  ierr = PetscDTBinomialInt(imageDim, PetscAbsInt(formDegree), &imageFormSize);CHKERRQ(ierr);
   imageNc = Ncopies * imageFormSize;
   ierr = PetscMalloc1(Npoints * imageDim, &imagePoints);CHKERRQ(ierr);
   ierr = PetscMalloc1(Npoints * imageNc, &imageWeights);CHKERRQ(ierr);
   ierr = PetscMalloc2(imageDim * dim, &Jinv, formSize * imageFormSize, &Jinvstar);CHKERRQ(ierr);
   ierr = PetscDTJacobianInverse_Internal(dim, imageDim, J, Jinv);CHKERRQ(ierr);
-  ierr = PetscDTAltVPullbackMatrix(imageDim, dim, Jinv, formIndex, Jinvstar);CHKERRQ(ierr);
+  ierr = PetscDTAltVPullbackMatrix(imageDim, dim, Jinv, formDegree, Jinvstar);CHKERRQ(ierr);
   for (pt = 0; pt < Npoints; pt++) {
     const PetscReal *point = &points[pt * dim];
     PetscReal       *imagePoint = &imagePoints[pt * imageDim];
@@ -1022,9 +1022,7 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature1D_Internal(PetscInt npoints, 
       ierr = PetscDTFactorial(ia + npoints, &a2);CHKERRQ(ierr);
       ierr = PetscDTFactorial(ib + npoints, &a3);CHKERRQ(ierr);
       ierr = PetscDTFactorial(ia + ib + npoints, &a4);CHKERRQ(ierr);
-    } else {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"tgamma() - math routine is unavailable.");
-    }
+    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"tgamma() - math routine is unavailable.");
   }
 #endif
 
