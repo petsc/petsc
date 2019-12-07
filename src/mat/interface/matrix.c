@@ -2079,7 +2079,7 @@ PetscErrorCode MatGetLayouts(Mat A,PetscLayout *rmap,PetscLayout *cmap)
 
 /*@C
    MatSetValuesLocal - Inserts or adds values into certain locations of a matrix,
-   using a local ordering of the nodes.
+   using a local numbering of the nodes.
 
    Not Collective
 
