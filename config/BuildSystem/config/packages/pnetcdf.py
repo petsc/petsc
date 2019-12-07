@@ -25,6 +25,14 @@ class Configure(config.package.GNUPackage):
     return
 
   def formGNUConfigureArgs(self):
+    # https://github.com/Parallel-NetCDF/PnetCDF/commit/38d210c006cabff70d78204d2db98a22ab87547c
+    if hasattr(self.mpi,'ompi_version') and self.mpi.ompi_version >= (4,0,0):
+        self.minversion = '1.12.1'
+        oldinclude = self.include
+        self.include.append(os.path.join(self.packageDir,'src','include'))
+        self.checkVersion()
+        self.include = oldinclude
+
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
     self.addToArgs(args,'LIBS',self.libraries.toStringNoDupes(self.flibs.lib))
     return args
