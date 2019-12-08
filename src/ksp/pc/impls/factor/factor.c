@@ -504,7 +504,7 @@ PetscErrorCode  PCFactorSetFill(PC pc,PetscReal fill)
    For sparse matrices the factorization cannot be done truly in-place
    so this does not save memory during the factorization, but after the matrix
    is factored, the original unfactored matrix is freed, thus recovering that
-   space.
+   space. For ICC(0) and ILU(0) with the default natural ordering the factorization is done efficiently in-place.
 
    Logically Collective on PC
 

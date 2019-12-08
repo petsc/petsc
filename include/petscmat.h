@@ -1105,17 +1105,18 @@ PETSC_EXTERN PetscErrorCode MatReorderForNonzeroDiagonal(Mat,PetscReal,IS,IS);
 PETSC_EXTERN PetscErrorCode MatCreateLaplacian(Mat,PetscReal,PetscBool,Mat*);
 
 /*S
-    MatFactorShiftType - Numeric Shift.
+    MatFactorShiftType - Numeric Shift for factorizations
 
    Level: beginner
 
+.seealso: MatGetFactor()
 S*/
 typedef enum {MAT_SHIFT_NONE,MAT_SHIFT_NONZERO,MAT_SHIFT_POSITIVE_DEFINITE,MAT_SHIFT_INBLOCKS} MatFactorShiftType;
 PETSC_EXTERN const char *const MatFactorShiftTypes[];
 PETSC_EXTERN const char *const MatFactorShiftTypesDetail[];
 
 /*S
-    MatFactorError - indicates what type of error in matrix factor
+    MatFactorError - indicates what type of error was generated in a matrix factorization
 
     Level: beginner
 
@@ -1221,11 +1222,15 @@ PETSC_EXTERN PetscErrorCode MatSOR(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscI
 
    Level: beginner
 
-.seealso:  MatFDColoringCreate() ISColoring MatFDColoring
+    Notes:
+       Coloring of matrices can be computed directly from the sparse matrix nonzero structure via the MatColoring object or from the mesh from which the
+       matrix comes from via DMCreateColoring(). In general using the mesh produces a more optimal coloring (fewer colors).
+
+       Once a coloring is available MatFDColoringCreate() creates an object that can be used to efficiently compute Jacobians using that coloring. This
+       same object can also be used to efficiently convert data created by Automatic Differentation tools to PETSc sparse matrices.
+
+.seealso:  MatFDColoringCreate(), MatColoringWeightType, ISColoring, MatFDColoring, DMCreateColoring(), MatColoringCreate(), MatOrdering, MatPartitioning
 S*/
-typedef struct _p_MatColoring* MatColoring;
-/*J
-    MatColoringType - String with the name of a PETSc matrix coloring
 
    Level: beginner
 
@@ -1253,6 +1258,8 @@ typedef const  char*           MatColoringType;
     Level: intermediate
 
    Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
+
+.seealso: MatColoring, MatColoringCreate()
 E*/
 typedef enum {MAT_COLORING_WEIGHT_RANDOM,MAT_COLORING_WEIGHT_LEXICAL,MAT_COLORING_WEIGHT_LF,MAT_COLORING_WEIGHT_SL} MatColoringWeightType;
 
@@ -1282,7 +1289,10 @@ PETSC_EXTERN PetscErrorCode MatISColoringTest(Mat,ISColoring);
 
    Level: beginner
 
-.seealso:  MatFDColoringCreate()
+   Notes:
+      This object is creating utilizing a coloring provided by the MatColoring object or DMCreateColoring()
+
+.seealso:  MatFDColoringCreate(), MatColoring, DMCreateColoring()
 S*/
 typedef struct _p_MatFDColoring* MatFDColoring;
 
@@ -1324,7 +1334,14 @@ PETSC_EXTERN PetscErrorCode MatTransposeColoringDestroy(MatTransposeColoring*);
 
    Level: beginner
 
-.seealso:  MatPartitioningCreate(), MatPartitioningType
+   Notes:
+     There is also a PetscPartitioner object that provides the same functionality. It can utilize the MatPartitioning operations
+     via PetscPartitionerSetType(p,PETSCPARTITIONERMATPARTITIONING)
+
+   Developers Note:
+     It is an extra maintainance and documentation cost to have two objects with the same functionality.
+
+.seealso:  MatPartitioningCreate(), MatPartitioningType, MatColoring, MatGetOrdering()
 S*/
 typedef struct _p_MatPartitioning* MatPartitioning;
 
@@ -1345,7 +1362,6 @@ typedef const char* MatPartitioningType;
 #define MATPARTITIONINGPTSCOTCH "ptscotch"
 #define MATPARTITIONINGHIERARCH  "hierarch"
 
-
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate(MPI_Comm,MatPartitioning*);
 PETSC_EXTERN PetscErrorCode MatPartitioningSetType(MatPartitioning,MatPartitioningType);
 PETSC_EXTERN PetscErrorCode MatPartitioningSetNParts(MatPartitioning,PetscInt);
@@ -1357,14 +1373,9 @@ PETSC_EXTERN PetscErrorCode MatPartitioningImprove(MatPartitioning,IS*);
 PETSC_EXTERN PetscErrorCode MatPartitioningViewImbalance(MatPartitioning,IS);
 PETSC_EXTERN PetscErrorCode MatPartitioningApplyND(MatPartitioning,IS*);
 PETSC_EXTERN PetscErrorCode MatPartitioningDestroy(MatPartitioning*);
-
 PETSC_EXTERN PetscErrorCode MatPartitioningRegister(const char[],PetscErrorCode (*)(MatPartitioning));
-
-
-
 PETSC_EXTERN PetscErrorCode MatPartitioningView(MatPartitioning,PetscViewer);
 PETSC_EXTERN PetscErrorCode MatPartitioningViewFromOptions(MatPartitioning,PetscObject,const char[]);
-
 PETSC_EXTERN PetscErrorCode MatPartitioningSetFromOptions(MatPartitioning);
 PETSC_EXTERN PetscErrorCode MatPartitioningGetType(MatPartitioning,MatPartitioningType*);
 

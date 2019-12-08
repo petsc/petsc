@@ -889,12 +889,15 @@ PetscErrorCode  SNESMonitorSetFromOptions(SNES snes,const char name[],const char
 -  -snes_ksp_ew_threshold <threshold> - Sets threshold
 
    Notes:
-   To see all options, run your program with the -help option or consult
-   Users-Manual: ch_snes
+   To see all options, run your program with the -help option or consult the users manual
+
+   Notes:
+      SNES supports three approaches for computing (approximate) Jacobians: user provided via SNESSetJacobian(), matrix free, and computing explictly with
+      finite differences and coloring using MatFDColoring. It is also possible to use automatic differentiation and the MatFDColoring object.
 
    Level: beginner
 
-.seealso: SNESSetOptionsPrefix(), SNESResetFromOptions()
+.seealso: SNESSetOptionsPrefix(), SNESResetFromOptions(), SNES, SNESCreate()
 @*/
 PetscErrorCode  SNESSetFromOptions(SNES snes)
 {
@@ -1231,8 +1234,7 @@ PetscErrorCode  SNESGetApplicationContext(SNES snes,void *usrP)
 }
 
 /*@
-   SNESSetUseMatrixFree - indicates that SNES should use matrix free finite difference matrix vector products internally to apply
-                          the Jacobian.
+   SNESSetUseMatrixFree - indicates that SNES should use matrix free finite difference matrix vector products internally to apply the Jacobian.
 
    Collective on SNES
 
@@ -1243,11 +1245,17 @@ PetscErrorCode  SNESGetApplicationContext(SNES snes,void *usrP)
 
    Options Database:
 + -snes_mf - use matrix free for both the mat and pmat operator
-- -snes_mf_operator - use matrix free only for the mat operator
+. -snes_mf_operator - use matrix free only for the mat operator
+. -snes_fd_color - compute the Jacobian via coloring and finite differences.
+- -snes_fd - compute the Jacobian via finite differences (slow)
 
    Level: intermediate
 
-.seealso:   SNESGetUseMatrixFree(), MatCreateSNESMF()
+   Notes:
+      SNES supports three approaches for computing (approximate) Jacobians: user provided via SNESSetJacobian(), matrix free, and computing explictly with
+      finite differences and coloring using MatFDColoring. It is also possible to use automatic differentiation and the MatFDColoring object.
+
+.seealso:   SNESGetUseMatrixFree(), MatCreateSNESMF(), SNESComputeJacobianDefaultColor()
 @*/
 PetscErrorCode  SNESSetUseMatrixFree(SNES snes,PetscBool mf_operator,PetscBool mf)
 {
@@ -1262,8 +1270,7 @@ PetscErrorCode  SNESSetUseMatrixFree(SNES snes,PetscBool mf_operator,PetscBool m
 }
 
 /*@
-   SNESGetUseMatrixFree - indicates if the SNES uses matrix free finite difference matrix vector products to apply
-                          the Jacobian.
+   SNESGetUseMatrixFree - indicates if the SNES uses matrix free finite difference matrix vector products to apply the Jacobian.
 
    Collective on SNES
 
