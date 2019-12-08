@@ -359,7 +359,10 @@ PetscErrorCode PetscSFSetGraph(PetscSF sf,PetscInt nroots,PetscInt nleaves,const
   if (nroots  < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"nroots %D, cannot be negative",nroots);
   if (nleaves < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"nleaves %D, cannot be negative",nleaves);
 
-  ierr = PetscSFReset(sf);CHKERRQ(ierr);
+  if (sf->nroots >= 0) { /* Reset only if graph already set */
+    ierr = PetscSFReset(sf);CHKERRQ(ierr);
+  }
+
   ierr = PetscLogEventBegin(PETSCSF_SetGraph,sf,0,0,0);CHKERRQ(ierr);
 
   sf->nroots  = nroots;
