@@ -764,6 +764,7 @@ PetscErrorCode  DMDestroy(DM *dm)
   if ((*dm)->ops->destroy) {
     ierr = (*(*dm)->ops->destroy)(*dm);CHKERRQ(ierr);
   }
+  ierr = DMMonitorCancel(*dm);CHKERRQ(ierr);
   /* We do not destroy (*dm)->data here so that we can reference count backend objects */
   ierr = PetscHeaderDestroy(dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -8154,6 +8155,159 @@ PetscErrorCode DMGetCompatibility(DM dm,DM dm2,PetscBool *compatible,PetscBool *
     ierr = (*dm2->ops->getcompatibility)(dm2,dm,compatible,set);CHKERRQ(ierr); /* Note argument order */
   } else {
     *set = PETSC_FALSE;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMMonitorSet - Sets an ADDITIONAL function that is to be used after a solve to monitor discretization performance.
+
+  Logically Collective on DM
+
+  Input Parameters:
++ DM - the DM
+. f - the monitor function
+. mctx - [optional] user-defined context for private data for the monitor routine (use NULL if no context is desired)
+- monitordestroy - [optional] routine that frees monitor context (may be NULL)
+
+  Options Database Keys:
+- -dm_monitor_cancel - cancels all monitors that have been hardwired into a code by calls to DMMonitorSet(), but
+                            does not cancel those set via the options database.
+
+  Notes:
+  Several different monitoring routines may be set by calling
+  DMMonitorSet() multiple times; all will be called in the
+  order in which they were set.
+
+  Fortran Notes:
+  Only a single monitor function can be set for each DM object
+
+  Level: intermediate
+
+.seealso: DMMonitorCancel()
+@*/
+PetscErrorCode DMMonitorSet(DM dm, PetscErrorCode (*f)(DM, void *), void *mctx, PetscErrorCode (*monitordestroy)(void**))
+{
+  PetscInt       m;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  for (m = 0; m < dm->numbermonitors; ++m) {
+    PetscBool identical;
+
+    ierr = PetscMonitorCompare((PetscErrorCode (*)(void)) f, mctx, monitordestroy, (PetscErrorCode (*)(void)) dm->monitor[m], dm->monitorcontext[m], dm->monitordestroy[m], &identical);CHKERRQ(ierr);
+    if (identical) PetscFunctionReturn(0);
+  }
+  if (dm->numbermonitors >= MAXDMMONITORS) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Too many monitors set");
+  dm->monitor[dm->numbermonitors]          = f;
+  dm->monitordestroy[dm->numbermonitors]   = monitordestroy;
+  dm->monitorcontext[dm->numbermonitors++] = (void *) mctx;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMMonitorCancel - Clears all the monitor functions for a DM object.
+
+  Logically Collective on DM
+
+  Input Parameter:
+. dm - the DM
+
+  Options Database Key:
+. -dm_monitor_cancel - cancels all monitors that have been hardwired
+  into a code by calls to DMonitorSet(), but does not cancel those
+  set via the options database
+
+  Notes:
+  There is no way to clear one specific monitor from a DM object.
+
+  Level: intermediate
+
+.seealso: DMMonitorSet()
+@*/
+PetscErrorCode DMMonitorCancel(DM dm)
+{
+  PetscErrorCode ierr;
+  PetscInt       m;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  for (m = 0; m < dm->numbermonitors; ++m) {
+    if (dm->monitordestroy[m]) {ierr = (*dm->monitordestroy[m])(&dm->monitorcontext[m]);CHKERRQ(ierr);}
+  }
+  dm->numbermonitors = 0;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMMonitorSetFromOptions - Sets a monitor function and viewer appropriate for the type indicated by the user
+
+  Collective on DM
+
+  Input Parameters:
++ dm   - DM object you wish to monitor
+. name - the monitor type one is seeking
+. help - message indicating what monitoring is done
+. manual - manual page for the monitor
+. monitor - the monitor function
+- monitorsetup - a function that is called once ONLY if the user selected this monitor that may set additional features of the DM or PetscViewer objects
+
+  Output Parameter:
+. flg - Flag set if the monitor was created
+
+  Level: developer
+
+.seealso: PetscOptionsGetViewer(), PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(),
+          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
+          PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
+          PetscOptionsFList(), PetscOptionsEList()
+@*/
+PetscErrorCode DMMonitorSetFromOptions(DM dm, const char name[], const char help[], const char manual[], PetscErrorCode (*monitor)(DM, void *), PetscErrorCode (*monitorsetup)(DM, PetscViewerAndFormat *), PetscBool *flg)
+{
+  PetscViewer       viewer;
+  PetscViewerFormat format;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject) dm), ((PetscObject) dm)->options, ((PetscObject) dm)->prefix, name, &viewer, &format, flg);CHKERRQ(ierr);
+  if (*flg) {
+    PetscViewerAndFormat *vf;
+
+    ierr = PetscViewerAndFormatCreate(viewer, format, &vf);CHKERRQ(ierr);
+    ierr = PetscObjectDereference((PetscObject) viewer);CHKERRQ(ierr);
+    if (monitorsetup) {ierr = (*monitorsetup)(dm, vf);CHKERRQ(ierr);}
+    ierr = DMMonitorSet(dm,(PetscErrorCode (*)(DM, void *)) monitor, vf, (PetscErrorCode (*)(void **)) PetscViewerAndFormatDestroy);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+   DMMonitor - runs the user provided monitor routines, if they exist
+
+   Collective on DM
+
+   Input Parameters:
+.  dm - The DM
+
+   Level: developer
+
+.seealso: DMMonitorSet()
+@*/
+PetscErrorCode DMMonitor(DM dm)
+{
+  PetscInt       m;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!dm) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  for (m = 0; m < dm->numbermonitors; ++m) {
+    ierr = (*dm->monitor[m])(dm, dm->monitorcontext[m]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
