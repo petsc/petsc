@@ -419,6 +419,14 @@ cdef class DM(Object):
         CHKERR( DMAdaptMetric(self.dm, metric.vec, clbl, &newdm.dm) )
         return newdm
 
+    def getLabel(self, name):
+        cdef const_char *cname = NULL
+        cdef DMLabel dmlabel = DMLabel()
+        name = str2bytes(name, &cname)
+        CHKERR( DMGetLabel(self.dm, cname, &dmlabel.dmlabel) )
+        PetscINCREF(dmlabel.obj)
+        return dmlabel
+
     #
 
     def setSection(self, Section sec):
