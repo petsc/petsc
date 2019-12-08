@@ -33,15 +33,21 @@ static PetscErrorCode SNESComputeFunctionCtx(SNES snes,Vec x,Vec f,void *ctx)
 .  -snes_fd_color - Activates SNESComputeJacobianDefaultColor() in SNESSetFromOptions()
 .  -mat_fd_coloring_err <err> - Sets <err> (square root of relative error in the function)
 .  -mat_fd_coloring_umin <umin> - Sets umin, the minimum allowable u-value magnitude
--  -mat_fd_type - Either wp or ds (see MATMFFD_WP or MATMFFD_DS)
+.  -mat_fd_type - Either wp or ds (see MATMFFD_WP or MATMFFD_DS)
+.  -snes_mf_operator - Use matrix free application of Jacobian
+-  -snes_mf - Use matrix free Jacobian with not explicit Jacobian represenation
 
     Notes:
-    If the coloring is not provided through the context, this will first try to get the
+        If the coloring is not provided through the context, this will first try to get the
         coloring from the DM.  If the DM type has no coloring routine, then it will try to
         get the coloring from the matrix.  This requires that the matrix have nonzero entries
-        precomputed.  
+        precomputed.
 
-.seealso: SNESSetJacobian(), SNESTestJacobian(), SNESComputeJacobianDefault()
+       SNES supports three approaches for computing (approximate) Jacobians: user provided via SNESSetJacobian(), matrix free via SNESSetUseMatrixFree,
+       and computing explictly with finite differences and coloring using MatFDColoring. It is also possible to use automatic differentiation and the MatFDColoring object.
+
+
+.seealso: SNESSetJacobian(), SNESTestJacobian(), SNESComputeJacobianDefault(), SNESSetUseMatrixFree(),
           MatFDColoringCreate(), MatFDColoringSetFunction()
 
 @*/

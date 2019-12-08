@@ -138,9 +138,9 @@ $      MATORDERINGQMD - Quotient Minimum Degree
 +  rperm - row permutation indices
 -  cperm - column permutation indices
 
-
    Options Database Key:
-. -mat_view_ordering draw - plots matrix nonzero structure in new ordering
++ -mat_view_ordering draw - plots matrix nonzero structure in new ordering
+- -pc_factor_mat_ordering_type <nd,natural,..> - ordering to use with PCs based on factorization, LU, ILU, Cholesky, ICC
 
    Level: intermediate
 
@@ -161,7 +161,7 @@ $      MATORDERINGQMD - Quotient Minimum Degree
            One-way Dissection, Cholesky, Reverse Cuthill-McKee,
            Quotient Minimum Degree
 
-.seealso:   MatOrderingRegister(), PCFactorSetMatOrderingType()
+.seealso:   MatOrderingRegister(), PCFactorSetMatOrderingType(), MatColoring, MatColoringCreate()
 @*/
 PetscErrorCode  MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
 {
