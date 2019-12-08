@@ -272,8 +272,6 @@ PetscErrorCode PetscSFSetUp(PetscSF sf)
                            Only available for SF types of basic and neighbor.
 
    Level: intermediate
-
-.seealso: PetscSFWindowSetSyncType()
 @*/
 PetscErrorCode PetscSFSetFromOptions(PetscSF sf)
 {
@@ -1224,8 +1222,7 @@ PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF sf,PetscInt nselected,const Petsc
     }
 
     if (n != connected_leaves) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"There is a size mismatch in the SF embedding, %d != %d",n,connected_leaves);
-    ierr = PetscSFCreate(comm,newsf);CHKERRQ(ierr);
-    ierr = PetscSFSetFromOptions(*newsf);CHKERRQ(ierr);
+    ierr = PetscSFDuplicate(sf,PETSCSF_DUPLICATE_CONFONLY,newsf);CHKERRQ(ierr);
     ierr = PetscSFSetGraph(*newsf,nroots,connected_leaves,new_ilocal,PETSC_OWN_POINTER,new_iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
     ierr = PetscFree2(rootdata,leafdata);CHKERRQ(ierr);
   }
@@ -1287,8 +1284,7 @@ PetscErrorCode PetscSFCreateEmbeddedLeafSF(PetscSF sf,PetscInt nselected,const P
       new_iremote[i].rank  = iremote[l].rank;
       new_iremote[i].index = iremote[l].index;
     }
-    ierr = PetscSFCreate(comm,newsf);CHKERRQ(ierr);
-    ierr = PetscSFSetFromOptions(*newsf);CHKERRQ(ierr);
+    ierr = PetscSFDuplicate(sf,PETSCSF_DUPLICATE_CONFONLY,newsf);CHKERRQ(ierr);
     ierr = PetscSFSetGraph(*newsf,nroots,nselected,new_ilocal,PETSC_OWN_POINTER,new_iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
   }
   ierr = PetscFree(leaves);CHKERRQ(ierr);
