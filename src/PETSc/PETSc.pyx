@@ -148,6 +148,7 @@ include "petscdmstag.pxi"
 include "petscdmcomposite.pxi"
 include "petscdmshell.pxi"
 include "petscdmlabel.pxi"
+include "petscdmswarm.pxi"
 include "petscpartitioner.pxi"
 include "petsclinesearch.pxi"
 
@@ -188,6 +189,7 @@ include "DMStag.pyx"
 include "DMComposite.pyx"
 include "DMShell.pyx"
 include "DMLabel.pyx"
+include "DMSwarm.pyx"
 include "Partitioner.pyx"
 
 # --------------------------------------------------------------------

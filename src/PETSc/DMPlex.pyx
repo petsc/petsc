@@ -593,6 +593,10 @@ cdef class DMPlex(DM):
         CHKERR( DMPlexGetPointGlobalField(self.dm, cpoint, cfield, &start, &end) )
         return toInt(start), toInt(end)
 
+    def createClosureIndex(self, Section sec or None):
+        cdef PetscSection csec = sec.sec if sec is not None else NULL
+        CHKERR( DMPlexCreateClosureIndex(self.dm, csec) )
+
     #
 
     def setRefinementUniform(self, refinementUniform=True):

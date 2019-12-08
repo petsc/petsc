@@ -48,6 +48,7 @@ cdef extern from "petsc4py/numpy.h":
     ctypedef struct PyObject
     ctypedef struct PyTypeObject
     PyObject* PyArray_New(PyTypeObject*,int,npy_intp[],int,npy_intp[],void*,int,int,PyObject*)
+    PyObject* PyArray_SimpleNewFromData(int,npy_intp[],int,void*)
 
 
 cdef extern from "petsc4py/numpy.h":
