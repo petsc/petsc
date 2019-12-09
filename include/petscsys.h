@@ -1274,6 +1274,9 @@ PETSC_EXTERN PetscErrorCode PetscPythonFinalize(void);
 PETSC_EXTERN PetscErrorCode PetscPythonPrintError(void);
 PETSC_EXTERN PetscErrorCode PetscPythonMonitorSet(PetscObject,const char[]);
 
+PETSC_EXTERN PetscErrorCode PetscMonitorCompare(PetscErrorCode (*)(void),void *,PetscErrorCode (*)(void**),PetscErrorCode (*)(void),void *,PetscErrorCode (*)(void**),PetscBool *);
+
+
 /*
      These are so that in extern C code we can caste function pointers to non-extern C
    function pointers. Since the regular C++ code expects its function pointers to be C++

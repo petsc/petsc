@@ -802,8 +802,6 @@ M*/
 PETSC_EXTERN PetscErrorCode PetscObjectGetId(PetscObject,PetscObjectId*);
 PETSC_EXTERN PetscErrorCode PetscObjectCompareId(PetscObject,PetscObjectId,PetscBool*);
 
-PETSC_EXTERN PetscErrorCode PetscMonitorCompare(PetscErrorCode (*)(void),void *,PetscErrorCode (*)(void**),PetscErrorCode (*)(void),void *,PetscErrorCode (*)(void**),PetscBool *);
-
 PETSC_EXTERN PetscMPIInt Petsc_Counter_keyval;
 PETSC_EXTERN PetscMPIInt Petsc_InnerComm_keyval;
 PETSC_EXTERN PetscMPIInt Petsc_OuterComm_keyval;
