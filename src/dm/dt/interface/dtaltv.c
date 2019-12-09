@@ -1,6 +1,59 @@
 #include <petsc/private/petscimpl.h>
 #include <petsc/private/dtimpl.h> /*I "petscdt.h" I*/
 
+/*MC
+   PetscDTAltV - An interface for common operations on k-forms, also known as alternating algebraic forms or alternating k-linear maps.
+   The name of the interface comes from the notation "Alt V" for the algebra of all k-forms acting vectors in the space V, also known as the exterior algebra of V*.
+
+   A recommended reference for this material is Section 2 "Exterior algebra and exterior calculus" in "Finite element
+   exterior calculus, homological techniques, and applications", by Arnold, Falk, & Winther (2006, doi:10.1017/S0962492906210018).
+
+   A k-form w (k is called the "form degree" of w) is an alternating k-linear map acting on tuples (v_1, ..., v_k) of
+   vectors from a vector space V and producing a real number:
+   - alternating: swapping any two vectors in a tuple reverses the sign of the result, e.g. w(v_1, v_2, ..., v_k) = -w(v_2, v_1, ..., v_k)
+   - k-linear: w acts linear in each vector separately, e.g. w(a*v + b*y, v_2, ..., v_k) = a*w(v,v_2,...,v_k) + b*w(y,v_2,...,v_k)
+   This action is implemented as PetscDTAltVApply.
+
+   The k-forms on a vector space form a vector space themselves, Alt^k V.  The dimension of Alt^k V, if V is N dimensional, is N choose k.  (This
+   shows that for an N dimensional space, only 0 <= k <= N are valid form degrees.)
+   The standard basis for Alt^k V, used in PetscDTAltV, has one basis k-form for each ordered subset of k coordinates of the N dimensional space:
+   For example, if the coordinate directions of a four dimensional space are (t, x, y, z), then there are 4 choose 2 = 6 ordered subsets of two coordinates.
+   They are, in lexicographic order, (t, x), (t, y), (t, z), (x, y), (x, z) and (y, z).  PetscDTAltV also orders the basis of Alt^k V lexicographically
+   by the associated subsets.
+
+   The unit basis k-form associated with coordinates (c_1, ..., c_k) acts on a set of k vectors (v_1, ..., v_k) by creating a square matrix V where
+   V[i,j] = v_i[c_j] and taking the determinant of V.
+
+   If j + k <= N, then a j-form f and a k-form g can be multiplied to create a (j+k)-form using the wedge or exterior product, (f wedge g).
+   This is an anticommutative product, (f wedge g) = -(g wedge f).  It is sufficient to describe the wedge product of two basis forms.
+   Let f be the basis j-form associated with coordinates (f_1,...,f_j) and g be the basis k-form associated with coordinates (g_1,...,g_k):
+   - If there is any coordinate in both sets, then (f wedge g) = 0.
+   - Otherwise, (f wedge g) is a multiple of the basis (j+k)-form h associated with (f_1,...,f_j,g_1,...,g_k).
+   - In fact it is equal to either h or -h depending on how (f_1,...,f_j,g_1,...,g_k) compares to the same list of coordinates given in ascending order: if it is an even permutation of that list, then (f wedge g) = h, otherwise (f wedge g) = -h.
+   The wedge product is implemented for either two inputs (f and g) in PetscDTAltVWedge, or for one (just f, giving a
+   matrix to multiply against multiple choices of g) in PetscDTAltVWedgeMatrix.
+
+   If k > 0, a k-form w and a vector v can combine to make a (k-1)-formm through the interior product, (w int v),
+   defined by (w int v)(v_1,...,v_{k-1}) = w(v,v_1,...,v_{k-1}).
+
+   The interior product is implemented for either two inputs (w and v) in PetscDTAltVInterior, for one (just v, giving a
+   matrix to multiply against multiple choices of w) in PetscDTAltVInteriorMatrix,
+   or for no inputs (giving the sparsity pattern of PetscDTAltVInteriorMatrix) in PetscDTAltVInteriorPattern.
+
+   When there is a linear map L: V -> W from an N dimensional vector space to an M dimensional vector space,
+   it induces the linear pullback map L^* : Alt^k W -> Alt^k V, defined by L^* w(v_1,...,v_k) = w(L v_1, ..., L v_k).
+   The pullback is implemented as PetscDTAltVPullback (acting on a known w) and PetscDTAltVPullbackMatrix (creating a matrix that computes the actin of L^*).
+
+   Alt^k V and Alt^(N-k) V have the same dimension, and the Hodge star operator maps between them.  We note that Alt^N V is a one dimensional space, and its
+   basis vector is sometime called vol.  The Hodge star operator has the property that (f wedge (star g)) = (f,g) vol, where (f,g) is the simple inner product
+   of the basis coefficients of f and g.
+   Powers of the Hodge star operator can be applied with PetscDTAltVStar
+
+   level: intermediate
+
+.seealso: PetscDTAltVApply(), PetscDTAltVWedge(), PetscDTAltVInterior(), PetscDTAltVPullback(), PetscDTAltVStar()
+M*/
+
 /*@
    PetscDTAltVApply - Apply an a k-form (an alternating k-linear map) to a set of k N-dimensional vectors
 
@@ -15,7 +68,7 @@
 
    Level: intermediate
 
-.seealso: PetscDTAltVPullback(), PetscDTAltVPullbackMatrix()
+.seealso: PetscDTAltV, PetscDTAltVPullback(), PetscDTAltVPullbackMatrix()
 @*/
 PetscErrorCode PetscDTAltVApply(PetscInt N, PetscInt k, const PetscReal *w, const PetscReal *v, PetscReal *wv)
 {
@@ -93,7 +146,7 @@ PetscErrorCode PetscDTAltVApply(PetscInt N, PetscInt k, const PetscReal *w, cons
 
    Level: intermediate
 
-.seealso: PetscDTAltVWedgeMatrix(), PetscDTAltVPullback(), PetscDTAltVPullbackMatrix()
+.seealso: PetscDTAltV, PetscDTAltVWedgeMatrix(), PetscDTAltVPullback(), PetscDTAltVPullbackMatrix()
 @*/
 PetscErrorCode PetscDTAltVWedge(PetscInt N, PetscInt j, PetscInt k, const PetscReal *a, const PetscReal *b, PetscReal *awedgeb)
 {
@@ -172,7 +225,7 @@ PetscErrorCode PetscDTAltVWedge(PetscInt N, PetscInt j, PetscInt k, const PetscR
 
    Level: intermediate
 
-.seealso: PetscDTAltVPullback(), PetscDTAltVPullbackMatrix()
+.seealso: PetscDTAltV, PetscDTAltVPullback(), PetscDTAltVPullbackMatrix()
 @*/
 PetscErrorCode PetscDTAltVWedgeMatrix(PetscInt N, PetscInt j, PetscInt k, const PetscReal *a, PetscReal *awedgeMat)
 {
@@ -260,7 +313,7 @@ PetscErrorCode PetscDTAltVWedgeMatrix(PetscInt N, PetscInt j, PetscInt k, const 
    but its normal trace is integrated on faces, like a 2-form.  The correct pullback then is to apply the Hodge star transformation from (M-2)-form to 2-form, pullback as a 2-form,
    then the inverse Hodge star transformation.
 
-.seealso: PetscDTAltVPullbackMatrix(), PetscDTAltVStar()
+.seealso: PetscDTAltV, PetscDTAltVPullbackMatrix(), PetscDTAltVStar()
 @*/
 PetscErrorCode PetscDTAltVPullback(PetscInt N, PetscInt M, const PetscReal *L, PetscInt k, const PetscReal *w, PetscReal *Lstarw)
 {
@@ -397,7 +450,7 @@ PetscErrorCode PetscDTAltVPullback(PetscInt N, PetscInt M, const PetscReal *L, P
 
    Level: intermediate
 
-.seealso: PetscDTAltVPullback(), PetscDTAltVStar()
+.seealso: PetscDTAltV, PetscDTAltVPullback(), PetscDTAltVStar()
 @*/
 PetscErrorCode PetscDTAltVPullbackMatrix(PetscInt N, PetscInt M, const PetscReal *L, PetscInt k, PetscReal *Lstar)
 {
@@ -513,7 +566,7 @@ PetscErrorCode PetscDTAltVPullbackMatrix(PetscInt N, PetscInt M, const PetscReal
 
    Level: intermediate
 
-.seealso: PetscDTAltVInteriorMatrix(), PetscDTAltVInteriorPattern(), PetscDTAltVPullback(), PetscDTAltVPullbackMatrix()
+.seealso: PetscDTAltV, PetscDTAltVInteriorMatrix(), PetscDTAltVInteriorPattern(), PetscDTAltVPullback(), PetscDTAltVPullbackMatrix()
 @*/
 PetscErrorCode PetscDTAltVInterior(PetscInt N, PetscInt k, const PetscReal *w, const PetscReal *v, PetscReal *wIntv)
 {
@@ -581,7 +634,7 @@ PetscErrorCode PetscDTAltVInterior(PetscInt N, PetscInt k, const PetscReal *w, c
 
    Level: intermediate
 
-.seealso: PetscDTAltVInterior(), PetscDTAltVInteriorPattern(), PetscDTAltVPullback(), PetscDTAltVPullbackMatrix()
+.seealso: PetscDTAltV, PetscDTAltVInterior(), PetscDTAltVInteriorPattern(), PetscDTAltVPullback(), PetscDTAltVPullbackMatrix()
 @*/
 PetscErrorCode PetscDTAltVInteriorMatrix(PetscInt N, PetscInt k, const PetscReal *v, PetscReal *intvMat)
 {
@@ -645,7 +698,7 @@ PetscErrorCode PetscDTAltVInteriorMatrix(PetscInt N, PetscInt k, const PetscReal
 
    Note: this function is useful when the interior product needs to be computed at multiple locations, as when computing the Koszul differential
 
-.seealso: PetscDTAltVInterior(), PetscDTAltVInteriorMatrix(), PetscDTAltVPullback(), PetscDTAltVPullbackMatrix()
+.seealso: PetscDTAltV, PetscDTAltVInterior(), PetscDTAltVInteriorMatrix(), PetscDTAltVPullback(), PetscDTAltVPullbackMatrix()
 @*/
 PetscErrorCode PetscDTAltVInteriorPattern(PetscInt N, PetscInt k, PetscInt (*indices)[3])
 {
@@ -719,7 +772,7 @@ PetscErrorCode PetscDTAltVInteriorPattern(PetscInt N, PetscInt k, PetscInt (*ind
 
    Level: intermediate
 
-.seealso: PetscDTAltVPullback(), PetscDTAltVPullbackMatrix()
+.seealso: PetscDTAltV, PetscDTAltVPullback(), PetscDTAltVPullbackMatrix()
 @*/
 PetscErrorCode PetscDTAltVStar(PetscInt N, PetscInt k, PetscInt pow, const PetscReal *w, PetscReal *starw)
 {
