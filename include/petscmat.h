@@ -1231,12 +1231,15 @@ PETSC_EXTERN PetscErrorCode MatSOR(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscI
 
 .seealso:  MatFDColoringCreate(), MatColoringWeightType, ISColoring, MatFDColoring, DMCreateColoring(), MatColoringCreate(), MatOrdering, MatPartitioning
 S*/
+typedef struct _p_MatColoring* MatColoring;
+
+/*J
+    MatColoringType - String with the name of a PETSc matrix coloring
 
    Level: beginner
 
 .seealso: MatColoringSetType(), MatColoring
 J*/
-
 typedef const  char*           MatColoringType;
 #define MATCOLORINGJP      "jp"
 #define MATCOLORINGPOWER   "power"
