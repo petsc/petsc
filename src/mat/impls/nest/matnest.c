@@ -431,6 +431,9 @@ static PetscErrorCode MatNestFindSubMat(Mat A,struct MatNestISPair *is,IS isrow,
       ierr = ISGetLocalSize(vs->isglobal.row[row],&lr);CHKERRQ(ierr);
       ierr = ISGetLocalSize(vs->isglobal.col[col],&lc);CHKERRQ(ierr);
       ierr = MatSetSizes(vs->m[row][col],lr,lc,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+      ierr = MatSetType(vs->m[row][col],MATAIJ);CHKERRQ(ierr);
+      ierr = MatSeqAIJSetPreallocation(vs->m[row][col],0,NULL);CHKERRQ(ierr);
+      ierr = MatMPIAIJSetPreallocation(vs->m[row][col],0,NULL,0,NULL);CHKERRQ(ierr);
       ierr = MatSetUp(vs->m[row][col]);CHKERRQ(ierr);
       ierr = MatAssemblyBegin(vs->m[row][col],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = MatAssemblyEnd(vs->m[row][col],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
