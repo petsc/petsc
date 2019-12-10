@@ -1,10 +1,7 @@
 PetscSF Object: 1 MPI processes
-  type: window
-    synchronization=FENCE sort=rank-order
   [0] Number of roots=1, leaves=1, remote ranks=1
   [0] 0 <- (0,0)
 Vec Object: 1 MPI processes
-  type: seq
 0.
 1.
 2.

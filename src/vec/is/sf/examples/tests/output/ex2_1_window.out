@@ -1,0 +1,32 @@
+PetscSF Object: 2 MPI processes
+      current info with 2 keys. Ordered key-value pairs follow:
+        petsc_test_info1 = info1
+        petsc_test_info2 = info2
+  [0] Number of roots=2, leaves=2, remote ranks=1
+  [0] 0 <- (1,0)
+  [0] 0 <- (1,1)
+  [1] Number of roots=2, leaves=2, remote ranks=1
+  [1] 0 <- (0,0)
+  [1] 0 <- (0,1)
+  [0] Roots referenced by my leaves, by rank
+  [0] 1: 2 edges
+  [0]    0 <- 0
+  [0]    0 <- 1
+  [1] Roots referenced by my leaves, by rank
+  [1] 0: 2 edges
+  [1]    0 <- 0
+  [1]    0 <- 1
+PetscSF Object: 2 MPI processes
+      current info with 2 keys. Ordered key-value pairs follow:
+        petsc_test_info1 = info1
+        petsc_test_info2 = info2
+  [0] Number of roots=2, leaves=1, remote ranks=1
+  [0] 0 <- (1,0)
+  [1] Number of roots=2, leaves=1, remote ranks=1
+  [1] 0 <- (0,0)
+  [0] Roots referenced by my leaves, by rank
+  [0] 1: 1 edges
+  [0]    0 <- 0
+  [1] Roots referenced by my leaves, by rank
+  [1] 0: 1 edges
+  [1]    0 <- 0
