@@ -330,6 +330,8 @@ shared libraries and run with --known-mpi-shared-libraries=1')
       openmpi_cuda_test = '#include<mpi.h>\n #include <mpi-ext.h>\n #if defined(MPIX_CUDA_AWARE_SUPPORT) && MPIX_CUDA_AWARE_SUPPORT\n #else\n #error This OpenMPI is not CUDA-aware\n #endif\n'
       if self.checkCompile(openmpi_cuda_test):
         self.addDefine('HAVE_MPI_GPU_AWARE', 1)
+    if self.checkLink('#include <mpi.h>\n', 'int ptr[1]; MPI_Win win; if (MPI_Get_accumulate(ptr,1,MPI_INT,ptr,1,MPI_INT,0,0,1,MPI_INT,MPI_SUM,win));\n'):
+      self.addDefine('HAVE_MPI_GET_ACCUMULATE', 1)
     self.compilers.CPPFLAGS = oldFlags
     self.compilers.LIBS = oldLibs
     self.logWrite(self.framework.restoreLog())
