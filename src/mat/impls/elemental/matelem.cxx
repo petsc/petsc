@@ -69,7 +69,6 @@ static PetscErrorCode MatView_Elemental(Mat A,PetscViewer viewer)
       ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
       if (A->factortype == MAT_FACTOR_NONE){
         Mat Adense;
-        ierr = PetscPrintf(PetscObjectComm((PetscObject)viewer),"Elemental matrix (explicit ordering)\n");CHKERRQ(ierr);
         ierr = MatConvert(A,MATDENSE,MAT_INITIAL_MATRIX,&Adense);CHKERRQ(ierr);
         ierr = MatView(Adense,viewer);CHKERRQ(ierr);
         ierr = MatDestroy(&Adense);CHKERRQ(ierr);
@@ -78,7 +77,6 @@ static PetscErrorCode MatView_Elemental(Mat A,PetscViewer viewer)
   } else {
     /* convert to dense format and call MatView() */
     Mat Adense;
-    ierr = PetscPrintf(PetscObjectComm((PetscObject)viewer),"Elemental matrix (explicit ordering)\n");CHKERRQ(ierr);
     ierr = MatConvert(A,MATDENSE,MAT_INITIAL_MATRIX,&Adense);CHKERRQ(ierr);
     ierr = MatView(Adense,viewer);CHKERRQ(ierr);
     ierr = MatDestroy(&Adense);CHKERRQ(ierr);
