@@ -4,7 +4,7 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.gitcommit              = '59ff81b' #master oct-21-2019
-    self.download               = ['git://https://bitbucket.com/slepc/slepc.git','https://bitbucket.org/slepc/slepc/get/'+self.gitcommit+'.tar.gz']
+    self.download               = ['git://https://gitlab.com/slepc/slepc.git','https://gitlab.com/slepc/slepc/-/archive/'+self.gitcommit+'/slepc-'+self.gitcommit+'.tar.gz']
     self.functions              = []
     self.includes               = []
     self.skippackagewithoptions = 1
