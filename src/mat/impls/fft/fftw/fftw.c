@@ -449,7 +449,7 @@ static PetscErrorCode VecDuplicate_FFTW_bout(Vec bout, Vec *bout_new)
         figures out how much space is needed, i.e. it figures out the data+scratch space for
         each processor and returns that.
 
-.seealso: MatCreateFFTW()
+.seealso: MatCreateFFT()
 @*/
 PetscErrorCode MatCreateVecsFFTW(Mat A,Vec *x,Vec *y,Vec *z)
 {

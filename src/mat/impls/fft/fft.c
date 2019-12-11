@@ -29,13 +29,15 @@ PetscErrorCode MatDestroy_FFT(Mat A)
 +   comm - MPI communicator
 .   ndim - the ndim-dimensional transform
 .   dim - array of size ndim, dim[i] contains the vector length in the i-dimension
--   type - package type, e.g., FFTW or FFTCU
+-   type - package type, e.g., FFTW or MATSEQCUFFT
 
    Output Parameter:
 .   A  - the matrix
 
-  Options Database Keys:
-. -mat_fft_type - set FFT type
+   Options Database Keys:
+.   -mat_fft_type - set FFT type fft or seqcufft
+
+   Note: this serves as a base class for all FFT marix classes, currently MATFFTW or MATSEQCUFFT
 
    Level: intermediate
 
