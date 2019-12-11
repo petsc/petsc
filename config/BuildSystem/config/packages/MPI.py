@@ -335,6 +335,8 @@ shared libraries and run with --known-mpi-shared-libraries=1')
         self.addDefine('HAVE_MPI_GPU_AWARE', 1)
     if self.checkLink('#include <mpi.h>\n', 'int ptr[1]; MPI_Win win; if (MPI_Get_accumulate(ptr,1,MPI_INT,ptr,1,MPI_INT,0,0,1,MPI_INT,MPI_SUM,win));\n'):
       self.addDefine('HAVE_MPI_GET_ACCUMULATE', 1)
+    if self.checkLink('#include <mpi.h>\n', 'int ptr[1]; MPI_Win win; MPI_Request req; if (MPI_Rget(ptr,1,MPI_INT,0,1,1,MPI_INT,win,&req));\n'):
+      self.addDefine('HAVE_MPI_RGET', 1)
     self.compilers.CPPFLAGS = oldFlags
     self.compilers.LIBS = oldLibs
     self.logWrite(self.framework.restoreLog())
