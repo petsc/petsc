@@ -1184,7 +1184,7 @@ PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF sf,PetscInt nselected,const Petsc
   PetscValidPointer(newsf,4);
 
   ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
-
+  ierr = PetscLogEventBegin(PETSCSF_EmbedSF,sf,0,0,0);CHKERRQ(ierr);
   /* Uniq selected[] and put results in roots[] */
   ierr = PetscObjectGetComm((PetscObject)sf,&comm);CHKERRQ(ierr);
   ierr = PetscMalloc1(nselected,&roots);CHKERRQ(ierr);
@@ -1227,6 +1227,8 @@ PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF sf,PetscInt nselected,const Petsc
     ierr = PetscFree2(rootdata,leafdata);CHKERRQ(ierr);
   }
   ierr = PetscFree(roots);CHKERRQ(ierr);
+  ierr = PetscSFSetUp(*newsf);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PETSCSF_EmbedSF,sf,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

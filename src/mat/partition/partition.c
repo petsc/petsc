@@ -522,9 +522,7 @@ PetscErrorCode  MatPartitioningSetVertexWeights(MatPartitioning part,const Petsc
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
-
   ierr = PetscFree(part->vertex_weights);CHKERRQ(ierr);
-
   part->vertex_weights = (PetscInt*)weights;
   PetscFunctionReturn(0);
 }
@@ -557,9 +555,7 @@ PetscErrorCode  MatPartitioningSetPartitionWeights(MatPartitioning part,const Pe
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
-
   ierr = PetscFree(part->part_weights);CHKERRQ(ierr);
-
   part->part_weights = (PetscReal*)weights;
   PetscFunctionReturn(0);
 }
@@ -793,9 +789,3 @@ PetscErrorCode  MatPartitioningSetFromOptions(MatPartitioning part)
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
-
-
-
-

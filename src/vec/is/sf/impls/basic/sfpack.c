@@ -873,7 +873,7 @@ PetscErrorCode PetscSFPackOptCreate(PetscInt n,const PetscInt *offset,const Pets
 
   opt->n = n;
 
-  /* Check if the indices are piece-wise contiguous (if yes, we can optimize a packing with mulitple memcpy's ) */
+  /* Check if the indices are piece-wise contiguous (if yes, we can optimize a packing with multiple memcpy's ) */
   for (i=0; i<n; i++) { /* for each target processor */
     /* Scan indices to count n_copies -- the number of contiguous pieces for i-th target */
     n_copies = 1;
