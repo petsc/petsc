@@ -266,8 +266,6 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBegin(comm, "", "Meshing Interpolation Test Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsBoundedInt("-debug", "The debugging level", "ex18.c", options->debug, &options->debug, NULL,0);CHKERRQ(ierr);
   ierr = PetscOptionsBoundedInt("-testnum", "The mesh to create", "ex18.c", options->testNum, &options->testNum, NULL,0);CHKERRQ(ierr);
-  ierr = PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex18.c", options->dim, &options->dim, &flg1,1,3);CHKERRQ(ierr);
-  if (options->dim < 1 || options->dim > 3) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "dimension set to %d, must be between 1 and 3", options->dim);
   ierr = PetscOptionsBool("-cell_simplex", "Generate simplices if true, otherwise hexes", "ex18.c", options->cellSimplex, &options->cellSimplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-distribute", "Distribute the mesh", "ex18.c", options->distribute, &options->distribute, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEList("-interpolate", "Type of mesh interpolation, e.g. none, serial, parallel", "ex18.c", interpTypes, 3, interpTypes[options->interpolate], &interp, NULL);CHKERRQ(ierr);
@@ -294,6 +292,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
     options->interpolate = SERIAL;
     options->distribute = PETSC_FALSE;
   }
+  ierr = PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex18.c", options->dim, &options->dim, &flg1,1,3);CHKERRQ(ierr);
   dim = 3;
   ierr = PetscOptionsIntArray("-faces", "Number of faces per dimension", "ex18.c", options->faces, &dim, &flg2);CHKERRQ(ierr);
   if (flg2) {
