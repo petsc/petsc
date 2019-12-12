@@ -262,6 +262,175 @@ PetscErrorCode PetscQuadratureGetData(PetscQuadrature q, PetscInt *dim, PetscInt
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PetscDTJacobianInverse_Internal(PetscInt m, PetscInt n, const PetscReal J[], PetscReal Jinv[])
+{
+  PetscScalar    *Js, *Jinvs;
+  PetscInt       i, j, k;
+  PetscBLASInt   bm, bn, info;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscBLASIntCast(m, &bm);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(n, &bn);CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
+  ierr = PetscMalloc2(m*n, &Js, m*n, &Jinvs);CHKERRQ(ierr);
+  for (i = 0; i < m*n; i++) Js[i] = J[i];
+#else
+  Js = (PetscReal *) J;
+  Jinvs = Jinv;
+#endif
+  if (m == n) {
+    PetscBLASInt *pivots;
+    PetscScalar *W;
+
+    ierr = PetscMalloc2(m, &pivots, m, &W);CHKERRQ(ierr);
+
+    ierr = PetscArraycpy(Jinvs, Js, m * m);CHKERRQ(ierr);
+    PetscStackCallBLAS("LAPACKgetrf", LAPACKgetrf_(&bm, &bm, Jinvs, &bm, pivots, &info));
+    if (info) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from LAPACKgetrf %D",(PetscInt)info);
+    PetscStackCallBLAS("LAPACKgetri", LAPACKgetri_(&bm, Jinvs, &bm, pivots, W, &bm, &info));
+    if (info) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from LAPACKgetri %D",(PetscInt)info);
+    ierr = PetscFree2(pivots, W);CHKERRQ(ierr);
+  } else if (m < n) {
+    PetscScalar *JJT;
+    PetscBLASInt *pivots;
+    PetscScalar *W;
+
+    ierr = PetscMalloc1(m*m, &JJT);CHKERRQ(ierr);
+    ierr = PetscMalloc2(m, &pivots, m, &W);CHKERRQ(ierr);
+    for (i = 0; i < m; i++) {
+      for (j = 0; j < m; j++) {
+        PetscScalar val = 0.;
+
+        for (k = 0; k < n; k++) val += Js[i * n + k] * Js[j * n + k];
+        JJT[i * m + j] = val;
+      }
+    }
+
+    PetscStackCallBLAS("LAPACKgetrf", LAPACKgetrf_(&bm, &bm, JJT, &bm, pivots, &info));
+    if (info) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from LAPACKgetrf %D",(PetscInt)info);
+    PetscStackCallBLAS("LAPACKgetri", LAPACKgetri_(&bm, JJT, &bm, pivots, W, &bm, &info));
+    if (info) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from LAPACKgetri %D",(PetscInt)info);
+    for (i = 0; i < n; i++) {
+      for (j = 0; j < m; j++) {
+        PetscScalar val = 0.;
+
+        for (k = 0; k < m; k++) val += Js[k * n + i] * JJT[k * m + j];
+        Jinvs[i * m + j] = val;
+      }
+    }
+    ierr = PetscFree2(pivots, W);CHKERRQ(ierr);
+    ierr = PetscFree(JJT);CHKERRQ(ierr);
+  } else {
+    PetscScalar *JTJ;
+    PetscBLASInt *pivots;
+    PetscScalar *W;
+
+    ierr = PetscMalloc1(n*n, &JTJ);CHKERRQ(ierr);
+    ierr = PetscMalloc2(n, &pivots, n, &W);CHKERRQ(ierr);
+    for (i = 0; i < n; i++) {
+      for (j = 0; j < n; j++) {
+        PetscScalar val = 0.;
+
+        for (k = 0; k < m; k++) val += Js[k * n + i] * Js[k * n + j];
+        JTJ[i * n + j] = val;
+      }
+    }
+
+    PetscStackCallBLAS("LAPACKgetrf", LAPACKgetrf_(&bn, &bn, JTJ, &bm, pivots, &info));
+    if (info) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from LAPACKgetrf %D",(PetscInt)info);
+    PetscStackCallBLAS("LAPACKgetri", LAPACKgetri_(&bn, JTJ, &bn, pivots, W, &bn, &info));
+    if (info) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from LAPACKgetri %D",(PetscInt)info);
+    for (i = 0; i < n; i++) {
+      for (j = 0; j < m; j++) {
+        PetscScalar val = 0.;
+
+        for (k = 0; k < n; k++) val += JTJ[i * n + k] * Js[j * n + k];
+        Jinvs[i * m + j] = val;
+      }
+    }
+    ierr = PetscFree2(pivots, W);CHKERRQ(ierr);
+    ierr = PetscFree(JTJ);CHKERRQ(ierr);
+  }
+#if defined(PETSC_USE_COMPLEX)
+  for (i = 0; i < m*n; i++) Jinv[i] = PetscRealPart(Jinvs[i]);
+  ierr = PetscFree2(Js, Jinvs);CHKERRQ(ierr);
+#endif
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PetscQuadraturePushForward - Push forward a quadrature functional under an affine transformation.
+
+   Collecive on PetscQuadrature
+
+   Input Arguments:
++  q - the quadrature functional
+.  imageDim - the dimension of the image of the transformation
+.  origin - a point in the original space
+.  originImage - the image of the origin under the transformation
+.  J - the Jacobian of the image: an [imageDim x dim] matrix in row major order
+-  formDegree - transform the quadrature weights as k-forms of this form degree (if the number of components is a multiple of (dim choose formDegree), it is assumed that they represent multiple k-forms) [see PetscDTAltVPullback() for interpretation of formDegree]
+
+   Output Arguments:
+.  Jinvstarq - a quadrature rule where each point is the image of a point in the original quadrature rule, and where the k-form weights have been pulled-back by the pseudoinverse of J to the k-form weights in the image space.
+
+   Note: the new quadrature rule will have a different number of components if spaces have different dimensions.  For example, pushing a 2-form forward from a two dimensional space to a three dimensional space changes the number of components from 1 to 3.
+
+.seealso: PetscDTAltVPullback(), PetscDTAltVPullbackMatrix()
+@*/
+PetscErrorCode PetscQuadraturePushForward(PetscQuadrature q, PetscInt imageDim, const PetscReal origin[], const PetscReal originImage[], const PetscReal J[], PetscInt formDegree, PetscQuadrature *Jinvstarq)
+{
+  PetscInt         dim, Nc, imageNc, formSize, Ncopies, imageFormSize, Npoints, pt, i, j, c;
+  const PetscReal *points;
+  const PetscReal *weights;
+  PetscReal       *imagePoints, *imageWeights;
+  PetscReal       *Jinv;
+  PetscReal       *Jinvstar;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(q, PETSC_OBJECT_CLASSID, 1);
+  if (imageDim < PetscAbsInt(formDegree)) SETERRQ2(PetscObjectComm((PetscObject)q), PETSC_ERR_ARG_INCOMP, "Cannot represent a %D-form in %D dimensions", PetscAbsInt(formDegree), imageDim);
+  ierr = PetscQuadratureGetData(q, &dim, &Nc, &Npoints, &points, &weights);CHKERRQ(ierr);
+  ierr = PetscDTBinomialInt(dim, PetscAbsInt(formDegree), &formSize);CHKERRQ(ierr);
+  if (Nc % formSize) SETERRQ2(PetscObjectComm((PetscObject)q), PETSC_ERR_ARG_INCOMP, "Number of components %D is not a multiple of formSize %D\n", Nc, formSize);
+  Ncopies = Nc / formSize;
+  ierr = PetscDTBinomialInt(imageDim, PetscAbsInt(formDegree), &imageFormSize);CHKERRQ(ierr);
+  imageNc = Ncopies * imageFormSize;
+  ierr = PetscMalloc1(Npoints * imageDim, &imagePoints);CHKERRQ(ierr);
+  ierr = PetscMalloc1(Npoints * imageNc, &imageWeights);CHKERRQ(ierr);
+  ierr = PetscMalloc2(imageDim * dim, &Jinv, formSize * imageFormSize, &Jinvstar);CHKERRQ(ierr);
+  ierr = PetscDTJacobianInverse_Internal(dim, imageDim, J, Jinv);CHKERRQ(ierr);
+  ierr = PetscDTAltVPullbackMatrix(imageDim, dim, Jinv, formDegree, Jinvstar);CHKERRQ(ierr);
+  for (pt = 0; pt < Npoints; pt++) {
+    const PetscReal *point = &points[pt * dim];
+    PetscReal       *imagePoint = &imagePoints[pt * imageDim];
+
+    for (i = 0; i < imageDim; i++) {
+      PetscReal val = originImage[i];
+
+      for (j = 0; j < dim; j++) val += J[i * dim + j] * (point[j] - origin[j]);
+      imagePoint[i] = val;
+    }
+    for (c = 0; c < Ncopies; c++) {
+      const PetscReal *form = &weights[pt * Nc + c * formSize];
+      PetscReal       *imageForm = &imageWeights[pt * imageNc + c * imageFormSize];
+
+      for (i = 0; i < imageFormSize; i++) {
+        PetscReal val = 0.;
+
+        for (j = 0; j < formSize; j++) val += Jinvstar[i * formSize + j] * form[j];
+        imageForm[i] = val;
+      }
+    }
+  }
+  ierr = PetscQuadratureCreate(PetscObjectComm((PetscObject)q), Jinvstarq);CHKERRQ(ierr);
+  ierr = PetscQuadratureSetData(*Jinvstarq, imageDim, imageNc, Npoints, imagePoints, imageWeights);CHKERRQ(ierr);
+  ierr = PetscFree2(Jinv, Jinvstar);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@C
   PetscQuadratureSetData - Sets the data defining the quadrature
 
@@ -768,19 +937,6 @@ PetscErrorCode PetscDTGaussTensorQuadrature(PetscInt dim, PetscInt Nc, PetscInt 
 
 /* Evaluates the nth jacobi polynomial with weight parameters a,b at a point x.
    Recurrence relations implemented from the pseudocode given in Karniadakis and Sherwin, Appendix B */
-PETSC_STATIC_INLINE PetscErrorCode PetscDTFactorial_Internal(PetscInt n, PetscReal *factorial)
-{
-  PetscReal f = 1.0;
-  PetscInt  i;
-
-  PetscFunctionBegin;
-  for (i = 1; i < n+1; ++i) f *= i;
-  *factorial = f;
-  PetscFunctionReturn(0);
-}
-
-/* Evaluates the nth jacobi polynomial with weight parameters a,b at a point x.
-   Recurrence relations implemented from the pseudocode given in Karniadakis and Sherwin, Appendix B */
 PETSC_STATIC_INLINE PetscErrorCode PetscDTComputeJacobi(PetscReal a, PetscReal b, PetscInt n, PetscReal x, PetscReal *P)
 {
   PetscReal apb, pn1, pn2;
@@ -863,16 +1019,14 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature1D_Internal(PetscInt npoints, 
     ia = (PetscInt) a;
     ib = (PetscInt) b;
     if (ia == a && ib == b && ia + npoints + 1 > 0 && ib + npoints + 1 > 0 && ia + ib + npoints + 1 > 0) { /* All gamma(x) terms are (x-1)! terms */
-      ierr = PetscDTFactorial_Internal(ia + npoints, &a2);CHKERRQ(ierr);
-      ierr = PetscDTFactorial_Internal(ib + npoints, &a3);CHKERRQ(ierr);
-      ierr = PetscDTFactorial_Internal(ia + ib + npoints, &a4);CHKERRQ(ierr);
-    } else {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"tgamma() - math routine is unavailable.");
-    }
+      ierr = PetscDTFactorial(ia + npoints, &a2);CHKERRQ(ierr);
+      ierr = PetscDTFactorial(ib + npoints, &a3);CHKERRQ(ierr);
+      ierr = PetscDTFactorial(ia + ib + npoints, &a4);CHKERRQ(ierr);
+    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"tgamma() - math routine is unavailable.");
   }
 #endif
 
-  ierr = PetscDTFactorial_Internal(npoints, &a5);CHKERRQ(ierr);
+  ierr = PetscDTFactorial(npoints, &a5);CHKERRQ(ierr);
   a6   = a1 * a2 * a3 / a4 / a5;
   /* Computes the m roots of P_{m}^{a,b} on [-1,1] by Newton's method with Chebyshev points as initial guesses.
    Algorithm implemented from the pseudocode given by Karniadakis and Sherwin and Python in FIAT */
