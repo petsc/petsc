@@ -515,6 +515,7 @@ to remove this warning message *****')
         self.addDefine('HAVE_OMPI_MINOR_VERSION',ompi_minor_version)
         self.addDefine('HAVE_OMPI_RELEASE_VERSION',ompi_release_version)
         self.ompi_major_version = ompi_major_version
+        self.ompi_version = tuple([int(i) for i in [ompi_major_version,ompi_minor_version,ompi_release_version]])
         self.mpi_pkg_version = '  OMPI_VERSION: '+ompi_major_version+'.'+ompi_minor_version+'.'+ompi_release_version+'\n'
       except:
         self.logPrint('Unable to parse OpenMPI version from header. Probably a buggy preprocessor')
