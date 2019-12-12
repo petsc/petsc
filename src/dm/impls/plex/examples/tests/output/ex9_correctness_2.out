@@ -1,0 +1,4 @@
+[0] Cones: 131072 Total time: 4.203e-04s Average time per cone: 3.207e-09s
+[0] Closures: 131072 Total time: 2.625e-02s Average time per cone: 2.003e-07s
+[0] VecClosures: 131072 Total time: 5.952e-02s Average time per vector closure: 4.541e-07s
+[0] VecClosures with Index: 131072 Total time: 6.382e-03s Average time per vector closure: 4.869e-08s

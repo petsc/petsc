@@ -1,0 +1,4 @@
+[0] Cones: 4 Total time: 1.192e-06s Average time per cone: 2.980e-07s
+[0] Closures: 4 Total time: 7.868e-06s Average time per cone: 1.967e-06s
+[0] VecClosures: 4 Total time: 3.338e-06s Average time per vector closure: 8.345e-07s
+[0] VecClosures with Index: 4 Total time: 7.153e-07s Average time per vector closure: 1.788e-07s
