@@ -18,6 +18,7 @@ typedef struct {
   PetscReal maxConeTime;       /* Max time per run for DMPlexGetCone() */
   PetscReal maxClosureTime;    /* Max time per run for DMPlexGetTransitiveClosure() */
   PetscReal maxVecClosureTime; /* Max time per run for DMPlexVecGetClosure() */
+  PetscBool printTimes;        /* Print total times, do not check limits */
 } AppCtx;
 
 static PetscErrorCode ProcessOptions(AppCtx *options)
@@ -41,6 +42,7 @@ static PetscErrorCode ProcessOptions(AppCtx *options)
   options->maxConeTime       = 0.0;
   options->maxClosureTime    = 0.0;
   options->maxVecClosureTime = 0.0;
+  options->printTimes        = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(PETSC_COMM_SELF, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex9.c", options->dim, &options->dim, NULL,1,3);CHKERRQ(ierr);
@@ -48,7 +50,7 @@ static PetscErrorCode ProcessOptions(AppCtx *options)
   ierr = PetscOptionsBool("-spectral", "Flag for spectral element layout", "ex9.c", options->spectral, &options->spectral, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-interpolate", "Flag for mesh interpolation", "ex9.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-refinement_limit", "The maximum volume of a refined cell", "ex9.c", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBoundedInt("-num_fields", "The number of section fields", "ex9.c", options->numFields, &options->numFields, NULL,1);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-num_fields", "The number of section fields", "ex9.c", options->numFields, &options->numFields, NULL, 0);CHKERRQ(ierr);
   if (options->numFields) {
     len  = options->numFields;
     ierr = PetscMalloc1(len, &options->numComponents);CHKERRQ(ierr);
@@ -75,6 +77,7 @@ static PetscErrorCode ProcessOptions(AppCtx *options)
   ierr = PetscOptionsReal("-max_cone_time", "The maximum time per run for DMPlexGetCone()", "ex9.c", options->maxConeTime, &options->maxConeTime, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-max_closure_time", "The maximum time per run for DMPlexGetTransitiveClosure()", "ex9.c", options->maxClosureTime, &options->maxClosureTime, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-max_vec_closure_time", "The maximum time per run for DMPlexVecGetClosure()", "ex9.c", options->maxVecClosureTime, &options->maxVecClosureTime, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-print_times", "Print total times, do not check limits", "ex9.c", options->printTimes, &options->printTimes, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -236,9 +239,13 @@ static PetscErrorCode TestCone(DM dm, AppCtx *user)
   PetscLogStage      stage;
   PetscLogEvent      event;
   PetscEventPerfInfo eventInfo;
+  MPI_Comm           comm;
+  PetscMPIInt        rank;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = PetscLogStageRegister("DMPlex Cone Test", &stage);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("Cone", PETSC_OBJECT_CLASSID, &event);CHKERRQ(ierr);
   ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
@@ -258,8 +265,12 @@ static PetscErrorCode TestCone(DM dm, AppCtx *user)
   numRuns = (cEnd-cStart) * user->iterations;
   if (eventInfo.count != 1) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of event calls %d should be %d", eventInfo.count, 1);
   if ((PetscInt) eventInfo.flops != 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of event flops %d should be %d", (PetscInt) eventInfo.flops, 0);
-  if (eventInfo.time > maxTimePerRun * numRuns) {
-    ierr = PetscPrintf(PETSC_COMM_SELF, "Cones: %d Average time per cone: %gs standard: %gs\n", numRuns, eventInfo.time/numRuns, maxTimePerRun);CHKERRQ(ierr);
+  if (user->printTimes) {
+    ierr = PetscSynchronizedPrintf(comm, "[%d] Cones: %d Total time: %.3es Average time per cone: %.3es\n", rank, numRuns, eventInfo.time, eventInfo.time/numRuns);CHKERRQ(ierr);
+    ierr = PetscSynchronizedFlush(comm, PETSC_STDOUT);CHKERRQ(ierr);
+  } else if (eventInfo.time > maxTimePerRun * numRuns) {
+    ierr = PetscSynchronizedPrintf(comm, "[%d] Cones: %d Average time per cone: %gs standard: %gs\n", rank, numRuns, eventInfo.time/numRuns, maxTimePerRun);CHKERRQ(ierr);
+    ierr = PetscSynchronizedFlush(comm, PETSC_STDOUT);CHKERRQ(ierr);
     if (user->errors) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Average time for cone %g > standard %g", eventInfo.time/numRuns, maxTimePerRun);
   }
   PetscFunctionReturn(0);
@@ -272,9 +283,13 @@ static PetscErrorCode TestTransitiveClosure(DM dm, AppCtx *user)
   PetscLogStage      stage;
   PetscLogEvent      event;
   PetscEventPerfInfo eventInfo;
+  MPI_Comm           comm;
+  PetscMPIInt        rank;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = PetscLogStageRegister("DMPlex Transitive Closure Test", &stage);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("TransitiveClosure", PETSC_OBJECT_CLASSID, &event);CHKERRQ(ierr);
   ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
@@ -296,8 +311,12 @@ static PetscErrorCode TestTransitiveClosure(DM dm, AppCtx *user)
   numRuns = (cEnd-cStart) * user->iterations;
   if (eventInfo.count != 1) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of event calls %d should be %d", eventInfo.count, 1);
   if ((PetscInt) eventInfo.flops != 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of event flops %d should be %d", (PetscInt) eventInfo.flops, 0);
-  if (eventInfo.time > maxTimePerRun * numRuns) {
-    ierr = PetscPrintf(PETSC_COMM_SELF, "Closures: %d Average time per cone: %gs standard: %gs\n", numRuns, eventInfo.time/numRuns, maxTimePerRun);CHKERRQ(ierr);
+  if (user->printTimes) {
+    ierr = PetscSynchronizedPrintf(comm, "[%d] Closures: %d Total time: %.3es Average time per cone: %.3es\n", rank, numRuns, eventInfo.time, eventInfo.time/numRuns);CHKERRQ(ierr);
+    ierr = PetscSynchronizedFlush(comm, PETSC_STDOUT);CHKERRQ(ierr);
+  } else if (eventInfo.time > maxTimePerRun * numRuns) {
+    ierr = PetscSynchronizedPrintf(comm, "[%d] Closures: %d Average time per cone: %gs standard: %gs\n", rank, numRuns, eventInfo.time/numRuns, maxTimePerRun);CHKERRQ(ierr);
+    ierr = PetscSynchronizedFlush(comm, PETSC_STDOUT);CHKERRQ(ierr);
     if (user->errors) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Average time for closure %g > standard %g", eventInfo.time/numRuns, maxTimePerRun);
   }
   PetscFunctionReturn(0);
@@ -314,9 +333,13 @@ static PetscErrorCode TestVecClosure(DM dm, PetscBool useIndex, PetscBool useSpe
   PetscLogStage      stage;
   PetscLogEvent      event;
   PetscEventPerfInfo eventInfo;
+  MPI_Comm           comm;
+  PetscMPIInt        rank;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   if (useIndex) {
     if (useSpectral) {
       ierr = PetscLogStageRegister("DMPlex Vector Closure with Index Test", &stage);CHKERRQ(ierr);
@@ -361,14 +384,20 @@ static PetscErrorCode TestVecClosure(DM dm, PetscBool useIndex, PetscBool useSpe
   numRuns = (cEnd-cStart) * user->iterations;
   if (eventInfo.count != 1) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of event calls %d should be %d", eventInfo.count, 1);
   if ((PetscInt) eventInfo.flops != 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of event flops %d should be %d", (PetscInt) eventInfo.flops, 0);
-  if (eventInfo.time > maxTimePerRun * numRuns) {
+  if (user->printTimes || eventInfo.time > maxTimePerRun * numRuns) {
     const char *title = "VecClosures";
     const char *titleIndex = "VecClosures with Index";
     const char *titleSpec = "VecClosures Spectral";
     const char *titleSpecIndex = "VecClosures Spectral with Index";
 
-    ierr = PetscPrintf(PETSC_COMM_SELF, "%s: %d Average time per vector closure: %gs standard: %gs\n", useIndex ? (useSpectral ? titleSpecIndex : titleIndex) : (useSpectral ? titleSpec : title), numRuns, eventInfo.time/numRuns, maxTimePerRun);CHKERRQ(ierr);
-    if (user->errors) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Average time for vector closure %g > standard %g", eventInfo.time/numRuns, maxTimePerRun);
+    if (user->printTimes) {
+      ierr = PetscSynchronizedPrintf(comm, "[%d] %s: %d Total time: %.3es Average time per vector closure: %.3es\n", rank, useIndex ? (useSpectral ? titleSpecIndex : titleIndex) : (useSpectral ? titleSpec : title), numRuns, eventInfo.time, eventInfo.time/numRuns);CHKERRQ(ierr);
+      ierr = PetscSynchronizedFlush(comm, PETSC_STDOUT);CHKERRQ(ierr);
+    } else {
+      ierr = PetscSynchronizedPrintf(comm, "[%d] %s: %d Average time per vector closure: %gs standard: %gs\n", rank, useIndex ? (useSpectral ? titleSpecIndex : titleIndex) : (useSpectral ? titleSpec : title), numRuns, eventInfo.time/numRuns, maxTimePerRun);CHKERRQ(ierr);
+      ierr = PetscSynchronizedFlush(comm, PETSC_STDOUT);CHKERRQ(ierr);
+      if (user->errors) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Average time for vector closure %g > standard %g", eventInfo.time/numRuns, maxTimePerRun);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -392,7 +421,7 @@ int main(int argc, char **argv)
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   ierr = ProcessOptions(&user);CHKERRQ(ierr);
   ierr = PetscLogDefaultBegin();CHKERRQ(ierr);
-  ierr = CreateMesh(PETSC_COMM_SELF, &user, &dm);CHKERRQ(ierr);
+  ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
   ierr = TestCone(dm, &user);CHKERRQ(ierr);
   ierr = TestTransitiveClosure(dm, &user);CHKERRQ(ierr);
   ierr = TestVecClosure(dm, PETSC_FALSE, PETSC_FALSE, &user);CHKERRQ(ierr);
@@ -409,46 +438,56 @@ int main(int argc, char **argv)
 
 /*TEST
 
+  build:
+    requires: define(PETSC_USE_LOG)
+
   # 2D Simplex P_1 scalar tests
+  testset:
+    args: -num_dof 1,0,0 -iterations 2 -print_times
+    test:
+      suffix: correctness_0
+    test:
+      suffix: correctness_1
+      args: -interpolate -dm_refine 2
+    test:
+      suffix: correctness_2
+      requires: triangle
+      args: -interpolate -refinement_limit 1.0e-5
   test:
     suffix: 0
-    requires: performance
-    TODO: missing output file
+    TODO: Only for performance testing
     args: -num_dof 1,0,0 -iterations 10000 -max_cone_time 1.1e-8 -max_closure_time 1.3e-7 -max_vec_closure_time 3.6e-7
   test:
     suffix: 1
-    requires: performance
-    TODO: missing output file
+    requires: triangle
+    TODO: Only for performance testing
     args: -refinement_limit 1.0e-5 -num_dof 1,0,0 -iterations 2 -max_cone_time 2.1e-8 -max_closure_time 1.5e-7 -max_vec_closure_time 3.6e-7
   test:
     suffix: 2
-    requires: performance
-    TODO: missing output file
+    TODO: Only for performance testing
     args: -num_fields 1 -num_components 1 -num_dof 1,0,0 -iterations 10000 -max_cone_time 1.1e-8 -max_closure_time 1.3e-7 -max_vec_closure_time 4.5e-7
   test:
     suffix: 3
-    requires: performance
-    TODO: missing output file
+    requires: triangle
+    TODO: Only for performance testing
     args: -refinement_limit 1.0e-5 -num_fields 1 -num_components 1 -num_dof 1,0,0 -iterations 2 -max_cone_time 2.1e-8 -max_closure_time 1.5e-7 -max_vec_closure_time 4.7e-7
   test:
     suffix: 4
-    requires: performance
-    TODO: missing output file
+    TODO: Only for performance testing
     args: -interpolate -num_dof 1,0,0 -iterations 10000 -max_cone_time 1.1e-8 -max_closure_time 6.5e-7 -max_vec_closure_time 1.0e-6
   test:
     suffix: 5
-    requires: performance
-    TODO: missing output file
+    requires: triangle
+    TODO: Only for performance testing
     args: -interpolate -refinement_limit 1.0e-4 -num_dof 1,0,0 -iterations 2 -max_cone_time 2.1e-8 -max_closure_time 6.5e-7 -max_vec_closure_time 1.0e-6
   test:
     suffix: 6
-    requires: performance
-    TODO: missing output file
+    TODO: Only for performance testing
     args: -interpolate -num_fields 1 -num_components 1 -num_dof 1,0,0 -iterations 10000 -max_cone_time 1.1e-8 -max_closure_time 6.5e-7 -max_vec_closure_time 1.1e-6
   test:
     suffix: 7
-    requires: performance
-    TODO: missing output file
+    requires: triangle
+    TODO: Only for performance testing
     args: -interpolate -refinement_limit 1.0e-4 -num_fields 1 -num_components 1 -num_dof 1,0,0 -iterations 2 -max_cone_time 2.1e-8 -max_closure_time 6.5e-7 -max_vec_closure_time 1.2e-6
 
   # 2D Simplex P_1 vector tests
