@@ -37,6 +37,9 @@ PETSC_EXTERN PetscLogEvent DMPLEX_InjectorFEM;
 PETSC_EXTERN PetscLogEvent DMPLEX_IntegralFEM;
 PETSC_EXTERN PetscLogEvent DMPLEX_CreateGmsh;
 PETSC_EXTERN PetscLogEvent DMPLEX_RebalanceSharedPoints;
+PETSC_EXTERN PetscLogEvent DMPLEX_CreateFromFile;
+PETSC_EXTERN PetscLogEvent DMPLEX_CreateFromCellList;
+PETSC_EXTERN PetscLogEvent DMPLEX_CreateFromCellList_Coordinates;
 
 PETSC_EXTERN PetscBool      PetscPartitionerRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode PetscPartitionerRegisterAll(void);
