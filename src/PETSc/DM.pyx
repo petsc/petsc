@@ -299,6 +299,8 @@ cdef class DM(Object):
         return tuple([(toReal(lmin[i]), toReal(lmax[i]))
                       for i from 0 <= i < dim])
 
+    def localizeCoordinates(self):
+        CHKERR( DMLocalizeCoordinates(self.dm) )
     #
 
     def setMatType(self, mat_type):
