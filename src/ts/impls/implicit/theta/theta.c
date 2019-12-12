@@ -204,9 +204,9 @@ static PetscErrorCode TSStep_Theta(TS ts)
   }
 
   th->status     = TS_STEP_INCOMPLETE;
-  th->shift      = 1/(th->Theta*ts->time_step);
-  th->stage_time = ts->ptime + (th->endpoint ? (PetscReal)1 : th->Theta)*ts->time_step;
   while (!ts->reason && th->status != TS_STEP_COMPLETE) {
+    th->shift      = 1/(th->Theta*ts->time_step);
+    th->stage_time = ts->ptime + (th->endpoint ? (PetscReal)1 : th->Theta)*ts->time_step;
     ierr = VecCopy(th->X0,th->X);CHKERRQ(ierr);
     if (th->extrapolate && !ts->steprestart) {
       ierr = VecAXPY(th->X,1/th->shift,th->Xdot);CHKERRQ(ierr);
