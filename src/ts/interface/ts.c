@@ -87,7 +87,7 @@ static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt,TSAdaptType default_ty
 .  -ts_init_time <time> - initial time to start computation
 .  -ts_final_time <time> - final time to compute to (deprecated: use -ts_max_time)
 .  -ts_dt <dt> - initial time step
-.  -ts_exact_final_time <stepover,interpolate,matchstep> whether to stop at the exact given final time and how to compute the solution at that ti,e
+.  -ts_exact_final_time <stepover,interpolate,matchstep> - whether to stop at the exact given final time and how to compute the solution at that ti,e
 .  -ts_max_snes_failures <maxfailures> - Maximum number of nonlinear solve failures allowed
 .  -ts_max_reject <maxrejects> - Maximum number of step rejections before step fails
 .  -ts_error_if_step_fails <true,false> - Error if no step succeeds
