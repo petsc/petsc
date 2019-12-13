@@ -963,7 +963,7 @@ PetscErrorCode PetscFEGetTabulation(PetscFE fem, PetscInt npoints, const PetscRe
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  if (!npoints) {
+  if (!npoints || !fem->dualSpace) {
     if (B) *B = NULL;
     if (D) *D = NULL;
     if (H) *H = NULL;
@@ -1019,10 +1019,12 @@ PetscErrorCode PetscFERestoreTabulation(PetscFE fem, PetscInt npoints, const Pet
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
-  ierr = PetscDualSpaceGetDM(fem->dualSpace, &dm);CHKERRQ(ierr);
-  if (B && *B) {ierr = DMRestoreWorkArray(dm, 0, MPIU_REAL, B);CHKERRQ(ierr);}
-  if (D && *D) {ierr = DMRestoreWorkArray(dm, 0, MPIU_REAL, D);CHKERRQ(ierr);}
-  if (H && *H) {ierr = DMRestoreWorkArray(dm, 0, MPIU_REAL, H);CHKERRQ(ierr);}
+  if (fem->dualSpace) {
+    ierr = PetscDualSpaceGetDM(fem->dualSpace, &dm);CHKERRQ(ierr);
+    if (B && *B) {ierr = DMRestoreWorkArray(dm, 0, MPIU_REAL, B);CHKERRQ(ierr);}
+    if (D && *D) {ierr = DMRestoreWorkArray(dm, 0, MPIU_REAL, D);CHKERRQ(ierr);}
+    if (H && *H) {ierr = DMRestoreWorkArray(dm, 0, MPIU_REAL, H);CHKERRQ(ierr);}
+  }
   PetscFunctionReturn(0);
 }
 
