@@ -1909,7 +1909,10 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, IS cellIS, PetscReal t, Pet
   ierr = PetscObjectTypeCompare((PetscObject) JacP, MATIS, &isMatISP);CHKERRQ(ierr);
   ierr = DMGetGlobalSection(dm, &globalSection);CHKERRQ(ierr);
   if (isMatISP) {ierr = DMPlexGetSubdomainSection(dm, &subSection);CHKERRQ(ierr);}
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(cellIS, &numCells);CHKERRQ(ierr);
+  ierr = ISGetPointRange(cellIS, &cStart, &cEnd, &cells);CHKERRQ(ierr);
+  ierr = DMGetCellDS(dm, cStart, &prob);CHKERRQ(ierr);
+  ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
   ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
   ierr = PetscDSHasJacobian(prob, &hasJac);CHKERRQ(ierr);
   ierr = PetscDSHasJacobianPreconditioner(prob, &hasPrec);CHKERRQ(ierr);
@@ -1918,9 +1921,6 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, IS cellIS, PetscReal t, Pet
   if (hasJac && Jac == JacP) hasPrec = PETSC_FALSE;
   ierr = PetscDSHasDynamicJacobian(prob, &hasDyn);CHKERRQ(ierr);
   hasDyn = hasDyn && (X_tShift != 0.0) ? PETSC_TRUE : PETSC_FALSE;
-  ierr = PetscSectionGetNumFields(section, &Nf);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(cellIS, &numCells);CHKERRQ(ierr);
-  ierr = ISGetPointRange(cellIS, &cStart, &cEnd, &cells);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject) dm, "dmAux", (PetscObject *) &dmAux);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject) dm, "A", (PetscObject *) &A);CHKERRQ(ierr);
   if (dmAux) {
