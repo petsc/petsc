@@ -19,6 +19,8 @@ if sys.version_info < (2,6):
 def check_for_option_mistakes(opts):
   for opt in opts[1:]:
     name = opt.split('=')[0]
+    if name.find(' ') >= 0:
+      raise ValueError('The option "'+name+'" has a space character in the name - this is likely incorrect usage.');
     if name.find('_') >= 0:
       exception = False
       for exc in ['mkl_sparse', 'mkl_sparse_optimize', 'mkl_cpardiso', 'mkl_pardiso', 'superlu_dist', 'PETSC_ARCH', 'PETSC_DIR', 'CXX_CXXFLAGS', 'LD_SHARED', 'CC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'AR_FLAGS', 'C_VERSION', 'CXX_VERSION', 'FC_VERSION', 'size_t', 'MPI_Comm','MPI_Fint','int64_t']:

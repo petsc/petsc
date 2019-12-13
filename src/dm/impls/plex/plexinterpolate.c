@@ -1562,7 +1562,7 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
   PetscSection   coordSectionA, coordSectionB;
   PetscScalar   *coordsA, *coordsB;
   PetscInt       spaceDim, Nf, vStartA, vStartB, vEndA, vEndB, coordSizeB, v, d;
-  PetscInt       cStartA, cEndA, cStartB, cEndB, cS, cE;
+  PetscInt       cStartA, cEndA, cStartB, cEndB, cS, cE, cdim;
   PetscBool      lc = PETSC_FALSE;
   PetscErrorCode ierr;
 
@@ -1570,6 +1570,8 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
   PetscValidHeaderSpecific(dmA, DM_CLASSID, 1);
   PetscValidHeaderSpecific(dmB, DM_CLASSID, 2);
   if (dmA == dmB) PetscFunctionReturn(0);
+  ierr = DMGetCoordinateDim(dmA, &cdim);CHKERRQ(ierr);
+  ierr = DMSetCoordinateDim(dmB, cdim);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dmA, 0, &vStartA, &vEndA);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dmB, 0, &vStartB, &vEndB);CHKERRQ(ierr);
   if ((vEndA-vStartA) != (vEndB-vStartB)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The number of vertices in first DM %d != %d in the second DM", vEndA-vStartA, vEndB-vStartB);
