@@ -22,6 +22,9 @@ const char       GaussCitation[] = "@article{GolubWelsch1969,\n"
                                    "  pages   = {221--230},\n"
                                    "  year    = {1969}\n}\n";
 
+
+PetscClassId PETSCQUADRATURE_CLASSID = 0;
+
 /*@
   PetscQuadratureCreate - Create a PetscQuadrature object
 
@@ -43,8 +46,8 @@ PetscErrorCode PetscQuadratureCreate(MPI_Comm comm, PetscQuadrature *q)
 
   PetscFunctionBegin;
   PetscValidPointer(q, 2);
-  ierr = PetscSysInitializePackage();CHKERRQ(ierr);
-  ierr = PetscHeaderCreate(*q,PETSC_OBJECT_CLASSID,"PetscQuadrature","Quadrature","DT",comm,PetscQuadratureDestroy,PetscQuadratureView);CHKERRQ(ierr);
+  ierr = DMInitializePackage();CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(*q,PETSCQUADRATURE_CLASSID,"PetscQuadrature","Quadrature","DT",comm,PetscQuadratureDestroy,PetscQuadratureView);CHKERRQ(ierr);
   (*q)->dim       = -1;
   (*q)->Nc        =  1;
   (*q)->order     = -1;
@@ -108,7 +111,7 @@ PetscErrorCode PetscQuadratureDestroy(PetscQuadrature *q)
 
   PetscFunctionBegin;
   if (!*q) PetscFunctionReturn(0);
-  PetscValidHeaderSpecific((*q),PETSC_OBJECT_CLASSID,1);
+  PetscValidHeaderSpecific((*q),PETSCQUADRATURE_CLASSID,1);
   if (--((PetscObject)(*q))->refct > 0) {
     *q = NULL;
     PetscFunctionReturn(0);
@@ -137,7 +140,7 @@ PetscErrorCode PetscQuadratureDestroy(PetscQuadrature *q)
 PetscErrorCode PetscQuadratureGetOrder(PetscQuadrature q, PetscInt *order)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(q, PETSC_OBJECT_CLASSID, 1);
+  PetscValidHeaderSpecific(q, PETSCQUADRATURE_CLASSID, 1);
   PetscValidPointer(order, 2);
   *order = q->order;
   PetscFunctionReturn(0);
@@ -159,7 +162,7 @@ PetscErrorCode PetscQuadratureGetOrder(PetscQuadrature q, PetscInt *order)
 PetscErrorCode PetscQuadratureSetOrder(PetscQuadrature q, PetscInt order)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(q, PETSC_OBJECT_CLASSID, 1);
+  PetscValidHeaderSpecific(q, PETSCQUADRATURE_CLASSID, 1);
   q->order = order;
   PetscFunctionReturn(0);
 }
@@ -184,7 +187,7 @@ PetscErrorCode PetscQuadratureSetOrder(PetscQuadrature q, PetscInt order)
 PetscErrorCode PetscQuadratureGetNumComponents(PetscQuadrature q, PetscInt *Nc)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(q, PETSC_OBJECT_CLASSID, 1);
+  PetscValidHeaderSpecific(q, PETSCQUADRATURE_CLASSID, 1);
   PetscValidPointer(Nc, 2);
   *Nc = q->Nc;
   PetscFunctionReturn(0);
@@ -208,7 +211,7 @@ PetscErrorCode PetscQuadratureGetNumComponents(PetscQuadrature q, PetscInt *Nc)
 PetscErrorCode PetscQuadratureSetNumComponents(PetscQuadrature q, PetscInt Nc)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(q, PETSC_OBJECT_CLASSID, 1);
+  PetscValidHeaderSpecific(q, PETSCQUADRATURE_CLASSID, 1);
   q->Nc = Nc;
   PetscFunctionReturn(0);
 }
@@ -238,7 +241,7 @@ PetscErrorCode PetscQuadratureSetNumComponents(PetscQuadrature q, PetscInt Nc)
 PetscErrorCode PetscQuadratureGetData(PetscQuadrature q, PetscInt *dim, PetscInt *Nc, PetscInt *npoints, const PetscReal *points[], const PetscReal *weights[])
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(q, PETSC_OBJECT_CLASSID, 1);
+  PetscValidHeaderSpecific(q, PETSCQUADRATURE_CLASSID, 1);
   if (dim) {
     PetscValidPointer(dim, 2);
     *dim = q->dim;
@@ -453,7 +456,7 @@ PetscErrorCode PetscQuadraturePushForward(PetscQuadrature q, PetscInt imageDim, 
 PetscErrorCode PetscQuadratureSetData(PetscQuadrature q, PetscInt dim, PetscInt Nc, PetscInt npoints, const PetscReal points[], const PetscReal weights[])
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(q, PETSC_OBJECT_CLASSID, 1);
+  PetscValidHeaderSpecific(q, PETSCQUADRATURE_CLASSID, 1);
   if (dim >= 0)     q->dim       = dim;
   if (Nc >= 0)      q->Nc        = Nc;
   if (npoints >= 0) q->numPoints = npoints;
@@ -558,7 +561,7 @@ PetscErrorCode PetscQuadratureExpandComposite(PetscQuadrature q, PetscInt numSub
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(q, PETSC_OBJECT_CLASSID, 1);
+  PetscValidHeaderSpecific(q, PETSCQUADRATURE_CLASSID, 1);
   PetscValidPointer(v0, 3);
   PetscValidPointer(jac, 4);
   PetscValidPointer(qref, 5);
@@ -1885,4 +1888,3 @@ PetscErrorCode PetscGaussLobattoLegendreElementMassDestroy(PetscInt n,PetscReal 
   *AA  = NULL;
   PetscFunctionReturn(0);
 }
-

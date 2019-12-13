@@ -636,12 +636,12 @@ PetscErrorCode Compute_Lagrange_Basis_3D_Internal ( const PetscInt nverts, const
         dphidx[1 + offset] = Dx[1];
         dphidx[2 + offset] = Dx[2];
         dphidx[3 + offset] = Dx[3];
-      
+
         dphidy[0 + offset] = Dy[0];
         dphidy[1 + offset] = Dy[1];
         dphidy[2 + offset] = Dy[2];
         dphidy[3 + offset] = Dy[3];
-      
+
         dphidz[0 + offset] = Dz[0];
         dphidz[1 + offset] = Dz[1];
         dphidz[2 + offset] = Dz[2];
@@ -695,8 +695,8 @@ PetscErrorCode Compute_Lagrange_Basis_3D_Internal ( const PetscInt nverts, const
   Level: advanced
 
 @*/
-PetscErrorCode DMMoabFEMComputeBasis ( const PetscInt dim, const PetscInt nverts, const PetscReal *coordinates, const PetscQuadrature quadrature, 
-                                       PetscReal *phypts, PetscReal *jacobian_quadrature_weight_product, 
+PetscErrorCode DMMoabFEMComputeBasis ( const PetscInt dim, const PetscInt nverts, const PetscReal *coordinates, const PetscQuadrature quadrature,
+                                       PetscReal *phypts, PetscReal *jacobian_quadrature_weight_product,
                                        PetscReal *fe_basis, PetscReal **fe_basis_derivatives)
 {
   PetscErrorCode  ierr;
@@ -707,7 +707,7 @@ PetscErrorCode DMMoabFEMComputeBasis ( const PetscInt dim, const PetscInt nverts
 
   PetscFunctionBegin;
   PetscValidPointer(coordinates, 3);
-  PetscValidHeaderSpecific(quadrature, PETSC_OBJECT_CLASSID, 4);
+  PetscValidHeaderSpecific(quadrature, PETSCQUADRATURE_CLASSID, 4);
   PetscValidPointer(fe_basis, 7);
   compute_der = (fe_basis_derivatives != NULL);
 
@@ -1158,4 +1158,3 @@ PetscErrorCode DMMoabPToRMapping( const PetscInt dim, const PetscInt nverts, con
   }
   PetscFunctionReturn(0);
 }
-

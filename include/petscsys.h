@@ -1240,6 +1240,9 @@ PETSC_EXTERN const char *const PetscFileModes[];
 PETSC_EXTERN PetscClassId PETSC_LARGEST_CLASSID;
 PETSC_EXTERN PetscClassId PETSC_OBJECT_CLASSID;
 PETSC_EXTERN PetscErrorCode PetscClassIdRegister(const char[],PetscClassId *);
+PETSC_EXTERN PetscErrorCode PetscObjectGetId(PetscObject,PetscObjectId*);
+PETSC_EXTERN PetscErrorCode PetscObjectCompareId(PetscObject,PetscObjectId,PetscBool*);
+
 
 /*
    Routines that get memory usage information from the OS
