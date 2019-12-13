@@ -78,7 +78,6 @@ def summarize_results(directory,make,ntime,etime):
           re.sub('cmd-','',
           re.sub('diff-','',failstr+' '))
           )
-      print(fail_targets)
       # Strip off characters from subtests
       fail_list=[]
       for failure in fail_targets.split():
