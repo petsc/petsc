@@ -97,6 +97,12 @@ fi
 if $debugger; then
   args="-start_in_debugger $args"
 fi
+if test -n "$filter"; then
+  diff_flags=$diff_flags" -F \$'$filter'"
+fi
+if test -n "$filter_output"; then
+  diff_flags=$diff_flags" -f \$'$filter_output'"
+fi
 
 
 # Init
@@ -132,16 +138,12 @@ function petsc_testrun() {
   # Second arg = stdout file
   # Third arg = stderr file
   # Fourth arg = label for reporting
-  # Fifth arg = Filter
   rmfiles="${rmfiles} $2 $3"
   tlabel=$4
-  filter=$5
+  error=$5
   cmd="$1 > $2 2> $3"
-  if test -n "$filter"; then
-    if test "${filter:0:6}"=="Error:"; then
-      filter=${filter##Error:}
-      cmd="$1 2>&1 | cat > $2"
-    fi
+  if test -n "$error"; then
+    cmd="$1 2>&1 | cat > $2"
   fi
   echo "$cmd" > ${tlabel}.sh; chmod 755 ${tlabel}.sh
 
@@ -160,13 +162,6 @@ function petsc_testrun() {
     if [ $cmd_res -eq 0 ]; then
       cmd_res=1
     fi
-  fi
-
-  # Handle filters separately and assume no timeout check needed
-  if test -n "$filter"; then
-    cmd="cat $2 | $filter > $2.tmp 2>> $3 ; mv $2.tmp $2"
-    echo "$cmd" >> ${tlabel}.sh
-    eval "$cmd"
   fi
 
   # Report errors

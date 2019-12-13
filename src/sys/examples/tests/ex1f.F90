@@ -58,6 +58,7 @@
 !/*TEST
 !
 !   test:
-!     filter: egrep  "(My error handler|Operating system error: Cannot allocate memory)" | wc -l
+!     args: -error_output_stdout
+!     filter:Error: egrep  "(My error handler|Operating system error: Cannot allocate memory)" | wc -l
 !
 !TEST*/

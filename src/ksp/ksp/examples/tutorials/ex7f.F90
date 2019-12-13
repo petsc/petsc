@@ -277,7 +277,7 @@ end program main
 !
 !   test:
 !      nsize: 2
-!      args: -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always> ex7_1.tmp 2>&1
+!      args: -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always
 !
 !   test:
 !      suffix: 2
