@@ -137,6 +137,10 @@ struct _n_PetscFunctionList {
   Output Parameter:
 . mesh - The DMPlex object
 
+  Options Database:
++  -dm_plex_generate <name> - package to generate mesh, for example, triangle, ctetgen or tetgen
+-  -dm_plex_generator <name> - package to generate mesh, for example, triangle, ctetgen or tetgen (deprecated)
+
   Level: intermediate
 
 .seealso: DMPlexCreate(), DMRefine()
@@ -148,6 +152,7 @@ PetscErrorCode DMPlexGenerate(DM boundary, const char name[], PetscBool interpol
   PetscBool         flg;
   PetscErrorCode    ierr;
   PetscFunctionList fl;
+  const char*       suggestions;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(boundary, DM_CLASSID, 1);
@@ -155,6 +160,10 @@ PetscErrorCode DMPlexGenerate(DM boundary, const char name[], PetscBool interpol
   ierr = DMGetDimension(boundary, &dim);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(((PetscObject) boundary)->options,((PetscObject) boundary)->prefix, "-dm_plex_generator", genname, 1024, &flg);CHKERRQ(ierr);
   if (flg) name = genname;
+  else {
+    ierr = PetscOptionsGetString(((PetscObject) boundary)->options,((PetscObject) boundary)->prefix, "-dm_plex_generate", genname, 1024, &flg);CHKERRQ(ierr);
+    if (flg) name = genname;
+  }
 
   fl = DMPlexGenerateList;
   if (name) {
@@ -166,7 +175,7 @@ PetscErrorCode DMPlexGenerate(DM boundary, const char name[], PetscBool interpol
       }
       fl = fl->next;
     }
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Grid generator %g not registered",name);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Grid generator %s not registered; you may need to add --download-%s to your ./configure options",name,name);
   } else {
     while (fl) {
       if (boundary->dim == fl->dim) {
@@ -175,7 +184,10 @@ PetscErrorCode DMPlexGenerate(DM boundary, const char name[], PetscBool interpol
       }
       fl = fl->next;
     }
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"No grid generator of dimension %D registered",boundary->dim+1);
+    suggestions = "";
+    if (boundary->dim+1 == 2) suggestions = " You may need to add --download-triangle to your ./configure options";
+    else if (boundary->dim+1 == 3) suggestions = " You may need to add --download-ctetgen or --download-tetgen in your ./configure options";
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"No grid generator of dimension %D registered%s",boundary->dim+1,suggestions);
   }
   PetscFunctionReturn(0);
 }
