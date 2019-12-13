@@ -26,13 +26,15 @@ static PetscErrorCode ProjectToUnitSphere(DM dm)
 {
   Vec            coordinates;
   PetscScalar   *coords;
-  PetscInt       Nv, v, dim, d;
+  PetscInt       Nv, v, bs, dim, d;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = VecGetLocalSize(coordinates, &Nv);CHKERRQ(ierr);
-  ierr = VecGetBlockSize(coordinates, &dim);CHKERRQ(ierr);
+  ierr = VecGetBlockSize(coordinates, &bs);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(dm, &dim);CHKERRQ(ierr);
+  if (dim != bs) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Coordinate bs %D does not match dim %D",bs,dim);
   Nv  /= dim;
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
   for (v = 0; v < Nv; ++v) {
