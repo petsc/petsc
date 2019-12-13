@@ -45,6 +45,8 @@ variables:
   extends: .test
   stage: stage-1
   image: jedbrown/mpich-ccache
+  tags:
+    - docker
   before_script:
     - date
     - echo nproc=$(nproc)
