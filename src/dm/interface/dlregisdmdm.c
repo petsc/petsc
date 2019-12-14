@@ -78,6 +78,7 @@ PetscErrorCode  DMInitializePackage(void)
   ierr = PetscLogEventRegister("DMCreateRestrict",       DM_CLASSID,&DM_CreateRestriction);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMCreateInject",         DM_CLASSID,&DM_CreateInjection);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMCreateMat",            DM_CLASSID,&DM_CreateMatrix);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMLoad",                 DM_CLASSID,&DM_Load);CHKERRQ(ierr);
 
   ierr = PetscLogEventRegister("Mesh Partition",         DM_CLASSID,&DMPLEX_Partition);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("Mesh Migration",         DM_CLASSID,&DMPLEX_Migrate);CHKERRQ(ierr);

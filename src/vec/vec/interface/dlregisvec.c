@@ -58,6 +58,8 @@ PetscErrorCode  ISInitializePackage(void)
   /* Register Constructors */
   ierr = ISRegisterAll();CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingRegisterAll();CHKERRQ(ierr);
+  /* Register Events */
+  ierr = PetscLogEventRegister("ISLoad",IS_CLASSID,&IS_Load);CHKERRQ(ierr);
   /* Process info exclusions */
   ierr = PetscOptionsGetString(NULL,NULL,"-info_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {

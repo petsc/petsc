@@ -7,6 +7,8 @@
 
 /* Logging support */
 PetscClassId IS_CLASSID;
+/* TODO: Much more events are missing! */
+PetscLogEvent IS_Load;
 
 /*@
    ISRenumber - Renumbers an index set (with multiplicities) in a contiguous way.
@@ -1662,7 +1664,9 @@ PetscErrorCode ISLoad(IS is, PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5);CHKERRQ(ierr);
   if (!isbinary && !ishdf5) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
   if (!((PetscObject)is)->type_name) {ierr = ISSetType(is, ISGENERAL);CHKERRQ(ierr);}
+  ierr = PetscLogEventBegin(IS_Load,viewer,0,0,0);CHKERRQ(ierr);
   ierr = (*is->ops->load)(is, viewer);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(IS_Load,viewer,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

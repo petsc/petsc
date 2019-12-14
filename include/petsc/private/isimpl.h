@@ -14,6 +14,9 @@ PETSC_EXTERN PetscBool ISRegisterAllCalled;
 PETSC_EXTERN PetscBool ISLocalToGlobalMappingRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode ISRegisterAll(void);
 
+/* events */
+PETSC_EXTERN PetscLogEvent IS_Load;
+
 struct _ISOps {
   PetscErrorCode (*getindices)(IS,const PetscInt*[]);
   PetscErrorCode (*restoreindices)(IS,const PetscInt*[]);

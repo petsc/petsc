@@ -3,6 +3,8 @@
 #include <petsc/private/hashseti.h>          /*I   "petscdmplex.h"   I*/
 #include <petscsf.h>
 
+static PetscLogEvent DM_Plex_CreateFromFile = 0, DM_Plex_CreateFromCellList = 0, DM_Plex_CreateFromCellList_Coordinates = 0;
+
 /*@
   DMPlexCreateDoublet - Creates a mesh of two cells of the specified type, optionally with later refinement.
 
@@ -2623,6 +2625,8 @@ PetscErrorCode DMPlexBuildFromCellList_Parallel_Internal(DM dm, PetscInt spaceDi
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  if (!DM_Plex_CreateFromCellList) {ierr = PetscLogEventRegister("DMPlexCrFrCeLi",DM_CLASSID,&DM_Plex_CreateFromCellList);}
+  ierr = PetscLogEventBegin(DM_Plex_CreateFromCellList,dm,0,0,0);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size);CHKERRQ(ierr);
   /* Partition vertices */
@@ -2707,6 +2711,7 @@ PetscErrorCode DMPlexBuildFromCellList_Parallel_Internal(DM dm, PetscInt spaceDi
   /* Fill in the rest of the topology structure */
   ierr = DMPlexSymmetrize(dm);CHKERRQ(ierr);
   ierr = DMPlexStratify(dm);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(DM_Plex_CreateFromCellList,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2722,6 +2727,8 @@ PetscErrorCode DMPlexBuildCoordinates_Parallel_Internal(DM dm, PetscInt spaceDim
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!DM_Plex_CreateFromCellList_Coordinates) {ierr = PetscLogEventRegister("DMPlexCrFrCeLiCo",DM_CLASSID,&DM_Plex_CreateFromCellList_Coordinates);}
+  ierr = PetscLogEventBegin(DM_Plex_CreateFromCellList_Coordinates,dm,0,0,0);CHKERRQ(ierr);
   ierr = DMSetCoordinateDim(dm, spaceDim);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sfVert, &numVertices, &numVerticesAdj, NULL, NULL);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
@@ -2765,6 +2772,7 @@ PetscErrorCode DMPlexBuildCoordinates_Parallel_Internal(DM dm, PetscInt spaceDim
   ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(dm, coordinates);CHKERRQ(ierr);
   ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(DM_Plex_CreateFromCellList_Coordinates,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2851,6 +2859,8 @@ PetscErrorCode DMPlexBuildFromCellList_Internal(DM dm, PetscInt spaceDim, PetscI
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!DM_Plex_CreateFromCellList) {ierr = PetscLogEventRegister("DMPlexCrFrCeLi",DM_CLASSID,&DM_Plex_CreateFromCellList);}
+  ierr = PetscLogEventBegin(DM_Plex_CreateFromCellList,dm,0,0,0);CHKERRQ(ierr);
   ierr = DMPlexSetChart(dm, 0, numCells+numVertices);CHKERRQ(ierr);
   for (c = 0; c < numCells; ++c) {
     ierr = DMPlexSetConeSize(dm, c, numCorners);CHKERRQ(ierr);
@@ -2867,6 +2877,7 @@ PetscErrorCode DMPlexBuildFromCellList_Internal(DM dm, PetscInt spaceDim, PetscI
   ierr = DMRestoreWorkArray(dm, numCorners, MPIU_INT, &cone);CHKERRQ(ierr);
   ierr = DMPlexSymmetrize(dm);CHKERRQ(ierr);
   ierr = DMPlexStratify(dm);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(DM_Plex_CreateFromCellList,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2883,6 +2894,8 @@ PetscErrorCode DMPlexBuildCoordinates_Internal(DM dm, PetscInt spaceDim, PetscIn
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!DM_Plex_CreateFromCellList) {ierr = PetscLogEventRegister("DMPlexCrFrCeLiCo",DM_CLASSID,&DM_Plex_CreateFromCellList_Coordinates);}
+  ierr = PetscLogEventBegin(DM_Plex_CreateFromCellList_Coordinates,dm,0,0,0);CHKERRQ(ierr);
   ierr = DMSetCoordinateDim(dm, spaceDim);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = PetscSectionSetNumFields(coordSection, 1);CHKERRQ(ierr);
@@ -2907,6 +2920,7 @@ PetscErrorCode DMPlexBuildCoordinates_Internal(DM dm, PetscInt spaceDim, PetscIn
   ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(dm, coordinates);CHKERRQ(ierr);
   ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(DM_Plex_CreateFromCellList_Coordinates,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3241,6 +3255,8 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscB
   PetscFunctionBegin;
   PetscValidCharPointer(filename, 2);
   PetscValidPointer(dm, 4);
+  if (!DM_Plex_CreateFromFile) {ierr = PetscLogEventRegister("DMPlexCrFromFile",DM_CLASSID,&DM_Plex_CreateFromFile);}
+  ierr = PetscLogEventBegin(DM_Plex_CreateFromFile,0,0,0,0);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
   if (!len) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Filename must be a valid path");
@@ -3297,6 +3313,7 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscB
   } else if (isCV) {
     ierr = DMPlexCreateCellVertexFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
   } else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot load file %s: unrecognized extension", filename);
+  ierr = PetscLogEventEnd(DM_Plex_CreateFromFile,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
