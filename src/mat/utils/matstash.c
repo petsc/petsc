@@ -81,6 +81,7 @@ PetscErrorCode MatStashCreate_Private(MPI_Comm comm,PetscInt bs,MatStash *stash)
 
   ierr = PetscOptionsGetBool(NULL,NULL,"-matstash_reproduce",&stash->reproduce,NULL);CHKERRQ(ierr);
 #if !defined(PETSC_HAVE_MPIUNI)
+  flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,NULL,"-matstash_legacy",&flg,NULL);CHKERRQ(ierr);
   if (!flg) {
     stash->ScatterBegin   = MatStashScatterBegin_BTS;
