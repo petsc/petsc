@@ -69,8 +69,7 @@ variables:
     name: "$CI_JOB_NAME"
     when: always
     paths:
-    - arch-*/lib/petsc/conf/configure.log
-    - arch-*/lib/petsc/conf/make.log
+    - arch-*/lib/petsc/conf/*.log
     - arch-*/tests/testresults.xml
     - arch-*/tests/test_*_tap.log
     - arch-*/tests/test_*_err.log
@@ -137,8 +136,7 @@ checksource:
     name: "$CI_JOB_NAME"
     when: always
     paths:
-    - ${TEST_ARCH}/lib/petsc/conf/configure.log
-    - ${TEST_ARCH}/lib/petsc/conf/make.log
+    - ${TEST_ARCH}/lib/petsc/conf/*.log
     - ${TEST_ARCH}/tests/testresults.xml
     - ${TEST_ARCH}/tests/test_${TEST_ARCH}_tap.log
     - ${TEST_ARCH}/tests/test_${TEST_ARCH}_err.log
@@ -439,8 +437,7 @@ linux-cmplx-gcov:
   artifacts:
     when: always
     paths:
-    - ${TEST_ARCH}/lib/petsc/conf/configure.log
-    - ${TEST_ARCH}/lib/petsc/conf/make.log
+    - ${TEST_ARCH}/lib/petsc/conf/*.log
     - ${TEST_ARCH}/tests/testresults.xml
     - ${TEST_ARCH}/tests/test_${TEST_ARCH}_tap.log
     - ${TEST_ARCH}/tests/test_${TEST_ARCH}_err.log
@@ -590,8 +587,7 @@ linux-gcov:
   artifacts:
     when: always
     paths:
-    - ${TEST_ARCH}/lib/petsc/conf/configure.log
-    - ${TEST_ARCH}/lib/petsc/conf/make.log
+    - ${TEST_ARCH}/lib/petsc/conf/*.log
     - ${TEST_ARCH}/tests/testresults.xml
     - ${TEST_ARCH}/tests/test_${TEST_ARCH}_tap.log
     - ${TEST_ARCH}/tests/test_${TEST_ARCH}_err.log
@@ -621,8 +617,7 @@ linux-matlab-ilp64-gcov:
   artifacts:
     when: always
     paths:
-    - ${TEST_ARCH}/lib/petsc/conf/configure.log
-    - ${TEST_ARCH}/lib/petsc/conf/make.log
+    - ${TEST_ARCH}/lib/petsc/conf/*.log
     - ${TEST_ARCH}/tests/testresults.xml
     - ${TEST_ARCH}/tests/test_${TEST_ARCH}_tap.log
     - ${TEST_ARCH}/tests/test_${TEST_ARCH}_err.log
@@ -670,8 +665,7 @@ linux-pkgs-gcov:
   artifacts:
     when: always
     paths:
-    - ${TEST_ARCH}/lib/petsc/conf/configure.log
-    - ${TEST_ARCH}/lib/petsc/conf/make.log
+    - ${TEST_ARCH}/lib/petsc/conf/*.log
     - ${TEST_ARCH}/tests/testresults.xml
     - ${TEST_ARCH}/tests/test_${TEST_ARCH}_tap.log
     - ${TEST_ARCH}/tests/test_${TEST_ARCH}_err.log
