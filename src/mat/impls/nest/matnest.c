@@ -356,7 +356,7 @@ static PetscErrorCode MatNestFindIS(Mat A,PetscInt n,const IS list[],IS is,Petsc
   *found = -1;
   for (i=0; i<n; i++) {
     if (!list[i]) continue;
-    ierr = ISEqual(list[i],is,&flg);CHKERRQ(ierr);
+    ierr = ISEqualUnsorted(list[i],is,&flg);CHKERRQ(ierr);
     if (flg) {
       *found = i;
       PetscFunctionReturn(0);
@@ -1191,7 +1191,7 @@ PetscErrorCode MatNestSetSubMats_Nest(Mat A,PetscInt nr,const IS is_row[],PetscI
   if (cong && nr != nc) cong = PETSC_FALSE;
   if (cong) {
     for (i = 0; cong && i < nr; i++) {
-      ierr = ISEqual(s->isglobal.row[i],s->isglobal.col[i],&cong);CHKERRQ(ierr);
+      ierr = ISEqualUnsorted(s->isglobal.row[i],s->isglobal.col[i],&cong);CHKERRQ(ierr);
     }
   }
   if (!cong) {
