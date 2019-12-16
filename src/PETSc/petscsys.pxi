@@ -1,5 +1,12 @@
 cdef extern from * nogil:
 
+    ctypedef enum PetscDataType:
+        PETSC_INT
+        PETSC_REAL
+        PETSC_SCALAR
+        PETSC_COMPLEX
+        PETSC_DATATYPE_UNKNOWN
+
     const_char PETSC_AUTHOR_INFO[]
     int PetscGetVersion(char[],size_t)
     int PetscGetVersionNumber(PetscInt*,PetscInt*,PetscInt*,PetscInt*)
