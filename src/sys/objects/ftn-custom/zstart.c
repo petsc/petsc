@@ -327,6 +327,8 @@ static void petscinitialize_internal(char* filename, PetscInt len, PetscBool rea
   }
   if (f_petsc_comm_world) PETSC_COMM_WORLD = MPI_Comm_f2c(*(MPI_Fint*)&f_petsc_comm_world); /* User called MPI_INITIALIZE() and changed PETSC_COMM_WORLD */
   else PETSC_COMM_WORLD = MPI_COMM_WORLD;
+  *ierr = MPI_Comm_set_errhandler(PETSC_COMM_WORLD,MPI_ERRORS_RETURN);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize: Setting MPI error handler\n");return;}
   PetscInitializeCalled = PETSC_TRUE;
 
   *ierr = PetscSpinlockCreate(&PetscViewerASCIISpinLockOpen);

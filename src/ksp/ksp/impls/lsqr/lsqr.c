@@ -15,6 +15,10 @@ typedef struct {
   PetscBool exact_norm; /* flag for -ksp_lsqr_exact_mat_norm */
   PetscReal arnorm;     /* Good estimate of norm((A*inv(Pmat))'*r), where r = A*x - b, used in specific stopping criterion */
   PetscReal anorm;      /* Poor estimate of norm(A*inv(Pmat),'fro') used in specific stopping criterion */
+  /* Backup previous convergence test */
+  PetscErrorCode        (*converged)(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*);
+  PetscErrorCode        (*convergeddestroy)(void*);
+  void                  *cnvP;
 } KSP_LSQR;
 
 static PetscErrorCode  VecSquare(Vec v)
@@ -251,6 +255,9 @@ PetscErrorCode KSPDestroy_LSQR(KSP ksp)
     ierr = VecDestroyVecs(lsqr->nwork_m,&lsqr->vwork_m);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&lsqr->se);CHKERRQ(ierr);
+  /* Revert convergence test */
+  ierr = KSPSetConvergenceTest(ksp,lsqr->converged,lsqr->cnvP,lsqr->convergeddestroy);CHKERRQ(ierr);
+  /* Free the KSP_LSQR context */
   ierr = PetscFree(ksp->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -561,6 +568,9 @@ PETSC_EXTERN PetscErrorCode KSPCreate_LSQR(KSP ksp)
   ksp->ops->setfromoptions = KSPSetFromOptions_LSQR;
   ksp->ops->view           = KSPView_LSQR;
 
+  /* Backup current convergence test; remove destroy routine from KSP to prevent destroying the convergence context in KSPSetConvergenceTest() */
+  ierr = KSPGetAndClearConvergenceTest(ksp,&lsqr->converged,&lsqr->cnvP,&lsqr->convergeddestroy);CHKERRQ(ierr);
+  /* Override current convergence test */
   ierr = KSPConvergedDefaultCreate(&ctx);CHKERRQ(ierr);
   ierr = KSPSetConvergenceTest(ksp,KSPLSQRConvergedDefault,ctx,KSPConvergedDefaultDestroy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
