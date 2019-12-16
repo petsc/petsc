@@ -1,0 +1,15 @@
+  type: lsqr
+  left preconditioning
+  using UNPRECONDITIONED norm type for convergence test
+  type: jacobi
+convergence test: lsqr
+  type: lsqr
+  left preconditioning
+  using UNPRECONDITIONED norm type for convergence test
+  type: jacobi
+convergence test: lsqr
+  type: lsqr
+  left preconditioning
+  using UNPRECONDITIONED norm type for convergence test
+  type: jacobi
+convergence test: lsqr
