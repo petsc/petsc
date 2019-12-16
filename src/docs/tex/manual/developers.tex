@@ -2287,6 +2287,123 @@ of the data within the source files can be performed.
 As always, to see the full usage of the python script \trl{query_tests.py}, use
 the help flag:  \trl{query_tests.py --help}.
 
+%----------------------------------------------------------------------
+\cleardoublepage
+\chapter{Makefiles}
+\label{ch_makefiles}
+
+This chapter describes the design of the PETSc makefiles, which are
+key to managing code portability across a wide variety of UNIX and Windows systems.
+
+
+
+\section{Makefile Commands} \label{sec_common}
+
+The directory
+\trl{${PETSC_DIR}/lib/petsc/conf}
+contains virtually all
+makefile commands and customizations to enable portability across
+different architectures.  Most makefile commands for maintaining the
+PETSc system are defined in the file
+\trl{${PETSC_DIR}/lib/petsc/conf/rules}
+These commands, which process all appropriate files within the
+directory of execution, include
+\begin{itemize}
+\item \trl{libs} - Update the PETSc libraries
+\item \trl{clean} - Remove garbage files as well as libraries 
+\end{itemize}
+
+The \trl{tree} command enables the user to execute a particular action
+within a directory and all of its subdirectories.  The action is specified
+by \trl{ACTION=[action]}, where \trl{action} is one of the basic commands
+listed above. 
+
+\section{Customized Makefiles}
+\label{sec_custom}
+
+The directory \trl{${PETSC_DIR}/} contains a subdirectory for each
+architecture that contains machine-specific information, enabling the
+portability of our makefile system, these are
+\trl{${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf}
+ Each architecture directory contains
+two makefiles:
+\begin{itemize}
+\item \trl{petscvariables} - definitions of the compilers, linkers, etc.
+\item \trl{petscrules} - some build rules specific to this machine.
+\end{itemize}
+These files are generated automatically when you run \trl{./configure}.
+
+These are included by the architecture-independent makefiles located in
+\trl{${PETSC_DIR}/lib/petsc/conf}.
+
+\section{PETSc Flags}
+\label{sec_makeflags}
+
+PETSc has several flags that determine how the source code will be
+compiled.  The default flags for particular versions are specified in
+\trl{${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h}.
+The flags include
+\begin{itemize}
+\item \trl{PETSC_USE_DEBUG} - The PETSc debugging options are activated. We
+      recommend always using this except when doing performance analysis or production runs. \findex{PETSC_USE_DEBUG}
+\item \trl{PETSC_USE_COMPLEX} - The version with scalars represented
+      as complex numbers is used. \findex{PETSC_USE_COMPLEX}
+\end{itemize}
+
+\section{Sample Makefiles}
+
+
+Some additional variables that can be used in the makefile are defined
+as follows:
+\begin{tightitemize}
+\item \lstinline{CFLAGS, FFLAGS} User specified additional options for the C compiler and
+        Fortran compiler.
+\item \lstinline{CPPFLAGS, FPPFLAGS} User specified additional flags for the C preprocessor
+        and Fortran preprocessor.
+\item \lstinline{CLINKER, FLINKER} the C and Fortran linkers.
+\item \lstinline{RM} the remove command for deleting files.
+\end{tightitemize}
+
+Figure \ref{fig_make3} contains a makefile that maintains a PETSc
+library.  
+\begin{figure}[H]
+\begin{makelisting}
+ALL: lib
+
+CFLAGS   =
+SOURCEC  = sp1wd.c spinver.c spnd.c spqmd.c sprcm.c
+SOURCEF  = degree.F  fnroot.F genqmd.F qmdqt.F rcm.F fn1wd.F gen1wd.F \
+          genrcm.F qmdrch.F rootls.F fndsep.F gennd.F qmdmrg.F qmdupd.F
+SOURCEH  =
+LIBBASE  = libpetscmat
+MANSEC   = Mat
+
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
+\end{makelisting}
+\caption{Sample PETSc Makefile for Library Maintenance}
+\label{fig_make3}
+\end{figure}
+
+The library's name is \trl{libpetscmat.a}, and the source files being added
+to it are indicated by \lstinline{SOURCEC} (for C files) and \lstinline{SOURCEF} (for
+Fortran files).
+
+The variable \lstinline{MANSEC} indicates that any manual pages generated
+from this source should be included in the \lstinline{Mat} section.
+
+\section{Limitations}
+
+This approach to portable makefiles has some minor limitations, including
+the following:
+\begin{itemize}
+\item Each makefile must be called ``makefile''.
+\item Each makefile can maintain at most one archive library.
+\end{itemize}
+
+%------------------------------------------------------------------
+
+
 \bibliographystyle{plain}
 \bibliography{../petsc,../petscapp}
 

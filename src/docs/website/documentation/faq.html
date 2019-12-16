@@ -116,7 +116,7 @@ See https://www.mcs.anl.gov/petsc/documentation/faq.html
         <li><a href="#mpi-vec-to-mpi-vec">How do I collect all the values from a parallel PETSc vector into a vector on the zeroth (or any particular) processor?</a></li>
         <li><a href="#sparse-matrix-ascii-format">How can I read in or write out a sparse matrix in Matrix Market, Harwell-Boeing, SLAPC or other ASCII format?</a></li>
         <li><a href="#setfromoptions">Does TSSetFromOptions(), SNESSetFromOptions() or KSPSetFromOptions() reset all the parameters I set or how come TS/SNES/KSPSetXXX() don't seem to work?</a></li>
-        <li><a href="#makefiles">Can I use my own makefiles or rules for compiling code, rather than PETSc's?</a></li>
+        <li><a href="#makefiles">How do I compile and link may own PETSc application codess and can I use my own makefiles or rules for compiling code, rather than PETSc's?</a></li>
         <li><a href="#cmake">Can I use CMake to build my own project that depends on PETSc?</a></li>
         <li><a href="#carriagereturns">How can I put carriage returns in PetscPrintf() statements from Fortran?</a></li>
         <li><a href="#cxxmethod">How can I implement callbacks using C++ class methods?</a></li>
@@ -503,11 +503,6 @@ See https://www.mcs.anl.gov/petsc/documentation/faq.html
           versions of the library and mylinux-O for the optimized version, or
           petscdebug for the debug version and petscopt for the optimized
           version.
-        </li>
-
-        <li>
-          Begin by copying one of the many PETSc examples (in, for example,
-          petsc/src/ksp/examples/tutorials) and its corresponding makefile.
         </li>
 
         <li>
@@ -944,9 +939,10 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
         </li>
       </ul>
 
-      <h3><a name="makefiles">Can I use my own makefiles or rules for compiling code, instead of using PETSc's?</a></h3>
+      <h3><a name="makefiles">How do I compile and link may own PETSc application codes and can I use my own makefiles or rules for compiling code, rather than PETSc's?</a></h3>
 
-      Yes, see the section of the <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf">users manual</a> called Makefiles
+      See the section of the <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf">users manual</a> called Writing Application Codes with PETSc. This provides a
+      simple makefile that can be used to compiler user code. You are free to modify this makefile or completely replace it with your own makefile. 
 
       <h3><a name="cmake">Can I use CMake to build my own project that depends on PETSc?</a></h3>
 

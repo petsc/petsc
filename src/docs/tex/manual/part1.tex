@@ -1,4 +1,3 @@
-
 % --------------------------------------------------------------------
 %
 %                            PART 1
@@ -172,7 +171,7 @@ Part II explains in detail the use of the various PETSc libraries,
 such as vectors, matrices, index sets, linear and nonlinear
 solvers, and graphics.  Part III describes a variety of useful
 information, including profiling, the options database, viewers, error
-handling, makefiles, and some details of
+handling, and some details of
 PETSc design.
 
 \nocite{efficient}
@@ -535,6 +534,8 @@ details regarding error checking when using the PETSc Fortran interface.
 \begin{figure}[H]
   {
     \begin{outputlisting}
+ $ cd $PETSC_DIR/src/ksp/ksp/examples/tutorials
+ $ make ex3
  $ mpiexec -n 1 ./ex3 -m 100000
  [0]PETSC ERROR: --------------------- Error Message --------------------------------
  [0]PETSC ERROR: Out of memory. This could be due to allocating
@@ -625,8 +626,8 @@ part of the matrix and vectors in the parallel case.
 
 Figure~\ref{fig_exrun} illustrates compiling and running a PETSc program
 using MPICH on an OS X laptop.  Note that different machines will have
-compilation commands as determined by the configuration process.  See Chapter \ref{ch_makefiles}
-for a discussion about compiling PETSc programs.
+compilation commands as determined by the configuration process.  See Section \ref{application}
+for a discussion about how to compile your PETSc programs.
 Users who are experiencing difficulties linking PETSc programs should
 refer to the FAQ on the PETSc website
 \href{https://www.mcs.anl.gov/petsc}{https://www.mcs.anl.gov/petsc} or
@@ -635,7 +636,8 @@ given in the file \trl{$PETSC_DIR/docs/faq.html}.
 \begin{figure}[H]
 {
  \begin{outputlisting}
-$ make ex2
+ $ cd $PETSC_DIR/src/ksp/ksp/examples/tutorials
+ $ make ex2
 /Users/patrick/petsc/arch-darwin-double-debug/bin/mpicc -o ex2.o -c -Wall -Wwrite-strings -Wno-strict-aliasing -Wno-unknown-pragmas -Qunused-arguments -fvisibility=hidden -g3   -I/Users/patrick/petsc/include -I/Users/patrick/petsc/arch-darwin-double-debug/include -I/opt/X11/include -I/opt/local/include    `pwd`/ex2.c
 /Users/patrick/petsc/arch-darwin-double-debug/bin/mpicc -Wl,-multiply_defined,suppress -Wl,-multiply_defined -Wl,suppress -Wl,-commons,use_dylibs -Wl,-search_paths_first -Wl,-multiply_defined,suppress -Wl,-multiply_defined -Wl,suppress -Wl,-commons,use_dylibs -Wl,-search_paths_first    -Wall -Wwrite-strings -Wno-strict-aliasing -Wno-unknown-pragmas -Qunused-arguments -fvisibility=hidden -g3  -o ex2 ex2.o  -Wl,-rpath,/Users/patrick/petsc/arch-darwin-double-debug/lib -L/Users/patrick/petsc/arch-darwin-double-debug/lib  -lpetsc -Wl,-rpath,/Users/patrick/petsc/arch-darwin-double-debug/lib -lf2clapack -lf2cblas -Wl,-rpath,/opt/X11/lib -L/opt/X11/lib -lX11 -lssl -lcrypto -Wl,-rpath,/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0.2/lib/darwin -L/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0.2/lib/darwin -lmpifort -lgfortran -Wl,-rpath,/opt/local/lib/gcc5/gcc/x86_64-apple-darwin14/5.3.0 -L/opt/local/lib/gcc5/gcc/x86_64-apple-darwin14/5.3.0 -Wl,-rpath,/opt/local/lib/gcc5 -L/opt/local/lib/gcc5 -lgfortran -lgcc_ext.10.5 -lquadmath -lm -lclang_rt.osx -lmpicxx -lc++ -Wl,-rpath,/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/7.0.2/lib/darwin -L/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/7.0.2/lib/darwin -lclang_rt.osx -Wl,-rpath,/Users/patrick/petsc/arch-darwin-double-debug/lib -L/Users/patrick/petsc/arch-darwin-double-debug/lib -ldl -lmpi -lpmpi -lSystem -Wl,-rpath,/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/7.0.2/lib/darwin -L/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/7.0.2/lib/darwin -lclang_rt.osx -ldl
 /bin/rm -f ex2.o
@@ -718,7 +720,8 @@ Reports information only for process 0.
 \label{fig_exprof}
 \end{figure}
 
-\subsection*{Writing Application Codes with PETSc}
+\section{Writing Application Codes with PETSc}
+\label{applicatation}
 
 The examples throughout the library demonstrate the software usage
 and can serve as templates for developing
@@ -727,7 +730,7 @@ users examine programs in the directories
 \trl{${PETSC_DIR}/src/<library>/examples/tutorials}
 where \trl{<library>}
 denotes any of the PETSc libraries (listed in the following
-section), such as \trl{SNES} or \trl{KSP}.
+section), such as \trl{SNES} or \trl{KSP}  or \trl{TS}.
 The manual pages located at \trl{${PETSC_DIR}/docs/index.htm} or 
 \href{https://www.mcs.anl.gov/petsc/documentation/}{https://www.mcs.anl.gov/petsc/documentation/}
 provide links (organized by both routine names and concepts) to the tutorial examples.
@@ -736,13 +739,26 @@ To write a new application program using PETSc, we suggest the
 following procedure:
 \begin{tightenumerate}
 \item Install and test PETSc according to the instructions at the PETSc web site.
-\item Copy one of the many PETSc examples in the directory
-      that corresponds to the class of problem of interest (e.g.,
-      for linear solvers, see \trl{${PETSC_DIR}/src/ksp/ksp/examples/tutorials}).
-\item Copy the corresponding makefile within the example directory;
-      compile and run the example program.
+\item Make a working directory for your source code: for example, \trl{mkdir $HOME/application}
+\item Change to that working directory; for example,\trl{ cd $HOME/application}
+\item Copy one of the examples in the directory
+      that corresponds to the class of problem of interest into your working directory, for example, \trl{cp $PETSC_DIR/src/snes/examples/tutorials/ex19.c ex19.c}
+\item Copy \$PETSC\_DIR/share/petsc/Makefile.user to your working directory, for example, \trl{cp $PETSC_DIR/share/petsc/Makefile.user Makefile}
+\item Compile and run the example program, for example, \trl{make ex19; ./ex19}
 \item Use the example program as a starting point for developing a custom code.
 \end{tightenumerate}
+
+We highly recommend against the following since it requires changing your makefile for each new configuration/computing system but
+if you do not wish to include any PETSc utilities in your makefile,
+you can use the following commands in the PETSc root directory to get the information
+needed by your makefile:
+\begin{bashlisting}
+make getlinklibs getincludedirs getcflags getcxxflags getfortranflags getccompiler getfortrancompiler getcxxcompiler
+\end{bashlisting}
+All the libraries listed need to be linked into your executable and the
+include directories and flags need to be passed to the compiler.
+Usually this is done with \lstinline{CFLAGS=<list of -I and other flags>} and
+\lstinline{FFLAGS=<list of -I and other flags>} in your makefile.
 
 %---------------------------------------------------------------------
 

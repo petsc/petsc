@@ -152,9 +152,6 @@ alltree: ${ACTION}
 	PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} ; ) fi; \
 	done ; fi
 
-getpetscflags:
-	-@echo  ${PETSCFLAGS}
-
 getmpilinklibs:
 	-@echo  ${MPI_LIB}
 
