@@ -211,14 +211,14 @@ shared libraries and run with --known-mpi-shared-libraries=1')
       # TODO: This support for spaces and () should be moved to core BuildSystem
       self.mpiexec = self.mpiexec.replace(' ', '\\ ').replace('(', '\\(').replace(')', '\\)').replace('\ -',' -')
       if (hasattr(self, 'ompi_major_version') and int(self.ompi_major_version) >= 3):
-        (out, err, ret) = Configure.executeShellCommand(self.mpiexec+' -help all', checkCommand = noCheck, timeout = 10, log = self.log)
+        (out, err, ret) = Configure.executeShellCommand(self.mpiexec+' -help all', checkCommand = noCheck, timeout = 60, log = self.log)
         if out.find('--oversubscribe') >=0:
           self.mpiexec = self.mpiexec + ' --oversubscribe'
 
     # using mpiexec environmental variables make sure mpiexec matches the MPI libraries and save the variables for testing in PetscInitialize()
     # the variable HAVE_MPIEXEC_ENVIRONMENTAL_VARIABLE is not currently used. PetscInitialize() can check the existence of the environmental variable to
     # determine if the program has been started with the correct mpiexec (will only be set for parallel runs so not clear how to check appropriately)
-    (out, err, ret) = Configure.executeShellCommand(self.mpiexec+' -n 1 printenv', checkCommand = noCheck, timeout = 10, log = self.log)
+    (out, err, ret) = Configure.executeShellCommand(self.mpiexec+' -n 1 printenv', checkCommand = noCheck, timeout = 60, log = self.log)
     if ret:
       self.logWrite('Unable to run '+self.mpiexec+' with option "-n 1 printenv"\nThis could be ok, some MPI implementations such as SGI produce a non-zero status with non-MPI programs\n'+out+err)
     else:
@@ -239,7 +239,7 @@ shared libraries and run with --known-mpi-shared-libraries=1')
     includes = '#include <mpi.h>'
     body = 'MPI_Init(0,0);\nMPI_Finalize();\n'
     try:
-      ok = self.checkRun(includes, body, executor = self.mpiexec, timeout = 20)
+      ok = self.checkRun(includes, body, executor = self.mpiexec, timeout = 60)
       if not ok: raise RuntimeError('Unable to run MPI program with '+self.mpiexec+' make sure this is the correct program to run MPI jobs')
     except RuntimeError as e:
       if str(e).find('Runaway process exceeded time limit') > -1:
