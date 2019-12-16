@@ -11,7 +11,7 @@ Input parameters include:\n\
    Concepts: DMNetwork
    Concepts: PETSc TS solver
 
-   This example was contributed by Bikiran Guha and Jianqiao Huang, Illinois Institute of Technology, 2017.
+   This example was modified from ex9busdmnetwork.c.
 */
 
 #include <petscts.h>
@@ -185,8 +185,7 @@ PetscErrorCode read_data(PetscInt nc, Gen **pgen,Exc **pexc, Load **pload,Bus **
    D[2] = 0.1*M[2];
 
    /* Alocate memory for bus, generators, exciter, loads and branches */
-   ierr = PetscCalloc4(NBUS*nc,&bus,NGEN*nc,&gen,NLOAD*nc,&load,NBRANCH*nc+(nc-1),&branch);CHKERRQ(ierr);
-   ierr = PetscCalloc1(NGEN*nc,&exc);CHKERRQ(ierr);
+   ierr = PetscCalloc5(NBUS*nc,&bus,NGEN*nc,&gen,NLOAD*nc,&load,NBRANCH*nc+(nc-1),&branch,NGEN*nc,&exc);CHKERRQ(ierr);
 
    ierr = VecGetArray(V0,&varr);CHKERRQ(ierr);
 
@@ -1049,7 +1048,7 @@ int main(int argc,char ** argv)
   ierr = DMSetUp(networkdm);CHKERRQ(ierr);
 
   if (!rank) {
-    ierr = PetscFree4(bus,gen,load,branch);CHKERRQ(ierr);
+    ierr = PetscFree5(bus,gen,load,branch,exc);CHKERRQ(ierr);
   }
 
   /* for parallel options: Network partitioning and distribution of data */
