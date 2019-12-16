@@ -218,11 +218,11 @@ PetscErrorCode DMStagMatSetValuesStencil(DM dm,Mat mat,PetscInt nRow,const DMSta
   Accepts stencils which refer to global element numbers, but
   only allows access to entries in the local representation (including ghosts).
 
-  This approach is not as efficient as setting values directly with DMStagVecGetArrayDOF(), which is recommended for matrix free operators.
+  This approach is not as efficient as setting values directly with DMStagVecGetArray(), which is recommended for matrix free operators.
 
   Level: advanced
 
-.seealso: DMSTAG, DMStagStencil, DMStagStencilLocation, DMStagVecSetValuesStencil(), DMStagMatSetValuesStencil(), DMStagVecGetArrayDOF()
+.seealso: DMSTAG, DMStagStencil, DMStagStencilLocation, DMStagVecSetValuesStencil(), DMStagMatSetValuesStencil(), DMStagVecGetArray()
 @*/
 PetscErrorCode DMStagVecGetValuesStencil(DM dm, Vec vec,PetscInt n,const DMStagStencil *pos,PetscScalar *val)
 {
@@ -263,12 +263,12 @@ PetscErrorCode DMStagVecGetValuesStencil(DM dm, Vec vec,PetscInt n,const DMStagS
   Notes:
   The vector is expected to be a global vector compatible with the DM (usually obtained by DMGetGlobalVector() or DMCreateGlobalVector()).
 
-  This approach is not as efficient as setting values directly with DMStagVecGetArrayDOF(), which is recommended for matrix-free operators. 
+  This approach is not as efficient as setting values directly with DMStagVecGetArray(), which is recommended for matrix-free operators. 
   For assembling systems, where overhead may be less important than convenience, this routine could be helpful in assembling a righthand side and a matrix (using DMStagMatSetValuesStencil()).
 
   Level: advanced
 
-.seealso: DMSTAG, DMStagStencil, DMStagStencilLocation, DMStagVecGetValuesStencil(), DMStagMatSetValuesStencil(), DMCreateGlobalVector(), DMGetLocalVector(), DMStagVecGetArrayDOF()
+.seealso: DMSTAG, DMStagStencil, DMStagStencilLocation, DMStagVecGetValuesStencil(), DMStagMatSetValuesStencil(), DMCreateGlobalVector(), DMGetLocalVector(), DMStagVecGetArray()
 @*/
 PetscErrorCode DMStagVecSetValuesStencil(DM dm,Vec vec,PetscInt n,const DMStagStencil *pos,const PetscScalar *val,InsertMode insertMode)
 {

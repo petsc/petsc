@@ -143,7 +143,7 @@ static PetscErrorCode Test2_1d(DM dm)
   ierr = VecSet(vecLocal,-1.0);CHKERRQ(ierr);
   ierr = DMStagGetCorners(dm,&startx,NULL,NULL,&nx,NULL,NULL,&nExtrax,NULL,NULL);CHKERRQ(ierr);
   ierr = DMStagGetDOF(dm,&dof0,&dof1,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMStagVecGetArrayDOF(dm,vecLocal,&arr);CHKERRQ(ierr);
+  ierr = DMStagVecGetArray(dm,vecLocal,&arr);CHKERRQ(ierr);
   if (dof0 > 0) {
     ierr = DMStagGetLocationSlot(dm,DMSTAG_LEFT,0,&idxLeft);CHKERRQ(ierr);
   }
@@ -162,13 +162,13 @@ static PetscErrorCode Test2_1d(DM dm)
       }
     }
   }
-  ierr = DMStagVecRestoreArrayDOF(dm,vecLocal,&arr);CHKERRQ(ierr);
+  ierr = DMStagVecRestoreArray(dm,vecLocal,&arr);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(dm,&vecGlobal);CHKERRQ(ierr);
   ierr = DMLocalToGlobal(dm,vecLocal,INSERT_VALUES,vecGlobal);CHKERRQ(ierr);
   ierr = VecDuplicate(vecLocal,&vecLocalCheck);CHKERRQ(ierr);
   ierr = VecSet(vecLocalCheck,-1.0);CHKERRQ(ierr);
   ierr = DMGlobalToLocal(dm,vecGlobal,INSERT_VALUES,vecLocalCheck);CHKERRQ(ierr);
-  ierr = DMStagVecGetArrayDOFRead(dm,vecLocalCheck,&arr);CHKERRQ(ierr);
+  ierr = DMStagVecGetArrayRead(dm,vecLocalCheck,&arr);CHKERRQ(ierr);
   for (i=startx; i<startx+nx+nExtrax; ++i) {
     for (c=0; c<dof0; ++c) {
       const PetscScalar valRef = TEST_FUNCTION(i,0,0,idxLeft,c);
@@ -189,7 +189,7 @@ static PetscErrorCode Test2_1d(DM dm)
       }
     }
   }
-  ierr = DMStagVecRestoreArrayDOFRead(dm,vecLocalCheck,&arr);CHKERRQ(ierr);
+  ierr = DMStagVecRestoreArrayRead(dm,vecLocalCheck,&arr);CHKERRQ(ierr);
   ierr = VecDestroy(&vecLocal);CHKERRQ(ierr);
   ierr = VecDestroy(&vecLocalCheck);CHKERRQ(ierr);
   ierr = VecDestroy(&vecGlobal);CHKERRQ(ierr);
@@ -209,7 +209,7 @@ static PetscErrorCode Test2_2d(DM dm)
   ierr = VecSet(vecLocal,-1.0);CHKERRQ(ierr);
   ierr = DMStagGetCorners(dm,&startx,&starty,NULL,&nx,&ny,NULL,&nExtrax,&nExtray,NULL);CHKERRQ(ierr);
   ierr = DMStagGetDOF(dm,&dof0,&dof1,&dof2,NULL);CHKERRQ(ierr);
-  ierr = DMStagVecGetArrayDOF(dm,vecLocal,&arr);CHKERRQ(ierr);
+  ierr = DMStagVecGetArray(dm,vecLocal,&arr);CHKERRQ(ierr);
   if (dof0 > 0) {
     ierr = DMStagGetLocationSlot(dm,DMSTAG_DOWN_LEFT,0,&idxDownLeft);CHKERRQ(ierr);
   }
@@ -246,13 +246,13 @@ static PetscErrorCode Test2_2d(DM dm)
       }
     }
   }
-  ierr = DMStagVecRestoreArrayDOF(dm,vecLocal,&arr);CHKERRQ(ierr);
+  ierr = DMStagVecRestoreArray(dm,vecLocal,&arr);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(dm,&vecGlobal);CHKERRQ(ierr);
   ierr = DMLocalToGlobal(dm,vecLocal,INSERT_VALUES,vecGlobal);CHKERRQ(ierr);
   ierr = VecDuplicate(vecLocal,&vecLocalCheck);CHKERRQ(ierr);
   ierr = VecSet(vecLocalCheck,-1.0);CHKERRQ(ierr);
   ierr = DMGlobalToLocal(dm,vecGlobal,INSERT_VALUES,vecLocalCheck);CHKERRQ(ierr);
-  ierr = DMStagVecGetArrayDOFRead(dm,vecLocalCheck,&arr);CHKERRQ(ierr);
+  ierr = DMStagVecGetArrayRead(dm,vecLocalCheck,&arr);CHKERRQ(ierr);
   for (j=starty; j<starty+ny+nExtray; ++j) {
     for (i=startx; i<startx+nx+nExtrax; ++i) {
       for (c=0; c<dof0; ++c) {
@@ -301,7 +301,7 @@ static PetscErrorCode Test2_2d(DM dm)
       }
     }
   }
-  ierr = DMStagVecRestoreArrayDOFRead(dm,vecLocalCheck,&arr);CHKERRQ(ierr);
+  ierr = DMStagVecRestoreArrayRead(dm,vecLocalCheck,&arr);CHKERRQ(ierr);
   ierr = VecDestroy(&vecLocal);CHKERRQ(ierr);
   ierr = VecDestroy(&vecLocalCheck);CHKERRQ(ierr);
   ierr = VecDestroy(&vecGlobal);CHKERRQ(ierr);
@@ -320,7 +320,7 @@ static PetscErrorCode Test2_3d(DM dm)
   ierr = VecSet(vecLocal,-1.0);CHKERRQ(ierr);
   ierr = DMStagGetCorners(dm,&startx,&starty,&startz,&nx,&ny,&nz,&nExtrax,&nExtray,&nExtraz);CHKERRQ(ierr);
   ierr = DMStagGetDOF(dm,&dof0,&dof1,&dof2,&dof3);CHKERRQ(ierr);
-  ierr = DMStagVecGetArrayDOF(dm,vecLocal,&arr);CHKERRQ(ierr);
+  ierr = DMStagVecGetArray(dm,vecLocal,&arr);CHKERRQ(ierr);
   if (dof0 > 0) {
     ierr = DMStagGetLocationSlot(dm,DMSTAG_BACK_DOWN_LEFT,0,&idxBackDownLeft);CHKERRQ(ierr);
   }
@@ -389,13 +389,13 @@ static PetscErrorCode Test2_3d(DM dm)
       }
     }
   }
-  ierr = DMStagVecRestoreArrayDOF(dm,vecLocal,&arr);CHKERRQ(ierr);
+  ierr = DMStagVecRestoreArray(dm,vecLocal,&arr);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(dm,&vecGlobal);CHKERRQ(ierr);
   ierr = DMLocalToGlobal(dm,vecLocal,INSERT_VALUES,vecGlobal);CHKERRQ(ierr);
   ierr = VecDuplicate(vecLocal,&vecLocalCheck);CHKERRQ(ierr);
   ierr = VecSet(vecLocalCheck,-1.0);CHKERRQ(ierr);
   ierr = DMGlobalToLocal(dm,vecGlobal,INSERT_VALUES,vecLocalCheck);CHKERRQ(ierr);
-  ierr = DMStagVecGetArrayDOFRead(dm,vecLocalCheck,&arr);CHKERRQ(ierr);
+  ierr = DMStagVecGetArrayRead(dm,vecLocalCheck,&arr);CHKERRQ(ierr);
   for (k=startz; k<startz+nz+nExtraz; ++k) {
     for (j=starty; j<starty+ny+nExtray; ++j) {
       for (i=startx; i<startx+nx+nExtrax; ++i) {
@@ -498,7 +498,7 @@ static PetscErrorCode Test2_3d(DM dm)
       }
     }
   }
-  ierr = DMStagVecRestoreArrayDOFRead(dm,vecLocalCheck,&arr);CHKERRQ(ierr);
+  ierr = DMStagVecRestoreArrayRead(dm,vecLocalCheck,&arr);CHKERRQ(ierr);
   ierr = VecDestroy(&vecLocal);CHKERRQ(ierr);
   ierr = VecDestroy(&vecLocalCheck);CHKERRQ(ierr);
   ierr = VecDestroy(&vecGlobal);CHKERRQ(ierr);

@@ -89,7 +89,7 @@ PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_3d(DM dm,PetscRe
     if (stagCoord->dof[s] !=0 && stagCoord->dof[s] != 3) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Coordinate DM in 3 dimensions must have 0 or 3 dof on each stratum, but stratum %d has %d dof",s,stagCoord->dof[s]);
   }
   ierr = DMGetLocalVector(dmCoord,&coordLocal);CHKERRQ(ierr);
-  ierr = DMStagVecGetArrayDOF(dmCoord,coordLocal,&arr);CHKERRQ(ierr);
+  ierr = DMStagVecGetArray(dmCoord,coordLocal,&arr);CHKERRQ(ierr);
   if (stagCoord->dof[0]) {
     ierr = DMStagGetLocationSlot(dmCoord,DMSTAG_BACK_DOWN_LEFT,0,&ibackdownleft);CHKERRQ(ierr);
   }
@@ -166,7 +166,7 @@ PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_3d(DM dm,PetscRe
       }
     }
   }
-  ierr = DMStagVecRestoreArrayDOF(dmCoord,coordLocal,&arr);CHKERRQ(ierr);
+  ierr = DMStagVecRestoreArray(dmCoord,coordLocal,&arr);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(dmCoord,&coord);CHKERRQ(ierr);
   ierr = DMLocalToGlobalBegin(dmCoord,coordLocal,INSERT_VALUES,coord);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(dmCoord,coordLocal,INSERT_VALUES,coord);CHKERRQ(ierr);
