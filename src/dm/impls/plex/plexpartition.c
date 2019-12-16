@@ -254,7 +254,7 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_ViaMat(DM dm, PetscInt height
   PetscSF        sfPoint;
   const PetscInt *rows, *cols, *ii, *jj;
   PetscInt       *idxs,*idxs2;
-  PetscInt       dim, depth, floc, cloc, i, M, N, c, m, cStart, cEnd, fStart, fEnd;
+  PetscInt       dim, depth, floc, cloc, i, M, N, c, lm, m, cStart, cEnd, fStart, fEnd;
   PetscMPIInt    rank;
   PetscBool      flg;
   PetscErrorCode ierr;
@@ -330,7 +330,8 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_ViaMat(DM dm, PetscInt height
   ierr = MatCreate(PetscObjectComm((PetscObject)dm), &conn);CHKERRQ(ierr);
   ierr = MatSetSizes(conn, floc, cloc, M, N);CHKERRQ(ierr);
   ierr = MatSetType(conn, MATMPIAIJ);CHKERRQ(ierr);
-  ierr = DMPlexGetMaxSizes(dm, NULL, &m);CHKERRQ(ierr);
+  ierr = DMPlexGetMaxSizes(dm, NULL, &lm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&lm, &m, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject) dm));CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(conn, m, NULL, m, NULL);CHKERRQ(ierr);
 
   /* Assemble matrix */
