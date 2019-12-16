@@ -331,6 +331,7 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
       network->header[i].ndata = 0;
       ierr = PetscSectionAddDof(network->DataSection,i,network->dataheadersize);CHKERRQ(ierr);
       network->header[i].offset[0] = 0;
+      network->header[i].offsetvarrel[0] = 0;
       i++;
     }
     if (i >= network->subnet[j].eEnd) j++;
@@ -371,6 +372,7 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
     network->header[i].ndata = 0;
     ierr = PetscSectionAddDof(network->DataSection,i,network->dataheadersize);CHKERRQ(ierr);
     network->header[i].offset[0] = 0;
+    network->header[i].offsetvarrel[0] = 0;
   }
 
   ierr = PetscFree2(vidxlTog,eowners);CHKERRQ(ierr);
@@ -722,9 +724,40 @@ PetscErrorCode DMNetworkAddComponent(DM dm, PetscInt p,PetscInt componentkey,voi
   ierr = PetscSectionAddDof(network->DataSection,p,component->size);CHKERRQ(ierr);
   header->key[header->ndata] = componentkey;
   if (header->ndata != 0) header->offset[header->ndata] = header->offset[header->ndata-1] + header->size[header->ndata-1];
+  header->nvar[header->ndata] = 0;
 
   cvalue->data[header->ndata] = (void*)compvalue;
   header->ndata++;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMNetworkSetComponentNumVariables - Sets the number of variables for a component
+
+  Not Collective
+
+  Input Parameters:
++ dm           - The DMNetwork object
+. p            - vertex/edge point
+. compnum      - component number (First component added = 0, second = 1, ...)
+- nvar         - number of variables for the component
+
+  Level: intermediate
+
+.seealso: DMNetworkAddComponent, DMNetworkGetNumComponents,DMNetworkRegisterComponent
+@*/
+PetscErrorCode DMNetworkSetComponentNumVariables(DM dm, PetscInt p,PetscInt compnum,PetscInt nvar)
+{
+  DM_Network               *network = (DM_Network*)dm->data;
+  DMNetworkComponentHeader header = &network->header[p];
+  PetscErrorCode           ierr;
+
+  PetscFunctionBegin;
+
+  ierr = DMNetworkAddNumVariables(dm,p,nvar);CHKERRQ(ierr);
+  header->nvar[compnum] = nvar;
+  if (compnum != 0) header->offsetvarrel[compnum] = header->offsetvarrel[compnum-1] + header->nvar[compnum-1];
+
   PetscFunctionReturn(0);
 }
 
@@ -806,6 +839,70 @@ PetscErrorCode DMNetworkGetVariableGlobalOffset(DM dm,PetscInt p,PetscInt *offse
   PetscFunctionBegin;
   ierr = PetscSectionGetOffset(network->plex->globalSection,p,offsetg);CHKERRQ(ierr);
   if (*offsetg < 0) *offsetg = -(*offsetg + 1); /* Convert to actual global offset for ghost vertex */
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMNetworkGetComponentVariableOffset - Get the offset for accessing the variable associated with a component for the given vertex/edge from the local vector.
+
+  Not Collective
+
+  Input Parameters:
++ dm     - The DMNetwork object
+. compnum - component number
+- p      - the edge/vertex point
+
+  Output Parameters:
+. offset - the offset
+
+  Level: intermediate
+
+.seealso: DMNetworkGetVariableGlobalOffset, DMGetLocalVector, DMNetworkSetComponentNumVariables
+@*/
+PetscErrorCode DMNetworkGetComponentVariableOffset(DM dm,PetscInt p,PetscInt compnum,PetscInt *offset)
+{
+  PetscErrorCode ierr;
+  DM_Network     *network = (DM_Network*)dm->data;
+  PetscInt       offsetp,offsetd;
+  DMNetworkComponentHeader header;
+
+  PetscFunctionBegin;
+  ierr = DMNetworkGetVariableOffset(dm,p,&offsetp);CHKERRQ(ierr);
+  ierr = PetscSectionGetOffset(network->DataSection,p,&offsetd);CHKERRQ(ierr);
+  header = (DMNetworkComponentHeader)(network->componentdataarray+offsetd);
+  *offset = offsetp + header->offsetvarrel[compnum];
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMNetworkGetComponentVariableGlobalOffset - Get the global offset for accessing the variable associated with a component for the given vertex/edge from the local vector.
+
+  Not Collective
+
+  Input Parameters:
++ dm     - The DMNetwork object
+. compnum - component number
+- p      - the edge/vertex point
+
+  Output Parameters:
+. offsetg - the global offset
+
+  Level: intermediate
+
+.seealso: DMNetworkGetVariableGlobalOffset, DMNetworkGetComponentVariableOffset, DMGetLocalVector, DMNetworkSetComponentNumVariables
+@*/
+PetscErrorCode DMNetworkGetComponentVariableGlobalOffset(DM dm,PetscInt p,PetscInt compnum,PetscInt *offsetg)
+{
+  PetscErrorCode ierr;
+  DM_Network     *network = (DM_Network*)dm->data;
+  PetscInt       offsetp,offsetd;
+  DMNetworkComponentHeader header;
+
+  PetscFunctionBegin;
+  ierr = DMNetworkGetVariableGlobalOffset(dm,p,&offsetp);CHKERRQ(ierr);
+  ierr = PetscSectionGetOffset(network->DataSection,p,&offsetd);CHKERRQ(ierr);
+  header = (DMNetworkComponentHeader)(network->componentdataarray+offsetd);
+  *offsetg = offsetp + header->offsetvarrel[compnum];
   PetscFunctionReturn(0);
 }
 
