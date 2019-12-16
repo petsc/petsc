@@ -317,6 +317,7 @@ osx-cxx-pkgs-opt:
   variables:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -saws_port_auto_select -saws_port_auto_select_silent -vecscatter_mpi1 false -options_left false
     TEST_ARCH: arch-ci-osx-cxx-pkgs-opt
+    MAKE_CXXFLAGS: -Werror -Wno-pass-failed
 
 mswin-uni:
   extends:
