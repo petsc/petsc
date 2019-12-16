@@ -744,7 +744,7 @@ PetscErrorCode DMNetworkAddComponent(DM dm, PetscInt p,PetscInt componentkey,voi
 
   Level: intermediate
 
-.seealso: DMNetworkAddComponent, DMNetworkGetNumComponents,DMNetworkRegisterComponent
+.seealso: DMNetworkAddComponent(), DMNetworkGetNumComponents(),DMNetworkRegisterComponent()
 @*/
 PetscErrorCode DMNetworkSetComponentNumVariables(DM dm, PetscInt p,PetscInt compnum,PetscInt nvar)
 {
@@ -753,11 +753,9 @@ PetscErrorCode DMNetworkSetComponentNumVariables(DM dm, PetscInt p,PetscInt comp
   PetscErrorCode           ierr;
 
   PetscFunctionBegin;
-
   ierr = DMNetworkAddNumVariables(dm,p,nvar);CHKERRQ(ierr);
   header->nvar[compnum] = nvar;
   if (compnum != 0) header->offsetvarrel[compnum] = header->offsetvarrel[compnum-1] + header->nvar[compnum-1];
-
   PetscFunctionReturn(0);
 }
 
@@ -857,7 +855,7 @@ PetscErrorCode DMNetworkGetVariableGlobalOffset(DM dm,PetscInt p,PetscInt *offse
 
   Level: intermediate
 
-.seealso: DMNetworkGetVariableGlobalOffset, DMGetLocalVector, DMNetworkSetComponentNumVariables
+.seealso: DMNetworkGetVariableGlobalOffset(), DMGetLocalVector(), DMNetworkSetComponentNumVariables()
 @*/
 PetscErrorCode DMNetworkGetComponentVariableOffset(DM dm,PetscInt p,PetscInt compnum,PetscInt *offset)
 {
@@ -889,7 +887,7 @@ PetscErrorCode DMNetworkGetComponentVariableOffset(DM dm,PetscInt p,PetscInt com
 
   Level: intermediate
 
-.seealso: DMNetworkGetVariableGlobalOffset, DMNetworkGetComponentVariableOffset, DMGetLocalVector, DMNetworkSetComponentNumVariables
+.seealso: DMNetworkGetVariableGlobalOffset(), DMNetworkGetComponentVariableOffset(), DMGetLocalVector(), DMNetworkSetComponentNumVariables()
 @*/
 PetscErrorCode DMNetworkGetComponentVariableGlobalOffset(DM dm,PetscInt p,PetscInt compnum,PetscInt *offsetg)
 {
