@@ -86,7 +86,12 @@ static PetscErrorCode DMLabelMakeValid_Private(DMLabel label, PetscInt v)
       ierr = PetscBTSet(label->bt, point - label->pStart);CHKERRQ(ierr);
     }
   }
-  ierr = ISCreateGeneral(PETSC_COMM_SELF, label->stratumSizes[v], pointArray, PETSC_OWN_POINTER, &is);CHKERRQ(ierr);
+  if (label->stratumSizes[v] > 0 && pointArray[label->stratumSizes[v]-1] == pointArray[0] + label->stratumSizes[v]-1) {
+    ierr = ISCreateStride(PETSC_COMM_SELF, label->stratumSizes[v], pointArray[0], 1, &is);CHKERRQ(ierr);
+    ierr = PetscFree(pointArray);CHKERRQ(ierr);
+  } else {
+    ierr = ISCreateGeneral(PETSC_COMM_SELF, label->stratumSizes[v], pointArray, PETSC_OWN_POINTER, &is);CHKERRQ(ierr);
+  }
   ierr = PetscObjectSetName((PetscObject) is, "indices");CHKERRQ(ierr);
   label->points[v]  = is;
   label->validIS[v] = PETSC_TRUE;

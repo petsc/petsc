@@ -792,12 +792,13 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
     PetscClassId         faceId, cellId;
     PetscDualSpace       dsp;
     DM                   K;
+    DMPolytopeType       ct;
     PetscInt           (*co)[2][3];
     PetscInt             coneSize;
     PetscInt           **counts;
     PetscInt             f, i, o, q, s;
     const PetscInt      *coneK;
-    PetscInt             minOrient, maxOrient, numOrient;
+    PetscInt             eStart, minOrient, maxOrient, numOrient;
     PetscInt            *orients;
     PetscReal          **orientPoints;
     PetscReal           *cellPoints;
@@ -811,6 +812,8 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
     if (faceId != PETSCFE_CLASSID || cellId != PETSCFE_CLASSID) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not supported\n");
     ierr = PetscFEGetDualSpace((PetscFE)cellDisc, &dsp);CHKERRQ(ierr);
     ierr = PetscDualSpaceGetDM(dsp, &K); CHKERRQ(ierr);
+    ierr = DMPlexGetHeightStratum(K, 1, &eStart, NULL);CHKERRQ(ierr);
+    ierr = DMPlexGetCellType(K, eStart, &ct);CHKERRQ(ierr);
     ierr = DMPlexGetConeSize(K,0,&coneSize);CHKERRQ(ierr);
     ierr = DMPlexGetCone(K,0,&coneK);CHKERRQ(ierr);
     ierr = PetscMalloc2(numFaces, &co, coneSize, &counts);CHKERRQ(ierr);
@@ -874,10 +877,9 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
 
         ierr = PetscMalloc1(Nq * dim, &orientPoints[o]);CHKERRQ(ierr);
         /* rotate the quadrature points appropriately */
-        switch (dim) {
-        case 0:
-          break;
-        case 1:
+        switch (ct) {
+        case DM_POLYTOPE_POINT: break;
+        case DM_POLYTOPE_SEGMENT:
           if (orient == -2 || orient == 1) {
             for (q = 0; q < Nq; q++) {
               orientPoints[o][q] = -geom->xi[q];
@@ -888,67 +890,61 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
             }
           }
           break;
-        case 2:
-          switch (coneSize) {
-          case 3:
-            for (q = 0; q < Nq; q++) {
-              PetscReal lambda[3];
-              PetscReal lambdao[3];
+        case DM_POLYTOPE_TRIANGLE:
+          for (q = 0; q < Nq; q++) {
+            PetscReal lambda[3];
+            PetscReal lambdao[3];
 
-              /* convert to barycentric */
-              lambda[0] = - (geom->xi[2 * q] + geom->xi[2 * q + 1]) / 2.;
-              lambda[1] = (geom->xi[2 * q] + 1.) / 2.;
-              lambda[2] = (geom->xi[2 * q + 1] + 1.) / 2.;
-              if (orient >= 0) {
-                for (i = 0; i < 3; i++) {
-                  lambdao[i] = lambda[(orient + i) % 3];
-                }
-              } else {
-                for (i = 0; i < 3; i++) {
-                  lambdao[i] = lambda[(-(orient + i) + 3) % 3];
-                }
+            /* convert to barycentric */
+            lambda[0] = - (geom->xi[2 * q] + geom->xi[2 * q + 1]) / 2.;
+            lambda[1] = (geom->xi[2 * q] + 1.) / 2.;
+            lambda[2] = (geom->xi[2 * q + 1] + 1.) / 2.;
+            if (orient >= 0) {
+              for (i = 0; i < 3; i++) {
+                lambdao[i] = lambda[(orient + i) % 3];
               }
-              /* convert to coordinates */
-              orientPoints[o][2 * q + 0] = -(lambdao[0] + lambdao[2]) + lambdao[1];
-              orientPoints[o][2 * q + 1] = -(lambdao[0] + lambdao[1]) + lambdao[2];
+            } else {
+              for (i = 0; i < 3; i++) {
+                lambdao[i] = lambda[(-(orient + i) + 3) % 3];
+              }
             }
-            break;
-          case 4:
-            for (q = 0; q < Nq; q++) {
-              PetscReal xi[2], xio[2];
-              PetscInt oabs = (orient >= 0) ? orient : -(orient + 1);
-
-              xi[0] = geom->xi[2 * q];
-              xi[1] = geom->xi[2 * q + 1];
-              switch (oabs) {
-              case 1:
-                xio[0] = xi[1];
-                xio[1] = -xi[0];
-                break;
-              case 2:
-                xio[0] = -xi[0];
-                xio[1] = -xi[1];
-              case 3:
-                xio[0] = -xi[1];
-                xio[1] = xi[0];
-              case 0:
-              default:
-                xio[0] = xi[0];
-                xio[1] = xi[1];
-                break;
-              }
-              if (orient < 0) {
-                xio[0] = -xio[0];
-              }
-              orientPoints[o][2 * q + 0] = xio[0];
-              orientPoints[o][2 * q + 1] = xio[1];
-            }
-            break;
-          default:
-            SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cone size %D not yet supported\n", coneSize);
+            /* convert to coordinates */
+            orientPoints[o][2 * q + 0] = -(lambdao[0] + lambdao[2]) + lambdao[1];
+            orientPoints[o][2 * q + 1] = -(lambdao[0] + lambdao[1]) + lambdao[2];
           }
-        default:
-          SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Dimension %D not yet supported\n", dim);
+          break;
+        case DM_POLYTOPE_QUADRILATERAL:
+          for (q = 0; q < Nq; q++) {
+            PetscReal xi[2], xio[2];
+            PetscInt oabs = (orient >= 0) ? orient : -(orient + 1);
+
+            xi[0] = geom->xi[2 * q];
+            xi[1] = geom->xi[2 * q + 1];
+            switch (oabs) {
+            case 1:
+              xio[0] = xi[1];
+              xio[1] = -xi[0];
+              break;
+            case 2:
+              xio[0] = -xi[0];
+              xio[1] = -xi[1];
+            case 3:
+              xio[0] = -xi[1];
+              xio[1] = xi[0];
+            case 0:
+            default:
+              xio[0] = xi[0];
+              xio[1] = xi[1];
+              break;
+            }
+            if (orient < 0) {
+              xio[0] = -xio[0];
+            }
+            orientPoints[o][2 * q + 0] = xio[0];
+            orientPoints[o][2 * q + 1] = xio[1];
+          }
+          break;
+        default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cell type %s not yet supported\n", DMPolytopeTypes[ct]);
         }
       }
     }

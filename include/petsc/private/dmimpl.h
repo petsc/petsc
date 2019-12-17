@@ -180,6 +180,7 @@ struct _p_DM {
   DMWorkLink              workin,workout;
   DMLabelLink             labels;            /* Linked list of labels */
   DMLabel                 depthLabel;        /* Optimized access to depth label */
+  DMLabel                 celltypeLabel;     /* Optimized access to celltype label */
   void                    *ctx;    /* a user context */
   PetscErrorCode          (*ctxdestroy)(void**);
   Vec                     x;       /* location at which the functions/Jacobian are computed */

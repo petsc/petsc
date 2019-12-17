@@ -12,7 +12,7 @@ PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal, DM_LocalToLocal, D
 
 const char *const DMBoundaryTypes[] = {"NONE","GHOSTED","MIRROR","PERIODIC","TWIST","DMBoundaryType","DM_BOUNDARY_",0};
 const char *const DMBoundaryConditionTypes[] = {"INVALID","ESSENTIAL","NATURAL","INVALID","INVALID","ESSENTIAL_FIELD","NATURAL_FIELD","INVALID","INVALID","INVALID","NATURAL_RIEMANN","DMBoundaryConditionType","DM_BC_",0};
-
+const char *const DMPolytopeTypes[] = {"point", "segment", "triangle", "quadrilateral", "segment tensor prism", "tetrahedron", "hexahedron", "triangular prism", "triangular tensor prism", "quadrilateral tensor prism", "unknown", "DMPolytopeType", "DM_POLYTOPE_", 0};
 /*@
   DMCreate - Creates an empty DM object. The type can then be set with DMSetType().
 
@@ -55,6 +55,7 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   v->adjacency[0]             = PETSC_FALSE;
   v->adjacency[1]             = PETSC_TRUE;
   v->depthLabel               = NULL;
+  v->celltypeLabel            = NULL;
   v->localSection             = NULL;
   v->globalSection            = NULL;
   v->defaultConstraintSection = NULL;
@@ -579,7 +580,8 @@ PetscErrorCode DMDestroyLabelLinkList_Internal(DM dm)
   while (next) {
     DMLabelLink tmp = next->next;
 
-    if (next->label == dm->depthLabel) dm->depthLabel = NULL;
+    if (next->label == dm->depthLabel)    dm->depthLabel    = NULL;
+    if (next->label == dm->celltypeLabel) dm->celltypeLabel = NULL;
     ierr = DMLabelDestroy(&next->label);CHKERRQ(ierr);
     ierr = PetscFree(next);CHKERRQ(ierr);
     next = tmp;
@@ -7181,6 +7183,8 @@ PetscErrorCode DMAddLabel(DM dm, DMLabel label)
   ierr = PetscObjectReference((PetscObject)label);CHKERRQ(ierr);
   ierr = PetscStrcmp(lname, "depth", &flg);CHKERRQ(ierr);
   if (flg) dm->depthLabel = label;
+  ierr = PetscStrcmp(lname, "celltype", &flg);CHKERRQ(ierr);
+  if (flg) dm->celltypeLabel = label;
   PetscFunctionReturn(0);
 }
 
@@ -7229,6 +7233,8 @@ PetscErrorCode DMRemoveLabel(DM dm, const char name[], DMLabel *label)
       *pnext = link->next; /* Remove from list */
       ierr = PetscStrcmp(name, "depth", &hasLabel);CHKERRQ(ierr);
       if (hasLabel) dm->depthLabel = NULL;
+      ierr = PetscStrcmp(name, "celltype", &hasLabel);CHKERRQ(ierr);
+      if (hasLabel) dm->celltypeLabel = NULL;
       if (label) *label = link->label;
       else       {ierr = DMLabelDestroy(&link->label);CHKERRQ(ierr);}
       ierr = PetscFree(link);CHKERRQ(ierr);
@@ -7274,6 +7280,7 @@ PetscErrorCode DMRemoveLabelBySelf(DM dm, DMLabel *label, PetscBool failNotFound
       hasLabel = PETSC_TRUE;
       *pnext = link->next; /* Remove from list */
       if (*label == dm->depthLabel) dm->depthLabel = NULL;
+      if (*label == dm->celltypeLabel) dm->celltypeLabel = NULL;
       if (((PetscObject) link->label)->refct < 2) *label = NULL; /* nullify if exclusive reference */
       ierr = DMLabelDestroy(&link->label);CHKERRQ(ierr);
       ierr = PetscFree(link);CHKERRQ(ierr);
@@ -7364,7 +7371,7 @@ PetscErrorCode DMSetLabelOutput(DM dm, const char name[], PetscBool output)
 + dmA - The DM object with initial labels
 . dmB - The DM object with copied labels
 . mode - Copy labels by pointers (PETSC_OWN_POINTER) or duplicate them (PETSC_COPY_VALUES)
-- all  - Copy all labels including "depth" and "dim" (PETSC_TRUE) which are otherwise ignored (PETSC_FALSE)
+- all  - Copy all labels including "depth", "dim", and "celltype" (PETSC_TRUE) which are otherwise ignored (PETSC_FALSE)
 
   Level: intermediate
 
@@ -7395,8 +7402,11 @@ PetscErrorCode DMCopyLabels(DM dmA, DM dmB, PetscCopyMode mode, PetscBool all)
       if (flg) continue;
       ierr = PetscStrcmp(name, "dim", &flg);CHKERRQ(ierr);
       if (flg) continue;
+      ierr = PetscStrcmp(name, "celltype", &flg);CHKERRQ(ierr);
+      if (flg) continue;
     } else {
-      dmB->depthLabel = dmA->depthLabel;
+      dmB->depthLabel    = dmA->depthLabel;
+      dmB->celltypeLabel = dmA->celltypeLabel;
     }
     if (mode==PETSC_COPY_VALUES) {
       ierr = DMLabelDuplicate(label, &labelNew);CHKERRQ(ierr);

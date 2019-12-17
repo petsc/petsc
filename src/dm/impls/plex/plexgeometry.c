@@ -173,7 +173,7 @@ static PetscErrorCode DMPlexClosestPoint_Simplex_2D_Internal(DM dm, const PetscS
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexLocatePoint_General_2D_Internal(DM dm, const PetscScalar point[], PetscInt c, PetscInt *cell)
+static PetscErrorCode DMPlexLocatePoint_Quad_2D_Internal(DM dm, const PetscScalar point[], PetscInt c, PetscInt *cell)
 {
   PetscSection       coordSection;
   Vec             coordsLocal;
@@ -445,39 +445,21 @@ PetscErrorCode PetscGridHashDestroy(PetscGridHash *box)
 
 PetscErrorCode DMPlexLocatePoint_Internal(DM dm, PetscInt dim, const PetscScalar point[], PetscInt cellStart, PetscInt *cell)
 {
-  PetscInt       coneSize;
+  DMPolytopeType ct;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  switch (dim) {
-  case 2:
-    ierr = DMPlexGetConeSize(dm, cellStart, &coneSize);CHKERRQ(ierr);
-    switch (coneSize) {
-    case 3:
-      ierr = DMPlexLocatePoint_Simplex_2D_Internal(dm, point, cellStart, cell);CHKERRQ(ierr);
-      break;
-    case 4:
-      ierr = DMPlexLocatePoint_General_2D_Internal(dm, point, cellStart, cell);CHKERRQ(ierr);
-      break;
-    default:
-      SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "No point location for cell with cone size %D", coneSize);
-    }
-    break;
-  case 3:
-    ierr = DMPlexGetConeSize(dm, cellStart, &coneSize);CHKERRQ(ierr);
-    switch (coneSize) {
-    case 4:
-      ierr = DMPlexLocatePoint_Simplex_3D_Internal(dm, point, cellStart, cell);CHKERRQ(ierr);
-      break;
-    case 6:
-      ierr = DMPlexLocatePoint_General_3D_Internal(dm, point, cellStart, cell);CHKERRQ(ierr);
-      break;
-    default:
-      SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "No point location for cell with cone size %D", coneSize);
-    }
-    break;
-  default:
-    SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "No point location for mesh dimension %D", dim);
+  ierr = DMPlexGetCellType(dm, cellStart, &ct);CHKERRQ(ierr);
+  switch (ct) {
+    case DM_POLYTOPE_TRIANGLE:
+    ierr = DMPlexLocatePoint_Simplex_2D_Internal(dm, point, cellStart, cell);CHKERRQ(ierr);break;
+    case DM_POLYTOPE_QUADRILATERAL:
+    ierr = DMPlexLocatePoint_Quad_2D_Internal(dm, point, cellStart, cell);CHKERRQ(ierr);break;
+    case DM_POLYTOPE_TETRAHEDRON:
+    ierr = DMPlexLocatePoint_Simplex_3D_Internal(dm, point, cellStart, cell);CHKERRQ(ierr);break;
+    case DM_POLYTOPE_HEXAHEDRON:
+    ierr = DMPlexLocatePoint_General_3D_Internal(dm, point, cellStart, cell);CHKERRQ(ierr);break;
+    default: SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "No point location for cell %D with type %s", cellStart, DMPolytopeTypes[ct]);
   }
   PetscFunctionReturn(0);
 }
@@ -487,43 +469,23 @@ PetscErrorCode DMPlexLocatePoint_Internal(DM dm, PetscInt dim, const PetscScalar
 */
 PetscErrorCode DMPlexClosestPoint_Internal(DM dm, PetscInt dim, const PetscScalar point[], PetscInt cell, PetscReal cpoint[])
 {
-  PetscInt       coneSize;
+  DMPolytopeType ct;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  switch (dim) {
-  case 2:
-    ierr = DMPlexGetConeSize(dm, cell, &coneSize);CHKERRQ(ierr);
-    switch (coneSize) {
-    case 3:
-      ierr = DMPlexClosestPoint_Simplex_2D_Internal(dm, point, cell, cpoint);CHKERRQ(ierr);
-      break;
+  ierr = DMPlexGetCellType(dm, cell, &ct);CHKERRQ(ierr);
+  switch (ct) {
+    case DM_POLYTOPE_TRIANGLE:
+    ierr = DMPlexClosestPoint_Simplex_2D_Internal(dm, point, cell, cpoint);CHKERRQ(ierr);break;
 #if 0
-    case 4:
-      ierr = DMPlexClosestPoint_General_2D_Internal(dm, point, cell, cpoint);CHKERRQ(ierr);
-      break;
+    case DM_POLYTOPE_QUADRILATERAL:
+    ierr = DMPlexClosestPoint_General_2D_Internal(dm, point, cell, cpoint);CHKERRQ(ierr);break;
+    case DM_POLYTOPE_TETRAHEDRON:
+    ierr = DMPlexClosestPoint_Simplex_3D_Internal(dm, point, cell, cpoint);CHKERRQ(ierr);break;
+    case DM_POLYTOPE_HEXAHEDRON:
+    ierr = DMPlexClosestPoint_General_3D_Internal(dm, point, cell, cpoint);CHKERRQ(ierr);break;
 #endif
-    default:
-      SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "No closest point location for cell with cone size %D", coneSize);
-    }
-    break;
-#if 0
-  case 3:
-    ierr = DMPlexGetConeSize(dm, cell, &coneSize);CHKERRQ(ierr);
-    switch (coneSize) {
-    case 4:
-      ierr = DMPlexClosestPoint_Simplex_3D_Internal(dm, point, cell, cpoint);CHKERRQ(ierr);
-      break;
-    case 6:
-      ierr = DMPlexClosestPoint_General_3D_Internal(dm, point, cell, cpoint);CHKERRQ(ierr);
-      break;
-    default:
-      SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "No closest point location for cell with cone size %D", coneSize);
-    }
-    break;
-#endif
-  default:
-    SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "No closest point location for mesh dimension %D", dim);
+    default: SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "No closest point location for cell %D with type %s", cell, DMPolytopeTypes[ct]);
   }
   PetscFunctionReturn(0);
 }
@@ -1533,6 +1495,7 @@ static PetscErrorCode DMPlexComputeHexahedronGeometry_Internal(DM dm, PetscInt e
 
 static PetscErrorCode DMPlexComputeCellGeometryFEM_Implicit(DM dm, PetscInt cell, PetscQuadrature quad, PetscReal *v, PetscReal *J, PetscReal *invJ, PetscReal *detJ)
 {
+  DMPolytopeType  ct;
   PetscInt        depth, dim, coordDim, coneSize, i;
   PetscInt        Nq = 0;
   const PetscReal *points = NULL;
@@ -1552,55 +1515,33 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_Implicit(DM dm, PetscInt cell
   ierr = DMGetCoordinateDim(dm, &coordDim);CHKERRQ(ierr);
   if (coordDim > 3) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported coordinate dimension %D > 3", coordDim);
   if (quad) {ierr = PetscQuadratureGetData(quad, NULL, NULL, &Nq, &points, NULL);CHKERRQ(ierr);}
-  switch (dim) {
-  case 0:
+  ierr = DMPlexGetCellType(dm, cell, &ct);CHKERRQ(ierr);
+  switch (ct) {
+    case DM_POLYTOPE_POINT:
     ierr = DMPlexComputePointGeometry_Internal(dm, cell, v, J, invJ, detJ);CHKERRQ(ierr);
     isAffine = PETSC_FALSE;
     break;
-  case 1:
-    if (Nq) {
-      ierr = DMPlexComputeLineGeometry_Internal(dm, cell, v0, J0, NULL, &detJ0);CHKERRQ(ierr);
-    } else {
-      ierr = DMPlexComputeLineGeometry_Internal(dm, cell, v, J, invJ, detJ);CHKERRQ(ierr);
-    }
+    case DM_POLYTOPE_SEGMENT:
+    if (Nq) {ierr = DMPlexComputeLineGeometry_Internal(dm, cell, v0, J0, NULL, &detJ0);CHKERRQ(ierr);}
+    else    {ierr = DMPlexComputeLineGeometry_Internal(dm, cell, v,  J,  invJ,  detJ);CHKERRQ(ierr);}
     break;
-  case 2:
-    switch (coneSize) {
-    case 3:
-      if (Nq) {
-        ierr = DMPlexComputeTriangleGeometry_Internal(dm, cell, v0, J0, NULL, &detJ0);CHKERRQ(ierr);
-      } else {
-        ierr = DMPlexComputeTriangleGeometry_Internal(dm, cell, v, J, invJ, detJ);CHKERRQ(ierr);
-      }
-      break;
-    case 4:
-      ierr = DMPlexComputeRectangleGeometry_Internal(dm, cell, Nq, points, v, J, invJ, detJ);CHKERRQ(ierr);
-      isAffine = PETSC_FALSE;
-      break;
-    default:
-      SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported number of faces %D in cell %D for element geometry computation", coneSize, cell);
-    }
+    case DM_POLYTOPE_TRIANGLE:
+    if (Nq) {ierr = DMPlexComputeTriangleGeometry_Internal(dm, cell, v0, J0, NULL, &detJ0);CHKERRQ(ierr);}
+    else    {ierr = DMPlexComputeTriangleGeometry_Internal(dm, cell, v,  J,  invJ,  detJ);CHKERRQ(ierr);}
     break;
-  case 3:
-    switch (coneSize) {
-    case 4:
-      if (Nq) {
-        ierr = DMPlexComputeTetrahedronGeometry_Internal(dm, cell, v0, J0, NULL, &detJ0);CHKERRQ(ierr);
-      } else {
-        ierr = DMPlexComputeTetrahedronGeometry_Internal(dm, cell, v, J, invJ, detJ);CHKERRQ(ierr);
-      }
-      break;
-    case 6: /* Faces */
-    case 8: /* Vertices */
-      ierr = DMPlexComputeHexahedronGeometry_Internal(dm, cell, Nq, points, v, J, invJ, detJ);CHKERRQ(ierr);
-      isAffine = PETSC_FALSE;
-      break;
-    default:
-      SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported number of faces %D in cell %D for element geometry computation", coneSize, cell);
-    }
+    case DM_POLYTOPE_QUADRILATERAL:
+    ierr = DMPlexComputeRectangleGeometry_Internal(dm, cell, Nq, points, v, J, invJ, detJ);CHKERRQ(ierr);
+    isAffine = PETSC_FALSE;
     break;
-  default:
-    SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported dimension %D for element geometry computation", dim);
+    case DM_POLYTOPE_TETRAHEDRON:
+    if (Nq) {ierr = DMPlexComputeTetrahedronGeometry_Internal(dm, cell, v0, J0, NULL, &detJ0);CHKERRQ(ierr);}
+    else    {ierr = DMPlexComputeTetrahedronGeometry_Internal(dm, cell, v,  J,  invJ,  detJ);CHKERRQ(ierr);}
+    break;
+    case DM_POLYTOPE_HEXAHEDRON:
+    ierr = DMPlexComputeHexahedronGeometry_Internal(dm, cell, Nq, points, v, J, invJ, detJ);CHKERRQ(ierr);
+    isAffine = PETSC_FALSE;
+    break;
+    default: SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "No element geometry for cell %D with type %s", cell, DMPolytopeTypes[ct]);
   }
   if (isAffine && Nq) {
     if (v) {
@@ -1958,7 +1899,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, 
   PetscReal       vsum = 0.0, vtmp, coordsTmp[3*3];
   const PetscInt *faces, *facesO;
   PetscBool       isHybrid = PETSC_FALSE;
-  PetscInt        pEndInterior[4], cdepth, numFaces, f, coordSize, numCorners, p, d;
+  PetscInt        pEndInterior[4], cdepth, numFaces, f, coordSize, p, d;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -1977,12 +1918,13 @@ static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, 
   ierr = DMPlexGetCone(dm, cell, &faces);CHKERRQ(ierr);
   ierr = DMPlexGetConeOrientation(dm, cell, &facesO);CHKERRQ(ierr);
   for (f = 0; f < numFaces; ++f) {
-    PetscBool flip = isHybrid && f == 0 ? PETSC_TRUE : PETSC_FALSE; /* The first hybrid face is reversed */
+    PetscBool      flip = isHybrid && f == 0 ? PETSC_TRUE : PETSC_FALSE; /* The first hybrid face is reversed */
+    DMPolytopeType ct;
 
     ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, faces[f], &coordSize, &coords);CHKERRQ(ierr);
-    numCorners = coordSize/dim;
-    switch (numCorners) {
-    case 3:
+    ierr = DMPlexGetCellType(dm, faces[f], &ct);CHKERRQ(ierr);
+    switch (ct) {
+    case DM_POLYTOPE_TRIANGLE:
       for (d = 0; d < dim; ++d) {
         coordsTmp[0*dim+d] = PetscRealPart(coords[0*dim+d]);
         coordsTmp[1*dim+d] = PetscRealPart(coords[1*dim+d]);
@@ -1997,7 +1939,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, 
         }
       }
       break;
-    case 4:
+    case DM_POLYTOPE_QUADRILATERAL:
     {
       PetscInt fv[4] = {0, 1, 2, 3};
 
@@ -2035,7 +1977,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, 
       break;
     }
     default:
-      SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle faces with %D vertices", numCorners);
+      SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle face %D of type %s", faces[f], DMPolytopeTypes[ct]);
     }
     ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, faces[f], &coordSize, &coords);CHKERRQ(ierr);
   }
@@ -2076,9 +2018,7 @@ PetscErrorCode DMPlexComputeCellGeometryFVM(DM dm, PetscInt cell, PetscReal *vol
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   if (depth != dim) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh must be interpolated");
-  /* We need to keep a pointer to the depth label */
-  ierr = DMGetLabelValue(dm, "depth", cell, &depth);CHKERRQ(ierr);
-  /* Cone size is now the number of faces */
+  ierr = DMPlexGetPointDepth(dm, cell, &depth);CHKERRQ(ierr);
   switch (depth) {
   case 1:
     ierr = DMPlexComputeGeometryFVM_1D_Internal(dm, dim, cell, vol, centroid, normal);CHKERRQ(ierr);

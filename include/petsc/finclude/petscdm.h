@@ -10,14 +10,15 @@
 #include "petsc/finclude/petscmat.h"
 
 #define DMType character*(80)
-#define DMBoundaryType      PetscEnum
-#define DMPointLocationType PetscEnum
-#define DMAdaptationType    PetscEnum
-#define DMAdaptFlag         PetscEnum
-#define PetscUnit           PetscEnum
+#define DMBoundaryType       PetscEnum
+#define DMPointLocationType  PetscEnum
+#define DMAdaptationType     PetscEnum
+#define DMAdaptFlag          PetscEnum
+#define PetscUnit            PetscEnum
 #define DMAdaptationStrategy PetscEnum
-#define DMDirection PetscEnum
-#define DMEnclosureType     PetscEnum
+#define DMDirection          PetscEnum
+#define DMEnclosureType      PetscEnum
+#define DMPolytopeType       PetscEnum
 
 #define DM               type(tDM)
 
