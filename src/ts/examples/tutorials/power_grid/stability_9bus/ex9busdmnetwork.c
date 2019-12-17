@@ -369,10 +369,10 @@ PetscErrorCode SetInitialGuess(DM networkdm, Vec X)
   PetscBool      ghostvtex;
   Vec            localX;
   PetscScalar    *xarr;
-  PetscScalar    Vr=0,Vi=0,Vm,Vm2;  /* Terminal voltage variables */
+  PetscScalar    Vr=0,Vi=0,Vm=0,Vm2;  /* Terminal voltage variables */
   PetscScalar    IGr, IGi;          /* Generator real and imaginary current */
   PetscScalar    Eqp,Edp,delta;     /* Generator variables */
-  PetscScalar    Efd,RF,VR;         /* Exciter variables */
+  PetscScalar    Efd=0,RF,VR;         /* Exciter variables */
   PetscScalar    Vd,Vq;             /* Generator dq axis voltages */
   PetscScalar    Id,Iq;             /* Generator dq axis currents */
   PetscScalar    theta;             /* Generator phase angle */
@@ -498,6 +498,7 @@ PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,Userctx *use
   PetscScalar                        Vd,Vq,SE;
   const PetscScalar                  *xarr,*xdotarr;
   void*                              component;
+  PetscScalar                        Vr=0, Vi=0;
 
   PetscFunctionBegin;
   ierr = VecSet(F,0.0);CHKERRQ(ierr);
@@ -523,7 +524,6 @@ PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,Userctx *use
 
   for (v=vStart; v < vEnd; v++) {
     PetscInt     i,j,offsetbus,offsetgen,offsetexc,key;
-    PetscScalar  Vr, Vi;
     Bus          *bus;
     Gen          *gen;
     Exc          *exc;
@@ -763,6 +763,7 @@ PetscErrorCode AlgFunction (SNES snes, Vec X, Vec F, void *ctx)
   Userctx        *user=(Userctx*)ctx;
   const PetscScalar *xarr;
   void*          component;
+  PetscScalar    Vr=0,Vi=0;
 
   PetscFunctionBegin;
   ierr = VecSet(F,0.0);CHKERRQ(ierr);
@@ -782,7 +783,7 @@ PetscErrorCode AlgFunction (SNES snes, Vec X, Vec F, void *ctx)
 
   for (v=vStart; v < vEnd; v++) {
     PetscInt      i,j,offsetbus,offsetgen,key,numComps;
-    PetscScalar   Vr, Vi, Yffr, Yffi, Vm, Vm2, Vm0, Vr0=0, Vi0=0, PD, QD;
+    PetscScalar   Yffr, Yffi, Vm, Vm2, Vm0, Vr0=0, Vi0=0, PD, QD;
     Bus           *bus;
     Gen           *gen;
     Load          *load;
