@@ -422,7 +422,7 @@ class generateExamples(Petsc):
       if subkey=='regexes': continue
       if not isinstance(subst[subkey],str): continue
       if subkey.upper() not in Str: continue
-      Str=subst['regexes'][subkey].sub(subst[subkey],Str)
+      Str=subst['regexes'][subkey].sub(lambda x: subst[subkey],Str)
     return Str
 
   def getCmds(self,subst,i):
