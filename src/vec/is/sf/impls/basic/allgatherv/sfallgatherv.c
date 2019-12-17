@@ -195,9 +195,9 @@ static PetscErrorCode PetscSFBcastAndOpBegin_Allgatherv(PetscSF sf,MPI_Datatype 
   PetscSFPack            link;
   PetscMPIInt            sendcount;
   MPI_Comm               comm;
-  const void             *rootbuf_mpi; /* buffer used by MPI */
-  void                   *leafbuf_mpi;
-  PetscMemType           rootmtype_mpi,leafmtype_mpi; /* Seen by MPI */
+  const void             *rootbuf_mpi = NULL; /* buffer used by MPI */
+  void                   *leafbuf_mpi = NULL;
+  PetscMemType           rootmtype_mpi = PETSC_MEMTYPE_HOST,leafmtype_mpi = PETSC_MEMTYPE_HOST; /* Seen by MPI */
   PetscSF_Allgatherv     *dat = (PetscSF_Allgatherv*)sf->data;
 
   PetscFunctionBegin;
