@@ -268,10 +268,10 @@ cdef class DMStag(DM):
         CHKERR( DMStagGetLocationSlot(self.dm, sloc, comp, &slot) ) 
         return toInt(slot)
 
-    def get1DCoordinateLocationSlot(self, loc):
+    def getProductCoordinateLocationSlot(self, loc):
         cdef PetscInt slot=0
         cdef PetscDMStagStencilLocation sloc = asStagStencilLocation(loc)
-        CHKERR( DMStagGet1dCoordinateLocationSlot(self.dm, sloc, &slot) ) 
+        CHKERR( DMStagGetProductCoordinateLocationSlot(self.dm, sloc, &slot) )
         return toInt(slot)
         
     def getLocationDof(self, loc):

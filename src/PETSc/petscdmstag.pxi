@@ -66,7 +66,7 @@ cdef extern from * nogil:
 
     int DMStagGetLocationSlot(PetscDM,PetscDMStagStencilLocation,PetscInt,PetscInt*)
     int DMStagGetLocationDOF(PetscDM,PetscDMStagStencilLocation,PetscInt*)
-    int DMStagGet1dCoordinateLocationSlot(PetscDM,PetscDMStagStencilLocation,PetscInt*)
+    int DMStagGetProductCoordinateLocationSlot(PetscDM,PetscDMStagStencilLocation,PetscInt*)
 
     int DMStagGetIsFirstRank(PetscDM,PetscBool*,PetscBool*,PetscBool*)
     int DMStagGetIsLastRank(PetscDM,PetscBool*,PetscBool*,PetscBool*)
