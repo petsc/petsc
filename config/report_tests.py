@@ -191,8 +191,6 @@ def get_test_data(directory):
             'fullname':fname
         }
         # process the *.counts file and increment problem status trackers
-        if len(testdata[pkgname]['problems'][probname]['stderr'])>0:
-            testdata[pkgname]['errors'] += 1
         with open(cfile, 'r') as f:
             for line in f:
                 l = line.split()
@@ -201,9 +199,17 @@ def get_test_data(directory):
                     testdata[pkgname]['problems'][probname][l[0]] = float(l[1])
                     testdata[pkgname][l[0]] += float(l[1])
                 elif l[0] in testdata[pkgname].keys():
+                    # This block includes total, success, failed, skip, todo
                     num_int=int(l[1])
                     testdata[pkgname][l[0]] += num_int
-                    if l[0] in ['failed','skip'] and num_int:
+                    if l[0] in ['failed']:
+                        # If non-zero error code and non-zero stderr, something wrong
+                        if len(testdata[pkgname]['problems'][probname]['stderr'])>0:
+                            if not num_int: num_int=1
+                        if num_int:
+                            testdata[pkgname]['errors'] += 1
+                            testdata[pkgname]['problems'][probname][l[0]] = True
+                    if l[0] in ['skip'] and num_int:
                         testdata[pkgname]['problems'][probname][l[0]] = True
                 else:
                     continue
@@ -267,15 +273,17 @@ def generate_xml(testdata,directory):
             if p['skipped']:
                 # if we got here, the TAP output shows a skipped test
                 junit.write('      <skipped/>\n')
-            elif len(p['stderr'])>0:
+            elif p['failed']:
                 # if we got here, the test crashed with an error
                 # we show the stderr output under <error>
                 junit.write('      <error type="crash">\n')
                 junit.write("<![CDATA[\n") # CDATA is necessary to preserve whitespace
                 # many times error messages also go to stdout so we print both
+                junit.write("stdout:\n")
                 if len(p['stdout'])>0:
                     for line in p['stdout']:
                         junit.write("%s\n"%line.rstrip())
+                junit.write("\nstderr:\n")
                 for line in p['stderr']:
                     junit.write("%s\n"%line.rstrip())
                 junit.write("]]>")
