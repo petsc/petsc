@@ -179,9 +179,9 @@ def chksynonyms():
       elif name.find('with-'+i.lower()+'=') >= 0:
         sys.argv[l] = name.replace(i.lower()+'=',j.lower()+'=')
 
-def chkwinf90():
+def chkwincompilerusinglink():
   for arg in sys.argv:
-    if (arg.find('win32fe') >= 0 and (arg.find('f90') >=0 or arg.find('ifort') >=0)):
+    if (arg.find('win32fe') >= 0 and (arg.find('f90') >=0 or arg.find('ifort') >=0 or arg.find('icl') >=0)):
       return 1
   return 0
 
@@ -196,12 +196,12 @@ def chkdosfiles():
   return
 
 def chkcygwinlink():
-  if os.path.exists('/usr/bin/cygcheck.exe') and os.path.exists('/usr/bin/link.exe') and chkwinf90():
+  if os.path.exists('/usr/bin/cygcheck.exe') and os.path.exists('/usr/bin/link.exe') and chkwincompilerusinglink():
       if '--ignore-cygwin-link' in sys.argv: return 0
       print('===============================================================================')
-      print(' *** Cygwin /usr/bin/link detected! Compiles with CVF/Intel f90 can break!  **')
+      print(' *** Cygwin /usr/bin/link detected! Compiles with Intel icl/ifort can break!  **')
       print(' *** To workarround do: "mv /usr/bin/link.exe /usr/bin/link-cygwin.exe"     **')
-      print(' *** Or to ignore this check, use configure option: --ignore-cygwin-link    **')
+      print(' *** Or to ignore this check, use configure option: --ignore-cygwin-link. But compiles can fail. **')
       print('===============================================================================')
       sys.exit(3)
   return 0
