@@ -1,15 +1,4 @@
 {
-   <petsc-nightlybuild-with-gfortran>
-   Memcheck:Cond
-   fun:fd_to_stream
-   fun:_gfortrani_init_units
-   fun:init
-   fun:call_init.part.0
-   fun:_dl_init
-   obj:/lib/x86_64-linux-gnu/ld-2.15.so
-}
-
-{
    <mpich-3.1.3 issue with runex2_window in src/vec/is/sf/examples/tutorials>
    Memcheck:Param
    writev(vector[...])
@@ -39,35 +28,6 @@
 }
 
 {
-   <p4st issue issue with snes_tutorials-ex12_p4est_test_q2_nonconformal_parallel in src/snes/examples/tutorials>
-   Memcheck:Param
-   writev(vector[...])
-   fun:writev
-   fun:MPL_large_writev
-   fun:MPIDI_CH3I_Sock_writev
-   fun:MPIDI_CH3_iSendv
-   fun:MPIDI_CH3_EagerContigIsend
-   fun:MPID_Isend
-   fun:PMPI_Isend
-   fun:p4est_balance_ext
-   fun:p4est_balance
-}
-
-{
-   <p4st issue issue with snes_tutorials-ex12_p4est_test_q2_nonconformal_parallel in src/snes/examples/tutorials>
-   Memcheck:Param
-   writev(vector[...])
-   fun:writev
-   fun:MPL_large_writev
-   fun:MPIDI_CH3I_Sock_writev
-   fun:MPIDI_CH3_iSendv
-   fun:MPIDI_CH3_EagerContigIsend
-   fun:MPID_Isend
-   fun:PMPI_Isend
-   fun:p4est_partition_for_coarsening
-   fun:p4est_partition_ext
-}
-
 
 
 
