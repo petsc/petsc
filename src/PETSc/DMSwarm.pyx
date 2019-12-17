@@ -102,7 +102,7 @@ cdef class DMSwarm(DM):
         if ctype == PETSC_SCALAR:  typenum = NPY_PETSC_SCALAR
         if ctype == PETSC_COMPLEX: typenum = NPY_PETSC_COMPLEX
         assert typenum != -1
-        cdef npy_intp s = <npy_intp> nlocal
+        cdef npy_intp s = <npy_intp> nlocal * blocksize
         return <object> PyArray_SimpleNewFromData(1, &s, typenum, data)
 
     def restoreField(self, fieldname):
@@ -156,7 +156,7 @@ cdef class DMSwarm(DM):
     def collectViewDestroy(self):
         CHKERR( DMSwarmCollectViewDestroy(self.dm) )
 
-    def setCellDM(self, DMSwarm dm):
+    def setCellDM(self, DM dm):
         CHKERR( DMSwarmSetCellDM(self.dm, dm.dm) )
 
     def getCellDM(self):
@@ -215,10 +215,13 @@ cdef class DMSwarm(DM):
         cdef const_char *cval = NULL
         cdef const_char *cfilename = NULL
         filename = str2bytes(filename, &cfilename)
-        cdef PetscInt cnfields = asInt(len(fieldnames))
+        cdef PetscInt cnfields = <PetscInt> len(fieldnames)
         cdef const char** cfieldnames = NULL
+        cdef object tmp = oarray_p(empty_p(cnfields), NULL, <void**>&cfieldnames)
+        fieldnames = list(fieldnames)
         for i from 0 <= i < cnfields:
             fieldnames[i] = str2bytes(fieldnames[i], &cval)
+            cfieldnames[i] = cval
         CHKERR( DMSwarmViewFieldsXDMF(self.dm, cfilename, cnfields, cfieldnames ) )
 
     def viewXDMF(self, filename):
@@ -262,11 +265,13 @@ cdef class DMSwarm(DM):
     def projectFields(self, fieldnames, reuse=False):
         cdef PetscBool creuse = asBool(reuse)
         cdef const_char *cval = NULL
-        cdef PetscInt cnfields = asInt(len(fieldnames))
+        cdef PetscInt cnfields = <PetscInt> len(fieldnames)
         cdef const char** cfieldnames = NULL
+        cdef object tmp = oarray_p(empty_p(cnfields), NULL, <void**>&cfieldnames)
         cdef PetscVec *cfieldvecs
+        fieldnames = list(fieldnames)
         for i from 0 <= i < cnfields:
-            fieldname = str2bytes(fieldname, &cval)
+            fieldnames[i] = str2bytes(fieldnames[i], &cval)
             cfieldnames[i] = cval
         CHKERR( DMSwarmProjectFields(self.dm, cnfields, cfieldnames, &cfieldvecs, creuse) )
         cdef list fieldvecs = []
