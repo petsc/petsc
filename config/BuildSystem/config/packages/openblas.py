@@ -5,6 +5,8 @@ import config.package
 #       fails on mac due to argument list too long https://github.com/xianyi/OpenBLAS/issues/977
 #       does not support 64 bit integers with INTERFACE64
 
+# OpenBLAS is not always valgrind clean
+# dswap_k_SANDYBRIDGE (in /usr/lib/openblas-base/libblas.so.3)
 
 class Configure(config.package.Package):
   def __init__(self, framework):
