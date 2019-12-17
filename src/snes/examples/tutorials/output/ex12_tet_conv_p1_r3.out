@@ -7,6 +7,7 @@ Mesh in 3 dimensions:
   3-cells: 3072
 Labels:
   depth: 4 strata with value/size (0 (729), 1 (4184), 2 (6528), 3 (3072))
+  celltype: 4 strata with value/size (5 (3072), 0 (729), 2 (6528), 1 (4184))
   marker: 1 strata with value/size (1 (2036))
 L_2 Error: 0.00631862
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1

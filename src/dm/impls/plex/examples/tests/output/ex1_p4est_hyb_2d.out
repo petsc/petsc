@@ -7,4 +7,5 @@ Simplicial Mesh in 2 dimensions:
 Labels:
   Cell Sets: 1 strata with value/size (1 (1485))
   depth: 3 strata with value/size (0 (563), 1 (1176), 2 (445))
+  celltype: 3 strata with value/size (3 (445), 1 (1176), 0 (563))
 Mesh with 445 cells, shape condition numbers: min = 2., max = 7.04333, mean = 2.33348, stddev = 0.637205

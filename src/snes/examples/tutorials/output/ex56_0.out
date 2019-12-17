@@ -61,6 +61,7 @@ Mesh in 3 dimensions:
   3-cells: 8 8 8 8
 Labels:
   depth: 4 strata with value/size (0 (27), 1 (54), 2 (36), 3 (8))
+  celltype: 4 strata with value/size (6 (8), 0 (27), 3 (36), 1 (54))
   marker: 1 strata with value/size (1 (69))
   Face Sets: 4 strata with value/size (1 (9), 2 (9), 3 (9), 6 (9))
   boundary: 1 strata with value/size (1 (77))
