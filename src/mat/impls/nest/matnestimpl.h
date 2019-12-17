@@ -15,6 +15,7 @@ typedef struct {
   struct MatNestISPair islocal;
   Vec                  *left,*right;
   PetscInt             *row_len,*col_len;
+  PetscObjectState     *nnzstate;
   PetscBool            splitassembly;
 } Mat_Nest;
 

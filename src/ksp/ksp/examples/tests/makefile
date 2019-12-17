@@ -4,7 +4,7 @@ FFLAGS    =
 CPPFLAGS  =
 FPPFLAGS  =
 LOCDIR    = src/ksp/ksp/examples/tests/
-EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex6.c ex7.c ex8.c ex10.c ex11.c ex14.c \
+EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex6.c ex7.c ex8.c ex9.c ex10.c ex11.c ex14.c \
                 ex15.c ex17.c ex18.c ex19.c ex20.c ex21.c ex22.c ex24.c \
                 ex25.c ex26.c ex27.c ex28.c ex29.c ex30.c ex31.c ex32.c \
                 ex33.c ex37.c ex38.c ex39.c ex40.c ex42.c \

@@ -865,18 +865,18 @@ PetscErrorCode  PCSetUp(PC pc)
   ierr = PetscObjectStateGet((PetscObject)pc->pmat,&matstate);CHKERRQ(ierr);
   ierr = MatGetNonzeroState(pc->pmat,&matnonzerostate);CHKERRQ(ierr);
   if (!pc->setupcalled) {
-    ierr            = PetscInfo(pc,"Setting up PC for first time\n");CHKERRQ(ierr);
-    pc->flag        = DIFFERENT_NONZERO_PATTERN;
+    ierr     = PetscInfo(pc,"Setting up PC for first time\n");CHKERRQ(ierr);
+    pc->flag = DIFFERENT_NONZERO_PATTERN;
   } else if (matstate == pc->matstate) {
     ierr = PetscInfo(pc,"Leaving PC with identical preconditioner since operator is unchanged\n");CHKERRQ(ierr);
     PetscFunctionReturn(0);
   } else {
     if (matnonzerostate > pc->matnonzerostate) {
        ierr = PetscInfo(pc,"Setting up PC with different nonzero pattern\n");CHKERRQ(ierr);
-       pc->flag            = DIFFERENT_NONZERO_PATTERN;
+       pc->flag = DIFFERENT_NONZERO_PATTERN;
     } else {
       ierr = PetscInfo(pc,"Setting up PC with same nonzero pattern\n");CHKERRQ(ierr);
-      pc->flag            = SAME_NONZERO_PATTERN;
+      pc->flag = SAME_NONZERO_PATTERN;
     }
   }
   pc->matstate        = matstate;

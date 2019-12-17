@@ -727,7 +727,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       } else scall = MAT_REUSE_MATRIX;
 
       for (i=0; i<nsplit; i++) {
-        if (jac->mat[i]) {ierr = MatCreateSubMatrix(pc->mat,ilink->is,ilink->is_col,scall,&jac->mat[i]);CHKERRQ(ierr);}
+        ierr  = MatCreateSubMatrix(pc->mat,ilink->is,ilink->is_col,scall,&jac->mat[i]);CHKERRQ(ierr);
         ilink = ilink->next;
       }
     }
@@ -756,23 +756,22 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       if (!jac->Afield) {
         ierr = PetscCalloc1(nsplit,&jac->Afield);CHKERRQ(ierr);
         if (jac->offdiag_use_amat) {
-          ierr  = MatCreateSubMatrix(pc->mat,ilink->next->is,ilink->is,MAT_INITIAL_MATRIX,&jac->Afield[1]);CHKERRQ(ierr);
+          ierr = MatCreateSubMatrix(pc->mat,ilink->next->is,ilink->is,MAT_INITIAL_MATRIX,&jac->Afield[1]);CHKERRQ(ierr);
         } else {
-          ierr  = MatCreateSubMatrix(pc->pmat,ilink->next->is,ilink->is,MAT_INITIAL_MATRIX,&jac->Afield[1]);CHKERRQ(ierr);
+          ierr = MatCreateSubMatrix(pc->pmat,ilink->next->is,ilink->is,MAT_INITIAL_MATRIX,&jac->Afield[1]);CHKERRQ(ierr);
         }
       } else {
         MatReuse scall;
+
         if (pc->flag == DIFFERENT_NONZERO_PATTERN) {
-          for (i=0; i<nsplit; i++) {
-            ierr = MatDestroy(&jac->Afield[1]);CHKERRQ(ierr);
-          }
+          ierr  = MatDestroy(&jac->Afield[1]);CHKERRQ(ierr);
           scall = MAT_INITIAL_MATRIX;
         } else scall = MAT_REUSE_MATRIX;
 
         if (jac->offdiag_use_amat) {
-          ierr  = MatCreateSubMatrix(pc->mat,ilink->next->is,ilink->is,scall,&jac->Afield[1]);CHKERRQ(ierr);
+          ierr = MatCreateSubMatrix(pc->mat,ilink->next->is,ilink->is,scall,&jac->Afield[1]);CHKERRQ(ierr);
         } else {
-          ierr  = MatCreateSubMatrix(pc->pmat,ilink->next->is,ilink->is,scall,&jac->Afield[1]);CHKERRQ(ierr);
+          ierr = MatCreateSubMatrix(pc->pmat,ilink->next->is,ilink->is,scall,&jac->Afield[1]);CHKERRQ(ierr);
         }
       }
     } else {
@@ -780,9 +779,9 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
         ierr = PetscMalloc1(nsplit,&jac->Afield);CHKERRQ(ierr);
         for (i=0; i<nsplit; i++) {
           if (jac->offdiag_use_amat) {
-            ierr  = MatCreateSubMatrix(pc->mat,ilink->is,NULL,MAT_INITIAL_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
+            ierr = MatCreateSubMatrix(pc->mat,ilink->is,NULL,MAT_INITIAL_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
           } else {
-            ierr  = MatCreateSubMatrix(pc->pmat,ilink->is,NULL,MAT_INITIAL_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
+            ierr = MatCreateSubMatrix(pc->pmat,ilink->is,NULL,MAT_INITIAL_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
           }
           ilink = ilink->next;
         }
@@ -797,9 +796,9 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
 
         for (i=0; i<nsplit; i++) {
           if (jac->offdiag_use_amat) {
-            ierr  = MatCreateSubMatrix(pc->mat,ilink->is,NULL,scall,&jac->Afield[i]);CHKERRQ(ierr);
+            ierr = MatCreateSubMatrix(pc->mat,ilink->is,NULL,scall,&jac->Afield[i]);CHKERRQ(ierr);
           } else {
-            ierr  = MatCreateSubMatrix(pc->pmat,ilink->is,NULL,scall,&jac->Afield[i]);CHKERRQ(ierr);
+            ierr = MatCreateSubMatrix(pc->pmat,ilink->is,NULL,scall,&jac->Afield[i]);CHKERRQ(ierr);
           }
           ilink = ilink->next;
         }
@@ -825,25 +824,31 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     /* When extracting off-diagonal submatrices, we take complements from this range */
     ierr = MatGetOwnershipRangeColumn(pc->mat,&rstart,&rend);CHKERRQ(ierr);
 
-    /* need to handle case when one is resetting up the preconditioner */
     if (jac->schur) {
-      KSP kspA = jac->head->ksp, kspInner = NULL, kspUpper = jac->kspupper;
+      KSP      kspA = jac->head->ksp, kspInner = NULL, kspUpper = jac->kspupper;
+      MatReuse scall;
+
+      if (pc->flag == DIFFERENT_NONZERO_PATTERN) {
+        scall = MAT_INITIAL_MATRIX;
+        ierr  = MatDestroy(&jac->B);CHKERRQ(ierr);
+        ierr  = MatDestroy(&jac->C);CHKERRQ(ierr);
+      } else scall = MAT_REUSE_MATRIX;
 
       ierr  = MatSchurComplementGetKSP(jac->schur, &kspInner);CHKERRQ(ierr);
       ilink = jac->head;
       ierr  = ISComplement(ilink->is_col,rstart,rend,&ccis);CHKERRQ(ierr);
       if (jac->offdiag_use_amat) {
-	ierr  = MatCreateSubMatrix(pc->mat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->B);CHKERRQ(ierr);
+	ierr = MatCreateSubMatrix(pc->mat,ilink->is,ccis,scall,&jac->B);CHKERRQ(ierr);
       } else {
-	ierr  = MatCreateSubMatrix(pc->pmat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->B);CHKERRQ(ierr);
+	ierr = MatCreateSubMatrix(pc->pmat,ilink->is,ccis,scall,&jac->B);CHKERRQ(ierr);
       }
       ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
       ilink = ilink->next;
       ierr  = ISComplement(ilink->is_col,rstart,rend,&ccis);CHKERRQ(ierr);
       if (jac->offdiag_use_amat) {
-	ierr  = MatCreateSubMatrix(pc->mat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->C);CHKERRQ(ierr);
+	ierr = MatCreateSubMatrix(pc->mat,ilink->is,ccis,scall,&jac->C);CHKERRQ(ierr);
       } else {
-	ierr  = MatCreateSubMatrix(pc->pmat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->C);CHKERRQ(ierr);
+	ierr = MatCreateSubMatrix(pc->pmat,ilink->is,ccis,scall,&jac->C);CHKERRQ(ierr);
       }
       ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
       ierr  = MatSchurComplementUpdateSubMatrices(jac->schur,jac->mat[0],jac->pmat[0],jac->B,jac->C,jac->mat[1]);CHKERRQ(ierr);
@@ -1031,11 +1036,11 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     /* When extracting off-diagonal submatrices, we take complements from this range */
     ierr = MatGetOwnershipRangeColumn(pc->mat,&rstart,&rend);CHKERRQ(ierr);
 
-    ierr  = ISComplement(ilink->is_col,rstart,rend,&ccis);CHKERRQ(ierr);
+    ierr = ISComplement(ilink->is_col,rstart,rend,&ccis);CHKERRQ(ierr);
     if (jac->offdiag_use_amat) {
-     ierr  = MatCreateSubMatrix(pc->mat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->B);CHKERRQ(ierr);
+      ierr = MatCreateSubMatrix(pc->mat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->B);CHKERRQ(ierr);
     } else {
-      ierr  = MatCreateSubMatrix(pc->pmat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->B);CHKERRQ(ierr);
+      ierr = MatCreateSubMatrix(pc->pmat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->B);CHKERRQ(ierr);
     }
     ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
     /* Create work vectors for GKB algorithm */
@@ -1045,17 +1050,17 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     ilink = ilink->next;
     ierr  = ISComplement(ilink->is_col,rstart,rend,&ccis);CHKERRQ(ierr);
     if (jac->offdiag_use_amat) {
-      ierr  = MatCreateSubMatrix(pc->mat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->C);CHKERRQ(ierr);
+      ierr = MatCreateSubMatrix(pc->mat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->C);CHKERRQ(ierr);
     } else {
-      ierr  = MatCreateSubMatrix(pc->pmat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->C);CHKERRQ(ierr);
+      ierr = MatCreateSubMatrix(pc->pmat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->C);CHKERRQ(ierr);
     }
-    ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
+    ierr = ISDestroy(&ccis);CHKERRQ(ierr);
     /* Create work vectors for GKB algorithm */
-    ierr  = VecDuplicate(ilink->x,&jac->v);CHKERRQ(ierr);
-    ierr  = VecDuplicate(ilink->x,&jac->d);CHKERRQ(ierr);
-    ierr  = VecDuplicate(ilink->x,&jac->w1);CHKERRQ(ierr);
-    ierr  = MatGolubKahanComputeExplicitOperator(jac->mat[0],jac->B,jac->C,&jac->H,jac->gkbnu);CHKERRQ(ierr);
-    ierr  = PetscCalloc1(jac->gkbdelay,&jac->vecz);CHKERRQ(ierr);
+    ierr = VecDuplicate(ilink->x,&jac->v);CHKERRQ(ierr);
+    ierr = VecDuplicate(ilink->x,&jac->d);CHKERRQ(ierr);
+    ierr = VecDuplicate(ilink->x,&jac->w1);CHKERRQ(ierr);
+    ierr = MatGolubKahanComputeExplicitOperator(jac->mat[0],jac->B,jac->C,&jac->H,jac->gkbnu);CHKERRQ(ierr);
+    ierr = PetscCalloc1(jac->gkbdelay,&jac->vecz);CHKERRQ(ierr);
 
     ilink = jac->head;
     ierr  = KSPSetOperators(ilink->ksp,jac->H,jac->H);CHKERRQ(ierr);

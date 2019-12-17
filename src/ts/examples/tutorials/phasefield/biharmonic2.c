@@ -252,9 +252,10 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec Xdot,Vec F,void *ptr
 PetscErrorCode FormInitialSolution(DM da,Vec X,PetscReal kappa)
 {
   PetscErrorCode ierr;
-  PetscInt       i,xs,xm,Mx;
+  PetscInt       i,xs,xm,Mx,xgs,xgm;
   Field          *x;
   PetscReal      hx,xx,r,sx;
+  Vec            Xg;
 
   PetscFunctionBegin;
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
@@ -265,29 +266,38 @@ PetscErrorCode FormInitialSolution(DM da,Vec X,PetscReal kappa)
   /*
      Get pointers to vector data
   */
-  ierr = DMDAVecGetArray(da,X,&x);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(da,&Xg);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,Xg,&x);CHKERRQ(ierr);
 
   /*
      Get local grid boundaries
   */
   ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(da,&xgs,NULL,NULL,&xgm,NULL,NULL);CHKERRQ(ierr);
 
   /*
-     Compute function over the locally owned part of the grid
+     Compute u function over the locally owned part of the grid including ghost points
   */
-  for (i=xs; i<xs+xm; i++) {
+  for (i=xgs; i<xgs+xgm; i++) {
     xx = i*hx;
     r = PetscSqrtReal((xx-.5)*(xx-.5));
     if (r < .125) x[i].u = 1.0;
     else          x[i].u = -.50;
-    /*  u[i] = PetscPowScalar(x - .5,4.0); */
+    /* fill in x[i].w so that valgrind doesn't detect use of uninitialized memory */
+    x[i].w = 0;
   }
   for (i=xs; i<xs+xm; i++) x[i].w = -kappa*(x[i-1].u + x[i+1].u - 2.0*x[i].u)*sx;
 
   /*
      Restore vectors
   */
-  ierr = DMDAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,Xg,&x);CHKERRQ(ierr);
+
+  /* Grab only the global part of the vector */
+  ierr = VecSet(X,0);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(da,Xg,ADD_VALUES,X);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(da,Xg,ADD_VALUES,X);CHKERRQ(ierr);
+  ierr = VecDestroy(&Xg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
