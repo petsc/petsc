@@ -792,12 +792,12 @@ static PetscErrorCode MatAXPY_Nest(Mat Y,PetscScalar a,Mat X,MatStructure str)
       } else if (bX->m[i][j]) {
         Mat M;
 
-        if (str != DIFFERENT_NONZERO_PATTERN) SETERRQ2(PetscObjectComm((PetscObject)Y),PETSC_ERR_ARG_INCOMP,"Matrix block does not exist at %D,%D",i,j);
+        if (str != DIFFERENT_NONZERO_PATTERN) SETERRQ2(PetscObjectComm((PetscObject)Y),PETSC_ERR_ARG_INCOMP,"Matrix block does not exist at %D,%D. Use DIFFERENT_NONZERO_PATTERN",i,j);
         ierr = MatDuplicate(bX->m[i][j],MAT_COPY_VALUES,&M);CHKERRQ(ierr);
         ierr = MatNestSetSubMat(Y,i,j,M);CHKERRQ(ierr);
         ierr = MatDestroy(&M);CHKERRQ(ierr);
       }
-      ierr = MatGetNonzeroState(bY->m[i][j],&subnnzstate);CHKERRQ(ierr);
+      if (bY->m[i][j]) { ierr = MatGetNonzeroState(bY->m[i][j],&subnnzstate);CHKERRQ(ierr); }
       nnzstate = (PetscBool)(nnzstate || bY->nnzstate[i*nc+j] != subnnzstate);
       bY->nnzstate[i*nc+j] = subnnzstate;
     }
