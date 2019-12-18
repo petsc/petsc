@@ -1254,66 +1254,79 @@ static PetscErrorCode MatNestCreateAggregateL2G_Private(Mat A,PetscInt n,const I
   PetscInt       i,j,m,mi,*ix;
 
   PetscFunctionBegin;
+  *ltog = NULL;
   for (i=0,m=0,flg=PETSC_FALSE; i<n; i++) {
     if (islocal[i]) {
-      ierr = ISGetSize(islocal[i],&mi);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(islocal[i],&mi);CHKERRQ(ierr);
       flg  = PETSC_TRUE;      /* We found a non-trivial entry */
     } else {
-      ierr = ISGetSize(isglobal[i],&mi);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(isglobal[i],&mi);CHKERRQ(ierr);
     }
     m += mi;
   }
-  if (flg) {
-    ierr = PetscMalloc1(m,&ix);CHKERRQ(ierr);
-    for (i=0,m=0; i<n; i++) {
-      ISLocalToGlobalMapping smap = NULL;
-      Mat                    sub = NULL;
-      PetscSF                sf;
-      PetscLayout            map;
-      PetscInt               *ix2;
+  if (!flg) PetscFunctionReturn(0);
 
+  ierr = PetscMalloc1(m,&ix);CHKERRQ(ierr);
+  for (i=0,m=0; i<n; i++) {
+    ISLocalToGlobalMapping smap = NULL;
+    Mat                    sub = NULL;
+    PetscSF                sf;
+    PetscLayout            map;
+    const PetscInt         *ix2;
+
+    if (!colflg) {
+      ierr = MatNestFindNonzeroSubMatRow(A,i,&sub);CHKERRQ(ierr);
+    } else {
+      ierr = MatNestFindNonzeroSubMatCol(A,i,&sub);CHKERRQ(ierr);
+    }
+    if (sub) {
       if (!colflg) {
-        ierr = MatNestFindNonzeroSubMatRow(A,i,&sub);CHKERRQ(ierr);
+        ierr = MatGetLocalToGlobalMapping(sub,&smap,NULL);CHKERRQ(ierr);
       } else {
-        ierr = MatNestFindNonzeroSubMatCol(A,i,&sub);CHKERRQ(ierr);
+        ierr = MatGetLocalToGlobalMapping(sub,NULL,&smap);CHKERRQ(ierr);
       }
-      if (sub) {
-        if (!colflg) {
-          ierr = MatGetLocalToGlobalMapping(sub,&smap,NULL);CHKERRQ(ierr);
-        } else {
-          ierr = MatGetLocalToGlobalMapping(sub,NULL,&smap);CHKERRQ(ierr);
-        }
-      }
-      if (islocal[i]) {
-        ierr = ISGetSize(islocal[i],&mi);CHKERRQ(ierr);
-      } else {
-        ierr = ISGetSize(isglobal[i],&mi);CHKERRQ(ierr);
-      }
-      for (j=0; j<mi; j++) ix[m+j] = j;
-      if (smap) {ierr = ISLocalToGlobalMappingApply(smap,mi,ix+m,ix+m);CHKERRQ(ierr);}
+    }
+    /*
+       Now we need to extract the monolithic global indices that correspond to the given split global indices.
+       In many/most cases, we only want MatGetLocalSubMatrix() to work, in which case we only need to know the size of the local spaces.
+    */
+    ierr = ISGetIndices(isglobal[i],&ix2);CHKERRQ(ierr);
+    if (islocal[i]) {
+      PetscInt *ilocal,*iremote;
+      PetscInt mil,nleaves;
 
-      /*
-        Now we need to extract the monolithic global indices that correspond to the given split global indices.
-        In many/most cases, we only want MatGetLocalSubMatrix() to work, in which case we only need to know the size of the local spaces.
-       */
-      ierr = PetscMalloc1(mi,&ix2);CHKERRQ(ierr);
-      ierr = PetscSFCreate(((PetscObject)isglobal[i])->comm,&sf);CHKERRQ(ierr);
-      ierr = PetscLayoutCreate(((PetscObject)isglobal[i])->comm,&map);CHKERRQ(ierr);
-      ierr = PetscLayoutSetLocalSize(map,mi);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(islocal[i],&mi);CHKERRQ(ierr);
+      if (!smap) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Missing local to global map");
+      for (j=0; j<mi; j++) ix[m+j] = j;
+      ierr = ISLocalToGlobalMappingApply(smap,mi,ix+m,ix+m);CHKERRQ(ierr);
+
+      /* PetscSFSetGraphLayout does not like negative indices */
+      ierr = PetscMalloc2(mi,&ilocal,mi,&iremote);CHKERRQ(ierr);
+      for (j=0, nleaves = 0; j<mi; j++) {
+        if (ix[m+j] < 0) continue;
+        ilocal[nleaves]  = j;
+        iremote[nleaves] = ix[m+j];
+        nleaves++;
+      }
+      ierr = ISGetLocalSize(isglobal[i],&mil);CHKERRQ(ierr);
+      ierr = PetscSFCreate(PetscObjectComm((PetscObject)A),&sf);CHKERRQ(ierr);
+      ierr = PetscLayoutCreate(PetscObjectComm((PetscObject)A),&map);CHKERRQ(ierr);
+      ierr = PetscLayoutSetLocalSize(map,mil);CHKERRQ(ierr);
       ierr = PetscLayoutSetUp(map);CHKERRQ(ierr);
-      ierr = PetscSFSetGraphLayout(sf,map,mi,NULL,PETSC_USE_POINTER,ix+m);CHKERRQ(ierr);
+      ierr = PetscSFSetGraphLayout(sf,map,nleaves,ilocal,PETSC_USE_POINTER,iremote);CHKERRQ(ierr);
       ierr = PetscLayoutDestroy(&map);CHKERRQ(ierr);
-      for (j=0; j<mi; j++) ix2[j] = ix[m+j];
       ierr = PetscSFBcastBegin(sf,MPIU_INT,ix2,ix + m);CHKERRQ(ierr);
       ierr = PetscSFBcastEnd(sf,MPIU_INT,ix2,ix + m);CHKERRQ(ierr);
       ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
-      ierr = PetscFree(ix2);CHKERRQ(ierr);
-      m   += mi;
+      ierr = PetscFree2(ilocal,iremote);CHKERRQ(ierr);
+    } else {
+      ierr = ISGetLocalSize(isglobal[i],&mi);CHKERRQ(ierr);
+      for (j=0; j<mi; j++) ix[m+j] = ix2[i];
     }
-    ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)A),1,m,ix,PETSC_OWN_POINTER,ltog);CHKERRQ(ierr);
-  } else {
-    *ltog = NULL;
+    ierr = ISRestoreIndices(isglobal[i],&ix2);CHKERRQ(ierr);
+    m   += mi;
   }
+  ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)A),1,m,ix,PETSC_OWN_POINTER,ltog);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
