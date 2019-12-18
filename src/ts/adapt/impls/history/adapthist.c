@@ -12,7 +12,7 @@ static PetscErrorCode TSAdaptChoose_History(TSAdapt adapt,TS ts,PetscReal h,Pets
   TSAdapt_History *thadapt = (TSAdapt_History*)adapt->data;
 
   PetscFunctionBegin;
-  if (!thadapt->hist) SETERRQ(PetscObjectComm((PetscObject)adapt),PETSC_ERR_USER,"Need call TSAdaptHistorySetHistory()");
+  if (!thadapt->hist) SETERRQ(PetscObjectComm((PetscObject)adapt),PETSC_ERR_ORDER,"Need to call TSAdaptHistorySetHistory() first");
   ierr = TSGetStepNumber(ts,&step);CHKERRQ(ierr);
   ierr = TSHistoryGetTimeStep(thadapt->hist,thadapt->bw,step+1,next_h);CHKERRQ(ierr);
   *accept  = PETSC_TRUE;
