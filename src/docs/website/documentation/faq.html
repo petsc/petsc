@@ -122,6 +122,7 @@ See https://www.mcs.anl.gov/petsc/documentation/faq.html
         <li><a href="#cxxmethod">How can I implement callbacks using C++ class methods?</a></li>
         <li><a href="#functionjacobian">Everyone knows that when you code Newton's method you should compute the function and its Jacobian at the same time. How can one do this in PETSc?</a></li>
         <li><a href="#jacobianfree">How can I use Newton's method Jacobian free? Can I difference a different function than provided with SNESSetFunction()?</a></li>
+        <li><a href="#lagjacobian">Computing the Jacobian or preconditioner is time consuming, is there any way to compute it less often?</a></li>
         <li><a href="#conditionnumber">How can I determine the condition number of a matrix?</a></li>
         <li><a href="#invertmatrix">How can I compute the inverse of a PETSc matrix?</a></li>
         <li><a href="#schurcomplement">How can I compute a Schur complement: Kbb - Kba *inverse(Kaa)*Kab?</a></li>
@@ -135,7 +136,6 @@ See https://www.mcs.anl.gov/petsc/documentation/faq.html
         <li><a href="#infeasible">TS or SNES produces infeasible (out of domain) solutions or states, how can I prevent this?</a></li>
         <li><a href="#hermitian">Can PETSc work with Hermitian matrices?</a></li>
         <li><a href="#matreassembly">How do I efficiently assemble a bunch of very similar matrices (say in a time loop)?</a></li>
-      </ul>
         <li><a href="#resize">Can one resize or change the size of PETSc matrices or vectors?</a></li>
       </ul>
 
@@ -1001,7 +1001,36 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
         function.
       </p>
 
-      <h3><a name="jacobianfree">How can I use Newton's method Jacobian free? Can I difference a different function than provided
+      <h3><a name="lagjacobian">Computing the Jacobian or preconditioner is time consuming, is there any way to compute it less often?</a></h3>
+
+      PETSc has a variety of ways of lagging the computation of the Jacobian or the preconditioner. They are documented in the manual page and users manual.
+
+      <ol>
+        <li>
+          -snes_lag_jacobian <lag> - (SNESSetLagJacobian) how often Jacobian is rebuilt (use -1 to never rebuild, use -2 to rebuild the next time and then never again).
+        </li>
+        <li>
+          -snes_lag_jacobian_persists - Jacobian lagging through multiple SNES solves (SNESSetLagJacobianPersists), same as passing -2 to -snes_lag_jacobian
+        </li>
+        <li>
+          These are often (but does not need to be) used in combination with -snes_mf_operator which applies the fresh Jacobian matrix free for every matrix-vector product.
+          Otherwise the out-of-date matrix vector product, computed with the lagged Jacobian will be used.
+        </li>
+      </ol>
+
+      <ol>
+        <li>
+          -snes_lag_preconditioner <lag> - (SNESSetLagPreconditioner) how often the preconditioner is rebuilt. Note: if you are lagging the Jacobian the system will know the
+                                           the matrix has not changed and will not recompute the (same) preconditioner. 
+        </li>
+        <li>
+          -snes_lag_preconditioner_persists - Preconditioner lags through multiple SNES solves
+        </li>
+      </ol>
+
+      Experimentation is the only general purpose way to determine which approach is best for your problem. It is also important to experiment on your true problem at the scale you will be solving the problem since the performance benifits depend on the exact problem and and problem size.
+
+<h3><a name="jacobianfree">How can I use Newton's method Jacobian free? Can I difference a different function than provided
              with <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/SNES/SNESSetFunction.html">SNESSetFunction()?</a></h3>
 
       <p>
