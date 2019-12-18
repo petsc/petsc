@@ -17,6 +17,8 @@ struct _p_DMNetworkComponentHeader {
   PetscInt size[MAX_DATA_AT_POINT];
   PetscInt key[MAX_DATA_AT_POINT];
   PetscInt offset[MAX_DATA_AT_POINT];
+  PetscInt nvar[MAX_DATA_AT_POINT]; /* Number of variables */
+  PetscInt offsetvarrel[MAX_DATA_AT_POINT]; /* offset from the first variable of the network point */
 } PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
 
 typedef struct _p_DMNetworkComponentValue *DMNetworkComponentValue;
