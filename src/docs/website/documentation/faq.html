@@ -134,6 +134,7 @@ See https://www.mcs.anl.gov/petsc/documentation/faq.html
         <li><a href="#parallelsolvesequentialcode">If I have a sequential program can I use a parallel direct solver?</a></li>
         <li><a href="#infeasible">TS or SNES produces infeasible (out of domain) solutions or states, how can I prevent this?</a></li>
         <li><a href="#hermitian">Can PETSc work with Hermitian matrices?</a></li>
+        <li><a href="#matreassembly">How do I efficiently assemble a bunch of very similar matrices (say in a time loop)?</a></li>
       </ul>
         <li><a href="#resize">Can one resize or change the size of PETSc matrices or vectors?</a></li>
       </ul>
@@ -1293,6 +1294,10 @@ PETSC_COMM_WORLD = NewComm;
         </li>
     </ol>
 
+     <h3><a name="matreassembly">How can I assemble a bunch of similar matrices?</a></h3>
+     
+     <p>You can first add the values common to all the matrices, then use MatStoreValues() to stash the common values.
+        Each iteration you call MatRetrieveValues(), then set the unique values in a matrix and assemble.</p>
 
      <h3><a name="resize">Can one resize or change the size of PETSc matrices or vectors?</a></h3>
 
