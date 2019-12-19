@@ -8755,6 +8755,7 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
         ierr = DMLocalizeCoordinate_Internal(dm, spaceDim, &coords[offA], &coords[offB], &coordsNew[offnew]);CHKERRQ(ierr);
         for (d = 0; d < spaceDim; ++d) {
           coordsNew[offnew+d] = 0.5*(coords[offA+d] + coordsNew[offnew+d]);
+          ierr = DMPlexSnapToGeomModel(dm, e, &coordsNew[offnew], &coordsNew[offnew]);CHKERRQ(ierr);
         }
       } else {
         for (d = 0; d < spaceDim; ++d) coordsNew[offnew+d] = PETSC_MIN_REAL;
