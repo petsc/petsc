@@ -868,7 +868,7 @@ PetscErrorCode  PCShellSetApplyRichardson(PC pc,PetscErrorCode (*apply)(PC,Vec,V
               own private data storage format.
 
    Level: advanced
->
+
   Usage:
 $             extern PetscErrorCode apply(PC,Vec,Vec);
 $             extern PetscErrorCode applyba(PC,PCSide,Vec,Vec,Vec);
@@ -939,9 +939,3 @@ PETSC_EXTERN PetscErrorCode PCCreate_Shell(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetApplyRichardson_C",PCShellSetApplyRichardson_Shell);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
-
-
-
-

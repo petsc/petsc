@@ -67,7 +67,7 @@ PetscErrorCode  PCSetType(PC pc,PCType type)
   if (!r) SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PC type %s",type);
   /* Destroy the previous private PC context */
   if (pc->ops->destroy) {
-    ierr             =  (*pc->ops->destroy)(pc);CHKERRQ(ierr);
+    ierr             = (*pc->ops->destroy)(pc);CHKERRQ(ierr);
     pc->ops->destroy = NULL;
     pc->data         = 0;
   }
@@ -185,7 +185,7 @@ PetscErrorCode  PCSetFromOptions(PC pc)
    Level: intermediate
 
    Developer Notes:
-    The routines KSP/SNES/TSSetDM() require the dm to be non-NULL, but this one can be NULL since all it does is 
+    The routines KSP/SNES/TSSetDM() require the dm to be non-NULL, but this one can be NULL since all it does is
     replace the current DM
 
 .seealso: PCGetDM(), KSPSetDM(), KSPGetDM()
