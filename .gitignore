@@ -10,6 +10,7 @@
 *.pvt[ksu]
 *.h5m
 .*_license
+*.mypy_cache
 unix/*
 unix-opt/*
 unix-gcov/*
