@@ -2279,7 +2279,7 @@ PetscErrorCode MatMumpsGetInverse_MUMPS(Mat F,Mat spRHS)
   PetscBool      flg;
   Mat_MUMPS      *mumps =(Mat_MUMPS*)F->data;
   PetscScalar    *aa;
-  PetscInt       spnr,*ia,*ja;
+  PetscInt       spnr,*ia,*ja,M,nrhs;
 
   PetscFunctionBegin;
   PetscValidIntPointer(spRHS,2);
@@ -2296,6 +2296,11 @@ PetscErrorCode MatMumpsGetInverse_MUMPS(Mat F,Mat spRHS)
   } else {
     Btseq = Bt;
   }
+
+  ierr = MatGetSize(spRHS,&M,&nrhs);CHKERRQ(ierr);
+  mumps->id.nrhs = nrhs;
+  mumps->id.lrhs = M;
+  mumps->id.rhs  = NULL;
 
   if (!mumps->myid) {
     ierr = MatSeqAIJGetArray(Btseq,&aa);CHKERRQ(ierr);
