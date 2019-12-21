@@ -70,14 +70,14 @@ info:
 	-@echo "Using configuration flags:"
 	-@grep "\#define " ${PETSCCONF_H}
 	-@echo "-----------------------------------------"
-	-@echo "Using C compile: ${PETSC_COMPILE}"
+	-@echo "Using C compile: ${PETSC_CCOMPILE}"
 	-@if [  "${MPICC_SHOW}" != "" ]; then \
              printf  "mpicc -show: %b\n" "${MPICC_SHOW}";\
           fi; \
-          printf  "C compiler version: %b\n" "${C_VERSION}"; \
-	  if [ "${CXX}" != "" ]; then \
-	   echo "Using C++ compile: ${PETSC_CXXCOMPILE}";\
-	    if [ "${MPICXX_SHOW}" != "" ]; then \
+        printf  "C compiler version: %b\n" "${C_VERSION}"; \
+        if [ "${PETSC_CXXCOMPILE}" != "" ]; then \
+        echo "Using C++ compile: ${PETSC_CXXCOMPILE}";\
+        if [ "${MPICXX_SHOW}" != "" ]; then \
                printf "mpicxx -show: %b\n" "${MPICXX_SHOW}"; \
             fi;\
             printf  "C++ compiler version: %b\n" "${Cxx_VERSION}"; \
@@ -92,6 +92,9 @@ info:
 	-@if [ "${CUDAC}" != "" ]; then \
 	   echo "Using CUDA compile: ${PETSC_CUCOMPILE}";\
          fi
+	-@if [ "${CLANGUAGE}" == "CXX" ]; then \
+           echo "Using C++ compiler to compile PETSc";\
+        fi
 	-@echo "-----------------------------------------"
 	-@echo "Using C/C++ linker: ${PCC_LINKER}"
 	-@echo "Using C/C++ flags: ${PCC_LINKER_FLAGS}"
@@ -106,7 +109,7 @@ info:
         else \
            TESTDIR=`mktemp -q -d -t petscmpi-XXXXXXXX` && \
            echo '#include <mpi.h>' > $${TESTDIR}/mpitest.c && \
-           BUF=`${CPP} ${PETSC_CCPPFLAGS} $${TESTDIR}/mpitest.c |grep 'mpi\.h' | ( head -1 ; cat > /dev/null )` && \
+           BUF=`${CPP} ${PETSC_CPPFLAGS} ${PETSC_CC_INCLUDES} $${TESTDIR}/mpitest.c |grep 'mpi\.h' | ( head -1 ; cat > /dev/null )` && \
            echo Using mpi.h: $${BUF}; ${RM} -rf $${TESTDIR}; \
         fi
 	-@echo "-----------------------------------------"
