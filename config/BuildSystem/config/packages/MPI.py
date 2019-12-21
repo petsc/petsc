@@ -55,6 +55,7 @@ class Configure(config.package.Package):
     # support MPI-3 non-blocking collectives
     self.support_mpi3_nbc = 0
     self.mpi_pkg_version  = ''
+    self.lookforbydefault = 1
     return
 
   def setupHelp(self, help):

@@ -513,6 +513,7 @@ def petsc_configure(configure_options):
     +'*******************************************************************************\n'
     se  = str(e)
 
+  framework.logClear()
   print(msg)
   if not framework is None:
     framework.logClear()
