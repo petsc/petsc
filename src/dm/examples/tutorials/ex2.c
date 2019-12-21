@@ -45,10 +45,7 @@ int main(int argc,char **argv)
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,NULL,"Life",PETSC_DECIDE,PETSC_DECIDE,1000,1000,&viewer);CHKERRQ(ierr);
 
   /* Create distributed array and get vectors */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,
-                      DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,
-                      DMDA_STENCIL_BOX,30,30,PETSC_DECIDE,PETSC_DECIDE,
-                      1,1,NULL,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX,30,30,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMSetFromOptions(da);CHKERRQ(ierr);
   ierr = DMSetUp(da);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da,&Xlocal);CHKERRQ(ierr);
@@ -71,7 +68,7 @@ int main(int argc,char **argv)
         }
         if (has_blinker && i == blinker_loc[0] && j == blinker_loc[1]) {
           x[j-1][i] = 1;
-          x[j][i] = 1;
+          x[j][i]   = 1;
           x[j+1][i] = 1;
         }
       }
@@ -99,15 +96,15 @@ int main(int argc,char **argv)
       for (j=info.ys; j<info.ys+info.ym; j++) {
         for (i=info.xs; i<info.xs+info.xm; i++) {
           PetscInt live_neighbors = 0;
-          live_neighbors += x[j-1][i-1] > 0;
-          live_neighbors += x[j-1][i] > 0;
-          live_neighbors += x[j-1][i+1] > 0;
-          live_neighbors += x[j][i-1] > 0;
-          live_neighbors += x[j][i+1] > 0;
-          live_neighbors += x[j+1][i-1] > 0;
-          live_neighbors += x[j+1][i] > 0;
-          live_neighbors += x[j+1][i+1] > 0;
-          if (x[j][i] > 0) {    /* Live cell */
+          live_neighbors += PetscRealPart(x[j-1][i-1]) > 0;
+          live_neighbors += PetscRealPart(x[j-1][i]) > 0;
+          live_neighbors += PetscRealPart(x[j-1][i+1]) > 0;
+          live_neighbors += PetscRealPart(x[j][i-1]) > 0;
+          live_neighbors += PetscRealPart(x[j][i+1]) > 0;
+          live_neighbors += PetscRealPart(x[j+1][i-1]) > 0;
+          live_neighbors += PetscRealPart(x[j+1][i]) > 0;
+          live_neighbors += PetscRealPart(x[j+1][i+1]) > 0;
+          if (PetscRealPart(x[j][i]) > 0) {    /* Live cell */
             switch (live_neighbors) {
             case 2:
             case 3:
