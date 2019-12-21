@@ -441,7 +441,7 @@ linux-cmplx-gcov:
     - ${TEST_ARCH}/tests/testresults.xml
     - ${TEST_ARCH}/tests/test_${TEST_ARCH}_tap.log
     - ${TEST_ARCH}/tests/test_${TEST_ARCH}_err.log
-    - gcov.tar.gz
+    - ${TEST_ARCH}/gcov.tar.gz
     expire_in: 4 days
 
 
@@ -591,7 +591,7 @@ linux-gcov:
     - ${TEST_ARCH}/tests/testresults.xml
     - ${TEST_ARCH}/tests/test_${TEST_ARCH}_tap.log
     - ${TEST_ARCH}/tests/test_${TEST_ARCH}_err.log
-    - gcov.tar.gz
+    - ${TEST_ARCH}/gcov.tar.gz
     expire_in: 4 days
 
 
@@ -621,7 +621,7 @@ linux-matlab-ilp64-gcov:
     - ${TEST_ARCH}/tests/testresults.xml
     - ${TEST_ARCH}/tests/test_${TEST_ARCH}_tap.log
     - ${TEST_ARCH}/tests/test_${TEST_ARCH}_err.log
-    - gcov.tar.gz
+    - ${TEST_ARCH}/gcov.tar.gz
     expire_in: 4 days
 
 
@@ -669,7 +669,7 @@ linux-pkgs-gcov:
     - ${TEST_ARCH}/tests/testresults.xml
     - ${TEST_ARCH}/tests/test_${TEST_ARCH}_tap.log
     - ${TEST_ARCH}/tests/test_${TEST_ARCH}_err.log
-    - gcov.tar.gz
+    - ${TEST_ARCH}/gcov.tar.gz
     expire_in: 4 days
 
 linux-pkgs-opt:
@@ -719,6 +719,37 @@ linux-nagfor:
   variables:
     TEST_ARCH: arch-ci-linux-nagfor
 
+# job for analyzing the final coverage results
+analyze-pipeline:
+  stage: .post
+  image: jedbrown/mpich-ccache
+  variables:
+    PYTHON: python3
+    # Need a dummy TEST_ARCH that comes from artifacts
+    TEST_ARCH: arch-ci-linux-pkgs-gcov
+  only:
+    refs:
+#     Set with CI/CD Shedules - New Schedule
+      - schedules
+#     Set with CI/CD Pipelines - Run Pipeline
+      - web
+  allow_failure: true
+  before_script:
+    - date
+  script:
+  - python3 ./configure --with-mpi=0 --with-fc=0 --with-cxx=0
+#  - make mergegcov LOC=$PWD
+  - ${PYTHON} lib/petsc/bin/maint/gcov.py --merge_gcov --loc=${PWD} --petsc_arch ${TEST_ARCH}
+  - ls
+  - ls arch*/*
+  artifacts:
+    name: "$CI_JOB_NAME"
+    when: always
+    paths:
+    - i*.html
+    - arch-*-gcov/*
+    expire_in: 4 days
+#
 #
 # The following tests are experimental; more tests by users at other sites may be added below this.  Experimental test
 # that fail produce a warning, but do not block execution of a pipeline.

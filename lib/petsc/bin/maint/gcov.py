@@ -86,17 +86,22 @@ def run_gcov(gcov_dir,petsc_dir,petsc_arch):
     print("""Finshed running gcov on PETSc source code""")
     return
 
-def make_tarball(dirname,petsc_dir):
+def make_tarball(dirname,petsc_dir,petsc_arch):
 
     # Create tarball of .lines files stored in gcov_dir
     print("""Creating tarball in %s to store gcov results files""" %(petsc_dir))
+    curdir=os.path.abspath(os.path.curdir)
     os.chdir(dirname)
     os.system("tar -czf "+petsc_dir+os.sep+"gcov.tar.gz *.lines")
+    os.chdir(petsc_dir)
     shutil.rmtree(dirname)
+    # Copy file so artifacts in CI propogate without overwriting
+    shutil.copyfile('gcov.tar.gz',os.path.join(petsc_arch,'gcov.tar.gz'))
     print("""Tarball created in %s"""%(petsc_dir))
+    os.chdir(curdir)
     return
 
-def make_htmlpage(gcov_dir,petsc_dir,LOC,tarballs):
+def make_htmlpage(gcov_dir,petsc_dir,LOC,tarballs,isCI):
 
     # Create index_gcov webpages using information processed from
     # running gcov
@@ -113,9 +118,6 @@ def make_htmlpage(gcov_dir,petsc_dir,LOC,tarballs):
     cwd = os.getcwd()
     # -------------------------- Stage 1 -------------------------------
     len_tarballs = len(tarballs)
-    if len_tarballs == 0:
-        print("No gcov tar balls found in directory %s" %(cwd))
-        sys.exit()
 
     print("%s tarballs found\n%s" %(len_tarballs,tarballs))
     print("Extracting gcov directories from tar balls")
@@ -126,7 +128,7 @@ def make_htmlpage(gcov_dir,petsc_dir,LOC,tarballs):
         dir = os.path.join(gcov_dir,str(i))
         tmp.append(dir)
         os.mkdir(dir)
-        os.system("cd "+dir+";gunzip -c "+cwd+os.sep+tarballs[i] + "|tar -xof -")
+        os.system("cd "+dir+";gunzip -c "+tarballs[i] + "|tar -xof -")
         tmp.append(len(os.listdir(dir)))
         tmp_dirs.append(tmp)
 
@@ -143,6 +145,7 @@ def make_htmlpage(gcov_dir,petsc_dir,LOC,tarballs):
     print("Merging files")
     nfiles = tmp_dirs[0][1]
     files_dir1 = os.listdir(tmp_dirs[0][0])
+    print(files_dir1)
     for i in range(0,nfiles):
         out_file = os.path.join(gcov_dir,files_dir1[i])
         out_fid  = open(out_file,'w')
@@ -409,7 +412,10 @@ def main():
                       action='store_true',default=False)
     options, args = parser.parse_args()
 
-    USER = os.environ['USER']
+    if 'USER' in os.environ:
+      USER = os.environ['USER']
+    else:
+      USER = 'petsc_ci'
     gcov_dir = "/tmp/gcov-"+USER
 
     if options.petsc_dir:
@@ -419,8 +425,9 @@ def main():
     if options.petsc_arch:
         petsc_arch = options.petsc_arch
     else:
-        if os.environ['PETSC_ARCH']:
-           petsc_arch = os.environ['PETSC_ARCH']
+        if 'PETSC_ARCH' in os.environ:
+          if os.environ['PETSC_ARCH']:
+            petsc_arch = os.environ['PETSC_ARCH']
         else:
             print("Must specify PETSC_ARCH with --petsc_arch")
             return
@@ -428,7 +435,7 @@ def main():
     if options.run_gcov:
         print("Running gcov and creating tarball")
         run_gcov(gcov_dir,petsc_dir,petsc_arch)
-        make_tarball(gcov_dir,petsc_dir)
+        make_tarball(gcov_dir,petsc_dir,petsc_arch)
     elif options.merge_gcov:
         print("Creating main html page")
         # check to see if LOC is given
@@ -440,7 +447,18 @@ def main():
             LOC = petsc_dir
 
         tarballs = glob.glob(os.path.join(LOC,'*.tar.gz'))
-        make_htmlpage(gcov_dir,petsc_dir,LOC,tarballs)
+
+        # Gitlab CI organizes things differently
+        isCI=False
+        if len(tarballs)==0:
+          tarballs=glob.glob(os.path.join(LOC,'arch-*/gcov.tar.gz'))
+          isCI=True
+
+        if len(tarballs)==0:
+          print("No coverage tarballs found")
+          return
+
+        make_htmlpage(gcov_dir,petsc_dir,LOC,tarballs,isCI)
     else:
         parser.print_usage()
 
