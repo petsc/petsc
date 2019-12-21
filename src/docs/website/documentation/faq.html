@@ -1010,7 +1010,7 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
           -snes_lag_jacobian <lag> - (SNESSetLagJacobian) how often Jacobian is rebuilt (use -1 to never rebuild, use -2 to rebuild the next time and then never again).
         </li>
         <li>
-          -snes_lag_jacobian_persists - Jacobian lagging through multiple SNES solves (SNESSetLagJacobianPersists), same as passing -2 to -snes_lag_jacobian
+          -snes_lag_jacobian_persists - forces lagging of Jacobian through multiple SNES solves (SNESSetLagJacobianPersists), same as passing -2 to -snes_lag_jacobian. By default each new SNES solve normally triggers a recomputation of the Jacobian
         </li>
         <li>
           These are often (but does not need to be) used in combination with -snes_mf_operator which applies the fresh Jacobian matrix free for every matrix-vector product.
