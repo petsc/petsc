@@ -262,7 +262,7 @@ static PetscErrorCode TestIntegration(DM dm, PetscInt cbs, PetscInt its)
     ierr = PetscLogEventGetPerfInfo(stage, event, &eventInfo);CHKERRQ(ierr);
     flopRate = eventInfo.flops/eventInfo.time;
     cellRate = N/eventInfo.time;
-    ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "%s: %D integrals %D chunks %D reps\n  Cell rate: %.2f/s flop rate: %.2f MF/s\n", title, N, Nch, its, cellRate, flopRate/1.e6);CHKERRQ(ierr);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "%s: %D integrals %D chunks %D reps\n  Cell rate: %.2f/s flop rate: %.2f MF/s\n", title, N, Nch, its, (double)cellRate, (double)(flopRate/1.e6));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -299,7 +299,7 @@ static PetscErrorCode TestIntegration2(DM dm, PetscInt cbs, PetscInt its)
     N        = (cEnd - cStart)*Nf*eventInfo.count;
     flopRate = eventInfo.flops/eventInfo.time;
     cellRate = N/eventInfo.time;
-    ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "%s: %D integrals %D reps\n  Cell rate: %.2f/s flop rate: %.2f MF/s\n", title, N, eventInfo.count, cellRate, flopRate/1.e6);CHKERRQ(ierr);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "%s: %D integrals %D reps\n  Cell rate: %.2f/s flop rate: %.2f MF/s\n", title, N, eventInfo.count, (double)cellRate, (double)(flopRate/1.e6));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
