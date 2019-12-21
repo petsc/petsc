@@ -164,6 +164,11 @@
        PetscErrorCode, intent(out) :: ierr
       end Subroutine PetscInitialize
       
+      subroutine PetscInitializeNoArguments(ierr)
+      use petscsysdef
+       PetscErrorCode, intent(out) :: ierr
+      end Subroutine PetscInitializeNoArguments
+
       subroutine PetscFinalize(ierr)
       use petscsysdef
        PetscErrorCode, intent(out) :: ierr

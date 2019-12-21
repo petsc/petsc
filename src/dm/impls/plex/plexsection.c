@@ -343,9 +343,9 @@ static PetscErrorCode DMPlexCreateSectionBCIndices(DM dm, PetscSection section)
 
   Input Parameters:
 + dm        - The DMPlex object
+. label     - The label indicating the mesh support of each field, or NULL for the whole mesh
 . numComp   - An array of size numFields that holds the number of components for each field
 . numDof    - An array of size numFields*(dim+1) which holds the number of dof for each field on a mesh piece of dimension d
-. label     - The label indicating the mesh support of each field, or NULL for the whole mesh
 . numBC     - The number of boundary conditions
 . bcField   - An array of size numBC giving the field number for each boundry condition
 . bcComps   - [Optional] An array of size numBC giving an IS holding the field components to which each boundary condition applies
@@ -362,9 +362,6 @@ static PetscErrorCode DMPlexCreateSectionBCIndices(DM dm, PetscSection section)
   The chart permutation is the same one set using PetscSectionSetPermutation()
 
   Level: developer
-
-  Fortran Notes:
-  A Fortran 90 version is available as DMPlexCreateSectionF90()
 
   TODO: How is this related to DMCreateLocalSection()
 
