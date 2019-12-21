@@ -939,7 +939,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   if (flg) {
     ierr = SNESSetLagPreconditioner(snes,lag);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsBool("-snes_lag_preconditioner_persists","Preconditioner lagging through multiple solves","SNESSetLagPreconditionerPersists",snes->lagjac_persist,&persist,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-snes_lag_preconditioner_persists","Preconditioner lagging through multiple SNES solves","SNESSetLagPreconditionerPersists",snes->lagjac_persist,&persist,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = SNESSetLagPreconditionerPersists(snes,persist);CHKERRQ(ierr);
   }
@@ -947,7 +947,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   if (flg) {
     ierr = SNESSetLagJacobian(snes,lag);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsBool("-snes_lag_jacobian_persists","Jacobian lagging through multiple solves","SNESSetLagJacobianPersists",snes->lagjac_persist,&persist,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-snes_lag_jacobian_persists","Jacobian lagging through multiple SNES solves","SNESSetLagJacobianPersists",snes->lagjac_persist,&persist,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = SNESSetLagJacobianPersists(snes,persist);CHKERRQ(ierr);
   }
