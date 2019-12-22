@@ -402,7 +402,7 @@ struct _p_Mat {
   PetscBool              assembly_subset;  /* set by MAT_SUBSET_OFF_PROC_ENTRIES */
   PetscBool              submat_singleis;  /* for efficient PCSetUp_ASM() */
   PetscBool              structure_only;
-  PetscBool              sortedfull;       /* full, sorted rows are inserted */ 
+  PetscBool              sortedfull;       /* full, sorted rows are inserted */
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
   PetscOffloadMask       offloadmask;      /* a mask which indicates where the valid matrix data is (GPU, CPU or both) */
   PetscBool              pinnedtocpu;
@@ -462,6 +462,7 @@ struct _p_MatPartitioning {
   PetscInt    n;                                 /* number of partitions */
   void        *data;
   PetscInt    setupcalled;
+  PetscBool   use_edge_weights;  /* A flag indicates whether or not to use edge weights */
 };
 
 /* needed for parallel nested dissection by ParMetis and PTSCOTCH */

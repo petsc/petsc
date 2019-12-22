@@ -1351,6 +1351,8 @@ PETSC_EXTERN PetscErrorCode MatPartitioningSetNParts(MatPartitioning,PetscInt);
 PETSC_EXTERN PetscErrorCode MatPartitioningSetAdjacency(MatPartitioning,Mat);
 PETSC_EXTERN PetscErrorCode MatPartitioningSetVertexWeights(MatPartitioning,const PetscInt[]);
 PETSC_EXTERN PetscErrorCode MatPartitioningSetPartitionWeights(MatPartitioning,const PetscReal []);
+PETSC_EXTERN PetscErrorCode MatPartitioningSetUseEdgeWeights(MatPartitioning,PetscBool);
+PETSC_EXTERN PetscErrorCode MatPartitioningGetUseEdgeWeights(MatPartitioning,PetscBool*);
 PETSC_EXTERN PetscErrorCode MatPartitioningApply(MatPartitioning,IS*);
 PETSC_EXTERN PetscErrorCode MatPartitioningImprove(MatPartitioning,IS*);
 PETSC_EXTERN PetscErrorCode MatPartitioningViewImbalance(MatPartitioning,IS);
