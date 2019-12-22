@@ -351,7 +351,7 @@ shared libraries and run with --known-mpi-shared-libraries=1')
             self.addDefine('HAVE_'+datatype, 1)
         elif not self.argDB['with-batch']:
           self.pushLanguage('C')
-          if self.checkRun(includes, body, defaultArg = 'known-mpi-'+name):
+          if self.checkRun(includes, body, defaultArg = 'known-mpi-'+name, executor = self.mpiexec):
             self.addDefine('HAVE_'+datatype, 1)
           self.popLanguage()
         else:
@@ -597,6 +597,7 @@ to remove this warning message *****')
 You may need to set the environmental variable HWLOC_COMPONENTS to -x86 to prevent such hangs. warning message *****')
     self.executeTest(self.configureMPI2)
     self.executeTest(self.configureMPI3) #depends on checkMPICHorOpenMPI for self.mpich_numversion
+    self.executeTest(self.configureMPIEXEC)
     self.executeTest(self.configureMPITypes)
     self.executeTest(self.SGIMPICheck)
     self.executeTest(self.CxxMPICheck)
@@ -604,7 +605,6 @@ You may need to set the environmental variable HWLOC_COMPONENTS to -x86 to preve
     self.executeTest(self.configureIO)
     self.executeTest(self.findMPIInc)
     self.executeTest(self.PetscArchMPICheck)
-    self.executeTest(self.configureMPIEXEC)
     funcs = '''MPI_Type_get_envelope  MPI_Type_dup MPI_Init_thread MPI_Iallreduce MPI_Ibarrier MPI_Finalized MPI_Exscan MPI_Reduce_scatter MPI_Reduce_scatter_block'''.split()
     found, missing = self.libraries.checkClassify(self.dlib, funcs)
     for f in found:
