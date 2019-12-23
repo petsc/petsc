@@ -59,7 +59,10 @@ int main(int argc, char **args)
       PetscScalar vals[3];
 
       cols[0] = r-1; cols[1] = r;   cols[2] = r+1;
-      vals[0] = use_edge_weights? 5.0:1.0; vals[1] = 1.0; vals[2] = use_edge_weights? 5.0:1.0;
+      /* ADJ matrix needs to be symmetric */
+      vals[0] = use_edge_weights? (cols[0]==0? 2.0:5.0):1.0;
+      vals[1] = 1.0;
+      vals[2] = use_edge_weights? (cols[2]==N-1? 3.0:5.0):1.0;
 
       ierr = MatSetValues(A, 1, &r, 3, cols, vals, INSERT_VALUES);CHKERRQ(ierr);
     }
@@ -125,7 +128,7 @@ int main(int argc, char **args)
       suffix: 6
       nsize: 3
       requires: parmetis
-      args: -mat_partitioning_type hierarch -mat_partitioning_hierarchical_nfineparts 3 -mat_partitioning_nparts 10 -N 100 -test_vertex_weights 1
+      args: -mat_partitioning_type hierarch -mat_partitioning_hierarchical_nfineparts 3 -mat_partitioning_nparts 10 -N 100 -test_vertex_weights 1 -mat_partitioning_use_edge_weights 1
 
    test:
       suffix: 7
@@ -138,5 +141,11 @@ int main(int argc, char **args)
       nsize: 2
       requires: parmetis
       args: -mat_partitioning_type parmetis -mat_partitioning_nparts 3 -test_use_edge_weights 1
+
+   test:
+      suffix: 9
+      nsize: 2
+      requires: ptscotch
+      args: -mat_partitioning_type ptscotch -mat_partitioning_nparts 3 -test_use_edge_weights 1
 
 TEST*/
