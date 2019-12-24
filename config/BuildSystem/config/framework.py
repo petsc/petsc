@@ -1165,6 +1165,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
           if dep.lookforbydefault: found = 1
           if 'download-'+dep.package in self.framework.clArgDB and self.argDB['download-'+dep.package]: found = 1
           if 'with-'+dep.package in self.framework.clArgDB and self.argDB['with-'+dep.package]: found = 1
+          if 'with-'+dep.package+'-lib' in self.framework.clArgDB and self.argDB['with-'+dep.package+'-lib']: found = 1
           if not found: msg += 'Package '+child.package+' requested but dependency '+dep.package+' not requested. Perhaps you want --download-'+dep.package+'\n'
         if msg: raise RuntimeError(msg)
         if child.cxx and ('with-cxx' in self.framework.clArgDB) and (self.argDB['with-cxx'] == '0'): raise RuntimeError('Package '+child.package+' requested requires C++ but compiler turned off.')
