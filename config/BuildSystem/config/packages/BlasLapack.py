@@ -221,13 +221,13 @@ class Configure(config.package.Package):
       if mkl:
         # Since user did not select MKL specifically first try compiler defaults and only if they fail use the MKL
         yield ('Default compiler libraries', '', '','unknown','unknown')
-        yield ('Default compiler locations', 'libblas.a', 'liblapack.a','unknown','unknown')
-        yield ('Default compiler locations /usr/local/lib', os.path.join('/usr','local','lib','libblas.a'), os.path.join('/usr','local','lib','liblapack.a'),'unknown','unknown')
+        yield ('BLIS default compiler locations', 'libblis.a', 'liblapack.a','unknown','unknown')
+        yield ('BLIS default compiler locations /usr/local/lib', os.path.join('/usr','local','lib','libblis.a'), os.path.join('/usr','local','lib','liblapack.a'),'unknown','unknown')
         yield ('OpenBLAS default compiler locations', None, 'libopenblas.a','unknown','unknown')
         yield ('OpenBLAS default compiler locations /usr/local/lib', None, os.path.join('/usr','local','lib','libopenblas.a'),'unknown','unknown')
+        yield ('Default compiler locations', 'libblas.a', 'liblapack.a','unknown','unknown')
+        yield ('Default compiler locations /usr/local/lib', os.path.join('/usr','local','lib','libblas.a'), os.path.join('/usr','local','lib','liblapack.a'),'unknown','unknown')
         yield ('Default compiler locations with gfortran', None, ['liblapack.a', 'libblas.a','libgfortran.a'],'unknown','unknown')
-        yield ('Default compiler locations', 'libblis.a', 'liblapack.a','unknown','unknown')
-        yield ('Default compiler locations /usr/local/lib', os.path.join('/usr','local','lib','libblis.a'), os.path.join('/usr','local','lib','liblapack.a'),'unknown','unknown')
         self.logWrite('Did not detect default BLAS and LAPACK locations so using the value of MKLROOT to search as --with-blas-lapack-dir='+mkl)
         self.argDB['with-blaslapack-dir'] = mkl
 
@@ -366,6 +366,8 @@ class Configure(config.package.Package):
       yield ('User specified AMD ACML lib dir', None, [os.path.join(dir,'lib','libacml.a'), os.path.join(dir,'lib','libacml_mv.a')],'32','unknown')
       yield ('User specified AMD ACML lib dir', None, os.path.join(dir,'lib','libacml_mp.a'),'32','unknown')
       yield ('User specified AMD ACML lib dir', None, [os.path.join(dir,'lib','libacml_mp.a'), os.path.join(dir,'lib','libacml_mv.a')],'32','unknown')
+      # BLIS
+      yield ('User specified installation root', os.path.join(dir, 'libblis.a'), os.path.join(dir, 'liblapack.a'), 'unknown', 'unknown')
       # Search for OpenBLAS
       yield ('User specified OpenBLAS', None, os.path.join(dir, 'libopenblas.a'),'unknown','unknown')
       # Search for atlas
@@ -378,7 +380,6 @@ class Configure(config.package.Package):
       # Search for liblapack.a and libblas.a after the implementations with more specific name to avoid
       # finding these in /usr/lib despite using -L<blaslapack-dir> while attempting to get a different library.
       yield ('User specified installation root', os.path.join(dir, 'libblas.a'),    os.path.join(dir, 'liblapack.a'),'unknown','unknown')
-      yield ('User specified installation root', os.path.join(dir, 'libblis.a'),    os.path.join(dir, 'liblapack.a'),'unknown','unknown')
       raise RuntimeError('You set a value for --with-blaslapack-dir=<dir>, but '+self.argDB['with-blaslapack-dir']+' cannot be used\n')
     if self.defaultPrecision == '__float128':
       raise RuntimeError('__float128 precision requires f2c libraries; suggest --download-f2cblaslapack\n')
@@ -386,6 +387,7 @@ class Configure(config.package.Package):
 
     # Try compiler defaults
     yield ('Default compiler libraries', '', '','unknown','unknown')
+    yield ('Default BLIS', 'libblis.a', 'liblapack.a','unknown','unknown')
     yield ('Default compiler locations', 'libblas.a', 'liblapack.a','unknown','unknown')
     yield ('Default OpenBLAS', None, 'libopenblas.a','unknown','unknown')
     # Intel on Mac
