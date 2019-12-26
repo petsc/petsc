@@ -220,12 +220,12 @@ class Configure(config.package.Package):
       mkl = os.getenv('MKLROOT')
       if mkl:
         # Since user did not select MKL specifically first try compiler defaults and only if they fail use the MKL
-        yield ('Default compiler libraries', '', '','unknown','unknow')
-        yield ('Default compiler locations', 'libblas.a', 'liblapack.a','unknown','unknow')
-        yield ('Default compiler locations /usr/local/lib', os.path.join('/usr','local','lib','libblas.a'), os.path.join('/usr','local','lib','liblapack.a'),'unknown','unknow')
-        yield ('OpenBLAS default compiler locations', None, 'libopenblas.a','unknown','unknow')
-        yield ('OpenBLAS default compiler locations /usr/local/lib', None, os.path.join('/usr','local','lib','libopenblas.a'),'unknown','unknow')
-        yield ('Default compiler locations with gfortran', None, ['liblapack.a', 'libblas.a','libgfortran.a'],'unknown','unknow')
+        yield ('Default compiler libraries', '', '','unknown','unknown')
+        yield ('Default compiler locations', 'libblas.a', 'liblapack.a','unknown','unknown')
+        yield ('Default compiler locations /usr/local/lib', os.path.join('/usr','local','lib','libblas.a'), os.path.join('/usr','local','lib','liblapack.a'),'unknown','unknown')
+        yield ('OpenBLAS default compiler locations', None, 'libopenblas.a','unknown','unknown')
+        yield ('OpenBLAS default compiler locations /usr/local/lib', None, os.path.join('/usr','local','lib','libopenblas.a'),'unknown','unknown')
+        yield ('Default compiler locations with gfortran', None, ['liblapack.a', 'libblas.a','libgfortran.a'],'unknown','unknown')
         yield ('Default compiler locations', 'libblis.a', 'liblapack.a','unknown','unknown')
         yield ('Default compiler locations /usr/local/lib', os.path.join('/usr','local','lib','libblis.a'), os.path.join('/usr','local','lib','liblapack.a'),'unknown','unknown')
         self.logWrite('Did not detect default BLAS and LAPACK locations so using the value of MKLROOT to search as --with-blas-lapack-dir='+mkl)
@@ -377,7 +377,7 @@ class Configure(config.package.Package):
       yield ('User specified installation root(FBLASLAPACK)', os.path.join(dir, 'libfblas.a'),   os.path.join(dir, 'libflapack.a'),'32','no')
       # Search for liblapack.a and libblas.a after the implementations with more specific name to avoid
       # finding these in /usr/lib despite using -L<blaslapack-dir> while attempting to get a different library.
-      yield ('User specified installation root', os.path.join(dir, 'libblas.a'),    os.path.join(dir, 'liblapack.a'),'unknown','unknow')
+      yield ('User specified installation root', os.path.join(dir, 'libblas.a'),    os.path.join(dir, 'liblapack.a'),'unknown','unknown')
       yield ('User specified installation root', os.path.join(dir, 'libblis.a'),    os.path.join(dir, 'liblapack.a'),'unknown','unknown')
       raise RuntimeError('You set a value for --with-blaslapack-dir=<dir>, but '+self.argDB['with-blaslapack-dir']+' cannot be used\n')
     if self.defaultPrecision == '__float128':
