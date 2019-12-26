@@ -21,6 +21,7 @@ class Configure(config.package.Package):
     config.package.Package.setupDependencies(self, framework)
     self.f2cblaslapack = framework.require('config.packages.f2cblaslapack', self)
     self.fblaslapack   = framework.require('config.packages.fblaslapack', self)
+    self.blis          = framework.require('config.packages.blis', self)
     self.openblas      = framework.require('config.packages.openblas', self)
     self.flibs         = framework.require('config.packages.flibs',self)
     self.mathlib       = framework.require('config.packages.mathlib',self)
@@ -169,6 +170,10 @@ class Configure(config.package.Package):
       libDir = os.path.join(self.fblaslapack.directory,'lib')
       yield ('fblaslapack', os.path.join(libDir,'libfblas.a'), os.path.join(libDir,'libflapack.a'), '32','no')
       raise RuntimeError('--download-fblaslapack libraries cannot be used')
+    if self.blis.found:
+      self.f2c = 0
+      # TODO: Where shall we find liblapack.a?
+      yield ('BLIS with full path', os.path.join(self.blis.libDir,'libblis.a'), 'liblapack.a', self.blis.known64, self.blis.usesopenmp)
     if self.openblas.found:
       self.f2c = 0
       if self.openblas.libDir:
