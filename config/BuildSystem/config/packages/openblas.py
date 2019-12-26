@@ -76,9 +76,9 @@ class Configure(config.package.Package):
     cmdline += 'FC='+self.compilers.FC+' '
     if self.argDB['download-openblas-64-bit-blas-indices'] or self.argDB['with-64-bit-blas-indices']:
       cmdline += " INTERFACE64=1 "
-      self.known64 = 'yes'
+      self.known64 = '64'
     else:
-      self.known64 = 'no'
+      self.known64 = '32'
     if 'download-openblas-make-options' in self.argDB and self.argDB['download-openblas-make-options']:
       cmdline+=" "+self.argDB['download-openblas-make-options']
     if not self.argDB['with-shared-libraries']:
