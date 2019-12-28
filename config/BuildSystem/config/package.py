@@ -56,6 +56,8 @@ class Package(config.base.Configure):
     self.liblist                = [[]] # list of libraries we wish to check for (packages can override with their own generateLibList() method)
     self.extraLib               = []   # additional libraries needed to link
     self.includes               = []   # headers to check for
+    self.optionalincludes       = []   # headers to check for, do not error if not found
+    self.foundoptionalincludes  = 0
     self.functions              = []   # functions we wish to check for in the libraries
     self.functionsDefine        = []   # optional functions we wish to check for in the libraries that should generate a PETSC_HAVE_ define
     self.functionsFortran       = 0    # 1 means the symbols in self.functions are Fortran symbols, so name-mangling is done
@@ -889,9 +891,14 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
       self.libraries.saveLog()
       if self.executeTest(self.libraries.check,[lib, self.functions],{'otherLibs' : self.dlib, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2], 'cxxLink': self.cxx}):
         self.lib = lib
-        self.executeTest(self.libraries.check,[lib, self.functionsDefine],{'otherLibs' : self.dlib, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2], 'cxxLink': self.cxx, 'functionDefine': 1})
+        if self.functionsDefine:
+          self.executeTest(self.libraries.check,[lib, self.functionsDefine],{'otherLibs' : self.dlib, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2], 'cxxLink': self.cxx, 'functionDefine': 1})
         self.logWrite(self.libraries.restoreLog())
-        self.logPrint('Checking for headers '+location+': '+str(incl))
+        self.logPrint('Checking for optionsl headers '+str(self.optionalincludes)+' in '+location+': '+str(incl))
+        if self.checkInclude(incl, self.optionalincludes, self.dinclude, timeout = 40.0):
+          self.include += self.optionalincludes
+          self.foundoptionalincludes = 1
+        self.logPrint('Checking for headers '+str(self.includes)+' in '+location+': '+str(incl))
         if (not self.includes) or self.checkInclude(incl, self.includes, self.dinclude, timeout = 40.0):
           if self.includes:
             self.include = testedincl
@@ -993,7 +1000,10 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
 
     if not self.version and not self.minversion and not self.maxversion and not self.versionname: return
     if not self.versioninclude:
-      if not self.includes: return
+      if not self.includes:
+        self.log.write('For '+self.package+' unable to find version information since includes and version includes are missing skipping version check\n')
+        self.version = ''
+        return
       self.versioninclude = self.includes[0]
     if self.cxx:
       self.pushLanguage('C++')
@@ -1002,12 +1012,16 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
     flagsArg = self.getPreprocessorFlagsArg()
     oldFlags = getattr(self.compilers, flagsArg)
     setattr(self.compilers, flagsArg, oldFlags+' '+self.headers.toString(self.include))
+    self.compilers.saveLog()
     try:
       output = self.outputPreprocess('#include "'+self.versioninclude+'"\n;petscpkgver('+self.versionname+');\n')
+      self.logWrite(self.compilers.restoreLog())
     except:
       self.log.write('For '+self.package+' unable to run preprocessor to obtain version information, skipping version check\n')
+      self.logWrite(self.compilers.restoreLog())
       self.popLanguage()
       setattr(self.compilers, flagsArg,oldFlags)
+      self.version = ''
       return
     self.popLanguage()
     setattr(self.compilers, flagsArg,oldFlags)

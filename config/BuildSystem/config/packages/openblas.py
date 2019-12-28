@@ -15,7 +15,7 @@ class Configure(config.package.Package):
     self.gitcommit              = 'e7c4d6705a41910240dd19b9e7082a422563bf15'
     self.versionname            = 'OPENBLAS_VERSION'
     self.download               = ['git://https://github.com/xianyi/OpenBLAS.git','https://github.com/xianyi/OpenBLAS/archive/'+self.gitcommit+'.tar.gz']
-    self.includes               = ['openblas_config.h']
+    self.optionalincludes       = ['openblas_config.h']
     self.functions              = ['openblas_get_config']
     self.liblist                = [['libopenblas.a']]
     self.precisions             = ['single','double']
@@ -41,10 +41,15 @@ class Configure(config.package.Package):
     self.make            = framework.require('config.packages.make',self)
     self.openmp          = framework.require('config.packages.openmp',self)
 
+  def getSearchDirectories(self):
+    import os
+    return [os.path.join('/usr','local')]
+
   def configureLibrary(self):
     import os
     config.package.Package.configureLibrary(self)
-    self.checkVersion()
+    if self.foundoptionalincludes:
+      self.checkVersion()
     if self.found:
       # TODO: Use openblas_get_config() or openblas_config.h to determine use of OpenMP and 64 bit indices for prebuilt OpenBLAS libraries
       if not hasattr(self,'usesopenmp'): self.usesopenmp = 'unknown'
