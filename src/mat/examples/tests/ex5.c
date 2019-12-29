@@ -200,7 +200,7 @@ int main(int argc,char **args)
       suffix: 2_aijcusparse_2
       filter: grep -v type
       args: -mat_type mpiaijcusparse -vec_type cuda
-      args: -sf_type {{basic neighbor}} -vecscatter_packongpu {{0 1}} -sf_use_pinned_buffer {{0 1}}
+      args: -sf_type {{basic neighbor}} -vecscatter_packongpu {{0 1}}
       output_file: output/ex5_23.out
       requires: cuda
 
