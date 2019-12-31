@@ -40,6 +40,7 @@ class Configure(config.package.Package):
     config.package.Package.setupDependencies(self, framework)
     self.make            = framework.require('config.packages.make',self)
     self.openmp          = framework.require('config.packages.openmp',self)
+    self.pthread         = framework.require('config.packages.pthread',self)
 
   def configureLibrary(self):
     import os
@@ -86,12 +87,14 @@ class Configure(config.package.Package):
       cmdline += " USE_OPENMP=0 "
       self.usesopenmp = 'no'
       if 'download-openblas-use-pthreads' in self.argDB and self.argDB['download-openblas-use-pthreads']:
+        if not self.pthread.found: raise RuntimeError("--download-openblas-use-pthreads option selected but pthreads is not available")
         self.usespthreads = 1
         cmdline += " USE_THREAD=1 "
         # use the environmental variable OPENBLAS_NUM_THREADS to control the number of threads used
       else:
         cmdline += " USE_THREAD=0 "
     cmdline += " NO_EXPRECISION=1 "
+    cmdline += " libs netlib re_lapack shared "
 
     libdir = self.libDir
     blasDir = self.packageDir
