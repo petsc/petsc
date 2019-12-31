@@ -464,6 +464,7 @@ PetscErrorCode MatCreateColmap_MPIAIJ_Private(Mat mat)
             (void)PetscLogFlops(1.0);   \
            } \
           else                    ap1[_i] = value; \
+          inserted = PETSC_TRUE; \
           goto a_noinsert; \
         } \
       }  \
@@ -500,6 +501,7 @@ PetscErrorCode MatCreateColmap_MPIAIJ_Private(Mat mat)
           (void)PetscLogFlops(1.0);                       \
         }                                                 \
         else                    ap2[_i] = value;          \
+        inserted = PETSC_TRUE;                            \
         goto b_noinsert;                                  \
       }                                                   \
     }                                                     \
@@ -541,6 +543,9 @@ PetscErrorCode MatSetValuesRow_MPIAIJ(Mat A,PetscInt row,const PetscScalar v[])
 
   /* right of diagonal part */
   ierr = PetscArraycpy(b->a+b->i[row]+l,v+l+a->i[row+1]-a->i[row],b->i[row+1]-b->i[row]-l);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+  if (A->offloadmask != PETSC_OFFLOAD_UNALLOCATED && (l || (a->i[row+1]-a->i[row]) || (b->i[row+1]-b->i[row]-l))) A->offloadmask = PETSC_OFFLOAD_CPU;
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -554,15 +559,18 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
   PetscBool      roworiented = aij->roworiented;
 
   /* Some Variables required in the macro */
-  Mat        A                 = aij->A;
-  Mat_SeqAIJ *a                = (Mat_SeqAIJ*)A->data;
-  PetscInt   *aimax            = a->imax,*ai = a->i,*ailen = a->ilen,*aj = a->j;
-  MatScalar  *aa               = a->a;
-  PetscBool  ignorezeroentries = a->ignorezeroentries;
-  Mat        B                 = aij->B;
-  Mat_SeqAIJ *b                = (Mat_SeqAIJ*)B->data;
-  PetscInt   *bimax            = b->imax,*bi = b->i,*bilen = b->ilen,*bj = b->j,bm = aij->B->rmap->n,am = aij->A->rmap->n;
-  MatScalar  *ba               = b->a;
+  Mat        A                    = aij->A;
+  Mat_SeqAIJ *a                   = (Mat_SeqAIJ*)A->data;
+  PetscInt   *aimax               = a->imax,*ai = a->i,*ailen = a->ilen,*aj = a->j;
+  MatScalar  *aa                  = a->a;
+  PetscBool  ignorezeroentries    = a->ignorezeroentries;
+  Mat        B                    = aij->B;
+  Mat_SeqAIJ *b                   = (Mat_SeqAIJ*)B->data;
+  PetscInt   *bimax               = b->imax,*bi = b->i,*bilen = b->ilen,*bj = b->j,bm = aij->B->rmap->n,am = aij->A->rmap->n;
+  MatScalar  *ba                  = b->a;
+  /* This variable below is only for the PETSC_HAVE_VIENNACL or PETSC_HAVE_CUDA cases, but we define it in all cases because we
+   * cannot use "#if defined" inside a macro. */
+  PETSC_UNUSED PetscBool inserted = PETSC_FALSE;
 
   PetscInt  *rp1,*rp2,ii,nrow1,nrow2,_i,rmax1,rmax2,N,low1,high1,low2,high2,t,lastcol1,lastcol2;
   PetscInt  nonew;
@@ -598,6 +606,9 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
           col   = in[j] - cstart;
           nonew = a->nonew;
           MatSetValues_SeqAIJ_A_Private(row,col,value,addv,im[i],in[j]);
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+          if (A->offloadmask != PETSC_OFFLOAD_UNALLOCATED && inserted) A->offloadmask = PETSC_OFFLOAD_CPU;
+#endif
         } else if (in[j] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
         else if (in[j] >= mat->cmap->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",in[j],mat->cmap->N-1);
@@ -617,17 +628,18 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
               ierr = MatDisAssemble_MPIAIJ(mat);CHKERRQ(ierr);
               col  =  in[j];
               /* Reinitialize the variables required by MatSetValues_SeqAIJ_B_Private() */
-              B     = aij->B;
-              b     = (Mat_SeqAIJ*)B->data;
-              bimax = b->imax; bi = b->i; bilen = b->ilen; bj = b->j; ba = b->a;
-              rp2   = bj + bi[row];
-              ap2   = ba + bi[row];
-              rmax2 = bimax[row];
-              nrow2 = bilen[row];
-              low2  = 0;
-              high2 = nrow2;
-              bm    = aij->B->rmap->n;
-              ba    = b->a;
+              B        = aij->B;
+              b        = (Mat_SeqAIJ*)B->data;
+              bimax    = b->imax; bi = b->i; bilen = b->ilen; bj = b->j; ba = b->a;
+              rp2      = bj + bi[row];
+              ap2      = ba + bi[row];
+              rmax2    = bimax[row];
+              nrow2    = bilen[row];
+              low2     = 0;
+              high2    = nrow2;
+              bm       = aij->B->rmap->n;
+              ba       = b->a;
+              inserted = PETSC_FALSE;
             } else if (col < 0) {
               if (1 == ((Mat_SeqAIJ*)(aij->B->data))->nonew) {
                 ierr = PetscInfo3(mat,"Skipping of insertion of new nonzero location in off-diagonal portion of matrix %g(%D,%D)\n",(double)PetscRealPart(value),im[i],in[j]);CHKERRQ(ierr);
@@ -636,6 +648,9 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
           } else col = in[j];
           nonew = b->nonew;
           MatSetValues_SeqAIJ_B_Private(row,col,value,addv,im[i],in[j]);
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+          if (B->offloadmask != PETSC_OFFLOAD_UNALLOCATED && inserted) B->offloadmask = PETSC_OFFLOAD_CPU;
+#endif
         }
       }
     } else {
@@ -6194,15 +6209,18 @@ PETSC_EXTERN void PETSC_STDCALL matsetvaluesmpiaij_(Mat *mmat,PetscInt *mm,const
     PetscBool roworiented = aij->roworiented;
 
     /* Some Variables required in the macro */
-    Mat        A                 = aij->A;
-    Mat_SeqAIJ *a                = (Mat_SeqAIJ*)A->data;
-    PetscInt   *aimax            = a->imax,*ai = a->i,*ailen = a->ilen,*aj = a->j;
-    MatScalar  *aa               = a->a;
-    PetscBool  ignorezeroentries = (((a->ignorezeroentries)&&(addv==ADD_VALUES)) ? PETSC_TRUE : PETSC_FALSE);
-    Mat        B                 = aij->B;
-    Mat_SeqAIJ *b                = (Mat_SeqAIJ*)B->data;
-    PetscInt   *bimax            = b->imax,*bi = b->i,*bilen = b->ilen,*bj = b->j,bm = aij->B->rmap->n,am = aij->A->rmap->n;
-    MatScalar  *ba               = b->a;
+    Mat        A                    = aij->A;
+    Mat_SeqAIJ *a                   = (Mat_SeqAIJ*)A->data;
+    PetscInt   *aimax               = a->imax,*ai = a->i,*ailen = a->ilen,*aj = a->j;
+    MatScalar  *aa                  = a->a;
+    PetscBool  ignorezeroentries    = (((a->ignorezeroentries)&&(addv==ADD_VALUES)) ? PETSC_TRUE : PETSC_FALSE);
+    Mat        B                    = aij->B;
+    Mat_SeqAIJ *b                   = (Mat_SeqAIJ*)B->data;
+    PetscInt   *bimax               = b->imax,*bi = b->i,*bilen = b->ilen,*bj = b->j,bm = aij->B->rmap->n,am = aij->A->rmap->n;
+    MatScalar  *ba                  = b->a;
+    /* This variable below is only for the PETSC_HAVE_VIENNACL or PETSC_HAVE_CUDA cases, but we define it in all cases because we
+     * cannot use "#if defined" inside a macro. */
+    PETSC_UNUSED PetscBool inserted = PETSC_FALSE;
 
     PetscInt  *rp1,*rp2,ii,nrow1,nrow2,_i,rmax1,rmax2,N,low1,high1,low2,high2,t,lastcol1,lastcol2;
     PetscInt  nonew = a->nonew;
@@ -6238,6 +6256,9 @@ PETSC_EXTERN void PETSC_STDCALL matsetvaluesmpiaij_(Mat *mmat,PetscInt *mm,const
           if (in[j] >= cstart && in[j] < cend) {
             col = in[j] - cstart;
             MatSetValues_SeqAIJ_A_Private(row,col,value,addv,im[i],in[j]);
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+            if (A->offloadmask != PETSC_OFFLOAD_UNALLOCATED && inserted) A->offloadmask = PETSC_OFFLOAD_CPU;
+#endif
           } else if (in[j] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
           /* extra brace on SETERRQ2() is required for --with-errorchecking=0 - due to the next 'else' clause */
@@ -6258,20 +6279,24 @@ PETSC_EXTERN void PETSC_STDCALL matsetvaluesmpiaij_(Mat *mmat,PetscInt *mm,const
                 ierr = MatDisAssemble_MPIAIJ(mat);CHKERRQ(ierr);
                 col  =  in[j];
                 /* Reinitialize the variables required by MatSetValues_SeqAIJ_B_Private() */
-                B     = aij->B;
-                b     = (Mat_SeqAIJ*)B->data;
-                bimax = b->imax; bi = b->i; bilen = b->ilen; bj = b->j;
-                rp2   = bj + bi[row];
-                ap2   = ba + bi[row];
-                rmax2 = bimax[row];
-                nrow2 = bilen[row];
-                low2  = 0;
-                high2 = nrow2;
-                bm    = aij->B->rmap->n;
-                ba    = b->a;
+                B        = aij->B;
+                b        = (Mat_SeqAIJ*)B->data;
+                bimax    = b->imax; bi = b->i; bilen = b->ilen; bj = b->j;
+                rp2      = bj + bi[row];
+                ap2      = ba + bi[row];
+                rmax2    = bimax[row];
+                nrow2    = bilen[row];
+                low2     = 0;
+                high2    = nrow2;
+                bm       = aij->B->rmap->n;
+                ba       = b->a;
+                inserted = PETSC_FALSE;
               }
             } else col = in[j];
             MatSetValues_SeqAIJ_B_Private(row,col,value,addv,im[i],in[j]);
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+            if (B->offloadmask != PETSC_OFFLOAD_UNALLOCATED && inserted) B->offloadmask = PETSC_OFFLOAD_CPU;
+#endif
           }
         }
       } else if (!aij->donotstash) {
