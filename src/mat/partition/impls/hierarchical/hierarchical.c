@@ -50,6 +50,7 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part,IS 
   const PetscInt                *svweights_indices;
   ISLocalToGlobalMapping        mapping;
   const char                    *prefix;
+  PetscBool                     use_edge_weights;
   PetscErrorCode                ierr;
 
   PetscFunctionBegin;
@@ -139,6 +140,9 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part,IS 
     ierr = PetscArraycpy(coarse_vertex_weights,part->vertex_weights,mat_localsize);CHKERRQ(ierr);
     ierr = MatPartitioningSetVertexWeights(hpart->coarseMatPart,coarse_vertex_weights);CHKERRQ(ierr);
   }
+  /* Copy use_edge_weights flag from part to coarse part */
+  ierr = MatPartitioningGetUseEdgeWeights(part,&use_edge_weights);CHKERRQ(ierr);
+  ierr = MatPartitioningSetUseEdgeWeights(hpart->coarseMatPart,use_edge_weights);CHKERRQ(ierr);
 
   ierr = MatPartitioningSetPartitionWeights(hpart->coarseMatPart, part_weights);CHKERRQ(ierr);
   ierr = MatPartitioningApply(hpart->coarseMatPart,&hpart->coarseparts);CHKERRQ(ierr);
@@ -199,6 +203,7 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part,IS 
       } else {
         ierr = MatPartitioningSetType(hpart->fineMatPart,hpart->fineparttype);CHKERRQ(ierr);
       }
+      ierr = MatPartitioningSetUseEdgeWeights(hpart->fineMatPart,use_edge_weights);CHKERRQ(ierr);
       ierr = MatPartitioningSetAdjacency(hpart->fineMatPart,sadj);CHKERRQ(ierr);
       ierr = MatPartitioningSetNParts(hpart->fineMatPart, offsets[rank+1+i]-offsets[rank+i]);CHKERRQ(ierr);
       if (part->vertex_weights) {
