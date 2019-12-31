@@ -87,9 +87,9 @@ static PetscErrorCode MatPartitioningApply_Parmetis_Private(MatPartitioning part
       ierr = ISDestroy(partitioning);CHKERRQ(ierr);
     }
 
-    if (adj->values && !part->vertex_weights) wgtflag = 1;
+    if (adj->values && part->use_edge_weights && !part->vertex_weights) wgtflag = 1;
     if (part->vertex_weights && !adj->values) wgtflag = 2;
-    if (part->vertex_weights && adj->values) wgtflag = 3;
+    if (part->vertex_weights && adj->values && part->use_edge_weights) wgtflag = 3;
 
     if (PetscLogPrintInfo) {itmp = pmetis->printout; pmetis->printout = 127;}
     ierr = PetscMalloc1(ncon*nparts,&tpwgts);CHKERRQ(ierr);
