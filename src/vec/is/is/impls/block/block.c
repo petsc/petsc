@@ -290,6 +290,7 @@ static PetscErrorCode ISSetBlockSize_Block(IS is,PetscInt bs)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (is->map->bs > 0 && bs != is->map->bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot change blocksize %D (to %D) if ISType is ISBLOCK",is->map->bs,bs);
   ierr = PetscLayoutSetBlockSize(is->map, bs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
