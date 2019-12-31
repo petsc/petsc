@@ -16,6 +16,7 @@ class Configure(config.package.Package):
     self.functions        = ['dmumps_c']
     self.includes         = ['dmumps_c.h']
     #
+    self.fc               = 1
     # Mumps does NOT work with 64 bit integers without a huge number of hacks we ain't making
     self.precisions       = ['single','double']
     self.requires32bitint = 1;  # 1 means that the package will not work with 64 bit integers
@@ -66,8 +67,6 @@ class Configure(config.package.Package):
       self.usesopenmp = 'yes'
       # use OMP_NUM_THREADS to control the number of threads used
 
-    if not hasattr(self.compilers, 'FC'):
-      raise RuntimeError('Cannot install '+self.name+' without Fortran, make sure you do NOT have --with-fc=0')
     if not self.fortran.FortranDefineCompilerOption:
       raise RuntimeError('Fortran compiler cannot handle preprocessing directives from command line.')
     g = open(os.path.join(self.packageDir,'Makefile.inc'),'w')
