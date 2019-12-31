@@ -2229,7 +2229,7 @@ PetscErrorCode DMPlexComputeInterpolatorNested(DM dmc, DM dmf, Mat In, void *use
 {
   DM_Plex          *mesh  = (DM_Plex *) dmc->data;
   const char       *name  = "Interpolator";
-  PetscDS           prob;
+  PetscDS           cds, rds;
   PetscFE          *feRef;
   PetscFV          *fvRef;
   PetscSection      fsection, fglobalSection;
@@ -2248,14 +2248,15 @@ PetscErrorCode DMPlexComputeInterpolatorNested(DM dmc, DM dmf, Mat In, void *use
   ierr = DMGetGlobalSection(dmc, &cglobalSection);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(fsection, &Nf);CHKERRQ(ierr);
   ierr = DMPlexGetInteriorCellStratum(dmc, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMGetDS(dmf, &prob);CHKERRQ(ierr);
-  ierr = PetscCalloc2(Nf,&feRef,Nf,&fvRef);CHKERRQ(ierr);
+  ierr = DMGetDS(dmc, &cds);CHKERRQ(ierr);
+  ierr = DMGetDS(dmf, &rds);CHKERRQ(ierr);
+  ierr = PetscCalloc2(Nf, &feRef, Nf, &fvRef);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) {
     PetscObject  obj;
     PetscClassId id;
     PetscInt     rNb = 0, Nc = 0;
 
-    ierr = PetscDSGetDiscretization(prob, f, &obj);CHKERRQ(ierr);
+    ierr = PetscDSGetDiscretization(rds, f, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
     if (id == PETSCFE_CLASSID) {
       PetscFE fe = (PetscFE) obj;
@@ -2274,7 +2275,7 @@ PetscErrorCode DMPlexComputeInterpolatorNested(DM dmc, DM dmf, Mat In, void *use
     }
     rTotDim += rNb;
   }
-  ierr = PetscDSGetTotalDimension(prob, &cTotDim);CHKERRQ(ierr);
+  ierr = PetscDSGetTotalDimension(cds, &cTotDim);CHKERRQ(ierr);
   ierr = PetscMalloc1(rTotDim*cTotDim,&elemMat);CHKERRQ(ierr);
   ierr = PetscArrayzero(elemMat, rTotDim*cTotDim);CHKERRQ(ierr);
   for (fieldI = 0, offsetI = 0; fieldI < Nf; ++fieldI) {
@@ -2311,7 +2312,7 @@ PetscErrorCode DMPlexComputeInterpolatorNested(DM dmc, DM dmf, Mat In, void *use
       PetscReal   *B;
       PetscInt     NcJ = 0, cpdim = 0, j, qNc;
 
-      ierr = PetscDSGetDiscretization(prob, fieldJ, &obj);CHKERRQ(ierr);
+      ierr = PetscDSGetDiscretization(cds, fieldJ, &obj);CHKERRQ(ierr);
       ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
       if (id == PETSCFE_CLASSID) {
         PetscFE fe = (PetscFE) obj;
