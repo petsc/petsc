@@ -5,8 +5,103 @@ typedef struct {
   PetscScalar diag;
 } Mat_ConstantDiagonal;
 
+static PetscErrorCode MatGetRow_ConstantDiagonal(Mat A, PetscInt row, PetscInt *ncols, PetscInt *cols[], PetscScalar *vals[])
+{
+  Mat_ConstantDiagonal *ctx = (Mat_ConstantDiagonal*)A->data;
+  PetscErrorCode       ierr;
 
-/* ----------------------------------------------------------------------------------------*/
+  PetscFunctionBegin;
+  if (ncols) *ncols = 1;
+  if (cols) {
+    ierr = PetscMalloc1(1,cols);CHKERRQ(ierr);
+    (*cols)[0] = row;
+  }
+  if (vals) {
+    ierr = PetscMalloc1(1,vals);CHKERRQ(ierr);
+    (*vals)[0] = ctx->diag;
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatRestoreRow_ConstantDiagonal(Mat A, PetscInt row, PetscInt *ncols, PetscInt *cols[], PetscScalar *vals[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (ncols) *ncols = 0;
+  if (cols) {
+    ierr = PetscFree(*cols);CHKERRQ(ierr);
+  }
+  if (vals) {
+    ierr = PetscFree(*vals);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatMultTranspose_ConstantDiagonal(Mat A, Vec x, Vec y)
+{
+  Mat_ConstantDiagonal *ctx = (Mat_ConstantDiagonal*)A->data;
+  PetscErrorCode       ierr;
+
+  PetscFunctionBegin;
+  ierr = VecAXPBY(y,ctx->diag,0.0,x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatMultAdd_ConstantDiagonal(Mat mat,Vec v1,Vec v2,Vec v3)
+{
+  PetscErrorCode       ierr;
+  Mat_ConstantDiagonal *ctx = (Mat_ConstantDiagonal*)mat->data;
+
+  PetscFunctionBegin;
+  if (v2 == v3) {
+    ierr = VecAXPBY(v3,ctx->diag,1.0,v1);CHKERRQ(ierr);
+  } else {
+    ierr = VecAXPBYPCZ(v3,ctx->diag,1.0,0.0,v1,v2);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatMultTransposeAdd_ConstantDiagonal(Mat mat,Vec v1,Vec v2,Vec v3)
+{
+  PetscErrorCode       ierr;
+  Mat_ConstantDiagonal *ctx = (Mat_ConstantDiagonal*)mat->data;
+
+  PetscFunctionBegin;
+  if (v2 == v3) {
+    ierr = VecAXPBY(v3,ctx->diag,1.0,v1);CHKERRQ(ierr);
+  } else {
+    ierr = VecAXPBYPCZ(v3,ctx->diag,1.0,0.0,v1,v2);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatDuplicate_ConstantDiagonal(Mat A, MatDuplicateOption op, Mat *B)
+{
+  PetscErrorCode       ierr;
+  Mat_ConstantDiagonal *actx = (Mat_ConstantDiagonal*)A->data;
+
+  PetscFunctionBegin;
+  ierr = MatCreate(PetscObjectComm((PetscObject)A),B);CHKERRQ(ierr);
+  ierr = MatSetSizes(*B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
+  ierr = MatSetBlockSizesFromMats(*B,A,A);CHKERRQ(ierr);
+  ierr = MatSetType(*B,MATCONSTANTDIAGONAL);CHKERRQ(ierr);
+  ierr = PetscLayoutReference(A->rmap,&(*B)->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutReference(A->cmap,&(*B)->cmap);CHKERRQ(ierr);
+  if (op == MAT_COPY_VALUES) {
+    Mat_ConstantDiagonal *bctx = (Mat_ConstantDiagonal*)(*B)->data;
+    bctx->diag = actx->diag;
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatMissingDiagonal_ConstantDiagonal(Mat mat,PetscBool *missing,PetscInt *dd)
+{
+  PetscFunctionBegin;
+  *missing = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode MatDestroy_ConstantDiagonal(Mat mat)
 {
   PetscErrorCode       ierr;
@@ -182,18 +277,27 @@ PETSC_EXTERN PetscErrorCode  MatCreate_ConstantDiagonal(Mat A)
   ctx->diag = 0.0;
   A->data   = (void*)ctx;
 
-  A->assembled        = PETSC_TRUE;
-  A->preallocated     = PETSC_TRUE;
-  A->ops->mult        = MatMult_ConstantDiagonal;
-  A->ops->sor         = MatSOR_ConstantDiagonal;
-  A->ops->shift       = MatShift_ConstantDiagonal;
-  A->ops->scale       = MatScale_ConstantDiagonal;
-  A->ops->getdiagonal = MatGetDiagonal_ConstantDiagonal;
-  A->ops->view        = MatView_ConstantDiagonal;
-  A->ops->zeroentries = MatZeroEntries_ConstantDiagonal;
-  A->ops->assemblyend = MatAssemblyEnd_ConstantDiagonal;
-  A->ops->destroy     = MatDestroy_ConstantDiagonal;
-  A->ops->getinfo     = MatGetInfo_ConstantDiagonal;
+  A->assembled    = PETSC_TRUE;
+  A->preallocated = PETSC_TRUE;
+
+  A->ops->mult             = MatMult_ConstantDiagonal;
+  A->ops->multadd          = MatMultAdd_ConstantDiagonal;
+  A->ops->multtranspose    = MatMultTranspose_ConstantDiagonal;
+  A->ops->multtransposeadd = MatMultTransposeAdd_ConstantDiagonal;
+  A->ops->duplicate        = MatDuplicate_ConstantDiagonal;
+  A->ops->missingdiagonal  = MatMissingDiagonal_ConstantDiagonal;
+  A->ops->getrow           = MatGetRow_ConstantDiagonal;
+  A->ops->restorerow       = MatRestoreRow_ConstantDiagonal;
+  A->ops->sor              = MatSOR_ConstantDiagonal;
+  A->ops->shift            = MatShift_ConstantDiagonal;
+  A->ops->scale            = MatScale_ConstantDiagonal;
+  A->ops->getdiagonal      = MatGetDiagonal_ConstantDiagonal;
+  A->ops->view             = MatView_ConstantDiagonal;
+  A->ops->zeroentries      = MatZeroEntries_ConstantDiagonal;
+  A->ops->assemblyend      = MatAssemblyEnd_ConstantDiagonal;
+  A->ops->destroy          = MatDestroy_ConstantDiagonal;
+  A->ops->getinfo          = MatGetInfo_ConstantDiagonal;
+
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATCONSTANTDIAGONAL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
