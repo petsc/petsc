@@ -9,11 +9,12 @@ PetscErrorCode test_solve(void)
   PC             pc;
   Vec            b,x, f,h, diag, x1,x2;
   Vec            tmp_x[2],*_tmp_x;
-  int            n, np, i,j;
+  PetscInt       n, np, i,j;
+  PetscBool      flg;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  PetscPrintf(PETSC_COMM_WORLD, "%s \n", PETSC_FUNCTION_NAME);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "%s \n", PETSC_FUNCTION_NAME);CHKERRQ(ierr);
 
   n  = 3;
   np = 2;
@@ -67,6 +68,12 @@ PetscErrorCode test_solve(void)
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
+  /* Tests MatMissingDiagonal_Nest */
+  ierr = MatMissingDiagonal(A,&flg,NULL);CHKERRQ(ierr);
+  if (!flg) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Unexpected %s\n",flg ? "true" : "false");CHKERRQ(ierr);
+  }
+
   /* Create vectors */
   ierr = MatCreateVecs(A12, &h, &f);CHKERRQ(ierr);
 
@@ -96,12 +103,12 @@ PetscErrorCode test_solve(void)
   x1 = _tmp_x[0];
   x2 = _tmp_x[1];
 
-  PetscPrintf(PETSC_COMM_WORLD, "x1 \n");
-  PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_ASCII_INFO_DETAIL);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "x1 \n");CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_ASCII_INFO_DETAIL);CHKERRQ(ierr);
   ierr = VecView(x1, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  PetscPrintf(PETSC_COMM_WORLD, "x2 \n");
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "x2 \n");CHKERRQ(ierr);
   ierr = VecView(x2, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
@@ -123,13 +130,13 @@ PetscErrorCode test_solve_matgetvecs(void)
   KSP            ksp;
   PC             pc;
   Vec            b,x, f,h, diag, x1,x2;
-  int            n, np, i,j;
+  PetscInt       n, np, i,j;
   Mat            tmp[2][2];
   Vec            *tmp_x;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  PetscPrintf(PETSC_COMM_WORLD, "%s \n", PETSC_FUNCTION_NAME);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "%s \n", PETSC_FUNCTION_NAME);CHKERRQ(ierr);
 
   n  = 3;
   np = 2;
