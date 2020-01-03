@@ -146,6 +146,6 @@ int main(int argc, char **args)
       suffix: 9
       nsize: 2
       requires: ptscotch
-      args: -mat_partitioning_type ptscotch -mat_partitioning_nparts 3 -test_use_edge_weights 1
+      args: -mat_partitioning_type ptscotch -mat_partitioning_nparts 3 -test_use_edge_weights 1 -mat_partitioning_ptscotch_proc_weight 0
 
 TEST*/
