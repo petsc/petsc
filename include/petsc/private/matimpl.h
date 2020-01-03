@@ -207,6 +207,7 @@ struct _MatOps {
   PetscErrorCode (*creatempimatconcatenateseqmat)(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
   PetscErrorCode (*destroysubmatrices)(PetscInt,Mat*[]);
   PetscErrorCode (*mattransposesolve)(Mat,Mat,Mat);
+  PetscErrorCode (*getvalueslocal)(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],PetscScalar[]);
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum
