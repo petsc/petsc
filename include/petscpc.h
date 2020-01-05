@@ -435,8 +435,11 @@ PETSC_EXTERN PetscErrorCode PCDeflationSetCoarseMat(PC,Mat);
 PETSC_EXTERN PetscErrorCode PCDeflationGetPC(PC,PC*);
 
 PETSC_EXTERN PetscErrorCode PCHPDDMSetAuxiliaryMat(PC,IS,Mat,PetscErrorCode (*)(Mat,PetscReal,Vec,Vec,PetscReal,IS,void*),void*);
+PETSC_EXTERN PetscErrorCode PCHPDDMSetRHSMat(PC,Mat);
 PETSC_EXTERN PetscErrorCode PCHPDDMHasNeumannMat(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCHPDDMSetCoarseCorrectionType(PC,PCHPDDMCoarseCorrectionType);
 PETSC_EXTERN PetscErrorCode PCHPDDMGetCoarseCorrectionType(PC,PCHPDDMCoarseCorrectionType*);
+PETSC_EXTERN PetscErrorCode PCHPDDMFinalizePackage(void);
+PETSC_EXTERN PetscErrorCode PCHPDDMInitializePackage(void);
 
 #endif /* PETSCPC_H */
