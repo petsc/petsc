@@ -26,7 +26,7 @@ PETSC_EXTERN PetscErrorCode MatSeqAIJRegisterAll(void);
 
 /*
     If you add entries here also add them to the MATOP enum
-    in include/petscmat.h and include/petsc/finclude/petscmat.h
+    in include/petscmat.h and src/mat/f90-mod/petscmat.h
 */
 typedef struct _MatOps *MatOps;
 struct _MatOps {
@@ -207,10 +207,11 @@ struct _MatOps {
   PetscErrorCode (*creatempimatconcatenateseqmat)(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
   PetscErrorCode (*destroysubmatrices)(PetscInt,Mat*[]);
   PetscErrorCode (*mattransposesolve)(Mat,Mat,Mat);
+  PetscErrorCode (*getvalueslocal)(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],PetscScalar[]);
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum
-    in include/petscmat.h and include/petsc/finclude/petscmat.h
+    in include/petscmat.h and src/mat/f90-mod/petscmat.h
 */
 
 #include <petscsys.h>

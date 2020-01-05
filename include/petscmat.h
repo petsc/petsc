@@ -640,6 +640,7 @@ PETSC_EXTERN PetscErrorCode MatZeroRowsLocal(Mat,PetscInt,const PetscInt [],Pets
 PETSC_EXTERN PetscErrorCode MatZeroRowsLocalIS(Mat,IS,PetscScalar,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatZeroRowsColumnsLocal(Mat,PetscInt,const PetscInt [],PetscScalar,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatZeroRowsColumnsLocalIS(Mat,IS,PetscScalar,Vec,Vec);
+PETSC_EXTERN PetscErrorCode MatGetValuesLocal(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],PetscScalar[]);
 PETSC_EXTERN PetscErrorCode MatSetValuesLocal(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
 PETSC_EXTERN PetscErrorCode MatSetValuesBlockedLocal(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
 
@@ -1444,7 +1445,8 @@ PETSC_EXTERN PetscErrorCode MatMeshToVertexGraph(Mat,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode MatMeshToCellGraph(Mat,PetscInt,Mat*);
 
 /*
-    If you add entries here you must also add them to petsc/finclude/petscmat.h
+    If you add entries here you must also add them to include/petscmat.h
+    and src/mat/f90-mod/petscmat.h
 */
 typedef enum { MATOP_SET_VALUES=0,
                MATOP_GET_ROW=1,
@@ -1590,7 +1592,9 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_RESIDUAL=141,
                MATOP_FDCOLORING_SETUP=142,
                MATOP_MPICONCATENATESEQ=144,
-               MATOP_DESTROYSUBMATRICES=145
+               MATOP_DESTROYSUBMATRICES=145,
+               MATOP_TRANSPOSE_SOLVE=146,
+               MATOP_GET_VALUES_LOCAL=147
              } MatOperation;
 PETSC_EXTERN PetscErrorCode MatSetOperation(Mat,MatOperation,void(*)(void));
 PETSC_EXTERN PetscErrorCode MatGetOperation(Mat,MatOperation,void(**)(void));

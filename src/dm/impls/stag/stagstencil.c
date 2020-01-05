@@ -161,6 +161,44 @@ static PetscErrorCode DMStagStencilToIndexLocal(DM dm,PetscInt n,const DMStagSte
 }
 
 /*@C
+  DMStagMatGetValuesStencil - retrieve local matrix entries using grid indexing
+
+  Not Collective
+
+  Input Parameters:
++ dm - the DMStag object
+. mat - the matrix
+. nRow - number of rows
+. posRow - grid locations (including components) of rows
+. nCol - number of columns
+- posCol - grid locations (including components) of columns
+
+  Output Parameter:
+. val - logically two-dimensional array of values
+
+  Level: advanced
+
+.seealso: DMSTAG, DMStagStencil, DMStagStencilLocation, DMStagVecGetValuesStencil(), DMStagVecSetValuesStencil(), DMStagMatSetValuesStencil(), MatSetValuesStencil(), MatAssemblyBegin(), MatAssemblyEnd(), DMCreateMatrix()
+@*/
+PetscErrorCode DMStagMatGetValuesStencil(DM dm,Mat mat,PetscInt nRow,const DMStagStencil *posRow,PetscInt nCol,const DMStagStencil *posCol,PetscScalar *val)
+{
+  PetscErrorCode ierr;
+  PetscInt       dim;
+  PetscInt       *ir,*ic;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,2);
+  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
+  ierr = PetscMalloc2(nRow,&ir,nCol,&ic);CHKERRQ(ierr);
+  ierr = DMStagStencilToIndexLocal(dm,nRow,posRow,ir);CHKERRQ(ierr);
+  ierr = DMStagStencilToIndexLocal(dm,nCol,posCol,ic);CHKERRQ(ierr);
+  ierr = MatGetValuesLocal(mat,nRow,ir,nCol,ic,val);CHKERRQ(ierr);
+  ierr = PetscFree2(ir,ic);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
   DMStagMatSetValuesStencil - insert or add matrix entries using grid indexing
 
   Not Collective
@@ -180,7 +218,7 @@ static PetscErrorCode DMStagStencilToIndexLocal(DM dm,PetscInt n,const DMStagSte
 
   Level: intermediate
 
-.seealso: DMSTAG, DMStagStencil, DMStagStencilLocation, DMStagVecGetValuesStencil(), DMStagVecSetValuesStencil(), MatSetValuesStencil(), MatAssemblyBegin(), MatAssemblyEnd(), DMCreateMatrix()
+.seealso: DMSTAG, DMStagStencil, DMStagStencilLocation, DMStagVecGetValuesStencil(), DMStagVecSetValuesStencil(), DMStagMatGetValuesStencil(), MatSetValuesStencil(), MatAssemblyBegin(), MatAssemblyEnd(), DMCreateMatrix()
 @*/
 PetscErrorCode DMStagMatSetValuesStencil(DM dm,Mat mat,PetscInt nRow,const DMStagStencil *posRow,PetscInt nCol,const DMStagStencil *posCol,const PetscScalar *val,InsertMode insertMode)
 {
