@@ -68,10 +68,10 @@ do
     f ) force=true           ;;
     h ) print_usage; exit    ;;  
     n ) nsize="$OPTARG"      ;;  
-    j ) diff_flags="-j"      ;;  
-    J ) diff_flags="-J $OPTARG" ;;  
-    m ) diff_flags="-m"      ;;  
-    M ) diff_flags="-M"      ;;  
+    j ) diff_flags=$diff_flags" -j"      ;;  
+    J ) diff_flags=$diff_flags" -J $OPTARG" ;;  
+    m ) diff_flags=$diff_flags" -m"      ;;  
+    M ) diff_flags=$diff_flags" -M"      ;;  
     o ) output_fmt=$OPTARG   ;;  
     t ) TIMEOUT=$OPTARG      ;;  
     V ) mpiexec="petsc_mpiexec_valgrind $mpiexec" ;;  
@@ -186,7 +186,10 @@ function petsc_testrun() {
       # mpi_abort go to stderr which throws this test off.  Show both
       # with stdout first
       awk '{print "#\t" $0}' < $2 | tee -a ${testlogerrfile}
-      awk '{print "#\t" $0}' < $3 | tee -a ${testlogerrfile}
+      # if statement is for diff tests
+      if test "$2" != "$3"; then
+        awk '{print "#\t" $0}' < $3 | tee -a ${testlogerrfile}
+      fi
     fi
     let failed=$failed+1
     failures="$failures $tlabel"
