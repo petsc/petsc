@@ -8215,14 +8215,14 @@ PetscErrorCode MatSetNearNullSpace(Mat mat,MatNullSpace nullsp)
 }
 
 /*@
-   MatGetNearNullSpace -Get null space attached with MatSetNearNullSpace()
+   MatGetNearNullSpace - Get null space attached with MatSetNearNullSpace()
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
-   Output Parameters:
+   Output Parameter:
 .  nullsp - the null space object, NULL if not set
 
    Level: developer
