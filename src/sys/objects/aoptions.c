@@ -1228,7 +1228,7 @@ PetscErrorCode  PetscOptionsFList_Private(PetscOptionItems *PetscOptionsObject,c
   ierr = PetscOptionsGetString(PetscOptionsObject->options,PetscOptionsObject->prefix,opt,value,len,&lset);CHKERRQ(ierr);
   if (set) *set = lset;
   if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) {
-    ierr = PetscFunctionListPrintTypes(PetscOptionsObject->comm,stdout,PetscOptionsObject->prefix,opt,ltext,man,list,currentvalue,lset && value ? value : currentvalue);CHKERRQ(ierr);CHKERRQ(ierr);
+    ierr = PetscFunctionListPrintTypes(PetscOptionsObject->comm,stdout,PetscOptionsObject->prefix,opt,ltext,man,list,currentvalue,lset && value ? value : currentvalue);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

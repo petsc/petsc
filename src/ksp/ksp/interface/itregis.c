@@ -55,8 +55,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_HPDDM(KSP);
   Not Collective
 
   Level: advanced
-
-.seealso:  KSPRegisterDestroy()
 @*/
 PetscErrorCode  KSPRegisterAll(void)
 {

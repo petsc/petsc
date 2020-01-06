@@ -43,7 +43,7 @@ int main(int argc,char **argv)
   /* test MemoryScalable ao */
   /*-------------------------*/
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\nTest AOCreateMemoryScalable: \n");CHKERRQ(ierr);
-  ierr = AOCreateMemoryScalableIS(isapp,ispetsc,&ao);CHKERRQ(ierr);CHKERRQ(ierr);
+  ierr = AOCreateMemoryScalableIS(isapp,ispetsc,&ao);CHKERRQ(ierr);
   ierr = AOView(ao,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = AOPetscToApplication(ao,4,getapp1);CHKERRQ(ierr);
@@ -62,7 +62,7 @@ int main(int argc,char **argv)
   /* test MemoryScalable ao: ispetsc = NULL */
   /*-----------------------------------------------*/
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\nTest AOCreateMemoryScalable with ispetsc=NULL:\n");CHKERRQ(ierr);
-  ierr = AOCreateMemoryScalableIS(isapp,NULL,&ao);CHKERRQ(ierr);CHKERRQ(ierr);
+  ierr = AOCreateMemoryScalableIS(isapp,NULL,&ao);CHKERRQ(ierr);
 
   ierr = AOView(ao,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 

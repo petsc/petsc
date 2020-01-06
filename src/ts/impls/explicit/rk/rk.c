@@ -640,7 +640,7 @@ static PetscErrorCode TSForwardStep_RK(TS ts)
         ierr = MatDenseGetColumn(MatsFwdSensipTemp[i],0,&xarr);CHKERRQ(ierr);
         ierr = VecPlaceArray(rk->VecDeltaFwdSensipCol,xarr);CHKERRQ(ierr);
         ierr = MatMultAdd(ts->Jacprhs,ts->vec_dir,rk->VecDeltaFwdSensipCol,rk->VecDeltaFwdSensipCol);CHKERRQ(ierr);
-        ierr = VecResetArray(rk->VecDeltaFwdSensipCol);CHKERRQ(ierr);CHKERRQ(ierr);
+        ierr = VecResetArray(rk->VecDeltaFwdSensipCol);CHKERRQ(ierr);
         ierr = MatDenseRestoreColumn(MatsFwdSensipTemp[i],&xarr);CHKERRQ(ierr);
       } else {
         ierr = MatAXPY(MatsFwdSensipTemp[i],1.,ts->Jacprhs,SUBSET_NONZERO_PATTERN);CHKERRQ(ierr);

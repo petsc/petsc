@@ -2685,7 +2685,7 @@ PetscErrorCode DMCreateSubDM_Plex(DM dm, PetscInt numFields, const PetscInt fiel
 
     (*subdm)->sfMigration = dm->sfMigration;
     ierr = PetscObjectReference((PetscObject) dm->sfMigration);CHKERRQ(ierr);
-    ierr = DMGetLocalSection((*subdm), &section);CHKERRQ(ierr);CHKERRQ(ierr);
+    ierr = DMGetLocalSection((*subdm), &section);CHKERRQ(ierr);
     ierr = PetscSFCreateInverseSF((*subdm)->sfMigration, &sfMigrationInv);CHKERRQ(ierr);
     ierr = PetscSectionCreate(PetscObjectComm((PetscObject) (*subdm)), &sectionSeq);CHKERRQ(ierr);
     ierr = PetscSFDistributeSection(sfMigrationInv, section, NULL, sectionSeq);CHKERRQ(ierr);

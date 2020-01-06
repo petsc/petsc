@@ -864,14 +864,7 @@ static PetscErrorCode PCHPDDMGetCoarseCorrectionType_HPDDM(PC pc, PCHPDDMCoarseC
 /*MC
      PCHPDDM - Interface with the HPDDM library.
 
-   This PC may be used to build multilevel spectral domain decomposition methods based on the GenEO framework [2011, 2019]. It may be viewed as an alternative to spectral AMGe or PCBDDC with adaptive selection of constraints. Here is a chronological bibliography of relevant publications linked with PC available in HPDDM through PCHPDDM.
-
-.vb
-   [2011] A robust two-level domain decomposition preconditioner for systems of PDEs. Spillane, Dolean, Hauret, Nataf, Pechstein, and Scheichl. Comptes Rendus Mathematique.
-   [2013] Scalable Domain Decomposition Preconditioners For Heterogeneous Elliptic Problems. Jolivet, Hecht, Nataf, and Prud'homme. SC13.
-   [2015] An Introduction to Domain Decomposition Methods: Algorithms, Theory, and Parallel Implementation. Dolean, Jolivet, and Nataf. SIAM.
-   [2019] A Multilevel Schwarz Preconditioner Based on a Hierarchy of Robust Coarse Spaces. Al Daas, Grigori, Jolivet, and Tournier.
-.ve
+   This PC may be used to build multilevel spectral domain decomposition methods based on the GenEO framework [2011, 2019]. It may be viewed as an alternative to spectral AMGe or PCBDDC with adaptive selection of constraints. A chronological bibliography of relevant publications linked with PC available in HPDDM through PCHPDDM may be found below.
 
    The matrix to be preconditioned (Pmat) may be unassembled (MATIS) or assembled (MATMPIAIJ, MATMPIBAIJ, or MATMPISBAIJ). For multilevel preconditioning, when using an assembled Pmat, one must provide an auxiliary local Mat (unassembled local operator for GenEO) using PCHPDDMSetAuxiliaryMat. Calling this routine is not needed when using a MATIS Pmat (assembly done internally using MatConvert).
 
@@ -896,6 +889,12 @@ static PetscErrorCode PCHPDDMGetCoarseCorrectionType_HPDDM(PC pc, PCHPDDMCoarseC
    In order to activate a "level N+1" coarse correction, it is mandatory to call -pc_hpddm_levels_N_eps_nev <nu> or -pc_hpddm_levels_N_eps_threshold <val>. The default -pc_hpddm_coarse_p value is 1, meaning that the coarse operator is aggregated on a single process.
 
    This preconditioner requires that you build PETSc with SLEPc (--download-slepc=1). By default, the underlying concurrent eigenproblems are solved using SLEPc shift-and-invert spectral transformation. This is usually what gives the best performance for GenEO, cf. [2011, 2013]. As stated above, SLEPc options are available through -pc_hpddm_levels_%d_, e.g., -pc_hpddm_levels_1_eps_type arpack -pc_hpddm_levels_1_eps_threshold 0.1 -pc_hpddm_levels_1_st_type sinvert.
+
+   References:
++   2011 - A robust two-level domain decomposition preconditioner for systems of PDEs. Spillane, Dolean, Hauret, Nataf, Pechstein, and Scheichl. Comptes Rendus Mathematique.
+.   2013 - Scalable Domain Decomposition Preconditioners For Heterogeneous Elliptic Problems. Jolivet, Hecht, Nataf, and Prud'homme. SC13.
+.   2015 - An Introduction to Domain Decomposition Methods: Algorithms, Theory, and Parallel Implementation. Dolean, Jolivet, and Nataf. SIAM.
+-   2019 - A Multilevel Schwarz Preconditioner Based on a Hierarchy of Robust Coarse Spaces. Al Daas, Grigori, Jolivet, and Tournier.
 
    Level: intermediate
 

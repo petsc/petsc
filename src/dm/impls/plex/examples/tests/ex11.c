@@ -150,7 +150,7 @@ static PetscErrorCode TestEmptyStrata(MPI_Comm comm)
   ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
   ierr = DMPlexDistribute(dm, 1, NULL, &dmDist);CHKERRQ(ierr);
   if (dmDist) {
-    ierr = DMDestroy(&dm);CHKERRQ(ierr);CHKERRQ(ierr);
+    ierr = DMDestroy(&dm);CHKERRQ(ierr);
     dm   = dmDist;
   }
   {

@@ -287,7 +287,7 @@ PetscErrorCode  SNESMonitorDefault(SNES snes,PetscInt its,PetscReal fgnorm,Petsc
   ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES Function norm %14.12e \n",its,(double)fgnorm);CHKERRQ(ierr);
   ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
-  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr) ;
+  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -328,7 +328,7 @@ PetscErrorCode  SNESMonitorScaling(SNES snes,PetscInt its,PetscReal fgnorm,Petsc
   ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES Jacobian maximum row entries \n");CHKERRQ(ierr);
   ierr = VecView(v,viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
-  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr) ;
+  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   ierr = VecDestroy(&v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

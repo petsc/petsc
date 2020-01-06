@@ -846,8 +846,7 @@ $     -ksp_type my_solver
 
    Level: advanced
 
-.seealso: KSPRegisterAll(), KSPRegisterDestroy()
-
+.seealso: KSPRegisterAll()
 @*/
 PetscErrorCode  KSPRegister(const char sname[],PetscErrorCode (*function)(KSP))
 {
