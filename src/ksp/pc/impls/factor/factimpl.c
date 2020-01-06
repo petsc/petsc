@@ -334,7 +334,7 @@ PetscErrorCode PCView_Factor(PC pc,PetscViewer viewer)
     MatFactorType t;
     ierr = MatGetFactorType(factor->fact,&t);CHKERRQ(ierr);
     if (t == MAT_FACTOR_ILU || t == MAT_FACTOR_ICC) {
-      ierr = PetscViewerStringSPrintf(viewer," lvls=%D,order=%s",(PetscInt)factor->info.levels,factor->ordering);CHKERRQ(ierr);CHKERRQ(ierr);
+      ierr = PetscViewerStringSPrintf(viewer," lvls=%D,order=%s",(PetscInt)factor->info.levels,factor->ordering);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

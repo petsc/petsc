@@ -237,16 +237,16 @@ static PetscErrorCode MatView_Info_CHOLMOD(Mat F,PetscViewer viewer)
   ierr = PetscViewerASCIIPrintf(viewer,"Common.lnz               %g (fundamental nz in L)\n",c->lnz);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"Common.anz               %g\n",c->anz);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"Common.modfl             %g (flop count from most recent update)\n",c->modfl);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"Common.malloc_count      %g (number of live objects)\n",(double)c->malloc_count);CHKERRQ(ierr);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"Common.memory_usage      %g (peak memory usage in bytes)\n",(double)c->memory_usage);CHKERRQ(ierr);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"Common.memory_inuse      %g (current memory usage in bytes)\n",(double)c->memory_inuse);CHKERRQ(ierr);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"Common.nrealloc_col      %g (number of column reallocations)\n",c->nrealloc_col);CHKERRQ(ierr);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"Common.nrealloc_factor   %g (number of factor reallocations due to column reallocations)\n",c->nrealloc_factor);CHKERRQ(ierr);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"Common.ndbounds_hit      %g (number of times diagonal was modified by dbound)\n",c->ndbounds_hit);CHKERRQ(ierr);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"Common.rowfacfl          %g (number of flops in last call to cholmod_rowfac)\n",c->rowfacfl);CHKERRQ(ierr);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"Common.aatfl             %g (number of flops to compute A(:,f)*A(:,f)')\n",c->aatfl);CHKERRQ(ierr);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"Common.malloc_count      %g (number of live objects)\n",(double)c->malloc_count);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"Common.memory_usage      %g (peak memory usage in bytes)\n",(double)c->memory_usage);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"Common.memory_inuse      %g (current memory usage in bytes)\n",(double)c->memory_inuse);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"Common.nrealloc_col      %g (number of column reallocations)\n",c->nrealloc_col);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"Common.nrealloc_factor   %g (number of factor reallocations due to column reallocations)\n",c->nrealloc_factor);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"Common.ndbounds_hit      %g (number of times diagonal was modified by dbound)\n",c->ndbounds_hit);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"Common.rowfacfl          %g (number of flops in last call to cholmod_rowfac)\n",c->rowfacfl);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"Common.aatfl             %g (number of flops to compute A(:,f)*A(:,f)')\n",c->aatfl);CHKERRQ(ierr);
 #if defined(PETSC_USE_SUITESPARSE_GPU)
-  ierr = PetscViewerASCIIPrintf(viewer,"Common.useGPU            %d\n",c->useGPU);CHKERRQ(ierr);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"Common.useGPU            %d\n",c->useGPU);CHKERRQ(ierr);
 #endif
   ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -1115,7 +1115,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   /* First compute Av_u = Av*exp(-u) */
   ierr = VecSet(user->uwork,0);CHKERRQ(ierr);
   ierr = VecAXPY(user->uwork,-1.0,user->u);CHKERRQ(ierr); /*  Note: user->u */
-  ierr = VecExp(user->uwork);CHKERRQ(ierr);CHKERRQ(ierr);
+  ierr = VecExp(user->uwork);CHKERRQ(ierr);
   ierr = MatMult(user->Av,user->uwork,user->Av_u);CHKERRQ(ierr);
 
   /* Next form DSG = Div*S*Grad */
