@@ -894,7 +894,7 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
         if self.functionsDefine:
           self.executeTest(self.libraries.check,[lib, self.functionsDefine],{'otherLibs' : self.dlib, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2], 'cxxLink': self.cxx, 'functionDefine': 1})
         self.logWrite(self.libraries.restoreLog())
-        self.logPrint('Checking for optionsl headers '+str(self.optionalincludes)+' in '+location+': '+str(incl))
+        self.logPrint('Checking for optional headers '+str(self.optionalincludes)+' in '+location+': '+str(incl))
         if self.checkInclude(incl, self.optionalincludes, self.dinclude, timeout = 40.0):
           self.include += self.optionalincludes
           self.foundoptionalincludes = 1
