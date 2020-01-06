@@ -290,7 +290,7 @@ int main(int argc,char **args)
   ierr = MatDuplicate(sA,MAT_COPY_VALUES,&sB);CHKERRQ(ierr);
   ierr = MatEqual(sA,sB,&flg);CHKERRQ(ierr);
   if (!flg) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD," Error in MatDuplicate(), sA != sB \n");CHKERRQ(ierr);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD," Error in MatDuplicate(), sA != sB \n");CHKERRQ(ierr);
   }
   ierr = MatMultEqual(sA,sB,5,&flg);CHKERRQ(ierr);
   if (!flg) {

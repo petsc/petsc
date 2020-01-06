@@ -26,7 +26,7 @@ int main(int argc,char **args)
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
     ierr = MatLoad(A,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-    ierr = MatCreateVecs(A,&x,&b);CHKERRQ(ierr);CHKERRQ(ierr);
+    ierr = MatCreateVecs(A,&x,&b);CHKERRQ(ierr);
     ierr = PetscSNPrintf(name,sizeof(name),"%s/rhs_%d.dat",dir,j);CHKERRQ(ierr);
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
     ierr = VecLoad(b,viewer);CHKERRQ(ierr);

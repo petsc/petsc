@@ -223,7 +223,7 @@ int main(int argc,char **args)
         ierr = MatAXPY(X,-1.0,C,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
         ierr = MatNorm(X,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
         if (norm > tol) {
-          ierr = PetscPrintf(PETSC_COMM_WORLD,"%D-the MatMatSolve: Norm of error %g, nsolve %D\n",nsolve,norm,nsolve);CHKERRQ(ierr);CHKERRQ(ierr);
+          ierr = PetscPrintf(PETSC_COMM_WORLD,"%D-the MatMatSolve: Norm of error %g, nsolve %D\n",nsolve,norm,nsolve);CHKERRQ(ierr);
         }
       }
       if (ipack == 2 && size == 1) {

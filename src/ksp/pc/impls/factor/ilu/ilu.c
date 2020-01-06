@@ -109,7 +109,7 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
     ((PC_Factor*)ilu)->info.fill          = 1.0;
     ((PC_Factor*)ilu)->info.diagonal_fill = 0.0;
 
-    ierr = MatILUFactor(pc->pmat,ilu->row,ilu->col,&((PC_Factor*)ilu)->info);CHKERRQ(ierr);CHKERRQ(ierr);
+    ierr = MatILUFactor(pc->pmat,ilu->row,ilu->col,&((PC_Factor*)ilu)->info);CHKERRQ(ierr);
     ierr = MatFactorGetError(pc->pmat,&err);CHKERRQ(ierr);
     if (err) { /* Factor() fails */
       pc->failedreason = (PCFailedReason)err;

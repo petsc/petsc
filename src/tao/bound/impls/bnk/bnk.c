@@ -343,7 +343,7 @@ PetscErrorCode TaoBNKEstimateActiveSet(Tao tao, PetscInt asType)
         ierr = MatGetDiagonal(tao->hessian, bnk->Xwork);CHKERRQ(ierr);
         ierr = VecAbs(bnk->Xwork);CHKERRQ(ierr);
         ierr = VecMedian(bnk->Diag_min, bnk->Xwork, bnk->Diag_max, bnk->Xwork);CHKERRQ(ierr);
-        ierr = VecReciprocal(bnk->Xwork);CHKERRQ(ierr);CHKERRQ(ierr);
+        ierr = VecReciprocal(bnk->Xwork);CHKERRQ(ierr);
         ierr = VecPointwiseMult(bnk->W, bnk->Xwork, bnk->unprojected_gradient);CHKERRQ(ierr);
       } else {
         /* If the Hessian or its diagonal does not exist, we will simply use gradient step */
