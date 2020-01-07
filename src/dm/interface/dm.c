@@ -811,14 +811,14 @@ PetscErrorCode  DMSetUp(DM dm)
 .   -dm_mat_type <type>  - type of matrix to create inside DM
 -   -dm_is_coloring_type - <global or local>
 
-    DMPLEX Specific Checks:
-    -dm_plex_check_symmetry        - Check that the adjacency information in the mesh is symmetric - DMPlexCheckSymmetry()
-    -dm_plex_check_skeleton        - Check that each cell has the correct number of vertices (only for homogeneous simplex or tensor meshes) - DMPlexCheckSkeleton()
-    -dm_plex_check_faces           - Check that the faces of each cell give a vertex order this is consistent with what we expect from the cell type - DMPlexCheckFaces()
-    -dm_plex_check_geometry        - Check that cells have positive volume - DMPlexCheckGeometry()
-    -dm_plex_check_pointsf         - Check some necessary conditions for PointSF - DMPlexCheckPointSF()
-    -dm_plex_check_interface_cones - Check points on inter-partition interfaces have conforming order of cone points - DMPlexCheckInterfaceCones()
-    -dm_plex_check_all             - Perform all the checks above
+    DMPLEX Specific Checks
++   -dm_plex_check_symmetry        - Check that the adjacency information in the mesh is symmetric - DMPlexCheckSymmetry()
+.   -dm_plex_check_skeleton        - Check that each cell has the correct number of vertices (only for homogeneous simplex or tensor meshes) - DMPlexCheckSkeleton()
+.   -dm_plex_check_faces           - Check that the faces of each cell give a vertex order this is consistent with what we expect from the cell type - DMPlexCheckFaces()
+.   -dm_plex_check_geometry        - Check that cells have positive volume - DMPlexCheckGeometry()
+.   -dm_plex_check_pointsf         - Check some necessary conditions for PointSF - DMPlexCheckPointSF()
+.   -dm_plex_check_interface_cones - Check points on inter-partition interfaces have conforming order of cone points - DMPlexCheckInterfaceCones()
+-   -dm_plex_check_all             - Perform all the checks above
 
     Level: intermediate
 
