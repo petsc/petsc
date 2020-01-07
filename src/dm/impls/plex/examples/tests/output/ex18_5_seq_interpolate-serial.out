@@ -1,3 +1,4 @@
+DMPlexCreateFromFile produced serial mesh.
 DMPlexIsDistributed: FALSE
 DMPlexIsInterpolatedCollective: full
 DMPlexCheckPointSFHeavy PASSED

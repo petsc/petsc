@@ -1,3 +1,4 @@
+DMPlexCreateFromFile produced distributed mesh.
 DMPlexCheckPointSFHeavy PASSED
 Graph Partitioner: 4 MPI Processes
   type: matpartitioning
