@@ -61,6 +61,8 @@ static PetscErrorCode KSPDestroy_HPDDM(KSP ksp)
   PetscFunctionBegin;
   ierr = KSPReset_HPDDM(ksp);CHKERRQ(ierr);
   ierr = KSPDestroyDefault(ksp);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPHPDDMSetDeflationSpace_C", NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPHPDDMGetDeflationSpace_C", NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -82,6 +84,104 @@ static PetscErrorCode KSPSolve_HPDDM(KSP ksp)
   ierr = VecRestoreArray(ksp->vec_sol, &x);CHKERRQ(ierr);
   if (ksp->its < ksp->max_it) ksp->reason = KSP_CONVERGED_RTOL;
   else ksp->reason = KSP_DIVERGED_ITS;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+     KSPHPDDMSetDeflationSpace - Sets the deflation space used by Krylov methods with recycling. This space is viewed as a set of vectors stored in a MATDENSE (column major).
+
+   Input Parameters:
++     ksp - iterative context
+-     U - deflation space to be used during KSPSolve()
+
+   Level: intermediate
+
+.seealso:  KSPCreate(), KSPType (for list of available types), KSPHPDDMGetDeflationSpace()
+@*/
+PetscErrorCode KSPHPDDMSetDeflationSpace(KSP ksp, Mat U)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
+  PetscValidHeaderSpecific(U, MAT_CLASSID, 2);
+  PetscCheckSameComm(ksp, 1, U, 2);
+  ierr = PetscUseMethod(ksp, "KSPHPDDMSetDeflationSpace_C", (KSP, Mat), (ksp, U));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+     KSPHPDDMGetDeflationSpace - Gets the deflation space computed by Krylov methods with recycling or NULL if KSPSolve() has not been called yet. This space is viewed as a set of vectors stored in a MATDENSE (column major). It is the responsibility of the user to free the returned Mat.
+
+   Input Parameter:
++     ksp - iterative context
+
+   Output Parameter:
++     U - deflation space generated during KSPSolve()
+
+   Level: intermediate
+
+.seealso:  KSPCreate(), KSPType (for list of available types), KSPHPDDMSetDeflationSpace()
+@*/
+PetscErrorCode KSPHPDDMGetDeflationSpace(KSP ksp, Mat *U)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
+  ierr = PetscUseMethod(ksp, "KSPHPDDMGetDeflationSpace_C", (KSP, Mat*), (ksp, U));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode KSPHPDDMSetDeflationSpace_HPDDM(KSP ksp, Mat U)
+{
+  HPDDM::PETScOperator *op = reinterpret_cast<HPDDM::PETScOperator*>(ksp->data);
+  Mat                  A, local;
+  const PetscScalar    *array;
+  PetscScalar          *copy;
+  PetscInt             m1, M1, m2, M2, n2, N2, ldu;
+  PetscBool            match;
+  PetscErrorCode       ierr;
+
+  PetscFunctionBegin;
+  ierr = KSPGetOperators(ksp, &A, NULL);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(A, &m1, NULL);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(U, &m2, &n2);CHKERRQ(ierr);
+  ierr = MatGetSize(A, &M1, NULL);CHKERRQ(ierr);
+  ierr = MatGetSize(U, &M2, &N2);CHKERRQ(ierr);
+  if (m1 != m2 || M1 != M2) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Cannot use a deflation space with (m2,M2) = (%D,%D) for a linear system with (m1,M1) = (%D,%D)", m2, M2, m1, M1);
+  ierr = PetscObjectTypeCompareAny((PetscObject)U, &match, MATSEQDENSE, MATMPIDENSE, "");CHKERRQ(ierr);
+  if (!match) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Provided deflation space not stored in a dense Mat");
+  ierr = MatDenseGetLocalMatrix(U, &local);CHKERRQ(ierr);
+  ierr = MatDenseGetArrayRead(local, &array);CHKERRQ(ierr);
+  copy = op->allocate(m2, 1, N2);
+  if (!copy) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_POINTER, "Memory allocation error");
+  ierr = MatDenseGetLDA(local, &ldu);CHKERRQ(ierr);
+  HPDDM::Wrapper<PetscScalar>::omatcopy<'N'>(N2, m2, array, ldu, copy, m2);
+  ierr = MatDenseRestoreArrayRead(local, &array);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode KSPHPDDMGetDeflationSpace_HPDDM(KSP ksp, Mat *U)
+{
+  HPDDM::PETScOperator *op = reinterpret_cast<HPDDM::PETScOperator*>(ksp->data);
+  Mat                  A;
+  const PetscScalar    *array = op->storage();
+  PetscScalar          *copy;
+  PetscInt             m1, M1, N2 = op->k();
+  PetscErrorCode       ierr;
+
+  PetscFunctionBegin;
+  if (!array) *U = NULL;
+  else {
+    ierr = KSPGetOperators(ksp, &A, NULL);CHKERRQ(ierr);
+    ierr = MatGetLocalSize(A, &m1, NULL);CHKERRQ(ierr);
+    ierr = MatGetSize(A, &M1, NULL);CHKERRQ(ierr);
+    ierr = MatCreateDense(PetscObjectComm((PetscObject)ksp), m1, PETSC_DECIDE, M1, N2, NULL, U);CHKERRQ(ierr);
+    ierr = MatDenseGetArray(*U, &copy);CHKERRQ(ierr);
+    ierr = PetscArraycpy(copy, array, m1 * N2);CHKERRQ(ierr);
+    ierr = MatDenseRestoreArray(*U, &copy);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -126,5 +226,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_HPDDM(KSP ksp)
   ksp->ops->reset          = KSPReset_HPDDM;
   ksp->ops->destroy        = KSPDestroy_HPDDM;
   ksp->ops->setfromoptions = KSPSetFromOptions_HPDDM;
+  ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPHPDDMSetDeflationSpace_C", KSPHPDDMSetDeflationSpace_HPDDM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPHPDDMGetDeflationSpace_C", KSPHPDDMGetDeflationSpace_HPDDM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
