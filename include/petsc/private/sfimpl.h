@@ -135,21 +135,12 @@ PETSC_STATIC_INLINE PetscErrorCode PetscGetMemType(const void *data,PetscMemType
   PetscValidPointer(mtype,2);
   *mtype = PETSC_MEMTYPE_HOST;
 #if defined(PETSC_HAVE_CUDA)
-  {
-    struct cudaPointerAttributes attr;
-    if (data) {
-#if (CUDART_VERSION < 10000)
-      attr.memoryType = cudaMemoryTypeHost;
-      cudaPointerGetAttributes(&attr,data);
-      cudaGetLastError();
-      if (attr.memoryType == cudaMemoryTypeDevice) *mtype = PETSC_MEMTYPE_DEVICE;
-#else
-      attr.type = cudaMemoryTypeHost;
-      cudaPointerGetAttributes(&attr,data); /* Do not check error since before CUDA 11.0, passing host pointer will return cudaErrorInvalidValue */
-      cudaGetLastError(); /* Get and then clear the last error */
-      if (attr.type == cudaMemoryTypeDevice || attr.type == cudaMemoryTypeManaged) *mtype = PETSC_MEMTYPE_DEVICE;
-#endif
-    }
+  if (data) {
+    /* Use CUDA driver API cuPointerGetAttribute() directly since it is lighter and faster than CUDA runtime API cudaPointerGetAttributes() */
+    CUmemorytype  cumtype = CU_MEMORYTYPE_HOST;
+    CUresult      cuerr;
+    cuerr = cuPointerGetAttribute(&cumtype,CU_POINTER_ATTRIBUTE_MEMORY_TYPE,(CUdeviceptr)data);
+    if (cuerr == CUDA_SUCCESS && cumtype == CU_MEMORYTYPE_DEVICE) *mtype = PETSC_MEMTYPE_DEVICE;
   }
 #endif
   PetscFunctionReturn(0);
