@@ -37,12 +37,12 @@ struct _PetscSFOps {
   PetscErrorCode (*SetFromOptions)(PetscOptionItems*,PetscSF);
   PetscErrorCode (*View)(PetscSF,PetscViewer);
   PetscErrorCode (*Duplicate)(PetscSF,PetscSFDuplicateOption,PetscSF);
-  PetscErrorCode (*BcastAndOpBegin)(PetscSF,MPI_Datatype,PetscMemType,const void*,PetscMemType,      void*,      MPI_Op);
-  PetscErrorCode (*BcastAndOpEnd)  (PetscSF,MPI_Datatype,PetscMemType,const void*,PetscMemType,      void*,      MPI_Op);
-  PetscErrorCode (*ReduceBegin)    (PetscSF,MPI_Datatype,PetscMemType,const void*,PetscMemType,      void*,      MPI_Op);
-  PetscErrorCode (*ReduceEnd)      (PetscSF,MPI_Datatype,PetscMemType,const void*,PetscMemType,      void*,      MPI_Op);
-  PetscErrorCode (*FetchAndOpBegin)(PetscSF,MPI_Datatype,PetscMemType,      void*,PetscMemType,const void*,void*,MPI_Op);
-  PetscErrorCode (*FetchAndOpEnd)  (PetscSF,MPI_Datatype,PetscMemType,      void*,PetscMemType,const void*,void*,MPI_Op);
+  PetscErrorCode (*BcastAndOpBegin)(PetscSF,MPI_Datatype,PetscMemType,const void*,PetscMemType,void*,MPI_Op);
+  PetscErrorCode (*BcastAndOpEnd)  (PetscSF,MPI_Datatype,const void*,void*,MPI_Op);
+  PetscErrorCode (*ReduceBegin)    (PetscSF,MPI_Datatype,PetscMemType,const void*,PetscMemType,void*,MPI_Op);
+  PetscErrorCode (*ReduceEnd)      (PetscSF,MPI_Datatype,const void*,void*,MPI_Op);
+  PetscErrorCode (*FetchAndOpBegin)(PetscSF,MPI_Datatype,PetscMemType,void*,PetscMemType,const void*,void*,MPI_Op);
+  PetscErrorCode (*FetchAndOpEnd)  (PetscSF,MPI_Datatype,void*,const void*,void*,MPI_Op);
   PetscErrorCode (*BcastToZero)    (PetscSF,MPI_Datatype,PetscMemType,const void*,PetscMemType,      void*); /* For interal use only */
   PetscErrorCode (*GetRootRanks)(PetscSF,PetscInt*,const PetscMPIInt**,const PetscInt**,const PetscInt**,const PetscInt**);
   PetscErrorCode (*GetLeafRanks)(PetscSF,PetscInt*,const PetscMPIInt**,const PetscInt**,const PetscInt**);
