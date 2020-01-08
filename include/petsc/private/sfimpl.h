@@ -92,6 +92,7 @@ struct _p_PetscSF {
   PetscBool       persistent;      /* Does this SF use MPI persistent requests for communication */
   PetscLayout     map;             /* Layout of leaves over all processes when building a patterned graph */
   PetscBool       use_default_stream;  /* If true, SF assumes root/leafdata is on the default stream upon input and will also leave them there upon output */
+  PetscBool       use_stream_aware_mpi;/* If true, SF assumes the underlying MPI is cuda-stream aware and we won't sync streams for send/recv buffers passed to MPI */
 #if defined(PETSC_HAVE_CUDA)
   PetscInt        maxResidentThreadsPerGPU;
 #endif
