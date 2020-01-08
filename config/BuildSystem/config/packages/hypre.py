@@ -54,7 +54,9 @@ class Configure(config.package.GNUPackage):
     libs = []
     for l in self.mpi.lib:
       ll = os.path.basename(l)
-      libs.append(ll[3:-2])
+      if ll.endswith('.a'): libs.append(ll[3:-2])
+      if ll.endswith('.so'): libs.append(ll[3:-3])
+      if ll.endswith('.dylib'): libs.append(ll[3:-6])
     libs = ' '.join(libs)
     args.append('--with-MPI-libs="'+libs+'"')
 

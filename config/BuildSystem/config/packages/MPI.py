@@ -592,6 +592,9 @@ to remove this warning message *****')
     if 'with-'+self.package+'-shared' in self.argDB:
       self.argDB['with-'+self.package] = 1
     config.package.Package.configureLibrary(self)
+    if self.setCompilers.usedMPICompilers:
+      if 'with-mpi-include' in self.argDB: raise RuntimeError('Do not use --with-mpi-include when using MPI compiler wrappers')
+      if 'with-mpi-lib' in self.argDB: raise RuntimeError('Do not use --with-mpi-lib when using MPI compiler wrappers')
     self.executeTest(self.checkMPICHorOpenMPI)
     if any(x in platform.processor() for x in ['i386','x86','i86pc']) and config.setCompilers.Configure.isSolaris(self.log) and hasattr(self, 'mpich_numversion') and int(self.mpich_numversion) >= 30301300:
       # this is only needed if MPICH/HWLOC were compiled with optimization
