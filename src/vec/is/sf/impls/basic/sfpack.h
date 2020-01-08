@@ -303,4 +303,22 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkMPIWaitall(PetscSF sf,PetscSFLink 
   PetscFunctionReturn(0);
 }
 
+PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkMemcpy(PetscSF sf,PetscSFLink link,PetscMemType dstmtype,void* dst,PetscMemType srcmtype,const void*src,size_t n)
+{
+  PetscFunctionBegin;
+  if (n) {
+    if (dstmtype == PETSC_MEMTYPE_HOST && srcmtype == PETSC_MEMTYPE_HOST) {PetscErrorCode ierr = PetscMemcpy(dst,src,n);CHKERRQ(ierr);}
+#if defined(PETSC_HAVE_CUDA)
+    else if (dstmtype == PETSC_MEMTYPE_DEVICE && srcmtype == PETSC_MEMTYPE_HOST)   {
+      cudaError_t    err  = cudaMemcpyAsync(dst,src,n,cudaMemcpyHostToDevice,link->stream);CHKERRCUDA(err);
+      PetscErrorCode ierr = PetscLogCpuToGpu(n);CHKERRQ(ierr);
+    } else if (dstmtype == PETSC_MEMTYPE_HOST && srcmtype == PETSC_MEMTYPE_DEVICE) {
+      cudaError_t    err  = cudaMemcpyAsync(dst,src,n,cudaMemcpyDeviceToHost,link->stream);CHKERRCUDA(err);
+      PetscErrorCode ierr = PetscLogGpuToCpu(n);CHKERRQ(ierr);
+    } else if (dstmtype == PETSC_MEMTYPE_DEVICE && srcmtype == PETSC_MEMTYPE_DEVICE) {cudaError_t err = cudaMemcpyAsync(dst,src,n,cudaMemcpyDeviceToDevice,link->stream);CHKERRCUDA(err);}
+#endif
+    else SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong PetscMemType for dst %d and src %d",(int)dstmtype,(int)srcmtype);
+  }
+  PetscFunctionReturn(0);
+}
 #endif

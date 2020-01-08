@@ -1480,7 +1480,7 @@ PetscErrorCode PetscSFLinkBcastAndOpLocal(PetscSF sf,PetscSFLink link,const void
   if (rootmtype != leafmtype) { /* Uncommon case */
      /* The local communication has to go through pack and unpack */
     ierr = PetscSFLinkPackRootData(sf,link,PETSCSF_LOCAL,rootdata);CHKERRQ(ierr);
-    ierr = PetscMemcpyWithMemType(leafmtype,rootmtype,link->leafbuf[PETSCSF_LOCAL][leafmtype],link->rootbuf[PETSCSF_LOCAL][rootmtype],sf->leafbuflen[PETSCSF_LOCAL]*link->unitbytes);CHKERRQ(ierr);
+    ierr = PetscSFLinkMemcpy(sf,link,leafmtype,link->leafbuf[PETSCSF_LOCAL][leafmtype],rootmtype,link->rootbuf[PETSCSF_LOCAL][rootmtype],sf->leafbuflen[PETSCSF_LOCAL]*link->unitbytes);CHKERRQ(ierr);
     ierr = PetscSFLinkUnpackLeafData(sf,link,PETSCSF_LOCAL,leafdata,op);CHKERRQ(ierr);
   } else {
     if (bas->rootcontig[PETSCSF_LOCAL]) { /* If root indices are contiguous, Scatter becomes Unpack */
@@ -1525,7 +1525,7 @@ PetscErrorCode PetscSFLinkReduceLocal(PetscSF sf,PetscSFLink link,const void *le
   if (rootmtype != leafmtype) {
     /* The local communication has to go through pack and unpack */
     ierr = PetscSFLinkPackLeafData(sf,link,PETSCSF_LOCAL,leafdata);CHKERRQ(ierr);
-    ierr = PetscMemcpyWithMemType(rootmtype,leafmtype,link->rootbuf[PETSCSF_LOCAL][rootmtype],link->leafbuf[PETSCSF_LOCAL][leafmtype],bas->rootbuflen[PETSCSF_LOCAL]*link->unitbytes);CHKERRQ(ierr);
+    ierr = PetscSFLinkMemcpy(sf,link,rootmtype,link->rootbuf[PETSCSF_LOCAL][rootmtype],leafmtype,link->leafbuf[PETSCSF_LOCAL][leafmtype],bas->rootbuflen[PETSCSF_LOCAL]*link->unitbytes);CHKERRQ(ierr);
     ierr = PetscSFLinkUnpackRootData(sf,link,PETSCSF_LOCAL,rootdata,op);CHKERRQ(ierr);
   } else {
     if (sf->leafcontig[PETSCSF_LOCAL]) {
