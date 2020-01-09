@@ -141,7 +141,7 @@ static PetscErrorCode PetscSFReduceBegin_Neighbor(PetscSF sf,MPI_Datatype unit,P
   const PetscInt       *leafloc = NULL;
   PetscSFPack          link;
   PetscSF_Neighbor     *dat = (PetscSF_Neighbor*)sf->data;
-  MPI_Comm             distcomm;
+  MPI_Comm             distcomm = MPI_COMM_NULL;
 
   PetscFunctionBegin;
   ierr = PetscSFGetLeafIndicesWithMemType_Basic(sf,leafmtype,&leafloc);CHKERRQ(ierr);
@@ -157,11 +157,11 @@ static PetscErrorCode PetscSFReduceBegin_Neighbor(PetscSF sf,MPI_Datatype unit,P
 
 static PetscErrorCode PetscSFFetchAndOpEnd_Neighbor(PetscSF sf,MPI_Datatype unit,PetscMemType rootmtype,void *rootdata,PetscMemType leafmtype,const void *leafdata,void *leafupdate,MPI_Op op)
 {
-  PetscErrorCode    ierr;
-  PetscSFPack       link;
-  const PetscInt    *rootloc = NULL,*leafloc = NULL;
-  MPI_Comm          comm;
-  PetscSF_Neighbor  *dat = (PetscSF_Neighbor*)sf->data;
+  PetscErrorCode       ierr;
+  PetscSFPack          link;
+  const PetscInt       *rootloc = NULL,*leafloc = NULL;
+  PetscSF_Neighbor     *dat = (PetscSF_Neighbor*)sf->data;
+  MPI_Comm             distcomm = MPI_COMM_NULL;
 
   PetscFunctionBegin;
   ierr = PetscSFPackGetInUse(sf,unit,rootdata,leafdata,PETSC_OWN_POINTER,&link);CHKERRQ(ierr);
@@ -172,8 +172,8 @@ static PetscErrorCode PetscSFFetchAndOpEnd_Neighbor(PetscSF sf,MPI_Datatype unit
   ierr = PetscSFFetchAndOpRootData(sf,link,rootloc,rootdata,op,PETSC_TRUE);CHKERRQ(ierr);
 
   /* Bcast the updated root buffer back to leaves */
-  ierr = PetscSFGetDistComm_Neighbor(sf,PETSCSF_ROOT2LEAF_BCAST,&comm);CHKERRQ(ierr);
-  ierr = MPI_Start_neighbor_alltoallv(dat->rootdegree,dat->leafdegree,link->rootbuf[rootmtype],dat->rootcounts,dat->rootdispls,unit,link->leafbuf[leafmtype],dat->leafcounts,dat->leafdispls,unit,comm);CHKERRQ(ierr);
+  ierr = PetscSFGetDistComm_Neighbor(sf,PETSCSF_ROOT2LEAF_BCAST,&distcomm);CHKERRQ(ierr);
+  ierr = MPI_Start_neighbor_alltoallv(dat->rootdegree,dat->leafdegree,link->rootbuf[rootmtype],dat->rootcounts,dat->rootdispls,unit,link->leafbuf[leafmtype],dat->leafcounts,dat->leafdispls,unit,distcomm);CHKERRQ(ierr);
   if (rootmtype != leafmtype) {ierr = PetscMemcpyWithMemType(leafmtype,rootmtype,link->selfbuf[leafmtype],link->selfbuf[rootmtype],link->selfbuflen*link->unitbytes);CHKERRQ(ierr);}
   ierr = PetscSFUnpackAndOpLeafData(sf,link,leafloc,leafupdate,MPIU_REPLACE,PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscSFPackReclaim(sf,&link);CHKERRQ(ierr);
