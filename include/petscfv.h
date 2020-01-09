@@ -86,9 +86,8 @@ PETSC_EXTERN PetscErrorCode PetscFVGetDualSpace(PetscFV, PetscDualSpace *);
 
 PETSC_EXTERN PetscErrorCode PetscFVRefine(PetscFV, PetscFV *);
 
-PETSC_EXTERN PetscErrorCode PetscFVGetDefaultTabulation(PetscFV, PetscReal **, PetscReal **, PetscReal **);
-PETSC_EXTERN PetscErrorCode PetscFVGetTabulation(PetscFV, PetscInt, const PetscReal[], PetscReal **, PetscReal **, PetscReal **);
-PETSC_EXTERN PetscErrorCode PetscFVRestoreTabulation(PetscFV, PetscInt, const PetscReal[], PetscReal **, PetscReal **, PetscReal **);
+PETSC_EXTERN PetscErrorCode PetscFVGetCellTabulation(PetscFV, PetscTabulation *);
+PETSC_EXTERN PetscErrorCode PetscFVCreateTabulation(PetscFV, PetscInt, PetscInt, const PetscReal[], PetscInt, PetscTabulation *);
 
 PETSC_EXTERN PetscErrorCode PetscFVComputeGradient(PetscFV, PetscInt, PetscScalar[], PetscScalar[]);
 PETSC_EXTERN PetscErrorCode PetscFVIntegrateRHSFunction(PetscFV, PetscDS, PetscInt, PetscInt, PetscFVFaceGeom *, PetscReal *, PetscScalar[], PetscScalar[], PetscScalar[], PetscScalar[]);

@@ -188,7 +188,7 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX_SubDivide(DM dm,DM dm
   PetscErrorCode ierr;
   PetscInt dim,nfaces,nbasis;
   PetscInt q,npoints_q,e,nel,pcnt,ps,pe,d,k,r;
-  PetscReal *B;
+  PetscTabulation T;
   Vec coorlocal;
   PetscSection coordSection;
   PetscScalar *elcoor = NULL;
@@ -219,7 +219,7 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX_SubDivide(DM dm,DM dm
   ierr = PetscFEGetQuadrature(fe,&quadrature);CHKERRQ(ierr);
   ierr = PetscQuadratureGetData(quadrature, NULL, NULL, &npoints_q, &xiq, NULL);CHKERRQ(ierr);
   ierr = PetscFEGetDimension(fe,&nbasis);CHKERRQ(ierr);
-  ierr = PetscFEGetDefaultTabulation(fe, &B, NULL, NULL);CHKERRQ(ierr);
+  ierr = PetscFEGetCellTabulation(fe, &T);CHKERRQ(ierr);
 
   /* 0->cell, 1->edge, 2->vert */
   ierr = DMPlexGetHeightStratum(dmc,0,&ps,&pe);CHKERRQ(ierr);
@@ -240,7 +240,7 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX_SubDivide(DM dm,DM dm
       for (d=0; d<dim; d++) {
         swarm_coor[dim*pcnt+d] = 0.0;
         for (k=0; k<nbasis; k++) {
-          swarm_coor[dim*pcnt+d] += B[q*nbasis + k] * PetscRealPart(elcoor[dim*k+d]);
+          swarm_coor[dim*pcnt+d] += T->T[0][q*nbasis + k] * PetscRealPart(elcoor[dim*k+d]);
         }
       }
       swarm_cellid[pcnt] = e;
@@ -663,7 +663,8 @@ PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM dm,DM dmc,Pets
   PetscInt dim,nfaces,ps,pe,p,d,nbasis,pcnt,e,k,nel;
   PetscFE fe;
   PetscQuadrature quadrature;
-  PetscReal *B,*xiq;
+  PetscTabulation T;
+  PetscReal *xiq;
   Vec coorlocal;
   PetscSection coordSection;
   PetscScalar *elcoor = NULL;
@@ -720,7 +721,7 @@ PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM dm,DM dmc,Pets
   ierr = private_PetscFECreateDefault_scalar_pk1(dmc, dim, is_simplex, 0, &fe);CHKERRQ(ierr);
   ierr = PetscFESetQuadrature(fe,quadrature);CHKERRQ(ierr);
   ierr = PetscFEGetDimension(fe,&nbasis);CHKERRQ(ierr);
-  ierr = PetscFEGetDefaultTabulation(fe, &B, NULL, NULL);CHKERRQ(ierr);
+  ierr = PetscFEGetCellTabulation(fe, &T);CHKERRQ(ierr);
 
   /* for each cell, interpolate coordaintes and insert the interpolated points coordinates into swarm */
   /* 0->cell, 1->edge, 2->vert */
@@ -742,7 +743,7 @@ PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM dm,DM dmc,Pets
       for (d=0; d<dim; d++) {
         swarm_coor[dim*pcnt+d] = 0.0;
         for (k=0; k<nbasis; k++) {
-          swarm_coor[dim*pcnt+d] += B[p*nbasis + k] * PetscRealPart(elcoor[dim*k+d]);
+          swarm_coor[dim*pcnt+d] += T->T[0][p*nbasis + k] * PetscRealPart(elcoor[dim*k+d]);
         }
       }
       swarm_cellid[pcnt] = e;

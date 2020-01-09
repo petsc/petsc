@@ -434,4 +434,18 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTEnumSplit(PetscInt n, PetscInt k, Pets
   PetscFunctionReturn(0);
 }
 
+struct _p_PetscTabulation {
+  PetscInt    K;    /* Indicates a k-jet, namely tabulated derviatives up to order k */
+  PetscInt    Nr;   /* THe number of tabulation replicas (often 1) */
+  PetscInt    Np;   /* The number of tabulation points in a replica */
+  PetscInt    Nb;   /* The number of functions tabulated */
+  PetscInt    Nc;   /* The number of function components */
+  PetscInt    cdim; /* The coordinate dimension */
+  PetscReal **T;    /* The tabulation T[K] of functions and their derivatives
+                       T[0] = B[Nr*Np][Nb][Nc]:             The basis function values at quadrature points
+                       T[1] = D[Nr*Np][Nb][Nc][cdim]:       The basis function derivatives at quadrature points
+                       T[2] = H[Nr*Np][Nb][Nc][cdim][cdim]: The basis function second derivatives at quadrature points */
+};
+typedef struct _p_PetscTabulation *PetscTabulation;
+
 #endif

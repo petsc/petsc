@@ -97,7 +97,7 @@ static PetscErrorCode PetscFESetUp_Composite(PetscFE fem)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscFEGetTabulation_Composite(PetscFE fem, PetscInt npoints, const PetscReal points[], PetscReal *B, PetscReal *D, PetscReal *H)
+static PetscErrorCode PetscFECreateTabulation_Composite(PetscFE fem, PetscInt npoints, const PetscReal points[], PetscInt K, PetscTabulation T)
 {
   PetscFE_Composite *cmp = (PetscFE_Composite *) fem->data;
   DM                 dm;
@@ -106,7 +106,10 @@ static PetscErrorCode PetscFEGetTabulation_Composite(PetscFE fem, PetscInt npoin
   PetscInt           dim;   /* Spatial dimension */
   PetscInt           comp;  /* Field components */
   PetscInt          *subpoints;
-  PetscReal         *tmpB, *tmpD, *tmpH, *subpoint;
+  PetscReal         *B = K >= 0 ? T->T[0] : NULL;
+  PetscReal         *D = K >= 1 ? T->T[1] : NULL;
+  PetscReal         *H = K >= 2 ? T->T[2] : NULL;
+  PetscReal         *tmpB = NULL, *tmpD = NULL, *tmpH = NULL, *subpoint;
   PetscInt           p, s, d, e, j, k;
   PetscErrorCode     ierr;
 
@@ -135,14 +138,14 @@ static PetscErrorCode PetscFEGetTabulation_Composite(PetscFE fem, PetscInt npoin
   }
   ierr = DMRestoreWorkArray(dm, dim, MPIU_REAL, &subpoint);CHKERRQ(ierr);
   /* Evaluate the prime basis functions at all points */
-  if (B) {ierr = DMGetWorkArray(dm, npoints*spdim, MPIU_REAL, &tmpB);CHKERRQ(ierr);}
-  if (D) {ierr = DMGetWorkArray(dm, npoints*spdim*dim, MPIU_REAL, &tmpD);CHKERRQ(ierr);}
-  if (H) {ierr = DMGetWorkArray(dm, npoints*spdim*dim*dim, MPIU_REAL, &tmpH);CHKERRQ(ierr);}
-  ierr = PetscSpaceEvaluate(fem->basisSpace, npoints, points, B ? tmpB : NULL, D ? tmpD : NULL, H ? tmpH : NULL);CHKERRQ(ierr);
+  if (K >= 0) {ierr = DMGetWorkArray(dm, npoints*spdim, MPIU_REAL, &tmpB);CHKERRQ(ierr);}
+  if (K >= 1) {ierr = DMGetWorkArray(dm, npoints*spdim*dim, MPIU_REAL, &tmpD);CHKERRQ(ierr);}
+  if (K >= 2) {ierr = DMGetWorkArray(dm, npoints*spdim*dim*dim, MPIU_REAL, &tmpH);CHKERRQ(ierr);}
+  ierr = PetscSpaceEvaluate(fem->basisSpace, npoints, points, tmpB, tmpD, tmpH);CHKERRQ(ierr);
   /* Translate to the nodal basis */
-  if (B) {ierr = PetscArrayzero(B, npoints*pdim*comp);CHKERRQ(ierr);}
-  if (D) {ierr = PetscArrayzero(D, npoints*pdim*comp*dim);CHKERRQ(ierr);}
-  if (H) {ierr = PetscArrayzero(H, npoints*pdim*comp*dim*dim);CHKERRQ(ierr);}
+  if (K >= 0) {ierr = PetscArrayzero(B, npoints*pdim*comp);CHKERRQ(ierr);}
+  if (K >= 1) {ierr = PetscArrayzero(D, npoints*pdim*comp*dim);CHKERRQ(ierr);}
+  if (K >= 2) {ierr = PetscArrayzero(H, npoints*pdim*comp*dim*dim);CHKERRQ(ierr);}
   for (p = 0; p < npoints; ++p) {
     const PetscInt s = subpoints[p];
 
@@ -185,9 +188,9 @@ static PetscErrorCode PetscFEGetTabulation_Composite(PetscFE fem, PetscInt npoin
     }
   }
   ierr = DMRestoreWorkArray(dm, npoints, MPIU_INT, &subpoints);CHKERRQ(ierr);
-  if (B) {ierr = DMRestoreWorkArray(dm, npoints*spdim, MPIU_REAL, &tmpB);CHKERRQ(ierr);}
-  if (D) {ierr = DMRestoreWorkArray(dm, npoints*spdim*dim, MPIU_REAL, &tmpD);CHKERRQ(ierr);}
-  if (H) {ierr = DMRestoreWorkArray(dm, npoints*spdim*dim*dim, MPIU_REAL, &tmpH);CHKERRQ(ierr);}
+  if (K >= 0) {ierr = DMRestoreWorkArray(dm, npoints*spdim, MPIU_REAL, &tmpB);CHKERRQ(ierr);}
+  if (K >= 1) {ierr = DMRestoreWorkArray(dm, npoints*spdim*dim, MPIU_REAL, &tmpD);CHKERRQ(ierr);}
+  if (K >= 2) {ierr = DMRestoreWorkArray(dm, npoints*spdim*dim*dim, MPIU_REAL, &tmpH);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -199,7 +202,7 @@ static PetscErrorCode PetscFEInitialize_Composite(PetscFE fem)
   fem->ops->view                    = NULL;
   fem->ops->destroy                 = PetscFEDestroy_Composite;
   fem->ops->getdimension            = PetscFEGetDimension_Basic;
-  fem->ops->gettabulation           = PetscFEGetTabulation_Composite;
+  fem->ops->createtabulation        = PetscFECreateTabulation_Composite;
   fem->ops->integrateresidual       = PetscFEIntegrateResidual_Basic;
   fem->ops->integratebdresidual     = PetscFEIntegrateBdResidual_Basic;
   fem->ops->integratejacobianaction = NULL/* PetscFEIntegrateJacobianAction_Basic */;

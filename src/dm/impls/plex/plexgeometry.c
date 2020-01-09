@@ -1685,14 +1685,14 @@ PetscErrorCode DMPlexComputeCellGeometryAffineFEM(DM dm, PetscInt cell, PetscRea
 
 static PetscErrorCode DMPlexComputeCellGeometryFEM_FE(DM dm, PetscFE fe, PetscInt point, PetscQuadrature quad, PetscReal v[], PetscReal J[], PetscReal invJ[], PetscReal *detJ)
 {
-  PetscQuadrature  feQuad;
-  PetscSection     coordSection;
-  Vec              coordinates;
-  PetscScalar     *coords = NULL;
-  const PetscReal *quadPoints;
-  PetscReal       *basisDer, *basis, detJt;
-  PetscInt         dim, cdim, pdim, qdim, Nq, numCoords, q;
-  PetscErrorCode   ierr;
+  PetscQuadrature   feQuad;
+  PetscSection      coordSection;
+  Vec               coordinates;
+  PetscScalar      *coords = NULL;
+  const PetscReal  *quadPoints;
+  PetscTabulation T;
+  PetscInt          dim, cdim, pdim, qdim, Nq, numCoords, q;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
@@ -1713,61 +1713,64 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_FE(DM dm, PetscFE fe, PetscIn
   ierr = PetscFEGetDimension(fe, &pdim);CHKERRQ(ierr);
   ierr = PetscFEGetQuadrature(fe, &feQuad);CHKERRQ(ierr);
   if (feQuad == quad) {
-    ierr = PetscFEGetDefaultTabulation(fe, &basis, J ? &basisDer : NULL, NULL);CHKERRQ(ierr);
+    ierr = PetscFEGetCellTabulation(fe, &T);CHKERRQ(ierr);
     if (numCoords != pdim*cdim) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "There are %d coordinates for point %d != %d*%d", numCoords, point, pdim, cdim);
   } else {
-    ierr = PetscFEGetTabulation(fe, Nq, quadPoints, &basis, J ? &basisDer : NULL, NULL);CHKERRQ(ierr);
+    ierr = PetscFECreateTabulation(fe, 1, Nq, quadPoints, J ? 1 : 0, &T);CHKERRQ(ierr);
   }
   if (qdim != dim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Point dimension %d != quadrature dimension %d", dim, qdim);
-  if (v) {
-    ierr = PetscArrayzero(v, Nq*cdim);CHKERRQ(ierr);
-    for (q = 0; q < Nq; ++q) {
-      PetscInt i, k;
+  {
+    const PetscReal *basis    = T->T[0];
+    const PetscReal *basisDer = T->T[1];
+    PetscReal        detJt;
 
-      for (k = 0; k < pdim; ++k)
-        for (i = 0; i < cdim; ++i)
-          v[q*cdim + i] += basis[q*pdim + k] * PetscRealPart(coords[k*cdim + i]);
-      ierr = PetscLogFlops(2.0*pdim*cdim);CHKERRQ(ierr);
-    }
-  }
-  if (J) {
-    ierr = PetscArrayzero(J, Nq*cdim*cdim);CHKERRQ(ierr);
-    for (q = 0; q < Nq; ++q) {
-      PetscInt i, j, k, c, r;
+    if (v) {
+      ierr = PetscArrayzero(v, Nq*cdim);CHKERRQ(ierr);
+      for (q = 0; q < Nq; ++q) {
+        PetscInt i, k;
 
-      /* J = dx_i/d\xi_j = sum[k=0,n-1] dN_k/d\xi_j * x_i(k) */
-      for (k = 0; k < pdim; ++k)
-        for (j = 0; j < dim; ++j)
+        for (k = 0; k < pdim; ++k)
           for (i = 0; i < cdim; ++i)
-            J[(q*cdim + i)*cdim + j] += basisDer[(q*pdim + k)*dim + j] * PetscRealPart(coords[k*cdim + i]);
-      ierr = PetscLogFlops(2.0*pdim*dim*cdim);CHKERRQ(ierr);
-      if (cdim > dim) {
-        for (c = dim; c < cdim; ++c)
-          for (r = 0; r < cdim; ++r)
-            J[r*cdim+c] = r == c ? 1.0 : 0.0;
+            v[q*cdim + i] += basis[q*pdim + k] * PetscRealPart(coords[k*cdim + i]);
+        ierr = PetscLogFlops(2.0*pdim*cdim);CHKERRQ(ierr);
       }
-      if (!detJ && !invJ) continue;
-      detJt = 0.;
-      switch (cdim) {
-      case 3:
-        DMPlex_Det3D_Internal(&detJt, &J[q*cdim*dim]);
-        if (invJ) {DMPlex_Invert3D_Internal(&invJ[q*cdim*dim], &J[q*cdim*dim], detJt);}
-        break;
-      case 2:
-        DMPlex_Det2D_Internal(&detJt, &J[q*cdim*dim]);
-        if (invJ) {DMPlex_Invert2D_Internal(&invJ[q*cdim*dim], &J[q*cdim*dim], detJt);}
-        break;
-      case 1:
-        detJt = J[q*cdim*dim];
-        if (invJ) invJ[q*cdim*dim] = 1.0/detJt;
-      }
-      if (detJ) detJ[q] = detJt;
     }
+    if (J) {
+      ierr = PetscArrayzero(J, Nq*cdim*cdim);CHKERRQ(ierr);
+      for (q = 0; q < Nq; ++q) {
+        PetscInt i, j, k, c, r;
+
+        /* J = dx_i/d\xi_j = sum[k=0,n-1] dN_k/d\xi_j * x_i(k) */
+        for (k = 0; k < pdim; ++k)
+          for (j = 0; j < dim; ++j)
+            for (i = 0; i < cdim; ++i)
+              J[(q*cdim + i)*cdim + j] += basisDer[(q*pdim + k)*dim + j] * PetscRealPart(coords[k*cdim + i]);
+        ierr = PetscLogFlops(2.0*pdim*dim*cdim);CHKERRQ(ierr);
+        if (cdim > dim) {
+          for (c = dim; c < cdim; ++c)
+            for (r = 0; r < cdim; ++r)
+              J[r*cdim+c] = r == c ? 1.0 : 0.0;
+        }
+        if (!detJ && !invJ) continue;
+        detJt = 0.;
+        switch (cdim) {
+        case 3:
+          DMPlex_Det3D_Internal(&detJt, &J[q*cdim*dim]);
+          if (invJ) {DMPlex_Invert3D_Internal(&invJ[q*cdim*dim], &J[q*cdim*dim], detJt);}
+          break;
+        case 2:
+          DMPlex_Det2D_Internal(&detJt, &J[q*cdim*dim]);
+          if (invJ) {DMPlex_Invert2D_Internal(&invJ[q*cdim*dim], &J[q*cdim*dim], detJt);}
+          break;
+        case 1:
+          detJt = J[q*cdim*dim];
+          if (invJ) invJ[q*cdim*dim] = 1.0/detJt;
+        }
+        if (detJ) detJ[q] = detJt;
+      }
+    } else if (detJ || invJ) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Need J to compute invJ or detJ");
   }
-  else if (detJ || invJ) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Need J to compute invJ or detJ");
-  if (feQuad != quad) {
-    ierr = PetscFERestoreTabulation(fe, Nq, quadPoints, &basis, J ? &basisDer : NULL, NULL);CHKERRQ(ierr);
-  }
+  if (feQuad != quad) {ierr = PetscTabulationDestroy(&T);CHKERRQ(ierr);}
   ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, point, &numCoords, &coords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

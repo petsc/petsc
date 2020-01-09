@@ -3228,19 +3228,19 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
           PetscInt        numClosure;
           PetscInt        iCell = pperms ? pperms[i] : i;
           PetscInt        parentCellShapeDof = cellShapeOff + iCell;
-          PetscReal       *Bparent;
+          PetscTabulation Tparent;
 
           ierr = PetscDualSpaceGetFunctional(dsp,parentCellShapeDof,&q);CHKERRQ(ierr);
           ierr = PetscQuadratureGetData(q,&dim,&thisNc,&numPoints,&points,&weights);CHKERRQ(ierr);
           if (thisNc != Nc) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Functional dim %D does not much basis dim %D\n",thisNc,Nc);
-          ierr = PetscFEGetTabulation(fe,numPoints,points,&Bparent,NULL,NULL);CHKERRQ(ierr); /* I'm expecting a nodal basis: weights[:]' * Bparent[:,cellShapeDof] = 1. */
+          ierr = PetscFECreateTabulation(fe,1,numPoints,points,0,&Tparent);CHKERRQ(ierr); /* I'm expecting a nodal basis: weights[:]' * Bparent[:,cellShapeDof] = 1. */
           for (j = 0; j < numPoints; j++) {
             PetscInt          childCell = -1;
             PetscReal         *parentValAtPoint;
             const PetscReal   xi0[3] = {-1.,-1.,-1.};
             const PetscReal   *pointReal = &points[dim * j];
             const PetscScalar *point;
-            PetscReal         *Bchild;
+            PetscTabulation Tchild;
             PetscInt          childCellShapeOff, pointMatOff;
 #if defined(PETSC_USE_COMPLEX)
             PetscInt          d;
@@ -3253,7 +3253,7 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
             point = pointReal;
 #endif
 
-            parentValAtPoint = &Bparent[(fSize * j + parentCellShapeDof) * Nc];
+            parentValAtPoint = &Tparent->T[0][(fSize * j + parentCellShapeDof) * Nc];
 
             for (k = 0; k < numChildren; k++) { /* locate the point in a child's star cell*/
               PetscInt child = children[k];
@@ -3277,7 +3277,7 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
             CoordinatesRefToReal(dim, dim, xi0, v0parent, Jparent, pointReal, vtmp);
             CoordinatesRealToRef(dim, dim, xi0, v0, invJ, vtmp, pointRef);
 
-            ierr = PetscFEGetTabulation(fe,1,pointRef,&Bchild,NULL,NULL);CHKERRQ(ierr);
+            ierr = PetscFECreateTabulation(fe,1,1,pointRef,0,&Tchild);CHKERRQ(ierr);
             ierr = DMPlexGetTransitiveClosure(refTree,childCell,PETSC_TRUE,&numClosure,&closure);CHKERRQ(ierr);
             for (k = 0, pointMatOff = 0; k < numChildren; k++) { /* point is located in cell => child dofs support at point are in closure of cell */
               PetscInt child = children[k], childDepth, childDof, childO = PETSC_MIN_INT;
@@ -3309,7 +3309,7 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
                 PetscReal   *childValAtPoint;
                 PetscReal   val = 0.;
 
-                childValAtPoint = &Bchild[childCellDof * Nc];
+                childValAtPoint = &Tchild->T[0][childCellDof * Nc];
                 for (m = 0; m < Nc; m++) {
                   val += weights[j * Nc + m] * parentValAtPoint[m] * childValAtPoint[m];
                 }
@@ -3319,9 +3319,9 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
               pointMatOff += childDof;
             }
             ierr = DMPlexRestoreTransitiveClosure(refTree,childCell,PETSC_TRUE,&numClosure,&closure);CHKERRQ(ierr);
-            ierr = PetscFERestoreTabulation(fe,1,pointRef,&Bchild,NULL,NULL);CHKERRQ(ierr);
+            ierr = PetscTabulationDestroy(&Tchild);CHKERRQ(ierr);
           }
-          ierr = PetscFERestoreTabulation(fe,numPoints,points,&Bparent,NULL,NULL);CHKERRQ(ierr);
+          ierr = PetscTabulationDestroy(&Tparent);CHKERRQ(ierr);
         }
       }
       else { /* just the volume-weighted averages of the children */

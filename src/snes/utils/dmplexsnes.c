@@ -544,8 +544,10 @@ PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Quad_Private(DMInterpolationInf
   PC             pc;
   Vec            coordsLocal, r, ref, real;
   Mat            J;
+  PetscTabulation    T;
   const PetscScalar *coords;
   PetscScalar    *a;
+  PetscReal      xir[2];
   PetscInt       Nf, p;
   const PetscInt dof = ctx->dof;
   PetscErrorCode ierr;
@@ -575,10 +577,10 @@ PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Quad_Private(DMInterpolationInf
 
   ierr = VecGetArrayRead(ctx->coords, &coords);CHKERRQ(ierr);
   ierr = VecGetArray(v, &a);CHKERRQ(ierr);
+  ierr = PetscFECreateTabulation(fem, 1, 1, xir, 0, &T);CHKERRQ(ierr);
   for (p = 0; p < ctx->n; ++p) {
     PetscScalar *x = NULL, *vertices = NULL;
     PetscScalar *xi;
-    PetscReal    xir[2];
     PetscInt     c = ctx->cells[p], comp, coordSize, xSize;
 
     /* Can make this do all points at once */
@@ -596,18 +598,16 @@ PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Quad_Private(DMInterpolationInf
     xir[0] = PetscRealPart(xi[0]);
     xir[1] = PetscRealPart(xi[1]);
     if (4*dof != xSize) {
-      PetscReal *B;
-      PetscInt   d;
+      PetscInt d;
 
       xir[0] = 2.0*xir[0] - 1.0; xir[1] = 2.0*xir[1] - 1.0;
-      ierr = PetscFEGetTabulation(fem, 1, xir, &B, NULL, NULL);CHKERRQ(ierr);
+      ierr = PetscFEComputeTabulation(fem, 1, xir, 0, T);CHKERRQ(ierr);
       for (comp = 0; comp < dof; ++comp) {
         a[p*dof+comp] = 0.0;
         for (d = 0; d < xSize/dof; ++d) {
-          a[p*dof+comp] += x[d*dof+comp]*B[d*dof+comp];
+          a[p*dof+comp] += x[d*dof+comp]*T->T[0][d*dof+comp];
         }
       }
-      ierr = PetscFERestoreTabulation(fem, 1, xir, &B, NULL, NULL);CHKERRQ(ierr);
     } else {
       for (comp = 0; comp < dof; ++comp)
         a[p*dof+comp] = x[0*dof+comp]*(1 - xir[0])*(1 - xir[1]) + x[1*dof+comp]*xir[0]*(1 - xir[1]) + x[2*dof+comp]*xir[0]*xir[1] + x[3*dof+comp]*(1 - xir[0])*xir[1];
@@ -616,6 +616,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Quad_Private(DMInterpolationInf
     ierr = DMPlexVecRestoreClosure(dmCoord, NULL, coordsLocal, c, &coordSize, &vertices);CHKERRQ(ierr);
     ierr = DMPlexVecRestoreClosure(dm, NULL, xLocal, c, &xSize, &x);CHKERRQ(ierr);
   }
+  ierr = PetscTabulationDestroy(&T);CHKERRQ(ierr);
   ierr = VecRestoreArray(v, &a);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(ctx->coords, &coords);CHKERRQ(ierr);
 
