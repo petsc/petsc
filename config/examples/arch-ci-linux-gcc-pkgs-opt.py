@@ -23,6 +23,7 @@ configure_options = [
   '--download-triangle',
   '--download-chaco',
   '--download-ctetgen',
+  '--download-egads',
 ]
 
 if __name__ == '__main__':

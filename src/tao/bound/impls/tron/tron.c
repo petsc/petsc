@@ -193,7 +193,7 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
       stepsize=1.0;f_new=f;
 
       ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,1.0);CHKERRQ(ierr);
-      ierr = TaoLineSearchApply(tao->linesearch, tron->X_New, &f_new, tron->G_New, tao->stepdirection,&stepsize,&ls_reason);CHKERRQ(ierr);CHKERRQ(ierr);
+      ierr = TaoLineSearchApply(tao->linesearch, tron->X_New, &f_new, tron->G_New, tao->stepdirection,&stepsize,&ls_reason);CHKERRQ(ierr);
       ierr = TaoAddLineSearchCounts(tao);CHKERRQ(ierr);
 
       ierr = MatMult(tao->hessian, tao->stepdirection, tron->Work);CHKERRQ(ierr);

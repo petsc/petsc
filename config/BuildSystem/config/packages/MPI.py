@@ -212,14 +212,14 @@ shared libraries and run with --known-mpi-shared-libraries=1')
       # TODO: This support for spaces and () should be moved to core BuildSystem
       self.mpiexec = self.mpiexec.replace(' ', '\\ ').replace('(', '\\(').replace(')', '\\)').replace('\ -',' -')
       if (hasattr(self, 'ompi_major_version') and int(self.ompi_major_version) >= 3):
-        (out, err, ret) = Configure.executeShellCommand(self.mpiexec+' -help all', checkCommand = noCheck, timeout = 10, log = self.log)
+        (out, err, ret) = Configure.executeShellCommand(self.mpiexec+' -help all', checkCommand = noCheck, timeout = 10, log = self.log, threads = 1)
         if out.find('--oversubscribe') >=0:
           self.mpiexec = self.mpiexec + ' --oversubscribe'
 
     # using mpiexec environmental variables make sure mpiexec matches the MPI libraries and save the variables for testing in PetscInitialize()
     # the variable HAVE_MPIEXEC_ENVIRONMENTAL_VARIABLE is not currently used. PetscInitialize() can check the existence of the environmental variable to
     # determine if the program has been started with the correct mpiexec (will only be set for parallel runs so not clear how to check appropriately)
-    (out, err, ret) = Configure.executeShellCommand(self.mpiexec+' -n 1 printenv', checkCommand = noCheck, timeout = 10, log = self.log)
+    (out, err, ret) = Configure.executeShellCommand(self.mpiexec+' -n 1 printenv', checkCommand = noCheck, timeout = 10, threads = 1, log = self.log)
     if ret:
       self.logWrite('Unable to run '+self.mpiexec+' with option "-n 1 printenv"\nThis could be ok, some MPI implementations such as SGI produce a non-zero status with non-MPI programs\n'+out+err)
     else:
@@ -240,7 +240,7 @@ shared libraries and run with --known-mpi-shared-libraries=1')
     includes = '#include <mpi.h>'
     body = 'MPI_Init(0,0);\nMPI_Finalize();\n'
     try:
-      ok = self.checkRun(includes, body, executor = self.mpiexec, timeout = 20)
+      ok = self.checkRun(includes, body, executor = self.mpiexec, timeout = 20, threads = 1)
       if not ok: raise RuntimeError('Unable to run MPI program with '+self.mpiexec+' make sure this is the correct program to run MPI jobs')
     except RuntimeError as e:
       if str(e).find('Runaway process exceeded time limit') > -1:
@@ -359,7 +359,7 @@ shared libraries and run with --known-mpi-shared-libraries=1')
             self.addDefine('HAVE_'+datatype, 1)
         elif not self.argDB['with-batch']:
           self.pushLanguage('C')
-          if self.checkRun(includes, body, defaultArg = 'known-mpi-'+name):
+          if self.checkRun(includes, body, defaultArg = 'known-mpi-'+name, executor = self.mpiexec):
             self.addDefine('HAVE_'+datatype, 1)
           self.popLanguage()
         else:
@@ -620,6 +620,9 @@ to remove this warning message *****')
     if 'with-'+self.package+'-shared' in self.argDB:
       self.argDB['with-'+self.package] = 1
     config.package.Package.configureLibrary(self)
+    if self.setCompilers.usedMPICompilers:
+      if 'with-mpi-include' in self.argDB: raise RuntimeError('Do not use --with-mpi-include when using MPI compiler wrappers')
+      if 'with-mpi-lib' in self.argDB: raise RuntimeError('Do not use --with-mpi-lib when using MPI compiler wrappers')
     self.executeTest(self.checkMPIDistro)
     if any(x in platform.processor() for x in ['i386','x86','i86pc']) and config.setCompilers.Configure.isSolaris(self.log) and hasattr(self, 'mpich_numversion') and int(self.mpich_numversion) >= 30301300:
       # this is only needed if MPICH/HWLOC were compiled with optimization
@@ -628,9 +631,9 @@ to remove this warning message *****')
       self.addDefine('HAVE_HWLOC_SOLARIS_BUG',1)
       self.logPrintBox('***** WARNING: This MPI implementation may have a bug in it that causes programs to hang.\n\
 You may need to set the environmental variable HWLOC_COMPONENTS to -x86 to prevent such hangs. warning message *****')
-
     self.executeTest(self.configureMPI2) #depends on checkMPIDistro
     self.executeTest(self.configureMPI3) #depends on checkMPIDistro
+    self.executeTest(self.configureMPIEXEC)
     self.executeTest(self.configureMPITypes)
     self.executeTest(self.SGIMPICheck)
     self.executeTest(self.CxxMPICheck)
@@ -638,7 +641,6 @@ You may need to set the environmental variable HWLOC_COMPONENTS to -x86 to preve
     self.executeTest(self.configureIO) #depends on checkMPIDistro
     self.executeTest(self.findMPIInc)
     self.executeTest(self.PetscArchMPICheck)
-    self.executeTest(self.configureMPIEXEC)
     funcs = '''MPI_Type_get_envelope  MPI_Type_dup MPI_Init_thread MPI_Iallreduce MPI_Ibarrier MPI_Finalized MPI_Exscan MPI_Reduce_scatter MPI_Reduce_scatter_block'''.split()
     found, missing = self.libraries.checkClassify(self.dlib, funcs)
     for f in found:

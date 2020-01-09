@@ -174,6 +174,9 @@ PetscErrorCode  MatDiagonalSet_SeqAIJ(Mat Y,Vec D,InsertMode is)
   MatScalar         *aa = aij->a;
   const PetscScalar *v;
   PetscBool         missing;
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+  PetscBool         inserted = PETSC_FALSE;
+#endif
 
   PetscFunctionBegin;
   if (Y->assembled) {
@@ -182,14 +185,23 @@ PetscErrorCode  MatDiagonalSet_SeqAIJ(Mat Y,Vec D,InsertMode is)
       diag = aij->diag;
       ierr = VecGetArrayRead(D,&v);CHKERRQ(ierr);
       if (is == INSERT_VALUES) {
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+        inserted = PETSC_TRUE;
+#endif
         for (i=0; i<m; i++) {
           aa[diag[i]] = v[i];
         }
       } else {
         for (i=0; i<m; i++) {
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+          if (v[i] != 0.0) inserted = PETSC_TRUE;
+#endif
           aa[diag[i]] += v[i];
         }
       }
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+      if (inserted) Y->offloadmask = PETSC_OFFLOAD_CPU;
+#endif
       ierr = VecRestoreArrayRead(D,&v);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }

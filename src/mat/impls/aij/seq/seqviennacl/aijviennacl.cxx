@@ -191,6 +191,8 @@ PetscErrorCode MatMult_SeqAIJViennaCL(Mat A,Vec xx,Vec yy)
   ViennaCLVector       *ygpu=NULL;
 
   PetscFunctionBegin;
+  /* The line below is necessary due to the operations that modify the matrix on the CPU (axpy, scale, etc) */
+  ierr = MatViennaCLCopyToGPU(A);CHKERRQ(ierr);
   if (A->rmap->n > 0 && A->cmap->n > 0 && a->nz) {
     ierr = VecViennaCLGetArrayRead(xx,&xgpu);CHKERRQ(ierr);
     ierr = VecViennaCLGetArrayWrite(yy,&ygpu);CHKERRQ(ierr);
@@ -224,6 +226,8 @@ PetscErrorCode MatMultAdd_SeqAIJViennaCL(Mat A,Vec xx,Vec yy,Vec zz)
   ViennaCLVector       *zgpu=NULL;
 
   PetscFunctionBegin;
+  /* The line below is necessary due to the operations that modify the matrix on the CPU (axpy, scale, etc) */
+  ierr = MatViennaCLCopyToGPU(A);CHKERRQ(ierr);
   if (A->rmap->n > 0 && A->cmap->n > 0 && a->nz) {
     try {
       ierr = VecViennaCLGetArrayRead(xx,&xgpu);CHKERRQ(ierr);

@@ -707,7 +707,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   hid_t             filescalartype; /* scalar type for file (H5T_NATIVE_FLOAT or H5T_NATIVE_DOUBLE) */
   PetscInt          bs = PetscAbs(xin->map->bs);
   hsize_t           dim;
-  hsize_t           maxDims[4], dims[4], chunkDims[4], count[4],offset[4];
+  hsize_t           maxDims[4], dims[4], chunkDims[4], count[4], offset[4];
   PetscInt          timestep;
   PetscInt          low;
   hsize_t           chunksize;
@@ -745,20 +745,20 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   ierr = PetscHDF5IntCast(xin->map->N/bs,dims + dim);CHKERRQ(ierr);
 
   maxDims[dim]   = dims[dim];
-  chunkDims[dim] = dims[dim];
+  chunkDims[dim] = PetscMax(1, dims[dim]);
   chunksize      *= chunkDims[dim];
   ++dim;
   if (bs > 1 || dim2) {
     dims[dim]      = bs;
     maxDims[dim]   = dims[dim];
-    chunkDims[dim] = dims[dim];
+    chunkDims[dim] = PetscMax(1, dims[dim]);
     chunksize      *= chunkDims[dim];
     ++dim;
   }
 #if defined(PETSC_USE_COMPLEX)
   dims[dim]      = 2;
   maxDims[dim]   = dims[dim];
-  chunkDims[dim] = dims[dim];
+  chunkDims[dim] = PetscMax(1, dims[dim]);
   chunksize      *= chunkDims[dim];
   /* hdf5 chunks must be less than 4GB */
   if (chunksize > PETSC_HDF5_MAX_CHUNKSIZE/64 ) {
@@ -773,7 +773,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
     }
   }
   ++dim;
-#else 
+#else
   /* hdf5 chunks must be less than 4GB */
   if (chunksize > PETSC_HDF5_MAX_CHUNKSIZE/64) {
     if (bs > 1 || dim2) {
@@ -1176,4 +1176,3 @@ PetscErrorCode VecAssemblyEnd_MPI(Vec vec)
   vec->stash.insertmode = NOT_SET_VALUES;
   PetscFunctionReturn(0);
 }
-

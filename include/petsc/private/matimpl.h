@@ -26,7 +26,7 @@ PETSC_EXTERN PetscErrorCode MatSeqAIJRegisterAll(void);
 
 /*
     If you add entries here also add them to the MATOP enum
-    in include/petscmat.h and include/petsc/finclude/petscmat.h
+    in include/petscmat.h and src/mat/f90-mod/petscmat.h
 */
 typedef struct _MatOps *MatOps;
 struct _MatOps {
@@ -207,10 +207,11 @@ struct _MatOps {
   PetscErrorCode (*creatempimatconcatenateseqmat)(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
   PetscErrorCode (*destroysubmatrices)(PetscInt,Mat*[]);
   PetscErrorCode (*mattransposesolve)(Mat,Mat,Mat);
+  PetscErrorCode (*getvalueslocal)(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],PetscScalar[]);
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum
-    in include/petscmat.h and include/petsc/finclude/petscmat.h
+    in include/petscmat.h and src/mat/f90-mod/petscmat.h
 */
 
 #include <petscsys.h>
@@ -402,7 +403,7 @@ struct _p_Mat {
   PetscBool              assembly_subset;  /* set by MAT_SUBSET_OFF_PROC_ENTRIES */
   PetscBool              submat_singleis;  /* for efficient PCSetUp_ASM() */
   PetscBool              structure_only;
-  PetscBool              sortedfull;       /* full, sorted rows are inserted */ 
+  PetscBool              sortedfull;       /* full, sorted rows are inserted */
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
   PetscOffloadMask       offloadmask;      /* a mask which indicates where the valid matrix data is (GPU, CPU or both) */
   PetscBool              pinnedtocpu;
@@ -462,6 +463,7 @@ struct _p_MatPartitioning {
   PetscInt    n;                                 /* number of partitions */
   void        *data;
   PetscInt    setupcalled;
+  PetscBool   use_edge_weights;  /* A flag indicates whether or not to use edge weights */
 };
 
 /* needed for parallel nested dissection by ParMetis and PTSCOTCH */

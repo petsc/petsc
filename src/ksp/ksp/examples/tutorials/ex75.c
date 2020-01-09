@@ -7,8 +7,12 @@ int main(int argc,char **args)
   Vec            x,b;        /* computed solution and RHS */
   Mat            A;          /* linear system matrix */
   KSP            ksp;        /* linear solver context */
+#if defined(PETSC_HAVE_HPDDM)
+  Mat            U;          /* deflation space */
+#endif
   PetscInt       i,j,nmat = 10;
   PetscViewer    viewer;
+  PetscBool      reset = PETSC_FALSE;
   char           name[256];
   char           dir[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
@@ -17,6 +21,7 @@ int main(int argc,char **args)
   ierr = PetscStrcpy(dir,".");CHKERRQ(ierr);
   ierr = PetscOptionsGetString(NULL,NULL,"-load_dir",dir,sizeof(dir),NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-nmat",&nmat,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-reset",&reset,NULL);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
@@ -26,14 +31,27 @@ int main(int argc,char **args)
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
     ierr = MatLoad(A,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-    ierr = MatCreateVecs(A,&x,&b);CHKERRQ(ierr);CHKERRQ(ierr);
+    ierr = MatCreateVecs(A,&x,&b);CHKERRQ(ierr);
     ierr = PetscSNPrintf(name,sizeof(name),"%s/rhs_%d.dat",dir,j);CHKERRQ(ierr);
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
     ierr = VecLoad(b,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-    ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
     ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
     ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_HPDDM)
+    ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPHPDDM,&reset);CHKERRQ(ierr);
+    if (reset) {
+      ierr = KSPHPDDMGetDeflationSpace(ksp,&U);CHKERRQ(ierr);
+      ierr = KSPReset(ksp);CHKERRQ(ierr);
+      ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
+      ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+      ierr = KSPSetUp(ksp);CHKERRQ(ierr);
+      if (U) {
+        ierr = KSPHPDDMSetDeflationSpace(ksp,U);CHKERRQ(ierr);
+        ierr = MatDestroy(&U);CHKERRQ(ierr);
+      }
+    }
+#endif
     ierr = VecDestroy(&x);CHKERRQ(ierr);
     ierr = VecDestroy(&b);CHKERRQ(ierr);
   }
@@ -73,6 +91,6 @@ int main(int argc,char **args)
       requires: hpddm datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
       suffix: 2_icc
       nsize: 1
-      args: -nmat 3 -pc_type icc -ksp_converged_reason -ksp_type hpddm -ksp_max_it 1000 -ksp_gmres_restart 40 -ksp_rtol 1e-10 -ksp_hpddm_krylov_method gcrodr -ksp_hpddm_recycle 20 -load_dir ${DATAFILESPATH}/matrices/hpddm/GCRODR
+      args: -nmat 3 -pc_type icc -ksp_converged_reason -ksp_type hpddm -ksp_max_it 1000 -ksp_gmres_restart 40 -ksp_rtol 1e-10 -ksp_hpddm_krylov_method gcrodr -ksp_hpddm_recycle 20 -reset {{false true}shared output} -load_dir ${DATAFILESPATH}/matrices/hpddm/GCRODR
 
 TEST*/

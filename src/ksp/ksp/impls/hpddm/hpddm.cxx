@@ -61,6 +61,8 @@ static PetscErrorCode KSPDestroy_HPDDM(KSP ksp)
   PetscFunctionBegin;
   ierr = KSPReset_HPDDM(ksp);CHKERRQ(ierr);
   ierr = KSPDestroyDefault(ksp);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPHPDDMSetDeflationSpace_C", NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPHPDDMGetDeflationSpace_C", NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -85,18 +87,108 @@ static PetscErrorCode KSPSolve_HPDDM(KSP ksp)
   PetscFunctionReturn(0);
 }
 
+/*@C
+     KSPHPDDMSetDeflationSpace - Sets the deflation space used by Krylov methods with recycling. This space is viewed as a set of vectors stored in a MATDENSE (column major).
+
+   Input Parameters:
++     ksp - iterative context
+-     U - deflation space to be used during KSPSolve()
+
+   Level: intermediate
+
+.seealso:  KSPCreate(), KSPType (for list of available types), KSPHPDDMGetDeflationSpace()
+@*/
+PetscErrorCode KSPHPDDMSetDeflationSpace(KSP ksp, Mat U)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
+  PetscValidHeaderSpecific(U, MAT_CLASSID, 2);
+  PetscCheckSameComm(ksp, 1, U, 2);
+  ierr = PetscUseMethod(ksp, "KSPHPDDMSetDeflationSpace_C", (KSP, Mat), (ksp, U));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+     KSPHPDDMGetDeflationSpace - Gets the deflation space computed by Krylov methods with recycling or NULL if KSPSolve() has not been called yet. This space is viewed as a set of vectors stored in a MATDENSE (column major). It is the responsibility of the user to free the returned Mat.
+
+   Input Parameter:
++     ksp - iterative context
+
+   Output Parameter:
++     U - deflation space generated during KSPSolve()
+
+   Level: intermediate
+
+.seealso:  KSPCreate(), KSPType (for list of available types), KSPHPDDMSetDeflationSpace()
+@*/
+PetscErrorCode KSPHPDDMGetDeflationSpace(KSP ksp, Mat *U)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
+  ierr = PetscUseMethod(ksp, "KSPHPDDMGetDeflationSpace_C", (KSP, Mat*), (ksp, U));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode KSPHPDDMSetDeflationSpace_HPDDM(KSP ksp, Mat U)
+{
+  HPDDM::PETScOperator *op = reinterpret_cast<HPDDM::PETScOperator*>(ksp->data);
+  Mat                  A, local;
+  const PetscScalar    *array;
+  PetscScalar          *copy;
+  PetscInt             m1, M1, m2, M2, n2, N2, ldu;
+  PetscBool            match;
+  PetscErrorCode       ierr;
+
+  PetscFunctionBegin;
+  ierr = KSPGetOperators(ksp, &A, NULL);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(A, &m1, NULL);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(U, &m2, &n2);CHKERRQ(ierr);
+  ierr = MatGetSize(A, &M1, NULL);CHKERRQ(ierr);
+  ierr = MatGetSize(U, &M2, &N2);CHKERRQ(ierr);
+  if (m1 != m2 || M1 != M2) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Cannot use a deflation space with (m2,M2) = (%D,%D) for a linear system with (m1,M1) = (%D,%D)", m2, M2, m1, M1);
+  ierr = PetscObjectTypeCompareAny((PetscObject)U, &match, MATSEQDENSE, MATMPIDENSE, "");CHKERRQ(ierr);
+  if (!match) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Provided deflation space not stored in a dense Mat");
+  ierr = MatDenseGetLocalMatrix(U, &local);CHKERRQ(ierr);
+  ierr = MatDenseGetArrayRead(local, &array);CHKERRQ(ierr);
+  copy = op->allocate(m2, 1, N2);
+  if (!copy) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_POINTER, "Memory allocation error");
+  ierr = MatDenseGetLDA(local, &ldu);CHKERRQ(ierr);
+  HPDDM::Wrapper<PetscScalar>::omatcopy<'N'>(N2, m2, array, ldu, copy, m2);
+  ierr = MatDenseRestoreArrayRead(local, &array);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode KSPHPDDMGetDeflationSpace_HPDDM(KSP ksp, Mat *U)
+{
+  HPDDM::PETScOperator *op = reinterpret_cast<HPDDM::PETScOperator*>(ksp->data);
+  Mat                  A;
+  const PetscScalar    *array = op->storage();
+  PetscScalar          *copy;
+  PetscInt             m1, M1, N2 = op->k();
+  PetscErrorCode       ierr;
+
+  PetscFunctionBegin;
+  if (!array) *U = NULL;
+  else {
+    ierr = KSPGetOperators(ksp, &A, NULL);CHKERRQ(ierr);
+    ierr = MatGetLocalSize(A, &m1, NULL);CHKERRQ(ierr);
+    ierr = MatGetSize(A, &M1, NULL);CHKERRQ(ierr);
+    ierr = MatCreateDense(PetscObjectComm((PetscObject)ksp), m1, PETSC_DECIDE, M1, N2, NULL, U);CHKERRQ(ierr);
+    ierr = MatDenseGetArray(*U, &copy);CHKERRQ(ierr);
+    ierr = PetscArraycpy(copy, array, m1 * N2);CHKERRQ(ierr);
+    ierr = MatDenseRestoreArray(*U, &copy);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 /*MC
      KSPHPDDM - Interface with the HPDDM library.
 
-   This KSP may be used to further select methods that are currently not implemented natively in PETSc, e.g., GCRODR [2006], a recycled Krylov method which is similar to KSPLGMRES, see [2016] for a comparison. ex75.c shows how to reproduce the results from the aforementioned paper [2006]. Here is a chronological bibliography of relevant publications linked with KSP available in HPDDM through KSPHPDDM, and not available directly in PETSc, like KSPCG and KSPGMRES.
-
-.vb
-   [1980] The Block Conjugate Gradient Algorithm and Related Methods. O'Leary. Linear Algebra and its Applications.
-   [2006] Recycling Krylov Subspaces for Sequences of Linear Systems. Parks, de Sturler, Mackey, Johnson, and Maiti. SIAM Journal on Scientific Computing
-   [2013] A Modified Block Flexible GMRES Method with Deflation at Each Iteration for the Solution of Non-Hermitian Linear Systems with Multiple Right-Hand Sides. Calandra, Gratton, Lago, Vasseur, and Carvalho. SIAM Journal on Scientific Computing.
-   [2016] Block Iterative Methods and Recycling for Improved Scalability of Linear Solvers. Jolivet and Tournier. SC16.
-   [2017] A breakdown-free block conjugate gradient method. Ji and Li. BIT Numerical Mathematics.
-.ve
+   This KSP may be used to further select methods that are currently not implemented natively in PETSc, e.g., GCRODR [2006], a recycled Krylov method which is similar to KSPLGMRES, see [2016] for a comparison. ex75.c shows how to reproduce the results from the aforementioned paper [2006]. A chronological bibliography of relevant publications linked with KSP available in HPDDM through KSPHPDDM, and not available directly in PETSc, may be found below.
 
    Options Database Keys:
 +   -ksp_richardson_scale <scale, default=1.0> - see KSPRICHARDSON
@@ -110,6 +202,13 @@ static PetscErrorCode KSPSolve_HPDDM(KSP ksp)
 .   -ksp_hpddm_recycle <n, default=0> - number of harmonic Ritz vectors to compute (only relevant with GCRODR or BGCRODR)
 .   -ksp_hpddm_recycle_target <type, default=SM> - criterion to select harmonic Ritz vectors using either SM, LM, SR, LR, SI, or LI (only relevant with GCRODR or BGCRODR)
 -   -ksp_hpddm_recycle_strategy <type, default=A> - generalized eigenvalue problem A or B to solve for recycling (only relevant with flexible GCRODR or BGCRODR)
+
+   References:
++   1980 - The Block Conjugate Gradient Algorithm and Related Methods. O'Leary. Linear Algebra and its Applications.
+.   2006 - Recycling Krylov Subspaces for Sequences of Linear Systems. Parks, de Sturler, Mackey, Johnson, and Maiti. SIAM Journal on Scientific Computing
+.   2013 - A Modified Block Flexible GMRES Method with Deflation at Each Iteration for the Solution of Non-Hermitian Linear Systems with Multiple Right-Hand Sides. Calandra, Gratton, Lago, Vasseur, and Carvalho. SIAM Journal on Scientific Computing.
+.   2016 - Block Iterative Methods and Recycling for Improved Scalability of Linear Solvers. Jolivet and Tournier. SC16.
+-   2017 - A breakdown-free block conjugate gradient method. Ji and Li. BIT Numerical Mathematics.
 
    Level: intermediate
 
@@ -127,5 +226,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_HPDDM(KSP ksp)
   ksp->ops->reset          = KSPReset_HPDDM;
   ksp->ops->destroy        = KSPDestroy_HPDDM;
   ksp->ops->setfromoptions = KSPSetFromOptions_HPDDM;
+  ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPHPDDMSetDeflationSpace_C", KSPHPDDMSetDeflationSpace_HPDDM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPHPDDMGetDeflationSpace_C", KSPHPDDMGetDeflationSpace_HPDDM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

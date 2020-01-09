@@ -24,6 +24,7 @@ configure_options = [
   '--download-metis=1',
   '--download-parmetis=1',
   '--download-pastix=1',
+  '--download-hwloc=1',
   '--download-ptscotch=1',
   '--download-superlu_dist=1'
   ]

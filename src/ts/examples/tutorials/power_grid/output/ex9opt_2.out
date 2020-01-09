@@ -1,7 +1,7 @@
   ---------- Testing Gradient -------------
   Run with -tao_test_gradient_view and optionally -tao_test_gradient <threshold> to show difference
     of hand-coded and finite difference gradient entries greater than <threshold>.
-  Testing hand-coded Gradient, if (for double precision runs) ||G - Gfd||_F/||G||_F is
+  Testing hand-coded Gradient, if (for double precision runs) ||G - Gfd||/||G|| is
     O(1.e-8), the hand-coded Gradient is probably correct.
   ||Gfd|| 0.0021849, ||G|| = 0.00218604, angle cosine = (Gfd'G)/||Gfd||||G|| = 1.
   2-norm ||G - Gfd||/||G|| = 0.000520807, ||G - Gfd|| = 1.1385e-06
@@ -16,10 +16,10 @@
   2-norm ||G - Gfd||/||G|| = 8.2006e-06, ||G - Gfd|| = 6.03754e-07
   max-norm ||G - Gfd||/||G|| = 8.2006e-06, ||G - Gfd|| = 6.03754e-07
   ---------- Testing Gradient -------------
-  ||Gfd|| 3.42727e-07, ||G|| = 1.38751e-11, angle cosine = (Gfd'G)/||Gfd||||G|| = -1.
+  ||Gfd|| 3.42727e-07, ||G|| = 1.38753e-11, angle cosine = (Gfd'G)/||Gfd||||G|| = -1.
   2-norm ||G - Gfd||/||G|| = 1.00004, ||G - Gfd|| = 3.42741e-07
   max-norm ||G - Gfd||/||G|| = 1.00004, ||G - Gfd|| = 3.42741e-07
-  1 TAO,  Function value: -1.01855,  Residual: 1.38751e-11 
+  1 TAO,  Function value: -1.01855,  Residual: 1.38753e-11 
 TAO solve converged due to CONVERGED_GRTOL iterations 1
 Vec Object: 1 MPI processes
   type: seq
