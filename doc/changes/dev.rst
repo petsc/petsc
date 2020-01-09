@@ -39,6 +39,7 @@ Changes: Development
 
 - Add ``VecCreateMatDense()``
 - Remove ``MATSOLVERSPARSEELEMENTAL`` since it is no longer functional
+- Add MATSELLCUDA. It supports fast ``MatMult()``, ``MatMultTranspose()`` and ``MatMultAdd()`` on GPUs
 
 .. rubric:: MatCoarsen:
 

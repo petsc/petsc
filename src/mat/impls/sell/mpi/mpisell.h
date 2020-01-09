@@ -39,8 +39,10 @@ typedef struct {
 } Mat_MPISELL;
 
 PETSC_EXTERN PetscErrorCode MatCreate_MPISELL(Mat);
-PETSC_INTERN PetscErrorCode MatSetUpMultiply_MPISELL(Mat);
 
+PETSC_INTERN PetscErrorCode MatAssemblyEnd_MPISELL(Mat, MatAssemblyType);
+
+PETSC_INTERN PetscErrorCode MatSetUpMultiply_MPISELL(Mat);
 PETSC_INTERN PetscErrorCode MatDisAssemble_MPISELL(Mat);
 PETSC_INTERN PetscErrorCode MatDuplicate_MPISELL(Mat, MatDuplicateOption, Mat *);
 

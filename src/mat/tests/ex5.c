@@ -288,4 +288,10 @@ int main(int argc, char **args)
       args: -mat_type sell -test_diagonalscale
       output_file: output/ex5_53.out
 
+   test:
+      suffix: sell_5
+      nsize: 1
+      args: -mat_type mpisell
+      output_file: output/ex5_53.out
+
 TEST*/
