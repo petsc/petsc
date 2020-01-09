@@ -1,3 +1,4 @@
+DMPlexCreateFromFile produced distributed mesh.
 DMPlexIsDistributed: TRUE
 DMPlexIsInterpolatedCollective: full
 DMPlexCheckPointSFHeavy PASSED

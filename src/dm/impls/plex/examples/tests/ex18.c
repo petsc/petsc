@@ -197,6 +197,7 @@ typedef struct {
   InterpType interpolate;                  /* Interpolate the mesh before or after DMPlexDistribute() */
   PetscBool  useGenerator;                 /* Construct mesh with a mesh generator */
   PetscBool  testOrientIF;                 /* Test for different original interface orientations */
+  PetscBool  testHeavy;                    /* Run the heavy PointSF test */
   PetscBool  customView;                   /* Show results of DMPlexIsInterpolated() etc. */
   PetscInt   ornt[2];                      /* Orientation of interface on rank 0 and rank 1 */
   PetscInt   faces[3];                     /* Number of faces per dimension for generator */
@@ -253,6 +254,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->interpolate  = NONE;
   options->useGenerator = PETSC_FALSE;
   options->testOrientIF = PETSC_FALSE;
+  options->testHeavy    = PETSC_TRUE;
   options->customView   = PETSC_FALSE;
   options->testExpandPointsEmpty = PETSC_FALSE;
   options->ornt[0]      = 0;
@@ -283,6 +285,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   if (options->nPointsToExpand) {
     ierr = PetscOptionsBool("-test_expand_points_empty", "For -test_expand_points, rank 0 will have empty input array", "ex18.c", options->testExpandPointsEmpty, &options->testExpandPointsEmpty, NULL);CHKERRQ(ierr);
   }
+  ierr = PetscOptionsBool("-test_heavy", "Run the heavy PointSF test", "ex18.c", options->testHeavy, &options->testHeavy, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-custom_view", "Custom DMPlex view", "ex18.c", options->customView, &options->customView, NULL);CHKERRQ(ierr);
   if (options->testOrientIF) {
     PetscInt i;
@@ -680,9 +683,9 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscBool      useGenerator   = user->useGenerator;
   PetscBool      interpSerial   = user->interpolate == SERIAL ? PETSC_TRUE : PETSC_FALSE;
   PetscBool      interpParallel = user->interpolate == PARALLEL ? PETSC_TRUE : PETSC_FALSE;
+  PetscBool      testHeavy      = user->testHeavy;
   const char    *filename       = user->filename;
   size_t         len;
-  PetscBool      distributed;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
@@ -690,11 +693,14 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
   if (len) {
-    if (interpSerial) {ierr = DMPlexSetOrientInterface_Private(NULL, PETSC_FALSE);CHKERRQ(ierr);}
+    PetscBool distributed;
+
+    if (testHeavy && interpSerial) {ierr = DMPlexSetOrientInterface_Private(NULL, PETSC_FALSE);CHKERRQ(ierr);}
     ierr = DMPlexCreateFromFile(comm, filename, interpSerial, dm);CHKERRQ(ierr); /* with DMPlexOrientInterface_Internal() call skipped so that PointSF issues are left to DMPlexCheckPointSFHeavy() */
-    if (interpSerial) {ierr = DMPlexSetOrientInterface_Private(NULL, PETSC_TRUE);CHKERRQ(ierr);}
+    if (testHeavy && interpSerial) {ierr = DMPlexSetOrientInterface_Private(NULL, PETSC_TRUE);CHKERRQ(ierr);}
     ierr = DMPlexIsDistributed(*dm, &distributed);CHKERRQ(ierr);
-    if (distributed) {
+    ierr = PetscPrintf(comm, "DMPlexCreateFromFile produced %s mesh.\n", distributed ? "distributed" : "serial");CHKERRQ(ierr);
+    if (testHeavy && distributed) {
       ierr = PetscOptionsSetValue(NULL, "-dm_plex_hdf5_force_sequential", NULL);CHKERRQ(ierr);
       ierr = DMPlexCreateFromFile(comm, filename, interpSerial, &serialDM);CHKERRQ(ierr);
       ierr = DMPlexIsDistributed(serialDM, &distributed);CHKERRQ(ierr);
@@ -739,19 +745,24 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   }
 
   if (user->customView) {ierr = CustomView(*dm, PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);}
-  ierr = DMPlexIsDistributed(*dm, &distributed);CHKERRQ(ierr);
-  if (!serialDM && !distributed) {
-    serialDM = *dm;
-    ierr = PetscObjectReference((PetscObject)*dm);CHKERRQ(ierr);
+  if (testHeavy) {
+    PetscBool distributed;
+
+    ierr = DMPlexIsDistributed(*dm, &distributed);CHKERRQ(ierr);
+    if (!serialDM && !distributed) {
+      serialDM = *dm;
+      ierr = PetscObjectReference((PetscObject)*dm);CHKERRQ(ierr);
+    }
+    if (serialDM) {
+      ierr = DMPlexGetExpandedBoundary_Private(serialDM, &boundary);CHKERRQ(ierr);
+    }
+    if (boundary) {
+      /* check DM which has been created in parallel and already interpolated */
+      ierr = DMPlexCheckPointSFHeavy(*dm, boundary);CHKERRQ(ierr);
+    }
+    /* Orient interface because it could be deliberately skipped above. It is idempotent. */
+    ierr = DMPlexOrientInterface_Internal(*dm);CHKERRQ(ierr);
   }
-  if (serialDM) {
-    ierr = DMPlexGetExpandedBoundary_Private(serialDM, &boundary);CHKERRQ(ierr);
-  }
-  if (boundary) {
-    /* check DM which has been created in parallel and already interpolated */
-    ierr = DMPlexCheckPointSFHeavy(*dm, boundary);CHKERRQ(ierr);
-  }
-  ierr = DMPlexOrientInterface_Internal(*dm);CHKERRQ(ierr); /* ensure interface is oriented because orientation might be deliberately skipped above */
   if (user->distribute) {
     DM               pdm = NULL;
 
@@ -767,21 +778,22 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     if (interpParallel) {
       DM idm;
 
-      ierr = DMPlexSetOrientInterface_Private(*dm, PETSC_FALSE);CHKERRQ(ierr);
+      if (testHeavy) {ierr = DMPlexSetOrientInterface_Private(*dm, PETSC_FALSE);CHKERRQ(ierr);}
       ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr); /* with DMPlexOrientInterface_Internal() call skipped so that PointSF issues are left to DMPlexCheckPointSFHeavy() */
-      ierr = DMPlexSetOrientInterface_Private(*dm, PETSC_TRUE);CHKERRQ(ierr);
+      if (testHeavy) {ierr = DMPlexSetOrientInterface_Private(*dm, PETSC_TRUE);CHKERRQ(ierr);}
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm = idm;
       ierr = PetscObjectSetName((PetscObject) *dm, "Interpolated Redistributed Mesh");CHKERRQ(ierr);
       ierr = DMViewFromOptions(*dm, NULL, "-intp_dm_view");CHKERRQ(ierr);
     }
   }
-  if (boundary) {
-    ierr = DMPlexCheckPointSFHeavy(*dm, boundary);CHKERRQ(ierr);
+  if (testHeavy) {
+    if (boundary) {
+      ierr = DMPlexCheckPointSFHeavy(*dm, boundary);CHKERRQ(ierr);
+    }
+    /* Orient interface because it could be deliberately skipped above. It is idempotent. */
+    ierr = DMPlexOrientInterface_Internal(*dm);CHKERRQ(ierr);
   }
-
-  /* Orient interface because it could be deliberately skipped above. It is idempotent. */
-  ierr = DMPlexOrientInterface_Internal(*dm);CHKERRQ(ierr);
 
   ierr = PetscObjectSetName((PetscObject) *dm, "Parallel Mesh");CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
