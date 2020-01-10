@@ -128,4 +128,10 @@ int main(int argc,char **args)
    test:
       args: -bs {{1 2 3 4 5 6 7 8 9 10 11 12}} -pc_type cholesky
 
+   test:
+      suffix: mkl_pardiso
+      requires: mkl_pardiso
+      output_file: output/ex49_1.out
+      args: -bs {{1 3}} -pc_type cholesky -pc_factor_mat_solver_type mkl_pardiso
+
 TEST*/

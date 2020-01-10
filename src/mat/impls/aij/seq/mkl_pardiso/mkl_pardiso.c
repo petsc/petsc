@@ -110,9 +110,7 @@ PetscErrorCode MatMKLPardiso_Convert_seqsbaij(Mat A,PetscBool sym,MatReuse reuse
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!sym) {
-    SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"This should not happen");
-  }
+  if (!sym) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"This should not happen");
   *v      = aa->a;
   if (bs == 1) { /* already in the correct format */
     /* though PetscInt and INT_TYPE are of the same size since they are defined differently the Intel compiler requires a cast */
@@ -1114,9 +1112,6 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_mkl_pardiso(Mat A,MatFactorType fty
     mat_mkl_pardiso->mtype = 11;
 #endif
   } else {
-#if defined(PETSC_USE_COMPLEX)
-    SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support for PARDISO CHOLESKY with complex scalars! Use MAT_FACTOR_LU instead",((PetscObject)A)->type_name);
-#endif
     B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_AIJMKL_PARDISO;
     B->factortype                  = MAT_FACTOR_CHOLESKY;
     if (isSeqAIJ) mat_mkl_pardiso->Convert = MatMKLPardiso_Convert_seqaij;
@@ -1125,8 +1120,13 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_mkl_pardiso(Mat A,MatFactorType fty
     else SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support for PARDISO CHOLESKY with %s format",((PetscObject)A)->type_name);
 
     mat_mkl_pardiso->needsym = PETSC_TRUE;
+#if !defined(PETSC_USE_COMPLEX)
     if (A->spd_set && A->spd) mat_mkl_pardiso->mtype = 2;
     else                      mat_mkl_pardiso->mtype = -2;
+#else
+    mat_mkl_pardiso->mtype = 6;
+    if (A->hermitian) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support for PARDISO CHOLESKY with Hermitian matrices! Use MAT_FACTOR_LU instead");
+#endif
   }
   B->ops->destroy = MatDestroy_MKL_PARDISO;
   B->ops->view    = MatView_MKL_PARDISO;
