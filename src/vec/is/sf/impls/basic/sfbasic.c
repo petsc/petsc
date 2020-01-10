@@ -304,7 +304,7 @@ static PetscErrorCode PetscSFBcastAndOpBegin_Basic(PetscSF sf,MPI_Datatype unit,
   PetscErrorCode    ierr;
   PetscSFPack       link;
   const PetscInt    *rootloc = NULL;
-  MPI_Request       *rootreqs,*leafreqs;
+  MPI_Request       *rootreqs = NULL,*leafreqs = NULL;
 
   PetscFunctionBegin;
   ierr = PetscSFPackGet_Basic(sf,unit,rootmtype,rootdata,leafmtype,leafdata,PETSCSF_ROOT2LEAF_BCAST,&link);CHKERRQ(ierr);
@@ -391,7 +391,7 @@ static PetscErrorCode PetscSFFetchAndOpEnd_Basic(PetscSF sf,MPI_Datatype unit,Pe
   PetscErrorCode    ierr;
   PetscSFPack       link;
   const PetscInt    *rootloc = NULL,*leafloc = NULL;
-  MPI_Request       *rootreqs,*leafreqs;
+  MPI_Request       *rootreqs = NULL,*leafreqs = NULL;
 
   PetscFunctionBegin;
   ierr = PetscSFGetRootIndicesWithMemType_Basic(sf,rootmtype,&rootloc);CHKERRQ(ierr);
