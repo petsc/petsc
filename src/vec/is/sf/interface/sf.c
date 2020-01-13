@@ -1658,7 +1658,7 @@ PetscErrorCode PetscSFComputeMultiRootOriginalNumbering(PetscSF sf, const PetscI
 PetscErrorCode PetscSFGatherBegin(PetscSF sf,MPI_Datatype unit,const void *leafdata,void *multirootdata)
 {
   PetscErrorCode ierr;
-  PetscSF        multi;
+  PetscSF        multi = NULL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
@@ -1688,7 +1688,7 @@ PetscErrorCode PetscSFGatherBegin(PetscSF sf,MPI_Datatype unit,const void *leafd
 PetscErrorCode PetscSFGatherEnd(PetscSF sf,MPI_Datatype unit,const void *leafdata,void *multirootdata)
 {
   PetscErrorCode ierr;
-  PetscSF        multi;
+  PetscSF        multi = NULL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
@@ -1718,7 +1718,7 @@ PetscErrorCode PetscSFGatherEnd(PetscSF sf,MPI_Datatype unit,const void *leafdat
 PetscErrorCode PetscSFScatterBegin(PetscSF sf,MPI_Datatype unit,const void *multirootdata,void *leafdata)
 {
   PetscErrorCode ierr;
-  PetscSF        multi;
+  PetscSF        multi = NULL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
@@ -1748,7 +1748,7 @@ PetscErrorCode PetscSFScatterBegin(PetscSF sf,MPI_Datatype unit,const void *mult
 PetscErrorCode PetscSFScatterEnd(PetscSF sf,MPI_Datatype unit,const void *multirootdata,void *leafdata)
 {
   PetscErrorCode ierr;
-  PetscSF        multi;
+  PetscSF        multi = NULL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);

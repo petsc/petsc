@@ -116,7 +116,7 @@ static PetscErrorCode PetscSFBcastAndOpBegin_Neighbor(PetscSF sf,MPI_Datatype un
   PetscSFLink          link;
   PetscSF_Neighbor     *dat = (PetscSF_Neighbor*)sf->data;
   MPI_Comm             distcomm;
-  void                 *rootbuf,*leafbuf;
+  void                 *rootbuf = NULL,*leafbuf = NULL;
   MPI_Request          *req;
 
   PetscFunctionBegin;
