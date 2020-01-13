@@ -11,10 +11,7 @@ int main(int argc,char **argv)
   PetscScalar    one = 1.0;
   PetscReal      fill=2.0;
   Mat            A,P,C;
-  PetscScalar    *array,none = -1.0,alpha;
-  Vec            x,v1,v2,v3,v4;
-  PetscReal      norm,norm_tmp,norm_tmp1,tol=100.*PETSC_MACHINE_EPSILON;
-  PetscRandom    rdm;
+  PetscScalar    *array,alpha;
   PetscBool      Test_3D=PETSC_FALSE,flg;
   const PetscInt *ia,*ja;
   PetscInt       dof;
@@ -76,14 +73,24 @@ int main(int argc,char **argv)
   }
   /* Create interpolation between the fine and coarse grids */
   ierr = DMCreateInterpolation(coarsedm,finedm,&P,NULL);CHKERRQ(ierr);
-  /* Create vectors v1 and v2 that are compatible with A */
-  ierr = MatCreateVecs(A,&v1,NULL);CHKERRQ(ierr);
-  ierr = VecDuplicate(v1,&v2);CHKERRQ(ierr);
-  ierr = PetscRandomCreate(comm,&rdm);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
 
   /* Test P^T * A * P - MatPtAP() */
   /*------------------------------*/
+  /* (1) Developer API */
+  ierr = MatProductCreate(A,P,NULL,&C);CHKERRQ(ierr);
+  ierr = MatProductSetType(C,MATPRODUCT_PtAP);CHKERRQ(ierr);
+  ierr = MatProductSetAlgorithm(C,"default");CHKERRQ(ierr);
+  ierr = MatProductSetFill(C,PETSC_DEFAULT);CHKERRQ(ierr);
+  ierr = MatProductSetFromOptions(C);CHKERRQ(ierr);
+  ierr = MatProductSymbolic(C);CHKERRQ(ierr);
+  ierr = MatProductNumeric(C);CHKERRQ(ierr);
+  ierr = MatProductNumeric(C);CHKERRQ(ierr); /* Test reuse of symbolic C */
+
+  ierr = MatPtAPMultEqual(A,P,C,10,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatProduct_PtAP");
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
+
+  /* (2) User API */
   ierr = MatPtAP(A,P,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
   /* Test MAT_REUSE_MATRIX - reuse symbolic C */
   alpha=1.0;
@@ -96,41 +103,14 @@ int main(int argc,char **argv)
   /* Free intermediate data structures created for reuse of C=Pt*A*P */
   ierr = MatFreeIntermediateDataStructures(C);CHKERRQ(ierr);
 
-  /* Create vector x that is compatible with P */
-  ierr = MatCreateVecs(P,&x,NULL);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&v3);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&v4);CHKERRQ(ierr);
-
-  norm = 0.0;
-  for (i=0; i<10; i++) {
-    ierr = VecSetRandom(x,rdm);CHKERRQ(ierr);
-    ierr = MatMult(P,x,v1);CHKERRQ(ierr);
-    ierr = MatMult(A,v1,v2);CHKERRQ(ierr);  /* v2 = A*P*x */
-
-    ierr = MatMultTranspose(P,v2,v3);CHKERRQ(ierr); /* v3 = Pt*A*P*x */
-    ierr = MatMult(C,x,v4);CHKERRQ(ierr);           /* v3 = C*x   */
-    ierr = VecAXPY(v4,none,v3);CHKERRQ(ierr);
-    ierr = VecNorm(v4,NORM_1,&norm_tmp);CHKERRQ(ierr);
-    ierr = VecNorm(v3,NORM_1,&norm_tmp1);CHKERRQ(ierr);
-
-    norm_tmp /= norm_tmp1;
-    if (norm_tmp > norm) norm = norm_tmp;
-  }
-  if (norm >= tol && !rank) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatPtAP(), |v3 - v4|/|v3|: %g\n",(double)norm);CHKERRQ(ierr);
-  }
+  ierr = MatPtAPMultEqual(A,P,C,10,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatPtAP");
 
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&P);CHKERRQ(ierr);
-  ierr = VecDestroy(&v3);CHKERRQ(ierr);
-  ierr = VecDestroy(&v4);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&v1);CHKERRQ(ierr);
-  ierr = VecDestroy(&v2);CHKERRQ(ierr);
   ierr = DMDestroy(&finedm);CHKERRQ(ierr);
   ierr = DMDestroy(&coarsedm);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }
@@ -144,25 +124,25 @@ int main(int argc,char **argv)
    test:
       suffix: allatonce
       nsize: 4
-      args: -M 10 -N 10 -Z 10 -matmaijptap_via allatonce
+      args: -M 10 -N 10 -Z 10 -matptap_via allatonce
       output_file: output/ex89_1.out
 
    test:
       suffix: allatonce_merged
       nsize: 4
-      args: -M 10 -M 5 -M 10 -matmaijptap_via allatonce_merged
+      args: -M 10 -M 5 -M 10 -matptap_via allatonce_merged
       output_file: output/ex96_1.out
 
    test:
       suffix: allatonce_3D
       nsize: 4
-      args: -M 10 -M 5 -M 10 -test_3D 1 -matmaijptap_via allatonce
+      args: -M 10 -M 5 -M 10 -test_3D 1 -matptap_via allatonce
       output_file: output/ex96_1.out
 
    test:
       suffix: allatonce_merged_3D
       nsize: 4
-      args: -M 10 -M 5 -M 10 -test_3D 1 -matmaijptap_via allatonce_merged
+      args: -M 10 -M 5 -M 10 -test_3D 1 -matptap_via allatonce_merged
       output_file: output/ex96_1.out
 
 TEST*/

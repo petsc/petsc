@@ -129,22 +129,39 @@ int main(int argc,char **args)
     ierr = MatCreateTranspose(AT,&ATT);CHKERRQ(ierr);
     ierr = MatCreateTranspose(B,&BT);CHKERRQ(ierr);
     ierr = MatCreateTranspose(BT,&BTT);CHKERRQ(ierr);
+
+    ierr = MatMatMult(AT,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
+    ierr = MatMatMultEqual(AT,B,C,10,&flg);CHKERRQ(ierr);
+    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error: MatMatMult() for C=AT*B");
+    ierr = MatDestroy(&C);CHKERRQ(ierr);
+
     ierr = MatMatMult(ATT,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
-    ierr = MatMatMultEqual(A,B,C,10,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error: MatMatMult()\n");
+    ierr = MatMatMultEqual(ATT,B,C,10,&flg);CHKERRQ(ierr);
+    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error: MatMatMult() for C=ATT*B");
     ierr = MatDestroy(&C);CHKERRQ(ierr);
+
+    ierr = MatMatMult(A,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
+    ierr = MatMatMultEqual(A,B,C,10,&flg);CHKERRQ(ierr);
+    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error: MatMatMult() for reuse C=A*B");
+    /* ATT has different matrix type as A (although they have same internal data structure),
+       we cannot call MatProductReplaceMats(ATT,NULL,NULL,C) and MatMatMult(ATT,B,MAT_REUSE_MATRIX,fill,&C) */
+    ierr = MatDestroy(&C);CHKERRQ(ierr);
+
     ierr = MatMatMult(A,BTT,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
-    ierr = MatMatMultEqual(A,B,C,10,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error: MatMatMult()\n");
+    ierr = MatMatMultEqual(A,BTT,C,10,&flg);CHKERRQ(ierr);
+    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error: MatMatMult() for C=A*BTT");
     ierr = MatDestroy(&C);CHKERRQ(ierr);
+
     ierr = MatMatMult(ATT,BTT,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
     ierr = MatMatMultEqual(A,B,C,10,&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error: MatMatMult()\n");
     ierr = MatDestroy(&C);CHKERRQ(ierr);
+
     ierr = MatDestroy(&BTT);CHKERRQ(ierr);
     ierr = MatDestroy(&BT);CHKERRQ(ierr);
     ierr = MatDestroy(&ATT);CHKERRQ(ierr);
     ierr = MatDestroy(&AT);CHKERRQ(ierr);
+
     ierr = MatMatMult(A,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
     ierr = MatSetOptionsPrefix(C,"matmatmult_");CHKERRQ(ierr); /* enable option '-matmatmult_' for matrix C */
     ierr = MatGetInfo(C,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
@@ -304,30 +321,20 @@ int main(int argc,char **args)
       ierr = MatConvert(P,MATMPIDENSE,MAT_INITIAL_MATRIX,&Pdense);CHKERRQ(ierr);
     }
 
-    /* test with A AIJ */
+    /* test with A(AIJ), Pdense -- call MatPtAP_Basic() when np>1 */
     ierr = MatPtAP(A,Pdense,MAT_INITIAL_MATRIX,fill,&Cdense);CHKERRQ(ierr);
-    ierr = MatAXPY(Cdense,-1.0,Cdensetest,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-    ierr = MatNorm(Cdense,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
-    if (norm > PETSC_SMALL) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in MatPtAP with A SeqAIJ and P SeqDense: %g\n",(double)norm);
-    ierr = MatScale(Cdense,-1.);CHKERRQ(ierr);
     ierr = MatPtAP(A,Pdense,MAT_REUSE_MATRIX,fill,&Cdense);CHKERRQ(ierr);
-    ierr = MatAXPY(Cdense,-1.0,Cdensetest,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-    ierr = MatNorm(Cdense,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
-    if (norm > PETSC_SMALL) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in MatPtAP with A SeqAIJ and P SeqDense and MAT_REUSE_MATRIX: %g\n",(double)norm);
+    ierr = MatPtAPMultEqual(A,Pdense,Cdense,10,&flg);CHKERRQ(ierr);
+    if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatPtAP with A AIJ and P Dense");
     ierr = MatDestroy(&Cdense);CHKERRQ(ierr);
 
     /* test with A SeqDense */
     if (seqaij) {
       ierr = MatConvert(A,MATSEQDENSE,MAT_INITIAL_MATRIX,&Adense);CHKERRQ(ierr);
       ierr = MatPtAP(Adense,Pdense,MAT_INITIAL_MATRIX,fill,&Cdense);CHKERRQ(ierr);
-      ierr = MatAXPY(Cdense,-1.0,Cdensetest,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-      ierr = MatNorm(Cdense,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
-      if (norm > PETSC_SMALL) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in MatPtAP with A SeqDense and P SeqDense: %g\n",(double)norm);
-      ierr = MatScale(Cdense,-1.);CHKERRQ(ierr);
       ierr = MatPtAP(Adense,Pdense,MAT_REUSE_MATRIX,fill,&Cdense);CHKERRQ(ierr);
-      ierr = MatAXPY(Cdense,-1.0,Cdensetest,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-      ierr = MatNorm(Cdense,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
-      if (norm > PETSC_SMALL) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in MatPtAP with A SeqDense and P SeqDense and MAT_REUSE_MATRIX: %g\n",(double)norm);
+      ierr = MatPtAPMultEqual(Adense,Pdense,Cdense,10,&flg);CHKERRQ(ierr);
+      if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in MatPtAP with A SeqDense and P SeqDense");
       ierr = MatDestroy(&Cdense);CHKERRQ(ierr);
       ierr = MatDestroy(&Adense);CHKERRQ(ierr);
     }
@@ -353,9 +360,24 @@ int main(int argc,char **args)
     /* 4) Test MatRARt() */
     /* ----------------- */
     if (Test_MatRARt) {
-      Mat       R, RARt;
+      Mat R, RARt, Rdense, RARtdense;
       ierr = MatTranspose(P,MAT_INITIAL_MATRIX,&R);CHKERRQ(ierr);
+
+      /* Test MatRARt_Basic(), MatMatMatMult_Basic() */
+      ierr = MatConvert(R,MATDENSE,MAT_INITIAL_MATRIX,&Rdense);CHKERRQ(ierr);
+      ierr = MatRARt(A,Rdense,MAT_INITIAL_MATRIX,2.0,&RARtdense);CHKERRQ(ierr);
+      ierr = MatRARt(A,Rdense,MAT_REUSE_MATRIX,2.0,&RARtdense);CHKERRQ(ierr);
+
+      ierr = MatConvert(RARtdense,MATAIJ,MAT_INITIAL_MATRIX,&RARt);CHKERRQ(ierr);
+      ierr = MatNormDifference(C,RARt,&norm);CHKERRQ(ierr);
+      if (norm > PETSC_SMALL) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"|PtAP - RARtdense| = %g",(double)norm);
+      ierr = MatDestroy(&Rdense);CHKERRQ(ierr);
+      ierr = MatDestroy(&RARtdense);CHKERRQ(ierr);
+      ierr = MatDestroy(&RARt);CHKERRQ(ierr);
+
+      /* Test MatRARt() for aij matrices */
       ierr = MatRARt(A,R,MAT_INITIAL_MATRIX,2.0,&RARt);CHKERRQ(ierr);
+      ierr = MatRARt(A,R,MAT_REUSE_MATRIX,2.0,&RARt);CHKERRQ(ierr);
       ierr = MatNormDifference(C,RARt,&norm);CHKERRQ(ierr);
       if (norm > PETSC_SMALL) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"|PtAP - RARt| = %g",(double)norm);
       ierr = MatDestroy(&R);CHKERRQ(ierr);
@@ -366,6 +388,7 @@ int main(int argc,char **args)
       Mat       R, RAP;
       ierr = MatTranspose(P,MAT_INITIAL_MATRIX,&R);CHKERRQ(ierr);
       ierr = MatMatMatMult(R,A,P,MAT_INITIAL_MATRIX,2.0,&RAP);CHKERRQ(ierr);
+      ierr = MatMatMatMult(R,A,P,MAT_REUSE_MATRIX,2.0,&RAP);CHKERRQ(ierr);
       ierr = MatNormDifference(C,RAP,&norm);CHKERRQ(ierr);
       if (norm > PETSC_SMALL) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PtAP != RAP %g",(double)norm);
       ierr = MatDestroy(&R);CHKERRQ(ierr);
@@ -430,7 +453,7 @@ int main(int argc,char **args)
       suffix: 2_mattransposematmult_matmatmult
       nsize: 3
       requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
-      args: -f0 ${DATAFILESPATH}/matrices/medium -f1 ${DATAFILESPATH}/matrices/medium -mattransposematmult_via matmatmult> ex94_2.tmp 2>&1
+      args: -f0 ${DATAFILESPATH}/matrices/medium -f1 ${DATAFILESPATH}/matrices/medium -mattransposematmult_via at*b> ex94_2.tmp 2>&1
 
    test:
       suffix: 2_mattransposematmult_scalable

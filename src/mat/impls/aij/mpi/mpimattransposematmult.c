@@ -23,28 +23,11 @@ PetscErrorCode MatDestroy_MPIDense_MatTransMatMult(Mat A)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatTransposeMatMult_MPIAIJ_MPIDense(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (scall == MAT_INITIAL_MATRIX) {
-    ierr = PetscLogEventBegin(MAT_TransposeMatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
-    ierr = MatTransposeMatMultSymbolic_MPIAIJ_MPIDense(A,B,fill,C);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(MAT_TransposeMatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
-  }
-  ierr = PetscLogEventBegin(MAT_TransposeMatMultNumeric,A,B,0,0);CHKERRQ(ierr);
-  ierr = MatTransposeMatMultNumeric_MPIAIJ_MPIDense(A,B,*C);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_TransposeMatMultNumeric,A,B,0,0);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal fill,Mat *C)
+PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal fill,Mat C)
 {
   PetscErrorCode      ierr;
   PetscInt            m=A->rmap->n,n=A->cmap->n,BN=B->cmap->N;
   Mat_MatTransMatMult *atb;
-  Mat                 Cdense;
   Vec                 bt,ct;
   Mat_MPIDense        *c;
 
@@ -52,10 +35,9 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal
   ierr = PetscNew(&atb);CHKERRQ(ierr);
 
   /* create output dense matrix C = A^T*B */
-  ierr = MatCreate(PetscObjectComm((PetscObject)A),&Cdense);CHKERRQ(ierr);
-  ierr = MatSetSizes(Cdense,n,PETSC_DECIDE,PETSC_DECIDE,BN);CHKERRQ(ierr);
-  ierr = MatSetType(Cdense,MATMPIDENSE);CHKERRQ(ierr);
-  ierr = MatMPIDenseSetPreallocation(Cdense,NULL);CHKERRQ(ierr);
+  ierr = MatSetSizes(C,n,PETSC_DECIDE,PETSC_DECIDE,BN);CHKERRQ(ierr);
+  ierr = MatSetType(C,MATMPIDENSE);CHKERRQ(ierr);
+  ierr = MatMPIDenseSetPreallocation(C,NULL);CHKERRQ(ierr);
 
   /* create vectors bt and ct to hold locally transposed arrays of B and C */
   ierr = VecCreate(PetscObjectComm((PetscObject)A),&bt);CHKERRQ(ierr);
@@ -67,12 +49,11 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal
   atb->bt = bt;
   atb->ct = ct;
 
-  *C = Cdense;
-  c                                    = (Mat_MPIDense*)Cdense->data;
-  c->atb                               = atb;
-  atb->destroy                         = Cdense->ops->destroy;
-  Cdense->ops->destroy                 = MatDestroy_MPIDense_MatTransMatMult;
-  Cdense->ops->transposematmultnumeric = MatTransposeMatMultNumeric_MPIAIJ_MPIDense;
+  c                               = (Mat_MPIDense*)C->data;
+  c->atb                          = atb;
+  atb->destroy                    = C->ops->destroy;
+  C->ops->destroy                 = MatDestroy_MPIDense_MatTransMatMult;
+  C->ops->transposematmultnumeric = MatTransposeMatMultNumeric_MPIAIJ_MPIDense;
   PetscFunctionReturn(0);
 }
 

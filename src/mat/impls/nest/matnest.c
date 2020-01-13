@@ -97,7 +97,7 @@ PETSC_INTERN PetscErrorCode MatMatMultNumeric_Nest_Dense(Mat A,Mat B,Mat C)
   Mat_Nest          *bA = (Mat_Nest*)A->data;
   PetscContainer    container;
   Nest_Dense        *contents;
-  Mat               viewB,viewC,seq;
+  Mat               viewB,viewC,seq,productB,workC;
   const PetscScalar *barray;
   PetscScalar       *carray;
   PetscInt          i,j,M,N,nr = bA->nr,nc = bA->nc,ldb,ldc;
@@ -124,16 +124,25 @@ PETSC_INTERN PetscErrorCode MatMatMultNumeric_Nest_Dense(Mat A,Mat B,Mat C)
       ierr = MatCreateDense(PetscObjectComm((PetscObject)A),contents->dn[j+1]-contents->dn[j],PETSC_DECIDE,M,N,(PetscScalar*)(barray+contents->dn[j]),&viewB);CHKERRQ(ierr);
       ierr = MatDenseGetLocalMatrix(viewB,&seq);CHKERRQ(ierr);
       ierr = MatSeqDenseSetLDA(seq,ldb);CHKERRQ(ierr);
-      /* workC <- A[i][j] * B[j] */
-      ierr = MatMatMultNumeric(bA->m[i][j],viewB,contents->workC[i*nc + j]);CHKERRQ(ierr);
+
+      /* MatMatMultNumeric(bA->m[i][j],viewB,contents->workC[i*nc + j]); */
+      workC             = contents->workC[i*nc + j];
+      productB          = workC->product->B;
+      workC->product->B = viewB; /* use newly created dense matrix viewB */
+      ierr = (workC->ops->productnumeric)(workC);CHKERRQ(ierr);
       ierr = MatDestroy(&viewB);CHKERRQ(ierr);
-       /* C[i] <- workC + C[i] */
+      workC->product->B = productB; /* resume original B */
+
+      /* C[i] <- workC + C[i] */
       ierr = MatAXPY(viewC,1.0,contents->workC[i*nc + j],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     }
     ierr = MatDestroy(&viewC);CHKERRQ(ierr);
   }
   ierr = MatDenseRestoreArray(C,&carray);CHKERRQ(ierr);
   ierr = MatDenseRestoreArrayRead(B,&barray);CHKERRQ(ierr);
+
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -153,32 +162,33 @@ PetscErrorCode MatNest_DenseDestroy(void *ctx)
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode MatMatMultSymbolic_Nest_Dense(Mat A,Mat B,PetscReal fill,Mat *C)
+PETSC_INTERN PetscErrorCode MatMatMultSymbolic_Nest_Dense(Mat A,Mat B,PetscReal fill,Mat C)
 {
   Mat_Nest          *bA = (Mat_Nest*)A->data;
-  Mat               viewB,viewSeq;
+  Mat               viewB,viewSeq,workC;
   const PetscScalar *barray;
   PetscInt          i,j,M,N,m,nr = bA->nr,nc = bA->nc,maxm = 0,ldb;
   PetscContainer    container;
-  Nest_Dense        *contents;
+  Nest_Dense        *contents=NULL;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = MatGetSize(B,NULL,&N);CHKERRQ(ierr);
-  if (!(*C)) {
+  if (!C->assembled) {
+    ierr = MatGetSize(B,NULL,&N);CHKERRQ(ierr);
     ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
     ierr = MatGetSize(A,&M,NULL);CHKERRQ(ierr);
-    ierr = MatCreateDense(PetscObjectComm((PetscObject)A),m,PETSC_DECIDE,M,N,NULL,C);CHKERRQ(ierr);
-  } else {
-    if ((*C)->rmap->n != A->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrix local row dimensions are incompatible, %D != %D",(*C)->rmap->n,A->rmap->n);
-    if ((*C)->cmap->n != B->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrix local column dimensions are incompatible, %D != %D",(*C)->cmap->n,B->cmap->n);
+
+    ierr = MatSetSizes(C,m,PETSC_DECIDE,M,N);CHKERRQ(ierr);
+    ierr = MatSetType(C,MATDENSE);CHKERRQ(ierr);
+    ierr = MatSeqDenseSetPreallocation(C,NULL);CHKERRQ(ierr);
+    ierr = MatMPIDenseSetPreallocation(C,NULL);CHKERRQ(ierr);
   }
 
   ierr = PetscNew(&contents);CHKERRQ(ierr);
   ierr = PetscContainerCreate(PetscObjectComm((PetscObject)A),&container);CHKERRQ(ierr);
   ierr = PetscContainerSetPointer(container,contents);CHKERRQ(ierr);
   ierr = PetscContainerSetUserDestroy(container,MatNest_DenseDestroy);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)*C,"workC",(PetscObject)container);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)C,"workC",(PetscObject)container);CHKERRQ(ierr);
   ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
   ierr = PetscCalloc3(nr+1,&contents->dm,nc+1,&contents->dn,nr*nc,&contents->workC);CHKERRQ(ierr);
   contents->k = nr*nc;
@@ -204,8 +214,16 @@ PETSC_INTERN PetscErrorCode MatMatMultSymbolic_Nest_Dense(Mat A,Mat B,PetscReal 
     for (i=0; i<nr; i++) {
       if (!bA->m[i][j]) continue;
       /* MatMatMultSymbolic may attach a specific container (depending on MatType of bA->m[i][j]) to workC[i][j] */
-      ierr = MatMatMultSymbolic(bA->m[i][j],viewB,fill,contents->workC + i*nc + j);CHKERRQ(ierr);
-      ierr = MatDenseGetLocalMatrix(contents->workC[i*nc + j],&viewSeq);CHKERRQ(ierr);
+
+      ierr = MatProductCreate(bA->m[i][j],viewB,NULL,&contents->workC[i*nc + j]);CHKERRQ(ierr);
+      workC = contents->workC[i*nc + j];
+      ierr = MatProductSetType(workC,MATPRODUCT_AB);CHKERRQ(ierr);
+      ierr = MatProductSetAlgorithm(workC,"default");CHKERRQ(ierr);
+      ierr = MatProductSetFill(workC,fill);CHKERRQ(ierr);
+      ierr = MatProductSetFromOptions(workC);CHKERRQ(ierr);
+      ierr = MatProductSymbolic(workC);CHKERRQ(ierr);
+
+      ierr = MatDenseGetLocalMatrix(workC,&viewSeq);CHKERRQ(ierr);
       /* free the memory allocated in MatMatMultSymbolic, since tarray will be shared by all Mat */
       ierr = MatSeqDenseSetPreallocation(viewSeq,contents->tarray);CHKERRQ(ierr);
     }
@@ -213,26 +231,31 @@ PETSC_INTERN PetscErrorCode MatMatMultSymbolic_Nest_Dense(Mat A,Mat B,PetscReal 
   }
   ierr = MatDenseRestoreArrayRead(B,&barray);CHKERRQ(ierr);
 
-  (*C)->ops->matmultnumeric = MatMatMultNumeric_Nest_Dense;
+  C->ops->matmultnumeric = MatMatMultNumeric_Nest_Dense;
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode MatMatMult_Nest_Dense(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
+/* --------------------------------------------------------- */
+static PetscErrorCode MatProductSetFromOptions_Nest_Dense_AB(Mat C)
+{
+  PetscFunctionBegin;
+  C->ops->matmultsymbolic = MatMatMultSymbolic_Nest_Dense;
+  C->ops->productsymbolic = MatProductSymbolic_AB;
+  PetscFunctionReturn(0);
+}
+
+PETSC_INTERN PetscErrorCode MatProductSetFromOptions_Nest_Dense(Mat C)
 {
   PetscErrorCode ierr;
+  Mat_Product    *product = C->product;
 
   PetscFunctionBegin;
-  if (scall == MAT_INITIAL_MATRIX) {
-    *C = NULL;
-    ierr = PetscLogEventBegin(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
-    ierr = MatMatMultSymbolic_Nest_Dense(A,B,fill,C);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
-  }
-  ierr = PetscLogEventBegin(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr);
-  ierr = MatMatMultNumeric_Nest_Dense(A,B,*C);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr);
+  if (product->type == MATPRODUCT_AB) {
+    ierr = MatProductSetFromOptions_Nest_Dense_AB(C);CHKERRQ(ierr);
+  } else SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_SUP,"MatProduct type is not supported");
   PetscFunctionReturn(0);
 }
+/* --------------------------------------------------------- */
 
 static PetscErrorCode MatMultTranspose_Nest(Mat A,Vec x,Vec y)
 {
@@ -406,9 +429,9 @@ static PetscErrorCode MatDestroy_Nest(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_nest_seqaij_C",0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_nest_aij_C",0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_nest_is_C",0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMatMult_nest_mpidense_C",0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMatMult_nest_seqdense_C",0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMatMult_nest_dense_C",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_nest_seqdense_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_nest_mpidense_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_nest_dense_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2168,9 +2191,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_Nest(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_nest_seqaij_C",  MatConvert_Nest_AIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_nest_aij_C",     MatConvert_Nest_AIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_nest_is_C",      MatConvert_Nest_IS);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMatMult_nest_mpidense_C",MatMatMult_Nest_Dense);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMatMult_nest_seqdense_C",MatMatMult_Nest_Dense);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMatMult_nest_dense_C",   MatMatMult_Nest_Dense);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_nest_seqdense_C",MatProductSetFromOptions_Nest_Dense);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_nest_mpidense_C",MatProductSetFromOptions_Nest_Dense);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_nest_dense_C",MatProductSetFromOptions_Nest_Dense);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATNEST);CHKERRQ(ierr);
   PetscFunctionReturn(0);

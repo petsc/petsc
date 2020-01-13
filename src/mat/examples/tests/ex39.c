@@ -137,6 +137,11 @@ int main(int argc,char **args)
 
   /* Test MatMatTransposeMult(): B = C*C^T */
   ierr = MatMatTransposeMult(C,C,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&B);CHKERRQ(ierr);
+  ierr = MatScale(C,2.0);CHKERRQ(ierr);
+  ierr = MatMatTransposeMult(C,C,MAT_REUSE_MATRIX,PETSC_DEFAULT,&B);CHKERRQ(ierr);
+  ierr = MatMatTransposeMultEqual(C,C,B,10,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MatMatTransposeMult: B != C*B^T");
+
   if (mats_view) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"C MatMatTransposeMult C:\n");CHKERRQ(ierr);
     ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -167,5 +172,12 @@ int main(int argc,char **args)
       nsize: 6
       args: -m 2 -n 3
       requires: elemental
+
+   test:
+      suffix: 3
+      nsize: 1
+      args: -m 2 -n 3
+      requires: elemental
+      output_file: output/ex39_1.out
 
 TEST*/

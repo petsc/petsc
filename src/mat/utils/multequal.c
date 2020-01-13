@@ -8,7 +8,7 @@
 
    Input Parameters:
 +  A - the first matrix
--  B - the second matrix
+.  B - the second matrix
 -  n - number of random vectors to be tested
 
    Output Parameter:
@@ -71,7 +71,7 @@ PetscErrorCode MatMultEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
 
    Input Parameters:
 +  A - the first matrix
--  B - the second matrix
+.  B - the second matrix
 -  n - number of random vectors to be tested
 
    Output Parameter:
@@ -135,7 +135,7 @@ PetscErrorCode  MatMultAddEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
 
    Input Parameters:
 +  A - the first matrix
--  B - the second matrix
+.  B - the second matrix
 -  n - number of random vectors to be tested
 
    Output Parameter:
@@ -196,7 +196,7 @@ PetscErrorCode  MatMultTransposeEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
 
    Input Parameters:
 +  A - the first matrix
--  B - the second matrix
+.  B - the second matrix
 -  n - number of random vectors to be tested
 
    Output Parameter:
@@ -327,8 +327,8 @@ PetscErrorCode MatMatMultEqual(Mat A,Mat B,Mat C,PetscInt n,PetscBool *flg)
 
    Input Parameters:
 +  A - the first matrix
--  B - the second matrix
--  C - the third matrix
+.  B - the second matrix
+.  C - the third matrix
 -  n - number of random vectors to be tested
 
    Output Parameter:
@@ -394,8 +394,8 @@ PetscErrorCode MatTransposeMatMultEqual(Mat A,Mat B,Mat C,PetscInt n,PetscBool *
 
    Input Parameters:
 +  A - the first matrix
--  B - the second matrix
--  C - the third matrix
+.  B - the second matrix
+.  C - the third matrix
 -  n - number of random vectors to be tested
 
    Output Parameter:
@@ -451,6 +451,78 @@ PetscErrorCode MatMatTransposeMultEqual(Mat A,Mat B,Mat C,PetscInt n,PetscBool *
   ierr = VecDestroy(&s1);CHKERRQ(ierr);
   ierr = VecDestroy(&s2);CHKERRQ(ierr);
   ierr = VecDestroy(&s3);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   MatPtAPMultEqual - Compares matrix-vector products of C = Bt*A*B
+
+   Collective on Mat
+
+   Input Parameters:
++  A - the first matrix
+.  B - the second matrix
+.  C - the third matrix
+-  n - number of random vectors to be tested
+
+   Output Parameter:
+.  flg - PETSC_TRUE if the products are equal; PETSC_FALSE otherwise.
+
+   Level: intermediate
+
+@*/
+PetscErrorCode MatPtAPMultEqual(Mat A,Mat B,Mat C,PetscInt n,PetscBool *flg)
+{
+  PetscErrorCode ierr;
+  Vec            x,v1,v2,v3,v4;
+  PetscReal      norm_abs,norm_rel,tol=PETSC_SQRT_MACHINE_EPSILON;
+  PetscInt       i,am,an,bm,bn,cm,cn;
+  PetscRandom    rdm;
+  PetscScalar    none = -1.0;
+
+  PetscFunctionBegin;
+  ierr = MatGetLocalSize(A,&am,&an);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(B,&bm,&bn);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(C,&cm,&cn);CHKERRQ(ierr);
+  if (an != bm || bn != cm || bn != cn) SETERRQ6(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat A, B, C local dim %D %D %D %D %D %D",am,an,bm,bn,cm,cn);
+
+  /* Create left vector of A: v2 */
+  ierr = MatCreateVecs(A,NULL,&v2);CHKERRQ(ierr);
+
+  /* Create right vectors of B: x, v3, v4 */
+  ierr = MatCreateVecs(B,&x,&v1);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&v3);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&v4);CHKERRQ(ierr);
+
+  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rdm);CHKERRQ(ierr);
+  ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
+
+  *flg = PETSC_TRUE;
+  for (i=0; i<n; i++) {
+    ierr = VecSetRandom(x,rdm);CHKERRQ(ierr);
+    ierr = MatMult(B,x,v1);CHKERRQ(ierr);
+    ierr = MatMult(A,v1,v2);CHKERRQ(ierr);          /* v2 = A*B*x */
+
+    ierr = MatMultTranspose(B,v2,v3);CHKERRQ(ierr); /* v3 = Bt*A*B*x */
+    ierr = MatMult(C,x,v4);CHKERRQ(ierr);           /* v4 = C*x   */
+    ierr = VecNorm(v4,NORM_2,&norm_abs);CHKERRQ(ierr);
+    ierr = VecAXPY(v4,none,v3);CHKERRQ(ierr);
+    ierr = VecNorm(v4,NORM_2,&norm_rel);CHKERRQ(ierr);
+
+    if (norm_abs > tol) norm_rel /= norm_abs;
+    if (norm_rel > tol) {
+      *flg = PETSC_FALSE;
+      ierr = PetscInfo2(A,"Error: %D-th MatPtAPMult() %g\n",i,(double)norm_rel);CHKERRQ(ierr);
+      break;
+    }
+  }
+
+  ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&v1);CHKERRQ(ierr);
+  ierr = VecDestroy(&v2);CHKERRQ(ierr);
+  ierr = VecDestroy(&v3);CHKERRQ(ierr);
+  ierr = VecDestroy(&v4);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

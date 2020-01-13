@@ -245,6 +245,8 @@ int main(int argc,char **argv)
   if (norm > tol) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: |A*x - b| for LU %g\n",(double)norm);CHKERRQ(ierr);
   }
+  /* Reuse product C; replace Aher with A */
+  ierr = MatProductReplaceMats(A,NULL,NULL,C);CHKERRQ(ierr);
   ierr = MatMatMult(A,X,MAT_REUSE_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
   ierr = MatAXPY(C,-1.0,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatNorm(C,NORM_1,&norm);CHKERRQ(ierr);

@@ -364,10 +364,9 @@ PetscErrorCode FormJacobianState(Tao tao, Vec X, Mat J, Mat JPre, Mat JInv, void
   ierr = MatCopy(user->Div,user->Divwork,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatDiagonalScale(user->Divwork,NULL,user->Swork);CHKERRQ(ierr);
   if (user->dsg_formed) {
-    ierr = MatMatMultNumeric(user->Divwork,user->Grad,user->DSG);CHKERRQ(ierr);
+    ierr = MatProductNumeric(user->DSG);CHKERRQ(ierr);
   } else {
-    ierr = MatMatMultSymbolic(user->Divwork,user->Grad,PETSC_DECIDE,&user->DSG);CHKERRQ(ierr);
-    ierr = MatMatMultNumeric(user->Divwork,user->Grad,user->DSG);CHKERRQ(ierr);
+    ierr = MatMatMult(user->Divwork,user->Grad,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&user->DSG);CHKERRQ(ierr);
     user->dsg_formed = PETSC_TRUE;
   }
 
@@ -1089,17 +1088,23 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   ierr = VecExp(user->uwork);CHKERRQ(ierr);
   ierr = MatMult(user->Av,user->uwork,user->Av_u);CHKERRQ(ierr);
 
-  ierr = MatMatMultSymbolic(user->Div,user->Grad,PETSC_DEFAULT,&user->DSG);CHKERRQ(ierr);
+  /* Symbolic DSG = Div * Grad */
+  ierr = MatProductCreate(user->Div,user->Grad,NULL,&user->DSG);CHKERRQ(ierr);
+  ierr = MatProductSetType(user->DSG,MATPRODUCT_AB);CHKERRQ(ierr);
+  ierr = MatProductSetAlgorithm(user->DSG,"default");CHKERRQ(ierr);
+  ierr = MatProductSetFill(user->DSG,PETSC_DEFAULT);CHKERRQ(ierr);
+  ierr = MatProductSetFromOptions(user->DSG);CHKERRQ(ierr);
+  ierr = MatProductSymbolic(user->DSG);CHKERRQ(ierr);
+
   user->dsg_formed = PETSC_TRUE;
 
-  /* Next form DSG = Div*S*Grad */
+  /* Next form DSG = Div*Grad */
   ierr = MatCopy(user->Div,user->Divwork,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatDiagonalScale(user->Divwork,NULL,user->Av_u);CHKERRQ(ierr);
   if (user->dsg_formed) {
-    ierr = MatMatMultNumeric(user->Divwork,user->Grad,user->DSG);CHKERRQ(ierr);
+    ierr = MatProductNumeric(user->DSG);CHKERRQ(ierr);
   } else {
-    ierr = MatMatMultSymbolic(user->Div,user->Grad,PETSC_DEFAULT,&user->DSG);CHKERRQ(ierr);
-    ierr = MatMatMultNumeric(user->Div,user->Grad,user->DSG);CHKERRQ(ierr);
+    ierr = MatMatMult(user->Div,user->Grad,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&user->DSG);CHKERRQ(ierr);
     user->dsg_formed = PETSC_TRUE;
   }
   /* B = speye(nx^3) + ht*DSG; */
@@ -1121,10 +1126,10 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   ierr = MatCopy(user->Div,user->Divwork,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatDiagonalScale(user->Divwork,NULL,user->Av_u);CHKERRQ(ierr);
   if (user->dsg_formed) {
-    ierr = MatMatMultNumeric(user->Divwork,user->Grad,user->DSG);CHKERRQ(ierr);
+    ierr = MatProductNumeric(user->DSG);CHKERRQ(ierr);
   } else {
-    ierr = MatMatMultSymbolic(user->Div,user->Grad,PETSC_DEFAULT,&user->DSG);CHKERRQ(ierr);
-    ierr = MatMatMultNumeric(user->Div,user->Grad,user->DSG);CHKERRQ(ierr);
+    ierr = MatMatMult(user->Div,user->Grad,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&user->DSG);CHKERRQ(ierr);
+
     user->dsg_formed = PETSC_TRUE;
   }
   /* B = speye(nx^3) + ht*DSG; */

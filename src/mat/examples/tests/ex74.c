@@ -278,7 +278,7 @@ int main(int argc,char **args)
     }
   }
 
-  /* Test MatMatMult() */
+  /* Test MatMatMult() for sbaij and dense matrices */
   ierr = MatCreateSeqDense(PETSC_COMM_SELF,n,5*n,NULL,&B);CHKERRQ(ierr);
   ierr = MatSetRandom(B,rdm);CHKERRQ(ierr);
   ierr = MatMatMult(sA,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);

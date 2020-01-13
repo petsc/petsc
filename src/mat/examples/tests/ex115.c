@@ -166,32 +166,32 @@ int main(int argc,char **args)
     ierr = MatPtAP(A,A,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&pP);CHKERRQ(ierr);
     ierr = MatPtAP(A,A,MAT_REUSE_MATRIX,PETSC_DEFAULT,&pP);CHKERRQ(ierr);
     ierr = MatNorm(pP,NORM_INFINITY,&norm);CHKERRQ(ierr);
+    ierr = MatPtAPMultEqual(A,A,pP,10,&flg);CHKERRQ(ierr);
+    if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatPtAP_MatAIJ");
 
     /* MatPtAP_HYPRE_HYPRE -> output is a MatHYPRE */
     ierr = MatPtAP(C,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&hP);CHKERRQ(ierr);
     ierr = MatPtAP(C,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&hP);CHKERRQ(ierr);
+    ierr = MatPtAPMultEqual(C,B,hP,10,&flg);CHKERRQ(ierr);
+    if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatPtAP_HYPRE_HYPRE");
+
+    /* Test MatAXPY_Basic() */
     ierr = MatAXPY(hP,-1.,pP,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatHasOperation(hP,MATOP_NORM,&flg);CHKERRQ(ierr);
     if (!flg) { /* TODO add MatNorm_HYPRE */
       ierr = MatConvert(hP,MATAIJ,MAT_INPLACE_MATRIX,&hP);CHKERRQ(ierr);
     }
     ierr = MatNorm(hP,NORM_INFINITY,&err);CHKERRQ(ierr);
-    if (err/norm > PETSC_SMALL) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error MatPtAP %g %g",err,norm);
+    if (err/norm > PETSC_SMALL) SETERRQ2(PetscObjectComm((PetscObject)hP),PETSC_ERR_PLIB,"Error MatPtAP %g %g",err,norm);
+    ierr = MatDestroy(&pP);CHKERRQ(ierr);
     ierr = MatDestroy(&hP);CHKERRQ(ierr);
 
     /* MatPtAP_AIJ_HYPRE -> output can be decided at runtime with -matptap_hypre_outtype */
     ierr = MatPtAP(A,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&hP);CHKERRQ(ierr);
     ierr = MatPtAP(A,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&hP);CHKERRQ(ierr);
-    ierr = MatAXPY(hP,-1.,pP,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-    ierr = MatHasOperation(hP,MATOP_NORM,&flg);CHKERRQ(ierr);
-    if (!flg) { /* TODO add MatNorm_HYPRE */
-      ierr = MatConvert(hP,MATAIJ,MAT_INPLACE_MATRIX,&hP);CHKERRQ(ierr);
-    }
-    ierr = MatNorm(hP,NORM_INFINITY,&err);CHKERRQ(ierr);
-    if (err/norm > PETSC_SMALL) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error MatPtAP mixed %g %g",err,norm);
+    ierr = MatPtAPMultEqual(A,B,hP,10,&flg);CHKERRQ(ierr);
+    if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatPtAP_AIJ_HYPRE");
     ierr = MatDestroy(&hP);CHKERRQ(ierr);
-
-    ierr = MatDestroy(&pP);CHKERRQ(ierr);
   }
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
@@ -207,21 +207,29 @@ int main(int argc,char **args)
     ierr = MatMatMult(A,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&pAB);CHKERRQ(ierr);
     ierr = MatMatMult(A,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&pAB);CHKERRQ(ierr);
     ierr = MatNorm(pAB,NORM_INFINITY,&norm);CHKERRQ(ierr);
+    ierr = MatMatMultEqual(A,B,pAB,10,&flg);CHKERRQ(ierr);
+    if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatMatMult_AIJ_AIJ");
 
     /* MatMatMult_HYPRE_HYPRE -> output is a MatHYPRE */
     ierr = MatMatMult(C,D,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&CD);CHKERRQ(ierr);
     ierr = MatMatMult(C,D,MAT_REUSE_MATRIX,PETSC_DEFAULT,&CD);CHKERRQ(ierr);
+    ierr = MatMatMultEqual(C,D,CD,10,&flg);CHKERRQ(ierr);
+    if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatMatMult_HYPRE_HYPRE");
+
+    /* Test MatAXPY_Basic() */
     ierr = MatAXPY(CD,-1.,pAB,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+
     ierr = MatHasOperation(CD,MATOP_NORM,&flg);CHKERRQ(ierr);
     if (!flg) { /* TODO add MatNorm_HYPRE */
       ierr = MatConvert(CD,MATAIJ,MAT_INPLACE_MATRIX,&CD);CHKERRQ(ierr);
     }
     ierr = MatNorm(CD,NORM_INFINITY,&err);CHKERRQ(ierr);
-    if (err/norm > PETSC_SMALL) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error MatMatMult %g %g",err,norm);
+    if (err/norm > PETSC_SMALL) SETERRQ2(PetscObjectComm((PetscObject)CD),PETSC_ERR_PLIB,"Error MatMatMult %g %g",err,norm);
+
     ierr = MatDestroy(&C);CHKERRQ(ierr);
     ierr = MatDestroy(&D);CHKERRQ(ierr);
-    ierr = MatDestroy(&CD);CHKERRQ(ierr);
     ierr = MatDestroy(&pAB);CHKERRQ(ierr);
+    ierr = MatDestroy(&CD);CHKERRQ(ierr);
 
     /* When configured with HYPRE, MatMatMatMult is available for the triplet transpose(aij)-aij-aij */
     ierr = MatCreateTranspose(A,&C);CHKERRQ(ierr);

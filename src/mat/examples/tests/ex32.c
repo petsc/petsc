@@ -19,9 +19,25 @@ int main(int argc,char **argv)
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSeqDenseSetPreallocation(A,NULL);CHKERRQ(ierr);
   ierr = MatSetRandom(A,NULL);CHKERRQ(ierr);
+#if 0
+  PetscInt       i,j;
+  PetscScalar    val;
+  for (i=0; i<m; i++) {
+    for (j=0; j<n; j++) {
+      val = (PetscScalar)(i+j);
+      ierr = MatSetValues(A,1,&i,1,&j,&val,INSERT_VALUES);CHKERRQ(ierr);
+    }
+  }
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+#endif
 
   /* Create a CUDA version of A */
+#if defined(PETSC_HAVE_CUDA)
   ierr = MatConvert(A,MATSEQDENSECUDA,MAT_INITIAL_MATRIX,&AC);CHKERRQ(ierr);
+#else
+  ierr = MatDuplicate(A,MAT_COPY_VALUES,&AC);CHKERRQ(ierr);
+#endif
   ierr = MatDuplicate(AC,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
 
   /* full CUDA AXPY */
@@ -43,8 +59,10 @@ int main(int argc,char **argv)
     ierr = MatCopy(AC,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     /* full CUDA PtAP */
     ierr = MatPtAP(B,AC,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&B1);CHKERRQ(ierr);
+
     /* CPU PtAP since A is on the CPU only */
     ierr = MatPtAP(B,A,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&B2);CHKERRQ(ierr);
+
     ierr = MatAXPY(B2,-1.0,B1,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatNorm(B2,NORM_INFINITY,&r);CHKERRQ(ierr);
     if (r > tol) SETERRQ1(PetscObjectComm((PetscObject)B),PETSC_ERR_PLIB,"Error MatPtAP %g",(double)r);

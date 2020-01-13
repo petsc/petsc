@@ -12,6 +12,7 @@ int main(int argc,char **argv)
   PetscScalar    one=1.;
   PetscErrorCode ierr;
   PetscMPIInt    size;
+  PetscBool      flg;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -32,7 +33,7 @@ int main(int argc,char **argv)
   /* Create AIJ equivalent matrix, aijP, for comparison testing */
   ierr = MatConvert(P,MATSEQAIJ,MAT_INITIAL_MATRIX,&aijP);CHKERRQ(ierr);
 
-  /* Create AIJ matrix, A */
+  /* Create AIJ matrix A */
   ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,9,9,9,9);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
@@ -47,31 +48,42 @@ int main(int argc,char **argv)
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  /* Perform PtAP_SeqAIJ_SeqMAIJ */
-  ierr = MatPtAP(A,P,MAT_INITIAL_MATRIX,1.,&mC);CHKERRQ(ierr);
-  ierr = MatPtAP(A,P,MAT_REUSE_MATRIX,1.,&mC);CHKERRQ(ierr);
-  ierr = MatView(mC,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-
   /* Perform PtAP_SeqAIJ_SeqAIJ for comparison testing */
   ierr = MatPtAP(A,aijP,MAT_INITIAL_MATRIX,1.,&C);CHKERRQ(ierr);
-  ierr = MatView(C,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+
+  /* Perform PtAP_SeqAIJ_SeqMAIJ */
+  /* Developer API */
+  ierr = MatProductCreate(A,P,NULL,&mC);CHKERRQ(ierr);
+  ierr = MatProductSetType(mC,MATPRODUCT_PtAP);CHKERRQ(ierr);
+  ierr = MatProductSetAlgorithm(mC,"default");CHKERRQ(ierr);
+  ierr = MatProductSetFill(mC,PETSC_DEFAULT);CHKERRQ(ierr);
+  ierr = MatProductSetFromOptions(mC);CHKERRQ(ierr);
+  ierr = MatProductSymbolic(mC);CHKERRQ(ierr);
+  ierr = MatProductNumeric(mC);CHKERRQ(ierr);
+  ierr = MatProductNumeric(mC);CHKERRQ(ierr);
 
   /* Check mC = C */
-  ierr = MatAXPY(C,-1.0,mC,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  /* Note: We should be able to use SAME_NONZERO_PATTERN on the line above, */
-  /*       but don't because this flag doesn't assist testing. */
-  ierr = MatView(C,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  ierr = MatEqual(C,mC,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"MatProduct C != mC");
+  ierr = MatDestroy(&mC);CHKERRQ(ierr);
+
+  /* User API */
+  ierr = MatPtAP(A,P,MAT_INITIAL_MATRIX,1.,&mC);CHKERRQ(ierr);
+  ierr = MatPtAP(A,P,MAT_REUSE_MATRIX,1.,&mC);CHKERRQ(ierr);
+
+  /* Check mC = C */
+  ierr = MatEqual(C,mC,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"MatPtAP C != mC");
+  ierr = MatDestroy(&mC);CHKERRQ(ierr);
 
   /* Cleanup */
   ierr = MatDestroy(&P);CHKERRQ(ierr);
   ierr = MatDestroy(&aijP);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
-  ierr = MatDestroy(&mC);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }
-
 
 /*TEST
 

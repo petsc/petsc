@@ -12,7 +12,7 @@ int main(int argc,char **argv)
   PetscInt       i,M=10,N=5,j,nrows,ncols,am,an,rstart,rend;
   PetscErrorCode ierr;
   PetscRandom    r;
-  PetscBool      equal,iselemental;
+  PetscBool      equal,Aiselemental;
   PetscReal      fill = 1.0;
   IS             isrows,iscols;
   const PetscInt *rows,*cols;
@@ -59,20 +59,30 @@ int main(int argc,char **argv)
   ierr = ISDestroy(&iscols);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&r);CHKERRQ(ierr);
 
-  /* Test MatTranspose() */
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATELEMENTAL,&Aiselemental);CHKERRQ(ierr);
+
+  /* Test MatCreateTranspose() and MatTranspose() */
   ierr = MatCreateTranspose(A,&C);CHKERRQ(ierr);
   ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr); /* B = A^T */
   ierr = MatMultEqual(C,B,10,&equal);CHKERRQ(ierr);
   if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"A^T*x != (x^T*A)^T");
-  ierr = MatTranspose(A,MAT_REUSE_MATRIX,&B);CHKERRQ(ierr); /* B = A^T */
-  ierr = MatMultEqual(C,B,10,&equal);CHKERRQ(ierr);
-  if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"A^T*x != (x^T*A)^T");
   ierr = MatDestroy(&B);CHKERRQ(ierr);
+
   ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
-  ierr = MatTranspose(B,MAT_INPLACE_MATRIX,&B);CHKERRQ(ierr);
-  ierr = MatMultEqual(C,B,10,&equal);CHKERRQ(ierr);
-  if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"A^T*x != (x^T*A)^T");
+  if (!Aiselemental) {
+    ierr = MatTranspose(B,MAT_INPLACE_MATRIX,&B);CHKERRQ(ierr);
+    ierr = MatMultEqual(C,B,10,&equal);CHKERRQ(ierr);
+    if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"C*x != B*x");
+  }
   ierr = MatDestroy(&B);CHKERRQ(ierr);
+
+  /* Test B = C*A for matrix type transpose and seqdense */
+  if (size == 1 && !Aiselemental) {
+    ierr = MatMatMult(C,A,MAT_INITIAL_MATRIX,fill,&B);CHKERRQ(ierr);
+    ierr = MatMatMultEqual(C,A,B,10,&equal);CHKERRQ(ierr);
+    if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"B != C*A for matrix type transpose and seqdense");
+    ierr = MatDestroy(&B);CHKERRQ(ierr);
+  }
   ierr = MatDestroy(&C);CHKERRQ(ierr);
 
   /* Test MatMatMult() */
@@ -83,40 +93,27 @@ int main(int argc,char **argv)
     ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr); /* B = A^T */
     ierr = MatMatMult(B,A,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr); /* C = B*A = A^T*A */
     ierr = MatMatMult(B,A,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
+    ierr = MatMatMultEqual(B,A,C,10,&equal);CHKERRQ(ierr);
+    if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"B*A*x != C*x");
 
     /* Test MatDuplicate for matrix product */
     ierr = MatDuplicate(C,MAT_COPY_VALUES,&D);CHKERRQ(ierr);
+
     ierr = MatDestroy(&D);CHKERRQ(ierr);
-
-    /* Test B*A*x = C*x for n random vector x */
-    ierr = MatMatMultEqual(B,A,C,10,&equal);CHKERRQ(ierr);
-    if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"B*A*x != C*x");
-    ierr = MatDestroy(&C);CHKERRQ(ierr);
-
-    ierr = MatMatMultSymbolic(B,A,fill,&C);CHKERRQ(ierr);
-    for (i=0; i<2; i++) {
-      /* Repeat the numeric product to test reuse of the previous symbolic product */
-      ierr = MatMatMultNumeric(B,A,C);CHKERRQ(ierr);
-
-      ierr = MatMatMultEqual(B,A,C,10,&equal);CHKERRQ(ierr);
-      if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"B*A*x != C*x");
-    }
     ierr = MatDestroy(&C);CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
   }
 
   /* Test MatTransposeMatMult() */
-  ierr = PetscObjectTypeCompare((PetscObject)A,MATELEMENTAL,&iselemental);CHKERRQ(ierr);
-  if (!iselemental) {
+  if (!Aiselemental) {
     ierr = MatTransposeMatMult(A,A,MAT_INITIAL_MATRIX,fill,&D);CHKERRQ(ierr); /* D = A^T*A */
     ierr = MatTransposeMatMult(A,A,MAT_REUSE_MATRIX,fill,&D);CHKERRQ(ierr);
+    ierr = MatTransposeMatMultEqual(A,A,D,10,&equal);CHKERRQ(ierr);
+    if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"D*x != A^T*A*x");
 
     /* Test MatDuplicate for matrix product */
     ierr = MatDuplicate(D,MAT_COPY_VALUES,&C);CHKERRQ(ierr);
     ierr = MatDestroy(&C);CHKERRQ(ierr);
-
-    ierr = MatTransposeMatMultEqual(A,A,D,10,&equal);CHKERRQ(ierr);
-    if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"D*x != A^T*A*x");
     ierr = MatDestroy(&D);CHKERRQ(ierr);
 
     /* Test D*x = A^T*C*A*x, where C is in AIJ format */
@@ -149,7 +146,7 @@ int main(int argc,char **argv)
   }
 
   /* Test MatMatTransposeMult() */
-  if (!iselemental) {
+  if (!Aiselemental) {
     PetscReal diff, scale;
     PetscInt  am, an, aM, aN;
 
@@ -212,5 +209,18 @@ int main(int argc,char **argv)
       nsize: 4
       output_file: output/ex104.out
       args: -M 23 -N 31 -matmattransmult_mpidense_mpidense_via allgatherv
+
+    test:
+      suffix: 6
+      args: -mat_type elemental
+      requires: elemental
+      output_file: output/ex104.out
+
+    test:
+      suffix: 7
+      nsize: 2
+      args: -mat_type elemental
+      requires: elemental
+      output_file: output/ex104.out
 
 TEST*/

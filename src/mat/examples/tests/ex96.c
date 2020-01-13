@@ -289,43 +289,43 @@ int main(int argc,char **argv)
    test:
      suffix: seq_scalable
      nsize: 3
-     args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable -inner_diag_matmatmult_via scalable -inner_offdiag_matmatmult_via scalable
+     args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable -inner_diag_matproduct_ab_via scalable -inner_offdiag_matproduct_ab_via scalable
      output_file: output/ex96_1.out
 
    test:
      suffix: seq_sorted
      nsize: 3
-     args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable -inner_diag_matmatmult_via sorted -inner_offdiag_matmatmult_via sorted
+     args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable -inner_diag_matproduct_ab_via sorted -inner_offdiag_matproduct_ab_via sorted
      output_file: output/ex96_1.out
 
    test:
      suffix: seq_scalable_fast
      nsize: 3
-     args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable -inner_diag_matmatmult_via scalable_fast -inner_offdiag_matmatmult_via scalable_fast
+     args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable -inner_diag_matproduct_ab_via scalable_fast -inner_offdiag_matproduct_ab_via scalable_fast
      output_file: output/ex96_1.out
 
    test:
      suffix: seq_heap
      nsize: 3
-     args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable -inner_diag_matmatmult_via heap -inner_offdiag_matmatmult_via heap
+     args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable -inner_diag_matproduct_ab_via heap -inner_offdiag_matproduct_ab_via heap
      output_file: output/ex96_1.out
 
    test:
      suffix: seq_btheap
      nsize: 3
-     args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable -inner_diag_matmatmult_via btheap -inner_offdiag_matmatmult_via btheap
+     args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable -inner_diag_matproduct_ab_via btheap -inner_offdiag_matproduct_ab_via btheap
      output_file: output/ex96_1.out
 
    test:
      suffix: seq_llcondensed
      nsize: 3
-     args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable -inner_diag_matmatmult_via llcondensed -inner_offdiag_matmatmult_via llcondensed
+     args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable -inner_diag_matproduct_ab_via llcondensed -inner_offdiag_matproduct_ab_via llcondensed
      output_file: output/ex96_1.out
 
    test:
      suffix: seq_rowmerge
      nsize: 3
-     args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable -inner_diag_matmatmult_via rowmerge -inner_offdiag_matmatmult_via rowmerge
+     args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable -inner_diag_matproduct_ab_via rowmerge -inner_offdiag_matproduct_ab_via rowmerge
      output_file: output/ex96_1.out
 
    test:
