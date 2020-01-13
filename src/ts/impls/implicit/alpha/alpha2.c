@@ -434,10 +434,10 @@ static PetscErrorCode TSSetFromOptions_Alpha(PetscOptionItems *PetscOptionsObjec
     PetscReal radius = 1;
     ierr = PetscOptionsReal("-ts_alpha_radius","Spectral radius (high-frequency dissipation)","TSAlpha2SetRadius",radius,&radius,&flg);CHKERRQ(ierr);
     if (flg) {ierr = TSAlpha2SetRadius(ts,radius);CHKERRQ(ierr);}
-    ierr = PetscOptionsReal("-ts_alpha_alpha_m","Algoritmic parameter alpha_m","TSAlpha2SetParams",th->Alpha_m,&th->Alpha_m,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-ts_alpha_alpha_f","Algoritmic parameter alpha_f","TSAlpha2SetParams",th->Alpha_f,&th->Alpha_f,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-ts_alpha_gamma","Algoritmic parameter gamma","TSAlpha2SetParams",th->Gamma,&th->Gamma,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-ts_alpha_beta","Algoritmic parameter beta","TSAlpha2SetParams",th->Beta,&th->Beta,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ts_alpha_alpha_m","Algorithmic parameter alpha_m","TSAlpha2SetParams",th->Alpha_m,&th->Alpha_m,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ts_alpha_alpha_f","Algorithmic parameter alpha_f","TSAlpha2SetParams",th->Alpha_f,&th->Alpha_f,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ts_alpha_gamma","Algorithmic parameter gamma","TSAlpha2SetParams",th->Gamma,&th->Gamma,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ts_alpha_beta","Algorithmic parameter beta","TSAlpha2SetParams",th->Beta,&th->Beta,NULL);CHKERRQ(ierr);
     ierr = TSAlpha2SetParams(ts,th->Alpha_m,th->Alpha_f,th->Gamma,th->Beta);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
