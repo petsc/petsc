@@ -701,14 +701,23 @@ linux-xsdk-dbg:
   variables:
     TEST_ARCH: arch-ci-linux-xsdk-dbg
 
-linux-pardiso:
+linux-intel:
   extends:
     - .stage-3
     - .linux_test
   tags:
     - mcs-nfs
   variables:
-    TEST_ARCH: arch-ci-linux-pardiso
+    TEST_ARCH: arch-ci-linux-intel
+
+linux-intel-cmplx:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - mcs-nfs
+  variables:
+    TEST_ARCH: arch-ci-linux-intel-cmplx
 
 linux-nagfor:
   extends:
