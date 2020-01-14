@@ -3,13 +3,12 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = cg.c cgeig.c cgtype.c cgls.c
+SOURCEC  = pipeprcg.c
 SOURCEF  =
-SOURCEH  = cgimpl.h
+SOURCEH  =
 LIBBASE  = libpetscksp
-DIRS     = cgne gltr nash stcg pipecg pipecgrr groppcg pipelcg pipeprcg
 MANSEC   = KSP
-LOCDIR   = src/ksp/ksp/impls/cg/
+LOCDIR   = src/ksp/ksp/impls/cg/pipeprcg/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
