@@ -186,7 +186,7 @@ cell   7-------------6-------------11 cell
 
 */
 
-typedef enum {NONE, SERIAL, PARALLEL} InterpType;
+typedef enum {NONE, CREATE, AFTER_CREATE, AFTER_DISTRIBUTE} InterpType;
 
 typedef struct {
   PetscInt   debug;                        /* The debugging level */
@@ -217,6 +217,8 @@ struct _n_PortableBoundary {
 };
 typedef struct _n_PortableBoundary * PortableBoundary;
 
+static PetscLogStage  stage[3];
+
 static PetscErrorCode DMPlexCheckPointSFHeavy(DM, PortableBoundary);
 static PetscErrorCode DMPlexSetOrientInterface_Private(DM,PetscBool);
 static PetscErrorCode DMPlexGetExpandedBoundary_Private(DM, PortableBoundary *);
@@ -240,7 +242,7 @@ static PetscErrorCode PortableBoundaryDestroy(PortableBoundary *bnd)
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  const char    *interpTypes[3]  = {"none", "serial", "parallel"};
+  const char    *interpTypes[4]  = {"none", "create", "after_create", "after_distribute"};
   PetscInt       interp=NONE, dim;
   PetscBool      flg1, flg2;
   PetscErrorCode ierr;
@@ -270,15 +272,12 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBoundedInt("-testnum", "The mesh to create", "ex18.c", options->testNum, &options->testNum, NULL,0);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-cell_simplex", "Generate simplices if true, otherwise hexes", "ex18.c", options->cellSimplex, &options->cellSimplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-distribute", "Distribute the mesh", "ex18.c", options->distribute, &options->distribute, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-interpolate", "Type of mesh interpolation, e.g. none, serial, parallel", "ex18.c", interpTypes, 3, interpTypes[options->interpolate], &interp, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-interpolate", "Type of mesh interpolation (none, create, after_create, after_distribute)", "ex18.c", interpTypes, 4, interpTypes[options->interpolate], &interp, NULL);CHKERRQ(ierr);
   options->interpolate = (InterpType) interp;
-  if (!options->distribute && options->interpolate == PARALLEL) SETERRQ(comm, PETSC_ERR_SUP, "-interpolate parallel  needs  -distribute 1");
+  if (!options->distribute && options->interpolate == AFTER_DISTRIBUTE) SETERRQ(comm, PETSC_ERR_SUP, "-interpolate after_distribute  needs  -distribute 1");
   ierr = PetscOptionsBool("-use_generator", "Use a mesh generator to build the mesh", "ex18.c", options->useGenerator, &options->useGenerator, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBoundedInt("-rotate_interface_0", "Rotation (relative orientation) of interface on rank 0; implies -interpolate serial -distribute 0", "ex18.c", options->ornt[0], &options->ornt[0], &options->testOrientIF,0);CHKERRQ(ierr);
-  ierr = PetscOptionsBoundedInt("-rotate_interface_1", "Rotation (relative orientation) of interface on rank 1; implies -interpolate serial -distribute 0", "ex18.c", options->ornt[1], &options->ornt[1], &flg2,0);CHKERRQ(ierr);
   options->ncoords = 128;
   ierr = PetscOptionsRealArray("-view_vertices_from_coords", "Print DAG points corresponding to vertices with given coordinates", "ex18.c", options->coords, &options->ncoords, NULL);CHKERRQ(ierr);
-  if (flg2 != options->testOrientIF) SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "neither or both -rotate_interface_0 -rotate_interface_1 must be set");
   ierr = PetscOptionsReal("-view_vertices_from_coords_tol", "Tolerance for -view_vertices_from_coords", "ex18.c", options->coordsTol, &options->coordsTol, NULL);CHKERRQ(ierr);
   options->nPointsToExpand = 128;
   ierr = PetscOptionsIntArray("-test_expand_points", "Expand given array of DAG point using DMPlexGetConeRecursive() and print results", "ex18.c", options->pointsToExpand, &options->nPointsToExpand, NULL);CHKERRQ(ierr);
@@ -287,14 +286,6 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   }
   ierr = PetscOptionsBool("-test_heavy", "Run the heavy PointSF test", "ex18.c", options->testHeavy, &options->testHeavy, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-custom_view", "Custom DMPlex view", "ex18.c", options->customView, &options->customView, NULL);CHKERRQ(ierr);
-  if (options->testOrientIF) {
-    PetscInt i;
-    for (i=0; i<2; i++) {
-      if (options->ornt[i] >= 10) options->ornt[i] = -(options->ornt[i]-10);  /* 11 12 13 become -1 -2 -3 */
-    }
-    options->interpolate = SERIAL;
-    options->distribute = PETSC_FALSE;
-  }
   ierr = PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex18.c", options->dim, &options->dim, &flg1,1,3);CHKERRQ(ierr);
   dim = 3;
   ierr = PetscOptionsIntArray("-faces", "Number of faces per dimension", "ex18.c", options->faces, &dim, &flg2);CHKERRQ(ierr);
@@ -303,6 +294,21 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
     options->dim = dim;
   }
   ierr = PetscOptionsString("-filename", "The mesh file", "ex18.c", options->filename, options->filename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-rotate_interface_0", "Rotation (relative orientation) of interface on rank 0; implies -interpolate create -distribute 0", "ex18.c", options->ornt[0], &options->ornt[0], &options->testOrientIF,0);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-rotate_interface_1", "Rotation (relative orientation) of interface on rank 1; implies -interpolate create -distribute 0", "ex18.c", options->ornt[1], &options->ornt[1], &flg2,0);CHKERRQ(ierr);
+  if (flg2 != options->testOrientIF) SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "neither or both -rotate_interface_0 -rotate_interface_1 must be set");
+  if (options->testOrientIF) {
+    PetscInt i;
+    for (i=0; i<2; i++) {
+      if (options->ornt[i] >= 10) options->ornt[i] = -(options->ornt[i]-10);  /* 11 12 13 become -1 -2 -3 */
+    }
+    options->filename[0]  = 0;
+    options->useGenerator = PETSC_FALSE;
+    options->dim          = 3;
+    options->cellSimplex  = PETSC_TRUE;
+    options->interpolate  = CREATE;
+    options->distribute   = PETSC_FALSE;
+  }
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -569,6 +575,7 @@ static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, PetscBool interpolate, App
     ierr = DMPlexOrientCell_Internal(*dm, ifp[rank], start, reverse);CHKERRQ(ierr);
     ierr = DMPlexCheckFaces(*dm, 0);CHKERRQ(ierr);
     ierr = DMPlexOrientInterface_Internal(*dm);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm, "Orientation test PASSED\n");CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -673,69 +680,97 @@ static PetscErrorCode CustomView(DM dm, PetscViewer v)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode CreateMeshFromFile(MPI_Comm comm, AppCtx *user, DM *dm, DM *serialDM)
+{
+  const char    *filename       = user->filename;
+  PetscBool      testHeavy      = user->testHeavy;
+  PetscBool      interpCreate   = user->interpolate == CREATE ? PETSC_TRUE : PETSC_FALSE;
+  PetscBool      distributed    = PETSC_FALSE;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *serialDM = NULL;
+  if (testHeavy && interpCreate) {ierr = DMPlexSetOrientInterface_Private(NULL, PETSC_FALSE);CHKERRQ(ierr);}
+  ierr = PetscLogStagePush(stage[0]);CHKERRQ(ierr);
+  ierr = DMPlexCreateFromFile(comm, filename, interpCreate, dm);CHKERRQ(ierr); /* with DMPlexOrientInterface_Internal() call skipped so that PointSF issues are left to DMPlexCheckPointSFHeavy() */
+  ierr = PetscLogStagePop();CHKERRQ(ierr);
+  if (testHeavy && interpCreate) {ierr = DMPlexSetOrientInterface_Private(NULL, PETSC_TRUE);CHKERRQ(ierr);}
+  ierr = DMPlexIsDistributed(*dm, &distributed);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "DMPlexCreateFromFile produced %s mesh.\n", distributed ? "distributed" : "serial");CHKERRQ(ierr);
+  if (testHeavy && distributed) {
+    ierr = PetscOptionsSetValue(NULL, "-dm_plex_hdf5_force_sequential", NULL);CHKERRQ(ierr);
+    ierr = DMPlexCreateFromFile(comm, filename, interpCreate, serialDM);CHKERRQ(ierr);
+    ierr = DMPlexIsDistributed(*serialDM, &distributed);CHKERRQ(ierr);
+    if (distributed) SETERRQ(comm, PETSC_ERR_PLIB, "unable to create a serial DM from file");
+  }
+  ierr = DMGetDimension(*dm, &user->dim);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   PetscPartitioner part;
   PortableBoundary boundary     = NULL;
   DM             serialDM       = NULL;
-  PetscInt       dim            = user->dim;
   PetscBool      cellSimplex    = user->cellSimplex;
   PetscBool      useGenerator   = user->useGenerator;
-  PetscBool      interpSerial   = user->interpolate == SERIAL ? PETSC_TRUE : PETSC_FALSE;
-  PetscBool      interpParallel = user->interpolate == PARALLEL ? PETSC_TRUE : PETSC_FALSE;
+  PetscBool      interpCreate   = user->interpolate == CREATE ? PETSC_TRUE : PETSC_FALSE;
+  PetscBool      interpSerial   = user->interpolate == AFTER_CREATE ? PETSC_TRUE : PETSC_FALSE;
+  PetscBool      interpParallel = user->interpolate == AFTER_DISTRIBUTE ? PETSC_TRUE : PETSC_FALSE;
   PetscBool      testHeavy      = user->testHeavy;
-  const char    *filename       = user->filename;
-  size_t         len;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
-  if (len) {
-    PetscBool distributed;
-
-    if (testHeavy && interpSerial) {ierr = DMPlexSetOrientInterface_Private(NULL, PETSC_FALSE);CHKERRQ(ierr);}
-    ierr = DMPlexCreateFromFile(comm, filename, interpSerial, dm);CHKERRQ(ierr); /* with DMPlexOrientInterface_Internal() call skipped so that PointSF issues are left to DMPlexCheckPointSFHeavy() */
-    if (testHeavy && interpSerial) {ierr = DMPlexSetOrientInterface_Private(NULL, PETSC_TRUE);CHKERRQ(ierr);}
-    ierr = DMPlexIsDistributed(*dm, &distributed);CHKERRQ(ierr);
-    ierr = PetscPrintf(comm, "DMPlexCreateFromFile produced %s mesh.\n", distributed ? "distributed" : "serial");CHKERRQ(ierr);
-    if (testHeavy && distributed) {
-      ierr = PetscOptionsSetValue(NULL, "-dm_plex_hdf5_force_sequential", NULL);CHKERRQ(ierr);
-      ierr = DMPlexCreateFromFile(comm, filename, interpSerial, &serialDM);CHKERRQ(ierr);
-      ierr = DMPlexIsDistributed(serialDM, &distributed);CHKERRQ(ierr);
-      if (distributed) SETERRQ(comm, PETSC_ERR_PLIB, "unable to create a serial DM from file");
-    }
-    ierr = DMGetDimension(*dm, &dim);CHKERRQ(ierr);
-    user->dim = dim;
+  if (user->filename[0]) {
+    ierr = CreateMeshFromFile(comm, user, dm, &serialDM);CHKERRQ(ierr);
   } else if (useGenerator) {
-    ierr = DMPlexCreateBoxMesh(comm, dim, cellSimplex, user->faces, NULL, NULL, NULL, interpSerial, dm);CHKERRQ(ierr);
+    ierr = PetscLogStagePush(stage[0]);CHKERRQ(ierr);
+    ierr = DMPlexCreateBoxMesh(comm, user->dim, cellSimplex, user->faces, NULL, NULL, NULL, interpCreate, dm);CHKERRQ(ierr);
+    ierr = PetscLogStagePop();CHKERRQ(ierr);
   } else {
-    switch (dim) {
+    ierr = PetscLogStagePush(stage[0]);CHKERRQ(ierr);
+    switch (user->dim) {
     case 1:
-      ierr = CreateMesh_1D(comm, interpSerial, user, dm);CHKERRQ(ierr);
+      ierr = CreateMesh_1D(comm, interpCreate, user, dm);CHKERRQ(ierr);
       break;
     case 2:
       if (cellSimplex) {
-        ierr = CreateSimplex_2D(comm, interpSerial, user, dm);CHKERRQ(ierr);
+        ierr = CreateSimplex_2D(comm, interpCreate, user, dm);CHKERRQ(ierr);
       } else {
-        ierr = CreateQuad_2D(comm, interpSerial, user, dm);CHKERRQ(ierr);
+        ierr = CreateQuad_2D(comm, interpCreate, user, dm);CHKERRQ(ierr);
       }
       break;
     case 3:
       if (cellSimplex) {
-        ierr = CreateSimplex_3D(comm, interpSerial, user, dm);CHKERRQ(ierr);
+        ierr = CreateSimplex_3D(comm, interpCreate, user, dm);CHKERRQ(ierr);
       } else {
-        ierr = CreateHex_3D(comm, interpSerial, user, dm);CHKERRQ(ierr);
+        ierr = CreateHex_3D(comm, interpCreate, user, dm);CHKERRQ(ierr);
       }
       break;
     default:
-      SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make meshes for dimension %D", dim);
+      SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make meshes for dimension %D", user->dim);
     }
+    ierr = PetscLogStagePop();CHKERRQ(ierr);
   }
   if (user->ncoords % user->dim) SETERRQ2(comm, PETSC_ERR_ARG_OUTOFRANGE, "length of coordinates array %D must be divisable by spatial dimension %D", user->ncoords, user->dim);
   ierr = PetscObjectSetName((PetscObject) *dm, "Original Mesh");CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-orig_dm_view");CHKERRQ(ierr);
+
+  if (interpSerial) {
+    DM idm;
+
+    if (testHeavy) {ierr = DMPlexSetOrientInterface_Private(*dm, PETSC_FALSE);CHKERRQ(ierr);}
+    ierr = PetscLogStagePush(stage[2]);CHKERRQ(ierr);
+    ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr); /* with DMPlexOrientInterface_Internal() call skipped so that PointSF issues are left to DMPlexCheckPointSFHeavy() */
+    ierr = PetscLogStagePop();CHKERRQ(ierr);
+    if (testHeavy) {ierr = DMPlexSetOrientInterface_Private(*dm, PETSC_TRUE);CHKERRQ(ierr);}
+    ierr = DMDestroy(dm);CHKERRQ(ierr);
+    *dm = idm;
+    ierr = PetscObjectSetName((PetscObject) *dm, "Interpolated Mesh");CHKERRQ(ierr);
+    ierr = DMViewFromOptions(*dm, NULL, "-intp_dm_view");CHKERRQ(ierr);
+  }
 
   /* Set partitioner options */
   ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
@@ -767,7 +802,9 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     DM               pdm = NULL;
 
     /* Redistribute mesh over processes using that partitioner */
+    ierr = PetscLogStagePush(stage[1]);CHKERRQ(ierr);
     ierr = DMPlexDistribute(*dm, 0, NULL, &pdm);CHKERRQ(ierr);
+    ierr = PetscLogStagePop();CHKERRQ(ierr);
     if (pdm) {
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = pdm;
@@ -779,7 +816,9 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       DM idm;
 
       if (testHeavy) {ierr = DMPlexSetOrientInterface_Private(*dm, PETSC_FALSE);CHKERRQ(ierr);}
+      ierr = PetscLogStagePush(stage[2]);CHKERRQ(ierr);
       ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr); /* with DMPlexOrientInterface_Internal() call skipped so that PointSF issues are left to DMPlexCheckPointSFHeavy() */
+      ierr = PetscLogStagePop();CHKERRQ(ierr);
       if (testHeavy) {ierr = DMPlexSetOrientInterface_Private(*dm, PETSC_TRUE);CHKERRQ(ierr);}
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm = idm;
@@ -1547,6 +1586,9 @@ int main(int argc, char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
+  ierr = PetscLogStageRegister("create",&stage[0]);CHKERRQ(ierr);
+  ierr = PetscLogStageRegister("distribute",&stage[1]);CHKERRQ(ierr);
+  ierr = PetscLogStageRegister("interpolate",&stage[2]);CHKERRQ(ierr);
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
   if (user.nPointsToExpand) {
@@ -1568,23 +1610,23 @@ int main(int argc, char **argv)
     args: -dm_plex_check_all
     test:
       suffix: 1_tri_dist0
-      args: -distribute 0 -interpolate {{none serial}separate output}
+      args: -distribute 0 -interpolate {{none create}separate output}
     test:
       suffix: 1_tri_dist1
-      args: -distribute 1 -interpolate {{none serial parallel}separate output}
+      args: -distribute 1 -interpolate {{none create after_distribute}separate output}
     test:
       suffix: 1_quad_dist0
-      args: -cell_simplex 0 -distribute 0 -interpolate {{none serial}separate output}
+      args: -cell_simplex 0 -distribute 0 -interpolate {{none create}separate output}
     test:
       suffix: 1_quad_dist1
-      args: -cell_simplex 0 -distribute 1 -interpolate {{none serial parallel}separate output}
+      args: -cell_simplex 0 -distribute 1 -interpolate {{none create after_distribute}separate output}
     test:
       suffix: 1_1d_dist1
       args: -dim 1 -distribute 1
 
   testset:
     nsize: 3
-    args: -testnum 1 -interpolate serial
+    args: -testnum 1 -interpolate create
     args: -dm_plex_check_all
     test:
       suffix: 2
@@ -1606,16 +1648,16 @@ int main(int argc, char **argv)
     args: -dm_plex_check_all
     test:
       suffix: 4_tet_dist0
-      args: -distribute 0 -interpolate {{none serial}separate output}
+      args: -distribute 0 -interpolate {{none create}separate output}
     test:
       suffix: 4_tet_dist1
-      args: -distribute 1 -interpolate {{none serial parallel}separate output}
+      args: -distribute 1 -interpolate {{none create after_distribute}separate output}
     test:
       suffix: 4_hex_dist0
-      args: -cell_simplex 0 -distribute 0 -interpolate {{none serial}separate output}
+      args: -cell_simplex 0 -distribute 0 -interpolate {{none create}separate output}
     test:
       suffix: 4_hex_dist1
-      args: -cell_simplex 0 -distribute 1 -interpolate {{none serial parallel}separate output}
+      args: -cell_simplex 0 -distribute 1 -interpolate {{none create after_distribute}separate output}
 
   test:
     # the same as 4_tet_dist0 but test different initial orientations
@@ -1635,15 +1677,15 @@ int main(int argc, char **argv)
     test:
       suffix: 5_seq
       nsize: 1
-      args: -distribute 0 -interpolate {{none serial}separate output}
+      args: -distribute 0 -interpolate {{none create}separate output}
     test:
       suffix: 5_dist0
       nsize: 2
-      args: -distribute 0 -interpolate {{none serial}separate output}
+      args: -distribute 0 -interpolate {{none create}separate output}
     test:
       suffix: 5_dist1
       nsize: 2
-      args: -distribute 1 -interpolate {{none serial parallel}separate output}
+      args: -distribute 1 -interpolate {{none create after_distribute}separate output}
 
   testset:
     nsize: {{1 2 4}}
@@ -1668,7 +1710,7 @@ int main(int argc, char **argv)
     nsize: {{1 2 4}}
     args: -use_generator
     args: -dm_plex_check_all
-    args: -distribute -interpolate serial
+    args: -distribute -interpolate create
     test:
       suffix: 6_int_tri
       requires: triangle
@@ -1687,7 +1729,7 @@ int main(int argc, char **argv)
     nsize: {{2 4}}
     args: -use_generator
     args: -dm_plex_check_all
-    args: -distribute -interpolate parallel
+    args: -distribute -interpolate after_distribute
     test:
       suffix: 6_parint_tri
       requires: triangle
@@ -1715,22 +1757,22 @@ int main(int argc, char **argv)
     test: # seq load, seq interpolation, simple partitioner
       suffix: 7_exo_int_simple
       nsize: {{1 2 4 5}}
-      args: -interpolate serial
+      args: -interpolate create
     test: # seq load, seq interpolation, metis partitioner
       suffix: 7_exo_int_metis
       requires: parmetis
       nsize: {{2 4 5}}
-      args: -interpolate serial
+      args: -interpolate create
       args: -petscpartitioner_type parmetis
     test: # seq load, simple partitioner, par interpolation
       suffix: 7_exo_simple_int
       nsize: {{2 4 5}}
-      args: -interpolate parallel
+      args: -interpolate after_distribute
     test: # seq load, metis partitioner, par interpolation
       suffix: 7_exo_metis_int
       requires: parmetis
       nsize: {{2 4 5}}
-      args: -interpolate parallel
+      args: -interpolate after_distribute
       args: -petscpartitioner_type parmetis
 
   testset: # 7 HDF5 SEQUANTIAL LOAD
@@ -1746,22 +1788,22 @@ int main(int argc, char **argv)
     test: # seq load, seq interpolation, simple partitioner
       suffix: 7_seq_hdf5_int_simple
       nsize: {{1 2 4 5}}
-      args: -interpolate serial
+      args: -interpolate after_create
     test: # seq load, seq interpolation, metis partitioner
       nsize: {{2 4 5}}
       suffix: 7_seq_hdf5_int_metis
       requires: parmetis
-      args: -interpolate serial
+      args: -interpolate after_create
       args: -petscpartitioner_type parmetis
     test: # seq load, simple partitioner, par interpolation
       suffix: 7_seq_hdf5_simple_int
       nsize: {{2 4 5}}
-      args: -interpolate parallel
+      args: -interpolate after_distribute
     test: # seq load, metis partitioner, par interpolation
       nsize: {{2 4 5}}
       suffix: 7_seq_hdf5_metis_int
       requires: parmetis
-      args: -interpolate parallel
+      args: -interpolate after_distribute
       args: -petscpartitioner_type parmetis
 
   testset: # 7 HDF5 PARALLEL LOAD
@@ -1774,7 +1816,7 @@ int main(int argc, char **argv)
       args: -interpolate none
     test: # par load, par interpolation
       suffix: 7_par_hdf5_int
-      args: -interpolate serial             #TODO serial means before DMPlexDistribute but plex is already parallel from DMLoad - serial/parallel should be renamed
+      args: -interpolate after_create
     test: # par load, parmetis repartitioner
       TODO: Parallel partitioning of uninterpolated meshes not supported
       suffix: 7_par_hdf5_parmetis
@@ -1785,20 +1827,20 @@ int main(int argc, char **argv)
       suffix: 7_par_hdf5_int_parmetis
       requires: parmetis
       args: -distribute -petscpartitioner_type parmetis
-      args: -interpolate serial             #TODO serial means before DMPlexDistribute but plex is already parallel from DMLoad - serial/parallel should be renamed
+      args: -interpolate after_create
     test: # par load, parmetis partitioner, par interpolation
       TODO: Parallel partitioning of uninterpolated meshes not supported
       suffix: 7_par_hdf5_parmetis_int
       requires: parmetis
       args: -distribute -petscpartitioner_type parmetis
-      args: -interpolate parallel           #TODO parallel means after DMPlexDistribute but plex is already parallel from DMLoad - serial/parallel should be renamed
+      args: -interpolate after_distribute
 
     test:
       suffix: 7_hdf5_hierarch
       requires: hdf5 ptscotch !complex
       nsize: {{2 3 4}separate output}
       args: -distribute
-      args: -interpolate serial
+      args: -interpolate after_create
       args: -petscpartitioner_type matpartitioning -petscpartitioner_view ::ascii_info
       args: -mat_partitioning_type hierarch -mat_partitioning_hierarchical_nfineparts 2
       args: -mat_partitioning_hierarchical_coarseparttype ptscotch -mat_partitioning_hierarchical_fineparttype ptscotch
@@ -1808,7 +1850,7 @@ int main(int argc, char **argv)
     requires: hdf5 !complex
     nsize: 4
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5 -dm_plex_create_from_hdf5_xdmf
-    args: -distribute 0 -interpolate serial
+    args: -distribute 0 -interpolate after_create
     args: -view_vertices_from_coords 0.,1.,0.,-0.5,1.,0.,0.583,-0.644,0.,-2.,-2.,-2. -view_vertices_from_coords_tol 1e-3
     args: -dm_plex_check_all
     args: -custom_view
@@ -1826,17 +1868,17 @@ int main(int argc, char **argv)
     test: # seq load, seq interpolation, simple partitioner
       suffix: 9_seq_hdf5_int_simple
       nsize: {{1 2 4 5}}
-      args: -interpolate serial
+      args: -interpolate after_create
     test: # seq load, seq interpolation, metis partitioner
       nsize: {{2 4 5}}
       suffix: 9_seq_hdf5_int_metis
       requires: parmetis
-      args: -interpolate serial
+      args: -interpolate after_create
       args: -petscpartitioner_type parmetis
     test: # seq load, simple partitioner, par interpolation
       suffix: 9_seq_hdf5_simple_int
       nsize: {{2 4 5}}
-      args: -interpolate parallel
+      args: -interpolate after_distribute
     test: # seq load, simple partitioner, par interpolation
       # This is like 9_seq_hdf5_simple_int but testing error output of DMPlexCheckPointSFHeavy().
       # Once 9_seq_hdf5_simple_int gets fixed, this one gets broken.
@@ -1844,13 +1886,13 @@ int main(int argc, char **argv)
       TODO: This test is broken because PointSF is fixed.
       suffix: 9_seq_hdf5_simple_int_err
       nsize: 4
-      args: -interpolate parallel
+      args: -interpolate after_distribute
       filter: sed -e "/PETSC ERROR/,$$d"
     test: # seq load, metis partitioner, par interpolation
       nsize: {{2 4 5}}
       suffix: 9_seq_hdf5_metis_int
       requires: parmetis
-      args: -interpolate parallel
+      args: -interpolate after_distribute
       args: -petscpartitioner_type parmetis
 
   testset: # 9 HDF5 PARALLEL LOAD
@@ -1863,7 +1905,7 @@ int main(int argc, char **argv)
       args: -interpolate none
     test: # par load, par interpolation
       suffix: 9_par_hdf5_int
-      args: -interpolate serial             #TODO serial means before DMPlexDistribute but plex is already parallel from DMLoad - serial/parallel should be renamed
+      args: -interpolate after_create
     test: # par load, parmetis repartitioner
       TODO: Parallel partitioning of uninterpolated meshes not supported
       suffix: 9_par_hdf5_parmetis
@@ -1874,12 +1916,12 @@ int main(int argc, char **argv)
       suffix: 9_par_hdf5_int_parmetis
       requires: parmetis
       args: -distribute -petscpartitioner_type parmetis
-      args: -interpolate serial             #TODO serial means before DMPlexDistribute but plex is already parallel from DMLoad - serial/parallel should be renamed
+      args: -interpolate after_create
     test: # par load, parmetis partitioner, par interpolation
       TODO: Parallel partitioning of uninterpolated meshes not supported
       suffix: 9_par_hdf5_parmetis_int
       requires: parmetis
       args: -distribute -petscpartitioner_type parmetis
-      args: -interpolate parallel           #TODO parallel means after DMPlexDistribute but plex is already parallel from DMLoad - serial/parallel should be renamed
+      args: -interpolate after_distribute
 
 TEST*/
