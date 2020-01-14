@@ -171,6 +171,7 @@ checksource:
     - grep PRETTY_NAME /etc/os-release
     - echo $(nproc)
     - ccache --zero-stats
+    - if [ ! -z ${LOAD_MODULES+x} ]; then module load ${LOAD_MODULES}; module list; fi
   after_script:
     - date
     - ccache --show-stats
@@ -524,7 +525,7 @@ linux-opt-misc:
     - .stage-3
     - .linux_test
   tags:
-    - name:compute004
+    - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-opt-misc
 
@@ -600,7 +601,7 @@ linux-ILP64:
     - .stage-3
     - .linux_test
   tags:
-    - name:compute004
+    - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-ILP64
 
@@ -677,7 +678,7 @@ linux-pkgs-opt:
     - .stage-3
     - .linux_test
   tags:
-    - name:compute004
+    - gce-nfs
   variables:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -saws_port_auto_select -saws_port_auto_select_silent
     TEST_ARCH: arch-ci-linux-pkgs-opt
@@ -704,20 +705,22 @@ linux-xsdk-dbg:
 linux-intel:
   extends:
     - .stage-3
-    - .linux_test
+    - .linux_test_noflags
   tags:
-    - mcs-nfs
+    - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-intel
+    LOAD_MODULES: intel-mkl/19.5 intel/19.0
 
 linux-intel-cmplx:
   extends:
     - .stage-3
-    - .linux_test
+    - .linux_test_noflags
   tags:
-    - mcs-nfs
+    - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-intel-cmplx
+    LOAD_MODULES: intel-mkl/19.5 intel/19.0
 
 linux-nagfor:
   extends:
