@@ -43,7 +43,7 @@ int main(int argc, char **argv)
       PetscReal       xi0[3] = {-1., -1., -1.};
       PetscScalar     *outSub, *outFull;
       PetscReal       *testSub, *testFull;
-      PetscReal       *Bsub, *Bfull;
+      PetscTabulation Tsub, Tfull;
       PetscReal       J[9], detJ;
       PetscInt        i, j;
       PetscSection    sectionFull;
@@ -87,12 +87,12 @@ int main(int argc, char **argv)
       ierr = PetscMalloc1(nSub,&arraySub);CHKERRQ(ierr);
       ierr = DMPlexVecGetClosure(dm,sectionFull,vecFull,point,&nSub,&arraySub);CHKERRQ(ierr);
       /* get the tabulations */
-      ierr = PetscFEGetTabulation(traceFE,1,testSub,&Bsub,NULL,NULL);CHKERRQ(ierr);
-      ierr = PetscFEGetTabulation(fe,1,testFull,&Bfull,NULL,NULL);CHKERRQ(ierr);
+      ierr = PetscFECreateTabulation(traceFE,1,1,testSub,0,&Tsub);CHKERRQ(ierr);
+      ierr = PetscFECreateTabulation(fe,1,1,testFull,0,&Tfull);CHKERRQ(ierr);
       for (i = 0; i < Nc; i++) {
         outSub[i] = 0.0;
         for (j = 0; j < nSub; j++) {
-          outSub[i] += Bsub[j * Nc + i] * arraySub[j];
+          outSub[i] += Tsub->T[0][j * Nc + i] * arraySub[j];
         }
       }
       ierr = VecGetArray(vecFull,&arrayFull);CHKERRQ(ierr);
@@ -102,7 +102,7 @@ int main(int argc, char **argv)
 
         outFull[i] = 0.0;
         for (j = 0; j < nFull; j++) {
-          outFull[i] += Bfull[j * Nc + i] * arrayFull[j];
+          outFull[i] += Tfull->T[0][j * Nc + i] * arrayFull[j];
         }
         diff = outFull[i] - outSub[i];
         err += PetscRealPart(PetscConj(diff) * diff);
@@ -112,8 +112,8 @@ int main(int argc, char **argv)
         SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Trace FE error %g\n",err);
       }
       ierr = VecRestoreArray(vecFull,&arrayFull);CHKERRQ(ierr);
-      ierr = PetscFERestoreTabulation(fe,1,testFull,&Bfull,NULL,NULL);CHKERRQ(ierr);
-      ierr = PetscFERestoreTabulation(traceFE,1,testSub,&Bsub,NULL,NULL);CHKERRQ(ierr);
+      ierr = PetscTabulationDestroy(&Tfull);CHKERRQ(ierr);
+      ierr = PetscTabulationDestroy(&Tsub);CHKERRQ(ierr);
       /* clean up */
       ierr = PetscFree(arraySub);CHKERRQ(ierr);
       ierr = PetscSectionDestroy(&sectionFull);CHKERRQ(ierr);

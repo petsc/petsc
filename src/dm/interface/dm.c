@@ -7684,7 +7684,9 @@ PetscErrorCode DMIsBoundaryPoint(DM dm, PetscInt point, PetscBool *isBd)
 }
 
 /*@C
-  DMProjectFunction - This projects the given function into the function space provided.
+  DMProjectFunction - This projects the given function into the function space provided, putting the coefficients in a global vector.
+
+  Collective on DM
 
   Input Parameters:
 + dm      - The DM
@@ -7707,7 +7709,7 @@ $    func(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscS
 
   Level: developer
 
-.seealso: DMComputeL2Diff()
+.seealso: DMProjectFunctionLocal(), DMProjectFunctionLabel(), DMComputeL2Diff()
 @*/
 PetscErrorCode DMProjectFunction(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec X)
 {
@@ -7724,6 +7726,34 @@ PetscErrorCode DMProjectFunction(DM dm, PetscReal time, PetscErrorCode (**funcs)
   PetscFunctionReturn(0);
 }
 
+/*@C
+  DMProjectFunctionLocal - This projects the given function into the function space provided, putting the coefficients in a local vector.
+
+  Not collective
+
+  Input Parameters:
++ dm      - The DM
+. time    - The time
+. funcs   - The coordinate functions to evaluate, one per field
+. ctxs    - Optional array of contexts to pass to each coordinate function.  ctxs itself may be null.
+- mode    - The insertion mode for values
+
+  Output Parameter:
+. localX - vector
+
+   Calling sequence of func:
+$    func(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx);
+
++  dim - The spatial dimension
+.  x   - The coordinates
+.  Nf  - The number of fields
+.  u   - The output field values
+-  ctx - optional user-defined function context
+
+  Level: developer
+
+.seealso: DMProjectFunction(), DMProjectFunctionLabel(), DMComputeL2Diff()
+@*/
 PetscErrorCode DMProjectFunctionLocal(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
 {
   PetscErrorCode ierr;
@@ -7736,6 +7766,35 @@ PetscErrorCode DMProjectFunctionLocal(DM dm, PetscReal time, PetscErrorCode (**f
   PetscFunctionReturn(0);
 }
 
+/*@C
+  DMProjectFunctionLabel - This projects the given function into the function space provided, putting the coefficients in a global vector, setting values only for points in the given label.
+
+  Collective on DM
+
+  Input Parameters:
++ dm      - The DM
+. time    - The time
+. label   - The DMLabel selecting the portion of the mesh for projection
+. funcs   - The coordinate functions to evaluate, one per field
+. ctxs    - Optional array of contexts to pass to each coordinate function.  ctxs itself may be null.
+- mode    - The insertion mode for values
+
+  Output Parameter:
+. X - vector
+
+   Calling sequence of func:
+$    func(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx);
+
++  dim - The spatial dimension
+.  x   - The coordinates
+.  Nf  - The number of fields
+.  u   - The output field values
+-  ctx - optional user-defined function context
+
+  Level: developer
+
+.seealso: DMProjectFunction(), DMProjectFunctionLocal(), DMProjectFunctionLabelLocal(), DMComputeL2Diff()
+@*/
 PetscErrorCode DMProjectFunctionLabel(DM dm, PetscReal time, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscInt Nc, const PetscInt comps[], PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec X)
 {
   Vec            localX;
@@ -7751,6 +7810,35 @@ PetscErrorCode DMProjectFunctionLabel(DM dm, PetscReal time, DMLabel label, Pets
   PetscFunctionReturn(0);
 }
 
+/*@C
+  DMProjectFunctionLabelLocal - This projects the given function into the function space provided, putting the coefficients in a local vector, setting values only for points in the given label.
+
+  Not collective
+
+  Input Parameters:
++ dm      - The DM
+. time    - The time
+. label   - The DMLabel selecting the portion of the mesh for projection
+. funcs   - The coordinate functions to evaluate, one per field
+. ctxs    - Optional array of contexts to pass to each coordinate function.  ctxs itself may be null.
+- mode    - The insertion mode for values
+
+  Output Parameter:
+. localX - vector
+
+   Calling sequence of func:
+$    func(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx);
+
++  dim - The spatial dimension
+.  x   - The coordinates
+.  Nf  - The number of fields
+.  u   - The output field values
+-  ctx - optional user-defined function context
+
+  Level: developer
+
+.seealso: DMProjectFunction(), DMProjectFunctionLocal(), DMProjectFunctionLabel(), DMComputeL2Diff()
+@*/
 PetscErrorCode DMProjectFunctionLabelLocal(DM dm, PetscReal time, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscInt Nc, const PetscInt comps[], PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
 {
   PetscErrorCode ierr;
@@ -7763,6 +7851,55 @@ PetscErrorCode DMProjectFunctionLabelLocal(DM dm, PetscReal time, DMLabel label,
   PetscFunctionReturn(0);
 }
 
+/*@C
+  DMProjectFieldLocal - This projects the given function of the input fields into the function space provided, putting the coefficients in a local vector.
+
+  Not collective
+
+  Input Parameters:
++ dm      - The DM
+. time    - The time
+. localU  - The input field vector
+. funcs   - The functions to evaluate, one per field
+- mode    - The insertion mode for values
+
+  Output Parameter:
+. localX  - The output vector
+
+   Calling sequence of func:
+$    func(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+$         const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+$         const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+$         PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[]);
+
++  dim          - The spatial dimension
+.  Nf           - The number of input fields
+.  NfAux        - The number of input auxiliary fields
+.  uOff         - The offset of each field in u[]
+.  uOff_x       - The offset of each field in u_x[]
+.  u            - The field values at this point in space
+.  u_t          - The field time derivative at this point in space (or NULL)
+.  u_x          - The field derivatives at this point in space
+.  aOff         - The offset of each auxiliary field in u[]
+.  aOff_x       - The offset of each auxiliary field in u_x[]
+.  a            - The auxiliary field values at this point in space
+.  a_t          - The auxiliary field time derivative at this point in space (or NULL)
+.  a_x          - The auxiliary field derivatives at this point in space
+.  t            - The current time
+.  x            - The coordinates of this point
+.  numConstants - The number of constants
+.  constants    - The value of each constant
+-  f            - The value of the function at this point in space
+
+  Note: There are three different DMs that potentially interact in this function. The output DM, dm, specifies the layout of the values calculates by funcs.
+  The input DM, attached to U, may be different. For example, you can input the solution over the full domain, but output over a piece of the boundary, or
+  a subdomain. You can also output a different number of fields than the input, with different discretizations. Last the auxiliary DM, attached to the
+  auxiliary field vector, which is attached to dm, can also be different. It can have a different topology, number of fields, and discretizations.
+
+  Level: intermediate
+
+.seealso: DMProjectField(), DMProjectFieldLabelLocal(), DMProjectFunction(), DMComputeL2Diff()
+@*/
 PetscErrorCode DMProjectFieldLocal(DM dm, PetscReal time, Vec localU,
                                    void (**funcs)(PetscInt, PetscInt, PetscInt,
                                                   const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -7781,6 +7918,60 @@ PetscErrorCode DMProjectFieldLocal(DM dm, PetscReal time, Vec localU,
   PetscFunctionReturn(0);
 }
 
+/*@C
+  DMProjectFieldLabelLocal - This projects the given function of the input fields into the function space provided, putting the coefficients in a local vector, calculating only over the portion of the domain specified by the label.
+
+  Not collective
+
+  Input Parameters:
++ dm      - The DM
+. time    - The time
+. label   - The DMLabel marking the portion of the domain to output
+. numIds  - The number of label ids to use
+. ids     - The label ids to use for marking
+. Nc      - The number of components to set in the output, or PETSC_DETERMINE for all components
+. comps   - The components to set in the output, or NULL for all components
+. localU  - The input field vector
+. funcs   - The functions to evaluate, one per field
+- mode    - The insertion mode for values
+
+  Output Parameter:
+. localX  - The output vector
+
+   Calling sequence of func:
+$    func(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+$         const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+$         const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+$         PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[]);
+
++  dim          - The spatial dimension
+.  Nf           - The number of input fields
+.  NfAux        - The number of input auxiliary fields
+.  uOff         - The offset of each field in u[]
+.  uOff_x       - The offset of each field in u_x[]
+.  u            - The field values at this point in space
+.  u_t          - The field time derivative at this point in space (or NULL)
+.  u_x          - The field derivatives at this point in space
+.  aOff         - The offset of each auxiliary field in u[]
+.  aOff_x       - The offset of each auxiliary field in u_x[]
+.  a            - The auxiliary field values at this point in space
+.  a_t          - The auxiliary field time derivative at this point in space (or NULL)
+.  a_x          - The auxiliary field derivatives at this point in space
+.  t            - The current time
+.  x            - The coordinates of this point
+.  numConstants - The number of constants
+.  constants    - The value of each constant
+-  f            - The value of the function at this point in space
+
+  Note: There are three different DMs that potentially interact in this function. The output DM, dm, specifies the layout of the values calculates by funcs.
+  The input DM, attached to U, may be different. For example, you can input the solution over the full domain, but output over a piece of the boundary, or
+  a subdomain. You can also output a different number of fields than the input, with different discretizations. Last the auxiliary DM, attached to the
+  auxiliary field vector, which is attached to dm, can also be different. It can have a different topology, number of fields, and discretizations.
+
+  Level: intermediate
+
+.seealso: DMProjectField(), DMProjectFieldLabelLocal(), DMProjectFunction(), DMComputeL2Diff()
+@*/
 PetscErrorCode DMProjectFieldLabelLocal(DM dm, PetscReal time, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscInt Nc, const PetscInt comps[], Vec localU,
                                         void (**funcs)(PetscInt, PetscInt, PetscInt,
                                                        const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],

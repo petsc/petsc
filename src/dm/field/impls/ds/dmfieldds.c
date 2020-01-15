@@ -92,6 +92,7 @@ static PetscErrorCode DMFieldDSGetHeightDisc(DMField field, PetscInt height, Pet
     }                                                                            \
   } while (0)
 
+/* TODO: Reorganize interface so that I can reuse a tabulation rather than mallocing each time */
 static PetscErrorCode DMFieldEvaluateFE_DS(DMField field, IS pointIS, PetscQuadrature quad, PetscDataType type, void *B, void *D, void *H)
 {
   DMField_DS      *dsfield = (DMField_DS *) field->data;
@@ -126,10 +127,11 @@ static PetscErrorCode DMFieldEvaluateFE_DS(DMField field, IS pointIS, PetscQuadr
   if (classid == PETSCFE_CLASSID) {
     PetscFE      fe = (PetscFE) disc;
     PetscInt     feDim, i;
-    PetscReal    *fB = NULL, *fD = NULL, *fH = NULL;
+    PetscInt          K = H ? 2 : (D ? 1 : (B ? 0 : -1));
+    PetscTabulation T;
 
     ierr = PetscFEGetDimension(fe,&feDim);CHKERRQ(ierr);
-    ierr = PetscFEGetTabulation(fe,nq,qpoints,B ? &fB : NULL,D ? &fD : NULL,H ? &fH : NULL);CHKERRQ(ierr);
+    ierr = PetscFECreateTabulation(fe,1,nq,qpoints,K,&T);CHKERRQ(ierr);
     for (i = 0; i < numCells; i++) {
       PetscInt     c = isStride ? (sfirst + i * stride) : points[i];
       PetscInt     closureSize;
@@ -140,38 +142,38 @@ static PetscErrorCode DMFieldEvaluateFE_DS(DMField field, IS pointIS, PetscQuadr
         if (type == PETSC_SCALAR) {
           PetscScalar *cB = &((PetscScalar *) B)[nc * nq * i];
 
-          DMFieldDSdot(cB,fB,elem,nq,feDim,nc,(PetscScalar));
+          DMFieldDSdot(cB,T->T[0],elem,nq,feDim,nc,(PetscScalar));
         } else {
           PetscReal *cB = &((PetscReal *) B)[nc * nq * i];
 
-          DMFieldDSdot(cB,fB,elem,nq,feDim,nc,PetscRealPart);
+          DMFieldDSdot(cB,T->T[0],elem,nq,feDim,nc,PetscRealPart);
         }
       }
       if (D) {
         if (type == PETSC_SCALAR) {
           PetscScalar *cD = &((PetscScalar *) D)[nc * nq * dim * i];
 
-          DMFieldDSdot(cD,fD,elem,nq,feDim,(nc * dim),(PetscScalar));
+          DMFieldDSdot(cD,T->T[1],elem,nq,feDim,(nc * dim),(PetscScalar));
         } else {
           PetscReal *cD = &((PetscReal *) D)[nc * nq * dim * i];
 
-          DMFieldDSdot(cD,fD,elem,nq,feDim,(nc * dim),PetscRealPart);
+          DMFieldDSdot(cD,T->T[1],elem,nq,feDim,(nc * dim),PetscRealPart);
         }
       }
       if (H) {
         if (type == PETSC_SCALAR) {
           PetscScalar *cH = &((PetscScalar *) H)[nc * nq * dim * dim * i];
 
-          DMFieldDSdot(cH,fH,elem,nq,feDim,(nc * dim * dim),(PetscScalar));
+          DMFieldDSdot(cH,T->T[2],elem,nq,feDim,(nc * dim * dim),(PetscScalar));
         } else {
           PetscReal *cH = &((PetscReal *) H)[nc * nq * dim * dim * i];
 
-          DMFieldDSdot(cH,fH,elem,nq,feDim,(nc * dim * dim),PetscRealPart);
+          DMFieldDSdot(cH,T->T[2],elem,nq,feDim,(nc * dim * dim),PetscRealPart);
         }
       }
       ierr = DMPlexVecRestoreClosure(dm,section,dsfield->vec,c,&closureSize,&elem);CHKERRQ(ierr);
     }
-    ierr = PetscFERestoreTabulation(fe,nq,qpoints,B ? &fB : NULL,D ? &fD : NULL,H ? &fH : NULL);CHKERRQ(ierr);
+    ierr = PetscTabulationDestroy(&T);CHKERRQ(ierr);
   } else {SETERRQ(PetscObjectComm((PetscObject)field),PETSC_ERR_SUP,"Not implemented");}
   if (!isStride) {
     ierr = ISRestoreIndices(pointIS,&points);CHKERRQ(ierr);
@@ -240,7 +242,8 @@ static PetscErrorCode DMFieldEvaluate_DS(DMField field, Vec points, PetscDataTyp
     PetscInt nq = cellDegrees[c], p;
 
     if (nq) {
-      PetscReal *fB, *fD, *fH;
+      PetscInt          K = H ? 2 : (D ? 1 : (B ? 0 : -1));
+      PetscTabulation T;
       PetscInt     closureSize;
       PetscScalar *elem = NULL;
       PetscReal   *quadPoints;
@@ -249,7 +252,7 @@ static PetscErrorCode DMFieldEvaluate_DS(DMField field, Vec points, PetscDataTyp
 
       for (p = 0; p < dim * nq; p++) coordsReal[p] = PetscRealPart(cellPoints[dim * offset + p]);
       ierr = DMPlexCoordinatesToReference(field->dm, c, nq, coordsReal, coordsRef);CHKERRQ(ierr);
-      ierr = PetscFEGetTabulation(cellFE,nq,coordsRef,B ? &fB : NULL,D ? &fD : NULL,H ? &fH : NULL);CHKERRQ(ierr);
+      ierr = PetscFECreateTabulation(cellFE,1,nq,coordsRef,K,&T);CHKERRQ(ierr);
       ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &quad);CHKERRQ(ierr);
       ierr = PetscMalloc1(dimR * nq, &quadPoints);CHKERRQ(ierr);
       for (p = 0; p < dimR * nq; p++) quadPoints[p] = coordsRef[p];
@@ -261,18 +264,18 @@ static PetscErrorCode DMFieldEvaluate_DS(DMField field, Vec points, PetscDataTyp
         if (datatype == PETSC_SCALAR) {
           PetscScalar *cB = &cellBs[nc * offset];
 
-          DMFieldDSdot(cB,fB,elem,nq,feDim,nc,(PetscScalar));
+          DMFieldDSdot(cB,T->T[0],elem,nq,feDim,nc,(PetscScalar));
         } else {
           PetscReal *cB = &cellBr[nc * offset];
 
-          DMFieldDSdot(cB,fB,elem,nq,feDim,nc,PetscRealPart);
+          DMFieldDSdot(cB,T->T[0],elem,nq,feDim,nc,PetscRealPart);
         }
       }
       if (D) {
         if (datatype == PETSC_SCALAR) {
           PetscScalar *cD = &cellDs[nc * dim * offset];
 
-          DMFieldDSdot(cD,fD,elem,nq,feDim,(nc * dim),(PetscScalar));
+          DMFieldDSdot(cD,T->T[1],elem,nq,feDim,(nc * dim),(PetscScalar));
           for (p = 0; p < nq; p++) {
             for (g = 0; g < nc; g++) {
               PetscScalar vs[3];
@@ -291,7 +294,7 @@ static PetscErrorCode DMFieldEvaluate_DS(DMField field, Vec points, PetscDataTyp
         } else {
           PetscReal *cD = &cellDr[nc * dim * offset];
 
-          DMFieldDSdot(cD,fD,elem,nq,feDim,(nc * dim),PetscRealPart);
+          DMFieldDSdot(cD,T->T[1],elem,nq,feDim,(nc * dim),PetscRealPart);
           for (p = 0; p < nq; p++) {
             for (g = 0; g < nc; g++) {
               for (d = 0; d < dimR; d++) {
@@ -311,7 +314,7 @@ static PetscErrorCode DMFieldEvaluate_DS(DMField field, Vec points, PetscDataTyp
         if (datatype == PETSC_SCALAR) {
           PetscScalar *cH = &cellHs[nc * dim * dim * offset];
 
-          DMFieldDSdot(cH,fH,elem,nq,feDim,(nc * dim * dim),(PetscScalar));
+          DMFieldDSdot(cH,T->T[2],elem,nq,feDim,(nc * dim * dim),(PetscScalar));
           for (p = 0; p < nq; p++) {
             for (g = 0; g < nc * dimR; g++) {
               PetscScalar vs[3];
@@ -345,7 +348,7 @@ static PetscErrorCode DMFieldEvaluate_DS(DMField field, Vec points, PetscDataTyp
         } else {
           PetscReal *cH = &cellHr[nc * dim * dim * offset];
 
-          DMFieldDSdot(cH,fH,elem,nq,feDim,(nc * dim * dim),PetscRealPart);
+          DMFieldDSdot(cH,T->T[2],elem,nq,feDim,(nc * dim * dim),PetscRealPart);
           for (p = 0; p < nq; p++) {
             for (g = 0; g < nc * dimR; g++) {
               for (d = 0; d < dimR; d++) {
@@ -375,7 +378,7 @@ static PetscErrorCode DMFieldEvaluate_DS(DMField field, Vec points, PetscDataTyp
         }
       }
       ierr = DMPlexVecRestoreClosure(field->dm,section,dsfield->vec,c,&closureSize,&elem);CHKERRQ(ierr);
-      ierr = PetscFERestoreTabulation(cellFE,nq,coordsRef,B ? &fB : NULL,D ? &fD : NULL,H ? &fH : NULL);CHKERRQ(ierr);
+      ierr = PetscTabulationDestroy(&T);CHKERRQ(ierr);
     }
     offset += nq;
   }

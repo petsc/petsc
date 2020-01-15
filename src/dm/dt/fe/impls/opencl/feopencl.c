@@ -50,7 +50,7 @@ static PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **s
   PetscBool       useF0         = PETSC_TRUE;
   PetscBool       useF1         = PETSC_TRUE;
   const PetscReal *points, *weights;
-  PetscReal      *basis, *basisDer;
+  PetscTabulation T;
   PetscInt        dim, qNc, N_b, N_c, N_q, N_t, p, d, b, c;
   size_t          count;
   PetscErrorCode  ierr;
@@ -102,7 +102,7 @@ static PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **s
   }
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "};\n", &count);STRING_ERROR_CHECK("Message to short");
   /* Basis Functions */
-  ierr = PetscFEGetDefaultTabulation(fem, &basis, &basisDer, NULL);CHKERRQ(ierr);
+  ierr = PetscFEGetCellTabulation(fem, &T);CHKERRQ(ierr);
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "  /* Nodal basis function evaluations\n"
 "    - basis component is fastest varying, the basis function, then point */\n"
@@ -111,7 +111,7 @@ static PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **s
   for (p = 0; p < N_q; ++p) {
     for (b = 0; b < N_b; ++b) {
       for (c = 0; c < N_c; ++c) {
-        ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "%g,\n", &count, basis[(p*N_b + b)*N_c + c]);STRING_ERROR_CHECK("Message to short");
+        ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "%g,\n", &count, T->T[0][(p*N_b + b)*N_c + c]);STRING_ERROR_CHECK("Message to short");
       }
     }
   }
@@ -128,9 +128,9 @@ static PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **s
         ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "(%s%d)(", &count, numeric_str, dim);STRING_ERROR_CHECK("Message to short");
         for (d = 0; d < dim; ++d) {
           if (d > 0) {
-            ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, ", %g", &count, basisDer[((p*N_b + b)*dim + d)*N_c + c]);STRING_ERROR_CHECK("Message to short");
+            ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, ", %g", &count, T->T[1][((p*N_b + b)*dim + d)*N_c + c]);STRING_ERROR_CHECK("Message to short");
           } else {
-            ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "%g", &count, basisDer[((p*N_b + b)*dim + d)*N_c + c]);STRING_ERROR_CHECK("Message to short");
+            ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "%g", &count, T->T[1][((p*N_b + b)*dim + d)*N_c + c]);STRING_ERROR_CHECK("Message to short");
           }
         }
         ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "),\n", &count);STRING_ERROR_CHECK("Message to short");
@@ -773,8 +773,7 @@ static PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscDS prob, PetscInt fie
 }
 
 PETSC_EXTERN PetscErrorCode PetscFESetUp_Basic(PetscFE);
-PETSC_EXTERN PetscErrorCode PetscFEGetTabulation_Basic(PetscFE, PetscInt, const PetscReal [],
-                                                       PetscReal *, PetscReal *, PetscReal *);
+PETSC_EXTERN PetscErrorCode PetscFECreateTabulation_Basic(PetscFE, PetscInt, const PetscReal [], PetscInt, PetscTabulation);
 
 static PetscErrorCode PetscFEInitialize_OpenCL(PetscFE fem)
 {
@@ -784,7 +783,7 @@ static PetscErrorCode PetscFEInitialize_OpenCL(PetscFE fem)
   fem->ops->view                    = NULL;
   fem->ops->destroy                 = PetscFEDestroy_OpenCL;
   fem->ops->getdimension            = PetscFEGetDimension_Basic;
-  fem->ops->gettabulation           = PetscFEGetTabulation_Basic;
+  fem->ops->createtabulation        = PetscFECreateTabulation_Basic;
   fem->ops->integrateresidual       = PetscFEIntegrateResidual_OpenCL;
   fem->ops->integratebdresidual     = NULL/* PetscFEIntegrateBdResidual_OpenCL */;
   fem->ops->integratejacobianaction = NULL/* PetscFEIntegrateJacobianAction_OpenCL */;

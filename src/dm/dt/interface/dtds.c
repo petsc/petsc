@@ -378,7 +378,7 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
   prob->totDim = prob->totComp = 0;
   ierr = PetscMalloc2(Nf,&prob->Nc,Nf,&prob->Nb);CHKERRQ(ierr);
   ierr = PetscCalloc2(Nf+1,&prob->off,Nf+1,&prob->offDer);CHKERRQ(ierr);
-  ierr = PetscMalloc4(Nf,&prob->basis,Nf,&prob->basisDer,Nf,&prob->basisFace,Nf,&prob->basisDerFace);CHKERRQ(ierr);
+  ierr = PetscMalloc2(Nf,&prob->T,Nf,&prob->Tf);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) {
     PetscObject     obj;
     PetscClassId    id;
@@ -393,15 +393,15 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
       ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
       ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
       ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
-      ierr = PetscFEGetDefaultTabulation(fe, &prob->basis[f], &prob->basisDer[f], NULL);CHKERRQ(ierr);
-      ierr = PetscFEGetFaceTabulation(fe, &prob->basisFace[f], &prob->basisDerFace[f], NULL);CHKERRQ(ierr);
+      ierr = PetscFEGetCellTabulation(fe, &prob->T[f]);CHKERRQ(ierr);
+      ierr = PetscFEGetFaceTabulation(fe, &prob->Tf[f]);CHKERRQ(ierr);
     } else if (id == PETSCFV_CLASSID) {
       PetscFV fv = (PetscFV) obj;
 
       ierr = PetscFVGetQuadrature(fv, &q);CHKERRQ(ierr);
       ierr = PetscFVGetNumComponents(fv, &Nc);CHKERRQ(ierr);
       Nb   = Nc;
-      ierr = PetscFVGetDefaultTabulation(fv, &prob->basis[f], &prob->basisDer[f], NULL);CHKERRQ(ierr);
+      ierr = PetscFVGetCellTabulation(fv, &prob->T[f]);CHKERRQ(ierr);
       /* TODO: should PetscFV also have face tabulation? Otherwise there will be a null pointer in prob->basisFace */
     } else SETERRQ1(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", f);
     prob->Nc[f]       = Nc;
@@ -436,7 +436,7 @@ static PetscErrorCode PetscDSDestroyStructs_Static(PetscDS prob)
   PetscFunctionBegin;
   ierr = PetscFree2(prob->Nc,prob->Nb);CHKERRQ(ierr);
   ierr = PetscFree2(prob->off,prob->offDer);CHKERRQ(ierr);
-  ierr = PetscFree4(prob->basis,prob->basisDer,prob->basisFace,prob->basisDerFace);CHKERRQ(ierr);
+  ierr = PetscFree2(prob->T,prob->Tf);CHKERRQ(ierr);
   ierr = PetscFree3(prob->u,prob->u_t,prob->u_x);CHKERRQ(ierr);
   ierr = PetscFree5(prob->x,prob->basisReal, prob->basisDerReal,prob->testReal,prob->testDerReal);CHKERRQ(ierr);
   ierr = PetscFree6(prob->f0,prob->f1,prob->g0,prob->g1,prob->g2,prob->g3);CHKERRQ(ierr);
@@ -2593,23 +2593,22 @@ PetscErrorCode PetscDSGetComponentDerivativeOffsets(PetscDS prob, PetscInt *offs
   Input Parameter:
 . prob - The PetscDS object
 
-  Output Parameters:
-+ basis - The basis function tabulation at quadrature points
-- basisDer - The basis function derivative tabulation at quadrature points
+  Output Parameter:
+. T - The basis function and derivatives tabulation at quadrature points for each field
 
   Level: intermediate
 
 .seealso: PetscDSCreate()
 @*/
-PetscErrorCode PetscDSGetTabulation(PetscDS prob, PetscReal ***basis, PetscReal ***basisDer)
+PetscErrorCode PetscDSGetTabulation(PetscDS prob, PetscTabulation *T[])
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  PetscValidPointer(T, 2);
   ierr = PetscDSSetUp(prob);CHKERRQ(ierr);
-  if (basis)    {PetscValidPointer(basis, 2);    *basis    = prob->basis;}
-  if (basisDer) {PetscValidPointer(basisDer, 3); *basisDer = prob->basisDer;}
+  *T = prob->T;
   PetscFunctionReturn(0);
 }
 
@@ -2621,23 +2620,22 @@ PetscErrorCode PetscDSGetTabulation(PetscDS prob, PetscReal ***basis, PetscReal 
   Input Parameter:
 . prob - The PetscDS object
 
-  Output Parameters:
-+ basisFace - The basis function tabulation at quadrature points
-- basisDerFace - The basis function derivative tabulation at quadrature points
+  Output Parameter:
+. Tf - The basis function and derviative tabulation on each lcoal face at quadrature points for each and field
 
   Level: intermediate
 
 .seealso: PetscDSGetTabulation(), PetscDSCreate()
 @*/
-PetscErrorCode PetscDSGetFaceTabulation(PetscDS prob, PetscReal ***basis, PetscReal ***basisDer)
+PetscErrorCode PetscDSGetFaceTabulation(PetscDS prob, PetscTabulation *Tf[])
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  PetscValidPointer(Tf, 2);
   ierr = PetscDSSetUp(prob);CHKERRQ(ierr);
-  if (basis)    {PetscValidPointer(basis, 2);    *basis    = prob->basisFace;}
-  if (basisDer) {PetscValidPointer(basisDer, 3); *basisDer = prob->basisDerFace;}
+  *Tf = prob->Tf;
   PetscFunctionReturn(0);
 }
 
@@ -3118,6 +3116,25 @@ PetscErrorCode PetscDSGetHeightSubspace(PetscDS prob, PetscInt height, PetscDS *
     }
   }
   *subprob = prob->subprobs[height-1];
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PetscDSIsFE_Internal(PetscDS ds, PetscInt f, PetscBool *isFE)
+{
+  PetscObject    obj;
+  PetscClassId   id;
+  PetscInt       Nf;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
+  PetscValidPointer(isFE, 3);
+  ierr = PetscDSGetNumFields(ds, &Nf);CHKERRQ(ierr);
+  if (f >= Nf) SETERRQ2(PetscObjectComm((PetscObject) ds), PETSC_ERR_ARG_SIZ, "Field %D must be in [0, %D)", f, Nf);
+  ierr = PetscDSGetDiscretization(ds, f, &obj);CHKERRQ(ierr);
+  ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+  if (id == PETSCFE_CLASSID) *isFE = PETSC_TRUE;
+  else                       *isFE = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
