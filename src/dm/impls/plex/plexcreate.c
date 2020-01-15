@@ -299,7 +299,7 @@ PetscErrorCode DMPlexCreateSquareBoundary(DM dm, const PetscReal lower[], const 
 + comm  - The communicator for the DM object
 . lower - The lower left front corner coordinates
 . upper - The upper right back corner coordinates
-- edges - The number of cells in each direction
+- faces - The number of faces in each direction (the same as the number of cells)
 
   Output Parameter:
 . dm  - The DM object
