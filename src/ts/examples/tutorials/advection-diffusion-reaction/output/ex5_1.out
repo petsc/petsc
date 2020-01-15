@@ -26,6 +26,7 @@ TS Object: 1 MPI processes
   type: arkimex
     ARK IMEX 3
     Stiff abscissa       ct =  0.000000  0.871733  0.600000  1.000000 
+  Fully implicit: yes
   Stiffly accurate: yes
   Explicit first stage: yes
   FSAL property: yes
