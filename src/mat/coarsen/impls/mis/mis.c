@@ -14,7 +14,7 @@
 
    Input Parameter:
    . perm - serial permutation of rows of local to process in MIS
-   . Gmat - glabal matrix of graph (data not defined)
+   . Gmat - global matrix of graph (data not defined)
    . strict_aggs - flag for whether to keep strict (non overlapping) aggregates in 'llist';
 
    Output Parameter:
