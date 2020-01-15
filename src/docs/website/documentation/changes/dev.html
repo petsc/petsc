@@ -149,15 +149,25 @@
           <li>DMCopyLabels(): Add two additional input flags</li>
           <li>DMPlexDistribute(): fixed bug associated with vertex partition weights and overlapped meshes</li>
           <li>DMPlexDistribute(): vertex partition weights are now computed by summing all the local section dofs in the transitive closure of each cell</li>
+          <li>Added PetscTabulation to hold function tabulation data</li>
+          <li>Added DMEnclosureType to describe relations between meshes</li>
+          <li>Added DMGetEnclosureRelation() and DMGetEnclosurePoint() to discover relations between meshes.</li>
+          <li>Added DMPolytopeType to describe different cell constructions</li>
         </ul>
       <h4>DMPlex:</h4>
         <ul>
+          <li>The cell type is now stored in a label, so it can be queried. This is useful for interpolation, which needs extra data, and for geometric calculations.</li>
           <li>Add DMPlexOrientCell() which orients a single cell</li>
           <li>Add DMPlexCompareOrientations() which compares the cone point order of a single cell with the given reference cone</li>
           <li>Add DMPlexIsInterpolated() which finds out whether the plex is interpolated</li>
           <li>Add DMPlexIsInterpolatedCollective() which finds out whether the plex is interpolated on all ranks</li>
           <li>Add DMPlexIsDistributed() which finds out whether the plex is distributed</li>
         </ul>
+      <h4>DT:</h4>
+      <ul>
+        <li>All tabulated data is now stored in PetscTabulation structures. Thiis changes interfaces in PetscDS, PetscFE, and PetscFV.</li>
+        <li>DefaultTabulation has been renamed CellTabulation everywhere.</li>
+      </ul>
       <h4>PetscViewer:</h4>
         <ul>
           <li>Add "fieldnum" argument to PetscViewerVTKAddField() to indicate only one field of the vector should be viewed</li>
