@@ -237,24 +237,23 @@ PetscErrorCode TSRKRegisterAll(void)
   }
   {
     const PetscReal
-      A[7][7]   = {{0,0,0,0,0,0,0},
-                   {RC(1.0)/RC(5.0),0,0,0,0,0,0},
-                   {RC(3.0)/RC(40.0),RC(9.0)/RC(40.0),0,0,0,0,0},
-                   {RC(44.0)/RC(45.0),RC(-56.0)/RC(15.0),RC(32.0)/RC(9.0),0,0,0,0},
-                   {RC(19372.0)/RC(6561.0),RC(-25360.0)/RC(2187.0),RC(64448.0)/RC(6561.0),RC(-212.0)/RC(729.0),0,0,0},
-                   {RC(9017.0)/RC(3168.0),RC(-355.0)/RC(33.0),RC(46732.0)/RC(5247.0),RC(49.0)/RC(176.0),RC(-5103.0)/RC(18656.0),0,0},
-                   {RC(35.0)/RC(384.0),0,RC(500.0)/RC(1113.0),RC(125.0)/RC(192.0),RC(-2187.0)/RC(6784.0),RC(11.0)/RC(84.0),0}},
-      b[7]      =  {RC(35.0)/RC(384.0),0,RC(500.0)/RC(1113.0),RC(125.0)/RC(192.0),RC(-2187.0)/RC(6784.0),RC(11.0)/RC(84.0),0},
-        bembed[7] =  {RC(5179.0)/RC(57600.0),0,RC(7571.0)/RC(16695.0),RC(393.0)/RC(640.0),RC(-92097.0)/RC(339200.0),RC(187.0)/RC(2100.0),RC(1.0)/RC(40.0)},
-        binterp[7][5] =  {{RC(1.0),RC(-4034104133.0)/RC(1410260304.0),RC(105330401.0)/RC(33982176.0),RC(-13107642775.0)/RC(11282082432.0),RC(6542295.0)/RC(470086768.0)},
-                    {0,0,0,0,0},
-                    {0,RC(132343189600.0)/RC(32700410799.0),RC(-833316000.0)/RC(131326951.0),RC(91412856700.0)/RC(32700410799.0),RC(-523383600.0)/RC(10900136933.0)},
-                    {0,RC(-115792950.0)/RC(29380423.0),RC(185270875.0)/RC(16991088.0),RC(-12653452475.0)/RC(1880347072.0),RC(98134425.0)/RC(235043384.0)},
-                    {0,RC(70805911779.0)/RC(24914598704.0),RC(-4531260609.0)/RC(600351776.0),RC(988140236175.0)/RC(199316789632.0),RC(-14307999165.0)/RC(24914598704.0)},
-                    {0,RC(-331320693.0)/RC(205662961.0),RC(31361737.0)/RC(7433601.0),RC(-2426908385.0)/RC(822651844.0),RC(97305120.0)/RC(205662961.0)},
-                    {0,RC(44764047.0)/RC(29380423.0),RC(-1532549.0)/RC(353981.0),RC(90730570.0)/RC(29380423.0),RC(-8293050.0)/RC(29380423.0)}};
-
-        ierr = TSRKRegister(TSRK5DP,5,7,&A[0][0],b,NULL,bembed,5,binterp[0]);CHKERRQ(ierr);
+      A[7][7]       = {{0,0,0,0,0,0,0},
+                       {RC(1.0)/RC(5.0),0,0,0,0,0,0},
+                       {RC(3.0)/RC(40.0),RC(9.0)/RC(40.0),0,0,0,0,0},
+                       {RC(44.0)/RC(45.0),RC(-56.0)/RC(15.0),RC(32.0)/RC(9.0),0,0,0,0},
+                       {RC(19372.0)/RC(6561.0),RC(-25360.0)/RC(2187.0),RC(64448.0)/RC(6561.0),RC(-212.0)/RC(729.0),0,0,0},
+                       {RC(9017.0)/RC(3168.0),RC(-355.0)/RC(33.0),RC(46732.0)/RC(5247.0),RC(49.0)/RC(176.0),RC(-5103.0)/RC(18656.0),0,0},
+                       {RC(35.0)/RC(384.0),0,RC(500.0)/RC(1113.0),RC(125.0)/RC(192.0),RC(-2187.0)/RC(6784.0),RC(11.0)/RC(84.0),0}},
+      b[7]          =  {RC(35.0)/RC(384.0),0,RC(500.0)/RC(1113.0),RC(125.0)/RC(192.0),RC(-2187.0)/RC(6784.0),RC(11.0)/RC(84.0),0},
+      bembed[7]     =  {RC(5179.0)/RC(57600.0),0,RC(7571.0)/RC(16695.0),RC(393.0)/RC(640.0),RC(-92097.0)/RC(339200.0),RC(187.0)/RC(2100.0),RC(1.0)/RC(40.0)},
+      binterp[7][5] = {{RC(1.0),RC(-4034104133.0)/RC(1410260304.0),RC(105330401.0)/RC(33982176.0),RC(-13107642775.0)/RC(11282082432.0),RC(6542295.0)/RC(470086768.0)},
+                       {0,0,0,0,0},
+                       {0,RC(132343189600.0)/RC(32700410799.0),RC(-833316000.0)/RC(131326951.0),RC(91412856700.0)/RC(32700410799.0),RC(-523383600.0)/RC(10900136933.0)},
+                       {0,RC(-115792950.0)/RC(29380423.0),RC(185270875.0)/RC(16991088.0),RC(-12653452475.0)/RC(1880347072.0),RC(98134425.0)/RC(235043384.0)},
+                       {0,RC(70805911779.0)/RC(24914598704.0),RC(-4531260609.0)/RC(600351776.0),RC(988140236175.0)/RC(199316789632.0),RC(-14307999165.0)/RC(24914598704.0)},
+                       {0,RC(-331320693.0)/RC(205662961.0),RC(31361737.0)/RC(7433601.0),RC(-2426908385.0)/RC(822651844.0),RC(97305120.0)/RC(205662961.0)},
+                       {0,RC(44764047.0)/RC(29380423.0),RC(-1532549.0)/RC(353981.0),RC(90730570.0)/RC(29380423.0),RC(-8293050.0)/RC(29380423.0)}};
+      ierr = TSRKRegister(TSRK5DP,5,7,&A[0][0],b,NULL,bembed,5,binterp[0]);CHKERRQ(ierr);
   }
   {
     const PetscReal
@@ -458,6 +457,58 @@ PetscErrorCode TSRKRegister(TSRKType name,PetscInt order,PetscInt s,
 
   link->next = RKTableauList;
   RKTableauList = link;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode TSRKGetTableau_RK(TS ts, PetscInt *s, const PetscReal **A, const PetscReal **b, const PetscReal **c, const PetscReal **bembed,
+                                        PetscInt *p, const PetscReal **binterp, PetscBool *FSAL)
+{
+  TS_RK     *rk   = (TS_RK*)ts->data;
+  RKTableau tab  = rk->tableau;
+
+  PetscFunctionBegin;
+  if (s) *s = tab->s;
+  if (A) *A = tab->A;
+  if (b) *b = tab->b;
+  if (c) *c = tab->c;
+  if (bembed) *bembed = tab->bembed;
+  if (p) *p = tab->p;
+  if (binterp) *binterp = tab->binterp;
+  if (FSAL) *FSAL = tab->FSAL;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   TSRKGetTableau - Get info on the RK tableau
+
+   Not Collective
+
+   Input Parameters:
+.  ts - timestepping context
+
+   Output Parameters:
++  s - number of stages, this is the dimension of the matrices below
+.  A - stage coefficients (dimension s*s, row-major)
+.  b - step completion table (dimension s)
+.  c - abscissa (dimension s)
+.  bembed - completion table for embedded method (dimension s; NULL if not available)
+.  p - Order of the interpolation scheme, equal to the number of columns of binterp
+.  binterp - Coefficients of the interpolation formula (dimension s*p)
+-  FSAL - wheather or not the scheme has the First Same As Last property
+
+   Level: developer
+
+.seealso: TSRK
+@*/
+PetscErrorCode TSRKGetTableau(TS ts, PetscInt *s, const PetscReal **A, const PetscReal **b, const PetscReal **c, const PetscReal **bembed,
+                                     PetscInt *p, const PetscReal **binterp, PetscBool *FSAL)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ierr = PetscUseMethod(ts,"TSRKGetTableau_C",(TS,PetscInt*,const PetscReal**,const PetscReal**,const PetscReal**,const PetscReal**,
+                                                  PetscInt*,const PetscReal**,PetscBool*),(ts,s,A,b,c,bembed,p,binterp,FSAL));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1174,14 +1225,19 @@ static PetscErrorCode TSView_RK(TS ts,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    RKTableau tab  = rk->tableau;
-    TSRKType  rktype;
-    char      buf[512];
+    RKTableau       tab  = rk->tableau;
+    TSRKType        rktype;
+    const PetscReal *c;
+    PetscInt        s;
+    char            buf[512];
+    PetscBool       FSAL;
+
     ierr = TSRKGetType(ts,&rktype);CHKERRQ(ierr);
+    ierr = TSRKGetTableau(ts,&s,NULL,NULL,&c,NULL,NULL,NULL,&FSAL);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  RK type %s\n",rktype);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Order: %D\n",tab->order);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  FSAL property: %s\n",tab->FSAL ? "yes" : "no");CHKERRQ(ierr);
-    ierr = PetscFormatRealArray(buf,sizeof(buf),"% 8.6f",tab->s,tab->c);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  FSAL property: %s\n",FSAL ? "yes" : "no");CHKERRQ(ierr);
+    ierr = PetscFormatRealArray(buf,sizeof(buf),"% 8.6f",s,c);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Abscissa c = %s\n",buf);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -1308,6 +1364,7 @@ static PetscErrorCode TSDestroy_RK(TS ts)
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKGetType_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKSetType_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKGetTableau_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKSetMultirate_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKGetMultirate_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1453,6 +1510,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_RK(TS ts)
 
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKGetType_C",TSRKGetType_RK);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKSetType_C",TSRKSetType_RK);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKGetTableau_C",TSRKGetTableau_RK);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKSetMultirate_C",TSRKSetMultirate_RK);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKGetMultirate_C",TSRKGetMultirate_RK);CHKERRQ(ierr);
 
