@@ -366,6 +366,7 @@ cdef extern from * nogil:
     int MatISRestoreLocalMat(PetscMat,PetscMat*)
     int MatISSetLocalMat(PetscMat,PetscMat)
 
+    int MatMissingDiagonal(Mat,PetscBool*,PetscInt*)
     ctypedef enum PetscMatFactorShiftType "MatFactorShiftType":
         MAT_SHIFT_NONE
         MAT_SHIFT_NONZERO

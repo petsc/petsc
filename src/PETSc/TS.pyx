@@ -709,6 +709,18 @@ cdef class TS(Object):
             vm = [ref_Vec(vecm[i]) for i from 0 <= i < n]
         return (vl, vm)
 
+    def setRHSJacobianP(self, jacobianp, Mat A=None, args=None, kargs=None):
+        cdef PetscMat Amat=NULL
+        if A is not None: Amat = A.mat
+        if jacobianp is not None:
+            if args  is None: args  = ()
+            if kargs is None: kargs = {}
+            context = (jacobianp, args, kargs)
+            self.set_attr('__rhsjacobianp__', context)
+            CHKERR( TSSetRHSJacobianP(self.ts, Amat, TS_RHSJacobianP, <void*>context) )
+        else:
+            CHKERR( TSSetRHSJacobianP(self.ts, Amat, NULL, NULL) )
+
     def createQuadratureTS(self, forward=True):
         cdef TS qts = TS()
         cdef PetscBool fwd = forward
