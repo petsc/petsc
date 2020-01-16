@@ -128,7 +128,7 @@ static PetscErrorCode DMFieldEvaluateFE_DS(DMField field, IS pointIS, PetscQuadr
     PetscFE      fe = (PetscFE) disc;
     PetscInt     feDim, i;
     PetscInt          K = H ? 2 : (D ? 1 : (B ? 0 : -1));
-    PetscTabulation T;
+    PetscTabulation   T;
 
     ierr = PetscFEGetDimension(fe,&feDim);CHKERRQ(ierr);
     ierr = PetscFECreateTabulation(fe,1,nq,qpoints,K,&T);CHKERRQ(ierr);
@@ -243,7 +243,7 @@ static PetscErrorCode DMFieldEvaluate_DS(DMField field, Vec points, PetscDataTyp
 
     if (nq) {
       PetscInt          K = H ? 2 : (D ? 1 : (B ? 0 : -1));
-      PetscTabulation T;
+      PetscTabulation   T;
       PetscInt     closureSize;
       PetscScalar *elem = NULL;
       PetscReal   *quadPoints;

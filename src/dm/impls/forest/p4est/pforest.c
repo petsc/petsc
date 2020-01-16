@@ -4750,16 +4750,16 @@ static PetscErrorCode DMForestTransferVecFromBase_pforest(DM dm, Vec vecIn, Vec 
 
   ierr = DMGetLocalVector(dmIn,&vecOutLocal);CHKERRQ(ierr);
   { /* get degrees of freedom ordered onto dmIn */
-    PetscSF basetocoarse;
-    PetscInt bStart, bEnd, nroots;
-    PetscInt iStart, iEnd, nleaves, leaf;
-    PetscMPIInt rank;
-    PetscSFNode *remotes;
-    PetscSection secIn, secOut;
-    PetscInt    *remoteOffsets;
-    PetscSF      transferSF;
-    const PetscScalar  *inArray;
-    PetscScalar  *outArray;
+    PetscSF            basetocoarse;
+    PetscInt           bStart, bEnd, nroots;
+    PetscInt           iStart, iEnd, nleaves, leaf;
+    PetscMPIInt        rank;
+    PetscSFNode       *remotes;
+    PetscSection       secIn, secOut;
+    PetscInt          *remoteOffsets;
+    PetscSF            transferSF;
+    const PetscScalar *inArray;
+    PetscScalar       *outArray;
 
     ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)basec), &rank);CHKERRQ(ierr);
     ierr = DMPlexGetChart(basec, &bStart, &bEnd);CHKERRQ(ierr);

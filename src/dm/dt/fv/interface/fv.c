@@ -1694,8 +1694,8 @@ PetscErrorCode PetscFVCreateTabulation(PetscFV fvm, PetscInt nrepl, PetscInt npo
     PetscFunctionReturn(0);
   }
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
-  PetscValidPointer(points, 3);
-  PetscValidPointer(T, 5);
+  PetscValidPointer(points, 4);
+  PetscValidPointer(T, 6);
   ierr = PetscFVGetSpatialDimension(fvm, &cdim);CHKERRQ(ierr);
   ierr = PetscFVGetNumComponents(fvm, &Nc);CHKERRQ(ierr);
   ierr = PetscMalloc1(1, T);CHKERRQ(ierr);

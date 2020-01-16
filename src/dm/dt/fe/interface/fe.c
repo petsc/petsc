@@ -956,8 +956,8 @@ PetscErrorCode PetscFECreateTabulation(PetscFE fem, PetscInt nrepl, PetscInt npo
     PetscFunctionReturn(0);
   }
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
-  PetscValidPointer(points, 3);
-  PetscValidPointer(T, 5);
+  PetscValidPointer(points, 4);
+  PetscValidPointer(T, 6);
   ierr = PetscFEGetDualSpace(fem, &Q);CHKERRQ(ierr);
   ierr = PetscDualSpaceGetDM(Q, &dm);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &cdim);CHKERRQ(ierr);
@@ -1849,10 +1849,10 @@ PetscErrorCode PetscFEEvaluateFieldJets_Internal(PetscDS ds, PetscInt Nf, PetscI
 
 PetscErrorCode PetscFEEvaluateFaceFields_Internal(PetscDS prob, PetscInt field, PetscInt faceLoc, const PetscScalar coefficients[], PetscScalar u[])
 {
-  PetscFE           fe;
+  PetscFE         fe;
   PetscTabulation Tc;
-  PetscInt          b, c;
-  PetscErrorCode    ierr;
+  PetscInt        b, c;
+  PetscErrorCode  ierr;
 
   if (!prob) return 0;
   ierr = PetscDSGetDiscretization(prob, field, (PetscObject *) &fe);CHKERRQ(ierr);

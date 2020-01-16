@@ -3831,7 +3831,7 @@ PetscErrorCode DMPlexGetPointDepth(DM dm, PetscInt point, PetscInt *depth)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(depth, 3);
+  PetscValidIntPointer(depth, 3);
   ierr = DMLabelGetValue(dm->depthLabel, point, depth);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
