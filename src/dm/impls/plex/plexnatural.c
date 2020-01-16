@@ -198,17 +198,22 @@ PetscErrorCode DMPlexGlobalToNaturalBegin(DM dm, Vec gv, Vec nv)
 {
   const PetscScalar *inarray;
   PetscScalar       *outarray;
+  PetscMPIInt        size;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(DMPLEX_GlobalToNaturalBegin,dm,0,0,0);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size);CHKERRQ(ierr);
   if (dm->sfNatural) {
     ierr = VecGetArray(nv, &outarray);CHKERRQ(ierr);
     ierr = VecGetArrayRead(gv, &inarray);CHKERRQ(ierr);
     ierr = PetscSFBcastBegin(dm->sfNatural, MPIU_SCALAR, (PetscScalar *) inarray, outarray);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(gv, &inarray);CHKERRQ(ierr);
     ierr = VecRestoreArray(nv, &outarray);CHKERRQ(ierr);
-  } else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONGSTATE, "DM global to natural SF was not created.\nYou must call DMSetUseNatural() before DMPlexDistribute().\n");
+  } else if (size == 1) {
+    ierr = VecCopy(nv, gv);CHKERRQ(ierr);
+  } else if (dm->useNatural) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "DM global to natural SF not present.\nIf DMPlexDistribute() was called, report to petsc-maint@mcs.anl.gov.\n");
+  else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONGSTATE, "DM global to natural SF was not created.\nYou must call DMSetUseNatural() before DMPlexDistribute().\n");
   ierr = PetscLogEventEnd(DMPLEX_GlobalToNaturalBegin,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -235,17 +240,21 @@ PetscErrorCode DMPlexGlobalToNaturalEnd(DM dm, Vec gv, Vec nv)
 {
   const PetscScalar *inarray;
   PetscScalar       *outarray;
+  PetscMPIInt        size;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(DMPLEX_GlobalToNaturalEnd,dm,0,0,0);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size);CHKERRQ(ierr);
   if (dm->sfNatural) {
     ierr = VecGetArrayRead(gv, &inarray);CHKERRQ(ierr);
     ierr = VecGetArray(nv, &outarray);CHKERRQ(ierr);
     ierr = PetscSFBcastEnd(dm->sfNatural, MPIU_SCALAR, (PetscScalar *) inarray, outarray);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(gv, &inarray);CHKERRQ(ierr);
     ierr = VecRestoreArray(nv, &outarray);CHKERRQ(ierr);
-  }
+  } else if (size == 1) {
+  } else if (dm->useNatural) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "DM global to natural SF not present.\nIf DMPlexDistribute() was called, report to petsc-maint@mcs.anl.gov.\n");
+  else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONGSTATE, "DM global to natural SF was not created.\nYou must call DMSetUseNatural() before DMPlexDistribute().\n");
   ierr = PetscLogEventEnd(DMPLEX_GlobalToNaturalEnd,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -272,10 +281,12 @@ PetscErrorCode DMPlexNaturalToGlobalBegin(DM dm, Vec nv, Vec gv)
 {
   const PetscScalar *inarray;
   PetscScalar       *outarray;
+  PetscMPIInt        size;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(DMPLEX_NaturalToGlobalBegin,dm,0,0,0);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size);CHKERRQ(ierr);
   if (dm->sfNatural) {
     /* We only have acces to the SF that goes from Global to Natural.
        Instead of inverting dm->sfNatural, we can call PetscSFReduceBegin/End with MPI_Op MPI_SUM.
@@ -286,7 +297,10 @@ PetscErrorCode DMPlexNaturalToGlobalBegin(DM dm, Vec nv, Vec gv)
     ierr = PetscSFReduceBegin(dm->sfNatural, MPIU_SCALAR, (PetscScalar *) inarray, outarray, MPI_SUM);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(nv, &inarray);CHKERRQ(ierr);
     ierr = VecRestoreArray(gv, &outarray);CHKERRQ(ierr);
-  } else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONGSTATE, "DM global to natural SF was not created.\nYou must call DMSetUseNatural() before DMPlexDistribute().\n");
+  } else if (size == 1) {
+    ierr = VecCopy(nv, gv);CHKERRQ(ierr);
+  } else if (dm->useNatural) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "DM global to natural SF not present.\nIf DMPlexDistribute() was called, report to petsc-maint@mcs.anl.gov.\n");
+  else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONGSTATE, "DM global to natural SF was not created.\nYou must call DMSetUseNatural() before DMPlexDistribute().\n");
   ierr = PetscLogEventEnd(DMPLEX_NaturalToGlobalBegin,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -313,17 +327,21 @@ PetscErrorCode DMPlexNaturalToGlobalEnd(DM dm, Vec nv, Vec gv)
 {
   const PetscScalar *inarray;
   PetscScalar       *outarray;
+  PetscMPIInt        size;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(DMPLEX_NaturalToGlobalEnd,dm,0,0,0);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size);CHKERRQ(ierr);
   if (dm->sfNatural) {
     ierr = VecGetArrayRead(nv, &inarray);CHKERRQ(ierr);
     ierr = VecGetArray(gv, &outarray);CHKERRQ(ierr);
     ierr = PetscSFReduceEnd(dm->sfNatural, MPIU_SCALAR, (PetscScalar *) inarray, outarray, MPI_SUM);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(nv, &inarray);CHKERRQ(ierr);
     ierr = VecRestoreArray(gv, &outarray);CHKERRQ(ierr);
-  }
+  } else if (size == 1) {
+  } else if (dm->useNatural) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "DM global to natural SF not present.\nIf DMPlexDistribute() was called, report to petsc-maint@mcs.anl.gov.\n");
+  else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONGSTATE, "DM global to natural SF was not created.\nYou must call DMSetUseNatural() before DMPlexDistribute().\n");
   ierr = PetscLogEventEnd(DMPLEX_NaturalToGlobalEnd,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
