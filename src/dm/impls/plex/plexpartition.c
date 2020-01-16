@@ -968,6 +968,7 @@ PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, PetscInt nparts,
   if (numVertices < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of vertices must be non-negative");
   if (numVertices && !part->noGraph) {
     PetscValidIntPointer(start, 4);
+    PetscValidIntPointer(start + numVertices, 4);
     if (start[numVertices]) PetscValidIntPointer(adjacency, 5);
   }
   if (vertexSection) {
