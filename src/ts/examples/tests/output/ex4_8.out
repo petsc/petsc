@@ -1,0 +1,23 @@
+At t[0] =      0.00e+00 u=       1.00e+00 at the center 
+At t[10] =      1.00e-01 u=       4.72e-01 at the center 
+At t[20] =      2.00e-01 u=       2.24e-01 at the center 
+At t[30] =      3.00e-01 u=       1.09e-01 at the center 
+At t[40] =      4.00e-01 u=       5.37e-02 at the center 
+At t[50] =      5.00e-01 u=       2.70e-02 at the center 
+At t[60] =      6.00e-01 u=       1.38e-02 at the center 
+At t[70] =      7.00e-01 u=       7.15e-03 at the center 
+At t[80] =      8.00e-01 u=       3.74e-03 at the center 
+At t[90] =      9.00e-01 u=       1.98e-03 at the center 
+At t[100] =      1.00e+00 u=       1.05e-03 at the center 
+TS Object: 1 MPI processes
+  type: rk
+    RK type 5dp
+    Order: 5
+    FSAL property: yes
+    Abscissa c =  0.000000  0.200000  0.300000  0.800000  0.888889  1.000000  1.000000 
+  maximum steps=100
+  maximum time=1.
+  total number of rejected steps=0
+  using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001
+  TSAdapt Object: 1 MPI processes
+    type: none
