@@ -1411,7 +1411,7 @@ PetscErrorCode TSRKGetMultirate(TS ts,PetscBool *use_multirate)
 
   Level: beginner
 
-.seealso:  TSCreate(), TS, TSSetType(), TSRKSetType(), TSRKGetType(), TSRKSetFullyImplicit(), TSRK2D, TTSRK2E, TSRK3,
+.seealso:  TSCreate(), TS, TSSetType(), TSRKSetType(), TSRKGetType(), TSRK2D, TTSRK2E, TSRK3,
            TSRK4, TSRK5, TSRKPRSSP2, TSRKBPR3, TSRKType, TSRKRegister(), TSRKSetMultirate(), TSRKGetMultirate()
 
 M*/
