@@ -278,13 +278,14 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
 
 #endif
 
-#define PetscSorted(n,idx,sorted)                         \
-do {                                                      \
-  PetscInt i;                                             \
-  sorted = PETSC_TRUE;                                    \
-  for (i = 1; i < n; i++) if (idx[i] < idx[i - 1]) break; \
-  if (i < n) sorted = PETSC_FALSE;                        \
-} while(0)
+#define PetscSorted(n,idx,sorted)           \
+  do {                                      \
+    PetscInt _i_;                           \
+    (sorted) = PETSC_TRUE;                  \
+    for (_i_ = 1; _i_ < (n); _i_++)         \
+      if ((idx)[_i_] < (idx)[_i_ - 1])      \
+        { (sorted) = PETSC_FALSE; break; }  \
+  } while(0)
 
 #if !defined(PETSC_USE_DEBUG)
 
@@ -411,11 +412,11 @@ do {                                                      \
     if (-b2[0] != b2[1]) SETERRQ1(PetscObjectComm((PetscObject)(a)),PETSC_ERR_ARG_WRONG,"Enum value must be same on all processes, argument # %d",arg); \
   } while (0)
 
-#define PetscCheckSorted(n,idx)                                                                \
-  do {                                                                                         \
-    PetscBool flg;                                                                             \
-    PetscSorted(n,idx,flg);                                                                    \
-    if (!flg) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Input array needs to be sorted"); \
+#define PetscCheckSorted(n,idx)                                                                   \
+  do {                                                                                            \
+    PetscBool _1_flg;                                                                             \
+    PetscSorted(n,idx,_1_flg);                                                                    \
+    if (!_1_flg) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Input array needs to be sorted"); \
   } while (0)
 
 #endif
