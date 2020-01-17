@@ -1556,7 +1556,10 @@ static PetscErrorCode TSTrajectoryGet_Memory(TSTrajectory tj,TS ts,PetscInt step
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (tj->adjoint_solve_mode && stepnum == 0) PetscFunctionReturn(0);
+  if (tj->adjoint_solve_mode && stepnum == 0) {
+    ierr = TSTrajectoryReset(tj);CHKERRQ(ierr); /* reset TSTrajectory so users do not need to reset TSTrajectory */
+    PetscFunctionReturn(0);
+  }
   switch (tjsch->stype) {
     case NONE:
       if (tj->adjoint_solve_mode) {
