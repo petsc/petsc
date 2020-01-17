@@ -294,12 +294,12 @@ do {                                                      \
 #define PetscValidType(a,arg) do {(void)(a);} while (0)
 #define PetscCheckSameComm(a,arga,b,argb) do {(void)(a);(void)(b);} while (0)
 #define PetscCheckSameTypeAndComm(a,arga,b,argb) do {(void)(a);(void)(b);} while (0)
-#define PetscValidLogicalCollectiveScalar(a,b,c) do {(void)(a);(void)(b);} while (0)
-#define PetscValidLogicalCollectiveReal(a,b,c) do {(void)(a);(void)(b);} while (0)
-#define PetscValidLogicalCollectiveInt(a,b,c) do {(void)(a);(void)(b);} while (0)
-#define PetscValidLogicalCollectiveMPIInt(a,b,c) do {(void)(a);(void)(b);} while (0)
-#define PetscValidLogicalCollectiveBool(a,b,c) do {(void)(a);(void)(b);} while (0)
-#define PetscValidLogicalCollectiveEnum(a,b,c) do {(void)(a);(void)(b);} while (0)
+#define PetscValidLogicalCollectiveScalar(a,b,arg) do {(void)(a);(void)(b);} while (0)
+#define PetscValidLogicalCollectiveReal(a,b,arg) do {(void)(a);(void)(b);} while (0)
+#define PetscValidLogicalCollectiveInt(a,b,arg) do {(void)(a);(void)(b);} while (0)
+#define PetscValidLogicalCollectiveMPIInt(a,b,arg) do {(void)(a);(void)(b);} while (0)
+#define PetscValidLogicalCollectiveBool(a,b,arg) do {(void)(a);(void)(b);} while (0)
+#define PetscValidLogicalCollectiveEnum(a,b,arg) do {(void)(a);(void)(b);} while (0)
 #define PetscCheckSorted(n,idx) do {(void)(n);(void)(idx);} while (0)
 
 #else
@@ -310,32 +310,32 @@ do {                                                      \
 */
 #define PetscCheckSameType(a,arga,b,argb)                               \
   do {                                                                  \
-    if (((PetscObject)a)->type != ((PetscObject)b)->type) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Objects not of same type: Argument # %d and %d",arga,argb); \
+    if (((PetscObject)(a))->type != ((PetscObject)(b))->type) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Objects not of same type: Argument # %d and %d",arga,argb); \
   } while (0)
 /*
     Check type_name
 */
 #define PetscCheckTypeName(a,type)                                      \
   do {                                                                  \
-    PetscBool      _7_match;                                             \
+    PetscBool      _7_match;                                            \
     PetscErrorCode _7_ierr;                                             \
-    _7_ierr = PetscObjectTypeCompare(((PetscObject)a),(type),&_7_match);CHKERRQ(_7_ierr); \
-    if (!_7_match) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Object (%s) is not %s",(char*)(((PetscObject)a)->type_name),type); \
+    _7_ierr = PetscObjectTypeCompare(((PetscObject)(a)),(type),&_7_match);CHKERRQ(_7_ierr); \
+    if (!_7_match) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Object (%s) is not %s",(char*)(((PetscObject)(a))->type_name),type); \
   } while (0)
 
 #define PetscCheckTypeNames(a,type1,type2)                              \
   do {                                                                  \
     PetscBool      _7_match;                                            \
     PetscErrorCode _7_ierr;                                             \
-    _7_ierr = PetscObjectTypeCompareAny(((PetscObject)a),&_7_match,(type1),(type2),"");CHKERRQ(_7_ierr); \
-    if (!_7_match) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Object (%s) is not %s or %s",(char*)(((PetscObject)a)->type_name),type1,type2); \
+    _7_ierr = PetscObjectTypeCompareAny(((PetscObject)(a)),&_7_match,(type1),(type2),"");CHKERRQ(_7_ierr); \
+    if (!_7_match) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Object (%s) is not %s or %s",(char*)(((PetscObject)(a))->type_name),type1,type2); \
   } while (0)
 /*
    Use this macro to check if the type is set
 */
 #define PetscValidType(a,arg)                                           \
   do {                                                                  \
-    if (!((PetscObject)a)->type_name) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"%s object's type is not set: Argument # %d",((PetscObject)a)->class_name,arg); \
+    if (!((PetscObject)(a))->type_name) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"%s object's type is not set: Argument # %d",((PetscObject)(a))->class_name,arg); \
   } while (0)
 /*
    Sometimes object must live on same communicator to inter-operate
@@ -344,7 +344,7 @@ do {                                                      \
   do {                                                                  \
     PetscErrorCode _7_ierr;                                             \
     PetscMPIInt    _7_flag;                                             \
-    _7_ierr = MPI_Comm_compare(PetscObjectComm((PetscObject)a),PetscObjectComm((PetscObject)b),&_7_flag);CHKERRQ(_7_ierr);                                                   \
+    _7_ierr = MPI_Comm_compare(PetscObjectComm((PetscObject)(a)),PetscObjectComm((PetscObject)(b)),&_7_flag);CHKERRQ(_7_ierr); \
     if (_7_flag != MPI_CONGRUENT && _7_flag != MPI_IDENT) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMECOMM,"Different communicators in the two objects: Argument # %d and %d flag %d",arga,argb,_7_flag); \
   } while (0)
 
@@ -354,53 +354,61 @@ do {                                                      \
     PetscCheckSameComm(a,arga,b,argb);                  \
   } while (0)
 
-#define PetscValidLogicalCollectiveScalar(a,b,c)                        \
+#define PetscValidLogicalCollectiveScalar(a,b,arg)                      \
   do {                                                                  \
     PetscErrorCode _7_ierr;                                             \
+    PetscScalar b0=(b);                                                 \
     PetscReal b1[5],b2[5];                                              \
-    if (PetscIsNanScalar(b)) {b1[4] = 1;} else {b1[4] = 0;};            \
-    b1[0] = -PetscRealPart(b); b1[1] = PetscRealPart(b); b1[2] = -PetscImaginaryPart(b); b1[3] = PetscImaginaryPart(b); \
-    _7_ierr = MPI_Allreduce(b1,b2,5,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)a));CHKERRQ(_7_ierr); \
-    if (!(b2[4] > 0) && !(PetscEqualReal(-b2[0],b2[1]) && PetscEqualReal(-b2[2],b2[3]))) SETERRQ1(PetscObjectComm((PetscObject)a),PETSC_ERR_ARG_WRONG,"Scalar value must be same on all processes, argument # %d",c); \
+    if (PetscIsNanScalar(b0)) {b1[4] = 1;} else {b1[4] = 0;};           \
+    b1[0] = -PetscRealPart(b0); b1[1] = PetscRealPart(b0); b1[2] = -PetscImaginaryPart(b0); b1[3] = PetscImaginaryPart(b0); \
+    _7_ierr = MPI_Allreduce(b1,b2,5,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)(a)));CHKERRQ(_7_ierr); \
+    if (!(b2[4] > 0) && !(PetscEqualReal(-b2[0],b2[1]) && PetscEqualReal(-b2[2],b2[3]))) SETERRQ1(PetscObjectComm((PetscObject)(a)),PETSC_ERR_ARG_WRONG,"Scalar value must be same on all processes, argument # %d",arg); \
   } while (0)
 
-#define PetscValidLogicalCollectiveReal(a,b,c)                          \
+#define PetscValidLogicalCollectiveReal(a,b,arg)                        \
   do {                                                                  \
     PetscErrorCode _7_ierr;                                             \
-    PetscReal b1[3],b2[3];                                              \
-    if (PetscIsNanReal(b)) {b1[2] = 1;} else {b1[2] = 0;};              \
-    b1[0] = -b; b1[1] = b;                                              \
-    _7_ierr = MPI_Allreduce(b1,b2,3,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)a));CHKERRQ(_7_ierr); \
-    if (!(b2[2] > 0) && !PetscEqualReal(-b2[0],b2[1])) SETERRQ1(PetscObjectComm((PetscObject)a),PETSC_ERR_ARG_WRONG,"Real value must be same on all processes, argument # %d",c); \
+    PetscReal b0=(b),b1[3],b2[3];                                       \
+    if (PetscIsNanReal(b0)) {b1[2] = 1;} else {b1[2] = 0;};             \
+    b1[0] = -b0; b1[1] = b0;                                            \
+    _7_ierr = MPI_Allreduce(b1,b2,3,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)(a)));CHKERRQ(_7_ierr); \
+    if (!(b2[2] > 0) && !PetscEqualReal(-b2[0],b2[1])) SETERRQ1(PetscObjectComm((PetscObject)(a)),PETSC_ERR_ARG_WRONG,"Real value must be same on all processes, argument # %d",arg); \
   } while (0)
 
-#define PetscValidLogicalCollectiveInt(a,b,c)                           \
+#define PetscValidLogicalCollectiveInt(a,b,arg)                         \
   do {                                                                  \
     PetscErrorCode _7_ierr;                                             \
-    PetscInt b1[2],b2[2];                                               \
-    b1[0] = -b; b1[1] = b;                                              \
-    _7_ierr = MPIU_Allreduce(b1,b2,2,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)a));CHKERRQ(_7_ierr); \
-    if (-b2[0] != b2[1]) SETERRQ1(PetscObjectComm((PetscObject)a),PETSC_ERR_ARG_WRONG,"Int value must be same on all processes, argument # %d",c); \
+    PetscInt b0=(b),b1[2],b2[2];                                        \
+    b1[0] = -b0; b1[1] = b0;                                            \
+    _7_ierr = MPIU_Allreduce(b1,b2,2,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)(a)));CHKERRQ(_7_ierr); \
+    if (-b2[0] != b2[1]) SETERRQ1(PetscObjectComm((PetscObject)(a)),PETSC_ERR_ARG_WRONG,"Int value must be same on all processes, argument # %d",arg); \
   } while (0)
 
-#define PetscValidLogicalCollectiveMPIInt(a,b,c) do {} while (0)
-
-#define PetscValidLogicalCollectiveBool(a,b,c)                          \
+#define PetscValidLogicalCollectiveMPIInt(a,b,arg)                      \
   do {                                                                  \
     PetscErrorCode _7_ierr;                                             \
-    PetscMPIInt b1[2],b2[2];                                            \
-    b1[0] = -(PetscMPIInt)b; b1[1] = (PetscMPIInt)b;                    \
-    _7_ierr = MPIU_Allreduce(b1,b2,2,MPI_INT,MPI_MAX,PetscObjectComm((PetscObject)a));CHKERRQ(_7_ierr); \
-    if (-b2[0] != b2[1]) SETERRQ1(PetscObjectComm((PetscObject)a),PETSC_ERR_ARG_WRONG,"Bool value must be same on all processes, argument # %d",c); \
+    PetscMPIInt b0=(b),b1[2],b2[2];                                     \
+    b1[0] = -b0; b1[1] = b0;                                            \
+    _7_ierr = MPIU_Allreduce(b1,b2,2,MPI_INT,MPI_MAX,PetscObjectComm((PetscObject)(a)));CHKERRQ(_7_ierr); \
+    if (-b2[0] != b2[1]) SETERRQ1(PetscObjectComm((PetscObject)(a)),PETSC_ERR_ARG_WRONG,"PetscMPIInt value must be same on all processes, argument # %d",arg); \
   } while (0)
 
-#define PetscValidLogicalCollectiveEnum(a,b,c)                          \
+#define PetscValidLogicalCollectiveBool(a,b,arg)                        \
   do {                                                                  \
     PetscErrorCode _7_ierr;                                             \
-    PetscMPIInt b1[2],b2[2];                                            \
-    b1[0] = -(PetscMPIInt)b; b1[1] = (PetscMPIInt)b;                    \
-    _7_ierr = MPIU_Allreduce(b1,b2,2,MPI_INT,MPI_MAX,PetscObjectComm((PetscObject)a));CHKERRQ(_7_ierr); \
-    if (-b2[0] != b2[1]) SETERRQ1(PetscObjectComm((PetscObject)a),PETSC_ERR_ARG_WRONG,"Enum value must be same on all processes, argument # %d",c); \
+    PetscMPIInt b0=(PetscMPIInt)(b),b1[2],b2[2];                        \
+    b1[0] = -b0; b1[1] = b0;                                            \
+    _7_ierr = MPIU_Allreduce(b1,b2,2,MPI_INT,MPI_MAX,PetscObjectComm((PetscObject)(a)));CHKERRQ(_7_ierr); \
+    if (-b2[0] != b2[1]) SETERRQ1(PetscObjectComm((PetscObject)(a)),PETSC_ERR_ARG_WRONG,"Bool value must be same on all processes, argument # %d",arg); \
+  } while (0)
+
+#define PetscValidLogicalCollectiveEnum(a,b,arg)                        \
+  do {                                                                  \
+    PetscErrorCode _7_ierr;                                             \
+    PetscMPIInt b0=(PetscMPIInt)(b),b1[2],b2[2];                        \
+    b1[0] = -b0; b1[1] = b0;                                            \
+    _7_ierr = MPIU_Allreduce(b1,b2,2,MPI_INT,MPI_MAX,PetscObjectComm((PetscObject)(a)));CHKERRQ(_7_ierr); \
+    if (-b2[0] != b2[1]) SETERRQ1(PetscObjectComm((PetscObject)(a)),PETSC_ERR_ARG_WRONG,"Enum value must be same on all processes, argument # %d",arg); \
   } while (0)
 
 #define PetscCheckSorted(n,idx)                                                                \
