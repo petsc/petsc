@@ -158,9 +158,9 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscObjectViewFunction)(PetscObje
 @*/
 #define PetscHeaderCreate(h,classid,class_name,descr,mansec,comm,destroy,view) \
   (PetscNew(&(h)) || \
-   PetscHeaderCreate_Private((PetscObject)h,classid,class_name,descr,mansec,comm,(PetscObjectDestroyFunction)destroy,(PetscObjectViewFunction)view) || \
+   PetscHeaderCreate_Private((PetscObject)(h),classid,class_name,descr,mansec,comm,(PetscObjectDestroyFunction)(destroy),(PetscObjectViewFunction)(view)) || \
    PetscLogObjectCreate(h) || \
-   PetscLogObjectMemory((PetscObject)h,sizeof(*(h))))
+   PetscLogObjectMemory((PetscObject)(h),sizeof(*(h))))
 
 PETSC_EXTERN PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj);
 PETSC_EXTERN PetscErrorCode PetscHeaderCreate_Private(PetscObject,PetscClassId,const char[],const char[],const char[],MPI_Comm,PetscObjectDestroyFunction,PetscObjectViewFunction);
@@ -175,7 +175,7 @@ PETSC_EXTERN PetscErrorCode PetscHeaderCreate_Private(PetscObject,PetscClassId,c
 
 .seealso: PetscHeaderCreate()
 @*/
-#define PetscHeaderDestroy(h) (PetscHeaderDestroy_Private((PetscObject)(*h)) || PetscFree(*h))
+#define PetscHeaderDestroy(h) (PetscHeaderDestroy_Private((PetscObject)(*(h))) || PetscFree(*(h)))
 
 PETSC_EXTERN PetscErrorCode PetscHeaderDestroy_Private(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject,PetscObject);
@@ -213,13 +213,13 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
     PetscErrorCode _7_ierr; \
     PetscBool      _7_same; \
     PetscValidHeaderSpecific(h,ck,arg); \
-    _7_ierr = PetscObjectTypeCompare((PetscObject)h,t,&_7_same);CHKERRQ(_7_ierr);      \
-    if (!_7_same) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong subtype object:Parameter # %d must have implementation %s it is %s",arg,t,((PetscObject)h)->type_name); \
+    _7_ierr = PetscObjectTypeCompare((PetscObject)(h),t,&_7_same);CHKERRQ(_7_ierr); \
+    if (!_7_same) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong subtype object:Parameter # %d must have implementation %s it is %s",arg,t,((PetscObject)(h))->type_name); \
   } while (0)
 
 #define PetscValidHeaderSpecific(h,ck,arg)                              \
   do {                                                                  \
-    if (!h) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Object: Parameter # %d",arg); \
+    if (!(h)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Object: Parameter # %d",arg); \
     if (!PetscCheckPointer(h,PETSC_OBJECT)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Invalid Pointer to Object: Parameter # %d",arg); \
     if (((PetscObject)(h))->classid != ck) {                            \
       if (((PetscObject)(h))->classid == PETSCFREEDHEADER) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Object already free: Parameter # %d",arg); \
@@ -229,7 +229,7 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
 
 #define PetscValidHeader(h,arg)                                         \
   do {                                                                  \
-    if (!h) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Object: Parameter # %d",arg); \
+    if (!(h)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Object: Parameter # %d",arg); \
     if (!PetscCheckPointer(h,PETSC_OBJECT)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Invalid Pointer to Object: Parameter # %d",arg); \
     if (((PetscObject)(h))->classid == PETSCFREEDHEADER) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Object already free: Parameter # %d",arg); \
     else if (((PetscObject)(h))->classid < PETSC_SMALLEST_CLASSID || ((PetscObject)(h))->classid > PETSC_LARGEST_CLASSID) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Invalid type of object: Parameter # %d",arg); \
@@ -237,43 +237,43 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
 
 #define PetscValidPointer(h,arg)                                        \
   do {                                                                  \
-    if (!h) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Pointer: Parameter # %d",arg); \
+    if (!(h)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Pointer: Parameter # %d",arg); \
     if (!PetscCheckPointer(h,PETSC_CHAR)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Invalid Pointer: Parameter # %d",arg); \
   } while (0)
 
 #define PetscValidCharPointer(h,arg)                                    \
   do {                                                                  \
-    if (!h) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Pointer: Parameter # %d",arg);\
+    if (!(h)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Pointer: Parameter # %d",arg);\
     if (!PetscCheckPointer(h,PETSC_CHAR)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Invalid Pointer to char: Parameter # %d",arg); \
   } while (0)
 
 #define PetscValidIntPointer(h,arg)                                     \
   do {                                                                  \
-    if (!h) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Null Pointer: Parameter # %d",arg); \
+    if (!(h)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Null Pointer: Parameter # %d",arg); \
     if (!PetscCheckPointer(h,PETSC_INT)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Invalid Pointer to PetscInt: Parameter # %d",arg); \
   } while (0)
 
 #define PetscValidBoolPointer(h,arg)                                    \
   do {                                                                  \
-    if (!h) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Null Pointer: Parameter # %d",arg); \
+    if (!(h)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Null Pointer: Parameter # %d",arg); \
     if (!PetscCheckPointer(h,PETSC_BOOL)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Invalid Pointer to PetscBool: Parameter # %d",arg); \
   } while (0)
 
 #define PetscValidScalarPointer(h,arg)                                  \
   do {                                                                  \
-    if (!h) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Pointer: Parameter # %d",arg); \
+    if (!(h)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Pointer: Parameter # %d",arg); \
     if (!PetscCheckPointer(h,PETSC_SCALAR)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Invalid Pointer to PetscScalar: Parameter # %d",arg); \
   } while (0)
 
-#define PetscValidRealPointer(h,arg)                                  \
+#define PetscValidRealPointer(h,arg)                                    \
   do {                                                                  \
-    if (!h) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Pointer: Parameter # %d",arg); \
+    if (!(h)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Pointer: Parameter # %d",arg); \
     if (!PetscCheckPointer(h,PETSC_REAL)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Invalid Pointer to PetscReal: Parameter # %d",arg); \
   } while (0)
 
 #define PetscValidFunction(f,arg)                                       \
   do {                                                                  \
-    if (!f) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Function Pointer: Parameter # %d",arg); \
+    if (!(f)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Function Pointer: Parameter # %d",arg); \
   } while (0)
 
 #endif
