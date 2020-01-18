@@ -12,7 +12,7 @@ EXAMPLESC        = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c \
                    ex54.c ex55.c ex56.c ex59.c ex62.c ex64.c ex65.c ex66.c \
                    ex67.c ex68.c ex69.c ex70.c ex71.c ex72.c ex73.c ex74.c ex75.c ex76.c ex100.c
 EXAMPLESF        = ex1f.F90 ex2f.F90 ex6f.F90 ex11f.F90 ex13f90.F90 ex14f.F90 ex15f.F90 ex22f.F90 ex44f.F90 ex45f.F90 \
-                   ex5f.F90 ex52f.F90 ex54f.F90 ex61f.F90 ex7f.F90 ex100f.F90
+                   ex5f.F90 ex52f.F90 ex54f.F90 ex61f.F90 ex7f.F90 ex100f.F90 ex75f.F90 ex76f.F90
 MANSEC           = KSP
 CLEANFILES       = rhs.vtk solution.vtk
 NP               = 1
