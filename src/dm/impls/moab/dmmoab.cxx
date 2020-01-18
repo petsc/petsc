@@ -50,7 +50,7 @@ PETSC_EXTERN PetscErrorCode DMCreateSubDM_Moab(DM dm, PetscInt numFields, PetscI
 PETSC_EXTERN PetscErrorCode DMLocatePoints_Moab(DM dm, Vec v, IS *cellIS);
 */
 
-/*@
+/*@C
   DMMoabCreate - Creates a DMMoab object, which encapsulates a moab instance
 
   Collective
@@ -75,7 +75,7 @@ PetscErrorCode DMMoabCreate(MPI_Comm comm, DM *dmb)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
   DMMoabCreateMoab - Creates a DMMoab object, optionally from an instance and other data
 
   Collective
@@ -166,7 +166,7 @@ PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::T
 
 #ifdef MOAB_HAVE_MPI
 
-/*@
+/*@C
   DMMoabGetParallelComm - Get the ParallelComm used with this DMMoab
 
   Collective
@@ -191,7 +191,7 @@ PetscErrorCode DMMoabGetParallelComm(DM dm, moab::ParallelComm **pcomm)
 #endif /* MOAB_HAVE_MPI */
 
 
-/*@
+/*@C
   DMMoabSetInterface - Set the MOAB instance used with this DMMoab
 
   Collective
@@ -219,7 +219,7 @@ PetscErrorCode DMMoabSetInterface(DM dm, moab::Interface *mbiface)
 }
 
 
-/*@
+/*@C
   DMMoabGetInterface - Get the MOAB instance used with this DMMoab
 
   Collective
@@ -246,7 +246,7 @@ PetscErrorCode DMMoabGetInterface(DM dm, moab::Interface **mbiface)
 }
 
 
-/*@
+/*@C
   DMMoabSetLocalVertices - Set the entities having DOFs on this DMMoab
 
   Collective
@@ -297,7 +297,7 @@ PetscErrorCode DMMoabSetLocalVertices(DM dm, moab::Range *range)
 }
 
 
-/*@
+/*@C
   DMMoabGetAllVertices - Get the entities having DOFs on this DMMoab
 
   Collective
@@ -321,7 +321,7 @@ PetscErrorCode DMMoabGetAllVertices(DM dm, moab::Range *local)
 
 
 
-/*@
+/*@C
   DMMoabGetLocalVertices - Get the entities having DOFs on this DMMoab
 
   Collective
@@ -345,7 +345,7 @@ PetscErrorCode DMMoabGetLocalVertices(DM dm, const moab::Range **owned, const mo
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
   DMMoabGetLocalElements - Get the higher-dimensional entities that are locally owned
 
   Collective
@@ -368,7 +368,7 @@ PetscErrorCode DMMoabGetLocalElements(DM dm, const moab::Range **range)
 }
 
 
-/*@
+/*@C
   DMMoabSetLocalElements - Set the entities having DOFs on this DMMoab
 
   Collective
@@ -407,7 +407,7 @@ PetscErrorCode DMMoabSetLocalElements(DM dm, moab::Range *range)
 }
 
 
-/*@
+/*@C
   DMMoabSetLocalToGlobalTag - Set the tag used for local to global numbering
 
   Collective
@@ -428,7 +428,7 @@ PetscErrorCode DMMoabSetLocalToGlobalTag(DM dm, moab::Tag ltogtag)
 }
 
 
-/*@
+/*@C
   DMMoabGetLocalToGlobalTag - Get the tag used for local to global numbering
 
   Collective
@@ -451,7 +451,7 @@ PetscErrorCode DMMoabGetLocalToGlobalTag(DM dm, moab::Tag *ltog_tag)
 }
 
 
-/*@
+/*@C
   DMMoabSetBlockSize - Set the block size used with this DMMoab
 
   Collective
@@ -472,7 +472,7 @@ PetscErrorCode DMMoabSetBlockSize(DM dm, PetscInt bs)
 }
 
 
-/*@
+/*@C
   DMMoabGetBlockSize - Get the block size used with this DMMoab
 
   Collective
@@ -495,7 +495,7 @@ PetscErrorCode DMMoabGetBlockSize(DM dm, PetscInt *bs)
 }
 
 
-/*@
+/*@C
   DMMoabGetSize - Get the global vertex size used with this DMMoab
 
   Collective on dm
@@ -520,7 +520,7 @@ PetscErrorCode DMMoabGetSize(DM dm, PetscInt *neg, PetscInt *nvg)
 }
 
 
-/*@
+/*@C
   DMMoabGetLocalSize - Get the local and ghosted vertex size used with this DMMoab
 
   Collective on dm
@@ -549,7 +549,7 @@ PetscErrorCode DMMoabGetLocalSize(DM dm, PetscInt *nel, PetscInt *neg, PetscInt 
 }
 
 
-/*@
+/*@C
   DMMoabGetOffset - Get the local offset for the global vector
 
   Collective
@@ -572,7 +572,7 @@ PetscErrorCode DMMoabGetOffset(DM dm, PetscInt *offset)
 }
 
 
-/*@
+/*@C
   DMMoabGetDimension - Get the dimension of the DM Mesh
 
   Collective
@@ -595,7 +595,7 @@ PetscErrorCode DMMoabGetDimension(DM dm, PetscInt *dim)
 }
 
 
-/*@
+/*@C
   DMMoabGetHierarchyLevel - Get the current level of the mesh hierarchy
   generated through uniform refinement.
 
@@ -619,7 +619,7 @@ PetscErrorCode DMMoabGetHierarchyLevel(DM dm, PetscInt *nlevel)
 }
 
 
-/*@
+/*@C
   DMMoabGetMaterialBlock - Get the material ID corresponding to the current entity of the DM Mesh
 
   Collective
@@ -648,7 +648,7 @@ PetscErrorCode DMMoabGetMaterialBlock(DM dm, const moab::EntityHandle ehandle, P
 }
 
 
-/*@
+/*@C
   DMMoabGetVertexCoordinates - Get the coordinates corresponding to the requested vertex entities
 
   Collective
@@ -687,7 +687,7 @@ PetscErrorCode DMMoabGetVertexCoordinates(DM dm, PetscInt nconn, const moab::Ent
 }
 
 
-/*@
+/*@C
   DMMoabGetVertexConnectivity - Get the vertex adjacency for the given entity
 
   Collective
@@ -729,7 +729,7 @@ PetscErrorCode DMMoabGetVertexConnectivity(DM dm, moab::EntityHandle vhandle, Pe
 }
 
 
-/*@
+/*@C
   DMMoabRestoreVertexConnectivity - Restore the vertex connectivity for the given entity
 
   Collective
@@ -760,7 +760,7 @@ PetscErrorCode DMMoabRestoreVertexConnectivity(DM dm, moab::EntityHandle ehandle
 }
 
 
-/*@
+/*@C
   DMMoabGetElementConnectivity - Get the vertex adjacency for the given entity
 
   Collective
@@ -798,7 +798,7 @@ PetscErrorCode DMMoabGetElementConnectivity(DM dm, moab::EntityHandle ehandle, P
 }
 
 
-/*@
+/*@C
   DMMoabIsEntityOnBoundary - Check whether a given entity is on the boundary (vertex, edge, face, element)
 
   Collective
@@ -848,7 +848,7 @@ PetscErrorCode DMMoabIsEntityOnBoundary(DM dm, const moab::EntityHandle ent, Pet
 }
 
 
-/*@
+/*@C
   DMMoabIsEntityOnBoundary - Check whether a given entity is on the boundary (vertex, edge, face, element)
 
   Input Parameter:
@@ -881,7 +881,7 @@ PetscErrorCode DMMoabCheckBoundaryVertices(DM dm, PetscInt nconn, const moab::En
 }
 
 
-/*@
+/*@C
   DMMoabGetBoundaryMarkers - Return references to the vertices, faces, elements on the boundary
 
   Input Parameter:
@@ -1263,7 +1263,7 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
 }
 
 
-/*@
+/*@C
   DMMoabCreateVertices - Creates and adds several vertices to the primary set represented by the DM.
 
   Collective
@@ -1302,7 +1302,7 @@ PetscErrorCode DMMoabCreateVertices(DM dm, const PetscReal* coords, PetscInt nve
 }
 
 
-/*@
+/*@C
   DMMoabCreateElement - Adds an element of specified type to the primary set represented by the DM.
 
   Collective
@@ -1341,7 +1341,7 @@ PetscErrorCode DMMoabCreateElement(DM dm, const moab::EntityType type, const moa
 }
 
 
-/*@
+/*@C
   DMMoabCreateSubmesh - Creates a sub-DM object with a set that contains all vertices/elements of the parent
   in addition to providing support for dynamic mesh modifications. This is useful for AMR calculations to
   create a DM object on a refined level.

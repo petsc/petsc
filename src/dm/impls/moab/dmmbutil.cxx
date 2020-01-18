@@ -487,7 +487,7 @@ PetscErrorCode DMMBUtil_InitializeOptions(DMMoabMeshGeneratorCtx& genCtx, PetscI
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
   DMMoabCreateBoxMesh - Creates a mesh on the tensor product (box) of intervals with genCtx specified bounds.
 
   Collective
@@ -799,7 +799,7 @@ PetscErrorCode DMMoab_GetReadOptions_Private(PetscBool by_rank, PetscInt numproc
 }
 
 
-/*@
+/*@C
   DMMoabLoadFromFile - Creates a DM object by loading the mesh from a user specified file.
 
   Collective
@@ -893,7 +893,7 @@ PetscErrorCode DMMoabLoadFromFile(MPI_Comm comm, PetscInt dim, PetscInt nghost, 
 }
 
 
-/*@
+/*@C
   DMMoabRenumberMeshEntities - Order and number all entities (vertices->elements) to be contiguously ordered
   in parallel
 

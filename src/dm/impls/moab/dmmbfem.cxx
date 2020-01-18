@@ -97,7 +97,7 @@ inline PetscErrorCode DMatrix_Invert_4x4_Internal (PetscReal *inmat, PetscReal *
 }
 
 
-/*@
+/*@C
   Compute_Lagrange_Basis_1D_Internal - Evaluate bases and derivatives at quadrature points for a EDGE2 or EDGE3 element.
 
   The routine is given the coordinates of the vertices of a linear or quadratic edge element.
@@ -229,7 +229,7 @@ PetscErrorCode Compute_Lagrange_Basis_1D_Internal ( const PetscInt nverts, const
 }
 
 
-/*@
+/*@C
   Compute_Lagrange_Basis_2D_Internal - Evaluate bases and derivatives at quadrature points for a QUAD4 or TRI3 element.
 
   The routine is given the coordinates of the vertices of a quadrangle or triangle.
@@ -404,7 +404,7 @@ PetscErrorCode Compute_Lagrange_Basis_2D_Internal ( const PetscInt nverts, const
 }
 
 
-/*@
+/*@C
   Compute_Lagrange_Basis_3D_Internal - Evaluate bases and derivatives at quadrature points for a HEX8 or TET4 element.
 
   The routine is given the coordinates of the vertices of a hexahedra or tetrahedra.
@@ -674,7 +674,7 @@ PetscErrorCode Compute_Lagrange_Basis_3D_Internal ( const PetscInt nverts, const
 
 
 
-/*@
+/*@C
   DMMoabFEMComputeBasis - Evaluate bases and derivatives at quadrature points for a linear EDGE/QUAD/TRI/HEX/TET element.
 
   The routine takes the coordinates of the vertices of an element and computes basis functions associated with
@@ -748,7 +748,7 @@ PetscErrorCode DMMoabFEMComputeBasis ( const PetscInt dim, const PetscInt nverts
 
 
 
-/*@
+/*@C
   DMMoabFEMCreateQuadratureDefault - Create default quadrature rules for integration over an element with a given
   dimension and polynomial order (deciphered from number of element vertices).
 
@@ -1048,7 +1048,7 @@ PetscErrorCode FEMComputeBasis_JandF ( const PetscInt dim, const PetscInt nverts
 
 
 
-/*@
+/*@C
   DMMoabPToRMapping - Compute the mapping from the physical coordinate system for a given element to the
   canonical reference element. In addition to finding the inverse mapping evaluation through Newton iteration,
   the basis function at the parametric point is also evaluated optionally.

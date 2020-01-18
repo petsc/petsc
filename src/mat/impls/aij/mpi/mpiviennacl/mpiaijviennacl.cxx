@@ -71,7 +71,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJViennaCL(Mat A)
 }
 
 
-/*@
+/*@C
    MatCreateAIJViennaCL - Creates a sparse matrix in AIJ (compressed row) format
    (the default parallel PETSc format).  This matrix will ultimately be pushed down
    to GPUs and use the ViennaCL library for calculations. For good matrix

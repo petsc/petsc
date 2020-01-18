@@ -92,7 +92,7 @@ info:
 	-@if [ "${CUDAC}" != "" ]; then \
 	   echo "Using CUDA compile: ${PETSC_CUCOMPILE}";\
          fi
-	-@if [ "${CLANGUAGE}" == "CXX" ]; then \
+	-@if [ "${CLANGUAGE}" = "CXX" ]; then \
            echo "Using C++ compiler to compile PETSc";\
         fi
 	-@echo "-----------------------------------------"
@@ -199,7 +199,7 @@ test_usermakefile:
 
 # Compare ABI/API of two versions of PETSc library with the old one defined by PETSC_{DIR,ARCH}_ABI_OLD
 abitest:
-	@if [ "${PETSC_DIR_ABI_OLD}" == "" ] || [ "${PETSC_ARCH_ABI_OLD}" == "" ]; \
+	@if [ "${PETSC_DIR_ABI_OLD}" = "" ] || [ "${PETSC_ARCH_ABI_OLD}" = "" ]; \
 		then printf "You must set environment variables PETSC_DIR_ABI_OLD and PETSC_ARCH_ABI_OLD to run abitest\n"; \
 		exit 1; \
 	fi;

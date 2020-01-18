@@ -1011,7 +1011,7 @@ PetscErrorCode VecReplaceArray_SeqViennaCL(Vec vin,const PetscScalar *a)
 }
 
 
-/*@
+/*@C
    VecCreateSeqViennaCL - Creates a standard, sequential array-style vector.
 
    Collective
