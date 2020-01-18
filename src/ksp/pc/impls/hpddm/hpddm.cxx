@@ -1,6 +1,6 @@
 #include <petsc/private/dmimpl.h>
 #include <petsc/private/matimpl.h>
-#include <petsc/private/petschpddm.h>
+#include <petsc/private/petschpddm.h> /*I "petscpc.h" I*/
 #include <petsc/private/pcimpl.h> /* this must be included after petschpddm.h so that _PCIMPL_H is not defined            */
                                   /* otherwise, it is assumed that one is compiling libhpddm_petsc => circular dependency */
 
@@ -87,7 +87,7 @@ static PetscErrorCode PCHPDDMSetAuxiliaryMat_HPDDM(PC pc, IS is, Mat A, PetscErr
   PetscFunctionReturn(0);
 }
 
-/*MC
+/*@
      PCHPDDMSetAuxiliaryMat - Sets the auxiliary matrix used by PCHPDDM for the concurrent GenEO eigenproblems at the finest level. As an example, in a finite element context with nonoverlapping subdomains plus (overlapping) ghost elements, this could be the unassembled (Neumann) local overlapping operator. As opposed to the assembled (Dirichlet) local overlapping operator obtained by summing neighborhood contributions at the interface of ghost elements.
 
    Input Parameters:
@@ -100,7 +100,7 @@ static PetscErrorCode PCHPDDMSetAuxiliaryMat_HPDDM(PC pc, IS is, Mat A, PetscErr
    Level: intermediate
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCHPDDMSetRHSMat(), MATIS
-M*/
+@*/
 PetscErrorCode PCHPDDMSetAuxiliaryMat(PC pc, IS is, Mat A, PetscErrorCode (*setup)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void*), void* setup_ctx)
 {
   PetscErrorCode ierr;
@@ -122,8 +122,8 @@ static PetscErrorCode PCHPDDMHasNeumannMat_HPDDM(PC pc, PetscBool has)
   PetscFunctionReturn(0);
 }
 
-/*MC
-     PCHPDDMHasNeumannMat - Informs PCHPDDM that the Mat passed to PCHPDDMSetAuxiliaryMat is the local Neumann matrix. This may be used to bypass a call to MatCreateSubMatrices and to MatConvert for MATMPISBAIJ matrices. If a DMCreateNeumannOverlap implementation is available in the DM attached to the Pmat, or the Amat, or the PC, the flag is internally set to PETSC_TRUE. Its default value is otherwise PETSC_FALSE.
+/*@
+     PCHPDDMHasNeumannMat - Informs PCHPDDM that the Mat passed to PCHPDDMSetAuxiliaryMat() is the local Neumann matrix. This may be used to bypass a call to MatCreateSubMatrices() and to MatConvert() for MATMPISBAIJ matrices. If a DMCreateNeumannOverlap() implementation is available in the DM attached to the Pmat, or the Amat, or the PC, the flag is internally set to PETSC_TRUE. Its default value is otherwise PETSC_FALSE.
 
    Input Parameters:
 +     pc - preconditioner context
@@ -132,7 +132,7 @@ static PetscErrorCode PCHPDDMHasNeumannMat_HPDDM(PC pc, PetscBool has)
    Level: intermediate
 
 .seealso:  PCHPDDM, PCHPDDMSetAuxiliaryMat()
-M*/
+@*/
 PetscErrorCode PCHPDDMHasNeumannMat(PC pc, PetscBool has)
 {
   PetscErrorCode ierr;
@@ -155,7 +155,7 @@ static PetscErrorCode PCHPDDMSetRHSMat_HPDDM(PC pc, Mat B)
   PetscFunctionReturn(0);
 }
 
-/*MC
+/*@
      PCHPDDMSetRHSMat - Sets the right-hand side matrix used by PCHPDDM for the concurrent GenEO eigenproblems at the finest level. Must be used in conjuction with PCHPDDMSetAuxiliaryMat(N), so that Nv = lambda Bv is solved using EPSSetOperators(N, B). It is assumed that N and B are provided using the same numbering. This provides a means to try more advanced methods such as GenEO-II or H-GenEO.
 
    Input Parameters:
@@ -165,7 +165,7 @@ static PetscErrorCode PCHPDDMSetRHSMat_HPDDM(PC pc, Mat B)
    Level: advanced
 
 .seealso:  PCHPDDMSetAuxiliaryMat(), PCHPDDM
-M*/
+@*/
 PetscErrorCode PCHPDDMSetRHSMat(PC pc, Mat B)
 {
   PetscErrorCode ierr;
@@ -420,7 +420,7 @@ PETSC_STATIC_INLINE PetscErrorCode PCHPDDMDeflate_Private(PC pc, Vec x, Vec y)
   PetscFunctionReturn(0);
 }
 
-/*MC
+/*@C
      PCHPDDMShellApply - Applies a (2) deflated, (1) additive, or (3) balanced coarse correction. In what follows, E = Z Pmat Z^T and Q = Z^T E^-1 Z.
 
 .vb
@@ -442,7 +442,7 @@ PETSC_STATIC_INLINE PetscErrorCode PCHPDDMDeflate_Private(PC pc, Vec x, Vec y)
      (1) and (2) visit the "next" level (in terms of coarsening) once per application, while (3) visits it twice, so it is asymptotically twice costlier. (2) is not symmetric even if both Amat and Pmat are symmetric.
 
 .seealso:  PCHPDDM, PCHPDDMCoarseCorrectionType
-M*/
+@*/
 static PetscErrorCode PCHPDDMShellApply(PC pc, Vec x, Vec y)
 {
   PC_HPDDM_Level *ctx;
@@ -795,7 +795,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
      PCHPDDMSetCoarseCorrectionType - Sets the coarse correction type.
 
    Input Parameters:
@@ -819,7 +819,7 @@ PetscErrorCode PCHPDDMSetCoarseCorrectionType(PC pc, PCHPDDMCoarseCorrectionType
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
      PCHPDDMGetCoarseCorrectionType - Gets the coarse correction type.
 
    Input Parameter:
@@ -915,7 +915,18 @@ PETSC_EXTERN PetscErrorCode PCCreate_HPDDM(PC pc)
     ierr = PetscDLLibraryRetrieve(PETSC_COMM_SELF, lib, dlib, 1024, &found);CHKERRQ(ierr);
     if (found) {
       ierr = PetscDLLibraryAppend(PETSC_COMM_SELF, &PetscDLLibrariesLoaded, dlib);CHKERRQ(ierr);
-    } else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "%s not found", lib);
+#if defined(SLEPC_LIB_DIR) /* this variable is passed during SLEPc ./configure since    */
+    } else {               /* slepcconf.h is not yet build (and thus can't be included) */
+      ierr = PetscStrcpy(dir, HPDDM_STR(SLEPC_LIB_DIR));CHKERRQ(ierr);
+      ierr = PetscSNPrintf(lib, sizeof(lib), "%s/libhpddm_petsc", dir);CHKERRQ(ierr);
+      ierr = PetscDLLibraryRetrieve(PETSC_COMM_SELF, lib, dlib, 1024, &found);CHKERRQ(ierr);
+      if (found) {
+        ierr = PetscDLLibraryAppend(PETSC_COMM_SELF, &PetscDLLibrariesLoaded, dlib);CHKERRQ(ierr);
+#endif
+      } else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "%s not found", lib);
+#if defined(SLEPC_LIB_DIR)
+    }
+#endif
     ierr = PetscDLLibrarySym(PETSC_COMM_SELF, &PetscDLLibrariesLoaded, NULL, "PCHPDDM_Internal", (void**)&loadedSym);CHKERRQ(ierr);
   }
   if (!loadedSym) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "PCHPDDM_Internal symbol not found in %s", lib);
