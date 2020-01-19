@@ -15,7 +15,6 @@
 #endif
 #include "petscversion.h"
 #include "petsc/finclude/petscviewer.h"
-#include "petsc/finclude/petscerror.h"
 #include "petsc/finclude/petsclog.h"
 #include "petsc/finclude/petscbag.h"
 
@@ -78,9 +77,9 @@
 #define MPI_Group PetscFortranInt
 #define PetscMPIInt PetscFortranInt
 #else
-#define MPI_Comm integer
-#define MPI_Group integer
-#define PetscMPIInt integer
+#define MPI_Comm integer4
+#define MPI_Group integer4
+#define PetscMPIInt integer4
 #endif
 !
 #define PetscEnum PetscFortranInt

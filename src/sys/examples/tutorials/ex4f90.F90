@@ -14,8 +14,8 @@
       use petscsys
       implicit none
 
-      integer ierr
-      integer rank, size
+      PetscErrorCode ierr
+      PetscMPIInt rank, size, two
 
 !     We must call MPI_Init() first, making us, not PETSc, responsible
 !     for MPI
@@ -28,8 +28,9 @@
 
 !     We can now change the communicator universe for PETSc
 
+      two = 2
       call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
-      call MPI_Comm_split(MPI_COMM_WORLD,mod(rank,2),0,PETSC_COMM_WORLD,ierr)
+      call MPI_Comm_split(MPI_COMM_WORLD,mod(rank,two),0,PETSC_COMM_WORLD,ierr)
 
 !     Every PETSc routine should begin with the PetscInitialize()
 !     routine.

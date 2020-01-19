@@ -202,7 +202,7 @@
       ione = 1
       nfour = 4
       call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-par',user%lambda,flg,ierr);CHKERRA(ierr)
-      if (user%lambda .ge. lambda_max .or. user%lambda .le. lambda_min) then; SETERRA(PETSC_COMM_SELF,1,'Lambda provided with -par is out of range '); endif
+      if (user%lambda .ge. lambda_max .or. user%lambda .le. lambda_min) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_USER,'Lambda provided with -par is out of range '); endif
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create nonlinear solver context

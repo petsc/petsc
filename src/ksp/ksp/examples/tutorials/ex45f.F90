@@ -19,8 +19,8 @@
          print*,'Unable to initialize PETSc'
          stop
        endif
-       call KSPCreate(MPI_COMM_WORLD,ksp,ierr)
-       call DMDACreate2D(MPI_COMM_WORLD, DM_BOUNDARY_NONE,DM_BOUNDARY_NONE, DMDA_STENCIL_STAR,three,three,              &
+       call KSPCreate(PETSC_COMM_WORLD,ksp,ierr)
+       call DMDACreate2D(PETSC_COMM_WORLD, DM_BOUNDARY_NONE,DM_BOUNDARY_NONE, DMDA_STENCIL_STAR,three,three,              &
      &                   PETSC_DECIDE,PETSC_DECIDE,one,one, PETSC_NULL_INTEGER,PETSC_NULL_INTEGER, dm, ierr)
        call DMSetFromOptions(dm,ierr)
        call DMSetUp(dm,ierr)

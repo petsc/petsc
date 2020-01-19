@@ -209,6 +209,8 @@ def processf90interfaces(petscdir,verbose):
           fdr = open(os.path.join(petscdir,'src',mansec,'f90-mod','ftn-auto-interfaces',submansec+'-tmpdir',sfile))
           txt = fdr.readline()
           while txt:
+            if 'integer z' in txt: txt = '        PetscErrorCode z\n'
+            if 'integer a ! MPI_Comm' in txt: txt = '      integer4 a ! MPI_Comm\n'
             fd.write(txt)
             if txt.find('subroutine ') > -1 and txt.find('end subroutine') == -1:
               while txt.endswith('&\n'):

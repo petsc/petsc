@@ -25,8 +25,8 @@
         stop
       endif
 
-      call MPI_Comm_size(MPI_COMM_WORLD,size,ierr)
-      call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
+      call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
+      call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
 !     create two vectors
 !     one parallel and one sequential. The sequential one on each processor
@@ -34,8 +34,8 @@
 
       NN = size*n
 
-      call VecCreateMPI(MPI_COMM_WORLD,PETSC_DECIDE,NN,y,ierr)
-      call VecCreateSeq(MPI_COMM_SELF,NN,x,ierr)
+      call VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,NN,y,ierr)
+      call VecCreateSeq(PETSC_COMM_SELF,NN,x,ierr)
 
       call VecSet(x,zero,ierr)
       call VecGetOwnershipRange(y,low,high,ierr)

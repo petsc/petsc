@@ -59,11 +59,11 @@
       call DMGetLabel(dm, 'marker', label, ierr);CHKERRA(ierr)
       call DMLabelGetValue(label, zero, val, ierr);CHKERRA(ierr)
       if (val .ne. -1) then
-        CHKERRA(1)
+        SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error in library')
       endif
       call DMLabelGetValue(label, eight, val, ierr);CHKERRA(ierr)
       if (val .ne. 1) then
-        CHKERRA(1)
+        SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error in library')
       endif
 !     Prescribe a Dirichlet condition on u on the boundary
 !       Label "marker" is made by the mesh creation routine

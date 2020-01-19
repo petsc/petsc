@@ -33,16 +33,17 @@
       PetscLogEvent :: PlayBall, SkipRope
       PetscLogEvent :: TidyClass
       PetscLogEvent :: Lessons,  CorrectHomework
+      PetscClassId classid
 
       ! Petsc-stuff
       PetscErrorCode            :: ierr
 
       ! MPI-stuff
-      integer                   :: rank, size
+      PetscMPIInt              :: rank, size
       PetscReal, allocatable    :: message(:,:)
       integer                   :: item, maxItem
-      integer                   :: status(MPI_STATUS_SIZE)
-      integer                   :: req
+      integer4                  :: status(MPI_STATUS_SIZE)
+      PetscMPIInt                  req
 
       ! Own stuff
       integer                   :: role                 ! is this process a BOY, a GIRL or a TEACHER?
@@ -74,13 +75,14 @@
 !
 !====================================================================
 !     Create new user-defined events
-      call PetscLogEventRegister('Morning',         0, Morning,   ierr)
-      call PetscLogEventRegister('Afternoon',       0, Afternoon, ierr)
-      call PetscLogEventRegister('Play Ball',       0, PlayBall,  ierr)
-      call PetscLogEventRegister('Skip Rope',       0, SkipRope,  ierr)
-      call PetscLogEventRegister('Tidy Classroom',  0, TidyClass, ierr)
-      call PetscLogEventRegister('Lessons',         0, Lessons,   ierr)
-      call PetscLogEventRegister('Correct Homework',0,CorrectHomework,          &
+      classid = 0
+      call PetscLogEventRegister('Morning',         classid, Morning,   ierr)
+      call PetscLogEventRegister('Afternoon',       classid, Afternoon, ierr)
+      call PetscLogEventRegister('Play Ball',       classid, PlayBall,  ierr)
+      call PetscLogEventRegister('Skip Rope',       classid, SkipRope,  ierr)
+      call PetscLogEventRegister('Tidy Classroom',  classid, TidyClass, ierr)
+      call PetscLogEventRegister('Lessons',         classid, Lessons,   ierr)
+      call PetscLogEventRegister('Correct Homework',classid,CorrectHomework,          &
      &                                                            ierr)
       if (verbose>=1) then
       print '(a,i0,a)','[',rank,'] SchoolDay events have been defined'

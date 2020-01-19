@@ -30,7 +30,7 @@ implicit none
    onnz(i) = 1
   end do
   
-  call MatCreateAIJ(MPI_COMM_WORLD,m,n,PETSC_DETERMINE,PETSC_DETERMINE,PETSC_DECIDE,dnnz,PETSC_DECIDE,onnz,A,ierr);CHKERRA(ierr)
+  call MatCreateAIJ(PETSC_COMM_WORLD,m,n,PETSC_DETERMINE,PETSC_DETERMINE,PETSC_DECIDE,dnnz,PETSC_DECIDE,onnz,A,ierr);CHKERRA(ierr)
   call MatSetFromOptions(A,ierr);CHKERRA(ierr)
   call MatSetUp(A,ierr);CHKERRA(ierr)
   deallocate(dnnz)

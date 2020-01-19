@@ -26,7 +26,7 @@
       subroutine MatCreateMPIAIJWithSplitArrays(a,b,c,d,e,f,g,h,i,j,k,l,&
      &z)
        use petscmatdef
-       integer a ! MPI_Comm
+       integer4 a ! MPI_Comm
        PetscInt b ! PetscInt
        PetscInt c ! PetscInt
        PetscInt d ! PetscInt
@@ -38,28 +38,28 @@
        PetscInt j (*) ! PetscInt
        PetscScalar k (*) ! PetscScalar
        Mat l ! Mat
-       integer z
+       PetscErrorCode z
        end subroutine
       End Interface
 
       interface MatNullSpaceCreate
       subroutine MatNullSpaceCreate1(a,b,c,d,e,z)
       use petscmatdef
-       integer a
+       integer4 a
        PetscBool b
        PetscInt c
        Vec d (*)
        MatNullSpace e
-       integer z
+       PetscErrorCode z
        end subroutine
       subroutine MatNullSpaceCreate0(a,b,c,d,e,z)
       use petscmatdef
-       integer a
+       integer4 a
        PetscBool b
        PetscInt c
        Vec d
        MatNullSpace e
-       integer z
+       PetscErrorCode z
        end subroutine
       end interface
 
@@ -69,21 +69,21 @@
        Mat a
        PetscInt b
        PetscInt c
-       integer z
+       PetscErrorCode z
        end subroutine
       subroutine MatGetSize10(a,b,c,z)
       use petscmatdef
        Mat a
        PetscInt b(*)
        PetscInt c
-       integer z
+       PetscErrorCode z
        end subroutine
       subroutine MatGetSize01(a,b,c,z)
       use petscmatdef
        Mat a
        PetscInt b
        PetscInt c(*)
-       integer z
+       PetscErrorCode z
        end subroutine
       end interface
 
@@ -93,21 +93,21 @@
        Mat a
        PetscInt b
        PetscInt c
-       integer z
+       PetscErrorCode z
        end subroutine
       subroutine MatGetLocalSize10(a,b,c,z)
       use petscmatdef
        Mat a
        PetscInt b(*)
        PetscInt c
-       integer z
+       PetscErrorCode z
        end subroutine
       subroutine MatGetLocalSize01(a,b,c,z)
       use petscmatdef
        Mat a
        PetscInt b
        PetscInt c(*)
-       integer z
+       PetscErrorCode z
        end subroutine
        end interface
 
@@ -124,7 +124,7 @@
           PetscInt h
           PetscInt i (*)
           Mat j
-          integer z
+          PetscErrorCode z
         end subroutine
 
         subroutine MatCreateSeqAIJ(a,b,c,d,e,f,z)
@@ -135,7 +135,7 @@
           PetscInt d
           PetscInt e(*)
           Mat f
-          integer z
+          PetscErrorCode z
         end subroutine
 
         subroutine MatSeqAIJSetPreallocation(a,b,c,z)
@@ -143,7 +143,7 @@
           Mat a
           PetscInt b
           PetscInt c(*)
-          integer z
+          PetscErrorCode z
         end subroutine
 
         subroutine MatSeqBAIJSetPreallocation(a,b,c,d,z)
@@ -151,7 +151,7 @@
           Mat a
           PetscInt b,c
           PetscInt d(*)
-          integer z
+          PetscErrorCode z
         end subroutine
 
         subroutine MatMPIAIJSetPreallocation(a,b,c,d,e,z)
@@ -161,7 +161,7 @@
           PetscInt c(*)
           PetscInt d
           PetscInt e(*)
-          integer z
+          PetscErrorCode z
         end subroutine
 
         subroutine MatXAIJSetPreallocationb(a,b,c,d,e,f,z)
@@ -172,7 +172,7 @@
           PetscInt d (*) ! PetscInt
           PetscInt e (*) ! PetscInt
           PetscInt f (*) ! PetscInt
-          integer z
+          PetscErrorCode z
         end subroutine
 
         subroutine MatSetValue(myMat,i,j,va,mode,ierr)
@@ -181,7 +181,7 @@
           PetscInt :: i,j
           PetscScalar :: va
           InsertMode :: mode
-          integer, intent(out) :: ierr
+          PetscErrorCode, intent(out) :: ierr
         end subroutine
 
         subroutine MatSetValueLocal(myMat,i,j,va,mode,ierr)
@@ -190,7 +190,7 @@
           PetscInt :: i,j
           PetscScalar :: va
           InsertMode :: mode
-          integer, intent(out) :: ierr
+          PetscErrorCode, intent(out) :: ierr
         end subroutine
 
         end interface
@@ -207,7 +207,7 @@
           PetscInt e (*) ! PetscInt
           PetscScalar f (*) ! PetscScalar
           InsertMode g ! InsertMode
-          integer z
+          PetscErrorCode z
         end subroutine
         subroutine MatSetValuesnn1(a,b,c,d,e,f,g,z)
           use petscmatdef
@@ -218,7 +218,7 @@
           PetscInt e (*) ! PetscInt
           PetscScalar f  ! PetscScalar
           InsertMode g ! InsertMode
-          integer z
+          PetscErrorCode z
         end subroutine
         subroutine MatSetValuesnnnn(a,b,c,d,e,f,g,z)
           use petscmatdef
@@ -229,7 +229,7 @@
           PetscInt e (*) ! PetscInt
           PetscScalar f(1,1)  ! PetscScalar
           InsertMode g ! InsertMode
-          integer z
+          PetscErrorCode z
         end subroutine
         subroutine MatSetValues11(a,b,c,d,e,f,g,z)
           use petscmatdef
@@ -240,7 +240,7 @@
           PetscInt e ! PetscInt
           PetscScalar f  ! PetscScalar
           InsertMode g ! InsertMode
-          integer z
+          PetscErrorCode z
         end subroutine
         subroutine MatSetValues1n(a,b,c,d,e,f,g,z)
           use petscmatdef
@@ -251,7 +251,7 @@
           PetscInt e (*) ! PetscInt
           PetscScalar f (*)  ! PetscScalar
           InsertMode g ! InsertMode
-          integer z
+          PetscErrorCode z
         end subroutine
         subroutine MatSetValuesn1(a,b,c,d,e,f,g,z)
           use petscmatdef
@@ -262,7 +262,7 @@
           PetscInt e ! PetscInt
           PetscScalar f (*) ! PetscScalar
           InsertMode g ! InsertMode
-          integer z
+          PetscErrorCode z
         end subroutine
       End Interface MatSetValues
 
@@ -278,7 +278,7 @@
           PetscInt e (*) ! PetscInt
           PetscScalar f (*) ! PetscScalar
           InsertMode g ! InsertMode
-          integer z
+          PetscErrorCode z
         end subroutine
         subroutine MatSetValuesLocal11(a,b,c,d,e,f,g,z)
           use petscmatdef
@@ -289,7 +289,7 @@
           PetscInt e ! PetscInt
           PetscScalar f(*)  ! PetscScalar
           InsertMode g ! InsertMode
-          integer z
+          PetscErrorCode z
         end subroutine
         subroutine MatSetValuesLocal11nn(a,b,c,d,e,f,g,z)
           use petscmatdef
@@ -300,7 +300,7 @@
           PetscInt e ! PetscInt
           PetscScalar f(1,1)  ! PetscScalar
           InsertMode g ! InsertMode
-          integer z
+          PetscErrorCode z
         end subroutine
         subroutine MatSetValuesLocal111(a,b,c,d,e,f,g,z)
           use petscmatdef
@@ -311,7 +311,7 @@
           PetscInt e ! PetscInt
           PetscScalar f  ! PetscScalar
           InsertMode g ! InsertMode
-          integer z
+          PetscErrorCode z
         end subroutine
         subroutine MatSetValuesLocal1n(a,b,c,d,e,f,g,z)
           use petscmatdef
@@ -322,7 +322,7 @@
           PetscInt e (*) ! PetscInt
           PetscScalar f (*)  ! PetscScalar
           InsertMode g ! InsertMode
-          integer z
+          PetscErrorCode z
         end subroutine
         subroutine MatSetValuesLocaln1(a,b,c,d,e,f,g,z)
           use petscmatdef
@@ -333,7 +333,7 @@
           PetscInt e ! PetscInt
           PetscScalar f (*) ! PetscScalar
           InsertMode g ! InsertMode
-          integer z
+          PetscErrorCode z
         end subroutine
       End Interface MatSetValuesLocal
 
@@ -349,7 +349,7 @@
           PetscInt e (*) ! PetscInt
           PetscScalar f (*) ! PetscScalar
           InsertMode g ! InsertMode
-          integer z
+          PetscErrorCode z
         end subroutine
         subroutine MatSetValuesBlockedLocal11(a,b,c,d,e,f,g,z)
           use petscmatdef
@@ -360,7 +360,7 @@
           PetscInt e ! PetscInt
           PetscScalar f(*)  ! PetscScalar
           InsertMode g ! InsertMode
-          integer z
+          PetscErrorCode z
         end subroutine
         subroutine MatSetValuesBlockedLocal111(a,b,c,d,e,f,g,z)
           use petscmatdef
@@ -371,7 +371,7 @@
           PetscInt e ! PetscInt
           PetscScalar f(1,1)  ! PetscScalar
           InsertMode g ! InsertMode
-          integer z
+          PetscErrorCode z
         end subroutine
         subroutine MatSetValuesBlockedLocal1n(a,b,c,d,e,f,g,z)
           use petscmatdef
@@ -382,7 +382,7 @@
           PetscInt e (*) ! PetscInt
           PetscScalar f (*)  ! PetscScalar
           InsertMode g ! InsertMode
-          integer z
+          PetscErrorCode z
         end subroutine
         subroutine MatSetValuesBlockedLocaln1(a,b,c,d,e,f,g,z)
           use petscmatdef
@@ -393,7 +393,7 @@
           PetscInt e ! PetscInt
           PetscScalar f (*) ! PetscScalar
           InsertMode g ! InsertMode
-          integer z
+          PetscErrorCode z
         end subroutine
       End Interface MatSetValuesBlockedLocal
 
@@ -409,7 +409,7 @@
           PetscInt e (*) ! PetscInt
           PetscScalar, pointer :: f (:,:)
           InsertMode g ! InsertMode
-          integer z
+          PetscErrorCode z
         end subroutine
         subroutine MatSetValuesBlocked0(a,b,c,d,e,f,g,z)
           use petscmatdef
@@ -420,7 +420,7 @@
           PetscInt e (*) ! PetscInt
           PetscScalar f (*) ! PetscScalar
           InsertMode g ! InsertMode
-          integer z
+          PetscErrorCode z
         end subroutine
         subroutine MatSetValuesBlocked11(a,b,c,d,e,f,g,z)
           use petscmatdef
@@ -431,7 +431,7 @@
           PetscInt e ! PetscInt
           PetscScalar f(*)  ! PetscScalar
           InsertMode g ! InsertMode
-          integer z
+          PetscErrorCode z
         end subroutine
         subroutine MatSetValuesBlocked111(a,b,c,d,e,f,g,z)
           use petscmatdef
@@ -442,7 +442,7 @@
           PetscInt e ! PetscInt
           PetscScalar f(1,1)  ! PetscScalar
           InsertMode g ! InsertMode
-          integer z
+          PetscErrorCode z
         end subroutine
         subroutine MatSetValuesBlocked1n(a,b,c,d,e,f,g,z)
           use petscmatdef
@@ -453,7 +453,7 @@
           PetscInt e (*) ! PetscInt
           PetscScalar f (*)  ! PetscScalar
           InsertMode g ! InsertMode
-          integer z
+          PetscErrorCode z
         end subroutine
         subroutine MatSetValuesBlockedn1(a,b,c,d,e,f,g,z)
           use petscmatdef
@@ -464,7 +464,7 @@
           PetscInt e ! PetscInt
           PetscScalar f (*) ! PetscScalar
           InsertMode g ! InsertMode
-          integer z
+          PetscErrorCode z
         end subroutine
       End Interface MatSetValuesBlocked
 
@@ -710,7 +710,7 @@
       use petscmatdef
        Mat a
        character(*) b
-       integer z
+       PetscErrorCode z
        end subroutine
       end Interface
 
@@ -719,7 +719,7 @@
       use petscmatdef
        Mat a
        PetscViewer b
-       integer z
+       PetscErrorCode z
        end subroutine
       end Interface
 
@@ -732,7 +732,7 @@
        PetscScalar d ! PetscScalar
        Vec e ! Vec
        Vec f ! Vec
-       integer z
+       PetscErrorCode z
        end subroutine
       subroutine MatZeroRowsLocal1(a,b,c,d,e,f,z)
       use petscmatdef
@@ -742,7 +742,7 @@
        PetscScalar d ! PetscScalar
        Vec e ! Vec
        Vec f ! Vec
-       integer z
+       PetscErrorCode z
        end subroutine
       End Interface
 
@@ -787,7 +787,7 @@
 
       subroutine MatPartitioningCreate(a,b,ierr)
       use petscmatdef
-       integer, intent(in) :: a ! MPI_comm
+       integer4, intent(in) :: a ! MPI_comm
        MatPartitioning, intent(out) ::  b
        PetscErrorCode,intent(out) :: ierr
       end subroutine

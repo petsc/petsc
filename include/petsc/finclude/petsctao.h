@@ -5,7 +5,7 @@
 
 #define Tao PetscFortranAddr
 #define TaoLineSearch PetscFortranAddr
-#define TaoConvergedReason integer
+#define TaoConvergedReason PetscEnum
 #define TaoType character*(80)
 #define TaoLineSearchType character*(80)
 

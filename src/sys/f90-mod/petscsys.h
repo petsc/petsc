@@ -20,7 +20,29 @@
 #if defined(PETSC_HAVE_MPIUNI)
 #include "petsc/mpiuni/mpif.h"
 #else
+!
+!  This code is extremely fragile; it assumes the format of the mpif.h file has
+!  a particular structure that does not change with MPI implementation versions. But since
+!  mpif.h is a bit of a deadwater and PETSC_PROMOTE_FORTRAN_INTEGER is
+!  rarely used it is maybe ok to include fragile code
+!
+#if defined(PETSC_HAVE_MPICH_NUMVERSION) && defined(PETSC_PROMOTE_FORTRAN_INTEGER)
+#define INTEGER integer4
+#define MPI_STATUS_IGNORE(A) mpi_status_ignore(5)
+#define MPI_STATUSES_IGNORE(B,C) mpi_statuses_ignore(5,1)
+#elif defined(PETSC_HAVE_OMPI_MAJOR_VERSION)  && defined(PETSC_PROMOTE_FORTRAN_INTEGER)
+#define integer integer4
+#define INTEGER integer4
+#endif
 #include "mpif.h"
+#if defined(PETSC_HAVE_MPICH_NUMVERSION) && defined(PETSC_PROMOTE_FORTRAN_INTEGER)
+#undef INTEGER
+#undef MPI_STATUS_IGNORE
+#undef MPI_STATUSES_IGNORE
+#elif defined(PETSC_HAVE_OMPI_MAJOR_VERSION) && defined(PETSC_PROMOTE_FORTRAN_INTEGER)
+#undef integer
+#undef INTEGER
+#endif
 #endif
 #endif
 
@@ -126,17 +148,17 @@
 !     and transmitted from the C code
 !
 #if !defined(PETSC_USE_REAL___FLOAT128)
-      integer MPIU_REAL
+      integer4 MPIU_REAL
 #if defined (PETSC_USE_REAL_SINGLE)
       parameter (MPIU_REAL = MPI_REAL)
 #else
       parameter(MPIU_REAL = MPI_DOUBLE_PRECISION)
 #endif
 
-      integer MPIU_SUM
+      integer4 MPIU_SUM
       parameter (MPIU_SUM = MPI_SUM)
 
-      integer MPIU_SCALAR
+      integer4 MPIU_SCALAR
 #if defined(PETSC_USE_COMPLEX)
 #if defined (PETSC_USE_REAL_SINGLE)
       parameter(MPIU_SCALAR = MPI_COMPLEX)
@@ -152,7 +174,7 @@
 #endif
 #endif
 
-      integer MPIU_INTEGER
+      integer4 MPIU_INTEGER
 #if defined(PETSC_USE_64BIT_INDICES)
       parameter(MPIU_INTEGER = MPI_INTEGER8)
 #else

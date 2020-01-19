@@ -1537,17 +1537,17 @@ class GNUPackage(Package):
           args.append('F90="'+self.setCompilers.cross_fc+'"')
         else:
           args.append('F90="'+fc+'"')
-        args.append('F90FLAGS="'+self.removeWarningFlags(self.getCompilerFlags()).replace('-Mfree','')+'"')
+        args.append('F90FLAGS="'+self.removeWarningFlags(self.getCompilerFlags()).replace('-Mfree','').replace('-fdefault-integer-8','')+'"')
       else:
         args.append('--disable-f90')
-      args.append('FFLAGS="'+self.removeWarningFlags(self.getCompilerFlags()).replace('-Mfree','')+'"')
+      args.append('FFLAGS="'+self.removeWarningFlags(self.getCompilerFlags()).replace('-Mfree','').replace('-fdefault-integer-8','')+'"')
       if not self.installwithbatch and hasattr(self.setCompilers,'cross_fc'):
         args.append('FC="'+self.setCompilers.cross_fc+'"')
         args.append('F77="'+self.setCompilers.cross_fc+'"')
       else:
         args.append('FC="'+fc+'"')
         args.append('F77="'+fc+'"')
-      args.append('FCFLAGS="'+self.removeWarningFlags(self.getCompilerFlags()).replace('-Mfree','')+'"')
+      args.append('FCFLAGS="'+self.removeWarningFlags(self.getCompilerFlags()).replace('-Mfree','').replace('-fdefault-integer-8','')+'"')
       self.popLanguage()
     else:
       args.append('--disable-fortran')

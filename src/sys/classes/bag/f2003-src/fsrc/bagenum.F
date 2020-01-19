@@ -6,6 +6,7 @@
 #endif
       Subroutine PetscBagRegisterEnum(bag,addr,FArray,def,n,h,ierr)
       use,intrinsic :: iso_c_binding
+      use petscsys
       implicit none
 
       PetscBag   bag
