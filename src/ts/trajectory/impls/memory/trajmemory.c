@@ -1780,6 +1780,7 @@ static PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
     ierr = TSTrajectorySetUp_Basic(tj,ts);CHKERRQ(ierr);
   }
 
+  stack->stacksize = PetscMax(stack->stacksize,1);
   tjsch->recompute = PETSC_FALSE;
   ierr = TSGetStages(ts,&numY,PETSC_IGNORE);CHKERRQ(ierr);
   ierr = StackCreate(stack,stack->stacksize,numY);CHKERRQ(ierr);
