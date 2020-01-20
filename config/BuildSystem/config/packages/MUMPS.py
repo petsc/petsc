@@ -151,7 +151,7 @@ class Configure(config.package.Package):
     g.close()
     if self.installNeeded('Makefile.inc'):
       try:
-        output1,err1,ret1  = config.package.Package.executeShellCommand('make clean', cwd=self.packageDir, timeout=5, log = self.log)
+        output1,err1,ret1  = config.package.Package.executeShellCommand('make clean', cwd=self.packageDir, timeout=60, log = self.log)
       except RuntimeError as e:
         pass
       try:
@@ -165,9 +165,9 @@ class Configure(config.package.Package):
           [self.installSudo+'mkdir -p '+libDir+' '+includeDir,
            self.installSudo+'cp -f lib/*.* '+libDir+'/.',
            self.installSudo+'cp -f include/*.* '+includeDir+'/.'
-          ], cwd=self.packageDir, timeout=50, log = self.log)
+          ], cwd=self.packageDir, timeout=60, log = self.log)
         if self.argDB['with-mumps-serial']:
-          output,err,ret = config.package.Package.executeShellCommand([self.installSudo+'cp', '-f', 'libseq/libmpiseq.a', libDir+'/.'], cwd=self.packageDir, timeout=25, log = self.log)
+          output,err,ret = config.package.Package.executeShellCommand([self.installSudo+'cp', '-f', 'libseq/libmpiseq.a', libDir+'/.'], cwd=self.packageDir, timeout=60, log = self.log)
       except RuntimeError as e:
         self.logPrint('Error running make on MUMPS: '+str(e))
         raise RuntimeError('Error running make on MUMPS')

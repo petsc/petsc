@@ -463,9 +463,9 @@ class Package(config.base.Configure):
         else: path = None
         os.environ['PKG_CONFIG_PATH'] = self.argDB['with-'+self.package+'-pkg-config']
 
-      l,err,ret  = config.base.Configure.executeShellCommand('pkg-config '+self.pkgname+' --libs', timeout=5, log = self.log)
+      l,err,ret  = config.base.Configure.executeShellCommand('pkg-config '+self.pkgname+' --libs', timeout=60, log = self.log)
       l = l.strip()
-      i,err,ret  = config.base.Configure.executeShellCommand('pkg-config '+self.pkgname+' --cflags', timeout=5, log = self.log)
+      i,err,ret  = config.base.Configure.executeShellCommand('pkg-config '+self.pkgname+' --cflags', timeout=60, log = self.log)
       i = i.strip()
       if self.argDB['with-'+self.package+'-pkg-config']:
         if path: os.environ['PKG_CONFIG_PATH'] = path
@@ -895,11 +895,11 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
           self.executeTest(self.libraries.check,[lib, self.functionsDefine],{'otherLibs' : self.dlib, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2], 'cxxLink': self.cxx, 'functionDefine': 1})
         self.logWrite(self.libraries.restoreLog())
         self.logPrint('Checking for optional headers '+str(self.optionalincludes)+' in '+location+': '+str(incl))
-        if self.checkInclude(incl, self.optionalincludes, self.dinclude, timeout = 40.0):
+        if self.checkInclude(incl, self.optionalincludes, self.dinclude, timeout = 60.0):
           self.include += self.optionalincludes
           self.foundoptionalincludes = 1
         self.logPrint('Checking for headers '+str(self.includes)+' in '+location+': '+str(incl))
-        if (not self.includes) or self.checkInclude(incl, self.includes, self.dinclude, timeout = 40.0):
+        if (not self.includes) or self.checkInclude(incl, self.includes, self.dinclude, timeout = 60.0):
           if self.includes:
             self.include = testedincl
           self.found     = 1
@@ -1191,14 +1191,14 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
     if self.framework.argDB['prefix']:
       try:
         self.logPrintBox('Installing PETSc; this may take several minutes')
-        output,err,ret  = config.package.Package.executeShellCommand(self.installDirProvider.installSudo+self.make.make+' install PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch, cwd=self.petscdir.dir, timeout=50, log = self.log)
+        output,err,ret  = config.package.Package.executeShellCommand(self.installDirProvider.installSudo+self.make.make+' install PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch, cwd=self.petscdir.dir, timeout=60, log = self.log)
         self.log.write(output+err)
       except RuntimeError as e:
         raise RuntimeError('Error running make install on PETSc: '+str(e))
     elif not self.argDB['with-batch']:
       try:
         self.logPrintBox('Testing PETSc; this may take several minutes')
-        output,err,ret  = config.package.Package.executeShellCommand(self.make.make+' test PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch, cwd=self.petscdir.dir, timeout=50, log = self.log)
+        output,err,ret  = config.package.Package.executeShellCommand(self.make.make+' test PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch, cwd=self.petscdir.dir, timeout=60, log = self.log)
         output = output+err
         self.log.write(output)
         if output.find('error') > -1 or output.find('Error') > -1:

@@ -193,7 +193,7 @@ class Configure(config.package.Package):
         output1,err1,ret1  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && make CXX="'+ self.setCompilers.getCompiler() + '" CXXFLAGS="' + cflags + '" PREDCXXFLAGS="' + predcflags + '" tetlib && mv tetgen_def.h tetgen.h && '+self.installSudo+'cp *.a ' + libDir + ' && rm *.a *.o', timeout=2500, log = self.log)
       except RuntimeError as e:
         raise RuntimeError('Error running make on TetGen: '+str(e))
-      output2,err2,ret2  = config.package.Package.executeShellCommand(self.installSudo+'cp -f '+os.path.join(self.packageDir, 'tetgen.h')+' '+includeDir, timeout=5, log = self.log)
+      output2,err2,ret2  = config.package.Package.executeShellCommand(self.installSudo+'cp -f '+os.path.join(self.packageDir, 'tetgen.h')+' '+includeDir, timeout=60, log = self.log)
       self.postInstall(output1+err1+output2+err2,'make.inc')
 
     return self.installDir

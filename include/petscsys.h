@@ -510,7 +510,7 @@ M*/
 .  m1 - number of elements to allocate  (may be zero)
 
    Output Parameter:
-.  r1 - memory allocated in first chunk
+.  r1 - memory allocated
 
    Note:
    This uses the sizeof() of the memory type requested to determine the total memory to be allocated, therefore you should not
@@ -521,7 +521,7 @@ $  PetscMalloc1(10,&id);
 $  PetscInt *id;
 $  PetscMalloc1(10*sizeof(PetscInt),&id);
 
-        Does not zero the memory allocatd, used PetscCalloc1() to obtain memory that has been zeroed.
+        Does not zero the memory allocated, use PetscCalloc1() to obtain memory that has been zeroed.
 
    Level: beginner
 
@@ -543,7 +543,7 @@ M*/
 .  m1 - number of elements to allocate in 1st chunk  (may be zero)
 
    Output Parameter:
-.  r1 - memory allocated in first chunk
+.  r1 - memory allocated
 
    Notes:
    See PetsMalloc1() for more details on usage.

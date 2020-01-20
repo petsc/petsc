@@ -65,7 +65,7 @@ class Configure(config.package.Package):
 
     if self.installNeeded('SLmake.inc'):
       try:
-        output,err,ret  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && '+self.make.make+' -f Makefile.parallel cleanlib', timeout=25, log = self.log)
+        output,err,ret  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && '+self.make.make+' -f Makefile.parallel cleanlib', timeout=60, log = self.log)
       except RuntimeError as e:
         pass
       try:
