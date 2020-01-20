@@ -219,7 +219,7 @@ static PetscErrorCode StackCreate(Stack *stack,PetscInt size,PetscInt ny)
   stack->top  = -1;
   stack->numY = ny;
 
-  ierr = PetscMalloc1(size*sizeof(StackElement),&stack->container);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size,&stack->container);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -471,7 +471,7 @@ static PetscErrorCode UpdateTS(TS ts,Stack *stack,StackElement e, PetscBool adjo
 
   PetscFunctionBegin;
   ierr = VecCopy(e->X,ts->vec_sol);CHKERRQ(ierr);
-  if (!stack->solution_only) {
+  if (!stack->solution_only && e->stepnum) {
     ierr = TSGetStages(ts,&stack->numY,&Y);CHKERRQ(ierr);
     for (i=0;i<stack->numY;i++) {
       ierr = VecCopy(e->Y[i],Y[i]);CHKERRQ(ierr);
