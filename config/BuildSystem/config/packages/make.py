@@ -203,7 +203,12 @@ the --download-make option to get the latest Gnu make *****')
     self.addMakeMacro('MAKE_TEST_NP',str(make_test_np))
     self.addMakeMacro('MAKE_LOAD',str(make_load))
     self.addMakeMacro('NPMAX',str(cores))
-    self.make_jnp = self.make + ' -j' + str(self.make_np) +' -l'+str(self.make_load)
+    self.make_jnp_list = [self.make, '-j'+str(self.make_np), '-l'+str(self.make_load)]
+    self.make_jnp = ' '.join(self.make_jnp_list)
+    if self.installSudo:
+      self.make_sudo_list = [self.installSudo, self.make]
+    else:
+      self.make_sudo_list = [self.make]
     return
 
   def configure(self):
