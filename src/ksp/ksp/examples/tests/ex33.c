@@ -144,7 +144,7 @@ int main(int argc,char **args)
     test:
       suffix: mkl_pardiso
       args: -sigma 2.0 -pc_factor_mat_solver_type mkl_pardiso -mat_type sbaij
-      requires: mkl_pardiso
+      requires: mkl_pardiso !complex
       output_file: output/ex33.out
 
     test:
