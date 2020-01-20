@@ -116,8 +116,8 @@ triangle_shared:
       self.installDirProvider.printSudoPasswordMessage()
       output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'lib'), timeout=2500, log=self.log)
       output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'include'), timeout=2500, log=self.log)
-      output2,err2,ret2  = config.package.Package.executeShellCommand(self.installSudo+'cp -f '+os.path.join(self.packageDir,'libtriangle.'+self.setCompilers.AR_LIB_SUFFIX)+' '+os.path.join(self.installDir,'lib'), timeout=5, log = self.log)
-      output2,err2,ret2  = config.package.Package.executeShellCommand(self.installSudo+'cp -f '+os.path.join(self.packageDir, 'src', 'triangle.h')+' '+includeDir, timeout=5, log = self.log)
+      output2,err2,ret2  = config.package.Package.executeShellCommand(self.installSudo+'cp -f '+os.path.join(self.packageDir,'libtriangle.'+self.setCompilers.AR_LIB_SUFFIX)+' '+os.path.join(self.installDir,'lib'), timeout=60, log = self.log)
+      output2,err2,ret2  = config.package.Package.executeShellCommand(self.installSudo+'cp -f '+os.path.join(self.packageDir, 'src', 'triangle.h')+' '+includeDir, timeout=60, log = self.log)
       self.postInstall(output1+err1+output2+err2,'make.inc')
     return self.installDir
 

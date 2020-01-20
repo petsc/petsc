@@ -105,7 +105,7 @@ class Configure(config.package.CMakePackage):
     fd.write('listlibs:\n\t-@echo ${Trilinos_LIBRARIES}')
     fd.close()
     try:
-      output1,err1,ret1  = config.package.Package.executeShellCommand('make -f simplemake listlibs', timeout=25, log = self.log)
+      output1,err1,ret1  = config.package.Package.executeShellCommand('make -f simplemake listlibs', timeout=60, log = self.log)
       os.unlink('simplemake')
     except RuntimeError as e:
       raise RuntimeError('Unable to generate list of Trilinos Libraries')

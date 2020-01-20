@@ -63,7 +63,7 @@ class Configure(config.package.GNUPackage):
         PDIR   = 'PETSC_DIR='+self.petscdir.dir
         PARCH  = 'PETSC_ARCH='+self.arch
         PREFIX = '--prefix='+os.path.join(self.petscdir.dir,self.arch)
-      output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+self.packageDir+' && '+PARCH+' '+PDIR+' ./configure all '+PREFIX,timeout=10, log = self.log)
+      output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+self.packageDir+' && '+PARCH+' '+PDIR+' ./configure all '+PREFIX,timeout=60, log = self.log)
       self.log.write(output+err)
 
       self.logPrintBox('Compiling Pflotran; this may take several minutes')

@@ -50,7 +50,7 @@ class Configure(config.package.Package):
       try:
         self.logPrintBox('Compiling TChem; this may take several minutes')
         output2,err2,ret2  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && make && cp include/TC_*.h %(includeDir)s && cp lib/libtchem* %(libDir)s' % dict(includeDir=includeDir,libDir=libDir), timeout=500, log = self.log)
-        output2,err2,ret2  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && cp data/periodictable.dat  %(shareDir)s' % dict(shareDir=shareDir) , timeout=10, log = self.log)
+        output2,err2,ret2  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && cp data/periodictable.dat  %(shareDir)s' % dict(shareDir=shareDir) , timeout=60, log = self.log)
       except RuntimeError as e:
         raise RuntimeError('Error running make on TChem: '+str(e))
       self.postInstall(output1+err1+output2+err2,'tchem')
