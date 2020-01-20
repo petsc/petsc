@@ -32,8 +32,9 @@ PETSC_EXTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
 @*/
 PetscErrorCode DMPlexRefineSimplexToTensor(DM dm, DM *dmRefined)
 {
-  PetscInt         dim, cMax, fMax, cStart, cEnd, coneSize;
   CellRefiner      cellRefiner;
+  DMPolytopeType   ct;
+  PetscInt         dim, cMax, fMax, cStart, cEnd;
   PetscBool        lop, allnoop, localized;
   PetscErrorCode   ierr;
 
@@ -45,42 +46,30 @@ PetscErrorCode DMPlexRefineSimplexToTensor(DM dm, DM *dmRefined)
   ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
   if (!(cEnd - cStart)) cellRefiner = REFINER_NOOP;
   else {
-    ierr = DMPlexGetConeSize(dm,cStart,&coneSize);CHKERRQ(ierr);
-    switch (dim) {
-    case 1:
-      cellRefiner = REFINER_NOOP;
-    break;
-    case 2:
-      switch (coneSize) {
-      case 3:
+    ierr = DMPlexGetCellType(dm, cStart, &ct);CHKERRQ(ierr);
+    switch (ct) {
+      case DM_POLYTOPE_POINT:
+      case DM_POLYTOPE_SEGMENT:
+        cellRefiner = REFINER_NOOP;break;
+      case DM_POLYTOPE_TRIANGLE:
         if (cMax >= 0) cellRefiner = REFINER_HYBRID_SIMPLEX_TO_HEX_2D;
-        else cellRefiner = REFINER_SIMPLEX_TO_HEX_2D;
-      break;
-      case 4:
+        else           cellRefiner = REFINER_SIMPLEX_TO_HEX_2D;
+        break;
+      case DM_POLYTOPE_QUADRILATERAL:
         if (cMax >= 0) cellRefiner = REFINER_HYBRID_SIMPLEX_TO_HEX_2D;
-        else cellRefiner = REFINER_NOOP;
-      break;
-      default: SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot handle coneSize %D with dimension %D",coneSize,dim);
-      }
-    break;
-    case 3:
-      switch (coneSize) {
-      case 4:
+        else           cellRefiner = REFINER_NOOP;
+        break;
+      case DM_POLYTOPE_TETRAHEDRON:
         if (cMax >= 0) cellRefiner = REFINER_HYBRID_SIMPLEX_TO_HEX_3D;
-        else cellRefiner = REFINER_SIMPLEX_TO_HEX_3D;
-      break;
-      case 5:
-        if (cMax >= 0) cellRefiner = REFINER_HYBRID_SIMPLEX_TO_HEX_3D;
-        else cellRefiner = REFINER_NOOP;
-      break;
-      case 6:
-        if (cMax >= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Simplex2Tensor in 3D with Hybrid mesh not yet done");
-        cellRefiner = REFINER_NOOP;
-      break;
-      default: SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot handle coneSize %D with dimension %D",coneSize,dim);
-      }
-    break;
-    default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot handle dimension %D",dim);
+        else           cellRefiner = REFINER_SIMPLEX_TO_HEX_3D;
+        break;
+      case DM_POLYTOPE_TRI_PRISM_TENSOR:
+        cellRefiner = REFINER_HYBRID_SIMPLEX_TO_HEX_3D;break;
+      case DM_POLYTOPE_HEXAHEDRON:
+        if (cMax >= 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Simplex2Tensor in 3D with Hybrid mesh not yet done");
+        else           cellRefiner = REFINER_NOOP;
+        break;
+      default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot handle cell polytope type %s", DMPolytopeTypes[ct]);
     }
   }
   /* return if we don't need to refine */
@@ -570,7 +559,7 @@ PETSC_UNUSED static PetscErrorCode DMPlexView_Ascii_Geometry(DM dm, PetscViewer 
 {
   PetscSection       coordSection;
   Vec                coordinates;
-  DMLabel            depthLabel;
+  DMLabel            depthLabel, celltypeLabel;
   const char        *name[4];
   const PetscScalar *a;
   PetscInt           dim, pStart, pEnd, cStart, cEnd, c;
@@ -581,6 +570,7 @@ PETSC_UNUSED static PetscErrorCode DMPlexView_Ascii_Geometry(DM dm, PetscViewer 
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMPlexGetDepthLabel(dm, &depthLabel);CHKERRQ(ierr);
+  ierr = DMPlexGetCellTypeLabel(dm, &celltypeLabel);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(coordSection, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = VecGetArrayRead(coordinates, &a);CHKERRQ(ierr);
@@ -590,9 +580,10 @@ PETSC_UNUSED static PetscErrorCode DMPlexView_Ascii_Geometry(DM dm, PetscViewer 
   name[dim]   = "cell";
   for (c = cStart; c < cEnd; ++c) {
     PetscInt *closure = NULL;
-    PetscInt  closureSize, cl;
+    PetscInt  closureSize, cl, ct;
 
-    ierr = PetscViewerASCIIPrintf(viewer, "Geometry for cell %D:\n", c);CHKERRQ(ierr);
+    ierr = DMLabelGetValue(celltypeLabel, c, &ct);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "Geometry for cell %D polytope type %s:\n", c, DMPolytopeTypes[ct]);CHKERRQ(ierr);
     ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     for (cl = 0; cl < closureSize*2; cl += 2) {
@@ -1223,19 +1214,20 @@ static PetscErrorCode DMPlexView_Draw(DM dm, PetscViewer viewer)
 
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
-    PetscScalar *coords = NULL;
-    PetscInt     numCoords,coneSize;
+    PetscScalar   *coords = NULL;
+    DMPolytopeType ct;
+    PetscInt       numCoords;
 
-    ierr = DMPlexGetConeSize(dm, c, &coneSize);CHKERRQ(ierr);
+    ierr = DMPlexGetCellType(dm, c, &ct);CHKERRQ(ierr);
     ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, c, &numCoords, &coords);CHKERRQ(ierr);
-    switch (coneSize) {
-    case 3:
+    switch (ct) {
+    case DM_POLYTOPE_TRIANGLE:
       ierr = PetscDrawTriangle(draw, PetscRealPart(coords[0]), PetscRealPart(coords[1]), PetscRealPart(coords[2]), PetscRealPart(coords[3]), PetscRealPart(coords[4]), PetscRealPart(coords[5]),
                                PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS-2) + 2,
                                PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS-2) + 2,
                                PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS-2) + 2);CHKERRQ(ierr);
       break;
-    case 4:
+    case DM_POLYTOPE_QUADRILATERAL:
       ierr = PetscDrawTriangle(draw, PetscRealPart(coords[0]), PetscRealPart(coords[1]), PetscRealPart(coords[2]), PetscRealPart(coords[3]), PetscRealPart(coords[4]), PetscRealPart(coords[5]),
                                 PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS-2) + 2,
                                 PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS-2) + 2,
@@ -1245,29 +1237,30 @@ static PetscErrorCode DMPlexView_Draw(DM dm, PetscViewer viewer)
                                 PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS-2) + 2,
                                 PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS-2) + 2);CHKERRQ(ierr);
       break;
-    default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot draw cells with %D facets", coneSize);
+    default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot draw cells of type %s", DMPolytopeTypes[ct]);
     }
     ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, c, &numCoords, &coords);CHKERRQ(ierr);
   }
   for (c = cStart; c < cEnd; ++c) {
-    PetscScalar *coords = NULL;
-    PetscInt     numCoords,coneSize;
+    PetscScalar   *coords = NULL;
+    DMPolytopeType ct;
+    PetscInt       numCoords;
 
-    ierr = DMPlexGetConeSize(dm, c, &coneSize);CHKERRQ(ierr);
+    ierr = DMPlexGetCellType(dm, c, &ct);CHKERRQ(ierr);
     ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, c, &numCoords, &coords);CHKERRQ(ierr);
-    switch (coneSize) {
-    case 3:
+    switch (ct) {
+    case DM_POLYTOPE_TRIANGLE:
       ierr = PetscDrawLine(draw, PetscRealPart(coords[0]), PetscRealPart(coords[1]), PetscRealPart(coords[2]), PetscRealPart(coords[3]), PETSC_DRAW_BLACK);CHKERRQ(ierr);
       ierr = PetscDrawLine(draw, PetscRealPart(coords[2]), PetscRealPart(coords[3]), PetscRealPart(coords[4]), PetscRealPart(coords[5]), PETSC_DRAW_BLACK);CHKERRQ(ierr);
       ierr = PetscDrawLine(draw, PetscRealPart(coords[4]), PetscRealPart(coords[5]), PetscRealPart(coords[0]), PetscRealPart(coords[1]), PETSC_DRAW_BLACK);CHKERRQ(ierr);
       break;
-    case 4:
+    case DM_POLYTOPE_QUADRILATERAL:
       ierr = PetscDrawLine(draw, PetscRealPart(coords[0]), PetscRealPart(coords[1]), PetscRealPart(coords[2]), PetscRealPart(coords[3]), PETSC_DRAW_BLACK);CHKERRQ(ierr);
       ierr = PetscDrawLine(draw, PetscRealPart(coords[2]), PetscRealPart(coords[3]), PetscRealPart(coords[4]), PetscRealPart(coords[5]), PETSC_DRAW_BLACK);CHKERRQ(ierr);
       ierr = PetscDrawLine(draw, PetscRealPart(coords[4]), PetscRealPart(coords[5]), PetscRealPart(coords[6]), PetscRealPart(coords[7]), PETSC_DRAW_BLACK);CHKERRQ(ierr);
       ierr = PetscDrawLine(draw, PetscRealPart(coords[6]), PetscRealPart(coords[7]), PetscRealPart(coords[0]), PetscRealPart(coords[1]), PETSC_DRAW_BLACK);CHKERRQ(ierr);
       break;
-    default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot draw cells with %D facets", coneSize);
+    default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot draw cells of type %s", DMPolytopeTypes[ct]);
     }
     ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, c, &numCoords, &coords);CHKERRQ(ierr);
   }
@@ -1865,6 +1858,7 @@ PetscErrorCode DMPlexGetConeRecursive(DM dm, IS points, PetscInt *depth, IS *exp
     arr = newarr;
     n = newn;
   }
+  ierr = ISRestoreIndices(points, &arr0);CHKERRQ(ierr);
   *depth = depth_;
   if (expandedPoints) *expandedPoints = expandedPoints_;
   else {
@@ -2864,7 +2858,7 @@ $  depth 1 = {e0, c0}
 
   Level: beginner
 
-.seealso: DMPlexCreate(), DMPlexSymmetrize()
+.seealso: DMPlexCreate(), DMPlexSymmetrize(), DMPlexComputeCellTypes()
 @*/
 PetscErrorCode DMPlexStratify(DM dm)
 {
@@ -2972,6 +2966,112 @@ PetscErrorCode DMPlexStratify(DM dm)
     if (vMax >= 0) {ierr = DMPlexCreateDimStratum(dm, label, dimLabel, 0, vMax);CHKERRQ(ierr);}
   }
   ierr = PetscLogEventEnd(DMPLEX_Stratify,dm,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexComputeCellTypes - Infer the polytope type of every cell using its dimension and cone size.
+
+  Collective on dm
+
+  Input Parameter:
+. mesh - The DMPlex
+
+  DMPlexComputeCellTypes() should be called after all calls to DMPlexSymmetrize() and DMPlexStratify()
+
+  Level: beginner
+
+.seealso: DMPlexCreate(), DMPlexSymmetrize(), DMPlexStratify()
+@*/
+PetscErrorCode DMPlexComputeCellTypes(DM dm)
+{
+  DM_Plex       *mesh;
+  DMLabel        label;
+  PetscInt       dim, depth, gcStart, gcEnd, pStart, pEnd, p;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  mesh = (DM_Plex *) dm->data;
+  ierr = DMCreateLabel(dm, "celltype");CHKERRQ(ierr);
+  ierr = DMPlexGetCellTypeLabel(dm, &label);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
+  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetGhostCellStratum(dm, &gcStart, &gcEnd);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; ++p) {
+    DMPolytopeType ct = DM_POLYTOPE_UNKNOWN;
+    PetscInt       pdepth, pheight, coneSize;
+
+    ierr = DMPlexGetPointDepth(dm, p, &pdepth);CHKERRQ(ierr);
+    ierr = DMPlexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
+    pheight = depth - pdepth;
+    if (depth <= 1) {
+      switch (pdepth) {
+        case 0: ct = DM_POLYTOPE_POINT;break;
+        case 1:
+          switch (coneSize) {
+            case 2: ct = DM_POLYTOPE_SEGMENT;break;
+            case 3: ct = DM_POLYTOPE_TRIANGLE;break;
+            case 4:
+            switch (dim) {
+              case 2: ct = DM_POLYTOPE_QUADRILATERAL;break;
+              case 3: ct = DM_POLYTOPE_TETRAHEDRON;break;
+              default: break;
+            }
+            break;
+          case 6: ct = DM_POLYTOPE_TRI_PRISM_TENSOR;break;
+          case 8: ct = DM_POLYTOPE_HEXAHEDRON;break;
+          default: break;
+        }
+      }
+    } else {
+      if (pdepth == 0) {
+        ct = DM_POLYTOPE_POINT;
+      } else if (pheight == 0) {
+        if ((p >= gcStart) && (p < gcEnd)) {
+          if (coneSize == 1) ct = DM_POLYTOPE_FV_GHOST;
+          else SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Ghost cell %D should have a cone size of 1, not %D", p, coneSize);
+        } else {
+          switch (dim) {
+            case 1:
+              switch (coneSize) {
+                case 2: ct = DM_POLYTOPE_SEGMENT;break;
+                default: break;
+              }
+              break;
+            case 2:
+              switch (coneSize) {
+                case 3: ct = DM_POLYTOPE_TRIANGLE;break;
+                case 4: ct = DM_POLYTOPE_QUADRILATERAL;break;
+                default: break;
+              }
+              break;
+            case 3:
+              switch (coneSize) {
+                case 4: ct = DM_POLYTOPE_TETRAHEDRON;break;
+                case 5: ct = DM_POLYTOPE_TRI_PRISM_TENSOR;break;
+                case 6: ct = DM_POLYTOPE_HEXAHEDRON;break;
+                default: break;
+              }
+              break;
+            default: break;
+          }
+        }
+      } else if (pheight > 0) {
+        switch (coneSize) {
+          case 2: ct = DM_POLYTOPE_SEGMENT;break;
+          case 3: ct = DM_POLYTOPE_TRIANGLE;break;
+          case 4: ct = DM_POLYTOPE_QUADRILATERAL;break;
+          default: break;
+        }
+      }
+    }
+    if (ct == DM_POLYTOPE_UNKNOWN) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Point %D is screwed up", p);
+    ierr = DMLabelSetValue(label, p, ct);CHKERRQ(ierr);
+  }
+  ierr = PetscObjectStateGet((PetscObject) label, &mesh->celltypeState);CHKERRQ(ierr);
+  ierr = PetscObjectViewFromOptions((PetscObject) label, NULL, "-dm_plex_celltypes_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3706,6 +3806,91 @@ PetscErrorCode DMPlexGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt *st
   if (!label) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "No label named depth was found");
   ierr = DMLabelGetNumValues(label, &depth);CHKERRQ(ierr);
   ierr = DMLabelGetStratumBounds(label, depth-1-stratumValue, start, end);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexGetPointDepth - Get the depth of a given point
+
+  Not Collective
+
+  Input Parameter:
++ dm    - The DMPlex object
+- point - The point
+
+  Output Parameter:
+. depth - The depth of the point
+
+  Level: intermediate
+
+.seealso: DMPlexGetCellType(), DMPlexGetDepthLabel(), DMPlexGetDepth()
+@*/
+PetscErrorCode DMPlexGetPointDepth(DM dm, PetscInt point, PetscInt *depth)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidIntPointer(depth, 3);
+  ierr = DMLabelGetValue(dm->depthLabel, point, depth);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexGetCellTypeLabel - Get the DMLabel recording the polytope type of each cell
+
+  Not Collective
+
+  Input Parameter:
+. dm - The DMPlex object
+
+  Output Parameter:
+. celltypeLabel - The DMLabel recording cell polytope type
+
+  Level: developer
+
+.seealso: DMPlexGetCellType(), DMPlexGetDepthLabel(), DMPlexGetDepth()
+@*/
+PetscErrorCode DMPlexGetCellTypeLabel(DM dm, DMLabel *celltypeLabel)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(celltypeLabel, 2);
+  if (!dm->celltypeLabel) {ierr = DMPlexComputeCellTypes(dm);CHKERRQ(ierr);}
+  *celltypeLabel = dm->celltypeLabel;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexGetCellType - Get the polytope type of a given cell
+
+  Not Collective
+
+  Input Parameter:
++ dm   - The DMPlex object
+- cell - The cell
+
+  Output Parameter:
+. celltype - The polytope type of the cell
+
+  Level: intermediate
+
+.seealso: DMPlexGetCellTypeLabel(), DMPlexGetDepthLabel(), DMPlexGetDepth()
+@*/
+PetscErrorCode DMPlexGetCellType(DM dm, PetscInt cell, DMPolytopeType *celltype)
+{
+  DMLabel        label;
+  PetscInt       ct;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(celltype, 3);
+  ierr = DMPlexGetCellTypeLabel(dm, &label);CHKERRQ(ierr);
+  ierr = DMLabelGetValue(label, cell, &ct);CHKERRQ(ierr);
+  *celltype = (DMPolytopeType) ct;
   PetscFunctionReturn(0);
 }
 
@@ -6479,9 +6664,7 @@ static PetscErrorCode DMPlexCreateDimStratum(DM dm, DMLabel depthLabel, DMLabel 
   PetscFunctionBegin;
   ierr = DMLabelGetStratumIS(depthLabel, d, &is);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) is, ISSTRIDE, &isStride);CHKERRQ(ierr);
-  if (isStride) {
-    ierr = ISStrideGetInfo(is, &first, &stride);CHKERRQ(ierr);
-  }
+  if (isStride) {ierr = ISStrideGetInfo(is, &first, &stride);CHKERRQ(ierr);}
   if (is && (!isStride || stride != 1)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "DM is not stratified: depth %D IS is not contiguous", d);
   ierr = ISCreateStride(PETSC_COMM_SELF, (dMax - first), first, 1, &his);CHKERRQ(ierr);
   ierr = DMLabelSetStratumIS(dimLabel, d, his);CHKERRQ(ierr);
@@ -7134,10 +7317,12 @@ PetscErrorCode DMPlexCheckFaces(DM dm, PetscInt cellHeight)
     ierr = DMPlexGetHeightStratum(dm, h, &cStart, &cEnd);CHKERRQ(ierr);
     for (c = cStart; c < cEnd; ++c) {
       const PetscInt *cone, *ornt, *faces;
+      DMPolytopeType  ct;
       PetscInt        numFaces, faceSize, coneSize,f;
       PetscInt       *closure = NULL, closureSize, cl, numCorners = 0;
 
       if (pMax[dim-h] >= 0 && c >= pMax[dim-h]) continue;
+      ierr = DMPlexGetCellType(dm, c, &ct);CHKERRQ(ierr);
       ierr = DMPlexGetConeSize(dm, c, &coneSize);CHKERRQ(ierr);
       ierr = DMPlexGetCone(dm, c, &cone);CHKERRQ(ierr);
       ierr = DMPlexGetConeOrientation(dm, c, &ornt);CHKERRQ(ierr);
@@ -7146,7 +7331,7 @@ PetscErrorCode DMPlexCheckFaces(DM dm, PetscInt cellHeight)
         const PetscInt p = closure[cl];
         if ((p >= vStart) && (p < vEnd)) closure[numCorners++] = p;
       }
-      ierr = DMPlexGetRawFaces_Internal(dm, dim-h, numCorners, closure, &numFaces, &faceSize, &faces);CHKERRQ(ierr);
+      ierr = DMPlexGetRawFaces_Internal(dm, ct, closure, &numFaces, &faceSize, &faces);CHKERRQ(ierr);
       if (coneSize != numFaces) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell %D has %D faces but should have %D", c, coneSize, numFaces);
       for (f = 0; f < numFaces; ++f) {
         PetscInt *fclosure = NULL, fclosureSize, cl, fnumCorners = 0, v;
@@ -7162,7 +7347,7 @@ PetscErrorCode DMPlexCheckFaces(DM dm, PetscInt cellHeight)
         }
         ierr = DMPlexRestoreTransitiveClosure(dm, cone[f], PETSC_TRUE, &fclosureSize, &fclosure);CHKERRQ(ierr);
       }
-      ierr = DMPlexRestoreFaces_Internal(dm, dim, c, &numFaces, &faceSize, &faces);CHKERRQ(ierr);
+      ierr = DMPlexRestoreFaces_Internal(dm, ct, &numFaces, &faceSize, &faces);CHKERRQ(ierr);
       ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     }
   }

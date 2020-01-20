@@ -824,7 +824,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
 
       ierr = DMGetNumLabels(base,&numLabels);CHKERRQ(ierr);
       for (l = 0; l < numLabels; l++) {
-        PetscBool  isDepth, isGhost, isVTK, isDim;
+        PetscBool  isDepth, isGhost, isVTK, isDim, isCellType;
         DMLabel    label, labelNew;
         PetscInt   defVal;
         const char *name;
@@ -835,6 +835,8 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
         if (isDepth) continue;
         ierr = PetscStrcmp(name,"dim",&isDim);CHKERRQ(ierr);
         if (isDim) continue;
+        ierr = PetscStrcmp(name,"celltype",&isCellType);CHKERRQ(ierr);
+        if (isCellType) continue;
         ierr = PetscStrcmp(name,"ghost",&isGhost);CHKERRQ(ierr);
         if (isGhost) continue;
         ierr = PetscStrcmp(name,"vtk",&isVTK);CHKERRQ(ierr);
@@ -995,7 +997,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
 
       ierr = DMGetNumLabels(adaptFrom,&numLabels);CHKERRQ(ierr);
       for (l = 0; l < numLabels; l++) {
-        PetscBool  isDepth, isGhost, isVTK;
+        PetscBool  isDepth, isCellType, isGhost, isVTK;
         DMLabel    label, labelNew;
         PetscInt   defVal;
         const char *name;
@@ -1004,6 +1006,8 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
         ierr = DMGetLabelByNum(adaptFrom, l, &label);CHKERRQ(ierr);
         ierr = PetscStrcmp(name,"depth",&isDepth);CHKERRQ(ierr);
         if (isDepth) continue;
+        ierr = PetscStrcmp(name,"celltype",&isCellType);CHKERRQ(ierr);
+        if (isCellType) continue;
         ierr = PetscStrcmp(name,"ghost",&isGhost);CHKERRQ(ierr);
         if (isGhost) continue;
         ierr = PetscStrcmp(name,"vtk",&isVTK);CHKERRQ(ierr);
@@ -3226,12 +3230,17 @@ static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
   while (next) {
     DMLabel   baseLabel;
     DMLabel   label = next->label;
-    PetscBool isDepth, isGhost, isVTK, isSpmap;
+    PetscBool isDepth, isCellType, isGhost, isVTK, isSpmap;
     const char *name;
 
     ierr = PetscObjectGetName((PetscObject) label, &name);CHKERRQ(ierr);
     ierr = PetscStrcmp(name,"depth",&isDepth);CHKERRQ(ierr);
     if (isDepth) {
+      next = next->next;
+      continue;
+    }
+    ierr = PetscStrcmp(name,"celltype",&isCellType);CHKERRQ(ierr);
+    if (isCellType) {
       next = next->next;
       continue;
     }
@@ -3633,13 +3642,18 @@ static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex)
     while (next) {
       DMLabel    nextLabel = next->label;
       const char *name;
-      PetscBool  isDepth, isGhost, isVTK;
+      PetscBool  isDepth, isCellType, isGhost, isVTK;
       DMLabel    label;
       PetscInt   p;
 
       ierr = PetscObjectGetName((PetscObject) nextLabel, &name);CHKERRQ(ierr);
       ierr = PetscStrcmp(name,"depth",&isDepth);CHKERRQ(ierr);
       if (isDepth) {
+        next = next->next;
+        continue;
+      }
+      ierr = PetscStrcmp(name,"celltype",&isCellType);CHKERRQ(ierr);
+      if (isCellType) {
         next = next->next;
         continue;
       }
@@ -4343,7 +4357,7 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
     ierr = DMPlexSetTree(newPlex,parentSection,(PetscInt*)parents->array,(PetscInt*)childids->array);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&parentSection);CHKERRQ(ierr);
     ierr = PetscSFCreate(comm,&pointSF);CHKERRQ(ierr);
-    /* 
+    /*
        These arrays defining the sf are from the p4est library, but the code there shows the leaves being populated in increasing order.
        https://gitlab.com/petsc/petsc/merge_requests/2248#note_240186391
     */
@@ -4736,16 +4750,16 @@ static PetscErrorCode DMForestTransferVecFromBase_pforest(DM dm, Vec vecIn, Vec 
 
   ierr = DMGetLocalVector(dmIn,&vecOutLocal);CHKERRQ(ierr);
   { /* get degrees of freedom ordered onto dmIn */
-    PetscSF basetocoarse;
-    PetscInt bStart, bEnd, nroots;
-    PetscInt iStart, iEnd, nleaves, leaf;
-    PetscMPIInt rank;
-    PetscSFNode *remotes;
-    PetscSection secIn, secOut;
-    PetscInt    *remoteOffsets;
-    PetscSF      transferSF;
-    const PetscScalar  *inArray;
-    PetscScalar  *outArray;
+    PetscSF            basetocoarse;
+    PetscInt           bStart, bEnd, nroots;
+    PetscInt           iStart, iEnd, nleaves, leaf;
+    PetscMPIInt        rank;
+    PetscSFNode       *remotes;
+    PetscSection       secIn, secOut;
+    PetscInt          *remoteOffsets;
+    PetscSF            transferSF;
+    const PetscScalar *inArray;
+    PetscScalar       *outArray;
 
     ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)basec), &rank);CHKERRQ(ierr);
     ierr = DMPlexGetChart(basec, &bStart, &bEnd);CHKERRQ(ierr);

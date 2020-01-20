@@ -8,4 +8,5 @@ Labels:
   marker: 0 strata with value/size ()
   Face Sets: 0 strata with value/size ()
   depth: 3 strata with value/size (0 (129), 1 (276), 2 (111))
+  celltype: 3 strata with value/size (3 (111), 1 (276), 0 (129))
 Mesh with 111 cells, shape condition numbers: min = 2.26667, max = 2.26667, mean = 2.26667, stddev = 0.

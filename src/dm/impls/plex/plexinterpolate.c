@@ -54,24 +54,24 @@ static PetscErrorCode PetscSortSFNode(PetscInt n, PetscSFNode A[])
   DMPlexGetFaces_Internal - Gets groups of vertices that correspond to faces for the given cell
   This assumes that the mesh is not interpolated from the depth of point p to the vertices
 */
-PetscErrorCode DMPlexGetFaces_Internal(DM dm, PetscInt dim, PetscInt p, PetscInt *numFaces, PetscInt *faceSize, const PetscInt *faces[])
+PetscErrorCode DMPlexGetFaces_Internal(DM dm, PetscInt p, PetscInt *numFaces, PetscInt *faceSize, const PetscInt *faces[])
 {
   const PetscInt *cone = NULL;
-  PetscInt        coneSize;
+  DMPolytopeType  ct;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = DMPlexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
+  ierr = DMPlexGetCellType(dm, p, &ct);CHKERRQ(ierr);
   ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
-  ierr = DMPlexGetRawFaces_Internal(dm, dim, coneSize, cone, numFaces, faceSize, faces);CHKERRQ(ierr);
+  ierr = DMPlexGetRawFaces_Internal(dm, ct, cone, numFaces, faceSize, faces);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*
   DMPlexRestoreFaces_Internal - Restores the array
 */
-PetscErrorCode DMPlexRestoreFaces_Internal(DM dm, PetscInt dim, PetscInt p, PetscInt *numFaces, PetscInt *faceSize, const PetscInt *faces[])
+PetscErrorCode DMPlexRestoreFaces_Internal(DM dm, PetscInt p, PetscInt *numFaces, PetscInt *faceSize, const PetscInt *faces[])
 {
   PetscErrorCode  ierr;
 
@@ -83,7 +83,7 @@ PetscErrorCode DMPlexRestoreFaces_Internal(DM dm, PetscInt dim, PetscInt p, Pets
 /*
   DMPlexGetRawFaces_Internal - Gets groups of vertices that correspond to faces for the given cone
 */
-PetscErrorCode DMPlexGetRawFaces_Internal(DM dm, PetscInt dim, PetscInt coneSize, const PetscInt cone[], PetscInt *numFaces, PetscInt *faceSize, const PetscInt *faces[])
+PetscErrorCode DMPlexGetRawFaces_Internal(DM dm, DMPolytopeType ct, const PetscInt cone[], PetscInt *numFaces, PetscInt *faceSize, const PetscInt *faces[])
 {
   PetscInt       *facesTmp;
   PetscInt        maxConeSize, maxSupportSize;
@@ -91,13 +91,15 @@ PetscErrorCode DMPlexGetRawFaces_Internal(DM dm, PetscInt dim, PetscInt coneSize
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (faces && coneSize) PetscValidIntPointer(cone,4);
+  if (cone) PetscValidIntPointer(cone, 3);
   ierr = DMPlexGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
   if (faces) {ierr = DMGetWorkArray(dm, PetscSqr(PetscMax(maxConeSize, maxSupportSize)), MPIU_INT, &facesTmp);CHKERRQ(ierr);}
-  switch (dim) {
-  case 1:
-    switch (coneSize) {
-    case 2:
+  switch (ct) {
+    case DM_POLYTOPE_POINT:
+      if (numFaces) *numFaces = 0;
+      if (faceSize) *faceSize = 0;
+      break;
+    case DM_POLYTOPE_SEGMENT:
       if (faces) {
         facesTmp[0] = cone[0]; facesTmp[1] = cone[1];
         *faces = facesTmp;
@@ -105,13 +107,7 @@ PetscErrorCode DMPlexGetRawFaces_Internal(DM dm, PetscInt dim, PetscInt coneSize
       if (numFaces) *numFaces = 2;
       if (faceSize) *faceSize = 1;
       break;
-    default:
-      SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cone size %D not supported for dimension %D", coneSize, dim);
-    }
-    break;
-  case 2:
-    switch (coneSize) {
-    case 3:
+    case DM_POLYTOPE_TRIANGLE:
       if (faces) {
         facesTmp[0] = cone[0]; facesTmp[1] = cone[1];
         facesTmp[2] = cone[1]; facesTmp[3] = cone[2];
@@ -121,7 +117,7 @@ PetscErrorCode DMPlexGetRawFaces_Internal(DM dm, PetscInt dim, PetscInt coneSize
       if (numFaces) *numFaces = 3;
       if (faceSize) *faceSize = 2;
       break;
-    case 4:
+    case DM_POLYTOPE_QUADRILATERAL:
       /* Vertices follow right hand rule */
       if (faces) {
         facesTmp[0] = cone[0]; facesTmp[1] = cone[1];
@@ -133,23 +129,7 @@ PetscErrorCode DMPlexGetRawFaces_Internal(DM dm, PetscInt dim, PetscInt coneSize
       if (numFaces) *numFaces = 4;
       if (faceSize) *faceSize = 2;
       break;
-    default:
-      SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cone size %D not supported for dimension %D", coneSize, dim);
-    }
-    break;
-  case 3:
-    switch (coneSize) {
-    case 3:
-      if (faces) {
-        facesTmp[0] = cone[0]; facesTmp[1] = cone[1];
-        facesTmp[2] = cone[1]; facesTmp[3] = cone[2];
-        facesTmp[4] = cone[2]; facesTmp[5] = cone[0];
-        *faces = facesTmp;
-      }
-      if (numFaces) *numFaces = 3;
-      if (faceSize) *faceSize = 2;
-      break;
-    case 4:
+    case DM_POLYTOPE_TETRAHEDRON:
       /* Vertices of first face follow right hand rule and normal points away from last vertex */
       if (faces) {
         facesTmp[0] = cone[0]; facesTmp[1]  = cone[1]; facesTmp[2]  = cone[2];
@@ -161,7 +141,7 @@ PetscErrorCode DMPlexGetRawFaces_Internal(DM dm, PetscInt dim, PetscInt coneSize
       if (numFaces) *numFaces = 4;
       if (faceSize) *faceSize = 3;
       break;
-    case 8:
+    case DM_POLYTOPE_HEXAHEDRON:
       /*  7--------6
          /|       /|
         / |      / |
@@ -185,12 +165,7 @@ PetscErrorCode DMPlexGetRawFaces_Internal(DM dm, PetscInt dim, PetscInt coneSize
       if (numFaces) *numFaces = 6;
       if (faceSize) *faceSize = 4;
       break;
-    default:
-      SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cone size %D not supported for dimension %D", coneSize, dim);
-    }
-    break;
-  default:
-    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Dimension %D not supported", dim);
+    default: SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "No face description for cell type %s", DMPolytopeTypes[ct]);
   }
   PetscFunctionReturn(0);
 }
@@ -198,7 +173,7 @@ PetscErrorCode DMPlexGetRawFaces_Internal(DM dm, PetscInt dim, PetscInt coneSize
 /*
   DMPlexGetRawFacesHybrid_Internal - Gets groups of vertices that correspond to faces for the given cone using hybrid ordering (prisms)
 */
-static PetscErrorCode DMPlexGetRawFacesHybrid_Internal(DM dm, PetscInt dim, PetscInt coneSize, const PetscInt cone[], PetscInt *numFaces, PetscInt *numFacesNotH, PetscInt *faceSize, const PetscInt *faces[])
+static PetscErrorCode DMPlexGetRawFacesHybrid_Internal(DM dm, DMPolytopeType ct, const PetscInt cone[], PetscInt *numFaces, PetscInt *numFacesNotH, PetscInt *faceSize, const PetscInt *faces[])
 {
   PetscInt       *facesTmp;
   PetscInt        maxConeSize, maxSupportSize;
@@ -206,13 +181,11 @@ static PetscErrorCode DMPlexGetRawFacesHybrid_Internal(DM dm, PetscInt dim, Pets
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (faces && coneSize) PetscValidIntPointer(cone,4);
+  if (cone) PetscValidIntPointer(cone, 3);
   ierr = DMPlexGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
   if (faces) {ierr = DMGetWorkArray(dm, PetscSqr(PetscMax(maxConeSize, maxSupportSize)), MPIU_INT, &facesTmp);CHKERRQ(ierr);}
-  switch (dim) {
-  case 1:
-    switch (coneSize) {
-    case 2:
+  switch (ct) {
+    case DM_POLYTOPE_SEGMENT:
       if (faces) {
         facesTmp[0] = cone[0]; facesTmp[1] = cone[1];
         *faces = facesTmp;
@@ -221,13 +194,8 @@ static PetscErrorCode DMPlexGetRawFacesHybrid_Internal(DM dm, PetscInt dim, Pets
       if (numFacesNotH) *numFacesNotH = 2;
       if (faceSize)     *faceSize = 1;
       break;
-    default:
-      SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cone size %D not supported for dimension %D", coneSize, dim);
-    }
-    break;
-  case 2:
-    switch (coneSize) {
-    case 4:
+    case DM_POLYTOPE_QUADRILATERAL:
+    case DM_POLYTOPE_SEG_PRISM_TENSOR:
       if (faces) {
         facesTmp[0] = cone[0]; facesTmp[1] = cone[1];
         facesTmp[2] = cone[2]; facesTmp[3] = cone[3];
@@ -239,13 +207,20 @@ static PetscErrorCode DMPlexGetRawFacesHybrid_Internal(DM dm, PetscInt dim, Pets
       if (numFacesNotH) *numFacesNotH = 2;
       if (faceSize)     *faceSize = 2;
       break;
-    default:
-      SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cone size %D not supported for dimension %D", coneSize, dim);
-    }
-    break;
-  case 3:
-    switch (coneSize) {
-    case 6: /* triangular prism */
+    case DM_POLYTOPE_TRI_PRISM:
+      if (faces) {
+        facesTmp[0]  = cone[0]; facesTmp[1]  = cone[2]; facesTmp[2]  = cone[1]; facesTmp[3]  = -1;      /* Bottom */
+        facesTmp[4]  = cone[3]; facesTmp[5]  = cone[4]; facesTmp[6]  = cone[5]; facesTmp[7]  = -1;      /* Top */
+        facesTmp[8]  = cone[0]; facesTmp[9]  = cone[1]; facesTmp[10] = cone[4]; facesTmp[11] = cone[3]; /* Back left */
+        facesTmp[12] = cone[1]; facesTmp[13] = cone[2]; facesTmp[14] = cone[5]; facesTmp[15] = cone[4]; /* Back right */
+        facesTmp[16] = cone[2]; facesTmp[17] = cone[0]; facesTmp[18] = cone[3]; facesTmp[19] = cone[5]; /* Front */
+        *faces = facesTmp;
+      }
+      if (numFaces)     *numFaces = 5;
+      if (numFacesNotH) *numFacesNotH = 2;
+      if (faceSize)     *faceSize = -4;
+      break;
+    case DM_POLYTOPE_TRI_PRISM_TENSOR:
       if (faces) {
         facesTmp[0]  = cone[0]; facesTmp[1]  = cone[1]; facesTmp[2]  = cone[2]; facesTmp[3]  = -1;      /* Bottom */
         facesTmp[4]  = cone[3]; facesTmp[5]  = cone[4]; facesTmp[6]  = cone[5]; facesTmp[7]  = -1;      /* Top */
@@ -258,17 +233,12 @@ static PetscErrorCode DMPlexGetRawFacesHybrid_Internal(DM dm, PetscInt dim, Pets
       if (numFacesNotH) *numFacesNotH = 2;
       if (faceSize)     *faceSize = -4;
       break;
-    default:
-      SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cone size %D not supported for dimension %D", coneSize, dim);
-    }
-    break;
-  default:
-    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Dimension %D not supported", dim);
+    default: SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "No face description for cell type %s", DMPolytopeTypes[ct]);
   }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexRestoreRawFacesHybrid_Internal(DM dm, PetscInt dim, PetscInt coneSize, const PetscInt cone[], PetscInt *numFaces, PetscInt *numFacesNotH, PetscInt *faceSize, const PetscInt *faces[])
+static PetscErrorCode DMPlexRestoreRawFacesHybrid_Internal(DM dm, DMPolytopeType ct, const PetscInt cone[], PetscInt *numFaces, PetscInt *numFacesNotH, PetscInt *faceSize, const PetscInt *faces[])
 {
   PetscErrorCode  ierr;
 
@@ -277,17 +247,17 @@ static PetscErrorCode DMPlexRestoreRawFacesHybrid_Internal(DM dm, PetscInt dim, 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexGetFacesHybrid_Internal(DM dm, PetscInt dim, PetscInt p, PetscInt *numFaces, PetscInt *numFacesNotH, PetscInt *faceSize, const PetscInt *faces[])
+static PetscErrorCode DMPlexGetFacesHybrid_Internal(DM dm, PetscInt p, PetscInt *numFaces, PetscInt *numFacesNotH, PetscInt *faceSize, const PetscInt *faces[])
 {
   const PetscInt *cone = NULL;
-  PetscInt        coneSize;
+  DMPolytopeType  ct;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = DMPlexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
+  ierr = DMPlexGetCellType(dm, p, &ct);CHKERRQ(ierr);
   ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
-  ierr = DMPlexGetRawFacesHybrid_Internal(dm, dim, coneSize, cone, numFaces, numFacesNotH, faceSize, faces);CHKERRQ(ierr);
+  ierr = DMPlexGetRawFacesHybrid_Internal(dm, ct, cone, numFaces, numFacesNotH, faceSize, faces);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -332,14 +302,16 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
   pMax = pMax < 0 ? pEnd[cellDepth] : pMax;
   if (pMax < pEnd[cellDepth]) {
     const PetscInt *cellFaces, *cone;
+    DMPolytopeType  ct;
     PetscInt        numCellFacesT, faceSize, cf;
 
     /* First get normal cell face size (we now allow hybrid cells to meet normal cells on either hybrid or normal faces */
-    if (pStart[cellDepth] < pMax) {ierr = DMPlexGetFaces_Internal(dm, cellDim, pStart[cellDepth], NULL, &faceSizeAll, NULL);CHKERRQ(ierr);}
+    if (pStart[cellDepth] < pMax) {ierr = DMPlexGetFaces_Internal(dm, pStart[cellDepth], NULL, &faceSizeAll, NULL);CHKERRQ(ierr);}
 
+    ierr = DMPlexGetCellType(dm, pMax, &ct);CHKERRQ(ierr);
     ierr = DMPlexGetConeSize(dm, pMax, &coneSizeH);CHKERRQ(ierr);
     ierr = DMPlexGetCone(dm, pMax, &cone);CHKERRQ(ierr);
-    ierr = DMPlexGetRawFacesHybrid_Internal(dm, cellDim, coneSizeH, cone, &numCellFacesH, &numCellFacesT, &faceSize, &cellFaces);CHKERRQ(ierr);
+    ierr = DMPlexGetRawFacesHybrid_Internal(dm, ct, cone, &numCellFacesH, &numCellFacesT, &faceSize, &cellFaces);CHKERRQ(ierr);
     if (faceSize < 0) {
       PetscInt *sizes, minv, maxv;
 
@@ -373,9 +345,9 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
     } else { /* the size of the faces in hybrid cells is the same */
       faceSizeAll = faceSizeAllH = faceSizeAllT = faceSize;
     }
-    ierr = DMPlexRestoreRawFacesHybrid_Internal(dm, cellDim, coneSizeH, cone, &numCellFacesH, &numCellFacesT, &faceSize, &cellFaces);CHKERRQ(ierr);
+    ierr = DMPlexRestoreRawFacesHybrid_Internal(dm, ct, cone, &numCellFacesH, &numCellFacesT, &faceSize, &cellFaces);CHKERRQ(ierr);
   } else if (pEnd[cellDepth] > pStart[cellDepth]) {
-    ierr = DMPlexGetFaces_Internal(dm, cellDim, pStart[cellDepth], NULL, &faceSizeAll, NULL);CHKERRQ(ierr);
+    ierr = DMPlexGetFaces_Internal(dm, pStart[cellDepth], NULL, &faceSizeAll, NULL);CHKERRQ(ierr);
     faceSizeAllH = faceSizeAllT = faceSizeAll;
   }
   if (faceSizeAll > 4) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Do not support interpolation of meshes with faces of %D vertices", faceSizeAll);
@@ -394,17 +366,19 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
       PetscInt        numCellFaces, faceSize, faceSizeInc, faceSizeCheck, cf;
 
       if (c < pMax) {
-        ierr = DMPlexGetFaces_Internal(dm, cellDim, c, &numCellFaces, &faceSize, &cellFaces);CHKERRQ(ierr);
+        ierr = DMPlexGetFaces_Internal(dm, c, &numCellFaces, &faceSize, &cellFaces);CHKERRQ(ierr);
         if (faceSize != faceSizeAll) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistent face for cell %D of size %D != %D", c, faceSize, faceSizeAll);
         faceSizeCheck = faceSizeAll;
       } else { /* Hybrid cell */
         const PetscInt *cone;
+        DMPolytopeType  ct;
         PetscInt        numCellFacesN, coneSize;
 
+        ierr = DMPlexGetCellType(dm, c, &ct);CHKERRQ(ierr);
         ierr = DMPlexGetConeSize(dm, c, &coneSize);CHKERRQ(ierr);
         if (coneSize != coneSizeH) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unexpected hybrid coneSize %D != %D", coneSize, coneSizeH);
         ierr = DMPlexGetCone(dm, c, &cone);CHKERRQ(ierr);
-        ierr = DMPlexGetRawFacesHybrid_Internal(dm, cellDim, coneSize, cone, &numCellFaces, &numCellFacesN, &faceSize, &cellFaces);CHKERRQ(ierr);
+        ierr = DMPlexGetRawFacesHybrid_Internal(dm, ct, cone, &numCellFaces, &numCellFacesN, &faceSize, &cellFaces);CHKERRQ(ierr);
         if (numCellFaces != numCellFacesH) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unexpected numCellFaces %D != %D for hybrid cell %D", numCellFaces, numCellFacesH, c);
         faceSize = PetscMax(faceSize, -faceSize);
         if (faceSize > 4) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Do not support interpolation of meshes with faces of %D vertices", faceSize);
@@ -440,9 +414,9 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
         }
       }
       if (c < pMax) {
-        ierr = DMPlexRestoreFaces_Internal(dm, cellDim, c, &numCellFaces, &faceSize, &cellFaces);CHKERRQ(ierr);
+        ierr = DMPlexRestoreFaces_Internal(dm, c, &numCellFaces, &faceSize, &cellFaces);CHKERRQ(ierr);
       } else {
-        ierr = DMPlexRestoreRawFacesHybrid_Internal(dm, cellDim, coneSizeH, NULL, NULL, NULL, NULL, &cellFaces);CHKERRQ(ierr);
+        ierr = DMPlexRestoreRawFacesHybrid_Internal(dm, DM_POLYTOPE_UNKNOWN, NULL, NULL, NULL, NULL, &cellFaces);CHKERRQ(ierr);
       }
     }
   }
@@ -451,11 +425,12 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
   /* Second pass for hybrid meshes: number hybrid faces */
   for (c = pMax; c < pEnd[cellDepth]; ++c) {
     const PetscInt *cellFaces, *cone;
-    PetscInt        numCellFaces, numCellFacesN, faceSize, cf, coneSize;
+    DMPolytopeType  ct;
+    PetscInt        numCellFaces, numCellFacesN, faceSize, cf;
 
-    ierr = DMPlexGetConeSize(dm, c, &coneSize);CHKERRQ(ierr);
+    ierr = DMPlexGetCellType(dm, c, &ct);CHKERRQ(ierr);
     ierr = DMPlexGetCone(dm, c, &cone);CHKERRQ(ierr);
-    ierr = DMPlexGetRawFacesHybrid_Internal(dm, cellDim, coneSize, cone, &numCellFaces, &numCellFacesN, &faceSize, &cellFaces);CHKERRQ(ierr);
+    ierr = DMPlexGetRawFacesHybrid_Internal(dm, ct, cone, &numCellFaces, &numCellFacesN, &faceSize, &cellFaces);CHKERRQ(ierr);
     if (numCellFaces != numCellFacesH) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unexpected hybrid numCellFaces %D != %D", numCellFaces, numCellFacesH);
     faceSize = PetscMax(faceSize, -faceSize);
     for (cf = numCellFacesN; cf < numCellFaces; ++cf) { /* These are the hybrid faces */
@@ -481,7 +456,7 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
       ierr = PetscHashIJKLPut(faceTable, key, &iter, &missing);CHKERRQ(ierr);
       if (missing) {ierr = PetscHashIJKLIterSet(faceTable, iter, face++);CHKERRQ(ierr);}
     }
-    ierr = DMPlexRestoreRawFacesHybrid_Internal(dm, cellDim, coneSize, cone, &numCellFaces, &numCellFacesN, &faceSize, &cellFaces);CHKERRQ(ierr);
+    ierr = DMPlexRestoreRawFacesHybrid_Internal(dm, ct, cone, &numCellFaces, &numCellFacesN, &faceSize, &cellFaces);CHKERRQ(ierr);
   }
   faceH = face - pEnd[faceDepth];
   if (faceH) {
@@ -525,9 +500,9 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
       for (p = pStart[d]; p < pEnd[d]; ++p) {
         /* Number of cell faces may be different from number of cell vertices*/
         if (p < pMax) {
-          ierr = DMPlexGetFaces_Internal(dm, cellDim, p, &coneSize, NULL, NULL);CHKERRQ(ierr);
+          ierr = DMPlexGetFaces_Internal(dm, p, &coneSize, NULL, NULL);CHKERRQ(ierr);
         } else {
-          ierr = DMPlexGetFacesHybrid_Internal(dm, cellDim, p, &coneSize, NULL, NULL, NULL);CHKERRQ(ierr);
+          ierr = DMPlexGetFacesHybrid_Internal(dm, p, &coneSize, NULL, NULL, NULL);CHKERRQ(ierr);
         }
         ierr = DMPlexSetConeSize(idm, p, coneSize);CHKERRQ(ierr);
       }
@@ -563,16 +538,18 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
       PetscInt        numCellFaces, faceSize, faceSizeInc, cf;
 
       if (c < pMax) {
-        ierr = DMPlexGetFaces_Internal(dm, cellDim, c, &numCellFaces, &faceSize, &cellFaces);CHKERRQ(ierr);
+        ierr = DMPlexGetFaces_Internal(dm, c, &numCellFaces, &faceSize, &cellFaces);CHKERRQ(ierr);
         if (faceSize != faceSizeAll) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistent face for cell %D of size %D != %D", c, faceSize, faceSizeAll);
       } else {
         const PetscInt *cone;
+        DMPolytopeType  ct;
         PetscInt        numCellFacesN, coneSize;
 
+        ierr = DMPlexGetCellType(dm, c, &ct);CHKERRQ(ierr);
         ierr = DMPlexGetConeSize(dm, c, &coneSize);CHKERRQ(ierr);
         if (coneSize != coneSizeH) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unexpected hybrid coneSize %D != %D", coneSize, coneSizeH);
         ierr = DMPlexGetCone(dm, c, &cone);CHKERRQ(ierr);
-        ierr = DMPlexGetRawFacesHybrid_Internal(dm, cellDim, coneSize, cone, &numCellFaces, &numCellFacesN, &faceSize, &cellFaces);CHKERRQ(ierr);
+        ierr = DMPlexGetRawFacesHybrid_Internal(dm, ct, cone, &numCellFaces, &numCellFacesN, &faceSize, &cellFaces);CHKERRQ(ierr);
         if (numCellFaces != numCellFacesH) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unexpected numCellFaces %D != %D for hybrid cell %D", numCellFaces, numCellFacesH, c);
         faceSize = PetscMax(faceSize, -faceSize);
         if (faceSize > 4) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Do not support interpolation of meshes with faces of %D vertices", faceSize);
@@ -631,20 +608,22 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
         }
       }
       if (c < pMax) {
-        ierr = DMPlexRestoreFaces_Internal(dm, cellDim, c, &numCellFaces, &faceSize, &cellFaces);CHKERRQ(ierr);
+        ierr = DMPlexRestoreFaces_Internal(dm, c, &numCellFaces, &faceSize, &cellFaces);CHKERRQ(ierr);
       } else {
-        ierr = DMPlexRestoreRawFacesHybrid_Internal(dm, cellDim, coneSizeH, NULL, NULL, NULL, NULL, &cellFaces);CHKERRQ(ierr);
+        ierr = DMPlexRestoreRawFacesHybrid_Internal(dm, DM_POLYTOPE_UNKNOWN, NULL, NULL, NULL, NULL, &cellFaces);CHKERRQ(ierr);
       }
     }
   }
   /* Second pass for hybrid meshes: orient hybrid faces */
   for (c = pMax; c < pEnd[cellDepth]; ++c) {
     const PetscInt *cellFaces, *cone;
-    PetscInt        numCellFaces, numCellFacesN, faceSize, cf, coneSize;
+    DMPolytopeType  ct;
+    PetscInt        numCellFaces, numCellFacesN, faceSize, coneSize, cf;
 
+    ierr = DMPlexGetCellType(dm, c, &ct);CHKERRQ(ierr);
     ierr = DMPlexGetConeSize(dm, c, &coneSize);CHKERRQ(ierr);
     ierr = DMPlexGetCone(dm, c, &cone);CHKERRQ(ierr);
-    ierr = DMPlexGetRawFacesHybrid_Internal(dm, cellDim, coneSize, cone, &numCellFaces, &numCellFacesN, &faceSize, &cellFaces);CHKERRQ(ierr);
+    ierr = DMPlexGetRawFacesHybrid_Internal(dm, ct, cone, &numCellFaces, &numCellFacesN, &faceSize, &cellFaces);CHKERRQ(ierr);
     if (numCellFaces != numCellFacesH) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unexpected hybrid numCellFaces %D != %D", numCellFaces, numCellFacesH);
     faceSize = PetscMax(faceSize, -faceSize);
     for (cf = numCellFacesN; cf < numCellFaces; ++cf) { /* These are the hybrid faces */
@@ -728,7 +707,7 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
         ierr = DMPlexInsertConeOrientation(idm, c, cf, ornt);CHKERRQ(ierr);
       }
     }
-    ierr = DMPlexRestoreRawFacesHybrid_Internal(dm, cellDim, coneSize, cone, &numCellFaces, &numCellFacesN, &faceSize, &cellFaces);CHKERRQ(ierr);
+    ierr = DMPlexRestoreRawFacesHybrid_Internal(dm, ct, cone, &numCellFaces, &numCellFacesN, &faceSize, &cellFaces);CHKERRQ(ierr);
   }
   if (face != pEnd[faceDepth]) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of faces %D should be %D", face-pStart[faceDepth], pEnd[faceDepth]-pStart[faceDepth]);
   ierr = PetscFree2(pStart,pEnd);CHKERRQ(ierr);

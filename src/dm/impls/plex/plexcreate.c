@@ -2237,6 +2237,9 @@ static PetscErrorCode DMPlexSwap_Static(DM dmA, DM dmB)
   depthTmp  = dmA->depthLabel;
   dmA->depthLabel = dmB->depthLabel;
   dmB->depthLabel = depthTmp;
+  depthTmp  = dmA->celltypeLabel;
+  dmA->celltypeLabel = dmB->celltypeLabel;
+  dmB->celltypeLabel = depthTmp;
   tmpI         = dmA->levelup;
   dmA->levelup = dmB->levelup;
   dmB->levelup = tmpI;
@@ -2557,6 +2560,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
 
   mesh->regularRefinement   = PETSC_FALSE;
   mesh->depthState          = -1;
+  mesh->celltypeState       = -1;
   mesh->globalVertexNumbers = NULL;
   mesh->globalCellNumbers   = NULL;
   mesh->anchorSection       = NULL;

@@ -6,6 +6,7 @@ Distributed Mesh in 2 dimensions:
   2-cells: 8 8 8 8 4
 Labels:
   depth: 3 strata with value/size (0 (15), 1 (22), 2 (8))
+  celltype: 3 strata with value/size (3 (8), 0 (15), 1 (22))
   marker: 2 strata with value/size (1 (9), 4 (5))
   Face Sets: 2 strata with value/size (1 (6), 4 (3))
   markerBottom: 1 strata with value/size (1 (9))
