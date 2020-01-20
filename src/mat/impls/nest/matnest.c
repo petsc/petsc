@@ -412,6 +412,29 @@ static PetscErrorCode MatDestroy_Nest(Mat A)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatMissingDiagonal_Nest(Mat mat,PetscBool *missing,PetscInt *dd)
+{
+  Mat_Nest       *vs = (Mat_Nest*)mat->data;
+  PetscInt       i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (dd) *dd = 0;
+  if (!vs->nr) {
+    *missing = PETSC_TRUE;
+    PetscFunctionReturn(0);
+  }
+  *missing = PETSC_FALSE;
+  for (i = 0; i < vs->nr && !(*missing); i++) {
+    *missing = PETSC_TRUE;
+    if (vs->m[i][i]) {
+      ierr = MatMissingDiagonal(vs->m[i][i],missing,NULL);CHKERRQ(ierr);
+      if (*missing && dd) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"First missing entry not yet implemented");
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode MatAssemblyBegin_Nest(Mat A,MatAssemblyType type)
 {
   Mat_Nest       *vs = (Mat_Nest*)A->data;
@@ -1073,7 +1096,7 @@ PetscErrorCode MatNestSetSubMat_Nest(Mat A,PetscInt idxm,PetscInt jdxm,Mat mat)
 
  Level: developer
 
-.seealso: MatNestSetSubMats(), MatNestGetSubMats(), MatNestGetLocalISs(), MATNEST, MatNestCreate(), 
+.seealso: MatNestSetSubMats(), MatNestGetSubMats(), MatNestGetLocalISs(), MATNEST, MatNestCreate(),
           MatNestGetSubMat(), MatNestGetISs(), MatNestGetSize()
 @*/
 PetscErrorCode  MatNestSetSubMat(Mat A,PetscInt idxm,PetscInt jdxm,Mat sub)
@@ -1119,7 +1142,7 @@ $   call MatNestGetSubMats(A, M, N, mat, ierr)
 
  Level: developer
 
-.seealso: MatNestGetSize(), MatNestGetSubMat(), MatNestGetLocalISs(), MATNEST, MatNestCreate(), 
+.seealso: MatNestGetSize(), MatNestGetSubMat(), MatNestGetLocalISs(), MATNEST, MatNestCreate(),
           MatNestSetSubMats(), MatNestGetISs(), MatNestSetSubMat()
 @*/
 PetscErrorCode  MatNestGetSubMats(Mat A,PetscInt *M,PetscInt *N,Mat ***mat)
@@ -1351,9 +1374,10 @@ PetscErrorCode MatNestSetSubMats_Nest(Mat A,PetscInt nr,const IS is_row[],PetscI
     }
   }
   if (!cong) {
-    A->ops->getdiagonal = NULL;
-    A->ops->shift       = NULL;
-    A->ops->diagonalset = NULL;
+    A->ops->missingdiagonal = NULL;
+    A->ops->getdiagonal     = NULL;
+    A->ops->shift           = NULL;
+    A->ops->diagonalset     = NULL;
   }
 
   ierr = PetscCalloc2(nr,&s->left,nc,&s->right);CHKERRQ(ierr);
@@ -1670,7 +1694,7 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A,PetscInt nr,const IS is_row[
 
    Level: advanced
 
-.seealso: MatCreate(), VecCreateNest(), DMCreateMatrix(), MATNEST, MatNestSetSubMat(), 
+.seealso: MatCreate(), VecCreateNest(), DMCreateMatrix(), MATNEST, MatNestSetSubMat(),
           MatNestGetSubMat(), MatNestGetLocalISs(), MatNestGetSize(),
           MatNestGetISs(), MatNestSetSubMats(), MatNestGetSubMats()
 @*/
@@ -2126,6 +2150,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Nest(Mat A)
   A->ops->diagonalset           = MatDiagonalSet_Nest;
   A->ops->setrandom             = MatSetRandom_Nest;
   A->ops->hasoperation          = MatHasOperation_Nest;
+  A->ops->missingdiagonal       = MatMissingDiagonal_Nest;
 
   A->spptr        = 0;
   A->assembled    = PETSC_FALSE;

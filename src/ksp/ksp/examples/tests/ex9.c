@@ -40,6 +40,7 @@ int main(int argc, char *argv[])
    Vec            x,b;
    IS             f[2];
    PetscInt       i,j,rstart,rend;
+   PetscBool      missA,missM;
    PetscErrorCode ierr;
 
    ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
@@ -58,6 +59,14 @@ int main(int argc, char *argv[])
    }
    ierr = MatCreateNest(PetscObjectComm((PetscObject)M),2,f,2,f,&sA[0][0],&A);CHKERRQ(ierr);
    ierr = MatCreateNest(PetscObjectComm((PetscObject)M),2,f,2,f,&sP[0][0],&P);CHKERRQ(ierr);
+
+   /* Tests MatMissingDiagonal_Nest */
+   ierr = MatMissingDiagonal(M,&missM,NULL);CHKERRQ(ierr);
+   ierr = MatMissingDiagonal(A,&missA,NULL);CHKERRQ(ierr);
+   if (missM != missA) {
+     ierr = PetscPrintf(PETSC_COMM_WORLD,"Unexpected %s != %s\n",missM ? "true": "false",missA ? "true" : "false");CHKERRQ(ierr);
+   }
+
    ierr = MatDestroy(&M);CHKERRQ(ierr);
 
    ierr = KSPCreate(PetscObjectComm((PetscObject)A),&ksp);CHKERRQ(ierr);
