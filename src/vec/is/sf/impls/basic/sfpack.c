@@ -28,57 +28,46 @@
 
    Arguments of the macro:
    +Type      Type of the basic data in an entry, i.e., int, PetscInt, PetscReal etc. It is not the type of an entry.
-   .BS        Block size for vectorization. It is a factor of bs.
+   .BS        Block size for vectorization. It is a factor of bsz.
    -EQ        (bs == BS) ? 1 : 0. EQ is a compile-time const to help compiler optimizations. See below.
 
    Arguments of the Pack routine:
    +count     Number of indices in idx[].
-   .start     If indices are contiguous, it is the first index; otherwise, not used.
-   .idx       Indices of entries to packed. NULL means contiguous indices, that is [start,start+count).
+   .start     When opt and idx are NULL, it means indices are contiguous & start is the first index; otherwise, not used.
+   .opt       Per-pack optimization plan. NULL means no such plan.
+   .idx       Indices of entries to packed.
    .link      Provide a context for the current call, such as link->bs, number of basic types in an entry. Ex. if unit is MPI_2INT, then bs=2 and the basic type is int.
-   .opt       Per-remote pack optimization plan. NULL means no such plan.
    .unpacked  Address of the unpacked data. The entries will be packed are unpacked[idx[i]],for i in [0,count).
    -packed    Address of the packed data.
  */
 #define DEF_PackFunc(Type,BS,EQ) \
-  static PetscErrorCode CPPJoin4(Pack,Type,BS,EQ)(PetscSFLink link,PetscInt count,PetscInt start,const PetscInt *idx,PetscSFPackOpt opt,const void *unpacked,void *packed) \
+  static PetscErrorCode CPPJoin4(Pack,Type,BS,EQ)(PetscSFLink link,PetscInt count,PetscInt start,PetscSFPackOpt opt,const PetscInt *idx,const void *unpacked,void *packed) \
   {                                                                                                          \
     PetscErrorCode ierr;                                                                                     \
     const Type     *u = (const Type*)unpacked,*u2;                                                           \
     Type           *p = (Type*)packed,*p2;                                                                   \
-    PetscInt       i,j,k,l,r,step,bs=link->bs;                                                               \
-    const PetscInt *idx2,M = (EQ) ? 1 : bs/BS; /* If EQ, then M=1 enables compiler's const-propagation */    \
+    PetscInt       i,j,k,X,Y,r,bs=link->bs;                                                                  \
+    const PetscInt M = (EQ) ? 1 : bs/BS; /* If EQ, then M=1 enables compiler's const-propagation */          \
     const PetscInt MBS = M*BS; /* MBS=bs. We turn MBS into a compile time const when EQ=1. */                \
     PetscFunctionBegin;                                                                                      \
-    if (!idx) {ierr = PetscArraycpy(p,u+start*bs,MBS*count);CHKERRQ(ierr);}  /* Indices are contiguous */    \
-    else if (!opt) { /* No optimizations available */                                                        \
+    if (!idx) {ierr = PetscArraycpy(p,u+start*MBS,MBS*count);CHKERRQ(ierr);}/* idx[] are contiguous */       \
+    else if (opt) { /* has optimizations available */                                                        \
+      p2 = p;                                                                                                \
+      for (r=0; r<opt->n; r++) {                                                                             \
+        u2 = u + opt->start[r]*MBS;                                                                          \
+        X  = opt->X[r];                                                                                      \
+        Y  = opt->Y[r];                                                                                      \
+        for (k=0; k<opt->dz[r]; k++)                                                                         \
+          for (j=0; j<opt->dy[r]; j++) {                                                                     \
+            ierr = PetscArraycpy(p2,u2+(X*Y*k+X*j)*MBS,opt->dx[r]*MBS);CHKERRQ(ierr);                        \
+            p2  += opt->dx[r]*MBS;                                                                           \
+          }                                                                                                  \
+      }                                                                                                      \
+    } else {                                                                                                 \
       for (i=0; i<count; i++)                                                                                \
         for (j=0; j<M; j++)     /* Decent compilers should eliminate this loop when M = const 1 */           \
           for (k=0; k<BS; k++)  /* Compiler either unrolls (BS=1) or vectorizes (BS=2,4,8,etc) this loop */  \
             p[i*MBS+j*BS+k] = u[idx[i]*MBS+j*BS+k];                                                          \
-    } else {                                                                                                 \
-      for (r=0; r<opt->n; r++) {                                                                             \
-        p2  = p + opt->offset[r]*MBS;                                                                        \
-        if (opt->type[r] == PETSCSF_PACKOPT_NONE) {                                                          \
-          idx2 = idx + opt->offset[r];                                                                       \
-          for (i=0; i<opt->offset[r+1]-opt->offset[r]; i++)                                                  \
-            for (j=0; j<M; j++)                                                                              \
-              for (k=0; k<BS; k++)                                                                           \
-                p2[i*MBS+j*BS+k] = u[idx2[i]*MBS+j*BS+k];                                                    \
-        } else if (opt->type[r] == PETSCSF_PACKOPT_MULTICOPY) {                                              \
-          for (i=opt->copy_offset[r]; i<opt->copy_offset[r+1]; i++) {                                        \
-            u2   = u + idx[opt->copy_start[i]]*MBS;                                                          \
-            l    = opt->copy_length[i]*MBS; /* length in basic type such as MPI_INT */                       \
-            ierr = PetscArraycpy(p2,u2,l);CHKERRQ(ierr);                                                     \
-            p2  += l;                                                                                        \
-          }                                                                                                  \
-        } else if (opt->type[r] == PETSCSF_PACKOPT_STRIDE) {                                                 \
-          u2   = u + idx[opt->offset[r]]*MBS;                                                                \
-          step = opt->stride_step[r];                                                                        \
-          for (i=0; i<opt->stride_n[r]; i++)                                                                 \
-            for (j=0; j<MBS; j++) p2[i*MBS+j] = u2[i*step*MBS+j];                                            \
-        } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unknown SFPack optimzation type %D",opt->type[r]);   \
-      }                                                                                                      \
     }                                                                                                        \
     PetscFunctionReturn(0);                                                                                  \
   }
@@ -95,45 +84,33 @@
    This macro is not combined with DEF_ActionAndOp because we want to use memcpy in this macro.
  */
 #define DEF_UnpackFunc(Type,BS,EQ)               \
-  static PetscErrorCode CPPJoin4(UnpackAndInsert,Type,BS,EQ)(PetscSFLink link,PetscInt count,PetscInt start,const PetscInt *idx,PetscSFPackOpt opt,void *unpacked,const void *packed) \
+  static PetscErrorCode CPPJoin4(UnpackAndInsert,Type,BS,EQ)(PetscSFLink link,PetscInt count,PetscInt start,PetscSFPackOpt opt,const PetscInt *idx,void *unpacked,const void *packed) \
   {                                                                                                          \
     PetscErrorCode ierr;                                                                                     \
     Type           *u = (Type*)unpacked,*u2;                                                                 \
-    const Type     *p = (const Type*)packed,*p2;                                                             \
-    PetscInt       i,j,k,l,r,step,bs=link->bs;                                                               \
-    const PetscInt *idx2,M = (EQ) ? 1 : bs/BS; /* If EQ, then M=1 enables compiler's const-propagation */    \
+    const Type     *p = (const Type*)packed;                                                                 \
+    PetscInt       i,j,k,X,Y,r,bs=link->bs;                                                                  \
+    const PetscInt M = (EQ) ? 1 : bs/BS; /* If EQ, then M=1 enables compiler's const-propagation */          \
     const PetscInt MBS = M*BS; /* MBS=bs. We turn MBS into a compile time const when EQ=1. */                \
     PetscFunctionBegin;                                                                                      \
     if (!idx) {                                                                                              \
-      u2 = u + start*bs;                                                                                     \
-      if (u2 != p) {ierr = PetscArraycpy(u2,p,count*MBS);CHKERRQ(ierr);}                                     \
-    } else if (!opt) { /* No optimizations available */                                                      \
+      u += start*MBS;                                                                                        \
+      if (u != p) {ierr = PetscArraycpy(u,p,count*MBS);CHKERRQ(ierr);}                                       \
+    } else if (opt) { /* has optimizations available */                                                      \
+      for (r=0; r<opt->n; r++) {                                                                             \
+        u2 = u + opt->start[r]*MBS;                                                                          \
+        X  = opt->X[r];                                                                                      \
+        Y  = opt->Y[r];                                                                                      \
+        for (k=0; k<opt->dz[r]; k++)                                                                         \
+          for (j=0; j<opt->dy[r]; j++) {                                                                     \
+            ierr = PetscArraycpy(u2+(X*Y*k+X*j)*MBS,p,opt->dx[r]*MBS);CHKERRQ(ierr);                         \
+            p   += opt->dx[r]*MBS;                                                                           \
+          }                                                                                                  \
+      }                                                                                                      \
+    } else {                                                                                                 \
       for (i=0; i<count; i++)                                                                                \
         for (j=0; j<M; j++)                                                                                  \
           for (k=0; k<BS; k++) u[idx[i]*MBS+j*BS+k] = p[i*MBS+j*BS+k];                                       \
-    } else {                                                                                                 \
-      for (r=0; r<opt->n; r++) {                                                                             \
-        p2 = p + opt->offset[r]*MBS;                                                                         \
-        if (opt->type[r] == PETSCSF_PACKOPT_NONE) {                                                          \
-          idx2 = idx + opt->offset[r];                                                                       \
-          for (i=0; i<opt->offset[r+1]-opt->offset[r]; i++)                                                  \
-            for (j=0; j<M; j++)                                                                              \
-              for (k=0; k<BS; k++) u[idx2[i]*MBS+j*BS+k] = p2[i*MBS+j*BS+k];                                 \
-        } else if (opt->type[r] == PETSCSF_PACKOPT_MULTICOPY) {                                              \
-          for (i=opt->copy_offset[r]; i<opt->copy_offset[r+1]; i++) { /* i-th piece */                       \
-            u2 = u + idx[opt->copy_start[i]]*MBS;                                                            \
-            l  = opt->copy_length[i]*MBS;                                                                    \
-            ierr = PetscArraycpy(u2,p2,l);CHKERRQ(ierr);                                                     \
-            p2 += l;                                                                                         \
-          }                                                                                                  \
-        } else if (opt->type[r] == PETSCSF_PACKOPT_STRIDE) {                                                 \
-          u2   = u + idx[opt->offset[r]]*MBS;                                                                \
-          step = opt->stride_step[r];                                                                        \
-          for (i=0; i<opt->stride_n[r]; i++)                                                                 \
-            for (j=0; j<M; j++)                                                                              \
-              for (k=0; k<BS; k++) u2[i*step*MBS+j*BS+k] = p2[i*MBS+j*BS+k];                                 \
-        } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unknown SFPack optimzation type %D",opt->type[r]);   \
-      }                                                                                                      \
     }                                                                                                        \
     PetscFunctionReturn(0);                                                                                  \
   }
@@ -149,137 +126,114 @@
   .OpApply    Macro defining application of the op. Could be OP_BINARY, OP_FUNCTION, OP_LXOR
  */
 #define DEF_UnpackAndOp(Type,BS,EQ,Opname,Op,OpApply) \
-  static PetscErrorCode CPPJoin4(UnpackAnd##Opname,Type,BS,EQ)(PetscSFLink link,PetscInt count,PetscInt start,const PetscInt *idx,PetscSFPackOpt opt,void *unpacked,const void *packed) \
+  static PetscErrorCode CPPJoin4(UnpackAnd##Opname,Type,BS,EQ)(PetscSFLink link,PetscInt count,PetscInt start,PetscSFPackOpt opt,const PetscInt *idx,void *unpacked,const void *packed) \
   {                                                                                                          \
     Type           *u = (Type*)unpacked,*u2;                                                                 \
-    const Type     *p = (const Type*)packed,*p2;                                                             \
-    PetscInt       i,j,k,l,r,step,bs=link->bs;                                                               \
-    const PetscInt *idx2,M = (EQ) ? 1 : bs/BS; /* If EQ, then M=1 enables compiler's const-propagation */    \
+    const Type     *p = (const Type*)packed;                                                                 \
+    PetscInt       i,j,k,X,Y,r,bs=link->bs;                                                                  \
+    const PetscInt M = (EQ) ? 1 : bs/BS; /* If EQ, then M=1 enables compiler's const-propagation */          \
     const PetscInt MBS = M*BS; /* MBS=bs. We turn MBS into a compile time const when EQ=1. */                \
     PetscFunctionBegin;                                                                                      \
     if (!idx) {                                                                                              \
-      u += start*bs;                                                                                         \
+      u += start*MBS;                                                                                        \
       for (i=0; i<count; i++)                                                                                \
         for (j=0; j<M; j++)                                                                                  \
           for (k=0; k<BS; k++)                                                                               \
             OpApply(Op,u[i*MBS+j*BS+k],p[i*MBS+j*BS+k]);                                                     \
-    } else if (!opt) { /* No optimizations available */                                                      \
+    } else if (opt) { /* idx[] has patterns */                                                               \
+      for (r=0; r<opt->n; r++) {                                                                             \
+        u2 = u + opt->start[r]*MBS;                                                                          \
+        X  = opt->X[r];                                                                                      \
+        Y  = opt->Y[r];                                                                                      \
+        for (k=0; k<opt->dz[r]; k++)                                                                         \
+          for (j=0; j<opt->dy[r]; j++) {                                                                     \
+            for (i=0; i<opt->dx[r]*MBS; i++) OpApply(Op,u2[(X*Y*k+X*j)*MBS+i],p[i]);                         \
+            p += opt->dx[r]*MBS;                                                                             \
+          }                                                                                                  \
+      }                                                                                                      \
+    } else {                                                                                                 \
       for (i=0; i<count; i++)                                                                                \
         for (j=0; j<M; j++)                                                                                  \
           for (k=0; k<BS; k++)                                                                               \
-              OpApply(Op,u[idx[i]*MBS+j*BS+k],p[i*MBS+j*BS+k]);                                              \
-    } else {                                                                                                 \
-      for (r=0; r<opt->n; r++) {                                                                             \
-        p2 = p + opt->offset[r]*MBS;                                                                         \
-        if (opt->type[r] == PETSCSF_PACKOPT_NONE) {                                                          \
-          idx2 = idx + opt->offset[r];                                                                       \
-          for (i=0; i<opt->offset[r+1]-opt->offset[r]; i++)                                                  \
-            for (j=0; j<M; j++)                                                                              \
-              for (k=0; k<BS; k++)                                                                           \
-                OpApply(Op,u[idx2[i]*MBS+j*BS+k],p2[i*MBS+j*BS+k]);                                          \
-        } else if (opt->type[r] == PETSCSF_PACKOPT_MULTICOPY) {                                              \
-          for (i=opt->copy_offset[r]; i<opt->copy_offset[r+1]; i++) { /* i-th piece */                       \
-            u2 = u + idx[opt->copy_start[i]]*MBS;                                                            \
-            l  = opt->copy_length[i]*MBS;                                                                    \
-            for (j=0; j<l; j++) OpApply(Op,u2[j],p2[j]);                                                     \
-            p2 += l;                                                                                         \
-          }                                                                                                  \
-        } else if (opt->type[r] == PETSCSF_PACKOPT_STRIDE) {                                                 \
-          u2   = u + idx[opt->offset[r]]*MBS;                                                                \
-          step = opt->stride_step[r];                                                                        \
-          for (i=0; i<opt->stride_n[r]; i++)                                                                 \
-            for (j=0; j<M; j++)                                                                              \
-              for (k=0; k<BS; k++)                                                                           \
-                OpApply(Op,u2[i*step*MBS+j*BS+k],p2[i*MBS+j*BS+k]);                                          \
-        } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unknown SFPack optimzation type %D",opt->type[r]);   \
-      }                                                                                                      \
+            OpApply(Op,u[idx[i]*MBS+j*BS+k],p[i*MBS+j*BS+k]);                                                \
     }                                                                                                        \
     PetscFunctionReturn(0);                                                                                  \
   }
 
 #define DEF_FetchAndOp(Type,BS,EQ,Opname,Op,OpApply) \
-  static PetscErrorCode CPPJoin4(FetchAnd##Opname,Type,BS,EQ)(PetscSFLink link,PetscInt count,PetscInt start,const PetscInt *idx,PetscSFPackOpt opt,void *unpacked,void *packed) \
+  static PetscErrorCode CPPJoin4(FetchAnd##Opname,Type,BS,EQ)(PetscSFLink link,PetscInt count,PetscInt start,PetscSFPackOpt opt,const PetscInt *idx,void *unpacked,void *packed) \
   {                                                                                                          \
-    Type           *u = (Type*)unpacked,*p = (Type*)packed,t;                                                \
-    PetscInt       i,j,k,bs=link->bs;                                                                        \
-    const PetscInt M = (EQ) ? 1 : bs/BS; /* If EQ, then M=1 enables compiler's const-propagation */          \
-    const PetscInt MBS = M*BS; /* MBS=bs. We turn MBS into a compile time const when EQ=1. */                \
+    Type           *u = (Type*)unpacked,*p = (Type*)packed,tmp;                                              \
+    PetscInt       i,j,k,r,l,bs=link->bs;                                                                    \
+    const PetscInt M = (EQ) ? 1 : bs/BS;                                                                     \
+    const PetscInt MBS = M*BS;                                                                               \
     PetscFunctionBegin;                                                                                      \
-    if (!idx) {                                                                                              \
-      u += start*bs;                                                                                         \
-      for (i=0; i<count; i++)                                                                                \
-        for (j=0; j<M; j++)                                                                                  \
-          for (k=0; k<BS; k++) {                                                                             \
-            t = u[i*MBS+j*BS+k];                                                                             \
-            OpApply(Op,u[i*MBS+j*BS+k],p[i*MBS+j*BS+k]);                                                     \
-            p[i*MBS+j*BS+k] = t;                                                                             \
-          }                                                                                                  \
-    } else {                                                                                                 \
-      for (i=0; i<count; i++)                                                                                \
-        for (j=0; j<M; j++)                                                                                  \
-          for (k=0; k<BS; k++) {                                                                             \
-              t = u[idx[i]*MBS+j*BS+k];                                                                      \
-              OpApply(Op,u[idx[i]*MBS+j*BS+k],p[i*MBS+j*BS+k]);                                              \
-              p[i*MBS+j*BS+k] = t;                                                                           \
-          }                                                                                                  \
+    for (i=0; i<count; i++) {                                                                                \
+      r = (!idx ? start+i : idx[i])*MBS;                                                                     \
+      l = i*MBS;                                                                                             \
+      for (j=0; j<M; j++)                                                                                    \
+        for (k=0; k<BS; k++) {                                                                               \
+          tmp = u[r+j*BS+k];                                                                                 \
+          OpApply(Op,u[r+j*BS+k],p[l+j*BS+k]);                                                               \
+          p[l+j*BS+k] = tmp;                                                                                 \
+        }                                                                                                    \
     }                                                                                                        \
     PetscFunctionReturn(0);                                                                                  \
   }
 
 #define DEF_ScatterAndOp(Type,BS,EQ,Opname,Op,OpApply) \
-  static PetscErrorCode CPPJoin4(ScatterAnd##Opname,Type,BS,EQ)(PetscSFLink link,PetscInt count,PetscInt startx,const PetscInt *idx,const void *xdata,PetscInt starty,const PetscInt *idy,void *ydata) \
+  static PetscErrorCode CPPJoin4(ScatterAnd##Opname,Type,BS,EQ)(PetscSFLink link,PetscInt count,PetscInt srcStart,PetscSFPackOpt srcOpt,const PetscInt *srcIdx,const void *src,PetscInt dstStart,PetscSFPackOpt dstOpt,const PetscInt *dstIdx,void *dst) \
   {                                                                                                          \
-    const Type     *x = (const Type*)xdata;                                                                  \
-    Type           *y = (Type*)ydata;                                                                        \
-    PetscInt       i,j,k,bs = link->bs;                                                                      \
+    PetscErrorCode ierr;                                                                                     \
+    const Type     *u = (const Type*)src;                                                                    \
+    Type           *v = (Type*)dst;                                                                          \
+    PetscInt       i,j,k,s,t,X,Y,bs = link->bs;                                                              \
     const PetscInt M = (EQ) ? 1 : bs/BS;                                                                     \
     const PetscInt MBS = M*BS;                                                                               \
     PetscFunctionBegin;                                                                                      \
-    if (!idx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Petsc should use UnpackAndOp instead of ScatterAndOp");\
-    if (!idy) {                                                                                              \
-      y += starty*bs;                                                                                        \
-      for (i=0; i<count; i++)                                                                                \
+    if (!srcIdx) { /* src is contiguous */                                                                   \
+      u += srcStart*MBS;                                                                                     \
+      ierr = CPPJoin4(UnpackAnd##Opname,Type,BS,EQ)(link,count,dstStart,dstOpt,dstIdx,dst,u);CHKERRQ(ierr);  \
+    } else if (srcOpt && !dstIdx) { /* src is 3D, dst is contiguous */                                       \
+      u += srcOpt->start[0]*MBS;                                                                             \
+      v += dstStart*MBS;                                                                                     \
+      X  = srcOpt->X[0]; Y = srcOpt->Y[0];                                                                   \
+      for (k=0; k<srcOpt->dz[0]; k++)                                                                        \
+        for (j=0; j<srcOpt->dy[0]; j++) {                                                                    \
+          for (i=0; i<srcOpt->dx[0]*MBS; i++) OpApply(Op,v[i],u[(X*Y*k+X*j)*MBS+i]);                         \
+          v += srcOpt->dx[0]*MBS;                                                                            \
+        }                                                                                                    \
+    } else { /* all other cases */                                                                           \
+      for (i=0; i<count; i++) {                                                                              \
+        s = (!srcIdx ? srcStart+i : srcIdx[i])*MBS;                                                          \
+        t = (!dstIdx ? dstStart+i : dstIdx[i])*MBS;                                                          \
         for (j=0; j<M; j++)                                                                                  \
-          for (k=0; k<BS; k++)                                                                               \
-            OpApply(Op,y[i*MBS+j*BS+k],x[idx[i]*MBS+j*BS+k]);                                                \
-    } else {                                                                                                 \
-      for (i=0; i<count; i++)                                                                                \
-        for (j=0; j<M; j++)                                                                                  \
-          for (k=0; k<BS; k++)                                                                               \
-            OpApply(Op,y[idy[i]*MBS+j*BS+k],x[idx[i]*MBS+j*BS+k]);                                           \
+          for (k=0; k<BS; k++) OpApply(Op,v[t+j*BS+k],u[s+j*BS+k]);                                          \
+      }                                                                                                      \
     }                                                                                                        \
     PetscFunctionReturn(0);                                                                                  \
   }
 
 #define DEF_FetchAndOpLocal(Type,BS,EQ,Opname,Op,OpApply) \
-  static PetscErrorCode CPPJoin4(FetchAnd##Opname##Local,Type,BS,EQ)(PetscSFLink link,PetscInt count,PetscInt rootstart,const PetscInt *rootindices,void *rootdata,PetscInt leafstart,const PetscInt *leafindices,const void *leafdata,void *leafupdate) \
+  static PetscErrorCode CPPJoin4(FetchAnd##Opname##Local,Type,BS,EQ)(PetscSFLink link,PetscInt count,PetscInt rootstart,PetscSFPackOpt rootopt,const PetscInt *rootidx,void *rootdata,PetscInt leafstart,PetscSFPackOpt leafopt,const PetscInt *leafidx,const void *leafdata,void *leafupdate) \
   {                                                                                                          \
-    Type           *x = (Type*)rootdata,*y2 = (Type*)leafupdate;                                             \
-    const Type     *y = (const Type*)leafdata;                                                               \
-    PetscInt       i,j,k,bs = link->bs;                                                                      \
+    Type           *rdata = (Type*)rootdata,*lupdate = (Type*)leafupdate;                                    \
+    const Type     *ldata = (const Type*)leafdata;                                                           \
+    PetscInt       i,j,k,r,l,bs = link->bs;                                                                  \
     const PetscInt M = (EQ) ? 1 : bs/BS;                                                                     \
     const PetscInt MBS = M*BS;                                                                               \
     PetscFunctionBegin;                                                                                      \
-    if (!rootindices) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Petsc should use FetchAndOp instead of FetchAndOpLocal");\
-    if (!leafindices) {                                                                                      \
-      y += leafstart*bs; y2 += leafstart*bs;                                                                 \
-      for (i=0; i<count; i++)                                                                                \
-        for (j=0; j<M; j++)                                                                                  \
-          for (k=0; k<BS; k++) {                                                                             \
-            y2[i*MBS+j*BS+k] = x[rootindices[i]*MBS+j*BS+k];                                                 \
-            OpApply(Op,x[rootindices[i]*MBS+j*BS+k],y[i*MBS+j*BS+k]);                                        \
-          }                                                                                                  \
-    } else {                                                                                                 \
-      for (i=0; i<count; i++)                                                                                \
-        for (j=0; j<M; j++)                                                                                  \
-          for (k=0; k<BS; k++) {                                                                             \
-            y2[leafindices[i]*MBS+j*BS+k] = x[rootindices[i]*MBS+j*BS+k];                                    \
-            OpApply(Op,x[rootindices[i]*MBS+j*BS+k],y[leafindices[i]*MBS+j*BS+k]);                           \
-          }                                                                                                  \
+    for (i=0; i<count; i++) {                                                                                \
+      r = (rootidx ? rootidx[i] : rootstart+i)*MBS;                                                          \
+      l = (leafidx ? leafidx[i] : leafstart+i)*MBS;                                                          \
+      for (j=0; j<M; j++)                                                                                    \
+        for (k=0; k<BS; k++) {                                                                               \
+          lupdate[l+j*BS+k] = rdata[r+j*BS+k];                                                               \
+          OpApply(Op,rdata[r+j*BS+k],ldata[l+j*BS+k]);                                                       \
+        }                                                                                                    \
     }                                                                                                        \
     PetscFunctionReturn(0);                                                                                  \
   }
-
 
 /* Pack, Unpack/Fetch ops */
 #define DEF_Pack(Type,BS,EQ)                                                      \
@@ -965,7 +919,7 @@ PetscErrorCode PetscSFLinkSetUp_Host(PetscSF sf,PetscSFLink link,MPI_Datatype un
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSFLinkGetUnpackAndOp(PetscSFLink link,PetscMemType mtype,MPI_Op op,PetscBool atomic,PetscErrorCode (**UnpackAndOp)(PetscSFLink,PetscInt,PetscInt,const PetscInt*,PetscSFPackOpt,void*,const void*))
+PetscErrorCode PetscSFLinkGetUnpackAndOp(PetscSFLink link,PetscMemType mtype,MPI_Op op,PetscBool atomic,PetscErrorCode (**UnpackAndOp)(PetscSFLink,PetscInt,PetscInt,PetscSFPackOpt,const PetscInt*,void*,const void*))
 {
   PetscFunctionBegin;
   *UnpackAndOp = NULL;
@@ -1018,7 +972,7 @@ PetscErrorCode PetscSFLinkGetUnpackAndOp(PetscSFLink link,PetscMemType mtype,MPI
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSFLinkGetScatterAndOp(PetscSFLink link,PetscMemType mtype,MPI_Op op,PetscBool atomic,PetscErrorCode (**ScatterAndOp)(PetscSFLink,PetscInt,PetscInt,const PetscInt*,const void*,PetscInt,const PetscInt*,void*))
+PetscErrorCode PetscSFLinkGetScatterAndOp(PetscSFLink link,PetscMemType mtype,MPI_Op op,PetscBool atomic,PetscErrorCode (**ScatterAndOp)(PetscSFLink,PetscInt,PetscInt,PetscSFPackOpt,const PetscInt*,const void*,PetscInt,PetscSFPackOpt,const PetscInt*,void*))
 {
   PetscFunctionBegin;
   *ScatterAndOp = NULL;
@@ -1071,7 +1025,7 @@ PetscErrorCode PetscSFLinkGetScatterAndOp(PetscSFLink link,PetscMemType mtype,MP
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSFLinkGetFetchAndOp(PetscSFLink link,PetscMemType mtype,MPI_Op op,PetscBool atomic,PetscErrorCode (**FetchAndOp)(PetscSFLink,PetscInt,PetscInt,const PetscInt*,PetscSFPackOpt,void*,void*))
+PetscErrorCode PetscSFLinkGetFetchAndOp(PetscSFLink link,PetscMemType mtype,MPI_Op op,PetscBool atomic,PetscErrorCode (**FetchAndOp)(PetscSFLink,PetscInt,PetscInt,PetscSFPackOpt,const PetscInt*,void*,void*))
 {
   PetscFunctionBegin;
   *FetchAndOp = NULL;
@@ -1084,7 +1038,7 @@ PetscErrorCode PetscSFLinkGetFetchAndOp(PetscSFLink link,PetscMemType mtype,MPI_
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSFLinkGetFetchAndOpLocal(PetscSFLink link,PetscMemType mtype,MPI_Op op,PetscBool atomic,PetscErrorCode (**FetchAndOpLocal)(PetscSFLink,PetscInt,PetscInt,const PetscInt*,void*,PetscInt,const PetscInt*,const void*,void*))
+PetscErrorCode PetscSFLinkGetFetchAndOpLocal(PetscSFLink link,PetscMemType mtype,MPI_Op op,PetscBool atomic,PetscErrorCode (**FetchAndOpLocal)(PetscSFLink,PetscInt,PetscInt,PetscSFPackOpt,const PetscInt*,void*,PetscInt,PetscSFPackOpt,const PetscInt*,const void*,void*))
 {
   PetscFunctionBegin;
   *FetchAndOpLocal = NULL;
@@ -1296,16 +1250,20 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkUnpackDataWithMPIReduceLocal(Petsc
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkScatterDataWithMPIReduceLocal(PetscSF sf,PetscSFLink link,PetscInt count,const PetscInt *idx,const void *xdata,PetscInt starty,const PetscInt *idy,void *ydata,MPI_Op op)
+PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkScatterDataWithMPIReduceLocal(PetscSF sf,PetscSFLink link,PetscInt count,PetscInt srcStart,const PetscInt *srcIdx,const void *src,PetscInt dstStart,const PetscInt *dstIdx,void *dst,MPI_Op op)
 {
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_MPI_REDUCE_LOCAL)
   {
     PetscErrorCode ierr;
     PetscInt       i,disp;
-    for (i=0; i<count; i++) {
-      disp = idy? idy[i] : starty + i;
-      ierr = MPI_Reduce_local((const char*)xdata+idx[i]*link->unitbytes,(char*)ydata+disp*link->unitbytes,1,link->unit,op);CHKERRQ(ierr);
+    if (!srcIdx) {
+      ierr = PetscSFLinkUnpackDataWithMPIReduceLocal(sf,link,count,dstStart,dstIdx,dst,(const char*)src+srcStart*link->unitbytes,op);CHKERRQ(ierr);
+    } else {
+      for (i=0; i<count; i++) {
+        disp = dstIdx? dstIdx[i] : dstStart + i;
+        ierr = MPI_Reduce_local((const char*)src+srcIdx[i]*link->unitbytes,(char*)dst+disp*link->unitbytes,1,link->unit,op);CHKERRQ(ierr);
+      }
     }
   }
 #else
@@ -1335,16 +1293,18 @@ PetscErrorCode PetscSFLinkPackRootData(PetscSF sf,PetscSFLink link,PetscSFScope 
   PetscSF_Basic    *bas = (PetscSF_Basic*)sf->data;
   const PetscInt   *rootindices = NULL;
   PetscInt         count,start;
-  PetscErrorCode   (*Pack)(PetscSFLink,PetscInt,PetscInt,const PetscInt*,PetscSFPackOpt,const void*,void*) = NULL;
+  PetscErrorCode   (*Pack)(PetscSFLink,PetscInt,PetscInt,PetscSFPackOpt,const PetscInt*,const void*,void*) = NULL;
   PetscMemType     rootmtype = link->rootmtype;
+  PetscSFPackOpt   opt = NULL;
+
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(PETSCSF_Pack,sf,0,0,0);CHKERRQ(ierr);
   if (scope == PETSCSF_REMOTE) {ierr = PetscSFLinkSyncDeviceBeforePackData(sf,link);CHKERRQ(ierr);}
   if (!link->rootdirect[scope] && bas->rootbuflen[scope]) { /* If rootdata works directly as rootbuf, skip packing */
-    ierr = PetscSFLinkGetRootIndices(sf,link,rootmtype,scope,&count,&start,&rootindices);CHKERRQ(ierr);
+    ierr = PetscSFLinkGetRootPackOptAndIndices(sf,link,rootmtype,scope,&count,&start,&opt,&rootindices);CHKERRQ(ierr);
     ierr = PetscSFLinkGetPack(link,rootmtype,&Pack);CHKERRQ(ierr);
-    ierr = (*Pack)(link,count,start,rootindices,bas->rootpackopt[scope],rootdata,link->rootbuf[scope][rootmtype]);CHKERRQ(ierr);
+    ierr = (*Pack)(link,count,start,opt,rootindices,rootdata,link->rootbuf[scope][rootmtype]);CHKERRQ(ierr);
   }
   if (scope == PETSCSF_REMOTE) {
     ierr = PetscSFLinkCopyRootBufferInCaseNotUseGpuAwareMPI(sf,link,PETSC_TRUE/*device2host*/);CHKERRQ(ierr);
@@ -1360,16 +1320,17 @@ PetscErrorCode PetscSFLinkPackLeafData(PetscSF sf,PetscSFLink link,PetscSFScope 
   PetscErrorCode   ierr;
   const PetscInt   *leafindices = NULL;
   PetscInt         count,start;
-  PetscErrorCode   (*Pack)(PetscSFLink,PetscInt,PetscInt,const PetscInt*,PetscSFPackOpt,const void*,void*) = NULL;
+  PetscErrorCode   (*Pack)(PetscSFLink,PetscInt,PetscInt,PetscSFPackOpt,const PetscInt*,const void*,void*) = NULL;
   PetscMemType     leafmtype = link->leafmtype;
+  PetscSFPackOpt   opt = NULL;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(PETSCSF_Pack,sf,0,0,0);CHKERRQ(ierr);
   if (scope == PETSCSF_REMOTE) {ierr = PetscSFLinkSyncDeviceBeforePackData(sf,link);CHKERRQ(ierr);}
   if (!link->leafdirect[scope] && sf->leafbuflen[scope]) { /* If leafdata works directly as rootbuf, skip packing */
-    ierr = PetscSFLinkGetLeafIndices(sf,link,leafmtype,scope,&count,&start,&leafindices);CHKERRQ(ierr);
+    ierr = PetscSFLinkGetLeafPackOptAndIndices(sf,link,leafmtype,scope,&count,&start,&opt,&leafindices);CHKERRQ(ierr);
     ierr = PetscSFLinkGetPack(link,leafmtype,&Pack);CHKERRQ(ierr);
-    ierr = (*Pack)(link,count,start,leafindices,sf->leafpackopt[scope],leafdata,link->leafbuf[scope][leafmtype]);CHKERRQ(ierr);
+    ierr = (*Pack)(link,count,start,opt,leafindices,leafdata,link->leafbuf[scope][leafmtype]);CHKERRQ(ierr);
   }
   if (scope == PETSCSF_REMOTE) {
     ierr = PetscSFLinkCopyLeafBufferInCaseNotUseGpuAwareMPI(sf,link,PETSC_TRUE/*device2host*/);CHKERRQ(ierr);
@@ -1386,8 +1347,9 @@ PetscErrorCode PetscSFLinkUnpackRootData(PetscSF sf,PetscSFLink link,PetscSFScop
   const PetscInt   *rootindices = NULL;
   PetscInt         count,start;
   PetscSF_Basic    *bas = (PetscSF_Basic*)sf->data;
-  PetscErrorCode   (*UnpackAndOp)(PetscSFLink,PetscInt,PetscInt,const PetscInt*,PetscSFPackOpt,void*,const void*) = NULL;
+  PetscErrorCode   (*UnpackAndOp)(PetscSFLink,PetscInt,PetscInt,PetscSFPackOpt,const PetscInt*,void*,const void*) = NULL;
   PetscMemType     rootmtype = link->rootmtype;
+  PetscSFPackOpt   opt = NULL;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(PETSCSF_Unpack,sf,0,0,0);CHKERRQ(ierr);
@@ -1395,10 +1357,10 @@ PetscErrorCode PetscSFLinkUnpackRootData(PetscSF sf,PetscSFLink link,PetscSFScop
   if (!link->rootdirect[scope] && bas->rootbuflen[scope]) { /* If rootdata works directly as rootbuf, skip unpacking */
     ierr = PetscSFLinkGetUnpackAndOp(link,rootmtype,op,bas->rootdups[scope],&UnpackAndOp);CHKERRQ(ierr);
     if (UnpackAndOp) {
-      ierr = PetscSFLinkGetRootIndices(sf,link,rootmtype,scope,&count,&start,&rootindices);CHKERRQ(ierr);
-      ierr = (*UnpackAndOp)(link,count,start,rootindices,bas->rootpackopt[scope],rootdata,link->rootbuf[scope][rootmtype]);CHKERRQ(ierr);
+      ierr = PetscSFLinkGetRootPackOptAndIndices(sf,link,rootmtype,scope,&count,&start,&opt,&rootindices);CHKERRQ(ierr);
+      ierr = (*UnpackAndOp)(link,count,start,opt,rootindices,rootdata,link->rootbuf[scope][rootmtype]);CHKERRQ(ierr);
     } else {
-      ierr = PetscSFLinkGetRootIndices(sf,link,PETSC_MEMTYPE_HOST,scope,&count,&start,&rootindices);CHKERRQ(ierr);
+      ierr = PetscSFLinkGetRootPackOptAndIndices(sf,link,PETSC_MEMTYPE_HOST,scope,&count,&start,&opt,&rootindices);CHKERRQ(ierr);
       ierr = PetscSFLinkUnpackDataWithMPIReduceLocal(sf,link,count,start,rootindices,rootdata,link->rootbuf[scope][rootmtype],op);CHKERRQ(ierr);
     }
   }
@@ -1414,8 +1376,9 @@ PetscErrorCode PetscSFLinkUnpackLeafData(PetscSF sf,PetscSFLink link,PetscSFScop
   PetscErrorCode   ierr;
   const PetscInt   *leafindices = NULL;
   PetscInt         count,start;
-  PetscErrorCode   (*UnpackAndOp)(PetscSFLink,PetscInt,PetscInt,const PetscInt*,PetscSFPackOpt,void*,const void*) = NULL;
+  PetscErrorCode   (*UnpackAndOp)(PetscSFLink,PetscInt,PetscInt,PetscSFPackOpt,const PetscInt*,void*,const void*) = NULL;
   PetscMemType     leafmtype = link->leafmtype;
+  PetscSFPackOpt   opt = NULL;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(PETSCSF_Unpack,sf,0,0,0);CHKERRQ(ierr);
@@ -1423,10 +1386,10 @@ PetscErrorCode PetscSFLinkUnpackLeafData(PetscSF sf,PetscSFLink link,PetscSFScop
   if (!link->leafdirect[scope] && sf->leafbuflen[scope]) { /* If leafdata works directly as rootbuf, skip unpacking */
     ierr = PetscSFLinkGetUnpackAndOp(link,leafmtype,op,sf->leafdups[scope],&UnpackAndOp);CHKERRQ(ierr);
     if (UnpackAndOp) {
-      ierr = PetscSFLinkGetLeafIndices(sf,link,leafmtype,scope,&count,&start,&leafindices);CHKERRQ(ierr);
-      ierr = (*UnpackAndOp)(link,count,start,leafindices,sf->leafpackopt[scope],leafdata,link->leafbuf[scope][leafmtype]);CHKERRQ(ierr);
+      ierr = PetscSFLinkGetLeafPackOptAndIndices(sf,link,leafmtype,scope,&count,&start,&opt,&leafindices);CHKERRQ(ierr);
+      ierr = (*UnpackAndOp)(link,count,start,opt,leafindices,leafdata,link->leafbuf[scope][leafmtype]);CHKERRQ(ierr);
     } else {
-      ierr = PetscSFLinkGetLeafIndices(sf,link,PETSC_MEMTYPE_HOST,scope,&count,&start,&leafindices);CHKERRQ(ierr);
+      ierr = PetscSFLinkGetLeafPackOptAndIndices(sf,link,PETSC_MEMTYPE_HOST,scope,&count,&start,&opt,&leafindices);CHKERRQ(ierr);
       ierr = PetscSFLinkUnpackDataWithMPIReduceLocal(sf,link,count,start,leafindices,leafdata,link->leafbuf[scope][leafmtype],op);CHKERRQ(ierr);
     }
   }
@@ -1443,8 +1406,9 @@ PetscErrorCode PetscSFLinkFetchRootData(PetscSF sf,PetscSFLink link,PetscSFScope
   const PetscInt     *rootindices = NULL;
   PetscInt           count,start;
   PetscSF_Basic      *bas = (PetscSF_Basic*)sf->data;
-  PetscErrorCode     (*FetchAndOp)(PetscSFLink,PetscInt,PetscInt,const PetscInt*,PetscSFPackOpt,void*,void*) = NULL;
+  PetscErrorCode     (*FetchAndOp)(PetscSFLink,PetscInt,PetscInt,PetscSFPackOpt,const PetscInt*,void*,void*) = NULL;
   PetscMemType       rootmtype = link->rootmtype;
+  PetscSFPackOpt     opt = NULL;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(PETSCSF_Unpack,sf,0,0,0);CHKERRQ(ierr);
@@ -1452,8 +1416,8 @@ PetscErrorCode PetscSFLinkFetchRootData(PetscSF sf,PetscSFLink link,PetscSFScope
   if (bas->rootbuflen[scope]) {
     /* Do FetchAndOp on rootdata with rootbuf */
     ierr = PetscSFLinkGetFetchAndOp(link,rootmtype,op,bas->rootdups[scope],&FetchAndOp);CHKERRQ(ierr);
-    ierr = PetscSFLinkGetRootIndices(sf,link,rootmtype,scope,&count,&start,&rootindices);CHKERRQ(ierr);
-    ierr = (*FetchAndOp)(link,count,start,rootindices,bas->rootpackopt[scope],rootdata,link->rootbuf[scope][rootmtype]);CHKERRQ(ierr);
+    ierr = PetscSFLinkGetRootPackOptAndIndices(sf,link,rootmtype,scope,&count,&start,&opt,&rootindices);CHKERRQ(ierr);
+    ierr = (*FetchAndOp)(link,count,start,opt,rootindices,rootdata,link->rootbuf[scope][rootmtype]);CHKERRQ(ierr);
   }
   if (scope == PETSCSF_REMOTE) {
     ierr = PetscSFLinkCopyRootBufferInCaseNotUseGpuAwareMPI(sf,link,PETSC_TRUE);CHKERRQ(ierr);
@@ -1471,9 +1435,9 @@ PetscErrorCode PetscSFLinkBcastAndOpLocal(PetscSF sf,PetscSFLink link,const void
   const PetscInt       *rootindices = NULL,*leafindices = NULL;
   PetscInt             count,rootstart,leafstart;
   PetscSF_Basic        *bas = (PetscSF_Basic*)sf->data;
-  PetscErrorCode       (*UnpackAndOp)(PetscSFLink,PetscInt,PetscInt,const PetscInt*,PetscSFPackOpt,void*,const void*) = NULL;
-  PetscErrorCode       (*ScatterAndOp)(PetscSFLink,PetscInt,PetscInt,const PetscInt*,const void*,PetscInt,const PetscInt*,void*) = NULL;
+  PetscErrorCode       (*ScatterAndOp)(PetscSFLink,PetscInt,PetscInt,PetscSFPackOpt,const PetscInt*,const void*,PetscInt,PetscSFPackOpt,const PetscInt*,void*) = NULL;
   const PetscMemType   rootmtype = link->rootmtype,leafmtype = link->leafmtype;
+  PetscSFPackOpt       leafopt = NULL,rootopt = NULL;
 
   PetscFunctionBegin;
   if (!bas->rootbuflen[PETSCSF_LOCAL]) PetscFunctionReturn(0);
@@ -1483,27 +1447,15 @@ PetscErrorCode PetscSFLinkBcastAndOpLocal(PetscSF sf,PetscSFLink link,const void
     ierr = PetscSFLinkMemcpy(sf,link,leafmtype,link->leafbuf[PETSCSF_LOCAL][leafmtype],rootmtype,link->rootbuf[PETSCSF_LOCAL][rootmtype],sf->leafbuflen[PETSCSF_LOCAL]*link->unitbytes);CHKERRQ(ierr);
     ierr = PetscSFLinkUnpackLeafData(sf,link,PETSCSF_LOCAL,leafdata,op);CHKERRQ(ierr);
   } else {
-    if (bas->rootcontig[PETSCSF_LOCAL]) { /* If root indices are contiguous, Scatter becomes Unpack */
-      ierr = PetscSFLinkGetUnpackAndOp(link,leafmtype,op,sf->leafdups[PETSCSF_LOCAL],&UnpackAndOp);CHKERRQ(ierr);
-      rootdata = (const char*)rootdata + bas->rootstart[PETSCSF_LOCAL]*link->unitbytes; /* Make rootdata point to start of the buffer */
-      if (UnpackAndOp) {
-        ierr = PetscSFLinkGetLeafIndices(sf,link,leafmtype,PETSCSF_LOCAL,&count,&leafstart,&leafindices);CHKERRQ(ierr);
-        ierr = (*UnpackAndOp)(link,count,leafstart,leafindices,sf->leafpackopt[PETSCSF_LOCAL],leafdata,rootdata);CHKERRQ(ierr);
-      } else {
-        ierr = PetscSFLinkGetLeafIndices(sf,link,PETSC_MEMTYPE_HOST,PETSCSF_LOCAL,&count,&leafstart,&leafindices);CHKERRQ(ierr);
-        ierr = PetscSFLinkUnpackDataWithMPIReduceLocal(sf,link,count,leafstart,leafindices,leafdata,rootdata,op);CHKERRQ(ierr);
-      }
-    } else { /* ScatterAndOp */
-      ierr = PetscSFLinkGetScatterAndOp(link,leafmtype,op,sf->leafdups[PETSCSF_LOCAL],&ScatterAndOp);CHKERRQ(ierr);
-      if (ScatterAndOp) {
-        ierr = PetscSFLinkGetRootIndices(sf,link,rootmtype,PETSCSF_LOCAL,&count,&rootstart,&rootindices);CHKERRQ(ierr);
-        ierr = PetscSFLinkGetLeafIndices(sf,link,leafmtype,PETSCSF_LOCAL,&count,&leafstart,&leafindices);CHKERRQ(ierr);
-        ierr = (*ScatterAndOp)(link,count,rootstart,rootindices,rootdata,leafstart,leafindices,leafdata);CHKERRQ(ierr);
-      } else {
-        ierr = PetscSFLinkGetRootIndices(sf,link,PETSC_MEMTYPE_HOST,PETSCSF_LOCAL,&count,NULL,&rootindices);CHKERRQ(ierr);
-        ierr = PetscSFLinkGetLeafIndices(sf,link,PETSC_MEMTYPE_HOST,PETSCSF_LOCAL,NULL,&leafstart,&leafindices);CHKERRQ(ierr);
-        ierr = PetscSFLinkScatterDataWithMPIReduceLocal(sf,link,count,rootindices,rootdata,leafstart,leafindices,leafdata,op);CHKERRQ(ierr);
-      }
+    ierr = PetscSFLinkGetScatterAndOp(link,leafmtype,op,sf->leafdups[PETSCSF_LOCAL],&ScatterAndOp);CHKERRQ(ierr);
+    if (ScatterAndOp) {
+      ierr = PetscSFLinkGetRootPackOptAndIndices(sf,link,rootmtype,PETSCSF_LOCAL,&count,&rootstart,&rootopt,&rootindices);CHKERRQ(ierr);
+      ierr = PetscSFLinkGetLeafPackOptAndIndices(sf,link,leafmtype,PETSCSF_LOCAL,&count,&leafstart,&leafopt,&leafindices);CHKERRQ(ierr);
+      ierr = (*ScatterAndOp)(link,count,rootstart,rootopt,rootindices,rootdata,leafstart,leafopt,leafindices,leafdata);CHKERRQ(ierr);
+    } else {
+      ierr = PetscSFLinkGetRootPackOptAndIndices(sf,link,PETSC_MEMTYPE_HOST,PETSCSF_LOCAL,&count,&rootstart,&rootopt,&rootindices);CHKERRQ(ierr);
+      ierr = PetscSFLinkGetLeafPackOptAndIndices(sf,link,PETSC_MEMTYPE_HOST,PETSCSF_LOCAL,&count,&leafstart,&leafopt,&leafindices);CHKERRQ(ierr);
+      ierr = PetscSFLinkScatterDataWithMPIReduceLocal(sf,link,count,rootstart,rootindices,rootdata,leafstart,leafindices,leafdata,op);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -1516,9 +1468,9 @@ PetscErrorCode PetscSFLinkReduceLocal(PetscSF sf,PetscSFLink link,const void *le
   const PetscInt       *rootindices = NULL,*leafindices = NULL;
   PetscInt             count,rootstart,leafstart;
   PetscSF_Basic        *bas = (PetscSF_Basic*)sf->data;
-  PetscErrorCode       (*UnpackAndOp)(PetscSFLink,PetscInt,PetscInt,const PetscInt*,PetscSFPackOpt,void*,const void*) = NULL;
-  PetscErrorCode       (*ScatterAndOp)(PetscSFLink,PetscInt,PetscInt,const PetscInt*,const void*,PetscInt,const PetscInt*,void*) = NULL;
+  PetscErrorCode       (*ScatterAndOp)(PetscSFLink,PetscInt,PetscInt,PetscSFPackOpt,const PetscInt*,const void*,PetscInt,PetscSFPackOpt,const PetscInt*,void*) = NULL;
   const PetscMemType   rootmtype = link->rootmtype,leafmtype = link->leafmtype;
+  PetscSFPackOpt       leafopt = NULL,rootopt = NULL;
 
   PetscFunctionBegin;
   if (!sf->leafbuflen[PETSCSF_LOCAL]) PetscFunctionReturn(0);
@@ -1528,28 +1480,15 @@ PetscErrorCode PetscSFLinkReduceLocal(PetscSF sf,PetscSFLink link,const void *le
     ierr = PetscSFLinkMemcpy(sf,link,rootmtype,link->rootbuf[PETSCSF_LOCAL][rootmtype],leafmtype,link->leafbuf[PETSCSF_LOCAL][leafmtype],bas->rootbuflen[PETSCSF_LOCAL]*link->unitbytes);CHKERRQ(ierr);
     ierr = PetscSFLinkUnpackRootData(sf,link,PETSCSF_LOCAL,rootdata,op);CHKERRQ(ierr);
   } else {
-    if (sf->leafcontig[PETSCSF_LOCAL]) {
-      /* If leaf indices are contiguous, Scatter becomes Unpack */
-      ierr = PetscSFLinkGetUnpackAndOp(link,rootmtype,op,bas->rootdups[PETSCSF_LOCAL],&UnpackAndOp);CHKERRQ(ierr);
-      leafdata = (const char*)leafdata + sf->leafstart[PETSCSF_LOCAL]*link->unitbytes; /* Make leafdata point to start of the buffer */
-      if (UnpackAndOp) {
-        ierr = PetscSFLinkGetRootIndices(sf,link,rootmtype,PETSCSF_LOCAL,&count,&rootstart,&rootindices);CHKERRQ(ierr);
-        ierr = (*UnpackAndOp)(link,count,rootstart,rootindices,bas->rootpackopt[PETSCSF_LOCAL],rootdata,leafdata);CHKERRQ(ierr);
-      } else {
-        ierr = PetscSFLinkGetRootIndices(sf,link,PETSC_MEMTYPE_HOST,PETSCSF_LOCAL,&count,&rootstart,&rootindices);CHKERRQ(ierr);
-        ierr = PetscSFLinkUnpackDataWithMPIReduceLocal(sf,link,count,rootstart,rootindices,rootdata,leafdata,op);CHKERRQ(ierr);
-      }
+    ierr = PetscSFLinkGetScatterAndOp(link,rootmtype,op,bas->rootdups[PETSCSF_LOCAL],&ScatterAndOp);CHKERRQ(ierr);
+    if (ScatterAndOp) {
+      ierr = PetscSFLinkGetRootPackOptAndIndices(sf,link,rootmtype,PETSCSF_LOCAL,&count,&rootstart,&rootopt,&rootindices);CHKERRQ(ierr);
+      ierr = PetscSFLinkGetLeafPackOptAndIndices(sf,link,leafmtype,PETSCSF_LOCAL,&count,&leafstart,&leafopt,&leafindices);CHKERRQ(ierr);
+      ierr = (*ScatterAndOp)(link,count,leafstart,leafopt,leafindices,leafdata,rootstart,rootopt,rootindices,rootdata);CHKERRQ(ierr);
     } else {
-      ierr = PetscSFLinkGetScatterAndOp(link,rootmtype,op,bas->rootdups[PETSCSF_LOCAL],&ScatterAndOp);CHKERRQ(ierr);
-      if (ScatterAndOp) {
-        ierr = PetscSFLinkGetRootIndices(sf,link,rootmtype,PETSCSF_LOCAL,&count,&rootstart,&rootindices);CHKERRQ(ierr);
-        ierr = PetscSFLinkGetLeafIndices(sf,link,leafmtype,PETSCSF_LOCAL,NULL,&leafstart,&leafindices);CHKERRQ(ierr);
-        ierr = (*ScatterAndOp)(link,count,leafstart,leafindices,leafdata,rootstart,rootindices,rootdata);CHKERRQ(ierr);
-      } else {
-        ierr = PetscSFLinkGetRootIndices(sf,link,PETSC_MEMTYPE_HOST,PETSCSF_LOCAL,&count,&rootstart,&rootindices);CHKERRQ(ierr);
-        ierr = PetscSFLinkGetLeafIndices(sf,link,PETSC_MEMTYPE_HOST,PETSCSF_LOCAL,NULL,NULL,&leafindices);CHKERRQ(ierr);
-        ierr = PetscSFLinkScatterDataWithMPIReduceLocal(sf,link,count,leafindices,leafdata,rootstart,rootindices,rootdata,op);CHKERRQ(ierr);
-      }
+      ierr = PetscSFLinkGetRootPackOptAndIndices(sf,link,PETSC_MEMTYPE_HOST,PETSCSF_LOCAL,&count,&rootstart,&rootopt,&rootindices);CHKERRQ(ierr);
+      ierr = PetscSFLinkGetLeafPackOptAndIndices(sf,link,PETSC_MEMTYPE_HOST,PETSCSF_LOCAL,&count,&leafstart,&leafopt,&leafindices);CHKERRQ(ierr);
+      ierr = PetscSFLinkScatterDataWithMPIReduceLocal(sf,link,count,leafstart,leafindices,leafdata,rootstart,rootindices,rootdata,op);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -1562,8 +1501,9 @@ PetscErrorCode PetscSFLinkFetchAndOpLocal(PetscSF sf,PetscSFLink link,void *root
   const PetscInt       *rootindices = NULL,*leafindices = NULL;
   PetscInt             count,rootstart,leafstart;
   PetscSF_Basic        *bas = (PetscSF_Basic*)sf->data;
-  PetscErrorCode       (*FetchAndOpLocal)(PetscSFLink,PetscInt,PetscInt,const PetscInt*,void*,PetscInt,const PetscInt*,const void*,void*) = NULL;
+  PetscErrorCode       (*FetchAndOpLocal)(PetscSFLink,PetscInt,PetscInt,PetscSFPackOpt,const PetscInt*,void*,PetscInt,PetscSFPackOpt,const PetscInt*,const void*,void*) = NULL;
   const PetscMemType   rootmtype = link->rootmtype,leafmtype = link->leafmtype;
+  PetscSFPackOpt       leafopt = NULL,rootopt = NULL;
 
   PetscFunctionBegin;
   if (!bas->rootbuflen[PETSCSF_LOCAL]) PetscFunctionReturn(0);
@@ -1571,10 +1511,10 @@ PetscErrorCode PetscSFLinkFetchAndOpLocal(PetscSF sf,PetscSFLink link,void *root
    /* The local communication has to go through pack and unpack */
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Doing PetscSFFetchAndOp with rootdata and leafdata on opposite side of CPU and GPU");
   } else {
-    ierr = PetscSFLinkGetRootIndices(sf,link,rootmtype,PETSCSF_LOCAL,&count,&rootstart,&rootindices);CHKERRQ(ierr);
-    ierr = PetscSFLinkGetLeafIndices(sf,link,leafmtype,PETSCSF_LOCAL,NULL,&leafstart,&leafindices);CHKERRQ(ierr);
+    ierr = PetscSFLinkGetRootPackOptAndIndices(sf,link,rootmtype,PETSCSF_LOCAL,&count,&rootstart,&rootopt,&rootindices);CHKERRQ(ierr);
+    ierr = PetscSFLinkGetLeafPackOptAndIndices(sf,link,leafmtype,PETSCSF_LOCAL,&count,&leafstart,&leafopt,&leafindices);CHKERRQ(ierr);
     ierr = PetscSFLinkGetFetchAndOpLocal(link,rootmtype,op,bas->rootdups[PETSCSF_LOCAL],&FetchAndOpLocal);CHKERRQ(ierr);
-    ierr = (*FetchAndOpLocal)(link,count,rootstart,rootindices,rootdata,leafstart,leafindices,leafdata,leafupdate);CHKERRQ(ierr);
+    ierr = (*FetchAndOpLocal)(link,count,rootstart,rootopt,rootindices,rootdata,leafstart,leafopt,leafindices,leafdata,leafupdate);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1583,7 +1523,7 @@ PetscErrorCode PetscSFLinkFetchAndOpLocal(PetscSF sf,PetscSFLink link,void *root
   Create per-rank pack/unpack optimizations based on indice patterns
 
    Input Parameters:
-  +  n       - Number of target ranks
+  +  n       - Number of destination ranks
   .  offset  - [n+1] For the i-th rank, its associated indices are idx[offset[i], offset[i+1]). offset[0] needs not to be 0.
   -  idx     - [*]   Array storing indices
 
@@ -1593,99 +1533,91 @@ PetscErrorCode PetscSFLinkFetchAndOpLocal(PetscSF sf,PetscSFLink link,void *root
 PetscErrorCode PetscSFCreatePackOpt(PetscInt n,const PetscInt *offset,const PetscInt *idx,PetscSFPackOpt *out)
 {
   PetscErrorCode ierr;
-  PetscInt       i,j,k,n_copies,tot_copies = 0,step;
-  PetscBool      strided,optimized = PETSC_FALSE;
+  PetscInt       r,p,start,i,j,k,dx,dy,dz,dydz,m,X,Y;
+  PetscBool      optimizable = PETSC_TRUE;
   PetscSFPackOpt opt;
 
   PetscFunctionBegin;
-  if (!n) {
-    *out = NULL;
-    PetscFunctionReturn(0);
-  }
+  ierr   = PetscMalloc1(1,&opt);CHKERRQ(ierr);
+  ierr   = PetscMalloc1(7*n+2,&opt->array);CHKERRQ(ierr);
+  opt->n      = opt->array[0] = n;
+  opt->offset = opt->array + 1;
+  opt->start  = opt->array + n   + 2;
+  opt->dx     = opt->array + 2*n + 2;
+  opt->dy     = opt->array + 3*n + 2;
+  opt->dz     = opt->array + 4*n + 2;
+  opt->X      = opt->array + 5*n + 2;
+  opt->Y      = opt->array + 6*n + 2;
 
-  ierr = PetscCalloc1(1,&opt);CHKERRQ(ierr);
-  ierr = PetscCalloc3(n,&opt->type,n+1,&opt->offset,n+1,&opt->copy_offset);CHKERRQ(ierr);
-  ierr = PetscArraycpy(opt->offset,offset,n+1);CHKERRQ(ierr);
-  /* Make opt->offset[] zero-based. If one calls this routine with non-zero offset[0], one should use packing routine in this way, Pack(count,idx+offset[0],packopt,...) */
-  if (offset[0]) {for (i=0; i<n+1; i++) opt->offset[i] -= offset[0];}
+  for (r=0; r<n; r++) { /* For each destination rank */
+    m     = offset[r+1] - offset[r]; /* Total number of indices for this rank. We want to see if m can be factored into dx*dy*dz */
+    p     = offset[r];
+    start = idx[p]; /* First index for this rank */
+    p++;
 
-  opt->n = n;
-
-  /* Check if the indices are piece-wise contiguous (if yes, we can optimize a packing with multiple memcpy's ) */
-  for (i=0; i<n; i++) { /* for each target processor */
-    /* Scan indices to count n_copies -- the number of contiguous pieces for i-th target */
-    n_copies = 1;
-    for (j=offset[i]; j<offset[i+1]-1; j++) {
-      if (idx[j]+1 != idx[j+1]) n_copies++;
+    /* Search in X dimension */
+    for (dx=1; dx<m; dx++,p++) {
+      if (start+dx != idx[p]) break;
     }
-    /* If the average length (in no. of indices) of contiguous pieces is long enough, say >=32,
-       then it is worth using memcpy for this target. 32 is an arbitrarily chosen number.
-     */
-    if ((offset[i+1]-offset[i])/n_copies >= 32) {
-      opt->type[i] = PETSCSF_PACKOPT_MULTICOPY;
-      optimized    = PETSC_TRUE;
-      tot_copies  += n_copies;
-    }
-  }
 
-  /* Setup memcpy plan for each contiguous piece */
-  k    = 0; /* k-th copy */
-  ierr = PetscMalloc4(tot_copies,&opt->copy_start,tot_copies,&opt->copy_length,n,&opt->stride_step,n,&opt->stride_n);CHKERRQ(ierr);
-  for (i=0; i<n; i++) { /* for each target processor */
-    if (opt->type[i] == PETSCSF_PACKOPT_MULTICOPY) {
-      n_copies           = 1;
-      opt->copy_start[k] = offset[i] - offset[0];
-      for (j=offset[i]; j<offset[i+1]-1; j++) {
-        if (idx[j]+1 != idx[j+1]) { /* meet end of a copy (and next copy must exist) */
-          n_copies++;
-          opt->copy_start[k+1] = j-offset[0]+1;
-          opt->copy_length[k]  = opt->copy_start[k+1] - opt->copy_start[k];
-          k++;
+    dydz = m/dx;
+    X    = dydz > 1 ? (idx[p]-start) : dx;
+    /* Not optimizable if m is not a multiple of dx, or some unrecognized pattern is found */
+    if (m%dx || X <= 0) {optimizable = PETSC_FALSE; goto finish;}
+    for (dy=1; dy<dydz; dy++) { /* Search in Y dimension */
+      for (i=0; i<dx; i++,p++) {
+        if (start+X*dy+i != idx[p]) {
+          if (i) {optimizable = PETSC_FALSE; goto finish;} /* The pattern is violated in the middle of an x-walk */
+          else goto Z_dimension;
         }
       }
-      /* Set copy length of the last copy for this target */
-      opt->copy_length[k] = j-offset[0]+1 - opt->copy_start[k];
-      k++;
     }
-    /* Set offset for next target. When opt->type[i]=PETSCSF_PACKOPT_NONE, copy_offsets[i]=copy_offsets[i+1] */
-    opt->copy_offset[i+1] = k;
+
+Z_dimension:
+    dz = m/(dx*dy);
+    Y  = dz > 1 ? (idx[p]-start)/X : dy;
+    /* Not optimizable if m is not a multiple of dx*dy, or some unrecognized pattern is found */
+    if (m%(dx*dy) || Y <= 0) {optimizable = PETSC_FALSE; goto finish;}
+    for (k=1; k<dz; k++) { /* Go through Z dimension to see if remaining indices follow the pattern */
+      for (j=0; j<dy; j++) {
+        for (i=0; i<dx; i++,p++) {
+          if (start+X*Y*k+X*j+i != idx[p]) {optimizable = PETSC_FALSE; goto finish;}
+        }
+      }
+    }
+    opt->start[r] = start;
+    opt->dx[r]    = dx;
+    opt->dy[r]    = dy;
+    opt->dz[r]    = dz;
+    opt->X[r]     = X;
+    opt->Y[r]     = Y;
   }
 
-  /* Last chance! If the indices do not have long contiguous pieces, are they strided? */
-  for (i=0; i<n; i++) { /* for each remote */
-    if (opt->type[i]==PETSCSF_PACKOPT_NONE && (offset[i+1] - offset[i]) >= 16) { /* few indices (<16) are not worth striding */
-      strided = PETSC_TRUE;
-      step    = idx[offset[i]+1] - idx[offset[i]];
-      for (j=offset[i]; j<offset[i+1]-1; j++) {
-        if (idx[j]+step != idx[j+1]) { strided = PETSC_FALSE; break; }
-      }
-      if (strided) {
-        opt->type[i]         = PETSCSF_PACKOPT_STRIDE;
-        opt->stride_step[i]  = step;
-        opt->stride_n[i]     = offset[i+1] - offset[i];
-        optimized            = PETSC_TRUE;
-      }
-    }
-  }
-  /* If no rank gets optimized, free arrays to save memory */
-  if (!optimized) {
-    ierr = PetscFree3(opt->type,opt->offset,opt->copy_offset);CHKERRQ(ierr);
-    ierr = PetscFree4(opt->copy_start,opt->copy_length,opt->stride_step,opt->stride_n);CHKERRQ(ierr);
+finish:
+  /* If not optimizable, free arrays to save memory */
+  if (!n || !optimizable) {
+    ierr = PetscFree(opt->array);CHKERRQ(ierr);
     ierr = PetscFree(opt);CHKERRQ(ierr);
     *out = NULL;
-  } else *out = opt;
+  } else {
+    opt->offset[0] = 0;
+    for (r=0; r<n; r++) opt->offset[r+1] = opt->offset[r] + opt->dx[r]*opt->dy[r]*opt->dz[r];
+    *out = opt;
+  }
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSFDestroyPackOpt(PetscSFPackOpt *out)
+PETSC_STATIC_INLINE PetscErrorCode PetscSFDestroyPackOpt(PetscMemType mtype,PetscSFPackOpt *out)
 {
   PetscErrorCode ierr;
   PetscSFPackOpt opt = *out;
 
   PetscFunctionBegin;
   if (opt) {
-    ierr = PetscFree3(opt->type,opt->offset,opt->copy_offset);CHKERRQ(ierr);
-    ierr = PetscFree4(opt->copy_start,opt->copy_length,opt->stride_step,opt->stride_n);CHKERRQ(ierr);
+    if (mtype == PETSC_MEMTYPE_HOST) {ierr = PetscFree(opt->array);CHKERRQ(ierr);}
+#if defined(PETSC_HAVE_CUDA)
+    else {cudaError_t cerr = cudaFree(opt->array);CHKERRCUDA(cerr);opt->array=NULL;}
+#endif
     ierr = PetscFree(opt);CHKERRQ(ierr);
     *out = NULL;
   }
@@ -1763,8 +1695,10 @@ PetscErrorCode PetscSFResetPackFields(PetscSF sf)
 
   PetscFunctionBegin;
   for (i=PETSCSF_LOCAL; i<=PETSCSF_REMOTE; i++) {
-    ierr = PetscSFDestroyPackOpt(&sf->leafpackopt[i]);CHKERRQ(ierr);
-    ierr = PetscSFDestroyPackOpt(&bas->rootpackopt[i]);CHKERRQ(ierr);
+    ierr = PetscSFDestroyPackOpt(PETSC_MEMTYPE_HOST,&sf->leafpackopt[i]);CHKERRQ(ierr);
+    ierr = PetscSFDestroyPackOpt(PETSC_MEMTYPE_DEVICE,&sf->leafpackopt_d[i]);CHKERRQ(ierr);
+    ierr = PetscSFDestroyPackOpt(PETSC_MEMTYPE_HOST,&bas->rootpackopt[i]);CHKERRQ(ierr);
+    ierr = PetscSFDestroyPackOpt(PETSC_MEMTYPE_DEVICE,&bas->rootpackopt_d[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

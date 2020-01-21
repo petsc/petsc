@@ -1,6 +1,28 @@
 #include <../src/vec/is/sf/impls/basic/sfpack.h>
 #include <cuda_runtime.h>
 
+/* Map a thread id to an index in root/leaf space through a series of 3D subdomains. See PetscSFPackOpt. */
+__device__ static inline PetscInt MapTidToIndex(const PetscInt *opt,PetscInt tid)
+{
+  PetscInt        i,j,k,m,n,r;
+  const PetscInt  *offset,*start,*dx,*dy,*X,*Y;
+
+  n      = opt[0];
+  offset = opt + 1;
+  start  = opt + n + 2;
+  dx     = opt + 2*n + 2;
+  dy     = opt + 3*n + 2;
+  X      = opt + 5*n + 2;
+  Y      = opt + 6*n + 2;
+  for (r=0; r<n; r++) {if (tid < offset[r+1]) break;}
+  m = (tid - offset[r]);
+  k = m/(dx[r]*dy[r]);
+  j = (m - k*dx[r]*dy[r])/dx[r];
+  i = m - k*dx[r]*dy[r] - j*dx[r];
+
+  return (start[r] + k*X[r]*Y[r] + j*X[r] + i);
+}
+
 /*====================================================================================*/
 /*  Templated CUDA kernels for pack/unpack. The Op can be regular or atomic           */
 /*====================================================================================*/
@@ -15,81 +37,98 @@
   For the common case in VecScatter, bs=1, BS=1, EQ=1, MBS=1, the inner for-loops below will be totally unrolled.
 */
 template<class Type,PetscInt BS,PetscInt EQ>
-__global__ static void d_Pack(PetscInt bs,PetscInt count,PetscInt start,const PetscInt *idx,const Type *unpacked,Type *packed)
+__global__ static void d_Pack(PetscInt bs,PetscInt count,PetscInt start,const PetscInt *opt,const PetscInt *idx,const Type *data,Type *buf)
 {
-  PetscInt        i,tid = blockIdx.x*blockDim.x + threadIdx.x;
+  PetscInt        i,s,t,tid = blockIdx.x*blockDim.x + threadIdx.x;
   const PetscInt  grid_size = gridDim.x * blockDim.x;
-  const Type      *u = unpacked;
-  Type            *p = packed;
   const PetscInt  M = (EQ) ? 1 : bs/BS; /* If EQ, then M=1 enables compiler's const-propagation */
   const PetscInt  MBS = M*BS;  /* MBS=bs. We turn MBS into a compile-time const when EQ=1. */
 
   for (; tid<count; tid += grid_size) {
-    if (!idx) {for (i=0; i<MBS; i++) p[tid*MBS+i] = u[(start+tid)*MBS+i];}
-    else      {for (i=0; i<MBS; i++) p[tid*MBS+i] = u[idx[tid]*MBS+i];}
+    /* opt != NULL ==> idx == NULL, i.e., the indices have patterns but not contiguous;
+       opt == NULL && idx == NULL ==> the indices are contiguous;
+     */
+    t = (opt? MapTidToIndex(opt,tid) : (idx? idx[tid] : start+tid))*MBS;
+    s = tid*MBS;
+    for (i=0; i<MBS; i++) buf[s+i] = data[t+i];
   }
 }
 
 template<class Type,class Op,PetscInt BS,PetscInt EQ>
-__global__ static void d_UnpackAndOp(PetscInt bs,PetscInt count,PetscInt start,const PetscInt *idx,Type *unpacked,const Type *packed)
+__global__ static void d_UnpackAndOp(PetscInt bs,PetscInt count,PetscInt start,const PetscInt *opt,const PetscInt *idx,Type *data,const Type *buf)
 {
-  PetscInt        i,tid = blockIdx.x*blockDim.x + threadIdx.x;
+  PetscInt        i,s,t,tid = blockIdx.x*blockDim.x + threadIdx.x;
   const PetscInt  grid_size = gridDim.x * blockDim.x;
-  Type            *u = unpacked;
-  const Type      *p = packed;
   const PetscInt  M = (EQ) ? 1 : bs/BS, MBS = M*BS;
   Op              op;
 
   for (; tid<count; tid += grid_size) {
-    if (!idx) {for (i=0; i<MBS; i++) op(u[(start+tid)*MBS+i],p[tid*MBS+i]);}
-    else      {for (i=0; i<MBS; i++) op(u[idx[tid]*MBS+i],p[tid*MBS+i]);}
+    t = (opt? MapTidToIndex(opt,tid) : (idx? idx[tid] : start+tid))*MBS;
+    s = tid*MBS;
+    for (i=0; i<MBS; i++) op(data[t+i],buf[s+i]);
   }
 }
 
 template<class Type,class Op,PetscInt BS,PetscInt EQ>
-__global__ static void d_FetchAndOp(PetscInt bs,PetscInt count,PetscInt start,const PetscInt *idx,Type *unpacked,Type *packed)
+__global__ static void d_FetchAndOp(PetscInt bs,PetscInt count,PetscInt rootstart,const PetscInt *rootopt,const PetscInt *rootidx,Type *rootdata,Type *leafbuf)
 {
-  PetscInt        i,tid = blockIdx.x*blockDim.x + threadIdx.x;
+  PetscInt        i,l,r,tid = blockIdx.x*blockDim.x + threadIdx.x;
   const PetscInt  grid_size = gridDim.x * blockDim.x;
-  Type            *u = unpacked,*p = packed;
   const PetscInt  M = (EQ) ? 1 : bs/BS, MBS = M*BS;
   Op              op;
 
   for (; tid<count; tid += grid_size) {
-    if (!idx) {for (i=0; i<MBS; i++) p[tid*MBS+i] = op(u[(start+tid)*MBS+i],p[tid*MBS+i]);}
-    else      {for (i=0; i<MBS; i++) p[tid*MBS+i] = op(u[idx[tid]*MBS+i],p[tid*MBS+i]);}
+    r = (rootopt? MapTidToIndex(rootopt,tid) : (rootidx? rootidx[tid] : rootstart+tid))*MBS;
+    l = tid*MBS;
+    for (i=0; i<MBS; i++) leafbuf[l+i] = op(rootdata[r+i],leafbuf[l+i]);
   }
 }
 
 template<class Type,class Op,PetscInt BS,PetscInt EQ>
-__global__ static void d_ScatterAndOp(PetscInt bs,PetscInt count,PetscInt startx,const PetscInt *idx,const Type *xdata,PetscInt starty,const PetscInt *idy,Type *ydata)
+__global__ static void d_ScatterAndOp(PetscInt bs,PetscInt count,PetscInt srcx,PetscInt srcy,PetscInt srcX,PetscInt srcY,PetscInt srcStart,const PetscInt* srcIdx,const Type *src,PetscInt dstx,PetscInt dsty,PetscInt dstX,PetscInt dstY,PetscInt dstStart,const PetscInt *dstIdx,Type *dst)
 {
-  PetscInt        i,tid = blockIdx.x*blockDim.x + threadIdx.x;
+  PetscInt        i,j,k,s,t,tid = blockIdx.x*blockDim.x + threadIdx.x;
   const PetscInt  grid_size = gridDim.x * blockDim.x;
-  const Type      *x = xdata;
-  Type            *y = ydata;
   const PetscInt  M = (EQ) ? 1 : bs/BS, MBS = M*BS;
   Op              op;
 
   for (; tid<count; tid += grid_size) {
-    if (!idy) {for (i=0; i<MBS; i++) op(y[(starty+tid)*MBS+i],x[idx[tid]*MBS+i]);}
-    else      {for (i=0; i<MBS; i++) op(y[idy[tid]*MBS+i],x[idx[tid]*MBS+i]);}
+    if (!srcIdx) { /* src is either contiguous or 3D */
+      k = tid/(srcx*srcy);
+      j = (tid - k*srcx*srcy)/srcx;
+      i = tid - k*srcx*srcy - j*srcx;
+      s = srcStart + k*srcX*srcY + j*srcX + i;
+    } else {
+      s = srcIdx[tid];
+    }
+
+    if (!dstIdx) { /* dst is either contiguous or 3D */
+      k = tid/(dstx*dsty);
+      j = (tid - k*dstx*dsty)/dstx;
+      i = tid - k*dstx*dsty - j*dstx;
+      t = dstStart + k*dstX*dstY + j*dstX + i;
+    } else {
+      t = dstIdx[tid];
+    }
+
+    s *= MBS;
+    t *= MBS;
+    for (i=0; i<MBS; i++) op(dst[t+i],src[s+i]);
   }
 }
 
 template<class Type,class Op,PetscInt BS,PetscInt EQ>
-__global__ static void d_FetchAndOpLocal(PetscInt bs,PetscInt count,PetscInt startx,const PetscInt *idx,Type *xdata,PetscInt starty,const PetscInt *idy,const Type *ydata,Type *yupdate)
+__global__ static void d_FetchAndOpLocal(PetscInt bs,PetscInt count,PetscInt rootstart,const PetscInt *rootopt,const PetscInt *rootidx,Type *rootdata,PetscInt leafstart,const PetscInt *leafopt,const PetscInt *leafidx,const Type *leafdata,Type *leafupdate)
 {
-  PetscInt        i,tid = blockIdx.x*blockDim.x + threadIdx.x;
+  PetscInt        i,l,r,tid = blockIdx.x*blockDim.x + threadIdx.x;
   const PetscInt  grid_size = gridDim.x * blockDim.x;
-  const Type      *y = ydata;
-  Type            *x = xdata,*y2 = yupdate;
   const PetscInt  M = (EQ) ? 1 : bs/BS, MBS = M*BS;
   Op              op;
 
   for (; tid<count; tid += grid_size) {
-    if (!idy) {for (i=0; i<MBS; i++) y2[(starty+tid)*MBS+i] = op(x[idx[tid]*MBS+i],y[(starty+tid)*MBS+i]);}
-    else      {for (i=0; i<MBS; i++) y2[idy[tid]*MBS+i]     = op(x[idx[tid]*MBS+i],y[idy[tid]*MBS+i]);}
+    r = (rootopt? MapTidToIndex(rootopt,tid) : (rootidx? rootidx[tid] : rootstart+tid))*MBS;
+    l = (leafopt? MapTidToIndex(leafopt,tid) : (leafidx? leafidx[tid] : leafstart+tid))*MBS;
+    for (i=0; i<MBS; i++) leafupdate[l+i] = op(rootdata[r+i],leafdata[l+i]);
   }
 }
 
@@ -504,109 +543,109 @@ template<typename Type> struct AtomicLXOR {__device__ Type operator()(Type& x,Ty
 /*  Wrapper functions of cuda kernels. Function pointers are stored in 'link'         */
 /*====================================================================================*/
 template<typename Type,PetscInt BS,PetscInt EQ>
-static PetscErrorCode Pack(PetscSFLink link,PetscInt count,PetscInt start,const PetscInt *idx,PetscSFPackOpt opt,const void *unpacked,void *packed)
+static PetscErrorCode Pack(PetscSFLink link,PetscInt count,PetscInt start,PetscSFPackOpt opt,const PetscInt *idx,const void *data,void *buf)
 {
-  cudaError_t err;
-  PetscInt    nthreads=256;
-  PetscInt    nblocks=(count+nthreads-1)/nthreads;
+  cudaError_t        cerr;
+  PetscInt           nthreads=256;
+  PetscInt           nblocks=(count+nthreads-1)/nthreads;
+  const PetscInt     *iarray=opt ? opt->array : NULL;
 
   PetscFunctionBegin;
   if (!count) PetscFunctionReturn(0);
   nblocks = PetscMin(nblocks,link->maxResidentThreadsPerGPU/nthreads);
-  d_Pack<Type,BS,EQ><<<nblocks,nthreads,0,link->stream>>>(link->bs,count,start,idx,(const Type*)unpacked,(Type*)packed);
-  err = cudaGetLastError();CHKERRCUDA(err);
+  d_Pack<Type,BS,EQ><<<nblocks,nthreads,0,link->stream>>>(link->bs,count,start,iarray,idx,(const Type*)data,(Type*)buf);
+  cerr = cudaGetLastError();CHKERRCUDA(cerr);
   PetscFunctionReturn(0);
 }
 
 template<typename Type,class Op,PetscInt BS,PetscInt EQ>
-static PetscErrorCode UnpackAndOp(PetscSFLink link,PetscInt count,PetscInt start,const PetscInt *idx,PetscSFPackOpt opt,void *unpacked,const void *packed)
+static PetscErrorCode UnpackAndOp(PetscSFLink link,PetscInt count,PetscInt start,PetscSFPackOpt opt,const PetscInt *idx,void *data,const void *buf)
 {
-  cudaError_t err;
-  PetscInt    nthreads=256;
-  PetscInt    nblocks=(count+nthreads-1)/nthreads;
+  cudaError_t        cerr;
+  PetscInt           nthreads=256;
+  PetscInt           nblocks=(count+nthreads-1)/nthreads;
+  const PetscInt     *iarray=opt ? opt->array : NULL;
 
   PetscFunctionBegin;
   if (!count) PetscFunctionReturn(0);
   nblocks = PetscMin(nblocks,link->maxResidentThreadsPerGPU/nthreads);
-  d_UnpackAndOp<Type,Op,BS,EQ><<<nblocks,nthreads,0,link->stream>>>(link->bs,count,start,idx,(Type*)unpacked,(const Type*)packed);
-  err = cudaGetLastError();CHKERRCUDA(err);
+  d_UnpackAndOp<Type,Op,BS,EQ><<<nblocks,nthreads,0,link->stream>>>(link->bs,count,start,iarray,idx,(Type*)data,(const Type*)buf);
+  cerr = cudaGetLastError();CHKERRCUDA(cerr);
   PetscFunctionReturn(0);
 }
 
 template<typename Type,class Op,PetscInt BS,PetscInt EQ>
-static PetscErrorCode FetchAndOp(PetscSFLink link,PetscInt count,PetscInt start,const PetscInt *idx,PetscSFPackOpt opt,void *unpacked,void *packed)
+static PetscErrorCode FetchAndOp(PetscSFLink link,PetscInt count,PetscInt start,PetscSFPackOpt opt,const PetscInt *idx,void *data,void *buf)
 {
-  cudaError_t err;
-  PetscInt    nthreads=256;
-  PetscInt    nblocks=(count+nthreads-1)/nthreads;
+  cudaError_t        cerr;
+  PetscInt           nthreads=256;
+  PetscInt           nblocks=(count+nthreads-1)/nthreads;
+  const PetscInt     *iarray=opt ? opt->array : NULL;
 
   PetscFunctionBegin;
   if (!count) PetscFunctionReturn(0);
   nblocks = PetscMin(nblocks,link->maxResidentThreadsPerGPU/nthreads);
-  d_FetchAndOp<Type,Op,BS,EQ><<<nblocks,nthreads,0,link->stream>>>(link->bs,count,start,idx,(Type*)unpacked,(Type*)packed);
-  err = cudaGetLastError();CHKERRCUDA(err);
+  d_FetchAndOp<Type,Op,BS,EQ><<<nblocks,nthreads,0,link->stream>>>(link->bs,count,start,iarray,idx,(Type*)data,(Type*)buf);
+  cerr = cudaGetLastError();CHKERRCUDA(cerr);
   PetscFunctionReturn(0);
 }
 
 template<typename Type,class Op,PetscInt BS,PetscInt EQ>
-static PetscErrorCode ScatterAndOp(PetscSFLink link,PetscInt count,PetscInt startx,const PetscInt *idx,const void *xdata,PetscInt starty,const PetscInt *idy,void *ydata)
+static PetscErrorCode ScatterAndOp(PetscSFLink link,PetscInt count,PetscInt srcStart,PetscSFPackOpt srcOpt,const PetscInt *srcIdx,const void *src,PetscInt dstStart,PetscSFPackOpt dstOpt,const PetscInt *dstIdx,void *dst)
 {
-  cudaError_t err;
-  PetscInt    nthreads=256;
-  PetscInt    nblocks=(count+nthreads-1)/nthreads;
-  const Type  *xdata2;
+  cudaError_t        cerr;
+  PetscInt           nthreads=256;
+  PetscInt           nblocks=(count+nthreads-1)/nthreads;
+  PetscInt           srcx=0,srcy=0,srcX=0,srcY=0,dstx=0,dsty=0,dstX=0,dstY=0;
 
   PetscFunctionBegin;
   if (!count) PetscFunctionReturn(0);
   nblocks = PetscMin(nblocks,link->maxResidentThreadsPerGPU/nthreads);
-  if (!idx) {
-    xdata2 = (const Type*)xdata + startx*link->bs;
-    d_UnpackAndOp<Type,Op,BS,EQ><<<nblocks,nthreads,0,link->stream>>>(link->bs,count,starty,idy,(Type*)ydata,(const Type*)xdata2);
-  } else {
-    d_ScatterAndOp<Type,Op,BS,EQ><<<nblocks,nthreads,0,link->stream>>>(link->bs,count,startx,idx,(const Type*)xdata,starty,idy,(Type*)ydata);
-  }
-  err = cudaGetLastError();CHKERRCUDA(err);
+
+  /* The 3D shape of source subdomain may be different than that of the destination, which makes it difficult to use CUDA 3D grid and block */
+  if (srcOpt)       {srcx = srcOpt->dx[0]; srcy = srcOpt->dy[0]; srcX = srcOpt->X[0]; srcY = srcOpt->Y[0]; srcStart = srcOpt->start[0]; srcIdx = NULL;}
+  else if (!srcIdx) {srcx = srcX = count; srcy = srcY = 1;}
+
+  if (dstOpt)       {dstx = dstOpt->dx[0]; dsty = dstOpt->dy[0]; dstX = dstOpt->X[0]; dstY = dstOpt->Y[0]; dstStart = dstOpt->start[0]; dstIdx = NULL;}
+  else if (!dstIdx) {dstx = dstX = count; dsty = dstY = 1;}
+
+  d_ScatterAndOp<Type,Op,BS,EQ><<<nblocks,nthreads,0,link->stream>>>(link->bs,count,srcx,srcy,srcX,srcY,srcStart,srcIdx,(const Type*)src,dstx,dsty,dstX,dstY,dstStart,dstIdx,(Type*)dst);
+  cerr = cudaGetLastError();CHKERRCUDA(cerr);
   PetscFunctionReturn(0);
 }
 
 /* Specialization for Insert since we may use cudaMemcpyAsync */
 template<typename Type,PetscInt BS,PetscInt EQ>
-static PetscErrorCode ScatterAndInsert(PetscSFLink link,PetscInt count,PetscInt startx,const PetscInt *idx,const void *xdata,PetscInt starty,const PetscInt *idy,void *ydata)
+static PetscErrorCode ScatterAndInsert(PetscSFLink link,PetscInt count,PetscInt srcStart,PetscSFPackOpt srcOpt,const PetscInt *srcIdx,const void *src,PetscInt dstStart,PetscSFPackOpt dstOpt,const PetscInt *dstIdx,void *dst)
 {
-  cudaError_t err;
-  PetscInt    nthreads=256;
-  PetscInt    nblocks=(count+nthreads-1)/nthreads;
-  const Type  *xdata2;
+  PetscErrorCode    ierr;
+  cudaError_t       cerr;
 
   PetscFunctionBegin;
   if (!count) PetscFunctionReturn(0);
-  nblocks = PetscMin(nblocks,link->maxResidentThreadsPerGPU/nthreads);
-  if (!idx && !idy) {
-    if (!(startx == starty && xdata == ydata)) { /* Only do the copy when source and destination are different */
-      err  = cudaMemcpyAsync((Type*)ydata+starty*link->bs,(const Type*)xdata+startx*link->bs,count*link->unitbytes,cudaMemcpyDeviceToDevice,link->stream);CHKERRCUDA(err);
-    }
-  } else if (!idx) {
-    xdata2 = (const Type*)xdata + startx*link->bs;
-    d_UnpackAndOp <Type,Insert<Type>,BS,EQ><<<nblocks,nthreads,0,link->stream>>>(link->bs,count,starty,idy,(Type*)ydata,(const Type*)xdata2);
+  /*src and dst are contiguous */
+  if ((!srcOpt && !srcIdx) && (!dstOpt && !dstIdx) && src != dst) {
+    cerr = cudaMemcpyAsync((Type*)dst+dstStart*link->bs,(const Type*)src+srcStart*link->bs,count*link->unitbytes,cudaMemcpyDeviceToDevice,link->stream);CHKERRCUDA(cerr);
   } else {
-    d_ScatterAndOp<Type,Insert<Type>,BS,EQ><<<nblocks,nthreads,0,link->stream>>>(link->bs,count,startx,idx,(const Type*)xdata,starty,idy,(Type*)ydata);
+    ierr = ScatterAndOp<Type,Insert<Type>,BS,EQ>(link,count,srcStart,srcOpt,srcIdx,src,dstStart,dstOpt,dstIdx,dst);CHKERRQ(ierr);
   }
-  err = cudaGetLastError();CHKERRCUDA(err);
   PetscFunctionReturn(0);
 }
 
 template<typename Type,class Op,PetscInt BS,PetscInt EQ>
-static PetscErrorCode FetchAndOpLocal(PetscSFLink link,PetscInt count,PetscInt rootstart,const PetscInt *rootindices,void *rootdata,PetscInt leafstart,const PetscInt *leafindices,const void *leafdata,void *leafupdate)
+static PetscErrorCode FetchAndOpLocal(PetscSFLink link,PetscInt count,PetscInt rootstart,PetscSFPackOpt rootopt,const PetscInt *rootidx,void *rootdata,PetscInt leafstart,PetscSFPackOpt leafopt,const PetscInt *leafidx,const void *leafdata,void *leafupdate)
 {
-  cudaError_t err;
-  PetscInt    nthreads=256;
-  PetscInt    nblocks=(count+nthreads-1)/nthreads;
+  cudaError_t       cerr;
+  PetscInt          nthreads=256;
+  PetscInt          nblocks=(count+nthreads-1)/nthreads;
+  const PetscInt    *rarray = rootopt ? rootopt->array : NULL;
+  const PetscInt    *larray = leafopt ? leafopt->array : NULL;
 
   PetscFunctionBegin;
   if (!count) PetscFunctionReturn(0);
   nblocks = PetscMin(nblocks,link->maxResidentThreadsPerGPU/nthreads);
-  d_FetchAndOpLocal<Type,Op,BS,EQ><<<nblocks,nthreads,0,link->stream>>>(link->bs,count,rootstart,rootindices,(Type*)rootdata,leafstart,leafindices,(const Type*)leafdata,(Type*)leafupdate);
-  err = cudaGetLastError();CHKERRCUDA(err);
+  d_FetchAndOpLocal<Type,Op,BS,EQ><<<nblocks,nthreads,0,link->stream>>>(link->bs,count,rootstart,rarray,rootidx,(Type*)rootdata,leafstart,larray,leafidx,(const Type*)leafdata,(Type*)leafupdate);
+  cerr = cudaGetLastError();CHKERRCUDA(cerr);
   PetscFunctionReturn(0);
 }
 

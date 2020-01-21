@@ -17,6 +17,7 @@ typedef struct _n_PetscSFLink* PetscSFLink;
   PetscBool        rootcontig[2];   /* True means the local/remote segments of indices in irootloc[] are contiguous ... */         \
   PetscInt         rootstart[2];    /* ... and start from rootstart[0] and rootstart[1] respectively */                            \
   PetscSFPackOpt   rootpackopt[2];  /* Pack optimization plans based on patterns in irootloc[]. NULL for no optimizations */       \
+  PetscSFPackOpt   rootpackopt_d[2];/* Copy of rootpackopt[] on device if needed */                                                \
   PetscBool        rootdups[2];     /* Indices of roots in irootloc[local/remote] have dups. Used for data-race test */            \
   PetscInt         nrootreqs;       /* Number of MPI reqests */                                                                    \
   PetscSFLink      avail;           /* One or more entries per MPI Datatype, lazily constructed */                                 \
