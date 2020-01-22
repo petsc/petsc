@@ -1265,7 +1265,8 @@ static PetscErrorCode PCGAMGSetNlevels_GAMG(PC pc, PetscInt n)
 
    Input Parameters:
 +  pc - the preconditioner context
--  threshold - the threshold value, 0.0 means keep all nonzero entries in the graph; negative means keep even zero entries in the graph
+.  threshold - array of threshold values for finest n levels; 0.0 means keep all nonzero entries in the graph; negative means keep even zero entries in the graph
+-  n - number of threshold values provided in array
 
    Options Database Key:
 .  -pc_gamg_threshold <threshold>
@@ -1273,6 +1274,10 @@ static PetscErrorCode PCGAMGSetNlevels_GAMG(PC pc, PetscInt n)
    Notes:
     Increasing the threshold decreases the rate of coarsening. Conversely reducing the threshold increases the rate of coarsening (aggressive coarsening) and thereby reduces the complexity of the coarse grids, and generally results in slower solver converge rates. Reducing coarse grid complexity reduced the complexity of Galerkin coarse grid construction considerably.
     Before coarsening or aggregating the graph, GAMG removes small values from the graph with this threshold, and thus reducing the coupling in the graph and a different (perhaps better) coarser set of points.
+
+    If n is less than the total number of coarsenings (see PCGAMGSetNlevels()), then threshold scaling (see PCGAMGSetThresholdScale()) is used for each successive coarsening.
+    In this case, PCGAMGSetThresholdScale() must be called before PCGAMGSetThreshold().
+    If n is greater than the total number of levels, the excess entries in threshold will not be used.
 
    Level: intermediate
 
@@ -1284,6 +1289,7 @@ PetscErrorCode PCGAMGSetThreshold(PC pc, PetscReal v[], PetscInt n)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  if (n) PetscValidRealPointer(v,2);
   ierr = PetscTryMethod(pc,"PCGAMGSetThreshold_C",(PC,PetscReal[],PetscInt),(pc,v,n));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1294,8 +1300,8 @@ static PetscErrorCode PCGAMGSetThreshold_GAMG(PC pc, PetscReal v[], PetscInt n)
   PC_GAMG *pc_gamg = (PC_GAMG*)mg->innerctx;
   PetscInt i;
   PetscFunctionBegin;
-  for (i=0;i<n;i++) pc_gamg->threshold[i] = v[i];
-  do {pc_gamg->threshold[i] = pc_gamg->threshold[i-1]*pc_gamg->threshold_scale;} while (++i<PETSC_MG_MAXLEVELS);
+  for (i=0; i<PetscMin(n,PETSC_MG_MAXLEVELS); i++) pc_gamg->threshold[i] = v[i];
+  for ( ; i<PETSC_MG_MAXLEVELS; i++) pc_gamg->threshold[i] = pc_gamg->threshold[i-1]*pc_gamg->threshold_scale;
   PetscFunctionReturn(0);
 }
 
@@ -1311,9 +1317,13 @@ static PetscErrorCode PCGAMGSetThreshold_GAMG(PC pc, PetscReal v[], PetscInt n)
    Options Database Key:
 .  -pc_gamg_threshold_scale <v>
 
+   Notes:
+   The initial threshold (for an arbitrary number of levels starting from the finest) can be set with PCGAMGSetThreshold().
+   This scaling is used for each subsequent coarsening, but must be called before PCGAMGSetThreshold().
+
    Level: advanced
 
-.seealso: ()
+.seealso: PCGAMGSetThreshold()
 @*/
 PetscErrorCode PCGAMGSetThresholdScale(PC pc, PetscReal v)
 {
