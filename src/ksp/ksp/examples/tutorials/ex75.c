@@ -9,6 +9,7 @@ int main(int argc,char **args)
   KSP            ksp;        /* linear solver context */
 #if defined(PETSC_HAVE_HPDDM)
   Mat            U;          /* deflation space */
+  PetscBool      flg;
 #endif
   PetscInt       i,j,nmat = 10;
   PetscViewer    viewer;
@@ -31,7 +32,9 @@ int main(int argc,char **args)
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
     ierr = MatLoad(A,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-    ierr = MatCreateVecs(A,&x,&b);CHKERRQ(ierr);
+    if (i == 0) {
+      ierr = MatCreateVecs(A,&x,&b);CHKERRQ(ierr);
+    }
     ierr = PetscSNPrintf(name,sizeof(name),"%s/rhs_%d.dat",dir,j);CHKERRQ(ierr);
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
     ierr = VecLoad(b,viewer);CHKERRQ(ierr);
@@ -39,8 +42,8 @@ int main(int argc,char **args)
     ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
     ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_HPDDM)
-    ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPHPDDM,&reset);CHKERRQ(ierr);
-    if (reset) {
+    ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPHPDDM,&flg);CHKERRQ(ierr);
+    if (flg && reset) {
       ierr = KSPHPDDMGetDeflationSpace(ksp,&U);CHKERRQ(ierr);
       ierr = KSPReset(ksp);CHKERRQ(ierr);
       ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
@@ -52,9 +55,9 @@ int main(int argc,char **args)
       }
     }
 #endif
-    ierr = VecDestroy(&x);CHKERRQ(ierr);
-    ierr = VecDestroy(&b);CHKERRQ(ierr);
   }
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&b);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = PetscFinalize();
@@ -67,7 +70,7 @@ int main(int argc,char **args)
       suffix: 1
       nsize: 1
       requires: hpddm datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
-      args: -nmat 1 -pc_type none -ksp_converged_reason -ksp_type {{gmres hpddm}shared ouput} -ksp_max_it 1000 -ksp_gmres_restart 1000 -ksp_rtol 1e-10 -load_dir ${DATAFILESPATH}/matrices/hpddm/GCRODR
+      args: -nmat 1 -pc_type none -ksp_converged_reason -ksp_type {{gmres hpddm}shared ouput} -ksp_max_it 1000 -ksp_gmres_restart 1000 -ksp_rtol 1e-10 -ksp_hpddm_type {{gmres bgmres}shared output} -options_left no -load_dir ${DATAFILESPATH}/matrices/hpddm/GCRODR
 
    test:
       requires: hpddm datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
@@ -77,7 +80,7 @@ int main(int argc,char **args)
 
    testset:
       requires: hpddm datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
-      args: -nmat 3 -pc_type none -ksp_converged_reason -ksp_type hpddm -ksp_max_it 1000 -ksp_gmres_restart 40 -ksp_rtol 1e-10 -ksp_hpddm_krylov_method gcrodr -ksp_hpddm_recycle 20 -load_dir ${DATAFILESPATH}/matrices/hpddm/GCRODR
+      args: -nmat 3 -pc_type none -ksp_converged_reason -ksp_type hpddm -ksp_max_it 1000 -ksp_gmres_restart 40 -ksp_rtol 1e-10 -ksp_hpddm_type {{gcrodr bgcrodr}shared output} -ksp_hpddm_recycle 20 -load_dir ${DATAFILESPATH}/matrices/hpddm/GCRODR
       test:
         nsize: 1
         suffix: 2_seq
@@ -91,6 +94,6 @@ int main(int argc,char **args)
       requires: hpddm datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
       suffix: 2_icc
       nsize: 1
-      args: -nmat 3 -pc_type icc -ksp_converged_reason -ksp_type hpddm -ksp_max_it 1000 -ksp_gmres_restart 40 -ksp_rtol 1e-10 -ksp_hpddm_krylov_method gcrodr -ksp_hpddm_recycle 20 -reset {{false true}shared output} -load_dir ${DATAFILESPATH}/matrices/hpddm/GCRODR
+      args: -nmat 3 -pc_type icc -ksp_converged_reason -ksp_type hpddm -ksp_max_it 1000 -ksp_gmres_restart 40 -ksp_rtol 1e-10 -ksp_hpddm_type gcrodr -ksp_hpddm_recycle 20 -reset {{false true}shared output} -load_dir ${DATAFILESPATH}/matrices/hpddm/GCRODR
 
 TEST*/

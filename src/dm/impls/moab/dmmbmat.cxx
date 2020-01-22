@@ -206,7 +206,7 @@ static PetscErrorCode DMMoabSetBlockFills_Private(PetscInt w, const PetscInt *fi
 }
 
 
-/*@
+/*@C
     DMMoabSetBlockFills - Sets the fill pattern in each block for a multi-component problem
     of the matrix returned by DMCreateMatrix().
 

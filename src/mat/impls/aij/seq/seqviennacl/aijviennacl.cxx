@@ -268,7 +268,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJViennaCL(Mat A,MatAssemblyType mode)
 }
 
 /* --------------------------------------------------------------------------------*/
-/*@
+/*@C
    MatCreateSeqAIJViennaCL - Creates a sparse matrix in AIJ (compressed row) format
    (the default parallel PETSc format).  This matrix will ultimately be pushed down
    to GPUs and use the ViennaCL library for calculations. For good matrix

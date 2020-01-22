@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit              = 'e5a5a1c' #master dec-22-2019
+    self.gitcommit              = 'd0c29ca' #master jan-20-2020
     self.download               = ['git://https://github.com/hpddm/hpddm','https://github.com/hpddm/hpddm/archive/'+self.gitcommit+'.tar.gz']
     self.version                = '2.0.2'
     self.minversion             = '2.0.0' # first release with --download-hpddm support, broken for Pmat of type MATMPISBAIJ

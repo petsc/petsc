@@ -9,7 +9,8 @@ PETSC_EXTERN PetscLogEvent PC_HPDDM_PtBP;
 PETSC_EXTERN PetscLogEvent PC_HPDDM_Next;
 
 namespace HPDDM {
-  template<class K> class Schwarz;       /* forward definition of the HPDDM class */
+  template<class K> class Schwarz;       /* forward definitions of two needed HPDDM classes */
+  struct PETScOperator;
 }
 
 struct PC_HPDDM_Level {
@@ -34,6 +35,14 @@ struct PC_HPDDM {
   PetscBool                   Neumann;    /* aux is the local Neumann matrix? */
   PetscErrorCode              (*setup)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void*); /* setup function for the auxiliary matrix */
   void*                       setup_ctx;  /* context for setup */
+};
+
+struct KSP_HPDDM {
+  HPDDM::PETScOperator *op;
+  PetscReal            rcntl[2];
+  int                  icntl[1];
+  unsigned short       scntl[3];
+  char                 cntl [6];
 };
 
 #define PETSC_HPDDM_MAXLEVELS 10
