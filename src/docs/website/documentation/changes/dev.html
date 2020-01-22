@@ -142,6 +142,9 @@
           <li>Add KSPHPDDMGetDeflationSpace and KSPHPDDMSetDeflationSpace for recycling Krylov methods in KSPHPDDM</li>
         </ul>
       <h4>SNES:</h4>
+      <ul>
+        <li><code>-snes_test_jacobian_display</code> and <code>-snes_test_jacobian_display_threshold</code> are deprecated.  <code>-snes_test_jacobian</code> accepts an optional threshold parameter (since v3.10) and <code>-snes_test_jacobian_view</code> should be used in favor of <code>-snes_test_jacobian_display</code>.</li>
+      </ul>
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>
       <h4>DM/DA:</h4>
