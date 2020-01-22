@@ -813,6 +813,7 @@ typedef const char* TSRKType;
 #define TSRK7VR   "7vr"
 #define TSRK8VR   "8vr"
 
+PETSC_EXTERN PetscErrorCode TSRKGetOrder(TS,PetscInt*);
 PETSC_EXTERN PetscErrorCode TSRKGetType(TS ts,TSRKType*);
 PETSC_EXTERN PetscErrorCode TSRKSetType(TS ts,TSRKType);
 PETSC_EXTERN PetscErrorCode TSRKSetMultirate(TS,PetscBool);
