@@ -2,7 +2,7 @@ static char help[] = "Example of simple hamiltonian system (harmonic oscillator)
 
 #include <petscdmplex.h>
 #include <petsc/private/dmpleximpl.h>  /* For norm */
-#include <petsc/private/petscfeimpl.h> /* Fpr CoordinatesRefToReal() */
+#include <petsc/private/petscfeimpl.h> /* For CoordinatesRefToReal() */
 #include <petscdmswarm.h>
 #include <petscts.h>
 
@@ -349,7 +349,6 @@ int main(int argc,char **argv)
   AppCtx         user;
   PetscErrorCode ierr;
 
-
   ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
   ierr = ProcessOptions(comm, &user);CHKERRQ(ierr);
@@ -378,10 +377,10 @@ int main(int argc,char **argv)
   ierr = ISDestroy(&is2);CHKERRQ(ierr);
   ierr = TSRHSSplitSetRHSFunction(ts, "position", NULL, RHSFunction1, &user);CHKERRQ(ierr);
   ierr = TSRHSSplitSetRHSFunction(ts, "momentum", NULL, RHSFunction2, &user);CHKERRQ(ierr);
-  ierr = TSSetComputeInitialCondition(ts, InitializeSolve);CHKERRQ(ierr);
-  ierr = TSSetComputeExactError(ts, ComputeError);CHKERRQ(ierr);
 
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
+  ierr = TSSetComputeInitialCondition(ts, InitializeSolve);CHKERRQ(ierr);
+  ierr = TSSetComputeExactError(ts, ComputeError);CHKERRQ(ierr);
   ierr = TSComputeInitialCondition(ts, u);CHKERRQ(ierr);
   ierr = TSSolve(ts, u);CHKERRQ(ierr);
   ierr = DMSwarmDestroyGlobalVectorFromField(sw, "kinematics", &u);CHKERRQ(ierr);
