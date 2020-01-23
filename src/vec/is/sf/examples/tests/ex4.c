@@ -25,6 +25,8 @@ int main(int argc, char **argv)
 
   ierr = PetscSFCreate(PETSC_COMM_WORLD, &sfA); CHKERRQ(ierr);
   ierr = PetscSFCreate(PETSC_COMM_WORLD, &sfB); CHKERRQ(ierr);
+  ierr = PetscSFSetFromOptions(sfA);CHKERRQ(ierr);
+  ierr = PetscSFSetFromOptions(sfB);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetBool(NULL,NULL,"-sparse_sfB",&flag,NULL);CHKERRQ(ierr);
 
@@ -105,6 +107,7 @@ int main(int argc, char **argv)
   ierr = VecView(ba, NULL); CHKERRQ(ierr);
 
   ierr = PetscSFCompose(sfA, sfB, &sfBA); CHKERRQ(ierr);
+  ierr = PetscSFSetFromOptions(sfBA);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)sfBA, "(sfB o sfA)");CHKERRQ(ierr);
   ierr = VecGetArrayRead(a, &arrayR); CHKERRQ(ierr);
   ierr = VecGetArray(ba, &arrayW); CHKERRQ(ierr);
@@ -139,6 +142,22 @@ int main(int argc, char **argv)
 
    test:
      suffix: 2
+     filter: grep -v "type" | grep -v "sort"
      args: -sparse_sfB
+
+   test:
+     suffix: 2_window
+     filter: grep -v "type" | grep -v "sort"
+     output_file: output/ex4_2.out
+     args: -sparse_sfB -sf_type window -sf_window_sync {{fence active lock}} -sf_window_flavor {{create dynamic allocate}}
+     requires: define(PETSC_HAVE_MPI_ONE_SIDED)
+
+   # The nightly test suite with MPICH uses ch3:sock, which is broken when winsize == 0 in some of the processes
+   test:
+     suffix: 2_window_shared
+     filter: grep -v "type" | grep -v "sort"
+     output_file: output/ex4_2.out
+     args: -sparse_sfB -sf_type window -sf_window_sync {{fence active lock}} -sf_window_flavor shared
+     requires: define(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY) !define(PETSC_HAVE_MPICH_NUMVERSION) define(PETSC_HAVE_MPI_ONE_SIDED)
 
 TEST*/

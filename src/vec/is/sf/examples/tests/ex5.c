@@ -21,8 +21,10 @@ int main(int argc, char **argv)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
-  ierr = PetscSFCreate(PETSC_COMM_WORLD, &sfA); CHKERRQ(ierr);
-  ierr = PetscSFCreate(PETSC_COMM_WORLD, &sfB); CHKERRQ(ierr);
+  ierr = PetscSFCreate(PETSC_COMM_WORLD, &sfA);CHKERRQ(ierr);
+  ierr = PetscSFCreate(PETSC_COMM_WORLD, &sfB);CHKERRQ(ierr);
+  ierr = PetscSFSetFromOptions(sfA);CHKERRQ(ierr);
+  ierr = PetscSFSetFromOptions(sfB);CHKERRQ(ierr);
 
   n = 4*nl*size;
   m = 2*nl;
@@ -36,10 +38,10 @@ int main(int argc, char **argv)
   nrootsB  = !rank ? n : 0;
   nleavesB = k;
 
-  ierr = PetscMalloc1(nleavesA, &ilocalA); CHKERRQ(ierr);
-  ierr = PetscMalloc1(nleavesA, &iremoteA); CHKERRQ(ierr);
-  ierr = PetscMalloc1(nleavesB, &ilocalB); CHKERRQ(ierr);
-  ierr = PetscMalloc1(nleavesB, &iremoteB); CHKERRQ(ierr);
+  ierr = PetscMalloc1(nleavesA, &ilocalA);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nleavesA, &iremoteA);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nleavesB, &ilocalB);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nleavesB, &iremoteB);CHKERRQ(ierr);
 
   /* sf A bcast is equivalent to a sparse gather on process 0
      process 0 receives data in the middle [nl,3*nl] of the leaf data array for A */
@@ -57,11 +59,10 @@ int main(int argc, char **argv)
     iremoteB[i].index = rank * 4*nl + nl + i%m;
     ilocalB[i] = 2*nl - i - 1;
   }
-
-  ierr = PetscSFSetGraph(sfA, nrootsA, nleavesA, ilocalA, PETSC_OWN_POINTER, iremoteA, PETSC_OWN_POINTER); CHKERRQ(ierr);
-  ierr = PetscSFSetGraph(sfB, nrootsB, nleavesB, ilocalB, PETSC_OWN_POINTER, iremoteB, PETSC_OWN_POINTER); CHKERRQ(ierr);
-  ierr = PetscSFSetUp(sfA); CHKERRQ(ierr);
-  ierr = PetscSFSetUp(sfB); CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(sfA, nrootsA, nleavesA, ilocalA, PETSC_OWN_POINTER, iremoteA, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(sfB, nrootsB, nleavesB, ilocalB, PETSC_OWN_POINTER, iremoteB, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  ierr = PetscSFSetUp(sfA);CHKERRQ(ierr);
+  ierr = PetscSFSetUp(sfB);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)sfA, "sfA");CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)sfB, "sfB");CHKERRQ(ierr);
   ierr = PetscSFViewFromOptions(sfA, NULL, "-view");CHKERRQ(ierr);
@@ -78,17 +79,18 @@ int main(int argc, char **argv)
   ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "BcastB(BcastA)\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "A: root data\n");CHKERRQ(ierr);
   ierr = PetscIntView(nrootsA, rdA, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(sfA, MPIU_INT, rdA, ldA); CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sfA, MPIU_INT, rdA, ldA); CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sfA, MPIU_INT, rdA, ldA);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sfA, MPIU_INT, rdA, ldA);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "A: leaf data (all)\n");CHKERRQ(ierr);
   ierr = PetscIntView(nldataA, ldA, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(sfB, MPIU_INT, ldA, ldB); CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sfB, MPIU_INT, ldA, ldB); CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sfB, MPIU_INT, ldA, ldB);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sfB, MPIU_INT, ldA, ldB);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "B: leaf data (all)\n");CHKERRQ(ierr);
   ierr = PetscIntView(nldataB, ldB, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = PetscSFCompose(sfA, sfB, &sfBA);CHKERRQ(ierr);
-  ierr = PetscSFSetUp(sfBA); CHKERRQ(ierr);
+  ierr = PetscSFSetFromOptions(sfBA);CHKERRQ(ierr);
+  ierr = PetscSFSetUp(sfBA);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)sfBA, "sfBA");CHKERRQ(ierr);
   ierr = PetscSFViewFromOptions(sfBA, NULL, "-view");CHKERRQ(ierr);
 
@@ -96,12 +98,13 @@ int main(int argc, char **argv)
   ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "BcastBA\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "BA: root data\n");CHKERRQ(ierr);
   ierr = PetscIntView(nrootsA, rdA, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(sfBA, MPIU_INT, rdA, ldB); CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sfBA, MPIU_INT, rdA, ldB); CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sfBA, MPIU_INT, rdA, ldB);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sfBA, MPIU_INT, rdA, ldB);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "BA: leaf data (all)\n");CHKERRQ(ierr);
   ierr = PetscIntView(nldataB, ldB, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = PetscSFCreateInverseSF(sfA, &sfAm);CHKERRQ(ierr);
+  ierr = PetscSFSetFromOptions(sfAm);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)sfAm, "sfAm");CHKERRQ(ierr);
   ierr = PetscSFViewFromOptions(sfAm, NULL, "-view");CHKERRQ(ierr);
 
@@ -110,11 +113,13 @@ int main(int argc, char **argv)
   } else {
     ierr = PetscSFCompose(sfA, sfAm, &sfAAm);CHKERRQ(ierr);
   }
-  ierr = PetscSFSetUp(sfAAm); CHKERRQ(ierr);
+  ierr = PetscSFSetFromOptions(sfAAm);CHKERRQ(ierr);
+  ierr = PetscSFSetUp(sfAAm);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)sfAAm, "sfAAm");CHKERRQ(ierr);
   ierr = PetscSFViewFromOptions(sfAAm, NULL, "-view");CHKERRQ(ierr);
 
   ierr = PetscSFCreateInverseSF(sfB, &sfBm);CHKERRQ(ierr);
+  ierr = PetscSFSetFromOptions(sfBm);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)sfBm, "sfBm");CHKERRQ(ierr);
   ierr = PetscSFViewFromOptions(sfBm, NULL, "-view");CHKERRQ(ierr);
 
@@ -123,7 +128,8 @@ int main(int argc, char **argv)
   } else {
     ierr = PetscSFCompose(sfB, sfBm, &sfBBm);CHKERRQ(ierr);
   }
-  ierr = PetscSFSetUp(sfBBm); CHKERRQ(ierr);
+  ierr = PetscSFSetFromOptions(sfBBm);CHKERRQ(ierr);
+  ierr = PetscSFSetUp(sfBBm);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)sfBBm, "sfBBm");CHKERRQ(ierr);
   ierr = PetscSFViewFromOptions(sfBBm, NULL, "-view");CHKERRQ(ierr);
 
@@ -151,7 +157,26 @@ int main(int argc, char **argv)
 
    test:
      nsize: 7
+     filter: grep -v "type" | grep -v "sort"
      suffix: 2
      args: -view -nl 5 -explicit_inverse {{0 1}}
+
+   # we cannot test for -sf_window_flavor dynamic because SFCompose with sparse leaves may change the root data pointer only locally, and this is not supported by the dynamic case
+   test:
+     nsize: 7
+     suffix: 2_window
+     filter: grep -v "type" | grep -v "sort"
+     output_file: output/ex5_2.out
+     args: -view -nl 5 -explicit_inverse {{0 1}} -sf_type window -sf_window_sync {{fence lock active}} -sf_window_flavor {{create allocate}}
+     requires: define(PETSC_HAVE_MPI_ONE_SIDED)
+
+   # The nightly test suite with MPICH uses ch3:sock, which is broken when winsize == 0 in some of the processes
+   test:
+     nsize: 7
+     suffix: 2_window_shared
+     filter: grep -v "type" | grep -v "sort"
+     output_file: output/ex5_2.out
+     args: -view -nl 5 -explicit_inverse {{0 1}} -sf_type window -sf_window_sync {{fence lock active}} -sf_window_flavor shared
+     requires: define(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY) !define(PETSC_HAVE_MPICH_NUMVERSION) define(PETSC_HAVE_MPI_ONE_SIDED)
 
 TEST*/

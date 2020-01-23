@@ -117,7 +117,7 @@ PetscErrorCode PetscSFReset(PetscSF sf)
 
    Options Database Key:
 .  -sf_type <type> - Sets the method; use -help for a list
-   of available methods (for instance, window, pt2pt, neighbor)
+   of available methods (for instance, window, basic, neighbor)
 
    Notes:
    See "include/petscsf.h" for available methods (for instance)
@@ -272,8 +272,6 @@ PetscErrorCode PetscSFSetUp(PetscSF sf)
                            Only available for SF types of basic and neighbor.
 
    Level: intermediate
-
-.seealso: PetscSFWindowSetSyncType()
 @*/
 PetscErrorCode PetscSFSetFromOptions(PetscSF sf)
 {
@@ -309,7 +307,6 @@ PetscErrorCode PetscSFSetFromOptions(PetscSF sf)
 @*/
 PetscErrorCode PetscSFSetRankOrder(PetscSF sf,PetscBool flg)
 {
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   PetscValidLogicalCollectiveBool(sf,flg,2);
@@ -359,7 +356,10 @@ PetscErrorCode PetscSFSetGraph(PetscSF sf,PetscInt nroots,PetscInt nleaves,const
   if (nroots  < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"nroots %D, cannot be negative",nroots);
   if (nleaves < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"nleaves %D, cannot be negative",nleaves);
 
-  ierr = PetscSFReset(sf);CHKERRQ(ierr);
+  if (sf->nroots >= 0) { /* Reset only if graph already set */
+    ierr = PetscSFReset(sf);CHKERRQ(ierr);
+  }
+
   ierr = PetscLogEventBegin(PETSCSF_SetGraph,sf,0,0,0);CHKERRQ(ierr);
 
   sf->nroots  = nroots;
@@ -949,7 +949,7 @@ PetscErrorCode PetscSFSetUpRanks(PetscSF sf,MPI_Group dgroup)
       if (!InList(ranks[sf->ndranks],groupsize,groupranks)) break;
     }
     if (sf->ndranks < i) {                         /* Swap ranks[sf->ndranks] with ranks[i] */
-      PetscInt    tmprank,tmpcount;
+      PetscInt tmprank,tmpcount;
 
       tmprank             = ranks[i];
       tmpcount            = rcount[i];
@@ -1011,7 +1011,7 @@ PetscErrorCode PetscSFGetGroups(PetscSF sf,MPI_Group *incoming,MPI_Group *outgoi
   MPI_Group      group = MPI_GROUP_NULL;
 
   PetscFunctionBegin;
-  if (!sf->setupcalled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call PetscSFSetUp() before obtaining groups");
+  if (sf->nranks < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call PetscSFSetUpRanks() before obtaining groups");
   if (sf->ingroup == MPI_GROUP_NULL) {
     PetscInt       i;
     const PetscInt *indegree;
@@ -1029,7 +1029,6 @@ PetscErrorCode PetscSFGetGroups(PetscSF sf,MPI_Group *incoming,MPI_Group *outgoi
     ierr = PetscSFSetGraph(bgcount,1,sf->nranks,NULL,PETSC_COPY_VALUES,remote,PETSC_OWN_POINTER);CHKERRQ(ierr);
     ierr = PetscSFComputeDegreeBegin(bgcount,&indegree);CHKERRQ(ierr);
     ierr = PetscSFComputeDegreeEnd(bgcount,&indegree);CHKERRQ(ierr);
-
     /* Enumerate the incoming ranks */
     ierr = PetscMalloc2(indegree[0],&inranks,sf->nranks,&outranks);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&rank);CHKERRQ(ierr);
@@ -1100,12 +1099,10 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF sf,PetscSF *multi)
     ierr = PetscSFFetchAndOpBegin(sf,MPIU_INT,inoffset,outones,outoffset,MPI_SUM);CHKERRQ(ierr);
     ierr = PetscSFFetchAndOpEnd(sf,MPIU_INT,inoffset,outones,outoffset,MPI_SUM);CHKERRQ(ierr);
     for (i=0; i<sf->nroots; i++) inoffset[i] -= indegree[i]; /* Undo the increment */
-#if 0
 #if defined(PETSC_USE_DEBUG)                                 /* Check that the expected number of increments occurred */
     for (i=0; i<sf->nroots; i++) {
       if (inoffset[i] + indegree[i] != inoffset[i+1]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Incorrect result after PetscSFFetchAndOp");
     }
-#endif
 #endif
     ierr = PetscMalloc1(sf->nleaves,&remote);CHKERRQ(ierr);
     for (i=0; i<sf->nleaves; i++) {
@@ -1221,8 +1218,7 @@ PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF sf,PetscInt nselected,const Petsc
     }
 
     if (n != connected_leaves) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"There is a size mismatch in the SF embedding, %d != %d",n,connected_leaves);
-    ierr = PetscSFCreate(comm,newsf);CHKERRQ(ierr);
-    ierr = PetscSFSetFromOptions(*newsf);CHKERRQ(ierr);
+    ierr = PetscSFDuplicate(sf,PETSCSF_DUPLICATE_CONFONLY,newsf);CHKERRQ(ierr);
     ierr = PetscSFSetGraph(*newsf,nroots,connected_leaves,new_ilocal,PETSC_OWN_POINTER,new_iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
     ierr = PetscFree2(rootdata,leafdata);CHKERRQ(ierr);
   }
@@ -1284,8 +1280,7 @@ PetscErrorCode PetscSFCreateEmbeddedLeafSF(PetscSF sf,PetscInt nselected,const P
       new_iremote[i].rank  = iremote[l].rank;
       new_iremote[i].index = iremote[l].index;
     }
-    ierr = PetscSFCreate(comm,newsf);CHKERRQ(ierr);
-    ierr = PetscSFSetFromOptions(*newsf);CHKERRQ(ierr);
+    ierr = PetscSFDuplicate(sf,PETSCSF_DUPLICATE_CONFONLY,newsf);CHKERRQ(ierr);
     ierr = PetscSFSetGraph(*newsf,nroots,nselected,new_ilocal,PETSC_OWN_POINTER,new_iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
   }
   ierr = PetscFree(leaves);CHKERRQ(ierr);
@@ -1551,13 +1546,14 @@ PetscErrorCode PetscSFComputeDegreeBegin(PetscSF sf,const PetscInt **degree)
   PetscSFCheckGraphSet(sf,1);
   PetscValidPointer(degree,2);
   if (!sf->degreeknown) {
-    PetscInt i, nroots = sf->nroots, maxlocal = sf->maxleaf+1;  /* TODO: We should use PetscSFGetLeafRange() */
+    PetscInt i, nroots = sf->nroots, maxlocal;
     if (sf->degree) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Calls to PetscSFComputeDegreeBegin() cannot be nested.");
+    maxlocal = sf->maxleaf-sf->minleaf+1;
     ierr = PetscMalloc1(nroots,&sf->degree);CHKERRQ(ierr);
     ierr = PetscMalloc1(PetscMax(maxlocal,1),&sf->degreetmp);CHKERRQ(ierr); /* allocate at least one entry, see check in PetscSFComputeDegreeEnd() */
     for (i=0; i<nroots; i++) sf->degree[i] = 0;
     for (i=0; i<maxlocal; i++) sf->degreetmp[i] = 1;
-    ierr = PetscSFReduceBegin(sf,MPIU_INT,sf->degreetmp,sf->degree,MPI_SUM);CHKERRQ(ierr);
+    ierr = PetscSFReduceBegin(sf,MPIU_INT,sf->degreetmp-sf->minleaf,sf->degree,MPI_SUM);CHKERRQ(ierr);
   }
   *degree = NULL;
   PetscFunctionReturn(0);
@@ -1591,7 +1587,7 @@ PetscErrorCode PetscSFComputeDegreeEnd(PetscSF sf,const PetscInt **degree)
   PetscValidPointer(degree,2);
   if (!sf->degreeknown) {
     if (!sf->degreetmp) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call PetscSFComputeDegreeBegin() before PetscSFComputeDegreeEnd()");
-    ierr = PetscSFReduceEnd(sf,MPIU_INT,sf->degreetmp,sf->degree,MPI_SUM);CHKERRQ(ierr);
+    ierr = PetscSFReduceEnd(sf,MPIU_INT,sf->degreetmp-sf->minleaf,sf->degree,MPI_SUM);CHKERRQ(ierr);
     ierr = PetscFree(sf->degreetmp);CHKERRQ(ierr);
     sf->degreeknown = PETSC_TRUE;
   }
@@ -1915,6 +1911,10 @@ PetscErrorCode PetscSFComposeInverse(PetscSF sfA,PetscSF sfB,PetscSF *sfBA)
   const PetscInt    *localPointsA,*localPointsB;
   PetscSFNode       *reorderedRemotePointsA = NULL;
   PetscInt          i,numRootsA,numLeavesA,numLeavesBA,numRootsB,numLeavesB,minleaf,maxleaf,*localPointsBA;
+  MPI_Op            op;
+#if defined(PETSC_USE_64BIT_INDICES)
+  PetscBool         iswin;
+#endif
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sfA,PETSCSF_CLASSID,1);
@@ -1925,10 +1925,23 @@ PetscErrorCode PetscSFComposeInverse(PetscSF sfA,PetscSF sfB,PetscSF *sfBA)
   PetscValidPointer(sfBA,3);
   ierr = PetscSFCheckLeavesUnique_Private(sfA);CHKERRQ(ierr);
   ierr = PetscSFCheckLeavesUnique_Private(sfB);CHKERRQ(ierr);
-  /* TODO: Check roots of sfB have degree of 1 */
 
   ierr = PetscSFGetGraph(sfA, &numRootsA, &numLeavesA, &localPointsA, &remotePointsA);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sfB, &numRootsB, &numLeavesB, &localPointsB, &remotePointsB);CHKERRQ(ierr);
+
+  /* TODO: Check roots of sfB have degree of 1 */
+  /* Once we implement it, we can replace the MPI_MAXLOC
+     with MPIU_REPLACE. In that case, MPI_MAXLOC and MPIU_REPLACE have the same effect.
+     We use MPI_MAXLOC only to have a deterministic output from this routine if
+     the root condition is not meet.
+   */
+  op = MPI_MAXLOC;
+#if defined(PETSC_USE_64BIT_INDICES)
+  /* we accept a non-deterministic output (if any) with PETSCSFWINDOW, since MPI_MAXLOC cannot operate on MPIU_2INT with MPI_Accumulate */
+  ierr = PetscObjectTypeCompare((PetscObject)sfB,PETSCSFWINDOW,&iswin);CHKERRQ(ierr);
+  if (iswin) op = MPIU_REPLACE;
+#endif
+
   ierr = PetscSFGetLeafRange(sfB, &minleaf, &maxleaf);CHKERRQ(ierr);
   ierr = PetscMalloc1(maxleaf - minleaf + 1,&reorderedRemotePointsA);CHKERRQ(ierr);
   for (i=0; i<maxleaf - minleaf + 1; i++) {
@@ -1954,11 +1967,8 @@ PetscErrorCode PetscSFComposeInverse(PetscSF sfA,PetscSF sfB,PetscSF *sfBA)
     remotePointsBA[i].index = -1;
   }
 
-  /* Once we implement the TODO above (check all roots of sfB have degree of 1), we can replace the MPI_MAXLOC
-     with MPIU_REPLACE. In that case, MPI_MAXLOC and MPIU_REPLACE have the same effect.
-   */
-  ierr = PetscSFReduceBegin(sfB,MPIU_2INT,reorderedRemotePointsA-minleaf,remotePointsBA,MPI_MAXLOC);CHKERRQ(ierr);
-  ierr = PetscSFReduceEnd(sfB,MPIU_2INT,reorderedRemotePointsA-minleaf,remotePointsBA,MPI_MAXLOC);CHKERRQ(ierr);
+  ierr = PetscSFReduceBegin(sfB,MPIU_2INT,reorderedRemotePointsA-minleaf,remotePointsBA,op);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(sfB,MPIU_2INT,reorderedRemotePointsA-minleaf,remotePointsBA,op);CHKERRQ(ierr);
   ierr = PetscFree(reorderedRemotePointsA);CHKERRQ(ierr);
   for (i=0,numLeavesBA=0; i<numRootsB; i++) {
     if (remotePointsBA[i].rank == -1) continue;

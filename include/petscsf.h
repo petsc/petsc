@@ -57,6 +57,21 @@ typedef enum {PETSCSF_WINDOW_SYNC_FENCE,PETSCSF_WINDOW_SYNC_LOCK,PETSCSF_WINDOW_
 PETSC_EXTERN const char *const PetscSFWindowSyncTypes[];
 
 /*E
+    PetscSFWindowFlavorType - Flavor for the creation of MPI windows for PETSCSFWINDOW
+
+$  PETSCSF_WINDOW_FLAVOR_CREATE - Use MPI_Win_create, no reusage
+$  PETSCSF_WINDOW_FLAVOR_DYNAMIC - Use MPI_Win_create_dynamic and dynamically attach pointers
+$  PETSCSF_WINDOW_FLAVOR_ALLOCATE - Use MPI_Win_allocate
+$  PETSCSF_WINDOW_FLAVOR_SHARED - Use MPI_Win_allocate_shared
+
+   Level: advanced
+
+.seealso: PetscSFWindowSetFlavorType(), PetscSFWindowGetFlavorType()
+E*/
+typedef enum {PETSCSF_WINDOW_FLAVOR_CREATE,PETSCSF_WINDOW_FLAVOR_DYNAMIC,PETSCSF_WINDOW_FLAVOR_ALLOCATE,PETSCSF_WINDOW_FLAVOR_SHARED} PetscSFWindowFlavorType;
+PETSC_EXTERN const char *const PetscSFWindowFlavorTypes[];
+
+/*E
     PetscSFDuplicateOption - Aspects to preserve when duplicating a PetscSF
 
 $  PETSCSF_DUPLICATE_CONFONLY - configuration only, user must call PetscSFSetGraph()
@@ -86,6 +101,10 @@ PETSC_EXTERN PetscErrorCode PetscSFSetFromOptions(PetscSF);
 PETSC_EXTERN PetscErrorCode PetscSFDuplicate(PetscSF,PetscSFDuplicateOption,PetscSF*);
 PETSC_EXTERN PetscErrorCode PetscSFWindowSetSyncType(PetscSF,PetscSFWindowSyncType);
 PETSC_EXTERN PetscErrorCode PetscSFWindowGetSyncType(PetscSF,PetscSFWindowSyncType*);
+PETSC_EXTERN PetscErrorCode PetscSFWindowSetFlavorType(PetscSF,PetscSFWindowFlavorType);
+PETSC_EXTERN PetscErrorCode PetscSFWindowGetFlavorType(PetscSF,PetscSFWindowFlavorType*);
+PETSC_EXTERN PetscErrorCode MPIAPI PetscSFWindowSetInfo(PetscSF,MPI_Info);
+PETSC_EXTERN PetscErrorCode MPIAPI PetscSFWindowGetInfo(PetscSF,MPI_Info*);
 PETSC_EXTERN PetscErrorCode PetscSFSetRankOrder(PetscSF,PetscBool);
 PETSC_EXTERN PetscErrorCode PetscSFSetGraph(PetscSF,PetscInt,PetscInt,const PetscInt*,PetscCopyMode,const PetscSFNode*,PetscCopyMode);
 PETSC_EXTERN PetscErrorCode PetscSFSetGraphWithPattern(PetscSF,PetscLayout,PetscSFPattern);

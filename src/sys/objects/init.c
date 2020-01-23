@@ -339,6 +339,18 @@ PetscErrorCode  PetscSetHelpVersionFunctions(PetscErrorCode (*help)(MPI_Comm),Pe
 PETSC_INTERN PetscBool   PetscObjectsLog;
 #endif
 
+void PetscMPI_Comm_eh(MPI_Comm *comm, PetscMPIInt *err, ...)
+{
+  if (PetscUnlikely(*err)) {
+    PetscMPIInt len;
+    char        errstring[MPI_MAX_ERROR_STRING];
+
+    MPI_Error_string(*err,errstring,&len);
+    PetscError(MPI_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,PETSC_MPI_ERROR_CODE,PETSC_ERROR_INITIAL,"Internal error in MPI: %s",errstring);
+  }
+  return;
+}
+
 PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 {
   char              string[64],mname[PETSC_MAX_PATH_LEN],*f;
@@ -495,6 +507,16 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   ierr = PetscOptionsGetBool(NULL,NULL,"-mpi_return_on_error",&flg1,NULL);CHKERRQ(ierr);
   if (flg1) {
     ierr = MPI_Comm_set_errhandler(comm,MPI_ERRORS_RETURN);CHKERRQ(ierr);
+  }
+  /* experimental */
+  flg1 = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(NULL,NULL,"-mpi_return_error_string",&flg1,NULL);CHKERRQ(ierr);
+  if (flg1) {
+    MPI_Errhandler eh;
+
+    ierr = MPI_Comm_create_errhandler(PetscMPI_Comm_eh,&eh);CHKERRQ(ierr);
+    ierr = MPI_Comm_set_errhandler(comm,eh);CHKERRQ(ierr);
+    ierr = MPI_Errhandler_free(&eh);CHKERRQ(ierr);
   }
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,NULL,"-no_signal_handler",&flg1,NULL);CHKERRQ(ierr);

@@ -45,7 +45,7 @@ int main(int argc,char **argv)
   PetscSFNode    *remote;
   PetscMPIInt    rank,size;
   PetscSF        sf;
-  PetscBool      test_bcast,test_bcastop,test_reduce,test_degree,test_fetchandop,test_gather,test_scatter,test_embed,test_invert,test_sf_distribute,test_char;
+  PetscBool      test_all,test_bcast,test_bcastop,test_reduce,test_degree,test_fetchandop,test_gather,test_scatter,test_embed,test_invert,test_sf_distribute,test_char;
   MPI_Op         mop=MPI_OP_NULL; /* initialize to prevent compiler warnings with cxx_quad build */
   char           opstring[256];
   PetscBool      strflg;
@@ -55,13 +55,15 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
   ierr            = PetscOptionsBegin(PETSC_COMM_WORLD,"","PetscSF Test Options","none");CHKERRQ(ierr);
-  test_bcast      = PETSC_FALSE;
+  test_all        = PETSC_FALSE;
+  ierr            = PetscOptionsBool("-test_all","Test all SF communications","",test_all,&test_all,NULL);CHKERRQ(ierr);
+  test_bcast      = test_all;
   ierr            = PetscOptionsBool("-test_bcast","Test broadcast","",test_bcast,&test_bcast,NULL);CHKERRQ(ierr);
-  test_bcastop    = PETSC_FALSE;
+  test_bcastop    = test_all;
   ierr            = PetscOptionsBool("-test_bcastop","Test broadcast and reduce","",test_bcastop,&test_bcastop,NULL);CHKERRQ(ierr);
-  test_reduce     = PETSC_FALSE;
+  test_reduce     = test_all;
   ierr            = PetscOptionsBool("-test_reduce","Test reduction","",test_reduce,&test_reduce,NULL);CHKERRQ(ierr);
-  test_char       = PETSC_FALSE;
+  test_char       = test_all;
   ierr            = PetscOptionsBool("-test_char","Test signed char, unsigned char, and char","",test_char,&test_char,NULL);CHKERRQ(ierr);
   mop             = MPI_SUM;
   ierr            = PetscStrcpy(opstring,"sum");CHKERRQ(ierr);
@@ -106,22 +108,23 @@ int main(int argc,char **argv)
   if (strflg) {
     mop = MPI_BXOR;
   }
-  test_degree     = PETSC_FALSE;
+  test_degree     = test_all;
   ierr            = PetscOptionsBool("-test_degree","Test computation of vertex degree","",test_degree,&test_degree,NULL);CHKERRQ(ierr);
-  test_fetchandop = PETSC_FALSE;
+  test_fetchandop = test_all;
   ierr            = PetscOptionsBool("-test_fetchandop","Test atomic Fetch-And-Op","",test_fetchandop,&test_fetchandop,NULL);CHKERRQ(ierr);
-  test_gather     = PETSC_FALSE;
+  test_gather     = test_all;
   ierr            = PetscOptionsBool("-test_gather","Test point gather","",test_gather,&test_gather,NULL);CHKERRQ(ierr);
-  test_scatter    = PETSC_FALSE;
+  test_scatter    = test_all;
   ierr            = PetscOptionsBool("-test_scatter","Test point scatter","",test_scatter,&test_scatter,NULL);CHKERRQ(ierr);
-  test_embed      = PETSC_FALSE;
+  test_embed      = test_all;
   ierr            = PetscOptionsBool("-test_embed","Test point embed","",test_embed,&test_embed,NULL);CHKERRQ(ierr);
-  test_invert     = PETSC_FALSE;
+  test_invert     = test_all;
   ierr            = PetscOptionsBool("-test_invert","Test point invert","",test_invert,&test_invert,NULL);CHKERRQ(ierr);
   stride          = 1;
   ierr            = PetscOptionsInt("-stride","Stride for leaf and root data","",stride,&stride,NULL);CHKERRQ(ierr);
   test_sf_distribute = PETSC_FALSE;
   ierr            = PetscOptionsBool("-test_sf_distribute","Create an SF that 'distributes' to each process, like an alltoall","",test_sf_distribute,&test_sf_distribute,NULL);CHKERRQ(ierr);
+  ierr            = PetscOptionsString("-test_op","Designate which MPI_Op to use","",opstring,opstring,256,NULL);CHKERRQ(ierr);
   ierr            = PetscOptionsEnd();CHKERRQ(ierr);
 
   if (test_sf_distribute) {
@@ -172,7 +175,6 @@ int main(int argc,char **argv)
   ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO_DETAIL);CHKERRQ(ierr);
   ierr = PetscSFView(sf,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-
 
   if (test_bcast) {             /* broadcast rootdata into leafdata */
     PetscInt *rootdata,*leafdata;
@@ -225,7 +227,7 @@ int main(int argc,char **argv)
 
   if (test_bcastop) {         /* Reduce rootdata into leafdata */
     PetscInt *rootdata,*leafdata;
-    /* Allocate space for send and recieve buffers. This example communicates PetscInt, but other types, including
+    /* Allocate space for send and receive buffers. This example communicates PetscInt, but other types, including
      * user-defined structures, could also be used. */
     ierr = PetscMalloc2(nrootsalloc,&rootdata,nleavesalloc,&leafdata);CHKERRQ(ierr);
     /* Set rootdata buffer to be broadcast */
@@ -458,15 +460,17 @@ int main(int argc,char **argv)
 
    test:
       nsize: 4
-      args: -test_bcast -sf_type window
-      requires: define(PETSC_HAVE_MPI_WIN_CREATE) define(PETSC_HAVE_MPICH_NUMVERSION)
+      filter: grep -v "type" | grep -v "sort"
+      args: -test_bcast -sf_type window -sf_window_sync {{fence active lock}} -sf_window_flavor {{create dynamic allocate}}
+      requires: define(PETSC_HAVE_MPI_ONE_SIDED)
 
 
    test:
       suffix: 2
       nsize: 4
-      args: -test_reduce -sf_type window
-      requires: define(PETSC_HAVE_MPI_WIN_CREATE) define(PETSC_HAVE_MPICH_NUMVERSION)
+      filter: grep -v "type" | grep -v "sort"
+      args: -test_reduce -sf_type window -sf_window_sync {{fence active lock}} -sf_window_flavor {{create dynamic allocate}}
+      requires: define(PETSC_HAVE_MPI_ONE_SIDED)
 
    test:
       suffix: 2_basic
@@ -476,8 +480,9 @@ int main(int argc,char **argv)
    test:
       suffix: 3
       nsize: 4
-      args: -test_degree -sf_type window
-      requires: define(PETSC_HAVE_MPI_WIN_CREATE) define(PETSC_HAVE_MPICH_NUMVERSION)
+      filter: grep -v "type" | grep -v "sort"
+      args: -test_degree -sf_type window -sf_window_sync {{fence active lock}} -sf_window_flavor {{create dynamic allocate}}
+      requires: define(PETSC_HAVE_MPI_ONE_SIDED)
 
    test:
       suffix: 3_basic
@@ -487,8 +492,9 @@ int main(int argc,char **argv)
    test:
       suffix: 4
       nsize: 4
-      args: -test_gather -sf_type window
-      requires: define(PETSC_HAVE_MPI_WIN_CREATE) define(PETSC_HAVE_MPICH_NUMVERSION)
+      filter: grep -v "type" | grep -v "sort"
+      args: -test_gather -sf_type window -sf_window_sync {{fence active lock}} -sf_window_flavor {{create dynamic allocate}}
+      requires: define(PETSC_HAVE_MPI_ONE_SIDED)
 
    test:
       suffix: 4_basic
@@ -503,8 +509,9 @@ int main(int argc,char **argv)
    test:
       suffix: 5
       nsize: 4
-      args: -test_scatter -sf_type window
-      requires: define(PETSC_HAVE_MPI_WIN_CREATE) define(PETSC_HAVE_MPICH_NUMVERSION)
+      filter: grep -v "type" | grep -v "sort"
+      args: -test_scatter -sf_type window -sf_window_sync {{fence active lock}} -sf_window_flavor {{create dynamic allocate}}
+      requires: define(PETSC_HAVE_MPI_ONE_SIDED)
 
    test:
       suffix: 5_basic
@@ -519,8 +526,9 @@ int main(int argc,char **argv)
    test:
       suffix: 6
       nsize: 4
-      args: -test_embed -sf_type window
-      requires: define(PETSC_HAVE_MPI_WIN_CREATE) define(PETSC_HAVE_MPICH_NUMVERSION)
+      filter: grep -v "type" | grep -v "sort"
+      args: -test_embed -sf_type window -sf_window_sync {{fence active lock}} -sf_window_flavor {{create dynamic allocate}}
+      requires: define(PETSC_HAVE_MPI_ONE_SIDED)
 
    test:
       suffix: 6_basic
@@ -530,8 +538,9 @@ int main(int argc,char **argv)
    test:
       suffix: 7
       nsize: 4
-      args: -test_invert -sf_type window
-      requires: define(PETSC_HAVE_MPI_WIN_CREATE) define(PETSC_HAVE_MPICH_NUMVERSION)
+      filter: grep -v "type" | grep -v "sort"
+      args: -test_invert -sf_type window -sf_window_sync {{fence active lock}} -sf_window_flavor {{create dynamic allocate}}
+      requires: define(PETSC_HAVE_MPI_ONE_SIDED)
 
    test:
       suffix: 7_basic
@@ -553,8 +562,9 @@ int main(int argc,char **argv)
    test:
       suffix: 8
       nsize: 3
-      args: -test_bcast -test_sf_distribute -sf_type window
-      requires: define(PETSC_HAVE_MPI_WIN_CREATE)
+      filter: grep -v "type" | grep -v "sort"
+      args: -test_bcast -test_sf_distribute -sf_type window -sf_window_sync {{fence active lock}} -sf_window_flavor {{create dynamic allocate}}
+      requires: define(PETSC_HAVE_MPI_ONE_SIDED)
 
    test:
       suffix: 8_basic
@@ -565,4 +575,27 @@ int main(int argc,char **argv)
       suffix: 9_char
       nsize: 4
       args: -sf_type basic -test_bcast -test_reduce -test_op max -test_char
+
+   # Here we do not test -sf_window_flavor dynamic since it is designed for repeated SFs with few different rootdata pointers
+   test:
+      suffix: 10
+      filter: grep -v "type" | grep -v "sort"
+      nsize: 4
+      args: -sf_type window -sf_window_sync {{fence active lock}} -sf_window_flavor {{create allocate}} -test_all -test_bcastop 0 -test_fetchandop 0
+      requires: define(PETSC_HAVE_MPI_ONE_SIDED)
+
+   # The nightly test suite with MPICH uses ch3:sock, which is broken when winsize == 0 in some of the processes
+   test:
+      suffix: 10_shared
+      output_file: output/ex1_10.out
+      filter: grep -v "type" | grep -v "sort"
+      nsize: 4
+      args: -sf_type window -sf_window_sync {{fence active lock}} -sf_window_flavor shared -test_all -test_bcastop 0 -test_fetchandop 0
+      requires: define(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY) !define(PETSC_HAVE_MPICH_NUMVERSION) define(PETSC_HAVE_MPI_ONE_SIDED)
+
+   test:
+      suffix: 10_basic
+      nsize: 4
+      args: -sf_type basic -test_all -test_bcastop 0 -test_fetchandop 0
+
 TEST*/

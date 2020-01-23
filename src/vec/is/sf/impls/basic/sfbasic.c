@@ -283,7 +283,7 @@ PETSC_INTERN PetscErrorCode PetscSFDestroy_Basic(PetscSF sf)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscSFReset(sf);CHKERRQ(ierr);
+  ierr = PetscSFReset_Basic(sf);CHKERRQ(ierr);
   ierr = PetscFree(sf->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

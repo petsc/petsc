@@ -287,6 +287,9 @@ shared libraries and run with --known-mpi-shared-libraries=1')
     # Even MPI_Win_create is in MPI 2.0, we do this test to supress MPIUNI, which does not support MPI one-sided.
     if self.checkLink('#include <mpi.h>\n', 'int base[100]; MPI_Win win; if (MPI_Win_create(base,100,4,MPI_INFO_NULL,MPI_COMM_WORLD,&win));\n'):
       self.addDefine('HAVE_MPI_WIN_CREATE', 1)
+    # flag broken one-sided tests
+    if not 'HAVE_MSMPI' in self.defines and not (hasattr(self, 'mpich_numversion') and int(self.mpich_numversion) <= 30004300):
+      self.addDefine('HAVE_MPI_ONE_SIDED', 1)
     self.compilers.CPPFLAGS = oldFlags
     self.compilers.LIBS = oldLibs
     self.logWrite(self.framework.restoreLog())
@@ -330,6 +333,10 @@ shared libraries and run with --known-mpi-shared-libraries=1')
       openmpi_cuda_test = '#include<mpi.h>\n #include <mpi-ext.h>\n #if defined(MPIX_CUDA_AWARE_SUPPORT) && MPIX_CUDA_AWARE_SUPPORT\n #else\n #error This OpenMPI is not CUDA-aware\n #endif\n'
       if self.checkCompile(openmpi_cuda_test):
         self.addDefine('HAVE_MPI_GPU_AWARE', 1)
+    if self.checkLink('#include <mpi.h>\n', 'int ptr[1]; MPI_Win win; if (MPI_Get_accumulate(ptr,1,MPI_INT,ptr,1,MPI_INT,0,0,1,MPI_INT,MPI_SUM,win));\n'):
+      self.addDefine('HAVE_MPI_GET_ACCUMULATE', 1)
+    if self.checkLink('#include <mpi.h>\n', 'int ptr[1]; MPI_Win win; MPI_Request req; if (MPI_Rget(ptr,1,MPI_INT,0,1,1,MPI_INT,win,&req));\n'):
+      self.addDefine('HAVE_MPI_RGET', 1)
     self.compilers.CPPFLAGS = oldFlags
     self.compilers.LIBS = oldLibs
     self.logWrite(self.framework.restoreLog())
@@ -449,7 +456,7 @@ to remove this warning message *****')
        - Define HAVE_MPIIO if they are present
        - Some older MPI 1 implementations are missing these'''
     # MSWIN has buggy MPI IO
-    if 'HAVE_LIBMSMPI' in self.defines: return
+    if 'HAVE_MSMPI' in self.defines: return
     oldFlags = self.compilers.CPPFLAGS
     oldLibs  = self.compilers.LIBS
     self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
@@ -468,8 +475,8 @@ to remove this warning message *****')
     self.compilers.CPPFLAGS = oldFlags
     return
 
-  def checkMPICHorOpenMPI(self):
-    '''Determine if MPICH_NUMVERSION or OMPI_MAJOR_VERSION exist in mpi.h
+  def checkMPIDistro(self):
+    '''Determine if MPICH_NUMVERSION, OMPI_MAJOR_VERSION or MSMPI_VER exist in mpi.h
        Used for consistency checking of MPI installation at compile time'''
     import re
     HASHLINESPACE = ' *(?:\n#.*\n *)*'
@@ -505,7 +512,7 @@ to remove this warning message *****')
       self.compilers.CPPFLAGS = oldFlags
       self.mpi_pkg_version = MPI_VER+'\n'
       return
-  
+
     # IBM Spectrum MPI is derived from OpenMPI, we do not yet have specific tests for it
     # https://www.ibm.com/us-en/marketplace/spectrum-mpi
     openmpi_test = '#include <mpi.h>\nint ompi_major = OMPI_MAJOR_VERSION;\nint ompi_minor = OMPI_MINOR_VERSION;\nint ompi_release = OMPI_RELEASE_VERSION;\n'
@@ -522,9 +529,30 @@ to remove this warning message *****')
         self.ompi_major_version = ompi_major_version
         self.ompi_version = tuple([int(i) for i in [ompi_major_version,ompi_minor_version,ompi_release_version]])
         self.mpi_pkg_version = '  OMPI_VERSION: '+ompi_major_version+'.'+ompi_minor_version+'.'+ompi_release_version+'\n'
+        MPI_VER = '  OMPI_VERSION: '+ompi_major_version+'.'+ompi_minor_version+'.'+ompi_release_version
       except:
         self.logPrint('Unable to parse OpenMPI version from header. Probably a buggy preprocessor')
-    self.compilers.CPPFLAGS = oldFlags
+    if MPI_VER:
+      self.compilers.CPPFLAGS = oldFlags
+      self.mpi_pkg_version = MPI_VER+'\n'
+      return
+
+    msmpi_test = '#include <mpi.h>\n#define xstr(s) str(s)\n#define str(s) #s\n#if defined(MSMPI_VER)\nchar msmpi_hex[] = xstr(MSMPI_VER);\n#else\n#error not MSMPI\n#endif\n'
+    if self.checkCompile(msmpi_test):
+      buf = self.outputPreprocess(msmpi_test)
+      msmpi_version = 'unknown'
+      self.addDefine('HAVE_MSMPI',1) # flag we have MSMPI since we need to disable broken components
+      try:
+        msmpi_version = re.compile('\nchar msmpi_hex\[\] = '+HASHLINESPACE+'\"([a-zA-Z0-9_]*)\"'+HASHLINESPACE+';').search(buf).group(1)
+        MPI_VER = '  MSMPI_VERSION: '+msmpi_version
+        self.addDefine('HAVE_MSMPI_VERSION',msmpi_version)
+      except:
+        self.logPrint('Unable to parse MSMPI version from header. Probably a buggy preprocessor')
+    if MPI_VER:
+      self.compilers.CPPFLAGS = oldFlags
+      self.mpi_pkg_version = MPI_VER+'\n'
+      return
+
     return
 
   def findMPIInc(self):
@@ -595,7 +623,7 @@ to remove this warning message *****')
     if self.setCompilers.usedMPICompilers:
       if 'with-mpi-include' in self.argDB: raise RuntimeError('Do not use --with-mpi-include when using MPI compiler wrappers')
       if 'with-mpi-lib' in self.argDB: raise RuntimeError('Do not use --with-mpi-lib when using MPI compiler wrappers')
-    self.executeTest(self.checkMPICHorOpenMPI)
+    self.executeTest(self.checkMPIDistro)
     if any(x in platform.processor() for x in ['i386','x86','i86pc']) and config.setCompilers.Configure.isSolaris(self.log) and hasattr(self, 'mpich_numversion') and int(self.mpich_numversion) >= 30301300:
       # this is only needed if MPICH/HWLOC were compiled with optimization
       self.logWrite('Setting environmental variable to work around buggy HWLOC\nhttps://github.com/open-mpi/hwloc/issues/290\n')
@@ -603,14 +631,14 @@ to remove this warning message *****')
       self.addDefine('HAVE_HWLOC_SOLARIS_BUG',1)
       self.logPrintBox('***** WARNING: This MPI implementation may have a bug in it that causes programs to hang.\n\
 You may need to set the environmental variable HWLOC_COMPONENTS to -x86 to prevent such hangs. warning message *****')
-    self.executeTest(self.configureMPI2)
-    self.executeTest(self.configureMPI3) #depends on checkMPICHorOpenMPI for self.mpich_numversion
+    self.executeTest(self.configureMPI2) #depends on checkMPIDistro
+    self.executeTest(self.configureMPI3) #depends on checkMPIDistro
     self.executeTest(self.configureMPIEXEC)
     self.executeTest(self.configureMPITypes)
     self.executeTest(self.SGIMPICheck)
     self.executeTest(self.CxxMPICheck)
     self.executeTest(self.FortranMPICheck)
-    self.executeTest(self.configureIO)
+    self.executeTest(self.configureIO) #depends on checkMPIDistro
     self.executeTest(self.findMPIInc)
     self.executeTest(self.PetscArchMPICheck)
     funcs = '''MPI_Type_get_envelope  MPI_Type_dup MPI_Init_thread MPI_Iallreduce MPI_Ibarrier MPI_Finalized MPI_Exscan MPI_Reduce_scatter MPI_Reduce_scatter_block'''.split()

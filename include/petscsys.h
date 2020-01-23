@@ -168,8 +168,14 @@ void assert_never_put_petsc_headers_inside_an_extern_c(int); void assert_never_p
 #  elif (OMPI_MAJOR_VERSION != PETSC_HAVE_OMPI_MAJOR_VERSION) || (OMPI_MINOR_VERSION != PETSC_HAVE_OMPI_MINOR_VERSION) || (OMPI_RELEASE_VERSION < PETSC_HAVE_OMPI_RELEASE_VERSION)
 #    error "PETSc was configured with one OpenMPI mpi.h version but now appears to be compiling using a different OpenMPI mpi.h version"
 #  endif
-#elif defined(OMPI_MAJOR_VERSION) || defined(MPICH_NUMVERSION)
-#  error "PETSc was configured with undetermined MPI - but now appears to be compiling using either of OpenMPI or a MPICH variant"
+#elif defined(PETSC_HAVE_MSMPI_VERSION)
+#  if !defined(MSMPI_VER)
+#    error "PETSc was configured with MSMPI but now appears to be compiling using a non-MSMPI mpi.h"
+#  elif (MSMPI_VER != PETSC_HAVE_MSMPI_VERSION)
+#    error "PETSc was configured with one MSMPI mpi.h version but now appears to be compiling using a different MSMPI mpi.h version"
+#  endif
+#elif defined(OMPI_MAJOR_VERSION) || defined(MPICH_NUMVERSION) || defined(MSMPI_VER)
+#  error "PETSc was configured with undetermined MPI - but now appears to be compiling using any of OpenMPI, MS-MPI or a MPICH variant"
 #endif
 
 /*
