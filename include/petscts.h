@@ -813,11 +813,11 @@ typedef const char* TSRKType;
 #define TSRK7VR   "7vr"
 #define TSRK8VR   "8vr"
 
-PETSC_EXTERN PetscErrorCode TSRKGetType(TS ts,TSRKType*);
-PETSC_EXTERN PetscErrorCode TSRKSetType(TS ts,TSRKType);
+PETSC_EXTERN PetscErrorCode TSRKGetType(TS,TSRKType*);
+PETSC_EXTERN PetscErrorCode TSRKSetType(TS,TSRKType);
+PETSC_EXTERN PetscErrorCode TSRKGetTableau(TS,PetscInt*,const PetscReal**,const PetscReal**,const PetscReal**,const PetscReal**,PetscInt*,const PetscReal**,PetscBool*);
 PETSC_EXTERN PetscErrorCode TSRKSetMultirate(TS,PetscBool);
 PETSC_EXTERN PetscErrorCode TSRKGetMultirate(TS,PetscBool*);
-PETSC_EXTERN PetscErrorCode TSRKSetFullyImplicit(TS,PetscBool);
 PETSC_EXTERN PetscErrorCode TSRKRegister(TSRKType,PetscInt,PetscInt,const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],PetscInt,const PetscReal[]);
 PETSC_EXTERN PetscErrorCode TSRKInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSRKFinalizePackage(void);
@@ -831,10 +831,10 @@ PETSC_EXTERN PetscErrorCode TSRKRegisterDestroy(void);
 .seealso: TSMPRKSetType(), TS, TSMPRK, TSMPRKRegister()
 J*/
 typedef const char* TSMPRKType;
-#define TSMPRK2A22   "2a22"
-#define TSMPRK2A23   "2a23"
-#define TSMPRK2A32   "2a32"
-#define TSMPRK2A33   "2a33"
+#define TSMPRK2A22  "2a22"
+#define TSMPRK2A23  "2a23"
+#define TSMPRK2A32  "2a32"
+#define TSMPRK2A33  "2a33"
 #define TSMPRKP2    "p2"
 #define TSMPRKP3    "p3"
 
