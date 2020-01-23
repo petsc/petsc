@@ -569,9 +569,12 @@ PetscErrorCode  PCFactorGetUseInPlace(PC pc,PetscBool *flg)
     Notes:
     nested dissection is used by default
 
-    For Cholesky and ICC and the SBAIJ format reorderings are not available,
-    since only the upper triangular part of the matrix is stored. You can use the
-    SeqAIJ format in this case to get reorderings.
+    For Cholesky and ICC and the SBAIJ format the only reordering available is natural since only the upper half of the matrix is stored
+    and reordering this matrix is very expensive.
+
+    You can use SeqAIJ matrix with Cholesky and ICC and use any ordering
+
+.seealso: MatOrderingType
 
 @*/
 PetscErrorCode  PCFactorSetMatOrderingType(PC pc,MatOrderingType ordering)

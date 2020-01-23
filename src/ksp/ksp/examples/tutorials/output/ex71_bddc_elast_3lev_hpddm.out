@@ -150,7 +150,7 @@ PC Object: 8 MPI processes
           PC Object:   (pc_bddc_coarse_pc_hpddm_levels_1_sub_)   1 MPI processes
             type: cholesky
               out-of-place factorization
-              matrix ordering: natural
+              matrix ordering: nd
               factor fill ratio given 5., needed 1.
                 Factored matrix follows:
                   Mat Object:   1 MPI processes

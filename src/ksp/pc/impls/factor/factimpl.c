@@ -279,9 +279,10 @@ PetscErrorCode  PCSetFromOptions_Factor(PetscOptionItems *PetscOptionsObject,PC 
 
 PetscErrorCode PCView_Factor(PC pc,PetscViewer viewer)
 {
-  PC_Factor      *factor = (PC_Factor*)pc->data;
-  PetscErrorCode ierr;
-  PetscBool      isstring,iascii;
+  PC_Factor       *factor = (PC_Factor*)pc->data;
+  PetscErrorCode  ierr;
+  PetscBool       isstring,iascii,flg;
+  MatOrderingType ordering;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
@@ -312,7 +313,19 @@ PetscErrorCode PCView_Factor(PC pc,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  using %s [%s]\n",MatFactorShiftTypesDetail[(int)factor->info.shifttype],MatFactorShiftTypes[(int)factor->info.shifttype]);CHKERRQ(ierr);
     }
 
-    ierr = PetscViewerASCIIPrintf(viewer,"  matrix ordering: %s\n",factor->ordering);CHKERRQ(ierr);
+    ierr = PetscStrcmp(factor->ordering,MATORDERINGNATURAL_OR_ND,&flg);CHKERRQ(ierr);
+    if (flg) {
+      PetscBool isseqsbaij;
+      ierr = PetscObjectTypeCompareAny((PetscObject)pc->pmat,&isseqsbaij,MATSEQSBAIJ,MATSEQBAIJ,NULL);CHKERRQ(ierr);
+      if (isseqsbaij) {
+        ordering = MATORDERINGNATURAL;
+      } else {
+        ordering = MATORDERINGND;
+      }
+    } else {
+      ordering = factor->ordering;
+    }
+    ierr = PetscViewerASCIIPrintf(viewer,"  matrix ordering: %s\n",ordering);CHKERRQ(ierr);
 
     if (factor->fact) {
       MatInfo info;

@@ -38,8 +38,6 @@ class Configure(config.package.Package):
     import os
     if self.slepc.found and not self.checkSharedLibrariesEnabled():
       raise RuntimeError('Shared libraries enabled needed to build PCHPDDM')
-    if self.framework.argDB['with-64-bit-blas-indices']:
-      raise RuntimeError('32-bit BLAS needed to build HPDDM')
     buildDir   = os.path.join(self.packageDir,'petsc-build')
     self.setCompilers.pushLanguage('Cxx')
     cxx = self.setCompilers.getCompiler()

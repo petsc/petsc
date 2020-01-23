@@ -286,7 +286,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_Cholesky(PC pc)
   dir->col = 0;
   dir->row = 0;
 
-  ierr = PetscStrallocpy(MATORDERINGNATURAL,(char**)&((PC_Factor*)dir)->ordering);CHKERRQ(ierr);
+  /* MATORDERINGNATURAL_OR_ND allows selecting type based on matrix type sbaij or aij */
+  ierr = PetscStrallocpy(MATORDERINGNATURAL_OR_ND,(char**)&((PC_Factor*)dir)->ordering);CHKERRQ(ierr);
 
   pc->ops->destroy             = PCDestroy_Cholesky;
   pc->ops->reset               = PCReset_Cholesky;

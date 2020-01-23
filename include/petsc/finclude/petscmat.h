@@ -61,6 +61,7 @@
 #define MATCOLORINGJP      'jp'
 
 #define MATORDERINGNATURAL   'natural'
+#define MATORDERINGNATURAL_OR_ND 'natural_or_nd'
 #define MATORDERINGND        'nd'
 #define MATORDERING1WD       '1wd'
 #define MATORDERINGRCM       'rcm'

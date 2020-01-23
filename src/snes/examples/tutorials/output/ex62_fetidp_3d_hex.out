@@ -70,14 +70,14 @@ SNES Object: 5 MPI processes
                           type: cholesky
                             out-of-place factorization
                             tolerance for zero pivot 2.22045e-14
-                            matrix ordering: natural
-                            factor fill ratio given 5., needed 5.24512
+                            matrix ordering: nd
+                            factor fill ratio given 5., needed 1.90717
                               Factored matrix follows:
                                 Mat Object: 1 MPI processes
                                   type: seqsbaij
                                   rows=693, cols=693
                                   package used to perform factorization: petsc
-                                  total: nonzeros=150021, allocated nonzeros=150021
+                                  total: nonzeros=54549, allocated nonzeros=54549
                                   total number of mallocs used during MatSetValues calls=0
                                       block size is 1
                           linear system matrix = precond matrix:
@@ -161,14 +161,14 @@ SNES Object: 5 MPI processes
                                   type: cholesky
                                     out-of-place factorization
                                     tolerance for zero pivot 2.22045e-14
-                                    matrix ordering: natural
-                                    factor fill ratio given 5., needed 5.24512
+                                    matrix ordering: nd
+                                    factor fill ratio given 5., needed 1.90717
                                       Factored matrix follows:
                                         Mat Object: 1 MPI processes
                                           type: seqsbaij
                                           rows=693, cols=693
                                           package used to perform factorization: petsc
-                                          total: nonzeros=150021, allocated nonzeros=150021
+                                          total: nonzeros=54549, allocated nonzeros=54549
                                           total number of mallocs used during MatSetValues calls=0
                                               block size is 1
                                   linear system matrix = precond matrix:
@@ -404,4 +404,4 @@ SNES Object: 5 MPI processes
       total: nonzeros=722206, allocated nonzeros=983974
       total number of mallocs used during MatSetValues calls=0
         has attached null space
-L_2 Error: 1.52049e-08 [4.93337e-10, 1.51969e-08]
+L_2 Error: 1.50706e-08 [4.86429e-10, 1.50627e-08]
