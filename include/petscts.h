@@ -813,6 +813,7 @@ typedef const char* TSRKType;
 #define TSRK7VR   "7vr"
 #define TSRK8VR   "8vr"
 
+PETSC_EXTERN PetscErrorCode TSRKGetOrder(TS,PetscInt*);
 PETSC_EXTERN PetscErrorCode TSRKGetType(TS,TSRKType*);
 PETSC_EXTERN PetscErrorCode TSRKSetType(TS,TSRKType);
 PETSC_EXTERN PetscErrorCode TSRKGetTableau(TS,PetscInt*,const PetscReal**,const PetscReal**,const PetscReal**,const PetscReal**,PetscInt*,const PetscReal**,PetscBool*);

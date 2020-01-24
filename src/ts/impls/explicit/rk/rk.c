@@ -1254,6 +1254,32 @@ static PetscErrorCode TSLoad_RK(TS ts,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+/*@
+  TSRKGetOrder - Get the order of RK scheme
+
+  Not collective
+
+  Input Parameter:
+.  ts - timestepping context
+
+  Output Parameter:
+.  order - order of RK-scheme
+
+  Level: intermediate
+
+.seealso: TSRKGetType()
+@*/
+PetscErrorCode TSRKGetOrder(TS ts,PetscInt *order)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidIntPointer(order,2);
+  ierr = PetscUseMethod(ts,"TSRKGetOrder_C",(TS,PetscInt*),(ts,order));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@C
   TSRKSetType - Set the type of RK scheme
 
@@ -1284,7 +1310,7 @@ PetscErrorCode TSRKSetType(TS ts,TSRKType rktype)
 /*@C
   TSRKGetType - Get the type of RK scheme
 
-  Logically collective
+  Not collective
 
   Input Parameter:
 .  ts - timestepping context
@@ -1294,7 +1320,7 @@ PetscErrorCode TSRKSetType(TS ts,TSRKType rktype)
 
   Level: intermediate
 
-.seealso: TSRKGetType()
+.seealso: TSRKSetType()
 @*/
 PetscErrorCode TSRKGetType(TS ts,TSRKType *rktype)
 {
@@ -1303,6 +1329,15 @@ PetscErrorCode TSRKGetType(TS ts,TSRKType *rktype)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   ierr = PetscUseMethod(ts,"TSRKGetType_C",(TS,TSRKType*),(ts,rktype));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode TSRKGetOrder_RK(TS ts,PetscInt *order)
+{
+  TS_RK *rk = (TS_RK*)ts->data;
+
+  PetscFunctionBegin;
+  *order = rk->tableau->order;
   PetscFunctionReturn(0);
 }
 
@@ -1362,6 +1397,7 @@ static PetscErrorCode TSDestroy_RK(TS ts)
     ierr = DMSubDomainHookRemove(ts->dm,DMSubDomainHook_TSRK,DMSubDomainRestrictHook_TSRK,ts);CHKERRQ(ierr);
   }
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKGetOrder_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKGetType_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKSetType_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKGetTableau_C",NULL);CHKERRQ(ierr);
@@ -1508,6 +1544,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_RK(TS ts)
   ierr = PetscNewLog(ts,&rk);CHKERRQ(ierr);
   ts->data = (void*)rk;
 
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKGetOrder_C",TSRKGetOrder_RK);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKGetType_C",TSRKGetType_RK);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKSetType_C",TSRKSetType_RK);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKGetTableau_C",TSRKGetTableau_RK);CHKERRQ(ierr);

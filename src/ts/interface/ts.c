@@ -3601,6 +3601,7 @@ PetscErrorCode  TSStep(TS ts)
   ierr = TSSetUp(ts);CHKERRQ(ierr);
   ierr = TSTrajectorySetUp(ts->trajectory,ts);CHKERRQ(ierr);
 
+  if (!ts->ops->step) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSStep not implemented for type '%s'",((PetscObject)ts)->type_name);
   if (ts->max_time >= PETSC_MAX_REAL && ts->max_steps == PETSC_MAX_INT) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"You must call TSSetMaxTime() or TSSetMaxSteps(), or use -ts_max_time <time> or -ts_max_steps <steps>");
   if (ts->exact_final_time == TS_EXACTFINALTIME_UNSPECIFIED) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"You must call TSSetExactFinalTime() or use -ts_exact_final_time <stepover,interpolate,matchstep> before calling TSStep()");
   if (ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP && !ts->adapt) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Since TS is not adaptive you cannot use TS_EXACTFINALTIME_MATCHSTEP, suggest TS_EXACTFINALTIME_INTERPOLATE");
@@ -3608,24 +3609,25 @@ PetscErrorCode  TSStep(TS ts)
   if (!ts->steps) ts->ptime_prev = ts->ptime;
   ptime = ts->ptime; ts->ptime_prev_rollback = ts->ptime_prev;
   ts->reason = TS_CONVERGED_ITERATING;
-  if (!ts->ops->step) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSStep not implemented for type '%s'",((PetscObject)ts)->type_name);
+
   ierr = PetscLogEventBegin(TS_Step,ts,0,0,0);CHKERRQ(ierr);
   ierr = (*ts->ops->step)(ts);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(TS_Step,ts,0,0,0);CHKERRQ(ierr);
-  ts->ptime_prev = ptime;
-  ts->steps++;
-  ts->steprollback = PETSC_FALSE;
-  ts->steprestart  = PETSC_FALSE;
 
-  if (ts->reason < 0) {
-    if (ts->errorifstepfailed) {
-      if (ts->reason == TS_DIVERGED_NONLINEAR_SOLVE) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed due to %s, increase -ts_max_snes_failures or make negative to attempt recovery",TSConvergedReasons[ts->reason]);
-      else SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed due to %s",TSConvergedReasons[ts->reason]);
-    }
-  } else if (!ts->reason) {
+  if (ts->reason >= 0) {
+    ts->ptime_prev = ptime;
+    ts->steps++;
+    ts->steprollback = PETSC_FALSE;
+    ts->steprestart  = PETSC_FALSE;
+  }
+
+  if (!ts->reason) {
     if (ts->steps >= ts->max_steps) ts->reason = TS_CONVERGED_ITS;
     else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
   }
+
+  if (ts->reason < 0 && ts->errorifstepfailed && ts->reason == TS_DIVERGED_NONLINEAR_SOLVE) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed due to %s, increase -ts_max_snes_failures or make negative to attempt recovery",TSConvergedReasons[ts->reason]);
+  if (ts->reason < 0 && ts->errorifstepfailed) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed due to %s",TSConvergedReasons[ts->reason]);
   PetscFunctionReturn(0);
 }
 
