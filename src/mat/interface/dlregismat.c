@@ -154,7 +154,7 @@ PetscErrorCode  MatInitializePackage(void)
   PetscFunctionBegin;
   if (MatPackageInitialized) PetscFunctionReturn(0);
   MatPackageInitialized = PETSC_TRUE;
-  /* Inialize subpackage */
+  /* Initialize subpackage */
   ierr = MatMFFDInitializePackage();CHKERRQ(ierr);
   /* Register Classes */
   ierr = PetscClassIdRegister("Matrix",&MAT_CLASSID);CHKERRQ(ierr);

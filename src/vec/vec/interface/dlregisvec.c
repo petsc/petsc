@@ -154,6 +154,8 @@ PetscErrorCode  VecInitializePackage(void)
   PetscFunctionBegin;
   if (VecPackageInitialized) PetscFunctionReturn(0);
   VecPackageInitialized = PETSC_TRUE;
+  /* Initialize subpackage */
+  ierr = VecScatterInitializePackage();CHKERRQ(ierr);
   /* Register Classes */
   ierr = PetscClassIdRegister("Vector",&VEC_CLASSID);CHKERRQ(ierr);
   /* Register Constructors */
