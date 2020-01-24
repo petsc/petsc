@@ -1,0 +1,73 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8">
+    <link href="../style.css" rel="stylesheet" type="text/css">
+    <title>PETSc: DMNetwork</title>
+  </head>
+  <body>
+
+    <div id="logo">
+      <h1>PETSc</h1>
+    </div>
+
+    <div id="header">
+      <h1>PETSc DMNetwork</h1>
+    </div>
+
+    <hr>
+
+    <div id="sidebar">
+      <ul>
+        <li><a href="../index.html">Home</a></li>
+        <li><a href="../download/index.html">Download</a></li>
+        <li><a href="../features/index.html">Features</a></li>
+        <li><a href="../documentation/index.html">Documentation</a></li>
+        <li><a href="../Publications/index.html">Documentation</a></li>
+        <li><a href="../miscellaneous/index.html">Miscellaneous</a></li>
+        <li><a href="../miscellaneous/external.html">External Software</a></li>
+        <li><a href="../developers/index.html">Developers Site</a></li>
+        <li>
+          <!-- <a href="../dmnetwork/index.html">DMNetwork</a> -->
+          <span class="current">DMNetwork</span>
+          <ul>
+            <li><a href="case_studies.html">Case Studies</a></li>
+            <li><a href="tutorials.html">Tutorials</a></li>
+            <li><a href="publications.html">Publications</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+
+    <div id="main">
+
+      <p>
+        PETSc DMNetwork provides a powerful flexible scalable framework for simulation of multiphysics
+        phenomena over large-scale networked systems such as power, water, gas, transportation,
+        and telecommunicaiton. It eases the application development cycle by providing the necessary infrastructure through simple abstractions to define and query the network components.
+      </p>
+
+      <center>
+        <img alt="" src="images/network.jpg"/>
+      </center>
+
+      <p>
+        PETSc DMNetwork provides data and topology management, parallelization for multiphysics systems over a network, and hierarchical and composable solvers to exploit the problem structure. The key features of DMNetwork include creating the network layout,
+        partitioning for efficient parallelism, parallel data movement, utility routines for extracting
+        connectivity information, and linear, nonlinear,
+        and time-stepping solvers. The steps for using DMNetwork is illustrated in the figure below and they include:
+        (i) Create network graph, (ii) Add physics components, and variabeles to the network elements (edges and vertices),
+        (iii) Distribute the poplulated network to multiple processors,
+        and (iv) decompose the domains and associate them with their respective linear, nonlinear, time-stepping solvers.
+      </p>
+
+      <center>
+        <img alt="" src="images/dmnetwork.png"/>
+      </center>
+
+    </div>
+
+    <hr>
+
+  </body>
+</html>
