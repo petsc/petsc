@@ -269,7 +269,7 @@ linux-cuda-double:
     - .stage-2
     - .linux_test
   tags:
-    - gpu:nvidia, os:linux
+    - gpu:nvidia, os:linux, name:p1
   variables:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -cuda_initialize 0
     TEST_ARCH: arch-ci-linux-cuda-double
