@@ -1142,8 +1142,7 @@ PetscErrorCode  DMCreateInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
 }
 
 /*@
-    DMCreateInterpolationScale - Forms L = R*1/diag(R*1) - L.*v is like a coarse grid average of the
-      nearby fine grid points.
+    DMCreateInterpolationScale - Forms L = 1/(R*1) such that diag(L)*R preserves scale and is thus suitable for state (versus residual) restriction.
 
   Input Parameters:
 +      dac - DM that defines a coarse mesh
