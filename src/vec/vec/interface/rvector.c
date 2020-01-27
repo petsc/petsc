@@ -1,4 +1,3 @@
-
 /*
      Provides the interface functions for vector operations that have PetscScalar/PetscReal in the signature
    These are the vector functions the user calls.
@@ -2048,7 +2047,7 @@ PetscErrorCode  VecPlaceArray(Vec vec,const PetscScalar array[])
    with the old array.
 
    The memory passed in MUST be obtained with PetscMalloc() and CANNOT be
-   freed by the user. It will be freed when the vector is destroy.
+   freed by the user. It will be freed when the vector is destroyed.
 
    Not supported from Fortran
 

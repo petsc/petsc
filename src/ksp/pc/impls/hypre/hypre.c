@@ -1,4 +1,3 @@
-
 /*
    Provides an interface to the LLNL package hypre
 */
@@ -2071,9 +2070,10 @@ PetscErrorCode  PCHYPREGetType(PC pc,const char *name[])
           -pc_hypre_parasails_reuse were failing with SIGSEGV. Dalcin L.
 
           MatSetNearNullSpace() - if you provide a near null space to your matrix it is ignored by hypre UNLESS you also use
-          the two options:
+          the following two options:
+   Options Database Keys:
 +   -pc_hypre_boomeramg_nodal_coarsen <n> - where n is from 1 to 6 (see HYPRE_BOOMERAMGSetNodal())
--   -pc_hypre_boomeramg_vec_interp_variant <v> where v is from 1 to 3 (see HYPRE_BoomerAMGSetInterpVecVariant())
+-   -pc_hypre_boomeramg_vec_interp_variant <v> - where v is from 1 to 3 (see HYPRE_BoomerAMGSetInterpVecVariant())
 
           Depending on the linear system you may see the same or different convergence depending on the values you use.
 
