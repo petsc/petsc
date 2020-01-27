@@ -183,6 +183,7 @@ PetscErrorCode TaoTestHessian(Tao tao)
   }
   if (complete_print) {
     ierr = PetscViewerPopFormat(mviewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&mviewer);CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIISetTab(viewer,tabs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
