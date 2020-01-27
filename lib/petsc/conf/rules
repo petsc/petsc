@@ -324,6 +324,7 @@ getautoconfargs:
           grep -v "may result in errors or" | \
           grep -v "is deprecated" | \
           grep -v "Werror=format-security" | \
+          grep -v " -Werror " | \
 	  egrep -i '(Error|warning|Can|Unresolved)' >> /dev/null;\
 	  if [ "$$?" != 1 ]; then \
           printf ${PETSC_TEXT_HILIGHT}"*******************Error detected during compile or link!*******************\n";\
@@ -370,6 +371,7 @@ getautoconfargs:
           grep -v "IPO Error: unresolved" | \
           grep -v "warning multiple definitions of symbol _matdensegetarray_" | \
           grep -v "Werror=format-security" | \
+          grep -v " -Werror " | \
 	  egrep -i '(Error|warning|Can|Unresolved)'  >> /dev/null ; \
 	  if [ "$$?" != 1 ]; then \
           printf ${PETSC_TEXT_HILIGHT}"*******************Error detected during compile or link!*******************\n";\

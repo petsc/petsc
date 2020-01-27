@@ -1,9 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 configure_options = [
-  # Blas autodetec with cygwin blas at /usr/lib/liblapack,a,libblas.a
-  '--with-mpi-dir=/home/petsc/soft/mpich-3.1',
-  '--with-shared-libraries=0',
+  # Autodetect cygwin blas/lapack, OpenMPI
   '--with-debugging=0',
   # not using -g so that the binaries are smaller
   'COPTFLAGS=-O',

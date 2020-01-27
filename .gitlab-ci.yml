@@ -129,7 +129,7 @@ checksource:
     - make CFLAGS=${MAKE_CFLAGS} CXXFLAGS=${MAKE_CXXFLAGS}
     - make CFLAGS=${MAKE_CFLAGS} CXXFLAGS=${MAKE_CXXFLAGS} check
     - make updatedatafiles
-    - make CFLAGS=${MAKE_CFLAGS} CXXFLAGS=${MAKE_CXXFLAGS} cleantest allgtests-tap TIMEOUT=${TIMEOUT}
+    - if [ -z ${DISABLE_TESTS+x} ]; then make CFLAGS=${MAKE_CFLAGS} CXXFLAGS=${MAKE_CXXFLAGS} cleantest allgtests-tap TIMEOUT=${TIMEOUT}; fi
   artifacts:
     reports:
       junit: ${TEST_ARCH}/tests/testresults.xml
@@ -319,6 +319,23 @@ mswin-uni:
     - name:ps5-2
   variables:
     TEST_ARCH: arch-ci-mswin-uni
+
+mswin-gnu:
+  extends:
+    - .stage-2
+    - .mswin_test
+  tags:
+    - name:ps5-3
+  variables:
+    TEST_ARCH: arch-ci-mswin-gnu
+    MAKE_CFLAGS: -Werror
+    MAKE_CXXFLAGS: -Werror
+    DISABLE_TESTS: 1
+  artifacts:
+    reports:
+    paths:
+    - arch-*/lib/petsc/conf/*.log
+    expire_in: 4 days
 
 #
 # The following tests run as part of stage-3.
