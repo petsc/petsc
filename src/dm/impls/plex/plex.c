@@ -3837,6 +3837,36 @@ PetscErrorCode DMPlexGetPointDepth(DM dm, PetscInt point, PetscInt *depth)
 }
 
 /*@
+  DMPlexGetPointHeight - Get the height of a given point
+
+  Not Collective
+
+  Input Parameter:
++ dm    - The DMPlex object
+- point - The point
+
+  Output Parameter:
+. height - The height of the point
+
+  Level: intermediate
+
+.seealso: DMPlexGetCellType(), DMPlexGetDepthLabel(), DMPlexGetDepth()
+@*/
+PetscErrorCode DMPlexGetPointHeight(DM dm, PetscInt point, PetscInt *height)
+{
+  PetscInt       n, pDepth;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidIntPointer(height, 3);
+  ierr = DMLabelGetNumValues(dm->depthLabel, &n);CHKERRQ(ierr);
+  ierr = DMLabelGetValue(dm->depthLabel, point, &pDepth);CHKERRQ(ierr);
+  *height = n - 1 - pDepth;  /* DAG depth is n-1 */
+  PetscFunctionReturn(0);
+}
+
+/*@
   DMPlexGetCellTypeLabel - Get the DMLabel recording the polytope type of each cell
 
   Not Collective
