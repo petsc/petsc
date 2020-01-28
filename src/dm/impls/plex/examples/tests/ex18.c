@@ -1924,4 +1924,12 @@ int main(int argc, char **argv)
       args: -distribute -petscpartitioner_type parmetis
       args: -interpolate after_distribute
 
+  testset: # 10 HDF5 PARALLEL LOAD
+    requires: hdf5 !complex datafilespath
+    nsize: {{2 4 7}}
+    args: -dm_plex_check_all
+    args: -filename ${DATAFILESPATH}/meshes/cube-hexahedra-refined2.h5 -dm_plex_create_from_hdf5_xdmf -dm_plex_hdf5_topology_path /topo -dm_plex_hdf5_geometry_path /geom
+    test: # par load, par interpolation
+      suffix: 10_par_hdf5_int
+      args: -interpolate after_create
 TEST*/
