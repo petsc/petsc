@@ -58,8 +58,8 @@ variables:
     - echo CONFIG_OPTS=$(CONFIG_OPTS)
   script:
     - ${PYTHON} ./configure --with-debugging=0 COPTFLAGS='-O -march=native' CXXOPTFLAGS='-O -march=native' FOPTFLAGS='-O -march=native' ${CONFIG_OPTS}
-    - make CFLAGS=-Werror CXXFLAGS=-Werror
-    - make CFLAGS=-Werror CXXFLAGS=-Werror allgtests-tap search="${TEST_SEARCH}" TIMEOUT=${TIMEOUT}
+    - make CFLAGS=-Werror CXXFLAGS=-Werror FFLAGS=-Werror
+    - make CFLAGS=-Werror CXXFLAGS=-Werror FFLAGS=-Werror allgtests-tap search="${TEST_SEARCH}" TIMEOUT=${TIMEOUT}
   after_script:
     - date
     - CCACHE_DIR=$(pwd)/.ccache ccache --show-stats
@@ -126,10 +126,10 @@ checksource:
     - printf "./config/examples/${TEST_ARCH}.py\n"
     - cat ./config/examples/${TEST_ARCH}.py
     - ./config/examples/${TEST_ARCH}.py
-    - make CFLAGS=${MAKE_CFLAGS} CXXFLAGS=${MAKE_CXXFLAGS}
-    - make CFLAGS=${MAKE_CFLAGS} CXXFLAGS=${MAKE_CXXFLAGS} check
+    - make CFLAGS=${MAKE_CFLAGS} CXXFLAGS=${MAKE_CXXFLAGS} FFLAGS=${MAKE_FFLAGS}
+    - make CFLAGS=${MAKE_CFLAGS} CXXFLAGS=${MAKE_CXXFLAGS} FFLAGS=${MAKE_FFLAGS} check
     - make updatedatafiles
-    - if [ -z ${DISABLE_TESTS+x} ]; then make CFLAGS=${MAKE_CFLAGS} CXXFLAGS=${MAKE_CXXFLAGS} cleantest allgtests-tap TIMEOUT=${TIMEOUT}; fi
+    - if [ -z ${DISABLE_TESTS+x} ]; then make CFLAGS=${MAKE_CFLAGS} CXXFLAGS=${MAKE_CXXFLAGS} FFLAGS=${MAKE_FFLAGS} cleantest allgtests-tap TIMEOUT=${TIMEOUT}; fi
   artifacts:
     reports:
       junit: ${TEST_ARCH}/tests/testresults.xml
@@ -181,11 +181,13 @@ checksource:
   variables:
     MAKE_CFLAGS: -Werror
     MAKE_CXXFLAGS: -Werror
+    MAKE_FFLAGS: -Werror
 
 .freebsd_test:
   variables:
     MAKE_CFLAGS: -Werror
     MAKE_CXXFLAGS: -Werror
+    MAKE_FFLAGS: -Werror
   before_script:
     - date
     - hostname
@@ -200,6 +202,7 @@ checksource:
   variables:
     MAKE_CFLAGS: -Werror
     MAKE_CXXFLAGS: -Werror
+    MAKE_FFLAGS: -Werror
   before_script:
     - date
     - hostname
@@ -242,7 +245,8 @@ linux-gcc-complex-opt:
     - .stage-2
     - .linux_test
   tags:
-    - linux-dell
+    - linux-stage2
+    - ci:1
   variables:
     TEST_ARCH: arch-ci-linux-gcc-complex-opt
 
@@ -251,7 +255,7 @@ linux-gcc-pkgs-opt:
     - .stage-2
     - .linux_test
   tags:
-    - linux-dell
+    - linux-stage2
   variables:
     TEST_ARCH: arch-ci-linux-gcc-pkgs-opt
 
@@ -260,7 +264,7 @@ linux-gcc-quad-64idx-dbg:
     - .stage-2
     - .linux_test
   tags:
-    - linux-dell
+    - linux-stage2
   variables:
     TEST_ARCH: arch-ci-linux-gcc-quad-64idx-dbg
 
@@ -330,6 +334,7 @@ mswin-gnu:
     TEST_ARCH: arch-ci-mswin-gnu
     MAKE_CFLAGS: -Werror
     MAKE_CXXFLAGS: -Werror
+    MAKE_FFLAGS: -Werror
     DISABLE_TESTS: 1
   artifacts:
     reports:
@@ -747,6 +752,7 @@ linux-nagfor:
     - mcs-nfs
   variables:
     TEST_ARCH: arch-ci-linux-nagfor
+    MAKE_FFLAGS: -DNO_WERROR_FLAG
 
 # job for analyzing the final coverage results
 analyze-pipeline:
