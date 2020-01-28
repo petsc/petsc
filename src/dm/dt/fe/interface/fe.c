@@ -1707,6 +1707,9 @@ PetscErrorCode PetscFERefine(PetscFE fe, PetscFE *feRef)
   Output Parameter:
 . fem - The PetscFE object
 
+  Note:
+  Each object is SetFromOption() during creation, so that the object may be customized from the command line.
+
   Level: beginner
 
 .seealso: PetscFECreate(), PetscSpaceCreate(), PetscDualSpaceCreate()
@@ -1759,6 +1762,87 @@ PetscErrorCode PetscFECreateDefault(MPI_Comm comm, PetscInt dim, PetscInt Nc, Pe
   ierr = PetscObjectOptionsBegin((PetscObject)*fem);CHKERRQ(ierr);
   ierr = PetscOptionsBoundedInt("-petscfe_default_quadrature_order","Quadrature order is one less than quadrature points per edge","PetscFECreateDefault",qorder,&qorder,NULL,0);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  quadPointsPerEdge = PetscMax(qorder + 1,1);
+  if (isSimplex) {
+    ierr = PetscDTGaussJacobiQuadrature(dim,   1, quadPointsPerEdge, -1.0, 1.0, &q);CHKERRQ(ierr);
+    ierr = PetscDTGaussJacobiQuadrature(dim-1, 1, quadPointsPerEdge, -1.0, 1.0, &fq);CHKERRQ(ierr);
+  } else {
+    ierr = PetscDTGaussTensorQuadrature(dim,   1, quadPointsPerEdge, -1.0, 1.0, &q);CHKERRQ(ierr);
+    ierr = PetscDTGaussTensorQuadrature(dim-1, 1, quadPointsPerEdge, -1.0, 1.0, &fq);CHKERRQ(ierr);
+  }
+  ierr = PetscFESetQuadrature(*fem, q);CHKERRQ(ierr);
+  ierr = PetscFESetFaceQuadrature(*fem, fq);CHKERRQ(ierr);
+  ierr = PetscQuadratureDestroy(&q);CHKERRQ(ierr);
+  ierr = PetscQuadratureDestroy(&fq);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscFECreateLagrange - Create a PetscFE for the basic Lagrange space of degree k
+
+  Collective
+
+  Input Parameters:
++ comm      - The MPI comm
+. dim       - The spatial dimension
+. Nc        - The number of components
+. isSimplex - Flag for simplex reference cell, otherwise its a tensor product
+. k         - The degree k of the space
+- qorder    - The quadrature order or PETSC_DETERMINE to use PetscSpace polynomial degree
+
+  Output Parameter:
+. fem       - The PetscFE object
+
+  Level: beginner
+
+  Notes:
+  For simplices, this element is the space of maximum polynomial degree k, otherwise it is a tensor product of 1D polynomials, each with maximal degree k.
+
+.seealso: PetscFECreate(), PetscSpaceCreate(), PetscDualSpaceCreate()
+@*/
+PetscErrorCode PetscFECreateLagrange(MPI_Comm comm, PetscInt dim, PetscInt Nc, PetscBool isSimplex, PetscInt k, PetscInt qorder, PetscFE *fem)
+{
+  PetscQuadrature q, fq;
+  DM              K;
+  PetscSpace      P;
+  PetscDualSpace  Q;
+  PetscInt        quadPointsPerEdge;
+  PetscBool       tensor = isSimplex ? PETSC_FALSE : PETSC_TRUE;
+  char            name[64];
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  /* Create space */
+  ierr = PetscSpaceCreate(comm, &P);CHKERRQ(ierr);
+  ierr = PetscSpaceSetType(P, PETSCSPACEPOLYNOMIAL);CHKERRQ(ierr);
+  ierr = PetscSpacePolynomialSetTensor(P, tensor);CHKERRQ(ierr);
+  ierr = PetscSpaceSetNumComponents(P, Nc);CHKERRQ(ierr);
+  ierr = PetscSpaceSetNumVariables(P, dim);CHKERRQ(ierr);
+  ierr = PetscSpaceSetDegree(P, k, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = PetscSpaceSetUp(P);CHKERRQ(ierr);
+  /* Create dual space */
+  ierr = PetscDualSpaceCreate(comm, &Q);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetType(Q, PETSCDUALSPACELAGRANGE);CHKERRQ(ierr);
+  ierr = PetscDualSpaceCreateReferenceCell(Q, dim, isSimplex, &K);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetDM(Q, K);CHKERRQ(ierr);
+  ierr = DMDestroy(&K);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetNumComponents(Q, Nc);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetOrder(Q, k);CHKERRQ(ierr);
+  ierr = PetscDualSpaceLagrangeSetTensor(Q, tensor);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetUp(Q);CHKERRQ(ierr);
+  /* Create element */
+  ierr = PetscFECreate(comm, fem);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(name, 64, "P%d", (int) k);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) *fem, name);CHKERRQ(ierr);
+  ierr = PetscFESetType(*fem, PETSCFEBASIC);CHKERRQ(ierr);
+  ierr = PetscFESetBasisSpace(*fem, P);CHKERRQ(ierr);
+  ierr = PetscFESetDualSpace(*fem, Q);CHKERRQ(ierr);
+  ierr = PetscFESetNumComponents(*fem, Nc);CHKERRQ(ierr);
+  ierr = PetscFESetUp(*fem);CHKERRQ(ierr);
+  ierr = PetscSpaceDestroy(&P);CHKERRQ(ierr);
+  ierr = PetscDualSpaceDestroy(&Q);CHKERRQ(ierr);
+  /* Create quadrature (with specified order if given) */
+  qorder = qorder >= 0 ? qorder : k;
   quadPointsPerEdge = PetscMax(qorder + 1,1);
   if (isSimplex) {
     ierr = PetscDTGaussJacobiQuadrature(dim,   1, quadPointsPerEdge, -1.0, 1.0, &q);CHKERRQ(ierr);

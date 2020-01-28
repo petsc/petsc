@@ -3146,6 +3146,7 @@ PetscErrorCode DMPlexRemapGeometry(DM dm, PetscReal time,
                                                 PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]))
 {
   DM             cdm;
+  DMField        cf;
   Vec            lCoords, tmpCoords;
   PetscErrorCode ierr;
 
@@ -3154,7 +3155,11 @@ PetscErrorCode DMPlexRemapGeometry(DM dm, PetscReal time,
   ierr = DMGetCoordinatesLocal(dm, &lCoords);CHKERRQ(ierr);
   ierr = DMGetLocalVector(cdm, &tmpCoords);CHKERRQ(ierr);
   ierr = VecCopy(lCoords, tmpCoords);CHKERRQ(ierr);
+  /* We have to do the coordinate field manually right now since the coordinate DM will not have its own */
+  ierr = DMGetCoordinateField(dm, &cf);CHKERRQ(ierr);
+  cdm->coordinateField = cf;
   ierr = DMProjectFieldLocal(cdm, time, tmpCoords, &func, INSERT_VALUES, lCoords);CHKERRQ(ierr);
+  cdm->coordinateField = NULL;
   ierr = DMRestoreLocalVector(cdm, &tmpCoords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
