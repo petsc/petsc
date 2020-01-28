@@ -1023,13 +1023,21 @@ static PetscErrorCode DMPlexAddSharedFace_Private(DM dm, PetscSection candidateS
 {
   MPI_Comm        comm;
   const PetscInt *support;
-  PetscInt        supportSize, s, off = 0, idx = 0;
+  PetscInt        supportSize, s, off = 0, idx = 0, overlap, cellHeight, height;
   PetscMPIInt     rank;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = DMPlexGetOverlap(dm, &overlap);CHKERRQ(ierr);
+  ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
+  ierr = DMPlexGetPointHeight(dm, p, &height);CHKERRQ(ierr);
+  if (!overlap && height <= cellHeight+1) {
+    /* cells can't be shared for non-overlapping meshes */
+    if (debug) {ierr = PetscSynchronizedPrintf(comm, "[%d]    Skipping face %D to avoid adding cell to hashmap since this is nonoverlapping mesh\n", rank, p);CHKERRQ(ierr);}
+    PetscFunctionReturn(0);
+  }
   ierr = DMPlexGetSupportSize(dm, p, &supportSize);CHKERRQ(ierr);
   ierr = DMPlexGetSupport(dm, p, &support);CHKERRQ(ierr);
   if (candidates) {ierr = PetscSectionGetOffset(candidateSection, p, &off);CHKERRQ(ierr);}
