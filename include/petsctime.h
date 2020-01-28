@@ -17,7 +17,7 @@ PETSC_EXTERN PetscLogDouble petsc_BaseTime;
 
    Synopsis:
     #include <petsctime.h>
-   PetscTime(PetscLogDouble *v)
+    PetscErrorCode PetscTime(PetscLogDouble *v)
 
    Not Collective
 
@@ -49,7 +49,7 @@ M*/
 
    Synopsis:
     #include <petsctime.h>
-   PetscTimeSubtract(&PetscLogDouble *v)
+    PetscErrorCode PetscTimeSubtract(PetscLogDouble *v)
 
    Not Collective
 
@@ -78,7 +78,7 @@ M*/
 
    Synopsis:
     #include <petsctime.h>
-   PetscTimeAdd(PetscLogDouble *v)
+    PetscErrorCode PetscTimeAdd(PetscLogDouble *v)
 
    Not Collective
 
