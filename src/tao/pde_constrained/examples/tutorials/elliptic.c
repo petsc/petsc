@@ -12,7 +12,6 @@
    Routines: TaoSetJacobianDesignRoutine();
    Routines: TaoSetStateDesignIS();
    Routines: TaoSetFromOptions();
-   Routines: TaoSetHistory(); TaoGetHistory();
    Routines: TaoSolve();
    Routines: TaoDestroy();
    Processors: n

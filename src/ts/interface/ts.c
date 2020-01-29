@@ -168,12 +168,12 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   ierr = PetscOptionsBool("-ts_use_splitrhsfunction","Use the split RHS function for multirate solvers ","TSSetUseSplitRHSFunction",ts->use_splitrhsfunction,&ts->use_splitrhsfunction,NULL);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SAWS)
   {
-  PetscBool set;
-  flg  = PETSC_FALSE;
-  ierr = PetscOptionsBool("-ts_saws_block","Block for SAWs memory snooper at end of TSSolve","PetscObjectSAWsBlock",((PetscObject)ts)->amspublishblock,&flg,&set);CHKERRQ(ierr);
-  if (set) {
-    ierr = PetscObjectSAWsSetBlock((PetscObject)ts,flg);CHKERRQ(ierr);
-  }
+    PetscBool set;
+    flg  = PETSC_FALSE;
+    ierr = PetscOptionsBool("-ts_saws_block","Block for SAWs memory snooper at end of TSSolve","PetscObjectSAWsBlock",((PetscObject)ts)->amspublishblock,&flg,&set);CHKERRQ(ierr);
+    if (set) {
+      ierr = PetscObjectSAWsSetBlock((PetscObject)ts,flg);CHKERRQ(ierr);
+    }
   }
 #endif
 
@@ -3949,6 +3949,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
     ts->reject            = 0;
     ts->steprestart       = PETSC_TRUE;
     ts->steprollback      = PETSC_FALSE;
+    ts->rhsjacobian.time  = PETSC_MIN_REAL;
   }
   if (ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP && ts->ptime < ts->max_time && ts->ptime + ts->time_step > ts->max_time) ts->time_step = ts->max_time - ts->ptime;
   ts->reason = TS_CONVERGED_ITERATING;
@@ -7380,7 +7381,7 @@ PetscErrorCode  TSClone(TS tsin, TS *tsout)
   t->ksp_its           = 0;
   t->snes_its          = 0;
   t->nwork             = 0;
-  t->rhsjacobian.time  = -1e20;
+  t->rhsjacobian.time  = PETSC_MIN_REAL;
   t->rhsjacobian.scale = 1.;
   t->ijacobian.shift   = 1.;
 
