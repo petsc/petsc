@@ -9,7 +9,7 @@
 
   implicit none
   PetscInt,    parameter :: wp = real64, n = 10
-  PetscScalar, parameter :: zero = (0.0_wp,0.0_wp), one  = (1.0_wp,0.0_wp)
+  PetscScalar, parameter :: zero = 0.0, one = 1.0
   Mat      :: L
   PetscInt :: istart, iend, row, i1, i0
   PetscErrorCode :: ierr
