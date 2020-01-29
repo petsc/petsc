@@ -3701,7 +3701,7 @@ PetscErrorCode DMPlexGetDepthLabel(DM dm, DMLabel *depthLabel)
   This returns maximum of point depths over all points, i.e. maximum value of the label returned by DMPlexGetDepthLabel().
   The point depth is described more in detail in DMPlexSymmetrize().
 
-.seealso: DMPlexGetDepthLabel(), DMPlexGetHeightStratum(), DMPlexGetDepthStratum(), DMPlexSymmetrize()
+.seealso: DMPlexGetDepthLabel(), DMPlexGetHeightStratum(), DMPlexGetDepthStratum(), DMPlexGetPointDepth(), DMPlexGetPointHeight(), DMPlexSymmetrize()
 @*/
 PetscErrorCode DMPlexGetDepth(DM dm, PetscInt *depth)
 {
@@ -3738,7 +3738,7 @@ PetscErrorCode DMPlexGetDepth(DM dm, PetscInt *depth)
 
   Level: developer
 
-.seealso: DMPlexGetHeightStratum(), DMPlexGetDepth()
+.seealso: DMPlexGetHeightStratum(), DMPlexGetDepth(), DMPlexGetPointDepth()
 @*/
 PetscErrorCode DMPlexGetDepthStratum(DM dm, PetscInt stratumValue, PetscInt *start, PetscInt *end)
 {
@@ -3783,7 +3783,7 @@ PetscErrorCode DMPlexGetDepthStratum(DM dm, PetscInt stratumValue, PetscInt *sta
 
   Level: developer
 
-.seealso: DMPlexGetDepthStratum(), DMPlexGetDepth()
+.seealso: DMPlexGetDepthStratum(), DMPlexGetDepth(), DMPlexGetPointHeight()
 @*/
 PetscErrorCode DMPlexGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt *start, PetscInt *end)
 {
@@ -3823,7 +3823,7 @@ PetscErrorCode DMPlexGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt *st
 
   Level: intermediate
 
-.seealso: DMPlexGetCellType(), DMPlexGetDepthLabel(), DMPlexGetDepth()
+.seealso: DMPlexGetCellType(), DMPlexGetDepthLabel(), DMPlexGetDepth(), DMPlexGetPointHeight()
 @*/
 PetscErrorCode DMPlexGetPointDepth(DM dm, PetscInt point, PetscInt *depth)
 {
@@ -3850,7 +3850,7 @@ PetscErrorCode DMPlexGetPointDepth(DM dm, PetscInt point, PetscInt *depth)
 
   Level: intermediate
 
-.seealso: DMPlexGetCellType(), DMPlexGetDepthLabel(), DMPlexGetDepth()
+.seealso: DMPlexGetCellType(), DMPlexGetDepthLabel(), DMPlexGetDepth(), DMPlexGetPointDepth()
 @*/
 PetscErrorCode DMPlexGetPointHeight(DM dm, PetscInt point, PetscInt *height)
 {
