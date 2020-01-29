@@ -46,8 +46,9 @@
       PetscMPIInt                  req
 
       ! Own stuff
-      integer                   :: role                 ! is this process a BOY, a GIRL or a TEACHER?
-      integer                   :: i, j
+      integer4                  :: role                 ! is this process a BOY, a GIRL or a TEACHER?
+      integer4                  :: i, j
+      integer4,parameter        :: one=1
 !====================================================================
 !     Initializations
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
@@ -69,7 +70,7 @@
       allocate(message(msgLen,msglen))
       do i = 1,msgLen
          do j  = 1,msgLen
-            message(i,j) = 10.0*j + i*1.0/(rank+1)
+            message(i,j) = 10.0*j + i*1.0/(rank+one)
          end do
       end do
 !
