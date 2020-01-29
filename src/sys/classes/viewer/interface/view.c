@@ -110,7 +110,7 @@ PetscErrorCode  PetscViewerDestroy(PetscViewer *viewer)
   PetscValidHeaderSpecific(*viewer,PETSC_VIEWER_CLASSID,1);
 
   ierr = PetscViewerFlush(*viewer);CHKERRQ(ierr);
-  if (--((PetscObject)(*viewer))->refct > 0) {*viewer = 0; PetscFunctionReturn(0);}
+  if (--((PetscObject)(*viewer))->refct > 0) {*viewer = NULL; PetscFunctionReturn(0);}
 
   ierr = PetscObjectSAWsViewOff((PetscObject)*viewer);CHKERRQ(ierr);
   if ((*viewer)->ops->destroy) {

@@ -70,7 +70,7 @@ PetscErrorCode PetscBagRegisterEnum(PetscBag bag,void *addr,const char *const *l
   item->dtype  = PETSC_ENUM;
   item->offset = ((char*)addr) - ((char*)bag);
   if (item->offset > bag->bagsize) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Registered item %s %s is not in bag memory space",name,help);
-  item->next        = 0;
+  item->next        = NULL;
   item->msize       = 1;
   ierr              = PetscStrArrayallocpy(list,(char***)&item->list);CHKERRQ(ierr);
   *(PetscEnum*)addr = mdefault;
@@ -123,7 +123,7 @@ PetscErrorCode PetscBagRegisterIntArray(PetscBag bag,void *addr,PetscInt msize, 
   item->dtype  = PETSC_INT;
   item->offset = ((char*)addr) - ((char*)bag);
   if (item->offset > bag->bagsize) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Registered item %s %s is not in bag memory space",name,help);
-  item->next  = 0;
+  item->next  = NULL;
   item->msize = msize;
   ierr        = PetscBagRegister_Private(bag,item,name,help);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -174,7 +174,7 @@ PetscErrorCode PetscBagRegisterRealArray(PetscBag bag,void *addr,PetscInt msize,
   item->dtype  = PETSC_REAL;
   item->offset = ((char*)addr) - ((char*)bag);
   if (item->offset > bag->bagsize) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Registered item %s %s is not in bag memory space",name,help);
-  item->next  = 0;
+  item->next  = NULL;
   item->msize = msize;
   ierr        = PetscBagRegister_Private(bag,item,name,help);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -220,7 +220,7 @@ PetscErrorCode PetscBagRegisterInt(PetscBag bag,void *addr,PetscInt mdefault,con
   item->dtype  = PETSC_INT;
   item->offset = ((char*)addr) - ((char*)bag);
   if (item->offset > bag->bagsize) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Registered item %s %s is not in bag memory space",name,help);
-  item->next       = 0;
+  item->next       = NULL;
   item->msize      = 1;
   *(PetscInt*)addr = mdefault;
   ierr             = PetscBagRegister_Private(bag,item,name,help);CHKERRQ(ierr);
@@ -270,7 +270,7 @@ PetscErrorCode PetscBagRegisterInt64(PetscBag bag,void *addr,PetscInt64 mdefault
   item->dtype  = PETSC_INT;
   item->offset = ((char*)addr) - ((char*)bag);
   if (item->offset > bag->bagsize) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Registered item %s %s is not in bag memory space",name,help);
-  item->next       = 0;
+  item->next       = NULL;
   item->msize      = 1;
   *(PetscInt64*)addr = mdefault;
   ierr             = PetscBagRegister_Private(bag,item,name,help);CHKERRQ(ierr);
@@ -322,7 +322,7 @@ PetscErrorCode PetscBagRegisterBoolArray(PetscBag bag,void *addr,PetscInt msize,
   item->dtype  = PETSC_BOOL;
   item->offset = ((char*)addr) - ((char*)bag);
   if (item->offset > bag->bagsize) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Registered item %s %s is not in bag memory space",name,help);
-  item->next   = 0;
+  item->next   = NULL;
   item->msize  = msize;
   ierr = PetscBagRegister_Private(bag,item,name,help);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -370,7 +370,7 @@ PetscErrorCode PetscBagRegisterString(PetscBag bag,void *addr,PetscInt msize,con
   item->dtype  = PETSC_CHAR;
   item->offset = ((char*)addr) - ((char*)bag);
   if (item->offset > bag->bagsize) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Registered item %s %s is not in bag memory space",name,help);
-  item->next  = 0;
+  item->next  = NULL;
   item->msize = msize;
   if (mdefault != (char*)addr) {
     ierr = PetscStrncpy((char*)addr,mdefault,msize-1);CHKERRQ(ierr);
@@ -420,7 +420,7 @@ PetscErrorCode PetscBagRegisterReal(PetscBag bag,void *addr,PetscReal mdefault, 
   item->dtype  = PETSC_REAL;
   item->offset = ((char*)addr) - ((char*)bag);
   if (item->offset > bag->bagsize) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Registered item %s %s is not in bag memory space",name,help);
-  item->next        = 0;
+  item->next        = NULL;
   item->msize       = 1;
   *(PetscReal*)addr = mdefault;
   ierr              = PetscBagRegister_Private(bag,item,name,help);CHKERRQ(ierr);
@@ -468,7 +468,7 @@ PetscErrorCode PetscBagRegisterScalar(PetscBag bag,void *addr,PetscScalar mdefau
   item->dtype  = PETSC_SCALAR;
   item->offset = ((char*)addr) - ((char*)bag);
   if (item->offset > bag->bagsize) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Registered item %s %s is not in bag memory space",name,help);
-  item->next          = 0;
+  item->next          = NULL;
   item->msize         = 1;
   *(PetscScalar*)addr = mdefault;
   ierr                = PetscBagRegister_Private(bag,item,name,help);CHKERRQ(ierr);
@@ -518,7 +518,7 @@ PetscErrorCode PetscBagRegisterBool(PetscBag bag,void *addr,PetscBool mdefault,c
   item->dtype  = PETSC_BOOL;
   item->offset = ((char*)addr) - ((char*)bag);
   if (item->offset > bag->bagsize) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Registered item %s %s is not in bag memory space",name,help);
-  item->next        = 0;
+  item->next        = NULL;
   item->msize       = 1;
   *(PetscBool*)addr = mdefault;
   ierr              = PetscBagRegister_Private(bag,item,name,help);CHKERRQ(ierr);
@@ -585,7 +585,7 @@ PetscErrorCode  PetscBagSetFromOptions(PetscBag bag)
   ierr = PetscStrncpy(helpname,bag->bagname,sizeof(helpname));CHKERRQ(ierr);
   ierr = PetscStrlcat(helpname," ",sizeof(helpname));CHKERRQ(ierr);
   ierr = PetscStrlcat(helpname,bag->baghelp,sizeof(helpname));CHKERRQ(ierr);
-  ierr = PetscOptionsBegin(bag->bagcomm,bag->bagprefix,helpname,0);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(bag->bagcomm,bag->bagprefix,helpname,NULL);CHKERRQ(ierr);
   while (nitem) {
     name[0] = '-';
     name[1] = 0;

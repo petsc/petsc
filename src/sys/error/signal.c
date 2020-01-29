@@ -14,7 +14,7 @@ struct SH {
   void           *ctx;
   struct SH      *previous;
 };
-static struct SH *sh       = 0;
+static struct SH *sh       = NULL;
 static PetscBool SignalSet = PETSC_FALSE;
 
 /*
@@ -238,7 +238,7 @@ PetscErrorCode  PetscPushSignalHandler(PetscErrorCode (*routine)(int,void*),void
     signal(SIGURG,  PETSC_SIGNAL_CAST PetscSignalHandler_Private);
 #endif
 #if !defined(PETSC_MISSING_SIGUSR1)
-    /*    signal(SIGUSR1, PETSC_SIGNAL_CAST PetscSignalHandler_Private); */
+    /* signal(SIGUSR1, PETSC_SIGNAL_CAST PetscSignalHandler_Private); */
 #endif
 #if !defined(PETSC_MISSING_SIGUSR2)
     /* signal(SIGUSR2, PETSC_SIGNAL_CAST PetscSignalHandler_Private); */
@@ -247,55 +247,55 @@ PetscErrorCode  PetscPushSignalHandler(PetscErrorCode (*routine)(int,void*),void
   }
   if (!routine) {
 #if !defined(PETSC_MISSING_SIGALRM)
-    /* signal(SIGALRM, 0); */
+    /* signal(SIGALRM, SIG_DFL); */
 #endif
 #if !defined(PETSC_MISSING_SIGBUS)
-    signal(SIGBUS,  0);
+    signal(SIGBUS,  SIG_DFL);
 #endif
 #if !defined(PETSC_MISSING_SIGCONT)
-    /* signal(SIGCONT, 0); */
+    /* signal(SIGCONT, SIG_DFL); */
 #endif
 #if !defined(PETSC_MISSING_SIGFPE)
-    signal(SIGFPE,  0);
+    signal(SIGFPE,  SIG_DFL);
 #endif
 #if !defined(PETSC_MISSING_SIGHUP)
-    signal(SIGHUP,  0);
+    signal(SIGHUP,  SIG_DFL);
 #endif
 #if !defined(PETSC_MISSING_SIGILL)
-    signal(SIGILL,  0);
+    signal(SIGILL,  SIG_DFL);
 #endif
 #if !defined(PETSC_MISSING_SIGINT)
-    /* signal(SIGINT,  0); */
+    /* signal(SIGINT,  SIG_DFL); */
 #endif
 #if !defined(PETSC_MISSING_SIGPIPE)
-    signal(SIGPIPE, 0);
+    signal(SIGPIPE, SIG_DFL);
 #endif
 #if !defined(PETSC_MISSING_SIGQUIT)
-    signal(SIGQUIT, 0);
+    signal(SIGQUIT, SIG_DFL);
 #endif
 #if !defined(PETSC_MISSING_SIGSEGV)
-    signal(SIGSEGV, 0);
+    signal(SIGSEGV, SIG_DFL);
 #endif
 #if !defined(PETSC_MISSING_SIGSYS)
-    signal(SIGSYS,  0);
+    signal(SIGSYS,  SIG_DFL);
 #endif
 #if !defined(PETSC_MISSING_SIGTERM)
-    signal(SIGTERM, 0);
+    signal(SIGTERM, SIG_DFL);
 #endif
 #if !defined(PETSC_MISSING_SIGTRAP)
-    signal(SIGTRAP, 0);
+    signal(SIGTRAP, SIG_DFL);
 #endif
 #if !defined(PETSC_MISSING_SIGTSTP)
-    /* signal(SIGTSTP, 0); */
+    /* signal(SIGTSTP, SIG_DFL); */
 #endif
 #if !defined(PETSC_MISSING_SIGURG)
-    signal(SIGURG,  0);
+    signal(SIGURG,  SIG_DFL);
 #endif
 #if !defined(PETSC_MISSING_SIGUSR1)
-    /*    signal(SIGUSR1, 0); */
+    /* signal(SIGUSR1, SIG_DFL); */
 #endif
 #if !defined(PETSC_MISSING_SIGUSR2)
-    /* signal(SIGUSR2, 0); */
+    /* signal(SIGUSR2, SIG_DFL); */
 #endif
     SignalSet = PETSC_FALSE;
   }
@@ -303,7 +303,7 @@ PetscErrorCode  PetscPushSignalHandler(PetscErrorCode (*routine)(int,void*),void
   if (sh) {
     if (sh->classid != SIGNAL_CLASSID) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Signal object has been corrupted");
     newsh->previous = sh;
-  }  else newsh->previous = 0;
+  }  else newsh->previous = NULL;
   newsh->handler = routine;
   newsh->ctx     = ctx;
   newsh->classid = SIGNAL_CLASSID;
@@ -337,55 +337,55 @@ PetscErrorCode  PetscPopSignalHandler(void)
   ierr = PetscFree(tmp);CHKERRQ(ierr);
   if (!sh || !sh->handler) {
 #if !defined(PETSC_MISSING_SIGALRM)
-    /* signal(SIGALRM, 0); */
+    /* signal(SIGALRM, SIG_DFL); */
 #endif
 #if !defined(PETSC_MISSING_SIGBUS)
-    signal(SIGBUS,  0);
+    signal(SIGBUS,  SIG_DFL);
 #endif
 #if !defined(PETSC_MISSING_SIGCONT)
-    /* signal(SIGCONT, 0); */
+    /* signal(SIGCONT, SIG_DFL); */
 #endif
 #if !defined(PETSC_MISSING_SIGFPE)
-    signal(SIGFPE,  0);
+    signal(SIGFPE,  SIG_DFL);
 #endif
 #if !defined(PETSC_MISSING_SIGHUP)
-    signal(SIGHUP,  0);
+    signal(SIGHUP,  SIG_DFL);
 #endif
 #if !defined(PETSC_MISSING_SIGILL)
-    signal(SIGILL,  0);
+    signal(SIGILL,  SIG_DFL);
 #endif
 #if !defined(PETSC_MISSING_SIGINT)
-    /* signal(SIGINT,  0); */
+    /* signal(SIGINT,  SIG_DFL); */
 #endif
 #if !defined(PETSC_MISSING_SIGPIPE)
-    signal(SIGPIPE, 0);
+    signal(SIGPIPE, SIG_DFL);
 #endif
 #if !defined(PETSC_MISSING_SIGQUIT)
-    signal(SIGQUIT, 0);
+    signal(SIGQUIT, SIG_DFL);
 #endif
 #if !defined(PETSC_MISSING_SIGSEGV)
-    signal(SIGSEGV, 0);
+    signal(SIGSEGV, SIG_DFL);
 #endif
 #if !defined(PETSC_MISSING_SIGSYS)
-    signal(SIGSYS,  0);
+    signal(SIGSYS,  SIG_DFL);
 #endif
 #if !defined(PETSC_MISSING_SIGTERM)
-    signal(SIGTERM, 0);
+    signal(SIGTERM, SIG_DFL);
 #endif
 #if !defined(PETSC_MISSING_SIGTRAP)
-    signal(SIGTRAP, 0);
+    signal(SIGTRAP, SIG_DFL);
 #endif
 #if !defined(PETSC_MISSING_SIGTSTP)
-    /* signal(SIGTSTP, 0); */
+    /* signal(SIGTSTP, SIG_DFL); */
 #endif
 #if !defined(PETSC_MISSING_SIGURG)
-    signal(SIGURG,  0);
+    signal(SIGURG,  SIG_DFL);
 #endif
 #if !defined(PETSC_MISSING_SIGUSR1)
-    /*    signal(SIGUSR1, 0); */
+    /* signal(SIGUSR1, SIG_DFL); */
 #endif
 #if !defined(PETSC_MISSING_SIGUSR2)
-    /* signal(SIGUSR2, 0); */
+    /* signal(SIGUSR2, SIG_DFL); */
 #endif
     SignalSet = PETSC_FALSE;
   } else {

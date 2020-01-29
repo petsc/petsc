@@ -17,11 +17,11 @@ PETSC_INTERN PetscErrorCode PetscSequentialPhaseBegin_Private(MPI_Comm comm,int 
   if (size == 1) PetscFunctionReturn(0);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (rank) {
-    ierr = MPI_Recv(0,0,MPI_INT,rank-1,tag,comm,&status);CHKERRQ(ierr);
+    ierr = MPI_Recv(NULL,0,MPI_INT,rank-1,tag,comm,&status);CHKERRQ(ierr);
   }
   /* Send to the next process in the group unless we are the last process */
   if ((rank % ng) < ng - 1 && rank != size - 1) {
-    ierr = MPI_Send(0,0,MPI_INT,rank + 1,tag,comm);CHKERRQ(ierr);
+    ierr = MPI_Send(NULL,0,MPI_INT,rank + 1,tag,comm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -39,10 +39,10 @@ PETSC_INTERN PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm comm,int ng
 
   /* Send to the first process in the next group */
   if ((rank % ng) == ng - 1 || rank == size - 1) {
-    ierr = MPI_Send(0,0,MPI_INT,(rank + 1) % size,tag,comm);CHKERRQ(ierr);
+    ierr = MPI_Send(NULL,0,MPI_INT,(rank + 1) % size,tag,comm);CHKERRQ(ierr);
   }
   if (!rank) {
-    ierr = MPI_Recv(0,0,MPI_INT,size-1,tag,comm,&status);CHKERRQ(ierr);
+    ierr = MPI_Recv(NULL,0,MPI_INT,size-1,tag,comm,&status);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -99,7 +99,7 @@ PetscErrorCode  PetscSequentialPhaseBegin(MPI_Comm comm,int ng)
 
   /* Get the private communicator for the sequential operations */
   if (Petsc_Seq_keyval == MPI_KEYVAL_INVALID) {
-    ierr = MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,MPI_COMM_NULL_DELETE_FN,&Petsc_Seq_keyval,0);CHKERRQ(ierr);
+    ierr = MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,MPI_COMM_NULL_DELETE_FN,&Petsc_Seq_keyval,NULL);CHKERRQ(ierr);
   }
 
   ierr = MPI_Comm_dup(comm,&local_comm);CHKERRQ(ierr);

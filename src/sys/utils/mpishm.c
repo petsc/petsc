@@ -21,7 +21,7 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelComm_Shm(MPI_Comm comm,PetscMPIInt keyv
   PetscShmComm p = (PetscShmComm)val;
 
   PetscFunctionBegin;
-  ierr = PetscInfo1(0,"Deleting shared memory subcommunicator in a MPI_Comm %ld\n",(long)comm);CHKERRMPI(ierr);
+  ierr = PetscInfo1(NULL,"Deleting shared memory subcommunicator in a MPI_Comm %ld\n",(long)comm);CHKERRMPI(ierr);
   ierr = MPI_Comm_free(&p->shmcomm);CHKERRMPI(ierr);
   ierr = PetscFree(p->globranks);CHKERRMPI(ierr);
   ierr = PetscFree(val);CHKERRMPI(ierr);

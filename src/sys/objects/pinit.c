@@ -50,8 +50,8 @@ PetscBool sf_use_default_cuda_stream = PETSC_FALSE;
 /*
      Declare and set all the string names of the PETSc enums
 */
-const char *const PetscBools[]     = {"FALSE","TRUE","PetscBool","PETSC_",0};
-const char *const PetscCopyModes[] = {"COPY_VALUES","OWN_POINTER","USE_POINTER","PetscCopyMode","PETSC_",0};
+const char *const PetscBools[]     = {"FALSE","TRUE","PetscBool","PETSC_",NULL};
+const char *const PetscCopyModes[] = {"COPY_VALUES","OWN_POINTER","USE_POINTER","PetscCopyMode","PETSC_",NULL};
 
 PetscBool PetscPreLoadingUsed = PETSC_FALSE;
 PetscBool PetscPreLoadingOn   = PETSC_FALSE;
@@ -141,7 +141,7 @@ PetscErrorCode  PetscInitializeNoArguments(void)
 {
   PetscErrorCode ierr;
   int            argc   = 0;
-  char           **args = 0;
+  char           **args = NULL;
 
   PetscFunctionBegin;
   ierr = PetscInitialize(&argc,&args,NULL,NULL);
@@ -329,7 +329,7 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelCounter(MPI_Comm comm,PetscMPIInt keyva
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscInfo1(0,"Deleting counter data in an MPI_Comm %ld\n",(long)comm);CHKERRMPI(ierr);
+  ierr = PetscInfo1(NULL,"Deleting counter data in an MPI_Comm %ld\n",(long)comm);CHKERRMPI(ierr);
   ierr = PetscFree(count_val);CHKERRMPI(ierr);
   PetscFunctionReturn(MPI_SUCCESS);
 }
@@ -359,7 +359,7 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelComm_Outer(MPI_Comm comm,PetscMPIInt ke
   if (!flg) SETERRMPI(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Inner MPI_Comm does not have expected reference to outer comm");
   if (ocomm.comm != comm) SETERRMPI(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Inner MPI_Comm has reference to non-matching outer comm");
   ierr = MPI_Comm_delete_attr(icomm.comm,Petsc_OuterComm_keyval);CHKERRMPI(ierr);
-  ierr = PetscInfo1(0,"User MPI_Comm %ld is being freed after removing reference from inner PETSc comm to this outer comm\n",(long)comm);CHKERRMPI(ierr);
+  ierr = PetscInfo1(NULL,"User MPI_Comm %ld is being freed after removing reference from inner PETSc comm to this outer comm\n",(long)comm);CHKERRMPI(ierr);
   PetscFunctionReturn(MPI_SUCCESS);
 }
 
@@ -371,7 +371,7 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelComm_Inner(MPI_Comm comm,PetscMPIInt ke
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscInfo1(0,"Removing reference to PETSc communicator embedded in a user MPI_Comm %ld\n",(long)comm);CHKERRMPI(ierr);
+  ierr = PetscInfo1(NULL,"Removing reference to PETSc communicator embedded in a user MPI_Comm %ld\n",(long)comm);CHKERRMPI(ierr);
   PetscFunctionReturn(MPI_SUCCESS);
 }
 
@@ -388,7 +388,7 @@ PetscMPIInt PETSC_MPI_ERROR_CLASS,PETSC_MPI_ERROR_CODE;
 PETSC_INTERN int  PetscGlobalArgc;
 PETSC_INTERN char **PetscGlobalArgs;
 int  PetscGlobalArgc   = 0;
-char **PetscGlobalArgs = 0;
+char **PetscGlobalArgs = NULL;
 PetscSegBuffer PetscCitationsList;
 
 PetscErrorCode PetscCitationsInitialize(void)
@@ -1022,16 +1022,16 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = PetscInitialize_DynamicLibraries();CHKERRQ(ierr);
 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  ierr = PetscInfo1(0,"PETSc successfully started: number of processors = %d\n",size);CHKERRQ(ierr);
+  ierr = PetscInfo1(NULL,"PETSc successfully started: number of processors = %d\n",size);CHKERRQ(ierr);
   ierr = PetscGetHostName(hostname,256);CHKERRQ(ierr);
-  ierr = PetscInfo1(0,"Running on machine: %s\n",hostname);CHKERRQ(ierr);
+  ierr = PetscInfo1(NULL,"Running on machine: %s\n",hostname);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_OPENMP)
   {
     PetscBool omp_view_flag;
     char      *threads = getenv("OMP_NUM_THREADS");
 
    if (threads) {
-     ierr = PetscInfo1(0,"Number of OpenMP threads %s (given by OMP_NUM_THREADS)\n",threads);CHKERRQ(ierr);
+     ierr = PetscInfo1(NULL,"Number of OpenMP threads %s (given by OMP_NUM_THREADS)\n",threads);CHKERRQ(ierr);
      (void) sscanf(threads, "%" PetscInt_FMT,&PetscNumOMPThreads);
    } else {
 #define NMAX  10000
@@ -1044,14 +1044,14 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
         PetscNumOMPThreads  = (PetscInt) omp_get_num_threads();
       }
       ierr = PetscFree(x);CHKERRQ(ierr);
-      ierr = PetscInfo1(0,"Number of OpenMP threads %D (number not set with OMP_NUM_THREADS, chosen by system)\n",PetscNumOMPThreads);CHKERRQ(ierr);
+      ierr = PetscInfo1(NULL,"Number of OpenMP threads %D (number not set with OMP_NUM_THREADS, chosen by system)\n",PetscNumOMPThreads);CHKERRQ(ierr);
     }
     ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"OpenMP options","Sys");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-omp_num_threads","Number of OpenMP threads to use (can also use environmental variable OMP_NUM_THREADS","None",PetscNumOMPThreads,&PetscNumOMPThreads,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsName("-omp_view","Display OpenMP number of threads",NULL,&omp_view_flag);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscInfo1(0,"Number of OpenMP theads %D (given by -omp_num_threads)\n",PetscNumOMPThreads);CHKERRQ(ierr);
+      ierr = PetscInfo1(NULL,"Number of OpenMP theads %D (given by -omp_num_threads)\n",PetscNumOMPThreads);CHKERRQ(ierr);
       omp_set_num_threads((int)PetscNumOMPThreads);
     }
     if (omp_view_flag) {
@@ -1491,7 +1491,7 @@ PetscErrorCode  PetscFinalize(void)
 
   if (petsc_history) {
     ierr = PetscCloseHistoryFile(&petsc_history);CHKERRQ(ierr);
-    petsc_history = 0;
+    petsc_history = NULL;
   }
   ierr = PetscOptionsHelpPrintedDestroy(&PetscOptionsHelpPrintedSingleton);CHKERRQ(ierr);
 
@@ -1558,7 +1558,7 @@ PetscErrorCode  PetscFinalize(void)
   ierr = PetscOptionsDestroyDefault();CHKERRQ(ierr);
 
   PetscGlobalArgc = 0;
-  PetscGlobalArgs = 0;
+  PetscGlobalArgs = NULL;
 
   ierr = PetscFreeMPIResources();CHKERRQ(ierr);
 

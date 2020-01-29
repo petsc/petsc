@@ -5,7 +5,7 @@
 #include <petscsys.h>    /*I   "petscsys.h"    I*/
 #include <petscviewer.h>
 
-const char *const PetscSubcommTypes[] = {"GENERAL","CONTIGUOUS","INTERLACED","PetscSubcommType","PETSC_SUBCOMM_",0};
+const char *const PetscSubcommTypes[] = {"GENERAL","CONTIGUOUS","INTERLACED","PetscSubcommType","PETSC_SUBCOMM_",NULL};
 
 static PetscErrorCode PetscSubcommCreate_contiguous(PetscSubcomm);
 static PetscErrorCode PetscSubcommCreate_interlaced(PetscSubcomm);

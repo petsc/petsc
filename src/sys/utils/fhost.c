@@ -85,11 +85,11 @@ PetscErrorCode  PetscGetHostName(char name[],size_t nlen)
     /* check if domain name is not a dnsdomainname and nuke it */
     ierr = PetscStrlen(name,&ll);CHKERRQ(ierr);
     if (ll > 4) {
-      const char *suffixes[] = {".edu",".com",".net",".org",".mil",0};
+      const char *suffixes[] = {".edu",".com",".net",".org",".mil",NULL};
       PetscInt   index;
       ierr = PetscStrendswithwhich(name,suffixes,&index);CHKERRQ(ierr);
       if (!suffixes[index]) {
-        ierr      = PetscInfo1(0,"Rejecting domainname, likely is NIS %s\n",name);CHKERRQ(ierr);
+        ierr      = PetscInfo1(NULL,"Rejecting domainname, likely is NIS %s\n",name);CHKERRQ(ierr);
         name[l-1] = 0;
       }
     }

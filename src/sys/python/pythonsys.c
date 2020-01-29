@@ -77,7 +77,7 @@ static PetscErrorCode PetscPythonFindLibrary(const char pythonexe[PETSC_MAX_PATH
   if (!found) {
     ierr = PetscPythonFindLibraryName(pythonexe,cmdline4,pythonlib,&found);CHKERRQ(ierr);
   }
-  ierr = PetscInfo2(0,"Python library  %s found %d\n",pythonlib,found);CHKERRQ(ierr);
+  ierr = PetscInfo2(NULL,"Python library  %s found %d\n",pythonlib,found);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -85,7 +85,7 @@ static PetscErrorCode PetscPythonFindLibrary(const char pythonexe[PETSC_MAX_PATH
 
 typedef struct _Py_object_t PyObject; /* fake definition */
 
-static PyObject* Py_None = 0;
+static PyObject* Py_None = NULL;
 
 static const char* (*Py_GetVersion)(void);
 
@@ -123,7 +123,7 @@ static PetscErrorCode PetscPythonLoadLibrary(const char pythonlib[])
   PetscFunctionBegin;
   /* open the Python dynamic library */
   ierr = PetscDLPyLibOpen(pythonlib);CHKERRQ(ierr);
-  ierr = PetscInfo1(0,"Python: loaded dynamic library %s\n", pythonlib);CHKERRQ(ierr);
+  ierr = PetscInfo1(NULL,"Python: loaded dynamic library %s\n", pythonlib);CHKERRQ(ierr);
   /* look required symbols from the Python C-API */
   ierr = PetscDLPyLibSym("_Py_NoneStruct"        , &Py_None               );CHKERRQ(ierr);
   ierr = PetscDLPyLibSym("Py_GetVersion"         , &Py_GetVersion         );CHKERRQ(ierr);
@@ -148,7 +148,7 @@ static PetscErrorCode PetscPythonLoadLibrary(const char pythonlib[])
   if (!Py_IsInitialized) SETERRQ1(PETSC_COMM_SELF,1,"Python: failed to load symbols from Python dynamic library %s",pythonlib);
   if (!Py_InitializeEx)  SETERRQ1(PETSC_COMM_SELF,1,"Python: failed to load symbols from Python dynamic library %s",pythonlib);
   if (!Py_Finalize)      SETERRQ1(PETSC_COMM_SELF,1,"Python: failed to load symbols from Python dynamic library %s",pythonlib);
-  ierr = PetscInfo1(0,"Python: all required symbols loaded from Python dynamic library %s\n",pythonlib);CHKERRQ(ierr);
+  ierr = PetscInfo1(NULL,"Python: all required symbols loaded from Python dynamic library %s\n",pythonlib);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -184,7 +184,7 @@ PetscErrorCode  PetscPythonFinalize(void)
 @*/
 PetscErrorCode  PetscPythonInitialize(const char pyexe[],const char pylib[])
 {
-  PyObject       *module = 0;
+  PyObject       *module = NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -247,9 +247,9 @@ PetscErrorCode  PetscPythonInitialize(const char pyexe[],const char pylib[])
   /* import 'petsc4py.PETSc' module */
   module = PyImport_ImportModule("petsc4py.PETSc");
   if (module) {
-    ierr = PetscInfo(0,"Python: successfully imported  module 'petsc4py.PETSc'\n");CHKERRQ(ierr);
+    ierr = PetscInfo(NULL,"Python: successfully imported  module 'petsc4py.PETSc'\n");CHKERRQ(ierr);
 
-    Py_DecRef(module); module = 0;
+    Py_DecRef(module); module = NULL;
   } else {
     PetscPythonPrintError();
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Python: could not import module 'petsc4py.PETSc', perhaps your PYTHONPATH does not contain it\n");
@@ -265,7 +265,7 @@ PetscErrorCode  PetscPythonInitialize(const char pyexe[],const char pylib[])
 @*/
 PetscErrorCode  PetscPythonPrintError(void)
 {
-  PyObject *exc=0, *val=0, *tb=0;
+  PyObject *exc=NULL, *val=NULL, *tb=NULL;
 
   PetscFunctionBegin;
   if (!PetscBeganPython) PetscFunctionReturn(0);

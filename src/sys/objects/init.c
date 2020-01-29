@@ -312,8 +312,8 @@ PETSC_INTERN PetscErrorCode PetscSetUseHBWMalloc_Private(void);
 PETSC_INTERN PetscBool      petscsetmallocvisited;
 static       char           emacsmachinename[256];
 
-PetscErrorCode (*PetscExternalVersionFunction)(MPI_Comm) = 0;
-PetscErrorCode (*PetscExternalHelpFunction)(MPI_Comm)    = 0;
+PetscErrorCode (*PetscExternalVersionFunction)(MPI_Comm) = NULL;
+PetscErrorCode (*PetscExternalHelpFunction)(MPI_Comm)    = NULL;
 
 /*@C
    PetscSetHelpVersionFunctions - Sets functions that print help and version information
@@ -498,11 +498,11 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   ierr = PetscOptionsGetBool(NULL,NULL,"-on_error_abort",&flg1,NULL);CHKERRQ(ierr);
   if (flg1) {
     ierr = MPI_Comm_set_errhandler(comm,MPI_ERRORS_ARE_FATAL);CHKERRQ(ierr);
-    ierr = PetscPushErrorHandler(PetscAbortErrorHandler,0);CHKERRQ(ierr);
+    ierr = PetscPushErrorHandler(PetscAbortErrorHandler,NULL);CHKERRQ(ierr);
   }
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,NULL,"-on_error_mpiabort",&flg1,NULL);CHKERRQ(ierr);
-  if (flg1) { ierr = PetscPushErrorHandler(PetscMPIAbortErrorHandler,0);CHKERRQ(ierr);}
+  if (flg1) { ierr = PetscPushErrorHandler(PetscMPIAbortErrorHandler,NULL);CHKERRQ(ierr);}
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,NULL,"-mpi_return_on_error",&flg1,NULL);CHKERRQ(ierr);
   if (flg1) {
@@ -538,7 +538,7 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     ierr = PetscSetDebuggerFromString(string);CHKERRQ(ierr);
     ierr = MPI_Comm_create_errhandler(Petsc_MPI_DebuggerOnError,&err_handler);CHKERRQ(ierr);
     ierr = MPI_Comm_set_errhandler(comm,err_handler);CHKERRQ(ierr);
-    ierr = PetscPushErrorHandler(PetscAttachDebuggerErrorHandler,0);CHKERRQ(ierr);
+    ierr = PetscPushErrorHandler(PetscAttachDebuggerErrorHandler,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsGetString(NULL,NULL,"-debug_terminal",string,64,&flg1);CHKERRQ(ierr);
   if (flg1) { ierr = PetscSetDebugTerminal(string);CHKERRQ(ierr); }
@@ -580,7 +580,7 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     }
     if (!flag) {
       ierr = PetscSetDebuggerFromString(string);CHKERRQ(ierr);
-      ierr = PetscPushErrorHandler(PetscAbortErrorHandler,0);CHKERRQ(ierr);
+      ierr = PetscPushErrorHandler(PetscAbortErrorHandler,NULL);CHKERRQ(ierr);
       if (flg1) {
         ierr = PetscAttachDebugger();CHKERRQ(ierr);
       } else {
