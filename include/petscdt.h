@@ -99,9 +99,9 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTFactorial(PetscInt n, PetscReal *facto
   PetscInt  i;
 
   PetscFunctionBegin;
-  *factorial = -1.;
+  *factorial = -1.0;
   if (n < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Factorial called with negative number %D\n", n);
-  for (i = 1; i < n+1; ++i) f *= i;
+  for (i = 1; i < n+1; ++i) f *= (PetscReal)i;
   *factorial = f;
   PetscFunctionReturn(0);
 }
@@ -153,17 +153,18 @@ M*/
 PETSC_STATIC_INLINE PetscErrorCode PetscDTBinomial(PetscInt n, PetscInt k, PetscReal *binomial)
 {
   PetscFunctionBeginHot;
+  *binomial = -1.0;
   if (n < 0 || k < 0 || k > n) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Binomial arguments (%D %D) must be non-negative, k <= n\n", n, k);
   if (n <= 3) {
     PetscInt binomLookup[4][4] = {{1, 0, 0, 0}, {1, 1, 0, 0}, {1, 2, 1, 0}, {1, 3, 3, 1}};
 
-    *binomial = binomLookup[n][k];
+    *binomial = (PetscReal)binomLookup[n][k];
   } else {
-    PetscReal binom = 1.;
+    PetscReal binom = 1.0;
     PetscInt  i;
 
     k = PetscMin(k, n - k);
-    for (i = 0; i < k; i++) binom = (binom * (n - i)) / (i + 1);
+    for (i = 0; i < k; i++) binom = (binom * (PetscReal)(n - i)) / (PetscReal)(i + 1);
     *binomial = binom;
   }
   PetscFunctionReturn(0);
