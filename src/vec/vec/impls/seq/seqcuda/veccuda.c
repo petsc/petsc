@@ -72,15 +72,19 @@ PetscErrorCode VecCUDAAllocateCheckHost(Vec v)
     v->data = s;
   }
   if (!s->array) {
-    if (n*sizeof(PetscScalar)> veccuda->minimum_bytes_pinned_memory) {
-      ierr = PetscMallocSetCUDAHost();CHKERRQ(ierr);
+    if (veccuda) {
+      if (n*sizeof(PetscScalar) > veccuda->minimum_bytes_pinned_memory) {
+        ierr = PetscMallocSetCUDAHost();CHKERRQ(ierr);
+      }
     }
     ierr = PetscMalloc1(n,&array);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)v,n*sizeof(PetscScalar));CHKERRQ(ierr);
     s->array           = array;
     s->array_allocated = array;
-    if (n*sizeof(PetscScalar) > veccuda->minimum_bytes_pinned_memory) {
-      ierr = PetscMallocResetCUDAHost();CHKERRQ(ierr);
+    if (veccuda) {
+      if (n*sizeof(PetscScalar) > veccuda->minimum_bytes_pinned_memory) {
+        ierr = PetscMallocResetCUDAHost();CHKERRQ(ierr);
+      }
     }
     if (v->offloadmask == PETSC_OFFLOAD_UNALLOCATED) {
       v->offloadmask = PETSC_OFFLOAD_CPU;
