@@ -14,7 +14,7 @@
 #endif
 #include <petscbt.h>
 
-const char *const PetscFileModes[] = {"READ","WRITE","APPEND","UPDATE","APPEND_UPDATE","PetscFileMode","PETSC_FILE_",0};
+const char *const PetscFileModes[] = {"READ","WRITE","APPEND","UPDATE","APPEND_UPDATE","PetscFileMode","PETSC_FILE_",NULL};
 
 /* --------------------------------------------------------- */
 /*

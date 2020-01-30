@@ -3,7 +3,7 @@
        Provides the calling sequences for all the basic PetscDraw routines.
 */
 #include <petsc/private/drawimpl.h>  /*I "petscdraw.h" I*/
-const char *const PetscDrawMarkerTypes[]     = {"CROSS","POINT","PLUS","CIRCLE","PetscDrawMarkerType","PETSC_DRAW_MARKER_",0};
+const char *const PetscDrawMarkerTypes[]     = {"CROSS","POINT","PLUS","CIRCLE","PetscDrawMarkerType","PETSC_DRAW_MARKER_",NULL};
 
 /*@
    PetscDrawMarker - PetscDraws a marker onto a drawable.

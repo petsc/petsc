@@ -368,7 +368,7 @@ static char *Petscgetline(FILE * f)
   size_t last  = 0;
   char   *buf  = NULL;
 
-  if (feof(f)) return 0;
+  if (feof(f)) return NULL;
   do {
     size += 1024; /* BUFSIZ is defined as "the optimal read size for this platform" */
     buf   = (char*)realloc((void*)buf,size); /* realloc(NULL,n) is the same as malloc(n) */
@@ -380,7 +380,7 @@ static char *Petscgetline(FILE * f)
   } while (!feof(f) && buf[last] != '\n' && buf[last] != '\r');
   if (len) return buf;
   free(buf);
-  return 0;
+  return NULL;
 }
 
 /*@C
@@ -417,7 +417,7 @@ static char *Petscgetline(FILE * f)
 @*/
 PetscErrorCode PetscOptionsInsertFile(MPI_Comm comm,PetscOptions options,const char file[],PetscBool require)
 {
-  char           *string,fname[PETSC_MAX_PATH_LEN],*first,*second,*third,*vstring = 0,*astring = 0,*packed = 0;
+  char           *string,fname[PETSC_MAX_PATH_LEN],*first,*second,*third,*vstring = NULL,*astring = NULL,*packed = NULL;
   PetscErrorCode ierr;
   size_t         i,len,bytes;
   FILE           *fd;
@@ -443,7 +443,7 @@ PetscErrorCode PetscOptionsInsertFile(MPI_Comm comm,PetscOptions options,const c
       ierr = PetscSegBufferCreate(1,2000,&aseg);CHKERRQ(ierr);
 
       /* the following line will not work when opening initial files (like .petscrc) since info is not yet set */
-      ierr = PetscInfo1(0,"Opened options file %s\n",file);CHKERRQ(ierr);
+      ierr = PetscInfo1(NULL,"Opened options file %s\n",file);CHKERRQ(ierr);
 
       while ((string = Petscgetline(fd))) {
         /* eliminate comments from each line */
@@ -2482,9 +2482,9 @@ char *PetscOptionsGetStringMatlab(PetscOptions options,const char pre[],const ch
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsFindPair(options,pre,name,&value,&flag);if (ierr) PetscFunctionReturn(0);
+  ierr = PetscOptionsFindPair(options,pre,name,&value,&flag);if (ierr) PetscFunctionReturn(NULL);
   if (flag) PetscFunctionReturn((char*)value);
-  else PetscFunctionReturn(0);
+  else PetscFunctionReturn(NULL);
 }
 
 /*@C

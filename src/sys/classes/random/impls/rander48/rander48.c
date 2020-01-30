@@ -102,7 +102,7 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
   PetscRandomGetValueReal_Rander48,
   PetscRandomDestroy_Rander48,
   /* 5 */
-  0
+  NULL
 };
 
 /*MC

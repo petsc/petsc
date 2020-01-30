@@ -50,7 +50,7 @@ struct _EH {
   EH             previous;
 };
 
-static EH eh = 0;
+static EH eh = NULL;
 
 /*@C
    PetscEmacsClientErrorHandler - Error handler that uses the emacsclient program to
@@ -108,7 +108,7 @@ PetscErrorCode  PetscEmacsClientErrorHandler(MPI_Comm comm,int line,const char *
 #endif
   ierr = PetscPopErrorHandler();if (ierr) PetscFunctionReturn(ierr); /* remove this handler from the stack of handlers */
   if (!eh) {
-    ierr = PetscTraceBackErrorHandler(comm,line,fun,file,n,p,mess,0);if (ierr) PetscFunctionReturn(ierr);
+    ierr = PetscTraceBackErrorHandler(comm,line,fun,file,n,p,mess,NULL);if (ierr) PetscFunctionReturn(ierr);
   } else {
     ierr = (*eh->handler)(comm,line,fun,file,n,p,mess,eh->ctx);if (ierr) PetscFunctionReturn(ierr);
   }
@@ -160,7 +160,7 @@ PetscErrorCode  PetscPushErrorHandler(PetscErrorCode (*handler)(MPI_Comm comm,in
   PetscFunctionBegin;
   ierr = PetscNew(&neweh);CHKERRQ(ierr);
   if (eh) neweh->previous = eh;
-  else    neweh->previous = 0;
+  else    neweh->previous = NULL;
   neweh->handler = handler;
   neweh->ctx     = ctx;
   eh             = neweh;
@@ -301,7 +301,7 @@ PetscErrorCode  PetscErrorMessage(int errnum,const char *text[],char **specific)
 {
   PetscFunctionBegin;
   if (text && errnum > PETSC_ERR_MIN_VALUE && errnum < PETSC_ERR_MAX_VALUE) *text = PetscErrorStrings[errnum-PETSC_ERR_MIN_VALUE-1];
-  else if (text) *text = 0;
+  else if (text) *text = NULL;
 
   if (specific) *specific = PetscErrorBaseMessage;
   PetscFunctionReturn(0);
@@ -373,7 +373,7 @@ PetscErrorCode PetscError(MPI_Comm comm,int line,const char *func,const char *fi
 {
   va_list        Argp;
   size_t         fullLength;
-  char           buf[2048],*lbuf = 0;
+  char           buf[2048],*lbuf = NULL;
   PetscBool      ismain;
   PetscErrorCode ierr;
 
@@ -391,7 +391,7 @@ PetscErrorCode PetscError(MPI_Comm comm,int line,const char *func,const char *fi
     if (p == PETSC_ERROR_INITIAL) PetscStrncpy(PetscErrorBaseMessage,lbuf,1023);
   }
 
-  if (!eh) ierr = PetscTraceBackErrorHandler(comm,line,func,file,n,p,lbuf,0);
+  if (!eh) ierr = PetscTraceBackErrorHandler(comm,line,func,file,n,p,lbuf,NULL);
   else     ierr = (*eh->handler)(comm,line,func,file,n,p,lbuf,eh->ctx);
 
   /*
@@ -484,8 +484,8 @@ PetscErrorCode  PetscIntView(PetscInt N,const PetscInt idx[],PetscViewer viewer)
 
     if (size > 1) {
       if (rank) {
-        ierr = MPI_Gather(&NN,1,MPI_INT,0,0,MPI_INT,0,comm);CHKERRQ(ierr);
-        ierr = MPI_Gatherv((void*)idx,NN,MPIU_INT,0,0,0,MPIU_INT,0,comm);CHKERRQ(ierr);
+        ierr = MPI_Gather(&NN,1,MPI_INT,NULL,0,MPI_INT,0,comm);CHKERRQ(ierr);
+        ierr = MPI_Gatherv((void*)idx,NN,MPIU_INT,NULL,NULL,NULL,MPIU_INT,0,comm);CHKERRQ(ierr);
       } else {
         ierr      = PetscMalloc1(size,&sizes);CHKERRQ(ierr);
         ierr      = MPI_Gather(&NN,1,MPI_INT,sizes,1,MPI_INT,0,comm);CHKERRQ(ierr);
@@ -589,8 +589,8 @@ PetscErrorCode  PetscRealView(PetscInt N,const PetscReal idx[],PetscViewer viewe
 
     if (size > 1) {
       if (rank) {
-        ierr = MPI_Gather(&NN,1,MPI_INT,0,0,MPI_INT,0,comm);CHKERRQ(ierr);
-        ierr = MPI_Gatherv((PetscReal*)idx,NN,MPIU_REAL,0,0,0,MPIU_REAL,0,comm);CHKERRQ(ierr);
+        ierr = MPI_Gather(&NN,1,MPI_INT,NULL,0,MPI_INT,0,comm);CHKERRQ(ierr);
+        ierr = MPI_Gatherv((PetscReal*)idx,NN,MPIU_REAL,NULL,NULL,NULL,MPIU_REAL,0,comm);CHKERRQ(ierr);
       } else {
         ierr      = PetscMalloc1(size,&sizes);CHKERRQ(ierr);
         ierr      = MPI_Gather(&NN,1,MPI_INT,sizes,1,MPI_INT,0,comm);CHKERRQ(ierr);
@@ -696,8 +696,8 @@ PetscErrorCode  PetscScalarView(PetscInt N,const PetscScalar idx[],PetscViewer v
 
     if (size > 1) {
       if (rank) {
-        ierr = MPI_Gather(&NN,1,MPI_INT,0,0,MPI_INT,0,comm);CHKERRQ(ierr);
-        ierr = MPI_Gatherv((void*)idx,NN,MPIU_SCALAR,0,0,0,MPIU_SCALAR,0,comm);CHKERRQ(ierr);
+        ierr = MPI_Gather(&NN,1,MPI_INT,NULL,0,MPI_INT,0,comm);CHKERRQ(ierr);
+        ierr = MPI_Gatherv((void*)idx,NN,MPIU_SCALAR,NULL,NULL,NULL,MPIU_SCALAR,0,comm);CHKERRQ(ierr);
       } else {
         ierr      = PetscMalloc1(size,&sizes);CHKERRQ(ierr);
         ierr      = MPI_Gather(&NN,1,MPI_INT,sizes,1,MPI_INT,0,comm);CHKERRQ(ierr);

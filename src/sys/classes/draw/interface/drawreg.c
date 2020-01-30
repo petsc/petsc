@@ -11,7 +11,7 @@
 /*
    Contains the list of registered PetscDraw routines
 */
-PetscFunctionList PetscDrawList = 0;
+PetscFunctionList PetscDrawList = NULL;
 
 /*@C
    PetscDrawView - Prints the PetscDraw data structure.
@@ -151,7 +151,7 @@ PetscErrorCode  PetscDrawCreate(MPI_Comm comm,const char display[],const char ti
 
   PetscFunctionBegin;
   ierr = PetscDrawInitializePackage();CHKERRQ(ierr);
-  *indraw = 0;
+  *indraw = NULL;
   ierr = PetscHeaderCreate(draw,PETSC_DRAW_CLASSID,"Draw","Graphics","Draw",comm,PetscDrawDestroy,PetscDrawView);CHKERRQ(ierr);
 
   draw->data    = NULL;

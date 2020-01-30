@@ -9,7 +9,7 @@
 /*
     This is the default list used by PETSc with the PetscDLLibrary register routines
 */
-PetscDLLibrary PetscDLLibrariesLoaded = 0;
+PetscDLLibrary PetscDLLibrariesLoaded = NULL;
 
 #if defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
 
@@ -156,7 +156,7 @@ PETSC_INTERN PetscErrorCode PetscFinalize_DynamicLibraries(void)
   ierr = PetscCommDestroy(&PETSC_COMM_WORLD_INNER);CHKERRQ(ierr);
 #endif
 
-  PetscDLLibrariesLoaded = 0;
+  PetscDLLibrariesLoaded = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -173,7 +173,7 @@ struct _n_PetscFunctionList {
 /*
      Keep a linked list of PetscFunctionLists so that we can destroy all the left-over ones.
 */
-static PetscFunctionList dlallhead = 0;
+static PetscFunctionList dlallhead = NULL;
 
 /*MC
    PetscFunctionListAdd - Given a routine and a string id, saves that routine in the
@@ -213,14 +213,14 @@ PETSC_EXTERN PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl,c
     ierr           = PetscNew(&entry);CHKERRQ(ierr);
     ierr           = PetscStrallocpy(name,&entry->name);CHKERRQ(ierr);
     entry->routine = fnc;
-    entry->next    = 0;
+    entry->next    = NULL;
     *fl            = entry;
 
 #if defined(PETSC_USE_DEBUG)
     /* add this new list to list of all lists */
     if (!dlallhead) {
       dlallhead        = *fl;
-      (*fl)->next_list = 0;
+      (*fl)->next_list = NULL;
     } else {
       ne               = dlallhead;
       dlallhead        = *fl;
@@ -246,7 +246,7 @@ PETSC_EXTERN PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl,c
     ierr           = PetscNew(&entry);CHKERRQ(ierr);
     ierr           = PetscStrallocpy(name,&entry->name);CHKERRQ(ierr);
     entry->routine = fnc;
-    entry->next    = 0;
+    entry->next    = NULL;
     ne->next       = entry;
   }
   PetscFunctionReturn(0);
@@ -292,7 +292,7 @@ PetscErrorCode  PetscFunctionListDestroy(PetscFunctionList *fl)
     ierr  = PetscFree(entry);CHKERRQ(ierr);
     entry = next;
   }
-  *fl = 0;
+  *fl = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -342,7 +342,7 @@ PETSC_EXTERN PetscErrorCode PetscFunctionListFind_Private(PetscFunctionList fl,c
   PetscFunctionBegin;
   if (!name) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to find routine with null name");
 
-  *r = 0;
+  *r = NULL;
   while (entry) {
     ierr = PetscStrcmp(name,entry->name,&flg);CHKERRQ(ierr);
     if (flg) {
@@ -427,7 +427,7 @@ PetscErrorCode  PetscFunctionListGet(PetscFunctionList list,const char ***array,
     klist           = klist->next;
     count++;
   }
-  (*array)[count] = 0;
+  (*array)[count] = NULL;
   *n              = count+1;
   PetscFunctionReturn(0);
 }

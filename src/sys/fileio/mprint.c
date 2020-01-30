@@ -13,13 +13,13 @@ PETSC_INTERN FILE *petsc_history;
      PETSC_STDOUT = fopen("/dev/ttyXX","w") will cause all standard out
      writes to go to terminal XX; assuming you have write permission there
 */
-FILE *PETSC_STDOUT = 0;
+FILE *PETSC_STDOUT = NULL;
 /*
      Allows one to overwrite where standard error is sent. For example
      PETSC_STDERR = fopen("/dev/ttyXX","w") will cause all standard error
      writes to go to terminal XX; assuming you have write permission there
 */
-FILE *PETSC_STDERR = 0;
+FILE *PETSC_STDERR = NULL;
 
 /*@C
      PetscFormatConvertGetSize - Gets the length of a string needed to hold format converted with PetscFormatConvert()
@@ -368,7 +368,7 @@ PetscErrorCode PetscSNPrintfCount(char *str,size_t len,const char format[],size_
 
 /* ----------------------------------------------------------------------- */
 
-PrintfQueue petsc_printfqueue       = 0,petsc_printfqueuebase = 0;
+PrintfQueue petsc_printfqueue       = NULL,petsc_printfqueuebase = NULL;
 int         petsc_printfqueuelength = 0;
 
 /*@C
@@ -422,7 +422,7 @@ PetscErrorCode PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
     if (petsc_printfqueue) {
       petsc_printfqueue->next = next;
       petsc_printfqueue       = next;
-      petsc_printfqueue->next = 0;
+      petsc_printfqueue->next = NULL;
     } else petsc_printfqueuebase = petsc_printfqueue = next;
     petsc_printfqueuelength++;
     next->size   = -1;
@@ -490,7 +490,7 @@ PetscErrorCode PetscSynchronizedFPrintf(MPI_Comm comm,FILE *fp,const char format
     if (petsc_printfqueue) {
       petsc_printfqueue->next = next;
       petsc_printfqueue       = next;
-      petsc_printfqueue->next = 0;
+      petsc_printfqueue->next = NULL;
     } else petsc_printfqueuebase = petsc_printfqueue = next;
     petsc_printfqueuelength++;
     next->size   = -1;
@@ -571,7 +571,7 @@ PetscErrorCode PetscSynchronizedFlush(MPI_Comm comm,FILE *fd)
       ierr     = PetscFree(previous->string);CHKERRQ(ierr);
       ierr     = PetscFree(previous);CHKERRQ(ierr);
     }
-    petsc_printfqueue       = 0;
+    petsc_printfqueue       = NULL;
     petsc_printfqueuelength = 0;
   }
   ierr = PetscCommDestroy(&comm);CHKERRQ(ierr);

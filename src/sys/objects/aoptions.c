@@ -33,7 +33,7 @@ PetscErrorCode PetscOptionsBegin_Private(PetscOptionItems *PetscOptionsObject,MP
     }
     ierr = PetscOptionsHelpPrintedCheck(PetscOptionsHelpPrintedSingleton,prefix,title,&PetscOptionsObject->alreadyprinted);CHKERRQ(ierr);
   }
-  PetscOptionsObject->next          = 0;
+  PetscOptionsObject->next          = NULL;
   PetscOptionsObject->comm          = comm;
   PetscOptionsObject->changedmethod = PETSC_FALSE;
 
@@ -87,10 +87,10 @@ static int PetscOptionItemCreate_Private(PetscOptionItems *PetscOptionsObject,co
   if (!valid) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"The option '%s' is not a valid key",opt);
 
   ierr            = PetscNew(amsopt);CHKERRQ(ierr);
-  (*amsopt)->next = 0;
+  (*amsopt)->next = NULL;
   (*amsopt)->set  = PETSC_FALSE;
   (*amsopt)->type = t;
-  (*amsopt)->data = 0;
+  (*amsopt)->data = NULL;
 
   ierr = PetscStrallocpy(text,&(*amsopt)->text);CHKERRQ(ierr);
   ierr = PetscStrallocpy(opt,&(*amsopt)->option);CHKERRQ(ierr);
@@ -149,7 +149,7 @@ static PetscErrorCode  PetscStrdup(const char s[],char *t[])
 {
   PetscErrorCode ierr;
   size_t         len;
-  char           *tmp = 0;
+  char           *tmp = NULL;
 
   PetscFunctionBegin;
   if (s) {
@@ -634,7 +634,7 @@ PetscErrorCode PetscOptionsEnd_Private(PetscOptionItems *PetscOptionsObject)
     ierr                    = PetscFree(last);CHKERRQ(ierr);
   }
   ierr = PetscFree(PetscOptionsObject->prefix);CHKERRQ(ierr);
-  PetscOptionsObject->next = 0;
+  PetscOptionsObject->next = NULL;
   PetscFunctionReturn(0);
 }
 

@@ -9,7 +9,7 @@ const char *const PetscDataTypes[] = {"UNKNOWN",
                                       "CHAR","LOGICAL","ENUM","BOOL","LONGDOUBLE",
                                       "OBJECT","FUNCTION","STRING","FP16","STRUCT",
                                       "INT","INT64",
-                                      "PetscDataType","PETSC_",0};
+                                      "PetscDataType","PETSC_",NULL};
 
 /*@C
      PetscDataTypeToMPIDataType - Converts the PETSc name of a datatype to its MPI name.

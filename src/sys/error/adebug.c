@@ -243,7 +243,7 @@ PetscErrorCode  PetscAttachDebugger(void)
 
     if (isxxgdb || isups || isddd) {
       args[1] = program; args[2] = pid; args[3] = "-display";
-      args[0] = PetscDebugger; args[4] = display; args[5] = 0;
+      args[0] = PetscDebugger; args[4] = display; args[5] = NULL;
       printf("PETSC: Attaching %s to %s %s on %s\n",args[0],args[1],pid,hostname);
       if (execvp(args[0],(char**)args)  < 0) {
         perror("Unable to start debugger");
@@ -251,7 +251,7 @@ PetscErrorCode  PetscAttachDebugger(void)
       }
     } else if (iskdbg) {
       args[1] = "-p"; args[2] = pid; args[3] = program;  args[4] = "-display";
-      args[0] = PetscDebugger; args[5] = display; args[6] = 0;
+      args[0] = PetscDebugger; args[5] = display; args[6] = NULL;
       printf("PETSC: Attaching %s to %s %s on %s\n",args[0],args[3],pid,hostname);
       if (execvp(args[0],(char**)args)  < 0) {
         perror("Unable to start debugger");
@@ -259,7 +259,7 @@ PetscErrorCode  PetscAttachDebugger(void)
       }
     } else if (isxldb) {
       args[1] = "-a"; args[2] = pid; args[3] = program;  args[4] = "-display";
-      args[0] = PetscDebugger; args[5] = display; args[6] = 0;
+      args[0] = PetscDebugger; args[5] = display; args[6] = NULL;
       printf("PETSC: Attaching %s to %s %s on %s\n",args[0],args[1],pid,hostname);
       if (execvp(args[0],(char**)args)  < 0) {
         perror("Unable to start debugger");
@@ -267,7 +267,7 @@ PetscErrorCode  PetscAttachDebugger(void)
       }
     } else if (isworkshop) {
       args[1] = "-s"; args[2] = pid; args[3] = "-D"; args[4] = "-";
-      args[0] = PetscDebugger; args[5] = pid; args[6] = "-display"; args[7] = display; args[8] = 0;
+      args[0] = PetscDebugger; args[5] = pid; args[6] = "-display"; args[7] = display; args[8] = NULL;
       printf("PETSC: Attaching %s to %s on %s\n",args[0],pid,hostname);
       if (execvp(args[0],(char**)args)  < 0) {
         perror("Unable to start debugger");
@@ -295,7 +295,7 @@ PetscErrorCode  PetscAttachDebugger(void)
       }
       args[j++] = PetscDebugger;
       jj = j;
-      args[j++] = program; args[j++] = pid; args[j++] = 0;
+      args[j++] = program; args[j++] = pid; args[j++] = NULL;
 
       if (isidb) {
         j = jj;
@@ -303,13 +303,13 @@ PetscErrorCode  PetscAttachDebugger(void)
         args[j++] = pid;
         args[j++] = "-gdb";
         args[j++] = program;
-        args[j++] = 0;
+        args[j++] = NULL;
       }
       if (islldb) {
         j = jj;
         args[j++] = "-p";
         args[j++] = pid;
-        args[j++] = 0;
+        args[j++] = NULL;
       }
       if (isdbx) {
         j = jj;
@@ -334,7 +334,7 @@ PetscErrorCode  PetscAttachDebugger(void)
         args[j++] = program;
         args[j++] = pid;
 #endif
-        args[j++] = 0;
+        args[j++] = NULL;
       }
       if (Xterm) {
         if (display[0]) printf("PETSC: Attaching %s to %s of pid %s on display %s on machine %s\n",PetscDebugger,program,pid,display,hostname);

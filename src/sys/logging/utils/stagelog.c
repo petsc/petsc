@@ -7,7 +7,7 @@
 */
 #include <petsc/private/logimpl.h> /*I    "petscsys.h"   I*/
 
-PetscStageLog petsc_stageLog = 0;
+PetscStageLog petsc_stageLog = NULL;
 
 /*@C
   PetscLogGetStageLog - This function returns the default stage logging object.

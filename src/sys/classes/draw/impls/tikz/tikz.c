@@ -53,7 +53,7 @@ static PetscErrorCode  PetscDrawDestroy_TikZ(PetscDraw draw)
   PetscFunctionReturn(0);
 }
 
-static const char *TikZColors[] = {"white","black","red","green","cyan","blue","magenta",0,0,"orange","violet","brown","pink",0,"yellow",0};
+static const char *TikZColors[] = {"white","black","red","green","cyan","blue","magenta",NULL,NULL,"orange","violet","brown","pink",NULL,"yellow",NULL};
 
 PETSC_STATIC_INLINE const char *TikZColorMap(int cl)
 {
@@ -184,41 +184,41 @@ static PetscErrorCode PetscDrawStringGetSize_TikZ(PetscDraw draw,PetscReal *x,Pe
   PetscFunctionReturn(0);
 }
 
-static struct _PetscDrawOps DvOps = { 0,
-                                      0,
+static struct _PetscDrawOps DvOps = { NULL,
+                                      NULL,
                                       PetscDrawLine_TikZ,
-                                      0,
-                                      0,
-                                      0,
-                                      0,
+                                      NULL,
+                                      NULL,
+                                      NULL,
+                                      NULL,
                                       PetscDrawString_TikZ,
                                       PetscDrawStringVertical_TikZ,
-                                      0,
+                                      NULL,
                                       PetscDrawStringGetSize_TikZ,
-                                      0,
+                                      NULL,
                                       PetscDrawClear_TikZ,
                                       PetscDrawRectangle_TikZ,
                                       PetscDrawTriangle_TikZ,
                                       PetscDrawEllipse_TikZ,
-                                      0,
-                                      0,
-                                      0,
-                                      0,
-                                      0,
-                                      0,
-                                      0,
-                                      0,
+                                      NULL,
+                                      NULL,
+                                      NULL,
+                                      NULL,
+                                      NULL,
+                                      NULL,
+                                      NULL,
+                                      NULL,
                                       PetscDrawDestroy_TikZ,
-                                      0,
-                                      0,
-                                      0,
-                                      0,
-                                      0,
-                                      0,
-                                      0,
-                                      0,
-                                      0,
-                                      0,
+                                      NULL,
+                                      NULL,
+                                      NULL,
+                                      NULL,
+                                      NULL,
+                                      NULL,
+                                      NULL,
+                                      NULL,
+                                      NULL,
+                                      NULL,
                                       PetscDrawStringBoxed_TikZ};
 
 PETSC_EXTERN PetscErrorCode PetscDrawCreate_TikZ(PetscDraw draw)

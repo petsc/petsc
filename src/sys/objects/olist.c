@@ -79,14 +79,14 @@ PetscErrorCode  PetscObjectListAdd(PetscObjectList *fl,const char name[],PetscOb
 
   PetscFunctionBegin;
   if (!obj) { /* this means remove from list if it is there */
-    nlist = *fl; prev = 0;
+    nlist = *fl; prev = NULL;
     while (nlist) {
       ierr = PetscStrcmp(name,nlist->name,&match);CHKERRQ(ierr);
       if (match) {  /* found it already in the list */
         /* Remove it first to prevent circular derefs */
         if (prev) prev->next = nlist->next;
         else if (nlist->next) *fl = nlist->next;
-        else *fl = 0;
+        else *fl = NULL;
         if (!nlist->skipdereference) {
           ierr = PetscObjectDereference(nlist->obj);CHKERRQ(ierr);
         }
@@ -116,7 +116,7 @@ PetscErrorCode  PetscObjectListAdd(PetscObjectList *fl,const char name[],PetscOb
 
   /* add it to list, because it was not already there */
   ierr        = PetscNew(&olist);CHKERRQ(ierr);
-  olist->next = 0;
+  olist->next = NULL;
   olist->obj  = obj;
 
   ierr = PetscObjectReference(obj);CHKERRQ(ierr);
@@ -189,7 +189,7 @@ PetscErrorCode  PetscObjectListFind(PetscObjectList fl,const char name[],PetscOb
   PetscBool      match;
 
   PetscFunctionBegin;
-  *obj = 0;
+  *obj = NULL;
   while (fl) {
     ierr = PetscStrcmp(name,fl->name,&match);CHKERRQ(ierr);
     if (match) {
@@ -225,7 +225,7 @@ PetscErrorCode  PetscObjectListFind(PetscObjectList fl,const char name[],PetscOb
 PetscErrorCode  PetscObjectListReverseFind(PetscObjectList fl,PetscObject obj,char **name,PetscBool *skipdereference)
 {
   PetscFunctionBegin;
-  *name = 0;
+  *name = NULL;
   while (fl) {
     if (fl->obj == obj) {
       *name = fl->name;
