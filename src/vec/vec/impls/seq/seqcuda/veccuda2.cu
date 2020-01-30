@@ -1143,9 +1143,9 @@ PetscErrorCode VecDestroy_SeqCUDA(Vec v)
     if (((Vec_CUDA*)v->spptr)->stream) {
       err = cudaStreamDestroy(((Vec_CUDA*)v->spptr)->stream);CHKERRCUDA(err);
     }
-    ierr = PetscFree(v->spptr);CHKERRQ(ierr);
   }
   ierr = VecDestroy_SeqCUDA_Private(v);CHKERRQ(ierr);
+  ierr = PetscFree(v->spptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
