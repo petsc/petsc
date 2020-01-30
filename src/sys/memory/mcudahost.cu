@@ -1,15 +1,16 @@
 #include <petscsys.h>             /*I   "petscsys.h"   I*/
+#include <petsccublas.h>          /* Needed to provide CHKERRCUDA() */
 
 static PetscErrorCode PetscCudaHostMalloc(size_t a,PetscBool clear,int lineno,const char function[],const char filename[],void **result)
 {
-  PetscErrorCode ierr;
+  cudaError_t ierr;
   ierr = cudaMallocHost(result,a);CHKERRCUDA(ierr);
   return 0;
 }
 
 static PetscErrorCode PetscCudaHostFree(void *aa,int lineno,const char function[],const char filename[])
 {
-  PetscErrorCode ierr;
+  cudaError_t ierr;
   ierr = cudaFreeHost(aa);CHKERRCUDA(ierr);
   return 0;
 }
