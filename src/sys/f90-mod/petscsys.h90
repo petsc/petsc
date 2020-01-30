@@ -150,7 +150,7 @@
       use petscsysdef
        PetscRandom a
        character(*) b
-       integer z
+       PetscErrorCode ierr
        end subroutine
 
       subroutine PetscErrorf(ierr)
@@ -178,46 +178,47 @@
       use petscsysdef
        PetscRandom a
        PetscViewer b
-       integer z
+       PetscErrorCode ierr
        end subroutine
 
       subroutine MPIU_abort(comm,ierr)
-      integer,intent(in) ::  comm,ierr
+      integer4,intent(in) ::  comm
+      PetscErrorCode,intent(in) ::  ierr
       end subroutine
 
       subroutine PetscLogEventRegister(name,classid,event,ierr)
        use petscsysdef
        character(len=*), intent(in) :: name
-       PetscLogEvent, intent(in) :: classid
-       integer, intent(in) :: event
-       integer, intent(out) :: ierr
+       PetscClassId, intent(in) :: classid
+       PetscLogEvent, intent(in) :: event
+       PetscErrorCode, intent(out) :: ierr
       end subroutine PetscLogEventRegister
 
       subroutine PetscLogStageRegister(name,stage,ierr)
        use petscsysdef
        character(len=*), intent(in) :: name
        PetscLogStage, intent(out) :: stage
-       integer, intent(out) :: ierr
+       PetscErrorCode, intent(out) :: ierr
       end subroutine PetscLogStageRegister
 
       subroutine PetscLogEventBegin(event,ierr)
-        integer, intent(in) :: event
-        integer, intent(out) :: ierr
+        PetscLogEvent, intent(in) :: event
+        PetscErrorCode, intent(out) :: ierr
       end subroutine PetscLogEventBegin
 
       subroutine PetscLogEventEnd(event,ierr)
-        integer, intent(in) :: event
-        integer, intent(out) :: ierr
+        PetscLogEvent, intent(in) :: event
+        PetscErrorCode, intent(out) :: ierr
       end subroutine PetscLogEventEnd
 
       subroutine PetscLogStagePop(ierr)
-        integer, intent(out) :: ierr
+        PetscErrorCode, intent(out) :: ierr
       end subroutine PetscLogStagePop
 
       subroutine PetscLogStagePush(s,ierr)
        use petscsysdef
        PetscLogStage, intent(in) :: s
-       integer, intent(out) :: ierr
+       PetscErrorCode, intent(out) :: ierr
       end subroutine PetscLogStagePush
       end Interface
 

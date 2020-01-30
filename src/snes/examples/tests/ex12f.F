@@ -10,7 +10,7 @@
           DM  da
           Vec F
           Vec xl
-          integer comm
+          MPI_Comm comm
           PetscInt N
         end type User
         save

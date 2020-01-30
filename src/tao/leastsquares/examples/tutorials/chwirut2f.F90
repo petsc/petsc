@@ -128,11 +128,12 @@
       Tao        tao
       Vec              x,f
       PetscErrorCode   ierr
-      PetscInt         dummy
 
       PetscInt         i,checkedin
       PetscInt         finished_tasks
-      integer          next_task,status(MPI_STATUS_SIZE),tag,source
+      integer          next_task
+      PetscMPIInt      status(MPI_STATUS_SIZE),tag,source
+      PetscInt         dummy
 
 ! PETSc's VecGetArray acts differently in Fortran than it does in C.
 ! Calling VecGetArray((Vec) X, (PetscReal) x_array(0:1), (PetscOffset) x_index, ierr)
@@ -444,9 +445,9 @@
 
       PetscErrorCode ierr
       PetscReal x(n),f
-      integer tag
+      PetscMPIInt tag
       PetscInt index
-      integer status(MPI_STATUS_SIZE)
+      PetscMPIInt status(MPI_STATUS_SIZE)
 
       tag = IDLE_TAG
       f   = 0.0
@@ -494,8 +495,8 @@
 #include "chwirut2f.h"
 
       integer checkedin
-      integer status(MPI_STATUS_SIZE)
-      integer source
+      PetscMPIInt status(MPI_STATUS_SIZE)
+      PetscMPIInt source
       PetscReal f,x(n)
       PetscErrorCode ierr
       PetscInt i

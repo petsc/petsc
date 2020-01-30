@@ -754,6 +754,24 @@ linux-nagfor:
     TEST_ARCH: arch-ci-linux-nagfor
     MAKE_FFLAGS: -DNO_WERROR_FLAG
 
+linux-64idx-i8:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - gce-nfs
+  variables:
+    TEST_ARCH: arch-ci-linux-64idx-i8
+
+linux-64idx-i8-uni:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - gce-nfs
+  variables:
+    TEST_ARCH: arch-ci-linux-64idx-i8-uni
+
 # job for analyzing the final coverage results
 analyze-pipeline:
   stage: .post

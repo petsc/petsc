@@ -9,9 +9,16 @@
 #include "petsc/mpiuni/mpiunifdef.h"
 #endif
 
+#if defined(PETSC_USE_FORTRANKIND)
+#define integer4 integer(kind=selected_int_kind(5))
+#else
+#define nteger4 integer*4
+#endif
+
       subroutine MPIU_Abort(comm,ierr)
       implicit none
-      integer comm,ierr,nierr
+      integer4 comm
+      integer4 ierr,nierr
 
       call MPI_Abort(comm,ierr,nierr)
 

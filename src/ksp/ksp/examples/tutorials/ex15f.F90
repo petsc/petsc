@@ -277,7 +277,7 @@
 
       PC      pc
       Mat     pmat
-      integer ierr
+      PetscErrorCode ierr
 
       call PCGetOperators(pc,PETSC_NULL_MAT,pmat,ierr)
       call MatCreateVecs(pmat,diag,PETSC_NULL_VEC,ierr)
@@ -310,7 +310,7 @@
 
       PC      pc
       Vec     x,y
-      integer ierr
+      PetscErrorCode ierr
 
       call VecPointwiseMult(y,x,diag,ierr)
 

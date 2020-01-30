@@ -53,7 +53,7 @@
           PetscInt num
           PetscInt count
           PetscDataType type
-          integer z
+          PetscErrorCode z
         end subroutine
         subroutine petscbinaryreadreal(fd,data,num,count,type,z)
           use petscsysdefdummy
@@ -62,7 +62,7 @@
           PetscInt num
           PetscInt count
           PetscDataType type
-          integer z
+          PetscErrorCode z
         end subroutine
         subroutine petscbinaryreadint(fd,data,num,count,type,z)
           use petscsysdefdummy
@@ -71,7 +71,7 @@
           PetscInt num
           PetscInt count
           PetscDataType type
-          integer z
+          PetscErrorCode z
         end subroutine
         subroutine petscbinaryreadcomplex1(fd,data,num,count,type,z)
           use petscsysdefdummy
@@ -80,7 +80,7 @@
           PetscInt num
           PetscInt count
           PetscDataType type
-          integer z
+          PetscErrorCode z
         end subroutine
         subroutine petscbinaryreadreal1(fd,data,num,count,type,z)
           use petscsysdefdummy
@@ -89,7 +89,7 @@
           PetscInt num
           PetscInt count
           PetscDataType type
-          integer z
+          PetscErrorCode z
         end subroutine
         subroutine petscbinaryreadint1(fd,data,num,count,type,z)
           use petscsysdefdummy
@@ -98,7 +98,7 @@
           PetscInt num
           PetscInt count
           PetscDataType type
-          integer z
+          PetscErrorCode z
         end subroutine
         subroutine petscbinaryreadcomplexcnt(fd,data,num,count,type,z)
           use petscsysdefdummy
@@ -107,7 +107,7 @@
           PetscInt num
           PetscInt count(1)
           PetscDataType type
-          integer z
+          PetscErrorCode z
         end subroutine
         subroutine petscbinaryreadrealcnt(fd,data,num,count,type,z)
           use petscsysdefdummy
@@ -116,7 +116,7 @@
           PetscInt num
           PetscInt count(1)
           PetscDataType type
-          integer z
+          PetscErrorCode z
         end subroutine
         subroutine petscbinaryreadintcnt(fd,data,num,count,type,z)
           use petscsysdefdummy
@@ -125,7 +125,7 @@
           PetscInt num
           PetscInt count(1)
           PetscDataType type
-          integer z
+          PetscErrorCode z
         end subroutine
         subroutine petscbinaryreadcomplex1cnt(fd,data,num,count,type,z)
           use petscsysdefdummy
@@ -134,7 +134,7 @@
           PetscInt num
           PetscInt count(1)
           PetscDataType type
-          integer z
+          PetscErrorCode z
         end subroutine
         subroutine petscbinaryreadreal1cnt(fd,data,num,count,type,z)
           use petscsysdefdummy
@@ -143,7 +143,7 @@
           PetscInt num
           PetscInt count(1)
           PetscDataType type
-          integer z
+          PetscErrorCode z
         end subroutine
         subroutine petscbinaryreadint1cnt(fd,data,num,count,type,z)
           use petscsysdefdummy
@@ -152,7 +152,7 @@
           PetscInt num
           PetscInt count(1)
           PetscDataType type
-          integer z
+          PetscErrorCode z
         end subroutine
         end Interface
 
@@ -164,7 +164,7 @@
           PetscInt num
           PetscDataType type
           PetscBool tmp
-          integer z
+          PetscErrorCode z
         end subroutine
         subroutine petscbinarywritereal(fd,data,num,type,tmp,z)
           use petscsysdefdummy
@@ -173,7 +173,7 @@
           PetscInt num
           PetscDataType type
           PetscBool tmp
-          integer z
+          PetscErrorCode z
         end subroutine
         subroutine petscbinarywriteint(fd,data,num,type,tmp, z)
           use petscsysdefdummy
@@ -182,7 +182,7 @@
           PetscInt num
           PetscDataType type
           PetscBool tmp
-          integer z
+          PetscErrorCode z
         end subroutine
         subroutine petscbinarywritecomplex1(fd,data,num,type,tmp,z)
           use petscsysdefdummy
@@ -191,7 +191,7 @@
           PetscInt num
           PetscDataType type
           PetscBool tmp
-          integer z
+          PetscErrorCode z
         end subroutine
         subroutine petscbinarywritereal1(fd,data,num,type,tmp,z)
           use petscsysdefdummy
@@ -200,7 +200,7 @@
           PetscInt num
           PetscDataType type
           PetscBool tmp
-          integer z
+          PetscErrorCode z
         end subroutine
         subroutine petscbinarywriteint1(fd,data,num,type,tmp, z)
           use petscsysdefdummy
@@ -209,7 +209,7 @@
           PetscInt num
           PetscDataType type
           PetscBool tmp
-          integer z
+          PetscErrorCode z
         end subroutine
         end Interface
 

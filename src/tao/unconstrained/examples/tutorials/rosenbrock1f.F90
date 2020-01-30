@@ -38,7 +38,7 @@
       Tao        tao     ! TAO_SOVER context
       PetscBool       flg
       PetscInt         i2,i1
-      integer          size
+      PetscMPIInt     size
       PetscReal      zero
 
 !  Note: Any user-defined Fortran routines (such as FormGradient)
@@ -58,7 +58,7 @@
       endif
 
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
-      if (size .ne. 1) then; SETERRA(PETSC_COMM_SELF,1,'This is a uniprocessor example only'); endif
+      if (size .ne. 1) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_WRONG_MPI_SIZE,'This is a uniprocessor example only'); endif
 
 !  Initialize problem parameters
       n     = 2

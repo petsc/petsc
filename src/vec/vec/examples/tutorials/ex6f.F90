@@ -27,7 +27,7 @@ program main
   call MPI_Comm_size(PETSC_COMM_WORLD,mySize,ierr)
   
   if (mySize /= 1) then
-  SETERRA(PETSC_COMM_SELF,1,"This is a uniprocessor example only!")
+    SETERRA(PETSC_COMM_SELF,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!")
   endif
    
   
@@ -80,7 +80,7 @@ program main
   sz=t(1)
   
   if (sz <= 0) then
-   SETERRA(PETSC_COMM_SELF,1,"Error: Must have array length > 0")
+   SETERRA(PETSC_COMM_SELF,PETSC_ERR_USER,"Error: Must have array length > 0")
   endif
   
   write(outstring,'(a,i2.2,a)') "reading data in binary from input.dat, sz =", sz, " ...\n"

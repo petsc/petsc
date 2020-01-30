@@ -39,7 +39,7 @@
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
       call MPI_Comm_size(PETSC_COMM_WORLD,mySize,ierr)
 
-      if (mySize /= 2) then; SETERRA(PETSC_COMM_WORLD,1,'Requires 2 processors'); endif
+      if (mySize /= 2) then; SETERRA(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,'Requires 2 processors'); endif
 
 !
 !     Construct a two dimensional graph connecting nlocal degrees of

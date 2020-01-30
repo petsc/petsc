@@ -1,6 +1,13 @@
 #if !defined (MPIUNIFDEF_H)
 #define MPIUNIFDEF_H
 
+#include "petscconf.h"
+#if defined(PETSC_USE_FORTRANKIND)
+#define mpiuni_integer4 integer(kind=selected_int_kind(5))
+#else
+#define mpiuni_integer4 integer*4
+#endif
+
 #define MPI_Init                  PETSC_MPI_INIT
 #define MPI_Finalize              PETSC_MPI_FINALIZE
 #define MPI_Comm_size             PETSC_MPI_COMM_SIZE

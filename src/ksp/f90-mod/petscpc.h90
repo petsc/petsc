@@ -3,7 +3,7 @@
       use petscpcdef
        PC a
        character(*) b
-       integer z
+       PetscErrorCode z
        end subroutine
       end Interface
 
@@ -12,7 +12,7 @@
       use petscpcdef
        PC a
        PetscViewer b
-       integer z
+       PetscErrorCode z
        end subroutine
       end Interface
 
@@ -22,7 +22,7 @@
        PC a
        character(*)  b
        IS c
-       integer z
+       PetscErrorCode z
        end subroutine
       end Interface
 
@@ -32,7 +32,7 @@
        PC a
        character(*)  b
        IS c
-       integer z
+       PetscErrorCode z
        end subroutine
       end Interface
 
