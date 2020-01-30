@@ -292,30 +292,25 @@ class Configure(script.Script):
       if setMakeMacro:
         self.addMakeMacro(varName.upper(), getattr(self, varName))
     else:
+      def logPrintFilesInPath(path):
+        for d in path:
+          try:
+            self.logWrite('      '+str(os.listdir(d))+'\n')
+          except OSError as e:
+            self.logWrite('      Warning accessing '+d+' gives errors: '+str(e)+'\n')
+        return
       self.logWrite('  Unable to find programs '+str(names)+' providing listing of each search directory to help debug\n')
       self.logWrite('    Path provided in Python program\n')
-      for d in path:
-        if os.path.isdir(d):
-          self.logWrite('      '+str(os.listdir(d))+'\n')
-        else:
-          self.logWrite('      Warning '+d+' is not a directory\n')
+      logPrintFilesInPath(path)
       if useDefaultPath:
         if os.environ['PATH'].split(os.path.pathsep):
           self.logWrite('    Path provided by default path\n')
-          for d in os.environ['PATH'].split(os.path.pathsep):
-            if os.path.isdir(d):
-              self.logWrite('      '+str(os.listdir(d))+'\n')
-            else:
-              self.logWrite('      Warning '+d+' is not a directory\n')
+          logPrintFilesInPath(os.environ['PATH'].split(os.path.pathsep))
       dirs = self.argDB['with-executables-search-path']
       if not isinstance(dirs, list): dirs = [dirs]
       if dirs:
         self.logWrite('    Path provided by --with-executables-search-path\n')
-        for d in dirs:
-          if os.path.isdir(d):
-            self.logWrite('      '+str(os.listdir(d))+'\n')
-          else:
-            self.logWrite('      Warning '+d+' is not a directory\n')
+        logPrintFilesInPath(dirs)
     return found
 
   def getExecutables(self, names, path = '', getFullPath = 0, useDefaultPath = 0, resultName = ''):
