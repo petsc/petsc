@@ -11,17 +11,25 @@
 
 PetscErrorCode VecDestroy_MPICUDA(Vec v)
 {
+  Vec_MPI        *vecmpi = (Vec_MPI*)v->data;
+  Vec_CUDA       *veccuda;
   PetscErrorCode ierr;
   cudaError_t    err;
 
   PetscFunctionBegin;
   if (v->spptr) {
-    if (((Vec_CUDA*)v->spptr)->GPUarray_allocated) {
+    veccuda = (Vec_CUDA*)v->spptr;
+    if (veccuda->GPUarray_allocated) {
       err = cudaFree(((Vec_CUDA*)v->spptr)->GPUarray_allocated);CHKERRCUDA(err);
-      ((Vec_CUDA*)v->spptr)->GPUarray_allocated = NULL;
+      veccuda->GPUarray_allocated = NULL;
     }
-    if (((Vec_CUDA*)v->spptr)->stream) {
+    if (veccuda->stream) {
       err = cudaStreamDestroy(((Vec_CUDA*)v->spptr)->stream);CHKERRCUDA(err);
+    }
+    if ((v->map->n)*sizeof(PetscScalar) > veccuda->minimum_bytes_pinned_memory) {
+      ierr = PetscMallocSetCUDAHost();CHKERRQ(ierr);
+      ierr = PetscFree(vecmpi->array_allocated);CHKERRQ(ierr);
+      ierr = PetscMallocResetCUDAHost();CHKERRQ(ierr);
     }
     ierr = PetscFree(v->spptr);CHKERRQ(ierr);
   }
