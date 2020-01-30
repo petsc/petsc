@@ -3,6 +3,15 @@
 #if defined(__cplusplus) && defined(PETSC_HAVE_COMPLEX) && defined(PETSC_HAVE_CXX_COMPLEX)
 
 /*
+    The pragma below silence all compiler warnings comming from code in this header file.
+    In particular, it silences `-Wfloat-equal` warnings in `operator==()` and `operator!=` below.
+    Other compilers beyond GCC support this pragma.
+*/
+#if defined(__GNUC__) && (__GNUC__ >= 4)
+#pragma GCC system_header
+#endif
+
+/*
      Defines additional operator overloading for the C++ complex class that are "missing" in the standard
      include files. For example, the code fragment
 
