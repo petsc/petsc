@@ -40,6 +40,30 @@ static PetscErrorCode MatMultTranspose_User(Mat A,Vec X,Vec Y)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatCopy_User(Mat A,Mat X,MatStructure str)
+{
+  User           user,userX;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatShellGetContext(A,&user);CHKERRQ(ierr);
+  ierr = MatShellGetContext(X,&userX);CHKERRQ(ierr);
+  if (user != userX) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"This should not happen");
+  ierr = PetscObjectReference((PetscObject)user->B);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatDestroy_User(Mat A)
+{
+  User           user;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatShellGetContext(A,&user);CHKERRQ(ierr);
+  ierr = PetscObjectDereference((PetscObject)user->B);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 int main(int argc,char **args)
 {
   User           user;
@@ -55,6 +79,7 @@ int main(int argc,char **args)
   PetscBool      keep = PETSC_FALSE;
   PetscBool      testzerorows = PETSC_TRUE, testdiagscale = PETSC_TRUE, testgetdiag = PETSC_TRUE, testsubmat = PETSC_TRUE;
   PetscBool      testshift = PETSC_TRUE, testscale = PETSC_TRUE, testdup = PETSC_TRUE, testreset = PETSC_TRUE;
+  PetscBool      testaxpy = PETSC_TRUE, testaxpyd = PETSC_TRUE, testaxpyerr = PETSC_FALSE;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
@@ -76,6 +101,9 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetBool(NULL,NULL,"-test_dup",&testdup,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-test_reset",&testreset,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-test_submat",&testsubmat,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-test_axpy",&testaxpy,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-test_axpy_different",&testaxpyd,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-test_axpy_error",&testaxpyerr,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-loop",&ntest,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,NULL,"-tol",&tol,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetScalar(NULL,NULL,"-diag",&diag,NULL);CHKERRQ(ierr);
@@ -135,6 +163,8 @@ int main(int argc,char **args)
   if (cong) {
     ierr = MatShellSetOperation(S,MATOP_GET_DIAGONAL,(void (*)(void))MatGetDiagonal_User);CHKERRQ(ierr);
   }
+  ierr = MatShellSetOperation(S,MATOP_COPY,(void (*)(void))MatCopy_User);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(S,MATOP_DESTROY,(void (*)(void))MatDestroy_User);CHKERRQ(ierr);
   ierr = MatDuplicate(A,MAT_COPY_VALUES,&user->B);CHKERRQ(ierr);
 
   /* Square and rows only scaling */
@@ -247,14 +277,14 @@ int main(int argc,char **args)
       ierr = MatAXPY(C,-1.0,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
       ierr = MatNorm(C,NORM_FROBENIUS,&err);CHKERRQ(ierr);
       if (err >= tol) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %D] Error mat mult %g\n",test,(double)err);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %D] Error mat mult after %s %g\n",test,ronl ? "MatZeroRows" : "MatZeroRowsColumns",(double)err);CHKERRQ(ierr);
       }
 
       ierr = MatConvert(A,MATDENSE,MAT_REUSE_MATRIX,&C);CHKERRQ(ierr);
       ierr = MatAXPY(C,-1.0,BTT,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
       ierr = MatNorm(C,NORM_FROBENIUS,&err);CHKERRQ(ierr);
       if (err >= tol) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %D] Error mat mult transpose %g\n",test,(double)err);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %D] Error mat mult transpose after %s %g\n",test,ronl ? "MatZeroRows" : "MatZeroRowsColumns",(double)err);CHKERRQ(ierr);
       }
 
       ierr = MatDestroy(&ST);CHKERRQ(ierr);
@@ -376,6 +406,43 @@ int main(int argc,char **args)
       ierr = ISDestroy(&c);CHKERRQ(ierr);
     }
 
+    if (testaxpy) {
+      Mat          tA,tS,dA,dS;
+      MatStructure str[3] = { SAME_NONZERO_PATTERN, SUBSET_NONZERO_PATTERN, DIFFERENT_NONZERO_PATTERN };
+
+      ierr = MatDuplicate(A,MAT_COPY_VALUES,&tA);CHKERRQ(ierr);
+      if (testaxpyd && !(test%2)) {
+        ierr = PetscObjectReference((PetscObject)tA);CHKERRQ(ierr);
+        tS   = tA;
+      } else {
+        ierr = PetscObjectReference((PetscObject)S);CHKERRQ(ierr);
+        tS   = S;
+      }
+      ierr = MatAXPY(A,0.5,tA,str[test%3]);CHKERRQ(ierr);
+      ierr = MatAXPY(S,0.5,tS,str[test%3]);CHKERRQ(ierr);
+      /* this will trigger an error the next MatMult or MatMultTranspose call for S */
+      if (testaxpyerr) { ierr = MatScale(tA,0);CHKERRQ(ierr); }
+      ierr = MatDestroy(&tA);CHKERRQ(ierr);
+      ierr = MatDestroy(&tS);CHKERRQ(ierr);
+      ierr = MatMultAddEqual(A,S,10,&flg);CHKERRQ(ierr);
+      if (!flg) {
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %D] Error axpy mult add\n",test);CHKERRQ(ierr);
+      }
+      ierr = MatMultTransposeAddEqual(A,S,10,&flg);CHKERRQ(ierr);
+      if (!flg) {
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %D] Error axpy mult add (T)\n",test);CHKERRQ(ierr);
+      }
+      ierr = MatConvert(A,MATDENSE,MAT_INITIAL_MATRIX,&dA);CHKERRQ(ierr);
+      ierr = MatConvert(S,MATDENSE,MAT_INITIAL_MATRIX,&dS);CHKERRQ(ierr);
+      ierr = MatAXPY(dA,-1.0,dS,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = MatNorm(dA,NORM_FROBENIUS,&err);CHKERRQ(ierr);
+      if (err >= tol) {
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %D] Error mat submatrix %g\n",test,(double)err);CHKERRQ(ierr);
+      }
+      ierr = MatDestroy(&dA);CHKERRQ(ierr);
+      ierr = MatDestroy(&dS);CHKERRQ(ierr);
+    }
+
     if (testreset && (ntest == 1 || test == ntest-2)) {
       /* reset MATSHELL */
       ierr = MatAssemblyBegin(S,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -386,7 +453,6 @@ int main(int argc,char **args)
   }
 
   ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MatDestroy(&user->B);CHKERRQ(ierr);
   ierr = MatDestroy(&S);CHKERRQ(ierr);
   ierr = PetscFree(user);CHKERRQ(ierr);
   ierr = PetscFinalize();
@@ -401,12 +467,12 @@ int main(int argc,char **args)
      requires: !single
      output_file: output/ex221_1.out
      nsize: {{1 3}}
-     args: -keep {{0 1}} -M {{12 19}} -N {{19 12}} -submat {{0 1}}
+     args: -loop 3 -keep {{0 1}} -M {{12 19}} -N {{19 12}} -submat {{0 1}} -test_axpy_different {{0 1}}
 
    testset:
      suffix: square
      requires: !single
      output_file: output/ex221_1.out
      nsize: {{1 3}}
-     args: -M 21 -N 21 -loop 4 -rows_only {{0 1}} -keep {{0 1}} -submat {{0 1}}
+     args: -M 21 -N 21 -loop 4 -rows_only {{0 1}} -keep {{0 1}} -submat {{0 1}} -test_axpy_different {{0 1}}
 TEST*/
