@@ -103,6 +103,8 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
          DMClone() applied to a DMPLEX object will result in a new DMPLEX that shares the topology with the original DMPLEX. It does
          share the PetscSection of the original DM
 
+  The clone is considered set up iff the original is.
+
 .seealso: DMDestroy(), DMCreate(), DMSetType(), DMSetLocalSection(), DMSetGlobalSection()
 
 @*/
