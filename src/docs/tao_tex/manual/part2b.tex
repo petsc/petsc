@@ -1395,3 +1395,61 @@ it evaluates the function, gradient, and Hessian only once.
 This method also requires the solution of systems of linear equations,
 whose solver can be accessed and modified 
 with the command {\tt Tao\-Get\-KSP()}.
+
+\section{Constrained Solvers}
+
+Constrained solvers solve optimization problems of the form
+\[
+\begin{array}{ll}
+\displaystyle \min_{x} & f(x) \\
+\mbox{subject to} & g(x) = c
+\end{array}
+\]
+where $g_i(x) = c_i$ for $i = 1,...,n$. are equality constraints.
+
+\subsection{Alternating Direction Method of Multipliers}
+
+The ADMM is an algorithm that is intended to blend the decomposability
+of dual ascent with the superior convergence properties of the
+method of multipliers. \cite{boyd} 
+The algorithm solves problems in the form
+\[
+\begin{array}{ll}
+\displaystyle \min_{x} & f(x) + g(z) \\ 
+\mbox{subject to} & Ax + Bz = c
+\end{array}
+\]
+where $x \in \Re^n$, $z \in \Re^m$, $A \in \Re^{p \times n}$, $B \in \Re^{p \times m}$, and $c \in \Re^p$.
+Essentially, ADMM is a wrapper over two TAO solver, one for $f(x)$, and one for $g(z)$.
+With method of multipliers, one can form the augmented Lagrangian 
+\begin{equation}
+L_{\rho}(x,z,y) = f(x) + g(z) + y^T(Ax+Bz-c) + (\rho/2)||Ax+Bz-c||_2^2
+\end{equation}
+Then, ADMM consists of the iterations
+\begin{equation}
+x^{k+1} := \text{argmin}L_{\rho}(x,z^k,y^k)
+\end{equation}
+\begin{equation}
+z^{k+1} := \text{argmin}L_{\rho}(x^{k+1},z,y^k)
+\end{equation}
+\begin{equation}
+y^{k+1} := y^k + \rho(Ax^{k+1}+Bz^{k+1}-c)
+\end{equation}
+In certain formulation of ADMM, solution of $z^{k+1}$ may have closed-form solution. 
+Currently ADMM provides one default implementation for $z^{k+1}$, which is soft-threshold. 
+It can be used with either {\tt TaoADMMSetRegularizerType\_ADMM()} or
+\texttt{-tao\_admm\_regularizer\_type <regularizer\_soft\_thresh>}.
+User can also pass spectral penalty value, $\rho$, with either {\tt TaoADMMSetSpectralPenalty()} or
+\texttt{-tao\_admm\_spectral\_penalty}.
+Currently, user can use
+\begin{itemize}
+\item {\tt TaoADMMSetMisfitObjectiveAndGradientRoutine()}
+\item {\tt TaoADMMSetRegularizerObjectiveAndGradientRoutine()}
+\item {\tt TaoADMMSetMisfitHessianRoutine()}
+\item {\tt TaoADMMSetRegularizerHessianRoutine()}
+\end{itemize}
+Any other combination of routines is currently not supported. Hessian matrices can either be constant or non-constant,
+of which fact can be set via {\tt TaoADMMSetMisfitHessianChangeStatus()}, and {\tt TaoADMMSetRegularizerHessianChangeStatus()}.
+Also, it may appear in certain cases where augmented Lagrangian's Hessian may become nearly singular depending on the 
+$\rho$, which may change in the case of \texttt{-tao\_admm\_dual\_update <update\_adaptive>, <update\_adaptive\_relaxed>}.
+This issue can be prevented by {\tt TaoADMMSetMinimumSpectralPenalty()}.
