@@ -1152,6 +1152,16 @@ class Framework(config.base.Configure, script.LanguageProcessor):
 
     ndepGraph = graph.DirectedGraph.topologicalSort(depGraph)
     for child in ndepGraph:
+      if hasattr(child,'setCompilers'): setCompilers = child.setCompilers
+
+    ndepGraph = graph.DirectedGraph.topologicalSort(depGraph)
+    for child in ndepGraph:
+      if (self.argDB['with-batch'] and
+          hasattr(child,'package') and
+          'download-'+child.package in self.framework.clArgDB and
+          self.argDB['download-'+child.package] and not
+          (hasattr(setCompilers,'cross_cc') or child.installwithbatch)): raise RuntimeError('--download-'+child.package+' cannot be used on this batch systems\n')
+
       # note, only classes derived from package.py have this attribute
       if hasattr(child,'deps'):
         found = 0
