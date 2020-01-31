@@ -8,6 +8,8 @@
 #define TaoConvergedReason integer
 #define TaoType character*(80)
 #define TaoLineSearchType character*(80)
+#define TaoADMMUpdateType PetscEnum
+#define TaoADMMRegularizerType PetscEnum
 
 #define TAOLMVM     "lmvm"
 #define TAONLS      "nls"
@@ -37,6 +39,7 @@
 #define TAOASILS    "asils"
 #define TAOASFLS    "asfls"
 #define TAOIPM      "ipm"
+#define TAOADMM     "admm"
 #define TAOFDTEST   "test"
 
 #endif
