@@ -461,7 +461,7 @@ PetscErrorCode DMStagGetLocalSizes(DM dm,PetscInt* m,PetscInt* n,PetscInt* p)
 
   Level: beginner
 
-.seealso: DMSTAG, DMStagGetGlobalSizes(), DMStagGetLocalSize(), DMStagSetNumRank(), DMDAGetInfo()
+.seealso: DMSTAG, DMStagGetGlobalSizes(), DMStagGetLocalSize(), DMStagSetNumRanks(), DMDAGetInfo()
 @*/
 PetscErrorCode DMStagGetNumRanks(DM dm,PetscInt *nRanks0,PetscInt *nRanks1,PetscInt *nRanks2)
 {
@@ -1057,12 +1057,12 @@ PetscErrorCode DMStagSetNumRanks(DM dm,PetscInt nRanks0,PetscInt nRanks1,PetscIn
   PetscValidLogicalCollectiveInt(dm,nRanks2,4);
   if (dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
-  if (nRanks0 < 1) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"number of ranks in X direction cannot be less than 1");
-  if (dim > 1 && nRanks1 < 1) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"number of ranks in Y direction cannot be less than 1");
-  if (dim > 2 && nRanks2 < 1) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"number of ranks in Z direction cannot be less than 1");
+  if (nRanks0 != PETSC_DECIDE && nRanks0 < 1) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"number of ranks in X direction cannot be less than 1");
+  if (dim > 1 && nRanks1 != PETSC_DECIDE && nRanks1 < 1) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"number of ranks in Y direction cannot be less than 1");
+  if (dim > 2 && nRanks2 != PETSC_DECIDE && nRanks2 < 1) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"number of ranks in Z direction cannot be less than 1");
   if (nRanks0) stag->nRanks[0] = nRanks0;
-  if (nRanks1) stag->nRanks[1] = nRanks1;
-  if (nRanks2) stag->nRanks[2] = nRanks2;
+  if (dim > 1 && nRanks1) stag->nRanks[1] = nRanks1;
+  if (dim > 2 && nRanks2) stag->nRanks[2] = nRanks2;
   PetscFunctionReturn(0);
 }
 
