@@ -303,6 +303,14 @@ class Configure(config.base.Configure):
     return 0
   isIntel = staticmethod(isIntel)
 
+  def isCrayKNL(compiler, log):
+    '''Returns true if the compiler is a compiler for KNL running on a Cray'''
+    x = os.getenv('PE_PRODUCT_LIST')
+    if x and x.find('CRAYPE_MIC-KNL') > -1:
+      return 1
+    return 0
+  isCrayKNL = staticmethod(isCrayKNL)
+
   def isCray(compiler, log):
     '''Returns true if the compiler is a Cray compiler'''
     try:
