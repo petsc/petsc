@@ -458,6 +458,9 @@ PETSC_EXTERN PetscErrorCode DMCreate_Stag(DM dm)
   stag->coordinateDMType                              = NULL;
 
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
+#if defined(PETSC_USE_DEBUG)
+  if (dim != 1 && dim != 2 && dim != 3) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"DMSetDimension() must be called to set a dimension with value 1, 2, or 3");
+#endif
 
   ierr = PetscMemzero(dm->ops,sizeof(*(dm->ops)));CHKERRQ(ierr);
   dm->ops->createcoordinatedm  = DMCreateCoordinateDM_Stag;
