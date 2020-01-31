@@ -824,7 +824,7 @@ PetscErrorCode MatResetPreallocation(Mat A)
 
 
 /*@
-   MatSetUp - Sets up the internal matrix data structures for the later use.
+   MatSetUp - Sets up the internal matrix data structures for later use.
 
    Collective on Mat
 

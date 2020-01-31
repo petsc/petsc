@@ -779,7 +779,7 @@ PetscErrorCode  KSPSetType(KSP ksp, KSPType type)
   ierr = PetscObjectTypeCompare((PetscObject)ksp,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  ierr =  PetscFunctionListFind(KSPList,type,&r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(KSPList,type,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested KSP type %s",type);
   /* Destroy the previous private KSP context */
   if (ksp->ops->destroy) {

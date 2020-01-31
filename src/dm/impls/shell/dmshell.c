@@ -206,12 +206,15 @@ static PetscErrorCode DMCreateMatrix_Shell(DM dm,Mat *J)
     }
   }
   if (((PetscObject)A)->refct < 2) { /* We have an exclusive reference so we can give it out */
+    PetscBool f;
+
     ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
-    ierr = MatZeroEntries(A);CHKERRQ(ierr);
+    /* MATSHELL does not implement MATOP_ZERO_ENTRIES */
+    ierr = MatHasOperation(A,MATOP_ZERO_ENTRIES,&f);CHKERRQ(ierr);
+    if (f) { ierr = MatZeroEntries(A);CHKERRQ(ierr); }
     *J   = A;
   } else { /* Need to create a copy, could use MAT_SHARE_NONZERO_PATTERN in most cases */
     ierr = MatDuplicate(A,MAT_DO_NOT_COPY_VALUES,J);CHKERRQ(ierr);
-    ierr = MatZeroEntries(*J);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
