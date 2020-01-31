@@ -1023,13 +1023,21 @@ static PetscErrorCode DMPlexAddSharedFace_Private(DM dm, PetscSection candidateS
 {
   MPI_Comm        comm;
   const PetscInt *support;
-  PetscInt        supportSize, s, off = 0, idx = 0;
+  PetscInt        supportSize, s, off = 0, idx = 0, overlap, cellHeight, height;
   PetscMPIInt     rank;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = DMPlexGetOverlap(dm, &overlap);CHKERRQ(ierr);
+  ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
+  ierr = DMPlexGetPointHeight(dm, p, &height);CHKERRQ(ierr);
+  if (!overlap && height <= cellHeight+1) {
+    /* cells can't be shared for non-overlapping meshes */
+    if (debug) {ierr = PetscSynchronizedPrintf(comm, "[%d]    Skipping face %D to avoid adding cell to hashmap since this is nonoverlapping mesh\n", rank, p);CHKERRQ(ierr);}
+    PetscFunctionReturn(0);
+  }
   ierr = DMPlexGetSupportSize(dm, p, &supportSize);CHKERRQ(ierr);
   ierr = DMPlexGetSupport(dm, p, &support);CHKERRQ(ierr);
   if (candidates) {ierr = PetscSectionGetOffset(candidateSection, p, &off);CHKERRQ(ierr);}
@@ -1242,8 +1250,8 @@ PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF)
           PetscBool              missing;
           PetscInt               points[1024], p, joinSize;
 
-          if (debug) {ierr = PetscSynchronizedPrintf(PetscObjectComm((PetscObject) dm), "[%d]  Checking face (%D, %D) at (%D, %D, %D) with cone size %D\n", rank, rface.index, rface.rank, r, idx, d, Np);CHKERRQ(ierr);}
-          if (Np > 4) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot handle faces with %D cone points", Np);
+          if (debug) {ierr = PetscSynchronizedPrintf(PetscObjectComm((PetscObject) dm), "[%d]  Checking face (%D, %D) at (%D, %D, %D) with cone size %D\n", rank, rface.rank, rface.index, r, idx, d, Np);CHKERRQ(ierr);}
+          if (Np > 4) SETERRQ6(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot handle face (%D, %D) at (%D, %D, %D) with %D cone points", rface.rank, rface.index, r, idx, d, Np);
           fcp0.rank  = rank;
           fcp0.index = r;
           d += Np;

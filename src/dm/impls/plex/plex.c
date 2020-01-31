@@ -3701,7 +3701,7 @@ PetscErrorCode DMPlexGetDepthLabel(DM dm, DMLabel *depthLabel)
   This returns maximum of point depths over all points, i.e. maximum value of the label returned by DMPlexGetDepthLabel().
   The point depth is described more in detail in DMPlexSymmetrize().
 
-.seealso: DMPlexGetDepthLabel(), DMPlexGetHeightStratum(), DMPlexGetDepthStratum(), DMPlexSymmetrize()
+.seealso: DMPlexGetDepthLabel(), DMPlexGetHeightStratum(), DMPlexGetDepthStratum(), DMPlexGetPointDepth(), DMPlexGetPointHeight(), DMPlexSymmetrize()
 @*/
 PetscErrorCode DMPlexGetDepth(DM dm, PetscInt *depth)
 {
@@ -3738,7 +3738,7 @@ PetscErrorCode DMPlexGetDepth(DM dm, PetscInt *depth)
 
   Level: developer
 
-.seealso: DMPlexGetHeightStratum(), DMPlexGetDepth()
+.seealso: DMPlexGetHeightStratum(), DMPlexGetDepth(), DMPlexGetPointDepth()
 @*/
 PetscErrorCode DMPlexGetDepthStratum(DM dm, PetscInt stratumValue, PetscInt *start, PetscInt *end)
 {
@@ -3783,7 +3783,7 @@ PetscErrorCode DMPlexGetDepthStratum(DM dm, PetscInt stratumValue, PetscInt *sta
 
   Level: developer
 
-.seealso: DMPlexGetDepthStratum(), DMPlexGetDepth()
+.seealso: DMPlexGetDepthStratum(), DMPlexGetDepth(), DMPlexGetPointHeight()
 @*/
 PetscErrorCode DMPlexGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt *start, PetscInt *end)
 {
@@ -3823,7 +3823,7 @@ PetscErrorCode DMPlexGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt *st
 
   Level: intermediate
 
-.seealso: DMPlexGetCellType(), DMPlexGetDepthLabel(), DMPlexGetDepth()
+.seealso: DMPlexGetCellType(), DMPlexGetDepthLabel(), DMPlexGetDepth(), DMPlexGetPointHeight()
 @*/
 PetscErrorCode DMPlexGetPointDepth(DM dm, PetscInt point, PetscInt *depth)
 {
@@ -3833,6 +3833,36 @@ PetscErrorCode DMPlexGetPointDepth(DM dm, PetscInt point, PetscInt *depth)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidIntPointer(depth, 3);
   ierr = DMLabelGetValue(dm->depthLabel, point, depth);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexGetPointHeight - Get the height of a given point
+
+  Not Collective
+
+  Input Parameter:
++ dm    - The DMPlex object
+- point - The point
+
+  Output Parameter:
+. height - The height of the point
+
+  Level: intermediate
+
+.seealso: DMPlexGetCellType(), DMPlexGetDepthLabel(), DMPlexGetDepth(), DMPlexGetPointDepth()
+@*/
+PetscErrorCode DMPlexGetPointHeight(DM dm, PetscInt point, PetscInt *height)
+{
+  PetscInt       n, pDepth;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidIntPointer(height, 3);
+  ierr = DMLabelGetNumValues(dm->depthLabel, &n);CHKERRQ(ierr);
+  ierr = DMLabelGetValue(dm->depthLabel, point, &pDepth);CHKERRQ(ierr);
+  *height = n - 1 - pDepth;  /* DAG depth is n-1 */
   PetscFunctionReturn(0);
 }
 
