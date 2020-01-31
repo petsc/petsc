@@ -2454,7 +2454,7 @@ PetscErrorCode SNESTestJacobian(SNES snes)
   MatType           mattype;
   PetscInt          m,n,M,N;
   void              *functx;
-  PetscBool         complete_print = PETSC_FALSE,threshold_print = PETSC_FALSE,test = PETSC_FALSE,flg;
+  PetscBool         complete_print = PETSC_FALSE,threshold_print = PETSC_FALSE,test = PETSC_FALSE,flg,istranspose;
   PetscViewer       viewer,mviewer;
   MPI_Comm          comm;
   PetscInt          tabs;
@@ -2511,8 +2511,15 @@ PetscErrorCode SNESTestJacobian(SNES snes)
   /* evaluate the function at this point because SNESComputeJacobianDefault() assumes that the function has been evaluated and put into snes->vec_func */
   ierr = SNESComputeFunction(snes,x,f);CHKERRQ(ierr);
   ierr = VecDestroy(&f);CHKERRQ(ierr);
-
+  ierr = PetscObjectTypeCompare((PetscObject)snes,SNESKSPTRANSPOSEONLY,&istranspose);CHKERRQ(ierr);
   while (jacobian) {
+    Mat JT = NULL, Jsave = NULL;
+
+    if (istranspose) {
+      ierr = MatCreateTranspose(jacobian,&JT);CHKERRQ(ierr);
+      Jsave = jacobian;
+      jacobian = JT;
+    }
     ierr = PetscObjectBaseTypeCompareAny((PetscObject)jacobian,&flg,MATSEQAIJ,MATMPIAIJ,MATSEQDENSE,MATMPIDENSE,MATSEQBAIJ,MATMPIBAIJ,MATSEQSBAIJ,MATMPISBAIJ,"");CHKERRQ(ierr);
     if (flg) {
       A    = jacobian;
@@ -2524,7 +2531,6 @@ PetscErrorCode SNESTestJacobian(SNES snes)
     ierr = MatGetType(A,&mattype);CHKERRQ(ierr);
     ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
     ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
-
     ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
     ierr = MatSetType(B,mattype);CHKERRQ(ierr);
     ierr = MatSetSizes(B,m,n,M,N);CHKERRQ(ierr);
@@ -2590,7 +2596,8 @@ PetscErrorCode SNESTestJacobian(SNES snes)
     }
     ierr = MatDestroy(&A);CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
-
+    ierr = MatDestroy(&JT);CHKERRQ(ierr);
+    if (Jsave) jacobian = Jsave;
     if (jacobian != snes->jacobian_pre) {
       jacobian = snes->jacobian_pre;
       ierr = PetscViewerASCIIPrintf(viewer,"  ---------- Testing Jacobian for preconditioner -------------\n");CHKERRQ(ierr);
