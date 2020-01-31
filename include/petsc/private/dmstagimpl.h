@@ -11,7 +11,8 @@
 #define DMSTAG_NUMBER_LOCATIONS 28
 
 typedef struct {
-  /* Fields which may require being set before DMSetUp() is called */
+  /* Fields which may require being set before DMSetUp() is called, set by DMStagInitialize().
+     Some may be adjusted by DMSetUp() */
   PetscInt          N[DMSTAG_MAX_DIM];            /* Global dimensions (elements)      */
   PetscInt          n[DMSTAG_MAX_DIM];            /* Local dimensions (elements)       */
   PetscInt          dof[DMSTAG_MAX_STRATA];       /* Dof per point for each stratum    */
@@ -42,6 +43,7 @@ typedef struct {
   PetscBool         lastRank[DMSTAG_MAX_DIM];     /* Last rank in this dim?             */
 } DM_Stag;
 
+PETSC_INTERN PetscErrorCode DMStagInitialize(DMBoundaryType,DMBoundaryType,DMBoundaryType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,DMStagStencilType,PetscInt,const PetscInt[],const PetscInt[],const PetscInt[],DM);
 PETSC_INTERN PetscErrorCode DMSetUp_Stag_1d(DM);
 PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM);
 PETSC_INTERN PetscErrorCode DMSetUp_Stag_3d(DM);
