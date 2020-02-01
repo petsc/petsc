@@ -4483,6 +4483,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexVecGetClosure_Depth1_Static(DM dm, Pets
   PetscFunctionReturn(0);
 }
 
+/* Compressed closure does not apply closure permutation */
 PetscErrorCode DMPlexGetCompressedClosure(DM dm, PetscSection section, PetscInt point, PetscInt *numPoints, PetscInt **points, PetscSection *clSec, IS *clPoints, const PetscInt **clp)
 {
   const PetscInt *cla;
@@ -5252,13 +5253,14 @@ PetscErrorCode DMPlexVecSetClosure(DM dm, PetscSection section, Vec v, PetscInt 
   PetscFunctionReturn(0);
 }
 
+/* Unlike DMPlexVecSetClosure(), this uses plex-native closure permutation, not a user-specified permutation such as DMPlexSetClosurePermutationTensor(). */
 PetscErrorCode DMPlexVecSetFieldClosure_Internal(DM dm, PetscSection section, Vec v, PetscBool fieldActive[], PetscInt point, PetscInt Ncc, const PetscInt comps[], const PetscScalar values[], InsertMode mode)
 {
   PetscSection      clSection;
   IS                clPoints;
   PetscScalar       *array;
   PetscInt          *points = NULL;
-  const PetscInt    *clp, *clperm;
+  const PetscInt    *clp;
   PetscInt          numFields, numPoints, p;
   PetscInt          offset = 0, f;
   PetscErrorCode    ierr;
@@ -5270,7 +5272,6 @@ PetscErrorCode DMPlexVecSetFieldClosure_Internal(DM dm, PetscSection section, Ve
   PetscValidHeaderSpecific(v, VEC_CLASSID, 3);
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
   /* Get points */
-  ierr = PetscSectionGetClosureInversePermutation_Internal(section, (PetscObject) dm, NULL, &clperm);CHKERRQ(ierr);
   ierr = DMPlexGetCompressedClosure(dm,section,point,&numPoints,&points,&clSection,&clPoints,&clp);CHKERRQ(ierr);
   /* Get array */
   ierr = VecGetArray(v, &array);CHKERRQ(ierr);
@@ -5294,35 +5295,35 @@ PetscErrorCode DMPlexVecSetFieldClosure_Internal(DM dm, PetscSection section, Ve
         const PetscInt    point = points[2*p];
         const PetscInt    *perm = perms ? perms[p] : NULL;
         const PetscScalar *flip = flips ? flips[p] : NULL;
-        updatePointFields_private(section, point, perm, flip, f, insert, PETSC_FALSE, clperm, values, &offset, array);
+        updatePointFields_private(section, point, perm, flip, f, insert, PETSC_FALSE, NULL, values, &offset, array);
       } break;
     case INSERT_ALL_VALUES:
       for (p = 0; p < numPoints; p++) {
         const PetscInt    point = points[2*p];
         const PetscInt    *perm = perms ? perms[p] : NULL;
         const PetscScalar *flip = flips ? flips[p] : NULL;
-        updatePointFields_private(section, point, perm, flip, f, insert, PETSC_TRUE, clperm, values, &offset, array);
+        updatePointFields_private(section, point, perm, flip, f, insert, PETSC_TRUE, NULL, values, &offset, array);
         } break;
     case INSERT_BC_VALUES:
       for (p = 0; p < numPoints; p++) {
         const PetscInt    point = points[2*p];
         const PetscInt    *perm = perms ? perms[p] : NULL;
         const PetscScalar *flip = flips ? flips[p] : NULL;
-        updatePointFieldsBC_private(section, point, perm, flip, f, Ncc, comps, insert, clperm, values, &offset, array);
+        updatePointFieldsBC_private(section, point, perm, flip, f, Ncc, comps, insert, NULL, values, &offset, array);
       } break;
     case ADD_VALUES:
       for (p = 0; p < numPoints; p++) {
         const PetscInt    point = points[2*p];
         const PetscInt    *perm = perms ? perms[p] : NULL;
         const PetscScalar *flip = flips ? flips[p] : NULL;
-        updatePointFields_private(section, point, perm, flip, f, add, PETSC_FALSE, clperm, values, &offset, array);
+        updatePointFields_private(section, point, perm, flip, f, add, PETSC_FALSE, NULL, values, &offset, array);
       } break;
     case ADD_ALL_VALUES:
       for (p = 0; p < numPoints; p++) {
         const PetscInt    point = points[2*p];
         const PetscInt    *perm = perms ? perms[p] : NULL;
         const PetscScalar *flip = flips ? flips[p] : NULL;
-        updatePointFields_private(section, point, perm, flip, f, add, PETSC_TRUE, clperm, values, &offset, array);
+        updatePointFields_private(section, point, perm, flip, f, add, PETSC_TRUE, NULL, values, &offset, array);
       } break;
     default:
       SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Invalid insert mode %d", mode);
