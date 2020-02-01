@@ -137,6 +137,8 @@
           <li>Fix a bug in MATSUPERLU_DIST interface when MATMPIAIJ with commsize 1 is used</li>
           <li>Add MATCHOLMOD support for block solves</li>
           <li>--download-suitesparse now uses the official SuiteSparse repository</li>
+          <li>Fix MatAXPY for MATSHELL</li>
+          <li>MatAXPY(Y,0.0,X,DIFFERENT_NONZERO_PATTERN) no longer modifies the nonzero pattern of Y to include that of X</li>
         </ul>
       <h4>PC:</h4>
         <ul>
