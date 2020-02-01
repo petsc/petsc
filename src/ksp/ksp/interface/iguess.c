@@ -62,7 +62,16 @@ PetscErrorCode KSPGuessRegisterAll(void)
 }
 
 /*@
-    KSPGuessSetFromOptions
+    KSPGuessSetFromOptions - Sets the options for a KSPGuess from the options database
+
+    Collective on guess
+
+    Input Parameter:
+.    guess - KSPGuess object
+
+   Level: intermediate
+
+.seealso: KSPGuess, KSPGetGuess(), KSPSetGuessType(), KSPGuessType
 @*/
 PetscErrorCode KSPGuessSetFromOptions(KSPGuess guess)
 {
