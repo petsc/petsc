@@ -599,7 +599,7 @@ PetscErrorCode MatMult_Shell(Mat A,Vec x,Vec y)
 
     ierr = MatShellGetContext(shell->axpy,(void *)&X);CHKERRQ(ierr);
     ierr = PetscObjectStateGet((PetscObject)X,&axpy_state);CHKERRQ(ierr);
-    if (shell->axpy_state != axpy_state) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Invalid AXPY state %D != %D",axpy_state,shell->axpy_state);
+    if (shell->axpy_state != axpy_state) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Invalid AXPY state: cannot modify the X matrix passed to MatAXPY(Y,a,X,...)");
     if (!shell->left_work) {ierr = MatCreateVecs(A,&shell->left_work,NULL);CHKERRQ(ierr);}
     ierr = MatMult(shell->axpy,x,shell->left_work);CHKERRQ(ierr);
     ierr = VecAXPY(y,shell->axpy_vscale,shell->left_work);CHKERRQ(ierr);
@@ -652,7 +652,7 @@ PetscErrorCode MatMultTranspose_Shell(Mat A,Vec x,Vec y)
 
     ierr = MatShellGetContext(shell->axpy,(void *)&X);CHKERRQ(ierr);
     ierr = PetscObjectStateGet((PetscObject)X,&axpy_state);CHKERRQ(ierr);
-    if (shell->axpy_state != axpy_state) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Invalid AXPY state %D != %D",axpy_state,shell->axpy_state);
+    if (shell->axpy_state != axpy_state) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Invalid AXPY state: cannot modify the X matrix passed to MatAXPY(Y,a,X,...)");
     if (!shell->right_work) {ierr = MatCreateVecs(A,NULL,&shell->right_work);CHKERRQ(ierr);}
     ierr = MatMultTranspose(shell->axpy,x,shell->right_work);CHKERRQ(ierr);
     ierr = VecAXPY(y,shell->axpy_vscale,shell->right_work);CHKERRQ(ierr);
@@ -706,7 +706,7 @@ PetscErrorCode MatGetDiagonal_Shell(Mat A,Vec v)
 
     ierr = MatShellGetContext(shell->axpy,(void *)&X);CHKERRQ(ierr);
     ierr = PetscObjectStateGet((PetscObject)X,&axpy_state);CHKERRQ(ierr);
-    if (shell->axpy_state != axpy_state) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Invalid AXPY state %D != %D",axpy_state,shell->axpy_state);
+    if (shell->axpy_state != axpy_state) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Invalid AXPY state: cannot modify the X matrix passed to MatAXPY(Y,a,X,...)");
     if (!shell->left_work) {ierr = VecDuplicate(v,&shell->left_work);CHKERRQ(ierr);}
     ierr = MatGetDiagonal(shell->axpy,shell->left_work);CHKERRQ(ierr);
     ierr = VecAXPY(v,shell->axpy_vscale,shell->left_work);CHKERRQ(ierr);
