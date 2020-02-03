@@ -1805,6 +1805,8 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
      #include "petscsnes.h"
      PetscErrorCode SNESFunction(SNES snes,Vec x,Vec f,void *ctx);
 
+     Collective on snes
+
      Input Parameters:
 +     snes - the SNES context
 .     x    - state at which to evaluate residual
@@ -2117,9 +2119,15 @@ PetscErrorCode  SNESGetFunctionType(SNES snes, SNESFunctionType *type)
      #include <petscsnes.h>
 $    SNESNGSFunction(SNES snes,Vec x,Vec b,void *ctx);
 
+     Collective on snes
+
+     Input Parameters:
 +  X   - solution vector
 .  B   - RHS vector
 -  ctx - optional user-defined Gauss-Seidel context
+
+     Output Parameter:
+.  X   - solution vector
 
    Level: intermediate
 
@@ -2907,10 +2915,15 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat A,Mat B)
      #include "petscsnes.h"
      PetscErrorCode SNESJacobianFunction(SNES snes,Vec x,Mat Amat,Mat Pmat,void *ctx);
 
-+  x - input vector
-.  Amat - the matrix that defines the (approximate) Jacobian
-.  Pmat - the matrix to be used in constructing the preconditioner, usually the same as Amat.
+     Collective on snes
+
+    Input Parameters:
++  x - input vector, the Jacobian is to be computed at this value
 -  ctx - [optional] user-defined Jacobian context
+
+    Output Parameters:
++  Amat - the matrix that defines the (approximate) Jacobian
+-  Pmat - the matrix to be used in constructing the preconditioner, usually the same as Amat.
 
    Level: intermediate
 
@@ -3865,6 +3878,9 @@ PetscErrorCode  SNESMonitor(SNES snes,PetscInt iter,PetscReal rnorm)
      #include <petscsnes.h>
 $    PetscErrorCode SNESMonitorFunction(SNES snes,PetscInt its, PetscReal norm,void *mctx)
 
+     Collective on snes
+
+    Input Parameters:
 +    snes - the SNES context
 .    its - iteration number
 .    norm - 2-norm function value (may be estimated)
@@ -3974,13 +3990,18 @@ PetscErrorCode  SNESMonitorCancel(SNES snes)
      #include <petscsnes.h>
 $     PetscErrorCode SNESConvergenceTest(SNES snes,PetscInt it,PetscReal xnorm,PetscReal gnorm,PetscReal f,SNESConvergedReason *reason,void *cctx)
 
+     Collective on snes
+
+    Input Parameters:
 +    snes - the SNES context
 .    it - current iteration (0 is the first and is before any Newton step)
-.    cctx - [optional] convergence context
-.    reason - reason for convergence/divergence
 .    xnorm - 2-norm of current iterate
 .    gnorm - 2-norm of current step
--    f - 2-norm of function
+.    f - 2-norm of function
+-    cctx - [optional] convergence context
+
+    Output Parameter:
+.    reason - reason for convergence/divergence, only needs to be set when convergence or divergence is detected
 
    Level: intermediate
 
