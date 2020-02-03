@@ -5,6 +5,16 @@ typedef struct {
   PetscScalar diag;
 } Mat_ConstantDiagonal;
 
+static PetscErrorCode MatAXPY_ConstantDiagonal(Mat Y, PetscScalar a, Mat X, MatStructure str)
+{
+  Mat_ConstantDiagonal *yctx = (Mat_ConstantDiagonal*)Y->data;
+  Mat_ConstantDiagonal *xctx = (Mat_ConstantDiagonal*)X->data;
+
+  PetscFunctionBegin;
+  yctx->diag += a*xctx->diag;
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode MatGetRow_ConstantDiagonal(Mat A, PetscInt row, PetscInt *ncols, PetscInt *cols[], PetscScalar *vals[])
 {
   Mat_ConstantDiagonal *ctx = (Mat_ConstantDiagonal*)A->data;
@@ -161,33 +171,27 @@ PetscErrorCode MatGetDiagonal_ConstantDiagonal(Mat J,Vec x)
 
 static PetscErrorCode MatShift_ConstantDiagonal(Mat Y,PetscScalar a)
 {
-  PetscErrorCode       ierr;
   Mat_ConstantDiagonal *ctx = (Mat_ConstantDiagonal*)Y->data;
 
   PetscFunctionBegin;
-  if (a != 0.) {ierr = PetscObjectStateIncrease((PetscObject)Y);CHKERRQ(ierr);}
   ctx->diag += a;
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MatScale_ConstantDiagonal(Mat Y,PetscScalar a)
 {
-  PetscErrorCode       ierr;
   Mat_ConstantDiagonal *ctx  = (Mat_ConstantDiagonal*)Y->data;
 
   PetscFunctionBegin;
-  if (a != 1.) {ierr = PetscObjectStateIncrease((PetscObject)Y);CHKERRQ(ierr);}
   ctx->diag *= a;
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MatZeroEntries_ConstantDiagonal(Mat Y)
 {
-  PetscErrorCode       ierr;
   Mat_ConstantDiagonal *ctx  = (Mat_ConstantDiagonal*)Y->data;
 
   PetscFunctionBegin;
-  if (ctx->diag != 0.0) {ierr = PetscObjectStateIncrease((PetscObject)Y);CHKERRQ(ierr);}
   ctx->diag = 0.0;
   PetscFunctionReturn(0);
 }
@@ -297,6 +301,7 @@ PETSC_EXTERN PetscErrorCode  MatCreate_ConstantDiagonal(Mat A)
   A->ops->assemblyend      = MatAssemblyEnd_ConstantDiagonal;
   A->ops->destroy          = MatDestroy_ConstantDiagonal;
   A->ops->getinfo          = MatGetInfo_ConstantDiagonal;
+  A->ops->axpy             = MatAXPY_ConstantDiagonal;
 
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATCONSTANTDIAGONAL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -304,14 +309,12 @@ PETSC_EXTERN PetscErrorCode  MatCreate_ConstantDiagonal(Mat A)
 
 static PetscErrorCode MatFactorNumeric_ConstantDiagonal(Mat fact,Mat A,const MatFactorInfo *info)
 {
-  PetscErrorCode       ierr;
   Mat_ConstantDiagonal *actx = (Mat_ConstantDiagonal*)A->data,*fctx = (Mat_ConstantDiagonal*)fact->data;
 
   PetscFunctionBegin;
   if (actx->diag == 0.0) fact->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
   else fact->factorerrortype = MAT_FACTOR_NOERROR;
   fctx->diag = 1.0/actx->diag;
-  ierr = PetscObjectStateIncrease((PetscObject)fact);CHKERRQ(ierr);
   fact->ops->solve = MatMult_ConstantDiagonal;
   PetscFunctionReturn(0);
 }
@@ -326,7 +329,7 @@ static PetscErrorCode MatFactorSymbolic_LU_ConstantDiagonal(Mat fact,Mat A,IS is
 static PetscErrorCode MatFactorSymbolic_Cholesky_ConstantDiagonal(Mat fact,Mat A,IS isrow,const MatFactorInfo *info)
 {
   PetscFunctionBegin;
-  fact->ops->choleskyfactornumeric = MatFactorNumeric_ConstantDiagonal;  PetscFunctionReturn(0);
+  fact->ops->choleskyfactornumeric = MatFactorNumeric_ConstantDiagonal;
   PetscFunctionReturn(0);
 }
 
