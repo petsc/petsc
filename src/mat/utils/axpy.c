@@ -46,6 +46,8 @@ static PetscErrorCode MatTransposeAXPY_Private(Mat Y,PetscScalar a,Mat X,MatStru
 -  str - either SAME_NONZERO_PATTERN, DIFFERENT_NONZERO_PATTERN
          or SUBSET_NONZERO_PATTERN (nonzeros of X is a subset of Y's)
 
+   Notes: No operation is performed when a is zero.
+
    Level: intermediate
 
 .seealso: MatAYPX()
@@ -71,7 +73,11 @@ PetscErrorCode MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure str)
   if (m1 != m2 || n1 != n2) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Non conforming matrix add: local sizes %D x %D, %D x %D",m1,m2,n1,n2);
   if (!Y->assembled) SETERRQ(PetscObjectComm((PetscObject)Y),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix (Y)");
   if (!X->assembled) SETERRQ(PetscObjectComm((PetscObject)X),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix (X)");
-
+  if (a == (PetscScalar)0.0) PetscFunctionReturn(0);
+  if (Y == X) {
+    ierr = MatScale(Y,1.0 + a);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
   ierr = MatGetType(X,&t1);CHKERRQ(ierr);
   ierr = MatGetType(Y,&t2);CHKERRQ(ierr);
   ierr = PetscStrcmp(t1,t2,&sametype);CHKERRQ(ierr);
@@ -87,15 +93,7 @@ PetscErrorCode MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure str)
       if (transpose) {
         ierr = MatTransposeAXPY_Private(Y,a,X,str,Y);CHKERRQ(ierr);
       } else {
-        if (str != DIFFERENT_NONZERO_PATTERN) {
-          ierr = MatAXPY_Basic(Y,a,X,str);CHKERRQ(ierr);
-        } else {
-          Mat B;
-
-          ierr = MatAXPY_Basic_Preallocate(Y,X,&B);CHKERRQ(ierr);
-          ierr = MatAXPY_BasicWithPreallocation(B,Y,a,X,str);CHKERRQ(ierr);
-          ierr = MatHeaderReplace(Y,&B);CHKERRQ(ierr);
-        }
+        ierr = MatAXPY_Basic(Y,a,X,str);CHKERRQ(ierr);
       }
     }
   }
@@ -155,41 +153,61 @@ PetscErrorCode MatAXPY_Basic_Preallocate(Mat Y, Mat X, Mat *B)
 
 PetscErrorCode MatAXPY_Basic(Mat Y,PetscScalar a,Mat X,MatStructure str)
 {
-  PetscInt          i,start,end,j,ncols,m,n;
-  PetscErrorCode    ierr;
-  const PetscInt    *row;
-  PetscScalar       *val;
-  const PetscScalar *vals;
+  PetscErrorCode ierr;
+  PetscBool      isshell;
 
   PetscFunctionBegin;
-  ierr = MatGetSize(X,&m,&n);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(X,&start,&end);CHKERRQ(ierr);
-  ierr = MatGetRowUpperTriangular(X);CHKERRQ(ierr);
-  if (a == 1.0) {
-    for (i = start; i < end; i++) {
-      ierr = MatGetRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
-      ierr = MatSetValues(Y,1,&i,ncols,row,vals,ADD_VALUES);CHKERRQ(ierr);
-      ierr = MatRestoreRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)Y,MATSHELL,&isshell);CHKERRQ(ierr);
+  if (isshell) { /* MatShell has special support for AXPY */
+    PetscErrorCode (*f)(Mat,PetscScalar,Mat,MatStructure);
+
+    ierr = MatGetOperation(Y,MATOP_AXPY,(void (**)(void))&f);CHKERRQ(ierr);
+    if (f) {
+      ierr = (*f)(Y,a,X,str);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
     }
-  } else {
-    PetscInt vs = 100;
-    /* realloc if needed, as this function may be used in parallel */
-    ierr = PetscMalloc1(vs,&val);CHKERRQ(ierr);
-    for (i=start; i<end; i++) {
-      ierr = MatGetRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
-      if (vs < ncols) {
-        vs   = PetscMin(2*ncols,n);
-        ierr = PetscRealloc(vs*sizeof(*val),&val);CHKERRQ(ierr);
-      }
-      for (j=0; j<ncols; j++) val[j] = a*vals[j];
-      ierr = MatSetValues(Y,1,&i,ncols,row,val,ADD_VALUES);CHKERRQ(ierr);
-      ierr = MatRestoreRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
-    }
-    ierr = PetscFree(val);CHKERRQ(ierr);
   }
-  ierr = MatRestoreRowUpperTriangular(X);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (str != DIFFERENT_NONZERO_PATTERN) {
+    PetscInt          i,start,end,j,ncols,m,n;
+    const PetscInt    *row;
+    PetscScalar       *val;
+    const PetscScalar *vals;
+
+    ierr = MatGetSize(X,&m,&n);CHKERRQ(ierr);
+    ierr = MatGetOwnershipRange(X,&start,&end);CHKERRQ(ierr);
+    ierr = MatGetRowUpperTriangular(X);CHKERRQ(ierr);
+    if (a == 1.0) {
+      for (i = start; i < end; i++) {
+        ierr = MatGetRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
+        ierr = MatSetValues(Y,1,&i,ncols,row,vals,ADD_VALUES);CHKERRQ(ierr);
+        ierr = MatRestoreRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
+      }
+    } else {
+      PetscInt vs = 100;
+      /* realloc if needed, as this function may be used in parallel */
+      ierr = PetscMalloc1(vs,&val);CHKERRQ(ierr);
+      for (i=start; i<end; i++) {
+        ierr = MatGetRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
+        if (vs < ncols) {
+          vs   = PetscMin(2*ncols,n);
+          ierr = PetscRealloc(vs*sizeof(*val),&val);CHKERRQ(ierr);
+        }
+        for (j=0; j<ncols; j++) val[j] = a*vals[j];
+        ierr = MatSetValues(Y,1,&i,ncols,row,val,ADD_VALUES);CHKERRQ(ierr);
+        ierr = MatRestoreRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
+      }
+      ierr = PetscFree(val);CHKERRQ(ierr);
+    }
+    ierr = MatRestoreRowUpperTriangular(X);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  } else {
+    Mat B;
+
+    ierr = MatAXPY_Basic_Preallocate(Y,X,&B);CHKERRQ(ierr);
+    ierr = MatAXPY_BasicWithPreallocation(B,Y,a,X,str);CHKERRQ(ierr);
+    ierr = MatHeaderReplace(Y,&B);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -257,12 +275,9 @@ PetscErrorCode MatAXPY_BasicWithPreallocation(Mat B,Mat Y,PetscScalar a,Mat X,Ma
    Notes:
     If the matrix Y is missing some diagonal entries this routine can be very slow. To make it fast one should initially
    fill the matrix so that all diagonal entries have a value (with a value of zero for those locations that would not have an
-   entry).
+   entry). No operation is performed when a is zero.
 
    To form Y = Y + diag(V) use MatDiagonalSet()
-
-   Developers Note: If the local "diagonal part" of the matrix Y has no entries then the local diagonal part is
-    preallocated with 1 nonzero per row for the to be added values. This allows for fast shifting of an empty matrix.
 
 .seealso: MatDiagonalSet(), MatScale(), MatDiagonalScale()
  @*/
