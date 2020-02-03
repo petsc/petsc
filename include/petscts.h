@@ -982,6 +982,7 @@ PETSC_EXTERN PetscErrorCode TSSundialsSetLinearTolerance(TS,PetscReal);
 PETSC_EXTERN PetscErrorCode TSSundialsMonitorInternalSteps(TS,PetscBool );
 PETSC_EXTERN PetscErrorCode TSSundialsGetParameters(TS,PetscInt *,long*[],double*[]);
 PETSC_EXTERN PetscErrorCode TSSundialsSetMaxl(TS,PetscInt);
+PETSC_EXTERN PetscErrorCode TSSundialsSetMaxord(TS,PetscInt);
 #endif
 
 PETSC_EXTERN PetscErrorCode TSThetaSetTheta(TS,PetscReal);

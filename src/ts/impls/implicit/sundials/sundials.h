@@ -35,12 +35,13 @@ typedef struct {
 
   /* Variables used by Sundials */
   MPI_Comm  comm_sundials;
-  double    reltol;
-  double    abstol;          /* only for using SS flag in SUNDIALS */
+  PetscReal reltol;
+  PetscReal abstol;          /* only for using SS flag in SUNDIALS */
   N_Vector  y;               /* current solution */
   void      *mem;
   PetscBool monitorstep;     /* flag for monitor internal steps; itask=V_ONE_STEP or itask=CV_NORMAL*/
   PetscInt  maxl;            /* max dimension of the Krylov subspace to be used */
+  PetscInt  maxord;          /* max order of BDF / Adams method */
 } TS_Sundials;
 #endif
 
