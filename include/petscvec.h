@@ -454,7 +454,8 @@ PETSC_EXTERN PetscErrorCode VecMTDotBegin(Vec,PetscInt,const Vec[],PetscScalar[]
 PETSC_EXTERN PetscErrorCode VecMTDotEnd(Vec,PetscInt,const Vec[],PetscScalar[]);
 PETSC_EXTERN PetscErrorCode PetscCommSplitReductionBegin(MPI_Comm);
 
-PETSC_EXTERN PetscErrorCode VecPinToCPU(Vec,PetscBool);
+PETSC_EXTERN PetscErrorCode VecBindToCPU(Vec,PetscBool);
+PETSC_DEPRECATED_FUNCTION("Use VecBindToCPU (since v3.13)") PETSC_STATIC_INLINE PetscErrorCode VecPinToCPU(Vec v,PetscBool flg) {return VecBindToCPU(v,flg);}
 
 typedef enum {VEC_IGNORE_OFF_PROC_ENTRIES,VEC_IGNORE_NEGATIVE_INDICES,VEC_SUBSET_OFF_PROC_ENTRIES} VecOption;
 PETSC_EXTERN PetscErrorCode VecSetOption(Vec,VecOption,PetscBool );

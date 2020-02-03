@@ -109,8 +109,8 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
       /* odd case where multiple coarse grids are on one processor or no coarsening ... */
       ierr = PetscInfo1(pc,"reduced grid using same number of processors (%d) as last grid (use larger coarse grid)\n",nactive);CHKERRQ(ierr);
       if (pc_gamg->cpu_pin_coarse_grids) {
-        ierr = MatPinToCPU(*a_Amat_crs,PETSC_TRUE);CHKERRQ(ierr);
-        ierr = MatPinToCPU(*a_P_inout,PETSC_TRUE);CHKERRQ(ierr);
+        ierr = MatBindToCPU(*a_Amat_crs,PETSC_TRUE);CHKERRQ(ierr);
+        ierr = MatBindToCPU(*a_P_inout,PETSC_TRUE);CHKERRQ(ierr);
       }
     }
     /* we know that the grid structure can be reused in MatPtAP */
@@ -405,16 +405,16 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
       static PetscInt llev = 2;
       ierr = PetscInfo1(pc,"Pinning level %D to the CPU\n",llev++);CHKERRQ(ierr);
 #endif
-      ierr = MatPinToCPU(*a_Amat_crs,PETSC_TRUE);CHKERRQ(ierr);
-      ierr = MatPinToCPU(*a_P_inout,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = MatBindToCPU(*a_Amat_crs,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = MatBindToCPU(*a_P_inout,PETSC_TRUE);CHKERRQ(ierr);
       if (1) { /* lvec is created, need to pin it, this is done in MatSetUpMultiply_MPIAIJ. Hack */
         Mat         A = *a_Amat_crs, P = *a_P_inout;
         PetscMPIInt size;
         ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
         if (size > 1) {
           Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data, *p = (Mat_MPIAIJ*)P->data;
-          ierr = VecPinToCPU(a->lvec,PETSC_TRUE);CHKERRQ(ierr);
-          ierr = VecPinToCPU(p->lvec,PETSC_TRUE);CHKERRQ(ierr);
+          ierr = VecBindToCPU(a->lvec,PETSC_TRUE);CHKERRQ(ierr);
+          ierr = VecBindToCPU(p->lvec,PETSC_TRUE);CHKERRQ(ierr);
         }
       }
     }

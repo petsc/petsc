@@ -248,12 +248,12 @@ PetscErrorCode  VecCreateMPICUDAWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,P
 
 extern "C" PetscErrorCode VecGetArrayWrite_SeqCUDA(Vec,PetscScalar**);
 
-PetscErrorCode VecPinToCPU_MPICUDA(Vec V,PetscBool pin)
+PetscErrorCode VecBindToCPU_MPICUDA(Vec V,PetscBool pin)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  V->pinnedtocpu = pin;
+  V->boundtocpu = pin;
   if (pin) {
     ierr = VecCUDACopyFromGPU(V);CHKERRQ(ierr);
     V->offloadmask = PETSC_OFFLOAD_CPU; /* since the CPU code will likely change values in the vector */
@@ -333,8 +333,8 @@ PetscErrorCode VecCreate_MPICUDA_Private(Vec vv,PetscBool alloc,PetscInt nghost,
   ierr = VecCreate_MPI_Private(vv,PETSC_FALSE,0,0);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)vv,VECMPICUDA);CHKERRQ(ierr);
 
-  ierr = VecPinToCPU_MPICUDA(vv,PETSC_FALSE);CHKERRQ(ierr);
-  vv->ops->pintocpu = VecPinToCPU_MPICUDA;
+  ierr = VecBindToCPU_MPICUDA(vv,PETSC_FALSE);CHKERRQ(ierr);
+  vv->ops->pintocpu = VecBindToCPU_MPICUDA;
 
   /* Later, functions check for the Vec_CUDA structure existence, so do not create it without array */
   if (alloc && !array) {

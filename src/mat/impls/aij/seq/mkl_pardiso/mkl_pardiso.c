@@ -251,8 +251,8 @@ static PetscErrorCode MatMKLPardisoSolveSchur_Private(Mat F, PetscScalar *B, Pet
   ierr = MatSetType(Bmat,((PetscObject)S)->type_name);CHKERRQ(ierr);
   ierr = MatSetType(Xmat,((PetscObject)S)->type_name);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-  ierr = MatPinToCPU(Xmat,S->pinnedtocpu);CHKERRQ(ierr);
-  ierr = MatPinToCPU(Bmat,S->pinnedtocpu);CHKERRQ(ierr);
+  ierr = MatBindToCPU(Xmat,S->boundtocpu);CHKERRQ(ierr);
+  ierr = MatBindToCPU(Bmat,S->boundtocpu);CHKERRQ(ierr);
 #endif
 
 #if defined(PETSC_USE_COMPLEX)

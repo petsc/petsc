@@ -1601,8 +1601,8 @@ PetscErrorCode PCBDDCComputeLocalTopologyInfo(PC pc)
   /* need to convert from global to local topology information and remove references to information in global ordering */
   ierr = MatCreateVecs(pc->pmat,&global,NULL);CHKERRQ(ierr);
   ierr = MatCreateVecs(matis->A,&local,NULL);CHKERRQ(ierr);
-  ierr = VecPinToCPU(global,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = VecPinToCPU(local,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = VecBindToCPU(global,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = VecBindToCPU(local,PETSC_TRUE);CHKERRQ(ierr);
   if (monolithic) { /* just get block size to properly compute vertices */
     if (pcbddc->vertex_size == 1) {
       ierr = MatGetBlockSize(pc->pmat,&pcbddc->vertex_size);CHKERRQ(ierr);
@@ -4155,9 +4155,9 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
       ierr = ISComplement(pcbddc->is_R_local,0,pcis->n,&is_aux);CHKERRQ(ierr);
     }
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-    oldpin = pcbddc->local_mat->pinnedtocpu;
+    oldpin = pcbddc->local_mat->boundtocpu;
 #endif
-    ierr = MatPinToCPU(pcbddc->local_mat,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = MatBindToCPU(pcbddc->local_mat,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatCreateSubMatrix(pcbddc->local_mat,pcbddc->is_R_local,is_aux,MAT_INITIAL_MATRIX,&A_RV);CHKERRQ(ierr);
     ierr = MatCreateSubMatrix(pcbddc->local_mat,is_aux,pcbddc->is_R_local,MAT_INITIAL_MATRIX,&A_VR);CHKERRQ(ierr);
     ierr = PetscObjectBaseTypeCompare((PetscObject)A_VR,MATSEQAIJ,&isaij);CHKERRQ(ierr);
@@ -4166,7 +4166,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
     }
     ierr = MatCreateSubMatrix(pcbddc->local_mat,is_aux,is_aux,MAT_INITIAL_MATRIX,&A_VV);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-    ierr = MatPinToCPU(pcbddc->local_mat,oldpin);CHKERRQ(ierr);
+    ierr = MatBindToCPU(pcbddc->local_mat,oldpin);CHKERRQ(ierr);
 #endif
     ierr = ISDestroy(&is_aux);CHKERRQ(ierr);
   }

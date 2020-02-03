@@ -2381,14 +2381,14 @@ static PetscErrorCode MatISSetUpScatters_Private(Mat A)
   ierr = VecScatterDestroy(&is->rctx);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&is->cctx);CHKERRQ(ierr);
   ierr = MatCreateVecs(is->A,&is->x,&is->y);CHKERRQ(ierr);
-  ierr = VecPinToCPU(is->y,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = VecBindToCPU(is->y,PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)is->y,VECSEQCUDA,&iscuda);CHKERRQ(ierr);
   if (iscuda) {
     ierr = PetscFree(A->defaultvectype);CHKERRQ(ierr);
     ierr = PetscStrallocpy(VECCUDA,&A->defaultvectype);CHKERRQ(ierr);
   }
   ierr = MatCreateVecs(A,&cglobal,&rglobal);CHKERRQ(ierr);
-  ierr = VecPinToCPU(rglobal,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = VecBindToCPU(rglobal,PETSC_TRUE);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingGetBlockIndices(A->rmap->mapping,&garray);CHKERRQ(ierr);
   ierr = ISCreateBlock(PetscObjectComm((PetscObject)A),rbs,nr/rbs,garray,PETSC_USE_POINTER,&from);CHKERRQ(ierr);
   ierr = VecScatterCreate(rglobal,from,is->y,NULL,&is->rctx);CHKERRQ(ierr);
@@ -2408,14 +2408,14 @@ static PetscErrorCode MatISSetUpScatters_Private(Mat A)
 
   /* interface counter vector (local) */
   ierr = VecDuplicate(is->y,&is->counter);CHKERRQ(ierr);
-  ierr = VecPinToCPU(is->counter,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = VecBindToCPU(is->counter,PETSC_TRUE);CHKERRQ(ierr);
   ierr = VecSet(is->y,1.);CHKERRQ(ierr);
   ierr = VecScatterBegin(is->rctx,is->y,rglobal,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd(is->rctx,is->y,rglobal,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterBegin(is->rctx,rglobal,is->counter,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(is->rctx,rglobal,is->counter,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecPinToCPU(is->y,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = VecPinToCPU(is->counter,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = VecBindToCPU(is->y,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = VecBindToCPU(is->counter,PETSC_FALSE);CHKERRQ(ierr);
 
   /* special functions for block-diagonal matrices */
   ierr = VecSum(rglobal,&sum);CHKERRQ(ierr);

@@ -142,7 +142,7 @@ struct _p_Vec {
   PetscInt               lock;         /* lock state. vector can be free (=0), locked for read (>0) or locked for write(<0) */
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
   PetscOffloadMask       offloadmask;  /* a mask which indicates where the valid vector data is (GPU, CPU or both) */
-  PetscBool              pinnedtocpu;
+  PetscBool              boundtocpu;
   void                   *spptr; /* this is the special pointer to the array on the GPU */
 #endif
 };
