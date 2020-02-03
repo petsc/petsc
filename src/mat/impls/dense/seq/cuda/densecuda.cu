@@ -109,7 +109,7 @@ PetscErrorCode MatSeqDenseCUDACopyToGPU(Mat A)
 
   PetscFunctionBegin;
   PetscCheckTypeName(A,MATSEQDENSECUDA);
-  if (A->pinnedtocpu) PetscFunctionReturn(0);
+  if (A->boundtocpu) PetscFunctionReturn(0);
   if (!dA->d_v) {
     cerr = cudaMalloc((void**)&dA->d_v,cA->lda*cA->Nmax*sizeof(PetscScalar));CHKERRCUDA(cerr);
   }
@@ -873,12 +873,12 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqdense_cuda(Mat A,MatFactorType ftype
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatPinToCPU_SeqDenseCUDA(Mat A,PetscBool flg)
+static PetscErrorCode MatBindToCPU_SeqDenseCUDA(Mat A,PetscBool flg)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  A->pinnedtocpu = flg;
+  A->boundtocpu = flg;
   if (!flg) {
     ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqDenseSetPreallocation_C",MatSeqDenseSetPreallocation_SeqDenseCUDA);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)A,"MatDenseGetArray_C",           MatDenseGetArray_SeqDenseCUDA);CHKERRQ(ierr);
@@ -932,7 +932,7 @@ PetscErrorCode MatConvert_SeqDenseCUDA_SeqDense(Mat M,MatType type,MatReuse reus
   }
 
   B    = *newmat;
-  ierr = MatPinToCPU_SeqDenseCUDA(B,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatBindToCPU_SeqDenseCUDA(B,PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatReset_SeqDenseCUDA(B);CHKERRQ(ierr);
   ierr = PetscFree(B->defaultvectype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(VECSTANDARD,&B->defaultvectype);CHKERRQ(ierr);
@@ -970,8 +970,8 @@ PetscErrorCode MatConvert_SeqDense_SeqDenseCUDA(Mat M,MatType type,MatReuse reus
 
   B->offloadmask = PETSC_OFFLOAD_UNALLOCATED;
 
-  ierr = MatPinToCPU_SeqDenseCUDA(B,PETSC_FALSE);CHKERRQ(ierr);
-  B->ops->pintocpu = MatPinToCPU_SeqDenseCUDA;
+  ierr = MatBindToCPU_SeqDenseCUDA(B,PETSC_FALSE);CHKERRQ(ierr);
+  B->ops->pintocpu = MatBindToCPU_SeqDenseCUDA;
   B->ops->destroy  = MatDestroy_SeqDenseCUDA;
   PetscFunctionReturn(0);
 }

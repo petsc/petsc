@@ -1088,12 +1088,12 @@ PetscErrorCode VecDestroy_SeqViennaCL(Vec v)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecPinToCPU_SeqAIJViennaCL(Vec V,PetscBool flg)
+static PetscErrorCode VecBindToCPU_SeqAIJViennaCL(Vec V,PetscBool flg)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  V->pinnedtocpu = flg;
+  V->boundtocpu = flg;
   if (flg) {
     ierr = VecViennaCLCopyFromGPU(V);CHKERRQ(ierr);
     V->offloadmask = PETSC_OFFLOAD_CPU; /* since the CPU code will likely change values in the vector */
@@ -1170,8 +1170,8 @@ PETSC_EXTERN PetscErrorCode VecCreate_SeqViennaCL(Vec V)
   ierr = VecCreate_Seq_Private(V,0);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)V,VECSEQVIENNACL);CHKERRQ(ierr);
 
-  ierr = VecPinToCPU_SeqAIJViennaCL(V,PETSC_FALSE);CHKERRQ(ierr);
-  V->ops->pintocpu = VecPinToCPU_SeqAIJViennaCL;
+  ierr = VecBindToCPU_SeqAIJViennaCL(V,PETSC_FALSE);CHKERRQ(ierr);
+  V->ops->pintocpu = VecBindToCPU_SeqAIJViennaCL;
 
   ierr = VecViennaCLAllocateCheck(V);CHKERRQ(ierr);
   ierr = VecViennaCLAllocateCheckHost(V);CHKERRQ(ierr);

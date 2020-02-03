@@ -933,8 +933,8 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     size_schur = cum - n_I;
     ierr = ISCreateGeneral(PETSC_COMM_SELF,cum,all_local_idx_N,PETSC_OWN_POINTER,&is_A_all);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-    oldpin = sub_schurs->A->pinnedtocpu;
-    ierr = MatPinToCPU(sub_schurs->A,PETSC_TRUE);CHKERRQ(ierr);
+    oldpin = sub_schurs->A->boundtocpu;
+    ierr = MatBindToCPU(sub_schurs->A,PETSC_TRUE);CHKERRQ(ierr);
 #endif
     if (cum == n) {
       ierr = ISSetPermutation(is_A_all);CHKERRQ(ierr);
@@ -943,7 +943,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       ierr = MatCreateSubMatrix(sub_schurs->A,is_A_all,is_A_all,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
     }
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-    ierr = MatPinToCPU(sub_schurs->A,oldpin);CHKERRQ(ierr);
+    ierr = MatBindToCPU(sub_schurs->A,oldpin);CHKERRQ(ierr);
 #endif
     ierr = MatSetOptionsPrefix(A,sub_schurs->prefix);CHKERRQ(ierr);
     ierr = MatAppendOptionsPrefix(A,"sub_schurs_");CHKERRQ(ierr);
@@ -1467,7 +1467,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 
       ierr = PetscOptionsGetBool(NULL,sub_schurs->prefix,"-sub_schurs_schur_pin_to_cpu",&flg,NULL);CHKERRQ(ierr);
       ierr = MatFactorGetSchurComplement(F,&St,&st);CHKERRQ(ierr);
-      ierr = MatPinToCPU(St,flg);CHKERRQ(ierr);
+      ierr = MatBindToCPU(St,flg);CHKERRQ(ierr);
       ierr = MatFactorRestoreSchurComplement(F,&St,st);CHKERRQ(ierr);
     }
 #endif

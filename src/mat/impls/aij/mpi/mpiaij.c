@@ -44,20 +44,20 @@ M*/
 .seealso: MatCreateMPIAIJCRL,MATSEQAIJCRL,MATMPIAIJCRL, MATSEQAIJCRL, MATMPIAIJCRL
 M*/
 
-static PetscErrorCode MatPinToCPU_MPIAIJ(Mat A,PetscBool flg)
+static PetscErrorCode MatBindToCPU_MPIAIJ(Mat A,PetscBool flg)
 {
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_VIENNACL)
-  A->pinnedtocpu = flg;
+  A->boundtocpu = flg;
 #endif
   if (a->A) {
-    ierr = MatPinToCPU(a->A,flg);CHKERRQ(ierr);
+    ierr = MatBindToCPU(a->A,flg);CHKERRQ(ierr);
   }
   if (a->B) {
-    ierr = MatPinToCPU(a->B,flg);CHKERRQ(ierr);
+    ierr = MatBindToCPU(a->B,flg);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -2741,7 +2741,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                        0,
                                        0,
                                        0,
-                                       MatPinToCPU_MPIAIJ,
+                                       MatBindToCPU_MPIAIJ,
                                 /*99*/ 0,
                                        0,
                                        0,

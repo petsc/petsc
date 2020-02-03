@@ -30,12 +30,12 @@ PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJCUSPARSE(Mat B,PetscInt d_nz,con
   if (!B->preallocated) {
     /* Explicitly create 2 MATSEQAIJCUSPARSE matrices. */
     ierr = MatCreate(PETSC_COMM_SELF,&b->A);CHKERRQ(ierr);
-    ierr = MatPinToCPU(b->A,B->pinnedtocpu);CHKERRQ(ierr);
+    ierr = MatBindToCPU(b->A,B->boundtocpu);CHKERRQ(ierr);
     ierr = MatSetSizes(b->A,B->rmap->n,B->cmap->n,B->rmap->n,B->cmap->n);CHKERRQ(ierr);
     ierr = MatSetType(b->A,MATSEQAIJCUSPARSE);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)B,(PetscObject)b->A);CHKERRQ(ierr);
     ierr = MatCreate(PETSC_COMM_SELF,&b->B);CHKERRQ(ierr);
-    ierr = MatPinToCPU(b->B,B->pinnedtocpu);CHKERRQ(ierr);
+    ierr = MatBindToCPU(b->B,B->boundtocpu);CHKERRQ(ierr);
     ierr = MatSetSizes(b->B,B->rmap->n,B->cmap->N,B->rmap->n,B->cmap->N);CHKERRQ(ierr);
     ierr = MatSetType(b->B,MATSEQAIJCUSPARSE);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)B,(PetscObject)b->B);CHKERRQ(ierr);

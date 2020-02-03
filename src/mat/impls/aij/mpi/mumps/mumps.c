@@ -160,14 +160,14 @@ static PetscErrorCode MatMumpsSolveSchur_Private(Mat F)
   ierr = MatCreateSeqDense(PETSC_COMM_SELF,mumps->id.size_schur,mumps->id.nrhs,(PetscScalar*)mumps->id.redrhs,&B);CHKERRQ(ierr);
   ierr = MatSetType(B,((PetscObject)S)->type_name);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-  ierr = MatPinToCPU(B,S->pinnedtocpu);CHKERRQ(ierr);
+  ierr = MatBindToCPU(B,S->boundtocpu);CHKERRQ(ierr);
 #endif
   switch (schurstatus) {
   case MAT_FACTOR_SCHUR_FACTORED:
     ierr = MatCreateSeqDense(PETSC_COMM_SELF,mumps->id.size_schur,mumps->id.nrhs,(PetscScalar*)mumps->id.redrhs,&X);CHKERRQ(ierr);
     ierr = MatSetType(X,((PetscObject)S)->type_name);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-    ierr = MatPinToCPU(X,S->pinnedtocpu);CHKERRQ(ierr);
+    ierr = MatBindToCPU(X,S->boundtocpu);CHKERRQ(ierr);
 #endif
     if (!mumps->id.ICNTL(9)) { /* transpose solve */
       ierr = MatMatSolveTranspose(S,B,X);CHKERRQ(ierr);
@@ -185,7 +185,7 @@ static PetscErrorCode MatMumpsSolveSchur_Private(Mat F)
     ierr = MatCreateSeqDense(PETSC_COMM_SELF,mumps->id.size_schur,mumps->id.nrhs,mumps->schur_sol,&X);CHKERRQ(ierr);
     ierr = MatSetType(X,((PetscObject)S)->type_name);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-    ierr = MatPinToCPU(X,S->pinnedtocpu);CHKERRQ(ierr);
+    ierr = MatBindToCPU(X,S->boundtocpu);CHKERRQ(ierr);
 #endif
     if (!mumps->id.ICNTL(9)) { /* transpose solve */
       ierr = MatTransposeMatMult(S,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&X);CHKERRQ(ierr);

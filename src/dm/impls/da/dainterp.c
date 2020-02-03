@@ -81,7 +81,7 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
      we don't want the original unconverted matrix copied to the GPU
    */
   if (dof > 1) {
-    ierr = MatPinToCPU(mat,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = MatBindToCPU(mat,PETSC_TRUE);CHKERRQ(ierr);
   }
   #endif
   ierr = MatSetSizes(mat,m_f,m_c,mx,Mx);CHKERRQ(ierr);
@@ -224,7 +224,7 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q0(DM dac,DM daf,Mat *A)
      we don't want the original unconverted matrix copied to the GPU
    */
   if (dof > 1) {
-    ierr = MatPinToCPU(mat,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = MatBindToCPU(mat,PETSC_TRUE);CHKERRQ(ierr);
   }
   #endif
   ierr = MatSetSizes(mat,m_f,m_c,mx,Mx);CHKERRQ(ierr);
@@ -370,7 +370,7 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
      we don't want the original unconverted matrix copied to the GPU
   */
   if (dof > 1) {
-    ierr = MatPinToCPU(mat,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = MatBindToCPU(mat,PETSC_TRUE);CHKERRQ(ierr);
   }
 #endif
   ierr = MatSetSizes(mat,m_f*n_f,col_scale*m_c*n_c,mx*my,col_scale*Mx*My);CHKERRQ(ierr);
@@ -592,7 +592,7 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
      we don't want the original unconverted matrix copied to the GPU
   */
   if (dof > 1) {
-    ierr = MatPinToCPU(mat,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = MatBindToCPU(mat,PETSC_TRUE);CHKERRQ(ierr);
   }
   #endif
   ierr = MatSetSizes(mat,m_f*n_f,col_scale*m_c*n_c,mx*my,col_scale*Mx*My);CHKERRQ(ierr);
@@ -727,7 +727,7 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
      we don't want the original unconverted matrix copied to the GPU
   */
   if (dof > 1) {
-    ierr = MatPinToCPU(mat,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = MatBindToCPU(mat,PETSC_TRUE);CHKERRQ(ierr);
   }
   #endif
   ierr = MatSetSizes(mat,m_f*n_f*p_f,col_scale*m_c*n_c*p_c,mx*my*mz,col_scale*Mx*My*Mz);CHKERRQ(ierr);
@@ -888,7 +888,7 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
      we don't want the original unconverted matrix copied to the GPU
   */
   if (dof > 1) {
-    ierr = MatPinToCPU(mat,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = MatBindToCPU(mat,PETSC_TRUE);CHKERRQ(ierr);
   }
   #endif
   ierr = MatSetSizes(mat,m_f*n_f*p_f,m_c*n_c*p_c,mx*my*mz,Mx*My*Mz);CHKERRQ(ierr);

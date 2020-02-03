@@ -261,7 +261,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJViennaCL(Mat A,MatAssemblyType mode)
   PetscFunctionBegin;
   ierr = MatAssemblyEnd_SeqAIJ(A,mode);CHKERRQ(ierr);
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
-  if (!A->pinnedtocpu) {
+  if (!A->boundtocpu) {
     ierr = MatViennaCLCopyToGPU(A);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -362,7 +362,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJViennaCL(Mat B)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatPinToCPU_SeqAIJViennaCL(Mat,PetscBool);
+static PetscErrorCode MatBindToCPU_SeqAIJViennaCL(Mat,PetscBool);
 static PetscErrorCode MatDuplicate_SeqAIJViennaCL(Mat A,MatDuplicateOption cpvalues,Mat *B)
 {
   PetscErrorCode ierr;
@@ -372,8 +372,8 @@ static PetscErrorCode MatDuplicate_SeqAIJViennaCL(Mat A,MatDuplicateOption cpval
   ierr = MatDuplicate_SeqAIJ(A,cpvalues,B);CHKERRQ(ierr);
   C = *B;
 
-  ierr = MatPinToCPU_SeqAIJViennaCL(A,PETSC_FALSE);CHKERRQ(ierr);
-  C->ops->pintocpu = MatPinToCPU_SeqAIJViennaCL;
+  ierr = MatBindToCPU_SeqAIJViennaCL(A,PETSC_FALSE);CHKERRQ(ierr);
+  C->ops->pintocpu = MatBindToCPU_SeqAIJViennaCL;
 
   C->spptr = new Mat_SeqAIJViennaCL();
   ((Mat_SeqAIJViennaCL*)C->spptr)->tempvec        = NULL;
@@ -412,12 +412,12 @@ static PetscErrorCode MatSeqAIJRestoreArray_SeqAIJViennaCL(Mat A,PetscScalar *ar
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatPinToCPU_SeqAIJViennaCL(Mat A,PetscBool flg)
+static PetscErrorCode MatBindToCPU_SeqAIJViennaCL(Mat A,PetscBool flg)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  A->pinnedtocpu = flg;
+  A->boundtocpu = flg;
   if (flg) {
     /* make sure we have an up-to-date copy on the CPU */
     ierr = MatViennaCLCopyFromGPU(A,(const ViennaCLAIJMatrix *)NULL);CHKERRQ(ierr);
@@ -466,8 +466,8 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJViennaCL(Mat A,MatType type,
   ((Mat_SeqAIJViennaCL*)B->spptr)->mat            = NULL;
   ((Mat_SeqAIJViennaCL*)B->spptr)->compressed_mat = NULL;
 
-  ierr = MatPinToCPU_SeqAIJViennaCL(A,PETSC_FALSE);CHKERRQ(ierr);
-  A->ops->pintocpu = MatPinToCPU_SeqAIJViennaCL;
+  ierr = MatBindToCPU_SeqAIJViennaCL(A,PETSC_FALSE);CHKERRQ(ierr);
+  A->ops->pintocpu = MatBindToCPU_SeqAIJViennaCL;
 
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJVIENNACL);CHKERRQ(ierr);
   ierr = PetscFree(B->defaultvectype);CHKERRQ(ierr);

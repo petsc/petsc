@@ -1814,7 +1814,8 @@ PETSC_EXTERN PetscErrorCode MatSTRUMPACKSetHSSLeafSize(Mat,PetscInt);
 #endif
 
 
-PETSC_EXTERN PetscErrorCode MatPinToCPU(Mat,PetscBool);
+PETSC_EXTERN PetscErrorCode MatBindToCPU(Mat,PetscBool);
+PETSC_DEPRECATED_FUNCTION("Use MatBindToCPU (since v3.13)") PETSC_STATIC_INLINE PetscErrorCode MatPinToCPU(Mat A,PetscBool flg) {return MatBindToCPU(A,flg);}
 
 #ifdef PETSC_HAVE_CUDA
 /*E

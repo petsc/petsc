@@ -313,12 +313,12 @@ PetscErrorCode VecGetArrayWrite_SeqCUDA(Vec v,PetscScalar **vv)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecPinToCPU_SeqCUDA(Vec V,PetscBool pin)
+PetscErrorCode VecBindToCPU_SeqCUDA(Vec V,PetscBool pin)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  V->pinnedtocpu = pin;
+  V->boundtocpu = pin;
   if (pin) {
     ierr = VecCUDACopyFromGPU(V);CHKERRQ(ierr);
     V->offloadmask                 = PETSC_OFFLOAD_CPU; /* since the CPU code will likely change values in the vector */
@@ -405,8 +405,8 @@ PetscErrorCode VecCreate_SeqCUDA_Private(Vec V,const PetscScalar *array)
   if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQCUDA on more than one process");
   ierr = VecCreate_Seq_Private(V,0);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)V,VECSEQCUDA);CHKERRQ(ierr);
-  ierr = VecPinToCPU_SeqCUDA(V,PETSC_FALSE);CHKERRQ(ierr);
-  V->ops->pintocpu = VecPinToCPU_SeqCUDA;
+  ierr = VecBindToCPU_SeqCUDA(V,PETSC_FALSE);CHKERRQ(ierr);
+  V->ops->pintocpu = VecBindToCPU_SeqCUDA;
 
   /* Later, functions check for the Vec_CUDA structure existence, so do not create it without array */
   if (array) {

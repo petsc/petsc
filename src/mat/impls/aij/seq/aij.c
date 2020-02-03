@@ -2575,7 +2575,7 @@ PetscErrorCode MatCreateSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,PetscInt csize,
     }
   }
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-  ierr = MatPinToCPU(C,A->pinnedtocpu);CHKERRQ(ierr);
+  ierr = MatBindToCPU(C,A->boundtocpu);CHKERRQ(ierr);
 #endif
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -2873,7 +2873,7 @@ PetscErrorCode MatPermute_SeqAIJ(Mat A,IS rowp,IS colp,Mat *B)
   (*B)->assembled = PETSC_FALSE;
 
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-  ierr = MatPinToCPU(*B,A->pinnedtocpu);CHKERRQ(ierr);
+  ierr = MatBindToCPU(*B,A->boundtocpu);CHKERRQ(ierr);
 #endif
   ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
