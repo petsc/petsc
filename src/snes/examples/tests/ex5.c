@@ -315,4 +315,11 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
    test:
       args: -snes_monitor_short -snes_view -ksp_monitor
 
+   # this is just a test for SNESKSPTRASPOSEONLY and KSPSolveTranspose to behave properly
+   # the solution is wrong on purpose
+   test:
+      requires: !single !complex
+      suffix: transpose_only
+      args: -snes_monitor_short -snes_view -ksp_monitor -snes_type ksptransposeonly -pc_type ilu -snes_test_jacobian -snes_test_jacobian_view -ksp_view_rhs -ksp_view_solution -ksp_view_mat_explicit -ksp_view_preconditioned_operator_explicit
+
 TEST*/

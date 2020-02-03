@@ -578,85 +578,16 @@ static PetscErrorCode KSPViewFinalResidual_Internal(KSP ksp, PetscViewer viewer,
   PetscFunctionReturn(0);
 }
 
-/*@
-   KSPSolve - Solves linear system.
-
-   Collective on ksp
-
-   Parameter:
-+  ksp - iterative context obtained from KSPCreate()
-.  b - the right hand side vector
--  x - the solution  (this may be the same vector as b, then b will be overwritten with answer)
-
-   Options Database Keys:
-+  -ksp_view_eigenvalues - compute preconditioned operators eigenvalues
-.  -ksp_view_eigenvalues_explicitly - compute the eigenvalues by forming the dense operator and using LAPACK
-.  -ksp_view_mat binary - save matrix to the default binary viewer
-.  -ksp_view_pmat binary - save matrix used to build preconditioner to the default binary viewer
-.  -ksp_view_rhs binary - save right hand side vector to the default binary viewer
-.  -ksp_view_solution binary - save computed solution vector to the default binary viewer
-           (can be read later with src/ksp/examples/tutorials/ex10.c for testing solvers)
-.  -ksp_view_mat_explicit - for matrix-free operators, computes the matrix entries and views them
-.  -ksp_view_preconditioned_operator_explicit - computes the product of the preconditioner and matrix as an explicit matrix and views it
-.  -ksp_converged_reason - print reason for converged or diverged, also prints number of iterations
-.  -ksp_view_final_residual - print 2-norm of true linear system residual at the end of the solution process
--  -ksp_view - print the ksp data structure at the end of the system solution
-
-   Notes:
-
-   If one uses KSPSetDM() then x or b need not be passed. Use KSPGetSolution() to access the solution in this case.
-
-   The operator is specified with KSPSetOperators().
-
-   Call KSPGetConvergedReason() to determine if the solver converged or failed and
-   why. The number of iterations can be obtained from KSPGetIterationNumber().
-
-   If you provide a matrix that has a MatSetNullSpace() and MatSetTransposeNullSpace() this will use that information to solve singular systems
-   in the least squares sense with a norm minimizing solution.
-$
-$                   A x = b   where b = b_p + b_t where b_t is not in the range of A (and hence by the fundamental theorem of linear algebra is in the nullspace(A') see MatSetNullSpace()
-$
-$    KSP first removes b_t producing the linear system  A x = b_p (which has multiple solutions) and solves this to find the ||x|| minimizing solution (and hence
-$    it finds the solution x orthogonal to the nullspace(A). The algorithm is simply in each iteration of the Krylov method we remove the nullspace(A) from the search
-$    direction thus the solution which is a linear combination of the search directions has no component in the nullspace(A).
-$
-$    We recommend always using GMRES for such singular systems.
-$    If nullspace(A) = nullspace(A') (note symmetric matrices always satisfy this property) then both left and right preconditioning will work
-$    If nullspace(A) != nullspace(A') then left preconditioning will work but right preconditioning may not work (or it may).
-
-   Developer Note: The reason we cannot always solve  nullspace(A) != nullspace(A') systems with right preconditioning is because we need to remove at each iteration
-       the nullspace(AB) from the search direction. While we know the nullspace(A) the nullspace(AB) equals B^-1 times the nullspace(A) but except for trivial preconditioners
-       such as diagonal scaling we cannot apply the inverse of the preconditioner to a vector and thus cannot compute the nullspace(AB).
-
-
-   If using a direct method (e.g., via the KSP solver
-   KSPPREONLY and a preconditioner such as PCLU/PCILU),
-   then its=1.  See KSPSetTolerances() and KSPConvergedDefault()
-   for more details.
-
-   Understanding Convergence:
-   The routines KSPMonitorSet(), KSPComputeEigenvalues(), and
-   KSPComputeEigenvaluesExplicitly() provide information on additional
-   options to monitor convergence and print eigenvalue information.
-
-   Level: beginner
-
-.seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPConvergedDefault(),
-          KSPSolveTranspose(), KSPGetIterationNumber(), MatNullSpaceCreate(), MatSetNullSpace(), MatSetTransposeNullSpace(), KSP
-@*/
-PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
+static PetscErrorCode KSPSolve_Private(KSP ksp,Vec b,Vec x)
 {
-  PetscErrorCode    ierr;
-  PetscBool         flg = PETSC_FALSE,inXisinB=PETSC_FALSE,guess_zero;
-  Mat               mat,pmat;
-  MPI_Comm          comm;
-  MatNullSpace      nullsp;
-  Vec               btmp,vec_rhs=0;
+  PetscErrorCode ierr;
+  PetscBool      flg = PETSC_FALSE,inXisinB=PETSC_FALSE,guess_zero;
+  Mat            mat,pmat;
+  MPI_Comm       comm;
+  MatNullSpace   nullsp;
+  Vec            btmp,vec_rhs=0;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (b) PetscValidHeaderSpecific(b,VEC_CLASSID,2);
-  if (x) PetscValidHeaderSpecific(x,VEC_CLASSID,3);
   comm = PetscObjectComm((PetscObject)ksp);
   if (x && x == b) {
     if (!ksp->guess_zero) SETERRQ(comm,PETSC_ERR_ARG_INCOMP,"Cannot use x == b with nonzero initial guess");
@@ -673,9 +604,8 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
     ierr         = VecDestroy(&ksp->vec_sol);CHKERRQ(ierr);
     ksp->vec_sol = x;
   }
-  if (ksp->viewPre) {ierr = ObjectView((PetscObject) ksp, ksp->viewerPre, ksp->formatPre);CHKERRQ(ierr);}
 
-  ksp->transpose_solve = PETSC_FALSE;
+  if (ksp->viewPre) {ierr = ObjectView((PetscObject) ksp, ksp->viewerPre, ksp->formatPre);CHKERRQ(ierr);}
 
   if (ksp->presolve) {ierr = (*ksp->presolve)(ksp,ksp->vec_rhs,ksp->vec_sol,ksp->prectx);CHKERRQ(ierr);}
 
@@ -745,7 +675,11 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
     ierr = VecNormAvailable(ksp->vec_sol,NORM_2,&flg,&norm);CHKERRQ(ierr);
     if (flg && !norm) ksp->guess_zero = PETSC_TRUE;
   }
-  ierr = MatGetTransposeNullSpace(pmat,&nullsp);CHKERRQ(ierr);
+  if (ksp->transpose_solve) {
+    ierr = MatGetNullSpace(pmat,&nullsp);CHKERRQ(ierr);
+  } else {
+    ierr = MatGetTransposeNullSpace(pmat,&nullsp);CHKERRQ(ierr);
+  }
   if (nullsp) {
     ierr = VecDuplicate(ksp->vec_rhs,&btmp);CHKERRQ(ierr);
     ierr = VecCopy(ksp->vec_rhs,btmp);CHKERRQ(ierr);
@@ -812,7 +746,15 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
     Mat A, B;
 
     ierr = PCGetOperators(ksp->pc, &A, NULL);CHKERRQ(ierr);
-    ierr = MatComputeOperator(A, MATAIJ, &B);CHKERRQ(ierr);
+    if (ksp->transpose_solve) {
+      Mat AT;
+
+      ierr = MatCreateTranspose(A, &AT);CHKERRQ(ierr);
+      ierr = MatComputeOperator(AT, MATAIJ, &B);CHKERRQ(ierr);
+      ierr = MatDestroy(&AT);CHKERRQ(ierr);
+    } else {
+      ierr = MatComputeOperator(A, MATAIJ, &B);CHKERRQ(ierr);
+    }
     ierr = ObjectView((PetscObject) B, ksp->viewerMatExp, ksp->formatMatExp);CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
   }
@@ -834,6 +776,85 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
 }
 
 /*@
+   KSPSolve - Solves linear system.
+
+   Collective on ksp
+
+   Parameter:
++  ksp - iterative context obtained from KSPCreate()
+.  b - the right hand side vector
+-  x - the solution  (this may be the same vector as b, then b will be overwritten with answer)
+
+   Options Database Keys:
++  -ksp_view_eigenvalues - compute preconditioned operators eigenvalues
+.  -ksp_view_eigenvalues_explicitly - compute the eigenvalues by forming the dense operator and using LAPACK
+.  -ksp_view_mat binary - save matrix to the default binary viewer
+.  -ksp_view_pmat binary - save matrix used to build preconditioner to the default binary viewer
+.  -ksp_view_rhs binary - save right hand side vector to the default binary viewer
+.  -ksp_view_solution binary - save computed solution vector to the default binary viewer
+           (can be read later with src/ksp/examples/tutorials/ex10.c for testing solvers)
+.  -ksp_view_mat_explicit - for matrix-free operators, computes the matrix entries and views them
+.  -ksp_view_preconditioned_operator_explicit - computes the product of the preconditioner and matrix as an explicit matrix and views it
+.  -ksp_converged_reason - print reason for converged or diverged, also prints number of iterations
+.  -ksp_view_final_residual - print 2-norm of true linear system residual at the end of the solution process
+-  -ksp_view - print the ksp data structure at the end of the system solution
+
+   Notes:
+
+   If one uses KSPSetDM() then x or b need not be passed. Use KSPGetSolution() to access the solution in this case.
+
+   The operator is specified with KSPSetOperators().
+
+   Call KSPGetConvergedReason() to determine if the solver converged or failed and
+   why. The number of iterations can be obtained from KSPGetIterationNumber().
+
+   If you provide a matrix that has a MatSetNullSpace() and MatSetTransposeNullSpace() this will use that information to solve singular systems
+   in the least squares sense with a norm minimizing solution.
+$
+$                   A x = b   where b = b_p + b_t where b_t is not in the range of A (and hence by the fundamental theorem of linear algebra is in the nullspace(A') see MatSetNullSpace()
+$
+$    KSP first removes b_t producing the linear system  A x = b_p (which has multiple solutions) and solves this to find the ||x|| minimizing solution (and hence
+$    it finds the solution x orthogonal to the nullspace(A). The algorithm is simply in each iteration of the Krylov method we remove the nullspace(A) from the search
+$    direction thus the solution which is a linear combination of the search directions has no component in the nullspace(A).
+$
+$    We recommend always using GMRES for such singular systems.
+$    If nullspace(A) = nullspace(A') (note symmetric matrices always satisfy this property) then both left and right preconditioning will work
+$    If nullspace(A) != nullspace(A') then left preconditioning will work but right preconditioning may not work (or it may).
+
+   Developer Note: The reason we cannot always solve  nullspace(A) != nullspace(A') systems with right preconditioning is because we need to remove at each iteration
+       the nullspace(AB) from the search direction. While we know the nullspace(A) the nullspace(AB) equals B^-1 times the nullspace(A) but except for trivial preconditioners
+       such as diagonal scaling we cannot apply the inverse of the preconditioner to a vector and thus cannot compute the nullspace(AB).
+
+
+   If using a direct method (e.g., via the KSP solver
+   KSPPREONLY and a preconditioner such as PCLU/PCILU),
+   then its=1.  See KSPSetTolerances() and KSPConvergedDefault()
+   for more details.
+
+   Understanding Convergence:
+   The routines KSPMonitorSet(), KSPComputeEigenvalues(), and
+   KSPComputeEigenvaluesExplicitly() provide information on additional
+   options to monitor convergence and print eigenvalue information.
+
+   Level: beginner
+
+.seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPConvergedDefault(),
+          KSPSolveTranspose(), KSPGetIterationNumber(), MatNullSpaceCreate(), MatSetNullSpace(), MatSetTransposeNullSpace(), KSP
+@*/
+PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  if (b) PetscValidHeaderSpecific(b,VEC_CLASSID,2);
+  if (x) PetscValidHeaderSpecific(x,VEC_CLASSID,3);
+  ksp->transpose_solve = PETSC_FALSE;
+  ierr = KSPSolve_Private(ksp,b,x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
    KSPSolveTranspose - Solves the transpose of a linear system.
 
    Collective on ksp
@@ -846,8 +867,6 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
    Notes:
     For complex numbers this solve the non-Hermitian transpose system.
 
-   This currently does NOT correctly use the null space of the operator and its transpose for solving singular systems.
-
    Developer Notes:
     We need to implement a KSPSolveHermitianTranspose()
 
@@ -856,91 +875,16 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
 .seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPConvergedDefault(),
           KSPSolve(), KSP
 @*/
-
-PetscErrorCode  KSPSolveTranspose(KSP ksp,Vec b,Vec x)
+PetscErrorCode KSPSolveTranspose(KSP ksp,Vec b,Vec x)
 {
   PetscErrorCode ierr;
-  PetscBool      inXisinB=PETSC_FALSE;
-  Vec            vec_rhs = 0,btmp;
-  Mat            mat,pmat;
-  MatNullSpace   nullsp;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidHeaderSpecific(b,VEC_CLASSID,2);
-  PetscValidHeaderSpecific(x,VEC_CLASSID,3);
-  if (x == b) {
-    ierr     = VecDuplicate(b,&x);CHKERRQ(ierr);
-    inXisinB = PETSC_TRUE;
-  }
-  ierr = PetscObjectReference((PetscObject)b);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject)x);CHKERRQ(ierr);
-  ierr = VecDestroy(&ksp->vec_rhs);CHKERRQ(ierr);
-  ierr = VecDestroy(&ksp->vec_sol);CHKERRQ(ierr);
-
-  ksp->vec_rhs         = b;
-  ksp->vec_sol         = x;
+  if (b) PetscValidHeaderSpecific(b,VEC_CLASSID,2);
+  if (x) PetscValidHeaderSpecific(x,VEC_CLASSID,3);
   ksp->transpose_solve = PETSC_TRUE;
-
-  if (ksp->presolve) {ierr = (*ksp->presolve)(ksp,ksp->vec_rhs,ksp->vec_sol,ksp->prectx);CHKERRQ(ierr);}
-
-  ierr = PetscLogEventBegin(KSP_SolveTranspose,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
-  if (ksp->guess) {
-    PetscObjectState ostate,state;
-
-    ierr = KSPGuessSetUp(ksp->guess);CHKERRQ(ierr);
-    ierr = PetscObjectStateGet((PetscObject)ksp->vec_sol,&ostate);CHKERRQ(ierr);
-    ierr = KSPGuessFormGuess(ksp->guess,ksp->vec_rhs,ksp->vec_sol);CHKERRQ(ierr);
-    ierr = PetscObjectStateGet((PetscObject)ksp->vec_sol,&state);CHKERRQ(ierr);
-    if (state != ostate) {
-      ksp->guess_zero = PETSC_FALSE;
-    } else {
-      ierr = PetscInfo(ksp,"Using zero initial guess since the KSPGuess object did not change the vector\n");CHKERRQ(ierr);
-      ksp->guess_zero = PETSC_TRUE;
-    }
-  }
-
-  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
-  ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
-  if (ksp->guess_zero) { ierr = VecSet(ksp->vec_sol,0.0);CHKERRQ(ierr);}
-
-  ierr = PCGetOperators(ksp->pc,&mat,&pmat);CHKERRQ(ierr);
-  ierr = MatGetNullSpace(pmat,&nullsp);CHKERRQ(ierr);
-  if (nullsp) {
-    ierr = VecDuplicate(ksp->vec_rhs,&btmp);CHKERRQ(ierr);
-    ierr = VecCopy(ksp->vec_rhs,btmp);CHKERRQ(ierr);
-    ierr = MatNullSpaceRemove(nullsp,btmp);CHKERRQ(ierr);
-    vec_rhs      = ksp->vec_rhs;
-    ksp->vec_rhs = btmp;
-  }
-
-  ierr = (*ksp->ops->solve)(ksp);CHKERRQ(ierr);
-  ksp->totalits += ksp->its;
-  if (nullsp) {
-    ksp->vec_rhs = vec_rhs;
-    ierr = VecDestroy(&btmp);CHKERRQ(ierr);
-  }
-  if (!ksp->reason) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Internal error, solver returned without setting converged reason");
-  if (ksp->viewReason) {ierr = KSPReasonView_Internal(ksp, ksp->viewerReason, ksp->formatReason);CHKERRQ(ierr);}
-  ierr = PetscLogEventEnd(KSP_SolveTranspose,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
-  if (ksp->guess) {
-    ierr = KSPGuessUpdate(ksp->guess,ksp->vec_rhs,ksp->vec_sol);CHKERRQ(ierr);
-  }
-  if (ksp->postsolve) {
-    ierr = (*ksp->postsolve)(ksp,ksp->vec_rhs,ksp->vec_sol,ksp->postctx);CHKERRQ(ierr);
-  }
-
-  if (ksp->viewMat)      {ierr = ObjectView((PetscObject) mat,          ksp->viewerMat,  ksp->formatMat);CHKERRQ(ierr);}
-  if (ksp->viewPMat)     {ierr = ObjectView((PetscObject) pmat,         ksp->viewerPMat, ksp->formatPMat);CHKERRQ(ierr);}
-  if (ksp->viewRhs)      {ierr = ObjectView((PetscObject) ksp->vec_rhs, ksp->viewerRhs,  ksp->formatRhs);CHKERRQ(ierr);}
-  if (ksp->viewSol)      {ierr = ObjectView((PetscObject) ksp->vec_sol, ksp->viewerSol,  ksp->formatSol);CHKERRQ(ierr);}
-  if (ksp->view)         {ierr = ObjectView((PetscObject) ksp,          ksp->viewer,     ksp->format);CHKERRQ(ierr);}
-
-  if (inXisinB) {
-    ierr = VecCopy(x,b);CHKERRQ(ierr);
-    ierr = VecDestroy(&x);CHKERRQ(ierr);
-  }
-  if (ksp->errorifnotconverged && ksp->reason < 0) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged");
+  ierr = KSPSolve_Private(ksp,b,x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

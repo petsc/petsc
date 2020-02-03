@@ -132,6 +132,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_KSPTRANSPOSEONLY(SNES snes)
 
   PetscFunctionBegin;
   ierr = SNESCreate_KSPONLY(snes);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)snes,SNESKSPTRANSPOSEONLY);CHKERRQ(ierr);
   kspo = (SNES_KSPONLY*)snes->data;
   kspo->transpose_solve = PETSC_TRUE;
   PetscFunctionReturn(0);
