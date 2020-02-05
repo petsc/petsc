@@ -114,7 +114,7 @@ static PetscErrorCode AdaptiveADMMPenaltyUpdate(Tao tao)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  TaoADMMSetRegularizerType_ADMM(Tao tao, TaoADMMRegularizerType type)
+static PetscErrorCode  TaoADMMSetRegularizerType_ADMM(Tao tao, TaoADMMRegularizerType type)
 {
   TAO_ADMM       *am = (TAO_ADMM*)tao->data;
 
@@ -123,7 +123,7 @@ PetscErrorCode  TaoADMMSetRegularizerType_ADMM(Tao tao, TaoADMMRegularizerType t
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  TaoADMMGetRegularizerType_ADMM(Tao tao, TaoADMMRegularizerType *type)
+static PetscErrorCode  TaoADMMGetRegularizerType_ADMM(Tao tao, TaoADMMRegularizerType *type)
 {
   TAO_ADMM       *am = (TAO_ADMM*)tao->data;
 
@@ -132,7 +132,7 @@ PetscErrorCode  TaoADMMGetRegularizerType_ADMM(Tao tao, TaoADMMRegularizerType *
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  TaoADMMSetUpdateType_ADMM(Tao tao, TaoADMMUpdateType type)
+static PetscErrorCode  TaoADMMSetUpdateType_ADMM(Tao tao, TaoADMMUpdateType type)
 {
   TAO_ADMM       *am = (TAO_ADMM*)tao->data;
 
@@ -141,7 +141,7 @@ PetscErrorCode  TaoADMMSetUpdateType_ADMM(Tao tao, TaoADMMUpdateType type)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  TaoADMMGetUpdateType_ADMM(Tao tao, TaoADMMUpdateType *type)
+static PetscErrorCode  TaoADMMGetUpdateType_ADMM(Tao tao, TaoADMMUpdateType *type)
 {
   TAO_ADMM       *am = (TAO_ADMM*)tao->data;
 
@@ -827,15 +827,17 @@ PETSC_EXTERN PetscErrorCode TaoCreate_ADMM(Tao tao)
 
 /*@
   TaoADMMSetMisfitHessianChangeStatus - Set boolean that determines  whether Hessian matrix of misfit subsolver changes with respect to input vector.
-  PETSC_FALSE for the case when the Hessian matrix does not change. TRUE for otherwise.
 
   Collective on Tao
 
   Input Parameters:
-+  tao - the Tao solver context
--  b - the Hessian matrix change status boolean
++  tao - the Tao solver context. 
+-  b - the Hessian matrix change status boolean, PETSC_FALSE  when the Hessian matrix does not change, TRUE otherwise.
 
   Level: advanced
+  
+.seealso: TAOADMM
+
 @*/
 PetscErrorCode TaoADMMSetMisfitHessianChangeStatus(Tao tao, PetscBool b)
 {
@@ -847,16 +849,19 @@ PetscErrorCode TaoADMMSetMisfitHessianChangeStatus(Tao tao, PetscBool b)
 }
 
 /*@
-  TaoADMMSetRegHessianChangeStatus - Set boolean that determines  whether Hessian matrix of regularization subsolver changes with respect to input vector.
-  PETSC_FALSE for the case when the Hessian matrix does not change. TRUE for otherwise.
+  TaoADMMSetRegHessianChangeStatus - Set boolean that determines whether Hessian matrix of regularization subsolver changes with respect to input vector.
+  
 
   Collective on Tao
 
   Input Parameters:
 +  tao - the Tao solver context
--  b - the Hessian matrix change status boolean
+-  b - the Hessian matrix change status boolean, PETSC_FALSE when the Hessian matrix does not change, TRUE otherwise.
 
   Level: advanced
+  
+.seealso: TAOADMM
+
 @*/
 PetscErrorCode TaoADMMSetRegHessianChangeStatus(Tao tao, PetscBool b)
 {
@@ -874,11 +879,11 @@ PetscErrorCode TaoADMMSetRegHessianChangeStatus(Tao tao, PetscBool b)
 
   Input Parameters:
 +  tao - the Tao solver context
--  mu - spectral penalty to be set
+-  mu - spectral penalty
 
   Level: advanced
 
-.seealso: TaoADMMSetMinimumSpectralPenalty()  
+.seealso: TaoADMMSetMinimumSpectralPenalty(), TAOADMM  
 @*/
 PetscErrorCode TaoADMMSetSpectralPenalty(Tao tao, PetscReal mu)
 {
@@ -894,13 +899,15 @@ PetscErrorCode TaoADMMSetSpectralPenalty(Tao tao, PetscReal mu)
 
   Collective on Tao
 
-  Input Parameters:
-+  tao - the Tao solver context
--  mu - spectral penalty
+  Input Parameter:
+.  tao - the Tao solver context
+
+  Output Parameter:
+.  mu - spectral penalty
 
   Level: advanced
 
-.seealso: TaoADMMSetMinimumSpectralPenalty(), TaoADMMSetSpectralPenalty()
+.seealso: TaoADMMSetMinimumSpectralPenalty(), TaoADMMSetSpectralPenalty(), TAOADMM
 @*/
 PetscErrorCode TaoADMMGetSpectralPenalty(Tao tao, PetscReal *mu)
 {
@@ -918,11 +925,16 @@ PetscErrorCode TaoADMMGetSpectralPenalty(Tao tao, PetscReal *mu)
 
   Collective on Tao
 
-  Input Parameters:
-+  tao - the Tao solver context
--  misfit - the Tao subsolver context
+  Input Parameter:
+.  tao - the Tao solver context
+
+   Output Parameter:
+.  misfit - the Tao subsolver context
 
   Level: advanced
+  
+.seealso: TAOADMM
+
 @*/
 PetscErrorCode TaoADMMGetMisfitSubsolver(Tao tao, Tao *misfit)
 {
@@ -938,11 +950,16 @@ PetscErrorCode TaoADMMGetMisfitSubsolver(Tao tao, Tao *misfit)
 
   Collective on Tao
 
-  Input Parameters:
-+  tao - the Tao solver context
--  reg - the Tao subsolver context
+  Input Parameter:
+.  tao - the Tao solver context
+
+  Output Parameter:
+.  reg - the Tao subsolver context
 
   Level: advanced
+  
+.seealso: TAOADMM
+
 @*/
 PetscErrorCode TaoADMMGetRegularizationSubsolver(Tao tao, Tao *reg)
 {
@@ -963,6 +980,9 @@ PetscErrorCode TaoADMMGetRegularizationSubsolver(Tao tao, Tao *reg)
 - c - RHS vector
 
   Level: advanced
+  
+.seealso: TAOADMM
+
 @*/
 PetscErrorCode TaoADMMSetConstraintVectorRHS(Tao tao, Vec c)
 {
@@ -974,7 +994,7 @@ PetscErrorCode TaoADMMSetConstraintVectorRHS(Tao tao, Vec c)
 }
 
 /*@
-  TaoADMMSetMinimumSpectralPenalty - Set the minimum value for spectral penalty
+  TaoADMMSetMinimumSpectralPenalty - Set the minimum value for the spectral penalty
 
   Collective on Tao
 
@@ -984,7 +1004,7 @@ PetscErrorCode TaoADMMSetConstraintVectorRHS(Tao tao, Vec c)
 
   Level: advanced
 
-.seealso: TaoADMMGetSpectralPenalty()  
+.seealso: TaoADMMGetSpectralPenalty(), TAOADMM  
 @*/
 PetscErrorCode TaoADMMSetMinimumSpectralPenalty(Tao tao, PetscReal mu)
 {
@@ -1005,6 +1025,9 @@ PetscErrorCode TaoADMMSetMinimumSpectralPenalty(Tao tao, PetscReal mu)
 -  lambda - L1-norm regularizer coefficient
 
   Level: advanced
+
+.seealso: TaoADMMSetMisfitConstraintJacobian(), TaoADMMSetRegularizerConstraintJacobian(), TAOADMM
+
 @*/
 PetscErrorCode TaoADMMSetRegularizerCoefficient(Tao tao, PetscReal lambda)
 {
@@ -1016,7 +1039,7 @@ PetscErrorCode TaoADMMSetRegularizerCoefficient(Tao tao, PetscReal lambda)
 }
 
 /*@C
-  TaoADMMSetMisfitConstraintJacobian- Set the constraint matrix B for ADMM algorithm. Matrix B constraints z variable.
+  TaoADMMSetMisfitConstraintJacobian - Set the constraint matrix B for the ADMM algorithm. Matrix B constrains the z variable.
 
   Collective on Tao
 
@@ -1028,6 +1051,9 @@ PetscErrorCode TaoADMMSetRegularizerCoefficient(Tao tao, PetscReal lambda)
 - ctx - user context for the regularizer Hessian
 
   Level: advanced
+
+.seealso: TaoADMMSetRegularizerCoefficient(), TaoADMMSetRegularizerConstraintJacobian(), TAOADMM
+
 @*/
 PetscErrorCode TaoADMMSetMisfitConstraintJacobian(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, void*), void *ctx)
 {
@@ -1061,7 +1087,7 @@ PetscErrorCode TaoADMMSetMisfitConstraintJacobian(Tao tao, Mat J, Mat Jpre, Pets
 }
 
 /*@C
-  TaoADMMSetRegularizerConstraintJacobian- Set the constraint matrix B for ADMM algorithm. Matrix B constraints z variable.
+  TaoADMMSetRegularizerConstraintJacobian - Set the constraint matrix B for ADMM algorithm. Matrix B constraints z variable.
 
   Collective on Tao
 
@@ -1073,6 +1099,9 @@ PetscErrorCode TaoADMMSetMisfitConstraintJacobian(Tao tao, Mat J, Mat Jpre, Pets
 - ctx - user context for the regularizer Hessian
 
   Level: advanced
+
+.seealso: TaoADMMSetRegularizerCoefficient(), TaoADMMSetMisfitConstraintJacobian(), TAOADMM
+
 @*/
 PetscErrorCode TaoADMMSetRegularizerConstraintJacobian(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, void*), void *ctx)
 {
@@ -1106,15 +1135,19 @@ PetscErrorCode TaoADMMSetRegularizerConstraintJacobian(Tao tao, Mat J, Mat Jpre,
 }
 
 /*@C
-   TaoADMMSetMisfitObjectiveAndGradientRoutine - Sets the user-defined misfit call-back
-   function into the algorithm.
+   TaoADMMSetMisfitObjectiveAndGradientRoutine - Sets the user-defined misfit call-back function
+
+   Collective on tao
 
    Input Parameters:
-   + tao - the Tao context
-   . func - function pointer for the misfit value and gradient evaluation
-   - ctx - user context for the misfit
++    tao - the Tao context
+.    func - function pointer for the misfit value and gradient evaluation
+-    ctx - user context for the misfit
 
    Level: advanced
+
+.seealso: TAOADMM
+
 @*/
 PetscErrorCode TaoADMMSetMisfitObjectiveAndGradientRoutine(Tao tao, PetscErrorCode (*func)(Tao, Vec, PetscReal*, Vec, void*), void *ctx)
 {
@@ -1131,6 +1164,8 @@ PetscErrorCode TaoADMMSetMisfitObjectiveAndGradientRoutine(Tao tao, PetscErrorCo
    TaoADMMSetMisfitHessianRoutine - Sets the user-defined misfit Hessian call-back
    function into the algorithm, to be used for subsolverX.
 
+   Collective on tao
+
    Input Parameters:
    + tao - the Tao context
    . H - user-created matrix for the Hessian of the misfit term
@@ -1139,6 +1174,9 @@ PetscErrorCode TaoADMMSetMisfitObjectiveAndGradientRoutine(Tao tao, PetscErrorCo
    - ctx - user context for the misfit Hessian
 
    Level: advanced
+   
+.seealso: TAOADMM
+
 @*/
 PetscErrorCode TaoADMMSetMisfitHessianRoutine(Tao tao, Mat H, Mat Hpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, void*), void *ctx)
 {
@@ -1175,8 +1213,9 @@ PetscErrorCode TaoADMMSetMisfitHessianRoutine(Tao tao, Mat H, Mat Hpre, PetscErr
 }
 
 /*@C
-   TaoADMMSetRegularizerObjectiveAndGradientRoutine - Sets the user-defined regularizer call-back
-   function into the algorithm.
+   TaoADMMSetRegularizerObjectiveAndGradientRoutine - Sets the user-defined regularizer call-back function
+
+   Collective on tao
 
    Input Parameters:
    + tao - the Tao context
@@ -1184,6 +1223,9 @@ PetscErrorCode TaoADMMSetMisfitHessianRoutine(Tao tao, Mat H, Mat Hpre, PetscErr
    - ctx - user context for the regularizer
 
    Level: advanced
+   
+.seealso: TAOADMM
+
 @*/
 PetscErrorCode TaoADMMSetRegularizerObjectiveAndGradientRoutine(Tao tao, PetscErrorCode (*func)(Tao, Vec, PetscReal*, Vec, void*), void *ctx)
 {
@@ -1198,7 +1240,9 @@ PetscErrorCode TaoADMMSetRegularizerObjectiveAndGradientRoutine(Tao tao, PetscEr
 
 /*@C
    TaoADMMSetRegularizerHessianRoutine - Sets the user-defined regularizer Hessian call-back
-   function into the algorithm, to be used for subsolverZ.
+   function, to be used for subsolverZ.
+
+   Collective on tao
 
    Input Parameters:
    + tao - the Tao context
@@ -1208,6 +1252,9 @@ PetscErrorCode TaoADMMSetRegularizerObjectiveAndGradientRoutine(Tao tao, PetscEr
    - ctx - user context for the regularizer Hessian
 
    Level: advanced
+   
+.seealso: TAOADMM
+
 @*/
 PetscErrorCode TaoADMMSetRegularizerHessianRoutine(Tao tao, Mat H, Mat Hpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, void*), void *ctx)
 {
@@ -1244,14 +1291,20 @@ PetscErrorCode TaoADMMSetRegularizerHessianRoutine(Tao tao, Mat H, Mat Hpre, Pet
 }
 
 /*@
-   TaoGetADMMParentTao - Gets pointer to parent ADMM tao.
-   To be used by inner subsolver.
+   TaoGetADMMParentTao - Gets pointer to parent ADMM tao, used by inner subsolver.
 
-   Input Parameters:
-   + tao - the Tao context
-   - admm_tao - the parent Tao context
+   Collective on tao
+
+   Input Parameter:
+   . tao - the Tao context
+
+   Output Parameter:
+   . admm_tao - the parent Tao context
 
    Level: advanced
+   
+.seealso: TAOADMM
+
 @*/
 PetscErrorCode TaoGetADMMParentTao(Tao tao, Tao *admm_tao)
 {
@@ -1264,15 +1317,20 @@ PetscErrorCode TaoGetADMMParentTao(Tao tao, Tao *admm_tao)
 }
 
 /*@
-  TaoADMMGetDualVector - Returns the dual vector with the current TAOADMM state
+  TaoADMMGetDualVector - Returns the dual vector associated with the current TAOADMM state
 
   Not Collective
 
   Input Parameter:
-+ tao - the Tao context
-- Y - the current solution
+  . tao - the Tao context
+
+  Output Parameter:
+  . Y - the current solution
 
   Level: intermediate
+  
+.seealso: TAOADMM
+
 @*/
 PetscErrorCode TaoADMMGetDualVector(Tao tao, Vec *Y)
 {
@@ -1291,11 +1349,14 @@ PetscErrorCode TaoADMMGetDualVector(Tao tao, Vec *Y)
 
   Input Parameter:
 + tao  - the Tao context
-- type - regulairzer type
+- type - regularizer type
+
+  Options Database:
+.  -tao_admm_regularizer_type <admm_regularizer_user,admm_regularizer_soft_thresh>
 
   Level: intermediate
 
-.seealso: TaoADMMGetRegularizerType(), TaoADMMRegularizerType
+.seealso: TaoADMMGetRegularizerType(), TaoADMMRegularizerType, TAOADMM
 @*/
 PetscErrorCode TaoADMMSetRegularizerType(Tao tao, TaoADMMRegularizerType type)
 {
@@ -1324,7 +1385,7 @@ PetscErrorCode TaoADMMSetRegularizerType(Tao tao, TaoADMMRegularizerType type)
 
    Level: intermediate
 
-.seealso: TaoADMMSetRegularizerType(), TaoADMMRegularizerType
+.seealso: TaoADMMSetRegularizerType(), TaoADMMRegularizerType, TAOADMM
 @*/
 PetscErrorCode TaoADMMGetRegularizerType(Tao tao, TaoADMMRegularizerType *type)
 {
@@ -1347,7 +1408,7 @@ PetscErrorCode TaoADMMGetRegularizerType(Tao tao, TaoADMMRegularizerType *type)
 
   Level: intermediate
 
-.seealso: TaoADMMGetUpdateType(), TaoADMMUpdateType
+.seealso: TaoADMMGetUpdateType(), TaoADMMUpdateType, TAOADMM
 @*/
 PetscErrorCode TaoADMMSetUpdateType(Tao tao, TaoADMMUpdateType type)
 {
@@ -1373,7 +1434,7 @@ PetscErrorCode TaoADMMSetUpdateType(Tao tao, TaoADMMUpdateType type)
 
    Level: intermediate
 
-.seealso: TaoADMMSetUpdateType(), TaoADMMUpdateType
+.seealso: TaoADMMSetUpdateType(), TaoADMMUpdateType, TAOADMM
 @*/
 PetscErrorCode TaoADMMGetUpdateType(Tao tao, TaoADMMUpdateType *type)
 {
