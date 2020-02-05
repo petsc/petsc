@@ -1265,6 +1265,10 @@ static PetscErrorCode PCMGGetGridComplexity(PC pc, PetscReal *gc)
   MatInfo        info;
 
   PetscFunctionBegin;
+  if (!pc->setupcalled) {
+    *gc = 0;
+    PetscFunctionReturn(0);
+  }
   if (!mg->nlevels) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MG has no levels");
   for (lev=0; lev<mg->nlevels; lev++) {
     Mat dB;

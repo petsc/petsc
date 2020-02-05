@@ -4,6 +4,7 @@
 */
 
 #include <petsc/private/pcimpl.h>        /*I "petscpc.h" I*/
+#include <petsc/private/matimpl.h>
 
 typedef struct {
   Vec  xwork, ywork;
@@ -190,7 +191,7 @@ static PetscErrorCode PCView_LMVM(PC pc,PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
-  if (iascii) {
+  if (iascii && ctx->B->assembled) {
     ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
     ierr = MatView(ctx->B, viewer);CHKERRQ(ierr);
     ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);

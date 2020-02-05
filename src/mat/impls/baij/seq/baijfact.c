@@ -1174,7 +1174,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const MatFact
     ierr = PetscInfo1(A,"Run with -pc_factor_fill %g or use \n",(double)af);CHKERRQ(ierr);
     ierr = PetscInfo1(A,"PCFactorSetFill(pc,%g) for best performance.\n",(double)af);CHKERRQ(ierr);
   } else {
-    ierr = PetscInfo(A,"Empty matrix.\n");CHKERRQ(ierr);
+    ierr = PetscInfo(A,"Empty matrix\n");CHKERRQ(ierr);
   }
 #endif
   if (perm_identity) {
@@ -1353,7 +1353,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const Ma
     ierr = PetscInfo1(A,"Run with -pc_factor_fill %g or use \n",(double)af);CHKERRQ(ierr);
     ierr = PetscInfo1(A,"PCFactorSetFill(pc,%g) for best performance.\n",(double)af);CHKERRQ(ierr);
   } else {
-    ierr = PetscInfo(A,"Empty matrix.\n");CHKERRQ(ierr);
+    ierr = PetscInfo(A,"Empty matrix\n");CHKERRQ(ierr);
   }
 #endif
   if (perm_identity) {
