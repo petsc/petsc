@@ -23,6 +23,9 @@ PETSC_INTERN PetscErrorCode PetscLogInitialize(void);
 #if defined(PETSC_HAVE_CUDA)
 #include <cuda_runtime.h>
 #include <petsccublas.h>
+#if defined(PETSC_HAVE_OMPI_MAJOR_VERSION)
+#include "mpi-ext.h" /* Needed for OpenMPI CUDA-aware check */
+#endif
 #endif
 
 #if defined(PETSC_HAVE_VIENNACL)
@@ -41,6 +44,8 @@ PetscBool   PetscCUDAInitialized  = PETSC_FALSE;
 
 PetscMPIInt PetscGlobalRank       = -1;
 PetscMPIInt PetscGlobalSize       = -1;
+
+PetscBool   use_gpu_aware_mpi     = PETSC_TRUE;
 
 #if defined(PETSC_HAVE_COMPLEX)
 #if defined(PETSC_COMPLEX_INSTANTIATE)
@@ -207,7 +212,8 @@ void Petsc_MPI_DebuggerOnError(MPI_Comm *comm,PetscMPIInt *flag,...)
                                when the first CUDA call is made unless you call PetscCUDAInitialize() before any CUDA operations are performed
 .  -cuda_view - view information about the CUDA devices
 .  -cuda_synchronize - wait at the end of asynchronize CUDA calls so that their time gets credited to the current event; default with -log_view
--  -cuda_set_device <gpu> - integer number of the device
+.  -cuda_set_device <gpu> - integer number of the device
+-  -use_gpu_aware_mpi     - Assume the MPI is GPU-aware when communicating data on GPU
 
   Level: beginner
 
@@ -367,7 +373,7 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   PetscBool         flg4 = PETSC_FALSE;
 #endif
 #if defined(PETSC_HAVE_CUDA)
-  PetscBool         initCuda = PETSC_TRUE;
+  PetscBool         initCuda = PETSC_TRUE,mpi_gpu_awareness;
 #endif
 
   PetscFunctionBegin;
@@ -670,8 +676,29 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 #if defined(PETSC_HAVE_CUDA)
   ierr = PetscOptionsBegin(comm,NULL,"CUDA initialize","Sys");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-cuda_initialize","Initialize the CUDA devices and cuBLAS during PetscInitialize()",NULL,initCuda,&initCuda,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-use_gpu_aware_mpi","Use GPU-aware MPI",NULL,use_gpu_aware_mpi,&use_gpu_aware_mpi,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if (initCuda) {ierr = PetscCUDAInitialize(PETSC_COMM_WORLD);CHKERRQ(ierr);}
+  if (use_gpu_aware_mpi) {
+#if defined(PETSC_HAVE_OMPI_MAJOR_VERSION) /* Use OpenMPI's compile time cuda query interface */
+#if defined(MPIX_CUDA_AWARE_SUPPORT) && MPIX_CUDA_AWARE_SUPPORT
+    mpi_gpu_awareness = PETSC_TRUE;
+#else
+    mpi_gpu_awareness = PETSC_FALSE;
+#endif
+#else
+    mpi_gpu_awareness = PetscCheckMpiGpuAwareness(); /* For other MPI implementations without cuda query API, we do a GPU MPI call to see if it segfaults */
+#endif
+    if (!mpi_gpu_awareness) {
+      (*PetscErrorPrintf)("PETSc is configured with GPU support, but your MPI is not GPU-aware. For better performance, please use a GPU-aware MPI.\n");
+      (*PetscErrorPrintf)("For IBM Spectrum MPI on OLCF Summit, you may need jsrun --smpiargs=-gpu.\n");
+      (*PetscErrorPrintf)("For OpenMPI, you need to configure it --with-cuda (https://www.open-mpi.org/faq/?category=buildcuda)\n");
+      (*PetscErrorPrintf)("For MVAPICH2-GDR, you need to set MV2_USE_CUDA=1 (http://mvapich.cse.ohio-state.edu/userguide/gdr/)\n");
+      (*PetscErrorPrintf)("For Cray-MPICH, you need to set MPICH_RDMA_ENABLED_CUDA=1 (https://www.olcf.ornl.gov/tutorials/gpudirect-mpich-enabled-cuda/)\n");
+      (*PetscErrorPrintf)("If you do not care, use option -use_gpu_aware_mpi 0, then PETSc will copy data from GPU to CPU for communication.\n");
+      PETSCABORT(PETSC_COMM_WORLD,PETSC_ERR_LIB);
+    }
+  }
 #endif
 
   /*

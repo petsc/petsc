@@ -515,7 +515,7 @@ PetscErrorCode PetscSFLinkCreate(PetscSF sf,MPI_Datatype unit,PetscMemType rootm
     }
   }
 
-  if (use_gpu_aware_mpi) {
+  if (sf->use_gpu_aware_mpi) {
     rootmtype_mpi = rootmtype;
     leafmtype_mpi = leafmtype;
   } else {
@@ -1077,7 +1077,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkSyncStreamAfterPackRootData(PetscS
   /* Do nothing if we use stream aware mpi || has nothing for remote */
   if (sf->use_stream_aware_mpi || link->rootmtype != PETSC_MEMTYPE_DEVICE || !bas->rootbuflen[PETSCSF_REMOTE]) PetscFunctionReturn(0);
   /* If we called a packing kernel || we async-copied rootdata from device to host || No cudaDeviceSynchronize was called (since default stream is assumed) */
-  if (!link->rootdirect[PETSCSF_REMOTE] || !use_gpu_aware_mpi || sf->use_default_stream) {
+  if (!link->rootdirect[PETSCSF_REMOTE] || !sf->use_gpu_aware_mpi || sf->use_default_stream) {
     cudaError_t cerr = cudaStreamSynchronize(link->stream);CHKERRCUDA(cerr);
   }
   PetscFunctionReturn(0);
@@ -1087,7 +1087,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkSyncStreamAfterPackLeafData(PetscS
   PetscFunctionBegin;
   /* See comments above */
   if (sf->use_stream_aware_mpi || link->leafmtype != PETSC_MEMTYPE_DEVICE || !sf->leafbuflen[PETSCSF_REMOTE]) PetscFunctionReturn(0);
-  if (!link->leafdirect[PETSCSF_REMOTE] || !use_gpu_aware_mpi || sf->use_default_stream) {
+  if (!link->leafdirect[PETSCSF_REMOTE] || !sf->use_gpu_aware_mpi || sf->use_default_stream) {
     cudaError_t cerr = cudaStreamSynchronize(link->stream);CHKERRCUDA(cerr);
   }
   PetscFunctionReturn(0);

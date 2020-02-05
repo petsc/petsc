@@ -150,7 +150,7 @@ static PetscErrorCode PetscSFBcastToZero_Allgatherv(PetscSF sf,MPI_Datatype unit
   ierr = PetscSFLinkGetInUse(sf,unit,rootdata,leafdata,PETSC_OWN_POINTER,&link);CHKERRQ(ierr);
   ierr = PetscSFLinkMPIWaitall(sf,link,PETSCSF_ROOT2LEAF);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&rank);CHKERRQ(ierr);
-  if (!rank && leafmtype == PETSC_MEMTYPE_DEVICE && !use_gpu_aware_mpi) {
+  if (!rank && leafmtype == PETSC_MEMTYPE_DEVICE && !sf->use_gpu_aware_mpi) {
     ierr = PetscSFLinkMemcpy(sf,link,PETSC_MEMTYPE_DEVICE,leafdata,PETSC_MEMTYPE_HOST,link->leafbuf[PETSC_MEMTYPE_HOST],sf->leafbuflen[PETSCSF_REMOTE]*link->unitbytes);CHKERRQ(ierr);
   }
   ierr = PetscSFLinkReclaim(sf,&link);CHKERRQ(ierr);
@@ -204,7 +204,7 @@ PETSC_INTERN PetscErrorCode PetscSFFetchAndOpBegin_Allgatherv(PetscSF sf,MPI_Dat
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)sf,&comm);CHKERRQ(ierr);
-  if (!use_gpu_aware_mpi && (rootmtype == PETSC_MEMTYPE_DEVICE || leafmtype == PETSC_MEMTYPE_DEVICE)) SETERRQ(comm,PETSC_ERR_SUP,"Do FetchAndOp on device but not use gpu-aware MPI");
+  if (!sf->use_gpu_aware_mpi && (rootmtype == PETSC_MEMTYPE_DEVICE || leafmtype == PETSC_MEMTYPE_DEVICE)) SETERRQ(comm,PETSC_ERR_SUP,"Do FetchAndOp on device but not use gpu-aware MPI");
   /* Copy leafdata to leafupdate */
   ierr = PetscSFLinkCreate(sf,unit,rootmtype,rootdata,leafmtype,leafdata,op,PETSCSF_FETCH,&link);CHKERRQ(ierr);
   ierr = PetscSFLinkPackLeafData(sf,link,PETSCSF_REMOTE,leafdata);CHKERRQ(ierr); /* Sync the device */

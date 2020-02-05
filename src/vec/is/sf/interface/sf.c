@@ -252,6 +252,7 @@ PetscErrorCode PetscSFSetUp(PetscSF sf)
   PetscSFCheckGraphSet(sf,1);
   if (sf->setupcalled) PetscFunctionReturn(0);
   ierr = PetscSFCheckGraphValid_Private(sf);CHKERRQ(ierr);
+  sf->use_gpu_aware_mpi = use_gpu_aware_mpi;
   if (!((PetscObject)sf)->type_name) {ierr = PetscSFSetType(sf,PETSCSFBASIC);CHKERRQ(ierr);}
   ierr = PetscLogEventBegin(PETSCSF_SetUp,sf,0,0,0);CHKERRQ(ierr);
   if (sf->ops->SetUp) {ierr = (*sf->ops->SetUp)(sf);CHKERRQ(ierr);}
@@ -272,8 +273,10 @@ PetscErrorCode PetscSFSetUp(PetscSF sf)
 +  -sf_type               - implementation type, see PetscSFSetType()
 .  -sf_rank_order         - sort composite points for gathers and scatters in rank order, gathers are non-deterministic otherwise
 .  -sf_use_default_stream - Assume callers of SF computed the input root/leafdata with the default cuda stream. SF will also
-                            use the default stream to process data. Therefore, no stream synchronization is needed between SF and its caller.
--  -sf_use_stream_aware_mpi  - Assumes the underlying MPI is cuda-stream aware and SF won't sync streams for send/recv buffers passed to MPI.
+                            use the default stream to process data. Therefore, no stream synchronization is needed between SF and its caller (default: true).
+                            If true, this option only works with -use_cuda_aware_mpi 1.
+-  -sf_use_stream_aware_mpi  - Assume the underlying MPI is cuda-stream aware and SF won't sync streams for send/recv buffers passed to MPI (default: false).
+                               If true, this option only works with -use_cuda_aware_mpi 1.
 
    Level: intermediate
 @*/
@@ -291,10 +294,13 @@ PetscErrorCode PetscSFSetFromOptions(PetscSF sf)
   ierr = PetscOptionsFList("-sf_type","PetscSF implementation type","PetscSFSetType",PetscSFList,deft,type,sizeof(type),&flg);CHKERRQ(ierr);
   ierr = PetscSFSetType(sf,flg ? type : deft);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-sf_rank_order","sort composite points for gathers and scatters in rank order, gathers are non-deterministic otherwise","PetscSFSetRankOrder",sf->rankorder,&sf->rankorder,NULL);CHKERRQ(ierr);
-  sf->use_default_stream = PETSC_FALSE;
+
+#if defined(PETSC_HAVE_CUDA)
+  sf->use_default_stream = PETSC_TRUE; /* The assumption is true for PETSc internal use of SF */
   ierr = PetscOptionsBool("-sf_use_default_stream","Assume SF's input and output root/leafdata is computed on the default stream","PetscSFSetFromOptions",sf->use_default_stream,&sf->use_default_stream,NULL);CHKERRQ(ierr);
   sf->use_stream_aware_mpi = PETSC_FALSE;
   ierr = PetscOptionsBool("-sf_use_stream_aware_mpi","Assume the underlying MPI is cuda-stream aware","PetscSFSetFromOptions",sf->use_stream_aware_mpi,&sf->use_stream_aware_mpi,NULL);CHKERRQ(ierr);
+#endif
   if (sf->ops->SetFromOptions) {ierr = (*sf->ops->SetFromOptions)(PetscOptionsObject,sf);CHKERRQ(ierr);}
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);

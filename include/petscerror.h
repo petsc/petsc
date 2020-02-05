@@ -617,7 +617,8 @@ PETSC_EXTERN PetscErrorCode PetscSignalHandlerDefault(int,void*);
 PETSC_EXTERN PetscErrorCode PetscPushSignalHandler(PetscErrorCode (*)(int,void *),void*);
 PETSC_EXTERN PetscErrorCode PetscPopSignalHandler(void);
 PETSC_EXTERN PetscErrorCode PetscCheckPointerSetIntensity(PetscInt);
-PETSC_EXTERN void PetscSignalSegvCheckPointer(void);
+PETSC_EXTERN void PetscSignalSegvCheckPointerOrMpi(void);
+PETSC_DEPRECATED_FUNCTION("Use PetscSignalSegvCheckPointerOrMpi() (since version 3.13)") PETSC_STATIC_INLINE void PetscSignalSegvCheckPointer(void) {PetscSignalSegvCheckPointerOrMpi();}
 
 /*MC
     PetscErrorPrintf - Prints error messages.

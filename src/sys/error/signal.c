@@ -63,7 +63,7 @@ PetscErrorCode  PetscSignalHandlerDefault(int sig,void *ptr)
   const char     *SIGNAME[64];
 
   PetscFunctionBegin;
-  if (sig == SIGSEGV) PetscSignalSegvCheckPointer();
+  if (sig == SIGSEGV) PetscSignalSegvCheckPointerOrMpi();
   SIGNAME[0]       = "Unknown signal";
 #if !defined(PETSC_MISSING_SIGABRT)
   SIGNAME[SIGABRT] = "Abort";

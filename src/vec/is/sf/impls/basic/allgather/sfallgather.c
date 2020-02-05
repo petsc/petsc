@@ -94,7 +94,7 @@ static PetscErrorCode PetscSFBcastToZero_Allgather(PetscSF sf,MPI_Datatype unit,
   ierr = PetscSFLinkGetInUse(sf,unit,rootdata,leafdata,PETSC_OWN_POINTER,&link);CHKERRQ(ierr);
   ierr = PetscSFLinkMPIWaitall(sf,link,PETSCSF_ROOT2LEAF);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&rank);CHKERRQ(ierr);
-  if (!rank && leafmtype == PETSC_MEMTYPE_DEVICE && !use_gpu_aware_mpi) {
+  if (!rank && leafmtype == PETSC_MEMTYPE_DEVICE && !sf->use_gpu_aware_mpi) {
     ierr = PetscSFLinkMemcpy(sf,link,PETSC_MEMTYPE_DEVICE,leafdata,PETSC_MEMTYPE_HOST,link->leafbuf[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST],sf->leafbuflen[PETSCSF_REMOTE]*link->unitbytes);CHKERRQ(ierr);
   }
   ierr = PetscSFLinkReclaim(sf,&link);CHKERRQ(ierr);

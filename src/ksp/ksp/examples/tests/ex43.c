@@ -102,10 +102,9 @@ int main(int argc,char **argv)
       args: -f ${DATAFILESPATH}/matrices/shallow_water1 -mat_type mpiaijcusparse -mat_cusparse_mult_diag_storage_format hyb -pc_type none -vec_type cuda
       test:
         suffix: 5
+        args: -use_gpu_aware_mpi 0
       test:
         suffix: 5_gpu_aware_mpi
-        args: -use_gpu_aware_mpi
-        requires: define(PETSC_HAVE_MPI_GPU_AWARE)
         output_file: output/ex43_5.out
 
    test:
@@ -120,10 +119,9 @@ int main(int argc,char **argv)
 
       test:
         suffix: 7
+        args: -use_gpu_aware_mpi 0
       test:
         suffix: 7_gpu_aware_mpi
-        args: -use_gpu_aware_mpi
-        requires: define(PETSC_HAVE_MPI_GPU_AWARE)
         output_file: output/ex43_7.out
 
    test:

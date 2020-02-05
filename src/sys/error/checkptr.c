@@ -1,5 +1,9 @@
 #include <petsc/private/petscimpl.h>
 #include <petscvalgrind.h>
+#if defined(PETSC_HAVE_CUDA)
+#include <cuda_runtime.h>
+#include <petsccublas.h>
+#endif
 
 static PetscInt petsc_checkpointer_intensity = 1;
 
@@ -43,9 +47,9 @@ static jmp_buf PetscSegvJumpBuf;
 static PetscBool PetscSegvJumpBuf_set;
 
 /*@C
-   PetscSignalSegvCheckPointer - To be called from a signal handler for SIGSEGV.  If the signal was received while
-   executing PetscCheckPointer(), this function longjmps back there, otherwise returns with no effect.  This function is
-   called automatically by PetscSignalHandlerDefault().
+   PetscSignalSegvCheckPointerOrMpi - To be called from a signal handler for SIGSEGV.  If the signal was received
+   while executing PetscCheckPointer()/PetscCheckMpiGpuAwareness(), this function longjmps back there, otherwise returns
+   with no effect. This function is called automatically by PetscSignalHandlerDefault().
 
    Not Collective
 
@@ -53,7 +57,7 @@ static PetscBool PetscSegvJumpBuf_set;
 
 .seealso: PetscPushSignalHandler()
 @*/
-void PetscSignalSegvCheckPointer() {
+void PetscSignalSegvCheckPointerOrMpi(void) {
   if (PetscSegvJumpBuf_set) longjmp(PetscSegvJumpBuf,1);
 }
 
@@ -129,14 +133,44 @@ PetscBool PetscCheckPointer(const void *ptr,PetscDataType dtype)
   PetscSegvJumpBuf_set = PETSC_FALSE;
   return PETSC_TRUE;
 }
+
+#if defined (PETSC_HAVE_CUDA)
+PetscBool PetscCheckMpiGpuAwareness(void)
+{
+  cudaError_t cerr=cudaSuccess;
+  int         ierr,hbuf[2]={1,0},*dbuf=NULL;
+  PetscBool   awareness=PETSC_FALSE;
+
+  cerr = cudaMalloc((void**)&dbuf,sizeof(int)*2);if (cerr != cudaSuccess) return PETSC_FALSE;
+  cerr = cudaMemcpy(dbuf,hbuf,sizeof(int)*2,cudaMemcpyHostToDevice);if (cerr != cudaSuccess) return PETSC_FALSE;
+
+  PetscSegvJumpBuf_set = PETSC_TRUE;
+  if (setjmp(PetscSegvJumpBuf)) {
+    /* If a segv was triggered in the MPI_Allreduce below, it is very likely due to the MPI is not GPU-aware */
+    awareness = PETSC_FALSE;
+  } else {
+    ierr = MPI_Allreduce(dbuf,dbuf+1,1,MPI_INT,MPI_SUM,PETSC_COMM_WORLD);
+    if (!ierr) awareness = PETSC_TRUE;
+  }
+  PetscSegvJumpBuf_set = PETSC_FALSE;
+  cerr = cudaFree(dbuf);if (cerr != cudaSuccess) return PETSC_FALSE;
+  return awareness;
+}
+#endif
 #else
-void PetscSignalSegvCheckPointer() {
+void PetscSignalSegvCheckPointerOrMpi(void) {
   return;
 }
 
 PetscBool PetscCheckPointer(const void *ptr,PETSC_UNUSED PetscDataType dtype)
 {
   if (!ptr) return PETSC_FALSE;
+  return PETSC_TRUE;
+}
+
+PetscBool PetscCheckMpiGpuAwareness(void)
+{
+  /* If no setjmp (rare), return true and let users code run (and segfault if they should) */
   return PETSC_TRUE;
 }
 #endif
