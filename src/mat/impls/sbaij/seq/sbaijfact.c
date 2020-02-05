@@ -154,7 +154,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_MSR(Mat F,Mat A,IS perm,const 
     ierr = PetscInfo1(A,"PCFactorSetFill(pc,%g);\n",(double)af);CHKERRQ(ierr);
     ierr = PetscInfo(A,"for best performance.\n");CHKERRQ(ierr);
   } else {
-    ierr = PetscInfo(A,"Empty matrix.\n");CHKERRQ(ierr);
+    ierr = PetscInfo(A,"Empty matrix\n");CHKERRQ(ierr);
   }
 #endif
 
@@ -365,7 +365,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const M
     ierr = PetscInfo1(A,"Run with -pc_factor_fill %g or use \n",(double)af);CHKERRQ(ierr);
     ierr = PetscInfo1(A,"PCFactorSetFill(pc,%g) for best performance.\n",(double)af);CHKERRQ(ierr);
   } else {
-    ierr = PetscInfo(A,"Empty matrix.\n");CHKERRQ(ierr);
+    ierr = PetscInfo(A,"Empty matrix\n");CHKERRQ(ierr);
   }
 #endif
   fact->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering;
@@ -540,7 +540,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_inplace(Mat fact,Mat A,IS perm
     ierr = PetscInfo1(A,"Run with -pc_factor_fill %g or use \n",(double)af);CHKERRQ(ierr);
     ierr = PetscInfo1(A,"PCFactorSetFill(pc,%g) for best performance.\n",(double)af);CHKERRQ(ierr);
   } else {
-    ierr = PetscInfo(A,"Empty matrix.\n");CHKERRQ(ierr);
+    ierr = PetscInfo(A,"Empty matrix\n");CHKERRQ(ierr);
   }
 #endif
   ierr = MatSeqSBAIJSetNumericFactorization_inplace(fact,perm_identity);CHKERRQ(ierr);

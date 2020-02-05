@@ -1338,7 +1338,7 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
   PetscBool      isMPIAIJ;
 
   PetscFunctionBegin;
-  if (mumps->id.INFOG(1) < 0) {
+  if (mumps->id.INFOG(1) < 0 && !(mumps->id.INFOG(1) == -16 && mumps->id.INFOG(1) == 0)) {
     if (mumps->id.INFOG(1) == -6) {
       ierr = PetscInfo2(A,"MatFactorNumeric is called with singular matrix structure, INFOG(1)=%d, INFO(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFO(2));CHKERRQ(ierr);
     }
@@ -1590,6 +1590,8 @@ PetscErrorCode MatFactorSymbolic_MUMPS_ReportIfError(Mat F,Mat A,const MatFactor
       } else if (mumps->id.INFOG(1) == -5 || mumps->id.INFOG(1) == -7) {
         ierr = PetscInfo2(F,"problem of workspace, INFOG(1)=%d, INFO(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFO(2));CHKERRQ(ierr);
         F->factorerrortype = MAT_FACTOR_OUTMEMORY;
+      } else if (mumps->id.INFOG(1) == -16 && mumps->id.INFOG(1) == 0) {
+        ierr = PetscInfo(F,"Empty matrix\n");CHKERRQ(ierr);
       } else {
         ierr = PetscInfo2(F,"Error reported by MUMPS in analysis phase: INFOG(1)=%d, INFO(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFO(2));CHKERRQ(ierr);
         F->factorerrortype = MAT_FACTOR_OTHER;
