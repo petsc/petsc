@@ -416,6 +416,9 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
       ierr = PetscOptionsGetReal(NULL,NULL,"-malloc_view_threshold",&logthreshold,NULL);CHKERRQ(ierr);
       ierr = PetscMallocViewSet(logthreshold);CHKERRQ(ierr);
     }
+#if defined(PETSC_USE_LOG)
+    ierr = PetscOptionsGetBool(NULL,NULL,"-log_view_memory",&PetscLogMemory,NULL);CHKERRQ(ierr);
+#endif
   }
 
   ierr = PetscOptionsGetBool(NULL,NULL,"-malloc_coalesce",&flg1,&flg2);CHKERRQ(ierr);
