@@ -724,7 +724,8 @@ PetscErrorCode  PetscMallocDump(FILE *fp)
 
     Options Database Key:
 +  -malloc_view <optional filename> - Activates PetscMallocView() in PetscFinalize()
--  -malloc_view_threshold <min> - Sets a minimum size if -malloc_view is used
+.  -malloc_view_threshold <min> - Sets a minimum size if -malloc_view is used
+-  -log_view_memory - view the memory usage also with the -log_view option
 
     Level: advanced
 

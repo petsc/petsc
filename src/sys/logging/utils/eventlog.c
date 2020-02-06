@@ -89,7 +89,7 @@ PetscErrorCode PetscEventPerfLogCreate(PetscEventPerfLog *eventLog)
   ierr         = PetscNew(&l);CHKERRQ(ierr);
   l->numEvents = 0;
   l->maxEvents = 100;
-  ierr         = PetscMalloc1(l->maxEvents,&l->eventInfo);CHKERRQ(ierr);
+  ierr         = PetscCalloc1(l->maxEvents,&l->eventInfo);CHKERRQ(ierr);
   *eventLog    = l;
   PetscFunctionReturn(0);
 }
@@ -218,7 +218,7 @@ PetscErrorCode PetscEventPerfLogEnsureSize(PetscEventPerfLog eventLog,int size)
 
   PetscFunctionBegin;
   while (size > eventLog->maxEvents) {
-    ierr = PetscMalloc1(eventLog->maxEvents*2,&eventInfo);CHKERRQ(ierr);
+    ierr = PetscCalloc1(eventLog->maxEvents*2,&eventInfo);CHKERRQ(ierr);
     ierr = PetscArraycpy(eventInfo,eventLog->eventInfo,eventLog->maxEvents);CHKERRQ(ierr);
     ierr = PetscFree(eventLog->eventInfo);CHKERRQ(ierr);
     eventLog->eventInfo  = eventInfo;
@@ -304,7 +304,7 @@ PetscErrorCode PetscEventRegLogRegister(PetscEventRegLog eventLog,const char ena
   /* Should check classid I think */
   e = eventLog->numEvents++;
   if (eventLog->numEvents > eventLog->maxEvents) {
-    ierr = PetscMalloc1(eventLog->maxEvents*2,&eventInfo);CHKERRQ(ierr);
+    ierr = PetscCalloc1(eventLog->maxEvents*2,&eventInfo);CHKERRQ(ierr);
     ierr = PetscArraycpy(eventInfo,eventLog->eventInfo,eventLog->maxEvents);CHKERRQ(ierr);
     ierr = PetscFree(eventLog->eventInfo);CHKERRQ(ierr);
     eventLog->eventInfo  = eventInfo;
@@ -740,7 +740,7 @@ PetscErrorCode PetscLogEventBeginComplete(PetscLogEvent event,int t,PetscObject 
   /* Dynamically enlarge logging structures */
   if (petsc_numActions >= petsc_maxActions) {
     PetscTime(&start);
-    ierr = PetscMalloc1(petsc_maxActions*2,&tmpAction);CHKERRQ(ierr);
+    ierr = PetscCalloc1(petsc_maxActions*2,&tmpAction);CHKERRQ(ierr);
     ierr = PetscArraycpy(tmpAction,petsc_actions,petsc_maxActions);CHKERRQ(ierr);
     ierr = PetscFree(petsc_actions);CHKERRQ(ierr);
 
@@ -800,7 +800,7 @@ PetscErrorCode PetscLogEventEndComplete(PetscLogEvent event,int t,PetscObject o1
   /* Dynamically enlarge logging structures */
   if (petsc_numActions >= petsc_maxActions) {
     PetscTime(&start);
-    ierr = PetscMalloc1(petsc_maxActions*2,&tmpAction);CHKERRQ(ierr);
+    ierr = PetscCalloc1(petsc_maxActions*2,&tmpAction);CHKERRQ(ierr);
     ierr = PetscArraycpy(tmpAction,petsc_actions,petsc_maxActions);CHKERRQ(ierr);
     ierr = PetscFree(petsc_actions);CHKERRQ(ierr);
 
