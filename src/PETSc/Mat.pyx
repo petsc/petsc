@@ -1302,21 +1302,6 @@ cdef class Mat(Object):
 
     # matrix-matrix product
 
-    def matMultSymbolic(self, Mat mat, fill=None):
-        cdef Mat result = Mat()
-        cdef PetscReal rval = 2
-        if fill is not None: rval = asReal(fill)
-        CHKERR( MatMatMultSymbolic(self.mat, mat.mat, rval, &result.mat) )
-        return result
-
-    def matMultNumeric(self, Mat mat, Mat result=None):
-        if result is None:
-            result = Mat()
-        if result.mat == NULL:
-            CHKERR( MatMatMultSymbolic(self.mat, mat.mat, 2.0, &result.mat) )
-        CHKERR( MatMatMultNumeric(self.mat, mat.mat, result.mat) )
-        return result
-
     def matMult(self, Mat mat, Mat result=None, fill=None):
         cdef PetscMatReuse reuse = MAT_INITIAL_MATRIX
         cdef PetscReal rval = 2
