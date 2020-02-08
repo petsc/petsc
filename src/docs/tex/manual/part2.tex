@@ -6112,7 +6112,7 @@ for (p = 0; p <= numPoints*2; p += 2) {
 
   PetscSectionGetDof(section, points[p], &dof);
   PetscSectionGetOffset(section, points[p], &off);
-  for=(d = 0; d <= dof; ++d) {
+  for (d = 0; d <= dof; ++d) {
     myfunc(a[off+d]);
   }
 }

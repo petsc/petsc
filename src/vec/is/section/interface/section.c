@@ -1125,9 +1125,8 @@ PetscErrorCode PetscSectionGetStorageSize(PetscSection s, PetscInt *size)
 
   Not collective
 
-  Input Parameters:
-+ s - the PetscSection
-- point - the point
+  Input Parameter:
+. s - the PetscSection
 
   Output Parameter:
 . size - the size of an array which can hold all unconstrained dofs
