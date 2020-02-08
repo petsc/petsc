@@ -308,7 +308,7 @@ static PetscErrorCode PetscParallelSortInt_Samplesort(PetscLayout mapin, PetscLa
 }
 
 /*@
-  PetscParallelSortInt - Globally sort a distrbuted array of integers
+  PetscParallelSortInt - Globally sort a distributed array of integers
 
   Collective
 
@@ -317,7 +317,7 @@ static PetscErrorCode PetscParallelSortInt_Samplesort(PetscLayout mapin, PetscLa
 . mapout - PetscLayout describing the distribution of the output keys
 - keysin - the pre-sorted array of integers
 
-  Output Parameters:
+  Output Parameter:
 . keysout - the array in which the sorted integers will be stored.  If mapin == mapout, then keysin may be equal to keysout.
 
   Level: developer

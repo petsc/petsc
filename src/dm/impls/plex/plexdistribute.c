@@ -458,7 +458,7 @@ PetscErrorCode DMPlexDistributeOwnership(DM dm, PetscSection rootSection, IS *ro
 . leafSection - The number of processes sharing a given leaf point
 - leafrank    - The rank of each process sharing a leaf point
 
-  Output Parameters:
+  Output Parameter:
 . ovLabel     - DMLabel containing remote overlap contributions as point/rank pairings
 
   Level: developer
@@ -570,7 +570,7 @@ PetscErrorCode DMPlexCreateOverlapLabel(DM dm, PetscInt levels, PetscSection roo
 + dm          - The DM
 - overlapSF   - The SF mapping ghost points in overlap to owner points on other processes
 
-  Output Parameters:
+  Output Parameter:
 . migrationSF - An SF that maps original points in old locations to points in new locations
 
   Level: developer
@@ -675,7 +675,7 @@ PetscErrorCode DMPlexCreateOverlapMigrationSF(DM dm, PetscSF overlapSF, PetscSF 
 /*@
   DMPlexStratifyMigrationSF - Rearrange the leaves of a migration sf for stratification.
 
-  Input Parameter:
+  Input Parameters:
 + dm          - The DM
 - sf          - A star forest with non-ordered leaves, usually defining a DM point migration
 
@@ -1378,7 +1378,7 @@ static void MaxLocCarry(void *in_, void *inout_, PetscMPIInt *len_, MPI_Datatype
 /*@C
   DMPlexCreatePointSF - Build a point SF from an SF describing a point migration
 
-  Input Parameter:
+  Input Parameters:
 + dm          - The source DMPlex object
 . migrationSF - The star forest that describes the parallel point remapping
 . ownership   - Flag causing a vote to determine point ownership
@@ -1512,7 +1512,7 @@ PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownersh
 
   Collective on dm
 
-  Input Parameter:
+  Input Parameters:
 + dm       - The source DMPlex object
 . sf       - The star forest communication context describing the migration pattern
 
@@ -1591,11 +1591,11 @@ PetscErrorCode DMPlexMigrate(DM dm, PetscSF sf, DM targetDM)
 
   Collective on dm
 
-  Input Parameter:
+  Input Parameters:
 + dm  - The original DMPlex object
 - overlap - The overlap of partitions, 0 is the default
 
-  Output Parameter:
+  Output Parameters:
 + sf - The PetscSF used for point distribution, or NULL if not needed
 - dmParallel - The distributed DMPlex object
 
@@ -1772,11 +1772,11 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
 
   Collective on dm
 
-  Input Parameter:
-+ dm  - The non-overlapping distrbuted DMPlex object
+  Input Parameters:
++ dm  - The non-overlapping distributed DMPlex object
 - overlap - The overlap of partitions (the same on all ranks)
 
-  Output Parameter:
+  Output Parameters:
 + sf - The PetscSF used for point distribution
 - dmOverlap - The overlapping distributed DMPlex object, or NULL
 
@@ -1872,7 +1872,7 @@ PetscErrorCode DMPlexGetOverlap_Plex(DM dm, PetscInt *overlap)
   Input Parameter:
 . dm - The DM
 
-  Output Parameters:
+  Output Parameter:
 . overlap - The overlap of this DM
 
   Level: intermediate
@@ -1896,7 +1896,7 @@ PetscErrorCode DMPlexGetOverlap(DM dm, PetscInt *overlap)
 
   Collective on dm
 
-  Input Parameters:
+  Input Parameter:
 . dm - the original DMPlex object
 
   Output Parameters:
@@ -1940,7 +1940,7 @@ PetscErrorCode DMPlexGetGatherDM(DM dm, PetscSF *sf, DM *gatherMesh)
 
   Collective on dm
 
-  Input Parameters:
+  Input Parameter:
 . dm - the original DMPlex object
 
   Output Parameters:
