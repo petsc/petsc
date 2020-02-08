@@ -16,6 +16,7 @@ typedef struct {
   PetscInt     curr;             /* current tip of snapshots set */
   Vec          *xsnap;           /* snapshots */
   Vec          *bsnap;           /* rhs snapshots */
+  Vec          *work;            /* parallel work vectors */
   PetscScalar  *dots_iallreduce;
   MPI_Request  req_iallreduce;
   PetscInt     ndots_iallreduce; /* if we have iallreduce we can hide the VecMDot communications */
@@ -67,6 +68,7 @@ static PetscErrorCode KSPGuessReset_POD(KSPGuess guess)
   if (!cong) {
     ierr = VecDestroyVecs(pod->maxn,&pod->xsnap);CHKERRQ(ierr);
     ierr = VecDestroyVecs(pod->maxn,&pod->bsnap);CHKERRQ(ierr);
+    ierr = VecDestroyVecs(1,&pod->work);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -124,6 +126,9 @@ static PetscErrorCode KSPGuessSetUp_POD(KSPGuess guess)
     ierr = VecDuplicateVecs(pod->xsnap[0],pod->maxn,&pod->bsnap);CHKERRQ(ierr);
     ierr = PetscLogObjectParents(guess,pod->maxn,pod->bsnap);CHKERRQ(ierr);
   }
+  if (!pod->work) {
+    ierr = KSPCreateVecs(guess->ksp,1,&pod->work,0,NULL);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -146,6 +151,7 @@ static PetscErrorCode KSPGuessDestroy_POD(KSPGuess guess)
   ierr = PetscFree(pod->swork);CHKERRQ(ierr);
   ierr = VecDestroyVecs(pod->maxn,&pod->bsnap);CHKERRQ(ierr);
   ierr = VecDestroyVecs(pod->maxn,&pod->xsnap);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(1,&pod->work);CHKERRQ(ierr);
   ierr = PetscFree(pod);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -225,11 +231,10 @@ static PetscErrorCode KSPGuessFormGuess_POD(KSPGuess guess,Vec b,Vec x)
   }
   ierr = VecGetArray(x,&array);CHKERRQ(ierr);
   ierr = VecPlaceArray(pod->bsnap[pod->curr],array);CHKERRQ(ierr);
-  ierr = VecRestoreArray(x,&array);CHKERRQ(ierr);
   ierr = VecSet(pod->bsnap[pod->curr],0);CHKERRQ(ierr);
   ierr = VecMAXPY(pod->bsnap[pod->curr],pod->n,pod->swork+pod->n,pod->xsnap);CHKERRQ(ierr);
   ierr = VecResetArray(pod->bsnap[pod->curr]);CHKERRQ(ierr);
-  ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(x,&array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -247,11 +252,10 @@ static PetscErrorCode KSPGuessUpdate_POD(KSPGuess guess, Vec b, Vec x)
   pod->n = pod->n < pod->maxn ? pod->n+1 : pod->maxn;
   ierr = VecCopy(x,pod->xsnap[pod->curr]);CHKERRQ(ierr);
   ierr = VecGetArray(pod->bsnap[pod->curr],&array);CHKERRQ(ierr);
-  ierr = VecPlaceArray(b,array);CHKERRQ(ierr);
+  ierr = VecPlaceArray(pod->work[0],array);CHKERRQ(ierr);
+  ierr = KSP_MatMult(guess->ksp,guess->A,x,pod->work[0]);CHKERRQ(ierr);
+  ierr = VecResetArray(pod->work[0]);CHKERRQ(ierr);
   ierr = VecRestoreArray(pod->bsnap[pod->curr],&array);CHKERRQ(ierr);
-  ierr = KSP_MatMult(guess->ksp,guess->A,x,b);CHKERRQ(ierr);
-  ierr = VecResetArray(b);CHKERRQ(ierr);
-  ierr = PetscObjectStateIncrease((PetscObject)pod->bsnap[pod->curr]);CHKERRQ(ierr);
   if (pod->Aspd) {
     ierr = VecMDot(pod->xsnap[pod->curr],pod->n,pod->bsnap,pod->swork);CHKERRQ(ierr);
 #if !defined(PETSC_HAVE_MPI_IALLREDUCE)

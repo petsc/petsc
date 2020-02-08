@@ -319,6 +319,8 @@ PetscErrorCode  KSPGuessSetUp(KSPGuess guess)
   PetscObjectState matstate;
   PetscInt         oM = 0, oN = 0, M, N;
   Mat              omat = NULL;
+  PC               pc;
+  PetscBool        reuse;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(guess,KSPGUESS_CLASSID,1);
@@ -327,12 +329,18 @@ PetscErrorCode  KSPGuessSetUp(KSPGuess guess)
     ierr = MatGetSize(guess->A,&oM,&oN);CHKERRQ(ierr);
   }
   ierr = KSPGetOperators(guess->ksp,&guess->A,NULL);CHKERRQ(ierr);
+  ierr = KSPGetPC(guess->ksp,&pc);CHKERRQ(ierr);
+  ierr = PCGetReusePreconditioner(pc,&reuse);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)guess->A);CHKERRQ(ierr);
   ierr = MatGetSize(guess->A,&M,&N);CHKERRQ(ierr);
   ierr = PetscObjectStateGet((PetscObject)guess->A,&matstate);CHKERRQ(ierr);
-  if (omat != guess->A || guess->omatstate != matstate || M != oM || N != oN) {
-    ierr = PetscInfo7(guess,"Resetting KSPGuess since matrix, mat state or sizes have changed (mat %d, %D != %D, %D != %D, %D != %D)\n",(PetscBool)(omat != guess->A),guess->omatstate,matstate,oM,M,oN,N);CHKERRQ(ierr);
+  if (M != oM || N != oN) {
+    ierr = PetscInfo4(guess,"Resetting KSPGuess since matrix sizes have changed (%D != %D, %D != %D)\n",oM,M,oN,N);CHKERRQ(ierr);
+  } else if (!reuse && (omat != guess->A || guess->omatstate != matstate)) {
+    ierr = PetscInfo1(guess,"Resetting KSPGuess since %s has changed\n",omat != guess->A ? "matrix" : "matrix state");CHKERRQ(ierr);
     if (guess->ops->reset) { ierr = (*guess->ops->reset)(guess);CHKERRQ(ierr); }
+  } else if (reuse) {
+    ierr = PetscInfo(guess,"Not resettting KSPGuess since reuse preconditioner has been specified\n");CHKERRQ(ierr);
   } else {
     ierr = PetscInfo(guess,"KSPGuess status unchanged\n");CHKERRQ(ierr);
   }
