@@ -532,6 +532,7 @@ typedef enum {
   /* Updates here must be accompanied by updates in finclude/petscsys.h and the string array in mpits.c */
 } PetscBuildTwoSidedType;
 
+/* NOTE: If you change this, you must also change the values in src/vec/f90-mod/petscvec.h */
 /*E
   InsertMode - Whether entries are inserted or added into vectors or matrices
 
