@@ -1,0 +1,26 @@
+DM Object: 2 MPI processes
+  type: stag
+Dimension: 1
+Global size: 5
+Boundary ghosting: NONE
+Elementwise ghost stencil: BOX, width 1
+Stratum dof: 0:1 1:1
+[0] Local elements : 2 (3 with ghosts)
+[0] Local native entries: 4
+[0] Local entries total : 6
+[1] Local elements : 3 (5 with ghosts)
+[1] Local native entries: 7
+[1] Local entries total : 10
+DM Object: 2 MPI processes
+  type: stag
+Dimension: 1
+Global size: 5
+Boundary ghosting: NONE
+Elementwise ghost stencil: BOX, width 1
+Stratum dof: 0:1 1:1
+[0] Local elements : 2 (3 with ghosts)
+[0] Local native entries: 4
+[0] Local entries total : 6
+[1] Local elements : 3 (5 with ghosts)
+[1] Local native entries: 7
+[1] Local entries total : 10

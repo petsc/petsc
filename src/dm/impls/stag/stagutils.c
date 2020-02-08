@@ -461,7 +461,7 @@ PetscErrorCode DMStagGetLocalSizes(DM dm,PetscInt* m,PetscInt* n,PetscInt* p)
 
   Level: beginner
 
-.seealso: DMSTAG, DMStagGetGlobalSizes(), DMStagGetLocalSize(), DMStagSetNumRank(), DMDAGetInfo()
+.seealso: DMSTAG, DMStagGetGlobalSizes(), DMStagGetLocalSize(), DMStagSetNumRanks(), DMDAGetInfo()
 @*/
 PetscErrorCode DMStagGetNumRanks(DM dm,PetscInt *nRanks0,PetscInt *nRanks1,PetscInt *nRanks2)
 {
@@ -614,24 +614,11 @@ PetscErrorCode DMStagGetOwnershipRanges(DM dm,const PetscInt *lx[],const PetscIn
 PetscErrorCode DMStagCreateCompatibleDMStag(DM dm,PetscInt dof0,PetscInt dof1,PetscInt dof2,PetscInt dof3,DM *newdm)
 {
   PetscErrorCode  ierr;
-  const DM_Stag * const stag = (DM_Stag*)dm->data;
-  PetscInt        dim;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
-  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
-  switch (dim) {
-    case 1:
-      ierr = DMStagCreate1d(PetscObjectComm((PetscObject)dm),stag->boundaryType[0],stag->N[0],dof0,dof1,stag->stencilType,stag->stencilWidth,NULL,newdm);CHKERRQ(ierr);
-      break;
-    case 2:
-      ierr = DMStagCreate2d(PetscObjectComm((PetscObject)dm),stag->boundaryType[0],stag->boundaryType[1],stag->N[0],stag->N[1],stag->nRanks[0],stag->nRanks[1],dof0,dof1,dof2,stag->stencilType,stag->stencilWidth,NULL,NULL,newdm);CHKERRQ(ierr);
-      break;
-    case 3:
-      ierr = DMStagCreate3d(PetscObjectComm((PetscObject)dm),stag->boundaryType[0],stag->boundaryType[1],stag->boundaryType[2],stag->N[0],stag->N[1],stag->N[2],stag->nRanks[0],stag->nRanks[1],stag->nRanks[2],dof0,dof1,dof2,dof3,stag->stencilType,stag->stencilWidth,NULL,NULL,NULL,newdm);CHKERRQ(ierr);
-      break;
-    default: SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Unsupported dimension %D",dim);
-  }
+  ierr = DMStagDuplicateWithoutSetup(dm,PetscObjectComm((PetscObject)dm),newdm);CHKERRQ(ierr);
+  ierr = DMStagSetDOF(*newdm,dof0,dof1,dof2,dof3);CHKERRQ(ierr);
   ierr = DMSetUp(*newdm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1070,12 +1057,12 @@ PetscErrorCode DMStagSetNumRanks(DM dm,PetscInt nRanks0,PetscInt nRanks1,PetscIn
   PetscValidLogicalCollectiveInt(dm,nRanks2,4);
   if (dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
-  if (nRanks0 < 1) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"number of ranks in X direction cannot be less than 1");
-  if (dim > 1 && nRanks1 < 1) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"number of ranks in Y direction cannot be less than 1");
-  if (dim > 2 && nRanks2 < 1) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"number of ranks in Z direction cannot be less than 1");
+  if (nRanks0 != PETSC_DECIDE && nRanks0 < 1) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"number of ranks in X direction cannot be less than 1");
+  if (dim > 1 && nRanks1 != PETSC_DECIDE && nRanks1 < 1) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"number of ranks in Y direction cannot be less than 1");
+  if (dim > 2 && nRanks2 != PETSC_DECIDE && nRanks2 < 1) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"number of ranks in Z direction cannot be less than 1");
   if (nRanks0) stag->nRanks[0] = nRanks0;
-  if (nRanks1) stag->nRanks[1] = nRanks1;
-  if (nRanks2) stag->nRanks[2] = nRanks2;
+  if (dim > 1 && nRanks1) stag->nRanks[1] = nRanks1;
+  if (dim > 2 && nRanks2) stag->nRanks[2] = nRanks2;
   PetscFunctionReturn(0);
 }
 
