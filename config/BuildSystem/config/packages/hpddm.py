@@ -3,10 +3,10 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit              = 'd0c29ca' #master jan-20-2020
+    self.gitcommit              = '7efbd32' #master feb-11-2020
     self.download               = ['git://https://github.com/hpddm/hpddm','https://github.com/hpddm/hpddm/archive/'+self.gitcommit+'.tar.gz']
-    self.version                = '2.0.2'
-    self.minversion             = '2.0.0' # first release with --download-hpddm support, broken for Pmat of type MATMPISBAIJ
+    self.version                = '2.0.3'
+    self.minversion             = '2.0.3' # prior versions are not handling KSPHPDDM options properly
     self.versionname            = 'HPDDM_VERSION'
     self.versioninclude         = 'HPDDM_define.hpp'
     self.requirescxx11          = 1
@@ -38,7 +38,7 @@ class Configure(config.package.Package):
     import os
     if self.slepc.found and not self.checkSharedLibrariesEnabled():
       raise RuntimeError('Shared libraries enabled needed to build PCHPDDM')
-    buildDir   = os.path.join(self.packageDir,'petsc-build')
+    buildDir = os.path.join(self.packageDir,'petsc-build')
     self.setCompilers.pushLanguage('Cxx')
     cxx = self.setCompilers.getCompiler()
     cxxflags = self.setCompilers.getCompilerFlags()
