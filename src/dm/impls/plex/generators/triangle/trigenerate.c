@@ -161,17 +161,49 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool inter
   ierr = PetscFree(in.holelist);CHKERRQ(ierr);
 
   {
-    DMLabel        glabel      = NULL;
-    DMLabel        glabel2     = NULL;
-    const PetscInt numCorners  = 3;
-    const PetscInt numCells    = out.numberoftriangles;
-    const PetscInt numVertices = out.numberofpoints;
-    const int     *cells      = out.trianglelist;
-    const double  *meshCoords = out.pointlist;
+    DMLabel          glabel      = NULL;
+    DMLabel          glabel2     = NULL;
+    const PetscInt   numCorners  = 3;
+    const PetscInt   numCells    = out.numberoftriangles;
+    const PetscInt   numVertices = out.numberofpoints;
+    PetscInt         *cells;
+    PetscReal        *meshCoords;
 
-    ierr = DMPlexCreateFromCellList(comm, dim, numCells, numVertices, numCorners, interpolate, cells, dim, meshCoords, dm);CHKERRQ(ierr);
-    if (label)  {ierr = DMCreateLabel(*dm, labelName);  ierr = DMGetLabel(*dm, labelName,  &glabel);}
-    if (label2) {ierr = DMCreateLabel(*dm, labelName2); ierr = DMGetLabel(*dm, labelName2, &glabel2);}
+    if (sizeof (PetscReal) == sizeof (out.pointlist[0])) {
+      meshCoords = (PetscReal *) out.pointlist;
+    } else {
+      PetscInt i;
+
+      ierr = PetscMalloc1(dim * numVertices,&meshCoords);CHKERRQ(ierr);
+      for (i = 0; i < dim * numVertices; i++) {
+        meshCoords[i] = (PetscReal) out.pointlist[i];
+      }
+    }
+    if (sizeof (PetscInt) == sizeof (out.trianglelist[0])) {
+      cells = (PetscInt *) out.trianglelist;
+    } else {
+      PetscInt i;
+
+      ierr = PetscMalloc1(numCells * numCorners, &cells);CHKERRQ(ierr);
+      for (i = 0; i < numCells * numCorners; i++) {
+        cells[i] = (PetscInt) out.trianglelist[i];
+      }
+    }
+    ierr = DMPlexCreateFromCellListPetsc(comm, dim, numCells, numVertices, numCorners, interpolate, cells, dim, meshCoords, dm);CHKERRQ(ierr);
+    if (sizeof (PetscReal) != sizeof (out.pointlist[0])) {
+      ierr = PetscFree(meshCoords);CHKERRQ(ierr);
+    }
+    if (sizeof (PetscInt) != sizeof (out.trianglelist[0])) {
+      ierr = PetscFree(cells);CHKERRQ(ierr);
+    }
+    if (label)  {
+      ierr = DMCreateLabel(*dm, labelName);CHKERRQ(ierr);
+      ierr = DMGetLabel(*dm, labelName, &glabel);CHKERRQ(ierr);
+    }
+    if (label2) {
+      ierr = DMCreateLabel(*dm, labelName2);CHKERRQ(ierr);
+      ierr = DMGetLabel(*dm, labelName2, &glabel2);CHKERRQ(ierr);
+    }
     /* Set labels */
     for (v = 0; v < numVertices; ++v) {
       if (out.pointmarkerlist[v]) {
@@ -308,16 +340,46 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Triangle(DM dm, PetscReal *inmaxVolumes
   ierr = PetscFree(in.trianglelist);CHKERRQ(ierr);
 
   {
-    DMLabel        rlabel      = NULL;
-    const PetscInt numCorners  = 3;
-    const PetscInt numCells    = out.numberoftriangles;
-    const PetscInt numVertices = out.numberofpoints;
-    const int     *cells      = out.trianglelist;
-    const double  *meshCoords = out.pointlist;
-    PetscBool      interpolate = depthGlobal > 1 ? PETSC_TRUE : PETSC_FALSE;
+    DMLabel          rlabel      = NULL;
+    const PetscInt   numCorners  = 3;
+    const PetscInt   numCells    = out.numberoftriangles;
+    const PetscInt   numVertices = out.numberofpoints;
+    PetscInt         *cells;
+    PetscReal        *meshCoords;
+    PetscBool        interpolate = depthGlobal > 1 ? PETSC_TRUE : PETSC_FALSE;
 
-    ierr = DMPlexCreateFromCellList(comm, dim, numCells, numVertices, numCorners, interpolate, cells, dim, meshCoords, dmRefined);CHKERRQ(ierr);
-    if (label) {ierr = DMCreateLabel(*dmRefined, labelName); ierr = DMGetLabel(*dmRefined, labelName, &rlabel);}
+    if (sizeof (PetscReal) == sizeof (out.pointlist[0])) {
+      meshCoords = (PetscReal *) out.pointlist;
+    } else {
+      PetscInt i;
+
+      ierr = PetscMalloc1(dim * numVertices,&meshCoords);CHKERRQ(ierr);
+      for (i = 0; i < dim * numVertices; i++) {
+        meshCoords[i] = (PetscReal) out.pointlist[i];
+      }
+    }
+    if (sizeof (PetscInt) == sizeof (out.trianglelist[0])) {
+      cells = (PetscInt *) out.trianglelist;
+    } else {
+      PetscInt i;
+
+      ierr = PetscMalloc1(numCells * numCorners, &cells);CHKERRQ(ierr);
+      for (i = 0; i < numCells * numCorners; i++) {
+        cells[i] = (PetscInt) out.trianglelist[i];
+      }
+    }
+
+    ierr = DMPlexCreateFromCellListPetsc(comm, dim, numCells, numVertices, numCorners, interpolate, cells, dim, meshCoords, dmRefined);CHKERRQ(ierr);
+    if (label) {
+      ierr = DMCreateLabel(*dmRefined, labelName);CHKERRQ(ierr);
+      ierr = DMGetLabel(*dmRefined, labelName, &rlabel);CHKERRQ(ierr);
+    }
+    if (sizeof (PetscReal) != sizeof (out.pointlist[0])) {
+      ierr = PetscFree(meshCoords);CHKERRQ(ierr);
+    }
+    if (sizeof (PetscInt) != sizeof (out.trianglelist[0])) {
+      ierr = PetscFree(cells);CHKERRQ(ierr);
+    }
     /* Set labels */
     for (v = 0; v < numVertices; ++v) {
       if (out.pointmarkerlist[v]) {

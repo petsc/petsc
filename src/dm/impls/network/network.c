@@ -254,27 +254,11 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
    */
 
   /* Create network->plex */
-#if defined(PETSC_USE_64BIT_INDICES)
-  {
-    int *edges64;
-    np = network->nEdges*numCorners;
-    ierr = PetscMalloc1(np,&edges64);CHKERRQ(ierr);
-    for (i=0; i<np; i++) edges64[i] = (int)edges[i];
-
-    if (size == 1) {
-      ierr = DMPlexCreateFromCellList(comm,dim,network->nEdges,network->nVertices,numCorners,PETSC_FALSE,(const int*)edges64,spacedim,(const double*)vertexcoords,&network->plex);CHKERRQ(ierr);
-    } else {
-      ierr = DMPlexCreateFromCellListParallel(comm,dim,network->nEdges,network->nVertices,numCorners,PETSC_FALSE,(const int*)edges64,spacedim,(const PetscReal*)vertexcoords,NULL,&network->plex);CHKERRQ(ierr);
-    }
-    ierr = PetscFree(edges64);CHKERRQ(ierr);
-  }
-#else
   if (size == 1) {
-    ierr = DMPlexCreateFromCellList(comm,dim,network->nEdges,network->nVertices,numCorners,PETSC_FALSE,(const int*)edges,spacedim,(const double*)vertexcoords,&network->plex);CHKERRQ(ierr);
+    ierr = DMPlexCreateFromCellListPetsc(comm,dim,network->nEdges,network->nVertices,numCorners,PETSC_FALSE,edges,spacedim,vertexcoords,&network->plex);CHKERRQ(ierr);
   } else {
-    ierr = DMPlexCreateFromCellListParallel(comm,dim,network->nEdges,network->nVertices,numCorners,PETSC_FALSE,(const int*)edges,spacedim,(const PetscReal*)vertexcoords,NULL,&network->plex);CHKERRQ(ierr);
+    ierr = DMPlexCreateFromCellListParallelPetsc(comm,dim,network->nEdges,network->nVertices,numCorners,PETSC_FALSE,edges,spacedim,vertexcoords,NULL,&network->plex);CHKERRQ(ierr);
   }
-#endif
 
   ierr = DMPlexGetChart(network->plex,&network->pStart,&network->pEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(network->plex,0,&network->eStart,&network->eEnd);CHKERRQ(ierr);

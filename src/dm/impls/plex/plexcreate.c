@@ -2746,8 +2746,8 @@ static PetscErrorCode DMPlexInvertCell_Internal(PetscInt dim, PetscInt numCorner
 /*
   This takes as input the common mesh generator output, a list of the vertices for each cell, but vertex numbers are global and an SF is built for them
 */
-/* TODO: invertCells and spaceDim arguments could be added also to to DMPlexCreateFromCellListParallel(), DMPlexBuildFromCellList_Internal() and DMPlexCreateFromCellList() */
-PetscErrorCode DMPlexBuildFromCellList_Parallel_Internal(DM dm, PetscInt spaceDim, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, const int cells[], PetscBool invertCells, PetscSF *sfVert)
+/* TODO: invertCells and spaceDim arguments could be added also to to DMPlexCreateFromCellListParallelPetsc(), DMPlexBuildFromCellList_Internal() and DMPlexCreateFromCellListPetsc() */
+PetscErrorCode DMPlexBuildFromCellList_Parallel_Internal(DM dm, PetscInt spaceDim, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, const PetscInt cells[], PetscBool invertCells, PetscSF *sfVert)
 {
   PetscSF         sfPoint;
   PetscLayout     vLayout;
@@ -2909,7 +2909,7 @@ PetscErrorCode DMPlexBuildCoordinates_Parallel_Internal(DM dm, PetscInt spaceDim
 }
 
 /*@
-  DMPlexCreateFromCellListParallel - This takes as input common mesh generator output, a list of the vertices for each cell, and produces a DM
+  DMPlexCreateFromCellListParallelPetsc - This takes as input common mesh generator output, a list of the vertices for each cell, and produces a DM
 
   Input Parameters:
 + comm - The communicator
@@ -2955,9 +2955,9 @@ $        3
 
   Level: beginner
 
-.seealso: DMPlexCreateFromCellList(), DMPlexCreateFromDAG(), DMPlexCreate()
+.seealso: DMPlexCreateFromCellListPetsc(), DMPlexCreateFromDAG(), DMPlexCreate()
 @*/
-PetscErrorCode DMPlexCreateFromCellListParallel(MPI_Comm comm, PetscInt dim, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, PetscBool interpolate, const int cells[], PetscInt spaceDim, const PetscReal vertexCoords[], PetscSF *vertexSF, DM *dm)
+PetscErrorCode DMPlexCreateFromCellListParallelPetsc(MPI_Comm comm, PetscInt dim, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, PetscBool interpolate, const PetscInt cells[], PetscInt spaceDim, const PetscReal vertexCoords[], PetscSF *vertexSF, DM *dm)
 {
   PetscSF        sfVert;
   PetscErrorCode ierr;
@@ -2982,10 +2982,41 @@ PetscErrorCode DMPlexCreateFromCellListParallel(MPI_Comm comm, PetscInt dim, Pet
   PetscFunctionReturn(0);
 }
 
+
+/*@
+  DMPlexCreateFromCellListParallel - Deprecated, use DMPlexCreateFromCellListParallelPetsc()
+
+  Level: deprecated
+
+.seealso: DMPlexCreateFromCellListParallelPetsc()
+@*/
+PetscErrorCode DMPlexCreateFromCellListParallel(MPI_Comm comm, PetscInt dim, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, PetscBool interpolate, const int cells[], PetscInt spaceDim, const PetscReal vertexCoords[], PetscSF *vertexSF, DM *dm)
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+  PetscInt       *pintCells;
+
+  PetscFunctionBegin;
+  if (sizeof(int) > sizeof(PetscInt)) SETERRQ2(comm, PETSC_ERR_ARG_SIZ, "Size of int %zd greater than size of PetscInt %zd. Reconfigure PETSc --with-64-bit-indices=1", sizeof(int), sizeof(PetscInt));
+  if (sizeof(int) == sizeof(PetscInt)) {
+    pintCells = (PetscInt *) cells;
+  } else {
+    ierr = PetscMalloc1(numCells*numCorners, &pintCells);CHKERRQ(ierr);
+    for (i = 0; i < numCells*numCorners; i++) {
+      pintCells[i] = (PetscInt) cells[i];
+    }
+  }
+  ierr = DMPlexCreateFromCellListParallelPetsc(comm, dim, numCells, numVertices, numCorners, interpolate, pintCells, spaceDim, vertexCoords, vertexSF, dm);CHKERRQ(ierr);
+  if (sizeof(int) != sizeof(PetscInt)) {
+    ierr = PetscFree(pintCells);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 /*
   This takes as input the common mesh generator output, a list of the vertices for each cell
 */
-PetscErrorCode DMPlexBuildFromCellList_Internal(DM dm, PetscInt spaceDim, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, const int cells[], PetscBool invertCells)
+PetscErrorCode DMPlexBuildFromCellList_Internal(DM dm, PetscInt spaceDim, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, const PetscInt cells[], PetscBool invertCells)
 {
   PetscInt      *cone, c, p;
   PetscErrorCode ierr;
@@ -3015,7 +3046,7 @@ PetscErrorCode DMPlexBuildFromCellList_Internal(DM dm, PetscInt spaceDim, PetscI
 /*
   This takes as input the coordinates for each vertex
 */
-PetscErrorCode DMPlexBuildCoordinates_Internal(DM dm, PetscInt spaceDim, PetscInt numCells, PetscInt numVertices, const double vertexCoords[])
+PetscErrorCode DMPlexBuildCoordinates_Internal(DM dm, PetscInt spaceDim, PetscInt numCells, PetscInt numVertices, const PetscReal vertexCoords[])
 {
   PetscSection   coordSection;
   Vec            coordinates;
@@ -3055,7 +3086,7 @@ PetscErrorCode DMPlexBuildCoordinates_Internal(DM dm, PetscInt spaceDim, PetscIn
 }
 
 /*@
-  DMPlexCreateFromCellList - This takes as input common mesh generator output, a list of the vertices for each cell, and produces a DM
+  DMPlexCreateFromCellListPetsc - This takes as input common mesh generator output, a list of the vertices for each cell, and produces a DM
 
   Input Parameters:
 + comm - The communicator
@@ -3102,7 +3133,7 @@ $        3
 
 .seealso: DMPlexCreateFromDAG(), DMPlexCreate()
 @*/
-PetscErrorCode DMPlexCreateFromCellList(MPI_Comm comm, PetscInt dim, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, PetscBool interpolate, const int cells[], PetscInt spaceDim, const double vertexCoords[], DM *dm)
+PetscErrorCode DMPlexCreateFromCellListPetsc(MPI_Comm comm, PetscInt dim, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, PetscBool interpolate, const PetscInt cells[], PetscInt spaceDim, const PetscReal vertexCoords[], DM *dm)
 {
   PetscErrorCode ierr;
 
@@ -3120,6 +3151,49 @@ PetscErrorCode DMPlexCreateFromCellList(MPI_Comm comm, PetscInt dim, PetscInt nu
     *dm  = idm;
   }
   ierr = DMPlexBuildCoordinates_Internal(*dm, spaceDim, numCells, numVertices, vertexCoords);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexCreateFromCellList - Deprecated, use DMPlexCreateFromCellListPetsc()
+
+  Level: deprecated
+
+.seealso: DMPlexCreateFromCellListPetsc()
+@*/
+PetscErrorCode DMPlexCreateFromCellList(MPI_Comm comm, PetscInt dim, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, PetscBool interpolate, const int cells[], PetscInt spaceDim, const double vertexCoords[], DM *dm)
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+  PetscInt       *pintCells;
+  PetscReal      *prealVC;
+
+  PetscFunctionBegin;
+  if (sizeof(int) > sizeof(PetscInt)) SETERRQ2(comm, PETSC_ERR_ARG_SIZ, "Size of int %zd greater than size of PetscInt %zd. Reconfigure PETSc --with-64-bit-indices=1", sizeof(int), sizeof(PetscInt));
+  if (sizeof(int) == sizeof(PetscInt)) {
+    pintCells = (PetscInt *) cells;
+  } else {
+    ierr = PetscMalloc1(numCells*numCorners, &pintCells);CHKERRQ(ierr);
+    for (i = 0; i < numCells*numCorners; i++) {
+      pintCells[i] = (PetscInt) cells[i];
+    }
+  }
+  if (sizeof(double) > sizeof(PetscReal)) SETERRQ2(comm, PETSC_ERR_ARG_SIZ, "Size of double %zd greater than size of PetscReal %zd. Reconfigure PETSc --with-precision=<higher precision>.", sizeof(double), sizeof(PetscReal));
+  if (sizeof(double) == sizeof(PetscReal)) {
+    prealVC = (PetscReal *) vertexCoords;
+  } else {
+    ierr = PetscMalloc1(numVertices*spaceDim, &prealVC);CHKERRQ(ierr);
+    for (i = 0; i < numVertices*spaceDim; i++) {
+      prealVC[i] = (PetscReal) vertexCoords[i];
+    }
+  }
+  ierr = DMPlexCreateFromCellListPetsc(comm, dim, numCells, numVertices, numCorners, interpolate, pintCells, spaceDim, prealVC, dm);CHKERRQ(ierr);
+  if (sizeof(int) != sizeof(PetscInt)) {
+    ierr = PetscFree(pintCells);CHKERRQ(ierr);
+  }
+  if (sizeof(double) != sizeof(PetscReal)) {
+    ierr = PetscFree(prealVC);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -3155,11 +3229,11 @@ $     \  |  /
 $      \ | /
 $        3
 $
-$ Notice that all points are numbered consecutively, unlikely DMPlexCreateFromCellList()
+$ Notice that all points are numbered consecutively, unlike DMPlexCreateFromCellListPetsc()
 
   Level: advanced
 
-.seealso: DMPlexCreateFromCellList(), DMPlexCreate()
+.seealso: DMPlexCreateFromCellListPetsc(), DMPlexCreate()
 @*/
 PetscErrorCode DMPlexCreateFromDAG(DM dm, PetscInt depth, const PetscInt numPoints[], const PetscInt coneSize[], const PetscInt cones[], const PetscInt coneOrientations[], const PetscScalar vertexCoords[])
 {
@@ -3363,7 +3437,7 @@ $ -dm_plex_create_viewer_hdf5_collective
 
   Level: beginner
 
-.seealso: DMPlexCreateFromDAG(), DMPlexCreateFromCellList(), DMPlexCreate()
+.seealso: DMPlexCreateFromDAG(), DMPlexCreateFromCellListPetsc(), DMPlexCreate()
 @*/
 PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm)
 {

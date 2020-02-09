@@ -96,23 +96,13 @@ PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer)
 
   {
     const PetscScalar *coordinates_arr;
-    PetscReal *coordinates_arr_real;
-    const PetscInt *cells_arr;
-    int *cells_arr_int;
-    PetscSF sfVert=NULL;
-    PetscInt i;
+    PetscReal         *coordinates_arr_real;
+    const PetscInt    *cells_arr;
+    PetscSF           sfVert=NULL;
+    PetscInt          i;
 
     ierr = VecGetArrayRead(coordinates, &coordinates_arr);CHKERRQ(ierr);
     ierr = ISGetIndices(cells, &cells_arr);CHKERRQ(ierr);
-
-    if (PetscDefined(USE_64BIT_INDICES)) {
-      /* convert to 32-bit integers if PetscInt is 64-bit */
-      /*TODO More systematic would be to change all the function arguments to PetscInt */
-      ierr = PetscMalloc1(numCells*numCorners, &cells_arr_int);CHKERRQ(ierr);
-      for (i = 0; i < numCells*numCorners; ++i) {
-        ierr = PetscMPIIntCast(cells_arr[i], &cells_arr_int[i]);CHKERRQ(ierr);
-      }
-    } else cells_arr_int = (int*)cells_arr;
 
     if (PetscDefined(USE_COMPLEX)) {
       /* convert to real numbers if PetscScalar is complex */
@@ -127,12 +117,11 @@ PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer)
     } else coordinates_arr_real = (PetscReal*)coordinates_arr;
 
     ierr = DMSetDimension(dm, spatialDim);CHKERRQ(ierr);
-    ierr = DMPlexBuildFromCellList_Parallel_Internal(dm, spatialDim, numCells, numVertices, numCorners, cells_arr_int, PETSC_TRUE, &sfVert);CHKERRQ(ierr);
+    ierr = DMPlexBuildFromCellList_Parallel_Internal(dm, spatialDim, numCells, numVertices, numCorners, cells_arr, PETSC_TRUE, &sfVert);CHKERRQ(ierr);
     ierr = DMPlexBuildCoordinates_Parallel_Internal( dm, spatialDim, numCells, numVertices, sfVert, coordinates_arr_real);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(coordinates, &coordinates_arr);CHKERRQ(ierr);
     ierr = ISRestoreIndices(cells, &cells_arr);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&sfVert);CHKERRQ(ierr);
-    if (PetscDefined(USE_64BIT_INDICES)) {ierr = PetscFree(cells_arr_int);CHKERRQ(ierr);}
     if (PetscDefined(USE_COMPLEX)) {ierr = PetscFree(coordinates_arr_real);CHKERRQ(ierr);}
   }
   ierr = ISDestroy(&cells);CHKERRQ(ierr);

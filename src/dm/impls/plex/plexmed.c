@@ -29,7 +29,7 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
   PetscInt        i, ngeo, spaceDim, meshDim;
   PetscInt        numVertices = 0, numCells = 0, c, numCorners, numCellsLocal, numVerticesLocal;
   med_int        *medCellList;
-  int            *cellList;
+  PetscInt       *cellList;
   med_float      *coordinates = NULL;
   PetscReal      *vertcoords = NULL;
   PetscLayout     vLayout, cLayout;
@@ -122,21 +122,18 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
   ierr = PetscMalloc1(numCellsLocal*numCorners, &medCellList);CHKERRQ(ierr);
   ierr = MEDmeshElementConnectivityAdvancedRd(fileID, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, geotype[cellID],
                                               MED_NODAL, &cfilter, medCellList);CHKERRQ(ierr);
-  if (sizeof(med_int) == sizeof(int)) {
-    cellList = (int *) medCellList;
-    medCellList = NULL;
-  } else {
-    ierr = PetscMalloc1(numCellsLocal*numCorners, &cellList);CHKERRQ(ierr);
-    for (i = 0; i < numCellsLocal*numCorners; i++) cellList[i] = medCellList[i];
-    ierr = PetscFree(medCellList);CHKERRQ(ierr);
+  if (sizeof(med_int) > sizeof(PetscInt)) SETERRQ2(comm, PETSC_ERR_ARG_SIZ, "Size of PetscInt %zd less than  size of med_int %zd. Reconfigure PETSc --with-64-bit-indices=1", sizeof(PetscInt), sizeof(med_int));
+  ierr = PetscMalloc1(numCellsLocal*numCorners, &cellList);CHKERRQ(ierr);
+  for (i = 0; i < numCellsLocal*numCorners; i++) {
+    cellList[i] = ((PetscInt) medCellList[i]) - 1; /* Correct entity counting */
   }
-  for (i = 0; i < numCellsLocal*numCorners; i++) cellList[i]--; /* Correct entity counting */
+  ierr = PetscFree(medCellList);CHKERRQ(ierr);
   /* Generate the DM */
   if (sizeof(med_float) == sizeof(PetscReal)) {
     vertcoords = (PetscReal *) coordinates;
   } else {
     ierr = PetscMalloc1(numVerticesLocal*spaceDim, &vertcoords);CHKERRQ(ierr);
-    for (i = 0; i < numVerticesLocal*spaceDim; i++) vertcoords[i] = coordinates[i];
+    for (i = 0; i < numVerticesLocal*spaceDim; i++) vertcoords[i] = (PetscReal) coordinates[i];
   }
   /* Account for cell inversion */
   for (c = 0; c < numCellsLocal; ++c) {
@@ -151,22 +148,20 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
       }
     }
   }
-  ierr = DMPlexCreateFromCellListParallel(comm, meshDim, numCellsLocal, numVerticesLocal, numCorners, interpolate, cellList, spaceDim, coordinates, &sfVertices, dm);CHKERRQ(ierr);
+  ierr = DMPlexCreateFromCellListParallelPetsc(comm, meshDim, numCellsLocal, numVerticesLocal, numCorners, interpolate, cellList, spaceDim, vertcoords, &sfVertices, dm);CHKERRQ(ierr);
   if (sizeof(med_float) == sizeof(PetscReal)) {
     vertcoords = NULL;
   } else {
     ierr = PetscFree(vertcoords);CHKERRQ(ierr);
   }
-
   if (ngeo > 1) {
     PetscInt        numFacets = 0, numFacetsLocal, numFacetCorners, numFacetsRendezvous;
     PetscInt        c, f, v, vStart, joinSize, vertices[8];
-    med_int        *medFacetList;
     PetscInt       *facetList, *facetListRendezvous, *facetIDs, *facetIDsRendezvous, *facetListRemote, *facetIDsRemote;
     const PetscInt *frange, *join;
     PetscLayout     fLayout;
     med_filter      ffilter = MED_FILTER_INIT, fidfilter = MED_FILTER_INIT;
-    PetscSection facetSectionRemote, facetSectionIDsRemote;
+    PetscSection    facetSectionRemote, facetSectionIDsRemote;
     /* Partition facets */
     numFacets = MEDmeshnEntity(fileID, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, geotype[facetID],
                                MED_CONNECTIVITY, MED_NODAL,&coordinatechangement, &geotransformation);
@@ -181,26 +176,36 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
                                     MED_NO_PROFILE, frange[rank]+1, 1, numFacetsLocal, 1, 1, &ffilter);CHKERRQ(ierr);
     ierr = MEDfilterBlockOfEntityCr(fileID, numFacets, 1, 1, MED_ALL_CONSTITUENT, MED_FULL_INTERLACE, MED_COMPACT_STMODE,
                                     MED_NO_PROFILE, frange[rank]+1, 1, numFacetsLocal, 1, 1, &fidfilter);CHKERRQ(ierr);
-    /* Read facet connectivity */
     ierr = DMPlexGetDepthStratum(*dm, 0, &vStart, NULL);CHKERRQ(ierr);
-    ierr = PetscMalloc1(numFacetsLocal*numFacetCorners, &medFacetList);CHKERRQ(ierr);
-    ierr = PetscCalloc1(numFacetsLocal, &facetIDs);CHKERRQ(ierr);
-    ierr = MEDmeshElementConnectivityAdvancedRd(fileID, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, geotype[facetID],
-                                                MED_NODAL, &ffilter, medFacetList);CHKERRQ(ierr);
-    if (sizeof(med_int) == sizeof(PetscInt)) {
-      facetList = (PetscInt *) medFacetList;
-      medFacetList = NULL;
-    } else {
-      ierr = PetscMalloc1(numFacetsLocal*numFacetCorners, &facetList);CHKERRQ(ierr);
-      for (i = 0; i < numFacetsLocal*numFacetCorners; i++) facetList[i] = medFacetList[i];
+    ierr = PetscMalloc1(numFacetsLocal, &facetIDs);CHKERRQ(ierr);
+    ierr = PetscMalloc1(numFacetsLocal*numFacetCorners, &facetList);CHKERRQ(ierr);
+
+    /* Read facet connectivity */
+    {
+      med_int *medFacetList;
+
+      ierr = PetscMalloc1(numFacetsLocal*numFacetCorners, &medFacetList);CHKERRQ(ierr);
+      ierr = MEDmeshElementConnectivityAdvancedRd(fileID, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, geotype[facetID], MED_NODAL, &ffilter, medFacetList);CHKERRQ(ierr);
+      for (i = 0; i < numFacetsLocal*numFacetCorners; i++) {
+        facetList[i] = ((PetscInt) medFacetList[i]) - 1 ; /* Correct entity counting */
+      }
       ierr = PetscFree(medFacetList);
     }
-    for (i = 0; i < numFacetsLocal*numFacetCorners; i++) facetList[i]--; /* Correct entity counting */
+
     /* Read facet IDs */
-    ierr = MEDmeshEntityAttributeAdvancedRd(fileID, meshname, MED_FAMILY_NUMBER, MED_NO_DT, MED_NO_IT, MED_CELL,
-                                            geotype[facetID], &fidfilter, facetIDs);CHKERRQ(ierr);
     {
-      /* Send facets and IDs to a rendezvous partition that is based on the initial vertex partitioning. */
+      med_int *medFacetIDs;
+
+      ierr = PetscMalloc1(numFacetsLocal, &medFacetIDs);CHKERRQ(ierr);
+      ierr = MEDmeshEntityAttributeAdvancedRd(fileID, meshname, MED_FAMILY_NUMBER, MED_NO_DT, MED_NO_IT, MED_CELL, geotype[facetID], &fidfilter, medFacetIDs);CHKERRQ(ierr);
+      for (i = 0; i < numFacetsLocal; i++) {
+        facetIDs[i] = (PetscInt) medFacetIDs[i];
+      }
+      ierr = PetscFree(medFacetIDs);CHKERRQ(ierr);
+    }
+
+    /* Send facets and IDs to a rendezvous partition that is based on the initial vertex partitioning. */
+    {
       PetscInt           r;
       DMLabel            lblFacetRendezvous, lblFacetMigration;
       PetscSection       facetSection, facetSectionRendezvous;
@@ -244,8 +249,9 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
       ierr = PetscSectionDestroy(&facetSection);CHKERRQ(ierr);
       ierr = PetscSectionDestroy(&facetSectionRendezvous);CHKERRQ(ierr);
     }
+
+    /* On the rendevouz partition we build a vertex-wise section/array of facets and IDs. */
     {
-      /* On the rendevouz partition we build a vertex-wise section/array of facets and IDs. */
       PetscInt               sizeVertexFacets, offset, sizeFacetIDsRemote;
       PetscInt              *vertexFacets, *vertexIdx, *vertexFacetIDs;
       PetscSection           facetSectionVertices, facetSectionIDs;

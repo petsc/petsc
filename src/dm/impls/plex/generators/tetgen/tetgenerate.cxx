@@ -3,12 +3,12 @@
 #include <tetgen.h>
 
 /* This is to fix the tetrahedron orientation from TetGen */
-static PetscErrorCode DMPlexInvertCells_Tetgen(PetscInt numCells, PetscInt numCorners, int cells[])
+static PetscErrorCode DMPlexInvertCells_Tetgen(PetscInt numCells, PetscInt numCorners, PetscInt cells[])
 {
   PetscInt bound = numCells*numCorners, coff;
 
   PetscFunctionBegin;
-#define SWAP(a,b) do { int tmp = (a); (a) = (b); (b) = tmp; } while(0)
+#define SWAP(a,b) do { PetscInt tmp = (a); (a) = (b); (b) = tmp; } while(0)
   for (coff = 0; coff < bound; coff += numCorners) SWAP(cells[coff],cells[coff+1]);
 #undef SWAP
   PetscFunctionReturn(0);
@@ -106,15 +106,36 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpo
     else                  {::tetrahedralize(args, &in, &out);}
   }
   {
-    DMLabel        glabel      = NULL;
-    const PetscInt numCorners  = 4;
-    const PetscInt numCells    = out.numberoftetrahedra;
-    const PetscInt numVertices = out.numberofpoints;
-    const double   *meshCoords = out.pointlist;
-    int            *cells      = out.tetrahedronlist;
+    DMLabel          glabel      = NULL;
+    const PetscInt   numCorners  = 4;
+    const PetscInt   numCells    = out.numberoftetrahedra;
+    const PetscInt   numVertices = out.numberofpoints;
+    PetscReal        *meshCoords = NULL;
+    PetscInt         *cells      = NULL;
+
+    if (sizeof (PetscReal) == sizeof (out.pointlist[0])) {
+      meshCoords = (PetscReal *) out.pointlist;
+    } else {
+      PetscInt i;
+
+      meshCoords = new PetscReal[dim * numVertices];
+      for (i = 0; i < dim * numVertices; i++) {
+        meshCoords[i] = (PetscReal) out.pointlist[i];
+      }
+    }
+    if (sizeof (PetscInt) == sizeof (out.tetrahedronlist[0])) {
+      cells = (PetscInt *) out.tetrahedronlist;
+    } else {
+      PetscInt i;
+
+      cells = new PetscInt[numCells * numCorners];
+      for (i = 0; i < numCells * numCorners; i++) {
+        cells[i] = (PetscInt) out.tetrahedronlist[i];
+      }
+    }
 
     ierr = DMPlexInvertCells_Tetgen(numCells, numCorners, cells);CHKERRQ(ierr);
-    ierr = DMPlexCreateFromCellList(comm, dim, numCells, numVertices, numCorners, interpolate, cells, dim, meshCoords, dm);CHKERRQ(ierr);
+    ierr = DMPlexCreateFromCellListPetsc(comm, dim, numCells, numVertices, numCorners, interpolate, cells, dim, meshCoords, dm);CHKERRQ(ierr);
     if (label) {ierr = DMCreateLabel(*dm, labelName);CHKERRQ(ierr); ierr = DMGetLabel(*dm, labelName, &glabel);CHKERRQ(ierr);}
     /* Set labels */
     for (v = 0; v < numVertices; ++v) {
@@ -199,7 +220,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *d
       for (d = 0; d < dim; ++d) in.pointlist[idx*dim + d] = PetscRealPart(array[off+d]);
       if (label) {
         PetscInt val;
-        
+
         ierr = DMLabelGetValue(label, v, &val);CHKERRQ(ierr);
         in.pointmarkerlist[idx] = (int) val;
       }
@@ -241,18 +262,41 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *d
   in.tetrahedronvolumelist = NULL;
 
   {
-    DMLabel        rlabel      = NULL;
-    const PetscInt numCorners  = 4;
-    const PetscInt numCells    = out.numberoftetrahedra;
-    const PetscInt numVertices = out.numberofpoints;
-    const double   *meshCoords = out.pointlist;
-    int            *cells      = out.tetrahedronlist;
+    DMLabel          rlabel      = NULL;
+    const PetscInt   numCorners  = 4;
+    const PetscInt   numCells    = out.numberoftetrahedra;
+    const PetscInt   numVertices = out.numberofpoints;
+    PetscReal        *meshCoords = NULL;
+    PetscInt         *cells      = NULL;
+    PetscBool        interpolate = depthGlobal > 1 ? PETSC_TRUE : PETSC_FALSE;
 
-    PetscBool      interpolate = depthGlobal > 1 ? PETSC_TRUE : PETSC_FALSE;
+    if (sizeof (PetscReal) == sizeof (out.pointlist[0])) {
+      meshCoords = (PetscReal *) out.pointlist;
+    } else {
+      PetscInt i;
+
+      meshCoords = new PetscReal[dim * numVertices];
+      for (i = 0; i < dim * numVertices; i++) {
+        meshCoords[i] = (PetscReal) out.pointlist[i];
+      }
+    }
+    if (sizeof (PetscInt) == sizeof (out.tetrahedronlist[0])) {
+      cells = (PetscInt *) out.tetrahedronlist;
+    } else {
+      PetscInt i;
+
+      cells = new PetscInt[numCells * numCorners];
+      for (i = 0; i < numCells * numCorners; i++) {
+        cells[i] = (PetscInt) out.tetrahedronlist[i];
+      }
+    }
 
     ierr = DMPlexInvertCells_Tetgen(numCells, numCorners, cells);CHKERRQ(ierr);
-    ierr = DMPlexCreateFromCellList(comm, dim, numCells, numVertices, numCorners, interpolate, cells, dim, meshCoords, dmRefined);CHKERRQ(ierr);
-    if (label) {ierr = DMCreateLabel(*dmRefined, labelName); ierr = DMGetLabel(*dmRefined, labelName, &rlabel);}
+    ierr = DMPlexCreateFromCellListPetsc(comm, dim, numCells, numVertices, numCorners, interpolate, cells, dim, meshCoords, dmRefined);CHKERRQ(ierr);
+    if (label) {
+      ierr = DMCreateLabel(*dmRefined, labelName);CHKERRQ(ierr);
+      ierr = DMGetLabel(*dmRefined, labelName, &rlabel);CHKERRQ(ierr);
+    }
     /* Set labels */
     for (v = 0; v < numVertices; ++v) {
       if (out.pointmarkerlist[v]) {
