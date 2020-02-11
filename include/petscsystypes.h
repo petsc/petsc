@@ -397,11 +397,7 @@ typedef struct _p_PetscObject* PetscObject;
 
 .seealso: PetscObjectState, PetscObjectGetId()
 M*/
-#if defined(PETSC_USING_F90) && !defined(PETSC_USE_FORTRANKIND) /* compaq F90 */
-   typedef int PetscObjectId;
-#else
-   typedef PetscInt64 PetscObjectId;
-#endif
+typedef PetscInt64 PetscObjectId;
 
 /*MC
     PetscObjectState - integer state for a PetscObject
@@ -414,11 +410,7 @@ M*/
 
 .seealso: PetscObjectId, PetscObjectStateGet(), PetscObjectStateIncrease(), PetscObjectStateSet()
 M*/
-#if defined(PETSC_USING_F90) && !defined(PETSC_USE_FORTRANKIND) /* compaq F90 */
-   typedef int PetscObjectState;
-#else
-   typedef PetscInt64 PetscObjectState;
-#endif
+typedef PetscInt64 PetscObjectState;
 
 /*S
      PetscFunctionList - Linked list of functions, possibly stored in dynamic libraries, accessed
