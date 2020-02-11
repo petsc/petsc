@@ -5,7 +5,7 @@
 CFLAGS	   =
 FFLAGS	   =
 SOURCEC	   =
-SOURCEF	   = petsctaomod.F
+SOURCEF90  = petsctaomod.F90
 SOURCEH	   = petsctao.h petsctao.h90
 LIBBASE	   = libpetsctao
 MANSEC	   = Tao

@@ -5,8 +5,8 @@
 CFLAGS	   =
 FFLAGS	   =
 SOURCEC	   =
-SOURCEF	   = petscvecmod.F
-SOURCEH	   = petscao.h petscis.h petscis.h90 petscvec.h petscvec.h90 
+SOURCEF90  = petscvecmod.F90
+SOURCEH	   = petscao.h petscis.h petscis.h90 petscvec.h petscvec.h90
 LIBBASE	   = libpetscvec
 MANSEC	   = Vec
 LOCDIR	   = src/vec/f90-mod/

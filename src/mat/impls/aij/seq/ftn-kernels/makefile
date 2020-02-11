@@ -11,7 +11,7 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  =
-SOURCEF  = fmult.F fmultadd.F fsolve.F frelax.F
+SOURCEF90= fmult.F90 fmultadd.F90 fsolve.F90 frelax.F90
 SOURCEH  =
 LIBBASE  = libpetscmat
 MANSEC   = Sys

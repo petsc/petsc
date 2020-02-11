@@ -5,7 +5,7 @@
 CFLAGS	   =
 FFLAGS	   =
 SOURCEC	   =
-SOURCEF	   = mpiunimod.F
+SOURCEF90  = mpiunimod.F90
 SOURCEH	   =
 LIBBASE	   = libpetscsys
 MANSEC	   = Sys

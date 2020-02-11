@@ -70,7 +70,7 @@ ifeq ($(SL_LINKER_FUNCTION),-LD)
 $(OBJDIR)/%.o : CCPPFLAGS+=-Dpetsc_EXPORTS
 endif
 
-langs := F cu cxx c
+langs := F F90 cu cxx c
 concatlang = $(foreach lang, $(langs), $(srcs-$(1).$(lang):src/%.$(lang)=$(OBJDIR)/%.o))
 srcs.o := $(foreach pkg, $(pkgs), $(call concatlang,$(pkg)))
 

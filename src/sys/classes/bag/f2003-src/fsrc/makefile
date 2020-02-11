@@ -3,7 +3,7 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  =
-SOURCEF  = bagenum.F
+SOURCEF90= bagenum.F90
 SOURCEH  =
 DIRS     =
 LIBBASE  = libpetscsys

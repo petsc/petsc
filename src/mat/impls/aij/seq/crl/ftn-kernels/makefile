@@ -11,7 +11,7 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  =
-SOURCEF  = fmultcrl.F
+SOURCEF90= fmultcrl.F90
 SOURCEH  =
 LIBBASE  = libpetscsys
 MANSEC   = Sys

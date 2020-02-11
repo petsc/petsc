@@ -5,7 +5,7 @@
 CFLAGS	   =
 FFLAGS	   =
 SOURCEC	   =
-SOURCEF	   = petscdmmod.F petscdmplexmod.F petscdmdamod.F
+SOURCEF90  = petscdmmod.F90 petscdmplexmod.F90 petscdmdamod.F90
 SOURCEH = petscdmcomposite.h90 petscdmda.h90 petscdmforest.h90          \
  petscdm.h90 petscdmlabel.h90 petscdmnetwork.h90 petscdmpatch.h90       \
  petscdmplex.h90 petscdt.h90
