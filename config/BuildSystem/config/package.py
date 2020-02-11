@@ -896,7 +896,6 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
         self.logWrite(self.libraries.restoreLog())
         self.logPrint('Checking for optional headers '+str(self.optionalincludes)+' in '+location+': '+str(incl))
         if self.checkInclude(incl, self.optionalincludes, self.dinclude, timeout = 60.0):
-          self.include += self.optionalincludes
           self.foundoptionalincludes = 1
         self.logPrint('Checking for headers '+str(self.includes)+' in '+location+': '+str(incl))
         if (not self.includes) or self.checkInclude(incl, self.includes, self.dinclude, timeout = 60.0):
