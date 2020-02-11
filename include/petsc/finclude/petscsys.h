@@ -60,9 +60,9 @@
 #endif
 !
 #if defined(PETSC_HAVE_MPIUNI)
-#define MPI_Comm PetscFortranInt
-#define MPI_Group PetscFortranInt
-#define PetscMPIInt PetscFortranInt
+#define MPI_Comm MPIUNI_FInt
+#define MPI_Group MPIUNI_FInt
+#define PetscMPIInt MPIUNI_FInt
 #else
 #define MPI_Comm integer4
 #define MPI_Group integer4

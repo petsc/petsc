@@ -26,7 +26,7 @@
       subroutine MatCreateMPIAIJWithSplitArrays(a,b,c,d,e,f,g,h,i,j,k,l,&
      &z)
        use petscmatdef
-       integer4 a ! MPI_Comm
+       MPI_Comm a ! MPI_Comm
        PetscInt b ! PetscInt
        PetscInt c ! PetscInt
        PetscInt d ! PetscInt
@@ -45,7 +45,7 @@
       interface MatNullSpaceCreate
       subroutine MatNullSpaceCreate1(a,b,c,d,e,z)
       use petscmatdef
-       integer4 a
+       MPI_Comm a
        PetscBool b
        PetscInt c
        Vec d (*)
@@ -54,7 +54,7 @@
        end subroutine
       subroutine MatNullSpaceCreate0(a,b,c,d,e,z)
       use petscmatdef
-       integer4 a
+       MPI_Comm a
        PetscBool b
        PetscInt c
        Vec d
@@ -787,7 +787,7 @@
 
       subroutine MatPartitioningCreate(a,b,ierr)
       use petscmatdef
-       integer4, intent(in) :: a ! MPI_comm
+       MPI_Comm, intent(in) :: a ! MPI_comm
        MatPartitioning, intent(out) ::  b
        PetscErrorCode,intent(out) :: ierr
       end subroutine
