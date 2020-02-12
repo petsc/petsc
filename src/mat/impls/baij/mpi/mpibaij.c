@@ -2995,7 +2995,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPIAIJ(Mat A,MatType newtype,MatR
     MatSetOptions(,MAT_STRUCTURE_ONLY,PETSC_TRUE) may be called for this matrix type. In this no
     space is allocated for the nonzero entries and any entries passed with MatSetValues() are ignored
 
-.seealso: MatCreateMPIBAIJ
+.seealso: MatCreateBAIJ
 M*/
 
 PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPIBSTRM(Mat,MatType,MatReuse,Mat*);

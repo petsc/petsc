@@ -48,7 +48,7 @@ typedef struct {
 
 /*
    MatMFFDCompute_DS - Standard PETSc code for computing the
-   differencing paramter (h) for use with matrix-free finite differences.
+   differencing parameter (h) for use with matrix-free finite differences.
 
    Input Parameters:
 +  ctx - the matrix free context

@@ -47,7 +47,7 @@ PetscErrorCode PetscEventRegLogCreate(PetscEventRegLog *eventLog)
 
   Not collective
 
-  Input Paramter:
+  Input Parameter:
 . eventLog - The PetscEventRegLog
 
   Level: developer
@@ -99,7 +99,7 @@ PetscErrorCode PetscEventPerfLogCreate(PetscEventPerfLog *eventLog)
 
   Not collective
 
-  Input Paramter:
+  Input Parameter:
 . eventLog - The PetscEventPerfLog
 
   Level: developer
@@ -122,7 +122,7 @@ PetscErrorCode PetscEventPerfLogDestroy(PetscEventPerfLog eventLog)
 
   Not collective
 
-  Input Paramter:
+  Input Parameter:
 . eventInfo - The PetscEventPerfInfo
 
   Level: developer
@@ -179,10 +179,10 @@ PetscErrorCode PetscEventPerfInfoClear(PetscEventPerfInfo *eventInfo)
 
   Not collective
 
-  Input Paramter:
+  Input Parameter:
 . eventInfo - The input PetscEventPerfInfo
 
-  Output Paramter:
+  Output Parameter:
 . outInfo   - The output PetscEventPerfInfo
 
   Level: developer
@@ -203,7 +203,7 @@ PetscErrorCode PetscEventPerfInfoCopy(PetscEventPerfInfo *eventInfo,PetscEventPe
 
   Not collective
 
-  Input Paramters:
+  Input Parameters:
 + eventLog - The PetscEventPerfLog
 - size     - The size
 

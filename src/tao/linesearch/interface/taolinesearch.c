@@ -592,7 +592,7 @@ PetscErrorCode TaoLineSearchSetFromOptions(TaoLineSearch ls)
   Input Parameter:
 . ls - the TaoLineSearch context
 
-  Output Paramter:
+  Output Parameter:
 . type - the line search algorithm in effect
 
   Level: developer

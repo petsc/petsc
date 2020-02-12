@@ -768,7 +768,7 @@ PetscErrorCode  MatCreateMFFD(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,Pet
    Input Parameters:
 .  mat - the matrix obtained with MatCreateSNESMF()
 
-   Output Paramter:
+   Output Parameter:
 .  h - the differencing step size
 
    Level: advanced

@@ -825,7 +825,7 @@ PetscErrorCode  PetscViewerDrawSetBounds(PetscViewer viewer,PetscInt nbounds,con
     Input Parameter:
 .   viewer - the PetscViewer (created with PetscViewerDrawOpen())
 
-    Output Paramters:
+    Output Parameters:
 +   nbounds - number of plots that can be made with this viewer, for example the dof passed to DMDACreate()
 -   bounds - the actual bounds, the size of this is 2*nbounds, the values are stored in the order min F_0, max F_0, min F_1, max F_1, .....
 

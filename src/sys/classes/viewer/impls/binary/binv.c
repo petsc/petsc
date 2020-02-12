@@ -361,7 +361,7 @@ PetscErrorCode PetscViewerBinaryGetDescriptor(PetscViewer viewer,int *fdes)
 
     Not Collective
 
-    Input Paramter:
+    Input Parameter:
 .   viewer - PetscViewer context, obtained from PetscViewerCreate()
 
     Options Database Key:
@@ -403,7 +403,7 @@ static PetscErrorCode PetscViewerBinarySetSkipInfo_Binary(PetscViewer viewer,Pet
 
     Not Collective
 
-    Input Paramter:
+    Input Parameter:
 .   viewer - PetscViewer context, obtained from PetscViewerCreate()
 
     Options Database Key:

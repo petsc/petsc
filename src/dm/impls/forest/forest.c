@@ -230,7 +230,7 @@ static PetscErrorCode DMDestroy_Forest(DM dm)
 
   Level: intermediate
 
-.seealso(): DMForestGetTopology(), DMForestSetBaseDM()
+.seealso: DMForestGetTopology(), DMForestSetBaseDM()
 @*/
 PetscErrorCode DMForestSetTopology(DM dm, DMForestTopology topology)
 {
@@ -287,7 +287,7 @@ PetscErrorCode DMForestGetTopology(DM dm, DMForestTopology *topology)
 
   Level: intermediate
 
-.seealso(): DMForestGetBaseDM()
+.seealso: DMForestGetBaseDM()
 @*/
 PetscErrorCode DMForestSetBaseDM(DM dm, DM base)
 {
@@ -337,7 +337,7 @@ PetscErrorCode DMForestSetBaseDM(DM dm, DM base)
 
   Level: intermediate
 
-.seealso(); DMForestSetBaseDM()
+.seealso: DMForestSetBaseDM()
 @*/
 PetscErrorCode DMForestGetBaseDM(DM dm, DM *base)
 {

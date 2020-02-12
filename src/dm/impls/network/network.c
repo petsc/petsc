@@ -504,7 +504,7 @@ PetscErrorCode DMNetworkRegisterComponent(DM dm,const char *name,size_t size,Pet
   Input Parameters:
 . dm - The DMNetwork object
 
-  Output Paramters:
+  Output Parameters:
 + vStart - The first vertex point
 - vEnd   - One beyond the last vertex point
 
@@ -530,7 +530,7 @@ PetscErrorCode DMNetworkGetVertexRange(DM dm,PetscInt *vStart,PetscInt *vEnd)
   Input Parameters:
 . dm - The DMNetwork object
 
-  Output Paramters:
+  Output Parameters:
 + eStart - The first edge point
 - eEnd   - One beyond the last edge point
 
@@ -557,7 +557,7 @@ PetscErrorCode DMNetworkGetEdgeRange(DM dm,PetscInt *eStart,PetscInt *eEnd)
 + dm - DMNetwork object
 - p  - edge point
 
-  Output Paramters:
+  Output Parameters:
 . index - user global numbering for the edge
 
   Level: intermediate
@@ -588,7 +588,7 @@ PetscErrorCode DMNetworkGetGlobalEdgeIndex(DM dm,PetscInt p,PetscInt *index)
 + dm - DMNetwork object
 - p  - vertex point
 
-  Output Paramters:
+  Output Parameters:
 . index - user global numbering for the vertex
 
   Level: intermediate
@@ -1391,7 +1391,7 @@ PetscErrorCode PetscSFGetSubSF(PetscSF mastersf, ISLocalToGlobalMapping map, Pet
 + dm - The DMNetwork object
 - p  - the vertex point
 
-  Output Paramters:
+  Output Parameters:
 + nedges - number of edges connected to this vertex point
 - edges  - List of edge points
 
@@ -1423,7 +1423,7 @@ PetscErrorCode DMNetworkGetSupportingEdges(DM dm,PetscInt vertex,PetscInt *nedge
 + dm - The DMNetwork object
 - p  - the edge point
 
-  Output Paramters:
+  Output Parameters:
 . vertices  - vertices connected to this edge
 
   Level: intermediate

@@ -260,7 +260,7 @@ PetscErrorCode MatColoringSetDistance(MatColoring mc,PetscInt dist)
    Input Parameter:
 .  mc - the MatColoring context
 
-   Output Paramter:
+   Output Parameter:
 .  dist - the current distance being used for the coloring.
 
    Level: beginner
@@ -311,7 +311,7 @@ PetscErrorCode MatColoringSetMaxColors(MatColoring mc,PetscInt maxcolors)
    Input Parameter:
 .  mc - the MatColoring context
 
-   Output Paramter:
+   Output Parameter:
 .  maxcolors - the current maximum number of colors to produce
 
    Level: beginner

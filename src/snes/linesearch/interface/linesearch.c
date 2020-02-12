@@ -1210,7 +1210,7 @@ PetscErrorCode  SNESLineSearchGetDamping(SNESLineSearch linesearch,PetscReal *da
 }
 
 /*@
-   SNESLineSearchSetDamping - Sets the line search damping paramter.
+   SNESLineSearchSetDamping - Sets the line search damping parameter.
 
    Input Parameters:
 +  linesearch - linesearch context
