@@ -247,11 +247,10 @@ PetscErrorCode CellRefinerGetAffineTransforms_Internal(CellRefiner refiner, Pets
      |         |         |       |         |         |
      0---------0---------3       4---------0---------5
      */
-    break;
     dim = 3;
     if (numSubcells) *numSubcells = 8;
     if (v0) {
-      ierr = PetscMalloc3(4*dim,&v,4*dim*dim,&j,4*dim*dim,&invj);CHKERRQ(ierr);
+      ierr = PetscMalloc3(8*dim,&v,8*dim*dim,&j,8*dim*dim,&invj);CHKERRQ(ierr);
       /* A */
       v[0+0] = -1.0; v[0+1] = -1.0; v[0+2] = -1.0;
       j[0+0] =  0.5; j[0+1] =  0.0; j[0+2] =  0.0;
@@ -297,6 +296,7 @@ PetscErrorCode CellRefinerGetAffineTransforms_Internal(CellRefiner refiner, Pets
         DMPlex_Invert3D_Internal(&invj[s*dim*dim], &j[s*dim*dim], detJ);
       }
     }
+    break;
   default:
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %s", CellRefiners[refiner]);
   }
@@ -332,6 +332,9 @@ PetscErrorCode CellRefinerInCellTest_Internal(CellRefiner refiner, const PetscRe
     break;
   case REFINER_HEX_2D:
     for (d = 0; d < 2; ++d) if ((point[d] < -1.00000000001) || (point[d] > 1.000000000001)) {*inside = PETSC_FALSE; break;}
+    break;
+  case REFINER_HEX_3D:
+    for (d = 0; d < 3; d++) if (PetscAbsReal(point[d]) > 1 + PETSC_SMALL) {*inside = PETSC_FALSE; break;}
     break;
   default:
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %s", CellRefiners[refiner]);
