@@ -846,7 +846,7 @@ PetscErrorCode  VecSetValues(Vec x,PetscInt ni,const PetscInt ix[],const PetscSc
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
    VecGetValues - Gets values from certain locations of a vector. Currently
           can only get values on the same processor
 

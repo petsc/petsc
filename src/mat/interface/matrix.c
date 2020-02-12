@@ -1883,7 +1883,7 @@ PetscErrorCode MatSetValuesBlocked(Mat mat,PetscInt m,const PetscInt idxm[],Pets
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
    MatGetValues - Gets a block of values from a matrix.
 
    Not Collective; currently only returns a local block

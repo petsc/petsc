@@ -4,6 +4,13 @@
 #include <petscviewer.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define matgetvalues_                    MATGETVALUES
+#define matgetvalues0_                   MATGETVALUES0
+#define matgetvaluesnn1_                 MATGETVALUESnn1
+#define matgetvaluesnnnn_                MATGETVALUESnnnn
+#define matgetvalues11_                  MATGETVALUES11
+#define matgetvalues1n_                  MATGETVALUES1n
+#define matgetvaluesn1_                  MATGETVALUESn1
 #define matsetvalues_                    MATSETVALUES
 #define matsetvaluesnnnn_                MATSETVALUESNNNN
 #define matsetvalues0_                   MATSETVALUES0
@@ -185,6 +192,13 @@
 #define matgetlocalsize00_               matgetlocalsize00
 #define matgetlocalsize10_               matgetlocalsize10
 #define matgetlocalsize01_               matgetlocalsize01
+#define matgetvalues_                    matgetvalues
+#define matgetvalues0_                   matgetvalues0
+#define matgetvaluesnn1_                 matgetvaluesnn1
+#define matgetvaluesnnnn_                matgetvaluesnnnn
+#define matgetvalues11_                  matgetvalues11
+#define matgetvalues1n_                  matgetvalues1n
+#define matgetvaluesn1_                  matgetvaluesn1
 #define matsetnullspace_                 matsetnullspace
 #define matgetownershiprange_            matgetownershiprange
 #define matgetownershiprange00_          matgetownershiprange00
@@ -195,6 +209,41 @@
 #define matgetownershiprangecolumn_      matgetownershiprangecolumn
 #define matviewfromoptions_              matviewfromoptions
 #endif
+
+PETSC_EXTERN void matgetvalues_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[],PetscScalar v[], int *ierr)
+{
+  *ierr = MatGetValues(*mat,*m,idxm,*n,idxn,v);
+}
+
+PETSC_EXTERN void matgetvalues0_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[],PetscScalar v[], int *ierr)
+{
+  matgetvalues_(mat,m,idxm,n,idxn,v,ierr);
+}
+
+PETSC_EXTERN void matgetvaluesnn1_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[],PetscScalar v[], int *ierr)
+{
+  matgetvalues_(mat,m,idxm,n,idxn,v,ierr);
+}
+
+PETSC_EXTERN void matgetvaluesnnnn_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[],PetscScalar v[], int *ierr)
+{
+  matgetvalues_(mat,m,idxm,n,idxn,v,ierr);
+}
+
+PETSC_EXTERN void matgetvalues11_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[],PetscScalar v[], int *ierr)
+{
+  matgetvalues_(mat,m,idxm,n,idxn,v,ierr);
+}
+
+PETSC_EXTERN void matgetvalues1n_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[],PetscScalar v[], int *ierr)
+{
+  matgetvalues_(mat,m,idxm,n,idxn,v,ierr);
+}
+
+PETSC_EXTERN void matgetvaluesn1_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[],PetscScalar v[], int *ierr)
+{
+  matgetvalues_(mat,m,idxm,n,idxn,v,ierr);
+}
 
 PETSC_EXTERN void  matgetownershiprange_(Mat *mat,PetscInt *m,PetscInt *n, int *ierr )
 {
