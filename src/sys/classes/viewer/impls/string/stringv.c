@@ -160,7 +160,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_String(PetscViewer v)
   Input Parameter:
 .   viewer - string viewer
 
-  Output Paramters:
+  Output Parameters:
 +    string - the string, optional use NULL if you do not need
 -   len - the length of the string, optional use NULL if you do
 

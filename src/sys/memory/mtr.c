@@ -628,7 +628,7 @@ PetscErrorCode  PetscMallocPopMaximumUsage(int event,PetscLogDouble *mu)
    Input Parameter:
 .    ptr - the memory location
 
-   Output Paramter:
+   Output Parameter:
 .    stack - the stack indicating where the program allocated this memory
 
    Level: intermediate

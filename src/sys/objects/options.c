@@ -1458,7 +1458,7 @@ PetscErrorCode PetscOptionsHasName(PetscOptions options,const char pre[],const c
 
    Not Collective
 
-   Input Paramter:
+   Input Parameter:
 .  options - the options database, use NULL for the default global database
 
    Output Parameter:

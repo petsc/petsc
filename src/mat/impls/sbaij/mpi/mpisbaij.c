@@ -2331,7 +2331,7 @@ PetscErrorCode MatMPISBAIJSetPreallocationCSR_MPISBAIJ(Mat B,PetscInt bs,const P
 
    Level: beginner
 
-.seealso: MatCreateMPISBAIJ(), MATSEQSBAIJ, MatType
+.seealso: MatCreateBAIJ(), MATSEQSBAIJ, MatType
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat B)
@@ -2447,7 +2447,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat B)
 
   Level: beginner
 
-.seealso: MatCreateMPISBAIJ,MATSEQSBAIJ,MATMPISBAIJ
+.seealso: MatCreateMPISBAIJ, MATSEQSBAIJ, MATMPISBAIJ
 M*/
 
 /*@C
