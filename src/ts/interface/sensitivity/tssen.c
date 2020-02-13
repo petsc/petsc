@@ -825,6 +825,7 @@ PetscErrorCode TSComputeRHSHessianProductFunctionPP(TS ts,PetscReal t,Vec U,Vec 
 
    Input Parameters:
 +  ts - the TS context obtained from TSCreate()
+.  numcost - number of gradients to be computed, this is the number of cost functions
 .  lambda - gradients with respect to the initial condition variables, the dimension and parallel layout of these vectors is the same as the ODE solution vector
 -  mu - gradients with respect to the parameters, the number of entries in these vectors is the same as the number of parameters
 
