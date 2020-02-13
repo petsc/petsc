@@ -84,7 +84,7 @@ $(generatedtest) : $(petscconf) $(petscvariables) $(CONFIGDIR)/gmakegentest.py $
 	$(PYTHON) $(CONFIGDIR)/gmakegentest.py --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) --testdir=$(TESTDIR)
 
 ifneq ($(MAKECMDGOALS:clean%=clean),clean)
--include $(generatedtest)
+include $(generatedtest)
 endif
 
 ifeq ($(PETSC_LANGUAGE),CXXONLY)
