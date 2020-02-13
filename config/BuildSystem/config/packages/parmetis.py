@@ -28,7 +28,7 @@ class Configure(config.package.CMakePackage):
     args.append('-DGKLIB_PATH=../headers')
     args.append('-DMETIS_PATH='+self.metis.directory)
     if self.mpi.include:
-      args.append('-DMPI_INCLUDE_PATH='+self.mpi.include[0])
+      args.append('-DMPI_INCLUDE_PATH="'+self.mpi.include[0]+'"')
     if self.checkSharedLibrariesEnabled():
       args.append('-DSHARED=1')
       args.append('-DCMAKE_INSTALL_RPATH_USE_LINK_PATH:BOOL=ON')

@@ -283,9 +283,9 @@ PetscErrorCode PetscOptionsValidKey(const char key[],PetscBool *valid)
   if (!key) PetscFunctionReturn(0);
   if (key[0] != '-') PetscFunctionReturn(0);
   if (key[1] == '-') key++;
-  if (!isalpha((int)(key[1]))) PetscFunctionReturn(0);
+  if (!isalpha((int)key[1])) PetscFunctionReturn(0);
   (void) strtod(key,&ptr);
-  if (ptr != key && !(*ptr == '_' || isalnum(*ptr))) PetscFunctionReturn(0);
+  if (ptr != key && !(*ptr == '_' || isalnum((int)*ptr))) PetscFunctionReturn(0);
   *valid = PETSC_TRUE;
   PetscFunctionReturn(0);
 }

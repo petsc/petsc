@@ -6,7 +6,7 @@ class Configure(config.package.Package):
     self.version          = '6.0.9'
     self.versionname      = 'SCOTCH_VERSION.SCOTCH_RELEASE.SCOTCH_PATCHLEVEL'
     self.gitcommit        = 'v'+self.version
-    self.download         = ['git:https://gitlab.inria.fr/scotch/scotch',
+    self.download         = ['git://https://gitlab.inria.fr/scotch/scotch.git',
                              'https://gitlab.inria.fr/scotch/scotch/-/archive/'+self.gitcommit+'/scotch-'+self.gitcommit+'.tar.gz',
                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/scotch-'+self.gitcommit+'.tar.gz']
     self.downloaddirnames = ['scotch','petsc-pkg-scotch']
