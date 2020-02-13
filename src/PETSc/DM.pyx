@@ -645,6 +645,32 @@ cdef class DM(Object):
         else:
             CHKERR( DMSNESSetJacobian(self.dm, NULL, NULL) )
 
+    def addCoarsenHook(self, coarsenhook, restricthook, args=None, kargs=None):
+        if args  is None: args  = ()
+        if kargs is None: kargs = {}
+
+        if coarsenhook is not None:
+            coarsencontext = (coarsenhook, args, kargs)
+
+            coarsenhooks = self.get_attr('__coarsenhooks__')
+            if coarsenhooks is None:
+                coarsenhooks = [coarsencontext]
+                CHKERR( DMCoarsenHookAdd(self.dm, DM_PyCoarsenHook, NULL, <void*>NULL) )
+            else:
+                coarsenhooks.append(coarsencontext)
+            self.set_attr('__coarsenhooks__', coarsenhooks)
+
+        if restricthook is not None:
+            restrictcontext = (restricthook, args, kargs)
+
+            restricthooks = self.get_attr('__restricthooks__')
+            if restricthooks is None:
+                restricthooks = [restrictcontext]
+                CHKERR( DMCoarsenHookAdd(self.dm, NULL, DM_PyRestrictHook, <void*>NULL) )
+            else:
+                restricthooks.append(restrictcontext)
+            self.set_attr('__restricthooks__', restricthooks)
+
     # --- application context ---
 
     property appctx:
