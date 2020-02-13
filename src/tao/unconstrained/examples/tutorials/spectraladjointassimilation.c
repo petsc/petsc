@@ -597,7 +597,7 @@ PetscErrorCode RHSAdvection(TS ts,PetscReal t,Vec X,Mat A,Mat BB,void *ctx)
           but TSAdjoint does not solve this since it can only solve the transposed system for the
           Jacobian the user provided. Hence TSAdjoint solves
                  w_t = J^T M^{-1} w  (where w = M v)
-          since there is no way to indicate the mass matrix as a seperate entitity to TS. Thus one
+          since there is no way to indicate the mass matrix as a separate entitity to TS. Thus one
           must be careful in initializing the "adjoint equation" and using the result. This is
           why
               G = -2 M(u(T) - u_d)
