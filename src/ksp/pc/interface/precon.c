@@ -364,7 +364,7 @@ PetscErrorCode  PCGetUseAmat(PC pc,PetscBool *flg)
 .  pc - location to put the preconditioner context
 
    Notes:
-   The default preconditioner for sparse matrices is PCILU or PCICC with 0 fill on one process and block Jacobi with PCILU or ICC
+   The default preconditioner for sparse matrices is PCILU or PCICC with 0 fill on one process and block Jacobi with PCILU or PCICC
    in parallel. For dense matrices it is always PCNONE.
 
    Level: developer
@@ -1691,7 +1691,7 @@ $     -pc_type my_solver
 
    Level: advanced
 
-.seealso: PCRegisterAll(), PCRegisterDestroy()
+.seealso: PCRegisterAll()
 @*/
 PetscErrorCode  PCRegister(const char sname[],PetscErrorCode (*function)(PC))
 {

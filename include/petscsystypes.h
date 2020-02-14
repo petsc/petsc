@@ -419,7 +419,7 @@ M*/
 
    Level: advanced
 
-.seealso:  PetscFunctionListAdd(), PetscFunctionListDestroy(), PetscOpFlist
+.seealso:  PetscFunctionListAdd(), PetscFunctionListDestroy()
 S*/
 typedef struct _n_PetscFunctionList *PetscFunctionList;
 
@@ -442,7 +442,7 @@ typedef void* PetscDLHandle;
 typedef enum {PETSC_DL_DECIDE=0,PETSC_DL_NOW=1,PETSC_DL_LOCAL=2} PetscDLMode;
 
 /*S
-     PetscObjectList - Linked list of PETSc objects, each accessable by string name
+     PetscObjectList - Linked list of PETSc objects, each accessible by string name
 
    Level: developer
 

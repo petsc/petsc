@@ -171,7 +171,7 @@ PetscErrorCode  PetscObjectListDestroy(PetscObjectList *ifl)
 -   name - name string
 
     Output Parameters:
-.   ob - the PETSc object
+.   obj - the PETSc object
 
     Level: developer
 
@@ -206,7 +206,7 @@ PetscErrorCode  PetscObjectListFind(PetscObjectList fl,const char name[],PetscOb
 
     Input Parameters:
 +   fl   - pointer to list
--   ob - the PETSc object
+-   obj - the PETSc object
 
     Output Parameters:
 +  name - name string
