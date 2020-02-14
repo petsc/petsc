@@ -4,5 +4,4 @@
 ! Note: This is needed in f90 interface for MatGetInfo() - hence
 ! in a separate include
 
-      PetscEnum MAT_INFO_SIZE
-      parameter (MAT_INFO_SIZE=10)
+      PetscEnum, parameter :: MAT_INFO_SIZE=10
