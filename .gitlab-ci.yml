@@ -540,6 +540,7 @@ linux-viennacl:
   tags:
     - gpu:nvidia, os:linux, name:frog
   variables:
+    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -cuda_initialize 0
     TEST_ARCH: arch-ci-linux-viennacl
 
 linux-opt-misc:
