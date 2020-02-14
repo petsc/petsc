@@ -37,7 +37,7 @@ makefileMap["NOTSINGLE"]="buildrequires: !single"
 makefileMap["NOSINGLE"]="buildrequires: !single"
 
 makefileMap["DOUBLEINT32"]="buildrequires: !define(USE_64BIT_INDICES) define(PETSC_USE_REAL_DOUBLE)"  
-makefileMap["THREADSAFETY"]="buildrequires: define(PETSC_USING_FREEFORM) define(PETSC_USING_F90)"
+makefileMap["THREADSAFETY"]="buildrequires: define(PETSC_USING_FREEFORM)"
 makefileMap["F2003"]="buildrequires: define(PETSC_USING_FREEFORM) define(PETSC_USING_F2003)"
 #makefileMap["F90_DATATYPES"]="" # ??
 

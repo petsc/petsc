@@ -151,7 +151,6 @@ class Configure(config.base.Configure):
         INTEGER, PARAMETER :: int = SELECTED_INT_KIND(8)
         INTEGER (KIND=int) :: ierr
         ierr = 1'''):
-      self.addDefine('USING_F90', 1)
       self.fortranIsF90 = 1
       self.logPrint('Fortran compiler supports F90')
     else:
