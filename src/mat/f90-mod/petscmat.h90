@@ -196,7 +196,7 @@
         end interface
 
         Interface MatSetValues
-        ! picky Fortran requires seperate prototypes if args
+        ! picky Fortran requires separate prototypes if args
         ! are arrays or scalars
         subroutine MatSetValues0(a,b,c,d,e,f,g,z)
           use petscmatdef
@@ -267,7 +267,7 @@
       End Interface MatSetValues
 
       Interface MatSetValuesLocal
-        ! picky Fortran requires seperate prototypes if args
+        ! picky Fortran requires separate prototypes if args
         ! are arrays or scalars
         subroutine MatSetValuesLocal0(a,b,c,d,e,f,g,z)
           use petscmatdef
@@ -338,7 +338,7 @@
       End Interface MatSetValuesLocal
 
       Interface MatSetValuesBlockedLocal
-        ! picky Fortran requires seperate prototypes if args
+        ! picky Fortran requires separate prototypes if args
         ! are arrays or scalars
         subroutine MatSetValuesBlockedLocal0(a,b,c,d,e,f,g,z)
           use petscmatdef
@@ -398,7 +398,7 @@
       End Interface MatSetValuesBlockedLocal
 
       Interface MatSetValuesBlocked
-        ! picky Fortran requires seperate prototypes if args
+        ! picky Fortran requires separate prototypes if args
         ! are arrays or scalars
         subroutine MatSetValuesBlocked2(a,b,c,d,e,f,g,z)
           use petscmatdef

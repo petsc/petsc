@@ -144,7 +144,7 @@ static PetscErrorCode TSTrajectoryDestroy_Basic(TSTrajectory tj)
 /*MC
       TSTRAJECTORYBASIC - Stores each solution of the ODE/DAE in a file
 
-      Saves each timestep into a seperate file named TS-data-XXXXXX/TS-%06d.bin. The file name can be changed.
+      Saves each timestep into a separate file named TS-data-XXXXXX/TS-%06d.bin. The file name can be changed.
 
       This version saves the solutions at all the stages
 

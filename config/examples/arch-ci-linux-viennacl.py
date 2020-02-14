@@ -11,6 +11,7 @@ if __name__ == '__main__':
     '--download-viennacl',
     '--with-opencl-include=/usr/local/cuda/include',
     '--with-opencl-lib=-L/usr/local/cuda/lib64 -lOpenCL',
+    '--with-cuda=1',
     '--download-codipack=1',
     '--download-adblaslapack=1',
   ]

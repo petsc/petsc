@@ -1,1 +1,1 @@
-../rowscalingviennacl/rowscalingviennacl.cxx
+#include "../src/ksp/pc/impls/rowscalingviennacl/rowscalingviennacl.cxx"

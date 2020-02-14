@@ -72,7 +72,7 @@ static PetscErrorCode TSTrajectorySet_Visualization(TSTrajectory tj,TS ts,PetscI
 /*MC
       TSTRAJECTORYVISUALIZATION - Stores each solution of the ODE/DAE in a file
 
-      Saves each timestep into a seperate file in Visualization-data/SA-%06d.bin
+      Saves each timestep into a separate file in Visualization-data/SA-%06d.bin
 
       This version saves only the solutions at each timestep, it does not save the solution at each stage,
       see TSTRAJECTORYBASIC that saves all stages
