@@ -62,7 +62,7 @@ $(generated) : $(petscconf) $(petscvariables) config/gmakegen.py
 
 # Skip including generated files (which triggers rebuilding them) when we're just going to clean anyway.
 ifneq ($(MAKECMDGOALS:clean%=clean),clean)
--include $(generated)
+include $(generated)
 endif
 
 # implies shared libraries with MS compilers

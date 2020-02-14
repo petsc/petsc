@@ -4,7 +4,7 @@
 TESTMODE = testexamples
 ALLTESTS_CHECK_FAILURES = no
 ALLTESTS_MAKEFILE = gmakefile.test
-alltests:
+alltests: ./${PETSC_ARCH}/tests/testfiles
 	-@${RM} -rf ${PETSC_ARCH}/lib/petsc/conf/alltests.log alltests.log
 	+@if [ -f ${PETSC_DIR}/share/petsc/examples/gmakefile.test ] ; then \
             ALLTESTS_MAKEFILE=${PETSC_DIR}/share/petsc/examples/gmakefile.test ; \
@@ -22,10 +22,10 @@ alltests:
 allgtests-tap: allgtest-tap
 	+@${OMAKE} -f gmakefile.test PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} check-test-errors
 
-allgtest-tap:
+allgtest-tap: ./${PETSC_ARCH}/tests/testfiles
 	+@MAKEFLAGS="-j$(MAKE_TEST_NP) -l$(MAKE_LOAD) $(MAKEFLAGS)" ${OMAKE} -f gmakefile.test PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} test OUTPUT=1
 
-allgtest:
+allgtest: ./${PETSC_ARCH}/tests/testfiles
 	+@MAKEFLAGS="-j$(MAKE_TEST_NP) -l$(MAKE_LOAD) $(MAKEFLAGS)" ${OMAKE} -k -f ${ALLTESTS_MAKEFILE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} test V=0 2>&1 | egrep -v '^(ok [^#]*(# SKIP|# TODO|$$)|[A-Za-z][A-Za-z0-9_]*\.(c|F|cxx|F90).$$)'
 
 cleantest:
