@@ -429,7 +429,7 @@ PetscErrorCode PCSetFromOptions_MG(PetscOptionItems *PetscOptionsObject,PC pc)
     ierr = PCMGSetGalerkin(pc,gtype);CHKERRQ(ierr);
   }
   flg = PETSC_FALSE;
-  ierr = PetscOptionsBool("-pc_mg_distinct_smoothup","Create seperate smoothup KSP and append the prefix _up","PCMGSetDistinctSmoothUp",PETSC_FALSE,&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_mg_distinct_smoothup","Create separate smoothup KSP and append the prefix _up","PCMGSetDistinctSmoothUp",PETSC_FALSE,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PCMGSetDistinctSmoothUp(pc);CHKERRQ(ierr);
   }
@@ -1194,7 +1194,7 @@ PetscErrorCode  PCMGSetNumberSmooth(PC pc,PetscInt n)
 }
 
 /*@
-   PCMGSetDistinctSmoothUp - sets the up (post) smoother to be a seperate KSP from the down (pre) smoother on all levels
+   PCMGSetDistinctSmoothUp - sets the up (post) smoother to be a separate KSP from the down (pre) smoother on all levels
        and adds the suffix _up to the options name
 
    Logically Collective on PC
