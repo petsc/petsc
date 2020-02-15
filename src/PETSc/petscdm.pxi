@@ -29,6 +29,16 @@ cdef extern from * nogil:
     struct _n_DMLabel
     ctypedef _n_DMLabel* PetscDMLabel "DMLabel"
 
+    ctypedef int (*PetscDMCoarsenHook)(PetscDM,
+                                       PetscDM,
+                                       void*) except PETSC_ERR_PYTHON
+    ctypedef int (*PetscDMRestrictHook)(PetscDM,
+                                        PetscMat,
+                                        PetscVec,
+                                        PetscMat,
+                                        PetscDM,
+                                        void*) except PETSC_ERR_PYTHON
+
     int DMCreate(MPI_Comm,PetscDM*)
     int DMClone(PetscDM,PetscDM*)
     int DMDestroy(PetscDM*)
@@ -145,6 +155,8 @@ cdef extern from * nogil:
     int DMSNESSetFunction(PetscDM,PetscSNESFunctionFunction,void*)
     int DMSNESSetJacobian(PetscDM,PetscSNESJacobianFunction,void*)
 
+    int DMCoarsenHookAdd(PetscDM,PetscDMCoarsenHook,PetscDMRestrictHook,void*)
+
 # --------------------------------------------------------------------
 
 cdef inline PetscDMBoundaryType asBoundaryType(object boundary) \
@@ -202,4 +214,49 @@ cdef inline object toBoundary(PetscInt dim,
     elif dim == 2: return (x, y)
     elif dim == 3: return (x, y, z)
 
+# -----------------------------------------------------------------------------
+
+cdef inline DM ref_DM(PetscDM dm):
+    cdef DM ob = <DM> DM()
+    ob.dm = dm
+    PetscINCREF(ob.obj)
+    return ob
+
 # --------------------------------------------------------------------
+
+cdef int DM_PyCoarsenHook(
+    PetscDM fine,
+    PetscDM coarse,
+    void*   ctx,
+    ) except PETSC_ERR_PYTHON with gil:
+
+    cdef DM Fine = ref_DM(fine)
+    cdef DM Coarse = ref_DM(coarse)
+    cdef object hooks = Fine.get_attr('__coarsenhooks__')
+    assert hooks is not None and type(hooks) is list
+    for hook in hooks:
+        (hookop, args, kargs) = hook
+        hookop(Fine, Coarse, *args, **kargs)
+    return 0
+
+cdef int DM_PyRestrictHook(
+    PetscDM fine,
+    PetscMat mrestrict,
+    PetscVec rscale,
+    PetscMat inject,
+    PetscDM coarse,
+    void*   ctx,
+    ) except PETSC_ERR_PYTHON with gil:
+
+    cdef DM  Fine = ref_DM(fine)
+    cdef Mat Mrestrict = ref_Mat(mrestrict)
+    cdef Vec Rscale = ref_Vec(rscale)
+    cdef Mat Inject = ref_Mat(inject)
+    cdef DM  Coarse = ref_DM(coarse)
+    cdef object hooks = Fine.get_attr('__restricthooks__')
+    assert hooks is not None and type(hooks) is list
+    for hook in hooks:
+        (hookop, args, kargs) = hook
+        hookop(Fine, Mrestrict, Rscale, Inject, Coarse, *args, **kargs)
+    return 0
+# -----------------------------------------------------------------------------
