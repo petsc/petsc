@@ -23,7 +23,8 @@ class Configure(config.package.Package):
     self.mathlib        = framework.require('config.packages.mathlib',self)
     self.pthread        = framework.require('config.packages.pthread',self)
     self.zlib           = framework.require('config.packages.zlib',self)
-    self.deps           = [self.mpi, self.mathlib]
+    self.regex          = framework.require('config.packages.regex',self)
+    self.deps           = [self.mpi,self.mathlib,self.regex]
     self.odeps          = [self.pthread,self.zlib]
     return
 
@@ -55,12 +56,17 @@ class Configure(config.package.Package):
 
     # Building cflags/ldflags
     self.cflags = self.removeWarningFlags(self.setCompilers.getCompilerFlags())+' '+self.headers.toString(self.mpi.include)
+    functions = self.framework.require('config.functions', self)
+    if not functions.haveFunction('FORK') and not functions.haveFunction('_PIPE'):
+      raise RuntimeError('Error building PTScotch: no pipe function')
     ldflags = self.libraries.toString(self.dlib)
     if self.zlib.found:
       self.cflags = self.cflags + ' -DCOMMON_FILE_COMPRESS_GZ'
     # OSX does not have pthread_barrier_destroy
     if self.pthread.found and self.pthread.pthread_barrier:
       self.cflags = self.cflags + ' -DCOMMON_PTHREAD'
+    if functions.haveFunction('_PIPE'):
+      self.cflags = self.cflags + ' -D\'pipe(pfds)=_pipe(pfds,1024,0x8000)\''
     if self.libraries.add('-lrt','timer_create'): ldflags += ' -lrt'
     self.cflags = self.cflags + ' -DCOMMON_RANDOM_FIXED_SEED'
     # do not use -DSCOTCH_PTHREAD because requires MPI built for threads.

@@ -122,19 +122,19 @@ class Configure(config.base.Configure):
         self.registerPythonFile(fname,'')
 
     # test for a variety of basic headers and functions
-    headersC = map(lambda name: name+'.h', ['setjmp','dos', 'fcntl', 'float', 'io',  'malloc', 'pwd',  'strings',
-                                            'unistd', 'sys/sysinfo', 'machine/endian', 'sys/param', 'sys/procfs', 'sys/resource',
-                                            'sys/systeminfo', 'sys/times', 'sys/utsname',
+    headersC = map(lambda name: name+'.h',['setjmp','dos','fcntl','float','io','malloc','pwd','strings',
+                                            'unistd','sys/sysinfo','machine/endian','sys/param','sys/procfs','sys/resource',
+                                            'sys/systeminfo','sys/times','sys/utsname',
                                             'sys/socket','sys/wait','netinet/in','netdb','Direct','time','Ws2tcpip','sys/types',
-                                            'WindowsX', 'float','ieeefp','stdint','pthread','inttypes','immintrin','zmmintrin'])
-    functions = ['access', '_access', 'clock', 'drand48', 'getcwd', '_getcwd', 'getdomainname', 'gethostname',
-                 'getwd', 'memalign', 'popen', 'PXFGETARG', 'rand', 'getpagesize',
-                 'readlink', 'realpath',  'usleep', 'sleep', '_sleep',
+                                            'WindowsX','float','ieeefp','stdint','pthread','inttypes','immintrin','zmmintrin'])
+    functions = ['access','_access','clock','drand48','getcwd','_getcwd','getdomainname','gethostname',
+                 'getwd','memalign','popen','PXFGETARG','rand','getpagesize',
+                 'readlink','realpath','usleep','sleep','_sleep',
                  'uname','snprintf','_snprintf','lseek','_lseek','time','fork','stricmp',
-                 'strcasecmp', 'bzero', 'dlopen', 'dlsym', 'dlclose', 'dlerror',
-                 '_set_output_format','_mkdir','socket','gethostbyname']
-    libraries = [(['fpe'], 'handle_sigfpes')]
-    librariessock = [(['socket', 'nsl'], 'socket')]
+                 'strcasecmp','bzero','dlopen','dlsym','dlclose','dlerror',
+                 '_set_output_format','_mkdir','socket','gethostbyname','_pipe']
+    libraries = [(['fpe'],'handle_sigfpes')]
+    librariessock = [(['socket','nsl'],'socket')]
     self.headers.headers.extend(headersC)
     self.functions.functions.extend(functions)
     self.libraries.libraries.extend(libraries)
