@@ -93,7 +93,7 @@ static PetscErrorCode CreateMatrix(UserCtx ctx)
   ierr = MatAssemblyBegin(ctx->F, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(ctx->F, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscLogStagePop();CHKERRQ(ierr);
-  /* Stencil matrix is symmetric. Setting symmetric flag for ICC/CHolesky preconditioner */
+  /* Stencil matrix is symmetric. Setting symmetric flag for ICC/Cholesky preconditioner */
   if (!(ctx->matops)) {
     ierr = MatSetOption(ctx->F,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
   }

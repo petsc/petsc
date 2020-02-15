@@ -704,7 +704,7 @@ checkTestCoverage:
 	  fi; \
 	done
 
-#  Lists all the URLs in the PETSc repository that are unaccessable, nonexistent, or permanently moved (301)
+#  Lists all the URLs in the PETSc repository that are unaccessible, nonexistent, or permanently moved (301)
 #  REPLACE=1 locations marked as permanently moved (301) are replaced in the repository
 #  This code is fragile; always check the changes after a use of REPLACE=1 before commiting the changes
 #

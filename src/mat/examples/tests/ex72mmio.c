@@ -32,7 +32,7 @@ int mm_read_unsymmetric_sparse(const char *fname, int *M_, int *N_, int *nz_,
 
     if (mm_read_banner(f, &matcode) != 0)
     {
-        printf("mm_read_unsymetric: Could not process Matrix Market banner ");
+        printf("mm_read_unsymmetric: Could not process Matrix Market banner ");
         printf(" in file [%s]\n", fname);
         return -1;
     }
