@@ -40,10 +40,10 @@ gnumake:
 	+@make libs
 
 ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/files:
-	@touch -t 197001010000 ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/files
+	@touch -t 197102020000 ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/files
 
 ./${PETSC_ARCH}/tests/testfiles:
-	@${MKDIR} -p ./${PETSC_ARCH}/tests && touch -t 197001010000 ./${PETSC_ARCH}/tests/testfiles
+	@${MKDIR} -p ./${PETSC_ARCH}/tests && touch -t 197102020000 ./${PETSC_ARCH}/tests/testfiles
 
 libs: ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/files ./${PETSC_ARCH}/tests/testfiles
 	+@cd ${PETSC_DIR} && MAKEFLAGS="-j$(MAKE_NP) -l$(MAKE_LOAD) $(MAKEFLAGS)" ${OMAKE_PRINTDIR} -f gmakefile ${MAKE_PAR_OUT_FLG} V=${V}
