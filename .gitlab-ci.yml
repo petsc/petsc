@@ -246,7 +246,7 @@ linux-gcc-complex-opt:
     - .linux_test
   tags:
     - linux-stage2
-    - ci:1
+    - ci:2
   variables:
     TEST_ARCH: arch-ci-linux-gcc-complex-opt
 
