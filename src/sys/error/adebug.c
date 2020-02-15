@@ -177,7 +177,7 @@ PetscErrorCode  PetscSetDebuggerFromString(const char *string)
 @*/
 PetscErrorCode  PetscAttachDebugger(void)
 {
-#if !defined(PETSC_CANNOT_START_DEBUGGER)
+#if !defined(PETSC_CANNOT_START_DEBUGGER) && defined(PETSC_HAVE_FORK)
   int            child    =0;
   PetscReal      sleeptime=0;
   PetscErrorCode ierr;

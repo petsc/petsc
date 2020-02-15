@@ -441,6 +441,8 @@ PETSC_STATIC_INLINE PetscErrorCode PCHPDDMDeflate_Private(PC pc, Vec x, Vec y)
      The options of (Z Pmat Z^T)^-1 = ksp(Z Pmat Z^T) are prefixed by -pc_hpddm_coarse_ (KSPPREONLY and PCCHOLESKY by default), unless a multilevel correction is turned on, in which case, this function is called recursively at each level except the coarsest one.
      (1) and (2) visit the "next" level (in terms of coarsening) once per application, while (3) visits it twice, so it is asymptotically twice costlier. (2) is not symmetric even if both Amat and Pmat are symmetric.
 
+   Level: advanced
+
 .seealso:  PCHPDDM, PCHPDDMCoarseCorrectionType
 @*/
 static PetscErrorCode PCHPDDMShellApply(PC pc, Vec x, Vec y)
