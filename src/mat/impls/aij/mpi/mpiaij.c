@@ -4552,6 +4552,28 @@ PetscErrorCode  MatCreateAIJ(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,Pets
   PetscFunctionReturn(0);
 }
 
+/*@C
+  MatMPIAIJGetSeqAIJ - Returns the local piece of this distributed matrix
+  
+  Not collective
+  
+  Input Parameter:
+. A - The MPIAIJ matrix
+
+  Output Parameters:
++ Ad - The local diagonal block as a SeqAIJ matrix
+. Ao - The local off-diagonal block as a SeqAIJ matrix
+- colmap - An array mapping local column numbers of Ao to global column numbers of the parallel matrix
+
+  Note: The rows in Ad and Ao are in [0, Nr), where Nr is the number of local rows on this process. The columns
+  in Ad are in [0, Nc) where Nc is the number of local columns. The columns are Ao are in [0, Nco), where Nco is
+  the number of nonzero columns in the local off-diagonal piece of the matrix A. The array colmap maps these
+  local column numbers to global column numbers in the original matrix.
+
+  Level: intermediate
+
+.seealso: MatMPIAIJGetLocalMat(), MatMPIAIJGetLocalMatCondensed(), MatCreateAIJ(), MATMPIAJ, MATSEQAIJ
+@*/
 PetscErrorCode MatMPIAIJGetSeqAIJ(Mat A,Mat *Ad,Mat *Ao,const PetscInt *colmap[])
 {
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
