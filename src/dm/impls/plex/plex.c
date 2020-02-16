@@ -5507,8 +5507,12 @@ PetscErrorCode DMPlexGetIndicesPointFields_Internal(PetscSection section, PetscB
   This version believes the globalSection offsets for each field, rather than just the point offset
 
  . foffs - The offset into 'indices' for each field, since it is segregated by field
+
+ Notes:
+ The semantics of this function relate to that of setBC=FALSE in DMPlexGetIndicesPointFields_Internal.
+ Since this function uses global indices, setBC=TRUE would be invalid, so no such argument exists.
 */
-PetscErrorCode DMPlexGetIndicesPointFieldsSplit_Internal(PetscSection section, PetscSection globalSection, PetscInt point, PetscInt foffs[], PetscBool setBC, const PetscInt ***perms, PetscInt permsoff, const PetscInt indperm[], PetscInt indices[])
+static PetscErrorCode DMPlexGetIndicesPointFieldsSplit_Internal(PetscSection section, PetscSection globalSection, PetscInt point, PetscInt foffs[], const PetscInt ***perms, PetscInt permsoff, const PetscInt indperm[], PetscInt indices[])
 {
   PetscInt       numFields, foff, f;
   PetscErrorCode ierr;
@@ -5524,7 +5528,7 @@ PetscErrorCode DMPlexGetIndicesPointFieldsSplit_Internal(PetscSection section, P
     ierr = PetscSectionGetFieldDof(section, point, f, &fdof);CHKERRQ(ierr);
     ierr = PetscSectionGetFieldConstraintDof(section, point, f, &cfdof);CHKERRQ(ierr);
     ierr = PetscSectionGetFieldOffset(globalSection, point, f, &foff);CHKERRQ(ierr);
-    if (!cfdof || setBC) {
+    if (!cfdof) {
       for (b = 0; b < fdof; ++b) {
         const PetscInt preind = perm ? foffs[f]+perm[b] : foffs[f]+b;
         const PetscInt ind    = indperm ? indperm[preind] : preind;
@@ -6355,7 +6359,7 @@ PetscErrorCode DMPlexMatSetClosure(DM dm, PetscSection section, PetscSection glo
     ierr = PetscSectionGetUseFieldOffsets(globalSection, &useFieldOffsets);CHKERRQ(ierr);
     if (useFieldOffsets) {
       for (p = 0; p < numPoints; p++) {
-        DMPlexGetIndicesPointFieldsSplit_Internal(section, globalSection, points[2*p], offsets, PETSC_FALSE, perms, p, clperm, indices);
+        ierr = DMPlexGetIndicesPointFieldsSplit_Internal(section, globalSection, points[2*p], offsets, perms, p, clperm, indices);CHKERRQ(ierr);
       }
     } else {
       for (p = 0; p < numPoints; p++) {
