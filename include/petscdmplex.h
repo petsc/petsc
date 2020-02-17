@@ -205,6 +205,8 @@ PETSC_EXTERN PetscErrorCode DMPlexCreateFluentFromFile(MPI_Comm, const char [], 
 PETSC_EXTERN PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm, const char [], PetscBool, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexCreatePLYFromFile(MPI_Comm, const char [], PetscBool, DM *);
 
+PETSC_EXTERN PetscErrorCode PetscViewerExodusIIGetId(PetscViewer, int *);
+
 /* Mesh Partitioning and Distribution */
 PETSC_EXTERN PetscErrorCode DMPlexCreateNeighborCSR(DM, PetscInt, PetscInt *, PetscInt **, PetscInt **);
 PETSC_EXTERN PetscErrorCode DMPlexGetPartitioner(DM, PetscPartitioner *);
