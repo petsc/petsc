@@ -124,17 +124,17 @@ int main(int argc,char **argv)
         ierr = PetscStrcmp(names[s], name, &has);CHKERRQ(ierr);
         if (!has) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "current object name %s not equal to anticipated %s", name, names[s]);
         ierr = PetscViewerHDF5HasObject(viewer, (PetscObject)vecs[s], &has);CHKERRQ(ierr);
-        ierr = PetscPrintf(PETSC_COMM_WORLD, "-   %s/%s dataset? %D\n", group, name, has);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD, "    %s/%s dataset? %D\n", group, name, has);CHKERRQ(ierr);
       }
       if (has) {
         for (a=0; a<na; a++) {
           ierr = PetscViewerHDF5HasObjectAttribute(viewer, (PetscObject) vecs[s], attr[a], &has);CHKERRQ(ierr);
-          ierr = PetscPrintf(PETSC_COMM_WORLD, "  - %s/%s/%s object attribute? %D\n", group, names[s], attr[a], has);CHKERRQ(ierr);
+          ierr = PetscPrintf(PETSC_COMM_WORLD, "    %s/%s/%s object attribute? %D\n", group, names[s], attr[a], has);CHKERRQ(ierr);
         }
       }
       for (a=0; a<na; a++) {
         ierr = PetscViewerHDF5HasAttribute(viewer, names[s], attr[a], &has);CHKERRQ(ierr);
-        ierr = PetscPrintf(PETSC_COMM_WORLD, "  - %s/%s/%s attribute? %D\n", group, names[s], attr[a], has);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD, "    %s/%s/%s attribute? %D\n", group, names[s], attr[a], has);CHKERRQ(ierr);
       }
     }
 
