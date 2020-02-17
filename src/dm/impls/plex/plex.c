@@ -6746,7 +6746,7 @@ PetscErrorCode DMPlexCreateRankField(DM dm, Vec *ranks)
     PetscScalar *lr;
 
     ierr = DMPlexPointGlobalRef(rdm, c, r, &lr);CHKERRQ(ierr);
-    *lr = rank;
+    if (lr) *lr = rank;
   }
   ierr = VecRestoreArray(*ranks, &r);CHKERRQ(ierr);
   ierr = DMDestroy(&rdm);CHKERRQ(ierr);
