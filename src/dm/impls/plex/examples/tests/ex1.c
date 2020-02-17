@@ -2,7 +2,7 @@ static char help[] = "Tests various DMPlex routines to construct, refine and dis
 
 #include <petscdmplex.h>
 
-typedef enum {BOX, CYLINDER} DomainShape;
+typedef enum {BOX, CYLINDER, SPHERE, BALL} DomainShape;
 enum {STAGE_LOAD, STAGE_DISTRIBUTE, STAGE_REFINE, STAGE_OVERLAP};
 
 typedef struct {
@@ -37,7 +37,7 @@ typedef struct {
 
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  const char       *dShapes[2] = {"box", "cylinder"};
+  const char       *dShapes[4] = {"box", "cylinder", "sphere", "ball"};
   PetscInt         shape, bd, n;
   static PetscInt  domainBoxSizes[3] = {1,1,1};
   static PetscReal domainBoxL[3] = {0.,0.,0.};
@@ -84,7 +84,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-simplex2tensor", "Refine simplicial cells in tensor product cells", "ex1.c", options->simplex2tensor, &options->simplex2tensor, NULL);CHKERRQ(ierr);
   if (options->simplex2tensor) options->interpolate = PETSC_TRUE;
   shape = options->domainShape;
-  ierr = PetscOptionsEList("-domain_shape","The shape of the domain","ex1.c", dShapes, 2, dShapes[options->domainShape], &shape, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-domain_shape","The shape of the domain","ex1.c", dShapes, 4, dShapes[options->domainShape], &shape, NULL);CHKERRQ(ierr);
   options->domainShape = (DomainShape) shape;
   ierr = PetscOptionsIntArray("-domain_box_sizes","The sizes of the box domain","ex1.c", domainBoxSizes, (n=3,&n), &flg);CHKERRQ(ierr);
   if (flg) { options->domainShape = BOX; options->domainBoxSizes = domainBoxSizes;}
@@ -122,6 +122,20 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscLogStageRegister("MeshRefine",     &options->stages[STAGE_REFINE]);CHKERRQ(ierr);
   ierr = PetscLogStageRegister("MeshOverlap",    &options->stages[STAGE_OVERLAP]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
+}
+
+/* Overload time to be the sphere radius */
+static void snapToSphere(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                         const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                         const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                         PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
+  PetscReal norm2 = 0.0, fac;
+  PetscInt  n = uOff[1] - uOff[0], d;
+
+  for (d = 0; d < n; ++d) norm2 += PetscSqr(PetscRealPart(u[d]));
+  fac = t/PetscSqrtReal(norm2);
+  for (d = 0; d < n; ++d) f0[d] = u[d]*fac;
 }
 
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
@@ -197,6 +211,43 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
         ierr = DMPlexCreateWedgeCylinderMesh(comm, 6, interpolate, dm);CHKERRQ(ierr);
       } else {
         ierr = DMPlexCreateHexCylinderMesh(comm, 3, user->periodicity[2], dm);CHKERRQ(ierr);
+      }
+      break;
+    case SPHERE:
+      ierr = DMPlexCreateSphereMesh(comm, dim, cellSimplex, dm);CHKERRQ(ierr);
+      break;
+    case BALL:
+      {
+        DM       sdm;
+        PetscInt Nr = 0, r;
+
+        ierr = DMPlexCreateSphereMesh(comm, dim-1, cellSimplex, &sdm);CHKERRQ(ierr);
+        {
+          DM       cdm;
+          PetscFE  fe;
+          PetscInt dim, dE;
+
+          ierr = DMGetCoordinateDM(sdm, &cdm);CHKERRQ(ierr);
+          ierr = DMGetDimension(sdm, &dim);CHKERRQ(ierr);
+          ierr = DMGetCoordinateDim(sdm, &dE);CHKERRQ(ierr);
+          ierr = PetscFECreateLagrange(PETSC_COMM_SELF, dim, dE, PETSC_TRUE, 1, -1, &fe);CHKERRQ(ierr);
+          ierr = DMSetField(cdm, 0, NULL, (PetscObject) fe);CHKERRQ(ierr);
+          ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
+          ierr = DMCreateDS(cdm);CHKERRQ(ierr);
+        }
+        ierr = PetscOptionsGetInt(NULL, "bd_", "-dm_refine", &Nr, NULL);CHKERRQ(ierr);
+        for (r = 0; r < Nr; ++r) {
+          DM rdm, cdm, rcdm;
+          ierr = DMRefine(sdm, PETSC_COMM_WORLD, &rdm);CHKERRQ(ierr);
+          ierr = DMGetCoordinateDM(sdm, &cdm);CHKERRQ(ierr);
+          ierr = DMGetCoordinateDM(rdm, &rcdm);CHKERRQ(ierr);
+          ierr = DMCopyDisc(cdm, rcdm);CHKERRQ(ierr);
+          ierr = DMPlexRemapGeometry(rdm, 1.0, snapToSphere);CHKERRQ(ierr);
+          ierr = DMDestroy(&sdm);CHKERRQ(ierr);
+          sdm  = rdm;
+        }
+        ierr = DMPlexGenerate(sdm, NULL, interpolate, dm);CHKERRQ(ierr);
+        ierr = DMDestroy(&sdm);CHKERRQ(ierr);
       }
       break;
     default: SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Unknown domain shape %D", user->domainShape);
@@ -445,6 +496,11 @@ int main(int argc, char **argv)
     suffix: 1
     requires: ctetgen
     args: -dim 3 -ctetgen_verbose 4 -refinement_limit 0.0625 -dm_view ascii::ascii_info_detail -info -info_exclude null
+  test:
+    # -dm_view exodusii:$PWD/mesh.exo -bd_dm_refine 2
+    suffix: ball_0
+    requires: ctetgen
+    args: -dim 3 -domain_shape ball -interpolate -dm_view
 
   # 2D LaTex and ASCII output 2-9
   test:
