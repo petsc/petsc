@@ -5,7 +5,7 @@ class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
     self.download         = ['https://www.mpich.org/static/downloads/3.3.2/mpich-3.3.2.tar.gz',
-                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-3.3.1.tar.gz']
+                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-3.3.2.tar.gz']
     self.download_31      = ['http://www.mpich.org/static/downloads/3.1/mpich-3.1.tar.gz',
                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-3.1.tar.gz']
     self.downloaddirnames  = ['mpich']
