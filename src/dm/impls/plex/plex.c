@@ -4955,11 +4955,12 @@ PETSC_STATIC_INLINE PetscErrorCode updatePointFieldsBC_private(PetscSection sect
   PetscScalar    *a;
   PetscInt        fdof, foff, fcdof, foffset = *offset;
   const PetscInt *fcdofs; /* The indices of the constrained dofs for field f on this point */
-  PetscInt        cind = 0, ncind = 0, b;
+  PetscInt        Nc, cind = 0, ncind = 0, b;
   PetscBool       ncSet, fcSet;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  ierr = PetscSectionGetFieldComponents(section, f, &Nc);CHKERRQ(ierr);
   ierr = PetscSectionGetFieldDof(section, point, f, &fdof);CHKERRQ(ierr);
   ierr = PetscSectionGetFieldConstraintDof(section, point, f, &fcdof);CHKERRQ(ierr);
   ierr = PetscSectionGetFieldOffset(section, point, f, &foff);CHKERRQ(ierr);
@@ -4972,7 +4973,7 @@ PETSC_STATIC_INLINE PetscErrorCode updatePointFieldsBC_private(PetscSection sect
         if (comps) {
           for (b = 0; b < fdof; b++) {
             ncSet = fcSet = PETSC_FALSE;
-            if ((ncind < Ncc)  && (b == comps[ncind])) {++ncind; ncSet = PETSC_TRUE;}
+            if (b%Nc == comps[ncind]) {ncind = (ncind+1)%Ncc; ncSet = PETSC_TRUE;}
             if ((cind < fcdof) && (b == fcdofs[cind])) {++cind;  fcSet = PETSC_TRUE;}
             if (ncSet && fcSet) {fuse(&a[b], values[clperm[foffset+perm[b]]] * (flip ? flip[perm[b]] : 1.));}
           }
@@ -4988,7 +4989,7 @@ PETSC_STATIC_INLINE PetscErrorCode updatePointFieldsBC_private(PetscSection sect
         if (comps) {
           for (b = 0; b < fdof; b++) {
             ncSet = fcSet = PETSC_FALSE;
-            if ((ncind < Ncc)  && (b == comps[ncind])) {++ncind; ncSet = PETSC_TRUE;}
+            if (b%Nc == comps[ncind]) {ncind = (ncind+1)%Ncc; ncSet = PETSC_TRUE;}
             if ((cind < fcdof) && (b == fcdofs[cind])) {++cind;  fcSet = PETSC_TRUE;}
             if (ncSet && fcSet) {fuse(&a[b], values[clperm[foffset+     b ]] * (flip ? flip[     b ] : 1.));}
           }
@@ -5006,7 +5007,7 @@ PETSC_STATIC_INLINE PetscErrorCode updatePointFieldsBC_private(PetscSection sect
         if (comps) {
           for (b = 0; b < fdof; b++) {
             ncSet = fcSet = PETSC_FALSE;
-            if ((ncind < Ncc)  && (b == comps[ncind])) {++ncind; ncSet = PETSC_TRUE;}
+            if (b%Nc == comps[ncind]) {ncind = (ncind+1)%Ncc; ncSet = PETSC_TRUE;}
             if ((cind < fcdof) && (b == fcdofs[cind])) {++cind;  fcSet = PETSC_TRUE;}
             if (ncSet && fcSet) {fuse(&a[b], values[foffset+perm[b]] * (flip ? flip[perm[b]] : 1.));}
           }
@@ -5022,7 +5023,7 @@ PETSC_STATIC_INLINE PetscErrorCode updatePointFieldsBC_private(PetscSection sect
         if (comps) {
           for (b = 0; b < fdof; b++) {
             ncSet = fcSet = PETSC_FALSE;
-            if ((ncind < Ncc)  && (b == comps[ncind])) {++ncind; ncSet = PETSC_TRUE;}
+            if (b%Nc == comps[ncind]) {ncind = (ncind+1)%Ncc; ncSet = PETSC_TRUE;}
             if ((cind < fcdof) && (b == fcdofs[cind])) {++cind;  fcSet = PETSC_TRUE;}
             if (ncSet && fcSet) {fuse(&a[b], values[foffset+     b ] * (flip ? flip[     b ] : 1.));}
           }
