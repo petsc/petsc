@@ -11,7 +11,7 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  =
-SOURCEF  = fwaxpy.F faypx.F fnorm.F fxtimesy.F fmdot.F fmaxpy.F
+SOURCEF90= fwaxpy.F90 faypx.F90 fnorm.F90 fxtimesy.F90 fmdot.F90 fmaxpy.F90
 SOURCEH  =
 LIBBASE  = libpetscvec
 MANSEC   = Sys

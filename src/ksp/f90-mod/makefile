@@ -1,11 +1,10 @@
 #requiresdefine   'PETSC_HAVE_FORTRAN'
-#requiresdefine   'PETSC_USING_F90'
 #
 
 CFLAGS	   =
 FFLAGS	   =
 SOURCEC	   =
-SOURCEF	   = petsckspdefmod.F petscpcmod.F petsckspmod.F
+SOURCEF90  = petsckspdefmod.F90 petscpcmod.F90 petsckspmod.F90
 SOURCEH	   = petscksp.h petscksp.h90 petscpc.h petscpc.h90
 LIBBASE	   = libpetscksp
 MANSEC	   = KSP

@@ -288,6 +288,8 @@ prepend-path PATH "%s"
 
     if hasattr(self.compilers, 'FC'):
       if self.framework.argDB['with-fortran-bindings']:
+        if not self.fortran.fortranIsF90:
+          raise RuntimeError('Error! Fortran compiler "'+self.compilers.FC+'" does not support F90! PETSc fortran bindings require a F90 compiler')
         self.addDefine('HAVE_FORTRAN','1')
       self.setCompilers.pushLanguage('FC')
       # need FPPFLAGS in config/setCompilers

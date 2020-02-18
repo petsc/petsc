@@ -182,7 +182,7 @@
        end subroutine
 
       subroutine MPIU_abort(comm,ierr)
-      integer4,intent(in) ::  comm
+      MPI_Comm,intent(in) ::  comm
       PetscErrorCode,intent(in) ::  ierr
       end subroutine
 

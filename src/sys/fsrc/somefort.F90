@@ -4,21 +4,12 @@
 !     when MPI_Abort() is called directly by CHKERRQ(ierr);
 !
 
-#include <petscconf.h>
-#if defined(PETSC_HAVE_MPIUNI)
-#include "petsc/mpiuni/mpiunifdef.h"
-#endif
-
-#if defined(PETSC_USE_FORTRANKIND)
-#define integer4 integer(kind=selected_int_kind(5))
-#else
-#define nteger4 integer*4
-#endif
+#include <petsc/finclude/petscsys.h>
 
       subroutine MPIU_Abort(comm,ierr)
       implicit none
-      integer4 comm
-      integer4 ierr,nierr
+      MPI_Comm comm
+      PetscMPIInt ierr,nierr
 
       call MPI_Abort(comm,ierr,nierr)
 
@@ -28,7 +19,7 @@
 !DEC$ ATTRIBUTES DLLEXPORT::MPIU_Abort
 #endif
 
-!  This is currently not used in PETSc
+!  This uses F2003 feature - and is the preferred mode for accessing command line arguments
 #if defined(PETSC_HAVE_FORTRAN_GET_COMMAND_ARGUMENT)
       integer function PetscCommandArgumentCount()
       implicit none

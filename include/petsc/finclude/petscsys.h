@@ -24,19 +24,11 @@
 ! compiler options like -r4,-r8, sometimes invoked
 ! by the user. NAG compiler does not like integer*4,real*8
 
-#if defined(PETSC_USE_FORTRANKIND)
 #define integer8 integer(kind=selected_int_kind(10))
 #define integer4 integer(kind=selected_int_kind(5))
 #define integer2 integer(kind=selected_int_kind(3))
 #define integer1 integer(kind=selected_int_kind(1))
 #define PetscBool  logical(kind=4)
-#else
-#define integer8 integer*8
-#define integer4 integer*4
-#define integer2 integer*2
-#define integer1 integer*1
-#define PetscBool  logical*4
-#endif
 
 #if (PETSC_SIZEOF_VOID_P == 8)
 #define PetscOffset integer8
@@ -52,13 +44,8 @@
 #define PetscInt integer4
 #endif
 #define PetscInt64 integer8
-#if defined(PETSC_USING_F90) && !defined(PETSC_USE_FORTRANKIND)
-#define PetscObjectState integer4
-#define PetscObjectId integer4
-#else
 #define PetscObjectState PetscInt64
 #define PetscObjectId PetscInt64
-#endif
 
 #if (PETSC_SIZEOF_INT == 4)
 #define PetscFortranInt integer4
@@ -73,9 +60,9 @@
 #endif
 !
 #if defined(PETSC_HAVE_MPIUNI)
-#define MPI_Comm PetscFortranInt
-#define MPI_Group PetscFortranInt
-#define PetscMPIInt PetscFortranInt
+#define MPI_Comm MPIUNI_FInt
+#define MPI_Group MPIUNI_FInt
+#define PetscMPIInt MPIUNI_FInt
 #else
 #define MPI_Comm integer4
 #define MPI_Group integer4
@@ -94,7 +81,6 @@
 #define PetscDataType PetscEnum
 #define PetscFPTrap PetscEnum
 !
-#if defined (PETSC_USE_FORTRANKIND)
 #define PetscFortranFloat real(kind=selected_real_kind(5))
 #define PetscFortranDouble real(kind=selected_real_kind(10))
 #define PetscFortranLongDouble real(kind=selected_real_kind(19))
@@ -106,19 +92,6 @@
 #define PetscFortranComplex complex(kind=selected_real_kind(20))
 #endif
 #define PetscChar(a) character(len = a) ::
-#else
-#define PetscFortranFloat real*4
-#define PetscFortranDouble real*8
-#define PetscFortranLongDouble real*16
-#if defined(PETSC_USE_REAL_SINGLE)
-#define PetscFortranComplex complex*8
-#elif defined(PETSC_USE_REAL_DOUBLE)
-#define PetscFortranComplex complex*16
-#elif defined(PETSC_USE_REAL___FLOAT128)
-#define PetscFortranComplex complex*32
-#endif
-#define PetscChar(a) character*(a)
-#endif
 
 #if defined(PETSC_USE_COMPLEX)
 #define PETSC_SCALAR PETSC_COMPLEX

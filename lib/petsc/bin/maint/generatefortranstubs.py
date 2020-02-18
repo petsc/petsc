@@ -210,7 +210,7 @@ def processf90interfaces(petscdir,verbose):
           txt = fdr.readline()
           while txt:
             if 'integer z' in txt: txt = '        PetscErrorCode z\n'
-            if 'integer a ! MPI_Comm' in txt: txt = '      integer4 a ! MPI_Comm\n'
+            if 'integer a ! MPI_Comm' in txt: txt = '      MPI_Comm a ! MPI_Comm\n'
             fd.write(txt)
             if txt.find('subroutine ') > -1 and txt.find('end subroutine') == -1:
               while txt.endswith('&\n'):

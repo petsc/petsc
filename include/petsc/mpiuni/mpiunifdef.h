@@ -2,10 +2,10 @@
 #define MPIUNIFDEF_H
 
 #include "petscconf.h"
-#if defined(PETSC_USE_FORTRANKIND)
-#define mpiuni_integer4 integer(kind=selected_int_kind(5))
-#else
-#define mpiuni_integer4 integer*4
+#if (PETSC_SIZEOF_INT == 4)
+#define MPIUNI_FInt integer(kind=selected_int_kind(5))
+#elif (PETSC_SIZEOF_INT == 8)
+#define MPIUNI_FInt integer(kind=selected_int_kind(10))
 #endif
 
 #define MPI_Init                  PETSC_MPI_INIT

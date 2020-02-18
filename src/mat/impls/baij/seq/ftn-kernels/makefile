@@ -11,7 +11,7 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  =
-SOURCEF  = fsolvebaij.F
+SOURCEF90= fsolvebaij.F90
 SOURCEH  =
 LIBBASE  = libpetscmat
 MANSEC   = Sys

@@ -10,10 +10,8 @@
 !    The following block allows one to write constants that match the
 !    precision of PetscReal as, for example,  x = .7_PETSC_REAL_KIND
 !
-       PetscReal,Parameter ::                                                 &
-     &                        PetscReal_Private = 1.0
-       Integer,Parameter   :: PETSC_REAL_KIND                                 &
-     &  = Selected_Real_Kind(Precision(PetscReal_Private))
+       PetscReal,Parameter :: PetscReal_Private = 1.0
+       Integer,Parameter   :: PETSC_REAL_KIND = Selected_Real_Kind(Precision(PetscReal_Private))
 
 
 #if !defined(PETSC_AVOID_MPIF_H)
@@ -50,54 +48,29 @@
         PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
       end type tPetscOptions
 
-      PetscOptions, parameter :: PETSC_NULL_OPTIONS =                        &
-     &                           tPetscOptions(0)
+      PetscOptions, parameter :: PETSC_NULL_OPTIONS = tPetscOptions(0)
 
 ! ------------------------------------------------------------------------
 !     Non Common block Stuff declared first
 !
 !     Flags
 !
-      PetscBool  PETSC_TRUE
-      PetscBool  PETSC_FALSE
-      parameter (PETSC_TRUE = .true.,PETSC_FALSE = .false.)
-      PetscInt   PETSC_DECIDE,PETSC_DETERMINE
-      parameter (PETSC_DECIDE=-1,PETSC_DETERMINE=-1)
+      PetscBool, parameter :: PETSC_TRUE = .true.
+      PetscBool, parameter :: PETSC_FALSE = .false.
 
-      PetscInt  PETSC_DEFAULT_INTEGER
-      parameter (PETSC_DEFAULT_INTEGER = -2)
+      PetscInt, parameter :: PETSC_DECIDE = -1
+      PetscInt, parameter :: PETSC_DETERMINE = -1
+      PetscInt, parameter :: PETSC_DEFAULT_INTEGER = -2
 
-      PetscReal PETSC_DEFAULT_REAL
-      parameter (PETSC_DEFAULT_REAL=-2.0d0)
+      PetscReal, parameter :: PETSC_DEFAULT_REAL = -2.0d0
 
-      PetscEnum PETSC_FP_TRAP_OFF
-      PetscEnum PETSC_FP_TRAP_ON
-      parameter (PETSC_FP_TRAP_OFF = 0,PETSC_FP_TRAP_ON = 1)
+      PetscEnum, parameter :: PETSC_FP_TRAP_OFF = 0
+      PetscEnum, parameter :: PETSC_FP_TRAP_ON = 1
 
-      PetscFortranAddr PETSC_STDOUT
-
-      parameter (PETSC_STDOUT  = 0)
+      PetscFortranAddr, parameter :: PETSC_STDOUT = 0
 !
 !     PETSc DataTypes
 !
-      PetscEnum PETSC_INT
-      PetscEnum PETSC_DOUBLE
-      PetscEnum PETSC_COMPLEX
-      PetscEnum PETSC_LONG
-      PetscEnum PETSC_SHORT
-      PetscEnum PETSC_FLOAT
-      PetscEnum PETSC_CHAR
-      PetscEnum PETSC_BIT_LOGICAL
-      PetscEnum PETSC_ENUM
-      PetscEnum PETSC_BOOL
-      PetscEnum PETSC___FLOAT128
-      PetscEnum PETSC_OBJECT
-      PetscEnum PETSC_FUNCTION
-      PetscEnum PETSC_STRING
-      PetscEnum PETSC___FP16
-      PetscEnum PETSC_STRUCT
-      PetscEnum PETSC_DATATYPE_UNKNOWN
-
 #if defined(PETSC_USE_REAL_SINGLE)
 #define PETSC_REAL PETSC_FLOAT
 #elif defined(PETSC_USE_REAL___FLOAT128)
@@ -107,24 +80,29 @@
 #endif
 #define PETSC_FORTRANADDR PETSC_LONG
 
-      parameter (PETSC_DATATYPE_UNKNOWN=0)
-      parameter (PETSC_DOUBLE=1,PETSC_COMPLEX=2)
-      parameter (PETSC_LONG=3,PETSC_SHORT=4,PETSC_FLOAT=5)
-      parameter (PETSC_CHAR=6,PETSC_BIT_LOGICAL=7,PETSC_ENUM=8)
-      parameter (PETSC_BOOL=9,PETSC___FLOAT128=10)
-      parameter (PETSC_OBJECT=11,PETSC_FUNCTION=12)
-      parameter (PETSC_STRING=13,PETSC___FP16=14,PETSC_STRUCT=15)
-      parameter (PETSC_INT=16)
+      PetscEnum, parameter :: PETSC_DATATYPE_UNKNOWN = 0
+      PetscEnum, parameter :: PETSC_DOUBLE = 1
+      PetscEnum, parameter :: PETSC_COMPLEX = 2
+      PetscEnum, parameter :: PETSC_LONG = 3
+      PetscEnum, parameter :: PETSC_SHORT = 4
+      PetscEnum, parameter :: PETSC_FLOAT = 5
+      PetscEnum, parameter :: PETSC_CHAR = 6
+      PetscEnum, parameter :: PETSC_BIT_LOGICAL = 7
+      PetscEnum, parameter :: PETSC_ENUM = 8
+      PetscEnum, parameter :: PETSC_BOOL = 9
+      PetscEnum, parameter :: PETSC___FLOAT128 = 10
+      PetscEnum, parameter :: PETSC_OBJECT = 11
+      PetscEnum, parameter :: PETSC_FUNCTION = 12
+      PetscEnum, parameter :: PETSC_STRING = 13
+      PetscEnum, parameter :: PETSC___FP16 = 14
+      PetscEnum, parameter :: PETSC_STRUCT = 15
+      PetscEnum, parameter :: PETSC_INT = 16
 !
 !
 !
-      PetscEnum PETSC_COPY_VALUES
-      PetscEnum PETSC_OWN_POINTER
-      PetscEnum PETSC_USE_POINTER
-
-      parameter (PETSC_COPY_VALUES = 0)
-      parameter (PETSC_OWN_POINTER = 1)
-      parameter (PETSC_USE_POINTER = 2)
+      PetscEnum, parameter :: PETSC_COPY_VALUES = 0
+      PetscEnum, parameter :: PETSC_OWN_POINTER = 1
+      PetscEnum, parameter :: PETSC_USE_POINTER = 2
 !
 ! ------------------------------------------------------------------------
 !     PETSc mathematics include file. Defines certain basic mathematical
@@ -133,13 +111,11 @@
 !
 !     Representation of complex i
 !
-      PetscFortranComplex PETSC_i
 #if defined(PETSC_USE_REAL_SINGLE)
-      parameter (PETSC_i = (0.0e0,1.0e0))
+      PetscFortranComplex, parameter :: PETSC_i = (0.0e0,1.0e0)
 #else
-      parameter (PETSC_i = (0.0d0,1.0d0))
+      PetscFortranComplex, parameter :: PETSC_i = (0.0d0,1.0d0)
 #endif
-
 !
 ! ----------------------------------------------------------------------------
 !    BEGIN PETSc aliases for MPI_ constants
@@ -148,22 +124,19 @@
 !     and transmitted from the C code
 !
 #if !defined(PETSC_USE_REAL___FLOAT128)
-      integer4 MPIU_REAL
 #if defined (PETSC_USE_REAL_SINGLE)
-      parameter (MPIU_REAL = MPI_REAL)
+      integer4, parameter :: MPIU_REAL = MPI_REAL
 #else
-      parameter(MPIU_REAL = MPI_DOUBLE_PRECISION)
+      integer4, parameter :: MPIU_REAL = MPI_DOUBLE_PRECISION
 #endif
 
-      integer4 MPIU_SUM
-      parameter (MPIU_SUM = MPI_SUM)
+      integer4, parameter :: MPIU_SUM = MPI_SUM
 
-      integer4 MPIU_SCALAR
 #if defined(PETSC_USE_COMPLEX)
 #if defined (PETSC_USE_REAL_SINGLE)
-      parameter(MPIU_SCALAR = MPI_COMPLEX)
+      integer4, parameter :: MPIU_SCALAR = MPI_COMPLEX
 #else
-      parameter(MPIU_SCALAR = MPI_DOUBLE_COMPLEX)
+      integer4, parameter :: MPIU_SCALAR = MPI_DOUBLE_COMPLEX
 #endif
 #else
 #if defined (PETSC_USE_REAL_SINGLE)
@@ -174,11 +147,10 @@
 #endif
 #endif
 
-      integer4 MPIU_INTEGER
 #if defined(PETSC_USE_64BIT_INDICES)
-      parameter(MPIU_INTEGER = MPI_INTEGER8)
+      integer4, parameter :: MPIU_INTEGER = MPI_INTEGER8
 #else
-      parameter(MPIU_INTEGER = MPI_INTEGER)
+      integer4, parameter :: MPIU_INTEGER = MPI_INTEGER
 #endif
 
 !      A PETSC_NULL_FUNCTION pointer
@@ -208,8 +180,7 @@
         PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
       end type tPetscRandom
 
-      PetscRandom, parameter :: PETSC_NULL_RANDOM                                  &
-     &             = tPetscRandom(0)
+      PetscRandom, parameter :: PETSC_NULL_RANDOM = tPetscRandom(0)
 !
 #define PETSCRAND 'rand'
 #define PETSCRAND48 'rand48'
@@ -218,46 +189,30 @@
 !
 !
 !
-      PetscEnum PETSC_BINARY_INT_SIZE
-      PetscEnum PETSC_BINARY_FLOAT_SIZE
-      PetscEnum PETSC_BINARY_CHAR_SIZE
-      PetscEnum PETSC_BINARY_SHORT_SIZE
-      PetscEnum PETSC_BINARY_DOUBLE_SIZE
-      PetscEnum PETSC_BINARY_SCALAR_SIZE
-
-      parameter (PETSC_BINARY_INT_SIZE = 4)
-      parameter (PETSC_BINARY_FLOAT_SIZE = 4)
-      parameter (PETSC_BINARY_CHAR_SIZE = 1)
-      parameter (PETSC_BINARY_SHORT_SIZE = 2)
-      parameter (PETSC_BINARY_DOUBLE_SIZE = 8)
+      PetscEnum, parameter :: PETSC_BINARY_INT_SIZE = 4
+      PetscEnum, parameter :: PETSC_BINARY_FLOAT_SIZE = 4
+      PetscEnum, parameter :: PETSC_BINARY_CHAR_SIZE = 1
+      PetscEnum, parameter :: PETSC_BINARY_SHORT_SIZE = 2
+      PetscEnum, parameter :: PETSC_BINARY_DOUBLE_SIZE = 8
 #if defined(PETSC_USE_COMPLEX)
-      parameter (PETSC_BINARY_SCALAR_SIZE = 16)
+      PetscEnum, parameter :: PETSC_BINARY_SCALAR_SIZE = 16
 #else
-      parameter (PETSC_BINARY_SCALAR_SIZE = 8)
+      PetscEnum, parameter :: PETSC_BINARY_SCALAR_SIZE = 8
 #endif
 
-      PetscEnum PETSC_BINARY_SEEK_SET
-      PetscEnum PETSC_BINARY_SEEK_CUR
-      PetscEnum PETSC_BINARY_SEEK_END
+      PetscEnum, parameter :: PETSC_BINARY_SEEK_SET = 0
+      PetscEnum, parameter :: PETSC_BINARY_SEEK_CUR = 1
+      PetscEnum, parameter :: PETSC_BINARY_SEEK_END = 2
 
-      parameter (PETSC_BINARY_SEEK_SET = 0,PETSC_BINARY_SEEK_CUR = 1)
-      parameter (PETSC_BINARY_SEEK_END = 2)
-
-      PetscEnum PETSC_BUILDTWOSIDED_ALLREDUCE
-      PetscEnum PETSC_BUILDTWOSIDED_IBARRIER
-      PetscEnum PETSC_BUILDTWOSIDED_REDSCATTER
-      parameter (PETSC_BUILDTWOSIDED_ALLREDUCE = 0)
-      parameter (PETSC_BUILDTWOSIDED_IBARRIER = 1)
-      parameter (PETSC_BUILDTWOSIDED_REDSCATTER = 2)
+      PetscEnum, parameter :: PETSC_BUILDTWOSIDED_ALLREDUCE = 0
+      PetscEnum, parameter :: PETSC_BUILDTWOSIDED_IBARRIER = 1
+      PetscEnum, parameter :: PETSC_BUILDTWOSIDED_REDSCATTER = 2
 !
 !     PetscSubcommType
 !
-      PetscEnum PETSC_SUBCOMM_GENERAL
-      PetscEnum PETSC_SUBCOMM_CONTIGUOUS
-      PetscEnum PETSC_SUBCOMM_INTERLACED
-      parameter(PETSC_SUBCOMM_GENERAL=0)
-      parameter(PETSC_SUBCOMM_CONTIGUOUS=1)
-      parameter(PETSC_SUBCOMM_INTERLACED=2)
+      PetscEnum, parameter :: PETSC_SUBCOMM_GENERAL = 0
+      PetscEnum, parameter :: PETSC_SUBCOMM_CONTIGUOUS = 1
+      PetscEnum, parameter :: PETSC_SUBCOMM_INTERLACED = 2
 
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
 !DEC$ ATTRIBUTES DLLEXPORT::PetscReal_Private
