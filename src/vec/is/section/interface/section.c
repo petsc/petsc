@@ -2263,9 +2263,13 @@ PetscErrorCode PetscSectionSetConstraintIndices(PetscSection s, PetscInt point, 
 - point - The point
 
   Output Parameter:
-. indices - The constrained dofs
+. indices - The constrained dofs sorted in ascending order
 
-  Note: In Fortran, you call PetscSectionGetFieldConstraintIndicesF90() and PetscSectionRestoreFieldConstraintIndicesF90()
+  Notes:
+  The indices array, which is provided by the caller, must have capacity to hold the number of constrained dofs, e.g., as returned by PetscSectionGetConstraintDof().
+
+  Fortran Note:
+  In Fortran, you call PetscSectionGetFieldConstraintIndicesF90() and PetscSectionRestoreFieldConstraintIndicesF90()
 
   Level: intermediate
 
