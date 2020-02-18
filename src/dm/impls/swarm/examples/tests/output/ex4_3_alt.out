@@ -1,0 +1,86 @@
+DM Object: Mesh 1 MPI processes
+  type: plex
+Mesh in 2 dimensions:
+  0-cells: 4
+  1-cells: 5
+  2-cells: 2
+Labels:
+  depth: 3 strata with value/size (0 (4), 1 (5), 2 (2))
+  marker: 1 strata with value/size (1 (8))
+  Face Sets: 1 strata with value/size (1 (4))
+DM Object: Particles 1 MPI processes
+  type: swarm
+DMSwarmDataBucketView:
+  L                  = 2
+  buffer             = 0
+  allocated          = 2
+  nfields registered = 5
+    [  0]     DMSwarm_pid : Mem. usage       = 1.60e-05 (MB) [rank0]
+                            blocksize        = 1
+                            atomic size      = 4
+    [  1]    DMSwarm_rank : Mem. usage       = 8.00e-06 (MB) [rank0]
+                            blocksize        = 1
+                            atomic size      = 4
+    [  2] DMSwarmPIC_coor : Mem. usage       = 3.20e-05 (MB) [rank0]
+                            blocksize        = 2
+                            atomic size      = 16 [full block, bs=2]
+                            atomic size/item = 8
+    [  3]  DMSwarm_cellid : Mem. usage       = 8.00e-06 (MB) [rank0]
+                            blocksize        = 1
+                            atomic size      = 4
+    [  4]      kinematics : Mem. usage       = 3.20e-05 (MB) [rank0]
+                            blocksize        = 2
+                            atomic size      = 16 [full block, bs=2]
+                            atomic size/item = 8
+  Total mem. usage                           = 9.60e-05 (MB) (collective)
+Time     Step Part     Energy Mod Energy
+0.000000    0    0   455.1111   455.1111
+0.000000    0    1  1820.4444  1820.4444
+0.005000   50    0   455.1111   455.9808
+0.005000   50    1  1820.4445  1823.9234
+0.010000  100    0   455.1111   456.5063
+0.010000  100    1  1820.4445  1826.0253
+p0 error [2e-09 1.7e-10] sol [0.378112 -18.017320] exact [0.378112 -18.017320] energy/exact energy 455.111 / 455.111
+p1 error [4.1e-09 3.3e-10] sol [0.756223 -36.034641] exact [0.756223 -36.034641] energy/exact energy 1820.44 / 1820.44
+Time     Step Part     Energy Mod Energy
+0.000000    0    0   455.1111   455.1111
+0.000000    0    1  1820.4444  1820.4444
+0.002500   50    0   455.1111   455.3402
+0.002500   50    1  1820.4444  1821.3607
+0.005000  100    0   455.1111   455.5460
+0.005000  100    1  1820.4444  1822.1839
+0.007500  150    0   455.1111   455.7076
+0.007500  150    1  1820.4444  1822.8305
+0.010000  200    0   455.1111   455.8087
+0.010000  200    1  1820.4444  1823.2349
+p0 error [2.6e-10 1e-11] sol [0.378112 -18.017320] exact [0.378112 -18.017320] energy/exact energy 455.111 / 455.111
+p1 error [5.1e-10 2.1e-11] sol [0.756223 -36.034641] exact [0.756223 -36.034641] energy/exact energy 1820.44 / 1820.44
+Time     Step Part     Energy Mod Energy
+0.000000    0    0   455.1111   455.1111
+0.000000    0    1  1820.4444  1820.4444
+0.001250   50    0   455.1111   455.1691
+0.001250   50    1  1820.4444  1820.6765
+0.002500  100    0   455.1111   455.2256
+0.002500  100    1  1820.4444  1820.9026
+0.003750  150    0   455.1111   455.2792
+0.003750  150    1  1820.4444  1821.1170
+0.005000  200    0   455.1111   455.3285
+0.005000  200    1  1820.4444  1821.3142
+0.006250  250    0   455.1111   455.3723
+0.006250  250    1  1820.4444  1821.4892
+0.007500  300    0   455.1111   455.4094
+0.007500  300    1  1820.4444  1821.6375
+0.008750  350    0   455.1111   455.4388
+0.008750  350    1  1820.4444  1821.7553
+0.010000  400    0   455.1111   455.4599
+0.010000  400    1  1820.4444  1821.8397
+p0 error [3.2e-11 7.9e-13] sol [0.378112 -18.017320] exact [0.378112 -18.017320] energy/exact energy 455.111 / 455.111
+p1 error [6.4e-11 1.6e-12] sol [0.756223 -36.034641] exact [0.756223 -36.034641] energy/exact energy 1820.44 / 1820.44
+L_2 convergence rate: 3.0
+Time     Step Part     Energy Mod Energy
+0.000000    0    0   455.1111   455.1111
+0.000000    0    1  1820.4444  1820.4444
+0.005000   50    0   455.1111   455.9808
+0.005000   50    1  1820.4445  1823.9234
+0.010000  100    0   455.1111   456.5063
+0.010000  100    1  1820.4445  1826.0253

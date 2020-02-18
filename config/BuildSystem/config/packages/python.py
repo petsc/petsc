@@ -25,11 +25,11 @@ class Configure(config.package.Package):
       self.pyexe = sys.executable
     self.addDefine('PYTHON_EXE','"'+self.pyexe+'"')
     try:
-      output1,err1,ret1  = config.package.Package.executeShellCommand(self.pyexe + ' -c "import Cython"',timeout=50, log = self.log)
+      output1,err1,ret1  = config.package.Package.executeShellCommand(self.pyexe + ' -c "import Cython"',timeout=60, log = self.log)
       self.cython = 1
     except: pass
     try:
-      output1,err1,ret1  = config.package.Package.executeShellCommand(self.pyexe + ' -c "import numpy"',timeout=50, log = self.log)
+      output1,err1,ret1  = config.package.Package.executeShellCommand(self.pyexe + ' -c "import numpy"',timeout=60, log = self.log)
       self.numpy = 1
     except: pass
     return

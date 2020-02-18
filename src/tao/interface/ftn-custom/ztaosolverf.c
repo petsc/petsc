@@ -29,6 +29,7 @@
 #define taoappendoptionsprefix_             TAOAPPENDOPTIONSPREFIX
 #define taogettype_                         TAOGETTYPE
 #define taosetupdate_                       TAOSETUPDATE
+#define taoviewfromoptions_                 TAOVIEWFROMOPTIONS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 
 #define taosetobjectiveroutine_             taosetobjectiveroutine
@@ -56,6 +57,7 @@
 #define taoappendoptionsprefix_             taoappendoptionsprefix
 #define taogettype_                         taogettype
 #define taosetupdate_                       taosetupdate
+#define taoviewfromoptions_                 taoviewfromoptions
 #endif
 
 static struct {
@@ -361,6 +363,15 @@ PETSC_EXTERN void PETSC_STDCALL taosetupdate_(Tao *tao, void (PETSC_STDCALL *fun
     CHKFORTRANNULLFUNCTION(func);
     *ierr = PetscObjectSetFortranCallback((PetscObject)*tao,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.update,(PetscVoidFunction)func,ctx);
     if(!*ierr) *ierr = TaoSetUpdate(*tao, ourtaoupdateroutine, ctx);
+}
+
+PETSC_EXTERN void PETSC_STDCALL taoviewfromoptions_(Tao *ao,PetscObject obj,char* type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+{
+  char *t;
+
+  FIXCHAR(type,len,t);
+  *ierr = TaoViewFromOptions(*ao,obj,t);if (*ierr) return;
+  FREECHAR(type,t);
 }
 
 EXTERN_C_END

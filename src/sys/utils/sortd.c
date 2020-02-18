@@ -10,6 +10,29 @@
 
 #define SWAP(a,b,t) {t=a;a=b;b=t;}
 
+/*@
+   PetscSortedReal - Determines whether the array is sorted.
+
+   Not Collective
+
+   Input Parameters:
++  n  - number of values
+-  X  - array of integers
+
+   Output Parameters:
+.  sorted - flag whether the array is sorted
+
+   Level: intermediate
+
+.seealso: PetscSortReal(), PetscSortedInt(), PetscSortedMPIInt()
+@*/
+PetscErrorCode  PetscSortedReal(PetscInt n,const PetscReal X[],PetscBool *sorted)
+{
+  PetscFunctionBegin;
+  PetscSorted(n,X,*sorted);
+  PetscFunctionReturn(0);
+}
+
 /* A simple version of quicksort; taken from Kernighan and Ritchie, page 87 */
 static PetscErrorCode PetscSortReal_Private(PetscReal *v,PetscInt right)
 {
@@ -162,6 +185,7 @@ PetscErrorCode PetscFindReal(PetscReal key, PetscInt n, const PetscReal t[], Pet
   PetscValidPointer(loc,4);
   if (!n) {*loc = -1; PetscFunctionReturn(0);}
   PetscValidPointer(t,3);
+  PetscCheckSorted(n,t);
   while (hi - lo > 1) {
     PetscInt mid = lo + (hi - lo)/2;
     if (key < t[mid]) hi = mid;

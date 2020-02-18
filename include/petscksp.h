@@ -36,6 +36,7 @@ typedef const char* KSPType;
 #define KSPPIPECG     "pipecg"
 #define KSPPIPECGRR   "pipecgrr"
 #define KSPPIPELCG     "pipelcg"
+#define KSPPIPEPRCG    "pipeprcg"
 #define   KSPCGNE       "cgne"
 #define   KSPNASH       "nash"
 #define   KSPSTCG       "stcg"
@@ -227,6 +228,10 @@ PETSC_EXTERN PetscErrorCode KSPFETIDPGetInnerBDDC(KSP,PC*);
 PETSC_EXTERN PetscErrorCode KSPFETIDPSetInnerBDDC(KSP,PC);
 PETSC_EXTERN PetscErrorCode KSPFETIDPGetInnerKSP(KSP,KSP*);
 PETSC_EXTERN PetscErrorCode KSPFETIDPSetPressureOperator(KSP,Mat);
+
+PETSC_EXTERN PetscErrorCode KSPHPDDMSetDeflationSpace(KSP,Mat);
+PETSC_EXTERN PetscErrorCode KSPHPDDMGetDeflationSpace(KSP,Mat*);
+
 /*E
     KSPGMRESCGSRefinementType - How the classical (unmodified) Gram-Schmidt is performed.
 
@@ -333,7 +338,7 @@ PETSC_EXTERN PetscErrorCode KSPGetDiagonalScaleFix(KSP,PetscBool*);
 
 PETSC_EXTERN PetscErrorCode KSPView(KSP,PetscViewer);
 PETSC_EXTERN PetscErrorCode KSPLoad(KSP,PetscViewer);
-PETSC_STATIC_INLINE PetscErrorCode KSPViewFromOptions(KSP A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
+PETSC_EXTERN PetscErrorCode KSPViewFromOptions(KSP,PetscObject,const char[]);
 PETSC_EXTERN PetscErrorCode KSPReasonView(KSP,PetscViewer);
 PETSC_EXTERN PetscErrorCode KSPReasonViewFromOptions(KSP);
 

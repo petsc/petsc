@@ -174,6 +174,9 @@ PetscErrorCode  MatDiagonalSet_SeqAIJ(Mat Y,Vec D,InsertMode is)
   MatScalar         *aa = aij->a;
   const PetscScalar *v;
   PetscBool         missing;
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+  PetscBool         inserted = PETSC_FALSE;
+#endif
 
   PetscFunctionBegin;
   if (Y->assembled) {
@@ -182,14 +185,23 @@ PetscErrorCode  MatDiagonalSet_SeqAIJ(Mat Y,Vec D,InsertMode is)
       diag = aij->diag;
       ierr = VecGetArrayRead(D,&v);CHKERRQ(ierr);
       if (is == INSERT_VALUES) {
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+        inserted = PETSC_TRUE;
+#endif
         for (i=0; i<m; i++) {
           aa[diag[i]] = v[i];
         }
       } else {
         for (i=0; i<m; i++) {
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+          if (v[i] != 0.0) inserted = PETSC_TRUE;
+#endif
           aa[diag[i]] += v[i];
         }
       }
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+      if (inserted) Y->offloadmask = PETSC_OFFLOAD_CPU;
+#endif
       ierr = VecRestoreArrayRead(D,&v);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
@@ -2563,7 +2575,7 @@ PetscErrorCode MatCreateSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,PetscInt csize,
     }
   }
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-  ierr = MatPinToCPU(C,A->pinnedtocpu);CHKERRQ(ierr);
+  ierr = MatBindToCPU(C,A->boundtocpu);CHKERRQ(ierr);
 #endif
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -2861,7 +2873,7 @@ PetscErrorCode MatPermute_SeqAIJ(Mat A,IS rowp,IS colp,Mat *B)
   (*B)->assembled = PETSC_FALSE;
 
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-  ierr = MatPinToCPU(*B,A->pinnedtocpu);CHKERRQ(ierr);
+  ierr = MatBindToCPU(*B,A->boundtocpu);CHKERRQ(ierr);
 #endif
   ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -2869,6 +2881,14 @@ PetscErrorCode MatPermute_SeqAIJ(Mat A,IS rowp,IS colp,Mat *B)
   ierr = ISRestoreIndices(icolp,&col);CHKERRQ(ierr);
   ierr = ISDestroy(&irowp);CHKERRQ(ierr);
   ierr = ISDestroy(&icolp);CHKERRQ(ierr);
+  if (rowp == colp) {
+    if (A->symmetric) {
+      ierr = MatSetOption(*B,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+    }
+    if (A->hermitian) {
+      ierr = MatSetOption(*B,MAT_HERMITIAN,PETSC_TRUE);CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -2882,7 +2902,7 @@ PetscErrorCode MatCopy_SeqAIJ(Mat A,Mat B,MatStructure str)
     Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
     Mat_SeqAIJ *b = (Mat_SeqAIJ*)B->data;
 
-    if (a->i[A->rmap->n] != b->i[B->rmap->n]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of nonzeros in two matrices are different");
+    if (a->i[A->rmap->n] != b->i[B->rmap->n]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of nonzeros in two matrices are different %D != %D",a->i[A->rmap->n],b->i[B->rmap->n]);
     ierr = PetscArraycpy(b->a,a->a,a->i[A->rmap->n]);CHKERRQ(ierr);
     ierr = PetscObjectStateIncrease((PetscObject)B);CHKERRQ(ierr);
   } else {

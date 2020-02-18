@@ -105,9 +105,14 @@ Warning: Using from command-line or name of script: %s, ignoring environment: %s
     import os
     import sys
     import hashlib
-    args = sorted(set(filter(lambda x: not (x.startswith('PETSC_ARCH') or x == '--force'),sys.argv[1:])))
-    hash = 'args:\n' + '\n'.join('    '+a for a in args) + '\n'
+    import platform
+    if sys.version_info < (3,):
+      hash = 'Uname: '+platform.uname()[0]+' '+platform.uname()[4]+'\n'
+    else:
+      hash = 'Uname: '+platform.uname().system+' '+platform.uname().processor+'\n'
     hash += 'PATH=' + os.environ.get('PATH', '') + '\n'
+    args = sorted(set(filter(lambda x: not (x.startswith('PETSC_ARCH') or x == '--force'),sys.argv[1:])))
+    hash += 'args:\n' + '\n'.join('    '+a for a in args) + '\n'
     chash=''
     try:
       for root, dirs, files in os.walk('config'):
@@ -144,21 +149,33 @@ Warning: Using from command-line or name of script: %s, ignoring environment: %s
         self.arch = 'arch-'+hprefix[0:6]
       else:
         if not os.path.isdir(self.argDB['package-prefix-hash']):
-          raise RuntimeError('--package-prefix-hash '+self.argDB['package-prefix-hash']+' directory does not exist\n')
-        self.argDB['prefix'] = os.path.join(self.argDB['package-prefix-hash'],hprefix[0:6])
-        if not os.path.isdir(self.argDB['prefix']):
-          os.mkdir(self.argDB['prefix'])
-          hashfilepackages = os.path.join(self.argDB['prefix'],'configure-hash')
-        else:
+          self.logPrintBox('Specified package-prefix-hash location %s not found! Attemping to create this dir!' % self.argDB['package-prefix-hash'])
           try:
-            with open(os.path.join(self.argDB['prefix'],'configure-hash'), 'r') as f:
-              a = f.read()
-          except:
-            self.logPrint('No previous hashfilepackages found')
-            a = ''
-          if a == hash:
-            self.logPrint('Reusing download packages in '+self.argDB['prefix'])
-            self.argDB['package-prefix-hash'] = 'reuse' # indicates prefix libraries already built, no need to rebuild
+            os.makedirs(self.argDB['package-prefix-hash'])
+          except Exception as e:
+            self.logPrint('Error creating package-prefix-hash directory '+self.argDB['package-prefix-hash']+': '+str(e))
+            raise RuntimeError('You must have write permission to create this directory!')
+        status = False
+        for idx in range(6,len(hprefix)):
+          hashdirpackages = os.path.join(self.argDB['package-prefix-hash'],hprefix[0:idx])
+          hashfilepackages = os.path.join(hashdirpackages,'configure-hash')
+          if os.path.isdir(hashdirpackages):
+            if os.path.exists(hashfilepackages):
+              self.argDB['package-prefix-hash'] = 'reuse' # indicates prefix libraries already built, no need to rebuild
+              status = True
+              break
+            else: continue # perhaps an incomplete build? use a longer hash
+          else:
+            try:
+              os.mkdir(hashdirpackages)
+            except Exception as e:
+              self.logPrint('Error creating package-prefix-hash directory '+hashdirpackages+': '+str(e))
+              raise RuntimeError('You must have write permission on --package-prefix-hash='+self.argDB['package-prefix-hash']+' directory')
+            status = True
+            break
+        if not status:
+          raise RuntimeError('Unable to create package-prefix-hash dir! Suggest cleaning up %s* !' % os.path.join(self.argDB['package-prefix-hash'],hprefix[0:6]) )
+        self.argDB['prefix'] = hashdirpackages
 
     hashfile = os.path.join(self.arch,'lib','petsc','conf','configure-hash')
 

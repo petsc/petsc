@@ -62,6 +62,36 @@
     }                                                                            \
   } while(0)
 
+/*
+   Partition X[lo,hi] into two parts: X[lo,l) >= pivot; X[r,hi] < pivot
+
+   Input Parameters:
+    + X         - array to partition
+    . pivot     - a pivot of X[]
+    . t1        - temp variable for X
+    - lo,hi     - lower and upper bound of the array
+
+   Output Parameters:
+    + l,r       - of type PetscInt
+
+   Notes:
+    The TwoWayPartition2/3 variants also partition other arrays along with X.
+    These arrays can have different types, so they provide their own temp t2,t3
+ */
+#define TwoWayPartitionReverse1(X,pivot,t1,lo,hi,l,r)                                   \
+  do {                                                                           \
+    l = lo;                                                                      \
+    r = hi;                                                                      \
+    while(1) {                                                                   \
+      while (X[l] > pivot) l++;                                                  \
+      while (X[r] < pivot) r--;                                                  \
+      if (l >= r) {r++; break;}                                                  \
+      SWAP1(X[l],X[r],t1);                                                       \
+      l++;                                                                       \
+      r--;                                                                       \
+    }                                                                            \
+  } while(0)
+
 #define TwoWayPartition2(X,Y,pivot,t1,t2,lo,hi,l,r)                              \
   do {                                                                           \
     l = lo;                                                                      \
@@ -113,6 +143,29 @@
     }                                                                            \
   } while(0)
 
+/* Templates for similar functions used below */
+#define QuickSortReverse1(FuncName,X,n,pivot,t1,ierr)                            \
+  do {                                                                           \
+    PetscInt i,j,p,l,r,hi=n-1;                                                   \
+    if (n < 8) {                                                                 \
+      for (i=0; i<n; i++) {                                                      \
+        pivot = X[i];                                                            \
+        for (j=i+1; j<n; j++) {                                                  \
+          if (pivot < X[j]) {                                                    \
+            SWAP1(X[i],X[j],t1);                                                 \
+            pivot = X[i];                                                        \
+          }                                                                      \
+        }                                                                        \
+      }                                                                          \
+    } else {                                                                     \
+      p     = MEDIAN(X,hi);                                                      \
+      pivot = X[p];                                                              \
+      TwoWayPartitionReverse1(X,pivot,t1,0,hi,l,r);                              \
+      ierr  = FuncName(l,X);CHKERRQ(ierr);                                       \
+      ierr  = FuncName(hi-r+1,X+r);CHKERRQ(ierr);                                \
+    }                                                                            \
+  } while(0)
+
 #define QuickSort2(FuncName,X,Y,n,pivot,t1,t2,ierr)                              \
   do {                                                                           \
     PetscInt i,j,p,l,r,hi=n-1;                                                   \
@@ -158,6 +211,29 @@
   } while(0)
 
 /*@
+   PetscSortedInt - Determines whether the array is sorted.
+
+   Not Collective
+
+   Input Parameters:
++  n  - number of values
+-  X  - array of integers
+
+   Output Parameters:
+.  sorted - flag whether the array is sorted
+
+   Level: intermediate
+
+.seealso: PetscSortInt(), PetscSortedMPIInt(), PetscSortedReal()
+@*/
+PetscErrorCode  PetscSortedInt(PetscInt n,const PetscInt X[],PetscBool *sorted)
+{
+  PetscFunctionBegin;
+  PetscSorted(n,X,*sorted);
+  PetscFunctionReturn(0);
+}
+
+/*@
    PetscSortInt - Sorts an array of integers in place in increasing order.
 
    Not Collective
@@ -177,6 +253,29 @@ PetscErrorCode  PetscSortInt(PetscInt n,PetscInt X[])
 
   PetscFunctionBegin;
   QuickSort1(PetscSortInt,X,n,pivot,t1,ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PetscSortReverseInt - Sorts an array of integers in place in decreasing order.
+
+   Not Collective
+
+   Input Parameters:
++  n  - number of values
+-  X  - array of integers
+
+   Level: intermediate
+
+.seealso: PetscSortInt(), PetscSortIntWithPermutation()
+@*/
+PetscErrorCode  PetscSortReverseInt(PetscInt n,PetscInt X[])
+{
+  PetscErrorCode ierr;
+  PetscInt       pivot,t1;
+
+  PetscFunctionBegin;
+  QuickSortReverse1(PetscSortReverseInt,X,n,pivot,t1,ierr);
   PetscFunctionReturn(0);
 }
 
@@ -201,8 +300,8 @@ PetscErrorCode  PetscSortedRemoveDupsInt(PetscInt *n,PetscInt X[])
   PetscInt i,s = 0,N = *n, b = 0;
 
   PetscFunctionBegin;
+  PetscCheckSorted(*n,X);
   for (i=0; i<N-1; i++) {
-    if (PetscUnlikely(X[b+s+1] < X[b])) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Input array is not sorted");
     if (X[b+s+1] != X[b]) {
       X[b+1] = X[b+s+1]; b++;
     } else s++;
@@ -262,6 +361,7 @@ PetscErrorCode PetscFindInt(PetscInt key, PetscInt n, const PetscInt X[], PetscI
   PetscValidPointer(loc,4);
   if (!n) {*loc = -1; PetscFunctionReturn(0);}
   PetscValidPointer(X,3);
+  PetscCheckSorted(n,X);
   while (hi - lo > 1) {
     PetscInt mid = lo + (hi - lo)/2;
     if (key < X[mid]) hi = mid;
@@ -335,6 +435,7 @@ PetscErrorCode PetscFindMPIInt(PetscMPIInt key, PetscInt n, const PetscMPIInt X[
   PetscValidPointer(loc,4);
   if (!n) {*loc = -1; PetscFunctionReturn(0);}
   PetscValidPointer(X,3);
+  PetscCheckSorted(n,X);
   while (hi - lo > 1) {
     PetscInt mid = lo + (hi - lo)/2;
     if (key < X[mid]) hi = mid;
@@ -392,6 +493,29 @@ PetscErrorCode  PetscSortIntWithArrayPair(PetscInt n,PetscInt X[],PetscInt Y[],P
 
   PetscFunctionBegin;
   QuickSort3(PetscSortIntWithArrayPair,X,Y,Z,n,pivot,t1,t2,t3,ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PetscSortedMPIInt - Determines whether the array is sorted.
+
+   Not Collective
+
+   Input Parameters:
++  n  - number of values
+-  X  - array of integers
+
+   Output Parameters:
+.  sorted - flag whether the array is sorted
+
+   Level: intermediate
+
+.seealso: PetscSortMPIInt(), PetscSortedInt(), PetscSortedReal()
+@*/
+PetscErrorCode  PetscSortedMPIInt(PetscInt n,const PetscMPIInt X[],PetscBool *sorted)
+{
+  PetscFunctionBegin;
+  PetscSorted(n,X,*sorted);
   PetscFunctionReturn(0);
 }
 
@@ -853,3 +977,51 @@ PetscErrorCode  PetscProcessTree(PetscInt n,const PetscBool mask[],const PetscIn
   *Column    = column;
   PetscFunctionReturn(0);
 }
+
+/*@
+  PetscParallelSortedInt - Check whether an integer array, distributed over a communicator, is globally sorted.
+
+  Collective
+
+  Input Parameters:
++ comm - the MPI communicator
+. n - the local number of integers
+- keys - the local array of integers
+
+  Output Parameters:
+. is_sorted - whether the array is globally sorted
+
+  Level: developer
+
+.seealso: PetscParallelSortInt()
+@*/
+PetscErrorCode PetscParallelSortedInt(MPI_Comm comm, PetscInt n, const PetscInt keys[], PetscBool *is_sorted)
+{
+  PetscBool      sorted;
+  PetscInt       i, min, max, prevmax;
+  PetscMPIInt    rank;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  sorted = PETSC_TRUE;
+  min    = PETSC_MAX_INT;
+  max    = PETSC_MIN_INT;
+  if (n) {
+    min = keys[0];
+    max = keys[0];
+  }
+  for (i = 1; i < n; i++) {
+    if (keys[i] < keys[i - 1]) break;
+    min = PetscMin(min,keys[i]);
+    max = PetscMax(max,keys[i]);
+  }
+  if (i < n) sorted = PETSC_FALSE;
+  prevmax = PETSC_MIN_INT;
+  ierr = MPI_Exscan(&max, &prevmax, 1, MPIU_INT, MPI_MAX, comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  if (!rank) prevmax = PETSC_MIN_INT;
+  if (prevmax > min) sorted = PETSC_FALSE;
+  ierr = MPI_Allreduce(&sorted, is_sorted, 1, MPIU_BOOL, MPI_LAND, comm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+

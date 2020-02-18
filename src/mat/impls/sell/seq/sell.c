@@ -962,8 +962,14 @@ PetscErrorCode MatDiagonalScale_SeqSELL(Mat A,Vec ll,Vec rr)
     if (m != A->rmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Left scaling vector wrong length");
     ierr = VecGetArrayRead(ll,&l);CHKERRQ(ierr);
     for (i=0; i<a->totalslices; i++) { /* loop over slices */
-      for (j=a->sliidx[i],row=0; j<a->sliidx[i+1]; j++,row=((row+1)&0x07)) {
-        a->val[j] *= l[8*i+row];
+      if (i == a->totalslices-1 && (A->rmap->n & 0x07)) { /* if last slice has padding rows */
+        for (j=a->sliidx[i],row=0; j<a->sliidx[i+1]; j++,row=((row+1)&0x07)) {
+          if (row < (A->rmap->n & 0x07)) a->val[j] *= l[8*i+row];
+        }
+      } else {
+        for (j=a->sliidx[i],row=0; j<a->sliidx[i+1]; j++,row=((row+1)&0x07)) {
+          a->val[j] *= l[8*i+row];
+        }
       }
     }
     ierr = VecRestoreArrayRead(ll,&l);CHKERRQ(ierr);
@@ -974,8 +980,14 @@ PetscErrorCode MatDiagonalScale_SeqSELL(Mat A,Vec ll,Vec rr)
     if (n != A->cmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Right scaling vector wrong length");
     ierr = VecGetArrayRead(rr,&r);CHKERRQ(ierr);
     for (i=0; i<a->totalslices; i++) { /* loop over slices */
-      for (j=a->sliidx[i]; j<a->sliidx[i+1]; j++) {
-        a->val[j] *= r[a->colidx[j]];
+      if (i == a->totalslices-1 && (A->rmap->n & 0x07)) { /* if last slice has padding rows */
+        for (j=a->sliidx[i],row=0; j<a->sliidx[i+1]; j++,row=((row+1)&0x07)) {
+          if (row < (A->rmap->n & 0x07)) a->val[j] *= r[a->colidx[j]];
+        }
+      } else {
+        for (j=a->sliidx[i]; j<a->sliidx[i+1]; j++) {
+          a->val[j] *= r[a->colidx[j]];
+        }
       }
     }
     ierr = VecRestoreArrayRead(rr,&r);CHKERRQ(ierr);

@@ -148,7 +148,6 @@ static PetscErrorCode CreateSystem(DM dmSol,Mat *pA,Vec *pRhs, PetscBool pinPres
   Mat               A;
   PetscInt          startx,starty,startz,N[3],nx,ny,nz,ex,ey,ez,d;
   PetscInt          icp[3],icux[3],icuy[3],icuz[3],icux_right[3],icuy_up[3],icuz_front[3];
-  PetscBool         isLastRankx,isLastRanky,isLastRankz,isFirstRankx,isFirstRanky,isFirstRankz;
   PetscReal         hx,hy,hz;
   DM                dmCoord;
   PetscScalar       ****arrCoord;
@@ -162,12 +161,10 @@ static PetscErrorCode CreateSystem(DM dmSol,Mat *pA,Vec *pRhs, PetscBool pinPres
   ierr = DMStagGetCorners(dmSol,&startx,&starty,&startz,&nx,&ny,&nz,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = DMStagGetGlobalSizes(dmSol,&N[0],&N[1],&N[2]);CHKERRQ(ierr);
   if (N[0] < 2 || N[1] < 2 || N[2] < 2) SETERRQ(PetscObjectComm((PetscObject)dmSol),PETSC_ERR_ARG_SIZ,"This example requires at least two elements in each dimensions");
-  ierr = DMStagGetIsLastRank(dmSol,&isLastRankx,&isLastRanky,&isLastRankz);CHKERRQ(ierr);
-  ierr = DMStagGetIsFirstRank(dmSol,&isFirstRankx,&isFirstRanky,&isFirstRankz);CHKERRQ(ierr);
   hx = 1.0/N[0]; hy = 1.0/N[1]; hz = 1.0/N[2];
   ierr = DMGetCoordinateDM(dmSol,&dmCoord);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dmSol,&coordLocal);CHKERRQ(ierr);
-  ierr = DMStagVecGetArrayDOFRead(dmCoord,coordLocal,&arrCoord);CHKERRQ(ierr);
+  ierr = DMStagVecGetArrayRead(dmCoord,coordLocal,&arrCoord);CHKERRQ(ierr);
   for (d=0; d<3; ++d) {
     ierr = DMStagGetLocationSlot(dmCoord,ELEMENT,d,&icp[d]       );CHKERRQ(ierr);
     ierr = DMStagGetLocationSlot(dmCoord,LEFT,   d,&icux[d]      );CHKERRQ(ierr);
@@ -213,7 +210,7 @@ static PetscErrorCode CreateSystem(DM dmSol,Mat *pA,Vec *pRhs, PetscBool pinPres
           ierr = DMStagVecSetValuesStencil(dmSol,rhs,1,&row,&valRhs,INSERT_VALUES);CHKERRQ(ierr);
         }
         if (ez == N[2]-1) {
-          /* Top boundary velocity Dirichlet */
+          /* Front boundary velocity Dirichlet */
           DMStagStencil row;
           PetscScalar   valRhs;
           const PetscScalar valA = 1.0;
@@ -403,8 +400,8 @@ static PetscErrorCode CreateSystem(DM dmSol,Mat *pA,Vec *pRhs, PetscBool pinPres
               col[3].i = ex+1; col[3].j = ey  ;  col[3].k = ez  ; col[3].loc = DOWN;    col[3].c  = 0; valA[3] =  1.0 / (hx*hx);
               col[4].i = ex  ; col[4].j = ey  ;  col[4].k = ez-1; col[4].loc = DOWN;    col[4].c  = 0; valA[4] =  1.0 / (hz*hz);
               /* Front term missing */
-              col[5].i = ex  ; col[4].j = ey-1;  col[5].k = ez  ; col[5].loc = ELEMENT; col[5].c  = 0; valA[5] =  1.0 / hy;
-              col[6].i = ex  ; col[5].j = ey  ;  col[6].k = ez  ; col[6].loc = ELEMENT; col[6].c  = 0; valA[6] = -1.0 / hy;
+              col[5].i = ex  ; col[5].j = ey-1;  col[5].k = ez  ; col[5].loc = ELEMENT; col[5].c  = 0; valA[5] =  1.0 / hy;
+              col[6].i = ex  ; col[6].j = ey  ;  col[6].k = ez  ; col[6].loc = ELEMENT; col[6].c  = 0; valA[6] = -1.0 / hy;
             } else {
               nEntries = 8;
               col[0].i = ex  ; col[0].j = ey  ;  col[0].k = ez  ; col[0].loc = DOWN;    col[0].c  = 0; valA[0] = -1.0 / (hx*hx) + -2.0 / (hy*hy) -2.0 / (hz*hz);
@@ -667,7 +664,7 @@ static PetscErrorCode CreateSystem(DM dmSol,Mat *pA,Vec *pRhs, PetscBool pinPres
       }
     }
   }
-  ierr = DMStagVecRestoreArrayDOFRead(dmCoord,coordLocal,&arrCoord);CHKERRQ(ierr);
+  ierr = DMStagVecRestoreArrayRead(dmCoord,coordLocal,&arrCoord);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(rhs);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -734,9 +731,9 @@ static PetscErrorCode CreateReferenceSolution(DM dmSol,Vec *pSolRef)
     ierr = DMStagGetLocationSlot(dmCoord,DOWN,   d,&icuy[d]);CHKERRQ(ierr);
     ierr = DMStagGetLocationSlot(dmCoord,BACK,   d,&icuz[d]);CHKERRQ(ierr);
   }
-  ierr = DMStagVecGetArrayDOFRead(dmCoord,coordLocal,&arrCoord);CHKERRQ(ierr);
+  ierr = DMStagVecGetArrayRead(dmCoord,coordLocal,&arrCoord);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dmSol,&solRefLocal);CHKERRQ(ierr);
-  ierr = DMStagVecGetArrayDOF(dmSol,solRefLocal,&arrSol);CHKERRQ(ierr);
+  ierr = DMStagVecGetArray(dmSol,solRefLocal,&arrSol);CHKERRQ(ierr);
   for (ez=start[2]; ez<start[2] + n[2] + nExtra[2]; ++ez) {
     for (ey=start[1]; ey<start[1] + n[1] + nExtra[1]; ++ey) {
       for (ex=start[0]; ex<start[0] + n[0] + nExtra[0]; ++ex) {
@@ -767,8 +764,8 @@ static PetscErrorCode CreateReferenceSolution(DM dmSol,Vec *pSolRef)
       }
     }
   }
-  ierr = DMStagVecRestoreArrayDOFRead(dmCoord,coordLocal,&arrCoord);CHKERRQ(ierr);
-  ierr = DMStagVecRestoreArrayDOF(dmSol,solRefLocal,&arrSol);CHKERRQ(ierr);
+  ierr = DMStagVecRestoreArrayRead(dmCoord,coordLocal,&arrCoord);CHKERRQ(ierr);
+  ierr = DMStagVecRestoreArray(dmSol,solRefLocal,&arrSol);CHKERRQ(ierr);
   ierr = DMLocalToGlobal(dmSol,solRefLocal,INSERT_VALUES,solRef);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dmCoord,&coordLocal);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dmSol,&solRefLocal);CHKERRQ(ierr);
@@ -805,7 +802,7 @@ static PetscErrorCode CheckSolution(Vec sol,Vec solRef)
       suffix: 2
       requires: !single
       nsize: 4
-      args: -ksp_monitor_short -ksp_converged_reason -pc_fieldsplit_schur_fact_type diag -fieldsplit_0_ksp_type preonly -fieldsplit_1_pc_type none -fieldsplit_0_pc_type gamg -fieldsplit_0_mg_levels_ksp_max_it 3 -fieldsplit_1_ksp_type gmres -fieldsplit_1_ksp_max_it 20
+      args: -ksp_monitor_short -ksp_converged_reason -pc_fieldsplit_schur_fact_type diag -fieldsplit_0_ksp_type preonly -fieldsplit_1_pc_type none -fieldsplit_0_pc_type gamg -fieldsplit_0_mg_levels_ksp_max_it 3 -fieldsplit_1_ksp_type gmres -fieldsplit_1_ksp_max_it 20 -fieldsplit_0_pc_gamg_esteig_ksp_type gmres
 
    test:
       suffix: direct_umfpack

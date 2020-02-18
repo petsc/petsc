@@ -39,7 +39,13 @@ gnumake:
 	+@echo "make gnumake is deprecated, use make libs"
 	+@make libs
 
-libs:
+${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/files:
+	@touch -t 197102020000 ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/files
+
+./${PETSC_ARCH}/tests/testfiles:
+	@${MKDIR} -p ./${PETSC_ARCH}/tests && touch -t 197102020000 ./${PETSC_ARCH}/tests/testfiles
+
+libs: ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/files ./${PETSC_ARCH}/tests/testfiles
 	+@cd ${PETSC_DIR} && MAKEFLAGS="-j$(MAKE_NP) -l$(MAKE_LOAD) $(MAKEFLAGS)" ${OMAKE_PRINTDIR} -f gmakefile ${MAKE_PAR_OUT_FLG} V=${V}
 
 # Does nothing; needed for some rules that require actions.
@@ -151,9 +157,6 @@ alltree: ${ACTION}
 	${OMAKE}  alltree ACTION="${ACTION}"  \
 	PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} ; ) fi; \
 	done ; fi
-
-getpetscflags:
-	-@echo  ${PETSCFLAGS}
 
 getmpilinklibs:
 	-@echo  ${MPI_LIB}
@@ -273,6 +276,8 @@ getautoconfargs:
 .F.o .F90.o .F95.o:
 	${PETSC_FCOMPILE} -o $@ $<
 
+.f.o .f90.o .f95.o:
+	${FC} -c ${FC_FLAGS} ${FFLAGS} -o $@ $<
 #
 #  These rules are for compiling the test examples.
 #
@@ -322,6 +327,7 @@ getautoconfargs:
           grep -v "may result in errors or" | \
           grep -v "is deprecated" | \
           grep -v "Werror=format-security" | \
+          grep -v " -Werror " | \
 	  egrep -i '(Error|warning|Can|Unresolved)' >> /dev/null;\
 	  if [ "$$?" != 1 ]; then \
           printf ${PETSC_TEXT_HILIGHT}"*******************Error detected during compile or link!*******************\n";\
@@ -368,6 +374,7 @@ getautoconfargs:
           grep -v "IPO Error: unresolved" | \
           grep -v "warning multiple definitions of symbol _matdensegetarray_" | \
           grep -v "Werror=format-security" | \
+          grep -v " -Werror " | \
 	  egrep -i '(Error|warning|Can|Unresolved)'  >> /dev/null ; \
 	  if [ "$$?" != 1 ]; then \
           printf ${PETSC_TEXT_HILIGHT}"*******************Error detected during compile or link!*******************\n";\
@@ -570,7 +577,7 @@ html: chk_c2html
               ${RM} $${loc}/$$i.html; \
               echo "<center><a href=\"$${iroot}\">Actual source code: $${iroot}</a></center><br>" > $${loc}/$$i.html; \
               sed -e "s/CHKERRQ(ierr);//g" -e "s/PetscFunctionReturn(0)/return(0)/g"  -e "s/ierr [ ]*= //g"  -e "s/PETSC[A-Z]*_DLLEXPORT//g" $$i | ${C2HTML} -n  | \
-              awk '{ sub(/<pre width=\"80\">/,"<pre width=\"80\">\n"); print }'  | ${PETSC_DIR}/lib/petsc/bin/maint/fixinclude $$i $${PETSC_DIR} | \
+              awk '{ sub(/<pre width="80">/,"<pre width=\"80\">\n"); print }'  | ${PETSC_DIR}/lib/petsc/bin/maint/fixinclude $$i $${PETSC_DIR} | \
               egrep -v '(PetscValid|PetscFunctionBegin|PetscCheck|PetscErrorCode ierr;|#if !defined\(__|#define __|#undef __|EXTERN_C )' | \
               ${MAPNAMES} -map /tmp/$$USER.htmlmap -inhtml | sed -e s?ROOT?$${IROOT}?g >> $${loc}/$$i.html ; \
 	    fi; \
@@ -694,7 +701,7 @@ checkTestCoverage:
 	  fi; \
 	done
 
-#  Lists all the URLs in the PETSc repository that are unaccessable, nonexistent, or permanently moved (301)
+#  Lists all the URLs in the PETSc repository that are unaccessible, nonexistent, or permanently moved (301)
 #  REPLACE=1 locations marked as permanently moved (301) are replaced in the repository
 #  This code is fragile; always check the changes after a use of REPLACE=1 before commiting the changes
 #

@@ -96,7 +96,7 @@ static PetscErrorCode GNObjectiveGradientEval(Tao tao,Vec X,PetscReal *fcn,Vec G
     ierr = VecPointwiseMult(gn->y_work,gn->y,gn->y);CHKERRQ(ierr);
     ierr = VecShift(gn->y_work,gn->epsilon*gn->epsilon);CHKERRQ(ierr);
     ierr = VecSqrtAbs(gn->y_work);CHKERRQ(ierr);  /* gn->y_work = sqrt(y.^2+epsilon^2) */ 
-    ierr = VecSum(gn->y_work,&yESum);CHKERRQ(ierr);CHKERRQ(ierr);
+    ierr = VecSum(gn->y_work,&yESum);CHKERRQ(ierr);
     ierr = VecGetSize(gn->y,&K);CHKERRQ(ierr);
     *fcn += gn->lambda*(yESum - K*gn->epsilon);
     /* compute G = G + lambda*D'*(y./sqrt(y.^2+epsilon^2)),where y = D*x */  

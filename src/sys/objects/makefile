@@ -11,7 +11,7 @@ SOURCEF	  =
 SOURCEH	  = ../../../include/petscoptions.h
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
-DIRS	  = f2003-src
+DIRS	  = cuda f2003-src
 LOCDIR	  = src/sys/objects/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

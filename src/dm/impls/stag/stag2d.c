@@ -40,29 +40,14 @@
 
 .seealso: DMSTAG, DMStagCreate1d(), DMStagCreate3d(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateLocalVector(), DMLocalToGlobalBegin(), DMDACreate2d()
 @*/
-PETSC_EXTERN PetscErrorCode DMStagCreate2d(MPI_Comm comm, DMBoundaryType bndx ,DMBoundaryType bndy, PetscInt M,PetscInt N, PetscInt m,PetscInt n, PetscInt dof0,PetscInt dof1,PetscInt dof2,DMStagStencilType stencilType,PetscInt stencilWidth,const PetscInt lx[],const PetscInt ly[],DM* dm)
+PETSC_EXTERN PetscErrorCode DMStagCreate2d(MPI_Comm comm, DMBoundaryType bndx,DMBoundaryType bndy, PetscInt M,PetscInt N, PetscInt m,PetscInt n, PetscInt dof0, PetscInt dof1, PetscInt dof2, DMStagStencilType stencilType, PetscInt stencilWidth, const PetscInt lx[], const PetscInt ly[],DM* dm)
 {
   PetscErrorCode ierr;
-  DM_Stag        *stag;
 
   PetscFunctionBegin;
   ierr = DMCreate(comm,dm);CHKERRQ(ierr);
-  ierr = DMSetDimension(*dm,2);CHKERRQ(ierr); /* Must precede DMSetType */
-  ierr = DMSetType(*dm,DMSTAG);CHKERRQ(ierr);
-  stag = (DM_Stag*)(*dm)->data;
-
-  /* Global sizes and flags (derived quantities set in DMSetUp_Stag) */
-  stag->boundaryType[0] = bndx;
-  stag->boundaryType[1] = bndy;
-  stag->N[0]            = M;
-  stag->N[1]            = N;
-  stag->nRanks[0]       = m; /* Adjusted later in DMSetUp_Stag */
-  stag->nRanks[1]       = n; /* Adjusted later in DMSetUp_Stag */
-  stag->stencilType     = stencilType;
-  stag->stencilWidth    = stencilWidth;
-  ierr = DMStagSetDOF(*dm,dof0,dof1,dof2,0);CHKERRQ(ierr);
-  ierr = DMStagSetOwnershipRanges(*dm,lx,ly,NULL);CHKERRQ(ierr);
-
+  ierr = DMSetDimension(*dm,2);CHKERRQ(ierr);
+  ierr = DMStagInitialize(bndx,bndy,DM_BOUNDARY_NONE,M,N,0,m,n,0,dof0,dof1,dof2,0,stencilType,stencilWidth,lx,ly,NULL,*dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -85,7 +70,7 @@ PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_2d(DM dm,PetscRe
   }
   ierr = DMGetLocalVector(dmCoord,&coordLocal);CHKERRQ(ierr);
 
-  ierr = DMStagVecGetArrayDOF(dmCoord,coordLocal,&arr);CHKERRQ(ierr);
+  ierr = DMStagVecGetArray(dmCoord,coordLocal,&arr);CHKERRQ(ierr);
   if (stagCoord->dof[0]) {
     ierr = DMStagGetLocationSlot(dmCoord,DMSTAG_DOWN_LEFT,0,&idownleft);CHKERRQ(ierr);
   }
@@ -130,7 +115,7 @@ PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_2d(DM dm,PetscRe
       }
     }
   }
-  ierr = DMStagVecRestoreArrayDOF(dmCoord,coordLocal,&arr);CHKERRQ(ierr);
+  ierr = DMStagVecRestoreArray(dmCoord,coordLocal,&arr);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(dmCoord,&coord);CHKERRQ(ierr);
   ierr = DMLocalToGlobalBegin(dmCoord,coordLocal,INSERT_VALUES,coord);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(dmCoord,coordLocal,INSERT_VALUES,coord);CHKERRQ(ierr);

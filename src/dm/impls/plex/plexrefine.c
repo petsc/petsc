@@ -247,11 +247,10 @@ PetscErrorCode CellRefinerGetAffineTransforms_Internal(CellRefiner refiner, Pets
      |         |         |       |         |         |
      0---------0---------3       4---------0---------5
      */
-    break;
     dim = 3;
     if (numSubcells) *numSubcells = 8;
     if (v0) {
-      ierr = PetscMalloc3(4*dim,&v,4*dim*dim,&j,4*dim*dim,&invj);CHKERRQ(ierr);
+      ierr = PetscMalloc3(8*dim,&v,8*dim*dim,&j,8*dim*dim,&invj);CHKERRQ(ierr);
       /* A */
       v[0+0] = -1.0; v[0+1] = -1.0; v[0+2] = -1.0;
       j[0+0] =  0.5; j[0+1] =  0.0; j[0+2] =  0.0;
@@ -297,6 +296,7 @@ PetscErrorCode CellRefinerGetAffineTransforms_Internal(CellRefiner refiner, Pets
         DMPlex_Invert3D_Internal(&invj[s*dim*dim], &j[s*dim*dim], detJ);
       }
     }
+    break;
   default:
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %s", CellRefiners[refiner]);
   }
@@ -332,6 +332,9 @@ PetscErrorCode CellRefinerInCellTest_Internal(CellRefiner refiner, const PetscRe
     break;
   case REFINER_HEX_2D:
     for (d = 0; d < 2; ++d) if ((point[d] < -1.00000000001) || (point[d] > 1.000000000001)) {*inside = PETSC_FALSE; break;}
+    break;
+  case REFINER_HEX_3D:
+    for (d = 0; d < 3; d++) if (PetscAbsReal(point[d]) > 1 + PETSC_SMALL) {*inside = PETSC_FALSE; break;}
     break;
   default:
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %s", CellRefiners[refiner]);
@@ -531,7 +534,7 @@ static PetscErrorCode DMLabelSetStratumBounds(DMLabel label, PetscInt value, Pet
 static PetscErrorCode CellRefinerSetConeSizes(CellRefiner refiner, DM dm, PetscInt depthSize[], DM rdm)
 {
   PetscInt       depth, cStart, cStartNew, cEnd, cEndNew, cMax, c, vStart, vStartNew, vEnd, vEndNew, vMax, v, fStart, fStartNew, fEnd, fEndNew, fMax, f, eStart, eStartNew, eEnd, eEndNew, eMax, e, r;
-  DMLabel        depthLabel;
+  DMLabel        depthLabel, celltypeLabel;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1726,6 +1729,12 @@ static PetscErrorCode CellRefinerSetConeSizes(CellRefiner refiner, DM dm, PetscI
     break;
   default:
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %s", CellRefiners[refiner]);
+  }
+  {
+    DM_Plex *plex = (DM_Plex *) rdm->data;
+
+    ierr = DMPlexGetCellTypeLabel(rdm, &celltypeLabel);CHKERRQ(ierr);
+    ierr = PetscObjectStateGet((PetscObject) celltypeLabel, &plex->celltypeState);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -3488,7 +3497,7 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
     break;
   case REFINER_SIMPLEX_3D:
     /* All cells have 4 faces: Tet face order is prescribed in DMPlexGetFaces_Internal() */
-    ierr = DMPlexGetRawFaces_Internal(dm, 3, 4, cellInd, NULL, NULL, &faces);CHKERRQ(ierr);
+    ierr = DMPlexGetRawFaces_Internal(dm, DM_POLYTOPE_TETRAHEDRON, cellInd, NULL, NULL, &faces);CHKERRQ(ierr);
     for (c = cStart; c < cEnd; ++c) {
       const PetscInt  newp = cStartNew + (c - cStart)*8;
       const PetscInt *cone, *ornt;
@@ -4130,12 +4139,12 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
 #endif
     }
     ierr = PetscFree(supportRef);CHKERRQ(ierr);
-    ierr = DMPlexRestoreFaces_Internal(dm, 3, cStart, NULL, NULL, &faces);CHKERRQ(ierr);
+    ierr = DMPlexRestoreFaces_Internal(dm, cStart, NULL, NULL, &faces);CHKERRQ(ierr);
     break;
   case REFINER_HYBRID_SIMPLEX_3D:
     ierr = DMPlexGetHybridBounds(rdm, &cMaxNew, &fMaxNew, &eMaxNew, NULL);CHKERRQ(ierr);
     /* Interior cells have 4 faces: Tet face order is prescribed in DMPlexGetFaces_Internal() */
-    ierr = DMPlexGetRawFaces_Internal(dm, 3, 4, cellInd, NULL, NULL, &faces);CHKERRQ(ierr);
+    ierr = DMPlexGetRawFaces_Internal(dm, DM_POLYTOPE_TETRAHEDRON, cellInd, NULL, NULL, &faces);CHKERRQ(ierr);
     for (c = cStart; c < cMax; ++c) {
       const PetscInt  newp = cStartNew + (c - cStart)*8;
       const PetscInt *cone, *ornt;
@@ -5018,10 +5027,10 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
 #endif
     }
     ierr = PetscFree(supportRef);CHKERRQ(ierr);
-    ierr = DMPlexRestoreFaces_Internal(dm, 3, cStart, NULL, NULL, &faces);CHKERRQ(ierr);
+    ierr = DMPlexRestoreFaces_Internal(dm, cStart, NULL, NULL, &faces);CHKERRQ(ierr);
     break;
   case REFINER_SIMPLEX_TO_HEX_3D:
-    ierr = DMPlexGetRawFaces_Internal(dm, 3, 4, cellInd, NULL, NULL, &faces);CHKERRQ(ierr);
+    ierr = DMPlexGetRawFaces_Internal(dm, DM_POLYTOPE_TETRAHEDRON, cellInd, NULL, NULL, &faces);CHKERRQ(ierr);
     /* All cells have 6 faces */
     for (c = cStart; c < cEnd; ++c) {
       const PetscInt  newp = cStartNew + (c - cStart)*4;
@@ -5583,7 +5592,7 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
 #endif
     }
     ierr = PetscFree(supportRef);CHKERRQ(ierr);
-    ierr = DMPlexRestoreFaces_Internal(dm, 3, cStart, NULL, NULL, &faces);CHKERRQ(ierr);
+    ierr = DMPlexRestoreFaces_Internal(dm, cStart, NULL, NULL, &faces);CHKERRQ(ierr);
     break;
   case REFINER_HYBRID_SIMPLEX_TO_HEX_3D:
     if (cMax < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No cell maximum specified in hybrid mesh");
@@ -5592,7 +5601,7 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
     fMax = PetscMin(fEnd, fMax);
     if (eMax < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No face maximum specified in hybrid mesh");
     eMax = PetscMin(eEnd, eMax);
-    ierr = DMPlexGetRawFaces_Internal(dm, 3, 4, cellInd, NULL, NULL, &faces);CHKERRQ(ierr);
+    ierr = DMPlexGetRawFaces_Internal(dm, DM_POLYTOPE_TETRAHEDRON, cellInd, NULL, NULL, &faces);CHKERRQ(ierr);
     /* All cells have 6 faces */
     for (c = cStart; c < cMax; ++c) {
       const PetscInt  newp = cStartNew + (c - cStart)*4;
@@ -6580,7 +6589,7 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
 #endif
     }
     ierr = PetscFree(supportRef);CHKERRQ(ierr);
-    ierr = DMPlexRestoreFaces_Internal(dm, 3, cStart, NULL, NULL, &faces);CHKERRQ(ierr);
+    ierr = DMPlexRestoreFaces_Internal(dm, cStart, NULL, NULL, &faces);CHKERRQ(ierr);
     break;
   case REFINER_HEX_3D:
     /*
@@ -8755,6 +8764,7 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
         ierr = DMLocalizeCoordinate_Internal(dm, spaceDim, &coords[offA], &coords[offB], &coordsNew[offnew]);CHKERRQ(ierr);
         for (d = 0; d < spaceDim; ++d) {
           coordsNew[offnew+d] = 0.5*(coords[offA+d] + coordsNew[offnew+d]);
+          ierr = DMPlexSnapToGeomModel(dm, e, &coordsNew[offnew], &coordsNew[offnew]);CHKERRQ(ierr);
         }
       } else {
         for (d = 0; d < spaceDim; ++d) coordsNew[offnew+d] = PETSC_MIN_REAL;
@@ -9683,7 +9693,7 @@ static PetscErrorCode CellRefinerCreateLabels(CellRefiner refiner, DM dm, PetscI
   for (l = 0; l < numLabels; ++l) {
     DMLabel         label, labelNew;
     const char     *lname;
-    PetscBool       isDepth;
+    PetscBool       isDepth, isCellType;
     IS              valueIS;
     const PetscInt *values;
     PetscInt        defVal;
@@ -9692,6 +9702,8 @@ static PetscErrorCode CellRefinerCreateLabels(CellRefiner refiner, DM dm, PetscI
     ierr = DMGetLabelName(dm, l, &lname);CHKERRQ(ierr);
     ierr = PetscStrcmp(lname, "depth", &isDepth);CHKERRQ(ierr);
     if (isDepth) continue;
+    ierr = PetscStrcmp(lname, "celltype", &isCellType);CHKERRQ(ierr);
+    if (isCellType) continue;
     ierr = DMCreateLabel(rdm, lname);CHKERRQ(ierr);
     ierr = DMGetLabel(dm, lname, &label);CHKERRQ(ierr);
     ierr = DMGetLabel(rdm, lname, &labelNew);CHKERRQ(ierr);
@@ -10423,59 +10435,31 @@ PetscErrorCode DMPlexGetRefinementFunction(DM dm, PetscErrorCode (**refinementFu
 
 PetscErrorCode DMPlexGetCellRefiner_Internal(DM dm, CellRefiner *cellRefiner)
 {
-  PetscInt       dim, cStart, cEnd, coneSize, cMax, fMax;
+  DMPolytopeType ct;
+  PetscInt       dim, cStart, cEnd, cMax, fMax;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   if (cEnd <= cStart) {*cellRefiner = REFINER_NOOP; PetscFunctionReturn(0);}
-  ierr = DMPlexGetConeSize(dm, cStart, &coneSize);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cMax, &fMax, NULL, NULL);CHKERRQ(ierr);
-  switch (dim) {
-  case 1:
-    switch (coneSize) {
-    case 2:
-      *cellRefiner = REFINER_SIMPLEX_1D;
-      break;
-    default:
-      SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown coneSize %D in dimension %D for cell refiner", coneSize, dim);
-    }
-    break;
-  case 2:
-    switch (coneSize) {
-    case 3:
-      if (cMax >= 0) *cellRefiner = REFINER_HYBRID_SIMPLEX_2D;
-      else *cellRefiner = REFINER_SIMPLEX_2D;
-      break;
-    case 4:
-      if (cMax >= 0 && fMax >= 0) *cellRefiner = REFINER_HYBRID_HEX_2D;
-      else *cellRefiner = REFINER_HEX_2D;
-      break;
-    default:
-      SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown coneSize %D in dimension %D for cell refiner", coneSize, dim);
-    }
-    break;
-  case 3:
-    switch (coneSize) {
-    case 4:
-      if (cMax >= 0) *cellRefiner = REFINER_HYBRID_SIMPLEX_3D;
-      else *cellRefiner = REFINER_SIMPLEX_3D;
-      break;
-    case 5:
-      if (cMax == 0) *cellRefiner = REFINER_HYBRID_SIMPLEX_3D;
-      else SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown coneSize %D in dimension %D for cell refiner", coneSize, dim);
-      break;
-    case 6:
-      if (cMax >= 0) *cellRefiner = REFINER_HYBRID_HEX_3D;
-      else *cellRefiner = REFINER_HEX_3D;
-      break;
-    default:
-      SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown coneSize %D in dimension %D for cell refiner", coneSize, dim);
-    }
-    break;
-  default:
-    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown dimension %D for cell refiner", dim);
+  /* TODO Must tag hybrid cells with correct cell types */
+  ierr = DMPlexGetCellType(dm, cStart, &ct);CHKERRQ(ierr);
+  switch (ct) {
+    case DM_POLYTOPE_SEGMENT:       *cellRefiner = REFINER_SIMPLEX_1D; break;
+    case DM_POLYTOPE_TRIANGLE:      if (cMax >= 0) {*cellRefiner = REFINER_HYBRID_SIMPLEX_2D; break;}
+                                    else           {*cellRefiner = REFINER_SIMPLEX_2D; break;}
+    case DM_POLYTOPE_QUADRILATERAL: if (cMax >= 0) {*cellRefiner = REFINER_HYBRID_HEX_2D; break;} /* Why did this have fMax >= 0 ??? */
+                                    else           {*cellRefiner = REFINER_HEX_2D; break;}
+    case DM_POLYTOPE_TETRAHEDRON:   if (cMax >= 0) {*cellRefiner = REFINER_HYBRID_SIMPLEX_3D; break;}
+                                    else           {*cellRefiner = REFINER_SIMPLEX_3D; break;}
+    case DM_POLYTOPE_HEXAHEDRON:    if (cMax >= 0) {*cellRefiner = REFINER_HYBRID_HEX_3D; break;}
+                                    else           {*cellRefiner = REFINER_HEX_3D; break;}
+    case DM_POLYTOPE_SEG_PRISM_TENSOR:  *cellRefiner = REFINER_HYBRID_SIMPLEX_2D; break;
+    case DM_POLYTOPE_TRI_PRISM_TENSOR:  *cellRefiner = REFINER_HYBRID_SIMPLEX_3D; break;
+    case DM_POLYTOPE_QUAD_PRISM_TENSOR: *cellRefiner = REFINER_HYBRID_HEX_3D; break;
+    default: SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "No cell refiner for cell %D with type %s", cStart, DMPolytopeTypes[ct]);
   }
   PetscFunctionReturn(0);
 }

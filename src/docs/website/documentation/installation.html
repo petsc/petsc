@@ -1188,10 +1188,14 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
                   <li> It is best not to use built-in modules for external packages (except blas/lapack) because they are often buggy.
                        Most external packages can be built using the --download option with the intel or Gnu environment but not cray </li>
                   <li> You can use config/examples/arch-cray-xc40-knl-opt.py as a template for running configure but it is outdated </li>
-            </li>
+                  <li> When using the Intel module you may need to use --download-sowing-cc=icc --download-sowing-cxx=icpc -download-sowing-cpp="icc -E" --download-sowing-cxxpp="icpc -E" since the GNU compilers may not work as they access Intel files</li>
+                  </li>
+                  <li> To get an interactive node use qsub -A CSC250STMS07 -n 1 -t 60 -q debug-flat-quad -I </li>
+                  <li> To run on interactive node using two MPI ranks use aprun -n 2 ./program options</li>
             </ul>
           </li>
-            </ul>
+              </ul>
+              </ul> </ul>
           <li>
             OLCF - Oak Ridge National Laboratory - Summit machine - NVIDIA GPUs and IBM Power PC processors
             <ul>
@@ -1201,6 +1205,9 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
               <li>
                 PI: Barry Smith
             </li>
+              <li>
+                Apply at: https://docs.olcf.ornl.gov/accounts/accounts_and_projects.html#applying-for-a-user-account
+                </li>
               <li>
                 Notes on usage:
                 <ul>
@@ -1222,7 +1229,7 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
                      <li>  nvprof and nvvp from the CUDA toolkit </li>
                      </ul>
             </ul>
-        </ul>
+        
 
 </ul>
 </ul>

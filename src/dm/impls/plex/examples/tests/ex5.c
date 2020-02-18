@@ -826,7 +826,6 @@ int main(int argc, char **argv)
       suffix: quad_t1_0
       args: -dim 2 -cell_simplex 0 -test_num 1 \
             -faulted_dm_plex_check_symmetry -faulted_dm_plex_check_skeleton -faulted_dm_plex_check_faces
-      TODO: turn on test
     # 3D Hex
     test:
       suffix: hex_0

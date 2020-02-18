@@ -505,7 +505,7 @@ PETSC_STATIC_INLINE int MPI_Type_dup(MPI_Datatype datatype,MPI_Datatype *newtype
 }
 #endif
 
-PetscErrorCode PetscSFPackGetInUse(PetscSF sf,MPI_Datatype unit,const void *rkey,const void *lkey,PetscCopyMode cmode,PetscSFPack *mylink)
+PetscErrorCode PetscSFPackGetInUse(PetscSF sf,MPI_Datatype unit,const void *rootdata,const void *leafdata,PetscCopyMode cmode,PetscSFPack *mylink)
 {
   PetscErrorCode    ierr;
   PetscSFPack       link,*p;
@@ -516,7 +516,7 @@ PetscErrorCode PetscSFPackGetInUse(PetscSF sf,MPI_Datatype unit,const void *rkey
   for (p=&bas->inuse; (link=*p); p=&link->next) {
     PetscBool match;
     ierr = MPIPetsc_Type_compare(unit,link->unit,&match);CHKERRQ(ierr);
-    if (match && (rkey == link->rkey) && (lkey == link->lkey)) {
+    if (match && (rootdata == link->rootdata) && (leafdata == link->leafdata)) {
       switch (cmode) {
       case PETSC_OWN_POINTER: *p = link->next; break; /* Remove from inuse list */
       case PETSC_USE_POINTER: break;
@@ -535,16 +535,16 @@ PetscErrorCode PetscSFPackReclaim(PetscSF sf,PetscSFPack *link)
   PetscSF_Basic     *bas=(PetscSF_Basic*)sf->data;
 
   PetscFunctionBegin;
-  (*link)->rkey = NULL;
-  (*link)->lkey = NULL;
-  (*link)->next = bas->avail;
-  bas->avail    = *link;
-  *link         = NULL;
+  (*link)->rootdata = NULL;
+  (*link)->leafdata = NULL;
+  (*link)->next     = bas->avail;
+  bas->avail        = *link;
+  *link             = NULL;
   PetscFunctionReturn(0);
 }
 
 /* Destroy all links, i.e., PetscSFPacks in the linked list, usually named 'avail' */
-PetscErrorCode PetscSFPackDestoryAvailable(PetscSFPack *avail)
+PetscErrorCode PetscSFPackDestroyAvailable(PetscSF sf,PetscSFPack *avail)
 {
   PetscErrorCode    ierr;
   PetscSFPack       link=*avail,next;
@@ -558,6 +558,14 @@ PetscErrorCode PetscSFPackDestoryAvailable(PetscSFPack *avail)
       if (link->reqs[i] != MPI_REQUEST_NULL) {ierr = MPI_Request_free(&link->reqs[i]);CHKERRQ(ierr);}
     }
     ierr = PetscFree(link->reqs);CHKERRQ(ierr);
+
+#if defined(PETSC_HAVE_CUDA)
+    if (!use_gpu_aware_mpi && sf->use_pinned_buf) { /* In case the buffers are allocated specially */
+      if (link->rootmtype == PETSC_MEMTYPE_DEVICE) {ierr = PetscFreePinnedMemory(link->rootbuf[PETSC_MEMTYPE_HOST]);CHKERRQ(ierr);}
+      if (link->leafmtype == PETSC_MEMTYPE_DEVICE) {ierr = PetscFreePinnedMemory(link->leafbuf[PETSC_MEMTYPE_HOST]);CHKERRQ(ierr);}
+    }
+#endif
+
     ierr = PetscFreeWithMemType(PETSC_MEMTYPE_HOST,link->rootbuf[PETSC_MEMTYPE_HOST]);CHKERRQ(ierr);
     ierr = PetscFreeWithMemType(PETSC_MEMTYPE_HOST,link->leafbuf[PETSC_MEMTYPE_HOST]);CHKERRQ(ierr);
     ierr = PetscFreeWithMemType(PETSC_MEMTYPE_HOST,link->selfbuf[PETSC_MEMTYPE_HOST]);CHKERRQ(ierr);
@@ -575,7 +583,7 @@ PetscErrorCode PetscSFPackDestoryAvailable(PetscSFPack *avail)
 }
 
 /* Error out on unsupported overlapped communications */
-PetscErrorCode PetscSFPackSetErrorOnUnsupportedOverlap(PetscSF sf,MPI_Datatype unit,const void *rkey,const void *lkey)
+PetscErrorCode PetscSFPackSetErrorOnUnsupportedOverlap(PetscSF sf,MPI_Datatype unit,const void *rootdata,const void *leafdata)
 {
   PetscErrorCode    ierr;
   PetscSFPack       link,*p;
@@ -586,10 +594,10 @@ PetscErrorCode PetscSFPackSetErrorOnUnsupportedOverlap(PetscSF sf,MPI_Datatype u
   /* Look up links in use and error out if there is a match. When both rootdata and leafdata are NULL, ignore
      the potential overlapping since this process does not participate in communication. Overlapping is harmless.
   */
-  if (rkey || lkey) {
+  if (rootdata || leafdata) {
     for (p=&bas->inuse; (link=*p); p=&link->next) {
       ierr = MPIPetsc_Type_compare(unit,link->unit,&match);CHKERRQ(ierr);
-      if (match && (rkey == link->rkey) && (lkey == link->lkey)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for overlapped PetscSF communications with the same SF, rootdata(%p), leafdata(%p) and data type. You can undo the overlap to avoid the error.",rkey,lkey);
+      if (match && (rootdata == link->rootdata) && (leafdata == link->leafdata)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for overlapped PetscSF communications with the same SF, rootdata(%p), leafdata(%p) and data type. You can undo the overlap to avoid the error.",rootdata,leafdata);
     }
   }
   PetscFunctionReturn(0);
@@ -865,7 +873,7 @@ PetscErrorCode PetscSFPackOptCreate(PetscInt n,const PetscInt *offset,const Pets
 
   opt->n = n;
 
-  /* Check if the indices are piece-wise contiguous (if yes, we can optimize a packing with mulitple memcpy's ) */
+  /* Check if the indices are piece-wise contiguous (if yes, we can optimize a packing with multiple memcpy's ) */
   for (i=0; i<n; i++) { /* for each target processor */
     /* Scan indices to count n_copies -- the number of contiguous pieces for i-th target */
     n_copies = 1;
@@ -931,7 +939,7 @@ PetscErrorCode PetscSFPackOptCreate(PetscInt n,const PetscInt *offset,const Pets
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSFPackOptDestory(PetscSFPackOpt *out)
+PetscErrorCode PetscSFPackOptDestroy(PetscSFPackOpt *out)
 {
   PetscErrorCode ierr;
   PetscSFPackOpt opt = *out;

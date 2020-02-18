@@ -9,3 +9,4 @@ Labels:
   depth: 4 strata with value/size (0 (120), 1 (432), 2 (511), 3 (198))
   dim: 3 strata with value/size (3 (99), 2 (343), 1 (360))
   Cell Sets: 1 strata with value/size (1 (198))
+  celltype: 6 strata with value/size (5 (99), 8 (99), 0 (120), 2 (343), 3 (168), 1 (432))

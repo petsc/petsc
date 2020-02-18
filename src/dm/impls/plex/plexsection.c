@@ -99,8 +99,8 @@ static PetscErrorCode DMPlexCreateSectionDof(DM dm, DMLabel label[],const PetscI
 
     ierr = DMGetField(dm, f, NULL, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
-    if (id == PETSCFE_CLASSID)      {isFE[f] = PETSC_TRUE;}
-    else if (id == PETSCFV_CLASSID) {isFE[f] = PETSC_FALSE;}
+    /* User is allowed to put a "placeholder" field in (c.f. DMCreateDS) */
+    isFE[f] = id == PETSCFE_CLASSID ? PETSC_TRUE : PETSC_FALSE;
   }
 
   ierr = PetscMalloc1(depth+1, &pMax);CHKERRQ(ierr);
@@ -167,10 +167,13 @@ static PetscErrorCode DMPlexCreateSectionBCDof(DM dm, PetscInt numBC, const Pets
     PetscInt        field = 0;
     const PetscInt *comp;
     const PetscInt *idx;
-    PetscInt        Nc = -1, n, i;
+    PetscInt        Nc = 0, cNc = -1, n, i;
 
-    if (Nf) field = bcField[bc];
-    if (bcComps && bcComps[bc]) {ierr = ISGetLocalSize(bcComps[bc], &Nc);CHKERRQ(ierr);}
+    if (Nf) {
+      field = bcField[bc];
+      ierr = PetscSectionGetFieldComponents(section, field, &Nc);CHKERRQ(ierr);
+    }
+    if (bcComps && bcComps[bc]) {ierr = ISGetLocalSize(bcComps[bc], &cNc);CHKERRQ(ierr);}
     if (bcComps && bcComps[bc]) {ierr = ISGetIndices(bcComps[bc], &comp);CHKERRQ(ierr);}
     ierr = ISGetLocalSize(bcPoints[bc], &n);CHKERRQ(ierr);
     ierr = ISGetIndices(bcPoints[bc], &idx);CHKERRQ(ierr);
@@ -183,9 +186,17 @@ static PetscErrorCode DMPlexCreateSectionBCDof(DM dm, PetscInt numBC, const Pets
       } else {
         ierr = PetscSectionGetDof(section, p, &numConst);CHKERRQ(ierr);
       }
-      /* If Nc < 0, constrain every dof on the point */
-      /* TODO: Matt, this only works if there is one node on the point.  We need to handle numDofs > NumComponents */
-      if (Nc > 0) numConst = PetscMin(numConst, Nc);
+      /* If Nc <= 0, constrain every dof on the point */
+      if (cNc > 0) {
+        /* We assume that a point may have multiple "nodes", which are collections of Nc dofs,
+           and that those dofs are numbered n*Nc+c */
+        if (Nf) {
+          if (numConst % Nc) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %D has %D dof which is not divisible by %D field components", p, numConst, Nc);
+          numConst = (numConst/Nc) * cNc;
+        } else {
+          numConst = PetscMin(numConst, cNc);
+        }
+      }
       if (Nf) {ierr = PetscSectionAddFieldConstraintDof(section, p, field, numConst);CHKERRQ(ierr);}
       ierr = PetscSectionAddConstraintDof(section, p, numConst);CHKERRQ(ierr);
     }
@@ -238,27 +249,31 @@ static PetscErrorCode DMPlexCreateSectionBCIndicesField(DM dm, PetscInt numBC,co
   for (bc = 0; bc < numBC; ++bc) {
     const PetscInt  field = bcField[bc];
     const PetscInt *comp, *idx;
-    PetscInt        Nc = -1, n, i;
+    PetscInt        Nc, cNc = -1, n, i;
 
-    if (bcComps && bcComps[bc]) {ierr = ISGetLocalSize(bcComps[bc], &Nc);CHKERRQ(ierr);}
+    ierr = PetscSectionGetFieldComponents(section, field, &Nc);CHKERRQ(ierr);
+    if (bcComps && bcComps[bc]) {ierr = ISGetLocalSize(bcComps[bc], &cNc);CHKERRQ(ierr);}
     if (bcComps && bcComps[bc]) {ierr = ISGetIndices(bcComps[bc], &comp);CHKERRQ(ierr);}
     ierr = ISGetLocalSize(bcPoints[bc], &n);CHKERRQ(ierr);
     ierr = ISGetIndices(bcPoints[bc], &idx);CHKERRQ(ierr);
     for (i = 0; i < n; ++i) {
       const PetscInt  p = idx[i];
       const PetscInt *find;
-      PetscInt        fdof, fcdof, c;
+      PetscInt        fdof, fcdof, c, j;
 
       ierr = PetscSectionGetFieldDof(section, p, field, &fdof);CHKERRQ(ierr);
       if (!fdof) continue;
-      if (Nc < 0) {
+      if (cNc < 0) {
         for (d = 0; d < fdof; ++d) indices[d] = d;
         fcdof = fdof;
       } else {
+        /* We assume that a point may have multiple "nodes", which are collections of Nc dofs,
+           and that those dofs are numbered n*Nc+c */
         ierr = PetscSectionGetFieldConstraintDof(section, p, field, &fcdof);CHKERRQ(ierr);
         ierr = PetscSectionGetFieldConstraintIndices(section, p, field, &find);CHKERRQ(ierr);
+        /* Get indices constrained by previous bcs */
         for (d = 0; d < fcdof; ++d) {if (find[d] < 0) break; indices[d] = find[d];}
-        for (c = 0; c < Nc; ++c) indices[d++] = comp[c];
+        for (j = 0; j < fdof/Nc; ++j) for (c = 0; c < cNc; ++c) indices[d++] = j*Nc + comp[c];
         ierr = PetscSortRemoveDupsInt(&d, indices);CHKERRQ(ierr);
         for (c = d; c < fcdof; ++c) indices[c] = -1;
         fcdof = d;
@@ -343,9 +358,9 @@ static PetscErrorCode DMPlexCreateSectionBCIndices(DM dm, PetscSection section)
 
   Input Parameters:
 + dm        - The DMPlex object
+. label     - The label indicating the mesh support of each field, or NULL for the whole mesh
 . numComp   - An array of size numFields that holds the number of components for each field
 . numDof    - An array of size numFields*(dim+1) which holds the number of dof for each field on a mesh piece of dimension d
-. label     - The label indicating the mesh support of each field, or NULL for the whole mesh
 . numBC     - The number of boundary conditions
 . bcField   - An array of size numBC giving the field number for each boundry condition
 . bcComps   - [Optional] An array of size numBC giving an IS holding the field components to which each boundary condition applies
@@ -362,9 +377,6 @@ static PetscErrorCode DMPlexCreateSectionBCIndices(DM dm, PetscSection section)
   The chart permutation is the same one set using PetscSectionSetPermutation()
 
   Level: developer
-
-  Fortran Notes:
-  A Fortran 90 version is available as DMPlexCreateSectionF90()
 
   TODO: How is this related to DMCreateLocalSection()
 

@@ -2,7 +2,6 @@
 
 import os
 petsc_hash_pkgs=os.path.join(os.getenv('HOME'),'petsc-hash-pkgs')
-if not os.path.isdir(petsc_hash_pkgs): os.mkdir(petsc_hash_pkgs)
 
 configure_options = [
   '--package-prefix-hash='+petsc_hash_pkgs,
@@ -26,7 +25,7 @@ configure_options = [
   '--download-elemental=1',
   #'--download-spai=1', valgrind leaks here will probably not get fixed in the near future
   '--download-parms=1',
-  '--download-moab=1',
+  #'--download-moab=1',
   '--download-chaco=1',
   '--download-revolve=1',
   '--download-codipack=1',

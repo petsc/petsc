@@ -122,6 +122,7 @@ static PetscErrorCode PetscSFBcastAndOpBegin_Neighbor(PetscSF sf,MPI_Datatype un
   const PetscInt       *rootloc = NULL;
   PetscSF_Neighbor     *dat = (PetscSF_Neighbor*)sf->data;
   MPI_Comm             distcomm;
+  PetscMemType         rootmtype_mpi,leafmtype_mpi; /* memtypes seen by MPI */
 
   PetscFunctionBegin;
   ierr = PetscSFPackGet_Neighbor(sf,unit,rootmtype,rootdata,leafmtype,leafdata,&link);CHKERRQ(ierr);
@@ -130,7 +131,14 @@ static PetscErrorCode PetscSFBcastAndOpBegin_Neighbor(PetscSF sf,MPI_Datatype un
 
   /* Do neighborhood alltoallv for non-distinguished ranks */
   ierr = PetscSFGetDistComm_Neighbor(sf,PETSCSF_ROOT2LEAF_BCAST,&distcomm);CHKERRQ(ierr);
-  ierr = MPI_Start_ineighbor_alltoallv(dat->rootdegree,dat->leafdegree,link->rootbuf[rootmtype],dat->rootcounts,dat->rootdispls,unit,link->leafbuf[leafmtype],dat->leafcounts,dat->leafdispls,unit,distcomm,link->rootreqs[PETSCSF_ROOT2LEAF_BCAST][rootmtype]);CHKERRQ(ierr);
+  if (use_gpu_aware_mpi) {
+    rootmtype_mpi = rootmtype;
+    leafmtype_mpi = leafmtype;
+  } else {
+    rootmtype_mpi = PETSC_MEMTYPE_HOST;
+    leafmtype_mpi = PETSC_MEMTYPE_HOST;
+  }
+  ierr = MPI_Start_ineighbor_alltoallv(dat->rootdegree,dat->leafdegree,link->rootbuf[rootmtype_mpi],dat->rootcounts,dat->rootdispls,unit,link->leafbuf[leafmtype_mpi],dat->leafcounts,dat->leafdispls,unit,distcomm,link->rootreqs[PETSCSF_ROOT2LEAF_BCAST][rootmtype_mpi]);CHKERRQ(ierr);
   if (rootmtype != leafmtype) {ierr = PetscMemcpyWithMemType(leafmtype,rootmtype,link->selfbuf[leafmtype],link->selfbuf[rootmtype],link->selfbuflen*link->unitbytes);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
@@ -141,7 +149,8 @@ static PetscErrorCode PetscSFReduceBegin_Neighbor(PetscSF sf,MPI_Datatype unit,P
   const PetscInt       *leafloc = NULL;
   PetscSFPack          link;
   PetscSF_Neighbor     *dat = (PetscSF_Neighbor*)sf->data;
-  MPI_Comm             distcomm;
+  MPI_Comm             distcomm = MPI_COMM_NULL;
+  PetscMemType         rootmtype_mpi,leafmtype_mpi; /* memtypes seen by MPI */
 
   PetscFunctionBegin;
   ierr = PetscSFGetLeafIndicesWithMemType_Basic(sf,leafmtype,&leafloc);CHKERRQ(ierr);
@@ -150,30 +159,45 @@ static PetscErrorCode PetscSFReduceBegin_Neighbor(PetscSF sf,MPI_Datatype unit,P
 
   /* Do neighborhood alltoallv for non-distinguished ranks */
   ierr = PetscSFGetDistComm_Neighbor(sf,PETSCSF_LEAF2ROOT_REDUCE,&distcomm);CHKERRQ(ierr);
-  ierr = MPI_Start_ineighbor_alltoallv(dat->leafdegree,dat->rootdegree,link->leafbuf[leafmtype],dat->leafcounts,dat->leafdispls,unit,link->rootbuf[rootmtype],dat->rootcounts,dat->rootdispls,unit,distcomm,link->rootreqs[PETSCSF_LEAF2ROOT_REDUCE][rootmtype]);CHKERRQ(ierr);
+  if (use_gpu_aware_mpi) {
+    rootmtype_mpi = rootmtype;
+    leafmtype_mpi = leafmtype;
+  } else {
+    rootmtype_mpi = PETSC_MEMTYPE_HOST;
+    leafmtype_mpi = PETSC_MEMTYPE_HOST;
+  }
+  ierr = MPI_Start_ineighbor_alltoallv(dat->leafdegree,dat->rootdegree,link->leafbuf[leafmtype_mpi],dat->leafcounts,dat->leafdispls,unit,link->rootbuf[rootmtype_mpi],dat->rootcounts,dat->rootdispls,unit,distcomm,link->rootreqs[PETSCSF_LEAF2ROOT_REDUCE][rootmtype_mpi]);CHKERRQ(ierr);
   if (rootmtype != leafmtype) {ierr = PetscMemcpyWithMemType(rootmtype,leafmtype,link->selfbuf[rootmtype],link->selfbuf[leafmtype],link->selfbuflen*link->unitbytes);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PetscSFFetchAndOpEnd_Neighbor(PetscSF sf,MPI_Datatype unit,PetscMemType rootmtype,void *rootdata,PetscMemType leafmtype,const void *leafdata,void *leafupdate,MPI_Op op)
 {
-  PetscErrorCode    ierr;
-  PetscSFPack       link;
-  const PetscInt    *rootloc = NULL,*leafloc = NULL;
-  MPI_Comm          comm;
-  PetscSF_Neighbor  *dat = (PetscSF_Neighbor*)sf->data;
+  PetscErrorCode       ierr;
+  PetscSFPack          link;
+  const PetscInt       *rootloc = NULL,*leafloc = NULL;
+  PetscSF_Neighbor     *dat = (PetscSF_Neighbor*)sf->data;
+  PetscMemType         rootmtype_mpi,leafmtype_mpi; /* memtypes seen by MPI */
+  MPI_Comm             distcomm = MPI_COMM_NULL;
 
   PetscFunctionBegin;
   ierr = PetscSFPackGetInUse(sf,unit,rootdata,leafdata,PETSC_OWN_POINTER,&link);CHKERRQ(ierr);
-  ierr = PetscSFPackWaitall_Basic(link,PETSCSF_LEAF2ROOT_REDUCE);CHKERRQ(ierr);
+  ierr = PetscSFPackWaitall(link,PETSCSF_LEAF2ROOT_REDUCE);CHKERRQ(ierr);
   ierr = PetscSFGetRootIndicesWithMemType_Basic(sf,rootmtype,&rootloc);CHKERRQ(ierr);
   ierr = PetscSFGetLeafIndicesWithMemType_Basic(sf,leafmtype,&leafloc);CHKERRQ(ierr);
   /* Process local fetch-and-op */
   ierr = PetscSFFetchAndOpRootData(sf,link,rootloc,rootdata,op,PETSC_TRUE);CHKERRQ(ierr);
 
-  /* Bcast the updated root buffer back to leaves */
-  ierr = PetscSFGetDistComm_Neighbor(sf,PETSCSF_ROOT2LEAF_BCAST,&comm);CHKERRQ(ierr);
-  ierr = MPI_Start_neighbor_alltoallv(dat->rootdegree,dat->leafdegree,link->rootbuf[rootmtype],dat->rootcounts,dat->rootdispls,unit,link->leafbuf[leafmtype],dat->leafcounts,dat->leafdispls,unit,comm);CHKERRQ(ierr);
+  /* Bcast the updated rootbuf back to leaves */
+  ierr = PetscSFGetDistComm_Neighbor(sf,PETSCSF_ROOT2LEAF_BCAST,&distcomm);CHKERRQ(ierr);
+  if (use_gpu_aware_mpi) {
+    rootmtype_mpi = rootmtype;
+    leafmtype_mpi = leafmtype;
+  } else {
+    rootmtype_mpi = PETSC_MEMTYPE_HOST;
+    leafmtype_mpi = PETSC_MEMTYPE_HOST;
+  }
+  ierr = MPI_Start_neighbor_alltoallv(dat->rootdegree,dat->leafdegree,link->rootbuf[rootmtype_mpi],dat->rootcounts,dat->rootdispls,unit,link->leafbuf[leafmtype_mpi],dat->leafcounts,dat->leafdispls,unit,distcomm);CHKERRQ(ierr);
   if (rootmtype != leafmtype) {ierr = PetscMemcpyWithMemType(leafmtype,rootmtype,link->selfbuf[leafmtype],link->selfbuf[rootmtype],link->selfbuflen*link->unitbytes);CHKERRQ(ierr);}
   ierr = PetscSFUnpackAndOpLeafData(sf,link,leafloc,leafupdate,MPIU_REPLACE,PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscSFPackReclaim(sf,&link);CHKERRQ(ierr);
@@ -193,6 +217,7 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Neighbor(PetscSF sf)
   sf->ops->FetchAndOpBegin      = PetscSFFetchAndOpBegin_Basic;
   sf->ops->GetLeafRanks         = PetscSFGetLeafRanks_Basic;
   sf->ops->View                 = PetscSFView_Basic;
+  sf->ops->SetFromOptions       = PetscSFSetFromOptions_Basic;
 
   sf->ops->SetUp                = PetscSFSetUp_Neighbor;
   sf->ops->Reset                = PetscSFReset_Neighbor;

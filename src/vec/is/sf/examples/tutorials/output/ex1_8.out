@@ -1,6 +1,5 @@
 PetscSF Object: 3 MPI processes
-  type: window
-    synchronization=FENCE sort=rank-order
+      current info=MPI_INFO_NULL
   [0] Number of roots=3, leaves=3, remote ranks=3
   [0] 0 <- (0,0)
   [0] 1 <- (1,0)

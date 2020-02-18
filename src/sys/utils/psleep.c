@@ -35,7 +35,7 @@ PetscErrorCode  PetscSleep(PetscReal s)
     struct timespec rq;
     rq.tv_sec  = 0;
     rq.tv_nsec = (long)(s*1e9);
-    nanosleep(&rq,0);
+    nanosleep(&rq,NULL);
   }
 #elif defined(PETSC_HAVE_USLEEP)
   /* POSIX.1-2001 deprecates this in favor of nanosleep because nanosleep defines interaction with signals */

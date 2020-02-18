@@ -5,7 +5,7 @@ class Configure(config.package.CMakePackage):
     config.package.CMakePackage.__init__(self, framework)
     self.version          = '4.0.3'
     self.versionname      = 'PARMETIS_MAJOR_VERSION.PARMETIS_MINOR_VERSION.PARMETIS_SUBMINOR_VERSION'
-    self.gitcommit         = 'v'+self.version+'-p5'
+    self.gitcommit         = 'v'+self.version+'-p6'
     self.download          = ['git://https://bitbucket.org/petsc/pkg-parmetis.git','https://bitbucket.org/petsc/pkg-parmetis/get/'+self.gitcommit+'.tar.gz']
     self.functions         = ['ParMETIS_V3_PartKway']
     self.includes          = ['parmetis.h']
@@ -28,7 +28,7 @@ class Configure(config.package.CMakePackage):
     args.append('-DGKLIB_PATH=../headers')
     args.append('-DMETIS_PATH='+self.metis.directory)
     if self.mpi.include:
-      args.append('-DMPI_INCLUDE_PATH='+self.mpi.include[0])
+      args.append('-DMPI_INCLUDE_PATH="'+self.mpi.include[0]+'"')
     if self.checkSharedLibrariesEnabled():
       args.append('-DSHARED=1')
       args.append('-DCMAKE_INSTALL_RPATH_USE_LINK_PATH:BOOL=ON')

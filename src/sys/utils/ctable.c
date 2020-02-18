@@ -238,7 +238,7 @@ PetscErrorCode  PetscTableGetNext(PetscTable ta,PetscTablePosition *rPosition,Pe
   do {
     pos++;  idex++;
     if (idex >= ta->tablesize) {
-      pos = 0; /* end of list */
+      pos = NULL; /* end of list */
       break;
     } else if (ta->keytable[idex]) {
       pos = ta->table + idex;

@@ -3,7 +3,7 @@
 #include <MBTagConventions.hpp>
 #include <moab/NestedRefine.hpp>
 
-/*@
+/*@C
   DMMoabGenerateHierarchy - Generate a multi-level uniform refinement hierarchy
   by succesively refining a coarse mesh, already defined in the DM object
   provided by the user.
@@ -80,7 +80,7 @@ PetscErrorCode DMMoabGenerateHierarchy(DM dm, PetscInt nlevels, PetscInt *ldegre
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
   DMRefineHierarchy_Moab - Generate a multi-level DM hierarchy
   by succesively refining a coarse mesh.
 
@@ -110,7 +110,7 @@ PETSC_EXTERN PetscErrorCode  DMRefineHierarchy_Moab(DM dm, PetscInt nlevels, DM 
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
   DMCoarsenHierarchy_Moab - Generate a multi-level DM hierarchy
   by succesively coarsening a refined mesh.
 
@@ -142,7 +142,7 @@ PETSC_EXTERN PetscErrorCode DMCoarsenHierarchy_Moab(DM dm, PetscInt nlevels, DM 
 
 PETSC_EXTERN PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM, PetscInt*, PetscInt*, PetscInt*, PetscInt*, PetscBool);
 
-/*@
+/*@C
   DMCreateInterpolation_Moab - Generate the interpolation operators to transform
   operators (matrices, vectors) from parent level to child level as defined by
   the DM inputs provided by the user.
@@ -384,7 +384,7 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat* inte
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
   DMCreateInjection_Moab - Generate a multi-level uniform refinement hierarchy
   by succesively refining a coarse mesh, already defined in the DM object
   provided by the user.
@@ -503,7 +503,7 @@ static PetscErrorCode DMMoab_UMR_Private(DM dm, MPI_Comm comm, PetscBool refine,
 }
 
 
-/*@
+/*@C
   DMRefine_Moab - Generate a multi-level uniform refinement hierarchy
   by succesively refining a coarse mesh, already defined in the DM object
   provided by the user.
@@ -533,7 +533,7 @@ PETSC_EXTERN PetscErrorCode DMRefine_Moab(DM dm, MPI_Comm comm, DM* dmf)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
   DMCoarsen_Moab - Generate a multi-level uniform refinement hierarchy
   by succesively refining a coarse mesh, already defined in the DM object
   provided by the user.

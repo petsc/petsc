@@ -310,9 +310,9 @@ static PetscErrorCode KSPGuessFischerSetModel_Fischer(KSPGuess guess,PetscInt mo
 
    Notes:
     the algorithm is different from the paper because we do not CHANGE the right hand side of the new
-    problem and solve the problem with an initial guess of zero, rather we solve the original new problem
+    problem and solve the problem with an initial guess of zero, rather we solve the original problem
     with a nonzero initial guess (this is done so that the linear solver convergence tests are based on
-    the original RHS.) But we use the xtilde = x - xguess as the new direction so that it is not
+    the original RHS). We use the xtilde = x - xguess as the new direction so that it is not
     mostly orthogonal to the previous solutions.
 
     These are not intended to be used directly, they are called by KSP automatically with the command line options -ksp_guess_type fischer -ksp_guess_fischer_model <int,int> or programmatically as

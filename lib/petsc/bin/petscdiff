@@ -10,12 +10,16 @@ print_usage() {
 cat >&2 <<EOF
 Usage: $0 [options] file1 file2
 Replaces floating point numbers with XXX and then does a diff
+file1 is typically "expected result"
 
 OPTIONS
-  -m ................ mv file2 to file1 after diffing
-  -M ................ mv file2 to file1 after diffing if it is an alt file
-  -j ................ just use diff without modifying numbers
-  -h ................ print this message
+  -m ............. mv file2 to file1 after diffing
+  -M ............. mv file2 to file1 after diffing if it is an alt file
+  -j ............. just use diff without modifying numbers
+  -h ............. print this message
+  -f ............. filter file1 with commands; e.g., 'sort -nr'
+  -F ............. filter file2 with commands; e.g., 'grep -v foo | grep -v bar'
+  -k ............. keep the filter files -- do not delete
 EOF
   exit $1
 }
@@ -24,12 +28,18 @@ EOF
 mvfile=false
 mvfile_ifalt=false
 justdiff=false
+filter=false          # File2
+filter_output=false   # File1
+keep_files=false
 diffargs=""
-while getopts "hjJ:mM" opt
+while getopts "f:F:hjJ:kmM" opt
 do
   case $opt in
+    f ) filter_output=true;  filter_output_cmd=$OPTARG ;;
+    F ) filter=true;  filter_cmd=$OPTARG ;;
     j ) justdiff=true ;;
     J ) justdiff=true;  diffargs=$OPTARG;;
+    k ) keep_files=true;;
     m ) mvfile=true;;
     M ) mvfile_ifalt=true;;
     h ) print_usage 0;;
@@ -41,6 +51,14 @@ if [ $# -lt 2 ]; then
   echo Error! 
   print_usage 1
 fi
+
+# Filter a file and sort output into a file with a unique suffix
+filter_suffix=".filter_tmp"
+filter_file() {
+  file="$1"
+  fcmds="$2"
+  eval "cat ${file} | ${fcmds} > ${file}${filter_suffix}"
+}
 
 if [ "x${RM}" = "x" ]; then RM="rm"; fi
 if [ "x${SED}" = "x" ]; then SED="sed"; fi
@@ -56,7 +74,13 @@ elif [ -f ${1} ]; then
 else 
   if ${mvfile}; then
     echo "mv'ing $2 --> $1"
-    mv "$2" "$1"
+    # If filter need to filter first
+    if ${filter}; then
+      filter_file "${2}" "${filter_cmd}" 
+      mv "${2}${filter_suffix}" "$1"
+    else
+      mv "$2" "$1"
+    fi
     exit 0
   else
     echo Error! file1 check failed: "${1}"
@@ -66,7 +90,12 @@ else
     echo "mvfile_ifalt"
     if echo $1 | grep '_alt.out'; then 
       echo "mv'ing $2 --> $1"
-      mv "$2" "$1"
+      if ${filter}; then
+        filter_file "${2}" "${filter_cmd}" 
+        mv "${2}${filter_suffix}" "$1"
+      else
+        mv "$2" "$1"
+      fi 
       exit 0
     fi
   fi
@@ -77,6 +106,15 @@ if [ -f ${2} ]; then
 else
   echo Error! file2 check failed: "${2}"
   exit 1
+fi
+
+if ${filter}; then
+      filter_file "${file2}" "${filter_cmd}" 
+      file2="${file2}${filter_suffix}"  # Will need to remove later
+fi
+if ${filter_output}; then
+      filter_file "${file1}" "${filter_output_cmd}" 
+      file1="${file1}${filter_suffix}"  # Will need to remove later
 fi
 
 if ! ${justdiff}; then
@@ -111,6 +149,16 @@ if ${mvfile_ifalt} && test ${err} -gt 0; then
   if echo $file1 | grep '_alt.out'; then 
     echo "mv'ing $file2 --> $file1"
     mv "$file2" "$file1"
+  fi
+fi
+
+# For debugging filters, it is useful to be able to keep the files
+if ! ${keep_files}; then
+  if ${filter}; then
+        ${RM} -f ${file2}  # Temporary file.  See above
+  fi
+  if ${filter_output}; then
+        ${RM} -f ${file1}  # Temporary file.  See above
   fi
 fi
 

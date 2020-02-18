@@ -41,7 +41,7 @@ const char *const PetscViewerFormats[] = {
   "LOAD_BALANCE",
   "PetscViewerFormat",
   "PETSC_VIEWER_",
-  0
+  NULL
 };
 
 /*@C

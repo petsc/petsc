@@ -826,7 +826,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
           ierr = PCSetType(schurpc,PCLU);CHKERRQ(ierr);
         }
         ierr = ISGetSize(is_I,&n_internal);CHKERRQ(ierr);
-        if (n_internal) { /* UMFPACK gives error with 0 sized problems */
+        if (!n_internal) { /* UMFPACK gives error with 0 sized problems */
           MatSolverType solver = NULL;
           ierr = PCFactorGetMatSolverType(origpc,(MatSolverType*)&solver);CHKERRQ(ierr);
           if (solver) {
@@ -933,8 +933,8 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     size_schur = cum - n_I;
     ierr = ISCreateGeneral(PETSC_COMM_SELF,cum,all_local_idx_N,PETSC_OWN_POINTER,&is_A_all);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-    oldpin = sub_schurs->A->pinnedtocpu;
-    ierr = MatPinToCPU(sub_schurs->A,PETSC_TRUE);CHKERRQ(ierr);
+    oldpin = sub_schurs->A->boundtocpu;
+    ierr = MatBindToCPU(sub_schurs->A,PETSC_TRUE);CHKERRQ(ierr);
 #endif
     if (cum == n) {
       ierr = ISSetPermutation(is_A_all);CHKERRQ(ierr);
@@ -943,7 +943,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       ierr = MatCreateSubMatrix(sub_schurs->A,is_A_all,is_A_all,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
     }
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-    ierr = MatPinToCPU(sub_schurs->A,oldpin);CHKERRQ(ierr);
+    ierr = MatBindToCPU(sub_schurs->A,oldpin);CHKERRQ(ierr);
 #endif
     ierr = MatSetOptionsPrefix(A,sub_schurs->prefix);CHKERRQ(ierr);
     ierr = MatAppendOptionsPrefix(A,"sub_schurs_");CHKERRQ(ierr);
@@ -1467,7 +1467,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 
       ierr = PetscOptionsGetBool(NULL,sub_schurs->prefix,"-sub_schurs_schur_pin_to_cpu",&flg,NULL);CHKERRQ(ierr);
       ierr = MatFactorGetSchurComplement(F,&St,&st);CHKERRQ(ierr);
-      ierr = MatPinToCPU(St,flg);CHKERRQ(ierr);
+      ierr = MatBindToCPU(St,flg);CHKERRQ(ierr);
       ierr = MatFactorRestoreSchurComplement(F,&St,st);CHKERRQ(ierr);
     }
 #endif
@@ -1868,7 +1868,7 @@ PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs sub_schurs, const char* prefi
 {
   IS              *faces,*edges,*all_cc,vertices;
   PetscInt        i,n_faces,n_edges,n_all_cc;
-  PetscBool       is_sorted,ispetsc;
+  PetscBool       is_sorted,ispardiso,ismumps;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -1934,8 +1934,9 @@ PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs sub_schurs, const char* prefi
   ierr = PetscOptionsBool("-sub_schurs_restrictcomm","Restrict communicator on active processes only",NULL,sub_schurs->restrict_comm,&sub_schurs->restrict_comm,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-sub_schurs_debug","Debug output",NULL,sub_schurs->debug,&sub_schurs->debug,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  ierr = PetscStrcmp(sub_schurs->mat_solver_type,MATSOLVERPETSC,&ispetsc);CHKERRQ(ierr);
-  sub_schurs->schur_explicit = (PetscBool)!ispetsc;
+  ierr = PetscStrcmp(sub_schurs->mat_solver_type,MATSOLVERMUMPS,&ismumps);CHKERRQ(ierr);
+  ierr = PetscStrcmp(sub_schurs->mat_solver_type,MATSOLVERMKL_PARDISO,&ispardiso);CHKERRQ(ierr);
+  sub_schurs->schur_explicit = (PetscBool)(ispardiso || ismumps);
 
   /* for reals, symmetric and hermitian are synonims */
 #if !defined(PETSC_USE_COMPLEX)

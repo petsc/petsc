@@ -154,7 +154,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_MSR(Mat F,Mat A,IS perm,const 
     ierr = PetscInfo1(A,"PCFactorSetFill(pc,%g);\n",(double)af);CHKERRQ(ierr);
     ierr = PetscInfo(A,"for best performance.\n");CHKERRQ(ierr);
   } else {
-    ierr = PetscInfo(A,"Empty matrix.\n");CHKERRQ(ierr);
+    ierr = PetscInfo(A,"Empty matrix\n");CHKERRQ(ierr);
   }
 #endif
 
@@ -365,7 +365,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const M
     ierr = PetscInfo1(A,"Run with -pc_factor_fill %g or use \n",(double)af);CHKERRQ(ierr);
     ierr = PetscInfo1(A,"PCFactorSetFill(pc,%g) for best performance.\n",(double)af);CHKERRQ(ierr);
   } else {
-    ierr = PetscInfo(A,"Empty matrix.\n");CHKERRQ(ierr);
+    ierr = PetscInfo(A,"Empty matrix\n");CHKERRQ(ierr);
   }
 #endif
   fact->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering;
@@ -540,7 +540,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_inplace(Mat fact,Mat A,IS perm
     ierr = PetscInfo1(A,"Run with -pc_factor_fill %g or use \n",(double)af);CHKERRQ(ierr);
     ierr = PetscInfo1(A,"PCFactorSetFill(pc,%g) for best performance.\n",(double)af);CHKERRQ(ierr);
   } else {
-    ierr = PetscInfo(A,"Empty matrix.\n");CHKERRQ(ierr);
+    ierr = PetscInfo(A,"Empty matrix\n");CHKERRQ(ierr);
   }
 #endif
   ierr = MatSeqSBAIJSetNumericFactorization_inplace(fact,perm_identity);CHKERRQ(ierr);
@@ -599,7 +599,6 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_N(Mat C,Mat A,const MatFactorIn
         }
         /* transform columnoriented blocks that lie in the lower triangle to roworiented blocks */
         if (i > aj[j]) {
-          /* printf("change orientation, row: %d, col: %d\n",i,aj[j]); */
           ap = aa + j*bs2;                     /* ptr to the beginning of j-th block of aa */
           for (k=0; k<bs2; k++) dk[k] = ap[k]; /* dk <- j-th block of aa */
           for (k=0; k<bs; k++) {               /* j-th block of aa <- dk^T */
@@ -733,8 +732,8 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_N_NaturalOrdering(Mat C,Mat A,c
   ierr = PetscCalloc1(bs2*mbs,&rtmp);CHKERRQ(ierr);
   ierr = PetscMalloc2(mbs,&il,mbs,&jl);CHKERRQ(ierr);
   il[0] = 0;
-  for (i=0; i<mbs; i++) jl[i] = mbs; 
-  
+  for (i=0; i<mbs; i++) jl[i] = mbs;
+
   ierr = PetscMalloc3(bs2,&dk,bs2,&uik,bs,&work);CHKERRQ(ierr);
   ierr = PetscMalloc1(bs,&pivots);CHKERRQ(ierr);
   allowzeropivot = PetscNot(A->erroriffailure);
@@ -898,7 +897,6 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_2(Mat C,Mat A,const MatFactorIn
         }
         /* transform columnoriented blocks that lie in the lower triangle to roworiented blocks */
         if (i > aj[j]) {
-          /* printf("change orientation, row: %d, col: %d\n",i,aj[j]); */
           ap    = aa + j*4;  /* ptr to the beginning of the block */
           dk[1] = ap[1];     /* swap ap[1] and ap[2] */
           ap[1] = ap[2];
@@ -1201,7 +1199,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_inplace(Mat C,Mat A,const Mat
     sctx.newshift = PETSC_FALSE;
     il[0] = 0;
     for (i=0; i<mbs; i++) {
-      rtmp[i] = 0.0; jl[i] = mbs; 
+      rtmp[i] = 0.0; jl[i] = mbs;
     }
 
     for (k = 0; k<mbs; k++) {
@@ -1476,7 +1474,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering_inplace(Mat C
     sctx.newshift = PETSC_FALSE;
     il[0] = 0;
     for (i=0; i<mbs; i++) {
-      rtmp[i] = 0.0; jl[i] = mbs; 
+      rtmp[i] = 0.0; jl[i] = mbs;
     }
 
     for (k = 0; k<mbs; k++) {
@@ -1596,5 +1594,3 @@ PetscErrorCode MatCholeskyFactor_SeqSBAIJ(Mat A,IS perm,const MatFactorInfo *inf
   ierr = MatHeaderMerge(A,&C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-

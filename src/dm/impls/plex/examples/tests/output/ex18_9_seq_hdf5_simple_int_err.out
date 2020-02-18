@@ -1,0 +1,79 @@
+DMPlexCheckPointSFHeavy PASSED
+Points missing in PointSF:
+[0] --------
+  face 76
+    edge 136
+      vertex 14 w/ coordinates (       0.000,    50000.000,    83333.333)
+      vertex 13 w/ coordinates (       0.000,    50000.000,    75000.000)
+    edge 139
+      vertex 20 w/ coordinates (   25000.000,    50000.000,    83333.333)
+      vertex 14 w/ coordinates (       0.000,    50000.000,    83333.333)
+    edge 137
+      vertex 24 w/ coordinates (   50000.000,    50000.000,    75000.000)
+      vertex 20 w/ coordinates (   25000.000,    50000.000,    83333.333)
+    edge 89
+      vertex 13 w/ coordinates (       0.000,    50000.000,    75000.000)
+      vertex 24 w/ coordinates (   50000.000,    50000.000,    75000.000)
+  face 80
+    edge 141
+      vertex 30 w/ coordinates (   75000.000,    50000.000,    83333.333)
+      vertex 24 w/ coordinates (   50000.000,    50000.000,    75000.000)
+    edge 144
+      vertex 37 w/ coordinates (  100000.000,    50000.000,    83333.333)
+      vertex 30 w/ coordinates (   75000.000,    50000.000,    83333.333)
+    edge 142
+      vertex 36 w/ coordinates (  100000.000,    50000.000,    75000.000)
+      vertex 37 w/ coordinates (  100000.000,    50000.000,    83333.333)
+    edge 97
+      vertex 24 w/ coordinates (   50000.000,    50000.000,    75000.000)
+      vertex 36 w/ coordinates (  100000.000,    50000.000,    75000.000)
+  edge 108
+    vertex 25 w/ coordinates (   50000.000,    75000.000,    83333.333)
+    vertex 24 w/ coordinates (   50000.000,    50000.000,    75000.000)
+  edge 136
+    vertex 14 w/ coordinates (       0.000,    50000.000,    83333.333)
+    vertex 13 w/ coordinates (       0.000,    50000.000,    75000.000)
+  edge 142
+    vertex 36 w/ coordinates (  100000.000,    50000.000,    75000.000)
+    vertex 37 w/ coordinates (  100000.000,    50000.000,    83333.333)
+[1] --------
+  face 54
+    edge 101
+      vertex 29 w/ coordinates (   50000.000,    50000.000,    75000.000)
+      vertex 12 w/ coordinates (       0.000,    50000.000,    75000.000)
+    edge 99
+      vertex 22 w/ coordinates (   25000.000,    50000.000,    83333.333)
+      vertex 29 w/ coordinates (   50000.000,    50000.000,    75000.000)
+    edge 102
+      vertex 13 w/ coordinates (       0.000,    50000.000,    83333.333)
+      vertex 22 w/ coordinates (   25000.000,    50000.000,    83333.333)
+    edge 92
+      vertex 12 w/ coordinates (       0.000,    50000.000,    75000.000)
+      vertex 13 w/ coordinates (       0.000,    50000.000,    83333.333)
+  face 60
+    edge 112
+      vertex 43 w/ coordinates (  100000.000,    50000.000,    75000.000)
+      vertex 29 w/ coordinates (   50000.000,    50000.000,    75000.000)
+    edge 110
+      vertex 44 w/ coordinates (  100000.000,    50000.000,    83333.333)
+      vertex 43 w/ coordinates (  100000.000,    50000.000,    75000.000)
+    edge 113
+      vertex 36 w/ coordinates (   75000.000,    50000.000,    83333.333)
+      vertex 44 w/ coordinates (  100000.000,    50000.000,    83333.333)
+    edge 104
+      vertex 29 w/ coordinates (   50000.000,    50000.000,    75000.000)
+      vertex 36 w/ coordinates (   75000.000,    50000.000,    83333.333)
+  edge 92
+    vertex 12 w/ coordinates (       0.000,    50000.000,    75000.000)
+    vertex 13 w/ coordinates (       0.000,    50000.000,    83333.333)
+  edge 96
+    vertex 29 w/ coordinates (   50000.000,    50000.000,    75000.000)
+    vertex 30 w/ coordinates (   50000.000,    75000.000,    83333.333)
+  edge 110
+    vertex 44 w/ coordinates (  100000.000,    50000.000,    83333.333)
+    vertex 43 w/ coordinates (  100000.000,    50000.000,    75000.000)
+[2] --------
+  edge 120
+    vertex 22 w/ coordinates (   50000.000,    50000.000,    75000.000)
+    vertex 24 w/ coordinates (   50000.000,    75000.000,    83333.333)
+Extra points in PointSF:

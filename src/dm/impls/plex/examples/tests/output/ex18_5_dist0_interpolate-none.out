@@ -1,4 +1,8 @@
+DMPlexCreateFromFile produced serial mesh.
+DMPlexIsDistributed: FALSE
 DMPlexIsInterpolatedCollective: none
+DMPlexCheckPointSFHeavy PASSED
+DMPlexCheckPointSFHeavy PASSED
 DM Object: Parallel Mesh 2 MPI processes
   type: plex
 Parallel Mesh in 2 dimensions:
@@ -38,4 +42,5 @@ PetscSF Object: 2 MPI processes
   type: basic
     sort=rank-order
   PetscSFSetGraph() has not been called yet
+DMPlexIsDistributed: FALSE
 DMPlexIsInterpolatedCollective: none

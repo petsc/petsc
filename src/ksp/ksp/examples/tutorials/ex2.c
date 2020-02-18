@@ -206,7 +206,7 @@ int main(int argc,char **args)
 /*TEST
 
    build:
-      requires: !complex !single
+      requires: !single
 
    test:
       suffix: chebyest_1
@@ -319,4 +319,12 @@ int main(int argc,char **args)
    test:
      suffix: pc_symmetric
      args: -m 10 -n 9 -ksp_converged_reason -ksp_type gmres -ksp_pc_side symmetric -pc_type cholesky
-TEST*/
+
+   test:
+      suffix: pipeprcg
+      args: -ksp_monitor_short -ksp_type pipeprcg -m 9 -n 9
+
+   test:
+      suffix: pipeprcg_rcw
+      args: -ksp_monitor_short -ksp_type pipeprcg -recompute_w false -m 9 -n 9
+ TEST*/

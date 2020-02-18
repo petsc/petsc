@@ -25,7 +25,7 @@ static PetscErrorCode VecScatterBegin_SF(VecScatter vscat,Vec x,Vec y,InsertMode
   PetscFunctionBegin;
   if (x != y) {ierr = VecLockReadPush(x);CHKERRQ(ierr);}
 
-  if (use_gpu_aware_mpi) {
+  if (use_gpu_aware_mpi || vscat->packongpu) {
     ierr = VecGetArrayReadInPlace(x,&vscat->xdata);CHKERRQ(ierr);
   } else {
 #if defined(PETSC_HAVE_CUDA)
@@ -44,7 +44,7 @@ static PetscErrorCode VecScatterBegin_SF(VecScatter vscat,Vec x,Vec y,InsertMode
   }
 
   if (x != y) {
-    if (use_gpu_aware_mpi) {ierr = VecGetArrayInPlace(y,&vscat->ydata);CHKERRQ(ierr);}
+    if (use_gpu_aware_mpi || vscat->packongpu) {ierr = VecGetArrayInPlace(y,&vscat->ydata);CHKERRQ(ierr);}
     else {ierr = VecGetArray(y,&vscat->ydata);CHKERRQ(ierr);}
   } else vscat->ydata = (PetscScalar *)vscat->xdata;
   ierr = VecLockWriteSet_Private(y,PETSC_TRUE);CHKERRQ(ierr);
@@ -98,12 +98,12 @@ static PetscErrorCode VecScatterEnd_SF(VecScatter vscat,Vec x,Vec y,InsertMode a
   }
 
   if (x != y) {
-    if (use_gpu_aware_mpi) {ierr = VecRestoreArrayReadInPlace(x,&vscat->xdata);CHKERRQ(ierr);}
+    if (use_gpu_aware_mpi || vscat->packongpu) {ierr = VecRestoreArrayReadInPlace(x,&vscat->xdata);CHKERRQ(ierr);}
     else {ierr = VecRestoreArrayRead(x,&vscat->xdata);CHKERRQ(ierr);}
     ierr = VecLockReadPop(x);CHKERRQ(ierr);
   }
 
-  if (use_gpu_aware_mpi) {ierr = VecRestoreArrayInPlace(y,&vscat->ydata);CHKERRQ(ierr);}
+  if (use_gpu_aware_mpi || vscat->packongpu) {ierr = VecRestoreArrayInPlace(y,&vscat->ydata);CHKERRQ(ierr);}
   else {ierr = VecRestoreArray(y,&vscat->ydata);CHKERRQ(ierr);}
   ierr = VecLockWriteSet_Private(y,PETSC_FALSE);CHKERRQ(ierr);
 
@@ -691,9 +691,10 @@ static PetscErrorCode VecScatterSetUp_SF(VecScatter vscat)
     ierr    = MPI_Comm_rank(ycomm,&yrank);CHKERRQ(ierr);
     for (i=disp=0; i<nrecv; i++) {
       for (j=0; j<rlens[i]; j++) {
-        k         = disp + j; /* k-th index pair */
-        ilocal[k] = ryindices[k] - yrange[yrank]; /* Convert y's global index to local index */
-        ierr      = PetscLayoutFindOwnerIndex(xlayout,rxindices[k],&iremote[k].rank,&iremote[k].index);CHKERRQ(ierr); /* Convert x's global index to (rank, index) */
+        k               = disp + j; /* k-th index pair */
+        ilocal[k]       = ryindices[k] - yrange[yrank]; /* Convert y's global index to local index */
+        ierr            = PetscLayoutFindOwnerIndex(xlayout,rxindices[k],&rank,&iremote[k].index);CHKERRQ(ierr); /* Convert x's global index to (rank, index) */
+        iremote[k].rank = rank;
       }
       disp += rlens[i];
     }
@@ -712,7 +713,10 @@ static PetscErrorCode VecScatterSetUp_SF(VecScatter vscat)
     ierr = PetscMalloc1(nleaves,&ilocal);CHKERRQ(ierr);
     ierr = PetscMalloc1(nleaves,&iremote);CHKERRQ(ierr);
     ierr = PetscArraycpy(ilocal,yindices,nleaves);CHKERRQ(ierr);
-    for (i=0; i<nleaves; i++) {ierr = PetscLayoutFindOwnerIndex(xlayout,xindices[i],&iremote[i].rank,&iremote[i].index);CHKERRQ(ierr);}
+    for (i=0; i<nleaves; i++) {
+      ierr = PetscLayoutFindOwnerIndex(xlayout,xindices[i],&rank,&iremote[i].index);CHKERRQ(ierr);
+      iremote[i].rank = rank;
+    }
   }
 
   /* MUST build SF on xx's comm, which is not necessarily identical to yy's comm.

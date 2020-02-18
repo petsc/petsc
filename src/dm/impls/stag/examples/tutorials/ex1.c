@@ -128,10 +128,10 @@ int main(int argc,char **argv)
   /* Compute reference solution on the grid, using direct array access */
   ierr = DMCreateGlobalVector(dmSol,&solRef);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dmSol,&solRefLocal);CHKERRQ(ierr);
-  ierr = DMStagVecGetArrayDOF(dmSol,solRefLocal,&arrSol);CHKERRQ(ierr);
+  ierr = DMStagVecGetArray(dmSol,solRefLocal,&arrSol);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(dmSol,&dmCoordSol);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dmSol,&coordSolLocal);CHKERRQ(ierr);
-  ierr = DMStagVecGetArrayDOFRead(dmCoordSol,coordSolLocal,&arrCoordSol);CHKERRQ(ierr);
+  ierr = DMStagVecGetArrayRead(dmCoordSol,coordSolLocal,&arrCoordSol);CHKERRQ(ierr);
   ierr = DMStagGetCorners(dmSol,&start,NULL,NULL,&n,NULL,NULL,&nExtra,NULL,NULL);CHKERRQ(ierr);
 
   /* Get the correct entries for each of our variables in local element-wise storage */
@@ -149,8 +149,8 @@ int main(int argc,char **argv)
       arrSol[e][ip] = b - a - (c/2.0) + c * coordp;
     }
   }
-  ierr = DMStagVecRestoreArrayDOFRead(dmCoordSol,coordSolLocal,&arrCoordSol);CHKERRQ(ierr);
-  ierr = DMStagVecRestoreArrayDOF(dmSol,solRefLocal,&arrSol);CHKERRQ(ierr);
+  ierr = DMStagVecRestoreArrayRead(dmCoordSol,coordSolLocal,&arrCoordSol);CHKERRQ(ierr);
+  ierr = DMStagVecRestoreArray(dmSol,solRefLocal,&arrSol);CHKERRQ(ierr);
   ierr = DMLocalToGlobal(dmSol,solRefLocal,INSERT_VALUES,solRef);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dmSol,&solRefLocal);CHKERRQ(ierr);
 

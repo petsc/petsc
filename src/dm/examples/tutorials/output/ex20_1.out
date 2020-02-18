@@ -1,5 +1,3 @@
-  DMSWARM_PIC: Using method CellDM->LocatePoints
-  DMSWARM_PIC: Using method CellDM->GetNeigbors
 DM Object: 1 MPI processes
   type: da
 Processor [0] M 25 N 13 m 1 n 1 w 1 s 1

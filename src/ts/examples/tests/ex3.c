@@ -573,7 +573,7 @@ PetscErrorCode RHSfunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
     ierr = VecCopy(obj->ksp_rhs,globalout);CHKERRQ(ierr);
   } else {
     /* ksp_sol = inv(Amat)*ksp_rhs */
-    ierr = Petsc_KSPSolve(obj);CHKERRQ(ierr);CHKERRQ(ierr);
+    ierr = Petsc_KSPSolve(obj);CHKERRQ(ierr);
     ierr = VecCopy(obj->ksp_sol,globalout);CHKERRQ(ierr);
   }
   return 0;

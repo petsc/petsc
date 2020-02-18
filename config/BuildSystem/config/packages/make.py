@@ -112,7 +112,7 @@ class Configure(config.package.GNUPackage):
           self.logPrintBox('***** WARNING: You have an older version of Gnu make, it will work,\n\
 but may not support all the parallel testing options. You can install the \n\
 latest Gnu make with your package manager, such as brew or macports, or use\n\
-the --download-make option to get the latest Gnu make warning message *****')
+the --download-make option to get the latest Gnu make *****')
         self.foundversion = ".".join([str(major),str(minor)])
     except RuntimeError as e:
       self.log.write('GNUMake check failed: '+str(e)+'\n')
@@ -203,7 +203,12 @@ the --download-make option to get the latest Gnu make warning message *****')
     self.addMakeMacro('MAKE_TEST_NP',str(make_test_np))
     self.addMakeMacro('MAKE_LOAD',str(make_load))
     self.addMakeMacro('NPMAX',str(cores))
-    self.make_jnp = self.make + ' -j' + str(self.make_np) +' -l'+str(self.make_load)
+    self.make_jnp_list = [self.make, '-j'+str(self.make_np), '-l'+str(self.make_load)]
+    self.make_jnp = ' '.join(self.make_jnp_list)
+    if self.installSudo:
+      self.make_sudo_list = [self.installSudo, self.make]
+    else:
+      self.make_sudo_list = [self.make]
     return
 
   def configure(self):

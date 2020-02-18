@@ -824,7 +824,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
 
       ierr = DMGetNumLabels(base,&numLabels);CHKERRQ(ierr);
       for (l = 0; l < numLabels; l++) {
-        PetscBool  isDepth, isGhost, isVTK, isDim;
+        PetscBool  isDepth, isGhost, isVTK, isDim, isCellType;
         DMLabel    label, labelNew;
         PetscInt   defVal;
         const char *name;
@@ -835,6 +835,8 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
         if (isDepth) continue;
         ierr = PetscStrcmp(name,"dim",&isDim);CHKERRQ(ierr);
         if (isDim) continue;
+        ierr = PetscStrcmp(name,"celltype",&isCellType);CHKERRQ(ierr);
+        if (isCellType) continue;
         ierr = PetscStrcmp(name,"ghost",&isGhost);CHKERRQ(ierr);
         if (isGhost) continue;
         ierr = PetscStrcmp(name,"vtk",&isVTK);CHKERRQ(ierr);
@@ -995,7 +997,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
 
       ierr = DMGetNumLabels(adaptFrom,&numLabels);CHKERRQ(ierr);
       for (l = 0; l < numLabels; l++) {
-        PetscBool  isDepth, isGhost, isVTK;
+        PetscBool  isDepth, isCellType, isGhost, isVTK;
         DMLabel    label, labelNew;
         PetscInt   defVal;
         const char *name;
@@ -1004,6 +1006,8 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
         ierr = DMGetLabelByNum(adaptFrom, l, &label);CHKERRQ(ierr);
         ierr = PetscStrcmp(name,"depth",&isDepth);CHKERRQ(ierr);
         if (isDepth) continue;
+        ierr = PetscStrcmp(name,"celltype",&isCellType);CHKERRQ(ierr);
+        if (isCellType) continue;
         ierr = PetscStrcmp(name,"ghost",&isGhost);CHKERRQ(ierr);
         if (isGhost) continue;
         ierr = PetscStrcmp(name,"vtk",&isVTK);CHKERRQ(ierr);
@@ -3226,12 +3230,17 @@ static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
   while (next) {
     DMLabel   baseLabel;
     DMLabel   label = next->label;
-    PetscBool isDepth, isGhost, isVTK, isSpmap;
+    PetscBool isDepth, isCellType, isGhost, isVTK, isSpmap;
     const char *name;
 
     ierr = PetscObjectGetName((PetscObject) label, &name);CHKERRQ(ierr);
     ierr = PetscStrcmp(name,"depth",&isDepth);CHKERRQ(ierr);
     if (isDepth) {
+      next = next->next;
+      continue;
+    }
+    ierr = PetscStrcmp(name,"celltype",&isCellType);CHKERRQ(ierr);
+    if (isCellType) {
       next = next->next;
       continue;
     }
@@ -3633,13 +3642,18 @@ static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex)
     while (next) {
       DMLabel    nextLabel = next->label;
       const char *name;
-      PetscBool  isDepth, isGhost, isVTK;
+      PetscBool  isDepth, isCellType, isGhost, isVTK;
       DMLabel    label;
       PetscInt   p;
 
       ierr = PetscObjectGetName((PetscObject) nextLabel, &name);CHKERRQ(ierr);
       ierr = PetscStrcmp(name,"depth",&isDepth);CHKERRQ(ierr);
       if (isDepth) {
+        next = next->next;
+        continue;
+      }
+      ierr = PetscStrcmp(name,"celltype",&isCellType);CHKERRQ(ierr);
+      if (isCellType) {
         next = next->next;
         continue;
       }
@@ -4343,6 +4357,10 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
     ierr = DMPlexSetTree(newPlex,parentSection,(PetscInt*)parents->array,(PetscInt*)childids->array);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&parentSection);CHKERRQ(ierr);
     ierr = PetscSFCreate(comm,&pointSF);CHKERRQ(ierr);
+    /*
+       These arrays defining the sf are from the p4est library, but the code there shows the leaves being populated in increasing order.
+       https://gitlab.com/petsc/petsc/merge_requests/2248#note_240186391
+    */
     ierr = PetscSFSetGraph(pointSF,pEnd - pStart,(PetscInt)leaves->elem_count,(PetscInt*)leaves->array,PETSC_COPY_VALUES,(PetscSFNode*)remotes->array,PETSC_COPY_VALUES);CHKERRQ(ierr);
     ierr = DMSetPointSF(newPlex,pointSF);CHKERRQ(ierr);
     ierr = DMSetPointSF(dm,pointSF);CHKERRQ(ierr);
@@ -4601,52 +4619,18 @@ static PetscErrorCode DMCreateInjection_pforest(DM dmCoarse, DM dmFine, Mat *inj
   PetscFunctionReturn(0);
 }
 
-static void transfer_func_0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-                            const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-                            const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                            PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar uexact[])
-{
-  PetscInt f = 0; /* I would like to have f = (PetscInt)(*ctx) */
-  PetscInt oa, ou;
-  for (ou = 0, oa = aOff[f]; oa < aOff[f+1]; ou++, oa++) uexact[ou] = a[oa];
-}
-
-static void transfer_func_1(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-                            const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-                            const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                            PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar uexact[])
-{
-  PetscInt f = 1;
-  PetscInt oa, ou;
-  for (ou = 0, oa = aOff[f]; oa < aOff[f+1]; ou++, oa++) uexact[ou] = a[oa];
-}
-
-static void transfer_func_2(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-                            const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-                            const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                            PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar uexact[])
-{
-  PetscInt f = 2;
-  PetscInt oa, ou;
-  for (ou = 0, oa = aOff[f]; oa < aOff[f+1]; ou++, oa++) uexact[ou] = a[oa];
-}
-
 #define DMForestTransferVecFromBase_pforest _append_pforest(DMForestTransferVecFromBase)
 static PetscErrorCode DMForestTransferVecFromBase_pforest(DM dm, Vec vecIn, Vec vecOut)
 {
-  DM             dmIn, dmVecIn, base, basec, plex, dmAux, coarseDM;
+  DM             dmIn, dmVecIn, base, basec, plex, coarseDM;
   DM             *hierarchy;
   PetscSF        sfRed = NULL;
   PetscDS        ds;
-  Vec            dummy, vecInLocal, vecOutLocal;
+  Vec            vecInLocal, vecOutLocal;
   DMLabel        subpointMap;
   PetscInt       minLevel, mh, n_hi, i;
   PetscBool      hiforest, *hierarchy_forest;
   PetscErrorCode ierr;
-  void           (*funcs[3]) (PetscInt dim, PetscInt Nf, PetscInt NfAux,
-                              const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-                              const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                              PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar uexact[]) = {transfer_func_0,transfer_func_1,transfer_func_2};
 
   PetscFunctionBegin;
   ierr = VecGetDM(vecIn,&dmVecIn);CHKERRQ(ierr);
@@ -4746,8 +4730,6 @@ static PetscErrorCode DMForestTransferVecFromBase_pforest(DM dm, Vec vecIn, Vec 
     ierr = MPIU_Allreduce(ncells,gncells,2,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
     if (gncells[0] != gncells[1]) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Invalid number of base cells! Expected %D, found %D",gncells[0]+1,gncells[1]+1);
   }
-  ierr = PetscObjectQuery((PetscObject)plex,"dmAux",(PetscObject*)&dmAux);CHKERRQ(ierr);
-  if (dmAux) SETERRQ(PetscObjectComm((PetscObject)dmAux),PETSC_ERR_SUP,"Cannot currently transfer from base when a dmAux is present");
 
   ierr = DMGetLabel(dmIn,"_forest_base_subpoint_map",&subpointMap);CHKERRQ(ierr);
   if (!subpointMap) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing _forest_base_subpoint_map label");CHKERRQ(ierr);
@@ -4765,20 +4747,56 @@ static PetscErrorCode DMForestTransferVecFromBase_pforest(DM dm, Vec vecIn, Vec 
     ierr = DMGlobalToLocalBegin(basec,vecIn,INSERT_VALUES,vecInLocal);CHKERRQ(ierr);
     ierr = DMGlobalToLocalEnd(basec,vecIn,INSERT_VALUES,vecInLocal);CHKERRQ(ierr);
   }
-  ierr = PetscObjectCompose((PetscObject)plex,"dmAux",(PetscObject)basec);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)plex,"A",(PetscObject)vecInLocal);CHKERRQ(ierr);
-  ierr = VecDestroy(&vecInLocal);CHKERRQ(ierr);
-  ierr = VecDestroy(&vecIn);CHKERRQ(ierr);
-  ierr = DMPlexSetSubpointMap(basec,subpointMap);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(basec,NULL,"-dm_basec_view");CHKERRQ(ierr);
-  ierr = DMDestroy(&basec);CHKERRQ(ierr);
 
-  ierr = DMGetLocalVector(dmIn,&dummy);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dmIn,&vecOutLocal);CHKERRQ(ierr);
-  ierr = DMProjectFieldLocal(dmIn,0.0,dummy,funcs,INSERT_ALL_VALUES,vecOutLocal);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(dmIn,&dummy);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)plex,"A",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)plex,"dmAux",NULL);CHKERRQ(ierr);
+  { /* get degrees of freedom ordered onto dmIn */
+    PetscSF            basetocoarse;
+    PetscInt           bStart, bEnd, nroots;
+    PetscInt           iStart, iEnd, nleaves, leaf;
+    PetscMPIInt        rank;
+    PetscSFNode       *remotes;
+    PetscSection       secIn, secOut;
+    PetscInt          *remoteOffsets;
+    PetscSF            transferSF;
+    const PetscScalar *inArray;
+    PetscScalar       *outArray;
+
+    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)basec), &rank);CHKERRQ(ierr);
+    ierr = DMPlexGetChart(basec, &bStart, &bEnd);CHKERRQ(ierr);
+    nroots = PetscMax(bEnd - bStart, 0);
+    ierr = DMPlexGetChart(plex, &iStart, &iEnd);CHKERRQ(ierr);
+    nleaves = PetscMax(iEnd - iStart, 0);
+
+    ierr = PetscMalloc1(nleaves, &remotes);CHKERRQ(ierr);
+    for (leaf = iStart; leaf < iEnd; leaf++) {
+      PetscInt index;
+
+      remotes[leaf - iStart].rank = rank;
+      ierr = DMLabelGetValue(subpointMap, leaf, &index);CHKERRQ(ierr);
+      remotes[leaf - iStart].index = index;
+    }
+
+    ierr = PetscSFCreate(PetscObjectComm((PetscObject)basec), &basetocoarse);CHKERRQ(ierr);
+    ierr = PetscSFSetGraph(basetocoarse, nroots, nleaves, NULL, PETSC_OWN_POINTER, remotes, PETSC_OWN_POINTER);CHKERRQ(ierr);
+    ierr = PetscSFSetUp(basetocoarse);CHKERRQ(ierr);
+    ierr = DMGetLocalSection(basec,&secIn);CHKERRQ(ierr);
+    ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dmIn),&secOut);CHKERRQ(ierr);
+    ierr = PetscSFDistributeSection(basetocoarse, secIn, &remoteOffsets, secOut);CHKERRQ(ierr);
+    ierr = PetscSFCreateSectionSF(basetocoarse, secIn, remoteOffsets, secOut, &transferSF);CHKERRQ(ierr);
+    ierr = PetscFree(remoteOffsets);CHKERRQ(ierr);
+    ierr = VecGetArrayWrite(vecOutLocal, &outArray);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(vecInLocal, &inArray);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(transferSF, MPIU_SCALAR, inArray, outArray);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(transferSF, MPIU_SCALAR, inArray, outArray);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(vecInLocal, &inArray);CHKERRQ(ierr);
+    ierr = VecRestoreArrayWrite(vecOutLocal, &outArray);CHKERRQ(ierr);
+    ierr = PetscSFDestroy(&transferSF);CHKERRQ(ierr);
+    ierr = PetscSectionDestroy(&secOut);CHKERRQ(ierr);
+    ierr = PetscSFDestroy(&basetocoarse);CHKERRQ(ierr);
+  }
+  ierr = VecDestroy(&vecInLocal);CHKERRQ(ierr);
+  ierr = DMDestroy(&basec);CHKERRQ(ierr);
+  ierr = VecDestroy(&vecIn);CHKERRQ(ierr);
 
   /* output */
   if (n_hi > 1) { /* downsweep the stored hierarchy */

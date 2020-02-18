@@ -409,7 +409,7 @@ static int gamg_hem_compare(const void *a, const void *b)
 
    Input Parameter:
    . perm - permutation
-   . a_Gmat - glabal matrix of graph (data not defined)
+   . a_Gmat - global matrix of graph (data not defined)
 
    Output Parameter:
    . a_locals_llist - array of list of local nodes rooted at local node

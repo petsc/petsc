@@ -270,7 +270,6 @@ int main(int argc,char **args)
     ierr = VecSetSizes(u,PETSC_DECIDE,m*n);CHKERRQ(ierr);
     ierr = VecSetFromOptions(u);CHKERRQ(ierr);
 
-    
     ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
     ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
     ierr = VecSetRandom(u,rctx);CHKERRQ(ierr);

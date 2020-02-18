@@ -7,7 +7,7 @@
 */
 #include <petsc/private/logimpl.h> /*I    "petscsys.h"   I*/
 
-PetscStageLog petsc_stageLog = 0;
+PetscStageLog petsc_stageLog = NULL;
 
 /*@C
   PetscLogGetStageLog - This function returns the default stage logging object.
@@ -108,7 +108,7 @@ PetscErrorCode  PetscStageLogGetEventPerfLog(PetscStageLog stageLog, int stage, 
 
   Not collective
 
-  Input Paramter:
+  Input Parameter:
 . stageInfo - The PetscStageInfo
 
   Level: developer
@@ -131,7 +131,7 @@ PetscErrorCode  PetscStageInfoDestroy(PetscStageInfo *stageInfo)
 
   Not collective
 
-  Input Paramter:
+  Input Parameter:
 . stageLog - The PetscStageLog
 
   Level: developer

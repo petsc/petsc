@@ -348,13 +348,15 @@ static PetscErrorCode PetscDualSpaceSetUp_BDM(PetscDualSpace sp)
       isCell = ((d == dim) && !faceSp) ? PETSC_TRUE : PETSC_FALSE;
       if (isFace) {
         PetscQuadrature  fq;
+        PetscTabulation  T;
         PetscReal       *B, n[3];
         const PetscReal *fqpoints, *fqweights;
         PetscInt         faceDim = PetscMax(dim-1, 1), Nq, q, fdim, fb;
 
         if (cdim == 1) {n[0] = 0.; n[1] = 1.;}
         else           {ierr = DMPlexComputeCellGeometryFVM(dm, p, NULL, NULL, n);CHKERRQ(ierr);}
-        ierr = PetscFEGetDefaultTabulation(faceFE, &B, NULL, NULL);CHKERRQ(ierr);
+        ierr = PetscFEGetCellTabulation(faceFE, &T);CHKERRQ(ierr);
+        B = T->T[0];
         ierr = PetscFEGetQuadrature(faceFE, &fq);CHKERRQ(ierr);
         ierr = PetscQuadratureGetData(fq, NULL, NULL, &Nq, &fqpoints, &fqweights);CHKERRQ(ierr);
         /* Create a dual basis vector for each basis function */

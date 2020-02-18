@@ -10,7 +10,7 @@ const char *const PetscBuildTwoSidedTypes[] = {
   "REDSCATTER",
   "PetscBuildTwoSidedType",
   "PETSC_BUILDTWOSIDED_",
-  0
+  NULL
 };
 
 static PetscBuildTwoSidedType _twosided_type = PETSC_BUILDTWOSIDED_NOTSET;

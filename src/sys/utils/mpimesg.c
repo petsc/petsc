@@ -85,7 +85,7 @@ PetscErrorCode  PetscGatherNumberOfMessages(MPI_Comm comm,const PetscMPIInt ifla
 
   The calling function deallocates the memory in onodes and olengths
 
-  To determine nrecevs, one can use PetscGatherNumberOfMessages()
+  To determine nrecvs, one can use PetscGatherNumberOfMessages()
 
 .seealso: PetscGatherNumberOfMessages()
 @*/
@@ -166,7 +166,7 @@ PetscErrorCode  PetscGatherMessageLengths(MPI_Comm comm,PetscMPIInt nsends,Petsc
 
   The calling function deallocates the memory in onodes and olengths
 
-  To determine nrecevs, one can use PetscGatherNumberOfMessages()
+  To determine nrecvs, one can use PetscGatherNumberOfMessages()
 
 .seealso: PetscGatherMessageLengths() and PetscGatherNumberOfMessages()
 @*/

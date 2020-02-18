@@ -4,12 +4,13 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.version         = '2.18.1'
+    #self.version         = '2.18.2'
     self.minversion      = '2.14'
     self.versionname     = 'HYPRE_RELEASE_VERSION'
     self.versioninclude  = 'HYPRE_config.h'
     self.requiresversion = 1
-    self.gitcommit       = 'v'+self.version
+    #self.gitcommit       = 'v'+self.version
+    self.gitcommit       = '93baaa8c9' # v2.18.2+valgrind-fix
     self.download        = ['git://https://github.com/hypre-space/hypre','https://github.com/hypre-space/hypre/archive/'+self.gitcommit+'.tar.gz']
     self.functions       = ['HYPRE_IJMatrixCreate']
     self.includes        = ['HYPRE.h']
@@ -53,7 +54,9 @@ class Configure(config.package.GNUPackage):
     libs = []
     for l in self.mpi.lib:
       ll = os.path.basename(l)
-      libs.append(ll[3:-2])
+      if ll.endswith('.a'): libs.append(ll[3:-2])
+      if ll.endswith('.so'): libs.append(ll[3:-3])
+      if ll.endswith('.dylib'): libs.append(ll[3:-6])
     libs = ' '.join(libs)
     args.append('--with-MPI-libs="'+libs+'"')
 
@@ -109,8 +112,9 @@ class Configure(config.package.GNUPackage):
 
   def configureLibrary(self):
     config.package.Package.configureLibrary(self)
-    oldFlags = self.compilers.CPPFLAGS
-    self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
+    flagsArg = self.getPreprocessorFlagsArg()
+    oldFlags = getattr(self.compilers, flagsArg)
+    setattr(self.compilers, flagsArg, oldFlags+' '+self.headers.toString(self.include))
     # check integers
     if self.defaultIndexSize == 64:
       code = '#if !defined(HYPRE_BIGINT) && !defined(HYPRE_MIXEDINT)\n#error HYPRE_BIGINT or HYPRE_MIXEDINT not defined!\n#endif'
@@ -120,5 +124,5 @@ class Configure(config.package.GNUPackage):
       msg  = 'Hypre with --enable-bigint/--enable-mixedint appears to be specified for a default 32-bit-indices build of PETSc.\n'
     if not self.checkCompile('#include "HYPRE_config.h"',code):
       raise RuntimeError('Hypre specified is incompatible!\n'+msg+'Suggest using --download-hypre for a compatible hypre')
-    self.compilers.CPPFLAGS = oldFlags
+    setattr(self.compilers, flagsArg,oldFlags)
     return

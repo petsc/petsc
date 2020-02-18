@@ -100,12 +100,24 @@ int main(int argc, char **argv)
    test:
       suffix: basic
       nsize: 2
+      filter: grep -v "type" | grep -v "sort"
       args: -sf_type basic
 
    test:
       suffix: window
       nsize: 2
-      args: -sf_type window
-      requires: define(PETSC_HAVE_MPI_WIN_CREATE)
+      filter: grep -v "type" | grep -v "sort"
+      output_file: output/ex2_basic.out
+      args: -sf_type window -sf_window_sync {{fence active lock}} -sf_window_flavor {{create dynamic allocate}}
+      requires: define(PETSC_HAVE_MPI_ONE_SIDED)
+
+   # The nightly test suite with MPICH uses ch3:sock, which is broken when winsize == 0 in some of the processes
+   test:
+      suffix: window_shared
+      nsize: 2
+      filter: grep -v "type" | grep -v "sort"
+      output_file: output/ex2_basic.out
+      args: -sf_type window -sf_window_sync {{fence active lock}} -sf_window_flavor shared
+      requires: define(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY) !define(PETSC_HAVE_MPICH_NUMVERSION) define(PETSC_HAVE_MPI_ONE_SIDED)
 
 TEST*/

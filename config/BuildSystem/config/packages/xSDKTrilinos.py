@@ -102,7 +102,7 @@ class Configure(config.package.CMakePackage):
     if not self.argDB['with-batch']:
       try:
         self.logPrintBox('Testing xSDKTrilinos; this may take several minutes')
-        output,err,ret  = config.package.CMakePackage.executeShellCommand('cd '+os.path.join(self.packageDir,'petsc-build')+' && '+self.cmake.ctest,timeout=50, log = self.log)
+        output,err,ret  = config.package.CMakePackage.executeShellCommand('cd '+os.path.join(self.packageDir,'petsc-build')+' && '+self.cmake.ctest,timeout=60, log = self.log)
         output = output+err
         self.log.write(output)
         if output.find('Failure') > -1:

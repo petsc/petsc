@@ -122,19 +122,19 @@ class Configure(config.base.Configure):
         self.registerPythonFile(fname,'')
 
     # test for a variety of basic headers and functions
-    headersC = map(lambda name: name+'.h', ['setjmp','dos', 'fcntl', 'float', 'io',  'malloc', 'pwd',  'strings',
-                                            'unistd', 'sys/sysinfo', 'machine/endian', 'sys/param', 'sys/procfs', 'sys/resource',
-                                            'sys/systeminfo', 'sys/times', 'sys/utsname',
+    headersC = map(lambda name: name+'.h',['setjmp','dos','fcntl','float','io','malloc','pwd','strings',
+                                            'unistd','sys/sysinfo','machine/endian','sys/param','sys/procfs','sys/resource',
+                                            'sys/systeminfo','sys/times','sys/utsname',
                                             'sys/socket','sys/wait','netinet/in','netdb','Direct','time','Ws2tcpip','sys/types',
-                                            'WindowsX', 'float','ieeefp','stdint','pthread','inttypes','immintrin','zmmintrin'])
-    functions = ['access', '_access', 'clock', 'drand48', 'getcwd', '_getcwd', 'getdomainname', 'gethostname',
-                 'getwd', 'memalign', 'popen', 'PXFGETARG', 'rand', 'getpagesize',
-                 'readlink', 'realpath',  'usleep', 'sleep', '_sleep',
+                                            'WindowsX','float','ieeefp','stdint','pthread','inttypes','immintrin','zmmintrin'])
+    functions = ['access','_access','clock','drand48','getcwd','_getcwd','getdomainname','gethostname',
+                 'getwd','memalign','popen','PXFGETARG','rand','getpagesize',
+                 'readlink','realpath','usleep','sleep','_sleep',
                  'uname','snprintf','_snprintf','lseek','_lseek','time','fork','stricmp',
-                 'strcasecmp', 'bzero', 'dlopen', 'dlsym', 'dlclose', 'dlerror',
-                 '_set_output_format','_mkdir','socket','gethostbyname']
-    libraries = [(['fpe'], 'handle_sigfpes')]
-    librariessock = [(['socket', 'nsl'], 'socket')]
+                 'strcasecmp','bzero','dlopen','dlsym','dlclose','dlerror',
+                 '_set_output_format','_mkdir','socket','gethostbyname','_pipe']
+    libraries = [(['fpe'],'handle_sigfpes')]
+    librariessock = [(['socket','nsl'],'socket')]
     self.headers.headers.extend(headersC)
     self.functions.functions.extend(functions)
     self.libraries.libraries.extend(libraries)
@@ -253,6 +253,7 @@ prepend-path PATH "%s"
     if hasattr(self.compilers, 'CXX'):
       self.setCompilers.pushLanguage('Cxx')
       self.addDefine('HAVE_CXX','1')
+      self.addMakeMacro('CXXPP_FLAGS',self.setCompilers.CXXPPFLAGS)
       self.addMakeMacro('CXX_FLAGS',self.setCompilers.getCompilerFlags())
       cxx_linker = self.setCompilers.getLinker()
       self.addMakeMacro('CXX_LINKER',cxx_linker)
@@ -266,6 +267,12 @@ prepend-path PATH "%s"
     self.setCompilers.pushLanguage(self.languages.clanguage)
     self.addMakeMacro('PCC',self.setCompilers.getCompiler())
     self.addMakeMacro('PCC_FLAGS',self.setCompilers.getCompilerFlags())
+    self.addMakeMacro('PCPP_FLAGS',getattr(self.setCompilers,self.languages.clanguage.upper()+'PPFLAGS'))
+    self.addMakeMacro('PFLAGS','${'+self.languages.clanguage.upper()+'FLAGS}')
+    self.addMakeMacro('PPPFLAGS','${'+self.languages.clanguage.upper()+'PPFLAGS}')
+    # ugly work-around for python3 distutils parse_makefile() issue with the above 2 lines
+    self.addMakeMacro('PY_'+self.languages.clanguage.upper()+'FLAGS','')
+    self.addMakeMacro('PY_'+self.languages.clanguage.upper()+'PPFLAGS','')
     self.setCompilers.popLanguage()
     # .o or .obj
     self.addMakeMacro('CC_SUFFIX','o')
@@ -281,10 +288,12 @@ prepend-path PATH "%s"
 
     if hasattr(self.compilers, 'FC'):
       if self.framework.argDB['with-fortran-bindings']:
+        if not self.fortran.fortranIsF90:
+          raise RuntimeError('Error! Fortran compiler "'+self.compilers.FC+'" does not support F90! PETSc fortran bindings require a F90 compiler')
         self.addDefine('HAVE_FORTRAN','1')
       self.setCompilers.pushLanguage('FC')
       # need FPPFLAGS in config/setCompilers
-      self.addMakeMacro('FPP_FLAGS',self.setCompilers.CPPFLAGS)
+      self.addMakeMacro('FPP_FLAGS',self.setCompilers.FPPFLAGS)
 
       # compiler values
       self.addMakeMacro('FC_FLAGS',self.setCompilers.getCompilerFlags())
@@ -601,7 +610,7 @@ prepend-path PATH "%s"
       self.addDefine('DEPRECATED_ENUM(why)', '__attribute((deprecated))')
     else:
       self.addDefine('DEPRECATED_ENUM(why)', ' ')
-    # I was unable to make a CPP macro that takes the old and new values as seperate arguments and builds the message needed by _Pragma
+    # I was unable to make a CPP macro that takes the old and new values as separate arguments and builds the message needed by _Pragma
     # hence the deprecation message is handled as it is
     if self.checkCompile('#define TEST _Pragma("GCC warning \"Testing _Pragma\"") value'):
       self.addDefine('DEPRECATED_MACRO(why)', '_Pragma(why)')

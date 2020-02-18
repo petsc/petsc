@@ -642,7 +642,7 @@ PetscErrorCode PetscSFSetGraphLayout(PetscSF sf,PetscLayout layout,PetscInt nlea
   ierr = PetscLayoutGetLocalSize(layout,&nroots);CHKERRQ(ierr);
   ierr = PetscMalloc1(nleaves,&remote);CHKERRQ(ierr);
   for (i=0; i<nleaves; i++) {
-    PetscInt owner = -1;
+    PetscMPIInt owner = -1;
     ierr = PetscLayoutFindOwner(layout,iremote[i],&owner);CHKERRQ(ierr);
     remote[i].rank  = owner;
     remote[i].index = iremote[i] - layout->range[owner];
@@ -693,8 +693,8 @@ PetscErrorCode PetscLayoutMapLocal(PetscLayout map,PetscInt N,const PetscInt idx
   PetscSF        sf;
   PetscInt      *lidxs,*work = NULL;
   PetscSFNode   *ridxs;
-  PetscMPIInt    rank;
-  PetscInt       r, p = 0, len = 0;
+  PetscMPIInt    rank, p = 0;
+  PetscInt       r, len = 0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

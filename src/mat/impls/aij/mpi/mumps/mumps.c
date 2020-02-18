@@ -160,14 +160,14 @@ static PetscErrorCode MatMumpsSolveSchur_Private(Mat F)
   ierr = MatCreateSeqDense(PETSC_COMM_SELF,mumps->id.size_schur,mumps->id.nrhs,(PetscScalar*)mumps->id.redrhs,&B);CHKERRQ(ierr);
   ierr = MatSetType(B,((PetscObject)S)->type_name);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-  ierr = MatPinToCPU(B,S->pinnedtocpu);CHKERRQ(ierr);
+  ierr = MatBindToCPU(B,S->boundtocpu);CHKERRQ(ierr);
 #endif
   switch (schurstatus) {
   case MAT_FACTOR_SCHUR_FACTORED:
     ierr = MatCreateSeqDense(PETSC_COMM_SELF,mumps->id.size_schur,mumps->id.nrhs,(PetscScalar*)mumps->id.redrhs,&X);CHKERRQ(ierr);
     ierr = MatSetType(X,((PetscObject)S)->type_name);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-    ierr = MatPinToCPU(X,S->pinnedtocpu);CHKERRQ(ierr);
+    ierr = MatBindToCPU(X,S->boundtocpu);CHKERRQ(ierr);
 #endif
     if (!mumps->id.ICNTL(9)) { /* transpose solve */
       ierr = MatMatSolveTranspose(S,B,X);CHKERRQ(ierr);
@@ -185,7 +185,7 @@ static PetscErrorCode MatMumpsSolveSchur_Private(Mat F)
     ierr = MatCreateSeqDense(PETSC_COMM_SELF,mumps->id.size_schur,mumps->id.nrhs,mumps->schur_sol,&X);CHKERRQ(ierr);
     ierr = MatSetType(X,((PetscObject)S)->type_name);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-    ierr = MatPinToCPU(X,S->pinnedtocpu);CHKERRQ(ierr);
+    ierr = MatBindToCPU(X,S->boundtocpu);CHKERRQ(ierr);
 #endif
     if (!mumps->id.ICNTL(9)) { /* transpose solve */
       ierr = MatTransposeMatMult(S,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&X);CHKERRQ(ierr);
@@ -1348,7 +1348,7 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
   PetscBool      isMPIAIJ;
 
   PetscFunctionBegin;
-  if (mumps->id.INFOG(1) < 0) {
+  if (mumps->id.INFOG(1) < 0 && !(mumps->id.INFOG(1) == -16 && mumps->id.INFOG(1) == 0)) {
     if (mumps->id.INFOG(1) == -6) {
       ierr = PetscInfo2(A,"MatFactorNumeric is called with singular matrix structure, INFOG(1)=%d, INFO(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFO(2));CHKERRQ(ierr);
     }
@@ -1599,6 +1599,8 @@ PetscErrorCode MatFactorSymbolic_MUMPS_ReportIfError(Mat F,Mat A,const MatFactor
       } else if (mumps->id.INFOG(1) == -5 || mumps->id.INFOG(1) == -7) {
         ierr = PetscInfo2(F,"problem of workspace, INFOG(1)=%d, INFO(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFO(2));CHKERRQ(ierr);
         F->factorerrortype = MAT_FACTOR_OUTMEMORY;
+      } else if (mumps->id.INFOG(1) == -16 && mumps->id.INFOG(1) == 0) {
+        ierr = PetscInfo(F,"Empty matrix\n");CHKERRQ(ierr);
       } else {
         ierr = PetscInfo2(F,"Error reported by MUMPS in analysis phase: INFOG(1)=%d, INFO(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFO(2));CHKERRQ(ierr);
         F->factorerrortype = MAT_FACTOR_OTHER;
@@ -2288,7 +2290,7 @@ PetscErrorCode MatMumpsGetInverse_MUMPS(Mat F,Mat spRHS)
   PetscBool      flg;
   Mat_MUMPS      *mumps =(Mat_MUMPS*)F->data;
   PetscScalar    *aa;
-  PetscInt       spnr,*ia,*ja;
+  PetscInt       spnr,*ia,*ja,M,nrhs;
 
   PetscFunctionBegin;
   PetscValidIntPointer(spRHS,2);
@@ -2305,6 +2307,11 @@ PetscErrorCode MatMumpsGetInverse_MUMPS(Mat F,Mat spRHS)
   } else {
     Btseq = Bt;
   }
+
+  ierr = MatGetSize(spRHS,&M,&nrhs);CHKERRQ(ierr);
+  mumps->id.nrhs = nrhs;
+  mumps->id.lrhs = M;
+  mumps->id.rhs  = NULL;
 
   if (!mumps->myid) {
     ierr = MatSeqAIJGetArray(Btseq,&aa);CHKERRQ(ierr);
@@ -2654,6 +2661,9 @@ static PetscErrorCode MatGetFactor_aij_mumps(Mat A,MatFactorType ftype,Mat *F)
   PetscBool      isSeqAIJ;
 
   PetscFunctionBegin;
+ #if defined(PETSC_USE_COMPLEX)
+  if (A->hermitian && !A->symmetric && ftype == MAT_FACTOR_CHOLESKY) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Hermitian CHOLESKY Factor is not supported");
+ #endif
   /* Create the factorization matrix */
   ierr = PetscObjectBaseTypeCompare((PetscObject)A,MATSEQAIJ,&isSeqAIJ);CHKERRQ(ierr);
   ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
@@ -2721,15 +2731,16 @@ static PetscErrorCode MatGetFactor_sbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
   PetscBool      isSeqSBAIJ;
 
   PetscFunctionBegin;
-  if (ftype != MAT_FACTOR_CHOLESKY) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Cannot use PETSc SBAIJ matrices with MUMPS LU, use AIJ matrix");
-  ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQSBAIJ,&isSeqSBAIJ);CHKERRQ(ierr);
-  /* Create the factorization matrix */
+ #if defined(PETSC_USE_COMPLEX)
+  if (A->hermitian && !A->symmetric) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Hermitian CHOLESKY Factor is not supported");
+ #endif
   ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
   ierr = PetscStrallocpy("mumps",&((PetscObject)B)->type_name);CHKERRQ(ierr);
   ierr = MatSetUp(B);CHKERRQ(ierr);
 
   ierr = PetscNewLog(B,&mumps);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQSBAIJ,&isSeqSBAIJ);CHKERRQ(ierr);
   if (isSeqSBAIJ) {
     mumps->ConvertToTriples = MatConvertToTriples_seqsbaij_seqsbaij;
   } else {

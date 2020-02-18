@@ -209,6 +209,29 @@ static PetscErrorCode PetscDualSpaceView_ASCII(PetscDualSpace sp, PetscViewer v)
   PetscFunctionReturn(0);
 }
 
+/*@C
+   PetscDualSpaceViewFromOptions - View from Options
+
+   Collective on PetscDualSpace
+
+   Input Parameters:
++  A - the PetscDualSpace object
+.  obj - Optional object, proivides prefix
+-  name - command line option
+
+   Level: intermediate
+.seealso:  PetscDualSpace, PetscDualSpaceView(), PetscObjectViewFromOptions(), PetscDualSpaceCreate()
+@*/
+PetscErrorCode  PetscDualSpaceViewFromOptions(PetscDualSpace A,PetscObject obj,const char name[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,PETSCDUALSPACE_CLASSID,1);
+  ierr = PetscObjectViewFromOptions((PetscObject)A,obj,name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@
   PetscDualSpaceView - Views a PetscDualSpace
 
@@ -220,7 +243,7 @@ static PetscErrorCode PetscDualSpaceView_ASCII(PetscDualSpace sp, PetscViewer v)
 
   Level: beginner
 
-.seealso PetscDualSpaceDestroy()
+.seealso PetscDualSpaceDestroy(), PetscDualSpace
 @*/
 PetscErrorCode PetscDualSpaceView(PetscDualSpace sp, PetscViewer v)
 {
@@ -249,7 +272,7 @@ PetscErrorCode PetscDualSpaceView(PetscDualSpace sp, PetscViewer v)
 
   Level: intermediate
 
-.seealso PetscDualSpaceView()
+.seealso PetscDualSpaceView(), PetscDualSpace, PetscObjectSetFromOptions()
 @*/
 PetscErrorCode PetscDualSpaceSetFromOptions(PetscDualSpace sp)
 {
@@ -309,7 +332,7 @@ PetscErrorCode PetscDualSpaceSetFromOptions(PetscDualSpace sp)
 
   Level: intermediate
 
-.seealso PetscDualSpaceView(), PetscDualSpaceDestroy()
+.seealso PetscDualSpaceView(), PetscDualSpaceDestroy(), PetscDualSpace
 @*/
 PetscErrorCode PetscDualSpaceSetUp(PetscDualSpace sp)
 {
@@ -334,7 +357,7 @@ PetscErrorCode PetscDualSpaceSetUp(PetscDualSpace sp)
 
   Level: beginner
 
-.seealso PetscDualSpaceView()
+.seealso PetscDualSpaceView(), PetscDualSpace(), PetscDualSpaceCreate()
 @*/
 PetscErrorCode PetscDualSpaceDestroy(PetscDualSpace *sp)
 {

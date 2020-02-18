@@ -208,7 +208,7 @@ PetscErrorCode MatFDColoringSetUp_SeqXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   }
 
   ierr = PetscMalloc2(nis,&c->ncolumns,nis,&c->columns);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nis,&c->nrows);CHKERRQ(ierr); /* nrows is freeed seperately from ncolumns and columns */
+  ierr = PetscMalloc1(nis,&c->nrows);CHKERRQ(ierr); /* nrows is freeed separately from ncolumns and columns */
   ierr = PetscLogObjectMemory((PetscObject)c,3*nis*sizeof(PetscInt));CHKERRQ(ierr);
 
   if (c->htype[0] == 'd') {

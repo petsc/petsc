@@ -26,13 +26,15 @@ static PetscErrorCode ProjectToUnitSphere(DM dm)
 {
   Vec            coordinates;
   PetscScalar   *coords;
-  PetscInt       Nv, v, dim, d;
+  PetscInt       Nv, v, bs, dim, d;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = VecGetLocalSize(coordinates, &Nv);CHKERRQ(ierr);
-  ierr = VecGetBlockSize(coordinates, &dim);CHKERRQ(ierr);
+  ierr = VecGetBlockSize(coordinates, &bs);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(dm, &dim);CHKERRQ(ierr);
+  if (dim != bs) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Coordinate bs %D does not match dim %D",bs,dim);
   Nv  /= dim;
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
   for (v = 0; v < Nv; ++v) {
@@ -114,7 +116,7 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_quad_parallel
     requires: !__float128
-    args: -dm_view
+    args: -dm_view -petscpartitioner_type simple
     nsize: 2
 
   test:
@@ -125,7 +127,7 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_tri_parallel
     requires: !__float128
-    args: -simplex -dm_view
+    args: -simplex -dm_view -petscpartitioner_type simple
     nsize: 2
 
   test:
@@ -136,7 +138,7 @@ int main(int argc, char **argv)
   test:
     suffix: 3d_tri_parallel
     requires: !__float128
-    args: -dim 3 -simplex -dm_view
+    args: -dim 3 -simplex -dm_view -petscpartitioner_type simple
     nsize: 2
 
 TEST*/

@@ -87,7 +87,6 @@ int main(int argc, char **argv)
   return ierr;
 }
 
-
 /*TEST
 
    test:
@@ -100,12 +99,28 @@ int main(int argc, char **argv)
 
    test:
       suffix: window
-      args: -sf_type window
-      requires: define(PETSC_HAVE_MPI_WIN_CREATE)
+      filter: grep -v "type" | grep -v "sort"
+      args: -sf_type window -sf_window_sync {{fence active lock}} -sf_window_flavor {{create allocate dynamic}}
+      requires: define(PETSC_HAVE_MPI_ONE_SIDED)
 
    test:
       suffix: window_dupped
-      args: -test_dupped_type -sf_type window
-      requires: define(PETSC_HAVE_MPI_WIN_CREATE)
+      filter: grep -v "type" | grep -v "sort"
+      args: -test_dupped_type -sf_type window -sf_window_sync {{fence active lock}} -sf_window_flavor {{create allocate dynamic}}
+      requires: define(PETSC_HAVE_MPI_ONE_SIDED)
+
+   test:
+      suffix: window_shared
+      output_file: output/ex3_window.out
+      filter: grep -v "type" | grep -v "sort"
+      args: -sf_type window -sf_window_sync {{fence active lock}} -sf_window_flavor shared
+      requires: define(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY) define(PETSC_HAVE_MPI_ONE_SIDED)
+
+   test:
+      suffix: window_dupped_shared
+      output_file: output/ex3_window_dupped.out
+      filter: grep -v "type" | grep -v "sort"
+      args: -test_dupped_type -sf_type window -sf_window_sync {{fence active lock}} -sf_window_flavor shared
+      requires: define(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY) define(PETSC_HAVE_MPI_ONE_SIDED)
 
 TEST*/

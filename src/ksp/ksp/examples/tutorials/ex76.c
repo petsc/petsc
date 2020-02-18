@@ -11,7 +11,9 @@ int main(int argc,char **args)
   IS             is,sizes;
   const PetscInt *idx;
   PetscMPIInt    rank,size;
-  char           dir[PETSC_MAX_PATH_LEN],name[PETSC_MAX_PATH_LEN];
+  const char     *deft = MATAIJ;
+  PetscBool      flg;
+  char           dir[PETSC_MAX_PATH_LEN],name[PETSC_MAX_PATH_LEN],type[256];
   PetscViewer    viewer;
   PetscErrorCode ierr;
 
@@ -39,23 +41,36 @@ int main(int argc,char **args)
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   ierr = MatLoad(A,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(name,sizeof(name),"%s/is_%d_%d.dat",dir,rank,size);CHKERRQ(ierr);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(name,sizeof(name),"%s/is_%d_%d.dat",dir,rank,size);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,name,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   ierr = ISLoad(is,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(name,sizeof(name),"%s/Neumann_%d_%d.dat",dir,rank,size);CHKERRQ(ierr);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(name,sizeof(name),"%s/Neumann_%d_%d.dat",dir,rank,size);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,name,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
+  ierr = MatSetBlockSizesFromMats(aux,A,A);CHKERRQ(ierr);
   ierr = MatLoad(aux,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatSetOption(aux,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
   /* ready for testing */
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","","");CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-mat_type","Matrix type","MatSetType",MatList,deft,type,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  if (flg) {
+    ierr = MatConvert(A,type,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
+    ierr = MatConvert(aux,type,MAT_INPLACE_MATRIX,&aux);CHKERRQ(ierr);
+  }
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)pc,"_PCHPDDM_Neumann_IS",(PetscObject)is);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)pc,"_PCHPDDM_Neumann_Mat",(PetscObject)aux);CHKERRQ(ierr);
+  ierr = PCSetType(pc,PCHPDDM);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_HPDDM)
+  ierr = PCHPDDMSetAuxiliaryMat(pc,is,aux,NULL,NULL);CHKERRQ(ierr);
+  ierr = PCHPDDMHasNeumannMat(pc,PETSC_FALSE);CHKERRQ(ierr); /* PETSC_TRUE is fine as well, just testing */
+#endif
   ierr = ISDestroy(&is);CHKERRQ(ierr);
   ierr = MatDestroy(&aux);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = MatCreateVecs(A,&x,&b);CHKERRQ(ierr);
   ierr = VecSet(b,1.0);CHKERRQ(ierr);
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
@@ -70,26 +85,27 @@ int main(int argc,char **args)
 /*TEST
 
    test:
-      requires: hpddm datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: hpddm slepc datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
       nsize: 4
       args: -ksp_rtol 1e-3 -ksp_converged_reason -pc_type {{bjacobi hpddm}shared output} -pc_hpddm_coarse_sub_pc_type lu -sub_pc_type lu -options_left no -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO
 
    test:
-      requires: hpddm datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: hpddm slepc datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
       suffix: geneo
       nsize: 4
-      args: -ksp_converged_reason -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_nev {{5 10 15}separate output} -pc_hpddm_coarse_p {{1 2}shared output} -pc_hpddm_coarse_pc_type redundant -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO
+      args: -ksp_converged_reason -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_eps_nev {{5 15}separate output} -pc_hpddm_levels_1_st_pc_type cholesky -pc_hpddm_coarse_p {{1 2}shared output} -pc_hpddm_coarse_pc_type redundant -mat_type {{aij baij sbaij}shared output} -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO
 
    test:
-      requires: hpddm datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: hpddm slepc datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
       suffix: fgmres_geneo_20_p_2
       nsize: 4
       args: -ksp_converged_reason -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_nev 20 -pc_hpddm_coarse_p 2 -pc_hpddm_coarse_pc_type redundant -ksp_type fgmres -pc_hpddm_coarse_mat_type {{baij sbaij}shared output} -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO
 
    test:
-      requires: hpddm datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: hpddm slepc datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
       suffix: fgmres_geneo_20_p_2_geneo
+      output_file: output/ex76_fgmres_geneo_20_p_2.out
       nsize: 4
-      args: -ksp_converged_reason -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_nev 20 -pc_hpddm_levels_2_p 2 -pc_hpddm_levels_2_mat_type {{baij sbaij}shared output} -pc_hpddm_levels_2_eps_nev {{5 20}separate output} -pc_hpddm_levels_2_sub_pc_type cholesky -pc_hpddm_levels_2_ksp_type gmres -pc_hpddm_levels_2_ksp_converged_reason -ksp_type fgmres -pc_hpddm_coarse_mat_type {{baij sbaij}shared output} -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO
+      args: -ksp_converged_reason -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_eps_nev 20 -pc_hpddm_levels_2_p 2 -pc_hpddm_levels_2_mat_type {{baij sbaij}shared output} -pc_hpddm_levels_2_eps_nev {{5 20}shared output} -pc_hpddm_levels_2_sub_pc_type cholesky -pc_hpddm_levels_2_ksp_type gmres -ksp_type fgmres -pc_hpddm_coarse_mat_type {{baij sbaij}shared output} -mat_type {{aij sbaij}shared output} -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO
 
 TEST*/

@@ -68,10 +68,10 @@ do
     f ) force=true           ;;
     h ) print_usage; exit    ;;  
     n ) nsize="$OPTARG"      ;;  
-    j ) diff_flags="-j"      ;;  
-    J ) diff_flags="-J $OPTARG" ;;  
-    m ) diff_flags="-m"      ;;  
-    M ) diff_flags="-M"      ;;  
+    j ) diff_flags=$diff_flags" -j"      ;;  
+    J ) diff_flags=$diff_flags" -J $OPTARG" ;;  
+    m ) diff_flags=$diff_flags" -m"      ;;  
+    M ) diff_flags=$diff_flags" -M"      ;;  
     o ) output_fmt=$OPTARG   ;;  
     t ) TIMEOUT=$OPTARG      ;;  
     V ) mpiexec="petsc_mpiexec_valgrind $mpiexec" ;;  
@@ -96,6 +96,12 @@ if test -n "$extra_args"; then
 fi
 if $debugger; then
   args="-start_in_debugger $args"
+fi
+if test -n "$filter"; then
+  diff_flags=$diff_flags" -F \$'$filter'"
+fi
+if test -n "$filter_output"; then
+  diff_flags=$diff_flags" -f \$'$filter_output'"
 fi
 
 
@@ -132,16 +138,12 @@ function petsc_testrun() {
   # Second arg = stdout file
   # Third arg = stderr file
   # Fourth arg = label for reporting
-  # Fifth arg = Filter
   rmfiles="${rmfiles} $2 $3"
   tlabel=$4
-  filter=$5
+  error=$5
   cmd="$1 > $2 2> $3"
-  if test -n "$filter"; then
-    if test "${filter:0:6}"=="Error:"; then
-      filter=${filter##Error:}
-      cmd="$1 2>&1 | cat > $2"
-    fi
+  if test -n "$error"; then
+    cmd="$1 2>&1 | cat > $2"
   fi
   echo "$cmd" > ${tlabel}.sh; chmod 755 ${tlabel}.sh
 
@@ -162,13 +164,6 @@ function petsc_testrun() {
     fi
   fi
 
-  # Handle filters separately and assume no timeout check needed
-  if test -n "$filter"; then
-    cmd="cat $2 | $filter > $2.tmp 2>> $3 ; mv $2.tmp $2"
-    echo "$cmd" >> ${tlabel}.sh
-    eval "$cmd"
-  fi
-
   # Report errors
   comment=""
   if test $cmd_res == 0; then
@@ -187,11 +182,13 @@ function petsc_testrun() {
 
     # Report errors in detail
     if [ -z "$timed_out" ]; then
-      # We've had tests fail but stderr->stdout. Fix with this test.
-      if test -s $3; then
+      # We've had tests fail but stderr->stdout, as well as having
+      # mpi_abort go to stderr which throws this test off.  Show both
+      # with stdout first
+      awk '{print "#\t" $0}' < $2 | tee -a ${testlogerrfile}
+      # if statement is for diff tests
+      if test "$2" != "$3"; then
         awk '{print "#\t" $0}' < $3 | tee -a ${testlogerrfile}
-      else
-        awk '{print "#\t" $0}' < $2 | tee -a ${testlogerrfile}
       fi
     fi
     let failed=$failed+1
@@ -234,7 +231,7 @@ function petsc_mpiexec_valgrind() {
   npopt=$1;shift
   np=$1;shift
 
-  valgrind="valgrind -q --tool=memcheck --leak-check=yes --num-callers=20 --track-origins=yes --suppressions=$petsc_bindir/maint/petsc-val.supp"
+  valgrind="valgrind -q --tool=memcheck --leak-check=yes --num-callers=20 --track-origins=yes --suppressions=$petsc_bindir/maint/petsc-val.supp --error-exitcode=10"
 
   $mpiexec $npopt $np $valgrind $*
 }

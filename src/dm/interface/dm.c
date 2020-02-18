@@ -8,11 +8,11 @@
 
 PetscClassId  DM_CLASSID;
 PetscClassId  DMLABEL_CLASSID;
-PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal, DM_LocalToLocal, DM_LocatePoints, DM_Coarsen, DM_Refine, DM_CreateInterpolation, DM_CreateRestriction, DM_CreateInjection, DM_CreateMatrix;
+PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal, DM_LocalToLocal, DM_LocatePoints, DM_Coarsen, DM_Refine, DM_CreateInterpolation, DM_CreateRestriction, DM_CreateInjection, DM_CreateMatrix, DM_Load;
 
 const char *const DMBoundaryTypes[] = {"NONE","GHOSTED","MIRROR","PERIODIC","TWIST","DMBoundaryType","DM_BOUNDARY_",0};
 const char *const DMBoundaryConditionTypes[] = {"INVALID","ESSENTIAL","NATURAL","INVALID","INVALID","ESSENTIAL_FIELD","NATURAL_FIELD","INVALID","INVALID","INVALID","NATURAL_RIEMANN","DMBoundaryConditionType","DM_BC_",0};
-
+const char *const DMPolytopeTypes[] = {"point", "segment", "triangle", "quadrilateral", "segment tensor prism", "tetrahedron", "hexahedron", "triangular prism", "triangular tensor prism", "quadrilateral tensor prism", "unknown", "DMPolytopeType", "DM_POLYTOPE_", 0};
 /*@
   DMCreate - Creates an empty DM object. The type can then be set with DMSetType().
 
@@ -55,6 +55,7 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   v->adjacency[0]             = PETSC_FALSE;
   v->adjacency[1]             = PETSC_TRUE;
   v->depthLabel               = NULL;
+  v->celltypeLabel            = NULL;
   v->localSection             = NULL;
   v->globalSection            = NULL;
   v->defaultConstraintSection = NULL;
@@ -98,11 +99,14 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
 
   Level: beginner
 
-  Notes: For some DM this is a shallow clone, the result of which may share (referent counted) information with its parent. For example,
-         DMClone() applied to a DMPLEX object will result in a new DMPLEX that shares the topology with the original DMPLEX. It does
-         share the PetscSection of the original DM
+  Notes: 
+  For some DM implementations this is a shallow clone, the result of which may share (referent counted) information with its parent. For example,
+  DMClone() applied to a DMPLEX object will result in a new DMPLEX that shares the topology with the original DMPLEX. It does not
+  share the PetscSection of the original DM.
 
-.seealso: DMDestry(), DMCreate(), DMSetType(), DMSetLocalSection(), DMSetGlobalSection()
+  The clone is considered set up iff the original is.
+
+.seealso: DMDestroy(), DMCreate(), DMSetType(), DMSetLocalSection(), DMSetGlobalSection()
 
 @*/
 PetscErrorCode DMClone(DM dm, DM *newdm)
@@ -579,7 +583,8 @@ PetscErrorCode DMDestroyLabelLinkList_Internal(DM dm)
   while (next) {
     DMLabelLink tmp = next->next;
 
-    if (next->label == dm->depthLabel) dm->depthLabel = NULL;
+    if (next->label == dm->depthLabel)    dm->depthLabel    = NULL;
+    if (next->label == dm->celltypeLabel) dm->celltypeLabel = NULL;
     ierr = DMLabelDestroy(&next->label);CHKERRQ(ierr);
     ierr = PetscFree(next);CHKERRQ(ierr);
     next = tmp;
@@ -764,6 +769,7 @@ PetscErrorCode  DMDestroy(DM *dm)
   if ((*dm)->ops->destroy) {
     ierr = (*(*dm)->ops->destroy)(*dm);CHKERRQ(ierr);
   }
+  ierr = DMMonitorCancel(*dm);CHKERRQ(ierr);
   /* We do not destroy (*dm)->data here so that we can reference count backend objects */
   ierr = PetscHeaderDestroy(dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -810,9 +816,19 @@ PetscErrorCode  DMSetUp(DM dm)
 .   -dm_mat_type <type>  - type of matrix to create inside DM
 -   -dm_is_coloring_type - <global or local>
 
-    Level: developer
+    DMPLEX Specific Checks
++   -dm_plex_check_symmetry        - Check that the adjacency information in the mesh is symmetric - DMPlexCheckSymmetry()
+.   -dm_plex_check_skeleton        - Check that each cell has the correct number of vertices (only for homogeneous simplex or tensor meshes) - DMPlexCheckSkeleton()
+.   -dm_plex_check_faces           - Check that the faces of each cell give a vertex order this is consistent with what we expect from the cell type - DMPlexCheckFaces()
+.   -dm_plex_check_geometry        - Check that cells have positive volume - DMPlexCheckGeometry()
+.   -dm_plex_check_pointsf         - Check some necessary conditions for PointSF - DMPlexCheckPointSF()
+.   -dm_plex_check_interface_cones - Check points on inter-partition interfaces have conforming order of cone points - DMPlexCheckInterfaceCones()
+-   -dm_plex_check_all             - Perform all the checks above
 
-.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix()
+    Level: intermediate
+
+.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(),
+    DMPlexCheckSymmetry(), DMPlexCheckSkeleton(), DMPlexCheckFaces(), DMPlexCheckGeometry(), DMPlexCheckPointSF(), DMPlexCheckInterfaceCones()
 
 @*/
 PetscErrorCode DMSetFromOptions(DM dm)
@@ -843,6 +859,29 @@ PetscErrorCode DMSetFromOptions(DM dm)
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) dm);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   DMViewFromOptions - View from Options
+
+   Collective on DM
+
+   Input Parameters:
++  dm - the DM object
+.  obj - Optional object
+-  name - command line option
+
+   Level: intermediate
+.seealso:  DM, DMView, PetscObjectViewFromOptions(), DMCreate()
+@*/
+PetscErrorCode  DMViewFromOptions(DM dm,PetscObject obj,const char name[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = PetscObjectViewFromOptions((PetscObject)dm,obj,name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1087,7 +1126,7 @@ PetscErrorCode  DMGetBlockSize(DM dm,PetscInt *bs)
         EXCEPT in the periodic case where it does not make sense since the coordinate vectors are not periodic.
 
 
-.seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateColoring(), DMCreateMatrix(), DMRefine(), DMCoarsen(), DMCreateRestriction()
+.seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateColoring(), DMCreateMatrix(), DMRefine(), DMCoarsen(), DMCreateRestriction(), DMCreateInterpolationScale()
 
 @*/
 PetscErrorCode  DMCreateInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
@@ -1102,6 +1141,38 @@ PetscErrorCode  DMCreateInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
   ierr = PetscLogEventBegin(DM_CreateInterpolation,dm1,dm2,0,0);CHKERRQ(ierr);
   ierr = (*dm1->ops->createinterpolation)(dm1,dm2,mat,vec);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(DM_CreateInterpolation,dm1,dm2,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+    DMCreateInterpolationScale - Forms L = 1/(R*1) such that diag(L)*R preserves scale and is thus suitable for state (versus residual) restriction.
+
+  Input Parameters:
++      dac - DM that defines a coarse mesh
+.      daf - DM that defines a fine mesh
+-      mat - the restriction (or interpolation operator) from fine to coarse
+
+  Output Parameter:
+.    scale - the scaled vector
+
+  Level: developer
+
+.seealso: DMCreateInterpolation()
+
+@*/
+PetscErrorCode  DMCreateInterpolationScale(DM dac,DM daf,Mat mat,Vec *scale)
+{
+  PetscErrorCode ierr;
+  Vec            fine;
+  PetscScalar    one = 1.0;
+
+  PetscFunctionBegin;
+  ierr = DMCreateGlobalVector(daf,&fine);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(dac,scale);CHKERRQ(ierr);
+  ierr = VecSet(fine,one);CHKERRQ(ierr);
+  ierr = MatRestrict(mat,fine,*scale);CHKERRQ(ierr);
+  ierr = VecDestroy(&fine);CHKERRQ(ierr);
+  ierr = VecReciprocal(*scale);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1220,9 +1291,15 @@ PetscErrorCode DMCreateMassMatrix(DM dm1, DM dm2, Mat *mat)
     Output Parameter:
 .   coloring - the coloring
 
+    Notes:
+       Coloring of matrices can be computed directly from the sparse matrix nonzero structure via the MatColoring object or from the mesh from which the
+       matrix comes from. In general using the mesh produces a more optimal coloring (fewer colors).
+
+       This produces a coloring with the distance of 2, see MatSetColoringDistance() which can be used for efficiently computing Jacobians with MatFDColoringCreate()
+
     Level: developer
 
-.seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateMatrix(), DMSetMatType()
+.seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateMatrix(), DMSetMatType(), MatColoring, MatFDColoringCreate()
 
 @*/
 PetscErrorCode  DMCreateColoring(DM dm,ISColoringType ctype,ISColoring *coloring)
@@ -3715,6 +3792,7 @@ PetscErrorCode  DMLoad(DM newdm, PetscViewer viewer)
   ierr = PetscViewerCheckReadable(viewer);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&ishdf5);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(DM_Load,viewer,0,0,0);CHKERRQ(ierr);
   if (isbinary) {
     PetscInt classid;
     char     type[256];
@@ -3727,6 +3805,7 @@ PetscErrorCode  DMLoad(DM newdm, PetscViewer viewer)
   } else if (ishdf5) {
     if (newdm->ops->load) {ierr = (*newdm->ops->load)(newdm,viewer);CHKERRQ(ierr);}
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen() or PetscViewerHDF5Open()");
+  ierr = PetscLogEventEnd(DM_Load,viewer,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -7139,6 +7218,8 @@ PetscErrorCode DMAddLabel(DM dm, DMLabel label)
   ierr = PetscObjectReference((PetscObject)label);CHKERRQ(ierr);
   ierr = PetscStrcmp(lname, "depth", &flg);CHKERRQ(ierr);
   if (flg) dm->depthLabel = label;
+  ierr = PetscStrcmp(lname, "celltype", &flg);CHKERRQ(ierr);
+  if (flg) dm->celltypeLabel = label;
   PetscFunctionReturn(0);
 }
 
@@ -7187,6 +7268,8 @@ PetscErrorCode DMRemoveLabel(DM dm, const char name[], DMLabel *label)
       *pnext = link->next; /* Remove from list */
       ierr = PetscStrcmp(name, "depth", &hasLabel);CHKERRQ(ierr);
       if (hasLabel) dm->depthLabel = NULL;
+      ierr = PetscStrcmp(name, "celltype", &hasLabel);CHKERRQ(ierr);
+      if (hasLabel) dm->celltypeLabel = NULL;
       if (label) *label = link->label;
       else       {ierr = DMLabelDestroy(&link->label);CHKERRQ(ierr);}
       ierr = PetscFree(link);CHKERRQ(ierr);
@@ -7232,6 +7315,7 @@ PetscErrorCode DMRemoveLabelBySelf(DM dm, DMLabel *label, PetscBool failNotFound
       hasLabel = PETSC_TRUE;
       *pnext = link->next; /* Remove from list */
       if (*label == dm->depthLabel) dm->depthLabel = NULL;
+      if (*label == dm->celltypeLabel) dm->celltypeLabel = NULL;
       if (((PetscObject) link->label)->refct < 2) *label = NULL; /* nullify if exclusive reference */
       ierr = DMLabelDestroy(&link->label);CHKERRQ(ierr);
       ierr = PetscFree(link);CHKERRQ(ierr);
@@ -7322,7 +7406,7 @@ PetscErrorCode DMSetLabelOutput(DM dm, const char name[], PetscBool output)
 + dmA - The DM object with initial labels
 . dmB - The DM object with copied labels
 . mode - Copy labels by pointers (PETSC_OWN_POINTER) or duplicate them (PETSC_COPY_VALUES)
-- all  - Copy all labels including "depth" and "dim" (PETSC_TRUE) which are otherwise ignored (PETSC_FALSE)
+- all  - Copy all labels including "depth", "dim", and "celltype" (PETSC_TRUE) which are otherwise ignored (PETSC_FALSE)
 
   Level: intermediate
 
@@ -7353,8 +7437,11 @@ PetscErrorCode DMCopyLabels(DM dmA, DM dmB, PetscCopyMode mode, PetscBool all)
       if (flg) continue;
       ierr = PetscStrcmp(name, "dim", &flg);CHKERRQ(ierr);
       if (flg) continue;
+      ierr = PetscStrcmp(name, "celltype", &flg);CHKERRQ(ierr);
+      if (flg) continue;
     } else {
-      dmB->depthLabel = dmA->depthLabel;
+      dmB->depthLabel    = dmA->depthLabel;
+      dmB->celltypeLabel = dmA->celltypeLabel;
     }
     if (mode==PETSC_COPY_VALUES) {
       ierr = DMLabelDuplicate(label, &labelNew);CHKERRQ(ierr);
@@ -7642,7 +7729,9 @@ PetscErrorCode DMIsBoundaryPoint(DM dm, PetscInt point, PetscBool *isBd)
 }
 
 /*@C
-  DMProjectFunction - This projects the given function into the function space provided.
+  DMProjectFunction - This projects the given function into the function space provided, putting the coefficients in a global vector.
+
+  Collective on DM
 
   Input Parameters:
 + dm      - The DM
@@ -7665,7 +7754,7 @@ $    func(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscS
 
   Level: developer
 
-.seealso: DMComputeL2Diff()
+.seealso: DMProjectFunctionLocal(), DMProjectFunctionLabel(), DMComputeL2Diff()
 @*/
 PetscErrorCode DMProjectFunction(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec X)
 {
@@ -7682,6 +7771,34 @@ PetscErrorCode DMProjectFunction(DM dm, PetscReal time, PetscErrorCode (**funcs)
   PetscFunctionReturn(0);
 }
 
+/*@C
+  DMProjectFunctionLocal - This projects the given function into the function space provided, putting the coefficients in a local vector.
+
+  Not collective
+
+  Input Parameters:
++ dm      - The DM
+. time    - The time
+. funcs   - The coordinate functions to evaluate, one per field
+. ctxs    - Optional array of contexts to pass to each coordinate function.  ctxs itself may be null.
+- mode    - The insertion mode for values
+
+  Output Parameter:
+. localX - vector
+
+   Calling sequence of func:
+$    func(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx);
+
++  dim - The spatial dimension
+.  x   - The coordinates
+.  Nf  - The number of fields
+.  u   - The output field values
+-  ctx - optional user-defined function context
+
+  Level: developer
+
+.seealso: DMProjectFunction(), DMProjectFunctionLabel(), DMComputeL2Diff()
+@*/
 PetscErrorCode DMProjectFunctionLocal(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
 {
   PetscErrorCode ierr;
@@ -7694,6 +7811,35 @@ PetscErrorCode DMProjectFunctionLocal(DM dm, PetscReal time, PetscErrorCode (**f
   PetscFunctionReturn(0);
 }
 
+/*@C
+  DMProjectFunctionLabel - This projects the given function into the function space provided, putting the coefficients in a global vector, setting values only for points in the given label.
+
+  Collective on DM
+
+  Input Parameters:
++ dm      - The DM
+. time    - The time
+. label   - The DMLabel selecting the portion of the mesh for projection
+. funcs   - The coordinate functions to evaluate, one per field
+. ctxs    - Optional array of contexts to pass to each coordinate function.  ctxs itself may be null.
+- mode    - The insertion mode for values
+
+  Output Parameter:
+. X - vector
+
+   Calling sequence of func:
+$    func(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx);
+
++  dim - The spatial dimension
+.  x   - The coordinates
+.  Nf  - The number of fields
+.  u   - The output field values
+-  ctx - optional user-defined function context
+
+  Level: developer
+
+.seealso: DMProjectFunction(), DMProjectFunctionLocal(), DMProjectFunctionLabelLocal(), DMComputeL2Diff()
+@*/
 PetscErrorCode DMProjectFunctionLabel(DM dm, PetscReal time, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscInt Nc, const PetscInt comps[], PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec X)
 {
   Vec            localX;
@@ -7709,6 +7855,35 @@ PetscErrorCode DMProjectFunctionLabel(DM dm, PetscReal time, DMLabel label, Pets
   PetscFunctionReturn(0);
 }
 
+/*@C
+  DMProjectFunctionLabelLocal - This projects the given function into the function space provided, putting the coefficients in a local vector, setting values only for points in the given label.
+
+  Not collective
+
+  Input Parameters:
++ dm      - The DM
+. time    - The time
+. label   - The DMLabel selecting the portion of the mesh for projection
+. funcs   - The coordinate functions to evaluate, one per field
+. ctxs    - Optional array of contexts to pass to each coordinate function.  ctxs itself may be null.
+- mode    - The insertion mode for values
+
+  Output Parameter:
+. localX - vector
+
+   Calling sequence of func:
+$    func(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx);
+
++  dim - The spatial dimension
+.  x   - The coordinates
+.  Nf  - The number of fields
+.  u   - The output field values
+-  ctx - optional user-defined function context
+
+  Level: developer
+
+.seealso: DMProjectFunction(), DMProjectFunctionLocal(), DMProjectFunctionLabel(), DMComputeL2Diff()
+@*/
 PetscErrorCode DMProjectFunctionLabelLocal(DM dm, PetscReal time, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscInt Nc, const PetscInt comps[], PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
 {
   PetscErrorCode ierr;
@@ -7721,6 +7896,55 @@ PetscErrorCode DMProjectFunctionLabelLocal(DM dm, PetscReal time, DMLabel label,
   PetscFunctionReturn(0);
 }
 
+/*@C
+  DMProjectFieldLocal - This projects the given function of the input fields into the function space provided, putting the coefficients in a local vector.
+
+  Not collective
+
+  Input Parameters:
++ dm      - The DM
+. time    - The time
+. localU  - The input field vector
+. funcs   - The functions to evaluate, one per field
+- mode    - The insertion mode for values
+
+  Output Parameter:
+. localX  - The output vector
+
+   Calling sequence of func:
+$    func(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+$         const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+$         const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+$         PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[]);
+
++  dim          - The spatial dimension
+.  Nf           - The number of input fields
+.  NfAux        - The number of input auxiliary fields
+.  uOff         - The offset of each field in u[]
+.  uOff_x       - The offset of each field in u_x[]
+.  u            - The field values at this point in space
+.  u_t          - The field time derivative at this point in space (or NULL)
+.  u_x          - The field derivatives at this point in space
+.  aOff         - The offset of each auxiliary field in u[]
+.  aOff_x       - The offset of each auxiliary field in u_x[]
+.  a            - The auxiliary field values at this point in space
+.  a_t          - The auxiliary field time derivative at this point in space (or NULL)
+.  a_x          - The auxiliary field derivatives at this point in space
+.  t            - The current time
+.  x            - The coordinates of this point
+.  numConstants - The number of constants
+.  constants    - The value of each constant
+-  f            - The value of the function at this point in space
+
+  Note: There are three different DMs that potentially interact in this function. The output DM, dm, specifies the layout of the values calculates by funcs.
+  The input DM, attached to U, may be different. For example, you can input the solution over the full domain, but output over a piece of the boundary, or
+  a subdomain. You can also output a different number of fields than the input, with different discretizations. Last the auxiliary DM, attached to the
+  auxiliary field vector, which is attached to dm, can also be different. It can have a different topology, number of fields, and discretizations.
+
+  Level: intermediate
+
+.seealso: DMProjectField(), DMProjectFieldLabelLocal(), DMProjectFunction(), DMComputeL2Diff()
+@*/
 PetscErrorCode DMProjectFieldLocal(DM dm, PetscReal time, Vec localU,
                                    void (**funcs)(PetscInt, PetscInt, PetscInt,
                                                   const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -7739,6 +7963,60 @@ PetscErrorCode DMProjectFieldLocal(DM dm, PetscReal time, Vec localU,
   PetscFunctionReturn(0);
 }
 
+/*@C
+  DMProjectFieldLabelLocal - This projects the given function of the input fields into the function space provided, putting the coefficients in a local vector, calculating only over the portion of the domain specified by the label.
+
+  Not collective
+
+  Input Parameters:
++ dm      - The DM
+. time    - The time
+. label   - The DMLabel marking the portion of the domain to output
+. numIds  - The number of label ids to use
+. ids     - The label ids to use for marking
+. Nc      - The number of components to set in the output, or PETSC_DETERMINE for all components
+. comps   - The components to set in the output, or NULL for all components
+. localU  - The input field vector
+. funcs   - The functions to evaluate, one per field
+- mode    - The insertion mode for values
+
+  Output Parameter:
+. localX  - The output vector
+
+   Calling sequence of func:
+$    func(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+$         const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+$         const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+$         PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[]);
+
++  dim          - The spatial dimension
+.  Nf           - The number of input fields
+.  NfAux        - The number of input auxiliary fields
+.  uOff         - The offset of each field in u[]
+.  uOff_x       - The offset of each field in u_x[]
+.  u            - The field values at this point in space
+.  u_t          - The field time derivative at this point in space (or NULL)
+.  u_x          - The field derivatives at this point in space
+.  aOff         - The offset of each auxiliary field in u[]
+.  aOff_x       - The offset of each auxiliary field in u_x[]
+.  a            - The auxiliary field values at this point in space
+.  a_t          - The auxiliary field time derivative at this point in space (or NULL)
+.  a_x          - The auxiliary field derivatives at this point in space
+.  t            - The current time
+.  x            - The coordinates of this point
+.  numConstants - The number of constants
+.  constants    - The value of each constant
+-  f            - The value of the function at this point in space
+
+  Note: There are three different DMs that potentially interact in this function. The output DM, dm, specifies the layout of the values calculates by funcs.
+  The input DM, attached to U, may be different. For example, you can input the solution over the full domain, but output over a piece of the boundary, or
+  a subdomain. You can also output a different number of fields than the input, with different discretizations. Last the auxiliary DM, attached to the
+  auxiliary field vector, which is attached to dm, can also be different. It can have a different topology, number of fields, and discretizations.
+
+  Level: intermediate
+
+.seealso: DMProjectField(), DMProjectFieldLabelLocal(), DMProjectFunction(), DMComputeL2Diff()
+@*/
 PetscErrorCode DMProjectFieldLabelLocal(DM dm, PetscReal time, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscInt Nc, const PetscInt comps[], Vec localU,
                                         void (**funcs)(PetscInt, PetscInt, PetscInt,
                                                        const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -8115,6 +8393,159 @@ PetscErrorCode DMGetCompatibility(DM dm,DM dm2,PetscBool *compatible,PetscBool *
     ierr = (*dm2->ops->getcompatibility)(dm2,dm,compatible,set);CHKERRQ(ierr); /* Note argument order */
   } else {
     *set = PETSC_FALSE;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMMonitorSet - Sets an ADDITIONAL function that is to be used after a solve to monitor discretization performance.
+
+  Logically Collective on DM
+
+  Input Parameters:
++ DM - the DM
+. f - the monitor function
+. mctx - [optional] user-defined context for private data for the monitor routine (use NULL if no context is desired)
+- monitordestroy - [optional] routine that frees monitor context (may be NULL)
+
+  Options Database Keys:
+- -dm_monitor_cancel - cancels all monitors that have been hardwired into a code by calls to DMMonitorSet(), but
+                            does not cancel those set via the options database.
+
+  Notes:
+  Several different monitoring routines may be set by calling
+  DMMonitorSet() multiple times; all will be called in the
+  order in which they were set.
+
+  Fortran Notes:
+  Only a single monitor function can be set for each DM object
+
+  Level: intermediate
+
+.seealso: DMMonitorCancel()
+@*/
+PetscErrorCode DMMonitorSet(DM dm, PetscErrorCode (*f)(DM, void *), void *mctx, PetscErrorCode (*monitordestroy)(void**))
+{
+  PetscInt       m;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  for (m = 0; m < dm->numbermonitors; ++m) {
+    PetscBool identical;
+
+    ierr = PetscMonitorCompare((PetscErrorCode (*)(void)) f, mctx, monitordestroy, (PetscErrorCode (*)(void)) dm->monitor[m], dm->monitorcontext[m], dm->monitordestroy[m], &identical);CHKERRQ(ierr);
+    if (identical) PetscFunctionReturn(0);
+  }
+  if (dm->numbermonitors >= MAXDMMONITORS) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Too many monitors set");
+  dm->monitor[dm->numbermonitors]          = f;
+  dm->monitordestroy[dm->numbermonitors]   = monitordestroy;
+  dm->monitorcontext[dm->numbermonitors++] = (void *) mctx;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMMonitorCancel - Clears all the monitor functions for a DM object.
+
+  Logically Collective on DM
+
+  Input Parameter:
+. dm - the DM
+
+  Options Database Key:
+. -dm_monitor_cancel - cancels all monitors that have been hardwired
+  into a code by calls to DMonitorSet(), but does not cancel those
+  set via the options database
+
+  Notes:
+  There is no way to clear one specific monitor from a DM object.
+
+  Level: intermediate
+
+.seealso: DMMonitorSet()
+@*/
+PetscErrorCode DMMonitorCancel(DM dm)
+{
+  PetscErrorCode ierr;
+  PetscInt       m;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  for (m = 0; m < dm->numbermonitors; ++m) {
+    if (dm->monitordestroy[m]) {ierr = (*dm->monitordestroy[m])(&dm->monitorcontext[m]);CHKERRQ(ierr);}
+  }
+  dm->numbermonitors = 0;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMMonitorSetFromOptions - Sets a monitor function and viewer appropriate for the type indicated by the user
+
+  Collective on DM
+
+  Input Parameters:
++ dm   - DM object you wish to monitor
+. name - the monitor type one is seeking
+. help - message indicating what monitoring is done
+. manual - manual page for the monitor
+. monitor - the monitor function
+- monitorsetup - a function that is called once ONLY if the user selected this monitor that may set additional features of the DM or PetscViewer objects
+
+  Output Parameter:
+. flg - Flag set if the monitor was created
+
+  Level: developer
+
+.seealso: PetscOptionsGetViewer(), PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(),
+          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
+          PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
+          PetscOptionsFList(), PetscOptionsEList()
+@*/
+PetscErrorCode DMMonitorSetFromOptions(DM dm, const char name[], const char help[], const char manual[], PetscErrorCode (*monitor)(DM, void *), PetscErrorCode (*monitorsetup)(DM, PetscViewerAndFormat *), PetscBool *flg)
+{
+  PetscViewer       viewer;
+  PetscViewerFormat format;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject) dm), ((PetscObject) dm)->options, ((PetscObject) dm)->prefix, name, &viewer, &format, flg);CHKERRQ(ierr);
+  if (*flg) {
+    PetscViewerAndFormat *vf;
+
+    ierr = PetscViewerAndFormatCreate(viewer, format, &vf);CHKERRQ(ierr);
+    ierr = PetscObjectDereference((PetscObject) viewer);CHKERRQ(ierr);
+    if (monitorsetup) {ierr = (*monitorsetup)(dm, vf);CHKERRQ(ierr);}
+    ierr = DMMonitorSet(dm,(PetscErrorCode (*)(DM, void *)) monitor, vf, (PetscErrorCode (*)(void **)) PetscViewerAndFormatDestroy);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+   DMMonitor - runs the user provided monitor routines, if they exist
+
+   Collective on DM
+
+   Input Parameters:
+.  dm - The DM
+
+   Level: developer
+
+.seealso: DMMonitorSet()
+@*/
+PetscErrorCode DMMonitor(DM dm)
+{
+  PetscInt       m;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!dm) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  for (m = 0; m < dm->numbermonitors; ++m) {
+    ierr = (*dm->monitor[m])(dm, dm->monitorcontext[m]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

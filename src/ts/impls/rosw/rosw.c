@@ -790,7 +790,7 @@ PetscErrorCode TSRosWRegister(TSRosWType name,PetscInt order,PetscInt s,const Pe
 }
 
 /*@C
-   TSRosWRegisterRos4 - register a fourth order Rosenbrock scheme by providing paramter choices
+   TSRosWRegisterRos4 - register a fourth order Rosenbrock scheme by providing parameter choices
 
    Not Collective, but the same schemes should be registered on all processes on which they will be used
 

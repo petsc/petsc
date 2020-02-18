@@ -397,11 +397,7 @@ typedef struct _p_PetscObject* PetscObject;
 
 .seealso: PetscObjectState, PetscObjectGetId()
 M*/
-#if defined(PETSC_USING_F90) && !defined(PETSC_USE_FORTRANKIND) /* compaq F90 */
-   typedef int PetscObjectId;
-#else
-   typedef PetscInt64 PetscObjectId;
-#endif
+typedef PetscInt64 PetscObjectId;
 
 /*MC
     PetscObjectState - integer state for a PetscObject
@@ -414,11 +410,7 @@ M*/
 
 .seealso: PetscObjectId, PetscObjectStateGet(), PetscObjectStateIncrease(), PetscObjectStateSet()
 M*/
-#if defined(PETSC_USING_F90) && !defined(PETSC_USE_FORTRANKIND) /* compaq F90 */
-   typedef int PetscObjectState;
-#else
-   typedef PetscInt64 PetscObjectState;
-#endif
+typedef PetscInt64 PetscObjectState;
 
 /*S
      PetscFunctionList - Linked list of functions, possibly stored in dynamic libraries, accessed
@@ -426,7 +418,7 @@ M*/
 
    Level: advanced
 
-.seealso:  PetscFunctionListAdd(), PetscFunctionListDestroy(), PetscOpFlist
+.seealso:  PetscFunctionListAdd(), PetscFunctionListDestroy()
 S*/
 typedef struct _n_PetscFunctionList *PetscFunctionList;
 
@@ -449,7 +441,7 @@ typedef void* PetscDLHandle;
 typedef enum {PETSC_DL_DECIDE=0,PETSC_DL_NOW=1,PETSC_DL_LOCAL=2} PetscDLMode;
 
 /*S
-     PetscObjectList - Linked list of PETSc objects, each accessable by string name
+     PetscObjectList - Linked list of PETSc objects, each accessible by string name
 
    Level: developer
 
@@ -532,6 +524,7 @@ typedef enum {
   /* Updates here must be accompanied by updates in finclude/petscsys.h and the string array in mpits.c */
 } PetscBuildTwoSidedType;
 
+/* NOTE: If you change this, you must also change the values in src/vec/f90-mod/petscvec.h */
 /*E
   InsertMode - Whether entries are inserted or added into vectors or matrices
 

@@ -219,7 +219,7 @@ static PetscErrorCode StackCreate(Stack *stack,PetscInt size,PetscInt ny)
   stack->top  = -1;
   stack->numY = ny;
 
-  ierr = PetscMalloc1(size*sizeof(StackElement),&stack->container);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size,&stack->container);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -471,7 +471,7 @@ static PetscErrorCode UpdateTS(TS ts,Stack *stack,StackElement e, PetscBool adjo
 
   PetscFunctionBegin;
   ierr = VecCopy(e->X,ts->vec_sol);CHKERRQ(ierr);
-  if (!stack->solution_only) {
+  if (!stack->solution_only && e->stepnum) {
     ierr = TSGetStages(ts,&stack->numY,&Y);CHKERRQ(ierr);
     for (i=0;i<stack->numY;i++) {
       ierr = VecCopy(e->Y[i],Y[i]);CHKERRQ(ierr);
@@ -1556,7 +1556,10 @@ static PetscErrorCode TSTrajectoryGet_Memory(TSTrajectory tj,TS ts,PetscInt step
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (tj->adjoint_solve_mode && stepnum == 0) PetscFunctionReturn(0);
+  if (tj->adjoint_solve_mode && stepnum == 0) {
+    ierr = TSTrajectoryReset(tj);CHKERRQ(ierr); /* reset TSTrajectory so users do not need to reset TSTrajectory */
+    PetscFunctionReturn(0);
+  }
   switch (tjsch->stype) {
     case NONE:
       if (tj->adjoint_solve_mode) {
@@ -1777,6 +1780,7 @@ static PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
     ierr = TSTrajectorySetUp_Basic(tj,ts);CHKERRQ(ierr);
   }
 
+  stack->stacksize = PetscMax(stack->stacksize,1);
   tjsch->recompute = PETSC_FALSE;
   ierr = TSGetStages(ts,&numY,PETSC_IGNORE);CHKERRQ(ierr);
   ierr = StackCreate(stack,stack->stacksize,numY);CHKERRQ(ierr);

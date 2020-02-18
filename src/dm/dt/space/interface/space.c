@@ -119,6 +119,29 @@ PetscErrorCode PetscSpaceGetType(PetscSpace sp, PetscSpaceType *name)
 }
 
 /*@C
+   PetscSpaceViewFromOptions - View from Options
+
+   Collective on PetscSpace
+
+   Input Parameters:
++  A - the PetscSpace object
+.  obj - Optional object
+-  name - command line option
+
+   Level: intermediate
+.seealso:  PetscSpace, PetscSpaceView, PetscObjectViewFromOptions(), PetscSpaceCreate()
+@*/
+PetscErrorCode  PetscSpaceViewFromOptions(PetscSpace A,PetscObject obj,const char name[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,PETSCSPACE_CLASSID,1);
+  ierr = PetscObjectViewFromOptions((PetscObject)A,obj,name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
   PetscSpaceView - Views a PetscSpace
 
   Collective on sp
@@ -473,7 +496,7 @@ PetscErrorCode PetscSpaceGetNumVariables(PetscSpace sp, PetscInt *n)
 
   Level: beginner
 
-.seealso: PetscFEGetTabulation(), PetscFEGetDefaultTabulation(), PetscSpaceCreate()
+.seealso: PetscFECreateTabulation(), PetscFEGetCellTabulation(), PetscSpaceCreate()
 @*/
 PetscErrorCode PetscSpaceEvaluate(PetscSpace sp, PetscInt npoints, const PetscReal points[], PetscReal B[], PetscReal D[], PetscReal H[])
 {

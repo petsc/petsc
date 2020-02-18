@@ -169,6 +169,8 @@ typedef struct _n_Space {
 
 PETSC_INTERN PetscErrorCode DMDestroyLabelLinkList_Internal(DM);
 
+#define MAXDMMONITORS 5
+
 struct _p_DM {
   PETSCHEADER(struct _DMOps);
   Vec                     localin[DM_MAX_WORK_VECTORS],localout[DM_MAX_WORK_VECTORS];
@@ -178,6 +180,7 @@ struct _p_DM {
   DMWorkLink              workin,workout;
   DMLabelLink             labels;            /* Linked list of labels */
   DMLabel                 depthLabel;        /* Optimized access to depth label */
+  DMLabel                 celltypeLabel;     /* Optimized access to celltype label */
   void                    *ctx;    /* a user context */
   PetscErrorCode          (*ctxdestroy)(void**);
   Vec                     x;       /* location at which the functions/Jacobian are computed */
@@ -247,6 +250,10 @@ struct _p_DM {
   DM                      dmBC;                 /* The DM with boundary conditions in the global DM */
   PetscInt                outputSequenceNum;    /* The current sequence number for output */
   PetscReal               outputSequenceVal;    /* The current sequence value for output */
+  PetscErrorCode        (*monitor[MAXDMMONITORS])(DM, void *);
+  PetscErrorCode        (*monitordestroy[MAXDMMONITORS])(void **);
+  void                   *monitorcontext[MAXDMMONITORS];
+  PetscInt                numbermonitors;
 
   PetscObject             dmksp,dmsnes,dmts;
 };
@@ -261,6 +268,7 @@ PETSC_EXTERN PetscLogEvent DM_CreateInterpolation;
 PETSC_EXTERN PetscLogEvent DM_CreateRestriction;
 PETSC_EXTERN PetscLogEvent DM_CreateInjection;
 PETSC_EXTERN PetscLogEvent DM_CreateMatrix;
+PETSC_EXTERN PetscLogEvent DM_Load;
 
 PETSC_EXTERN PetscErrorCode DMCreateGlobalVector_Section_Private(DM,Vec*);
 PETSC_EXTERN PetscErrorCode DMCreateLocalVector_Section_Private(DM,Vec*);

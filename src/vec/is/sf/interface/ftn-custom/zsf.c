@@ -7,12 +7,14 @@
 #define petscsfbcastbegin_    PETSCSFBCASTBEGIN
 #define petscsfbcastend_      PETSCSFBCASTEND
 #define f90arraysfnodecreate_ F90ARRAYSFNODECREATE
+#define petscsfviewfromoptions_ PETSCSFVIEWFROMOPTIONS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscsfgetgraph_      petscsfgetgraph
 #define petscsfview_          petscsfview
 #define petscsfbcastbegin_    petscsfbcastbegin
 #define petscsfbcastend_      petscsfbcastend
 #define f90arraysfnodecreate_ f90arraysfnodecreate
+#define petscsfviewfromoptions_ petscsfviewfromoptions
 #endif
 
 PETSC_EXTERN void PETSC_STDCALL f90arraysfnodecreate_(const PetscInt *,PetscInt *,void * PETSC_F90_2PTR_PROTO_NOVAR);
@@ -60,4 +62,12 @@ PETSC_EXTERN void PETSC_STDCALL petscsfbcastend_(PetscSF *sf, MPI_Fint *unit,F90
   *ierr = F90Array1dAccess(rptr, dtype, (void**) &rootdata PETSC_F90_2PTR_PARAM(rptrd));if (*ierr) return;
   *ierr = F90Array1dAccess(lptr, dtype, (void**) &leafdata PETSC_F90_2PTR_PARAM(lptrd));if (*ierr) return;
   *ierr = PetscSFBcastEnd(*sf, dtype, rootdata, leafdata);
+}
+PETSC_EXTERN void PETSC_STDCALL petscsfviewfromoptions_(PetscSF *ao,PetscObject obj,char* type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+{
+  char *t;
+
+  FIXCHAR(type,len,t);
+  *ierr = PetscSFViewFromOptions(*ao,obj,t);if (*ierr) return;
+  FREECHAR(type,t);
 }

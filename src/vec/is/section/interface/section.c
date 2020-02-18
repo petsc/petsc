@@ -93,6 +93,7 @@ PetscErrorCode PetscSectionCopy(PetscSection section, PetscSection newSection)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, PETSC_SECTION_CLASSID, 1);
   PetscValidHeaderSpecific(newSection, PETSC_SECTION_CLASSID, 2);
+  ierr = PetscSectionReset(newSection);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
   if (numFields) {ierr = PetscSectionSetNumFields(newSection, numFields);CHKERRQ(ierr);}
   for (f = 0; f < numFields; ++f) {
@@ -1124,9 +1125,8 @@ PetscErrorCode PetscSectionGetStorageSize(PetscSection s, PetscInt *size)
 
   Not collective
 
-  Input Parameters:
-+ s - the PetscSection
-- point - the point
+  Input Parameter:
+. s - the PetscSection
 
   Output Parameter:
 . size - the size of an array which can hold all unconstrained dofs
@@ -1155,13 +1155,13 @@ PetscErrorCode PetscSectionGetConstrainedStorageSize(PetscSection s, PetscInt *s
   the local section and an SF describing the section point overlap.
 
   Input Parameters:
-  + s - The PetscSection for the local field layout
-  . sf - The SF describing parallel layout of the section points (leaves are unowned local points)
-  . includeConstraints - By default this is PETSC_FALSE, meaning that the global field vector will not possess constrained dofs
-  - localOffsets - If PETSC_TRUE, use local rather than global offsets for the points
++ s - The PetscSection for the local field layout
+. sf - The SF describing parallel layout of the section points (leaves are unowned local points)
+. includeConstraints - By default this is PETSC_FALSE, meaning that the global field vector will not possess constrained dofs
+- localOffsets - If PETSC_TRUE, use local rather than global offsets for the points
 
   Output Parameter:
-  . gsection - The PetscSection for the global field layout
+. gsection - The PetscSection for the global field layout
 
   Note: This gives negative sizes and offsets to points not owned by this process
 
@@ -1948,6 +1948,29 @@ static PetscErrorCode PetscSectionView_ASCII(PetscSection s, PetscViewer viewer)
 }
 
 /*@C
+   PetscSectionViewFromOptions - View from Options
+
+   Collective on PetscSection
+
+   Input Parameters:
++  A - the PetscSection object to view
+.  obj - Optional object
+-  name - command line option
+
+   Level: intermediate
+.seealso:  PetscSection, PetscSectionView, PetscObjectViewFromOptions(), PetscSectionCreate()
+@*/
+PetscErrorCode  PetscSectionViewFromOptions(PetscSection A,PetscObject obj,const char name[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,PETSC_SECTION_CLASSID,1);
+  ierr = PetscObjectViewFromOptions((PetscObject)A,obj,name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
   PetscSectionView - Views a PetscSection
 
   Collective on PetscSection
@@ -2021,6 +2044,8 @@ PetscErrorCode PetscSectionReset(PetscSection s)
   ierr = PetscFree(s->clPerm);CHKERRQ(ierr);
   ierr = PetscFree(s->clInvPerm);CHKERRQ(ierr);
   ierr = PetscSectionSymDestroy(&s->sym);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&s->clSection);CHKERRQ(ierr);
+  ierr = ISDestroy(&s->clPoints);CHKERRQ(ierr);
 
   s->pStart    = -1;
   s->pEnd      = -1;
@@ -2234,13 +2259,17 @@ PetscErrorCode PetscSectionSetConstraintIndices(PetscSection s, PetscInt point, 
 
   Input Parameters:
 + s     - The PetscSection
-.field  - The field number
+. field  - The field number
 - point - The point
 
   Output Parameter:
-. indices - The constrained dofs
+. indices - The constrained dofs sorted in ascending order
 
-  Note: In Fortran, you call PetscSectionGetFieldConstraintIndicesF90() and PetscSectionRestoreFieldConstraintIndicesF90()
+  Notes:
+  The indices array, which is provided by the caller, must have capacity to hold the number of constrained dofs, e.g., as returned by PetscSectionGetConstraintDof().
+
+  Fortran Note:
+  In Fortran, you call PetscSectionGetFieldConstraintIndicesF90() and PetscSectionRestoreFieldConstraintIndicesF90()
 
   Level: intermediate
 
@@ -2644,8 +2673,13 @@ PetscErrorCode PetscSectionSetClosureIndex(PetscSection section, PetscObject obj
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,1);
+  PetscValidHeaderSpecific(clSection,PETSC_SECTION_CLASSID,3);
+  PetscValidHeaderSpecific(clPoints,IS_CLASSID,4);
   if (section->clObj != obj) {ierr = PetscFree(section->clPerm);CHKERRQ(ierr);ierr = PetscFree(section->clInvPerm);CHKERRQ(ierr);}
   section->clObj     = obj;
+  ierr = PetscObjectReference((PetscObject)clSection);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)clPoints);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&section->clSection);CHKERRQ(ierr);
   ierr = ISDestroy(&section->clPoints);CHKERRQ(ierr);
   section->clSection = clSection;

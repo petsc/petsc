@@ -26,6 +26,6 @@ class Configure(config.package.Package):
       self.framework.popLanguage()
     except RuntimeError as e:
       raise RuntimeError('Error running make on radau5: '+str(e))
-    output,err,ret  = config.package.Package.executeShellCommand('cp -f '+os.path.join(self.packageDir,'libradau5.a')+' '+os.path.join(self.confDir,'lib'), timeout=25, log = self.log)
+    output,err,ret  = config.package.Package.executeShellCommand('cp -f '+os.path.join(self.packageDir,'libradau5.a')+' '+os.path.join(self.confDir,'lib'), timeout=60, log = self.log)
     return os.path.join(self.confDir,'lib')
 

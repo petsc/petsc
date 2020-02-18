@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from __future__ import print_function
-import glob, os, re
+import glob, os, re, stat
 import optparse
 import inspect
 
@@ -78,26 +78,25 @@ def summarize_results(directory,make,ntime,etime):
           re.sub('cmd-','',
           re.sub('diff-','',failstr+' '))
           )
-      print(fail_targets)
       # Strip off characters from subtests
       fail_list=[]
       for failure in fail_targets.split():
-        if failure.split('-')[1].count('_')>1:
-            froot=failure.split('-')[0]
-            flabel='_'.join(failure.split('-')[1].split('_')[0:1])
-            fail_list.append(froot+'-'+flabel+'_*')
-        elif failure.count('-')>1:
-            fail_list.append('-'.join(failure.split('-')[:-1]))
-        else:
-            fail_list.append(failure)
+         fail_list.append(failure.split('+')[0])
       fail_list=list(set(fail_list))
       fail_targets=' '.join(fail_list)
+
+      # create simple little script
+      sfile=os.path.join(os.path.dirname(os.path.abspath(os.curdir)),'echofailures.sh')
+      with open(sfile,'w') as f:
+          f.write('echo '+fail_targets.strip())
+      st = os.stat(sfile)
+      os.chmod(sfile, st.st_mode | stat.S_IEXEC)
 
       #Make the message nice
       makefile="gmakefile.test" if inInstallDir() else "gmakefile"
 
       print("#\n# To rerun failed tests: ")
-      print("#     "+make+" -f "+makefile+" test globsearch='" + fail_targets.strip()+"'")
+      print("#     "+make+" -f "+makefile+" test test-fail=1")
 
   if ntime>0:
       print("#\n# Timing summary (actual test time / total CPU time): ")
@@ -192,25 +191,28 @@ def get_test_data(directory):
             'fullname':fname
         }
         # process the *.counts file and increment problem status trackers
-        if len(testdata[pkgname]['problems'][probname]['stderr'])>0:
-            testdata[pkgname]['errors'] += 1
         with open(cfile, 'r') as f:
             for line in f:
                 l = line.split()
-                if l[0] == 'failed':
-                    testdata[pkgname]['problems'][probname][l[0]] = True
-                    testdata[pkgname][l[0]] += 1
-                elif l[0] == 'time':
+                if l[0] == 'time':
                     if len(l)==1: continue
                     testdata[pkgname]['problems'][probname][l[0]] = float(l[1])
                     testdata[pkgname][l[0]] += float(l[1])
-                elif l[0] == 'skip':
-                    testdata[pkgname]['problems'][probname][l[0]] = True
-                    testdata[pkgname][l[0]] += 1
-                elif l[0] not in testdata[pkgname].keys():
-                    continue
+                elif l[0] in testdata[pkgname].keys():
+                    # This block includes total, success, failed, skip, todo
+                    num_int=int(l[1])
+                    testdata[pkgname][l[0]] += num_int
+                    if l[0] in ['failed']:
+                        # If non-zero error code and non-zero stderr, something wrong
+                        if len(testdata[pkgname]['problems'][probname]['stderr'])>0:
+                            if not num_int: num_int=1
+                        if num_int:
+                            testdata[pkgname]['errors'] += 1
+                            testdata[pkgname]['problems'][probname][l[0]] = True
+                    if l[0] in ['skip'] and num_int:
+                        testdata[pkgname]['problems'][probname][l[0]] = True
                 else:
-                    testdata[pkgname][l[0]] += 1
+                    continue
     os.chdir(startdir)  # Keep function in good state
     return testdata
 
@@ -271,11 +273,17 @@ def generate_xml(testdata,directory):
             if p['skipped']:
                 # if we got here, the TAP output shows a skipped test
                 junit.write('      <skipped/>\n')
-            elif len(p['stderr'])>0:
+            elif p['failed']:
                 # if we got here, the test crashed with an error
                 # we show the stderr output under <error>
                 junit.write('      <error type="crash">\n')
                 junit.write("<![CDATA[\n") # CDATA is necessary to preserve whitespace
+                # many times error messages also go to stdout so we print both
+                junit.write("stdout:\n")
+                if len(p['stdout'])>0:
+                    for line in p['stdout']:
+                        junit.write("%s\n"%line.rstrip())
+                junit.write("\nstderr:\n")
                 for line in p['stderr']:
                     junit.write("%s\n"%line.rstrip())
                 junit.write("]]>")
@@ -289,19 +297,6 @@ def generate_xml(testdata,directory):
                     junit.write("%s\n"%line.rstrip())
                 junit.write("]]>")
                 junit.write('      </failure>\n')
-            elif len(p['stdout'])>0:
-                # if we got here, the test succeeded so we just show the stdout 
-                # for manual sanity-checks
-                junit.write('      <system-out>\n')
-                junit.write("<![CDATA[\n") # CDATA is necessary to preserve whitespace
-                count = 0
-                for line in p['stdout']:
-                    junit.write("%s\n"%line.rstrip())
-                    count += 1
-                    if count >= 1024: 
-                        break
-                junit.write("]]>")
-                junit.write('      </system-out>\n')
             junit.write('    </testcase>\n')
         junit.write('  </testsuite>\n')
     junit.write('</testsuites>')

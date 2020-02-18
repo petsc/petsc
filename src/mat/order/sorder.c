@@ -128,6 +128,7 @@ PetscErrorCode  MatOrderingRegister(const char sname[],PetscErrorCode (*function
    Input Parameters:
 +  mat - the matrix
 -  type - type of reordering, one of the following:
+$      MATORDERINGNATURAL_OR_ND - Nested dissection unless matrix is SBAIJ then it is natural
 $      MATORDERINGNATURAL - Natural
 $      MATORDERINGND - Nested Dissection
 $      MATORDERING1WD - One-way Dissection
@@ -138,9 +139,9 @@ $      MATORDERINGQMD - Quotient Minimum Degree
 +  rperm - row permutation indices
 -  cperm - column permutation indices
 
-
    Options Database Key:
-. -mat_view_ordering draw - plots matrix nonzero structure in new ordering
++ -mat_view_ordering draw - plots matrix nonzero structure in new ordering
+- -pc_factor_mat_ordering_type <nd,natural,..> - ordering to use with PCs based on factorization, LU, ILU, Cholesky, ICC
 
    Level: intermediate
 
@@ -161,14 +162,14 @@ $      MATORDERINGQMD - Quotient Minimum Degree
            One-way Dissection, Cholesky, Reverse Cuthill-McKee,
            Quotient Minimum Degree
 
-.seealso:   MatOrderingRegister(), PCFactorSetMatOrderingType()
+.seealso:   MatOrderingRegister(), PCFactorSetMatOrderingType(), MatColoring, MatColoringCreate()
 @*/
 PetscErrorCode  MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
 {
   PetscErrorCode ierr;
   PetscInt       mmat,nmat,mis,m;
   PetscErrorCode (*r)(Mat,MatOrderingType,IS*,IS*);
-  PetscBool      flg = PETSC_FALSE,isseqdense,ismpidense,ismpiaij,ismpibaij,ismpisbaij,ismpiaijcusparse,iselemental;
+  PetscBool      flg = PETSC_FALSE,isseqdense,ismpidense,ismpiaij,ismpibaij,ismpisbaij,ismpiaijcusparse,iselemental,flg1;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
@@ -176,6 +177,17 @@ PetscErrorCode  MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
   PetscValidPointer(cperm,4);
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+
+  ierr = PetscStrcmp(type,MATORDERINGNATURAL_OR_ND,&flg1);CHKERRQ(ierr);
+  if (flg1) {
+    PetscBool isseqsbaij;
+    ierr = PetscObjectTypeCompareAny((PetscObject)mat,&isseqsbaij,MATSEQSBAIJ,MATSEQBAIJ,NULL);CHKERRQ(ierr);
+    if (isseqsbaij) {
+      type = MATORDERINGNATURAL;
+    } else {
+      type = MATORDERINGND;
+    }
+  }
 
   /* This code is terrible. MatGetOrdering() multiple dispatch should use matrix and this code should move to impls/aij/mpi. */
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPIAIJ,&ismpiaij);CHKERRQ(ierr);

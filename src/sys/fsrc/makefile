@@ -5,7 +5,7 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  =
-SOURCEF  = somefort.F
+SOURCEF90= somefort.F90
 SOURCEH  =
 LIBBASE  = libpetscsys
 MANSEC   = Sys

@@ -153,7 +153,7 @@ PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
   tao->viewgradient=PETSC_FALSE;
   tao->viewjacobian=PETSC_FALSE;
   tao->viewconstraints = PETSC_FALSE;
-  
+
   tao->bounded = PETSC_FALSE;
 
   tao->header_printed = PETSC_FALSE;
@@ -551,6 +551,29 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
     }
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   TaoViewFromOptions - View from Options
+
+   Collective on Tao
+
+   Input Parameters:
++  A - the  Tao context
+.  obj - Optional object
+-  name - command line option
+
+   Level: intermediate
+.seealso:  Tao, TaoView, PetscObjectViewFromOptions(), TaoCreate()
+@*/
+PetscErrorCode  TaoViewFromOptions(Tao A,PetscObject obj,const char name[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,TAO_CLASSID,1);
+  ierr = PetscObjectViewFromOptions((PetscObject)A,obj,name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1336,7 +1359,7 @@ PetscErrorCode TaoResetStatistics(Tao tao)
 /*@C
   TaoSetUpdate - Sets the general-purpose update function called
   at the beginning of every iteration of the nonlinear solve. Specifically
-  it is called at the top of every iteration, after the new solution and the gradient 
+  it is called at the top of every iteration, after the new solution and the gradient
   is determined, but before the Hessian is computed (if applicable).
 
   Logically Collective on Tao
@@ -1544,13 +1567,13 @@ PetscErrorCode TaoMonitorDefault(Tao tao, void *ctx)
   ierr = PetscViewerASCIISetTab(viewer, tabs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
- 
+
 /*@
    TaoDefaultGMonitor - Default routine for monitoring progress of the
-   Tao solvers (default) with extra detail on the globalization method.  
-   This monitor prints the function value and gradient norm at each 
-   iteration, as well as the step size and trust radius. Note that the 
-   step size and trust radius may be the same for some algorithms. 
+   Tao solvers (default) with extra detail on the globalization method.
+   This monitor prints the function value and gradient norm at each
+   iteration, as well as the step size and trust radius. Note that the
+   step size and trust radius may be the same for some algorithms.
    It can be turned on from the command line using the
    -tao_gmonitor option
 
@@ -2627,7 +2650,7 @@ PetscErrorCode TaoSetConvergenceHistory(Tao tao, PetscReal obj[], PetscReal resi
 .  resid - array used to hold residual history
 .  cnorm - array used to hold constraint violation history
 .  lits  - integer array used to hold linear solver iteration count
--  nhist  - size of obj, resid, cnorm, and lits (will be less than or equal to na given in TaoSetHistory)
+-  nhist  - size of obj, resid, cnorm, and lits
 
    Notes:
     This routine must be preceded by calls to TaoSetConvergenceHistory()
@@ -2652,7 +2675,7 @@ PetscErrorCode TaoGetConvergenceHistory(Tao tao, PetscReal **obj, PetscReal **re
   if (obj)   *obj   = tao->hist_obj;
   if (cnorm) *cnorm = tao->hist_cnorm;
   if (resid) *resid = tao->hist_resid;
-  if (nhist) *nhist   = tao->hist_len;
+  if (nhist) *nhist = tao->hist_len;
   PetscFunctionReturn(0);
 }
 

@@ -39,20 +39,21 @@
       EC(4) = 5
       pEC => EC
       c = 0
-      write(*,*) 'cell',c,pEC
+      write(*,1000) 'cell',c,pEC
+ 1000 format (a,i4,50i4)
       call DMPlexSetCone(dm, c , pEC, ierr);CHKERRA(ierr)
       call DMPlexGetCone(dm, c , pEC, ierr);CHKERRA(ierr)
-      write(*,*) 'cell',c,pEC
+      write(*,1000) 'cell',c,pEC
       EC(1) = 4
       EC(2) = 5
       EC(3) = 6
       EC(4) = 7
       pEC => EC
       c = 1
-      write(*,*) 'cell',c,pEC
+      write(*,1000) 'cell',c,pEC
       call DMPlexSetCone(dm, c , pEC, ierr);CHKERRA(ierr)
       call DMPlexGetCone(dm, c , pEC, ierr);CHKERRA(ierr)
-      write(*,*) 'cell',c,pEC
+      write(*,1000) 'cell',c,pEC
       call DMPlexRestoreCone(dm, c , pEC, ierr);CHKERRA(ierr)
 
       call DMPlexSymmetrize(dm, ierr);CHKERRA(ierr)
@@ -60,7 +61,7 @@
 
       v = 4
       call DMPlexGetSupport(dm, v , pES, ierr);CHKERRA(ierr)
-      write(*,*) 'vertex',v,pES
+      write(*,1000) 'vertex',v,pES
       call DMPlexRestoreSupport(dm, v , pES, ierr);CHKERRA(ierr)
 
       call DMDestroy(dm,ierr);CHKERRA(ierr)

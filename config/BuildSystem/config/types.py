@@ -101,28 +101,6 @@ class Configure(config.base.Configure):
     self.popLanguage()
     return
 
-  def checkFortranStar(self):
-    '''Checks whether integer*4, etc. is handled in Fortran, and if not defines MISSING_FORTRANSTAR'''
-    self.pushLanguage('FC')
-    body = '        integer*4 i\n        real*8 d\n'
-    if not self.checkCompile('', body):
-      self.addDefine('MISSING_FORTRANSTAR', 1)
-    self.popLanguage()
-    return
-
-# reverse of the above - but more standard thing to do for F90 compilers
-  def checkFortranKind(self):
-    '''Checks whether selected_int_kind etc work USE_FORTRANKIND'''
-    self.pushLanguage('FC')
-    body = '''
-        integer(kind=selected_int_kind(10)) i
-        real(kind=selected_real_kind(10)) d
-'''
-    if self.checkCompile('', body):
-      self.addDefine('USE_FORTRANKIND', 1)
-    self.popLanguage()
-    return
-
   def checkConst(self):
     '''Checks for working const, and if not found defines it to empty string'''
     body = '''
@@ -197,9 +175,12 @@ class Configure(config.base.Configure):
         includes += mpiFix
       includes += '#include <' + otherInclude + '>\n'
     size = None
+    checkName = typeName
+    if typeName == 'enum':
+      checkName = 'enum{ENUM_DUMMY}'
     with self.Language(lang):
       for s in typeSizes:
-        body = 'char assert_sizeof[(sizeof({0})=={1})*2-1];'.format(typeName, s)
+        body = 'char assert_sizeof[(sizeof({0})=={1})*2-1];'.format(checkName, s)
         if self.checkCompile(includes, body, codeBegin=codeBegin, codeEnd='\n'):
           size = s
           break
@@ -244,15 +225,13 @@ class Configure(config.base.Configure):
     self.executeTest(self.checkC99Complex)
     if hasattr(self.compilers, 'CXX'):
       self.executeTest(self.checkCxxComplex)
-    if hasattr(self.compilers, 'FC'):
-      #self.executeTest(self.checkFortranStar)
-      self.executeTest(self.checkFortranKind)
     self.executeTest(self.checkConst)
     for t, sizes in {'void *': (8, 4),
                      'short': (2, 4, 8),
                      'int': (4, 8, 2),
                      'long': (8, 4),
                      'long long': (8,),
+                     'enum': (4, 8),
                      'size_t': (8, 4)}.items():
       self.executeTest(self.checkSizeof, args=[t, sizes])
     self.executeTest(self.checkVisibility)

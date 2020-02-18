@@ -22,6 +22,7 @@
 #  define cholmod_X_free_dense            cholmod_l_free_dense
 #  define cholmod_X_resymbol(a,b,c,d,f,e) cholmod_l_resymbol(a,(SuiteSparse_long *)b,c,d,f,e)
 #  define cholmod_X_solve                 cholmod_l_solve
+#  define cholmod_X_solve2                cholmod_l_solve2
 #else
 #  define CHOLMOD_INT_TYPE          CHOLMOD_INT
 #  define cholmod_X_start           cholmod_start
@@ -34,6 +35,7 @@
 #  define cholmod_X_free_dense      cholmod_free_dense
 #  define cholmod_X_resymbol        cholmod_resymbol
 #  define cholmod_X_solve           cholmod_solve
+#  define cholmod_X_solve2          cholmod_solve2
 #endif
 
 EXTERN_C_BEGIN
@@ -41,7 +43,7 @@ EXTERN_C_BEGIN
 EXTERN_C_END
 
 typedef struct {
-  PetscErrorCode (*Wrap)(Mat,PetscBool,cholmod_sparse*,PetscBool*);
+  PetscErrorCode (*Wrap)(Mat,PetscBool,cholmod_sparse*,PetscBool*,PetscBool*);
   cholmod_sparse *matrix;
   cholmod_factor *factor;
   cholmod_common *common;
@@ -51,6 +53,7 @@ typedef struct {
 PETSC_INTERN PetscErrorCode CholmodStart(Mat);
 PETSC_INTERN PetscErrorCode MatView_CHOLMOD(Mat,PetscViewer);
 PETSC_INTERN PetscErrorCode MatCholeskyFactorSymbolic_CHOLMOD(Mat,Mat,IS,const MatFactorInfo*);
+PETSC_INTERN PetscErrorCode MatGetInfo_CHOLMOD(Mat,MatInfoType,MatInfo*);
 PETSC_INTERN PetscErrorCode MatDestroy_CHOLMOD(Mat);
 
 #endif /* CHOLMODIMPL_H_ */

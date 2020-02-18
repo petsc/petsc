@@ -248,7 +248,7 @@ static const NState REMOVED =-3;
      - AGG-MG specific: clears singletons out of 'selected_2'
 
    Input Parameter:
-   . Gmat_2 - glabal matrix of graph (data not defined)   base (squared) graph
+   . Gmat_2 - global matrix of graph (data not defined)   base (squared) graph
    . Gmat_1 - base graph to grab with                 base graph
    Input/Output Parameter:
    . aggs_2 - linked list of aggs with gids)
@@ -1110,41 +1110,55 @@ static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
 
   /* compute maximum value of operator to be used in smoother */
   if (0 < pc_gamg_agg->nsmooths) {
-    ierr = MatCreateVecs(Amat, &bb, 0);CHKERRQ(ierr);
-    ierr = MatCreateVecs(Amat, &xx, 0);CHKERRQ(ierr);
-    ierr = PetscRandomCreate(PETSC_COMM_SELF,&random);CHKERRQ(ierr);
-    ierr = VecSetRandom(bb,random);CHKERRQ(ierr);
-    ierr = PetscRandomDestroy(&random);CHKERRQ(ierr);
+    /* get eigen estimates */
+    if ( pc_gamg->emax > 0) {
+      emin = pc_gamg->emin;
+      emax = pc_gamg->emax;
+    } else {
+      ierr = MatCreateVecs(Amat, &bb, 0);CHKERRQ(ierr);
+      ierr = MatCreateVecs(Amat, &xx, 0);CHKERRQ(ierr);
+      ierr = PetscRandomCreate(PETSC_COMM_SELF,&random);CHKERRQ(ierr);
+      ierr = VecSetRandom(bb,random);CHKERRQ(ierr);
+      ierr = PetscRandomDestroy(&random);CHKERRQ(ierr);
 
-    ierr = KSPCreate(comm,&eksp);CHKERRQ(ierr);
-    ierr = KSPSetErrorIfNotConverged(eksp,pc->erroriffailure);CHKERRQ(ierr);
-    ierr = KSPSetTolerances(eksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,10);CHKERRQ(ierr);
-    ierr = KSPSetNormType(eksp, KSP_NORM_NONE);CHKERRQ(ierr);
+      ierr = KSPCreate(comm,&eksp);CHKERRQ(ierr);
+      ierr = KSPSetType(eksp, pc_gamg->esteig_type);CHKERRQ(ierr);
+      ierr = KSPSetErrorIfNotConverged(eksp,pc->erroriffailure);CHKERRQ(ierr);
+      ierr = KSPSetTolerances(eksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,pc_gamg->esteig_max_it);CHKERRQ(ierr);
+      ierr = KSPSetNormType(eksp, KSP_NORM_NONE);CHKERRQ(ierr);
 
-    ierr = KSPSetInitialGuessNonzero(eksp, PETSC_FALSE);CHKERRQ(ierr);
-    ierr = KSPSetOperators(eksp, Amat, Amat);CHKERRQ(ierr);
-    ierr = KSPSetComputeSingularValues(eksp,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = KSPSetInitialGuessNonzero(eksp, PETSC_FALSE);CHKERRQ(ierr);
+      ierr = KSPSetOperators(eksp, Amat, Amat);CHKERRQ(ierr);
+      ierr = KSPSetComputeSingularValues(eksp,PETSC_TRUE);CHKERRQ(ierr);
 
-    ierr = KSPGetPC(eksp, &epc);CHKERRQ(ierr);
-    ierr = PCSetType(epc, PCJACOBI);CHKERRQ(ierr);  /* smoother in smoothed agg. */
+      ierr = KSPGetPC(eksp, &epc);CHKERRQ(ierr);
+      ierr = PCSetType(epc, PCJACOBI);CHKERRQ(ierr);  /* smoother in smoothed agg. */
 
-    ierr = KSPSetOptionsPrefix(eksp,((PetscObject)pc)->prefix);CHKERRQ(ierr);
-    ierr = KSPAppendOptionsPrefix(eksp, "gamg_est_");CHKERRQ(ierr);
-    ierr = KSPSetFromOptions(eksp);CHKERRQ(ierr);
+      /* solve - keep stuff out of logging */
+      ierr = PetscLogEventDeactivate(KSP_Solve);CHKERRQ(ierr);
+      ierr = PetscLogEventDeactivate(PC_Apply);CHKERRQ(ierr);
+      ierr = KSPSolve(eksp, bb, xx);CHKERRQ(ierr);
+      ierr = KSPCheckSolve(eksp,pc,xx);CHKERRQ(ierr);
+      ierr = PetscLogEventActivate(KSP_Solve);CHKERRQ(ierr);
+      ierr = PetscLogEventActivate(PC_Apply);CHKERRQ(ierr);
 
-    /* solve - keep stuff out of logging */
-    ierr = PetscLogEventDeactivate(KSP_Solve);CHKERRQ(ierr);
-    ierr = PetscLogEventDeactivate(PC_Apply);CHKERRQ(ierr);
-    ierr = KSPSolve(eksp, bb, xx);CHKERRQ(ierr);
-    ierr = KSPCheckSolve(eksp,pc,xx);CHKERRQ(ierr);
-    ierr = PetscLogEventActivate(KSP_Solve);CHKERRQ(ierr);
-    ierr = PetscLogEventActivate(PC_Apply);CHKERRQ(ierr);
-
-    ierr = KSPComputeExtremeSingularValues(eksp, &emax, &emin);CHKERRQ(ierr);
-    ierr = PetscInfo3(pc,"Smooth P0: max eigen=%e min=%e PC=%s\n",emax,emin,PCJACOBI);CHKERRQ(ierr);
-    ierr = VecDestroy(&xx);CHKERRQ(ierr);
-    ierr = VecDestroy(&bb);CHKERRQ(ierr);
-    ierr = KSPDestroy(&eksp);CHKERRQ(ierr);
+      ierr = KSPComputeExtremeSingularValues(eksp, &emax, &emin);CHKERRQ(ierr);
+      ierr = PetscInfo3(pc,"Smooth P0: max eigen=%e min=%e PC=%s\n",emax,emin,PCJACOBI);CHKERRQ(ierr);
+      ierr = VecDestroy(&xx);CHKERRQ(ierr);
+      ierr = VecDestroy(&bb);CHKERRQ(ierr);
+      ierr = KSPDestroy(&eksp);CHKERRQ(ierr);
+    }
+    if (pc_gamg->use_sa_esteig) {
+      mg->min_eigen_DinvA[pc_gamg->current_level] = emin;
+      mg->max_eigen_DinvA[pc_gamg->current_level] = emax;
+      ierr = PetscInfo3(pc,"Smooth P0: level %D, cache spectra %g %g\n",pc_gamg->current_level,(double)emin,(double)emax);CHKERRQ(ierr);
+    } else {
+      mg->min_eigen_DinvA[pc_gamg->current_level] = 0;
+      mg->max_eigen_DinvA[pc_gamg->current_level] = 0;
+    }
+  } else {
+    mg->min_eigen_DinvA[pc_gamg->current_level] = 0;
+    mg->max_eigen_DinvA[pc_gamg->current_level] = 0;
   }
 
   /* smooth P0 */

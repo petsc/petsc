@@ -1,0 +1,74 @@
+DMPlexCreateFromFile produced serial mesh.
+DMPlexIsDistributed: FALSE
+DMPlexIsInterpolatedCollective: full
+DMPlexCheckPointSFHeavy PASSED
+DMPlexCheckPointSFHeavy PASSED
+DM Object: Parallel Mesh 2 MPI processes
+  type: plex
+Parallel Mesh in 2 dimensions:
+Supports:
+[0] Max support size: 3
+[0]: 2 ----> 8
+[0]: 2 ----> 11
+[0]: 2 ----> 12
+[0]: 3 ----> 8
+[0]: 3 ----> 9
+[0]: 3 ----> 14
+[0]: 4 ----> 9
+[0]: 4 ----> 10
+[0]: 5 ----> 10
+[0]: 5 ----> 11
+[0]: 6 ----> 12
+[0]: 6 ----> 13
+[0]: 7 ----> 13
+[0]: 7 ----> 14
+[0]: 8 ----> 0
+[0]: 8 ----> 1
+[0]: 9 ----> 0
+[0]: 10 ----> 0
+[0]: 11 ----> 0
+[0]: 12 ----> 1
+[0]: 13 ----> 1
+[0]: 14 ----> 1
+[1] Max support size: 0
+Cones:
+[0] Max cone size: 4
+[0]: 0 <---- 8 (0)
+[0]: 0 <---- 9 (0)
+[0]: 0 <---- 10 (0)
+[0]: 0 <---- 11 (0)
+[0]: 1 <---- 8 (-2)
+[0]: 1 <---- 12 (0)
+[0]: 1 <---- 13 (0)
+[0]: 1 <---- 14 (0)
+[0]: 8 <---- 2 (0)
+[0]: 8 <---- 3 (0)
+[0]: 9 <---- 3 (0)
+[0]: 9 <---- 4 (0)
+[0]: 10 <---- 4 (0)
+[0]: 10 <---- 5 (0)
+[0]: 11 <---- 5 (0)
+[0]: 11 <---- 2 (0)
+[0]: 12 <---- 2 (0)
+[0]: 12 <---- 6 (0)
+[0]: 13 <---- 6 (0)
+[0]: 13 <---- 7 (0)
+[0]: 14 <---- 7 (0)
+[0]: 14 <---- 3 (0)
+[1] Max cone size: 0
+coordinates with 1 fields
+  field 0 with 2 components
+Process 0:
+  (   2) dim  2 offset   0 0. -0.5
+  (   3) dim  2 offset   2 0. 0.5
+  (   4) dim  2 offset   4 -1. 0.5
+  (   5) dim  2 offset   6 -1. -0.5
+  (   6) dim  2 offset   8 1. -0.5
+  (   7) dim  2 offset  10 1. 0.5
+Process 1:
+PetscSF Object: 2 MPI processes
+  type: basic
+    sort=rank-order
+  PetscSFSetGraph() has not been called yet
+DMPlexIsDistributed: FALSE
+DMPlexIsInterpolatedCollective: full

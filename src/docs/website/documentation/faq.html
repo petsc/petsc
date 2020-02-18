@@ -116,12 +116,13 @@ See https://www.mcs.anl.gov/petsc/documentation/faq.html
         <li><a href="#mpi-vec-to-mpi-vec">How do I collect all the values from a parallel PETSc vector into a vector on the zeroth (or any particular) processor?</a></li>
         <li><a href="#sparse-matrix-ascii-format">How can I read in or write out a sparse matrix in Matrix Market, Harwell-Boeing, SLAPC or other ASCII format?</a></li>
         <li><a href="#setfromoptions">Does TSSetFromOptions(), SNESSetFromOptions() or KSPSetFromOptions() reset all the parameters I set or how come TS/SNES/KSPSetXXX() don't seem to work?</a></li>
-        <li><a href="#makefiles">Can I use my own makefiles or rules for compiling code, rather than PETSc's?</a></li>
+        <li><a href="#makefiles">How do I compile and link may own PETSc application codess and can I use my own makefiles or rules for compiling code, rather than PETSc's?</a></li>
         <li><a href="#cmake">Can I use CMake to build my own project that depends on PETSc?</a></li>
         <li><a href="#carriagereturns">How can I put carriage returns in PetscPrintf() statements from Fortran?</a></li>
         <li><a href="#cxxmethod">How can I implement callbacks using C++ class methods?</a></li>
         <li><a href="#functionjacobian">Everyone knows that when you code Newton's method you should compute the function and its Jacobian at the same time. How can one do this in PETSc?</a></li>
         <li><a href="#jacobianfree">How can I use Newton's method Jacobian free? Can I difference a different function than provided with SNESSetFunction()?</a></li>
+        <li><a href="#lagjacobian">Computing the Jacobian or preconditioner is time consuming, is there any way to compute it less often?</a></li>
         <li><a href="#conditionnumber">How can I determine the condition number of a matrix?</a></li>
         <li><a href="#invertmatrix">How can I compute the inverse of a PETSc matrix?</a></li>
         <li><a href="#schurcomplement">How can I compute a Schur complement: Kbb - Kba *inverse(Kaa)*Kab?</a></li>
@@ -133,6 +134,9 @@ See https://www.mcs.anl.gov/petsc/documentation/faq.html
         <li><a href="#customnormforksp">I would like to compute a custom norm for KSP to use as a convergence test or for monitoring?</a></li>
         <li><a href="#parallelsolvesequentialcode">If I have a sequential program can I use a parallel direct solver?</a></li>
         <li><a href="#infeasible">TS or SNES produces infeasible (out of domain) solutions or states, how can I prevent this?</a></li>
+        <li><a href="#hermitian">Can PETSc work with Hermitian matrices?</a></li>
+        <li><a href="#matreassembly">How do I efficiently assemble a bunch of very similar matrices (say in a time loop)?</a></li>
+        <li><a href="#resize">Can one resize or change the size of PETSc matrices or vectors?</a></li>
       </ul>
 
       <h4><a href="#Execution">Execution</a></h4>
@@ -500,11 +504,6 @@ See https://www.mcs.anl.gov/petsc/documentation/faq.html
           versions of the library and mylinux-O for the optimized version, or
           petscdebug for the debug version and petscopt for the optimized
           version.
-        </li>
-
-        <li>
-          Begin by copying one of the many PETSc examples (in, for example,
-          petsc/src/ksp/examples/tutorials) and its corresponding makefile.
         </li>
 
         <li>
@@ -941,9 +940,10 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
         </li>
       </ul>
 
-      <h3><a name="makefiles">Can I use my own makefiles or rules for compiling code, instead of using PETSc's?</a></h3>
+      <h3><a name="makefiles">How do I compile and link may own PETSc application codes and can I use my own makefiles or rules for compiling code, rather than PETSc's?</a></h3>
 
-      Yes, see the section of the <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf">users manual</a> called Makefiles
+      See the section of the <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf">users manual</a> called Writing Application Codes with PETSc. This provides a
+      simple makefile that can be used to compiler user code. You are free to modify this makefile or completely replace it with your own makefile. 
 
       <h3><a name="cmake">Can I use CMake to build my own project that depends on PETSc?</a></h3>
 
@@ -1001,7 +1001,38 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
         function.
       </p>
 
-      <h3><a name="jacobianfree">How can I use Newton's method Jacobian free? Can I difference a different function than provided
+      <h3><a name="lagjacobian">Computing the Jacobian or preconditioner is time consuming, is there any way to compute it less often?</a></h3>
+
+      PETSc has a variety of ways of lagging the computation of the Jacobian or the preconditioner. They are documented in the manual page and users manual.
+
+      <ol>
+        <li>
+          -snes_lag_jacobian <lag> - (SNESSetLagJacobian) how often Jacobian is rebuilt (use -1 to never rebuild, use -2 to rebuild the next time requested and then never again).
+        </li>
+        <li>
+          -snes_lag_jacobian_persists - forces lagging of Jacobian through multiple SNES solves (SNESSetLagJacobianPersists), same as passing -2 to -snes_lag_jacobian. By default, each new SNES solve normally triggers a recomputation of the Jacobian
+        </li>
+        <li>
+          These are often (but does not need to be) used in combination with -snes_mf_operator which applies the fresh Jacobian matrix free for every matrix-vector product.
+          Otherwise the out-of-date matrix vector product, computed with the lagged Jacobian will be used.
+        </li>
+      </ol>
+
+      <ol>
+        <li>
+          -snes_lag_preconditioner <lag> - (SNESSetLagPreconditioner) how often the preconditioner is rebuilt. Note: if you are lagging the Jacobian the system will know the
+                                           the matrix has not changed and will not recompute the (same) preconditioner. 
+        </li>
+        <li>
+          -snes_lag_preconditioner_persists - Preconditioner lags through multiple SNES solves
+        </li>
+      </ol>
+
+      By using KSPMonitorSet() and/or SNESMonitorSet() one can provide code that monitors the convergence rate and automatically triggers an update of the Jacobian or preconditioner based on decreasing convergence of the iterative method. For example if the number of SNES iterations doubles one might trigger a new computation of the Jacobian.
+      
+      Experimentation is the only general purpose way to determine which approach is best for your problem. It is also important to experiment on your true problem at the scale you will be solving the problem since the performance benifits depend on the exact problem and and problem size.
+
+<h3><a name="jacobianfree">How can I use Newton's method Jacobian free? Can I difference a different function than provided
              with <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/SNES/SNESSetFunction.html">SNESSetFunction()?</a></h3>
 
       <p>
@@ -1266,13 +1297,42 @@ PETSC_COMM_WORLD = NewComm;
         and SNES call <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/SNES/SNESSetFunctionDomainError.html">SNESSetFunctionDomainError</a>() when
         the solver passes an infeasible (out of domain) solution or state to your routines.
       </p>
-      
+
       <p> If it occurs for DAEs, it is important to insure the algebraic 
         constraints are well satisfied, which can prevent "breakdown" later. 
         Thus, one can try using a tight tolerance for SNES(), using a dicrect
         solver when possible, and reducing the timestep (or tightening TS
         tolerances for adaptive time stepping).
       </p>
+
+
+     <h3><a name="hermitian">Can PETSc work with Hermitian matrices?</a></h3>
+
+     <p> PETSc's support of Hermitian matrices is very limited. Many operations and solvers work for symmetric (MATSBAIJ) matrices and operations on transpose
+       matrices but there is little direct support for Hermitian matrices and Hermitian transpose (complex conjugate transpose) operations. There is KSPSolveTranspose() for
+       solving the transpose of a linear system but no KSPSolveHermitian(). Relevant functions include:
+      </p>
+
+    <ol>
+        <li>
+          MatIsHermitian(), MatIsHermitianKnown(), MatIsStructurallySymmetric(), MatSetOption(Mat,MAT_SYMMETRIC or MAT_HERMITIAN, PetscBool), MatIsSymmetricKnown(), MatIsSymmetric()
+        </li>
+        <li>
+          MatMultHermitianTranspose(), MatMultHermitianTransposeAdd() (very limited support)
+        </li>
+        <li>
+          MatCreateNormalHermitian(), MatCreateHermitianTranspose()
+        </li>
+    </ol>
+
+     <h3><a name="matreassembly">How can I assemble a bunch of similar matrices?</a></h3>
+     
+     <p>You can first add the values common to all the matrices, then use MatStoreValues() to stash the common values.
+        Each iteration you call MatRetrieveValues(), then set the unique values in a matrix and assemble.</p>
+
+     <h3><a name="resize">Can one resize or change the size of PETSc matrices or vectors?</a></h3>
+
+      No, once the vector or matrices sizes have been set and the matrices or vectors are fully usuable one cannot change the size of the matrices or vectors or number of processors they live on. One may create new vectors and copy, for example using VecScatterCreate(), the old values from the previous vector.
 
       <hr>
 
@@ -1369,7 +1429,7 @@ PETSC_COMM_WORLD = NewComm;
 
       Some examples use ${DATAFILESPATH}/matrices/medium and other files. These
       test matrices in PETSc binary format can be found at
-      <a href="https://bitbucket.org/petsc/datafiles">https://bitbucket.org/petsc/petsc/datafiles</a>
+      <a href="https://gitlab.com/petsc/datafiles">https://gitlab.com/petsc/datafiles</a>
 
       <h3><a name="info">When I dump some matrices and vectors to binary, I seem to be generating some empty files with .info extensions. What's the deal with these?</a></h3>
 
@@ -1901,7 +1961,7 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh
       <ul>
         <li>Recommend building PETSc with <code>--download-mpich --with-debugging</code> [debugging is enabled by default]</li>
         <li>Compile application code with this build of PETSc</li>
-        <li>run with valgrind using: <code>${PETSC_DIR}/lib/petsc/bin/petscmpiexec -valgrind -n NPROC PETSCPROGRAMNAME -malloc off PROGRAMOPTIONS</code></li>
+        <li>run with valgrind using: <code>${PETSC_DIR}/lib/petsc/bin/petscmpiexec -valgrind -n NPROC PETSCPROGRAMNAME  PROGRAMOPTIONS</code></li>
         <li>or invoke valgrind directly with: <code>mpiexec -n NPROC valgrind --tool=memcheck -q --num-callers=20 --log-file=valgrind.log.%p PETSCPROGRAMNAME -malloc off PROGRAMOPTIONS</code></li>
       </ul>
 

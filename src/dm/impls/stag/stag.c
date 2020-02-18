@@ -2,10 +2,24 @@
    Implementation of DMStag, defining dimension-independent functions in the
    DM API. stag1d.c, stag2d.c, and stag3d.c may include dimension-specific
    implementations of DM API functions, and other files here contain additional
-   DMStag-specific API functions (and internal functions).
+   DMStag-specific API functions, as well as internal functions.
 */
 #include <petsc/private/dmstagimpl.h>
 #include <petscsf.h>
+
+static PetscErrorCode DMClone_Stag(DM dm,DM *newdm)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* Destroy the DM created by generic logic in DMClone() */
+  if (*newdm) {
+    ierr = DMDestroy(newdm);CHKERRQ(ierr);
+  }
+  ierr = DMStagDuplicateWithoutSetup(dm,PetscObjectComm((PetscObject)dm),newdm);CHKERRQ(ierr);
+  ierr = DMSetUp(*newdm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 static PetscErrorCode DMDestroy_Stag(DM dm)
 {
@@ -444,6 +458,9 @@ PETSC_EXTERN PetscErrorCode DMCreate_Stag(DM dm)
   stag->coordinateDMType                              = NULL;
 
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
+#if defined(PETSC_USE_DEBUG)
+  if (dim != 1 && dim != 2 && dim != 3) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"DMSetDimension() must be called to set a dimension with value 1, 2, or 3");
+#endif
 
   ierr = PetscMemzero(dm->ops,sizeof(*(dm->ops)));CHKERRQ(ierr);
   dm->ops->createcoordinatedm  = DMCreateCoordinateDM_Stag;
@@ -464,6 +481,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Stag(DM dm)
     case 3: dm->ops->setup     = DMSetUp_Stag_3d; break;
     default : SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Unsupported dimension %d",dim);
   }
+  dm->ops->clone               = DMClone_Stag;
   dm->ops->view                = DMView_Stag;
   dm->ops->getcompatibility    = DMGetCompatibility_Stag;
   PetscFunctionReturn(0);

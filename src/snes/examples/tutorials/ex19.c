@@ -712,7 +712,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
    test:
       suffix: 2_bcols1
       nsize: 4
-      args: -da_refine 3 -snes_converged_reason -pc_type mg -mat_fd_type ds -mat_fd_coloring_bcols 1> ex19_1.tmp 2>&1
+      args: -da_refine 3 -snes_converged_reason -pc_type mg -mat_fd_type ds -mat_fd_coloring_bcols
       output_file: output/ex19_2.out
       requires: !single
 
@@ -1123,5 +1123,11 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
      nsize: 4
      requires: mkl_cpardiso
      args: -pc_type lu -pc_factor_mat_solver_type mkl_cpardiso -ksp_monitor
+
+   test:
+     suffix: logviewmemory
+     requires: define(PETSC_USE_LOG) !define(PETSC_HAVE_VALGRIND)
+     args: -log_view -log_view_memory -da_refine 4
+     filter: grep MatFDColorSetUp | wc -w | xargs  -I % sh -c "expr % \> 21"
 
 TEST*/

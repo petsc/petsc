@@ -132,14 +132,13 @@ PetscErrorCode  MatCoarsenSetAdjacency(MatCoarsen agg, Mat adj)
 }
 
 /*@
-   MatCoarsenSetStrictAggs - WHAT IS THIS?
+   MatCoarsenSetStrictAggs - Set whether to keep strict (non overlapping) aggregates in the linked list of aggregates for a coarsen context
 
    Logically Collective on MatCoarsen
 
    Input Parameters:
 +  agg - the coarsen context
--  str - the adjacency matrix
-
+-  str - PETSC_TRUE keep strict aggregates, PETSC_FALSE allow overlap
    Level: advanced
 
 .seealso: MatCoarsenCreate()
@@ -214,6 +213,29 @@ PetscErrorCode  MatCoarsenCreate(MPI_Comm comm, MatCoarsen *newcrs)
   ierr = PetscHeaderCreate(agg, MAT_COARSEN_CLASSID,"MatCoarsen","Matrix/graph coarsen", "MatCoarsen", comm, MatCoarsenDestroy, MatCoarsenView);CHKERRQ(ierr);
 
   *newcrs = agg;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatCoarsenViewFromOptions - View from Options
+
+   Collective on MatCoarsen
+
+   Input Parameters:
++  A - the coarsen context
+.  obj - Optional object
+-  name - command line option
+
+   Level: intermediate
+.seealso:  MatCoarsen, MatCoarsenView, PetscObjectViewFromOptions(), MatCoarsenCreate()
+@*/
+PetscErrorCode  MatCoarsenViewFromOptions(MatCoarsen A,PetscObject obj,const char name[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_COARSEN_CLASSID,1);
+  ierr = PetscObjectViewFromOptions((PetscObject)A,obj,name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

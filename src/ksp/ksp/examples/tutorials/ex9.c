@@ -448,7 +448,7 @@ PetscErrorCode MyKSPMonitor(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
    test:
       requires: hpddm
       suffix: hpddm_2
-      args: -t 2 -pc_type jacobi -ksp_monitor_short -ksp_type gmres -s2_ksp_type hpddm -s2_ksp_hpddm_krylov_method gcrodr -s2_ksp_hpddm_recycle 10 -s2_pc_type jacobi -s2_ksp_monitor_short
+      args: -t 2 -pc_type jacobi -ksp_monitor_short -ksp_type gmres -s2_ksp_type hpddm -s2_ksp_hpddm_type gcrodr -s2_ksp_hpddm_recycle 10 -s2_pc_type jacobi -s2_ksp_monitor_short
 
    testset:
       requires: hpddm
@@ -459,9 +459,9 @@ PetscErrorCode MyKSPMonitor(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
          args: -ksp_type cg -s2_ksp_type cg
       test:
          suffix: hpddm_cg_p_h
-         args: -ksp_type cg -s2_ksp_type hpddm -s2_ksp_hpddm_krylov_method cg
+         args: -ksp_type cg -s2_ksp_type hpddm -s2_ksp_hpddm_type cg
       test:
          suffix: hpddm_cg_h_h
-         args: -ksp_type hpddm -ksp_hpddm_krylov_method cg -s2_ksp_type hpddm -s2_ksp_hpddm_krylov_method cg
+         args: -ksp_type hpddm -ksp_hpddm_type cg -s2_ksp_type hpddm -s2_ksp_hpddm_type cg
 
 TEST*/

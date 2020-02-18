@@ -12,7 +12,7 @@ PETSC_INTERN PetscBool   PetscObjectsLog;
 #endif
 
 #if defined(PETSC_USE_LOG)
-PetscObject *PetscObjects      = 0;
+PetscObject *PetscObjects      = NULL;
 PetscInt    PetscObjectsCounts = 0, PetscObjectsMaxCounts = 0;
 PetscBool   PetscObjectsLog    = PETSC_FALSE;
 #endif
@@ -43,15 +43,15 @@ PetscErrorCode  PetscHeaderCreate_Private(PetscObject h,PetscClassId classid,con
   h->class_name            = (char*)class_name;
   h->description           = (char*)descr;
   h->mansec                = (char*)mansec;
-  h->prefix                = 0;
+  h->prefix                = NULL;
   h->refct                 = 1;
 #if defined(PETSC_HAVE_SAWS)
   h->amsmem                = PETSC_FALSE;
 #endif
   h->id                    = idcnt++;
   h->parentid              = 0;
-  h->qlist                 = 0;
-  h->olist                 = 0;
+  h->qlist                 = NULL;
+  h->olist                 = NULL;
   h->bops->destroy         = destroy;
   h->bops->view            = view;
   h->bops->getcomm         = PetscObjectGetComm_Petsc;
@@ -111,8 +111,8 @@ PetscErrorCode  PetscHeaderDestroy_Private(PetscObject h)
   if (h->python_destroy) {
     void           *python_context = h->python_context;
     PetscErrorCode (*python_destroy)(void*) = h->python_destroy;
-    h->python_context = 0;
-    h->python_destroy = 0;
+    h->python_context = NULL;
+    h->python_destroy = NULL;
 
     ierr = (*python_destroy)(python_context);CHKERRQ(ierr);
   }
@@ -136,7 +136,7 @@ PetscErrorCode  PetscHeaderDestroy_Private(PetscObject h)
     /* Record object removal from list of all objects */
     for (i=0; i<PetscObjectsMaxCounts; i++) {
       if (PetscObjects[i] == h) {
-        PetscObjects[i] = 0;
+        PetscObjects[i] = NULL;
         PetscObjectsCounts--;
         break;
       }
@@ -296,7 +296,7 @@ PetscErrorCode  PetscObjectsDump(FILE *fd,PetscBool all)
         ierr = PetscObjectName(h);CHKERRQ(ierr);
         {
 #if defined(PETSC_USE_DEBUG)
-        PetscStack *stack = 0;
+        PetscStack *stack = NULL;
         char       *create,*rclass;
 
         /* if the PETSc function the user calls is not a create then this object was NOT directly created by them */
@@ -927,7 +927,7 @@ PetscErrorCode  PetscContainerDestroy(PetscContainer *obj)
   PetscFunctionBegin;
   if (!*obj) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*obj,PETSC_CONTAINER_CLASSID,1);
-  if (--((PetscObject)(*obj))->refct > 0) {*obj = 0; PetscFunctionReturn(0);}
+  if (--((PetscObject)(*obj))->refct > 0) {*obj = NULL; PetscFunctionReturn(0);}
   if ((*obj)->userdestroy) { ierr = (*(*obj)->userdestroy)((*obj)->ptr);CHKERRQ(ierr); }
   ierr = PetscHeaderDestroy(obj);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -70,14 +70,14 @@ info:
 	-@echo "Using configuration flags:"
 	-@grep "\#define " ${PETSCCONF_H}
 	-@echo "-----------------------------------------"
-	-@echo "Using C compile: ${PETSC_COMPILE}"
+	-@echo "Using C compile: ${PETSC_CCOMPILE}"
 	-@if [  "${MPICC_SHOW}" != "" ]; then \
              printf  "mpicc -show: %b\n" "${MPICC_SHOW}";\
           fi; \
-          printf  "C compiler version: %b\n" "${C_VERSION}"; \
-	  if [ "${CXX}" != "" ]; then \
-	   echo "Using C++ compile: ${PETSC_CXXCOMPILE}";\
-	    if [ "${MPICXX_SHOW}" != "" ]; then \
+        printf  "C compiler version: %b\n" "${C_VERSION}"; \
+        if [ "${PETSC_CXXCOMPILE}" != "" ]; then \
+        echo "Using C++ compile: ${PETSC_CXXCOMPILE}";\
+        if [ "${MPICXX_SHOW}" != "" ]; then \
                printf "mpicxx -show: %b\n" "${MPICXX_SHOW}"; \
             fi;\
             printf  "C++ compiler version: %b\n" "${Cxx_VERSION}"; \
@@ -92,6 +92,9 @@ info:
 	-@if [ "${CUDAC}" != "" ]; then \
 	   echo "Using CUDA compile: ${PETSC_CUCOMPILE}";\
          fi
+	-@if [ "${CLANGUAGE}" = "CXX" ]; then \
+           echo "Using C++ compiler to compile PETSc";\
+        fi
 	-@echo "-----------------------------------------"
 	-@echo "Using C/C++ linker: ${PCC_LINKER}"
 	-@echo "Using C/C++ flags: ${PCC_LINKER_FLAGS}"
@@ -106,7 +109,7 @@ info:
         else \
            TESTDIR=`mktemp -q -d -t petscmpi-XXXXXXXX` && \
            echo '#include <mpi.h>' > $${TESTDIR}/mpitest.c && \
-           BUF=`${CPP} ${PETSC_CCPPFLAGS} $${TESTDIR}/mpitest.c |grep 'mpi\.h' | ( head -1 ; cat > /dev/null )` && \
+           BUF=`${CPP} ${PETSC_CPPFLAGS} ${PETSC_CC_INCLUDES} $${TESTDIR}/mpitest.c |grep 'mpi\.h' | ( head -1 ; cat > /dev/null )` && \
            echo Using mpi.h: $${BUF}; ${RM} -rf $${TESTDIR}; \
         fi
 	-@echo "-----------------------------------------"
@@ -160,6 +163,9 @@ test_build:
 	+@if ( [ "${ML_LIB}" != "" ] ||  [ "${TRILINOS_LIB}" != "" ] ) && [ "${PETSC_WITH_BATCH}" = "" ]; then \
           cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR}  DIFF=${PETSC_DIR}/lib/petsc/bin/petscdiff runex19_ml; \
          fi;
+	+@if [ "${SUITESPARSE_LIB}" != "" ] && [ "${PETSC_WITH_BATCH}" = "" ]; then \
+          cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} DIFF=${PETSC_DIR}/lib/petsc/bin/petscdiff runex19_suitesparse; \
+         fi;
 	+@cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} ex19.rm
 	+@if [ "${PETSC4PY}" = "yes" ]; then \
           cd src/ksp/ksp/examples/tutorials >/dev/null; \
@@ -193,7 +199,7 @@ test_usermakefile:
 
 # Compare ABI/API of two versions of PETSc library with the old one defined by PETSC_{DIR,ARCH}_ABI_OLD
 abitest:
-	@if [ "${PETSC_DIR_ABI_OLD}" == "" ] || [ "${PETSC_ARCH_ABI_OLD}" == "" ]; \
+	@if [ "${PETSC_DIR_ABI_OLD}" = "" ] || [ "${PETSC_ARCH_ABI_OLD}" = "" ]; \
 		then printf "You must set environment variables PETSC_DIR_ABI_OLD and PETSC_ARCH_ABI_OLD to run abitest\n"; \
 		exit 1; \
 	fi;
@@ -439,10 +445,11 @@ update-web:
 #  See script for details
 #
 gcov:
-	-@$(PYTHON) ${PETSC_DIR}/lib/petsc/bin/maint/gcov.py -run_gcov
+	-@$(PYTHON) ${PETSC_DIR}/lib/petsc/bin/maint/gcov.py --run_gcov --petsc_arch ${PETSC_ARCH}
 
 mergegcov:
-	-@$(PYTHON) ${PETSC_DIR}/lib/petsc/bin/maint/gcov.py -merge_gcov ${LOC} *.tar.gz
+	-@$(PYTHON) ${PETSC_DIR}/lib/petsc/bin/maint/gcov.py --merge_gcov --loc=${LOC} --petsc_arch ${PETSC_ARCH}
+
 
 ########################
 #

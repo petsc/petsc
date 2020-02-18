@@ -12,7 +12,6 @@
    Routines: TaoSetJacobianDesignRoutine();
    Routines: TaoSetStateDesignIS();
    Routines: TaoSetFromOptions();
-   Routines: TaoSetHistory(); TaoGetHistory();
    Routines: TaoSolve();
    Routines: TaoDestroy();
    Processors: 1
@@ -333,7 +332,7 @@ PetscErrorCode FormJacobianState(Tao tao, Vec X, Mat J, Mat JPre, Mat JInv, void
   ierr = Scatter_yi(user->u,user->ui,user->ui_scatter,user->nt);CHKERRQ(ierr);
   ierr = Scatter_uxi_uyi(user->u,user->uxi,user->uxi_scatter,user->uyi,user->uyi_scatter,user->nt);CHKERRQ(ierr);
   for (i=0; i<user->nt; i++){
-    ierr = MatCopy(user->Divxy[0],user->C[i],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = MatCopy(user->Divxy[0],user->C[i],SUBSET_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatCopy(user->Divxy[1],user->Cwork[i],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 
     ierr = MatDiagonalScale(user->C[i],NULL,user->uxi[i]);CHKERRQ(ierr);
@@ -1095,8 +1094,6 @@ PetscErrorCode HyperbolicInitialize(AppCtx *user)
 
   /* Build matrices for SOR preconditioner */
   ierr = Scatter_uxi_uyi(user->u,user->uxi,user->uxi_scatter,user->uyi,user->uyi_scatter,user->nt);CHKERRQ(ierr);
-  ierr = MatShift(user->Divxy[0],0.0);CHKERRQ(ierr); /*  Force C[i] and Divxy[0] to share same nonzero pattern */
-  ierr = MatAXPY(user->Divxy[0],0.0,user->Divxy[1],DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = PetscMalloc1(5*n,&user->C);CHKERRQ(ierr);
   ierr = PetscMalloc1(2*n,&user->Cwork);CHKERRQ(ierr);
   for (i=0; i<user->nt; i++){
@@ -1105,7 +1102,7 @@ PetscErrorCode HyperbolicInitialize(AppCtx *user)
 
     ierr = MatDiagonalScale(user->C[i],NULL,user->uxi[i]);CHKERRQ(ierr);
     ierr = MatDiagonalScale(user->Cwork[i],NULL,user->uyi[i]);CHKERRQ(ierr);
-    ierr = MatAXPY(user->C[i],1.0,user->Cwork[i],SUBSET_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = MatAXPY(user->C[i],1.0,user->Cwork[i],DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatScale(user->C[i],user->ht);CHKERRQ(ierr);
     ierr = MatShift(user->C[i],1.0);CHKERRQ(ierr);
   }

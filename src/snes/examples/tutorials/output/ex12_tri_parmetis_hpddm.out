@@ -1,20 +1,20 @@
   0 SNES Function norm 33.3967 
-    0 KSP Residual norm 82.6989 
-    1 KSP Residual norm 11.3401 
-    2 KSP Residual norm 0.964682 
-    3 KSP Residual norm 0.13285 
-    4 KSP Residual norm 0.0198781 
-    5 KSP Residual norm 0.00389101 
-    6 KSP Residual norm 0.000681727 
-    7 KSP Residual norm 7.6521e-05 
-    8 KSP Residual norm 1.09686e-05 
-    9 KSP Residual norm 1.77017e-06 
-   10 KSP Residual norm 2.9491e-07 
-   11 KSP Residual norm 5.3175e-08 
-   12 KSP Residual norm 1.13777e-08 
-   13 KSP Residual norm 1.94732e-09 
+    0 KSP Residual norm 83.1148 
+    1 KSP Residual norm 11.2855 
+    2 KSP Residual norm 1.64705 
+    3 KSP Residual norm 0.417142 
+    4 KSP Residual norm 0.0795477 
+    5 KSP Residual norm 0.0101668 
+    6 KSP Residual norm 0.00231525 
+    7 KSP Residual norm 0.00030839 
+    8 KSP Residual norm 4.14765e-05 
+    9 KSP Residual norm 7.85089e-06 
+   10 KSP Residual norm 9.81655e-07 
+   11 KSP Residual norm 1.57944e-07 
+   12 KSP Residual norm 1.94736e-08 
+   13 KSP Residual norm 2.16207e-09 
   Linear solve converged due to CONVERGED_RTOL iterations 13
-  1 SNES Function norm 1.84209e-09 
+  1 SNES Function norm 2.37188e-09 
 L_2 Error: 7.89093
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 4 MPI processes
@@ -42,9 +42,10 @@ SNES Object: 4 MPI processes
   PC Object: 4 MPI processes
     type: hpddm
     levels: 2
+    Neumann matrix attached? TRUE
     coarse correction: deflated
     on process #0, value (+ threshold if available) for selecting deflation vectors: 20
-    grid and operator complexities: 1.01463 1.04313
+    grid and operator complexities: 1.01463 1.10782
     KSP Object: (pc_hpddm_levels_1_) 4 MPI processes
       type: preonly
       maximum iterations=10000, initial guess is zero
@@ -104,7 +105,7 @@ SNES Object: 4 MPI processes
         Mat Object: (pc_hpddm_coarse_) 2 MPI processes
           type: mpisbaij
           rows=80, cols=80, bs=20
-          total: nonzeros=1600, allocated nonzeros=1600
+          total: nonzeros=4000, allocated nonzeros=4000
           total number of mallocs used during MatSetValues calls=0
               block size is 20
                 KSP Object:       (pc_hpddm_coarse_redundant_)       1 MPI processes
@@ -118,20 +119,20 @@ SNES Object: 4 MPI processes
                     out-of-place factorization
                     tolerance for zero pivot 2.22045e-14
                     matrix ordering: natural
-                    factor fill ratio given 5., needed 1.25
+                    factor fill ratio given 5., needed 1.1
                       Factored matrix follows:
                         Mat Object:       1 MPI processes
                           type: seqsbaij
                           rows=80, cols=80, bs=20
                           package used to perform factorization: petsc
-                          total: nonzeros=2000, allocated nonzeros=2000
+                          total: nonzeros=4400, allocated nonzeros=4400
                           total number of mallocs used during MatSetValues calls=0
                               block size is 20
                   linear system matrix = precond matrix:
                   Mat Object:       1 MPI processes
                     type: seqsbaij
                     rows=80, cols=80, bs=20
-                    total: nonzeros=1600, allocated nonzeros=1600
+                    total: nonzeros=4000, allocated nonzeros=4000
                     total number of mallocs used during MatSetValues calls=0
                         block size is 20
     linear system matrix = precond matrix:

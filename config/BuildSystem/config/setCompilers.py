@@ -1,7 +1,6 @@
 from __future__ import generators
 import config.base
 import config
-
 import os
 from functools import reduce
 
@@ -404,6 +403,15 @@ class Configure(config.base.Configure):
     return 0
   isDarwin = staticmethod(isDarwin)
 
+  def isDarwinCatalina(log):
+    '''Returns true if system is Darwin/MacOSX Version Catalina or higher'''
+    import platform
+    if platform.system() != 'Darwin': return 0
+    v = tuple([int(a) for a in platform.mac_ver()[0].split('.')])
+    if v < (10,15,0): return 0
+    return 1
+  isDarwinCatalina = staticmethod(isDarwinCatalina)
+
   def isFreeBSD(log):
     '''Returns true if system is FreeBSD'''
     (output, error, status) = config.base.Configure.executeShellCommand('uname -s', log = log)
@@ -562,13 +570,13 @@ class Configure(config.base.Configure):
         yield 'win32fe '+self.argDB['with-cc']
       else:
         yield self.argDB['with-cc']
-      raise RuntimeError('C compiler you provided with -with-cc='+self.argDB['with-cc']+' does not work.'+'\n'+self.mesg)
+      raise RuntimeError('C compiler you provided with -with-cc='+self.argDB['with-cc']+' cannot be found or does not work.'+'\n'+self.mesg)
     elif 'CC' in self.argDB:
       if self.isWindows(self.argDB['CC'], self.log):
         yield 'win32fe '+self.argDB['CC']
       else:
         yield self.argDB['CC']
-      raise RuntimeError('C compiler you provided with -CC='+self.argDB['CC']+' does not work.'+'\n'+self.mesg)
+      raise RuntimeError('C compiler you provided with -CC='+self.argDB['CC']+' cannot be found or does not work.'+'\n'+self.mesg)
     elif self.useMPICompilers() and 'with-mpi-dir' in self.argDB and os.path.isdir(os.path.join(self.argDB['with-mpi-dir'], 'bin')):
       self.usedMPICompilers = 1
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpiicc')
@@ -577,7 +585,7 @@ class Configure(config.base.Configure):
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'hcc')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpcc_r')
       self.usedMPICompilers = 0
-      raise RuntimeError('MPI compiler wrappers in '+self.argDB['with-mpi-dir']+'/bin do not work. See https://www.mcs.anl.gov/petsc/documentation/faq.html#mpi-compilers')
+      raise RuntimeError('MPI compiler wrappers in '+self.argDB['with-mpi-dir']+'/bin cannot be found or do not work. See https://www.mcs.anl.gov/petsc/documentation/faq.html#mpi-compilers')
     else:
       if self.useMPICompilers() and 'with-mpi-dir' in self.argDB:
       # if it gets here these means that self.argDB['with-mpi-dir']/bin does not exist so we should not search for MPI compilers
@@ -628,7 +636,6 @@ class Configure(config.base.Configure):
           self.checkCompiler('C')
           break
       except RuntimeError as e:
-        import os
         self.mesg = str(e)
         self.logPrint('Error testing C compiler: '+str(e))
         if os.path.basename(self.CC) == 'mpicc':
@@ -641,6 +648,9 @@ class Configure(config.base.Configure):
       self.executeShellCommand(self.CC+' --version', log = self.log)
     except:
       pass
+    if os.path.basename(self.CC).startswith('mpi'):
+       self.logPrint('Since MPI c compiler starts with mpi, force searches for other compilers to only look for MPI compilers\n')
+       self.argDB['with-mpi-compilers'] = 1
     return
 
   def generateCPreprocessorGuesses(self):
@@ -670,7 +680,6 @@ class Configure(config.base.Configure):
     return
 
   def generateCUDACompilerGuesses(self):
-    import os
     '''Determine the CUDA compiler using CUDAC, then --with-cudac
        - Any given category can be excluded'''
     if hasattr(self, 'CUDAC'):
@@ -678,12 +687,11 @@ class Configure(config.base.Configure):
       raise RuntimeError('Error: '+self.mesg)
     elif 'with-cudac' in self.argDB:
       yield self.argDB['with-cudac']
-      raise RuntimeError('CUDA compiler you provided with -with-cudac='+self.argDB['with-cudac']+' does not work.'+'\n'+self.mesg)
+      raise RuntimeError('CUDA compiler you provided with -with-cudac='+self.argDB['with-cudac']+' cannot be found or does not work.'+'\n'+self.mesg)
     elif 'CUDAC' in self.argDB:
       yield self.argDB['CUDAC']
-      raise RuntimeError('CUDA compiler you provided with -CUDAC='+self.argDB['CUDAC']+' does not work.'+'\n'+self.mesg)
+      raise RuntimeError('CUDA compiler you provided with -CUDAC='+self.argDB['CUDAC']+' cannot be found or does not work.'+'\n'+self.mesg)
     elif 'with-cuda-dir' in self.argDB:
-      import os
       nvccPath = os.path.join(self.argDB['with-cuda-dir'], 'bin','nvcc')
       yield nvccPath
     else:
@@ -748,7 +756,6 @@ class Configure(config.base.Configure):
 
   def generateCxxCompilerGuesses(self):
     '''Determine the Cxx compiler'''
-    import os
 
     if hasattr(self, 'CXX'):
       yield self.CXX
@@ -767,13 +774,13 @@ class Configure(config.base.Configure):
         yield 'win32fe '+self.argDB['with-cxx']
       else:
         yield self.argDB['with-cxx']
-      raise RuntimeError('C++ compiler you provided with -with-cxx='+self.argDB['with-cxx']+' does not work.'+'\n'+self.mesg)
+      raise RuntimeError('C++ compiler you provided with -with-cxx='+self.argDB['with-cxx']+' cannot be found or does not work.'+'\n'+self.mesg)
     elif 'CXX' in self.argDB:
       if self.isWindows(self.argDB['CXX'], self.log):
         yield 'win32fe '+self.argDB['CXX']
       else:
         yield self.argDB['CXX']
-      raise RuntimeError('C++ compiler you provided with -CXX='+self.argDB['CXX']+' does not work.'+'\n'+self.mesg)
+      raise RuntimeError('C++ compiler you provided with -CXX='+self.argDB['CXX']+' cannot be found or does not work.'+'\n'+self.mesg)
     elif self.useMPICompilers() and 'with-mpi-dir' in self.argDB and os.path.isdir(os.path.join(self.argDB['with-mpi-dir'], 'bin')):
       self.usedMPICompilers = 1
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpiicpc')
@@ -783,7 +790,7 @@ class Configure(config.base.Configure):
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpiCC')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpCC_r')
       self.usedMPICompilers = 0
-      raise RuntimeError('bin/<mpiCC,mpicxx,hcp,mpCC_r> you provided with -with-mpi-dir='+self.argDB['with-mpi-dir']+' does not work. See https://www.mcs.anl.gov/petsc/documentation/faq.html#mpi-compilers')
+      raise RuntimeError('bin/<mpiCC,mpicxx,hcp,mpCC_r> you provided with -with-mpi-dir='+self.argDB['with-mpi-dir']+' cannot be found or does not work. See https://www.mcs.anl.gov/petsc/documentation/faq.html#mpi-compilers')
     else:
       if self.useMPICompilers():
         self.usedMPICompilers = 1
@@ -848,7 +855,6 @@ class Configure(config.base.Configure):
             self.checkCompiler('Cxx')
             break
         except RuntimeError as e:
-          import os
           self.mesg = str(e)
           self.logPrint('Error testing C++ compiler: '+str(e))
           if os.path.basename(self.CXX) in ['mpicxx', 'mpiCC']:
@@ -887,7 +893,6 @@ class Configure(config.base.Configure):
           self.popLanguage()
           break
       except RuntimeError as e:
-        import os
 
         if os.path.basename(self.CXXPP) in ['mpicxx', 'mpiCC']:
           self.logPrint('MPI installation '+self.getCompiler()+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI')
@@ -898,7 +903,6 @@ class Configure(config.base.Configure):
 
   def generateFortranCompilerGuesses(self):
     '''Determine the Fortran compiler'''
-    import os
 
     if hasattr(self, 'FC'):
       yield self.FC
@@ -911,14 +915,14 @@ class Configure(config.base.Configure):
         yield 'win32fe '+self.argDB['with-fc']
       else:
         yield self.argDB['with-fc']
-      raise RuntimeError('Fortran compiler you provided with --with-fc='+self.argDB['with-fc']+' does not work.'+'\n'+self.mesg)
+      raise RuntimeError('Fortran compiler you provided with --with-fc='+self.argDB['with-fc']+' cannot be found or does not work.'+'\n'+self.mesg)
     elif 'FC' in self.argDB:
       if self.isWindows(self.argDB['FC'], self.log):
         yield 'win32fe '+self.argDB['FC']
       else:
         yield self.argDB['FC']
       yield self.argDB['FC']
-      raise RuntimeError('Fortran compiler you provided with -FC='+self.argDB['FC']+' does not work.'+'\n'+self.mesg)
+      raise RuntimeError('Fortran compiler you provided with -FC='+self.argDB['FC']+' cannot be found or does not work.'+'\n'+self.mesg)
     elif self.useMPICompilers() and 'with-mpi-dir' in self.argDB and os.path.isdir(os.path.join(self.argDB['with-mpi-dir'], 'bin')):
       self.usedMPICompilers = 1
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpiifort')
@@ -929,7 +933,7 @@ class Configure(config.base.Configure):
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpxlf_r')
       self.usedMPICompilers = 0
       if os.path.isfile(os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpif90')):
-        raise RuntimeError('bin/mpif90 you provided with --with-mpi-dir='+self.argDB['with-mpi-dir']+' does not work.\nRun with --with-fc=0 if you wish to use this MPI and disable Fortran. See https://www.mcs.anl.gov/petsc/documentation/faq.html#mpi-compilers')
+        raise RuntimeError('bin/mpif90 you provided with --with-mpi-dir='+self.argDB['with-mpi-dir']+' cannot be found or does not work.\nRun with --with-fc=0 if you wish to use this MPI and disable Fortran. See https://www.mcs.anl.gov/petsc/documentation/faq.html#mpi-compilers')
     else:
       if self.useMPICompilers():
         self.usedMPICompilers = 1
@@ -1027,7 +1031,6 @@ class Configure(config.base.Configure):
           self.popLanguage()
           break
       except RuntimeError as e:
-        import os
 
         if os.path.basename(self.FPP) in ['mpif90']:
           self.logPrint('MPI installation '+self.getCompiler()+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI')

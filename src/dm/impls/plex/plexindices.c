@@ -7,7 +7,7 @@
 
   Input Parameters:
 + dm - The DM
-- section - The section describing the layout in v, or NULL to use the default section
+- section - The section describing the layout in the local vector, or NULL to use the default section
 
   Note:
   This should greatly improve the performance of the closure operations, at the cost of additional memory.
@@ -65,9 +65,11 @@ PetscErrorCode DMPlexCreateClosureIndex(DM dm, PetscSection section)
       }
     }
     ierr = DMPlexRestoreTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
-    if (q*2 != cldof) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "Invalid size for closure %d should be %d", q*2, cldof);
+    if (q*2 != cldof) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "Invalid size for closure %D should be %D", q*2, cldof);
   }
   ierr = ISCreateGeneral(PETSC_COMM_SELF, clSize, clPoints, PETSC_OWN_POINTER, &closureIS);CHKERRQ(ierr);
   ierr = PetscSectionSetClosureIndex(section, (PetscObject) dm, closureSection, closureIS);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&closureSection);CHKERRQ(ierr);
+  ierr = ISDestroy(&closureIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -24,9 +24,11 @@ typedef struct {
   Vec         left,right;
   Vec         left_work,right_work;
   Vec         left_add_work,right_add_work;
-  Mat         axpy;
-  PetscScalar axpy_vscale;
-  PetscBool   managescalingshifts;                   /* The user will manage the scaling and shifts for the MATSHELL, not the default */
+  /* support for MatAXPY */
+  Mat              axpy;
+  PetscScalar      axpy_vscale;
+  PetscObjectState axpy_state;
+  PetscBool        managescalingshifts; /* The user will manage the scaling and shifts for the MATSHELL, not the default */
   /* support for ZeroRows/Columns operations */
   IS          zrows;
   IS          zcols;
@@ -222,7 +224,7 @@ static PetscErrorCode MatShellShiftAndScale(Mat A,Vec X,Vec Y)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  MatShellGetContext_Shell(Mat mat,void *ctx)
+PetscErrorCode MatShellGetContext_Shell(Mat mat,void *ctx)
 {
   PetscFunctionBegin;
   *(void**)ctx = ((Mat_Shell*)(mat->data))->ctx;
@@ -270,7 +272,6 @@ static PetscErrorCode MatZeroRowsColumns_Local_Shell(Mat mat,PetscInt nr,PetscIn
   PetscInt       cum,rst,cst,i;
 
   PetscFunctionBegin;
-  if (shell->axpy) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot diagonal scale MATSHELL after MatAXPY operation");
   if (!shell->zvals) {
     ierr = MatCreateVecs(mat,NULL,&shell->zvals);CHKERRQ(ierr);
   }
@@ -334,6 +335,7 @@ static PetscErrorCode MatZeroRowsColumns_Local_Shell(Mat mat,PetscInt nr,PetscIn
 
 static PetscErrorCode MatZeroRows_Shell(Mat mat,PetscInt n,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
 {
+  Mat_Shell      *shell = (Mat_Shell*)mat->data;
   PetscInt       nr, *lrows;
   PetscErrorCode ierr;
 
@@ -372,12 +374,16 @@ static PetscErrorCode MatZeroRows_Shell(Mat mat,PetscInt n,const PetscInt rows[]
   }
   ierr = PetscLayoutMapLocal(mat->rmap,n,rows,&nr,&lrows,NULL);CHKERRQ(ierr);
   ierr = MatZeroRowsColumns_Local_Shell(mat,nr,lrows,0,NULL,diag,PETSC_FALSE);CHKERRQ(ierr);
+  if (shell->axpy) {
+    ierr = MatZeroRows(shell->axpy,n,rows,0.0,NULL,NULL);CHKERRQ(ierr);
+  }
   ierr = PetscFree(lrows);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MatZeroRowsColumns_Shell(Mat mat,PetscInt n,const PetscInt rowscols[],PetscScalar diag,Vec x,Vec b)
 {
+  Mat_Shell      *shell = (Mat_Shell*)mat->data;
   PetscInt       *lrows, *lcols;
   PetscInt       nr, nc;
   PetscBool      congruent;
@@ -444,6 +450,9 @@ static PetscErrorCode MatZeroRowsColumns_Shell(Mat mat,PetscInt n,const PetscInt
     ierr = PetscFree(lcols);CHKERRQ(ierr);
   }
   ierr = PetscFree(lrows);CHKERRQ(ierr);
+  if (shell->axpy) {
+    ierr = MatZeroRowsColumns(shell->axpy,n,rowscols,0.0,NULL,NULL);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -456,6 +465,7 @@ PetscErrorCode MatDestroy_Shell(Mat mat)
   if (shell->ops->destroy) {
     ierr = (*shell->ops->destroy)(mat);CHKERRQ(ierr);
   }
+  ierr = PetscMemzero(shell->ops,sizeof(struct _MatShellOps));CHKERRQ(ierr);
   ierr = VecDestroy(&shell->left);CHKERRQ(ierr);
   ierr = VecDestroy(&shell->right);CHKERRQ(ierr);
   ierr = VecDestroy(&shell->dshift);CHKERRQ(ierr);
@@ -473,6 +483,7 @@ PetscErrorCode MatDestroy_Shell(Mat mat)
   ierr = PetscFree(mat->data);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatShellGetContext_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatShellSetContext_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatShellSetVecType_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatShellSetManageScalingShifts_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatShellSetOperation_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatShellGetOperation_C",NULL);CHKERRQ(ierr);
@@ -522,10 +533,13 @@ PetscErrorCode MatCopy_Shell(Mat A,Mat B,MatStructure str)
     ierr = VecDestroy(&shellB->right);CHKERRQ(ierr);
   }
   ierr = MatDestroy(&shellB->axpy);CHKERRQ(ierr);
+  shellB->axpy_vscale = 0.0;
+  shellB->axpy_state  = 0;
   if (shellA->axpy) {
     ierr                = PetscObjectReference((PetscObject)shellA->axpy);CHKERRQ(ierr);
     shellB->axpy        = shellA->axpy;
     shellB->axpy_vscale = shellA->axpy_vscale;
+    shellB->axpy_state  = shellA->axpy_state;
   }
   if (shellA->zrows) {
     ierr = ISDuplicate(shellA->zrows,&shellB->zrows);CHKERRQ(ierr);
@@ -580,6 +594,12 @@ PetscErrorCode MatMult_Shell(Mat A,Vec x,Vec y)
   ierr = MatShellPostZeroLeft(A,y);CHKERRQ(ierr);
 
   if (shell->axpy) {
+    Mat              X;
+    PetscObjectState axpy_state;
+
+    ierr = MatShellGetContext(shell->axpy,(void *)&X);CHKERRQ(ierr);
+    ierr = PetscObjectStateGet((PetscObject)X,&axpy_state);CHKERRQ(ierr);
+    if (shell->axpy_state != axpy_state) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Invalid AXPY state: cannot modify the X matrix passed to MatAXPY(Y,a,X,...)");
     if (!shell->left_work) {ierr = MatCreateVecs(A,&shell->left_work,NULL);CHKERRQ(ierr);}
     ierr = MatMult(shell->axpy,x,shell->left_work);CHKERRQ(ierr);
     ierr = VecAXPY(y,shell->axpy_vscale,shell->left_work);CHKERRQ(ierr);
@@ -627,6 +647,12 @@ PetscErrorCode MatMultTranspose_Shell(Mat A,Vec x,Vec y)
   ierr = MatShellPostZeroRight(A,y);CHKERRQ(ierr);
 
   if (shell->axpy) {
+    Mat              X;
+    PetscObjectState axpy_state;
+
+    ierr = MatShellGetContext(shell->axpy,(void *)&X);CHKERRQ(ierr);
+    ierr = PetscObjectStateGet((PetscObject)X,&axpy_state);CHKERRQ(ierr);
+    if (shell->axpy_state != axpy_state) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Invalid AXPY state: cannot modify the X matrix passed to MatAXPY(Y,a,X,...)");
     if (!shell->right_work) {ierr = MatCreateVecs(A,NULL,&shell->right_work);CHKERRQ(ierr);}
     ierr = MatMultTranspose(shell->axpy,x,shell->right_work);CHKERRQ(ierr);
     ierr = VecAXPY(y,shell->axpy_vscale,shell->right_work);CHKERRQ(ierr);
@@ -675,6 +701,12 @@ PetscErrorCode MatGetDiagonal_Shell(Mat A,Vec v)
     ierr = VecScatterEnd(shell->zvals_sct_r,shell->zvals,v,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   }
   if (shell->axpy) {
+    Mat              X;
+    PetscObjectState axpy_state;
+
+    ierr = MatShellGetContext(shell->axpy,(void *)&X);CHKERRQ(ierr);
+    ierr = PetscObjectStateGet((PetscObject)X,&axpy_state);CHKERRQ(ierr);
+    if (shell->axpy_state != axpy_state) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Invalid AXPY state: cannot modify the X matrix passed to MatAXPY(Y,a,X,...)");
     if (!shell->left_work) {ierr = VecDuplicate(v,&shell->left_work);CHKERRQ(ierr);}
     ierr = MatGetDiagonal(shell->axpy,shell->left_work);CHKERRQ(ierr);
     ierr = VecAXPY(v,shell->axpy_vscale,shell->left_work);CHKERRQ(ierr);
@@ -786,7 +818,6 @@ static PetscErrorCode MatDiagonalScale_Shell(Mat Y,Vec left,Vec right)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (shell->axpy) SETERRQ(PetscObjectComm((PetscObject)Y),PETSC_ERR_SUP,"Cannot diagonal scale MATSHELL after MatAXPY operation");
   if (left) {
     if (!shell->left) {
       ierr = VecDuplicate(left,&shell->left);CHKERRQ(ierr);
@@ -815,6 +846,9 @@ static PetscErrorCode MatDiagonalScale_Shell(Mat Y,Vec left,Vec right)
       ierr = VecPointwiseMult(shell->zvals,shell->zvals,shell->zvals_w);CHKERRQ(ierr);
     }
   }
+  if (shell->axpy) {
+    ierr = MatDiagonalScale(shell->axpy,left,right);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -827,6 +861,8 @@ PetscErrorCode MatAssemblyEnd_Shell(Mat Y,MatAssemblyType t)
   if (t == MAT_FINAL_ASSEMBLY) {
     shell->vshift = 0.0;
     shell->vscale = 1.0;
+    shell->axpy_vscale = 0.0;
+    shell->axpy_state  = 0;
     ierr = VecDestroy(&shell->dshift);CHKERRQ(ierr);
     ierr = VecDestroy(&shell->left);CHKERRQ(ierr);
     ierr = VecDestroy(&shell->right);CHKERRQ(ierr);
@@ -839,7 +875,7 @@ PetscErrorCode MatAssemblyEnd_Shell(Mat Y,MatAssemblyType t)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatMissingDiagonal_Shell(Mat A,PetscBool  *missing,PetscInt *d)
+static PetscErrorCode MatMissingDiagonal_Shell(Mat A,PetscBool *missing,PetscInt *d)
 {
   PetscFunctionBegin;
   *missing = PETSC_FALSE;
@@ -852,10 +888,17 @@ PetscErrorCode MatAXPY_Shell(Mat Y,PetscScalar a,Mat X,MatStructure str)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectReference((PetscObject)X);CHKERRQ(ierr);
-  ierr = MatDestroy(&shell->axpy);CHKERRQ(ierr);
-  shell->axpy        = X;
-  shell->axpy_vscale = a;
+  if (X == Y) {
+    ierr = MatScale(Y,1.0 + a);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+  if (!shell->axpy) {
+    ierr = MatConvertFrom_Shell(X,MATSHELL,MAT_INITIAL_MATRIX,&shell->axpy);CHKERRQ(ierr);
+    shell->axpy_vscale = a;
+    ierr = PetscObjectStateGet((PetscObject)X,&shell->axpy_state);CHKERRQ(ierr);
+  } else {
+    ierr = MatAXPY(shell->axpy,a/shell->axpy_vscale,X,str);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1005,10 +1048,20 @@ static struct _MatOps MatOps_Values = {0,
 
 PetscErrorCode  MatShellSetContext_Shell(Mat mat,void *ctx)
 {
-  Mat_Shell      *shell = (Mat_Shell*)mat->data;
+  Mat_Shell *shell = (Mat_Shell*)mat->data;
 
   PetscFunctionBegin;
   shell->ctx = ctx;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatShellSetVecType_Shell(Mat mat,VecType vtype)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(mat->defaultvectype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(vtype,(char**)&mat->defaultvectype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1167,6 +1220,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Shell(Mat A)
 
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatShellGetContext_C",MatShellGetContext_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatShellSetContext_C",MatShellSetContext_Shell);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatShellSetVecType_C",MatShellSetVecType_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatShellSetManageScalingShifts_C",MatShellSetManageScalingShifts_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatShellSetOperation_C",MatShellSetOperation_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatShellGetOperation_C",MatShellGetOperation_Shell);CHKERRQ(ierr);
@@ -1302,7 +1356,31 @@ PetscErrorCode  MatShellSetContext(Mat mat,void *ctx)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  ierr = PetscUseMethod(mat,"MatShellSetContext_C",(Mat,void*),(mat,ctx));CHKERRQ(ierr);
+  ierr = PetscTryMethod(mat,"MatShellSetContext_C",(Mat,void*),(mat,ctx));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+ MatShellSetVecType - Sets the type of Vec returned by MatCreateVecs()
+
+ Logically collective
+
+    Input Parameters:
++   mat   - the shell matrix
+-   vtype - type to use for creating vectors
+
+ Notes:
+
+ Level: advanced
+
+.seealso: MatCreateVecs()
+@*/
+PetscErrorCode  MatShellSetVecType(Mat mat,VecType vtype)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscTryMethod(mat,"MatShellSetVecType_C",(Mat,VecType),(mat,vtype));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1325,7 +1403,7 @@ PetscErrorCode MatShellSetManageScalingShifts(Mat A)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  ierr = PetscUseMethod(A,"MatShellSetManageScalingShifts_C",(Mat),(A));CHKERRQ(ierr);
+  ierr = PetscTryMethod(A,"MatShellSetManageScalingShifts_C",(Mat),(A));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1518,7 +1596,7 @@ PetscErrorCode MatShellSetOperation(Mat mat,MatOperation op,void (*g)(void))
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  ierr = PetscUseMethod(mat,"MatShellSetOperation_C",(Mat,MatOperation,void (*)(void)),(mat,op,g));CHKERRQ(ierr);
+  ierr = PetscTryMethod(mat,"MatShellSetOperation_C",(Mat,MatOperation,void (*)(void)),(mat,op,g));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

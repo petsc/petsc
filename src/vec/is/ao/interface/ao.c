@@ -51,6 +51,29 @@ PetscErrorCode  AOView(AO ao,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+/*@C
+   AOViewFromOptions - View from Options
+
+   Collective on AO
+
+   Input Parameters:
++  ao - the application ordering context
+.  obj - Optional object
+-  name - command line option
+
+   Level: intermediate
+.seealso:  AO, AOView, PetscObjectViewFromOptions(), AOCreate()
+@*/
+PetscErrorCode  AOViewFromOptions(AO ao,PetscObject obj,const char name[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ao,AO_CLASSID,1);
+  ierr = PetscObjectViewFromOptions((PetscObject)ao,obj,name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@
    AODestroy - Destroys an application ordering.
 

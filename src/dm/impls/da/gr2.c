@@ -691,7 +691,7 @@ PetscErrorCode  VecView_MPI_DA(Vec xin,PetscViewer viewer)
         ierr = DMGetCompatibility(da,(DM)dmvtk,&compatible,&compatibleSet);CHKERRQ(ierr);
         if (!compatibleSet || !compatible) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_INCOMP,"Cannot confirm compatibility of DMs associated with Vecs viewed in the same VTK file. Check that grids are the same.");
       }
-      ierr = PetscViewerVTKAddField(viewer,(PetscObject)da,DMDAVTKWriteAll,PETSC_VTK_POINT_FIELD,PETSC_FALSE,(PetscObject)Y);CHKERRQ(ierr);
+      ierr = PetscViewerVTKAddField(viewer,(PetscObject)da,DMDAVTKWriteAll,PETSC_DEFAULT,PETSC_VTK_POINT_FIELD,PETSC_FALSE,(PetscObject)Y);CHKERRQ(ierr);
     }
 #if defined(PETSC_HAVE_HDF5)
   } else if (ishdf5) {

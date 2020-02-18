@@ -40,9 +40,9 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
   PetscRandomSeed_Rand,
   PetscRandomGetValue_Rand,
   PetscRandomGetValueReal_Rand,
-  0,
+  NULL,
   /* 5 */
-  0
+  NULL
 };
 
 /*MC

@@ -6,5 +6,6 @@ Simplicial Mesh in 1 dimension:
   1-cells: 5 5
 Labels:
   depth: 2 strata with value/size (0 (6), 1 (5))
+  celltype: 2 strata with value/size (0 (6), 1 (5))
   marker: 1 strata with value/size (1 (1))
   Face Sets: 1 strata with value/size (1 (1))

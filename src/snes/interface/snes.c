@@ -308,6 +308,29 @@ PetscErrorCode  SNESLoad(SNES snes, PetscViewer viewer)
 #include <petscviewersaws.h>
 #endif
 
+/*@C
+   SNESViewFromOptions - View from Options
+
+   Collective on SNES
+
+   Input Parameters:
++  A - the application ordering context
+.  obj - Optional object
+-  name - command line option
+
+   Level: intermediate
+.seealso:  SNES, SNESView, PetscObjectViewFromOptions(), SNESCreate()
+@*/
+PetscErrorCode  SNESViewFromOptions(SNES A,PetscObject obj,const char name[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,SNES_CLASSID,1);
+  ierr = PetscObjectViewFromOptions((PetscObject)A,obj,name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 PETSC_EXTERN PetscErrorCode SNESComputeJacobian_DMDA(SNES,Vec,Mat,Mat,void*);
 
 /*@C
@@ -866,12 +889,15 @@ PetscErrorCode  SNESMonitorSetFromOptions(SNES snes,const char name[],const char
 -  -snes_ksp_ew_threshold <threshold> - Sets threshold
 
    Notes:
-   To see all options, run your program with the -help option or consult
-   Users-Manual: ch_snes
+   To see all options, run your program with the -help option or consult the users manual
+
+   Notes:
+      SNES supports three approaches for computing (approximate) Jacobians: user provided via SNESSetJacobian(), matrix free, and computing explictly with
+      finite differences and coloring using MatFDColoring. It is also possible to use automatic differentiation and the MatFDColoring object.
 
    Level: beginner
 
-.seealso: SNESSetOptionsPrefix(), SNESResetFromOptions()
+.seealso: SNESSetOptionsPrefix(), SNESResetFromOptions(), SNES, SNESCreate()
 @*/
 PetscErrorCode  SNESSetFromOptions(SNES snes)
 {
@@ -913,7 +939,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   if (flg) {
     ierr = SNESSetLagPreconditioner(snes,lag);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsBool("-snes_lag_preconditioner_persists","Preconditioner lagging through multiple solves","SNESSetLagPreconditionerPersists",snes->lagjac_persist,&persist,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-snes_lag_preconditioner_persists","Preconditioner lagging through multiple SNES solves","SNESSetLagPreconditionerPersists",snes->lagjac_persist,&persist,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = SNESSetLagPreconditionerPersists(snes,persist);CHKERRQ(ierr);
   }
@@ -921,7 +947,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   if (flg) {
     ierr = SNESSetLagJacobian(snes,lag);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsBool("-snes_lag_jacobian_persists","Jacobian lagging through multiple solves","SNESSetLagJacobianPersists",snes->lagjac_persist,&persist,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-snes_lag_jacobian_persists","Jacobian lagging through multiple SNES solves","SNESSetLagJacobianPersists",snes->lagjac_persist,&persist,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = SNESSetLagJacobianPersists(snes,persist);CHKERRQ(ierr);
   }
@@ -1208,8 +1234,7 @@ PetscErrorCode  SNESGetApplicationContext(SNES snes,void *usrP)
 }
 
 /*@
-   SNESSetUseMatrixFree - indicates that SNES should use matrix free finite difference matrix vector products internally to apply
-                          the Jacobian.
+   SNESSetUseMatrixFree - indicates that SNES should use matrix free finite difference matrix vector products internally to apply the Jacobian.
 
    Collective on SNES
 
@@ -1220,11 +1245,17 @@ PetscErrorCode  SNESGetApplicationContext(SNES snes,void *usrP)
 
    Options Database:
 + -snes_mf - use matrix free for both the mat and pmat operator
-- -snes_mf_operator - use matrix free only for the mat operator
+. -snes_mf_operator - use matrix free only for the mat operator
+. -snes_fd_color - compute the Jacobian via coloring and finite differences.
+- -snes_fd - compute the Jacobian via finite differences (slow)
 
    Level: intermediate
 
-.seealso:   SNESGetUseMatrixFree(), MatCreateSNESMF()
+   Notes:
+      SNES supports three approaches for computing (approximate) Jacobians: user provided via SNESSetJacobian(), matrix free, and computing explictly with
+      finite differences and coloring using MatFDColoring. It is also possible to use automatic differentiation and the MatFDColoring object.
+
+.seealso:   SNESGetUseMatrixFree(), MatCreateSNESMF(), SNESComputeJacobianDefaultColor()
 @*/
 PetscErrorCode  SNESSetUseMatrixFree(SNES snes,PetscBool mf_operator,PetscBool mf)
 {
@@ -1239,8 +1270,7 @@ PetscErrorCode  SNESSetUseMatrixFree(SNES snes,PetscBool mf_operator,PetscBool m
 }
 
 /*@
-   SNESGetUseMatrixFree - indicates if the SNES uses matrix free finite difference matrix vector products to apply
-                          the Jacobian.
+   SNESGetUseMatrixFree - indicates if the SNES uses matrix free finite difference matrix vector products to apply the Jacobian.
 
    Collective on SNES
 
@@ -1775,6 +1805,8 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
      #include "petscsnes.h"
      PetscErrorCode SNESFunction(SNES snes,Vec x,Vec f,void *ctx);
 
+     Collective on snes
+
      Input Parameters:
 +     snes - the SNES context
 .     x    - state at which to evaluate residual
@@ -2087,9 +2119,15 @@ PetscErrorCode  SNESGetFunctionType(SNES snes, SNESFunctionType *type)
      #include <petscsnes.h>
 $    SNESNGSFunction(SNES snes,Vec x,Vec b,void *ctx);
 
+     Collective on snes
+
+     Input Parameters:
 +  X   - solution vector
 .  B   - RHS vector
 -  ctx - optional user-defined Gauss-Seidel context
+
+     Output Parameter:
+.  X   - solution vector
 
    Level: intermediate
 
@@ -2424,7 +2462,7 @@ PetscErrorCode SNESTestJacobian(SNES snes)
   MatType           mattype;
   PetscInt          m,n,M,N;
   void              *functx;
-  PetscBool         complete_print = PETSC_FALSE,threshold_print = PETSC_FALSE,test = PETSC_FALSE,flg;
+  PetscBool         complete_print = PETSC_FALSE,threshold_print = PETSC_FALSE,test = PETSC_FALSE,flg,istranspose;
   PetscViewer       viewer,mviewer;
   MPI_Comm          comm;
   PetscInt          tabs;
@@ -2437,9 +2475,11 @@ PetscErrorCode SNESTestJacobian(SNES snes)
   ierr = PetscOptionsReal("-snes_test_jacobian", "Threshold for element difference between hand-coded and finite difference being meaningful", "None", threshold, &threshold,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsViewer("-snes_test_jacobian_view","View difference between hand-coded and finite difference Jacobians element entries","None",&mviewer,&format,&complete_print);CHKERRQ(ierr);
   if (!complete_print) {
+    ierr = PetscOptionsDeprecated("-snes_test_jacobian_display","-snes_test_jacobian_view","3.13",NULL);CHKERRQ(ierr);
     ierr = PetscOptionsViewer("-snes_test_jacobian_display","Display difference between hand-coded and finite difference Jacobians","None",&mviewer,&format,&complete_print);CHKERRQ(ierr);
   }
   /* for compatibility with PETSc 3.9 and older. */
+  ierr = PetscOptionsDeprecated("-snes_test_jacobian_display_threshold","-snes_test_jacobian","3.13","-snes_test_jacobian accepts an optional threshold (since v3.10)");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-snes_test_jacobian_display_threshold", "Display difference between hand-coded and finite difference Jacobians which exceed input threshold", "None", threshold, &threshold, &threshold_print);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if (!test) PetscFunctionReturn(0);
@@ -2479,8 +2519,15 @@ PetscErrorCode SNESTestJacobian(SNES snes)
   /* evaluate the function at this point because SNESComputeJacobianDefault() assumes that the function has been evaluated and put into snes->vec_func */
   ierr = SNESComputeFunction(snes,x,f);CHKERRQ(ierr);
   ierr = VecDestroy(&f);CHKERRQ(ierr);
-
+  ierr = PetscObjectTypeCompare((PetscObject)snes,SNESKSPTRANSPOSEONLY,&istranspose);CHKERRQ(ierr);
   while (jacobian) {
+    Mat JT = NULL, Jsave = NULL;
+
+    if (istranspose) {
+      ierr = MatCreateTranspose(jacobian,&JT);CHKERRQ(ierr);
+      Jsave = jacobian;
+      jacobian = JT;
+    }
     ierr = PetscObjectBaseTypeCompareAny((PetscObject)jacobian,&flg,MATSEQAIJ,MATMPIAIJ,MATSEQDENSE,MATMPIDENSE,MATSEQBAIJ,MATMPIBAIJ,MATSEQSBAIJ,MATMPISBAIJ,"");CHKERRQ(ierr);
     if (flg) {
       A    = jacobian;
@@ -2492,7 +2539,6 @@ PetscErrorCode SNESTestJacobian(SNES snes)
     ierr = MatGetType(A,&mattype);CHKERRQ(ierr);
     ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
     ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
-
     ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
     ierr = MatSetType(B,mattype);CHKERRQ(ierr);
     ierr = MatSetSizes(B,m,n,M,N);CHKERRQ(ierr);
@@ -2513,7 +2559,7 @@ PetscErrorCode SNESTestJacobian(SNES snes)
 
     if (complete_print) {
       ierr = PetscViewerASCIIPrintf(viewer,"  Hand-coded Jacobian ----------\n");CHKERRQ(ierr);
-      ierr = MatView(jacobian,mviewer);CHKERRQ(ierr);
+      ierr = MatView(A,mviewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  Finite difference Jacobian ----------\n");CHKERRQ(ierr);
       ierr = MatView(B,mviewer);CHKERRQ(ierr);
     }
@@ -2558,7 +2604,8 @@ PetscErrorCode SNESTestJacobian(SNES snes)
     }
     ierr = MatDestroy(&A);CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
-
+    ierr = MatDestroy(&JT);CHKERRQ(ierr);
+    if (Jsave) jacobian = Jsave;
     if (jacobian != snes->jacobian_pre) {
       jacobian = snes->jacobian_pre;
       ierr = PetscViewerASCIIPrintf(viewer,"  ---------- Testing Jacobian for preconditioner -------------\n");CHKERRQ(ierr);
@@ -2590,9 +2637,8 @@ PetscErrorCode SNESTestJacobian(SNES snes)
   Options Database Keys:
 +    -snes_lag_preconditioner <lag>
 .    -snes_lag_jacobian <lag>
-.    -snes_test_jacobian - compare the user provided Jacobian with one compute via finite differences to check for errors
-.    -snes_test_jacobian_display - display the user provided Jacobian, the finite difference Jacobian and the difference between them to help users detect the location of errors in the user provided Jacobian
-.    -snes_test_jacobian_display_threshold <numerical value>  - display entries in the difference between the user provided Jacobian and finite difference Jacobian that are greater than a certain value to help users detect errors
+.    -snes_test_jacobian <optional threshold> - compare the user provided Jacobian with one compute via finite differences to check for errors.  If a threshold is given, display only those entries whose difference is greater than the threshold.
+.    -snes_test_jacobian_view - display the user provided Jacobian, the finite difference Jacobian and the difference between them to help users detect the location of errors in the user provided Jacobian
 .    -snes_compare_explicit - Compare the computed Jacobian to the finite difference Jacobian and output the differences
 .    -snes_compare_explicit_draw  - Compare the computed Jacobian to the finite difference Jacobian and draw the result
 .    -snes_compare_explicit_contour  - Compare the computed Jacobian to the finite difference Jacobian and draw a contour plot with the result
@@ -2869,10 +2915,15 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat A,Mat B)
      #include "petscsnes.h"
      PetscErrorCode SNESJacobianFunction(SNES snes,Vec x,Mat Amat,Mat Pmat,void *ctx);
 
-+  x - input vector
-.  Amat - the matrix that defines the (approximate) Jacobian
-.  Pmat - the matrix to be used in constructing the preconditioner, usually the same as Amat.
+     Collective on snes
+
+    Input Parameters:
++  x - input vector, the Jacobian is to be computed at this value
 -  ctx - [optional] user-defined Jacobian context
+
+    Output Parameters:
++  Amat - the matrix that defines the (approximate) Jacobian
+-  Pmat - the matrix to be used in constructing the preconditioner, usually the same as Amat.
 
    Level: intermediate
 
@@ -3827,6 +3878,9 @@ PetscErrorCode  SNESMonitor(SNES snes,PetscInt iter,PetscReal rnorm)
      #include <petscsnes.h>
 $    PetscErrorCode SNESMonitorFunction(SNES snes,PetscInt its, PetscReal norm,void *mctx)
 
+     Collective on snes
+
+    Input Parameters:
 +    snes - the SNES context
 .    its - iteration number
 .    norm - 2-norm function value (may be estimated)
@@ -3936,13 +3990,18 @@ PetscErrorCode  SNESMonitorCancel(SNES snes)
      #include <petscsnes.h>
 $     PetscErrorCode SNESConvergenceTest(SNES snes,PetscInt it,PetscReal xnorm,PetscReal gnorm,PetscReal f,SNESConvergedReason *reason,void *cctx)
 
+     Collective on snes
+
+    Input Parameters:
 +    snes - the SNES context
 .    it - current iteration (0 is the first and is before any Newton step)
-.    cctx - [optional] convergence context
-.    reason - reason for convergence/divergence
 .    xnorm - 2-norm of current iterate
 .    gnorm - 2-norm of current step
--    f - 2-norm of function
+.    f - 2-norm of function
+-    cctx - [optional] convergence context
+
+    Output Parameter:
+.    reason - reason for convergence/divergence, only needs to be set when convergence or divergence is detected
 
    Level: intermediate
 
@@ -4371,7 +4430,7 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
         ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
         ierr = PetscCalloc1(Nf, &alpha);CHKERRQ(ierr);
         ierr = PetscConvEstCreate(PetscObjectComm((PetscObject) snes), &conv);CHKERRQ(ierr);
-        ierr = PetscConvEstSetSolver(conv, snes);CHKERRQ(ierr);
+        ierr = PetscConvEstSetSolver(conv, (PetscObject) snes);CHKERRQ(ierr);
         ierr = PetscConvEstSetFromOptions(conv);CHKERRQ(ierr);
         ierr = PetscConvEstSetUp(conv);CHKERRQ(ierr);
         ierr = PetscConvEstGetConvRate(conv, alpha);CHKERRQ(ierr);
@@ -4466,7 +4525,7 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
     if (snes->lagjac_persist) snes->jac_iter += snes->iter;
     if (snes->lagpre_persist) snes->pre_iter += snes->iter;
 
-    ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)snes),((PetscObject)snes)->options,((PetscObject)snes)->prefix,"-snes_test_local_min",NULL,NULL,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)snes),((PetscObject)snes)->options,((PetscObject)snes)->prefix,"-snes_test_local_min",NULL,NULL,&flg);CHKERRQ(ierr);
     if (flg && !PetscPreLoadingOn) { ierr = SNESTestLocalMin(snes);CHKERRQ(ierr); }
     ierr = SNESReasonViewFromOptions(snes);CHKERRQ(ierr);
 
@@ -4495,6 +4554,7 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
   }
   ierr = SNESViewFromOptions(snes,NULL,"-snes_view");CHKERRQ(ierr);
   ierr = VecViewFromOptions(snes->vec_sol,(PetscObject)snes,"-snes_view_solution");CHKERRQ(ierr);
+  ierr = DMMonitor(snes->dm);CHKERRQ(ierr);
 
   ierr = VecDestroy(&xcreated);CHKERRQ(ierr);
   ierr = PetscObjectSAWsBlock((PetscObject)snes);CHKERRQ(ierr);

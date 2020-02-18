@@ -173,7 +173,10 @@ class Script(logger.Logger):
           err = err.decode(encoding='UTF-8',errors='replace')
         ret = pipe.returncode
       except Exception as e:
-        return ('', e.message, e.errno)
+        if hasattr(e,'message') and hasattr(e,'errno'):
+          return ('', e.message, e.errno)
+        else:
+          return ('', str(e),1)
       output += out
       error += err
       if ret:
@@ -193,6 +196,7 @@ class Script(logger.Logger):
   def executeShellCommand(command, checkCommand = None, timeout = 600.0, log = None, lineLimit = 0, cwd=None, logOutputflg = True, threads = 0):
     '''Execute a shell command returning the output, and optionally provide a custom error checker
        - This returns a tuple of the (output, error, statuscode)'''
+    '''The timeout is ignored unless the threads values is nonzero'''
     return Script.executeShellCommandSeq([command], checkCommand=checkCommand, timeout=timeout, log=log, lineLimit=lineLimit, cwd=cwd,logOutputflg = logOutputflg, threads = threads)
 
   @staticmethod
@@ -217,8 +221,10 @@ class Script(logger.Logger):
           log.write('stdout: '+output+'\n')
       return output
     def runInShell(commandseq, log, cwd):
+      if not useThreads: log.write('UseThreads is off\n')
       if useThreads and threads:
         import threading
+        log.write('Running Executable with threads to time it out at '+str(timeout)+'\n')
         class InShell(threading.Thread):
           def __init__(self):
             threading.Thread.__init__(self)
@@ -231,12 +237,13 @@ class Script(logger.Logger):
         thread.start()
         thread.join(timeout)
         if thread.isAlive():
-          error = 'Runaway process exceeded time limit of '+str(timeout)+'s\n'
+          error = 'Runaway process exceeded time limit of '+str(timeout)+'\n'
           log.write(error)
           return ('', error, -1)
         else:
           return (thread.output, thread.error, thread.status)
       else:
+        log.write('Running Executable WITHOUT threads to time it out\n')
         return Script.runShellCommandSeq(commandseq, log, cwd)
 
     (output, error, status) = runInShell(commandseq, log, cwd)

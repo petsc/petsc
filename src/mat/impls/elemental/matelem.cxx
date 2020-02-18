@@ -69,7 +69,6 @@ static PetscErrorCode MatView_Elemental(Mat A,PetscViewer viewer)
       ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
       if (A->factortype == MAT_FACTOR_NONE){
         Mat Adense;
-        ierr = PetscPrintf(PetscObjectComm((PetscObject)viewer),"Elemental matrix (explicit ordering)\n");CHKERRQ(ierr);
         ierr = MatConvert(A,MATDENSE,MAT_INITIAL_MATRIX,&Adense);CHKERRQ(ierr);
         ierr = MatView(Adense,viewer);CHKERRQ(ierr);
         ierr = MatDestroy(&Adense);CHKERRQ(ierr);
@@ -78,7 +77,6 @@ static PetscErrorCode MatView_Elemental(Mat A,PetscViewer viewer)
   } else {
     /* convert to dense format and call MatView() */
     Mat Adense;
-    ierr = PetscPrintf(PetscObjectComm((PetscObject)viewer),"Elemental matrix (explicit ordering)\n");CHKERRQ(ierr);
     ierr = MatConvert(A,MATDENSE,MAT_INITIAL_MATRIX,&Adense);CHKERRQ(ierr);
     ierr = MatView(Adense,viewer);CHKERRQ(ierr);
     ierr = MatDestroy(&Adense);CHKERRQ(ierr);
@@ -129,6 +127,7 @@ PetscErrorCode MatSetOption_Elemental(Mat A,MatOption op,PetscBool flg)
   case MAT_NEW_NONZERO_ALLOCATION_ERR:
   case MAT_SYMMETRIC:
   case MAT_SORTED_FULL:
+  case MAT_HERMITIAN:
     break;
   case MAT_ROW_ORIENTED:
     a->roworiented = flg;
@@ -1015,8 +1014,10 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_Elemental(Mat A, MatType newtype
     /* PETSc-Elemental interface uses axpy for setting off-processor entries, only ADD_VALUES is allowed */
     ierr = MatSetValues(mat_elemental,1,&row,ncols,cols,vals,ADD_VALUES);CHKERRQ(ierr);
     for (j=0; j<ncols; j++) { /* lower triangular part */
+      PetscScalar v;
       if (cols[j] == row) continue;
-      ierr = MatSetValues(mat_elemental,1,&cols[j],1,&row,&vals[j],ADD_VALUES);CHKERRQ(ierr);
+      v    = A->hermitian ? PetscConj(vals[j]) : vals[j];
+      ierr = MatSetValues(mat_elemental,1,&cols[j],1,&row,&v,ADD_VALUES);CHKERRQ(ierr);
     }
     ierr = MatRestoreRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);
   }
@@ -1056,8 +1057,10 @@ PETSC_INTERN PetscErrorCode MatConvert_MPISBAIJ_Elemental(Mat A, MatType newtype
     /* PETSc-Elemental interface uses axpy for setting off-processor entries, only ADD_VALUES is allowed */
     ierr = MatSetValues(mat_elemental,1,&row,ncols,cols,vals,ADD_VALUES);CHKERRQ(ierr);
     for (j=0; j<ncols; j++) { /* lower triangular part */
+      PetscScalar v;
       if (cols[j] == row) continue;
-      ierr = MatSetValues(mat_elemental,1,&cols[j],1,&row,&vals[j],ADD_VALUES);CHKERRQ(ierr);
+      v    = A->hermitian ? PetscConj(vals[j]) : vals[j];
+      ierr = MatSetValues(mat_elemental,1,&cols[j],1,&row,&v,ADD_VALUES);CHKERRQ(ierr);
     }
     ierr = MatRestoreRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);
   }

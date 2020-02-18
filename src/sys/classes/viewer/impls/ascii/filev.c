@@ -144,7 +144,7 @@ PetscErrorCode PetscViewerFlush_ASCII(PetscViewer viewer)
         ierr     = PetscFree(previous->string);CHKERRQ(ierr);
         ierr     = PetscFree(previous);CHKERRQ(ierr);
       }
-      vascii->petsc_printfqueue       = 0;
+      vascii->petsc_printfqueue       = NULL;
       vascii->petsc_printfqueuelength = 0;
       for (i=1; i<size; i++) {
         /* to prevent a flood of messages to process zero, request each message separately */
@@ -177,7 +177,7 @@ PetscErrorCode PetscViewerFlush_ASCII(PetscViewer viewer)
         ierr     = PetscFree(previous->string);CHKERRQ(ierr);
         ierr     = PetscFree(previous);CHKERRQ(ierr);
       }
-      vascii->petsc_printfqueue       = 0;
+      vascii->petsc_printfqueue       = NULL;
       vascii->petsc_printfqueuelength = 0;
     }
     ierr = PetscCommDestroy(&comm);CHKERRQ(ierr);
@@ -607,7 +607,7 @@ PetscErrorCode  PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],..
       ierr     = PetscFree(previous->string);CHKERRQ(ierr);
       ierr     = PetscFree(previous);CHKERRQ(ierr);
     }
-    ascii->petsc_printfqueue       = 0;
+    ascii->petsc_printfqueue       = NULL;
     ascii->petsc_printfqueuelength = 0;
     tab = intab;
     while (tab--) {
@@ -862,12 +862,12 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_ASCII(PetscViewer viewer)
   /* defaults to stdout unless set with PetscViewerFileSetName() */
   vascii->fd        = PETSC_STDOUT;
   vascii->mode      = FILE_MODE_WRITE;
-  vascii->bviewer   = 0;
-  vascii->subviewer = 0;
-  vascii->sviewer   = 0;
+  vascii->bviewer   = NULL;
+  vascii->subviewer = NULL;
+  vascii->sviewer   = NULL;
   vascii->tab       = 0;
   vascii->tab_store = 0;
-  vascii->filename  = 0;
+  vascii->filename  = NULL;
   vascii->closefile = PETSC_TRUE;
 
   ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetName_C",PetscViewerFileSetName_ASCII);CHKERRQ(ierr);
@@ -959,7 +959,7 @@ PetscErrorCode  PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char
       ierr     = PetscFree(previous->string);CHKERRQ(ierr);
       ierr     = PetscFree(previous);CHKERRQ(ierr);
     }
-    vascii->petsc_printfqueue       = 0;
+    vascii->petsc_printfqueue       = NULL;
     vascii->petsc_printfqueuelength = 0;
 
     while (tab--) {

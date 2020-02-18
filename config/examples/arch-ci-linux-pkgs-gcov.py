@@ -2,8 +2,6 @@
 
 import os
 petsc_hash_pkgs=os.path.join(os.getenv('HOME'),'petsc-hash-pkgs')
-if not os.path.isdir(petsc_hash_pkgs): os.mkdir(petsc_hash_pkgs)
-
 
 configure_options = [
   '--package-prefix-hash='+petsc_hash_pkgs,
@@ -25,7 +23,8 @@ configure_options = [
   '--download-spai=1',
   '--download-parms=1',
   '--download-chaco=1',
-  '--download-pastix',
+  '--download-pastix=1',
+  '--download-hwloc=1',
   '--download-ctetgen',
   '--download-netcdf',
   '--download-hdf5',
@@ -38,6 +37,8 @@ configure_options = [
   '--download-ml',
   '--download-sundials',
   '--download-p4est=1',
+  '--download-eigen',
+  '--download-pragmatic',
   ]
 
 if __name__ == '__main__':

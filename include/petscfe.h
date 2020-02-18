@@ -50,7 +50,7 @@ PETSC_EXTERN PetscErrorCode PetscSpaceSetType(PetscSpace, PetscSpaceType);
 PETSC_EXTERN PetscErrorCode PetscSpaceGetType(PetscSpace, PetscSpaceType *);
 PETSC_EXTERN PetscErrorCode PetscSpaceSetUp(PetscSpace);
 PETSC_EXTERN PetscErrorCode PetscSpaceSetFromOptions(PetscSpace);
-PETSC_STATIC_INLINE PetscErrorCode PetscSpaceViewFromOptions(PetscSpace A,PetscObject B,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,B,name);}
+PETSC_EXTERN PetscErrorCode PetscSpaceViewFromOptions(PetscSpace,PetscObject,const char[]);
 
 PETSC_EXTERN PetscErrorCode PetscSpaceView(PetscSpace,PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscSpaceRegister(const char [], PetscErrorCode (*)(PetscSpace));
@@ -105,7 +105,7 @@ PETSC_EXTERN PetscErrorCode PetscDualSpaceGetNumDof(PetscDualSpace, const PetscI
 PETSC_EXTERN PetscErrorCode PetscDualSpaceCreateSection(PetscDualSpace, PetscSection *);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceSetUp(PetscDualSpace);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceSetFromOptions(PetscDualSpace);
-PETSC_STATIC_INLINE PetscErrorCode PetscDualSpaceViewFromOptions(PetscDualSpace A,PetscObject B,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,B,name);}
+PETSC_EXTERN PetscErrorCode PetscDualSpaceViewFromOptions(PetscDualSpace,PetscObject,const char[]);
 
 PETSC_EXTERN PetscErrorCode PetscDualSpaceView(PetscDualSpace,PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceRegister(const char [], PetscErrorCode (*)(PetscDualSpace));
@@ -176,13 +176,14 @@ PETSC_EXTERN PetscErrorCode PetscFESetType(PetscFE, PetscFEType);
 PETSC_EXTERN PetscErrorCode PetscFEGetType(PetscFE, PetscFEType *);
 PETSC_EXTERN PetscErrorCode PetscFESetUp(PetscFE);
 PETSC_EXTERN PetscErrorCode PetscFESetFromOptions(PetscFE);
-PETSC_STATIC_INLINE PetscErrorCode PetscFEViewFromOptions(PetscFE A,PetscObject B,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,B,name);}
+PETSC_EXTERN PetscErrorCode PetscFEViewFromOptions(PetscFE,PetscObject,const char[]);
 PETSC_EXTERN PetscErrorCode PetscFESetName(PetscFE, const char []);
 
 PETSC_EXTERN PetscErrorCode PetscFEView(PetscFE,PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscFERegister(const char [], PetscErrorCode (*)(PetscFE));
 PETSC_EXTERN PetscErrorCode PetscFERegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode PetscFECreateDefault(MPI_Comm, PetscInt, PetscInt, PetscBool, const char [], PetscInt, PetscFE *);
+PETSC_EXTERN PetscErrorCode PetscFECreateLagrange(MPI_Comm, PetscInt, PetscInt, PetscBool, PetscInt, PetscInt, PetscFE *);
 
 PETSC_EXTERN PetscErrorCode PetscFEGetDimension(PetscFE, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscFEGetSpatialDimension(PetscFE, PetscInt *);
@@ -200,11 +201,15 @@ PETSC_EXTERN PetscErrorCode PetscFESetFaceQuadrature(PetscFE, PetscQuadrature);
 PETSC_EXTERN PetscErrorCode PetscFEGetFaceQuadrature(PetscFE, PetscQuadrature *);
 PETSC_EXTERN PetscErrorCode PetscFECopyQuadrature(PetscFE, PetscFE);
 PETSC_EXTERN PetscErrorCode PetscFEGetNumDof(PetscFE, const PetscInt **);
-PETSC_EXTERN PetscErrorCode PetscFEGetDefaultTabulation(PetscFE, PetscReal **, PetscReal **, PetscReal **);
-PETSC_EXTERN PetscErrorCode PetscFEGetFaceTabulation(PetscFE, PetscReal **, PetscReal **, PetscReal **);
-PETSC_EXTERN PetscErrorCode PetscFEGetFaceCentroidTabulation(PetscFE, PetscReal **);
-PETSC_EXTERN PetscErrorCode PetscFEGetTabulation(PetscFE, PetscInt, const PetscReal[], PetscReal **, PetscReal **, PetscReal **);
-PETSC_EXTERN PetscErrorCode PetscFERestoreTabulation(PetscFE, PetscInt, const PetscReal[], PetscReal **, PetscReal **, PetscReal **);
+
+/* TODO: Need a function to reuse the memory when retabulating the same FE at different points */
+PETSC_EXTERN PetscErrorCode PetscFEGetCellTabulation(PetscFE, PetscTabulation *);
+PETSC_EXTERN PetscErrorCode PetscFEGetFaceTabulation(PetscFE, PetscTabulation *);
+PETSC_EXTERN PetscErrorCode PetscFEGetFaceCentroidTabulation(PetscFE, PetscTabulation *);
+PETSC_EXTERN PetscErrorCode PetscFECreateTabulation(PetscFE, PetscInt, PetscInt, const PetscReal[], PetscInt, PetscTabulation *);
+PETSC_EXTERN PetscErrorCode PetscFEComputeTabulation(PetscFE, PetscInt, const PetscReal[], PetscInt, PetscTabulation);
+PETSC_EXTERN PetscErrorCode PetscTabulationDestroy(PetscTabulation *);
+
 PETSC_EXTERN PetscErrorCode PetscFERefine(PetscFE, PetscFE *);
 PETSC_EXTERN PetscErrorCode PetscFEGetHeightSubspace(PetscFE, PetscInt, PetscFE *);
 

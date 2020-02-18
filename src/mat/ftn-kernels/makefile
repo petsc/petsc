@@ -11,7 +11,7 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  =
-SOURCEF  = sgemv.F
+SOURCEF90= sgemv.F90
 SOURCEH  =
 LIBBASE  = libpetscmat
 MANSEC   = Sys

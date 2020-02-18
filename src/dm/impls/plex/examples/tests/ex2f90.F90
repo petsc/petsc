@@ -98,8 +98,9 @@
 !     Different Fortran compilers print a different number of columns
 !     per row producing different outputs in the test runs hence
 !     do not print the nClosure
-!       write(*,*) nClosure
-       call DMPlexRestoreTransitiveClosure(dm,cell,PETSC_TRUE,nClosure,ierr);CHKERRA(ierr)
+        write(*,1000) 'nClosure ',nClosure
+ 1000   format (a,30i4)
+        call DMPlexRestoreTransitiveClosure(dm,cell,PETSC_TRUE,nClosure,ierr);CHKERRA(ierr)
       end do
 
 !     Test Join
@@ -108,15 +109,19 @@
       VE(2) = 7
       pVE => VE
       call DMPlexGetJoin(dm, size, pVE, nJoin, ierr);CHKERRA(ierr)
-      write(*,*) 'Join of',pVE,'is',nJoin
+      write(*,1001) 'Join of',pVE
+      write(*,1002) '  is',nJoin
       call DMPlexRestoreJoin(dm, size, pVE, nJoin, ierr);CHKERRA(ierr)
       size  = 2
       VE(1) = 9
       VE(2) = 7
       pVE => VE
       call DMPlexGetJoin(dm, size, pVE, nJoin, ierr);CHKERRA(ierr)
-      write(*,*) 'Join of',pVE,'is',nJoin
-      call DMPlexRestoreJoin(dm, size, pVE, nJoin, ierr);CHKERRA(ierr)
+      write(*,1001) 'Join of',pVE
+ 1001 format (a,10i5)
+       write(*,1002) '  is',nJoin
+ 1002  format (a,10i5)
+     call DMPlexRestoreJoin(dm, size, pVE, nJoin, ierr);CHKERRA(ierr)
 !     Test Full Join
       size  = 3
       EC(1) = 3
@@ -124,7 +129,8 @@
       EC(3) = 5
       pEC => EC
       call DMPlexGetFullJoin(dm, size, pEC, nJoin, ierr);CHKERRA(ierr)
-      write(*,*) 'Full Join of',pEC,'is',nJoin
+      write(*,1001) 'Full Join of',pEC
+      write(*,1002) '  is',nJoin
       call DMPlexRestoreJoin(dm, size, pEC, nJoin, ierr);CHKERRA(ierr)
 !     Test Meet
       size  = 2
@@ -132,14 +138,16 @@
       VE(2) = 1
       pVE => VE
       call DMPlexGetMeet(dm, size, pVE, nMeet, ierr);CHKERRA(ierr)
-      write(*,*) 'Meet of',pVE,'is',nMeet
+      write(*,1001) 'Meet of',pVE
+      write(*,1002) '  is',nMeet
       call DMPlexRestoreMeet(dm, size, pVE, nMeet, ierr);CHKERRA(ierr)
       size  = 2
       VE(1) = 6
       VE(2) = 7
       pVE => VE
       call DMPlexGetMeet(dm, size, pVE, nMeet, ierr);CHKERRA(ierr)
-      write(*,*) 'Meet of',pVE,'is',nMeet
+      write(*,1001) 'Meet of',pVE
+      write(*,1002) '  is',nMeet
       call DMPlexRestoreMeet(dm, size, pVE, nMeet, ierr);CHKERRA(ierr)
 
       call DMDestroy(dm, ierr);CHKERRA(ierr)

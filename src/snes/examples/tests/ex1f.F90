@@ -59,9 +59,6 @@
 #include <petsc/finclude/petscdraw.h>
       use petscsnes
       implicit none
-#if defined(PETSC_USING_F90) && !defined(PETSC_USE_FORTRANKIND)
-      external SNESCOMPUTEJACOBIANDEFAULTCOLOR
-#endif
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -115,7 +112,7 @@
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
-      if (size .ne. 1) then; SETERRA(PETSC_COMM_SELF,1,'This is a uniprocessor example only'); endif
+      if (size .ne. 1) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_WRONG_MPI_SIZE,'This is a uniprocessor example only'); endif
 
 !  Initialize problem parameters
       i5 = 5
@@ -127,7 +124,7 @@
       call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-mx',mx,flg,ierr)
       call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-my',my,flg,ierr)
       call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-par',lambda,flg,ierr)
-      if (lambda .ge. lambda_max .or. lambda .le. lambda_min) then; SETERRA(PETSC_COMM_SELF,1,'Lambda out of range '); endif
+      if (lambda .ge. lambda_max .or. lambda .le. lambda_min) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_USER,'Lambda out of range '); endif
       N  = mx*my
       pc = PETSC_FALSE
       call PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-pc',pc,PETSC_NULL_BOOL,ierr);
@@ -460,7 +457,8 @@
       if (fd_coloring) then
          call MatFDColoringGetPerturbedColumnsF90(fdcoloring,indices,ierr)
          print*,'Indices from GetPerturbedColumnsF90'
-         print*,indices
+         write(*,1000) indices
+ 1000    format(50i4)
          call MatFDColoringRestorePerturbedColumnsF90(fdcoloring,indices,ierr)
       endif
       return

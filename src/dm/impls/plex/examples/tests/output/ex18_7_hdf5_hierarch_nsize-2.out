@@ -1,19 +1,26 @@
+DMPlexCreateFromFile produced distributed mesh.
+DMPlexCheckPointSFHeavy PASSED
 Graph Partitioner: 2 MPI Processes
   type: matpartitioning
   edge cut: 0
-  balance:  0
+  balance: 0
+  use vertex weights: 1
 MatPartitioning Graph Partitioner:
   MatPartitioning Object: 2 MPI processes
     type: hierarch
+    Using vertex weights
      Number of coarse parts: 1
      Coarse partitioner: ptscotch
       MatPartitioning Object: (hierarch_coarse_) 2 MPI processes
         type: ptscotch
+        Using vertex weights
           Strategy=Default behavior
           Load imbalance ratio=0.01
      Number of fine parts: 2
      Fine partitioner: ptscotch
     MatPartitioning Object: (hierarch_fine_) 1 MPI processes
       type: ptscotch
+      Using vertex weights
         Strategy=Default behavior
         Load imbalance ratio=0.01
+DMPlexCheckPointSFHeavy PASSED

@@ -72,7 +72,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_HPDDM(PC);
 
    Level: advanced
 
-.seealso: PCRegister(), PCRegisterDestroy()
+.seealso: PCRegister()
 @*/
 PetscErrorCode  PCRegisterAll(void)
 {

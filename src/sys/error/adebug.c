@@ -57,7 +57,7 @@ PetscErrorCode  PetscSetDebugTerminal(const char terminal[])
 
    Input Parameters:
 +  debugger - name of debugger, which should be in your path,
-              usually "lldb", "dbx", "gdb", "idb", "xxgdb", "kdgb" or "ddd". Also, HP-UX
+              usually "lldb", "dbx", "gdb", "cuda-gdb", "idb", "xxgdb", "kdgb" or "ddd". Also, HP-UX
               supports "xdb", and IBM rs6000 supports "xldb".
 
 -  xterm - flag to indicate debugger window, set to either PETSC_TRUE (to indicate
@@ -147,6 +147,7 @@ PetscErrorCode  PetscSetDebuggerFromString(const char *string)
   ierr = PetscCheckDebugger_Private("dbx",      string, &debugger);CHKERRQ(ierr);
   ierr = PetscCheckDebugger_Private("xldb",     string, &debugger);CHKERRQ(ierr);
   ierr = PetscCheckDebugger_Private("gdb",      string, &debugger);CHKERRQ(ierr);
+  ierr = PetscCheckDebugger_Private("cuda-gdb", string, &debugger);CHKERRQ(ierr);
   ierr = PetscCheckDebugger_Private("idb",      string, &debugger);CHKERRQ(ierr);
   ierr = PetscCheckDebugger_Private("xxgdb",    string, &debugger);CHKERRQ(ierr);
   ierr = PetscCheckDebugger_Private("ddd",      string, &debugger);CHKERRQ(ierr);
@@ -176,7 +177,7 @@ PetscErrorCode  PetscSetDebuggerFromString(const char *string)
 @*/
 PetscErrorCode  PetscAttachDebugger(void)
 {
-#if !defined(PETSC_CANNOT_START_DEBUGGER)
+#if !defined(PETSC_CANNOT_START_DEBUGGER) && defined(PETSC_HAVE_FORK)
   int            child    =0;
   PetscReal      sleeptime=0;
   PetscErrorCode ierr;
@@ -242,7 +243,7 @@ PetscErrorCode  PetscAttachDebugger(void)
 
     if (isxxgdb || isups || isddd) {
       args[1] = program; args[2] = pid; args[3] = "-display";
-      args[0] = PetscDebugger; args[4] = display; args[5] = 0;
+      args[0] = PetscDebugger; args[4] = display; args[5] = NULL;
       printf("PETSC: Attaching %s to %s %s on %s\n",args[0],args[1],pid,hostname);
       if (execvp(args[0],(char**)args)  < 0) {
         perror("Unable to start debugger");
@@ -250,7 +251,7 @@ PetscErrorCode  PetscAttachDebugger(void)
       }
     } else if (iskdbg) {
       args[1] = "-p"; args[2] = pid; args[3] = program;  args[4] = "-display";
-      args[0] = PetscDebugger; args[5] = display; args[6] = 0;
+      args[0] = PetscDebugger; args[5] = display; args[6] = NULL;
       printf("PETSC: Attaching %s to %s %s on %s\n",args[0],args[3],pid,hostname);
       if (execvp(args[0],(char**)args)  < 0) {
         perror("Unable to start debugger");
@@ -258,7 +259,7 @@ PetscErrorCode  PetscAttachDebugger(void)
       }
     } else if (isxldb) {
       args[1] = "-a"; args[2] = pid; args[3] = program;  args[4] = "-display";
-      args[0] = PetscDebugger; args[5] = display; args[6] = 0;
+      args[0] = PetscDebugger; args[5] = display; args[6] = NULL;
       printf("PETSC: Attaching %s to %s %s on %s\n",args[0],args[1],pid,hostname);
       if (execvp(args[0],(char**)args)  < 0) {
         perror("Unable to start debugger");
@@ -266,7 +267,7 @@ PetscErrorCode  PetscAttachDebugger(void)
       }
     } else if (isworkshop) {
       args[1] = "-s"; args[2] = pid; args[3] = "-D"; args[4] = "-";
-      args[0] = PetscDebugger; args[5] = pid; args[6] = "-display"; args[7] = display; args[8] = 0;
+      args[0] = PetscDebugger; args[5] = pid; args[6] = "-display"; args[7] = display; args[8] = NULL;
       printf("PETSC: Attaching %s to %s on %s\n",args[0],pid,hostname);
       if (execvp(args[0],(char**)args)  < 0) {
         perror("Unable to start debugger");
@@ -294,7 +295,7 @@ PetscErrorCode  PetscAttachDebugger(void)
       }
       args[j++] = PetscDebugger;
       jj = j;
-      args[j++] = program; args[j++] = pid; args[j++] = 0;
+      args[j++] = program; args[j++] = pid; args[j++] = NULL;
 
       if (isidb) {
         j = jj;
@@ -302,13 +303,13 @@ PetscErrorCode  PetscAttachDebugger(void)
         args[j++] = pid;
         args[j++] = "-gdb";
         args[j++] = program;
-        args[j++] = 0;
+        args[j++] = NULL;
       }
       if (islldb) {
         j = jj;
         args[j++] = "-p";
         args[j++] = pid;
-        args[j++] = 0;
+        args[j++] = NULL;
       }
       if (isdbx) {
         j = jj;
@@ -333,7 +334,7 @@ PetscErrorCode  PetscAttachDebugger(void)
         args[j++] = program;
         args[j++] = pid;
 #endif
-        args[j++] = 0;
+        args[j++] = NULL;
       }
       if (Xterm) {
         if (display[0]) printf("PETSC: Attaching %s to %s of pid %s on display %s on machine %s\n",PetscDebugger,program,pid,display,hostname);
@@ -403,7 +404,7 @@ PetscErrorCode  PetscAttachDebugger(void)
    Level: developer
 
    Notes:
-   By default the GNU debugger, gdb, is used.  Alternatives are lldb, dbx and
+   By default the GNU debugger, gdb, is used.  Alternatives are cuda-gdb, lldb, dbx and
    xxgdb,xldb (on IBM rs6000), xdb (on HP-UX).
 
    Most users need not directly employ this routine and the other error

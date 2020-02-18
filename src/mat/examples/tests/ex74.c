@@ -1,5 +1,5 @@
 
-static char help[] = "Tests the various sequential routines in MatSBAIJ format.\n";
+static char help[] = "Tests the various sequential routines in MATSEQSBAIJ format.\n";
 
 #include <petscmat.h>
 
@@ -9,10 +9,10 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   Vec            x,y,b,s1,s2;
   Mat            A;                    /* linear system matrix */
-  Mat            sA,sB,sFactor;        /* symmetric matrices */
+  Mat            sA,sB,sFactor,B,C;    /* symmetric matrices */
   PetscInt       n,mbs=16,bs=1,nz=3,prob=1,i,j,k1,k2,col[3],lf,block, row,Ii,J,n1,inc;
   PetscReal      norm1,norm2,rnorm,tol=10*PETSC_SMALL;
-  PetscScalar    neg_one = -1.0,four=4.0,value[3];
+  PetscScalar    neg_one=-1.0,four=4.0,value[3];
   IS             perm, iscol;
   PetscRandom    rdm;
   PetscBool      doIcc=PETSC_TRUE,equal;
@@ -73,7 +73,7 @@ int main(int argc,char **args)
       ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
       ierr = MatSetValues(sA,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
 
-    } else if (prob ==2) { /* matrix for the five point stencil */
+    } else if (prob == 2) { /* matrix for the five point stencil */
       n1 = (PetscInt) (PetscSqrtReal((PetscReal)n) + 0.001);
       if (n1*n1 - n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"sqrt(n) must be a positive integer!");
       for (i=0; i<n1; i++) {
@@ -151,10 +151,6 @@ int main(int argc,char **args)
   /* Test MatGetInfo() of A and sA */
   ierr = MatGetInfo(A,MAT_LOCAL,&minfo1);CHKERRQ(ierr);
   ierr = MatGetInfo(sA,MAT_LOCAL,&minfo2);CHKERRQ(ierr);
-  /*
-  printf("A matrix nonzeros (BAIJ format) = %d, allocated nonzeros= %d\n", (int)minfo1.nz_used,(int)minfo1.nz_allocated);
-  printf("sA matrix nonzeros(SBAIJ format) = %d, allocated nonzeros= %d\n", (int)minfo2.nz_used,(int)minfo2.nz_allocated);
-  */
   i  = (int) (minfo1.nz_used - minfo2.nz_used);
   j  = (int) (minfo1.nz_allocated - minfo2.nz_allocated);
   k1 = (int) (minfo1.nz_allocated - minfo1.nz_used);
@@ -192,10 +188,6 @@ int main(int argc,char **args)
   /* Test MatGetInfo(), MatGetSize(), MatGetBlockSize() */
   ierr = MatGetInfo(A,MAT_LOCAL,&minfo1);CHKERRQ(ierr);
   ierr = MatGetInfo(sB,MAT_LOCAL,&minfo2);CHKERRQ(ierr);
-  /*
-  printf("matrix nonzeros (BAIJ format) = %d, allocated nonzeros= %d\n", (int)minfo1.nz_used,(int)minfo1.nz_allocated);
-  printf("matrix nonzeros(SBAIJ format) = %d, allocated nonzeros= %d\n", (int)minfo2.nz_used,(int)minfo2.nz_allocated);
-  */
   i  = (int) (minfo1.nz_used - minfo2.nz_used);
   j  = (int) (minfo1.nz_allocated - minfo2.nz_allocated);
   k1 = (int) (minfo1.nz_allocated - minfo1.nz_used);
@@ -282,9 +274,18 @@ int main(int argc,char **args)
     ierr   = VecNorm(s2,NORM_1,&norm2);CHKERRQ(ierr);
     norm1 -= norm2;
     if (norm1<-tol || norm1>tol) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatMultAdd(),  norm1-norm2: %g\n",(double)norm1);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatMultAdd(), norm1-norm2: %g\n",(double)norm1);CHKERRQ(ierr);
     }
   }
+
+  /* Test MatMatMult() */
+  ierr = MatCreateSeqDense(PETSC_COMM_SELF,n,5*n,NULL,&B);CHKERRQ(ierr);
+  ierr = MatSetRandom(B,rdm);CHKERRQ(ierr);
+  ierr = MatMatMult(sA,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
+  ierr = MatMatMultEqual(sA,B,C,5*n,&equal);CHKERRQ(ierr);
+  if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error: MatMatMult()");
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
 
   /* Test MatCholeskyFactor(), MatICCFactor() with natural ordering */
   ierr  = MatGetOrdering(A,MATORDERINGNATURAL,&perm,&iscol);CHKERRQ(ierr);
@@ -359,7 +360,7 @@ int main(int argc,char **args)
     ierr = VecAXPY(x,neg_one,b);CHKERRQ(ierr);
     ierr = VecNorm(x,NORM_2,&norm2);CHKERRQ(ierr);
     if (norm2>tol) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatSolve(),  norm2: %g\n",(double)norm2);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatSolve(), norm2: %g\n",(double)norm2);CHKERRQ(ierr);
     }
   }
   ierr = MatDestroy(&sFactor);CHKERRQ(ierr);

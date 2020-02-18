@@ -412,6 +412,30 @@ int main(int argc, char **argv)
           -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition full \
             -fieldsplit_field_pc_type lu \
             -fieldsplit_potential_ksp_rtol 1e-10 -fieldsplit_potential_pc_type lu
+
+  test:
+    suffix: 2d_p2_p0_vtk
+    requires: triangle
+    args: -sol_type linear \
+          -field_petscspace_degree 2 -dm_refine 0 -convest_num_refine 1 -snes_convergence_estimate \
+          -dmsnes_check .001 -snes_error_if_not_converged \
+          -ksp_rtol 1e-10 -ksp_error_if_not_converged \
+          -potential_view vtk: -exact_vec_view vtk: \
+          -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition full \
+            -fieldsplit_field_pc_type lu \
+            -fieldsplit_potential_ksp_rtol 1e-10 -fieldsplit_potential_pc_type lu
+
+  test:
+    suffix: 2d_p2_p0_vtu
+    requires: triangle
+    args: -sol_type linear \
+          -field_petscspace_degree 2 -dm_refine 0 -convest_num_refine 1 -snes_convergence_estimate \
+          -dmsnes_check .001 -snes_error_if_not_converged \
+          -ksp_rtol 1e-10 -ksp_error_if_not_converged \
+          -potential_view vtk:multifield.vtu -exact_vec_view vtk:exact.vtu \
+          -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition full \
+            -fieldsplit_field_pc_type lu \
+            -fieldsplit_potential_ksp_rtol 1e-10 -fieldsplit_potential_pc_type lu
 TEST*/
 
 /* These tests will be active once tensor P^- is working

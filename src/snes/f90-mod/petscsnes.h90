@@ -67,7 +67,7 @@
       use petscsnesdef
        SNES a
        PetscViewer b
-       integer z
+       PetscErrorCode z
       end subroutine
       end Interface
 

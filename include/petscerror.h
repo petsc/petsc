@@ -8,7 +8,7 @@
      These are the generic error codes. These error codes are used
      many different places in the PETSc source code. The string versions are
      at src/sys/error/err.c any changes here must also be made there
-     These are also define in include/petsc/finclude/petscerror.h any CHANGES here
+     These are also define in src/sys/f90-mod/petscerror.h any CHANGES here
      must be also made there.
 
 */
@@ -88,6 +88,10 @@
     See SETERRQ1(), SETERRQ2(), SETERRQ3() for versions that take arguments
 
     Experienced users can set the error handler with PetscPushErrorHandler().
+
+   Fortran Notes:
+      SETERRQ() may be called from Fortran subroutines but SETERRA() must be called from the 
+      Fortran main program.
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ3()
 M*/
@@ -546,9 +550,9 @@ M*/
 
 #endif
 
-#define CHKERRCUDA(err)   do {if (PetscUnlikely(err)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error %d",err);} while(0)
-#define CHKERRCUBLAS(err) do {if (PetscUnlikely(err)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUBLAS error %d",err);} while(0)
-
+#if defined(PETSC_HAVE_CUDA)
+#define CHKERRCUSOLVER(err) do {if (PetscUnlikely(err)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSOLVER error %d",err);} while(0)
+#endif
 /*MC
    CHKMEMQ - Checks the memory for corruption, calls error handler if any is detected
 
@@ -727,8 +731,8 @@ PETSC_STATIC_INLINE PetscBool PetscStackActive(void)
     PetscStackSAWsTakeAccess();                                          \
     if (petscstack && petscstack->currentsize > 0) {                  \
       petscstack->currentsize--;                                       \
-      petscstack->function[petscstack->currentsize]  = 0;             \
-      petscstack->file[petscstack->currentsize]      = 0;             \
+      petscstack->function[petscstack->currentsize]  = NULL;             \
+      petscstack->file[petscstack->currentsize]      = NULL;             \
       petscstack->line[petscstack->currentsize]      = 0;             \
       petscstack->petscroutine[petscstack->currentsize] = PETSC_FALSE;\
     }                                                                   \

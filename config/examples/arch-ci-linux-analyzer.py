@@ -2,7 +2,6 @@
 
 import os
 petsc_hash_pkgs=os.path.join(os.getenv('HOME'),'petsc-hash-pkgs')
-if not os.path.isdir(petsc_hash_pkgs): os.mkdir(petsc_hash_pkgs)
 
 configure_options = [
   '--package-prefix-hash='+petsc_hash_pkgs,
@@ -25,6 +24,7 @@ configure_options = [
   '--download-metis=1',
   '--download-parmetis=1',
   '--download-pastix=1',
+  '--download-hwloc=1',
   '--download-ptscotch=1',
   '--download-superlu_dist=1'
   ]

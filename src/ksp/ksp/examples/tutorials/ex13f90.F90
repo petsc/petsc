@@ -81,7 +81,7 @@
         stop
       endif
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
-      if (size .ne. 1) then; SETERRA(PETSC_COMM_WORLD,1,'This is a uniprocessor example only'); endif
+      if (size .ne. 1) then; SETERRA(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,'This is a uniprocessor example only'); endif
 
 !  The next two lines are for testing only; these allow the user to
 !  decide the grid size at runtime.

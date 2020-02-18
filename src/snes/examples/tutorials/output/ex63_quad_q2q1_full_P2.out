@@ -1,5 +1,3 @@
-DMSWARM_PIC: Using method CellDM->LocatePoints
-  DMSWARM_PIC: Using method CellDM->GetNeigbors
   0 SNES Function norm 18.1358 
     0 KSP Residual norm 18.1358 
     1 KSP Residual norm 4.47755e-05 

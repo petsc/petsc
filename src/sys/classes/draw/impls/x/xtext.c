@@ -19,7 +19,7 @@ static PetscErrorCode PetscDrawXiMatchFontSize(PetscDrawXiFont*,int,int);
 */
 PetscErrorCode PetscDrawXiFontFixed(PetscDraw_X *XBWin,int w,int h,PetscDrawXiFont **outfont)
 {
-  static PetscDrawXiFont *curfont = 0,*font;
+  static PetscDrawXiFont *curfont = NULL,*font;
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
@@ -62,7 +62,7 @@ static PetscErrorCode PetscDrawXiLoadFont(PetscDraw_X *XBWin,PetscDrawXiFont *fo
   font->font_w       = FontInfo->max_bounds.rbearing - FontInfo->min_bounds.lbearing;
   font->font_h       = FontInfo->max_bounds.ascent + FontInfo->max_bounds.descent;
 
-  XFreeFontInfo(0,FontInfo,1);
+  XFreeFontInfo(NULL,FontInfo,1);
 
   /* Set the current font in the CG */
   values.font = font->fnt;

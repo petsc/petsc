@@ -7,7 +7,7 @@ SOURCEC  = cg.c cgeig.c cgtype.c cgls.c
 SOURCEF  =
 SOURCEH  = cgimpl.h
 LIBBASE  = libpetscksp
-DIRS     = cgne gltr nash stcg pipecg pipecgrr groppcg pipelcg
+DIRS     = cgne gltr nash stcg pipecg pipecgrr groppcg pipelcg pipeprcg
 MANSEC   = KSP
 LOCDIR   = src/ksp/ksp/impls/cg/
 

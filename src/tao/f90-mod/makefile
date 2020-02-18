@@ -1,11 +1,10 @@
 #requiresdefine   'PETSC_HAVE_FORTRAN'
-#requiresdefine   'PETSC_USING_F90'
 #
 
 CFLAGS	   =
 FFLAGS	   =
 SOURCEC	   =
-SOURCEF	   = petsctaomod.F
+SOURCEF90  = petsctaomod.F90
 SOURCEH	   = petsctao.h petsctao.h90
 LIBBASE	   = libpetsctao
 MANSEC	   = Tao

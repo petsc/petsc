@@ -2000,6 +2000,7 @@ static PetscErrorCode DMPlexComputeBdIntegral_Internal(DM dm, Vec locX, IS point
                                                        PetscScalar *fintegral, void *user)
 {
   DM                 plex = NULL, plexA = NULL;
+  DMEnclosureType    encAux;
   PetscDS            prob, probAux = NULL;
   PetscSection       section, sectionAux = NULL;
   Vec                locA = NULL;
@@ -2037,6 +2038,7 @@ static PetscErrorCode DMPlexComputeBdIntegral_Internal(DM dm, Vec locX, IS point
     DM dmAux;
 
     ierr = VecGetDM(locA, &dmAux);CHKERRQ(ierr);
+    ierr = DMGetEnclosureRelation(dmAux, dm, &encAux);CHKERRQ(ierr);
     ierr = DMConvert(dmAux, DMPLEX, &plexA);CHKERRQ(ierr);
     ierr = DMGetDS(dmAux, &probAux);CHKERRQ(ierr);
     ierr = PetscDSGetNumFields(probAux, &NfAux);CHKERRQ(ierr);
@@ -2084,7 +2086,7 @@ static PetscErrorCode DMPlexComputeBdIntegral_Internal(DM dm, Vec locX, IS point
         ierr = DMPlexVecRestoreClosure(plex, section, locX, support[0], NULL, &x);CHKERRQ(ierr);
         if (locA) {
           PetscInt subp;
-          ierr = DMPlexGetSubpoint(plexA, support[0], &subp);CHKERRQ(ierr);
+          ierr = DMGetEnclosurePoint(plexA, dm, encAux, support[0], &subp);CHKERRQ(ierr);
           ierr = DMPlexVecGetClosure(plexA, sectionAux, locA, subp, NULL, &x);CHKERRQ(ierr);
           for (i = 0; i < totDimAux; ++i) a[f*totDimAux+i] = x[i];
           ierr = DMPlexVecRestoreClosure(plexA, sectionAux, locA, subp, NULL, &x);CHKERRQ(ierr);
@@ -2229,7 +2231,7 @@ PetscErrorCode DMPlexComputeInterpolatorNested(DM dmc, DM dmf, Mat In, void *use
 {
   DM_Plex          *mesh  = (DM_Plex *) dmc->data;
   const char       *name  = "Interpolator";
-  PetscDS           prob;
+  PetscDS           cds, rds;
   PetscFE          *feRef;
   PetscFV          *fvRef;
   PetscSection      fsection, fglobalSection;
@@ -2248,14 +2250,15 @@ PetscErrorCode DMPlexComputeInterpolatorNested(DM dmc, DM dmf, Mat In, void *use
   ierr = DMGetGlobalSection(dmc, &cglobalSection);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(fsection, &Nf);CHKERRQ(ierr);
   ierr = DMPlexGetInteriorCellStratum(dmc, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMGetDS(dmf, &prob);CHKERRQ(ierr);
-  ierr = PetscCalloc2(Nf,&feRef,Nf,&fvRef);CHKERRQ(ierr);
+  ierr = DMGetDS(dmc, &cds);CHKERRQ(ierr);
+  ierr = DMGetDS(dmf, &rds);CHKERRQ(ierr);
+  ierr = PetscCalloc2(Nf, &feRef, Nf, &fvRef);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) {
     PetscObject  obj;
     PetscClassId id;
     PetscInt     rNb = 0, Nc = 0;
 
-    ierr = PetscDSGetDiscretization(prob, f, &obj);CHKERRQ(ierr);
+    ierr = PetscDSGetDiscretization(rds, f, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
     if (id == PETSCFE_CLASSID) {
       PetscFE fe = (PetscFE) obj;
@@ -2274,7 +2277,7 @@ PetscErrorCode DMPlexComputeInterpolatorNested(DM dmc, DM dmf, Mat In, void *use
     }
     rTotDim += rNb;
   }
-  ierr = PetscDSGetTotalDimension(prob, &cTotDim);CHKERRQ(ierr);
+  ierr = PetscDSGetTotalDimension(cds, &cTotDim);CHKERRQ(ierr);
   ierr = PetscMalloc1(rTotDim*cTotDim,&elemMat);CHKERRQ(ierr);
   ierr = PetscArrayzero(elemMat, rTotDim*cTotDim);CHKERRQ(ierr);
   for (fieldI = 0, offsetI = 0; fieldI < Nf; ++fieldI) {
@@ -2308,13 +2311,13 @@ PetscErrorCode DMPlexComputeInterpolatorNested(DM dmc, DM dmf, Mat In, void *use
     for (fieldJ = 0, offsetJ = 0; fieldJ < Nf; ++fieldJ) {
       PetscObject  obj;
       PetscClassId id;
-      PetscReal   *B;
       PetscInt     NcJ = 0, cpdim = 0, j, qNc;
 
-      ierr = PetscDSGetDiscretization(prob, fieldJ, &obj);CHKERRQ(ierr);
+      ierr = PetscDSGetDiscretization(cds, fieldJ, &obj);CHKERRQ(ierr);
       ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
       if (id == PETSCFE_CLASSID) {
-        PetscFE fe = (PetscFE) obj;
+        PetscFE           fe = (PetscFE) obj;
+        PetscTabulation T  = NULL;
 
         /* Evaluate basis at points */
         ierr = PetscFEGetNumComponents(fe, &NcJ);CHKERRQ(ierr);
@@ -2322,7 +2325,7 @@ PetscErrorCode DMPlexComputeInterpolatorNested(DM dmc, DM dmf, Mat In, void *use
         /* For now, fields only interpolate themselves */
         if (fieldI == fieldJ) {
           if (Nc != NcJ) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of components in fine space field %D does not match coarse field %D", Nc, NcJ);
-          ierr = PetscFEGetTabulation(fe, npoints, points, &B, NULL, NULL);CHKERRQ(ierr);
+          ierr = PetscFECreateTabulation(fe, 1, npoints, points, 0, &T);CHKERRQ(ierr);
           for (i = 0, k = 0; i < fpdim; ++i) {
             ierr = PetscDualSpaceGetFunctional(Qref, i, &f);CHKERRQ(ierr);
             ierr = PetscQuadratureGetData(f, NULL, &qNc, &Np, NULL, &qweights);CHKERRQ(ierr);
@@ -2337,11 +2340,11 @@ PetscErrorCode DMPlexComputeInterpolatorNested(DM dmc, DM dmf, Mat In, void *use
                    Np, p:              Number of quad points in the fine grid functional i
                    k:                  i*Np + p, overall point number for the interpolation
                 */
-                for (c = 0; c < Nc; ++c) elemMat[(offsetI + i)*cTotDim + offsetJ + j] += B[k*cpdim*NcJ+j*Nc+c]*qweights[p*qNc+c];
+                for (c = 0; c < Nc; ++c) elemMat[(offsetI + i)*cTotDim + offsetJ + j] += T->T[0][k*cpdim*NcJ+j*Nc+c]*qweights[p*qNc+c];
               }
             }
           }
-          ierr = PetscFERestoreTabulation(fe, npoints, points, &B, NULL, NULL);CHKERRQ(ierr);CHKERRQ(ierr);
+          ierr = PetscTabulationDestroy(&T);CHKERRQ(ierr);CHKERRQ(ierr);
         }
       } else if (id == PETSCFV_CLASSID) {
         PetscFV        fv = (PetscFV) obj;
@@ -2564,12 +2567,13 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
   ierr = MatSetOption(In, MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscFree2(dnz,onz);CHKERRQ(ierr);
   for (field = 0; field < Nf; ++field) {
-    PetscObject      obj;
-    PetscClassId     id;
-    PetscDualSpace   Q = NULL;
-    PetscQuadrature  f;
-    const PetscReal *qpoints, *qweights;
-    PetscInt         Nc, qNc, Np, fpdim, i, d;
+    PetscObject       obj;
+    PetscClassId      id;
+    PetscDualSpace    Q = NULL;
+    PetscTabulation T = NULL;
+    PetscQuadrature   f;
+    const PetscReal  *qpoints, *qweights;
+    PetscInt          Nc, qNc, Np, fpdim, i, d;
 
     ierr = PetscDSGetDiscretization(prob, field, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
@@ -2578,6 +2582,7 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
 
       ierr = PetscFEGetDualSpace(fe, &Q);CHKERRQ(ierr);
       ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
+      ierr = PetscFECreateTabulation(fe, 1, 1, x, 0, &T);CHKERRQ(ierr);
     } else if (id == PETSCFV_CLASSID) {
       PetscFV fv = (PetscFV) obj;
 
@@ -2633,18 +2638,16 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
           CoordinatesRealToRef(dim, dim, xi0, v0c, invJc, pVReal, x);
 
           if (id == PETSCFE_CLASSID) {
-            PetscFE    fe = (PetscFE) obj;
-            PetscReal *B;
+            PetscFE fe = (PetscFE) obj;
 
             /* Evaluate coarse basis on contained point */
             ierr = PetscFEGetDimension(fe, &cpdim);CHKERRQ(ierr);
-            ierr = PetscFEGetTabulation(fe, 1, x, &B, NULL, NULL);CHKERRQ(ierr);
+            ierr = PetscFEComputeTabulation(fe, 1, x, 0, T);CHKERRQ(ierr);
             ierr = PetscArrayzero(elemMat, cpdim);CHKERRQ(ierr);
             /* Get elemMat entries by multiplying by weight */
             for (j = 0; j < cpdim; ++j) {
-              for (c = 0; c < Nc; ++c) elemMat[j] += B[j*Nc + c]*qweights[ccell*qNc + c];
+              for (c = 0; c < Nc; ++c) elemMat[j] += T->T[0][j*Nc + c]*qweights[ccell*qNc + c];
             }
-            ierr = PetscFERestoreTabulation(fe, 1, x, &B, NULL, NULL);CHKERRQ(ierr);CHKERRQ(ierr);
           } else {
             cpdim = 1;
             for (j = 0; j < cpdim; ++j) {
@@ -2663,6 +2666,7 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
       }
       ierr = DMPlexRestoreClosureIndices(dmf, fsection, globalFSection, cell, &numFIndices, &findices, NULL);CHKERRQ(ierr);
     }
+    if (id == PETSCFE_CLASSID) {ierr = PetscTabulationDestroy(&T);CHKERRQ(ierr);}
   }
   ierr = PetscFree3(v0,J,invJ);CHKERRQ(ierr);
   ierr = PetscFree3(v0c,Jc,invJc);CHKERRQ(ierr);
@@ -2804,17 +2808,22 @@ PetscErrorCode DMPlexComputeMassMatrixGeneral(DM dmc, DM dmf, Mat mass, void *us
   ierr = MatSetOption(mass, MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscFree2(dnz,onz);CHKERRQ(ierr);
   for (field = 0; field < Nf; ++field) {
-    PetscObject      obj;
-    PetscClassId     id;
-    PetscQuadrature  quad;
-    PetscReal       *Bfine;
-    const PetscReal *qpoints, *qweights;
-    PetscInt         Nq, Nc, i, d;
+    PetscObject       obj;
+    PetscClassId      id;
+    PetscTabulation T, Tfine;
+    PetscQuadrature   quad;
+    const PetscReal  *qpoints, *qweights;
+    PetscInt          Nq, Nc, i, d;
 
     ierr = PetscDSGetDiscretization(prob, field, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
-    if (id == PETSCFE_CLASSID) {ierr = PetscFEGetQuadrature((PetscFE) obj, &quad);CHKERRQ(ierr);ierr = PetscFEGetDefaultTabulation((PetscFE) obj, &Bfine, NULL, NULL);CHKERRQ(ierr);}
-    else                       {ierr = PetscFVGetQuadrature((PetscFV) obj, &quad);CHKERRQ(ierr);}
+    if (id == PETSCFE_CLASSID) {
+      ierr = PetscFEGetQuadrature((PetscFE) obj, &quad);CHKERRQ(ierr);
+      ierr = PetscFEGetCellTabulation((PetscFE) obj, &Tfine);CHKERRQ(ierr);
+      ierr = PetscFECreateTabulation((PetscFE) obj, 1, 1, x, 0, &T);CHKERRQ(ierr);
+    } else {
+      ierr = PetscFVGetQuadrature((PetscFV) obj, &quad);CHKERRQ(ierr);
+    }
     ierr = PetscQuadratureGetData(quad, NULL, &Nc, &Nq, &qpoints, &qweights);CHKERRQ(ierr);
     /* For each fine grid cell */
     for (cell = cStart; cell < cEnd; ++cell) {
@@ -2858,24 +2867,22 @@ PetscErrorCode DMPlexComputeMassMatrixGeneral(DM dmc, DM dmf, Mat mass, void *us
         CoordinatesRealToRef(dim, dim, xi0, v0c, invJc, pVReal, x);
 
         if (id == PETSCFE_CLASSID) {
-          PetscFE    fe = (PetscFE) obj;
-          PetscReal *B;
+          PetscFE fe = (PetscFE) obj;
 
           /* Evaluate coarse basis on contained point */
           ierr = PetscFEGetDimension(fe, &cpdim);CHKERRQ(ierr);
-          ierr = PetscFEGetTabulation(fe, 1, x, &B, NULL, NULL);CHKERRQ(ierr);
+          ierr = PetscFEComputeTabulation(fe, 1, x, 0, T);CHKERRQ(ierr);
           /* Get elemMat entries by multiplying by weight */
           for (i = 0; i < numFIndices; ++i) {
             ierr = PetscArrayzero(elemMat, cpdim);CHKERRQ(ierr);
             for (j = 0; j < cpdim; ++j) {
-              for (c = 0; c < Nc; ++c) elemMat[j] += B[j*Nc + c]*Bfine[(ccell*numFIndices + i)*Nc + c]*qweights[ccell*Nc + c]*detJ;
+              for (c = 0; c < Nc; ++c) elemMat[j] += T->T[0][j*Nc + c]*Tfine->T[0][(ccell*numFIndices + i)*Nc + c]*qweights[ccell*Nc + c]*detJ;
             }
             /* Update interpolator */
             if (mesh->printFEM > 1) {ierr = DMPrintCellMatrix(cell, name, 1, numCIndices, elemMat);CHKERRQ(ierr);}
             if (numCIndices != cpdim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of element matrix columns %D != %D", numCIndices, cpdim);
             ierr = MatSetValues(mass, 1, &findices[i], numCIndices, cindices, elemMat, ADD_VALUES);CHKERRQ(ierr);
           }
-          ierr = PetscFERestoreTabulation(fe, 1, x, &B, NULL, NULL);CHKERRQ(ierr);CHKERRQ(ierr);
         } else {
           cpdim = 1;
           for (i = 0; i < numFIndices; ++i) {
@@ -2897,6 +2904,7 @@ PetscErrorCode DMPlexComputeMassMatrixGeneral(DM dmc, DM dmf, Mat mass, void *us
       ierr = VecDestroy(&pointVec);CHKERRQ(ierr);
       ierr = DMPlexRestoreClosureIndices(dmf, fsection, globalFSection, cell, &numFIndices, &findices, NULL);CHKERRQ(ierr);
     }
+    if (id == PETSCFE_CLASSID) {ierr = PetscTabulationDestroy(&T);CHKERRQ(ierr);}
   }
   ierr = PetscFree3(v0,J,invJ);CHKERRQ(ierr);
   ierr = PetscFree3(v0c,Jc,invJc);CHKERRQ(ierr);
@@ -3096,6 +3104,7 @@ PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, void *us
 PetscErrorCode DMPlexGetCellFields(DM dm, IS cellIS, Vec locX, Vec locX_t, Vec locA, PetscScalar **u, PetscScalar **u_t, PetscScalar **a)
 {
   DM              plex, plexA = NULL;
+  DMEnclosureType encAux;
   PetscSection    section, sectionAux;
   PetscDS         prob;
   const PetscInt *cells;
@@ -3120,6 +3129,7 @@ PetscErrorCode DMPlexGetCellFields(DM dm, IS cellIS, Vec locX, Vec locX_t, Vec l
     PetscDS probAux;
 
     ierr = VecGetDM(locA, &dmAux);CHKERRQ(ierr);
+    ierr = DMGetEnclosureRelation(dmAux, dm, &encAux);CHKERRQ(ierr);
     ierr = DMPlexConvertPlex(dmAux, &plexA, PETSC_FALSE);CHKERRQ(ierr);
     ierr = DMGetLocalSection(dmAux, &sectionAux);CHKERRQ(ierr);
     ierr = DMGetDS(dmAux, &probAux);CHKERRQ(ierr);
@@ -3145,7 +3155,7 @@ PetscErrorCode DMPlexGetCellFields(DM dm, IS cellIS, Vec locX, Vec locX_t, Vec l
     }
     if (locA) {
       PetscInt subcell;
-      ierr = DMPlexGetAuxiliaryPoint(plex, plexA, cell, &subcell);CHKERRQ(ierr);
+      ierr = DMGetEnclosurePoint(plexA, dm, encAux, cell, &subcell);CHKERRQ(ierr);
       ierr = DMPlexVecGetClosure(plexA, sectionAux, locA, subcell, NULL, &x);CHKERRQ(ierr);
       for (i = 0; i < totDimAux; ++i) al[cind*totDimAux+i] = x[i];
       ierr = DMPlexVecRestoreClosure(plexA, sectionAux, locA, subcell, NULL, &x);CHKERRQ(ierr);

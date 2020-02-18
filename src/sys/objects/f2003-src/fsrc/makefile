@@ -3,7 +3,7 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  =
-SOURCEF  = optionenum.F
+SOURCEF90= optionenum.F90
 SOURCEH  =
 DIRS     =
 LIBBASE  = libpetscsys

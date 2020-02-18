@@ -1,11 +1,10 @@
 #requiresdefine   'PETSC_HAVE_FORTRAN'
-#requiresdefine   'PETSC_USING_F90'
 #
 
 CFLAGS	   =
 FFLAGS	   =
 SOURCEC	   =
-SOURCEF	   = petscsysmod.F
+SOURCEF90  = petscsysmod.F90
 SOURCEH	   = petscbag.h petscdraw.h petscerror.h petsclog.h petscsys.h  petscviewer.h petscviewer.h90 petscsys.h90
 LIBBASE	   = libpetscsys
 MANSEC	   = Sys

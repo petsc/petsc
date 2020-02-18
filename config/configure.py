@@ -19,6 +19,8 @@ if sys.version_info < (2,6):
 def check_for_option_mistakes(opts):
   for opt in opts[1:]:
     name = opt.split('=')[0]
+    if name.find(' ') >= 0:
+      raise ValueError('The option "'+name+'" has a space character in the name - this is likely incorrect usage.');
     if name.find('_') >= 0:
       exception = False
       for exc in ['mkl_sparse', 'mkl_sparse_optimize', 'mkl_cpardiso', 'mkl_pardiso', 'superlu_dist', 'PETSC_ARCH', 'PETSC_DIR', 'CXX_CXXFLAGS', 'LD_SHARED', 'CC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'AR_FLAGS', 'C_VERSION', 'CXX_VERSION', 'FC_VERSION', 'size_t', 'MPI_Comm','MPI_Fint','int64_t']:
@@ -177,9 +179,9 @@ def chksynonyms():
       elif name.find('with-'+i.lower()+'=') >= 0:
         sys.argv[l] = name.replace(i.lower()+'=',j.lower()+'=')
 
-def chkwinf90():
+def chkwincompilerusinglink():
   for arg in sys.argv:
-    if (arg.find('win32fe') >= 0 and (arg.find('f90') >=0 or arg.find('ifort') >=0)):
+    if (arg.find('win32fe') >= 0 and (arg.find('f90') >=0 or arg.find('ifort') >=0 or arg.find('icl') >=0)):
       return 1
   return 0
 
@@ -194,12 +196,12 @@ def chkdosfiles():
   return
 
 def chkcygwinlink():
-  if os.path.exists('/usr/bin/cygcheck.exe') and os.path.exists('/usr/bin/link.exe') and chkwinf90():
+  if os.path.exists('/usr/bin/cygcheck.exe') and os.path.exists('/usr/bin/link.exe') and chkwincompilerusinglink():
       if '--ignore-cygwin-link' in sys.argv: return 0
       print('===============================================================================')
-      print(' *** Cygwin /usr/bin/link detected! Compiles with CVF/Intel f90 can break!  **')
+      print(' *** Cygwin /usr/bin/link detected! Compiles with Intel icl/ifort can break!  **')
       print(' *** To workarround do: "mv /usr/bin/link.exe /usr/bin/link-cygwin.exe"     **')
-      print(' *** Or to ignore this check, use configure option: --ignore-cygwin-link    **')
+      print(' *** Or to ignore this check, use configure option: --ignore-cygwin-link. But compiles can fail. **')
       print('===============================================================================')
       sys.exit(3)
   return 0
@@ -330,9 +332,11 @@ def move_configure_log(framework):
 
     # Just in case - confdir is not created
     lib_dir = os.path.join(petsc_arch,'lib')
+    petsc_dir = os.path.join(petsc_arch,'lib','petsc')
     conf_dir = os.path.join(petsc_arch,'lib','petsc','conf')
     if not os.path.isdir(petsc_arch): os.mkdir(petsc_arch)
     if not os.path.isdir(lib_dir): os.mkdir(lib_dir)
+    if not os.path.isdir(petsc_dir): os.mkdir(petsc_dir)
     if not os.path.isdir(conf_dir): os.mkdir(conf_dir)
 
     curr_bkp  = curr_file + '.bkp'
@@ -455,6 +459,7 @@ def petsc_configure(configure_options):
       pass
     return 0
   except (RuntimeError, config.base.ConfigureSetupError) as e:
+    tbo = sys.exc_info()[2]
     emsg = str(e)
     if not emsg.endswith('\n'): emsg = emsg+'\n'
     msg ='*******************************************************************************\n'\
@@ -483,6 +488,7 @@ def petsc_configure(configure_options):
     +emsg+'*******************************************************************************\n'
     se = ''
   except OSError as e :
+    tbo = sys.exc_info()[2]
     emsg = str(e)
     if not emsg.endswith('\n'): emsg = emsg+'\n'
     msg ='*******************************************************************************\n'\
@@ -491,20 +497,23 @@ def petsc_configure(configure_options):
     +emsg+'*******************************************************************************\n'
     se = ''
   except SystemExit as e:
+    tbo = sys.exc_info()[2]
     if e.code is None or e.code == 0:
       return
-    if e.code is 10:
+    if e.code == 10:
       sys.exit(10)
     msg ='*******************************************************************************\n'\
     +'         CONFIGURATION FAILURE  (Please send configure.log to petsc-maint@mcs.anl.gov)\n' \
     +'*******************************************************************************\n'
     se  = str(e)
   except Exception as e:
+    tbo = sys.exc_info()[2]
     msg ='*******************************************************************************\n'\
     +'        CONFIGURATION CRASH  (Please send configure.log to petsc-maint@mcs.anl.gov)\n' \
     +'*******************************************************************************\n'
     se  = str(e)
 
+  framework.logClear()
   print(msg)
   if not framework is None:
     framework.logClear()
@@ -518,7 +527,6 @@ def petsc_configure(configure_options):
           framework.outputCHeader(framework.log)
       except Exception as e:
         framework.log.write('Problem writing headers to log: '+str(e))
-      if sys.exc_info()[2]: tbo = sys.exc_info()[2]
       try:
         framework.log.write(msg+se)
         traceback.print_tb(tbo, file = framework.log)
@@ -527,14 +535,14 @@ def petsc_configure(configure_options):
         move_configure_log(framework)
       except Exception as e:
         print('Error printing error message from exception or printing the traceback:'+str(e))
-        traceback.print_tb(tbo)
+        traceback.print_tb(sys.exc_info()[2])
       sys.exit(1)
     else:
       print(se)
-      traceback.print_tb(sys.exc_info()[2])
+      traceback.print_tb(tbo)
   else:
     print(se)
-    traceback.print_tb(sys.exc_info()[2])
+    traceback.print_tb(tbo)
   if hasattr(framework,'log'): framework.log.close()
 
 if __name__ == '__main__':

@@ -472,11 +472,11 @@ PetscErrorCode  MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring 
 
   ierr = MatCreateVecs(mat,NULL,&c->w1);CHKERRQ(ierr);
   /* Vec is used instensively in particular piece of scalar CPU code; won't benifit from bouncing back and forth to the GPU */
-  ierr = VecPinToCPU(c->w1,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = VecBindToCPU(c->w1,PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)c,(PetscObject)c->w1);CHKERRQ(ierr);
   ierr = VecDuplicate(c->w1,&c->w2);CHKERRQ(ierr);
   /* Vec is used instensively in particular piece of scalar CPU code; won't benifit from bouncing back and forth to the GPU */
-  ierr = VecPinToCPU(c->w2,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = VecBindToCPU(c->w2,PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)c,(PetscObject)c->w2);CHKERRQ(ierr);
 
   c->error_rel    = PETSC_SQRT_MACHINE_EPSILON;

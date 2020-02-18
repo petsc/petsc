@@ -12,8 +12,8 @@ include $(PETSC_DIR)/lib/petsc/conf/variables
 
 TESTDIR ?= ./$(PETSC_ARCH)/tests
 MODDIR := $(PETSC_DIR)/$(PETSC_ARCH)/include
-TESTLOGTAPFILE ?= $(TESTDIR)/test_tap.log
-TESTLOGERRFILE ?= $(TESTDIR)/test_err.log
+TESTLOGTAPFILE ?= $(TESTDIR)/test_$(PETSC_ARCH)_tap.log
+TESTLOGERRFILE ?= $(TESTDIR)/test_$(PETSC_ARCH)_err.log
 EXAMPLESDIR := $(TESTSRCDIR)
 
 pkgs := sys vec mat dm ksp snes ts tao
@@ -84,7 +84,7 @@ $(generatedtest) : $(petscconf) $(petscvariables) $(CONFIGDIR)/gmakegentest.py $
 	$(PYTHON) $(CONFIGDIR)/gmakegentest.py --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) --testdir=$(TESTDIR)
 
 ifneq ($(MAKECMDGOALS:clean%=clean),clean)
--include $(generatedtest)
+include $(generatedtest)
 endif
 
 ifeq ($(PETSC_LANGUAGE),CXXONLY)
@@ -93,8 +93,8 @@ else
   cc_name := CC
 endif
 
-PETSC_COMPILE.c = $(call quiet,$(cc_name)) -c $(PCC_FLAGS) $(CFLAGS) $(CCPPFLAGS) $(C_DEPFLAGS)
-PETSC_COMPILE.cxx = $(call quiet,CXX) -c $(CXX_FLAGS) $(CFLAGS) $(CCPPFLAGS) $(CXX_DEPFLAGS)
+PETSC_COMPILE.c = $(call quiet,$(cc_name)) -c $(PCC_FLAGS) $(PFLAGS) $(CCPPFLAGS) $(C_DEPFLAGS)
+PETSC_COMPILE.cxx = $(call quiet,CXX) -c $(CXX_FLAGS) $(CXXFLAGS) $(CXXCPPFLAGS) $(CXX_DEPFLAGS)
 PETSC_COMPILE.cu = $(call quiet,CUDAC) -c $(CUDAC_FLAGS) --compiler-options="$(PCC_FLAGS) $(CXXFLAGS) $(CCPPFLAGS)"
 PETSC_GENDEPS.cu = $(call quiet,CUDAC,.dep) --generate-dependencies --output-directory=$(@D) $(CUDAC_FLAGS) --compiler-options="$(PCC_FLAGS) $(CXXFLAGS) $(CCPPFLAGS)"
 PETSC_COMPILE.F = $(call quiet,FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DEPFLAGS)
@@ -182,7 +182,7 @@ $(foreach pkg, $(pkgs), $(call concattestlang,$(pkg),F F90)) : $(libpetscall)
 # Testing convenience targets
 .PHONY: test pre-clean
 
-test: report_tests check-test-errors
+test: report_tests
 
 pre-clean:
 	@$(RM) -rf $(TESTDIR)/counts $(TESTLOGTAPFILE) $(TESTLOGERRFILE)
@@ -273,6 +273,10 @@ else ifdef argsearch
   TESTTARGETS := $(foreach v,$(alltesttargets),$(if $(findstring $(argsearch),$($(v)_ARGS)),$(v)))
 else ifdef globsearch
   TESTTARGETS := $(shell $(PYTHON) -c"import sys,fnmatch,itertools; m=[fnmatch.filter(sys.argv[2].split(),p) for p in sys.argv[1].split()]; print(' '.join(list(itertools.chain.from_iterable(m))))" '$(globsearch)' '$(alltesttargets)')
+else ifdef test-fail
+  TESTTARGETS := $(shell $(PETSC_ARCH)/tests/echofailures.sh)
+else ifdef query
+  TESTTARGETS := $(shell $(PYTHON) config/query_tests.py '$(query)' '$(queryval)')
 else                            # No filter - run them all, but delete the executables as we go
   TESTTARGETS := $(testpkgs)
 endif
@@ -371,6 +375,12 @@ help-test:
 	-@echo "  For general glob-style searching using python:"
 	-@echo "   NOTE: uses shell which is possibly slower and more brittle"
 	-@echo "    make -f ${makefile} test globsearch='sys*ex2*'"
+	-@echo
+	-@echo "  To re-run the last tests which failed:"
+	-@echo "    make -f ${makefile} test test-fail='1'"
+	-@echo
+	-@echo "  To search for fields from the original test definitions:"
+	-@echo "    make -f ${makefile} test query='requires' queryval='*MPI_PROCESS_SHARED_MEMORY*'"
 	-@echo
 	-@echo "  To see which targets match a given pattern (useful for doing a specific target):"
 	-@echo "    make -f ${makefile} print-test search=sys%"

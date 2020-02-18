@@ -10,7 +10,7 @@
           DM  da
           Vec F
           Vec xl
-          integer comm
+          MPI_Comm comm
           PetscInt N
         end type User
         save
@@ -67,9 +67,6 @@
       program main
       use UserModule
       implicit none
-#if defined(PETSC_USING_F90) && !defined(PETSC_USE_FORTRANKIND)
-      external PETSC_NULL_FUNCTION
-#endif
       type(User) ctx
       PetscMPIInt rank,size
       PetscErrorCode ierr

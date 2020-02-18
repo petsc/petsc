@@ -23,7 +23,7 @@ static PetscErrorCode DMDestroy_Product(DM dm)
   Level: advanced
 
 .seealso: DM, DMSTAG, DMProductGetDM(), DMProductSetDimensionIndex(), DMProductSetDM(), DMStagSetUniformCoordinatesProduct(),
-          DMStagGet1dCoordinateArraysDOFRead()
+          DMStagGetProductCoordinateArrays(), DMStagGetProductCoordinateArraysRead()
 M*/
 
 PETSC_EXTERN PetscErrorCode DMCreate_Product(DM dm)

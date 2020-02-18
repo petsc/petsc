@@ -1,11 +1,10 @@
 #requiresdefine   'PETSC_HAVE_FORTRAN'
-#requiresdefine   'PETSC_USING_F90'
 #
 
 CFLAGS	   =
 FFLAGS	   =
 SOURCEC	   =
-SOURCEF	   = mpiunimod.F
+SOURCEF90  = mpiunimod.F90
 SOURCEH	   =
 LIBBASE	   = libpetscsys
 MANSEC	   = Sys

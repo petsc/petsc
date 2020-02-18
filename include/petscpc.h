@@ -61,7 +61,6 @@ PETSC_EXTERN PetscErrorCode PCApplyRichardsonExists(PC,PetscBool *);
 PETSC_EXTERN PetscErrorCode PCSetUseAmat(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGetUseAmat(PC,PetscBool*);
 
-
 PETSC_EXTERN PetscErrorCode PCRegister(const char[],PetscErrorCode(*)(PC));
 
 PETSC_EXTERN PetscErrorCode PCReset(PC);
@@ -78,7 +77,7 @@ PETSC_EXTERN PetscErrorCode PCGetOperatorsSet(PC,PetscBool *,PetscBool *);
 
 PETSC_EXTERN PetscErrorCode PCView(PC,PetscViewer);
 PETSC_EXTERN PetscErrorCode PCLoad(PC,PetscViewer);
-PETSC_STATIC_INLINE PetscErrorCode PCViewFromOptions(PC A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
+PETSC_EXTERN PetscErrorCode PCViewFromOptions(PC,PetscObject,const char[]);
 
 PETSC_EXTERN PetscErrorCode PCSetOptionsPrefix(PC,const char[]);
 PETSC_EXTERN PetscErrorCode PCAppendOptionsPrefix(PC,const char[]);
@@ -293,12 +292,16 @@ PETSC_EXTERN PetscErrorCode PCPARMSSetFill(PC,PetscInt,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetType( PC,PCGAMGType);
 PETSC_EXTERN PetscErrorCode PCGAMGGetType( PC,PCGAMGType*);
 PETSC_EXTERN PetscErrorCode PCGAMGSetProcEqLim(PC,PetscInt);
+
 PETSC_EXTERN PetscErrorCode PCGAMGSetRepartition(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCGAMGSetUseSAEstEig(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCGAMGSetEstEigKSPMaxIt(PC,PetscInt);
+PETSC_EXTERN PetscErrorCode PCGAMGSetEstEigKSPType(PC,char[]);
+PETSC_EXTERN PetscErrorCode PCGAMGSetEigenvalues(PC,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode PCGAMGASMSetUseAggs(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGSetUseParallelCoarseGridSolve(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGSetCpuPinCoarseGrids(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGSetCoarseGridLayoutType(PC,PCGAMGLayoutType);
-PETSC_EXTERN PetscErrorCode PCGAMGSetSolverType(PC,char[],PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetThreshold(PC,PetscReal[],PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetThresholdScale(PC,PetscReal);
 PETSC_EXTERN PetscErrorCode PCGAMGSetCoarseEqLim(PC,PetscInt);
@@ -432,7 +435,11 @@ PETSC_EXTERN PetscErrorCode PCDeflationSetCoarseMat(PC,Mat);
 PETSC_EXTERN PetscErrorCode PCDeflationGetPC(PC,PC*);
 
 PETSC_EXTERN PetscErrorCode PCHPDDMSetAuxiliaryMat(PC,IS,Mat,PetscErrorCode (*)(Mat,PetscReal,Vec,Vec,PetscReal,IS,void*),void*);
+PETSC_EXTERN PetscErrorCode PCHPDDMSetRHSMat(PC,Mat);
+PETSC_EXTERN PetscErrorCode PCHPDDMHasNeumannMat(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCHPDDMSetCoarseCorrectionType(PC,PCHPDDMCoarseCorrectionType);
 PETSC_EXTERN PetscErrorCode PCHPDDMGetCoarseCorrectionType(PC,PCHPDDMCoarseCorrectionType*);
+PETSC_EXTERN PetscErrorCode PCHPDDMFinalizePackage(void);
+PETSC_EXTERN PetscErrorCode PCHPDDMInitializePackage(void);
 
 #endif /* PETSCPC_H */

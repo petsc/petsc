@@ -210,7 +210,7 @@ static PetscErrorCode PetscDrawXiDisplayWindow(PetscDraw_X *XiWin,char *label,in
     size_hints.height     = h;
     size_hints.flags      = USPosition | USSize | PMinSize;
 
-    XSetWMProperties(XiWin->disp,XiWin->win,&windowname,&iconname,0,0,&size_hints,&wm_hints,&class_hints);
+    XSetWMProperties(XiWin->disp,XiWin->win,&windowname,&iconname,NULL,0,&size_hints,&wm_hints,&class_hints);
     XFree((void*)windowname.value);
     XFree((void*)iconname.value);
   }

@@ -197,7 +197,7 @@ PETSC_INTERN PetscErrorCode PetscLogFinalize(void)
   petsc_tracetime             = 0.0;
   PETSC_LARGEST_CLASSID       = PETSC_SMALLEST_CLASSID;
   PETSC_OBJECT_CLASSID        = 0;
-  petsc_stageLog              = 0;
+  petsc_stageLog              = NULL;
   PetscLogInitializeCalled    = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

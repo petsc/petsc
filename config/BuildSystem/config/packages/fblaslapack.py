@@ -3,8 +3,9 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit              = 'origin/barry/2019-08-22/fix-syntax-for-nag'
+    self.gitcommit              = 'v3.4.2-p2'
     self.download               = ['git://https://bitbucket.org/petsc/pkg-fblaslapack','https://bitbucket.org/petsc/pkg-fblaslapack/get/'+self.gitcommit+'.tar.gz']
+    self.downloaddirnames       = ['petsc-pkg-fblaslapack']
     self.precisions             = ['single','double']
     self.downloadonWindows      = 1
     self.skippackagewithoptions = 1

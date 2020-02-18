@@ -458,7 +458,7 @@ PetscErrorCode DMPlexDistributeOwnership(DM dm, PetscSection rootSection, IS *ro
 . leafSection - The number of processes sharing a given leaf point
 - leafrank    - The rank of each process sharing a leaf point
 
-  Output Parameters:
+  Output Parameter:
 . ovLabel     - DMLabel containing remote overlap contributions as point/rank pairings
 
   Level: developer
@@ -570,7 +570,7 @@ PetscErrorCode DMPlexCreateOverlapLabel(DM dm, PetscInt levels, PetscSection roo
 + dm          - The DM
 - overlapSF   - The SF mapping ghost points in overlap to owner points on other processes
 
-  Output Parameters:
+  Output Parameter:
 . migrationSF - An SF that maps original points in old locations to points in new locations
 
   Level: developer
@@ -675,7 +675,7 @@ PetscErrorCode DMPlexCreateOverlapMigrationSF(DM dm, PetscSF overlapSF, PetscSF 
 /*@
   DMPlexStratifyMigrationSF - Rearrange the leaves of a migration sf for stratification.
 
-  Input Parameter:
+  Input Parameters:
 + dm          - The DM
 - sf          - A star forest with non-ordered leaves, usually defining a DM point migration
 
@@ -1378,13 +1378,16 @@ static void MaxLocCarry(void *in_, void *inout_, PetscMPIInt *len_, MPI_Datatype
 /*@C
   DMPlexCreatePointSF - Build a point SF from an SF describing a point migration
 
-  Input Parameter:
+  Input Parameters:
 + dm          - The source DMPlex object
 . migrationSF - The star forest that describes the parallel point remapping
 . ownership   - Flag causing a vote to determine point ownership
 
   Output Parameter:
 - pointSF     - The star forest describing the point overlap in the remapped DM
+
+  Notes:
+  Output pointSF is guaranteed to have the array of local indices (leaves) sorted.
 
   Level: developer
 
@@ -1485,6 +1488,7 @@ PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownersh
   ierr = PetscMalloc1(npointLeaves, &pointRemote);CHKERRQ(ierr);
   for (idx = 0, p = 0; p < nleaves; p++) {
     if (leafNodes[p].rank != rank) {
+      /* Note that pointLocal is automatically sorted as it is sublist of 0, ..., nleaves-1 */
       pointLocal[idx] = p;
       pointRemote[idx] = leafNodes[p];
       idx++;
@@ -1508,7 +1512,7 @@ PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownersh
 
   Collective on dm
 
-  Input Parameter:
+  Input Parameters:
 + dm       - The source DMPlex object
 . sf       - The star forest communication context describing the migration pattern
 
@@ -1587,11 +1591,11 @@ PetscErrorCode DMPlexMigrate(DM dm, PetscSF sf, DM targetDM)
 
   Collective on dm
 
-  Input Parameter:
+  Input Parameters:
 + dm  - The original DMPlex object
 - overlap - The overlap of partitions, 0 is the default
 
-  Output Parameter:
+  Output Parameters:
 + sf - The PetscSF used for point distribution, or NULL if not needed
 - dmParallel - The distributed DMPlex object
 
@@ -1635,7 +1639,7 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
   ierr = PetscLogEventBegin(DMPLEX_Partition,dm,0,0,0);CHKERRQ(ierr);
   ierr = PetscSectionCreate(comm, &cellPartSection);CHKERRQ(ierr);
   ierr = DMPlexGetPartitioner(dm, &partitioner);CHKERRQ(ierr);
-  ierr = PetscPartitionerPartition(partitioner, dm, cellPartSection, &cellPart);CHKERRQ(ierr);
+  ierr = PetscPartitionerDMPlexPartition(partitioner, dm, NULL, cellPartSection, &cellPart);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(DMPLEX_PartSelf,dm,0,0,0);CHKERRQ(ierr);
   {
     /* Convert partition to DMLabel */
@@ -1768,11 +1772,11 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
 
   Collective on dm
 
-  Input Parameter:
-+ dm  - The non-overlapping distrbuted DMPlex object
+  Input Parameters:
++ dm  - The non-overlapping distributed DMPlex object
 - overlap - The overlap of partitions (the same on all ranks)
 
-  Output Parameter:
+  Output Parameters:
 + sf - The PetscSF used for point distribution
 - dmOverlap - The overlapping distributed DMPlex object, or NULL
 
@@ -1868,7 +1872,7 @@ PetscErrorCode DMPlexGetOverlap_Plex(DM dm, PetscInt *overlap)
   Input Parameter:
 . dm - The DM
 
-  Output Parameters:
+  Output Parameter:
 . overlap - The overlap of this DM
 
   Level: intermediate
@@ -1892,7 +1896,7 @@ PetscErrorCode DMPlexGetOverlap(DM dm, PetscInt *overlap)
 
   Collective on dm
 
-  Input Parameters:
+  Input Parameter:
 . dm - the original DMPlex object
 
   Output Parameters:
@@ -1936,7 +1940,7 @@ PetscErrorCode DMPlexGetGatherDM(DM dm, PetscSF *sf, DM *gatherMesh)
 
   Collective on dm
 
-  Input Parameters:
+  Input Parameter:
 . dm - the original DMPlex object
 
   Output Parameters:
@@ -2001,5 +2005,42 @@ PetscErrorCode DMPlexGetRedundantDM(DM dm, PetscSF *sf, DM *redundantMesh)
   ierr = PetscSFDestroy(&migrationSF);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&gatherSF);CHKERRQ(ierr);
   ierr = DMDestroy(&gatherDM);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexIsDistributed - Find out whether this DM is distributed, i.e. more than one rank owns some points.
+
+  Collective
+
+  Input Parameter:
+. dm      - The DM object
+
+  Output Parameter:
+. distributed - Flag whether the DM is distributed
+
+  Level: intermediate
+
+  Notes:
+  This currently finds out whether at least two ranks have any DAG points.
+  This involves MPI_Allreduce() with one integer.
+  The result is currently not stashed so every call to this routine involves this global communication.
+
+.seealso: DMPlexDistribute(), DMPlexGetOverlap(), DMPlexIsInterpolated()
+@*/
+PetscErrorCode DMPlexIsDistributed(DM dm, PetscBool *distributed)
+{
+  PetscInt          pStart, pEnd, count;
+  MPI_Comm          comm;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(distributed,2);
+  ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
+  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+  count = !!(pEnd - pStart);
+  ierr = MPI_Allreduce(MPI_IN_PLACE, &count, 1, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr);
+  *distributed = count > 1 ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(0);
 }

@@ -1,11 +1,10 @@
 #requiresdefine   'PETSC_HAVE_FORTRAN'
-#requiresdefine   'PETSC_USING_F90'
 #
 
 CFLAGS	   =
 FFLAGS	   =
 SOURCEC	   =
-SOURCEF	   = petscsnesmod.F
+SOURCEF90  = petscsnesmod.F90
 SOURCEH	   = petscsnes.h petscsnes.h90 petscsnesfas.h
 LIBBASE	   = libpetscsnes
 MANSEC	   = SNES

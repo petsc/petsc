@@ -49,25 +49,25 @@ Mat Object: symm_initial 2 MPI processes
 Mat Object: symm_conv_init 2 MPI processes
   type: mpibaij
   rows=10, cols=10, bs=2
-  total: nonzeros=52, allocated nonzeros=152
+  total: nonzeros=52, allocated nonzeros=52
   total number of mallocs used during MatSetValues calls=0
       block size is 2
 Mat Object: symm_conv_reuse 2 MPI processes
   type: mpibaij
   rows=10, cols=10, bs=2
-  total: nonzeros=52, allocated nonzeros=152
+  total: nonzeros=52, allocated nonzeros=52
   total number of mallocs used during MatSetValues calls=0
       block size is 2
 Mat Object: symm_conv_copy_samennz 2 MPI processes
   type: mpibaij
   rows=10, cols=10, bs=2
-  total: nonzeros=52, allocated nonzeros=152
+  total: nonzeros=52, allocated nonzeros=52
   total number of mallocs used during MatSetValues calls=0
       block size is 2
 Mat Object: symm_conv_copy_subnnz 2 MPI processes
   type: mpibaij
   rows=10, cols=10, bs=2
-  total: nonzeros=52, allocated nonzeros=152
+  total: nonzeros=52, allocated nonzeros=52
   total number of mallocs used during MatSetValues calls=0
       block size is 2
 Mat Object: symm_conv_copy_diffnnz 2 MPI processes

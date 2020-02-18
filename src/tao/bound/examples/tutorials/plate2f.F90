@@ -120,7 +120,7 @@
 ! derives from an elliptic PDE on a two-dimensional domain.  From the
 ! distributed array, create the vectors
 
-      call DMDACreate2d(MPI_COMM_WORLD,DM_BOUNDARY_NONE,                    &
+      call DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,                    &
      &     DM_BOUNDARY_NONE, DMDA_STENCIL_BOX,                              &
      &     mx,my,Nx,Ny,i1,i1,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,           &
      &     dm,ierr)
@@ -147,7 +147,7 @@
 
       call VecGetLocalSize(x,m,ierr)
       CHKERRA(ierr)
-      call MatCreateAIJ(MPI_COMM_WORLD,m,m,N,N,i7,PETSC_NULL_INTEGER,   &
+      call MatCreateAIJ(PETSC_COMM_WORLD,m,m,N,N,i7,PETSC_NULL_INTEGER,   &
      &     i3,PETSC_NULL_INTEGER,H,ierr)
       CHKERRA(ierr)
 
@@ -455,7 +455,7 @@
 
       ft = ft * area
       call MPI_Allreduce(ft,fcn,1,MPIU_SCALAR,                            &
-     &             MPIU_SUM,MPI_COMM_WORLD,ierr)
+     &             MPIU_SUM,PETSC_COMM_WORLD,ierr)
 
 
 ! Restore vectors
@@ -798,10 +798,10 @@
       tsize = xm + 2
 
 
-      call VecCreateMPI(MPI_COMM_WORLD,bsize,PETSC_DECIDE,Bottom,ierr)
-      call VecCreateMPI(MPI_COMM_WORLD,tsize,PETSC_DECIDE,Top,ierr)
-      call VecCreateMPI(MPI_COMM_WORLD,lsize,PETSC_DECIDE,Left,ierr)
-      call VecCreateMPI(MPI_COMM_WORLD,rsize,PETSC_DECIDE,Right,ierr)
+      call VecCreateMPI(PETSC_COMM_WORLD,bsize,PETSC_DECIDE,Bottom,ierr)
+      call VecCreateMPI(PETSC_COMM_WORLD,tsize,PETSC_DECIDE,Top,ierr)
+      call VecCreateMPI(PETSC_COMM_WORLD,lsize,PETSC_DECIDE,Left,ierr)
+      call VecCreateMPI(PETSC_COMM_WORLD,rsize,PETSC_DECIDE,Right,ierr)
 
       hx= (r-l)/(mx+1)
       hy= (t-b)/(my+1)
@@ -1031,7 +1031,7 @@
          call VecSet(X,zero,ierr)
 
       elseif ((flg .eqv. PETSC_TRUE) .and. (start .gt. 0)) then  ! random start -0.5 < xi < 0.5
-         call PetscRandomCreate(MPI_COMM_WORLD,rctx,ierr)
+         call PetscRandomCreate(PETSC_COMM_WORLD,rctx,ierr)
          do i=0,start-1
             call VecSetRandom(X,rctx,ierr)
          enddo

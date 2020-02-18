@@ -78,7 +78,7 @@
       ierr = PetscAReduce()
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
-      if (size .ne. 1) then; SETERRA(PETSC_COMM_SELF,1,'Uniprocessor example'); endif
+      if (size .ne. 1) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_WRONG_MPI_SIZE,'Uniprocessor example'); endif
 
       i2  = 2
       i20 = 20

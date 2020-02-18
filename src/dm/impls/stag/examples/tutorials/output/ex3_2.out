@@ -1,40 +1,18 @@
   0 KSP Residual norm 29.7322 
-  1 KSP Residual norm 29.7154 
-  2 KSP Residual norm 29.599 
-  3 KSP Residual norm 28.9951 
-  4 KSP Residual norm 20.4734 
-  5 KSP Residual norm 20.455 
-  6 KSP Residual norm 11.8524 
-  7 KSP Residual norm 11.8522 
-  8 KSP Residual norm 10.8716 
-  9 KSP Residual norm 9.40732 
- 10 KSP Residual norm 5.82129 
- 11 KSP Residual norm 4.70239 
- 12 KSP Residual norm 3.4366 
- 13 KSP Residual norm 1.88612 
- 14 KSP Residual norm 1.13645 
- 15 KSP Residual norm 1.00455 
- 16 KSP Residual norm 0.459665 
- 17 KSP Residual norm 0.20327 
- 18 KSP Residual norm 0.180225 
- 19 KSP Residual norm 0.0931185 
- 20 KSP Residual norm 0.0576615 
- 21 KSP Residual norm 0.0490717 
- 22 KSP Residual norm 0.0392816 
- 23 KSP Residual norm 0.0153601 
- 24 KSP Residual norm 0.0121437 
- 25 KSP Residual norm 0.0097283 
- 26 KSP Residual norm 0.00282707 
- 27 KSP Residual norm 0.00203073 
- 28 KSP Residual norm 0.00164238 
- 29 KSP Residual norm 0.00058169 
- 30 KSP Residual norm 0.000425327 
- 31 KSP Residual norm 0.000425324 
- 32 KSP Residual norm 0.000424161 
- 33 KSP Residual norm 0.000392647 
- 34 KSP Residual norm 0.000384362 
- 35 KSP Residual norm 0.000346703 
- 36 KSP Residual norm 0.000188895 
-Linear solve converged due to CONVERGED_RTOL iterations 36
-Error (abs): 3.79597
-Error (rel): 0.208148
+  1 KSP Residual norm 19.0519 
+  2 KSP Residual norm 18.0607 
+  3 KSP Residual norm 11.1347 
+  4 KSP Residual norm 0.976072 
+  5 KSP Residual norm 0.823254 
+  6 KSP Residual norm 0.808854 
+  7 KSP Residual norm 0.0598007 
+  8 KSP Residual norm 0.0530177 
+  9 KSP Residual norm 0.0423075 
+ 10 KSP Residual norm 0.00428706 
+ 11 KSP Residual norm 0.00392479 
+ 12 KSP Residual norm 0.00258912 
+ 13 KSP Residual norm 0.000326356 
+ 14 KSP Residual norm 0.000294056 
+Linear solve converged due to CONVERGED_RTOL iterations 14
+Error (abs): 0.539402
+Error (rel): 0.0295775

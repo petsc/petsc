@@ -283,9 +283,9 @@ PetscErrorCode PetscOptionsValidKey(const char key[],PetscBool *valid)
   if (!key) PetscFunctionReturn(0);
   if (key[0] != '-') PetscFunctionReturn(0);
   if (key[1] == '-') key++;
-  if (!isalpha((int)(key[1]))) PetscFunctionReturn(0);
+  if (!isalpha((int)key[1])) PetscFunctionReturn(0);
   (void) strtod(key,&ptr);
-  if (ptr != key && !(*ptr == '_' || isalnum(*ptr))) PetscFunctionReturn(0);
+  if (ptr != key && !(*ptr == '_' || isalnum((int)*ptr))) PetscFunctionReturn(0);
   *valid = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -368,7 +368,7 @@ static char *Petscgetline(FILE * f)
   size_t last  = 0;
   char   *buf  = NULL;
 
-  if (feof(f)) return 0;
+  if (feof(f)) return NULL;
   do {
     size += 1024; /* BUFSIZ is defined as "the optimal read size for this platform" */
     buf   = (char*)realloc((void*)buf,size); /* realloc(NULL,n) is the same as malloc(n) */
@@ -380,7 +380,7 @@ static char *Petscgetline(FILE * f)
   } while (!feof(f) && buf[last] != '\n' && buf[last] != '\r');
   if (len) return buf;
   free(buf);
-  return 0;
+  return NULL;
 }
 
 /*@C
@@ -417,7 +417,7 @@ static char *Petscgetline(FILE * f)
 @*/
 PetscErrorCode PetscOptionsInsertFile(MPI_Comm comm,PetscOptions options,const char file[],PetscBool require)
 {
-  char           *string,fname[PETSC_MAX_PATH_LEN],*first,*second,*third,*vstring = 0,*astring = 0,*packed = 0;
+  char           *string,fname[PETSC_MAX_PATH_LEN],*first,*second,*third,*vstring = NULL,*astring = NULL,*packed = NULL;
   PetscErrorCode ierr;
   size_t         i,len,bytes;
   FILE           *fd;
@@ -443,7 +443,7 @@ PetscErrorCode PetscOptionsInsertFile(MPI_Comm comm,PetscOptions options,const c
       ierr = PetscSegBufferCreate(1,2000,&aseg);CHKERRQ(ierr);
 
       /* the following line will not work when opening initial files (like .petscrc) since info is not yet set */
-      ierr = PetscInfo1(0,"Opened options file %s\n",file);CHKERRQ(ierr);
+      ierr = PetscInfo1(NULL,"Opened options file %s\n",file);CHKERRQ(ierr);
 
       while ((string = Petscgetline(fd))) {
         /* eliminate comments from each line */
@@ -1458,7 +1458,7 @@ PetscErrorCode PetscOptionsHasName(PetscOptions options,const char pre[],const c
 
    Not Collective
 
-   Input Paramter:
+   Input Parameter:
 .  options - the options database, use NULL for the default global database
 
    Output Parameter:
@@ -2158,7 +2158,7 @@ PetscErrorCode PetscOptionsGetBool(PetscOptions options,const char pre[],const c
 PetscErrorCode PetscOptionsGetEList(PetscOptions options,const char pre[],const char opt[],const char * const *list,PetscInt ntext,PetscInt *value,PetscBool *set)
 {
   PetscErrorCode ierr;
-  size_t         alen,len = 0;
+  size_t         alen,len = 0, tlen = 0;
   char           *svalue;
   PetscBool      aset,flg = PETSC_FALSE;
   PetscInt       i;
@@ -2168,13 +2168,28 @@ PetscErrorCode PetscOptionsGetEList(PetscOptions options,const char pre[],const 
   for (i=0; i<ntext; i++) {
     ierr = PetscStrlen(list[i],&alen);CHKERRQ(ierr);
     if (alen > len) len = alen;
+    tlen += len + 1;
   }
   len += 5; /* a little extra space for user mistypes */
   ierr = PetscMalloc1(len,&svalue);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(options,pre,opt,svalue,len,&aset);CHKERRQ(ierr);
   if (aset) {
     ierr = PetscEListFind(ntext,list,svalue,value,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_USER,"Unknown option %s for -%s%s",svalue,pre ? pre : "",opt+1);
+    if (!flg) {
+      char *avail,*pavl;
+
+      ierr = PetscMalloc1(tlen,&avail);CHKERRQ(ierr);
+      pavl = avail;
+      for (i=0; i<ntext; i++) {
+        ierr = PetscStrlen(list[i],&alen);CHKERRQ(ierr);
+        ierr = PetscStrcpy(pavl,list[i]);CHKERRQ(ierr);
+        pavl += alen;
+        ierr = PetscStrcpy(pavl," ");CHKERRQ(ierr);
+        pavl += 1;
+      }
+      ierr = PetscStrtolower(avail);CHKERRQ(ierr);
+      SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_USER,"Unknown option %s for -%s%s. Available options: %s",svalue,pre ? pre : "",opt+1,avail);
+    }
     if (set) *set = PETSC_TRUE;
   } else if (set) *set = PETSC_FALSE;
   ierr = PetscFree(svalue);CHKERRQ(ierr);
@@ -2467,9 +2482,9 @@ char *PetscOptionsGetStringMatlab(PetscOptions options,const char pre[],const ch
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsFindPair(options,pre,name,&value,&flag);if (ierr) PetscFunctionReturn(0);
+  ierr = PetscOptionsFindPair(options,pre,name,&value,&flag);if (ierr) PetscFunctionReturn(NULL);
   if (flag) PetscFunctionReturn((char*)value);
-  else PetscFunctionReturn(0);
+  else PetscFunctionReturn(NULL);
 }
 
 /*@C
@@ -2913,25 +2928,32 @@ PetscErrorCode PetscOptionsDeprecated_Private(PetscOptionItems *PetscOptionsObje
   const char         *value;
   const char * const quietopt="-options_suppress_deprecated_warnings";
   char               msg[4096];
+  char               *prefix = NULL;
+  PetscOptions       options = NULL;
+  MPI_Comm           comm = PETSC_COMM_SELF;
 
   PetscFunctionBegin;
   PetscValidCharPointer(oldname,2);
   PetscValidCharPointer(version,4);
-
-  ierr = PetscOptionsFindPair(PetscOptionsObject->options,PetscOptionsObject->prefix,oldname,&value,&found);CHKERRQ(ierr);
+  if (PetscOptionsObject) {
+    prefix  = PetscOptionsObject->prefix;
+    options = PetscOptionsObject->options;
+    comm    = PetscOptionsObject->comm;
+  }
+  ierr = PetscOptionsFindPair(options,prefix,oldname,&value,&found);CHKERRQ(ierr);
   if (found) {
     if (newname) {
-      if (PetscOptionsObject->prefix) {
-        ierr = PetscOptionsPrefixPush(PetscOptionsObject->options,PetscOptionsObject->prefix);CHKERRQ(ierr);
+      if (prefix) {
+        ierr = PetscOptionsPrefixPush(options,prefix);CHKERRQ(ierr);
       }
-      ierr = PetscOptionsSetValue(PetscOptionsObject->options,newname,value);CHKERRQ(ierr);
-      if (PetscOptionsObject->prefix) {
-        ierr = PetscOptionsPrefixPop(PetscOptionsObject->options);CHKERRQ(ierr);
+      ierr = PetscOptionsSetValue(options,newname,value);CHKERRQ(ierr);
+      if (prefix) {
+        ierr = PetscOptionsPrefixPop(options);CHKERRQ(ierr);
       }
-      ierr = PetscOptionsClearValue(PetscOptionsObject->options,oldname);CHKERRQ(ierr);
+      ierr = PetscOptionsClearValue(options,oldname);CHKERRQ(ierr);
     }
     quiet = PETSC_FALSE;
-    ierr = PetscOptionsGetBool(PetscOptionsObject->options,NULL,quietopt,&quiet,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(options,NULL,quietopt,&quiet,NULL);CHKERRQ(ierr);
     if (!quiet) {
       ierr = PetscStrcpy(msg,"** PETSc DEPRECATION WARNING ** : the option ");CHKERRQ(ierr);
       ierr = PetscStrcat(msg,oldname);CHKERRQ(ierr);
@@ -2950,7 +2972,7 @@ PetscErrorCode PetscOptionsDeprecated_Private(PetscOptionItems *PetscOptionsObje
       ierr = PetscStrcat(msg," (Silence this warning with ");CHKERRQ(ierr);
       ierr = PetscStrcat(msg,quietopt);CHKERRQ(ierr);
       ierr = PetscStrcat(msg,")\n");CHKERRQ(ierr);
-      ierr = PetscPrintf(PetscOptionsObject->comm,msg);CHKERRQ(ierr);
+      ierr = PetscPrintf(comm,msg);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

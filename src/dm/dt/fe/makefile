@@ -2,7 +2,7 @@
 ALL: lib
 
 SOURCEH   = ../../../../include/petscdt.h ../../../../include/petscfe.h ../../../../include/petscfetypes.h
-DIRS      = interface impls
+DIRS      = interface impls examples
 LOCDIR    = src/dm/dt/fe/
 MANSEC    = DM
 SUBMANSEC = FE

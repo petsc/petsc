@@ -203,7 +203,7 @@ static PetscErrorCode PCDeflationSetSpaceToCompute_Deflation(PC pc,PCDeflationSp
    Notes:
     For wavelet-based deflation, size represents number of levels.
 
-    The deflation space is computed in PCSetUP().
+    The deflation space is computed in PCSetUp().
 
    Level: intermediate
 

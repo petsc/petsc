@@ -1,4 +1,3 @@
-
 /*
      Provides the interface functions for vector operations that do NOT have PetscScalar/PetscReal in the signature
    These are the vector functions the user calls.
@@ -210,11 +209,11 @@ PetscErrorCode  VecPointwiseMax(Vec w,Vec x,Vec y)
   PetscCheckSameTypeAndComm(y,3,w,1);
   VecCheckSameSize(w,1,x,2);
   VecCheckSameSize(w,1,y,3);
+  ierr = VecSetErrorIfLocked(w,1);CHKERRQ(ierr);
   ierr = (*w->ops->pointwisemax)(w,x,y);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)w);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*@
    VecPointwiseMin - Computes the componentwise minimum w_i = min(x_i, y_i).
@@ -250,6 +249,7 @@ PetscErrorCode  VecPointwiseMin(Vec w,Vec x,Vec y)
   PetscCheckSameTypeAndComm(y,3,w,1);
   VecCheckSameSize(w,1,x,2);
   VecCheckSameSize(w,1,y,3);
+  ierr = VecSetErrorIfLocked(w,1);CHKERRQ(ierr);
   ierr = (*w->ops->pointwisemin)(w,x,y);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)w);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -288,6 +288,7 @@ PetscErrorCode  VecPointwiseMaxAbs(Vec w,Vec x,Vec y)
   PetscCheckSameTypeAndComm(y,3,w,1);
   VecCheckSameSize(w,1,x,2);
   VecCheckSameSize(w,1,y,3);
+  ierr = VecSetErrorIfLocked(w,1);CHKERRQ(ierr);
   ierr = (*w->ops->pointwisemaxabs)(w,x,y);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)w);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -326,6 +327,7 @@ PetscErrorCode  VecPointwiseDivide(Vec w,Vec x,Vec y)
   PetscCheckSameTypeAndComm(y,3,w,1);
   VecCheckSameSize(w,1,x,2);
   VecCheckSameSize(w,1,y,3);
+  ierr = VecSetErrorIfLocked(w,1);CHKERRQ(ierr);
   ierr = (*w->ops->pointwisedivide)(w,x,y);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)w);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -469,6 +471,29 @@ PetscErrorCode  VecDestroyVecs(PetscInt m,Vec *vv[])
 }
 
 /*@C
+   VecViewFromOptions - View from Options
+
+   Collective on Vec
+
+   Input Parameters:
++  A - the vector
+.  obj - Optional object
+-  name - command line option
+
+   Level: intermediate
+.seealso:  Vec, VecView, PetscObjectViewFromOptions(), VecCreate()
+@*/
+PetscErrorCode  VecViewFromOptions(Vec A,PetscObject obj,const char name[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,VEC_CLASSID,1);
+  ierr = PetscObjectViewFromOptions((PetscObject)A,obj,name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
    VecView - Views a vector object.
 
    Collective on Vec
@@ -486,12 +511,13 @@ PetscErrorCode  VecDestroyVecs(PetscInt m,Vec *vv[])
    You can change the format the vector is printed using the
    option PetscViewerPushFormat().
 
-   The user can open alternative visualization contexts with
+   The user can open alternative viewers with
 +    PetscViewerASCIIOpen() - Outputs vector to a specified file
 .    PetscViewerBinaryOpen() - Outputs vector in binary to a
          specified file; corresponding input uses VecLoad()
 .    PetscViewerDrawOpen() - Outputs vector to an X window display
--    PetscViewerSocketOpen() - Outputs vector to Socket viewer
+.    PetscViewerSocketOpen() - Outputs vector to Socket viewer
+-    PetscViewerHDF5Open() - Outputs vector to HDF5 file viewer
 
    The user can call PetscViewerPushFormat() to specify the output
    format of ASCII printed objects (when using PETSC_VIEWER_STDOUT_SELF,
@@ -505,29 +531,39 @@ PetscErrorCode  VecDestroyVecs(PetscInt m,Vec *vv[])
    Notes:
     You can pass any number of vector objects, or other PETSc objects to the same viewer.
 
-   Notes for binary viewer: If you pass multiply vectors to a binary viewer you can read them back in in the same order
-$     with VecLoad().
-$
-$    If the blocksize of the vector is greater than one then you must provide a unique prefix to
-$    the vector with PetscObjectSetOptionsPrefix((PetscObject)vec,"uniqueprefix"); BEFORE calling VecView() on the
-$    vector to be stored and then set that same unique prefix on the vector that you pass to VecLoad(). The blocksize
-$    information is stored in an ASCII file with the same name as the binary file plus a ".info" appended to the
-$    filename. If you copy the binary file, make sure you copy the associated .info file with it.
+   Notes for binary viewer:
+     If you pass multiple vectors to a binary viewer you can read them back in in the same order
+     with VecLoad().
 
-   Notes for HDF5 Viewer: the name of the Vec (given with PetscObjectSetName() is the name that is used
-$    for the object in the HDF5 file. If you wish to store the same vector to the HDF5 viewer (with different values,
-$    obviously) several times, you must change its name each time before calling the VecView(). The name you use
-$    here should equal the name that you use in the Vec object that you use with VecLoad().
+     If the blocksize of the vector is greater than one then you must provide a unique prefix to
+     the vector with PetscObjectSetOptionsPrefix((PetscObject)vec,"uniqueprefix"); BEFORE calling VecView() on the
+     vector to be stored and then set that same unique prefix on the vector that you pass to VecLoad(). The blocksize
+     information is stored in an ASCII file with the same name as the binary file plus a ".info" appended to the
+     filename. If you copy the binary file, make sure you copy the associated .info file with it.
 
-   See the manual page for VecLoad() on the exact format the binary viewer stores
-   the values in the file.
+     See the manual page for VecLoad() on the exact format the binary viewer stores
+     the values in the file.
+
+
+   Notes for HDF5 Viewer:
+     The name of the Vec (given with PetscObjectSetName() is the name that is used
+     for the object in the HDF5 file. If you wish to store the same Vec into multiple
+     datasets in the same file (typically with different values), you must change its
+     name each time before calling the VecView(). To load the same vector,
+     the name of the Vec object passed to VecLoad() must be the same.
+
+     If the block size of the vector is greater than 1 then it is used as the first dimension in the HDF5 array.
+     If the function PetscViewerHDF5SetBaseDimension2()is called then even if the block size is one it will
+     be used as the first dimension in the HDF5 array (that is the HDF5 array will always be two dimensional)
+     See also PetscViewerHDF5SetTimestep() which adds an additional complication to reading and writing Vecs
+     with the HDF5 viewer.
 
    Level: beginner
 
 
 .seealso: PetscViewerASCIIOpen(), PetscViewerDrawOpen(), PetscDrawLGCreate(),
           PetscViewerSocketOpen(), PetscViewerBinaryOpen(), VecLoad(), PetscViewerCreate(),
-          PetscRealView(), PetscScalarView(), PetscIntView()
+          PetscRealView(), PetscScalarView(), PetscIntView(), PetscViewerHDF5SetTimestep()
 @*/
 PetscErrorCode  VecView(Vec vec,PetscViewer viewer)
 {
@@ -854,7 +890,7 @@ PetscErrorCode  VecResetArray(Vec vec)
   sets the type and the local and global sizes. If type and/or
   sizes are already set, then the same are used.
 
-  If using binary and the blocksize of the vector is greater than one then you must provide a unique prefix to
+  If using the binary viewer and the blocksize of the vector is greater than one then you must provide a unique prefix to
   the vector with PetscObjectSetOptionsPrefix((PetscObject)vec,"uniqueprefix"); BEFORE calling VecView() on the
   vector to be stored and then set that same unique prefix on the vector that you pass to VecLoad(). The blocksize
   information is stored in an ASCII file with the same name as the binary file plus a ".info" appended to the
@@ -862,24 +898,28 @@ PetscErrorCode  VecResetArray(Vec vec)
 
   If using HDF5, you must assign the Vec the same name as was used in the Vec
   that was stored in the file using PetscObjectSetName(). Otherwise you will
-  get the error message: "Cannot H5DOpen2() with Vec name NAMEOFOBJECT"
+  get the error message: "Cannot H5DOpen2() with Vec name NAMEOFOBJECT".
 
-  Notes for advanced users:
+  If the HDF5 file contains a two dimensional array the first dimension is treated as the block size
+  in loading the vector. Hence, for example, using Matlab notation h5create('vector.dat','/Test_Vec',[27 1]);
+  will load a vector of size 27 and block size 27 thus resulting in all 27 entries being on the first process of
+  vectors communicator and the rest of the processes having zero entries
+
+  Notes for advanced users when using the binary viewer:
   Most users should not need to know the details of the binary storage
   format, since VecLoad() and VecView() completely hide these details.
   But for anyone who's interested, the standard binary vector storage
   format is
 .vb
-     int    VEC_FILE_CLASSID
-     int    number of rows
+     PetscInt    VEC_FILE_CLASSID
+     PetscInt    number of rows
      PetscScalar *values of all entries
 .ve
 
-   In addition, PETSc automatically does the byte swapping for
-machines that store the bytes reversed, e.g.  DEC alpha, freebsd,
-linux, Windows and the paragon; thus if you write your own binary
-read/write routines you have to swap the bytes; see PetscBinaryRead()
-and PetscBinaryWrite() to see how this may be done.
+   In addition, PETSc automatically uses byte swapping to work on all machines; the files
+   are written ALWAYS using big-endian ordering. On small-endian machines the numbers
+   are converted to the small-endian format when they are read in from the file.
+   See PetscBinaryRead() and PetscBinaryWrite() to see how this may be done.
 
 .seealso: PetscViewerBinaryOpen(), VecView(), MatLoad(), VecLoad()
 @*/
@@ -895,9 +935,10 @@ PetscErrorCode  VecLoad(Vec newvec, PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&ishdf5);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERADIOS,&isadios);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERADIOS,&isadios2);CHKERRQ(ierr);    
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERADIOS,&isadios2);CHKERRQ(ierr);
   if (!isbinary && !ishdf5 && !isadios && !isadios2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
 
+  ierr = VecSetErrorIfLocked(newvec,1);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
   if (!((PetscObject)newvec)->type_name && !newvec->ops->create) {
     ierr = VecSetType(newvec, VECSTANDARD);CHKERRQ(ierr);
@@ -938,6 +979,7 @@ PetscErrorCode  VecReciprocal(Vec vec)
   PetscValidType(vec,1);
   if (vec->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
   if (!vec->ops->reciprocal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Vector does not support reciprocal operation");
+  ierr = VecSetErrorIfLocked(vec,1);CHKERRQ(ierr);
   ierr = (*vec->ops->reciprocal)(vec);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1047,6 +1089,7 @@ PetscErrorCode  VecConjugate(Vec x)
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidType(x,1);
   if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
+  ierr = VecSetErrorIfLocked(x,1);CHKERRQ(ierr);
   ierr = (*x->ops->conjugate)(x);CHKERRQ(ierr);
   /* we need to copy norms here */
   ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
@@ -1089,6 +1132,7 @@ PetscErrorCode  VecPointwiseMult(Vec w, Vec x,Vec y)
   PetscCheckSameTypeAndComm(y,3,w,1);
   VecCheckSameSize(w,1,x,2);
   VecCheckSameSize(w,2,y,3);
+  ierr = VecSetErrorIfLocked(w,1);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(VEC_PointwiseMult,x,y,w,0);CHKERRQ(ierr);
   ierr = (*w->ops->pointwisemult)(w,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_PointwiseMult,x,y,w,0);CHKERRQ(ierr);
@@ -1131,6 +1175,7 @@ PetscErrorCode  VecSetRandom(Vec x,PetscRandom rctx)
   if (rctx) PetscValidHeaderSpecific(rctx,PETSC_RANDOM_CLASSID,2);
   PetscValidType(x,1);
   if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
+  ierr = VecSetErrorIfLocked(x,1);CHKERRQ(ierr);
 
   if (!rctx) {
     MPI_Comm comm;
@@ -1461,6 +1506,7 @@ PetscErrorCode  VecSetUp(Vec v)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
+  if (v->map->n < 0 && v->map->N < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Sizes not set");
   if (!((PetscObject)v)->type_name) {
     ierr = MPI_Comm_size(PetscObjectComm((PetscObject)v), &size);CHKERRQ(ierr);
     if (size == 1) {
@@ -1602,6 +1648,8 @@ PetscErrorCode  VecSwap(Vec x,Vec y)
   VecCheckSameSize(x,1,y,2);
   if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
   if (y->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
+  ierr = VecSetErrorIfLocked(x,1);CHKERRQ(ierr);
+  ierr = VecSetErrorIfLocked(y,2);CHKERRQ(ierr);
 
   ierr = PetscLogEventBegin(VEC_Swap,x,y,0,0);CHKERRQ(ierr);
   for (i=0; i<4; i++) {
@@ -1816,22 +1864,22 @@ PetscErrorCode VecSetInf(Vec xin)
 }
 
 /*@
-     VecPinToCPU - marks a vector to temporarily stay on the CPU and perform computations on the CPU
+     VecBindToCPU - marks a vector to temporarily stay on the CPU and perform computations on the CPU
 
    Input Parameters:
 +   v - the vector
--   flg - pin to the CPU if value of PETSC_TRUE
+-   flg - bind to the CPU if value of PETSC_TRUE
 
    Level: intermediate
 @*/
-PetscErrorCode VecPinToCPU(Vec v,PetscBool flg)
+PetscErrorCode VecBindToCPU(Vec v,PetscBool flg)
 {
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (v->pinnedtocpu == flg) PetscFunctionReturn(0);
-  v->pinnedtocpu = flg;
+  if (v->boundtocpu == flg) PetscFunctionReturn(0);
+  v->boundtocpu = flg;
   if (v->ops->pintocpu) {
     ierr = (*v->ops->pintocpu)(v,flg);CHKERRQ(ierr);
   }
@@ -1840,4 +1888,3 @@ PetscErrorCode VecPinToCPU(Vec v,PetscBool flg)
   return 0;
 #endif
 }
-

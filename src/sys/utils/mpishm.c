@@ -21,7 +21,7 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelComm_Shm(MPI_Comm comm,PetscMPIInt keyv
   PetscShmComm p = (PetscShmComm)val;
 
   PetscFunctionBegin;
-  ierr = PetscInfo1(0,"Deleting shared memory subcommunicator in a MPI_Comm %ld\n",(long)comm);CHKERRMPI(ierr);
+  ierr = PetscInfo1(NULL,"Deleting shared memory subcommunicator in a MPI_Comm %ld\n",(long)comm);CHKERRMPI(ierr);
   ierr = MPI_Comm_free(&p->shmcomm);CHKERRMPI(ierr);
   ierr = PetscFree(p->globranks);CHKERRMPI(ierr);
   ierr = PetscFree(val);CHKERRMPI(ierr);
@@ -352,14 +352,14 @@ PetscErrorCode PetscOmpCtrlCreate(MPI_Comm petsc_comm,PetscInt nthreads,PetscOmp
 
   /* PETSc decides nthreads, which is the smaller of shm_comm_size or cores per package(socket) */
   if (nthreads == -1) {
-    num_packages = hwloc_get_nbobjs_by_type(ctrl->topology,HWLOC_OBJ_PACKAGE); if (num_packages <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Could not determine number of sockets(packages) per compute node\n");
-    num_cores    = hwloc_get_nbobjs_by_type(ctrl->topology,HWLOC_OBJ_CORE);    if (num_cores    <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Could not determine number of cores per compute node\n");
+    num_packages = hwloc_get_nbobjs_by_type(ctrl->topology,HWLOC_OBJ_PACKAGE) <= 0 ? 1 : hwloc_get_nbobjs_by_type(ctrl->topology,HWLOC_OBJ_PACKAGE);
+    num_cores    = hwloc_get_nbobjs_by_type(ctrl->topology,HWLOC_OBJ_CORE) <= 0 ? 1 :  hwloc_get_nbobjs_by_type(ctrl->topology,HWLOC_OBJ_CORE);
     nthreads     = num_cores/num_packages;
     if (nthreads > shm_comm_size) nthreads = shm_comm_size;
   }
 
-  if (nthreads < 1 || nthreads > shm_comm_size) SETERRQ2(petsc_comm,PETSC_ERR_ARG_OUTOFRANGE,"number of OpenMP threads %d can not be < 1 or > the MPI shared memory communicator size %d\n",nthreads,shm_comm_size);
-  if (shm_comm_size % nthreads) { ierr = PetscPrintf(petsc_comm,"Warning: number of OpenMP threads %d is not a factor of the MPI shared memory communicator size %d, which may cause load-imbalance!\n",nthreads,shm_comm_size);CHKERRQ(ierr); }
+  if (nthreads < 1 || nthreads > shm_comm_size) SETERRQ2(petsc_comm,PETSC_ERR_ARG_OUTOFRANGE,"number of OpenMP threads %D can not be < 1 or > the MPI shared memory communicator size %d\n",nthreads,shm_comm_size);
+  if (shm_comm_size % nthreads) { ierr = PetscPrintf(petsc_comm,"Warning: number of OpenMP threads %D is not a factor of the MPI shared memory communicator size %d, which may cause load-imbalance!\n",nthreads,shm_comm_size);CHKERRQ(ierr); }
 
   /* split shm_comm into a set of omp_comms with each of size nthreads. Ex., if
      shm_comm_size=16, nthreads=8, then ranks 0~7 get color 0 and ranks 8~15 get
@@ -432,7 +432,7 @@ PetscErrorCode PetscOmpCtrlCreate(MPI_Comm petsc_comm,PetscInt nthreads,PetscOmp
 }
 
 /*@C
-    PetscOmpCtrlDestroy - destory the PETSc OpenMP controller
+    PetscOmpCtrlDestroy - destroy the PETSc OpenMP controller
 
     Input Parameter:
 .   pctrl  - a PETSc OpenMP controller

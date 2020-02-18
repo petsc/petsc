@@ -449,7 +449,7 @@ static PetscErrorCode VecDuplicate_FFTW_bout(Vec bout, Vec *bout_new)
         figures out how much space is needed, i.e. it figures out the data+scratch space for
         each processor and returns that.
 
-.seealso: MatCreateFFTW()
+.seealso: MatCreateFFT()
 @*/
 PetscErrorCode MatCreateVecsFFTW(Mat A,Vec *x,Vec *y,Vec *z)
 {
@@ -689,6 +689,13 @@ PetscErrorCode  MatCreateVecsFFTW_FFTW(Mat A,Vec *fin,Vec *fout,Vec *bout)
 #endif
       break;
     }
+    /* fftw vectors have their data array allocated by fftw_malloc, such that v->array=xxx but
+       v->array_allocated=NULL. A regular replacearray call won't free the memory and only causes
+       memory leaks. We void these pointers here to avoid acident uses.
+     */
+    if (fin)  (*fin)->ops->replacearray = NULL;
+    if (fout) (*fout)->ops->replacearray = NULL;
+    if (bout) (*bout)->ops->replacearray = NULL;
   }
   PetscFunctionReturn(0);
 }

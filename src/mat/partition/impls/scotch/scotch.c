@@ -263,7 +263,7 @@ static PetscErrorCode MatPartitioningApply_PTScotch_Private(MatPartitioning part
     adj  = (Mat_MPIAdj*)mat->data;
   }
 
-  proc_weight_flg = PETSC_TRUE;
+  proc_weight_flg = part->part_weights ? PETSC_TRUE : PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL, NULL, "-mat_partitioning_ptscotch_proc_weight", &proc_weight_flg, NULL);CHKERRQ(ierr);
 
   ierr = PetscMalloc1(mat->rmap->n+1,&locals);CHKERRQ(ierr);
@@ -322,17 +322,16 @@ static PetscErrorCode MatPartitioningApply_PTScotch_Private(MatPartitioning part
     vertlocnbr = mat->rmap->range[rank+1] - mat->rmap->range[rank];
     edgelocnbr = adj->i[vertlocnbr];
     veloloctab = part->vertex_weights;
-    edloloctab = adj->values;
+    edloloctab = part->use_edge_weights? adj->values:NULL;
 
     /* detect whether all vertices are located at the same process in original graph */
     for (p = 0; !mat->rmap->range[p+1] && p < nparts; ++p);
     distributed = (mat->rmap->range[p+1] == mat->rmap->N) ? PETSC_FALSE : PETSC_TRUE;
-
     if (distributed) {
-      SCOTCH_Arch              archdat;
-      SCOTCH_Dgraph            grafdat;
-      SCOTCH_Dmapping          mappdat;
-      SCOTCH_Strat             stradat;
+      SCOTCH_Arch     archdat;
+      SCOTCH_Dgraph   grafdat;
+      SCOTCH_Dmapping mappdat;
+      SCOTCH_Strat    stradat;
 
       ierr = SCOTCH_dgraphInit(&grafdat,comm);CHKERRQ(ierr);
       ierr = SCOTCH_dgraphBuild(&grafdat,0,vertlocnbr,vertlocnbr,adj->i,adj->i+1,veloloctab,
@@ -349,7 +348,7 @@ static PetscErrorCode MatPartitioningApply_PTScotch_Private(MatPartitioning part
       if (velotab) {
         ierr = SCOTCH_archCmpltw(&archdat,nparts,velotab);CHKERRQ(ierr);
       } else {
-        ierr = SCOTCH_archCmplt( &archdat,nparts);CHKERRQ(ierr);
+        ierr = SCOTCH_archCmplt(&archdat,nparts);CHKERRQ(ierr);
       }
       ierr = SCOTCH_dgraphMapInit(&grafdat,&mappdat,&archdat,locals);CHKERRQ(ierr);
       ierr = SCOTCH_dgraphMapCompute(&grafdat,&mappdat,&stradat);CHKERRQ(ierr);
@@ -360,21 +359,25 @@ static PetscErrorCode MatPartitioningApply_PTScotch_Private(MatPartitioning part
       SCOTCH_dgraphExit(&grafdat);
 
     } else if (rank == p) {
-      SCOTCH_Graph   grafdat;
-      SCOTCH_Strat   stradat;
+      SCOTCH_Graph grafdat;
+      SCOTCH_Strat stradat;
 
       ierr = SCOTCH_graphInit(&grafdat);CHKERRQ(ierr);
       ierr = SCOTCH_graphBuild(&grafdat,0,vertlocnbr,adj->i,adj->i+1,veloloctab,NULL,edgelocnbr,adj->j,edloloctab);CHKERRQ(ierr);
-
 #if defined(PETSC_USE_DEBUG)
       ierr = SCOTCH_graphCheck(&grafdat);CHKERRQ(ierr);
 #endif
-
       ierr = SCOTCH_stratInit(&stradat);CHKERRQ(ierr);
       ierr = SCOTCH_stratGraphMapBuild(&stradat,scotch->strategy,nparts,scotch->imbalance);CHKERRQ(ierr);
-
-      ierr = SCOTCH_graphPart(&grafdat,nparts,&stradat,locals);CHKERRQ(ierr);
-
+      if (velotab) {
+        SCOTCH_Arch archdat;
+        ierr = SCOTCH_archInit(&archdat);CHKERRQ(ierr);
+        ierr = SCOTCH_archCmpltw(&archdat,nparts,velotab);CHKERRQ(ierr);
+        ierr = SCOTCH_graphMap(&grafdat,&archdat,&stradat,locals);CHKERRQ(ierr);
+        SCOTCH_archExit(&archdat);
+      } else {
+        ierr = SCOTCH_graphPart(&grafdat,nparts,&stradat,locals);CHKERRQ(ierr);
+      }
       SCOTCH_stratExit(&stradat);
       SCOTCH_graphExit(&grafdat);
     }

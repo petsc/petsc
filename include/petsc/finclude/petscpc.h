@@ -29,7 +29,7 @@
 ! GAMG types
 !
 #define PCGAMGAGG 'agg'
-#define PCGAMGGEO  'geo'
+#define PCGAMGGEO 'geo'
 #define PCGAMGCLASSICAL 'classical'
 !
 ! GAMG classical types
@@ -38,7 +38,7 @@
 #define PCGAMGCLASSICALSTANDARD 'standard'
 
 !
-!  Various preconditioners
+! Various preconditioners
 !
 #define PCNONE 'none'
 #define PCJACOBI 'jacobi'
@@ -68,7 +68,6 @@
 #define PCML 'ml'
 #define PCGALERKIN 'galerkin'
 #define PCEXOTIC 'exotic'
-#define PCSUPPORTGRAPH 'supportgraph'
 #define PCCP 'cp'
 #define PCBFBT 'bfbt'
 #define PCLSC 'lsc'
@@ -78,9 +77,17 @@
 #define PCREDISTRIBUTE 'redistribute'
 #define PCSVD 'svd'
 #define PCGAMG 'gamg'
+#define PCCHOWILUVIENNACL 'chowiluviennacl'
+#define PCROWSCALINGVIENNACL 'rowscalingviennacl'
+#define PCSAVIENNACL 'saviennacl'
 #define PCBDDC 'bddc'
+#define PCKACZMARZ 'kaczmarz'
+#define PCTELESCOPE 'telescope'
 #define PCPATCH 'patch'
+#define PCLMVM 'lmvm'
+#define PCHMG 'hmg'
 #define PCDEFLATION 'deflation'
+#define PCHPDDM 'hpddm'
 
 #define PCMGType PetscEnum
 #define PCMGCycleType PetscEnum
@@ -88,5 +95,6 @@
 #define PCExoticType PetscEnum
 #define PCDeflationSpaceType PetscEnum
 #define PCBDDCInterfaceExtType PetscEnum
+#define PCHPDDMCoarseCorrectionType PetscEnum
 #define PCFailedReason PetscEnum
 #endif

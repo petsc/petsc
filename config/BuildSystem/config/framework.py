@@ -1050,6 +1050,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
         # the handling of logs, error messages, and tracebacks from errors in children
         # does not work correctly.
         except (RuntimeError, config.base.ConfigureSetupError) as e:
+          tbo = sys.exc_info()[2]
           emsg = str(e)
           if not emsg.endswith('\n'): emsg = emsg+'\n'
           msg ='*******************************************************************************\n'\
@@ -1067,6 +1068,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
               +emsg+'*******************************************************************************\n'
           se = ''
         except ImportError as e :
+          tbo = sys.exc_info()[2]
           emsg = str(e)
           if not emsg.endswith('\n'): emsg = emsg+'\n'
           msg ='*******************************************************************************\n'\
@@ -1075,6 +1077,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
               +emsg+'*******************************************************************************\n'
           se = ''
         except OSError as e :
+          tbo = sys.exc_info()[2]
           emsg = str(e)
           if not emsg.endswith('\n'): emsg = emsg+'\n'
           msg ='*******************************************************************************\n'\
@@ -1083,6 +1086,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
               +emsg+'*******************************************************************************\n'
           se = ''
         except SystemExit as e:
+          tbo = sys.exc_info()[2]
           if e.code is None or e.code == 0:
             return
           msg ='*******************************************************************************\n'\
@@ -1090,6 +1094,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
               +'*******************************************************************************\n'
           se  = str(e)
         except Exception as e:
+          tbo = sys.exc_info()[2]
           msg ='*******************************************************************************\n'\
               +'        CONFIGURATION CRASH  (Please send configure.log to petsc-maint@mcs.anl.gov)\n' \
               +'*******************************************************************************\n'
@@ -1145,9 +1150,33 @@ class Framework(config.base.Configure, script.LanguageProcessor):
   def serialEvaluation(self, depGraph):
     import graph
 
+    ndepGraph = graph.DirectedGraph.topologicalSort(depGraph)
+    for child in ndepGraph:
+      # note, only classes derived from package.py have this attribute
+      if hasattr(child,'deps'):
+        found = 0
+        if child.lookforbydefault: found = 1
+        if 'download-'+child.package in self.framework.clArgDB and self.argDB['download-'+child.package]: found = 1
+        if 'with-'+child.package in self.framework.clArgDB and self.argDB['with-'+child.package]: found = 1
+        if 'with-'+child.package+'-lib' in self.framework.clArgDB and self.argDB['with-'+child.package+'-lib']: found = 1
+        if 'with-'+child.package+'-dir' in self.framework.clArgDB and self.argDB['with-'+child.package+'-dir']: found = 1
+        if not found: continue
+        msg = ''
+        for dep in child.deps:
+          found = 0
+          if dep.lookforbydefault: found = 1
+          if 'download-'+dep.package in self.framework.clArgDB and self.argDB['download-'+dep.package]: found = 1
+          if 'with-'+dep.package in self.framework.clArgDB and self.argDB['with-'+dep.package]: found = 1
+          if 'with-'+dep.package+'-lib' in self.framework.clArgDB and self.argDB['with-'+dep.package+'-lib']: found = 1
+          if 'with-'+dep.package+'-dir' in self.framework.clArgDB and self.argDB['with-'+dep.package+'-dir']: found = 1
+          if not found: msg += 'Package '+child.package+' requested but dependency '+dep.package+' not requested. Perhaps you want --download-'+dep.package+'\n'
+        if msg: raise RuntimeError(msg)
+        if child.cxx and ('with-cxx' in self.framework.clArgDB) and (self.argDB['with-cxx'] == '0'): raise RuntimeError('Package '+child.package+' requested requires C++ but compiler turned off.')
+        if child.fc and ('with-fc' in self.framework.clArgDB) and (self.argDB['with-fc'] == '0'): raise RuntimeError('Package '+child.package+' requested requires Fortran but compiler turned off.')
+
+    depGraph = graph.DirectedGraph.topologicalSort(depGraph)
     totaltime = 0
     starttime = time.time()
-    depGraph = graph.DirectedGraph.topologicalSort(depGraph)
     for child in depGraph:
       start = time.time()
       if not hasattr(child, '_configured'):

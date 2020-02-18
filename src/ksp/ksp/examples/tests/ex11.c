@@ -6,6 +6,41 @@ and run with -f underworld32.gz\n\n";
 #include <petscksp.h>
 #include <petscdmda.h>
 
+static PetscErrorCode replace_submats(Mat A, IS isu, IS isp)
+{
+  PetscErrorCode ierr;
+  Mat            A11,A22,A12,A21;
+  Mat            nA11,nA22,nA12,nA21;
+  const char     *prefix;
+
+  PetscFunctionBeginUser;
+  ierr = MatCreateSubMatrix(A,isu,isu,MAT_INITIAL_MATRIX,&A11);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrix(A,isu,isp,MAT_INITIAL_MATRIX,&A12);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrix(A,isp,isu,MAT_INITIAL_MATRIX,&A21);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrix(A,isp,isp,MAT_INITIAL_MATRIX,&A22);CHKERRQ(ierr);
+  ierr = MatDuplicate(A11,MAT_COPY_VALUES,&nA11);CHKERRQ(ierr);
+  ierr = MatDuplicate(A12,MAT_COPY_VALUES,&nA12);CHKERRQ(ierr);
+  ierr = MatDuplicate(A21,MAT_COPY_VALUES,&nA21);CHKERRQ(ierr);
+  ierr = MatDuplicate(A22,MAT_COPY_VALUES,&nA22);CHKERRQ(ierr);
+  ierr = MatGetOptionsPrefix(A11,&prefix);CHKERRQ(ierr);
+  ierr = MatSetOptionsPrefix(nA11,prefix);CHKERRQ(ierr);
+  ierr = MatGetOptionsPrefix(A22,&prefix);CHKERRQ(ierr);
+  ierr = MatSetOptionsPrefix(nA22,prefix);CHKERRQ(ierr);
+  ierr = MatNestSetSubMat(A,0,0,nA11);CHKERRQ(ierr);
+  ierr = MatNestSetSubMat(A,0,1,nA12);CHKERRQ(ierr);
+  ierr = MatNestSetSubMat(A,1,0,nA21);CHKERRQ(ierr);
+  ierr = MatNestSetSubMat(A,1,1,nA22);CHKERRQ(ierr);
+  ierr = MatDestroy(&A11);CHKERRQ(ierr);
+  ierr = MatDestroy(&A12);CHKERRQ(ierr);
+  ierr = MatDestroy(&A21);CHKERRQ(ierr);
+  ierr = MatDestroy(&A22);CHKERRQ(ierr);
+  ierr = MatDestroy(&nA11);CHKERRQ(ierr);
+  ierr = MatDestroy(&nA12);CHKERRQ(ierr);
+  ierr = MatDestroy(&nA21);CHKERRQ(ierr);
+  ierr = MatDestroy(&nA22);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode LSCLoadTestOperators(Mat *A11,Mat *A12,Mat *A21,Mat *A22,Vec *b1,Vec *b2)
 {
   PetscViewer    viewer;
@@ -110,19 +145,26 @@ PetscErrorCode LoadTestMatrices(Mat *_A,Vec *_x,Vec *_b,IS *_isu,IS *_isp)
 
 PetscErrorCode port_lsd_bfbt(void)
 {
-  Mat            A;
+  Mat            A,P;
   Vec            x,b;
   KSP            ksp_A;
   PC             pc_A;
   IS             isu,isp;
+  PetscBool      test_fs = PETSC_FALSE;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   ierr = LoadTestMatrices(&A,&x,&b,&isu,&isp);CHKERRQ(ierr);
-
+  ierr = PetscOptionsGetBool(NULL,NULL,"-test_fs",&test_fs,NULL);CHKERRQ(ierr);
+  if (!test_fs) {
+    ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
+    P = A;
+  } else {
+    ierr = MatDuplicate(A,MAT_COPY_VALUES,&P);CHKERRQ(ierr);
+  }
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp_A);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(ksp_A,"fc_");CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp_A,A,A);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp_A,A,P);CHKERRQ(ierr);
 
   ierr = KSPGetPC(ksp_A,&pc_A);CHKERRQ(ierr);
   ierr = PCSetType(pc_A,PCFIELDSPLIT);CHKERRQ(ierr);
@@ -196,7 +238,15 @@ PetscErrorCode port_lsd_bfbt(void)
     ierr = MatDestroy(&A22);CHKERRQ(ierr);
   }
 
+  /* test second solve by changing the mat associated to the MATNEST blocks */
+  {
+    ierr = replace_submats(A,isu,isp);CHKERRQ(ierr);
+    ierr = replace_submats(P,isu,isp);CHKERRQ(ierr);
+    ierr = KSPSolve(ksp_A,b,x);CHKERRQ(ierr);
+  }
+
   ierr = KSPDestroy(&ksp_A);CHKERRQ(ierr);
+  ierr = MatDestroy(&P);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&b);CHKERRQ(ierr);
@@ -219,13 +269,13 @@ int main(int argc,char **argv)
 /*TEST
 
     test:
-      args: -f ${DATAFILESPATH}/matrices/underworld32.gz -fc_ksp_view -fc_ksp_monitor_short -fc_ksp_type fgmres -fc_ksp_max_it 4000 -fc_ksp_diagonal_scale -fc_pc_type fieldsplit  -fc_pc_fieldsplit_type SCHUR -fc_pc_fieldsplit_schur_fact_type UPPER -fc_fieldsplit_velocity_ksp_type cg -fc_fieldsplit_velocity_pc_type cholesky -fc_fieldsplit_velocity_pc_factor_mat_ordering_type nd -fc_fieldsplit_pressure_ksp_max_it 100 -fc_fieldsplit_pressure_ksp_constant_null_space -fc_fieldsplit_pressure_ksp_monitor_short -fc_fieldsplit_pressure_pc_type lsc -fc_fieldsplit_pressure_lsc_ksp_type cg -fc_fieldsplit_pressure_lsc_ksp_max_it 100 -fc_fieldsplit_pressure_lsc_ksp_constant_null_space -fc_fieldsplit_pressure_lsc_ksp_converged_reason -fc_fieldsplit_pressure_lsc_pc_type icc
+      args: -f ${DATAFILESPATH}/matrices/underworld32.gz -fc_ksp_view -fc_ksp_monitor_short -fc_ksp_type fgmres -fc_ksp_max_it 4000 -fc_ksp_diagonal_scale -fc_pc_type fieldsplit  -fc_pc_fieldsplit_type SCHUR -fc_pc_fieldsplit_schur_fact_type UPPER -fc_fieldsplit_velocity_ksp_type cg -fc_fieldsplit_velocity_pc_type cholesky -fc_fieldsplit_velocity_pc_factor_mat_ordering_type nd -fc_fieldsplit_pressure_ksp_max_it 100 -fc_fieldsplit_pressure_ksp_constant_null_space -fc_fieldsplit_pressure_ksp_monitor_short -fc_fieldsplit_pressure_pc_type lsc -fc_fieldsplit_pressure_lsc_ksp_type cg -fc_fieldsplit_pressure_lsc_ksp_max_it 100 -fc_fieldsplit_pressure_lsc_ksp_constant_null_space -fc_fieldsplit_pressure_lsc_ksp_converged_reason -fc_fieldsplit_pressure_lsc_pc_type icc -test_fs {{0 1}separate output} -fc_pc_fieldsplit_off_diag_use_amat {{0 1}separate output} -fc_pc_fieldsplit_diag_use_amat {{0 1}separate output}
       requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
 
     test:
       suffix: 2
       nsize: 4
-      args: -f ${DATAFILESPATH}/matrices/underworld32.gz -fc_ksp_view -fc_ksp_monitor_short -fc_ksp_type fgmres -fc_ksp_max_it 4000 -fc_ksp_diagonal_scale -fc_pc_type fieldsplit -fc_pc_fieldsplit_type SCHUR -fc_pc_fieldsplit_schur_fact_type UPPER -fc_fieldsplit_velocity_ksp_type cg -fc_fieldsplit_velocity_ksp_rtol 1.0e-6 -fc_fieldsplit_velocity_pc_type bjacobi -fc_fieldsplit_velocity_sub_pc_type cholesky -fc_fieldsplit_velocity_sub_pc_factor_mat_ordering_type nd -fc_fieldsplit_pressure_ksp_type fgmres -fc_fieldsplit_pressure_ksp_constant_null_space -fc_fieldsplit_pressure_ksp_monitor_short  -fc_fieldsplit_pressure_pc_type lsc -fc_fieldsplit_pressure_lsc_ksp_type cg -fc_fieldsplit_pressure_lsc_ksp_rtol 1.0e-2 -fc_fieldsplit_pressure_lsc_ksp_constant_null_space -fc_fieldsplit_pressure_lsc_ksp_converged_reason -fc_fieldsplit_pressure_lsc_pc_type bjacobi -fc_fieldsplit_pressure_lsc_sub_pc_type icc
+      args: -f ${DATAFILESPATH}/matrices/underworld32.gz -fc_ksp_view -fc_ksp_monitor_short -fc_ksp_type fgmres -fc_ksp_max_it 4000 -fc_ksp_diagonal_scale -fc_pc_type fieldsplit -fc_pc_fieldsplit_type SCHUR -fc_pc_fieldsplit_schur_fact_type UPPER -fc_fieldsplit_velocity_ksp_type cg -fc_fieldsplit_velocity_ksp_rtol 1.0e-6 -fc_fieldsplit_velocity_pc_type bjacobi -fc_fieldsplit_velocity_sub_pc_type cholesky -fc_fieldsplit_velocity_sub_pc_factor_mat_ordering_type nd -fc_fieldsplit_pressure_ksp_type fgmres -fc_fieldsplit_pressure_ksp_constant_null_space -fc_fieldsplit_pressure_ksp_monitor_short  -fc_fieldsplit_pressure_pc_type lsc -fc_fieldsplit_pressure_lsc_ksp_type cg -fc_fieldsplit_pressure_lsc_ksp_rtol 1.0e-2 -fc_fieldsplit_pressure_lsc_ksp_constant_null_space -fc_fieldsplit_pressure_lsc_ksp_converged_reason -fc_fieldsplit_pressure_lsc_pc_type bjacobi -fc_fieldsplit_pressure_lsc_sub_pc_type icc -test_fs {{0 1}separate output} -fc_pc_fieldsplit_off_diag_use_amat {{0 1}separate output} -fc_pc_fieldsplit_diag_use_amat {{0 1}separate output}
       requires: datafilespath double  !complex !define(PETSC_USE_64BIT_INDICES)
 
 TEST*/

@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit         = 'v2.0.2-p2'
+    self.gitcommit         = 'v2.1.0-p1'
     self.download         = ['git://https://bitbucket.org/petsc/pkg-scalapack','https://bitbucket.org/petsc/pkg-scalapack/get/'+self.gitcommit+'.tar.gz']
     self.downloaddirnames = ['petsc-pkg-scalapack','scalapack']
     self.includes         = []
@@ -65,7 +65,7 @@ class Configure(config.package.Package):
 
     if self.installNeeded('SLmake.inc'):
       try:
-        output,err,ret  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && '+self.make.make+' -f Makefile.parallel cleanlib', timeout=25, log = self.log)
+        output,err,ret  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && '+self.make.make+' -f Makefile.parallel cleanlib', timeout=60, log = self.log)
       except RuntimeError as e:
         pass
       try:

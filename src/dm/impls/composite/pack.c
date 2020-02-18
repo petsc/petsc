@@ -950,6 +950,9 @@ PetscErrorCode  DMCompositeGetISLocalToGlobalMappings(DM dm,ISLocalToGlobalMappi
     /* Shift the sub-DM definition of the global space to the composite global space */
     for (i=0; i<n; i++) {
       PetscInt subi = indices[i],lo = 0,hi = size,t;
+      /* There's no consensus on what a negative index means,
+         except for skipping when setting the values in vectors and matrices */
+      if (subi < 0) { idx[i] = subi - next->grstarts[rank]; continue; }
       /* Binary search to find which rank owns subi */
       while (hi-lo > 1) {
         t = lo + (hi-lo)/2;

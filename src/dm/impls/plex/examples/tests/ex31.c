@@ -86,7 +86,7 @@ int main(int argc, char **argv)
   ierr = PetscPartitionerSetType(part, PETSCPARTITIONERPARMETIS);CHKERRQ(ierr);
   ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
   ierr = PetscSectionCreate(comm, &s);CHKERRQ(ierr);
-  ierr = PetscPartitionerPartition(part, dm, s, &is);CHKERRQ(ierr);
+  ierr = PetscPartitionerDMPlexPartition(part, dm, NULL, s, &is);CHKERRQ(ierr);
 
   ierr = DMPlexDistribute(dm, 0, NULL, &dmdist);CHKERRQ(ierr);
   if (dmdist) {

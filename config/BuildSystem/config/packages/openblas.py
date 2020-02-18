@@ -5,6 +5,8 @@ import config.package
 #       fails on mac due to argument list too long https://github.com/xianyi/OpenBLAS/issues/977
 #       does not support 64 bit integers with INTERFACE64
 
+# OpenBLAS is not always valgrind clean
+# dswap_k_SANDYBRIDGE (in /usr/lib/openblas-base/libblas.so.3)
 
 class Configure(config.package.Package):
   def __init__(self, framework):
@@ -13,7 +15,7 @@ class Configure(config.package.Package):
     self.gitcommit              = 'e7c4d6705a41910240dd19b9e7082a422563bf15'
     self.versionname            = 'OPENBLAS_VERSION'
     self.download               = ['git://https://github.com/xianyi/OpenBLAS.git','https://github.com/xianyi/OpenBLAS/archive/'+self.gitcommit+'.tar.gz']
-    self.includes               = ['openblas_config.h']
+    self.optionalincludes       = ['openblas_config.h']
     self.functions              = ['openblas_get_config']
     self.liblist                = [['libopenblas.a']]
     self.precisions             = ['single','double']
@@ -38,11 +40,17 @@ class Configure(config.package.Package):
     config.package.Package.setupDependencies(self, framework)
     self.make            = framework.require('config.packages.make',self)
     self.openmp          = framework.require('config.packages.openmp',self)
+    self.pthread         = framework.require('config.packages.pthread',self)
+
+  def getSearchDirectories(self):
+    import os
+    return [os.path.join('/usr','local')]
 
   def configureLibrary(self):
     import os
     config.package.Package.configureLibrary(self)
-    self.checkVersion()
+    if self.foundoptionalincludes:
+      self.checkVersion()
     if self.found:
       # TODO: Use openblas_get_config() or openblas_config.h to determine use of OpenMP and 64 bit indices for prebuilt OpenBLAS libraries
       if not hasattr(self,'usesopenmp'): self.usesopenmp = 'unknown'
@@ -68,9 +76,9 @@ class Configure(config.package.Package):
     cmdline += 'FC='+self.compilers.FC+' '
     if self.argDB['download-openblas-64-bit-blas-indices'] or self.argDB['with-64-bit-blas-indices']:
       cmdline += " INTERFACE64=1 "
-      self.known64 = 'yes'
+      self.known64 = '64'
     else:
-      self.known64 = 'no'
+      self.known64 = '32'
     if 'download-openblas-make-options' in self.argDB and self.argDB['download-openblas-make-options']:
       cmdline+=" "+self.argDB['download-openblas-make-options']
     if not self.argDB['with-shared-libraries']:
@@ -84,12 +92,14 @@ class Configure(config.package.Package):
       cmdline += " USE_OPENMP=0 "
       self.usesopenmp = 'no'
       if 'download-openblas-use-pthreads' in self.argDB and self.argDB['download-openblas-use-pthreads']:
+        if not self.pthread.found: raise RuntimeError("--download-openblas-use-pthreads option selected but pthreads is not available")
         self.usespthreads = 1
         cmdline += " USE_THREAD=1 "
         # use the environmental variable OPENBLAS_NUM_THREADS to control the number of threads used
       else:
         cmdline += " USE_THREAD=0 "
     cmdline += " NO_EXPRECISION=1 "
+    cmdline += " libs netlib re_lapack shared "
 
     libdir = self.libDir
     blasDir = self.packageDir
@@ -108,7 +118,7 @@ class Configure(config.package.Package):
     try:
       self.logPrintBox('Installing OpenBLAS')
       self.installDirProvider.printSudoPasswordMessage()
-      output2,err2,ret  = config.package.Package.executeShellCommand('cd '+blasDir+' && '+self.installSudo+' make PREFIX='+self.installDir+' install', timeout=30, log = self.log)
+      output2,err2,ret  = config.package.Package.executeShellCommand('cd '+blasDir+' && '+self.installSudo+' make PREFIX='+self.installDir+' '+cmdline+' install', timeout=60, log = self.log)
     except RuntimeError as e:
       self.logPrint('Error moving '+blasDir+' libraries: '+str(e))
       raise RuntimeError('Error moving '+blasDir+' libraries')

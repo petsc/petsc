@@ -468,10 +468,10 @@ PetscErrorCode MatMult_SeqBAIJ_4(Mat A,Vec xx,Vec zz)
     for (j=0; j<n; j++) {
       xb    = x + 4*(*idx++);
       x1    = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3];
-      sum1 += v[0]*x1 + v[4]*x2 + v[8]*x3   + v[12]*x4;
-      sum2 += v[1]*x1 + v[5]*x2 + v[9]*x3   + v[13]*x4;
-      sum3 += v[2]*x1 + v[6]*x2 + v[10]*x3  + v[14]*x4;
-      sum4 += v[3]*x1 + v[7]*x2 + v[11]*x3  + v[15]*x4;
+      sum1 += v[0]*x1 + v[4]*x2 + v[8]*x3  + v[12]*x4;
+      sum2 += v[1]*x1 + v[5]*x2 + v[9]*x3  + v[13]*x4;
+      sum3 += v[2]*x1 + v[6]*x2 + v[10]*x3 + v[14]*x4;
+      sum4 += v[3]*x1 + v[7]*x2 + v[11]*x3 + v[15]*x4;
       v    += 16;
     }
     if (usecprow) z = zarray + 4*ridx[i];
@@ -520,11 +520,11 @@ PetscErrorCode MatMult_SeqBAIJ_5(Mat A,Vec xx,Vec zz)
     for (j=0; j<n; j++) {
       xb    = x + 5*(*idx++);
       x1    = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5 = xb[4];
-      sum1 += v[0]*x1 + v[5]*x2 + v[10]*x3  + v[15]*x4 + v[20]*x5;
-      sum2 += v[1]*x1 + v[6]*x2 + v[11]*x3  + v[16]*x4 + v[21]*x5;
-      sum3 += v[2]*x1 + v[7]*x2 + v[12]*x3  + v[17]*x4 + v[22]*x5;
-      sum4 += v[3]*x1 + v[8]*x2 + v[13]*x3  + v[18]*x4 + v[23]*x5;
-      sum5 += v[4]*x1 + v[9]*x2 + v[14]*x3  + v[19]*x4 + v[24]*x5;
+      sum1 += v[0]*x1 + v[5]*x2 + v[10]*x3 + v[15]*x4 + v[20]*x5;
+      sum2 += v[1]*x1 + v[6]*x2 + v[11]*x3 + v[16]*x4 + v[21]*x5;
+      sum3 += v[2]*x1 + v[7]*x2 + v[12]*x3 + v[17]*x4 + v[22]*x5;
+      sum4 += v[3]*x1 + v[8]*x2 + v[13]*x3 + v[18]*x4 + v[23]*x5;
+      sum5 += v[4]*x1 + v[9]*x2 + v[14]*x3 + v[19]*x4 + v[24]*x5;
       v    += 25;
     }
     if (usecprow) z = zarray + 5*ridx[i];
@@ -536,8 +536,6 @@ PetscErrorCode MatMult_SeqBAIJ_5(Mat A,Vec xx,Vec zz)
   ierr = PetscLogFlops(50.0*a->nz - 5.0*a->nonzerorowcnt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
 
 PetscErrorCode MatMult_SeqBAIJ_6(Mat A,Vec xx,Vec zz)
 {
@@ -582,12 +580,12 @@ PetscErrorCode MatMult_SeqBAIJ_6(Mat A,Vec xx,Vec zz)
     for (j=0; j<n; j++) {
       xb    = x + 6*(*idx++);
       x1    = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5 = xb[4]; x6 = xb[5];
-      sum1 += v[0]*x1 + v[6]*x2  + v[12]*x3  + v[18]*x4 + v[24]*x5 + v[30]*x6;
-      sum2 += v[1]*x1 + v[7]*x2  + v[13]*x3  + v[19]*x4 + v[25]*x5 + v[31]*x6;
-      sum3 += v[2]*x1 + v[8]*x2  + v[14]*x3  + v[20]*x4 + v[26]*x5 + v[32]*x6;
-      sum4 += v[3]*x1 + v[9]*x2  + v[15]*x3  + v[21]*x4 + v[27]*x5 + v[33]*x6;
-      sum5 += v[4]*x1 + v[10]*x2 + v[16]*x3  + v[22]*x4 + v[28]*x5 + v[34]*x6;
-      sum6 += v[5]*x1 + v[11]*x2 + v[17]*x3  + v[23]*x4 + v[29]*x5 + v[35]*x6;
+      sum1 += v[0]*x1 + v[6]*x2  + v[12]*x3 + v[18]*x4 + v[24]*x5 + v[30]*x6;
+      sum2 += v[1]*x1 + v[7]*x2  + v[13]*x3 + v[19]*x4 + v[25]*x5 + v[31]*x6;
+      sum3 += v[2]*x1 + v[8]*x2  + v[14]*x3 + v[20]*x4 + v[26]*x5 + v[32]*x6;
+      sum4 += v[3]*x1 + v[9]*x2  + v[15]*x3 + v[21]*x4 + v[27]*x5 + v[33]*x6;
+      sum5 += v[4]*x1 + v[10]*x2 + v[16]*x3 + v[22]*x4 + v[28]*x5 + v[34]*x6;
+      sum6 += v[5]*x1 + v[11]*x2 + v[17]*x3 + v[23]*x4 + v[29]*x5 + v[35]*x6;
       v    += 36;
     }
     if (usecprow) z = zarray + 6*ridx[i];
@@ -645,13 +643,13 @@ PetscErrorCode MatMult_SeqBAIJ_7(Mat A,Vec xx,Vec zz)
     for (j=0; j<n; j++) {
       xb    = x + 7*(*idx++);
       x1    = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5 = xb[4]; x6 = xb[5]; x7 = xb[6];
-      sum1 += v[0]*x1 + v[7]*x2  + v[14]*x3  + v[21]*x4 + v[28]*x5 + v[35]*x6 + v[42]*x7;
-      sum2 += v[1]*x1 + v[8]*x2  + v[15]*x3  + v[22]*x4 + v[29]*x5 + v[36]*x6 + v[43]*x7;
-      sum3 += v[2]*x1 + v[9]*x2  + v[16]*x3  + v[23]*x4 + v[30]*x5 + v[37]*x6 + v[44]*x7;
-      sum4 += v[3]*x1 + v[10]*x2 + v[17]*x3  + v[24]*x4 + v[31]*x5 + v[38]*x6 + v[45]*x7;
-      sum5 += v[4]*x1 + v[11]*x2 + v[18]*x3  + v[25]*x4 + v[32]*x5 + v[39]*x6 + v[46]*x7;
-      sum6 += v[5]*x1 + v[12]*x2 + v[19]*x3  + v[26]*x4 + v[33]*x5 + v[40]*x6 + v[47]*x7;
-      sum7 += v[6]*x1 + v[13]*x2 + v[20]*x3  + v[27]*x4 + v[34]*x5 + v[41]*x6 + v[48]*x7;
+      sum1 += v[0]*x1 + v[7]*x2  + v[14]*x3 + v[21]*x4 + v[28]*x5 + v[35]*x6 + v[42]*x7;
+      sum2 += v[1]*x1 + v[8]*x2  + v[15]*x3 + v[22]*x4 + v[29]*x5 + v[36]*x6 + v[43]*x7;
+      sum3 += v[2]*x1 + v[9]*x2  + v[16]*x3 + v[23]*x4 + v[30]*x5 + v[37]*x6 + v[44]*x7;
+      sum4 += v[3]*x1 + v[10]*x2 + v[17]*x3 + v[24]*x4 + v[31]*x5 + v[38]*x6 + v[45]*x7;
+      sum5 += v[4]*x1 + v[11]*x2 + v[18]*x3 + v[25]*x4 + v[32]*x5 + v[39]*x6 + v[46]*x7;
+      sum6 += v[5]*x1 + v[12]*x2 + v[19]*x3 + v[26]*x4 + v[33]*x5 + v[40]*x6 + v[47]*x7;
+      sum7 += v[6]*x1 + v[13]*x2 + v[20]*x3 + v[27]*x4 + v[34]*x5 + v[41]*x6 + v[48]*x7;
       v    += 49;
     }
     if (usecprow) z = zarray + 7*ridx[i];
@@ -854,7 +852,6 @@ PetscErrorCode MatMult_SeqBAIJ_11(Mat A,Vec xx,Vec zz)
 
 /* MatMult_SeqBAIJ_15 version 1: Columns in the block are accessed one at a time */
 /* Default MatMult for block size 15 */
-
 PetscErrorCode MatMult_SeqBAIJ_15_ver1(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
@@ -1140,7 +1137,6 @@ PetscErrorCode MatMult_SeqBAIJ_15_ver3(Mat A,Vec xx,Vec zz)
 }
 
 /* MatMult_SeqBAIJ_15_ver4 : All columns in the block are accessed at once */
-
 PetscErrorCode MatMult_SeqBAIJ_15_ver4(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
@@ -1209,7 +1205,6 @@ PetscErrorCode MatMult_SeqBAIJ_15_ver4(Mat A,Vec xx,Vec zz)
   ierr = PetscLogFlops(450.0*a->nz - 15.0*a->nonzerorowcnt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*
     This will not work with MatScalar == float because it calls the BLAS
@@ -1558,6 +1553,7 @@ PetscErrorCode MatMultAdd_SeqBAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
   ierr = PetscLogFlops(50.0*a->nz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 PetscErrorCode MatMultAdd_SeqBAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
@@ -2513,7 +2509,6 @@ PetscErrorCode MatMatMult_SeqBAIJ_1_Private(Mat A,PetscScalar* b,PetscInt bm,Pet
   PetscBool         usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
-
   idx = a->j;
   v   = a->a;
   if (usecprow) {
@@ -2538,7 +2533,7 @@ PetscErrorCode MatMatMult_SeqBAIJ_1_Private(Mat A,PetscScalar* b,PetscInt bm,Pet
       v = vv;
       sum1    = 0.0;
       for (j=0; j<n; j++) {
-        xb    = b + (*idx++); x1 = xb[0+k*cm];
+        xb    = b + (*idx++); x1 = xb[0+k*bm];
         sum1 += v[0]*x1;
         v    += 1;
       }
@@ -2560,7 +2555,6 @@ PetscErrorCode MatMatMult_SeqBAIJ_2_Private(Mat A,PetscScalar* b,PetscInt bm,Pet
   PetscBool         usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
-
   idx = a->j;
   v   = a->a;
   if (usecprow) {
@@ -2585,7 +2579,7 @@ PetscErrorCode MatMatMult_SeqBAIJ_2_Private(Mat A,PetscScalar* b,PetscInt bm,Pet
       v = vv;
       sum1    = 0.0; sum2 = 0.0;
       for (j=0; j<n; j++) {
-        xb    = b + 2*(*idx++); x1 = xb[0+k*cm]; x2 = xb[1+k*cm];
+        xb    = b + 2*(*idx++); x1 = xb[0+k*bm]; x2 = xb[1+k*bm];
         sum1 += v[0]*x1 + v[2]*x2;
         sum2 += v[1]*x1 + v[3]*x2;
         v    += 4;
@@ -2608,7 +2602,6 @@ PetscErrorCode MatMatMult_SeqBAIJ_3_Private(Mat A,PetscScalar* b,PetscInt bm,Pet
   PetscBool         usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
-
   idx = a->j;
   v   = a->a;
   if (usecprow) {
@@ -2633,7 +2626,7 @@ PetscErrorCode MatMatMult_SeqBAIJ_3_Private(Mat A,PetscScalar* b,PetscInt bm,Pet
       v = vv;
       sum1    = 0.0; sum2 = 0.0; sum3 = 0.0;
       for (j=0; j<n; j++) {
-        xb    = b + 3*(*idx++); x1 = xb[0+k*cm]; x2 = xb[1+k*cm]; x3 = xb[2+k*cm];
+        xb    = b + 3*(*idx++); x1 = xb[0+k*bm]; x2 = xb[1+k*bm]; x3 = xb[2+k*bm];
         sum1 += v[0]*x1 + v[3]*x2 + v[6]*x3;
         sum2 += v[1]*x1 + v[4]*x2 + v[7]*x3;
         sum3 += v[2]*x1 + v[5]*x2 + v[8]*x3;
@@ -2657,7 +2650,6 @@ PetscErrorCode MatMatMult_SeqBAIJ_4_Private(Mat A,PetscScalar* b,PetscInt bm,Pet
   PetscBool         usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
-
   idx = a->j;
   v   = a->a;
   if (usecprow) {
@@ -2682,7 +2674,7 @@ PetscErrorCode MatMatMult_SeqBAIJ_4_Private(Mat A,PetscScalar* b,PetscInt bm,Pet
       v = vv;
       sum1    = 0.0; sum2 = 0.0; sum3 = 0.0; sum4 = 0.0;
       for (j=0; j<n; j++) {
-        xb    = b + 4*(*idx++); x1 = xb[0+k*cm]; x2 = xb[1+k*cm]; x3 = xb[2+k*cm]; x4 = xb[3+k*cm];
+        xb    = b + 4*(*idx++); x1 = xb[0+k*bm]; x2 = xb[1+k*bm]; x3 = xb[2+k*bm]; x4 = xb[3+k*bm];
         sum1 += v[0]*x1 + v[4]*x2 + v[8]*x3   + v[12]*x4;
         sum2 += v[1]*x1 + v[5]*x2 + v[9]*x3   + v[13]*x4;
         sum3 += v[2]*x1 + v[6]*x2 + v[10]*x3  + v[14]*x4;
@@ -2707,7 +2699,6 @@ PetscErrorCode MatMatMult_SeqBAIJ_5_Private(Mat A,PetscScalar* b,PetscInt bm,Pet
   PetscBool         usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
-
   idx = a->j;
   v   = a->a;
   if (usecprow) {
@@ -2732,7 +2723,7 @@ PetscErrorCode MatMatMult_SeqBAIJ_5_Private(Mat A,PetscScalar* b,PetscInt bm,Pet
       v = vv;
       sum1    = 0.0; sum2 = 0.0; sum3 = 0.0; sum4 = 0.0; sum5 = 0.0;
       for (j=0; j<n; j++) {
-        xb    = b + 5*(*idx++); x1 = xb[0+k*cm]; x2 = xb[1+k*cm]; x3 = xb[2+k*cm]; x4 = xb[3+k*cm]; x5 = xb[4+k*cm];
+        xb    = b + 5*(*idx++); x1 = xb[0+k*bm]; x2 = xb[1+k*bm]; x3 = xb[2+k*bm]; x4 = xb[3+k*bm]; x5 = xb[4+k*bm];
         sum1 += v[0]*x1 + v[5]*x2 + v[10]*x3  + v[15]*x4 + v[20]*x5;
         sum2 += v[1]*x1 + v[6]*x2 + v[11]*x3  + v[16]*x4 + v[21]*x5;
         sum3 += v[2]*x1 + v[7]*x2 + v[12]*x3  + v[17]*x4 + v[22]*x5;
@@ -2752,7 +2743,6 @@ PetscErrorCode MatMatMultNumeric_SeqBAIJ_SeqDense(Mat A,Mat B,Mat C)
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
   Mat_SeqDense      *bd = (Mat_SeqDense*)B->data;
   Mat_SeqDense      *cd = (Mat_SeqDense*)B->data;
-  PetscErrorCode    ierr;
   PetscInt          cm=cd->lda,cn=B->cmap->n,bm=bd->lda;
   PetscInt          mbs,i,bs=A->rmap->bs,j,n,bs2=a->bs2;
   PetscBLASInt      bbs,bcn,bbm,bcm;
@@ -2762,6 +2752,7 @@ PetscErrorCode MatMatMultNumeric_SeqBAIJ_SeqDense(Mat A,Mat B,Mat C)
   const PetscInt    *idx,*ii,*ridx=NULL;
   PetscScalar       _DZero=0.0,_DOne=1.0;
   PetscBool         usecprow=a->compressedrow.use;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   if (!cm || !cn) PetscFunctionReturn(0);

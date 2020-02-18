@@ -38,12 +38,13 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerSetType(PetscPartitioner, PetscParti
 PETSC_EXTERN PetscErrorCode PetscPartitionerGetType(PetscPartitioner, PetscPartitionerType *);
 PETSC_EXTERN PetscErrorCode PetscPartitionerSetUp(PetscPartitioner);
 PETSC_EXTERN PetscErrorCode PetscPartitionerSetFromOptions(PetscPartitioner);
-PETSC_STATIC_INLINE PetscErrorCode PetscPartitionerViewFromOptions(PetscPartitioner A,PetscObject B,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,B,name);}
+PETSC_EXTERN PetscErrorCode PetscPartitionerViewFromOptions(PetscPartitioner,PetscObject,const char[]);
 PETSC_EXTERN PetscErrorCode PetscPartitionerView(PetscPartitioner, PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscPartitionerRegister(const char [], PetscErrorCode (*)(PetscPartitioner));
 PETSC_EXTERN PetscErrorCode PetscPartitionerRegisterDestroy(void);
+PETSC_EXTERN PetscErrorCode PetscPartitionerPartition(PetscPartitioner, PetscInt, PetscInt, PetscInt[], PetscInt[], PetscSection, PetscSection, PetscSection, IS*);
 
-PETSC_EXTERN PetscErrorCode PetscPartitionerPartition(PetscPartitioner, DM, PetscSection, IS *);
+PETSC_EXTERN PetscErrorCode PetscPartitionerDMPlexPartition(PetscPartitioner, DM, PetscSection, PetscSection, IS *);
 
 PETSC_EXTERN PetscErrorCode PetscPartitionerShellSetPartition(PetscPartitioner, PetscInt, const PetscInt[], const PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscPartitionerShellSetRandom(PetscPartitioner, PetscBool);
@@ -106,6 +107,23 @@ PETSC_EXTERN PetscErrorCode DMPlexPointGlobalFieldRead(DM,PetscInt,PetscInt,cons
 
 /* Topological interpolation */
 PETSC_EXTERN const char * const DMPlexInterpolatedFlags[];
+/*E
+   DMPlexInterpolatedFlag - Describes level of topological interpolatedness.
+     It is a local or collective property depending on whether it is returned by DMPlexIsInterpolated() or DMPlexIsInterpolatedCollective().
+
+$  DMPLEX_INTERPOLATED_INVALID - Uninitialized value (internal use only; never returned by DMPlexIsInterpolated() or DMPlexIsInterpolatedCollective())
+$  DMPLEX_INTERPOLATED_NONE    - Mesh is not interpolated
+$  DMPLEX_INTERPOLATED_PARTIAL - Mesh is partially interpolated. This can e.g. mean DMPlex with cells, faces and vertices but no edges represented, or a mesh with mixed cones (see DMPlexStratify() for an example)
+$  DMPLEX_INTERPOLATED_MIXED   - Can be returned only by DMPlexIsInterpolatedCollective(), meaning that DMPlexIsInterpolated() returns different interpolatedness on different ranks
+$  DMPLEX_INTERPOLATED_FULL    - Mesh is fully interpolated
+
+   Level: intermediate
+
+   Developer Note:
+   Any additions/changes here MUST also be made in include/petsc/finclude/petscdmplex.h and src/dm/f90-mod/petscdmplex.h
+
+.seealso: DMPlexIsInterpolated(), DMPlexIsInterpolatedCollective(), DMPlexInterpolate(), DMPlexUninterpolate()
+E*/
 typedef enum {
   DMPLEX_INTERPOLATED_INVALID = -1,
   DMPLEX_INTERPOLATED_NONE = 0,
@@ -130,6 +148,11 @@ PETSC_EXTERN PetscErrorCode DMPlexGetDepth(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMPlexGetDepthLabel(DM, DMLabel *);
 PETSC_EXTERN PetscErrorCode DMPlexGetDepthStratum(DM, PetscInt, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMPlexGetHeightStratum(DM, PetscInt, PetscInt *, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMPlexGetPointDepth(DM, PetscInt, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMPlexGetPointHeight(DM, PetscInt, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMPlexGetCellTypeLabel(DM, DMLabel *);
+PETSC_EXTERN PetscErrorCode DMPlexGetCellType(DM, PetscInt, DMPolytopeType *);
+PETSC_EXTERN PetscErrorCode DMPlexComputeCellTypes(DM);
 
 /* Topological Operations */
 PETSC_EXTERN PetscErrorCode DMPlexGetMeet(DM, PetscInt, const PetscInt [], PetscInt *, const PetscInt **);
@@ -164,7 +187,7 @@ PETSC_EXTERN PetscErrorCode DMPlexCheckSkeleton(DM, PetscInt);
 PETSC_EXTERN PetscErrorCode DMPlexCheckFaces(DM, PetscInt);
 PETSC_EXTERN PetscErrorCode DMPlexCheckGeometry(DM);
 PETSC_EXTERN PetscErrorCode DMPlexCheckPointSF(DM);
-PETSC_EXTERN PetscErrorCode DMPlexCheckConesConformOnInterfaces(DM);
+PETSC_EXTERN PetscErrorCode DMPlexCheckInterfaceCones(DM);
 PETSC_EXTERN PetscErrorCode DMPlexCheckCellShape(DM, PetscBool, PetscReal);
 
 PETSC_EXTERN PetscErrorCode DMPlexTriangleSetOptions(DM, const char *);
@@ -182,6 +205,8 @@ PETSC_EXTERN PetscErrorCode DMPlexCreateFluentFromFile(MPI_Comm, const char [], 
 PETSC_EXTERN PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm, const char [], PetscBool, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexCreatePLYFromFile(MPI_Comm, const char [], PetscBool, DM *);
 
+PETSC_EXTERN PetscErrorCode PetscViewerExodusIIGetId(PetscViewer, int *);
+
 /* Mesh Partitioning and Distribution */
 PETSC_EXTERN PetscErrorCode DMPlexCreateNeighborCSR(DM, PetscInt, PetscInt *, PetscInt **, PetscInt **);
 PETSC_EXTERN PetscErrorCode DMPlexGetPartitioner(DM, PetscPartitioner *);
@@ -196,6 +221,7 @@ PETSC_EXTERN PetscErrorCode DMPlexPartitionLabelPropagate(DM, DMLabel);
 PETSC_EXTERN PetscErrorCode DMPlexPartitionLabelCreateSF(DM, DMLabel, PetscSF *);
 PETSC_EXTERN PetscErrorCode DMPlexSetPartitionBalance(DM, PetscBool);
 PETSC_EXTERN PetscErrorCode DMPlexGetPartitionBalance(DM, PetscBool *);
+PETSC_EXTERN PetscErrorCode DMPlexIsDistributed(DM, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMPlexDistribute(DM, PetscInt, PetscSF*, DM*);
 PETSC_EXTERN PetscErrorCode DMPlexDistributeOverlap(DM, PetscInt, PetscSF *, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexGetOverlap(DM, PetscInt *);
@@ -234,12 +260,14 @@ PETSC_EXTERN PetscErrorCode DMPlexCreateHybridMesh(DM, DMLabel, DMLabel, DMLabel
 PETSC_EXTERN PetscErrorCode DMPlexGetSubpointMap(DM, DMLabel*);
 PETSC_EXTERN PetscErrorCode DMPlexSetSubpointMap(DM, DMLabel);
 PETSC_EXTERN PetscErrorCode DMPlexCreateSubpointIS(DM, IS *);
-PETSC_EXTERN PetscErrorCode DMPlexGetSubpoint(DM, PetscInt, PetscInt *);
-PETSC_EXTERN PetscErrorCode DMPlexGetAuxiliaryPoint(DM, DM, PetscInt, PetscInt *);
+
+PETSC_EXTERN PetscErrorCode DMGetEnclosureRelation(DM, DM, DMEnclosureType *);
+PETSC_EXTERN PetscErrorCode DMGetEnclosurePoint(DM, DM, DMEnclosureType, PetscInt, PetscInt *);
 
 PETSC_EXTERN PetscErrorCode DMPlexLabelComplete(DM, DMLabel);
 PETSC_EXTERN PetscErrorCode DMPlexLabelCohesiveComplete(DM, DMLabel, DMLabel, PetscBool, DM);
 PETSC_EXTERN PetscErrorCode DMPlexLabelAddCells(DM, DMLabel);
+PETSC_EXTERN PetscErrorCode DMPlexLabelAddFaceCells(DM, DMLabel);
 PETSC_EXTERN PetscErrorCode DMPlexLabelClearCells(DM, DMLabel);
 
 PETSC_EXTERN PetscErrorCode DMPlexGetRefinementLimit(DM, PetscReal *);
@@ -410,6 +438,8 @@ PETSC_EXTERN PetscErrorCode DMPlexTreeRefineCell(DM, PetscInt, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeInjectorReferenceTree(DM, Mat *);
 PETSC_EXTERN PetscErrorCode DMPlexTransferVecTree(DM,Vec,DM,Vec,PetscSF,PetscSF,PetscInt *,PetscInt *,PetscBool,PetscReal);
 
+PETSC_EXTERN PetscErrorCode DMPlexMonitorThroughput(DM, void *);
+
 /* natural order */
 PETSC_EXTERN PetscErrorCode DMPlexCreateGlobalToNaturalSF(DM, PetscSection, PetscSF, PetscSF *);
 PETSC_EXTERN PetscErrorCode DMPlexSetGlobalToNaturalSF(DM, PetscSF);
@@ -421,6 +451,7 @@ PETSC_EXTERN PetscErrorCode DMPlexNaturalToGlobalEnd(DM, Vec, Vec);
 
 /* mesh adaptation */
 PETSC_EXTERN PetscErrorCode DMPlexAdapt(DM, Vec, const char [], DM *);
+PETSC_EXTERN PetscErrorCode DMPlexSnapToGeomModel(DM, PetscInt, const PetscScalar[], PetscScalar[]);
 
 PETSC_EXTERN PetscErrorCode DMPlexGlobalToLocalBasis(DM, Vec);
 PETSC_EXTERN PetscErrorCode DMPlexLocalToGlobalBasis(DM, Vec);

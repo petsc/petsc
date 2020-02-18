@@ -95,7 +95,18 @@ PETSC_INTERN PetscErrorCode MatConvert_MPISBAIJ_Basic(Mat A, MatType newtype, Ma
 
     ierr = MatGetRow(A,r,&ncols,&row,&vals);CHKERRQ(ierr);
     ierr = MatSetValues(B,1,&r,ncols,row,vals,INSERT_VALUES);CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
+    if (A->hermitian) {
+      PetscInt i;
+      for (i = 0; i < ncols; i++) {
+        ierr = MatSetValue(B,row[i],r,PetscConj(vals[i]),INSERT_VALUES);CHKERRQ(ierr);
+      }
+    } else {
+      ierr = MatSetValues(B,ncols,row,1,&r,vals,INSERT_VALUES);CHKERRQ(ierr);
+    }
+#else
     ierr = MatSetValues(B,ncols,row,1,&r,vals,INSERT_VALUES);CHKERRQ(ierr);
+#endif
     ierr = MatRestoreRow(A,r,&ncols,&row,&vals);CHKERRQ(ierr);
   }
   ierr = MatRestoreRowUpperTriangular(A);CHKERRQ(ierr);
@@ -1238,14 +1249,11 @@ PetscErrorCode MatMult_MPISBAIJ_Hermitian(Mat A,Vec xx,Vec yy)
 {
   Mat_MPISBAIJ      *a = (Mat_MPISBAIJ*)A->data;
   PetscErrorCode    ierr;
-  PetscInt          nt,mbs=a->mbs,bs=A->rmap->bs;
+  PetscInt          mbs=a->mbs,bs=A->rmap->bs;
   PetscScalar       *from;
   const PetscScalar *x;
 
   PetscFunctionBegin;
-  ierr = VecGetLocalSize(xx,&nt);CHKERRQ(ierr);
-  if (nt != A->cmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Incompatible partition of A and xx");
-
   /* diagonal part */
   ierr = (*a->A->ops->mult)(a->A,xx,a->slvec1a);CHKERRQ(ierr);
   ierr = VecSet(a->slvec1b,0.0);CHKERRQ(ierr);
@@ -1272,14 +1280,11 @@ PetscErrorCode MatMult_MPISBAIJ(Mat A,Vec xx,Vec yy)
 {
   Mat_MPISBAIJ      *a = (Mat_MPISBAIJ*)A->data;
   PetscErrorCode    ierr;
-  PetscInt          nt,mbs=a->mbs,bs=A->rmap->bs;
+  PetscInt          mbs=a->mbs,bs=A->rmap->bs;
   PetscScalar       *from;
   const PetscScalar *x;
 
   PetscFunctionBegin;
-  ierr = VecGetLocalSize(xx,&nt);CHKERRQ(ierr);
-  if (nt != A->cmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Incompatible partition of A and xx");
-
   /* diagonal part */
   ierr = (*a->A->ops->mult)(a->A,xx,a->slvec1a);CHKERRQ(ierr);
   ierr = VecSet(a->slvec1b,0.0);CHKERRQ(ierr);
@@ -1328,6 +1333,37 @@ PetscErrorCode MatMult_MPISBAIJ_2comm(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatMultAdd_MPISBAIJ_Hermitian(Mat A,Vec xx,Vec yy,Vec zz)
+{
+  Mat_MPISBAIJ      *a = (Mat_MPISBAIJ*)A->data;
+  PetscErrorCode    ierr;
+  PetscInt          mbs=a->mbs,bs=A->rmap->bs;
+  PetscScalar       *from,zero=0.0;
+  const PetscScalar *x;
+
+  PetscFunctionBegin;
+  /* diagonal part */
+  ierr = (*a->A->ops->multadd)(a->A,xx,yy,a->slvec1a);CHKERRQ(ierr);
+  ierr = VecSet(a->slvec1b,zero);CHKERRQ(ierr);
+
+  /* subdiagonal part */
+  ierr = (*a->B->ops->multhermitiantranspose)(a->B,xx,a->slvec0b);CHKERRQ(ierr);
+
+  /* copy x into the vec slvec0 */
+  ierr = VecGetArray(a->slvec0,&from);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr = PetscArraycpy(from,x,bs*mbs);CHKERRQ(ierr);
+  ierr = VecRestoreArray(a->slvec0,&from);CHKERRQ(ierr);
+
+  ierr = VecScatterBegin(a->sMvctx,a->slvec0,a->slvec1,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr = VecScatterEnd(a->sMvctx,a->slvec0,a->slvec1,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+
+  /* supperdiagonal part */
+  ierr = (*a->B->ops->multadd)(a->B,a->slvec1b,a->slvec1a,zz);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatMultAdd_MPISBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_MPISBAIJ      *a = (Mat_MPISBAIJ*)A->data;
@@ -1337,10 +1373,6 @@ PetscErrorCode MatMultAdd_MPISBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   const PetscScalar *x;
 
   PetscFunctionBegin;
-  /*
-  PetscSynchronizedPrintf(PetscObjectComm((PetscObject)A)," MatMultAdd is called ...\n");
-  PetscSynchronizedFlush(PetscObjectComm((PetscObject)A),PETSC_STDOUT);
-  */
   /* diagonal part */
   ierr = (*a->A->ops->multadd)(a->A,xx,yy,a->slvec1a);CHKERRQ(ierr);
   ierr = VecSet(a->slvec1b,zero);CHKERRQ(ierr);
@@ -1712,25 +1744,29 @@ PetscErrorCode MatSetOption_MPISBAIJ(Mat A,MatOption op,PetscBool flg)
     break;
   case MAT_HERMITIAN:
     MatCheckPreallocated(A,1);
-    if (!A->assembled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call MatAssemblyEnd() first");
     ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
-    A->ops->mult = MatMult_MPISBAIJ_Hermitian;
+    if (flg) { /* need different mat-vec ops */
+      A->ops->mult             = MatMult_MPISBAIJ_Hermitian;
+      A->ops->multadd          = MatMultAdd_MPISBAIJ_Hermitian;
+      A->ops->multtranspose    = NULL;
+      A->ops->multtransposeadd = NULL;
+      A->symmetric = PETSC_FALSE;
+    }
 #endif
     break;
   case MAT_SPD:
-    A->spd_set = PETSC_TRUE;
-    A->spd     = flg;
-    if (flg) {
-      A->symmetric                  = PETSC_TRUE;
-      A->structurally_symmetric     = PETSC_TRUE;
-      A->symmetric_set              = PETSC_TRUE;
-      A->structurally_symmetric_set = PETSC_TRUE;
-    }
-    break;
   case MAT_SYMMETRIC:
     MatCheckPreallocated(A,1);
     ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
+    if (flg) { /* restore to use default mat-vec ops */
+      A->ops->mult             = MatMult_MPISBAIJ;
+      A->ops->multadd          = MatMultAdd_MPISBAIJ;
+      A->ops->multtranspose    = MatMult_MPISBAIJ;
+      A->ops->multtransposeadd = MatMultAdd_MPISBAIJ;
+    }
+#endif
     break;
   case MAT_STRUCTURALLY_SYMMETRIC:
     MatCheckPreallocated(A,1);
@@ -2295,7 +2331,7 @@ PetscErrorCode MatMPISBAIJSetPreallocationCSR_MPISBAIJ(Mat B,PetscInt bs,const P
 
    Level: beginner
 
-.seealso: MatCreateMPISBAIJ(), MATSEQSBAIJ, MatType
+.seealso: MatCreateBAIJ(), MATSEQSBAIJ, MatType
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat B)
@@ -2377,9 +2413,13 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat B)
   B->symmetric_set              = PETSC_TRUE;
   B->structurally_symmetric_set = PETSC_TRUE;
   B->symmetric_eternal          = PETSC_TRUE;
-
+#if defined(PETSC_USE_COMPLEX)
   B->hermitian                  = PETSC_FALSE;
   B->hermitian_set              = PETSC_FALSE;
+#else
+  B->hermitian                  = PETSC_TRUE;
+  B->hermitian_set              = PETSC_TRUE;
+#endif
 
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPISBAIJ);CHKERRQ(ierr);
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)B),NULL,"Options for loading MPISBAIJ matrix 1","Mat");CHKERRQ(ierr);
@@ -2407,7 +2447,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat B)
 
   Level: beginner
 
-.seealso: MatCreateMPISBAIJ,MATSEQSBAIJ,MATMPISBAIJ
+.seealso: MatCreateMPISBAIJ, MATSEQSBAIJ, MATMPISBAIJ
 M*/
 
 /*@C

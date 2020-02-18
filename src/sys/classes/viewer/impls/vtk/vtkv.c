@@ -25,9 +25,10 @@ M*/
 + viewer - VTK viewer
 . dm - DM on which Vec lives
 . PetscViewerVTKWriteFunction - function to write this Vec
+. fieldnum - which field of the DM to write (PETSC_DEFAULT if the whle vector should be written)
 . fieldtype - Either PETSC_VTK_POINT_FIELD or PETSC_VTK_CELL_FIELD
 . checkdm - whether to check for identical dm arguments as fields are added
-- vec - Vec to write
+- vec - Vec from which to write
 
    Note:
    This routine keeps exclusive ownership of the Vec. The caller should not use or destroy the Vec after adding it.
@@ -36,7 +37,7 @@ M*/
 
 .seealso: PetscViewerVTKOpen(), DMDAVTKWriteAll(), PetscViewerVTKWriteFunction, PetscViewerVTKGetDM()
 @*/
-PetscErrorCode PetscViewerVTKAddField(PetscViewer viewer,PetscObject dm,PetscErrorCode (*PetscViewerVTKWriteFunction)(PetscObject,PetscViewer),PetscViewerVTKFieldType fieldtype,PetscBool checkdm,PetscObject vec)
+PetscErrorCode PetscViewerVTKAddField(PetscViewer viewer,PetscObject dm,PetscErrorCode (*PetscViewerVTKWriteFunction)(PetscObject,PetscViewer),PetscInt fieldnum,PetscViewerVTKFieldType fieldtype,PetscBool checkdm,PetscObject vec)
 {
   PetscErrorCode ierr;
 
@@ -44,7 +45,7 @@ PetscErrorCode PetscViewerVTKAddField(PetscViewer viewer,PetscObject dm,PetscErr
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidHeader(dm,2);
   PetscValidHeader(vec,4);
-  ierr = PetscUseMethod(viewer,"PetscViewerVTKAddField_C",(PetscViewer,PetscObject,PetscErrorCode (*)(PetscObject,PetscViewer),PetscViewerVTKFieldType,PetscBool,PetscObject),(viewer,dm,PetscViewerVTKWriteFunction,fieldtype,checkdm,vec));CHKERRQ(ierr);
+  ierr = PetscUseMethod(viewer,"PetscViewerVTKAddField_C",(PetscViewer,PetscObject,PetscErrorCode (*)(PetscObject,PetscViewer),PetscInt,PetscViewerVTKFieldType,PetscBool,PetscObject),(viewer,dm,PetscViewerVTKWriteFunction,fieldnum,fieldtype,checkdm,vec));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -104,6 +105,7 @@ static PetscErrorCode PetscViewerFlush_VTK(PetscViewer viewer)
   }
   ierr       = PetscObjectDestroy(&vtk->dm);CHKERRQ(ierr);
   vtk->write = NULL;
+  vtk->link  = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -169,7 +171,7 @@ PetscErrorCode  PetscViewerFileGetMode_VTK(PetscViewer viewer,PetscFileMode *typ
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  PetscViewerVTKAddField_VTK(PetscViewer viewer,PetscObject dm,PetscErrorCode (*PetscViewerVTKWriteFunction)(PetscObject,PetscViewer),PetscViewerVTKFieldType fieldtype,PetscBool checkdm,PetscObject vec)
+PetscErrorCode  PetscViewerVTKAddField_VTK(PetscViewer viewer,PetscObject dm,PetscErrorCode (*PetscViewerVTKWriteFunction)(PetscObject,PetscViewer),PetscInt fieldnum,PetscViewerVTKFieldType fieldtype,PetscBool checkdm,PetscObject vec)
 {
   PetscViewer_VTK          *vtk = (PetscViewer_VTK*)viewer->data;
   PetscViewerVTKObjectLink link, tail = vtk->link;
@@ -182,11 +184,12 @@ PetscErrorCode  PetscViewerVTKAddField_VTK(PetscViewer viewer,PetscObject dm,Pet
     ierr = PetscObjectReference(dm);CHKERRQ(ierr);
     vtk->dm = dm;
   }
-  vtk->write = PetscViewerVTKWriteFunction;
-  ierr       = PetscNew(&link);CHKERRQ(ierr);
-  link->ft   = fieldtype;
-  link->vec  = vec;
-  link->next = NULL;
+  vtk->write  = PetscViewerVTKWriteFunction;
+  ierr        = PetscNew(&link);CHKERRQ(ierr);
+  link->ft    = fieldtype;
+  link->vec   = vec;
+  link->field = fieldnum;
+  link->next  = NULL;
   /* Append to list */
   if (tail) {
     while (tail->next) tail = tail->next;
@@ -228,7 +231,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_VTK(PetscViewer v)
   v->ops->destroy = PetscViewerDestroy_VTK;
   v->ops->flush   = PetscViewerFlush_VTK;
   vtk->btype      = (PetscFileMode) -1;
-  vtk->filename   = 0;
+  vtk->filename   = NULL;
 
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetName_C",PetscViewerFileSetName_VTK);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileGetName_C",PetscViewerFileGetName_VTK);CHKERRQ(ierr);

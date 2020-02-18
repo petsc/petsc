@@ -1,0 +1,141 @@
+    Iteration information for misfit_ solve.
+    0 TAO,    Function value: 0.00378251,    Residual: 0.00101179 
+    1 TAO,    Function value: 0.000434894,    Residual: 1.12158e-09 
+    Iteration information for reg_ solve.
+    0 TAO,    Function value: 4.05323e-05,    Residual: 0.00900359 
+    1 TAO,    Function value: 4.05323e-13,    Residual: 7.82167e-19 
+  1 TAO,  Function value: 0.000394602,  Residual: 0.000126509 
+    Iteration information for misfit_ solve.
+    0 TAO,    Function value: 0.000394362,    Residual: 0.000126508 
+    1 TAO,    Function value: 0.000386697,    Residual: 7.22267e-10 
+    Iteration information for reg_ solve.
+    0 TAO,    Function value: 4.11715e-06,    Residual: 0.00286955 
+    1 TAO,    Function value: 5.99794e-13,    Residual: 7.01453e-19 
+  2 TAO,  Function value: 0.000382832,  Residual: 0.000123941 
+    Iteration information for misfit_ solve.
+    0 TAO,    Function value: 0.00038258,    Residual: 0.000123941 
+    1 TAO,    Function value: 0.000379782,    Residual: 6.49655e-10 
+    Iteration information for reg_ solve.
+    0 TAO,    Function value: 2.06887e-06,    Residual: 0.00203414 
+    1 TAO,    Function value: 7.58793e-13,    Residual: 6.29871e-19 
+  3 TAO,  Function value: 0.00037797,  Residual: 0.000122998 
+    Iteration information for misfit_ solve.
+    0 TAO,    Function value: 0.000377713,    Residual: 0.000122998 
+    1 TAO,    Function value: 0.000376097,    Residual: 5.8345e-10 
+    Iteration information for reg_ solve.
+    0 TAO,    Function value: 1.31802e-06,    Residual: 0.00162359 
+    1 TAO,    Function value: 9.01633e-13,    Residual: 6.75068e-19 
+  4 TAO,  Function value: 0.000375039,  Residual: 0.000122418 
+    Iteration information for misfit_ solve.
+    0 TAO,    Function value: 0.000374779,    Residual: 0.000122418 
+    1 TAO,    Function value: 0.000373665,    Residual: 5.31342e-10 
+    Iteration information for reg_ solve.
+    0 TAO,    Function value: 9.68237e-07,    Residual: 0.00139157 
+    1 TAO,    Function value: 1.03364e-12,    Residual: 6.93911e-19 
+  5 TAO,  Function value: 0.000372959,  Residual: 0.000121997 
+    Iteration information for misfit_ solve.
+    0 TAO,    Function value: 0.000372697,    Residual: 0.000121996 
+    1 TAO,    Function value: 0.000371836,    Residual: 4.73755e-10 
+    Iteration information for reg_ solve.
+    0 TAO,    Function value: 7.78736e-07,    Residual: 0.00124799 
+    1 TAO,    Function value: 1.15896e-12,    Residual: 7.25246e-19 
+  6 TAO,  Function value: 0.000371321,  Residual: 0.000121654 
+    Iteration information for misfit_ solve.
+    0 TAO,    Function value: 0.000371057,    Residual: 0.000121654 
+    1 TAO,    Function value: 0.000370343,    Residual: 4.14404e-10 
+    Iteration information for reg_ solve.
+    0 TAO,    Function value: 6.62812e-07,    Residual: 0.00115136 
+    1 TAO,    Function value: 1.28067e-12,    Residual: 7.46767e-19 
+  7 TAO,  Function value: 0.000369945,  Residual: 0.000121356 
+    Iteration information for misfit_ solve.
+    0 TAO,    Function value: 0.00036968,    Residual: 0.000121356 
+    1 TAO,    Function value: 0.00036906,    Residual: 3.53728e-10 
+    Iteration information for reg_ solve.
+    0 TAO,    Function value: 5.85454e-07,    Residual: 0.00108208 
+    1 TAO,    Function value: 1.40091e-12,    Residual: 8.06503e-19 
+  8 TAO,  Function value: 0.00036874,  Residual: 0.000121085 
+    Iteration information for misfit_ solve.
+    0 TAO,    Function value: 0.000368474,    Residual: 0.000121084 
+    1 TAO,    Function value: 0.000367918,    Residual: 2.92758e-10 
+    Iteration information for reg_ solve.
+    0 TAO,    Function value: 5.30803e-07,    Residual: 0.00103034 
+    1 TAO,    Function value: 1.52116e-12,    Residual: 8.25929e-19 
+  9 TAO,  Function value: 0.000367654,  Residual: 0.00012083 
+    Iteration information for misfit_ solve.
+    0 TAO,    Function value: 0.000367387,    Residual: 0.00012083 
+    1 TAO,    Function value: 0.000366878,    Residual: 2.33589e-10 
+    Iteration information for reg_ solve.
+    0 TAO,    Function value: 4.90722e-07,    Residual: 0.000990677 
+    1 TAO,    Function value: 1.64244e-12,    Residual: 8.6034e-19 
+ 10 TAO,  Function value: 0.000366655,  Residual: 0.000120587 
+    Iteration information for misfit_ solve.
+    0 TAO,    Function value: 0.000366387,    Residual: 0.000120587 
+    1 TAO,    Function value: 0.000365913,    Residual: 1.79439e-10 
+    Iteration information for reg_ solve.
+    0 TAO,    Function value: 4.60537e-07,    Residual: 0.000959724 
+    1 TAO,    Function value: 1.76551e-12,    Residual: 8.81134e-19 
+ 11 TAO,  Function value: 0.000365721,  Residual: 0.000120352 
+    Iteration information for misfit_ solve.
+    0 TAO,    Function value: 0.000365452,    Residual: 0.000120352 
+    1 TAO,    Function value: 0.000365004,    Residual: 1.33577e-10 
+    Iteration information for reg_ solve.
+    0 TAO,    Function value: 4.37321e-07,    Residual: 0.000935221 
+    1 TAO,    Function value: 1.89095e-12,    Residual: 9.18034e-19 
+ 12 TAO,  Function value: 0.000364836,  Residual: 0.000120124 
+    Iteration information for misfit_ solve.
+    0 TAO,    Function value: 0.000364567,    Residual: 0.000120124 
+    1 TAO,    Function value: 0.000364139,    Residual: 1.13603e-09 
+    Iteration information for reg_ solve.
+    0 TAO,    Function value: 4.19129e-07,    Residual: 0.000915562 
+    1 TAO,    Function value: 2.01922e-12,    Residual: 9.62448e-19 
+ 13 TAO,  Function value: 0.000363989,  Residual: 0.000119901 
+    Iteration information for misfit_ solve.
+    0 TAO,    Function value: 0.00036372,    Residual: 0.0001199 
+    1 TAO,    Function value: 0.000363308,    Residual: 9.68788e-10 
+    Iteration information for reg_ solve.
+    0 TAO,    Function value: 4.0462e-07,    Residual: 0.000899575 
+    1 TAO,    Function value: 2.1507e-12,    Residual: 9.99949e-19 
+ 14 TAO,  Function value: 0.000363173,  Residual: 0.000119681 
+    Iteration information for misfit_ solve.
+    0 TAO,    Function value: 0.000362904,    Residual: 0.00011968 
+    1 TAO,    Function value: 0.000362505,    Residual: 8.38141e-10 
+    Iteration information for reg_ solve.
+    0 TAO,    Function value: 3.9285e-07,    Residual: 0.000886394 
+    1 TAO,    Function value: 2.28571e-12,    Residual: 1.055e-18 
+ 15 TAO,  Function value: 0.000362383,  Residual: 0.000119463 
+    Iteration information for misfit_ solve.
+    0 TAO,    Function value: 0.000362113,    Residual: 0.000119463 
+    1 TAO,    Function value: 0.000361725,    Residual: 7.33633e-10 
+    Iteration information for reg_ solve.
+    0 TAO,    Function value: 3.83141e-07,    Residual: 0.000875372 
+    1 TAO,    Function value: 2.42453e-12,    Residual: 1.06423e-18 
+ 16 TAO,  Function value: 0.000361612,  Residual: 0.000119249 
+    Iteration information for misfit_ solve.
+    0 TAO,    Function value: 0.000361342,    Residual: 0.000119248 
+    1 TAO,    Function value: 0.000360963,    Residual: 6.48116e-10 
+    Iteration information for reg_ solve.
+    0 TAO,    Function value: 3.75e-07,    Residual: 0.000866023 
+    1 TAO,    Function value: 2.56739e-12,    Residual: 1.05733e-18 
+ 17 TAO,  Function value: 0.000360858,  Residual: 0.000119036 
+    Iteration information for misfit_ solve.
+    0 TAO,    Function value: 0.000360588,    Residual: 0.000119036 
+    1 TAO,    Function value: 0.000360216,    Residual: 5.77005e-10 
+    Iteration information for reg_ solve.
+    0 TAO,    Function value: 3.68067e-07,    Residual: 0.000857979 
+    1 TAO,    Function value: 2.71449e-12,    Residual: 1.07743e-18 
+ 18 TAO,  Function value: 0.000360119,  Residual: 0.000118825 
+    Iteration information for misfit_ solve.
+    0 TAO,    Function value: 0.000359848,    Residual: 0.000118825 
+    1 TAO,    Function value: 0.000359483,    Residual: 5.17544e-10 
+    Iteration information for reg_ solve.
+    0 TAO,    Function value: 3.62072e-07,    Residual: 0.000850964 
+    1 TAO,    Function value: 2.866e-12,    Residual: 1.08705e-18 
+ 19 TAO,  Function value: 0.000359392,  Residual: 0.000118616 
+    Iteration information for misfit_ solve.
+    0 TAO,    Function value: 0.000359121,    Residual: 0.000118615 
+    1 TAO,    Function value: 0.000358762,    Residual: 4.68019e-10 
+    Iteration information for reg_ solve.
+    0 TAO,    Function value: 3.56817e-07,    Residual: 0.000844765 
+    1 TAO,    Function value: 3.02208e-12,    Residual: 1.12999e-18 
+ 20 TAO,  Function value: 0.000358676,  Residual: 0.000118408 
+relative reconstruction error: ||x-xGT||/||xGT|| = 8.0320e-01.

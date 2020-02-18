@@ -46,7 +46,7 @@ class Mistakes(object):
         if NOWARNDIRS.intersection(pathsplit(root)):
             return
         smsources = set(msources)
-        ssources  = set(f for f in files if os.path.splitext(f)[1] in ['.c', '.cxx', '.cc', '.cu', '.cpp', '.F'])
+        ssources  = set(f for f in files if os.path.splitext(f)[1] in ['.c', '.cxx', '.cc', '.cu', '.cpp', '.F', '.F90'])
         if not smsources.issubset(ssources):
             self.mistakes.append('Makefile contains file not on filesystem: %s: %r' % (root, sorted(smsources - ssources)))
         if not self.verbose: return

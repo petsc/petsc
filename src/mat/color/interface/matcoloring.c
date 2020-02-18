@@ -59,12 +59,15 @@ PetscErrorCode  MatColoringRegister(const char sname[],PetscErrorCode (*function
    Level: beginner
 
    Notes:
-    A distance one coloring is useful, for example, multi-color SOR. A distance two coloring is for the finite difference computation of Jacobians 
+    A distance one coloring is useful, for example, multi-color SOR. A distance two coloring is for the finite difference computation of Jacobians
           (see MatFDColoringCreate()).
+
+       Coloring of matrices can be computed directly from the sparse matrix nonzero structure via the MatColoring object or from the mesh from which the
+       matrix comes from with DMCreateColoring(). In general using the mesh produces a more optimal coloring (fewer colors).
 
           Some coloring types only support distance two colorings
 
-.seealso: MatColoring, MatColoringApply(), MatFDColoringCreate()
+.seealso: MatColoring, MatColoringApply(), MatFDColoringCreate(), DMCreateColoring()
 @*/
 PetscErrorCode MatColoringCreate(Mat m,MatColoring *mcptr)
 {
@@ -175,11 +178,13 @@ PetscErrorCode MatColoringSetType(MatColoring mc,MatColoringType type)
 +   -mat_coloring_type - the type of coloring algorithm used
 .   -mat_coloring_maxcolors - the maximum number of relevant colors, all nodes not in a color are in maxcolors+1
 .   -mat_coloring_distance - compute a distance 1,2,... coloring.
--   -mat_coloring_view - print information about the coloring and the produced index sets
+.   -mat_coloring_view - print information about the coloring and the produced index sets
+.   -snes_fd_color - instruct SNES to using coloring and then MatFDColoring to compute the Jacobians
+-   -snes_fd_color_use_mat - instruct SNES to color the matrix directly instead of the DM from which the matrix comes (the default)
 
    Level: beginner
 
-.seealso: MatColoring, MatColoringApply()
+.seealso: MatColoring, MatColoringApply(), MatColoringSetDistance(), SNESComputeJacobianDefaultColor()
 @*/
 PetscErrorCode MatColoringSetFromOptions(MatColoring mc)
 {
@@ -255,7 +260,7 @@ PetscErrorCode MatColoringSetDistance(MatColoring mc,PetscInt dist)
    Input Parameter:
 .  mc - the MatColoring context
 
-   Output Paramter:
+   Output Parameter:
 .  dist - the current distance being used for the coloring.
 
    Level: beginner
@@ -306,7 +311,7 @@ PetscErrorCode MatColoringSetMaxColors(MatColoring mc,PetscInt maxcolors)
    Input Parameter:
 .  mc - the MatColoring context
 
-   Output Paramter:
+   Output Parameter:
 .  maxcolors - the current maximum number of colors to produce
 
    Level: beginner

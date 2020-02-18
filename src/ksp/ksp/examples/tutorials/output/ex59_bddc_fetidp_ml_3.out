@@ -97,19 +97,19 @@ PC Object: (physical_) 4 MPI processes
         factor fill ratio given 5., needed 2.86706
           Factored matrix follows:
             Mat Object: 1 MPI processes
-              type: seqbaij
+              type: seqaij
               rows=87, cols=87
               package used to perform factorization: petsc
               total: nonzeros=1941, allocated nonzeros=1941
               total number of mallocs used during MatSetValues calls=0
-                  block size is 1
+                not using I-node routines
       linear system matrix = precond matrix:
       Mat Object: (physical_pc_bddc_neumann_) 1 MPI processes
-        type: seqbaij
+        type: seqaij
         rows=87, cols=87
         total: nonzeros=677, allocated nonzeros=677
         total number of mallocs used during MatSetValues calls=0
-            block size is 1
+          not using I-node routines
   --- Coarse solver
     KSP Object: (physical_pc_bddc_coarse_) 1 MPI processes
       type: preonly

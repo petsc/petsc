@@ -2,6 +2,7 @@ from __future__ import generators
 import config.base
 
 import os
+import re
 
 try:
   from hashlib import md5 as new_md5
@@ -55,6 +56,8 @@ class Package(config.base.Configure):
     self.liblist                = [[]] # list of libraries we wish to check for (packages can override with their own generateLibList() method)
     self.extraLib               = []   # additional libraries needed to link
     self.includes               = []   # headers to check for
+    self.optionalincludes       = []   # headers to check for, do not error if not found
+    self.foundoptionalincludes  = 0
     self.functions              = []   # functions we wish to check for in the libraries
     self.functionsDefine        = []   # optional functions we wish to check for in the libraries that should generate a PETSC_HAVE_ define
     self.functionsFortran       = 0    # 1 means the symbols in self.functions are Fortran symbols, so name-mangling is done
@@ -89,7 +92,7 @@ class Package(config.base.Configure):
 
     self.isMPI                  = 0 # Is an MPI implementation, needed to check for compiler wrappers
     self.hastests               = 0 # indicates that PETSc make alltests has tests for this package
-    self.hastestsdatafiles      = 0 # indicates that PETSc make all tests has tests for this package that require DATAFILESPATH to be set
+    self.hastestsdatafiles      = 0 # indicates that PETSc make alltests has tests for this package that require DATAFILESPATH to be set
     self.makerulename           = '' # some packages do too many things with the make stage; this allows a package to limit to, for example, just building the libraries
     self.installedpetsc         = 0
     self.installwithbatch       = 1  # install the package even though configure in the batch mode; f2blaslapack and fblaslapack for example
@@ -115,7 +118,7 @@ class Package(config.base.Configure):
       if self.lib:     output += '  Library:  '+self.libraries.toStringNoDupes(self.lib)+'\n'
       if self.executablename: output += '  '+getattr(self,self.executablename)+'\n'
       if self.usesopenmp == 'yes': output += '  uses OpenMP; use export OMP_NUM_THREADS=<p> or -omp_num_threads <p> to control the number of threads\n'
-      if self.usesopenmp == 'unknown': output += '  Unkown if this uses OpenMP (try export OMP_NUM_THREADS=<1-4> yourprogram -log_view) \n'
+      if self.usesopenmp == 'unknown': output += '  Unknown if this uses OpenMP (try export OMP_NUM_THREADS=<1-4> yourprogram -log_view) \n'
     return output
 
   def setupDependencies(self, framework):
@@ -460,9 +463,9 @@ class Package(config.base.Configure):
         else: path = None
         os.environ['PKG_CONFIG_PATH'] = self.argDB['with-'+self.package+'-pkg-config']
 
-      l,err,ret  = config.base.Configure.executeShellCommand('pkg-config '+self.pkgname+' --libs', timeout=5, log = self.log)
+      l,err,ret  = config.base.Configure.executeShellCommand('pkg-config '+self.pkgname+' --libs', timeout=60, log = self.log)
       l = l.strip()
-      i,err,ret  = config.base.Configure.executeShellCommand('pkg-config '+self.pkgname+' --cflags', timeout=5, log = self.log)
+      i,err,ret  = config.base.Configure.executeShellCommand('pkg-config '+self.pkgname+' --cflags', timeout=60, log = self.log)
       i = i.strip()
       if self.argDB['with-'+self.package+'-pkg-config']:
         if path: os.environ['PKG_CONFIG_PATH'] = path
@@ -676,8 +679,11 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
         try:
           config.base.Configure.executeShellCommand([self.sourceControl.git, '-c', 'user.name=petsc-configure', '-c', 'user.email=petsc@configure', 'stash'], cwd=self.packageDir, log = self.log)
           config.base.Configure.executeShellCommand([self.sourceControl.git, 'clean', '-f', '-d', '-x'], cwd=self.packageDir, log = self.log)
-        except:
-          raise RuntimeError('Unable to run git stash/clean in repository: '+self.packageDir+'.\nPerhaps its a git error!')
+        except RuntimeError as e:
+          if str(e).find("Unknown option: -c") >= 0:
+            self.logPrintBox('***** WARNING: Unable to "git stash". Likely due to antique git version (<1.8). Proceeding without stashing!')
+          else:
+            raise RuntimeError('Unable to run git stash/clean in repository: '+self.packageDir+'.\nPerhaps its a git error!')
         try:
           config.base.Configure.executeShellCommand([self.sourceControl.git, 'checkout', '-f', gitcommit_hash], cwd=self.packageDir, log = self.log)
         except:
@@ -793,12 +799,13 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
     return ret
 
   def checkPackageLink(self, includes, body, cleanup = 1, codeBegin = None, codeEnd = None, shared = 0):
-    oldFlags = self.compilers.CPPFLAGS
+    flagsArg = self.getPreprocessorFlagsArg()
+    oldFlags = getattr(self.compilers, flagsArg)
     oldLibs  = self.compilers.LIBS
-    self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
+    setattr(self.compilers, flagsArg, oldFlags+' '+self.headers.toString(self.include))
     self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.compilers.LIBS
     result = self.checkLink(includes, body, cleanup, codeBegin, codeEnd, shared)
-    self.compilers.CPPFLAGS = oldFlags
+    setattr(self.compilers, flagsArg,oldFlags)
     self.compilers.LIBS = oldLibs
     return result
 
@@ -884,10 +891,14 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
       self.libraries.saveLog()
       if self.executeTest(self.libraries.check,[lib, self.functions],{'otherLibs' : self.dlib, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2], 'cxxLink': self.cxx}):
         self.lib = lib
-        self.executeTest(self.libraries.check,[lib, self.functionsDefine],{'otherLibs' : self.dlib, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2], 'cxxLink': self.cxx, 'functionDefine': 1})
+        if self.functionsDefine:
+          self.executeTest(self.libraries.check,[lib, self.functionsDefine],{'otherLibs' : self.dlib, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2], 'cxxLink': self.cxx, 'functionDefine': 1})
         self.logWrite(self.libraries.restoreLog())
-        self.logPrint('Checking for headers '+location+': '+str(incl))
-        if (not self.includes) or self.checkInclude(incl, self.includes, self.dinclude, timeout = 40.0):
+        self.logPrint('Checking for optional headers '+str(self.optionalincludes)+' in '+location+': '+str(incl))
+        if self.checkInclude(incl, self.optionalincludes, self.dinclude, timeout = 60.0):
+          self.foundoptionalincludes = 1
+        self.logPrint('Checking for headers '+str(self.includes)+' in '+location+': '+str(incl))
+        if (not self.includes) or self.checkInclude(incl, self.includes, self.dinclude, timeout = 60.0):
           if self.includes:
             self.include = testedincl
           self.found     = 1
@@ -988,31 +999,41 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
 
     if not self.version and not self.minversion and not self.maxversion and not self.versionname: return
     if not self.versioninclude:
-      if not self.includes: return
+      if not self.includes:
+        self.log.write('For '+self.package+' unable to find version information since includes and version includes are missing skipping version check\n')
+        self.version = ''
+        return
       self.versioninclude = self.includes[0]
-    oldFlags = self.compilers.CPPFLAGS
-    self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
     if self.cxx:
       self.pushLanguage('C++')
     else:
       self.pushLanguage(self.defaultLanguage)
+    flagsArg = self.getPreprocessorFlagsArg()
+    oldFlags = getattr(self.compilers, flagsArg)
+    setattr(self.compilers, flagsArg, oldFlags+' '+self.headers.toString(self.include))
+    self.compilers.saveLog()
     try:
-      output = self.outputPreprocess('#include "'+self.versioninclude+'"\nversion='+self.versionname+'\n')
+      output = self.outputPreprocess('#include "'+self.versioninclude+'"\n;petscpkgver('+self.versionname+');\n')
+      self.logWrite(self.compilers.restoreLog())
     except:
       self.log.write('For '+self.package+' unable to run preprocessor to obtain version information, skipping version check\n')
+      self.logWrite(self.compilers.restoreLog())
       self.popLanguage()
-      self.compilers.CPPFLAGS = oldFlags
+      setattr(self.compilers, flagsArg,oldFlags)
+      self.version = ''
       return
     self.popLanguage()
-    self.compilers.CPPFLAGS = oldFlags
-    loutput = output.split('\n')
+    setattr(self.compilers, flagsArg,oldFlags)
+    #strip #lines
+    output = re.sub('#.*\n','\n',output)
+    #strip newlines,spaces,quotes
+    output = re.sub('[\n "]*','',output)
+    #now split over ';'
+    loutput = output.split(';')
     version = ''
     for i in loutput:
-      if i.startswith('version='):
-        version = i[8:]
-        break
-      if i.startswith('version ='):
-        version = i[9:]
+      if i.find('petscpkgver') >=0:
+        version = i.split('(')[1].split(')')[0]
         break
     if not version:
       self.log.write('For '+self.package+' unable to find version information: output below, skipping version check\n')
@@ -1020,7 +1041,6 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
       if self.requiresversion:
         raise RuntimeError('Configure must be able to determined the version information for '+self.name+'. It was unable to, please send configure.log to petsc-maint@mcs.anl.gov')
       return
-    version = version.replace(' ','').replace('\"','')
     try:
       self.foundversion = self.versionToStandardForm(version)
       self.version_tuple = self.versionToTuple(self.foundversion)
@@ -1170,14 +1190,14 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
     if self.framework.argDB['prefix']:
       try:
         self.logPrintBox('Installing PETSc; this may take several minutes')
-        output,err,ret  = config.package.Package.executeShellCommand(self.installDirProvider.installSudo+self.make.make+' install PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch, cwd=self.petscdir.dir, timeout=50, log = self.log)
+        output,err,ret  = config.package.Package.executeShellCommand(self.installDirProvider.installSudo+self.make.make+' install PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch, cwd=self.petscdir.dir, timeout=60, log = self.log)
         self.log.write(output+err)
       except RuntimeError as e:
         raise RuntimeError('Error running make install on PETSc: '+str(e))
     elif not self.argDB['with-batch']:
       try:
         self.logPrintBox('Testing PETSc; this may take several minutes')
-        output,err,ret  = config.package.Package.executeShellCommand(self.make.make+' test PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch, cwd=self.petscdir.dir, timeout=50, log = self.log)
+        output,err,ret  = config.package.Package.executeShellCommand(self.make.make+' test PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch, cwd=self.petscdir.dir, timeout=60, log = self.log)
         output = output+err
         self.log.write(output)
         if output.find('error') > -1 or output.find('Error') > -1:
@@ -1516,17 +1536,17 @@ class GNUPackage(Package):
           args.append('F90="'+self.setCompilers.cross_fc+'"')
         else:
           args.append('F90="'+fc+'"')
-        args.append('F90FLAGS="'+self.removeWarningFlags(self.getCompilerFlags()).replace('-Mfree','')+'"')
+        args.append('F90FLAGS="'+self.removeWarningFlags(self.getCompilerFlags()).replace('-Mfree','').replace('-fdefault-integer-8','')+'"')
       else:
         args.append('--disable-f90')
-      args.append('FFLAGS="'+self.removeWarningFlags(self.getCompilerFlags()).replace('-Mfree','')+'"')
+      args.append('FFLAGS="'+self.removeWarningFlags(self.getCompilerFlags()).replace('-Mfree','').replace('-fdefault-integer-8','')+'"')
       if not self.installwithbatch and hasattr(self.setCompilers,'cross_fc'):
         args.append('FC="'+self.setCompilers.cross_fc+'"')
         args.append('F77="'+self.setCompilers.cross_fc+'"')
       else:
         args.append('FC="'+fc+'"')
         args.append('F77="'+fc+'"')
-      args.append('FCFLAGS="'+self.removeWarningFlags(self.getCompilerFlags()).replace('-Mfree','')+'"')
+      args.append('FCFLAGS="'+self.removeWarningFlags(self.getCompilerFlags()).replace('-Mfree','').replace('-fdefault-integer-8','')+'"')
       self.popLanguage()
     else:
       args.append('--disable-fortran')

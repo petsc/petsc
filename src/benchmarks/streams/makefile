@@ -1,12 +1,12 @@
 
 ALL:
 
-CFLAGS	      = 
+CFLAGS	      =
 FFLAGS	      =
 CPPFLAGS      =
 FPPFLAGS      =
 LOCDIR        = src/benchmarks/streams/
-EXAMPLESC     = BasicVersion.c MPIVersion.c OpenMPVersion.c SSEVersion.c PthreadVersion.c
+EXAMPLESC     = BasicVersion.c MPIVersion.c OpenMPVersion.c SSEVersion.c PthreadVersion.c CUDAVersion.cu
 EXAMPLESF     =
 TESTS         = BasicVersion OpenMPVersion
 MANSEC        = Sys
@@ -15,15 +15,19 @@ include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
 include ${PETSC_DIR}/lib/petsc/conf/test
 
-BasicVersion: BasicVersion.o 
+BasicVersion: BasicVersion.o
 	-@${CLINKER} -o BasicVersion BasicVersion.o ${PETSC_LIB}
 	@${RM} -f BasicVersion.o
 
-MPIVersion: MPIVersion.o 
+MPIVersion: MPIVersion.o
 	-@${CLINKER} -o MPIVersion MPIVersion.o ${PETSC_LIB}
 	@${RM} -f MPIVersion.o
 
-OpenMPVersion: OpenMPVersion.o 
+CUDAVersion: CUDAVersion.o
+	-@${CLINKER} -o CUDAVersion CUDAVersion.o ${PETSC_LIB}
+	@${RM} -f CUDAVersion.o
+
+OpenMPVersion: OpenMPVersion.o
 	-@${CLINKER} -o OpenMPVersion OpenMPVersion.o
 	@${RM} -f OpenMPVersion.o
 
@@ -31,7 +35,7 @@ SSEVersion: SSEVersion.o
 	-${CLINKER} -o $@ $< ${PETSC_LIB}
 	${RM} -f $<
 
-PthreadVersion: PthreadVersion.o 
+PthreadVersion: PthreadVersion.o
 	-@${CLINKER} -o PthreadVersion PthreadVersion.o ${PETSC_LIB}
 	@${RM} -f PthreadVersion.o
 
@@ -44,7 +48,22 @@ mpistream:  MPIVersion
 	  ${MPIEXEC} ${MPI_BINDING} -n $${i} ./MPIVersion | tee -a scaling.log; \
         done
 	-@echo "------------------------------------------------"
-	-@${PYTHON} process.py MPI fileoutput 
+	-@${PYTHON} process.py MPI fileoutput
+
+# Works on SUMMIT
+cudastreamjsrun:  CUDAVersion
+	@if [ "${NPMAX}foo" = "foo" ]; then echo "---------"; printf " Run with [PETSC_OPTIONS=-process_view] make streams NPMAX=<integer number of MPI processes> [MPI_BINDING='-bind-to core -map-by numa']\n or       [I_MPI_PIN_PROCESSOR_LIST=:map=scatter] [PETSC_OPTIONS=-process_view] make streams NPMAX=<integer number of MPI processes>\n"; exit 1 ; fi
+	-@printf "" > scaling.log
+	-@printf "Running streams with '${MPIEXEC} ${MPI_BINDING}' using 'NPMAX=${NPMAX}' \n"
+	-@i=0; while [ $${i} -lt ${NPMAX} ] && [ $${i} -lt 7 ]; do i=`expr $${i} + 1`; \
+	  ${MPIEXEC} ${MPI_BINDING} -n 1 -c$${i} -a$${i} -g1 ./CUDAVersion | tee -a scaling.log; \
+        done
+	-@n=1; i=7; while [ $${i} -lt ${NPMAX} ]; do i=`expr $${i} + 7`; n=`expr $${n} + 1`; \
+	       c=5; while [ $${c} -lt 7 ]; do c=`expr $${c} + 1`; \
+	  ${MPIEXEC} ${MPI_BINDING} -n $${n} -c$${c} -a$${c} -g1 ./CUDAVersion | tee -a scaling.log; \
+        done; done
+	-@echo "------------------------------------------------"
+	-@${PYTHON} process.py CUDA fileoutput
 
 openmpstream:  OpenMPVersion
 	@if [ "${NPMAX}foo" = "foo" ]; then echo "---------"; printf " Run with make openmpstream NPMAX=<integer number of threads>\n"; exit 1 ; fi

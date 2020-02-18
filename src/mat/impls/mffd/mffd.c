@@ -226,7 +226,7 @@ static PetscErrorCode MatDestroy_MFFD(Mat mat)
     ierr = VecDestroy(&ctx->current_f);CHKERRQ(ierr);
   }
   if (ctx->ops->destroy) {ierr = (*ctx->ops->destroy)(ctx);CHKERRQ(ierr);}
-  ierr      = PetscHeaderDestroy(&ctx);CHKERRQ(ierr);
+  ierr = PetscHeaderDestroy(&ctx);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMFFDSetBase_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMFFDSetFunctioniBase_C",NULL);CHKERRQ(ierr);
@@ -768,7 +768,7 @@ PetscErrorCode  MatCreateMFFD(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,Pet
    Input Parameters:
 .  mat - the matrix obtained with MatCreateSNESMF()
 
-   Output Paramter:
+   Output Parameter:
 .  h - the differencing step size
 
    Level: advanced

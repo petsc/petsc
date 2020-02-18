@@ -34,9 +34,9 @@ const char DMSwarmPICField_cellid[] = "DMSwarm_cellid";
    Level: beginner
 
    Notes:
- 
+
    The field with name fieldname must be defined as having a data type of PetscScalar.
- 
+
    This function must be called prior to calling DMCreateLocalVector(), DMCreateGlobalVector().
    Mutiple calls to DMSwarmVectorDefineField() are permitted.
 
@@ -227,7 +227,7 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
 
   ierr = PetscCalloc2(locRows, &dnz, locRows, &onz);CHKERRQ(ierr);
   ierr = PetscHSetIJCreate(&ht);CHKERRQ(ierr);
-  
+
   ierr = PetscSynchronizedFlush(comm, NULL);CHKERRQ(ierr);
   /* count non-zeros */
   ierr = DMSwarmSortGetAccess(dmc);CHKERRQ(ierr);
@@ -269,9 +269,10 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
   ierr = PetscFree2(dnz, onz);CHKERRQ(ierr);
   ierr = PetscMalloc3(maxC*totDim, &elemMat, maxC, &rowIDXs, maxC*dim, &xi);CHKERRQ(ierr);
   for (field = 0; field < Nf; ++field) {
-    PetscObject     obj;
-    PetscReal      *Bcoarse, *coords;
-    PetscInt        Nc, i;
+    PetscTabulation Tcoarse;
+    PetscObject       obj;
+    PetscReal        *coords;
+    PetscInt          Nc, i;
 
     ierr = PetscDSGetDiscretization(prob, field, &obj);CHKERRQ(ierr);
     ierr = PetscFEGetNumComponents((PetscFE) obj, &Nc);CHKERRQ(ierr);
@@ -289,14 +290,14 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
       for (p = 0; p < numCIndices; ++p) {
         CoordinatesRealToRef(dim, dim, v0ref, v0, invJ, &coords[cindices[p]*dim], &xi[p*dim]);
       }
-      ierr = PetscFEGetTabulation((PetscFE) obj, numCIndices, xi, &Bcoarse, NULL, NULL);CHKERRQ(ierr);
+      ierr = PetscFECreateTabulation((PetscFE) obj, 1, numCIndices, xi, 0, &Tcoarse);CHKERRQ(ierr);
       /* Get elemMat entries by multiplying by weight */
       ierr = PetscArrayzero(elemMat, numCIndices*totDim);CHKERRQ(ierr);
       for (i = 0; i < numFIndices; ++i) {
         for (p = 0; p < numCIndices; ++p) {
           for (c = 0; c < Nc; ++c) {
             /* B[(p*pdim + i)*Nc + c] is the value at point p for basis function i and component c */
-            elemMat[p*numFIndices+i] += Bcoarse[(p*numFIndices + i)*Nc + c]*(useDeltaFunction ? 1.0 : detJ);
+            elemMat[p*numFIndices+i] += Tcoarse->T[0][(p*numFIndices + i)*Nc + c]*(useDeltaFunction ? 1.0 : detJ);
           }
         }
       }
@@ -305,7 +306,7 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
       ierr = MatSetValues(mass, numCIndices, rowIDXs, numFIndices, findices, elemMat, ADD_VALUES);CHKERRQ(ierr);
       ierr = PetscFree(cindices);CHKERRQ(ierr);
       ierr = DMPlexRestoreClosureIndices(dmf, fsection, globalFSection, cell, &numFIndices, &findices, NULL);CHKERRQ(ierr);
-      ierr = PetscFERestoreTabulation((PetscFE) obj, numCIndices, xi, &Bcoarse, NULL, NULL);CHKERRQ(ierr);
+      ierr = PetscTabulationDestroy(&Tcoarse);CHKERRQ(ierr);
     }
     ierr = DMSwarmRestoreField(dmc, DMSwarmPICField_coor, NULL, NULL, (void **) &coords);CHKERRQ(ierr);
   }
@@ -483,7 +484,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmInitializeFieldRegister(DM dm)
   PetscFunctionBegin;
   if (!swarm->field_registration_initialized) {
     swarm->field_registration_initialized = PETSC_TRUE;
-    ierr = DMSwarmRegisterPetscDatatypeField(dm,DMSwarmField_pid,1,PETSC_LONG);CHKERRQ(ierr); /* unique identifer */
+    ierr = DMSwarmRegisterPetscDatatypeField(dm,DMSwarmField_pid,1,PETSC_INT64);CHKERRQ(ierr); /* unique identifer */
     ierr = DMSwarmRegisterPetscDatatypeField(dm,DMSwarmField_rank,1,PETSC_INT);CHKERRQ(ierr); /* used for communication */
   }
   PetscFunctionReturn(0);
@@ -941,23 +942,23 @@ PETSC_EXTERN PetscErrorCode DMSwarmRemovePointAtIndex(DM dm,PetscInt idx)
 
 /*@C
    DMSwarmCopyPoint - Copy point pj to point pi in the DMSwarm
- 
+
    Not collective
- 
+
    Input parameters:
 +  dm - a DMSwarm
 .  pi - the index of the point to copy
 -  pj - the point index where the copy should be located
- 
+
  Level: beginner
- 
+
 .seealso: DMSwarmRemovePoint()
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmCopyPoint(DM dm,PetscInt pi,PetscInt pj)
 {
   DM_Swarm       *swarm = (DM_Swarm*)dm->data;
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   if (!swarm->issetup) {ierr = DMSetUp(dm);CHKERRQ(ierr);}
   ierr = DMSwarmDataBucketCopyPoint(swarm->db,pi,swarm->db,pj);CHKERRQ(ierr);
@@ -1163,16 +1164,16 @@ PetscErrorCode DMSetup_Swarm(DM dm)
 
     if (swarm->dmcell->ops->locatepointssubdomain) {
       /* check methods exists for exact ownership identificiation */
-      ierr = PetscPrintf(PetscObjectComm((PetscObject)dm),"  DMSWARM_PIC: Using method CellDM->ops->LocatePointsSubdomain\n");CHKERRQ(ierr);
+      ierr = PetscInfo(dm, "DMSWARM_PIC: Using method CellDM->ops->LocatePointsSubdomain\n");CHKERRQ(ierr);
       swarm->migrate_type = DMSWARM_MIGRATE_DMCELLEXACT;
     } else {
       /* check methods exist for point location AND rank neighbor identification */
       if (swarm->dmcell->ops->locatepoints) {
-        ierr = PetscPrintf(PetscObjectComm((PetscObject)dm),"  DMSWARM_PIC: Using method CellDM->LocatePoints\n");CHKERRQ(ierr);
+        ierr = PetscInfo(dm, "DMSWARM_PIC: Using method CellDM->LocatePoints\n");CHKERRQ(ierr);
       } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"DMSWARM_PIC requires the method CellDM->ops->locatepoints be defined");
 
       if (swarm->dmcell->ops->getneighbors) {
-        ierr = PetscPrintf(PetscObjectComm((PetscObject)dm),"  DMSWARM_PIC: Using method CellDM->GetNeigbors\n");CHKERRQ(ierr);
+        ierr = PetscInfo(dm, "DMSWARM_PIC: Using method CellDM->GetNeigbors\n");CHKERRQ(ierr);
       } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"DMSWARM_PIC requires the method CellDM->ops->getneighbors be defined");
 
       swarm->migrate_type = DMSWARM_MIGRATE_DMCELLNSCATTER;
@@ -1318,9 +1319,9 @@ $    DMSwarmFinalizeFieldRegister(dm)
  If the local size of the DMSwarm does not match the local size of the global vector
  when DMSwarmDestroyGlobalVectorFromField() is called, an error is thrown.
 
- Additional high-level support is provided for Particle-In-Cell methods. 
+ Additional high-level support is provided for Particle-In-Cell methods.
  Please refer to the man page for DMSwarmSetType().
- 
+
  Level: beginner
 
 .seealso: DMType, DMCreate(), DMSetType()

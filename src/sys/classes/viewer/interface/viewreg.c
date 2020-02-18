@@ -5,7 +5,7 @@
 #include <petscviewersaws.h>
 #endif
 
-PetscFunctionList PetscViewerList = 0;
+PetscFunctionList PetscViewerList = NULL;
 
 
 PetscOptionsHelpPrinted PetscOptionsHelpPrintedSingleton = NULL;
@@ -264,7 +264,7 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,PetscOptions options,const c
     } else {
       char       *loc0_vtype,*loc1_fname,*loc2_fmt = NULL,*loc3_fmode = NULL;
       PetscInt   cnt;
-      const char *viewers[] = {PETSCVIEWERASCII,PETSCVIEWERBINARY,PETSCVIEWERDRAW,PETSCVIEWERSOCKET,PETSCVIEWERMATLAB,PETSCVIEWERSAWS,PETSCVIEWERVTK,PETSCVIEWERHDF5,PETSCVIEWERGLVIS,0};
+      const char *viewers[] = {PETSCVIEWERASCII,PETSCVIEWERBINARY,PETSCVIEWERDRAW,PETSCVIEWERSOCKET,PETSCVIEWERMATLAB,PETSCVIEWERSAWS,PETSCVIEWERVTK,PETSCVIEWERHDF5,PETSCVIEWERGLVIS,PETSCVIEWEREXODUSII,NULL};
 
       ierr = PetscStrallocpy(value,&loc0_vtype);CHKERRQ(ierr);
       ierr = PetscStrchr(loc0_vtype,':',&loc1_fname);CHKERRQ(ierr);
@@ -314,6 +314,11 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,PetscOptions options,const c
           case 8:
             if (!(*viewer = PETSC_VIEWER_GLVIS_(comm))) CHKERRQ(PETSC_ERR_PLIB);
             break;
+#if defined(PETSC_HAVE_EXODUSII)
+          case 9:
+            if (!(*viewer = PETSC_VIEWER_EXODUSII_(comm))) CHKERRQ(PETSC_ERR_PLIB);
+            break;
+#endif
           default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported viewer %s",loc0_vtype);
           }
           ierr = PetscObjectReference((PetscObject)*viewer);CHKERRQ(ierr);
@@ -388,11 +393,11 @@ PetscErrorCode  PetscViewerCreate(MPI_Comm comm,PetscViewer *inviewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  *inviewer = 0;
+  *inviewer = NULL;
   ierr = PetscViewerInitializePackage();CHKERRQ(ierr);
   ierr         = PetscHeaderCreate(viewer,PETSC_VIEWER_CLASSID,"PetscViewer","PetscViewer","Viewer",comm,PetscViewerDestroy,NULL);CHKERRQ(ierr);
   *inviewer    = viewer;
-  viewer->data = 0;
+  viewer->data = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -433,7 +438,7 @@ PetscErrorCode  PetscViewerSetType(PetscViewer viewer,PetscViewerType type)
     ierr         = (*viewer->ops->destroy)(viewer);CHKERRQ(ierr);
 
     viewer->ops->destroy = NULL;
-    viewer->data         = 0;
+    viewer->data         = NULL;
   }
   ierr = PetscMemzero(viewer->ops,sizeof(struct _PetscViewerOps));CHKERRQ(ierr);
 

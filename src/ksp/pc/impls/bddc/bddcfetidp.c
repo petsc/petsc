@@ -652,7 +652,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
     ierr = ISLocalToGlobalMappingGetIndices(l2gmap_p,&idxs);CHKERRQ(ierr);
     /* shift local to global indices for pressure */
     for (i=0;i<nPl;i++) {
-      PetscInt owner;
+      PetscMPIInt owner;
 
       ierr = PetscLayoutFindOwner(play,idxs[i],&owner);CHKERRQ(ierr);
       l2g_indices_p[i] = idxs[i]-pranges[owner]+aranges[owner];
@@ -676,7 +676,8 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
 
     /* shift local to global indices for multipliers */
     for (i=0;i<n_local_lambda;i++) {
-      PetscInt owner,ps;
+      PetscInt    ps;
+      PetscMPIInt owner;
 
       ierr = PetscLayoutFindOwner(llay,l2g_indices[i],&owner);CHKERRQ(ierr);
       ps = pranges[owner+1]-pranges[owner];

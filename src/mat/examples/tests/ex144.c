@@ -169,7 +169,7 @@ int main(int argc,char **args)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  Error norm of |x - z|  = %e\n",enorm);CHKERRQ(ierr);
   }
 
-  /* Execute fftw with function fftw_execute and destory it after execution */
+  /* Execute fftw with function fftw_execute and destroy it after execution */
   fftw_destroy_plan(fplan);
   fftw_destroy_plan(bplan);
   fftw_free(in1);  ierr = VecDestroy(&fin);CHKERRQ(ierr);

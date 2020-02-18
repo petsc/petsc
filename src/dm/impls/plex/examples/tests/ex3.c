@@ -977,6 +977,7 @@ int main(int argc, char **argv)
     suffix: p1_2d_3
     requires: triangle pragmatic
     args: -petscspace_degree 1 -qorder 1 -dm_plex_hash_location -convergence -conv_refine 0
+    filter: grep -v DEBUG
   test:
     suffix: p1_2d_4
     requires: triangle pragmatic
@@ -1003,6 +1004,7 @@ int main(int argc, char **argv)
     suffix: p1_3d_3
     requires: ctetgen pragmatic
     args: -dim 3 -petscspace_degree 1 -qorder 1 -dm_plex_hash_location -convergence -conv_refine 0
+    filter: grep -v DEBUG
   test:
     suffix: p1_3d_4
     requires: ctetgen pragmatic
@@ -1029,6 +1031,7 @@ int main(int argc, char **argv)
     suffix: p2_2d_3
     requires: triangle pragmatic
     args: -petscspace_degree 2 -qorder 2 -dm_plex_hash_location -convergence -conv_refine 0
+    filter: grep -v DEBUG
   test:
     suffix: p2_2d_4
     requires: triangle pragmatic
@@ -1055,6 +1058,7 @@ int main(int argc, char **argv)
     suffix: p2_3d_3
     requires: ctetgen pragmatic
     args: -dim 3 -petscspace_degree 2 -qorder 2 -dm_plex_hash_location -convergence -conv_refine 0
+    filter: grep -v DEBUG
   test:
     suffix: p2_3d_4
     requires: ctetgen pragmatic
@@ -1159,6 +1163,7 @@ int main(int argc, char **argv)
     suffix: p3_2d_4
     requires: triangle pragmatic
     args: -petscspace_degree 3 -qorder 3 -dm_plex_hash_location -convergence -conv_refine 0
+    filter: grep -v DEBUG
   test:
     suffix: p3_2d_5
     requires: triangle pragmatic

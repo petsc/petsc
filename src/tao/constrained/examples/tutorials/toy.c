@@ -125,7 +125,7 @@ PetscErrorCode InitializeProblem(AppCtx *user)
 
 
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,user->n,user->n,1,NULL,&user->H);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(user->H);CHKERRQ(ierr);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(user->H);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

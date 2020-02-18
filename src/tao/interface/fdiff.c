@@ -117,16 +117,13 @@ PetscErrorCode TaoDefaultComputeGradient(Tao tao,Vec Xin,Vec G,void *dummy)
 PetscErrorCode TaoDefaultComputeHessian(Tao tao,Vec V,Mat H,Mat B,void *dummy)
 {
   PetscErrorCode ierr;
-  Vec            G;
   SNES           snes;
   DM             dm;
 
   PetscFunctionBegin;
-  ierr = VecDuplicate(V,&G);CHKERRQ(ierr);
   ierr = PetscInfo(tao,"TAO Using finite differences w/o coloring to compute Hessian matrix\n");CHKERRQ(ierr);
-  ierr = TaoComputeGradient(tao,V,G);CHKERRQ(ierr);
   ierr = SNESCreate(PetscObjectComm((PetscObject)H),&snes);CHKERRQ(ierr);
-  ierr = SNESSetFunction(snes,G,Fsnes,tao);CHKERRQ(ierr);
+  ierr = SNESSetFunction(snes,NULL,Fsnes,tao);CHKERRQ(ierr);
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = DMShellSetGlobalVector(dm,V);CHKERRQ(ierr);
   ierr = SNESSetUp(snes);CHKERRQ(ierr);
@@ -148,7 +145,6 @@ PetscErrorCode TaoDefaultComputeHessian(Tao tao,Vec V,Mat H,Mat B,void *dummy)
   }
   ierr = SNESComputeJacobianDefault(snes,V,H,B,NULL);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
-  ierr = VecDestroy(&G);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

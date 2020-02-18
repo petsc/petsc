@@ -62,9 +62,9 @@ PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C,PetscInt imax,IS is[])
   PetscInt       *n,*w3,*w4,**data,len;
   PetscErrorCode ierr;
   PetscMPIInt    size,rank,tag1,tag2,*w2,*w1,nrqr;
-  PetscInt       Mbs,i,j,k,**rbuf,row,proc=-1,nrqs,msz,**outdat,**ptr;
+  PetscInt       Mbs,i,j,k,**rbuf,row,nrqs,msz,**outdat,**ptr;
   PetscInt       *ctr,*pa,*tmp,*isz,*isz1,**xdata,**rbuf2,*d_p;
-  PetscMPIInt    *onodes1,*olengths1,*onodes2,*olengths2;
+  PetscMPIInt    *onodes1,*olengths1,*onodes2,*olengths2,proc=-1;
   PetscBT        *table;
   MPI_Comm       comm,*iscomms;
   MPI_Request    *s_waits1,*r_waits1,*s_waits2,*r_waits2;

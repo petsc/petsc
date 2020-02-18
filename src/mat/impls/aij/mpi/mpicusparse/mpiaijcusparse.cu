@@ -4,6 +4,7 @@
 
 #include <petscconf.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>   /*I "petscmat.h" I*/
+#include <../src/mat/impls/aij/seq/seqcusparse/cusparsematimpl.h>
 #include <../src/mat/impls/aij/mpi/mpicusparse/mpicusparsematimpl.h>
 
 PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJCUSPARSE(Mat B,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
@@ -29,12 +30,12 @@ PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJCUSPARSE(Mat B,PetscInt d_nz,con
   if (!B->preallocated) {
     /* Explicitly create 2 MATSEQAIJCUSPARSE matrices. */
     ierr = MatCreate(PETSC_COMM_SELF,&b->A);CHKERRQ(ierr);
-    ierr = MatPinToCPU(b->A,B->pinnedtocpu);CHKERRQ(ierr);
+    ierr = MatBindToCPU(b->A,B->boundtocpu);CHKERRQ(ierr);
     ierr = MatSetSizes(b->A,B->rmap->n,B->cmap->n,B->rmap->n,B->cmap->n);CHKERRQ(ierr);
     ierr = MatSetType(b->A,MATSEQAIJCUSPARSE);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)B,(PetscObject)b->A);CHKERRQ(ierr);
     ierr = MatCreate(PETSC_COMM_SELF,&b->B);CHKERRQ(ierr);
-    ierr = MatPinToCPU(b->B,B->pinnedtocpu);CHKERRQ(ierr);
+    ierr = MatBindToCPU(b->B,B->boundtocpu);CHKERRQ(ierr);
     ierr = MatSetSizes(b->B,B->rmap->n,B->cmap->N,B->rmap->n,B->cmap->N);CHKERRQ(ierr);
     ierr = MatSetType(b->B,MATSEQAIJCUSPARSE);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)B,(PetscObject)b->B);CHKERRQ(ierr);
@@ -219,7 +220,7 @@ PetscErrorCode MatDestroy_MPIAIJCUSPARSE(Mat A)
   try {
     ierr = MatCUSPARSEClearHandle(a->A);CHKERRQ(ierr);
     ierr = MatCUSPARSEClearHandle(a->B);CHKERRQ(ierr);
-    stat = cusparseDestroy(cusparseStruct->handle);CHKERRCUDA(stat);
+    stat = cusparseDestroy(cusparseStruct->handle);CHKERRCUSPARSE(stat);
     if (cusparseStruct->stream) {
       err = cudaStreamDestroy(cusparseStruct->stream);CHKERRCUDA(err);
     }
@@ -251,7 +252,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSPARSE(Mat A)
   cusparseStruct->diagGPUMatFormat    = MAT_CUSPARSE_CSR;
   cusparseStruct->offdiagGPUMatFormat = MAT_CUSPARSE_CSR;
   cusparseStruct->stream              = 0;
-  stat = cusparseCreate(&(cusparseStruct->handle));CHKERRCUDA(stat);
+  stat = cusparseCreate(&(cusparseStruct->handle));CHKERRCUSPARSE(stat);
 
   A->ops->assemblyend    = MatAssemblyEnd_MPIAIJCUSPARSE;
   A->ops->mult           = MatMult_MPIAIJCUSPARSE;

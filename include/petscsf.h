@@ -57,6 +57,21 @@ typedef enum {PETSCSF_WINDOW_SYNC_FENCE,PETSCSF_WINDOW_SYNC_LOCK,PETSCSF_WINDOW_
 PETSC_EXTERN const char *const PetscSFWindowSyncTypes[];
 
 /*E
+    PetscSFWindowFlavorType - Flavor for the creation of MPI windows for PETSCSFWINDOW
+
+$  PETSCSF_WINDOW_FLAVOR_CREATE - Use MPI_Win_create, no reusage
+$  PETSCSF_WINDOW_FLAVOR_DYNAMIC - Use MPI_Win_create_dynamic and dynamically attach pointers
+$  PETSCSF_WINDOW_FLAVOR_ALLOCATE - Use MPI_Win_allocate
+$  PETSCSF_WINDOW_FLAVOR_SHARED - Use MPI_Win_allocate_shared
+
+   Level: advanced
+
+.seealso: PetscSFWindowSetFlavorType(), PetscSFWindowGetFlavorType()
+E*/
+typedef enum {PETSCSF_WINDOW_FLAVOR_CREATE,PETSCSF_WINDOW_FLAVOR_DYNAMIC,PETSCSF_WINDOW_FLAVOR_ALLOCATE,PETSCSF_WINDOW_FLAVOR_SHARED} PetscSFWindowFlavorType;
+PETSC_EXTERN const char *const PetscSFWindowFlavorTypes[];
+
+/*E
     PetscSFDuplicateOption - Aspects to preserve when duplicating a PetscSF
 
 $  PETSCSF_DUPLICATE_CONFONLY - configuration only, user must call PetscSFSetGraph()
@@ -80,12 +95,16 @@ PETSC_EXTERN PetscErrorCode PetscSFDestroy(PetscSF*);
 PETSC_EXTERN PetscErrorCode PetscSFSetType(PetscSF,PetscSFType);
 PETSC_EXTERN PetscErrorCode PetscSFGetType(PetscSF,PetscSFType*);
 PETSC_EXTERN PetscErrorCode PetscSFView(PetscSF,PetscViewer);
-PETSC_STATIC_INLINE PetscErrorCode PetscSFViewFromOptions(PetscSF A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
+PETSC_EXTERN PetscErrorCode PetscSFViewFromOptions(PetscSF,PetscObject,const char[]);
 PETSC_EXTERN PetscErrorCode PetscSFSetUp(PetscSF);
 PETSC_EXTERN PetscErrorCode PetscSFSetFromOptions(PetscSF);
 PETSC_EXTERN PetscErrorCode PetscSFDuplicate(PetscSF,PetscSFDuplicateOption,PetscSF*);
 PETSC_EXTERN PetscErrorCode PetscSFWindowSetSyncType(PetscSF,PetscSFWindowSyncType);
 PETSC_EXTERN PetscErrorCode PetscSFWindowGetSyncType(PetscSF,PetscSFWindowSyncType*);
+PETSC_EXTERN PetscErrorCode PetscSFWindowSetFlavorType(PetscSF,PetscSFWindowFlavorType);
+PETSC_EXTERN PetscErrorCode PetscSFWindowGetFlavorType(PetscSF,PetscSFWindowFlavorType*);
+PETSC_EXTERN PetscErrorCode MPIAPI PetscSFWindowSetInfo(PetscSF,MPI_Info);
+PETSC_EXTERN PetscErrorCode MPIAPI PetscSFWindowGetInfo(PetscSF,MPI_Info*);
 PETSC_EXTERN PetscErrorCode PetscSFSetRankOrder(PetscSF,PetscBool);
 PETSC_EXTERN PetscErrorCode PetscSFSetGraph(PetscSF,PetscInt,PetscInt,const PetscInt*,PetscCopyMode,const PetscSFNode*,PetscCopyMode);
 PETSC_EXTERN PetscErrorCode PetscSFSetGraphWithPattern(PetscSF,PetscLayout,PetscSFPattern);
@@ -149,9 +168,44 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFGetRanks(PetscSF sf,PetscInt *nranks,c
   return PetscSFGetRootRanks(sf,nranks,ranks,roffset,rmine,rremote);
 }
 
+/*@C
+   PetscSFBcastBegin - begin pointwise broadcast to be concluded with call to PetscSFBcastEnd()
+
+   Collective on PetscSF
+
+   Input Arguments:
++  sf - star forest on which to communicate
+.  unit - data type associated with each node
+-  rootdata - buffer to broadcast
+
+   Output Arguments:
+.  leafdata - buffer to update with values from each leaf's respective root
+
+   Level: intermediate
+
+.seealso: PetscSFCreate(), PetscSFSetGraph(), PetscSFView(), PetscSFBcastEnd(), PetscSFReduceBegin(), PetscSFBcastAndOpBegin()
+@*/
 PETSC_STATIC_INLINE PetscErrorCode PetscSFBcastBegin(PetscSF sf,MPI_Datatype unit,const void* rootdata,void* leafdata) {
   return PetscSFBcastAndOpBegin(sf,unit,rootdata,leafdata,MPIU_REPLACE);
 }
+
+/*@C
+   PetscSFBcastEnd - end a broadcast operation started with PetscSFBcastBegin()
+
+   Collective
+
+   Input Arguments:
++  sf - star forest
+.  unit - data type
+-  rootdata - buffer to broadcast
+
+   Output Arguments:
+.  leafdata - buffer to update with values from each leaf's respective root
+
+   Level: intermediate
+
+.seealso: PetscSFSetGraph(), PetscSFReduceEnd()
+@*/
 PETSC_STATIC_INLINE PetscErrorCode PetscSFBcastEnd(PetscSF sf,MPI_Datatype unit,const void* rootdata,void* leafdata) {
   return PetscSFBcastAndOpEnd(sf,unit,rootdata,leafdata,MPIU_REPLACE);
 }

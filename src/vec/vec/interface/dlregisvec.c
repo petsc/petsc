@@ -8,6 +8,7 @@
 
 static PetscBool         ISPackageInitialized = PETSC_FALSE;
 extern PetscFunctionList ISLocalToGlobalMappingList;
+const char       *ISInfos[] = {"SORTED", "UNIQUE", "PERMUTATION", "INTERVAL", "IDENTITY", "ISInfo", "IS_",0};
 
 /*@C
   ISFinalizePackage - This function destroys everything in the IS package. It is
@@ -57,6 +58,8 @@ PetscErrorCode  ISInitializePackage(void)
   /* Register Constructors */
   ierr = ISRegisterAll();CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingRegisterAll();CHKERRQ(ierr);
+  /* Register Events */
+  ierr = PetscLogEventRegister("ISLoad",IS_CLASSID,&IS_Load);CHKERRQ(ierr);
   /* Process info exclusions */
   ierr = PetscOptionsGetString(NULL,NULL,"-info_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
@@ -154,6 +157,8 @@ PetscErrorCode  VecInitializePackage(void)
   PetscFunctionBegin;
   if (VecPackageInitialized) PetscFunctionReturn(0);
   VecPackageInitialized = PETSC_TRUE;
+  /* Initialize subpackage */
+  ierr = VecScatterInitializePackage();CHKERRQ(ierr);
   /* Register Classes */
   ierr = PetscClassIdRegister("Vector",&VEC_CLASSID);CHKERRQ(ierr);
   /* Register Constructors */

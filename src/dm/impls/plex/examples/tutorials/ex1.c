@@ -73,9 +73,10 @@ int main(int argc, char **argv)
   test:
     suffix: 0
     requires: triangle
+    args: -info -info_exclude null
   test:
     suffix: 1
     requires: ctetgen
-    args: -dim 3
+    args: -dim 3 -info -info_exclude null
 
 TEST*/

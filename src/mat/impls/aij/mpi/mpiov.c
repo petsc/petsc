@@ -50,12 +50,12 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_Scalable(Mat mat,PetscInt n
 {
   PetscErrorCode ierr;
   MPI_Comm       comm;
-  PetscInt       *length,length_i,tlength,*remoterows,nrrows,reducednrrows,*rrow_ranks,*rrow_isids,i,j,owner;
+  PetscInt       *length,length_i,tlength,*remoterows,nrrows,reducednrrows,*rrow_ranks,*rrow_isids,i,j;
   PetscInt       *tosizes,*tosizes_temp,*toffsets,*fromsizes,*todata,*fromdata;
   PetscInt       nrecvrows,*sbsizes = 0,*sbdata = 0;
   const PetscInt *indices_i,**indices;
   PetscLayout    rmap;
-  PetscMPIInt    rank,size,*toranks,*fromranks,nto,nfrom;
+  PetscMPIInt    rank,size,*toranks,*fromranks,nto,nfrom,owner;
   PetscSF        sf;
   PetscSFNode    *remote;
 
@@ -366,8 +366,8 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Local_Scalable(Mat mat,PetscInt 
 {
   const PetscInt   *gcols,*ai,*aj,*bi,*bj, *indices;
   PetscInt          tnz,an,bn,i,j,row,start,end,rstart,cstart,col,k,*indices_temp;
-  PetscInt          lsize,lsize_tmp,owner;
-  PetscMPIInt       rank;
+  PetscInt          lsize,lsize_tmp;
+  PetscMPIInt       rank,owner;
   Mat               amat,bmat;
   PetscBool         done;
   PetscLayout       cmap,rmap;
@@ -467,8 +467,8 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C,PetscInt imax,IS is[]
   PetscInt       *data_i,*d_p;
 #endif
   PetscErrorCode ierr;
-  PetscMPIInt    size,rank,tag1,tag2;
-  PetscInt       M,i,j,k,**rbuf,row,proc = 0,nrqs,msz,**outdat,**ptr;
+  PetscMPIInt    size,rank,tag1,tag2,proc = 0;
+  PetscInt       M,i,j,k,**rbuf,row,nrqs,msz,**outdat,**ptr;
   PetscInt       *ctr,*pa,*tmp,*isz,*isz1,**xdata,**rbuf2;
   PetscBT        *table;
   MPI_Comm       comm;
@@ -1977,7 +1977,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ(Mat C,PetscInt ismax,const IS isrow[]
   /* Check for special case: each processor has a single IS */
   if (C->submat_singleis) { /* flag is set in PCSetUp_ASM() to skip MPIU_Allreduce() */
     ierr = MatCreateSubMatrices_MPIAIJ_SingleIS(C,ismax,isrow,iscol,scall,submat);CHKERRQ(ierr);
-    C->submat_singleis = PETSC_FALSE; /* resume its default value in case C will be used for non-singlis */
+    C->submat_singleis = PETSC_FALSE; /* resume its default value in case C will be used for non-single IS */
     PetscFunctionReturn(0);
   }
 

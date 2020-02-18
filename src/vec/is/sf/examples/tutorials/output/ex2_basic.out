@@ -1,6 +1,4 @@
 PetscSF Object: 2 MPI processes
-  type: basic
-    sort=rank-order
   [0] Number of roots=1, leaves=2, remote ranks=2
   [0] 0 <- (0,0)
   [0] 1 <- (1,0)
@@ -8,7 +6,6 @@ PetscSF Object: 2 MPI processes
   [1] 0 <- (1,0)
   [1] 1 <- (0,0)
 Vec Object: 2 MPI processes
-  type: mpi
 Process [0]
 0.
 1.
@@ -16,7 +13,6 @@ Process [1]
 1.
 0.
 Vec Object: 2 MPI processes
-  type: mpi
 Process [0]
 10.
 11.

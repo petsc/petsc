@@ -3,7 +3,8 @@ import config.package
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit         = 'v5.1.0-p6'
+    self.versionname       = 'METIS_VER_MAJOR.METIS_VER_MINOR.METIS_VER_SUBMINOR'
+    self.gitcommit         = 'v5.1.0-p8'
     self.download          = ['git://https://bitbucket.org/petsc/pkg-metis.git','https://bitbucket.org/petsc/pkg-metis/get/'+self.gitcommit+'.tar.gz']
     self.downloaddirnames  = ['petsc-pkg-metis']
     self.functions         = ['METIS_PartGraphKway']
@@ -22,7 +23,7 @@ class Configure(config.package.CMakePackage):
   def setupDependencies(self, framework):
     config.package.CMakePackage.setupDependencies(self, framework)
     self.compilerFlags = framework.require('config.compilerFlags', self)
-    self.mathlib       = framework.require('config.packages.mathlib',self)
+    self.mathlib       = framework.require('config.packages.mathlib', self)
     self.deps          = [self.mathlib]
     return
 

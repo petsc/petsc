@@ -88,5 +88,11 @@ runex19_superlu_dist:
            echo "C/C++ example src/snes/examples/tutorials/ex19 run successfully with superlu_dist"; \
            else  printf "${PWD}\nPossible problem with ex19 running with superlu_dist, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex19.tmp
+runex19_suitesparse:
+	-@${MPIEXEC} -n 1 ./ex19 -da_refine 3 -snes_monitor_short -pc_type lu -pc_factor_mat_solver_type umfpack > ex19_1.tmp 2>&1; \
+	   if (${DIFF} output/ex19_suitesparse.out ex19_1.tmp) then \
+           echo "C/C++ example src/snes/examples/tutorials/ex19 run successfully with suitesparse"; \
+           else  printf "${PWD}\nPossible problem with ex19 running with suitesparse, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex19_1.tmp
 
 include ${PETSC_DIR}/lib/petsc/conf/test

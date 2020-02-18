@@ -26,6 +26,7 @@
       PetscLogEvent USER_EVENT5,USER_EVENT6
       PetscLogEvent USER_EVENT7,USER_EVENT8
       PetscLogEvent USER_EVENT9
+      PetscClassId  classid
       integer imax
       PetscErrorCode ierr
       parameter (imax = 10000)
@@ -53,15 +54,16 @@
 !      - The user can also optionally log floating point operations
 !        with the routine PetscLogFlops().
 !
-      call PetscLogEventRegister('Event 1',0,USER_EVENT1,ierr)
-      call PetscLogEventRegister('Event 2',0,USER_EVENT2,ierr)
-      call PetscLogEventRegister('Event 3',0,USER_EVENT3,ierr)
-      call PetscLogEventRegister('Event 4',0,USER_EVENT4,ierr)
-      call PetscLogEventRegister('Event 5',0,USER_EVENT5,ierr)
-      call PetscLogEventRegister('Event 6',0,USER_EVENT6,ierr)
-      call PetscLogEventRegister('Event 7',0,USER_EVENT7,ierr)
-      call PetscLogEventRegister('Event 8',0,USER_EVENT8,ierr)
-      call PetscLogEventRegister('Event 9',0,USER_EVENT9,ierr)
+      classid = 0
+      call PetscLogEventRegister('Event 1',classid,USER_EVENT1,ierr)
+      call PetscLogEventRegister('Event 2',classid,USER_EVENT2,ierr)
+      call PetscLogEventRegister('Event 3',classid,USER_EVENT3,ierr)
+      call PetscLogEventRegister('Event 4',classid,USER_EVENT4,ierr)
+      call PetscLogEventRegister('Event 5',classid,USER_EVENT5,ierr)
+      call PetscLogEventRegister('Event 6',classid,USER_EVENT6,ierr)
+      call PetscLogEventRegister('Event 7',classid,USER_EVENT7,ierr)
+      call PetscLogEventRegister('Event 8',classid,USER_EVENT8,ierr)
+      call PetscLogEventRegister('Event 9',classid,USER_EVENT9,ierr)
       call PetscLogEventBegin(USER_EVENT1,ierr)
       call PetscLogFlops(imax*onefp,ierr)
       call PetscSleep(onereal,ierr)

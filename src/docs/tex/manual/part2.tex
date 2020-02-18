@@ -660,8 +660,8 @@ vector (including ghost points that contain irrelevant values) to
 a local vector with correct ghost point values.
 This scatter may be done with the commands
 \begin{lstlisting}
-DMDALocalToLocalBegin(DM da,Vec l1,InsertMode iora,Vec l2);
-DMDALocalToLocalEnd(DM da,Vec l1,InsertMode iora,Vec l2);
+DMLocalToLocalBegin(DM da,Vec l1,InsertMode iora,Vec l2);
+DMLocalToLocalEnd(DM da,Vec l1,InsertMode iora,Vec l2);
 \end{lstlisting}
 Since both local vectors, \lstinline{l1} and \lstinline{l2},
 must be compatible with the distributed array, \lstinline{da}, they should be
@@ -2533,10 +2533,9 @@ a couple hundred.  The \lstinline{PetscDrawSP*()} routines are very useful for
 drawing scatter plots of the eigenvalues. \findex{PetscDrawSP*()}
 
 The eigenvalues may also be computed and displayed graphically with the options
-data base commands \trl{-ksp_plot_eigenvalues} and \trl{-ksp_plot_eigenvalues_explicitly}.  \findex{-ksp_plot_eigenvalues} \findex{-ksp_plot_eigenvalues_explicitly}
+data base commands \trl{-ksp_view_eigenvalues draw} and \trl{-ksp_view_eigenvalues_explicitly draw}.  \findex{-ksp_view_eigenvalues} \findex{-ksp_view_eigenvalues_explicitly}
 Or they can be dumped to the screen in ASCII text via
-\trl{-ksp_compute_eigenvalues} and \trl{-ksp_compute_eigenvalues_explicitly}.
-\findex{-ksp_compute_eigenvalues} \findex{-ksp_compute_eigenvalues_explicitly}
+\trl{-ksp_view_eigenvalues} and \trl{-ksp_view_eigenvalues_explicitly}.
 \sindex{eigenvalues} \sindex{spectrum} \sindex{Arnoldi} \sindex{Lanczos}
 
 \subsection{Other KSP Options}
@@ -2952,25 +2951,39 @@ One can use AIJ instead of BAIJ without changing any code other than the constru
 For instance, \lstinline{MatSetValuesBlocked} works with AIJ matrices.
 
 GAMG provides unsmoothed aggregation (\trl{-pc_gamg_agg_nsmooths 0}) and smoothed aggregation (\trl{-pc_gamg_agg_nsmooths 1} or \lstinline{PCGAMGSetNSmooths(pc,1)}).
-Smoothed aggregation is recommended for symmetric positive definite
-systems.
+Smoothed aggregation (SA) is recommended for symmetric positive
+definite systems.
 Unsmoothed aggregation can be useful for asymmetric
 problems and problems where highest eigen estimates are problematic.
-If poor convergence rates are observed using the smoothed version one can test unsmoothed aggregation.
-The parameters for the eigen estimator can be set with the prefix \trl{gamg_est}.
-For example CG is a much better KSP type than the default GMRES if your problem is symmetric positive definite; one can specify this with \trl{-gamg_est_ksp_type cg}, prepending any solver prefix that has been added to the solver.
+If poor convergence rates are observed using the smoothed version one
+can test unsmoothed aggregation.
+
+{\bf Eigenvalue estimates:}
+The parameters for the KSP eigen estimator, use for SA, can be set with \trl{-pc_gamg_esteig_ksp_max_it} and \trl{-pc_gamg_esteig_ksp_type}.
+For example CG generally converges to the highest eigenvalue fast than GMRES (the default
+for KSP) if your problem is symmetric positive definite.
+One can specify CG with \trl{-pc_gamg_esteig_ksp_type cg}.
+The default for \trl{-pc_gamg_esteig_ksp_max_it} is 10, which we have
+found is pretty safe with a (default) safety factor of 1.1.
+One can specify the range of real eigenvalues, in the same way that
+one can for Chebyshev KSP solvers (smoothers), with
+\trl{-pc_gamg_eigenvalues <emin,emax>}.
+GAMG sets the MG smoother type to chebyshev by default.
+By default, GAMG uses its eigen estimate, if it has one, for Chebyshev
+smoothers if the smoother uses Jacobi preconditioning.
+This can be overridden with \trl{-pc_gamg_use_sa_esteig  <true,false>}.
 
 AMG methods requires knowledge of the number of degrees of
 freedom per vertex, the default is one (a scalar problem).
 Vector problems like elasticity should set the block size of the matrix appropriately with \trl{-mat_block_size bs}  or \lstinline{MatSetBlockSize(mat,bs)}.
 Equations must be ordered in ``vertex-major'' ordering (e.g., $x_1,y_1,z_1,x_2,y_2,...$).
 
-Smoothed aggregation requires an explicit representation of the (near) null space of the operator for optimal performance.
+{\bf Near null space:} Smoothed aggregation requires an explicit representation of the (near) null space of the operator for optimal performance.
 One can provide an orthonormal set of null space vectors with \lstinline{MatSetNearNullSpace()}.
 The vector of all ones is the default, for each variable given by the block size (e.g., the translational rigid  body modes).
 For elasticity, where rotational rigid body modes are required to complete the near null space you can use \lstinline{MatNullSpaceCreateRigidBody()} to create the null space vectors and then \lstinline{MatSetNearNullSpace()}.
 
-The GAMG framework provides for reducing the number of active processes on coarse grids to reduce communication costs when there is not enough parallelism to keep relative communication costs down.
+{\bf Coarse grid data model:} The GAMG framework provides for reducing the number of active processes on coarse grids to reduce communication costs when there is not enough parallelism to keep relative communication costs down.
 Most AMG solver reduce to just one active process on the coarsest grid (the PETSc MG framework also supports redundantly solving the coarse grid on all processes to potentially reduce communication  costs), although this forcing to one process can be overridden if one wishes to use a parallel coarse grid solver.
 GAMG generalizes this by reducing the active number of processes on other coarse grids as well.
 GAMG will select the number of active processors by fitting the desired number of equation per process (set with \trl{-pc_gamg_process_eq_limit <50>,}) at each level given that size of each level.
@@ -2979,9 +2992,9 @@ One can, and probably should, repartition the coarse grids with \trl{-pc_gamg_re
 As mentioned multigrid generally coarsens the problem until it is small enough to be solved with an exact solver (eg, LU or SVD) in a relatively small time.
 GAMG will stop coarsening when the number of equation on a grid falls below at threshold give by \trl{-pc_gamg_coarse_eq_limit <50>,}.
 
-There are several options to provide parameters to the coarsening algorithm and parallel data layout.
+{\bf Coarse grid parameters:} There are several options to provide parameters to the coarsening algorithm and parallel data layout.
 Run a code that uses GAMG with \trl{-help} to get full listing of GAMG parameters with short parameter descriptions.
-The rate of coarsening is critical in AMG performance -- too slow of coarsening will result in an overly expensive solver per iteration and too fast coarsening will result in decrease in the convergence rate. \trl{-pc_gamg_threshold <0>} and  \trl{-pc_gamg_square_graph <1>,} are the primary parameters that control coarsening rates, which is very important for AMG perforamance.
+The rate of coarsening is critical in AMG performance -- too slow of coarsening will result in an overly expensive solver per iteration and too fast coarsening will result in decrease in the convergence rate. \trl{-pc_gamg_threshold <0>} and  \trl{-pc_gamg_square_graph <1>,} are the primary parameters that control coarsening rates, which is very important for AMG performance.
 A greedy maximal independent set (MIS) algorithm is used in coarsening.
 Squaring the graph implements so called MIS-2, the root vertex in an aggregate is more than two edges away from another root vertex, instead of more than one in MIS.
 The threshold parameter sets a normalized threshold for which edges are removed from the MIS graph, thereby coarsening slower.
@@ -3004,8 +3017,8 @@ large jumps in material coefficients with complex geometry (AMG is
 particularly well suited to jumps in coefficients but it is not a
 perfect solution), highly incompressible elasticity, not to mention
 ill-posed problems, and many others. For Grad-Div and Curl-Curl operators,
-you may want to try the Auxilary Maxwell Space (AMS, \trl{-pc_type hypre -pc_hypre_set_type ams})
-or the Auxilary Divergence Space (ADS, \trl{-pc_type hypre -pc_hypre_set_type ads}) solvers.
+you may want to try the Auxiliary-space Maxwell Solver (AMS, \trl{-pc_type hypre -pc_hypre_type ams})
+or the Auxiliary-space Divergence Solver (ADS, \trl{-pc_type hypre -pc_hypre_type ads}) solvers.
 These solvers need some additional information on the underlying mesh;
 specifically, AMS needs the discrete gradient operator, which can be specified via
 \lstinline{PCHYPRESetDiscreteGradient()}. In addition to the discrete gradient, ADS also needs the
@@ -3063,7 +3076,7 @@ graph (\trl{-pc_gamg_square_graph <N>}, squares the graph on the finest N levels
 Likewise if your \lstinline{MatPtAP} time is small and your convergence rate is not ideal then you could decrease the coarsening rate.
 
 PETSc's AMG solver is constructed as a framework for developers to
-easily add AMG capabilities, like a new AMG methods or anAMG component like a matrix
+easily add AMG capabilities, like a new AMG methods or an AMG component like a matrix
 triple product. Contact us directly if you are interested in contributing.
 
 %----------------------------------------------------------------------
@@ -3337,7 +3350,7 @@ call
 PCMGGetCoarseSolve(PC pc,KSP *ksp);
 \end{lstlisting}
 and set the appropriate options in \lstinline{ksp}. Similarly, the
-smoothers are setcontrolled by first calling
+smoothers are controlled by first calling
 \begin{lstlisting}
 PCMGGetSmoother(PC pc,PetscInt level,KSP *ksp);
 \end{lstlisting}
@@ -4409,7 +4422,7 @@ form of comparison, users can employ the option \trl{-snes_test_jacobian}
 to compare the matrices at several points.  Although not exhaustive,
 this test will generally catch obvious problems.  One can compare the
 elements of the two matrices by using the option \trl{
--snes_test_display} \findex{-snes_test_jacobian_display -snes_test_jacobian_display_threshold}, which causes the two
+-snes_test_jacobian_view} \findex{-snes_test_jacobian_view}, which causes the two
 matrices to be printed to the screen.  \sindex{Jacobian, testing}
 
 Another means for verifying the correctness of a code for Jacobian
@@ -6099,7 +6112,7 @@ for (p = 0; p <= numPoints*2; p += 2) {
 
   PetscSectionGetDof(section, points[p], &dof);
   PetscSectionGetOffset(section, points[p], &off);
-  for=(d = 0; d <= dof; ++d) {
+  for (d = 0; d <= dof; ++d) {
     myfunc(a[off+d]);
   }
 }
@@ -6146,98 +6159,128 @@ networks such as communication networks, power grid, computer networks, transpor
 The general flow of an application code using \lstinline{DMNetwork} is as follows:
 
 \begin{enumerate}
-  \item Create a network object and a ``component'' library:
+  \item Create a network object
 \begin{lstlisting}
-DMNetworkCreate(MPI_Comm, DM*);
+DMNetworkCreate(MPI_Comm comm, DM *dm);
 \end{lstlisting}
-  creates an empty network object. A ``component'' is specific application data at a node/edge of the network required for its residual evaluation. For example, components could be resistor, inductor data for circuit applications, edge weights for graph problems, generator/transmission line data for power grids. Components are registered by calling
+  \item Create components and register them with the network. A ``component'' is specific application data at a vertex/edge of the network required for its residual evaluation. For example, components could be resistor, inductor data for circuit applications, edge weights for graph problems, generator/transmission line data for power grids. Components are registered by calling
 \begin{lstlisting}
-DMNetworkRegisterComponent(DM,const char* name, PetscInt size, PetscInt* compkey);
+DMNetworkRegisterComponent(DM dm, const char *name, size_t size, PetscInt *compkey);
 \end{lstlisting}
-  Here, \lstinline{name} is the component name,\lstinline{size} is the size of component data type, and \lstinline{compkey} is an integer key that can be used for
-  setting/getting the component at a node or an edge.
-  \item Set network size (number of nodes, edges), edge connectivity.
-  \item Set the bare layout (graph) of the network
+  Here, \lstinline{name} is the component name, \lstinline{size} is the size of component data type, and \lstinline{compkey} is an integer key that can be used for setting/getting the component at a vertex or an edge. DMNetwork currently allows upto 16 components to be registered for a network.
+
+  \item A DMNetwork can consist of one or more {\em physical} subnetworks. When multiple physical subnetworks are used one can (optionally) provide {\em coupling information between subnetworks} which consist only of edges connecting the vertices of the physical subnetworks. The topological sizes of the network are set by calling
+\begin{lstlisting}
+DMNetworkSetSizes(DM dm, PetscInt Nsubnet, PetscInt nV[], PetscInt nE[], PetscInt NsubnetCouple, PetscInt nec[]);
+\end{lstlisting}
+Here, \lstinline{Nsubnet} is the number of subnetworks, \lstinline{nV} and \lstinline{nE} is the number of vertices and edges for each subnetwork, \lstinline{NsubnetCouple} is the number of pairs of subnetworks that are coupled, and \lstinline{nec} is the number of edges coupling each subnetwork pair. DMNetwork assumes coupling between the subnetworks through coupling edges. For a single network, set \lstinline{Nsubnet} = 1, \lstinline{NsubnetCouple} = 0, and \lstinline{nec} = NULL. Note that the coupling between subnetworks is still an experimental feature and under development.
+  \item The next step is to set up the connectivity for the network. This is done by specifying the connectivity within each subnetwork (\lstinline{edgelist}) and between subnetworks (\lstinline{edgelistCouple}).
+\begin{lstlisting}
+DMNetworkSetEdgeList(DM dm, PetscInt *edgelist[], PetscInt *edgelistCouple[]);
+\end{lstlisting}
+Each element of \lstinline{edgelist} is an integer array of size 2*nE[i] containing the edge connectivity for the i-th subnetwork. Each element in \lstinline{edgelistCouple} has four entries - {from subnetwork number (net.id), from subnetwork vertex number (vertex.id), to subnetwork number (net.id), to subetwork vertex number (vertex.id)}.
+
+As an example, consider a network comprising of 2 subnetworks that are coupled. The topological information for the network is as follows: \\
+subnetwork 0: v0 --- v1 --- v2 --- v3 \\
+subnetwork 1: v1 --- v2 --- v0 \\
+coupling between subnetworks: subnetwork 1: v2 --- subnetwork 0: v0  \\
+The \lstinline{edgelist} and \lstinline{edgelistCouple} for this network are \\
+edgelist[0] = \{0,1,1,2,2,3\} \\
+edgelist[1] = \{1,2,2,0\} \\
+edgelistCouple[0] = \{1,2,0,0\}.
+
+\item The next step is to have DMNetwork to create a bare layout (graph) of the network by calling
 \begin{lstlisting}
 DMNetworkLayoutSetUp(DM dm);
 \end{lstlisting}
+
+\item After completing the previous steps, the network graph is set up, but no physics is associated yet. This is done by adding the components and setting the number of variables for the vertices and edges.
+
+A component is added to a vertex/edge by calling
 \begin{lstlisting}
-DMNetworkSetSizes(DM dm, PetscInt nnodes, PetscInt nedges, PetscInt Nnodes, PetscInt Nedges);
+DMNetworkAddComponent(DM dm, PetscInt p, PetscInt compkey, void* compdata);
 \end{lstlisting}
+where \lstinline{p} is the network vertex/edge point in the range obtained by either DMNetworkGetEdgeRange or DMNetworkGetVertexRange, \lstinline{compkey} is the component key returned when registering the component (DMNetworkRegisterComponent), and \lstinline{compdata} holds the data for the component. DMNetwork supports setting multiple components (max. 36) at a vertex/edge.
+
+DMNetwork currently assumes the component data to be stored in a contiguous chunk of memory. As such, it does not do any packing/unpacking before/after the component data gets distributed. Any such serialization (packing/unpacking) should be done by the application.
+ 
+The number of variables at each vertex/edge are set by
 \begin{lstlisting}
-DMNetworkSetEdgeList(DM dm, int edgeconns[]);
-\end{lstlisting}
-  \item Set components and number of variables for nodes/edges.
+DMNetworkSetNumVariables(DM dm, PetscInt p, PetscInt nvar);
+\end{lstlisting} or
 \begin{lstlisting}
-DMNetworkAddComponent(DM dm, PetscInt p,PetscInt component,void* component);
+DMNetworkAddNumVariables(DM dm, PetscInt p, PetscInt nvar);
 \end{lstlisting}
-  Multiple components can be added at a node/edge.
-\begin{lstlisting}
-DMNetworkSetNumVariables(DM dm,PetscInt p,PetscInt nvar);
-\end{lstlisting}
-\begin{lstlisting}
-DMNetworkAddNumVariables(DM dm,PetscInt p,PetscInt nvar);
-\end{lstlisting}
-  \item Signal network ready to be distributed.
+
+\item Set up network internal data structures.
+  %Signal network ready to be distributed.
 \begin{lstlisting}
 DMSetUp(DM dm);
 \end{lstlisting}
-  \item Distribute the network (also moves components attached with nodes/edges)
+  \item Distribute the network (also moves components attached with vertices/edges) to multiple processors.
 \begin{lstlisting}
-DMNetworkDistribute(DM oldDM, const char partitioner[], PetscInt overlap,DM *distDM);
+DMNetworkDistribute(DM dm, const char partitioner[], PetscInt overlap, DM *distDM);
 \end{lstlisting}
-\item Hook up the \lstinline{DM} with the solver: \lstinline{KSPSetDM()}, \lstinline{SNESSetDM()}, \lstinline{TSSetDM()}
+\item Associate the \lstinline{DM} with a PETSc solver:
+\begin{lstlisting}
+KSPSetDM(KSP ksp, DM dm) or SNESSetDM(SNES snes, DM dm) or TSSetDM(TS ts, DM dm).
+\end{lstlisting}
 \end{enumerate}
 
 \subsection{Utility functions}
-  \lstinline{DMNetwork} provides functions for obtaining iterators for nodes/edges, checking the ``ghost''
-  status of a node (vertex), and retrieving local/global indices of node/edge variables for inserting
+  \lstinline{DMNetwork} provides several utility functions for operations on the network. The mostly commonly used functions are:
+obtaining iterators for vertices/edges,
+\begin{lstlisting}
+DMNetworkGetEdgeRange(DM dm, PetscInt *eStart, PetscInt *eEnd);
+\end{lstlisting}
+\begin{lstlisting}
+DMNetworkGetVertexRange(DM dm, PetscInt *vStart, PetscInt *vEnd);
+\end{lstlisting}
+\begin{lstlisting}
+DMNetworkGetSubnetworkInfo(DM dm, PetscInt netid, PetscInt *nv, PetscInt *ne, const PetscInt **vtx, const PetscInt **edge);
+\end{lstlisting}
+Checking the ``ghost'' status of a vertex,
+\begin{lstlisting}
+DMNetworkIsGhostVertex(DM dm, PetscInt p, PetscBool *isghost);
+\end{lstlisting}
+and retrieving local/global indices of vertex/edge variables for inserting
   elements in vectors/matrices.
 \begin{lstlisting}
-DMNetworkGetEdgeRange(DM dm,PetscInt *eStart,PetscInt *eEnd);
+DMNetworkGetVariableOffset(DM dm, PetscInt p, PetscInt *offset);
 \end{lstlisting}
 \begin{lstlisting}
-DMNetworkGetVertexRange(DM dm,PetscInt *vStart, PetscInt *vEnd);
+DMNetworkGetVariableGlobalOffset(DM dm, PetscInt p, PetscInt *offsetg);
+\end{lstlisting}
+In network applications, one frequently needs to find the supporting edges for a vertex or
+the connecting vertices covering an edge. These can be obtained by the following two routines.
+\begin{lstlisting}
+DMNetworkGetConnectedVertices(DM dm, PetscInt edge, const PetscInt *vertices[]);
 \end{lstlisting}
 \begin{lstlisting}
-DMNetworkIsGhostVertex(DM dm,PetscInt p,PetscBool *isghost);
-\end{lstlisting}
-\begin{lstlisting}
-DMNetworkGetVariableOffset(DM dm,PetscInt p,PetscInt *offset);
-\end{lstlisting}
-\begin{lstlisting}
-DMNetworkGetVariableGlobalOffset(DM dm,PetscInt p,PetscInt *offsetg);
-\end{lstlisting}
-In network applications, one frequently needs to find the supporting edges for a node or
-the connecting nodes covering an edge. These can be obtained by the following two routines.
-\begin{lstlisting}
-DMNetworkGetConnectedVertices(DM dm,PetscInt edge,const PetscInt *vertices[]);
-\end{lstlisting}
-\begin{lstlisting}
-DMNetworkGetSupportingEdges(DM dm,PetscInt vertex,PetscInt *nedges,const PetscInt *edges[]) ;
+DMNetworkGetSupportingEdges(DM dm, PetscInt vertex, PetscInt *nedges, const PetscInt *edges[]);
 \end{lstlisting}
 
 \subsection{Retrieving components}
-The components set at nodes/edges be accessed by
+The components set at a vertex/edge can be accessed by
 \begin{lstlisting}
-DMNetworkGetComponent(DM dm,PetscInt p, PetscInt compnum, PetscInt *compkey, void** component);
+DMNetworkGetComponent(DM dm, PetscInt p, PetscInt compnum, PetscInt *compkey, void** component);
 \end{lstlisting}
-\lstinline{compkey} is the key set by \lstinline{DMNetworkRegisterComponent}. An example of accessing and retrieving the components at nodes is:
+\lstinline{compkey} is the key set by \lstinline{DMNetworkRegisterComponent}. An example of accessing and retrieving the components at vertices is:
 
 \begin{lstlisting}
 PetscInt Start, End, numcomps,key,v,compnum;
 void *component;
 
 DMNetworkGetVertexRange(dm, &Start, &End);
-for(v=Start; v  < End; v++) {
+for (v=Start; v  < End; v++) {
   DMNetworkGetNumComponents(dm,v, &numcomps);
-  for(compnum=0; compnum < numcomps;compnum++) {
+  for (compnum=0; compnum < numcomps;compnum++) {
     DMNetworkGetComponent(dm,v,compnum, &key, &component);
     compdata = (UserCompDataType)(component);
   }
 }
 \end{lstlisting}
-The above example does not explicitly make use the component key. It is used when different component types are set at different nodes. In this case, the {compkey} is the used to differentiate the component type.
+The above example does not explicitly make use the component key. It is used when different component types are set at different vertices. In this case, the {compkey} is used to differentiate the component type.
 
 % --------------------------------------------------------------------
 %                            PART 3
@@ -9066,268 +9109,6 @@ You can also use \trl{getExecutable()} to search for executables.
 
 After configure tests have been run, various kinds of output can be generated.A \#define statement can be added to the configure header using \trl{addDefine()}, and \trl{addTypedef()} and \trl{addPrototype()} also put information in this header file. Using \trl{addMakeMacro()} and \trl{addMakeRule()} will add make macros and rules to the output makefiles specified in the framework. In addition we provide \trl{addSubstitution()} and \trl{addArgumentSubstitution()} to mimic the bahvior of Autoconf if necessary. The object may define a \trl{headerPrefix} member, which will be appended, followed by an underscore, to every define which is output from it. Similarly, a \trl{substPrefix} can be defined which applies to every substitution from the object. Typedefs and function prototypes are placed in a separate header in order to accommodate languages such as Fortran whose preprocessor can sometimes fail at these statements.
 
-%----------------------------------------------------------------------
-\cleardoublepage
-\chapter{Makefiles}
-\label{ch_makefiles}
-
-This chapter describes the design of the PETSc makefiles, which are
-key to managing code portability across a wide variety of UNIX and Windows systems.
-
-\section{Makefile System}
-
-To make a program named \trl{ex1}, one may use the command
-\begin{bashlisting}
-make PETSC_ARCH=arch ex1
-\end{bashlisting}
-which will compile the
-example and automatically link the appropriate libraries.  The
-architecture, \trl{arch}, is one of \trl{solaris, rs6000, IRIX,
-hpux, arch-darwin-double-debug}, etc., as determined during the PETSc configuration process.
-Note that when using command line options with \trl{make} (as illustrated above),
-one must {\em not} place spaces on either side of the ``\trl{=}'' signs.
-The variable \trl{PETSC_ARCH} can also be set as an environment
-variable.
-
-\subsection{Makefile Commands} \label{sec_common}
-
-The directory
-\trl{${PETSC_DIR}/lib/petsc/conf}
-contains virtually all
-makefile commands and customizations to enable portability across
-different architectures.  Most makefile commands for maintaining the
-PETSc system are defined in the file
-\trl{${PETSC_DIR}/lib/petsc/conf/rules}
-These commands, which process all appropriate files within the
-directory of execution, include
-\begin{itemize}
-\item \trl{lib} - Update the PETSc libraries based on the source code
-      in the directory.
-\item \trl{libfast} - Update the libraries faster.  Since
-      \trl{libfast} recompiles all source files in the directory at once,
-      rather than individually, this command saves time when many files
-      must be compiled.
-\item \trl{clean} - Remove garbage files.
-\end{itemize}
-
-The \trl{tree} command enables the user to execute a particular action
-within a directory and all of its subdirectories.  The action is specified
-by \trl{ACTION=[action]}, where \trl{action} is one of the basic commands
-listed above. For example, if the command
-\trl{make ACTION=lib tree}
-were executed from the directory
-\trl{${PETSC_DIR}/src/ksp/ksp}
-the debugging library for all Krylov subspace solvers would be built.
-
-\subsection{Customized Makefiles}
-\label{sec_custom}
-
-The directory \trl{${PETSC_DIR}/} contains a subdirectory for each
-architecture that contains machine-specific information, enabling the
-portability of our makefile system, these are
-\trl{${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf}
- Each architecture directory contains
-two makefiles:
-\begin{itemize}
-\item \trl{petscvariables} - definitions of the compilers, linkers, etc.
-\item \trl{petscrules} - some build rules specific to this machine.
-\end{itemize}
-These files are generated automatically when you run \trl{./configure}.
-
-These are included by the architecture-independent makefiles located in
-\trl{${PETSC_DIR}/lib/petsc/conf}.
-
-\section{PETSc Flags}
-\label{sec_makeflags}
-
-PETSc has several flags that determine how the source code will be
-compiled.  The default flags for particular versions are specified in
-\trl{${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h}.
-The flags include
-\begin{itemize}
-\item \trl{PETSC_USE_DEBUG} - The PETSc debugging options are activated. We
-      recommend always using this except when doing performance analysis or production runs. \findex{PETSC_USE_DEBUG}
-\item \trl{PETSC_USE_COMPLEX} - The version with scalars represented
-      as complex numbers is used. \findex{PETSC_USE_COMPLEX}
-\item \trl{PETSC_USE_LOG} - Various monitoring statistics on floating-point operations,
-      and message-passing activity are kept. \findex{PETSC_USE_LOG}
-\end{itemize}
-
-\subsection{Sample Makefiles}
-
-Maintaining portable PETSc makefiles is very simple.
-
-A first example, shown in Figure \ref{fig_make1}, is a ``minimum'' makefile for maintaining
-a single program that uses the PETSc libraries.
-The most important lines in this makefile are the lines starting with \trl{include}:
-\begin{makelisting}
-include ${PETSC_DIR}/lib/petsc/conf/variables
-include ${PETSC_DIR}/lib/petsc/conf/rules
-\end{makelisting}
-These lines includes other makefiles that provide the needed definitions
-and rules for the particular base PETSc installation (specified by
-\trl{PETSC_DIR}) and architecture (specified by
-\trl{PETSC_ARCH}).  (See \ref{sec_running} for information on
-setting these environmental variables.)  As listed in the sample
-makefile, the appropriate \trl{include} file is automatically
-completely specified; the user should {\em not} alter this statement
-within the makefile.
-
-\begin{figure}[H]
-\begin{makelisting}
-   ALL: ex2
-   CFLAGS     =
-   FFLAGS     =
-   CPPFLAGS   =
-   FPPFLAGS   =
-   CLEANFILES = ex2
-
-   include ${PETSC_DIR}/lib/petsc/conf/variables
-   include ${PETSC_DIR}/lib/petsc/conf/rules
-
-   ex2: ex2.o
-           ${CLINKER} -o ex2 ex2.o  ${PETSC_LIB}
-           ${RM} ex2.o
-\end{makelisting}
-\caption{Sample PETSc Makefile for a Single Program}
-\label{fig_make1}
-\end{figure}
-
-Users who wish to manage the compile process themselves
-and {\emph not} use the rules PETSc uses for compiling programs
-should only include \trl{variables}. That is, use something like
-the makefile shown in Figure \ref{fig_make1var}.
-
-\begin{figure}[H]
-\begin{makelisting}
-   ALL: ex2
-   CFLAGS   = ${PETSC_CC_INCLUDES}
-   FFLAGS   = ${PETSC_FC_INCLUDES}
-
-   include ${PETSC_DIR}/lib/petsc/conf/variables
-
-   ex2: ex2.o
-           mylinkercommand -o ex2 ex2.o  ${PETSC_LIB}
-\end{makelisting}
-\caption{Sample PETSc Makefile that does {\bf not} use PETSc's rules for compiling}
-\label{fig_make1var}
-\end{figure}
-
-The variables \trl{PETSC_CC_INCLUDES}, \trl{PETSC_FC_INCLUDES}
-and \trl{PETSC_LIB} are defined by the included \trl{${PETSC_DIR}/lib/petsc/conf/variables} file.
-
-If you do not wish to include any PETSc makefiles in your makefile,
-you can use the following commands in the PETSc root directory to get the information
-needed by your makefile:
-\begin{bashlisting}
-make getlinklibs getincludedirs getpetscflags
-\end{bashlisting}
-All the libraries listed need to be linked into your executable and the
-include directories and flags need to be passed to the compiler.
-Usually this is done with \lstinline{CFLAGS=<list of -I and other flags>} and
-\lstinline{FFLAGS=<list of -I and other flags>} in your makefile.
-
-\findex{PETSC_LIB} \findex{PETSC_LIB}
-Note that the variable \trl{PETSC_LIB} (as listed on the link
-line in the above makefile) specifies {\em all} of the various PETSc
-libraries in the appropriate order for correct linking.  For users who
-employ only a specific PETSc library, can use alternative variables
-like  \trl{PETSC_SYS_LIB}, \trl{PETSC_VEC_LIB},
-\trl{PETSC_MAT_LIB}, \trl{PETSC_DM_LIB},
-\trl{PETSC_KSP_LIB}, \trl{PETSC_SNES_LIB} or
-\trl{PETSC_TS_LIB}.
-
-The second sample makefile, given in Figure~\ref{fig_make2},
-controls the generation of several example programs.
-
-\begin{figure}[H]
-\begin{makelisting}
-   CFLAGS   =
-   FFLAGS   =
-   CPPFLAGS =
-   FPPFLAGS =
-
-   include ${PETSC_DIR}/lib/petsc/conf/variables
-   include ${PETSC_DIR}/lib/petsc/conf/rules
-
-   ex1: ex1.o
-        -${CLINKER} -o ex1 ex1.o  ${PETSC_LIB}
-        ${RM} ex1.o
-   ex2: ex2.o
-        -${CLINKER} -o ex2 ex2.o  ${PETSC_LIB}
-        ${RM} ex2.o
-   ex3: ex3.o
-        -${FLINKER} -o ex3 ex3.o  ${PETSC_LIB}
-        ${RM} ex3.o
-   ex4: ex4.o
-        -${CLINKER} -o ex4 ex4.o  ${PETSC_LIB}
-        ${RM} ex4.o
-
-   runex1:
-        -@${MPIEXEC} ex1
-   runex2:
-        -@${MPIEXEC} -n 2 ./ex2 -mat_seqdense -options_left
-   runex3:
-        -@${MPIEXEC} ex3 -v -log_view
-   runex4:
-        -@${MPIEXEC} -n 4 ./ex4 -trdump
-\end{makelisting}
-\caption{Sample PETSc Makefile for Several Example Programs}
-\label{fig_make2}
-\end{figure}
-
-Again, the most important lines in this makefile are the \lstinline{include}
-lines that include the files defining all of the macro variables.
-Some additional variables that can be used in the makefile are defined
-as follows:
-\begin{tightitemize}
-\item \lstinline{CFLAGS, FFLAGS} User specified additional options for the C compiler and
-        Fortran compiler.
-\item \lstinline{CPPFLAGS, FPPFLAGS} User specified additional flags for the C preprocessor
-        and Fortran preprocessor.
-\item \lstinline{CLINKER, FLINKER} the C and Fortran linkers.
-\item \lstinline{RM} the remove command for deleting files.
-\end{tightitemize}
-
-Figure \ref{fig_make3} contains a makefile that maintains a PETSc
-library.  Although most users do not need to understand or deal with such
-makefiles, they are also easily used.
-\begin{figure}[H]
-\begin{makelisting}
-ALL: lib
-
-CFLAGS   =
-SOURCEC  = sp1wd.c spinver.c spnd.c spqmd.c sprcm.c
-SOURCEF  = degree.F  fnroot.F genqmd.F qmdqt.F rcm.F fn1wd.F gen1wd.F \
-          genrcm.F qmdrch.F rootls.F fndsep.F gennd.F qmdmrg.F qmdupd.F
-SOURCEH  =
-LIBBASE  = libpetscmat
-MANSEC   = Mat
-
-include ${PETSC_DIR}/lib/petsc/conf/variables
-include ${PETSC_DIR}/lib/petsc/conf/rules
-\end{makelisting}
-\caption{Sample PETSc Makefile for Library Maintenance}
-\label{fig_make3}
-\end{figure}
-
-The library's name is \trl{libpetscmat.a}, and the source files being added
-to it are indicated by \lstinline{SOURCEC} (for C files) and \lstinline{SOURCEF} (for
-Fortran files).
-
-The variable \lstinline{MANSEC} indicates that any manual pages generated
-from this source should be included in the \lstinline{Mat} section.
-
-\section{Limitations}
-
-This approach to portable makefiles has some minor limitations, including
-the following:
-\begin{itemize}
-\item Each makefile must be called ``makefile''.
-\item Each makefile can maintain at most one archive library.
-\end{itemize}
-
-%------------------------------------------------------------------
 
 \cleardoublepage
 \chapter{Unimportant and Advanced Features of Matrices and Solvers}
@@ -9725,6 +9506,8 @@ make -f gmakefile test search='ts%'                      # Run all TS examples
 make -f gmakefile test searchin='tutorials'              # Run all tutorials
 make -f gmakefile test search='ts%' searchin='tutorials' # Run all TS tutorials
 make -f gmakefile test argsearch='cuda'                  # Run examples with cuda in arguments
+make -f gmakefile test test-fail='1'
+make -f gmakefile test query='requires' queryval='*MPI_PROCESS_SHARED_MEMORY*'
 \end{bashlisting}
 
 It is useful before invoking the tests to see what targets will

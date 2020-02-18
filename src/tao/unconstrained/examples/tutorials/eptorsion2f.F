@@ -49,9 +49,6 @@
 
       use mymodule
       implicit none
-#if defined(PETSC_USING_F90) && !defined(PETSC_USE_FORTRANKIND)
-      external PETSC_NULL_FUNCTION
-#endif
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

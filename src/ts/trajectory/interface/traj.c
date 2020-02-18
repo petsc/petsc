@@ -270,6 +270,29 @@ PetscErrorCode TSTrajectoryGetVecs(TSTrajectory tj,TS ts,PetscInt stepnum,PetscR
 }
 
 /*@C
+   TSTrajectoryViewFromOptions - View from Options
+
+   Collective on TSTrajectory
+
+   Input Parameters:
++  A - the TSTrajectory context
+.  obj - Optional object
+-  name - command line option
+
+   Level: intermediate
+.seealso:  TSTrajectory, TSTrajectoryView, PetscObjectViewFromOptions(), TSTrajectoryCreate()
+@*/
+PetscErrorCode  TSTrajectoryViewFromOptions(TSTrajectory A,PetscObject obj,const char name[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,TSTRAJECTORY_CLASSID,1);
+  ierr = PetscObjectViewFromOptions((PetscObject)A,obj,name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
     TSTrajectoryView - Prints information about the trajectory object
 
     Collective on TSTrajectory

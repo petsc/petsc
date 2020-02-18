@@ -41,7 +41,7 @@ PetscErrorCode PetscClassRegLogCreate(PetscClassRegLog *classLog)
 
   Not collective
 
-  Input Paramter:
+  Input Parameter:
 . classLog - The PetscClassRegLog
 
   Level: developer
@@ -117,7 +117,7 @@ PetscErrorCode PetscClassPerfLogCreate(PetscClassPerfLog *classLog)
 
   Not collective
 
-  Input Paramter:
+  Input Parameter:
 . classLog - The PetscClassPerfLog
 
   Level: developer
@@ -140,7 +140,7 @@ PetscErrorCode PetscClassPerfLogDestroy(PetscClassPerfLog classLog)
 
   Not collective
 
-  Input Paramter:
+  Input Parameter:
 . classInfo - The PetscClassPerfInfo
 
   Level: developer
@@ -163,7 +163,7 @@ PetscErrorCode PetscClassPerfInfoClear(PetscClassPerfInfo *classInfo)
 
   Not collective
 
-  Input Paramters:
+  Input Parameters:
 + classLog - The PetscClassPerfLog
 - size     - The size
 

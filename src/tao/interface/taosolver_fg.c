@@ -46,7 +46,12 @@ PetscErrorCode TaoTestGradient(Tao tao,Vec x,Vec g1)
   ierr = PetscOptionsName("-tao_test_gradient","Compare hand-coded and finite difference Gradients","None",&test);CHKERRQ(ierr);
   ierr = PetscOptionsViewer("-tao_test_gradient_view","View difference between hand-coded and finite difference Gradients element entries","None",&mviewer,&format,&complete_print);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  if (!test) PetscFunctionReturn(0);
+  if (!test) {
+    if (complete_print) {
+      ierr = PetscViewerDestroy(&mviewer);CHKERRQ(ierr);
+    }
+    PetscFunctionReturn(0);
+  }
 
   ierr = PetscObjectGetComm((PetscObject)tao,&comm);CHKERRQ(ierr);
   ierr = PetscViewerASCIIGetStdout(comm,&viewer);CHKERRQ(ierr);
@@ -58,7 +63,7 @@ PetscErrorCode TaoTestGradient(Tao tao,Vec x,Vec g1)
     ierr = PetscViewerASCIIPrintf(viewer,"    of hand-coded and finite difference gradient entries greater than <threshold>.\n");CHKERRQ(ierr);
   }
   if (!directionsprinted) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  Testing hand-coded Gradient, if (for double precision runs) ||G - Gfd||_F/||G||_F is\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Testing hand-coded Gradient, if (for double precision runs) ||G - Gfd||/||G|| is\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"    O(1.e-8), the hand-coded Gradient is probably correct.\n");CHKERRQ(ierr);
     directionsprinted = PETSC_TRUE;
   }
@@ -98,6 +103,7 @@ PetscErrorCode TaoTestGradient(Tao tao,Vec x,Vec g1)
 
   if (complete_print) {
     ierr = PetscViewerPopFormat(mviewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&mviewer);CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIISetTab(viewer,tabs);CHKERRQ(ierr);
   PetscFunctionReturn(0);

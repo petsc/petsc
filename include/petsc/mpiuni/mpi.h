@@ -517,6 +517,12 @@ typedef int MPI_Fint;
      (MPIUNI_ARG(comm),\
       *group = 1,\
       MPI_SUCCESS)
+#define MPI_Group_excl(group,n,ranks,newgroup) \
+     (MPIUNI_ARG(group),\
+      MPIUNI_ARG(n),\
+      MPIUNI_ARG(ranks),\
+      MPIUNI_ARG(newgroup),\
+      MPI_SUCCESS)
 #define MPI_Group_incl(group,n,ranks,newgroup) \
      (MPIUNI_ARG(group),\
       MPIUNI_ARG(n),\
@@ -863,7 +869,6 @@ typedef int MPI_Fint;
 #define MPI_Group_union(group1,group2,newgroup) MPI_SUCCESS
 #define MPI_Group_intersection(group1,group2,newgroup) MPI_SUCCESS
 #define MPI_Group_difference(group1,group2,newgroup) MPI_SUCCESS
-#define MPI_Group_excl(group,n,ranks,newgroup) MPI_SUCCESS
 #define MPI_Group_range_incl(group,n,ranges,newgroup) MPI_SUCCESS
 #define MPI_Group_range_excl(group,n,ranges,newgroup) MPI_SUCCESS
 #define MPI_Group_free(group) \

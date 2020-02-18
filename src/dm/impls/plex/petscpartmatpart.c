@@ -89,19 +89,19 @@ static PetscErrorCode PetscPartitionerSetFromOptions_MatPartitioning(PetscOption
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPartitionerPartition_MatPartitioning(PetscPartitioner part, DM dm, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection partSection, IS *is)
+static PetscErrorCode PetscPartitionerPartition_MatPartitioning(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertSection, PetscSection targetSection, PetscSection partSection, IS *is)
 {
   PetscPartitioner_MatPartitioning  *p = (PetscPartitioner_MatPartitioning *) part->data;
   Mat                               matadj;
   IS                                is1, is2, is3;
+  PetscReal                         *tpwgts = NULL;
   PetscInt                          numVerticesGlobal, numEdges;
-  PetscInt                          *i, *j;
+  PetscInt                          *i, *j, *vwgt = NULL;
   MPI_Comm                          comm;
   PetscErrorCode                    ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)part, &comm);CHKERRQ(ierr);
-  if (numVertices < 0) SETERRQ(comm, PETSC_ERR_PLIB, "number of vertices must be specified");
 
   /* TODO: MatCreateMPIAdj should maybe take global number of ROWS */
   /* TODO: And vertex distribution in PetscPartitionerPartition_ParMetis should be done using PetscSplitOwnership */
@@ -120,6 +120,45 @@ static PetscErrorCode PetscPartitionerPartition_MatPartitioning(PetscPartitioner
   ierr = MatPartitioningSetAdjacency(p->mp, matadj);CHKERRQ(ierr);
   ierr = MatPartitioningSetNParts(p->mp, nparts);CHKERRQ(ierr);
 
+  /* calculate partition weights */
+  if (targetSection) {
+    PetscReal sumt;
+    PetscInt  p;
+
+    sumt = 0.0;
+    ierr = PetscMalloc1(nparts,&tpwgts);CHKERRQ(ierr);
+    for (p = 0; p < nparts; ++p) {
+      PetscInt tpd;
+
+      ierr = PetscSectionGetDof(targetSection,p,&tpd);CHKERRQ(ierr);
+      sumt += tpd;
+      tpwgts[p] = tpd;
+    }
+    if (sumt) { /* METIS/ParMETIS do not like exactly zero weight */
+      for (p = 0, sumt = 0.0; p < nparts; ++p) {
+        tpwgts[p] = PetscMax(tpwgts[p],PETSC_SMALL);
+        sumt += tpwgts[p];
+      }
+      for (p = 0; p < nparts; ++p) tpwgts[p] /= sumt;
+      for (p = 0, sumt = 0.0; p < nparts-1; ++p) sumt += tpwgts[p];
+      tpwgts[nparts - 1] = 1. - sumt;
+    } else {
+      ierr = PetscFree(tpwgts);CHKERRQ(ierr);
+    }
+  }
+  ierr = MatPartitioningSetPartitionWeights(p->mp, tpwgts);CHKERRQ(ierr);
+
+  /* calculate vertex weights */
+  if (vertSection) {
+    PetscInt v;
+
+    ierr = PetscMalloc1(numVertices,&vwgt);CHKERRQ(ierr);
+    for (v = 0; v < numVertices; ++v) {
+      ierr = PetscSectionGetDof(vertSection, v, &vwgt[v]);CHKERRQ(ierr);
+    }
+  }
+  ierr = MatPartitioningSetVertexWeights(p->mp, vwgt);CHKERRQ(ierr);
+
   /* apply the partitioning */
   ierr = MatPartitioningApply(p->mp, &is1);CHKERRQ(ierr);
 
@@ -128,11 +167,9 @@ static PetscErrorCode PetscPartitionerPartition_MatPartitioning(PetscPartitioner
     PetscInt v;
     const PetscInt *assignment_arr;
 
-    ierr = PetscSectionSetChart(partSection, 0, nparts);CHKERRQ(ierr);
     ierr = ISGetIndices(is1, &assignment_arr);CHKERRQ(ierr);
     for (v = 0; v < numVertices; ++v) {ierr = PetscSectionAddDof(partSection, assignment_arr[v], 1);CHKERRQ(ierr);}
     ierr = ISRestoreIndices(is1, &assignment_arr);CHKERRQ(ierr);
-    ierr = PetscSectionSetUp(partSection);CHKERRQ(ierr);
   }
 
   /* convert assignment IS to global numbering IS */

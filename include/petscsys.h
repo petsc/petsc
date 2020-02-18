@@ -168,8 +168,14 @@ void assert_never_put_petsc_headers_inside_an_extern_c(int); void assert_never_p
 #  elif (OMPI_MAJOR_VERSION != PETSC_HAVE_OMPI_MAJOR_VERSION) || (OMPI_MINOR_VERSION != PETSC_HAVE_OMPI_MINOR_VERSION) || (OMPI_RELEASE_VERSION < PETSC_HAVE_OMPI_RELEASE_VERSION)
 #    error "PETSc was configured with one OpenMPI mpi.h version but now appears to be compiling using a different OpenMPI mpi.h version"
 #  endif
-#elif defined(OMPI_MAJOR_VERSION) || defined(MPICH_NUMVERSION)
-#  error "PETSc was configured with undetermined MPI - but now appears to be compiling using either of OpenMPI or a MPICH variant"
+#elif defined(PETSC_HAVE_MSMPI_VERSION)
+#  if !defined(MSMPI_VER)
+#    error "PETSc was configured with MSMPI but now appears to be compiling using a non-MSMPI mpi.h"
+#  elif (MSMPI_VER != PETSC_HAVE_MSMPI_VERSION)
+#    error "PETSc was configured with one MSMPI mpi.h version but now appears to be compiling using a different MSMPI mpi.h version"
+#  endif
+#elif defined(OMPI_MAJOR_VERSION) || defined(MPICH_NUMVERSION) || defined(MSMPI_VER)
+#  error "PETSc was configured with undetermined MPI - but now appears to be compiling using any of OpenMPI, MS-MPI or a MPICH variant"
 #endif
 
 /*
@@ -510,7 +516,7 @@ M*/
 .  m1 - number of elements to allocate  (may be zero)
 
    Output Parameter:
-.  r1 - memory allocated in first chunk
+.  r1 - memory allocated
 
    Note:
    This uses the sizeof() of the memory type requested to determine the total memory to be allocated, therefore you should not
@@ -521,7 +527,7 @@ $  PetscMalloc1(10,&id);
 $  PetscInt *id;
 $  PetscMalloc1(10*sizeof(PetscInt),&id);
 
-        Does not zero the memory allocatd, used PetscCalloc1() to obtain memory that has been zeroed.
+        Does not zero the memory allocated, use PetscCalloc1() to obtain memory that has been zeroed.
 
    Level: beginner
 
@@ -543,7 +549,7 @@ M*/
 .  m1 - number of elements to allocate in 1st chunk  (may be zero)
 
    Output Parameter:
-.  r1 - memory allocated in first chunk
+.  r1 - memory allocated
 
    Notes:
    See PetsMalloc1() for more details on usage.
@@ -967,7 +973,7 @@ M*/
 .seealso: PetscNew(), PetscMalloc(), PetscNewLog(), PetscMalloc1(), PetscCalloc1()
 
 M*/
-#define PetscFree(a)   ((*PetscTrFree)((void*)(a),__LINE__,PETSC_FUNCTION_NAME,__FILE__) || ((a) = 0,0))
+#define PetscFree(a)   ((*PetscTrFree)((void*)(a),__LINE__,PETSC_FUNCTION_NAME,__FILE__) || ((a) = NULL,0))
 
 /*MC
    PetscFree2 - Frees 2 chunks of memory obtained with PetscMalloc2()
@@ -1240,6 +1246,9 @@ PETSC_EXTERN const char *const PetscFileModes[];
 PETSC_EXTERN PetscClassId PETSC_LARGEST_CLASSID;
 PETSC_EXTERN PetscClassId PETSC_OBJECT_CLASSID;
 PETSC_EXTERN PetscErrorCode PetscClassIdRegister(const char[],PetscClassId *);
+PETSC_EXTERN PetscErrorCode PetscObjectGetId(PetscObject,PetscObjectId*);
+PETSC_EXTERN PetscErrorCode PetscObjectCompareId(PetscObject,PetscObjectId,PetscBool*);
+
 
 /*
    Routines that get memory usage information from the OS
@@ -1273,6 +1282,9 @@ PETSC_EXTERN PetscErrorCode PetscPythonInitialize(const char[],const char[]);
 PETSC_EXTERN PetscErrorCode PetscPythonFinalize(void);
 PETSC_EXTERN PetscErrorCode PetscPythonPrintError(void);
 PETSC_EXTERN PetscErrorCode PetscPythonMonitorSet(PetscObject,const char[]);
+
+PETSC_EXTERN PetscErrorCode PetscMonitorCompare(PetscErrorCode (*)(void),void *,PetscErrorCode (*)(void**),PetscErrorCode (*)(void),void *,PetscErrorCode (*)(void**),PetscBool *);
+
 
 /*
      These are so that in extern C code we can caste function pointers to non-extern C
@@ -2304,7 +2316,11 @@ PETSC_EXTERN PetscErrorCode PetscGetDate(char[],size_t);
 PETSC_EXTERN PetscErrorCode PetscGetVersion(char[], size_t);
 PETSC_EXTERN PetscErrorCode PetscGetVersionNumber(PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 
+PETSC_EXTERN PetscErrorCode PetscSortedInt(PetscInt,const PetscInt[],PetscBool*);
+PETSC_EXTERN PetscErrorCode PetscSortedMPIInt(PetscInt,const PetscMPIInt[],PetscBool*);
+PETSC_EXTERN PetscErrorCode PetscSortedReal(PetscInt,const PetscReal[],PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscSortInt(PetscInt,PetscInt[]);
+PETSC_EXTERN PetscErrorCode PetscSortReverseInt(PetscInt,PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscSortedRemoveDupsInt(PetscInt*,PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscSortRemoveDupsInt(PetscInt*,PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscCheckDupsInt(PetscInt,const PetscInt[],PetscBool*);
@@ -2331,6 +2347,8 @@ PETSC_EXTERN PetscErrorCode PetscProcessTree(PetscInt,const PetscBool [],const P
 PETSC_EXTERN PetscErrorCode PetscMergeIntArrayPair(PetscInt,const PetscInt[],const PetscInt[],PetscInt,const PetscInt[],const PetscInt[],PetscInt*,PetscInt**,PetscInt**);
 PETSC_EXTERN PetscErrorCode PetscMergeIntArray(PetscInt,const PetscInt[],PetscInt,const PetscInt[],PetscInt*,PetscInt**);
 PETSC_EXTERN PetscErrorCode PetscMergeMPIIntArray(PetscInt,const PetscMPIInt[],PetscInt,const PetscMPIInt[],PetscInt*,PetscMPIInt**);
+
+PETSC_EXTERN PetscErrorCode PetscParallelSortedInt(MPI_Comm, PetscInt, const PetscInt[], PetscBool *);
 
 PETSC_EXTERN PetscErrorCode PetscSetDisplay(void);
 PETSC_EXTERN PetscErrorCode PetscGetDisplay(char[],size_t);
@@ -2365,7 +2383,7 @@ PETSC_EXTERN PetscErrorCode PetscRandomRegister(const char[],PetscErrorCode (*)(
 PETSC_EXTERN PetscErrorCode PetscRandomSetType(PetscRandom, PetscRandomType);
 PETSC_EXTERN PetscErrorCode PetscRandomSetFromOptions(PetscRandom);
 PETSC_EXTERN PetscErrorCode PetscRandomGetType(PetscRandom, PetscRandomType*);
-PETSC_STATIC_INLINE PetscErrorCode PetscRandomViewFromOptions(PetscRandom A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
+PETSC_EXTERN PetscErrorCode PetscRandomViewFromOptions(PetscRandom,PetscObject,const char[]);
 PETSC_EXTERN PetscErrorCode PetscRandomView(PetscRandom,PetscViewer);
 
 PETSC_EXTERN PetscErrorCode PetscRandomCreate(MPI_Comm,PetscRandom*);
