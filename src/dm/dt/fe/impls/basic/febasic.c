@@ -48,7 +48,7 @@ static PetscErrorCode PetscFEView_Basic(PetscFE fe, PetscViewer v)
 /* Construct the change of basis from prime basis to nodal basis */
 PetscErrorCode PetscFESetUp_Basic(PetscFE fem)
 {
-  PetscScalar   *work, *invVscalar;
+  PetscReal     *work;
   PetscBLASInt  *pivots;
   PetscBLASInt   n, info;
   PetscInt       pdim, j;
@@ -57,11 +57,6 @@ PetscErrorCode PetscFESetUp_Basic(PetscFE fem)
   PetscFunctionBegin;
   ierr = PetscDualSpaceGetDimension(fem->dualSpace, &pdim);CHKERRQ(ierr);
   ierr = PetscMalloc1(pdim*pdim,&fem->invV);CHKERRQ(ierr);
-#if defined(PETSC_USE_COMPLEX)
-  ierr = PetscMalloc1(pdim*pdim,&invVscalar);CHKERRQ(ierr);
-#else
-  invVscalar = fem->invV;
-#endif
   for (j = 0; j < pdim; ++j) {
     PetscReal       *Bf;
     PetscQuadrature  f;
@@ -74,10 +69,10 @@ PetscErrorCode PetscFESetUp_Basic(PetscFE fem)
     ierr = PetscSpaceEvaluate(fem->basisSpace, Nq, points, Bf, NULL, NULL);CHKERRQ(ierr);
     for (k = 0; k < pdim; ++k) {
       /* V_{jk} = n_j(\phi_k) = \int \phi_k(x) n_j(x) dx */
-      invVscalar[j*pdim+k] = 0.0;
+      fem->invV[j*pdim+k] = 0.0;
 
       for (q = 0; q < Nq; ++q) {
-        for (c = 0; c < Nc; ++c) invVscalar[j*pdim+k] += Bf[(q*pdim + k)*Nc + c]*weights[q*Nc + c];
+        for (c = 0; c < Nc; ++c) fem->invV[j*pdim+k] += Bf[(q*pdim + k)*Nc + c]*weights[q*Nc + c];
       }
     }
     ierr = PetscFree(Bf);CHKERRQ(ierr);
@@ -85,14 +80,10 @@ PetscErrorCode PetscFESetUp_Basic(PetscFE fem)
 
   ierr = PetscMalloc2(pdim,&pivots,pdim,&work);CHKERRQ(ierr);
   n = pdim;
-  PetscStackCallBLAS("LAPACKgetrf", LAPACKgetrf_(&n, &n, invVscalar, &n, pivots, &info));
+  PetscStackCallBLAS("LAPACKgetrf", LAPACKREALgetrf_(&n, &n, fem->invV, &n, pivots, &info));
   if (info) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from LAPACKgetrf %D",(PetscInt)info);
-  PetscStackCallBLAS("LAPACKgetri", LAPACKgetri_(&n, invVscalar, &n, pivots, work, &n, &info));
+  PetscStackCallBLAS("LAPACKgetri", LAPACKREALgetri_(&n, fem->invV, &n, pivots, work, &n, &info));
   if (info) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from LAPACKgetri %D",(PetscInt)info);
-#if defined(PETSC_USE_COMPLEX)
-  for (j = 0; j < pdim*pdim; j++) fem->invV[j] = PetscRealPart(invVscalar[j]);
-  ierr = PetscFree(invVscalar);CHKERRQ(ierr);
-#endif
   ierr = PetscFree2(pivots,work);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -106,6 +97,33 @@ PetscErrorCode PetscFEGetDimension_Basic(PetscFE fem, PetscInt *dim)
   PetscFunctionReturn(0);
 }
 
+/* Tensor contraction on the middle index,
+ *    C[m,n,p] = A[m,k,p] * B[k,n]
+ * where all matrices use C-style ordering.
+ */
+static PetscErrorCode TensorContract_Private(PetscInt m,PetscInt n,PetscInt p,PetscInt k,const PetscReal *A,const PetscReal *B,PetscReal *C) {
+  PetscErrorCode ierr;
+  PetscInt i;
+
+  PetscFunctionBegin;
+  for (i=0; i<m; i++) {
+    PetscBLASInt n_,p_,k_,lda,ldb,ldc;
+    PetscReal one = 1, zero = 0;
+    /* Taking contiguous submatrices, we wish to comput c[n,p] = a[k,p] * B[k,n]
+     * or, in Fortran ordering, c(p,n) = a(p,k) * B(n,k)
+     */
+    ierr = PetscBLASIntCast(n,&n_);CHKERRQ(ierr);
+    ierr = PetscBLASIntCast(p,&p_);CHKERRQ(ierr);
+    ierr = PetscBLASIntCast(k,&k_);CHKERRQ(ierr);
+    lda = p_;
+    ldb = n_;
+    ldc = p_;
+    PetscStackCallBLAS("BLASgemm",BLASREALgemm_("N","T",&p_,&n_,&k_,&one,A+i*k*p,&lda,B,&ldb,&zero,C+i*n*p,&ldc));
+  }
+  PetscLogFlops(2*m*n*p*k);
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode PetscFECreateTabulation_Basic(PetscFE fem, PetscInt npoints, const PetscReal points[], PetscInt K, PetscTabulation T)
 {
   DM               dm;
@@ -116,7 +134,6 @@ PetscErrorCode PetscFECreateTabulation_Basic(PetscFE fem, PetscInt npoints, cons
   PetscReal       *D = K >= 1 ? T->T[1] : NULL;
   PetscReal       *H = K >= 2 ? T->T[2] : NULL;
   PetscReal       *tmpB = NULL, *tmpD = NULL, *tmpH = NULL;
-  PetscInt         p, d, j, k, c;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -129,51 +146,18 @@ PetscErrorCode PetscFECreateTabulation_Basic(PetscFE fem, PetscInt npoints, cons
   if (K >= 1) {ierr = DMGetWorkArray(dm, npoints*pdim*Nc*dim, MPIU_REAL, &tmpD);CHKERRQ(ierr);}
   if (K >= 2) {ierr = DMGetWorkArray(dm, npoints*pdim*Nc*dim*dim, MPIU_REAL, &tmpH);CHKERRQ(ierr);}
   ierr = PetscSpaceEvaluate(fem->basisSpace, npoints, points, tmpB, tmpD, tmpH);CHKERRQ(ierr);
-  /* Translate to the nodal basis */
-  for (p = 0; p < npoints; ++p) {
-    if (B) {
-      /* Multiply by V^{-1} (pdim x pdim) */
-      for (j = 0; j < pdim; ++j) {
-        const PetscInt i = (p*pdim + j)*Nc;
-
-        for (c = 0; c < Nc; ++c) {
-          B[i+c] = 0.0;
-          for (k = 0; k < pdim; ++k) {
-            B[i+c] += fem->invV[k*pdim+j] * tmpB[(p*pdim + k)*Nc+c];
-          }
-        }
-      }
-    }
-    if (D) {
-      /* Multiply by V^{-1} (pdim x pdim) */
-      for (j = 0; j < pdim; ++j) {
-        for (c = 0; c < Nc; ++c) {
-          for (d = 0; d < dim; ++d) {
-            const PetscInt i = ((p*pdim + j)*Nc + c)*dim + d;
-
-            D[i] = 0.0;
-            for (k = 0; k < pdim; ++k) {
-              D[i] += fem->invV[k*pdim+j] * tmpD[((p*pdim + k)*Nc + c)*dim + d];
-            }
-          }
-        }
-      }
-    }
-    if (H) {
-      /* Multiply by V^{-1} (pdim x pdim) */
-      for (j = 0; j < pdim; ++j) {
-        for (c = 0; c < Nc; ++c) {
-          for (d = 0; d < dim*dim; ++d) {
-            const PetscInt i = ((p*pdim + j)*Nc + c)*dim*dim + d;
-
-            H[i] = 0.0;
-            for (k = 0; k < pdim; ++k) {
-              H[i] += fem->invV[k*pdim+j] * tmpH[((p*pdim + k)*Nc + c)*dim*dim + d];
-            }
-          }
-        }
-      }
-    }
+  /* Translate from prime to nodal basis */
+  if (B) {
+    /* B[npoints, nodes, Nc] = tmpB[npoints, prime, Nc] * invV[prime, nodes] */
+    ierr = TensorContract_Private(npoints, pdim, Nc, pdim, tmpB, fem->invV, B);CHKERRQ(ierr);
+  }
+  if (D) {
+    /* D[npoints, nodes, Nc, dim] = tmpD[npoints, prime, Nc, dim] * invV[prime, nodes] */
+    ierr = TensorContract_Private(npoints, pdim, Nc*dim, pdim, tmpD, fem->invV, D);CHKERRQ(ierr);
+  }
+  if (H) {
+    /* H[npoints, nodes, Nc, dim, dim] = tmpH[npoints, prime, Nc, dim, dim] * invV[prime, nodes] */
+    ierr = TensorContract_Private(npoints, pdim, Nc*dim*dim, pdim, tmpH, fem->invV, H);CHKERRQ(ierr);
   }
   if (K >= 0) {ierr = DMRestoreWorkArray(dm, npoints*pdim*Nc, MPIU_REAL, &tmpB);CHKERRQ(ierr);}
   if (K >= 1) {ierr = DMRestoreWorkArray(dm, npoints*pdim*Nc*dim, MPIU_REAL, &tmpD);CHKERRQ(ierr);}
