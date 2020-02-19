@@ -961,7 +961,7 @@ M*/
    Not Collective
 
    Input Parameter:
-.   memory - memory to free (the pointer is ALWAYS set to NULL upon sucess)
+.   memory - memory to free (the pointer is ALWAYS set to NULL upon success)
 
    Level: beginner
 
