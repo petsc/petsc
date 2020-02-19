@@ -43,7 +43,7 @@ PetscErrorCode PetscOptionsBegin_Private(PetscOptionItems *PetscOptionsObject,MP
   ierr = PetscOptionsHasHelp(PetscOptionsObject->options,&PetscOptionsObject->printhelp);CHKERRQ(ierr);
   if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1) {
     if (!PetscOptionsObject->alreadyprinted) {
-      ierr = (*PetscHelpPrintf)(comm,"%s -------------------------------------------------\n",title);CHKERRQ(ierr);
+      ierr = (*PetscHelpPrintf)(comm,"-------------------------------------------------\n%s:\n",title);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
