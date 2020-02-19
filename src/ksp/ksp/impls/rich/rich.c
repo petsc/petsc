@@ -258,6 +258,10 @@ static PetscErrorCode  KSPRichardsonSetSelfScale_Richardson(KSP ksp,PetscBool se
 
     Supports only left preconditioning
 
+    If using direct solvers such as PCLU and PCCHOLESKY one generally uses KSPPREONLY which uses exactly one iteration
+
+$    -ksp_type richardson -pc_type jacobi gives one classically Jacobi preconditioning
+
   References:
 .  1. - L. F. Richardson, "The Approximate Arithmetical Solution by Finite Differences of Physical Problems Involving
    Differential Equations, with an Application to the Stresses in a Masonry Dam",
@@ -265,7 +269,7 @@ static PetscErrorCode  KSPRichardsonSetSelfScale_Richardson(KSP ksp,PetscBool se
   Containing Papers of a Mathematical or Physical Character, Vol. 210, 1911 (1911).
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
-           KSPRichardsonSetScale()
+           KSPRichardsonSetScale(), KSPPREONLY
 
 M*/
 
