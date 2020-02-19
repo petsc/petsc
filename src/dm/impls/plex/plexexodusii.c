@@ -27,7 +27,7 @@
   an error code.  The GLVIS PetscViewer is usually used in the form
 $       XXXView(XXX object, PETSC_VIEWER_EXODUSII_(comm));
 
-.seealso: PetscViewerGLVISOpen(), PetscViewerGLVisType, PetscViewerCreate(), PetscViewerDestroy()
+.seealso: PetscViewerExodusIIOpen(), PetscViewerType, PetscViewerCreate(), PetscViewerDestroy()
 */
 PetscViewer PETSC_VIEWER_EXODUSII_(MPI_Comm comm)
 {
@@ -36,9 +36,9 @@ PetscViewer PETSC_VIEWER_EXODUSII_(MPI_Comm comm)
 
   PetscFunctionBegin;
   ierr = PetscViewerExodusIIOpen(comm, "mesh.exo", FILE_MODE_WRITE, &viewer);
-  if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_GLVIS_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
+  if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_EXODUSII_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
   ierr = PetscObjectRegisterDestroy((PetscObject) viewer);
-  if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_GLVIS_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
+  if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_EXODUSII_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
   PetscFunctionReturn(viewer);
 }
 
@@ -171,7 +171,7 @@ $    FILE_MODE_READ - open existing file for binary input
 $    FILE_MODE_APPEND - open existing file for binary output
 
    Output Parameter:
-.  exo - PetscViewer for HDF5 input/output to use with the specified file
+.  exo - PetscViewer for Exodus II input/output to use with the specified file
 
    Level: beginner
 
@@ -179,9 +179,8 @@ $    FILE_MODE_APPEND - open existing file for binary output
    This PetscViewer should be destroyed with PetscViewerDestroy().
 
 
-.seealso: PetscViewerASCIIOpen(), PetscViewerPushFormat(), PetscViewerDestroy(), PetscViewerHDF5SetBaseDimension2(),
-          PetscViewerHDF5SetSPOutput(), PetscViewerHDF5GetBaseDimension2(), VecView(), MatView(), VecLoad(),
-          MatLoad(), PetscFileMode, PetscViewer, PetscViewerSetType(), PetscViewerFileSetMode(), PetscViewerFileSetName()
+.seealso: PetscViewerPushFormat(), PetscViewerDestroy(),
+          DMLoad(), PetscFileMode, PetscViewer, PetscViewerSetType(), PetscViewerFileSetMode(), PetscViewerFileSetName()
 @*/
 PetscErrorCode PetscViewerExodusIIOpen(MPI_Comm comm, const char name[], PetscFileMode type, PetscViewer *exo)
 {
@@ -197,12 +196,10 @@ PetscErrorCode PetscViewerExodusIIOpen(MPI_Comm comm, const char name[], PetscFi
 }
 
 /*MC
-   PETSCVIEWERHDF5 - A viewer that writes to an HDF5 file
+   PETSCVIEWEREXODUSII - A viewer that writes to an Exodus II file
 
 
-.seealso:  PetscViewerHDF5Open(), PetscViewerStringSPrintf(), PetscViewerSocketOpen(), PetscViewerDrawOpen(), PETSCVIEWERSOCKET,
-           PetscViewerCreate(), PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), PETSCVIEWERBINARY, PETSCVIEWERDRAW, PETSCVIEWERSTRING,
-           PetscViewerMatlabOpen(), VecView(), DMView(), PetscViewerMatlabPutArray(), PETSCVIEWERASCII, PETSCVIEWERMATLAB,
+.seealso:  PetscViewerExodusIIOpen(), PetscViewerCreate(), PETSCVIEWERBINARY, PETSCVIEWERHDF5, DMView(),
            PetscViewerFileSetName(), PetscViewerFileSetMode(), PetscViewerFormat, PetscViewerType, PetscViewerSetType()
 
   Level: beginner
