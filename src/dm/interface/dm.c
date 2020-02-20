@@ -533,19 +533,11 @@ PetscErrorCode  DMGetOptionsPrefix(DM dm,const char *prefix[])
 
 static PetscErrorCode DMCountNonCyclicReferences(DM dm, PetscBool recurseCoarse, PetscBool recurseFine, PetscInt *ncrefct)
 {
-  PetscInt i, refct = ((PetscObject) dm)->refct;
-  DMNamedVecLink nlink;
+  PetscInt       refct = ((PetscObject) dm)->refct;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   *ncrefct = 0;
-  /* count all the circular references of DM and its contained Vecs */
-  for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
-    if (dm->localin[i])  refct--;
-    if (dm->globalin[i]) refct--;
-  }
-  for (nlink=dm->namedglobal; nlink; nlink=nlink->next) refct--;
-  for (nlink=dm->namedlocal; nlink; nlink=nlink->next) refct--;
   if (dm->coarseMesh && dm->coarseMesh->fineMesh == dm) {
     refct--;
     if (recurseCoarse) {
@@ -603,7 +595,7 @@ PetscErrorCode DMDestroyLabelLinkList_Internal(DM dm)
 @*/
 PetscErrorCode  DMDestroy(DM *dm)
 {
-  PetscInt       i, cnt;
+  PetscInt       cnt;
   DMNamedVecLink nlink,nnext;
   PetscErrorCode ierr;
 
@@ -615,17 +607,12 @@ PetscErrorCode  DMDestroy(DM *dm)
   ierr = DMCountNonCyclicReferences(*dm,PETSC_TRUE,PETSC_TRUE,&cnt);CHKERRQ(ierr);
   --((PetscObject)(*dm))->refct;
   if (--cnt > 0) {*dm = 0; PetscFunctionReturn(0);}
-  /*
-     Need this test because the dm references the vectors that
-     reference the dm, so destroying the dm calls destroy on the
-     vectors that cause another destroy on the dm
-  */
   if (((PetscObject)(*dm))->refct < 0) PetscFunctionReturn(0);
-  ((PetscObject) (*dm))->refct = 0;
-  for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
-    if ((*dm)->localout[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Destroying a DM that has a local vector obtained with DMGetLocalVector()");
-    ierr = VecDestroy(&(*dm)->localin[i]);CHKERRQ(ierr);
-  }
+  ((PetscObject)(*dm))->refct = 0;
+
+  ierr = DMClearGlobalVectors(*dm);CHKERRQ(ierr);
+  ierr = DMClearLocalVectors(*dm);CHKERRQ(ierr);
+
   nnext=(*dm)->namedglobal;
   (*dm)->namedglobal = NULL;
   for (nlink=nnext; nlink; nlink=nnext) { /* Destroy the named vectors */
@@ -720,7 +707,6 @@ PetscErrorCode  DMDestroy(DM *dm)
     ierr = (*(*dm)->ctxdestroy)(&(*dm)->ctx);CHKERRQ(ierr);
   }
   ierr = MatFDColoringDestroy(&(*dm)->fd);CHKERRQ(ierr);
-  ierr = DMClearGlobalVectors(*dm);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&(*dm)->ltogmap);CHKERRQ(ierr);
   ierr = PetscFree((*dm)->vectype);CHKERRQ(ierr);
   ierr = PetscFree((*dm)->mattype);CHKERRQ(ierr);
@@ -741,6 +727,7 @@ PetscErrorCode  DMDestroy(DM *dm)
   if ((*dm)->coarseMesh && (*dm)->coarseMesh->fineMesh == *dm) {
     ierr = DMSetFineDM((*dm)->coarseMesh,NULL);CHKERRQ(ierr);
   }
+
   ierr = DMDestroy(&(*dm)->coarseMesh);CHKERRQ(ierr);
   if ((*dm)->fineMesh && (*dm)->fineMesh->coarseMesh == *dm) {
     ierr = DMSetCoarseDM((*dm)->fineMesh,NULL);CHKERRQ(ierr);
@@ -5335,7 +5322,6 @@ PetscErrorCode DMCopyDisc(DM dm, DM newdm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (dm == newdm) PetscFunctionReturn(0);
   ierr = DMCopyFields(dm, newdm);CHKERRQ(ierr);
   ierr = DMCopyDS(dm, newdm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
