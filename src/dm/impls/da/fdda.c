@@ -261,15 +261,15 @@ PetscErrorCode  DMCreateColoring_DA(DM da,ISColoringType ctype,ISColoring *color
 
   /*
      We do not provide a getcoloring function in the DMDA operations because
-   the basic DMDA does not know about matrices. We think of DMDA as being more
+   the basic DMDA does not know about matrices. We think of DMDA as being
    more low-level then matrices.
   */
   if (dim == 1) {
     ierr = DMCreateColoring_DA_1d_MPIAIJ(da,ctype,coloring);CHKERRQ(ierr);
   } else if (dim == 2) {
-    ierr =  DMCreateColoring_DA_2d_MPIAIJ(da,ctype,coloring);CHKERRQ(ierr);
+    ierr = DMCreateColoring_DA_2d_MPIAIJ(da,ctype,coloring);CHKERRQ(ierr);
   } else if (dim == 3) {
-    ierr =  DMCreateColoring_DA_3d_MPIAIJ(da,ctype,coloring);CHKERRQ(ierr);
+    ierr = DMCreateColoring_DA_3d_MPIAIJ(da,ctype,coloring);CHKERRQ(ierr);
   } else SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Not done for %D dimension, send us mail petsc-maint@mcs.anl.gov for code",dim);
   if (isBAIJ) {
     dd->w  = nc;
@@ -285,14 +285,14 @@ PetscErrorCode  DMCreateColoring_DA(DM da,ISColoringType ctype,ISColoring *color
 
 PetscErrorCode DMCreateColoring_DA_2d_MPIAIJ(DM da,ISColoringType ctype,ISColoring *coloring)
 {
-  PetscErrorCode   ierr;
-  PetscInt         xs,ys,nx,ny,i,j,ii,gxs,gys,gnx,gny,m,n,M,N,dim,s,k,nc,col;
-  PetscInt         ncolors;
-  MPI_Comm         comm;
-  DMBoundaryType bx,by;
-  DMDAStencilType  st;
-  ISColoringValue  *colors;
-  DM_DA            *dd = (DM_DA*)da->data;
+  PetscErrorCode  ierr;
+  PetscInt        xs,ys,nx,ny,i,j,ii,gxs,gys,gnx,gny,m,n,M,N,dim,s,k,nc,col;
+  PetscInt        ncolors;
+  MPI_Comm        comm;
+  DMBoundaryType  bx,by;
+  DMDAStencilType st;
+  ISColoringValue *colors;
+  DM_DA           *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   /*
@@ -359,14 +359,14 @@ PetscErrorCode DMCreateColoring_DA_2d_MPIAIJ(DM da,ISColoringType ctype,ISColori
 
 PetscErrorCode DMCreateColoring_DA_3d_MPIAIJ(DM da,ISColoringType ctype,ISColoring *coloring)
 {
-  PetscErrorCode   ierr;
-  PetscInt         xs,ys,nx,ny,i,j,gxs,gys,gnx,gny,m,n,p,dim,s,k,nc,col,zs,gzs,ii,l,nz,gnz,M,N,P;
-  PetscInt         ncolors;
-  MPI_Comm         comm;
-  DMBoundaryType bx,by,bz;
-  DMDAStencilType  st;
-  ISColoringValue  *colors;
-  DM_DA            *dd = (DM_DA*)da->data;
+  PetscErrorCode  ierr;
+  PetscInt        xs,ys,nx,ny,i,j,gxs,gys,gnx,gny,m,n,p,dim,s,k,nc,col,zs,gzs,ii,l,nz,gnz,M,N,P;
+  PetscInt        ncolors;
+  MPI_Comm        comm;
+  DMBoundaryType  bx,by,bz;
+  DMDAStencilType st;
+  ISColoringValue *colors;
+  DM_DA           *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   /*
@@ -433,13 +433,13 @@ PetscErrorCode DMCreateColoring_DA_3d_MPIAIJ(DM da,ISColoringType ctype,ISColori
 
 PetscErrorCode DMCreateColoring_DA_1d_MPIAIJ(DM da,ISColoringType ctype,ISColoring *coloring)
 {
-  PetscErrorCode   ierr;
-  PetscInt         xs,nx,i,i1,gxs,gnx,l,m,M,dim,s,nc,col;
-  PetscInt         ncolors;
-  MPI_Comm         comm;
-  DMBoundaryType bx;
-  ISColoringValue  *colors;
-  DM_DA            *dd = (DM_DA*)da->data;
+  PetscErrorCode  ierr;
+  PetscInt        xs,nx,i,i1,gxs,gnx,l,m,M,dim,s,nc,col;
+  PetscInt        ncolors;
+  MPI_Comm        comm;
+  DMBoundaryType  bx;
+  ISColoringValue *colors;
+  DM_DA           *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   /*
@@ -509,13 +509,13 @@ PetscErrorCode DMCreateColoring_DA_1d_MPIAIJ(DM da,ISColoringType ctype,ISColori
 
 PetscErrorCode DMCreateColoring_DA_2d_5pt_MPIAIJ(DM da,ISColoringType ctype,ISColoring *coloring)
 {
-  PetscErrorCode   ierr;
-  PetscInt         xs,ys,nx,ny,i,j,ii,gxs,gys,gnx,gny,m,n,dim,s,k,nc;
-  PetscInt         ncolors;
-  MPI_Comm         comm;
-  DMBoundaryType bx,by;
-  ISColoringValue  *colors;
-  DM_DA            *dd = (DM_DA*)da->data;
+  PetscErrorCode  ierr;
+  PetscInt        xs,ys,nx,ny,i,j,ii,gxs,gys,gnx,gny,m,n,dim,s,k,nc;
+  PetscInt        ncolors;
+  MPI_Comm        comm;
+  DMBoundaryType  bx,by;
+  ISColoringValue *colors;
+  DM_DA           *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   /*
