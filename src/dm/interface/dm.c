@@ -546,11 +546,6 @@ static PetscErrorCode DMCountNonCyclicReferences(DM dm, PetscBool recurseCoarse,
   }
   for (nlink=dm->namedglobal; nlink; nlink=nlink->next) refct--;
   for (nlink=dm->namedlocal; nlink; nlink=nlink->next) refct--;
-  if (dm->x) {
-    DM obj;
-    ierr = VecGetDM(dm->x, &obj);CHKERRQ(ierr);
-    if (obj == dm) refct--;
-  }
   if (dm->coarseMesh && dm->coarseMesh->fineMesh == dm) {
     refct--;
     if (recurseCoarse) {
@@ -724,7 +719,6 @@ PetscErrorCode  DMDestroy(DM *dm)
   if ((*dm)->ctx && (*dm)->ctxdestroy) {
     ierr = (*(*dm)->ctxdestroy)(&(*dm)->ctx);CHKERRQ(ierr);
   }
-  ierr = VecDestroy(&(*dm)->x);CHKERRQ(ierr);
   ierr = MatFDColoringDestroy(&(*dm)->fd);CHKERRQ(ierr);
   ierr = DMClearGlobalVectors(*dm);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&(*dm)->ltogmap);CHKERRQ(ierr);
@@ -3494,38 +3488,6 @@ PetscErrorCode DMHasCreateInjection(DM dm,PetscBool *flg)
     ierr = (*dm->ops->hascreateinjection)(dm,flg);CHKERRQ(ierr);
   } else {
     *flg = (dm->ops->createinjection) ? PETSC_TRUE : PETSC_FALSE;
-  }
-  PetscFunctionReturn(0);
-}
-
-
-/*@C
-    DMSetVec - set the vector at which to compute residual, Jacobian and VI bounds, if the problem is nonlinear.
-
-    Collective on dm
-
-    Input Parameter:
-+   dm - the DM object
--   x - location to compute residual and Jacobian, if NULL is passed to those routines; will be NULL for linear problems.
-
-    Level: developer
-
-.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext()
-
-@*/
-PetscErrorCode  DMSetVec(DM dm,Vec x)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (x) {
-    if (!dm->x) {
-      ierr = DMCreateGlobalVector(dm,&dm->x);CHKERRQ(ierr);
-    }
-    ierr = VecCopy(x,dm->x);CHKERRQ(ierr);
-  } else if (dm->x) {
-    ierr = VecDestroy(&dm->x);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

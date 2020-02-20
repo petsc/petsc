@@ -183,7 +183,6 @@ struct _p_DM {
   DMLabel                 celltypeLabel;     /* Optimized access to celltype label */
   void                    *ctx;    /* a user context */
   PetscErrorCode          (*ctxdestroy)(void**);
-  Vec                     x;       /* location at which the functions/Jacobian are computed */
   ISColoringType          coloringtype;
   MatFDColoring           fd;
   VecType                 vectype;  /* type of vector created with DMCreateLocalVector() and DMCreateGlobalVector() */
