@@ -294,6 +294,7 @@ PetscErrorCode DMCreateMatrix_MF(DM packer,Mat *A)
   ierr = DMRestoreGlobalVector(packer,&t);CHKERRQ(ierr);
   ierr = MatCreateMFFD(PETSC_COMM_WORLD,m,m,PETSC_DETERMINE,PETSC_DETERMINE,A);CHKERRQ(ierr);
   ierr = MatSetUp(*A);CHKERRQ(ierr);
+  ierr = MatSetDM(*A,packer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

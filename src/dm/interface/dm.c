@@ -947,6 +947,14 @@ PetscErrorCode  DMCreateGlobalVector(DM dm,Vec *vec)
   PetscValidPointer(vec,2);
   if (!dm->ops->createglobalvector) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM type %s does not implement DMCreateGlobalVector",((PetscObject)dm)->type_name);
   ierr = (*dm->ops->createglobalvector)(dm,vec);CHKERRQ(ierr);
+#if defined(PETSC_USE_DEBUG)
+  {
+    DM vdm;
+
+    ierr = VecGetDM(*vec,&vdm);CHKERRQ(ierr);
+    if (!vdm) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"DM type '%s' did not attach the DM to the vector\n",((PetscObject)dm)->type_name);
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -975,6 +983,14 @@ PetscErrorCode  DMCreateLocalVector(DM dm,Vec *vec)
   PetscValidPointer(vec,2);
   if (!dm->ops->createlocalvector) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM type %s does not implement DMCreateLocalVector",((PetscObject)dm)->type_name);
   ierr = (*dm->ops->createlocalvector)(dm,vec);CHKERRQ(ierr);
+#if defined(PETSC_USE_DEBUG)
+  {
+    DM vdm;
+
+    ierr = VecGetDM(*vec,&vdm);CHKERRQ(ierr);
+    if (!vdm) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"DM type '%s' did not attach the DM to the vector\n",((PetscObject)dm)->type_name);
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -1335,6 +1351,14 @@ PetscErrorCode  DMCreateMatrix(DM dm,Mat *mat)
   ierr = MatInitializePackage();CHKERRQ(ierr);
   ierr = PetscLogEventBegin(DM_CreateMatrix,0,0,0,0);CHKERRQ(ierr);
   ierr = (*dm->ops->creatematrix)(dm,mat);CHKERRQ(ierr);
+#if defined(PETSC_USE_DEBUG)
+  {
+    DM mdm;
+
+    ierr = MatGetDM(*mat,&mdm);CHKERRQ(ierr);
+    if (!mdm) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"DM type '%s' did not attach the DM to the matrix\n",((PetscObject)dm)->type_name);
+  }
+#endif
   /* Handle nullspace and near nullspace */
   if (dm->Nf) {
     MatNullSpace nullSpace;

@@ -83,6 +83,7 @@ PetscErrorCode DMCreateGlobalVector_Swarm(DM dm,Vec *vec)
   ierr = PetscObjectSetName((PetscObject)x,name);CHKERRQ(ierr);
   ierr = VecSetSizes(x,swarm->db->L*swarm->vec_field_bs,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetBlockSize(x,swarm->vec_field_bs);CHKERRQ(ierr);
+  ierr = VecSetDM(x,dm);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   *vec = x;
   PetscFunctionReturn(0);
@@ -106,6 +107,7 @@ PetscErrorCode DMCreateLocalVector_Swarm(DM dm,Vec *vec)
   ierr = PetscObjectSetName((PetscObject)x,name);CHKERRQ(ierr);
   ierr = VecSetSizes(x,swarm->db->L*swarm->vec_field_bs,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetBlockSize(x,swarm->vec_field_bs);CHKERRQ(ierr);
+  ierr = VecSetDM(x,dm);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   *vec = x;
   PetscFunctionReturn(0);
