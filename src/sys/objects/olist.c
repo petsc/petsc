@@ -210,7 +210,7 @@ PetscErrorCode  PetscObjectListFind(PetscObjectList fl,const char name[],PetscOb
 
     Output Parameters:
 +  name - name string
--  skipdereference - if the object is list but does not have the increased reference count for a circular dependency
+-  skipdereference - if the object is in list but does not have the increased reference count for a circular dependency
 
     Level: developer
 
@@ -238,7 +238,7 @@ PetscErrorCode  PetscObjectListReverseFind(PetscObjectList fl,PetscObject obj,ch
 }
 
 /*@C
-    PetscObjectListDuplicate - Creates a new list from a give object list.
+    PetscObjectListDuplicate - Creates a new list from a given object list.
 
     Input Parameters:
 .   fl   - pointer to list
@@ -262,8 +262,3 @@ PetscErrorCode  PetscObjectListDuplicate(PetscObjectList fl,PetscObjectList *nl)
   }
   PetscFunctionReturn(0);
 }
-
-
-
-
-
