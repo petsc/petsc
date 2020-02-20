@@ -458,7 +458,7 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
     ierr = PetscMalloc1(cEnd-cEndInterior,&newidx);CHKERRQ(ierr);
     for (c = cEndInterior; c < cEnd; ++c) newidx[c-cEndInterior] = c;
     bcFields[bc] = f;
-    ierr = ISCreateGeneral(PetscObjectComm((PetscObject) dm), cEnd-cEndInterior, newidx, PETSC_OWN_POINTER, &bcPoints[bc++]);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF, cEnd-cEndInterior, newidx, PETSC_OWN_POINTER, &bcPoints[bc++]);CHKERRQ(ierr);
   }
   /* Handle FEM Dirichlet boundaries */
   for (bd = 0; bd < numBd; ++bd) {
@@ -490,7 +490,7 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
       PetscInt        n, newn = 0, p, v;
 
       bcFields[bc] = field;
-      if (numComps) {ierr = ISCreateGeneral(PetscObjectComm((PetscObject) dm), numComps, comps, PETSC_COPY_VALUES, &bcComps[bc]);CHKERRQ(ierr);}
+      if (numComps) {ierr = ISCreateGeneral(PETSC_COMM_SELF, numComps, comps, PETSC_COPY_VALUES, &bcComps[bc]);CHKERRQ(ierr);}
       for (v = 0; v < numValues; ++v) {
         IS              tmp;
         const PetscInt *idx;
@@ -525,7 +525,7 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
         ierr = ISRestoreIndices(tmp, &idx);CHKERRQ(ierr);
         ierr = ISDestroy(&tmp);CHKERRQ(ierr);
       }
-      ierr = ISCreateGeneral(PetscObjectComm((PetscObject) dm), newn, newidx, PETSC_OWN_POINTER, &bcPoints[bc++]);CHKERRQ(ierr);
+      ierr = ISCreateGeneral(PETSC_COMM_SELF, newn, newidx, PETSC_OWN_POINTER, &bcPoints[bc++]);CHKERRQ(ierr);
     }
   }
   /* Handle discretization */
