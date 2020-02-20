@@ -42,10 +42,10 @@ PetscErrorCode DMSetUpGLVisViewer_Shell(PetscObject odm, PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetGlobalVector(dm,&V);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(dm,&V);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)V,"sample");CHKERRQ(ierr);
   ierr = PetscViewerGLVisSetFields(viewer,1,&fec_type,&dim,NULL,(PetscObject*)&V,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(dm,&V);CHKERRQ(ierr);
+  ierr = VecDestroy(&V);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -81,4 +81,3 @@ int main(int argc, char **argv)
     output_file: output/ex8_glvis.out
 
 TEST*/
-
