@@ -33,7 +33,7 @@ int main(int argc, char **argv)
   numDof[0*(dim+1)+0]     = 1;
   /* Let v be defined on cells */
   numDof[1*(dim+1)+dim]   = dim;
-  /* Let v be defined on faces */
+  /* Let w be defined on faces */
   numDof[2*(dim+1)+dim-1] = dim-1;
   /* Setup boundary conditions */
   numBC = 1;
