@@ -127,6 +127,33 @@
         end subroutine
       end interface VecSetValuesLocal
 
+      Interface VecGetValues
+        subroutine VecGetValues0(a,b,c,d,z)
+          use petscvecdef
+          Vec a ! Vec
+          PetscInt b ! PetscInt
+          PetscInt c (*) ! PetscInt
+          PetscScalar d (*) ! PetscScalar
+          PetscErrorCode z
+        end subroutine
+        subroutine VecGetValues1(a,b,c,d,z)
+          use petscvecdef
+          Vec a ! Vec
+          PetscInt b ! PetscInt
+          PetscInt c ! PetscInt
+          PetscScalar d (*) ! PetscScalar
+          PetscErrorCode z
+        end subroutine
+        subroutine VecGetValues11(a,b,c,d,z)
+          use petscvecdef
+          Vec a ! Vec
+          PetscInt b ! PetscInt
+          PetscInt c ! PetscInt
+          PetscScalar d ! PetscScalar
+          PetscErrorCode z
+        end subroutine
+      End Interface VecGetValues
+
       Interface VecSetValues
         subroutine VecSetValues0(a,b,c,d,e,z)
           use petscvecdef

@@ -195,6 +195,72 @@
 
         end interface
 
+        Interface MatGetValues
+        ! picky Fortran requires separate prototypes if args
+        ! are arrays or scalars
+        subroutine MatGetValues0(a,b,c,d,e,f,z)
+          use petscmatdef
+          Mat a ! Mat
+          PetscInt b ! PetscInt
+          PetscInt c (*) ! PetscInt
+          PetscInt d ! PetscInt
+          PetscInt e (*) ! PetscInt
+          PetscScalar f (*) ! PetscScalar
+          PetscErrorCode z
+        end subroutine
+        subroutine MatGetValuesnn1(a,b,c,d,e,f,z)
+          use petscmatdef
+          Mat a ! Mat
+          PetscInt b ! PetscInt
+          PetscInt c (*) ! PetscInt
+          PetscInt d ! PetscInt
+          PetscInt e (*) ! PetscInt
+          PetscScalar f  ! PetscScalar
+          PetscErrorCode z
+        end subroutine
+        subroutine MatGetValuesnnnn(a,b,c,d,e,f,z)
+          use petscmatdef
+          Mat a ! Mat
+          PetscInt b ! PetscInt
+          PetscInt c (*) ! PetscInt
+          PetscInt d ! PetscInt
+          PetscInt e (*) ! PetscInt
+          PetscScalar f(1,1)  ! PetscScalar
+          PetscErrorCode z
+        end subroutine
+        subroutine MatGetValues11(a,b,c,d,e,f,z)
+          use petscmatdef
+          Mat a ! Mat
+          PetscInt b ! PetscInt
+          PetscInt c ! PetscInt
+          PetscInt d ! PetscInt
+          PetscInt e ! PetscInt
+          PetscScalar f  ! PetscScalar
+          PetscErrorCode z
+        end subroutine
+        subroutine MatGetValues1n(a,b,c,d,e,f,z)
+          use petscmatdef
+          Mat a ! Mat
+          PetscInt b ! PetscInt
+          PetscInt c ! PetscInt
+          PetscInt d ! PetscInt
+          PetscInt e (*) ! PetscInt
+          PetscScalar f (*)  ! PetscScalar
+          PetscErrorCode z
+        end subroutine
+        subroutine MatGetValuesn1(a,b,c,d,e,f,z)
+          use petscmatdef
+          Mat a ! Mat
+          PetscInt b ! PetscInt
+          PetscInt c (*) ! PetscInt
+          PetscInt d ! PetscInt
+          PetscInt e ! PetscInt
+          PetscScalar f (*) ! PetscScalar
+          PetscErrorCode z
+        end subroutine
+      End Interface MatGetValues
+
+
         Interface MatSetValues
         ! picky Fortran requires separate prototypes if args
         ! are arrays or scalars

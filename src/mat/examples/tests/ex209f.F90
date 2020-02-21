@@ -11,6 +11,7 @@
       PetscScalar, pointer :: km(:,:)
       PetscInt three,one
       PetscInt idxm(1),i,j
+      PetscScalar v
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       if (ierr .ne. 0) then
@@ -38,6 +39,9 @@
       call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr);CHKERRA(ierr)
       call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr);CHKERRA(ierr)
       call MatView(A,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
+
+      j = 0
+      call MatGetValues(A,one,j,one,j,v,ierr);CHKERRA(ierr)
 
       call MatDestroy(A,ierr);CHKERRA(ierr)
 

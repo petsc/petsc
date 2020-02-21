@@ -69,6 +69,12 @@
       call VecAssemblyBegin(x,ierr)
       call VecAssemblyEnd(x,ierr)
 
+!     Test VecGetValues() with scalar entries
+      if (rank .eq. 0) then
+        ione = 0
+        call VecGetValues(x,ione,i,one,ierr)
+      endif
+
 !  View the vector; then destroy it.
 
       call VecView(x,PETSC_VIEWER_STDOUT_WORLD,ierr)
