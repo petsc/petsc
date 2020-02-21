@@ -469,7 +469,7 @@ PetscErrorCode PetscSectionGetFieldComponents(PetscSection s, PetscInt field, Pe
 
   Level: intermediate
 
-.seealso: PetscSectionGetNumFieldComponents(), PetscSectionGetNumFields()
+.seealso: PetscSectionGetFieldComponents(), PetscSectionGetNumFields()
 @*/
 PetscErrorCode PetscSectionSetFieldComponents(PetscSection s, PetscInt field, PetscInt numComp)
 {

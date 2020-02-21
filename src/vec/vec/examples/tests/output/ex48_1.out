@@ -1,106 +1,106 @@
 na np ns 6 4 3
 Has / group? 1
-  - ///integer attribute? 1
-  - ///real attribute? 1
-  - ///boolean0 attribute? 1
-  - ///boolean1 attribute? 1
-  - ///string attribute? 1
-  - ///nonExistingAttribute attribute? 0
--   //x dataset? 1
-  - //x/integer object attribute? 1
-  - //x/real object attribute? 1
-  - //x/boolean0 object attribute? 1
-  - //x/boolean1 object attribute? 1
-  - //x/string object attribute? 1
-  - //x/nonExistingAttribute object attribute? 0
-  - //x/integer attribute? 1
-  - //x/real attribute? 1
-  - //x/boolean0 attribute? 1
-  - //x/boolean1 attribute? 1
-  - //x/string attribute? 1
-  - //x/nonExistingAttribute attribute? 0
--   //nonExistingVec dataset? 0
-  - //nonExistingVec/integer attribute? 0
-  - //nonExistingVec/real attribute? 0
-  - //nonExistingVec/boolean0 attribute? 0
-  - //nonExistingVec/boolean1 attribute? 0
-  - //nonExistingVec/string attribute? 0
-  - //nonExistingVec/nonExistingAttribute attribute? 0
+    ///integer attribute? 1
+    ///real attribute? 1
+    ///boolean0 attribute? 1
+    ///boolean1 attribute? 1
+    ///string attribute? 1
+    ///nonExistingAttribute attribute? 0
+    //x dataset? 1
+    //x/integer object attribute? 1
+    //x/real object attribute? 1
+    //x/boolean0 object attribute? 1
+    //x/boolean1 object attribute? 1
+    //x/string object attribute? 1
+    //x/nonExistingAttribute object attribute? 0
+    //x/integer attribute? 1
+    //x/real attribute? 1
+    //x/boolean0 attribute? 1
+    //x/boolean1 attribute? 1
+    //x/string attribute? 1
+    //x/nonExistingAttribute attribute? 0
+    //nonExistingVec dataset? 0
+    //nonExistingVec/integer attribute? 0
+    //nonExistingVec/real attribute? 0
+    //nonExistingVec/boolean0 attribute? 0
+    //nonExistingVec/boolean1 attribute? 0
+    //nonExistingVec/string attribute? 0
+    //nonExistingVec/nonExistingAttribute attribute? 0
 Has /group1 group? 1
-  - /group1//integer attribute? 1
-  - /group1//real attribute? 1
-  - /group1//boolean0 attribute? 1
-  - /group1//boolean1 attribute? 1
-  - /group1//string attribute? 1
-  - /group1//nonExistingAttribute attribute? 0
--   /group1/x dataset? 1
-  - /group1/x/integer object attribute? 1
-  - /group1/x/real object attribute? 1
-  - /group1/x/boolean0 object attribute? 1
-  - /group1/x/boolean1 object attribute? 1
-  - /group1/x/string object attribute? 1
-  - /group1/x/nonExistingAttribute object attribute? 0
-  - /group1/x/integer attribute? 1
-  - /group1/x/real attribute? 1
-  - /group1/x/boolean0 attribute? 1
-  - /group1/x/boolean1 attribute? 1
-  - /group1/x/string attribute? 1
-  - /group1/x/nonExistingAttribute attribute? 0
--   /group1/nonExistingVec dataset? 0
-  - /group1/nonExistingVec/integer attribute? 0
-  - /group1/nonExistingVec/real attribute? 0
-  - /group1/nonExistingVec/boolean0 attribute? 0
-  - /group1/nonExistingVec/boolean1 attribute? 0
-  - /group1/nonExistingVec/string attribute? 0
-  - /group1/nonExistingVec/nonExistingAttribute attribute? 0
+    /group1//integer attribute? 1
+    /group1//real attribute? 1
+    /group1//boolean0 attribute? 1
+    /group1//boolean1 attribute? 1
+    /group1//string attribute? 1
+    /group1//nonExistingAttribute attribute? 0
+    /group1/x dataset? 1
+    /group1/x/integer object attribute? 1
+    /group1/x/real object attribute? 1
+    /group1/x/boolean0 object attribute? 1
+    /group1/x/boolean1 object attribute? 1
+    /group1/x/string object attribute? 1
+    /group1/x/nonExistingAttribute object attribute? 0
+    /group1/x/integer attribute? 1
+    /group1/x/real attribute? 1
+    /group1/x/boolean0 attribute? 1
+    /group1/x/boolean1 attribute? 1
+    /group1/x/string attribute? 1
+    /group1/x/nonExistingAttribute attribute? 0
+    /group1/nonExistingVec dataset? 0
+    /group1/nonExistingVec/integer attribute? 0
+    /group1/nonExistingVec/real attribute? 0
+    /group1/nonExistingVec/boolean0 attribute? 0
+    /group1/nonExistingVec/boolean1 attribute? 0
+    /group1/nonExistingVec/string attribute? 0
+    /group1/nonExistingVec/nonExistingAttribute attribute? 0
 Has /group1/group2 group? 1
-  - /group1/group2//integer attribute? 1
-  - /group1/group2//real attribute? 1
-  - /group1/group2//boolean0 attribute? 1
-  - /group1/group2//boolean1 attribute? 1
-  - /group1/group2//string attribute? 1
-  - /group1/group2//nonExistingAttribute attribute? 0
--   /group1/group2/x dataset? 1
-  - /group1/group2/x/integer object attribute? 1
-  - /group1/group2/x/real object attribute? 1
-  - /group1/group2/x/boolean0 object attribute? 1
-  - /group1/group2/x/boolean1 object attribute? 1
-  - /group1/group2/x/string object attribute? 1
-  - /group1/group2/x/nonExistingAttribute object attribute? 0
-  - /group1/group2/x/integer attribute? 1
-  - /group1/group2/x/real attribute? 1
-  - /group1/group2/x/boolean0 attribute? 1
-  - /group1/group2/x/boolean1 attribute? 1
-  - /group1/group2/x/string attribute? 1
-  - /group1/group2/x/nonExistingAttribute attribute? 0
--   /group1/group2/nonExistingVec dataset? 0
-  - /group1/group2/nonExistingVec/integer attribute? 0
-  - /group1/group2/nonExistingVec/real attribute? 0
-  - /group1/group2/nonExistingVec/boolean0 attribute? 0
-  - /group1/group2/nonExistingVec/boolean1 attribute? 0
-  - /group1/group2/nonExistingVec/string attribute? 0
-  - /group1/group2/nonExistingVec/nonExistingAttribute attribute? 0
+    /group1/group2//integer attribute? 1
+    /group1/group2//real attribute? 1
+    /group1/group2//boolean0 attribute? 1
+    /group1/group2//boolean1 attribute? 1
+    /group1/group2//string attribute? 1
+    /group1/group2//nonExistingAttribute attribute? 0
+    /group1/group2/x dataset? 1
+    /group1/group2/x/integer object attribute? 1
+    /group1/group2/x/real object attribute? 1
+    /group1/group2/x/boolean0 object attribute? 1
+    /group1/group2/x/boolean1 object attribute? 1
+    /group1/group2/x/string object attribute? 1
+    /group1/group2/x/nonExistingAttribute object attribute? 0
+    /group1/group2/x/integer attribute? 1
+    /group1/group2/x/real attribute? 1
+    /group1/group2/x/boolean0 attribute? 1
+    /group1/group2/x/boolean1 attribute? 1
+    /group1/group2/x/string attribute? 1
+    /group1/group2/x/nonExistingAttribute attribute? 0
+    /group1/group2/nonExistingVec dataset? 0
+    /group1/group2/nonExistingVec/integer attribute? 0
+    /group1/group2/nonExistingVec/real attribute? 0
+    /group1/group2/nonExistingVec/boolean0 attribute? 0
+    /group1/group2/nonExistingVec/boolean1 attribute? 0
+    /group1/group2/nonExistingVec/string attribute? 0
+    /group1/group2/nonExistingVec/nonExistingAttribute attribute? 0
 Has /group1/nonExistingPath group? 0
-  - /group1/nonExistingPath//integer attribute? 0
-  - /group1/nonExistingPath//real attribute? 0
-  - /group1/nonExistingPath//boolean0 attribute? 0
-  - /group1/nonExistingPath//boolean1 attribute? 0
-  - /group1/nonExistingPath//string attribute? 0
-  - /group1/nonExistingPath//nonExistingAttribute attribute? 0
--   /group1/nonExistingPath/x dataset? 0
-  - /group1/nonExistingPath/x/integer attribute? 0
-  - /group1/nonExistingPath/x/real attribute? 0
-  - /group1/nonExistingPath/x/boolean0 attribute? 0
-  - /group1/nonExistingPath/x/boolean1 attribute? 0
-  - /group1/nonExistingPath/x/string attribute? 0
-  - /group1/nonExistingPath/x/nonExistingAttribute attribute? 0
--   /group1/nonExistingPath/nonExistingVec dataset? 0
-  - /group1/nonExistingPath/nonExistingVec/integer attribute? 0
-  - /group1/nonExistingPath/nonExistingVec/real attribute? 0
-  - /group1/nonExistingPath/nonExistingVec/boolean0 attribute? 0
-  - /group1/nonExistingPath/nonExistingVec/boolean1 attribute? 0
-  - /group1/nonExistingPath/nonExistingVec/string attribute? 0
-  - /group1/nonExistingPath/nonExistingVec/nonExistingAttribute attribute? 0
+    /group1/nonExistingPath//integer attribute? 0
+    /group1/nonExistingPath//real attribute? 0
+    /group1/nonExistingPath//boolean0 attribute? 0
+    /group1/nonExistingPath//boolean1 attribute? 0
+    /group1/nonExistingPath//string attribute? 0
+    /group1/nonExistingPath//nonExistingAttribute attribute? 0
+    /group1/nonExistingPath/x dataset? 0
+    /group1/nonExistingPath/x/integer attribute? 0
+    /group1/nonExistingPath/x/real attribute? 0
+    /group1/nonExistingPath/x/boolean0 attribute? 0
+    /group1/nonExistingPath/x/boolean1 attribute? 0
+    /group1/nonExistingPath/x/string attribute? 0
+    /group1/nonExistingPath/x/nonExistingAttribute attribute? 0
+    /group1/nonExistingPath/nonExistingVec dataset? 0
+    /group1/nonExistingPath/nonExistingVec/integer attribute? 0
+    /group1/nonExistingPath/nonExistingVec/real attribute? 0
+    /group1/nonExistingPath/nonExistingVec/boolean0 attribute? 0
+    /group1/nonExistingPath/nonExistingVec/boolean1 attribute? 0
+    /group1/nonExistingPath/nonExistingVec/string attribute? 0
+    /group1/nonExistingPath/nonExistingVec/nonExistingAttribute attribute? 0
 Has ///integer? 1
 Has ///real? 1
 Has ///boolean0? 1
@@ -177,35 +177,44 @@ Has /group1/nonExistingPath/nonExistingVec/nonExistingAttribute? 0
 ///real=3.140000
 ///boolean0=FALSE
 ///boolean1=TRUE
+///string=Test String
 //x/integer=-1234
 //x/real=3.140000
 //x/boolean0=FALSE
 //x/boolean1=TRUE
+//x/string=Test String
 /group1//integer=-1234
 /group1//real=3.140000
 /group1//boolean0=FALSE
 /group1//boolean1=TRUE
+/group1//string=Test String
 /group1/x/integer=-1234
 /group1/x/real=3.140000
 /group1/x/boolean0=FALSE
 /group1/x/boolean1=TRUE
+/group1/x/string=Test String
 /group1/group2//integer=-1234
 /group1/group2//real=3.140000
 /group1/group2//boolean0=FALSE
 /group1/group2//boolean1=TRUE
+/group1/group2//string=Test String
 /group1/group2/x/integer=-1234
 /group1/group2/x/real=3.140000
 /group1/group2/x/boolean0=FALSE
 /group1/group2/x/boolean1=TRUE
+/group1/group2/x/string=Test String
 //x/integer=-1234
 //x/real=3.140000
 //x/boolean0=FALSE
 //x/boolean1=TRUE
+//x/string=Test String
 /group1/x/integer=-1234
 /group1/x/real=3.140000
 /group1/x/boolean0=FALSE
 /group1/x/boolean1=TRUE
+/group1/x/string=Test String
 /group1/group2/x/integer=-1234
 /group1/group2/x/real=3.140000
 /group1/group2/x/boolean0=FALSE
 /group1/group2/x/boolean1=TRUE
+/group1/group2/x/string=Test String
