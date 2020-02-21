@@ -18,7 +18,7 @@
 extern "C" {
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL petscsynchronizedflush_(MPI_Fint * comm, FILE **file,int *ierr)
+PETSC_EXTERN void petscsynchronizedflush_(MPI_Fint * comm, FILE **file,int *ierr)
 {
   FILE *f = *file;
   if (!f) f = PETSC_STDOUT; /* support for PETSC_STDOUT in Fortran */
@@ -40,7 +40,7 @@ static PetscErrorCode PetscFixSlashN(const char *in, char **out)
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscfprintf_(MPI_Comm *comm,FILE **file,char* fname PETSC_MIXED_LEN(len1),PetscErrorCode *ierr PETSC_END_LEN(len1))
+PETSC_EXTERN void petscfprintf_(MPI_Comm *comm,FILE **file,char* fname,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len1)
 {
   char *c1,*tmp;
 
@@ -51,7 +51,7 @@ PETSC_EXTERN void PETSC_STDCALL petscfprintf_(MPI_Comm *comm,FILE **file,char* f
   *ierr = PetscFree(tmp);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscprintf_(MPI_Comm *comm,char* fname PETSC_MIXED_LEN(len1),PetscErrorCode *ierr PETSC_END_LEN(len1))
+PETSC_EXTERN void petscprintf_(MPI_Comm *comm,char* fname,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len1)
 {
   char *c1,*tmp;
 
@@ -62,7 +62,7 @@ PETSC_EXTERN void PETSC_STDCALL petscprintf_(MPI_Comm *comm,char* fname PETSC_MI
   *ierr = PetscFree(tmp);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscsynchronizedfprintf_(MPI_Comm *comm,FILE **file,char* fname PETSC_MIXED_LEN(len1),PetscErrorCode *ierr PETSC_END_LEN(len1))
+PETSC_EXTERN void petscsynchronizedfprintf_(MPI_Comm *comm,FILE **file,char* fname,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len1)
 {
   char *c1,*tmp;
 
@@ -73,7 +73,7 @@ PETSC_EXTERN void PETSC_STDCALL petscsynchronizedfprintf_(MPI_Comm *comm,FILE **
   *ierr = PetscFree(tmp);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscsynchronizedprintf_(MPI_Comm *comm,char* fname PETSC_MIXED_LEN(len1),PetscErrorCode *ierr PETSC_END_LEN(len1))
+PETSC_EXTERN void petscsynchronizedprintf_(MPI_Comm *comm,char* fname,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len1)
 {
   char *c1,*tmp;
 

@@ -14,14 +14,14 @@
 #define aocreatememoryscalableis_ aocreatememoryscalableis
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL aocreatebasic_(MPI_Comm *comm,PetscInt *napp,PetscInt *myapp,PetscInt *mypetsc,AO *aoout,PetscErrorCode *ierr)
+PETSC_EXTERN void aocreatebasic_(MPI_Comm *comm,PetscInt *napp,PetscInt *myapp,PetscInt *mypetsc,AO *aoout,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(myapp);
   CHKFORTRANNULLINTEGER(mypetsc);
   *ierr = AOCreateBasic(MPI_Comm_f2c(*(MPI_Fint*)&*comm),*napp,myapp,mypetsc,aoout);
 }
 
-PETSC_EXTERN void PETSC_STDCALL aocreatebasicis_(IS *isapp,IS *ispetsc,AO *aoout,PetscErrorCode *ierr)
+PETSC_EXTERN void aocreatebasicis_(IS *isapp,IS *ispetsc,AO *aoout,PetscErrorCode *ierr)
 {
   IS cispetsc = NULL;
   CHKFORTRANNULLOBJECT(ispetsc);
@@ -29,14 +29,14 @@ PETSC_EXTERN void PETSC_STDCALL aocreatebasicis_(IS *isapp,IS *ispetsc,AO *aoout
   *ierr = AOCreateBasicIS(*isapp,cispetsc,aoout);
 }
 
-PETSC_EXTERN void PETSC_STDCALL aocreatememoryscalable_(MPI_Comm *comm,PetscInt *napp,PetscInt *myapp,PetscInt *mypetsc,AO *aoout,PetscErrorCode *ierr)
+PETSC_EXTERN void aocreatememoryscalable_(MPI_Comm *comm,PetscInt *napp,PetscInt *myapp,PetscInt *mypetsc,AO *aoout,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(myapp);
   CHKFORTRANNULLINTEGER(mypetsc);
   *ierr = AOCreateMemoryScalable(MPI_Comm_f2c(*(MPI_Fint*)&*comm),*napp,myapp,mypetsc,aoout);
 }
 
-PETSC_EXTERN void PETSC_STDCALL aocreatememoryscalableis_(IS *isapp,IS *ispetsc,AO *aoout,PetscErrorCode *ierr)
+PETSC_EXTERN void aocreatememoryscalableis_(IS *isapp,IS *ispetsc,AO *aoout,PetscErrorCode *ierr)
 {
   IS cispetsc = NULL;
   CHKFORTRANNULLOBJECT(ispetsc);

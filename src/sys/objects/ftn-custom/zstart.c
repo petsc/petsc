@@ -102,8 +102,8 @@
 #endif   /* mpi_init_ */
 #endif   /* PETSC_HAVE_MPIUNI */
 
-PETSC_EXTERN void PETSC_STDCALL mpi_init_(int*);
-PETSC_EXTERN void PETSC_STDCALL petscgetcomm_(PetscMPIInt*);
+PETSC_EXTERN void mpi_init_(int*);
+PETSC_EXTERN void petscgetcomm_(PetscMPIInt*);
 
 /*
      Different Fortran compilers handle command lines in different ways
@@ -114,10 +114,6 @@ PETSC_EXTERN void getarg_(int*,char*,int);
 #elif defined(PETSC_USE_NARGS)
 PETSC_EXTERN short __stdcall NARGS();
 PETSC_EXTERN void __stdcall GETARG(short*,char*,int,short *);
-
-#elif defined(PETSC_HAVE_FORTRAN_STDCALL)
-PETSC_EXTERN int PETSC_STDCALL IARGC();
-PETSC_EXTERN void PETSC_STDCALL GETARG(int *,char *,int);
 
 #elif defined(PETSC_HAVE_PXFGETARG_NEW)
 PETSC_EXTERN int iargc_();
@@ -511,18 +507,18 @@ static void petscinitialize_internal(char* filename, PetscInt len, PetscBool rea
 #endif
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscinitialize_(char* filename PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void petscinitialize_(char* filename,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   petscinitialize_internal(filename, len, PETSC_TRUE, ierr);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscinitializenoarguments_(PetscErrorCode *ierr)
+PETSC_EXTERN void petscinitializenoarguments_(PetscErrorCode *ierr)
 {
   petscinitialize_internal(NULL, (PetscInt) 0, PETSC_FALSE, ierr);
 }
 
 
-PETSC_EXTERN void PETSC_STDCALL petscfinalize_(PetscErrorCode *ierr)
+PETSC_EXTERN void petscfinalize_(PetscErrorCode *ierr)
 {
 #if defined(PETSC_HAVE_SUNMATHPRO)
   extern void standard_arithmetic();
@@ -534,7 +530,7 @@ PETSC_EXTERN void PETSC_STDCALL petscfinalize_(PetscErrorCode *ierr)
   *ierr = PetscFinalize();
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscend_(PetscErrorCode *ierr)
+PETSC_EXTERN void petscend_(PetscErrorCode *ierr)
 {
 #if defined(PETSC_HAVE_SUNMATHPRO)
   extern void standard_arithmetic();

@@ -8,7 +8,7 @@
 #define kspgetresidualhistoryf90_     kspgetresidualhistoryf90
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL kspgetresidualhistoryf90_(KSP *ksp,F90Array1d *indices,PetscInt *n,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void kspgetresidualhistoryf90_(KSP *ksp,F90Array1d *indices,PetscInt *n,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscReal *hist;
   *ierr = KSPGetResidualHistory(*ksp,&hist,n); if (*ierr) return;

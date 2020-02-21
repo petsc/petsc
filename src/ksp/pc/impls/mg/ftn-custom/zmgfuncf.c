@@ -14,7 +14,7 @@ typedef PetscErrorCode (*MVVVV)(Mat,Vec,Vec,Vec);
 static PetscErrorCode ourresidualfunction(Mat mat,Vec b,Vec x,Vec R)
 {
   PetscErrorCode ierr = 0;
-  (*(void (PETSC_STDCALL *)(Mat*,Vec*,Vec*,Vec*,PetscErrorCode*))(((PetscObject)mat)->fortran_func_pointers[0]))(&mat,&b,&x,&R,&ierr);
+  (*(void (*)(Mat*,Vec*,Vec*,Vec*,PetscErrorCode*))(((PetscObject)mat)->fortran_func_pointers[0]))(&mat,&b,&x,&R,&ierr);
   return 0;
 }
 
@@ -23,7 +23,7 @@ PETSC_EXTERN void pcmgresidualdefault_(Mat *mat,Vec *b,Vec *x,Vec *r, PetscError
   *ierr = PCMGResidualDefault(*mat,*b,*x,*r);
 }
 
-PETSC_EXTERN void PETSC_STDCALL pcmgsetresidual_(PC *pc,PetscInt *l,PetscErrorCode (*residual)(Mat*,Vec*,Vec*,Vec*,PetscErrorCode*),Mat *mat, PetscErrorCode *ierr)
+PETSC_EXTERN void pcmgsetresidual_(PC *pc,PetscInt *l,PetscErrorCode (*residual)(Mat*,Vec*,Vec*,Vec*,PetscErrorCode*),Mat *mat, PetscErrorCode *ierr)
 {
   MVVVV rr;
   if ((PetscVoidFunction)residual == (PetscVoidFunction)pcmgresidualdefault_) rr = PCMGResidualDefault;

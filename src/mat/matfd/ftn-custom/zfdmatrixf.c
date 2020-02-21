@@ -21,7 +21,7 @@ typedef struct _p_SNES *SNES;
 #define matfdcoloringrestoreperturbedcolumnsf90_ matfdcoloringrestoreperturbedcolumnsf90
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL matfdcoloringgetperturbedcolumnsf90_(MatFDColoring *x,F90Array1d *ptr,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void matfdcoloringgetperturbedcolumnsf90_(MatFDColoring *x,F90Array1d *ptr,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   const PetscInt *fa;
   PetscInt       len;
@@ -29,7 +29,7 @@ PETSC_EXTERN void PETSC_STDCALL matfdcoloringgetperturbedcolumnsf90_(MatFDColori
   *__ierr = MatFDColoringGetPerturbedColumns(*x,&len,&fa);   if (*__ierr) return;
   *__ierr = F90Array1dCreate((void*)fa,MPIU_INT,1,len,ptr PETSC_F90_2PTR_PARAM(ptrd));
 }
-PETSC_EXTERN void PETSC_STDCALL matfdcoloringrestoreperturbedcolumnsf90_(MatFDColoring *x,F90Array1d *ptr,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void matfdcoloringrestoreperturbedcolumnsf90_(MatFDColoring *x,F90Array1d *ptr,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   *__ierr = F90Array1dDestroy(ptr,MPIU_INT PETSC_F90_2PTR_PARAM(ptrd));
 }
@@ -38,14 +38,14 @@ PETSC_EXTERN void PETSC_STDCALL matfdcoloringrestoreperturbedcolumnsf90_(MatFDCo
 static PetscErrorCode ourmatfdcoloringfunctionts(TS ts,PetscReal t,Vec x,Vec y,MatFDColoring fd)
 {
   PetscErrorCode ierr = 0;
-  (*(void (PETSC_STDCALL *)(TS*,PetscReal*,Vec*,Vec*,void*,PetscErrorCode*))(fd->ftn_func_pointer)) (&ts,&t,&x,&y,fd->ftn_func_cntx,&ierr);
+  (*(void (*)(TS*,PetscReal*,Vec*,Vec*,void*,PetscErrorCode*))(fd->ftn_func_pointer)) (&ts,&t,&x,&y,fd->ftn_func_cntx,&ierr);
   return ierr;
 }
 
 static PetscErrorCode ourmatfdcoloringfunctionsnes(SNES snes,Vec x,Vec y,MatFDColoring fd)
 {
   PetscErrorCode ierr = 0;
-  (*(void (PETSC_STDCALL *)(SNES*,Vec*,Vec*,void*,PetscErrorCode*))(fd->ftn_func_pointer)) (&snes,&x,&y,fd->ftn_func_cntx,&ierr);
+  (*(void (*)(SNES*,Vec*,Vec*,void*,PetscErrorCode*))(fd->ftn_func_pointer)) (&snes,&x,&y,fd->ftn_func_cntx,&ierr);
   return ierr;
 }
 
@@ -58,7 +58,7 @@ static PetscErrorCode ourmatfdcoloringfunctionsnes(SNES snes,Vec x,Vec y,MatFDCo
 */
 
 
-PETSC_EXTERN void PETSC_STDCALL matfdcoloringsetfunctionts_(MatFDColoring *fd,void (PETSC_STDCALL *f)(TS*,double*,Vec*,Vec*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void matfdcoloringsetfunctionts_(MatFDColoring *fd,void (*f)(TS*,double*,Vec*,Vec*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
 {
   (*fd)->ftn_func_pointer =  (void (*)(void)) f;
   (*fd)->ftn_func_cntx    = ctx;
@@ -66,7 +66,7 @@ PETSC_EXTERN void PETSC_STDCALL matfdcoloringsetfunctionts_(MatFDColoring *fd,vo
   *ierr = MatFDColoringSetFunction(*fd,(PetscErrorCodeFunction)ourmatfdcoloringfunctionts,*fd);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matfdcoloringsetfunction_(MatFDColoring *fd,void (PETSC_STDCALL *f)(SNES*,Vec*,Vec*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void matfdcoloringsetfunction_(MatFDColoring *fd,void (*f)(SNES*,Vec*,Vec*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
 {
   (*fd)->ftn_func_pointer = (void (*)(void)) f;
   (*fd)->ftn_func_cntx    = ctx;
@@ -74,7 +74,7 @@ PETSC_EXTERN void PETSC_STDCALL matfdcoloringsetfunction_(MatFDColoring *fd,void
   *ierr = MatFDColoringSetFunction(*fd,(PetscErrorCodeFunction)ourmatfdcoloringfunctionsnes,*fd);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matfdcoloringview_(MatFDColoring *c,PetscViewer *vin,PetscErrorCode *ierr)
+PETSC_EXTERN void matfdcoloringview_(MatFDColoring *c,PetscViewer *vin,PetscErrorCode *ierr)
 {
   PetscViewer v;
 
@@ -82,7 +82,7 @@ PETSC_EXTERN void PETSC_STDCALL matfdcoloringview_(MatFDColoring *c,PetscViewer 
   *ierr = MatFDColoringView(*c,v);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matfdcoloringsettype_(MatFDColoring *matfdcoloring,char* type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void matfdcoloringsettype_(MatFDColoring *matfdcoloring,char* type,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;
 

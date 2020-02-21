@@ -12,8 +12,8 @@
 extern "C" {
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL petscfopen_(MPI_Comm *comm,char* fname PETSC_MIXED_LEN(len1),char* fmode PETSC_MIXED_LEN(len2),
-                               FILE **file,PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
+PETSC_EXTERN void petscfopen_(MPI_Comm *comm,char* fname,char* fmode,
+                               FILE **file,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len1,PETSC_FORTRAN_CHARLEN_T len2)
 {
   char *c1,*c2;
 
@@ -24,7 +24,7 @@ PETSC_EXTERN void PETSC_STDCALL petscfopen_(MPI_Comm *comm,char* fname PETSC_MIX
   FREECHAR(fmode,c2);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscfclose_(MPI_Comm *comm,FILE **file,PetscErrorCode *ierr)
+PETSC_EXTERN void petscfclose_(MPI_Comm *comm,FILE **file,PetscErrorCode *ierr)
 {
   *ierr = PetscFClose(MPI_Comm_f2c(*(MPI_Fint*)&*comm),*file);
 }

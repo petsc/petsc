@@ -11,7 +11,7 @@
 #define matnestgetsubmats_               matnestgetsubmats
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL matcreatenest_(MPI_Fint *comm,PetscInt *nr,IS is_row[],PetscInt *nc,IS is_col[],Mat a[],Mat *B,int *ierr)
+PETSC_EXTERN void matcreatenest_(MPI_Fint *comm,PetscInt *nr,IS is_row[],PetscInt *nc,IS is_col[],Mat a[],Mat *B,int *ierr)
 {
   Mat *m,*tmp;
   PetscInt i;
@@ -29,14 +29,14 @@ PETSC_EXTERN void PETSC_STDCALL matcreatenest_(MPI_Fint *comm,PetscInt *nr,IS is
   *ierr = PetscFree(m);
 }
 
-PETSC_EXTERN void PETSC_STDCALL  matnestgetiss_(Mat *A,IS rows[],IS cols[], int *ierr )
+PETSC_EXTERN void  matnestgetiss_(Mat *A,IS rows[],IS cols[], int *ierr )
 {
   CHKFORTRANNULLOBJECT(rows);
   CHKFORTRANNULLOBJECT(cols);
   *ierr = MatNestGetISs(*A,rows,cols);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matnestgetsubmats_(Mat *A,PetscInt *M,PetscInt *N,Mat *sub,int *ierr)
+PETSC_EXTERN void matnestgetsubmats_(Mat *A,PetscInt *M,PetscInt *N,Mat *sub,int *ierr)
 {
   PetscInt i,j,m,n;
   Mat **mat;

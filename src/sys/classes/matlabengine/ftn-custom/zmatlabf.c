@@ -17,8 +17,8 @@
 #define petscmatlabenginegetarray_    petscmatlabenginegetarray
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL petscmatlabenginecreate_(MPI_Comm *comm,char* m PETSC_MIXED_LEN(len),PetscMatlabEngine *e,
-                                            PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void petscmatlabenginecreate_(MPI_Comm *comm,char* m,PetscMatlabEngine *e,
+                                            PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *ms;
 
@@ -27,8 +27,8 @@ PETSC_EXTERN void PETSC_STDCALL petscmatlabenginecreate_(MPI_Comm *comm,char* m 
   FREECHAR(m,ms);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscmatlabengineevaluate_(PetscMatlabEngine *e,char* m PETSC_MIXED_LEN(len),
-                                              PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void petscmatlabengineevaluate_(PetscMatlabEngine *e,char* m,
+                                              PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *ms;
   FIXCHAR(m,len,ms);
@@ -36,8 +36,8 @@ PETSC_EXTERN void PETSC_STDCALL petscmatlabengineevaluate_(PetscMatlabEngine *e,
   FREECHAR(m,ms);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscmatlabengineputarray_(PetscMatlabEngine *e,PetscInt *m,PetscInt *n,PetscScalar *a,
-                                              char* s PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void petscmatlabengineputarray_(PetscMatlabEngine *e,PetscInt *m,PetscInt *n,PetscScalar *a,
+                                              char* s,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *ms;
   FIXCHAR(s,len,ms);
@@ -45,8 +45,8 @@ PETSC_EXTERN void PETSC_STDCALL petscmatlabengineputarray_(PetscMatlabEngine *e,
   FREECHAR(s,ms);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscmatlabenginegetarray_(PetscMatlabEngine *e,PetscInt *m,PetscInt *n,PetscScalar *a,
-                                              char* s PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void petscmatlabenginegetarray_(PetscMatlabEngine *e,PetscInt *m,PetscInt *n,PetscScalar *a,
+                                              char* s,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *ms;
   FIXCHAR(s,len,ms);

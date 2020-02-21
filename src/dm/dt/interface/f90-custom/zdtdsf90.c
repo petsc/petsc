@@ -14,7 +14,7 @@
 #define petscdsrestorebdtabulation_  petscdsrestorebdtabulation
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL petscdsgettabulation_(PetscDS *prob, PetscInt *f, F90Array1d *ptrB, F90Array1d *ptrD, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrb) PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void petscdsgettabulation_(PetscDS *prob, PetscInt *f, F90Array1d *ptrB, F90Array1d *ptrD, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrb) PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscFE          fe;
   PetscQuadrature  q;
@@ -32,7 +32,7 @@ PETSC_EXTERN void PETSC_STDCALL petscdsgettabulation_(PetscDS *prob, PetscInt *f
   *ierr = F90Array1dCreate((void *) T[*f]->T[0], MPIU_REAL, 1, Nq*Nb*Nc*dim, ptrD PETSC_F90_2PTR_PARAM(ptrd));
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscdsrestoretabulation_(PetscDS *prob, PetscInt *f, F90Array1d *ptrB, F90Array1d *ptrD, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrb) PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void petscdsrestoretabulation_(PetscDS *prob, PetscInt *f, F90Array1d *ptrB, F90Array1d *ptrD, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrb) PETSC_F90_2PTR_PROTO(ptrd))
 {
   *ierr = F90Array1dDestroy(ptrB, MPIU_REAL PETSC_F90_2PTR_PARAM(ptrb));if (*ierr) return;
   *ierr = F90Array1dDestroy(ptrD, MPIU_REAL PETSC_F90_2PTR_PARAM(ptrd));

@@ -14,17 +14,17 @@
 #define matnullspaceview_                matnullspaceview
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL  matnullspacecreate0_(MPI_Fint * comm,PetscBool *has_cnst,PetscInt *n, Vec vecs[],MatNullSpace *SP, PetscErrorCode *ierr )
+PETSC_EXTERN void  matnullspacecreate0_(MPI_Fint * comm,PetscBool *has_cnst,PetscInt *n, Vec vecs[],MatNullSpace *SP, PetscErrorCode *ierr )
 {
   *ierr = MatNullSpaceCreate(MPI_Comm_f2c(*(comm)),*has_cnst,*n,vecs,SP);
 }
 
-PETSC_EXTERN void PETSC_STDCALL  matnullspacecreate1_(MPI_Fint * comm,PetscBool *has_cnst,PetscInt *n, Vec vecs[],MatNullSpace *SP, PetscErrorCode *ierr )
+PETSC_EXTERN void  matnullspacecreate1_(MPI_Fint * comm,PetscBool *has_cnst,PetscInt *n, Vec vecs[],MatNullSpace *SP, PetscErrorCode *ierr )
 {
   *ierr = MatNullSpaceCreate(MPI_Comm_f2c(*(comm)),*has_cnst,*n,vecs,SP);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matnullspacegetvecs_(MatNullSpace *sp,PetscBool *HAS_CNST,PetscInt *N, Vec *VECS,PetscErrorCode *ierr)
+PETSC_EXTERN void matnullspacegetvecs_(MatNullSpace *sp,PetscBool *HAS_CNST,PetscInt *N, Vec *VECS,PetscErrorCode *ierr)
 {
   PetscBool has_cnst;
   PetscInt i,n;
@@ -49,7 +49,7 @@ PETSC_EXTERN void PETSC_STDCALL matnullspacegetvecs_(MatNullSpace *sp,PetscBool 
   }
 }
 
-PETSC_EXTERN void PETSC_STDCALL matnullspaceview_(MatNullSpace *sp,PetscViewer *vin,PetscErrorCode *ierr)
+PETSC_EXTERN void matnullspaceview_(MatNullSpace *sp,PetscViewer *vin,PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(vin,v);

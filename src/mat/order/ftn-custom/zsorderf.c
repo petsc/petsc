@@ -7,7 +7,7 @@
 #define matgetordering_                  matgetordering
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL matgetordering_(Mat *mat,char* type PETSC_MIXED_LEN(len),IS *rperm,IS *cperm,PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void matgetordering_(Mat *mat,char* type,IS *rperm,IS *cperm,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;
   FIXCHAR(type,len,t);

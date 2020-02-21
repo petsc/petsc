@@ -15,16 +15,16 @@
 #define petscrandomviewfromoptions_        petscrandomviewfromoptions
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL  petscrandomgetseed_(PetscRandom *r,unsigned long *seed, PetscErrorCode *ierr )
+PETSC_EXTERN void  petscrandomgetseed_(PetscRandom *r,unsigned long *seed, PetscErrorCode *ierr )
 {
   *ierr = PetscRandomGetSeed(*r,seed);
 }
-PETSC_EXTERN void PETSC_STDCALL  petscrandomsetseed_(PetscRandom *r,unsigned long *seed, PetscErrorCode *ierr )
+PETSC_EXTERN void  petscrandomsetseed_(PetscRandom *r,unsigned long *seed, PetscErrorCode *ierr )
 {
   *ierr = PetscRandomSetSeed(*r,*seed);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscrandomsettype_(PetscRandom *rnd,char* type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void petscrandomsettype_(PetscRandom *rnd,char* type,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;
 
@@ -33,7 +33,7 @@ PETSC_EXTERN void PETSC_STDCALL petscrandomsettype_(PetscRandom *rnd,char* type 
   FREECHAR(type,t);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscrandomgettype_(PetscRandom *petscrandom,char* name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void petscrandomgettype_(PetscRandom *petscrandom,char* name,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   const char *tname;
 
@@ -42,7 +42,7 @@ PETSC_EXTERN void PETSC_STDCALL petscrandomgettype_(PetscRandom *petscrandom,cha
   FIXRETURNCHAR(PETSC_TRUE,name,len);
 
 }
-PETSC_EXTERN void PETSC_STDCALL petscrandomviewfromoptions_(PetscRandom *ao,PetscObject obj,char* type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void petscrandomviewfromoptions_(PetscRandom *ao,PetscObject obj,char* type,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;
 

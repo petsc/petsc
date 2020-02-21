@@ -11,15 +11,15 @@
 #define petscviewerbinarygetdescriptor_     petscviewerbinarygetdescriptor
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL petscviewerfilesetmode_(PetscViewer *viewer,PetscFileMode *type,PetscErrorCode *ierr)
+PETSC_EXTERN void petscviewerfilesetmode_(PetscViewer *viewer,PetscFileMode *type,PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
   *ierr = PetscViewerFileSetMode(v,*type);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscviewerbinaryopen_(MPI_Comm *comm,char* name PETSC_MIXED_LEN(len),PetscFileMode *type,
-                                          PetscViewer *binv,PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void petscviewerbinaryopen_(MPI_Comm *comm,char* name,PetscFileMode *type,
+                                          PetscViewer *binv,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *c1;
   FIXCHAR(name,len,c1);
@@ -27,7 +27,7 @@ PETSC_EXTERN void PETSC_STDCALL petscviewerbinaryopen_(MPI_Comm *comm,char* name
   FREECHAR(name,c1);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscviewerbinarygetdescriptor_(PetscViewer *viewer,int *fd,PetscErrorCode *ierr)
+PETSC_EXTERN void petscviewerbinarygetdescriptor_(PetscViewer *viewer,int *fd,PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);

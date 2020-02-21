@@ -8,7 +8,7 @@
 #define snesgetconvergencehistoryf90_     snesgetconvergencehistoryf90
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL snesgetconvergencehistoryf90_(SNES *snes,F90Array1d *r,F90Array1d *fits,PetscInt *n,int *ierr PETSC_F90_2PTR_PROTO(ptrd1) PETSC_F90_2PTR_PROTO(ptrd2))
+PETSC_EXTERN void snesgetconvergencehistoryf90_(SNES *snes,F90Array1d *r,F90Array1d *fits,PetscInt *n,int *ierr PETSC_F90_2PTR_PROTO(ptrd1) PETSC_F90_2PTR_PROTO(ptrd2))
 {
   PetscReal *hist;
   PetscInt  *its;

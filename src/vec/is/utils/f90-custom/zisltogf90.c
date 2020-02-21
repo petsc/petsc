@@ -14,7 +14,7 @@
 #define islocaltoglobalmappingrestoreblockindicesf90_  islocaltoglobalmappingrestoreblockindicesf90
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL islocaltoglobalmappinggetindicesf90_(ISLocalToGlobalMapping *da,F90Array1d *indices,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void islocaltoglobalmappinggetindicesf90_(ISLocalToGlobalMapping *da,F90Array1d *indices,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   const PetscInt *idx;
   PetscInt       n;
@@ -23,7 +23,7 @@ PETSC_EXTERN void PETSC_STDCALL islocaltoglobalmappinggetindicesf90_(ISLocalToGl
   *ierr = F90Array1dCreate((void*)idx,MPIU_INT,1,n,indices PETSC_F90_2PTR_PARAM(ptrd));
 }
 
-PETSC_EXTERN void PETSC_STDCALL islocaltoglobalmappingrestoreindicesf90_(ISLocalToGlobalMapping *da,F90Array1d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void islocaltoglobalmappingrestoreindicesf90_(ISLocalToGlobalMapping *da,F90Array1d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   const PetscInt *fa;
 
@@ -32,7 +32,7 @@ PETSC_EXTERN void PETSC_STDCALL islocaltoglobalmappingrestoreindicesf90_(ISLocal
   *ierr = ISLocalToGlobalMappingRestoreIndices(*da,&fa); if (*ierr) return;
 }
 
-PETSC_EXTERN void PETSC_STDCALL islocaltoglobalmappinggetblockindicesf90_(ISLocalToGlobalMapping *da,F90Array1d *indices,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void islocaltoglobalmappinggetblockindicesf90_(ISLocalToGlobalMapping *da,F90Array1d *indices,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   const PetscInt *idx;
   PetscInt       n;
@@ -41,7 +41,7 @@ PETSC_EXTERN void PETSC_STDCALL islocaltoglobalmappinggetblockindicesf90_(ISLoca
   *ierr = F90Array1dCreate((void*)idx,MPIU_INT,1,n,indices PETSC_F90_2PTR_PARAM(ptrd));
 }
 
-PETSC_EXTERN void PETSC_STDCALL islocaltoglobalmappingrestoreblockindicesf90_(ISLocalToGlobalMapping *da,F90Array1d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void islocaltoglobalmappingrestoreblockindicesf90_(ISLocalToGlobalMapping *da,F90Array1d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   const PetscInt *fa;
 

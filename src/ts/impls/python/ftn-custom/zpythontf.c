@@ -7,7 +7,7 @@
 #define tspythonsettype_            tspythonsettype
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL tspythonsettype_(TS *ts, char* name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void tspythonsettype_(TS *ts, char* name,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;
   FIXCHAR(name,len,t);

@@ -7,7 +7,7 @@
 #define pccompositeaddpc_          pccompositeaddpc
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL pccompositeaddpc_(PC *pc,char* type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void pccompositeaddpc_(PC *pc,char* type,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;
 

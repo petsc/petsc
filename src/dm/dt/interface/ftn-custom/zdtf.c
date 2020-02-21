@@ -8,7 +8,7 @@
 #define petscquadratureview_         petscquadratureview
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL petscquadratureview_(PetscQuadrature *q,PetscViewer *vin,PetscErrorCode *ierr)
+PETSC_EXTERN void petscquadratureview_(PetscQuadrature *q,PetscViewer *vin,PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(vin,v);

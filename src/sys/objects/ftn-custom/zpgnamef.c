@@ -6,7 +6,7 @@
 #define petscobjectgetname_        petscobjectgetname
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL petscobjectgetname_(PetscObject *obj,char* name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void petscobjectgetname_(PetscObject *obj,char* name,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   const char *tmp;
   *ierr = PetscObjectGetName(*obj,&tmp);

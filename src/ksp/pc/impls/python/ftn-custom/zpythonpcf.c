@@ -7,7 +7,7 @@
 #define pcpythonsettype_            pcpythonsettype
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL pcpythonsettype_(PC *pc, char* name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void pcpythonsettype_(PC *pc, char* name,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;
   FIXCHAR(name,len,t);

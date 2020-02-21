@@ -6,8 +6,8 @@
 #define petscstrncpy_              petscstrncpy
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL petscstrncpy_(char* s1 PETSC_MIXED_LEN(len1),char* s2 PETSC_MIXED_LEN(len2),int *n,
-                                 PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
+PETSC_EXTERN void petscstrncpy_(char* s1,char* s2,int *n,
+                                 PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len1,PETSC_FORTRAN_CHARLEN_T len2)
 {
   char *t1,*t2;
   PETSC_FORTRAN_CHARLEN_T m;

@@ -6,7 +6,7 @@
 #define petscobjectsetname_        petscobjectsetname
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL petscobjectsetname_(PetscObject *obj,char* name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void petscobjectsetname_(PetscObject *obj,char* name,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t1;
 

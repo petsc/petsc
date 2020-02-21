@@ -11,7 +11,7 @@
 #define veccreatenest_                veccreatenest
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL vecnestgetsubvecs_(Vec *X,PetscInt *N,Vec *sx,PetscErrorCode *ierr)
+PETSC_EXTERN void vecnestgetsubvecs_(Vec *X,PetscInt *N,Vec *sx,PetscErrorCode *ierr)
 {
   Vec      *tsx;
   PetscInt i,n;
@@ -24,12 +24,12 @@ PETSC_EXTERN void PETSC_STDCALL vecnestgetsubvecs_(Vec *X,PetscInt *N,Vec *sx,Pe
   }
 }
 
-PETSC_EXTERN void PETSC_STDCALL vecnestsetsubvecs_(Vec *X,PetscInt *N,PetscInt *idxm,Vec *sx,PetscErrorCode *ierr)
+PETSC_EXTERN void vecnestsetsubvecs_(Vec *X,PetscInt *N,PetscInt *idxm,Vec *sx,PetscErrorCode *ierr)
 {
   *ierr = VecNestSetSubVecs(*X,*N,idxm,sx);
 }
 
-PETSC_EXTERN void PETSC_STDCALL veccreatenest_(MPI_Fint *comm,PetscInt *nb,IS is[],Vec x[],Vec *Y,int *ierr)
+PETSC_EXTERN void veccreatenest_(MPI_Fint *comm,PetscInt *nb,IS is[],Vec x[],Vec *Y,int *ierr)
 {
   CHKFORTRANNULLOBJECT(is);
   CHKFORTRANNULLOBJECT(x);

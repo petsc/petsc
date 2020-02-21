@@ -7,7 +7,7 @@
 #define matpythonsettype_            matpythonsettype
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL matpythonsettype_(Mat *mat, char* name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void matpythonsettype_(Mat *mat, char* name,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;
   FIXCHAR(name,len,t);

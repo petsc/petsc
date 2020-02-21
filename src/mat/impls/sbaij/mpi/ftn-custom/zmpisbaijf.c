@@ -9,7 +9,7 @@
 #define matmpisbaijsetpreallocation_     matmpisbaijsetpreallocation
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL matcreatesbaij_(MPI_Comm *comm,PetscInt *bs,PetscInt *m,PetscInt *n,PetscInt *M,PetscInt *N,
+PETSC_EXTERN void matcreatesbaij_(MPI_Comm *comm,PetscInt *bs,PetscInt *m,PetscInt *n,PetscInt *M,PetscInt *N,
                                    PetscInt *d_nz,PetscInt *d_nnz,PetscInt *o_nz,PetscInt *o_nnz,Mat *newmat,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(d_nnz);
@@ -17,7 +17,7 @@ PETSC_EXTERN void PETSC_STDCALL matcreatesbaij_(MPI_Comm *comm,PetscInt *bs,Pets
   *ierr = MatCreateSBAIJ(MPI_Comm_f2c(*(MPI_Fint*)&*comm),*bs,*m,*n,*M,*N,*d_nz,d_nnz,*o_nz,o_nnz,newmat);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matmpisbaijsetpreallocation_(Mat *mat,PetscInt *bs,PetscInt *d_nz,PetscInt *d_nnz,PetscInt *o_nz,PetscInt *o_nnz,PetscErrorCode *ierr)
+PETSC_EXTERN void matmpisbaijsetpreallocation_(Mat *mat,PetscInt *bs,PetscInt *d_nz,PetscInt *d_nnz,PetscInt *o_nz,PetscInt *o_nnz,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(d_nnz);
   CHKFORTRANNULLINTEGER(o_nnz);
