@@ -36,6 +36,13 @@ variables:
       - web
   dependencies: []
 
+check-ci-settings:
+  extends: .test
+  stage: .pre
+  tags:
+    - check-ci-settings
+  script:
+    - lib/petsc/bin/maint/check-ci-settings.sh
 #
 #  This provides the basic order of operations and options template for cloud based stage 1 tests.
 #  Not all test-short need to follow this template but most will.
@@ -246,7 +253,6 @@ linux-gcc-complex-opt:
     - .linux_test
   tags:
     - linux-stage2
-    - ci:2
   variables:
     TEST_ARCH: arch-ci-linux-gcc-complex-opt
 
@@ -757,18 +763,16 @@ linux-nagfor:
 
 # job for analyzing the final coverage results
 analyze-pipeline:
+  extends: .test
   stage: .post
   image: jedbrown/mpich-ccache
+  tags:
+    - docker
+  dependencies:
   variables:
     PYTHON: python3
     # Need a dummy TEST_ARCH that comes from artifacts
     TEST_ARCH: arch-ci-linux-pkgs-gcov
-  only:
-    refs:
-#     Set with CI/CD Shedules - New Schedule
-      - schedules
-#     Set with CI/CD Pipelines - Run Pipeline
-      - web
   allow_failure: true
   before_script:
     - date
