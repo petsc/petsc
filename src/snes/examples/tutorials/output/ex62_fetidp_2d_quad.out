@@ -93,7 +93,7 @@ SNES Object: 5 MPI processes
                                       ICNTL(10) (max num of refinements):  0 
                                       ICNTL(11) (error analysis):          0 
                                       ICNTL(12) (efficiency control):                         1 
-                                      ICNTL(13) (efficiency control):                         0 
+                                      ICNTL(13) (sequential factorization of the root node):  0 
                                       ICNTL(14) (percentage of estimated workspace increase): 20 
                                       ICNTL(18) (input mat struct):                           0 
                                       ICNTL(19) (Schur complement info):                      0 
@@ -273,7 +273,7 @@ SNES Object: 5 MPI processes
                                               ICNTL(10) (max num of refinements):  0 
                                               ICNTL(11) (error analysis):          0 
                                               ICNTL(12) (efficiency control):                         1 
-                                              ICNTL(13) (efficiency control):                         0 
+                                              ICNTL(13) (sequential factorization of the root node):  0 
                                               ICNTL(14) (percentage of estimated workspace increase): 20 
                                               ICNTL(18) (input mat struct):                           0 
                                               ICNTL(19) (Schur complement info):                      0 
@@ -466,7 +466,7 @@ SNES Object: 5 MPI processes
                         ICNTL(10) (max num of refinements):  0 
                         ICNTL(11) (error analysis):          0 
                         ICNTL(12) (efficiency control):                         1 
-                        ICNTL(13) (efficiency control):                         0 
+                        ICNTL(13) (sequential factorization of the root node):  0 
                         ICNTL(14) (percentage of estimated workspace increase): 20 
                         ICNTL(18) (input mat struct):                           0 
                         ICNTL(19) (Schur complement info):                      0 
@@ -583,7 +583,7 @@ SNES Object: 5 MPI processes
                         ICNTL(10) (max num of refinements):  0 
                         ICNTL(11) (error analysis):          0 
                         ICNTL(12) (efficiency control):                         1 
-                        ICNTL(13) (efficiency control):                         0 
+                        ICNTL(13) (sequential factorization of the root node):  0 
                         ICNTL(14) (percentage of estimated workspace increase): 20 
                         ICNTL(18) (input mat struct):                           0 
                         ICNTL(19) (Schur complement info):                      0 
