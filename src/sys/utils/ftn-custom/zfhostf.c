@@ -6,7 +6,7 @@
 #define petscgethostname_                  petscgethostname
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL petscgethostname_(char* str PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void petscgethostname_(char* str,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char   *tstr;
   size_t tlen;

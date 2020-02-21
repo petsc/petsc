@@ -16,13 +16,13 @@
 extern "C" {
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL  petscgetversion_(char* version PETSC_MIXED_LEN(len1),int *ierr PETSC_END_LEN(len1))
+PETSC_EXTERN void  petscgetversion_(char* version,int *ierr,PETSC_FORTRAN_CHARLEN_T len1)
 {
   *ierr = PetscGetVersion(version,len1);
   FIXRETURNCHAR(PETSC_TRUE,version,len1);
 }
 
-PETSC_EXTERN void PETSC_STDCALL  petscgetversionnumber_(PetscInt *major,PetscInt *minor,PetscInt *subminor,PetscInt *release, int *ierr )
+PETSC_EXTERN void  petscgetversionnumber_(PetscInt *major,PetscInt *minor,PetscInt *subminor,PetscInt *release, int *ierr )
 {
   CHKFORTRANNULLINTEGER(major);
   CHKFORTRANNULLINTEGER(minor);

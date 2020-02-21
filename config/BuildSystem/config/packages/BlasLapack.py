@@ -81,15 +81,9 @@ class Configure(config.package.Package):
   def checkBlas(self, blasLibrary, otherLibs, fortranMangle, routineIn = 'dot'):
     '''This checks the given library for the routine, dot by default'''
     oldLibs = self.compilers.LIBS
-    prototype = ''
-    call      = ''
     routine   = self.mangleBlas(routineIn)
-    if fortranMangle=='stdcall':
-      if routine=='ddot'+self.suffix:
-        prototype = 'double __stdcall DDOT(int*,double*,int*,double*,int*);'
-        call      = 'DDOT(0,0,0,0,0);'
     self.libraries.saveLog()
-    found   = self.libraries.check(blasLibrary, routine, otherLibs = otherLibs, fortranMangle = fortranMangle, prototype = prototype, call = call)
+    found   = self.libraries.check(blasLibrary, routine, otherLibs = otherLibs, fortranMangle = fortranMangle)
     self.logWrite(self.libraries.restoreLog())
     self.compilers.LIBS = oldLibs
     return found
@@ -99,19 +93,11 @@ class Configure(config.package.Package):
     if not isinstance(routinesIn, list): routinesIn = [routinesIn]
     routines = list(routinesIn)
     found   = 1
-    prototypes = ['']
-    calls      = ['']
     routines   = map(self.mangleBlas, routines)
 
-    if fortranMangle=='stdcall':
-      if routines == ['dgetrs','dgeev']:
-        prototypes = ['void __stdcall DGETRS(char*,int,int*,int*,double*,int*,int*,double*,int*,int*);',
-                      'void __stdcall DGEEV(char*,int,char*,int,int*,double*,int*,double*,double*,double*,int*,double*,int*,double*,int*,int*);']
-        calls      = ['DGETRS(0,0,0,0,0,0,0,0,0,0);',
-                      'DGEEV(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);']
-    for routine, prototype, call in zip(routines, prototypes, calls):
+    for routine in routines:
       self.libraries.saveLog()
-      found = found and self.libraries.check(lapackLibrary, routine, otherLibs = otherLibs, fortranMangle = fortranMangle, prototype = prototype, call = call)
+      found = found and self.libraries.check(lapackLibrary, routine, otherLibs = otherLibs, fortranMangle = fortranMangle)
       self.logWrite(self.libraries.restoreLog())
       if not found: break
     self.compilers.LIBS = oldLibs
@@ -119,8 +105,6 @@ class Configure(config.package.Package):
 
   def checkLib(self, lapackLibrary, blasLibrary = None):
     '''Checking for BLAS and LAPACK symbols'''
-
-    #check for BLASLAPACK_STDCALL calling convention!!!!
 
     if blasLibrary is None:
       self.separateBlas = 0
@@ -497,8 +481,6 @@ class Configure(config.package.Package):
         self.addDefine('BLASLAPACK_UNDERSCORE', 1)
     elif self.mangling == 'caps':
         self.addDefine('BLASLAPACK_CAPS', 1)
-    elif self.mangling == 'stdcall':
-        self.addDefine('BLASLAPACK_STDCALL', 1)
 
     if self.suffix != '':
         self.addDefine('BLASLAPACK_SUFFIX', self.suffix)

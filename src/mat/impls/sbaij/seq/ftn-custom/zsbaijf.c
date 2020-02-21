@@ -9,13 +9,13 @@
 #define matseqsbaijsetpreallocation_     matseqsbaijsetpreallocation
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL matcreateseqsbaij_(MPI_Comm *comm,PetscInt *bs,PetscInt *m,PetscInt *n,PetscInt *nz,PetscInt *nnz,Mat *newmat,PetscErrorCode *ierr)
+PETSC_EXTERN void matcreateseqsbaij_(MPI_Comm *comm,PetscInt *bs,PetscInt *m,PetscInt *n,PetscInt *nz,PetscInt *nnz,Mat *newmat,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(nnz);
   *ierr = MatCreateSeqSBAIJ(MPI_Comm_f2c(*(MPI_Fint*)&*comm),*bs,*m,*n,*nz,nnz,newmat);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matseqsbaijsetpreallocation_(Mat *mat,PetscInt *bs,PetscInt *nz,PetscInt *nnz,PetscErrorCode *ierr)
+PETSC_EXTERN void matseqsbaijsetpreallocation_(Mat *mat,PetscInt *bs,PetscInt *nz,PetscInt *nnz,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(nnz);
   *ierr = MatSeqSBAIJSetPreallocation(*mat,*bs,*nz,nnz);

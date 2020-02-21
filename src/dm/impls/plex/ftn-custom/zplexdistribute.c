@@ -8,7 +8,7 @@
 #endif
 
 /* Definitions of Fortran Wrapper routines */
-PETSC_EXTERN void PETSC_STDCALL dmplexdistribute_(DM *dm, PetscInt *overlap, PetscSF *sf, DM *dmParallel, int *ierr)
+PETSC_EXTERN void dmplexdistribute_(DM *dm, PetscInt *overlap, PetscSF *sf, DM *dmParallel, int *ierr)
 {
   CHKFORTRANNULLOBJECT(sf);
   *ierr = DMPlexDistribute(*dm, *overlap, sf, dmParallel);

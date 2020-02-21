@@ -7,8 +7,8 @@
 #define petscviewervtkopen_     petscviewervtkopen
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL petscviewervtkopen_(MPI_Comm *comm,char* name PETSC_MIXED_LEN(len),PetscFileMode *type,
-                           PetscViewer *binv,PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void petscviewervtkopen_(MPI_Comm *comm,char* name,PetscFileMode *type,
+                           PetscViewer *binv,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *c1;
   FIXCHAR(name,len,c1);

@@ -5,10 +5,6 @@
 
 #include <petsc/private/petscimpl.h>
 
-/* PETSC_STDCALL is defined on some Microsoft Windows systems and is used for functions compiled by the Fortran compiler */
-#if !defined(PETSC_STDCALL)
-#define PETSC_STDCALL
-#endif
 PETSC_EXTERN PetscErrorCode PetscMPIFortranDatatypeToC(MPI_Fint,MPI_Datatype*);
 
 PETSC_EXTERN PetscErrorCode PetscScalarAddressToFortran(PetscObject,PetscInt,PetscScalar*,PetscScalar*,PetscInt,size_t*);
@@ -27,32 +23,6 @@ PETSC_EXTERN void (*PETSC_NULL_FUNCTION_Fortran)(void);
    PETSc object C pointers are stored directly as
    Fortran integer*4 or *8 depending on the size of pointers.
 */
-
-
-/* --------------------------------------------------------------------*/
-#ifndef PETSC_FORTRAN_CHARLEN_T
-#  define PETSC_FORTRAN_CHARLEN_T int
-#endif
-/*
-    This lets us map the str-len argument either, immediately following
-    the char argument (DVF on Win32) or at the end of the argument list
-    (general unix compilers)
-*/
-#if defined(PETSC_HAVE_FORTRAN_MIXED_STR_ARG)
-#define PETSC_MIXED_LEN(len) ,PETSC_FORTRAN_CHARLEN_T len
-#define PETSC_END_LEN(len)
-#define PETSC_MIXED_LEN_CALL(len) ,((PETSC_FORTRAN_CHARLEN_T)(len))
-#define PETSC_END_LEN_CALL(len)
-#define PETSC_MIXED_LEN_PROTO ,PETSC_FORTRAN_CHARLEN_T
-#define PETSC_END_LEN_PROTO
-#else
-#define PETSC_MIXED_LEN(len)
-#define PETSC_END_LEN(len)   ,PETSC_FORTRAN_CHARLEN_T len
-#define PETSC_MIXED_LEN_CALL(len)
-#define PETSC_END_LEN_CALL(len)   ,((PETSC_FORTRAN_CHARLEN_T)(len))
-#define PETSC_MIXED_LEN_PROTO
-#define PETSC_END_LEN_PROTO   ,PETSC_FORTRAN_CHARLEN_T
-#endif
 
 /* --------------------------------------------------------------------*/
 /*
@@ -217,7 +187,7 @@ typedef PETSC_UINTPTR_T PetscFortranAddr;
 /* Entire function body, _ctx is a "special" variable that can be passed along */
 #define PetscObjectUseFortranCallback_Private(obj,cid,types,args,cbclass) { \
     PetscErrorCode ierr;                                                \
-    void (PETSC_STDCALL *func) types,*_ctx;                             \
+    void (*func) types,*_ctx;                             \
     PetscFunctionBegin;                                                 \
     ierr = PetscObjectGetFortranCallback((PetscObject)(obj),(cbclass),(cid),(PetscVoidFunction*)&func,&_ctx);CHKERRQ(ierr); \
     if (func) {(*func)args;CHKERRQ(ierr);}                              \

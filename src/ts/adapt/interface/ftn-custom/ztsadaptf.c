@@ -9,7 +9,7 @@
 #define tsadaptgettype_ tsadaptgettype
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL tsadaptsettype_(TSAdapt *tsadapt,char* type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void tsadaptsettype_(TSAdapt *tsadapt,char* type,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;
 
@@ -18,7 +18,7 @@ PETSC_EXTERN void PETSC_STDCALL tsadaptsettype_(TSAdapt *tsadapt,char* type PETS
   FREECHAR(type,t);
 }
 
-PETSC_EXTERN void PETSC_STDCALL tsadaptgettype_(TSAdapt *adapt,char* type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void tsadaptgettype_(TSAdapt *adapt,char* type,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   const char *t;
 

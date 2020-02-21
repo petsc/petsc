@@ -22,27 +22,27 @@
 /*
     Dummy symbols that the MINOS files mi25bfac.f and mi15blas.f may require
 */
-PETSC_EXTERN void PETSC_STDCALL M1PAGE()
+PETSC_EXTERN void M1PAGE()
 {
   ;
 }
-PETSC_EXTERN void PETSC_STDCALL M5SETX()
-{
-  ;
-}
-
-PETSC_EXTERN void PETSC_STDCALL M6RDEL()
+PETSC_EXTERN void M5SETX()
 {
   ;
 }
 
-PETSC_EXTERN void PETSC_STDCALL LU1FAC(int *m, int *n, int *nnz, int *size, int *luparm,
+PETSC_EXTERN void M6RDEL()
+{
+  ;
+}
+
+PETSC_EXTERN void LU1FAC(int *m, int *n, int *nnz, int *size, int *luparm,
                                  double *parmlu, double *data, int *indc, int *indr,
                                  int *rowperm, int *colperm, int *collen, int *rowlen,
                                  int *colstart, int *rowstart, int *rploc, int *cploc,
                                  int *rpinv, int *cpinv, double *w, int *inform);
 
-PETSC_EXTERN void PETSC_STDCALL LU6SOL(int *mode, int *m, int *n, double *rhs, double *x,
+PETSC_EXTERN void LU6SOL(int *mode, int *m, int *n, double *rhs, double *x,
                                  int *size, int *luparm, double *parmlu, double *data,
                                  int *indc, int *indr, int *rowperm, int *colperm,
                                  int *collen, int *rowlen, int *colstart, int *rowstart,

@@ -836,7 +836,7 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
     return found
 
   def checkFortranNameMangling(self):
-    '''Checks Fortran name mangling, and defines HAVE_FORTRAN_UNDERSCORE, HAVE_FORTRAN_NOUNDERSCORE, HAVE_FORTRAN_CAPS, or HAVE_FORTRAN_STDCALL'''
+    '''Checks Fortran name mangling, and defines HAVE_FORTRAN_UNDERSCORE, HAVE_FORTRAN_NOUNDERSCORE, HAVE_FORTRAN_CAPS'''
     self.manglerFuncs = {'underscore': ('void d1chk_(void);', 'void d1chk_(void){return;}\n', '       call d1chk()\n'),
                          'unchanged': ('void d1chk(void);', 'void d1chk(void){return;}\n', '       call d1chk()\n'),
                          'caps': ('void D1CHK(void);', 'void D1CHK(void){return;}\n', '       call d1chk()\n'),
@@ -866,10 +866,7 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
     elif self.fortranMangling == 'caps':
       self.addDefine('HAVE_FORTRAN_CAPS', 1)
     elif self.fortranMangling == 'stdcall':
-      self.addDefine('HAVE_FORTRAN_STDCALL', 1)
-      self.addDefine('STDCALL', '__stdcall')
-      self.addDefine('HAVE_FORTRAN_CAPS', 1)
-      self.addDefine('HAVE_FORTRAN_MIXED_STR_ARG', 1)
+      raise RuntimeError('Fortran STDCALL compilers are unsupported!\n')
     if config.setCompilers.Configure.isGfortran8plus(self.getCompiler('FC'), self.log):
       self.addDefine('FORTRAN_CHARLEN_T', 'size_t')
     else:

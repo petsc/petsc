@@ -9,7 +9,7 @@
 #define matpartitioningpartysetlocal_    matpartitioningpartysetlocal
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL matpartitioningpartysetglobal_(MatPartitioning *part,char* method PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void matpartitioningpartysetglobal_(MatPartitioning *part,char* method,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;
   FIXCHAR(method,len,t);
@@ -17,7 +17,7 @@ PETSC_EXTERN void PETSC_STDCALL matpartitioningpartysetglobal_(MatPartitioning *
   FREECHAR(method,t);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matpartitioningpartysetlocal_(MatPartitioning *part,char* method PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void matpartitioningpartysetlocal_(MatPartitioning *part,char* method,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;
   FIXCHAR(method,len,t);

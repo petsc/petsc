@@ -12,7 +12,7 @@
 #define petscobjectstateincrease_   petscobjectstateincrease
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL petscobjectstateincrease_(PetscObject *obj, PetscErrorCode *ierr)
+PETSC_EXTERN void petscobjectstateincrease_(PetscObject *obj, PetscErrorCode *ierr)
 {
   *ierr = PetscObjectStateIncrease(*obj);
 }
@@ -24,7 +24,7 @@ void flush__(int unit)
 #endif
 
 
-PETSC_EXTERN void PETSC_STDCALL petscoffsetfortran_(PetscScalar *x,PetscScalar *y,size_t *shift,PetscErrorCode *ierr)
+PETSC_EXTERN void petscoffsetfortran_(PetscScalar *x,PetscScalar *y,size_t *shift,PetscErrorCode *ierr)
 {
   *ierr  = 0;
   *shift = y - x;
@@ -50,7 +50,7 @@ static char FIXCHARSTRING[1024];
   } \
 }
 
-PETSC_EXTERN void PETSC_STDCALL chkmemfortran_(int *line,char* file PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void chkmemfortran_(int *line,char* file,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *c1;
 

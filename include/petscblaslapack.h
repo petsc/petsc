@@ -8,7 +8,6 @@
   The BLAS/LAPACK name mangling is almost (but not always) the same as the Fortran mangling; and exists even if there is
   not Fortran compiler.
 
-  PETSC_BLASLAPACK_STDCALL  is for Microsoft Windows compiles, it also implicitly has capitalized function names
   PETSC_BLASLAPACK_UNDERSCORE BLAS/LAPACK function have an underscore at the end of each function name
   PETSC_BLASLAPACK_CAPS BLAS/LAPACK function names are all in capital letters
   PETSC_BLASLAPACK_C BLAS/LAPACK function names have no mangling
@@ -34,10 +33,6 @@
     routine;                                                    \
     PetscStackPop;                                              \
   } while(0)
-
-#if defined(PETSC_BLASLAPACK_STDCALL)
-#include <petscblaslapack_stdcall.h>
-#else
 
 #include <petscblaslapack_mangle.h>
 
@@ -169,5 +164,4 @@ BLAS_EXTERN void LAPACKgeev_(const char*,const char*,PetscBLASInt *,PetscScalar 
 BLAS_EXTERN void LAPACKgesvd_(const char*,const char*,PetscBLASInt *,PetscBLASInt*,PetscScalar *,PetscBLASInt*,PetscReal*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 #endif
 
-#endif
 #endif

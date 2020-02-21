@@ -9,7 +9,7 @@
 #define petscpartitionergettype_                   petscpartitionergettype
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL petscpartitionersettype_(PetscPartitioner *x,char* type_name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void petscpartitionersettype_(PetscPartitioner *x,char* type_name,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;
 
@@ -18,7 +18,7 @@ PETSC_EXTERN void PETSC_STDCALL petscpartitionersettype_(PetscPartitioner *x,cha
   FREECHAR(type_name,t);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscpartitionergettype_(PetscPartitioner *mm,char* name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void petscpartitionergettype_(PetscPartitioner *mm,char* name,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   const char *tname;
 

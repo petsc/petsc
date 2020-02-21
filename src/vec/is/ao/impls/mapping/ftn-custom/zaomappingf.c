@@ -10,7 +10,7 @@
 #define aocreatemappingis_ aocreatemappingis
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL aocreatemapping_(MPI_Comm *comm,PetscInt *napp,PetscInt *myapp,PetscInt *mypetsc,AO *aoout,PetscErrorCode *ierr)
+PETSC_EXTERN void aocreatemapping_(MPI_Comm *comm,PetscInt *napp,PetscInt *myapp,PetscInt *mypetsc,AO *aoout,PetscErrorCode *ierr)
 {
   if (*napp) {
     CHKFORTRANNULLINTEGER(myapp);

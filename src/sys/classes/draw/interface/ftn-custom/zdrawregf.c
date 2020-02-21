@@ -13,8 +13,8 @@
 #define petscdrawviewfromoptions_  petscdrawviewfromoptions
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL petscdrawsettype_(PetscDraw *ctx,char* text PETSC_MIXED_LEN(len),
-                                     PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void petscdrawsettype_(PetscDraw *ctx,char* text,
+                                     PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;
   FIXCHAR(text,len,t);
@@ -22,9 +22,9 @@ PETSC_EXTERN void PETSC_STDCALL petscdrawsettype_(PetscDraw *ctx,char* text PETS
   FREECHAR(text,t);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscdrawcreate_(MPI_Comm *comm,char* display PETSC_MIXED_LEN(len1),
-                    char* title PETSC_MIXED_LEN(len2),int *x,int *y,int *w,int *h,PetscDraw* inctx,
-                    PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
+PETSC_EXTERN void petscdrawcreate_(MPI_Comm *comm,char* display,
+                    char* title,int *x,int *y,int *w,int *h,PetscDraw* inctx,
+                    PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len1,PETSC_FORTRAN_CHARLEN_T len2)
 {
   char *t1,*t2;
 
@@ -35,8 +35,8 @@ PETSC_EXTERN void PETSC_STDCALL petscdrawcreate_(MPI_Comm *comm,char* display PE
   FREECHAR(title,t2);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscdrawsetoptionsprefix_(PetscDraw *ctx,char* text PETSC_MIXED_LEN(len),
-                                     PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void petscdrawsetoptionsprefix_(PetscDraw *ctx,char* text,
+                                     PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;
   FIXCHAR(text,len,t);
@@ -44,7 +44,7 @@ PETSC_EXTERN void PETSC_STDCALL petscdrawsetoptionsprefix_(PetscDraw *ctx,char* 
   FREECHAR(text,t);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscdrawviewfromoptions_(PetscDraw *draw,PetscObject obj,char* type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void petscdrawviewfromoptions_(PetscDraw *draw,PetscObject obj,char* type,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;
 

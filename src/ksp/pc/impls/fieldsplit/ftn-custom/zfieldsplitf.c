@@ -13,7 +13,7 @@
 #define pcfieldsplitgetis_            pcfieldsplitgetis
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL pcfieldsplitschurgetsubksp_(PC *pc,PetscInt *n_local,KSP *ksp,PetscErrorCode *ierr)
+PETSC_EXTERN void pcfieldsplitschurgetsubksp_(PC *pc,PetscInt *n_local,KSP *ksp,PetscErrorCode *ierr)
 {
   KSP      *tksp;
   PetscInt i,nloc;
@@ -27,7 +27,7 @@ PETSC_EXTERN void PETSC_STDCALL pcfieldsplitschurgetsubksp_(PC *pc,PetscInt *n_l
   *ierr = PetscFree(tksp);
 }
 
-PETSC_EXTERN void PETSC_STDCALL pcfieldsplitgetsubksp_(PC *pc,PetscInt *n_local,KSP *ksp,PetscErrorCode *ierr)
+PETSC_EXTERN void pcfieldsplitgetsubksp_(PC *pc,PetscInt *n_local,KSP *ksp,PetscErrorCode *ierr)
 {
   KSP      *tksp;
   PetscInt i,nloc;
@@ -41,7 +41,7 @@ PETSC_EXTERN void PETSC_STDCALL pcfieldsplitgetsubksp_(PC *pc,PetscInt *n_local,
   *ierr = PetscFree(tksp);
 }
 
-PETSC_EXTERN void PETSC_STDCALL  pcfieldsplitsetis_(PC *pc, char* splitname PETSC_MIXED_LEN(len),IS *is, PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void  pcfieldsplitsetis_(PC *pc, char* splitname,IS *is, PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;
   FIXCHAR(splitname,len,t);
@@ -50,7 +50,7 @@ PETSC_EXTERN void PETSC_STDCALL  pcfieldsplitsetis_(PC *pc, char* splitname PETS
 }
 
 
-PETSC_EXTERN void PETSC_STDCALL  pcfieldsplitgetis_(PC *pc, char* splitname PETSC_MIXED_LEN(len),IS *is, PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void  pcfieldsplitgetis_(PC *pc, char* splitname,IS *is, PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;
   FIXCHAR(splitname,len,t);

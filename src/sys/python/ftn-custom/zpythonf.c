@@ -8,7 +8,7 @@
 #define petscpythonfinalize_   petscpythonfinalize
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL petscpythoninitialize_(char* n1 PETSC_MIXED_LEN(l1),char* n2 PETSC_MIXED_LEN(l2), PetscErrorCode *ierr PETSC_END_LEN(l1) PETSC_END_LEN(l2))
+PETSC_EXTERN void petscpythoninitialize_(char* n1,char* n2, PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T l1,PETSC_FORTRAN_CHARLEN_T l2)
 {
   char *t1,*t2;
   FIXCHAR(n1,l1,t1);
@@ -18,7 +18,7 @@ PETSC_EXTERN void PETSC_STDCALL petscpythoninitialize_(char* n1 PETSC_MIXED_LEN(
   FREECHAR(n2,t2);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscpythonfinalize_(PetscErrorCode *ierr)
+PETSC_EXTERN void petscpythonfinalize_(PetscErrorCode *ierr)
 {
   *ierr = PetscPythonFinalize();
 }

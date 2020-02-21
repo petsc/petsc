@@ -27,10 +27,10 @@ static PetscErrorCode ourmoddestroy(void *ctx)
   PetscObjectUseFortranCallbackSubType(ksp,_cb.destroy,(void*,PetscErrorCode*),(_ctx,&ierr));
 }
 
-PETSC_EXTERN void PETSC_STDCALL kspfgmresmodifypcnochange_(KSP*,PetscInt*,PetscInt*,PetscReal*,void*,PetscErrorCode*);
-PETSC_EXTERN void PETSC_STDCALL kspfgmresmodifypcksp_(KSP*,PetscInt*,PetscInt*,PetscReal*,void*,PetscErrorCode*);
+PETSC_EXTERN void kspfgmresmodifypcnochange_(KSP*,PetscInt*,PetscInt*,PetscReal*,void*,PetscErrorCode*);
+PETSC_EXTERN void kspfgmresmodifypcksp_(KSP*,PetscInt*,PetscInt*,PetscReal*,void*,PetscErrorCode*);
 
-PETSC_EXTERN void PETSC_STDCALL kspfgmressetmodifypc_(KSP *ksp,void (PETSC_STDCALL *fcn)(KSP*,PetscInt*,PetscInt*,PetscReal*,void*,PetscErrorCode*),void* ctx,void (PETSC_STDCALL *d)(void*,PetscErrorCode*),PetscErrorCode *ierr)
+PETSC_EXTERN void kspfgmressetmodifypc_(KSP *ksp,void (*fcn)(KSP*,PetscInt*,PetscInt*,PetscReal*,void*,PetscErrorCode*),void* ctx,void (*d)(void*,PetscErrorCode*),PetscErrorCode *ierr)
 {
   CHKFORTRANNULLFUNCTION(d);
   if ((PetscVoidFunction)fcn == (PetscVoidFunction)kspfgmresmodifypcksp_) {

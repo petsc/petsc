@@ -6,7 +6,7 @@
 #define petscdatatypegetsize_        petscdatatypegetsize
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL  petscdatatypegetsize_(PetscDataType *ptype,size_t *size, PetscErrorCode *ierr )
+PETSC_EXTERN void  petscdatatypegetsize_(PetscDataType *ptype,size_t *size, PetscErrorCode *ierr )
 {
   *ierr = PetscDataTypeGetSize(*ptype,size);
 }

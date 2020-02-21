@@ -9,7 +9,7 @@
 #define matgettype_                      matgettype
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL matsettype_(Mat *x,char* type_name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void matsettype_(Mat *x,char* type_name,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;
 
@@ -18,7 +18,7 @@ PETSC_EXTERN void PETSC_STDCALL matsettype_(Mat *x,char* type_name PETSC_MIXED_L
   FREECHAR(type_name,t);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matgettype_(Mat *mm,char* name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void matgettype_(Mat *mm,char* name,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   const char *tname;
 

@@ -10,7 +10,7 @@
 #define matmpiadjsetpreallocation_       matmpiadjsetpreallocation
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL matcreatempiadj_(MPI_Comm *comm,PetscInt *m,PetscInt *n,PetscInt *i,PetscInt *j,PetscInt *values,Mat *A,PetscErrorCode *ierr)
+PETSC_EXTERN void matcreatempiadj_(MPI_Comm *comm,PetscInt *m,PetscInt *n,PetscInt *i,PetscInt *j,PetscInt *values,Mat *A,PetscErrorCode *ierr)
 {
   Mat_MPIAdj *adj;
 
@@ -20,7 +20,7 @@ PETSC_EXTERN void PETSC_STDCALL matcreatempiadj_(MPI_Comm *comm,PetscInt *m,Pets
   adj->freeaij = PETSC_FALSE;
 }
 
-PETSC_EXTERN void PETSC_STDCALL matmpiadjsetpreallocation_(Mat *mat,PetscInt *i,PetscInt *j,PetscInt *values, PetscErrorCode *ierr)
+PETSC_EXTERN void matmpiadjsetpreallocation_(Mat *mat,PetscInt *i,PetscInt *j,PetscInt *values, PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(values);
   *ierr = MatMPIAdjSetPreallocation(*mat,i,j,values);

@@ -21,7 +21,7 @@ T*/
 #define ex7c_ ex7c
 #endif
 
-PETSC_INTERN void PETSC_STDCALL ex7f_(Vec*,int*);
+PETSC_INTERN void ex7f_(Vec*,int*);
 
 int main(int argc,char **args)
 {
@@ -55,7 +55,7 @@ int main(int argc,char **args)
   return ierr;
 }
 
-PETSC_INTERN void PETSC_STDCALL ex7c_(Vec *fvec,int *fcomm,PetscErrorCode *ierr)
+PETSC_INTERN void ex7c_(Vec *fvec,int *fcomm,PetscErrorCode *ierr)
 {
   MPI_Comm comm;
   PetscInt vsize;

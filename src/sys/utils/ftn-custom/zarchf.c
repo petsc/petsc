@@ -8,7 +8,7 @@
 #define petscbarrier_                      petscbarrier
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL petscgetarchtype_(char* str PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void petscgetarchtype_(char* str,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char   *tstr;
   size_t tlen;
@@ -18,7 +18,7 @@ PETSC_EXTERN void PETSC_STDCALL petscgetarchtype_(char* str PETSC_MIXED_LEN(len)
   FIXRETURNCHAR(PETSC_TRUE,str,len);
 }
 
-PETSC_EXTERN void PETSC_STDCALL  petscbarrier_(PetscObject *obj, int *ierr){
+PETSC_EXTERN void  petscbarrier_(PetscObject *obj, int *ierr){
   *ierr = PetscBarrier(*obj);
 }
 

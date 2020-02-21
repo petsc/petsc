@@ -11,7 +11,7 @@
 #define tstrajectoryviewfromoptions_ tstrajectoryviewfromoptions
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL tstrajectorysetdirname_(TSTrajectory *tj,char dirname[] PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void tstrajectorysetdirname_(TSTrajectory *tj,char dirname[],int *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;
   FIXCHAR(dirname,len,t);
@@ -19,14 +19,14 @@ PETSC_EXTERN void PETSC_STDCALL tstrajectorysetdirname_(TSTrajectory *tj,char di
   FREECHAR(dirname,t);
 }
 
-PETSC_EXTERN void PETSC_STDCALL tstrajectorysetfiletemplate_(TSTrajectory *tj,char filetemplate[] PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void tstrajectorysetfiletemplate_(TSTrajectory *tj,char filetemplate[],int *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;
   FIXCHAR(filetemplate,len,t);
   *ierr = TSTrajectorySetFiletemplate(*tj,t);
   FREECHAR(filetemplate,t);
 }
-PETSC_EXTERN void PETSC_STDCALL tstrajectoryviewfromoptions_(TSTrajectory *ao,PetscObject obj,char* type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void tstrajectoryviewfromoptions_(TSTrajectory *ao,PetscObject obj,char* type,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;
 
