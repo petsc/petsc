@@ -523,7 +523,7 @@ linux-c-exodus-dbg:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -cuda_initialize 0
     TEST_ARCH: arch-ci-linux-c-exodus-dbg
 
-linux-cuda-single:
+linux-cuda-single-cxx:
   extends:
     - .stage-3
     - .linux_test
@@ -531,7 +531,7 @@ linux-cuda-single:
     - gpu:nvidia, os:linux
   variables:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -cuda_initialize 0
-    TEST_ARCH: arch-ci-linux-cuda-single
+    TEST_ARCH: arch-ci-linux-cuda-single-cxx
 
 linux-viennacl:
   extends:
