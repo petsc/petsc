@@ -1,5 +1,5 @@
 !
-!  Program to test PetscObjectReference() and other PetscObjectXXX functions.
+!  Program to test PetscRandom, PetscObjectReference() and other PetscObjectXXX functions.
 !
       program main
 

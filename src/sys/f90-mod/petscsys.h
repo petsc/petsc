@@ -207,6 +207,14 @@
       PetscEnum, parameter :: PETSC_BUILDTWOSIDED_ALLREDUCE = 0
       PetscEnum, parameter :: PETSC_BUILDTWOSIDED_IBARRIER = 1
       PetscEnum, parameter :: PETSC_BUILDTWOSIDED_REDSCATTER = 2
+
+      type tPetscSubcomm
+        sequence
+        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
+      end type tPetscSubcomm
+
+      PetscSubcomm, parameter :: PETSC_NULL_SUBCOMM = tPetscSubcomm(0)
+
 !
 !     PetscSubcommType
 !

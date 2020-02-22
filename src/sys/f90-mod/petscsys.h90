@@ -181,6 +181,31 @@
        PetscErrorCode ierr
        end subroutine
 
+      subroutine PetscSubcommView(a,b,z)
+      use petscsysdef
+       PetscSubcomm a ! PetscSubcomm
+       PetscViewer b ! PetscViewer
+       PetscErrorCode z
+      end subroutine
+      subroutine PetscSubcommGetParent(a,b,z)
+      use petscsysdef
+       PetscSubcomm a ! PetscSubcomm
+       MPI_Comm b ! MPI_Comm
+       PetscErrorCode z
+       end subroutine
+      subroutine PetscSubcommGetContiguousParent(a,b,z)
+      use petscsysdef
+       PetscSubcomm a ! PetscSubcomm
+       MPI_Comm b ! MPI_Comm
+       PetscErrorCode z
+       end subroutine
+      subroutine PetscSubcommGetChild(a,b,z)
+      use petscsysdef
+       PetscSubcomm a ! PetscSubcomm
+       MPI_Comm b ! MPI_Comm
+       PetscErrorCode z
+       end subroutine
+
       subroutine MPIU_abort(comm,ierr)
       MPI_Comm,intent(in) ::  comm
       PetscErrorCode,intent(in) ::  ierr

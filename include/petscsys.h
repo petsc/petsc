@@ -2484,6 +2484,9 @@ PETSC_EXTERN PetscErrorCode PetscSubcommSetTypeGeneral(PetscSubcomm,PetscMPIInt,
 PETSC_EXTERN PetscErrorCode PetscSubcommView(PetscSubcomm,PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscSubcommSetFromOptions(PetscSubcomm);
 PETSC_EXTERN PetscErrorCode PetscSubcommSetOptionsPrefix(PetscSubcomm,const char[]);
+PETSC_EXTERN PetscErrorCode PetscSubcommGetParent(PetscSubcomm,MPI_Comm*);
+PETSC_EXTERN PetscErrorCode PetscSubcommGetContiguousParent(PetscSubcomm,MPI_Comm*);
+PETSC_EXTERN PetscErrorCode PetscSubcommGetChild(PetscSubcomm,MPI_Comm*);
 
 PETSC_EXTERN PetscErrorCode PetscHeapCreate(PetscInt,PetscHeap*);
 PETSC_EXTERN PetscErrorCode PetscHeapAdd(PetscHeap,PetscInt,PetscInt);

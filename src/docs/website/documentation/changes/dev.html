@@ -189,6 +189,11 @@
           <li>Add "fieldnum" argument to PetscViewerVTKAddField() to indicate only one field of the vector should be viewed</li>
         </ul>
       <h4>SYS:</h4>
+      <ul>
+        <li>Add PetscSubcommGetParent() - Gets the communicator that was used to create the PetscSubcomm</li>
+        <li>Add PetscSubcommGetContiguousParent() - Gets a communicator that that is a duplicate of the parent but has the ranks reordered by the order they are in the children</li>
+        <li>Add PetscSubcommGetChild() - Gets the communicator created by the PetscSubcomm</li>
+      </ul>
       <h4>AO:</h4>
       <h4>Sieve:</h4>
       <h4>Fortran:</h4>
