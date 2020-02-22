@@ -246,8 +246,6 @@ PetscErrorCode  VecCreateMPICUDAWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,P
   PetscFunctionReturn(0);
 }
 
-extern "C" PetscErrorCode VecGetArrayWrite_SeqCUDA(Vec,PetscScalar**);
-
 PetscErrorCode VecPinToCPU_MPICUDA(Vec V,PetscBool pin)
 {
   PetscErrorCode ierr;
