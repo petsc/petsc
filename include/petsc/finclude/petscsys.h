@@ -185,6 +185,8 @@
 #define PetscBinarySeekType PetscEnum
 
 #define PetscBuildTwoSidedType PetscEnum
+
+#define PetscSubcomm type(tPetscSubcomm)
 #define PetscSubcommType PetscEnum
 
 #define PetscOptions type(tPetscOptions)
