@@ -18,7 +18,7 @@ if __name__ == '__main__':
     '--with-precision=single',
     '--download-openblas', # default ATLAS blas on Ubuntu 14.04 breaks runex76 in src/mat/examples/tests
     '--download-openblas-make-options=TARGET=GENERIC',
-    '--with-clanguage=c',
+    '--with-clanguage=cxx',
     '--with-single-library=0',
     '--with-visibility=1',
     # Note: If using nvcc with a host compiler other than the CUDA SDK default for your platform (GCC on Linux, clang
