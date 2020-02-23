@@ -9397,7 +9397,7 @@ PetscErrorCode DMPlexSetRegularRefinement(DM dm, PetscBool regular)
 /* anchors */
 /*@
   DMPlexGetAnchors - Get the layout of the anchor (point-to-point) constraints.  Typically, the user will not have to
-  call DMPlexGetAnchors() directly: if there are anchors, then DMPlexGetAnchors() is called during DMGetConstraints().
+  call DMPlexGetAnchors() directly: if there are anchors, then DMPlexGetAnchors() is called during DMGetDefaultConstraints().
 
   not collective
 
@@ -9410,7 +9410,7 @@ PetscErrorCode DMPlexSetRegularRefinement(DM dm, PetscBool regular)
 
   Level: intermediate
 
-.seealso: DMPlexSetAnchors(), DMGetConstraints(), DMSetConstraints()
+.seealso: DMPlexSetAnchors(), DMGetDefaultConstraints(), DMSetDefaultConstraints()
 @*/
 PetscErrorCode DMPlexGetAnchors(DM dm, PetscSection *anchorSection, IS *anchorIS)
 {
@@ -9431,7 +9431,7 @@ PetscErrorCode DMPlexGetAnchors(DM dm, PetscSection *anchorSection, IS *anchorIS
   point's degrees of freedom to be a linear combination of other points' degrees of freedom.
 
   After specifying the layout of constraints with DMPlexSetAnchors(), one specifies the constraints by calling
-  DMGetConstraints() and filling in the entries in the constraint matrix.
+  DMGetDefaultConstraints() and filling in the entries in the constraint matrix.
 
   collective on dm
 
@@ -9444,7 +9444,7 @@ PetscErrorCode DMPlexGetAnchors(DM dm, PetscSection *anchorSection, IS *anchorIS
 
   Level: intermediate
 
-.seealso: DMPlexGetAnchors(), DMGetConstraints(), DMSetConstraints()
+.seealso: DMPlexGetAnchors(), DMGetDefaultConstraints(), DMSetDefaultConstraints()
 @*/
 PetscErrorCode DMPlexSetAnchors(DM dm, PetscSection anchorSection, IS anchorIS)
 {
