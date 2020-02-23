@@ -155,7 +155,7 @@ static PetscErrorCode FormJacobianLocal_K(User user,DMDALocalInfo *info,const Pe
   PetscFunctionBeginUser;
   for (i=info->xs; i<info->xs+info->xm; i++) {
     PetscInt    row    = i-info->gxs;
-    PetscScalar vals[] = {hx*(PetscExpScalar(k[i]-1.)+1.)};
+    PetscScalar vals[] = {hx*(PetscExpScalar(k[i]-1.)+ (PetscScalar)1.)};
     ierr = MatSetValuesLocal(Bkk,1,&row,1,&row,vals,INSERT_VALUES);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
