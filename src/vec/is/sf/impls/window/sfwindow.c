@@ -869,7 +869,7 @@ PetscErrorCode PetscSFBcastAndOpEnd_Window(PetscSF sf,MPI_Datatype unit,const vo
   PetscSF_Window *w = (PetscSF_Window*)sf->data;
   PetscErrorCode ierr;
   MPI_Win        win;
-  MPI_Request    *reqs;
+  MPI_Request    *reqs = NULL;
 
   PetscFunctionBegin;
   ierr = PetscSFFindWindow(sf,unit,rootdata,&win,&reqs);CHKERRQ(ierr);
@@ -924,7 +924,7 @@ static PetscErrorCode PetscSFReduceEnd_Window(PetscSF sf,MPI_Datatype unit,const
   PetscSF_Window *w = (PetscSF_Window*)sf->data;
   PetscErrorCode ierr;
   MPI_Win        win;
-  MPI_Request    *reqs;
+  MPI_Request    *reqs = NULL;
 
   PetscFunctionBegin;
   ierr = PetscSFFindWindow(sf,unit,rootdata,&win,&reqs);CHKERRQ(ierr);
@@ -1000,7 +1000,7 @@ static PetscErrorCode PetscSFFetchAndOpEnd_Window(PetscSF sf,MPI_Datatype unit,v
 #if defined(PETSC_HAVE_MPI_GET_ACCUMULATE)
   PetscSF_Window *w = (PetscSF_Window*)sf->data;
 #endif
-  MPI_Request    *reqs;
+  MPI_Request    *reqs = NULL;
 
   PetscFunctionBegin;
   ierr = PetscSFFindWindow(sf,unit,rootdata,&win,&reqs);CHKERRQ(ierr);
