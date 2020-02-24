@@ -70,8 +70,8 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   v->celltypeLabel            = NULL;
   v->localSection             = NULL;
   v->globalSection            = NULL;
-  v->defaultConstraintSection = NULL;
-  v->defaultConstraintMat     = NULL;
+  v->defaultConstraint.section = NULL;
+  v->defaultConstraint.mat    = NULL;
   v->L                        = NULL;
   v->maxCell                  = NULL;
   v->bdtype                   = NULL;
@@ -731,8 +731,8 @@ PetscErrorCode  DMDestroy(DM *dm)
   ierr = PetscSectionDestroy(&(*dm)->localSection);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&(*dm)->globalSection);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&(*dm)->map);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&(*dm)->defaultConstraintSection);CHKERRQ(ierr);
-  ierr = MatDestroy(&(*dm)->defaultConstraintMat);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&(*dm)->defaultConstraint.section);CHKERRQ(ierr);
+  ierr = MatDestroy(&(*dm)->defaultConstraint.mat);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&(*dm)->sf);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&(*dm)->sectionSF);CHKERRQ(ierr);
   if ((*dm)->useNatural) {
@@ -4430,9 +4430,9 @@ PetscErrorCode DMGetDefaultConstraints(DM dm, PetscSection *section, Mat *mat)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (!dm->defaultConstraintSection && !dm->defaultConstraintMat && dm->ops->createdefaultconstraints) {ierr = (*dm->ops->createdefaultconstraints)(dm);CHKERRQ(ierr);}
-  if (section) {*section = dm->defaultConstraintSection;}
-  if (mat) {*mat = dm->defaultConstraintMat;}
+  if (!dm->defaultConstraint.section && !dm->defaultConstraint.mat && dm->ops->createdefaultconstraints) {ierr = (*dm->ops->createdefaultconstraints)(dm);CHKERRQ(ierr);}
+  if (section) *section = dm->defaultConstraint.section;
+  if (mat) *mat = dm->defaultConstraint.mat;
   PetscFunctionReturn(0);
 }
 
@@ -4474,11 +4474,11 @@ PetscErrorCode DMSetDefaultConstraints(DM dm, PetscSection section, Mat mat)
     PetscCheckFalse(result != MPI_CONGRUENT && result != MPI_IDENT,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMECOMM,"constraint matrix must have local communicator");
   }
   ierr = PetscObjectReference((PetscObject)section);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&dm->defaultConstraintSection);CHKERRQ(ierr);
-  dm->defaultConstraintSection = section;
+  ierr = PetscSectionDestroy(&dm->defaultConstraint.section);CHKERRQ(ierr);
+  dm->defaultConstraint.section = section;
   ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
-  ierr = MatDestroy(&dm->defaultConstraintMat);CHKERRQ(ierr);
-  dm->defaultConstraintMat = mat;
+  ierr = MatDestroy(&dm->defaultConstraint.mat);CHKERRQ(ierr);
+  dm->defaultConstraint.mat = mat;
   PetscFunctionReturn(0);
 }
 
