@@ -240,7 +240,7 @@ PetscErrorCode DMProjectField(DM dm, PetscReal time, Vec U,
   if (mode == INSERT_VALUES || mode == INSERT_ALL_VALUES || mode == INSERT_BC_VALUES) {
     Mat cMat;
 
-    ierr = DMGetDefaultConstraints(dm, NULL, &cMat);CHKERRQ(ierr);
+    ierr = DMGetDefaultConstraints(dm, NULL, &cMat, NULL);CHKERRQ(ierr);
     if (cMat) {
       ierr = DMGlobalToLocalSolve(dm, localX, X);CHKERRQ(ierr);
     }

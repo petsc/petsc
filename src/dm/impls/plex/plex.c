@@ -5023,7 +5023,7 @@ PetscErrorCode DMCreateCoordinateDM_Plex(DM dm, DM *cdm)
   ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PETSC_COMM_SELF, &s);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_SELF, &m);CHKERRQ(ierr);
-  ierr = DMSetDefaultConstraints(*cdm, s, m);CHKERRQ(ierr);
+  ierr = DMSetDefaultConstraints(*cdm, s, m, NULL);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&s);CHKERRQ(ierr);
   ierr = MatDestroy(&m);CHKERRQ(ierr);
 
@@ -6859,7 +6859,7 @@ PetscErrorCode DMPlexAnchorsModifyMat(DM dm, PetscSection section, PetscInt numP
 
   PetscCheckFalse(numFields && newOffsets[numFields] != newNumIndices,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid size for closure %D should be %D", newOffsets[numFields], newNumIndices);
 
-  ierr = DMGetDefaultConstraints(dm, &cSec, &cMat);CHKERRQ(ierr);
+  ierr = DMGetDefaultConstraints(dm, &cSec, &cMat, NULL);CHKERRQ(ierr);
 
   /* workspaces */
   if (numFields) {
@@ -9499,7 +9499,7 @@ PetscErrorCode DMPlexSetAnchors(DM dm, PetscSection anchorSection, IS anchorIS)
     ierr = ISRestoreIndices(anchorIS,&anchors);CHKERRQ(ierr);
   }
   /* reset the generic constraints */
-  ierr = DMSetDefaultConstraints(dm,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMSetDefaultConstraints(dm,NULL,NULL,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -9686,7 +9686,7 @@ PetscErrorCode DMCreateDefaultConstraints_Plex(DM dm)
     ierr = DMPlexCreateConstraintMatrix_Anchors(dm,section,cSec,&cMat);CHKERRQ(ierr);
     ierr = DMGetNumFields(dm,&Nf);CHKERRQ(ierr);
     if (Nf && plex->computeanchormatrix) {ierr = (*plex->computeanchormatrix)(dm,section,cSec,cMat);CHKERRQ(ierr);}
-    ierr = DMSetDefaultConstraints(dm,cSec,cMat);CHKERRQ(ierr);
+    ierr = DMSetDefaultConstraints(dm,cSec,cMat,NULL);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&cSec);CHKERRQ(ierr);
     ierr = MatDestroy(&cMat);CHKERRQ(ierr);
   }

@@ -1500,7 +1500,7 @@ static PetscErrorCode DMPlexReferenceTreeGetChildrenMatrices(DM refTree, PetscSc
   ierr = DMGetDS(refTree,&ds);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(ds,&numFields);CHKERRQ(ierr);
   maxFields = PetscMax(1,numFields);
-  ierr = DMGetDefaultConstraints(refTree,&refConSec,&refCmat);CHKERRQ(ierr);
+  ierr = DMGetDefaultConstraints(refTree,&refConSec,&refCmat,NULL);CHKERRQ(ierr);
   ierr = DMPlexGetAnchors(refTree,&refAnSec,&refAnIS);CHKERRQ(ierr);
   ierr = ISGetIndices(refAnIS,&refAnchors);CHKERRQ(ierr);
   ierr = DMGetLocalSection(refTree,&refSection);CHKERRQ(ierr);
@@ -1619,7 +1619,7 @@ static PetscErrorCode DMPlexReferenceTreeRestoreChildrenMatrices(DM refTree, Pet
   ierr = DMGetDS(refTree,&ds);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(ds,&numFields);CHKERRQ(ierr);
   maxFields = PetscMax(1,numFields);
-  ierr = DMGetDefaultConstraints(refTree,&refConSec,NULL);CHKERRQ(ierr);
+  ierr = DMGetDefaultConstraints(refTree,&refConSec,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(refConSec,&pRefStart,&pRefEnd);CHKERRQ(ierr);
   for (p = pRefStart; p < pRefEnd; p++) {
     PetscInt parent, pDof;
@@ -1667,7 +1667,7 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_FromReference(DM dm, PetscS
   maxFields = PetscMax(1,numFields);
   ierr = DMPlexGetReferenceTree(dm,&refTree);CHKERRQ(ierr);
   ierr = DMCopyDisc(dm,refTree);CHKERRQ(ierr);
-  ierr = DMGetDefaultConstraints(refTree,&refConSec,&refCmat);CHKERRQ(ierr);
+  ierr = DMGetDefaultConstraints(refTree,&refConSec,&refCmat,NULL);CHKERRQ(ierr);
   ierr = DMPlexGetAnchors(refTree,&refAnSec,&refAnIS);CHKERRQ(ierr);
   ierr = DMPlexGetAnchors(dm,&anSec,&anIS);CHKERRQ(ierr);
   ierr = ISGetIndices(anIS,&anchors);CHKERRQ(ierr);
@@ -2261,7 +2261,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
   ierr = ISGetIndices(aIS,&anchors);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(aSec,&aStart,&aEnd);CHKERRQ(ierr);
 
-  ierr = DMGetDefaultConstraints(coarse,&cSec,&cMat);CHKERRQ(ierr);
+  ierr = DMGetDefaultConstraints(coarse,&cSec,&cMat,NULL);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(cSec,&cStart,&cEnd);CHKERRQ(ierr);
 
   /* create sections that will send to children the indices and matrices they will need to construct the interpolator */
@@ -2841,7 +2841,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
 
     ierr = DMPlexGetReferenceTree(fine,&refTree);CHKERRQ(ierr);
     ierr = DMPlexReferenceTreeGetChildrenMatrices(refTree,&refPointFieldMats,&refPointFieldN);CHKERRQ(ierr);
-    ierr = DMGetDefaultConstraints(refTree,&refConSec,NULL);CHKERRQ(ierr);
+    ierr = DMGetDefaultConstraints(refTree,&refConSec,NULL,NULL);CHKERRQ(ierr);
     ierr = DMPlexGetAnchors(refTree,&refAnSec,NULL);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(refConSec,&pRefStart,&pRefEnd);CHKERRQ(ierr);
     ierr = PetscSectionGetMaxDof(refConSec,&maxConDof);CHKERRQ(ierr);
@@ -3033,7 +3033,7 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
   ierr = PetscSectionGetNumFields(section,&numSecFields);CHKERRQ(ierr);
   ierr = DMGetLabel(refTree,"canonical",&canonical);CHKERRQ(ierr);
   ierr = DMGetLabel(refTree,"depth",&depth);CHKERRQ(ierr);
-  ierr = DMGetDefaultConstraints(refTree,&cSection,&cMat);CHKERRQ(ierr);
+  ierr = DMGetDefaultConstraints(refTree,&cSection,&cMat,NULL);CHKERRQ(ierr);
   ierr = DMPlexGetChart(refTree, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(refTree, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = MatGetSize(cMat,&n,&m);CHKERRQ(ierr); /* the injector has transpose sizes from the constraint matrix */
@@ -3374,7 +3374,7 @@ static PetscErrorCode DMPlexReferenceTreeGetChildrenMatrices_Injection(DM refTre
   PetscFunctionBegin;
   ierr = DMGetDS(refTree,&ds);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(ds,&numFields);CHKERRQ(ierr);
-  ierr = DMGetDefaultConstraints(refTree,&refConSec,NULL);CHKERRQ(ierr);
+  ierr = DMGetDefaultConstraints(refTree,&refConSec,NULL,NULL);CHKERRQ(ierr);
   ierr = DMGetLocalSection(refTree,&refSection);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(refConSec,&pRefStart,&pRefEnd);CHKERRQ(ierr);
   ierr = PetscMalloc1(pRefEnd-pRefStart,&refPointFieldMats);CHKERRQ(ierr);
@@ -3447,7 +3447,7 @@ static PetscErrorCode DMPlexReferenceTreeRestoreChildrenMatrices_Injection(DM re
   ierr = DMGetDS(refTree,&ds);CHKERRQ(ierr);
   ierr = DMGetLocalSection(refTree,&refSection);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(ds,&numFields);CHKERRQ(ierr);
-  ierr = DMGetDefaultConstraints(refTree,&refConSec,NULL);CHKERRQ(ierr);
+  ierr = DMGetDefaultConstraints(refTree,&refConSec,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(refConSec,&pRefStart,&pRefEnd);CHKERRQ(ierr);
   for (p = pRefStart; p < pRefEnd; p++) {
     PetscInt parent, pDof, parentDof;
@@ -3482,7 +3482,7 @@ static PetscErrorCode DMPlexReferenceTreeGetInjector(DM refTree,Mat *injRef)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetDefaultConstraints(refTree,NULL,&cMatRef);CHKERRQ(ierr);
+  ierr = DMGetDefaultConstraints(refTree,NULL,&cMatRef,NULL);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject)cMatRef,"DMPlexComputeInjectorTree_refTree",&injRefObj);CHKERRQ(ierr);
   *injRef = (Mat) injRefObj;
   if (!*injRef) {
@@ -3756,7 +3756,7 @@ PetscErrorCode DMPlexComputeInjectorTree(DM coarse, DM fine, PetscSF coarseToFin
 
   /* get the templates for the fine-to-coarse injection from the reference tree */
   ierr = DMPlexGetReferenceTree(coarse,&refTree);CHKERRQ(ierr);
-  ierr = DMGetDefaultConstraints(refTree,&cSecRef,NULL);CHKERRQ(ierr);
+  ierr = DMGetDefaultConstraints(refTree,&cSecRef,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(cSecRef,&pRefStart,&pRefEnd);CHKERRQ(ierr);
   ierr = DMPlexReferenceTreeGetInjector(refTree,&injRef);CHKERRQ(ierr);
 
@@ -4056,7 +4056,7 @@ static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse
   ierr = ISGetIndices(aIS,&anchors);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(aSec,&aStart,&aEnd);CHKERRQ(ierr);
 
-  ierr = DMGetDefaultConstraints(coarse,&cSec,&cMat);CHKERRQ(ierr);
+  ierr = DMGetDefaultConstraints(coarse,&cSec,&cMat,NULL);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(cSec,&cStart,&cEnd);CHKERRQ(ierr);
 
   /* create sections that will send to children the indices and matrices they will need to construct the interpolator */
@@ -4204,7 +4204,7 @@ static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse
     ierr = DMPlexGetReferenceTree(fine,&refTree);CHKERRQ(ierr);
     ierr = DMCopyDisc(fine,refTree);CHKERRQ(ierr);
     ierr = DMPlexReferenceTreeGetChildrenMatrices(refTree,&refPointFieldMats,&refPointFieldN);CHKERRQ(ierr);
-    ierr = DMGetDefaultConstraints(refTree,&refConSec,NULL);CHKERRQ(ierr);
+    ierr = DMGetDefaultConstraints(refTree,&refConSec,NULL,NULL);CHKERRQ(ierr);
     ierr = DMPlexGetAnchors(refTree,&refAnSec,NULL);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(refConSec,&pRefStart,&pRefEnd);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(leafValuesSec,&leafStart,&leafEnd);CHKERRQ(ierr);
@@ -4338,7 +4338,7 @@ static PetscErrorCode DMPlexTransferVecTree_Inject(DM fine, Vec vecFine, DM coar
   ierr = VecSetOption(vecCoarse,VEC_IGNORE_NEGATIVE_INDICES,PETSC_TRUE);CHKERRQ(ierr);
   ierr = DMPlexGetReferenceTree(coarse,&refTree);CHKERRQ(ierr);
   ierr = DMCopyDisc(coarse,refTree);CHKERRQ(ierr);
-  ierr = DMGetDefaultConstraints(refTree,&cSecRef,NULL);CHKERRQ(ierr);
+  ierr = DMGetDefaultConstraints(refTree,&cSecRef,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(cSecRef,&pRefStart,&pRefEnd);CHKERRQ(ierr);
   ierr = DMPlexReferenceTreeGetInjector(refTree,&injRef);CHKERRQ(ierr);
 

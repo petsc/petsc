@@ -260,6 +260,7 @@ struct _p_DM {
   struct {
     PetscSection section;
     Mat          mat;
+    Vec          bias;
   } defaultConstraint;
   /* Basis transformation */
   DM                      transformDM;          /* Layout for basis transformation */

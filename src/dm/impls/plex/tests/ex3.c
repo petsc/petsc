@@ -395,7 +395,7 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
       ierr = DMGetLocalSection(dm,&section);CHKERRQ(ierr);
       /* this creates the matrix and preallocates the matrix structure: we
        * just have to fill in the values */
-      ierr = DMGetDefaultConstraints(dm,&cSec,&cMat);CHKERRQ(ierr);
+      ierr = DMGetDefaultConstraints(dm,&cSec,&cMat,NULL);CHKERRQ(ierr);
       ierr = PetscSectionGetChart(cSec,&cStart,&cEnd);CHKERRQ(ierr);
       ierr = ISGetIndices(aIS,&anchors);CHKERRQ(ierr);
       ierr = PetscFEGetNumComponents(user->fe, &numComp);CHKERRQ(ierr);

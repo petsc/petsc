@@ -5107,14 +5107,15 @@ static PetscErrorCode DMCreateDefaultConstraints_pforest(DM dm)
 {
   DM             plex;
   Mat            mat;
+  Vec            bias;
   PetscSection   section;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMPforestGetPlex(dm,&plex);CHKERRQ(ierr);
-  ierr = DMGetDefaultConstraints(plex,&section,&mat);CHKERRQ(ierr);
-  ierr = DMSetDefaultConstraints(dm,section,mat);CHKERRQ(ierr);
+  ierr = DMGetDefaultConstraints(plex,&section,&mat,&bias);CHKERRQ(ierr);
+  ierr = DMSetDefaultConstraints(dm,section,mat,bias);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

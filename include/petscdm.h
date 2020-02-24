@@ -238,8 +238,8 @@ PETSC_EXTERN PetscErrorCode DMSetPointSF(DM, PetscSF);
 PETSC_EXTERN PetscErrorCode DMGetNaturalSF(DM, PetscSF *);
 PETSC_EXTERN PetscErrorCode DMSetNaturalSF(DM, PetscSF);
 
-PETSC_EXTERN PetscErrorCode DMGetDefaultConstraints(DM, PetscSection *, Mat *);
-PETSC_EXTERN PetscErrorCode DMSetDefaultConstraints(DM, PetscSection, Mat);
+PETSC_EXTERN PetscErrorCode DMGetDefaultConstraints(DM, PetscSection *, Mat *, Vec *);
+PETSC_EXTERN PetscErrorCode DMSetDefaultConstraints(DM, PetscSection, Mat, Vec);
 
 PETSC_EXTERN PetscErrorCode DMGetOutputDM(DM, DM *);
 PETSC_EXTERN PetscErrorCode DMGetOutputSequenceNumber(DM, PetscInt *, PetscReal *);
