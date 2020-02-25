@@ -130,6 +130,7 @@ class Configure(config.base.Configure):
     self.headers   = self.framework.getChild('config.headers')    
     return
 
+  @staticmethod
   def isNAG(compiler, log):
     '''Returns true if the compiler is a NAG F90 compiler'''
     try:
@@ -139,9 +140,8 @@ class Configure(config.base.Configure):
         return 1
     except RuntimeError:
       pass
-    return 0
-  isNAG = staticmethod(isNAG)
 
+  @staticmethod
   def isGNU(compiler, log):
     '''Returns true if the compiler is a GNU compiler'''
     try:
@@ -163,9 +163,8 @@ class Configure(config.base.Configure):
                                                  ]]))
     except RuntimeError:
       pass
-    return 0
-  isGNU = staticmethod(config.memoize(isGNU))
 
+  @staticmethod
   def isClang(compiler, log):
     '''Returns true if the compiler is a Clang/LLVM compiler'''
     try:
@@ -174,9 +173,8 @@ class Configure(config.base.Configure):
       return any([s in output for s in ['Emit Clang AST']])
     except RuntimeError:
       pass
-    return 0
-  isClang = staticmethod(isClang)
 
+  @staticmethod
   def isGfortran45x(compiler, log):
     '''returns true if the compiler is gfortran-4.5.x'''
     try:
@@ -187,9 +185,8 @@ class Configure(config.base.Configure):
         return 1
     except RuntimeError:
       pass
-    return 0
-  isGfortran45x = staticmethod(isGfortran45x)
 
+  @staticmethod
   def isGfortran46plus(compiler, log):
     '''returns true if the compiler is gfortran-4.6.x or later'''
     try:
@@ -203,9 +200,8 @@ class Configure(config.base.Configure):
           return 1
     except RuntimeError:
       pass
-    return 0
-  isGfortran46plus = staticmethod(isGfortran46plus)
 
+  @staticmethod
   def isGfortran47plus(compiler, log):
     '''returns true if the compiler is gfortran-4.7.x or later'''
     try:
@@ -219,10 +215,8 @@ class Configure(config.base.Configure):
           return 1
     except RuntimeError:
       pass
-    return 0
-  isGfortran47plus = staticmethod(isGfortran47plus)
 
-
+  @staticmethod
   def isGfortran8plus(compiler, log):
     '''returns true if the compiler is gfortran-8 or later'''
     try:
@@ -236,9 +230,8 @@ class Configure(config.base.Configure):
           return 1
     except RuntimeError:
       pass
-    return 0
-  isGfortran8plus = staticmethod(isGfortran8plus)
 
+  @staticmethod
   def isG95(compiler, log):
     '''Returns true if the compiler is g95'''
     try:
@@ -250,9 +243,8 @@ class Configure(config.base.Configure):
         return 1
     except RuntimeError:
       pass
-    return 0
-  isG95 = staticmethod(isG95)
 
+  @staticmethod
   def isCompaqF90(compiler, log):
     '''Returns true if the compiler is Compaq f90'''
     try:
@@ -264,9 +256,8 @@ class Configure(config.base.Configure):
         return 1
     except RuntimeError:
       pass
-    return 0
-  isCompaqF90 = staticmethod(isCompaqF90)
 
+  @staticmethod
   def isSun(compiler, log):
     '''Returns true if the compiler is a Sun/Oracle compiler'''
     try:
@@ -276,9 +267,8 @@ class Configure(config.base.Configure):
         return 1
     except RuntimeError:
       pass
-    return 0
-  isSun = staticmethod(isSun)
 
+  @staticmethod
   def isIBM(compiler, log):
     '''Returns true if the compiler is a IBM compiler'''
     try:
@@ -288,9 +278,8 @@ class Configure(config.base.Configure):
         return 1
     except RuntimeError:
       pass
-    return 0
-  isIBM = staticmethod(isIBM)
 
+  @staticmethod
   def isIntel(compiler, log):
     '''Returns true if the compiler is a Intel compiler'''
     try:
@@ -300,17 +289,15 @@ class Configure(config.base.Configure):
         return 1
     except RuntimeError:
       pass
-    return 0
-  isIntel = staticmethod(isIntel)
 
+  @staticmethod
   def isCrayKNL(compiler, log):
     '''Returns true if the compiler is a compiler for KNL running on a Cray'''
     x = os.getenv('PE_PRODUCT_LIST')
     if x and x.find('CRAYPE_MIC-KNL') > -1:
       return 1
-    return 0
-  isCrayKNL = staticmethod(isCrayKNL)
 
+  @staticmethod
   def isCray(compiler, log):
     '''Returns true if the compiler is a Cray compiler'''
     try:
@@ -320,9 +307,8 @@ class Configure(config.base.Configure):
         return 1
     except RuntimeError:
       pass
-    return 0
-  isCray = staticmethod(isCray)
 
+  @staticmethod
   def isCrayVector(compiler, log):
     '''Returns true if the compiler is a Cray compiler for a Cray Vector system'''
     try:
@@ -332,14 +318,10 @@ class Configure(config.base.Configure):
         return 0
       elif not status:
         return 1
-      else:
-        return 0
     except RuntimeError:
       pass
-    return 0
-  isCrayVector = staticmethod(isCrayVector)
 
-
+  @staticmethod
   def isPGI(compiler, log):
     '''Returns true if the compiler is a PGI compiler'''
     try:
@@ -349,9 +331,8 @@ class Configure(config.base.Configure):
         return 1
     except RuntimeError:
       pass
-    return 0
-  isPGI = staticmethod(isPGI)
 
+  @staticmethod
   def isSolarisAR(ar, log):
     '''Returns true AR is solaris'''
     try:
@@ -361,9 +342,8 @@ class Configure(config.base.Configure):
         return 1
     except RuntimeError:
       pass
-    return 0
-  isSolarisAR = staticmethod(isSolarisAR)
 
+  @staticmethod
   def isAIXAR(ar, log):
     '''Returns true AR is AIX'''
     try:
@@ -373,45 +353,36 @@ class Configure(config.base.Configure):
         return 1
     except RuntimeError:
       pass
-    return 0
-  isAIXAR = staticmethod(isAIXAR)
 
-
+  @staticmethod
   def isLinux(log):
     '''Returns true if system is linux'''
     (output, error, status) = config.base.Configure.executeShellCommand('uname -s', log = log)
     if not status and output.lower().strip().find('linux') >= 0:
       return 1
-    else:
-      return 0
-  isLinux = staticmethod(isLinux)
 
+  @staticmethod
   def isCygwin(log):
     '''Returns true if system is cygwin'''
     (output, error, status) = config.base.Configure.executeShellCommand('uname -s', log = log)
     if not status and output.lower().strip().find('cygwin') >= 0:
       return 1
-    else:
-      return 0
-  isCygwin = staticmethod(isCygwin)
 
+  @staticmethod
   def isSolaris(log):
     '''Returns true if system is solaris'''
     (output, error, status) = config.base.Configure.executeShellCommand('uname -s', log = log)
     if not status and output.lower().strip().find('sunos') >= 0:
       return 1
-    else:
-      return 0
-  isSolaris = staticmethod(isSolaris)
 
+  @staticmethod
   def isDarwin(log):
     '''Returns true if system is Darwin/MacOSX'''
     (output, error, status) = config.base.Configure.executeShellCommand('uname -s', log = log)
     if not status:
       return output.lower().strip() == 'darwin'
-    return 0
-  isDarwin = staticmethod(isDarwin)
 
+  @staticmethod
   def isDarwinCatalina(log):
     '''Returns true if system is Darwin/MacOSX Version Catalina or higher'''
     import platform
@@ -419,16 +390,15 @@ class Configure(config.base.Configure):
     v = tuple([int(a) for a in platform.mac_ver()[0].split('.')])
     if v < (10,15,0): return 0
     return 1
-  isDarwinCatalina = staticmethod(isDarwinCatalina)
 
+  @staticmethod
   def isFreeBSD(log):
     '''Returns true if system is FreeBSD'''
     (output, error, status) = config.base.Configure.executeShellCommand('uname -s', log = log)
     if not status:
       return output.lower().strip() == 'freebsd'
-    return 0
-  isFreeBSD = staticmethod(isFreeBSD)
 
+  @staticmethod
   def isWindows(compiler, log):
     '''Returns true if the compiler is a Windows compiler'''
     if compiler in ['icl', 'cl', 'bcc32', 'ifl', 'df']:
@@ -437,9 +407,8 @@ class Configure(config.base.Configure):
       return 1
     if compiler in ['lib', 'tlib']:
       return 1
-    return 0
-  isWindows = staticmethod(isWindows)
 
+  @staticmethod
   def addLdPath(path):
     if 'LD_LIBRARY_PATH' in os.environ:
       ldPath=os.environ['LD_LIBRARY_PATH']
@@ -449,7 +418,6 @@ class Configure(config.base.Configure):
     else: ldPath += ':' + path
     os.environ['LD_LIBRARY_PATH'] = ldPath
     return
-  addLdPath = staticmethod(addLdPath)
 
   def useMPICompilers(self):
     if ('with-cc' in self.argDB and self.argDB['with-cc'] != '0') or 'CC' in self.argDB:
