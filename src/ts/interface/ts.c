@@ -3914,7 +3914,6 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (u) PetscValidHeaderSpecific(u,VEC_CLASSID,2);
-
   if (ts->exact_final_time == TS_EXACTFINALTIME_INTERPOLATE && u) {   /* Need ts->vec_sol to be distinct so it is not overwritten when we interpolate at the end */
     if (!ts->vec_sol || u == ts->vec_sol) {
       ierr = VecDuplicate(u,&solution);CHKERRQ(ierr);
@@ -3951,7 +3950,14 @@ PetscErrorCode TSSolve(TS ts,Vec u)
     ts->steprollback      = PETSC_FALSE;
     ts->rhsjacobian.time  = PETSC_MIN_REAL;
   }
-  if (ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP && ts->ptime < ts->max_time && ts->ptime + ts->time_step > ts->max_time) ts->time_step = ts->max_time - ts->ptime;
+
+  /* make sure initial time step does not overshoot final time */
+  if (ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP) {
+    PetscReal maxdt = ts->max_time-ts->ptime;
+    PetscReal dt = ts->time_step;
+
+    ts->time_step = dt >= maxdt ? maxdt : (PetscIsCloseAtTol(dt,maxdt,10*PETSC_MACHINE_EPSILON,0) ? maxdt : dt);
+  }
   ts->reason = TS_CONVERGED_ITERATING;
 
   {
