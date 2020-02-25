@@ -215,13 +215,12 @@ static PetscErrorCode TSInterpolate_Sundials(TS ts,PetscReal t,Vec X)
   /* get the vector size */
   ierr = VecGetSize(X,&glosize);CHKERRQ(ierr);
   ierr = VecGetLocalSize(X,&locsize);CHKERRQ(ierr);
+  ierr = VecGetArray(X,&x_data);CHKERRQ(ierr);
 
-  /* allocate the memory for N_Vec y */
-  y = N_VNew_Parallel(cvode->comm_sundials,locsize,glosize);
+  /* Initialize N_Vec y with x_data */
+  y = N_VMake_Parallel(cvode->comm_sundials,locsize,glosize,(realtype*)x_data);
   if (!y) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Interpolated y is not allocated");
 
-  ierr = VecGetArray(X,&x_data);CHKERRQ(ierr);
-  N_VSetArrayPointer((realtype*)x_data,y);
   ierr = CVodeGetDky(cvode->mem,t,0,y);CHKERRQ(ierr);
   ierr = VecRestoreArray(X,&x_data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
