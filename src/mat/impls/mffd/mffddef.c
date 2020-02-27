@@ -175,10 +175,12 @@ static PetscErrorCode MatMFFDDestroy_DS(MatMFFD ctx)
 */
 PetscErrorCode MatMFFDDSSetUmin_DS(Mat mat,PetscReal umin)
 {
-  MatMFFD    ctx = (MatMFFD)mat->data;
-  MatMFFD_DS *hctx;
+  MatMFFD        ctx=NULL;
+  MatMFFD_DS     *hctx;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = MatShellGetContext(mat,&ctx);CHKERRQ(ierr);
   if (!ctx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"MatMFFDDSSetUmin() attached to non-shell matrix");
   hctx       = (MatMFFD_DS*)ctx->hctx;
   hctx->umin = umin;
