@@ -768,34 +768,17 @@ PetscErrorCode PCSetUp_MG(PC pc)
       dB = B;
     }
   }
-  if (needRestricts && pc->dm && pc->dm->x) {
-    /* need to restrict Jacobian location to coarser meshes for evaluation */
-    for (i=n-2; i>-1; i--) {
-      Mat R;
-      Vec rscale;
-      if (!mglevels[i]->smoothd->dm->x) {
-        Vec *vecs;
-        ierr = KSPCreateVecs(mglevels[i]->smoothd,1,&vecs,0,NULL);CHKERRQ(ierr);
-        mglevels[i]->smoothd->dm->x = vecs[0];
-        ierr = PetscFree(vecs);CHKERRQ(ierr);
-      }
-      ierr = PCMGGetRestriction(pc,i+1,&R);CHKERRQ(ierr);
-      ierr = PCMGGetRScale(pc,i+1,&rscale);CHKERRQ(ierr);
-      ierr = MatRestrict(R,mglevels[i+1]->smoothd->dm->x,mglevels[i]->smoothd->dm->x);CHKERRQ(ierr);
-      ierr = VecPointwiseMult(mglevels[i]->smoothd->dm->x,mglevels[i]->smoothd->dm->x,rscale);CHKERRQ(ierr);
-    }
-  }
   if (needRestricts && pc->dm) {
     for (i=n-2; i>=0; i--) {
       DM  dmfine,dmcoarse;
       Mat Restrict,Inject;
       Vec rscale;
-      ierr   = KSPGetDM(mglevels[i+1]->smoothd,&dmfine);CHKERRQ(ierr);
-      ierr   = KSPGetDM(mglevels[i]->smoothd,&dmcoarse);CHKERRQ(ierr);
-      ierr   = PCMGGetRestriction(pc,i+1,&Restrict);CHKERRQ(ierr);
-      ierr   = PCMGGetRScale(pc,i+1,&rscale);CHKERRQ(ierr);
-      ierr   = PCMGGetInjection(pc,i+1,&Inject);CHKERRQ(ierr);
-      ierr   = DMRestrict(dmfine,Restrict,rscale,Inject,dmcoarse);CHKERRQ(ierr);
+      ierr = KSPGetDM(mglevels[i+1]->smoothd,&dmfine);CHKERRQ(ierr);
+      ierr = KSPGetDM(mglevels[i]->smoothd,&dmcoarse);CHKERRQ(ierr);
+      ierr = PCMGGetRestriction(pc,i+1,&Restrict);CHKERRQ(ierr);
+      ierr = PCMGGetRScale(pc,i+1,&rscale);CHKERRQ(ierr);
+      ierr = PCMGGetInjection(pc,i+1,&Inject);CHKERRQ(ierr);
+      ierr = DMRestrict(dmfine,Restrict,rscale,Inject,dmcoarse);CHKERRQ(ierr);
     }
   }
 
@@ -1160,7 +1143,7 @@ PetscErrorCode  PCMGGetGalerkin(PC pc,PCMGGalerkinType  *galerkin)
 +  mg - the multigrid context
 -  n - the number of smoothing steps
 
-   Options Database Key: 
+   Options Database Key:
 .  -mg_levels_ksp_max_it <n> - Sets number of pre and post-smoothing steps
 
    Level: advanced

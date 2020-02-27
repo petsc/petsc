@@ -24,7 +24,10 @@ static PetscErrorCode SNESSolve_KSPONLY(SNES snes)
   F = snes->vec_func;
   Y = snes->vec_sol_update;
 
-  ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
+  if (!snes->vec_func_init_set) {
+    ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
+  } else snes->vec_func_init_set = PETSC_FALSE;
+
   if (snes->numbermonitors) {
     PetscReal fnorm;
     ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);

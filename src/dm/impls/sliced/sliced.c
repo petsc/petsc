@@ -69,6 +69,7 @@ PetscErrorCode  DMCreateMatrix_Sliced(DM dm, Mat *J)
   ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,bs,slice->n+slice->Nghosts,globals,PETSC_OWN_POINTER,&lmap);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMapping(*J,lmap,lmap);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&lmap);CHKERRQ(ierr);
+  ierr = MatSetDM(*J,dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

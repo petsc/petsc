@@ -322,12 +322,12 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
     SNESCheckFunctionNorm(snes,fnorm);
   }
   if (snes->npc && snes->npcside== PC_LEFT && snes->functype == SNES_FUNCTION_UNPRECONDITIONED) {
-      ierr = SNESApplyNPC(snes,X,F,D);CHKERRQ(ierr);
-      ierr = SNESGetConvergedReason(snes->npc,&reason);CHKERRQ(ierr);
-      if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
-        snes->reason = SNES_DIVERGED_INNER;
-        PetscFunctionReturn(0);
-      }
+    ierr = SNESApplyNPC(snes,X,F,D);CHKERRQ(ierr);
+    ierr = SNESGetConvergedReason(snes->npc,&reason);CHKERRQ(ierr);
+    if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
+      snes->reason = SNES_DIVERGED_INNER;
+      PetscFunctionReturn(0);
+    }
   } else {
     ierr = VecCopy(F,D);CHKERRQ(ierr);
   }

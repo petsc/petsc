@@ -5,46 +5,6 @@
 
 #include <petsc/private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 
-/*
-   DMDestroy_Private - handles the work vectors created by DMGetGlobalVector() and DMGetLocalVector()
-
-*/
-PetscErrorCode  DMDestroy_Private(DM dm,PetscBool  *done)
-{
-  PetscErrorCode ierr;
-  PetscErrorCode i,cnt = 0;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  *done = PETSC_FALSE;
-
-  for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
-    if (dm->localin[i])  cnt++;
-    if (dm->globalin[i]) cnt++;
-  }
-
-  if (--((PetscObject)dm)->refct - cnt > 0) PetscFunctionReturn(0);
-
-  /*
-         Need this test because the dm references the vectors that
-     reference the dm, so destroying the dm calls destroy on the
-     vectors that cause another destroy on the dm
-  */
-  if (((PetscObject)dm)->refct < 0) PetscFunctionReturn(0);
-  ((PetscObject)dm)->refct = 0;
-
-  for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
-    if (dm->localout[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Destroying a DM that has a local vector obtained with DMGetLocalVector()");
-    ierr = VecDestroy(&dm->localin[i]);CHKERRQ(ierr);
-    if (dm->globalout[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Destroying a DM that has a global vector obtained with DMGetGlobalVector()");
-    ierr = VecDestroy(&dm->globalin[i]);CHKERRQ(ierr);
-  }
-  ierr = ISLocalToGlobalMappingDestroy(&dm->ltogmap);CHKERRQ(ierr);
-
-  *done = PETSC_TRUE;
-  PetscFunctionReturn(0);
-}
-
 PetscErrorCode  DMDestroy_DA(DM da)
 {
   PetscErrorCode ierr;

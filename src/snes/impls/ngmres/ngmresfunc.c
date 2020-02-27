@@ -9,7 +9,7 @@ PetscErrorCode SNESNGMRESUpdateSubspace_Private(SNES snes,PetscInt ivec,PetscInt
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ivec > l) SETERRQ2(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"Cannot update vector %d with space size %d!",ivec,l);
+  if (ivec > l) SETERRQ2(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"Cannot update vector %D with space size %D!",ivec,l);
   ierr = VecCopy(F,Fdot[ivec]);CHKERRQ(ierr);
   ierr = VecCopy(X,Xdot[ivec]);CHKERRQ(ierr);
 
@@ -96,7 +96,7 @@ PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES snes,PetscInt ivec,Pe
     if (snes->npc && snes->npcside== PC_LEFT) {
       ierr = SNESApplyNPC(snes,XA,NULL,FA);CHKERRQ(ierr);
     } else {
-      ierr =SNESComputeFunction(snes,XA,FA);CHKERRQ(ierr);
+      ierr = SNESComputeFunction(snes,XA,FA);CHKERRQ(ierr);
     }
   } else {
     ierr = VecCopy(FM,FA);CHKERRQ(ierr);
