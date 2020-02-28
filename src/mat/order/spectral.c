@@ -126,7 +126,7 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_Spectral(Mat A, MatOrderingType type,
     Mat          LD;
     PetscScalar *a;
     PetscReal   *realpart, *imagpart, *eigvec, *work;
-#ifndef PETSC_USE_COMPLEX
+#if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_HAVE_ESSL)
     PetscReal    sdummy;
 #endif
     PetscBLASInt bn, bN, lwork, lierr, idummy;

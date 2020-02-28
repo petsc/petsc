@@ -77,9 +77,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
   PetscBLASInt t_size = 0, l_size = 0, il, iu, info;
   PetscBLASInt nrhs, nldb;
 
-#if !defined(PETSC_MISSING_LAPACK_STEBZ)
-  PetscBLASInt e_valus, e_splts;
-#endif
+  PetscBLASInt e_valus=0, e_splts;
   PetscBool diagonalscale;
 
   PetscFunctionBegin;
@@ -831,9 +829,6 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
   il = 1;
   iu = 1;
 
-#if defined(PETSC_MISSING_LAPACK_STEBZ)
-  SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"STEBZ - Lapack routine is unavailable.");
-#else
   PetscStackCallBLAS("LAPACKstebz",LAPACKstebz_("I", "E", &t_size, &vl, &vu, &il, &iu, &cg->eigen_tol,cg->diag, cg->offd + 1, &e_valus, &e_splts, e_valu,e_iblk, e_splt, e_rwrk, e_iwrk, &info));
 
   if ((0 != info) || (1 != e_valus)) {
@@ -856,7 +851,6 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
 
   pert = cg->init_pert;
   if (e_valu[0] < 0.0) cg->lambda = pert - e_valu[0];
-#endif
 
   while (1) {
     for (i = 0; i < t_size; ++i) {
@@ -864,16 +858,12 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
       t_offd[i] = cg->offd[i];
     }
 
-#if defined(PETSC_MISSING_LAPACK_PTTRF)
-    SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"PTTRF - Lapack routine is unavailable.");
-#else
     PetscStackCallBLAS("LAPACKpttrf",LAPACKpttrf_(&t_size, t_diag, t_offd + 1, &info));
 
     if (0 == info) break;
 
     pert      += pert;
     cg->lambda = cg->lambda * (1.0 + pert) + pert;
-#endif
   }
 
   /***************************************************************************/
@@ -886,11 +876,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
   t_soln[0] = -cg->norm_r[0];
   for (i = 1; i < t_size; ++i) t_soln[i] = 0.0;
 
-#if defined(PETSC_MISSING_LAPACK_PTTRS)
-  SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"PTTRS - Lapack routine is unavailable.");
-#else
   PetscStackCallBLAS("LAPACKpttrs",LAPACKpttrs_(&t_size, &nrhs, t_diag, t_offd + 1, t_soln, &nldb, &info));
-#endif
 
   if (0 != info) {
     /*************************************************************************/
@@ -924,11 +910,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
       /* minimum eigenvalue and move along this direction to the boundary.   */
       /***********************************************************************/
 
-#if defined(PETSC_MISSING_LAPACK_STEIN)
-      SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"STEIN - Lapack routine is unavailable.");
-#else
       PetscStackCallBLAS("LAPACKstein",LAPACKstein_(&t_size, cg->diag, cg->offd + 1, &e_valus, e_valu,e_iblk, e_splt, e_vect, &nldb,e_rwrk, e_iwrk, e_iwrk + t_size, &info));
-#endif
 
       if (0 != info) {
         /*********************************************************************/
@@ -1029,11 +1011,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
 
       ierr = PetscArraycpy(e_rwrk, t_soln, t_size);CHKERRQ(ierr);
 
-#if defined(PETSC_MISSING_LAPACK_PTTRS)
-      SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"PTTRS - Lapack routine is unavailable.");
-#else
       PetscStackCallBLAS("LAPACKpttrs",LAPACKpttrs_(&t_size, &nrhs, t_diag, t_offd + 1, e_rwrk, &nldb, &info));
-#endif
 
       if (0 != info) {
         /*********************************************************************/
@@ -1064,11 +1042,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
         t_offd[j] = cg->offd[j];
       }
 
-#if defined(PETSC_MISSING_LAPACK_PTTRF)
-      SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"PTTRF - Lapack routine is unavailable.");
-#else
       PetscStackCallBLAS("LAPACKpttrf",LAPACKpttrf_(&t_size, t_diag, t_offd + 1, &info));
-#endif
 
       if (0 != info) {
         /*********************************************************************/
@@ -1088,11 +1062,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
       t_soln[0] = -cg->norm_r[0];
       for (j = 1; j < t_size; ++j) t_soln[j] = 0.0;
 
-#if defined(PETSC_MISSING_LAPACK_PTTRS)
-      SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"PTTRS - Lapack routine is unavailable.");
-#else
       PetscStackCallBLAS("LAPACKpttrs",LAPACKpttrs_(&t_size, &nrhs, t_diag, t_offd + 1, t_soln, &nldb, &info));
-#endif
 
       if (0 != info) {
         /*********************************************************************/

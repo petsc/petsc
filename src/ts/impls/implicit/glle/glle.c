@@ -147,9 +147,7 @@ static PetscErrorCode TSGLLESchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscI
     PetscBLASInt m,n,one=1,*ipiv,lwork=4*((s+3)*3+3),info,ldb;
     PetscReal    rcond,*sing,*workreal;
     PetscScalar  *ImV,*H,*bmat,*workscalar,*c=scheme->c,*a=scheme->a,*b=scheme->b,*u=scheme->u,*v=scheme->v;
-#if !defined(PETSC_MISSING_LAPACK_GELSS)
     PetscBLASInt rank;
-#endif
     ierr = PetscMalloc7(PetscSqr(r),&ImV,3*s,&H,3*ss,&bmat,lwork,&workscalar,5*(3+r),&workreal,r+s,&sing,r+s,&ipiv);CHKERRQ(ierr);
 
     /* column-major input */
@@ -245,10 +243,6 @@ static PetscErrorCode TSGLLESchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscI
     ierr  = PetscBLASIntCast(s,&n);CHKERRQ(ierr);
     ierr  = PetscBLASIntCast(ss,&ldb);CHKERRQ(ierr);
     rcond = 1e-12;
-#if defined(PETSC_MISSING_LAPACK_GELSS)
-    /* ESSL does not have this routine */
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"GELSS - Lapack routine is unavailable\nNot able to run GL time stepping.");
-#else
 #if defined(PETSC_USE_COMPLEX)
     /* ZGELSS( M, N, NRHS, A, LDA, B, LDB, S, RCOND, RANK, WORK, LWORK, RWORK, INFO) */
     PetscStackCallBLAS("LAPACKgelss",LAPACKgelss_(&m,&n,&m,H,&m,bmat,&ldb,sing,&rcond,&rank,workscalar,&lwork,workreal,&info));
@@ -258,7 +252,6 @@ static PetscErrorCode TSGLLESchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscI
 #endif
     if (info < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad argument to GELSS");
     if (info > 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"SVD failed to converge");
-#endif
 
     for (j=0; j<3; j++) {
       for (k=0; k<s; k++) scheme->phi[k+j*s] = bmat[k+j*ss];

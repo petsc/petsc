@@ -34,9 +34,6 @@ typedef enum {READ=1, WRITE=2, READ_WRITE=3} AccessMode;
 */
 static PetscErrorCode PCSetUp_SVD(PC pc)
 {
-#if defined(PETSC_MISSING_LAPACK_GESVD)
-  SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"GESVD - Lapack routine is unavailable\nNot able to provide singular value estimates.");
-#else
   PC_SVD         *jac = (PC_SVD*)pc->data;
   PetscErrorCode ierr;
   PetscScalar    *a,*u,*v,*d,*work;
@@ -145,7 +142,6 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
 #endif
   ierr = PetscFree(work);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-#endif
 }
 
 static PetscErrorCode PCSVDGetVec(PC pc,PCSide side,AccessMode amode,Vec x,Vec *xred)

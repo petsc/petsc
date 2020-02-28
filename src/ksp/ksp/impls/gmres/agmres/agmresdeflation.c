@@ -126,19 +126,11 @@ static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscSca
 
   /* Compute the Schur form */
   if (IsReduced) {                /* The eigenvalue problem is already in reduced form, meaning that A is upper Hessenberg and B is triangular */
-#if defined(PETSC_MISSING_LAPACK_HGEQZ)
-    SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"HGEQZ - Lapack routine is unavailable.");
-#else
     PetscStackCallBLAS("LAPACKhgeqz",LAPACKhgeqz_("S", "I", "I", &KspSize, &ilo, &ihi, A, &ldA, B, &ldB, wr, wi, beta, Q, &N, Z, &N, work, &lwork, &info));
     if (info) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB, "Error while calling LAPACK routine xhgeqz_");
-#endif
   } else {
-#if defined(PETSC_MISSING_LAPACK_GGES)
-    SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"GGES - Lapack routine is unavailable.");
-#else
     PetscStackCallBLAS("LAPACKgges",LAPACKgges_("V", "V", "N", NULL, &KspSize, A, &ldA, B, &ldB, &sdim, wr, wi, beta, Q, &N, Z, &N, work, &lwork, NULL, &info));
     if (info) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB, "Error while calling LAPACK routine xgges_");
-#endif
   }
 
   /* We should avoid computing these ratio...  */
@@ -165,12 +157,8 @@ static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscSca
   } else {
     for (j = 0; j < r; j++) select[perm[KspSize-j-1]] = 1;
   }
-#if defined(PETSC_MISSING_LAPACK_TGSEN)
-  SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"GGES - Lapack routine is unavailable.");
-#else
   PetscStackCallBLAS("LAPACKtgsen",LAPACKtgsen_(&ijob, &wantQ, &wantZ, select, &KspSize, A, &ldA, B, &ldB, wr, wi, beta, Q, &N, Z, &N, &r, NULL, NULL, &(Dif[0]), work, &lwork, iwork, &liwork, &info));
   if (info == 1) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB, "UNABLE TO REORDER THE EIGENVALUES WITH THE LAPACK ROUTINE : ILL-CONDITIONED PROBLEM");
-#endif
   /* Extract the Schur vectors associated to the r smallest eigenvalues */
   ierr = PetscArrayzero(Sr,(N+1)*r);CHKERRQ(ierr);
   for (j = 0; j < r; j++) {

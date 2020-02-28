@@ -312,13 +312,9 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b,
 
       parf = par;
       PetscStackCallBLAS("BLAScopy",BLAScopy_(&blasn, b, &blas1, wa2, &blas1));
-#if defined(PETSC_MISSING_LAPACK_TRTRS)
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"TRTRS - Lapack routine is unavailable.");
-#else
       PetscStackCallBLAS("LAPACKtrtrs",LAPACKtrtrs_("U","T","N",&blasn,&blas1,a,&blaslda,wa2,&blasn,&blasinfo));
       rxnorm = BLASnrm2_(&blasn, wa2, &blas1);
       PetscStackCallBLAS("LAPACKtrtrs",LAPACKtrtrs_("U","N","N",&blasn,&blas1,a,&blaslda,wa2,&blasn,&blasinfo));
-#endif
 
       PetscStackCallBLAS("BLAScopy",BLAScopy_(&blasn, wa2, &blas1, x, &blas1));
       PetscStackCallBLAS("BLASscal",BLASscal_(&blasn, &minusone, x, &blas1));
@@ -373,11 +369,7 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b,
         PetscStackCallBLAS("BLAScopy",BLAScopy_(&blasn, x, &blas1, wa2, &blas1));
         temp = 1.0/xnorm;
         PetscStackCallBLAS("BLASscal",BLASscal_(&blasn, &temp, wa2, &blas1));
-#if defined(PETSC_MISSING_LAPACK_TRTRS)
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"TRTRS - Lapack routine is unavailable.");
-#else
         PetscStackCallBLAS("LAPACKtrtrs",LAPACKtrtrs_("U","T","N",&blasn, &blas1, a, &blaslda, wa2, &blasn, &blasinfo));
-#endif
         temp = BLASnrm2_(&blasn, wa2, &blas1);
         parc = (xnorm - delta)/(delta*temp*temp);
       }
@@ -402,16 +394,12 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b,
 
                 /* compute parc. */
         PetscStackCallBLAS("BLAScopy",BLAScopy_(&iblas,&a[0 + (indef-1)*lda], &blas1, wa2, &blas1));
-#if defined(PETSC_MISSING_LAPACK_TRTRS)
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"TRTRS - Lapack routine is unavailable.");
-#else
         PetscStackCallBLAS("LAPACKtrtrs",LAPACKtrtrs_("U","T","N",&iblas,&blas1,a,&blaslda,wa2,&blasn,&blasinfo));
         PetscStackCallBLAS("BLAScopy",BLAScopy_(&iblas,wa2,&blas1,&a[0 + (indef-1)*lda],&blas1));
         temp = BLASnrm2_(&iblas,&a[0 + (indef-1)*lda],&blas1);
         CHKMEMQ;
         a[indef-1 + (indef-1)*lda] -= temp*temp;
         PetscStackCallBLAS("LAPACKtrtrs",LAPACKtrtrs_("U","N","N",&iblas,&blas1,a,&blaslda,wa2,&blasn,&blasinfo));
-#endif
       }
 
       wa2[indef-1] = -1.0;
