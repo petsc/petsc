@@ -58,8 +58,8 @@ static PetscErrorCode private_PetscFECreateDefault_scalar_pk1(DM dm, PetscInt di
   qorder = qorder >= 0 ? qorder : order;
   quadPointsPerEdge = PetscMax(qorder + 1,1);
   if (isSimplex) {
-    ierr = PetscDTGaussJacobiQuadrature(dim,   1, quadPointsPerEdge, -1.0, 1.0, &q);CHKERRQ(ierr);
-    ierr = PetscDTGaussJacobiQuadrature(dim-1, 1, quadPointsPerEdge, -1.0, 1.0, &fq);CHKERRQ(ierr);
+    ierr = PetscDTStroudConicalQuadrature(dim,   1, quadPointsPerEdge, -1.0, 1.0, &q);CHKERRQ(ierr);
+    ierr = PetscDTStroudConicalQuadrature(dim-1, 1, quadPointsPerEdge, -1.0, 1.0, &fq);CHKERRQ(ierr);
   }
   else {
     ierr = PetscDTGaussTensorQuadrature(dim,   1, quadPointsPerEdge, -1.0, 1.0, &q);CHKERRQ(ierr);
@@ -373,7 +373,7 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX(DM dm,DM celldm,DMSwa
 
       npoints1 = layout_param;
       if (is_simplex) {
-        ierr = PetscDTGaussJacobiQuadrature(dim,1,npoints1,-1.0,1.0,&quadrature);CHKERRQ(ierr);
+        ierr = PetscDTStroudConicalQuadrature(dim,1,npoints1,-1.0,1.0,&quadrature);CHKERRQ(ierr);
       } else {
         ierr = PetscDTGaussTensorQuadrature(dim,1,npoints1,-1.0,1.0,&quadrature);CHKERRQ(ierr);
       }
