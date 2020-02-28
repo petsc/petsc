@@ -120,7 +120,7 @@ static PetscErrorCode TensorContract_Private(PetscInt m,PetscInt n,PetscInt p,Pe
     ldc = p_;
     PetscStackCallBLAS("BLASgemm",BLASREALgemm_("N","T",&p_,&n_,&k_,&one,A+i*k*p,&lda,B,&ldb,&zero,C+i*n*p,&ldc));
   }
-  PetscLogFlops(2*m*n*p*k);
+  ierr = PetscLogFlops(2.*m*n*p*k);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
