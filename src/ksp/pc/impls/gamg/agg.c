@@ -759,8 +759,12 @@ static PetscErrorCode formProl0(PetscCoarsenData *agg_llists,PetscInt bs,PetscIn
       }
 
       /* get Q - row oriented */
+#if defined(PETSC_MISSING_LAPACK_ORGQR)
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"ORGQR - Lapack routine is unavailable.");
+#else
       PetscStackCallBLAS("LAPACKorgqr",LAPACKorgqr_(&Mdata, &N, &N, qqc, &LDA, TAU, WORK, &LWORK, &INFO));
       if (INFO != 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"xORGQR error arg %d",-INFO);
+#endif
 
       for (ii = 0; ii < M; ii++) {
         for (jj = 0; jj < N; jj++) {

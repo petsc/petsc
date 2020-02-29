@@ -428,8 +428,12 @@ static PetscErrorCode morepoints(TAO_POUNDERS *mfqP)
     /* Copy L_save to L_tmp */
 
     /* L_tmp = N*Qtmp' */
+#if defined(PETSC_MISSING_LAPACK_ORMQR)
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"ORMQR - Lapack routine is unavailable.");
+#else
     PetscStackCallBLAS("LAPACKormqr",LAPACKormqr_("R","N",&blasint2,&blasnp,&blasnplus1,mfqP->Q_tmp,&blasnpmax,mfqP->tau_tmp,mfqP->L_tmp,&blasint2,mfqP->npmaxwork,&blasnmax,&info));
     if (info != 0) SETERRQ1(PETSC_COMM_SELF,1,"LAPACK routine ormqr returned with value %d\n",info);
+#endif
 
     /* Copy L_tmp to L_save */
     for (i=0;i<mfqP->npmax * mfqP->n*(mfqP->n+1)/2;i++) {
@@ -475,8 +479,12 @@ static PetscErrorCode morepoints(TAO_POUNDERS *mfqP)
   }
 
   /* Q_tmp = I * Q */
+#if defined(PETSC_MISSING_LAPACK_ORMQR)
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"ORMQR - Lapack routine is unavailable.");
+#else
   PetscStackCallBLAS("LAPACKormqr",LAPACKormqr_("R","N",&blasnp,&blasnp,&blasnplus1,mfqP->Q,&blasnpmax,mfqP->tau,mfqP->Q_tmp,&blasnpmax,mfqP->npmaxwork,&blasnmax,&info));
   if (info != 0) SETERRQ1(PETSC_COMM_SELF,1,"LAPACK routine ormqr returned with value %d\n",info);
+#endif
 
   /* Copy Q_tmp(:,n+2:np) to Z) */
   offset = mfqP->npmax * (mfqP->n+1);
@@ -547,7 +555,11 @@ static PetscErrorCode modelimprove(Tao tao, TAO_POUNDERS *mfqP, PetscInt addallp
   }
 
   /* Qtmp = Q * I */
+#if defined(PETSC_MISSING_LAPACK_ORMQR)
+  SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_SUP,"ORMQR - Lapack routine is unavailable.");
+#else
   PetscStackCallBLAS("LAPACKormqr",LAPACKormqr_("R","N",&blasn,&blasn,&blask,mfqP->Q,&blasnpmax,mfqP->tau, mfqP->Q_tmp, &blasnpmax, mfqP->npmaxwork,&blasnmax, &info));
+#endif
 
   for (i=mfqP->nmodelpoints;i<mfqP->n;i++) {
     dp = BLASdot_(&blasn,&mfqP->Q_tmp[i*mfqP->npmax],&blas1,mfqP->Gres,&blas1);
@@ -599,8 +611,12 @@ static PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin,PetscReal c)
       if (!mfqP->q_is_I) {
         /* project D onto null */
         blask=(mfqP->nmodelpoints);
+#if defined(PETSC_MISSING_LAPACK_ORMQR)
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"ORMQR - Lapack routine is unavailable.");
+#else
         PetscStackCallBLAS("LAPACKormqr",LAPACKormqr_("R","N",&ione,&blasn,&blask,mfqP->Q,&blasnpmax,mfqP->tau,mfqP->work2,&ione,mfqP->mwork,&blasm,&info));
         if (info < 0) SETERRQ1(PETSC_COMM_SELF,1,"ormqr returned value %d\n",info);
+#endif
       }
       proj = BLASnrm2_(&blasj,&mfqP->work2[mfqP->nmodelpoints],&ione);
 

@@ -454,7 +454,7 @@ static PetscErrorCode KSPAGMRESBuildSoln(KSP ksp,PetscInt it)
 
   agmres->nrs[0] = ksp->rnorm;
 #if defined(PETSC_MISSING_LAPACK_ORMQR)
-  SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"GEQRF - Lapack routine is unavailable.");
+  SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"ORMQR - Lapack routine is unavailable.");
 #else
   PetscStackCallBLAS("LAPACKormqr",LAPACKormqr_("L", "T", &lC, &nrhs, &KspSize, agmres->hh_origin, &ldH, agmres->tau, agmres->nrs, &N, agmres->work, &lwork, &info));
   if (info) SETERRQ1(PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB,"Error in LAPACK routine XORMQR INFO=%d",info);

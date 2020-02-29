@@ -2036,8 +2036,12 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverse_Static(PetscInt m,PetscIn
   Q    = Ainv;
   ierr = PetscArraycpy(Q,A,mstride*n);CHKERRQ(ierr);
   K    = N;                     /* full rank */
+#if defined(PETSC_MISSING_LAPACK_ORGQR)
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"ORGQR - Lapack routine is unavailable.");
+#else
   PetscStackCallBLAS("LAPACKorgqr",LAPACKorgqr_(&M,&N,&K,Q,&lda,tau,work,&ldwork,&info));
   if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"xORGQR/xUNGQR error");
+#endif
 
   /* Compute A^{-T} = (R^{-1} Q^T)^T = Q R^{-T} */
   Alpha = 1.0;
@@ -2098,12 +2102,20 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverseSVD_Static(PetscInt m,Pets
 #if defined(PETSC_USE_COMPLEX)
   rworkSize = 5 * PetscMin(M,N);
   ierr  = PetscMalloc1(rworkSize,&rwork);CHKERRQ(ierr);
+#if defined(PETSC_MISSING_LAPACK_GELSS)
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"GELSS - Lapack routine is unavailable.");
+#else
   LAPACKgelss_(&M,&N,&nrhs,A,&lda,Brhs,&ldb, (PetscReal *) tau,&rcond,&irank,tmpwork,&ldwork,rwork,&info);
+#endif
   ierr = PetscFPTrapPop();CHKERRQ(ierr);
   ierr = PetscFree(rwork);CHKERRQ(ierr);
 #else
   nrhs  = M;
+#if defined(PETSC_MISSING_LAPACK_GELSS)
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"GELSS - Lapack routine is unavailable.");
+#else
   LAPACKgelss_(&M,&N,&nrhs,A,&lda,Brhs,&ldb, (PetscReal *) tau,&rcond,&irank,tmpwork,&ldwork,&info);
+#endif
   ierr = PetscFPTrapPop();CHKERRQ(ierr);
 #endif
   if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"xGELSS error");
