@@ -521,7 +521,11 @@ PetscErrorCode PetscDTGaussQuadrature(PetscInt npoints,PetscReal a,PetscReal b,P
   ierr = PetscBLASIntCast(npoints,&N);CHKERRQ(ierr);
   LDZ  = N;
   ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
+#if defined(PETSC_MISSING_LAPACK_STEQR)
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"STEQR - Lapack routine is unavailable.");
+#else
   PetscStackCallBLAS("LAPACKsteqr",LAPACKsteqr_("I",&N,x,w,Z,&LDZ,work,&info));
+#endif
   ierr = PetscFPTrapPop();CHKERRQ(ierr);
   if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"xSTEQR error");
 
@@ -624,8 +628,12 @@ PetscErrorCode PetscDTGaussLobattoLegendreQuadrature(PetscInt npoints,PetscGauss
       ierr = PetscArrayzero(&x[1],bn);CHKERRQ(ierr);
       ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
       x0=0;
+#if defined(PETSC_MISSING_LAPACK_STEQR)
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"STEQR - Lapack routine is unavailable.");
+#else
       PetscStackCallBLAS("LAPACKsteqr",LAPACKREALsteqr_("N",&bn,&x[1],M,&x0,&bn,M,&lierr));
       if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in STERF Lapack routine %d",(int)lierr);
+#endif
       ierr = PetscFPTrapPop();CHKERRQ(ierr);
       ierr = PetscFree(M);CHKERRQ(ierr);
     }
@@ -1267,8 +1275,12 @@ static PetscErrorCode PetscDTPseudoInverseQR(PetscInt m,PetscInt mstride,PetscIn
   Q = Ainv;
   ierr = PetscArraycpy(Q,A,mstride*n);CHKERRQ(ierr);
   K = N;                        /* full rank */
+#if defined(PETSC_MISSING_LAPACK_ORGQR)
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"ORGQR - Lapack routine is unavailable.");
+#else
   PetscStackCallBLAS("LAPACKorgqr",LAPACKorgqr_(&M,&N,&K,Q,&lda,tau,work,&ldwork,&info));
   if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"xORGQR/xUNGQR error");
+#endif
 
   /* Compute A^{-T} = (R^{-1} Q^T)^T = Q R^{-T} */
   Alpha = 1.0;
