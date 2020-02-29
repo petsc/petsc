@@ -706,7 +706,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscKernel_A_gets_A_minus_B_times_C_7(PetscS
   return 0;
 }
 
-#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(__FMA__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
+#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(__FMA__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES) && !defined(PETSC_SKIP_IMMINTRIN_H_CUDAWORKAROUND)
 #include <immintrin.h>
 PETSC_STATIC_INLINE PetscErrorCode PetscKernel_A_gets_A_times_B_9(PetscScalar *A,const PetscScalar *B,PetscScalar *W)
 {
@@ -881,7 +881,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscKernel_A_gets_A_times_B_9(PetscScalar *A
 }
 #endif
 
-#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(__FMA__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
+#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(__FMA__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES) && !defined(PETSC_SKIP_IMMINTRIN_H_CUDAWORKAROUND)
 PETSC_STATIC_INLINE PetscErrorCode PetscKernel_A_gets_A_minus_B_times_C_9(PetscScalar *A,const PetscScalar *B,const PetscScalar *C)
 {
   PetscInt i;
