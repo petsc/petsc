@@ -1180,6 +1180,8 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
   ierr = PetscObjectSetName((PetscObject) *dm, title);CHKERRQ(ierr);
   ierr = DMSetDimension(*dm, dim);CHKERRQ(ierr);
   ierr = DMPlexSetChart(*dm, 0, numCells+numVertices);CHKERRQ(ierr);
+  /*   We do not want this label automatically computed, instead we compute it here */
+  ierr = DMCreateLabel(*dm, "celltype");CHKERRQ(ierr);
 
   /* Read cell sets information */
   if (!rank) {
@@ -1219,15 +1221,23 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
         cs_order[cs-num_hybrid] = cs;
       }
     }
-    if (num_hybrid) {ierr = DMPlexSetHybridBounds(*dm, numCells-numHybridCells, PETSC_DETERMINE, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);}
     /* First set sizes */
     for (ncs = 0, c = 0; ncs < num_cs; ++ncs) {
       const PetscInt cs = cs_order[ncs];
       PetscStackCallStandard(ex_get_block,(exoid, EX_ELEM_BLOCK, cs_id[cs], buffer, &num_cell_in_set,&num_vertex_per_cell, 0, 0, &num_attr));
       for (c_loc = 0; c_loc < num_cell_in_set; ++c_loc, ++c) {
         ierr = DMPlexSetConeSize(*dm, c, num_vertex_per_cell);CHKERRQ(ierr);
+        if (c >= numCells-numHybridCells) {
+          ierr = DMPlexSetCellType(*dm, c, DM_POLYTOPE_TRI_PRISM);CHKERRQ(ierr);
+        } else {
+          DMPolytopeType ct;
+
+          ierr = DMPlexComputeCellType_Internal(*dm, c, 1, &ct);CHKERRQ(ierr);
+          ierr = DMPlexSetCellType(*dm, c, ct);CHKERRQ(ierr);
+        }
       }
     }
+    for (v = numCells; v < numCells+numVertices; ++v) {ierr = DMPlexSetCellType(*dm, v, DM_POLYTOPE_POINT);CHKERRQ(ierr);}
     ierr = DMSetUp(*dm);CHKERRQ(ierr);
     for (ncs = 0, c = 0; ncs < num_cs; ++ncs) {
       const PetscInt cs = cs_order[ncs];
@@ -1251,6 +1261,12 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
             PetscInt tmp = cone[1];
             cone[1] = cone[3];
             cone[3] = tmp;
+          }
+          /* Triangular prisms are inverted */
+          if (num_vertex_per_cell == 6) {
+            PetscInt tmp = cone[1];
+            cone[1] = cone[2];
+            cone[2] = tmp;
           }
         }
         ierr = DMPlexSetCone(*dm, c, cone);CHKERRQ(ierr);

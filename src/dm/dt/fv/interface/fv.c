@@ -1,5 +1,5 @@
 #include <petsc/private/petscfvimpl.h> /*I "petscfv.h" I*/
-#include <petsc/private/dmpleximpl.h> /* For CellRefiner */
+#include <petscdmplex.h>
 #include <petscds.h>
 
 PetscClassId PETSCLIMITER_CLASSID = 0;
@@ -1788,14 +1788,15 @@ PetscErrorCode PetscFVIntegrateRHSFunction(PetscFV fvm, PetscDS prob, PetscInt f
 @*/
 PetscErrorCode PetscFVRefine(PetscFV fv, PetscFV *fvRef)
 {
-  PetscDualSpace   Q, Qref;
-  DM               K, Kref;
-  PetscQuadrature  q, qref;
-  CellRefiner      cellRefiner;
-  PetscReal       *v0;
-  PetscReal       *jac, *invjac;
-  PetscInt         numComp, numSubelements, s;
-  PetscErrorCode   ierr;
+  PetscDualSpace    Q, Qref;
+  DM                K, Kref;
+  PetscQuadrature   q, qref;
+  DMPolytopeType    ct;
+  DMPlexCellRefiner cr;
+  PetscReal        *v0;
+  PetscReal        *jac, *invjac;
+  PetscInt          numComp, numSubelements, s;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = PetscFVGetDualSpace(fv, &Q);CHKERRQ(ierr);
@@ -1814,8 +1815,9 @@ PetscErrorCode PetscFVRefine(PetscFV fv, PetscFV *fvRef)
   ierr = PetscFVSetNumComponents(*fvRef, numComp);CHKERRQ(ierr);
   ierr = PetscFVSetUp(*fvRef);CHKERRQ(ierr);
   /* Create quadrature */
-  ierr = DMPlexGetCellRefiner_Internal(K, &cellRefiner);CHKERRQ(ierr);
-  ierr = CellRefinerGetAffineTransforms_Internal(cellRefiner, &numSubelements, &v0, &jac, &invjac);CHKERRQ(ierr);
+  ierr = DMPlexGetCellType(K, 0, &ct);CHKERRQ(ierr);
+  ierr = DMPlexCellRefinerCreate(K, &cr);CHKERRQ(ierr);
+  ierr = DMPlexCellRefinerGetAffineTransforms(cr, ct, &numSubelements, &v0, &jac, &invjac);CHKERRQ(ierr);
   ierr = PetscQuadratureExpandComposite(q, numSubelements, v0, jac, &qref);CHKERRQ(ierr);
   ierr = PetscDualSpaceSimpleSetDimension(Qref, numSubelements);CHKERRQ(ierr);
   for (s = 0; s < numSubelements; ++s) {
@@ -1835,8 +1837,8 @@ PetscErrorCode PetscFVRefine(PetscFV fv, PetscFV *fvRef)
     ierr = PetscDualSpaceSimpleSetFunctional(Qref, s, qs);CHKERRQ(ierr);
     ierr = PetscQuadratureDestroy(&qs);CHKERRQ(ierr);
   }
-  ierr = CellRefinerRestoreAffineTransforms_Internal(cellRefiner, &numSubelements, &v0, &jac, &invjac);CHKERRQ(ierr);
   ierr = PetscFVSetQuadrature(*fvRef, qref);CHKERRQ(ierr);
+  ierr = DMPlexCellRefinerDestroy(&cr);CHKERRQ(ierr);
   ierr = PetscQuadratureDestroy(&qref);CHKERRQ(ierr);
   ierr = PetscDualSpaceDestroy(&Qref);CHKERRQ(ierr);
   PetscFunctionReturn(0);

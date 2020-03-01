@@ -1030,7 +1030,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   Vec            coordinates;
   PetscBT        periodicV = NULL, periodicC = NULL;
   PetscScalar   *coords;
-  PetscInt       dim = 0, embedDim = -1, coordSize, c, v, d, cell, *periodicMap = NULL, *periodicMapI = NULL, *hybridMap = NULL, cMax = PETSC_DETERMINE;
+  PetscInt       dim = 0, embedDim = -1, coordSize, c, v, d, cell, *periodicMap = NULL, *periodicMapI = NULL, *hybridMap = NULL;
   PetscInt       numVertices = 0, numCells = 0, trueNumCells = 0;
   int            i, shift = 1;
   PetscMPIInt    rank;
@@ -1284,7 +1284,6 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
       default:
         SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported cell types %d and %d",n1, n2);
       }
-      cMax = hc1;
       ierr = PetscMalloc1(trueNumCells, &hybridMap);CHKERRQ(ierr);
       for (cell = 0; cell < hc1; cell++) hybridMap[hybridCells1[cell]] = cell;
       for (cell = 0; cell < hc2; cell++) hybridMap[hybridCells2[cell]] = cell + hc1;
@@ -1295,13 +1294,17 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   }
 
   /* Allocate the cell-vertex mesh */
+  /*   We do not want this label automatically computed, instead we compute it here */
+  ierr = DMCreateLabel(*dm, "celltype");CHKERRQ(ierr);
   ierr = DMPlexSetChart(*dm, 0, trueNumCells+numVertices);CHKERRQ(ierr);
   for (cell = 0, c = 0; c < numCells; ++c) {
     if (gmsh_elem[c].dim == dim) {
       ierr = DMPlexSetConeSize(*dm, hybridMap ? hybridMap[cell] : cell, gmsh_elem[c].numNodes);CHKERRQ(ierr);
+      ierr = DMPlexSetCellType(*dm, hybridMap ? hybridMap[cell] : cell, DMPolytopeTypeFromGmsh(gmsh_elem[c].cellType));CHKERRQ(ierr);
       cell++;
     }
   }
+  for (v = trueNumCells; v < trueNumCells+numVertices; ++v) {ierr = DMPlexSetCellType(*dm, v, DM_POLYTOPE_POINT);CHKERRQ(ierr);}
   ierr = DMSetUp(*dm);CHKERRQ(ierr);
   /* Add cell-vertex connections */
   for (cell = 0, c = 0; c < numCells; ++c) {
@@ -1331,16 +1334,6 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
           tmp      = pcone[1];
           pcone[1] = pcone[2];
           pcone[2] = tmp;
-          tmp      = pcone[4];
-          pcone[4] = pcone[5];
-          pcone[5] = tmp;
-        }
-      } else if (dim == 2 && hybridMap && hybridMap[cell] >= cMax) { /* hybrid cells */
-        /* quads are input to PLEX as prisms */
-        if (gmsh_elem[c].cellType == 3 || gmsh_elem[c].cellType == 10) {
-          PetscInt tmp = pcone[2];
-          pcone[2] = pcone[3];
-          pcone[3] = tmp;
         }
       }
       ierr = DMPlexSetCone(*dm, hybridMap ? hybridMap[cell] : cell, pcone);CHKERRQ(ierr);
@@ -1349,7 +1342,6 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   }
   ierr = MPI_Bcast(&dim, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
   ierr = DMSetDimension(*dm, dim);CHKERRQ(ierr);
-  ierr = DMPlexSetHybridBounds(*dm, cMax, PETSC_DETERMINE, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = DMPlexSymmetrize(*dm);CHKERRQ(ierr);
   ierr = DMPlexStratify(*dm);CHKERRQ(ierr);
   if (interpolate) {
@@ -1496,16 +1488,6 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
               tmp      = pcone[1];
               pcone[1] = pcone[2];
               pcone[2] = tmp;
-              tmp      = pcone[4];
-              pcone[4] = pcone[5];
-              pcone[5] = tmp;
-            }
-          } else if (dim == 2 && hybridMap && hybridMap[cell] >= cMax) { /* hybrid cells */
-            /* quads are input to PLEX as prisms */
-            if (gmsh_elem[c].cellType == 3 || gmsh_elem[c].cellType == 10) {
-              PetscInt tmp = pcone[2];
-              pcone[2] = pcone[3];
-              pcone[3] = tmp;
             }
           }
           ierr = PetscSectionGetOffset(coordSection, ucell, &off);CHKERRQ(ierr);

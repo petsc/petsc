@@ -4,6 +4,12 @@
 #include "petsc/finclude/petscdmplex.h"
 
 !
+! DMPlexCellRefinerType
+!
+      PetscEnum, parameter :: REFINER_REGULAR = 0
+      PetscEnum, parameter :: REFINER_TO_HEX = 1
+      PetscEnum, parameter :: REFINER_TO_SIMPLEX = 2
+!
 ! DMPlexInterpolatedFlag
 !
       PetscEnum, parameter :: DMPLEX_INTERPOLATED_INVALID = -1

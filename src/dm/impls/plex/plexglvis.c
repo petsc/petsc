@@ -307,26 +307,6 @@ static PetscErrorCode DMPlexGetPointMFEMVertexIDs_Internal(DM dm, PetscInt p, Pe
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexGlvisInvertHybrid(PetscInt cid,int vids[])
-{
-  int tmp;
-
-  PetscFunctionBegin;
-  if (cid == MFEM_SQUARE) { /* PETSc stores hybrid quads not as counter-clockwise quad */
-    tmp     = vids[2];
-    vids[2] = vids[3];
-    vids[3] = tmp;
-  } else if (cid == MFEM_PRISM) { /* MFEM uses a different orientation for the base and top triangles of the wedge */
-    tmp     = vids[1];
-    vids[1] = vids[2];
-    vids[2] = tmp;
-    tmp     = vids[4];
-    vids[4] = vids[5];
-    vids[5] = tmp;
-  }
-  PetscFunctionReturn(0);
-}
-
 /*
    ASCII visualization/dump: full support for simplices and tensor product cells. It supports AMR
    Higher order meshes are also supported
@@ -338,7 +318,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   Vec                  coordinates,hovec;
   const PetscScalar    *array;
   PetscInt             bf,p,sdim,dim,depth,novl,minl;
-  PetscInt             cStart,cEnd,cMax,vStart,vEnd,nvert;
+  PetscInt             cStart,cEnd,vStart,vEnd,nvert;
   PetscMPIInt          size;
   PetscBool            localized,isascii;
   PetscBool            enable_mfem,enable_boundary,enable_ncmesh,view_ovl = PETSC_FALSE;
@@ -373,9 +353,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
      DMPlex does not currently support HO meshes, so there's no API for this */
   ierr = PetscObjectQuery((PetscObject)dm,"_glvis_mesh_coords",(PetscObject*)&hovec);CHKERRQ(ierr);
 
-  ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
-  cMax = cMax < 0 ? cEnd : cMax;
+  ierr = DMPlexGetSimplexOrBoxCells(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm,0,&vStart,&vEnd);CHKERRQ(ierr);
   ierr = DMGetPeriodicity(dm,&periodic,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocalized(dm,&localized);CHKERRQ(ierr);
@@ -485,7 +463,6 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
       PetscScalar *array,*ptr;
 
       ierr = PetscSNPrintf(fec,sizeof(fec),"FiniteElementCollection: L2_T1_%DD_P1",dim);CHKERRQ(ierr);
-      if (cMax < cEnd) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Support for hybrid meshed not currently implemented");
       if (cEnd-cStart) {
         PetscInt fpc;
 
@@ -602,10 +579,8 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
     if (PetscUnlikely(pown && !PetscBTLookup(pown,p-cStart))) continue;
     ierr = DMPlexGetPointMFEMCellID_Internal(dm,label,minl,p,&mid,&cid);CHKERRQ(ierr);
     ierr = DMPlexGetPointMFEMVertexIDs_Internal(dm,p,(localized && !hovec) ? coordSection : NULL,&nv,vids);CHKERRQ(ierr);
+    /* TODO Rewrite to invert by cell type */
     ierr = DMPlexInvertCell(dim,nv,vids);CHKERRQ(ierr);
-    if (p >= cMax) {
-      ierr = DMPlexGlvisInvertHybrid(cid,vids);CHKERRQ(ierr);
-    }
     ierr = PetscViewerASCIIPrintf(viewer,"%D %D",mid,cid);CHKERRQ(ierr);
     for (i=0;i<nv;i++) {
       ierr = PetscViewerASCIIPrintf(viewer," %D",(PetscInt)vids[i]);CHKERRQ(ierr);
@@ -622,7 +597,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
     PetscBT  bfaces;
     PetscInt fStart,fEnd,*fcells;
     PetscInt *faces = NULL,fpc = 0,vpf = 0, vpc = 0;
-    PetscInt *facesH = NULL,fpcH = 0,vpfH = 0, vpcH = 0;
+    PetscInt *facesH = NULL,fpcH = 0,vpfH = 0;
     PetscInt fv1[]     = {0,1},
              fv2tri[]  = {0,1,
                           1,2,
@@ -653,12 +628,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
 
     /* determine orientation of boundary mesh */
     if (cEnd-cStart) {
-      if (cMax < cEnd) {
-        ierr = DMPlexGetConeSize(dm,cMax,&fpcH);CHKERRQ(ierr);
-      }
-      if (cMax > cStart) {
-        ierr = DMPlexGetConeSize(dm,cStart,&fpc);CHKERRQ(ierr);
-      }
+      ierr = DMPlexGetConeSize(dm,cStart,&fpc);CHKERRQ(ierr);
       switch(dim) {
         case 1:
           if (fpc != 2) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled case faces per cell %D",fpc);
@@ -676,7 +646,6 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
               if (fpcH == 4) {
                 facesH = fv2quadH;
                 vpfH   = 2;
-                vpcH   = 4;
               } else if (fpcH) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled case hybrid faces per cell %D",fpcH);
               break;
             case 4:
@@ -700,7 +669,6 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
               if (fpcH == 5) {
                 facesH = fv3wedge;
                 vpfH   = -4;
-                vpcH   = 6;
               } else if (fpcH) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled case hybrid faces per cell %D",fpcH);
               break;
             case 6:
@@ -735,8 +703,8 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
         if (dof) {
           PetscInt    v,csize,cellClosureSize,*cellClosure = NULL,*vidxs = NULL;
           PetscScalar *vals = NULL;
-          if (p < cMax) uvpc = vpc;
-          else uvpc = vpcH;
+          /* TODO Check cell type */
+          uvpc = vpc;
           if (dof%sdim) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Incompatible number of cell dofs %D and space dimension %D",dof,sdim);
           if (dof/sdim != uvpc) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_SUP,"Incompatible number of cell dofs %D, vertices %D and space dim %D",dof/sdim,uvpc,sdim);
           ierr = DMPlexVecGetClosure(dm,coordSection,coordinates,p,&csize,&vals);CHKERRQ(ierr);
@@ -931,7 +899,8 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
           ierr = PetscViewerASCIIPrintf(viewer,"%D %D",mid,cid);CHKERRQ(ierr);
           /* vertex ids */
           ierr = DMPlexGetPointMFEMVertexIDs_Internal(dm,cell,(localized && !hovec) ? coordSection : NULL,&nv,vids);CHKERRQ(ierr);
-          if (cell >= cMax) {
+          /* TODO Check celltype of cell */
+          if (0) { /* Is prism */
             PetscInt nv = vpfH, inc = vpfH;
             if (vpfH < 0) { /* Wedge */
               if (cl == 0 || cl == 1) nv = 3;

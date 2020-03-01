@@ -1132,8 +1132,8 @@ PetscErrorCode DMLabelGetStratumBounds(DMLabel label, PetscInt value, PetscInt *
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
-  if (start) {PetscValidPointer(start, 3); *start = 0;}
-  if (end)   {PetscValidPointer(end,   4); *end   = 0;}
+  if (start) {PetscValidPointer(start, 3); *start = label->defaultValue;}
+  if (end)   {PetscValidPointer(end,   4); *end   = label->defaultValue;}
   ierr = DMLabelLookupStratum(label, value, &v);CHKERRQ(ierr);
   if (v < 0) PetscFunctionReturn(0);
   ierr = DMLabelMakeValid_Private(label, v);CHKERRQ(ierr);
@@ -1271,6 +1271,35 @@ PetscErrorCode DMLabelClearStratum(DMLabel label, PetscInt value)
   } else {
     ierr = PetscHSetIClear(label->ht[v]);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMLabelSetStratumBounds - Efficiently give a contiguous set of points a given label value
+
+  Not collective
+
+  Input Parameters:
++ label  - The DMLabel
+. value  - The label value for all points
+. pStart - The first point
+- pEnd   - A point beyond all marked points
+
+  Note: The marks points are [pStart, pEnd), and only the bounds are stored.
+
+  Level: intermediate
+
+.seealso: DMLabelCreate(), DMLabelSetStratumIS(), DMLabelGetStratumIS()
+@*/
+PetscErrorCode DMLabelSetStratumBounds(DMLabel label, PetscInt value, PetscInt pStart, PetscInt pEnd)
+{
+  IS             pIS;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = ISCreateStride(PETSC_COMM_SELF, pEnd - pStart, pStart, 1, &pIS);CHKERRQ(ierr);
+  ierr = DMLabelSetStratumIS(label, value, pIS);CHKERRQ(ierr);
+  ierr = ISDestroy(&pIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

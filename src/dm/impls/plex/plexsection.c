@@ -81,7 +81,7 @@ static PetscErrorCode DMPlexCreateSectionFields(DM dm, const PetscInt numComp[],
 static PetscErrorCode DMPlexCreateSectionDof(DM dm, DMLabel label[],const PetscInt numDof[], PetscSection section)
 {
   DMLabel        depthLabel;
-  PetscInt      *pMax;
+  DMPolytopeType ct;
   PetscInt       depth, cellHeight, pStart = 0, pEnd = 0;
   PetscInt       Nf, f, dim, d, dep, p;
   PetscBool     *isFE;
@@ -103,8 +103,6 @@ static PetscErrorCode DMPlexCreateSectionDof(DM dm, DMLabel label[],const PetscI
     isFE[f] = id == PETSCFE_CLASSID ? PETSC_TRUE : PETSC_FALSE;
   }
 
-  ierr = PetscMalloc1(depth+1, &pMax);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, depth >= 0 ? &pMax[depth] : NULL, depth>1 ? &pMax[depth-1] : NULL, depth>2 ? &pMax[1] : NULL, &pMax[0]);CHKERRQ(ierr);
   ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) {
     if (label && label[f]) {
@@ -120,10 +118,17 @@ static PetscErrorCode DMPlexCreateSectionDof(DM dm, DMLabel label[],const PetscI
         const PetscInt point = points[p];
         PetscInt       dof, d;
 
+        ierr = DMPlexGetCellType(dm, point, &ct);CHKERRQ(ierr);
         ierr = DMLabelGetValue(depthLabel, point, &d);CHKERRQ(ierr);
-        ierr = DMPlexGetDepthStratum(dm, d, NULL, &pEnd);CHKERRQ(ierr);
-        /* If this is a hybrid point, use dof for one dimension lower */
-        if ((point >= pMax[d]) && (point < pEnd)) --d;
+        /* If this is a tensor prism point, use dof for one dimension lower */
+        switch (ct) {
+          case DM_POLYTOPE_POINT_PRISM_TENSOR:
+          case DM_POLYTOPE_SEG_PRISM_TENSOR:
+          case DM_POLYTOPE_TRI_PRISM_TENSOR:
+          case DM_POLYTOPE_QUAD_PRISM_TENSOR:
+            --d;break;
+          default: break;
+        }
         dof  = d < 0 ? 0 : numDof[f*(dim+1)+d];
         ierr = PetscSectionSetFieldDof(section, point, f, dof);CHKERRQ(ierr);
         ierr = PetscSectionAddDof(section, point, dof);CHKERRQ(ierr);
@@ -135,18 +140,24 @@ static PetscErrorCode DMPlexCreateSectionDof(DM dm, DMLabel label[],const PetscI
         /* Cases: dim > depth (cell-vertex mesh), dim == depth (fully interpolated), dim < depth (interpolated submesh) */
         d    = dim <= depth ? dep : (!dep ? 0 : dim);
         ierr = DMPlexGetDepthStratum(dm, dep, &pStart, &pEnd);CHKERRQ(ierr);
-        pMax[dep] = pMax[dep] < 0 ? pEnd : pMax[dep];
         for (p = pStart; p < pEnd; ++p) {
           const PetscInt dof = numDof[f*(dim+1)+d];
 
-          if (isFE[f] && p >= pMax[dep]) continue;
+          ierr = DMPlexGetCellType(dm, p, &ct);CHKERRQ(ierr);
+          switch (ct) {
+            case DM_POLYTOPE_POINT_PRISM_TENSOR:
+            case DM_POLYTOPE_SEG_PRISM_TENSOR:
+            case DM_POLYTOPE_TRI_PRISM_TENSOR:
+            case DM_POLYTOPE_QUAD_PRISM_TENSOR:
+              if (isFE[f]) continue;
+            default: break;
+          }
           ierr = PetscSectionSetFieldDof(section, p, f, dof);CHKERRQ(ierr);
           ierr = PetscSectionAddDof(section, p, dof);CHKERRQ(ierr);
         }
       }
     }
   }
-  ierr = PetscFree(pMax);CHKERRQ(ierr);
   ierr = PetscFree(isFE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

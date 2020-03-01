@@ -352,4 +352,89 @@ PETSC_EXTERN PetscErrorCode DMMonitorCancel(DM);
 PETSC_EXTERN PetscErrorCode DMMonitorSetFromOptions(DM, const char[], const char[], const char[], PetscErrorCode (*)(DM, void *), PetscErrorCode (*)(DM, PetscViewerAndFormat *), PetscBool *);
 PETSC_EXTERN PetscErrorCode DMMonitor(DM);
 
+PETSC_STATIC_INLINE PetscInt DMPolytopeTypeGetDim(DMPolytopeType ct) {
+  switch (ct) {
+    case DM_POLYTOPE_POINT:
+      return 0;
+    case DM_POLYTOPE_SEGMENT:
+    case DM_POLYTOPE_POINT_PRISM_TENSOR:
+      return 1;
+    case DM_POLYTOPE_TRIANGLE:
+    case DM_POLYTOPE_QUADRILATERAL:
+    case DM_POLYTOPE_SEG_PRISM_TENSOR:
+      return 2;
+    case DM_POLYTOPE_TETRAHEDRON:
+    case DM_POLYTOPE_HEXAHEDRON:
+    case DM_POLYTOPE_TRI_PRISM:
+    case DM_POLYTOPE_TRI_PRISM_TENSOR:
+    case DM_POLYTOPE_QUAD_PRISM_TENSOR:
+      return 3;
+    default: return -1;
+  }
+}
+
+PETSC_STATIC_INLINE PetscInt DMPolytopeTypeGetConeSize(DMPolytopeType ct)
+{
+  switch (ct) {
+    case DM_POLYTOPE_POINT:              return 0;
+    case DM_POLYTOPE_SEGMENT:            return 2;
+    case DM_POLYTOPE_POINT_PRISM_TENSOR: return 2;
+    case DM_POLYTOPE_TRIANGLE:           return 3;
+    case DM_POLYTOPE_QUADRILATERAL:      return 4;
+    case DM_POLYTOPE_SEG_PRISM_TENSOR:   return 4;
+    case DM_POLYTOPE_TETRAHEDRON:        return 4;
+    case DM_POLYTOPE_HEXAHEDRON:         return 6;
+    case DM_POLYTOPE_TRI_PRISM:          return 5;
+    case DM_POLYTOPE_TRI_PRISM_TENSOR:   return 5;
+    case DM_POLYTOPE_QUAD_PRISM_TENSOR:  return 6;
+    default: return -1;
+  }
+}
+
+PETSC_STATIC_INLINE PetscInt DMPolytopeTypeGetNumVertices(DMPolytopeType ct)
+{
+  switch (ct) {
+    case DM_POLYTOPE_POINT:              return 1;
+    case DM_POLYTOPE_SEGMENT:            return 2;
+    case DM_POLYTOPE_POINT_PRISM_TENSOR: return 2;
+    case DM_POLYTOPE_TRIANGLE:           return 3;
+    case DM_POLYTOPE_QUADRILATERAL:      return 4;
+    case DM_POLYTOPE_SEG_PRISM_TENSOR:   return 4;
+    case DM_POLYTOPE_TETRAHEDRON:        return 4;
+    case DM_POLYTOPE_HEXAHEDRON:         return 8;
+    case DM_POLYTOPE_TRI_PRISM:          return 6;
+    case DM_POLYTOPE_TRI_PRISM_TENSOR:   return 6;
+    case DM_POLYTOPE_QUAD_PRISM_TENSOR:  return 8;
+    default: return -1;
+  }
+}
+
+PETSC_STATIC_INLINE DMPolytopeType DMPolytopeTypeFromGmsh(PetscInt ctGmsh)
+{
+  switch (ctGmsh) {
+    case 1:
+    case 8:
+      return DM_POLYTOPE_SEGMENT;
+    case 2:
+    case 9:
+     return DM_POLYTOPE_TRIANGLE;
+    case 3:
+    case 10:
+     return DM_POLYTOPE_QUADRILATERAL;
+    case 4:
+    case 11:
+     return DM_POLYTOPE_TETRAHEDRON;
+    case 5:
+    case 12:
+     return DM_POLYTOPE_HEXAHEDRON;
+    case 6:
+    case 13:
+     return DM_POLYTOPE_TRI_PRISM;
+    case 7:
+    case 14:
+     return DM_POLYTOPE_UNKNOWN; /* Pyramid */
+    case 15: return DM_POLYTOPE_POINT;
+    default: return DM_POLYTOPE_UNKNOWN;
+  }
+}
 #endif

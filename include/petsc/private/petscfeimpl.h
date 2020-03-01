@@ -181,11 +181,10 @@ typedef struct {
 #endif
 
 typedef struct {
-  CellRefiner   cellRefiner;    /* The cell refiner defining the cell division */
-  PetscInt      numSubelements; /* The number of subelements */
-  PetscReal    *v0;             /* The affine transformation for each subelement */
-  PetscReal    *jac, *invjac;
-  PetscInt     *embedding;      /* Map from subelements dofs to element dofs */
+  PetscInt   numSubelements; /* The number of subelements */
+  PetscReal *v0;             /* The affine transformation for each subelement */
+  PetscReal *jac, *invjac;
+  PetscInt  *embedding;      /* Map from subelements dofs to element dofs */
 } PetscFE_Composite;
 
 /* Utility functions */

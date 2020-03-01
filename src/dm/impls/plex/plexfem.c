@@ -1066,7 +1066,7 @@ PetscErrorCode DMPlexComputeL2DiffLocal(DM dm, PetscReal time, PetscErrorCode (*
   PetscReal       *coords, *gcoords;
   PetscReal        localDiff = 0.0;
   const PetscReal *quadWeights;
-  PetscInt         dim, coordDim, numFields, numComponents = 0, qNc, Nq, cellHeight, cStart, cEnd, cEndInterior, c, field, fieldOffset;
+  PetscInt         dim, coordDim, numFields, numComponents = 0, qNc, Nq, cellHeight, cStart, cEnd, c, field, fieldOffset;
   PetscBool        transform;
   PetscErrorCode   ierr;
 
@@ -1103,11 +1103,7 @@ PetscErrorCode DMPlexComputeL2DiffLocal(DM dm, PetscReal time, PetscErrorCode (*
   if ((qNc != 1) && (qNc != numComponents)) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_SIZ, "Quadrature components %D != %D field components", qNc, numComponents);
   ierr = PetscMalloc6(numComponents,&funcVal,numComponents,&interpolant,coordDim*Nq,&coords,Nq,&fegeom.detJ,coordDim*coordDim*Nq,&fegeom.J,coordDim*coordDim*Nq,&fegeom.invJ);CHKERRQ(ierr);
   ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetGhostCellStratum(dm, &cEndInterior, NULL);CHKERRQ(ierr);
-  cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
-  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
-  cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
+  ierr = DMPlexGetSimplexOrBoxCells(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     PetscScalar *x = NULL;
     PetscReal    elemDiff = 0.0;
@@ -1218,7 +1214,7 @@ PetscErrorCode DMComputeL2GradientDiff_Plex(DM dm, PetscReal time, PetscErrorCod
   if ((qNc != 1) && (qNc != numComponents)) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_SIZ, "Quadrature components %D != %D field components", qNc, numComponents);
   /* ierr = DMProjectFunctionLocal(dm, fe, funcs, INSERT_BC_VALUES, localX);CHKERRQ(ierr); */
   ierr = PetscMalloc6(numComponents,&funcVal,coordDim*Nq,&coords,coordDim*coordDim*Nq,&fegeom.J,coordDim*coordDim*Nq,&fegeom.invJ,numComponents*coordDim,&interpolant,Nq,&fegeom.detJ);CHKERRQ(ierr);
-  ierr = DMPlexGetInteriorCellStratum(dm, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     PetscScalar *x = NULL;
     PetscReal    elemDiff = 0.0;
@@ -1345,7 +1341,7 @@ PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (
   ierr = PetscQuadratureGetData(quad, NULL, &qNc, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
   if ((qNc != 1) && (qNc != numComponents)) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_SIZ, "Quadrature components %D != %D field components", qNc, numComponents);
   ierr = PetscCalloc7(numFields,&localDiff,numComponents,&funcVal,numComponents,&interpolant,coordDim*(Nq+1),&coords,Nq,&fegeom.detJ,coordDim*coordDim*Nq,&fegeom.J,coordDim*coordDim*Nq,&fegeom.invJ);CHKERRQ(ierr);
-  ierr = DMPlexGetInteriorCellStratum(dm, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     PetscScalar *x = NULL;
     PetscInt     qc = 0;
@@ -1481,7 +1477,7 @@ PetscErrorCode DMPlexComputeL2DiffVec(DM dm, PetscReal time, PetscErrorCode (**f
   ierr = PetscQuadratureGetData(quad, NULL, &qNc, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
   if ((qNc != 1) && (qNc != numComponents)) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_SIZ, "Quadrature components %D != %D field components", qNc, numComponents);
   ierr = PetscMalloc6(numComponents,&funcVal,numComponents,&interpolant,coordDim*Nq,&coords,Nq,&fegeom.detJ,coordDim*coordDim*Nq,&fegeom.J,coordDim*coordDim*Nq,&fegeom.invJ);CHKERRQ(ierr);
-  ierr = DMPlexGetInteriorCellStratum(dm, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     PetscScalar *x = NULL;
     PetscScalar  elemDiff = 0.0;
@@ -1605,7 +1601,7 @@ PetscErrorCode DMPlexComputeGradientClementInterpolant(DM dm, Vec locX, Vec locC
   if ((qNc != 1) && (qNc != numComponents)) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_SIZ, "Quadrature components %D != %D field components", qNc, numComponents);
   ierr = PetscMalloc6(coordDim*numComponents*2,&gradsum,coordDim*numComponents,&interpolant,coordDim*Nq,&coords,Nq,&fegeom.detJ,coordDim*coordDim*Nq,&fegeom.J,coordDim*coordDim*Nq,&fegeom.invJ);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetInteriorCellStratum(dm, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   for (v = vStart; v < vEnd; ++v) {
     PetscScalar volsum = 0.0;
     PetscInt   *star = NULL;
@@ -1901,7 +1897,7 @@ PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscScalar *integral, voi
 {
   DM_Plex       *mesh = (DM_Plex *) dm->data;
   PetscScalar   *cintegral, *lintegral;
-  PetscInt       Nf, f, cellHeight, cStart, cEnd, cEndInterior[4], cell;
+  PetscInt       Nf, f, cellHeight, cStart, cEnd, cell;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1911,9 +1907,7 @@ PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscScalar *integral, voi
   ierr = PetscLogEventBegin(DMPLEX_IntegralFEM,dm,0,0,0);CHKERRQ(ierr);
   ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
   ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cEndInterior[0], &cEndInterior[1], &cEndInterior[2], &cEndInterior[3]);CHKERRQ(ierr);
-  cEnd = cEndInterior[cellHeight] < 0 ? cEnd : cEndInterior[cellHeight];
+  ierr = DMPlexGetSimplexOrBoxCells(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
   /* TODO Introduce a loop over large chunks (right now this is a single chunk) */
   ierr = PetscCalloc2(Nf, &lintegral, (cEnd-cStart)*Nf, &cintegral);CHKERRQ(ierr);
   ierr = DMPlexComputeIntegral_Internal(dm, X, cStart, cEnd, cintegral, user);CHKERRQ(ierr);
@@ -1956,7 +1950,7 @@ PetscErrorCode DMPlexComputeCellwiseIntegralFEM(DM dm, Vec X, Vec F, void *user)
   DM             dmF;
   PetscSection   sectionF;
   PetscScalar   *cintegral, *af;
-  PetscInt       Nf, f, cellHeight, cStart, cEnd, cEndInterior[4], cell;
+  PetscInt       Nf, f, cellHeight, cStart, cEnd, cell;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1966,9 +1960,7 @@ PetscErrorCode DMPlexComputeCellwiseIntegralFEM(DM dm, Vec X, Vec F, void *user)
   ierr = PetscLogEventBegin(DMPLEX_IntegralFEM,dm,0,0,0);CHKERRQ(ierr);
   ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
   ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cEndInterior[0], &cEndInterior[1], &cEndInterior[2], &cEndInterior[3]);CHKERRQ(ierr);
-  cEnd = cEndInterior[cellHeight] < 0 ? cEnd : cEndInterior[cellHeight];
+  ierr = DMPlexGetSimplexOrBoxCells(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
   /* TODO Introduce a loop over large chunks (right now this is a single chunk) */
   ierr = PetscCalloc1((cEnd-cStart)*Nf, &cintegral);CHKERRQ(ierr);
   ierr = DMPlexComputeIntegral_Internal(dm, X, cStart, cEnd, cintegral, user);CHKERRQ(ierr);
@@ -2249,7 +2241,7 @@ PetscErrorCode DMPlexComputeInterpolatorNested(DM dmc, DM dmf, Mat In, void *use
   ierr = DMGetLocalSection(dmc, &csection);CHKERRQ(ierr);
   ierr = DMGetGlobalSection(dmc, &cglobalSection);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(fsection, &Nf);CHKERRQ(ierr);
-  ierr = DMPlexGetInteriorCellStratum(dmc, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetSimplexOrBoxCells(dmc, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMGetDS(dmc, &cds);CHKERRQ(ierr);
   ierr = DMGetDS(dmf, &rds);CHKERRQ(ierr);
   ierr = PetscCalloc2(Nf, &feRef, Nf, &fvRef);CHKERRQ(ierr);
@@ -2950,7 +2942,7 @@ PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, void *us
   ierr = DMGetLocalSection(dmc, &csection);CHKERRQ(ierr);
   ierr = DMGetGlobalSection(dmc, &cglobalSection);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(fsection, &Nf);CHKERRQ(ierr);
-  ierr = DMPlexGetInteriorCellStratum(dmc, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetSimplexOrBoxCells(dmc, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMGetDS(dmc, &prob);CHKERRQ(ierr);
   ierr = PetscCalloc3(Nf,&feRef,Nf,&fvRef,Nf,&needAvg);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) {

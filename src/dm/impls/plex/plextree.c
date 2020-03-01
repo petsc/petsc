@@ -3986,7 +3986,7 @@ static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse
   const PetscInt    *anchors;
   Mat               cMat;
   PetscInt          numFields;
-  PetscInt          pStartC, pEndC, pStartF, pEndF, p, cellStart, cellEnd, cellEndInterior;
+  PetscInt          pStartC, pEndC, pStartF, pEndF, p, cellStart, cellEnd;
   PetscInt          aStart, aEnd, cStart, cEnd;
   PetscInt          *maxChildIds;
   PetscInt          *offsets, *newOffsets, *offsetsCopy, *newOffsetsCopy, *rowOffsets, *numD, *numO;
@@ -4000,9 +4000,7 @@ static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse
   PetscFunctionBegin;
   ierr = VecSetOption(vecFine,VEC_IGNORE_NEGATIVE_INDICES,PETSC_TRUE);CHKERRQ(ierr);
   ierr = DMPlexGetChart(coarse,&pStartC,&pEndC);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(coarse,0,&cellStart,&cellEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(coarse,&cellEndInterior,NULL,NULL,NULL);CHKERRQ(ierr);
-  cellEnd = (cellEndInterior < 0) ? cellEnd : cellEndInterior;
+  ierr = DMPlexGetSimplexOrBoxCells(coarse,0,&cellStart,&cellEnd);CHKERRQ(ierr);
   ierr = DMPlexGetChart(fine,&pStartF,&pEndF);CHKERRQ(ierr);
   ierr = DMGetGlobalSection(fine,&globalFine);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(coarse,&dim);CHKERRQ(ierr);
@@ -4202,9 +4200,7 @@ static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse
     ierr = DMPlexGetAnchors(refTree,&refAnSec,NULL);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(refConSec,&pRefStart,&pRefEnd);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(leafValuesSec,&leafStart,&leafEnd);CHKERRQ(ierr);
-    ierr = DMPlexGetHeightStratum(fine,0,&cellStart,&cellEnd);CHKERRQ(ierr);
-    ierr = DMPlexGetHybridBounds(fine,&cellEndInterior,NULL,NULL,NULL);CHKERRQ(ierr);
-    cellEnd = (cellEndInterior < 0) ? cellEnd : cellEndInterior;
+    ierr = DMPlexGetSimplexOrBoxCells(fine,0,&cellStart,&cellEnd);CHKERRQ(ierr);
     for (p = leafStart; p < leafEnd; p++) {
       PetscInt          gDof, gcDof, gOff, lDof;
       PetscInt          numValues, pValOff;
