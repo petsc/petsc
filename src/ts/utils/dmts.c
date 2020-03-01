@@ -546,7 +546,7 @@ PetscErrorCode DMTSSetRHSFunction(DM dm,TSRHSFunction func,void *ctx)
 
      dF/dP + shift * dF/dCdot dC/dP.
 
-.seealso: DMTSGetTransientVariable(), DMTSSetIFunction(), DMTSSetIJacobian()
+.seealso: TSSetTransientVariable(), DMTSGetTransientVariable(), DMTSSetIFunction(), DMTSSetIJacobian()
 @*/
 PetscErrorCode DMTSSetTransientVariable(DM dm,TSTransientVariable tvar,void *ctx)
 {
