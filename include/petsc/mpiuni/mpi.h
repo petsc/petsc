@@ -279,6 +279,7 @@ typedef int MPI_Errhandler;
 #define MPI_ERRHANDLER_NULL  0
 #define MPI_ERRORS_RETURN    0
 #define MPI_ERRORS_ARE_FATAL 0
+#define MPI_ERR_LASTCODE     0x3fffffff
 typedef void (MPI_Handler_function)(MPI_Comm *, int *, ...);
 
 /*
