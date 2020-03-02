@@ -13,4 +13,10 @@ struct _p_PetscQuadrature {
   const PetscReal *weights;   /* The quadrature weights */
 };
 
+#if (!defined(PETSC_MISSING_LAPACK_STEQR) || !defined(PETSC_MISSING_LAPACK_STEGR))
+#define PETSCDTGAUSSIANQUADRATURE_EIG 1
+#endif
+
+PETSC_EXTERN PetscBool PetscDTGaussQuadratureNewton_Internal;
+
 #endif

@@ -22,8 +22,16 @@ const char       GolubWelschCitation[] = "@article{GolubWelsch1969,\n"
                                          "  pages   = {221--230},\n"
                                          "  year    = {1969}\n}\n";
 
-static PetscBool gaussQuadratureNewton = PETSC_FALSE;
+/* Numerical tests in src/dm/dt/examples/tests/ex1.c show that when computing the nodes and weights of Gauss-Jacobi
+   quadrature rules:
 
+   - in double precision, Newton's method and Golub & Welsch both work for moderate degrees (< 100),
+   - in single precision, Newton's method starts producing incorrect roots around n = 15, but
+     the weights from Golub & Welsch become a problem before then: they produces errors
+     in computing the Jacobi-polynomial Gram matrix around n = 6.
+
+   So we default to Newton's method (required fewer dependencies) */
+PetscBool PetscDTGaussQuadratureNewton_Internal = PETSC_TRUE;
 
 PetscClassId PETSCQUADRATURE_CLASSID = 0;
 
@@ -590,8 +598,126 @@ PetscErrorCode PetscQuadratureExpandComposite(PetscQuadrature q, PetscInt numSub
   PetscFunctionReturn(0);
 }
 
+/* Compute the coefficients for the Jacobi polynomial recurrence,
+ *
+ * J^{a,b}_n(x) = (cnm1 + cnm1x * x) * J^{a,b}_{n-1}(x) - cnm2 * J^{a,b}_{n-2}(x).
+ */
+#define PetscDTJacobiRecurrence_Internal(n,a,b,cnm1,cnm1x,cnm2) \
+do {                                                            \
+  PetscReal _a = (a);                                           \
+  PetscReal _b = (b);                                           \
+  PetscReal _n = (n);                                           \
+  if (n == 1) {                                                 \
+    (cnm1) = (_a-_b) * 0.5;                                     \
+    (cnm1x) = (_a+_b+2.)*0.5;                                   \
+    (cnm2) = 0.;                                                \
+  } else {                                                      \
+    PetscReal _2n = _n+_n;                                      \
+    PetscReal _d = (_2n*(_n+_a+_b)*(_2n+_a+_b-2));              \
+    PetscReal _n1 = (_2n+_a+_b-1.)*(_a*_a-_b*_b);               \
+    PetscReal _n1x = (_2n+_a+_b-1.)*(_2n+_a+_b)*(_2n+_a+_b-2);  \
+    PetscReal _n2 = 2.*((_n+_a-1.)*(_n+_b-1.)*(_2n+_a+_b));     \
+    (cnm1) = _n1 / _d;                                          \
+    (cnm1x) = _n1x / _d;                                        \
+    (cnm2) = _n2 / _d;                                          \
+  }                                                             \
+} while (0)
+
+static PetscErrorCode PetscDTJacobiEval_Internal(PetscInt npoints, PetscReal a, PetscReal b, PetscInt k, const PetscReal *points, PetscInt ndegree, const PetscInt *degrees, PetscReal *p)
+{
+  PetscReal ak, bk;
+  PetscReal abk1;
+  PetscInt i,l,maxdegree;
+
+  PetscFunctionBegin;
+  maxdegree = degrees[ndegree-1] - k;
+  ak = a + k;
+  bk = b + k;
+  abk1 = a + b + k + 1.;
+  if (maxdegree < 0) {
+    for (i = 0; i < npoints; i++) for (l = 0; l < ndegree; l++) p[i*ndegree+l] = 0.;
+    PetscFunctionReturn(0);
+  }
+  for (i=0; i<npoints; i++) {
+    PetscReal pm1,pm2,x;
+    PetscReal cnm1, cnm1x, cnm2;
+    PetscInt  j,m;
+
+    x    = points[i];
+    pm2  = 1.;
+    PetscDTJacobiRecurrence_Internal(1,ak,bk,cnm1,cnm1x,cnm2);
+    pm1 = (cnm1 + cnm1x*x);
+    l    = 0;
+    while (l < ndegree && degrees[l] - k < 0) {
+      p[l++] = 0.;
+    }
+    while (l < ndegree && degrees[l] - k == 0) {
+      p[l] = pm2;
+      for (m = 0; m < k; m++) p[l] *= (abk1 + m) * 0.5;
+      l++;
+    }
+    while (l < ndegree && degrees[l] - k == 1) {
+      p[l] = pm1;
+      for (m = 0; m < k; m++) p[l] *= (abk1 + 1 + m) * 0.5;
+      l++;
+    }
+    for (j=2; j<=maxdegree; j++) {
+      PetscReal pp;
+
+      PetscDTJacobiRecurrence_Internal(j,ak,bk,cnm1,cnm1x,cnm2);
+      pp   = (cnm1 + cnm1x*x)*pm1 - cnm2*pm2;
+      pm2  = pm1;
+      pm1  = pp;
+      while (l < ndegree && degrees[l] - k == j) {
+        p[l] = pp;
+        for (m = 0; m < k; m++) p[l] *= (abk1 + j + m) * 0.5;
+        l++;
+      }
+    }
+    p += ndegree;
+  }
+  PetscFunctionReturn(0);
+}
+
 /*@
-   PetscDTLegendreEval - evaluate Legendre polynomial at points
+   PetscDTJacobiEval - evaluate Jacobi polynomials for the weight function $(1.+x)^{\alpha} (1.-x)^{\beta}$
+                       at points
+
+   Not Collective
+
+   Input Arguments:
++  npoints - number of spatial points to evaluate at
+.  alpha - the left exponent > -1
+.  beta - the right exponent > -1
+.  points - array of locations to evaluate at
+.  ndegree - number of basis degrees to evaluate
+-  degrees - sorted array of degrees to evaluate
+
+   Output Arguments:
++  B - row-oriented basis evaluation matrix B[point*ndegree + degree] (dimension npoints*ndegrees, allocated by caller) (or NULL)
+.  D - row-oriented derivative evaluation matrix (or NULL)
+-  D2 - row-oriented second derivative evaluation matrix (or NULL)
+
+   Level: intermediate
+
+.seealso: PetscDTGaussQuadrature()
+@*/
+PetscErrorCode PetscDTJacobiEval(PetscInt npoints,PetscReal alpha, PetscReal beta, const PetscReal *points,PetscInt ndegree,const PetscInt *degrees,PetscReal *B,PetscReal *D,PetscReal *D2)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (alpha <= -1.) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"alpha must be > -1.");
+  if (beta <= -1.) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"beta must be > -1.");
+  if (!npoints || !ndegree) PetscFunctionReturn(0);
+  if (B)  {ierr = PetscDTJacobiEval_Internal(npoints, alpha, beta, 0, points, ndegree, degrees, B);CHKERRQ(ierr);}
+  if (D)  {ierr = PetscDTJacobiEval_Internal(npoints, alpha, beta, 1, points, ndegree, degrees, D);CHKERRQ(ierr);}
+  if (D2) {ierr = PetscDTJacobiEval_Internal(npoints, alpha, beta, 2, points, ndegree, degrees, D2);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PetscDTLegendreEval - evaluate Legendre polynomials at points
 
    Not Collective
 
@@ -612,54 +738,12 @@ PetscErrorCode PetscQuadratureExpandComposite(PetscQuadrature q, PetscInt numSub
 @*/
 PetscErrorCode PetscDTLegendreEval(PetscInt npoints,const PetscReal *points,PetscInt ndegree,const PetscInt *degrees,PetscReal *B,PetscReal *D,PetscReal *D2)
 {
-  PetscInt i,maxdegree;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!npoints || !ndegree) PetscFunctionReturn(0);
-  maxdegree = degrees[ndegree-1];
-  for (i=0; i<npoints; i++) {
-    PetscReal pm1,pm2,pd1,pd2,pdd1,pdd2,x;
-    PetscInt  j,k;
-    x    = points[i];
-    pm2  = 0;
-    pm1  = 1;
-    pd2  = 0;
-    pd1  = 0;
-    pdd2 = 0;
-    pdd1 = 0;
-    k    = 0;
-    if (degrees[k] == 0) {
-      if (B) B[i*ndegree+k] = pm1;
-      if (D) D[i*ndegree+k] = pd1;
-      if (D2) D2[i*ndegree+k] = pdd1;
-      k++;
-    }
-    for (j=1; j<=maxdegree; j++,k++) {
-      PetscReal p,d,dd;
-      p    = ((2*j-1)*x*pm1 - (j-1)*pm2)/j;
-      d    = pd2 + (2*j-1)*pm1;
-      dd   = pdd2 + (2*j-1)*pd1;
-      pm2  = pm1;
-      pm1  = p;
-      pd2  = pd1;
-      pd1  = d;
-      pdd2 = pdd1;
-      pdd1 = dd;
-      if (degrees[k] == j) {
-        if (B) B[i*ndegree+k] = p;
-        if (D) D[i*ndegree+k] = d;
-        if (D2) D2[i*ndegree+k] = dd;
-      }
-    }
-  }
+  ierr = PetscDTJacobiEval(npoints, 0., 0., points, ndegree, degrees, B, D, D2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-/* if we can cobble together an eigenvalue / eigenvector routine for a symmetric tridiagonal system, we should use
- * Golub & Welsch (Gauss-Jacobi) or Golub (Gauss-Lobatto-Jacobi) to compute Gaussian quadrature */
-#if (!defined(PETSC_MISSING_LAPACK_STEQR) || !defined(PETSC_MISSING_LAPACK_STEGR))
-#define PETSCDTGAUSSIANQUADRATURE_EIG 1
-#endif
 
 /* solve the symmetric tridiagonal eigenvalue system, writing the eigenvalues into eigs and the eigenvectors into V
  * with lds n; diag and subdiag are overwritten */
@@ -727,7 +811,6 @@ static PetscErrorCode PetscDTGaussLobattoJacobiEndweights_Internal(PetscInt n, P
   PetscReal a = alpha + 1.;
   PetscReal b = beta + 1.;
   PetscReal gra, grb;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   twoab1 = PetscPowReal(2., a + b - 1.);
@@ -740,6 +823,7 @@ static PetscErrorCode PetscDTGaussLobattoJacobiEndweights_Internal(PetscInt n, P
   {
     PetscInt alphai = (PetscInt) alpha;
     PetscInt betai = (PetscInt) beta;
+    PetscErrorCode ierr;
 
     if ((PetscReal) alphai == alpha && (PetscReal) betai == beta) {
       PetscReal binom1, binom2;
@@ -762,26 +846,21 @@ static PetscErrorCode PetscDTGaussLobattoJacobiEndweights_Internal(PetscInt n, P
    Recurrence relations implemented from the pseudocode given in Karniadakis and Sherwin, Appendix B */
 PETSC_STATIC_INLINE PetscErrorCode PetscDTComputeJacobi(PetscReal a, PetscReal b, PetscInt n, PetscReal x, PetscReal *P)
 {
-  PetscReal apb, pn1, pn2;
+  PetscReal pn1, pn2;
+  PetscReal cnm1, cnm1x, cnm2;
   PetscInt  k;
 
   PetscFunctionBegin;
   if (!n) {*P = 1.0; PetscFunctionReturn(0);}
-  if (n == 1) {*P = 0.5 * (a - b + (a + b + 2.0) * x); PetscFunctionReturn(0);}
-  apb = a + b;
-  pn2 = 1.0;
-  pn1 = 0.5 * (a - b + (apb + 2.0) * x);
+  PetscDTJacobiRecurrence_Internal(1,a,b,cnm1,cnm1x,cnm2);
+  pn2 = 1.;
+  pn1 = cnm1 + cnm1x*x;
+  if (n == 1) {*P = pn1; PetscFunctionReturn(0);}
   *P  = 0.0;
   for (k = 2; k < n+1; ++k) {
-    PetscReal a1 = 2.0 * k * (k + apb) * (2.0*k + apb - 2.0);
-    PetscReal a2 = (2.0 * k + apb - 1.0) * (a*a - b*b);
-    PetscReal a3 = (2.0 * k + apb - 2.0) * (2.0 * k + apb - 1.0) * (2.0 * k + apb);
-    PetscReal a4 = 2.0 * (k + a - 1.0) * (k + b - 1.0) * (2.0 * k + apb);
+    PetscDTJacobiRecurrence_Internal(k,a,b,cnm1,cnm1x,cnm2);
 
-    a2  = a2 / a1;
-    a3  = a3 / a1;
-    a4  = a4 / a1;
-    *P  = (a2 + a3 * x) * pn1 - a4 * pn2;
+    *P  = (cnm1 + cnm1x*x)*pn1 - cnm2*pn2;
     pn2 = pn1;
     pn1 = *P;
   }
@@ -815,38 +894,40 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTMapSquareToTriangle_Internal(PetscReal
 static PetscErrorCode PetscDTGaussJacobiQuadrature_Newton_Internal(PetscInt npoints, PetscReal a, PetscReal b, PetscReal x[], PetscReal w[])
 {
   PetscInt       maxIter = 100;
-  PetscReal      eps     = 1.0e-8;
-  PetscReal      a1, a2, a3, a4, a5, a6;
+  PetscReal      eps     = PetscExpReal(0.75 * PetscLogReal(PETSC_MACHINE_EPSILON));
+  PetscReal      a1, a2, a3, a4, a5, a6, gf;
   PetscInt       k;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
 
-  a1      = PetscPowReal(2.0, a+b+1);
-#if defined(PETSC_HAVE_TGAMMA)
-  a2      = PetscTGamma(a + npoints + 1);
-  a3      = PetscTGamma(b + npoints + 1);
-  a4      = PetscTGamma(a + b + npoints + 1);
+  a1 = PetscPowReal(2.0, a+b+1);
+#if defined(PETSC_HAVE_LGAMMA)
+  a2 = PetscLGamma(a + npoints + 1);
+  a3 = PetscLGamma(b + npoints + 1);
+  a4 = PetscLGamma(a + b + npoints + 1);
+  a5 = PetscLGamma(npoints + 1);
+  gf = PetscExpReal(a2 + a3 - (a4 + a5));
 #else
   {
     PetscInt ia, ib;
 
     ia = (PetscInt) a;
     ib = (PetscInt) b;
-    if (ia == a && ib == b && ia + npoints + 1 > 0 && ib + npoints + 1 > 0 && ia + ib + npoints + 1 > 0) { /* All gamma(x) terms are (x-1)! terms */
-      ierr = PetscDTFactorial(ia + npoints, &a2);CHKERRQ(ierr);
-      ierr = PetscDTFactorial(ib + npoints, &a3);CHKERRQ(ierr);
-      ierr = PetscDTFactorial(ia + ib + npoints, &a4);CHKERRQ(ierr);
-    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"tgamma() - math routine is unavailable.");
+    gf = 1.;
+    if (ia == a && ia >= 0) { /* compute ratio of rising factorals wrt a */
+      for (k = 0; k < ia; k++) gf *= (npoints + 1. + k) / (npoints + b + 1. + k);
+    } else if (b == b && ib >= 0) { /* compute ratio of rising factorials wrt b */
+      for (k = 0; k < ib; k++) gf *= (npoints + 1. + k) / (npoints + a + 1. + k);
+    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"lgamma() - math routine is unavailable.");
   }
 #endif
 
-  ierr = PetscDTFactorial(npoints, &a5);CHKERRQ(ierr);
-  a6   = a1 * a2 * a3 / a4 / a5;
+  a6   = a1 * gf;
   /* Computes the m roots of P_{m}^{a,b} on [-1,1] by Newton's method with Chebyshev points as initial guesses.
    Algorithm implemented from the pseudocode given by Karniadakis and Sherwin and Python in FIAT */
   for (k = 0; k < npoints; ++k) {
-    PetscReal r = -PetscCosReal((2.0*k + 1.0) * PETSC_PI / (2.0 * npoints)), dP;
+    PetscReal r = PetscCosReal(PETSC_PI * (1. - (4.*k + 3. + 2.*b) / (4.*npoints + 2.*(a + b + 1.)))), dP;
     PetscInt  j;
 
     if (k > 0) r = 0.5 * (r + x[k-1]);
@@ -868,7 +949,7 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature_Newton_Internal(PetscInt npoi
   PetscFunctionReturn(0);
 }
 
-/* Compute the diagonals of the Jacobi matrix used in Golub (& Welsch) algorithms for Gauss-(Lobatto)-Jacobi
+/* Compute the diagonals of the Jacobi matrix used in Golub & Welsch algorithms for Gauss-Jacobi
  * quadrature weight calculations on [-1,1] for exponents (1. + x)^a (1.-x)^b */
 static PetscErrorCode PetscDTJacobiMatrix_Internal(PetscInt nPoints, PetscReal a, PetscReal b, PetscReal *d, PetscReal *s)
 {
@@ -876,21 +957,12 @@ static PetscErrorCode PetscDTJacobiMatrix_Internal(PetscInt nPoints, PetscReal a
 
   PetscFunctionBegin;
   for (i = 0; i < nPoints; i++) {
-    PetscReal A, B, Ap, C;
-    PetscInt  si = i+1;
+    PetscReal A, B, C;
 
-    /* Jacobi three term recurrence */
-    if (si > 1) {
-      A = (2.*si+a+b)*(2*si+a+b-1.) / (2.*si*(si+a+b));
-      B = (a*a-b*b)*(2*si+a+b-1.) / (2.*si*(si+a+b)*(2*si+a+b-2));
-    } else {
-      A = (a+b+2.) / 2.;
-      B = (a-b) / 2.;
-    }
-    Ap = (2*(si+1)+a+b)*(2*(si+1)+a+b-1) / (2*(si+1)*(si+1+a+b));
-    C = (2*((si+1)+a-1)*((si+1)+b-1)*(2*(si+1)+a+b) / (2*(si+1)*((si+1)+a+b)*(2*(si+1)+a+b-2)));
-    d[i] = -B / A;
-    s[i] = (C / (A * Ap));
+    PetscDTJacobiRecurrence_Internal(i+1,a,b,A,B,C);
+    d[i] = -A / B;
+    if (i) s[i-1] *= C / B;
+    if (i < nPoints - 1) s[i] = 1. / B;
   }
   PetscFunctionReturn(0);
 }
@@ -934,13 +1006,33 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature_GolubWelsch_Internal(PetscInt
     ierr = PetscDTJacobiMatrix_Internal(npoints, a, b, diag, subdiag);CHKERRQ(ierr);
     for (i = 0; i < npoints - 1; i++) subdiag[i] = PetscSqrtReal(subdiag[i]);
     ierr = PetscDTSymmetricTridiagonalEigensolve(npoints, diag, subdiag, x, V);CHKERRQ(ierr);
-    for (i = 0; i < npoints; i++) w[i] = PetscSqr(V[i * npoints]) * mu0;
+    for (i = 0; i < npoints; i++) w[i] = PetscSqr(PetscRealPart(V[i * npoints])) * mu0;
     ierr = PetscFree(V);CHKERRQ(ierr);
     ierr = PetscFree2(diag, subdiag);CHKERRQ(ierr);
   }
 #else
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP_SYS, "A LAPACK symmetric tridiagonal eigensolver could not be found");
 #endif
+  { /* As of March 2, 2020, The Sun Performance Library breaks the LAPACK contract for xstegr and xsteqr: the
+       eigenvalues are not guaranteed to be in ascending order.  So we heave a passive aggressive sigh and check that
+       the eigenvalues are sorted */
+    PetscBool sorted;
+
+    ierr = PetscSortedReal(npoints, x, &sorted);CHKERRQ(ierr);
+    if (!sorted) {
+      PetscInt *order, i;
+      PetscReal *tmp;
+
+      ierr = PetscMalloc2(npoints, &order, npoints, &tmp);CHKERRQ(ierr);
+      for (i = 0; i < npoints; i++) order[i] = i;
+      ierr = PetscSortRealWithPermutation(npoints, x, order);CHKERRQ(ierr);
+      ierr = PetscArraycpy(tmp, x, npoints);CHKERRQ(ierr);
+      for (i = 0; i < npoints; i++) x[i] = tmp[order[i]];
+      ierr = PetscArraycpy(tmp, w, npoints);CHKERRQ(ierr);
+      for (i = 0; i < npoints; i++) w[i] = tmp[order[i]];
+      ierr = PetscFree2(order, tmp);CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -976,12 +1068,40 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature_Internal(PetscInt npoints,Pet
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscDTGaussJacobiQuadrature(PetscInt npoints,PetscReal alpha, PetscReal beta, PetscReal x[], PetscReal w[])
+/*@
+  PetscDTGaussJacobiQuadrature - quadrature for the interval [a, b] with the weight function
+  $(x-a)^\alpha (x-b)^\beta$.
+
+  Not collective
+
+  Input Parameters:
++ npoints - the number of points in the quadrature rule
+. a - the left endpoint of the interval
+. b - the right endpoint of the interval
+. alpha - the left exponent
+- beta - the right exponent
+
+  Output Parameters:
++ x - array of length npoints, the locations of the quadrature points
+- w - array of length npoints, the weights of the quadrature points
+
+  Level: intermediate
+
+  Note: this quadrature rule is exact for polynomials up to degree 2*npoints - 1.
+@*/
+PetscErrorCode PetscDTGaussJacobiQuadrature(PetscInt npoints,PetscReal a, PetscReal b, PetscReal alpha, PetscReal beta, PetscReal x[], PetscReal w[])
 {
+  PetscInt       i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscDTGaussJacobiQuadrature_Internal(npoints, alpha, beta, x, w, gaussQuadratureNewton);CHKERRQ(ierr);
+  ierr = PetscDTGaussJacobiQuadrature_Internal(npoints, alpha, beta, x, w, PetscDTGaussQuadratureNewton_Internal);CHKERRQ(ierr);
+  if (a != -1. || b != 1.) { /* shift */
+    for (i = 0; i < npoints; i++) {
+      x[i] = (x[i] + 1.) * ((b - a) / 2.) + a;
+      w[i] *= (b - a) / 2.;
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -998,11 +1118,50 @@ static PetscErrorCode PetscDTGaussLobattoJacobiQuadrature_Internal(PetscInt npoi
 
   x[0] = -1.;
   x[npoints-1] = 1.;
-  ierr = PetscDTGaussJacobiQuadrature_Internal(npoints, alpha+1., beta+1., &x[1], &w[1], newton);CHKERRQ(ierr);
+  if (npoints > 2) {
+    ierr = PetscDTGaussJacobiQuadrature_Internal(npoints-2, alpha+1., beta+1., &x[1], &w[1], newton);CHKERRQ(ierr);
+  }
   for (i = 1; i < npoints - 1; i++) {
     w[i] /= (1. - x[i]*x[i]);
   }
   ierr = PetscDTGaussLobattoJacobiEndweights_Internal(npoints, alpha, beta, &w[0], &w[npoints-1]);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscDTGaussLobattoJacobiQuadrature - quadrature for the interval [a, b] with the weight function
+  $(x-a)^\alpha (x-b)^\beta$, with endpoints a and b included as quadrature points.
+
+  Not collective
+
+  Input Parameters:
++ npoints - the number of points in the quadrature rule
+. a - the left endpoint of the interval
+. b - the right endpoint of the interval
+. alpha - the left exponent
+- beta - the right exponent
+
+  Output Parameters:
++ x - array of length npoints, the locations of the quadrature points
+- w - array of length npoints, the weights of the quadrature points
+
+  Level: intermediate
+
+  Note: this quadrature rule is exact for polynomials up to degree 2*npoints - 3.
+@*/
+PetscErrorCode PetscDTGaussLobattoJacobiQuadrature(PetscInt npoints,PetscReal a, PetscReal b, PetscReal alpha, PetscReal beta, PetscReal x[], PetscReal w[])
+{
+  PetscInt       i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscDTGaussLobattoJacobiQuadrature_Internal(npoints, alpha, beta, x, w, PetscDTGaussQuadratureNewton_Internal);CHKERRQ(ierr);
+  if (a != -1. || b != 1.) { /* shift */
+    for (i = 0; i < npoints; i++) {
+      x[i] = (x[i] + 1.) * ((b - a) / 2.) + a;
+      w[i] *= (b - a) / 2.;
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1033,8 +1192,8 @@ PetscErrorCode PetscDTGaussQuadrature(PetscInt npoints,PetscReal a,PetscReal b,P
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscDTGaussJacobiQuadrature_Internal(npoints, 0., 0., x, w, gaussQuadratureNewton);CHKERRQ(ierr);
-  if (a != -1. || b != 1.) {
+  ierr = PetscDTGaussJacobiQuadrature_Internal(npoints, 0., 0., x, w, PetscDTGaussQuadratureNewton_Internal);CHKERRQ(ierr);
+  if (a != -1. || b != 1.) { /* shift */
     for (i = 0; i < npoints; i++) {
       x[i] = (x[i] + 1.) * ((b - a) / 2.) + a;
       w[i] *= (b - a) / 2.;
@@ -1077,7 +1236,7 @@ PetscErrorCode PetscDTGaussLobattoLegendreQuadrature(PetscInt npoints,PetscGauss
 
   PetscFunctionBegin;
   if (npoints < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must provide at least 2 grid points per element");
-  newton = (PetscBool) (type == PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEAR_ALGEBRA);
+  newton = (PetscBool) (type == PETSCGAUSSLOBATTOLEGENDRE_VIA_NEWTON);
   ierr = PetscDTGaussLobattoJacobiQuadrature_Internal(npoints, 0., 0., x, w, newton);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1219,14 +1378,14 @@ PetscErrorCode PetscDTStroudConicalQuadrature(PetscInt dim, PetscInt Nc, PetscIn
     break;
   case 1:
     ierr = PetscMalloc1(npoints,&wx);CHKERRQ(ierr);
-    ierr = PetscDTGaussJacobiQuadrature(npoints, 0.0, 0.0, x, wx);CHKERRQ(ierr);
+    ierr = PetscDTGaussJacobiQuadrature(npoints, -1., 1., 0.0, 0.0, x, wx);CHKERRQ(ierr);
     for (i = 0; i < npoints; ++i) for (c = 0; c < Nc; ++c) w[i*Nc+c] = wx[i];
     ierr = PetscFree(wx);CHKERRQ(ierr);
     break;
   case 2:
     ierr = PetscMalloc4(npoints,&px,npoints,&wx,npoints,&py,npoints,&wy);CHKERRQ(ierr);
-    ierr = PetscDTGaussJacobiQuadrature(npoints, 0.0, 0.0, px, wx);CHKERRQ(ierr);
-    ierr = PetscDTGaussJacobiQuadrature(npoints, 1.0, 0.0, py, wy);CHKERRQ(ierr);
+    ierr = PetscDTGaussJacobiQuadrature(npoints, -1., 1., 0.0, 0.0, px, wx);CHKERRQ(ierr);
+    ierr = PetscDTGaussJacobiQuadrature(npoints, -1., 1., 1.0, 0.0, py, wy);CHKERRQ(ierr);
     for (i = 0; i < npoints; ++i) {
       for (j = 0; j < npoints; ++j) {
         ierr = PetscDTMapSquareToTriangle_Internal(px[i], py[j], &x[(i*npoints+j)*2+0], &x[(i*npoints+j)*2+1]);CHKERRQ(ierr);
@@ -1237,9 +1396,9 @@ PetscErrorCode PetscDTStroudConicalQuadrature(PetscInt dim, PetscInt Nc, PetscIn
     break;
   case 3:
     ierr = PetscMalloc6(npoints,&px,npoints,&wx,npoints,&py,npoints,&wy,npoints,&pz,npoints,&wz);CHKERRQ(ierr);
-    ierr = PetscDTGaussJacobiQuadrature(npoints, 0.0, 0.0, px, wx);CHKERRQ(ierr);
-    ierr = PetscDTGaussJacobiQuadrature(npoints, 1.0, 0.0, py, wy);CHKERRQ(ierr);
-    ierr = PetscDTGaussJacobiQuadrature(npoints, 2.0, 0.0, pz, wz);CHKERRQ(ierr);
+    ierr = PetscDTGaussJacobiQuadrature(npoints, -1., 1., 0.0, 0.0, px, wx);CHKERRQ(ierr);
+    ierr = PetscDTGaussJacobiQuadrature(npoints, -1., 1., 1.0, 0.0, py, wy);CHKERRQ(ierr);
+    ierr = PetscDTGaussJacobiQuadrature(npoints, -1., 1., 2.0, 0.0, pz, wz);CHKERRQ(ierr);
     for (i = 0; i < npoints; ++i) {
       for (j = 0; j < npoints; ++j) {
         for (k = 0; k < npoints; ++k) {
