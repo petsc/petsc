@@ -47,7 +47,7 @@ static PetscErrorCode sinx(PetscInt dim, PetscReal time, const PetscReal x[], Pe
 {
   AppCtx *ctx = (AppCtx *) a_ctx;
 
-  u[0] = sin(2*PETSC_PI*ctx->k*x[0]/(ctx->domain_hi[0] - ctx->domain_lo[0]));
+  u[0] = PetscSinScalar(2*PETSC_PI*ctx->k*x[0]/(ctx->domain_hi[0] - ctx->domain_lo[0]));
   return 0;
 }
 

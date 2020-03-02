@@ -53,8 +53,8 @@ static PetscErrorCode FormRHSFunction(TS ts, PetscReal t, Vec U, Vec F, void *ct
     const PetscScalar hx = i+1 == info.xs+info.xm ? x[i] - x[i-1] : x[i+1] - x[i];
 
     f[i].u  =  hx*(u[i].v);
-    f[i].v  = -hx*(PetscSqr(user->gammaTilde)*u[i].u + (PetscSqr(user->gamma) / user->xi)*(u[i].th + log(u[i].v + 1)));
-    f[i].th = -hx*(u[i].v + 1)*(u[i].th + (1 + user->epsilon)*log(u[i].v + 1));
+    f[i].v  = -hx*(PetscSqr(user->gammaTilde)*u[i].u + (PetscSqr(user->gamma) / user->xi)*(u[i].th + PetscLogScalar(u[i].v + 1)));
+    f[i].th = -hx*(u[i].v + 1)*(u[i].th + (1 + user->epsilon)*PetscLogScalar(u[i].v + 1));
   }
   ierr = DMDAVecRestoreArrayRead(dm,  U, (void*)&u);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(dm,  F, &f);CHKERRQ(ierr);

@@ -178,7 +178,7 @@ checksource:
     - nproc
     - lscpu
     - ccache --zero-stats
-    - if [ ! -z ${LOAD_MODULES+x} ]; then module load ${LOAD_MODULES}; module list; fi
+    - if [ ! -z ${LOAD_MODULES+x} ]; then module --trace load ${LOAD_MODULES}; module list; fi
   after_script:
     - date
     - ccache --show-stats
@@ -458,10 +458,11 @@ linux-cmplx-gcov:
     - .stage-3
     - .linux_test
   tags:
-    - mcs-nfs
+    - gce-nfs
   variables:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -vecscatter_mpi1 false -options_left false
     TEST_ARCH: arch-ci-linux-cmplx-gcov
+    LOAD_MODULES: gcc/8.3.0-fjpc5ys
   after_script:
     - make gcov
   artifacts:
@@ -558,6 +559,7 @@ linux-opt-misc:
     - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-opt-misc
+    LOAD_MODULES: gcc/6.5.0-57usejd
 
 linux-pkgs-cxx-mlib:
   extends:
@@ -592,7 +594,7 @@ linux-analyzer:
     - .stage-3
     - .linux_test
   tags:
-    - mcs-nfs
+    - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-analyzer
 
@@ -601,16 +603,17 @@ linux-gcc-ifc-cmplx:
     - .stage-3
     - .linux_test
   tags:
-    - mcs-nfs
+    - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-gcc-ifc-cmplx
+    LOAD_MODULES: intel/19.0
 
 linux-gcov:
   extends:
     - .stage-3
     - .linux_test
   tags:
-    - mcs-nfs
+    - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-gcov
   after_script:
@@ -634,15 +637,17 @@ linux-ILP64:
     - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-ILP64
+    LOAD_MODULES: gcc/6.5.0-57usejd
 
 linux-matlab-ilp64-gcov:
   extends:
     - .stage-3
     - .linux_test
   tags:
-    - mcs-nfs
+    - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-matlab-ilp64-gcov
+    LOAD_MODULES: matlab/R2018a
   after_script:
     - make gcov
   artifacts:
@@ -654,6 +659,7 @@ linux-matlab-ilp64-gcov:
     - ${TEST_ARCH}/tests/test_${TEST_ARCH}_err.log
     - ${TEST_ARCH}/gcov.tar.gz
     expire_in: 4 days
+  allow_failure: true
 
 
 linux-opt-cxx-quad:
@@ -661,7 +667,7 @@ linux-opt-cxx-quad:
     - .stage-3
     - .linux_test
   tags:
-    - mcs-nfs
+    - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-opt-cxx-quad
 
@@ -670,7 +676,7 @@ linux-pgi:
     - .stage-3
     - .linux_test_noflags
   tags:
-    - mcs-nfs,name:petsc
+    - gce-nfs, linux-fast
   variables:
     TEST_ARCH: arch-ci-linux-pgi
 
@@ -679,16 +685,17 @@ linux-pkgs-64idx:
     - .stage-3
     - .linux_test
   tags:
-    - mcs-nfs
+    - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-64idx
+    LOAD_MODULES: cmake/3.15.5-fh74toq
 
 linux-pkgs-gcov:
   extends:
     - .stage-3
     - .linux_test
   tags:
-    - mcs-nfs
+    - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-gcov
   after_script:
@@ -708,7 +715,7 @@ linux-pkgs-opt:
     - .stage-3
     - .linux_test
   tags:
-    - gce-nfs
+    - gce-nfs, linux-fast
   variables:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -saws_port_auto_select -saws_port_auto_select_silent
     TEST_ARCH: arch-ci-linux-pkgs-opt
@@ -718,7 +725,7 @@ linux-pkgs-valgrind:
     - .stage-3
     - .linux_test
   tags:
-    - valgrind
+    - gce-nfs, linux-fast
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-valgrind
     TIMEOUT: 7200
@@ -728,9 +735,10 @@ linux-xsdk-dbg:
     - .stage-3
     - .linux_test
   tags:
-    - mcs-nfs
+    - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-xsdk-dbg
+    LOAD_MODULES: gcc/8.3.0-fjpc5ys
 
 linux-intel:
   extends:
