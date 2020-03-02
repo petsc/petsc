@@ -184,6 +184,8 @@
       <ul>
         <li>All tabulated data is now stored in PetscTabulation structures. This changes interfaces in PetscDS, PetscFE, and PetscFV</li>
         <li>DefaultTabulation has been renamed to CellTabulation everywhere.</li>
+        <li>PetscDTGaussJacobiQuadrature() is now truly Gauss-Jacobi quadrature.  The quadrature for the simplex (without weight function) is now called PetscDTStroudConicalQuadrature().</li>
+        <li>Add PetscDTJacobiEval(), PetscDTGaussLobattoJacobiQuadrature().</li>
       </ul>
       <h4>PetscViewer:</h4>
         <ul>
