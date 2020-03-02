@@ -1522,7 +1522,7 @@ static PetscErrorCode MatMultTransposeAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec
   Mat_SeqAIJCUSPARSE              *cusparsestruct = (Mat_SeqAIJCUSPARSE*)A->spptr;
   Mat_SeqAIJCUSPARSEMultStruct    *matstructT;
   const PetscScalar               *xarray;
-  PetscScalar                     *zarray,*dptr,*beta;
+  PetscScalar                     *zarray,*beta;
   PetscErrorCode                  ierr;
   cusparseStatus_t                stat;
 
@@ -1535,61 +1535,41 @@ static PetscErrorCode MatMultTransposeAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec
     matstructT = (Mat_SeqAIJCUSPARSEMultStruct*)cusparsestruct->matTranspose;
   }
 
+  /* Note unlike Mat, MatTranspose uses non-compressed row storage */
   try {
     ierr = VecCopy_SeqCUDA(yy,zz);CHKERRQ(ierr);
     ierr = VecCUDAGetArrayRead(xx,&xarray);CHKERRQ(ierr);
     ierr = VecCUDAGetArray(zz,&zarray);CHKERRQ(ierr);
-    dptr = cusparsestruct->workVector->size() == (thrust::detail::vector_base<PetscScalar, thrust::device_malloc_allocator<PetscScalar> >::size_type)(A->cmap->n) ? zarray : cusparsestruct->workVector->data().get();
-    beta = (yy == zz && dptr == zarray) ? matstructT->beta_one : matstructT->beta_zero;
+    beta = (yy == zz) ? matstructT->beta_one : matstructT->beta_zero;
 
     ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
     /* multiply add with matrix transpose */
     if (cusparsestruct->format==MAT_CUSPARSE_CSR) {
       CsrMatrix *mat = (CsrMatrix*)matstructT->mat;
-      /* here we need to be careful to set the number of rows in the multiply to the
-         number of compressed rows in the matrix ... which is equivalent to the
-         size of the workVector */
       stat = cusparse_csr_spmv(cusparsestruct->handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
                                mat->num_rows, mat->num_cols,
                                mat->num_entries, matstructT->alpha, matstructT->descr,
                                mat->values->data().get(), mat->row_offsets->data().get(),
                                mat->column_indices->data().get(), xarray, beta,
-                               dptr);CHKERRCUDA(stat);
+                               zarray);CHKERRCUDA(stat);
     } else {
       cusparseHybMat_t hybMat = (cusparseHybMat_t)matstructT->mat;
       if (cusparsestruct->workVector->size()) {
         stat = cusparse_hyb_spmv(cusparsestruct->handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
                                  matstructT->alpha, matstructT->descr, hybMat,
                                  xarray, beta,
-                                 dptr);CHKERRCUDA(stat);
+                                 zarray);CHKERRCUDA(stat);
       }
     }
     ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
 
-    if (dptr != zarray) {
-      ierr = VecCopy_SeqCUDA(yy,zz);CHKERRQ(ierr);
-    } else if (zz != yy) {
-      ierr = VecAXPY_SeqCUDA(zz,1.0,yy);CHKERRQ(ierr);
-    }
-    /* scatter the data from the temporary into the full vector with a += operation */
-    ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
-    if (dptr != zarray) {
-      thrust::device_ptr<PetscScalar> zptr;
-
-      zptr = thrust::device_pointer_cast(zarray);
-
-      /* scatter the data from the temporary into the full vector with a += operation */
-      thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(cusparsestruct->workVector->begin(), thrust::make_permutation_iterator(zptr, matstructT->cprowIndices->begin()))),
-                       thrust::make_zip_iterator(thrust::make_tuple(cusparsestruct->workVector->begin(), thrust::make_permutation_iterator(zptr, matstructT->cprowIndices->begin()))) + A->cmap->n,
-                       VecCUDAPlusEquals());
-    }
-    ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
+    if (zz != yy) {ierr = VecAXPY_SeqCUDA(zz,1.0,yy);CHKERRQ(ierr);}
     ierr = VecCUDARestoreArrayRead(xx,&xarray);CHKERRQ(ierr);
     ierr = VecCUDARestoreArray(zz,&zarray);CHKERRQ(ierr);
   } catch(char *ex) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSPARSE error: %s", ex);
   }
-  ierr = WaitForGPU();CHKERRCUDA(ierr); /* is this needed? just for yy==0 in Mult */
+  ierr = WaitForGPU();CHKERRCUDA(ierr);
   ierr = PetscLogGpuFlops(2.0*a->nz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
