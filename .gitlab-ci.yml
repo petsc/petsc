@@ -659,6 +659,7 @@ linux-matlab-ilp64-gcov:
     - ${TEST_ARCH}/tests/test_${TEST_ARCH}_err.log
     - ${TEST_ARCH}/gcov.tar.gz
     expire_in: 4 days
+  allow_failure: true
 
 
 linux-opt-cxx-quad:
