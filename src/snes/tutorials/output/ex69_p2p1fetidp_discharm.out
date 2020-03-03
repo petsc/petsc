@@ -5,8 +5,8 @@ Distributed Mesh in 2 dimensions:
   1-cells: 60 60 60 30 30
   2-cells: 32 32 32 16 16
 Labels:
+  celltype: 3 strata with value/size (1 (60), 3 (32), 0 (29))
   depth: 3 strata with value/size (0 (29), 1 (60), 2 (32))
-  celltype: 3 strata with value/size (2 (32), 0 (29), 1 (60))
   marker: 2 strata with value/size (1 (8), 4 (17))
   Face Sets: 2 strata with value/size (1 (7), 4 (14))
   markerBottom: 1 strata with value/size (1 (8))
@@ -84,13 +84,13 @@ SNES Object: 5 MPI processes
                             out-of-place factorization
                             tolerance for zero pivot 2.22045e-14
                             matrix ordering: nd
-                            factor fill ratio given 5., needed 1.4236
+                            factor fill ratio given 5., needed 1.34037
                               Factored matrix follows:
                                 Mat Object: 1 MPI processes
                                   type: seqsbaij
                                   rows=105, cols=105
                                   package used to perform factorization: petsc
-                                  total: nonzeros=1146, allocated nonzeros=1146
+                                  total: nonzeros=1079, allocated nonzeros=1079
                                   total number of mallocs used during MatSetValues calls=0
                                       block size is 1
                           linear system matrix = precond matrix:
@@ -106,7 +106,7 @@ SNES Object: 5 MPI processes
                           rows=105, cols=59
                           total: nonzeros=476, allocated nonzeros=476
                           total number of mallocs used during MatSetValues calls=0
-                            using I-node routines: found 51 nodes, limit used is 5
+                            using I-node routines: found 52 nodes, limit used is 5
               linear system matrix = precond matrix:
               Mat Object: (fetidp_fieldsplit_lag_) 5 MPI processes
                 type: submatrix
@@ -174,13 +174,13 @@ SNES Object: 5 MPI processes
                                     out-of-place factorization
                                     tolerance for zero pivot 2.22045e-14
                                     matrix ordering: nd
-                                    factor fill ratio given 5., needed 1.4236
+                                    factor fill ratio given 5., needed 1.34037
                                       Factored matrix follows:
                                         Mat Object: 1 MPI processes
                                           type: seqsbaij
                                           rows=105, cols=105
                                           package used to perform factorization: petsc
-                                          total: nonzeros=1146, allocated nonzeros=1146
+                                          total: nonzeros=1079, allocated nonzeros=1079
                                           total number of mallocs used during MatSetValues calls=0
                                               block size is 1
                                   linear system matrix = precond matrix:
@@ -196,7 +196,7 @@ SNES Object: 5 MPI processes
                                   rows=105, cols=59
                                   total: nonzeros=476, allocated nonzeros=476
                                   total number of mallocs used during MatSetValues calls=0
-                                    using I-node routines: found 51 nodes, limit used is 5
+                                    using I-node routines: found 52 nodes, limit used is 5
                       linear system matrix = precond matrix:
                       Mat Object: (fetidp_fieldsplit_lag_) 5 MPI processes
                         type: submatrix

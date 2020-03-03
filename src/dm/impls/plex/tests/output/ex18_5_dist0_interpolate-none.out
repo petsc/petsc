@@ -38,6 +38,15 @@ Process 0:
   (   6) dim  2 offset   8 1. -0.5
   (   7) dim  2 offset  10 1. 0.5
 Process 1:
+Label 'celltype':
+[0]: 0 (4)
+[0]: 1 (4)
+[0]: 2 (0)
+[0]: 3 (0)
+[0]: 4 (0)
+[0]: 5 (0)
+[0]: 6 (0)
+[0]: 7 (0)
 PetscSF Object: 2 MPI processes
   type: basic
     sort=rank-order

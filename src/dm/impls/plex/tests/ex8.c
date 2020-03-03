@@ -649,7 +649,6 @@ static PetscErrorCode TestWedge(MPI_Comm comm, PetscBool interpolate, PetscBool 
                                        -1.0, -1.0,  1.0,   1.0, -1.0,  1.0,  -1.0, 1.0,  1.0};
 
     ierr = DMPlexCreateFromDAG(dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-    ierr = DMPlexSetHybridBounds(dm, 0, PETSC_DETERMINE, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
     if (interpolate) {
       DM idm;
 

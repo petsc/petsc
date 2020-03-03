@@ -211,7 +211,8 @@ int main(int argc, char **argv)
 
     ierr = DMPlexCreateFromFile(comm,filename,PETSC_TRUE,&base);CHKERRQ(ierr);
     ierr = DMGetDimension(base,&dim);CHKERRQ(ierr);
-    ierr = DMPlexRefineSimplexToTensor(base,&tdm); CHKERRQ(ierr);
+    ierr = DMPlexSetCellRefinerType(base, REFINER_TO_HEX);CHKERRQ(ierr);
+    ierr = DMRefine(base, PETSC_COMM_WORLD, &tdm);CHKERRQ(ierr);
     if (tdm) {
       ierr = DMDestroy(&base);CHKERRQ(ierr);
       base = tdm;
@@ -237,6 +238,7 @@ int main(int argc, char **argv)
     DM           baseFV;
 
     ierr = DMPlexConstructGhostCells(base,NULL,NULL,&baseFV);CHKERRQ(ierr);
+    ierr = DMViewFromOptions(baseFV, NULL, "-fv_dm_view");CHKERRQ(ierr);
     ierr = DMDestroy(&base);CHKERRQ(ierr);
     base = baseFV;
     ierr = PetscFVCreate(comm, &fv);CHKERRQ(ierr);

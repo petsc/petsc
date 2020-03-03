@@ -5,7 +5,7 @@ Test Mesh in 2 dimensions:
   1-cells: 56
   2-cells: 32
 Labels:
+  celltype: 3 strata with value/size (1 (56), 3 (32), 0 (25))
   depth: 3 strata with value/size (0 (25), 1 (56), 2 (32))
-  celltype: 3 strata with value/size (2 (32), 0 (25), 1 (56))
   marker: 1 strata with value/size (1 (32))
   Face Sets: 1 strata with value/size (1 (24))

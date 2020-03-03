@@ -134,13 +134,13 @@ SNES Object: 5 MPI processes
                   Mat Object: 1 MPI processes
                     type: seqaij
                     rows=210, cols=210
-                    total: nonzeros=4158, allocated nonzeros=4158
+                    total: nonzeros=4184, allocated nonzeros=4184
                     total number of mallocs used during MatSetValues calls=0
                       not using I-node routines
                 Mat Object: 1 MPI processes
                   type: seqaij
                   rows=172, cols=210
-                  total: nonzeros=2800, allocated nonzeros=2800
+                  total: nonzeros=2807, allocated nonzeros=2807
                   total number of mallocs used during MatSetValues calls=0
                     not using I-node routines
               linear system matrix = precond matrix:
@@ -274,13 +274,13 @@ SNES Object: 5 MPI processes
                           Mat Object: 1 MPI processes
                             type: seqaij
                             rows=210, cols=210
-                            total: nonzeros=4158, allocated nonzeros=4158
+                            total: nonzeros=4184, allocated nonzeros=4184
                             total number of mallocs used during MatSetValues calls=0
                               not using I-node routines
                         Mat Object: 1 MPI processes
                           type: seqaij
                           rows=172, cols=210
-                          total: nonzeros=2800, allocated nonzeros=2800
+                          total: nonzeros=2807, allocated nonzeros=2807
                           total number of mallocs used during MatSetValues calls=0
                             not using I-node routines
                       linear system matrix = precond matrix:
@@ -502,4 +502,4 @@ SNES Object: 5 MPI processes
       total: nonzeros=87213, allocated nonzeros=112347
       total number of mallocs used during MatSetValues calls=0
         has attached null space
-L_2 Error: 2.86948e-08 [4.79659e-10, 2.86908e-08]
+L_2 Error: 3.86246e-08 [7.98944e-10, 3.86163e-08]

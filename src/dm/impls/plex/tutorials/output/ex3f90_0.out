@@ -6,6 +6,7 @@ testplex in 3 dimensions:
   2-cells: 11
   3-cells: 2
 Labels:
+  celltype: 4 strata with value/size (0 (12), 7 (2), 4 (11), 1 (20))
   depth: 4 strata with value/size (0 (12), 1 (20), 2 (11), 3 (2))
 cell:  0 volume:   0.5000 centroid:  -0.2500   0.5000   0.5000
 cell:  1 volume:   0.5000 centroid:   0.2500   0.5000   0.5000

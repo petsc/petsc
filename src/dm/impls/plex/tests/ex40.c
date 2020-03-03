@@ -68,6 +68,7 @@ int main(int argc, char **argv)
 
   test:
     suffix: box_tri
+    requires: triangle
     nsize: {{1 3 5}}
     args: -dm_plex_box_faces 3,3 -dm_refine 2 -dm_plex_check_all
 
@@ -86,6 +87,7 @@ int main(int argc, char **argv)
 
   test:
     suffix: box_tet
+    requires: ctetgen
     nsize: {{1 3 5}}
     args: -dim 3 -dm_plex_box_faces 3,3,3 -dm_refine 2 -dm_plex_check_all
 
@@ -100,19 +102,19 @@ int main(int argc, char **argv)
 
   test:
     suffix: ref_trip
-    args: -ref_cell "triangular prism" -dm_refine 2 -dm_plex_check_all
+    args: -ref_cell triangular_prism -dm_refine 2 -dm_plex_check_all
 
   test:
     suffix: ref_tquad
-    args: -ref_cell "tensor quad" -dm_refine 2 -dm_plex_check_all
+    args: -ref_cell tensor_quad -dm_refine 2 -dm_plex_check_all
 
   test:
     suffix: ref_ttrip
-    args: -ref_cell "tensor triangular prism" -dm_refine 2 -dm_plex_check_all
+    args: -ref_cell tensor_triangular_prism -dm_refine 2 -dm_plex_check_all
 
   test:
     suffix: ref_tquadp
-    args: -ref_cell "tensor quadrilateral prism" -dm_refine 2 -dm_plex_check_all
+    args: -ref_cell tensor_quadrilateral_prism -dm_refine 2 -dm_plex_check_all
 
   test:
     suffix: ref_tri_tohex
@@ -120,6 +122,7 @@ int main(int argc, char **argv)
 
   test:
     suffix: box_tri_tohex
+    requires: triangle
     nsize: {{1 3 5}}
     args: -dm_plex_box_faces 3,3 -dm_plex_cell_refiner tohex -dm_refine 2 -dm_plex_check_all
 
@@ -129,15 +132,16 @@ int main(int argc, char **argv)
 
   test:
     suffix: box_tet_tohex
+    requires: ctetgen
     nsize: {{1 3 5}}
     args: -dim 3 -dm_plex_box_faces 3,3,3 -dm_plex_cell_refiner tohex -dm_refine 2 -dm_plex_check_all
 
   test:
     suffix: ref_trip_tohex
-    args: -ref_cell "triangular prism" -dm_plex_cell_refiner tohex -dm_refine 2 -dm_plex_check_all
+    args: -ref_cell triangular_prism -dm_plex_cell_refiner tohex -dm_refine 2 -dm_plex_check_all
 
   test:
     suffix: ref_ttrip_tohex
-    args: -ref_cell "tensor triangular prism" -dm_plex_cell_refiner tohex -dm_refine 2 -dm_plex_check_all
+    args: -ref_cell tensor_triangular_prism -dm_plex_cell_refiner tohex -dm_refine 2 -dm_plex_check_all
 
 TEST*/

@@ -1,5 +1,4 @@
 DM Object: Simplicial Mesh 2 MPI processes
   type: plex
   Cell balance: 1.00 (max 1540, min 1538, empty 0)
-  Edge Cut: 153 (on node 1.000)
-Mesh with 3078 cells, shape condition numbers: min = 18.1354, max = 101.203, mean = 52.6631, stddev = 15.5332
+  Edge Cut: 153 (on node 0.000)

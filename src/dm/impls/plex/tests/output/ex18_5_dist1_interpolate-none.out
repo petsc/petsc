@@ -40,6 +40,17 @@ Process 1:
   (   2) dim  2 offset   2 0. 0.5
   (   3) dim  2 offset   4 1. -0.5
   (   4) dim  2 offset   6 1. 0.5
+Label 'celltype':
+[0]: 1 (0)
+[0]: 2 (0)
+[0]: 3 (0)
+[0]: 4 (0)
+[0]: 0 (4)
+[1]: 1 (0)
+[1]: 2 (0)
+[1]: 3 (0)
+[1]: 4 (0)
+[1]: 0 (4)
 PetscSF Object: 2 MPI processes
   type: basic
     sort=rank-order

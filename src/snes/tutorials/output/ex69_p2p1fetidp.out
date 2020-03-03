@@ -5,8 +5,8 @@ Distributed Mesh in 2 dimensions:
   1-cells: 60 60 60 30 30
   2-cells: 32 32 32 16 16
 Labels:
+  celltype: 3 strata with value/size (1 (60), 3 (32), 0 (29))
   depth: 3 strata with value/size (0 (29), 1 (60), 2 (32))
-  celltype: 3 strata with value/size (2 (32), 0 (29), 1 (60))
   marker: 2 strata with value/size (1 (8), 4 (17))
   Face Sets: 2 strata with value/size (1 (7), 4 (14))
   markerBottom: 1 strata with value/size (1 (8))
@@ -96,7 +96,7 @@ SNES Object: 5 MPI processes
                           rows=121, cols=59
                           total: nonzeros=551, allocated nonzeros=551
                           total number of mallocs used during MatSetValues calls=0
-                            using I-node routines: found 52 nodes, limit used is 5
+                            using I-node routines: found 53 nodes, limit used is 5
               linear system matrix = precond matrix:
               Mat Object: (fetidp_fieldsplit_lag_) 5 MPI processes
                 type: submatrix
@@ -176,7 +176,7 @@ SNES Object: 5 MPI processes
                                   rows=121, cols=59
                                   total: nonzeros=551, allocated nonzeros=551
                                   total number of mallocs used during MatSetValues calls=0
-                                    using I-node routines: found 52 nodes, limit used is 5
+                                    using I-node routines: found 53 nodes, limit used is 5
                       linear system matrix = precond matrix:
                       Mat Object: (fetidp_fieldsplit_lag_) 5 MPI processes
                         type: submatrix

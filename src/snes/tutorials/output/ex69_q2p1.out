@@ -12,6 +12,7 @@ Labels:
   markerRight: 1 strata with value/size (1 (7))
   markerTop: 1 strata with value/size (1 (7))
   markerLeft: 1 strata with value/size (1 (7))
+  celltype: 3 strata with value/size (4 (9), 0 (16), 1 (24))
 Integral of pressure: -0.0455228
 SNES Object: 1 MPI processes
   type: newtonls

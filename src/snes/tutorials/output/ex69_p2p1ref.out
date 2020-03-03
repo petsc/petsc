@@ -5,8 +5,8 @@ Mesh in 2 dimensions:
   1-cells: 208
   2-cells: 128
 Labels:
+  celltype: 3 strata with value/size (1 (208), 3 (128), 0 (81))
   depth: 3 strata with value/size (0 (81), 1 (208), 2 (128))
-  celltype: 3 strata with value/size (2 (128), 0 (81), 1 (208))
   marker: 4 strata with value/size (4 (17), 1 (15), 2 (17), 3 (15))
   Face Sets: 4 strata with value/size (1 (14), 4 (14), 2 (14), 3 (14))
   markerBottom: 1 strata with value/size (1 (15))
@@ -57,15 +57,15 @@ SNES Object: 1 MPI processes
             out-of-place factorization
             tolerance for zero pivot 2.22045e-14
             matrix ordering: nd
-            factor fill ratio given 5., needed 2.54349
+            factor fill ratio given 5., needed 2.52379
               Factored matrix follows:
                 Mat Object: 1 MPI processes
                   type: seqaij
                   rows=510, cols=510
                   package used to perform factorization: petsc
-                  total: nonzeros=26086, allocated nonzeros=26086
+                  total: nonzeros=25884, allocated nonzeros=25884
                   total number of mallocs used during MatSetValues calls=0
-                    using I-node routines: found 252 nodes, limit used is 5
+                    using I-node routines: found 279 nodes, limit used is 5
           linear system matrix followed by preconditioner matrix:
           Mat Object: 1 MPI processes
             type: seqaij
@@ -93,13 +93,13 @@ SNES Object: 1 MPI processes
             out-of-place factorization
             tolerance for zero pivot 2.22045e-14
             matrix ordering: nd
-            factor fill ratio given 5., needed 2.56942
+            factor fill ratio given 5., needed 2.54527
               Factored matrix follows:
                 Mat Object: 1 MPI processes
                   type: seqaij
                   rows=81, cols=81
                   package used to perform factorization: petsc
-                  total: nonzeros=1277, allocated nonzeros=1277
+                  total: nonzeros=1265, allocated nonzeros=1265
                   total number of mallocs used during MatSetValues calls=0
                     not using I-node routines
           linear system matrix followed by preconditioner matrix:
@@ -137,15 +137,15 @@ SNES Object: 1 MPI processes
                     out-of-place factorization
                     tolerance for zero pivot 2.22045e-14
                     matrix ordering: nd
-                    factor fill ratio given 5., needed 2.54349
+                    factor fill ratio given 5., needed 2.52379
                       Factored matrix follows:
                         Mat Object: 1 MPI processes
                           type: seqaij
                           rows=510, cols=510
                           package used to perform factorization: petsc
-                          total: nonzeros=26086, allocated nonzeros=26086
+                          total: nonzeros=25884, allocated nonzeros=25884
                           total number of mallocs used during MatSetValues calls=0
-                            using I-node routines: found 252 nodes, limit used is 5
+                            using I-node routines: found 279 nodes, limit used is 5
                   linear system matrix followed by preconditioner matrix:
                   Mat Object: 1 MPI processes
                     type: seqaij
