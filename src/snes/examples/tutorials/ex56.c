@@ -431,6 +431,8 @@ int main(int argc,char **args)
     ierr = PetscObjectSetName((PetscObject) bb, "b");CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) xx, "u");CHKERRQ(ierr);
     ierr = DMCreateMatrix(dm, &Amat);CHKERRQ(ierr);
+    ierr = MatSetOption(Amat,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);        /* Some matrix kernels can take advantage of symmetry if we set this. */
+    ierr = MatSetOption(Amat,MAT_SYMMETRY_ETERNAL,PETSC_TRUE);CHKERRQ(ierr); /* Inform PETSc that Amat is always symmetric, so info set above isn't lost. */
     ierr = VecGetSize(bb,&N);CHKERRQ(ierr);
     local_sizes[iter] = N;
     ierr = PetscInfo2(snes,"%D global equations, %D vertices\n",N,N/dim);CHKERRQ(ierr);
