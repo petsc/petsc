@@ -463,9 +463,6 @@ static PetscErrorCode DMAdaptorModifyHessian_Private(PetscInt dim, PetscReal h_m
 
     lwork = 5*dim;
     ierr = PetscMalloc1(5*dim, &work);CHKERRQ(ierr);
-#if defined(PETSC_MISSING_LAPACK_GEEV)
-    SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "GEEV - Lapack routine is unavailable\nNot able to provide eigen values.");
-#else
     {
       PetscBLASInt lierr;
       PetscBLASInt nb;
@@ -485,7 +482,6 @@ static PetscErrorCode DMAdaptorModifyHessian_Private(PetscInt dim, PetscReal h_m
       if (lierr) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in LAPACK routine %d", (int) lierr);
       ierr = PetscFPTrapPop();CHKERRQ(ierr);
     }
-#endif
     ierr = PetscFree(work);CHKERRQ(ierr);
   }
 #if 0

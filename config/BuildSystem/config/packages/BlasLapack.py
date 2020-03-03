@@ -582,10 +582,8 @@ class Configure(config.package.Package):
     '''Check for missing LAPACK routines'''
     if self.foundLapack:
       mangleFunc = hasattr(self.compilers, 'FC') and not self.f2c
-    routines = ['gels','gelss','geqrf','gerfs','gesv','gesvd','getrf','getri','gges',
-                'hgeqz','hseqr','ormqr','potrf','potri','potrs','pttrf','pttrs',
-                'stebz','stein','steqr','syev','syevx','sygvx','sytrf','sytri','sytrs',
-                'tgsen','trsen','trtrs','orgqr']  # skip these: 'hetrf','hetri','hetrs',
+    routines = ['gelss','gerfs','gges','hgeqz','hseqr','orgqr','ormqr','stebz',
+                'stein','steqr','sytri','tgsen','trsen','trtrs']
     self.libraries.saveLog()
     oldLibs = self.compilers.LIBS
     found, missing = self.libraries.checkClassify(self.lapackLibrary, map(self.mangleBlas,routines), otherLibs = self.getOtherLibs(), fortranMangle = mangleFunc)

@@ -22,9 +22,6 @@ PetscErrorCode MatDenseOrthogonalRangeOrComplement(Mat A, PetscBool range, Petsc
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#if defined(PETSC_MISSING_LAPACK_GESVD)
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"LAPACK _GESVD not available");
-#else
   ierr = MatGetSize(A,&nr,&nc);CHKERRQ(ierr);
   if (!nr || !nc) PetscFunctionReturn(0);
 
@@ -73,7 +70,6 @@ PetscErrorCode MatDenseOrthogonalRangeOrComplement(Mat A, PetscBool range, Petsc
   }
   ierr = MatDenseRestoreArray(*B,&data);CHKERRQ(ierr);
   ierr = PetscFree(U);CHKERRQ(ierr);
-#endif
 #else /* PETSC_USE_COMPLEX */
   PetscFunctionBegin;
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not implemented for complexes");
@@ -6601,7 +6597,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     PetscScalar  *qr_basis = NULL,*qr_tau = NULL,*qr_work = NULL,lqr_work_t;
     PetscBLASInt lqr_work;
     /* working stuff for UNGQR */
-    PetscScalar  *gqr_work = NULL,lgqr_work_t;
+    PetscScalar  *gqr_work = NULL,lgqr_work_t=0.0;
     PetscBLASInt lgqr_work;
     /* working stuff for TRTRS */
     PetscScalar  *trs_rhs = NULL;
@@ -6715,12 +6711,8 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       ierr = PetscBLASIntCast(max_constraints,&Blas_K);CHKERRQ(ierr);
       ierr = PetscBLASIntCast(max_size_of_constraint,&Blas_LDA);CHKERRQ(ierr);
       if (Blas_K>Blas_M) Blas_K=Blas_M; /* adjust just for computing optimal work */
-#if defined(PETSC_MISSING_LAPACK_ORGQR)
-      SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"ORGQR - Lapack routine is unavailable.");
-#else
       PetscStackCallBLAS("LAPACKorgqr",LAPACKorgqr_(&Blas_M,&Blas_N,&Blas_K,qr_basis,&Blas_LDA,qr_tau,&lgqr_work_t,&lgqr_work,&lierr));
       if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to ORGQR/UNGQR Lapack routine %d",(int)lierr);
-#endif
       ierr = PetscBLASIntCast((PetscInt)PetscRealPart(lgqr_work_t),&lgqr_work);CHKERRQ(ierr);
       ierr = PetscMalloc1((PetscInt)PetscRealPart(lgqr_work_t),&gqr_work);CHKERRQ(ierr);
       /* array to store rhs and solution of triangular solver */
@@ -6778,12 +6770,8 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
           ierr = PetscBLASIntCast(size_of_constraint,&Blas_LDA);CHKERRQ(ierr);
           ierr = PetscBLASIntCast(primal_dofs,&Blas_LDB);CHKERRQ(ierr);
           ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-#if defined(PETSC_MISSING_LAPACK_TRTRS)
-          SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"TRTRS - Lapack routine is unavailable.");
-#else
           PetscStackCallBLAS("LAPACKtrtrs",LAPACKtrtrs_("U","T","N",&Blas_N,&Blas_NRHS,qr_basis,&Blas_LDA,trs_rhs,&Blas_LDB,&lierr));
           if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in TRTRS Lapack routine %d",(int)lierr);
-#endif
           ierr = PetscFPTrapPop();CHKERRQ(ierr);
 
           /* explicitly compute all columns of Q (Q = [Q1 | Q2] ) overwriting QR factorization in qr_basis */
@@ -6792,12 +6780,8 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
           ierr = PetscBLASIntCast(primal_dofs,&Blas_K);CHKERRQ(ierr);
           ierr = PetscBLASIntCast(size_of_constraint,&Blas_LDA);CHKERRQ(ierr);
           ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-#if defined(PETSC_MISSING_LAPACK_ORGQR)
-          SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"ORGQR - Lapack routine is unavailable.");
-#else
           PetscStackCallBLAS("LAPACKorgqr",LAPACKorgqr_(&Blas_M,&Blas_N,&Blas_K,qr_basis,&Blas_LDA,qr_tau,gqr_work,&lgqr_work,&lierr));
           if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in ORGQR/UNGQR Lapack routine %d",(int)lierr);
-#endif
           ierr = PetscFPTrapPop();CHKERRQ(ierr);
 
           /* first primal_dofs columns of Q need to be re-scaled in order to be unitary w.r.t constraints

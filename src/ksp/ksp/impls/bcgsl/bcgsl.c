@@ -166,15 +166,11 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
 
       AY0c[0] = -1;
       if (bcgsl->pinv) {
-#if defined(PETSC_MISSING_LAPACK_GESVD)
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"GESVD - Lapack routine is unavailable.");
-#else
 #  if defined(PETSC_USE_COMPLEX)
         PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("A","A",&bell,&bell,&MZa[1+ldMZ],&ldMZ,bcgsl->s,bcgsl->u,&bell,bcgsl->v,&bell,bcgsl->work,&bcgsl->lwork,bcgsl->realwork,&bierr));
 #  else
         PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("A","A",&bell,&bell,&MZa[1+ldMZ],&ldMZ,bcgsl->s,bcgsl->u,&bell,bcgsl->v,&bell,bcgsl->work,&bcgsl->lwork,&bierr));
 #  endif
-#endif
         if (bierr!=0) {
           ksp->reason = KSP_DIVERGED_BREAKDOWN;
           PetscFunctionReturn(0);
@@ -202,11 +198,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
           }
         }
       } else {
-#if defined(PETSC_MISSING_LAPACK_POTRF)
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"POTRF - Lapack routine is unavailable.");
-#else
         PetscStackCallBLAS("LAPACKpotrf",LAPACKpotrf_("Lower", &bell, &MZa[1+ldMZ], &ldMZ, &bierr));
-#endif
         if (bierr!=0) {
           ksp->reason = KSP_DIVERGED_BREAKDOWN;
           PetscFunctionReturn(0);
@@ -220,11 +212,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
       PetscBLASInt neqs;
       ierr = PetscBLASIntCast(bcgsl->ell-1,&neqs);CHKERRQ(ierr);
 
-#if defined(PETSC_MISSING_LAPACK_POTRF)
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"POTRF - Lapack routine is unavailable.");
-#else
       PetscStackCallBLAS("LAPACKpotrf",LAPACKpotrf_("Lower", &neqs, &MZa[1+ldMZ], &ldMZ, &bierr));
-#endif
       if (bierr!=0) {
         ksp->reason = KSP_DIVERGED_BREAKDOWN;
         PetscFunctionReturn(0);
