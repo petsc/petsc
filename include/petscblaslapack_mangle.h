@@ -170,6 +170,9 @@
 #define LAPACKgesvd_ PETSCBLAS(gesvd,GESVD)
 #define LAPACKgeev_  PETSCBLAS(geev,GEEV)
 #define LAPACKgels_  PETSCBLAS(gels,GELS)
+#if !defined(PETSC_MISSING_LAPACK_STEGR)
+#define LAPACKstegr_ PETSCBLAS(stegr,STEGR)  /* eigenvalues and eigenvectors of symm tridiagonal */
+#endif
 #if !defined(PETSC_MISSING_LAPACK_STEQR)
 #define LAPACKsteqr_ PETSCBLAS(steqr,STEQR)  /* eigenvalues and eigenvectors of symm tridiagonal */
 #define LAPACKREALsteqr_ PETSCBLASREAL(steqr,STEQR)

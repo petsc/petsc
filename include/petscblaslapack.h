@@ -99,6 +99,11 @@ BLAS_EXTERN void LAPACKormqr_(const char*,const char*,PetscBLASInt*,PetscBLASInt
 #else
 #define LAPACKormqr_(a,b,c,d,e,f,g,h,i,j,k,l,m) PetscMissingLapack("ORMQR",a,b,c,d,e,f,g,h,i,j,k,l,m)
 #endif
+#if !defined(PETSC_MISSING_LAPACK_STEGR)
+BLAS_EXTERN void LAPACKstegr_(const char*,const char *,PetscBLASInt*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscBLASInt*,PetscReal*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
+#else
+#define LAPACKstegr_(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t) PetscMissingLapack("STEGR",a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t)
+#endif
 #if !defined(PETSC_MISSING_LAPACK_STEQR)
 BLAS_EXTERN void LAPACKsteqr_(const char*,PetscBLASInt*,PetscReal*,PetscReal*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscBLASInt*);
 BLAS_EXTERN void LAPACKREALsteqr_(const char*,PetscBLASInt*,PetscReal*,PetscReal*,PetscReal*,PetscBLASInt*,PetscReal*,PetscBLASInt*);
