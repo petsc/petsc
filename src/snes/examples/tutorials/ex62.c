@@ -995,7 +995,7 @@ int main(int argc, char **argv)
   test:
     suffix: fetidp_2d_tri
     requires: triangle mumps
-    filter: grep -v "variant HERMITIAN"
+    filter: grep -v "variant HERMITIAN" | sed -e "s/linear solver iterations=41/linear solver iterations=42/g"
     nsize: 5
     args: -run_type full -dm_refine 2 -bc_type dirichlet -interpolate 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -snes_view -snes_error_if_not_converged -dm_mat_type is -ksp_type fetidp -ksp_rtol 1.0e-8 -ksp_fetidp_saddlepoint -fetidp_ksp_type cg -fetidp_fieldsplit_p_ksp_max_it 1 -fetidp_fieldsplit_p_ksp_type richardson -fetidp_fieldsplit_p_ksp_richardson_scale 200 -fetidp_fieldsplit_p_pc_type none -ksp_fetidp_saddlepoint_flip 1 -fetidp_bddc_pc_bddc_dirichlet_pc_factor_mat_solver_type mumps -fetidp_bddc_pc_bddc_neumann_pc_factor_mat_solver_type mumps -petscpartitioner_type simple -fetidp_fieldsplit_lag_ksp_type preonly
   test:
