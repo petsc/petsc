@@ -31,8 +31,8 @@ class Configure(config.package.GNUPackage):
     self.mathlib        = framework.require('config.packages.mathlib',self)
     self.zlib           = framework.require('config.packages.zlib',self)
     self.szlib          = framework.require('config.packages.szlib',self)
-    self.deps           = [self.mpi,self.mathlib]
-    self.odeps          = [self.zlib,self.szlib]
+    self.deps           = [self.mathlib]
+    self.odeps          = [self.mpi, self.zlib,self.szlib]
     return
 
   def versionToStandardForm(self,ver):
@@ -62,7 +62,8 @@ class Configure(config.package.GNUPackage):
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
 
     args.append('--with-default-api-version=v18') # for hdf-1.10
-    args.append('--enable-parallel')
+    if not self.mpi.usingMPIUni:
+      args.append('--enable-parallel')
     if not self.argDB['download-hdf5-shared-libraries']:
       args.append('--enable-shared=0')
     if hasattr(self.compilers, 'FC') and self.argDB['download-hdf5-fortran-bindings']:
