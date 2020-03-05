@@ -59,6 +59,7 @@ PetscErrorCode PetscSectionCreate(MPI_Comm comm, PetscSection *s)
   (*s)->fieldNames         = NULL;
   (*s)->field              = NULL;
   (*s)->useFieldOff        = PETSC_FALSE;
+  (*s)->compNames          = NULL;
   (*s)->clObj              = NULL;
   (*s)->clSection          = NULL;
   (*s)->clPoints           = NULL;
@@ -87,7 +88,7 @@ PetscErrorCode PetscSectionCopy(PetscSection section, PetscSection newSection)
 {
   PetscSectionSym sym;
   IS              perm;
-  PetscInt        numFields, f, pStart, pEnd, p;
+  PetscInt        numFields, f, c, pStart, pEnd, p;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -97,13 +98,17 @@ PetscErrorCode PetscSectionCopy(PetscSection section, PetscSection newSection)
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
   if (numFields) {ierr = PetscSectionSetNumFields(newSection, numFields);CHKERRQ(ierr);}
   for (f = 0; f < numFields; ++f) {
-    const char *name   = NULL;
+    const char *fieldName = NULL, *compName = NULL;
     PetscInt   numComp = 0;
 
-    ierr = PetscSectionGetFieldName(section, f, &name);CHKERRQ(ierr);
-    ierr = PetscSectionSetFieldName(newSection, f, name);CHKERRQ(ierr);
+    ierr = PetscSectionGetFieldName(section, f, &fieldName);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldName(newSection, f, fieldName);CHKERRQ(ierr);
     ierr = PetscSectionGetFieldComponents(section, f, &numComp);CHKERRQ(ierr);
     ierr = PetscSectionSetFieldComponents(newSection, f, numComp);CHKERRQ(ierr);
+    for (c = 0; c < numComp; ++c) {
+      ierr = PetscSectionGetComponentName(section, f, c, &compName);CHKERRQ(ierr);
+      ierr = PetscSectionSetComponentName(newSection, f, c, compName);CHKERRQ(ierr);
+    }
     ierr = PetscSectionGetFieldSym(section, f, &sym);CHKERRQ(ierr);
     ierr = PetscSectionSetFieldSym(newSection, f, sym);CHKERRQ(ierr);
   }
@@ -365,6 +370,7 @@ PetscErrorCode PetscSectionSetNumFields(PetscSection s, PetscInt numFields)
   s->numFields = numFields;
   ierr = PetscMalloc1(s->numFields, &s->numFieldComponents);CHKERRQ(ierr);
   ierr = PetscMalloc1(s->numFields, &s->fieldNames);CHKERRQ(ierr);
+  ierr = PetscMalloc1(s->numFields, &s->compNames);CHKERRQ(ierr);
   ierr = PetscMalloc1(s->numFields, &s->field);CHKERRQ(ierr);
   for (f = 0; f < s->numFields; ++f) {
     char name[64];
@@ -374,6 +380,9 @@ PetscErrorCode PetscSectionSetNumFields(PetscSection s, PetscInt numFields)
     ierr = PetscSectionCreate(PetscObjectComm((PetscObject) s), &s->field[f]);CHKERRQ(ierr);
     ierr = PetscSNPrintf(name, 64, "Field_%D", f);CHKERRQ(ierr);
     ierr = PetscStrallocpy(name, (char **) &s->fieldNames[f]);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(name, 64, "Component_0");CHKERRQ(ierr);
+    ierr = PetscMalloc1(s->numFieldComponents[f], &s->compNames[f]);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(name, (char **) &s->compNames[f][0]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -398,7 +407,7 @@ PetscErrorCode PetscSectionGetFieldName(PetscSection s, PetscInt field, const ch
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  PetscValidPointer(fieldName,3);
+  PetscValidPointer(fieldName, 3);
   if ((field < 0) || (field >= s->numFields)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section field %D should be in [%D, %D)", field, 0, s->numFields);
   *fieldName = s->fieldNames[field];
   PetscFunctionReturn(0);
@@ -424,10 +433,65 @@ PetscErrorCode PetscSectionSetFieldName(PetscSection s, PetscInt field, const ch
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  if (fieldName) PetscValidCharPointer(fieldName,3);
+  if (fieldName) PetscValidCharPointer(fieldName, 3);
   if ((field < 0) || (field >= s->numFields)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section field %D should be in [%D, %D)", field, 0, s->numFields);
   ierr = PetscFree(s->fieldNames[field]);CHKERRQ(ierr);
   ierr = PetscStrallocpy(fieldName, (char**) &s->fieldNames[field]);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  PetscSectionGetComponentName - Gets the name of a field component in the PetscSection
+
+  Not Collective
+
+  Input Parameters:
++ s     - the PetscSection
+. field - the field number
+. comp  - the component number
+- compName - the component name
+
+  Level: intermediate
+
+.seealso: PetscSectionSetComponentName()
+@*/
+PetscErrorCode PetscSectionGetComponentName(PetscSection s, PetscInt field, PetscInt comp, const char *compName[])
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
+  PetscValidPointer(compName, 3);
+  if ((field < 0) || (field >= s->numFields)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section field %D should be in [%D, %D)", field, 0, s->numFields);
+  if ((comp < 0) || (comp >= s->numFieldComponents[field])) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section field component %D should be in [%D, %D)", comp, 0, s->numFieldComponents[field]);
+  *compName = s->compNames[field][comp];
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  PetscSectionSetComponentName - Sets the name of a field component in the PetscSection
+
+  Not Collective
+
+  Input Parameters:
++ s     - the PetscSection
+. field - the field number
+. comp  - the component number
+- compName - the component name
+
+  Level: intermediate
+
+.seealso: PetscSectionGetComponentName()
+@*/
+PetscErrorCode PetscSectionSetComponentName(PetscSection s, PetscInt field, PetscInt comp, const char compName[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
+  if (compName) PetscValidCharPointer(compName, 3);
+  if ((field < 0) || (field >= s->numFields)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section field %D should be in [%D, %D)", field, 0, s->numFields);
+  if ((comp < 0) || (comp >= s->numFieldComponents[field])) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section field component %D should be in [%D, %D)", comp, 0, s->numFieldComponents[field]);
+  ierr = PetscFree(s->compNames[field][comp]);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(compName, (char**) &s->compNames[field][comp]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -473,10 +537,28 @@ PetscErrorCode PetscSectionGetFieldComponents(PetscSection s, PetscInt field, Pe
 @*/
 PetscErrorCode PetscSectionSetFieldComponents(PetscSection s, PetscInt field, PetscInt numComp)
 {
-  PetscFunctionBegin;
+  PetscErrorCode ierr;
+  PetscInt c;
+  char name[64];
+
+  PetscFunctionBegin;  
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   if ((field < 0) || (field >= s->numFields)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section field %D should be in [%D, %D)", field, 0, s->numFields);
+  if (s->compNames) {
+    for (c = 0; c < s->numFieldComponents[field]; ++c) {
+      ierr = PetscFree(s->compNames[field][c]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(s->compNames[field]);CHKERRQ(ierr);
+  }
+
   s->numFieldComponents[field] = numComp;
+  if (numComp) {
+    ierr = PetscMalloc1(numComp, (char ***) &s->compNames[field]);CHKERRQ(ierr);
+    for (c = 0; c < numComp; ++c) {
+      ierr = PetscSNPrintf(name, 64, "%D", c);CHKERRQ(ierr);
+      ierr = PetscStrallocpy(name, (char **) &s->compNames[field][c]);CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1631,7 +1713,7 @@ PetscErrorCode PetscSectionGetOffsetRange(PetscSection s, PetscInt *start, Petsc
 @*/
 PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt len, const PetscInt fields[], PetscSection *subs)
 {
-  PetscInt       nF, f, pStart, pEnd, p, maxCdof = 0;
+  PetscInt       nF, f, c, pStart, pEnd, p, maxCdof = 0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1651,6 +1733,10 @@ PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt len, const 
     ierr = PetscSectionSetFieldName(*subs, f, name);CHKERRQ(ierr);
     ierr = PetscSectionGetFieldComponents(s, fields[f], &numComp);CHKERRQ(ierr);
     ierr = PetscSectionSetFieldComponents(*subs, f, numComp);CHKERRQ(ierr);
+    for (c = 0; c < s->numFieldComponents[fields[f]]; ++c) {
+      ierr = PetscSectionGetComponentName(s, fields[f], c, &name);CHKERRQ(ierr);
+      ierr = PetscSectionSetComponentName(*subs, f, c, name);CHKERRQ(ierr);
+    }
   }
   ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(*subs, pStart, pEnd);CHKERRQ(ierr);
@@ -1744,7 +1830,7 @@ PetscErrorCode PetscSectionCreateSupersection(PetscSection s[], PetscInt len, Pe
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject) s[0]), supers);CHKERRQ(ierr);
   ierr = PetscSectionSetNumFields(*supers, Nf);CHKERRQ(ierr);
   for (i = 0, f = 0; i < len; ++i) {
-    PetscInt nf, fi;
+    PetscInt nf, fi, ci;
 
     ierr = PetscSectionGetNumFields(s[i], &nf);CHKERRQ(ierr);
     for (fi = 0; fi < nf; ++fi, ++f) {
@@ -1755,6 +1841,10 @@ PetscErrorCode PetscSectionCreateSupersection(PetscSection s[], PetscInt len, Pe
       ierr = PetscSectionSetFieldName(*supers, f, name);CHKERRQ(ierr);
       ierr = PetscSectionGetFieldComponents(s[i], fi, &numComp);CHKERRQ(ierr);
       ierr = PetscSectionSetFieldComponents(*supers, f, numComp);CHKERRQ(ierr);
+      for (ci = 0; ci < s[i]->numFieldComponents[fi]; ++ci) {
+        ierr = PetscSectionGetComponentName(s[i], fi, ci, &name);CHKERRQ(ierr);
+        ierr = PetscSectionSetComponentName(*supers, f, ci, name);CHKERRQ(ierr);
+      }
     }
   }
   ierr = PetscSectionSetChart(*supers, pStart, pEnd);CHKERRQ(ierr);
@@ -1840,7 +1930,7 @@ PetscErrorCode PetscSectionCreateSupersection(PetscSection s[], PetscInt len, Pe
 PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection s, IS subpointMap, PetscSection *subs)
 {
   const PetscInt *points = NULL, *indices = NULL;
-  PetscInt       numFields, f, numSubpoints = 0, pStart, pEnd, p, subp;
+  PetscInt       numFields, f, c, numSubpoints = 0, pStart, pEnd, p, subp;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1858,6 +1948,10 @@ PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection s, IS subpointMap, 
     ierr = PetscSectionSetFieldName(*subs, f, name);CHKERRQ(ierr);
     ierr = PetscSectionGetFieldComponents(s, f, &numComp);CHKERRQ(ierr);
     ierr = PetscSectionSetFieldComponents(*subs, f, numComp);CHKERRQ(ierr);
+    for (c = 0; c < s->numFieldComponents[f]; ++c) {
+      ierr = PetscSectionGetComponentName(s, f, c, &name);CHKERRQ(ierr);
+      ierr = PetscSectionSetComponentName(*subs, f, c, name);CHKERRQ(ierr);
+    }
   }
   /* For right now, we do not try to squeeze the subchart */
   if (subpointMap) {
@@ -2023,17 +2117,21 @@ PetscErrorCode PetscSectionView(PetscSection s, PetscViewer viewer)
 @*/
 PetscErrorCode PetscSectionReset(PetscSection s)
 {
-  PetscInt       f;
+  PetscInt       f, c;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  ierr = PetscFree(s->numFieldComponents);CHKERRQ(ierr);
   for (f = 0; f < s->numFields; ++f) {
     ierr = PetscSectionDestroy(&s->field[f]);CHKERRQ(ierr);
     ierr = PetscFree(s->fieldNames[f]);CHKERRQ(ierr);
+    for (c = 0; c < s->numFieldComponents[f]; ++c)
+      ierr = PetscFree(s->compNames[f][c]);CHKERRQ(ierr);
+    ierr = PetscFree(s->compNames[f]);CHKERRQ(ierr);
   }
+  ierr = PetscFree(s->numFieldComponents);CHKERRQ(ierr);
   ierr = PetscFree(s->fieldNames);CHKERRQ(ierr);
+  ierr = PetscFree(s->compNames);CHKERRQ(ierr);
   ierr = PetscFree(s->field);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&s->bc);CHKERRQ(ierr);
   ierr = PetscFree(s->bcIndices);CHKERRQ(ierr);
@@ -2334,7 +2432,7 @@ PetscErrorCode PetscSectionPermute(PetscSection section, IS permutation, PetscSe
 {
   PetscSection    s = section, sNew;
   const PetscInt *perm;
-  PetscInt        numFields, f, numPoints, pStart, pEnd, p;
+  PetscInt        numFields, f, c, numPoints, pStart, pEnd, p;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -2352,6 +2450,10 @@ PetscErrorCode PetscSectionPermute(PetscSection section, IS permutation, PetscSe
     ierr = PetscSectionSetFieldName(sNew, f, name);CHKERRQ(ierr);
     ierr = PetscSectionGetFieldComponents(s, f, &numComp);CHKERRQ(ierr);
     ierr = PetscSectionSetFieldComponents(sNew, f, numComp);CHKERRQ(ierr);
+    for (c = 0; c < s->numFieldComponents[f]; ++c) {
+      ierr = PetscSectionGetComponentName(s, f, c, &name);CHKERRQ(ierr);
+      ierr = PetscSectionSetComponentName(sNew, f, c, name);CHKERRQ(ierr);
+    }
   }
   ierr = ISGetLocalSize(permutation, &numPoints);CHKERRQ(ierr);
   ierr = ISGetIndices(permutation, &perm);CHKERRQ(ierr);
@@ -2420,7 +2522,7 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
   PetscSF        embedSF;
   const PetscInt *indices;
   IS             selected;
-  PetscInt       numFields, nroots, rpStart, rpEnd, lpStart = PETSC_MAX_INT, lpEnd = -1, f;
+  PetscInt       numFields, nroots, rpStart, rpEnd, lpStart = PETSC_MAX_INT, lpEnd = -1, f, c;
   PetscBool      *sub, hasc;
   PetscErrorCode ierr;
 
@@ -2442,6 +2544,10 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
     ierr = PetscSectionSetFieldComponents(leafSection, f, numComp);CHKERRQ(ierr);
     ierr = PetscSectionSetFieldName(leafSection, f, name);CHKERRQ(ierr);
     ierr = PetscSectionSetFieldSym(leafSection, f, sym);CHKERRQ(ierr);
+    for (c = 0; c < rootSection->numFieldComponents[f]; ++c) {
+      ierr = PetscSectionGetComponentName(rootSection, f, c, &name);CHKERRQ(ierr);
+      ierr = PetscSectionSetComponentName(leafSection, f, c, name);CHKERRQ(ierr);
+    }
   }
   ierr = PetscSectionGetChart(rootSection, &rpStart, &rpEnd);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sf,&nroots,NULL,NULL,NULL);CHKERRQ(ierr);

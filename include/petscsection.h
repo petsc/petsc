@@ -15,6 +15,8 @@ PETSC_EXTERN PetscErrorCode PetscSectionGetNumFields(PetscSection, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscSectionSetNumFields(PetscSection, PetscInt);
 PETSC_EXTERN PetscErrorCode PetscSectionGetFieldName(PetscSection, PetscInt, const char *[]);
 PETSC_EXTERN PetscErrorCode PetscSectionSetFieldName(PetscSection, PetscInt, const char []);
+PETSC_EXTERN PetscErrorCode PetscSectionGetComponentName(PetscSection, PetscInt, PetscInt, const char *[]);
+PETSC_EXTERN PetscErrorCode PetscSectionSetComponentName(PetscSection, PetscInt, PetscInt, const char []);
 PETSC_EXTERN PetscErrorCode PetscSectionGetFieldComponents(PetscSection, PetscInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscSectionSetFieldComponents(PetscSection, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode PetscSectionGetChart(PetscSection, PetscInt *, PetscInt *);
