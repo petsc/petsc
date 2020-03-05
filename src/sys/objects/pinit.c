@@ -383,7 +383,7 @@ PETSC_EXTERN PetscMPIInt PetscDataRep_read_conv_fn(void*, MPI_Datatype,PetscMPII
 PETSC_EXTERN PetscMPIInt PetscDataRep_write_conv_fn(void*, MPI_Datatype,PetscMPIInt,void*,MPI_Offset,void*);
 #endif
 
-PetscMPIInt PETSC_MPI_ERROR_CLASS,PETSC_MPI_ERROR_CODE;
+PetscMPIInt PETSC_MPI_ERROR_CLASS=MPI_ERR_LASTCODE,PETSC_MPI_ERROR_CODE;
 
 PETSC_INTERN int  PetscGlobalArgc;
 PETSC_INTERN char **PetscGlobalArgs;
@@ -907,8 +907,10 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   if (PETSC_COMM_WORLD == MPI_COMM_NULL) PETSC_COMM_WORLD = MPI_COMM_WORLD;
   ierr = MPI_Comm_set_errhandler(PETSC_COMM_WORLD,MPI_ERRORS_RETURN);CHKERRQ(ierr);
 
-  ierr = MPI_Add_error_class(&PETSC_MPI_ERROR_CLASS);CHKERRQ(ierr);
-  ierr = MPI_Add_error_code(PETSC_MPI_ERROR_CLASS,&PETSC_MPI_ERROR_CODE);CHKERRQ(ierr);
+  if (PETSC_MPI_ERROR_CLASS == MPI_ERR_LASTCODE) {
+    ierr = MPI_Add_error_class(&PETSC_MPI_ERROR_CLASS);CHKERRQ(ierr);
+    ierr = MPI_Add_error_code(PETSC_MPI_ERROR_CLASS,&PETSC_MPI_ERROR_CODE);CHKERRQ(ierr);
+  }
 
   /* Done after init due to a bug in MPICH-GM? */
   ierr = PetscErrorPrintfInitialize();CHKERRQ(ierr);

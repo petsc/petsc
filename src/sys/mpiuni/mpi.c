@@ -20,7 +20,7 @@ void *MPIUNI_TMP = NULL;
      the other communicators are freed once the last PETSc object is freed (before MPI_Finalize()).
 
 */
-#define MAX_ATTR 128
+#define MAX_ATTR 256
 #define MAX_COMM 128
 
 static int MaxComm = 2;

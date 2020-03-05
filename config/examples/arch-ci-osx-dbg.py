@@ -16,8 +16,6 @@ configure_options = [
   '--download-metis=1',
   '--download-parmetis=1',
   '--download-elemental=1',
-  '--download-metis',
-  '--download-parmetis',
   '--download-ptscotch',
   '--download-scalapack',
   '--download-strumpack',
