@@ -218,7 +218,7 @@ static PetscErrorCode PetscDualSpaceBDMCreateFaceFE(PetscDualSpace sp, PetscBool
   /* Create quadrature (with specified order if given) */
   quadPointsPerEdge = PetscMax(order + 1, 1);
   if (tensor) {ierr = PetscDTGaussTensorQuadrature(faceDim, 1, quadPointsPerEdge, -1.0, 1.0, &q);CHKERRQ(ierr);}
-  else        {ierr = PetscDTGaussJacobiQuadrature(faceDim, 1, quadPointsPerEdge, -1.0, 1.0, &q);CHKERRQ(ierr);}
+  else        {ierr = PetscDTStroudConicalQuadrature(faceDim, 1, quadPointsPerEdge, -1.0, 1.0, &q);CHKERRQ(ierr);}
   ierr = PetscFESetQuadrature(*fe, q);CHKERRQ(ierr);
   ierr = PetscQuadratureDestroy(&q);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -263,7 +263,7 @@ static PetscErrorCode PetscDualSpaceBDMCreateCellFE(PetscDualSpace sp, PetscBool
   /* Create quadrature (with specified order if given) */
   quadPointsPerEdge = PetscMax(order + 1, 1);
   if (tensor) {ierr = PetscDTGaussTensorQuadrature(dim, 1, quadPointsPerEdge, -1.0, 1.0, &q);CHKERRQ(ierr);}
-  else        {ierr = PetscDTGaussJacobiQuadrature(dim, 1, quadPointsPerEdge, -1.0, 1.0, &q);CHKERRQ(ierr);}
+  else        {ierr = PetscDTStroudConicalQuadrature(dim, 1, quadPointsPerEdge, -1.0, 1.0, &q);CHKERRQ(ierr);}
   ierr = PetscFESetQuadrature(*fe, q);CHKERRQ(ierr);
   ierr = PetscQuadratureDestroy(&q);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -44,11 +44,14 @@ PETSC_EXTERN PetscErrorCode PetscQuadratureExpandComposite(PetscQuadrature, Pets
 PETSC_EXTERN PetscErrorCode PetscQuadraturePushForward(PetscQuadrature, PetscInt, const PetscReal[], const PetscReal[], const PetscReal[], PetscInt, PetscQuadrature *);
 
 PETSC_EXTERN PetscErrorCode PetscDTLegendreEval(PetscInt,const PetscReal*,PetscInt,const PetscInt*,PetscReal*,PetscReal*,PetscReal*);
+PETSC_EXTERN PetscErrorCode PetscDTJacobiEval(PetscInt,PetscReal,PetscReal,const PetscReal*,PetscInt,const PetscInt*,PetscReal*,PetscReal*,PetscReal*);
 PETSC_EXTERN PetscErrorCode PetscDTGaussQuadrature(PetscInt,PetscReal,PetscReal,PetscReal*,PetscReal*);
+PETSC_EXTERN PetscErrorCode PetscDTGaussJacobiQuadrature(PetscInt,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal*,PetscReal*);
+PETSC_EXTERN PetscErrorCode PetscDTGaussLobattoJacobiQuadrature(PetscInt,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal*,PetscReal*);
 PETSC_EXTERN PetscErrorCode PetscDTGaussLobattoLegendreQuadrature(PetscInt,PetscGaussLobattoLegendreCreateType,PetscReal*,PetscReal*);
 PETSC_EXTERN PetscErrorCode PetscDTReconstructPoly(PetscInt,PetscInt,const PetscReal*,PetscInt,const PetscReal*,PetscReal*);
 PETSC_EXTERN PetscErrorCode PetscDTGaussTensorQuadrature(PetscInt,PetscInt,PetscInt,PetscReal,PetscReal,PetscQuadrature*);
-PETSC_EXTERN PetscErrorCode PetscDTGaussJacobiQuadrature(PetscInt,PetscInt,PetscInt,PetscReal,PetscReal,PetscQuadrature*);
+PETSC_EXTERN PetscErrorCode PetscDTStroudConicalQuadrature(PetscInt,PetscInt,PetscInt,PetscReal,PetscReal,PetscQuadrature*);
 
 PETSC_EXTERN PetscErrorCode PetscDTTanhSinhTensorQuadrature(PetscInt, PetscInt, PetscReal, PetscReal, PetscQuadrature *);
 PETSC_EXTERN PetscErrorCode PetscDTTanhSinhIntegrate(void (*)(PetscReal, PetscReal *), PetscReal, PetscReal, PetscInt, PetscReal *);
