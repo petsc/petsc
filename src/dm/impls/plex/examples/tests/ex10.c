@@ -40,7 +40,7 @@ PetscErrorCode ProcessOptions(AppCtx *options)
   ierr = PetscOptionsBoundedInt("-num_fields", "The number of section fields", "ex10.c", options->numFields, &options->numFields, NULL,1);CHKERRQ(ierr);
   if (options->numFields) {
     len  = options->numFields;
-    ierr = PetscMalloc1(len, &options->numComponents);CHKERRQ(ierr);
+    ierr = PetscCalloc1(len, &options->numComponents);CHKERRQ(ierr);
     ierr = PetscOptionsIntArray("-num_components", "The number of components per field", "ex10.c", options->numComponents, &len, &flg);CHKERRQ(ierr);
     if (flg && (len != options->numFields)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of components array is %D should be %D", len, options->numFields);
   }
