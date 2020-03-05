@@ -465,8 +465,7 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
     ierr = PetscViewerBinaryGetMPIIODescriptor(viewer,&mfdes);CHKERRQ(ierr);
     ierr = PetscViewerBinaryGetMPIIOOffset(viewer,&off);CHKERRQ(ierr);
     off += xin->map->rstart*sizeof(PetscScalar); /* off is MPI_Offset, not PetscMPIInt */
-    ierr = MPI_File_set_view(mfdes,off,MPIU_SCALAR,MPIU_SCALAR,(char*)"native",MPI_INFO_NULL);CHKERRQ(ierr);
-    ierr = MPIU_File_write_all(mfdes,(void*)xarray,lsize,MPIU_SCALAR,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+    ierr = MPIU_File_write_at_all(mfdes,off,(void*)xarray,lsize,MPIU_SCALAR,MPI_STATUS_IGNORE);CHKERRQ(ierr);
     ierr = PetscViewerBinaryAddMPIIOOffset(viewer,xin->map->N*sizeof(PetscScalar));CHKERRQ(ierr);
   }
 #endif
