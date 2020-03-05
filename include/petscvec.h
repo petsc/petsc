@@ -408,8 +408,8 @@ PETSC_EXTERN PetscErrorCode VecCUDAPlaceArray(Vec, PetscScalar *);
 PETSC_EXTERN PetscErrorCode VecCUDAReplaceArray(Vec, PetscScalar *);
 PETSC_EXTERN PetscErrorCode VecCUDAResetArray(Vec);
 
-PETSC_EXTERN PetscErrorCode VecCUDASetPinnedMemoryMin(Vec, PetscInt);
-PETSC_EXTERN PetscErrorCode VecCUDAGetPinnedMemoryMin(Vec, PetscInt*);
+PETSC_EXTERN PetscErrorCode VecCUDASetPinnedMemoryMin(Vec, size_t);
+PETSC_EXTERN PetscErrorCode VecCUDAGetPinnedMemoryMin(Vec, size_t*);
 /*MC
    VecSetValueLocal - Set a single entry into a vector using the local numbering
 

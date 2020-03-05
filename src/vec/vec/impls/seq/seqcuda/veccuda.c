@@ -13,19 +13,20 @@
 #include <../src/vec/vec/impls/dvecimpl.h>
 #include <../src/vec/vec/impls/seq/seqcuda/cudavecimpl.h>
 
-/*@
-  VecCUDASetPinnedMemoryMin - Set the minimum data size for which pinned memory on CPU will be allocated..
+/*@C
+  VecCUDASetPinnedMemoryMin - Set the minimum data size for which pinned memory on CPU will be allocated.
 
-  Collective on Vec
+  Logically Collective on Vec
 
   Input Parameters:
 +  v    - the vector
 -  mbytes - minimum data size in bytes
 
-  Level: advanced
+  Level: developer
+
 .seealso: VecCUDAGetPinnedMemoryMin()
 @*/
-PetscErrorCode VecCUDASetPinnedMemoryMin(Vec v,PetscInt mbytes)
+PetscErrorCode VecCUDASetPinnedMemoryMin(Vec v,size_t mbytes)
 {
   Vec_CUDA *veccuda = (Vec_CUDA*)v->spptr;
 
@@ -34,17 +35,22 @@ PetscErrorCode VecCUDASetPinnedMemoryMin(Vec v,PetscInt mbytes)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
   VecCUDAGetPinnedMemoryMin - Get the minimum data size for which pinned memory on CPU will be allocated.
 
-  Collective on Vec
+  Logically Collective on Vec
 
   Input Parameters:
-+  v    - the vector
--  mbytes - minimum data size in bytes
+.  v    - the vector
+
+  Output Parameters:
+.  mbytes - minimum data size in bytes
+
+  Level: developer
+
 .seealso: VecCUDASetPinnedMemoryMin()
 @*/
-PetscErrorCode VecCUDAGetPinnedMemoryMin(Vec v,PetscInt* mbytes)
+PetscErrorCode VecCUDAGetPinnedMemoryMin(Vec v,size_t *mbytes)
 {
   Vec_CUDA *veccuda = (Vec_CUDA*)v->spptr;
 
@@ -471,18 +477,20 @@ PetscErrorCode VecCreate_SeqCUDA_Private(Vec V,const PetscScalar *array)
   /* Later, functions check for the Vec_CUDA structure existence, so do not create it without array */
   if (array) {
     if (!V->spptr) {
+      PetscReal pinned_memory_min;
       ierr = PetscMalloc(sizeof(Vec_CUDA),&V->spptr);CHKERRQ(ierr);
       veccuda = (Vec_CUDA*)V->spptr;
       veccuda->stream = 0; /* using default stream */
       veccuda->GPUarray_allocated = 0;
       veccuda->hostDataRegisteredAsPageLocked = PETSC_FALSE;
-      veccuda->minimum_bytes_pinned_memory = 0;
       V->offloadmask = PETSC_OFFLOAD_UNALLOCATED;
 
+      pinned_memory_min = 0;
       /* Need to parse command line for minimum size to use for pinned memory allocations on host here.
          Note: This same code duplicated in VecCUDAAllocateCheck() and VecCreate_MPICUDA_Private(). Is there a good way to avoid this? */
       ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)V),((PetscObject)V)->prefix,"VECCUDA Options","Vec");CHKERRQ(ierr);
-      ierr = PetscOptionsInt("-vec_cuda_pinned_memory_min","Minimum size (in bytes) for an allocation to use pinned memory on host","VecCUDASetPinnedMemoryMin",veccuda->minimum_bytes_pinned_memory,&veccuda->minimum_bytes_pinned_memory,NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsReal("-vec_cuda_pinned_memory_min","Minimum size (in bytes) for an allocation to use pinned memory on host","VecCUDASetPinnedMemoryMin",pinned_memory_min,&pinned_memory_min,NULL);CHKERRQ(ierr);
+      veccuda->minimum_bytes_pinned_memory = pinned_memory_min;
       ierr = PetscOptionsEnd();CHKERRQ(ierr);
     }
     veccuda = (Vec_CUDA*)V->spptr;
