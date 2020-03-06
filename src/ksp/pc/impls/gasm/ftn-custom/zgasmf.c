@@ -7,7 +7,7 @@
 #define pcgasmgetsubksp_            pcgasmgetsubksp
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL pcgasmgetsubksp_(PC *pc,PetscInt *n_local,PetscInt *first_local,KSP *ksp,PetscErrorCode *ierr)
+PETSC_EXTERN void pcgasmgetsubksp_(PC *pc,PetscInt *n_local,PetscInt *first_local,KSP *ksp,PetscErrorCode *ierr)
 {
   KSP      *tksp;
   PetscInt i,nloc;

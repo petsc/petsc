@@ -8,7 +8,7 @@
 #define pfviewfromoptions_  pfviewfromoptions
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL pfviewfromoptions_(PF *ao,PetscObject obj,char* type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void pfviewfromoptions_(PF *ao,PetscObject obj,char* type,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;
 

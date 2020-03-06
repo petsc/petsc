@@ -1117,7 +1117,7 @@ PETSC_EXTERN PetscErrorCode PetscFECreatePointTrace(PetscFE fe, PetscInt refPoin
   if (coneSize == 2 * depth) {
     ierr = PetscDTGaussTensorQuadrature(depth,1,(order + 1)/2,-1.,1.,&subQuad);CHKERRQ(ierr);
   } else {
-    ierr = PetscDTGaussJacobiQuadrature(depth,1,(order + 1)/2,-1.,1.,&subQuad);CHKERRQ(ierr);
+    ierr = PetscDTStroudConicalQuadrature(depth,1,(order + 1)/2,-1.,1.,&subQuad);CHKERRQ(ierr);
   }
   ierr = PetscFESetQuadrature(*trFE,subQuad);CHKERRQ(ierr);
   ierr = PetscFESetUp(*trFE);CHKERRQ(ierr);
@@ -1764,8 +1764,8 @@ PetscErrorCode PetscFECreateDefault(MPI_Comm comm, PetscInt dim, PetscInt Nc, Pe
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   quadPointsPerEdge = PetscMax(qorder + 1,1);
   if (isSimplex) {
-    ierr = PetscDTGaussJacobiQuadrature(dim,   1, quadPointsPerEdge, -1.0, 1.0, &q);CHKERRQ(ierr);
-    ierr = PetscDTGaussJacobiQuadrature(dim-1, 1, quadPointsPerEdge, -1.0, 1.0, &fq);CHKERRQ(ierr);
+    ierr = PetscDTStroudConicalQuadrature(dim,   1, quadPointsPerEdge, -1.0, 1.0, &q);CHKERRQ(ierr);
+    ierr = PetscDTStroudConicalQuadrature(dim-1, 1, quadPointsPerEdge, -1.0, 1.0, &fq);CHKERRQ(ierr);
   } else {
     ierr = PetscDTGaussTensorQuadrature(dim,   1, quadPointsPerEdge, -1.0, 1.0, &q);CHKERRQ(ierr);
     ierr = PetscDTGaussTensorQuadrature(dim-1, 1, quadPointsPerEdge, -1.0, 1.0, &fq);CHKERRQ(ierr);
@@ -1845,8 +1845,8 @@ PetscErrorCode PetscFECreateLagrange(MPI_Comm comm, PetscInt dim, PetscInt Nc, P
   qorder = qorder >= 0 ? qorder : k;
   quadPointsPerEdge = PetscMax(qorder + 1,1);
   if (isSimplex) {
-    ierr = PetscDTGaussJacobiQuadrature(dim,   1, quadPointsPerEdge, -1.0, 1.0, &q);CHKERRQ(ierr);
-    ierr = PetscDTGaussJacobiQuadrature(dim-1, 1, quadPointsPerEdge, -1.0, 1.0, &fq);CHKERRQ(ierr);
+    ierr = PetscDTStroudConicalQuadrature(dim,   1, quadPointsPerEdge, -1.0, 1.0, &q);CHKERRQ(ierr);
+    ierr = PetscDTStroudConicalQuadrature(dim-1, 1, quadPointsPerEdge, -1.0, 1.0, &fq);CHKERRQ(ierr);
   } else {
     ierr = PetscDTGaussTensorQuadrature(dim,   1, quadPointsPerEdge, -1.0, 1.0, &q);CHKERRQ(ierr);
     ierr = PetscDTGaussTensorQuadrature(dim-1, 1, quadPointsPerEdge, -1.0, 1.0, &fq);CHKERRQ(ierr);

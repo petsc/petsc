@@ -36,6 +36,13 @@ variables:
       - web
   dependencies: []
 
+check-ci-settings:
+  extends: .test
+  stage: .pre
+  tags:
+    - check-ci-settings
+  script:
+    - lib/petsc/bin/maint/check-ci-settings.sh
 #
 #  This provides the basic order of operations and options template for cloud based stage 1 tests.
 #  Not all test-short need to follow this template but most will.
@@ -49,13 +56,12 @@ variables:
     - docker
   before_script:
     - date
-    - echo nproc=$(nproc)
-    - cat /proc/cpuinfo
-    - export CCACHE_COMPILERCHECK=content
-    - export CCACHE_DIR=$(pwd)/.ccache
+    - nproc
+    - lscpu
+    - export CCACHE_COMPILERCHECK=content CCACHE_DIR=$(pwd)/.ccache
     - ccache --show-stats
     - ccache --zero-stats
-    - echo CONFIG_OPTS=$(CONFIG_OPTS)
+    - echo ${CONFIG_OPTS}
   script:
     - ${PYTHON} ./configure --with-debugging=0 COPTFLAGS='-O -march=native' CXXOPTFLAGS='-O -march=native' FOPTFLAGS='-O -march=native' ${CONFIG_OPTS}
     - make CFLAGS=-Werror CXXFLAGS=-Werror FFLAGS=-Werror
@@ -169,9 +175,10 @@ checksource:
     - date
     - hostname
     - grep PRETTY_NAME /etc/os-release
-    - echo $(nproc)
+    - nproc
+    - lscpu
     - ccache --zero-stats
-    - if [ ! -z ${LOAD_MODULES+x} ]; then module load ${LOAD_MODULES}; module list; fi
+    - if [ ! -z ${LOAD_MODULES+x} ]; then module --trace load ${LOAD_MODULES}; module list; fi
   after_script:
     - date
     - ccache --show-stats
@@ -218,7 +225,8 @@ checksource:
     - date
     - hostname
     - uname -a
-    - echo $(nproc)
+    - nproc
+    - isainfo -x
   after_script:
     - date
 
@@ -227,7 +235,7 @@ checksource:
     - date
     - hostname
     - uname -a
-    - echo $(nproc)
+    - nproc
   after_script:
     - date
 
@@ -246,7 +254,6 @@ linux-gcc-complex-opt:
     - .linux_test
   tags:
     - linux-stage2
-    - ci:2
   variables:
     TEST_ARCH: arch-ci-linux-gcc-complex-opt
 
@@ -451,10 +458,11 @@ linux-cmplx-gcov:
     - .stage-3
     - .linux_test
   tags:
-    - mcs-nfs
+    - gce-nfs
   variables:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -vecscatter_mpi1 false -options_left false
     TEST_ARCH: arch-ci-linux-cmplx-gcov
+    LOAD_MODULES: gcc/8.3.0-fjpc5ys
   after_script:
     - make gcov
   artifacts:
@@ -523,7 +531,7 @@ linux-c-exodus-dbg:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -cuda_initialize 0
     TEST_ARCH: arch-ci-linux-c-exodus-dbg
 
-linux-cuda-single:
+linux-cuda-single-cxx:
   extends:
     - .stage-3
     - .linux_test
@@ -531,7 +539,7 @@ linux-cuda-single:
     - gpu:nvidia, os:linux
   variables:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -cuda_initialize 0
-    TEST_ARCH: arch-ci-linux-cuda-single
+    TEST_ARCH: arch-ci-linux-cuda-single-cxx
 
 linux-viennacl:
   extends:
@@ -551,6 +559,7 @@ linux-opt-misc:
     - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-opt-misc
+    LOAD_MODULES: gcc/6.5.0-57usejd
 
 linux-pkgs-cxx-mlib:
   extends:
@@ -585,7 +594,7 @@ linux-analyzer:
     - .stage-3
     - .linux_test
   tags:
-    - mcs-nfs
+    - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-analyzer
 
@@ -594,16 +603,17 @@ linux-gcc-ifc-cmplx:
     - .stage-3
     - .linux_test
   tags:
-    - mcs-nfs
+    - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-gcc-ifc-cmplx
+    LOAD_MODULES: intel/19.0
 
 linux-gcov:
   extends:
     - .stage-3
     - .linux_test
   tags:
-    - mcs-nfs
+    - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-gcov
   after_script:
@@ -627,15 +637,17 @@ linux-ILP64:
     - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-ILP64
+    LOAD_MODULES: gcc/6.5.0-57usejd
 
 linux-matlab-ilp64-gcov:
   extends:
     - .stage-3
     - .linux_test
   tags:
-    - mcs-nfs
+    - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-matlab-ilp64-gcov
+    LOAD_MODULES: matlab/R2018a
   after_script:
     - make gcov
   artifacts:
@@ -647,6 +659,7 @@ linux-matlab-ilp64-gcov:
     - ${TEST_ARCH}/tests/test_${TEST_ARCH}_err.log
     - ${TEST_ARCH}/gcov.tar.gz
     expire_in: 4 days
+  allow_failure: true
 
 
 linux-opt-cxx-quad:
@@ -654,7 +667,7 @@ linux-opt-cxx-quad:
     - .stage-3
     - .linux_test
   tags:
-    - mcs-nfs
+    - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-opt-cxx-quad
 
@@ -663,7 +676,7 @@ linux-pgi:
     - .stage-3
     - .linux_test_noflags
   tags:
-    - mcs-nfs,name:petsc
+    - gce-nfs, linux-fast
   variables:
     TEST_ARCH: arch-ci-linux-pgi
 
@@ -672,16 +685,17 @@ linux-pkgs-64idx:
     - .stage-3
     - .linux_test
   tags:
-    - mcs-nfs
+    - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-64idx
+    LOAD_MODULES: cmake/3.15.5-fh74toq
 
 linux-pkgs-gcov:
   extends:
     - .stage-3
     - .linux_test
   tags:
-    - mcs-nfs
+    - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-gcov
   after_script:
@@ -701,7 +715,7 @@ linux-pkgs-opt:
     - .stage-3
     - .linux_test
   tags:
-    - gce-nfs
+    - gce-nfs, linux-fast
   variables:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -saws_port_auto_select -saws_port_auto_select_silent
     TEST_ARCH: arch-ci-linux-pkgs-opt
@@ -711,7 +725,7 @@ linux-pkgs-valgrind:
     - .stage-3
     - .linux_test
   tags:
-    - valgrind
+    - gce-nfs, linux-fast
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-valgrind
     TIMEOUT: 7200
@@ -721,9 +735,10 @@ linux-xsdk-dbg:
     - .stage-3
     - .linux_test
   tags:
-    - mcs-nfs
+    - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-xsdk-dbg
+    LOAD_MODULES: gcc/8.3.0-fjpc5ys
 
 linux-intel:
   extends:
@@ -775,18 +790,16 @@ linux-64idx-i8-uni:
 
 # job for analyzing the final coverage results
 analyze-pipeline:
+  extends: .test
   stage: .post
   image: jedbrown/mpich-ccache
+  tags:
+    - docker
+  dependencies:
   variables:
     PYTHON: python3
     # Need a dummy TEST_ARCH that comes from artifacts
     TEST_ARCH: arch-ci-linux-pkgs-gcov
-  only:
-    refs:
-#     Set with CI/CD Shedules - New Schedule
-      - schedules
-#     Set with CI/CD Pipelines - Run Pipeline
-      - web
   allow_failure: true
   before_script:
     - date

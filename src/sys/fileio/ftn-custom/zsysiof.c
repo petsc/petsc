@@ -49,38 +49,38 @@
 extern "C" {
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL  petscbinarywriteint_(int *fd,void*p,PetscInt *n,PetscDataType *type,PetscBool  *istemp, int *ierr)
+PETSC_EXTERN void  petscbinarywriteint_(int *fd,void*p,PetscInt *n,PetscDataType *type,PetscBool  *istemp, int *ierr)
 {
   *ierr = PetscBinaryWrite(*fd,p,*n,*type,*istemp);
 }
 
-PETSC_EXTERN void PETSC_STDCALL  petscbinarywritereal_(int *fd,void*p,PetscInt *n,PetscDataType *type,PetscBool  *istemp, int *ierr)
+PETSC_EXTERN void  petscbinarywritereal_(int *fd,void*p,PetscInt *n,PetscDataType *type,PetscBool  *istemp, int *ierr)
 {
   *ierr = PetscBinaryWrite(*fd,p,*n,*type,*istemp);
 }
 
-PETSC_EXTERN void PETSC_STDCALL  petscbinarywritecomplex_(int *fd,void*p,PetscInt *n,PetscDataType *type,PetscBool  *istemp, int *ierr)
+PETSC_EXTERN void  petscbinarywritecomplex_(int *fd,void*p,PetscInt *n,PetscDataType *type,PetscBool  *istemp, int *ierr)
 {
   *ierr = PetscBinaryWrite(*fd,p,*n,*type,*istemp);
 }
 
-PETSC_EXTERN void PETSC_STDCALL  petscbinarywriteint1_(int *fd,void*p,PetscInt *n,PetscDataType *type,PetscBool  *istemp, int *ierr)
+PETSC_EXTERN void  petscbinarywriteint1_(int *fd,void*p,PetscInt *n,PetscDataType *type,PetscBool  *istemp, int *ierr)
 {
   *ierr = PetscBinaryWrite(*fd,p,*n,*type,*istemp);
 }
 
-PETSC_EXTERN void PETSC_STDCALL  petscbinarywritereal1_(int *fd,void*p,PetscInt *n,PetscDataType *type,PetscBool  *istemp, int *ierr)
+PETSC_EXTERN void  petscbinarywritereal1_(int *fd,void*p,PetscInt *n,PetscDataType *type,PetscBool  *istemp, int *ierr)
 {
   *ierr = PetscBinaryWrite(*fd,p,*n,*type,*istemp);
 }
 
-PETSC_EXTERN void PETSC_STDCALL  petscbinarywritecomplex1_(int *fd,void*p,PetscInt *n,PetscDataType *type,PetscBool  *istemp, int *ierr)
+PETSC_EXTERN void  petscbinarywritecomplex1_(int *fd,void*p,PetscInt *n,PetscDataType *type,PetscBool  *istemp, int *ierr)
 {
   *ierr = PetscBinaryWrite(*fd,p,*n,*type,*istemp);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscbinaryopen_(char* name PETSC_MIXED_LEN(len),PetscFileMode *type,int *fd,
-                                    PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void petscbinaryopen_(char* name,PetscFileMode *type,int *fd,
+                                    PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *c1;
 
@@ -89,79 +89,79 @@ PETSC_EXTERN void PETSC_STDCALL petscbinaryopen_(char* name PETSC_MIXED_LEN(len)
   FREECHAR(name,c1);
 }
 
-PETSC_EXTERN void PETSC_STDCALL  petscbinaryreadint_(int *fd,void *data,PetscInt *num,PetscInt *count,PetscDataType *type,int *ierr)
+PETSC_EXTERN void  petscbinaryreadint_(int *fd,void *data,PetscInt *num,PetscInt *count,PetscDataType *type,int *ierr)
 {
   CHKFORTRANNULLINTEGER(count);
   *ierr = PetscBinaryRead(*fd,data,*num,count,*type);if (*ierr) return;
 }
 
-PETSC_EXTERN void PETSC_STDCALL  petscbinaryreadreal_(int *fd,void *data,PetscInt *num,PetscInt *count,PetscDataType *type,int *ierr)
+PETSC_EXTERN void  petscbinaryreadreal_(int *fd,void *data,PetscInt *num,PetscInt *count,PetscDataType *type,int *ierr)
 {
   CHKFORTRANNULLINTEGER(count);
   *ierr = PetscBinaryRead(*fd,data,*num,count,*type);if (*ierr) return;
 }
 
-PETSC_EXTERN void PETSC_STDCALL  petscbinaryreadcomplex_(int *fd,void *data,PetscInt *num,PetscInt *count,PetscDataType *type,int *ierr)
+PETSC_EXTERN void  petscbinaryreadcomplex_(int *fd,void *data,PetscInt *num,PetscInt *count,PetscDataType *type,int *ierr)
 {
   CHKFORTRANNULLINTEGER(count);
   *ierr = PetscBinaryRead(*fd,data,*num,count,*type);if (*ierr) return;
 }
 
-PETSC_EXTERN void PETSC_STDCALL  petscbinaryreadint1_(int *fd,void *data,PetscInt *num,PetscInt *count,PetscDataType *type,int *ierr)
+PETSC_EXTERN void  petscbinaryreadint1_(int *fd,void *data,PetscInt *num,PetscInt *count,PetscDataType *type,int *ierr)
 {
   CHKFORTRANNULLINTEGER(count);
   *ierr = PetscBinaryRead(*fd,data,*num,count,*type);if (*ierr) return;
 }
 
-PETSC_EXTERN void PETSC_STDCALL  petscbinaryreadreal1_(int *fd,void *data,PetscInt *num,PetscInt *count,PetscDataType *type,int *ierr)
+PETSC_EXTERN void  petscbinaryreadreal1_(int *fd,void *data,PetscInt *num,PetscInt *count,PetscDataType *type,int *ierr)
 {
   CHKFORTRANNULLINTEGER(count);
   *ierr = PetscBinaryRead(*fd,data,*num,count,*type);if (*ierr) return;
 }
 
-PETSC_EXTERN void PETSC_STDCALL  petscbinaryreadcomplex1_(int *fd,void *data,PetscInt *num,PetscInt *count,PetscDataType *type,int *ierr)
+PETSC_EXTERN void  petscbinaryreadcomplex1_(int *fd,void *data,PetscInt *num,PetscInt *count,PetscDataType *type,int *ierr)
 {
   CHKFORTRANNULLINTEGER(count);
   *ierr = PetscBinaryRead(*fd,data,*num,count,*type);if (*ierr) return;
 }
 
-PETSC_EXTERN void PETSC_STDCALL  petscbinaryreadintcnt_(int *fd,void *data,PetscInt *num,PetscInt *count,PetscDataType *type,int *ierr)
+PETSC_EXTERN void  petscbinaryreadintcnt_(int *fd,void *data,PetscInt *num,PetscInt *count,PetscDataType *type,int *ierr)
 {
   CHKFORTRANNULLINTEGER(count);
   *ierr = PetscBinaryRead(*fd,data,*num,count,*type);if (*ierr) return;
 }
 
-PETSC_EXTERN void PETSC_STDCALL  petscbinaryreadrealcnt_(int *fd,void *data,PetscInt *num,PetscInt *count,PetscDataType *type,int *ierr)
+PETSC_EXTERN void  petscbinaryreadrealcnt_(int *fd,void *data,PetscInt *num,PetscInt *count,PetscDataType *type,int *ierr)
 {
   CHKFORTRANNULLINTEGER(count);
   *ierr = PetscBinaryRead(*fd,data,*num,count,*type);if (*ierr) return;
 }
 
-PETSC_EXTERN void PETSC_STDCALL  petscbinaryreadcomplexcnt_(int *fd,void *data,PetscInt *num,PetscInt *count,PetscDataType *type,int *ierr)
+PETSC_EXTERN void  petscbinaryreadcomplexcnt_(int *fd,void *data,PetscInt *num,PetscInt *count,PetscDataType *type,int *ierr)
 {
   CHKFORTRANNULLINTEGER(count);
   *ierr = PetscBinaryRead(*fd,data,*num,count,*type);if (*ierr) return;
 }
 
-PETSC_EXTERN void PETSC_STDCALL  petscbinaryreadint1cnt_(int *fd,void *data,PetscInt *num,PetscInt *count,PetscDataType *type,int *ierr)
+PETSC_EXTERN void  petscbinaryreadint1cnt_(int *fd,void *data,PetscInt *num,PetscInt *count,PetscDataType *type,int *ierr)
 {
   CHKFORTRANNULLINTEGER(count);
   *ierr = PetscBinaryRead(*fd,data,*num,count,*type);if (*ierr) return;
 }
 
-PETSC_EXTERN void PETSC_STDCALL  petscbinaryreadreal1cnt_(int *fd,void *data,PetscInt *num,PetscInt *count,PetscDataType *type,int *ierr)
+PETSC_EXTERN void  petscbinaryreadreal1cnt_(int *fd,void *data,PetscInt *num,PetscInt *count,PetscDataType *type,int *ierr)
 {
   CHKFORTRANNULLINTEGER(count);
   *ierr = PetscBinaryRead(*fd,data,*num,count,*type);if (*ierr) return;
 }
 
-PETSC_EXTERN void PETSC_STDCALL  petscbinaryreadcomplex1cnt_(int *fd,void *data,PetscInt *num,PetscInt *count,PetscDataType *type,int *ierr)
+PETSC_EXTERN void  petscbinaryreadcomplex1cnt_(int *fd,void *data,PetscInt *num,PetscInt *count,PetscDataType *type,int *ierr)
 {
   CHKFORTRANNULLINTEGER(count);
   *ierr = PetscBinaryRead(*fd,data,*num,count,*type);if (*ierr) return;
 }
 
-PETSC_EXTERN void PETSC_STDCALL petsctestfile_(char* name PETSC_MIXED_LEN(len),char* mode PETSC_MIXED_LEN(len1),PetscBool *flg,PetscErrorCode *ierr PETSC_END_LEN(len) PETSC_END_LEN(len1))
+PETSC_EXTERN void petsctestfile_(char* name,char* mode,PetscBool *flg,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len,PETSC_FORTRAN_CHARLEN_T len1)
 {
   char *c1;
 

@@ -10,14 +10,14 @@
 #define iscoloringviewfromoptions_ iscoloringviewfromoptions
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL iscoloringview_(ISColoring *iscoloring,PetscViewer *viewer,PetscErrorCode *ierr)
+PETSC_EXTERN void iscoloringview_(ISColoring *iscoloring,PetscViewer *viewer,PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
   *ierr = ISColoringView(*iscoloring,v);
 }
 
-PETSC_EXTERN void PETSC_STDCALL iscoloringviewfromoptions_(ISColoring *ao,PetscObject obj,char* type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void iscoloringviewfromoptions_(ISColoring *ao,PetscObject obj,char* type,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;
 

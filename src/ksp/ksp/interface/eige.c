@@ -222,9 +222,6 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
     lwork    = 5*n;
     ierr     = PetscMalloc2(n,&realpart,n,&imagpart);CHKERRQ(ierr);
     ierr     = PetscMalloc1(5*n,&work);CHKERRQ(ierr);
-#if defined(PETSC_MISSING_LAPACK_GEEV)
-    SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"GEEV - Lapack routine is unavailable\nNot able to provide eigen values.");
-#else
     {
       PetscBLASInt lierr;
       PetscScalar  sdummy;
@@ -236,7 +233,6 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
       if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in LAPACK routine %d",(int)lierr);
       ierr = PetscFPTrapPop();CHKERRQ(ierr);
     }
-#endif
     ierr = PetscFree(work);CHKERRQ(ierr);
     ierr = PetscMalloc1(n,&perm);CHKERRQ(ierr);
 
@@ -261,9 +257,6 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
     ierr   = PetscMalloc1(5*n,&work);CHKERRQ(ierr);
     ierr   = PetscMalloc1(2*n,&rwork);CHKERRQ(ierr);
     ierr   = PetscMalloc1(n,&eigs);CHKERRQ(ierr);
-#if defined(PETSC_MISSING_LAPACK_GEEV)
-    SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"GEEV - Lapack routine is unavailable\nNot able to provide eigen values.");
-#else
     {
       PetscBLASInt lierr;
       PetscScalar  sdummy;
@@ -274,7 +267,6 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
       if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in LAPACK routine %d",(int)lierr);
       ierr = PetscFPTrapPop();CHKERRQ(ierr);
     }
-#endif
     ierr = PetscFree(work);CHKERRQ(ierr);
     ierr = PetscFree(rwork);CHKERRQ(ierr);
     ierr = PetscMalloc1(n,&perm);CHKERRQ(ierr);

@@ -5087,7 +5087,7 @@ PetscErrorCode  MatSeqAIJRegisterAll(void)
 #undef SETERRQ3
 #define SETERRQ3(comm,ierr,b,c,d,e) CHKERRABORT(comm,ierr)
 
-PETSC_EXTERN void PETSC_STDCALL matsetvaluesseqaij_(Mat *AA,PetscInt *mm,const PetscInt im[],PetscInt *nn,const PetscInt in[],const PetscScalar v[],InsertMode *isis, PetscErrorCode *_ierr)
+PETSC_EXTERN void matsetvaluesseqaij_(Mat *AA,PetscInt *mm,const PetscInt im[],PetscInt *nn,const PetscInt in[],const PetscScalar v[],InsertMode *isis, PetscErrorCode *_ierr)
 {
   Mat            A  = *AA;
   PetscInt       m  = *mm, n = *nn;

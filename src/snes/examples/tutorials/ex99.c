@@ -143,7 +143,7 @@ PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *ctx)
   ierr = VecGetArray(f,&ff);CHKERRQ(ierr);
 
   /* Compute function */
-  ff[0] = 8. * exp(-4. * (xx[0] - 2.) * (xx[0] - 2.)) * (xx[0] - 2.) + 2. * xx[0];
+  ff[0] = 8. * PetscExpScalar(-4. * (xx[0] - 2.) * (xx[0] - 2.)) * (xx[0] - 2.) + 2. * xx[0];
 
   /* Restore vectors */
   ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
@@ -168,8 +168,8 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
       - Since this is such a small problem, we set all entries for
         the matrix at once.
   */
-  A[0]  = 8. * ((xx[0] - 2.) * (exp(-4. * (xx[0] - 2.) * (xx[0] - 2.)) * -8. * (xx[0] - 2.))
-                + exp(-4. * (xx[0] - 2.) * (xx[0] - 2.)))
+  A[0]  = 8. * ((xx[0] - 2.) * (PetscExpScalar(-4. * (xx[0] - 2.) * (xx[0] - 2.)) * -8. * (xx[0] - 2.))
+                + PetscExpScalar(-4. * (xx[0] - 2.) * (xx[0] - 2.)))
           + 2.;
 
   ierr  = MatSetValues(B,1,idx,1,idx,A,INSERT_VALUES);CHKERRQ(ierr);

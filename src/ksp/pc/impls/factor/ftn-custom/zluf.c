@@ -12,7 +12,7 @@
 #define pcfactorgetmatsolvertype_ pcfactorgetmatsolvertype
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL pcfactorsetmatorderingtype_(PC *pc,char* ordering PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void pcfactorsetmatorderingtype_(PC *pc,char* ordering, PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;
 
@@ -20,7 +20,7 @@ PETSC_EXTERN void PETSC_STDCALL pcfactorsetmatorderingtype_(PC *pc,char* orderin
   *ierr = PCFactorSetMatOrderingType(*pc,t);if (*ierr) return;
   FREECHAR(ordering,t);
 }
-PETSC_EXTERN void PETSC_STDCALL pcfactorsetmatsolvertype_(PC *pc,char* ordering PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void pcfactorsetmatsolvertype_(PC *pc,char* ordering, PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;
 
@@ -28,7 +28,7 @@ PETSC_EXTERN void PETSC_STDCALL pcfactorsetmatsolvertype_(PC *pc,char* ordering 
   *ierr = PCFactorSetMatSolverType(*pc,t);if (*ierr) return;
   FREECHAR(ordering,t);
 }
-PETSC_EXTERN void PETSC_STDCALL pcfactorgetmatsolvertype_(PC *mat,char* name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void pcfactorgetmatsolvertype_(PC *mat,char* name,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   const char *tname;
 

@@ -12,7 +12,7 @@
 #define petscquadraturesetdata_      petscquadraturesetdata
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL petscquadraturegetdata_(PetscQuadrature *q, PetscInt *dim, PetscInt *Nc, PetscInt *npoints, F90Array1d *ptrP, F90Array1d *ptrW, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrp) PETSC_F90_2PTR_PROTO(ptrw))
+PETSC_EXTERN void petscquadraturegetdata_(PetscQuadrature *q, PetscInt *dim, PetscInt *Nc, PetscInt *npoints, F90Array1d *ptrP, F90Array1d *ptrW, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrp) PETSC_F90_2PTR_PROTO(ptrw))
 {
   const PetscReal *points, *weights;
 
@@ -21,13 +21,13 @@ PETSC_EXTERN void PETSC_STDCALL petscquadraturegetdata_(PetscQuadrature *q, Pets
   *ierr = F90Array1dCreate((void *) weights, MPIU_REAL, 1, (*npoints)*(*Nc), ptrW PETSC_F90_2PTR_PARAM(ptrw));
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscquadraturerestoredata_(PetscQuadrature *q, PetscInt *dim, PetscInt *Nc, PetscInt *npoints, F90Array1d *ptrP, F90Array1d *ptrW, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrp) PETSC_F90_2PTR_PROTO(ptrw))
+PETSC_EXTERN void petscquadraturerestoredata_(PetscQuadrature *q, PetscInt *dim, PetscInt *Nc, PetscInt *npoints, F90Array1d *ptrP, F90Array1d *ptrW, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrp) PETSC_F90_2PTR_PROTO(ptrw))
 {
   *ierr = F90Array1dDestroy(ptrP, MPIU_REAL PETSC_F90_2PTR_PARAM(ptrp));if (*ierr) return;
   *ierr = F90Array1dDestroy(ptrW, MPIU_REAL PETSC_F90_2PTR_PARAM(ptrw));
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscquadraturesetdata_(PetscQuadrature *q, PetscInt *dim, PetscInt *Nc, PetscInt *npoints, F90Array1d *ptrP, F90Array1d *ptrW, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrp) PETSC_F90_2PTR_PROTO(ptrw))
+PETSC_EXTERN void petscquadraturesetdata_(PetscQuadrature *q, PetscInt *dim, PetscInt *Nc, PetscInt *npoints, F90Array1d *ptrP, F90Array1d *ptrW, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrp) PETSC_F90_2PTR_PROTO(ptrw))
 {
   PetscReal *points, *weights;
 

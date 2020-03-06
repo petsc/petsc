@@ -21,10 +21,10 @@
 #define petsc_null_function_  petsc_null_function__
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL petscsetmoduleblock_();
-PETSC_EXTERN void PETSC_STDCALL petscsetmoduleblockmpi_(MPI_Fint*,MPI_Fint*,MPI_Fint*);
-PETSC_EXTERN void PETSC_STDCALL petscsetmoduleblocknumeric_(PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*);
-PETSC_EXTERN void PETSC_STDCALL petscsetcomm_(MPI_Fint*,MPI_Fint*);
+PETSC_EXTERN void petscsetmoduleblock_();
+PETSC_EXTERN void petscsetmoduleblockmpi_(MPI_Fint*,MPI_Fint*,MPI_Fint*);
+PETSC_EXTERN void petscsetmoduleblocknumeric_(PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*);
+PETSC_EXTERN void petscsetcomm_(MPI_Fint*,MPI_Fint*);
 
 /*@C
    PetscInitializeFortran - Routine that should be called soon AFTER
@@ -78,15 +78,15 @@ PetscErrorCode PetscInitializeFortran(void)
   return 0;
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscinitializefortran_(int *ierr)
+PETSC_EXTERN void petscinitializefortran_(int *ierr)
 {
   *ierr = PetscInitializeFortran();
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscsetfortranbasepointers_(char *fnull_character PETSC_MIXED_LEN(len),
+PETSC_EXTERN void petscsetfortranbasepointers_(char *fnull_character,
                                   void *fnull_integer,void *fnull_scalar,void * fnull_double,
                                   void *fnull_real,
-                                  void* fnull_truth,void (*fnull_function)(void) PETSC_END_LEN(len))
+                                  void* fnull_truth,void (*fnull_function)(void),PETSC_FORTRAN_CHARLEN_T len)
 {
   PETSC_NULL_CHARACTER_Fortran = fnull_character;
   PETSC_NULL_INTEGER_Fortran   = fnull_integer;

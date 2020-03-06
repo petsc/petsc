@@ -8,7 +8,7 @@ extern PetscErrorCode CkEigenSolutions(PetscInt,Mat,PetscInt,PetscInt,PetscScala
 int main(int argc,char **args)
 {
   PetscErrorCode ierr;
-#if defined(PETSC_USE_COMPLEX) || defined(PETSC_MISSING_LAPACK_DSTEBZ) || defined(PETSC_MISSING_LAPACK_STEIN)
+#if defined(PETSC_USE_COMPLEX) || defined(PETSC_MISSING_LAPACK_STEBZ) || defined(PETSC_MISSING_LAPACK_STEIN)
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP_SYS,"This example requires LAPACK routines dstebz and stien and real numbers");
 #else

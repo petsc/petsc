@@ -10,7 +10,7 @@
 #define petscfvviewfromoptions_ petscfvviewfromoptions
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL petsclimiterviewfromoptions_(PetscLimiter *ao,PetscObject obj,char* type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void petsclimiterviewfromoptions_(PetscLimiter *ao,PetscObject obj,char* type,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;
 
@@ -19,7 +19,7 @@ PETSC_EXTERN void PETSC_STDCALL petsclimiterviewfromoptions_(PetscLimiter *ao,Pe
   FREECHAR(type,t);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscfvviewfromoptions_(PetscFV *ao,PetscObject obj,char* type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void petscfvviewfromoptions_(PetscFV *ao,PetscObject obj,char* type,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;
 

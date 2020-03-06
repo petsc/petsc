@@ -9,7 +9,7 @@
 #define tsroswgettype_                   tsroswgettype
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL tsroswsettype_(TS *ts,char* type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void tsroswsettype_(TS *ts,char* type,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;
 
@@ -18,7 +18,7 @@ PETSC_EXTERN void PETSC_STDCALL tsroswsettype_(TS *ts,char* type PETSC_MIXED_LEN
   FREECHAR(type,t);
 }
 
-PETSC_EXTERN void PETSC_STDCALL tsroswgettype_(TS *ts,char* name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void tsroswgettype_(TS *ts,char* name,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   const char *tname;
 

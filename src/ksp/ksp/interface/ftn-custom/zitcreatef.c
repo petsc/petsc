@@ -14,7 +14,7 @@
 #define kspviewfromoptions_        kspviewfromoptions
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL kspgettype_(KSP *ksp,char* name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void kspgettype_(KSP *ksp,char* name,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   const char *tname;
 
@@ -24,7 +24,7 @@ PETSC_EXTERN void PETSC_STDCALL kspgettype_(KSP *ksp,char* name PETSC_MIXED_LEN(
 
 }
 
-PETSC_EXTERN void PETSC_STDCALL kspsettype_(KSP *ksp,char* type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void kspsettype_(KSP *ksp,char* type,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;
 
@@ -33,14 +33,14 @@ PETSC_EXTERN void PETSC_STDCALL kspsettype_(KSP *ksp,char* type PETSC_MIXED_LEN(
   FREECHAR(type,t);
 }
 
-PETSC_EXTERN void PETSC_STDCALL kspview_(KSP *ksp,PetscViewer *viewer, PetscErrorCode *ierr)
+PETSC_EXTERN void kspview_(KSP *ksp,PetscViewer *viewer, PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
   *ierr = KSPView(*ksp,v);
 }
 
-PETSC_EXTERN void PETSC_STDCALL kspviewfromoptions_(KSP *ao,PetscObject obj,char* type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void kspviewfromoptions_(KSP *ao,PetscObject obj,char* type,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;
 

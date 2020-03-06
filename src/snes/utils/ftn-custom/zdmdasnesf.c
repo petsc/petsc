@@ -22,7 +22,7 @@ static struct {
 static PetscErrorCode sourlj1d(DMDALocalInfo *info,PetscScalar *in,Mat A,Mat m,void *ptr)
 {
   PetscErrorCode ierr;
-  void (PETSC_STDCALL *func)(DMDALocalInfo*,PetscScalar*,Mat*,Mat*,void*,PetscErrorCode*),*ctx;
+  void (*func)(DMDALocalInfo*,PetscScalar*,Mat*,Mat*,void*,PetscErrorCode*),*ctx;
   DMSNES sdm;
 
   PetscFunctionBegin;
@@ -35,7 +35,7 @@ static PetscErrorCode sourlj1d(DMDALocalInfo *info,PetscScalar *in,Mat A,Mat m,v
 static PetscErrorCode sourlj2d(DMDALocalInfo *info,PetscScalar **in,Mat A,Mat m,void *ptr)
 {
   PetscErrorCode ierr;
-  void (PETSC_STDCALL *func)(DMDALocalInfo*,PetscScalar*,Mat*,Mat*,void*,PetscErrorCode*),*ctx;
+  void (*func)(DMDALocalInfo*,PetscScalar*,Mat*,Mat*,void*,PetscErrorCode*),*ctx;
   DMSNES sdm;
 
   PetscFunctionBegin;
@@ -48,7 +48,7 @@ static PetscErrorCode sourlj2d(DMDALocalInfo *info,PetscScalar **in,Mat A,Mat m,
 static PetscErrorCode sourlj3d(DMDALocalInfo *info,PetscScalar ***in,Mat A,Mat m,void *ptr)
 {
   PetscErrorCode ierr;
-  void (PETSC_STDCALL *func)(DMDALocalInfo*,PetscScalar*,Mat*,Mat*,void*,PetscErrorCode*),*ctx;
+  void (*func)(DMDALocalInfo*,PetscScalar*,Mat*,Mat*,void*,PetscErrorCode*),*ctx;
   DMSNES sdm;
 
   PetscFunctionBegin;
@@ -58,7 +58,7 @@ static PetscErrorCode sourlj3d(DMDALocalInfo *info,PetscScalar ***in,Mat A,Mat m
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN void PETSC_STDCALL dmdasnessetjacobianlocal_(DM *da,void (PETSC_STDCALL *jac)(DMDALocalInfo*,void*,void*,void*,void*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void dmdasnessetjacobianlocal_(DM *da,void (*jac)(DMDALocalInfo*,void*,void*,void*,void*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
 {
   DMSNES   sdm;
   PetscInt dim;
@@ -82,7 +82,7 @@ PETSC_EXTERN void PETSC_STDCALL dmdasnessetjacobianlocal_(DM *da,void (PETSC_STD
 static PetscErrorCode sourlf1d(DMDALocalInfo *info,PetscScalar *in,PetscScalar *out,void *ptr)
 {
   PetscErrorCode ierr;
-  void (PETSC_STDCALL *func)(DMDALocalInfo*,PetscScalar*,PetscScalar*,void*,PetscErrorCode*),*ctx;
+  void (*func)(DMDALocalInfo*,PetscScalar*,PetscScalar*,void*,PetscErrorCode*),*ctx;
   DMSNES sdm;
 
   PetscFunctionBegin;
@@ -95,7 +95,7 @@ static PetscErrorCode sourlf1d(DMDALocalInfo *info,PetscScalar *in,PetscScalar *
 static PetscErrorCode sourlf2d(DMDALocalInfo *info,PetscScalar **in,PetscScalar **out,void *ptr)
 {
   PetscErrorCode ierr;
-  void (PETSC_STDCALL *func)(DMDALocalInfo*,PetscScalar*,PetscScalar*,void*,PetscErrorCode*),*ctx;
+  void (*func)(DMDALocalInfo*,PetscScalar*,PetscScalar*,void*,PetscErrorCode*),*ctx;
   DMSNES sdm;
 
   PetscFunctionBegin;
@@ -108,7 +108,7 @@ static PetscErrorCode sourlf2d(DMDALocalInfo *info,PetscScalar **in,PetscScalar 
 static PetscErrorCode sourlf3d(DMDALocalInfo *info,PetscScalar ***in,PetscScalar ***out,void *ptr)
 {
   PetscErrorCode ierr;
-  void (PETSC_STDCALL *func)(DMDALocalInfo*,PetscScalar*,PetscScalar*,void*,PetscErrorCode*),*ctx;
+  void (*func)(DMDALocalInfo*,PetscScalar*,PetscScalar*,void*,PetscErrorCode*),*ctx;
   DMSNES sdm;
 
   PetscFunctionBegin;
@@ -118,7 +118,7 @@ static PetscErrorCode sourlf3d(DMDALocalInfo *info,PetscScalar ***in,PetscScalar
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN void PETSC_STDCALL dmdasnessetfunctionlocal_(DM *da,InsertMode *mode,void (PETSC_STDCALL *func)(DMDALocalInfo*,void*,void*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void dmdasnessetfunctionlocal_(DM *da,InsertMode *mode,void (*func)(DMDALocalInfo*,void*,void*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
 {
   DMSNES   sdm;
   PetscInt dim;

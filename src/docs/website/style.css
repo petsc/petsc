@@ -2,9 +2,13 @@ body {
   background-color: rgb(213, 234, 255);
 }
 
-#logo, #sidebar {
+#sidebar {
   float:left;
   width: 260px;
+}
+
+#logo img {
+  float:left;
 }
 
 #logo h1 {

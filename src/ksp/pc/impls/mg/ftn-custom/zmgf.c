@@ -7,7 +7,7 @@
 #define pcmgsetlevels_             pcmgsetlevels
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL pcmgsetlevels_(PC *pc,PetscInt *levels,MPI_Comm *comms, PetscErrorCode *ierr)
+PETSC_EXTERN void pcmgsetlevels_(PC *pc,PetscInt *levels,MPI_Comm *comms, PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(comms);
   *ierr = PCMGSetLevels(*pc,*levels,comms);

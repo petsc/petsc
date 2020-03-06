@@ -7,8 +7,8 @@
 #define petscdrawstring_          petscdrawstring
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL petscdrawstring_(PetscDraw *ctx,double* xl,double* yl,int* cl,char* text PETSC_MIXED_LEN(len),
-                                    PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void petscdrawstring_(PetscDraw *ctx,double* xl,double* yl,int* cl,char* text,
+                                    PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;
   FIXCHAR(text,len,t);
@@ -22,8 +22,8 @@ PETSC_EXTERN void PETSC_STDCALL petscdrawstring_(PetscDraw *ctx,double* xl,doubl
 #define petscdrawstringvertical_  petscdrawstringvertical
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL petscdrawstringvertical_(PetscDraw *ctx,double *xl,double *yl,int *cl,
-                   char* text PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void petscdrawstringvertical_(PetscDraw *ctx,double *xl,double *yl,int *cl,
+                   char* text,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;
   FIXCHAR(text,len,t);

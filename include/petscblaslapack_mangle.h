@@ -126,6 +126,8 @@
 #define LAPACKgeqrf_ PETSCBLAS(geqrf,GEQRF)
 #define LAPACKgetrf_ PETSCBLAS(getrf,GETRF)
 #define LAPACKgetri_ PETSCBLAS(getri,GETRI)
+#define LAPACKREALgetrf_ PETSCBLASREAL(getrf,GETRF)
+#define LAPACKREALgetri_ PETSCBLASREAL(getri,GETRI)
 #define BLASnrm2_    PETSCBLASR(nrm2,NRM2)
 #define BLASscal_    PETSCBLAS(scal,SCAL)
 #define BLAScopy_    PETSCBLAS(copy,COPY)
@@ -134,18 +136,28 @@
 #define BLASasum_    PETSCBLASR(asum,ASUM)
 #define LAPACKpttrf_ PETSCBLAS(pttrf,PTTRF) /* factorization of a spd tridiagonal matrix */
 #define LAPACKpttrs_ PETSCBLAS(pttrs,PTTRS) /* solve a spd tridiagonal matrix system */
+#if !defined(PETSC_MISSING_LAPACK_STEIN)
 #define LAPACKstein_ PETSCBLAS(stein,STEIN) /* eigenvectors of real symm tridiagonal matrix */
+#endif
 #define LAPACKgesv_  PETSCBLAS(gesv,GESV)
+#if !defined(PETSC_MISSING_LAPACK_GELSS)
 #define LAPACKgelss_ PETSCBLAS(gelss,GELSS)
+#endif
+#if !defined(PETSC_MISSING_LAPACK_GERFS)
 #define LAPACKgerfs_ PETSCBLAS(gerfs,GERFS)
+#endif
+#if !defined(PETSC_MISSING_LAPACK_TGSEN)
 #define LAPACKtgsen_ PETSCBLAS(tgsen,TGSEN)
+#endif
 /* character-string arguments: */
 #define LAPACKpotrf_ PETSCBLAS(potrf,POTRF)
 #define LAPACKpotri_ PETSCBLAS(potri,POTRI)
 #define LAPACKpotrs_ PETSCBLAS(potrs,POTRS)
 #define LAPACKsytrf_ PETSCBLAS(sytrf,SYTRF)
 #define LAPACKsytrs_ PETSCBLAS(sytrs,SYTRS)
+#if !defined(PETSC_MISSING_LAPACK_SYTRI)
 #define LAPACKsytri_ PETSCBLAS(sytri,SYTRI)
+#endif
 #define BLASgemv_    PETSCBLAS(gemv,GEMV)
 #define LAPACKgetrs_ PETSCBLAS(getrs,GETRS)
 #define BLAStrmv_    PETSCBLAS(trmv,TRMV)
@@ -154,21 +166,41 @@
 #define BLASsyrk_    PETSCBLAS(syrk,SYRK)
 #define BLASsyr2k_   PETSCBLAS(syr2k,SYR2K)
 #define BLAStrsm_    PETSCBLAS(trsm,TRSM)
+#define BLASREALgemm_ PETSCBLASREAL(gemm,GEMM)
 #define LAPACKgesvd_ PETSCBLAS(gesvd,GESVD)
 #define LAPACKgeev_  PETSCBLAS(geev,GEEV)
 #define LAPACKgels_  PETSCBLAS(gels,GELS)
+#if !defined(PETSC_MISSING_LAPACK_STEGR)
+#define LAPACKstegr_ PETSCBLAS(stegr,STEGR)  /* eigenvalues and eigenvectors of symm tridiagonal */
+#endif
+#if !defined(PETSC_MISSING_LAPACK_STEQR)
 #define LAPACKsteqr_ PETSCBLAS(steqr,STEQR)  /* eigenvalues and eigenvectors of symm tridiagonal */
-#define LAPACKREALsteqr_ PETSCBLASREAL(steqr,STEQR)  
+#define LAPACKREALsteqr_ PETSCBLASREAL(steqr,STEQR)
+#endif
+#if !defined(PETSC_MISSING_LAPACK_HSEQR)
 #define LAPACKhseqr_ PETSCBLAS(hseqr,HSEQR)
+#endif
+#if !defined(PETSC_MISSING_LAPACK_GGES)
 #define LAPACKgges_  PETSCBLAS(gges,GGES)
+#endif
+#if !defined(PETSC_MISSING_LAPACK_TRSEN)
 #define LAPACKtrsen_ PETSCBLAS(trsen,TRSEN)
+#endif
+#if !defined(PETSC_MISSING_LAPACK_HGEQZ)
 #define LAPACKhgeqz_ PETSCBLAS(hgeqz,HGEQZ)
+#endif
+#if !defined(PETSC_MISSING_LAPACK_TRTRS)
 #define LAPACKtrtrs_ PETSCBLAS(trtrs,TRTRS)
+#endif
 
 /* Subroutine names that differ for real/complex data: */
 #if !defined(PETSC_USE_COMPLEX)
+#if !defined(PETSC_MISSING_LAPACK_ORGQR)
 # define LAPACKorgqr_ PETSCBLAS(orgqr,ORGQR)
+#endif
+#if !defined(PETSC_MISSING_LAPACK_ORMQR)
 # define LAPACKormqr_ PETSCBLAS(ormqr,ORMQR)
+#endif
 # define BLASdot_     PETSCBLAS(dot,DOT)
 # define BLASdotu_    PETSCBLAS(dot,DOT)
 
@@ -178,13 +210,19 @@
 # define LAPACKsygvx_ PETSCBLAS(sygvx,SYGVX)
 
   /* stebz does not exist for complex data */
+#if !defined(PETSC_MISSING_LAPACK_STEBZ)
 # define LAPACKstebz_ PETSCBLAS(stebz,STEBZ) /* eigenvalues of symm tridiagonal matrix */
+#endif
 #else
 # define LAPACKhetrf_ PETSCBLAS(hetrf,HETRF)
 # define LAPACKhetrs_ PETSCBLAS(hetrs,HETRS)
 # define LAPACKhetri_ PETSCBLAS(hetri,HETRI)
+#if !defined(PETSC_MISSING_LAPACK_ORGQR)
 # define LAPACKorgqr_ PETSCBLAS(ungqr,UNGQR)
+#endif
+#if !defined(PETSC_MISSING_LAPACK_ORMQR)
 # define LAPACKormqr_ PETSCBLAS(unmqr,UNMQR)
+#endif
    /* note: dot and dotu are handled separately for complex data */
 
 # define LAPACKsyev_  PETSCBLAS(heev,HEEV)  /* eigenvalues and eigenvectors of a symm matrix */

@@ -6,8 +6,8 @@ petsc_hash_pkgs=os.path.join(os.getenv('HOME'),'petsc-hash-pkgs')
 # find the ifort libs location
 import os
 import distutils.spawn
-ifort_lib_dir=os.path.join(os.path.dirname(os.path.dirname(distutils.spawn.find_executable('ifort'))),'lib','intel64')
-mpich_install_dir='/homes/petsc/soft/linux-Ubuntu_14.04-x86_64/mpich-3.2-gcc-ifc'
+ifort_lib_dir=os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(distutils.spawn.find_executable('ifort')))),'compiler','lib','intel64')
+mpich_install_dir='/nfs/gce/projects/petsc/soft/gcc-7.4.0-ifort-19.0.3/mpich-3.3.2'
 mpich_lib_dir=os.path.join(mpich_install_dir,'lib')
 
 configure_options = [
@@ -19,8 +19,7 @@ configure_options = [
   #'--download-mpich=1',
   #'--download-mpich-pm=gforker',
   '--with-mpi-dir='+mpich_install_dir,
-
-  'LIBS=-L'+ifort_lib_dir+' -lifcore -ldl -limf -lirc -L'+mpich_lib_dir+' -lmpifort -lmpi',
+  'LIBS=-L'+ifort_lib_dir+' -lifport -lifcoremt_pic -limf -lsvml -lm -lipgo -lirc -lpthread -L'+mpich_lib_dir+' -lmpifort -lmpi',
 
   'COPTFLAGS=-g -O',
   'FOPTFLAGS=-g -O',

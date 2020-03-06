@@ -21,6 +21,7 @@ struct _p_PetscSection {
   PetscInt                     *numFieldComponents; /* The number of components in each field */
   PetscSection                 *field;        /* A section describing the layout and constraints for each field */
   PetscBool                     useFieldOff;  /* Use the field offsets directly for the global section, rather than the point offset */
+  char                        ***compNames;   /* The component names */
 
   PetscObject                   clObj;        /* Key for the closure (right now we only have one) */
   PetscSection                  clSection;    /* Section giving the number of points in each closure */

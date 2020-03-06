@@ -315,6 +315,7 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b,
       PetscStackCallBLAS("LAPACKtrtrs",LAPACKtrtrs_("U","T","N",&blasn,&blas1,a,&blaslda,wa2,&blasn,&blasinfo));
       rxnorm = BLASnrm2_(&blasn, wa2, &blas1);
       PetscStackCallBLAS("LAPACKtrtrs",LAPACKtrtrs_("U","N","N",&blasn,&blas1,a,&blaslda,wa2,&blasn,&blasinfo));
+
       PetscStackCallBLAS("BLAScopy",BLAScopy_(&blasn, wa2, &blas1, x, &blas1));
       PetscStackCallBLAS("BLASscal",BLASscal_(&blasn, &minusone, x, &blas1));
       xnorm = BLASnrm2_(&blasn, x, &blas1);

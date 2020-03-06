@@ -14,26 +14,26 @@
 #define vecscattercreatetozero_   vecscattercreatetozero
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL  vecscattercreatetoall_(Vec *vin,VecScatter *ctx,Vec *vout, int *ierr)
+PETSC_EXTERN void  vecscattercreatetoall_(Vec *vin,VecScatter *ctx,Vec *vout, int *ierr)
 {
   CHKFORTRANNULLOBJECT(vout);
   *ierr = VecScatterCreateToAll(*vin,ctx,vout);
 }
 
-PETSC_EXTERN void PETSC_STDCALL  vecscattercreatetozero_(Vec *vin,VecScatter *ctx,Vec *vout, int *ierr)
+PETSC_EXTERN void  vecscattercreatetozero_(Vec *vin,VecScatter *ctx,Vec *vout, int *ierr)
 {
   CHKFORTRANNULLOBJECT(vout);
   *ierr = VecScatterCreateToZero(*vin,ctx,vout);
 }
 
-PETSC_EXTERN void PETSC_STDCALL vecscatterview_(VecScatter *vecscatter,PetscViewer *viewer,PetscErrorCode *ierr)
+PETSC_EXTERN void vecscatterview_(VecScatter *vecscatter,PetscViewer *viewer,PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
   *ierr = VecScatterView(*vecscatter,v);
 }
 
-PETSC_EXTERN void PETSC_STDCALL vecscatterremap_(VecScatter *scat,PetscInt *rto,PetscInt *rfrom, int *ierr)
+PETSC_EXTERN void vecscatterremap_(VecScatter *scat,PetscInt *rto,PetscInt *rfrom, int *ierr)
 {
   CHKFORTRANNULLINTEGER(rto);
   CHKFORTRANNULLINTEGER(rfrom);

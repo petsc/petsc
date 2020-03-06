@@ -268,9 +268,6 @@ static PetscErrorCode SNESCompositeApply_AdditiveOptimal(SNES snes,Vec X,Vec B,V
     jac->beta[i] = ftf - jac->g[i];
   }
 
-#if defined(PETSC_MISSING_LAPACK_GELSS)
-  SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_SUP,"SNESCOMPOSITE with ADDITIVEOPTIMAL requires the LAPACK GELSS routine.");
-#else
   jac->info  = 0;
   jac->rcond = -1.;
   ierr          = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
@@ -282,7 +279,6 @@ static PetscErrorCode SNESCompositeApply_AdditiveOptimal(SNES snes,Vec X,Vec B,V
   ierr = PetscFPTrapPop();CHKERRQ(ierr);
   if (jac->info < 0) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_LIB,"Bad argument to GELSS");
   if (jac->info > 0) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_LIB,"SVD failed to converge");
-#endif
   tot = 0.;
   total = 0.;
   for (i=0; i<jac->n; i++) {

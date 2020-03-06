@@ -11,7 +11,7 @@
 #define dmdagetrefinementfactor_       dmdagetrefinementfactor
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL dmdagetneighbors_(DM *da,PetscMPIInt *ranks,PetscErrorCode *ierr)
+PETSC_EXTERN void dmdagetneighbors_(DM *da,PetscMPIInt *ranks,PetscErrorCode *ierr)
 {
   const PetscMPIInt *r;
   PetscInt          n,dim;
@@ -23,7 +23,7 @@ PETSC_EXTERN void PETSC_STDCALL dmdagetneighbors_(DM *da,PetscMPIInt *ranks,Pets
   *ierr = PetscArraycpy(ranks,r,n);
 }
 
-PETSC_EXTERN void PETSC_STDCALL dmdagetownershipranges_(DM *da,PetscInt lx[],PetscInt ly[],PetscInt lz[],PetscErrorCode *ierr)
+PETSC_EXTERN void dmdagetownershipranges_(DM *da,PetscInt lx[],PetscInt ly[],PetscInt lz[],PetscErrorCode *ierr)
 {
   const PetscInt *gx,*gy,*gz;
   PetscInt       M,N,P,i;
@@ -44,7 +44,7 @@ PETSC_EXTERN void PETSC_STDCALL dmdagetownershipranges_(DM *da,PetscInt lx[],Pet
   }
 }
 
-PETSC_EXTERN void PETSC_STDCALL dmdagetrefinementfactor_(DM *da,PetscInt *lx,PetscInt *ly,PetscInt *lz,PetscErrorCode *ierr)
+PETSC_EXTERN void dmdagetrefinementfactor_(DM *da,PetscInt *lx,PetscInt *ly,PetscInt *lz,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(lx);
   CHKFORTRANNULLINTEGER(ly);

@@ -2902,16 +2902,16 @@ PetscErrorCode MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *ne
   a       = (Mat_MPIAIJ*)mat->data;
 
   mat->factortype   = matin->factortype;
-  mat->assembled    = PETSC_TRUE;
+  mat->assembled    = matin->assembled;
   mat->insertmode   = NOT_SET_VALUES;
-  mat->preallocated = PETSC_TRUE;
+  mat->preallocated = matin->preallocated;
 
   a->size         = oldmat->size;
   a->rank         = oldmat->rank;
   a->donotstash   = oldmat->donotstash;
   a->roworiented  = oldmat->roworiented;
-  a->rowindices   = 0;
-  a->rowvalues    = 0;
+  a->rowindices   = NULL;
+  a->rowvalues    = NULL;
   a->getrowactive = PETSC_FALSE;
 
   ierr = PetscLayoutReference(matin->rmap,&mat->rmap);CHKERRQ(ierr);
@@ -2925,14 +2925,14 @@ PetscErrorCode MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *ne
     ierr = PetscLogObjectMemory((PetscObject)mat,(mat->cmap->N)*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscArraycpy(a->colmap,oldmat->colmap,mat->cmap->N);CHKERRQ(ierr);
 #endif
-  } else a->colmap = 0;
+  } else a->colmap = NULL;
   if (oldmat->garray) {
     PetscInt len;
     len  = oldmat->B->cmap->n;
     ierr = PetscMalloc1(len+1,&a->garray);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)mat,len*sizeof(PetscInt));CHKERRQ(ierr);
     if (len) { ierr = PetscArraycpy(a->garray,oldmat->garray,len);CHKERRQ(ierr); }
-  } else a->garray = 0;
+  } else a->garray = NULL;
 
   /* It may happen MatDuplicate is called with a non-assembled matrix
      In fact, MatDuplicate only requires the matrix to be preallocated
@@ -6225,7 +6225,7 @@ PetscErrorCode MatCreateMPIAIJWithSplitArrays(MPI_Comm comm,PetscInt m,PetscInt 
 #define matsetvaluesmpiaij_ matsetvaluesmpiaij
 #else
 #endif
-PETSC_EXTERN void PETSC_STDCALL matsetvaluesmpiaij_(Mat *mmat,PetscInt *mm,const PetscInt im[],PetscInt *mn,const PetscInt in[],const PetscScalar v[],InsertMode *maddv,PetscErrorCode *_ierr)
+PETSC_EXTERN void matsetvaluesmpiaij_(Mat *mmat,PetscInt *mm,const PetscInt im[],PetscInt *mn,const PetscInt in[],const PetscScalar v[],InsertMode *maddv,PetscErrorCode *_ierr)
 {
   Mat            mat  = *mmat;
   PetscInt       m    = *mm, n = *mn;

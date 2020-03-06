@@ -10,14 +10,14 @@
 #define petscfecreatedefault_ petscfecreatedefault
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL petscfeview_(PetscFE *fe,PetscViewer *vin,PetscErrorCode *ierr)
+PETSC_EXTERN void petscfeview_(PetscFE *fe,PetscViewer *vin,PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(vin,v);
   *ierr = PetscFEView(*fe,v);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscfecreatedefault_(MPI_Fint *comm,PetscInt *dim,PetscInt *Nc,PetscBool *isSimplex,char* prefix PETSC_MIXED_LEN(len),PetscInt *qorder, PetscFE *fe,PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void petscfecreatedefault_(MPI_Fint *comm,PetscInt *dim,PetscInt *Nc,PetscBool *isSimplex,char* prefix,PetscInt *qorder, PetscFE *fe,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *tprefix;
 

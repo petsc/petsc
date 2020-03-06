@@ -81,15 +81,9 @@ class Configure(config.package.Package):
   def checkBlas(self, blasLibrary, otherLibs, fortranMangle, routineIn = 'dot'):
     '''This checks the given library for the routine, dot by default'''
     oldLibs = self.compilers.LIBS
-    prototype = ''
-    call      = ''
     routine   = self.mangleBlas(routineIn)
-    if fortranMangle=='stdcall':
-      if routine=='ddot'+self.suffix:
-        prototype = 'double __stdcall DDOT(int*,double*,int*,double*,int*);'
-        call      = 'DDOT(0,0,0,0,0);'
     self.libraries.saveLog()
-    found   = self.libraries.check(blasLibrary, routine, otherLibs = otherLibs, fortranMangle = fortranMangle, prototype = prototype, call = call)
+    found   = self.libraries.check(blasLibrary, routine, otherLibs = otherLibs, fortranMangle = fortranMangle)
     self.logWrite(self.libraries.restoreLog())
     self.compilers.LIBS = oldLibs
     return found
@@ -99,19 +93,11 @@ class Configure(config.package.Package):
     if not isinstance(routinesIn, list): routinesIn = [routinesIn]
     routines = list(routinesIn)
     found   = 1
-    prototypes = ['']
-    calls      = ['']
     routines   = map(self.mangleBlas, routines)
 
-    if fortranMangle=='stdcall':
-      if routines == ['dgetrs','dgeev']:
-        prototypes = ['void __stdcall DGETRS(char*,int,int*,int*,double*,int*,int*,double*,int*,int*);',
-                      'void __stdcall DGEEV(char*,int,char*,int,int*,double*,int*,double*,double*,double*,int*,double*,int*,double*,int*,int*);']
-        calls      = ['DGETRS(0,0,0,0,0,0,0,0,0,0);',
-                      'DGEEV(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);']
-    for routine, prototype, call in zip(routines, prototypes, calls):
+    for routine in routines:
       self.libraries.saveLog()
-      found = found and self.libraries.check(lapackLibrary, routine, otherLibs = otherLibs, fortranMangle = fortranMangle, prototype = prototype, call = call)
+      found = found and self.libraries.check(lapackLibrary, routine, otherLibs = otherLibs, fortranMangle = fortranMangle)
       self.logWrite(self.libraries.restoreLog())
       if not found: break
     self.compilers.LIBS = oldLibs
@@ -119,8 +105,6 @@ class Configure(config.package.Package):
 
   def checkLib(self, lapackLibrary, blasLibrary = None):
     '''Checking for BLAS and LAPACK symbols'''
-
-    #check for BLASLAPACK_STDCALL calling convention!!!!
 
     if blasLibrary is None:
       self.separateBlas = 0
@@ -367,7 +351,7 @@ class Configure(config.package.Package):
       yield ('User specified AMD ACML lib dir', None, os.path.join(dir,'lib','libacml_mp.a'),'32','unknown')
       yield ('User specified AMD ACML lib dir', None, [os.path.join(dir,'lib','libacml_mp.a'), os.path.join(dir,'lib','libacml_mv.a')],'32','unknown')
       # BLIS
-      yield ('User specified installation root', os.path.join(dir, 'libblis.a'), os.path.join(dir, 'liblapack.a'), 'unknown', 'unknown')
+      yield ('User specified installation root BLIS/LAPACK', os.path.join(dir, 'libblis.a'), os.path.join(dir, 'liblapack.a'), 'unknown', 'unknown')
       # Search for OpenBLAS
       yield ('User specified OpenBLAS', None, os.path.join(dir, 'libopenblas.a'),'unknown','unknown')
       # Search for atlas
@@ -377,9 +361,11 @@ class Configure(config.package.Package):
       yield ('User specified installation root (HPUX)', os.path.join(dir, 'libveclib.a'),  os.path.join(dir, 'liblapack.a'),'32','unknown')
       yield ('User specified installation root (F2CBLASLAPACK)', os.path.join(dir,'libf2cblas.a'), os.path.join(dir, 'libf2clapack.a'),'32','no')
       yield ('User specified installation root(FBLASLAPACK)', os.path.join(dir, 'libfblas.a'),   os.path.join(dir, 'libflapack.a'),'32','no')
+      for lib in ['','lib64']:
+        yield ('User specified installation root IBM ESSL', None, os.path.join(dir, lib, 'libessl.a'),'32','unknown')
       # Search for liblapack.a and libblas.a after the implementations with more specific name to avoid
       # finding these in /usr/lib despite using -L<blaslapack-dir> while attempting to get a different library.
-      yield ('User specified installation root', os.path.join(dir, 'libblas.a'),    os.path.join(dir, 'liblapack.a'),'unknown','unknown')
+      yield ('User specified installation root BLAS/LAPACK', os.path.join(dir, 'libblas.a'),    os.path.join(dir, 'liblapack.a'),'unknown','unknown')
       raise RuntimeError('You set a value for --with-blaslapack-dir=<dir>, but '+self.argDB['with-blaslapack-dir']+' cannot be used\n')
     if self.defaultPrecision == '__float128':
       raise RuntimeError('__float128 precision requires f2c libraries; suggest --download-f2cblaslapack\n')
@@ -495,8 +481,6 @@ class Configure(config.package.Package):
         self.addDefine('BLASLAPACK_UNDERSCORE', 1)
     elif self.mangling == 'caps':
         self.addDefine('BLASLAPACK_CAPS', 1)
-    elif self.mangling == 'stdcall':
-        self.addDefine('BLASLAPACK_STDCALL', 1)
 
     if self.suffix != '':
         self.addDefine('BLASLAPACK_SUFFIX', self.suffix)
@@ -598,10 +582,8 @@ class Configure(config.package.Package):
     '''Check for missing LAPACK routines'''
     if self.foundLapack:
       mangleFunc = hasattr(self.compilers, 'FC') and not self.f2c
-    routines = ['gels','gelss','geqrf','gerfs','gesv','gesvd','getrf','getri','gges',
-                'hgeqz','hseqr','ormqr','potrf','potri','potrs','pttrf','pttrs',
-                'stebz','stein','steqr','syev','syevx','sygvx','sytrf','sytri','sytrs',
-                'tgsen','trsen','trtrs','orgqr']  # skip these: 'hetrf','hetri','hetrs',
+    routines = ['gelss','gerfs','gges','hgeqz','hseqr','orgqr','ormqr','stebz',
+                'stegr','stein','steqr','sytri','tgsen','trsen','trtrs']
     self.libraries.saveLog()
     oldLibs = self.compilers.LIBS
     found, missing = self.libraries.checkClassify(self.lapackLibrary, map(self.mangleBlas,routines), otherLibs = self.getOtherLibs(), fortranMangle = mangleFunc)

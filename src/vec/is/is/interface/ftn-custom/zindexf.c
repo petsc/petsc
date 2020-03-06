@@ -34,24 +34,24 @@
 #define isviewfromoptions_                         isviewfromoptions
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL petsclayoutfindowner_(PetscLayout *map,PetscInt *idx,PetscMPIInt *owner,int *ierr)
+PETSC_EXTERN void petsclayoutfindowner_(PetscLayout *map,PetscInt *idx,PetscMPIInt *owner,int *ierr)
 {
   *ierr = PetscLayoutFindOwner(*map,*idx,owner);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petsclayoutfindownerindex_(PetscLayout *map,PetscInt *idx,PetscMPIInt *owner,PetscInt *ridx,int *ierr)
+PETSC_EXTERN void petsclayoutfindownerindex_(PetscLayout *map,PetscInt *idx,PetscMPIInt *owner,PetscInt *ridx,int *ierr)
 {
   *ierr = PetscLayoutFindOwnerIndex(*map,*idx,owner,ridx);
 }
 
-PETSC_EXTERN void PETSC_STDCALL isview_(IS *is,PetscViewer *vin,PetscErrorCode *ierr)
+PETSC_EXTERN void isview_(IS *is,PetscViewer *vin,PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(vin,v);
   *ierr = ISView(*is,v);
 }
 
-PETSC_EXTERN void PETSC_STDCALL isgetindices_(IS *x,PetscInt *fa,size_t *ia,PetscErrorCode *ierr)
+PETSC_EXTERN void isgetindices_(IS *x,PetscInt *fa,size_t *ia,PetscErrorCode *ierr)
 {
   const PetscInt *lx;
 
@@ -59,13 +59,13 @@ PETSC_EXTERN void PETSC_STDCALL isgetindices_(IS *x,PetscInt *fa,size_t *ia,Pets
   *ia   = PetscIntAddressToFortran(fa,(PetscInt*)lx);
 }
 
-PETSC_EXTERN void PETSC_STDCALL isrestoreindices_(IS *x,PetscInt *fa,size_t *ia,PetscErrorCode *ierr)
+PETSC_EXTERN void isrestoreindices_(IS *x,PetscInt *fa,size_t *ia,PetscErrorCode *ierr)
 {
   const PetscInt *lx = PetscIntAddressFromFortran(fa,*ia);
   *ierr = ISRestoreIndices(*x,&lx);
 }
 
-PETSC_EXTERN void PETSC_STDCALL isgettotalindices_(IS *x,PetscInt *fa,size_t *ia,PetscErrorCode *ierr)
+PETSC_EXTERN void isgettotalindices_(IS *x,PetscInt *fa,size_t *ia,PetscErrorCode *ierr)
 {
   const PetscInt *lx;
 
@@ -73,13 +73,13 @@ PETSC_EXTERN void PETSC_STDCALL isgettotalindices_(IS *x,PetscInt *fa,size_t *ia
   *ia   = PetscIntAddressToFortran(fa,(PetscInt*)lx);
 }
 
-PETSC_EXTERN void PETSC_STDCALL isrestoretotalindices_(IS *x,PetscInt *fa,size_t *ia,PetscErrorCode *ierr)
+PETSC_EXTERN void isrestoretotalindices_(IS *x,PetscInt *fa,size_t *ia,PetscErrorCode *ierr)
 {
   const PetscInt *lx = PetscIntAddressFromFortran(fa,*ia);
   *ierr = ISRestoreTotalIndices(*x,&lx);
 }
 
-PETSC_EXTERN void PETSC_STDCALL isgetnonlocalindices_(IS *x,PetscInt *fa,size_t *ia,PetscErrorCode *ierr)
+PETSC_EXTERN void isgetnonlocalindices_(IS *x,PetscInt *fa,size_t *ia,PetscErrorCode *ierr)
 {
   const PetscInt *lx;
 
@@ -87,13 +87,13 @@ PETSC_EXTERN void PETSC_STDCALL isgetnonlocalindices_(IS *x,PetscInt *fa,size_t 
   *ia   = PetscIntAddressToFortran(fa,(PetscInt*)lx);
 }
 
-PETSC_EXTERN void PETSC_STDCALL isrestorenonlocalindices_(IS *x,PetscInt *fa,size_t *ia,PetscErrorCode *ierr)
+PETSC_EXTERN void isrestorenonlocalindices_(IS *x,PetscInt *fa,size_t *ia,PetscErrorCode *ierr)
 {
   const PetscInt *lx = PetscIntAddressFromFortran(fa,*ia);
   *ierr = ISRestoreNonlocalIndices(*x,&lx);
 }
 
-PETSC_EXTERN void PETSC_STDCALL islocaltoglobalmappinggetindices_(ISLocalToGlobalMapping *x,PetscInt *fa,size_t *ia,PetscErrorCode *ierr)
+PETSC_EXTERN void islocaltoglobalmappinggetindices_(ISLocalToGlobalMapping *x,PetscInt *fa,size_t *ia,PetscErrorCode *ierr)
 {
   const PetscInt *lx;
 
@@ -101,13 +101,13 @@ PETSC_EXTERN void PETSC_STDCALL islocaltoglobalmappinggetindices_(ISLocalToGloba
   *ia   = PetscIntAddressToFortran(fa,(PetscInt*)lx);
 }
 
-PETSC_EXTERN void PETSC_STDCALL islocaltoglobalmappingrestoreindices_(ISLocalToGlobalMapping *x,PetscInt *fa,size_t *ia,PetscErrorCode *ierr)
+PETSC_EXTERN void islocaltoglobalmappingrestoreindices_(ISLocalToGlobalMapping *x,PetscInt *fa,size_t *ia,PetscErrorCode *ierr)
 {
   const PetscInt *lx = PetscIntAddressFromFortran(fa,*ia);
   *ierr = ISLocalToGlobalMappingRestoreIndices(*x,&lx);
 }
 
-PETSC_EXTERN void PETSC_STDCALL islocaltoglobalmappinggetblockindices_(ISLocalToGlobalMapping *x,PetscInt *fa,size_t *ia,PetscErrorCode *ierr)
+PETSC_EXTERN void islocaltoglobalmappinggetblockindices_(ISLocalToGlobalMapping *x,PetscInt *fa,size_t *ia,PetscErrorCode *ierr)
 {
   const PetscInt *lx;
 
@@ -115,13 +115,13 @@ PETSC_EXTERN void PETSC_STDCALL islocaltoglobalmappinggetblockindices_(ISLocalTo
   *ia   = PetscIntAddressToFortran(fa,(PetscInt*)lx);
 }
 
-PETSC_EXTERN void PETSC_STDCALL islocaltoglobalmappingrestoreblockindices_(ISLocalToGlobalMapping *x,PetscInt *fa,size_t *ia,PetscErrorCode *ierr)
+PETSC_EXTERN void islocaltoglobalmappingrestoreblockindices_(ISLocalToGlobalMapping *x,PetscInt *fa,size_t *ia,PetscErrorCode *ierr)
 {
   const PetscInt *lx = PetscIntAddressFromFortran(fa,*ia);
   *ierr = ISLocalToGlobalMappingRestoreBlockIndices(*x,&lx);
 }
 
-PETSC_EXTERN void PETSC_STDCALL isviewfromoptions_(IS *ao,PetscObject obj,char* type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void isviewfromoptions_(IS *ao,PetscObject obj,char* type,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;
 

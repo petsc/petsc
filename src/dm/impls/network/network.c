@@ -1837,6 +1837,7 @@ PetscErrorCode DMCreateMatrix_Network(DM dm,Mat *J)
   ierr = PetscStrcmp(mtype,MATNEST,&isNest);CHKERRQ(ierr);
   if (isNest) {
     ierr = DMCreateMatrix_Network_Nest(dm,J);CHKERRQ(ierr);
+    ierr = MatSetDM(*J,dm);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 

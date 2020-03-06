@@ -9,7 +9,7 @@ PetscErrorCode SNESNGMRESUpdateSubspace_Private(SNES snes,PetscInt ivec,PetscInt
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ivec > l) SETERRQ2(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"Cannot update vector %d with space size %d!",ivec,l);
+  if (ivec > l) SETERRQ2(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"Cannot update vector %D with space size %D!",ivec,l);
   ierr = VecCopy(F,Fdot[ivec]);CHKERRQ(ierr);
   ierr = VecCopy(X,Xdot[ivec]);CHKERRQ(ierr);
 
@@ -61,9 +61,6 @@ PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES snes,PetscInt ivec,Pe
     if (H(0,0) != 0.) beta[0] = beta[0]/H(0,0);
     else beta[0] = 0.;
   } else {
-#if defined(PETSC_MISSING_LAPACK_GELSS)
-    SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_SUP,"NGMRES with LS requires the LAPACK GELSS routine.");
-#else
     ierr          = PetscBLASIntCast(l,&ngmres->m);CHKERRQ(ierr);
     ierr          = PetscBLASIntCast(l,&ngmres->n);CHKERRQ(ierr);
     ngmres->info  = 0;
@@ -77,7 +74,6 @@ PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES snes,PetscInt ivec,Pe
     ierr = PetscFPTrapPop();CHKERRQ(ierr);
     if (ngmres->info < 0) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_LIB,"Bad argument to GELSS");
     if (ngmres->info > 0) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_LIB,"SVD failed to converge");
-#endif
   }
   for (i=0; i<l; i++) {
     if (PetscIsInfOrNanScalar(beta[i])) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_LIB,"SVD generated inconsistent output");
@@ -96,7 +92,7 @@ PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES snes,PetscInt ivec,Pe
     if (snes->npc && snes->npcside== PC_LEFT) {
       ierr = SNESApplyNPC(snes,XA,NULL,FA);CHKERRQ(ierr);
     } else {
-      ierr =SNESComputeFunction(snes,XA,FA);CHKERRQ(ierr);
+      ierr = SNESComputeFunction(snes,XA,FA);CHKERRQ(ierr);
     }
   } else {
     ierr = VecCopy(FM,FA);CHKERRQ(ierr);

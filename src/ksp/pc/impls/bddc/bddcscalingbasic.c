@@ -35,12 +35,8 @@ static PetscErrorCode PCBDDCMatTransposeMatSolve_SeqDense(Mat A,Mat B,Mat X)
   ierr = MatDenseRestoreArrayRead(B,&b);CHKERRQ(ierr);
 
   if (A->factortype == MAT_FACTOR_LU) {
-#if defined(PETSC_MISSING_LAPACK_GETRS)
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"GETRS - Lapack routine is unavailable.");
-#else
     PetscStackCallBLAS("LAPACKgetrs",LAPACKgetrs_("T",&m,&nrhs,mat->v,&mat->lda,mat->pivots,x,&m,&info));
     if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"GETRS - Bad solve");
-#endif
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only LU factor supported");
 
   ierr = MatDenseRestoreArray(X,&x);CHKERRQ(ierr);

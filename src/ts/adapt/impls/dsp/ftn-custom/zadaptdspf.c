@@ -7,7 +7,7 @@
 #define tsadaptdspsetfilter_ tsadaptdspsetfilter
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL tsadaptdspsetfilter_(TSAdapt *tsadapt,char* name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void tsadaptdspsetfilter_(TSAdapt *tsadapt,char* name,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;
 

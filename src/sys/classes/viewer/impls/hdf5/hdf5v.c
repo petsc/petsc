@@ -914,6 +914,8 @@ PetscErrorCode PetscViewerHDF5WriteObjectAttribute(PetscViewer viewer, PetscObje
   Output Parameter:
 . value    - The attribute value
 
+  Notes: If the datatype is PETSC_STRING one must PetscFree() the obtained value when it is no longer needed.
+
   Level: advanced
 
 .seealso: PetscViewerHDF5Open(), PetscViewerHDF5ReadObjectAttribute(), PetscViewerHDF5WriteAttribute(), PetscViewerHDF5HasAttribute(), PetscViewerHDF5HasObject(), PetscViewerHDF5PushGroup(),PetscViewerHDF5PopGroup(),PetscViewerHDF5GetGroup()
@@ -942,10 +944,12 @@ PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char datas
     size_t len;
     PetscStackCallHDF5Return(atype,H5Aget_type,(attribute));
     PetscStackCall("H5Tget_size",len = H5Tget_size(atype));
-    PetscStackCallHDF5(H5Tclose,(atype));
-    ierr = PetscMalloc((len+1) * sizeof(char *), &value);CHKERRQ(ierr);
+    ierr = PetscMalloc((len+1) * sizeof(char), value);CHKERRQ(ierr);
+    PetscStackCallHDF5(H5Tset_size,(dtype, len+1));
+    PetscStackCallHDF5(H5Aread,(attribute, dtype, *(char**)value));
+  } else {
+    PetscStackCallHDF5(H5Aread,(attribute, dtype, value));
   }
-  PetscStackCallHDF5(H5Aread,(attribute, dtype, value));
   PetscStackCallHDF5(H5Aclose,(attribute));
   /* H5Oclose can be used to close groups, datasets, or committed datatypes */
   PetscStackCallHDF5(H5Oclose,(obj));

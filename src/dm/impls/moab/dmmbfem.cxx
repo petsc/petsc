@@ -775,7 +775,7 @@ PetscErrorCode DMMoabFEMCreateQuadratureDefault ( const PetscInt dim, const Pets
   {
   case 1:
     /* Create Gauss quadrature rules with <order = nverts> in the span [-1, 1] */
-    ierr = PetscDTGaussJacobiQuadrature(1, nc, nverts, 0, 1.0, quadrature);CHKERRQ(ierr);
+    ierr = PetscDTStroudConicalQuadrature(1, nc, nverts, 0, 1.0, quadrature);CHKERRQ(ierr);
     break;
   case 2:
     /* Create Gauss quadrature rules with <order = nverts> in the span [-1, 1] */
@@ -804,7 +804,7 @@ PetscErrorCode DMMoabFEMCreateQuadratureDefault ( const PetscInt dim, const Pets
       ierr = PetscQuadratureCreate(PETSC_COMM_SELF, quadrature);CHKERRQ(ierr);
       ierr = PetscQuadratureSetOrder(*quadrature, order);CHKERRQ(ierr);
       ierr = PetscQuadratureSetData(*quadrature, dim, nc, npoints, x, w);CHKERRQ(ierr);
-      /* ierr = PetscDTGaussJacobiQuadrature(dim, nverts, 0.0, 1.0, quadrature);CHKERRQ(ierr); */
+      /* ierr = PetscDTStroudConicalQuadrature(dim, nc, nverts, 0.0, 1.0, quadrature);CHKERRQ(ierr); */
     }
     else {
       ierr = PetscDTGaussTensorQuadrature(dim, nc, nverts, 0.0, 1.0, quadrature);CHKERRQ(ierr);
@@ -851,7 +851,7 @@ PetscErrorCode DMMoabFEMCreateQuadratureDefault ( const PetscInt dim, const Pets
       ierr = PetscQuadratureCreate(PETSC_COMM_SELF, quadrature);CHKERRQ(ierr);
       ierr = PetscQuadratureSetOrder(*quadrature, order);CHKERRQ(ierr);
       ierr = PetscQuadratureSetData(*quadrature, dim, nc, npoints, x, w);CHKERRQ(ierr);
-      /* ierr = PetscDTGaussJacobiQuadrature(dim, nverts, 0.0, 1.0, quadrature);CHKERRQ(ierr); */
+      /* ierr = PetscDTStroudConicalQuadrature(dim, nc, nverts, 0.0, 1.0, quadrature);CHKERRQ(ierr); */
     }
     else {
       ierr = PetscDTGaussTensorQuadrature(dim, nc, nverts, 0.0, 1.0, quadrature);CHKERRQ(ierr);

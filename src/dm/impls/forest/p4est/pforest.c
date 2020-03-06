@@ -4439,7 +4439,7 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
       ierr = DMCopyLabels(newPlex, dm, PETSC_OWN_POINTER, PETSC_TRUE);CHKERRQ(ierr);
       pforest->plex = newPlex;
     }
-    ierr  = DMDestroy(&refTree);CHKERRQ(ierr);
+    ierr = DMDestroy(&refTree);CHKERRQ(ierr);
     if (dm->setfromoptionscalled) {
       ierr = PetscObjectOptionsBegin((PetscObject)newPlex);CHKERRQ(ierr);
       ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject,newPlex);CHKERRQ(ierr);
@@ -5263,7 +5263,7 @@ static PetscErrorCode DMInitialize_pforest(DM dm)
   dm->ops->projectfunctionlocal      = DMProjectFunctionLocal_pforest;
   dm->ops->projectfunctionlabellocal = DMProjectFunctionLabelLocal_pforest;
   dm->ops->projectfieldlocal         = DMProjectFieldLocal_pforest;
-  dm->ops->createlocalsection      = DMCreatelocalsection_pforest;
+  dm->ops->createlocalsection        = DMCreatelocalsection_pforest;
   dm->ops->createdefaultconstraints  = DMCreateDefaultConstraints_pforest;
   dm->ops->computel2diff             = DMComputeL2Diff_pforest;
   dm->ops->computel2fielddiff        = DMComputeL2FieldDiff_pforest;

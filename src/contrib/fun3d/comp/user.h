@@ -298,19 +298,19 @@ int write_fine_grid(GRID*);
 #define f77RREAD    f77name(RREAD,rread,rread_)
 
 EXTERN_C_BEGIN
-extern void PETSC_STDCALL f77FORLINK(void);
-extern void PETSC_STDCALL f77OPENM(int*);
-extern void PETSC_STDCALL f77FILLA(int* nnodesLoc,int* nedgeLoc,int* eptr,int*nsface,
+extern void f77FORLINK(void);
+extern void f77OPENM(int*);
+extern void f77FILLA(int* nnodesLoc,int* nedgeLoc,int* eptr,int*nsface,
                                    int* isface,PetscScalar* fxn,PetscScalar* fyn,PetscScalar* fzn,
                                    PetscScalar* sxn,PetscScalar* syn,PetscScalar* szn,int* nsnodeLoc,int* nvnodeLoc,
                                    int* nfnodeLoc,int* isnode,int* ivnode,int* ifnode,
                                    PetscScalar* qnode,Mat* jac,PetscScalar* cdt,PetscScalar* rl,PetscScalar* area,PetscScalar* xn,PetscScalar*,PetscScalar* zn,
              PetscScalar* cfl,int* rank,int* nvertices);
-extern void PETSC_STDCALL f77READR1(int*,int*);
-extern void PETSC_STDCALL f77SUMGS(int*,int*,int*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,int*,int*);
-extern void PETSC_STDCALL f77INIT(int*,PetscScalar*,PetscScalar*,PetscScalar*,int*,int*,int*);
-extern void PETSC_STDCALL f77LSTGS(int*,int*,int*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,int*,int*);
-extern void PETSC_STDCALL f77GETRES(int* nnodesLoc,int* ncell,int *nedgeLoc,int* nsface,
+extern void f77READR1(int*,int*);
+extern void f77SUMGS(int*,int*,int*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,int*,int*);
+extern void f77INIT(int*,PetscScalar*,PetscScalar*,PetscScalar*,int*,int*,int*);
+extern void f77LSTGS(int*,int*,int*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,int*,int*);
+extern void f77GETRES(int* nnodesLoc,int* ncell,int *nedgeLoc,int* nsface,
                                     int* nvface,int* nfface,int* nbface,
                                     int* nsnodeLoc,int* nvnodeLoc,int* nfnodeLoc,
                                     int* isface,int* ivface,int* ifface,int* ileast,
@@ -326,7 +326,7 @@ extern void PETSC_STDCALL f77GETRES(int* nnodesLoc,int* ncell,int *nedgeLoc,int*
                                     PetscScalar* grad,PetscScalar* res,PetscScalar* turbre,PetscScalar* slen,int* c2n,int* c2e,
                                     PetscScalar* us,PetscScalar* vs,PetscScalar* as,PetscScalar* phi,PetscScalar* amut,
                                     int* ires,int* rank,int* nvertices);
-extern void PETSC_STDCALL f77FORCE(int* nnodesLoc,int* nedgeLoc,
+extern void f77FORCE(int* nnodesLoc,int* nedgeLoc,
             int* isnode,int* ivnode,
             int* nnfacetLoc,int* f2ntn,int* nnbound,
             int* nvfacetLoc,int* f2ntv,int* nvbound,
@@ -334,9 +334,9 @@ extern void PETSC_STDCALL f77FORCE(int* nnodesLoc,int* nedgeLoc,
             int* nvnodeLoc,int* c2n,int* ncell,
             PetscScalar* amut,int* sface_bit,int* vface_bit,
             PetscScalar* clift,PetscScalar* cdrag,PetscScalar* cmom,int* rank,int* nvertices);
-extern void PETSC_STDCALL f77GETIA(int*,int*,int*,int*,int*,int*);
-extern void PETSC_STDCALL f77GETJA(int*,int*,int*,int*,int*,int*,int*);
-extern void PETSC_STDCALL f77TECFLO(int* nnodes,int* nvbound,int* nvfacet,int* nvnode,
+extern void f77GETIA(int*,int*,int*,int*,int*,int*);
+extern void f77GETJA(int*,int*,int*,int*,int*,int*,int*);
+extern void f77TECFLO(int* nnodes,int* nvbound,int* nvfacet,int* nvnode,
              PetscScalar* x,PetscScalar* y,PetscScalar* z,
              PetscScalar* qnode, int* nvpts, int* nvtet,
              int* f2ntv, int* ivnode,

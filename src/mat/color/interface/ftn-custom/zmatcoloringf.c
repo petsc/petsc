@@ -7,7 +7,7 @@
 #define matcoloringsettype_ matcoloringsettype
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL matcoloringsettype_(MatColoring *mc,char* type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void matcoloringsettype_(MatColoring *mc,char* type,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;
 

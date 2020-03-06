@@ -285,7 +285,7 @@ int main(int argc, char **argv)
     }
     ierr = DMPlexCreateBoxMesh(comm,dim,simplex,cells,NULL,NULL,types,interpolate,&dm);CHKERRQ(ierr);
     if (simplex) {
-      ierr = PetscDTGaussJacobiQuadrature(dim, 1, pointsPerEdge, -1.0, 1.0, &quad);CHKERRQ(ierr);
+      ierr = PetscDTStroudConicalQuadrature(dim, 1, pointsPerEdge, -1.0, 1.0, &quad);CHKERRQ(ierr);
     } else {
       ierr = PetscDTGaussTensorQuadrature(dim, 1, pointsPerEdge, -1.0, 1.0, &quad);CHKERRQ(ierr);
     }

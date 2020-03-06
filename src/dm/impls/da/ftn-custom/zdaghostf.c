@@ -13,7 +13,7 @@
 #define dmdagetghostcorners011011_     dmdagetghostcorners011011
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL  dmdagetghostcorners_(DM *da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p, int *ierr )
+PETSC_EXTERN void  dmdagetghostcorners_(DM *da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p, int *ierr )
 {
   CHKFORTRANNULLINTEGER(y);
   CHKFORTRANNULLINTEGER(z);
@@ -23,17 +23,17 @@ PETSC_EXTERN void PETSC_STDCALL  dmdagetghostcorners_(DM *da,PetscInt *x,PetscIn
   *ierr = DMDAGetGhostCorners(*da,x,y,z,m,n,p);
 }
 
-PETSC_EXTERN void PETSC_STDCALL  dmdagetghostcorners000000_(DM *da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p, int *ierr )
+PETSC_EXTERN void  dmdagetghostcorners000000_(DM *da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p, int *ierr )
 {
   dmdagetghostcorners_(da,x,y,z,m,n,p,ierr);
 }
 
-PETSC_EXTERN void PETSC_STDCALL  dmdagetghostcorners001001_(DM *da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p, int *ierr )
+PETSC_EXTERN void  dmdagetghostcorners001001_(DM *da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p, int *ierr )
 {
   dmdagetghostcorners_(da,x,y,z,m,n,p,ierr);
 }
 
-PETSC_EXTERN void PETSC_STDCALL  dmdagetghostcorners011011_(DM *da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p, int *ierr )
+PETSC_EXTERN void  dmdagetghostcorners011011_(DM *da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p, int *ierr )
 {
   dmdagetghostcorners_(da,x,y,z,m,n,p,ierr);
 }

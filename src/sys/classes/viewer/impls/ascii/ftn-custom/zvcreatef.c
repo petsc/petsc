@@ -13,8 +13,8 @@
 #define petsc_viewer_stdout__      petsc_viewer_stdout___
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL petscviewerasciiopen_(MPI_Comm *comm,char* name PETSC_MIXED_LEN(len),PetscViewer *lab,
-                                    PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void petscviewerasciiopen_(MPI_Comm *comm,char* name,PetscViewer *lab,
+                                    PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *c1;
   FIXCHAR(name,len,c1);
@@ -22,7 +22,7 @@ PETSC_EXTERN void PETSC_STDCALL petscviewerasciiopen_(MPI_Comm *comm,char* name 
   FREECHAR(name,c1);
 }
 
-PETSC_EXTERN PetscViewer PETSC_STDCALL petsc_viewer_stdout__(MPI_Comm *comm)
+PETSC_EXTERN PetscViewer petsc_viewer_stdout__(MPI_Comm *comm)
 {
   return PETSC_VIEWER_STDOUT_(MPI_Comm_f2c(*(MPI_Fint*)&*comm));
 }

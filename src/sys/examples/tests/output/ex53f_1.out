@@ -1,0 +1,3 @@
+PetscSubcomm type GENERAL with total 2 MPI processes:
+  [0], color 0, sub-size 1, sub-rank 0, duprank 0
+  [1], color 1, sub-size 1, sub-rank 0, duprank 1

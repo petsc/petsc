@@ -8,7 +8,7 @@
 #define dmplexcreatesection_            dmplexcreatesection
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL dmplexcreatesection_(DM *dm, F90Array1d *ptrL, F90Array1d *ptrC, F90Array1d *ptrD, PetscInt *numBC, F90Array1d *ptrF, F90Array1d *ptrCp, F90Array1d *ptrP, IS *perm, PetscSection *section, int *ierr PETSC_F90_2PTR_PROTO(ptrLd) PETSC_F90_2PTR_PROTO(ptrCd) PETSC_F90_2PTR_PROTO(ptrDd) PETSC_F90_2PTR_PROTO(ptrFd) PETSC_F90_2PTR_PROTO(ptrCpd) PETSC_F90_2PTR_PROTO(ptrPd))
+PETSC_EXTERN void dmplexcreatesection_(DM *dm, F90Array1d *ptrL, F90Array1d *ptrC, F90Array1d *ptrD, PetscInt *numBC, F90Array1d *ptrF, F90Array1d *ptrCp, F90Array1d *ptrP, IS *perm, PetscSection *section, int *ierr PETSC_F90_2PTR_PROTO(ptrLd) PETSC_F90_2PTR_PROTO(ptrCd) PETSC_F90_2PTR_PROTO(ptrDd) PETSC_F90_2PTR_PROTO(ptrFd) PETSC_F90_2PTR_PROTO(ptrCpd) PETSC_F90_2PTR_PROTO(ptrPd))
 {
   DMLabel  *labels = NULL;
   PetscInt *numComp;

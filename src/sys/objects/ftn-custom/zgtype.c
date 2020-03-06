@@ -8,7 +8,7 @@
 #define petscobjectsettype_        petscobjectsettype
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL petscobjectgettype_(PetscObject *obj,char* type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void petscobjectgettype_(PetscObject *obj,char* type,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   const char *tmp;
   *ierr = PetscObjectGetType(*obj,&tmp);if (*ierr) return;
@@ -16,7 +16,7 @@ PETSC_EXTERN void PETSC_STDCALL petscobjectgettype_(PetscObject *obj,char* type 
   FIXRETURNCHAR(PETSC_TRUE,type,len);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscobjectsettype_(PetscObject *obj,char* type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void petscobjectsettype_(PetscObject *obj,char* type,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t1;
 

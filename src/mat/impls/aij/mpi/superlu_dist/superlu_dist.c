@@ -4,12 +4,33 @@
 
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
+#include <petscpkg_version.h>
 
 EXTERN_C_BEGIN
 #if defined(PETSC_USE_COMPLEX)
 #include <superlu_zdefs.h>
+#if PETSC_PKG_SUPERLU_DIST_VERSION_GE(6,3,0)
+#define LUstructInit zLUstructInit
+#define ScalePermstructInit zScalePermstructInit
+#define ScalePermstructFree zScalePermstructFree
+#define LUstructFree zLUstructFree
+#define Destroy_LU zDestroy_LU
+#define ScalePermstruct_t zScalePermstruct_t
+#define LUstruct_t zLUstruct_t
+#define SOLVEstruct_t zSOLVEstruct_t
+#endif
 #else
 #include <superlu_ddefs.h>
+#if PETSC_PKG_SUPERLU_DIST_VERSION_GE(6,3,0)
+#define LUstructInit dLUstructInit
+#define ScalePermstructInit dScalePermstructInit
+#define ScalePermstructFree dScalePermstructFree
+#define LUstructFree dLUstructFree
+#define Destroy_LU dDestroy_LU
+#define ScalePermstruct_t dScalePermstruct_t
+#define LUstruct_t dLUstruct_t
+#define SOLVEstruct_t dSOLVEstruct_t
+#endif
 #endif
 EXTERN_C_END
 

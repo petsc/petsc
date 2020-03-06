@@ -42,7 +42,7 @@ enum FortranMatOperation {
   This C routine then calls the corresponding Fortran routine that was
   set by the user.
 */
-PETSC_EXTERN void PETSC_STDCALL matcreateshell_(MPI_Comm *comm,PetscInt *m,PetscInt *n,PetscInt *M,PetscInt *N,void *ctx,Mat *mat,PetscErrorCode *ierr)
+PETSC_EXTERN void matcreateshell_(MPI_Comm *comm,PetscInt *m,PetscInt *n,PetscInt *M,PetscInt *N,void *ctx,Mat *mat,PetscErrorCode *ierr)
 {
   *ierr = MatCreateShell(MPI_Comm_f2c(*(MPI_Fint*)&*comm),*m,*n,*M,*N,ctx,mat);
 }
@@ -51,7 +51,7 @@ static PetscErrorCode ourmult(Mat mat,Vec x,Vec y)
 {
   PetscErrorCode ierr = 0;
 
-  (*(PetscErrorCode (PETSC_STDCALL *)(Mat*,Vec*,Vec*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_MULT]))(&mat,&x,&y,&ierr);
+  (*(PetscErrorCode (*)(Mat*,Vec*,Vec*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_MULT]))(&mat,&x,&y,&ierr);
   return ierr;
 }
 
@@ -59,7 +59,7 @@ static PetscErrorCode ourmultadd(Mat mat,Vec x,Vec y,Vec z)
 {
   PetscErrorCode ierr = 0;
 
-  (*(PetscErrorCode (PETSC_STDCALL *)(Mat*,Vec*,Vec*,Vec*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_MULT_ADD]))(&mat,&x,&y,&z,&ierr);
+  (*(PetscErrorCode (*)(Mat*,Vec*,Vec*,Vec*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_MULT_ADD]))(&mat,&x,&y,&z,&ierr);
   return ierr;
 }
 
@@ -67,7 +67,7 @@ static PetscErrorCode ourmulttranspose(Mat mat,Vec x,Vec y)
 {
   PetscErrorCode ierr = 0;
 
-  (*(PetscErrorCode (PETSC_STDCALL *)(Mat*,Vec*,Vec*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_MULT_TRANSPOSE]))(&mat,&x,&y,&ierr);
+  (*(PetscErrorCode (*)(Mat*,Vec*,Vec*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_MULT_TRANSPOSE]))(&mat,&x,&y,&ierr);
   return ierr;
 }
 
@@ -75,7 +75,7 @@ static PetscErrorCode ourmulttransposeadd(Mat mat,Vec x,Vec y,Vec z)
 {
   PetscErrorCode ierr = 0;
 
-  (*(PetscErrorCode (PETSC_STDCALL *)(Mat*,Vec*,Vec*,Vec*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_MULT_TRANSPOSE_ADD]))(&mat,&x,&y,&z,&ierr);
+  (*(PetscErrorCode (*)(Mat*,Vec*,Vec*,Vec*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_MULT_TRANSPOSE_ADD]))(&mat,&x,&y,&z,&ierr);
   return ierr;
 }
 
@@ -83,7 +83,7 @@ static PetscErrorCode oursor(Mat mat,Vec b,PetscReal omega,MatSORType flg,PetscR
 {
   PetscErrorCode ierr = 0;
 
-  (*(PetscErrorCode (PETSC_STDCALL *)(Mat*,Vec*,PetscReal*,MatSORType*,PetscReal*,PetscInt*,PetscInt*,Vec*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_SOR]))(&mat,&b,&omega,&flg,&shift,&its,&lits,&x,&ierr);
+  (*(PetscErrorCode (*)(Mat*,Vec*,PetscReal*,MatSORType*,PetscReal*,PetscInt*,PetscInt*,Vec*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_SOR]))(&mat,&b,&omega,&flg,&shift,&its,&lits,&x,&ierr);
   return ierr;
 }
 
@@ -93,7 +93,7 @@ static PetscErrorCode ourtranspose(Mat mat,MatReuse reuse,Mat *B)
   Mat bb = (Mat)-1;
   Mat *b = (!B ? &bb : B);
 
-  (*(PetscErrorCode (PETSC_STDCALL *)(Mat*,MatReuse*,Mat*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_TRANSPOSE]))(&mat,&reuse,b,&ierr);
+  (*(PetscErrorCode (*)(Mat*,MatReuse*,Mat*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_TRANSPOSE]))(&mat,&reuse,b,&ierr);
   return ierr;
 }
 
@@ -101,7 +101,7 @@ static PetscErrorCode ourgetdiagonal(Mat mat,Vec x)
 {
   PetscErrorCode ierr = 0;
 
-  (*(PetscErrorCode (PETSC_STDCALL *)(Mat*,Vec*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_GET_DIAGONAL]))(&mat,&x,&ierr);
+  (*(PetscErrorCode (*)(Mat*,Vec*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_GET_DIAGONAL]))(&mat,&x,&ierr);
   return ierr;
 }
 
@@ -112,7 +112,7 @@ static PetscErrorCode ourdiagonalscale(Mat mat,Vec l,Vec r)
   Vec *a = (!l ? &aa : &l);
   Vec *b = (!r ? &aa : &r);
 
-  (*(PetscErrorCode (PETSC_STDCALL *)(Mat*,Vec*,Vec*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_DIAGONAL_SCALE]))(&mat,a,b,&ierr);
+  (*(PetscErrorCode (*)(Mat*,Vec*,Vec*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_DIAGONAL_SCALE]))(&mat,a,b,&ierr);
   return ierr;
 }
 
@@ -120,7 +120,7 @@ static PetscErrorCode ourzeroentries(Mat mat)
 {
   PetscErrorCode ierr = 0;
 
-  (*(PetscErrorCode (PETSC_STDCALL *)(Mat*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_ZERO_ENTRIES]))(&mat,&ierr);
+  (*(PetscErrorCode (*)(Mat*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_ZERO_ENTRIES]))(&mat,&ierr);
   return ierr;
 }
 
@@ -128,7 +128,7 @@ static PetscErrorCode ouraxpy(Mat mat,PetscScalar a,Mat X,MatStructure str)
 {
   PetscErrorCode ierr = 0;
 
-  (*(PetscErrorCode (PETSC_STDCALL *)(Mat*,PetscScalar*,Mat*,MatStructure*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_AXPY]))(&mat,&a,&X,&str,&ierr);
+  (*(PetscErrorCode (*)(Mat*,PetscScalar*,Mat*,MatStructure*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_AXPY]))(&mat,&a,&X,&str,&ierr);
   return ierr;
 }
 
@@ -136,7 +136,7 @@ static PetscErrorCode ourshift(Mat mat,PetscScalar a)
 {
   PetscErrorCode ierr = 0;
 
-  (*(PetscErrorCode (PETSC_STDCALL *)(Mat*,PetscScalar*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_SHIFT]))(&mat,&a,&ierr);
+  (*(PetscErrorCode (*)(Mat*,PetscScalar*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_SHIFT]))(&mat,&a,&ierr);
   return ierr;
 }
 
@@ -144,7 +144,7 @@ static PetscErrorCode ourdiagonalset(Mat mat,Vec x,InsertMode ins)
 {
   PetscErrorCode ierr = 0;
 
-  (*(PetscErrorCode (PETSC_STDCALL *)(Mat*,Vec*,InsertMode*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_DIAGONAL_SET]))(&mat,&x,&ins,&ierr);
+  (*(PetscErrorCode (*)(Mat*,Vec*,InsertMode*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_DIAGONAL_SET]))(&mat,&x,&ins,&ierr);
   return ierr;
 }
 
@@ -152,7 +152,7 @@ static PetscErrorCode ourdestroy(Mat mat)
 {
   PetscErrorCode ierr = 0;
 
-  (*(PetscErrorCode (PETSC_STDCALL *)(Mat*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_DESTROY]))(&mat,&ierr);
+  (*(PetscErrorCode (*)(Mat*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_DESTROY]))(&mat,&ierr);
   return ierr;
 }
 
@@ -160,7 +160,7 @@ static PetscErrorCode ourview(Mat mat,PetscViewer v)
 {
   PetscErrorCode ierr = 0;
 
-  (*(PetscErrorCode (PETSC_STDCALL *)(Mat*,PetscViewer*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_VIEW]))(&mat,&v,&ierr);
+  (*(PetscErrorCode (*)(Mat*,PetscViewer*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_VIEW]))(&mat,&v,&ierr);
   return ierr;
 }
 
@@ -171,53 +171,53 @@ static PetscErrorCode ourgetvecs(Mat mat,Vec *l,Vec *r)
   Vec *a = (!l ? &aa : l);
   Vec *b = (!r ? &aa : r);
 
-  (*(PetscErrorCode (PETSC_STDCALL *)(Mat*,Vec*,Vec*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_CREATE_VECS]))(&mat,a,b,&ierr);
+  (*(PetscErrorCode (*)(Mat*,Vec*,Vec*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_CREATE_VECS]))(&mat,a,b,&ierr);
   return ierr;
 }
 
 static PetscErrorCode ourgetdiagonalblock(Mat mat,Mat *l)
 {
   PetscErrorCode ierr = 0;
-  (*(PetscErrorCode (PETSC_STDCALL *)(Mat*,Mat*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_GET_DIAGONAL_BLOCK]))(&mat,l,&ierr);
+  (*(PetscErrorCode (*)(Mat*,Mat*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_GET_DIAGONAL_BLOCK]))(&mat,l,&ierr);
   return ierr;
 }
 
 static PetscErrorCode ourcopy(Mat mat,Mat B,MatStructure str)
 {
   PetscErrorCode ierr = 0;
-  (*(PetscErrorCode (PETSC_STDCALL *)(Mat*,Mat*,MatStructure*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_COPY]))(&mat,&B,&str,&ierr);
+  (*(PetscErrorCode (*)(Mat*,Mat*,MatStructure*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_COPY]))(&mat,&B,&str,&ierr);
   return ierr;
 }
 
 static PetscErrorCode ourscale(Mat mat,PetscScalar a)
 {
   PetscErrorCode ierr = 0;
-  (*(PetscErrorCode (PETSC_STDCALL *)(Mat*,PetscScalar*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_SCALE]))(&mat,&a,&ierr);
+  (*(PetscErrorCode (*)(Mat*,PetscScalar*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_SCALE]))(&mat,&a,&ierr);
   return ierr;
 }
 
 static PetscErrorCode oursetrandom(Mat mat,PetscRandom ctx)
 {
   PetscErrorCode ierr = 0;
-  (*(PetscErrorCode (PETSC_STDCALL *)(Mat*,PetscRandom*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_SET_RANDOM]))(&mat,&ctx,&ierr);
+  (*(PetscErrorCode (*)(Mat*,PetscRandom*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_SET_RANDOM]))(&mat,&ctx,&ierr);
   return ierr;
 }
 
 static PetscErrorCode ourassemblybegin(Mat mat,MatAssemblyType type)
 {
   PetscErrorCode ierr = 0;
-  (*(PetscErrorCode (PETSC_STDCALL *)(Mat*,MatAssemblyType*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_ASSEMBLY_BEGIN]))(&mat,&type,&ierr);
+  (*(PetscErrorCode (*)(Mat*,MatAssemblyType*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_ASSEMBLY_BEGIN]))(&mat,&type,&ierr);
   return ierr;
 }
 
 static PetscErrorCode ourassemblyend(Mat mat,MatAssemblyType type)
 {
   PetscErrorCode ierr = 0;
-  (*(PetscErrorCode (PETSC_STDCALL *)(Mat*,MatAssemblyType*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_ASSEMBLY_END]))(&mat,&type,&ierr);
+  (*(PetscErrorCode (*)(Mat*,MatAssemblyType*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_ASSEMBLY_END]))(&mat,&type,&ierr);
   return ierr;
 }
 
-PETSC_EXTERN void PETSC_STDCALL matshellsetoperation_(Mat *mat,MatOperation *op,PetscErrorCode (PETSC_STDCALL *f)(Mat*,Vec*,Vec*,PetscErrorCode*),PetscErrorCode *ierr)
+PETSC_EXTERN void matshellsetoperation_(Mat *mat,MatOperation *op,PetscErrorCode (*f)(Mat*,Vec*,Vec*,PetscErrorCode*),PetscErrorCode *ierr)
 {
   MPI_Comm comm;
 

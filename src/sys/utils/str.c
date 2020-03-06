@@ -10,13 +10,13 @@
 #endif
 
 /*@C
-   PetscStrToArray - Separates a string by a charactor (for example ' ' or '\n') and creates an array of strings
+   PetscStrToArray - Separates a string by a character (for example ' ' or '\n') and creates an array of strings
 
    Not Collective
 
    Input Parameters:
 +  s - pointer to string
--  sp - separator charactor
+-  sp - separator character
 
    Output Parameter:
 +   argc - the number of entries in the array

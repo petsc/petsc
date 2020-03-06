@@ -1105,8 +1105,8 @@ PetscErrorCode DMFieldCreateDS(DM dm, PetscInt fieldNum, Vec vec,DMField *field)
     ierr = PetscSpaceDestroy(&P);CHKERRQ(ierr);
     ierr = PetscDualSpaceDestroy(&Q);CHKERRQ(ierr);
     if (isSimplex) {
-      ierr = PetscDTGaussJacobiQuadrature(dim,   1, 1, -1.0, 1.0, &quad);CHKERRQ(ierr);
-      ierr = PetscDTGaussJacobiQuadrature(dim-1, 1, 1, -1.0, 1.0, &fquad);CHKERRQ(ierr);
+      ierr = PetscDTStroudConicalQuadrature(dim,   1, 1, -1.0, 1.0, &quad);CHKERRQ(ierr);
+      ierr = PetscDTStroudConicalQuadrature(dim-1, 1, 1, -1.0, 1.0, &fquad);CHKERRQ(ierr);
     }
     else {
       ierr = PetscDTGaussTensorQuadrature(dim,   1, 1, -1.0, 1.0, &quad);CHKERRQ(ierr);

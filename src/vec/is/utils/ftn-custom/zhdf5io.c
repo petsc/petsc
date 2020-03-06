@@ -10,8 +10,8 @@
 #define petscviewerhdf5readsizes_       petscviewerhdf5readsizes
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL petscviewerhdf5readsizes_(PetscViewer *viewer, char* name PETSC_MIXED_LEN(len),
-    PetscInt *bs, PetscInt *N, PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void petscviewerhdf5readsizes_(PetscViewer *viewer, char* name,
+    PetscInt *bs, PetscInt *N, PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
    char *c1;
 

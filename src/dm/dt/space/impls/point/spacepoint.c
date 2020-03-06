@@ -41,7 +41,7 @@ static PetscErrorCode PetscSpaceSetUp_Point(PetscSpace sp)
   PetscFunctionBegin;
   if (!pt->quad->points && sp->degree >= 0) {
     ierr = PetscQuadratureDestroy(&pt->quad);CHKERRQ(ierr);
-    ierr = PetscDTGaussJacobiQuadrature(sp->Nv, sp->Nc, PetscMax(sp->degree + 1, 1), -1.0, 1.0, &pt->quad);CHKERRQ(ierr);
+    ierr = PetscDTStroudConicalQuadrature(sp->Nv, sp->Nc, PetscMax(sp->degree + 1, 1), -1.0, 1.0, &pt->quad);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

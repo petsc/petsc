@@ -35,9 +35,9 @@ def FixFile(filename):
   ff.close()
 
   # gotta be a better way to do this
-  data = re.subn('\nvoid ','\nPETSC_EXTERN void PETSC_STDCALL ',data)[0]
-  data = re.subn('\nPetscErrorCode ','\nPETSC_EXTERN void PETSC_STDCALL ',data)[0]
-  data = re.subn('Petsc([ToRm]*)Pointer\(int\)','Petsc\\1Pointer(void*)',data)[0]	
+  data = re.subn('\nvoid ','\nPETSC_EXTERN void ',data)[0]
+  data = re.subn('\nPetscErrorCode ','\nPETSC_EXTERN void ',data)[0]
+  data = re.subn('Petsc([ToRm]*)Pointer\(int\)','Petsc\\1Pointer(void*)',data)[0]
   data = re.subn('PetscToPointer\(a\) \(a\)','PetscToPointer(a) (*(PetscFortranAddr *)(a))',data)[0]
   data = re.subn('PetscFromPointer\(a\) \(int\)\(a\)','PetscFromPointer(a) (PetscFortranAddr)(a)',data)[0]
   data = re.subn('PetscToPointer\( \*\(int\*\)','PetscToPointer(',data)[0]

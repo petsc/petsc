@@ -7,7 +7,7 @@
 #define tssundialsgetiterations_             tssundialsgetiterations
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL tssundialsgetiterations_(TS *ts,PetscInt *nonlin,PetscInt *lin,PetscErrorCode *ierr)
+PETSC_EXTERN void tssundialsgetiterations_(TS *ts,PetscInt *nonlin,PetscInt *lin,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(nonlin);
   CHKFORTRANNULLINTEGER(lin);

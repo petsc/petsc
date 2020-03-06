@@ -25,13 +25,13 @@
 /* ---------------------------------------------------------------------*/
 
 #if defined(PETSC_HAVE_CUDA)
-PETSC_EXTERN void PETSC_STDCALL petsccudainitialize_(MPI_Fint *comm, PetscErrorCode *ierr)
+PETSC_EXTERN void petsccudainitialize_(MPI_Fint *comm, PetscErrorCode *ierr)
 {
   *ierr = PetscCUDAInitialize(MPI_Comm_f2c(*(comm)));
 }
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL petscobjectcompose_(PetscObject *obj, char *name PETSC_MIXED_LEN(len), PetscObject *ptr, PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void petscobjectcompose_(PetscObject *obj, char *name, PetscObject *ptr, PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *n1;
 
@@ -40,7 +40,7 @@ PETSC_EXTERN void PETSC_STDCALL petscobjectcompose_(PetscObject *obj, char *name
   FREECHAR(name,n1);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscobjectquery_(PetscObject *obj, char *name PETSC_MIXED_LEN(len), PetscObject *ptr, PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void petscobjectquery_(PetscObject *obj, char *name, PetscObject *ptr, PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *n1;
 

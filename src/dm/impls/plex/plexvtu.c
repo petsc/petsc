@@ -379,12 +379,10 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
 #endif
           } else {
             for (j=0; j<fbs; j++) {
+              const char *compName = NULL;
               char finalname[256];
-              if (fbs > 1) {
-                ierr = PetscSNPrintf(finalname,255,"%s%s.%D",vecname,fieldname,j);CHKERRQ(ierr);
-              } else {
-                ierr = PetscSNPrintf(finalname,255,"%s%s",vecname,fieldname);CHKERRQ(ierr);
-              }
+              ierr = PetscSectionGetComponentName(section,field,j,&compName);CHKERRQ(ierr);
+              ierr = PetscSNPrintf(finalname,255,"%s%s.%s",vecname,fieldname,compName);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
               ierr = PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"%s.Re\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%D\" />\n",precision,finalname,boffset);CHKERRQ(ierr);
               boffset += gpiece[r].nvertices*sizeof(PetscVTUReal) + sizeof(int);

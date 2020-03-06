@@ -12,7 +12,7 @@
 #define kspguessview_    kspguessview
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL kspguessgettype_(KSPGuess *kspguess,char* name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void kspguessgettype_(KSPGuess *kspguess,char* name,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   const char *tname;
 
@@ -22,7 +22,7 @@ PETSC_EXTERN void PETSC_STDCALL kspguessgettype_(KSPGuess *kspguess,char* name P
 
 }
 
-PETSC_EXTERN void PETSC_STDCALL kspguesssettype_(KSPGuess *kspguess,char* type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void kspguesssettype_(KSPGuess *kspguess,char* type,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;
 
@@ -31,7 +31,7 @@ PETSC_EXTERN void PETSC_STDCALL kspguesssettype_(KSPGuess *kspguess,char* type P
   FREECHAR(type,t);
 }
 
-PETSC_EXTERN void PETSC_STDCALL kspguessview_(KSPGuess *kspguess,PetscViewer *viewer, PetscErrorCode *ierr)
+PETSC_EXTERN void kspguessview_(KSPGuess *kspguess,PetscViewer *viewer, PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);

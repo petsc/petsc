@@ -8,7 +8,7 @@
 #define dmdacreate3d_                  dmdacreate3d
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL dmdacreate3d_(MPI_Comm *comm,DMBoundaryType *bx,DMBoundaryType *by,DMBoundaryType *bz,DMDAStencilType
+PETSC_EXTERN void dmdacreate3d_(MPI_Comm *comm,DMBoundaryType *bx,DMBoundaryType *by,DMBoundaryType *bz,DMDAStencilType
                  *stencil_type,PetscInt *M,PetscInt *N,PetscInt *P,PetscInt *m,PetscInt *n,PetscInt *p,
                  PetscInt *w,PetscInt *s,PetscInt *lx,PetscInt *ly,PetscInt *lz,DM *inra,PetscErrorCode *ierr)
 {

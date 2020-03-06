@@ -533,24 +533,11 @@ PetscErrorCode  DMGetOptionsPrefix(DM dm,const char *prefix[])
 
 static PetscErrorCode DMCountNonCyclicReferences(DM dm, PetscBool recurseCoarse, PetscBool recurseFine, PetscInt *ncrefct)
 {
-  PetscInt i, refct = ((PetscObject) dm)->refct;
-  DMNamedVecLink nlink;
+  PetscInt       refct = ((PetscObject) dm)->refct;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   *ncrefct = 0;
-  /* count all the circular references of DM and its contained Vecs */
-  for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
-    if (dm->localin[i])  refct--;
-    if (dm->globalin[i]) refct--;
-  }
-  for (nlink=dm->namedglobal; nlink; nlink=nlink->next) refct--;
-  for (nlink=dm->namedlocal; nlink; nlink=nlink->next) refct--;
-  if (dm->x) {
-    DM obj;
-    ierr = VecGetDM(dm->x, &obj);CHKERRQ(ierr);
-    if (obj == dm) refct--;
-  }
   if (dm->coarseMesh && dm->coarseMesh->fineMesh == dm) {
     refct--;
     if (recurseCoarse) {
@@ -608,7 +595,7 @@ PetscErrorCode DMDestroyLabelLinkList_Internal(DM dm)
 @*/
 PetscErrorCode  DMDestroy(DM *dm)
 {
-  PetscInt       i, cnt;
+  PetscInt       cnt;
   DMNamedVecLink nlink,nnext;
   PetscErrorCode ierr;
 
@@ -620,17 +607,12 @@ PetscErrorCode  DMDestroy(DM *dm)
   ierr = DMCountNonCyclicReferences(*dm,PETSC_TRUE,PETSC_TRUE,&cnt);CHKERRQ(ierr);
   --((PetscObject)(*dm))->refct;
   if (--cnt > 0) {*dm = 0; PetscFunctionReturn(0);}
-  /*
-     Need this test because the dm references the vectors that
-     reference the dm, so destroying the dm calls destroy on the
-     vectors that cause another destroy on the dm
-  */
   if (((PetscObject)(*dm))->refct < 0) PetscFunctionReturn(0);
-  ((PetscObject) (*dm))->refct = 0;
-  for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
-    if ((*dm)->localout[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Destroying a DM that has a local vector obtained with DMGetLocalVector()");
-    ierr = VecDestroy(&(*dm)->localin[i]);CHKERRQ(ierr);
-  }
+  ((PetscObject)(*dm))->refct = 0;
+
+  ierr = DMClearGlobalVectors(*dm);CHKERRQ(ierr);
+  ierr = DMClearLocalVectors(*dm);CHKERRQ(ierr);
+
   nnext=(*dm)->namedglobal;
   (*dm)->namedglobal = NULL;
   for (nlink=nnext; nlink; nlink=nnext) { /* Destroy the named vectors */
@@ -724,9 +706,7 @@ PetscErrorCode  DMDestroy(DM *dm)
   if ((*dm)->ctx && (*dm)->ctxdestroy) {
     ierr = (*(*dm)->ctxdestroy)(&(*dm)->ctx);CHKERRQ(ierr);
   }
-  ierr = VecDestroy(&(*dm)->x);CHKERRQ(ierr);
   ierr = MatFDColoringDestroy(&(*dm)->fd);CHKERRQ(ierr);
-  ierr = DMClearGlobalVectors(*dm);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&(*dm)->ltogmap);CHKERRQ(ierr);
   ierr = PetscFree((*dm)->vectype);CHKERRQ(ierr);
   ierr = PetscFree((*dm)->mattype);CHKERRQ(ierr);
@@ -747,6 +727,7 @@ PetscErrorCode  DMDestroy(DM *dm)
   if ((*dm)->coarseMesh && (*dm)->coarseMesh->fineMesh == *dm) {
     ierr = DMSetFineDM((*dm)->coarseMesh,NULL);CHKERRQ(ierr);
   }
+
   ierr = DMDestroy(&(*dm)->coarseMesh);CHKERRQ(ierr);
   if ((*dm)->fineMesh && (*dm)->fineMesh->coarseMesh == *dm) {
     ierr = DMSetCoarseDM((*dm)->fineMesh,NULL);CHKERRQ(ierr);
@@ -966,6 +947,14 @@ PetscErrorCode  DMCreateGlobalVector(DM dm,Vec *vec)
   PetscValidPointer(vec,2);
   if (!dm->ops->createglobalvector) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM type %s does not implement DMCreateGlobalVector",((PetscObject)dm)->type_name);
   ierr = (*dm->ops->createglobalvector)(dm,vec);CHKERRQ(ierr);
+#if defined(PETSC_USE_DEBUG)
+  {
+    DM vdm;
+
+    ierr = VecGetDM(*vec,&vdm);CHKERRQ(ierr);
+    if (!vdm) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"DM type '%s' did not attach the DM to the vector\n",((PetscObject)dm)->type_name);
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -994,6 +983,14 @@ PetscErrorCode  DMCreateLocalVector(DM dm,Vec *vec)
   PetscValidPointer(vec,2);
   if (!dm->ops->createlocalvector) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM type %s does not implement DMCreateLocalVector",((PetscObject)dm)->type_name);
   ierr = (*dm->ops->createlocalvector)(dm,vec);CHKERRQ(ierr);
+#if defined(PETSC_USE_DEBUG)
+  {
+    DM vdm;
+
+    ierr = VecGetDM(*vec,&vdm);CHKERRQ(ierr);
+    if (!vdm) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"DM type '%s' did not attach the DM to the vector\n",((PetscObject)dm)->type_name);
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -1354,6 +1351,14 @@ PetscErrorCode  DMCreateMatrix(DM dm,Mat *mat)
   ierr = MatInitializePackage();CHKERRQ(ierr);
   ierr = PetscLogEventBegin(DM_CreateMatrix,0,0,0,0);CHKERRQ(ierr);
   ierr = (*dm->ops->creatematrix)(dm,mat);CHKERRQ(ierr);
+#if defined(PETSC_USE_DEBUG)
+  {
+    DM mdm;
+
+    ierr = MatGetDM(*mat,&mdm);CHKERRQ(ierr);
+    if (!mdm) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"DM type '%s' did not attach the DM to the matrix\n",((PetscObject)dm)->type_name);
+  }
+#endif
   /* Handle nullspace and near nullspace */
   if (dm->Nf) {
     MatNullSpace nullSpace;
@@ -1849,7 +1854,7 @@ PetscErrorCode DMCreateSuperDM(DM dms[], PetscInt len, IS **is, DM *superdm)
   PetscFree(), every entry of is should be destroyed with ISDestroy(), every entry of dm should be destroyed with DMDestroy(),
   and all of the arrays should be freed with PetscFree().
 
-.seealso DMDestroy(), DMView(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMCreateDomainDecompositionDM(), DMCreateFieldDecomposition()
+.seealso DMDestroy(), DMView(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMCreateFieldDecomposition()
 @*/
 PetscErrorCode DMCreateDomainDecomposition(DM dm, PetscInt *len, char ***namelist, IS **innerislist, IS **outerislist, DM **dmlist)
 {
@@ -3494,38 +3499,6 @@ PetscErrorCode DMHasCreateInjection(DM dm,PetscBool *flg)
     ierr = (*dm->ops->hascreateinjection)(dm,flg);CHKERRQ(ierr);
   } else {
     *flg = (dm->ops->createinjection) ? PETSC_TRUE : PETSC_FALSE;
-  }
-  PetscFunctionReturn(0);
-}
-
-
-/*@C
-    DMSetVec - set the vector at which to compute residual, Jacobian and VI bounds, if the problem is nonlinear.
-
-    Collective on dm
-
-    Input Parameter:
-+   dm - the DM object
--   x - location to compute residual and Jacobian, if NULL is passed to those routines; will be NULL for linear problems.
-
-    Level: developer
-
-.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext()
-
-@*/
-PetscErrorCode  DMSetVec(DM dm,Vec x)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (x) {
-    if (!dm->x) {
-      ierr = DMCreateGlobalVector(dm,&dm->x);CHKERRQ(ierr);
-    }
-    ierr = VecCopy(x,dm->x);CHKERRQ(ierr);
-  } else if (dm->x) {
-    ierr = VecDestroy(&dm->x);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -5373,7 +5346,6 @@ PetscErrorCode DMCopyDisc(DM dm, DM newdm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (dm == newdm) PetscFunctionReturn(0);
   ierr = DMCopyFields(dm, newdm);CHKERRQ(ierr);
   ierr = DMCopyDS(dm, newdm);CHKERRQ(ierr);
   PetscFunctionReturn(0);

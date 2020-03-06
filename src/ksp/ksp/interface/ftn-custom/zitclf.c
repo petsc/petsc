@@ -17,19 +17,19 @@
 #define matcreateschurcomplement_  matcreateschurcomplement
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL kspbuildsolution_(KSP *ksp,Vec *v,Vec *V, int *ierr)
+PETSC_EXTERN void kspbuildsolution_(KSP *ksp,Vec *v,Vec *V, int *ierr)
 {
   CHKFORTRANNULLOBJECT(V);
   *ierr = KSPBuildSolution(*ksp,*v,V);
 }
 
-PETSC_EXTERN void PETSC_STDCALL kspbuildresidual_(KSP *ksp,Vec *t,Vec *v,Vec *V, int *ierr)
+PETSC_EXTERN void kspbuildresidual_(KSP *ksp,Vec *t,Vec *v,Vec *V, int *ierr)
 {
   CHKFORTRANNULLOBJECT(V);
   *ierr = KSPBuildResidual(*ksp,*t,*v,V);
 }
 
-PETSC_EXTERN void PETSC_STDCALL kspgetoptionsprefix_(KSP *ksp,char* prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void kspgetoptionsprefix_(KSP *ksp,char* prefix,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   const char *tname;
 
@@ -38,7 +38,7 @@ PETSC_EXTERN void PETSC_STDCALL kspgetoptionsprefix_(KSP *ksp,char* prefix PETSC
   FIXRETURNCHAR(PETSC_TRUE,prefix,len);
 }
 
-PETSC_EXTERN void PETSC_STDCALL kspappendoptionsprefix_(KSP *ksp,char* prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void kspappendoptionsprefix_(KSP *ksp,char* prefix,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;
 
@@ -47,7 +47,7 @@ PETSC_EXTERN void PETSC_STDCALL kspappendoptionsprefix_(KSP *ksp,char* prefix PE
   FREECHAR(prefix,t);
 }
 
-PETSC_EXTERN void PETSC_STDCALL kspsetoptionsprefix_(KSP *ksp,char* prefix PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void kspsetoptionsprefix_(KSP *ksp,char* prefix, PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;
 

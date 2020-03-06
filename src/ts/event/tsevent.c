@@ -64,14 +64,14 @@ PetscErrorCode TSEventDestroy(TSEvent *event)
 . -ts_event_post_eventinterval_step <dt> time-step after event interval
 
   Notes:
-  TSSetPostEventIntervalStep allows one to set a time-step that is used immediately following an event interval. 
-  
+  TSSetPostEventIntervalStep allows one to set a time-step that is used immediately following an event interval.
+
   This function should be called from the postevent function set with TSSetEventHandler().
 
-  The post event interval time-step should be selected based on the dynamics following the event. 
-  If the dynamics are stiff, a conservative (small) step should be used. 
+  The post event interval time-step should be selected based on the dynamics following the event.
+  If the dynamics are stiff, a conservative (small) step should be used.
   If not, then a larger time-step can be used.
-  
+
   Level: Advanced
   .seealso: TS, TSEvent, TSSetEventHandler()
 @*/
@@ -398,6 +398,11 @@ PetscErrorCode TSEventHandler(TS ts)
 
   if (event->status == TSEVENT_RESET_NEXTSTEP) {
     dt = event->timestep_posteventinterval;
+    if (ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP) {
+      PetscReal maxdt = ts->max_time-t;
+
+      dt = dt > maxdt ? maxdt : (PetscIsCloseAtTol(dt,maxdt,10*PETSC_MACHINE_EPSILON,0) ? maxdt : dt);
+    }
     ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
     event->status = TSEVENT_NONE;
   }
@@ -497,6 +502,11 @@ PetscErrorCode TSEventHandler(TS ts)
     if (PetscAbsReal(dt) < PETSC_SMALL) { /* we hit the event, continue with the candidate time step */
       dt = event->timestep_prev;
       event->status = TSEVENT_NONE;
+    }
+    if (ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP) {
+      PetscReal maxdt = ts->max_time-t;
+
+      dt = dt > maxdt ? maxdt : (PetscIsCloseAtTol(dt,maxdt,10*PETSC_MACHINE_EPSILON,0) ? maxdt : dt);
     }
     ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
     event->iterctr = 0;

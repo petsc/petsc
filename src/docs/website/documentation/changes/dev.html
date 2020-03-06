@@ -3,6 +3,7 @@
   <head>
     <meta http-equiv="content-type" content="text/html;charset=utf-8">
     <link href="../../style.css" rel="stylesheet" type="text/css">
+    <link rel="icon" href="../images/PETSc_RGB-logo.png" type="image/png" sizes="16x16">
     <title>PETSc: Documentation: Changes: Development</title>
   </head>
   <body>
@@ -106,6 +107,7 @@
       <h4>General:</h4>
         <ul>
           <li>Change PetscLayoutFindOwner() and PetscLayoutFindOwnerIndex() to return a PetscMPIInt instead of a PetscInt</li>
+          <li>Support for Compaq F90 is removed along with supporting flags PETSC_HAVE_FORTRAN_STDCALL, PETSC_BLASLAPACK_STDCALL, HAVE_FORTRAN_MIXED_STR_ARG
         </ul>
       <h4>Configure/Build:</h4>
       <h4>IS:</h4>
@@ -182,12 +184,19 @@
       <ul>
         <li>All tabulated data is now stored in PetscTabulation structures. This changes interfaces in PetscDS, PetscFE, and PetscFV</li>
         <li>DefaultTabulation has been renamed to CellTabulation everywhere.</li>
+        <li>PetscDTGaussJacobiQuadrature() is now truly Gauss-Jacobi quadrature.  The quadrature for the simplex (without weight function) is now called PetscDTStroudConicalQuadrature().</li>
+        <li>Add PetscDTJacobiEval(), PetscDTGaussLobattoJacobiQuadrature().</li>
       </ul>
       <h4>PetscViewer:</h4>
         <ul>
           <li>Add "fieldnum" argument to PetscViewerVTKAddField() to indicate only one field of the vector should be viewed</li>
         </ul>
       <h4>SYS:</h4>
+      <ul>
+        <li>Add PetscSubcommGetParent() - Gets the communicator that was used to create the PetscSubcomm</li>
+        <li>Add PetscSubcommGetContiguousParent() - Gets a communicator that that is a duplicate of the parent but has the ranks reordered by the order they are in the children</li>
+        <li>Add PetscSubcommGetChild() - Gets the communicator created by the PetscSubcomm</li>
+      </ul>
       <h4>AO:</h4>
       <h4>Sieve:</h4>
       <h4>Fortran:</h4>

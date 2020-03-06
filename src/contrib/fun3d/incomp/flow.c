@@ -2526,7 +2526,7 @@ int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
 /*                                                                           */
 /*===========================================================================*/
 EXTERN_C_BEGIN
-void PETSC_STDCALL f77CLINK(CINFO *p1,CRUNGE *p2,CGMCOM *p3)
+void f77CLINK(CINFO *p1,CRUNGE *p2,CGMCOM *p3)
 {
   c_info  = p1;
   c_runge = p2;

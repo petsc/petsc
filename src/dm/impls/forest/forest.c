@@ -160,7 +160,7 @@ PetscErrorCode DMForestTemplate(DM dm, MPI_Comm comm, DM *tdm)
   ierr = DMForestGetBaseCoordinateMapping(dm,&map,&mapCtx);CHKERRQ(ierr);
   ierr = DMForestSetBaseCoordinateMapping(*tdm,map,mapCtx);CHKERRQ(ierr);
   if (forest->ftemplate) {
-    ierr = (forest->ftemplate)(dm, *tdm);CHKERRQ(ierr);
+    ierr = (*forest->ftemplate)(dm, *tdm);CHKERRQ(ierr);
   }
   ierr = DMForestSetAdaptivityForest(*tdm,dm);CHKERRQ(ierr);
   ierr = DMCopyDisc(dm,*tdm);CHKERRQ(ierr);
@@ -204,7 +204,7 @@ static PetscErrorCode DMDestroy_Forest(DM dm)
 
   PetscFunctionBegin;
   if (--forest->refct > 0) PetscFunctionReturn(0);
-  if (forest->destroy) {ierr = forest->destroy(dm);CHKERRQ(ierr);}
+  if (forest->destroy) {ierr = (*forest->destroy)(dm);CHKERRQ(ierr);}
   ierr = PetscSFDestroy(&forest->cellSF);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&forest->preCoarseToFine);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&forest->coarseToPreFine);CHKERRQ(ierr);
@@ -400,18 +400,18 @@ PetscErrorCode DMForestSetAdaptivityForest(DM dm,DM adapt)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
+  if (adapt) PetscValidHeaderSpecific(adapt, DM_CLASSID, 2);
   ierr = DMIsForest(dm, &isForest);CHKERRQ(ierr);
   if (!isForest) PetscFunctionReturn(0);
-  forest   = (DM_Forest*) dm->data;
-  ierr     = DMForestGetAdaptivityForest(dm,&oldAdapt);CHKERRQ(ierr);
   if (adapt != NULL && dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the adaptation forest after setup");
+  forest         = (DM_Forest*) dm->data;
+  ierr           = DMForestGetAdaptivityForest(dm,&oldAdapt);CHKERRQ(ierr);
   adaptForest    = (DM_Forest*) (adapt ? adapt->data : NULL);
   oldAdaptForest = (DM_Forest*) (oldAdapt ? oldAdapt->data : NULL);
   if (adaptForest != oldAdaptForest) {
     ierr = PetscSFDestroy(&forest->preCoarseToFine);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&forest->coarseToPreFine);CHKERRQ(ierr);
-    if (forest->clearadaptivityforest) {ierr = (forest->clearadaptivityforest)(dm);CHKERRQ(ierr);}
+    if (forest->clearadaptivityforest) {ierr = (*forest->clearadaptivityforest)(dm);CHKERRQ(ierr);}
   }
   switch (forest->adaptPurpose) {
   case DM_ADAPT_DETERMINE:
@@ -1280,9 +1280,10 @@ PetscErrorCode DMForestSetAdaptivityLabel(DM dm, DMLabel adaptLabel)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (forest->adaptLabel) {ierr = DMLabelDestroy(&forest->adaptLabel);CHKERRQ(ierr);}
+  if (adaptLabel) PetscValidHeaderSpecific(adaptLabel,DMLABEL_CLASSID,2);
+  ierr = PetscObjectReference((PetscObject)adaptLabel);CHKERRQ(ierr);
+  ierr = DMLabelDestroy(&forest->adaptLabel);CHKERRQ(ierr);
   forest->adaptLabel = adaptLabel;
-  ierr = PetscObjectReference((PetscObject) adaptLabel);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

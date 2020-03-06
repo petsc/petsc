@@ -26,7 +26,7 @@
 #define petscintview_              petscintview
 #endif
 
-static void (PETSC_STDCALL *f2)(MPI_Comm *comm,int*,const char* PETSC_MIXED_LEN(len1),const char* PETSC_MIXED_LEN(len2),PetscErrorCode*,PetscErrorType*,const char* PETSC_MIXED_LEN(len3),void*,PetscErrorCode* PETSC_END_LEN(len1) PETSC_END_LEN(len2) PETSC_END_LEN(len3));
+static void (*f2)(MPI_Comm *comm,int*,const char*,const char*,PetscErrorCode*,PetscErrorType*,const char*,void*,PetscErrorCode*,PETSC_FORTRAN_CHARLEN_T len1,PETSC_FORTRAN_CHARLEN_T len2,PETSC_FORTRAN_CHARLEN_T len3);
 
 /* These are not extern C because they are passed into non-extern C user level functions */
 static PetscErrorCode ourerrorhandler(MPI_Comm comm,int line,const char *fun,const char *file,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
@@ -38,15 +38,13 @@ static PetscErrorCode ourerrorhandler(MPI_Comm comm,int line,const char *fun,con
   PetscStrlen(file,&len2);
   PetscStrlen(mess,&len3);
 
-  (*f2)(&comm,&line,fun PETSC_MIXED_LEN_CALL(len1),file PETSC_MIXED_LEN_CALL(len2),&n,&p,mess PETSC_MIXED_LEN_CALL(len3),ctx,&ierr PETSC_END_LEN_CALL(len1) PETSC_END_LEN_CALL(len2) PETSC_END_LEN_CALL(len3));
+  (*f2)(&comm,&line,fun,file,&n,&p,mess,ctx,&ierr,((PETSC_FORTRAN_CHARLEN_T)(len1)),((PETSC_FORTRAN_CHARLEN_T)(len2)),((PETSC_FORTRAN_CHARLEN_T)(len3)));
   return ierr;
 }
 
 /*
         These are not usually called from Fortran but allow Fortran users
    to transparently set these monitors from .F code
-
-   functions, hence no STDCALL
 */
 PETSC_EXTERN void petsctracebackerrorhandler_(MPI_Comm *comm,int *line,const char *fun,const char *file,PetscErrorCode *n,PetscErrorType *p,const char *mess,void *ctx,PetscErrorCode *ierr)
 {
@@ -73,7 +71,7 @@ PETSC_EXTERN void petscignoreerrorhandler_(MPI_Comm *comm,int *line,const char *
   *ierr = PetscIgnoreErrorHandler(*comm,*line,fun,file,*n,*p,mess,ctx);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscpusherrorhandler_(void (PETSC_STDCALL *handler)(MPI_Comm *comm,int*,const char* PETSC_MIXED_LEN(len1),const char* PETSC_MIXED_LEN(len2),PetscErrorCode*,PetscErrorType*,const char* PETSC_MIXED_LEN(len3),void*,PetscErrorCode* PETSC_END_LEN(len1) PETSC_END_LEN(len2) PETSC_END_LEN(len3)),void *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void petscpusherrorhandler_(void (*handler)(MPI_Comm *comm,int*,const char*,const char*,PetscErrorCode*,PetscErrorType*,const char*,void*,PetscErrorCode*,PETSC_FORTRAN_CHARLEN_T len1,PETSC_FORTRAN_CHARLEN_T len2,PETSC_FORTRAN_CHARLEN_T len3),void *ctx,PetscErrorCode *ierr)
 {
   if ((void(*)(void))handler == (void(*)(void))petsctracebackerrorhandler_) *ierr = PetscPushErrorHandler(PetscTraceBackErrorHandler,0);
   else {
@@ -82,7 +80,7 @@ PETSC_EXTERN void PETSC_STDCALL petscpusherrorhandler_(void (PETSC_STDCALL *hand
   }
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscerror_(MPI_Fint *comm,PetscErrorCode *number,PetscErrorType *p,char* message PETSC_MIXED_LEN(len) PETSC_END_LEN(len))
+PETSC_EXTERN void petscerror_(MPI_Fint *comm,PetscErrorCode *number,PetscErrorType *p,char* message,PETSC_FORTRAN_CHARLEN_T len)
 {
   PetscErrorCode nierr,*ierr = &nierr;
   char *t1;
@@ -92,19 +90,19 @@ PETSC_EXTERN void PETSC_STDCALL petscerror_(MPI_Fint *comm,PetscErrorCode *numbe
 }
 
 /* helper routine for CHKERRQ and CHKERRABORT macros on the fortran side */
-PETSC_EXTERN void PETSC_STDCALL petscerrorf_(PetscErrorCode *number)
+PETSC_EXTERN void petscerrorf_(PetscErrorCode *number)
 {
   PetscError(PETSC_COMM_SELF,0,NULL,NULL,*number,PETSC_ERROR_REPEAT,NULL);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscrealview_(PetscInt *n,PetscReal *d,PetscViewer *viwer,PetscErrorCode *ierr)
+PETSC_EXTERN void petscrealview_(PetscInt *n,PetscReal *d,PetscViewer *viwer,PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viwer,v);
   *ierr = PetscRealView(*n,d,v);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscintview_(PetscInt *n,PetscInt *d,PetscViewer *viwer,PetscErrorCode *ierr)
+PETSC_EXTERN void petscintview_(PetscInt *n,PetscInt *d,PetscViewer *viwer,PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viwer,v);
@@ -117,7 +115,7 @@ PETSC_EXTERN void PETSC_STDCALL petscintview_(PetscInt *n,PetscInt *d,PetscViewe
 #define petscscalarview_             petscscalarview
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL petscscalarview_(PetscInt *n,PetscScalar *d,PetscViewer *viwer,PetscErrorCode *ierr)
+PETSC_EXTERN void petscscalarview_(PetscInt *n,PetscScalar *d,PetscViewer *viwer,PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viwer,v);

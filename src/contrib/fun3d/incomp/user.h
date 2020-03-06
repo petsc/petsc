@@ -286,16 +286,16 @@ extern int  write_fine_grid(GRID*);
 #define f77RREAD    f77name(RREAD,rread,rread_)
 
 EXTERN_C_BEGIN
-extern void PETSC_STDCALL f77FORLINK(void);
-extern void PETSC_STDCALL f77OPENM(int*);
-extern void PETSC_STDCALL f77FILLA(int*,int*,int*,int*,int*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,
+extern void f77FORLINK(void);
+extern void f77OPENM(int*);
+extern void f77FILLA(int*,int*,int*,int*,int*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,
                      PetscScalar*,int*,int*,int*,int*,int*,int*,PetscScalar*,Mat*,PetscScalar*,PetscScalar*,PetscScalar*,
                      PetscScalar*,int*,int*);
-extern void PETSC_STDCALL f77READR1(int*,int*);
-extern void PETSC_STDCALL f77SUMGS(int*,int*,int*,PetscScalar*,PetscScalar*,int*,int*);
-extern void PETSC_STDCALL f77INIT(int*,PetscScalar*,PetscScalar*,PetscScalar*,int*,int*,int*);
-extern void PETSC_STDCALL f77LSTGS(int*,int*,int*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,int*,int*);
-extern void PETSC_STDCALL f77GETRES(int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
+extern void f77READR1(int*,int*);
+extern void f77SUMGS(int*,int*,int*,PetscScalar*,PetscScalar*,int*,int*);
+extern void f77INIT(int*,PetscScalar*,PetscScalar*,PetscScalar*,int*,int*,int*);
+extern void f77LSTGS(int*,int*,int*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,int*,int*);
+extern void f77GETRES(int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
                                     int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
                                     int*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,
                                     PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,
@@ -313,10 +313,10 @@ extern void PETSC_STDCALL f77GETRES(int*,int*,int*,int*,int*,int*,int*,int*,int*
 #endif
 #endif
                                     int*,int*,int*);
-extern void PETSC_STDCALL f77FORCE(int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,PetscScalar*,PetscScalar*,int*,int*,PetscScalar*,PetscScalar*,PetscScalar*,int*,int*);
-extern void PETSC_STDCALL f77GETIA(int*,int*,int*,int*,int*,int*);
-extern void PETSC_STDCALL f77GETJA(int*,int*,int*,int*,int*,int*,int*);
-extern void PETSC_STDCALL f77TECFLO(int* nnodes,int* nvbound,int* nvfacet,int* nvnode,
+extern void f77FORCE(int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,PetscScalar*,PetscScalar*,int*,int*,PetscScalar*,PetscScalar*,PetscScalar*,int*,int*);
+extern void f77GETIA(int*,int*,int*,int*,int*,int*);
+extern void f77GETJA(int*,int*,int*,int*,int*,int*,int*);
+extern void f77TECFLO(int* nnodes,int* nvbound,int* nvfacet,int* nvnode,
                                     PetscScalar* x,PetscScalar* y,PetscScalar* z,
                                     PetscScalar* qnode, int* nvpts, int* nvtet,
                                     int* f2ntv, int* ivnode,

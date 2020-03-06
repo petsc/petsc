@@ -19,7 +19,7 @@
 #define dmplexrestorefacegeometry_ dmplexrestorefacegeometry
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL dmplexgetcellfields_(DM *dm, IS *cellIS, Vec *locX, Vec *locX_t, Vec *locA, F90Array1d *uPtr, F90Array1d *utPtr, F90Array1d *aPtr, int *ierr PETSC_F90_2PTR_PROTO(uPtrd) PETSC_F90_2PTR_PROTO(utPtrd) PETSC_F90_2PTR_PROTO(aPtrd))
+PETSC_EXTERN void dmplexgetcellfields_(DM *dm, IS *cellIS, Vec *locX, Vec *locX_t, Vec *locA, F90Array1d *uPtr, F90Array1d *utPtr, F90Array1d *aPtr, int *ierr PETSC_F90_2PTR_PROTO(uPtrd) PETSC_F90_2PTR_PROTO(utPtrd) PETSC_F90_2PTR_PROTO(aPtrd))
 {
   PetscDS      prob;
   PetscScalar *u, *u_t, *a;
@@ -42,7 +42,7 @@ PETSC_EXTERN void PETSC_STDCALL dmplexgetcellfields_(DM *dm, IS *cellIS, Vec *lo
   *ierr = F90Array1dCreate((void*) a,   MPIU_SCALAR, 1, locA ? numCells*totDimAux : 0, aPtr  PETSC_F90_2PTR_PARAM(aPtrd));
 }
 
-PETSC_EXTERN void PETSC_STDCALL dmplexrestorecellfields_(DM *dm, IS *cellIS, Vec *locX, Vec *locX_t, Vec *locA, F90Array1d *uPtr, F90Array1d *utPtr, F90Array1d *aPtr, int *ierr PETSC_F90_2PTR_PROTO(uPtrd) PETSC_F90_2PTR_PROTO(utPtrd) PETSC_F90_2PTR_PROTO(aPtrd))
+PETSC_EXTERN void dmplexrestorecellfields_(DM *dm, IS *cellIS, Vec *locX, Vec *locX_t, Vec *locA, F90Array1d *uPtr, F90Array1d *utPtr, F90Array1d *aPtr, int *ierr PETSC_F90_2PTR_PROTO(uPtrd) PETSC_F90_2PTR_PROTO(utPtrd) PETSC_F90_2PTR_PROTO(aPtrd))
 {
   PetscScalar *u, *u_t, *a;
 
@@ -55,7 +55,7 @@ PETSC_EXTERN void PETSC_STDCALL dmplexrestorecellfields_(DM *dm, IS *cellIS, Vec
   *ierr = F90Array1dDestroy(aPtr,  MPIU_SCALAR PETSC_F90_2PTR_PARAM(aPtrd));if (*ierr) return;
 }
 
-PETSC_EXTERN void PETSC_STDCALL dmplexgetfacefields_(DM *dm, PetscInt *fStart, PetscInt *fEnd, Vec *locX, Vec *locX_t, Vec *faceGeometry, Vec *cellGeometry, Vec *locGrad, PetscInt *Nface, F90Array1d *uLPtr, F90Array1d *uRPtr, int *ierr PETSC_F90_2PTR_PROTO(uLPtrd) PETSC_F90_2PTR_PROTO(uRPtrd))
+PETSC_EXTERN void dmplexgetfacefields_(DM *dm, PetscInt *fStart, PetscInt *fEnd, Vec *locX, Vec *locX_t, Vec *faceGeometry, Vec *cellGeometry, Vec *locGrad, PetscInt *Nface, F90Array1d *uLPtr, F90Array1d *uRPtr, int *ierr PETSC_F90_2PTR_PROTO(uLPtrd) PETSC_F90_2PTR_PROTO(uRPtrd))
 {
   PetscDS      prob;
   PetscScalar *uL, *uR;
@@ -68,7 +68,7 @@ PETSC_EXTERN void PETSC_STDCALL dmplexgetfacefields_(DM *dm, PetscInt *fStart, P
   *ierr = F90Array1dCreate((void*) uR, MPIU_SCALAR, 1, numFaces*totDim, uRPtr PETSC_F90_2PTR_PARAM(uRPtrd));if (*ierr) return;
 }
 
-PETSC_EXTERN void PETSC_STDCALL dmplexrestorefacefields_(DM *dm, PetscInt *fStart, PetscInt *fEnd, Vec *locX, Vec *locX_t, Vec *faceGeometry, Vec *cellGeometry, Vec *locGrad, PetscInt *Nface, F90Array1d *uLPtr, F90Array1d *uRPtr, int *ierr PETSC_F90_2PTR_PROTO(uLPtrd) PETSC_F90_2PTR_PROTO(uRPtrd))
+PETSC_EXTERN void dmplexrestorefacefields_(DM *dm, PetscInt *fStart, PetscInt *fEnd, Vec *locX, Vec *locX_t, Vec *faceGeometry, Vec *cellGeometry, Vec *locGrad, PetscInt *Nface, F90Array1d *uLPtr, F90Array1d *uRPtr, int *ierr PETSC_F90_2PTR_PROTO(uLPtrd) PETSC_F90_2PTR_PROTO(uRPtrd))
 {
   PetscScalar *uL, *uR;
 
@@ -79,7 +79,7 @@ PETSC_EXTERN void PETSC_STDCALL dmplexrestorefacefields_(DM *dm, PetscInt *fStar
   *ierr = F90Array1dDestroy(uRPtr, MPIU_SCALAR PETSC_F90_2PTR_PARAM(uRPtrd));if (*ierr) return;
 }
 
-PETSC_EXTERN void PETSC_STDCALL dmplexgetfacegeometry_(DM *dm, PetscInt *fStart, PetscInt *fEnd, Vec *faceGeometry, Vec *cellGeometry, PetscInt *Nface, F90Array1d *gPtr, F90Array1d *vPtr, int *ierr PETSC_F90_2PTR_PROTO(gPtrd) PETSC_F90_2PTR_PROTO(vPtrd))
+PETSC_EXTERN void dmplexgetfacegeometry_(DM *dm, PetscInt *fStart, PetscInt *fEnd, Vec *faceGeometry, Vec *cellGeometry, PetscInt *Nface, F90Array1d *gPtr, F90Array1d *vPtr, int *ierr PETSC_F90_2PTR_PROTO(gPtrd) PETSC_F90_2PTR_PROTO(vPtrd))
 {
   PetscFVFaceGeom *g;
   PetscReal       *v;
@@ -90,7 +90,7 @@ PETSC_EXTERN void PETSC_STDCALL dmplexgetfacegeometry_(DM *dm, PetscInt *fStart,
   *ierr = F90Array1dCreate((void*) v, MPIU_REAL,   1, numFaces*2,          vPtr PETSC_F90_2PTR_PARAM(vPtrd));if (*ierr) return;
 }
 
-PETSC_EXTERN void PETSC_STDCALL dmplexrestorefacegeometry_(DM *dm, PetscInt *fStart, PetscInt *fEnd, Vec *faceGeometry, Vec *cellGeometry, PetscInt *Nface, F90Array1d *gPtr, F90Array1d *vPtr, int *ierr PETSC_F90_2PTR_PROTO(gPtrd) PETSC_F90_2PTR_PROTO(vPtrd))
+PETSC_EXTERN void dmplexrestorefacegeometry_(DM *dm, PetscInt *fStart, PetscInt *fEnd, Vec *faceGeometry, Vec *cellGeometry, PetscInt *Nface, F90Array1d *gPtr, F90Array1d *vPtr, int *ierr PETSC_F90_2PTR_PROTO(gPtrd) PETSC_F90_2PTR_PROTO(vPtrd))
 {
   PetscFVFaceGeom *g;
   PetscReal       *v;

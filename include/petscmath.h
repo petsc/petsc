@@ -50,6 +50,11 @@
 #define PetscFloorReal(a)   floorf(a)
 #define PetscFmodReal(a,b)  fmodf(a,b)
 #define PetscTGamma(a)      tgammaf(a)
+#if defined(PETSC_HAVE_LGAMMA_IS_GAMMA)
+#define PetscLGamma(a)      gammaf(a)
+#else
+#define PetscLGamma(a)      lgammaf(a)
+#endif
 
 #elif defined(PETSC_USE_REAL_DOUBLE)
 #define PetscSqrtReal(a)    sqrt(a)
@@ -77,6 +82,11 @@
 #define PetscFloorReal(a)   floor(a)
 #define PetscFmodReal(a,b)  fmod(a,b)
 #define PetscTGamma(a)      tgamma(a)
+#if defined(PETSC_HAVE_LGAMMA_IS_GAMMA)
+#define PetscLGamma(a)      gamma(a)
+#else
+#define PetscLGamma(a)      lgamma(a)
+#endif
 
 #elif defined(PETSC_USE_REAL___FLOAT128)
 #define PetscSqrtReal(a)    sqrtq(a)
@@ -104,6 +114,11 @@
 #define PetscFloorReal(a)   floorq(a)
 #define PetscFmodReal(a,b)  fmodq(a,b)
 #define PetscTGamma(a)      tgammaq(a)
+#if defined(PETSC_HAVE_LGAMMA_IS_GAMMA)
+#define PetscLGamma(a)      gammaq(a)
+#else
+#define PetscLGamma(a)      lgammaq(a)
+#endif
 
 #elif defined(PETSC_USE_REAL___FP16)
 #define PetscSqrtReal(a)    sqrtf(a)
@@ -131,6 +146,11 @@
 #define PetscFloorReal(a)   floorf(a)
 #define PetscFmodReal(a,b)  fmodf(a,b)
 #define PetscTGamma(a)      tgammaf(a)
+#if defined(PETSC_HAVE_LGAMMA_IS_GAMMA)
+#define PetscLGamma(a)      gammaf(a)
+#else
+#define PetscLGamma(a)      lgammaf(a)
+#endif
 
 #endif /* PETSC_USE_REAL_* */
 
