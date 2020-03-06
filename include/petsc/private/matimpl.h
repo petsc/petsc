@@ -148,7 +148,7 @@ struct _MatOps {
   PetscErrorCode (*mattransposemult)(Mat,Mat,MatReuse,PetscReal,Mat*);
   PetscErrorCode (*mattransposemultsymbolic)(Mat,Mat,PetscReal,Mat*);
   PetscErrorCode (*mattransposemultnumeric)(Mat,Mat,Mat);
-  PetscErrorCode (*pintocpu)(Mat,PetscBool);
+  PetscErrorCode (*bindtocpu)(Mat,PetscBool);
   /*99*/
   PetscErrorCode (*placeholder_99)(Mat);
   PetscErrorCode (*placeholder_100)(Mat);

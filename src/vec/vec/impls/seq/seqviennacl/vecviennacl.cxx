@@ -1171,7 +1171,7 @@ PETSC_EXTERN PetscErrorCode VecCreate_SeqViennaCL(Vec V)
   ierr = PetscObjectChangeTypeName((PetscObject)V,VECSEQVIENNACL);CHKERRQ(ierr);
 
   ierr = VecBindToCPU_SeqAIJViennaCL(V,PETSC_FALSE);CHKERRQ(ierr);
-  V->ops->pintocpu = VecBindToCPU_SeqAIJViennaCL;
+  V->ops->bindtocpu = VecBindToCPU_SeqAIJViennaCL;
 
   ierr = VecViennaCLAllocateCheck(V);CHKERRQ(ierr);
   ierr = VecViennaCLAllocateCheckHost(V);CHKERRQ(ierr);

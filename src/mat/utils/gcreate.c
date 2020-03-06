@@ -430,8 +430,8 @@ PetscErrorCode MatBindToCPU(Mat A,PetscBool flg)
   PetscFunctionBegin;
   if (A->boundtocpu == flg) PetscFunctionReturn(0);
   A->boundtocpu = flg;
-  if (A->ops->pintocpu) {
-    ierr = (*A->ops->pintocpu)(A,flg);CHKERRQ(ierr);
+  if (A->ops->bindtocpu) {
+    ierr = (*A->ops->bindtocpu)(A,flg);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 #else

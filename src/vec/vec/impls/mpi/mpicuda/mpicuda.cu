@@ -332,7 +332,7 @@ PetscErrorCode VecCreate_MPICUDA_Private(Vec vv,PetscBool alloc,PetscInt nghost,
   ierr = PetscObjectChangeTypeName((PetscObject)vv,VECMPICUDA);CHKERRQ(ierr);
 
   ierr = VecBindToCPU_MPICUDA(vv,PETSC_FALSE);CHKERRQ(ierr);
-  vv->ops->pintocpu = VecBindToCPU_MPICUDA;
+  vv->ops->bindtocpu = VecBindToCPU_MPICUDA;
 
   /* Later, functions check for the Vec_CUDA structure existence, so do not create it without array */
   if (alloc && !array) {

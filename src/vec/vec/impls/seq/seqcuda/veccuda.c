@@ -406,7 +406,7 @@ PetscErrorCode VecCreate_SeqCUDA_Private(Vec V,const PetscScalar *array)
   ierr = VecCreate_Seq_Private(V,0);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)V,VECSEQCUDA);CHKERRQ(ierr);
   ierr = VecBindToCPU_SeqCUDA(V,PETSC_FALSE);CHKERRQ(ierr);
-  V->ops->pintocpu = VecBindToCPU_SeqCUDA;
+  V->ops->bindtocpu = VecBindToCPU_SeqCUDA;
 
   /* Later, functions check for the Vec_CUDA structure existence, so do not create it without array */
   if (array) {
