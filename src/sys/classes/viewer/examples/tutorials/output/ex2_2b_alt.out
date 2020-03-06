@@ -1,4 +1,4 @@
-Warning: PetscViewerHDF5SetCollective(viewer,PETSC_TRUE) is ignored for HDF5 versions prior to 1.10.3
+Warning: PetscViewerHDF5SetCollective(viewer,PETSC_TRUE) is ignored for HDF5 versions prior to 1.10.3 or if built without MPI support
 PetscViewer Object: 1 MPI processes
   type: hdf5
   Viewer format = HDF5_XDMF
