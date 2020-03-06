@@ -22,6 +22,7 @@ static PetscErrorCode PetscCudaHostRealloc(size_t a,int lineno,const char functi
 }
 
 static PetscErrorCode (*PetscMallocOld)(size_t,PetscBool,int,const char[],const char[],void**);
+static PetscErrorCode (*PetscReallocOld)(size_t,int,const char[],const char[],void**);
 static PetscErrorCode (*PetscFreeOld)(void*,int,const char[],const char[]);
 
 /*@C
@@ -42,10 +43,12 @@ PetscErrorCode PetscMallocSetCUDAHost(void)
 {
   PetscFunctionBegin;
   /* Save the previous choice */
-  PetscMallocOld = PetscTrMalloc;
-  PetscFreeOld   = PetscTrFree;
-  PetscTrMalloc  = PetscCudaHostMalloc;
-  PetscTrFree    = PetscCudaHostFree;
+  PetscMallocOld  = PetscTrMalloc;
+  PetscReallocOld = PetscTrRealloc;
+  PetscFreeOld    = PetscTrFree;
+  PetscTrMalloc   = PetscCudaHostMalloc;
+  PetscTrRealloc  = PetscCudaHostRealloc;
+  PetscTrFree     = PetscCudaHostFree;
   PetscFunctionReturn(0);
 }
 
@@ -61,7 +64,8 @@ PetscErrorCode PetscMallocSetCUDAHost(void)
 PetscErrorCode PetscMallocResetCUDAHost(void)
 {
   PetscFunctionBegin;
-  PetscTrMalloc = PetscMallocOld;
-  PetscTrFree   = PetscFreeOld;
+  PetscTrMalloc  = PetscMallocOld;
+  PetscTrRealloc = PetscReallocOld;
+  PetscTrFree    = PetscFreeOld;
   PetscFunctionReturn(0);
 }
