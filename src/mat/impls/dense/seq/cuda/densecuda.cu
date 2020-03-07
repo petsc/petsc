@@ -939,7 +939,7 @@ PetscErrorCode MatConvert_SeqDenseCUDA_SeqDense(Mat M,MatType type,MatReuse reus
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQDENSE);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqdensecuda_seqdense_C",NULL);CHKERRQ(ierr);
 
-  B->ops->pintocpu    = NULL;
+  B->ops->bindtocpu    = NULL;
   B->ops->destroy     = MatDestroy_SeqDense;
   B->offloadmask = PETSC_OFFLOAD_CPU;
   PetscFunctionReturn(0);
@@ -971,7 +971,7 @@ PetscErrorCode MatConvert_SeqDense_SeqDenseCUDA(Mat M,MatType type,MatReuse reus
   B->offloadmask = PETSC_OFFLOAD_UNALLOCATED;
 
   ierr = MatBindToCPU_SeqDenseCUDA(B,PETSC_FALSE);CHKERRQ(ierr);
-  B->ops->pintocpu = MatBindToCPU_SeqDenseCUDA;
+  B->ops->bindtocpu = MatBindToCPU_SeqDenseCUDA;
   B->ops->destroy  = MatDestroy_SeqDenseCUDA;
   PetscFunctionReturn(0);
 }

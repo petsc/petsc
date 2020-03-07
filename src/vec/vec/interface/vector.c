@@ -1880,8 +1880,8 @@ PetscErrorCode VecBindToCPU(Vec v,PetscBool flg)
   PetscFunctionBegin;
   if (v->boundtocpu == flg) PetscFunctionReturn(0);
   v->boundtocpu = flg;
-  if (v->ops->pintocpu) {
-    ierr = (*v->ops->pintocpu)(v,flg);CHKERRQ(ierr);
+  if (v->ops->bindtocpu) {
+    ierr = (*v->ops->bindtocpu)(v,flg);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 #else

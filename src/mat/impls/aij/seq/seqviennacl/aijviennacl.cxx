@@ -373,7 +373,7 @@ static PetscErrorCode MatDuplicate_SeqAIJViennaCL(Mat A,MatDuplicateOption cpval
   C = *B;
 
   ierr = MatBindToCPU_SeqAIJViennaCL(A,PETSC_FALSE);CHKERRQ(ierr);
-  C->ops->pintocpu = MatBindToCPU_SeqAIJViennaCL;
+  C->ops->bindtocpu = MatBindToCPU_SeqAIJViennaCL;
 
   C->spptr = new Mat_SeqAIJViennaCL();
   ((Mat_SeqAIJViennaCL*)C->spptr)->tempvec        = NULL;
@@ -467,7 +467,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJViennaCL(Mat A,MatType type,
   ((Mat_SeqAIJViennaCL*)B->spptr)->compressed_mat = NULL;
 
   ierr = MatBindToCPU_SeqAIJViennaCL(A,PETSC_FALSE);CHKERRQ(ierr);
-  A->ops->pintocpu = MatBindToCPU_SeqAIJViennaCL;
+  A->ops->bindtocpu = MatBindToCPU_SeqAIJViennaCL;
 
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJVIENNACL);CHKERRQ(ierr);
   ierr = PetscFree(B->defaultvectype);CHKERRQ(ierr);
