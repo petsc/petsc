@@ -5412,6 +5412,8 @@ PetscErrorCode MatAssemblyEnd(Mat mat,MatAssemblyType type)
                             including after MatAssemblyBegin/End() which could
                             potentially change the symmetry structure, i.e. you
                             KNOW the matrix will ALWAYS have the property you set.
+                            Note that setting this flag alone implies nothing about whether the matrix is symmetric/Hermitian;
+                            the relevant flags must be set independently.
 
 
    Options For Use with MatSetValues():
