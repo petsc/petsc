@@ -395,7 +395,6 @@ int main(int argc,char **args)
 /*TEST
 
    test:
-      requires: mumps
       args: -use_petsc_lu
       output_file: output/ex52_2.out
 
