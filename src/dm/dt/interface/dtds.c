@@ -2677,9 +2677,9 @@ PetscErrorCode PetscDSGetWorkspace(PetscDS prob, PetscReal **x, PetscScalar **ba
   ierr = PetscDSSetUp(prob);CHKERRQ(ierr);
   if (x)            {PetscValidPointer(x, 2);            *x            = prob->x;}
   if (basisReal)    {PetscValidPointer(basisReal, 3);    *basisReal    = prob->basisReal;}
-  if (basisDerReal) {PetscValidPointer(basisDerReal, 3); *basisDerReal = prob->basisDerReal;}
-  if (testReal)     {PetscValidPointer(testReal, 3);     *testReal     = prob->testReal;}
-  if (testDerReal)  {PetscValidPointer(testDerReal, 3);  *testDerReal  = prob->testDerReal;}
+  if (basisDerReal) {PetscValidPointer(basisDerReal, 4); *basisDerReal = prob->basisDerReal;}
+  if (testReal)     {PetscValidPointer(testReal, 5);     *testReal     = prob->testReal;}
+  if (testDerReal)  {PetscValidPointer(testDerReal, 6);  *testDerReal  = prob->testDerReal;}
   PetscFunctionReturn(0);
 }
 
