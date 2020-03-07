@@ -770,6 +770,16 @@ linux-nagfor:
     TEST_ARCH: arch-ci-linux-nagfor
     MAKE_FFLAGS: -DNO_WERROR_FLAG
 
+linux-uni-pkgs:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - gce-nfs
+  variables:
+    TEST_ARCH: arch-ci-linux-uni-pkgs
+    LOAD_MODULES: llvm/9.0.0-7fyffox cmake/3.14.2-rl3q676
+
 linux-64idx-i8:
   extends:
     - .stage-3
