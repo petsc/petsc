@@ -337,7 +337,7 @@ int main(int argc,char **args)
        output_file: output/ex192_mkl_pardiso_3.out
 
    testset:
-     requires: mumps double !complex !define(PETSC_USE_64BIT_INDICES)
+     requires: mumps double !complex
      args: -solver 0
 
      test:

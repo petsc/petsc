@@ -218,11 +218,11 @@ int main(int argc,char **args)
 
 
    test:
-     requires: mumps double !complex !define(PETSC_USE_64BIT_INDICES)
+     requires: mumps double !complex
 
    test:
      suffix: 2
-     requires: mumps double !complex !define(PETSC_USE_64BIT_INDICES)
+     requires: mumps double !complex
      nsize: 2
 
 TEST*/
