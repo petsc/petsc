@@ -895,7 +895,7 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature_Newton_Internal(PetscInt npoi
 {
   PetscInt       maxIter = 100;
   PetscReal      eps     = PetscExpReal(0.75 * PetscLogReal(PETSC_MACHINE_EPSILON));
-  PetscReal      a1, a2, a3, a4, a5, a6, gf;
+  PetscReal      a1, a6, gf;
   PetscInt       k;
   PetscErrorCode ierr;
 
@@ -903,11 +903,14 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature_Newton_Internal(PetscInt npoi
 
   a1 = PetscPowReal(2.0, a+b+1);
 #if defined(PETSC_HAVE_LGAMMA)
-  a2 = PetscLGamma(a + npoints + 1);
-  a3 = PetscLGamma(b + npoints + 1);
-  a4 = PetscLGamma(a + b + npoints + 1);
-  a5 = PetscLGamma(npoints + 1);
-  gf = PetscExpReal(a2 + a3 - (a4 + a5));
+  {
+    PetscReal a2, a3, a4, a5;
+    a2 = PetscLGamma(a + npoints + 1);
+    a3 = PetscLGamma(b + npoints + 1);
+    a4 = PetscLGamma(a + b + npoints + 1);
+    a5 = PetscLGamma(npoints + 1);
+    gf = PetscExpReal(a2 + a3 - (a4 + a5));
+  }
 #else
   {
     PetscInt ia, ib;
