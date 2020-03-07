@@ -1314,7 +1314,7 @@ PetscErrorCode PetscDualSpaceTransformGradient(PetscDualSpace dsp, PetscDualSpac
     for (c = 0; c < Nc; ++c) {
       switch (dim)
       {
-        case 1: vals[(v*Nc+c)*dim] *= fegeom->invJ[0];
+        case 1: vals[(v*Nc+c)*dim] *= fegeom->invJ[0];break;
         case 2: DMPlex_MultTranspose2DReal_Internal(fegeom->invJ, 1, &vals[(v*Nc+c)*dim], &vals[(v*Nc+c)*dim]);break;
         case 3: DMPlex_MultTranspose3DReal_Internal(fegeom->invJ, 1, &vals[(v*Nc+c)*dim], &vals[(v*Nc+c)*dim]);break;
         default: SETERRQ1(PetscObjectComm((PetscObject) dsp), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dim %D for transformation", dim);
