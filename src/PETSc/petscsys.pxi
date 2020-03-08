@@ -31,8 +31,7 @@ cdef extern from * nogil:
     int PetscPushErrorHandler(PetscErrorHandlerFunction,void*)
     int PetscPopErrorHandler()
     int PetscPopSignalHandler()
-    int PetscInfoAllow(PetscBool)
-    int PetscInfoSetFile(char*,char*)
+    int PetscInfoAllow(PetscBool, char*)
 
     int PetscErrorMessage(int,char*[],char**)
 
