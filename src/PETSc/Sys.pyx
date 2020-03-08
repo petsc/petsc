@@ -157,10 +157,16 @@ cdef class Sys:
         CHKERR( PetscPopSignalHandler() )
 
     @classmethod
-    def infoAllow(cls, flag):
+    def infoAllow(cls, flag, filename=None, mode="w"):
         cdef PetscBool tval = PETSC_FALSE
+        cdef const_char *cfilename = NULL
+        cdef const_char *cmode = NULL
         if flag: tval = PETSC_TRUE
-        CHKERR( PetscInfoAllow(tval, NULL) )
+        CHKERR( PetscInfoAllow(tval) )
+        if filename is not None:
+            filename = str2bytes(filename, &cfilename)
+            mode = str2bytes(mode, &cmode)
+            CHKERR( PetscInfoSetFile(cfilename, cmode) )
 
     @classmethod
     def registerCitation(cls, citation):
