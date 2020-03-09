@@ -892,11 +892,9 @@ static PetscErrorCode PetscViewerBinaryWriteReadMPIIO(PetscViewer viewer,void *d
 -  dtype - type of data to read
 
    Output Parameters:
-.  count - number of items of data actually read, or NULL. Unless an error is generated this is always set to the input parameter num.
+.  count - number of items of data actually read, or NULL.
 
    Level: beginner
-
-   Developer Note: Since count is always set to num it is not clear what purpose the output argument count serves.
 
 .seealso: PetscViewerASCIIOpen(), PetscViewerPushFormat(), PetscViewerDestroy(),
           VecView(), MatView(), VecLoad(), MatLoad(), PetscViewerBinaryGetDescriptor(),
@@ -960,6 +958,156 @@ PetscErrorCode PetscViewerBinaryWrite(PetscViewer viewer,const void *data,PetscI
 #if defined(PETSC_HAVE_MPIIO)
   }
 #endif
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PetscViewerBinaryWriteReadAll(PetscViewer viewer,PetscBool write,void *data,PetscInt count,PetscInt start,PetscInt total,PetscDataType dtype)
+{
+  MPI_Comm       comm = PetscObjectComm((PetscObject)viewer);
+  PetscMPIInt    size,rank;
+  MPI_Datatype   mdtype;
+  MPI_Aint       lb,dsize;
+  PetscBool      useMPIIO;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecificType(viewer,PETSC_VIEWER_CLASSID,1,PETSCVIEWERBINARY);
+  PetscValidLogicalCollectiveBool(viewer,((start>=0)||(start==PETSC_DETERMINE)),4);
+  PetscValidLogicalCollectiveBool(viewer,((total>=0)||(total==PETSC_DETERMINE)),5);
+  PetscValidLogicalCollectiveInt(viewer,total,5);
+  ierr = PetscViewerSetUp(viewer);CHKERRQ(ierr);
+
+  ierr = PetscDataTypeToMPIDataType(dtype,&mdtype);CHKERRQ(ierr);
+  ierr = MPI_Type_get_extent(mdtype,&lb,&dsize);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+
+  ierr = PetscViewerBinaryGetUseMPIIO(viewer,&useMPIIO);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MPIIO)
+  if (useMPIIO) {
+    MPI_File       mfdes;
+    MPI_Offset     off;
+    PetscMPIInt    cnt;
+
+    if (start == PETSC_DETERMINE) {
+      ierr = MPI_Scan(&count,&start,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
+      start -= count;
+    }
+    if (total == PETSC_DETERMINE) {
+      total = start + count;
+      ierr = MPI_Bcast(&total,1,MPIU_INT,size-1,comm);CHKERRQ(ierr);
+    }
+    ierr = PetscMPIIntCast(count,&cnt);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryGetMPIIODescriptor(viewer,&mfdes);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryGetMPIIOOffset(viewer,&off);CHKERRQ(ierr);
+    off += (MPI_Offset)(start*dsize);
+    if (write) {
+      ierr = MPIU_File_write_at_all(mfdes,off,data,cnt,mdtype,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+    } else {
+      ierr = MPIU_File_read_at_all(mfdes,off,data,cnt,mdtype,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+    }
+    off  = (MPI_Offset)(total*dsize);
+    ierr = PetscViewerBinaryAddMPIIOOffset(viewer,off);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+#endif
+  {
+    int         fdes;
+    char        *workbuf = NULL;
+    PetscInt    maxcount=0,message_count,flowcontrolcount;
+    PetscMPIInt tag,cnt,maxcnt,scnt=0,rcnt=0,j;
+    MPI_Status  status;
+
+    ierr = PetscCommGetNewTag(comm,&tag);CHKERRQ(ierr);
+    ierr = MPI_Reduce(&count,&maxcount,1,MPIU_INT,MPI_MAX,0,comm);CHKERRQ(ierr);
+    ierr = PetscMPIIntCast(maxcount,&maxcnt);CHKERRQ(ierr);
+    ierr = PetscMPIIntCast(count,&cnt);CHKERRQ(ierr);
+
+    ierr = PetscViewerBinaryGetDescriptor(viewer,&fdes);CHKERRQ(ierr);
+    ierr = PetscViewerFlowControlStart(viewer,&message_count,&flowcontrolcount);CHKERRQ(ierr);
+    if (!rank) {
+      ierr = PetscMalloc(maxcnt*dsize,&workbuf);CHKERRQ(ierr);
+      if (write) {
+        ierr = PetscBinaryWrite(fdes,data,cnt,dtype);CHKERRQ(ierr);
+      } else {
+        ierr = PetscBinaryRead(fdes,data,cnt,NULL,dtype);CHKERRQ(ierr);
+      }
+      for (j=1; j<size; j++) {
+        ierr = PetscViewerFlowControlStepMaster(viewer,j,&message_count,flowcontrolcount);CHKERRQ(ierr);
+        if (write) {
+          ierr = MPI_Recv(workbuf,maxcnt,mdtype,j,tag,comm,&status);CHKERRQ(ierr);
+          ierr = MPI_Get_count(&status,mdtype,&rcnt);CHKERRQ(ierr);
+          ierr = PetscBinaryWrite(fdes,workbuf,rcnt,dtype);CHKERRQ(ierr);
+        } else {
+          ierr = MPI_Recv(&scnt,1,MPI_INT,j,tag,comm,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+          ierr = PetscBinaryRead(fdes,workbuf,scnt,NULL,dtype);CHKERRQ(ierr);
+          ierr = MPI_Send(workbuf,scnt,mdtype,j,tag,comm);CHKERRQ(ierr);
+        }
+      }
+      ierr = PetscFree(workbuf);CHKERRQ(ierr);
+      ierr = PetscViewerFlowControlEndMaster(viewer,&message_count);CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerFlowControlStepWorker(viewer,rank,&message_count);CHKERRQ(ierr);
+      if (write) {
+        ierr = MPI_Send(data,cnt,mdtype,0,tag,comm);CHKERRQ(ierr);
+      } else {
+        ierr = MPI_Send(&cnt,1,MPI_INT,0,tag,comm);CHKERRQ(ierr);
+        ierr = MPI_Recv(data,cnt,mdtype,0,tag,comm,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+      }
+      ierr = PetscViewerFlowControlEndWorker(viewer,&message_count);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+
+/*@C
+   PetscViewerBinaryReadAll - reads from a binary file from all processes
+
+   Collective
+
+   Input Parameters:
++  viewer - the binary viewer
+.  data - location of data
+.  count - local number of items of data to read
+.  start - local start, can be PETSC_DETERMINE
+.  total - global number of items of data to read, can be PETSC_DETERMINE
+-  dtype - type of data to read
+
+   Level: advanced
+
+.seealso: PetscViewerBinaryOpen(), PetscViewerBinarySetUseMPIIO(), PetscBinaryViewerRead(), PetscBinaryViewerWriteAll()
+@*/
+PetscErrorCode PetscViewerBinaryReadAll(PetscViewer viewer,void *data,PetscInt count,PetscInt start,PetscInt total,PetscDataType dtype)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = PetscViewerBinaryWriteReadAll(viewer,PETSC_FALSE,data,count,start,total,dtype);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   PetscViewerBinaryWriteAll - writes to a binary file from all processes
+
+   Collective
+
+   Input Parameters:
++  viewer - the binary viewer
+.  data - location of data
+.  count - local number of items of data to write
+.  start - local start, can be PETSC_DETERMINE
+.  total - global number of items of data to write, can be PETSC_DETERMINE
+-  dtype - type of data to write
+
+   Level: advanced
+
+.seealso: PetscViewerBinaryOpen(), PetscViewerBinarySetUseMPIIO(), PetscBinaryViewerWriteAll(), PetscBinaryViewerReadAll()
+@*/
+PetscErrorCode PetscViewerBinaryWriteAll(PetscViewer viewer,const void *data,PetscInt count,PetscInt start,PetscInt total,PetscDataType dtype)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = PetscViewerBinaryWriteReadAll(viewer,PETSC_TRUE,(void*)data,count,start,total,dtype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1416,8 +1564,8 @@ static PetscErrorCode PetscViewerSetFromOptions_Binary(PetscOptionItems *PetscOp
   ierr = PetscOptionsBool("-viewer_binary_skip_header","Skip writing/reading header information","PetscViewerBinarySetSkipHeader",binary->skipheader,&binary->skipheader,NULL);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MPIIO)
   ierr = PetscOptionsBool("-viewer_binary_mpiio","Use MPI-IO functionality to write/read binary file","PetscViewerBinarySetUseMPIIO",binary->usempiio,&binary->usempiio,NULL);CHKERRQ(ierr);
-#elif defined(PETSC_HAVE_MPIUNI)
-  ierr = PetscOptionsBool("-viewer_binary_mpiio","Use MPI-IO functionality to write/read binary file","PetscViewerBinarySetUseMPIIO",PETSC_FALSE,NULL,NULL);CHKERRQ(ierr);
+#else
+  ierr = PetscOptionsBool("-viewer_binary_mpiio","Use MPI-IO functionality to write/read binary file (NOT AVAILABLE)","PetscViewerBinarySetUseMPIIO",PETSC_FALSE,NULL,NULL);CHKERRQ(ierr);
 #endif
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   binary->setfromoptionscalled = PETSC_TRUE;
