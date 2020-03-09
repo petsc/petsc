@@ -15,6 +15,7 @@ PETSC_EXTERN PetscBool ISLocalToGlobalMappingRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode ISRegisterAll(void);
 
 /* events */
+PETSC_EXTERN PetscLogEvent IS_View;
 PETSC_EXTERN PetscLogEvent IS_Load;
 
 struct _ISOps {

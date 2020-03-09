@@ -8,6 +8,7 @@
 /* Logging support */
 PetscClassId IS_CLASSID;
 /* TODO: Much more events are missing! */
+PetscLogEvent IS_View;
 PetscLogEvent IS_Load;
 
 /*@
@@ -1623,14 +1624,14 @@ PetscErrorCode  ISView(IS is,PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
-  if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)is),&viewer);CHKERRQ(ierr);
-  }
+  if (!viewer) {ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)is),&viewer);CHKERRQ(ierr);}
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(is,1,viewer,2);
 
   ierr = PetscObjectPrintClassNamePrefixType((PetscObject)is,viewer);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(IS_View,is,viewer,0,0);CHKERRQ(ierr);
   ierr = (*is->ops->view)(is,viewer);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(IS_View,is,viewer,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1664,9 +1665,9 @@ PetscErrorCode ISLoad(IS is, PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5);CHKERRQ(ierr);
   if (!isbinary && !ishdf5) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
   if (!((PetscObject)is)->type_name) {ierr = ISSetType(is, ISGENERAL);CHKERRQ(ierr);}
-  ierr = PetscLogEventBegin(IS_Load,viewer,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(IS_Load,is,viewer,0,0);CHKERRQ(ierr);
   ierr = (*is->ops->load)(is, viewer);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(IS_Load,viewer,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(IS_Load,is,viewer,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
