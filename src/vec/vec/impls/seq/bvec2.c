@@ -585,9 +585,8 @@ PetscErrorCode VecView_Seq_Binary(Vec xin,PetscViewer viewer)
     ierr = PetscMPIIntCast(n,&lsize);CHKERRQ(ierr);
     ierr = PetscViewerBinaryGetMPIIODescriptor(viewer,&mfdes);CHKERRQ(ierr);
     ierr = PetscViewerBinaryGetMPIIOOffset(viewer,&off);CHKERRQ(ierr);
-    ierr = MPI_File_set_view(mfdes,off,MPIU_SCALAR,MPIU_SCALAR,(char*)"native",MPI_INFO_NULL);CHKERRQ(ierr);
     ierr = VecGetArrayRead(xin,&xv);CHKERRQ(ierr);
-    ierr = MPIU_File_write_all(mfdes,(void*)xv,lsize,MPIU_SCALAR,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+    ierr = MPIU_File_write_at_all(mfdes,off,(void*)xv,lsize,MPIU_SCALAR,MPI_STATUS_IGNORE);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(xin,&xv);CHKERRQ(ierr);
     ierr = PetscViewerBinaryAddMPIIOOffset(viewer,n*sizeof(PetscScalar));CHKERRQ(ierr);
   }

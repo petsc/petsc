@@ -77,8 +77,7 @@ PetscErrorCode ISLoad_Binary(IS is, PetscViewer viewer)
     ierr = PetscViewerBinaryGetMPIIOOffset(viewer,&off);CHKERRQ(ierr);
     ierr = PetscLayoutGetRange(is->map,&rstart,NULL);CHKERRQ(ierr);
     off += rstart*(MPI_Offset)sizeof(PetscInt);
-    ierr = MPI_File_set_view(mfdes,off,MPIU_INT,MPIU_INT,(char*)"native",MPI_INFO_NULL);CHKERRQ(ierr);
-    ierr = MPIU_File_read_all(mfdes,idx,lsize,MPIU_INT,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+    ierr = MPIU_File_read_at_all(mfdes,off,idx,lsize,MPIU_INT,MPI_STATUS_IGNORE);CHKERRQ(ierr);
     ierr = PetscViewerBinaryAddMPIIOOffset(viewer,N*(MPI_Offset)sizeof(PetscInt));CHKERRQ(ierr);
     ierr = ISGeneralSetIndices(is,ln,idx,PETSC_OWN_POINTER);CHKERRQ(ierr);
     PetscFunctionReturn(0);

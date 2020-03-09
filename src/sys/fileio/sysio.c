@@ -825,4 +825,56 @@ PetscErrorCode MPIU_File_read_all(MPI_File fd,void *data,PetscMPIInt cnt,MPI_Dat
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MPIU_File_write_at(MPI_File fd,MPI_Offset off,void *data,PetscMPIInt cnt,MPI_Datatype dtype,MPI_Status *status)
+{
+  PetscDataType  pdtype;
+  PetscErrorCode ierr;
+
+
+  PetscFunctionBegin;
+  ierr = PetscMPIDataTypeToPetscDataType(dtype,&pdtype);CHKERRQ(ierr);
+  if (!PetscBinaryBigEndian()) {ierr = PetscByteSwap(data,pdtype,cnt);CHKERRQ(ierr);}
+  ierr = MPI_File_write_at(fd,off,data,cnt,dtype,status);CHKERRQ(ierr);
+  if (!PetscBinaryBigEndian()) {ierr = PetscByteSwap(data,pdtype,cnt);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MPIU_File_read_at(MPI_File fd,MPI_Offset off,void *data,PetscMPIInt cnt,MPI_Datatype dtype,MPI_Status *status)
+{
+  PetscDataType  pdtype;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscMPIDataTypeToPetscDataType(dtype,&pdtype);CHKERRQ(ierr);
+  ierr = MPI_File_read_at(fd,off,data,cnt,dtype,status);CHKERRQ(ierr);
+  if (!PetscBinaryBigEndian()) {ierr = PetscByteSwap(data,pdtype,cnt);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MPIU_File_write_at_all(MPI_File fd,MPI_Offset off,void *data,PetscMPIInt cnt,MPI_Datatype dtype,MPI_Status *status)
+{
+  PetscDataType  pdtype;
+  PetscErrorCode ierr;
+
+
+  PetscFunctionBegin;
+  ierr = PetscMPIDataTypeToPetscDataType(dtype,&pdtype);CHKERRQ(ierr);
+  if (!PetscBinaryBigEndian()) {ierr = PetscByteSwap(data,pdtype,cnt);CHKERRQ(ierr);}
+  ierr = MPI_File_write_at_all(fd,off,data,cnt,dtype,status);CHKERRQ(ierr);
+  if (!PetscBinaryBigEndian()) {ierr = PetscByteSwap(data,pdtype,cnt);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MPIU_File_read_at_all(MPI_File fd,MPI_Offset off,void *data,PetscMPIInt cnt,MPI_Datatype dtype,MPI_Status *status)
+{
+  PetscDataType  pdtype;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscMPIDataTypeToPetscDataType(dtype,&pdtype);CHKERRQ(ierr);
+  ierr = MPI_File_read_at_all(fd,off,data,cnt,dtype,status);CHKERRQ(ierr);
+  if (!PetscBinaryBigEndian()) {ierr = PetscByteSwap(data,pdtype,cnt);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
 #endif

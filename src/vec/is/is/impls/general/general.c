@@ -352,9 +352,8 @@ static PetscErrorCode ISView_General_Binary(IS is,PetscViewer viewer)
     ierr = PetscViewerBinaryGetMPIIOOffset(viewer,&off);CHKERRQ(ierr);
     ierr = PetscLayoutGetRange(is->map,&rstart,NULL);CHKERRQ(ierr);
     off += rstart*(MPI_Offset)sizeof(PetscInt); /* off is MPI_Offset, not PetscMPIInt */
-    ierr = MPI_File_set_view(mfdes,off,MPIU_INT,MPIU_INT,(char*)"native",MPI_INFO_NULL);CHKERRQ(ierr);
     ierr = ISGetIndices(is,&iarray);CHKERRQ(ierr);
-    ierr = MPIU_File_write_all(mfdes,(void*)iarray,lsize,MPIU_INT,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+    ierr = MPIU_File_write_at_all(mfdes,off,(void*)iarray,lsize,MPIU_INT,MPI_STATUS_IGNORE);CHKERRQ(ierr);
     ierr = ISRestoreIndices(is,&iarray);CHKERRQ(ierr);
     ierr = PetscViewerBinaryAddMPIIOOffset(viewer,N*(MPI_Offset)sizeof(PetscInt));CHKERRQ(ierr);
     PetscFunctionReturn(0);

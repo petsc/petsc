@@ -1937,6 +1937,10 @@ M*/
 #if defined(PETSC_HAVE_MPIIO)
 PETSC_EXTERN PetscErrorCode MPIU_File_write_all(MPI_File,void*,PetscMPIInt,MPI_Datatype,MPI_Status*);
 PETSC_EXTERN PetscErrorCode MPIU_File_read_all(MPI_File,void*,PetscMPIInt,MPI_Datatype,MPI_Status*);
+PETSC_EXTERN PetscErrorCode MPIU_File_write_at(MPI_File,MPI_Offset,void*,PetscMPIInt,MPI_Datatype,MPI_Status*);
+PETSC_EXTERN PetscErrorCode MPIU_File_read_at(MPI_File,MPI_Offset,void*,PetscMPIInt,MPI_Datatype,MPI_Status*);
+PETSC_EXTERN PetscErrorCode MPIU_File_write_at_all(MPI_File,MPI_Offset,void*,PetscMPIInt,MPI_Datatype,MPI_Status*);
+PETSC_EXTERN PetscErrorCode MPIU_File_read_at_all(MPI_File,MPI_Offset,void*,PetscMPIInt,MPI_Datatype,MPI_Status*);
 #endif
 
 /* the following petsc_static_inline require petscerror.h */
