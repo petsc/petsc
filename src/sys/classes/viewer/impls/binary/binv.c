@@ -1370,12 +1370,15 @@ static PetscErrorCode PetscViewerBinarySetUseMPIIO_Binary(PetscViewer viewer,Pet
 static PetscErrorCode PetscViewerView_Binary(PetscViewer v,PetscViewer viewer)
 {
   PetscErrorCode     ierr;
-  PetscViewer_Binary *binary = (PetscViewer_Binary*)v->data;
+  PetscViewer_Binary *vbinary = (PetscViewer_Binary*)v->data;
+  const char         *fname = vbinary->filename ? vbinary->filename : "not yet set";
+  const char         *fmode = vbinary->btype != (PetscFileMode) -1 ? PetscFileModes[vbinary->btype] : "not yet set";
+  PetscBool          usempiio;
 
   PetscFunctionBegin;
-  if (binary->filename) {
-    ierr = PetscViewerASCIIPrintf(viewer,"Filename: %s\n",binary->filename);CHKERRQ(ierr);
-  }
+  ierr = PetscViewerBinaryGetUseMPIIO(v,&usempiio);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"Filename: %s\n",fname);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"Mode: %s (%s)\n",fmode,usempiio ? "mpiio" : "stdio");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
