@@ -724,22 +724,22 @@ PetscErrorCode  PetscBagView(PetscBag bag,PetscViewer view)
     PetscInt          classid           = PETSC_BAG_FILE_CLASSID, dtype;
     PetscInt          deprecatedbagsize = 0;
     PetscViewerFormat format;
-    ierr = PetscViewerBinaryWrite(view,&classid,1,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryWrite(view,&deprecatedbagsize,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryWrite(view,&bag->count,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryWrite(view,bag->bagname,PETSC_BAG_NAME_LENGTH,PETSC_CHAR,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryWrite(view,bag->baghelp,PETSC_BAG_HELP_LENGTH,PETSC_CHAR,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(view,&classid,1,PETSC_INT);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(view,&deprecatedbagsize,1,PETSC_INT);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(view,&bag->count,1,PETSC_INT);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(view,bag->bagname,PETSC_BAG_NAME_LENGTH,PETSC_CHAR);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(view,bag->baghelp,PETSC_BAG_HELP_LENGTH,PETSC_CHAR);CHKERRQ(ierr);
     while (nitem) {
-      ierr  = PetscViewerBinaryWrite(view,&nitem->offset,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+      ierr  = PetscViewerBinaryWrite(view,&nitem->offset,1,PETSC_INT);CHKERRQ(ierr);
       dtype = (PetscInt)nitem->dtype;
-      ierr  = PetscViewerBinaryWrite(view,&dtype,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
-      ierr  = PetscViewerBinaryWrite(view,nitem->name,PETSC_BAG_NAME_LENGTH,PETSC_CHAR,PETSC_FALSE);CHKERRQ(ierr);
-      ierr  = PetscViewerBinaryWrite(view,nitem->help,PETSC_BAG_HELP_LENGTH,PETSC_CHAR,PETSC_FALSE);CHKERRQ(ierr);
-      ierr  = PetscViewerBinaryWrite(view,&nitem->msize,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+      ierr  = PetscViewerBinaryWrite(view,&dtype,1,PETSC_INT);CHKERRQ(ierr);
+      ierr  = PetscViewerBinaryWrite(view,nitem->name,PETSC_BAG_NAME_LENGTH,PETSC_CHAR);CHKERRQ(ierr);
+      ierr  = PetscViewerBinaryWrite(view,nitem->help,PETSC_BAG_HELP_LENGTH,PETSC_CHAR);CHKERRQ(ierr);
+      ierr  = PetscViewerBinaryWrite(view,&nitem->msize,1,PETSC_INT);CHKERRQ(ierr);
       /* some Fortran compilers use -1 as boolean */
       if (dtype == PETSC_BOOL && ((*(int*) (((char*)bag) + nitem->offset) == -1))) *(int*) (((char*)bag) + nitem->offset) = PETSC_TRUE;
 
-      ierr = PetscViewerBinaryWrite(view,(((char*)bag) + nitem->offset),nitem->msize,nitem->dtype,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscViewerBinaryWrite(view,(((char*)bag) + nitem->offset),nitem->msize,nitem->dtype);CHKERRQ(ierr);
       if (dtype == PETSC_ENUM) {
         ierr = PetscViewerBinaryWriteStringArray(view,(const char* const*)nitem->list);CHKERRQ(ierr);
       }

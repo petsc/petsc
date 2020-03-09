@@ -54,8 +54,8 @@ PetscErrorCode DMSNESView(DMSNES kdm,PetscViewer viewer)
     } jacstruct;
     funcstruct.func = kdm->ops->computefunction;
     jacstruct.jac   = kdm->ops->computejacobian;
-    ierr = PetscViewerBinaryWrite(viewer,&funcstruct,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryWrite(viewer,&jacstruct,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,&funcstruct,1,PETSC_FUNCTION);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,&jacstruct,1,PETSC_FUNCTION);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -1441,7 +1441,7 @@ static PetscErrorCode MatView_SeqBAIJ_Binary(Mat A,PetscViewer viewer)
       col_lens[4+count++] = bs*(a->i[i+1] - a->i[i]);
     }
   }
-  ierr = PetscBinaryWrite(fd,col_lens,4+A->rmap->N,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(fd,col_lens,4+A->rmap->N,PETSC_INT);CHKERRQ(ierr);
   ierr = PetscFree(col_lens);CHKERRQ(ierr);
 
   /* store column indices (zero start index) */
@@ -1456,7 +1456,7 @@ static PetscErrorCode MatView_SeqBAIJ_Binary(Mat A,PetscViewer viewer)
       }
     }
   }
-  ierr = PetscBinaryWrite(fd,jj,bs2*a->nz,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(fd,jj,bs2*a->nz,PETSC_INT);CHKERRQ(ierr);
   ierr = PetscFree(jj);CHKERRQ(ierr);
 
   /* store nonzero values */
@@ -1471,7 +1471,7 @@ static PetscErrorCode MatView_SeqBAIJ_Binary(Mat A,PetscViewer viewer)
       }
     }
   }
-  ierr = PetscBinaryWrite(fd,aa,bs2*a->nz,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(fd,aa,bs2*a->nz,PETSC_SCALAR);CHKERRQ(ierr);
   ierr = PetscFree(aa);CHKERRQ(ierr);
 
   ierr = PetscViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);

@@ -29,7 +29,7 @@ PetscErrorCode IFunctionView(AppCtx *ctx,PetscViewer v)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscViewerBinaryWrite(v,&ctx->k,1,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryWrite(v,&ctx->k,1,PETSC_SCALAR);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

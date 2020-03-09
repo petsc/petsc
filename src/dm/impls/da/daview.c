@@ -57,18 +57,18 @@ PetscErrorCode DMView_DA_Binary(DM da,PetscViewer viewer)
   ierr = DMDAGetInfo(da,&dim,&m,&n,&p,&M,&N,&P,&dof,&swidth,&bx,&by,&bz,&stencil);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
-    ierr = PetscViewerBinaryWrite(viewer,&dim,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryWrite(viewer,&m,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryWrite(viewer,&n,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryWrite(viewer,&p,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryWrite(viewer,&dof,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryWrite(viewer,&swidth,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryWrite(viewer,&bx,1,PETSC_ENUM,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryWrite(viewer,&by,1,PETSC_ENUM,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryWrite(viewer,&bz,1,PETSC_ENUM,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryWrite(viewer,&stencil,1,PETSC_ENUM,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,&dim,1,PETSC_INT);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,&m,1,PETSC_INT);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,&n,1,PETSC_INT);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,&p,1,PETSC_INT);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,&dof,1,PETSC_INT);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,&swidth,1,PETSC_INT);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,&bx,1,PETSC_ENUM);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,&by,1,PETSC_ENUM);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,&bz,1,PETSC_ENUM);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,&stencil,1,PETSC_ENUM);CHKERRQ(ierr);
     if (da->coordinates) coors = PETSC_TRUE;
-    ierr = PetscViewerBinaryWrite(viewer,&coors,1,PETSC_BOOL,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,&coors,1,PETSC_BOOL);CHKERRQ(ierr);
   }
 
   /* save the coordinates if they exist to disk (in the natural ordering) */

@@ -411,7 +411,7 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
   if (!skipHeader) {
     tr[0] = VEC_FILE_CLASSID;
     tr[1] = xin->map->N;
-    ierr  = PetscViewerBinaryWrite(viewer,tr,2,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+    ierr  = PetscViewerBinaryWrite(viewer,tr,2,PETSC_INT);CHKERRQ(ierr);
   }
 
 #if defined(PETSC_HAVE_MPIIO)
@@ -420,7 +420,7 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
 #endif
     ierr = PetscViewerFlowControlStart(viewer,&message_count,&flowcontrolcount);CHKERRQ(ierr);
     if (!rank) {
-      ierr = PetscBinaryWrite(fdes,(void*)xarray,xin->map->n,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscBinaryWrite(fdes,(void*)xarray,xin->map->n,PETSC_SCALAR);CHKERRQ(ierr);
 
       len = 0;
       for (j=1; j<size; j++) len = PetscMax(len,xin->map->range[j+1]-xin->map->range[j]);
@@ -432,7 +432,7 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
         ierr = MPI_Recv(values,mesgsize,MPIU_SCALAR,j,tag,PetscObjectComm((PetscObject)xin),&status);CHKERRQ(ierr);
         ierr = MPI_Get_count(&status,MPIU_SCALAR,&mesglen);CHKERRQ(ierr);
         n    = (PetscInt)mesglen;
-        ierr = PetscBinaryWrite(fdes,values,n,PETSC_SCALAR,PETSC_TRUE);CHKERRQ(ierr);
+        ierr = PetscBinaryWrite(fdes,values,n,PETSC_SCALAR);CHKERRQ(ierr);
       }
       ierr = PetscViewerFlowControlEndMaster(viewer,&message_count);CHKERRQ(ierr);
       ierr = PetscFree(values);CHKERRQ(ierr);

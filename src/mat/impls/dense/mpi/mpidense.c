@@ -638,7 +638,7 @@ static PetscErrorCode MatView_MPIDense_Binary(Mat mat,PetscViewer viewer)
         header[1] = mat->rmap->N;
         header[2] = N;
         header[3] = MATRIX_BINARY_FORMAT_DENSE;
-        ierr      = PetscBinaryWrite(fd,header,4,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
+        ierr      = PetscBinaryWrite(fd,header,4,PETSC_INT);CHKERRQ(ierr);
 
         /* get largest work array needed for transposing array */
         mmax = mat->rmap->n;
@@ -655,7 +655,7 @@ static PetscErrorCode MatView_MPIDense_Binary(Mat mat,PetscViewer viewer)
             work[j + i*N] = *v++;
           }
         }
-        ierr = PetscBinaryWrite(fd,work,m*N,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
+        ierr = PetscBinaryWrite(fd,work,m*N,PETSC_SCALAR);CHKERRQ(ierr);
         /* get largest work array to receive messages from other processes, excludes process zero */
         mmax = 0;
         for (i=1; i<size; i++) {
@@ -672,7 +672,7 @@ static PetscErrorCode MatView_MPIDense_Binary(Mat mat,PetscViewer viewer)
               work[j + i*N] = *v++;
             }
           }
-          ierr = PetscBinaryWrite(fd,work,m*N,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
+          ierr = PetscBinaryWrite(fd,work,m*N,PETSC_SCALAR);CHKERRQ(ierr);
         }
         ierr = PetscFree(work);CHKERRQ(ierr);
         ierr = PetscFree(vv);CHKERRQ(ierr);

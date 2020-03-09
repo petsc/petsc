@@ -498,13 +498,13 @@ PetscErrorCode  PetscIntView(PetscInt N,const PetscInt idx[],PetscViewer viewer)
         }
         ierr = PetscMalloc1(Ntotal,&array);CHKERRQ(ierr);
         ierr = MPI_Gatherv((void*)idx,NN,MPIU_INT,array,sizes,displs,MPIU_INT,0,comm);CHKERRQ(ierr);
-        ierr = PetscViewerBinaryWrite(viewer,array,Ntotal,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
+        ierr = PetscViewerBinaryWrite(viewer,array,Ntotal,PETSC_INT);CHKERRQ(ierr);
         ierr = PetscFree(sizes);CHKERRQ(ierr);
         ierr = PetscFree(displs);CHKERRQ(ierr);
         ierr = PetscFree(array);CHKERRQ(ierr);
       }
     } else {
-      ierr = PetscViewerBinaryWrite(viewer,(void*) idx,N,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscViewerBinaryWrite(viewer,idx,N,PETSC_INT);CHKERRQ(ierr);
     }
   } else {
     const char *tname;
@@ -603,13 +603,13 @@ PetscErrorCode  PetscRealView(PetscInt N,const PetscReal idx[],PetscViewer viewe
         }
         ierr = PetscMalloc1(Ntotal,&array);CHKERRQ(ierr);
         ierr = MPI_Gatherv((PetscReal*)idx,NN,MPIU_REAL,array,sizes,displs,MPIU_REAL,0,comm);CHKERRQ(ierr);
-        ierr = PetscViewerBinaryWrite(viewer,array,Ntotal,PETSC_REAL,PETSC_TRUE);CHKERRQ(ierr);
+        ierr = PetscViewerBinaryWrite(viewer,array,Ntotal,PETSC_REAL);CHKERRQ(ierr);
         ierr = PetscFree(sizes);CHKERRQ(ierr);
         ierr = PetscFree(displs);CHKERRQ(ierr);
         ierr = PetscFree(array);CHKERRQ(ierr);
       }
     } else {
-      ierr = PetscViewerBinaryWrite(viewer,(void*) idx,N,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscViewerBinaryWrite(viewer,(void*) idx,N,PETSC_REAL);CHKERRQ(ierr);
     }
   } else {
     const char *tname;
@@ -710,13 +710,13 @@ PetscErrorCode  PetscScalarView(PetscInt N,const PetscScalar idx[],PetscViewer v
         }
         ierr = PetscMalloc1(Ntotal,&array);CHKERRQ(ierr);
         ierr = MPI_Gatherv((void*)idx,NN,MPIU_SCALAR,array,sizes,displs,MPIU_SCALAR,0,comm);CHKERRQ(ierr);
-        ierr = PetscViewerBinaryWrite(viewer,array,Ntotal,PETSC_SCALAR,PETSC_TRUE);CHKERRQ(ierr);
+        ierr = PetscViewerBinaryWrite(viewer,array,Ntotal,PETSC_SCALAR);CHKERRQ(ierr);
         ierr = PetscFree(sizes);CHKERRQ(ierr);
         ierr = PetscFree(displs);CHKERRQ(ierr);
         ierr = PetscFree(array);CHKERRQ(ierr);
       }
     } else {
-      ierr = PetscViewerBinaryWrite(viewer,(void*) idx,N,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscViewerBinaryWrite(viewer,(void*) idx,N,PETSC_SCALAR);CHKERRQ(ierr);
     }
   } else {
     const char *tname;

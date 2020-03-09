@@ -607,7 +607,7 @@ static PetscErrorCode DMDAArrayMPIIO(DM da,PetscViewer viewer,Vec xin,PetscBool 
     tr[0] = VEC_FILE_CLASSID;
     tr[1] = vecrows;
     if (!skipheader) {
-      ierr  = PetscViewerBinaryWrite(viewer,tr,2,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
+      ierr  = PetscViewerBinaryWrite(viewer,tr,2,PETSC_INT);CHKERRQ(ierr);
     }
   }
 

@@ -40,8 +40,8 @@ int main(int argc,char **args)
   ierr = PetscViewerBinaryGetDescriptor(view_out,&fd);CHKERRQ(ierr);
 
   /* Write binary output */
-  ierr = PetscBinaryWrite(fd,&m,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = PetscBinaryWrite(fd,array,m,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(fd,&m,1,PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(fd,array,m,PETSC_SCALAR);CHKERRQ(ierr);
 
   /* Destroy the output viewer and work array */
   ierr = PetscViewerDestroy(&view_out);CHKERRQ(ierr);

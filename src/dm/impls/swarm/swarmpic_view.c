@@ -158,7 +158,7 @@ PetscErrorCode private_DMSwarmView_XDMF(DM dm,PetscViewer viewer)
     pvertex[0] = 1;
     pvertex[1] = 1;
     pvertex[2] = k;
-    ierr = PetscViewerBinaryWrite(fviewer,pvertex,3,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(fviewer,pvertex,3,PETSC_INT);CHKERRQ(ierr);
   }
   bytes[0] += sizeof(PetscInt) * ng * 3;
   

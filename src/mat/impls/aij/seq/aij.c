@@ -620,14 +620,14 @@ PetscErrorCode MatView_SeqAIJ_Binary(Mat A,PetscViewer viewer)
   for (i=0; i<A->rmap->n; i++) {
     col_lens[4+i] = a->i[i+1] - a->i[i];
   }
-  ierr = PetscBinaryWrite(fd,col_lens,4+A->rmap->n,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(fd,col_lens,4+A->rmap->n,PETSC_INT);CHKERRQ(ierr);
   ierr = PetscFree(col_lens);CHKERRQ(ierr);
 
   /* store column indices (zero start index) */
-  ierr = PetscBinaryWrite(fd,a->j,a->nz,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(fd,a->j,a->nz,PETSC_INT);CHKERRQ(ierr);
 
   /* store nonzero values */
-  ierr = PetscBinaryWrite(fd,a->a,a->nz,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(fd,a->a,a->nz,PETSC_SCALAR);CHKERRQ(ierr);
 
   ierr = PetscViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
   if (file) {

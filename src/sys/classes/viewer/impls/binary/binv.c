@@ -933,19 +933,15 @@ PetscErrorCode PetscViewerBinaryRead(PetscViewer viewer,void *data,PetscInt num,
 +  viewer - the binary viewer
 .  data - location of data
 .  count - number of items of data to write
-.  dtype - type of data to write
--  istemp - data may be overwritten
+-  dtype - type of data to write
 
    Level: beginner
-
-   Notes:
-    because byte-swapping may be done on the values in data it cannot be declared const
 
 .seealso: PetscViewerASCIIOpen(), PetscViewerPushFormat(), PetscViewerDestroy(),
           VecView(), MatView(), VecLoad(), MatLoad(), PetscViewerBinaryGetDescriptor(), PetscDataType
           PetscViewerBinaryGetInfoPointer(), PetscFileMode, PetscViewer, PetscBinaryViewerRead()
 @*/
-PetscErrorCode PetscViewerBinaryWrite(PetscViewer viewer,void *data,PetscInt count,PetscDataType dtype,PetscBool istemp)
+PetscErrorCode PetscViewerBinaryWrite(PetscViewer viewer,const void *data,PetscInt count,PetscDataType dtype)
 {
   PetscErrorCode     ierr;
   PetscViewer_Binary *vbinary;
@@ -957,10 +953,10 @@ PetscErrorCode PetscViewerBinaryWrite(PetscViewer viewer,void *data,PetscInt cou
   vbinary = (PetscViewer_Binary*)viewer->data;
 #if defined(PETSC_HAVE_MPIIO)
   if (vbinary->usempiio) {
-    ierr = PetscViewerBinaryWriteReadMPIIO(viewer,data,count,NULL,dtype,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWriteReadMPIIO(viewer,(void*)data,count,NULL,dtype,PETSC_TRUE);CHKERRQ(ierr);
   } else {
 #endif
-    ierr = PetscBinarySynchronizedWrite(PetscObjectComm((PetscObject)viewer),vbinary->fdes,data,count,dtype,istemp);CHKERRQ(ierr);
+    ierr = PetscBinarySynchronizedWrite(PetscObjectComm((PetscObject)viewer),vbinary->fdes,data,count,dtype);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MPIIO)
   }
 #endif
@@ -1003,9 +999,9 @@ PetscErrorCode PetscViewerBinaryWriteStringArray(PetscViewer viewer,const char *
     ierr       = PetscStrlen(data[i],&tmp);CHKERRQ(ierr);
     sizes[i+1] = tmp + 1;   /* size includes space for the null terminator */
   }
-  ierr = PetscViewerBinaryWrite(viewer,sizes,n+1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryWrite(viewer,sizes,n+1,PETSC_INT);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    ierr = PetscViewerBinaryWrite(viewer,(void*)data[i],sizes[i+1],PETSC_CHAR,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,(void*)data[i],sizes[i+1],PETSC_CHAR);CHKERRQ(ierr);
   }
   ierr = PetscFree(sizes);CHKERRQ(ierr);
   PetscFunctionReturn(0);

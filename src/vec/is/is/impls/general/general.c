@@ -335,7 +335,7 @@ static PetscErrorCode ISView_General_Binary(IS is,PetscViewer viewer)
 
   ierr = PetscViewerBinaryGetSkipHeader(viewer,&skipHeader);CHKERRQ(ierr);
   if (!skipHeader) {
-    ierr  = PetscViewerBinaryWrite(viewer,tr,2,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+    ierr  = PetscViewerBinaryWrite(viewer,tr,2,PETSC_INT);CHKERRQ(ierr);
   }
 
   ierr = PetscViewerBinaryGetUseMPIIO(viewer,&useMPIIO);CHKERRQ(ierr);
@@ -369,7 +369,7 @@ static PetscErrorCode ISView_General_Binary(IS is,PetscViewer viewer)
 
   ierr = PetscViewerFlowControlStart(viewer,&message_count,&flowcontrolcount);CHKERRQ(ierr);
   if (!rank) {
-    ierr = PetscBinaryWrite(fdes,isa->idx,n,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fdes,isa->idx,n,PETSC_INT);CHKERRQ(ierr);
 
     ierr = PetscMalloc1(len,&values);CHKERRQ(ierr);
     ierr = PetscMPIIntCast(len,&mesgsize);CHKERRQ(ierr);
@@ -378,7 +378,7 @@ static PetscErrorCode ISView_General_Binary(IS is,PetscViewer viewer)
       ierr = PetscViewerFlowControlStepMaster(viewer,j,&message_count,flowcontrolcount);CHKERRQ(ierr);
       ierr = MPI_Recv(values,mesgsize,MPIU_INT,j,tag,PetscObjectComm((PetscObject)is),&status);CHKERRQ(ierr);
       ierr = MPI_Get_count(&status,MPIU_INT,&mesglen);CHKERRQ(ierr);
-      ierr = PetscBinaryWrite(fdes,values,(PetscInt)mesglen,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = PetscBinaryWrite(fdes,values,(PetscInt)mesglen,PETSC_INT);CHKERRQ(ierr);
     }
     ierr = PetscViewerFlowControlEndMaster(viewer,&message_count);CHKERRQ(ierr);
     ierr = PetscFree(values);CHKERRQ(ierr);

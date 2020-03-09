@@ -237,8 +237,6 @@ PetscErrorCode PetscByteSwap(void *data,PetscDataType pdtype,PetscInt count)
 +  data - the buffer
 -  count - the number of items read, optional
 
-
-
    Level: developer
 
    Notes:
@@ -246,12 +244,11 @@ PetscErrorCode PetscByteSwap(void *data,PetscDataType pdtype,PetscInt count)
    the maximum number of items to read, then this routine errors.
 
    PetscBinaryRead() uses byte swapping to work on all machines; the files
-   are written to file ALWAYS using big-endian ordering. On small-endian machines the numbers
-   are converted to the small-endian format when they are read in from the file.
-   When PETSc is ./configure with --with-64bit-indices the integers are written to the
-   file as 64 bit integers, this means they can only be read back in when the option --with-64bit-indices
+   are written to file ALWAYS using big-endian ordering. On little-endian machines the numbers
+   are converted to the little-endian format when they are read in from the file.
+   When PETSc is ./configure with --with-64-bit-indices the integers are written to the
+   file as 64 bit integers, this means they can only be read back in when the option --with-64-bit-indices
    is used.
-
 
 .seealso: PetscBinaryWrite(), PetscBinaryOpen(), PetscBinaryClose(), PetscViewerBinaryGetDescriptor(), PetscBinarySynchronizedWrite(),
           PetscBinarySynchronizedRead(), PetscBinarySynchronizedSeek()
@@ -346,17 +343,16 @@ PetscErrorCode  PetscBinaryRead(int fd,void *data,PetscInt num,PetscInt *count,P
 +  fd     - the file
 .  p      - the buffer
 .  n      - the number of items to write
-.  type   - the type of items to read (PETSC_INT, PETSC_DOUBLE or PETSC_SCALAR)
--  istemp - PETSC_FALSE if buffer data should be preserved, PETSC_TRUE otherwise.
+-  type   - the type of items to read (PETSC_INT, PETSC_DOUBLE or PETSC_SCALAR)
 
    Level: advanced
 
    Notes:
    PetscBinaryWrite() uses byte swapping to work on all machines; the files
-   are written using big-endian ordering to the file. On small-endian machines the numbers
+   are written using big-endian ordering to the file. On little-endian machines the numbers
    are converted to the big-endian format when they are written to disk.
-   When PETSc is ./configure with --with-64bit-indices the integers are written to the
-   file as 64 bit integers, this means they can only be read back in when the option --with-64bit-indices
+   When PETSc is ./configure with --with-64-bit-indices the integers are written to the
+   file as 64 bit integers, this means they can only be read back in when the option --with-64-bit-indices
    is used.
 
    If running with __float128 precision the output is in __float128 unless one uses the -binary_write_double option
@@ -367,9 +363,7 @@ PetscErrorCode  PetscBinaryRead(int fd,void *data,PetscInt num,PetscInt *count,P
 
    This routine restores the original contents of the buffer, after
    it is written to the file. This is done by byte-swapping in-place
-   the second time. If the flag istemp is set to PETSC_TRUE, the second
-   byte-swapping operation is not done, thus saving some computation,
-   but the buffer is left corrupted.
+   the second time.
 
    Because byte-swapping may be done on the values in data it cannot be declared const
 
@@ -377,13 +371,13 @@ PetscErrorCode  PetscBinaryRead(int fd,void *data,PetscInt num,PetscInt *count,P
 .seealso: PetscBinaryRead(), PetscBinaryOpen(), PetscBinaryClose(), PetscViewerBinaryGetDescriptor(), PetscBinarySynchronizedWrite(),
           PetscBinarySynchronizedRead(), PetscBinarySynchronizedSeek()
 @*/
-PetscErrorCode  PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,PetscBool  istemp)
+PetscErrorCode  PetscBinaryWrite(int fd,const void *p,PetscInt n,PetscDataType type)
 {
-  char           *pp = (char*)p;
+  const char     *pp = (char*)p;
   int            err,wsize;
   size_t         m = (size_t)n,maxblock=65536;
   PetscErrorCode ierr;
-  void           *ptmp = p;
+  const void     *ptmp = p;
   char           *fname = NULL;
 #if defined(PETSC_USE_REAL___FLOAT128)
   PetscBool      writedouble = PETSC_FALSE;
@@ -445,7 +439,7 @@ PetscErrorCode  PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,Pe
   else if (wtype == PETSC_BIT_LOGICAL) m = PetscBTLength(m)*sizeof(char);
   else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown type");
 
-  if (!PetscBinaryBigEndian()) {ierr = PetscByteSwap(ptmp,wtype,n);CHKERRQ(ierr);}
+  if (!PetscBinaryBigEndian()) {ierr = PetscByteSwap((void*)ptmp,wtype,n);CHKERRQ(ierr);}
 
   while (m) {
     wsize = (m < maxblock) ? m : maxblock;
@@ -456,9 +450,8 @@ PetscErrorCode  PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,Pe
     pp += wsize;
   }
 
-  if (!istemp) {
-    if (!PetscBinaryBigEndian()) {ierr = PetscByteSwap(ptmp,wtype,n);CHKERRQ(ierr);}
-  }
+  if (!PetscBinaryBigEndian()) {ierr = PetscByteSwap((void*)ptmp,wtype,n);CHKERRQ(ierr);}
+
   if (type == PETSC_FUNCTION) {
     free(fname);
   }
@@ -667,7 +660,6 @@ PetscErrorCode  PetscBinarySynchronizedRead(MPI_Comm comm,int fd,void *data,Pets
 .  fd - the file
 .  n  - the number of items to write
 .  p - the buffer
-.  istemp - the buffer may be changed
 -  type - the type of items to write (PETSC_INT, PETSC_DOUBLE or PETSC_SCALAR)
 
    Level: developer
@@ -690,7 +682,7 @@ PetscErrorCode  PetscBinarySynchronizedRead(MPI_Comm comm,int fd,void *data,Pets
 .seealso: PetscBinaryWrite(), PetscBinaryOpen(), PetscBinaryClose(), PetscBinaryRead(), PetscBinarySynchronizedRead(),
           PetscBinarySynchronizedSeek()
 @*/
-PetscErrorCode  PetscBinarySynchronizedWrite(MPI_Comm comm,int fd,void *p,PetscInt n,PetscDataType type,PetscBool istemp)
+PetscErrorCode  PetscBinarySynchronizedWrite(MPI_Comm comm,int fd,const void *p,PetscInt n,PetscDataType type)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -698,7 +690,7 @@ PetscErrorCode  PetscBinarySynchronizedWrite(MPI_Comm comm,int fd,void *p,PetscI
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
-    ierr = PetscBinaryWrite(fd,p,n,type,istemp);CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd,p,n,type);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

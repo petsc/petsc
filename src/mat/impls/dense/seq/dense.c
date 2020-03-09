@@ -1231,7 +1231,7 @@ static PetscErrorCode MatView_SeqDense_Binary(Mat A,PetscViewer viewer)
     col_lens[2] = n;
     col_lens[3] = MATRIX_BINARY_FORMAT_DENSE;
 
-    ierr = PetscBinaryWrite(fd,col_lens,4,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd,col_lens,4,PETSC_INT);CHKERRQ(ierr);
     ierr = PetscFree(col_lens);CHKERRQ(ierr);
 
     /* write out matrix, by rows */
@@ -1242,7 +1242,7 @@ static PetscErrorCode MatView_SeqDense_Binary(Mat A,PetscViewer viewer)
         vals[j + i*n] = *v++;
       }
     }
-    ierr = PetscBinaryWrite(fd,vals,n*m,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd,vals,n*m,PETSC_SCALAR);CHKERRQ(ierr);
     ierr = PetscFree(vals);CHKERRQ(ierr);
   } else {
     ierr = PetscMalloc1(4+nz,&col_lens);CHKERRQ(ierr);
@@ -1254,7 +1254,7 @@ static PetscErrorCode MatView_SeqDense_Binary(Mat A,PetscViewer viewer)
 
     /* store lengths of each row and write (including header) to file */
     for (i=0; i<m; i++) col_lens[4+i] = n;
-    ierr = PetscBinaryWrite(fd,col_lens,4+m,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd,col_lens,4+m,PETSC_INT);CHKERRQ(ierr);
 
     /* Possibly should write in smaller increments, not whole matrix at once? */
     /* store column indices (zero start index) */
@@ -1262,7 +1262,7 @@ static PetscErrorCode MatView_SeqDense_Binary(Mat A,PetscViewer viewer)
     for (i=0; i<m; i++) {
       for (j=0; j<n; j++) col_lens[ict++] = j;
     }
-    ierr = PetscBinaryWrite(fd,col_lens,nz,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd,col_lens,nz,PETSC_INT);CHKERRQ(ierr);
     ierr = PetscFree(col_lens);CHKERRQ(ierr);
 
     /* store nonzero values */
@@ -1274,7 +1274,7 @@ static PetscErrorCode MatView_SeqDense_Binary(Mat A,PetscViewer viewer)
         anonz[ict++] = *v; v += a->lda;
       }
     }
-    ierr = PetscBinaryWrite(fd,anonz,nz,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd,anonz,nz,PETSC_SCALAR);CHKERRQ(ierr);
     ierr = PetscFree(anonz);CHKERRQ(ierr);
   }
   ierr = MatDenseRestoreArrayRead(A,(const PetscScalar**)&av);CHKERRQ(ierr);

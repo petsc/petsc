@@ -281,7 +281,7 @@ PetscErrorCode PetscHTTPRequest(const char type[],const char url[],const char he
   ierr = PetscHTTPBuildRequest(type,url,header,ctype,body,&request);CHKERRQ(ierr);
   ierr = PetscStrlen(request,&request_len);CHKERRQ(ierr);
 
-  ierr = PetscBinaryWrite(sock,request,request_len,PETSC_CHAR,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(sock,request,request_len,PETSC_CHAR);CHKERRQ(ierr);
   ierr = PetscFree(request);CHKERRQ(ierr);
   PetscBinaryRead(sock,buff,buffsize,NULL,PETSC_CHAR);
   buff[buffsize-1] = 0;

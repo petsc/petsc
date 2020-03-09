@@ -550,8 +550,8 @@ PetscErrorCode VecView_Seq_Binary(Vec xin,PetscViewer viewer)
   /* Write vector header */
   ierr = PetscViewerBinaryGetSkipHeader(viewer,&skipHeader);CHKERRQ(ierr);
   if (!skipHeader) {
-    ierr = PetscViewerBinaryWrite(viewer,&classid,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryWrite(viewer,&n,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,&classid,1,PETSC_INT);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,&n,1,PETSC_INT);CHKERRQ(ierr);
   }
 
   /* Write vector contents */
@@ -561,7 +561,7 @@ PetscErrorCode VecView_Seq_Binary(Vec xin,PetscViewer viewer)
 #endif
     ierr = PetscViewerBinaryGetDescriptor(viewer,&fdes);CHKERRQ(ierr);
     ierr = VecGetArrayRead(xin,&xv);CHKERRQ(ierr);
-    ierr = PetscBinaryWrite(fdes,(void*)xv,n,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fdes,(void*)xv,n,PETSC_SCALAR);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(xin,&xv);CHKERRQ(ierr);
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_BINARY_MATLAB) {
