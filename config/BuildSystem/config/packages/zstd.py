@@ -4,7 +4,7 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.version           = '1.4.4'
-    self.download          = ['https://github.com/facebook/zstd/archive/v{}.tar.gz'.format(self.version)]
+    self.download          = ['https://github.com/facebook/zstd/archive/v'+self.version+'.tar.gz']
     self.functions         = ['ZSTD_compress']
     self.includes          = ['zstd.h']
     self.liblist           = [['libzstd.a']]
