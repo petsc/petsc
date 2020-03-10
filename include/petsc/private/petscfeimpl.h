@@ -105,18 +105,6 @@ typedef struct {
 } PetscDualSpace_Lag;
 
 typedef struct {
-  PetscInt       *numDof;      /* [d]: Number of dofs for d-dimensional point */
-  PetscBool       simplexCell; /* Flag for simplices, as opposed to tensor cells */
-  PetscInt        height;      /* The number of subspaces stored */
-  PetscDualSpace *subspaces;   /* [h]: The subspace for dimension dim-(h+1) */
-  PetscBool       faceSpace;   /* Flag indicating this is a subspace for a face (the only subspaces permitted) */
-  PetscInt     ***symmetries;
-  PetscScalar  ***flips;
-  PetscInt        numSelfSym;
-  PetscInt        selfSymOff;
-} PetscDualSpace_BDM;
-
-typedef struct {
   PetscInt  dim;
   PetscInt *numDof;
 } PetscDualSpace_Simple;
