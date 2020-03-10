@@ -83,5 +83,7 @@ PETSC_EXTERN PetscErrorCode MatSeqDenseInvertFactors_Private(Mat);
 PETSC_INTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat_SeqDense(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPIDense(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
 
+PETSC_INTERN PetscErrorCode MatView_Dense_Binary(Mat,PetscViewer);
+PETSC_INTERN PetscErrorCode MatLoad_Dense_Binary(Mat,PetscViewer);
 PETSC_INTERN PetscErrorCode MatLoad_Dense_HDF5(Mat,PetscViewer);
 #endif
