@@ -26,6 +26,7 @@ PetscErrorCode VecCUDAAllocateCheck(Vec v)
   PetscErrorCode ierr;
   cudaError_t    err;
   Vec_CUDA       *veccuda;
+  PetscBool      option_set;
 
   PetscFunctionBegin;
   if (!v->spptr) {
@@ -48,8 +49,8 @@ PetscErrorCode VecCUDAAllocateCheck(Vec v)
     /* Need to parse command line for minimum size to use for pinned memory allocations on host here.
        Note: This same code duplicated in VecCreate_SeqCUDA_Private() and VecCreate_MPICUDA_Private(). Is there a good way to avoid this? */
     ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)v),((PetscObject)v)->prefix,"VECCUDA Options","Vec");CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-vec_cuda_pinned_memory_min","Minimum size (in bytes) for an allocation to use pinned memory on host","VecCUDASetPinnedMemoryMin",pinned_memory_min,&pinned_memory_min,NULL);CHKERRQ(ierr);
-    veccuda->minimum_bytes_pinned_memory = pinned_memory_min;
+    ierr = PetscOptionsReal("-vec_pinned_memory_min","Minimum size (in bytes) for an allocation to use pinned memory on host","VecSetPinnedMemoryMin",pinned_memory_min,&pinned_memory_min,&option_set);CHKERRQ(ierr);
+    if (option_set) v->minimum_bytes_pinned_memory = pinned_memory_min;
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -192,12 +193,11 @@ PetscErrorCode VecCUDACopyFromGPUSome(Vec v, PetscCUDAIndices ci,ScatterMode mod
    VECSEQCUDA - VECSEQCUDA = "seqcuda" - The basic sequential vector, modified to use CUDA
 
    Options Database Keys:
-+ -vec_type seqcuda - sets the vector type to VECSEQCUDA during a call to VecSetFromOptions()
-- -vec_cuda_pinned_memory_min <size> - minimum size (in bytes) for an allocation to use pinned memory on host
+. -vec_type seqcuda - sets the vector type to VECSEQCUDA during a call to VecSetFromOptions()
 
   Level: beginner
 
-.seealso: VecCreate(), VecSetType(), VecSetFromOptions(), VecCreateSeqWithArray(), VECMPI, VecType, VecCreateMPI(), VecCreateSeq()
+.seealso: VecCreate(), VecSetType(), VecSetFromOptions(), VecCreateSeqWithArray(), VECMPI, VecType, VecCreateMPI(), VecCreateSeq(), VecSetPinnedMemoryMin()
 M*/
 
 PetscErrorCode VecAYPX_SeqCUDA(Vec yin,PetscScalar alpha,Vec xin)
@@ -1202,10 +1202,11 @@ PetscErrorCode VecGetLocalVector_SeqCUDA(Vec v,Vec w)
 
   if (w->data) {
     if (((Vec_Seq*)w->data)->array_allocated) {
-      if(w->map->n*sizeof(PetscScalar) > ((Vec_CUDA*)w->spptr)->minimum_bytes_pinned_memory) {
+      if(w->pinned_memory) {
         ierr = PetscMallocSetCUDAHost();CHKERRQ(ierr);
         ierr = PetscFree(((Vec_Seq*)w->data)->array_allocated);CHKERRQ(ierr);
         ierr = PetscMallocResetCUDAHost();CHKERRQ(ierr);
+        w->pinned_memory = PETSC_FALSE;
       }
     }
     ((Vec_Seq*)w->data)->array = NULL;

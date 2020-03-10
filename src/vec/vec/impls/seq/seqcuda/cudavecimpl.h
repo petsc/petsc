@@ -12,7 +12,6 @@ typedef struct {
   PetscScalar  *GPUarray_allocated; /* if the array was allocated by PETSc this is its pointer */
   cudaStream_t stream;              /* A stream for doing asynchronous data transfers */
   PetscBool    hostDataRegisteredAsPageLocked;
-  size_t       minimum_bytes_pinned_memory;     /* minimum data size in bytes for which pinned memory will be allocated */
 } Vec_CUDA;
 
 #include <cuda_runtime.h>
