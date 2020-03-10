@@ -1190,12 +1190,12 @@ PetscErrorCode PetscFEGetDimension(PetscFE fem, PetscInt *dim)
 
 .seealso: PetscDualSpacePushforward()
 @*/
-PetscErrorCode PetscFEPushforward(PetscFE fe, PetscFEGeom *fegeom, PetscInt Nv, PetscScalar vals[])
+PetscErrorCode PetscFEPushforward(PetscFE fe, PetscFEGeom *fegeom, PetscInt Nv, const PetscScalar refVals[], PetscScalar realVals[])
 {
   PetscErrorCode ierr;
 
   PetscFunctionBeginHot;
-  ierr = PetscDualSpacePushforward(fe->dualSpace, fegeom, Nv, fe->numComponents, vals);CHKERRQ(ierr);
+  ierr = PetscDualSpacePushforward(fe->dualSpace, fegeom, Nv, fe->numComponents, refVals, realVals);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1217,12 +1217,12 @@ PetscErrorCode PetscFEPushforward(PetscFE fe, PetscFEGeom *fegeom, PetscInt Nv, 
 
 .seealso: PetscFEPushforward(), PetscDualSpacePushforwardGradient(), PetscDualSpacePushforward()
 @*/
-PetscErrorCode PetscFEPushforwardGradient(PetscFE fe, PetscFEGeom *fegeom, PetscInt Nv, PetscScalar vals[])
+PetscErrorCode PetscFEPushforwardGradient(PetscFE fe, PetscFEGeom *fegeom, PetscInt Nv, const PetscScalar refVals[], PetscScalar realVals[])
 {
   PetscErrorCode ierr;
 
   PetscFunctionBeginHot;
-  ierr = PetscDualSpacePushforwardGradient(fe->dualSpace, fegeom, Nv, fe->numComponents, vals);CHKERRQ(ierr);
+  ierr = PetscDualSpacePushforwardGradient(fe->dualSpace, fegeom, Nv, fe->numComponents, NULL, realVals);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1912,8 +1912,8 @@ PetscErrorCode PetscFEEvaluateFieldJets_Internal(PetscDS ds, PetscInt Nf, PetscI
         for (d = 0; d < cdim; ++d) u_x[(fOffset+c)*cdim+d] += Dq[cidx*cdim+d]*coefficients[dOffset+b];
       }
     }
-    ierr = PetscFEPushforward(fe, fegeom, 1, &u[fOffset]);CHKERRQ(ierr);
-    ierr = PetscFEPushforwardGradient(fe, fegeom, 1, &u_x[fOffset*cdim]);CHKERRQ(ierr);
+    ierr = PetscFEPushforward(fe, fegeom, 1, NULL, &u[fOffset]);CHKERRQ(ierr);
+    ierr = PetscFEPushforwardGradient(fe, fegeom, 1, NULL, &u_x[fOffset*cdim]);CHKERRQ(ierr);
     if (u_t) {
       for (c = 0; c < Ncf; ++c) u_t[fOffset+c] = 0.0;
       for (b = 0; b < Nbf; ++b) {
@@ -1923,7 +1923,7 @@ PetscErrorCode PetscFEEvaluateFieldJets_Internal(PetscDS ds, PetscInt Nf, PetscI
           u_t[fOffset+c] += Bq[cidx]*coefficients_t[dOffset+b];
         }
       }
-      ierr = PetscFEPushforward(fe, fegeom, 1, &u_t[fOffset]);CHKERRQ(ierr);
+      ierr = PetscFEPushforward(fe, fegeom, 1, NULL, &u_t[fOffset]);CHKERRQ(ierr);
     }
     fOffset += Ncf;
     dOffset += Nbf;
@@ -1979,8 +1979,8 @@ PetscErrorCode PetscFEUpdateElementVec_Internal(PetscFE fe, PetscTabulation T, P
         for (d = 0; d < dim; ++d) tmpBasisDer[bcidx*dim+d] = basisDer[q*Nb*Nc*dim+bcidx*dim+d];
       }
     }
-    ierr = PetscFEPushforward(fe, fegeom, Nb, tmpBasis);CHKERRQ(ierr);
-    ierr = PetscFEPushforwardGradient(fe, fegeom, Nb, tmpBasisDer);CHKERRQ(ierr);
+    ierr = PetscFEPushforward(fe, fegeom, Nb, NULL, tmpBasis);CHKERRQ(ierr);
+    ierr = PetscFEPushforwardGradient(fe, fegeom, Nb, NULL, tmpBasisDer);CHKERRQ(ierr);
     for (b = 0; b < Nb; ++b) {
       for (c = 0; c < Nc; ++c) {
         const PetscInt bcidx = b*Nc+c;
@@ -2018,8 +2018,8 @@ PetscErrorCode PetscFEUpdateElementMat_Internal(PetscFE feI, PetscFE feJ, PetscI
       for (df = 0; df < dim; ++df) tmpBasisDerI[fidx*dim+df] = basisDerI[fidx*dim+df];
     }
   }
-  ierr = PetscFEPushforward(feI, fegeom, NbI, tmpBasisI);CHKERRQ(ierr);
-  ierr = PetscFEPushforwardGradient(feI, fegeom, NbI, tmpBasisDerI);CHKERRQ(ierr);
+  ierr = PetscFEPushforward(feI, fegeom, NbI, NULL, tmpBasisI);CHKERRQ(ierr);
+  ierr = PetscFEPushforwardGradient(feI, fegeom, NbI, NULL, tmpBasisDerI);CHKERRQ(ierr);
   for (g = 0; g < NbJ; ++g) {
     for (gc = 0; gc < NcJ; ++gc) {
       const PetscInt gidx = g*NcJ+gc; /* Trial function basis index */
@@ -2028,8 +2028,8 @@ PetscErrorCode PetscFEUpdateElementMat_Internal(PetscFE feI, PetscFE feJ, PetscI
       for (dg = 0; dg < dim; ++dg) tmpBasisDerJ[gidx*dim+dg] = basisDerJ[gidx*dim+dg];
     }
   }
-  ierr = PetscFEPushforward(feJ, fegeom, NbJ, tmpBasisJ);CHKERRQ(ierr);
-  ierr = PetscFEPushforwardGradient(feJ, fegeom, NbJ, tmpBasisDerJ);CHKERRQ(ierr);
+  ierr = PetscFEPushforward(feJ, fegeom, NbJ, NULL, tmpBasisJ);CHKERRQ(ierr);
+  ierr = PetscFEPushforwardGradient(feJ, fegeom, NbJ, NULL, tmpBasisDerJ);CHKERRQ(ierr);
   for (f = 0; f < NbI; ++f) {
     for (fc = 0; fc < NcI; ++fc) {
       const PetscInt fidx = f*NcI+fc; /* Test function basis index */

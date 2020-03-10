@@ -68,15 +68,15 @@ struct _PetscDualSpaceOps {
   PetscErrorCode (*view)(PetscDualSpace,PetscViewer);
   PetscErrorCode (*destroy)(PetscDualSpace);
 
-  PetscErrorCode (*duplicate)(PetscDualSpace,PetscDualSpace*);
-  PetscErrorCode (*getdimension)(PetscDualSpace,PetscInt*);
-  PetscErrorCode (*getnumdof)(PetscDualSpace,const PetscInt**);
-  PetscErrorCode (*getheightsubspace)(PetscDualSpace,PetscInt,PetscDualSpace *);
-  PetscErrorCode (*getpointsubspace)(PetscDualSpace,PetscInt,PetscDualSpace *);
+  PetscErrorCode (*duplicate)(PetscDualSpace,PetscDualSpace);
+  PetscErrorCode (*createheightsubspace)(PetscDualSpace,PetscInt,PetscDualSpace *);
+  PetscErrorCode (*createpointsubspace)(PetscDualSpace,PetscInt,PetscDualSpace *);
   PetscErrorCode (*getsymmetries)(PetscDualSpace,const PetscInt****,const PetscScalar****);
   PetscErrorCode (*apply)(PetscDualSpace, PetscInt, PetscReal, PetscFEGeom *, PetscInt, PetscErrorCode (*)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void *, PetscScalar *);
   PetscErrorCode (*applyall)(PetscDualSpace, const PetscScalar *, PetscScalar *);
-  PetscErrorCode (*createallpoints)(PetscDualSpace, PetscQuadrature *);
+  PetscErrorCode (*applyint)(PetscDualSpace, const PetscScalar *, PetscScalar *);
+  PetscErrorCode (*createalldata)(PetscDualSpace, PetscQuadrature *, Mat *);
+  PetscErrorCode (*createintdata)(PetscDualSpace, PetscQuadrature *, Mat *);
 };
 
 struct _p_PetscDualSpace {
@@ -86,14 +86,27 @@ struct _p_PetscDualSpace {
   PetscInt         order;      /* The approximation order of the space */
   PetscInt         Nc;         /* The number of components */
   PetscQuadrature *functional; /* The basis of functionals for this space */
-  PetscQuadrature  allPoints;  /* Collects all quadrature points representing functionals in the basis */
+  Mat              allMat;
+  PetscQuadrature  allNodes;   /* Collects all quadrature points representing functionals in the basis */
+  Vec              allNodeValues;
+  Vec              allDofValues;
+  Mat              intMat;
+  PetscQuadrature  intNodes;   /* Collects all quadrature points representing functionals in the basis in the interior of the cell */
+  Vec              intNodeValues;
+  Vec              intDofValues;
+  PetscInt         spdim;      /* The dual-space dimension */
+  PetscInt         spintdim;   /* The dual-space interior dimension */
   PetscInt         k;          /* k-simplex corresponding to the dofs in this basis (we always use the 3D complex right now) */
+  PetscBool        uniform;
   PetscBool        setupcalled;
   PetscBool        setfromoptionscalled;
+  PetscSection     pointSection;
+  PetscDualSpace  *pointSpaces;
+  PetscDualSpace  *heightSpaces;
+  PetscInt        *numDof;
 };
 
 typedef struct {
-  PetscInt       *numDof;      /* [d]: Number of dofs for d-dimensional point */
   PetscBool       simplexCell; /* Flag for simplices, as opposed to tensor cells */
   PetscBool       tensorSpace; /* Flag for tensor product space of polynomials, as opposed to a space of maximum degree */
   PetscBool       continuous;  /* Flag for a continuous basis, as opposed to discontinuous across element boundaries */
@@ -219,7 +232,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscFEInterpolate_Static(PetscFE fe, const P
       }
     }
   }
-  ierr = PetscFEPushforward(fe, fegeom, 1, interpolant);CHKERRQ(ierr);
+  ierr = PetscFEPushforward(fe, fegeom, 1, NULL, interpolant);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -247,7 +260,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscFEInterpolateGradient_Static(PetscFE fe,
       }
     }
   }
-  ierr = PetscFEPushforwardGradient(fe, fegeom, 1, interpolant);CHKERRQ(ierr);
+  ierr = PetscFEPushforwardGradient(fe, fegeom, 1, NULL, interpolant);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -276,13 +289,17 @@ PETSC_STATIC_INLINE PetscErrorCode PetscFEInterpolateFieldAndGradient_Static(Pet
       }
     }
   }
-  ierr = PetscFEPushforward(fe, fegeom, 1, interpolant);CHKERRQ(ierr);
-  ierr = PetscFEPushforwardGradient(fe, fegeom, 1, interpolantGrad);CHKERRQ(ierr);
+  ierr = PetscFEPushforward(fe, fegeom, 1, NULL, interpolant);CHKERRQ(ierr);
+  ierr = PetscFEPushforwardGradient(fe, fegeom, 1, NULL, interpolantGrad);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 PETSC_INTERN PetscErrorCode PetscDualSpaceLatticePointLexicographic_Internal(PetscInt, PetscInt, PetscInt[]);
 PETSC_INTERN PetscErrorCode PetscDualSpaceTensorPointLexicographic_Internal(PetscInt, PetscInt, PetscInt[]);
+
+PETSC_INTERN PetscErrorCode PetscDualSpaceSectionCreate_Internal(PetscDualSpace, PetscSection*);
+PETSC_INTERN PetscErrorCode PetscDualSpaceSectionSetUp_Internal(PetscDualSpace, PetscSection);
+PETSC_INTERN PetscErrorCode PetscDualSpacePushForwardSubspaces_Internal(PetscDualSpace, PetscInt, PetscInt);
 
 PETSC_INTERN PetscErrorCode PetscFEEvaluateFieldJets_Internal(PetscDS, PetscInt, PetscInt, PetscInt, PetscTabulation[], PetscFEGeom *, const PetscScalar[], const PetscScalar[], PetscScalar[], PetscScalar[], PetscScalar[]);
 PETSC_INTERN PetscErrorCode PetscFEEvaluateFaceFields_Internal(PetscDS, PetscInt, PetscInt, const PetscScalar[], PetscScalar[]);

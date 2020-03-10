@@ -55,7 +55,7 @@ static PetscErrorCode DMProjectPoint_Func_Private(DM dm, PetscDS ds, DM dmIn, Pe
         DM                rdm;
 
         ierr = PetscDualSpaceGetDM(sp[f],&rdm);CHKERRQ(ierr);
-        ierr = PetscDualSpaceGetAllPoints(sp[f], &allPoints);CHKERRQ(ierr);
+        ierr = PetscDualSpaceGetAllData(sp[f], &allPoints, NULL);CHKERRQ(ierr);
         ierr = PetscQuadratureGetData(allPoints,&dim,NULL,&numPoints,&points,NULL);CHKERRQ(ierr);
         ierr = DMGetWorkArray(rdm,numPoints*Nc[f],MPIU_SCALAR,&pointEval);CHKERRQ(ierr);
         ierr = DMGetWorkArray(rdm,coordDim,MPIU_REAL,&x);CHKERRQ(ierr);
@@ -72,7 +72,7 @@ static PetscErrorCode DMProjectPoint_Func_Private(DM dm, PetscDS ds, DM dmIn, Pe
           ierr = (*funcs[f])(coordDim, time, v0, Nc[f], &pointEval[Nc[f]*q], ctx);CHKERRQ(ierr);
         }
         /* Transform point evaluations pointEval[q,c] */
-        ierr = PetscDualSpacePullback(sp[f], fegeom, numPoints, Nc[f], pointEval);CHKERRQ(ierr);
+        ierr = PetscDualSpacePullback(sp[f], fegeom, numPoints, Nc[f], NULL, pointEval);CHKERRQ(ierr);
         ierr = PetscDualSpaceApplyAll(sp[f], pointEval, &values[v]);CHKERRQ(ierr);
         ierr = DMRestoreWorkArray(rdm,coordDim,MPIU_REAL,&x);CHKERRQ(ierr);
         ierr = DMRestoreWorkArray(rdm,numPoints*Nc[f],MPIU_SCALAR,&pointEval);CHKERRQ(ierr);
@@ -187,7 +187,7 @@ static PetscErrorCode DMProjectPoint_Field_Private(DM dm, PetscDS ds, DM dmIn, D
       continue;
     }
     ierr = PetscDualSpaceGetDM(sp[f],&dm);CHKERRQ(ierr);
-    ierr = PetscDualSpaceGetAllPoints(sp[f], &allPoints);CHKERRQ(ierr);
+    ierr = PetscDualSpaceGetAllData(sp[f], &allPoints, NULL);CHKERRQ(ierr);
     ierr = PetscQuadratureGetData(allPoints,&dim,NULL,&numPoints,&points,NULL);CHKERRQ(ierr);
     ierr = DMGetWorkArray(dm,numPoints*Nc[f],MPIU_SCALAR,&pointEval);CHKERRQ(ierr);
     for (q = 0; q < numPoints; ++q, ++tp) {
@@ -290,7 +290,7 @@ static PetscErrorCode DMProjectPoint_BdField_Private(DM dm, PetscDS ds, DM dmIn,
       continue;
     }
     ierr = PetscDualSpaceGetDM(sp[f],&dm);CHKERRQ(ierr);
-    ierr = PetscDualSpaceGetAllPoints(sp[f], &allPoints);CHKERRQ(ierr);
+    ierr = PetscDualSpaceGetAllData(sp[f], &allPoints, NULL);CHKERRQ(ierr);
     ierr = PetscQuadratureGetData(allPoints,&dim,NULL,&numPoints,&points,NULL);CHKERRQ(ierr);
     ierr = DMGetWorkArray(dm,numPoints*Nc[f],MPIU_SCALAR,&pointEval);CHKERRQ(ierr);
     for (q = 0; q < numPoints; ++q, ++tp) {
@@ -368,7 +368,7 @@ static PetscErrorCode PetscDualSpaceGetAllPointsUnion(PetscInt Nf, PetscDualSpac
       PetscQuadrature fAllPoints;
       PetscInt        fNumPoints;
 
-      ierr = PetscDualSpaceGetAllPoints(sp[f],&fAllPoints);CHKERRQ(ierr);
+      ierr = PetscDualSpaceGetAllData(sp[f],&fAllPoints, NULL);CHKERRQ(ierr);
       ierr = PetscQuadratureGetData(fAllPoints, NULL, NULL, &fNumPoints, NULL, NULL);CHKERRQ(ierr);
       numPoints += fNumPoints;
     }
@@ -384,7 +384,7 @@ static PetscErrorCode PetscDualSpaceGetAllPointsUnion(PetscInt Nf, PetscDualSpac
       PetscInt        qdim, fNumPoints, q;
       const PetscReal *fPoints;
 
-      ierr = PetscDualSpaceGetAllPoints(sp[f],&fAllPoints);CHKERRQ(ierr);
+      ierr = PetscDualSpaceGetAllData(sp[f],&fAllPoints, NULL);CHKERRQ(ierr);
       ierr = PetscQuadratureGetData(fAllPoints, &qdim, NULL, &fNumPoints, &fPoints, NULL);CHKERRQ(ierr);
       if (qdim != dim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Spatial dimension %D for dual basis does not match input dimension %D", qdim, dim);
       for (q = 0; q < fNumPoints*dim; ++q) points[numPoints*dim+q] = fPoints[q];

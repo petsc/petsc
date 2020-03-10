@@ -2,7 +2,7 @@
 ALL: lib
 
 LIBBASE  = libpetscdm
-DIRS     = lagrange simple
+DIRS     = lagrange simple refined
 LOCDIR   = src/dm/dt/dualspace/impls
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

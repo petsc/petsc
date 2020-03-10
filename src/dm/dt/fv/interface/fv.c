@@ -1588,6 +1588,7 @@ PetscErrorCode PetscFVGetDualSpace(PetscFV fvm, PetscDualSpace *sp)
       ierr = PetscDualSpaceSimpleSetFunctional(fvm->dualSpace, c, qc);CHKERRQ(ierr);
       ierr = PetscQuadratureDestroy(&qc);CHKERRQ(ierr);
     }
+    ierr = PetscDualSpaceSetUp(fvm->dualSpace);CHKERRQ(ierr);
   }
   *sp = fvm->dualSpace;
   PetscFunctionReturn(0);
