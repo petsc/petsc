@@ -308,7 +308,7 @@ class Configure(config.base.Configure):
             self.logPrint('already in lflags: '+arg, 4, 'compilers')
           continue
         # Check for system libraries
-        m = re.match(r'^-l(ang.*|crt[0-9].o|crtbegin.o|c|gcc|gcc_ext(.[0-9]+)*|System|cygwin|crt[0-9].[0-9][0-9].[0-9].o)$', arg)
+        m = re.match(r'^-l(ang.*|crt[0-9].o|crtbegin.o|c|gcc|gcc_ext(.[0-9]+)*|System|cygwin|xlomp_ser|crt[0-9].[0-9][0-9].[0-9].o)$', arg)
         if m:
           self.logPrint('Skipping system library: '+arg, 4, 'compilers')
           continue
@@ -687,7 +687,7 @@ class Configure(config.base.Configure):
             self.logPrint('already in lflags: '+arg, 4, 'compilers')
           continue
         # Check for system libraries
-        m = re.match(r'^-l(ang.*|crt[0-9].o|crtbegin.o|c|gcc|gcc_ext(.[0-9]+)*|System|cygwin|crt[0-9].[0-9][0-9].[0-9].o)$', arg)
+        m = re.match(r'^-l(ang.*|crt[0-9].o|crtbegin.o|c|gcc|gcc_ext(.[0-9]+)*|System|cygwin|xlomp_ser|crt[0-9].[0-9][0-9].[0-9].o)$', arg)
         if m:
           self.logPrint('Skipping system library: '+arg, 4, 'compilers')
           continue
@@ -1085,7 +1085,7 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
             self.logPrint('Already in lflags so skipping: '+arg, 4, 'compilers')
           continue
         # Check for system libraries
-        m = re.match(r'^-l(ang.*|crt[0-9].o|crtbegin.o|c|gcc|gcc_ext(.[0-9]+)*|System|cygwin|crt[0-9].[0-9][0-9].[0-9].o)$', arg)
+        m = re.match(r'^-l(ang.*|crt[0-9].o|crtbegin.o|c|gcc|gcc_ext(.[0-9]+)*|System|cygwin|xlomp_ser|crt[0-9].[0-9][0-9].[0-9].o)$', arg)
         if m:
           self.logPrint('Found system library therefore skipping: '+arg, 4, 'compilers')
           continue
