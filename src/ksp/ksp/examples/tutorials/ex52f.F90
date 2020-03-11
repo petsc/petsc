@@ -127,13 +127,17 @@
       call MatMumpsSetIcntl(F,icntl,ival,ierr)
 
 !     threshold for row pivot detection
-      call MatMumpsSetIcntl(F,24,1,ierr)
+      icntl = 24
+      ival  = 1
+      call MatMumpsSetIcntl(F,icntl,ival,ierr)
       icntl = 3
       val = 1.e-6
       call MatMumpsSetCntl(F,icntl,val,ierr)
 
 !     compute determinant of A
-      call MatMumpsSetIcntl(F,33,1,ierr)
+      icntl = 33
+      ival  = 1
+      call MatMumpsSetIcntl(F,icntl,ival,ierr)
 #endif
 
       call KSPSetFromOptions(ksp,ierr)
@@ -141,9 +145,12 @@
 #if defined(PETSC_HAVE_MUMPS)
       icntl = 3;
       call MatMumpsGetCntl(F,icntl,cntl,ierr)
-      call MatMumpsGetInfog(F,34,infog34,ierr)
-      call MatMumpsGetRinfog(F,12,rinfo12,ierr)
-      call MatMumpsGetRinfog(F,13,rinfo13,ierr)
+      icntl = 34
+      call MatMumpsGetInfog(F,icntl,infog34,ierr)
+      icntl = 12
+      call MatMumpsGetRinfog(F,icntl,rinfo12,ierr)
+      icntl = 13
+      call MatMumpsGetRinfog(F,icntl,rinfo13,ierr)
       if (rank .eq. 0) then
          write(6,98) cntl
          write(6,99) rinfo12,rinfo13,infog34

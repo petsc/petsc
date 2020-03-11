@@ -18,6 +18,8 @@ configure_options = [
   '--download-hypre=1',
   '--download-hypre-configure-arguments=--enable-bigint=no --enable-mixedint=yes', # HYPRE with mixed integers
   '--download-superlu_dist=1',
+  '--download-mumps=1',
+  '--download-scalapack=1',
   '--donwload-suitesparse=1',
   '--download-p4est=1',
   '--with-zlib=1',

@@ -145,6 +145,7 @@
           <li>MatPinToCPU() is deprecated in favor of MatBindToCPU().</li>
           <li>Fix MatAXPY for MATSHELL</li>
           <li>MatAXPY(Y,0.0,X,DIFFERENT_NONZERO_PATTERN) no longer modifies the nonzero pattern of Y to include that of X</li>
+          <li>Add support of selective 64-bit MUMPS, i.e., the regular/default build of MUMPS. One should still build PETSc --with-64-bit-indices to handle matrices with >2G nonzeros</li>
         </ul>
       <h4>PC:</h4>
         <ul>
