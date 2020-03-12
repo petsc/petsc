@@ -535,72 +535,7 @@ PetscErrorCode VecView_Seq_Draw(Vec xin,PetscViewer v)
 
 PetscErrorCode VecView_Seq_Binary(Vec xin,PetscViewer viewer)
 {
-  PetscErrorCode    ierr;
-  int               fdes;
-  PetscInt          n = xin->map->n,classid=VEC_FILE_CLASSID;
-  FILE              *file;
-  const PetscScalar *xv;
-#if defined(PETSC_HAVE_MPIIO)
-  PetscBool         isMPIIO;
-#endif
-  PetscBool         skipHeader;
-  PetscViewerFormat format;
-
-  PetscFunctionBegin;
-  /* Write vector header */
-  ierr = PetscViewerBinaryGetSkipHeader(viewer,&skipHeader);CHKERRQ(ierr);
-  if (!skipHeader) {
-    ierr = PetscViewerBinaryWrite(viewer,&classid,1,PETSC_INT);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryWrite(viewer,&n,1,PETSC_INT);CHKERRQ(ierr);
-  }
-
-  /* Write vector contents */
-#if defined(PETSC_HAVE_MPIIO)
-  ierr = PetscViewerBinaryGetUseMPIIO(viewer,&isMPIIO);CHKERRQ(ierr);
-  if (!isMPIIO) {
-#endif
-    ierr = PetscViewerBinaryGetDescriptor(viewer,&fdes);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(xin,&xv);CHKERRQ(ierr);
-    ierr = PetscBinaryWrite(fdes,(void*)xv,n,PETSC_SCALAR);CHKERRQ(ierr);
-    ierr = VecRestoreArrayRead(xin,&xv);CHKERRQ(ierr);
-    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-    if (format == PETSC_VIEWER_BINARY_MATLAB) {
-      MPI_Comm   comm;
-      FILE       *info;
-      const char *name;
-
-      ierr = PetscObjectGetName((PetscObject)xin,&name);CHKERRQ(ierr);
-      ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
-      ierr = PetscViewerBinaryGetInfoPointer(viewer,&info);CHKERRQ(ierr);
-      ierr = PetscFPrintf(comm,info,"#--- begin code written by PetscViewerBinary for MATLAB format ---#\n");CHKERRQ(ierr);
-      ierr = PetscFPrintf(comm,info,"#$$ Set.%s = PetscBinaryRead(fd);\n",name);CHKERRQ(ierr);
-      ierr = PetscFPrintf(comm,info,"#--- end code written by PetscViewerBinary for MATLAB format ---#\n\n");CHKERRQ(ierr);
-    }
-#if defined(PETSC_HAVE_MPIIO)
-  } else {
-    MPI_Offset   off;
-    MPI_File     mfdes;
-    PetscMPIInt  lsize;
-
-    ierr = PetscMPIIntCast(n,&lsize);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryGetMPIIODescriptor(viewer,&mfdes);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryGetMPIIOOffset(viewer,&off);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(xin,&xv);CHKERRQ(ierr);
-    ierr = MPIU_File_write_at_all(mfdes,off,(void*)xv,lsize,MPIU_SCALAR,MPI_STATUS_IGNORE);CHKERRQ(ierr);
-    ierr = VecRestoreArrayRead(xin,&xv);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryAddMPIIOOffset(viewer,n*sizeof(PetscScalar));CHKERRQ(ierr);
-  }
-#endif
-
-  ierr = PetscViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
-  if (file) {
-    if (((PetscObject)xin)->prefix) {
-      ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-%svecload_block_size %D\n",((PetscObject)xin)->prefix,PetscAbs(xin->map->bs));CHKERRQ(ierr);
-    } else {
-      ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-vecload_block_size %D\n",PetscAbs(xin->map->bs));CHKERRQ(ierr);
-    }
-  }
-  PetscFunctionReturn(0);
+  return VecView_Binary(xin,viewer);
 }
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)

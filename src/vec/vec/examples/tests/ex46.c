@@ -2,7 +2,7 @@
 static char help[] = "Tests PetscViewerBinary VecView()/VecLoad() function correctly when binary header is skipped.\n\n";
 
 /*T
- Concepts: viewers^skipheader
+ Concepts: viewers^skipheader^mpiio
 T*/
 
 #include <petscviewer.h>
@@ -161,7 +161,7 @@ PetscErrorCode TestBinary(void)
   Vec            x,y;
   PetscBool      skipheader = PETSC_TRUE;
   PetscBool      usempiio = PETSC_FALSE;
-    
+
   PetscFunctionBeginUser;
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = VecSetSizes(x,PETSC_DECIDE,VEC_LEN);CHKERRQ(ierr);
@@ -249,11 +249,19 @@ int main(int argc,char **args)
       nsize: 12
       output_file: output/ex46_1_p12.out
 
-   test:
-      suffix: mpiio
-      nsize: 6
-      args: -usempiio
-      output_file: output/ex46_2_p6.out
+   testset:
       requires: mpiio
+      args: -usempiio
+      test:
+         suffix: mpiio_1
+         output_file: output/ex46_2_p1.out
+      test:
+         suffix: mpiio_2
+         nsize: 6
+         output_file: output/ex46_2_p6.out
+      test:
+         suffix: mpiio_3
+         nsize: 12
+         output_file: output/ex46_2_p12.out
 
 TEST*/
