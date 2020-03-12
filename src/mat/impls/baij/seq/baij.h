@@ -234,7 +234,6 @@ PETSC_INTERN PetscErrorCode MatMultAdd_SeqBAIJ_7(Mat,Vec,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMultAdd_SeqBAIJ_9_AVX2(Mat,Vec,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMultAdd_SeqBAIJ_11(Mat,Vec,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMultAdd_SeqBAIJ_N(Mat,Vec,Vec,Vec);
-PETSC_INTERN PetscErrorCode MatLoad_SeqBAIJ(Mat,PetscViewer);
 PETSC_INTERN PetscErrorCode MatSeqBAIJSetNumericFactorization_inplace(Mat,PetscBool);
 PETSC_INTERN PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat,PetscBool);
 
@@ -243,6 +242,11 @@ PETSC_INTERN PetscErrorCode MatAXPYGetPreallocation_SeqBAIJ(Mat,Mat,PetscInt*);
 
 PETSC_INTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat_SeqBAIJ(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPIBAIJ(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
+
+PETSC_INTERN PetscErrorCode MatView_SeqBAIJ(Mat,PetscViewer);
+PETSC_INTERN PetscErrorCode MatLoad_SeqBAIJ(Mat,PetscViewer);
+PETSC_INTERN PetscErrorCode MatView_SeqBAIJ_Binary(Mat,PetscViewer);
+PETSC_INTERN PetscErrorCode MatLoad_SeqBAIJ_Binary(Mat,PetscViewer);
 
 /* used by mpibaij.c */
 PETSC_INTERN PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat);
