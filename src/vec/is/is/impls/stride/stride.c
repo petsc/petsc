@@ -170,12 +170,13 @@ PetscErrorCode ISView_Stride(IS is,PetscViewer viewer)
   IS_Stride         *sub = (IS_Stride*)is->data;
   PetscInt          i,n = is->map->n;
   PetscMPIInt       rank,size;
-  PetscBool         iascii;
+  PetscBool         iascii,ibinary;
   PetscViewerFormat fmt;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&ibinary);CHKERRQ(ierr);
   if (iascii) {
     PetscBool matl, isperm;
 
@@ -214,6 +215,8 @@ PetscErrorCode ISView_Stride(IS is,PetscViewer viewer)
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
     }
+  } else if (ibinary) {
+    ierr = ISView_Binary(is,viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

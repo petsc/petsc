@@ -59,7 +59,9 @@ struct _p_IS {
   ISInfoBool   info[2][IS_INFO_MAX];         /* local / global properties */
 };
 
-extern PetscErrorCode ISLoad_Default(IS, PetscViewer);
+PETSC_EXTERN PetscErrorCode ISView_Binary(IS, PetscViewer);
+PETSC_EXTERN PetscErrorCode ISLoad_Binary(IS, PetscViewer);
+PETSC_EXTERN PetscErrorCode ISLoad_Default(IS, PetscViewer);
 
 struct _ISLocalToGlobalMappingOps {
   PetscErrorCode (*globaltolocalmappingsetup)(ISLocalToGlobalMapping);
