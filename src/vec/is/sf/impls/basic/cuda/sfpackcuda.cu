@@ -401,7 +401,15 @@ __device__ static float atomicMax(float* address,float val)
 }
 #endif
 
-#if defined(PETSC_USE_64BIT_INDICES)
+/*
+  atomicMin/Max(long long *, long long) are not in Nvidia's documentation. But on OLCF Summit we found
+  atomicMin/Max/And/Or/Xor(long long *, long long) in /sw/summit/cuda/10.1.243/include/sm_32_atomic_functions.h.
+  This causes compilation errors with pgi compilers and 64-bit indices:
+      error: function "atomicMin(long long *, long long)" has already been defined
+
+  So we add extra conditions defined(__CUDA_ARCH__) && (__CUDA_ARCH__ < 320)
+*/
+#if defined(PETSC_USE_64BIT_INDICES) && defined(__CUDA_ARCH__) && (__CUDA_ARCH__ < 320)
 __device__ static PetscInt atomicMin(PetscInt* address,PetscInt val)
 {
   unsigned long long int *address_as_ull = (unsigned long long int*)(address);
@@ -448,7 +456,7 @@ template<typename Type> struct AtomicMax {__device__ Type operator() (Type& x,Ty
 */
 
 #if defined(PETSC_USE_64BIT_INDICES)
-#if defined(__CUDA_ARCH__) && (__CUDA_ARCH__ < 350)
+#if defined(__CUDA_ARCH__) && (__CUDA_ARCH__ < 320) /* Why 320? see comments at atomicMin(PetscInt* address,PetscInt val) */
 __device__ static PetscInt atomicAnd(PetscInt* address,PetscInt val)
 {
   unsigned long long int *address_as_ull = (unsigned long long int*)(address);
@@ -481,9 +489,12 @@ __device__ static PetscInt atomicXor(PetscInt* address,PetscInt val)
   return (PetscInt)old;
 }
 #else
+/*
+ See also comments at atomicMin(PetscInt* address,PetscInt val)
 __device__ static PetscInt atomicAnd(PetscInt* address,PetscInt val) {return (PetscInt)atomicAnd((unsigned long long int*)address,(unsigned long long int)val);}
 __device__ static PetscInt atomicOr (PetscInt* address,PetscInt val) {return (PetscInt)atomicOr ((unsigned long long int*)address,(unsigned long long int)val);}
 __device__ static PetscInt atomicXor(PetscInt* address,PetscInt val) {return (PetscInt)atomicXor((unsigned long long int*)address,(unsigned long long int)val);}
+*/
 #endif
 #endif
 
