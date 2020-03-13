@@ -27,51 +27,41 @@
         stop
       endif
       dir = '.'
-      call PetscOptionsGetString(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER, &
-     &     '-load_dir',dir,flg,ierr);CHKERRA(ierr)
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,    &
-     &     '-nmat',nmat,flg,ierr);CHKERRA(ierr)
+      call PetscOptionsGetString(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-load_dir',dir,flg,ierr);CHKERRA(ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-nmat',nmat,flg,ierr);CHKERRA(ierr)
       reset = PETSC_FALSE
-      call PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,   &
-     &     '-reset',reset,flg,ierr);CHKERRA(ierr)
-      call MatCreate(PETSC_COMM_WORLD,A,ierr);                            &
-     &    CHKERRA(ierr)
-      call KSPCreate(PETSC_COMM_WORLD,ksp,ierr);                          &
-     &    CHKERRA(ierr)
+      call PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-reset',reset,flg,ierr);CHKERRA(ierr)
+      call MatCreate(PETSC_COMM_WORLD,A,ierr);CHKERRA(ierr)
+      call KSPCreate(PETSC_COMM_WORLD,ksp,ierr);CHKERRA(ierr)
       call KSPSetOperators(ksp,A,A,ierr);CHKERRA(ierr)
       do 50 i=0,nmat-1
         j = i+400
         fmt = '(I3)'
         write (cmat,fmt) j
         write (name,'(a)')trim(dir)//'/A_'//cmat//'.dat'
-        call PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ, &
-     &       viewer,ierr);CHKERRA(ierr)
+        call PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,viewer,ierr);CHKERRA(ierr)
         call MatLoad(A,viewer,ierr);CHKERRA(ierr)
         call PetscViewerDestroy(viewer,ierr);CHKERRA(ierr)
         if (i .eq. 0) then
           call MatCreateVecs(A,x,b,ierr);CHKERRA(ierr)
         endif
         write (name,'(a)')trim(dir)//'/rhs_'//cmat//'.dat'
-        call PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ, &
-     &       viewer,ierr);CHKERRA(ierr)
+        call PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,viewer,ierr);CHKERRA(ierr)
         call VecLoad(b,viewer,ierr);CHKERRA(ierr)
         call PetscViewerDestroy(viewer,ierr);CHKERRA(ierr)
         call KSPSetOperators(ksp,A,A,ierr);CHKERRA(ierr)
         call KSPSetFromOptions(ksp,ierr);CHKERRA(ierr)
         call KSPSolve(ksp,b,x,ierr);CHKERRA(ierr)
 #if defined(PETSC_HAVE_HPDDM)
-        call PetscObjectTypeCompare(ksp,KSPHPDDM,flg,ierr);              &
-             CHKERRA(ierr)
+        call PetscObjectTypeCompare(ksp,KSPHPDDM,flg,ierr);CHKERRA(ierr)
         if (flg .and. reset) then
-          call KSPHPDDMGetDeflationSpace(ksp,U,ierr);                    &
-               CHKERRA(ierr)
+          call KSPHPDDMGetDeflationSpace(ksp,U,ierr);CHKERRA(ierr)
           call KSPReset(ksp,ierr);CHKERRA(ierr)
           call KSPSetOperators(ksp,A,A,ierr);CHKERRA(ierr)
           call KSPSetFromOptions(ksp,ierr);CHKERRA(ierr)
           call KSPSetUp(ksp,ierr);CHKERRA(ierr)
           if (U .ne. PETSC_NULL_MAT) then
-            call KSPHPDDMSetDeflationSpace(ksp,U,ierr);                  &
-                 CHKERRA(ierr)
+            call KSPHPDDMSetDeflationSpace(ksp,U,ierr);CHKERRA(ierr)
             call MatDestroy(U,ierr);CHKERRA(ierr)
           endif
         endif
