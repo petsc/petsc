@@ -34,64 +34,46 @@
         stop
       endif
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
-      call MatCreate(PETSC_COMM_WORLD,A,ierr);                            &
-     &    CHKERRA(ierr)
-      call MatCreate(PETSC_COMM_SELF,aux,ierr);                           &
-     &    CHKERRA(ierr)
-      call ISCreate(PETSC_COMM_SELF,is,ierr);                             &
-     &    CHKERRA(ierr)
+      call MatCreate(PETSC_COMM_WORLD,A,ierr);CHKERRA(ierr)
+      call MatCreate(PETSC_COMM_SELF,aux,ierr);CHKERRA(ierr)
+      call ISCreate(PETSC_COMM_SELF,is,ierr);CHKERRA(ierr)
       dir = '.'
-      call PetscOptionsGetString(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER, &
-     &     '-load_dir',dir,flg,ierr);CHKERRA(ierr)
+      call PetscOptionsGetString(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-load_dir',dir,flg,ierr);CHKERRA(ierr)
       fmt = '(I1)'
       write (crank,fmt) rank
       write (csize,fmt) size
       write (name,'(a)')trim(dir)//'/sizes_'//crank//'_'//csize//'.dat'
-      call PetscViewerBinaryOpen(PETSC_COMM_SELF,name,FILE_MODE_READ,     &
-     &     viewer,ierr);CHKERRA(ierr)
-      call ISCreate(PETSC_COMM_SELF,sizes,ierr);                          &
-     &     CHKERRA(ierr)
+      call PetscViewerBinaryOpen(PETSC_COMM_SELF,name,FILE_MODE_READ, viewer,ierr);CHKERRA(ierr)
+      call ISCreate(PETSC_COMM_SELF,sizes,ierr);CHKERRA(ierr)
       call ISLoad(sizes,viewer,ierr);CHKERRA(ierr)
       call ISGetIndicesF90(sizes,idx,ierr);CHKERRA(ierr)
-      call MatSetSizes(A,idx(1),idx(2),idx(3),idx(4),ierr);               &
-     &     CHKERRA(ierr)
-      call ISRestoreIndicesF90(sizes,idx,ierr);                           &
-     &     CHKERRA(ierr)
+      call MatSetSizes(A,idx(1),idx(2),idx(3),idx(4),ierr);CHKERRA(ierr)
+      call ISRestoreIndicesF90(sizes,idx,ierr);CHKERRA(ierr)
       call ISDestroy(sizes,ierr);CHKERRA(ierr)
       call PetscViewerDestroy(viewer,ierr);CHKERRA(ierr)
       call MatSetUp(A,ierr);CHKERRA(ierr)
       write (name,'(a)')trim(dir)//'/A.dat'
-      call PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,    &
-     &     viewer,ierr);CHKERRA(ierr)
+      call PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,viewer,ierr);CHKERRA(ierr)
       call MatLoad(A,viewer,ierr);CHKERRA(ierr)
       call PetscViewerDestroy(viewer,ierr);CHKERRA(ierr)
       write (name,'(a)')trim(dir)//'/is_'//crank//'_'//csize//'.dat'
-      call PetscViewerBinaryOpen(PETSC_COMM_SELF,name,FILE_MODE_READ,     &
-     &     viewer,ierr);CHKERRA(ierr)
+      call PetscViewerBinaryOpen(PETSC_COMM_SELF,name,FILE_MODE_READ,viewer,ierr);CHKERRA(ierr)
       call ISLoad(is,viewer,ierr);CHKERRA(ierr)
       call PetscViewerDestroy(viewer,ierr);CHKERRA(ierr)
-      write (name,'(a)')trim(dir)//'/Neumann_'//crank//'_'//csize//       &
-     &      '.dat'
-      call PetscViewerBinaryOpen(PETSC_COMM_SELF,name,FILE_MODE_READ,     &
-     &     viewer,ierr);CHKERRA(ierr)
-      call MatSetBlockSizesFromMats(aux,A,A,ierr);                        &
-     &     CHKERRA(ierr)
+      write (name,'(a)')trim(dir)//'/Neumann_'//crank//'_'//csize//'.dat'
+      call PetscViewerBinaryOpen(PETSC_COMM_SELF,name,FILE_MODE_READ,viewer,ierr);CHKERRA(ierr)
+      call MatSetBlockSizesFromMats(aux,A,A,ierr);CHKERRA(ierr)
       call MatLoad(aux,viewer,ierr);CHKERRA(ierr)
       call PetscViewerDestroy(viewer,ierr);CHKERRA(ierr)
-      call MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE,ierr);                 &
-     &     CHKERRA(ierr)
-      call MatSetOption(aux,MAT_SYMMETRIC,PETSC_TRUE,ierr);               &
-     &     CHKERRA(ierr)
-      call KSPCreate(PETSC_COMM_WORLD,ksp,ierr);                          &
-     &     CHKERRA(ierr)
+      call MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE,ierr);CHKERRA(ierr)
+      call MatSetOption(aux,MAT_SYMMETRIC,PETSC_TRUE,ierr);CHKERRA(ierr)
+      call KSPCreate(PETSC_COMM_WORLD,ksp,ierr);CHKERRA(ierr)
       call KSPSetOperators(ksp,A,A,ierr);CHKERRA(ierr)
       call KSPGetPC(ksp,pc,ierr);CHKERRA(ierr)
       call PCSetType(pc,PCHPDDM,ierr);CHKERRA(ierr)
 #if defined(PETSC_HAVE_HPDDM)
-      call PCHPDDMSetAuxiliaryMat(pc,is,aux,PETSC_NULL_FUNCTION,          &
-      PETSC_NULL_INTEGER,ierr);CHKERRA(ierr)
-      call PCHPDDMHasNeumannMat(pc,PETSC_FALSE,ierr);                     &
-     &     CHKERRA(ierr)
+      call PCHPDDMSetAuxiliaryMat(pc,is,aux,PETSC_NULL_FUNCTION,PETSC_NULL_INTEGER,ierr);CHKERRA(ierr)
+      call PCHPDDMHasNeumannMat(pc,PETSC_FALSE,ierr);CHKERRA(ierr)
 #endif
       call ISDestroy(is,ierr);CHKERRA(ierr)
       call MatDestroy(aux,ierr);CHKERRA(ierr)

@@ -1103,11 +1103,11 @@ PetscErrorCode  DMGetBlockSize(DM dm,PetscInt *bs)
 /*@
     DMCreateInterpolation - Gets interpolation matrix between two DM objects
 
-    Collective on dm1
+    Collective on dmc
 
     Input Parameter:
-+   dm1 - the DM object
--   dm2 - the second, finer DM object
++   dmc - the DM object
+-   dmf - the second, finer DM object
 
     Output Parameter:
 +  mat - the interpolation
@@ -1126,18 +1126,18 @@ PetscErrorCode  DMGetBlockSize(DM dm,PetscInt *bs)
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateColoring(), DMCreateMatrix(), DMRefine(), DMCoarsen(), DMCreateRestriction(), DMCreateInterpolationScale()
 
 @*/
-PetscErrorCode  DMCreateInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
+PetscErrorCode  DMCreateInterpolation(DM dmc,DM dmf,Mat *mat,Vec *vec)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm1,DM_CLASSID,1);
-  PetscValidHeaderSpecific(dm2,DM_CLASSID,2);
+  PetscValidHeaderSpecific(dmc,DM_CLASSID,1);
+  PetscValidHeaderSpecific(dmf,DM_CLASSID,2);
   PetscValidPointer(mat,3);
-  if (!dm1->ops->createinterpolation) SETERRQ1(PetscObjectComm((PetscObject)dm1),PETSC_ERR_SUP,"DM type %s does not implement DMCreateInterpolation",((PetscObject)dm1)->type_name);
-  ierr = PetscLogEventBegin(DM_CreateInterpolation,dm1,dm2,0,0);CHKERRQ(ierr);
-  ierr = (*dm1->ops->createinterpolation)(dm1,dm2,mat,vec);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(DM_CreateInterpolation,dm1,dm2,0,0);CHKERRQ(ierr);
+  if (!dmc->ops->createinterpolation) SETERRQ1(PetscObjectComm((PetscObject)dmc),PETSC_ERR_SUP,"DM type %s does not implement DMCreateInterpolation",((PetscObject)dmc)->type_name);
+  ierr = PetscLogEventBegin(DM_CreateInterpolation,dmc,dmf,0,0);CHKERRQ(ierr);
+  ierr = (*dmc->ops->createinterpolation)(dmc,dmf,mat,vec);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(DM_CreateInterpolation,dmc,dmf,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1176,11 +1176,11 @@ PetscErrorCode  DMCreateInterpolationScale(DM dac,DM daf,Mat mat,Vec *scale)
 /*@
     DMCreateRestriction - Gets restriction matrix between two DM objects
 
-    Collective on dm1
+    Collective on dmc
 
     Input Parameter:
-+   dm1 - the DM object
--   dm2 - the second, finer DM object
++   dmc - the DM object
+-   dmf - the second, finer DM object
 
     Output Parameter:
 .  mat - the restriction
@@ -1196,29 +1196,29 @@ PetscErrorCode  DMCreateInterpolationScale(DM dac,DM daf,Mat mat,Vec *scale)
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateColoring(), DMCreateMatrix(), DMRefine(), DMCoarsen(), DMCreateInterpolation()
 
 @*/
-PetscErrorCode  DMCreateRestriction(DM dm1,DM dm2,Mat *mat)
+PetscErrorCode  DMCreateRestriction(DM dmc,DM dmf,Mat *mat)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm1,DM_CLASSID,1);
-  PetscValidHeaderSpecific(dm2,DM_CLASSID,2);
+  PetscValidHeaderSpecific(dmc,DM_CLASSID,1);
+  PetscValidHeaderSpecific(dmf,DM_CLASSID,2);
   PetscValidPointer(mat,3);
-  if (!dm1->ops->createrestriction) SETERRQ1(PetscObjectComm((PetscObject)dm1),PETSC_ERR_SUP,"DM type %s does not implement DMCreateRestriction",((PetscObject)dm1)->type_name);
-  ierr = PetscLogEventBegin(DM_CreateRestriction,dm1,dm2,0,0);CHKERRQ(ierr);
-  ierr = (*dm1->ops->createrestriction)(dm1,dm2,mat);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(DM_CreateRestriction,dm1,dm2,0,0);CHKERRQ(ierr);
+  if (!dmc->ops->createrestriction) SETERRQ1(PetscObjectComm((PetscObject)dmc),PETSC_ERR_SUP,"DM type %s does not implement DMCreateRestriction",((PetscObject)dmc)->type_name);
+  ierr = PetscLogEventBegin(DM_CreateRestriction,dmc,dmf,0,0);CHKERRQ(ierr);
+  ierr = (*dmc->ops->createrestriction)(dmc,dmf,mat);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(DM_CreateRestriction,dmc,dmf,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*@
     DMCreateInjection - Gets injection matrix between two DM objects
 
-    Collective on dm1
+    Collective on dac
 
     Input Parameter:
-+   dm1 - the DM object
--   dm2 - the second, finer DM object
++   dac - the DM object
+-   daf - the second, finer DM object
 
     Output Parameter:
 .   mat - the injection
@@ -1232,29 +1232,29 @@ PetscErrorCode  DMCreateRestriction(DM dm1,DM dm2,Mat *mat)
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateColoring(), DMCreateMatrix(), DMCreateInterpolation()
 
 @*/
-PetscErrorCode  DMCreateInjection(DM dm1,DM dm2,Mat *mat)
+PetscErrorCode  DMCreateInjection(DM dac,DM daf,Mat *mat)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm1,DM_CLASSID,1);
-  PetscValidHeaderSpecific(dm2,DM_CLASSID,2);
+  PetscValidHeaderSpecific(dac,DM_CLASSID,1);
+  PetscValidHeaderSpecific(daf,DM_CLASSID,2);
   PetscValidPointer(mat,3);
-  if (!dm1->ops->createinjection) SETERRQ1(PetscObjectComm((PetscObject)dm1),PETSC_ERR_SUP,"DM type %s does not implement DMCreateInjection",((PetscObject)dm1)->type_name);
-  ierr = PetscLogEventBegin(DM_CreateInjection,dm1,dm2,0,0);CHKERRQ(ierr);
-  ierr = (*dm1->ops->createinjection)(dm1,dm2,mat);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(DM_CreateInjection,dm1,dm2,0,0);CHKERRQ(ierr);
+  if (!dac->ops->createinjection) SETERRQ1(PetscObjectComm((PetscObject)dac),PETSC_ERR_SUP,"DM type %s does not implement DMCreateInjection",((PetscObject)dac)->type_name);
+  ierr = PetscLogEventBegin(DM_CreateInjection,dac,daf,0,0);CHKERRQ(ierr);
+  ierr = (*dac->ops->createinjection)(dac,daf,mat);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(DM_CreateInjection,dac,daf,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*@
   DMCreateMassMatrix - Gets mass matrix between two DM objects, M_ij = \int \phi_i \psi_j
 
-  Collective on dm1
+  Collective on dac
 
   Input Parameter:
-+ dm1 - the DM object
-- dm2 - the second, finer DM object
++ dac - the DM object
+- daf - the second, finer DM object
 
   Output Parameter:
 . mat - the interpolation
@@ -1263,16 +1263,16 @@ PetscErrorCode  DMCreateInjection(DM dm1,DM dm2,Mat *mat)
 
 .seealso DMCreateMatrix(), DMRefine(), DMCoarsen(), DMCreateRestriction(), DMCreateInterpolation(), DMCreateInjection()
 @*/
-PetscErrorCode DMCreateMassMatrix(DM dm1, DM dm2, Mat *mat)
+PetscErrorCode DMCreateMassMatrix(DM dac, DM daf, Mat *mat)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm1, DM_CLASSID, 1);
-  PetscValidHeaderSpecific(dm2, DM_CLASSID, 2);
+  PetscValidHeaderSpecific(dac, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(daf, DM_CLASSID, 2);
   PetscValidPointer(mat,3);
-  if (!dm1->ops->createmassmatrix) SETERRQ1(PetscObjectComm((PetscObject)dm1),PETSC_ERR_SUP,"DM type %s does not implement DMCreateMassMatrix",((PetscObject)dm1)->type_name);
-  ierr = (*dm1->ops->createmassmatrix)(dm1, dm2, mat);CHKERRQ(ierr);
+  if (!dac->ops->createmassmatrix) SETERRQ1(PetscObjectComm((PetscObject)dac),PETSC_ERR_SUP,"DM type %s does not implement DMCreateMassMatrix",((PetscObject)dac)->type_name);
+  ierr = (*dac->ops->createmassmatrix)(dac, daf, mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -8248,7 +8248,7 @@ PetscErrorCode  MatFDColoringUseDM(Mat coloring,MatFDColoring fdcoloring)
     Collective
 
     Input Parameters:
-+    dm - the first DM
++    dm1 - the first DM
 -    dm2 - the second DM
 
     Output Parameters:
@@ -8310,7 +8310,7 @@ PetscErrorCode  MatFDColoringUseDM(Mat coloring,MatFDColoring fdcoloring)
     Developer Notes:
     Compatibility is assumed to be a symmetric concept; DM A is compatible with DM B
     iff B is compatible with A. Thus, this function checks the implementations
-    of both dm and dm2 (if they are of different types), attempting to determine
+    of both dm and dmc (if they are of different types), attempting to determine
     compatibility. It is left to DM implementers to ensure that symmetry is
     preserved. The simplest way to do this is, when implementing type-specific
     logic for this function, is to check for existing logic in the implementation
@@ -8321,7 +8321,7 @@ PetscErrorCode  MatFDColoringUseDM(Mat coloring,MatFDColoring fdcoloring)
 .seealso: DM, DMDACreateCompatibleDMDA(), DMStagCreateCompatibleDMStag()
 @*/
 
-PetscErrorCode DMGetCompatibility(DM dm,DM dm2,PetscBool *compatible,PetscBool *set)
+PetscErrorCode DMGetCompatibility(DM dm1,DM dm2,PetscBool *compatible,PetscBool *set)
 {
   PetscErrorCode ierr;
   PetscMPIInt    compareResult;
@@ -8329,11 +8329,11 @@ PetscErrorCode DMGetCompatibility(DM dm,DM dm2,PetscBool *compatible,PetscBool *
   PetscBool      sameType;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(dm1,DM_CLASSID,1);
   PetscValidHeaderSpecific(dm2,DM_CLASSID,2);
 
   /* Declare a DM compatible with itself */
-  if (dm == dm2) {
+  if (dm1 == dm2) {
     *set = PETSC_TRUE;
     *compatible = PETSC_TRUE;
     PetscFunctionReturn(0);
@@ -8343,7 +8343,7 @@ PetscErrorCode DMGetCompatibility(DM dm,DM dm2,PetscBool *compatible,PetscBool *
      communicator. Note that this does not preclude compatibility with
      DMs living on "congruent" or "similar" communicators, but this must be
      determined by the implementation-specific logic */
-  ierr = MPI_Comm_compare(PetscObjectComm((PetscObject)dm),PetscObjectComm((PetscObject)dm2),&compareResult);CHKERRQ(ierr);
+  ierr = MPI_Comm_compare(PetscObjectComm((PetscObject)dm1),PetscObjectComm((PetscObject)dm2),&compareResult);CHKERRQ(ierr);
   if (compareResult == MPI_UNEQUAL) {
     *set = PETSC_TRUE;
     *compatible = PETSC_FALSE;
@@ -8351,18 +8351,18 @@ PetscErrorCode DMGetCompatibility(DM dm,DM dm2,PetscBool *compatible,PetscBool *
   }
 
   /* Pass to the implementation-specific routine, if one exists. */
-  if (dm->ops->getcompatibility) {
-    ierr = (*dm->ops->getcompatibility)(dm,dm2,compatible,set);CHKERRQ(ierr);
+  if (dm1->ops->getcompatibility) {
+    ierr = (*dm1->ops->getcompatibility)(dm1,dm2,compatible,set);CHKERRQ(ierr);
     if (*set) PetscFunctionReturn(0);
   }
 
-  /* If dm and dm2 are of different types, then attempt to check compatibility
+  /* If dm1 and dm2 are of different types, then attempt to check compatibility
      with an implementation of this function from dm2 */
-  ierr = DMGetType(dm,&type);CHKERRQ(ierr);
+  ierr = DMGetType(dm1,&type);CHKERRQ(ierr);
   ierr = DMGetType(dm2,&type2);CHKERRQ(ierr);
   ierr = PetscStrcmp(type,type2,&sameType);CHKERRQ(ierr);
   if (!sameType && dm2->ops->getcompatibility) {
-    ierr = (*dm2->ops->getcompatibility)(dm2,dm,compatible,set);CHKERRQ(ierr); /* Note argument order */
+    ierr = (*dm2->ops->getcompatibility)(dm2,dm1,compatible,set);CHKERRQ(ierr); /* Note argument order */
   } else {
     *set = PETSC_FALSE;
   }
