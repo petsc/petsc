@@ -1,4 +1,4 @@
-
+#define PETSC_DESIRE_FEATURE_TEST_MACROS
 /*
    This file defines the initialization of PETSc, including PetscInitialize()
 */
@@ -670,6 +670,10 @@ int64_t Petsc_adios_group;
 PetscInt PetscNumOMPThreads;
 #endif
 
+#if defined(PETSC_HAVE_DLFCN_H)
+#include <dlfcn.h>
+#endif
+
 /*@C
    PetscInitialize - Initializes the PETSc database and MPI.
    PetscInitialize() calls MPI_Init() if that has yet to be called,
@@ -855,6 +859,19 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
       }
     }
 #endif
+  }
+#endif
+
+#if defined(PETSC_HAVE_DLSYM)
+  {
+    PetscInt cnt = 0;
+    /* These symbols are currently in the OpenMPI and MPICH libraries; they may not always be, in that case the test will simply not detect the problem */
+    if (dlsym(RTLD_DEFAULT,"ompi_mpi_init")) cnt++;
+    if (dlsym(RTLD_DEFAULT,"MPL_exit")) cnt++;
+    if (cnt > 1) {
+      fprintf(stderr,"PETSc Error --- Application was linked against both OpenMPI and MPICH based MPI libraries and will not run correctly\n");
+      return PETSC_ERR_MPI_LIB_INCOMP;
+    }
   }
 #endif
 
