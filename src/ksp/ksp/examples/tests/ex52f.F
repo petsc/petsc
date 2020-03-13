@@ -62,7 +62,7 @@
       call MatFactorGetError(F,ferr,ierr)
       call MatFactorGetErrorZeroPivot(F,pivot,row,ierr)
       write(6,101) ferr,pivot,row
- 101  format('MatFactorError ',i4,' Pivot value ',e12.4,' row ',i4)
+ 101  format('MatFactorError ',i4,' Pivot value ',1pe9.2,' row ',i4)
 
 ! Cleanup
       call KSPDestroy(ksp,ierr)

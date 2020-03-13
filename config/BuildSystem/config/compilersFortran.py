@@ -295,6 +295,11 @@ class Configure(config.base.Configure):
       self.logPrint('F90 uses a single argument for array pointers', 3, 'compilers')
     return
 
+  def checkFortran90AssumedType(self):
+    if config.setCompilers.Configure.isIBM(self.setCompilers.FC, self.log):
+      self.addDefine('HAVE_F90_ASSUMED_TYPE_NOT_PTR', 1)
+      self.logPrint('IBM F90 compiler detected so using HAVE_F90_ASSUMED_TYPE_NOT_PTR', 3, 'compilers')
+
   def checkFortranModuleInclude(self):
     '''Figures out what flag is used to specify the include path for Fortran modules'''
     self.setCompilers.fortranModuleIncludeFlag = None
@@ -484,6 +489,7 @@ class Configure(config.base.Configure):
       self.executeTest(self.checkFortran90FreeForm)
       self.executeTest(self.checkFortran2003)
       self.executeTest(self.checkFortran90Array)
+      self.executeTest(self.checkFortran90AssumedType)
       self.executeTest(self.checkFortranModuleInclude)
       self.executeTest(self.checkFortranModuleOutput)
       self.executeTest(self.checkFortranTypeStar)

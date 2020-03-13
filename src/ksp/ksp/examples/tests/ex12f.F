@@ -51,7 +51,7 @@
      &  info(MAT_INFO_MEMORY),info(MAT_INFO_ASSEMBLIES),                &
      &  info(MAT_INFO_MALLOCS)
 
- 100  format(4(i4,1x),7(g8.1,1x))
+ 100  format(4(i4,1x),7(1pe9.2,1x))
       call VecCreate(PETSC_COMM_WORLD,b,ierr)
       call VecLoad(b,fd,ierr)
       call PetscViewerDestroy(fd,ierr)
@@ -72,7 +72,7 @@
       call VecNorm(u,NORM_2,norm,ierr)
       call KSPGetIterationNumber(ksp,its,ierr)
       write(6,101) norm,its
- 101  format('Residual norm ',e11.4,' iterations ',i5)
+ 101  format('Residual norm ',1pe9.2,' iterations ',i5)
 
 ! Cleanup
       call KSPDestroy(ksp,ierr)
