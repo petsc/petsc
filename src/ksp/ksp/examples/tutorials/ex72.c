@@ -485,6 +485,7 @@ int main(int argc,char **args)
       args: -pc_factor_levels 2 -pc_factor_fill 1.73 -ksp_gmres_cgs_refinement_type refine_always
 
    testset:
+      TODO: Matrix row/column sizes are not compatible with block size
       suffix: 7
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES)
       args: -f0 ${DATAFILESPATH}/matrices/medium
@@ -502,6 +503,7 @@ int main(int argc,char **args)
          args: -pc_factor_levels 1
 
    testset:
+      TODO: Matrix row/column sizes are not compatible with block size
       suffix: 7_d
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES)
       args: -f0 ${DATAFILESPATH}/matrices/medium
@@ -516,6 +518,7 @@ int main(int argc,char **args)
       args: -ksp_diagonal_scale -pc_type eisenstat -ksp_monitor_short -ksp_diagonal_scale_fix -ksp_gmres_cgs_refinement_type refine_always -mat_no_inode
 
    testset:
+      TODO: Matrix row/column sizes are not compatible with block size
       suffix: 9
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES)
       args: -f0 ${DATAFILESPATH}/matrices/medium
