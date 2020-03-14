@@ -160,6 +160,9 @@ class Configure(config.package.Package):
       # TODO: use self.f2cblaslapack.libDir directly
       libDir = os.path.join(self.f2cblaslapack.directory,'lib')
       f2cBlas = [os.path.join(libDir,'libf2cblas.a')]
+      if self.blis.found:
+        # The real BLAS is provided by libblis, but we still need libf2cblas for aux functions needed by libf2clapack
+        f2cBlas.append(os.path.join(self.blis.libDir, 'libblis.a'))
       f2cLapack = [os.path.join(libDir,'libf2clapack.a')]
       yield ('f2cblaslapack', f2cBlas, f2cLapack, '32','no')
       yield ('f2cblaslapack', f2cBlas+['-lquadmath'], f2cLapack, '32','no')
