@@ -42,7 +42,7 @@ LEX=lex
 CC=cc
 AWK=awk
 TMP=${PWD}/toclapack.$$
-LEXFLAGS=-ll
+LEXFLAGS=-lfl
 SED=sed
 TAR=tar
 
