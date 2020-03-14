@@ -20,5 +20,9 @@ class Configure(config.package.Package):
 
     self.logPrintBox('Copying CoDiPack include files to install location')
     self.installDirProvider.printSudoPasswordMessage()
-    output2,err2,ret2  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && '+self.installSudo+' cp -rf include/* '+os.path.join(self.installDir,'include'),timeout=250, log = self.log)
+    includedir = os.path.join(self.installDir, 'include')
+    output2,err2,ret2  = config.package.Package.executeShellCommandSeq([
+      self.withSudo('mkdir', '-p', includedir),
+      self.withSudo('cp', '-rf', os.path.join('include', 'codi'), os.path.join('include', 'codi.hpp'), includedir),
+      ], cwd=self.packageDir, timeout=250, log = self.log)
     return self.installDir
