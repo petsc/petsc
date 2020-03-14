@@ -317,7 +317,7 @@ osx-cxx-pkgs-opt:
     - .stage-3
     - .osx_test
   tags:
-    - os:macos
+    - os:macos, opt
   variables:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -saws_port_auto_select -saws_port_auto_select_silent -vecscatter_mpi1 false -options_left false
     TEST_ARCH: arch-ci-osx-cxx-pkgs-opt
@@ -449,7 +449,7 @@ osx-xsdk-opt:
     - .stage-3
     - .osx_test
   tags:
-    - os:macos
+    - os:macos, opt
   variables:
     TEST_ARCH: arch-ci-osx-xsdk-opt
 
@@ -458,7 +458,7 @@ linux-cmplx-gcov:
     - .stage-3
     - .linux_test
   tags:
-    - gce-nfs
+    - gce-nfs, linux-fast
   variables:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -vecscatter_mpi1 false -options_left false
     TEST_ARCH: arch-ci-linux-cmplx-gcov
@@ -613,7 +613,7 @@ linux-gcov:
     - .stage-3
     - .linux_test
   tags:
-    - gce-nfs
+    - gce-nfs, linux-fast
   variables:
     TEST_ARCH: arch-ci-linux-gcov
   after_script:
@@ -644,7 +644,7 @@ linux-matlab-ilp64-gcov:
     - .stage-3
     - .linux_test
   tags:
-    - gce-nfs
+    - gce-nfs, linux-fast
   variables:
     TEST_ARCH: arch-ci-linux-matlab-ilp64-gcov
     LOAD_MODULES: matlab/R2018a
@@ -695,7 +695,7 @@ linux-pkgs-gcov:
     - .stage-3
     - .linux_test
   tags:
-    - gce-nfs
+    - gce-nfs, linux-fast
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-gcov
   after_script:
