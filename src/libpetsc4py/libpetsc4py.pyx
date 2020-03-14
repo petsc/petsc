@@ -53,10 +53,6 @@ cdef extern from * nogil:
     ctypedef long   PetscInt
     ctypedef double PetscReal
     ctypedef double PetscScalar
-    ctypedef PetscInt    const_PetscInt    "const PetscInt"
-    ctypedef PetscReal   const_PetscReal   "const PetscReal"
-    ctypedef PetscScalar const_PetscScalar "const PetscScalar"
-    PetscReal PetscMin(PetscReal,PetscReal)
 
     ctypedef struct _p_PetscObject:
         MPI_Comm comm
