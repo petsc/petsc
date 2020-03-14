@@ -526,6 +526,71 @@ PetscErrorCode DMTSSetRHSFunction(DM dm,TSRHSFunction func,void *ctx)
 }
 
 /*@C
+   DMTSSetTransientVariable - sets function to transform from state to transient variables
+
+   Logically Collective
+
+   Input Arguments:
++  dm - DM to be used with TS
+.  tvar - a function that transforms in-place to transient variables
+-  ctx - a context for tvar
+
+   Level: advanced
+
+   Notes:
+   This is typically used to transform from primitive to conservative variables so that a time integrator (e.g., TSBDF)
+   can be conservative.  In this context, primitive variables P are used to model the state (e.g., because they lead to
+   well-conditioned formulations even in limiting cases such as low-Mach or zero porosity).  The transient variable is
+   C(P), specified by calling this function.  An IFunction thus receives arguments (P, Cdot) and the IJacobian must be
+   evaluated via the chain rule, as in
+
+     dF/dP + shift * dF/dCdot dC/dP.
+
+.seealso: TSSetTransientVariable(), DMTSGetTransientVariable(), DMTSSetIFunction(), DMTSSetIJacobian()
+@*/
+PetscErrorCode DMTSSetTransientVariable(DM dm,TSTransientVariable tvar,void *ctx)
+{
+  PetscErrorCode ierr;
+  DMTS           dmts;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMGetDMTSWrite(dm,&dmts);CHKERRQ(ierr);
+  dmts->ops->transientvar = tvar;
+  dmts->transientvarctx = ctx;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   DMTSGetTransientVariable - gets function to transform from state to transient variables
+
+   Logically Collective
+
+   Input Arguments:
+.  dm - DM to be used with TS
+
+   Output Arguments:
++  tvar - a function that transforms in-place to transient variables
+-  ctx - a context for tvar
+
+   Level: advanced
+
+.seealso: DMTSSetTransientVariable(), DMTSGetIFunction(), DMTSGetIJacobian()
+@*/
+PetscErrorCode DMTSGetTransientVariable(DM dm,TSTransientVariable *tvar,void *ctx)
+{
+  PetscErrorCode ierr;
+  DMTS           dmts;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMGetDMTS(dm,&dmts);CHKERRQ(ierr);
+  if (tvar) *tvar = dmts->ops->transientvar;
+  if (ctx)  *(void**)ctx = dmts->transientvarctx;
+  PetscFunctionReturn(0);
+}
+
+/*@C
    DMTSGetSolutionFunction - gets the TS solution evaluation function
 
    Not Collective

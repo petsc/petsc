@@ -541,6 +541,13 @@ PETSC_EXTERN PetscErrorCode DMTSGetI2Function(DM,TSI2Function*,void**);
 PETSC_EXTERN PetscErrorCode DMTSSetI2Jacobian(DM,TSI2Jacobian,void*);
 PETSC_EXTERN PetscErrorCode DMTSGetI2Jacobian(DM,TSI2Jacobian*,void**);
 
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSTransientVariable)(TS,Vec,Vec,void*);
+PETSC_EXTERN PetscErrorCode TSSetTransientVariable(TS,TSTransientVariable,void*);
+PETSC_EXTERN PetscErrorCode DMTSSetTransientVariable(DM,TSTransientVariable,void*);
+PETSC_EXTERN PetscErrorCode DMTSGetTransientVariable(DM,TSTransientVariable*,void*);
+PETSC_EXTERN PetscErrorCode TSComputeTransientVariable(TS,Vec,Vec);
+PETSC_EXTERN PetscErrorCode TSHasTransientVariable(TS,PetscBool*);
+
 PETSC_EXTERN PetscErrorCode DMTSSetSolutionFunction(DM,TSSolutionFunction,void*);
 PETSC_EXTERN PetscErrorCode DMTSGetSolutionFunction(DM,TSSolutionFunction*,void**);
 PETSC_EXTERN PetscErrorCode DMTSSetForcingFunction(DM,TSForcingFunction,void*);

@@ -1765,6 +1765,109 @@ PetscErrorCode TSComputeI2Jacobian(TS ts,PetscReal t,Vec U,Vec V,Vec A,PetscReal
   PetscFunctionReturn(0);
 }
 
+/*@C
+   TSSetTransientVariable - sets function to transform from state to transient variables
+
+   Logically Collective
+
+   Input Arguments:
++  ts - time stepping context on which to change the transient variable
+.  tvar - a function that transforms in-place to transient variables
+-  ctx - a context for tvar
+
+   Level: advanced
+
+   Notes:
+   This is typically used to transform from primitive to conservative variables so that a time integrator (e.g., TSBDF)
+   can be conservative.  In this context, primitive variables P are used to model the state (e.g., because they lead to
+   well-conditioned formulations even in limiting cases such as low-Mach or zero porosity).  The transient variable is
+   C(P), specified by calling this function.  An IFunction thus receives arguments (P, Cdot) and the IJacobian must be
+   evaluated via the chain rule, as in
+
+     dF/dP + shift * dF/dCdot dC/dP.
+
+.seealso: DMTSSetTransientVariable(), DMTSGetTransientVariable(), TSSetIFunction(), TSSetIJacobian()
+@*/
+PetscErrorCode TSSetTransientVariable(TS ts,TSTransientVariable tvar,void *ctx)
+{
+  PetscErrorCode ierr;
+  DM             dm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+  ierr = DMTSSetTransientVariable(dm,tvar,ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   TSComputeTransientVariable - transforms state (primitive) variables to transient (conservative) variables
+
+   Logically Collective
+
+   Input Parameters:
++  ts - TS on which to compute
+-  U - state vector to be transformed to transient variables
+
+   Output Parameters:
+.  C - transient (conservative) variable
+
+   Developer Notes:
+   If DMTSSetTransientVariable() has not been called, then C is not modified in this routine and C=NULL is allowed.
+   This makes it safe to call without a guard.  One can use TSHasTransientVariable() to check if transient variables are
+   being used.
+
+   Level: developer
+
+.seealso: DMTSSetTransientVariable(), TSComputeIFunction(), TSComputeIJacobian()
+@*/
+PetscErrorCode TSComputeTransientVariable(TS ts,Vec U,Vec C)
+{
+  PetscErrorCode ierr;
+  DM             dm;
+  DMTS           dmts;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(U,VEC_CLASSID,2);
+  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+  ierr = DMGetDMTS(dm,&dmts);CHKERRQ(ierr);
+  if (dmts->ops->transientvar) {
+    PetscValidHeaderSpecific(C,VEC_CLASSID,3);
+    ierr = (*dmts->ops->transientvar)(ts,U,C,dmts->transientvarctx);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+   TSHasTransientVariable - determine whether transient variables have been set
+
+   Logically Collective
+
+   Input Parameters:
+.  ts - TS on which to compute
+
+   Output Parameters:
+.  has - PETSC_TRUE if transient variables have been set
+
+   Level: developer
+
+.seealso: DMTSSetTransientVariable(), TSComputeTransientVariable()
+@*/
+PetscErrorCode TSHasTransientVariable(TS ts,PetscBool *has)
+{
+  PetscErrorCode ierr;
+  DM             dm;
+  DMTS           dmts;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+  ierr = DMGetDMTS(dm,&dmts);CHKERRQ(ierr);
+  *has = dmts->ops->transientvar ? PETSC_TRUE : PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
 /*@
    TS2SetSolution - Sets the initial solution and time derivative vectors
    for use by the TS routines handling second order equations.

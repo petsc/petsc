@@ -356,6 +356,8 @@ struct _DMTSOps {
   TSI2Function i2function;
   TSI2Jacobian i2jacobian;
 
+  TSTransientVariable transientvar;
+
   TSSolutionFunction solution;
   TSForcingFunction  forcing;
 
@@ -373,6 +375,8 @@ struct _p_DMTS {
 
   void *i2functionctx;
   void *i2jacobianctx;
+
+  void *transientvarctx;
 
   void *solutionctx;
   void *forcingctx;
