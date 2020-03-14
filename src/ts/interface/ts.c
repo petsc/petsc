@@ -2555,7 +2555,11 @@ PetscErrorCode  TSSetUp(TS ts)
     ierr = TSSetType(ts,ifun ? TSBEULER : TSEULER);CHKERRQ(ierr);
   }
 
-  if (!ts->vec_sol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetSolution() first");
+  if (!ts->vec_sol) {
+    if (ts->dm) {
+      ierr = DMCreateGlobalVector(ts->dm,&ts->vec_sol);CHKERRQ(ierr);
+    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetSolution() first");
+  }
 
   if (!ts->Jacp && ts->Jacprhs) { /* IJacobianP shares the same matrix with RHSJacobianP if only RHSJacobianP is provided */
     ierr = PetscObjectReference((PetscObject)ts->Jacprhs);CHKERRQ(ierr);

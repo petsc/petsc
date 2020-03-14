@@ -523,7 +523,7 @@ static PetscErrorCode  SNESCompositeAddSNES_Composite(SNES snes,SNESType type)
   ierr        = PetscLogObjectParent((PetscObject)snes,(PetscObject)ilink->snes);CHKERRQ(ierr);
   ierr        = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr        = SNESSetDM(ilink->snes,dm);CHKERRQ(ierr);
-  ierr        = SNESSetTolerances(ilink->snes,ilink->snes->abstol,ilink->snes->rtol,ilink->snes->stol,1,ilink->snes->max_funcs);CHKERRQ(ierr);
+  ierr        = SNESSetTolerances(ilink->snes,snes->abstol,snes->rtol,snes->stol,1,snes->max_funcs);CHKERRQ(ierr);
   ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)snes,(PetscObject)ilink->snes);CHKERRQ(ierr);
   jac  = (SNES_Composite*)snes->data;
   next = jac->head;
@@ -541,7 +541,7 @@ static PetscErrorCode  SNESCompositeAddSNES_Composite(SNES snes,SNESType type)
   }
   ierr = SNESGetOptionsPrefix(snes,&prefix);CHKERRQ(ierr);
   ierr = SNESSetOptionsPrefix(ilink->snes,prefix);CHKERRQ(ierr);
-  sprintf(newprefix,"sub_%d_",(int)cnt);
+  ierr = PetscSNPrintf(newprefix,sizeof(newprefix),"sub_%d_",(int)cnt);CHKERRQ(ierr);
   ierr = SNESAppendOptionsPrefix(ilink->snes,newprefix);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject)ilink->snes,(PetscObject)snes,1);CHKERRQ(ierr);
   ierr = SNESSetType(ilink->snes,type);CHKERRQ(ierr);
@@ -617,6 +617,7 @@ PetscErrorCode  SNESCompositeAddSNES(SNES snes,SNESType type)
   ierr = PetscTryMethod(snes,"SNESCompositeAddSNES_C",(SNES,SNESType),(snes,type));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 /*@
    SNESCompositeGetSNES - Gets one of the SNES objects in the composite SNES.
 
@@ -718,9 +719,7 @@ PetscErrorCode  SNESCompositeSetDamping(SNES snes,PetscInt n,PetscReal dmp)
 
 static PetscErrorCode SNESSolve_Composite(SNES snes)
 {
-  Vec              F;
-  Vec              X;
-  Vec              B;
+  Vec              F,X,B,Y;
   PetscInt         i;
   PetscReal        fnorm = 0.0, xnorm = 0.0, snorm = 0.0;
   PetscErrorCode   ierr;
@@ -731,13 +730,13 @@ static PetscErrorCode SNESSolve_Composite(SNES snes)
   X = snes->vec_sol;
   F = snes->vec_func;
   B = snes->vec_rhs;
+  Y = snes->vec_sol_update;
 
   ierr         = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->iter   = 0;
   snes->norm   = 0.;
   comp->innerFailures = 0;
   ierr         = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
-  ierr         = SNESSetWorkVecs(snes, 1);CHKERRQ(ierr);
   snes->reason = SNES_CONVERGED_ITERATING;
   ierr         = SNESGetNormSchedule(snes, &normtype);CHKERRQ(ierr);
   if (normtype == SNES_NORM_ALWAYS || normtype == SNES_NORM_INITIAL_ONLY || normtype == SNES_NORM_INITIAL_FINAL_ONLY) {
@@ -767,15 +766,15 @@ static PetscErrorCode SNESSolve_Composite(SNES snes)
     ierr = SNESMonitor(snes,0,snes->norm);CHKERRQ(ierr);
   }
 
-  /* Call general purpose update function */
-  if (snes->ops->update) {
-    ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
-  }
-
   for (i = 0; i < snes->max_its; i++) {
+    /* Call general purpose update function */
+    if (snes->ops->update) {
+      ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
+    }
+
     /* Copy the state before modification by application of the composite solver;
        we will subtract the new state after application */
-    ierr = VecCopy(X, snes->work[0]);CHKERRQ(ierr);
+    ierr = VecCopy(X, Y);CHKERRQ(ierr);
 
     if (comp->type == SNES_COMPOSITE_ADDITIVE) {
       ierr = SNESCompositeApply_Additive(snes,X,B,F,&fnorm);CHKERRQ(ierr);
@@ -787,33 +786,32 @@ static PetscErrorCode SNESSolve_Composite(SNES snes)
     if (snes->reason < 0) break;
 
     /* Compute the solution update for convergence testing */
-    ierr = VecAXPY(snes->work[0], -1.0, X);CHKERRQ(ierr);
-    ierr = VecScale(snes->work[0], -1.0);CHKERRQ(ierr);
+    ierr = VecAYPX(Y, -1.0, X);CHKERRQ(ierr);
 
     if ((i == snes->max_its - 1) && (normtype == SNES_NORM_INITIAL_FINAL_ONLY || normtype == SNES_NORM_FINAL_ONLY)) {
       ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
 
       if (snes->xl && snes->xu) {
         ierr = VecNormBegin(X, NORM_2, &xnorm);CHKERRQ(ierr);
-        ierr = VecNormBegin(snes->work[0], NORM_2, &snorm);CHKERRQ(ierr);
+        ierr = VecNormBegin(Y, NORM_2, &snorm);CHKERRQ(ierr);
         ierr = SNESVIComputeInactiveSetFnorm(snes, F, X, &fnorm);CHKERRQ(ierr);
         ierr = VecNormEnd(X, NORM_2, &xnorm);CHKERRQ(ierr);
-        ierr = VecNormEnd(snes->work[0], NORM_2, &snorm);CHKERRQ(ierr);
+        ierr = VecNormEnd(Y, NORM_2, &snorm);CHKERRQ(ierr);
       } else {
         ierr = VecNormBegin(F, NORM_2, &fnorm);CHKERRQ(ierr);
         ierr = VecNormBegin(X, NORM_2, &xnorm);CHKERRQ(ierr);
-        ierr = VecNormBegin(snes->work[0], NORM_2, &snorm);CHKERRQ(ierr);
+        ierr = VecNormBegin(Y, NORM_2, &snorm);CHKERRQ(ierr);
 
         ierr = VecNormEnd(F, NORM_2, &fnorm);CHKERRQ(ierr);
         ierr = VecNormEnd(X, NORM_2, &xnorm);CHKERRQ(ierr);
-        ierr = VecNormEnd(snes->work[0], NORM_2, &snorm);CHKERRQ(ierr);
+        ierr = VecNormEnd(Y, NORM_2, &snorm);CHKERRQ(ierr);
       }
       SNESCheckFunctionNorm(snes,fnorm);
     } else if (normtype == SNES_NORM_ALWAYS) {
       ierr = VecNormBegin(X, NORM_2, &xnorm);CHKERRQ(ierr);
-      ierr = VecNormBegin(snes->work[0], NORM_2, &snorm);CHKERRQ(ierr);
+      ierr = VecNormBegin(Y, NORM_2, &snorm);CHKERRQ(ierr);
       ierr = VecNormEnd(X, NORM_2, &xnorm);CHKERRQ(ierr);
-      ierr = VecNormEnd(snes->work[0], NORM_2, &snorm);CHKERRQ(ierr);
+      ierr = VecNormEnd(Y, NORM_2, &snorm);CHKERRQ(ierr);
     }
     /* Monitor convergence */
     ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
@@ -827,8 +825,6 @@ static PetscErrorCode SNESSolve_Composite(SNES snes)
     /* Test for convergence */
     if (normtype == SNES_NORM_ALWAYS) {ierr = (*snes->ops->converged)(snes,snes->iter,xnorm,snorm,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);}
     if (snes->reason) break;
-    /* Call general purpose update function */
-    if (snes->ops->update) {ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);}
   }
   if (normtype == SNES_NORM_ALWAYS) {
     if (i == snes->max_its) {
@@ -855,7 +851,7 @@ static PetscErrorCode SNESSolve_Composite(SNES snes)
            SNESCompositeGetSNES()
 
    References:
-.  1. - Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers", 
+.  1. - Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",
    SIAM Review, 57(4), 2015
 
 M*/

@@ -541,8 +541,8 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NGMRES(SNES snes)
 
   ngmres->candidate = PETSC_FALSE;
 
- ierr = SNESGetLineSearch(snes,&linesearch);CHKERRQ(ierr);
- ierr = SNESLineSearchSetType(linesearch,SNESLINESEARCHBASIC);CHKERRQ(ierr);
+  ierr = SNESGetLineSearch(snes,&linesearch);CHKERRQ(ierr);
+  ierr = SNESLineSearchSetType(linesearch,SNESLINESEARCHBASIC);CHKERRQ(ierr);
 
   ngmres->additive_linesearch = NULL;
   ngmres->approxfunc          = PETSC_FALSE;
