@@ -26,9 +26,6 @@ cdef extern from * nogil:
         DM_BOUNDARY_PERIODIC
         DM_BOUNDARY_TWIST
 
-    struct _n_DMLabel
-    ctypedef _n_DMLabel* PetscDMLabel "DMLabel"
-
     ctypedef int (*PetscDMCoarsenHook)(PetscDM,
                                        PetscDM,
                                        void*) except PETSC_ERR_PYTHON
