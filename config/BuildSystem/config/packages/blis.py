@@ -11,16 +11,10 @@ class Configure(config.package.Package):
     self.liblist   = [['libblis.a']]
     return
 
-  def setupHelp(self, help):
-    config.package.Package.setupHelp(self,help)
-    import nargs
-    help.addArgument('BLIS', '-download-blis-threading', nargs.ArgString(None, 'no', regExp='^(?:openmp|pthreads|no)$', help='BLIS threading model [openmp|pthreads|no]'))
-
   def configureLibrary(self):
     import os
     config.package.Package.configureLibrary(self)
     if not hasattr(self, 'known64'): self.known64 = 'unknown'
-    if not hasattr(self, 'usesopenmp'): self.usesopenmp = 'unknown'
     if self.found:
       try:
         threading_model = re.compile(r'THREADING_MODEL\s*:=\s*(.*)')
@@ -34,11 +28,14 @@ class Configure(config.package.Package):
                 self.usesopenmp = 'no'
       except:
         pass
+    else:
+      self.usesopenmp = 'yes' if self.openmp.found else 'no'
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
     self.setCompilers    = framework.require('config.setCompilers',self)
     self.make            = framework.require('config.packages.make', self)
+    self.openmp          = framework.require('config.packages.openmp',self)
 
   def Install(self):
     import os
@@ -52,7 +49,7 @@ class Configure(config.package.Package):
         self.known64 = '64'
       else:
         self.known64 = '32'
-      args.append('--enable-threading=' + self.argDB.get('with-download-blis-threading', 'no'))
+      args.append('--enable-threading=' + ('openmp' if self.openmp.found else 'no'))
       args.append('CC=' + cc)
       args.append('auto')
       config.package.Package.executeShellCommand(args, cwd=self.packageDir, timeout=60, log=self.log)
