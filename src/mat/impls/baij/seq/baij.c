@@ -1416,6 +1416,7 @@ PetscErrorCode MatIsTranspose_SeqBAIJ(Mat A,Mat B,PetscReal tol,PetscBool  *f)
   PetscFunctionReturn(0);
 }
 
+/* Used for both SeqBAIJ and SeqSBAIJ matrices */
 PetscErrorCode MatView_SeqBAIJ_Binary(Mat mat,PetscViewer viewer)
 {
   Mat_SeqBAIJ    *A = (Mat_SeqBAIJ*)mat->data;
@@ -3228,6 +3229,7 @@ PetscErrorCode MatDuplicate_SeqBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   PetscFunctionReturn(0);
 }
 
+/* Used for both SeqBAIJ and SeqSBAIJ matrices */
 PetscErrorCode MatLoad_SeqBAIJ_Binary(Mat mat,PetscViewer viewer)
 {
   PetscInt       header[4],M,N,nz,bs,m,n,mbs,nbs,rows,cols,sum,i,j,k;
@@ -3278,24 +3280,32 @@ PetscErrorCode MatLoad_SeqBAIJ_Binary(Mat mat,PetscViewer viewer)
   { /* preallocate matrix storage */
     PetscBT   bt; /* helper bit set to count nonzeros */
     PetscInt  *nnz;
+    PetscBool sbaij;
 
     ierr = PetscBTCreate(nbs,&bt);CHKERRQ(ierr);
     ierr = PetscCalloc1(mbs,&nnz);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)mat,MATSEQSBAIJ,&sbaij);CHKERRQ(ierr);
     for (i=0; i<mbs; i++) {
       ierr = PetscBTMemzero(nbs,bt);CHKERRQ(ierr);
-      for (k=0; k<bs; k++)
-        for (j=rowidxs[bs*i+k]; j<rowidxs[bs*i+k+1]; j++)
-          if (!PetscBTLookupSet(bt,colidxs[j]/bs)) nnz[i]++;
+      for (k=0; k<bs; k++) {
+        PetscInt row = bs*i + k;
+        for (j=rowidxs[row]; j<rowidxs[row+1]; j++) {
+          PetscInt col = colidxs[j];
+          if (!sbaij || col >= row)
+            if (!PetscBTLookupSet(bt,col/bs)) nnz[i]++;
+        }
+      }
     }
     ierr = PetscBTDestroy(&bt);CHKERRQ(ierr);
     ierr = MatSeqBAIJSetPreallocation(mat,bs,0,nnz);CHKERRQ(ierr);
+    ierr = MatSeqSBAIJSetPreallocation(mat,bs,0,nnz);CHKERRQ(ierr);
     ierr = PetscFree(nnz);CHKERRQ(ierr);
   }
 
   /* store matrix values */
   for (i=0; i<m; i++) {
     PetscInt row = i, s = rowidxs[i], e = rowidxs[i+1];
-    ierr = MatSetValues_SeqBAIJ(mat,1,&row,e-s,colidxs+s,matvals+s,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = (*mat->ops->setvalues)(mat,1,&row,e-s,colidxs+s,matvals+s,INSERT_VALUES);CHKERRQ(ierr);
   }
 
   ierr = PetscFree(rowidxs);CHKERRQ(ierr);

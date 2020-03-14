@@ -1103,6 +1103,7 @@ static PetscErrorCode MatView_MPIBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer vi
   PetscFunctionReturn(0);
 }
 
+/* Used for both MPIBAIJ and MPISBAIJ matrices */
 PetscErrorCode MatView_MPIBAIJ_Binary(Mat mat,PetscViewer viewer)
 {
   Mat_MPIBAIJ    *aij = (Mat_MPIBAIJ*)mat->data;
@@ -3282,6 +3283,7 @@ static PetscErrorCode MatDuplicate_MPIBAIJ(Mat matin,MatDuplicateOption cpvalues
   PetscFunctionReturn(0);
 }
 
+/* Used for both MPIBAIJ and MPISBAIJ matrices */
 PetscErrorCode MatLoad_MPIBAIJ_Binary(Mat mat,PetscViewer viewer)
 {
   PetscInt       header[4],M,N,nz,bs,m,n,mbs,nbs,rows,cols,sum,i,j,k;
@@ -3302,6 +3304,9 @@ PetscErrorCode MatLoad_MPIBAIJ_Binary(Mat mat,PetscViewer viewer)
 
   /* set block sizes from the viewer's .info file */
   ierr = MatLoad_Binary_BlockSizes(mat,viewer);CHKERRQ(ierr);
+  /* set local sizes if not set already */
+  if (mat->rmap->n < 0 && M == N) mat->rmap->n = mat->cmap->n;
+  if (mat->cmap->n < 0 && M == N) mat->cmap->n = mat->rmap->n;
   /* set global sizes if not set already */
   if (mat->rmap->N < 0) mat->rmap->N = M;
   if (mat->cmap->N < 0) mat->cmap->N = N;
@@ -3332,34 +3337,42 @@ PetscErrorCode MatLoad_MPIBAIJ_Binary(Mat mat,PetscViewer viewer)
   { /* preallocate matrix storage */
     PetscBT    bt; /* helper bit set to count diagonal nonzeros */
     PetscHSetI ht; /* helper hash set to count off-diagonal nonzeros */
-    PetscBool  done;
+    PetscBool  sbaij,done;
     PetscInt   *d_nnz,*o_nnz;
 
     ierr = PetscBTCreate(nbs,&bt);CHKERRQ(ierr);
     ierr = PetscHSetICreate(&ht);CHKERRQ(ierr);
     ierr = PetscCalloc2(mbs,&d_nnz,mbs,&o_nnz);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPISBAIJ,&sbaij);CHKERRQ(ierr);
     for (i=0; i<mbs; i++) {
       ierr = PetscBTMemzero(nbs,bt);CHKERRQ(ierr);
       ierr = PetscHSetIClear(ht);CHKERRQ(ierr);
-      for (k=0; k<bs; k++)
-        for (j=rowidxs[bs*i+k]; j<rowidxs[bs*i+k+1]; j++)
-          if (colidxs[j] >= cs && colidxs[j] < ce) {
-            if (!PetscBTLookupSet(bt,(colidxs[j]-cs)/bs)) d_nnz[i]++;
-          } else {
-            ierr = PetscHSetIQueryAdd(ht,colidxs[j]/bs,&done);CHKERRQ(ierr);
-            if (done) o_nnz[i]++;
+      for (k=0; k<bs; k++) {
+        PetscInt row = bs*i + k;
+        for (j=rowidxs[row]; j<rowidxs[row+1]; j++) {
+          PetscInt col = colidxs[j];
+          if (!sbaij || col >= row) {
+            if (col >= cs && col < ce) {
+              if (!PetscBTLookupSet(bt,(col-cs)/bs)) d_nnz[i]++;
+            } else {
+              ierr = PetscHSetIQueryAdd(ht,col/bs,&done);CHKERRQ(ierr);
+              if (done) o_nnz[i]++;
+            }
           }
+        }
+      }
     }
     ierr = PetscBTDestroy(&bt);CHKERRQ(ierr);
     ierr = PetscHSetIDestroy(&ht);CHKERRQ(ierr);
     ierr = MatMPIBAIJSetPreallocation(mat,bs,0,d_nnz,0,o_nnz);CHKERRQ(ierr);
+    ierr = MatMPISBAIJSetPreallocation(mat,bs,0,d_nnz,0,o_nnz);CHKERRQ(ierr);
     ierr = PetscFree2(d_nnz,o_nnz);CHKERRQ(ierr);
   }
 
   /* store matrix values */
   for (i=0; i<m; i++) {
     PetscInt row = rs + i, s = rowidxs[i], e = rowidxs[i+1];
-    ierr = MatSetValues_MPIBAIJ(mat,1,&row,e-s,colidxs+s,matvals+s,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = (*mat->ops->setvalues)(mat,1,&row,e-s,colidxs+s,matvals+s,INSERT_VALUES);CHKERRQ(ierr);
   }
 
   ierr = PetscFree(rowidxs);CHKERRQ(ierr);
