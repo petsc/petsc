@@ -5599,27 +5599,34 @@ TSSetRHSJacobianP(TS ts,Mat Amat,PetscErrorCode (*fp)(TS,PetscReal,Vec,Mat,void*
 The arguments for the function \lstinline{fp()}
 are the timestep context, current time, $y$, and the (optional) user-provided context.
 
-If there is an integral term in the cost function, i.e. $r()$ is nonzero, one must also call
+If there is an integral term in the cost function, i.e. $r$ is nonzero, it can be transformed into another ODE that is augmented to the original ODE. To evaluate the integral, one needs to create a child \lstinline{TS} objective by calling
 \begin{lstlisting}
-TSSetCostIntegrand(TS ts,PetscInt numcost,Vec costintegral,
-                   PetscErrorCode (*rf)(TS,PetscReal,Vec,Vec,void*),
-                   PetscErrorCode (*drdyf)(TS,PetscReal,Vec,Vec*,void*),
-                   PetscErrorCode (*drdpf)(TS,PetscReal,Vec,Vec*,void*),void *ctx)
+TSCreateQuadratureTS(TS ts,PetscBool fwd,TS *quadts);
 \end{lstlisting}
-where $\mathrm{drdyf}= dr /dy$, $\mathrm{drdpf} = dr /dp$.
+and provide the ODE RHS function (which evaluates the integrand $r$) with
+\begin{lstlisting}
+TSSetRHSFunction(TS quadts,Vec R,PetscErrorCode (*rf)(TS,PetscReal,Vec,Vec,void*),void *ctx)
+\end{lstlisting}
+
+Similar to the settings for the original ODE, Jacobians of the integrand can be provided with
+\begin{lstlisting}
+TSSetRHSJacobian(TS quadts,Vec DRDU,Vec DRDU,PetscErrorCode (*drdyf)(TS,PetscReal,Vec,Vec*,void*),void *ctx)
+TSSetRHSJacobianP(TS quadts,Vec DRDU,Vec DRDU,PetscErrorCode (*drdyp)(TS,PetscReal,Vec,Vec*,void*),void *ctx)
+\end{lstlisting}
+where $\mathrm{drdyf}= dr /dy$, $\mathrm{drdpf} = dr /dp$. Since the integral term is additive to the cost function, its gradient information will be included in $\lambda$ and $\mu$.
 
 Lastly, one starts the backward run by calling
 \begin{lstlisting}
 TSAdjointSolve(TS ts).
 \end{lstlisting}
 
-One can get the value of the integral term by calling
+One can obtain the value of the integral term by calling
 \begin{lstlisting}
 TSGetCostIntegral(TS ts,Vec *q).
 \end{lstlisting}
-If \lstinline{TSSetCostGradients()} and \lstinline{TSSetCostIntegrand()} are called before \lstinline{TSSolve()}, the integral term will be evaluated in the forward run.
-Otherwise, the computation will take place in the backward run (inside \lstinline{TSAdjointSolve()}).
-Note that this allows the evaluation of the integral term in the cost function without having to run the adjoint solvers.
+or accessing directly the solution vector used by quadts.
+
+The second argument of \lstinline{TSCreateQuadratureTS()} allows one to choose if the integral term is evaluated in the forward run (inside \lstinline{TSSolve()}) or in the backward run (inside \lstinline{TSAdjointSolve()}) when \lstinline{TSSetCostGradients()} and \lstinline{TSSetCostIntegrand()} are called before \lstinline{TSSolve()}. Note that this also allows for evaluating the integral without having to use the adjoint solvers.
 
 To provide a better understanding of the use of the adjoint solvers, we introduce a simple example, corresponding to \href{https://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/power_grid/ex3adj.c.html}{\trl{${PETSC_DIR}/src/ts/examples/tutorials/power_grid/ex3adj.c}}.
 The problem is to study dynamic security of power system when there are credible contingencies such as short-circuits or loss of generators, transmission lines, or loads.
@@ -5771,7 +5778,7 @@ as follows.
 \begin{itemize}
 \item Provide the function \lstinline{G(u)} with the routine
 \begin{lstlisting}
- TSSetRHSFunction(TS ts,PetscErrorCode (*f)(TS,PetscReal,Vec,Vec,void*),void *fP);
+ TSSetRHSFunction(TS ts,Vec r,PetscErrorCode (*f)(TS,PetscReal,Vec,Vec,void*),void *fP);
 \end{lstlisting}
 The  arguments to the function \lstinline{f()} are
 the timestep context, the current time, the input for the function,
