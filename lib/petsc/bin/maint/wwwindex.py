@@ -12,7 +12,6 @@ from __future__ import print_function
 import os
 import glob
 import posixpath
-from exceptions import *
 from sys import *
 from string import *
 
