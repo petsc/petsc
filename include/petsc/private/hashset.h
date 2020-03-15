@@ -103,8 +103,8 @@ M*/
   PetscErrorCode PetscHSetTUpdate(PetscHSetT ht,PetscHSetT hda)
 
   Input Parameter:
-. ht - The hash table to which elements are added
-. hta - The hash table from which the elements are retrieved
++ ht - The hash table to which elements are added
+- hta - The hash table from which the elements are retrieved
 
   Output Parameter:
 . ht - The hash table filled with the elements from the other hash table

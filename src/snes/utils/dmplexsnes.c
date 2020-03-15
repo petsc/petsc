@@ -2430,7 +2430,7 @@ PetscErrorCode DMPlexSetSNESLocalFEM(DM dm, void *boundaryctx, void *residualctx
 . u    - a DM vector
 . exactFuncs - pointwise functions of the exact solution for each field
 . ctxs - contexts for the functions
-. tol  - A tolerance for the check, or -1 to print the results instead
+- tol  - A tolerance for the check, or -1 to print the results instead
 
   Output Parameters:
 . error - An array which holds the discretization error in each field, or NULL
@@ -2500,7 +2500,7 @@ PetscErrorCode DMSNESCheckDiscretization(SNES snes, DM dm, Vec u, PetscErrorCode
 + snes - the SNES object
 . dm   - the DM
 . u    - a DM vector
-. tol  - A tolerance for the check, or -1 to print the results instead
+- tol  - A tolerance for the check, or -1 to print the results instead
 
   Output Parameters:
 . residual - The residual norm of the exact solution, or NULL
@@ -2562,7 +2562,7 @@ PetscErrorCode DMSNESCheckResidual(SNES snes, DM dm, Vec u, PetscReal tol, Petsc
 + snes - the SNES object
 . dm   - the DM
 . u    - a DM vector
-. tol  - A tolerance for the check, or -1 to print the results instead
+- tol  - A tolerance for the check, or -1 to print the results instead
 
   Output Parameters:
 + isLinear - Flag indicaing that the function looks linear, or NULL

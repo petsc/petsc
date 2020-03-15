@@ -1526,7 +1526,7 @@ PetscErrorCode PetscFEIntegrateJacobian(PetscDS prob, PetscFEJacobianType jtype,
   Not collective
 
   Input Parameters:
-. prob         - The PetscDS specifying the discretizations and continuum functions
++ prob         - The PetscDS specifying the discretizations and continuum functions
 . fieldI       - The test field being integrated
 . fieldJ       - The basis field being integrated
 . Ne           - The number of elements in the chunk

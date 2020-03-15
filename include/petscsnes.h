@@ -185,6 +185,7 @@ PETSC_EXTERN PetscErrorCode SNESSetJacobianDomainError(SNES);
 PETSC_EXTERN PetscErrorCode SNESSetCheckJacobianDomainError(SNES,PetscBool);
 PETSC_EXTERN PetscErrorCode SNESGetCheckJacobianDomainError(SNES,PetscBool*);
 
+#define SNES_CONVERGED_TR_DELTA_DEPRECATED SNES_CONVERGED_TR_DELTA PETSC_DEPRECATED_ENUM("Use SNES_DIVERGED_TR_DELTA (since version 3.12)")
 /*E
     SNESConvergedReason - reason a SNES method was said to
          have converged or diverged
@@ -235,7 +236,6 @@ $      testing with -pc_type lu to eliminate the linear solver as the cause of t
 
 .seealso: SNESSolve(), SNESGetConvergedReason(), KSPConvergedReason, SNESSetConvergenceTest()
 E*/
-#define SNES_CONVERGED_TR_DELTA_DEPRECATED SNES_CONVERGED_TR_DELTA PETSC_DEPRECATED_ENUM("Use SNES_DIVERGED_TR_DELTA (since version 3.12)")
 typedef enum {/* converged */
               SNES_CONVERGED_FNORM_ABS         =  2, /* ||F|| < atol */
               SNES_CONVERGED_FNORM_RELATIVE    =  3, /* ||F|| < rtol*||F_initial|| */

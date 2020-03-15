@@ -1826,7 +1826,7 @@ PetscErrorCode PetscDTReconstructPoly(PetscInt degree,PetscInt nsource,const Pet
 +  n - the number of GLL nodes
 .  nodes - the GLL nodes
 .  weights - the GLL weights
-.  f - the function values at the nodes
+-  f - the function values at the nodes
 
    Output Parameter:
 .  in - the value of the integral
@@ -1856,7 +1856,7 @@ PetscErrorCode PetscGaussLobattoLegendreIntegrate(PetscInt n,PetscReal *nodes,Pe
    Input Parameter:
 +  n - the number of GLL nodes
 .  nodes - the GLL nodes
-.  weights - the GLL weights
+-  weights - the GLL weights
 
    Output Parameter:
 .  A - the stiffness element
@@ -2075,7 +2075,7 @@ PetscErrorCode PetscGaussLobattoLegendreElementGradientDestroy(PetscInt n,PetscR
    Input Parameter:
 +  n - the number of GLL nodes
 .  nodes - the GLL nodes
-.  weights - the GLL weightss
+-  weights - the GLL weightss
 
    Output Parameter:
 .  AA - the stiffness element

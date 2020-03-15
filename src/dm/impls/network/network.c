@@ -2236,7 +2236,7 @@ PetscErrorCode DMLocalToGlobalEnd_Network(DM dm, Vec l, InsertMode mode, Vec g)
 - vloc - local vertex ordering, start from 0
 
   Output Parameters
-+  vg  - global vertex ordering, start from 0
+.  vg  - global vertex ordering, start from 0
 
   Level: Advanced
 
@@ -2259,7 +2259,7 @@ PetscErrorCode DMNetworkGetVertexLocalToGlobalOrdering(DM dm,PetscInt vloc,Petsc
   Collective
 
   Input Parameters:
-+ dm - the dm object
+. dm - the dm object
 
   Level: Advanced
 

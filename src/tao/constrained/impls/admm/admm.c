@@ -1427,7 +1427,7 @@ PetscErrorCode TaoADMMSetUpdateType(Tao tao, TaoADMMUpdateType type)
    Not Collective
 
    Input Parameter:
-+  tao - the Tao context
+.  tao - the Tao context
 
    Output Parameter:
 .  type - the type of spectral penalty update routine
