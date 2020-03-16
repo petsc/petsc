@@ -442,6 +442,13 @@ PETSC_INTERN PetscErrorCode MatFactorSetUpInPlaceSchur_Private(Mat);
 PETSC_INTERN PetscErrorCode MatZeroRowsMapLocal_Private(Mat,PetscInt,const PetscInt*,PetscInt*,PetscInt**);
 
 /*
+    Utility for MatView/MatLoad
+*/
+PETSC_INTERN PetscErrorCode MatView_Binary_BlockSizes(Mat,PetscViewer);
+PETSC_INTERN PetscErrorCode MatLoad_Binary_BlockSizes(Mat,PetscViewer);
+
+
+/*
     Object for partitioning graphs
 */
 

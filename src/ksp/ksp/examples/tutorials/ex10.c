@@ -283,12 +283,15 @@ int main(int argc,char **args)
 /*TEST
 
    test:
+      TODO: Matrix row/column sizes are not compatible with block size
+      suffix: 1
       nsize: 4
       output_file: output/ex10_1.out
       requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
       args: -f0 ${DATAFILESPATH}/matrices/medium -f1 ${DATAFILESPATH}/matrices/arco6 -ksp_gmres_classicalgramschmidt -mat_type baij -matload_block_size 3 -pc_type bjacobi
 
    test:
+      TODO: Matrix row/column sizes are not compatible with block size
       suffix: 2
       nsize: 4
       output_file: output/ex10_2.out

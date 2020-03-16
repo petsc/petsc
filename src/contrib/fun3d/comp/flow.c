@@ -2303,7 +2303,7 @@ int WriteRestartFile(GRID *grid, int timeStep)
     ierr = PetscBinaryOpen(fileName,FILE_MODE_WRITE,&fdes);CHKERRQ(ierr);
     ierr = MPI_Barrier(MPI_COMM_WORLD);
     ierr = PetscBinarySeek(fdes,bs*rstart*PETSC_BINARY_SCALAR_SIZE,PETSC_BINARY_SEEK_SET,&startPos);CHKERRQ(ierr);
-    ierr = PetscBinaryWrite(fdes,qnode,bs*nnodesLoc,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fdes,qnode,bs*nnodesLoc,PETSC_SCALAR);CHKERRQ(ierr);
     /*write(fdes,qnode,bs*nnodesLoc*sizeof(REAL));*/
     ierr = MPI_Barrier(MPI_COMM_WORLD);
     PetscPrintf(MPI_COMM_WORLD,"Restart file written to %s\n", fileName);
@@ -2320,7 +2320,7 @@ int WriteRestartFile(GRID *grid, int timeStep)
       else                      sprintf(fileName,"flow%d.bin",timeStep);
       printf("Restart file name is %s\n", fileName);
       ierr = PetscBinaryOpen(fileName,FILE_MODE_WRITE,&fdes);CHKERRQ(ierr);
-      ierr = PetscBinaryWrite(fdes,qnode,bs*nnodesLoc,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscBinaryWrite(fdes,qnode,bs*nnodesLoc,PETSC_SCALAR);CHKERRQ(ierr);
       /* Write the solution vector in vtk (Visualization Toolkit) format*/
       ierr = PetscOptionsHasName(NULL,"-vtk",&flg_vtk);CHKERRQ(ierr);
       if (flg_vtk) {
@@ -2366,7 +2366,7 @@ int WriteRestartFile(GRID *grid, int timeStep)
         ierr = MPI_Recv(&nnodesLocIpr,1,MPI_INT,i,0,MPI_COMM_WORLD,&mstatus);CHKERRQ(ierr);
         FCALLOC(bs*nnodesLocIpr, &qnode);
         ierr = MPI_Recv(qnode,bs*nnodesLocIpr,MPI_DOUBLE,i,1,MPI_COMM_WORLD,&mstatus);CHKERRQ(ierr);
-        ierr = PetscBinaryWrite(fdes,qnode,bs*nnodesLocIpr,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
+        ierr = PetscBinaryWrite(fdes,qnode,bs*nnodesLocIpr,PETSC_SCALAR);CHKERRQ(ierr);
         /* Write the solution vector in vtk (Visualization Toolkit) format*/
         if (flg_vtk != 0) {
         /* Write the Mach Number */

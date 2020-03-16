@@ -130,13 +130,14 @@ static PetscErrorCode ISView_Block(IS is, PetscViewer viewer)
   IS_Block       *sub = (IS_Block*)is->data;
   PetscErrorCode ierr;
   PetscInt       i,bs,n,*idx = sub->idx;
-  PetscBool      iascii;
+  PetscBool      iascii,ibinary;
 
   PetscFunctionBegin;
   ierr = PetscLayoutGetBlockSize(is->map, &bs);CHKERRQ(ierr);
   ierr = PetscLayoutGetLocalSize(is->map, &n);CHKERRQ(ierr);
   n   /= bs;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&ibinary);CHKERRQ(ierr);
   if (iascii) {
     PetscViewerFormat fmt;
 
@@ -170,6 +171,8 @@ static PetscErrorCode ISView_Block(IS is, PetscViewer viewer)
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
     }
+  } else if (ibinary) {
+    ierr = ISView_Binary(is,viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -31,8 +31,8 @@ int main(int argc, char **argv)
     ierr = PetscStrcpy(filename,"ex61.random");CHKERRQ(ierr);
   }
   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,filename,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryWrite(viewer,&n,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryWrite(viewer,values,4*n,PETSC_DOUBLE,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryWrite(viewer,&n,1,PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryWrite(viewer,values,4*n,PETSC_DOUBLE);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   ierr = VecRestoreArray(x,&values);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);

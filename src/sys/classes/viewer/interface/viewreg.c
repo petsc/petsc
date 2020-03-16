@@ -395,7 +395,7 @@ PetscErrorCode  PetscViewerCreate(MPI_Comm comm,PetscViewer *inviewer)
   PetscFunctionBegin;
   *inviewer = NULL;
   ierr = PetscViewerInitializePackage();CHKERRQ(ierr);
-  ierr         = PetscHeaderCreate(viewer,PETSC_VIEWER_CLASSID,"PetscViewer","PetscViewer","Viewer",comm,PetscViewerDestroy,NULL);CHKERRQ(ierr);
+  ierr         = PetscHeaderCreate(viewer,PETSC_VIEWER_CLASSID,"PetscViewer","PetscViewer","Viewer",comm,PetscViewerDestroy,PetscViewerView);CHKERRQ(ierr);
   *inviewer    = viewer;
   viewer->data = NULL;
   PetscFunctionReturn(0);

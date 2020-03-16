@@ -314,83 +314,6 @@ static PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer)
 }
 #endif
 
-static PetscErrorCode ISView_General_Binary(IS is,PetscViewer viewer)
-{
-  PetscErrorCode ierr;
-  PetscBool      skipHeader,useMPIIO;
-  IS_General     *isa = (IS_General*) is->data;
-  PetscMPIInt    rank,size,mesgsize,tag = ((PetscObject)viewer)->tag, mesglen;
-  PetscInt       n,N,len,j,tr[2];
-  int            fdes;
-  MPI_Status     status;
-  PetscInt       message_count,flowcontrolcount,*values;
-
-  PetscFunctionBegin;
-  /* ierr = ISGetLayout(is,&map);CHKERRQ(ierr); */
-  ierr = PetscLayoutGetLocalSize(is->map, &n);CHKERRQ(ierr);
-  ierr = PetscLayoutGetSize(is->map, &N);CHKERRQ(ierr);
-
-  tr[0] = IS_FILE_CLASSID;
-  tr[1] = N;
-
-  ierr = PetscViewerBinaryGetSkipHeader(viewer,&skipHeader);CHKERRQ(ierr);
-  if (!skipHeader) {
-    ierr  = PetscViewerBinaryWrite(viewer,tr,2,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
-  }
-
-  ierr = PetscViewerBinaryGetUseMPIIO(viewer,&useMPIIO);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MPIIO)
-  if (useMPIIO) {
-    MPI_File       mfdes;
-    MPI_Offset     off;
-    PetscMPIInt    lsize;
-    PetscInt       rstart;
-    const PetscInt *iarray;
-
-    ierr = PetscMPIIntCast(n,&lsize);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryGetMPIIODescriptor(viewer,&mfdes);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryGetMPIIOOffset(viewer,&off);CHKERRQ(ierr);
-    ierr = PetscLayoutGetRange(is->map,&rstart,NULL);CHKERRQ(ierr);
-    off += rstart*(MPI_Offset)sizeof(PetscInt); /* off is MPI_Offset, not PetscMPIInt */
-    ierr = ISGetIndices(is,&iarray);CHKERRQ(ierr);
-    ierr = MPIU_File_write_at_all(mfdes,off,(void*)iarray,lsize,MPIU_INT,MPI_STATUS_IGNORE);CHKERRQ(ierr);
-    ierr = ISRestoreIndices(is,&iarray);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryAddMPIIOOffset(viewer,N*(MPI_Offset)sizeof(PetscInt));CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
-#endif
-
-  ierr = PetscViewerBinaryGetDescriptor(viewer,&fdes);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)is),&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)is),&size);CHKERRQ(ierr);
-
-  /* determine maximum message to arrive */
-  ierr = MPI_Reduce(&n,&len,1,MPIU_INT,MPI_MAX,0,PetscObjectComm((PetscObject)is));CHKERRQ(ierr);
-
-  ierr = PetscViewerFlowControlStart(viewer,&message_count,&flowcontrolcount);CHKERRQ(ierr);
-  if (!rank) {
-    ierr = PetscBinaryWrite(fdes,isa->idx,n,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
-
-    ierr = PetscMalloc1(len,&values);CHKERRQ(ierr);
-    ierr = PetscMPIIntCast(len,&mesgsize);CHKERRQ(ierr);
-    /* receive and save messages */
-    for (j=1; j<size; j++) {
-      ierr = PetscViewerFlowControlStepMaster(viewer,j,&message_count,flowcontrolcount);CHKERRQ(ierr);
-      ierr = MPI_Recv(values,mesgsize,MPIU_INT,j,tag,PetscObjectComm((PetscObject)is),&status);CHKERRQ(ierr);
-      ierr = MPI_Get_count(&status,MPIU_INT,&mesglen);CHKERRQ(ierr);
-      ierr = PetscBinaryWrite(fdes,values,(PetscInt)mesglen,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
-    }
-    ierr = PetscViewerFlowControlEndMaster(viewer,&message_count);CHKERRQ(ierr);
-    ierr = PetscFree(values);CHKERRQ(ierr);
-  } else {
-    ierr = PetscViewerFlowControlStepWorker(viewer,rank,&message_count);CHKERRQ(ierr);
-    ierr = PetscMPIIntCast(n,&mesgsize);CHKERRQ(ierr);
-    ierr = MPI_Send(isa->idx,mesgsize,MPIU_INT,0,tag,PetscObjectComm((PetscObject)is));CHKERRQ(ierr);
-    ierr = PetscViewerFlowControlEndWorker(viewer,&message_count);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode ISView_General(IS is,PetscViewer viewer)
 {
   IS_General     *sub = (IS_General*)is->data;
@@ -459,7 +382,7 @@ static PetscErrorCode ISView_General(IS is,PetscViewer viewer)
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
   } else if (isbinary) {
-    ierr = ISView_General_Binary(is,viewer);CHKERRQ(ierr);
+    ierr = ISView_Binary(is,viewer);CHKERRQ(ierr);
   } else if (ishdf5) {
 #if defined(PETSC_HAVE_HDF5)
     ierr = ISView_General_HDF5(is,viewer);CHKERRQ(ierr);

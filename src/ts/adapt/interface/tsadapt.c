@@ -274,7 +274,7 @@ PetscErrorCode  TSAdaptView(TSAdapt adapt,PetscViewer viewer)
 
     /* need to save FILE_CLASS_ID for adapt class */
     ierr = PetscStrncpy(type,((PetscObject)adapt)->type_name,256);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryWrite(viewer,type,256,PETSC_CHAR,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,type,256,PETSC_CHAR);CHKERRQ(ierr);
   } else if (adapt->ops->view) {
     ierr = (*adapt->ops->view)(adapt,viewer);CHKERRQ(ierr);
   }

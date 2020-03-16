@@ -49,34 +49,34 @@
 extern "C" {
 #endif
 
-PETSC_EXTERN void  petscbinarywriteint_(int *fd,void*p,PetscInt *n,PetscDataType *type,PetscBool  *istemp, int *ierr)
+PETSC_EXTERN void  petscbinarywriteint_(int *fd,void*p,PetscInt *n,PetscDataType *type, int *ierr)
 {
-  *ierr = PetscBinaryWrite(*fd,p,*n,*type,*istemp);
+  *ierr = PetscBinaryWrite(*fd,p,*n,*type);
 }
 
-PETSC_EXTERN void  petscbinarywritereal_(int *fd,void*p,PetscInt *n,PetscDataType *type,PetscBool  *istemp, int *ierr)
+PETSC_EXTERN void  petscbinarywritereal_(int *fd,void*p,PetscInt *n,PetscDataType *type, int *ierr)
 {
-  *ierr = PetscBinaryWrite(*fd,p,*n,*type,*istemp);
+  *ierr = PetscBinaryWrite(*fd,p,*n,*type);
 }
 
-PETSC_EXTERN void  petscbinarywritecomplex_(int *fd,void*p,PetscInt *n,PetscDataType *type,PetscBool  *istemp, int *ierr)
+PETSC_EXTERN void  petscbinarywritecomplex_(int *fd,void*p,PetscInt *n,PetscDataType *type, int *ierr)
 {
-  *ierr = PetscBinaryWrite(*fd,p,*n,*type,*istemp);
+  *ierr = PetscBinaryWrite(*fd,p,*n,*type);
 }
 
-PETSC_EXTERN void  petscbinarywriteint1_(int *fd,void*p,PetscInt *n,PetscDataType *type,PetscBool  *istemp, int *ierr)
+PETSC_EXTERN void  petscbinarywriteint1_(int *fd,void*p,PetscInt *n,PetscDataType *type, int *ierr)
 {
-  *ierr = PetscBinaryWrite(*fd,p,*n,*type,*istemp);
+  *ierr = PetscBinaryWrite(*fd,p,*n,*type);
 }
 
-PETSC_EXTERN void  petscbinarywritereal1_(int *fd,void*p,PetscInt *n,PetscDataType *type,PetscBool  *istemp, int *ierr)
+PETSC_EXTERN void  petscbinarywritereal1_(int *fd,void*p,PetscInt *n,PetscDataType *type, int *ierr)
 {
-  *ierr = PetscBinaryWrite(*fd,p,*n,*type,*istemp);
+  *ierr = PetscBinaryWrite(*fd,p,*n,*type);
 }
 
-PETSC_EXTERN void  petscbinarywritecomplex1_(int *fd,void*p,PetscInt *n,PetscDataType *type,PetscBool  *istemp, int *ierr)
+PETSC_EXTERN void  petscbinarywritecomplex1_(int *fd,void*p,PetscInt *n,PetscDataType *type, int *ierr)
 {
-  *ierr = PetscBinaryWrite(*fd,p,*n,*type,*istemp);
+  *ierr = PetscBinaryWrite(*fd,p,*n,*type);
 }
 
 PETSC_EXTERN void petscbinaryopen_(char* name,PetscFileMode *type,int *fd,

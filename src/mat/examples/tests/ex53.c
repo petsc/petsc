@@ -232,6 +232,7 @@ int main(int argc,char **args)
       output_file: output/ex53_1.out
 
    test:
+      TODO: Matrix row/column sizes are not compatible with block size
       suffix: 4
       requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
       nsize: 3
@@ -246,6 +247,7 @@ int main(int argc,char **args)
       output_file: output/ex53_1.out
 
    test:
+      TODO: Matrix row/column sizes are not compatible with block size
       suffix: 6
       requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
       nsize: 3
@@ -253,6 +255,7 @@ int main(int argc,char **args)
       output_file: output/ex53_1.out
 
    test:
+      TODO: Matrix row/column sizes are not compatible with block size
       suffix: 7
       requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
       nsize: 3

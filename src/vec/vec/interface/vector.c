@@ -575,9 +575,7 @@ PetscErrorCode  VecView(Vec vec,PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_CLASSID,1);
   PetscValidType(vec,1);
-  if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)vec),&viewer);CHKERRQ(ierr);
-  }
+  if (!viewer) {ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)vec),&viewer);CHKERRQ(ierr);}
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)vec),&size);CHKERRQ(ierr);
@@ -585,7 +583,6 @@ PetscErrorCode  VecView(Vec vec,PetscViewer viewer)
 
   if (vec->stash.n || vec->bstash.n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call VecAssemblyBegin/End() before viewing this vector");
 
-  ierr = PetscLogEventBegin(VEC_View,vec,viewer,0,0);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     PetscInt rows,bs;
@@ -604,6 +601,7 @@ PetscErrorCode  VecView(Vec vec,PetscViewer viewer)
     }
   }
   ierr = VecLockReadPush(vec);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(VEC_View,vec,viewer,0,0);CHKERRQ(ierr);
   if ((format == PETSC_VIEWER_NATIVE || format == PETSC_VIEWER_LOAD_BALANCE) && vec->ops->viewnative) {
     ierr = (*vec->ops->viewnative)(vec,viewer);CHKERRQ(ierr);
   } else {
@@ -872,7 +870,7 @@ PetscErrorCode  VecResetArray(Vec vec)
   Collective on PetscViewer
 
   Input Parameters:
-+ newvec - the newly loaded vector, this needs to have been created with VecCreate() or
++ vec - the newly loaded vector, this needs to have been created with VecCreate() or
            some related function before a call to VecLoad().
 - viewer - binary file viewer, obtained from PetscViewerBinaryOpen() or
            HDF5 file viewer, obtained from PetscViewerHDF5Open()
@@ -886,7 +884,7 @@ PetscErrorCode  VecResetArray(Vec vec)
   The input file must contain the full global vector, as
   written by the routine VecView().
 
-  If the type or size of newvec is not set before a call to VecLoad, PETSc
+  If the type or size of vec is not set before a call to VecLoad, PETSc
   sets the type and the local and global sizes. If type and/or
   sizes are already set, then the same are used.
 
@@ -923,31 +921,32 @@ PetscErrorCode  VecResetArray(Vec vec)
 
 .seealso: PetscViewerBinaryOpen(), VecView(), MatLoad(), VecLoad()
 @*/
-PetscErrorCode  VecLoad(Vec newvec, PetscViewer viewer)
+PetscErrorCode  VecLoad(Vec vec, PetscViewer viewer)
 {
   PetscErrorCode    ierr;
   PetscBool         isbinary,ishdf5,isadios,isadios2;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(newvec,VEC_CLASSID,1);
+  PetscValidHeaderSpecific(vec,VEC_CLASSID,1);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
+  PetscCheckSameComm(vec,1,viewer,2);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&ishdf5);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERADIOS,&isadios);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERADIOS,&isadios2);CHKERRQ(ierr);
   if (!isbinary && !ishdf5 && !isadios && !isadios2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
 
-  ierr = VecSetErrorIfLocked(newvec,1);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
-  if (!((PetscObject)newvec)->type_name && !newvec->ops->create) {
-    ierr = VecSetType(newvec, VECSTANDARD);CHKERRQ(ierr);
+  ierr = VecSetErrorIfLocked(vec,1);CHKERRQ(ierr);
+  if (!((PetscObject)vec)->type_name && !vec->ops->create) {
+    ierr = VecSetType(vec, VECSTANDARD);CHKERRQ(ierr);
   }
+  ierr = PetscLogEventBegin(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-  if (format == PETSC_VIEWER_NATIVE && newvec->ops->loadnative) {
-    ierr = (*newvec->ops->loadnative)(newvec,viewer);CHKERRQ(ierr);
+  if (format == PETSC_VIEWER_NATIVE && vec->ops->loadnative) {
+    ierr = (*vec->ops->loadnative)(vec,viewer);CHKERRQ(ierr);
   } else {
-    ierr = (*newvec->ops->load)(newvec,viewer);CHKERRQ(ierr);
+    ierr = (*vec->ops->load)(vec,viewer);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);

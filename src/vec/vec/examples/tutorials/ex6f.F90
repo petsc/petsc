@@ -52,8 +52,8 @@ program main
   call PetscViewerBinaryGetDescriptor(view_out,fd,ierr);CHKERRA(ierr)
   
   ! Write binary output
-  call PetscBinaryWrite(fd,t,one,PETSC_INT,PETSC_FALSE,ierr);CHKERRA(ierr)
-  call PetscBinaryWrite(fd,array,m,PETSC_SCALAR,PETSC_FALSE,ierr);CHKERRA(ierr)
+  call PetscBinaryWrite(fd,t,one,PETSC_INT,ierr);CHKERRA(ierr)
+  call PetscBinaryWrite(fd,array,m,PETSC_SCALAR,ierr);CHKERRA(ierr)
   
   ! Destroy the output viewer and work array
   call PetscViewerDestroy(view_out,ierr);CHKERRA(ierr)

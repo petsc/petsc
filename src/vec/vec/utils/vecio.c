@@ -11,135 +11,101 @@
 #include <petsc/private/viewerimpl.h>
 #include <petsclayouthdf5.h>
 
-static PetscErrorCode PetscViewerBinaryReadVecHeader_Private(PetscViewer viewer,PetscInt *rows)
+PetscErrorCode VecView_Binary(Vec vec,PetscViewer viewer)
 {
-  PetscErrorCode ierr;
-  MPI_Comm       comm;
-  PetscInt       tr[2],type;
+  PetscErrorCode    ierr;
+  PetscBool         skipHeader;
+  PetscLayout       map;
+  PetscInt          tr[2],n,s,N;
+  const PetscScalar *xarray;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
-  /* Read vector header */
-  ierr = PetscViewerBinaryRead(viewer,tr,2,NULL,PETSC_INT);CHKERRQ(ierr);
-  type = tr[0];
-  if (type != VEC_FILE_CLASSID) {
-    ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a vector next in file");
+  PetscCheckSameComm(vec,1,viewer,2);
+  ierr = PetscViewerSetUp(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryGetSkipHeader(viewer,&skipHeader);CHKERRQ(ierr);
+
+  ierr = VecGetLayout(vec,&map);CHKERRQ(ierr);
+  ierr = PetscLayoutGetLocalSize(map,&n);CHKERRQ(ierr);
+  ierr = PetscLayoutGetRange(map,&s,NULL);CHKERRQ(ierr);
+  ierr = PetscLayoutGetSize(map,&N);CHKERRQ(ierr);
+
+  tr[0] = VEC_FILE_CLASSID; tr[1] = N;
+  if (!skipHeader) {ierr = PetscViewerBinaryWrite(viewer,tr,2,PETSC_INT);CHKERRQ(ierr);}
+
+  ierr = VecGetArrayRead(vec,&xarray);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryWriteAll(viewer,xarray,n,s,N,PETSC_SCALAR);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(vec,&xarray);CHKERRQ(ierr);
+
+  { /* write to the viewer's .info file */
+    FILE             *info;
+    PetscMPIInt       rank;
+    PetscViewerFormat format;
+    const char        *name,*pre;
+
+    ierr = PetscViewerBinaryGetInfoPointer(viewer,&info);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)vec),&rank);CHKERRQ(ierr);
+
+    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+    if (format == PETSC_VIEWER_BINARY_MATLAB) {
+      ierr = PetscObjectGetName((PetscObject)vec,&name);CHKERRQ(ierr);
+      if (!rank && info) {
+        ierr = PetscFPrintf(PETSC_COMM_SELF,info,"#--- begin code written by PetscViewerBinary for MATLAB format ---#\n");CHKERRQ(ierr);
+        ierr = PetscFPrintf(PETSC_COMM_SELF,info,"#$$ Set.%s = PetscBinaryRead(fd);\n",name);CHKERRQ(ierr);
+        ierr = PetscFPrintf(PETSC_COMM_SELF,info,"#--- end code written by PetscViewerBinary for MATLAB format ---#\n\n");CHKERRQ(ierr);
+      }
+    }
+
+    ierr = PetscObjectGetOptionsPrefix((PetscObject)vec,&pre);CHKERRQ(ierr);
+    if (!rank && info) {ierr = PetscFPrintf(PETSC_COMM_SELF,info,"-%svecload_block_size %D\n",pre?pre:"",PetscAbs(vec->map->bs));CHKERRQ(ierr);}
   }
-  *rows = tr[1];
   PetscFunctionReturn(0);
 }
-
-#if defined(PETSC_HAVE_MPIIO)
-static PetscErrorCode VecLoad_Binary_MPIIO(Vec vec, PetscViewer viewer)
-{
-  PetscErrorCode ierr;
-  PetscMPIInt    lsize;
-  PetscScalar    *avec;
-  MPI_File       mfdes;
-  MPI_Offset     off;
-
-  PetscFunctionBegin;
-  ierr = VecGetArray(vec,&avec);CHKERRQ(ierr);
-  ierr = PetscMPIIntCast(vec->map->n,&lsize);CHKERRQ(ierr);
-
-  ierr = PetscViewerBinaryGetMPIIODescriptor(viewer,&mfdes);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryGetMPIIOOffset(viewer,&off);CHKERRQ(ierr);
-  off += vec->map->rstart*sizeof(PetscScalar);
-  ierr = MPIU_File_read_at_all(mfdes,off,avec,lsize,MPIU_SCALAR,MPI_STATUS_IGNORE);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryAddMPIIOOffset(viewer,vec->map->N*sizeof(PetscScalar));CHKERRQ(ierr);
-
-  ierr = VecRestoreArray(vec,&avec);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(vec);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(vec);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-#endif
 
 PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
 {
-  PetscMPIInt    size,rank,tag;
-  int            fd;
-  PetscInt       i,rows = 0,n,*range,N,bs;
   PetscErrorCode ierr;
-  PetscBool      flag,skipheader;
-  PetscScalar    *avec,*avecwork;
-  MPI_Comm       comm;
-  MPI_Request    request;
-  MPI_Status     status;
-#if defined(PETSC_HAVE_MPIIO)
-  PetscBool      useMPIIO;
-#endif
+  PetscBool      skipHeader,flg;
+  PetscInt       tr[2],rows,N,n,s,bs;
+  PetscScalar    *array;
+  PetscLayout    map;
 
   PetscFunctionBegin;
-  /* force binary viewer to load .info file if it has not yet done so */
   ierr = PetscViewerSetUp(viewer);CHKERRQ(ierr);
-  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryGetSkipHeader(viewer,&skipHeader);CHKERRQ(ierr);
 
-  ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryGetSkipHeader(viewer,&skipheader);CHKERRQ(ierr);
-  if (!skipheader) {
-    ierr = PetscViewerBinaryReadVecHeader_Private(viewer,&rows);CHKERRQ(ierr);
+  ierr = VecGetLayout(vec,&map);CHKERRQ(ierr);
+  ierr = PetscLayoutGetSize(map,&N);CHKERRQ(ierr);
+
+  /* read vector header */
+  if (!skipHeader) {
+    ierr = PetscViewerBinaryRead(viewer,tr,2,NULL,PETSC_INT);CHKERRQ(ierr);
+    if (tr[0] != VEC_FILE_CLASSID) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_FILE_UNEXPECTED,"Not a vector next in file");
+    if (tr[1] < 0) SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_FILE_UNEXPECTED,"Vector size (%D) in file is negative",tr[1]);
+    if (N >= 0 && N != tr[1]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Vector in file different size (%D) than input vector (%D)",tr[1],N);
+    rows = tr[1];
   } else {
-    VecType vtype;
-    ierr = VecGetType(vec,&vtype);CHKERRQ(ierr);
-    if (!vtype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER, "Vector binary file header was skipped, thus the user must specify the type and length of input vector");
-    ierr = VecGetSize(vec,&N);CHKERRQ(ierr);
-    if (!N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER, "Vector binary file header was skipped, thus the user must specify the length of input vector");
+    if (N < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Vector binary file header was skipped, thus the user must specify the global size of input vector");
     rows = N;
   }
-  /* Set Vec sizes,blocksize,and type if not already set. Block size first so that local sizes will be compatible. */
-  ierr = PetscOptionsGetInt(NULL,((PetscObject)vec)->prefix, "-vecload_block_size", &bs, &flag);CHKERRQ(ierr);
-  if (flag) {
-    ierr = VecSetBlockSize(vec, bs);CHKERRQ(ierr);
-  }
-  if (vec->map->n < 0 && vec->map->N < 0) {
-    ierr = VecSetSizes(vec,PETSC_DECIDE,rows);CHKERRQ(ierr);
-  }
 
-  /* If sizes and type already set,check if the vector global size is correct */
-  ierr = VecGetSize(vec, &N);CHKERRQ(ierr);
-  if (N != rows) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Vector in file different length (%D) then input vector (%D)", rows, N);
+  /* set vector size, blocksize, and type if not already set; block size first so that local sizes will be compatible. */
+  ierr = PetscLayoutGetBlockSize(map,&bs);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(((PetscObject)viewer)->options,((PetscObject)vec)->prefix,"-vecload_block_size",&bs,&flg);CHKERRQ(ierr);
+  if (flg) {ierr = VecSetBlockSize(vec,bs);CHKERRQ(ierr);}
+  ierr = PetscLayoutGetLocalSize(map,&n);CHKERRQ(ierr);
+  if (N < 0) {ierr = VecSetSizes(vec,n,rows);CHKERRQ(ierr);}
+  ierr = VecSetUp(vec);CHKERRQ(ierr);
 
-#if defined(PETSC_HAVE_MPIIO)
-  ierr = PetscViewerBinaryGetUseMPIIO(viewer,&useMPIIO);CHKERRQ(ierr);
-  if (useMPIIO) {
-    ierr = VecLoad_Binary_MPIIO(vec, viewer);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
-#endif
-
+  /* get vector sizes and check global size */
+  ierr = VecGetSize(vec,&N);CHKERRQ(ierr);
   ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr);
-  ierr = PetscObjectGetNewTag((PetscObject)viewer,&tag);CHKERRQ(ierr);
-  ierr = VecGetArray(vec,&avec);CHKERRQ(ierr);
-  if (!rank) {
-    ierr = PetscBinaryRead(fd,avec,n,NULL,PETSC_SCALAR);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(vec,&s,NULL);CHKERRQ(ierr);
+  if (N != rows) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Vector in file different size (%D) than input vector (%D)",rows,N);
 
-    if (size > 1) {
-      /* read in other chuncks and send to other processors */
-      /* determine maximum chunck owned by other */
-      range = vec->map->range;
-      n = 1;
-      for (i=1; i<size; i++) n = PetscMax(n,range[i+1] - range[i]);
-
-      ierr = PetscMalloc1(n,&avecwork);CHKERRQ(ierr);
-      for (i=1; i<size; i++) {
-        n    = range[i+1] - range[i];
-        ierr = PetscBinaryRead(fd,avecwork,n,NULL,PETSC_SCALAR);CHKERRQ(ierr);
-        ierr = MPI_Isend(avecwork,n,MPIU_SCALAR,i,tag,comm,&request);CHKERRQ(ierr);
-        ierr = MPI_Wait(&request,&status);CHKERRQ(ierr);
-      }
-      ierr = PetscFree(avecwork);CHKERRQ(ierr);
-    }
-  } else {
-    ierr = MPI_Recv(avec,n,MPIU_SCALAR,0,tag,comm,&status);CHKERRQ(ierr);
-  }
-
-  ierr = VecRestoreArray(vec,&avec);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(vec);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(vec);CHKERRQ(ierr);
+  /* read vector values */
+  ierr = VecGetArray(vec,&array);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryReadAll(viewer,array,n,s,N,PETSC_SCALAR);CHKERRQ(ierr);
+  ierr = VecRestoreArray(vec,&array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

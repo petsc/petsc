@@ -257,13 +257,13 @@ static PetscErrorCode WriteToDisk(PetscInt stepnum,PetscReal time,PetscReal time
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscViewerBinaryWrite(viewer,&stepnum,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryWrite(viewer,&stepnum,1,PETSC_INT);CHKERRQ(ierr);
   ierr = VecView(X,viewer);CHKERRQ(ierr);
   for (i=0;!solution_only && i<numY;i++) {
     ierr = VecView(Y[i],viewer);CHKERRQ(ierr);
   }
-  ierr = PetscViewerBinaryWrite(viewer,&time,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryWrite(viewer,&timeprev,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryWrite(viewer,&time,1,PETSC_REAL);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryWrite(viewer,&timeprev,1,PETSC_REAL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-static char help[] = "Tests MatView()/MatLoad() with binary viewers for AIJ matrices.\n\n";
+static char help[] = "Tests MatView()/MatLoad() with binary viewers for BAIJ matrices.\n\n";
 
 #include <petscmat.h>
 #include <petscviewer.h>
@@ -33,25 +33,27 @@ static PetscErrorCode CheckValuesAIJ(Mat A)
 int main(int argc,char **args)
 {
   Mat            A;
-  PetscInt       M = 11,N = 13;
+  PetscInt       M = 24,N = 48,bs = 2;
   PetscInt       rstart,rend,i,j;
   PetscErrorCode ierr;
   PetscViewer    view;
 
   ierr = PetscInitialize(&argc,&args,NULL,help);if (ierr) return ierr;
   /*
-      Create a parallel AIJ matrix shared by all processors
+      Create a parallel BAIJ matrix shared by all processors
   */
-  ierr = MatCreateAIJ(PETSC_COMM_WORLD,
-                      PETSC_DECIDE,PETSC_DECIDE,
-                      M,N,
-                      PETSC_DECIDE,NULL,
-                      PETSC_DECIDE,NULL,
-                      &A);CHKERRQ(ierr);
+  ierr = MatCreateBAIJ(PETSC_COMM_WORLD,
+                       bs,
+                       PETSC_DECIDE,PETSC_DECIDE,
+                       M,N,
+                       PETSC_DECIDE,NULL,
+                       PETSC_DECIDE,NULL,
+                       &A);CHKERRQ(ierr);
 
   /*
       Set values into the matrix
   */
+  ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
     for (j=0; j<N; j++) {
@@ -80,7 +82,7 @@ int main(int argc,char **args)
   */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"matrix.dat",FILE_MODE_READ,&view);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
+  ierr = MatSetType(A,MATBAIJ);CHKERRQ(ierr);
   for (i=0; i<3; i++) {
     if (i > 0) {ierr = MatZeroEntries(A);CHKERRQ(ierr);}
     ierr = MatLoad(A,view);CHKERRQ(ierr);
@@ -91,11 +93,11 @@ int main(int argc,char **args)
   ierr = MatDestroy(&A);CHKERRQ(ierr);
 
   /*
-      Reload in SEQAIJ matrix and check its values
+      Reload in SEQBAIJ matrix and check its values
   */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"matrix.dat",FILE_MODE_READ,&view);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
+  ierr = MatSetType(A,MATSEQBAIJ);CHKERRQ(ierr);
   for (i=0; i<3; i++) {
     if (i > 0) {ierr = MatZeroEntries(A);CHKERRQ(ierr);}
     ierr = MatLoad(A,view);CHKERRQ(ierr);
@@ -105,11 +107,11 @@ int main(int argc,char **args)
   ierr = MatDestroy(&A);CHKERRQ(ierr);
 
   /*
-     Reload in MPIAIJ matrix and check its values
+     Reload in MPIBAIJ matrix and check its values
   */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"matrix.dat",FILE_MODE_READ,&view);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
+  ierr = MatSetType(A,MATMPIBAIJ);CHKERRQ(ierr);
   for (i=0; i<3; i++) {
     if (i > 0) {ierr = MatZeroEntries(A);CHKERRQ(ierr);}
     ierr = MatLoad(A,view);CHKERRQ(ierr);
@@ -122,12 +124,11 @@ int main(int argc,char **args)
   return ierr;
 }
 
-
 /*TEST
 
    testset:
       args: -viewer_binary_mpiio 0
-      output_file: output/ex44.out
+      output_file: output/ex45.out
       test:
         suffix: stdio_1
         nsize: 1
@@ -141,13 +142,13 @@ int main(int argc,char **args)
         suffix: stdio_4
         nsize: 4
       test:
-        suffix: stdio_15
-        nsize: 15
+        suffix: stdio_5
+        nsize: 4
 
    testset:
       requires: mpiio
       args: -viewer_binary_mpiio 1
-      output_file: output/ex44.out
+      output_file: output/ex45.out
       test:
         suffix: mpiio_1
         nsize: 1
@@ -161,7 +162,7 @@ int main(int argc,char **args)
         suffix: mpiio_4
         nsize: 4
       test:
-        suffix: mpiio_15
-        nsize: 15
+        suffix: mpiio_5
+        nsize: 5
 
 TEST*/

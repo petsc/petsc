@@ -157,58 +157,52 @@
         end Interface
 
         Interface petscbinarywrite
-        subroutine petscbinarywritecomplex(fd,data,num,type,tmp,z)
+        subroutine petscbinarywritecomplex(fd,data,num,type,z)
           use petscsysdefdummy
           integer fd
           PetscComplex data(*)
           PetscInt num
           PetscDataType type
-          PetscBool tmp
           PetscErrorCode z
         end subroutine
-        subroutine petscbinarywritereal(fd,data,num,type,tmp,z)
+        subroutine petscbinarywritereal(fd,data,num,type,z)
           use petscsysdefdummy
           integer fd
           PetscReal data(*)
           PetscInt num
           PetscDataType type
-          PetscBool tmp
           PetscErrorCode z
         end subroutine
-        subroutine petscbinarywriteint(fd,data,num,type,tmp, z)
+        subroutine petscbinarywriteint(fd,data,num,type,z)
           use petscsysdefdummy
           integer fd
           PetscInt data(*)
           PetscInt num
           PetscDataType type
-          PetscBool tmp
           PetscErrorCode z
         end subroutine
-        subroutine petscbinarywritecomplex1(fd,data,num,type,tmp,z)
+        subroutine petscbinarywritecomplex1(fd,data,num,type,z)
           use petscsysdefdummy
           integer fd
           PetscComplex data
           PetscInt num
           PetscDataType type
-          PetscBool tmp
           PetscErrorCode z
         end subroutine
-        subroutine petscbinarywritereal1(fd,data,num,type,tmp,z)
+        subroutine petscbinarywritereal1(fd,data,num,type,z)
           use petscsysdefdummy
           integer fd
           PetscReal data
           PetscInt num
           PetscDataType type
-          PetscBool tmp
           PetscErrorCode z
         end subroutine
-        subroutine petscbinarywriteint1(fd,data,num,type,tmp, z)
+        subroutine petscbinarywriteint1(fd,data,num,type,z)
           use petscsysdefdummy
           integer fd
           PetscInt data
           PetscInt num
           PetscDataType type
-          PetscBool tmp
           PetscErrorCode z
         end subroutine
         end Interface

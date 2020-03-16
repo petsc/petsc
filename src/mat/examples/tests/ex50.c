@@ -1,4 +1,4 @@
-static char help[] = "Tests MatView()/MatLoad() with binary viewers for AIJ matrices.\n\n";
+static char help[] = "Tests MatView()/MatLoad() with binary viewers for SBAIJ matrices.\n\n";
 
 #include <petscmat.h>
 #include <petscviewer.h>
@@ -15,13 +15,17 @@ static PetscErrorCode CheckValuesAIJ(Mat A)
   PetscInt        M,N,rstart,rend,i,j;
   PetscReal       v,w;
   PetscScalar     val;
+  PetscBool       seqsbaij,mpisbaij,sbaij;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQSBAIJ,&seqsbaij);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATMPISBAIJ,&mpisbaij);CHKERRQ(ierr);
+  sbaij = (seqsbaij||mpisbaij) ? PETSC_TRUE : PETSC_FALSE;
   for (i=rstart; i<rend; i++) {
-    for (j=0; j<N; j++) {
+    for (j=(sbaij?i:0); j<N; j++) {
       ierr = MatGetValue(A,i,j,&val);CHKERRQ(ierr);
       v = MakeValue(i,j,M); w = PetscRealPart(val);
       if (PetscAbsReal(v-w) > 0) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Matrix entry (%D,%D) should be %g, got %g",i,j,(double)v,(double)w);
@@ -33,25 +37,27 @@ static PetscErrorCode CheckValuesAIJ(Mat A)
 int main(int argc,char **args)
 {
   Mat            A;
-  PetscInt       M = 11,N = 13;
+  PetscInt       M = 24,N = 24,bs = 3;
   PetscInt       rstart,rend,i,j;
   PetscErrorCode ierr;
   PetscViewer    view;
 
   ierr = PetscInitialize(&argc,&args,NULL,help);if (ierr) return ierr;
   /*
-      Create a parallel AIJ matrix shared by all processors
+      Create a parallel SBAIJ matrix shared by all processors
   */
-  ierr = MatCreateAIJ(PETSC_COMM_WORLD,
-                      PETSC_DECIDE,PETSC_DECIDE,
-                      M,N,
-                      PETSC_DECIDE,NULL,
-                      PETSC_DECIDE,NULL,
-                      &A);CHKERRQ(ierr);
+  ierr = MatCreateSBAIJ(PETSC_COMM_WORLD,
+                        bs,
+                        PETSC_DECIDE,PETSC_DECIDE,
+                        M,N,
+                        PETSC_DECIDE,NULL,
+                        PETSC_DECIDE,NULL,
+                        &A);CHKERRQ(ierr);
 
   /*
       Set values into the matrix
   */
+  ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
     for (j=0; j<N; j++) {
@@ -80,7 +86,7 @@ int main(int argc,char **args)
   */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"matrix.dat",FILE_MODE_READ,&view);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
+  ierr = MatSetType(A,MATSBAIJ);CHKERRQ(ierr);
   for (i=0; i<3; i++) {
     if (i > 0) {ierr = MatZeroEntries(A);CHKERRQ(ierr);}
     ierr = MatLoad(A,view);CHKERRQ(ierr);
@@ -91,11 +97,11 @@ int main(int argc,char **args)
   ierr = MatDestroy(&A);CHKERRQ(ierr);
 
   /*
-      Reload in SEQAIJ matrix and check its values
+      Reload in SEQSBAIJ matrix and check its values
   */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"matrix.dat",FILE_MODE_READ,&view);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
+  ierr = MatSetType(A,MATSEQSBAIJ);CHKERRQ(ierr);
   for (i=0; i<3; i++) {
     if (i > 0) {ierr = MatZeroEntries(A);CHKERRQ(ierr);}
     ierr = MatLoad(A,view);CHKERRQ(ierr);
@@ -105,11 +111,11 @@ int main(int argc,char **args)
   ierr = MatDestroy(&A);CHKERRQ(ierr);
 
   /*
-     Reload in MPIAIJ matrix and check its values
+     Reload in MPISBAIJ matrix and check its values
   */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"matrix.dat",FILE_MODE_READ,&view);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
+  ierr = MatSetType(A,MATMPISBAIJ);CHKERRQ(ierr);
   for (i=0; i<3; i++) {
     if (i > 0) {ierr = MatZeroEntries(A);CHKERRQ(ierr);}
     ierr = MatLoad(A,view);CHKERRQ(ierr);
@@ -122,12 +128,11 @@ int main(int argc,char **args)
   return ierr;
 }
 
-
 /*TEST
 
    testset:
       args: -viewer_binary_mpiio 0
-      output_file: output/ex44.out
+      output_file: output/ex50.out
       test:
         suffix: stdio_1
         nsize: 1
@@ -141,13 +146,13 @@ int main(int argc,char **args)
         suffix: stdio_4
         nsize: 4
       test:
-        suffix: stdio_15
-        nsize: 15
+        suffix: stdio_5
+        nsize: 4
 
    testset:
       requires: mpiio
       args: -viewer_binary_mpiio 1
-      output_file: output/ex44.out
+      output_file: output/ex50.out
       test:
         suffix: mpiio_1
         nsize: 1
@@ -161,7 +166,7 @@ int main(int argc,char **args)
         suffix: mpiio_4
         nsize: 4
       test:
-        suffix: mpiio_15
-        nsize: 15
+        suffix: mpiio_5
+        nsize: 5
 
 TEST*/

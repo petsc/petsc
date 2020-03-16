@@ -397,6 +397,7 @@ int main(int argc,char **args)
       output_file: output/ex30.out
 
     test:
+      TODO: Matrix row/column sizes are not compatible with block size
       suffix: 2
       args: -f ${DATAFILESPATH}/matrices/arco1 -mat_type baij -matload_block_size 3 -ksp_type preonly -pc_type ilu -pc_factor_mat_ordering_type natural -num_numfac 2
       requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
