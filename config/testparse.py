@@ -509,6 +509,9 @@ def printExParseDict(rDict):
     sortkeys=list(rDict[sfile].keys())
     sortkeys.sort()
     for runex in sortkeys:
+      if runex == 'requires':
+        print(indent+runex+':'+str(rDict[sfile][runex]))
+        continue
       print(indent+runex)
       if type(rDict[sfile][runex])==bytes:
         print(indent*2+rDict[sfile][runex])
