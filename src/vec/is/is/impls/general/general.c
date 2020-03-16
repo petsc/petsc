@@ -271,7 +271,7 @@ static PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer)
     count[dim] = bs;
     ++dim;
   }
-  if (n > 0) {
+  if (n > 0 || H5_VERSION_GE(1,10,0)) {
     PetscStackCallHDF5Return(memspace,H5Screate_simple,(dim, count, NULL));
   } else {
     /* Can't create dataspace with zero for any dimension, so create null dataspace. */
@@ -291,7 +291,7 @@ static PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer)
     offset[dim] = 0;
     ++dim;
   }
-  if (n > 0) {
+  if (n > 0 || H5_VERSION_GE(1,10,0)) {
     PetscStackCallHDF5Return(filespace,H5Dget_space,(dset_id));
     PetscStackCallHDF5(H5Sselect_hyperslab,(filespace, H5S_SELECT_SET, offset, NULL, count, NULL));
   } else {
