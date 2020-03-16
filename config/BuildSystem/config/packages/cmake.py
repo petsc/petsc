@@ -4,8 +4,8 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.download          = ['https://cmake.org/files/v3.9/cmake-3.9.6.tar.gz',
-                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/cmake-3.9.6.tar.gz']
+    self.download          = ['https://cmake.org/files/v3.15/cmake-3.15.6.tar.gz',
+                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/cmake-3.15.6.tar.gz']
     self.download_311      = ['https://cmake.org/files/v3.11/cmake-3.11.4.tar.gz',
                               'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/cmake-3.11.4.tar.gz']
     self.downloadonWindows = 1

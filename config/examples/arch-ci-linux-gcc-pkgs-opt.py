@@ -24,6 +24,9 @@ configure_options = [
   '--download-chaco',
   '--download-ctetgen',
   '--download-egads',
+  '--download-cmake',
+  '--download-amrex',
+  '--download-hypre',
 ]
 
 if __name__ == '__main__':
