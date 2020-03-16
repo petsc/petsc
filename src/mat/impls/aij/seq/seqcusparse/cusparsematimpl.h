@@ -126,6 +126,7 @@ struct Mat_SeqAIJCUSPARSE {
   Mat_SeqAIJCUSPARSEMultStruct *mat; /* pointer to the matrix on the GPU */
   Mat_SeqAIJCUSPARSEMultStruct *matTranspose; /* pointer to the matrix on the GPU (for the transpose ... useful for BiCG) */
   THRUSTARRAY                  *workVector; /*pointer to a workvector to which we can copy the relevant indices of a vector we want to multiply */
+  THRUSTINTARRAY               *rowoffsets_gpu; /* rowoffsets on GPU in non-compressed-row format. It is used to convert CSR to CSC */
   PetscInt                     nonzerorow; /* number of nonzero rows ... used in the flop calculations */
   MatCUSPARSEStorageFormat     format;   /* the storage format for the matrix on the device */
   cudaStream_t                 stream;   /* a stream for the parallel SpMV ... this is not owned and should not be deleted */
