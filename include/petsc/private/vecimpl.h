@@ -141,9 +141,11 @@ struct _p_Vec {
   PetscBool              petscnative;  /* means the ->data starts with VECHEADER and can use VecGetArrayFast()*/
   PetscInt               lock;         /* lock state. vector can be free (=0), locked for read (>0) or locked for write(<0) */
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+  void                   *spptr; /* this is the special pointer to the array on the GPU */
   PetscOffloadMask       offloadmask;  /* a mask which indicates where the valid vector data is (GPU, CPU or both) */
   PetscBool              boundtocpu;
-  void                   *spptr; /* this is the special pointer to the array on the GPU */
+  size_t                 minimum_bytes_pinned_memory; /* minimum data size in bytes for which pinned memory will be allocated */
+  PetscBool              pinned_memory; /* PETSC_TRUE if the current host allocation has been made from pinned memory. */
 #endif
 };
 

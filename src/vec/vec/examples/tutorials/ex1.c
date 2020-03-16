@@ -47,10 +47,10 @@ int main(int argc,char **argv)
      -vec_type shared causes the particular type of vector to be formed.
 
   */
-
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = VecSetSizes(x,PETSC_DECIDE,n);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
+
   /*
      Duplicate some work vectors (of the same format and
      partitioning as the initial vector).

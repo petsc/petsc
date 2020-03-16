@@ -1145,6 +1145,10 @@ PETSC_EXTERN PetscErrorCode PetscMallocClear(void);
 */
 PETSC_EXTERN PetscErrorCode PetscMallocSetDRAM(void);
 PETSC_EXTERN PetscErrorCode PetscMallocResetDRAM(void);
+#if defined(PETSC_HAVE_CUDA)
+PETSC_EXTERN PetscErrorCode PetscMallocSetCUDAHost(void);
+PETSC_EXTERN PetscErrorCode PetscMallocResetCUDAHost(void);
+#endif
 
 #define MPIU_PETSCLOGDOUBLE  MPI_DOUBLE
 #define MPIU_2PETSCLOGDOUBLE MPI_2DOUBLE_PRECISION
