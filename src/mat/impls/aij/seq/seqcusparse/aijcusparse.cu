@@ -1241,6 +1241,7 @@ static PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat A)
   cudaError_t                  err;
 
   PetscFunctionBegin;
+  if (A->boundtocpu) PetscFunctionReturn(0);
   if (A->offloadmask == PETSC_OFFLOAD_UNALLOCATED || A->offloadmask == PETSC_OFFLOAD_CPU) {
     ierr = PetscLogEventBegin(MAT_CUSPARSECopyToGPU,A,0,0,0);CHKERRQ(ierr);
     if (A->assembled && A->nonzerostate == cusparsestruct->nonzerostate && cusparsestruct->format == MAT_CUSPARSE_CSR) {
@@ -1608,7 +1609,7 @@ static PetscErrorCode MatAssemblyEnd_SeqAIJCUSPARSE(Mat A,MatAssemblyType mode)
 
   PetscFunctionBegin;
   ierr = MatAssemblyEnd_SeqAIJ(A,mode);CHKERRQ(ierr);
-  if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
+  if (mode == MAT_FLUSH_ASSEMBLY || A->boundtocpu) PetscFunctionReturn(0);
   if (A->factortype == MAT_FACTOR_NONE) {
     ierr = MatSeqAIJCUSPARSECopyToGPU(A);CHKERRQ(ierr);
   }
@@ -1695,6 +1696,7 @@ static PetscErrorCode MatDestroy_SeqAIJCUSPARSE(Mat A)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatBindToCPU_SeqAIJCUSPARSE(Mat,PetscBool);
 static PetscErrorCode MatDuplicate_SeqAIJCUSPARSE(Mat A,MatDuplicateOption cpvalues,Mat *B)
 {
   PetscErrorCode ierr;
@@ -1745,12 +1747,46 @@ static PetscErrorCode MatDuplicate_SeqAIJCUSPARSE(Mat A,MatDuplicateOption cpval
   C->ops->multtranspose    = MatMultTranspose_SeqAIJCUSPARSE;
   C->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJCUSPARSE;
   C->ops->duplicate        = MatDuplicate_SeqAIJCUSPARSE;
+  C->ops->bindtocpu        = MatBindToCPU_SeqAIJCUSPARSE;
 
   ierr = PetscObjectChangeTypeName((PetscObject)C,MATSEQAIJCUSPARSE);CHKERRQ(ierr);
 
+  C->boundtocpu  = PETSC_FALSE;
   C->offloadmask = PETSC_OFFLOAD_UNALLOCATED;
 
   ierr = PetscObjectComposeFunction((PetscObject)C, "MatCUSPARSESetFormat_C", MatCUSPARSESetFormat_SeqAIJCUSPARSE);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+static PetscErrorCode MatBindToCPU_SeqAIJCUSPARSE(Mat A,PetscBool flg)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* Currently, there is case in which an AIJCUSPARSE matrix ever has its offloadmask set to PETS_OFFLOAD_GPU.
+     If this changes, we need to implement a routine to update the CPU (host) version of the matrix from the GPU one.
+     Right now, for safety we simply check for PETSC_OFFLOAD_GPU and have MatBindToCPU() do nothing in this case.
+     TODO: Add MatAIJCUSPARSECopyFromGPU() and make MatBindToCPU() functional for AIJCUSPARSE matries;
+           can follow the example of MatBindToCPU_SeqAIJViennaCL(). */
+  if (A->offloadmask == PETSC_OFFLOAD_GPU) PetscFunctionReturn(0);
+  if (flg) {
+    A->ops->mult             = MatMult_SeqAIJ;
+    A->ops->multadd          = MatMultAdd_SeqAIJ;
+    A->ops->multtranspose    = MatMultTranspose_SeqAIJCUSPARSE;
+    A->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJCUSPARSE;
+    A->ops->assemblyend      = MatAssemblyEnd_SeqAIJ;
+    A->ops->duplicate        = MatDuplicate_SeqAIJ;
+  } else {
+    A->ops->mult             = MatMult_SeqAIJCUSPARSE;
+    A->ops->multadd          = MatMultAdd_SeqAIJCUSPARSE;
+    A->ops->multtranspose    = MatMultTranspose_SeqAIJCUSPARSE;
+    A->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJCUSPARSE;
+    A->ops->assemblyend      = MatAssemblyEnd_SeqAIJCUSPARSE;
+    A->ops->destroy          = MatDestroy_SeqAIJCUSPARSE;
+    A->ops->duplicate        = MatDuplicate_SeqAIJCUSPARSE;
+  }
+  A->boundtocpu = flg;
   PetscFunctionReturn(0);
 }
 
@@ -1799,9 +1835,11 @@ PETSC_EXTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCUSPARSE(Mat B)
   B->ops->multtranspose    = MatMultTranspose_SeqAIJCUSPARSE;
   B->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJCUSPARSE;
   B->ops->duplicate        = MatDuplicate_SeqAIJCUSPARSE;
+  B->ops->bindtocpu        = MatBindToCPU_SeqAIJCUSPARSE;
 
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJCUSPARSE);CHKERRQ(ierr);
 
+  B->boundtocpu  = PETSC_FALSE;
   B->offloadmask = PETSC_OFFLOAD_UNALLOCATED;
 
   ierr = PetscObjectComposeFunction((PetscObject)B, "MatCUSPARSESetFormat_C", MatCUSPARSESetFormat_SeqAIJCUSPARSE);CHKERRQ(ierr);
