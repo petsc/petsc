@@ -531,7 +531,7 @@ PetscErrorCode TSAdaptGetMaxIgnore(TSAdapt adapt,PetscReal *max_ignore)
 
    Level: intermediate
 
-.seealso: TSAdaptChoose(), TSAdaptGetClip()
+.seealso: TSAdaptChoose(), TSAdaptGetClip(), TSAdaptSetScaleSolveFailed()
 @*/
 PetscErrorCode TSAdaptSetClip(TSAdapt adapt,PetscReal low,PetscReal high)
 {
@@ -561,7 +561,7 @@ PetscErrorCode TSAdaptSetClip(TSAdapt adapt,PetscReal low,PetscReal high)
 
    Level: intermediate
 
-.seealso: TSAdaptChoose(), TSAdaptSetClip()
+.seealso: TSAdaptChoose(), TSAdaptSetClip(), TSAdaptSetScaleSolveFailed()
 @*/
 PetscErrorCode TSAdaptGetClip(TSAdapt adapt,PetscReal *low,PetscReal *high)
 {
@@ -571,6 +571,57 @@ PetscErrorCode TSAdaptGetClip(TSAdapt adapt,PetscReal *low,PetscReal *high)
   if (high) PetscValidRealPointer(high,3);
   if (low)  *low  = adapt->clip[0];
   if (high) *high = adapt->clip[1];
+  PetscFunctionReturn(0);
+}
+
+/*@
+   TSAdaptSetScaleSolveFailed - Scale step by this factor if solve fails
+
+   Logically collective on TSAdapt
+
+   Input Arguments:
++  adapt - adaptive controller context
+.  scale - scale
+
+   Options Database Keys:
+.  -ts_adapt_scale_solve_failed <scale> - to set scale step by this factor if solve fails
+
+   Level: intermediate
+
+.seealso: TSAdaptChoose(), TSAdaptGetScaleSolveFailed(), TSAdaptGetClip()
+@*/
+PetscErrorCode TSAdaptSetScaleSolveFailed(TSAdapt adapt,PetscReal scale)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
+  PetscValidLogicalCollectiveReal(adapt,scale,2);
+  if (scale != PETSC_DEFAULT && scale <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Scale factor %g must be positive",(double)scale);
+  if (scale != PETSC_DEFAULT && scale  > 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Scale factor %g must be less than one",(double)scale);
+  if (scale != PETSC_DEFAULT) adapt->scale_solve_failed = scale;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   TSAdaptGetScaleSolveFailed - Gets the admissible decrease/increase factor in step size
+
+   Not Collective
+
+   Input Arguments:
+.  adapt - adaptive controller context
+
+   Ouput Arguments:
++  scale - scale factor
+
+   Level: intermediate
+
+.seealso: TSAdaptChoose(), TSAdaptSetScaleSolveFailed(), TSAdaptSetClip()
+@*/
+PetscErrorCode TSAdaptGetScaleSolveFailed(TSAdapt adapt,PetscReal *scale)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
+  if (scale)  PetscValidRealPointer(scale,2);
+  if (scale)  *scale  = adapt->scale_solve_failed;
   PetscFunctionReturn(0);
 }
 
@@ -663,13 +714,13 @@ PetscErrorCode TSAdaptGetStepLimits(TSAdapt adapt,PetscReal *hmin,PetscReal *hma
    This function is automatically called by TSSetFromOptions()
 
 .seealso: TSGetAdapt(), TSAdaptSetType(), TSAdaptSetAlwaysAccept(), TSAdaptSetSafety(),
-          TSAdaptSetClip(), TSAdaptSetStepLimits(), TSAdaptSetMonitor()
+          TSAdaptSetClip(), TSAdaptSetScaleSolveFailed(), TSAdaptSetStepLimits(), TSAdaptSetMonitor()
 */
 PetscErrorCode  TSAdaptSetFromOptions(PetscOptionItems *PetscOptionsObject,TSAdapt adapt)
 {
   PetscErrorCode ierr;
   char           type[256] = TSADAPTBASIC;
-  PetscReal      safety,reject_safety,clip[2],hmin,hmax;
+  PetscReal      safety,reject_safety,clip[2],scale,hmin,hmax;
   PetscBool      set,flg;
   PetscInt       two;
 
@@ -704,7 +755,8 @@ PetscErrorCode  TSAdaptSetFromOptions(PetscOptionItems *PetscOptionsObject,TSAda
   ierr = PetscOptionsReal("-ts_adapt_max_ignore","Adaptor ignores (absolute) solution values smaller than this value","",adapt->ignore_max,&adapt->ignore_max,&set);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ts_adapt_glee_use_local","GLEE adaptor uses local error estimation for step control","",adapt->glee_use_local,&adapt->glee_use_local,&set);CHKERRQ(ierr);
 
-  ierr = PetscOptionsReal("-ts_adapt_scale_solve_failed","Scale step by this factor if solve fails","",adapt->scale_solve_failed,&adapt->scale_solve_failed,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ts_adapt_scale_solve_failed","Scale step by this factor if solve fails","TSAdaptSetScaleSolveFailed",adapt->scale_solve_failed,&scale,&set);CHKERRQ(ierr);
+  if (set) {ierr = TSAdaptSetScaleSolveFailed(adapt,scale);CHKERRQ(ierr);}
 
   ierr = PetscOptionsEnum("-ts_adapt_wnormtype","Type of norm computed for error estimation","",NormTypes,(PetscEnum)adapt->wnormtype,(PetscEnum*)&adapt->wnormtype,NULL);CHKERRQ(ierr);
   if (adapt->wnormtype != NORM_2 && adapt->wnormtype != NORM_INFINITY) SETERRQ(PetscObjectComm((PetscObject)adapt),PETSC_ERR_SUP,"Only 2-norm and infinite norm supported");
