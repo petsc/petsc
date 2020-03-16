@@ -39,6 +39,7 @@ petsc-maint@mcs.anl.gov.
    callbacks
    matrices
    testing
+   sphinx
 
 References
 ~~~~~~~~~~
