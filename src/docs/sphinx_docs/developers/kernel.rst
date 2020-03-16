@@ -71,9 +71,10 @@ calls:
 
 The macro ``SETERRQ()`` is given by
 
-::
-
-      return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,error code,PETSC_ERROR_INITIAL,"Error message");
+.. literalinclude:: /../../../include/petscerror.h
+   :language: c
+   :start-at: #define SETERRQ
+   :end-at: #define SETERRQ
 
 It calls the error handler with the current function name and location:
 line number, and file, plus an error code and an error message. Normally
@@ -84,9 +85,10 @@ from being printed by many processes.
 
 The macro ``CHKERRQ()`` is defined by
 
-::
-
-    if (ierr) PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME_,__FILE__,ierr, PETSC_ERROR_REPEAT," ");
+.. literalinclude:: /../../../include/petscerror.h
+   :language: c
+   :start-at: #define CHKERRQ
+   :end-at: #define CHKERRQ
 
 In addition to ``SETERRQ()``, the macros ``SETERRQ1()``, ``SETERRQ2()``,
 ``SETERRQ3()``, and ``SETERRQ4()`` allow one to provide additional
@@ -105,32 +107,11 @@ Error Handlers
 The error-handling function ``PetscError()`` calls the “current” error
 handler with the code
 
-::
-
-    PetscErrorCode PetscError(MPI_Comm,int line,const char *func,const char *file,error code,error type,const char *mess)
-    {
-      PetscErrorCode ierr;
-
-      PetscFunctionBegin;
-      if (!eh) ierr = PetscTraceBackErrorHandler(line,func,file,error code,error type,mess,0);
-      else     ierr = (*eh->handler)(line,func,file,error code,error type,mess,eh->ctx);
-      PetscFunctionReturn(ierr);
-    }
-
-The variable ``eh`` is the current error handler context and is defined
-in
-`src/sys/error/err.c <https://www.mcs.anl.gov/petsc/petsc-master/src/sys/error/err.c.html>`__
-as
-
-::
-
-    typedef struct _PetscEH* PetscEH;
-    struct _PetscEH {
-      PetscErrorCode handler(MPI_Comm,int,const char*,const char*,const char*,
-                             PetscErrorCode,PetscErrorType,const char*,void*);
-      void           *ctx;
-      PetscEH        previous;
-    };
+.. literalinclude:: /../../../src/sys/error/err.c
+   :language: c
+   :start-at: PetscErrorCode PetscError(
+   :end-at: PetscFunctionReturn
+   :append: }
 
 You can set a new error handler with the command
 ``PetscPushErrorHandler()``, which maintains a linked list of error
@@ -183,12 +164,27 @@ and ``free()`` routines. The public interface for these is provided in
 ``petscsys.h``, while the implementation code is in ``src/sys/memory``.
 The most basic interfaces are
 
-::
+.. literalinclude:: /../../../include/petscsys.h
+   :language: c
+   :start-at: #define PetscMalloc
+   :end-at: #define PetscMalloc
 
-    #define PetscMalloc(a,b)  ((*PetscTrMalloc)((a),__LINE__,PETSC_FUNCTION_NAME,__FILE__,(void**)(b)))
-    #define PetscFree(a)   ((*PetscTrFree)((void*)(a),__LINE__,PETSC_FUNCTION_NAME,__FILE__) || ((a) = 0,0))
-    PetscErrorCode PetscMallocA(int n,PetscBool clear,int lineno,const char *function,const char *filename,size_t bytes0,void *ptr0,...)
-    PetscErrorCode PetscFreeA(int n,int lineno,const char *function,const char *filename,void *ptr0,...)
+.. literalinclude:: /../../../include/petscsys.h
+   :language: c
+   :start-at: #define PetscFree
+   :end-at: #define PetscFree
+
+.. literalinclude:: /../../../src/sys/memory/mal.c
+   :language: c
+   :start-at: PetscErrorCode PetscMallocA(
+   :end-at: PetscFunctionReturn(0)
+   :append: }
+
+.. literalinclude:: /../../../src/sys/memory/mal.c
+   :language: c
+   :start-at: PetscErrorCode PetscFreeA(
+   :end-at: PetscFunctionReturn(0)
+   :append: }
 
 which allow the use of any number of profiling and error-checking
 wrappers for ``malloc(), calloc()``, and ``free()``. Both
@@ -214,15 +210,39 @@ in the PETSc source code. They automatically manage calling
 ``PetscMallocA()`` and ``PetscFreeA()`` with the appropriate location
 information.
 
-::
+.. literalinclude:: /../../../include/petscsys.h
+   :language: c
+   :start-at: #define PetscMalloc1
+   :end-at: #define PetscMalloc1
 
-    #define PetscMalloc1(m1,r1) PetscMallocA(1,PETSC_FALSE,__LINE__,PETSC_FUNCTION_NAME,__FILE__, (size_t)(m1)*sizeof(**(r1)),(r1))
-    #define PetscMalloc2(m1,r1,m2,r2) PetscMallocA(2,PETSC_FALSE,__LINE__,PETSC_FUNCTION_NAME,__FILE__, (size_t)(m1)*sizeof(**(r1)),(r1),(size_t)(m2)*sizeof(**(r2)),(r2))
-    ...
-    #define PetscMalloc7(...)
-    #define PetscFree2(m1,m2)   PetscFreeA(2,__LINE__,PETSC_FUNCTION_NAME,__FILE__,&(m1),&(m2))
-    ...
-    #define PetscFree7(...)
+.. literalinclude:: /../../../include/petscsys.h
+   :language: c
+   :start-at: #define PetscMalloc2
+   :end-at: #define PetscMalloc2
+
+...
+
+.. literalinclude:: /../../../include/petscsys.h
+   :language: c
+   :start-at: #define PetscMalloc7
+   :end-at: #define PetscMalloc7
+
+.. literalinclude:: /../../../include/petscsys.h
+   :language: c
+   :start-at: #define PetscFree
+   :end-at: #define PetscFree
+
+.. literalinclude:: /../../../include/petscsys.h
+   :language: c
+   :start-at: #define PetscFree2
+   :end-at: #define PetscFree2
+
+...
+
+.. literalinclude:: /../../../include/petscsys.h
+   :language: c
+   :start-at: #define PetscFree7
+   :end-at: #define PetscFree7
 
 Similar routines, ``PetscCalloc1()`` to ``PetscCalloc7()``, provide
 memory initialized to zero. The size requests for these macros are in
@@ -288,12 +308,7 @@ and number of nonzeros.
 Profiling Events
 ~~~~~~~~~~~~~~~~
 
-Events are logged by using the pair
-
-::
-
-    PetscLogEventBegin(PetscLogEvent event,PetscObject o1,...,PetscObject o4);
-    PetscLogEventEnd(PetscLogEvent event,PetscObject o1,...,PetscObject o4);
+Events are logged by using the pair ``PetscLogEventBegin()`` and ``PetscLogEventEnd()``.
 
 This logging is usually done in the abstract interface file for the
 operations, for example,
