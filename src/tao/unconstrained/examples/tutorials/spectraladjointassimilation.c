@@ -249,13 +249,16 @@ int main(int argc,char **argv)
   ierr = TSSetRHSJacobian(appctx.ts,appctx.SEMop.stiff,appctx.SEMop.stiff,TSComputeRHSJacobianConstant,&appctx);CHKERRQ(ierr);
   /*  ierr = TSSetRHSFunction(appctx.ts,NULL,RHSFunction,&appctx);CHKERRQ(ierr);
       ierr = TSSetRHSJacobian(appctx.ts,appctx.SEMop.stiff,appctx.SEMop.stiff,RHSJacobian,&appctx);CHKERRQ(ierr); */
-  ierr = TSSetSaveTrajectory(appctx.ts);CHKERRQ(ierr);
 
   /* Set random initial conditions as initial guess, compute analytic reference solution and analytic (true) initial conditions */
   ierr = ComputeSolutionCoefficients(&appctx);CHKERRQ(ierr);
   ierr = InitialConditions(appctx.dat.ic,&appctx);CHKERRQ(ierr);
   ierr = ComputeReference(appctx.ts,appctx.param.Tend,appctx.dat.reference,&appctx);CHKERRQ(ierr);
   ierr = ComputeReference(appctx.ts,0.0,appctx.dat.true_solution,&appctx);CHKERRQ(ierr);
+
+  /* Set up to save trajectory before TSSetFromOptions() so that TSTrajectory options can be captured */
+  ierr = TSSetSaveTrajectory(appctx.ts);CHKERRQ(ierr);
+  ierr = TSSetFromOptions(appctx.ts);CHKERRQ(ierr);
 
   /* Create TAO solver and set desired solution method  */
   ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
@@ -614,7 +617,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec ic,PetscReal *f,Vec G,void *ctx)
   PetscFunctionBegin;
   ierr = TSSetTime(appctx->ts,0.0);CHKERRQ(ierr);
   ierr = TSSetStepNumber(appctx->ts,0);CHKERRQ(ierr);
-  ierr = TSResetTrajectory(appctx->ts);CHKERRQ(ierr);
   ierr = TSSetTimeStep(appctx->ts,appctx->initial_dt);CHKERRQ(ierr);
   ierr = VecCopy(ic,appctx->dat.curr_sol);CHKERRQ(ierr);
 

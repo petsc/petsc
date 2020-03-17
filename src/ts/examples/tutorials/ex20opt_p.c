@@ -647,7 +647,7 @@ PetscErrorCode Adjoint2(Vec P,PetscScalar arr[],User ctx)
 
   ierr = TSSetTime(ts,0.0);CHKERRQ(ierr);
   ierr = TSSetStepNumber(ts,0);CHKERRQ(ierr);
-  ierr = TSSetTimeStep(ts,0.001);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,PetscRealConstant(0.001));CHKERRQ(ierr); /* can be overwritten by command line options */
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
   ierr = TSSetCostHessianProducts(ts,1,ctx->Lambda2,ctx->Mup2,ctx->Dir);CHKERRQ(ierr);
 

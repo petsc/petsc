@@ -430,10 +430,9 @@ PetscErrorCode FormGradient(Tao tao,Vec P,Vec G,void *ctx0)
   u[1] = PetscRealConstant(1.0);
   ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    Save trajectory of solution so that TSAdjointSolve() may be used
-   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  /* Set up to save trajectory before TSSetFromOptions() so that TSTrajectory options can be captured */
   ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
+  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
