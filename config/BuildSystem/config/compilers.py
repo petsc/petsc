@@ -912,12 +912,13 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
       return
     skipfortranlibraries = 1
     self.setCompilers.saveLog()
-    cbody = "int main(int argc,char **args)\n{return 0;}\n";
+    asub=self.mangleFortranFunction("asub")
+    cbody = "extern void "+asub+"(void);\nint main(int argc,char **args)\n{\n  "+asub+"();\n  return 0;\n}\n";
     self.pushLanguage('FC')
     if self.checkLink(includes='#include <mpif.h>',body='      call MPI_Allreduce()\n'):
-      fbody = "subroutine asub()\n      print*,'testing'\n      call MPI_Allreduce()\n      return\n      end\n"
+      fbody = "      subroutine asub()\n      print*,'testing'\n      call MPI_Allreduce()\n      return\n      end\n"
     else:
-      fbody = "subroutine asub()\n      print*,'testing'\n      return\n      end\n"
+      fbody = "      subroutine asub()\n      print*,'testing'\n      return\n      end\n"
     self.popLanguage()
     try:
       if self.checkCrossLink(fbody,cbody,language1='FC',language2='C'):
