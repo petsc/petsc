@@ -1,6 +1,5 @@
+-include ../petscdir.mk
 #requiresdefine   'PETSC_HAVE_ATTRIBUTEALIGNED'
-
-ALL: lib
 CFLAGS	         =
 FFLAGS	         =
 CPPFLAGS         =
