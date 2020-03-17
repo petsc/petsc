@@ -41,6 +41,7 @@ OPTIONS
   -m ................ Update results using petscdiff
   -M ................ Update alt files using petscdiff
   -o <arg> .......... Output format: 'interactive', 'err_only'
+  -p ................ Print command:  Print first command and exit
   -t ................ Override the default timeout (default=$TIMEOUT sec)
   -V ................ run Valgrind
   -v ................ Verbose: Print commands
@@ -56,9 +57,10 @@ output_fmt="interactive"
 verbose=false
 cleanup=false
 debugger=false
+printcmd=false
 force=false
 diff_flags=""
-while getopts "a:cde:fhjJ:mMn:o:t:vV" arg
+while getopts "a:cde:fhjJ:mMn:o:pt:vV" arg
 do
   case $arg in
     a ) args="$OPTARG"       ;;  
@@ -73,6 +75,7 @@ do
     m ) diff_flags=$diff_flags" -m"      ;;  
     M ) diff_flags=$diff_flags" -M"      ;;  
     o ) output_fmt=$OPTARG   ;;  
+    p ) printcmd=true        ;;
     t ) TIMEOUT=$OPTARG      ;;  
     V ) mpiexec="petsc_mpiexec_valgrind $mpiexec" ;;  
     v ) verbose=true         ;;  
@@ -133,6 +136,15 @@ function petsc_report_tapoutput() {
   fi
 }
 
+function printcmd() {
+  # Print command that can be run from PETSC_DIR
+  cmd="$1"
+  basedir=`dirname ${PWD} | sed "s#${petsc_dir}/##"`
+  modcmd=`echo ${cmd} | sed -e "s#\.\.#${basedir}#" | sed s#\>.*##`
+  printf "${modcmd}\n" 
+  exit
+}
+
 function petsc_testrun() {
   # First arg = Basic command
   # Second arg = stdout file
@@ -146,6 +158,9 @@ function petsc_testrun() {
     cmd="$1 2>&1 | cat > $2"
   fi
   echo "$cmd" > ${tlabel}.sh; chmod 755 ${tlabel}.sh
+  if $printcmd; then
+     printcmd "$cmd"
+  fi
 
   eval "{ time -p $cmd ; } 2>> timing.out"
   cmd_res=$?
