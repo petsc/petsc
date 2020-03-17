@@ -62,6 +62,7 @@ endif
 ifeq ($(ALT),1)
   TESTFLAGS += -M    # Replace alt files by passing -M to petscdiff
 endif
+PRINTONLY ?= 0
 ifeq ($(PRINTONLY),1)
   TESTFLAGS += -p    # Pass -p to petscdiff to print only command
 endif
