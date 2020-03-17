@@ -344,6 +344,13 @@ class Package(config.base.Configure):
       raise RuntimeError(self.package+' forgot to return the install directory from the method Install()\n')
     return os.path.abspath(installDir)
 
+  def withSudo(self, *args):
+    """Convert args to a list prepended by sudo when using sudo"""
+    if self.installSudo:
+      return [self.installSudo] + list(args)
+    else:
+      return list(args)
+
   def getChecksum(self,source, chunkSize = 1024*1024):
     '''Return the md5 checksum for a given file, which may also be specified by its filename
        - The chunkSize argument specifies the size of blocks read from the file'''

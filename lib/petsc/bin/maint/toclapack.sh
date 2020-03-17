@@ -42,12 +42,12 @@ LEX=lex
 CC=cc
 AWK=awk
 TMP=${PWD}/toclapack.$$
-LEXFLAGS=-ll
+LEXFLAGS=-lfl
 SED=sed
 TAR=tar
 
 # Some vars
-FBLASLAPACK=f2cblaslapack-3.4.2.q3
+FBLASLAPACK=f2cblaslapack-3.4.2.q4
 BIN=${TMP}/bin
 PAC=${TMP}/${FBLASLAPACK}
 BLASDIR=${PAC}/blas
@@ -156,6 +156,10 @@ blas_lib:
 	-@cd blas;   $(MAKE) lib $(MAKE_OPTIONS_BLAS)
 	-@$(RANLIB) $(BLAS_LIB_NAME)
 
+blasaux_lib:
+	-@cd blas;   $(MAKE) aux $(MAKE_OPTIONS_BLAS)
+	-@$(RANLIB) $(BLAS_LIB_NAME)
+
 lapack_lib:
 	-@cd lapack; $(MAKE) lib $(MAKE_OPTIONS_LAPACK)
 	-@$(RANLIB) $(LAPACK_LIB_NAME)
@@ -262,8 +266,11 @@ for p in blas qblas hblas lapack qlapack hlapack; do
 		DES="$BLASDIR"
 		NOOP=""
 		echo "pow_ii" > ${TMP}/AUX.list
-		echo $'pow_si\nsmaxloc\nsf__cabs' > ${TMP}/SINGLE.list
-		echo $'pow_di\ndmaxloc\ndf__cabs' > ${TMP}/DOUBLE.list
+                # Utility functions (not part of BLAS public interface) go in AUX because
+                # it's possible to build only the AUX part (needed by libf2clapack.a) while
+                # using an external BLAS (such as BLIS).
+		echo $'pow_si\nsmaxloc\nsf__cabs' >> ${TMP}/AUX.list
+		echo $'pow_di\ndmaxloc\ndf__cabs' >> ${TMP}/AUX.list
 		cd $SRC
 		files="`ls *.f`"
 		cd -
@@ -447,6 +454,9 @@ DOUBLEO = `cat ${TMP}/DOUBLE.list | $AWK '{printf("%s.o ", $1)}'`
 
 lib: \$(SINGLEO) \$(DOUBLEO) \$(AUXO)
 	\$(AR) \$(AR_FLAGS) ../\$(LIBNAME) \$(SINGLEO) \$(DOUBLEO) \$(AUXO)
+
+aux: \$(AUXO)
+	\$(AR) \$(AR_FLAGS) ../\$(LIBNAME) \$(AUXO)
 
 single: \$(SINGLEO) \$(AUXO)
 	\$(AR) \$(AR_FLAGS) ../\$(LIBNAME) \$(SINGLEO) \$(AUXO)
