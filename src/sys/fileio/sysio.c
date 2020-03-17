@@ -4,6 +4,7 @@
  */
 
 #include <petscsys.h>
+#include <petscbt.h>
 #include <errno.h>
 #include <fcntl.h>
 #if defined(PETSC_HAVE_UNISTD_H)
@@ -12,7 +13,9 @@
 #if defined(PETSC_HAVE_IO_H)
 #include <io.h>
 #endif
-#include <petscbt.h>
+#if !defined(PETSC_HAVE_O_BINARY)
+#define O_BINARY 0
+#endif
 
 const char *const PetscFileModes[] = {"READ","WRITE","APPEND","UPDATE","APPEND_UPDATE","PetscFileMode","PETSC_FILE_",NULL};
 
@@ -470,7 +473,7 @@ PetscErrorCode  PetscBinaryWrite(int fd,const void *p,PetscInt n,PetscDataType t
 
    Input Parameters:
 +  name - filename
--  type - type of binary file, one of FILE_MODE_READ, FILE_MODE_APPEND, FILE_MODE_WRITE
+-  mode - open mode of binary file, one of FILE_MODE_READ, FILE_MODE_WRITE, FILE_MODE_APPEND
 
    Output Parameter:
 .  fd - the file
@@ -490,23 +493,13 @@ PetscErrorCode  PetscBinaryWrite(int fd,const void *p,PetscInt n,PetscDataType t
 PetscErrorCode  PetscBinaryOpen(const char name[],PetscFileMode mode,int *fd)
 {
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_O_BINARY)
-  if (mode == FILE_MODE_WRITE) {
-    if ((*fd = open(name,O_WRONLY|O_CREAT|O_TRUNC|O_BINARY,0666)) == -1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot create file for writing: %s",name);
-  } else if (mode == FILE_MODE_READ) {
-    if ((*fd = open(name,O_RDONLY|O_BINARY,0)) == -1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file for reading: %s",name);
-  } else if (mode == FILE_MODE_APPEND) {
-    if ((*fd = open(name,O_WRONLY|O_BINARY,0)) == -1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file for writing: %s",name);
-#else
-  if (mode == FILE_MODE_WRITE) {
-    if ((*fd = creat(name,0666)) == -1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot create file for writing: %s",name);
-  } else if (mode == FILE_MODE_READ) {
-    if ((*fd = open(name,O_RDONLY,0)) == -1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file for reading: %s",name);
+  switch (mode) {
+  case FILE_MODE_READ:   *fd = open(name,O_BINARY|O_RDONLY,0); break;
+  case FILE_MODE_WRITE:  *fd = open(name,O_BINARY|O_WRONLY|O_CREAT|O_TRUNC,0666); break;
+  case FILE_MODE_APPEND: *fd = open(name,O_BINARY|O_WRONLY|O_APPEND,0); break;
+  default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported file mode %s",PetscFileModes[mode]);
   }
-  else if (mode == FILE_MODE_APPEND) {
-    if ((*fd = open(name,O_WRONLY,0)) == -1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file for writing: %s",name);
-#endif
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown file mode");
+  if (*fd == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file %s for %s: %s",name,PetscFileModes[mode]);
   PetscFunctionReturn(0);
 }
 
@@ -526,7 +519,7 @@ PetscErrorCode  PetscBinaryOpen(const char name[],PetscFileMode mode,int *fd)
 PetscErrorCode  PetscBinaryClose(int fd)
 {
   PetscFunctionBegin;
-  close(fd);
+  if (close(fd)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"close() failed on file descriptor");
   PetscFunctionReturn(0);
 }
 
