@@ -17,6 +17,8 @@ if __name__ == '__main__':
     '--download-hdf5',
     '--download-metis',
     '--download-superlu',
+    '--download-mumps',
+    '--with-mumps-serial',
   ]
   configure.petsc_configure(configure_options)
 
