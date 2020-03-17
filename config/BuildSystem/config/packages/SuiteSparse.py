@@ -3,11 +3,13 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self,framework)
-    self.version           = '5.6.0'
+    self.minversion        = '5.6.0'
+    self.version           = '5.7.1'
     self.versioninclude    = 'SuiteSparse_config.h'
     self.versionname       = 'SUITESPARSE_MAIN_VERSION.SUITESPARSE_SUB_VERSION.SUITESPARSE_SUBSUB_VERSION'
     self.gitcommit         = 'v'+self.version
     self.download          = ['git://https://github.com/DrTimothyAldenDavis/SuiteSparse','https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/'+self.gitcommit+'.tar.gz']
+    self.download_solaris  = ['https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/v5.6.0.tar.gz']
     self.liblist           = [['libumfpack.a','libklu.a','libcholmod.a','libbtf.a','libccolamd.a','libcolamd.a','libcamd.a','libamd.a','libsuitesparseconfig.a'],
                              ['libumfpack.a','libklu.a','libcholmod.a','libbtf.a','libccolamd.a','libcolamd.a','libcamd.a','libamd.a','libsuitesparseconfig.a','librt.a'],
                              ['libumfpack.a','libklu.a','libcholmod.a','libbtf.a','libccolamd.a','libcolamd.a','libcamd.a','libamd.a','libmetis.a','libsuitesparseconfig.a'],

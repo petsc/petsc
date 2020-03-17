@@ -1084,6 +1084,8 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
     return
 
   def configure(self):
+    if hasattr(self, 'download_solaris') and config.setCompilers.Configure.isSolaris(self.log):
+      self.download = self.download_solaris
     if self.download and self.argDB['download-'+self.downloadname.lower()] and (not self.framework.batchBodies or self.installwithbatch):
       self.argDB['with-'+self.package] = 1
       downloadPackageVal = self.argDB['download-'+self.downloadname.lower()]
