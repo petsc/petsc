@@ -16,14 +16,12 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscOptions   options;
 
-
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsCreate(&options);CHKERRQ(ierr);
-  ierr = PetscOptionsInsert(options,&argc,&argv,"optionsfile");CHKERRQ(ierr);
-  ierr = PetscOptionsInsertString(options,"-option1 value1 -option2 -option3 value3");CHKERRQ(ierr);
-  ierr = PetscOptionsView(options,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscOptionsDestroy(&options);CHKERRQ(ierr);
-
+  CHKERRQ(PetscOptionsCreate(&options));
+  CHKERRQ(PetscOptionsInsert(options,&argc,&argv,"optionsfile"));
+  CHKERRQ(PetscOptionsInsertString(options,"-option1 value1 -option2 -option3 value3"));
+  CHKERRQ(PetscOptionsView(options,PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(PetscOptionsDestroy(&options));
   ierr = PetscFinalize();
   return ierr;
 }
