@@ -62,6 +62,9 @@ endif
 ifeq ($(ALT),1)
   TESTFLAGS += -M    # Replace alt files by passing -M to petscdiff
 endif
+ifeq ($(PRINTONLY),1)
+  TESTFLAGS += -p    # Pass -p to petscdiff to print only command
+endif
 ifeq ($(DIFF_NUMBERS),1)
   TESTFLAGS += -j    # Pass -j to petscdiff to diff the actual numbers
 endif
@@ -300,8 +303,9 @@ starttime: pre-clean $(libpetscall)
 
 report_tests: starttime $(TESTTARGETS)
 	@$(eval ENDTIME := $(shell date +%s))
-	-@elapsed_time=$$(($(ENDTIME)- $(STARTTIME))) && \
-	$(PYTHON) $(CONFIGDIR)/report_tests.py -m $(MAKE) -d $(TESTDIR)/counts -t 5 -e $${elapsed_time}
+	-@if test ${PRINTONLY} -ne 1; then  elapsed_time=$$(($(ENDTIME)- $(STARTTIME))) && \
+	$(PYTHON) $(CONFIGDIR)/report_tests.py -m $(MAKE) -d $(TESTDIR)/counts -t 5 -e $${elapsed_time};\
+    fi
 
 check_output: 
 	$(PYTHON) $(CONFIGDIR)/gmakegentest.py --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) --testdir=$(TESTDIR) --check-output
@@ -351,6 +355,7 @@ help-test:
 	-@echo "  VALGRIND=1        Execute the tests using valgrind (-V to test scripts)"
 	-@echo "  NP=<num proc>     Set a number of processors to pass to scripts."
 	-@echo "  FORCE=1           Force SKIP or TODO tests to run"
+	-@echo "  PRINTONLY=1       Print the command, but do not run.  For loops print first command"
 	-@echo "  TIMEOUT=<time>    Test timeout limit in seconds (default in config/petsc_harness.sh)"
 	-@echo "  TESTDIR='tests'   Subdirectory where tests are run ($${PETSC_DIR}/$${PETSC_ARCH}/$${TESTDIR}"
 	-@echo "                    or $${PREFIX_DIR}/$${TESTDIR}"

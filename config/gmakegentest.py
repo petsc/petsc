@@ -682,7 +682,7 @@ class generateExamples(Petsc):
         for stest in testDict['subtests']:
           if 'requires' in testDict[stest]:
             testDict['requires']+=" "+testDict[stest]['requires']
-          if testDict.get('nsize', '1') != '1':
+          if testDict[stest].get('nsize', '1') != '1':
             testDict['SKIP'].append("Parallel test with serial build")
             break
 
