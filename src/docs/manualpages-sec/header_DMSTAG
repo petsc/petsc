@@ -3,7 +3,7 @@
 <TITLE>DMStag Manual Pages</TITLE>
 </HEAD>
 <BODY BGCOLOR="FFFFFF">
-<H2> DMStag - Staggered Grids: <A HREF="PETSC_DIRsrc/dm/impls/stag/examples/tutorials/index.html">Examples</A></H2>
+<H2> DMStag - Staggered Grids: <A HREF="PETSC_DIRsrc/dm/impls/stag/tutorials/index.html">Examples</A></H2>
 
 The DMStag class encapsulates a Cartesian structured mesh, with "staggered" data living on elements, faces, edges, and vertices.
 <P>

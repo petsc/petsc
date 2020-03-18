@@ -134,7 +134,7 @@ PetscErrorCode MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqDense(Mat R,Mat A,Mat B,Mat
 
   { /* 
      This approach is not as good as original ones (will be removed later), but it reveals that
-     AB_den=A*B takes almost all execution time in R*A*B for src/ksp/ksp/examples/tutorials/ex56.c
+     AB_den=A*B takes almost all execution time in R*A*B for src/ksp/ksp/tutorials/ex56.c
      */
     PetscBool via_matmatmult=PETSC_FALSE;
     ierr = PetscOptionsGetBool(NULL,NULL,"-matrart_via_matmatmult",&via_matmatmult,NULL);CHKERRQ(ierr);

@@ -4,7 +4,7 @@
 </HEAD>
 <BODY BGCOLOR="FFFFFF">
 
-<H2> PetscDualSpace <A HREF="PETSC_DIRsrc/dm/dt/dualspace/examples/tutorials/index.html">Examples</A></H2>
+<H2> PetscDualSpace <A HREF="PETSC_DIRsrc/dm/dt/dualspace/tutorials/index.html">Examples</A></H2>
 
 The PetscDualSpace class encapsulates a function space.
 

@@ -281,7 +281,7 @@ PetscErrorCode  DMDAVecRestoreArrayWrite(DM da,Vec vec,void *array)
     In C, the indexing is "backwards" from what expects: array[k][j][i][DOF] NOT array[i][j][k][DOF]!
 
     In Fortran 90 you do not need a version of DMDAVecRestoreArrayDOF() just use  DMDAVecRestoreArrayF90() and declare your array with one higher dimension,
-    see src/dm/examples/tutorials/ex11f90.F
+    see src/dm/tutorials/ex11f90.F
 
   Level: intermediate
 
@@ -512,7 +512,7 @@ PetscErrorCode  DMDAVecRestoreArrayRead(DM da,Vec vec,void *array)
     In C, the indexing is "backwards" from what expects: array[k][j][i][DOF] NOT array[i][j][k][DOF]!
 
     In Fortran 90 you do not need a version of DMDAVecRestoreArrayDOF() just use  DMDAVecRestoreArrayReadF90() and declare your array with one higher dimension,
-    see src/dm/examples/tutorials/ex11f90.F
+    see src/dm/tutorials/ex11f90.F
 
   Level: intermediate
 

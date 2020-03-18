@@ -2,7 +2,7 @@
 ALL: lib
 
 SOURCEH	  = aoimpl.h ../../../../include/petscao.h
-DIRS	  = interface impls  examples
+DIRS	  = interface impls  tests
 LOCDIR    = src/vec/is/ao/
 MANSEC    = Vec
 SUBMANSEC = AO

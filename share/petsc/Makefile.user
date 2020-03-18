@@ -7,7 +7,7 @@
 #
 # For example - a single source file can be compiled with:
 #
-#  $ cd src/snes/examples/tutorials/
+#  $ cd src/snes/tutorials/
 #  $ make -f $PETSC_DIR/share/petsc/Makefile.user ex17
 #
 # The following variable must either be a path to PETSc.pc or just "PETSc" if PETSc.pc

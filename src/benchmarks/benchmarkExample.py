@@ -482,7 +482,7 @@ if __name__ == '__main__':
   import __main__
 
   parser = argparse.ArgumentParser(description     = 'PETSc Benchmarking',
-                                   epilog          = 'This script runs src/<library>/examples/tutorials/ex<num>, For more information, visit https://www.mcs.anl.gov/petsc',
+                                   epilog          = 'This script runs src/<library>/tutorials/ex<num>, For more information, visit https://www.mcs.anl.gov/petsc',
                                    formatter_class = argparse.ArgumentDefaultsHelpFormatter)
   parser.add_argument('--library', default='SNES',                     help='The PETSc library used in this example')
   parser.add_argument('--num',     type = int, default='5',            help='The example number')

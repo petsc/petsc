@@ -16,7 +16,7 @@ if __name__ == '__main__':
     'CXXOPTFLAGS=-g -O',
     '--with-cuda=1',
     '--with-precision=single',
-    '--download-openblas', # default ATLAS blas on Ubuntu 14.04 breaks runex76 in src/mat/examples/tests
+    '--download-openblas', # default ATLAS blas on Ubuntu 14.04 breaks runex76 in src/mat/tests
     '--download-openblas-make-options=TARGET=GENERIC',
     '--with-clanguage=cxx',
     '--with-single-library=0',

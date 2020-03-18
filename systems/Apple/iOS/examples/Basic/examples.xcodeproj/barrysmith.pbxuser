@@ -307,7 +307,7 @@
 		isa = PBXFileReference;
 		lastKnownFileType = sourcecode.c.c;
 		name = ex19.c;
-		path = "/Users/barrysmith/Src/petsc-dev/include/../src/snes/examples/tutorials/ex19.c";
+		path = "/Users/barrysmith/Src/petsc-dev/include/../src/snes/tutorials/ex19.c";
 		sourceTree = "<absolute>";
 	};
 	D8744A0E119C98EA003C661D /* PBXTextBookmark */ = {
@@ -450,7 +450,7 @@
 		isa = PBXFileReference;
 		lastKnownFileType = sourcecode.c.c;
 		name = ex48.c;
-		path = "/Users/barrysmith/Src/petsc-dev/src/snes/examples/tutorials/ex48.c";
+		path = "/Users/barrysmith/Src/petsc-dev/src/snes/tutorials/ex48.c";
 		sourceTree = "<absolute>";
 		uiCtxt = {
 			sepNavIntBoundsRect = "{{0, 0}, {1818, 20423}}";
@@ -471,7 +471,7 @@
 	D8E3AE9D11A37C4800195F6D /* ex48.c */ = {
 		isa = PBXFileReference;
 		name = ex48.c;
-		path = "/Users/barrysmith/Src/petsc-dev/src/snes/examples/tutorials/ex48.c";
+		path = "/Users/barrysmith/Src/petsc-dev/src/snes/tutorials/ex48.c";
 		sourceTree = "<absolute>";
 	};
 	D8E9F847119CEC2200A5892E /* PBXTextBookmark */ = {

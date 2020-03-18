@@ -325,7 +325,7 @@ PETSC_EXTERN PetscErrorCode DMPlexAnchorsModifyMat(DM,PetscSection,PetscInt,Pets
 PETSC_EXTERN PetscErrorCode indicesPoint_private(PetscSection,PetscInt,PetscInt,PetscInt *,PetscBool,PetscInt,PetscInt []);
 PETSC_EXTERN PetscErrorCode indicesPointFields_private(PetscSection,PetscInt,PetscInt,PetscInt [],PetscBool,PetscInt,PetscInt []);
 PETSC_INTERN PetscErrorCode DMPlexLocatePoint_Internal(DM,PetscInt,const PetscScalar [],PetscInt,PetscInt *);
-/* these two are PETSC_EXTERN just because of src/dm/impls/plex/examples/tests/ex18.c */
+/* these two are PETSC_EXTERN just because of src/dm/impls/plex/tests/ex18.c */
 PETSC_EXTERN PetscErrorCode DMPlexOrientCell_Internal(DM,PetscInt,PetscInt,PetscBool);
 PETSC_EXTERN PetscErrorCode DMPlexOrientInterface_Internal(DM);
 

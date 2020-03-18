@@ -3178,7 +3178,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowColDist(Mat mat,IS isrow,IS isco
     ierr = ISGetLocalSize(iscol_o,&BsubN);CHKERRQ(ierr);
     n = asub->B->cmap->N;
     if (BsubN > n) {
-      /* This case can be tested using ~petsc/src/tao/bound/examples/tutorials/runplate2_3 */
+      /* This case can be tested using ~petsc/src/tao/bound/tutorials/runplate2_3 */
       const PetscInt *idx;
       PetscInt       i,j,*idx_new,*subgarray = asub->garray;
       ierr = PetscInfo2(M,"submatrix Bn %D != BsubN %D, update iscol_o\n",n,BsubN);CHKERRQ(ierr);

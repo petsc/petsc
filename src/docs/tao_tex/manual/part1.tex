@@ -19,7 +19,7 @@ Examples throughout the library demonstrate the software usage and
 can serve as templates for developing custom applications.  We suggest
 that new TAO users examine programs in
 \begin{verbatim}
-   ${PETSC_DIR}/src/tao/<unconstrained,bound,..>/examples/tutorials.
+   ${PETSC_DIR}/src/tao/<unconstrained,bound,..>/tutorials.
 \end{verbatim} 
 The HTML version of the manual pages located at
 \begin{verbatim}
@@ -42,7 +42,7 @@ program using TAO:
   \url{https://www.mcs.anl.gov/petsc/documentation/installation.html}.
 \item Copy an example and makefile from the directories
 \begin{verbatim}
-   ${PETSC_DIR}/src/tao/<unconstrained,bound,..>/examples/tutorials.
+   ${PETSC_DIR}/src/tao/<unconstrained,bound,..>/tutorials.
 \end{verbatim} 
   compile the example, and run the program. 
 \item Select the example program matching the application most
@@ -82,7 +82,7 @@ display purposes we have omitted some nonessential lines of code as well as the
 (essential) code required for the routine \texttt{FormFunctionGradient},
 which evaluates the function and gradient, and the code for
 \texttt{FormHessian}, which evaluates the Hessian matrix for Rosenbrock's
-function. The complete code is available in \url{$TAO\_DIR/src/unconstrained/examples/tutorials/rosenbrock1.c}. %$
+function. The complete code is available in \url{$TAO\_DIR/src/unconstrained/tutorials/rosenbrock1.c}. %$
 The following sections annotates the lines of code in
 Figure~\ref{fig:example1}.
 
@@ -288,7 +288,7 @@ information about error handling in Fortran.
 [0]PETSC ERROR: MatMult() line 2110 in petsc/src/mat/interface/matrix.c
 [0]PETSC ERROR: TaoSolve_NLS() line 291 in src/unconstrained/impls/nls/nls.c
 [0]PETSC ERROR: TaoSolve() line 154 in src/interface/tao.c
-[0]PETSC ERROR: main() line 94 in src/unconstrained/examples/tutorials/rosenbrock1.c
+[0]PETSC ERROR: main() line 94 in src/unconstrained/tutorials/rosenbrock1.c
 application called MPI_Abort(MPI_COMM_WORLD, 73) - process 0
 \end{verbatim}
 }

@@ -1,7 +1,7 @@
 
 /*
    This file contains routines for sorting integers. Values are sorted in place.
-   One can use src/sys/examples/tests/ex52.c for benchmarking.
+   One can use src/sys/tests/ex52.c for benchmarking.
  */
 #include <petsc/private/petscimpl.h>                /*I  "petscsys.h"  I*/
 #include <petsc/private/hashseti.h>

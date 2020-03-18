@@ -96,7 +96,7 @@
         <li><a href="#multiplempis">How to fix the problem: PETSc was configured with one MPICH or OpenMPI mpi.h version but now appears to be compiling using a different MPICH OpenMPI mpi.h version</a></li>
         <li><a href="#PetscOptionsInsertFile">What does it mean when make test gives:</a>
             <pre>
-Possible error running C/C++ src/snes/examples/tutorials/ex19 with 2 MPI processes
+Possible error running C/C++ src/snes/tutorials/ex19 with 2 MPI processes
 See https://www.mcs.anl.gov/petsc/documentation/faq.html
 [0]PETSC ERROR: #1 PetscOptionsInsertFile() line 563 in /Users/barrysmith/Src/PETSc/src/sys/objects/options.c
 [0]PETSC ERROR: #2 PetscOptionsInsert() line 720 in /Users/barrysmith/Src/PETSc/src/sys/objects/options.c
@@ -457,7 +457,7 @@ See https://www.mcs.anl.gov/petsc/documentation/faq.html
       except KSPIBCGS, run all their vector operations on the GPU; thus, for
       example, Jacobi preconditioned Krylov methods run completely on the GPU.
       Preconditioners are a problem; we could do with some help for these. The
-      example <a href="https://www.mcs.anl.gov/petsc/petsc-master/src/snes/examples/tutorials/ex47cu.cu.html">src/snes/examples/tutorials/ex47cu.cu</a>
+      example <a href="https://www.mcs.anl.gov/petsc/petsc-master/src/snes/tutorials/ex47cu.cu.html">src/snes/tutorials/ex47cu.cu</a>
       demonstates how the nonlinear function evaluation can be done on the
       GPU.
 
@@ -529,8 +529,8 @@ See https://www.mcs.anl.gov/petsc/documentation/faq.html
         <li>
           The PETSc test suite contains sample output for many of the examples.
           These are contained in the PETSc directories
-          ${PETSC_DIR}/src/*/examples/tutorials/output and
-          ${PETSC_DIR}/src/*/examples/tests/output. Once you have run the test
+          ${PETSC_DIR}/src/*/tutorials/output and
+          ${PETSC_DIR}/src/*/tests/output. Once you have run the test
           examples, you may remove all of these directories to save some disk space.
         </li>
 
@@ -646,7 +646,7 @@ See https://www.mcs.anl.gov/petsc/documentation/faq.html
 
       <h3><a name="PetscOptionsInsertFile">What does it mean when make test gives:</a></h3>
             <pre>
-Possible error running C/C++ src/snes/examples/tutorials/ex19 with 2 MPI processes
+Possible error running C/C++ src/snes/tutorials/ex19 with 2 MPI processes
 See https://www.mcs.anl.gov/petsc/documentation/faq.html
 [0]PETSC ERROR: #1 PetscOptionsInsertFile() line 563 in /Users/barrysmith/Src/PETSc/src/sys/objects/options.c
 [0]PETSC ERROR: #2 PetscOptionsInsert() line 720 in /Users/barrysmith/Src/PETSc/src/sys/objects/options.c
@@ -795,13 +795,13 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
         is defined by solving specific local subdomain problems. It currently
         only works for 3D scalar problems on structured grids created with PETSc
         DMDAs. See the manual page for PCEXOTIC and
-        src/ksp/ksp/examples/tutorials/ex45.c for any example.
+        src/ksp/ksp/tutorials/ex45.c for any example.
       </p>
 
       <p>
         PETSc also contains a balancing Neumann-Neumann type preconditioner, see the
         manual page for PCBDDC. This requires matrices be constructed with
-        <code>MatCreateIS()</code> via the finite element method. See src/ksp/ksp/examples/tests/ex59.c
+        <code>MatCreateIS()</code> via the finite element method. See src/ksp/ksp/tests/ex59.c
       </p>
 
       <h3><a name="blocks">Can I create BAIJ matrices with different size blocks for different block rows?</a></h3>
@@ -892,7 +892,7 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
       Julia package.</p>
 
       <p>For other formats, either adapt one of the above libraries or see the
-      examples in src/mat/examples/tests, specifically ex72.c or ex78.c. 
+      examples in src/mat/tests, specifically ex72.c or ex78.c. 
       You will likely need to modify the code slightly to match your
       required ASCII format. Note: Never read or write in parallel an ASCII
       matrix file, instead for reading: read in sequentially with a standalone
@@ -1050,13 +1050,13 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
        To write the code (rather than use the options above) use <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/SNES/MatCreateSNESMF.html">MatCreateSNESMF()</a> and pass the resulting matrix object to
        SNESSetJacobian(). For purely matrix-free (like -snes_mf) pass the matrix object for both matrix arguments and pass the function MatMFFDComputeJacobian(). To provide your own approximate Jacobian matrix to compute
        the preconditioner (like -snes_mf_operator), pass this other matrix as the second matrix argument to SNESSetJacobian(). Make sure your provided computejacobian() function calls MatAssemblyBegin/End() separately on BOTH
-       matrix arguments to this function. See <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tests/ex7.c.html">src/snes/examples/tests/ex7.c</a>
+       matrix arguments to this function. See <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tests/ex7.c.html">src/snes/tests/ex7.c</a>
       </p>
 
       <p>
        To difference a different function than that passed to SNESSetJacobian() to compute the matrix-free Jacobian multiply call
        <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatMFFDSetFunction.html">MatMFFDSetFunction()</a> to set that other function.
-       See <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tests/ex7.c.html">src/snes/examples/tests/ex7.c.h</a>
+       See <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tests/ex7.c.html">src/snes/tests/ex7.c.h</a>
       </p>
 
       <h3><a name="conditionnumber">How can I determine the condition number of a matrix?</a></h3>
@@ -1140,13 +1140,13 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
       <ol>
         <li>
           use DMPlex, which is a high level approach to manage your mesh and
-          discretization. <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex62.c.html">SNES
+          discretization. <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex62.c.html">SNES
           ex62</a> solves the Stokes equation using this approach.
         </li>
         <li>
           manage the grid data structure yourself and use
           PETSc IS and VecScatter to communicate the required
-          ghost point communication. See <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex10d/ex10.c.html">src/snes/examples/tutorials/ex10d/ex10.c</a>
+          ghost point communication. See <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex10d/ex10.c.html">src/snes/tutorials/ex10d/ex10.c</a>
         </li>
       </ol>
 

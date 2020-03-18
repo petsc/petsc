@@ -1541,7 +1541,7 @@ $       call VecRestoreArray(x,x_array,i_x,ierr)
    For Fortran 90 see VecGetArrayF90()
 
    See the Fortran chapter of the users manual and
-   petsc/src/snes/examples/tutorials/ex5f.F for details.
+   petsc/src/snes/tutorials/ex5f.F for details.
 
    Level: beginner
 

@@ -22,7 +22,7 @@ const char       GolubWelschCitation[] = "@article{GolubWelsch1969,\n"
                                          "  pages   = {221--230},\n"
                                          "  year    = {1969}\n}\n";
 
-/* Numerical tests in src/dm/dt/examples/tests/ex1.c show that when computing the nodes and weights of Gauss-Jacobi
+/* Numerical tests in src/dm/dt/tests/ex1.c show that when computing the nodes and weights of Gauss-Jacobi
    quadrature rules:
 
    - in double precision, Newton's method and Golub & Welsch both work for moderate degrees (< 100),

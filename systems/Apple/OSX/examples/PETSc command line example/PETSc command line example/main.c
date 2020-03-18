@@ -8,4 +8,4 @@
 
 #define PETSC_APPLE_FRAMEWORK
 
-#include "../../../../../../src/snes/examples/tutorials/ex19.c"
+#include "../../../../../../src/snes/tutorials/ex19.c"

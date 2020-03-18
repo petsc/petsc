@@ -1584,7 +1584,7 @@ $       MatMult(Mat,Vec,Vec) -> usermult(Mat,Vec,Vec)
 
     Fortran Notes:
     For MatCreateVecs() the user code should check if the input left or right matrix is -1 and in that case not
-       generate a matrix. See src/mat/examples/tests/ex120f.F
+       generate a matrix. See src/mat/tests/ex120f.F
 
     Use MatSetOperation() to set an operation for any matrix type
 

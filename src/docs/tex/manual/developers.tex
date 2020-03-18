@@ -1847,9 +1847,9 @@ which is equivalent to
 TEST*/
 \end{outputlisting}
 
-If this block is in \lstinline{src/a/b/examples/tutorials/ex1.c}, then it will create \lstinline{a_b_tutorials-ex1} test that
+If this block is in \lstinline{src/a/b/tutorials/ex1.c}, then it will create \lstinline{a_b_tutorials-ex1} test that
 requires only one processor/thread, with no arguments, and diff the
-resultant output with \lstinline{src/a/b/examples/tutorials/output/ex1.out}.
+resultant output with \lstinline{src/a/b/tutorials/output/ex1.out}.
 
 For Fortran, the equivalent is
 %
@@ -1874,7 +1874,7 @@ A more complete example is
 */TEST
 \end{outputlisting}
 
-This creates two tests.  Assuming that this is \lstinline{src/a/b/examples/tutorials/ex1.c}, the tests would
+This creates two tests.  Assuming that this is \lstinline{src/a/b/tutorials/ex1.c}, the tests would
 be \lstinline{a_b_tutorials-ex1} and \lstinline{a_b_tutorials-ex1_1}.
 
 
@@ -2179,9 +2179,9 @@ This output indicates that three tests have failed and should be investigated.
 \end{bashlisting}
 \item Examine the output.
 \begin{outputlisting}
-arch-darwin-master-double-debug/tests/sys/classes/viewer/examples/tests/runex4_4.sh  -v
+arch-darwin-master-double-debug/tests/sys/classes/viewer/tests/runex4_4.sh  -v
 ok sys_classes_viewer_tests-ex4_4 cat ex4_4.tmp | > /dev/null; cat ex4a1.tmp > ex4_4.tmp.tmp 2>> runex4_4.err && mv ex4_4.tmp.tmp ex4_4.tmp
-not ok diff-sys_classes_viewer_tests-ex4_4 /Users/patrick/petsc-master/lib/petsc/bin/petscdiff  /Users/patrick/petsc-master/src/sys/classes/viewer/examples/tests/output/ex4a.out ex4_4.tmp > diff-runex4_4.out 2> diff-runex4_4.out
+not ok diff-sys_classes_viewer_tests-ex4_4 /Users/patrick/petsc-master/lib/petsc/bin/petscdiff  /Users/patrick/petsc-master/src/sys/classes/viewer/tests/output/ex4a.out ex4_4.tmp > diff-runex4_4.out 2> diff-runex4_4.out
 #	2a3,14
 #	> Testing PetscViewerASCIIPrintf 0
 #	> Testing PetscViewerASCIIPrintf 1
@@ -2199,7 +2199,7 @@ not ok diff-sys_classes_viewer_tests-ex4_4 /Users/patrick/petsc-master/lib/petsc
 This indicates that the output does not match the reference output.
 \item Look in the directory from which the test was run.
 \begin{outputlisting}
-cd $PETSC_ARCH/tests/sys/classes/viewer/examples/tests/
+cd $PETSC_ARCH/tests/sys/classes/viewer/tests/
 \end{outputlisting}
 \item The name of the test indicates that the test was defined in \trl{ex4.c}, with the suffix \trl{4}. This is defined in \trl{ex4.c} as such:
 \begin{outputlisting}
@@ -2218,7 +2218,7 @@ cat ex4a1.tmp
 \end{outputlisting}
 \item Similarly, we can deduce that the reference output is in
 \begin{outputlisting}
-$PETSC_DIR/src/sys/classes/viewer/examples/tests/output/ex4a.out
+$PETSC_DIR/src/sys/classes/viewer/tests/output/ex4a.out
 \end{outputlisting}
 (Note that there is a default output location in \trl{output/testname_suffix}.)
 \item This should provide enough information to iteratively debug the problem by making changes, recompiling, and rerunning this example directly.
