@@ -64,19 +64,15 @@ PetscErrorCode PetscCommBuildTwoSidedSetType(MPI_Comm comm,PetscBuildTwoSidedTyp
 PetscErrorCode PetscCommBuildTwoSidedGetType(MPI_Comm comm,PetscBuildTwoSidedType *twosided)
 {
   PetscErrorCode ierr;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
   *twosided = PETSC_BUILDTWOSIDED_NOTSET;
   if (_twosided_type == PETSC_BUILDTWOSIDED_NOTSET) {
+    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+    _twosided_type = PETSC_BUILDTWOSIDED_ALLREDUCE; /* default for small comms, see https://gitlab.com/petsc/petsc/-/merge_requests/2611 */
 #if defined(PETSC_HAVE_MPI_IBARRIER)
-#  if defined(PETSC_HAVE_MPICH_CH3_SOCK) && !defined(PETSC_HAVE_MPICH_CH3_SOCK_FIXED_NBC_PROGRESS)
-    /* Deadlock in Ibarrier: http://trac.mpich.org/projects/mpich/ticket/1785 */
-    _twosided_type = PETSC_BUILDTWOSIDED_ALLREDUCE;
-#  else
-    _twosided_type = PETSC_BUILDTWOSIDED_IBARRIER;
-#  endif
-#else
-    _twosided_type = PETSC_BUILDTWOSIDED_ALLREDUCE;
+    if (size > 1024) _twosided_type = PETSC_BUILDTWOSIDED_IBARRIER;
 #endif
     ierr = PetscOptionsGetEnum(NULL,NULL,"-build_twosided",PetscBuildTwoSidedTypes,(PetscEnum*)&_twosided_type,NULL);CHKERRQ(ierr);
   }
@@ -155,21 +151,30 @@ static PetscErrorCode PetscCommBuildTwoSided_Ibarrier(MPI_Comm comm,PetscMPIInt 
 
 static PetscErrorCode PetscCommBuildTwoSided_Allreduce(MPI_Comm comm,PetscMPIInt count,MPI_Datatype dtype,PetscMPIInt nto,const PetscMPIInt *toranks,const void *todata,PetscMPIInt *nfrom,PetscMPIInt **fromranks,void *fromdata)
 {
-  PetscErrorCode ierr;
-  PetscMPIInt    size,*iflags,nrecvs,tag,*franks,i;
-  MPI_Aint       lb,unitbytes;
-  char           *tdata,*fdata;
-  MPI_Request    *reqs,*sendreqs;
-  MPI_Status     *statuses;
+  PetscErrorCode   ierr;
+  PetscMPIInt      size,rank,*iflags,nrecvs,tag,*franks,i,flg;
+  MPI_Aint         lb,unitbytes;
+  char             *tdata,*fdata;
+  MPI_Request      *reqs,*sendreqs;
+  MPI_Status       *statuses;
+  PetscCommCounter *counter;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = PetscCalloc1(size,&iflags);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = PetscCommDuplicate(comm,&comm,&tag);CHKERRQ(ierr);
+  ierr = MPI_Comm_get_attr(comm,Petsc_Counter_keyval,&counter,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inner PETSc communicator does not have its tag/name counter attribute set");
+  if (!counter->iflags) {
+    ierr   = PetscCalloc1(size,&counter->iflags);CHKERRQ(ierr);
+    iflags = counter->iflags;
+  } else {
+    iflags = counter->iflags;
+    ierr   = PetscArrayzero(iflags,size);CHKERRQ(ierr);
+  }
   for (i=0; i<nto; i++) iflags[toranks[i]] = 1;
-  ierr = PetscGatherNumberOfMessages(comm,iflags,NULL,&nrecvs);CHKERRQ(ierr);
-  ierr = PetscFree(iflags);CHKERRQ(ierr);
-
-  ierr     = PetscCommDuplicate(comm,&comm,&tag);CHKERRQ(ierr);
+  ierr     = MPIU_Allreduce(MPI_IN_PLACE,iflags,size,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
+  nrecvs   = iflags[rank];
   ierr     = MPI_Type_get_extent(dtype,&lb,&unitbytes);CHKERRQ(ierr);
   if (lb != 0) SETERRQ1(comm,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld\n",(long)lb);
   ierr     = PetscMalloc(nrecvs*count*unitbytes,&fdata);CHKERRQ(ierr);
@@ -198,21 +203,27 @@ static PetscErrorCode PetscCommBuildTwoSided_Allreduce(MPI_Comm comm,PetscMPIInt
 static PetscErrorCode PetscCommBuildTwoSided_RedScatter(MPI_Comm comm,PetscMPIInt count,MPI_Datatype dtype,PetscMPIInt nto,const PetscMPIInt *toranks,const void *todata,PetscMPIInt *nfrom,PetscMPIInt **fromranks,void *fromdata)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    size,*iflags,nrecvs,tag,*franks,i;
+  PetscMPIInt    size,*iflags,nrecvs,tag,*franks,i,flg;
   MPI_Aint       lb,unitbytes;
   char           *tdata,*fdata;
   MPI_Request    *reqs,*sendreqs;
   MPI_Status     *statuses;
+  PetscCommCounter *counter;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = PetscMalloc1(size,&iflags);CHKERRQ(ierr);
-  ierr = PetscArrayzero(iflags,size);CHKERRQ(ierr);
+  ierr = PetscCommDuplicate(comm,&comm,&tag);CHKERRQ(ierr);
+  ierr = MPI_Comm_get_attr(comm,Petsc_Counter_keyval,&counter,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inner PETSc communicator does not have its tag/name counter attribute set");
+  if (!counter->iflags) {
+    ierr   = PetscCalloc1(size,&counter->iflags);CHKERRQ(ierr);
+    iflags = counter->iflags;
+  } else {
+    iflags = counter->iflags;
+    ierr   = PetscArrayzero(iflags,size);CHKERRQ(ierr);
+  }
   for (i=0; i<nto; i++) iflags[toranks[i]] = 1;
-  ierr = MPI_Reduce_scatter_block(iflags,&nrecvs,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
-  ierr = PetscFree(iflags);CHKERRQ(ierr);
-
-  ierr     = PetscCommDuplicate(comm,&comm,&tag);CHKERRQ(ierr);
+  ierr     = MPI_Reduce_scatter_block(iflags,&nrecvs,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
   ierr     = MPI_Type_get_extent(dtype,&lb,&unitbytes);CHKERRQ(ierr);
   if (lb != 0) SETERRQ1(comm,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld\n",(long)lb);
   ierr     = PetscMalloc(nrecvs*count*unitbytes,&fdata);CHKERRQ(ierr);
@@ -259,7 +270,7 @@ static PetscErrorCode PetscCommBuildTwoSided_RedScatter(MPI_Comm comm,PetscMPIIn
    Level: developer
 
    Options Database Keys:
-.  -build_twosided <allreduce|ibarrier|redscatter> - algorithm to set up two-sided communication
+.  -build_twosided <allreduce|ibarrier|redscatter> - algorithm to set up two-sided communication. Default is allreduce for communicators with <= 1024 ranks, otherwise ibarrier.
 
    Notes:
    This memory-scalable interface is an alternative to calling PetscGatherNumberOfMessages() and
