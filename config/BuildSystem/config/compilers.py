@@ -24,12 +24,24 @@ class Configure(config.base.Configure):
     self.fmainlibs = []
     self.clibs = []
     self.cxxlibs = []
+    self.skipdefaultpaths = []
     self.cxxCompileC = False
     self.cRestrict = ' '
     self.cxxRestrict = ' '
     self.cxxdialect = ''
     self.c99flag = None
     return
+
+  def getSkipDefaultPaths(self):
+    if len(self.skipdefaultpaths):
+      return self.skipdefaultpaths
+    else:
+      self.skipdefaultpaths = ['/usr/lib','/lib','/usr/lib64','/lib64']
+      conda_sysrt = os.getenv('CONDA_BUILD_SYSROOT')
+      if conda_sysrt:
+        conda_sysrt = os.path.abspath(conda_sysrt)
+        self.skipdefaultpaths.extend([conda_sysrt+lib for lib in self.skipdefaultpaths])
+      return self.skipdefaultpaths
 
   def setupHelp(self, help):
     import nargs
@@ -260,6 +272,7 @@ class Configure(config.base.Configure):
     # Parse output
     argIter = iter(output.split())
     clibs = []
+    skipdefaultpaths = self.getSkipDefaultPaths()
     lflags  = []
     rpathflags = []
     try:
@@ -325,8 +338,9 @@ class Configure(config.base.Configure):
           continue
         m = re.match(r'^-L.*$', arg)
         if m:
-          arg = '-L'+os.path.abspath(arg[2:])
-          if arg in ['-L/usr/lib','-L/lib','-L/usr/lib64','-L/lib64']: continue
+          arg = os.path.abspath(arg[2:])
+          if arg in skipdefaultpaths: continue
+          arg = '-L'+arg
           lflags.append(arg)
           self.logPrint('Found library directory: '+arg, 4, 'compilers')
           clibs.append(arg)
@@ -337,7 +351,7 @@ class Configure(config.base.Configure):
           if lib.startswith('-'): continue # perhaps the path was striped due to quotes?
           if lib.startswith('"') and lib.endswith('"') and lib.find(' ') == -1: lib = lib[1:-1]
           lib = os.path.abspath(lib)
-          if lib in ['/usr/lib','/lib','/usr/lib64','/lib64']: continue
+          if lib in skipdefaultpaths: continue
           if not lib in rpathflags:
             rpathflags.append(lib)
             self.logPrint('Found '+arg+' library: '+lib, 4, 'compilers')
@@ -638,6 +652,7 @@ class Configure(config.base.Configure):
     # Parse output
     argIter = iter(output.split())
     cxxlibs = []
+    skipdefaultpaths = self.getSkipDefaultPaths()
     lflags  = []
     rpathflags = []
     try:
@@ -709,8 +724,9 @@ class Configure(config.base.Configure):
           continue
         m = re.match(r'^-L.*$', arg)
         if m:
-          arg = '-L'+os.path.abspath(arg[2:])
-          if arg in ['-L/usr/lib','-L/lib','-L/usr/lib64','-L/lib64']: continue
+          arg = os.path.abspath(arg[2:])
+          if arg in skipdefaultpaths: continue
+          arg = '-L'+arg
           if not arg in lflags:
             lflags.append(arg)
             self.logPrint('Found library directory: '+arg, 4, 'compilers')
@@ -722,7 +738,7 @@ class Configure(config.base.Configure):
           if lib.startswith('-'): continue # perhaps the path was striped due to quotes?
           if lib.startswith('"') and lib.endswith('"') and lib.find(' ') == -1: lib = lib[1:-1]
           lib = os.path.abspath(lib)
-          if lib in ['/usr/lib','/lib','/usr/lib64','/lib64']: continue
+          if lib in skipdefaultpaths: continue
           if not lib in rpathflags:
             rpathflags.append(lib)
             self.logPrint('Found '+arg+' library: '+lib, 4, 'compilers')
@@ -1014,6 +1030,7 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
     argIter = iter(output.split())
     fincs   = []
     flibs   = []
+    skipdefaultpaths = self.getSkipDefaultPaths()
     fmainlibs = []
     lflags  = []
     rpathflags = []
@@ -1130,8 +1147,9 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
           continue
         m = re.match(r'^-L.*$', arg)
         if m:
-          arg = '-L'+os.path.abspath(arg[2:])
-          if arg in ['-L/usr/lib','-L/lib','-L/usr/lib64','-L/lib64']: continue
+          arg = os.path.abspath(arg[2:])
+          if arg in skipdefaultpaths: continue
+          arg = '-L'+arg
           if not arg in lflags:
             lflags.append(arg)
             self.logPrint('Found library directory: '+arg, 4, 'compilers')
@@ -1146,7 +1164,7 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
           if lib.startswith('-'): continue # perhaps the path was striped due to quotes?
           if lib.startswith('"') and lib.endswith('"') and lib.find(' ') == -1: lib = lib[1:-1]
           lib = os.path.abspath(lib)
-          if lib in ['/usr/lib','/lib','/usr/lib64','/lib64']: continue
+          if lib in skipdefaultpaths: continue
           if not lib in rpathflags:
             rpathflags.append(lib)
             self.logPrint('Found '+arg+' library: '+lib, 4, 'compilers')
@@ -1181,8 +1199,9 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
             #solaris gnu g77 has this extra P, here, not sure why it means
             if lib.startswith('P,'):lib = lib[2:]
             self.logPrint('Handling -Y option: '+lib, 4, 'compilers')
-            lib1 = '-L'+os.path.abspath(lib)
-            if lib1 in ['-L/usr/lib','-L/lib','-L/usr/lib64','-L/lib64']: continue
+            lib1 = os.path.abspath(lib)
+            if lib1 in skipdefaultpaths: continue
+            lib1 = '-L'+lib1
             flibs.append(lib1)
           continue
         if arg.startswith('COMPILER_PATH=') or arg.startswith('LIBRARY_PATH='):
@@ -1193,8 +1212,9 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
           founddir = 0
           for l in arg.split(':'):
             if os.path.isdir(l):
-              lib1 = '-L'+os.path.abspath(l)
-              if lib1 in ['-L/usr/lib','-L/lib','-L/usr/lib64','-L/lib64']: continue
+              lib1 = os.path.abspath(l)
+              if lib1 in skipdefaultpaths: continue
+              lib1 = '-L'+lib1
               if not arg in lflags:
                 flibs.append(lib1)
                 lflags.append(lib1)
