@@ -1,15 +1,4 @@
-#include <../src/ksp/ksp/utils/lmvm/lmvm.h> /*I "petscksp.h" I*/
-
-/*
-  Limited-memory "good" Broyden's method for approximating the inverse of 
-  a Jacobian.
-*/
-
-typedef struct {
-  Vec *P, *Q;
-  PetscBool allocated, needP, needQ;
-  PetscReal *yty, *yts;
-} Mat_BadBrdn;
+#include <../src/ksp/ksp/utils/lmvm/brdn/brdn.h> /*I "petscksp.h" I*/
 
 /*------------------------------------------------------------*/
 
@@ -34,7 +23,7 @@ typedef struct {
 static PetscErrorCode MatSolve_LMVMBadBrdn(Mat B, Vec F, Vec dX)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
-  Mat_BadBrdn       *lbb = (Mat_BadBrdn*)lmvm->ctx;
+  Mat_Brdn          *lbb = (Mat_Brdn*)lmvm->ctx;
   PetscErrorCode    ierr;
   PetscInt          i, j;
   PetscScalar       yjtyi, ytf;
@@ -56,7 +45,7 @@ static PetscErrorCode MatSolve_LMVMBadBrdn(Mat B, Vec F, Vec dX)
   }
   
   ierr = MatLMVMApplyJ0Inv(B, F, dX);CHKERRQ(ierr);
-  for (i = 0; i <= lmvm->k-1; ++i) {
+  for (i = 0; i <= lmvm->k; ++i) {
     ierr = VecDot(lmvm->Y[i], F, &ytf);CHKERRQ(ierr);
     ierr = VecAXPBYPCZ(dX, PetscRealPart(ytf)/lbb->yty[i], -PetscRealPart(ytf)/lbb->yty[i], 1.0, lmvm->S[i], lbb->Q[i]);CHKERRQ(ierr);
   }
@@ -87,7 +76,7 @@ static PetscErrorCode MatSolve_LMVMBadBrdn(Mat B, Vec F, Vec dX)
 static PetscErrorCode MatMult_LMVMBadBrdn(Mat B, Vec X, Vec Z)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
-  Mat_BadBrdn       *lbb = (Mat_BadBrdn*)lmvm->ctx;
+  Mat_Brdn          *lbb = (Mat_Brdn*)lmvm->ctx;
   PetscErrorCode    ierr;
   PetscInt          i, j;
   PetscScalar       yjtsi, ytx;
@@ -109,7 +98,7 @@ static PetscErrorCode MatMult_LMVMBadBrdn(Mat B, Vec X, Vec Z)
   }
   
   ierr = MatLMVMApplyJ0Fwd(B, X, Z);CHKERRQ(ierr);
-  for (i = 0; i <= lmvm->k-1; ++i) {
+  for (i = 0; i <= lmvm->k; ++i) {
     ierr = VecDot(lmvm->Y[i], X, &ytx);CHKERRQ(ierr);
     ierr = VecAXPBYPCZ(Z, PetscRealPart(ytx)/lbb->yts[i], -PetscRealPart(ytx)/lbb->yts[i], 1.0, lmvm->Y[i], lbb->P[i]);CHKERRQ(ierr);
   }
@@ -121,7 +110,7 @@ static PetscErrorCode MatMult_LMVMBadBrdn(Mat B, Vec X, Vec Z)
 static PetscErrorCode MatUpdate_LMVMBadBrdn(Mat B, Vec X, Vec F)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
-  Mat_BadBrdn       *lbb = (Mat_BadBrdn*)lmvm->ctx;
+  Mat_Brdn          *lbb = (Mat_Brdn*)lmvm->ctx;
   PetscErrorCode    ierr;
   PetscInt          old_k, i;
   PetscScalar       yty, yts;
@@ -163,9 +152,9 @@ static PetscErrorCode MatUpdate_LMVMBadBrdn(Mat B, Vec X, Vec F)
 static PetscErrorCode MatCopy_LMVMBadBrdn(Mat B, Mat M, MatStructure str)
 {
   Mat_LMVM          *bdata = (Mat_LMVM*)B->data;
-  Mat_BadBrdn       *bctx = (Mat_BadBrdn*)bdata->ctx;
+  Mat_Brdn          *bctx = (Mat_Brdn*)bdata->ctx;
   Mat_LMVM          *mdata = (Mat_LMVM*)M->data;
-  Mat_BadBrdn       *mctx = (Mat_BadBrdn*)mdata->ctx;
+  Mat_Brdn          *mctx = (Mat_Brdn*)mdata->ctx;
   PetscErrorCode    ierr;
   PetscInt          i;
 
@@ -186,7 +175,7 @@ static PetscErrorCode MatCopy_LMVMBadBrdn(Mat B, Mat M, MatStructure str)
 static PetscErrorCode MatReset_LMVMBadBrdn(Mat B, PetscBool destructive)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
-  Mat_BadBrdn       *lbb = (Mat_BadBrdn*)lmvm->ctx;
+  Mat_Brdn          *lbb = (Mat_Brdn*)lmvm->ctx;
   PetscErrorCode    ierr;
   
   PetscFunctionBegin;
@@ -206,7 +195,7 @@ static PetscErrorCode MatReset_LMVMBadBrdn(Mat B, PetscBool destructive)
 static PetscErrorCode MatAllocate_LMVMBadBrdn(Mat B, Vec X, Vec F)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
-  Mat_BadBrdn          *lbb = (Mat_BadBrdn*)lmvm->ctx;
+  Mat_Brdn          *lbb = (Mat_Brdn*)lmvm->ctx;
   PetscErrorCode    ierr;
   
   PetscFunctionBegin;
@@ -227,7 +216,7 @@ static PetscErrorCode MatAllocate_LMVMBadBrdn(Mat B, Vec X, Vec F)
 static PetscErrorCode MatDestroy_LMVMBadBrdn(Mat B)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
-  Mat_BadBrdn       *lbb = (Mat_BadBrdn*)lmvm->ctx;
+  Mat_Brdn          *lbb = (Mat_Brdn*)lmvm->ctx;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -247,7 +236,7 @@ static PetscErrorCode MatDestroy_LMVMBadBrdn(Mat B)
 static PetscErrorCode MatSetUp_LMVMBadBrdn(Mat B)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
-  Mat_BadBrdn       *lbb = (Mat_BadBrdn*)lmvm->ctx;
+  Mat_Brdn          *lbb = (Mat_Brdn*)lmvm->ctx;
   PetscErrorCode    ierr;
   
   PetscFunctionBegin;
@@ -268,7 +257,7 @@ static PetscErrorCode MatSetUp_LMVMBadBrdn(Mat B)
 PetscErrorCode MatCreate_LMVMBadBrdn(Mat B)
 {
   Mat_LMVM          *lmvm;
-  Mat_BadBrdn       *lbb;
+  Mat_Brdn          *lbb;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;

@@ -708,6 +708,12 @@ E*/
 typedef enum {MAT_SCHUR_COMPLEMENT_AINV_DIAG, MAT_SCHUR_COMPLEMENT_AINV_LUMP, MAT_SCHUR_COMPLEMENT_AINV_BLOCK_DIAG} MatSchurComplementAinvType;
 PETSC_EXTERN const char *const MatSchurComplementAinvTypes[];
 
+typedef enum {MAT_LMVM_SYMBRDN_SCALE_NONE       = 0,
+              MAT_LMVM_SYMBRDN_SCALE_SCALAR     = 1,
+              MAT_LMVM_SYMBRDN_SCALE_DIAGONAL   = 2,
+              MAT_LMVM_SYMBRDN_SCALE_USER       = 3} MatLMVMSymBrdnScaleType;
+PETSC_EXTERN const char *const MatLMVMSymBrdnScaleTypes[];
+
 PETSC_EXTERN PetscErrorCode MatCreateSchurComplement(Mat,Mat,Mat,Mat,Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatSchurComplementGetKSP(Mat,KSP*);
 PETSC_EXTERN PetscErrorCode MatSchurComplementSetKSP(Mat,KSP);
@@ -746,9 +752,11 @@ PETSC_EXTERN PetscErrorCode MatLMVMApplyJ0Inv(Mat, Vec, Vec);
 PETSC_EXTERN PetscErrorCode MatLMVMGetJ0(Mat, Mat*);
 PETSC_EXTERN PetscErrorCode MatLMVMGetJ0PC(Mat, PC*);
 PETSC_EXTERN PetscErrorCode MatLMVMGetJ0KSP(Mat, KSP*);
+PETSC_EXTERN PetscErrorCode MatLMVMSetHistorySize(Mat, PetscInt);
 PETSC_EXTERN PetscErrorCode MatLMVMGetUpdateCount(Mat, PetscInt*);
 PETSC_EXTERN PetscErrorCode MatLMVMGetRejectCount(Mat, PetscInt*);
 PETSC_EXTERN PetscErrorCode MatSymBrdnSetDelta(Mat, PetscScalar);
+PETSC_EXTERN PetscErrorCode MatSymBrdnSetScaleType(Mat, MatLMVMSymBrdnScaleType);
 
 PETSC_EXTERN PetscErrorCode KSPSetDM(KSP,DM);
 PETSC_EXTERN PetscErrorCode KSPSetDMActive(KSP,PetscBool );

@@ -782,8 +782,8 @@ PETSC_EXTERN PetscErrorCode SNESNCGSetType(SNES, SNESNCGType);
 
 typedef enum {SNES_QN_SCALE_DEFAULT    = 0,
               SNES_QN_SCALE_NONE       = 1,
-              SNES_QN_SCALE_SHANNO     = 2,
-              SNES_QN_SCALE_LINESEARCH = 3,
+              SNES_QN_SCALE_SCALAR     = 2,
+              SNES_QN_SCALE_DIAGONAL   = 3,
               SNES_QN_SCALE_JACOBIAN   = 4} SNESQNScaleType;
 PETSC_EXTERN const char *const SNESQNScaleTypes[];
 typedef enum {SNES_QN_RESTART_DEFAULT  = 0,

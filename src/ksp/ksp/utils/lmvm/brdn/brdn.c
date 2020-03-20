@@ -1,15 +1,4 @@
-#include <../src/ksp/ksp/utils/lmvm/lmvm.h> /*I "petscksp.h" I*/
-
-/*
-  Limited-memory "good" Broyden's method for approximating the inverse of 
-  a Jacobian.
-*/
-
-typedef struct {
-  Vec *P, *Q;
-  PetscBool allocated, needP, needQ;
-  PetscReal *sts, *stq;
-} Mat_Brdn;
+#include <../src/ksp/ksp/utils/lmvm/brdn/brdn.h> /*I "petscksp.h" I*/
 
 /*------------------------------------------------------------*/
 
@@ -58,7 +47,7 @@ static PetscErrorCode MatSolve_LMVMBrdn(Mat B, Vec F, Vec dX)
   }
   
   ierr = MatLMVMApplyJ0Inv(B, F, dX);CHKERRQ(ierr);
-  for (i = 0; i <= lmvm->k-1; ++i) {
+  for (i = 0; i <= lmvm->k; ++i) {
     ierr = VecDot(lmvm->S[i], dX, &stx);CHKERRQ(ierr);
     ierr = VecAXPBYPCZ(dX, PetscRealPart(stx)/lbrdn->stq[i], -PetscRealPart(stx)/lbrdn->stq[i], 1.0, lmvm->S[i], lbrdn->Q[i]);CHKERRQ(ierr);
   }
@@ -111,7 +100,7 @@ static PetscErrorCode MatMult_LMVMBrdn(Mat B, Vec X, Vec Z)
   }
   
   ierr = MatLMVMApplyJ0Fwd(B, X, Z);CHKERRQ(ierr);
-  for (i = 0; i <= lmvm->k-1; ++i) {
+  for (i = 0; i <= lmvm->k; ++i) {
     ierr = VecDot(lmvm->S[i], X, &stx);CHKERRQ(ierr);
     ierr = VecAXPBYPCZ(Z, PetscRealPart(stx)/lbrdn->sts[i], -PetscRealPart(stx)/lbrdn->sts[i], 1.0, lmvm->Y[i], lbrdn->P[i]);CHKERRQ(ierr);
   }
