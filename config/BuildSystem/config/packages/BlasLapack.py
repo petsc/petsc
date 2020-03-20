@@ -162,8 +162,7 @@ class Configure(config.package.Package):
       f2cBlas = [os.path.join(libDir,'libf2cblas.a')]
       if self.blis.found:
         # The real BLAS is provided by libblis, but we still need libf2cblas for aux functions needed by libf2clapack
-        blisLibDir = os.path.join(self.blis.directory,'lib')
-        f2cBlas.append(os.path.join(blisLibDir, 'libblis.a'))
+        f2cBlas += self.blis.lib
       f2cLapack = [os.path.join(libDir,'libf2clapack.a')]
       yield ('f2cblaslapack', f2cBlas, f2cLapack, '32','no')
       yield ('f2cblaslapack', f2cBlas+['-lquadmath'], f2cLapack, '32','no')
@@ -177,8 +176,7 @@ class Configure(config.package.Package):
     if self.blis.found:
       self.f2c = 0
       # TODO: Where shall we find liblapack.a?
-      blisLibDir = os.path.join(self.blis.directory,'lib')
-      yield ('BLIS with full path', os.path.join(blisLibDir,'libblis.a'), 'liblapack.a', self.blis.known64, self.blis.usesopenmp)
+      yield ('BLIS', self.blis.lib, 'liblapack.a', self.blis.known64, self.blis.usesopenmp)
     if self.openblas.found:
       self.f2c = 0
       if self.openblas.libDir:
