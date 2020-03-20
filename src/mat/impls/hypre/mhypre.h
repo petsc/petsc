@@ -14,6 +14,7 @@ typedef struct {
   void           *array;
   PetscInt       size;
   PetscBool      available;
+  PetscBool      sorted_full;
 } Mat_HYPRE;
 
 #endif

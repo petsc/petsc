@@ -396,6 +396,7 @@ PETSC_INTERN PetscErrorCode MatConvert_AIJ_HYPRE(Mat A, MatType type, MatReuse r
     hB   = (Mat_HYPRE*)(M->data);
     if (reuse == MAT_INITIAL_MATRIX) *B = M;
   }
+  ierr = MatSetOption(*B,MAT_SORTED_FULL,PETSC_TRUE); /* "perfect" preallocation, so no need for hypre_AuxParCSRMatrixNeedAux */
   ierr = MatHYPRE_CreateFromMat(A,hB);CHKERRQ(ierr);
   ierr = MatHYPRE_IJMatrixCopy(A,hB->ij);CHKERRQ(ierr);
   if (reuse == MAT_INPLACE_MATRIX) {
@@ -1169,8 +1170,9 @@ static PetscErrorCode MatAssemblyEnd_HYPRE(Mat A, MatAssemblyType mode)
   }
 
   PetscStackCallStandard(HYPRE_IJMatrixAssemble,(hA->ij));
-  /* The assembly routine destroys the aux_matrix, we recreate it here by calling HYPRE_IJMatrixInitalize */
-  {
+  /* The assembly routine destroys the aux_matrix, we recreate it here by calling HYPRE_IJMatrixInitialize */
+  /* If the option MAT_SORTED_FULL is set to true, the indices and values can be passed to hypre directly, so we don't need the aux_matrix */
+  if(!hA->sorted_full) {
     hypre_AuxParCSRMatrix *aux_matrix;
 
     /* call destroy just to make sure we do not leak anything */
@@ -1334,7 +1336,8 @@ static PetscErrorCode MatHYPRESetPreallocation_HYPRE(Mat A, PetscInt dnz, const 
     }
     /* SetDiagOffdSizes sets hypre_AuxParCSRMatrixNeedAux(aux_matrix) = 0, since it seems
        they assume the user will input the entire row values, properly sorted
-       In PETSc, we don't make such an assumption, and we instead set this flag to 1
+       In PETSc, we don't make such an assumption and set this flag to 1,
+       unless the option MAT_SORTED_FULL is set to true.
        Also, to avoid possible memory leaks, we destroy and recreate the translator
        This has to be done here, as HYPRE_IJMatrixInitialize will properly initialize
        the IJ matrix for us */
@@ -1343,7 +1346,7 @@ static PetscErrorCode MatHYPRESetPreallocation_HYPRE(Mat A, PetscInt dnz, const 
     hypre_IJMatrixTranslator(hA->ij) = NULL;
     PetscStackCallStandard(HYPRE_IJMatrixSetDiagOffdSizes,(hA->ij,hdnnz,honnz));
     aux_matrix = (hypre_AuxParCSRMatrix*)hypre_IJMatrixTranslator(hA->ij);
-    hypre_AuxParCSRMatrixNeedAux(aux_matrix) = 1;
+    hypre_AuxParCSRMatrixNeedAux(aux_matrix) = !hA->sorted_full;
   } else {
     honnz = NULL;
     PetscStackCallStandard(HYPRE_IJMatrixSetRowSizes,(hA->ij,hdnnz));
@@ -1835,6 +1838,9 @@ static PetscErrorCode MatSetOption_HYPRE(Mat A,MatOption op,PetscBool flg)
       PetscStackCallStandard(HYPRE_IJMatrixSetMaxOffProcElmts,(hA->ij,0));
     }
     break;
+  case MAT_SORTED_FULL:
+    hA->sorted_full = flg;
+    break;
   default:
     break;
   }
@@ -1907,6 +1913,7 @@ static PetscErrorCode MatCopy_HYPRE(Mat A, Mat B, MatStructure str)
     ierr = MatHYPREGetParCSR_HYPRE(A,&acsr);CHKERRQ(ierr);
     ierr = MatHYPREGetParCSR_HYPRE(B,&bcsr);CHKERRQ(ierr);
     PetscStackCallStandard(hypre_ParCSRMatrixCopy,(acsr,bcsr,1));
+    ierr = MatSetOption(B,MAT_SORTED_FULL,PETSC_TRUE); /* "perfect" preallocation, so no need for hypre_AuxParCSRMatrixNeedAux */
     ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   } else {
@@ -2033,6 +2040,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B)
   ierr           = PetscNewLog(B,&hB);CHKERRQ(ierr);
   hB->inner_free = PETSC_TRUE;
   hB->available  = PETSC_TRUE;
+  hB->sorted_full= PETSC_FALSE; /* no assumption whether column indices are sorted or not */
   hB->size       = 0;
   hB->array      = NULL;
 
