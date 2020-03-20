@@ -1202,9 +1202,11 @@ PetscErrorCode VecGetLocalVector_SeqCUDA(Vec v,Vec w)
 
   if (w->data) {
     if (((Vec_Seq*)w->data)->array_allocated) {
-      if(w->pinned_memory) {
+      if (w->pinned_memory) {
         ierr = PetscMallocSetCUDAHost();CHKERRQ(ierr);
-        ierr = PetscFree(((Vec_Seq*)w->data)->array_allocated);CHKERRQ(ierr);
+      }
+      ierr = PetscFree(((Vec_Seq*)w->data)->array_allocated);CHKERRQ(ierr);
+      if (w->pinned_memory) {
         ierr = PetscMallocResetCUDAHost();CHKERRQ(ierr);
         w->pinned_memory = PETSC_FALSE;
       }
