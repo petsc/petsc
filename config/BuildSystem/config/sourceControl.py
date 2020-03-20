@@ -16,7 +16,7 @@ class Configure(config.base.Configure):
     import nargs
 
     help.addArgument('SourceControl', '-with-git=<prog>', nargs.Arg(None, 'git','Specify the Git executable'))
-#    help.addArgument('SourceControl', '-with-hg=<prog>',  nargs.Arg(None, 'hg', 'Specify the Mercurial executable'))
+    help.addArgument('SourceControl', '-with-hg=<prog>',  nargs.Arg(None, 'hg', 'Specify the Mercurial executable'))
 #    help.addArgument('SourceControl', '-with-cvs=<prog>', nargs.Arg(None, 'cvs', 'Specify the CVS executable'))
 #    help.addArgument('SourceControl', '-with-svn=<prog>', nargs.Arg(None, 'svn', 'Specify the Subversion executable'))
     return
@@ -63,7 +63,7 @@ class Configure(config.base.Configure):
 
   def configure(self):
     self.executeTest(self.configureGit)
-#    self.executeTest(self.configureMercurial)
+    self.executeTest(self.configureMercurial)
 #    self.executeTest(self.configureCVS)
 #    self.executeTest(self.configureSubversion)
     return
