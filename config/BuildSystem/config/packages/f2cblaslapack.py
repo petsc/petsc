@@ -32,36 +32,37 @@ class Configure(config.package.Package):
     libdir = self.libDir
     confdir = self.confDir
 
-    with open(os.path.join(self.packageDir,'tmpmakefile'),'w') as g, open(os.path.join(self.packageDir,'makefile'),'r') as f:
-      for line in f:
-        if line.startswith('CC  '):
-          cc = self.compilers.CC
-          line = 'CC = '+cc+'\n'
-        if line.startswith('COPTFLAGS '):
-          self.setCompilers.pushLanguage('C')
-          line = 'COPTFLAGS  = '+self.removeWarningFlags(self.setCompilers.getCompilerFlags())+'\n'
-          self.setCompilers.popLanguage()
-        if line.startswith('CNOOPT'):
-          self.setCompilers.pushLanguage('C')
-          noopt = self.checkNoOptFlag()
-          line = 'CNOOPT = '+noopt+ ' '+self.getSharedFlag(self.setCompilers.getCompilerFlags())+' '+self.getPointerSizeFlag(self.setCompilers.getCompilerFlags())+' '+self.getWindowsNonOptFlags(self.setCompilers.getCompilerFlags())+'\n'
-          self.setCompilers.popLanguage()
-        if line.startswith('AR  '):
-          line = 'AR      = '+self.setCompilers.AR+'\n'
-        if line.startswith('AR_FLAGS  '):
-          line = 'AR_FLAGS      = '+self.setCompilers.AR_FLAGS+'\n'
-        if line.startswith('LIB_SUFFIX '):
-          line = 'LIB_SUFFIX = '+self.setCompilers.AR_LIB_SUFFIX+'\n'
-        if line.startswith('RANLIB  '):
-          line = 'RANLIB = '+self.setCompilers.RANLIB+'\n'
-        if line.startswith('RM  '):
-          line = 'RM = '+self.programs.RM+'\nMAKE = '+self.make.make+'\n'
-        if line.startswith('include'):
-          line = '\n'
-        if line.find("-no-prec-div") >= 0:
-           raise RuntimeError('Some versions of the Intel compiler generate incorrect code on f2cblaslapack with the option -no-prec-div\nRun configure without this option')
-        g.write(line)
-      otherlibs = '''
+    with open(os.path.join(self.packageDir,'tmpmakefile'),'w') as g:
+      with open(os.path.join(self.packageDir,'makefile'),'r') as f:
+        for line in f:
+          if line.startswith('CC  '):
+            cc = self.compilers.CC
+            line = 'CC = '+cc+'\n'
+          if line.startswith('COPTFLAGS '):
+            self.setCompilers.pushLanguage('C')
+            line = 'COPTFLAGS  = '+self.removeWarningFlags(self.setCompilers.getCompilerFlags())+'\n'
+            self.setCompilers.popLanguage()
+          if line.startswith('CNOOPT'):
+            self.setCompilers.pushLanguage('C')
+            noopt = self.checkNoOptFlag()
+            line = 'CNOOPT = '+noopt+ ' '+self.getSharedFlag(self.setCompilers.getCompilerFlags())+' '+self.getPointerSizeFlag(self.setCompilers.getCompilerFlags())+' '+self.getWindowsNonOptFlags(self.setCompilers.getCompilerFlags())+'\n'
+            self.setCompilers.popLanguage()
+          if line.startswith('AR  '):
+            line = 'AR      = '+self.setCompilers.AR+'\n'
+          if line.startswith('AR_FLAGS  '):
+            line = 'AR_FLAGS      = '+self.setCompilers.AR_FLAGS+'\n'
+          if line.startswith('LIB_SUFFIX '):
+            line = 'LIB_SUFFIX = '+self.setCompilers.AR_LIB_SUFFIX+'\n'
+          if line.startswith('RANLIB  '):
+            line = 'RANLIB = '+self.setCompilers.RANLIB+'\n'
+          if line.startswith('RM  '):
+            line = 'RM = '+self.programs.RM+'\nMAKE = '+self.make.make+'\n'
+          if line.startswith('include'):
+            line = '\n'
+          if line.find("-no-prec-div") >= 0:
+             raise RuntimeError('Some versions of the Intel compiler generate incorrect code on f2cblaslapack with the option -no-prec-div\nRun configure without this option')
+          g.write(line)
+        otherlibs = '''
 blas_hlib:\n\
 \t-@cd blas;   $(MAKE) hlib $(MAKE_OPTIONS_BLAS)\n\
 \t-@$(RANLIB) $(BLAS_LIB_NAME)\n\
