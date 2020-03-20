@@ -984,7 +984,7 @@ PetscErrorCode MatConvert_SeqDense_SeqDenseCUDA(Mat M,MatType type,MatReuse reus
 
   Level: beginner
 
-.seealso: MatCreateSeqDenseCuda()
+.seealso: MatCreateSeqDenseCUDA()
 
 M*/
 PETSC_EXTERN PetscErrorCode MatCreate_SeqDenseCUDA(Mat B)
