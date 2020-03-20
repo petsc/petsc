@@ -108,32 +108,32 @@
         <ul>
           <li>Remove last PetscBool argument from PetscBinaryWrite() and PetscBinarySynchronizedWrite()</li>
           <li>Change PetscLayoutFindOwner() and PetscLayoutFindOwnerIndex() to return a PetscMPIInt instead of a PetscInt</li>
-          <li>Support for Compaq F90 is removed along with supporting flags PETSC_HAVE_FORTRAN_STDCALL, PETSC_BLASLAPACK_STDCALL, HAVE_FORTRAN_MIXED_STR_ARG
+          <li>Remove support for Compaq F90 along with supporting flags PETSC_HAVE_FORTRAN_STDCALL, PETSC_BLASLAPACK_STDCALL, HAVE_FORTRAN_MIXED_STR_ARG
         </ul>
       <h4>Configure/Build:</h4>
       <h4>IS:</h4>
         <ul>
-          <li>Add ISSetInfo(): set local and global properties of an IS (whether the IS is sorted, unique, a permutation, an interval, or identity).</li>
-          <li>Add ISGetInfo(): query local and global properties of an IS.</li>
+          <li>Add ISSetInfo(): set local and global properties of an IS (whether the IS is sorted, unique, a permutation, an interval, or identity)</li>
+          <li>Add ISGetInfo(): query local and global properties of an IS</li>
         </ul>
       <h4>PetscDraw:</h4>
       <h4>PetscSF:</h4>
         <ul>
-          <li>Fix few bugs in PETSCSFWINDOW when using PETSCSF_WINDOW_SYNC_LOCK or PETSCSF_WINDOW_SYNC_ACTIVE synchronization types.</li>
-          <li>Add window reusage for PETSCSFWINDOW and support for different creation flavor types. See PetscSFWindowFlavorType man page for details.</li>
+          <li>Fix few bugs in PETSCSFWINDOW when using PETSCSF_WINDOW_SYNC_LOCK or PETSCSF_WINDOW_SYNC_ACTIVE synchronization types</li>
+          <li>Add window reusage for PETSCSFWINDOW and support for different creation flavor types. See PetscSFWindowFlavorType man page for details</li>
         </ul>
       <h4>PF:</h4>
       <h4>Vec:</h4>
       <ul>
-          <li>VecPinToCPU() is deprecated in favor of VecBindToCPU().</li>
-          <li>Add Vec{Set|Get}PinnedMemoryMin() and -vec_pinned_memory_min option.</li>
+          <li>VecPinToCPU() is deprecated in favor of VecBindToCPU()</li>
+          <li>Add Vec{Set|Get}PinnedMemoryMin() and -vec_pinned_memory_min option</li>
       </ul>
       <h4>VecScatter:</h4>
       <h4>PetscSection:</h4>
       <h4>PetscPartitioner:</h4>
         <ul>
-          <li>PetscPartitionerPartition() does not longer gets a DM as input. Vertex weights can be specified through PetscSection.</li>
-          <li>Add support for target partition weights for PETSCPARTITIONERSIMPLE, PETSCPARTITIONERPARMETIS and PETSCPARTITIONERPTSCOTCH.</li>
+          <li>PetscPartitionerPartition() does not longer gets a DM as input. Vertex weights can be specified through PetscSection</li>
+          <li>Add support for target partition weights for PETSCPARTITIONERSIMPLE, PETSCPARTITIONERPARMETIS and PETSCPARTITIONERPTSCOTCH</li>
         </ul>
       <h4>Mat:</h4>
         <ul>
@@ -144,7 +144,7 @@
           <li>Fix a bug in MATSUPERLU_DIST interface when MATMPIAIJ with commsize 1 is used</li>
           <li>Add MATCHOLMOD support for block solves</li>
           <li>--download-suitesparse now uses the official SuiteSparse repository</li>
-          <li>MatPinToCPU() is deprecated in favor of MatBindToCPU().</li>
+          <li>MatPinToCPU() is deprecated in favor of MatBindToCPU()</li>
           <li>Fix MatAXPY for MATSHELL</li>
           <li>MatAXPY(Y,0.0,X,DIFFERENT_NONZERO_PATTERN) no longer modifies the nonzero pattern of Y to include that of X</li>
           <li>Add support of selective 64-bit MUMPS, i.e., the regular/default build of MUMPS. One should still build PETSc --with-64-bit-indices to handle matrices with >2G nonzeros</li>
@@ -159,24 +159,24 @@
           <li>Add KSPHPDDMGetDeflationSpace and KSPHPDDMSetDeflationSpace for recycling Krylov methods in KSPHPDDM</li>
         </ul>
       <h4>SNES:</h4>
-      <ul>
-        <li><code>-snes_test_jacobian_display</code> and <code>-snes_test_jacobian_display_threshold</code> are deprecated.  <code>-snes_test_jacobian</code> accepts an optional threshold parameter (since v3.10) and <code>-snes_test_jacobian_view</code> should be used in favor of <code>-snes_test_jacobian_display</code>.</li>
-      </ul>
+        <ul>
+          <li>Deprecate <code>-snes_test_jacobian_display</code> and <code>-snes_test_jacobian_display_threshold</code>.  <code>-snes_test_jacobian</code> accepts an optional threshold parameter (since v3.10) and <code>-snes_test_jacobian_view</code> should be used in favor of <code>-snes_test_jacobian_display</code></li>
+        </ul>
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>
       <h4>DM/DA:</h4>
         <ul>
-          <li>DMCopyLabels(): Add two additional input flags</li>
-          <li>DMPlexDistribute(): fixed bug associated with vertex partition weights and overlapped meshes</li>
+          <li>DMCopyLabels(): add two additional input flags</li>
+          <li>DMPlexDistribute(): fix a bug associated with vertex partition weights and overlapped meshes</li>
           <li>DMPlexDistribute(): vertex partition weights are now computed by summing all the local section dofs in the transitive closure of each cell</li>
           <li>Add PetscTabulation to hold function tabulation data</li>
           <li>Add DMEnclosureType to describe relations between meshes</li>
-          <li>Add DMGetEnclosureRelation() and DMGetEnclosurePoint() to discover relations between meshes.</li>
+          <li>Add DMGetEnclosureRelation() and DMGetEnclosurePoint() to discover relations between meshes</li>
           <li>Add DMPolytopeType to describe different cell constructions</li>
         </ul>
       <h4>DMPlex:</h4>
         <ul>
-          <li>The cell type is now stored in a label, so it can be queried. This is useful for interpolation, which needs extra data, and for geometric calculations.</li>
+          <li>The cell type is now stored in a label, so it can be queried. This is useful for interpolation, which needs extra data, and for geometric calculations</li>
           <li>Add DMPlexOrientCell() which orients a single cell</li>
           <li>Add DMPlexCompareOrientations() which compares the cone point order of a single cell with the given reference cone</li>
           <li>Add DMPlexIsInterpolated() which finds out whether the plex is interpolated</li>
@@ -186,9 +186,9 @@
       <h4>DT:</h4>
       <ul>
         <li>All tabulated data is now stored in PetscTabulation structures. This changes interfaces in PetscDS, PetscFE, and PetscFV</li>
-        <li>DefaultTabulation has been renamed to CellTabulation everywhere.</li>
-        <li>PetscDTGaussJacobiQuadrature() is now truly Gauss-Jacobi quadrature.  The quadrature for the simplex (without weight function) is now called PetscDTStroudConicalQuadrature().</li>
-        <li>Add PetscDTJacobiEval(), PetscDTGaussLobattoJacobiQuadrature().</li>
+        <li>Rename DefaultTabulation to CellTabulation everywhere</li>
+        <li>PetscDTGaussJacobiQuadrature() is now truly Gauss-Jacobi quadrature.  The quadrature for the simplex (without weight function) is now called PetscDTStroudConicalQuadrature()</li>
+        <li>Add PetscDTJacobiEval(), PetscDTGaussLobattoJacobiQuadrature()</li>
       </ul>
       <h4>PetscViewer:</h4>
         <ul>
