@@ -36,7 +36,6 @@ PetscErrorCode VecCUDAAllocateCheck(Vec v)
     err = cudaMalloc((void**)&veccuda->GPUarray_allocated,sizeof(PetscScalar)*((PetscBLASInt)v->map->n));CHKERRCUDA(err);
     veccuda->GPUarray = veccuda->GPUarray_allocated;
     veccuda->stream = 0;  /* using default stream */
-    veccuda->hostDataRegisteredAsPageLocked = PETSC_FALSE;
     if (v->offloadmask == PETSC_OFFLOAD_UNALLOCATED) {
       if (v->data && ((Vec_Seq*)v->data)->array) {
         v->offloadmask = PETSC_OFFLOAD_CPU;
