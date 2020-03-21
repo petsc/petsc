@@ -1202,9 +1202,11 @@ PetscErrorCode VecGetLocalVector_SeqCUDA(Vec v,Vec w)
 
   if (w->data) {
     if (((Vec_Seq*)w->data)->array_allocated) {
-      if(w->pinned_memory) {
+      if (w->pinned_memory) {
         ierr = PetscMallocSetCUDAHost();CHKERRQ(ierr);
-        ierr = PetscFree(((Vec_Seq*)w->data)->array_allocated);CHKERRQ(ierr);
+      }
+      ierr = PetscFree(((Vec_Seq*)w->data)->array_allocated);CHKERRQ(ierr);
+      if (w->pinned_memory) {
         ierr = PetscMallocResetCUDAHost();CHKERRQ(ierr);
         w->pinned_memory = PETSC_FALSE;
       }
@@ -1227,6 +1229,7 @@ PetscErrorCode VecGetLocalVector_SeqCUDA(Vec v,Vec w)
     ierr = PetscFree(w->data);CHKERRQ(ierr);
     w->data = v->data;
     w->offloadmask = v->offloadmask;
+    w->pinned_memory = v->pinned_memory;
     w->spptr = v->spptr;
     ierr = PetscObjectStateIncrease((PetscObject)w);CHKERRQ(ierr);
   } else {
@@ -1250,6 +1253,7 @@ PetscErrorCode VecRestoreLocalVector_SeqCUDA(Vec v,Vec w)
   if (v->petscnative) {
     v->data = w->data;
     v->offloadmask = w->offloadmask;
+    v->pinned_memory = w->pinned_memory;
     v->spptr = w->spptr;
     ierr = VecCUDACopyFromGPU(v);CHKERRQ(ierr);
     ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);

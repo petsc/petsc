@@ -18,7 +18,6 @@ static PetscErrorCode PetscCudaHostFree(void *aa,int lineno,const char function[
 static PetscErrorCode PetscCudaHostRealloc(size_t a,int lineno,const char function[],const char filename[],void **result)
 {
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"CUDA has no Realloc()");
-  return 0;
 }
 
 static PetscErrorCode (*PetscMallocOld)(size_t,PetscBool,int,const char[],const char[],void**);

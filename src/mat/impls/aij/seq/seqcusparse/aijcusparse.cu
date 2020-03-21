@@ -1744,8 +1744,6 @@ static PetscErrorCode MatDuplicate_SeqAIJCUSPARSE(Mat A,MatDuplicateOption cpval
 
 static PetscErrorCode MatBindToCPU_SeqAIJCUSPARSE(Mat A,PetscBool flg)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   /* Currently, there is case in which an AIJCUSPARSE matrix ever has its offloadmask set to PETS_OFFLOAD_GPU.
      If this changes, we need to implement a routine to update the CPU (host) version of the matrix from the GPU one.
