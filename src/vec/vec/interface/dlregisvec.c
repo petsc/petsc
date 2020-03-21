@@ -61,15 +61,16 @@ PetscErrorCode  ISInitializePackage(void)
   /* Register Events */
   ierr = PetscLogEventRegister("ISView",IS_CLASSID,&IS_View);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("ISLoad",IS_CLASSID,&IS_Load);CHKERRQ(ierr);
-  /* Process info exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL,"-info_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
-  if (opt) {
-    ierr = PetscStrInList("is",logList,',',&pkg);CHKERRQ(ierr);
-    if (pkg) {ierr = PetscInfoDeactivateClass(IS_CLASSID);CHKERRQ(ierr);}
-    if (pkg) {ierr = PetscInfoDeactivateClass(IS_LTOGM_CLASSID);CHKERRQ(ierr);}
-    ierr = PetscStrInList("section",logList,',',&pkg);CHKERRQ(ierr);
-    if (pkg) {ierr = PetscInfoDeactivateClass(PETSC_SECTION_CLASSID);CHKERRQ(ierr);}
-    if (pkg) {ierr = PetscInfoDeactivateClass(PETSC_SECTION_SYM_CLASSID);CHKERRQ(ierr);}
+  /* Process Info */
+  {
+    PetscClassId  classids[4];
+
+    classids[0] = IS_CLASSID;
+    classids[1] = IS_LTOGM_CLASSID;
+    classids[2] = PETSC_SECTION_CLASSID;
+    classids[3] = PETSC_SECTION_SYM_CLASSID;
+    ierr = PetscInfoProcessClass("is", 2, classids);CHKERRQ(ierr);
+    ierr = PetscInfoProcessClass("section", 2, &classids[2]);CHKERRQ(ierr);
   }
   /* Process summary exclusions */
   ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
@@ -222,15 +223,13 @@ PetscErrorCode  VecInitializePackage(void)
 #endif
   /* Turn off high traffic events by default */
   ierr = PetscLogEventSetActiveAll(VEC_SetValues, PETSC_FALSE);CHKERRQ(ierr);
+  /* Process Info */
+  {
+    PetscClassId  classids[1];
 
-  /* Process info exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL,"-info_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
-  if (opt) {
-    ierr = PetscStrInList("vec",logList,',',&pkg);CHKERRQ(ierr);
-    if (pkg) {ierr = PetscInfoDeactivateClass(VEC_CLASSID);CHKERRQ(ierr);}
-    if (pkg) {ierr = PetscInfoDeactivateClass(VEC_SCATTER_CLASSID);CHKERRQ(ierr);}
+    classids[0] = VEC_CLASSID;
+    ierr = PetscInfoProcessClass("vec", 1, classids);CHKERRQ(ierr);
   }
-
   /* Process summary exclusions */
   ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {

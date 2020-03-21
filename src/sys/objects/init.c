@@ -353,7 +353,7 @@ void PetscMPI_Comm_eh(MPI_Comm *comm, PetscMPIInt *err, ...)
 
 PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 {
-  char              string[64],mname[PETSC_MAX_PATH_LEN],*f;
+  char              string[64],mname[PETSC_MAX_PATH_LEN];
   MPI_Comm          comm = PETSC_COMM_WORLD;
   PetscBool         flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE,flag;
   PetscErrorCode    ierr;
@@ -603,13 +603,7 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   */
 #if defined(PETSC_USE_INFO)
   {
-    char logname[PETSC_MAX_PATH_LEN]; logname[0] = 0;
-    ierr = PetscOptionsGetString(NULL,NULL,"-info",logname,250,&flg1);CHKERRQ(ierr);
-    if (flg1 && logname[0]) {
-      ierr = PetscInfoAllow(PETSC_TRUE,logname);CHKERRQ(ierr);
-    } else if (flg1) {
-      ierr = PetscInfoAllow(PETSC_TRUE,NULL);CHKERRQ(ierr);
-    }
+    ierr = PetscInfoSetFromOptions(NULL);CHKERRQ(ierr);
   }
 #endif
 #if defined(PETSC_USE_LOG)
@@ -719,7 +713,9 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 #if defined(PETSC_HAVE_MPE)
     ierr = (*PetscHelpPrintf)(comm," -log_mpe: Also create logfile viewable through Jumpshot\n");CHKERRQ(ierr);
 #endif
-    ierr = (*PetscHelpPrintf)(comm," -info <optional filename>: print informative messages about the calculations\n");CHKERRQ(ierr);
+#endif
+#if defined(PETSC_USE_INFO)
+    ierr = (*PetscHelpPrintf)(comm," -info [filename][:[[~]list,of,classnames][:[[~]'self']]]: print informative messages\n");CHKERRQ(ierr);
 #endif
     ierr = (*PetscHelpPrintf)(comm," -v: prints PETSc version number and release date\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -options_file <file>: reads options from file\n");CHKERRQ(ierr);
@@ -740,14 +736,6 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   ierr = PetscOptionsGetReal(NULL,NULL,"-petsc_sleep",&si,&flg1);CHKERRQ(ierr);
   if (flg1) {
     ierr = PetscSleep(si);CHKERRQ(ierr);
-  }
-
-  ierr = PetscOptionsGetString(NULL,NULL,"-info_exclude",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
-  if (flg1) {
-    ierr = PetscStrstr(mname,"null",&f);CHKERRQ(ierr);
-    if (f) {
-      ierr = PetscInfoDeactivateClass(0);CHKERRQ(ierr);
-    }
   }
 
 #if defined(PETSC_HAVE_VIENNACL)

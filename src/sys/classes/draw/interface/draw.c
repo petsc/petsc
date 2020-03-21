@@ -54,18 +54,17 @@ PetscErrorCode  PetscDrawInitializePackage(void)
   ierr = PetscClassIdRegister("Scatter Plot",&PETSC_DRAWSP_CLASSID);CHKERRQ(ierr);
   /* Register Constructors */
   ierr = PetscDrawRegisterAll();CHKERRQ(ierr);
-  /* Process info exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL,"-info_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
-  if (opt) {
-    ierr = PetscStrInList("draw",logList,',',&pkg);CHKERRQ(ierr);
-    if (pkg) {
-      ierr = PetscInfoDeactivateClass(PETSC_DRAW_CLASSID);CHKERRQ(ierr);
-      ierr = PetscInfoDeactivateClass(PETSC_DRAWAXIS_CLASSID);CHKERRQ(ierr);
-      ierr = PetscInfoDeactivateClass(PETSC_DRAWLG_CLASSID);CHKERRQ(ierr);
-      ierr = PetscInfoDeactivateClass(PETSC_DRAWHG_CLASSID);CHKERRQ(ierr);
-      ierr = PetscInfoDeactivateClass(PETSC_DRAWBAR_CLASSID);CHKERRQ(ierr);
-      ierr = PetscInfoDeactivateClass(PETSC_DRAWSP_CLASSID);CHKERRQ(ierr);
-    }
+  /* Process Info */
+  {
+    PetscClassId  classids[6];
+
+    classids[0] = PETSC_DRAW_CLASSID;
+    classids[1] = PETSC_DRAWAXIS_CLASSID;
+    classids[2] = PETSC_DRAWLG_CLASSID;
+    classids[3] = PETSC_DRAWHG_CLASSID;
+    classids[4] = PETSC_DRAWBAR_CLASSID;
+    classids[5] = PETSC_DRAWSP_CLASSID;
+    ierr = PetscInfoProcessClass("draw", 6, classids);CHKERRQ(ierr);
   }
   /* Process summary exclusions */
   ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);

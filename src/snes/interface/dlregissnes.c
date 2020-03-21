@@ -62,15 +62,16 @@ PetscErrorCode  SNESInitializePackage(void)
   ierr = PetscLogEventRegister("SNESJacobianEval",     SNES_CLASSID,&SNES_JacobianEval);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("SNESNPCSolve",         SNES_CLASSID,&SNES_NPCSolve);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("SNESLineSearch",       SNESLINESEARCH_CLASSID,&SNESLINESEARCH_Apply);CHKERRQ(ierr);
-  /* Process info exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL,"-info_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
-  if (opt) {
-    ierr = PetscStrInList("snes",logList,',',&pkg);CHKERRQ(ierr);
-    if (pkg) {ierr = PetscInfoDeactivateClass(SNES_CLASSID);CHKERRQ(ierr);}
-    ierr = PetscStrInList("dm",logList,',',&cls);CHKERRQ(ierr);
-    if (pkg || cls) {ierr = PetscInfoDeactivateClass(DMSNES_CLASSID);CHKERRQ(ierr);}
-    ierr = PetscStrInList("sneslinesearch",logList,',',&cls);CHKERRQ(ierr);
-    if (pkg || cls) {ierr = PetscInfoDeactivateClass(SNESLINESEARCH_CLASSID);CHKERRQ(ierr);}
+  /* Process Info */
+  {
+    PetscClassId  classids[3];
+
+    classids[0] = SNES_CLASSID;
+    classids[1] = DMSNES_CLASSID;
+    classids[2] = SNESLINESEARCH_CLASSID;
+    ierr = PetscInfoProcessClass("snes", 1, classids);CHKERRQ(ierr);
+    ierr = PetscInfoProcessClass("dm", 1, &classids[1]);CHKERRQ(ierr);
+    ierr = PetscInfoProcessClass("sneslinesearch", 1, &classids[2]);CHKERRQ(ierr);
   }
   /* Process summary exclusions */
   ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);

@@ -125,5 +125,4 @@ PETSC_EXTERN PetscErrorCode PetscEventRegLogGetEvent(PetscEventRegLog, const cha
 
 PETSC_INTERN PetscErrorCode PetscLogView_Nested(PetscViewer);
 PETSC_INTERN PetscErrorCode PetscLogNestedEnd(void);
-
 #endif /* PETSC_USE_LOG */

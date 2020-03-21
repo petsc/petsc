@@ -283,3 +283,16 @@
 #include "../src/sys/f90-mod/petsclog.h"
 #include "../src/sys/f90-mod/petscbag.h"
 
+! ----------------------------------------------------------------------------
+!
+!     PetscInfoCommFlag Enum
+!
+!
+!     PetscInfoCommFlag
+!
+      PetscEnum PETSC_INFO_COMM_ALL
+      PetscEnum PETSC_INFO_COMM_NO_SELF
+      PetscEnum PETSC_INFO_COMM_ONLY_SELF
+      parameter(PETSC_INFO_COMM_ALL=-1)
+      parameter(PETSC_INFO_COMM_NO_SELF=0)
+      parameter(PETSC_INFO_COMM_ONLY_SELF=1)

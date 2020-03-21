@@ -149,6 +149,7 @@ PetscErrorCode  MatInitializePackage(void)
 {
   char           logList[256];
   PetscBool      opt,pkg;
+
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -281,18 +282,18 @@ PetscErrorCode  MatInitializePackage(void)
   ierr = PetscLogEventSetActiveAll(MAT_SetValues, PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscLogEventSetActiveAll(MAT_GetValues, PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscLogEventSetActiveAll(MAT_GetRow,    PETSC_FALSE);CHKERRQ(ierr);
+  /* Process Info */
+  {
+    PetscClassId  classids[7];
 
-  /* Process info exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL,"-info_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
-  if (opt) {
-    ierr = PetscStrInList("mat",logList,',',&pkg);CHKERRQ(ierr);
-    if (pkg) {ierr = PetscInfoDeactivateClass(MAT_CLASSID);CHKERRQ(ierr);}
-    if (pkg) {ierr = PetscInfoDeactivateClass(MAT_FDCOLORING_CLASSID);CHKERRQ(ierr);}
-    if (pkg) {ierr = PetscInfoDeactivateClass(MAT_COLORING_CLASSID);CHKERRQ(ierr);}
-    if (pkg) {ierr = PetscInfoDeactivateClass(MAT_TRANSPOSECOLORING_CLASSID);CHKERRQ(ierr);}
-    if (pkg) {ierr = PetscInfoDeactivateClass(MAT_PARTITIONING_CLASSID);CHKERRQ(ierr);}
-    if (pkg) {ierr = PetscInfoDeactivateClass(MAT_COARSEN_CLASSID);CHKERRQ(ierr);}
-    if (pkg) {ierr = PetscInfoDeactivateClass(MAT_NULLSPACE_CLASSID);CHKERRQ(ierr);}
+    classids[0] = MAT_CLASSID;
+    classids[1] = MAT_FDCOLORING_CLASSID;
+    classids[2] = MAT_COLORING_CLASSID;
+    classids[3] = MAT_TRANSPOSECOLORING_CLASSID;
+    classids[4] = MAT_PARTITIONING_CLASSID;
+    classids[5] = MAT_COARSEN_CLASSID;
+    classids[6] = MAT_NULLSPACE_CLASSID;
+    ierr = PetscInfoProcessClass("mat", 7, classids);CHKERRQ(ierr);
   }
 
   /* Process summary exclusions */

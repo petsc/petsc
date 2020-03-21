@@ -69,17 +69,18 @@ PetscErrorCode  TSInitializePackage(void)
   ierr = PetscLogEventRegister("TSTrajDiskWrite", TSTRAJECTORY_CLASSID,&TSTrajectory_DiskWrite);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("TSTrajDiskRead",  TSTRAJECTORY_CLASSID,&TSTrajectory_DiskRead);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("TSPseudoCmptTStp",TS_CLASSID,&TS_PseudoComputeTimeStep);CHKERRQ(ierr);
-  /* Process info exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL,"-info_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
-  if (opt) {
-    ierr = PetscStrInList("ts",logList,',',&pkg);CHKERRQ(ierr);
-    if (pkg) {ierr = PetscInfoDeactivateClass(TS_CLASSID);CHKERRQ(ierr);}
-    ierr = PetscStrInList("dm",logList,',',&cls);CHKERRQ(ierr);
-    if (pkg || cls) {ierr = PetscInfoDeactivateClass(DMTS_CLASSID);CHKERRQ(ierr);}
-    ierr = PetscStrInList("tsadapt",logList,',',&cls);CHKERRQ(ierr);
-    if (pkg || cls) {ierr = PetscInfoDeactivateClass(TSADAPT_CLASSID);CHKERRQ(ierr);}
-    ierr = PetscStrInList("tstrajectory",logList,',',&cls);CHKERRQ(ierr);
-    if (pkg || cls) {ierr = PetscInfoDeactivateClass(TSTRAJECTORY_CLASSID);CHKERRQ(ierr);}
+  /* Process Info */
+  {
+    PetscClassId  classids[4];
+
+    classids[0] = TS_CLASSID;
+    classids[1] = DMTS_CLASSID;
+    classids[2] = TSADAPT_CLASSID;
+    classids[3] = TSTRAJECTORY_CLASSID;
+    ierr = PetscInfoProcessClass("ts", 1, classids);CHKERRQ(ierr);
+    ierr = PetscInfoProcessClass("dm", 1, &classids[1]);CHKERRQ(ierr);
+    ierr = PetscInfoProcessClass("tsadapt", 1, &classids[2]);CHKERRQ(ierr);
+    ierr = PetscInfoProcessClass("tstrajectory", 1, &classids[3]);CHKERRQ(ierr);
   }
   /* Process summary exclusions */
   ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
