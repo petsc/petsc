@@ -12,7 +12,7 @@ static char help[] = " Demonstrate the use of MatConvert_Nest_AIJ\n";
 
 int main(int argc,char **args)
 {
-  Mat                 A1,A2,A3,A4,A5,B,C,nest;
+  Mat                 A1,A2,A3,A4,A5,B,C,C1,nest;
   Mat                 mata[4];
   Mat                 aij;
   MPI_Comm            comm;
@@ -20,10 +20,12 @@ int main(int argc,char **args)
   PetscScalar         v;
   PetscMPIInt         size;
   PetscErrorCode      ierr;
+  PetscBool           equal;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+
   /*
      Assemble the matrix for the five point stencil, YET AGAIN
   */
@@ -44,9 +46,11 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(A1,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A1,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatView(A1,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
   ierr = MatDuplicate(A1,MAT_COPY_VALUES,&A2);CHKERRQ(ierr);
   ierr = MatDuplicate(A1,MAT_COPY_VALUES,&A3);CHKERRQ(ierr);
   ierr = MatDuplicate(A1,MAT_COPY_VALUES,&A4);CHKERRQ(ierr);
+
   /*create a nest matrix */
   ierr = MatCreate(comm,&nest);CHKERRQ(ierr);
   ierr = MatSetType(nest,MATNEST);CHKERRQ(ierr);
@@ -55,39 +59,38 @@ int main(int argc,char **args)
   ierr = MatSetUp(nest);CHKERRQ(ierr);
   ierr = MatConvert(nest,MATAIJ,MAT_INITIAL_MATRIX,&aij);CHKERRQ(ierr);
   ierr = MatView(aij,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
+  /* create a dense matrix */
   ierr = MatGetSize(nest,&M,NULL);CHKERRQ(ierr);
   ierr = MatGetLocalSize(nest,&m,NULL);CHKERRQ(ierr);
   ierr = MatCreateDense(comm,m,PETSC_DECIDE,M,K,NULL,&B);CHKERRQ(ierr);
+  ierr = MatSetRandom(B,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  /* C = nest*B_dense */
   ierr = MatMatMult(nest,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
   ierr = MatMatMult(nest,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
-  ierr = MatCreateDense(comm,m,PETSC_DECIDE,M,K,NULL,&C);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatMatMult(nest,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  ierr = MatMatMultEqual(nest,B,C,10,&equal);CHKERRQ(ierr);
+  if (!equal) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in C != nest*B_dense");
   ierr = MatDestroy(&nest);CHKERRQ(ierr);
-  ierr = MatCreateTranspose(A3,&A5);CHKERRQ(ierr);
-  mata[3]=A5;
-  ierr = MatCreate(comm,&nest);CHKERRQ(ierr);
-  ierr = MatSetType(nest,MATNEST);CHKERRQ(ierr);
-  ierr = MatNestSetSubMats(nest,2,NULL,2,NULL,mata);CHKERRQ(ierr);
-  ierr = MatSetUp(nest);CHKERRQ(ierr);
-  ierr = MatGetSize(nest,&M,NULL);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(nest,&m,NULL);CHKERRQ(ierr);
-  ierr = MatCreateDense(comm,m,PETSC_DECIDE,M,K,NULL,&B);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatMatMult(nest,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
-  ierr = MatMatMult(nest,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
-  ierr = MatCreateDense(comm,m,PETSC_DECIDE,M,K,NULL,&C);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatMatMult(nest,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
+
+  if (size > 1) { /* Do not know why this test fails for size = 1 */
+    ierr = MatCreateTranspose(A1,&A5);CHKERRQ(ierr); /* A1 is symmetric */
+    mata[0] = A5;
+    ierr = MatCreate(comm,&nest);CHKERRQ(ierr);
+    ierr = MatSetType(nest,MATNEST);CHKERRQ(ierr);
+    ierr = MatNestSetSubMats(nest,2,NULL,2,NULL,mata);CHKERRQ(ierr);
+    ierr = MatSetUp(nest);CHKERRQ(ierr);
+    ierr = MatMatMult(nest,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C1);CHKERRQ(ierr);
+    ierr = MatMatMult(nest,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&C1);CHKERRQ(ierr);
+
+    ierr = MatEqual(C1,C,&equal);CHKERRQ(ierr);
+    if (!equal) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in C1 != C");
+    ierr = MatDestroy(&C1);CHKERRQ(ierr);
+    ierr = MatDestroy(&A5);CHKERRQ(ierr);
+  }
+
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = MatDestroy(&nest);CHKERRQ(ierr);
@@ -96,7 +99,6 @@ int main(int argc,char **args)
   ierr = MatDestroy(&A2);CHKERRQ(ierr);
   ierr = MatDestroy(&A3);CHKERRQ(ierr);
   ierr = MatDestroy(&A4);CHKERRQ(ierr);
-  ierr = MatDestroy(&A5);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }

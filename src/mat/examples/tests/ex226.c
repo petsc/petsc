@@ -274,7 +274,7 @@ int main(int argc,char **argv)
  test:
       suffix: 1
       nsize: 1
-      args: -m 8 -n 8 -stencil 2d5point -matmatmult_via combined
+      args: -m 8 -n 8 -stencil 2d5point -matmatmult_via sorted
 
  test:
        suffix: 2

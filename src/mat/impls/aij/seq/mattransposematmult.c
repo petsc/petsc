@@ -22,28 +22,11 @@ PetscErrorCode MatDestroy_SeqDense_MatTransMatMult(Mat A)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatTransposeMatMult_SeqAIJ_SeqDense(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (scall == MAT_INITIAL_MATRIX) {
-    ierr = PetscLogEventBegin(MAT_TransposeMatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
-    ierr = MatTransposeMatMultSymbolic_SeqAIJ_SeqDense(A,B,fill,C);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(MAT_TransposeMatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
-  }
-  ierr = PetscLogEventBegin(MAT_TransposeMatMultNumeric,A,B,0,0);CHKERRQ(ierr);
-  ierr = MatTransposeMatMultNumeric_SeqAIJ_SeqDense(A,B,*C);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_TransposeMatMultNumeric,A,B,0,0);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode MatTransposeMatMultSymbolic_SeqAIJ_SeqDense(Mat A,Mat B,PetscReal fill,Mat *C)
+PetscErrorCode MatTransposeMatMultSymbolic_SeqAIJ_SeqDense(Mat A,Mat B,PetscReal fill,Mat C)
 {
   PetscErrorCode      ierr;
   PetscInt            m=A->rmap->n,n=A->cmap->n,BN=B->cmap->N;
   Mat_MatTransMatMult *atb;
-  Mat                 Cdense;
   Vec                 bt,ct;
   Mat_SeqDense        *c;
 
@@ -51,10 +34,9 @@ PetscErrorCode MatTransposeMatMultSymbolic_SeqAIJ_SeqDense(Mat A,Mat B,PetscReal
   ierr = PetscNew(&atb);CHKERRQ(ierr);
 
   /* create output dense matrix C = A^T*B */
-  ierr = MatCreate(PETSC_COMM_SELF,&Cdense);CHKERRQ(ierr);
-  ierr = MatSetSizes(Cdense,n,BN,n,BN);CHKERRQ(ierr);
-  ierr = MatSetType(Cdense,MATSEQDENSE);CHKERRQ(ierr);
-  ierr = MatSeqDenseSetPreallocation(Cdense,NULL);CHKERRQ(ierr);
+  ierr = MatSetSizes(C,n,BN,n,BN);CHKERRQ(ierr);
+  ierr = MatSetType(C,MATSEQDENSE);CHKERRQ(ierr);
+  ierr = MatSeqDenseSetPreallocation(C,NULL);CHKERRQ(ierr);
 
   /* create vectors bt and ct to hold locally transposed arrays of B and C */
   ierr = VecCreate(PETSC_COMM_SELF,&bt);CHKERRQ(ierr);
@@ -66,12 +48,11 @@ PetscErrorCode MatTransposeMatMultSymbolic_SeqAIJ_SeqDense(Mat A,Mat B,PetscReal
   atb->bt = bt;
   atb->ct = ct;
 
-  *C                                   = Cdense;
-  c                                    = (Mat_SeqDense*)Cdense->data;
-  c->atb                               = atb;
-  atb->destroy                         = Cdense->ops->destroy;
-  Cdense->ops->destroy                 = MatDestroy_SeqDense_MatTransMatMult;
-  Cdense->ops->transposematmultnumeric = MatTransposeMatMultNumeric_SeqAIJ_SeqDense;
+  c                               = (Mat_SeqDense*)C->data;
+  c->atb                          = atb;
+  atb->destroy                    = C->ops->destroy;
+  C->ops->destroy                 = MatDestroy_SeqDense_MatTransMatMult;
+  C->ops->transposematmultnumeric = MatTransposeMatMultNumeric_SeqAIJ_SeqDense;
   PetscFunctionReturn(0);
 }
 

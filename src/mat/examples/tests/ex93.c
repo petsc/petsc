@@ -9,12 +9,13 @@ int main(int argc,char **argv)
   Mat            A,B,C,D;
   PetscScalar    a[] ={1.,1.,0.,0.,1.,1.,0.,0.,1.};
   PetscInt       ij[]={0,1,2};
-  PetscScalar    none=-1.;
   PetscErrorCode ierr;
-  PetscReal      fill=4;
-  PetscReal      norm;
+  PetscReal      fill=4.0;
   PetscMPIInt    size,rank;
+  PetscBool      isequal;
+#if defined(PETSC_HAVE_HYPRE)
   PetscBool      test_hypre=PETSC_FALSE;
+#endif
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 #if defined(PETSC_HAVE_HYPRE)
@@ -35,71 +36,35 @@ int main(int argc,char **argv)
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatSetOptionsPrefix(A,"A_");CHKERRQ(ierr);
-  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n");CHKERRQ(ierr);
 
   /* Test MatMatMult() */
   ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);      /* B = A^T */
-  ierr = MatSetOptionsPrefix(B,"B_");CHKERRQ(ierr);
   ierr = MatMatMult(B,A,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr); /* C = B*A */
-  ierr = MatMatMultNumeric(B,A,C);CHKERRQ(ierr);                   /* recompute C=B*A */
   ierr = MatMatMult(B,A,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);   /* recompute C=B*A */
   ierr = MatSetOptionsPrefix(C,"C_");CHKERRQ(ierr);
-  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  if (!rank) {ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);}
+  ierr = MatMatMultEqual(B,A,C,10,&isequal);CHKERRQ(ierr);
+  if (!isequal) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MatMatMult: C != B*A");
 
-  ierr = MatMatMult(C,A,MAT_INITIAL_MATRIX,fill,&D);CHKERRQ(ierr);
-  ierr = MatMatMultNumeric(C,A,D);CHKERRQ(ierr);  /* D = C*A = (A^T*A)*A */
-  ierr = MatSetOptionsPrefix(D,"D_");CHKERRQ(ierr);
-  ierr = MatView(D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  if (!rank) {ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);}
-
-  /* Repeat the numeric product to test reuse of the previous symbolic product */
-  ierr = MatMatMultNumeric(C,A,D);CHKERRQ(ierr);
-  ierr = MatView(D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  if (!rank) {ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);}
+  ierr = MatMatMult(C,A,MAT_INITIAL_MATRIX,fill,&D);CHKERRQ(ierr); /* D = C*A = (A^T*A)*A */
+  ierr = MatMatMult(C,A,MAT_REUSE_MATRIX,fill,&D);CHKERRQ(ierr);
+  ierr = MatMatMultEqual(C,A,D,10,&isequal);CHKERRQ(ierr);
+  if (!isequal) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MatMatMult: D != C*A");
 
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
-
-  /* Test PtAP routine. */
-  ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);      /* B = A */
-  ierr = MatPtAP(A,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr); /* C = B^T*A*B */
-  if (!test_hypre) {
-    ierr = MatAXPY(D,none,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-    ierr = MatNorm(D,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
-    if (norm > 1.e-15 && !rank) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Error in MatPtAP: %g\n",norm);CHKERRQ(ierr);
-    }
-  }
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&D);CHKERRQ(ierr);
 
-  /* Repeat PtAP to test symbolic/numeric separation for reuse of the symbolic product */
-  ierr = MatPtAP(A,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
-  ierr = MatSetOptionsPrefix(C,"C=BtAB_");CHKERRQ(ierr);
-  if (!test_hypre) {
-    ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"\n");CHKERRQ(ierr);
-  }
+  /* Test MatPtAP */
+  ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);      /* B = A */
+  ierr = MatPtAP(A,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr); /* C = B^T*A*B */
+  ierr = MatPtAPMultEqual(A,B,C,10,&isequal);CHKERRQ(ierr);
+  if (!isequal) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MatPtAP: C != B^T*A*B");
 
-  if (!test_hypre) {
-    ierr = MatPtAPSymbolic(A,B,fill,&D);CHKERRQ(ierr);
-    ierr = MatPtAPNumeric(A,B,D);CHKERRQ(ierr);
-    ierr = MatSetOptionsPrefix(D,"D=BtAB_");CHKERRQ(ierr);
-    ierr = MatView(D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"\n");CHKERRQ(ierr);
+  /* Repeat MatPtAP to test symbolic/numeric separation for reuse of the symbolic product */
+  ierr = MatPtAP(A,B,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
+  ierr = MatPtAPMultEqual(A,B,C,10,&isequal);CHKERRQ(ierr);
+  if (!isequal) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MatPtAP(reuse): C != B^T*A*B");
 
-    /* Repeat numeric product to test reuse of the previous symbolic product */
-    ierr = MatPtAPNumeric(A,B,D);CHKERRQ(ierr);
-    ierr = MatAXPY(D,none,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-    ierr = MatNorm(D,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
-    if (norm > 1.e-15) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Error in symbolic/numeric MatPtAP: %g\n",norm);CHKERRQ(ierr);
-    }
-    ierr = MatDestroy(&D);CHKERRQ(ierr);
-  }
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
 
@@ -109,15 +74,10 @@ int main(int argc,char **argv)
 
     /* test MatMatTransposeMult(): A*B^T */
     ierr = MatMatTransposeMult(A,A,MAT_INITIAL_MATRIX,fill,&D);CHKERRQ(ierr); /* D = A*A^T */
-    ierr = MatSetOptionsPrefix(D,"D=A*A^T_");CHKERRQ(ierr);
-    ierr = MatView(D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"\n");CHKERRQ(ierr);
-
-    ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr); /* B = A^T */
-    ierr = MatMatMult(A,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr); /* C=A*B */
-    ierr = MatSetOptionsPrefix(C,"D=A*B=A*A^T_");CHKERRQ(ierr);
-    ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"\n");CHKERRQ(ierr);
+    ierr = MatScale(A,2.0);CHKERRQ(ierr);
+    ierr = MatMatTransposeMult(A,A,MAT_REUSE_MATRIX,fill,&D);CHKERRQ(ierr);
+    ierr = MatMatTransposeMultEqual(A,A,D,10,&isequal);CHKERRQ(ierr);
+    if (!isequal) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MatMatTranspose: D != A*A^T");
   }
 
   ierr = MatDestroy(&A);CHKERRQ(ierr);
@@ -131,14 +91,10 @@ int main(int argc,char **argv)
 /* a test contributed by Tobias Neckel <neckel@in.tum.de>, 02 Jul 2008 */
 PetscErrorCode testPTAPRectangular(void)
 {
-
-  const int      rows = 3;
-  const int      cols = 5;
+  const int      rows = 3,cols = 5;
   PetscErrorCode ierr;
   int            i;
-  Mat            A;
-  Mat            P;
-  Mat            C;
+  Mat            A,P,C;
 
   PetscFunctionBegin;
   /* set up A  */
@@ -224,27 +180,28 @@ PetscErrorCode testPTAPRectangular(void)
    test:
       suffix: 2
       nsize: 2
-      args: -B_matmatmult_via nonscalable
+      args: -matmatmult_via nonscalable
+      output_file: output/ex93_1.out
 
    test:
       suffix: 3
       nsize: 2
-      output_file: output/ex93_2.out
+      output_file: output/ex93_1.out
 
    test:
       suffix: 4
       nsize: 2
-      args: -A_matptap_via scalable
-      output_file: output/ex93_2.out
+      args: -matptap_via scalable
+      output_file: output/ex93_1.out
 
    test:
       suffix: btheap
-      args: -B_matmatmult_via btheap
+      args: -matmatmult_via btheap -matmattransmult_via color
       output_file: output/ex93_1.out
 
    test:
       suffix: heap
-      args: -B_matmatmult_via heap
+      args: -matmatmult_via heap
       output_file: output/ex93_1.out
 
    #HYPRE PtAP is broken for complex numbers
@@ -252,21 +209,22 @@ PetscErrorCode testPTAPRectangular(void)
       suffix: hypre
       nsize: 3
       requires: hypre !complex
-      args: -B_matmatmult_via hypre -A_matptap_via hypre -test_hypre
+      args: -matmatmult_via hypre -matptap_via hypre -test_hypre
+      output_file: output/ex93_hypre.out
 
    test:
       suffix: llcondensed
-      args: -B_matmatmult_via llcondensed
+      args: -matmatmult_via llcondensed
       output_file: output/ex93_1.out
 
    test:
       suffix: scalable
-      args: -B_matmatmult_via scalable
+      args: -matmatmult_via scalable
       output_file: output/ex93_1.out
 
    test:
       suffix: scalable_fast
-      args: -B_matmatmult_via scalable_fast
+      args: -matmatmult_via scalable_fast
       output_file: output/ex93_1.out
 
 TEST*/

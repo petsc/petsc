@@ -334,6 +334,7 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat *C)
   PetscOps       Abops;
   struct _MatOps Aops;
   char           *mtype,*mname,*mprefix;
+  Mat_Product    *product;
 
   PetscFunctionBegin;
   /* save the parts of A we need */
@@ -343,6 +344,7 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat *C)
   mtype = ((PetscObject)A)->type_name;
   mname = ((PetscObject)A)->name;
   mprefix = ((PetscObject)A)->prefix;
+  product = A->product;
 
   /* zero these so the destroy below does not free them */
   ((PetscObject)A)->type_name = 0;
@@ -367,6 +369,7 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat *C)
   ((PetscObject)A)->type_name = mtype;
   ((PetscObject)A)->name      = mname;
   ((PetscObject)A)->prefix    = mprefix;
+  A->product                  = product;
 
   /* since these two are copied into A we do not want them destroyed in C */
   ((PetscObject)*C)->qlist = 0;

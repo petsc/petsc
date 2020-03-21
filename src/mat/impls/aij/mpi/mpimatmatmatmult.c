@@ -5,27 +5,46 @@
 #include <../src/mat/impls/aij/mpi/mpiaij.h> /*I "petscmat.h" I*/
 
 #if defined(PETSC_HAVE_HYPRE)
-PETSC_INTERN PetscErrorCode MatTransposeMatMatMultSymbolic_AIJ_AIJ_AIJ_wHYPRE(Mat,Mat,Mat,PetscReal,Mat*);
+PETSC_INTERN PetscErrorCode MatTransposeMatMatMultSymbolic_AIJ_AIJ_AIJ_wHYPRE(Mat,Mat,Mat,PetscReal,Mat);
 PETSC_INTERN PetscErrorCode MatTransposeMatMatMultNumeric_AIJ_AIJ_AIJ_wHYPRE(Mat,Mat,Mat,Mat);
 
-PETSC_INTERN PetscErrorCode MatMatMatMult_Transpose_AIJ_AIJ(Mat R,Mat A,Mat P,MatReuse scall, PetscReal fill, Mat *RAP)
+PETSC_INTERN PetscErrorCode MatProductNumeric_ABC_Transpose_AIJ_AIJ(Mat RAP)
 {
-  Mat            Rt;
-  PetscBool      flg;
   PetscErrorCode ierr;
+  Mat_Product    *product = RAP->product;
+  Mat            Rt,R=product->A,A=product->B,P=product->C;
 
   PetscFunctionBegin;
   ierr = MatTransposeGetMat(R,&Rt);CHKERRQ(ierr);
+  ierr = MatTransposeMatMatMultNumeric_AIJ_AIJ_AIJ_wHYPRE(Rt,A,P,RAP);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PETSC_INTERN PetscErrorCode MatProductSymbolic_ABC_Transpose_AIJ_AIJ(Mat RAP)
+{
+  PetscErrorCode ierr;
+  Mat_Product    *product = RAP->product;
+  Mat            Rt,R=product->A,A=product->B,P=product->C;
+  PetscBool      flg;
+
+  PetscFunctionBegin;
+  /* local sizes of matrices will be checked by the calling subroutines */
+  ierr = MatTransposeGetMat(R,&Rt);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompareAny((PetscObject)Rt,&flg,MATSEQAIJ,MATSEQAIJMKL,MATMPIAIJ,NULL);CHKERRQ(ierr);
   if (!flg) SETERRQ1(PetscObjectComm((PetscObject)Rt),PETSC_ERR_SUP,"Not for matrix type %s",((PetscObject)Rt)->type_name);
-  if (scall == MAT_INITIAL_MATRIX) {
-    ierr = PetscLogEventBegin(MAT_MatMatMultSymbolic,R,A,P,0);CHKERRQ(ierr);
-    ierr = MatTransposeMatMatMultSymbolic_AIJ_AIJ_AIJ_wHYPRE(Rt,A,P,fill,RAP);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(MAT_MatMatMultSymbolic,R,A,P,0);CHKERRQ(ierr);
-  }
-  ierr = PetscLogEventBegin(MAT_MatMatMultNumeric,R,A,P,0);CHKERRQ(ierr);
-  ierr = MatTransposeMatMatMultNumeric_AIJ_AIJ_AIJ_wHYPRE(Rt,A,P,*RAP);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_MatMatMultNumeric,R,A,P,0);CHKERRQ(ierr);
+  ierr = MatTransposeMatMatMultSymbolic_AIJ_AIJ_AIJ_wHYPRE(Rt,A,P,product->fill,RAP);CHKERRQ(ierr);
+  RAP->ops->productnumeric = MatProductNumeric_ABC_Transpose_AIJ_AIJ;
+  PetscFunctionReturn(0);
+}
+
+PETSC_INTERN PetscErrorCode MatProductSetFromOptions_Transpose_AIJ_AIJ(Mat C)
+{
+  Mat_Product *product = C->product;
+
+  PetscFunctionBegin;
+  if (product->type == MATPRODUCT_ABC) {
+    C->ops->productsymbolic = MatProductSymbolic_ABC_Transpose_AIJ_AIJ;
+  } else SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_SUP,"MatProduct type is not supported");
   PetscFunctionReturn(0);
 }
 #endif
@@ -55,72 +74,40 @@ PetscErrorCode MatDestroy_MPIAIJ_MatMatMatMult(Mat A)
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode MatMatMatMult_MPIAIJ_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C,MatReuse scall,PetscReal fill,Mat *D)
+PetscErrorCode MatMatMatMultSymbolic_MPIAIJ_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C,PetscReal fill,Mat D)
 {
   PetscErrorCode ierr;
+  Mat            BC;
+  PetscBool      scalable;
+  Mat_Product    *product = D->product;
 
   PetscFunctionBegin;
-  if (scall == MAT_INITIAL_MATRIX) {
-    ierr = PetscLogEventBegin(MAT_MatMatMultSymbolic,A,B,C,0);CHKERRQ(ierr);
-    ierr = MatMatMatMultSymbolic_MPIAIJ_MPIAIJ_MPIAIJ(A,B,C,fill,D);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(MAT_MatMatMultSymbolic,A,B,C,0);CHKERRQ(ierr);
-  }
-  ierr = PetscLogEventBegin(MAT_MatMatMultNumeric,A,B,C,0);CHKERRQ(ierr);
-  ierr = ((*D)->ops->matmatmultnumeric)(A,B,C,*D);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_MatMatMultNumeric,A,B,C,0);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
+  ierr = MatCreate(PetscObjectComm((PetscObject)A),&BC);CHKERRQ(ierr);
+  if (product) {
+    ierr = PetscStrcmp(product->alg,"scalable",&scalable);CHKERRQ(ierr);
+  } else SETERRQ(PetscObjectComm((PetscObject)D),PETSC_ERR_ARG_NULL,"Call MatProductCreate() first");
 
-PetscErrorCode MatMatMatMultSymbolic_MPIAIJ_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C,PetscReal fill,Mat *D)
-{
-  PetscErrorCode    ierr;
-  Mat               BC;
-  Mat_MatMatMatMult *matmatmatmult;
-  Mat_MPIAIJ        *d;
-  PetscBool         flg;
-  const char        *algTypes[2] = {"scalable","nonscalable"};
-  PetscInt          nalg=2,alg=0; /* set default algorithm */
-
-  PetscFunctionBegin;
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)B),((PetscObject)B)->prefix,"MatMatMatMult","Mat");CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-matmatmatmult_via","Algorithmic approach","MatMatMatMult",algTypes,nalg,algTypes[alg],&alg,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
-
-  switch (alg) {
-  case 0: /* scalable */
-    ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ(B,C,fill,&BC);CHKERRQ(ierr);
+  if (scalable) {
+    ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ(B,C,fill,BC);CHKERRQ(ierr);
     ierr = MatZeroEntries(BC);CHKERRQ(ierr); /* initialize value entries of BC */
     ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ(A,BC,fill,D);CHKERRQ(ierr);
-    break;
-  case 1:
-    ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(B,C,fill,&BC);CHKERRQ(ierr);
+  } else {
+    ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(B,C,fill,BC);CHKERRQ(ierr);
     ierr = MatZeroEntries(BC);CHKERRQ(ierr); /* initialize value entries of BC */
     ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(A,BC,fill,D);CHKERRQ(ierr);
-    break;
-  default:
-    SETERRQ(PetscObjectComm((PetscObject)B),PETSC_ERR_SUP,"Not supported");
   }
+  product->Dwork = BC;
 
-  /* create struct Mat_MatMatMatMult and attached it to *D */
-  ierr = PetscNew(&matmatmatmult);CHKERRQ(ierr);
-
-  matmatmatmult->BC      = BC;
-  matmatmatmult->destroy = (*D)->ops->destroy;
-  d                      = (Mat_MPIAIJ*)(*D)->data;
-  d->matmatmatmult       = matmatmatmult;
-
-  (*D)->ops->matmatmultnumeric = MatMatMatMultNumeric_MPIAIJ_MPIAIJ_MPIAIJ;
-  (*D)->ops->destroy           = MatDestroy_MPIAIJ_MatMatMatMult;
-  (*D)->ops->freeintermediatedatastructures = MatFreeIntermediateDataStructures_MPIAIJ_BC;
+  D->ops->matmatmultnumeric = MatMatMatMultNumeric_MPIAIJ_MPIAIJ_MPIAIJ;
+  D->ops->freeintermediatedatastructures = MatFreeIntermediateDataStructures_MPIAIJ_BC;
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatMatMatMultNumeric_MPIAIJ_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C,Mat D)
 {
-  PetscErrorCode    ierr;
-  Mat_MPIAIJ        *d             = (Mat_MPIAIJ*)D->data;
-  Mat_MatMatMatMult *matmatmatmult = d->matmatmatmult;
-  Mat               BC             = matmatmatmult->BC;
+  PetscErrorCode ierr;
+  Mat_Product    *product = D->product;
+  Mat            BC = product->Dwork;
 
   PetscFunctionBegin;
   ierr = (BC->ops->matmultnumeric)(B,C,BC);CHKERRQ(ierr);
@@ -128,17 +115,59 @@ PetscErrorCode MatMatMatMultNumeric_MPIAIJ_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C,Mat D
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatRARt_MPIAIJ_MPIAIJ(Mat A,Mat R,MatReuse scall,PetscReal fill,Mat *C)
+/* ----------------------------------------------------- */
+PetscErrorCode MatDestroy_MPIAIJ_RARt(Mat C)
 {
   PetscErrorCode ierr;
-  Mat            Rt;
+  Mat_MPIAIJ     *c    = (Mat_MPIAIJ*)C->data;
+  Mat_RARt       *rart = c->rart;
+
+  PetscFunctionBegin;
+  ierr = MatDestroy(&rart->Rt);CHKERRQ(ierr);
+
+  C->ops->destroy = rart->destroy;
+  if (C->ops->destroy) {
+    ierr = (*C->ops->destroy)(C);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(rart);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatProductNumeric_RARt_MPIAIJ_MPIAIJ(Mat C)
+{
+  PetscErrorCode ierr;
+  Mat_MPIAIJ     *c = (Mat_MPIAIJ*)C->data;
+  Mat_RARt       *rart = c->rart;
+  Mat_Product    *product = C->product;
+  Mat            A=product->A,R=product->B,Rt=rart->Rt;
+
+  PetscFunctionBegin;
+  ierr = MatTranspose(R,MAT_REUSE_MATRIX,&Rt);CHKERRQ(ierr);
+  ierr = (C->ops->matmatmultnumeric)(R,A,Rt,C);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatProductSymbolic_RARt_MPIAIJ_MPIAIJ(Mat C)
+{
+  PetscErrorCode      ierr;
+  Mat_Product         *product = C->product;
+  Mat                 A=product->A,R=product->B,Rt;
+  PetscReal           fill=product->fill;
+  Mat_RARt            *rart;
+  Mat_MPIAIJ          *c;
 
   PetscFunctionBegin;
   ierr = MatTranspose(R,MAT_INITIAL_MATRIX,&Rt);CHKERRQ(ierr);
-  if (scall == MAT_INITIAL_MATRIX) {
-    ierr = MatMatMatMultSymbolic_MPIAIJ_MPIAIJ_MPIAIJ(R,A,Rt,fill,C);CHKERRQ(ierr);
-  }
-  ierr = MatMatMatMultNumeric_MPIAIJ_MPIAIJ_MPIAIJ(R,A,Rt,*C);CHKERRQ(ierr);
-  ierr = MatDestroy(&Rt);CHKERRQ(ierr);
+  /* product->Dwork is used to store A*Rt in MatMatMatMultSymbolic_MPIAIJ_MPIAIJ_MPIAIJ() */
+  ierr = MatMatMatMultSymbolic_MPIAIJ_MPIAIJ_MPIAIJ(R,A,Rt,fill,C);CHKERRQ(ierr);
+  C->ops->productnumeric = MatProductNumeric_RARt_MPIAIJ_MPIAIJ;
+
+  /* create a supporting struct */
+  ierr     = PetscNew(&rart);CHKERRQ(ierr);
+  c        = (Mat_MPIAIJ*)C->data;
+  c->rart  = rart;
+  rart->Rt = Rt;
+  rart->destroy   = C->ops->destroy;
+  C->ops->destroy = MatDestroy_MPIAIJ_RARt;
   PetscFunctionReturn(0);
 }

@@ -68,7 +68,7 @@ static PetscErrorCode MatPtAPNumeric_IS_XAIJ(Mat A, Mat P, Mat C)
   } else {
     ierr = MatPtAP(lA,ptap->lP[0],reuse,ptap->fill,&lC);CHKERRQ(ierr);
     if (matis->storel2l) {
-     ierr = PetscObjectCompose((PetscObject)(C),"_MatIS_PtAP_l2l",(PetscObject)ptap->lP[0]);CHKERRQ(ierr);
+     ierr = PetscObjectCompose((PetscObject)C,"_MatIS_PtAP_l2l",(PetscObject)ptap->lP[0]);CHKERRQ(ierr);
     }
   }
   if (reuse == MAT_INITIAL_MATRIX) {
@@ -161,7 +161,7 @@ static PetscErrorCode MatGetNonzeroColumnsLocal_Private(Mat PT,IS *cis)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatPtAPSymbolic_IS_XAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
+static PetscErrorCode MatPtAPSymbolic_IS_XAIJ(Mat A,Mat P,PetscReal fill,Mat C)
 {
   Mat                    PT,lA;
   MatISPtAP              ptap;
@@ -175,14 +175,13 @@ static PetscErrorCode MatPtAPSymbolic_IS_XAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-  ierr = MatCreate(comm,C);CHKERRQ(ierr);
-  ierr = MatSetType(*C,MATIS);CHKERRQ(ierr);
+  ierr = MatSetType(C,MATIS);CHKERRQ(ierr);
   ierr = MatISGetLocalMat(A,&lA);CHKERRQ(ierr);
   ierr = MatGetType(lA,&lmtype);CHKERRQ(ierr);
-  ierr = MatISSetLocalMatType(*C,lmtype);CHKERRQ(ierr);
+  ierr = MatISSetLocalMatType(C,lmtype);CHKERRQ(ierr);
   ierr = MatGetSize(P,NULL,&N);CHKERRQ(ierr);
   ierr = MatGetLocalSize(P,NULL,&dc);CHKERRQ(ierr);
-  ierr = MatSetSizes(*C,dc,dc,N,N);CHKERRQ(ierr);
+  ierr = MatSetSizes(C,dc,dc,N,N);CHKERRQ(ierr);
 /* Not sure about this
   ierr = MatGetBlockSizes(P,NULL,&ibs);CHKERRQ(ierr);
   ierr = MatSetBlockSize(*C,ibs);CHKERRQ(ierr);
@@ -192,7 +191,7 @@ static PetscErrorCode MatPtAPSymbolic_IS_XAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   ierr = PetscContainerCreate(PETSC_COMM_SELF,&c);CHKERRQ(ierr);
   ierr = PetscContainerSetPointer(c,ptap);CHKERRQ(ierr);
   ierr = PetscContainerSetUserDestroy(c,MatISContainerDestroyPtAP_Private);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)(*C),"_MatIS_PtAP",(PetscObject)c);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)C,"_MatIS_PtAP",(PetscObject)c);CHKERRQ(ierr);
   ierr = PetscContainerDestroy(&c);CHKERRQ(ierr);
   ptap->fill = fill;
 
@@ -238,34 +237,52 @@ static PetscErrorCode MatPtAPSymbolic_IS_XAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   }
 /* Not sure about this
   if (!Crl2g) {
-    ierr = MatGetBlockSize(*C,&ibs);CHKERRQ(ierr);
+    ierr = MatGetBlockSize(C,&ibs);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingSetBlockSize(Ccl2g,ibs);CHKERRQ(ierr);
   }
 */
-  ierr = MatSetLocalToGlobalMapping(*C,Crl2g ? Crl2g : Ccl2g,Ccl2g);CHKERRQ(ierr);
+  ierr = MatSetLocalToGlobalMapping(C,Crl2g ? Crl2g : Ccl2g,Ccl2g);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&Crl2g);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&Ccl2g);CHKERRQ(ierr);
 
-  (*C)->ops->ptapnumeric = MatPtAPNumeric_IS_XAIJ;
+  C->ops->ptapnumeric = MatPtAPNumeric_IS_XAIJ;
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode MatPtAP_IS_XAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
+/* ----------------------------------------- */
+static PetscErrorCode MatProductSymbolic_PtAP_IS_XAIJ(Mat C)
 {
   PetscErrorCode ierr;
+  Mat_Product    *product = C->product;
+  Mat            A=product->A,P=product->B;
+  PetscReal      fill=product->fill;
 
   PetscFunctionBegin;
-  if (scall == MAT_INITIAL_MATRIX) {
-    ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
-    ierr = MatPtAPSymbolic_IS_XAIJ(A,P,fill,C);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
-  }
-  ierr = PetscLogEventBegin(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
-  ierr = ((*C)->ops->ptapnumeric)(A,P,*C);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
+  ierr = MatPtAPSymbolic_IS_XAIJ(A,P,fill,C);CHKERRQ(ierr);
+  C->ops->productnumeric = MatProductNumeric_PtAP;
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatProductSetFromOptions_IS_XAIJ_PtAP(Mat C)
+{
+  PetscFunctionBegin;
+  C->ops->productsymbolic = MatProductSymbolic_PtAP_IS_XAIJ;
+  PetscFunctionReturn(0);
+}
+
+PETSC_INTERN PetscErrorCode MatProductSetFromOptions_IS_XAIJ(Mat C)
+{
+  PetscErrorCode ierr;
+  Mat_Product    *product = C->product;
+
+  PetscFunctionBegin;
+  if (product->type == MATPRODUCT_PtAP) {
+    ierr = MatProductSetFromOptions_IS_XAIJ_PtAP(C);CHKERRQ(ierr);
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatProduct type is not supported");
+  PetscFunctionReturn(0);
+}
+
+/* ----------------------------------------- */
 static PetscErrorCode MatISContainerDestroyFields_Private(void *ptr)
 {
   MatISLocalFields lf = (MatISLocalFields)ptr;

@@ -287,7 +287,7 @@ PetscErrorCode FormJacobianState(Tao tao, Vec X, Mat J, Mat JPre, Mat JInv, void
   } else {
     ierr = MatCopy(user->Div,user->Divwork,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatDiagonalScale(user->Divwork,NULL,user->Swork);CHKERRQ(ierr);
-    ierr = MatMatMultNumeric(user->Divwork,user->Grad,user->DSG);CHKERRQ(ierr);
+    ierr = MatProductNumeric(user->DSG);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1036,8 +1036,8 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
   } else {
     ierr = MatCopy(user->Div,user->Divwork,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatDiagonalScale(user->Divwork,NULL,user->Swork);CHKERRQ(ierr);
-    ierr = MatMatMultSymbolic(user->Divwork,user->Grad,1.0,&user->DSG);CHKERRQ(ierr);
-    ierr = MatMatMultNumeric(user->Divwork,user->Grad,user->DSG);CHKERRQ(ierr);
+
+    ierr = MatMatMult(user->Divwork,user->Grad,MAT_INITIAL_MATRIX,1.0,&user->DSG);CHKERRQ(ierr);
   }
 
   ierr = MatSetOption(user->DSG,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
@@ -1099,7 +1099,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
   } else {
     ierr = MatCopy(user->Div,user->Divwork,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatDiagonalScale(user->Divwork,NULL,user->Av_u);CHKERRQ(ierr);
-    ierr = MatMatMultNumeric(user->Divwork,user->Grad,user->DSG);CHKERRQ(ierr);
+    ierr = MatProductNumeric(user->DSG);CHKERRQ(ierr);
   }
 
   /* Now solve for y */

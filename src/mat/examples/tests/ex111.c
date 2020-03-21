@@ -43,7 +43,7 @@ int main(int argc,char **argv)
   PetscInt       m,n,M,N,i,nrows;
   PetscScalar    one = 1.0;
   PetscReal      fill=2.0;
-  Mat            A,P,R,C,PtAP;
+  Mat            A,P,R,C,PtAP,D;
   PetscScalar    *array;
   PetscRandom    rdm;
   PetscBool      Test_3D=PETSC_FALSE,flg;
@@ -136,15 +136,40 @@ int main(int argc,char **argv)
   ierr = MatTranspose(P,MAT_INITIAL_MATRIX,&R);CHKERRQ(ierr);
 
   /* C = R*A*P */
+  /* Developer's API */
+  ierr = MatProductCreate(R,A,P,&D);CHKERRQ(ierr);
+  ierr = MatProductSetType(D,MATPRODUCT_ABC);CHKERRQ(ierr);
+  ierr = MatProductSetFromOptions(D);CHKERRQ(ierr);
+  ierr = MatProductSymbolic(D);CHKERRQ(ierr);
+  ierr = MatProductNumeric(D);CHKERRQ(ierr);
+  ierr = MatProductNumeric(D);CHKERRQ(ierr); /* Test reuse symbolic D */
+
+  /* User's API */
+  { /* Test MatMatMatMult_Basic() */
+    Mat Adense,Cdense;
+    ierr = MatConvert(A,MATDENSE,MAT_INITIAL_MATRIX,&Adense);CHKERRQ(ierr);
+    ierr = MatMatMatMult(R,Adense,P,MAT_INITIAL_MATRIX,fill,&Cdense);CHKERRQ(ierr);
+    ierr = MatMatMatMult(R,Adense,P,MAT_REUSE_MATRIX,fill,&Cdense);CHKERRQ(ierr);
+
+    ierr = MatMultEqual(D,Cdense,10,&flg);CHKERRQ(ierr);
+    if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"D*v != Cdense*v");
+    ierr = MatDestroy(&Adense);CHKERRQ(ierr);
+    ierr = MatDestroy(&Cdense);CHKERRQ(ierr);
+  }
+
   ierr = MatMatMatMult(R,A,P,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
   ierr = MatMatMatMult(R,A,P,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
   ierr = MatFreeIntermediateDataStructures(C);CHKERRQ(ierr);
+
+  /* Test D == C */
+  ierr = MatEqual(D,C,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"D != C");
 
   /* Test C == PtAP */
   ierr = MatPtAP(A,P,MAT_INITIAL_MATRIX,fill,&PtAP);CHKERRQ(ierr);
   ierr = MatPtAP(A,P,MAT_REUSE_MATRIX,fill,&PtAP);CHKERRQ(ierr);
   ierr = MatEqual(C,PtAP,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Matrices are not equal");
+  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"C != PtAP");
   ierr = MatDestroy(&PtAP);CHKERRQ(ierr);
 
   /* Clean up */
@@ -155,6 +180,7 @@ int main(int argc,char **argv)
   ierr = MatDestroy(&P);CHKERRQ(ierr);
   ierr = MatDestroy(&R);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
+  ierr = MatDestroy(&D);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }

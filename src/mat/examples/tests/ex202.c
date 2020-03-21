@@ -12,11 +12,11 @@ PetscErrorCode TestInitialMatrix(void)
   Mat             subs[2*3],**block;
   Vec             x,y,Ax,ATy;
   PetscInt        i,j;
-  PetscScalar     dot1,dot2,zero = 0.0,one = 1.0;
+  PetscScalar     dot1,dot2,zero = 0.0,one = 1.0,*valsB,*valsC;
   PetscReal       norm;
-  PetscScalar     *valsB,*valsC;
   PetscRandom     rctx;
   PetscErrorCode  ierr;
+  PetscBool       equal;
 
   PetscFunctionBegin;
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
@@ -71,6 +71,9 @@ PetscErrorCode TestInitialMatrix(void)
   ierr = MatSetRandom(B,rctx);CHKERRQ(ierr);
   ierr = MatMatMult(A,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
   ierr = MatMatMult(A,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
+  ierr = MatMatMultEqual(A,B,C,10,&equal);CHKERRQ(ierr);
+  if (!equal) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in C != A*B");
+
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   for (i=0; i<nk; i++) {

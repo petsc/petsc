@@ -4,8 +4,8 @@ static char help[] = "Test MatMatMult() for AIJ and Dense matrices.\n\n";
 
 int main(int argc,char **argv)
 {
-  Mat            A,B,C,D;
-  PetscInt       i,M=10,N=5;
+  Mat            A,B,C;
+  PetscInt       M=10,N=5;
   PetscErrorCode ierr;
   PetscRandom    r;
   PetscBool      equal=PETSC_FALSE;
@@ -44,15 +44,10 @@ int main(int argc,char **argv)
 
   /* Test MatMatMult() */
   ierr = MatMatMult(B,A,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
+  ierr = MatMatMult(B,A,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
+  ierr = MatMatMultEqual(B,A,C,10,&equal);CHKERRQ(ierr);
+  if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"C != B*A");
 
-  ierr = MatMatMultSymbolic(B,A,fill,&D);CHKERRQ(ierr);
-  for (i=0; i<2; i++) {
-    ierr = MatMatMultNumeric(B,A,D);CHKERRQ(ierr);
-  }
-  ierr = MatEqual(C,D,&equal);CHKERRQ(ierr);
-  if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"C != D");
-
-  ierr = MatDestroy(&D);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);

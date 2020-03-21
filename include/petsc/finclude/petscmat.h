@@ -27,6 +27,8 @@
 #define MatFactorType PetscEnum
 #define MatFactorError PetscEnum
 #define MatFactorShiftType PetscEnum
+#define MatProductType PetscEnum
+#define MatProductAlgorithm character*(80)
 #define MatFactorSchurStatus PetscEnum
 #define MatOrderingType character*(80)
 #define MatSORType PetscEnum

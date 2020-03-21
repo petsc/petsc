@@ -77,7 +77,7 @@ int main(int argc,char **argv)
   ierr = MatAssemblyBegin(Rt_dense,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Rt_dense,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatGetLocalSize(Rt_dense,&m,&n);CHKERRQ(ierr);
-  printf("Rt_dense: %d,%d\n",(int)m,(int)n);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Rt_dense: %D,%D\n",m,n);CHKERRQ(ierr);
 
   /* Get Rt_dense by Apply MatTransposeColoring to R */
   ierr = MatTransColoringApplySpToDen(matcoloring,R,Rt_dense);CHKERRQ(ierr);
@@ -112,9 +112,7 @@ int main(int argc,char **argv)
   ierr = MatRARt(A,R,MAT_INITIAL_MATRIX,2.0,&C);CHKERRQ(ierr);
   ierr = MatRARt(A,R,MAT_REUSE_MATRIX,2.0,&C);CHKERRQ(ierr);
   ierr = MatEqual(C,PtAP,&equal);CHKERRQ(ierr);
-  if (!equal) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: PtAP != RARt");CHKERRQ(ierr);
-  }
+  if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error: PtAP != RARt");
 
   /* Free spaces */
   ierr = MatDestroy(&C);CHKERRQ(ierr);
@@ -132,22 +130,22 @@ int main(int argc,char **argv)
       output_file: output/ex161.out
    test:
       suffix: 2
-      args: -matmattransmult_color -mat_no_inode
+      args: -matmattransmult_via color
       output_file: output/ex161.out
 
    test:
       suffix: 3
-      args: -matmattransmult_color -mat_no_inode -matden2sp_brows 3
+      args: -matmattransmult_via color -matden2sp_brows 3
       output_file: output/ex161.out
 
    test:
       suffix: 4
-      args: -matmattransmult_color -mat_no_inode -A_matrart_via matmattransposemult
+      args: -matmattransmult_via color -matrart_via r*art
       output_file: output/ex161.out
 
    test:
       suffix: 5
-      args: -matmattransmult_color -mat_no_inode -A_matrart_via coloring_rart
+      args: -matmattransmult_via color -matrart_via coloring_rart
       output_file: output/ex161.out
 
 TEST*/
