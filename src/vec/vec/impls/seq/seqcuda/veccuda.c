@@ -433,7 +433,6 @@ PetscErrorCode VecCreate_SeqCUDA_Private(Vec V,const PetscScalar *array)
       veccuda = (Vec_CUDA*)V->spptr;
       veccuda->stream = 0; /* using default stream */
       veccuda->GPUarray_allocated = 0;
-      veccuda->hostDataRegisteredAsPageLocked = PETSC_FALSE;
       V->offloadmask = PETSC_OFFLOAD_UNALLOCATED;
 
       pinned_memory_min = 0;
