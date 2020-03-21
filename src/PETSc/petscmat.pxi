@@ -304,8 +304,7 @@ cdef extern from * nogil:
     int MatMatMult(PetscMat,PetscMat,PetscMatReuse,PetscReal,PetscMat*)
     int MatMatTransposeMult(PetscMat,PetscMat,PetscMatReuse,PetscReal,PetscMat*)
     int MatTransposeMatMult(PetscMat,PetscMat,PetscMatReuse,PetscReal,PetscMat*)
-    int MatMatMultSymbolic(PetscMat,PetscMat,PetscReal,PetscMat*)
-    int MatMatMultNumeric(PetscMat,PetscMat,PetscMat)
+
     int MatPtAP(PetscMat,PetscMat,PetscMatReuse,PetscReal,PetscMat*)
 
     int MatInterpolate(PetscMat,PetscVec,PetscVec)
