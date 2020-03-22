@@ -80,7 +80,7 @@ def nameSpace(srcfile,srcdir):
   needs to convey the srcdir and srcfile.  There are two ways of doing this.
   """
   if srcfile.startswith('run'): srcfile=re.sub('^run','',srcfile)
-  prefix=srcdir.replace('/examples/','_').replace("/","_")+"-"
+  prefix=srcdir.replace("/","_")+"-"
   nameString=prefix+srcfile
   return nameString
 
@@ -391,7 +391,7 @@ class generateExamples(Petsc):
       if not subst['TODO']:
         print("Warning: "+subst['output_file']+" not found.")
     # Worry about alt files here -- see
-    #   src/snes/examples/tutorials/output/ex22*.out
+    #   src/snes/tutorials/output/ex22*.out
     altlist=[subst['output_file']]
     basefile,ext = os.path.splitext(subst['output_file'])
     for i in range(1,9):
@@ -891,7 +891,7 @@ class generateExamples(Petsc):
     for root, dirs, files in os.walk(top, topdown=True):
       dirs.sort()
       files.sort()
-      if not "examples" in root: continue
+      if "/tests" not in root and "/tutorials" not in root: continue
       if "dSYM" in root: continue
       if os.path.basename(root.rstrip("/")) == 'output': continue
       if self.verbose: print(root)

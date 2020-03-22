@@ -4,7 +4,7 @@
 </HEAD>
 <BODY BGCOLOR="FFFFFF">
 
-<H2> SNESFAS <A HREF="PETSC_DIRsrc/snes/examples/tutorials/index.html">Examples</A></H2>
+<H2> SNESFAS <A HREF="PETSC_DIRsrc/snes/tutorials/index.html">Examples</A></H2>
 
 The SNESFAS object is a nonlinear multigrid solver which uses the Full Approximation Storage scheme.
 

@@ -59,21 +59,21 @@
   <li> <a href="#example1">Linear Poisson equation on a 2D grid</a>
     <ul>
       <li> example of linear equation problem </li>
-      <li> see also <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/examples/tutorials/index.html">src/ksp/ksp/examples/tutorials</a> </li>
+      <li> see also <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/tutorials/index.html">src/ksp/ksp/tutorials</a> </li>
     </ul>
   </li>
 
   <li> <a href="#example2">Nonlinear ODE arising from a time-dependent one dimensional PDE</a>
     <ul>
       <li> example of time-stepping problem </li>
-      <li> see also <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/index.html">src/ts/examples/tutorials</a></li>
+      <li> see also <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/index.html">src/ts/tutorials</a></li>
     </ul>
   </li>
   
   <li> <a href="#example3">Nonlinear PDE on a structured grid</a>
     <ul>
       <li> example of nonlinear PDE </li>
-      <li> see also <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/index.html">src/snes/examples/tutorials</a> </li>
+      <li> see also <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/index.html">src/snes/tutorials</a> </li>
     </ul>
   </li>
   <li> <a href="#example4">Linear Stokes-type PDE on a structured grid</a> </li>
@@ -104,33 +104,33 @@
 
 <p>FURTHER DETAILS:</p>
 <ul>
-  <li><a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/examples/tutorials/ex50.c.html#line1">Mathematical description of the problem</a></li>
-  <li><a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/examples/tutorials/ex50.c.html#line21">the source code</a></li>
+  <li><a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/tutorials/ex50.c.html#line1">Mathematical description of the problem</a></li>
+  <li><a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/tutorials/ex50.c.html#line21">the source code</a></li>
 </ul>
 
 <p>DO THE FOLLOWING:</p>
 <ul>
-  <li> Compile src/ksp/ksp/examples/tutorials/ex50.c
+  <li> Compile src/ksp/ksp/tutorials/ex50.c
     <pre>
-      cd petsc/src/ksp/ksp/examples/tutorials
+      cd petsc/src/ksp/ksp/tutorials
       make ex50
   </pre>
   </li>
   <li> Run a 1 processor example with a 3x3 mesh and view the matrix assembled
     <pre>
-     mpiexec -n 1 ./ex50  -da_grid_x 4 -da_grid_y 4 -mat_view     <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/examples/tutorials/output/ex50_tut_1.out">[Expected output]</a>
+     mpiexec -n 1 ./ex50  -da_grid_x 4 -da_grid_y 4 -mat_view     <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/tutorials/output/ex50_tut_1.out">[Expected output]</a>
     </pre>
   </li>
   <div id="SuperLU">
   <li> Run with a 120x120 mesh on 4 processors using superlu_dist and view the solver options used
     <pre>
-     mpiexec -n 4 ./ex50  -da_grid_x 120 -da_grid_y 120 -pc_type lu -pc_factor_mat_solver_type superlu_dist -ksp_monitor -ksp_view     <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/examples/tutorials/output/ex50_tut_2.out">[Expected output]</a>
+     mpiexec -n 4 ./ex50  -da_grid_x 120 -da_grid_y 120 -pc_type lu -pc_factor_mat_solver_type superlu_dist -ksp_monitor -ksp_view     <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/tutorials/output/ex50_tut_2.out">[Expected output]</a>
     </pre>
   </div>
   </li>
   <li> Run with a 1025x1025 grid using multigrid solver on 4 processors with 9 multigrid levels
     <pre>
-     mpiexec -n 4 ./ex50 -da_grid_x 1025 -da_grid_y 1025 -pc_type mg -pc_mg_levels 9 -ksp_monitor     <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/examples/tutorials/output/ex50_tut_3.out">[Expected output]</a>
+     mpiexec -n 4 ./ex50 -da_grid_x 1025 -da_grid_y 1025 -pc_type mg -pc_mg_levels 9 -ksp_monitor     <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/tutorials/output/ex50_tut_3.out">[Expected output]</a>
     </pre>
   </l>
 </ul>
@@ -149,31 +149,31 @@
 
 <p>FURTHER DETAILS:</p>
 <ul>
-  <li><a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/ex2.c.html#line13">Mathematical description of the problem</a></li>
-  <li><a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/ex2.c.html#line36">the source code</a></li>
+  <li><a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/ex2.c.html#line13">Mathematical description of the problem</a></li>
+  <li><a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/ex2.c.html#line36">the source code</a></li>
 </ul>
 
 <p>DO THE FOLLOWING:</p>
 <ul>
-  <li> Compile src/ts/examples/tutorials/ex2.c
+  <li> Compile src/ts/tutorials/ex2.c
     <pre>
-      cd petsc/src/ts/examples/tutorials
+      cd petsc/src/ts/tutorials
       make ex2
   </pre>
   </li>
   <li> Run a 1 processor example on the default grid with all the default solver options
     <pre>
-     mpiexec -n 1 ./ex2 -ts_max_steps 10 -ts_monitor     <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/output/ex2_tut_1.out">[Expected output]</a>
+     mpiexec -n 1 ./ex2 -ts_max_steps 10 -ts_monitor     <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/output/ex2_tut_1.out">[Expected output]</a>
     </pre>
   </li>
   <li> Run with the same options on 4 processors plus monitor convergence of the nonlinear and linear solvers
     <pre>
-     mpiexec -n 4 ./ex2 -ts_max_steps 10 -ts_monitor -snes_monitor -ksp_monitor     <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/output/ex2_tut_2.out">[Expected output]</a>
+     mpiexec -n 4 ./ex2 -ts_max_steps 10 -ts_monitor -snes_monitor -ksp_monitor     <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/output/ex2_tut_2.out">[Expected output]</a>
     </pre>
   </li>
   <li> Run with the same options on 4 processors with 128 grid points
     <pre>
-     mpiexec -n 16 ./ex2 -ts_max_steps 10 -ts_monitor -M 128     <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/output/ex2_tut_3.out">[Expected output]</a>
+     mpiexec -n 16 ./ex2 -ts_max_steps 10 -ts_monitor -M 128     <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/output/ex2_tut_3.out">[Expected output]</a>
     </pre>
   </li>
 </ul>
@@ -191,35 +191,35 @@
 
 <p>FURTHER DETAILS:</p>
 <ul>
-  <li><a href="https://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex19.c.html#line19">Mathematical description of the problem</a></li>
-  <li><a href="https://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex19.c.html#line94">main program source code</a></li>
-  <li><a href="https://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex19.c.html#line246">physics source code</a></li>
+  <li><a href="https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex19.c.html#line19">Mathematical description of the problem</a></li>
+  <li><a href="https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex19.c.html#line94">main program source code</a></li>
+  <li><a href="https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex19.c.html#line246">physics source code</a></li>
 </ul>
 
 <p>DO THE FOLLOWING:</p>
 <ul>
-  <li> Compile src/snes/examples/tutorials/ex19.c
+  <li> Compile src/snes/tutorials/ex19.c
     <pre>
-      cd petsc/src/snes/examples/tutorials/
+      cd petsc/src/snes/tutorials/
       make ex19
   </pre>
   </li>
   <li> Run a 4 processor example with 5 levels of grid refinement, monitor the convergence of the nonlinear and linear solver
       and examine the exact solver used
     <pre>
-     mpiexec -n 4 ./ex19 -da_refine 5 -snes_monitor -ksp_monitor -snes_view     <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/output/ex19_tut_1.out">[Expected output]</a>
+     mpiexec -n 4 ./ex19 -da_refine 5 -snes_monitor -ksp_monitor -snes_view     <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/output/ex19_tut_1.out">[Expected output]</a>
     </pre>
   </li>
   <li> Run with the same options but use geometric multigrid as the linear solver
     <pre>
-     mpiexec -n 4 ./ex19 -da_refine 5 -snes_monitor -ksp_monitor -snes_view -pc_type mg     <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/output/ex19_tut_2.out">[Expected output]</a>
+     mpiexec -n 4 ./ex19 -da_refine 5 -snes_monitor -ksp_monitor -snes_view -pc_type mg     <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/output/ex19_tut_2.out">[Expected output]</a>
     </pre>
     Note this requires many fewer iterations than the default solver
   </li>
   <div id="HYPRE">
   <li> Run with the same options but use algebraic multigrid (hypre's BoomerAMG) as the linear solver
     <pre>
-     mpiexec -n 4 ./ex19 -da_refine 5 -snes_monitor -ksp_monitor -snes_view -pc_type hypre     <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/output/ex19_tut_3.out">[Expected output]</a>
+     mpiexec -n 4 ./ex19 -da_refine 5 -snes_monitor -ksp_monitor -snes_view -pc_type hypre     <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/output/ex19_tut_3.out">[Expected output]</a>
     </pre>
     Note this requires many fewer iterations than the default solver but requires more linear solver iterations than geometric multigrid.
   </div>
@@ -227,30 +227,30 @@
   <div id="ML">
   <li> Run with the same options but use the ML preconditioner from Trilinos
     <pre>
-     mpiexec -n 4 ./ex19 -da_refine 5 -snes_monitor -ksp_monitor -snes_view -pc_type ml     <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/output/ex19_tut_8.out">[Expected output]</a>
+     mpiexec -n 4 ./ex19 -da_refine 5 -snes_monitor -ksp_monitor -snes_view -pc_type ml     <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/output/ex19_tut_8.out">[Expected output]</a>
     </pre>
   </div>
   <li> Run on 1 processor with the default linear solver and profile the run
     <pre>
-     mpiexec -n 1 ./ex19 -da_refine 5 -log_view     <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/output/ex19_tut_4.out">[Expected output]</a>
+     mpiexec -n 1 ./ex19 -da_refine 5 -log_view     <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/output/ex19_tut_4.out">[Expected output]</a>
     </pre>
     Search for the line beginning with SNESSolve, the fourth column gives the time for the nonlinear solve.
   </li>
   <li> Run on 1 processor with the geometric multigrid linear solver and profile the run
     <pre>
-     mpiexec -n 1 ./ex19 -da_refine 5 -log_view -pc_type mg     <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/output/ex19_tut_5.out">[Expected output]</a>
+     mpiexec -n 1 ./ex19 -da_refine 5 -log_view -pc_type mg     <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/output/ex19_tut_5.out">[Expected output]</a>
     </pre>
     Compare the runtime for SNESSolve to the case with the default solver
   </li>
   <li> Run on 4 processors with the default linear solver and profile the run
     <pre>
-     mpiexec -n 4 ./ex19 -da_refine 5 -log_view     <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/output/ex19_tut_6.out">[Expected output]</a>
+     mpiexec -n 4 ./ex19 -da_refine 5 -log_view     <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/output/ex19_tut_6.out">[Expected output]</a>
     </pre>
     Compare the runtime for SNESSolve to the 1 processor case with the default solver. What is the speedup?
   </li>
   <li> Run on 4 processors with the geometric multigrid linear solver and profile the run
     <pre>
-     mpiexec -n 4 ./ex19 -da_refine 5 -log_view -pc_type mg     <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/output/ex19_tut_7.out">[Expected output]</a>
+     mpiexec -n 4 ./ex19 -da_refine 5 -log_view -pc_type mg     <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/output/ex19_tut_7.out">[Expected output]</a>
     </pre>
     Compare the runtime for SNESSolve to the 1 processor case with multigrid. What is the speedup?
     Why is the speedup for multigrid lower than the speedup for the default solver?
@@ -272,33 +272,33 @@
 
 <p>FURTHER DETAILS:</p>
 <ul>
-  <li><a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/examples/tutorials/ex42.c.html">Mathematical description of the problem</a></li>
-  <li><a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/examples/tutorials/ex42.c.html#line2059">main program source code</a></li>
-  <li><a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/examples/tutorials/ex42.c.html#line819">physics source code</a></li>
+  <li><a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/tutorials/ex42.c.html">Mathematical description of the problem</a></li>
+  <li><a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/tutorials/ex42.c.html#line2059">main program source code</a></li>
+  <li><a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/tutorials/ex42.c.html#line819">physics source code</a></li>
 </ul>
 
 <p>DO THE FOLLOWING:</p>
 <ul>
-  <li> Compile src/ksp/ksp/examples/tutorials/ex42.c
+  <li> Compile src/ksp/ksp/tutorials/ex42.c
     <pre>
-      cd petsc/src/ksp/ksp/examples/tutorials
+      cd petsc/src/ksp/ksp/tutorials
       make ex42
   </pre>
   </li>
   <li> Solve with the default solver
     <pre>
-     mpiexec -n 4 ./ex42  -stokes_ksp_monitor   <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/examples/tutorials/output/ex42_tut_1.out">[Expected output]</a>
+     mpiexec -n 4 ./ex42  -stokes_ksp_monitor   <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/tutorials/output/ex42_tut_1.out">[Expected output]</a>
     </pre>
     Note the poor convergence for even a very small problem
   </li>
   <li> Solve with a solver appropriate for Stoke's problems -stokes_pc_type fieldsplit -stokes_pc_fieldsplit_type schur
     <pre>
-     mpiexec -n 4 ./ex42  -stokes_ksp_monitor -stokes_pc_type fieldsplit -stokes_pc_fieldsplit_type schur  <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/examples/tutorials/output/ex42_tut_2.out">[Expected output]</a>
+     mpiexec -n 4 ./ex42  -stokes_ksp_monitor -stokes_pc_type fieldsplit -stokes_pc_fieldsplit_type schur  <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/tutorials/output/ex42_tut_2.out">[Expected output]</a>
     </pre>
   </li>
   <li> Solve with a finer mesh
     <pre>
-     mpiexec -n 4 ./ex42  -mx 20 -stokes_ksp_monitor  -stokes_pc_type fieldsplit -stokes_pc_fieldsplit_type schur  <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/examples/tutorials/output/ex42_tut_3.out">[Expected output]</a>
+     mpiexec -n 4 ./ex42  -mx 20 -stokes_ksp_monitor  -stokes_pc_type fieldsplit -stokes_pc_fieldsplit_type schur  <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/tutorials/output/ex42_tut_3.out">[Expected output]</a>
     </pre>
     Repeat with <pre> -mx 40 </pre> and/or more MPI ranks.
   </li>
@@ -317,37 +317,37 @@
 
 <p>FURTHER DETAILS:</p>
 <ul>
-  <li><a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/ex11.c.html">Mathematical description of the problem</a></li>
-  <li><a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/ex11.c.html#line1403">main program source code</a></li>
-  <li><a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/ex11.c.html#line186">source code of physics modules</a></li>
+  <li><a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/ex11.c.html">Mathematical description of the problem</a></li>
+  <li><a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/ex11.c.html#line1403">main program source code</a></li>
+  <li><a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/ex11.c.html#line186">source code of physics modules</a></li>
 </ul>
 
 <p>DO THE FOLLOWING:</p>
 <ul>
-  <li> Compile src/ts/examples/tutorials/ex11.c
+  <li> Compile src/ts/tutorials/ex11.c
     <pre>
-      cd petsc/src/ts/examples/tutorials
+      cd petsc/src/ts/tutorials
       make ex11
   </pre>
   <li>Run simple advection through a tiny hybrid mesh
     <pre>
-     mpiexec -n 1 ./ex11 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo      <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/output/ex11_tut_1.out">[Expected output]</a>
+     mpiexec -n 1 ./ex11 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo      <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/output/ex11_tut_1.out">[Expected output]</a>
     </pre>
   </li>
   <li>Run simple advection through a small mesh with a Rosenbrock-W solver
     <pre>
-     mpiexec -n 1 ./ex11 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo -ts_type rosw      <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/output/ex11_tut_2.out">[Expected output]</a>
+     mpiexec -n 1 ./ex11 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo -ts_type rosw      <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/output/ex11_tut_2.out">[Expected output]</a>
     </pre>
   </li>
   <li>Run simple advection through a larger quadrilateral mesh of an annulus with least squares reconstruction and no limiting, monitoring the error
     <pre>
-     mpiexec -n 4 ./ex11 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/annulus-20.exo -monitor Error -advect_sol_type bump -petscfv_type leastsquares -petsclimiter_type sin <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/output/ex11_tut_4.out">[Expected output]</a>
+     mpiexec -n 4 ./ex11 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/annulus-20.exo -monitor Error -advect_sol_type bump -petscfv_type leastsquares -petsclimiter_type sin <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/output/ex11_tut_4.out">[Expected output]</a>
     </pre>
     Compare turning to the error after turning off reconstruction.
   </li>
   <li>Run shallow water on the larger mesh with least squares reconstruction and minmod limiting, monitoring water Height (integral is conserved) and Energy (not conserved)
     <pre>
-     mpiexec -n 4 ./ex11 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/annulus-20.exo -physics sw -monitor Height,Energy -petscfv_type leastsquares -petsclimiter_type minmod <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/output/ex11_tut_5.out">[Expected output]</a>
+     mpiexec -n 4 ./ex11 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/annulus-20.exo -physics sw -monitor Height,Energy -petscfv_type leastsquares -petsclimiter_type minmod <a href="https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/output/ex11_tut_5.out">[Expected output]</a>
     </pre>
   </li>
 </ul>

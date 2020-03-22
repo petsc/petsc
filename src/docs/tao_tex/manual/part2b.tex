@@ -709,7 +709,7 @@ One can also supply their own preconditioner, serving as a Hessian initializatio
  the above diagonal scaling.
 The appropriate user function in the code is {\tt TaoBNCGSetH0(tao, H0)} where 
 {\tt H0} is the user-defined {\tt Mat} object that serves as a preconditioner. 
-For an example of similar usage, see {\tt tao/examples/tutorials/ex3.c}.
+For an example of similar usage, see {\tt tao/tutorials/ex3.c}.
 
 The active set estimation uses the Bertsekas-based method described in Section~\ref{sec:bnk},
 which can be deactivated using {\tt -tao\_bncg\_as\_type none}, in which case the 

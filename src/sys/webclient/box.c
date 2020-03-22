@@ -87,7 +87,7 @@ static PetscErrorCode PetscBoxStartWebServer_Private(void)
    Notes:
     This call requires stdout and stdin access from process 0 on the MPI communicator
 
-   You can run src/sys/webclient/examples/tutorials/boxobtainrefreshtoken to get a refresh token and then in the future pass it to
+   You can run src/sys/webclient/tutorials/boxobtainrefreshtoken to get a refresh token and then in the future pass it to
    PETSc programs with -box_refresh_token XXX
 
    This requires PETSc be installed using --with-saws or --download-saws

@@ -11,7 +11,7 @@ SOURCEF	  =
 SOURCEH	  = ../../../include/petscwebclient.h
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
-DIRS	  = examples
+DIRS	  = tutorials
 LOCDIR	  = src/sys/webclient/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

@@ -98,7 +98,7 @@ PETSC_UNUSED static PetscErrorCode base64_decode(const unsigned char *data,unsig
    Notes:
     This call requires stdout and stdin access from process 0 on the MPI communicator
 
-   You can run src/sys/webclient/examples/tutorials/globusobtainaccesstoken to get an access token
+   You can run src/sys/webclient/tutorials/globusobtainaccesstoken to get an access token
 
    Level: intermediate
 

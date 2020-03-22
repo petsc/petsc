@@ -4,7 +4,7 @@
 </HEAD>
 <BODY BGCOLOR="FFFFFF">
 
-<H2>Time steppers for ODE and DAE - TS: <A HREF="PETSC_DIRsrc/ts/examples/tutorials/index.html">Examples</A></H2>
+<H2>Time steppers for ODE and DAE - TS: <A HREF="PETSC_DIRsrc/ts/tutorials/index.html">Examples</A></H2>
 
 The time-stepping (TS) component provides ODE and DAE integrators as well as
 pseudo-timestepping.  TS internally

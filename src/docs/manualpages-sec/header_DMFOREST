@@ -4,7 +4,7 @@
 </HEAD>
 <BODY BGCOLOR="FFFFFF">
 
-<H2> DMFOREST <A HREF="PETSC_DIRsrc/dm/impls/forest/examples/tutorials/index.html">Examples</A></H2>
+<H2> DMFOREST <A HREF="PETSC_DIRsrc/dm/impls/forest/tutorials/index.html">Examples</A></H2>
 
 The DMFOREST class encapsulates an octree mesh, with interfaces for both topology and geometry. It is capable of parallel structured adaptive mesh refinement and coarsening and parallel redistribution for load balancing. It is designed to interface with the PetscFE and PetscFV trial discretization objects, and converts smoothly to a DMPLEX.
 

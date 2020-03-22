@@ -368,7 +368,7 @@ To help the user start using PETSc immediately, we begin with a simple
 uniprocessor example in Figure~\ref{fig_example1} that solves the
 one-dimensional Laplacian problem with finite differences.  This
 sequential code, which can be found in
-\trl{$PETSC_DIR/src/ksp/ksp/examples/tutorials/ex1.c},
+\trl{$PETSC_DIR/src/ksp/ksp/tutorials/ex1.c},
 illustrates the solution of a linear system with \lstinline{KSP}, the
 interface to the preconditioners, Krylov subspace methods, and direct
 linear solvers of PETSc.  Following the code we highlight a few of the most important
@@ -534,7 +534,7 @@ details regarding error checking when using the PETSc Fortran interface.
 \begin{figure}[H]
   {
     \begin{outputlisting}
- $ cd $PETSC_DIR/src/ksp/ksp/examples/tutorials
+ $ cd $PETSC_DIR/src/ksp/ksp/tutorials
  $ make ex3
  $ mpiexec -n 1 ./ex3 -m 100000
  [0]PETSC ERROR: --------------------- Error Message --------------------------------
@@ -552,7 +552,7 @@ details regarding error checking when using the PETSc Fortran interface.
  [0]PETSC ERROR: #2 PetscTrMallocDefault() line 188 in /Users/patrick/petsc/src/sys/memory/mtr.c
  [0]PETSC ERROR: #3 MatSeqAIJSetPreallocation_SeqAIJ() line 3618 in /Users/patrick/petsc/src/mat/impls/aij/seq/aij.c
  [0]PETSC ERROR: #4 MatSeqAIJSetPreallocation() line 3562 in /Users/patrick/petsc/src/mat/impls/aij/seq/aij.c
- [0]PETSC ERROR: #5 main() line 66 in /Users/patrick/petsc/src/ksp/ksp/examples/tutorials/ex3.c
+ [0]PETSC ERROR: #5 main() line 66 in /Users/patrick/petsc/src/ksp/ksp/tutorials/ex3.c
  [0]PETSC ERROR: PETSc Option Table entries:
  [0]PETSC ERROR: -m 100000
  [0]PETSC ERROR: ----------------End of Error Message ------- send entire error message to petsc-maint@mcs.anl.gov----------
@@ -602,7 +602,7 @@ in the same order on each processor.
 
 The next example, given in Figure~\ref{fig_example2}, illustrates the
 solution of a linear system in parallel.  This code, corresponding to
-\href{https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/examples/tutorials/ex3.c.html}{\trl{$PETSC_DIR/src/ksp/ksp/examples/tutorials/ex2.c}}, handles the
+\href{https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/tutorials/ex3.c.html}{\trl{$PETSC_DIR/src/ksp/ksp/tutorials/ex2.c}}, handles the
 two-dimensional Laplacian discretized with finite differences, where
 the linear system is again solved with KSP.  The code performs the
 same tasks as the sequential version within Figure~\ref{fig_example1}.
@@ -636,7 +636,7 @@ given in the file \trl{$PETSC_DIR/docs/faq.html}.
 \begin{figure}[H]
 {
  \begin{outputlisting}
- $ cd $PETSC_DIR/src/ksp/ksp/examples/tutorials
+ $ cd $PETSC_DIR/src/ksp/ksp/tutorials
  $ make ex2
 /Users/patrick/petsc/arch-darwin-double-debug/bin/mpicc -o ex2.o -c -Wall -Wwrite-strings -Wno-strict-aliasing -Wno-unknown-pragmas -Qunused-arguments -fvisibility=hidden -g3   -I/Users/patrick/petsc/include -I/Users/patrick/petsc/arch-darwin-double-debug/include -I/opt/X11/include -I/opt/local/include    `pwd`/ex2.c
 /Users/patrick/petsc/arch-darwin-double-debug/bin/mpicc -Wl,-multiply_defined,suppress -Wl,-multiply_defined -Wl,suppress -Wl,-commons,use_dylibs -Wl,-search_paths_first -Wl,-multiply_defined,suppress -Wl,-multiply_defined -Wl,suppress -Wl,-commons,use_dylibs -Wl,-search_paths_first    -Wall -Wwrite-strings -Wno-strict-aliasing -Wno-unknown-pragmas -Qunused-arguments -fvisibility=hidden -g3  -o ex2 ex2.o  -Wl,-rpath,/Users/patrick/petsc/arch-darwin-double-debug/lib -L/Users/patrick/petsc/arch-darwin-double-debug/lib  -lpetsc -Wl,-rpath,/Users/patrick/petsc/arch-darwin-double-debug/lib -lf2clapack -lf2cblas -Wl,-rpath,/opt/X11/lib -L/opt/X11/lib -lX11 -lssl -lcrypto -Wl,-rpath,/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0.2/lib/darwin -L/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0.2/lib/darwin -lmpifort -lgfortran -Wl,-rpath,/opt/local/lib/gcc5/gcc/x86_64-apple-darwin14/5.3.0 -L/opt/local/lib/gcc5/gcc/x86_64-apple-darwin14/5.3.0 -Wl,-rpath,/opt/local/lib/gcc5 -L/opt/local/lib/gcc5 -lgfortran -lgcc_ext.10.5 -lquadmath -lm -lclang_rt.osx -lmpicxx -lc++ -Wl,-rpath,/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/7.0.2/lib/darwin -L/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/7.0.2/lib/darwin -lclang_rt.osx -Wl,-rpath,/Users/patrick/petsc/arch-darwin-double-debug/lib -L/Users/patrick/petsc/arch-darwin-double-debug/lib -ldl -lmpi -lpmpi -lSystem -Wl,-rpath,/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/7.0.2/lib/darwin -L/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/7.0.2/lib/darwin -lclang_rt.osx -ldl
@@ -727,7 +727,7 @@ The examples throughout the library demonstrate the software usage
 and can serve as templates for developing
 custom applications.  We suggest that new PETSc
 users examine programs in the directories
-\trl{${PETSC_DIR}/src/<library>/examples/tutorials}
+\trl{${PETSC_DIR}/src/<library>/tutorials}
 where \trl{<library>}
 denotes any of the PETSc libraries (listed in the following
 section), such as \trl{SNES} or \trl{KSP}  or \trl{TS}.
@@ -742,7 +742,7 @@ following procedure:
 \item Make a working directory for your source code: for example, \trl{mkdir $HOME/application}
 \item Change to that working directory; for example,\trl{ cd $HOME/application}
 \item Copy one of the examples in the directory
-      that corresponds to the class of problem of interest into your working directory, for example, \trl{cp $PETSC_DIR/src/snes/examples/tutorials/ex19.c ex19.c}
+      that corresponds to the class of problem of interest into your working directory, for example, \trl{cp $PETSC_DIR/src/snes/tutorials/ex19.c ex19.c}
 \item Copy \$PETSC\_DIR/share/petsc/Makefile.user to your working directory, for example, \trl{cp $PETSC_DIR/share/petsc/Makefile.user Makefile}
 \item Compile and run the example program, for example, \trl{make ex19; ./ex19}
 \item Use the example program as a starting point for developing a custom code.

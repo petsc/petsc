@@ -2,7 +2,7 @@
 ALL: lib
 
 SOURCEH  = randomimpl.h
-DIRS     = interface examples impls
+DIRS     = interface tests tutorials impls
 LOCDIR   = src/sys/classes/random/
 MANSEC   = Sys
 

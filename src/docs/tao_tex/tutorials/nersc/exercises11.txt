@@ -41,7 +41,7 @@ For Carver:
 Create a subdirectory such as taoexamples, enter it, and copy several example problems to the new directory using the commands:
   > mkdir taoexamples
   > cd taoexamples
-  > cp -R $TAO_DIR/src/unconstrained/examples/tutorials/* .
+  > cp -R $TAO_DIR/src/unconstrained/tutorials/* .
   > ls
 
 There should be a makefile and several examples ending in .c and .F

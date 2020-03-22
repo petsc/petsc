@@ -1,7 +1,7 @@
 
 /*
     Provides an interface to the FFTW package.
-    Testing examples can be found in ~src/mat/examples/tests
+    Testing examples can be found in ~src/mat/tests
 */
 
 #include <../src/mat/impls/fft/fft.h>   /*I "petscmat.h" I*/
@@ -847,7 +847,7 @@ PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A,Vec x,Vec y)
       ierr = ISDestroy(&list1);CHKERRQ(ierr);
       ierr = ISDestroy(&list2);CHKERRQ(ierr);
 #else
-      /* buggy, needs to be fixed. See src/mat/examples/tests/ex158.c */
+      /* buggy, needs to be fixed. See src/mat/tests/ex158.c */
       SETERRQ(comm,PETSC_ERR_SUP,"FFTW does not support parallel 3D real transform");
       fftw_mpi_local_size_3d_transposed(dim[0],dim[1],dim[2]/2+1,comm,&local_n0,&local_0_start,&local_n1,&local_1_start);
 
@@ -895,7 +895,7 @@ PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A,Vec x,Vec y)
       ierr = ISDestroy(&list1);CHKERRQ(ierr);
       ierr = ISDestroy(&list2);CHKERRQ(ierr);
 #else
-      /* buggy, needs to be fixed. See src/mat/examples/tests/ex158.c */
+      /* buggy, needs to be fixed. See src/mat/tests/ex158.c */
       SETERRQ(comm,PETSC_ERR_SUP,"FFTW does not support parallel DIM>3 real transform");
       temp = (fftw->dim_fftw)[fftw->ndim_fftw-1];
 

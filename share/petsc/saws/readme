@@ -7,7 +7,7 @@
   Example usage: after starting each example below go to localhost:8080 in browser
 
 
-cd src/snes/examples/tutorials
+cd src/snes/tutorials
 make ex19
 
 bjacobi
@@ -48,7 +48,7 @@ other
 -------------
 ./ex19 -saws_options -da_refine 6 -snes_saws_block -ksp_monitor_saws -ksp_saws_block
 
-cd src/ts/examples/tutorials/advection-diffusion-reaction
+cd src/ts/tutorials/advection-diffusion-reaction
 make ex5
 ./ex5 -ts_view_pre saws  -stack_view saws
 

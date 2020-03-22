@@ -1131,8 +1131,8 @@ $    PetscViewerFileSetName(v,"datafile");
    The optional PetscViewerSetFromOptions() call allows to override PetscViewerSetType() using option
 $ -viewer_type {binary,hdf5}
 
-   See the example src/ksp/ksp/examples/tutorials/ex27.c with the first approach,
-   and src/mat/examples/tutorials/ex10.c with the second approach.
+   See the example src/ksp/ksp/tutorials/ex27.c with the first approach,
+   and src/mat/tutorials/ex10.c with the second approach.
 
    Notes about the PETSc binary format:
    In case of PETSCVIEWERBINARY, a native PETSc binary format is used. Each of the blocks
@@ -1176,7 +1176,7 @@ $    save example.mat A b -v7.3
    Unless -nocompression flag is used to save the file in MATLAB,
    PETSc must be configured with ZLIB package.
 
-   See also examples src/mat/examples/tutorials/ex10.c and src/ksp/ksp/examples/tutorials/ex27.c
+   See also examples src/mat/tutorials/ex10.c and src/ksp/ksp/tutorials/ex27.c
 
    Current HDF5 (MAT-File) limitations:
    This reader currently supports only real MATSEQAIJ, MATMPIAIJ, MATSEQDENSE and MATMPIDENSE matrices.

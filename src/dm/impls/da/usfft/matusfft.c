@@ -1,7 +1,7 @@
 
 /*
     Provides an implementation of the Unevenly Sampled FFT algorithm as a Mat.
-    Testing examples can be found in ~/src/mat/examples/tests FIX: should these be moved to dm/da/examples/tests?
+    Testing examples can be found in ~/src/mat/tests FIX: should these be moved to dm/da/tests?
 */
 
 #include <petsc/private/matimpl.h>          /*I "petscmat.h" I*/

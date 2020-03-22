@@ -1188,7 +1188,7 @@ $          call ISGetIndicesF90(i,array,ierr)
 
 
    See the Fortran chapter of the users manual and
-   petsc/src/is/examples/[tutorials,tests] for details.
+   petsc/src/is/[tutorials,tests] for details.
 
    Level: intermediate
 
@@ -1308,7 +1308,7 @@ $      ...... other code
 $       call ISRestoreIndices(is,is_array,i_is,ierr)
 
    See the Fortran chapter of the users manual and
-   petsc/src/is/examples/[tutorials,tests] for details.
+   petsc/src/vec/is/tests for details.
 
    Level: intermediate
 

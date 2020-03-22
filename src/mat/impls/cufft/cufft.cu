@@ -1,7 +1,7 @@
 
 /*
     Provides an interface to the CUFFT package.
-    Testing examples can be found in ~src/mat/examples/tests
+    Testing examples can be found in ~src/mat/tests
 */
 
 #include <petsc/private/matimpl.h>          /*I "petscmat.h" I*/

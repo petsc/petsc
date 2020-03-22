@@ -18,10 +18,10 @@ cp -r  ${PETSC_DIR}/systems/Apple/OSX/examples tempsource/PETSc-OSX.examples
 
 # copy the PETSc source for the examples into the example directories and modify the include to point to them 
 # in the PETSc tree the examples point to the original source elsewhere in the PETSc tree
-cp ${PETSC_DIR}/src/snes/examples/tutorials/ex19.c tempsource/PETSc-OSX.examples/PETSc\ command\ line\ example/PETSc\ command\ line\ example
-sed -i "" s?../../../../../../src/snes/examples/tutorials/??g tempsource/PETSc-OSX.examples/PETSc\ command\ line\ example/PETSc\ command\ line\ example/main.c
-cp ${PETSC_DIR}/src/snes/examples/tutorials/ex19.c tempsource/PETSc-OSX.examples/PETSc\ cocoa\ example/PETSc\ cocoa\ example
-sed -i "" s?../../../../../../src/snes/examples/tutorials/??g tempsource/PETSc-OSX.examples/PETSc\ cocoa\ example/PETSc\ cocoa\ example/AppDelegate.m
+cp ${PETSC_DIR}/src/snes/tutorials/ex19.c tempsource/PETSc-OSX.examples/PETSc\ command\ line\ example/PETSc\ command\ line\ example
+sed -i "" s?../../../../../../src/snes/tutorials/??g tempsource/PETSc-OSX.examples/PETSc\ command\ line\ example/PETSc\ command\ line\ example/main.c
+cp ${PETSC_DIR}/src/snes/tutorials/ex19.c tempsource/PETSc-OSX.examples/PETSc\ cocoa\ example/PETSc\ cocoa\ example
+sed -i "" s?../../../../../../src/snes/tutorials/??g tempsource/PETSc-OSX.examples/PETSc\ cocoa\ example/PETSc\ cocoa\ example/AppDelegate.m
 
 let size=`du  -c tempsource | tail -1 | cut -f1`
 let size=2*$size

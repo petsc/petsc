@@ -4,7 +4,7 @@
 </HEAD>
 <BODY BGCOLOR="FFFFFF">
 
-<H2> DMPLEX <A HREF="PETSC_DIRsrc/dm/impls/plex/examples/tutorials/index.html">Examples</A></H2>
+<H2> DMPLEX <A HREF="PETSC_DIRsrc/dm/impls/plex/tutorials/index.html">Examples</A></H2>
 
 The DMPLEX class encapsulates an unstructured mesh, with interfaces for both topology and geometry. It is capable of parallel refinement and coarsening (using Pragmatic) and parallel redistribution for load balancing. It is designed to interface with the PetscFE and PetscFV trial discretization objects.
 

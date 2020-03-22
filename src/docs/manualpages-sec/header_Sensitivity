@@ -4,7 +4,7 @@
 </HEAD>
 <BODY BGCOLOR="FFFFFF">
 
-<H2>Sensitivity analysis for ODE and DAE: <A HREF="PETSC_DIRsrc/ts/examples/tutorials/index.html">Examples</A></H2>
+<H2>Sensitivity analysis for ODE and DAE: <A HREF="PETSC_DIRsrc/ts/tutorials/index.html">Examples</A></H2>
 
 The TS library provides discrete adjoint models (TSAdjoint) and tangent linear models (TSForward) for sensitivity analysis for ODEs and DAEs.
 

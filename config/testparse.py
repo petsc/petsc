@@ -4,7 +4,7 @@ Parse the test file and return a dictionary.
 
 Quick usage::
 
-  lib/petsc/bin/maint/testparse.py -t src/ksp/ksp/examples/tutorials/ex1.c
+  lib/petsc/bin/maint/testparse.py -t src/ksp/ksp/tutorials/ex1.c
 
 From the command line, it prints out the dictionary.  
 This is meant to be used by other scripts, but it is 
