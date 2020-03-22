@@ -2,8 +2,6 @@
 #include <../src/vec/is/sf/impls/basic/allgather/sfallgather.h>
 #include <../src/vec/is/sf/impls/basic/gatherv/sfgatherv.h>
 
-#define PetscSFPackGet_Alltoall PetscSFPackGet_Allgatherv
-
 /* Reuse the type. The difference is some fields (i.e., displs, recvcounts) are not used, which is not a big deal */
 typedef PetscSF_Allgatherv PetscSF_Alltoall;
 
@@ -36,46 +34,41 @@ static PetscErrorCode PetscSFGetGraph_Alltoall(PetscSF sf,PetscInt *nroots,Petsc
 static PetscErrorCode PetscSFBcastAndOpBegin_Alltoall(PetscSF sf,MPI_Datatype unit,PetscMemType rootmtype,const void *rootdata,PetscMemType leafmtype,void *leafdata,MPI_Op op)
 {
   PetscErrorCode       ierr;
-  PetscSFPack          link;
+  PetscSFLink          link;
   MPI_Comm             comm;
-  const void           *rootbuf_mpi; /* buffer used by MPI */
-  void                 *leafbuf_mpi;
-  PetscMemType         rootmtype_mpi,leafmtype_mpi;
+  void                 *rootbuf = NULL,*leafbuf = NULL; /* buffer used by MPI */
+  MPI_Request          *req;
 
   PetscFunctionBegin;
-  ierr = PetscSFPackGet_Alltoall(sf,unit,rootmtype,rootdata,leafmtype,leafdata,&link);CHKERRQ(ierr);
+  ierr = PetscSFLinkCreate(sf,unit,rootmtype,rootdata,leafmtype,leafdata,op,PETSCSF_BCAST,&link);CHKERRQ(ierr);
+  ierr = PetscSFLinkPackRootData(sf,link,PETSCSF_REMOTE,rootdata);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)sf,&comm);CHKERRQ(ierr);
-  ierr = PetscSFBcastPrepareMPIBuffers_Allgatherv(sf,link,op,&rootmtype_mpi,&rootbuf_mpi,&leafmtype_mpi,&leafbuf_mpi);CHKERRQ(ierr);
-  ierr = MPIU_Ialltoall(rootbuf_mpi,1,unit,leafbuf_mpi,1,unit,comm,link->rootreqs[PETSCSF_ROOT2LEAF_BCAST][rootmtype_mpi]);CHKERRQ(ierr);
+  ierr = PetscSFLinkGetMPIBuffersAndRequests(sf,link,PETSCSF_ROOT2LEAF,&rootbuf,&leafbuf,&req,NULL);CHKERRQ(ierr);
+  ierr = MPIU_Ialltoall(rootbuf,1,unit,leafbuf,1,unit,comm,req);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PetscSFReduceBegin_Alltoall(PetscSF sf,MPI_Datatype unit,PetscMemType leafmtype,const void *leafdata,PetscMemType rootmtype,void *rootdata,MPI_Op op)
 {
   PetscErrorCode       ierr;
-  PetscSFPack          link;
+  PetscSFLink          link;
   MPI_Comm             comm;
-  void                 *recvbuf;
+  void                 *rootbuf = NULL,*leafbuf = NULL; /* buffer used by MPI */
+  MPI_Request          *req;
 
   PetscFunctionBegin;
+  ierr = PetscSFLinkCreate(sf,unit,rootmtype,rootdata,leafmtype,leafdata,op,PETSCSF_REDUCE,&link);CHKERRQ(ierr);
+  ierr = PetscSFLinkPackLeafData(sf,link,PETSCSF_REMOTE,leafdata);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)sf,&comm);CHKERRQ(ierr);
-  if (!use_gpu_aware_mpi && (rootmtype == PETSC_MEMTYPE_DEVICE || leafmtype == PETSC_MEMTYPE_DEVICE)) SETERRQ(comm,PETSC_ERR_SUP,"No support for PetscSFReduce"); /* No known uses */
-  ierr = PetscSFPackGet_Alltoall(sf,unit,rootmtype,rootdata,leafmtype,leafdata,&link);CHKERRQ(ierr);
-
-  if (op != MPIU_REPLACE) {
-    if (!link->rootbuf[rootmtype]) {ierr = PetscMallocWithMemType(rootmtype,sf->nroots*link->unitbytes,(void**)&link->rootbuf[rootmtype]);CHKERRQ(ierr);}
-    recvbuf = link->rootbuf[rootmtype];
-  } else {
-    recvbuf = (char*)rootdata;
-  }
-  ierr = MPIU_Ialltoall(leafdata,1,unit,recvbuf,1,unit,comm,link->rootreqs[PETSCSF_LEAF2ROOT_REDUCE][rootmtype]);CHKERRQ(ierr);
+  ierr = PetscSFLinkGetMPIBuffersAndRequests(sf,link,PETSCSF_LEAF2ROOT,&rootbuf,&leafbuf,&req,NULL);CHKERRQ(ierr);
+  ierr = MPIU_Ialltoall(leafbuf,1,unit,rootbuf,1,unit,comm,req);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PetscSFCreateLocalSF_Alltoall(PetscSF sf,PetscSF *out)
 {
   PetscErrorCode ierr;
-  PetscInt       nroots=1,nleaves=1,*ilocal;
+  PetscInt       nroots = 1,nleaves = 1,*ilocal;
   PetscSFNode    *iremote = NULL;
   PetscSF        lsf;
   PetscMPIInt    rank;
@@ -178,6 +171,14 @@ static PetscErrorCode PetscSFCreateEmbeddedSF_Alltoall(PetscSF sf,PetscInt nsele
     bas->irootloc[i]  = roots[i];
   }
 
+  /* See PetscSFCreateEmbeddedSF_Basic */
+  esf->nleafreqs  = esf->nranks - esf->ndranks;
+  bas->nrootreqs  = bas->niranks - bas->ndiranks;
+  esf->persistent = PETSC_TRUE;
+  /* Setup packing related fields */
+  ierr = PetscSFSetUpPackFields(esf);CHKERRQ(ierr);
+
+  esf->setupcalled = PETSC_TRUE; /* We have done setup ourselves! */
   *newsf = esf;
   PetscFunctionReturn(0);
 }
@@ -188,19 +189,21 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Alltoall(PetscSF sf)
   PetscSF_Alltoall *dat = (PetscSF_Alltoall*)sf->data;
 
   PetscFunctionBegin;
+  sf->ops->BcastAndOpEnd   = PetscSFBcastAndOpEnd_Basic;
+  sf->ops->ReduceEnd       = PetscSFReduceEnd_Basic;
+
   /* Inherit from Allgatherv. It is astonishing Alltoall can inherit so much from Allgather(v) */
   sf->ops->Destroy         = PetscSFDestroy_Allgatherv;
   sf->ops->Reset           = PetscSFReset_Allgatherv;
-  sf->ops->BcastAndOpEnd   = PetscSFBcastAndOpEnd_Allgatherv;
-  sf->ops->ReduceEnd       = PetscSFReduceEnd_Allgatherv;
   sf->ops->FetchAndOpEnd   = PetscSFFetchAndOpEnd_Allgatherv;
   sf->ops->GetRootRanks    = PetscSFGetRootRanks_Allgatherv;
 
   /* Inherit from Allgather. Every process gathers equal-sized data from others, which enables this inheritance. */
   sf->ops->GetLeafRanks    = PetscSFGetLeafRanks_Allgatherv;
+  sf->ops->SetUp           = PetscSFSetUp_Allgather;
 
   /* Inherit from Gatherv. Each root has only one leaf connected, which enables this inheritance */
-  sf->ops->FetchAndOpBegin  = PetscSFFetchAndOpBegin_Gatherv;
+  sf->ops->FetchAndOpBegin = PetscSFFetchAndOpBegin_Gatherv;
 
   /* Alltoall stuff */
   sf->ops->GetGraph         = PetscSFGetGraph_Alltoall;

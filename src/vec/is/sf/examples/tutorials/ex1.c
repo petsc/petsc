@@ -527,7 +527,8 @@ int main(int argc,char **argv)
       suffix: 6
       nsize: 4
       filter: grep -v "type" | grep -v "sort"
-      args: -test_embed -sf_type window -sf_window_sync {{fence active lock}} -sf_window_flavor {{create dynamic allocate}}
+      # No -sf_window_flavor dynamic due to bug https://gitlab.com/petsc/petsc/issues/555
+      args: -test_embed -sf_type window -sf_window_sync {{fence active lock}} -sf_window_flavor {{create allocate}}
       requires: define(PETSC_HAVE_MPI_ONE_SIDED)
 
    test:

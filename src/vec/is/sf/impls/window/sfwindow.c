@@ -864,12 +864,12 @@ static PetscErrorCode PetscSFBcastAndOpBegin_Window(PetscSF sf,MPI_Datatype unit
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSFBcastAndOpEnd_Window(PetscSF sf,MPI_Datatype unit,PetscMemType rootmtype,const void *rootdata,PetscMemType leafmtype,void *leafdata,MPI_Op op)
+PetscErrorCode PetscSFBcastAndOpEnd_Window(PetscSF sf,MPI_Datatype unit,const void *rootdata,void *leafdata,MPI_Op op)
 {
   PetscSF_Window *w = (PetscSF_Window*)sf->data;
   PetscErrorCode ierr;
   MPI_Win        win;
-  MPI_Request    *reqs;
+  MPI_Request    *reqs = NULL;
 
   PetscFunctionBegin;
   ierr = PetscSFFindWindow(sf,unit,rootdata,&win,&reqs);CHKERRQ(ierr);
@@ -919,12 +919,12 @@ PetscErrorCode PetscSFReduceBegin_Window(PetscSF sf,MPI_Datatype unit,PetscMemTy
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFReduceEnd_Window(PetscSF sf,MPI_Datatype unit,PetscMemType leafmtype,const void *leafdata,PetscMemType rootmtype,void *rootdata,MPI_Op op)
+static PetscErrorCode PetscSFReduceEnd_Window(PetscSF sf,MPI_Datatype unit,const void *leafdata,void *rootdata,MPI_Op op)
 {
   PetscSF_Window *w = (PetscSF_Window*)sf->data;
   PetscErrorCode ierr;
   MPI_Win        win;
-  MPI_Request    *reqs;
+  MPI_Request    *reqs = NULL;
 
   PetscFunctionBegin;
   ierr = PetscSFFindWindow(sf,unit,rootdata,&win,&reqs);CHKERRQ(ierr);
@@ -993,14 +993,14 @@ static PetscErrorCode PetscSFFetchAndOpBegin_Window(PetscSF sf,MPI_Datatype unit
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFFetchAndOpEnd_Window(PetscSF sf,MPI_Datatype unit,PetscMemType rootmtype,void *rootdata,PetscMemType leafmtype,const void *leafdata,void *leafupdate,MPI_Op op)
+static PetscErrorCode PetscSFFetchAndOpEnd_Window(PetscSF sf,MPI_Datatype unit,void *rootdata,const void *leafdata,void *leafupdate,MPI_Op op)
 {
   PetscErrorCode ierr;
   MPI_Win        win;
 #if defined(PETSC_HAVE_MPI_GET_ACCUMULATE)
   PetscSF_Window *w = (PetscSF_Window*)sf->data;
 #endif
-  MPI_Request    *reqs;
+  MPI_Request    *reqs = NULL;
 
   PetscFunctionBegin;
   ierr = PetscSFFindWindow(sf,unit,rootdata,&win,&reqs);CHKERRQ(ierr);

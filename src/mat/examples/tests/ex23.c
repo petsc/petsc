@@ -864,16 +864,11 @@ PetscErrorCode TestMatZeroRows(Mat A, Mat Afull, PetscBool squaretest, IS is, Pe
       nsize: 5
       args: -m 12 -n 12 -test_trans -nr 2 -nc 3 -diffmap -permmap
 
-   testset:
+   test:
+      suffix: vscat_default
       nsize: 5
       args: -m 12 -n 17 -test_trans -nr 2 -nc 3 -permmap
       output_file: output/ex23_11.out
-      test:
-        suffix: vscat_default
-        args:
-      test:
-        suffix: vscat_sf
-        args: -vecscatter_type sf
 
    test:
       suffix: 12
@@ -896,9 +891,5 @@ PetscErrorCode TestMatZeroRows(Mat A, Mat Afull, PetscBool squaretest, IS is, Pe
         requires: cuda
         suffix: cusparse
         args: -matis_localmat_type aijcusparse
-      test:
-        requires: cuda
-        suffix: cusparse_sf
-        args: -matis_localmat_type aijcusparse -vecscatter_type sf
 
 TEST*/

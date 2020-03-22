@@ -19,9 +19,6 @@ PetscFPT PetscFPTData = 0;
 #include <petscviewersaws.h>
 #endif
 
-#if defined(PETSC_HAVE_OPENMPI_MAJOR)
-#include "mpi-ext.h" /* Needed for CUDA-aware check */
-#endif
 /* -----------------------------------------------------------------------------------------*/
 
 PETSC_INTERN FILE *petsc_history;
@@ -40,12 +37,6 @@ PetscMPIInt Petsc_Counter_keyval   = MPI_KEYVAL_INVALID;
 PetscMPIInt Petsc_InnerComm_keyval = MPI_KEYVAL_INVALID;
 PetscMPIInt Petsc_OuterComm_keyval = MPI_KEYVAL_INVALID;
 PetscMPIInt Petsc_ShmComm_keyval   = MPI_KEYVAL_INVALID;
-
-/* Do not need put this in a guard like PETSC_HAVE_CUDA. Without configuring PETSc --with-cuda, users can still use option -use_gpu_aware_mpi */
-PetscBool use_gpu_aware_mpi = PETSC_FALSE;
-#if defined(PETSC_HAVE_CUDA)
-PetscBool sf_use_default_cuda_stream = PETSC_FALSE;
-#endif
 
 /*
      Declare and set all the string names of the PETSc enums
@@ -1133,16 +1124,6 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 
   ierr = PetscOptionsHasName(NULL,NULL,"-python",&flg);CHKERRQ(ierr);
   if (flg) {ierr = PetscPythonInitialize(NULL,NULL);CHKERRQ(ierr);}
-
-#if defined(PETSC_HAVE_CUDA)
-  ierr = PetscOptionsGetBool(NULL,NULL,"-use_gpu_aware_mpi",&use_gpu_aware_mpi,NULL);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_OPENMPI_MAJOR) && defined(MPIX_CUDA_AWARE_SUPPORT)
-  /* OpenMPI supports compile time and runtime cuda support checking */
-  if (use_gpu_aware_mpi && 1 != MPIX_Query_cuda_support()) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"OpenMPI you used does not support CUDA while you requested -use_gpu_aware_mpi");
-#endif
-  ierr = PetscOptionsGetBool(NULL,NULL,"-sf_use_default_cuda_stream",&sf_use_default_cuda_stream,NULL);CHKERRQ(ierr);
-#endif
-
   PetscFunctionReturn(0);
 }
 

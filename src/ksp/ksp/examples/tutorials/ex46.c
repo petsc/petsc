@@ -207,10 +207,9 @@ int main(int argc,char **argv)
 
       test:
         suffix: aijcusparse
+        args: -use_gpu_aware_mpi 0
       test:
         suffix: aijcusparse_mpi_gpu_aware
-        args: -use_gpu_aware_mpi
-        requires: define(PETSC_HAVE_MPI_GPU_AWARE)
 
    testset:
       requires: cuda
@@ -218,9 +217,9 @@ int main(int argc,char **argv)
       output_file: output/ex46_aijcusparse_2.out
       test:
         suffix: aijcusparse_2
+        args: -use_gpu_aware_mpi 0
       test:
         suffix: aijcusparse_2_mpi_gpu_aware
-        args: -use_gpu_aware_mpi
-        requires: define(PETSC_HAVE_MPI_GPU_AWARE)
+
 
 TEST*/
