@@ -238,7 +238,6 @@ int main(int argc,char **argv)
   ierr = TSSetMaxTime(appctx.ts,appctx.param.Tend);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(appctx.ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
   ierr = TSSetTolerances(appctx.ts,1e-7,NULL,1e-7,NULL);CHKERRQ(ierr);
-  ierr = TSSetSaveTrajectory(appctx.ts);CHKERRQ(ierr);
   ierr = TSSetFromOptions(appctx.ts);CHKERRQ(ierr);
   /* Need to save initial timestep user may have set with -ts_dt so it can be reset for each new TSSolve() */
   ierr = TSGetTimeStep(appctx.ts,&appctx.initial_dt);CHKERRQ(ierr);
@@ -249,6 +248,9 @@ int main(int argc,char **argv)
   ierr = InitialConditions(appctx.dat.ic,&appctx);CHKERRQ(ierr);
   ierr = TrueSolution(appctx.dat.true_solution,&appctx);CHKERRQ(ierr);
   ierr = ComputeObjective(appctx.param.Tend,appctx.dat.obj,&appctx);CHKERRQ(ierr);
+
+  ierr = TSSetSaveTrajectory(appctx.ts);CHKERRQ(ierr);
+  ierr = TSSetFromOptions(appctx.ts);CHKERRQ(ierr);
 
   /* Create TAO solver and set desired solution method  */
   ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
@@ -596,7 +598,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
   ierr = TSSetTimeStep(appctx->ts,appctx->initial_dt);CHKERRQ(ierr);
   ierr = VecCopy(IC,appctx->dat.curr_sol);CHKERRQ(ierr);
 
-  ierr = TSResetTrajectory(appctx->ts);CHKERRQ(ierr);
   ierr = TSSolve(appctx->ts,appctx->dat.curr_sol);CHKERRQ(ierr);
 
   ierr = VecWAXPY(G,-1.0,appctx->dat.curr_sol,appctx->dat.obj);CHKERRQ(ierr);
