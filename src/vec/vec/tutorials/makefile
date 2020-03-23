@@ -1,4 +1,4 @@
-#
+-include ../petscdir.mk
 CFLAGS		 =
 FFLAGS		 =
 CPPFLAGS         =
@@ -17,3 +17,4 @@ include ${PETSC_DIR}/lib/petsc/conf/test
 ex7: ex7.o ex7f.o
 ex21f90: ex21f90.o ex21.o
 ex43f: ex43.o ex43f.o
+

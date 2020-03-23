@@ -1,4 +1,4 @@
-ALL:WASH
+-include ../petscdir.mk
 CFLAGS	         =
 FFLAGS	         =
 CPPFLAGS         =

@@ -1,4 +1,4 @@
-
+-include ../petscdir.mk
 CFLAGS           =
 CXXFLAGS         = ${AMREX_INCLUDE}
 FFLAGS		 =
