@@ -16,7 +16,7 @@ typedef struct {
   PetscReal rho, alpha, beta;               /* convex combination factors for the scalar or diagonal scaling */
   PetscReal delta, delta_min, delta_max, sigma;
   PetscInt  sigma_hist;                      /* length of update history to be used for scaling */
-  MatLMVMSymBrdnScaleType  scale_type;
+  MatLMVMSymBroydenScaleType  scale_type;
   PetscInt  watchdog, max_seq_rejects;        /* tracker to reset after a certain # of consecutive rejects */
 } Mat_SymBrdn;
 
@@ -27,5 +27,4 @@ PETSC_INTERN PetscErrorCode MatSymBrdnComputeJ0Scalar(Mat);
 
 PETSC_INTERN PetscErrorCode MatView_LMVMSymBrdn(Mat, PetscViewer);
 PETSC_INTERN PetscErrorCode MatSetFromOptions_LMVMSymBrdn(PetscOptionItems*, Mat);
-
-PETSC_INTERN PetscErrorCode MatSymBrdnSetScaleType_Private(Mat, MatLMVMSymBrdnScaleType);
+PETSC_INTERN PetscErrorCode MatSetFromOptions_LMVMSymBrdn_Private(PetscOptionItems*, Mat);

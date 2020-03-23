@@ -49,7 +49,7 @@ Tao Object: 3 MPI processes
       Number of rejects: 0
       Number of resets: 1
       Mat Object: (J0_) 3 MPI processes
-        type: lmvmdiagbrdn
+        type: lmvmdiagbroyden
         rows=96, cols=96
           Scale history: 1
           Scale params: alpha=1., beta=0.5, rho=1.

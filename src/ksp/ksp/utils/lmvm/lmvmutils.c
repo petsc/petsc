@@ -646,6 +646,9 @@ PetscErrorCode MatLMVMReset(Mat B, PetscBool destructive)
 +  B - An LMVM-type matrix
 -  hist_size - number of past iterates (default 5)
 
+   Options Database:
+.  -mat_lmvm_hist_size <m>
+
    Level: beginner
 
 .seealso: MatLMVMGetUpdateCount()

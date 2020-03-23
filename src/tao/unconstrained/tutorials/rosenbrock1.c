@@ -302,15 +302,15 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat H, Mat Hpre, void *ptr)
       
    test:
       suffix: 11
-      args: -test_lmvm -tao_max_it 10 -tao_bqnk_mat_type lmvmbrdn
+      args: -test_lmvm -tao_max_it 10 -tao_bqnk_mat_type lmvmbroyden
       
    test:
       suffix: 12
-      args: -test_lmvm -tao_max_it 10 -tao_bqnk_mat_type lmvmbadbrdn
+      args: -test_lmvm -tao_max_it 10 -tao_bqnk_mat_type lmvmbadbroyden
       
    test:
      suffix: 13
-     args: -test_lmvm -tao_max_it 10 -tao_bqnk_mat_type lmvmsymbrdn
+     args: -test_lmvm -tao_max_it 10 -tao_bqnk_mat_type lmvmsymbroyden
 
    test:
      suffix: 14
@@ -342,6 +342,6 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat H, Mat Hpre, void *ptr)
      
    test:
      suffix: 21
-     args: -test_lmvm -tao_max_it 10 -tao_bqnk_mat_type lmvmsymbadbrdn
+     args: -test_lmvm -tao_max_it 10 -tao_bqnk_mat_type lmvmsymbadbroyden
 
 TEST*/

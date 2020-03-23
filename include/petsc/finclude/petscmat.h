@@ -143,6 +143,16 @@
 #define MATMPISELL         'mpisell'
 #define MATDUMMY           'dummy'
 
+#define MATLMVM            'lmvm'
+#define MATLMVMBROYDEN     'lmvmbroyden'
+#define MATLMVMBADBROYDEN  'lmvmbadbroyden'
+#define MATLMVMSYMBROYDEN  'lmvmsymbroyden'
+#define MATLMVMSYMBADBROYDEN 'lmvmsymbadbroyden'
+#define MATLMVMDIAGBROYDEN 'lmvmdiagbroyden'
+#define MATLMVMSR1         'lmvmsr1'
+#define MATLMVMDFP         'lmvmdfp'
+#define MATLMVMBFGS        'lmvmbfgs'
+
 !
 ! MatMFFDType values
 !

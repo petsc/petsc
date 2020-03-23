@@ -97,11 +97,11 @@ typedef const char* MatType;
 #define MATLMVMDFP         "lmvmdfp"
 #define MATLMVMBFGS        "lmvmbfgs"
 #define MATLMVMSR1         "lmvmsr1"
-#define MATLMVMBRDN        "lmvmbrdn"
-#define MATLMVMBADBRDN     "lmvmbadbrdn"
-#define MATLMVMSYMBRDN     "lmvmsymbrdn"
-#define MATLMVMSYMBADBRDN  "lmvmsymbadbrdn"
-#define MATLMVMDIAGBRDN    "lmvmdiagbrdn"
+#define MATLMVMBROYDEN     "lmvmbroyden"
+#define MATLMVMBADBROYDEN  "lmvmbadbroyden"
+#define MATLMVMSYMBROYDEN  "lmvmsymbroyden"
+#define MATLMVMSYMBADBROYDEN "lmvmsymbadbroyden"
+#define MATLMVMDIAGBROYDEN "lmvmdiagbroyden"
 #define MATCONSTANTDIAGONAL "constantdiagonal"
 
 /*J

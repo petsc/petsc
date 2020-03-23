@@ -268,24 +268,24 @@ static PetscErrorCode SNESSetUp_QN(SNES snes)
   /* Set up the LMVM matrix */
   switch (qn->type) {
     case SNES_QN_BROYDEN:
-      ierr = MatSetType(qn->B, MATLMVMBRDN);CHKERRQ(ierr);
+      ierr = MatSetType(qn->B, MATLMVMBROYDEN);CHKERRQ(ierr);
       qn->scale_type = SNES_QN_SCALE_NONE;
       break;
     case SNES_QN_BADBROYDEN:
-      ierr = MatSetType(qn->B, MATLMVMBADBRDN);CHKERRQ(ierr);
+      ierr = MatSetType(qn->B, MATLMVMBADBROYDEN);CHKERRQ(ierr);
       qn->scale_type = SNES_QN_SCALE_NONE;
       break;
     default:
       ierr = MatSetType(qn->B, MATLMVMBFGS);CHKERRQ(ierr);
       switch (qn->scale_type) {
         case SNES_QN_SCALE_NONE:
-          ierr = MatSymBrdnSetScaleType(qn->B, MAT_LMVM_SYMBRDN_SCALE_NONE);CHKERRQ(ierr);
+          ierr = MatLMVMSymBroydenSetScaleType(qn->B, MAT_LMVM_SYMBROYDEN_SCALE_NONE);CHKERRQ(ierr);
           break;
         case SNES_QN_SCALE_SCALAR:
-          ierr = MatSymBrdnSetScaleType(qn->B, MAT_LMVM_SYMBRDN_SCALE_SCALAR);CHKERRQ(ierr);
+          ierr = MatLMVMSymBroydenSetScaleType(qn->B, MAT_LMVM_SYMBROYDEN_SCALE_SCALAR);CHKERRQ(ierr);
           break;
         case SNES_QN_SCALE_JACOBIAN:
-          ierr = MatSymBrdnSetScaleType(qn->B, MAT_LMVM_SYMBRDN_SCALE_USER);CHKERRQ(ierr);
+          ierr = MatLMVMSymBroydenSetScaleType(qn->B, MAT_LMVM_SYMBROYDEN_SCALE_USER);CHKERRQ(ierr);
           break;
         case SNES_QN_SCALE_DIAGONAL:
         case SNES_QN_SCALE_DEFAULT:

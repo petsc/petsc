@@ -182,7 +182,7 @@ static PetscErrorCode MatSetFromOptions_LMVMSymBadBrdn(PetscOptionItems *PetscOp
 
   PetscFunctionBegin;
   ierr = MatSetFromOptions_LMVMSymBrdn(PetscOptionsObject, B);CHKERRQ(ierr);
-  if (lsb->scale_type == MAT_LMVM_SYMBRDN_SCALE_DIAGONAL) {
+  if (lsb->scale_type == MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL) {
     dbase = (Mat_LMVM*)lsb->D->data;
     dctx = (Mat_DiagBrdn*)dbase->ctx;
     dctx->forward = PETSC_FALSE;
@@ -199,7 +199,7 @@ PetscErrorCode MatCreate_LMVMSymBadBrdn(Mat B)
 
   PetscFunctionBegin;
   ierr = MatCreate_LMVMSymBrdn(B);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)B, MATLMVMSYMBADBRDN);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)B, MATLMVMSYMBADBROYDEN);CHKERRQ(ierr);
   B->ops->setfromoptions = MatSetFromOptions_LMVMSymBadBrdn;
   B->ops->solve = MatSolve_LMVMSymBadBrdn;
   
@@ -211,7 +211,7 @@ PetscErrorCode MatCreate_LMVMSymBadBrdn(Mat B)
 /*------------------------------------------------------------*/
 
 /*@
-   MatCreateLMVMSymBadBrdn - Creates a limited-memory Symmetric "Bad" Broyden-type matrix used
+   MatCreateLMVMSymBadBroyden - Creates a limited-memory Symmetric "Bad" Broyden-type matrix used
    for approximating Jacobians. L-SymBadBrdn is a convex combination of L-DFP and
    L-BFGS such that `^{-1} = (1 - phi)*BFGS^{-1} + phi*DFP^{-1}. The combination factor
    phi is restricted to the range [0, 1], where the L-SymBadBrdn matrix is guaranteed
@@ -251,17 +251,17 @@ PetscErrorCode MatCreate_LMVMSymBadBrdn(Mat B)
 
    Level: intermediate
 
-.seealso: MatCreate(), MATLMVM, MATLMVMSYMBRDN, MatCreateLMVMDFP(), MatCreateLMVMSR1(),
+.seealso: MatCreate(), MATLMVM, MATLMVMSYMBROYDEN, MatCreateLMVMDFP(), MatCreateLMVMSR1(),
           MatCreateLMVMBFGS(), MatCreateLMVMBrdn(), MatCreateLMVMBadBrdn()
 @*/
-PetscErrorCode MatCreateLMVMSymBadBrdn(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B)
+PetscErrorCode MatCreateLMVMSymBadBroyden(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B)
 {
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = MatCreate(comm, B);CHKERRQ(ierr);
   ierr = MatSetSizes(*B, n, n, N, N);CHKERRQ(ierr);
-  ierr = MatSetType(*B, MATLMVMSYMBADBRDN);CHKERRQ(ierr);
+  ierr = MatSetType(*B, MATLMVMSYMBADBROYDEN);CHKERRQ(ierr);
   ierr = MatSetUp(*B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

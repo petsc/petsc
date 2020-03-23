@@ -262,7 +262,7 @@ PetscErrorCode MatCreate_LMVMBadBrdn(Mat B)
 
   PetscFunctionBegin;
   ierr = MatCreate_LMVM(B);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)B, MATLMVMBADBRDN);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)B, MATLMVMBADBROYDEN);CHKERRQ(ierr);
   B->ops->setup = MatSetUp_LMVMBadBrdn;
   B->ops->destroy = MatDestroy_LMVMBadBrdn;
   B->ops->solve = MatSolve_LMVMBadBrdn;
@@ -285,7 +285,7 @@ PetscErrorCode MatCreate_LMVMBadBrdn(Mat B)
 /*------------------------------------------------------------*/
 
 /*@
-   MatCreateLMVMBadBrdn - Creates a limited-memory modified (aka "bad") Broyden-type 
+   MatCreateLMVMBadBroyden - Creates a limited-memory modified (aka "bad") Broyden-type 
    approximation matrix used for a Jacobian. L-BadBrdn is not guaranteed to be 
    symmetric or positive-definite.
    
@@ -324,14 +324,14 @@ PetscErrorCode MatCreate_LMVMBadBrdn(Mat B)
 .seealso: MatCreate(), MATLMVM, MATLMVMBADBRDN, MatCreateLMVMDFP(), MatCreateLMVMSR1(), 
           MatCreateLMVMBFGS(), MatCreateLMVMBrdn(), MatCreateLMVMSymBrdn()
 @*/
-PetscErrorCode MatCreateLMVMBadBrdn(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B)
+PetscErrorCode MatCreateLMVMBadBroyden(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B)
 {
   PetscErrorCode    ierr;
   
   PetscFunctionBegin;
   ierr = MatCreate(comm, B);CHKERRQ(ierr);
   ierr = MatSetSizes(*B, n, n, N, N);CHKERRQ(ierr);
-  ierr = MatSetType(*B, MATLMVMBADBRDN);CHKERRQ(ierr);
+  ierr = MatSetType(*B, MATLMVMBADBROYDEN);CHKERRQ(ierr);
   ierr = MatSetUp(*B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -523,7 +523,7 @@ PetscErrorCode MatCreate_LMVMDiagBrdn(Mat B)
 
   PetscFunctionBegin;
   ierr = MatCreate_LMVM(B);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)B, MATLMVMDIAGBRDN);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)B, MATLMVMDIAGBROYDEN);CHKERRQ(ierr);
   B->ops->setup = MatSetUp_DiagBrdn;
   B->ops->setfromoptions = MatSetFromOptions_DiagBrdn;
   B->ops->destroy = MatDestroy_DiagBrdn;
@@ -559,7 +559,7 @@ PetscErrorCode MatCreate_LMVMDiagBrdn(Mat B)
 /*------------------------------------------------------------*/
 
 /*@
-   MatCreateLMVMDiagBrdn - DiagBrdn creates a symmetric Broyden-type diagonal matrix used 
+   MatCreateLMVMDiagBroyden - DiagBrdn creates a symmetric Broyden-type diagonal matrix used 
    for approximating Hessians. It consists of a convex combination of DFP and BFGS 
    diagonal approximation schemes, such that DiagBrdn = (1-theta)*BFGS + theta*DFP. 
    To preserve symmetric positive-definiteness, we restrict theta to be in [0, 1]. 
@@ -604,14 +604,14 @@ PetscErrorCode MatCreate_LMVMDiagBrdn(Mat B)
 .seealso: MatCreate(), MATLMVM, MATLMVMDIAGBRDN, MatCreateLMVMDFP(), MatCreateLMVMSR1(),
           MatCreateLMVMBFGS(), MatCreateLMVMBrdn(), MatCreateLMVMSymBrdn()
 @*/
-PetscErrorCode MatCreateLMVMDiagBrdn(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B)
+PetscErrorCode MatCreateLMVMDiagBroyden(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B)
 {
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = MatCreate(comm, B);CHKERRQ(ierr);
   ierr = MatSetSizes(*B, n, n, N, N);CHKERRQ(ierr);
-  ierr = MatSetType(*B, MATLMVMDIAGBRDN);CHKERRQ(ierr);
+  ierr = MatSetType(*B, MATLMVMDIAGBROYDEN);CHKERRQ(ierr);
   ierr = MatSetUp(*B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
