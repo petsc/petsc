@@ -10,13 +10,24 @@ import subprocess
 #
 #      It uses the nagfor option -dryrun to determine the programs nagfor would run and fixes the arguments to the calls
 #
+#      It can be used with --download-mpich and --download-fblaslapack; PETSc configure automatically adds the option
+#      -mismatch when building these packages (but not when building PETSc)
+#
+#      -verbose and  -v run the compile printing the commands used. -dryrun does NOT run the compiler just prints what nagfor would do
+#
+#      -V or -version cause the version to be printed and then the compiler ends
+#
+#   nagfor puts temporary files in /tmp with a process id, if a different user runs and gets the same process id the compiler will fail
+#      thus petscnagfor appends the /tmp file names with the USER id to generate unique file names.
 #   nagfor does not handle -Wl,-rpath,path correctly (MPICH claims -Wl,-Wl,, works, but we can't change all of PETSc for this))
-#   nagfor links against two of its own .o files, if the link results in multiple definitions then remove a set and try again
+#   nagfor links against two of its own .o files, if the link results in multiple definitions then it removes a set and tries again
+#      this can cause problems when the linking is done by the C compiler which doesn't know about these libraries
 #   nagfor cannot always handle -O0 so remove it
 #   nagfor checks the length of all character strings; PETSc does not pass in the character string lengths to BLAS/LAPACK
-#   nagfor does not handle -verbose or -v; uses -dryrun instead
-#   nagfor does not handle -shared; pass it to linker with -Wl,-shared
-#   nagfor does not hanlde --whole-archive, --no-whole-archive that MPICH insists on putting in
+#      hence this script removes the lines of generated C code that check the lengths.
+#   nagfor does not handle -verbose or -v; so this script provides support
+#   nagfor does not handle -shared; this script passes it to linker with -Wl,-shared
+#   nagfor does not hanlde --whole-archive, --no-whole-archive that MPICH insists on putting in so they are removed
 #
 def runnagfor(args):
   if not isinstance(args, list): args = args.strip().split(' ')
@@ -27,11 +38,13 @@ def runnagfor(args):
     error = sub.stderr.read()
     status = sub.returncode
   except:
-    print('petscnagfor: Unable to run process with job '+str(args))
+    print('petscnagfor: Unable to run process with job: '+' '.join(args))
     exit(1)
   return (output,error,status)
 
 if __name__ == '__main__':
+  # Process options passed into compiler suite
+  verbose = 0
   linkerargs = ['-rpath', '--whole-archive', '--no-whole-archive', '-soname' ]
   args = sys.argv[1:]
   argst = args
@@ -40,11 +53,11 @@ if __name__ == '__main__':
   while i < len(argst):
     flag = 1
     if argst[i] == '-verbose':
-      args.append('-dryrun')
+      verbose = 1
       i = i + 1
       continue
     if argst[i] == '-v':
-      args.append('-dryrun')
+      verbose = 1
       i = i + 1
       continue
     if argst[i] == '-shared':
@@ -59,18 +72,17 @@ if __name__ == '__main__':
         break
     if flag: args.append(argst[i])
     i = i + 1
+  if '-mismatch' in args or '-dusty' in args:
+    args = [x for x in args if not x.startswith('-C=')]
 
-  if '-version' in args or '-V' in args or '-dryrun' in args or '-v' in args:
+  if '-version' in args or '-dryrun' in args or '-V' in args:
     (output,error,status) = runnagfor(['nagfor']+args)
     error = error.replace('-rpath ','-Wl,-rpath')
     print(output)
     print(error,file=sys.stderr)
     exit(0)
 
-  # nagfor cannot handle -O0 when passed with with -c option so remove it
-  argst = args
-  args = [x for x in argst if not x == '-O0']
-
+  if verbose: print(' '.join(['nagfor','-dryrun']+args))
   (output,error,status) = runnagfor(['nagfor','-dryrun']+args)
   if status:
     print(output)
@@ -79,13 +91,21 @@ if __name__ == '__main__':
 
   # Run through the up to four commands that nagfor passes out from -dryrun
   for i in (output+error).split('\n'):
+    import re
     if not i or i.startswith('stdout') or i.startswith('stderr') or i.startswith('NAG') or i.startswith('Loading'): continue
     if os.path.isfile(i[0:-1]): continue
     i = i.replace(';',' ')
+    i = re.sub(r'/tmp/([a-zA-Z0-9_]*)\.([0-9]*)\.([fF90co]*)','/tmp/'+os.getenv('USER')+r"-\1.\2.\3",i)
     for j in linkerargs:
       i = i.replace(j+' ','-Wl,'+j+',').strip()
     if i.find('forcomp') > -1:
       i = i.replace(' -PIC','').strip()
+      # each option needs its own -options in front of it
+      i = i.replace(' -options','').strip()
+      i = i.replace(' -C=',' -options -C=')   # note -C=xxx requires options but -C does not
+      i = i.replace(' -O',' -options -O')
+      i = i.replace(' -gline',' -options -gline') # note this is actually not needed
+      #  add more compiler options here
     js = [x for x in i.split(' ') if not x == '-Bstatic' and not x == '-Bdynamic']
 
     # Save all the .c files generated so they may be seen in the debugger
@@ -102,7 +122,17 @@ if __name__ == '__main__':
       else:
         js[-1] = last
 
+    if verbose: print(' '.join(js))
     (suboutput,error,status) = runnagfor(js)
+    if js[0].endswith('forcomp'):
+      lerror = ''
+      for k in error.split('\n'):
+        if k.find("Unused dummy variable") > -1: continue
+        if k.find("Fixed source form") > -1: continue
+        if k.find("[NAG Fortran Compiler normal termination") > -1: continue
+        if k.find("Line longer than") > -1: continue 
+        lerror += k
+      if lerror: print("\n"+lerror,file=sys.stderr)
 
     if (i.find('/fpp') == -1 and i.find('quickfit.o') == -1):
       if i.find('forcomp') > -1:
@@ -114,18 +144,12 @@ if __name__ == '__main__':
         f = fd.read()
         fd.close()
         fd = open(last,'w')
-        for i in f.split('\n'):
+        for k in f.split('\n'):
           # comment out the next line if you want to see the generated C code in the debugger, not the Fortran
-          if i.find('# line') > -1: continue
-          if i.find('Len) __NAGf90_rterr') > -1: continue
-          fd.write(i+'\n')
+          if k.find('# line') > -1: k = '/* removed hash line */'
+          if k.find('Len) __NAGf90_rterr') > -1: k = '/* removed length check code */'
+          fd.write(k+'\n')
         fd.close()
-      else:
-        try:
-          # comment this out if you want to see the C code in the debugger (see also 7 lines above)
-          os.remove(last)
-        except:
-          pass
 
     if status and (suboutput+error).find('multiple') > -1:
       js = i.strip().split(' ')
@@ -137,7 +161,6 @@ if __name__ == '__main__':
           foundinit = 1
           continue
         if not foundquickfit and x.endswith('quickfit.o'):
-
           foundquickfit = 1
           continue
         ks.append(x)

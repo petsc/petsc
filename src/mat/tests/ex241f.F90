@@ -5,7 +5,7 @@
 #include <petsc/finclude/petscmat.h>
 
   use PetscMat
-  use ISO_Fortran_Env, only : output_unit, real64
+  use ISO_Fortran_Env, only : real64
 
   implicit none
   PetscInt,    parameter :: wp = real64, n = 10
