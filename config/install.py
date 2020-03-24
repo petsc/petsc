@@ -172,7 +172,7 @@ class Installer(script.Script):
     return
 
   def copyConfig(self, src, dst):
-    """Recursively copy the examples directories
+    """Copy configuration/testing files
     """
     if not os.path.isdir(dst):
       raise shutil.Error('Destination is not a directory')
@@ -190,7 +190,7 @@ class Installer(script.Script):
     """copy the examples directories
     """
     for root, dirs, files in os.walk(src, topdown=False):
-      if not os.path.basename(root) == "examples": continue
+      if os.path.basename(root) not in ("tests", "tutorials"): continue
       self.copies.extend(self.copytree(root, root.replace(src,dst)))
     return
 
