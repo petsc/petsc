@@ -452,6 +452,8 @@ PetscErrorCode PetscInfoSetFromOptions(PetscOptions options)
   This is automatically called in PetscFinalize(). Useful for changing filters mid-program, or culling subsequent
   PetscInfo() calls down the line.
 
+  Level: intermediate
+
 .seealso: PetscInfo(), PetscInfoSetFromOptions()
 @*/
 PetscErrorCode PetscInfoDestroy(void)

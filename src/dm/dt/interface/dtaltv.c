@@ -49,7 +49,7 @@
    of the basis coefficients of f and g.
    Powers of the Hodge star operator can be applied with PetscDTAltVStar
 
-   level: intermediate
+   Level: intermediate
 
 .seealso: PetscDTAltVApply(), PetscDTAltVWedge(), PetscDTAltVInterior(), PetscDTAltVPullback(), PetscDTAltVStar()
 M*/
