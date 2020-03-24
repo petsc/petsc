@@ -75,11 +75,11 @@ cdef extern from * nogil:
     PetscMatType MATLMVMDFP
     PetscMatType MATLMVMBFGS
     PetscMatType MATLMVMSR1
-    PetscMatType MATLMVMBRDN
-    PetscMatType MATLMVMBADBRDN
-    PetscMatType MATLMVMSYMBRDN
-    PetscMatType MATLMVMSYMBADBRDN
-    PetscMatType MATLMVMDIAGBRDN
+    PetscMatType MATLMVMBROYDEN
+    PetscMatType MATLMVMBADBROYDEN
+    PetscMatType MATLMVMSYMBROYDEN
+    PetscMatType MATLMVMSYMBADBROYDEN
+    PetscMatType MATLMVMDIAGBROYDEN
     PetscMatType MATCONSTANTDIAGONAL
 
     ctypedef char* PetscMatOrderingType "const char*"
