@@ -849,6 +849,11 @@ PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
   }
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
   if (mat->offloadmask == PETSC_OFFLOAD_CPU) aij->A->offloadmask = PETSC_OFFLOAD_CPU;
+  /* We call MatBindToCPU() on aij->A and aij->B here, because if MatBindToCPU_MPIAIJ() is called before assembly, it cannot bind these. */
+  if (mat->boundtocpu) {
+    ierr = MatBindToCPU(aij->A,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = MatBindToCPU(aij->B,PETSC_TRUE);CHKERRQ(ierr);
+  }
 #endif
   ierr = MatAssemblyBegin(aij->A,mode);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(aij->A,mode);CHKERRQ(ierr);
