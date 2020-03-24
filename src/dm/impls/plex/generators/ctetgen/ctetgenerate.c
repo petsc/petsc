@@ -3,15 +3,14 @@
 #include <ctetgen.h>
 
 /* This is to fix the tetrahedron orientation from TetGen */
-static PetscErrorCode DMPlexInvertCells_Internal(PetscInt dim, PetscInt numCells, PetscInt numCorners, int cells[])
+static PetscErrorCode DMPlexInvertCells_CTetgen(PetscInt numCells, PetscInt numCorners, int cells[])
 {
-  PetscInt       bound = numCells*numCorners, coff;
-  PetscErrorCode ierr;
+  PetscInt bound = numCells*numCorners, coff;
 
   PetscFunctionBegin;
-  for (coff = 0; coff < bound; coff += numCorners) {
-    ierr = DMPlexInvertCell(dim, numCorners, &cells[coff]);CHKERRQ(ierr);
-  }
+#define SWAP(a,b) do { int tmp = (a); (a) = (b); (b) = tmp; } while(0)
+  for (coff = 0; coff < bound; coff += numCorners) SWAP(cells[coff],cells[coff+1]);
+#undef SWAP
   PetscFunctionReturn(0);
 }
 
@@ -130,7 +129,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interp
       }
     }
 
-    ierr = DMPlexInvertCells_Internal(dim, numCells, numCorners, cells);CHKERRQ(ierr);
+    ierr = DMPlexInvertCells_CTetgen(numCells, numCorners, cells);CHKERRQ(ierr);
     ierr = DMPlexCreateFromCellList(comm, dim, numCells, numVertices, numCorners, interpolate, cells, dim, meshCoords, dm);CHKERRQ(ierr);
     if (sizeof (PetscReal) != sizeof (double)) {
       ierr = PetscFree(meshCoords);CHKERRQ(ierr);
@@ -284,7 +283,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_CTetgen(DM dm, PetscReal *maxVolumes, D
       }
     }
 
-    ierr = DMPlexInvertCells_Internal(dim, numCells, numCorners, cells);CHKERRQ(ierr);
+    ierr = DMPlexInvertCells_CTetgen(numCells, numCorners, cells);CHKERRQ(ierr);
     ierr = DMPlexCreateFromCellList(comm, dim, numCells, numVertices, numCorners, interpolate, cells, dim, meshCoords, dmRefined);CHKERRQ(ierr);
     if (sizeof (PetscReal) != sizeof (double)) {
       ierr = PetscFree(meshCoords);CHKERRQ(ierr);

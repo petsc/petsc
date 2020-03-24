@@ -155,6 +155,9 @@ PETSC_EXTERN PetscErrorCode DMPlexGetCellTypeLabel(DM, DMLabel *);
 PETSC_EXTERN PetscErrorCode DMPlexGetCellType(DM, PetscInt, DMPolytopeType *);
 PETSC_EXTERN PetscErrorCode DMPlexSetCellType(DM, PetscInt, DMPolytopeType);
 PETSC_EXTERN PetscErrorCode DMPlexComputeCellTypes(DM);
+PETSC_EXTERN PetscErrorCode DMPlexInvertCell(DMPolytopeType, PetscInt[]);
+PETSC_EXTERN PetscErrorCode DMPlexReorderCell(DM, PetscInt, PetscInt[]);
+
 
 /* Topological Operations */
 PETSC_EXTERN PetscErrorCode DMPlexGetMeet(DM, PetscInt, const PetscInt [], PetscInt *, const PetscInt **);
@@ -182,7 +185,6 @@ PETSC_EXTERN PetscErrorCode DMPlexCreateWedgeCylinderMesh(MPI_Comm, PetscInt, Pe
 PETSC_EXTERN PetscErrorCode DMPlexCreateWedgeBoxMesh(MPI_Comm, const PetscInt[], const PetscReal[], const PetscReal[], const DMBoundaryType[], PetscBool, PetscBool, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexExtrude(DM, PetscInt, PetscReal, PetscBool, PetscBool, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateConeSection(DM, PetscSection *);
-PETSC_EXTERN PetscErrorCode DMPlexInvertCell(PetscInt, PetscInt, int []);
 
 PETSC_EXTERN PetscErrorCode DMPlexCheckSymmetry(DM);
 PETSC_EXTERN PetscErrorCode DMPlexCheckSkeleton(DM, PetscInt);

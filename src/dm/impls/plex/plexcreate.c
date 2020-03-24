@@ -2625,6 +2625,28 @@ PetscErrorCode DMPlexCreate(MPI_Comm comm, DM *mesh)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode DMPlexInvertCell_Internal(PetscInt dim, PetscInt numCorners, PetscInt cone[])
+{
+#define SWAPCONE(cone,i,j)  \
+  do {                      \
+    int _cone_tmp;          \
+    _cone_tmp = (cone)[i];  \
+    (cone)[i] = (cone)[j];  \
+    (cone)[j] = _cone_tmp;  \
+  } while (0)
+
+  PetscFunctionBegin;
+  if (dim != 3) PetscFunctionReturn(0);
+  switch (numCorners) {
+  case 4: SWAPCONE(cone,0,1); break;
+  case 6: SWAPCONE(cone,0,1); break;
+  case 8: SWAPCONE(cone,1,3); break;
+  default: break;
+  }
+  PetscFunctionReturn(0);
+#undef SWAPCONE
+}
+
 /*
   This takes as input the common mesh generator output, a list of the vertices for each cell, but vertex numbers are global and an SF is built for them
 */

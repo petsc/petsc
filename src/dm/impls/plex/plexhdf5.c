@@ -449,7 +449,7 @@ static PetscErrorCode CreateConesIS_Private(DM dm, PetscInt cStart, PetscInt cEn
         closure[Nc++] = closure[p];
       }
     }
-    ierr = DMPlexInvertCell_Internal(dim, Nc, closure);CHKERRQ(ierr);
+    ierr = DMPlexReorderCell(dm, cell, closure);CHKERRQ(ierr);
     for (p = 0; p < Nc; ++p) {
       PetscInt nv, gv = gvertex[closure[p] - vStart];
 

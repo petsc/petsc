@@ -2,7 +2,7 @@
 #include <petsc/private/petscfeimpl.h>  /* For PetscFEInterpolate_Static() */
 #include <petscsf.h>
 
-const char * const DMPlexCellRefinerTypes[] = {"Regular", "ToHex", "ToSimplex", "DMPlexCellRefinerTypes", "REFINER_", 0};
+const char * const DMPlexCellRefinerTypes[] = {"Regular", "ToBox", "ToSimplex", "DMPlexCellRefinerTypes", "DM_REFINER_", 0};
 
 /*
   Note that j and invj are non-square:
@@ -321,7 +321,7 @@ static PetscErrorCode DMPlexCellRefinerGetCellVertices_Regular(DMPlexCellRefiner
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexCellRefinerGetCellVertices_ToHex(DMPlexCellRefiner cr, DMPolytopeType ct, PetscInt *Nv, PetscReal *subcellV[])
+static PetscErrorCode DMPlexCellRefinerGetCellVertices_ToBox(DMPlexCellRefiner cr, DMPolytopeType ct, PetscInt *Nv, PetscReal *subcellV[])
 {
   static PetscReal tri_v[] = {-1.0, -1.0,  1.0, -1.0,  -1.0, 1.0,  0.0, -1.0,  0.0, 0.0,  -1.0, 0.0,  -1.0/3.0, -1.0/3.0};
   static PetscReal tet_v[] = {-1.0, -1.0, -1.0,   0.0, -1.0, -1.0,   1.0, -1.0, -1.0,
@@ -391,7 +391,7 @@ static PetscErrorCode DMPlexCellRefinerGetSubcellVertices_Regular(DMPlexCellRefi
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexCellRefinerGetSubcellVertices_ToHex(DMPlexCellRefiner cr, DMPolytopeType ct, DMPolytopeType rct, PetscInt r, PetscInt *Nv, PetscInt *subcellV[])
+static PetscErrorCode DMPlexCellRefinerGetSubcellVertices_ToBox(DMPlexCellRefiner cr, DMPolytopeType ct, DMPolytopeType rct, PetscInt r, PetscInt *Nv, PetscInt *subcellV[])
 {
   static PetscInt tri_v[]  = {0, 3, 6, 5,  3, 1, 4, 6,  5, 6, 4, 2};
   static PetscInt tet_v[]  = {0,  3,  4,  1,  7,  8, 14, 10,   6, 12, 11,  5,  3,  4, 14, 10,   2,  5, 11,  9,  1,  8, 14,  4,  13, 12 , 10,  7,  9,  8, 14, 11};
@@ -588,7 +588,7 @@ static PetscErrorCode DMPlexCellRefinerMapSubcells_Regular(DMPlexCellRefiner cr,
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexCellRefinerMapSubcells_ToHex(DMPlexCellRefiner cr, DMPolytopeType pct, PetscInt po, DMPolytopeType ct, PetscInt r, PetscInt o, PetscInt *rnew, PetscInt *onew)
+static PetscErrorCode DMPlexCellRefinerMapSubcells_ToBox(DMPlexCellRefiner cr, DMPolytopeType pct, PetscInt po, DMPolytopeType ct, PetscInt r, PetscInt o, PetscInt *rnew, PetscInt *onew)
 {
   PetscErrorCode ierr;
   /* We shift any input orientation in order to make it non-negative
@@ -714,7 +714,7 @@ $   ornt   = {                         0,                       0,              
 
   Level: developer
 
-.seealso: DMPlexRefineToHex()
+.seealso: DMPlexCellRefinerCreate(), DMPlexRefineUniform()
 @*/
 PetscErrorCode DMPlexCellRefinerRefine(DMPlexCellRefiner cr, DMPolytopeType source, PetscInt *Nt, DMPolytopeType *target[], PetscInt *size[], PetscInt *cone[], PetscInt *ornt[])
 {
@@ -1091,7 +1091,7 @@ static PetscErrorCode DMPlexCellRefinerRefine_Regular(DMPlexCellRefiner cr, DMPo
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexCellRefinerRefine_ToHex(DMPlexCellRefiner cr, DMPolytopeType source, PetscInt *Nt, DMPolytopeType *target[], PetscInt *size[], PetscInt *cone[], PetscInt *ornt[])
+static PetscErrorCode DMPlexCellRefinerRefine_ToBox(DMPlexCellRefiner cr, DMPolytopeType source, PetscInt *Nt, DMPolytopeType *target[], PetscInt *size[], PetscInt *cone[], PetscInt *ornt[])
 {
   PetscErrorCode ierr;
   /* Change tensor edges to segments */
@@ -1617,7 +1617,7 @@ PetscErrorCode DMPlexCellRefinerCreate(DM dm, DMPlexCellRefiner *cr)
   ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr);
   ierr = DMPlexGetCellRefinerType(dm, &tmp->type);CHKERRQ(ierr);
   switch (tmp->type) {
-    case REFINER_REGULAR:
+    case DM_REFINER_REGULAR:
       tmp->ops->refine                  = DMPlexCellRefinerRefine_Regular;
       tmp->ops->mapsubcells             = DMPlexCellRefinerMapSubcells_Regular;
       tmp->ops->getcellvertices         = DMPlexCellRefinerGetCellVertices_Regular;
@@ -1625,13 +1625,13 @@ PetscErrorCode DMPlexCellRefinerCreate(DM dm, DMPlexCellRefiner *cr)
       tmp->ops->getaffinetransforms     = DMPlexCellRefinerGetAffineTransforms_Regular;
       tmp->ops->getaffinefacetransforms = DMPlexCellRefinerGetAffineFaceTransforms_Regular;
       break;
-    case REFINER_TO_HEX:
-      tmp->ops->refine             = DMPlexCellRefinerRefine_ToHex;
-      tmp->ops->mapsubcells        = DMPlexCellRefinerMapSubcells_ToHex;
-      tmp->ops->getcellvertices    = DMPlexCellRefinerGetCellVertices_ToHex;
-      tmp->ops->getsubcellvertices = DMPlexCellRefinerGetSubcellVertices_ToHex;
+    case DM_REFINER_TO_BOX:
+      tmp->ops->refine             = DMPlexCellRefinerRefine_ToBox;
+      tmp->ops->mapsubcells        = DMPlexCellRefinerMapSubcells_ToBox;
+      tmp->ops->getcellvertices    = DMPlexCellRefinerGetCellVertices_ToBox;
+      tmp->ops->getsubcellvertices = DMPlexCellRefinerGetSubcellVertices_ToBox;
       break;
-    case REFINER_TO_SIMPLEX:
+    case DM_REFINER_TO_SIMPLEX:
       tmp->ops->refine      = DMPlexCellRefinerRefine_ToSimplex;
       tmp->ops->mapsubcells = DMPlexCellRefinerMapSubcells_ToSimplex;
       break;

@@ -6,9 +6,9 @@
 !
 ! DMPlexCellRefinerType
 !
-      PetscEnum, parameter :: REFINER_REGULAR = 0
-      PetscEnum, parameter :: REFINER_TO_HEX = 1
-      PetscEnum, parameter :: REFINER_TO_SIMPLEX = 2
+      PetscEnum, parameter :: DM_REFINER_REGULAR = 0
+      PetscEnum, parameter :: DM_REFINER_TO_BOX = 1
+      PetscEnum, parameter :: DM_REFINER_TO_SIMPLEX = 2
 !
 ! DMPlexInterpolatedFlag
 !

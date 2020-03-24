@@ -17,13 +17,13 @@ typedef struct _p_DMPlexCellRefiner *DMPlexCellRefiner;
   Level: beginner
 
   The strategy gives a prescription for refining each cell type. Existing strategies include
-$ REFINER_REGULAR - Divide cells into smaller cells of the same type
-$ REFINER_TO_HEX - Divide all cells into box cells
-$ REFINER_TO_SIMPLEX - Divide all cells into simplices
+$ DM_REFINER_REGULAR - Divide cells into smaller cells of the same type
+$ DM_REFINER_TO_BOX - Divide all cells into box cells
+$ DM_REFINER_TO_SIMPLEX - Divide all cells into simplices
 
 .seealso: DMPlexGetCellRefiner(), DMPlexSetCellRefiner(), DMRefine(), DMPolytopeType
 E*/
-typedef enum {REFINER_REGULAR, REFINER_TO_HEX, REFINER_TO_SIMPLEX} DMPlexCellRefinerType;
+typedef enum {DM_REFINER_REGULAR, DM_REFINER_TO_BOX, DM_REFINER_TO_SIMPLEX} DMPlexCellRefinerType;
 PETSC_EXTERN const char * const DMPlexCellRefinerTypes[];
 
 #endif

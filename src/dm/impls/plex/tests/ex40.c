@@ -117,31 +117,31 @@ int main(int argc, char **argv)
     args: -ref_cell tensor_quadrilateral_prism -dm_refine 2 -dm_plex_check_all
 
   test:
-    suffix: ref_tri_tohex
-    args: -ref_cell triangle -dm_plex_cell_refiner tohex -dm_refine 2 -dm_plex_check_all
+    suffix: ref_tri_tobox
+    args: -ref_cell triangle -dm_plex_cell_refiner tobox -dm_refine 2 -dm_plex_check_all
 
   test:
-    suffix: box_tri_tohex
+    suffix: box_tri_tobox
     requires: triangle
     nsize: {{1 3 5}}
-    args: -dm_plex_box_faces 3,3 -dm_plex_cell_refiner tohex -dm_refine 2 -dm_plex_check_all
+    args: -dm_plex_box_faces 3,3 -dm_plex_cell_refiner tobox -dm_refine 2 -dm_plex_check_all
 
   test:
-    suffix: ref_tet_tohex
-    args: -ref_cell tetrahedron -dm_plex_cell_refiner tohex -dm_refine 2 -dm_plex_check_all
+    suffix: ref_tet_tobox
+    args: -ref_cell tetrahedron -dm_plex_cell_refiner tobox -dm_refine 2 -dm_plex_check_all
 
   test:
-    suffix: box_tet_tohex
+    suffix: box_tet_tobox
     requires: ctetgen
     nsize: {{1 3 5}}
-    args: -dim 3 -dm_plex_box_faces 3,3,3 -dm_plex_cell_refiner tohex -dm_refine 2 -dm_plex_check_all
+    args: -dim 3 -dm_plex_box_faces 3,3,3 -dm_plex_cell_refiner tobox -dm_refine 2 -dm_plex_check_all
 
   test:
-    suffix: ref_trip_tohex
-    args: -ref_cell triangular_prism -dm_plex_cell_refiner tohex -dm_refine 2 -dm_plex_check_all
+    suffix: ref_trip_tobox
+    args: -ref_cell triangular_prism -dm_plex_cell_refiner tobox -dm_refine 2 -dm_plex_check_all
 
   test:
-    suffix: ref_ttrip_tohex
-    args: -ref_cell tensor_triangular_prism -dm_plex_cell_refiner tohex -dm_refine 2 -dm_plex_check_all
+    suffix: ref_ttrip_tobox
+    args: -ref_cell tensor_triangular_prism -dm_plex_cell_refiner tobox -dm_refine 2 -dm_plex_check_all
 
 TEST*/

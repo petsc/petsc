@@ -211,7 +211,7 @@ int main(int argc, char **argv)
 
     ierr = DMPlexCreateFromFile(comm,filename,PETSC_TRUE,&base);CHKERRQ(ierr);
     ierr = DMGetDimension(base,&dim);CHKERRQ(ierr);
-    ierr = DMPlexSetCellRefinerType(base, REFINER_TO_HEX);CHKERRQ(ierr);
+    ierr = DMPlexSetCellRefinerType(base, DM_REFINER_TO_BOX);CHKERRQ(ierr);
     ierr = DMRefine(base, PETSC_COMM_WORLD, &tdm);CHKERRQ(ierr);
     if (tdm) {
       ierr = DMDestroy(&base);CHKERRQ(ierr);

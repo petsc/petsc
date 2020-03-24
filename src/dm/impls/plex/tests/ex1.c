@@ -260,7 +260,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = DMPlexCheckPointSF(*dm);CHKERRQ(ierr);
     ierr = DMPlexCheckInterfaceCones(*dm);CHKERRQ(ierr);
     ierr = DMPlexSetRefinementUniform(*dm, PETSC_TRUE);CHKERRQ(ierr);
-    ierr = DMPlexSetCellRefinerType(*dm, REFINER_TO_HEX);CHKERRQ(ierr);
+    ierr = DMPlexSetCellRefinerType(*dm, DM_REFINER_TO_BOX);CHKERRQ(ierr);
     ierr = DMRefine(*dm, PETSC_COMM_WORLD, &dmConv);CHKERRQ(ierr);
     if (dmConv) {
       ierr = DMDestroy(dm);CHKERRQ(ierr);
@@ -368,16 +368,16 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 #if defined(PETSC_HAVE_P4EST)
     DM dmConv = NULL;
 
-    ierr = DMViewFromOptions(*dm, NULL, "-dm_tohex_view");CHKERRQ(ierr);
+    ierr = DMViewFromOptions(*dm, NULL, "-dm_tobox_view");CHKERRQ(ierr);
     ierr = DMPlexSetRefinementUniform(*dm, PETSC_TRUE);CHKERRQ(ierr);
-    ierr = DMPlexSetCellRefinerType(*dm, REFINER_TO_HEX);CHKERRQ(ierr);
+    ierr = DMPlexSetCellRefinerType(*dm, DM_REFINER_TO_BOX);CHKERRQ(ierr);
     ierr = DMRefine(*dm, PETSC_COMM_WORLD, &dmConv);CHKERRQ(ierr);
     if (dmConv) {
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = dmConv;
     }
     user->cellSimplex = PETSC_FALSE;
-    ierr = DMViewFromOptions(*dm, NULL, "-dm_tohex_view");CHKERRQ(ierr);
+    ierr = DMViewFromOptions(*dm, NULL, "-dm_tobox_view");CHKERRQ(ierr);
     ierr = DMPlexCheckSymmetry(*dm);CHKERRQ(ierr);
     ierr = DMPlexCheckSkeleton(*dm, 0);CHKERRQ(ierr);
     ierr = DMPlexCheckFaces(*dm, 0);CHKERRQ(ierr);
@@ -655,7 +655,7 @@ int main(int argc, char **argv)
   test:
     suffix: gmsh_13_hybs2t
     nsize: 4
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_triquad.msh -petscpartitioner_type simple -interpolate 1 -dm_view -dm_refine 1 -dm_plex_cell_refiner tohex -dm_plex_check_all
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_triquad.msh -petscpartitioner_type simple -interpolate 1 -dm_view -dm_refine 1 -dm_plex_cell_refiner tobox -dm_plex_check_all
   test:
     suffix: gmsh_14_ext
     requires: !single
@@ -663,7 +663,7 @@ int main(int argc, char **argv)
   test:
     suffix: gmsh_14_ext_s2t
     requires: !single
-    args: -ext_layers 2 -ext_thickness 1.5 -ext_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_bin.msh -dm_view -interpolate -dm_plex_check_all -dm_refine 1 -dm_plex_cell_refiner tohex
+    args: -ext_layers 2 -ext_thickness 1.5 -ext_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_bin.msh -dm_view -interpolate -dm_plex_check_all -dm_refine 1 -dm_plex_cell_refiner tobox
   test:
     suffix: gmsh_15_hyb3d
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_tetwedge.msh -dm_view -interpolate -dm_plex_check_all
@@ -672,7 +672,7 @@ int main(int argc, char **argv)
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_tetwedge.msh -dm_view vtk: -interpolate -dm_plex_gmsh_hybrid -dm_plex_check_all
   test:
     suffix: gmsh_15_hyb3d_s2t
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_tetwedge.msh -dm_view -interpolate -dm_plex_check_all -dm_refine 1 -dm_plex_cell_refiner tohex
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_tetwedge.msh -dm_view -interpolate -dm_plex_check_all -dm_refine 1 -dm_plex_cell_refiner tobox
   test:
     suffix: gmsh_16_spheresurface
     nsize : 4
@@ -680,7 +680,7 @@ int main(int argc, char **argv)
   test:
     suffix: gmsh_16_spheresurface_s2t
     nsize : 4
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/surfacesphere_bin.msh -dm_plex_gmsh_spacedim 3 -dm_refine 1 -dm_plex_cell_refiner tohex -dm_plex_check_all -dm_view -interpolate -petscpartitioner_type simple
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/surfacesphere_bin.msh -dm_plex_gmsh_spacedim 3 -dm_refine 1 -dm_plex_cell_refiner tobox -dm_plex_check_all -dm_view -interpolate -petscpartitioner_type simple
   test:
     suffix: gmsh_16_spheresurface_extruded
     nsize : 4
@@ -688,7 +688,7 @@ int main(int argc, char **argv)
   test:
     suffix: gmsh_16_spheresurface_extruded_s2t
     nsize : 4
-    args: -ext_layers 3 -ext_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/surfacesphere_bin.msh -dm_plex_gmsh_spacedim 3 -dm_refine 1 -dm_plex_cell_refiner tohex -dm_plex_check_all -dm_view -interpolate -petscpartitioner_type simple
+    args: -ext_layers 3 -ext_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/surfacesphere_bin.msh -dm_plex_gmsh_spacedim 3 -dm_refine 1 -dm_plex_cell_refiner tobox -dm_plex_check_all -dm_view -interpolate -petscpartitioner_type simple
   test:
     suffix: gmsh_17_hyb3d_interp_ascii
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_hexwedge.msh -dm_view -interpolate -dm_plex_check_all
@@ -823,12 +823,12 @@ int main(int argc, char **argv)
   test:
     suffix: s2t2
     requires: triangle
-    args: -dim 2 -dm_refine 1 -interpolate -dm_plex_cell_refiner tohex -refinement_limit 0.0625 -dm_view ascii::ascii_info_detail
+    args: -dim 2 -dm_refine 1 -interpolate -dm_plex_cell_refiner tobox -refinement_limit 0.0625 -dm_view ascii::ascii_info_detail
 
   test:
     suffix: s2t3
     requires: ctetgen
-    args: -dim 3 -dm_refine 1 -interpolate -dm_plex_cell_refiner tohex -refinement_limit 0.0625 -dm_view ascii::ascii_info_detail
+    args: -dim 3 -dm_refine 1 -interpolate -dm_plex_cell_refiner tobox -refinement_limit 0.0625 -dm_view ascii::ascii_info_detail
 
   # Test domain shapes
   test:
@@ -871,7 +871,7 @@ int main(int argc, char **argv)
 
   testset:
     requires: triangle
-    args: -dim 3 -cell_simplex 0 -interpolate -cell_wedge -domain_shape box -domain_box_sizes 2,3,1 -dm_view -dm_plex_check_all -dm_refine 1 -dm_plex_cell_refiner tohex
+    args: -dim 3 -cell_simplex 0 -interpolate -cell_wedge -domain_shape box -domain_box_sizes 2,3,1 -dm_view -dm_plex_check_all -dm_refine 1 -dm_plex_cell_refiner tobox
     test:
       suffix: box_wedge_s2t
     test:
@@ -1067,5 +1067,5 @@ int main(int argc, char **argv)
 
   test:
     suffix: glvis_3d_hyb_s2t
-    args: -dim 3 -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_3d_cube.msh -interpolate -dm_view glvis: -viewer_glvis_dm_plex_enable_boundary -petscpartitioner_type simple -dm_refine 1 -dm_plex_cell_refiner tohex -dm_plex_check_all
+    args: -dim 3 -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_3d_cube.msh -interpolate -dm_view glvis: -viewer_glvis_dm_plex_enable_boundary -petscpartitioner_type simple -dm_refine 1 -dm_plex_cell_refiner tobox -dm_plex_check_all
 TEST*/

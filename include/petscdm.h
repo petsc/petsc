@@ -409,32 +409,4 @@ PETSC_STATIC_INLINE PetscInt DMPolytopeTypeGetNumVertices(DMPolytopeType ct)
   }
 }
 
-PETSC_STATIC_INLINE DMPolytopeType DMPolytopeTypeFromGmsh(PetscInt ctGmsh)
-{
-  switch (ctGmsh) {
-    case 1:
-    case 8:
-      return DM_POLYTOPE_SEGMENT;
-    case 2:
-    case 9:
-     return DM_POLYTOPE_TRIANGLE;
-    case 3:
-    case 10:
-     return DM_POLYTOPE_QUADRILATERAL;
-    case 4:
-    case 11:
-     return DM_POLYTOPE_TETRAHEDRON;
-    case 5:
-    case 12:
-     return DM_POLYTOPE_HEXAHEDRON;
-    case 6:
-    case 13:
-     return DM_POLYTOPE_TRI_PRISM;
-    case 7:
-    case 14:
-     return DM_POLYTOPE_UNKNOWN; /* Pyramid */
-    case 15: return DM_POLYTOPE_POINT;
-    default: return DM_POLYTOPE_UNKNOWN;
-  }
-}
 #endif
