@@ -655,10 +655,3 @@ You may need to set the environmental variable HWLOC_COMPONENTS to -x86 to preve
       if self.checkCompile('#include <mpi.h>', 'int combiner = %s;' % (combiner,)):
         self.addDefine('HAVE_' + combiner,1)
     self.compilers.CPPFLAGS = oldFlags
-
-    if hasattr(self,'mpich_numversion'):
-      if self.libraries.check(self.dlib, "MPIDI_CH3I_sock_set"):
-        self.addDefine('HAVE_MPICH_CH3_SOCK', 1)
-      if self.libraries.check(self.dlib, "MPIDI_CH3I_sock_fixed_nbc_progress"):
-        # Indicates that this bug was fixed: http://trac.mpich.org/projects/mpich/ticket/1785
-        self.addDefine('HAVE_MPICH_CH3_SOCK_FIXED_NBC_PROGRESS', 1)

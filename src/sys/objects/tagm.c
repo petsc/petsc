@@ -126,12 +126,8 @@ PetscErrorCode  PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPII
       ierr = MPI_Comm_dup(comm_in,comm_out);CHKERRQ(ierr);
       ierr = MPI_Comm_get_attr(MPI_COMM_WORLD,MPI_TAG_UB,&maxval,&flg);CHKERRQ(ierr);
       if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"MPI error: MPI_Comm_get_attr() is not returning a MPI_TAG_UB");
-      ierr = PetscNew(&counter);CHKERRQ(ierr);
-
-      counter->tag       = *maxval;
-      counter->refcount  = 0;
-      counter->namecount = 0;
-
+      ierr = PetscNew(&counter);CHKERRQ(ierr); /* all fields of counter are zero'ed */
+      counter->tag = *maxval;
       ierr = MPI_Comm_set_attr(*comm_out,Petsc_Counter_keyval,counter);CHKERRQ(ierr);
       ierr = PetscInfo3(NULL,"Duplicating a communicator %ld %ld max tags = %d\n",(long)comm_in,(long)*comm_out,*maxval);CHKERRQ(ierr);
 

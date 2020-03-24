@@ -211,6 +211,7 @@
         <li>Add PetscSubcommGetParent() - Gets the communicator that was used to create the PetscSubcomm</li>
         <li>Add PetscSubcommGetContiguousParent() - Gets a communicator that that is a duplicate of the parent but has the ranks reordered by the order they are in the children</li>
         <li>Add PetscSubcommGetChild() - Gets the communicator created by the PetscSubcomm</li>
+        <li>Change the default option of -build_twosided from ibarrier to allreduce for communicators with no more than 1024 ranks </li>
       </ul>
       <h4>AO:</h4>
       <h4>Sieve:</h4>

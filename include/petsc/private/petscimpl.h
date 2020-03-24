@@ -824,6 +824,7 @@ typedef struct {
   PetscMPIInt tag;              /* next free tag value */
   PetscInt    refcount;         /* number of references, communicator can be freed when this reaches 0 */
   PetscInt    namecount;        /* used to generate the next name, as in Vec_0, Mat_1, ... */
+  PetscMPIInt *iflags;          /* length of comm size, shared by all calls to PetscCommBuildTwoSided_Allreduce/RedScatter on this comm */
 } PetscCommCounter;
 
 /*E
