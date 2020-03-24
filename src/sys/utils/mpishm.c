@@ -8,14 +8,14 @@ struct _n_PetscShmComm {
 };
 
 /*
-   Private routine to delete internal tag/name shared memory communicator when a communicator is freed.
+   Private routine to delete internal shared memory communicator when a communicator is freed.
 
    This is called by MPI, not by users. This is called by MPI_Comm_free() when the communicator that has this  data as an attribute is freed.
 
    Note: this is declared extern "C" because it is passed to MPI_Comm_create_keyval()
 
 */
-PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelComm_Shm(MPI_Comm comm,PetscMPIInt keyval,void *val,void *extra_state)
+PETSC_EXTERN PetscMPIInt MPIAPI Petsc_ShmComm_Attr_Delete_Fn(MPI_Comm comm,PetscMPIInt keyval,void *val,void *extra_state)
 {
   PetscErrorCode  ierr;
   PetscShmComm p = (PetscShmComm)val;
