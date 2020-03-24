@@ -1,15 +1,4 @@
-#include <../src/ksp/ksp/utils/lmvm/lmvm.h> /*I "petscksp.h" I*/
-
-/*
-  Limited-memory "good" Broyden's method for approximating the inverse of 
-  a Jacobian.
-*/
-
-typedef struct {
-  Vec *P, *Q;
-  PetscBool allocated, needP, needQ;
-  PetscReal *sts, *stq;
-} Mat_Brdn;
+#include <../src/ksp/ksp/utils/lmvm/brdn/brdn.h> /*I "petscksp.h" I*/
 
 /*------------------------------------------------------------*/
 
@@ -58,7 +47,7 @@ static PetscErrorCode MatSolve_LMVMBrdn(Mat B, Vec F, Vec dX)
   }
   
   ierr = MatLMVMApplyJ0Inv(B, F, dX);CHKERRQ(ierr);
-  for (i = 0; i <= lmvm->k-1; ++i) {
+  for (i = 0; i <= lmvm->k; ++i) {
     ierr = VecDot(lmvm->S[i], dX, &stx);CHKERRQ(ierr);
     ierr = VecAXPBYPCZ(dX, PetscRealPart(stx)/lbrdn->stq[i], -PetscRealPart(stx)/lbrdn->stq[i], 1.0, lmvm->S[i], lbrdn->Q[i]);CHKERRQ(ierr);
   }
@@ -111,7 +100,7 @@ static PetscErrorCode MatMult_LMVMBrdn(Mat B, Vec X, Vec Z)
   }
   
   ierr = MatLMVMApplyJ0Fwd(B, X, Z);CHKERRQ(ierr);
-  for (i = 0; i <= lmvm->k-1; ++i) {
+  for (i = 0; i <= lmvm->k; ++i) {
     ierr = VecDot(lmvm->S[i], X, &stx);CHKERRQ(ierr);
     ierr = VecAXPBYPCZ(Z, PetscRealPart(stx)/lbrdn->sts[i], -PetscRealPart(stx)/lbrdn->sts[i], 1.0, lmvm->Y[i], lbrdn->P[i]);CHKERRQ(ierr);
   }
@@ -269,7 +258,7 @@ PetscErrorCode MatCreate_LMVMBrdn(Mat B)
 
   PetscFunctionBegin;
   ierr = MatCreate_LMVM(B);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)B, MATLMVMBRDN);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)B, MATLMVMBROYDEN);CHKERRQ(ierr);
   B->ops->setup = MatSetUp_LMVMBrdn;
   B->ops->destroy = MatDestroy_LMVMBrdn;
   B->ops->solve = MatSolve_LMVMBrdn;
@@ -292,7 +281,7 @@ PetscErrorCode MatCreate_LMVMBrdn(Mat B)
 /*------------------------------------------------------------*/
 
 /*@
-   MatCreateLMVMBrdn - Creates a limited-memory "good" Broyden-type approximation
+   MatCreateLMVMBroyden - Creates a limited-memory "good" Broyden-type approximation
    matrix used for a Jacobian. L-Brdn is not guaranteed to be symmetric or 
    positive-definite.
    
@@ -325,14 +314,14 @@ PetscErrorCode MatCreate_LMVMBrdn(Mat B)
 .seealso: MatCreate(), MATLMVM, MATLMVMBRDN, MatCreateLMVMDFP(), MatCreateLMVMSR1(), 
          MatCreateLMVMBFGS(), MatCreateLMVMBadBrdn(), MatCreateLMVMSymBrdn()
 @*/
-PetscErrorCode MatCreateLMVMBrdn(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B)
+PetscErrorCode MatCreateLMVMBroyden(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B)
 {
   PetscErrorCode    ierr;
   
   PetscFunctionBegin;
   ierr = MatCreate(comm, B);CHKERRQ(ierr);
   ierr = MatSetSizes(*B, n, n, N, N);CHKERRQ(ierr);
-  ierr = MatSetType(*B, MATLMVMBRDN);CHKERRQ(ierr);
+  ierr = MatSetType(*B, MATLMVMBROYDEN);CHKERRQ(ierr);
   ierr = MatSetUp(*B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

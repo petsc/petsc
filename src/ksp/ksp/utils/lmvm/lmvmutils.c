@@ -186,11 +186,6 @@ PetscErrorCode MatLMVMSetJ0(Mat B, Mat J0)
   PetscValidHeaderSpecific(J0, MAT_CLASSID, 2);
   ierr = PetscObjectBaseTypeCompare((PetscObject)B, MATLMVM, &same);CHKERRQ(ierr);
   if (!same) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Matrix must be an LMVM-type.");
-  if (!J0->assembled) SETERRQ(comm, PETSC_ERR_ARG_WRONGSTATE, "J0 is not assembled.");
-  if (B->symmetric && (!J0->symmetric)) SETERRQ(comm, PETSC_ERR_ARG_INCOMP, "J0 and J0pre must be symmetric when B is symmetric");
-  if (lmvm->allocated) {
-    MatCheckSameSize(B, 1, J0, 2);
-  }
   ierr = MatLMVMClearJ0(B);CHKERRQ(ierr);
   ierr = MatDestroy(&lmvm->J0);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)J0);CHKERRQ(ierr);
@@ -225,7 +220,6 @@ PetscErrorCode MatLMVMSetJ0PC(Mat B, PC J0pc)
   PetscErrorCode    ierr;
   PetscBool         same;
   MPI_Comm          comm = PetscObjectComm((PetscObject)B);
-  Mat               J0, J0pre;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B, MAT_CLASSID, 1);
@@ -233,14 +227,6 @@ PetscErrorCode MatLMVMSetJ0PC(Mat B, PC J0pc)
   ierr = PetscObjectBaseTypeCompare((PetscObject)B, MATLMVM, &same);CHKERRQ(ierr);
   if (!same) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Matrix must be an LMVM-type.");
   if (!lmvm->square) SETERRQ(comm, PETSC_ERR_SUP, "Inverse J0 can be defined only for square LMVM matrices");
-  ierr = PCGetOperators(J0pc, &J0, &J0pre);CHKERRQ(ierr);
-  if (B->symmetric && (!J0->symmetric || !J0pre->symmetric)) SETERRQ(comm, PETSC_ERR_ARG_INCOMP, "J0 and J0pre must be symmetric when B is symmetric");
-  if (lmvm->allocated) {
-    MatCheckSameSize(B, 1, J0, 2);
-    MatCheckSameSize(B, 1, J0pre, 3);
-  }
-  ierr = MatDestroy(&J0);CHKERRQ(ierr);
-  ierr = MatDestroy(&J0pre);CHKERRQ(ierr);
   ierr = MatLMVMClearJ0(B);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)J0pc);CHKERRQ(ierr);
   lmvm->J0pc = J0pc;
@@ -271,7 +257,6 @@ PetscErrorCode MatLMVMSetJ0KSP(Mat B, KSP J0ksp)
   PetscErrorCode    ierr;
   PetscBool         same;
   MPI_Comm          comm = PetscObjectComm((PetscObject)B);
-  Mat               J0, J0pre;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B, MAT_CLASSID, 1);
@@ -279,12 +264,6 @@ PetscErrorCode MatLMVMSetJ0KSP(Mat B, KSP J0ksp)
   ierr = PetscObjectBaseTypeCompare((PetscObject)B, MATLMVM, &same);CHKERRQ(ierr);
   if (!same) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Matrix must be an LMVM-type.");
   if (!lmvm->square) SETERRQ(comm, PETSC_ERR_SUP, "Inverse J0 can be defined only for square LMVM matrices");
-  ierr = KSPGetOperators(J0ksp, &J0, &J0pre);CHKERRQ(ierr);
-  if (B->symmetric && (!J0->symmetric || !J0pre->symmetric)) SETERRQ(comm, PETSC_ERR_ARG_INCOMP, "J0 and J0pre must be symmetric when B is symmetric");
-  if (lmvm->allocated) {
-    MatCheckSameSize(B, 1, J0, 2);
-    MatCheckSameSize(B, 1, J0pre, 3);
-  }
   ierr = MatLMVMClearJ0(B);CHKERRQ(ierr);
   ierr = KSPDestroy(&lmvm->J0ksp);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)J0ksp);CHKERRQ(ierr);
@@ -654,6 +633,52 @@ PetscErrorCode MatLMVMReset(Mat B, PetscBool destructive)
       ierr = MatLMVMReset(lmvm->J0, destructive);CHKERRQ(ierr);
     }
   }
+  PetscFunctionReturn(0);
+}
+
+/*------------------------------------------------------------*/
+
+/*@
+   MatLMVMSetHistorySize - Set the number of past iterates to be 
+   stored for the construction of the limited-memory QN update.
+
+   Input Parameters:
++  B - An LMVM-type matrix
+-  hist_size - number of past iterates (default 5)
+
+   Options Database:
+.  -mat_lmvm_hist_size <m>
+
+   Level: beginner
+
+.seealso: MatLMVMGetUpdateCount()
+@*/
+
+PetscErrorCode MatLMVMSetHistorySize(Mat B, PetscInt hist_size)
+{
+  Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
+  PetscErrorCode    ierr;
+  PetscBool         same;
+  Vec               X, F;
+  
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(B, MAT_CLASSID, 1);
+  ierr = PetscObjectBaseTypeCompare((PetscObject)B, MATLMVM, &same);CHKERRQ(ierr);
+  if (!same) SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONG, "Matrix must be an LMVM-type.");
+  if (hist_size > 0) {
+    lmvm->m = hist_size;
+    if (lmvm->allocated && lmvm->m != lmvm->m_old) {
+      ierr = VecDuplicate(lmvm->Xprev, &X);CHKERRQ(ierr);
+      ierr = VecDuplicate(lmvm->Fprev, &F);CHKERRQ(ierr);
+      ierr = MatLMVMReset(B, PETSC_TRUE);CHKERRQ(ierr);
+      ierr = MatLMVMAllocate(B, X, F);CHKERRQ(ierr);
+      ierr = VecDestroy(&X);CHKERRQ(ierr);
+      ierr = VecDestroy(&F);CHKERRQ(ierr);
+    }
+  } else {
+    SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONG, "QN history size must be a positive integer.");
+  }
+  
   PetscFunctionReturn(0);
 }
 

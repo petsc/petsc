@@ -52,7 +52,7 @@ static PetscErrorCode TaoSolve_BLMVM(Tao tao)
     } else {
       delta = 2.0 * PetscAbsScalar(f) / gnorm2;
     }
-    ierr = MatSymBrdnSetDelta(blmP->M, delta);CHKERRQ(ierr);
+    ierr = MatLMVMSymBroydenSetDelta(blmP->M, delta);CHKERRQ(ierr);
     ierr = MatLMVMUpdate(blmP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
     ierr = MatSolve(blmP->M, blmP->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
     ierr = VecBoundGradientProjection(tao->stepdirection,tao->solution,tao->XL,tao->XU,tao->gradient);CHKERRQ(ierr);

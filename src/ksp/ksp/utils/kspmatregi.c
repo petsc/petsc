@@ -20,14 +20,14 @@ PetscErrorCode KSPMatRegisterAll(void)
   PetscFunctionBegin;
   if (KSPMatRegisterAllCalled) PetscFunctionReturn(0);
   KSPMatRegisterAllCalled = PETSC_TRUE;
-  ierr = MatRegister(MATSCHURCOMPLEMENT,    MatCreate_SchurComplement);CHKERRQ(ierr);
-  ierr = MatRegister(MATLMVMDFP,            MatCreate_LMVMDFP);CHKERRQ(ierr);
-  ierr = MatRegister(MATLMVMBFGS,           MatCreate_LMVMBFGS);CHKERRQ(ierr);
-  ierr = MatRegister(MATLMVMSR1,            MatCreate_LMVMSR1);CHKERRQ(ierr);
-  ierr = MatRegister(MATLMVMBRDN,           MatCreate_LMVMBrdn);CHKERRQ(ierr);
-  ierr = MatRegister(MATLMVMBADBRDN,        MatCreate_LMVMBadBrdn);CHKERRQ(ierr);
-  ierr = MatRegister(MATLMVMSYMBRDN,        MatCreate_LMVMSymBrdn);CHKERRQ(ierr);
-  ierr = MatRegister(MATLMVMSYMBADBRDN,     MatCreate_LMVMSymBadBrdn);CHKERRQ(ierr);
-  ierr = MatRegister(MATLMVMDIAGBRDN,       MatCreate_LMVMDiagBrdn);CHKERRQ(ierr);
+  ierr = MatRegister(MATSCHURCOMPLEMENT,       MatCreate_SchurComplement);CHKERRQ(ierr);
+  ierr = MatRegister(MATLMVMDFP,               MatCreate_LMVMDFP);CHKERRQ(ierr);
+  ierr = MatRegister(MATLMVMBFGS,              MatCreate_LMVMBFGS);CHKERRQ(ierr);
+  ierr = MatRegister(MATLMVMSR1,               MatCreate_LMVMSR1);CHKERRQ(ierr);
+  ierr = MatRegister(MATLMVMBROYDEN,           MatCreate_LMVMBrdn);CHKERRQ(ierr);
+  ierr = MatRegister(MATLMVMBADBROYDEN,        MatCreate_LMVMBadBrdn);CHKERRQ(ierr);
+  ierr = MatRegister(MATLMVMSYMBROYDEN,        MatCreate_LMVMSymBrdn);CHKERRQ(ierr);
+  ierr = MatRegister(MATLMVMSYMBADBROYDEN,     MatCreate_LMVMSymBadBrdn);CHKERRQ(ierr);
+  ierr = MatRegister(MATLMVMDIAGBROYDEN,       MatCreate_LMVMDiagBrdn);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -43,7 +43,7 @@ Tao Object: 1 MPI processes
   Mat Object: (tao_bqnk_) 1 MPI processes
     type: lmvmbfgs
     rows=64, cols=64
-      Scale type: diagonal
+      Scale type: DIAGONAL
       Scale history: 1
       Scale params: alpha=1., beta=0.5, rho=1.
       Convex factors: phi=0., theta=0.125
@@ -53,7 +53,7 @@ Tao Object: 1 MPI processes
       Number of rejects: 0
       Number of resets: 0
       Mat Object: (J0_) 1 MPI processes
-        type: lmvmdiagbrdn
+        type: lmvmdiagbroyden
         rows=64, cols=64
           Scale history: 1
           Scale params: alpha=1., beta=0.5, rho=1.
@@ -83,7 +83,7 @@ Tao Object: 1 MPI processes
     Mat Object: (tao_bqnk_) 1 MPI processes
       type: lmvmbfgs
       rows=64, cols=64
-        Scale type: diagonal
+        Scale type: DIAGONAL
         Scale history: 1
         Scale params: alpha=1., beta=0.5, rho=1.
         Convex factors: phi=0., theta=0.125
@@ -93,7 +93,7 @@ Tao Object: 1 MPI processes
         Number of rejects: 0
         Number of resets: 0
         Mat Object: (J0_) 1 MPI processes
-          type: lmvmdiagbrdn
+          type: lmvmdiagbroyden
           rows=64, cols=64
             Scale history: 1
             Scale params: alpha=1., beta=0.5, rho=1.

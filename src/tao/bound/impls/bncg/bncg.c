@@ -434,7 +434,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BNCG(Tao tao)
   ierr = MatCreate(PetscObjectComm((PetscObject)tao), &cg->B);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject)cg->B, (PetscObject)tao, 1);CHKERRQ(ierr);
   ierr = MatSetOptionsPrefix(cg->B, "tao_bncg_");CHKERRQ(ierr);
-  ierr = MatSetType(cg->B, MATLMVMDIAGBRDN);CHKERRQ(ierr);
+  ierr = MatSetType(cg->B, MATLMVMDIAGBROYDEN);CHKERRQ(ierr);
 
   cg->pc = NULL;
 

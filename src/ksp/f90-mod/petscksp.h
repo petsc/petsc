@@ -45,6 +45,15 @@
       PetscEnum, parameter :: KSP_DIVERGED_PC_FAILED = -11
 
       PetscEnum, parameter :: KSP_CONVERGED_ITERATING = 0
+
+!
+!  MatLMVMSymBrdnScaleType
+!
+      PetscEnum, parameter :: MAT_LMVM_SYMBRDN_SCALE_NONE     = 0
+      PetscEnum, parameter :: MAT_LMVM_SYMBRDN_SCALE_SCALAR   = 1
+      PetscEnum, parameter :: MAT_LMVM_SYMBRDN_SCALE_DIAGONAL = 2
+      PetscEnum, parameter :: MAT_LMVM_SYMBRDN_SCALE_USER     = 3
+
 !
 !  Possible arguments to KSPSetNormType()
 !

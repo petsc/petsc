@@ -20,6 +20,7 @@ PetscErrorCode MatReset_LMVM(Mat B, PetscBool destructive)
     ierr = VecDestroy(&lmvm->Fprev);CHKERRQ(ierr);
     lmvm->nupdates = 0;
     lmvm->nrejects = 0;
+    lmvm->m_old = 0;
     lmvm->allocated = PETSC_FALSE;
     B->preallocated = PETSC_FALSE;
     B->assembled = PETSC_FALSE;
@@ -57,15 +58,17 @@ PetscErrorCode MatAllocate_LMVM(Mat B, Vec X, Vec F)
     ierr = VecGetSize(X, &N);CHKERRQ(ierr);
     ierr = VecGetLocalSize(F, &m);CHKERRQ(ierr);
     ierr = VecGetSize(F, &M);CHKERRQ(ierr);
-    ierr = MatSetSizes(B, m, n, M, N);CHKERRQ(ierr);
-    ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
-    ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
+    B->rmap->n = m;
+    B->cmap->n = n;
+    B->rmap->N = M > -1 ? M : B->rmap->N;
+    B->cmap->N = N > -1 ? N : B->cmap->N;
     ierr = VecDuplicate(X, &lmvm->Xprev);CHKERRQ(ierr);
     ierr = VecDuplicate(F, &lmvm->Fprev);CHKERRQ(ierr);
     if (lmvm->m > 0) {
       ierr = VecDuplicateVecs(lmvm->Xprev, lmvm->m, &lmvm->S);CHKERRQ(ierr);
       ierr = VecDuplicateVecs(lmvm->Fprev, lmvm->m, &lmvm->Y);CHKERRQ(ierr);
     }
+    lmvm->m_old = lmvm->m;
     lmvm->allocated = PETSC_TRUE;
     B->preallocated = PETSC_TRUE;
     B->assembled = PETSC_TRUE;
@@ -301,7 +304,7 @@ PetscErrorCode MatSetFromOptions_LMVM(PetscOptionItems *PetscOptionsObject, Mat 
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"Limited-memory Variable Metric matrix for approximating Jacobians");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_lmvm_num_vecs","number of correction vectors kept in memory for the approximation","",lmvm->m,&lmvm->m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_lmvm_hist_size","number of past updates kept in memory for the approximation","",lmvm->m,&lmvm->m,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_lmvm_ksp_its","(developer) fixed number of KSP iterations to take when inverting J0","",lmvm->ksp_max_it,&lmvm->ksp_max_it,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-mat_lmvm_eps","(developer) machine zero definition","",lmvm->eps,&lmvm->eps,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -336,6 +339,7 @@ PetscErrorCode MatSetUp_LMVM(Mat B)
       ierr = VecDuplicateVecs(lmvm->Xprev, lmvm->m, &lmvm->S);CHKERRQ(ierr);
       ierr = VecDuplicateVecs(lmvm->Fprev, lmvm->m, &lmvm->Y);CHKERRQ(ierr);
     }
+    lmvm->m_old = lmvm->m;
     lmvm->allocated = PETSC_TRUE;
     B->preallocated = PETSC_TRUE;
     B->assembled = PETSC_TRUE;
@@ -374,6 +378,7 @@ PetscErrorCode MatCreate_LMVM(Mat B)
   ierr = PetscNewLog(B, &lmvm);CHKERRQ(ierr);
   B->data = (void*)lmvm;
   
+  lmvm->m_old = 0;
   lmvm->m = 5;
   lmvm->k = -1;
   lmvm->nupdates = 0;
