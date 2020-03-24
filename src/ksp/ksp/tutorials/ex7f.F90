@@ -191,9 +191,6 @@ program main
         call KSPSetUp(ksp,ierr)
         
         ! Extract the array of KSP contexts for the local blocks
-
-        call PCBJacobiGetSubKSP(myPc,nlocal,first,PETSC_NULL_KSP,ierr)
-
         call PCBJacobiGetSubKSP(myPc,nlocal,first,PETSC_NULL_KSP,ierr)
         allocate(subksp(nlocal))
         call PCBJacobiGetSubKSP(myPc,nlocal,first,subksp,ierr)

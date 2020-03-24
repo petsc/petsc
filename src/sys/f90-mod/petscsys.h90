@@ -146,7 +146,7 @@
           PetscErrorCode, intent(out) :: ierr
         End Subroutine PetscOptionsView
 
-      subroutine PetscRandomSetType(a,b,z)
+      subroutine PetscRandomSetType(a,b,ierr)
       use petscsysdef
        PetscRandom a
        character(*) b
@@ -174,7 +174,7 @@
        PetscErrorCode, intent(out) :: ierr
       end Subroutine PetscFinalize
 
-      subroutine PetscRandomView(a,b,z)
+      subroutine PetscRandomView(a,b,ierr)
       use petscsysdef
        PetscRandom a
        PetscViewer b
