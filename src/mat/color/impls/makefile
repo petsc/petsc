@@ -1,4 +1,4 @@
-
+-include ../petscdir.mk
 ALL: lib
 
 DIRS     = natural minpack jp greedy power

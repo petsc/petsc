@@ -1,5 +1,5 @@
-
-ALL: lib
+-include ../petscdir.mk
+ALL: lib1
 
 CFLAGS    =
 FFLAGS    =

@@ -1,4 +1,5 @@
 # -*- mode: makefile-gmake -*-
+include petscdir.mk
 
 CONFIGDIR := $(PETSC_DIR)/config
 
@@ -7,8 +8,8 @@ CONFIGDIR := $(PETSC_DIR)/config
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 TESTSRCDIR := $(dir $(mkfile_path))src
 
-include $(PETSC_DIR)/$(PETSC_ARCH)/lib/petsc/conf/petscvariables
-include $(PETSC_DIR)/lib/petsc/conf/variables
+-include $(PETSC_DIR)/$(PETSC_ARCH)/lib/petsc/conf/petscvariables
+-include $(PETSC_DIR)/lib/petsc/conf/variables
 
 TESTDIR ?= ./$(PETSC_ARCH)/tests
 MODDIR := $(PETSC_DIR)/$(PETSC_ARCH)/include

@@ -1,5 +1,5 @@
+-include ../petscdir.mk
 #requirespackage  'PETSC_HAVE_ML'
-
 
 ALL: lib
 

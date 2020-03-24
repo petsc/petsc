@@ -106,6 +106,7 @@
       <!-- Please use Imperative with first letter cap, e.g. Add, Improve, Change etc. WITHOUT dot at the end -->
       <h4>General:</h4>
         <ul>
+          <li>Remove support for make test to run the short test, now must use make check. Make test runs the full test suite</li>
           <li>Remove last PetscBool argument from PetscBinaryWrite() and PetscBinarySynchronizedWrite()</li>
           <li>Change PetscLayoutFindOwner() and PetscLayoutFindOwnerIndex() to return a PetscMPIInt instead of a PetscInt</li>
           <li>Support for Compaq F90 is removed along with supporting flags PETSC_HAVE_FORTRAN_STDCALL, PETSC_BLASLAPACK_STDCALL, HAVE_FORTRAN_MIXED_STR_ARG</li>

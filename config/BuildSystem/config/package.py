@@ -1210,9 +1210,9 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
         output = output+err
         self.log.write(output)
         if output.find('error') > -1 or output.find('Error') > -1:
-          raise RuntimeError('Error running make test on PETSc: '+output)
+          raise RuntimeError('Error running make check on PETSc: '+output)
       except RuntimeError as e:
-        raise RuntimeError('Error running make test on PETSc: '+str(e))
+        raise RuntimeError('Error running make check on PETSc: '+str(e))
     self.installedpetsc = 1
 
 

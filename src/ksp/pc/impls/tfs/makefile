@@ -1,4 +1,4 @@
-
+-include ../petscdir.mk
 #requiresscalar real
 
 ALL: lib

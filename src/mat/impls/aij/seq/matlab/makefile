@@ -1,3 +1,4 @@
+-include ../petscdir.mk
 #requiresdefine   'PETSC_HAVE_MATLAB_ENGINE'
 
 ALL: lib

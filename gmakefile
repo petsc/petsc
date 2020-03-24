@@ -1,4 +1,5 @@
 # -*- mode: makefile-gmake -*-
+include petscdir.mk
 
 # If $(PETSC_ARCH) is empty, this defines it and PETSC_DIR
 include ./$(PETSC_ARCH)/lib/petsc/conf/petscvariables
@@ -50,7 +51,8 @@ libpetscall := $(if $(filter-out no,$(BUILDSHAREDLIB)),$(libpetscall_shared),$(l
 
 generated      := $(PETSC_ARCH)/lib/petsc/conf/files
 
-all : $(generated) $(libpetscall)
+libs : $(libpetscall)
+.PHONY: libs
 
 .SECONDEXPANSION:		# to expand $$(@D)/.DIR
 
