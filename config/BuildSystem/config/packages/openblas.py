@@ -84,7 +84,10 @@ class Configure(config.package.Package):
     if not self.argDB['with-shared-libraries']:
       cmdline += " NO_SHARED=1 "
     cmdline += " MAKE_NB_JOBS="+str(self.make.make_np)+" "
-    if self.openmp.found:
+    usespthreads = False
+    if 'download-openblas-use-pthreads' in self.argDB and self.argDB['download-openblas-use-pthreads']:
+      usespthreads = True
+    if self.openmp.found and not usespthreads:
       cmdline += " USE_OPENMP=1 "
       self.usesopenmp = 'yes'
       # use the environmental variable OMP_NUM_THREADS to control the number of threads used
