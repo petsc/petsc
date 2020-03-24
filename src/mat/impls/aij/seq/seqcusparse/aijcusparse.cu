@@ -1745,7 +1745,7 @@ static PetscErrorCode MatDuplicate_SeqAIJCUSPARSE(Mat A,MatDuplicateOption cpval
 static PetscErrorCode MatBindToCPU_SeqAIJCUSPARSE(Mat A,PetscBool flg)
 {
   PetscFunctionBegin;
-  /* Currently, there is case in which an AIJCUSPARSE matrix ever has its offloadmask set to PETS_OFFLOAD_GPU.
+  /* Currently, there is no case in which an AIJCUSPARSE matrix ever has its offloadmask set to PETS_OFFLOAD_GPU.
      If this changes, we need to implement a routine to update the CPU (host) version of the matrix from the GPU one.
      Right now, for safety we simply check for PETSC_OFFLOAD_GPU and have MatBindToCPU() do nothing in this case.
      TODO: Add MatAIJCUSPARSECopyFromGPU() and make MatBindToCPU() functional for AIJCUSPARSE matries;
@@ -1754,8 +1754,8 @@ static PetscErrorCode MatBindToCPU_SeqAIJCUSPARSE(Mat A,PetscBool flg)
   if (flg) {
     A->ops->mult             = MatMult_SeqAIJ;
     A->ops->multadd          = MatMultAdd_SeqAIJ;
-    A->ops->multtranspose    = MatMultTranspose_SeqAIJCUSPARSE;
-    A->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJCUSPARSE;
+    A->ops->multtranspose    = MatMultTranspose_SeqAIJ;
+    A->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJ;
     A->ops->assemblyend      = MatAssemblyEnd_SeqAIJ;
     A->ops->duplicate        = MatDuplicate_SeqAIJ;
   } else {
