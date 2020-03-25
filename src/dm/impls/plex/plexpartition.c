@@ -1430,7 +1430,7 @@ PetscErrorCode PetscPartitionerShellSetRandom(PetscPartitioner part, PetscBool r
   Input Parameter:
 . part   - The PetscPartitioner
 
-  Output Parameter
+  Output Parameter:
 . random - The flag to use a random partition
 
   Level: intermediate

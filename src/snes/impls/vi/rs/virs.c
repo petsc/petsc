@@ -7,10 +7,10 @@
    SNESVIGetInactiveSet - Gets the global indices for the inactive set variables (these correspond to the degrees of freedom the linear
      system is solved on)
 
-   Input parameter
+   Input parameter:
 .  snes - the SNES context
 
-   Output parameter
+   Output parameter:
 .  inact - inactive set index set
 
  */

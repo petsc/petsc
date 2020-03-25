@@ -41,7 +41,7 @@ PetscErrorCode DMPlexSetReferenceTree(DM dm, DM ref)
   Input Parameters:
 . dm - The DMPlex object
 
-  Output Parameters
+  Output Parameters:
 . ref - The reference tree DMPlex object
 
   Level: intermediate

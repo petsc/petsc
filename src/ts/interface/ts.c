@@ -441,7 +441,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
    Input Parameters:
 .  ts - the TS context obtained from TSCreate()
 
-   Output Parameters;
+   Output Parameters:
 .  tr - the TSTrajectory object, if it exists
 
    Note: This routine should be called after all TS options have been set

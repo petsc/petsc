@@ -1867,7 +1867,7 @@ PetscErrorCode TSForwardCostIntegral(TS ts)
 
   Collective on TS
 
-  Input Parameter
+  Input Parameter:
 + ts - the TS context obtained from TSCreate()
 - didp - parametric sensitivities of the initial condition
 

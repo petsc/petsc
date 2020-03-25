@@ -520,7 +520,7 @@ PetscErrorCode HessianProductMat(Mat mat,Vec svec,Vec y)
    Hessian Product - Computes the matrix-vector product:
    y = f''(x)*svec.
 
-   Input Parameters
+   Input Parameters:
 .  ptr  - pointer to the user-defined context
 .  svec - input vector
 
