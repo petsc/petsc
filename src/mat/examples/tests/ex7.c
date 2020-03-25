@@ -95,6 +95,12 @@ int main(int argc,char **args)
 /*TEST
 
    test:
+      suffix: 1
+      filter: grep -v "MPI processes"
+
+   test:
+      suffix: 2
+      args: -m 1 -n 1 -fill 0.49
       filter: grep -v "MPI processes"
 
 TEST*/
