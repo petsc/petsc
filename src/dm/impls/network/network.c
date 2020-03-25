@@ -184,7 +184,7 @@ PetscErrorCode DMNetworkSetEdgeList(DM dm,PetscInt *edgelist[],PetscInt *edgelis
 
   Collective on dm
 
-  Input Parameters
+  Input Parameters:
 . DM - the dmnetwork object
 
   Notes:
@@ -382,11 +382,11 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
 /*@C
   DMNetworkGetSubnetworkInfo - Returns the info for the subnetwork
 
-  Input Parameters
+  Input Parameters:
 + dm - the DM object
 - id   - the ID (integer) of the subnetwork
 
-  Output Parameters
+  Output Parameters:
 + nv    - number of vertices (local)
 . ne    - number of edges (local)
 . vtx   - local vertices for this subnetwork
@@ -415,11 +415,11 @@ PetscErrorCode DMNetworkGetSubnetworkInfo(DM dm,PetscInt id,PetscInt *nv, PetscI
 /*@C
   DMNetworkGetSubnetworkCoupleInfo - Returns the info for the coupling subnetwork
 
-  Input Parameters
+  Input Parameters:
 + dm - the DM object
 - id   - the ID (integer) of the coupling subnetwork
 
-  Output Parameters
+  Output Parameters:
 + ne - number of edges (local)
 - edge  - local edges for this coupling subnetwork
 
@@ -454,12 +454,12 @@ PetscErrorCode DMNetworkGetSubnetworkCoupleInfo(DM dm,PetscInt id,PetscInt *ne,c
 
   Logically collective on dm
 
-  Input Parameters
+  Input Parameters:
 + dm   - the network object
 . name - the component name
 - size - the storage size in bytes for this component data
 
-   Output Parameters
+   Output Parameters:
 .   key - an integer key that defines the component
 
    Notes
@@ -660,7 +660,7 @@ PetscErrorCode DMNetworkGetComponentKeyOffset(DM dm,PetscInt p, PetscInt compnum
 
   Not Collective
 
-  Input Parameters
+  Input Parameters:
 + dm - DMNetwork object
 . p  - edge or vertex point
 - compnum - component number
@@ -2231,12 +2231,12 @@ PetscErrorCode DMLocalToGlobalEnd_Network(DM dm, Vec l, InsertMode mode, Vec g)
 
   Not collective
 
-  Input Parameters
+  Input Parameters:
 + dm - the dm object
 - vloc - local vertex ordering, start from 0
 
-  Output Parameters
-+  vg  - global vertex ordering, start from 0
+  Output Parameters:
+.  vg  - global vertex ordering, start from 0
 
   Level: Advanced
 
@@ -2259,7 +2259,7 @@ PetscErrorCode DMNetworkGetVertexLocalToGlobalOrdering(DM dm,PetscInt vloc,Petsc
   Collective
 
   Input Parameters:
-+ dm - the dm object
+. dm - the dm object
 
   Level: Advanced
 

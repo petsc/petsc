@@ -86,7 +86,7 @@ PetscErrorCode  KSPComputeExtremeSingularValues(KSP ksp,PetscReal *emax,PetscRea
 -  neig - actual number of eigenvalues computed (will be less than or equal to n)
 
    Options Database Keys:
-+  -ksp_view_eigenvalues - Prints eigenvalues to stdout
+.  -ksp_view_eigenvalues - Prints eigenvalues to stdout
 
    Notes:
    The number of eigenvalues estimated depends on the size of the Krylov space

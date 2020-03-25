@@ -218,7 +218,7 @@ typedef enum {PC_PARMS_GLOBAL_RAS,PC_PARMS_GLOBAL_SCHUR,PC_PARMS_GLOBAL_BJ} PCPA
 E*/
 typedef enum {PC_PARMS_LOCAL_ILU0,PC_PARMS_LOCAL_ILUK,PC_PARMS_LOCAL_ILUT,PC_PARMS_LOCAL_ARMS} PCPARMSLocalType;
 
-/*E
+/*J
     PCGAMGType - type of generalized algebraic multigrid (PCGAMG) method
 
     Level: intermediate
@@ -228,7 +228,7 @@ $   PCGAMGGEO - geometric coarsening, uses mesh generator to produce coarser mes
 $   PCGAMGCLASSICAL - classical algebraic multigrid preconditioner, incomplete, poorly tested
 
 .seealso: PCMG, PCSetType(), PCGAMGSetThreshold(), PCGAMGSetThreshold(), PCGAMGSetReuseInterpolation()
-E*/
+J*/
 typedef const char *PCGAMGType;
 #define PCGAMGAGG         "agg"
 #define PCGAMGGEO         "geo"

@@ -220,7 +220,7 @@ PetscErrorCode PetscSectionSetFromOptions(PetscSection s)
 
   Collective on PetscSection
 
-  Input Parameterss:
+  Input Parameters:
 + s1 - the first PetscSection
 - s2 - the second PetscSection
 

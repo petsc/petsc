@@ -14,7 +14,6 @@
 ##
 import os
 import re
-from exceptions import *
 import sys
 from string import *
 import pickle

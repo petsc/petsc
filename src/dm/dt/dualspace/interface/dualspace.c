@@ -675,7 +675,7 @@ PetscErrorCode PetscDualSpaceGetNumDof(PetscDualSpace sp, const PetscInt **numDo
   Collective on sp
 
   Input Parameters:
-+ sp      - The PetscDualSpace
+. sp      - The PetscDualSpace
 
   Output Parameter:
 . section - The section

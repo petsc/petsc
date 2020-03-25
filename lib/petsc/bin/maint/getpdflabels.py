@@ -14,7 +14,6 @@ import os
 import ftplib
 import httplib
 import sys
-from exceptions import *
 from sys import *
 from string import *
 import re

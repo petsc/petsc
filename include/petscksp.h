@@ -417,6 +417,7 @@ PETSC_EXTERN PetscErrorCode KSPSetSupportedNorm(KSP ksp,KSPNormType,PCSide,Petsc
 PETSC_EXTERN PetscErrorCode KSPSetCheckNormIteration(KSP,PetscInt);
 PETSC_EXTERN PetscErrorCode KSPSetLagNorm(KSP,PetscBool);
 
+#define KSP_DIVERGED_PCSETUP_FAILED_DEPRECATED KSP_DIVERGED_PCSETUP_FAILED PETSC_DEPRECATED_ENUM("Use KSP_DIVERGED_PC_FAILED (since version 3.11)")
 /*E
     KSPConvergedReason - reason a Krylov method was said to have converged or diverged
 
@@ -433,7 +434,6 @@ PETSC_EXTERN PetscErrorCode KSPSetLagNorm(KSP,PetscBool);
 
 .seealso: KSPSolve(), KSPGetConvergedReason(), KSPSetTolerances()
 E*/
-#define KSP_DIVERGED_PCSETUP_FAILED_DEPRECATED KSP_DIVERGED_PCSETUP_FAILED PETSC_DEPRECATED_ENUM("Use KSP_DIVERGED_PC_FAILED (since version 3.11)")
 typedef enum {/* converged */
               KSP_CONVERGED_RTOL_NORMAL        =  1,
               KSP_CONVERGED_ATOL_NORMAL        =  9,

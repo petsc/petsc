@@ -387,17 +387,21 @@ PetscErrorCode TaoBoundStep(Vec X, Vec XL, Vec XU, IS active_lower, IS active_up
 /*@C
   TaoBoundSolution - Ensures that the solution vector is snapped into the bounds within a given tolerance.
 
+  Collective on Vec
+
   Input Parameters:
 + X - solution vector
 . XL - lower bound vector
 . XU - upper bound vector
-- bound_tol - numerical tolerance for deciding if a variable is bounded
+- bound_tol - absolute tolerance in enforcing the bound
 
   Output Parameters:
-+ nDiff - number of variables that have been modified in the operation
-- Xout - bounded solution vector
++ nDiff - total number of vector entries that have been bounded
+- Xout - modified solution vector satisfying bounds to bound_tol
 
   Level: developer
+
+.seealso: TAOBNCG, TAOBNTL, TAOBNTR
 @*/
 PetscErrorCode TaoBoundSolution(Vec X, Vec XL, Vec XU, PetscReal bound_tol, PetscInt *nDiff, Vec Xout)
 {

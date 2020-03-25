@@ -946,8 +946,8 @@ PetscErrorCode PetscPartitionerDestroy(PetscPartitioner *part)
 - partition       - The list of points by partition
 
   Options Database:
-. -petscpartitioner_view - View the partitioner information
-. -petscpartitioner_view_graph - View the graph we are partitioning
++ -petscpartitioner_view - View the partitioner information
+- -petscpartitioner_view_graph - View the graph we are partitioning
 
   Notes:
     The chart of the vertexSection (if present) must contain [0,numVertices), with the number of dofs in the section specifying the absolute weight for each vertex.
@@ -1430,7 +1430,7 @@ PetscErrorCode PetscPartitionerShellSetRandom(PetscPartitioner part, PetscBool r
   Input Parameter:
 . part   - The PetscPartitioner
 
-  Output Parameter
+  Output Parameter:
 . random - The flag to use a random partition
 
   Level: intermediate
@@ -2978,7 +2978,7 @@ PetscErrorCode DMPlexPartitionLabelInvert(DM dm, DMLabel rootLabel, PetscSF proc
 
   Input Parameters:
 + dm    - The DM
-. label - DMLabel assinging ranks to remote roots
+- label - DMLabel assinging ranks to remote roots
 
   Output Parameter:
 . sf    - The star forest communication context encapsulating the defined mapping

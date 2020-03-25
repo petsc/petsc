@@ -532,7 +532,7 @@ M*/
 +  obj - the object from which data is to be retrieved
 -  id - the identifier for the data
 
-   Output parameters
+   Output parameters:
 +  data - the data to be retrieved
 -  flag - PETSC_TRUE if the data item exists and is valid, PETSC_FALSE otherwise
 
@@ -582,7 +582,7 @@ M*/
 +  obj - the object from which data is to be retrieved
 -  id - the identifier for the data
 
-   Output parameters
+   Output parameters:
 +  data - the data to be retrieved
 -  flag - PETSC_TRUE if the data item exists and is valid, PETSC_FALSE otherwise
 
@@ -631,7 +631,7 @@ M*/
 +  obj - the object from which data is to be retrieved
 -  id - the identifier for the data
 
-   Output parameters
+   Output parameters:
 +  data - the data to be retrieved
 -  flag - PETSC_TRUE if the data item exists and is valid, PETSC_FALSE otherwise
 
@@ -681,7 +681,7 @@ M*/
 +  obj - the object from which data is to be retrieved
 -  id - the identifier for the data
 
-   Output parameters
+   Output parameters:
 +  data - the data to be retrieved
 -  flag - PETSC_TRUE if the data item exists and is valid, PETSC_FALSE otherwise
 
@@ -734,7 +734,7 @@ M*/
 +  obj - the object from which data is to be retrieved
 -  id - the identifier for the data
 
-   Output parameters
+   Output parameters:
 +  data - the data to be retrieved
 -  flag - PETSC_TRUE if the data item exists and is valid, PETSC_FALSE otherwise
 
@@ -793,7 +793,7 @@ M*/
 +  obj - the object from which data is to be retrieved
 -  id - the identifier for the data
 
-   Output parameters
+   Output parameters:
 +  data - the data to be retrieved
 -  flag - PETSC_TRUE if the data item exists and is valid, PETSC_FALSE otherwise
 

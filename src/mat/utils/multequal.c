@@ -265,7 +265,7 @@ PetscErrorCode  MatMultTransposeAddEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
 -  n - number of random vectors to be tested
 
    Output Parameter:
-+  flg - PETSC_TRUE if the products are equal; PETSC_FALSE otherwise.
+.  flg - PETSC_TRUE if the products are equal; PETSC_FALSE otherwise.
 
    Level: intermediate
 

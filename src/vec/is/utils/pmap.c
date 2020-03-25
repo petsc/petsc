@@ -78,7 +78,7 @@ PetscErrorCode PetscLayoutCreate(MPI_Comm comm,PetscLayout *map)
 + comm  - the MPI communicator
 . n     - the local size (or PETSC_DECIDE)
 . N     - the global size (or PETSC_DECIDE)
-. bs    - the block size (or PETSC_DECIDE)
+- bs    - the block size (or PETSC_DECIDE)
 
   Output Parameters:
 . map - the new PetscLayout

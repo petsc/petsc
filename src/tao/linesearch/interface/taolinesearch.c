@@ -265,7 +265,7 @@ PetscErrorCode TaoLineSearchReset(TaoLineSearch ls)
 
   Collective on TaoLineSearch
 
-  Input Parameter
+  Input Parameter:
 . ls - the TaoLineSearch context
 
   Level: beginner
@@ -1247,7 +1247,7 @@ PetscErrorCode TaoLineSearchSetInitialStepLength(TaoLineSearch ls,PetscReal s)
   Input Parameters:
 . ls - the TaoLineSearch context
 
-  Output Parameters
+  Output Parameters:
 . s - the current step length
 
   Level: beginner

@@ -204,14 +204,14 @@ PetscErrorCode VecScatterRegister(const char sname[], PetscErrorCode (*function)
 .  newctx - location to store the new scatter context
 
    Options Database Keys:
-.  -vecscatter_view         - Prints detail of communications
++  -vecscatter_view         - Prints detail of communications
 .  -vecscatter_view ::ascii_info    - Print less details about communication
 .  -vecscatter_merge        - VecScatterBegin() handles all of the communication, VecScatterEnd() is a nop
                               eliminates the chance for overlap of computation and communication
 .  -vecscatter_packtogether - Pack all messages before sending, receive all messages before unpacking
                               will make the results of scatters deterministic when otherwise they are not (it may be slower also).
 .  -vecscatter_type sf      - Use the PetscSF implementation of vecscatter (Default). One can use PetscSF options to control the communication.
-.  -vecscatter_packongpu    - For GPU vectors, pack needed entries on GPU, then copy packed data to CPU, then do MPI.
+-  -vecscatter_packongpu    - For GPU vectors, pack needed entries on GPU, then copy packed data to CPU, then do MPI.
                               Otherwise, we might copy a segment encompassing needed entries. Default is TRUE.
 
     Level: intermediate

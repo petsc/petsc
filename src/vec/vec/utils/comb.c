@@ -730,7 +730,7 @@ PetscErrorCode  VecMTDotBegin(Vec x,PetscInt nv,const Vec y[],PetscScalar result
 .  nv - number of vectors
 -  y - array of  vectors (can be NULL)
 
-   Output Parameters
+   Output Parameters:
 .  result - where the result will go
 
    Level: advanced

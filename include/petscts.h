@@ -671,13 +671,13 @@ PETSC_EXTERN PetscFunctionList TSSSPList;
 S*/
 typedef struct _p_TSAdapt *TSAdapt;
 
-/*E
+/*J
     TSAdaptType - String with the name of TSAdapt scheme.
 
    Level: beginner
 
 .seealso: TSAdaptSetType(), TS
-E*/
+J*/
 typedef const char *TSAdaptType;
 #define TSADAPTNONE    "none"
 #define TSADAPTBASIC   "basic"

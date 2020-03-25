@@ -1305,7 +1305,7 @@ PetscErrorCode TSARKIMEXSetFullyImplicit(TS ts,PetscBool flg)
   Input Parameter:
 .  ts - timestepping context
 
-  Output Parameter
+  Output Parameter:
 .  flg - PETSC_TRUE for fully implicit
 
   Level: intermediate

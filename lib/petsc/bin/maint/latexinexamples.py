@@ -6,7 +6,6 @@
 #  See http://www.mathjax.org/docs/1.1/options/tex2jax.html#configure-tex2jax
 import os
 import re
-from exceptions import *
 import sys
 from string import *
 

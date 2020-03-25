@@ -684,7 +684,7 @@ PetscErrorCode DMPlexLocalToGlobalBasis(DM dm, Vec lv)
 + dm    - The DM
 . alpha - The first Euler angle, and in 2D the only one
 . beta  - The second Euler angle
-. gamma - The third Euler angle
+- gamma - The third Euler angle
 
   Note: Following https://en.wikipedia.org/wiki/Euler_angles, we will specify Euler angles by extrinsic rotations, meaning that
   we rotate with respect to a fixed initial coordinate system, the local basis (x-y-z). The global basis (X-Y-Z) is reached as follows:

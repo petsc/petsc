@@ -1329,7 +1329,7 @@ __kernel void integrateElementQuadrature(int N_cb, __global float *coefficients,
 . probAux      - The PetscDS specifying the auxiliary discretizations
 - coefficientsAux - The array of FEM auxiliary basis coefficients for the elements
 
-  Output Parameter
+  Output Parameter:
 . integral     - the integral for this field
 
   Level: intermediate
@@ -1365,7 +1365,7 @@ PetscErrorCode PetscFEIntegrate(PetscDS prob, PetscInt field, PetscInt Ne, Petsc
 . probAux      - The PetscDS specifying the auxiliary discretizations
 - coefficientsAux - The array of FEM auxiliary basis coefficients for the elements
 
-  Output Parameter
+  Output Parameter:
 . integral     - the integral for this field
 
   Level: intermediate
@@ -1406,7 +1406,7 @@ PetscErrorCode PetscFEIntegrateBd(PetscDS prob, PetscInt field,
 . coefficientsAux - The array of FEM auxiliary basis coefficients for the elements
 - t            - The time
 
-  Output Parameter
+  Output Parameter:
 . elemVec      - the element residual vectors from each element
 
   Note:
@@ -1451,7 +1451,7 @@ PetscErrorCode PetscFEIntegrateResidual(PetscDS prob, PetscInt field, PetscInt N
 . coefficientsAux - The array of FEM auxiliary basis coefficients for the elements
 - t            - The time
 
-  Output Parameter
+  Output Parameter:
 . elemVec      - the element residual vectors from each element
 
   Level: intermediate
@@ -1491,7 +1491,7 @@ PetscErrorCode PetscFEIntegrateBdResidual(PetscDS prob, PetscInt field, PetscInt
 . t            - The time
 - u_tShift     - A multiplier for the dF/du_t term (as opposed to the dF/du term)
 
-  Output Parameter
+  Output Parameter:
 . elemMat      - the element matrices for the Jacobian from each element
 
   Note:
@@ -1526,7 +1526,7 @@ PetscErrorCode PetscFEIntegrateJacobian(PetscDS prob, PetscFEJacobianType jtype,
   Not collective
 
   Input Parameters:
-. prob         - The PetscDS specifying the discretizations and continuum functions
++ prob         - The PetscDS specifying the discretizations and continuum functions
 . fieldI       - The test field being integrated
 . fieldJ       - The basis field being integrated
 . Ne           - The number of elements in the chunk
@@ -1538,7 +1538,7 @@ PetscErrorCode PetscFEIntegrateJacobian(PetscDS prob, PetscFEJacobianType jtype,
 . t            - The time
 - u_tShift     - A multiplier for the dF/du_t term (as opposed to the dF/du term)
 
-  Output Parameter
+  Output Parameter:
 . elemMat              - the element matrices for the Jacobian from each element
 
   Note:

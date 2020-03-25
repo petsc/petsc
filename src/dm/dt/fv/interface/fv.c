@@ -1752,7 +1752,7 @@ PetscErrorCode PetscFVComputeGradient(PetscFV fvm, PetscInt numFaces, PetscScala
 . uL           - The state from the cell on the left
 - uR           - The state from the cell on the right
 
-  Output Parameter
+  Output Parameter:
 + fluxL        - the left fluxes for each face
 - fluxR        - the right fluxes for each face
 

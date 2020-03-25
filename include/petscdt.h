@@ -269,7 +269,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTEnumPerm(PetscInt n, PetscInt k, Petsc
 
    Output Arguments:
 +  k - an integer in [0, n!)
-.  isOdd - if not NULL, returns wether the permutation used an even or odd number of swaps.
+-  isOdd - if not NULL, returns wether the permutation used an even or odd number of swaps.
 
    Note: this is limited to n such that n! can be represented by PetscInt, which is 12 if PetscInt is a signed 32-bit integer and 20 if PetscInt is a signed 64-bit integer.
 

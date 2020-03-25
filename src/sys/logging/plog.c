@@ -2336,7 +2336,7 @@ static const char *PetscLogMPERGBColors[PETSC_RGB_COLORS_MAX] = {
 
   Not collective. Maybe it should be?
 
-  Output Parameter
+  Output Parameter:
 . str - character string representing the color
 
   Level: developer

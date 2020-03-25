@@ -596,7 +596,7 @@ PetscErrorCode DMStagGetOwnershipRanges(DM dm,const PetscInt *lx[],const PetscIn
 
   Collective
 
-  Input Parameters
+  Input Parameters:
 + dm - the DMStag object
 - dof0,dof1,dof2,dof3 - number of dof on each stratum in the new DMStag
 
