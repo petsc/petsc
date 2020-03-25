@@ -9,6 +9,17 @@
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>   /*I  "petscvec.h"   I*/
 #include <../src/vec/vec/impls/seq/seqcuda/cudavecimpl.h>
 
+/*MC
+   VECCUDA - VECCUDA = "cuda" - A VECSEQCUDA on a single-process communicator, and VECMPICUDA otherwise.
+
+   Options Database Keys:
+. -vec_type cuda - sets the vector type to VECCUDA during a call to VecSetFromOptions()
+
+  Level: beginner
+
+.seealso: VecCreate(), VecSetType(), VecSetFromOptions(), VecCreateMPIWithArray(), VECSEQCUDA, VECMPICUDA, VECSTANDARD, VecType, VecCreateMPI(), VecSetPinnedMemoryMin()
+M*/
+
 PetscErrorCode VecDestroy_MPICUDA(Vec v)
 {
   Vec_MPI        *vecmpi = (Vec_MPI*)v->data;
