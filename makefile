@@ -329,7 +329,6 @@ allcite: chk_loc deletemanualpages
 # Build just PDF manuals + prerequisites
 allpdf: chk_loc allcite
 	-cd src/docs/tex/manual; ${OMAKE} manual.pdf LOC=${LOC}
-	-cd src/docs/tex/manual; ${OMAKE} developers.pdf LOC=${LOC}
 	-cd src/docs/tao_tex/manual; ${OMAKE} manual.pdf LOC=${LOC}
 
 # Build just manual pages + prerequisites
@@ -443,7 +442,6 @@ update-web:
 	/usr/bin/rsync -az -C --exclude=documentation/index.html \
           --exclude=documentation/installation.html --exclude=download/index.html \
 	  ${PETSC_DIR}/src/docs/website/ petsc@login.mcs.anl.gov:/mcs/web/research/projects/petsc
-	@cd ${PETSC_DIR}/docs; /usr/bin/rsync -az developers.pdf petsc@login.mcs.anl.gov:/mcs/web/research/projects/petsc/developers/
 	@cd ${PETSC_DIR}/src/docs/tex; /usr/bin/rsync -az petscapp.bib petsc.bib petsc@login.mcs.anl.gov:/mcs/web/research/projects/petsc/publications
 
 ###########################################################

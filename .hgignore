@@ -81,7 +81,6 @@ docs/faq.html
 docs/installation.html
 docs/linearsolvertable.html
 docs/manual.pdf
-docs/developers.pdf
 docs/troubleshooting.html
 src/docs/tex/manual/anchors
 src/docs/tex/manual/developerstmp.{aux,idx,out,tex}

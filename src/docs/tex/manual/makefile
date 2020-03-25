@@ -141,13 +141,3 @@ listing_drawex3tmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/sys/cla
 	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat listing_tmp.tex | \
 	  ${PYTHON} ../../../../lib/petsc/bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > $@
 	-@$(RM) listing_tmp.tex
-
-developers.pdf: chk_loc chk developers.tex
-	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat developers.tex | \
-	  ${PYTHON} ../../../../lib/petsc/bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > developerstmp.tex
-	${PDFLATEX} ${PDFLATEXOPTS} developerstmp.tex ${GONULL}
-	bibtex developerstmp ${GONULL}
-	${PDFLATEX} ${PDFLATEXOPTS} developerstmp.tex ${GONULL}
-	${PDFLATEX} ${PDFLATEXOPTS} developerstmp.tex ${GONULL}
-	${MV} developerstmp.pdf ${LOC}/docs/developers.pdf
-
