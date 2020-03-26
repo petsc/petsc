@@ -1,0 +1,65 @@
+variables:
+  GIT_STRATEGY: fetch
+  GIT_CLEAN_FLAGS: -ffdxq
+  TIMEOUT: 1200
+  ANL_THETA_PROJECT_SERVICE_USER: "cscstms"
+
+.test:
+  only:
+    refs:
+      - schedules
+      - web
+  dependencies: []
+
+.stage:
+  extends: .test
+  before_script:
+    - date
+    - hostname
+    - grep PRETTY_NAME /etc/os-release
+    - nproc
+    - lscpu
+    - if [ ! -z ${RM_MODULES+x} ]; then printf "removing modules - ${RM_MODULES}\n"; module list; module remove ${RM_MODULES}; fi
+    - if [ ! -z ${LOAD_MODULES+x} ]; then printf "loading modules - ${LOAD_MODULES}\n"; module load ${LOAD_MODULES}; module list; fi
+  after_script:
+    - date
+  script:
+    - printf "PATH:$PATH\n"
+    - printf "./config/examples/${TEST_ARCH}.py\n"
+    - cat ./config/examples/${TEST_ARCH}.py
+    - ./config/examples/${TEST_ARCH}.py
+    - make CFLAGS=${MAKE_CFLAGS} CXXFLAGS=${MAKE_CXXFLAGS} FFLAGS=${MAKE_FFLAGS}
+    - cd src/snes/tutorials; make ex19 ex5f
+  artifacts:
+    name: "$CI_JOB_NAME"
+    when: always
+    paths:
+    - ${TEST_ARCH}/lib/petsc/conf/*.log
+    - ${TEST_ARCH}/lib/pkgconfig/PETSc.pc
+    - core*
+    expire_in: 4 days
+
+theta-intel-opt:
+  extends:
+    - .stage
+  tags:
+    - anl-ci, shell
+  variables:
+    TEST_ARCH: arch-alcfci-theta-intel-opt
+    MAKE_CFLAGS: -Werror
+    MAKE_CXXFLAGS: -Werror
+    RM_MODULES: darshan xalt cray-libsci
+    LOAD_MODULES: gcc/8.3.0 cmake/3.14.5 cray-netcdf-hdf5parallel/4.6.3.1 cray-parallel-netcdf/1.11.1.0 cray-hdf5-parallel/1.10.5.1
+
+
+theta-cray-opt:
+  extends:
+    - .stage
+  tags:
+    - anl-ci, shell
+  variables:
+    TEST_ARCH: arch-alcfci-theta-cray-opt
+    MAKE_CFLAGS: -Werror
+    MAKE_CXXFLAGS: -Werror
+    RM_MODULES: darshan xalt PrgEnv-intel
+    LOAD_MODULES: gcc/8.3.0 PrgEnv-cray cmake/3.14.5 cray-netcdf-hdf5parallel/4.6.3.1 cray-parallel-netcdf/1.11.1.0 cray-hdf5-parallel/1.10.5.1
