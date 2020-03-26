@@ -1657,6 +1657,8 @@ PetscErrorCode PetscFERefine(PetscFE fe, PetscFE *feRef)
   PetscQuadrature  q, qref;
   const PetscReal *v0, *jac;
   PetscInt         numComp, numSubelements;
+  PetscInt         cStart, cEnd, c;
+  PetscDualSpace  *cellSpaces;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -1669,8 +1671,15 @@ PetscErrorCode PetscFERefine(PetscFE fe, PetscFE *feRef)
   Pref = P;
   /* Create dual space */
   ierr = PetscDualSpaceDuplicate(Q, &Qref);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetType(Qref, PETSCDUALSPACEREFINED);CHKERRQ(ierr);
   ierr = DMRefine(K, PetscObjectComm((PetscObject) fe), &Kref);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetDM(Qref, Kref);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(Kref, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = PetscMalloc1(cEnd - cStart, &cellSpaces);CHKERRQ(ierr);
+  /* TODO: fix for non-uniform refinement */
+  for (c = 0; c < cEnd - cStart; c++) cellSpaces[c] = Q;
+  ierr = PetscDualSpaceRefinedSetCellSpaces(Qref, cellSpaces);CHKERRQ(ierr);
+  ierr = PetscFree(cellSpaces);CHKERRQ(ierr);
   ierr = DMDestroy(&Kref);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetUp(Qref);CHKERRQ(ierr);
   /* Create element */
