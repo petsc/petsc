@@ -216,8 +216,21 @@
         <ul>
           <li>Rename PetscSignalSegvCheckPointer() to PetscSignalSegvCheckPointerOrMpi()</li>
         </ul>
-
-      <ul>
+        <ul>
+          <li>Improve PetscInfo() controls to allow for sorting of output by PETSc Class</li>
+          <li>Add PetscInfoSetFromOptions()</li>
+          <li>Add PetscInfoEnabled() - Indicate whether a given PETSc class is allowed in PetscInfo()</li>
+          <li>Add PetscInfoSetFile() - Set output destination of PetscInfo()</li>
+          <li>Add PetscInfoGetFile() - Get output destination of PetscInfo()</li>
+          <li>Add PetscInfoSetClasses() - Sets the classes which PetscInfo() is filtered for/against</li>
+          <li>Add PetscInfoGetClass() - Indicates whether the provided classname is marked as a filter in PetscInfo() as set by PetscInfoSetClasses()</li>
+          <li>Add PetscInfoProcessClass() - Activates or deactivates a class based on the filtering status of PetscInfo()</li>
+          <li>Add PetscInfoGetInfo() - Returns the current state of several indicator flags for PetscInfo()</li>
+          <li>Add PetscInfoSetFilterCommSelf() - Sets PetscInfoCommFlag enum to control communicator size filtering for PetscInfo()</li>
+          <li>Add PetscInfoDestroy() - Destroys and resets internal PetscInfo() filter options</li>
+          <li>Change PetscInfoAllow() to only activate/deactivate PetscInfo(), file setting is now handled separately by PetscInfoSetFile()</li>
+        </ul>
+        <ul>
         <li>Add PetscSubcommGetParent() - Gets the communicator that was used to create the PetscSubcomm</li>
         <li>Add PetscSubcommGetContiguousParent() - Gets a communicator that that is a duplicate of the parent but has the ranks reordered by the order they are in the children</li>
         <li>Add PetscSubcommGetChild() - Gets the communicator created by the PetscSubcomm</li>
