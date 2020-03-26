@@ -376,7 +376,7 @@ int main (int argc, char **argv)
   trimmed = PETSC_FALSE;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","Options for PETSCDUALSPACELAGRANGE test","none");CHKERRQ(ierr);
   ierr = PetscOptionsRangeInt("-dim", "The spatial dimension","ex1.c",dim,&dim,NULL,0,3);CHKERRQ(ierr);
-  ierr = PetscOptionsRangeInt("-tensor", "(0) simplex (1) hypercube (2) wedge","ex1.c",tensorCell,&tensorCell,NULL,0,3);CHKERRQ(ierr);
+  ierr = PetscOptionsRangeInt("-tensor", "(0) simplex (1) hypercube (2) wedge","ex1.c",tensorCell,&tensorCell,NULL,0,2);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-continuous", "Whether the dual space has continuity","ex1.c",continuous,&continuous,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-trimmed", "Whether the dual space matches a trimmed polynomial space","ex1.c",trimmed,&trimmed,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
