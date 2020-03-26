@@ -47,6 +47,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJMKL_SeqAIJ(Mat A,MatType type,MatRe
   B->ops->multtranspose    = MatMultTranspose_SeqAIJ;
   B->ops->multadd          = MatMultAdd_SeqAIJ;
   B->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJ;
+  B->ops->matmultsymbolic  = MatMatMultSymbolic_SeqAIJ_SeqAIJ;
   B->ops->matmultnumeric   = MatMatMultNumeric_SeqAIJ_SeqAIJ;
   B->ops->ptapnumeric      = MatPtAPNumeric_SeqAIJ_SeqAIJ;
 
@@ -719,6 +720,41 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,Vec zz)
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
 #if defined(PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE)
+PetscErrorCode MatMatMultSymbolic_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat B,PetscReal fill,Mat C)
+{
+  Mat_SeqAIJMKL       *a, *b, *c;
+  sparse_matrix_t     csrA, csrB, csrC;
+  PetscErrorCode      ierr;
+  sparse_status_t     stat = SPARSE_STATUS_SUCCESS;
+  struct matrix_descr descr_type_gen;
+  PetscObjectState    state;
+
+  PetscFunctionBegin;
+  a = (Mat_SeqAIJMKL*)A->spptr;
+  b = (Mat_SeqAIJMKL*)B->spptr;
+  c = (Mat_SeqAIJMKL*)C->spptr;
+  ierr = PetscObjectStateGet((PetscObject)A,&state);CHKERRQ(ierr);
+  if (!a->sparse_optimized || a->state != state) {
+    MatSeqAIJMKL_create_mkl_handle(A);
+  }
+  ierr = PetscObjectStateGet((PetscObject)B,&state);CHKERRQ(ierr);
+  if (!b->sparse_optimized || b->state != state) {
+    MatSeqAIJMKL_create_mkl_handle(B);
+  }
+  csrA = a->csrA;
+  csrB = b->csrA;
+  csrC = c->csrA;
+  descr_type_gen.type = SPARSE_MATRIX_TYPE_GENERAL;
+
+  stat = mkl_sparse_sp2m(SPARSE_OPERATION_NON_TRANSPOSE,descr_type_gen,csrA,
+                         SPARSE_OPERATION_NON_TRANSPOSE,descr_type_gen,csrB,
+                         SPARSE_STAGE_FULL_MULT_NO_VAL,&csrC);
+
+  if (stat != SPARSE_STATUS_SUCCESS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Intel MKL error: unable to complete symbolic stage of sparse matrix-matrix multiply");
+
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatMatMultNumeric_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat B,Mat C)
 {
   Mat_SeqAIJMKL       *a, *b, *c;
@@ -756,9 +792,7 @@ PetscErrorCode MatMatMultNumeric_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat B,Mat C)
 
   PetscFunctionReturn(0);
 }
-#endif /* PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE */
 
-#if defined(PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE)
 PetscErrorCode MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat P,Mat C)
 {
   Mat_SeqAIJMKL       *a, *p, *c;
@@ -803,7 +837,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat P,Mat C)
 
   PetscFunctionReturn(0);
 }
-#endif
+#endif /* PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE */
 
 /* MatConvert_SeqAIJ_SeqAIJMKL converts a SeqAIJ matrix into a
  * SeqAIJMKL matrix.  This routine is called by the MatCreate_SeqAIJMKL()
@@ -860,6 +894,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A,MatType type,MatRe
   B->ops->multadd          = MatMultAdd_SeqAIJMKL_SpMV2;
   B->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJMKL_SpMV2;
 # if defined(PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE)
+  B->ops->matmultsymbolic  = MatMatMultSymbolic_SeqAIJMKL_SeqAIJMKL_SpMV2;
   B->ops->matmultnumeric   = MatMatMultNumeric_SeqAIJMKL_SeqAIJMKL_SpMV2;
 #   if !defined(PETSC_USE_COMPLEX)
   B->ops->ptapnumeric      = MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL_SpMV2;
