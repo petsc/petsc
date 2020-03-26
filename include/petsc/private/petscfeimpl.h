@@ -106,15 +106,43 @@ struct _p_PetscDualSpace {
   PetscInt        *numDof;
 };
 
+typedef struct _n_Petsc1DNodeFamily *Petsc1DNodeFamily;
+typedef struct _n_PetscLagNodeIndices *PetscLagNodeIndices;
+
+PETSC_EXTERN PetscErrorCode PetscLagNodeIndicesGetData_Internal(PetscLagNodeIndices, PetscInt *, PetscInt *, PetscInt *, const PetscInt *[], const PetscReal *[]);
+PETSC_EXTERN PetscErrorCode PetscDualSpaceCreateInteriorSymmetryMatrix_Lagrange(PetscDualSpace sp, PetscInt ornt, Mat *symMat);
+
 typedef struct {
-  PetscBool       simplexCell; /* Flag for simplices, as opposed to tensor cells */
-  PetscBool       tensorSpace; /* Flag for tensor product space of polynomials, as opposed to a space of maximum degree */
-  PetscBool       continuous;  /* Flag for a continuous basis, as opposed to discontinuous across element boundaries */
-  PetscInt        height;      /* The number of subspaces stored */
-  PetscDualSpace *subspaces;   /* [h]: The subspace for dimension dim-(h+1) */
-  PetscInt     ***symmetries;
-  PetscInt        numSelfSym;
-  PetscInt        selfSymOff;
+  /* these describe the types of dual spaces implemented */
+  PetscBool         tensorCell;  /* Flag for tensor product cell */
+  PetscBool         tensorSpace; /* Flag for tensor product space of polynomials, as opposed to a space of maximum degree */
+  PetscBool         trimmed;     /* Flag for dual space of trimmed polynomial spaces */
+  PetscBool         continuous;  /* Flag for a continuous basis, as opposed to discontinuous across element boundaries */
+
+  PetscBool         interiorOnly; /* To make setup faster for tensor elements, only construct interior dofs in recursive calls */
+
+  /* these keep track of symmetries */
+  PetscInt       ***symperms;
+  PetscScalar    ***symflips;
+  PetscInt          numSelfSym;
+  PetscInt          selfSymOff;
+  PetscBool         symComputed;
+
+  /* these describe different schemes of placing nodes in a simplex, from
+   * which are derived all dofs in Lagrange dual spaces */
+  PetscDTNodeType   nodeType;
+  PetscBool         endNodes;
+  PetscReal         nodeExponent;
+  PetscInt          numNodeSkip; /* The number of end nodes from the 1D Node family to skip */
+  Petsc1DNodeFamily nodeFamily;
+
+  PetscInt          numCopies;
+
+  /* these are ways of indexing nodes in a way that makes
+   * the computation of symmetries programmatic */
+  PetscLagNodeIndices vertIndices;
+  PetscLagNodeIndices intNodeIndices;
+  PetscLagNodeIndices allNodeIndices;
 } PetscDualSpace_Lag;
 
 typedef struct {
