@@ -14,13 +14,14 @@ import os
 import sys
 import subprocess
 import re
+import datetime
 
 sys.path.append(os.path.abspath('./ext'))
 
 # -- Project information -----------------------------------------------------
 
 project = 'PETSc'
-copyright = '2020'
+copyright = str(datetime.date.today().year)
 author = 'PETSc'
 
 with open(os.path.join('..', '..', '..', 'include', 'petscversion.h'),'r') as version_file:
