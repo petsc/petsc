@@ -9,11 +9,11 @@ const char help[] = "Test PETSCDUALSPACELAGRANGE\n";
 
 typedef struct _PetscHashLagKey
 {
-  PetscInt dim;
-  PetscInt order;
-  PetscInt formDegree;
+  PetscInt  dim;
+  PetscInt  order;
+  PetscInt  formDegree;
   PetscBool trimmed;
-  PetscBool tensor;
+  PetscInt  tensor;
   PetscBool continuous;
 } PetscHashLagKey;
 
@@ -196,7 +196,7 @@ PetscErrorCode testLagrange(PetscHashLag lagTable, DM K, PetscInt dim, PetscInt 
   ierr = PetscDualSpaceLagrangeSetContinuity(sp, continuous);CHKERRQ(ierr);
   ierr = PetscDualSpaceLagrangeSetTensor(sp, (PetscBool) tensor);CHKERRQ(ierr);
   ierr = PetscDualSpaceLagrangeSetTrimmed(sp, trimmed);CHKERRQ(ierr);
-  ierr = PetscInfo7(NULL, "Input: dim %D, order %D, trimmed %D, tensor %D, continuous %D, formDegree %D, nCopies %D\n", dim, order, trimmed, tensor, continuous, formDegree, nCopies);CHKERRQ(ierr);
+  ierr = PetscInfo7(NULL, "Input: dim %D, order %D, trimmed %D, tensor %D, continuous %D, formDegree %D, nCopies %D\n", dim, order, (PetscInt) trimmed, tensor, (PetscInt) continuous, formDegree, nCopies);CHKERRQ(ierr);
   ierr = ExpectedNumDofs_Total(dim, order, formDegree, trimmed, tensor, nCopies, &exspdim);CHKERRQ(ierr);
   if (continuous && dim > 0 && order > 0) {
     ierr = ExpectedNumDofs_Interior(dim, order, formDegree, trimmed, tensor, nCopies, &exspintdim);CHKERRQ(ierr);
@@ -215,16 +215,19 @@ PetscErrorCode testLagrange(PetscHashLag lagTable, DM K, PetscInt dim, PetscInt 
   if (tensor == 2) {
     key.tensor = 2;
   } else {
-    ierr = PetscDualSpaceLagrangeGetTensor(sp, &key.tensor);CHKERRQ(ierr);
+    PetscBool bTensor;
+
+    ierr = PetscDualSpaceLagrangeGetTensor(sp, &bTensor);CHKERRQ(ierr);
+    key.tensor = bTensor;
   }
   ierr = PetscDualSpaceLagrangeGetTrimmed(sp, &key.trimmed);CHKERRQ(ierr);
-  ierr = PetscInfo4(NULL, "After setup:  order %D, trimmed %D, tensor %D, continuous %D\n", key.order, key.trimmed, key.tensor, key.continuous);CHKERRQ(ierr);
+  ierr = PetscInfo4(NULL, "After setup:  order %D, trimmed %D, tensor %D, continuous %D\n", key.order, (PetscInt) key.trimmed, key.tensor, (PetscInt) key.continuous);CHKERRQ(ierr);
   ierr = PetscHashLagPut(lagTable, key, &iter, &missing);CHKERRQ(ierr);
   if (missing) {
     DMPolytopeType type;
 
     ierr = DMPlexGetCellType(K, 0, &type);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF, "New space: %s, order %D, trimmed %D, tensor %D, continuous %D, form degree %D\n", DMPolytopeTypes[type], order, trimmed, tensor, continuous, formDegree);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF, "New space: %s, order %D, trimmed %D, tensor %D, continuous %D, form degree %D\n", DMPolytopeTypes[type], order, (PetscInt) trimmed, tensor, (PetscInt) continuous, formDegree);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
     {
       PetscQuadrature intNodes, allNodes;
@@ -254,7 +257,7 @@ PetscErrorCode testLagrange(PetscHashLag lagTable, DM K, PetscInt dim, PetscInt 
         }
         ierr = PetscPrintf(PETSC_COMM_SELF, "): [");CHKERRQ(ierr);
         for (j = 0; j < nodeVecDim; j++) {
-          ierr = PetscPrintf(PETSC_COMM_SELF, " %g,", nodeVec[i * nodeVecDim + j]);CHKERRQ(ierr);
+          ierr = PetscPrintf(PETSC_COMM_SELF, " %g,", (double) nodeVec[i * nodeVecDim + j]);CHKERRQ(ierr);
         }
         ierr = PetscPrintf(PETSC_COMM_SELF, "]\n");CHKERRQ(ierr);
       }

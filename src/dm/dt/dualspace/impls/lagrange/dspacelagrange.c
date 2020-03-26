@@ -1045,7 +1045,7 @@ static PetscErrorCode PetscQuadraturePointsMerge(PetscQuadrature quadA, PetscQua
   for (i = 0; i < nB; i++) {
     for (j = 0; j < nA; j++) {
       bToJ[i] = -1;
-      for (d = 0; d < dimA; d++) if (pointsB[i * dimA + d] != pointsA[j * dimA + d]) break;
+      for (d = 0; d < dimA; d++) if (PetscAbsReal(pointsB[i * dimA + d] - pointsA[j * dimA + d]) > PETSC_SMALL) break;
       if (d == dimA) {
         bToJ[i] = j;
         break;
@@ -1157,9 +1157,9 @@ static PetscErrorCode PetscDualSpaceCreateFacetSubspace_Lagrange(PetscDualSpace 
 
 
     if (depth == dim) {
-      pointDim = dim - 1;
       PetscInt coneSize;
 
+      pointDim = dim - 1;
       ierr = DMPlexGetConeSize(dm,f,&coneSize);CHKERRQ(ierr);
       isSimplex = (PetscBool) (coneSize == dim);
       ierr = PetscDualSpaceCreateReferenceCell(*bdsp, dim-1, isSimplex, &K);CHKERRQ(ierr);
@@ -1991,7 +1991,7 @@ static PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
 
   /* step 3: construct intNodes, and intMat, and combine it with boundray data to make allNodes and allMat */
   if (!tensorSpace) {
-    ierr = PetscLagNodeIndicesCreateSimplexVertices(dm, &(lag->vertIndices));CHKERRQ(ierr);
+    if (!tensorCell) {ierr = PetscLagNodeIndicesCreateSimplexVertices(dm, &(lag->vertIndices));CHKERRQ(ierr);}
 
     if (trimmed) {
       if (order + PetscAbsInt(formDegree) > dim) {
@@ -2116,10 +2116,10 @@ static PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
           intNodeIndices = intNodeIndices2;
         } else {
           /* merge the two matrices and the two sets of points */
-          PetscInt        *toMerged, *toMerged2;
           PetscInt         nM;
-          PetscQuadrature  merged = NULL;
           PetscInt         nDof, nDof2;
+          PetscInt        *toMerged = NULL, *toMerged2 = NULL;
+          PetscQuadrature  merged = NULL;
           PetscLagNodeIndices intNodeIndicesMerged = NULL;
           Mat              matMerged = NULL;
 
@@ -2129,7 +2129,8 @@ static PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
           ierr = PetscQuadratureGetData(merged, NULL, NULL, &nM, NULL, NULL);CHKERRQ(ierr);
           ierr = MatricesMerge(intMat, intMat2, dim, formDegree, nM, toMerged, toMerged2, &matMerged);CHKERRQ(ierr);
           ierr = PetscLagNodeIndicesMerge(intNodeIndices, intNodeIndices2, &intNodeIndicesMerged);CHKERRQ(ierr);
-          ierr = PetscFree2(toMerged,toMerged2);CHKERRQ(ierr);
+          ierr = PetscFree(toMerged);CHKERRQ(ierr);
+          ierr = PetscFree(toMerged2);CHKERRQ(ierr);
           ierr = MatDestroy(&intMat);CHKERRQ(ierr);
           ierr = MatDestroy(&intMat2);CHKERRQ(ierr);
           ierr = PetscQuadratureDestroy(&intNodes);CHKERRQ(ierr);

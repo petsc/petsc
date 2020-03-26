@@ -2257,7 +2257,6 @@ PetscErrorCode PetscDTBaryToIndex(PetscInt len, PetscInt sum, const PetscInt coo
 
   PetscFunctionBeginHot;
   if (len < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "length must be non-negative");
-  if (index < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "index must be non-negative");
   if (!len) {
     if (!sum) {
       *index = 0;

@@ -67,12 +67,13 @@ int main(int argc, char **argv)
   # quadratic nodes on the triangle
   test:
     suffix: 0
+    filter: sed -E "s/\(\+0, \+0\)/(+0., +0.)/g"
     args: -dim 2 -tensor 0 -petscdualspace_order 2 -petscdualspace_view ascii::ascii_info_detail
 
   # linear nodes on the quadrilateral
   test:
     suffix: 1
-    args: -dim 2 -tensor 1 -petscdualspace_order 1 -petscdualspace_view ascii::ascii_info_detail
+    args: -dim 2 -tensor 1 -petscdualspace_order 1 -petscdualspace_lagrange_tensor 1 -petscdualspace_view ascii::ascii_info_detail
 
   # lowest order Raviart-Thomas / Nedelec edge nodes on the hexahedron
   test:
