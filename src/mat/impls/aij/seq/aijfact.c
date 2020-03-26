@@ -161,6 +161,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ_inplace(Mat B,Mat A,IS isrow,IS iscol,
 
   /* initial FreeSpace size is f*(ai[n]+1) */
   f             = info->fill;
+  if (n==1)   f = 1; /* prevent failure in corner case of 1x1 matrix with fill < 0.5 */
   ierr          = PetscFreeSpaceGet(PetscRealIntMultTruncate(f,ai[n]+1),&free_space);CHKERRQ(ierr);
   current_space = free_space;
 
@@ -309,6 +310,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat B,Mat A,IS isrow,IS iscol,const Ma
 
   /* initial FreeSpace size is f*(ai[n]+1) */
   f             = info->fill;
+  if (n==1)   f = 1; /* prevent failure in corner case of 1x1 matrix with fill < 0.5 */
   ierr          = PetscFreeSpaceGet(PetscRealIntMultTruncate(f,ai[n]+1),&free_space);CHKERRQ(ierr);
   current_space = free_space;
 

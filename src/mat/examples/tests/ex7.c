@@ -9,15 +9,24 @@ int main(int argc,char **args)
 {
   Mat            C,LU;
   MatInfo        info;
-  PetscInt       i,j,m = 3,n = 3,Ii,J;
+  PetscInt       i,j,m,n,Ii,J;
   PetscErrorCode ierr;
   PetscScalar    v,one = 1.0;
   IS             perm,iperm;
   Vec            x,u,b;
-  PetscReal      norm;
+  PetscReal      norm,fill;
   MatFactorInfo  luinfo;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Mat test ex7 options","Mat");CHKERRQ(ierr);
+  m = 3; n = 3; fill = 2.0;
+  ierr = PetscOptionsInt("-m","Number of rows in grid",NULL,m,&m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-n","Number of columns in grid",NULL,n,&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-fill","Expected fill ratio for factorization",NULL,fill,&fill,NULL);CHKERRQ(ierr);
+
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+
   /* Create the matrix for the five point stencil, YET AGAIN */
   ierr = MatCreate(PETSC_COMM_SELF,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
@@ -41,7 +50,7 @@ int main(int argc,char **args)
 
   ierr = MatFactorInfoInitialize(&luinfo);CHKERRQ(ierr);
 
-  luinfo.fill          = 2.0;
+  luinfo.fill          = fill;
   luinfo.dtcol         = 0.0;
   luinfo.zeropivot     = 1.e-14;
   luinfo.pivotinblocks = 1.0;
@@ -86,6 +95,12 @@ int main(int argc,char **args)
 /*TEST
 
    test:
+      suffix: 1
+      filter: grep -v "MPI processes"
+
+   test:
+      suffix: 2
+      args: -m 1 -n 1 -fill 0.49
       filter: grep -v "MPI processes"
 
 TEST*/
