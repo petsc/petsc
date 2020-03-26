@@ -6,3 +6,4 @@ Parallel Mesh in 2 dimensions:
   2-cells: 3 3
 Labels:
   depth: 3 strata with value/size (0 (8), 1 (10), 2 (3))
+  celltype: 3 strata with value/size (0 (8), 1 (10), 4 (3))

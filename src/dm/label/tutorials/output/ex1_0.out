@@ -1,5 +1,15 @@
-Number of labels: 11
-Label 0: name: depth
+Number of labels: 12
+Label 0: name: celltype
+IS of values
+  IS Object: 1 MPI processes
+    type: general
+  Number of indices in set 4
+  0 0
+  1 7
+  2 4
+  3 1
+
+Label 1: name: depth
 IS of values
   IS Object: 1 MPI processes
     type: general
@@ -9,14 +19,14 @@ IS of values
   2 2
   3 3
 
-Label 1: name: Cell Sets
+Label 2: name: Cell Sets
 IS of values
   IS Object: 1 MPI processes
     type: general
   Number of indices in set 1
   0 10
 
-Label 2: name: Face Sets
+Label 3: name: Face Sets
 IS of values
   IS Object: 1 MPI processes
     type: general
@@ -26,56 +36,56 @@ IS of values
   2 200
   3 201
 
-Label 3: name: OuterBoundary
+Label 4: name: OuterBoundary
 IS of values
   IS Object: 1 MPI processes
     type: general
   Number of indices in set 1
   0 100
 
-Label 4: name: InnerBoundary
+Label 5: name: InnerBoundary
 IS of values
   IS Object: 1 MPI processes
     type: general
   Number of indices in set 1
   0 101
 
-Label 5: name: TopBoundary
+Label 6: name: TopBoundary
 IS of values
   IS Object: 1 MPI processes
     type: general
   Number of indices in set 1
   0 200
 
-Label 6: name: BottomBoundary
+Label 7: name: BottomBoundary
 IS of values
   IS Object: 1 MPI processes
     type: general
   Number of indices in set 1
   0 201
 
-Label 7: name: label0
+Label 8: name: label0
 IS of values
   IS Object: 1 MPI processes
     type: general
   Number of indices in set 1
   0 1
 
-Label 8: name: label1
+Label 9: name: label1
 IS of values
   IS Object: 1 MPI processes
     type: general
   Number of indices in set 1
   0 2
 
-Label 9: name: label2
+Label 10: name: label2
 IS of values
   IS Object: 1 MPI processes
     type: general
   Number of indices in set 1
   0 1
 
-Label 10: name: label3
+Label 11: name: label3
 IS of values
   IS Object: 1 MPI processes
     type: general

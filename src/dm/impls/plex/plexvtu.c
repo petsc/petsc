@@ -102,7 +102,13 @@ static PetscErrorCode DMPlexGetVTKConnectivity(DM dm, PetscBool localized, Piece
     } else {
       for (nC = 0; nC < dof/dim; nC++) conn[countconn++] = startoffset + nC;
     }
-    ierr = DMPlexInvertCell(dim, nC, &conn[countconn-nC]);CHKERRQ(ierr);
+
+    {
+      PetscInt n = PetscMin(nC, 8), s = countconn - nC, i, cone[8];
+      for (i = 0; i < n; ++i) cone[i] = conn[s+i];
+      ierr = DMPlexReorderCell(dm, c, cone);CHKERRQ(ierr);
+      for (i = 0; i < n; ++i) conn[s+i] = (int)cone[i];
+    }
 
     offsets[countcell] = countconn;
 

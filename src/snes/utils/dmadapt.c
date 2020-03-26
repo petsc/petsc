@@ -719,7 +719,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
 
       ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
       ierr = DMLabelCreate(PETSC_COMM_SELF, "adapt", &adaptLabel);CHKERRQ(ierr);
-      ierr = DMPlexGetInteriorCellStratum(plex, &cStart, &cEnd);CHKERRQ(ierr);
+      ierr = DMPlexGetSimplexOrBoxCells(plex, 0, &cStart, &cEnd);CHKERRQ(ierr);
 
       ierr = VecCreateMPI(PetscObjectComm((PetscObject) adaptor), cEnd-cStart, PETSC_DETERMINE, &errVec);CHKERRQ(ierr);
       ierr = VecSetUp(errVec);CHKERRQ(ierr);

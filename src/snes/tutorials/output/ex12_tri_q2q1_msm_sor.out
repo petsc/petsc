@@ -1,30 +1,29 @@
   0 SNES Function norm 8.32828 
-    0 KSP Residual norm 5.49429 
-    1 KSP Residual norm 1.75136 
-    2 KSP Residual norm 0.847906 
-    3 KSP Residual norm 0.468185 
-    4 KSP Residual norm 0.231759 
-    5 KSP Residual norm 0.10267 
-    6 KSP Residual norm 0.0219256 
-    7 KSP Residual norm 0.00324115 
-    8 KSP Residual norm 0.000629844 
-    9 KSP Residual norm 0.000212532 
-   10 KSP Residual norm 5.58983e-05 
-   11 KSP Residual norm 2.01188e-05 
-   12 KSP Residual norm 3.57773e-06 
-   13 KSP Residual norm 3.94557e-07 
-   14 KSP Residual norm 6.77194e-08 
-   15 KSP Residual norm 8.96775e-09 
-   16 KSP Residual norm 1.70104e-09 
-  Linear solve converged due to CONVERGED_RTOL iterations 16
-  1 SNES Function norm 2.77701e-09 
+    0 KSP Residual norm 5.6599 
+    1 KSP Residual norm 1.6573 
+    2 KSP Residual norm 0.795119 
+    3 KSP Residual norm 0.450895 
+    4 KSP Residual norm 0.220114 
+    5 KSP Residual norm 0.0802121 
+    6 KSP Residual norm 0.0123993 
+    7 KSP Residual norm 0.00268483 
+    8 KSP Residual norm 0.000819275 
+    9 KSP Residual norm 0.000220428 
+   10 KSP Residual norm 3.29995e-05 
+   11 KSP Residual norm 6.74624e-06 
+   12 KSP Residual norm 7.5397e-07 
+   13 KSP Residual norm 2.15979e-07 
+   14 KSP Residual norm 2.0235e-08 
+   15 KSP Residual norm 1.5961e-09 
+  Linear solve converged due to CONVERGED_RTOL iterations 15
+  1 SNES Function norm 3.20022e-09 
 L_2 Error: 0.00131794
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=16
+  total number of linear solver iterations=15
   total number of function evaluations=2
   norm schedule ALWAYS
   SNESLineSearch Object: 1 MPI processes
@@ -60,8 +59,8 @@ SNES Object: 1 MPI processes
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
           type: seqaij
-          rows=223, cols=223
-          total: nonzeros=1447, allocated nonzeros=1447
+          rows=224, cols=224
+          total: nonzeros=1452, allocated nonzeros=1452
           total number of mallocs used during MatSetValues calls=0
             not using I-node routines
     linear system matrix = precond matrix:

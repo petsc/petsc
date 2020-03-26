@@ -17,3 +17,7 @@ Process 0:
 Label 'marker':
 [0]: 1 (1)
 [0]: 2 (1)
+Label 'celltype':
+[0]: 0 (1)
+[0]: 1 (0)
+[0]: 2 (0)

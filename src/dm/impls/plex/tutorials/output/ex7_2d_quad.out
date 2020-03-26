@@ -6,3 +6,4 @@ Sphere in 2 dimensions:
   2-cells: 6
 Labels:
   depth: 3 strata with value/size (0 (8), 1 (12), 2 (6))
+  celltype: 3 strata with value/size (4 (6), 0 (8), 1 (12))

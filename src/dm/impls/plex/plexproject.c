@@ -604,15 +604,9 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
     IS           heightIS;
 
     /* Note we assume that dm and dmIn share the same topology */
-    ierr = DMPlexGetHeightStratum(plex, h, &pStart, &pEnd);CHKERRQ(ierr);
+    ierr = DMPlexGetSimplexOrBoxCells(plex, h, &pStart, &pEnd);CHKERRQ(ierr);
     ierr = DMGetFirstLabelEntry_Private(dm, dm, label, numIds, ids, h, &lStart, NULL);CHKERRQ(ierr);
     ierr = DMLabelGetStratumIS(depthLabel, depth - h, &heightIS);CHKERRQ(ierr);
-    if (!h) {
-      PetscInt cEndInterior;
-
-      ierr = DMPlexGetInteriorCellStratum(dm, NULL, &cEndInterior);CHKERRQ(ierr);
-      pEnd = cEndInterior < 0 ? pEnd : cEndInterior;
-    }
     if (pEnd <= pStart) {
       ierr = ISDestroy(&heightIS);CHKERRQ(ierr);
       continue;

@@ -183,7 +183,17 @@
         </ul>
       <h4>DMPlex:</h4>
         <ul>
-          <li>The cell type is now stored in a label, so it can be queried. This is useful for interpolation, which needs extra data, and for geometric calculations</li>
+          <li>The idea of hybrid and ghost cells has been removed from Plex in favor of cell type.</li>
+          <li>Plex can now classify points by cell type, stored in a DMLabel. This is useful for operations that require more than topological data, such as mesh interpolation, geometric calculations, and is also used an index to avoid repeated topological queries.</li>
+          <li>Add DMPlexSetCellType() and DMPlexCreateReferenceCellByType()</li>
+          <li>Distribution sorts strata by cell type.</li>
+          <li>Plex can now allow any number of cell types in a single mesh. Interpolation, refinement, and extraction of submeshes mixed meshes work smoothly. Both oriented and tensor-product prisms can be used in the same mesh.</li>
+          <li>Cell refiners have been abstracted. Currently there are two (regular refinement, and conversion to hexes). The plan is to add more, such as local extrusion and conversion to simplices.</li>
+          <li>Removed SimplexToTensor in favor of DM_REFINER_TO_BOX</li>
+          <li>DMForest now responds to DMPlexGetOverlap() and propagates its overlap to the underlying Plex<li>
+          <li>Add DMPlexGetSimplexOrBoxCells() to replace DMPlexGetInteriorCellStratum()<li>
+          <li>Add DMPolytopTypeGetDim(), DMPolyTopeTypeGetConeSize(), DMPolytopeTypeGetNumVertices()</li>
+          <li>Add DMLabelSetStratumBounds()</li>
           <li>Add DMPlexOrientCell() which orients a single cell</li>
           <li>Add DMPlexCompareOrientations() which compares the cone point order of a single cell with the given reference cone</li>
           <li>Add DMPlexIsInterpolated() which finds out whether the plex is interpolated</li>

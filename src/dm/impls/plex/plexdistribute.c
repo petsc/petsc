@@ -206,6 +206,7 @@ PetscErrorCode DMPlexGetAdjacency_Internal(DM dm, PetscInt p, PetscBool useCone,
 
     ierr  = DMPlexGetChart(dm, &pStart,&pEnd);CHKERRQ(ierr);
     ierr  = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
+    depth = PetscMax(depth, -depth);
     ierr  = DMPlexGetMaxSizes(dm, &maxC, &maxS);CHKERRQ(ierr);
     coneSeries    = (maxC > 1) ? ((PetscPowInt(maxC,depth+1)-1)/(maxC-1)) : depth+1;
     supportSeries = (maxS > 1) ? ((PetscPowInt(maxS,depth+1)-1)/(maxS-1)) : depth+1;
@@ -682,6 +683,9 @@ PetscErrorCode DMPlexCreateOverlapMigrationSF(DM dm, PetscSF overlapSF, PetscSF 
   Output Parameter:
 . migrationSF - A star forest with added leaf indirection that ensures the resulting DM is stratified
 
+  Note:
+  This lexicographically sorts by (depth, cellType)
+
   Level: developer
 
 .seealso: DMPlexPartitionLabelCreateSF(), DMPlexDistribute(), DMPlexDistributeOverlap()
@@ -690,10 +694,11 @@ PetscErrorCode DMPlexStratifyMigrationSF(DM dm, PetscSF sf, PetscSF *migrationSF
 {
   MPI_Comm           comm;
   PetscMPIInt        rank, size;
-  PetscInt           d, ldepth, depth, p, pStart, pEnd, nroots, nleaves;
-  PetscInt          *pointDepths, *remoteDepths, *ilocal;
+  PetscInt           d, ldepth, depth, dim, p, pStart, pEnd, nroots, nleaves;
+  PetscSFNode       *pointDepths, *remoteDepths;
+  PetscInt          *ilocal;
   PetscInt          *depthRecv, *depthShift, *depthIdx;
-  PetscInt           hybEnd[4];
+  PetscInt          *ctRecv,    *ctShift,    *ctIdx;
   const PetscSFNode *iremote;
   PetscErrorCode     ierr;
 
@@ -703,6 +708,7 @@ PetscErrorCode DMPlexStratifyMigrationSF(DM dm, PetscSF sf, PetscSF *migrationSF
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = DMPlexGetDepth(dm, &ldepth);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = MPIU_Allreduce(&ldepth, &depth, 1, MPIU_INT, MPI_MAX, comm);CHKERRQ(ierr);
   if ((ldepth >= 0) && (depth != ldepth)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Inconsistent Plex depth %d != %d", ldepth, depth);
   ierr = PetscLogEventBegin(DMPLEX_PartStratSF,dm,0,0,0);CHKERRQ(ierr);
@@ -710,49 +716,74 @@ PetscErrorCode DMPlexStratifyMigrationSF(DM dm, PetscSF sf, PetscSF *migrationSF
   /* Before building the migration SF we need to know the new stratum offsets */
   ierr = PetscSFGetGraph(sf, &nroots, &nleaves, NULL, &iremote);CHKERRQ(ierr);
   ierr = PetscMalloc2(nroots, &pointDepths, nleaves, &remoteDepths);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm,&hybEnd[depth],&hybEnd[PetscMax(depth-1,0)],&hybEnd[1],&hybEnd[0]);CHKERRQ(ierr);
   for (d = 0; d < depth+1; ++d) {
     ierr = DMPlexGetDepthStratum(dm, d, &pStart, &pEnd);CHKERRQ(ierr);
     for (p = pStart; p < pEnd; ++p) {
-      if (hybEnd[d] >= 0 && p >= hybEnd[d]) { /* put in a separate value for hybrid points */
-        pointDepths[p] = 2 * d;
-      } else {
-        pointDepths[p] = 2 * d + 1;
+      DMPolytopeType ct;
+
+      ierr = DMPlexGetCellType(dm, p, &ct);CHKERRQ(ierr);
+      pointDepths[p].index = d;
+      pointDepths[p].rank  = ct;
+    }
+  }
+  for (p = 0; p < nleaves; ++p) {remoteDepths[p].index = -1; remoteDepths[p].rank = -1;}
+  ierr = PetscSFBcastBegin(sf, MPIU_2INT, pointDepths, remoteDepths);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sf, MPIU_2INT, pointDepths, remoteDepths);CHKERRQ(ierr);
+  /* Count received points in each stratum and compute the internal strata shift */
+  ierr = PetscCalloc6(depth+1, &depthRecv, depth+1, &depthShift, depth+1, &depthIdx, DM_NUM_POLYTOPES, &ctRecv, DM_NUM_POLYTOPES, &ctShift, DM_NUM_POLYTOPES, &ctIdx);CHKERRQ(ierr);
+  for (p = 0; p < nleaves; ++p) {
+    if (remoteDepths[p].rank < 0) {
+      ++depthRecv[remoteDepths[p].index];
+    } else {
+      ++ctRecv[remoteDepths[p].rank];
+    }
+  }
+  {
+    PetscInt depths[4], dims[4], shift = 0, i, c;
+
+    /* Cells (depth), Vertices (0), Faces (depth-1), Edges (1) */
+    depths[0] = depth; depths[1] = 0; depths[2] = depth-1; depths[3] = 1;
+    dims[0]   = dim;   dims[1]   = 0; dims[2]   = dim-1;   dims[3]   = 1;
+    for (i = 0; i <= depth; ++i) {
+      const PetscInt dep = depths[i];
+      const PetscInt dim = dims[i];
+
+      for (c = 0; c < DM_NUM_POLYTOPES; ++c) {
+        if (DMPolytopeTypeGetDim((DMPolytopeType) c) != dim && !(i == 0 && c == DM_POLYTOPE_FV_GHOST)) continue;
+        ctShift[c] = shift;
+        shift     += ctRecv[c];
+      }
+      depthShift[dep] = shift;
+      shift          += depthRecv[dep];
+    }
+    for (c = 0; c < DM_NUM_POLYTOPES; ++c) {
+      const PetscInt ctDim = DMPolytopeTypeGetDim((DMPolytopeType) c);
+
+      if ((ctDim < 0 || ctDim > dim) && c != DM_POLYTOPE_FV_GHOST) {
+        ctShift[c] = shift;
+        shift     += ctRecv[c];
       }
     }
   }
-  for (p = 0; p < nleaves; ++p) remoteDepths[p] = -1;
-  ierr = PetscSFBcastBegin(sf, MPIU_INT, pointDepths, remoteDepths);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sf, MPIU_INT, pointDepths, remoteDepths);CHKERRQ(ierr);
-  /* Count received points in each stratum and compute the internal strata shift */
-  ierr = PetscMalloc3(2*(depth+1), &depthRecv, 2*(depth+1), &depthShift, 2*(depth+1), &depthIdx);CHKERRQ(ierr);
-  for (d = 0; d < 2*(depth+1); ++d) depthRecv[d] = 0;
-  for (p = 0; p < nleaves; ++p) depthRecv[remoteDepths[p]]++;
-  depthShift[2*depth+1] = 0;
-  for (d = 0; d < 2*depth+1; ++d) depthShift[d] = depthRecv[2 * depth + 1];
-  for (d = 0; d < 2*depth; ++d) depthShift[d] += depthRecv[2 * depth];
-  depthShift[0] += depthRecv[1];
-  for (d = 2; d < 2*depth; ++d) depthShift[d] += depthRecv[1];
-  for (d = 2; d < 2*depth; ++d) depthShift[d] += depthRecv[0];
-  for (d = 2 * depth-1; d > 2; --d) {
-    PetscInt e;
-
-    for (e = d -1; e > 1; --e) depthShift[e] += depthRecv[d];
-  }
-  for (d = 0; d < 2*(depth+1); ++d) {depthIdx[d] = 0;}
   /* Derive a new local permutation based on stratified indices */
   ierr = PetscMalloc1(nleaves, &ilocal);CHKERRQ(ierr);
   for (p = 0; p < nleaves; ++p) {
-    const PetscInt dep = remoteDepths[p];
+    const PetscInt       dep = remoteDepths[p].index;
+    const DMPolytopeType ct  = (DMPolytopeType) remoteDepths[p].rank;
 
-    ilocal[p] = depthShift[dep] + depthIdx[dep];
-    depthIdx[dep]++;
+    if ((PetscInt) ct < 0) {
+      ilocal[p] = depthShift[dep] + depthIdx[dep];
+      ++depthIdx[dep];
+    } else {
+      ilocal[p] = ctShift[ct] + ctIdx[ct];
+      ++ctIdx[ct];
+    }
   }
   ierr = PetscSFCreate(comm, migrationSF);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *migrationSF, "Migration SF");CHKERRQ(ierr);
   ierr = PetscSFSetGraph(*migrationSF, nroots, nleaves, ilocal, PETSC_OWN_POINTER, iremote, PETSC_COPY_VALUES);CHKERRQ(ierr);
   ierr = PetscFree2(pointDepths,remoteDepths);CHKERRQ(ierr);
-  ierr = PetscFree3(depthRecv, depthShift, depthIdx);CHKERRQ(ierr);
+  ierr = PetscFree6(depthRecv, depthShift, depthIdx, ctRecv, ctShift, ctIdx);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(DMPLEX_PartStratSF,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1094,60 +1125,6 @@ static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmPa
     ierr = DMLabelDestroy(&labelNew);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(DMPLEX_DistributeLabels,dm,0,0,0);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/* Set hybrid and ghost state of points */
-static PetscErrorCode DMPlexDistributeSetupHybrid(DM dm, PetscSF migrationSF, ISLocalToGlobalMapping renumbering, DM dmParallel)
-{
-  DM_Plex        *mesh  = (DM_Plex*) dm->data;
-  DM_Plex        *pmesh = (DM_Plex*) (dmParallel)->data;
-  PetscInt       *isHybrid, *isHybridParallel; /* 0 for normal, 1 for hybrid, 2 for ghost cell */
-  PetscInt        dim, depth, d;
-  PetscInt        pStart, pEnd, pStartP, pEndP, gcStart, gcEnd;
-  PetscErrorCode  ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidHeaderSpecific(dmParallel, DM_CLASSID, 3);
-
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
-  ierr = DMPlexGetChart(dm,&pStart,&pEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetChart(dmParallel,&pStartP,&pEndP);CHKERRQ(ierr);
-  ierr = DMPlexGetGhostCellStratum(dm, &gcStart, &gcEnd);CHKERRQ(ierr);
-  ierr = PetscCalloc2(pEnd-pStart,&isHybrid,pEndP-pStartP,&isHybridParallel);CHKERRQ(ierr);
-  for (d = 0; d <= depth; d++) {
-    PetscInt hybridMax = (depth == 1 && d == 1) ? mesh->hybridPointMax[dim] : mesh->hybridPointMax[d], p;
-
-    if (hybridMax >= 0) {
-      PetscInt sStart, sEnd;
-
-      ierr = DMPlexGetDepthStratum(dm,d,&sStart,&sEnd);CHKERRQ(ierr);
-      for (p = hybridMax; p < sEnd; p++) isHybrid[p-pStart] = 1;
-    }
-    if (d == depth) for (p = gcStart; p < gcEnd; ++p) isHybrid[p-pStart] = 2;
-  }
-  ierr = PetscSFBcastBegin(migrationSF,MPIU_INT,isHybrid,isHybridParallel);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(migrationSF,MPIU_INT,isHybrid,isHybridParallel);CHKERRQ(ierr);
-  for (d = 0; d <= dim; d++) pmesh->hybridPointMax[d] = -1;
-  for (d = 0; d <= depth; d++) {
-    PetscInt sStart, sEnd, p, dd;
-
-    ierr = DMPlexGetDepthStratum(dmParallel,d,&sStart,&sEnd);CHKERRQ(ierr);
-    dd = (depth == 1 && d == 1) ? dim : d;
-    for (p = sStart; p < sEnd; p++) {
-      if (isHybridParallel[p-pStartP] == 1) {
-        pmesh->hybridPointMax[dd] = p;
-        break;
-      }
-      if (d == depth && isHybridParallel[p-pStartP] == 2) {
-        ierr = DMPlexSetGhostCellStratum(dmParallel, p, PETSC_DETERMINE);CHKERRQ(ierr);
-        break;
-      }
-    }
-  }
-  ierr = PetscFree2(isHybrid,isHybridParallel);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1578,7 +1555,6 @@ PetscErrorCode DMPlexMigrate(DM dm, PetscSF sf, DM targetDM)
   ierr = DMPlexDistributeCones(dm, sf, ltogOriginal, ltogMigration, targetDM);CHKERRQ(ierr);
   ierr = DMPlexDistributeLabels(dm, sf, targetDM);CHKERRQ(ierr);
   ierr = DMPlexDistributeCoordinates(dm, sf, targetDM);CHKERRQ(ierr);
-  ierr = DMPlexDistributeSetupHybrid(dm, sf, ltogMigration, targetDM);CHKERRQ(ierr);
   ierr = DMPlexDistributeSetupTree(dm, sf, ltogOriginal, ltogMigration, targetDM);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&ltogOriginal);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&ltogMigration);CHKERRQ(ierr);

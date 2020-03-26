@@ -1,4 +1,4 @@
-static char help[] = "Tests for uniform refinement\n\n";
+static char help[] = "Tests for refinement of meshes created by hand\n\n";
 
 #include <petscdmplex.h>
 
@@ -9,7 +9,6 @@ typedef struct {
   PetscBool cellSimplex;    /* Use simplices or hexes */
   PetscBool testPartition;  /* Use a fixed partitioning for testing */
   PetscInt  testNum;        /* The particular mesh to test */
-  PetscBool simplex2tensor; /* Refine simplicials in hexes */
   PetscBool uninterpolate;  /* Uninterpolate the mesh at the end */
   PetscBool reinterpolate;  /* Reinterpolate the mesh at the end */
 } AppCtx;
@@ -25,7 +24,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->cellSimplex    = PETSC_TRUE;
   options->testPartition  = PETSC_TRUE;
   options->testNum        = 0;
-  options->simplex2tensor = PETSC_FALSE;
   options->uninterpolate  = PETSC_FALSE;
   options->reinterpolate  = PETSC_FALSE;
 
@@ -36,7 +34,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-cell_simplex", "Use simplices if true, otherwise hexes", "ex4.c", options->cellSimplex, &options->cellSimplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_partition", "Use a fixed partition for testing", "ex4.c", options->testPartition, &options->testPartition, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBoundedInt("-test_num", "The particular mesh to test", "ex4.c", options->testNum, &options->testNum, NULL,0);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-simplex2tensor", "Refine simplicial cells in tensor product cells", "ex4.c", options->simplex2tensor, &options->simplex2tensor, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-uninterpolate", "Uninterpolate the mesh at the end", "ex4.c", options->uninterpolate, &options->uninterpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-reinterpolate", "Reinterpolate the mesh at the end", "ex4.c", options->reinterpolate, &options->reinterpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
@@ -182,8 +179,6 @@ PetscErrorCode CreateSimplexHybrid_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
     break;
     default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
     }
-    ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, "orig_");CHKERRQ(ierr);
-    ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
     ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
     ierr = PetscObjectSetOptionsPrefix((PetscObject) idm, "in_");CHKERRQ(ierr);
     ierr = DMSetFromOptions(idm);CHKERRQ(ierr);
@@ -199,7 +194,9 @@ PetscErrorCode CreateSimplexHybrid_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
 
     ierr = DMPlexCreateFromDAG(*dm, 1, numPoints, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
     ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
-    ierr = DMViewFromOptions(idm, NULL, "-in_dm_view");CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject) idm, "in_");CHKERRQ(ierr);
+    ierr = DMSetFromOptions(idm);CHKERRQ(ierr);
+    ierr = DMViewFromOptions(idm, NULL, "-dm_view");CHKERRQ(ierr);
     ierr = DMPlexCreateHybridMesh(idm, NULL, NULL, NULL, NULL, NULL, &hdm);CHKERRQ(ierr);
     ierr = DMDestroy(&idm);CHKERRQ(ierr);
     ierr = DMDestroy(dm);CHKERRQ(ierr);
@@ -264,8 +261,6 @@ PetscErrorCode CreateTensorProductHybrid_2D(MPI_Comm comm, PetscInt testNum, DM 
 
     ierr = DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
     for(p = 0; p < 2; ++p) {ierr = DMSetLabelValue(*dm, "fault", faultPoints[p], 1);CHKERRQ(ierr);}
-    ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, "orig_");CHKERRQ(ierr);
-    ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
     ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
     ierr = PetscObjectSetOptionsPrefix((PetscObject) idm, "in_");CHKERRQ(ierr);
     ierr = DMSetFromOptions(idm);CHKERRQ(ierr);
@@ -278,7 +273,9 @@ PetscErrorCode CreateTensorProductHybrid_2D(MPI_Comm comm, PetscInt testNum, DM 
 
     ierr = DMPlexCreateFromDAG(*dm, 1, numPoints, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
     ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
-    ierr = DMViewFromOptions(idm, NULL, "-in_dm_view");CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject) idm, "in_");CHKERRQ(ierr);
+    ierr = DMSetFromOptions(idm);CHKERRQ(ierr);
+    ierr = DMViewFromOptions(idm, NULL, "-dm_view");CHKERRQ(ierr);
     ierr = DMPlexCreateHybridMesh(idm, NULL, NULL, NULL, NULL, NULL, &hdm);CHKERRQ(ierr);
   }
   ierr = DMDestroy(&idm);CHKERRQ(ierr);
@@ -414,8 +411,8 @@ PetscErrorCode CreateSimplexHybrid_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
       /* Tets 0,3,5 and 1,2,4 */
       PetscInt    numPoints[2]         = {9, 6};
       PetscInt    coneSize[15]         = {4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-      PetscInt    cones[24]            = { 7, 9,  8, 6,  11,  9, 13, 14,  10, 13, 11, 9,
-                                          10, 9, 11, 7,   9, 13, 14, 12,   7, 11,  8, 9};
+      PetscInt    cones[24]            = { 7,  8,  9, 6,  11, 13,  9, 14,  10, 11, 13, 9,
+                                           9, 10, 11, 7,   9, 14, 13, 12,   7,  8, 11, 9};
       PetscInt    coneOrientations[24] = { 0, 0,  0, 0,   0,  0,  0,  0,   0,  0,  0, 0,
                                            0, 0,  0, 0,   0,  0,  0,  0,   0,  0,  0, 0};
       PetscScalar vertexCoords[27]     = {-2.0, -1.0,  0.0,  -2.0,  0.0,  0.0,  -2.0,  0.0,  1.0,
@@ -429,8 +426,6 @@ PetscErrorCode CreateSimplexHybrid_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
     break;
     default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
     }
-    ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, "orig_");CHKERRQ(ierr);
-    ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
     ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
     ierr = PetscObjectSetOptionsPrefix((PetscObject) idm, "in_");CHKERRQ(ierr);
     ierr = DMSetFromOptions(idm);CHKERRQ(ierr);
@@ -446,7 +441,9 @@ PetscErrorCode CreateSimplexHybrid_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
 
     ierr = DMPlexCreateFromDAG(*dm, 1, numPoints, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
     ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
-    ierr = DMViewFromOptions(idm, NULL, "-in_dm_view");CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject) idm, "in_");CHKERRQ(ierr);
+    ierr = DMSetFromOptions(idm);CHKERRQ(ierr);
+    ierr = DMViewFromOptions(idm, NULL, "-dm_view");CHKERRQ(ierr);
     ierr = DMPlexCreateHybridMesh(idm, NULL, NULL, NULL, NULL, NULL, &hdm);CHKERRQ(ierr);
     ierr = DMDestroy(&idm);CHKERRQ(ierr);
     ierr = DMDestroy(dm);CHKERRQ(ierr);
@@ -556,8 +553,6 @@ PetscErrorCode CreateTensorProductHybrid_3D(MPI_Comm comm, PetscInt testNum, DM 
     break;
     default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
     }
-    ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, "orig_");CHKERRQ(ierr);
-    ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
     ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
     ierr = PetscObjectSetOptionsPrefix((PetscObject) idm, "in_");CHKERRQ(ierr);
     ierr = DMSetFromOptions(idm);CHKERRQ(ierr);
@@ -572,7 +567,9 @@ PetscErrorCode CreateTensorProductHybrid_3D(MPI_Comm comm, PetscInt testNum, DM 
 
     ierr = DMPlexCreateFromDAG(*dm, 1, numPoints, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
     ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
-    ierr = DMViewFromOptions(idm, NULL, "-in_dm_view");CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject) idm, "in_");CHKERRQ(ierr);
+    ierr = DMSetFromOptions(idm);CHKERRQ(ierr);
+    ierr = DMViewFromOptions(idm, NULL, "-dm_view");CHKERRQ(ierr);
     ierr = DMPlexCreateHybridMesh(idm, NULL, NULL, NULL, NULL, NULL, &hdm);CHKERRQ(ierr);
     ierr = DMDestroy(&idm);CHKERRQ(ierr);
     ierr = DMDestroy(dm);CHKERRQ(ierr);
@@ -779,16 +776,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     }
   }
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  if (user->simplex2tensor) {
-    DM rdm = NULL;
-    ierr = DMPlexSetRefinementUniform(*dm, PETSC_TRUE);CHKERRQ(ierr);
-    ierr = DMPlexRefineSimplexToTensor(*dm, &rdm);CHKERRQ(ierr);
-    if (rdm) {
-      ierr = DMDestroy(dm);CHKERRQ(ierr);
-      *dm  = rdm;
-    }
-    user->cellSimplex = PETSC_FALSE;
-  }
   if (user->uninterpolate || user->reinterpolate) {
     DM udm = NULL;
 
@@ -830,9 +817,7 @@ int main(int argc, char **argv)
 
   # 1D Simplex 29-31
   testset:
-    args: -dim 1 -cell_hybrid 0 -dm_view ascii::ascii_info_detail \
-          -hyb_dm_plex_check_symmetry -hyb_dm_plex_check_skeleton -hyb_dm_plex_check_faces \
-          -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_faces
+    args: -dim 1 -cell_hybrid 0 -hyb_dm_plex_check_all -dm_plex_check_all
     test:
       suffix: 29
     test:
@@ -844,9 +829,7 @@ int main(int argc, char **argv)
 
   # 2D Simplex 0-3
   testset:
-    args: -dim 2 -cell_hybrid 0 -dm_view ascii::ascii_info_detail \
-          -hyb_dm_plex_check_symmetry -hyb_dm_plex_check_skeleton \
-          -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_faces
+    args: -dim 2 -cell_hybrid 0 -hyb_dm_plex_check_all -dm_plex_check_all
     test:
       suffix: 0
       args: -hyb_dm_plex_check_faces
@@ -875,9 +858,7 @@ int main(int argc, char **argv)
 
   # 2D Hybrid Simplex 4-7
   testset:
-    args: -dim 2 -dm_view ascii::ascii_info_detail \
-          -hyb_dm_plex_check_symmetry -hyb_dm_plex_check_skeleton -hyb_dm_plex_check_faces \
-          -orig_dm_plex_check_symmetry -in_dm_plex_check_symmetry -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_faces
+    args: -dim 2 -hyb_dm_plex_check_all -in_dm_plex_check_all -dm_plex_check_all
     test:
       suffix: 4
     test:
@@ -896,9 +877,7 @@ int main(int argc, char **argv)
 
   # 2D Quad 12-13
   testset:
-    args: -dim 2 -cell_simplex 0 -cell_hybrid 0 -dm_view ascii::ascii_info_detail \
-          -hyb_dm_plex_check_symmetry -hyb_dm_plex_check_skeleton -hyb_dm_plex_check_faces \
-          -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_faces
+    args: -dim 2 -cell_simplex 0 -cell_hybrid 0 -hyb_dm_plex_check_all -dm_plex_check_all
     test:
       suffix: 12
       args: -dm_refine 1
@@ -909,9 +888,7 @@ int main(int argc, char **argv)
 
   # 2D Hybrid Quad 27-28
   testset:
-    args: -dim 2 -cell_simplex 0 -dm_view ascii::ascii_info_detail \
-          -hyb_dm_plex_check_symmetry -hyb_dm_plex_check_skeleton -hyb_dm_plex_check_faces \
-          -orig_dm_plex_check_symmetry -in_dm_plex_check_symmetry -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_faces
+    args: -dim 2 -cell_simplex 0 -hyb_dm_plex_check_all -in_dm_plex_check_all -dm_plex_check_all
     test:
       suffix: 27
       args: -dm_refine 1
@@ -922,9 +899,7 @@ int main(int argc, char **argv)
 
   # 3D Simplex 8-11
   testset:
-    args: -dim 3 -cell_hybrid 0 -dm_view ascii::ascii_info_detail \
-          -hyb_dm_plex_check_symmetry -hyb_dm_plex_check_skeleton -hyb_dm_plex_check_faces \
-          -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_faces
+    args: -dim 3 -cell_hybrid 0 -hyb_dm_plex_check_all -dm_plex_check_all
     test:
       suffix: 8
       args: -dm_refine 1
@@ -945,9 +920,7 @@ int main(int argc, char **argv)
 
   # 3D Hybrid Simplex 16-19
   testset:
-    args: -dim 3 -dm_view ascii::ascii_info_detail \
-          -hyb_dm_plex_check_symmetry -hyb_dm_plex_check_skeleton -hyb_dm_plex_check_faces \
-          -orig_dm_plex_check_symmetry -in_dm_plex_check_symmetry -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_faces
+    args: -dim 3 -hyb_dm_plex_check_all -in_dm_plex_check_all -dm_plex_check_all
     test:
       suffix: 16
       args: -dm_refine 1
@@ -965,9 +938,7 @@ int main(int argc, char **argv)
 
   # 3D Hex 14-15
   testset:
-    args: -dim 3 -cell_simplex 0 -cell_hybrid 0 -dm_view ascii::ascii_info_detail \
-          -hyb_dm_plex_check_symmetry -hyb_dm_plex_check_skeleton -hyb_dm_plex_check_faces \
-          -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_faces
+    args: -dim 3 -cell_simplex 0 -cell_hybrid 0 -hyb_dm_plex_check_all -dm_plex_check_all
     test:
       suffix: 14
       args: -dm_refine 1
@@ -981,9 +952,7 @@ int main(int argc, char **argv)
 
   # 3D Hybrid Hex 20-23
   testset:
-    args: -dim 3 -cell_simplex 0 -dm_view ascii::ascii_info_detail \
-          -hyb_dm_plex_check_symmetry -hyb_dm_plex_check_skeleton -hyb_dm_plex_check_faces \
-          -orig_dm_plex_check_symmetry -in_dm_plex_check_symmetry -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_faces
+    args: -dim 3 -cell_simplex 0 -hyb_dm_plex_check_all -in_dm_plex_check_all -dm_plex_check_all
     test:
       suffix: 20
       args: -dm_refine 1
@@ -1000,36 +969,21 @@ int main(int argc, char **argv)
       args: -test_num 1 -dm_refine 1
 
   # Hybrid interpolation
+  #   TODO Setup new tests (like -reinterpolate) that interpolate hybrid cells
   testset:
     nsize: 2
-    args: -test_partition 0 -petscpartitioner_type simple -dm_view -reinterpolate \
-          -hyb_dm_plex_check_symmetry -hyb_dm_plex_check_skeleton -hyb_dm_plex_check_faces \
-          -orig_dm_plex_check_symmetry -in_dm_plex_check_symmetry -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_faces
+    args: -test_partition 0 -petscpartitioner_type simple -dm_view -hyb_dm_plex_check_all -in_dm_plex_check_all -dm_plex_check_all
     test:
       suffix: hybint_2d_0
       args: -dim 2 -dm_refine 2
     test:
-      suffix: hybint_2d_s2t_0
-      args: -dim 2 -dm_refine 2 -simplex2tensor
-    test:
       suffix: hybint_2d_1
       args: -dim 2 -dm_refine 2 -test_num 1
-    test:
-      suffix: hybint_2d_s2t_1
-      args: -dim 2 -dm_refine 2 -simplex2tensor -test_num 1
     test:
       suffix: hybint_3d_0
       args: -dim 3 -dm_refine 1
     test:
-      TODO: fails due to Cone size 10 not supported for dimension 3
-      suffix: hybint_3d_s2t_0
-      args: -dim 3 -dm_refine 1 -simplex2tensor
-    test:
       suffix: hybint_3d_1
       args: -dim 3 -dm_refine 1 -test_num 1
-    test:
-      TODO: fails due to Cone size 12 not supported for dimension 3
-      suffix: hybint_3d_s2t_1
-      args: -dim 3 -dm_refine 1  -simplex2tensor -test_num 1
 
 TEST*/

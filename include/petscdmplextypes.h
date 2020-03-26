@@ -1,18 +1,29 @@
 #if !defined(PETSCDMPLEXTYPES_H)
 #define PETSCDMPLEXTYPES_H
 
+/*S
+  DMPlexCellRefiner - Object encapsulating the refinement strategy for a DMPlex
+
+  Level: developer
+
+.seealso:  DMPlexCellRefinerCreate(), DMType
+S*/
+typedef struct _p_DMPlexCellRefiner *DMPlexCellRefiner;
+
+
 /*E
-  DMPlexCellType - Common mesh celltypes
+  DMPlexCellRefinerType - This describes the strategy used to refine cells.
 
   Level: beginner
 
-  Plex can handle any cell shape, but sometimes we have to determine things about a mesh that the user
-  does not specify, and for this we have to make assumptions about the mesh. One very common assumption
-  is that all cells in the mesh take a certain form. For example, in order to interpolate a mesh (create
-  edges and faces automatically) we might assume that all cells are simples, or are tensor product cells.
+  The strategy gives a prescription for refining each cell type. Existing strategies include
+$ DM_REFINER_REGULAR - Divide cells into smaller cells of the same type
+$ DM_REFINER_TO_BOX - Divide all cells into box cells
+$ DM_REFINER_TO_SIMPLEX - Divide all cells into simplices
 
-.seealso: DMDASetBoundaryType(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDACreate()
+.seealso: DMPlexGetCellRefiner(), DMPlexSetCellRefiner(), DMRefine(), DMPolytopeType
 E*/
-typedef enum {DM_PLEX_CELLTYPE_SIMPLEX, DM_PLEX_CELLTYPE_TENSOR, DM_PLEX_CELLTYPE_UNKNOWN} DMPlexCellType;
+typedef enum {DM_REFINER_REGULAR, DM_REFINER_TO_BOX, DM_REFINER_TO_SIMPLEX} DMPlexCellRefinerType;
+PETSC_EXTERN const char * const DMPlexCellRefinerTypes[];
 
 #endif

@@ -6,6 +6,7 @@ Mesh in 3 dimensions:
   2-cells: 120
   3-cells: 48
 Labels:
+  celltype: 4 strata with value/size (0 (27), 6 (48), 3 (120), 1 (98))
   depth: 4 strata with value/size (0 (27), 1 (98), 2 (120), 3 (48))
   marker: 1 strata with value/size (1 (74))
 Local function:

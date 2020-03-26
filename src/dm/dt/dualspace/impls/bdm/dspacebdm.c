@@ -323,17 +323,21 @@ static PetscErrorCode PetscDualSpaceSetUp_BDM(PetscDualSpace sp)
   if (!dim) {
     bdm->numDof[0] = 0;
   } else {
-    PetscFE      faceFE, cellFE;
-    PetscSection section;
-    CellRefiner  cellRefiner;
-    PetscInt     faceDim = PetscMax(dim-1, 1), faceNum = 0;
-    PetscReal   *v0 = NULL, *J = NULL, *detJ = NULL;
+    PetscFE        faceFE, cellFE;
+    DMPolytopeType ct;
+    PetscSection   section;
+    PetscInt       faceDim = PetscMax(dim-1, 1), faceNum = 0;
+    PetscReal     *v0 = NULL, *J = NULL, *detJ = NULL;
 
     ierr = PetscSectionCreate(PETSC_COMM_SELF, &section);CHKERRQ(ierr);
     ierr = PetscSectionSetChart(section, pStart, pEnd);CHKERRQ(ierr);
     if (!faceSp) {
-      ierr = DMPlexGetCellRefiner_Internal(dm, &cellRefiner);CHKERRQ(ierr);
-      ierr = CellRefinerGetAffineFaceTransforms_Internal(cellRefiner, NULL, &v0, &J, NULL, &detJ);CHKERRQ(ierr);
+      DMPlexCellRefiner cr;
+
+      ierr = DMPlexGetCellType(dm, pStart, &ct);CHKERRQ(ierr);
+      ierr = DMPlexCellRefinerCreate(dm, &cr);CHKERRQ(ierr);
+      ierr = DMPlexCellRefinerGetAffineFaceTransforms(cr, ct, NULL, &v0, &J, NULL, &detJ);CHKERRQ(ierr);
+      ierr = DMPlexCellRefinerDestroy(&cr);CHKERRQ(ierr);
     }
     /* Create P_q(f) */
     ierr = PetscDualSpaceBDMCreateFaceFE(sp, simplex ? PETSC_FALSE : PETSC_TRUE, faceDim, order, &faceFE);CHKERRQ(ierr);
@@ -425,9 +429,6 @@ static PetscErrorCode PetscDualSpaceSetUp_BDM(PetscDualSpace sp)
     }
     ierr = PetscFEDestroy(&faceFE);CHKERRQ(ierr);
     ierr = PetscFEDestroy(&cellFE);CHKERRQ(ierr);
-    ierr = PetscFree(v0);CHKERRQ(ierr);
-    ierr = PetscFree(J);CHKERRQ(ierr);
-    ierr = PetscFree(detJ);CHKERRQ(ierr);
     ierr = PetscSectionSetUp(section);CHKERRQ(ierr);
     { /* reorder to closure order */
       PetscQuadrature *reorder = NULL;

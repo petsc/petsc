@@ -6,6 +6,7 @@ Mesh in 3 dimensions:
   2-cells: 18
   3-cells: 6
 Labels:
+  celltype: 4 strata with value/size (0 (8), 6 (6), 3 (18), 1 (19))
   depth: 4 strata with value/size (0 (8), 1 (19), 2 (18), 3 (6))
   marker: 1 strata with value/size (1 (20))
   boundary: 1 strata with value/size (1 (12))

@@ -1,27 +1,31 @@
-  0 SNES Function norm 33.3967 
-    0 KSP Residual norm 83.1148 
-    1 KSP Residual norm 11.2855 
-    2 KSP Residual norm 1.64705 
-    3 KSP Residual norm 0.417142 
-    4 KSP Residual norm 0.0795477 
-    5 KSP Residual norm 0.0101668 
-    6 KSP Residual norm 0.00231525 
-    7 KSP Residual norm 0.00030839 
-    8 KSP Residual norm 4.14765e-05 
-    9 KSP Residual norm 7.85089e-06 
-   10 KSP Residual norm 9.81655e-07 
-   11 KSP Residual norm 1.57944e-07 
-   12 KSP Residual norm 1.94736e-08 
-   13 KSP Residual norm 2.16207e-09 
-  Linear solve converged due to CONVERGED_RTOL iterations 13
-  1 SNES Function norm 2.37188e-09 
+  0 SNES Function norm 33.3967
+    0 KSP Residual norm 60.6931 
+    1 KSP Residual norm 17.0775
+    2 KSP Residual norm 3.02313
+    3 KSP Residual norm 0.829536
+    4 KSP Residual norm 0.194913
+    5 KSP Residual norm 0.0639834
+    6 KSP Residual norm 0.0197329
+    7 KSP Residual norm 0.00771292
+    8 KSP Residual norm 0.00275753
+    9 KSP Residual norm 0.000600238
+   10 KSP Residual norm 0.000149587
+   11 KSP Residual norm 3.29519e-05
+   12 KSP Residual norm 8.72355e-06
+   13 KSP Residual norm 1.91575e-06
+   14 KSP Residual norm 4.64281e-07
+   15 KSP Residual norm 8.45902e-08
+   16 KSP Residual norm 1.55073e-08
+   17 KSP Residual norm 3.3689e-09
+  Linear solve converged due to CONVERGED_RTOL iterations 17
+  1 SNES Function norm 3.34156e-09
 L_2 Error: 7.89093
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 4 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=13
+  total number of linear solver iterations=17
   total number of function evaluations=2
   norm schedule ALWAYS
   SNESLineSearch Object: 4 MPI processes
@@ -69,13 +73,13 @@ SNES Object: 4 MPI processes
           tolerance for zero pivot 2.22045e-14
           using Manteuffel shift [POSITIVE_DEFINITE]
           matrix ordering: natural
-          factor fill ratio given 1., needed 2.92956
+          factor fill ratio given 1., needed 2.69786
             Factored matrix follows:
               Mat Object: 1 MPI processes
                 type: seqsbaij
                 rows=1301, cols=1301
                 package used to perform factorization: petsc
-                total: nonzeros=14806, allocated nonzeros=14806
+                total: nonzeros=13635, allocated nonzeros=13635
                 total number of mallocs used during MatSetValues calls=0
                     block size is 1
         linear system matrix = precond matrix:

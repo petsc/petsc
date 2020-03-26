@@ -5,6 +5,7 @@ Mesh in 2 dimensions:
   1-cells: 16
   2-cells: 8
 Labels:
+  celltype: 3 strata with value/size (0 (9), 3 (8), 1 (16))
   depth: 3 strata with value/size (0 (9), 1 (16), 2 (8))
   marker: 4 strata with value/size (4 (5), 1 (3), 2 (5), 3 (3))
   Face Sets: 4 strata with value/size (1 (2), 4 (2), 2 (2), 3 (2))

@@ -5,8 +5,8 @@ Mesh in 2 dimensions:
   1-cells: 56
   2-cells: 32
 Labels:
+  celltype: 3 strata with value/size (1 (56), 3 (32), 0 (25))
   depth: 3 strata with value/size (0 (25), 1 (56), 2 (32))
-  celltype: 3 strata with value/size (2 (32), 0 (25), 1 (56))
   marker: 4 strata with value/size (4 (9), 1 (7), 2 (9), 3 (7))
   Face Sets: 4 strata with value/size (1 (6), 4 (6), 2 (6), 3 (6))
   markerBottom: 1 strata with value/size (1 (7))
@@ -61,15 +61,15 @@ SNES Object: 1 MPI processes
             out-of-place factorization
             tolerance for zero pivot 2.22045e-14
             matrix ordering: nd
-            factor fill ratio given 5., needed 1.79106
+            factor fill ratio given 5., needed 1.77372
               Factored matrix follows:
                 Mat Object: 1 MPI processes
                   type: seqaij
                   rows=126, cols=126
                   package used to perform factorization: petsc
-                  total: nonzeros=3926, allocated nonzeros=3926
+                  total: nonzeros=3888, allocated nonzeros=3888
                   total number of mallocs used during MatSetValues calls=0
-                    using I-node routines: found 62 nodes, limit used is 5
+                    using I-node routines: found 69 nodes, limit used is 5
           linear system matrix followed by preconditioner matrix:
           Mat Object: 1 MPI processes
             type: seqaij
@@ -141,15 +141,15 @@ SNES Object: 1 MPI processes
                     out-of-place factorization
                     tolerance for zero pivot 2.22045e-14
                     matrix ordering: nd
-                    factor fill ratio given 5., needed 1.79106
+                    factor fill ratio given 5., needed 1.77372
                       Factored matrix follows:
                         Mat Object: 1 MPI processes
                           type: seqaij
                           rows=126, cols=126
                           package used to perform factorization: petsc
-                          total: nonzeros=3926, allocated nonzeros=3926
+                          total: nonzeros=3888, allocated nonzeros=3888
                           total number of mallocs used during MatSetValues calls=0
-                            using I-node routines: found 62 nodes, limit used is 5
+                            using I-node routines: found 69 nodes, limit used is 5
                   linear system matrix followed by preconditioner matrix:
                   Mat Object: 1 MPI processes
                     type: seqaij
@@ -251,54 +251,6 @@ Vec Object: Solution 1 MPI processes
 0.0709222
 0.00720283
 0.198277
--0.00396224
--0.00835111
--0.0076458
-0.000441798
--0.00165403
-0.0085966
-0.0103443
-0.00419026
-0.00315907
-0.000999914
-0.00386233
-0.00356017
-0.00447518
-0.0105006
--8.51184e-06
-0.00942302
-2.94357e-05
-0.00116712
--0.00739898
--0.000863766
--0.00308254
--0.00213516
--0.00254151
--0.00414259
--0.00217579
--0.00228315
--0.00232911
--0.00554699
-6.33918e-07
--0.00599244
-1.45631e-05
--0.00449301
--0.00676361
--0.00240735
-0.00615983
--0.00174997
-0.000906275
--0.0055225
--0.00552637
--0.00224685
-0.0023553
-0.00666991
-0.00741551
--0.000905974
-0.00304741
--0.00216657
-0.00834423
-0.00426247
 -0.00651283
 0.00203578
 -0.00293891
@@ -347,3 +299,51 @@ Vec Object: Solution 1 MPI processes
 0.00200859
 0.00592549
 0.00083151
+-0.00396224
+-0.00835111
+-0.0076458
+0.000441798
+-0.00165403
+0.0085966
+0.0103443
+0.00419026
+0.00315907
+0.000999914
+0.00386233
+0.00356017
+0.00447518
+0.0105006
+-8.51184e-06
+0.00942302
+2.94357e-05
+0.00116712
+-0.00739898
+-0.000863766
+-0.00308254
+-0.00213516
+-0.00254151
+-0.00414259
+-0.00217579
+-0.00228315
+-0.00232911
+-0.00554699
+6.33918e-07
+-0.00599244
+1.45631e-05
+-0.00449301
+-0.00676361
+-0.00240735
+0.00615983
+-0.00174997
+0.000906275
+-0.0055225
+-0.00552637
+-0.00224685
+0.0023553
+0.00666991
+0.00741551
+-0.000905974
+0.00304741
+-0.00216657
+0.00834423
+0.00426247

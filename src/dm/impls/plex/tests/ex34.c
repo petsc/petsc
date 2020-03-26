@@ -49,7 +49,6 @@ static PetscErrorCode CreateHybridMesh(MPI_Comm comm, PetscBool interpolate, DM 
                                          2.0, 1.0, 0.0};
 
     ierr = DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-    ierr = DMPlexSetHybridBounds(*dm, 2, PETSC_DETERMINE, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
     if (interpolate) {
       DM idm;
 
@@ -94,7 +93,6 @@ static PetscErrorCode CreateReverseHybridMesh(MPI_Comm comm, PetscBool interpola
                                          1.0, -1.0, 1.0,                     1.0, 1.0, 1.0};
 
     ierr = DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-    ierr = DMPlexSetHybridBounds(*dm, 2, PETSC_DETERMINE, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
     if (interpolate) {
       DM idm;
 
@@ -141,7 +139,6 @@ static PetscErrorCode OrderHybridMesh(DM *dm)
   if (off[1] != cEnd)        SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of hybrid cells %D should be %D", off[1] - off[0], Nhyb);
   ierr = ISCreateGeneral(PETSC_COMM_SELF, pEnd-pStart, ind, PETSC_OWN_POINTER, &perm);CHKERRQ(ierr);
   ierr = DMPlexPermute(*dm, perm, &pdm);CHKERRQ(ierr);
-  ierr = DMPlexSetHybridBounds(pdm, cEnd-Nhyb, PETSC_DETERMINE, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = ISDestroy(&perm);CHKERRQ(ierr);
   ierr = DMDestroy(dm);CHKERRQ(ierr);
   *dm  = pdm;

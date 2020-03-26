@@ -5,6 +5,7 @@ Mesh in 2 dimensions:
   1-cells: 16
   2-cells: 8
 Labels:
+  celltype: 3 strata with value/size (0 (9), 3 (8), 1 (16))
   depth: 3 strata with value/size (0 (9), 1 (16), 2 (8))
   Face Sets: 1 strata with value/size (1 (8))
 DM Object: Particles 1 MPI processes

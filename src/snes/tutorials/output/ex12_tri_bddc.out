@@ -122,13 +122,13 @@ SNES Object: 5 MPI processes
           out-of-place factorization
           tolerance for zero pivot 2.22045e-14
           matrix ordering: nd
-          factor fill ratio given 5., needed 1.18462
+          factor fill ratio given 5., needed 1.09231
             Factored matrix follows:
               Mat Object: 1 MPI processes
                 type: seqaij
                 rows=15, cols=15
                 package used to perform factorization: petsc
-                total: nonzeros=77, allocated nonzeros=77
+                total: nonzeros=71, allocated nonzeros=71
                 total number of mallocs used during MatSetValues calls=0
                   not using I-node routines
         linear system matrix = precond matrix:

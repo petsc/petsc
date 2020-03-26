@@ -1018,7 +1018,6 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
   ierr = ISRestoreIndices(idIS, &ids);CHKERRQ(ierr);
   ierr = ISDestroy(&idIS);CHKERRQ(ierr);
   ierr = DMPlexStratify(sdm);CHKERRQ(ierr);
-  ierr = DMPlexSetGhostCellStratum(sdm, cEndInterior, PETSC_DETERMINE);CHKERRQ(ierr);
   /* Convert coordinates */
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
@@ -1381,7 +1380,7 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
       fintegral[i] = 0;
     }
     ierr = VecGetDM(cellgeom,&dmCell);CHKERRQ(ierr);
-    ierr = DMPlexGetInteriorCellStratum(dmCell,&cStart,&cEnd);CHKERRQ(ierr);
+    ierr = DMPlexGetSimplexOrBoxCells(dmCell,0,&cStart,&cEnd);CHKERRQ(ierr);
     ierr = VecGetArrayRead(cellgeom,&cgeom);CHKERRQ(ierr);
     ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
     ierr = DMGetLabel(dm,"vtk",&vtkLabel);CHKERRQ(ierr);
@@ -1516,7 +1515,7 @@ static PetscErrorCode adaptToleranceFVM(PetscFV fvm, TS ts, Vec sol, VecTagger r
   ierr = DMGlobalToLocalBegin(gradDM, grad, INSERT_VALUES, locGrad);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(gradDM, grad, INSERT_VALUES, locGrad);CHKERRQ(ierr);
   ierr = VecDestroy(&grad);CHKERRQ(ierr);
-  ierr = DMPlexGetInteriorCellStratum(plex,&cStart,&cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetSimplexOrBoxCells(plex,0,&cStart,&cEnd);CHKERRQ(ierr);
   ierr = VecGetArrayRead(locGrad,&pointGrads);CHKERRQ(ierr);
   ierr = VecGetArrayRead(cellGeom,&pointGeom);CHKERRQ(ierr);
   ierr = VecGetArrayRead(locX,&pointVals);CHKERRQ(ierr);

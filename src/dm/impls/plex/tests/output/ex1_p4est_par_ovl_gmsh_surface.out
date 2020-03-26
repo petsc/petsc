@@ -1,1 +1,1 @@
-Mesh with 5198 cells, shape condition numbers: min = 18.4419, max = 99.8298, mean = 51.8276, stddev = 15.8971
+Warning: DMPlexCheckPointSF() is currently not implemented for meshes with partition overlapping

@@ -6,8 +6,7 @@ Simplicial Mesh in 3 dimensions:
   2-cells: 1728
   3-cells: 512
 Labels:
+  celltype: 4 strata with value/size (0 (729), 1 (1944), 4 (1728), 7 (512))
   depth: 4 strata with value/size (0 (729), 1 (1944), 2 (1728), 3 (512))
-  celltype: 4 strata with value/size (6 (512), 0 (729), 3 (1728), 1 (1944))
   marker: 1 strata with value/size (1 (1530))
   Face Sets: 6 strata with value/size (6 (225), 5 (225), 3 (225), 4 (225), 1 (225), 2 (225))
-Mesh with 512 cells, shape condition numbers: min = 3., max = 3., mean = 3., stddev = 0.

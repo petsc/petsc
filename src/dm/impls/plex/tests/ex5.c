@@ -786,8 +786,7 @@ int main(int argc, char **argv)
 
 /*TEST
   testset:
-    args: -orig_dm_plex_check_symmetry -orig_dm_plex_check_skeleton -orig_dm_plex_check_faces \
-          -dm_view ascii::ascii_info_detail -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_faces
+    args: -orig_dm_plex_check_all -dm_plex_check_all
     # 2D Simplex
     test:
       suffix: tri_0
@@ -812,8 +811,7 @@ int main(int argc, char **argv)
       args: -dim 3 -test_num 1
 
   testset:
-    args: -orig_dm_plex_check_symmetry -orig_dm_plex_check_skeleton -orig_dm_plex_check_faces \
-          -dm_view ascii::ascii_info_detail -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_faces
+    args: -orig_dm_plex_check_all -dm_plex_check_all
     # 2D Quads
     test:
       suffix: quad_0
@@ -824,8 +822,7 @@ int main(int argc, char **argv)
       args: -dim 2 -cell_simplex 0
     test:
       suffix: quad_t1_0
-      args: -dim 2 -cell_simplex 0 -test_num 1 \
-            -faulted_dm_plex_check_symmetry -faulted_dm_plex_check_skeleton -faulted_dm_plex_check_faces
+      args: -dim 2 -cell_simplex 0 -test_num 1 -faulted_dm_plex_check_all
     # 3D Hex
     test:
       suffix: hex_0

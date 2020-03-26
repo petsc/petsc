@@ -1,6 +1,5 @@
 #include <petsc/private/petscfeimpl.h> /*I "petscfe.h" I*/
 #include <petsc/private/dtimpl.h> /*I "petscdt.h" I*/
-#include <petsc/private/dmpleximpl.h> /* For CellRefiner */
 #include <petscblaslapack.h>
 
 static PetscErrorCode PetscFEDestroy_Composite(PetscFE fem)
@@ -9,7 +8,6 @@ static PetscErrorCode PetscFEDestroy_Composite(PetscFE fem)
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = CellRefinerRestoreAffineTransforms_Internal(cmp->cellRefiner, &cmp->numSubelements, &cmp->v0, &cmp->jac, &cmp->invjac);CHKERRQ(ierr);
   ierr = PetscFree(cmp->embedding);CHKERRQ(ierr);
   ierr = PetscFree(cmp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -19,6 +17,8 @@ static PetscErrorCode PetscFESetUp_Composite(PetscFE fem)
 {
   PetscFE_Composite *cmp = (PetscFE_Composite *) fem->data;
   DM                 K;
+  DMPolytopeType     ct;
+  DMPlexCellRefiner  cr;
   PetscReal         *subpoint;
   PetscBLASInt      *pivots;
   PetscBLASInt       n, info;
@@ -30,8 +30,10 @@ static PetscErrorCode PetscFESetUp_Composite(PetscFE fem)
   /* Get affine mapping from reference cell to each subcell */
   ierr = PetscDualSpaceGetDM(fem->dualSpace, &K);CHKERRQ(ierr);
   ierr = DMGetDimension(K, &dim);CHKERRQ(ierr);
-  ierr = DMPlexGetCellRefiner_Internal(K, &cmp->cellRefiner);CHKERRQ(ierr);
-  ierr = CellRefinerGetAffineTransforms_Internal(cmp->cellRefiner, &cmp->numSubelements, &cmp->v0, &cmp->jac, &cmp->invjac);CHKERRQ(ierr);
+  ierr = DMPlexGetCellType(K, 0, &ct);CHKERRQ(ierr);
+  ierr = DMPlexCellRefinerCreate(K, &cr);CHKERRQ(ierr);
+  ierr = DMPlexCellRefinerGetAffineTransforms(cr, ct, &cmp->numSubelements, &cmp->v0, &cmp->jac, &cmp->invjac);CHKERRQ(ierr);
+  ierr = DMPlexCellRefinerDestroy(&cr);CHKERRQ(ierr);
   /* Determine dof embedding into subelements */
   ierr = PetscDualSpaceGetDimension(fem->dualSpace, &pdim);CHKERRQ(ierr);
   ierr = PetscSpaceGetDimension(fem->basisSpace, &spdim);CHKERRQ(ierr);
@@ -51,7 +53,7 @@ static PetscErrorCode PetscFESetUp_Composite(PetscFE fem)
         subpoint[d] = -1.0;
         for (e = 0; e < dim; ++e) subpoint[d] += cmp->invjac[(s*dim + d)*dim+e]*(f->points[e] - cmp->v0[s*dim+e]);
       }
-      ierr = CellRefinerInCellTest_Internal(cmp->cellRefiner, subpoint, &inside);CHKERRQ(ierr);
+      ierr = CellRefinerInCellTest_Internal(ct, subpoint, &inside);CHKERRQ(ierr);
       if (inside) {cmp->embedding[s*spdim+sd++] = j;}
     }
     if (sd != spdim) SETERRQ3(PetscObjectComm((PetscObject) fem), PETSC_ERR_PLIB, "Subelement %d has %d dual basis vectors != %d", s, sd, spdim);
@@ -101,6 +103,7 @@ static PetscErrorCode PetscFECreateTabulation_Composite(PetscFE fem, PetscInt np
 {
   PetscFE_Composite *cmp = (PetscFE_Composite *) fem->data;
   DM                 dm;
+  DMPolytopeType     ct;
   PetscInt           pdim;  /* Dimension of FE space P */
   PetscInt           spdim; /* Dimension of subelement FE space P */
   PetscInt           dim;   /* Spatial dimension */
@@ -116,6 +119,7 @@ static PetscErrorCode PetscFECreateTabulation_Composite(PetscFE fem, PetscInt np
   PetscFunctionBegin;
   ierr = PetscDualSpaceGetDM(fem->dualSpace, &dm);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexGetCellType(dm, 0, &ct);CHKERRQ(ierr);
   ierr = PetscSpaceGetDimension(fem->basisSpace, &spdim);CHKERRQ(ierr);
   ierr = PetscDualSpaceGetDimension(fem->dualSpace, &pdim);CHKERRQ(ierr);
   ierr = PetscFEGetNumComponents(fem, &comp);CHKERRQ(ierr);
@@ -131,7 +135,7 @@ static PetscErrorCode PetscFECreateTabulation_Composite(PetscFE fem, PetscInt np
         subpoint[d] = -1.0;
         for (e = 0; e < dim; ++e) subpoint[d] += cmp->invjac[(s*dim + d)*dim+e]*(points[p*dim+e] - cmp->v0[s*dim+e]);
       }
-      ierr = CellRefinerInCellTest_Internal(cmp->cellRefiner, subpoint, &inside);CHKERRQ(ierr);
+      ierr = CellRefinerInCellTest_Internal(ct, subpoint, &inside);CHKERRQ(ierr);
       if (inside) {subpoints[p] = s; break;}
     }
     if (s >= cmp->numSubelements) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %d was not found in any subelement", p);
@@ -227,7 +231,6 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_Composite(PetscFE fem)
   ierr      = PetscNewLog(fem, &cmp);CHKERRQ(ierr);
   fem->data = cmp;
 
-  cmp->cellRefiner    = REFINER_NOOP;
   cmp->numSubelements = -1;
   cmp->v0             = NULL;
   cmp->jac            = NULL;

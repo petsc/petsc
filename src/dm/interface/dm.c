@@ -12,7 +12,7 @@ PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal, DM_LocalToLocal, D
 
 const char *const DMBoundaryTypes[] = {"NONE","GHOSTED","MIRROR","PERIODIC","TWIST","DMBoundaryType","DM_BOUNDARY_",0};
 const char *const DMBoundaryConditionTypes[] = {"INVALID","ESSENTIAL","NATURAL","INVALID","INVALID","ESSENTIAL_FIELD","NATURAL_FIELD","INVALID","INVALID","INVALID","NATURAL_RIEMANN","DMBoundaryConditionType","DM_BC_",0};
-const char *const DMPolytopeTypes[] = {"point", "segment", "triangle", "quadrilateral", "segment tensor prism", "tetrahedron", "hexahedron", "triangular prism", "triangular tensor prism", "quadrilateral tensor prism", "unknown", "DMPolytopeType", "DM_POLYTOPE_", 0};
+const char *const DMPolytopeTypes[] = {"vertex", "segment", "tensor_segment", "triangle", "quadrilateral", "tensor_quad", "tetrahedron", "hexahedron", "triangular_prism", "tensor_triangular_prism", "tensor_quadrilateral_prism", "FV_ghost_cell", "unknown", "DMPolytopeType", "DM_POLYTOPE_", 0};
 /*@
   DMCreate - Creates an empty DM object. The type can then be set with DMSetType().
 
@@ -99,7 +99,7 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
 
   Level: beginner
 
-  Notes: 
+  Notes:
   For some DM implementations this is a shallow clone, the result of which may share (referent counted) information with its parent. For example,
   DMClone() applied to a DMPLEX object will result in a new DMPLEX that shares the topology with the original DMPLEX. It does not
   share the PetscSection of the original DM.
@@ -737,7 +737,9 @@ PetscErrorCode  DMDestroy(DM *dm)
   ierr = DMDestroy(&(*dm)->coordinateDM);CHKERRQ(ierr);
   ierr = VecDestroy(&(*dm)->coordinates);CHKERRQ(ierr);
   ierr = VecDestroy(&(*dm)->coordinatesLocal);CHKERRQ(ierr);
-  ierr = PetscFree3((*dm)->L,(*dm)->maxCell,(*dm)->bdtype);CHKERRQ(ierr);
+  ierr = PetscFree((*dm)->L);CHKERRQ(ierr);
+  ierr = PetscFree((*dm)->maxCell);CHKERRQ(ierr);
+  ierr = PetscFree((*dm)->bdtype);CHKERRQ(ierr);
   if ((*dm)->transformDestroy) {ierr = (*(*dm)->transformDestroy)(*dm, (*dm)->transformCtx);CHKERRQ(ierr);}
   ierr = DMDestroy(&(*dm)->transformDM);CHKERRQ(ierr);
   ierr = VecDestroy(&(*dm)->transform);CHKERRQ(ierr);
@@ -1941,6 +1943,9 @@ PetscErrorCode DMCreateDomainDecompositionScatters(DM dm,PetscInt n,DM *subdms,V
 
   Output Parameter:
 . dmf - the refined DM, or NULL
+
+  Options Dtabase Keys:
+. -dm_plex_cell_refiner <strategy> - chooses the refinement strategy, e.g. regular, tohex
 
   Note: If no refinement was done, the return value is NULL
 
@@ -5233,18 +5238,26 @@ PetscErrorCode DMCreateDS(DM dm)
     PetscInt lStart, lEnd;
 
     if (label) {
-      DM        plex;
-      IS        fields;
-      PetscInt *fld;
-      PetscInt  depth, pMax[4];
+      DM             plex;
+      DMPolytopeType ct;
+      IS             fields;
+      PetscInt      *fld;
+      PetscInt       depth;
 
       ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
       ierr = DMPlexGetDepth(plex, &depth);CHKERRQ(ierr);
-      ierr = DMPlexGetHybridBounds(plex, depth >= 0 ? &pMax[depth] : NULL, depth>1 ? &pMax[depth-1] : NULL, depth>2 ? &pMax[1] : NULL, &pMax[0]);CHKERRQ(ierr);
       ierr = DMDestroy(&plex);CHKERRQ(ierr);
 
       ierr = DMLabelGetBounds(label, &lStart, &lEnd);CHKERRQ(ierr);
-      if (lStart < pMax[depth]) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only support labels over hybrid cells right now");
+      ierr = DMPlexGetCellType(dm, lStart, &ct);CHKERRQ(ierr);
+      switch (ct) {
+        case DM_POLYTOPE_POINT_PRISM_TENSOR:
+        case DM_POLYTOPE_SEG_PRISM_TENSOR:
+        case DM_POLYTOPE_TRI_PRISM_TENSOR:
+        case DM_POLYTOPE_QUAD_PRISM_TENSOR:
+          break;
+        default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only support labels over tensor prism cells right now");
+      }
       ierr = PetscDSCreate(comm, &probh);CHKERRQ(ierr);
       ierr = PetscMalloc1(1, &fld);CHKERRQ(ierr);
       fld[0] = f;
@@ -6038,16 +6051,21 @@ PetscErrorCode DMSetPeriodicity(DM dm, PetscBool per, const PetscReal maxCell[],
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidLogicalCollectiveBool(dm,per,2);
-  if (maxCell) {
-    PetscValidRealPointer(maxCell,3);
-    PetscValidRealPointer(L,4);
-    PetscValidPointer(bd,5);
-  }
-  ierr = PetscFree3(dm->L,dm->maxCell,dm->bdtype);CHKERRQ(ierr);
+  if (maxCell) {PetscValidRealPointer(maxCell,3);}
+  if (L)       {PetscValidRealPointer(L,4);}
+  if (bd)      {PetscValidPointer(bd,5);}
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   if (maxCell) {
-    ierr = PetscMalloc3(dim,&dm->L,dim,&dm->maxCell,dim,&dm->bdtype);CHKERRQ(ierr);
-    for (d = 0; d < dim; ++d) {dm->L[d] = L[d]; dm->maxCell[d] = maxCell[d]; dm->bdtype[d] = bd[d];}
+    if (!dm->maxCell) {ierr = PetscMalloc1(dim, &dm->maxCell);CHKERRQ(ierr);}
+    for (d = 0; d < dim; ++d) dm->maxCell[d] = maxCell[d];
+  }
+  if (L) {
+    if (!dm->L) {ierr = PetscMalloc1(dim, &dm->L);CHKERRQ(ierr);}
+    for (d = 0; d < dim; ++d) dm->L[d] = L[d];
+  }
+  if (bd) {
+    if (!dm->bdtype) {ierr = PetscMalloc1(dim, &dm->bdtype);CHKERRQ(ierr);}
+    for (d = 0; d < dim; ++d) dm->bdtype[d] = bd[d];
   }
   dm->periodic = per;
   PetscFunctionReturn(0);
@@ -6178,8 +6196,14 @@ PetscErrorCode DMLocalizeAddCoordinate_Internal(DM dm, PetscInt dim, const Petsc
     for (d = 0; d < dim; ++d) out[d] += in[d];
   } else {
     for (d = 0; d < dim; ++d) {
-      if ((dm->bdtype[d] != DM_BOUNDARY_NONE) && (PetscAbsScalar(anchor[d] - in[d]) > dm->maxCell[d])) {
-        out[d] += PetscRealPart(anchor[d]) > PetscRealPart(in[d]) ? dm->L[d] + in[d] : in[d] - dm->L[d];
+      const PetscReal maxC = dm->maxCell[d];
+
+      if ((dm->bdtype[d] != DM_BOUNDARY_NONE) && (PetscAbsScalar(anchor[d] - in[d]) > maxC)) {
+        const PetscScalar newCoord = PetscRealPart(anchor[d]) > PetscRealPart(in[d]) ? dm->L[d] + in[d] : in[d] - dm->L[d];
+
+        if (PetscAbsScalar(newCoord - anchor[d]) > maxC)
+          SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "%D-Coordinate %g more than %g away from anchor %g", d, (double) PetscRealPart(in[d]), (double) maxC, (double) PetscRealPart(anchor[d]));
+        out[d] += newCoord;
       } else {
         out[d] += in[d];
       }
@@ -7411,9 +7435,6 @@ PetscErrorCode DMCopyLabels(DM dmA, DM dmB, PetscCopyMode mode, PetscBool all)
       if (flg) continue;
       ierr = PetscStrcmp(name, "celltype", &flg);CHKERRQ(ierr);
       if (flg) continue;
-    } else {
-      dmB->depthLabel    = dmA->depthLabel;
-      dmB->celltypeLabel = dmA->celltypeLabel;
     }
     if (mode==PETSC_COPY_VALUES) {
       ierr = DMLabelDuplicate(label, &labelNew);CHKERRQ(ierr);
