@@ -12,6 +12,8 @@
 #include <mpfr.h>
 #endif
 
+const char *const PetscDTNodeTypes[] = {"gaussjacobi", "equispaced", "tanhsinh", "PETSCDTNODES_", 0};
+
 static PetscBool GolubWelschCite       = PETSC_FALSE;
 const char       GolubWelschCitation[] = "@article{GolubWelsch1969,\n"
                                          "  author  = {Golub and Welsch},\n"
@@ -283,6 +285,7 @@ static PetscErrorCode PetscDTJacobianInverse_Internal(PetscInt m, PetscInt n, co
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!m || !n) PetscFunctionReturn(0);
   ierr = PetscBLASIntCast(m, &bm);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(n, &bn);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
@@ -350,7 +353,7 @@ static PetscErrorCode PetscDTJacobianInverse_Internal(PetscInt m, PetscInt n, co
       }
     }
 
-    PetscStackCallBLAS("LAPACKgetrf", LAPACKgetrf_(&bn, &bn, JTJ, &bm, pivots, &info));
+    PetscStackCallBLAS("LAPACKgetrf", LAPACKgetrf_(&bn, &bn, JTJ, &bn, pivots, &info));
     if (info) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from LAPACKgetrf %D",(PetscInt)info);
     PetscStackCallBLAS("LAPACKgetri", LAPACKgetri_(&bn, JTJ, &bn, pivots, W, &bn, &info));
     if (info) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from LAPACKgetri %D",(PetscInt)info);
@@ -405,7 +408,7 @@ PetscErrorCode PetscQuadraturePushForward(PetscQuadrature q, PetscInt imageDim, 
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(q, PETSC_OBJECT_CLASSID, 1);
+  PetscValidHeaderSpecific(q, PETSCQUADRATURE_CLASSID, 1);
   if (imageDim < PetscAbsInt(formDegree)) SETERRQ2(PetscObjectComm((PetscObject)q), PETSC_ERR_ARG_INCOMP, "Cannot represent a %D-form in %D dimensions", PetscAbsInt(formDegree), imageDim);
   ierr = PetscQuadratureGetData(q, &dim, &Nc, &Npoints, &points, &weights);CHKERRQ(ierr);
   ierr = PetscDTBinomialInt(dim, PetscAbsInt(formDegree), &formSize);CHKERRQ(ierr);
@@ -416,7 +419,7 @@ PetscErrorCode PetscQuadraturePushForward(PetscQuadrature q, PetscInt imageDim, 
   ierr = PetscMalloc1(Npoints * imageDim, &imagePoints);CHKERRQ(ierr);
   ierr = PetscMalloc1(Npoints * imageNc, &imageWeights);CHKERRQ(ierr);
   ierr = PetscMalloc2(imageDim * dim, &Jinv, formSize * imageFormSize, &Jinvstar);CHKERRQ(ierr);
-  ierr = PetscDTJacobianInverse_Internal(dim, imageDim, J, Jinv);CHKERRQ(ierr);
+  ierr = PetscDTJacobianInverse_Internal(imageDim, dim, J, Jinv);CHKERRQ(ierr);
   ierr = PetscDTAltVPullbackMatrix(imageDim, dim, Jinv, formDegree, Jinvstar);CHKERRQ(ierr);
   for (pt = 0; pt < Npoints; pt++) {
     const PetscReal *point = &points[pt * dim];
@@ -2169,5 +2172,111 @@ PetscErrorCode PetscGaussLobattoLegendreElementMassDestroy(PetscInt n,PetscReal 
   ierr = PetscFree((*AA)[0]);CHKERRQ(ierr);
   ierr = PetscFree(*AA);CHKERRQ(ierr);
   *AA  = NULL;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscDTIndexToBary - convert an index into a barycentric coordinate.
+
+  Input Parameters:
++ len - the desired length of the barycentric tuple (usually 1 more than the dimension it represents, so a barycentric coordinate in a triangle has length 3)
+. sum - the value that the sum of the barycentric coordinates (which will be non-negative integers) should sum to
+- index - the index to convert: should be >= 0 and < Binomial(len - 1 + sum, sum)
+
+  Output Parameter:
+. coord - will be filled with the barycentric coordinate
+
+  Level: beginner
+
+  Note: the indices map to barycentric coordinates in lexicographic order, where the first index is the
+  least significant and the last index is the most significant.
+
+.seealso: PetscDTBaryToIndex
+@*/
+PetscErrorCode PetscDTIndexToBary(PetscInt len, PetscInt sum, PetscInt index, PetscInt coord[])
+{
+  PetscInt c, d, s, total, subtotal, nexttotal;
+
+  PetscFunctionBeginHot;
+  if (len < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "length must be non-negative");
+  if (index < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "index must be non-negative");
+  if (!len) {
+    if (!sum && !index) PetscFunctionReturn(0);
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid index or sum for length 0 barycentric coordinate");
+  }
+  for (c = 1, total = 1; c <= len; c++) {
+    /* total is the number of ways to have a tuple of length c with sum */
+    if (index < total) break;
+    total = (total * (sum + c)) / c;
+  }
+  if (c > len) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "index out of range");
+  for (d = c; d < len; d++) coord[d] = 0;
+  for (s = 0, subtotal = 1, nexttotal = 1; c > 0;) {
+    /* subtotal is the number of ways to have a tuple of length c with sum s */
+    /* nexttotal is the number of ways to have a tuple of length c-1 with sum s */
+    if ((index + subtotal) >= total) {
+      coord[--c] = sum - s;
+      index -= (total - subtotal);
+      sum = s;
+      total = nexttotal;
+      subtotal = 1;
+      nexttotal = 1;
+      s = 0;
+    } else {
+      subtotal = (subtotal * (c + s)) / (s + 1);
+      nexttotal = (nexttotal * (c - 1 + s)) / (s + 1);
+      s++;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscDTBaryToIndex - convert a barycentric coordinate to an index
+
+  Input Parameters:
++ len - the desired length of the barycentric tuple (usually 1 more than the dimension it represents, so a barycentric coordinate in a triangle has length 3)
+. sum - the value that the sum of the barycentric coordinates (which will be non-negative integers) should sum to
+- coord - a barycentric coordinate with the given length and sum
+
+  Output Parameter:
+. index - the unique index for the coordinate, >= 0 and < Binomial(len - 1 + sum, sum)
+
+  Level: beginner
+
+  Note: the indices map to barycentric coordinates in lexicographic order, where the first index is the
+  least significant and the last index is the most significant.
+
+.seealso: PetscDTIndexToBary
+@*/
+PetscErrorCode PetscDTBaryToIndex(PetscInt len, PetscInt sum, const PetscInt coord[], PetscInt *index)
+{
+  PetscInt c;
+  PetscInt i;
+  PetscInt total;
+
+  PetscFunctionBeginHot;
+  if (len < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "length must be non-negative");
+  if (index < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "index must be non-negative");
+  if (!len) {
+    if (!sum) {
+      *index = 0;
+      PetscFunctionReturn(0);
+    }
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid index or sum for length 0 barycentric coordinate");
+  }
+  for (c = 1, total = 1; c < len; c++) total = (total * (sum + c)) / c;
+  i = total - 1;
+  c = len - 1;
+  sum -= coord[c];
+  while (sum > 0) {
+    PetscInt subtotal;
+    PetscInt s;
+
+    for (s = 1, subtotal = 1; s < sum; s++) subtotal = (subtotal * (c + s)) / s;
+    i   -= subtotal;
+    sum -= coord[--c];
+  }
+  *index = i;
   PetscFunctionReturn(0);
 }

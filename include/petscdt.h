@@ -28,6 +28,26 @@ $  PETSCGAUSSLOBATTOLEGENDRE_VIA_NEWTON - compute the nodes by solving a nonline
 E*/
 typedef enum {PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEAR_ALGEBRA,PETSCGAUSSLOBATTOLEGENDRE_VIA_NEWTON} PetscGaussLobattoLegendreCreateType;
 
+/*E
+  PetscDTNodeType - A description of strategies for generating nodes (both
+  quadrature nodes and nodes for Lagrange polynomials)
+
+  Level: intermediate
+
+$  PETSCDTNODES_DEFAULT - Nodes chosen by PETSc
+$  PETSCDTNODES_GAUSSJACOBI - Nodes at either Gauss-Jacobi or Gauss-Lobatto-Jacobi quadrature points
+$  PETSCDTNODES_EQUISPACED - Nodes equispaced either including the endpoints or excluding them
+$  PETSCDTNODES_TANHSINH - Nodes at Tanh-Sinh quadrature points
+
+  Note: a PetscDTNodeType can be paired with a PetscBool to indicate whether
+  the nodes include endpoints or not, and in the case of PETSCDT_GAUSSJACOBI
+  with exponents for the weight function.
+
+E*/
+typedef enum {PETSCDTNODES_DEFAULT=-1, PETSCDTNODES_GAUSSJACOBI, PETSCDTNODES_EQUISPACED, PETSCDTNODES_TANHSINH} PetscDTNodeType;
+
+PETSC_EXTERN const char *const PetscDTNodeTypes[];
+
 PETSC_EXTERN PetscErrorCode PetscQuadratureCreate(MPI_Comm, PetscQuadrature *);
 PETSC_EXTERN PetscErrorCode PetscQuadratureDuplicate(PetscQuadrature, PetscQuadrature *);
 PETSC_EXTERN PetscErrorCode PetscQuadratureGetOrder(PetscQuadrature, PetscInt*);
@@ -76,6 +96,9 @@ PETSC_EXTERN PetscErrorCode PetscDTAltVInterior(PetscInt, PetscInt, const PetscR
 PETSC_EXTERN PetscErrorCode PetscDTAltVInteriorMatrix(PetscInt, PetscInt, const PetscReal *, PetscReal *);
 PETSC_EXTERN PetscErrorCode PetscDTAltVInteriorPattern(PetscInt, PetscInt, PetscInt (*)[3]);
 PETSC_EXTERN PetscErrorCode PetscDTAltVStar(PetscInt, PetscInt, PetscInt, const PetscReal *, PetscReal *);
+
+PETSC_EXTERN PetscErrorCode PetscDTBaryToIndex(PetscInt,PetscInt,const PetscInt[],PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscDTIndexToBary(PetscInt,PetscInt,PetscInt,PetscInt[]);
 
 #if defined(PETSC_USE_64BIT_INDICES)
 #define PETSC_FACTORIAL_MAX 20
