@@ -77,8 +77,6 @@ PetscErrorCode main(int argc,char **argv)
   ierr = TaoSetHessianRoutine(tao,user.H,user.H,FormHessian,(void*)&user);CHKERRQ(ierr);
   /* ierr = TaoSetTolerances(tao,0,0,0);CHKERRQ(ierr); */
 
-  ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
-
   ierr = TaoGetKSP(tao,&ksp);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
@@ -90,6 +88,7 @@ PetscErrorCode main(int argc,char **argv)
   ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
+  ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
   /* ierr = TaoSetTolerances(tao,0,0,0);CHKERRQ(ierr); */
   ierr = TaoSolve(tao);CHKERRQ(ierr);
 
