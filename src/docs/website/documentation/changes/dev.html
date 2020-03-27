@@ -220,7 +220,7 @@
         <ul>
           <li>Rename PetscSignalSegvCheckPointer() to PetscSignalSegvCheckPointerOrMpi()</li>
           <li>Improve PetscInfo() controls to allow for sorting of output by PETSc Class</li>
-          <li>Add PetscInfoSetFromOptions()</li>
+          <li>Add PetscInfoSetFromOptions() - Allows configuration of PetscInfo() with new <code>-info [optional filename][:[~]optional list,of,classnames][:[~]optional "self"]</code> option from command line. List of classnames may be <code>mat,vec,snes</code> for example. Self refers to filtering by communicator size, i.e. <code>PETSC_COMM_SELF</code> or <code> PETSC_COMM_WORLD</code></li>
           <li>Add PetscInfoEnabled() - Indicate whether a given PETSc class is allowed in PetscInfo()</li>
           <li>Add PetscInfoSetFile() - Set output destination of PetscInfo()</li>
           <li>Add PetscInfoGetFile() - Get output destination of PetscInfo()</li>
