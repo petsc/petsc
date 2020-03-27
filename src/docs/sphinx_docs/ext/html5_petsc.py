@@ -173,6 +173,7 @@ def _generate_htmlmap_stash() -> str:
     htmlmap_stash_filename = os.path.join('_build', 'docs', 'manualpages', 'htmlmap')
     if not os.path.isfile(htmlmap_stash_filename):
         petsc_dir = os.path.abspath(os.path.join('..', '..', '..'))
+        petsc_arch = 'arch-sphinxdocs-minimal'
         configure = [
                 './configure',
                 '--with-mpi=0',
@@ -186,11 +187,12 @@ def _generate_htmlmap_stash() -> str:
                 '--download-sowing',
                 '--with-mkl_sparse_optimize=0',
                 '--with-mkl_sparse=0',
-                'PETSC_ARCH=arch-sphinxdocs-minimal'
+                'PETSC_ARCH=' + petsc_arch,
                 ]
         status = subprocess.run(configure, cwd = petsc_dir).check_returncode()
         docs_destination = os.path.join(os.getcwd(),'_build')
-        allcite = ['make', 'PETSC_DIR='+petsc_dir, 'allcite', 'LOC='+docs_destination]
+        allcite = ['make', 'allcite', 'PETSC_DIR=' + petsc_dir,
+                   'PETSC_ARCH=' + petsc_arch, 'LOC=' + docs_destination]
         subprocess.run(allcite, cwd=petsc_dir).check_returncode()
     return htmlmap_stash_filename
 
