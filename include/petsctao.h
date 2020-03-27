@@ -1,7 +1,7 @@
 #ifndef PETSCTAO_H
 #define PETSCTAO_H
 
-#include <petscksp.h>
+#include <petscsnes.h>
 
 PetscErrorCode VecFischer(Vec, Vec, Vec, Vec, Vec);
 PetscErrorCode VecSFischer(Vec, Vec, Vec, Vec, PetscReal, Vec);
@@ -141,6 +141,7 @@ typedef const char *TaoType;
 #define TAOASILS    "asils"
 #define TAOASFLS    "asfls"
 #define TAOIPM      "ipm"
+#define TAOPDIPM    "pdipm"
 #define TAOSHELL    "shell"
 #define TAOADMM     "admm"
 
