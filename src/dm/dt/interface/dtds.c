@@ -2686,6 +2686,8 @@ PetscErrorCode PetscDSGetWorkspace(PetscDS prob, PetscReal **x, PetscScalar **ba
 /*@C
   PetscDSAddBoundary - Add a boundary condition to the model
 
+  Collective on ds
+
   Input Parameters:
 + ds          - The PetscDS object
 . type        - The type of condition, e.g. DM_BC_ESSENTIAL/DM_BC_ESSENTIAL_FIELD (Dirichlet), or DM_BC_NATURAL (Neumann)
@@ -2714,6 +2716,10 @@ PetscErrorCode PetscDSAddBoundary(PetscDS ds, DMBoundaryConditionType type, cons
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
+  PetscValidLogicalCollectiveEnum(ds, type, 2);
+  PetscValidLogicalCollectiveInt(ds, field, 5);
+  PetscValidLogicalCollectiveInt(ds, numcomps, 6);
+  PetscValidLogicalCollectiveInt(ds, numids, 9);
   ierr = PetscNew(&b);CHKERRQ(ierr);
   ierr = PetscStrallocpy(name, (char **) &b->name);CHKERRQ(ierr);
   ierr = PetscStrallocpy(labelname, (char **) &b->labelname);CHKERRQ(ierr);
