@@ -260,7 +260,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscFEInterpolate_Static(PetscFE fe, const P
       }
     }
   }
-  ierr = PetscFEPushforward(fe, fegeom, 1, NULL, interpolant);CHKERRQ(ierr);
+  ierr = PetscFEPushforward(fe, fegeom, 1, interpolant);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -288,7 +288,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscFEInterpolateGradient_Static(PetscFE fe,
       }
     }
   }
-  ierr = PetscFEPushforwardGradient(fe, fegeom, 1, NULL, interpolant);CHKERRQ(ierr);
+  ierr = PetscFEPushforwardGradient(fe, fegeom, 1, interpolant);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -317,8 +317,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscFEInterpolateFieldAndGradient_Static(Pet
       }
     }
   }
-  ierr = PetscFEPushforward(fe, fegeom, 1, NULL, interpolant);CHKERRQ(ierr);
-  ierr = PetscFEPushforwardGradient(fe, fegeom, 1, NULL, interpolantGrad);CHKERRQ(ierr);
+  ierr = PetscFEPushforward(fe, fegeom, 1, interpolant);CHKERRQ(ierr);
+  ierr = PetscFEPushforwardGradient(fe, fegeom, 1, interpolantGrad);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
