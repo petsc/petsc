@@ -14,6 +14,8 @@ struct _n_Petsc1DNodeFamily
   PetscBool        endpoints;
 };
 
+/* users set node families for PETSCDUALSPACELAGRANGE with just the inputs to this function, but internally we create
+ * an object that can cache the computations across multiple dual spaces */
 static PetscErrorCode Petsc1DNodeFamilyCreate(PetscDTNodeType family, PetscReal gaussJacobiExp, PetscBool endpoints, Petsc1DNodeFamily *nf)
 {
   Petsc1DNodeFamily f;
@@ -93,6 +95,8 @@ static PetscErrorCode Petsc1DNodeFamilyGetNodeSets(Petsc1DNodeFamily f, PetscInt
           if (f->endpoints) {
             for (j = 0; j <= i; j++) f->nodesets[i][j] = (PetscReal) j / (PetscReal) i;
           } else {
+            /* these nodes are at the centroids of the small simplices created by the equispaced nodes that include
+             * the endpoints */
             for (j = 0; j <= i; j++) f->nodesets[i][j] = ((PetscReal) j + 0.5) / ((PetscReal) i + 1.);
           }
           break;
@@ -114,6 +118,7 @@ static PetscErrorCode Petsc1DNodeFamilyGetNodeSets(Petsc1DNodeFamily f, PetscInt
   PetscFunctionReturn(0);
 }
 
+/* http://arxiv.org/abs/2002.09421 for details */
 static PetscErrorCode PetscNodeRecursive_Internal(PetscInt dim, PetscInt degree, PetscReal **nodesets, PetscInt tup[], PetscReal node[])
 {
   PetscReal w;
@@ -162,26 +167,33 @@ static PetscErrorCode Petsc1DNodeFamilyComputeSimplexNodes(Petsc1DNodeFamily f, 
   ierr = Petsc1DNodeFamilyGetNodeSets(f, degree, &nodesets);CHKERRQ(ierr);
   worksize = ((dim + 2) * (dim + 3)) / 2;
   ierr = PetscMalloc2(worksize, &nodework, worksize, &tupwork);CHKERRQ(ierr);
+  /* loop over the tuples of length dim with sum at most degree */
   for (k = 0; k < npoints; k++) {
     PetscInt i;
 
+    /* turn thm into tuples of length dim + 1 with sum equal to degree (barycentric indice) */
     tup[0] = degree;
     for (i = 0; i < dim; i++) {
       tup[0] -= tup[i+1];
     }
     switch(f->nodeFamily) {
     case PETSCDTNODES_EQUISPACED:
+      /* compute equispaces nodes on the unit reference triangle */
       if (f->endpoints) {
         for (i = 0; i < dim; i++) {
           points[dim*k + i] = (PetscReal) tup[i+1] / (PetscReal) degree;
         }
       } else {
         for (i = 0; i < dim; i++) {
+          /* these nodes are at the centroids of the small simplices created by the equispaced nodes that include
+           * the endpoints */
           points[dim*k + i] = ((PetscReal) tup[i+1] + 1./(dim+1.)) / (PetscReal) (degree + 1.);
         }
       }
       break;
     default:
+      /* compute equispaces nodes on the barycentric reference triangle (the trace on the first dim dimensions are the
+       * unit reference triangle nodes */
       for (i = 0; i < dim + 1; i++) tupwork[i] = tup[i];
       ierr = PetscNodeRecursive_Internal(dim, degree, nodesets, tupwork, nodework);CHKERRQ(ierr);
       for (i = 0; i < dim; i++) points[dim*k + i] = nodework[i + 1];
@@ -196,6 +208,113 @@ static PetscErrorCode Petsc1DNodeFamilyComputeSimplexNodes(Petsc1DNodeFamily f, 
   PetscFunctionReturn(0);
 }
 
+/* If we need to get the dofs from a mesh point, or add values into dofs at a mesh point, and there is more than one dof
+ * on that mesh point, we have to be careful about getting/adding everything in the right place.
+ *
+ * With nodal dofs like PETSCDUALSPACELAGRANGE makes, the general approach to calculate the value of dofs associate
+ * with a node A is
+ * - transform the node locations x(A) by the map that takes the mesh point to its reorientation, x' = phi(x(A))
+ * - figure out which node was originally at the location of the transformed point, A' = idx(x')
+ * - if the dofs are not scalars, figure out how to represent the transformed dofs in terms of the basis
+ *   of dofs at A' (using pushforward/pullback rules)
+ *
+ * The one sticky point with this approach is the "A' = idx(x')" step: trying to go from real valued coordinates
+ * back to indices.  I don't want to rely on floating point tolerances.  Additionally, PETSCDUALSPACELAGRANGE may
+ * eventually support quasi-Lagrangian dofs, which could involve quadrature at multiple points, so the location "x(A)"
+ * would be ambiguous.
+ *
+ * So each dof gets an integer value coordinate (nodeIdx in the structure below).  The choice of integer coordinates
+ * is somewhat arbitrary, as long as all of the relevant symmetries of the mesh point correspond to *permutations* of
+ * the integer coordinates, which do not depend on numerical precision.
+ *
+ * So
+ *
+ * - DMPlexGetTransitiveClosure_Internal() tells me how an orientation turns into a permutation of the vertices of a
+ *   mesh point
+ * - The permutation of the vertices, and the nodeIdx values assigned to them, tells what permutation in index space
+ *   is associated with the orientation
+ * - I uses that permutation to get xi' = phi(xi(A)), the integer coordinate of the transformed dof
+ * - I can without numerical issues compute A' = idx(xi')
+ *
+ * Here are some examples of how the process works
+ *
+ * - With a triangle:
+ *
+ *   The triangle has the following integer coordinates for vertices, taken from the barycentric triangle
+ *
+ *     closure order 2
+ *     nodeIdx (0,0,1)
+ *      \
+ *       +
+ *       |\
+ *       | \
+ *       |  \
+ *       |   \    closure order 1
+ *       |    \ / nodeIdx (0,1,0)
+ *       +-----+
+ *        \
+ *      closure order 0
+ *      nodeIdx (1,0,0)
+ *
+ *   If I do DMPlexGetTransitiveClosure_Internal() with orientation 1, the vertices would appear
+ *   in the order (1, 2, 0)
+ *
+ *   If I list the nodeIdx of each vertex in closure order for orientation 0 (0, 1, 2) and orientation 1 (1, 2, 0), I
+ *   see
+ *
+ *   orientation 0  | orientation 1
+ *
+ *   [0] (1,0,0)      [1] (0,1,0)
+ *   [1] (0,1,0)      [2] (0,0,1)
+ *   [2] (0,0,1)      [0] (1,0,0)
+ *          A                B
+ *
+ *   In other words, B is the result of a row permutation of A.  But, there is also
+ *   a column permutation that accomplishes the same result, (2,0,1).
+ *
+ *   So if a dof has nodeIdx coordinate (a,b,c), after the transformation its nodeIdx coordinate
+ *   is (c,a,b), and the transformed degree of freedom will be a linear combination of dofs
+ *   that originally had coordinate (c,a,b).
+ *
+ * - With a quadrilateral:
+ *
+ *   The quadrilateral has the following integer coordinates for vertices, taken from concatenating barycentric
+ *   coordinates for two segments:
+ *
+ *     closure order 3      closure order 2
+ *     nodeIdx (1,0,0,1)    nodeIdx (0,1,0,1)
+ *                   \      /
+ *                    +----+
+ *                    |    |
+ *                    |    |
+ *                    +----+
+ *                   /      \
+ *     closure order 0      closure order 1
+ *     nodeIdx (1,0,1,0)    nodeIdx (0,1,1,0)
+ *
+ *   If I do DMPlexGetTransitiveClosure_Internal() with orientation 1, the vertices would appear
+ *   in the order (1, 2, 3, 0)
+ *
+ *   If I list the nodeIdx of each vertex in closure order for orientation 0 (0, 1, 2, 3) and
+ *   orientation 1 (1, 2, 3, 0), I see
+ *
+ *   orientation 0  | orientation 1
+ *
+ *   [0] (1,0,1,0)    [1] (0,1,1,0)
+ *   [1] (0,1,1,0)    [2] (0,1,0,1)
+ *   [2] (0,1,0,1)    [3] (1,0,0,1)
+ *   [3] (1,0,0,1)    [0] (1,0,1,0)
+ *          A                B
+ *
+ *   The column permutation that accomplishes the same result is (3,2,0,1).
+ *
+ *   So if a dof has nodeIdx coordinate (a,b,c,d), after the transformation its nodeIdx coordinate
+ *   is (d,c,a,b), and the transformed degree of freedom will be a linear combination of dofs
+ *   that originally had coordinate (d,c,a,b).
+ *
+ * Previously PETSCDUALSPACELAGRANGE had hardcoded symmetries for the triangle and quadrilateral,
+ * but this approach will work for any polytope, such as the wedge (triangular prism).
+ */
 struct _n_PetscLagNodeIndices
 {
   PetscInt   refct;
@@ -208,6 +327,7 @@ struct _n_PetscLagNodeIndices
                               if these are nodes, perm lists nodes in index revlex order */
 };
 
+/* this is just here so I can access the values in tests/ex1.c outside the library */
 PetscErrorCode PetscLagNodeIndicesGetData_Internal(PetscLagNodeIndices ni, PetscInt *nodeIdxDim, PetscInt *nodeVecDim, PetscInt *nNodes, const PetscInt *nodeIdx[], const PetscReal *nodeVec[])
 {
   PetscFunctionBegin;
@@ -243,10 +363,16 @@ static PetscErrorCode PetscLagNodeIndicesDestroy(PetscLagNodeIndices *ni) {
   PetscFunctionReturn(0);
 }
 
-/* The vertex indices were written as though the vertices were in revlex order
- * wrt coordinates.  To understand the effect of different symmetries, we need
- * them to be in closure order.  We also need a permutation that takes point index
- * to closure number */
+/* The vertices are given nodeIdx coordinates (e.g. the corners of the barycentric triangle).  Those coordinates are
+ * in some other order, and to understand the effect of different symmetries, we need them to be in closure order.
+ *
+ * If sortIdx is PETSC_FALSE, the coordinates are already in revlex order, otherwise we must sort them
+ * to that order before we do the real work of this function, which is
+ *
+ * - mark the vertices in closure order
+ * - sort them in revlex order
+ * - use the resulting permutation to list the vertex coordinates in closure order
+ */
 static PetscErrorCode PetscLagNodeIndicesComputeVertexOrder(DM dm, PetscLagNodeIndices ni, PetscBool sortIdx)
 {
   PetscInt        v, w, vStart, vEnd, c, d;
@@ -269,7 +395,7 @@ static PetscErrorCode PetscLagNodeIndicesComputeVertexOrder(DM dm, PetscLagNodeI
   ierr = PetscMalloc1(nVerts, &closureOrder);CHKERRQ(ierr);
   ierr = PetscMalloc1(nVerts, &invClosureOrder);CHKERRQ(ierr);
   ierr = PetscMalloc1(nVerts, &revlexOrder);CHKERRQ(ierr);
-  if (sortIdx) {
+  if (sortIdx) { /* bubble sort nodeIdx into revlex order */
     PetscInt nodeIdxDim = ni->nodeIdxDim;
     PetscInt *idxOrder;
 
@@ -341,6 +467,8 @@ static PetscErrorCode PetscLagNodeIndicesComputeVertexOrder(DM dm, PetscLagNodeI
   PetscFunctionReturn(0);
 }
 
+/* the coordinates of the simplex vertices are the corners of the barycentric simplex.
+ * When we stack them on top of each other in revlex order, they look like the identity matrix */
 static PetscErrorCode PetscLagNodeIndicesCreateSimplexVertices(DM dm, PetscLagNodeIndices *nodeIndices)
 {
   PetscLagNodeIndices ni;
@@ -362,6 +490,11 @@ static PetscErrorCode PetscLagNodeIndicesCreateSimplexVertices(DM dm, PetscLagNo
   PetscFunctionReturn(0);
 }
 
+/* A polytope that is a tensor product of a facet and a segment.
+ * We take whatever coordinate system was being used for the facet
+ * and we concatenaty the barycentric coordinates for the vertices
+ * at the end of the segment, (1,0) and (0,1), to get a coordinate
+ * system for the tensor product element */
 static PetscErrorCode PetscLagNodeIndicesCreateTensorVertices(DM dm, PetscLagNodeIndices facetni, PetscLagNodeIndices *nodeIndices)
 {
   PetscLagNodeIndices ni;
@@ -393,6 +526,24 @@ static PetscErrorCode PetscLagNodeIndicesCreateTensorVertices(DM dm, PetscLagNod
   PetscFunctionReturn(0);
 }
 
+/* This helps us compute symmetries, and it also helps us compute coordinates for dofs that are being pushed
+ * forward from a boundary mesh point.
+ *
+ * Input:
+ *
+ * dm - the target reference cell where we want new coordinates and dof directions to be valid
+ * vert - the vertex coordinate system for the target reference cell
+ * p - the point in the target reference cell that the dofs are coming from
+ * vertp - the vertex coordinate system for p's reference cell
+ * ornt - the resulting coordinates and dof vectors will be for p under this orientation
+ * nodep - the node coordinates and dof vectors in p's reference cell
+ * formDegree - the form degree that the dofs transform as
+ *
+ * Output:
+ *
+ * pfNodeIdx - the node coordinates for p's dofs, in the dm reference cell, from the ornt perspective
+ * pfNodeVec - the node dof vectors for p's dofs, in the dm reference cell, from the ornt perspective
+ */
 static PetscErrorCode PetscLagNodeIndicesPushForward(DM dm, PetscLagNodeIndices vert, PetscInt p, PetscLagNodeIndices vertp, PetscLagNodeIndices nodep, PetscInt ornt, PetscInt formDegree, PetscInt pfNodeIdx[], PetscReal pfNodeVec[])
 {
   PetscInt       *closureVerts;
@@ -450,12 +601,14 @@ static PetscErrorCode PetscLagNodeIndicesPushForward(DM dm, PetscLagNodeIndices 
         }
       }
       if (subi < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Did not find matching coordinate\n");
+      /* that component in the vertp system becomes component i in the vert system for each dof */
       for (n = 0; n < nNodes; n++) pfNodeIdx[n * nodeIdxDim + i] = nodeIdx[n * subNodeIdxDim + subi];
     }
   }
   /* push forward vectors */
   ierr = DMGetWorkArray(dm, dim * dim, MPIU_REAL, &J);CHKERRQ(ierr);
-  if (ornt != 0) {
+  if (ornt != 0) { /* temporarily change the coordinate vector so
+                      DMPlexComputeCellGeometryAffineFEM gives us the Jacobian we want */
     PetscInt        closureSize2 = 0;
     PetscInt       *closure2 = NULL;
 
@@ -480,6 +633,9 @@ static PetscErrorCode PetscLagNodeIndicesPushForward(DM dm, PetscLagNodeIndices 
   ierr = DMRestoreWorkArray(dm, nSubVert, MPIU_INT, &closureVerts);CHKERRQ(ierr);
   /* compactify */
   for (i = 0; i < dim; i++) for (j = 0; j < pdim; j++) J[i * pdim + j] = J[i * dim + j];
+  /* We have the Jacobian mapping the point's reference cell to this reference cell:
+   * pulling back a function to the point and applying the dof is what we want,
+   * so we get the pullback matrix and multiply the dof by that matrix on the right */
   ierr = PetscDTBinomialInt(dim, PetscAbsInt(formDegree), &Nk);CHKERRQ(ierr);
   ierr = PetscDTBinomialInt(pdim, PetscAbsInt(formDegree), &pNk);CHKERRQ(ierr);
   ierr = DMGetWorkArray(dm, pNk * Nk, MPIU_REAL, &Jstar);CHKERRQ(ierr);
@@ -496,6 +652,8 @@ static PetscErrorCode PetscLagNodeIndicesPushForward(DM dm, PetscLagNodeIndices 
   PetscFunctionReturn(0);
 }
 
+/* given to sets of nodes, take the tensor product, where the product of the dof indices is concatenation and the
+ * product of the dof vectors is the wedge product */
 static PetscErrorCode PetscLagNodeIndicesTensor(PetscLagNodeIndices tracei, PetscInt dimT, PetscInt kT, PetscLagNodeIndices fiberi, PetscInt dimF, PetscInt kF, PetscLagNodeIndices *nodeIndices)
 {
   PetscInt       dim = dimT + dimF;
@@ -596,6 +754,7 @@ static PetscErrorCode PetscLagNodeIndicesTensor(PetscLagNodeIndices tracei, Pets
   PetscFunctionReturn(0);
 }
 
+/* simple union of two sets of nodes */
 static PetscErrorCode PetscLagNodeIndicesMerge(PetscLagNodeIndices niA, PetscLagNodeIndices niB, PetscLagNodeIndices *nodeIndices)
 {
   PetscLagNodeIndices ni;
@@ -654,6 +813,8 @@ static int PetscTupIntCompRevlex_N(const void *a, const void *b)
   return (diff <= 0) ? (diff < 0) ? -1 : 0 : 1;
 }
 
+/* The nodes are not necessarily in revlex order wrt nodeIdx: get the permutation
+ * that puts them in that order */
 static PetscErrorCode PetscLagNodeIndicesGetPermutation(PetscLagNodeIndices ni, PetscInt *perm[])
 {
   PetscErrorCode ierr;
@@ -833,6 +994,8 @@ static PetscErrorCode PetscDualSpaceDuplicate_Lagrange(PetscDualSpace sp, PetscD
   PetscFunctionReturn(0);
 }
 
+/* for making tensor product spaces: take a dual space and product a segment space that has all the same
+ * specifications (trimmed, continuous, order, node set), except for the form degree */
 static PetscErrorCode PetscDualSpaceCreateEdgeSubspace_Lagrange(PetscDualSpace sp, PetscInt order, PetscInt k, PetscInt Nc, PetscBool interiorOnly, PetscDualSpace *bdsp)
 {
   DM                 K;
@@ -882,6 +1045,8 @@ static PetscErrorCode PetscQuadratureCreateTensor(PetscQuadrature trace, PetscQu
   PetscFunctionReturn(0);
 }
 
+/* Kronecker tensor product where matrix is considered a matrix of k-forms, so that
+ * the entries in the product matrix are wedge products of the entries in the original matrices */
 static PetscErrorCode MatTensorAltV(Mat trace, Mat fiber, PetscInt dimTrace, PetscInt kTrace, PetscInt dimFiber, PetscInt kFiber, Mat *product)
 {
   PetscInt mTrace, nTrace, mFiber, nFiber, m, n, k, i, j, l;
@@ -1023,6 +1188,7 @@ static PetscErrorCode MatTensorAltV(Mat trace, Mat fiber, PetscInt dimTrace, Pet
   PetscFunctionReturn(0);
 }
 
+/* Union of quadrature points, with an attempt to identify commont points in the two sets */
 static PetscErrorCode PetscQuadraturePointsMerge(PetscQuadrature quadA, PetscQuadrature quadB, PetscQuadrature *quadJoint, PetscInt *aToJoint[], PetscInt *bToJoint[])
 {
   PetscInt         dimA, dimB;
@@ -1070,6 +1236,8 @@ static PetscErrorCode PetscQuadraturePointsMerge(PetscQuadrature quadA, PetscQua
   PetscFunctionReturn(0);
 }
 
+/* Matrices matA and matB are both quadrature -> dof matrices: produce a matrix that is joint quadrature -> union of
+ * dofs, where the joint quadrature was produced by PetscQuadraturePointsMerge */
 static PetscErrorCode MatricesMerge(Mat matA, Mat matB, PetscInt dim, PetscInt k, PetscInt numMerged, const PetscInt aToMerged[], const PetscInt bToMerged[], Mat *matMerged)
 {
   PetscInt m, n, mA, nA, mB, nB, Nk, i, j, l;
@@ -1137,6 +1305,8 @@ static PetscErrorCode MatricesMerge(Mat matA, Mat matB, PetscInt dim, PetscInt k
   PetscFunctionReturn(0);
 }
 
+/* Take a dual space and product a segment space that has all the same specifications (trimmed, continuous, order,
+ * node set), except for the form degree.  For computing boundary dofs and for making tensor product spaces */
 static PetscErrorCode PetscDualSpaceCreateFacetSubspace_Lagrange(PetscDualSpace sp, DM K, PetscInt f, PetscInt k, PetscInt Ncopies, PetscBool interiorOnly, PetscDualSpace *bdsp)
 {
   PetscInt           Nknew, Ncnew;
@@ -1182,6 +1352,13 @@ static PetscErrorCode PetscDualSpaceCreateFacetSubspace_Lagrange(PetscDualSpace 
   PetscFunctionReturn(0);
 }
 
+/* Construct simplex nodes from a nodefamily, add Nk dof vectors of length Nk at each node.
+ * Return the (quadrature, matrix) form of the dofs and the nodeIndices form as well.
+ *
+ * Sometimes we want a set of nodes to be contained in the interior of the element,
+ * even when the node scheme puts nodes on the boundaries.  numNodeSkip tells
+ * the routine how many "layers" of nodes need to be skipped.
+ * */
 static PetscErrorCode PetscDualSpaceLagrangeCreateSimplexNodeMat(Petsc1DNodeFamily nodeFamily, PetscInt dim, PetscInt sum, PetscInt Nk, PetscInt numNodeSkip, PetscQuadrature *iNodes, Mat *iMat, PetscLagNodeIndices *nodeIndices)
 {
   PetscReal *extraNodeCoords, *nodeCoords;
@@ -1241,7 +1418,8 @@ static PetscErrorCode PetscDualSpaceLagrangeCreateSimplexNodeMat(Petsc1DNodeFami
       for (c = 0; c < Nk; c++) {
         for (j = 0; j < dim + 1; j++) {
           /* barycentric indices can have zeros, but we don't want to push forward zeros because it makes it harder to
-           * determine which nodes correspond to which under symmetries, so we increase by 1 */
+           * determine which nodes correspond to which under symmetries, so we increase by 1.  This is fine
+           * because the nodeIdx coordinates don't have any meaning other than helping to identify symmetries */
           ni->nodeIdx[(k * Nk + c) * (dim + 1) + j] = tup[j] + 1;
         }
       }
@@ -1269,6 +1447,8 @@ static PetscErrorCode PetscDualSpaceLagrangeCreateSimplexNodeMat(Petsc1DNodeFami
   PetscFunctionReturn(0);
 }
 
+/* once the nodeIndices have been created for the interior of the reference cell, and for all of the boundary cells,
+ * push forward the boudary dofs and concatenate them into the full node indices for the dual space */
 static PetscErrorCode PetscDualSpaceLagrangeCreateAllNodeIdx(PetscDualSpace sp)
 {
   DM             dm;
@@ -1318,6 +1498,10 @@ static PetscErrorCode PetscDualSpaceLagrangeCreateAllNodeIdx(PetscDualSpace sp)
   PetscFunctionReturn(0);
 }
 
+/* once the (quadrature, Matrix) forms of the dofs have been created for the interior of the
+ * reference cell and for the boundary cells, jk
+ * push forward the boundary data and concatenate them into the full (quadrature, matrix) data
+ * for the dual space */
 static PetscErrorCode PetscDualSpaceCreateAllDataFromInteriorData(PetscDualSpace sp)
 {
   DM               dm;
@@ -1411,7 +1595,7 @@ static PetscErrorCode PetscDualSpaceCreateAllDataFromInteriorData(PetscDualSpace
       for (i = 0; i < dim; i++) for (j = 0; j < pdim; j++) J[i * pdim + j] = J[i * dim + j];
     }
     ierr = PetscDTAltVPullbackMatrix(pdim, dim, J, k, L);CHKERRQ(ierr);
-    if (intNodes) { /* "push forward" dof by pulling back a k-form to be evaluated on the point: multiply on the right by L^T */
+    if (intNodes) { /* push forward quadrature locations by the affine transformation */
       PetscInt nNodesp;
       const PetscReal *nodesp;
       PetscInt j;
@@ -1478,6 +1662,12 @@ static PetscErrorCode PetscDualSpaceCreateAllDataFromInteriorData(PetscDualSpace
   PetscFunctionReturn(0);
 }
 
+/* rather than trying to get all data from the functionals, we create
+ * the functionals from rows of the quadrature -> dof matrix.
+ *
+ * Ideally most of the uses of PetscDualSpace in PetscFE will switch
+ * to using intMat and allMat, so that the individual functionals
+ * don't need to be constructed at all */
 static PetscErrorCode PetscDualSpaceComputeFunctionalsFromAllData(PetscDualSpace sp)
 {
   PetscQuadrature allNodes;
@@ -1588,6 +1778,9 @@ static PetscErrorCode PetscDualSpaceLagrangeMatrixCreateCopies(Mat A, PetscInt N
   PetscFunctionReturn(0);
 }
 
+/* check if a cell is a tensor product of the segment with a facet,
+ * specifically checking if f and f2 can be the "endpoints" (like the triangles
+ * at either end of a wedge) */
 static PetscErrorCode DMPlexPointIsTensor_Internal_Given(DM dm, PetscInt p, PetscInt f, PetscInt f2, PetscBool *isTensor)
 {
   PetscInt        coneSize, c;
@@ -1605,6 +1798,7 @@ static PetscErrorCode DMPlexPointIsTensor_Internal_Given(DM dm, PetscInt p, Pets
   ierr = DMPlexGetMeet(dm, 2, fs, &meetSize, &meet);CHKERRQ(ierr);
   nmeet = meetSize;
   ierr = DMPlexRestoreMeet(dm, 2, fs, &meetSize, &meet);CHKERRQ(ierr);
+  /* two points that have a non-empty meet cannot be at opposite ends of a cell */
   if (nmeet) {
     *isTensor = PETSC_FALSE;
     PetscFunctionReturn(0);
@@ -1623,6 +1817,8 @@ static PetscErrorCode DMPlexPointIsTensor_Internal_Given(DM dm, PetscInt p, Pets
     const PetscInt *tCone;
 
     if (t == f || t == f2) continue;
+    /* for every other facet in the cone, check that is has
+     * one ridge in common with each end */
     ierr = DMPlexGetConeSize(dm, t, &tConeSize);CHKERRQ(ierr);
     ierr = DMPlexGetCone(dm, t, &tCone);CHKERRQ(ierr);
 
@@ -1648,6 +1844,8 @@ static PetscErrorCode DMPlexPointIsTensor_Internal_Given(DM dm, PetscInt p, Pets
         }
       }
     }
+    /* if the whole cell is a tensor with the segment, then this
+     * facet should be a tensor with the segment */
     ierr = DMPlexPointIsTensor_Internal_Given(dm, t, d, d2, &tIsTensor);CHKERRQ(ierr);
     if (!tIsTensor) {
       *isTensor = PETSC_FALSE;
@@ -1658,6 +1856,8 @@ static PetscErrorCode DMPlexPointIsTensor_Internal_Given(DM dm, PetscInt p, Pets
   PetscFunctionReturn(0);
 }
 
+/* determine if a cell is a tensor with a segment by looping over pairs of facets to find a pair
+ * that could be the opposite ends */
 static PetscErrorCode DMPlexPointIsTensor_Internal(DM dm, PetscInt p, PetscBool *isTensor, PetscInt *endA, PetscInt *endB)
 {
   PetscInt        coneSize, c, c2;
@@ -1702,6 +1902,8 @@ static PetscErrorCode DMPlexPointIsTensor_Internal(DM dm, PetscInt p, PetscBool 
   PetscFunctionReturn(0);
 }
 
+/* determine if a cell is a tensor with a segment by looping over pairs of facets to find a pair
+ * that could be the opposite ends */
 static PetscErrorCode DMPlexPointIsTensor(DM dm, PetscInt p, PetscBool *isTensor, PetscInt *endA, PetscInt *endB)
 {
   DMPlexInterpolatedFlag interpolated;
@@ -1714,6 +1916,7 @@ static PetscErrorCode DMPlexPointIsTensor(DM dm, PetscInt p, PetscBool *isTensor
   PetscFunctionReturn(0);
 }
 
+/* permute a quadrature -> dof matrix so that its rows are in revlex order by nodeIdx */
 static PetscErrorCode MatPermuteByNodeIdx(Mat A, PetscLagNodeIndices ni, Mat *Aperm)
 {
   PetscInt       m, n, i, j;
@@ -1853,7 +2056,7 @@ static PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
       ierr = DMPlexComputeCellGeometryAffineFEM(dm, p, v0, J, NULL, &detJ);CHKERRQ(ierr);
       ierr = DMPlexGetCellType(dm, p, &ptype);CHKERRQ(ierr);
 
-      /* compare orders to previous facets: if computed, reference that dualspace */
+      /* compare to previous facets: if computed, reference that dualspace */
       for (q = pStratStart[depth - 1]; q < p; q++) {
         DMPolytopeType qtype;
 
@@ -1917,6 +2120,7 @@ static PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
     PetscDualSpace_Lag *scalarlag;
 
     ierr = PetscDualSpaceDuplicate(sp, &scalarsp);CHKERRQ(ierr);
+    /* Setting the number of components to Nk is a space with 1 copy of each k-form */
     ierr = PetscDualSpaceSetNumComponents(scalarsp, Nk);CHKERRQ(ierr);
     ierr = PetscDualSpaceSetUp(scalarsp);CHKERRQ(ierr);
     ierr = PetscDualSpaceGetInteriorData(scalarsp, &(sp->intNodes), &intMatScalar);CHKERRQ(ierr);
@@ -1975,7 +2179,6 @@ static PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
     ierr = PetscObjectReference((PetscObject) allMat);CHKERRQ(ierr);
     ierr = PetscObjectReference((PetscObject) allMat);CHKERRQ(ierr);
     sp->allMat = sp->intMat = allMat;
-    /* TODO: copy over symmetries */
     lagc = (PetscDualSpace_Lag *) spcont->data;
     ierr = PetscLagNodeIndicesReference(lagc->vertIndices);CHKERRQ(ierr);
     lag->vertIndices = lagc->vertIndices;
@@ -1994,6 +2197,8 @@ static PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
     if (!tensorCell) {ierr = PetscLagNodeIndicesCreateSimplexVertices(dm, &(lag->vertIndices));CHKERRQ(ierr);}
 
     if (trimmed) {
+      /* there is one dof in the interior of the a trimmed element for each full polynomial of with degree at most
+       * order + k - dim - 1 */
       if (order + PetscAbsInt(formDegree) > dim) {
         PetscInt sum = order + PetscAbsInt(formDegree) - dim - 1;
         PetscInt nDofs;
@@ -2007,6 +2212,8 @@ static PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
       ierr = PetscDualSpaceLagrangeCreateAllNodeIdx(sp);CHKERRQ(ierr);
     } else {
       if (!continuous) {
+        /* if discontinuous just construct one node for each set of dofs (a set of dofs is a basis for the k-form
+         * space) */
         PetscInt sum = order;
         PetscInt nDofs;
 
@@ -2021,6 +2228,8 @@ static PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
         ierr = PetscLagNodeIndicesReference(lag->intNodeIndices);CHKERRQ(ierr);
         lag->allNodeIndices = lag->intNodeIndices;
       } else {
+        /* there is one dof in the interior of the a full element for each trimmed polynomial of with degree at most
+         * order + k - dim, but with complementary form degree */
         if (order + PetscAbsInt(formDegree) > dim) {
           PetscDualSpace trimmedsp;
           PetscDualSpace_Lag *trimmedlag;
@@ -2053,15 +2262,14 @@ static PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
       }
     }
   } else {
-    /* assume the tensor element has the first facet being the cross-section, having its normal
-     * pointing in the last coordinate direction */
     PetscQuadrature intNodesTrace = NULL;
     PetscQuadrature intNodesFiber = NULL;
     PetscQuadrature intNodes = NULL;
     PetscLagNodeIndices intNodeIndices = NULL;
     Mat             intMat = NULL;
 
-    if (PetscAbsInt(formDegree) < dim) { /* get the trace k-forms on the first facet, and the 0-forms on the edge */
+    if (PetscAbsInt(formDegree) < dim) { /* get the trace k-forms on the first facet, and the 0-forms on the edge,
+                                            and wedge them together to create some of the k-form dofs */
       PetscDualSpace  trace, fiber;
       PetscDualSpace_Lag *tracel, *fiberl;
       Mat             intMatTrace, intMatFiber;
@@ -2088,7 +2296,8 @@ static PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
       ierr = PetscDualSpaceDestroy(&fiber);CHKERRQ(ierr);
       ierr = PetscDualSpaceDestroy(&trace);CHKERRQ(ierr);
     }
-    if (PetscAbsInt(formDegree) > 0) { /* get the trace (k-1)-forms on the first facet, and the 1-forms on the edge */
+    if (PetscAbsInt(formDegree) > 0) { /* get the trace (k-1)-forms on the first facet, and the 1-forms on the edge,
+                                          and wedge them together to create the remaining k-form dofs */
       PetscDualSpace  trace, fiber;
       PetscDualSpace_Lag *tracel, *fiberl;
       PetscQuadrature intNodesTrace2, intNodesFiber2, intNodes2;
@@ -2115,7 +2324,7 @@ static PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
           intNodes = intNodes2;
           intNodeIndices = intNodeIndices2;
         } else {
-          /* merge the two matrices and the two sets of points */
+          /* merge the matrices, quadrature points, and nodes */
           PetscInt         nM;
           PetscInt         nDof, nDof2;
           PetscInt        *toMerged = NULL, *toMerged2 = NULL;
@@ -2141,6 +2350,10 @@ static PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
           intMat = matMerged;
           intNodeIndices = intNodeIndicesMerged;
           if (!trimmed) {
+            /* I think users expect that, when a node has a full basis for the k-forms,
+             * they should be consecutive dofs.  That isn't the case for trimmed spaces,
+             * but is for some of the nodes in untrimmed spaces, so in that case we
+             * sort them to group them by node */
             Mat intMatPerm;
 
             ierr = MatPermuteByNodeIdx(intMat, intNodeIndices, &intMatPerm);CHKERRQ(ierr);
@@ -2186,6 +2399,9 @@ static PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
   PetscFunctionReturn(0);
 }
 
+/* Create a matrix that represents the transformation that DMPlexVecGetClosure() would need
+ * to get the representation of the dofs for a mesh point if the mesh point had this orientation
+ * relative to the cell */
 PetscErrorCode PetscDualSpaceCreateInteriorSymmetryMatrix_Lagrange(PetscDualSpace sp, PetscInt ornt, Mat *symMat)
 {
   PetscDualSpace_Lag *lag;
@@ -2219,7 +2435,9 @@ PetscErrorCode PetscDualSpaceCreateInteriorSymmetryMatrix_Lagrange(PetscDualSpac
   ni->nNodes = nNodes = intNodeIndices->nNodes;
   ierr = PetscMalloc1(nNodes * nodeIdxDim, &(ni->nodeIdx));CHKERRQ(ierr);
   ierr = PetscMalloc1(nNodes * nodeVecDim, &(ni->nodeVec));CHKERRQ(ierr);
+  /* push forward the dofs by the symmetry of the reference element induced by ornt */
   ierr = PetscLagNodeIndicesPushForward(dm, vertIndices, 0, vertIndices, intNodeIndices, ornt, formDegree, ni->nodeIdx, ni->nodeVec);CHKERRQ(ierr);
+  /* get the revlex order for both the original and transformed dofs */
   ierr = PetscLagNodeIndicesGetPermutation(intNodeIndices, &perm);CHKERRQ(ierr);
   ierr = PetscLagNodeIndicesGetPermutation(ni, &permOrnt);CHKERRQ(ierr);
   ierr = PetscMalloc1(nNodes, &nnz);CHKERRQ(ierr);
@@ -2227,6 +2445,7 @@ PetscErrorCode PetscDualSpaceCreateInteriorSymmetryMatrix_Lagrange(PetscDualSpac
     PetscInt *nind = &(ni->nodeIdx[permOrnt[n] * nodeIdxDim]);
     PetscInt m, nEnd;
     PetscInt groupSize;
+    /* for each group of dofs that have the same nodeIdx coordinate */
     for (nEnd = n + 1; nEnd < nNodes; nEnd++) {
       PetscInt *mind = &(ni->nodeIdx[permOrnt[nEnd] * nodeIdxDim]);
       PetscInt d;
@@ -2235,7 +2454,10 @@ PetscErrorCode PetscDualSpaceCreateInteriorSymmetryMatrix_Lagrange(PetscDualSpac
       for (d = 0; d < nodeIdxDim; d++) if (mind[d] != nind[d]) break;
       if (d < nodeIdxDim) break;
     }
+    /* permOrnt[[n, nEnd)] is a group of dofs that, under the symmetry are at the same location */
 #if defined(PETSC_USE_DEBUG)
+    /* the symmetry had better map the group of dofs with the same permuted nodeIdx
+     * to a group of dofs with the same size, otherwise we messed up */
     {
       PetscInt m;
       PetscInt *nind = &(intNodeIndices->nodeIdx[perm[n] * nodeIdxDim]);
@@ -2252,10 +2474,10 @@ PetscErrorCode PetscDualSpaceCreateInteriorSymmetryMatrix_Lagrange(PetscDualSpac
     }
 #endif
     groupSize = nEnd - n;
+    /* each pushforward dof vector will be expressed in a basis of the unpermuted dofs */
     for (m = n; m < nEnd; m++) nnz[permOrnt[m]] = groupSize;
 
     maxGroupSize = PetscMax(maxGroupSize, nEnd - n);
-    /* permOrnt[[n, nEnd)] is a group of dofs that, under the symmetry are at the same location */
     n = nEnd;
   }
   if (maxGroupSize > nodeVecDim) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Dofs are not in blocks that can be solved");
@@ -2276,7 +2498,7 @@ PetscErrorCode PetscDualSpaceCreateInteriorSymmetryMatrix_Lagrange(PetscDualSpac
       if (d < nodeIdxDim) break;
     }
     groupSize = nEnd - n;
-    /* get all of the vectors from the original */
+    /* get all of the vectors from the original and all of the pushforward vectors */
     for (m = n; m < nEnd; m++) {
       PetscInt d;
 
@@ -2285,7 +2507,8 @@ PetscErrorCode PetscDualSpaceCreateInteriorSymmetryMatrix_Lagrange(PetscDualSpac
         W[(m - n) * nodeVecDim + d] = ni->nodeVec[permOrnt[m] * nodeVecDim + d];
       }
     }
-    /* now we have to solve for W in terms of V */
+    /* now we have to solve for W in terms of V: the systems isn't always square, but the span
+     * of V and W should always be the same, so the solution of the normal equations works */
     {
       char transpose = 'N';
       PetscBLASInt bm = nodeVecDim;
@@ -2304,13 +2527,13 @@ PetscErrorCode PetscDualSpaceCreateInteriorSymmetryMatrix_Lagrange(PetscDualSpac
 
         for (i = 0; i < groupSize; i++) {
           for (j = 0; j < groupSize; j++) {
+            /* notice the different leading dimension */
             V[i * groupSize + j] = W[i * nodeVecDim + j];
           }
         }
       }
     }
     ierr = MatSetValues(A, groupSize, &permOrnt[n], groupSize, &perm[n], V, INSERT_VALUES);CHKERRQ(ierr);
-    /* permOrnt[[n, nEnd)] is a group of dofs that, under the symmetry are at the same location */
     n = nEnd;
   }
   ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -2325,6 +2548,16 @@ PetscErrorCode PetscDualSpaceCreateInteriorSymmetryMatrix_Lagrange(PetscDualSpac
 
 #define CartIndex(perEdge,a,b) (perEdge*(a)+b)
 
+/* the existing interface for symmetries is insufficient for all cases:
+ * - it should be sufficient for form degrees that are scalar (0 and n)
+ * - it should be sufficient for hypercube dofs
+ * - it isn't sufficient for simplex cells with non-scalar form degrees if
+ *   there are any dofs in the interior
+ *
+ * We compute the general transformation matrices, and if they fit, we return them,
+ * otherwise we error (but we should probably change the interface to allow for
+ * these symmetries)
+ */
 static PetscErrorCode PetscDualSpaceGetSymmetries_Lagrange(PetscDualSpace sp, const PetscInt ****perms, const PetscScalar ****flips)
 {
   PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *) sp->data;
@@ -2440,7 +2673,7 @@ static PetscErrorCode PetscDualSpaceGetSymmetries_Lagrange(PetscDualSpace sp, co
         symflips[0] = NULL;
       }
     }
-    {
+    { /* get the symmetries of closure points */
       PetscInt closureSize = 0;
       PetscInt *closure = NULL;
       PetscInt r;
