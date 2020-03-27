@@ -262,11 +262,9 @@ int main(int argc, char **argv)
   ierr = DMCreateDS(base);CHKERRQ(ierr);
 
   if (use_bcs) {
-    PetscDS  prob;
-    PetscInt ids[]   = {1, 2, 3, 4, 5, 6};
+    PetscInt ids[] = {1, 2, 3, 4, 5, 6};
 
-    ierr = DMGetDS(base,&prob);CHKERRQ(ierr);
-    ierr = PetscDSAddBoundary(prob,DM_BC_ESSENTIAL, "bc", "marker", 0, 0, NULL, useFV ? (void(*)(void)) bc_func_fv : (void(*)(void)) funcs[0], 2 * dim, ids, useFV ? (void *) &bcCtx : NULL);CHKERRQ(ierr);
+    ierr = DMAddBoundary(base,DM_BC_ESSENTIAL, "bc", "marker", 0, 0, NULL, useFV ? (void(*)(void)) bc_func_fv : (void(*)(void)) funcs[0], 2 * dim, ids, useFV ? (void *) &bcCtx : NULL);CHKERRQ(ierr);
   }
   ierr = DMViewFromOptions(base,NULL,"-dm_base_view");CHKERRQ(ierr);
 

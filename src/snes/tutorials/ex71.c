@@ -310,11 +310,11 @@ PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   /* Setup Boundary Conditions */
   ierr = PetscBagGetData(user->bag, (void **) &ctx);CHKERRQ(ierr);
   id   = 3;
-  ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "top wall",    "marker", 0, 0, NULL, (void (*)(void)) wall_velocity, 1, &id, ctx);CHKERRQ(ierr);
+  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "top wall",    "marker", 0, 0, NULL, (void (*)(void)) wall_velocity, 1, &id, ctx);CHKERRQ(ierr);
   id   = 1;
-  ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "bottom wall", "marker", 0, 0, NULL, (void (*)(void)) wall_velocity, 1, &id, ctx);CHKERRQ(ierr);
+  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "bottom wall", "marker", 0, 0, NULL, (void (*)(void)) wall_velocity, 1, &id, ctx);CHKERRQ(ierr);
   id   = 2;
-  ierr = PetscDSAddBoundary(prob, DM_BC_NATURAL,   "right wall",  "marker", 0, 0, NULL, (void (*)(void)) NULL,          1, &id, ctx);CHKERRQ(ierr);
+  ierr = DMAddBoundary(dm, DM_BC_NATURAL,   "right wall",  "marker", 0, 0, NULL, (void (*)(void)) NULL,          1, &id, ctx);CHKERRQ(ierr);
   /* Setup exact solution */
   user->exactFuncs[0] = quadratic_u;
   user->exactFuncs[1] = linear_p;
