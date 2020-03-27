@@ -190,8 +190,8 @@
           <li>Plex can now allow any number of cell types in a single mesh. Interpolation, refinement, and extraction of submeshes mixed meshes work smoothly. Both oriented and tensor-product prisms can be used in the same mesh.</li>
           <li>Cell refiners have been abstracted. Currently there are two (regular refinement, and conversion to hexes). The plan is to add more, such as local extrusion and conversion to simplices.</li>
           <li>Removed SimplexToTensor in favor of DM_REFINER_TO_BOX</li>
-          <li>DMForest now responds to DMPlexGetOverlap() and propagates its overlap to the underlying Plex<li>
-          <li>Add DMPlexGetSimplexOrBoxCells() to replace DMPlexGetInteriorCellStratum()<li>
+          <li>DMForest now responds to DMPlexGetOverlap() and propagates its overlap to the underlying Plex</li>
+          <li>Add DMPlexGetSimplexOrBoxCells() to replace DMPlexGetInteriorCellStratum()</li>
           <li>Add DMPolytopTypeGetDim(), DMPolyTopeTypeGetConeSize(), DMPolytopeTypeGetNumVertices()</li>
           <li>Add DMLabelSetStratumBounds()</li>
           <li>Add DMPlexOrientCell() which orients a single cell</li>
@@ -215,8 +215,6 @@
       <h4>SYS:</h4>
         <ul>
           <li>Rename PetscSignalSegvCheckPointer() to PetscSignalSegvCheckPointerOrMpi()</li>
-        </ul>
-        <ul>
           <li>Improve PetscInfo() controls to allow for sorting of output by PETSc Class</li>
           <li>Add PetscInfoSetFromOptions()</li>
           <li>Add PetscInfoEnabled() - Indicate whether a given PETSc class is allowed in PetscInfo()</li>
@@ -229,13 +227,11 @@
           <li>Add PetscInfoSetFilterCommSelf() - Sets PetscInfoCommFlag enum to control communicator size filtering for PetscInfo()</li>
           <li>Add PetscInfoDestroy() - Destroys and resets internal PetscInfo() filter options</li>
           <li>Change PetscInfoAllow() to only activate/deactivate PetscInfo(), file setting is now handled separately by PetscInfoSetFile()</li>
+          <li>Add PetscSubcommGetParent() - Gets the communicator that was used to create the PetscSubcomm</li>
+          <li>Add PetscSubcommGetContiguousParent() - Gets a communicator that that is a duplicate of the parent but has the ranks reordered by the order they are in the children</li>
+          <li>Add PetscSubcommGetChild() - Gets the communicator created by the PetscSubcomm</li>
+          <li>Change the default option of -build_twosided from ibarrier to allreduce for communicators with no more than 1024 ranks </li>
         </ul>
-        <ul>
-        <li>Add PetscSubcommGetParent() - Gets the communicator that was used to create the PetscSubcomm</li>
-        <li>Add PetscSubcommGetContiguousParent() - Gets a communicator that that is a duplicate of the parent but has the ranks reordered by the order they are in the children</li>
-        <li>Add PetscSubcommGetChild() - Gets the communicator created by the PetscSubcomm</li>
-        <li>Change the default option of -build_twosided from ibarrier to allreduce for communicators with no more than 1024 ranks </li>
-      </ul>
       <h4>AO:</h4>
       <h4>Sieve:</h4>
       <h4>Fortran:</h4>
