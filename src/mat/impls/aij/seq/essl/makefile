@@ -1,4 +1,4 @@
-
+-include ../petscdir.mk
 #requirespackage  'PETSC_HAVE_ESSL'
 #requiresscalar    real
 #requiresprecision double

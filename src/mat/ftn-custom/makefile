@@ -1,4 +1,5 @@
-#requiresdefine   'PETSC_HAVE_FORTRAN'
+#require-include ../petscdir.mk
+sdefine   'PETSC_HAVE_FORTRAN'
 
 ALL: lib
 

@@ -1,4 +1,4 @@
-
+-include ../petscdir.mk
 ALL: lib
 
 SOURCEH   = ../../../include/petsc/private/pcimpl.h ../../../include/petscpc.h \

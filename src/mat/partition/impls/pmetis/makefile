@@ -1,4 +1,4 @@
-#
+-include ../petscdir.mk
 ALL: lib
 
 #requirespackage 'PETSC_HAVE_PARMETIS'
