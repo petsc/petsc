@@ -674,14 +674,14 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if (initCUDA) {ierr = PetscCUDAInitialize(PETSC_COMM_WORLD);CHKERRQ(ierr);}
   if (use_gpu_aware_mpi) {
-#if defined(PETSC_HAVE_OMPI_MAJOR_VERSION) /* Use OpenMPI's compile time cuda query interface */
-#if defined(MPIX_CUDA_AWARE_SUPPORT) && MPIX_CUDA_AWARE_SUPPORT
+#if defined(PETSC_HAVE_OMPI_MAJOR_VERSION) && defined(MPIX_CUDA_AWARE_SUPPORT) && MPIX_CUDA_AWARE_SUPPORT
+    /* Trust OpenMPI's compile time cuda query interface */
     mpi_gpu_awareness = PETSC_TRUE;
 #else
-    mpi_gpu_awareness = PETSC_FALSE;
-#endif
-#else
-    mpi_gpu_awareness = PetscCheckMpiGpuAwareness(); /* For other MPI implementations without cuda query API, we do a GPU MPI call to see if it segfaults */
+    /* For other MPI implementations without cuda query API, we do a GPU MPI call to see if it segfaults.
+       Note that Spectrum MPI sets OMPI_MAJOR_VERSION and is CUDA-aware, but does not have MPIX_CUDA_AWARE_SUPPORT.
+    */
+    mpi_gpu_awareness = PetscCheckMpiGpuAwareness();
 #endif
     if (!mpi_gpu_awareness) {
       (*PetscErrorPrintf)("PETSc is configured with GPU support, but your MPI is not GPU-aware. For better performance, please use a GPU-aware MPI.\n");
