@@ -122,9 +122,9 @@ typedef struct _p_PetscOptionItems {
 
   Input Parameters:
 +   comm - communicator that shares GUI
-.   prefix - options prefix for all options displayed on window
+.   prefix - options prefix for all options displayed on window (optional)
 .   title - short descriptive text, for example "Krylov Solver Options"
--   mansec - section of manual pages for options, for example KSP
+-   mansec - section of manual pages for options, for example KSP (optional)
 
   Level: intermediate
 
