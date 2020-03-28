@@ -1,3 +1,4 @@
+petsc-dist/.readthedocs.yml
 petsc-dist/.travis.yml
 petsc-dist/Jenkinsfile
 petsc-dist/.gitmessage

@@ -90,7 +90,7 @@ version_minor=`grep '^#define PETSC_VERSION_MINOR ' include/petscversion.h |tr -
 version_subminor=`grep '^#define PETSC_VERSION_SUBMINOR ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`
 
 #generated a couple of more values
-version_date=`date +"%b, %d, %Y"`
+version_date=`date +"%b %d, %Y"`
 version_git=`git describe --match "v*"`
 version_date_git=`git log -1 --pretty=format:%ci`
 if [ ${version}foo = foo ]; then
