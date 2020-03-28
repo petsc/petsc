@@ -700,7 +700,7 @@ PetscInt PetscNumOMPThreads;
 
    Options Database Keys for Profiling:
    See Users-Manual: ch_profiling for details.
-+  -info [optional filename][:[~]optional list,of,classnames][:[~]optional "self"] - Prints verbose information to the screen. See PetscInfo().
++  -info [filename][:[~]<list,of,classnames>[:[~]self]] - Prints verbose information. See PetscInfo().
 .  -log_sync - Enable barrier synchronization for all events. This option is useful to debug imbalance within each event,
         however it slows things down and gives a distorted view of the overall runtime.
 .  -log_trace [filename] - Print traces of all PETSc calls to the screen (useful to determine where a program

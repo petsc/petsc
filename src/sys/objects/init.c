@@ -743,7 +743,7 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 #endif
 #endif
 #if defined(PETSC_USE_INFO)
-    ierr = (*PetscHelpPrintf)(comm," -info [filename][:[[~]list,of,classnames][:[[~]'self']]]: print informative messages\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -info [filename][:[~]<list,of,classnames>[:[~]self]]: print verbose information\n");CHKERRQ(ierr);
 #endif
     ierr = (*PetscHelpPrintf)(comm," -v: prints PETSc version number and release date\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -options_file <file>: reads options from file\n");CHKERRQ(ierr);
