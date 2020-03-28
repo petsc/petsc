@@ -241,6 +241,7 @@ PETSC_EXTERN void dmviewfromoptions_(DM *dm,PetscObject obj,char* type,PetscErro
   char *t;
 
   FIXCHAR(type,len,t);
+  CHKFORTRANNULLOBJECT(obj);
   *ierr = DMViewFromOptions(*dm,obj,t);if (*ierr) return;
   FREECHAR(type,t);
 }
