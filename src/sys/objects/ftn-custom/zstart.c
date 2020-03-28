@@ -149,7 +149,6 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_InnerComm_Attr_Delete_Fn(MPI_Comm,PetscMPI
 PETSC_EXTERN PetscMPIInt MPIAPI Petsc_OuterComm_Attr_Delete_Fn(MPI_Comm,PetscMPIInt,void*,void*);
 
 PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(void);
-PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Components(void);
 PETSC_INTERN PetscErrorCode PetscInitialize_DynamicLibraries(void);
 #if defined(PETSC_USE_LOG)
 PETSC_INTERN PetscErrorCode PetscLogInitialize(void);
@@ -483,8 +482,6 @@ static void petscinitialize_internal(char* filename, PetscInt len, PetscBool rea
   if (*ierr) { (*PetscErrorPrintf)("PetscInitialize:Getting hostname\n");return;}
   *ierr = PetscInfo1(0,"Running on machine: %s\n",hostname);
   if (*ierr) { (*PetscErrorPrintf)("PetscInitialize:Calling PetscInfo()\n");return;}
-  *ierr = PetscOptionsCheckInitial_Components();
-  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Checking initial options\n");return;}
 
 #if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_THREADSAFETY)
   *ierr = PetscStackCreate();

@@ -57,28 +57,6 @@ PetscSpinlock PetscCommSpinLock;
 #endif
 
 /*
-       Checks the options database for initializations related to the
-    PETSc components
-*/
-PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Components(void)
-{
-  PetscBool      flg;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscOptionsHasHelp(NULL,&flg);CHKERRQ(ierr);
-  if (flg) {
-#if defined(PETSC_USE_LOG)
-    MPI_Comm comm = PETSC_COMM_WORLD;
-    ierr = (*PetscHelpPrintf)(comm,"------Additional PETSc component options--------\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm," -log_exclude: <vec,mat,pc,ksp,snes,tao,ts>\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm,"-----------------------------------------------\n");CHKERRQ(ierr);
-#endif
-  }
-  PetscFunctionReturn(0);
-}
-
-/*
       PetscInitializeNoPointers - Calls PetscInitialize() from C/C++ without the pointers to argc and args
 
    Collective
@@ -1074,7 +1052,6 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
     }
   }
 #endif
-  ierr = PetscOptionsCheckInitial_Components();CHKERRQ(ierr);
   /* Check the options database for options related to the options database itself */
   ierr = PetscOptionsSetFromOptions(NULL);CHKERRQ(ierr);
 
