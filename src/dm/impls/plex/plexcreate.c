@@ -3588,7 +3588,7 @@ PetscErrorCode DMPlexCreateReferenceCell(MPI_Comm comm, PetscInt dim, PetscBool 
     else         {ierr = DMPlexCreateReferenceCellByType(comm, DM_POLYTOPE_HEXAHEDRON, refdm);CHKERRQ(ierr);}
     break;
   default:
-    SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Cannot create reference cell for dimension %d", dim);
+    SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Cannot create reference cell for dimension %D", dim);
   }
   PetscFunctionReturn(0);
 }

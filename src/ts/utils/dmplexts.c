@@ -38,54 +38,6 @@ static PetscErrorCode DMTSConvertPlex(DM dm, DM *plex, PetscBool copy)
   PetscFunctionReturn(0);
 }
 
-
-/*@
-  DMPlexTSGetGeometryFVM - Return precomputed geometric data
-
-  Input Parameter:
-. dm - The DM
-
-  Output Parameters:
-+ facegeom - The values precomputed from face geometry
-. cellgeom - The values precomputed from cell geometry
-- minRadius - The minimum radius over the mesh of an inscribed sphere in a cell
-
-  Level: developer
-
-.seealso: DMPlexTSSetRHSFunctionLocal()
-@*/
-PetscErrorCode DMPlexTSGetGeometryFVM(DM dm, Vec *facegeom, Vec *cellgeom, PetscReal *minRadius)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DMPlexSNESGetGeometryFVM(dm,facegeom,cellgeom,minRadius);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*@C
-  DMPlexTSGetGradientDM - Return gradient data layout
-
-  Input Parameters:
-+ dm - The DM
-- fv - The PetscFV
-
-  Output Parameter:
-. dmGrad - The layout for gradient values
-
-  Level: developer
-
-.seealso: DMPlexTSGetGeometryFVM(), DMPlexTSSetRHSFunctionLocal()
-@*/
-PetscErrorCode DMPlexTSGetGradientDM(DM dm, PetscFV fv, DM *dmGrad)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DMPlexSNESGetGradientDM(dm,fv,dmGrad);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 /*@
   DMPlexTSComputeRHSFunctionFVM - Form the local forcing F from the local input X using pointwise functions specified by the user
 
@@ -161,7 +113,7 @@ PetscErrorCode DMPlexTSComputeBoundary(DM dm, PetscReal time, Vec locX, Vec locX
       ierr = DMGetField(plex, f, NULL, &obj);CHKERRQ(ierr);
       ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
       if (id == PETSCFV_CLASSID) {
-        ierr = DMPlexSNESGetGeometryFVM(plex, &faceGeometryFVM, NULL, NULL);CHKERRQ(ierr);
+        ierr = DMPlexGetGeometryFVM(plex, &faceGeometryFVM, NULL, NULL);CHKERRQ(ierr);
         break;
       }
     }

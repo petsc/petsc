@@ -626,10 +626,10 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
   ierr = DMCreateDS(dmfv);CHKERRQ(ierr);
   ierr = DMPlexGetReferenceTree(dm,&refTree);CHKERRQ(ierr);
   if (refTree) {ierr = DMCopyDisc(dmfv,refTree);CHKERRQ(ierr);}
-  ierr = DMPlexSNESGetGradientDM(dmfv, fv, &dmgrad);CHKERRQ(ierr);
+  ierr = DMPlexGetGradientDM(dmfv, fv, &dmgrad);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dmfv,0,&cStart,&cEnd);CHKERRQ(ierr);
   nvecs = user->dim * (user->dim+1) / 2;
-  ierr = DMPlexSNESGetGeometryFVM(dmfv,NULL,&cellgeom,NULL);CHKERRQ(ierr);
+  ierr = DMPlexGetGeometryFVM(dmfv,NULL,&cellgeom,NULL);CHKERRQ(ierr);
   ierr = VecGetDM(cellgeom,&dmCell);CHKERRQ(ierr);
   ierr = VecGetArrayRead(cellgeom,&cgeom);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dmgrad,&grad);CHKERRQ(ierr);
