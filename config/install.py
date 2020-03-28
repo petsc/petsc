@@ -369,7 +369,7 @@ for file in files:
 ====================================
 Install complete.
 Now to check if the libraries are working do (in current directory):
-make PETSC_DIR=%s PETSC_ARCH="" test
+make PETSC_DIR=%s PETSC_ARCH="" check
 ====================================\
 ''' % (self.installDir))
     return
