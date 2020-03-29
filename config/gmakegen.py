@@ -129,25 +129,27 @@ class Petsc(object):
 
     def read_conf(self):
         self.conf = dict()
-        for line in open(self.arch_path('include', 'petscconf.h')):
-            if line.startswith('#define '):
-                define = line[len('#define '):]
-                space = define.find(' ')
-                key = define[:space]
-                val = define[space+1:]
-                self.conf[key] = val
+        with open(self.arch_path('include', 'petscconf.h')) as petscconf_h:
+            for line in petscconf_h:
+                if line.startswith('#define '):
+                    define = line[len('#define '):]
+                    space = define.find(' ')
+                    key = define[:space]
+                    val = define[space+1:]
+                    self.conf[key] = val
         self.conf.update(parse_makefile(self.arch_path('lib','petsc','conf', 'petscvariables')))
         # allow parsing package additional configurations (if any)
         if self.pkg_name != 'petsc' :
             f = self.pkg_arch_path('include', self.pkg_name + 'conf.h')
             if os.path.isfile(f):
-                for line in open(self.pkg_arch_path('include', self.pkg_name + 'conf.h')):
-                    if line.startswith('#define '):
-                        define = line[len('#define '):]
-                        space = define.find(' ')
-                        key = define[:space]
-                        val = define[space+1:]
-                        self.conf[key] = val
+                with open(self.pkg_arch_path('include', self.pkg_name + 'conf.h')) as pkg_conf_h:
+                    for line in pkg_conf_h:
+                        if line.startswith('#define '):
+                            define = line[len('#define '):]
+                            space = define.find(' ')
+                            key = define[:space]
+                            val = define[space+1:]
+                            self.conf[key] = val
             f = self.pkg_arch_path('lib',self.pkg_name,'conf', self.pkg_name + 'variables')
             if os.path.isfile(f):
                 self.conf.update(parse_makefile(self.pkg_arch_path('lib',self.pkg_name,'conf', self.pkg_name + 'variables')))
@@ -185,9 +187,8 @@ class Petsc(object):
             if not os.path.exists(makefile):
                 dirs[:] = []
                 continue
-            mklines = open(makefile)
-            conditions = set(tuple(stripsplit(line)) for line in mklines if line.startswith('#requires'))
-            mklines.close()
+            with open(makefile) as mklines:
+                conditions = set(tuple(stripsplit(line)) for line in mklines if line.startswith('#requires'))
             if not all(self.inconf(key, val) for key, val in conditions):
                 dirs[:] = []
                 continue
@@ -234,68 +235,67 @@ class Petsc(object):
 
 def WriteGnuMake(petsc):
     arch_files = petsc.pkg_arch_path('lib',petsc.pkg_name,'conf', 'files')
-    fd = open(arch_files, 'w')
-    gendeps = petsc.gen_gnumake(fd)
-    fd.write('\n')
-    fd.write('# Dependency to regenerate this file\n')
-    fd.write('%s : %s %s\n' % (os.path.relpath(arch_files, petsc.pkg_dir),
-                               os.path.relpath(__file__, os.path.realpath(petsc.pkg_dir)),
-                               ' '.join(gendeps)))
-    fd.write('\n')
-    fd.write('# Dummy dependencies in case makefiles are removed\n')
-    fd.write(''.join([dep + ':\n' for dep in gendeps]))
-    fd.close()
+    with open(arch_files, 'w') as fd:
+        gendeps = petsc.gen_gnumake(fd)
+        fd.write('\n')
+        fd.write('# Dependency to regenerate this file\n')
+        fd.write('%s : %s %s\n' % (os.path.relpath(arch_files, petsc.pkg_dir),
+                                   os.path.relpath(__file__, os.path.realpath(petsc.pkg_dir)),
+                                   ' '.join(gendeps)))
+        fd.write('\n')
+        fd.write('# Dummy dependencies in case makefiles are removed\n')
+        fd.write(''.join([dep + ':\n' for dep in gendeps]))
 
 def WriteNinja(petsc):
     conf = dict()
     parse_makefile(os.path.join(petsc.petsc_dir, 'lib', 'petsc','conf', 'variables'), conf)
     parse_makefile(petsc.arch_path('lib','petsc','conf', 'petscvariables'), conf)
     build_ninja = petsc.arch_path('build.ninja')
-    fd = open(build_ninja, 'w')
-    fd.write('objdir = obj-ninja\n')
-    fd.write('libdir = lib\n')
-    fd.write('c_compile = %(PCC)s\n' % conf)
-    fd.write('c_flags = %(PETSC_CC_INCLUDES)s %(PCC_FLAGS)s %(CCPPFLAGS)s\n' % conf)
-    fd.write('c_link = %(PCC_LINKER)s\n' % conf)
-    fd.write('c_link_flags = %(PCC_LINKER_FLAGS)s\n' % conf)
-    if petsc.have_fortran:
-        fd.write('f_compile = %(FC)s\n' % conf)
-        fd.write('f_flags = %(PETSC_FC_INCLUDES)s %(FC_FLAGS)s %(FCPPFLAGS)s\n' % conf)
-        fd.write('f_link = %(FC_LINKER)s\n' % conf)
-        fd.write('f_link_flags = %(FC_LINKER_FLAGS)s\n' % conf)
-    fd.write('petsc_external_lib = %(PETSC_EXTERNAL_LIB_BASIC)s\n' % conf)
-    fd.write('python = %(PYTHON)s\n' % conf)
-    fd.write('\n')
-    fd.write('rule C_COMPILE\n'
-             '  command = $c_compile -MMD -MF $out.d $c_flags -c $in -o $out\n'
-             '  description = CC $out\n'
-             '  depfile = $out.d\n'
-             # '  deps = gcc\n') # 'gcc' is default, 'msvc' only recognized by newer versions of ninja
-             '\n')
-    fd.write('rule C_LINK_SHARED\n'
-             '  command = $c_link $c_link_flags -shared -o $out $in $petsc_external_lib\n'
-             '  description = CLINK_SHARED $out\n'
-             '\n')
-    if petsc.have_fortran:
-        fd.write('rule F_COMPILE\n'
-                 '  command = $f_compile -MMD -MF $out.d $f_flags -c $in -o $out\n'
-                 '  description = FC $out\n'
+    with open(build_ninja, 'w') as fd:
+        fd.write('objdir = obj-ninja\n')
+        fd.write('libdir = lib\n')
+        fd.write('c_compile = %(PCC)s\n' % conf)
+        fd.write('c_flags = %(PETSC_CC_INCLUDES)s %(PCC_FLAGS)s %(CCPPFLAGS)s\n' % conf)
+        fd.write('c_link = %(PCC_LINKER)s\n' % conf)
+        fd.write('c_link_flags = %(PCC_LINKER_FLAGS)s\n' % conf)
+        if petsc.have_fortran:
+            fd.write('f_compile = %(FC)s\n' % conf)
+            fd.write('f_flags = %(PETSC_FC_INCLUDES)s %(FC_FLAGS)s %(FCPPFLAGS)s\n' % conf)
+            fd.write('f_link = %(FC_LINKER)s\n' % conf)
+            fd.write('f_link_flags = %(FC_LINKER_FLAGS)s\n' % conf)
+        fd.write('petsc_external_lib = %(PETSC_EXTERNAL_LIB_BASIC)s\n' % conf)
+        fd.write('python = %(PYTHON)s\n' % conf)
+        fd.write('\n')
+        fd.write('rule C_COMPILE\n'
+                 '  command = $c_compile -MMD -MF $out.d $c_flags -c $in -o $out\n'
+                 '  description = CC $out\n'
                  '  depfile = $out.d\n'
+                 # '  deps = gcc\n') # 'gcc' is default, 'msvc' only recognized by newer versions of ninja
                  '\n')
-        fd.write('rule F_LINK_SHARED\n'
-                 '  command = $f_link $f_link_flags -shared -o $out $in $petsc_external_lib\n'
-                 '  description = FLINK_SHARED $out\n'
+        fd.write('rule C_LINK_SHARED\n'
+                 '  command = $c_link $c_link_flags -shared -o $out $in $petsc_external_lib\n'
+                 '  description = CLINK_SHARED $out\n'
                  '\n')
-    fd.write('rule GEN_NINJA\n'
-             '  command = $python $in --output=ninja\n'
-             '  generator = 1\n'
-             '\n')
-    petsc.gen_ninja(fd)
-    fd.write('\n')
-    fd.write('build %s : GEN_NINJA | %s %s %s %s\n' % (build_ninja,
-                                                       os.path.abspath(__file__),
-                                                       os.path.join(petsc.petsc_dir, 'lib','petsc','conf', 'variables'),
-                                                       petsc.arch_path('lib','petsc','conf', 'petscvariables'),
+        if petsc.have_fortran:
+            fd.write('rule F_COMPILE\n'
+                     '  command = $f_compile -MMD -MF $out.d $f_flags -c $in -o $out\n'
+                     '  description = FC $out\n'
+                     '  depfile = $out.d\n'
+                     '\n')
+            fd.write('rule F_LINK_SHARED\n'
+                     '  command = $f_link $f_link_flags -shared -o $out $in $petsc_external_lib\n'
+                     '  description = FLINK_SHARED $out\n'
+                     '\n')
+        fd.write('rule GEN_NINJA\n'
+                 '  command = $python $in --output=ninja\n'
+                 '  generator = 1\n'
+                 '\n')
+        petsc.gen_ninja(fd)
+        fd.write('\n')
+        fd.write('build %s : GEN_NINJA | %s %s %s %s\n' % (build_ninja,
+                                                           os.path.abspath(__file__),
+                                                           os.path.join(petsc.petsc_dir, 'lib','petsc','conf', 'variables'),
+                                                           petsc.arch_path('lib','petsc','conf', 'petscvariables'),
                                                        ' '.join(os.path.join(petsc.pkg_dir, dep) for dep in petsc.gendeps)))
 
 def main(petsc_dir=None, petsc_arch=None, pkg_dir=None, pkg_name=None, pkg_arch=None, pkg_pkgs=None, output=None, verbose=False):
