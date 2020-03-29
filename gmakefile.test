@@ -1,5 +1,5 @@
 # -*- mode: makefile-gmake -*-
-include petscdir.mk
+-include petscdir.mk
 
 CONFIGDIR := $(PETSC_DIR)/config
 
@@ -88,7 +88,7 @@ endif
 $(generatedtest) : $(petscconf) $(petscvariables) $(CONFIGDIR)/gmakegentest.py $(TESTDIR)/.DIR | $$(@D)/.DIR
 	$(PYTHON) $(CONFIGDIR)/gmakegentest.py --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) --testdir=$(TESTDIR)
 
-ifneq ($(MAKECMDGOALS:clean%=clean),clean)
+ifneq ($(filter-out clean check,$(MAKECMDGOALS:clean%=clean)),)
 include $(generatedtest)
 endif
 
