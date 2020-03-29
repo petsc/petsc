@@ -247,6 +247,7 @@ PETSC_EXTERN PetscErrorCode MatProductNumeric_PtAP(Mat);
 PETSC_EXTERN PetscErrorCode MatProductNumeric_RARt(Mat);
 PETSC_EXTERN PetscErrorCode MatProductSymbolic_ABC(Mat);
 PETSC_EXTERN PetscErrorCode MatProductNumeric_ABC(Mat);
+PETSC_EXTERN PetscErrorCode MatProductCreate_Private(Mat,Mat,Mat,Mat);
 
 #if defined(PETSC_USE_DEBUG)
 #  define MatCheckPreallocated(A,arg) do {                              \

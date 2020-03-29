@@ -107,6 +107,9 @@ int main(int argc,char **args)
     ierr = MatMatMultEqual(A,B,C,10,&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error: MatMatMult()");
     ierr = MatDestroy(&A);CHKERRQ(ierr);
+
+    /* Test MatProductClear() */
+    ierr = MatProductClear(C);CHKERRQ(ierr);
     ierr = MatDestroy(&C);CHKERRQ(ierr);
   }
 

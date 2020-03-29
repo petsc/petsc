@@ -1288,11 +1288,7 @@ PetscErrorCode MatDestroy(Mat *A)
   ierr = PetscFree((*A)->bsizes);CHKERRQ(ierr);
   ierr = PetscFree((*A)->solvertype);CHKERRQ(ierr);
   ierr = MatDestroy_Redundant(&(*A)->redundant);CHKERRQ(ierr);
-  if ((*A)->product) {
-    Mat_Product  *product = (*A)->product;
-    ierr = MatDestroy(&product->Dwork);CHKERRQ(ierr);
-    ierr = PetscFree(product);CHKERRQ(ierr);
-  }
+  ierr = MatProductClear(*A);CHKERRQ(ierr);
 
   ierr = MatNullSpaceDestroy(&(*A)->nullsp);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&(*A)->transnullsp);CHKERRQ(ierr);
@@ -9321,14 +9317,10 @@ PetscErrorCode MatMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
 #endif
         /* user wants to reuse an assembled dense matrix */
         /* Create product -- see MatCreateProduct() */
-        ierr = PetscNewLog(*C,&product);CHKERRQ(ierr);
-        product->A        = A; product->Areplaced = PETSC_FALSE;
-        product->B        = B; product->Breplaced = PETSC_FALSE;
-        product->C        = NULL;
-        product->alg      = MATPRODUCTALGORITHM_DEFAULT;
+        ierr = MatProductCreate_Private(A,B,NULL,*C);CHKERRQ(ierr);
+        product = (*C)->product;
         product->fill     = fill;
         product->api_user = PETSC_TRUE;
-        (*C)->product     = product;
 
         ierr = MatProductSetType(*C,MATPRODUCT_AB);CHKERRQ(ierr);
         ierr = MatProductSetFromOptions(*C);CHKERRQ(ierr);
@@ -9404,14 +9396,10 @@ PetscErrorCode MatMatTransposeMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat
       if ((*C)->assembled && (seqdense || mpidense || dense)) {
         /* user wants to reuse an assembled dense matrix */
         /* Create product -- see MatCreateProduct() */
-        ierr = PetscNewLog(*C,&product);CHKERRQ(ierr);
-        product->A        = A; product->Areplaced = PETSC_FALSE;
-        product->B        = B; product->Breplaced = PETSC_FALSE;
-        product->C        = NULL;
-        product->alg      = MATPRODUCTALGORITHM_DEFAULT;
+        ierr = MatProductCreate_Private(A,B,NULL,*C);CHKERRQ(ierr);
+        product = (*C)->product;
         product->fill     = fill;
         product->api_user = PETSC_TRUE;
-        (*C)->product     = product;
 
         ierr = MatProductSetType(*C,MATPRODUCT_ABt);CHKERRQ(ierr);
         ierr = MatProductSetFromOptions(*C);CHKERRQ(ierr);
@@ -9480,14 +9468,10 @@ PetscErrorCode MatTransposeMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat
       if ((*C)->assembled && (seqdense || mpidense || dense)) {
         /* user wants to reuse an assembled dense matrix */
         /* Create product -- see MatCreateProduct() */
-        ierr = PetscNewLog(*C,&product);CHKERRQ(ierr);
-        product->A        = A; product->Areplaced = PETSC_FALSE;
-        product->B        = B; product->Breplaced = PETSC_FALSE;
-        product->C        = NULL;
-        product->alg      = MATPRODUCTALGORITHM_DEFAULT;
+        ierr = MatProductCreate_Private(A,B,NULL,*C);CHKERRQ(ierr);
+        product = (*C)->product;
         product->fill     = fill;
         product->api_user = PETSC_TRUE;
-        (*C)->product     = product;
 
         ierr = MatProductSetType(*C,MATPRODUCT_AtB);CHKERRQ(ierr);
         ierr = MatProductSetFromOptions(*C);CHKERRQ(ierr);
