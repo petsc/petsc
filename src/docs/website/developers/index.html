@@ -146,6 +146,14 @@
         <li><code>make alldoc LOC=${PETSC_DIR}</code></li>
       </ul>
 
+      <p>To get a quick preview of manual pages from a single source directory (mainly to debug the manual page syntax):</p>
+
+      <ul>
+        <li><code>cd $PETSC_DIR/src/snes/interface</code></li>
+        <li><code>make LOC=$PETSC_DIR manualpages_buildcite</code></li>
+        <li><code>browse $PETSC_DIR/docs/manualpages/SNES/SNESCreate.html  # or suitable command to open the HTML page in a browser</code></li>
+      </ul>
+
       <h2><a name="sending_patches_to_update_the_">Submitting code for inclusion in PETSc:</a></h2>
 
        See <a href="https://gitlab.com/petsc/petsc/wikis/Home">https://gitlab.com/petsc/petsc/wikis/Home</a> for how to contribute code to PETSc.
