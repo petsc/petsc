@@ -54,8 +54,9 @@ class Configure(config.package.Package):
     if self.found:
       # TODO: Use openblas_get_config() or openblas_config.h to determine use of OpenMP and 64 bit indices for prebuilt OpenBLAS libraries
       if not hasattr(self,'usesopenmp'): self.usesopenmp = 'unknown'
-      if  self.directory:
+      if self.directory:
         self.libDir = os.path.join(self.directory,'lib')
+        self.include = [os.path.join(self.directory,'include')]
       else:
         self.libDir = None
     if not hasattr(self,'known64'): self.known64 = 'unknown'
@@ -104,6 +105,7 @@ class Configure(config.package.Package):
     cmdline += " NO_EXPRECISION=1 "
     cmdline += " libs netlib re_lapack shared "
 
+    self.include = [os.path.join(self.installDir,'include')]
     libdir = self.libDir
     blasDir = self.packageDir
 
@@ -127,5 +129,3 @@ class Configure(config.package.Package):
       raise RuntimeError('Error moving '+blasDir+' libraries')
     self.postInstall(output1+err1+output2+err2,'tmpmakefile')
     return self.installDir
-
-
