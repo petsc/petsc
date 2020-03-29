@@ -47,10 +47,10 @@ struct _MatOps {
   PetscErrorCode (*lufactor)(Mat,IS,IS,const MatFactorInfo*);
   PetscErrorCode (*choleskyfactor)(Mat,IS,const MatFactorInfo*);
   PetscErrorCode (*sor)(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscInt,PetscInt,Vec);
-  PetscErrorCode (*transpose)(Mat,MatReuse,Mat *);
+  PetscErrorCode (*transpose)(Mat,MatReuse,Mat*);
   /*15*/
   PetscErrorCode (*getinfo)(Mat,MatInfoType,MatInfo*);
-  PetscErrorCode (*equal)(Mat,Mat,PetscBool  *);
+  PetscErrorCode (*equal)(Mat,Mat,PetscBool*);
   PetscErrorCode (*getdiagonal)(Mat,Vec);
   PetscErrorCode (*diagonalscale)(Mat,Vec,Vec);
   PetscErrorCode (*norm)(Mat,NormType,PetscReal*);
@@ -127,13 +127,13 @@ struct _MatOps {
   PetscErrorCode (*multtransposeconstrained)(Mat,Vec,Vec);
   /*79*/
   PetscErrorCode (*findzerodiagonals)(Mat,IS*);
-  PetscErrorCode (*mults)(Mat, Vecs, Vecs);
-  PetscErrorCode (*solves)(Mat, Vecs, Vecs);
+  PetscErrorCode (*mults)(Mat,Vecs,Vecs);
+  PetscErrorCode (*solves)(Mat,Vecs,Vecs);
   PetscErrorCode (*getinertia)(Mat,PetscInt*,PetscInt*,PetscInt*);
   PetscErrorCode (*load)(Mat, PetscViewer);
   /*84*/
-  PetscErrorCode (*issymmetric)(Mat,PetscReal,PetscBool *);
-  PetscErrorCode (*ishermitian)(Mat,PetscReal,PetscBool *);
+  PetscErrorCode (*issymmetric)(Mat,PetscReal,PetscBool*);
+  PetscErrorCode (*ishermitian)(Mat,PetscReal,PetscBool*);
   PetscErrorCode (*isstructurallysymmetric)(Mat,PetscBool *);
   PetscErrorCode (*setvaluesblockedlocal)(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
   PetscErrorCode (*getvecs)(Mat,Vec*,Vec*);

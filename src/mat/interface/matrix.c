@@ -8610,7 +8610,7 @@ PetscErrorCode MatIsHermitian(Mat A,PetscReal tol,PetscBool  *flg)
 
 .seealso: MatTranspose(), MatIsTranspose(), MatIsHermitian(), MatIsStructurallySymmetric(), MatSetOption(), MatIsSymmetric()
 @*/
-PetscErrorCode MatIsSymmetricKnown(Mat A,PetscBool  *set,PetscBool  *flg)
+PetscErrorCode MatIsSymmetricKnown(Mat A,PetscBool *set,PetscBool *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);

@@ -1376,17 +1376,17 @@ PETSC_EXTERN PetscErrorCode PetscObjectIncrementTabLevel(PetscObject,PetscObject
 PETSC_EXTERN PetscErrorCode PetscObjectReference(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectGetReference(PetscObject,PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscObjectDereference(PetscObject);
-PETSC_EXTERN PetscErrorCode PetscObjectGetNewTag(PetscObject,PetscMPIInt *);
+PETSC_EXTERN PetscErrorCode PetscObjectGetNewTag(PetscObject,PetscMPIInt*);
 PETSC_EXTERN PetscErrorCode PetscObjectCompose(PetscObject,const char[],PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectRemoveReference(PetscObject,const char[]);
-PETSC_EXTERN PetscErrorCode PetscObjectQuery(PetscObject,const char[],PetscObject *);
+PETSC_EXTERN PetscErrorCode PetscObjectQuery(PetscObject,const char[],PetscObject*);
 PETSC_EXTERN PetscErrorCode PetscObjectComposeFunction_Private(PetscObject,const char[],void (*)(void));
 #define PetscObjectComposeFunction(a,b,d) PetscObjectComposeFunction_Private(a,b,(PetscVoidFunction)(d))
 PETSC_EXTERN PetscErrorCode PetscObjectSetFromOptions(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectSetUp(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectSetPrintedOptions(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectInheritPrintedOptions(PetscObject,PetscObject);
-PETSC_EXTERN PetscErrorCode PetscCommGetNewTag(MPI_Comm,PetscMPIInt *);
+PETSC_EXTERN PetscErrorCode PetscCommGetNewTag(MPI_Comm,PetscMPIInt*);
 
 #include <petscviewertypes.h>
 #include <petscoptions.h>
@@ -1569,11 +1569,11 @@ PETSC_EXTERN PetscErrorCode PetscStartJava(MPI_Comm,const char[],const char[],FI
 PETSC_EXTERN PetscErrorCode PetscGetPetscDir(const char*[]);
 
 PETSC_EXTERN PetscClassId PETSC_CONTAINER_CLASSID;
-PETSC_EXTERN PetscErrorCode PetscContainerGetPointer(PetscContainer,void **);
-PETSC_EXTERN PetscErrorCode PetscContainerSetPointer(PetscContainer,void *);
+PETSC_EXTERN PetscErrorCode PetscContainerGetPointer(PetscContainer,void**);
+PETSC_EXTERN PetscErrorCode PetscContainerSetPointer(PetscContainer,void*);
 PETSC_EXTERN PetscErrorCode PetscContainerDestroy(PetscContainer*);
-PETSC_EXTERN PetscErrorCode PetscContainerCreate(MPI_Comm,PetscContainer *);
-PETSC_EXTERN PetscErrorCode PetscContainerSetUserDestroy(PetscContainer, PetscErrorCode (*)(void*));
+PETSC_EXTERN PetscErrorCode PetscContainerCreate(MPI_Comm,PetscContainer*);
+PETSC_EXTERN PetscErrorCode PetscContainerSetUserDestroy(PetscContainer,PetscErrorCode (*)(void*));
 PETSC_EXTERN PetscErrorCode PetscContainerUserDestroyDefault(void*);
 
 /*

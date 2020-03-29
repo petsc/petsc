@@ -988,7 +988,7 @@ static PetscErrorCode MatProductSetFromOptions_HYPRE_AB(Mat C)
     C->ops->productsymbolic = MatProductSymbolic_AB_HYPRE;
     C->ops->matmultnumeric  = MatMatMultNumeric_HYPRE_HYPRE;
     PetscFunctionReturn(0);
-  } else SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_SUP,"A must be Hyper type");
+  } else SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_SUP,"A must be Hypre type");
   PetscFunctionReturn(0);
 }
 

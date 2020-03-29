@@ -204,10 +204,3 @@ PetscErrorCode  MatRegisterRootName(const char rname[],const char sname[],const 
   }
   PetscFunctionReturn(0);
 }
-
-
-
-
-
-
-
