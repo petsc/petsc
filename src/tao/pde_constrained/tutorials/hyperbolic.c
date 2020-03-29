@@ -127,7 +127,7 @@ int main(int argc, char **argv)
 
   ierr = PetscInitialize(&argc, &argv, (char*)0,help);if (ierr) return ierr;
   user.mx = 32;
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,NULL,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"hyperbolic example",NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mx","Number of grid points in each direction","",user.mx,&user.mx,NULL);CHKERRQ(ierr);
   user.nt = 16;
   ierr = PetscOptionsInt("-nt","Number of time steps","",user.nt,&user.nt,NULL);CHKERRQ(ierr);
@@ -137,6 +137,8 @@ int main(int argc, char **argv)
   ierr = PetscOptionsReal("-alpha","Regularization parameter","",user.alpha,&user.alpha,NULL);CHKERRQ(ierr);
   user.T = 1.0/32.0;
   ierr = PetscOptionsReal("-Tfinal","Final time","",user.T,&user.T,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-ntests","Number of times to repeat TaoSolve","",ntests,&ntests,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   user.m = user.mx*user.mx*user.nt; /*  number of constraints */
   user.n = user.mx*user.mx*3*user.nt; /*  number of variables */
@@ -202,8 +204,6 @@ int main(int argc, char **argv)
   ierr = TaoSetStateDesignIS(tao,user.s_is,user.d_is);CHKERRQ(ierr);
 
   /* SOLVE THE APPLICATION */
-  ierr = PetscOptionsInt("-ntests","Number of times to repeat TaoSolve","",ntests,&ntests,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = PetscLogStageRegister("Trials",&stages[0]);CHKERRQ(ierr);
   ierr = PetscLogStagePush(stages[0]);CHKERRQ(ierr);
   user.ksp_its_initial = user.ksp_its;
