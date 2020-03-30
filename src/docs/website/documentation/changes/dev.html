@@ -213,6 +213,12 @@
         <li>Rename DefaultTabulation to CellTabulation everywhere</li>
         <li>PetscDTGaussJacobiQuadrature() is now truly Gauss-Jacobi quadrature.  The quadrature for the simplex (without weight function) is now called PetscDTStroudConicalQuadrature()</li>
         <li>Add PetscDTJacobiEval(), PetscDTGaussLobattoJacobiQuadrature()</li>
+        <li>Add PetscDTIndexToBary() and PetscDTBaryToIndex() for barycentric lattice calculations</li>
+        <li>Add PetscDTNodeType to enumerate methods of defining interpolation nodes</li>
+        <li>PetscDualSpace now has PetscDualSpaceSetFormDegree() and PetscDualSpaceGetFormDegree() for governing functional pushforward/pullback behavior</li>
+        <li>PETSCDUALSPACELAGRANGE now has PetscDualSpaceGetTrimmed() and PetscDualSpaceSetTrimmed() for creating degrees of freedom for trimmed polynomial spaces</li>
+        <li>PETSCDUALSPACELAGRANGE now has PetscDualSpaceGetNodeType() and PetscDualSpaceSetNodType() for controlling the placement of interpolation nodes</li>
+        <li>PETSCDUALSPACEBDM was removed: its functionality is now a part of PETSCDUALSPACELAGRANGE</li>
       </ul>
       <h4>PetscViewer:</h4>
         <ul>

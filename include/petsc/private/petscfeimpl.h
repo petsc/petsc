@@ -68,15 +68,15 @@ struct _PetscDualSpaceOps {
   PetscErrorCode (*view)(PetscDualSpace,PetscViewer);
   PetscErrorCode (*destroy)(PetscDualSpace);
 
-  PetscErrorCode (*duplicate)(PetscDualSpace,PetscDualSpace*);
-  PetscErrorCode (*getdimension)(PetscDualSpace,PetscInt*);
-  PetscErrorCode (*getnumdof)(PetscDualSpace,const PetscInt**);
-  PetscErrorCode (*getheightsubspace)(PetscDualSpace,PetscInt,PetscDualSpace *);
-  PetscErrorCode (*getpointsubspace)(PetscDualSpace,PetscInt,PetscDualSpace *);
+  PetscErrorCode (*duplicate)(PetscDualSpace,PetscDualSpace);
+  PetscErrorCode (*createheightsubspace)(PetscDualSpace,PetscInt,PetscDualSpace *);
+  PetscErrorCode (*createpointsubspace)(PetscDualSpace,PetscInt,PetscDualSpace *);
   PetscErrorCode (*getsymmetries)(PetscDualSpace,const PetscInt****,const PetscScalar****);
   PetscErrorCode (*apply)(PetscDualSpace, PetscInt, PetscReal, PetscFEGeom *, PetscInt, PetscErrorCode (*)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void *, PetscScalar *);
   PetscErrorCode (*applyall)(PetscDualSpace, const PetscScalar *, PetscScalar *);
-  PetscErrorCode (*createallpoints)(PetscDualSpace, PetscQuadrature *);
+  PetscErrorCode (*applyint)(PetscDualSpace, const PetscScalar *, PetscScalar *);
+  PetscErrorCode (*createalldata)(PetscDualSpace, PetscQuadrature *, Mat *);
+  PetscErrorCode (*createintdata)(PetscDualSpace, PetscQuadrature *, Mat *);
 };
 
 struct _p_PetscDualSpace {
@@ -86,35 +86,64 @@ struct _p_PetscDualSpace {
   PetscInt         order;      /* The approximation order of the space */
   PetscInt         Nc;         /* The number of components */
   PetscQuadrature *functional; /* The basis of functionals for this space */
-  PetscQuadrature  allPoints;  /* Collects all quadrature points representing functionals in the basis */
+  Mat              allMat;
+  PetscQuadrature  allNodes;   /* Collects all quadrature points representing functionals in the basis */
+  Vec              allNodeValues;
+  Vec              allDofValues;
+  Mat              intMat;
+  PetscQuadrature  intNodes;   /* Collects all quadrature points representing functionals in the basis in the interior of the cell */
+  Vec              intNodeValues;
+  Vec              intDofValues;
+  PetscInt         spdim;      /* The dual-space dimension */
+  PetscInt         spintdim;   /* The dual-space interior dimension */
   PetscInt         k;          /* k-simplex corresponding to the dofs in this basis (we always use the 3D complex right now) */
+  PetscBool        uniform;
   PetscBool        setupcalled;
   PetscBool        setfromoptionscalled;
+  PetscSection     pointSection;
+  PetscDualSpace  *pointSpaces;
+  PetscDualSpace  *heightSpaces;
+  PetscInt        *numDof;
 };
 
-typedef struct {
-  PetscInt       *numDof;      /* [d]: Number of dofs for d-dimensional point */
-  PetscBool       simplexCell; /* Flag for simplices, as opposed to tensor cells */
-  PetscBool       tensorSpace; /* Flag for tensor product space of polynomials, as opposed to a space of maximum degree */
-  PetscBool       continuous;  /* Flag for a continuous basis, as opposed to discontinuous across element boundaries */
-  PetscInt        height;      /* The number of subspaces stored */
-  PetscDualSpace *subspaces;   /* [h]: The subspace for dimension dim-(h+1) */
-  PetscInt     ***symmetries;
-  PetscInt        numSelfSym;
-  PetscInt        selfSymOff;
-} PetscDualSpace_Lag;
+typedef struct _n_Petsc1DNodeFamily *Petsc1DNodeFamily;
+typedef struct _n_PetscLagNodeIndices *PetscLagNodeIndices;
+
+PETSC_EXTERN PetscErrorCode PetscLagNodeIndicesGetData_Internal(PetscLagNodeIndices, PetscInt *, PetscInt *, PetscInt *, const PetscInt *[], const PetscReal *[]);
+PETSC_EXTERN PetscErrorCode PetscDualSpaceCreateInteriorSymmetryMatrix_Lagrange(PetscDualSpace sp, PetscInt ornt, Mat *symMat);
 
 typedef struct {
-  PetscInt       *numDof;      /* [d]: Number of dofs for d-dimensional point */
-  PetscBool       simplexCell; /* Flag for simplices, as opposed to tensor cells */
-  PetscInt        height;      /* The number of subspaces stored */
-  PetscDualSpace *subspaces;   /* [h]: The subspace for dimension dim-(h+1) */
-  PetscBool       faceSpace;   /* Flag indicating this is a subspace for a face (the only subspaces permitted) */
-  PetscInt     ***symmetries;
-  PetscScalar  ***flips;
-  PetscInt        numSelfSym;
-  PetscInt        selfSymOff;
-} PetscDualSpace_BDM;
+  /* these describe the types of dual spaces implemented */
+  PetscBool         tensorCell;  /* Flag for tensor product cell */
+  PetscBool         tensorSpace; /* Flag for tensor product space of polynomials, as opposed to a space of maximum degree */
+  PetscBool         trimmed;     /* Flag for dual space of trimmed polynomial spaces */
+  PetscBool         continuous;  /* Flag for a continuous basis, as opposed to discontinuous across element boundaries */
+
+  PetscBool         interiorOnly; /* To make setup faster for tensor elements, only construct interior dofs in recursive calls */
+
+  /* these keep track of symmetries */
+  PetscInt       ***symperms;
+  PetscScalar    ***symflips;
+  PetscInt          numSelfSym;
+  PetscInt          selfSymOff;
+  PetscBool         symComputed;
+
+  /* these describe different schemes of placing nodes in a simplex, from
+   * which are derived all dofs in Lagrange dual spaces */
+  PetscDTNodeType   nodeType;
+  PetscBool         endNodes;
+  PetscReal         nodeExponent;
+  PetscInt          numNodeSkip; /* The number of end nodes from the 1D Node family to skip */
+  Petsc1DNodeFamily nodeFamily;
+
+  PetscInt          numCopies;
+
+  /* these are ways of indexing nodes in a way that makes
+   * the computation of symmetries programmatic */
+  PetscLagNodeIndices vertIndices;
+  PetscLagNodeIndices intNodeIndices;
+  PetscLagNodeIndices allNodeIndices;
+} PetscDualSpace_Lag;
 
 typedef struct {
   PetscInt  dim;
@@ -295,6 +324,10 @@ PETSC_STATIC_INLINE PetscErrorCode PetscFEInterpolateFieldAndGradient_Static(Pet
 
 PETSC_INTERN PetscErrorCode PetscDualSpaceLatticePointLexicographic_Internal(PetscInt, PetscInt, PetscInt[]);
 PETSC_INTERN PetscErrorCode PetscDualSpaceTensorPointLexicographic_Internal(PetscInt, PetscInt, PetscInt[]);
+
+PETSC_INTERN PetscErrorCode PetscDualSpaceSectionCreate_Internal(PetscDualSpace, PetscSection*);
+PETSC_INTERN PetscErrorCode PetscDualSpaceSectionSetUp_Internal(PetscDualSpace, PetscSection);
+PETSC_INTERN PetscErrorCode PetscDualSpacePushForwardSubspaces_Internal(PetscDualSpace, PetscInt, PetscInt);
 
 PETSC_INTERN PetscErrorCode PetscFEEvaluateFieldJets_Internal(PetscDS, PetscInt, PetscInt, PetscInt, PetscTabulation[], PetscFEGeom *, const PetscScalar[], const PetscScalar[], PetscScalar[], PetscScalar[], PetscScalar[]);
 PETSC_INTERN PetscErrorCode PetscFEEvaluateFaceFields_Internal(PetscDS, PetscInt, PetscInt, const PetscScalar[], PetscScalar[]);

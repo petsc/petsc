@@ -444,14 +444,14 @@ int main(int argc, char **argv)
      test:
        output_file: output/ex2_steps3.out
        suffix: p4est_2d_deg3_steps3
-       args: -petscspace_type tensor -petscspace_degree 3 -dim 2 -coords -adapt_steps 3
+       args: -petscspace_type tensor -petscspace_degree 3 -dim 2 -coords -adapt_steps 3 -petscdualspace_lagrange_node_type equispaced -petscdualspace_lagrange_node_endpoints 1
        nsize: 3
        requires: p4est !single
 
      test:
        output_file: output/ex2_steps3.out
        suffix: p4est_2d_deg3_steps3_L2_periodic
-       args: -petscspace_type tensor -petscspace_degree 3 -petscdualspace_lagrange_continuity 0 -dim 2 -coords -adapt_steps 3 -periodic -use_bcs 0
+       args: -petscspace_type tensor -petscspace_degree 3 -petscdualspace_lagrange_continuity 0 -dim 2 -coords -adapt_steps 3 -periodic -use_bcs 0 -petscdualspace_lagrange_node_type equispaced
        nsize: 3
        requires: p4est !single
 
@@ -472,7 +472,7 @@ int main(int argc, char **argv)
      test:
        output_file: output/ex2_steps3.out
        suffix: p4est_3d_deg3_steps3
-       args: -petscspace_type tensor -petscspace_degree 3 -dim 3 -coords -adapt_steps 3
+       args: -petscspace_type tensor -petscspace_degree 3 -dim 3 -coords -adapt_steps 3 -petscdualspace_lagrange_node_type equispaced -petscdualspace_lagrange_node_endpoints 1
        nsize: 3
        requires: p4est !single
 

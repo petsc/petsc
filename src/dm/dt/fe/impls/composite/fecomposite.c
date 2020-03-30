@@ -24,6 +24,7 @@ static PetscErrorCode PetscFESetUp_Composite(PetscFE fem)
   PetscBLASInt       n, info;
   PetscScalar       *work, *invVscalar;
   PetscInt           dim, pdim, spdim, j, s;
+  PetscSection       section;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
@@ -39,23 +40,22 @@ static PetscErrorCode PetscFESetUp_Composite(PetscFE fem)
   ierr = PetscSpaceGetDimension(fem->basisSpace, &spdim);CHKERRQ(ierr);
   ierr = PetscMalloc1(cmp->numSubelements*spdim,&cmp->embedding);CHKERRQ(ierr);
   ierr = DMGetWorkArray(K, dim, MPIU_REAL, &subpoint);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetSection(fem->dualSpace, &section);CHKERRQ(ierr);
   for (s = 0; s < cmp->numSubelements; ++s) {
     PetscInt sd = 0;
+    PetscInt closureSize;
+    PetscInt *closure = NULL;
 
-    for (j = 0; j < pdim; ++j) {
-      PetscBool       inside;
-      PetscQuadrature f;
-      PetscInt        d, e;
+    ierr = DMPlexGetTransitiveClosure(K, s, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    for (j = 0; j < closureSize; j++) {
+      PetscInt point = closure[2*j];
+      PetscInt dof, off, k;
 
-      ierr = PetscDualSpaceGetFunctional(fem->dualSpace, j, &f);CHKERRQ(ierr);
-      /* Apply transform to first point, and check that point is inside subcell */
-      for (d = 0; d < dim; ++d) {
-        subpoint[d] = -1.0;
-        for (e = 0; e < dim; ++e) subpoint[d] += cmp->invjac[(s*dim + d)*dim+e]*(f->points[e] - cmp->v0[s*dim+e]);
-      }
-      ierr = CellRefinerInCellTest_Internal(ct, subpoint, &inside);CHKERRQ(ierr);
-      if (inside) {cmp->embedding[s*spdim+sd++] = j;}
+      ierr = PetscSectionGetDof(section, point, &dof);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(section, point, &off);CHKERRQ(ierr);
+      for (k = 0; k < dof; k++) cmp->embedding[s*spdim+sd++] = off + k;
     }
+    ierr = DMPlexRestoreTransitiveClosure(K, s, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     if (sd != spdim) SETERRQ3(PetscObjectComm((PetscObject) fem), PETSC_ERR_PLIB, "Subelement %d has %d dual basis vectors != %d", s, sd, spdim);
   }
   ierr = DMRestoreWorkArray(K, dim, MPIU_REAL, &subpoint);CHKERRQ(ierr);

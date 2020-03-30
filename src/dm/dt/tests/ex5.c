@@ -81,7 +81,7 @@ int main(int argc, char **argv)
       /* create a vector on the trace domain */
       ierr = PetscFEGetDimension(traceFE,&nSub);CHKERRQ(ierr);
       /* get the subset of the original finite element space that is supported on the trace space */
-      ierr = PetscDualSpaceCreateSection(dualspace,&sectionFull);CHKERRQ(ierr);
+      ierr = PetscDualSpaceGetSection(dualspace,&sectionFull);CHKERRQ(ierr);
       ierr = PetscSectionSetUp(sectionFull);CHKERRQ(ierr);
       /* get the trace degrees of freedom */
       ierr = PetscMalloc1(nSub,&arraySub);CHKERRQ(ierr);
@@ -116,7 +116,6 @@ int main(int argc, char **argv)
       ierr = PetscTabulationDestroy(&Tsub);CHKERRQ(ierr);
       /* clean up */
       ierr = PetscFree(arraySub);CHKERRQ(ierr);
-      ierr = PetscSectionDestroy(&sectionFull);CHKERRQ(ierr);
       ierr = VecDestroy(&vecFull);CHKERRQ(ierr);
       ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
       ierr = PetscFree4(testSub,testFull,outSub,outFull);CHKERRQ(ierr);

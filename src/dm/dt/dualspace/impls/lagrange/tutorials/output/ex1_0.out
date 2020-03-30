@@ -1,0 +1,22 @@
+PetscDualSpace Object: Lagrange dual space 1 MPI processes
+  type: lagrange
+  Dual space with 1 components, size 6
+  Continuous Lagrange dual space
+    Dual basis vector 0
+        Quadrature of order -1 on 1 points (dim 2)
+        p0 (+0, -1) +1
+    Dual basis vector 1
+        Quadrature of order -1 on 1 points (dim 2)
+        p0 (+0., +0.) +1
+    Dual basis vector 2
+        Quadrature of order -1 on 1 points (dim 2)
+        p0 (-1, +0) +1
+    Dual basis vector 3
+        Quadrature of order -1 on 1 points (dim 2)
+        p0 (-1, -1) +1
+    Dual basis vector 4
+        Quadrature of order -1 on 1 points (dim 2)
+        p0 (+1, -1) +1
+    Dual basis vector 5
+        Quadrature of order -1 on 1 points (dim 2)
+        p0 (-1, +1) +1

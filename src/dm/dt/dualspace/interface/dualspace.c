@@ -11,7 +11,7 @@ const char *const PetscDualSpaceReferenceCells[] = {"SIMPLEX", "TENSOR", "PetscD
 /*
   PetscDualSpaceLatticePointLexicographic_Internal - Returns all tuples of size 'len' with nonnegative integers that sum up to at most 'max'.
                                                      Ordering is lexicographic with lowest index as least significant in ordering.
-                                                     e.g. for len == 2 and max == 2, this will return, in order, {0,0}, {1,0}, {2,0}, {0,1}, {1,1}, {2,0}.
+                                                     e.g. for len == 2 and max == 2, this will return, in order, {0,0}, {1,0}, {2,0}, {0,1}, {1,1}, {0,2}.
 
   Input Parameters:
 + len - The length of the tuple
@@ -192,7 +192,11 @@ static PetscErrorCode PetscDualSpaceView_ASCII(PetscDualSpace sp, PetscViewer v)
   ierr = PetscDualSpaceGetDimension(sp, &pdim);CHKERRQ(ierr);
   ierr = PetscObjectPrintClassNamePrefixType((PetscObject) sp, v);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(v, "Dual space with %D components, size %D\n", sp->Nc, pdim);CHKERRQ(ierr);
+  if (sp->k) {
+    ierr = PetscViewerASCIIPrintf(v, "Dual space for %D-forms %swith %D components, size %D\n", PetscAbsInt(sp->k), sp->k < 0 ? "(stored in dual form) ": "", sp->Nc, pdim);CHKERRQ(ierr);
+  } else {
+    ierr = PetscViewerASCIIPrintf(v, "Dual space with %D components, size %D\n", sp->Nc, pdim);CHKERRQ(ierr);
+  }
   if (sp->ops->view) {ierr = (*sp->ops->view)(sp, v);CHKERRQ(ierr);}
   ierr = PetscViewerGetFormat(v, &format);CHKERRQ(ierr);
   if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
@@ -299,7 +303,8 @@ PetscErrorCode PetscDualSpaceSetFromOptions(PetscDualSpace sp)
   } else if (!((PetscObject) sp)->type_name) {
     ierr = PetscDualSpaceSetType(sp, defaultType);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsBoundedInt("-petscdualspace_degree", "The approximation order", "PetscDualSpaceSetOrder", sp->order, &sp->order, NULL,0);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-petscdualspace_order", "The approximation order", "PetscDualSpaceSetOrder", sp->order, &sp->order, NULL,0);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-petscdualspace_form_degree", "The form degree of the dofs", "PetscDualSpaceSetFormDegree", sp->k, &sp->k, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBoundedInt("-petscdualspace_components", "The number of components", "PetscDualSpaceSetNumComponents", sp->Nc, &sp->Nc, NULL,1);CHKERRQ(ierr);
   if (sp->ops->setfromoptions) {
     ierr = (*sp->ops->setfromoptions)(PetscOptionsObject,sp);CHKERRQ(ierr);
@@ -347,6 +352,48 @@ PetscErrorCode PetscDualSpaceSetUp(PetscDualSpace sp)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PetscDualSpaceClearDMData_Internal(PetscDualSpace sp, DM dm)
+{
+  PetscInt       pStart = -1, pEnd = -1, depth = -1;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!dm) PetscFunctionReturn(0);
+  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
+
+  if (sp->pointSpaces) {
+    PetscInt i;
+
+    for (i = 0; i < pEnd - pStart; i++) {
+      ierr = PetscDualSpaceDestroy(&(sp->pointSpaces[i]));CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscFree(sp->pointSpaces);CHKERRQ(ierr);
+
+  if (sp->heightSpaces) {
+    PetscInt i;
+
+    for (i = 0; i <= depth; i++) {
+      ierr = PetscDualSpaceDestroy(&(sp->heightSpaces[i]));CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscFree(sp->heightSpaces);CHKERRQ(ierr);
+
+  ierr = PetscSectionDestroy(&(sp->pointSection));CHKERRQ(ierr);
+  ierr = PetscQuadratureDestroy(&(sp->intNodes));CHKERRQ(ierr);
+  ierr = VecDestroy(&(sp->intDofValues));CHKERRQ(ierr);
+  ierr = VecDestroy(&(sp->intNodeValues));CHKERRQ(ierr);
+  ierr = MatDestroy(&(sp->intMat));CHKERRQ(ierr);
+  ierr = PetscQuadratureDestroy(&(sp->allNodes));CHKERRQ(ierr);
+  ierr = VecDestroy(&(sp->allDofValues));CHKERRQ(ierr);
+  ierr = VecDestroy(&(sp->allNodeValues));CHKERRQ(ierr);
+  ierr = MatDestroy(&(sp->allMat));CHKERRQ(ierr);
+  ierr = PetscFree(sp->numDof);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
 /*@
   PetscDualSpaceDestroy - Destroys a PetscDualSpace object
 
@@ -362,6 +409,7 @@ PetscErrorCode PetscDualSpaceSetUp(PetscDualSpace sp)
 PetscErrorCode PetscDualSpaceDestroy(PetscDualSpace *sp)
 {
   PetscInt       dim, f;
+  DM             dm;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -372,14 +420,16 @@ PetscErrorCode PetscDualSpaceDestroy(PetscDualSpace *sp)
   ((PetscObject) (*sp))->refct = 0;
 
   ierr = PetscDualSpaceGetDimension(*sp, &dim);CHKERRQ(ierr);
+  dm = (*sp)->dm;
+
+  if ((*sp)->ops->destroy) {ierr = (*(*sp)->ops->destroy)(*sp);CHKERRQ(ierr);}
+  ierr = PetscDualSpaceClearDMData_Internal(*sp, dm);CHKERRQ(ierr);
+
   for (f = 0; f < dim; ++f) {
     ierr = PetscQuadratureDestroy(&(*sp)->functional[f]);CHKERRQ(ierr);
   }
   ierr = PetscFree((*sp)->functional);CHKERRQ(ierr);
-  ierr = PetscQuadratureDestroy(&(*sp)->allPoints);CHKERRQ(ierr);
   ierr = DMDestroy(&(*sp)->dm);CHKERRQ(ierr);
-
-  if ((*sp)->ops->destroy) {ierr = (*(*sp)->ops->destroy)(*sp);CHKERRQ(ierr);}
   ierr = PetscHeaderDestroy(sp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -412,9 +462,12 @@ PetscErrorCode PetscDualSpaceCreate(MPI_Comm comm, PetscDualSpace *sp)
 
   ierr = PetscHeaderCreate(s, PETSCDUALSPACE_CLASSID, "PetscDualSpace", "Dual Space", "PetscDualSpace", comm, PetscDualSpaceDestroy, PetscDualSpaceView);CHKERRQ(ierr);
 
-  s->order = 0;
-  s->Nc    = 1;
-  s->k     = 0;
+  s->order       = 0;
+  s->Nc          = 1;
+  s->k           = 0;
+  s->spdim       = -1;
+  s->spintdim    = -1;
+  s->uniform     = PETSC_TRUE;
   s->setupcalled = PETSC_FALSE;
 
   *sp = s;
@@ -438,12 +491,27 @@ PetscErrorCode PetscDualSpaceCreate(MPI_Comm comm, PetscDualSpace *sp)
 @*/
 PetscErrorCode PetscDualSpaceDuplicate(PetscDualSpace sp, PetscDualSpace *spNew)
 {
+  DM             dm;
+  PetscDualSpaceType type;
+  const char     *name;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   PetscValidPointer(spNew, 2);
-  ierr = (*sp->ops->duplicate)(sp, spNew);CHKERRQ(ierr);
+  ierr = PetscDualSpaceCreate(PetscObjectComm((PetscObject)sp), spNew);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject) sp,     &name);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) *spNew,  name);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetType(sp, &type);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetType(*spNew, type);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetDM(sp, &dm);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetDM(*spNew, dm);CHKERRQ(ierr);
+
+  (*spNew)->order   = sp->order;
+  (*spNew)->k       = sp->k;
+  (*spNew)->Nc      = sp->Nc;
+  (*spNew)->uniform = sp->uniform;
+  if (sp->ops->duplicate) {ierr = (*sp->ops->duplicate)(sp, *spNew);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -491,8 +559,12 @@ PetscErrorCode PetscDualSpaceSetDM(PetscDualSpace sp, DM dm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
-  ierr = DMDestroy(&sp->dm);CHKERRQ(ierr);
+  if (sp->setupcalled) SETERRQ(PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_WRONGSTATE, "Cannot change DM after dualspace is set up");
   ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr);
+  if (sp->dm && sp->dm != dm) {
+    ierr = PetscDualSpaceClearDMData_Internal(sp, sp->dm);CHKERRQ(ierr);
+  }
+  ierr = DMDestroy(&sp->dm);CHKERRQ(ierr);
   sp->dm = dm;
   PetscFunctionReturn(0);
 }
@@ -538,6 +610,7 @@ PetscErrorCode PetscDualSpaceSetOrder(PetscDualSpace sp, PetscInt order)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
+  if (sp->setupcalled) SETERRQ(PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_WRONGSTATE, "Cannot change order after dualspace is set up");
   sp->order = order;
   PetscFunctionReturn(0);
 }
@@ -581,6 +654,7 @@ PetscErrorCode PetscDualSpaceSetNumComponents(PetscDualSpace sp, PetscInt Nc)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
+  if (sp->setupcalled) SETERRQ(PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_WRONGSTATE, "Cannot change number of components after dualspace is set up");
   sp->Nc = Nc;
   PetscFunctionReturn(0);
 }
@@ -637,10 +711,81 @@ PetscErrorCode PetscDualSpaceGetDimension(PetscDualSpace sp, PetscInt *dim)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   PetscValidPointer(dim, 2);
-  *dim = 0;
-  if (sp->ops->getdimension) {ierr = (*sp->ops->getdimension)(sp, dim);CHKERRQ(ierr);}
+  if (sp->spdim < 0) {
+    PetscSection section;
+
+    ierr = PetscDualSpaceGetSection(sp, &section);CHKERRQ(ierr);
+    if (section) {
+      ierr = PetscSectionGetStorageSize(section, &(sp->spdim));CHKERRQ(ierr);
+    } else sp->spdim = 0;
+  }
+  *dim = sp->spdim;
   PetscFunctionReturn(0);
 }
+
+/*@
+  PetscDualSpaceGetInteriorDimension - Get the interior dimension of the dual space, i.e. the number of basis functionals assigned to the interior of the reference domain
+
+  Not collective
+
+  Input Parameter:
+. sp - The PetscDualSpace
+
+  Output Parameter:
+. dim - The dimension
+
+  Level: intermediate
+
+.seealso: PetscDualSpaceGetFunctional(), PetscDualSpaceCreate()
+@*/
+PetscErrorCode PetscDualSpaceGetInteriorDimension(PetscDualSpace sp, PetscInt *intdim)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
+  PetscValidPointer(intdim, 2);
+  if (sp->spintdim < 0) {
+    PetscSection section;
+
+    ierr = PetscDualSpaceGetSection(sp, &section);CHKERRQ(ierr);
+    if (section) {
+      ierr = PetscSectionGetConstrainedStorageSize(section, &(sp->spintdim));CHKERRQ(ierr);
+    } else sp->spintdim = 0;
+  }
+  *intdim = sp->spintdim;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PetscDualSpaceGetUniform - Whether this dual space is uniform
+
+   Not collective
+
+   Input Parameters:
+.  sp - A dual space
+
+   Output Parameters:
+.  uniform - PETSC_TRUE if (a) the dual space is the same for each point in a stratum of the reference DMPlex, and
+             (b) every symmetry of each point in the reference DMPlex is also a symmetry of the point's dual space.
+
+
+   Level: advanced
+
+   Note: all of the usual spaces on simplex or tensor-product elements will be uniform, only reference cells
+   with non-uniform strata (like trianguar-prisms) or anisotropic hp dual spaces will not be uniform.
+
+.seealso: PetscDualSpaceGetPointSubspace(), PetscDualSpaceGetSymmetries()
+@*/
+PetscErrorCode PetscDualSpaceGetUniform(PetscDualSpace sp, PetscBool *uniform)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
+  PetscValidPointer(uniform, 2);
+  *uniform = sp->uniform;
+  PetscFunctionReturn(0);
+}
+
 
 /*@C
   PetscDualSpaceGetNumDof - Get the number of degrees of freedom for each spatial (topological) dimension
@@ -664,13 +809,114 @@ PetscErrorCode PetscDualSpaceGetNumDof(PetscDualSpace sp, const PetscInt **numDo
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   PetscValidPointer(numDof, 2);
-  ierr = (*sp->ops->getnumdof)(sp, numDof);CHKERRQ(ierr);
+  if (!sp->uniform) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "A non-uniform space does not have a fixed number of dofs for each height");
+  if (!sp->numDof) {
+    DM       dm;
+    PetscInt depth, d;
+    PetscSection section;
+
+    ierr = PetscDualSpaceGetDM(sp, &dm);CHKERRQ(ierr);
+    ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
+    ierr = PetscCalloc1(depth+1,&(sp->numDof));CHKERRQ(ierr);
+    ierr = PetscDualSpaceGetSection(sp, &section);CHKERRQ(ierr);
+    for (d = 0; d <= depth; d++) {
+      PetscInt dStart, dEnd;
+
+      ierr = DMPlexGetDepthStratum(dm, d, &dStart, &dEnd);CHKERRQ(ierr);
+      if (dEnd <= dStart) continue;
+      ierr = PetscSectionGetDof(section, dStart, &(sp->numDof[d]));CHKERRQ(ierr);
+
+    }
+  }
+  *numDof = sp->numDof;
   if (!*numDof) SETERRQ(PetscObjectComm((PetscObject) sp), PETSC_ERR_LIB, "Empty numDof[] returned from dual space implementation");
   PetscFunctionReturn(0);
 }
 
+/* create the section of the right size and set a permutation for topological ordering */
+PetscErrorCode PetscDualSpaceSectionCreate_Internal(PetscDualSpace sp, PetscSection *topSection)
+{
+  DM             dm;
+  PetscInt       pStart, pEnd, cStart, cEnd, c, depth, count, i;
+  PetscInt       *seen, *perm;
+  PetscSection   section;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  dm = sp->dm;
+  ierr = PetscSectionCreate(PETSC_COMM_SELF, &section);CHKERRQ(ierr);
+  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(section, pStart, pEnd);CHKERRQ(ierr);
+  ierr = PetscCalloc1(pEnd - pStart, &seen);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pEnd - pStart, &perm);CHKERRQ(ierr);
+  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  for (c = cStart, count = 0; c < cEnd; c++) {
+    PetscInt closureSize = -1, e;
+    PetscInt *closure = NULL;
+
+    perm[count++] = c;
+    seen[c-pStart] = 1;
+    ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    for (e = 0; e < closureSize; e++) {
+      PetscInt point = closure[2*e];
+
+      if (seen[point-pStart]) continue;
+      perm[count++] = point;
+      seen[point-pStart] = 1;
+    }
+    ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+  }
+  if (count != pEnd - pStart) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Bad topological ordering");
+  for (i = 0; i < pEnd - pStart; i++) if (perm[i] != i) break;
+  if (i < pEnd - pStart) {
+    IS permIS;
+
+    ierr = ISCreateGeneral(PETSC_COMM_SELF, pEnd - pStart, perm, PETSC_OWN_POINTER, &permIS);CHKERRQ(ierr);
+    ierr = ISSetPermutation(permIS);CHKERRQ(ierr);
+    ierr = PetscSectionSetPermutation(section, permIS);CHKERRQ(ierr);
+    ierr = ISDestroy(&permIS);CHKERRQ(ierr);
+  } else {
+    ierr = PetscFree(perm);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(seen);CHKERRQ(ierr);
+  *topSection = section;
+  PetscFunctionReturn(0);
+}
+
+/* mark boundary points and set up */
+PetscErrorCode PetscDualSpaceSectionSetUp_Internal(PetscDualSpace sp, PetscSection section)
+{
+  DM             dm;
+  DMLabel        boundary;
+  PetscInt       pStart, pEnd, p;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  dm = sp->dm;
+  ierr = DMLabelCreate(PETSC_COMM_SELF,"boundary",&boundary);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetDM(sp,&dm);CHKERRQ(ierr);
+  ierr = DMPlexMarkBoundaryFaces(dm,1,boundary);CHKERRQ(ierr);
+  ierr = DMPlexLabelComplete(dm,boundary);CHKERRQ(ierr);
+  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; p++) {
+    PetscInt bval;
+
+    ierr = DMLabelGetValue(boundary, p, &bval);CHKERRQ(ierr);
+    if (bval == 1) {
+      PetscInt dof;
+
+      ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
+      ierr = PetscSectionSetConstraintDof(section, p, dof);CHKERRQ(ierr);
+    }
+  }
+  ierr = DMLabelDestroy(&boundary);CHKERRQ(ierr);
+  ierr = PetscSectionSetUp(section);
+  PetscFunctionReturn(0);
+}
+
 /*@
-  PetscDualSpaceCreateSection - Create a PetscSection over the reference cell with the layout from this space
+  PetscDualSpaceGetSection - Create a PetscSection over the reference cell with the layout from this space
 
   Collective on sp
 
@@ -684,41 +930,75 @@ PetscErrorCode PetscDualSpaceGetNumDof(PetscDualSpace sp, const PetscInt **numDo
 
 .seealso: PetscDualSpaceCreate(), DMPLEX
 @*/
-PetscErrorCode PetscDualSpaceCreateSection(PetscDualSpace sp, PetscSection *section)
+PetscErrorCode PetscDualSpaceGetSection(PetscDualSpace sp, PetscSection *section)
 {
-  DM             dm;
-  PetscInt       pStart, pEnd, depth, h, offset;
-  const PetscInt *numDof;
+  PetscInt       pStart, pEnd, p;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscDualSpaceGetDM(sp,&dm);CHKERRQ(ierr);
-  ierr = DMPlexGetChart(dm,&pStart,&pEnd);CHKERRQ(ierr);
-  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)sp),section);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(*section,pStart,pEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetDepth(dm,&depth);CHKERRQ(ierr);
-  ierr = PetscDualSpaceGetNumDof(sp,&numDof);CHKERRQ(ierr);
-  for (h = 0; h <= depth; h++) {
-    PetscInt hStart, hEnd, p, dof;
+  if (!sp->pointSection) {
+    /* mark the boundary */
+    ierr = PetscDualSpaceSectionCreate_Internal(sp, &(sp->pointSection));CHKERRQ(ierr);
+    ierr = DMPlexGetChart(sp->dm,&pStart,&pEnd);CHKERRQ(ierr);
+    for (p = pStart; p < pEnd; p++) {
+      PetscDualSpace psp;
 
-    ierr = DMPlexGetHeightStratum(dm,h,&hStart,&hEnd);CHKERRQ(ierr);
-    dof = numDof[depth - h];
-    for (p = hStart; p < hEnd; p++) {
-      ierr = PetscSectionSetDof(*section,p,dof);CHKERRQ(ierr);
+      ierr = PetscDualSpaceGetPointSubspace(sp, p, &psp);CHKERRQ(ierr);
+      if (psp) {
+        PetscInt dof;
+
+        ierr = PetscDualSpaceGetInteriorDimension(psp, &dof);CHKERRQ(ierr);
+        ierr = PetscSectionSetDof(sp->pointSection,p,dof);CHKERRQ(ierr);
+      }
+    }
+    ierr = PetscDualSpaceSectionSetUp_Internal(sp,sp->pointSection);CHKERRQ(ierr);
+  }
+  *section = sp->pointSection;
+  PetscFunctionReturn(0);
+}
+
+/* this assumes that all of the point dual spaces store their interior dofs first, which is true when the point DMs
+ * have one cell */
+PetscErrorCode PetscDualSpacePushForwardSubspaces_Internal(PetscDualSpace sp, PetscInt sStart, PetscInt sEnd)
+{
+  PetscReal *sv0, *v0, *J;
+  PetscSection section;
+  PetscInt     dim, s, k;
+  DM             dm;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscDualSpaceGetDM(sp, &dm);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetSection(sp, &section);CHKERRQ(ierr);
+  ierr = PetscMalloc3(dim, &v0, dim, &sv0, dim*dim, &J);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetFormDegree(sp, &k);CHKERRQ(ierr);
+  for (s = sStart; s < sEnd; s++) {
+    PetscReal detJ, hdetJ;
+    PetscDualSpace ssp;
+    PetscInt dof, off, f, sdim;
+    PetscInt i, j;
+    DM sdm;
+
+    ierr = PetscDualSpaceGetPointSubspace(sp, s, &ssp);CHKERRQ(ierr);
+    if (!ssp) continue;
+    ierr = PetscSectionGetDof(section, s, &dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(section, s, &off);CHKERRQ(ierr);
+    /* get the first vertex of the reference cell */
+    ierr = PetscDualSpaceGetDM(ssp, &sdm);CHKERRQ(ierr);
+    ierr = DMGetDimension(sdm, &sdim);CHKERRQ(ierr);
+    ierr = DMPlexComputeCellGeometryAffineFEM(sdm, 0, sv0, NULL, NULL, &hdetJ);CHKERRQ(ierr);
+    ierr = DMPlexComputeCellGeometryAffineFEM(dm, s, v0, J, NULL, &detJ);CHKERRQ(ierr);
+    /* compactify Jacobian */
+    for (i = 0; i < dim; i++) for (j = 0; j < sdim; j++) J[i* sdim + j] = J[i * dim + j];
+    for (f = 0; f < dof; f++) {
+      PetscQuadrature fn;
+
+      ierr = PetscDualSpaceGetFunctional(ssp, f, &fn);CHKERRQ(ierr);
+      ierr = PetscQuadraturePushForward(fn, dim, sv0, v0, J, k, &(sp->functional[off+f]));CHKERRQ(ierr);
     }
   }
-  ierr = PetscSectionSetUp(*section);CHKERRQ(ierr);
-  for (h = 0, offset = 0; h <= depth; h++) {
-    PetscInt hStart, hEnd, p, dof;
-
-    ierr = DMPlexGetHeightStratum(dm,h,&hStart,&hEnd);CHKERRQ(ierr);
-    dof = numDof[depth - h];
-    for (p = hStart; p < hEnd; p++) {
-      ierr = PetscSectionGetDof(*section,p,&dof);CHKERRQ(ierr);
-      ierr = PetscSectionSetOffset(*section,p,offset);CHKERRQ(ierr);
-      offset += dof;
-    }
-  }
+  ierr = PetscFree3(v0, sv0, J);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -785,11 +1065,11 @@ PetscErrorCode PetscDualSpaceApply(PetscDualSpace sp, PetscInt f, PetscReal time
 }
 
 /*@C
-  PetscDualSpaceApplyAll - Apply all functionals from the dual space basis to the result of an evaluation at the points returned by PetscDualSpaceGetAllPoints()
+  PetscDualSpaceApplyAll - Apply all functionals from the dual space basis to the result of an evaluation at the points returned by PetscDualSpaceGetAllData()
 
   Input Parameters:
 + sp        - The PetscDualSpace object
-- pointEval - Evaluation at the points returned by PetscDualSpaceGetAllPoints()
+- pointEval - Evaluation at the points returned by PetscDualSpaceGetAllData()
 
   Output Parameter:
 . spValue   - The values of all dual space functionals
@@ -805,6 +1085,30 @@ PetscErrorCode PetscDualSpaceApplyAll(PetscDualSpace sp, const PetscScalar *poin
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   ierr = (*sp->ops->applyall)(sp, pointEval, spValue);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  PetscDualSpaceApplyInterior - Apply interior functionals from the dual space basis to the result of an evaluation at the points returned by PetscDualSpaceGetInteriorData()
+
+  Input Parameters:
++ sp        - The PetscDualSpace object
+- pointEval - Evaluation at the points returned by PetscDualSpaceGetInteriorData()
+
+  Output Parameter:
+. spValue   - The values of interior dual space functionals
+
+  Level: beginner
+
+.seealso: PetscDualSpaceCreate()
+@*/
+PetscErrorCode PetscDualSpaceApplyInterior(PetscDualSpace sp, const PetscScalar *pointEval, PetscScalar *spValue)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
+  ierr = (*sp->ops->applyint)(sp, pointEval, spValue);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -877,11 +1181,11 @@ PetscErrorCode PetscDualSpaceApplyDefault(PetscDualSpace sp, PetscInt f, PetscRe
 }
 
 /*@C
-  PetscDualSpaceApplyAllDefault - Apply all functionals from the dual space basis to the result of an evaluation at the points returned by PetscDualSpaceGetAllPoints()
+  PetscDualSpaceApplyAllDefault - Apply all functionals from the dual space basis to the result of an evaluation at the points returned by PetscDualSpaceGetAllData()
 
   Input Parameters:
 + sp        - The PetscDualSpace object
-- pointEval - Evaluation at the points returned by PetscDualSpaceGetAllPoints()
+- pointEval - Evaluation at the points returned by PetscDualSpaceGetAllData()
 
   Output Parameter:
 . spValue   - The values of all dual space functionals
@@ -892,110 +1196,317 @@ PetscErrorCode PetscDualSpaceApplyDefault(PetscDualSpace sp, PetscInt f, PetscRe
 @*/
 PetscErrorCode PetscDualSpaceApplyAllDefault(PetscDualSpace sp, const PetscScalar *pointEval, PetscScalar *spValue)
 {
-  PetscQuadrature  n;
-  const PetscReal *points, *weights;
-  PetscInt         qNc, c, Nq, q, f, spdim, Nc;
-  PetscInt         offset;
+  Vec              pointValues, dofValues;
+  Mat              allMat;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   PetscValidScalarPointer(pointEval, 2);
   PetscValidScalarPointer(spValue, 5);
-  ierr = PetscDualSpaceGetDimension(sp, &spdim);CHKERRQ(ierr);
-  ierr = PetscDualSpaceGetNumComponents(sp, &Nc);CHKERRQ(ierr);
-  for (f = 0, offset = 0; f < spdim; f++) {
-    ierr = PetscDualSpaceGetFunctional(sp, f, &n);CHKERRQ(ierr);
-    ierr = PetscQuadratureGetData(n, NULL, &qNc, &Nq, &points, &weights);CHKERRQ(ierr);
-    if (qNc != Nc) SETERRQ2(PetscObjectComm((PetscObject) sp), PETSC_ERR_ARG_SIZ, "The quadrature components %D != function components %D", qNc, Nc);
-    spValue[f] = 0.0;
-    for (q = 0; q < Nq; ++q) {
-      for (c = 0; c < Nc; ++c) {
-        spValue[f] += pointEval[offset++]*weights[q*Nc+c];
-      }
-    }
+  ierr = PetscDualSpaceGetAllData(sp, NULL, &allMat);CHKERRQ(ierr);
+  if (!(sp->allNodeValues)) {
+    ierr = MatCreateVecs(allMat, &(sp->allNodeValues), NULL);CHKERRQ(ierr);
   }
+  pointValues = sp->allNodeValues;
+  if (!(sp->allDofValues)) {
+    ierr = MatCreateVecs(allMat, NULL, &(sp->allDofValues));CHKERRQ(ierr);
+  }
+  dofValues = sp->allDofValues;
+  ierr = VecPlaceArray(pointValues, pointEval);CHKERRQ(ierr);
+  ierr = VecPlaceArray(dofValues, spValue);CHKERRQ(ierr);
+  ierr = MatMult(allMat, pointValues, dofValues);CHKERRQ(ierr);
+  ierr = VecResetArray(dofValues);CHKERRQ(ierr);
+  ierr = VecResetArray(pointValues);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  PetscDualSpaceApplyInteriorDefault - Apply interior functionals from the dual space basis to the result of an evaluation at the points returned by PetscDualSpaceGetInteriorData()
+
+  Input Parameters:
++ sp        - The PetscDualSpace object
+- pointEval - Evaluation at the points returned by PetscDualSpaceGetInteriorData()
+
+  Output Parameter:
+. spValue   - The values of interior dual space functionals
+
+  Level: beginner
+
+.seealso: PetscDualSpaceCreate()
+@*/
+PetscErrorCode PetscDualSpaceApplyInteriorDefault(PetscDualSpace sp, const PetscScalar *pointEval, PetscScalar *spValue)
+{
+  Vec              pointValues, dofValues;
+  Mat              intMat;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
+  PetscValidScalarPointer(pointEval, 2);
+  PetscValidScalarPointer(spValue, 5);
+  ierr = PetscDualSpaceGetInteriorData(sp, NULL, &intMat);CHKERRQ(ierr);
+  if (!(sp->intNodeValues)) {
+    ierr = MatCreateVecs(intMat, &(sp->intNodeValues), NULL);CHKERRQ(ierr);
+  }
+  pointValues = sp->intNodeValues;
+  if (!(sp->intDofValues)) {
+    ierr = MatCreateVecs(intMat, NULL, &(sp->intDofValues));CHKERRQ(ierr);
+  }
+  dofValues = sp->intDofValues;
+  ierr = VecPlaceArray(pointValues, pointEval);CHKERRQ(ierr);
+  ierr = VecPlaceArray(dofValues, spValue);CHKERRQ(ierr);
+  ierr = MatMult(intMat, pointValues, dofValues);CHKERRQ(ierr);
+  ierr = VecResetArray(dofValues);CHKERRQ(ierr);
+  ierr = VecResetArray(pointValues);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*@
-  PetscDualSpaceGetAllPoints - Get all quadrature points from this space
+  PetscDualSpaceGetAllData - Get all quadrature nodes from this space, and the matrix that sends quadrature node values to degree-of-freedom values
 
   Input Parameter:
 . sp - The dualspace
 
   Output Parameter:
-. allPoints - A PetscQuadrature object containing all evaluation points
++ allNodes - A PetscQuadrature object containing all evaluation nodes
+- allMat - A Mat for the node-to-dof transformation
 
   Level: advanced
 
 .seealso: PetscDualSpaceCreate()
 @*/
-PetscErrorCode PetscDualSpaceGetAllPoints(PetscDualSpace sp, PetscQuadrature *allPoints)
+PetscErrorCode PetscDualSpaceGetAllData(PetscDualSpace sp, PetscQuadrature *allNodes, Mat *allMat)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidPointer(allPoints,2);
-  if (!sp->allPoints && sp->ops->createallpoints) {
-    ierr = (*sp->ops->createallpoints)(sp,&sp->allPoints);CHKERRQ(ierr);
+  if (allNodes) PetscValidPointer(allNodes,2);
+  if (allMat) PetscValidPointer(allMat,3);
+  if ((!sp->allNodes || !sp->allMat) && sp->ops->createalldata) {
+    PetscQuadrature qpoints;
+    Mat amat;
+
+    ierr = (*sp->ops->createalldata)(sp,&qpoints,&amat);CHKERRQ(ierr);
+    ierr = PetscQuadratureDestroy(&(sp->allNodes));CHKERRQ(ierr);
+    ierr = MatDestroy(&(sp->allMat));CHKERRQ(ierr);
+    sp->allNodes = qpoints;
+    sp->allMat = amat;
   }
-  *allPoints = sp->allPoints;
+  if (allNodes) *allNodes = sp->allNodes;
+  if (allMat) *allMat = sp->allMat;
   PetscFunctionReturn(0);
 }
 
 /*@
-  PetscDualSpaceCreateAllPointsDefault - Create all evaluation points by examining functionals
+  PetscDualSpaceCreateAllDataDefault - Create all evaluation nodes and the node-to-dof matrix by examining functionals
 
   Input Parameter:
 . sp - The dualspace
 
   Output Parameter:
-. allPoints - A PetscQuadrature object containing all evaluation points
++ allNodes - A PetscQuadrature object containing all evaluation nodes
+- allMat - A Mat for the node-to-dof transformation
 
   Level: advanced
 
 .seealso: PetscDualSpaceCreate()
 @*/
-PetscErrorCode PetscDualSpaceCreateAllPointsDefault(PetscDualSpace sp, PetscQuadrature *allPoints)
+PetscErrorCode PetscDualSpaceCreateAllDataDefault(PetscDualSpace sp, PetscQuadrature *allNodes, Mat *allMat)
 {
   PetscInt        spdim;
   PetscInt        numPoints, offset;
   PetscReal       *points;
   PetscInt        f, dim;
+  PetscInt        Nc, nrows, ncols;
+  PetscInt        maxNumPoints;
   PetscQuadrature q;
+  Mat             A;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  ierr = PetscDualSpaceGetNumComponents(sp, &Nc);CHKERRQ(ierr);
   ierr = PetscDualSpaceGetDimension(sp,&spdim);CHKERRQ(ierr);
   if (!spdim) {
-    ierr = PetscQuadratureCreate(PETSC_COMM_SELF,allPoints);CHKERRQ(ierr);
-    ierr = PetscQuadratureSetData(*allPoints,0,0,0,NULL,NULL);CHKERRQ(ierr);
+    ierr = PetscQuadratureCreate(PETSC_COMM_SELF,allNodes);CHKERRQ(ierr);
+    ierr = PetscQuadratureSetData(*allNodes,0,0,0,NULL,NULL);CHKERRQ(ierr);
   }
+  nrows = spdim;
   ierr = PetscDualSpaceGetFunctional(sp,0,&q);CHKERRQ(ierr);
   ierr = PetscQuadratureGetData(q,&dim,NULL,&numPoints,NULL,NULL);CHKERRQ(ierr);
+  maxNumPoints = numPoints;
   for (f = 1; f < spdim; f++) {
     PetscInt Np;
 
     ierr = PetscDualSpaceGetFunctional(sp,f,&q);CHKERRQ(ierr);
     ierr = PetscQuadratureGetData(q,NULL,NULL,&Np,NULL,NULL);CHKERRQ(ierr);
     numPoints += Np;
+    maxNumPoints = PetscMax(maxNumPoints,Np);
   }
+  ncols = numPoints * Nc;
   ierr = PetscMalloc1(dim*numPoints,&points);CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF, nrows, ncols, maxNumPoints * Nc, NULL, &A);CHKERRQ(ierr);
   for (f = 0, offset = 0; f < spdim; f++) {
-    const PetscReal *p;
+    const PetscReal *p, *w;
     PetscInt        Np, i;
+    PetscInt        fnc;
 
     ierr = PetscDualSpaceGetFunctional(sp,f,&q);CHKERRQ(ierr);
-    ierr = PetscQuadratureGetData(q,NULL,NULL,&Np,&p,NULL);CHKERRQ(ierr);
+    ierr = PetscQuadratureGetData(q,NULL,&fnc,&Np,&p,&w);CHKERRQ(ierr);
+    if (fnc != Nc) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "functional component mismatch");
     for (i = 0; i < Np * dim; i++) {
-      points[offset + i] = p[i];
+      points[offset* dim + i] = p[i];
     }
-    offset += Np * dim;
+    for (i = 0; i < Np * Nc; i++) {
+      ierr = MatSetValue(A, f, offset * Nc, w[i], INSERT_VALUES);CHKERRQ(ierr);
+    }
+    offset += Np;
   }
-  ierr = PetscQuadratureCreate(PETSC_COMM_SELF,allPoints);CHKERRQ(ierr);
-  ierr = PetscQuadratureSetData(*allPoints,dim,0,numPoints,points,NULL);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = PetscQuadratureCreate(PETSC_COMM_SELF,allNodes);CHKERRQ(ierr);
+  ierr = PetscQuadratureSetData(*allNodes,dim,0,numPoints,points,NULL);CHKERRQ(ierr);
+  *allMat = A;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscDualSpaceGetInteriorData - Get all quadrature points necessary to compute the interior degrees of freedom from
+  this space, as well as the matrix that computes the degrees of freedom from the quadrature values.  Degrees of
+  freedom are interior degrees of freedom if they belong (by PetscDualSpaceGetSection()) to interior points in the
+  reference DMPlex: complementary boundary degrees of freedom are marked as constrained in the section returned by
+  PetscDualSpaceGetSection()).
+
+  Input Parameter:
+. sp - The dualspace
+
+  Output Parameter:
++ intNodes - A PetscQuadrature object containing all evaluation points needed to evaluate interior degrees of freedom
+- intMat   - A matrix that computes dual space values from point values: size [spdim0 x (npoints * nc)], where spdim0 is
+             the size of the constrained layout (PetscSectionGetConstrainStorageSize()) of the dual space section,
+             npoints is the number of points in intNodes and nc is PetscDualSpaceGetNumComponents().
+
+  Level: advanced
+
+.seealso: PetscDualSpaceCreate(), PetscDualSpaceGetDimension(), PetscDualSpaceGetNumComponents(), PetscQuadratureGetData()
+@*/
+PetscErrorCode PetscDualSpaceGetInteriorData(PetscDualSpace sp, PetscQuadrature *intNodes, Mat *intMat)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
+  if (intNodes) PetscValidPointer(intNodes,2);
+  if (intMat) PetscValidPointer(intMat,3);
+  if ((!sp->intNodes || !sp->intMat) && sp->ops->createintdata) {
+    PetscQuadrature qpoints;
+    Mat imat;
+
+    ierr = (*sp->ops->createintdata)(sp,&qpoints,&imat);CHKERRQ(ierr);
+    ierr = PetscQuadratureDestroy(&(sp->intNodes));CHKERRQ(ierr);
+    ierr = MatDestroy(&(sp->intMat));CHKERRQ(ierr);
+    sp->intNodes = qpoints;
+    sp->intMat = imat;
+  }
+  if (intNodes) *intNodes = sp->intNodes;
+  if (intMat) *intMat = sp->intMat;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscDualSpaceCreateInteriorDataDefault - Create quadrature points by examining interior functionals and create the matrix mapping quadrature point values to interior dual space values
+
+  Input Parameter:
+. sp - The dualspace
+
+  Output Parameter:
++ intNodes - A PetscQuadrature object containing all evaluation points needed to evaluate interior degrees of freedom
+- intMat    - A matrix that computes dual space values from point values: size [spdim0 x (npoints * nc)], where spdim0 is
+              the size of the constrained layout (PetscSectionGetConstrainStorageSize()) of the dual space section,
+              npoints is the number of points in allNodes and nc is PetscDualSpaceGetNumComponents().
+
+  Level: advanced
+
+.seealso: PetscDualSpaceCreate(), PetscDualSpaceGetInteriorData()
+@*/
+PetscErrorCode PetscDualSpaceCreateInteriorDataDefault(PetscDualSpace sp, PetscQuadrature *intNodes, Mat *intMat)
+{
+  DM              dm;
+  PetscInt        spdim0;
+  PetscInt        Nc;
+  PetscInt        pStart, pEnd, p, f;
+  PetscSection    section;
+  PetscInt        numPoints, offset, matoffset;
+  PetscReal       *points;
+  PetscInt        dim;
+  PetscInt        *nnz;
+  PetscQuadrature q;
+  Mat             imat;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp,PETSCDUALSPACE_CLASSID,1);
+  ierr = PetscDualSpaceGetSection(sp, &section);CHKERRQ(ierr);
+  ierr = PetscSectionGetConstrainedStorageSize(section, &spdim0);CHKERRQ(ierr);
+  if (!spdim0) {
+    *intNodes = NULL;
+    *intMat = NULL;
+    PetscFunctionReturn(0);
+  }
+  ierr = PetscDualSpaceGetNumComponents(sp, &Nc);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetDM(sp, &dm);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = PetscMalloc1(spdim0, &nnz);CHKERRQ(ierr);
+  for (p = pStart, f = 0, numPoints = 0; p < pEnd; p++) {
+    PetscInt dof, cdof, off, d;
+
+    ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetConstraintDof(section, p, &cdof);CHKERRQ(ierr);
+    if (!(dof - cdof)) continue;
+    ierr = PetscSectionGetOffset(section, p, &off);CHKERRQ(ierr);
+    for (d = 0; d < dof; d++, off++, f++) {
+      PetscInt Np;
+
+      ierr = PetscDualSpaceGetFunctional(sp,off,&q);CHKERRQ(ierr);
+      ierr = PetscQuadratureGetData(q,NULL,NULL,&Np,NULL,NULL);CHKERRQ(ierr);
+      nnz[f] = Np * Nc;
+      numPoints += Np;
+    }
+  }
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF, spdim0, numPoints * Nc, 0, nnz, &imat);CHKERRQ(ierr);
+  ierr = PetscFree(nnz);CHKERRQ(ierr);
+  ierr = PetscMalloc1(dim*numPoints,&points);CHKERRQ(ierr);
+  for (p = pStart, f = 0, offset = 0, matoffset = 0; p < pEnd; p++) {
+    PetscInt dof, cdof, off, d;
+
+    ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetConstraintDof(section, p, &cdof);CHKERRQ(ierr);
+    if (!(dof - cdof)) continue;
+    ierr = PetscSectionGetOffset(section, p, &off);CHKERRQ(ierr);
+    for (d = 0; d < dof; d++, off++, f++) {
+      const PetscReal *p;
+      const PetscReal *w;
+      PetscInt        Np, i;
+
+      ierr = PetscDualSpaceGetFunctional(sp,off,&q);CHKERRQ(ierr);
+      ierr = PetscQuadratureGetData(q,NULL,NULL,&Np,&p,&w);CHKERRQ(ierr);
+      for (i = 0; i < Np * dim; i++) {
+        points[offset + i] = p[i];
+      }
+      for (i = 0; i < Np * Nc; i++) {
+        ierr = MatSetValue(imat, f, matoffset + i, w[i],INSERT_VALUES);CHKERRQ(ierr);
+      }
+      offset += Np * dim;
+      matoffset += Np * Nc;
+    }
+  }
+  ierr = PetscQuadratureCreate(PETSC_COMM_SELF,intNodes);CHKERRQ(ierr);
+  ierr = PetscQuadratureSetData(*intNodes,dim,0,numPoints,points,NULL);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(imat, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(imat, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  *intMat = imat;
   PetscFunctionReturn(0);
 }
 
@@ -1084,13 +1595,42 @@ PetscErrorCode PetscDualSpaceApplyFVM(PetscDualSpace sp, PetscInt f, PetscReal t
 @*/
 PetscErrorCode PetscDualSpaceGetHeightSubspace(PetscDualSpace sp, PetscInt height, PetscDualSpace *subsp)
 {
+  PetscInt       depth = -1, cStart, cEnd;
+  DM             dm;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidPointer(subsp, 3);
+  PetscValidPointer(subsp,2);
+  if (!(sp->uniform)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "A non-uniform dual space does not have a single dual space at each height");
   *subsp = NULL;
-  if (sp->ops->getheightsubspace) {ierr = (*sp->ops->getheightsubspace)(sp, height, subsp);CHKERRQ(ierr);}
+  dm = sp->dm;
+  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
+  if (height < 0 || height > depth) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid height");
+  ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
+  if (height == 0 && cEnd == cStart + 1) {
+    *subsp = sp;
+    PetscFunctionReturn(0);
+  }
+  if (!sp->heightSpaces) {
+    PetscInt h;
+    ierr = PetscCalloc1(depth+1, &(sp->heightSpaces));CHKERRQ(ierr);
+
+    for (h = 0; h <= depth; h++) {
+      if (h == 0 && cEnd == cStart + 1) continue;
+      if (sp->ops->createheightsubspace) {ierr = (*sp->ops->createheightsubspace)(sp,height,&(sp->heightSpaces[h]));CHKERRQ(ierr);}
+      else if (sp->pointSpaces) {
+        PetscInt hStart, hEnd;
+
+        ierr = DMPlexGetHeightStratum(dm,h,&hStart,&hEnd);CHKERRQ(ierr);
+        if (hEnd > hStart) {
+          ierr = PetscObjectReference((PetscObject)(sp->pointSpaces[hStart]));CHKERRQ(ierr);
+          sp->heightSpaces[h] = sp->pointSpaces[hStart];
+        }
+      }
+    }
+  }
+  *subsp = sp->heightSpaces[height];
   PetscFunctionReturn(0);
 }
 
@@ -1119,26 +1659,43 @@ PetscErrorCode PetscDualSpaceGetHeightSubspace(PetscDualSpace sp, PetscInt heigh
 @*/
 PetscErrorCode PetscDualSpaceGetPointSubspace(PetscDualSpace sp, PetscInt point, PetscDualSpace *bdsp)
 {
+  PetscInt       pStart = 0, pEnd = 0, cStart, cEnd;
+  DM             dm;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   PetscValidPointer(bdsp,2);
   *bdsp = NULL;
-  if (sp->ops->getpointsubspace) {
-    ierr = (*sp->ops->getpointsubspace)(sp,point,bdsp);CHKERRQ(ierr);
-  } else if (sp->ops->getheightsubspace) {
-    DM       dm;
-    DMLabel  label;
-    PetscInt dim, depth, height;
-
-    ierr = PetscDualSpaceGetDM(sp,&dm);CHKERRQ(ierr);
-    ierr = DMPlexGetDepth(dm,&dim);CHKERRQ(ierr);
-    ierr = DMPlexGetDepthLabel(dm,&label);CHKERRQ(ierr);
-    ierr = DMLabelGetValue(label,point,&depth);CHKERRQ(ierr);
-    height = dim - depth;
-    ierr = (*sp->ops->getheightsubspace)(sp,height,bdsp);CHKERRQ(ierr);
+  dm = sp->dm;
+  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+  if (point < pStart || point > pEnd) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid point");
+  ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
+  if (point == cStart && cEnd == cStart + 1) { /* the dual space is only equivalent to the dual space on a cell if the reference mesh has just one cell */
+    *bdsp = sp;
+    PetscFunctionReturn(0);
   }
+  if (!sp->pointSpaces) {
+    PetscInt p;
+    ierr = PetscCalloc1(pEnd - pStart, &(sp->pointSpaces));CHKERRQ(ierr);
+
+    for (p = 0; p < pEnd - pStart; p++) {
+      if (p + pStart == cStart && cEnd == cStart + 1) continue;
+      if (sp->ops->createpointsubspace) {ierr = (*sp->ops->createpointsubspace)(sp,p+pStart,&(sp->pointSpaces[p]));CHKERRQ(ierr);}
+      else if (sp->heightSpaces || sp->ops->createheightsubspace) {
+        PetscInt dim, depth, height;
+        DMLabel  label;
+
+        ierr = DMPlexGetDepth(dm,&dim);CHKERRQ(ierr);
+        ierr = DMPlexGetDepthLabel(dm,&label);CHKERRQ(ierr);
+        ierr = DMLabelGetValue(label,p+pStart,&depth);CHKERRQ(ierr);
+        height = dim - depth;
+        ierr = PetscDualSpaceGetHeightSubspace(sp, height, &(sp->pointSpaces[p]));CHKERRQ(ierr);
+        ierr = PetscObjectReference((PetscObject)sp->pointSpaces[p]);CHKERRQ(ierr);
+      }
+    }
+  }
+  *bdsp = sp->pointSpaces[point - pStart];
   PetscFunctionReturn(0);
 }
 
@@ -1151,8 +1708,8 @@ PetscErrorCode PetscDualSpaceGetPointSubspace(PetscDualSpace sp, PetscInt point,
 . sp - the PetscDualSpace object
 
   Output Parameters:
-+ perms - Permutations of the local degrees of freedom, parameterized by the point orientation
-- flips - Sign reversal of the local degrees of freedom, parameterized by the point orientation
++ perms - Permutations of the interior degrees of freedom, parameterized by the point orientation
+- flips - Sign reversal of the interior degrees of freedom, parameterized by the point orientation
 
   Note: The permutation and flip arrays are organized in the following way
 $ perms[p][ornt][dof # on point] = new local dof #
@@ -1160,7 +1717,6 @@ $ flips[p][ornt][dof # on point] = reversal or not
 
   Level: developer
 
-.seealso: PetscDualSpaceSetSymmetries()
 @*/
 PetscErrorCode PetscDualSpaceGetSymmetries(PetscDualSpace sp, const PetscInt ****perms, const PetscScalar ****flips)
 {
@@ -1171,6 +1727,64 @@ PetscErrorCode PetscDualSpaceGetSymmetries(PetscDualSpace sp, const PetscInt ***
   if (perms) {PetscValidPointer(perms,2); *perms = NULL;}
   if (flips) {PetscValidPointer(flips,3); *flips = NULL;}
   if (sp->ops->getsymmetries) {ierr = (sp->ops->getsymmetries)(sp,perms,flips);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscDualSpaceGetFormDegree - Get the form degree k for the k-form the describes the pushforwards/pullbacks of this
+  dual space's functionals.
+
+  Input Parameter:
+. dsp - The PetscDualSpace
+
+  Output Parameter:
+. k   - The *signed* degree k of the k.  If k >= 0, this means that the degrees of freedom are k-forms, and are stored
+        in lexicographic order according to the basis of k-forms constructed from the wedge product of 1-forms.  So for example,
+        the 1-form basis in 3-D is (dx, dy, dz), and the 2-form basis in 3-D is (dx wedge dy, dx wedge dz, dy wedge dz).
+        If k < 0, this means that the degrees transform as k-forms, but are stored as (N-k) forms according to the
+        Hodge star map.  So for example if k = -2 and N = 3, this means that the degrees of freedom transform as 2-forms
+        but are stored as 1-forms.
+
+  Level: developer
+
+.seealso: PetscDTAltV, PetscDualSpacePullback(), PetscDualSpacePushforward(), PetscDualSpaceTransform(), PetscDualSpaceTransformType
+@*/
+PetscErrorCode PetscDualSpaceGetFormDegree(PetscDualSpace dsp, PetscInt *k)
+{
+  PetscFunctionBeginHot;
+  PetscValidHeaderSpecific(dsp, PETSCDUALSPACE_CLASSID, 1);
+  PetscValidPointer(k, 2);
+  *k = dsp->k;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscDualSpaceSetFormDegree - Set the form degree k for the k-form the describes the pushforwards/pullbacks of this
+  dual space's functionals.
+
+  Input Parameter:
++ dsp - The PetscDualSpace
+- k   - The *signed* degree k of the k.  If k >= 0, this means that the degrees of freedom are k-forms, and are stored
+        in lexicographic order according to the basis of k-forms constructed from the wedge product of 1-forms.  So for example,
+        the 1-form basis in 3-D is (dx, dy, dz), and the 2-form basis in 3-D is (dx wedge dy, dx wedge dz, dy wedge dz).
+        If k < 0, this means that the degrees transform as k-forms, but are stored as (N-k) forms according to the
+        Hodge star map.  So for example if k = -2 and N = 3, this means that the degrees of freedom transform as 2-forms
+        but are stored as 1-forms.
+
+  Level: developer
+
+.seealso: PetscDTAltV, PetscDualSpacePullback(), PetscDualSpacePushforward(), PetscDualSpaceTransform(), PetscDualSpaceTransformType
+@*/
+PetscErrorCode PetscDualSpaceSetFormDegree(PetscDualSpace dsp, PetscInt k)
+{
+  PetscInt dim;
+
+  PetscFunctionBeginHot;
+  PetscValidHeaderSpecific(dsp, PETSCDUALSPACE_CLASSID, 1);
+  if (dsp->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dsp), PETSC_ERR_ARG_WRONGSTATE, "Cannot change number of components after dualspace is set up");
+  dim = dsp->dm->dim;
+  if (k < -dim || k > dim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unsupported %D-form on %D-dimensional reference cell", PetscAbsInt(k), dim);
+  dsp->k = k;
   PetscFunctionReturn(0);
 }
 
@@ -1195,10 +1809,16 @@ $ 3: These are Hdiv methods that transform functions using the contravariant Pio
 @*/
 PetscErrorCode PetscDualSpaceGetDeRahm(PetscDualSpace dsp, PetscInt *k)
 {
+  PetscInt dim;
+
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(dsp, PETSCDUALSPACE_CLASSID, 1);
   PetscValidPointer(k, 2);
-  *k = dsp->k;
+  dim = dsp->dm->dim;
+  if (!dsp->k) *k = IDENTITY_TRANSFORM;
+  else if (dsp->k == 1) *k = COVARIANT_PIOLA_TRANSFORM;
+  else if (dsp->k == -(dim - 1)) *k = CONTRAVARIANT_PIOLA_TRANSFORM;
+  else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unsupported transformation");
   PetscFunctionReturn(0);
 }
 
@@ -1219,68 +1839,44 @@ PetscErrorCode PetscDualSpaceGetDeRahm(PetscDualSpace dsp, PetscInt *k)
 
   Level: intermediate
 
+  Note: This only handles tranformations when the embedding dimension of the geometry in fegeom is the same as the reference dimension.
+
 .seealso: PetscDualSpaceTransformGradient(), PetscDualSpacePullback(), PetscDualSpacePushforward(), PetscDualSpaceTransformType
 @*/
 PetscErrorCode PetscDualSpaceTransform(PetscDualSpace dsp, PetscDualSpaceTransformType trans, PetscBool isInverse, PetscFEGeom *fegeom, PetscInt Nv, PetscInt Nc, PetscScalar vals[])
 {
-  PetscInt dim, v, c;
+  PetscReal Jstar[9] = {0};
+  PetscInt dim, v, c, Nk;
+  PetscErrorCode ierr;
 
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(dsp, PETSCDUALSPACE_CLASSID, 1);
   PetscValidPointer(fegeom, 4);
   PetscValidPointer(vals, 7);
+  /* TODO: not handling dimEmbed != dim right now */
   dim = dsp->dm->dim;
-  /* Assume its a vector, otherwise assume its a bunch of scalars */
-  if (Nc == 1 || Nc != dim) PetscFunctionReturn(0);
-  switch (trans) {
-    case IDENTITY_TRANSFORM: break;
-    case COVARIANT_PIOLA_TRANSFORM: /* Covariant Piola mapping $\sigma^*(F) = J^{-T} F \circ \phi^{-1)$ */
-    if (isInverse) {
-      for (v = 0; v < Nv; ++v) {
-        switch (dim)
-        {
-          case 2: DMPlex_MultTranspose2DReal_Internal(fegeom->J, 1, &vals[v*Nc], &vals[v*Nc]);break;
-          case 3: DMPlex_MultTranspose3DReal_Internal(fegeom->J, 1, &vals[v*Nc], &vals[v*Nc]);break;
-          default: SETERRQ1(PetscObjectComm((PetscObject) dsp), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dim %D for transformation", dim);
-        }
-      }
-    } else {
-      for (v = 0; v < Nv; ++v) {
-        switch (dim)
-        {
-          case 2: DMPlex_MultTranspose2DReal_Internal(fegeom->invJ, 1, &vals[v*Nc], &vals[v*Nc]);break;
-          case 3: DMPlex_MultTranspose3DReal_Internal(fegeom->invJ, 1, &vals[v*Nc], &vals[v*Nc]);break;
-          default: SETERRQ1(PetscObjectComm((PetscObject) dsp), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dim %D for transformation", dim);
-        }
-      }
+  /* No change needed for 0-forms */
+  if (!dsp->k) PetscFunctionReturn(0);
+  ierr = PetscDTBinomialInt(dim, PetscAbsInt(dsp->k), &Nk);CHKERRQ(ierr);
+  /* TODO: use fegeom->isAffine */
+  ierr = PetscDTAltVPullbackMatrix(dim, dim, isInverse ? fegeom->J : fegeom->invJ, dsp->k, Jstar);CHKERRQ(ierr);
+  for (v = 0; v < Nv; ++v) {
+    switch (Nk) {
+    case 1:
+      for (c = 0; c < Nc; c++) vals[v*Nc + c] *= Jstar[0];
+      break;
+    case 2:
+      for (c = 0; c < Nc; c += 2) DMPlex_Mult2DReal_Internal(Jstar, 1, &vals[v*Nc + c], &vals[v*Nc + c]);
+      break;
+    case 3:
+      for (c = 0; c < Nc; c += 3) DMPlex_Mult3DReal_Internal(Jstar, 1, &vals[v*Nc + c], &vals[v*Nc + c]);
+      break;
+    default: SETERRQ1(PetscObjectComm((PetscObject) dsp), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported form size %D for transformation", Nk);
     }
-    break;
-    case CONTRAVARIANT_PIOLA_TRANSFORM: /* Contravariant Piola mapping $\sigma^*(F) = \frac{1}{|\det J|} J F \circ \phi^{-1}$ */
-    if (isInverse) {
-      for (v = 0; v < Nv; ++v) {
-        switch (dim)
-        {
-          case 2: DMPlex_Mult2DReal_Internal(fegeom->invJ, 1, &vals[v*Nc], &vals[v*Nc]);break;
-          case 3: DMPlex_Mult3DReal_Internal(fegeom->invJ, 1, &vals[v*Nc], &vals[v*Nc]);break;
-          default: SETERRQ1(PetscObjectComm((PetscObject) dsp), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dim %D for transformation", dim);
-        }
-        for (c = 0; c < Nc; ++c) vals[v*Nc+c] *= fegeom->detJ[0];
-      }
-    } else {
-      for (v = 0; v < Nv; ++v) {
-        switch (dim)
-        {
-          case 2: DMPlex_Mult2DReal_Internal(fegeom->J, 1, &vals[v*Nc], &vals[v*Nc]);break;
-          case 3: DMPlex_Mult3DReal_Internal(fegeom->J, 1, &vals[v*Nc], &vals[v*Nc]);break;
-          default: SETERRQ1(PetscObjectComm((PetscObject) dsp), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dim %D for transformation", dim);
-        }
-        for (c = 0; c < Nc; ++c) vals[v*Nc+c] /= fegeom->detJ[0];
-      }
-    }
-    break;
   }
   PetscFunctionReturn(0);
 }
+
 /*@C
   PetscDualSpaceTransformGradient - Transform the function gradient values
 
@@ -1297,6 +1893,8 @@ PetscErrorCode PetscDualSpaceTransform(PetscDualSpace dsp, PetscDualSpaceTransfo
 . vals      - The transformed function values
 
   Level: intermediate
+
+  Note: This only handles tranformations when the embedding dimension of the geometry in fegeom is the same as the reference dimension.
 
 .seealso: PetscDualSpaceTransform(), PetscDualSpacePullback(), PetscDualSpacePushforward(), PetscDualSpaceTransformType
 @*/
@@ -1398,11 +1996,14 @@ PetscErrorCode PetscDualSpaceTransformGradient(PetscDualSpace dsp, PetscDualSpac
 
   Note: Functions transform in a complementary way (pushforward) to functionals, so that the scalar product is invariant. The type of transform is dependent on the associated k-simplex from the DeRahm complex.
 
+  Note: This only handles tranformations when the embedding dimension of the geometry in fegeom is the same as the reference dimension.
+
 .seealso: PetscDualSpacePushforward(), PetscDualSpaceTransform(), PetscDualSpaceGetDeRahm()
 @*/
 PetscErrorCode PetscDualSpacePullback(PetscDualSpace dsp, PetscFEGeom *fegeom, PetscInt Nq, PetscInt Nc, PetscScalar pointEval[])
 {
   PetscDualSpaceTransformType trans;
+  PetscInt                    k;
   PetscErrorCode              ierr;
 
   PetscFunctionBeginHot;
@@ -1411,16 +2012,17 @@ PetscErrorCode PetscDualSpacePullback(PetscDualSpace dsp, PetscFEGeom *fegeom, P
   PetscValidPointer(pointEval, 5);
   /* The dualspace dofs correspond to some simplex in the DeRahm complex, which we label by k.
      This determines their transformation properties. */
-  switch (dsp->k)
+  ierr = PetscDualSpaceGetDeRahm(dsp, &k);CHKERRQ(ierr);
+  switch (k)
   {
     case 0: /* H^1 point evaluations */
     trans = IDENTITY_TRANSFORM;break;
     case 1: /* Hcurl preserves tangential edge traces  */
-    case 2:
     trans = COVARIANT_PIOLA_TRANSFORM;break;
+    case 2:
     case 3: /* Hdiv preserve normal traces */
     trans = CONTRAVARIANT_PIOLA_TRANSFORM;break;
-    default: SETERRQ1(PetscObjectComm((PetscObject) dsp), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported simplex dim %D for transformation", dsp->k);
+    default: SETERRQ1(PetscObjectComm((PetscObject) dsp), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported simplex dim %D for transformation", k);
   }
   ierr = PetscDualSpaceTransform(dsp, trans, PETSC_TRUE, fegeom, Nq, Nc, pointEval);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1443,11 +2045,14 @@ PetscErrorCode PetscDualSpacePullback(PetscDualSpace dsp, PetscFEGeom *fegeom, P
 
   Note: Functionals transform in a complementary way (pullback) to functions, so that the scalar product is invariant. The type of transform is dependent on the associated k-simplex from the DeRahm complex.
 
+  Note: This only handles tranformations when the embedding dimension of the geometry in fegeom is the same as the reference dimension.
+
 .seealso: PetscDualSpacePullback(), PetscDualSpaceTransform(), PetscDualSpaceGetDeRahm()
 @*/
 PetscErrorCode PetscDualSpacePushforward(PetscDualSpace dsp, PetscFEGeom *fegeom, PetscInt Nq, PetscInt Nc, PetscScalar pointEval[])
 {
   PetscDualSpaceTransformType trans;
+  PetscInt                    k;
   PetscErrorCode              ierr;
 
   PetscFunctionBeginHot;
@@ -1456,16 +2061,17 @@ PetscErrorCode PetscDualSpacePushforward(PetscDualSpace dsp, PetscFEGeom *fegeom
   PetscValidPointer(pointEval, 5);
   /* The dualspace dofs correspond to some simplex in the DeRahm complex, which we label by k.
      This determines their transformation properties. */
-  switch (dsp->k)
+  ierr = PetscDualSpaceGetDeRahm(dsp, &k);CHKERRQ(ierr);
+  switch (k)
   {
     case 0: /* H^1 point evaluations */
     trans = IDENTITY_TRANSFORM;break;
     case 1: /* Hcurl preserves tangential edge traces  */
-    case 2:
     trans = COVARIANT_PIOLA_TRANSFORM;break;
+    case 2:
     case 3: /* Hdiv preserve normal traces */
     trans = CONTRAVARIANT_PIOLA_TRANSFORM;break;
-    default: SETERRQ1(PetscObjectComm((PetscObject) dsp), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported simplex dim %D for transformation", dsp->k);
+    default: SETERRQ1(PetscObjectComm((PetscObject) dsp), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported simplex dim %D for transformation", k);
   }
   ierr = PetscDualSpaceTransform(dsp, trans, PETSC_FALSE, fegeom, Nq, Nc, pointEval);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1488,11 +2094,14 @@ PetscErrorCode PetscDualSpacePushforward(PetscDualSpace dsp, PetscFEGeom *fegeom
 
   Note: Functionals transform in a complementary way (pullback) to functions, so that the scalar product is invariant. The type of transform is dependent on the associated k-simplex from the DeRahm complex.
 
+  Note: This only handles tranformations when the embedding dimension of the geometry in fegeom is the same as the reference dimension.
+
 .seealso: PetscDualSpacePushforward(), PPetscDualSpacePullback(), PetscDualSpaceTransform(), PetscDualSpaceGetDeRahm()
 @*/
 PetscErrorCode PetscDualSpacePushforwardGradient(PetscDualSpace dsp, PetscFEGeom *fegeom, PetscInt Nq, PetscInt Nc, PetscScalar pointEval[])
 {
   PetscDualSpaceTransformType trans;
+  PetscInt                    k;
   PetscErrorCode              ierr;
 
   PetscFunctionBeginHot;
@@ -1501,16 +2110,17 @@ PetscErrorCode PetscDualSpacePushforwardGradient(PetscDualSpace dsp, PetscFEGeom
   PetscValidPointer(pointEval, 5);
   /* The dualspace dofs correspond to some simplex in the DeRahm complex, which we label by k.
      This determines their transformation properties. */
-  switch (dsp->k)
+  ierr = PetscDualSpaceGetDeRahm(dsp, &k);CHKERRQ(ierr);
+  switch (k)
   {
     case 0: /* H^1 point evaluations */
     trans = IDENTITY_TRANSFORM;break;
     case 1: /* Hcurl preserves tangential edge traces  */
-    case 2:
     trans = COVARIANT_PIOLA_TRANSFORM;break;
+    case 2:
     case 3: /* Hdiv preserve normal traces */
     trans = CONTRAVARIANT_PIOLA_TRANSFORM;break;
-    default: SETERRQ1(PetscObjectComm((PetscObject) dsp), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported simplex dim %D for transformation", dsp->k);
+    default: SETERRQ1(PetscObjectComm((PetscObject) dsp), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported simplex dim %D for transformation", k);
   }
   ierr = PetscDualSpaceTransformGradient(dsp, trans, PETSC_FALSE, fegeom, Nq, Nc, pointEval);CHKERRQ(ierr);
   PetscFunctionReturn(0);
