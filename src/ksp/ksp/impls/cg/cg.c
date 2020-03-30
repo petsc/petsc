@@ -483,7 +483,7 @@ PetscErrorCode KSPSetFromOptions_CG(PetscOptionItems *PetscOptionsObject,KSP ksp
 #endif
   ierr = PetscOptionsBool("-ksp_cg_single_reduction","Merge inner products into single MPIU_Allreduce()","KSPCGUseSingleReduction",cg->singlereduction,&cg->singlereduction,&flg);CHKERRQ(ierr);
   if (flg) {
-    KSPCGUseSingleReduction(ksp,cg->singlereduction);CHKERRQ(ierr);
+    ierr = KSPCGUseSingleReduction(ksp,cg->singlereduction);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
