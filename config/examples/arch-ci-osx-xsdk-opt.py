@@ -10,6 +10,8 @@ configure_options = [
   '--download-mpich=1',
   '--download-cmake=1',
   '--with-debugging=0',
+  '--download-metis=1',
+  '--download-suitesparse=1',
   '--with-shared-libraries=0',
   ]
 
