@@ -2408,11 +2408,11 @@ PetscErrorCode  DMGlobalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec l)
     PetscScalar       *lArray;
 
     if (mode == ADD_VALUES) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Invalid insertion mode %D", mode);
-    ierr = VecGetArray(l, &lArray);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(g, &gArray);CHKERRQ(ierr);
+    ierr = VecGetArrayInPlace(l, &lArray);CHKERRQ(ierr);
+    ierr = VecGetArrayReadInPlace(g, &gArray);CHKERRQ(ierr);
     ierr = PetscSFBcastBegin(sf, MPIU_SCALAR, gArray, lArray);CHKERRQ(ierr);
-    ierr = VecRestoreArray(l, &lArray);CHKERRQ(ierr);
-    ierr = VecRestoreArrayRead(g, &gArray);CHKERRQ(ierr);
+    ierr = VecRestoreArrayInPlace(l, &lArray);CHKERRQ(ierr);
+    ierr = VecRestoreArrayReadInPlace(g, &gArray);CHKERRQ(ierr);
   } else {
     if (!dm->ops->globaltolocalbegin) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Missing DMGlobalToLocalBegin() for type %s",((PetscObject)dm)->type_name);
     ierr = (*dm->ops->globaltolocalbegin)(dm,g,mode == INSERT_ALL_VALUES ? INSERT_VALUES : (mode == ADD_ALL_VALUES ? ADD_VALUES : mode),l);CHKERRQ(ierr);
@@ -2452,11 +2452,11 @@ PetscErrorCode  DMGlobalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l)
   if (sf) {
     if (mode == ADD_VALUES) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Invalid insertion mode %D", mode);
 
-    ierr = VecGetArray(l, &lArray);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(g, &gArray);CHKERRQ(ierr);
+    ierr = VecGetArrayInPlace(l, &lArray);CHKERRQ(ierr);
+    ierr = VecGetArrayReadInPlace(g, &gArray);CHKERRQ(ierr);
     ierr = PetscSFBcastEnd(sf, MPIU_SCALAR, gArray, lArray);CHKERRQ(ierr);
-    ierr = VecRestoreArray(l, &lArray);CHKERRQ(ierr);
-    ierr = VecRestoreArrayRead(g, &gArray);CHKERRQ(ierr);
+    ierr = VecRestoreArrayInPlace(l, &lArray);CHKERRQ(ierr);
+    ierr = VecRestoreArrayReadInPlace(g, &gArray);CHKERRQ(ierr);
     if (transform) {ierr = DMPlexGlobalToLocalBasis(dm, l);CHKERRQ(ierr);}
   } else {
     if (!dm->ops->globaltolocalend) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Missing DMGlobalToLocalEnd() for type %s",((PetscObject)dm)->type_name);
@@ -2619,7 +2619,7 @@ PetscErrorCode  DMLocalToGlobalBegin(DM dm,Vec l,InsertMode mode,Vec g)
   Vec                     tmpl;
   const PetscScalar      *lArray;
   PetscScalar            *gArray;
-  PetscBool               isInsert, transform;
+  PetscBool               isInsert, transform, l_inplace = PETSC_FALSE, g_inplace = PETSC_FALSE;
   PetscErrorCode          ierr;
 
   PetscFunctionBegin;
@@ -2651,10 +2651,18 @@ PetscErrorCode  DMLocalToGlobalBegin(DM dm,Vec l,InsertMode mode,Vec g)
       ierr = VecCopy(l, tmpl);CHKERRQ(ierr);
       ierr = DMPlexLocalToGlobalBasis(dm, tmpl);CHKERRQ(ierr);
       ierr = VecGetArrayRead(tmpl, &lArray);CHKERRQ(ierr);
-    } else {
+    } else if (isInsert) {
       ierr = VecGetArrayRead(l, &lArray);CHKERRQ(ierr);
+    } else {
+      ierr = VecGetArrayReadInPlace(l, &lArray);CHKERRQ(ierr);
+      l_inplace = PETSC_TRUE;
     }
-    ierr = VecGetArray(g, &gArray);CHKERRQ(ierr);
+    if (s && isInsert) {
+      ierr = VecGetArray(g, &gArray);CHKERRQ(ierr);
+    } else {
+      ierr = VecGetArrayInPlace(g, &gArray);CHKERRQ(ierr);
+      g_inplace = PETSC_TRUE;
+    }
     if (sf && !isInsert) {
       ierr = PetscSFReduceBegin(sf, MPIU_SCALAR, lArray, gArray, MPIU_SUM);CHKERRQ(ierr);
     } else if (s && isInsert) {
@@ -2691,10 +2699,16 @@ PetscErrorCode  DMLocalToGlobalBegin(DM dm,Vec l,InsertMode mode,Vec g)
         } else SETERRQ5(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Inconsistent sizes, p: %d dof: %d gdof: %d cdof: %d gcdof: %d", p, dof, gdof, cdof, gcdof);
       }
     }
-    ierr = VecRestoreArray(g, &gArray);CHKERRQ(ierr);
+    if (g_inplace) {
+      ierr = VecRestoreArrayInPlace(g, &gArray);CHKERRQ(ierr);
+    } else {
+      ierr = VecRestoreArray(g, &gArray);CHKERRQ(ierr);
+    }
     if (transform) {
       ierr = VecRestoreArrayRead(tmpl, &lArray);CHKERRQ(ierr);
       ierr = DMRestoreNamedLocalVector(dm, "__petsc_dm_transform_local_copy", &tmpl);CHKERRQ(ierr);
+    } else if (l_inplace) {
+      ierr = VecRestoreArrayReadInPlace(l, &lArray);CHKERRQ(ierr);
     } else {
       ierr = VecRestoreArrayRead(l, &lArray);CHKERRQ(ierr);
     }
@@ -2753,17 +2767,17 @@ PetscErrorCode  DMLocalToGlobalEnd(DM dm,Vec l,InsertMode mode,Vec g)
       ierr = DMGetNamedLocalVector(dm, "__petsc_dm_transform_local_copy", &tmpl);CHKERRQ(ierr);
       ierr = VecGetArrayRead(tmpl, &lArray);CHKERRQ(ierr);
     } else {
-      ierr = VecGetArrayRead(l, &lArray);CHKERRQ(ierr);
+      ierr = VecGetArrayReadInPlace(l, &lArray);CHKERRQ(ierr);
     }
-    ierr = VecGetArray(g, &gArray);CHKERRQ(ierr);
+    ierr = VecGetArrayInPlace(g, &gArray);CHKERRQ(ierr);
     ierr = PetscSFReduceEnd(sf, MPIU_SCALAR, lArray, gArray, MPIU_SUM);CHKERRQ(ierr);
     if (transform) {
       ierr = VecRestoreArrayRead(tmpl, &lArray);CHKERRQ(ierr);
       ierr = DMRestoreNamedLocalVector(dm, "__petsc_dm_transform_local_copy", &tmpl);CHKERRQ(ierr);
     } else {
-      ierr = VecRestoreArrayRead(l, &lArray);CHKERRQ(ierr);
+      ierr = VecRestoreArrayReadInPlace(l, &lArray);CHKERRQ(ierr);
     }
-    ierr = VecRestoreArray(g, &gArray);CHKERRQ(ierr);
+    ierr = VecRestoreArrayInPlace(g, &gArray);CHKERRQ(ierr);
   } else if (s && isInsert) {
   } else {
     if (!dm->ops->localtoglobalend) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Missing DMLocalToGlobalEnd() for type %s",((PetscObject)dm)->type_name);
