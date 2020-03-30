@@ -473,6 +473,7 @@ PetscErrorCode KSPSetFromOptions_CG(PetscOptionItems *PetscOptionsObject,KSP ksp
 {
   PetscErrorCode ierr;
   KSP_CG         *cg = (KSP_CG*)ksp->data;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"KSP CG and CGNE options");CHKERRQ(ierr);
@@ -480,7 +481,10 @@ PetscErrorCode KSPSetFromOptions_CG(PetscOptionItems *PetscOptionsObject,KSP ksp
   ierr = PetscOptionsEnum("-ksp_cg_type","Matrix is Hermitian or complex symmetric","KSPCGSetType",KSPCGTypes,(PetscEnum)cg->type,
                           (PetscEnum*)&cg->type,NULL);CHKERRQ(ierr);
 #endif
-  ierr = PetscOptionsBool("-ksp_cg_single_reduction","Merge inner products into single MPIU_Allreduce()","KSPCGUseSingleReduction",cg->singlereduction,&cg->singlereduction,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ksp_cg_single_reduction","Merge inner products into single MPIU_Allreduce()","KSPCGUseSingleReduction",cg->singlereduction,&cg->singlereduction,&flg);CHKERRQ(ierr);
+  if (flg) {
+    KSPCGUseSingleReduction(ksp,cg->singlereduction);CHKERRQ(ierr);
+  }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
