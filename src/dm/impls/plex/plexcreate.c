@@ -2627,24 +2627,17 @@ PetscErrorCode DMPlexCreate(MPI_Comm comm, DM *mesh)
 
 static PetscErrorCode DMPlexInvertCell_Internal(PetscInt dim, PetscInt numCorners, PetscInt cone[])
 {
-#define SWAPCONE(cone,i,j)  \
-  do {                      \
-    int _cone_tmp;          \
-    _cone_tmp = (cone)[i];  \
-    (cone)[i] = (cone)[j];  \
-    (cone)[j] = _cone_tmp;  \
-  } while (0)
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (dim != 3) PetscFunctionReturn(0);
   switch (numCorners) {
-  case 4: SWAPCONE(cone,0,1); break;
-  case 6: SWAPCONE(cone,0,1); break;
-  case 8: SWAPCONE(cone,1,3); break;
+  case 4: ierr = DMPlexInvertCell(DM_POLYTOPE_TETRAHEDRON,cone);CHKERRQ(ierr); break;
+  case 6: ierr = DMPlexInvertCell(DM_POLYTOPE_TRI_PRISM,cone);CHKERRQ(ierr); break;
+  case 8: ierr = DMPlexInvertCell(DM_POLYTOPE_HEXAHEDRON,cone);CHKERRQ(ierr); break;
   default: break;
   }
   PetscFunctionReturn(0);
-#undef SWAPCONE
 }
 
 /*
