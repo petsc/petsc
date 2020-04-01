@@ -999,6 +999,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = PetscOptionsHasHelp(NULL,&flg);CHKERRQ(ierr);
   if (help && flg) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,help);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"----------------------------------------\n");CHKERRQ(ierr);
   }
   ierr = PetscOptionsCheckInitial_Private();CHKERRQ(ierr);
 

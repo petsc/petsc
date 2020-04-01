@@ -240,7 +240,7 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,PetscOptions options,const c
     }
     ierr = PetscOptionsHelpPrintedCheck(PetscOptionsHelpPrintedSingleton,pre,name,&found);CHKERRQ(ierr);
     if (!found && viewer) {
-      ierr = (*PetscHelpPrintf)(comm,"-------------------------------------------------\nViewer (-%s%s) options:\n",pre ? pre : "",name+1);CHKERRQ(ierr);
+      ierr = (*PetscHelpPrintf)(comm,"----------------------------------------\nViewer (-%s%s) options:\n",pre ? pre : "",name+1);CHKERRQ(ierr);
       ierr = (*PetscHelpPrintf)(comm,"  -%s%s ascii[:[filename][:[format][:append]]]: %s (%s)\n",pre ? pre : "",name+1,"Prints object to stdout or ASCII file","PetscOptionsGetViewer");CHKERRQ(ierr);
       ierr = (*PetscHelpPrintf)(comm,"  -%s%s binary[:[filename][:[format][:append]]]: %s (%s)\n",pre ? pre : "",name+1,"Saves object to a binary file","PetscOptionsGetViewer");CHKERRQ(ierr);
       ierr = (*PetscHelpPrintf)(comm,"  -%s%s draw[:[drawtype][:filename|format]] %s (%s)\n",pre ? pre : "",name+1,"Draws object","PetscOptionsGetViewer");CHKERRQ(ierr);
