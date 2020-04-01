@@ -17,7 +17,7 @@
   PetscInfoClassnames holds a char array of classes which are filtered out/for in PetscInfo() calls.
 */
 const char * const        PetscInfoCommFlags[] = {"all", "no_self", "only_self", "PetscInfoCommFlag", "PETSC_INFO_COMM_", 0};
-static PetscBool          PetscInfoClassnamesLocked = PETSC_FALSE, PetscInfoInvertClasses = PETSC_FALSE;
+static PetscBool          PetscInfoClassesLocked = PETSC_FALSE, PetscInfoInvertClasses = PETSC_FALSE, PetscInfoClassesSet = PETSC_FALSE;
 static char               **PetscInfoClassnames = NULL;
 static char               *PetscInfoFilename = NULL;
 static PetscInt           PetscInfoNumClasses = -1;
@@ -32,7 +32,7 @@ static int                PetscInfoFlags[]  = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
                                                1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
                                                1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
                                                1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
-PetscBool                 PetscLogPrintInfo = PETSC_FALSE, PetscInfoSetUp = PETSC_FALSE;
+PetscBool                 PetscLogPrintInfo = PETSC_FALSE;
 FILE                      *PetscInfoFile = NULL;
 
 /*@
@@ -190,7 +190,7 @@ PetscErrorCode PetscInfoSetClasses(PetscBool exclude, PetscInt N, const char *co
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  if (PetscInfoClassnamesLocked) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "PetscInfoSetClasses() cannot be called after PetscInfoGetClass() or PetscInfoProcessClass()");
+  if (PetscInfoClassesLocked) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "PetscInfoSetClasses() cannot be called after PetscInfoGetClass() or PetscInfoProcessClass()");
   ierr = PetscStrNArrayDestroy(PetscInfoNumClasses, &PetscInfoClassnames);CHKERRQ(ierr);
   ierr = PetscStrNArrayallocpy(N, classnames, &PetscInfoClassnames);CHKERRQ(ierr);
   PetscInfoNumClasses = N;
@@ -200,7 +200,7 @@ PetscErrorCode PetscInfoSetClasses(PetscBool exclude, PetscInt N, const char *co
     PetscClassId  sysclassid = PETSC_SMALLEST_CLASSID;
     ierr = PetscInfoProcessClass("sys", 1, &sysclassid);CHKERRQ(ierr);
   }
-  PetscInfoSetUp = PETSC_TRUE;
+  PetscInfoClassesSet = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -230,7 +230,7 @@ PetscErrorCode PetscInfoGetClass(const char *classname, PetscBool *found)
   PetscFunctionBegin;
   PetscValidCharPointer(classname,1);
   ierr = PetscEListFind(PetscInfoNumClasses, (const char *const *) PetscInfoClassnames, classname ? classname : "sys", &idx, found);CHKERRQ(ierr);
-  PetscInfoClassnamesLocked = PETSC_TRUE;
+  PetscInfoClassesLocked = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -258,9 +258,9 @@ PetscErrorCode PetscInfoGetInfo(PetscBool *infoEnabled, PetscBool *classesSet, P
 {
   PetscFunctionBegin;
   if (infoEnabled)  *infoEnabled  = PetscLogPrintInfo;
-  if (classesSet)   *classesSet   = PetscInfoSetUp;
+  if (classesSet)   *classesSet   = PetscInfoClassesSet;
   if (exclude)      *exclude      = PetscInfoInvertClasses;
-  if (locked)       *locked       = PetscInfoClassnamesLocked;
+  if (locked)       *locked       = PetscInfoClassesLocked;
   if (commSelfFlag) *commSelfFlag = PetscInfoCommFilter;
   PetscFunctionReturn(0);
 }
@@ -366,7 +366,7 @@ PetscErrorCode PetscInfoSetFromOptions(PetscOptions options)
   ierr = PetscOptionsDeprecated_Private(NULL,"-info_exclude", NULL, "3.13", "Use -info instead");CHKERRQ(ierr);
   ierr = PetscOptionsGetString(options, NULL, "-info", optstring, PETSC_MAX_PATH_LEN, &set);CHKERRQ(ierr);
   if (set) {
-    PetscInfoSetUp = PETSC_TRUE;
+    PetscInfoClassesSet = PETSC_TRUE;
     ierr = PetscInfoAllow(PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscStrallocpy(optstring,&loc0_);CHKERRQ(ierr);
     ierr = PetscStrchr(loc0_,':',&loc1_);CHKERRQ(ierr);
@@ -390,11 +390,11 @@ PetscErrorCode PetscInfoSetFromOptions(PetscOptions options)
     ierr = PetscStrlen(loc2_, &size_loc2_);CHKERRQ(ierr);
     if (size_loc1_) {
       ierr = PetscStrtolower(loc1_);CHKERRQ(ierr);
-      ierr = PetscStrToArray((const char *) loc1_, ',',(int *) &nLoc1_, &loc1_array);CHKERRQ(ierr);
+      ierr = PetscStrToArray(loc1_, ',', &nLoc1_, &loc1_array);CHKERRQ(ierr);
     }
     if (size_loc2_) {
       ierr = PetscStrtolower(loc2_);CHKERRQ(ierr);
-      ierr = PetscStrcmp("self", (const char *) loc2_, &foundSelf);CHKERRQ(ierr);
+      ierr = PetscStrcmp("self", loc2_, &foundSelf);CHKERRQ(ierr);
       if (foundSelf) {
         if (loc2_invert) {
           commSelfFlag = PETSC_INFO_COMM_NO_SELF;
@@ -403,8 +403,8 @@ PetscErrorCode PetscInfoSetFromOptions(PetscOptions options)
         }
       }
     }
-    ierr = PetscInfoSetFile((const char *) size_loc0_ ? loc0_ : NULL, "w");CHKERRQ(ierr);
-    ierr = PetscInfoSetClasses(loc1_invert,(PetscInt) nLoc1_, (const char *const *) loc1_array);CHKERRQ(ierr);
+    ierr = PetscInfoSetFile(size_loc0_ ? loc0_ : NULL, "w");CHKERRQ(ierr);
+    ierr = PetscInfoSetClasses(loc1_invert, (PetscInt) nLoc1_, (const char *const *) loc1_array);CHKERRQ(ierr);
     ierr = PetscInfoSetFilterCommSelf(commSelfFlag);CHKERRQ(ierr);
     ierr = PetscStrToArrayDestroy(nLoc1_, loc1_array);CHKERRQ(ierr);
     ierr = PetscFree(loc0_);CHKERRQ(ierr);
@@ -428,7 +428,8 @@ PetscErrorCode PetscInfoSetFromOptions(PetscOptions options)
 PetscErrorCode PetscInfoDestroy(void)
 {
   PetscErrorCode  ierr;
-  int             err, i;
+  int             err;
+  size_t          i;
 
   PetscFunctionBegin;
   ierr = PetscInfoAllow(PETSC_FALSE);CHKERRQ(ierr);
@@ -439,12 +440,12 @@ PetscErrorCode PetscInfoDestroy(void)
     ierr  = PetscFClose(MPI_COMM_SELF, PetscInfoFile);CHKERRQ(ierr);
   }
   ierr = PetscFree(PetscInfoFilename);CHKERRQ(ierr);
-  for (i=0; i<160; i++) PetscInfoFlags[i] = 1;
-  PetscInfoClassnamesLocked = PETSC_FALSE;
+  for (i=0; i<sizeof(PetscInfoFlags)/sizeof(PetscInfoFlags[0]); i++) PetscInfoFlags[i] = 1;
+  PetscInfoClassesLocked = PETSC_FALSE;
   PetscInfoInvertClasses = PETSC_FALSE;
+  PetscInfoClassesSet = PETSC_FALSE;
   PetscInfoNumClasses = -1;
   PetscInfoCommFilter = PETSC_INFO_COMM_ALL;
-  PetscInfoSetUp = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
