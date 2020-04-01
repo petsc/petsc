@@ -1666,8 +1666,10 @@ PetscErrorCode DMPlexComputeResidual_Hybrid_Internal(DM dm, IS cellIS, PetscReal
       PetscFE fe;
 
       ierr = PetscDSGetDiscretization(prob, f, (PetscObject *) &fe);CHKERRQ(ierr);
-      ierr = PetscFEGetQuadrature(fe, &quads[f]);CHKERRQ(ierr);
-      ierr = PetscObjectReference((PetscObject) quads[f]);CHKERRQ(ierr);
+      if (fe) {
+        ierr = PetscFEGetQuadrature(fe, &quads[f]);CHKERRQ(ierr);
+        ierr = PetscObjectReference((PetscObject) quads[f]);CHKERRQ(ierr);
+      }
     }
   }
   /* Loop over chunks */
@@ -1699,7 +1701,7 @@ PetscErrorCode DMPlexComputeResidual_Hybrid_Internal(DM dm, IS cellIS, PetscReal
       if (affineQuad)  {ierr = DMSNESGetFEGeom(coordField, chunkIS, affineQuad, PETSC_TRUE, &affineGeom);CHKERRQ(ierr);}
     } else {
       for (f = 0; f < Nf; ++f) {
-        ierr = DMSNESGetFEGeom(coordField, chunkIS, quads[f], PETSC_TRUE, &geoms[f]);CHKERRQ(ierr);
+        if (quads[f]) {ierr = DMSNESGetFEGeom(coordField, chunkIS, quads[f], PETSC_TRUE, &geoms[f]);CHKERRQ(ierr);}
       }
     }
     /* Loop over fields */
@@ -1711,6 +1713,7 @@ PetscErrorCode DMPlexComputeResidual_Hybrid_Internal(DM dm, IS cellIS, PetscReal
       PetscInt        numChunks, numBatches, batchSize, numBlocks, blockSize, Ne, Nr, offset, Nq, Nb;
 
       ierr = PetscDSGetDiscretization(prob, f, (PetscObject *) &fe);CHKERRQ(ierr);
+      if (!fe) continue;
       ierr = PetscFEGetTileSizes(fe, NULL, &numBlocks, NULL, &numBatches);CHKERRQ(ierr);
       ierr = PetscQuadratureGetData(quad, NULL, NULL, &Nq, NULL, NULL);CHKERRQ(ierr);
       ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
@@ -2326,8 +2329,10 @@ PetscErrorCode DMPlexComputeJacobian_Hybrid_Internal(DM dm, IS cellIS, PetscReal
       PetscFE fe;
 
       ierr = PetscDSGetDiscretization(prob, f, (PetscObject *) &fe);CHKERRQ(ierr);
-      ierr = PetscFEGetQuadrature(fe, &quads[f]);CHKERRQ(ierr);
-      ierr = PetscObjectReference((PetscObject) quads[f]);CHKERRQ(ierr);
+      if (fe) {
+        ierr = PetscFEGetQuadrature(fe, &quads[f]);CHKERRQ(ierr);
+        ierr = PetscObjectReference((PetscObject) quads[f]);CHKERRQ(ierr);
+      }
     }
   }
   cellChunkSize = numCells;
@@ -2357,24 +2362,25 @@ PetscErrorCode DMPlexComputeJacobian_Hybrid_Internal(DM dm, IS cellIS, PetscReal
     } else {
       PetscInt f;
       for (f = 0; f < Nf; ++f) {
-        ierr = DMSNESGetFEGeom(coordField, chunkIS, quads[f], PETSC_TRUE, &geoms[f]);CHKERRQ(ierr);
+        if (quads[f]) {ierr = DMSNESGetFEGeom(coordField, chunkIS, quads[f], PETSC_TRUE, &geoms[f]);CHKERRQ(ierr);}
       }
     }
 
     for (fieldI = 0; fieldI < Nf; ++fieldI) {
-      PetscFE         fe;
+      PetscFE         feI;
       PetscFEGeom    *geom = affineGeom ? affineGeom : geoms[fieldI];
       PetscFEGeom    *chunkGeom = NULL, *remGeom = NULL;
       PetscQuadrature quad = affineQuad ? affineQuad : quads[fieldI];
       PetscInt        numChunks, numBatches, batchSize, numBlocks, blockSize, Ne, Nr, offset, Nq, Nb;
 
-      ierr = PetscDSGetDiscretization(prob, fieldI, (PetscObject *) &fe);CHKERRQ(ierr);
-      ierr = PetscFEGetTileSizes(fe, NULL, &numBlocks, NULL, &numBatches);CHKERRQ(ierr);
+      ierr = PetscDSGetDiscretization(prob, fieldI, (PetscObject *) &feI);CHKERRQ(ierr);
+      if (!feI) continue;
+      ierr = PetscFEGetTileSizes(feI, NULL, &numBlocks, NULL, &numBatches);CHKERRQ(ierr);
       ierr = PetscQuadratureGetData(quad, NULL, NULL, &Nq, NULL, NULL);CHKERRQ(ierr);
-      ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
+      ierr = PetscFEGetDimension(feI, &Nb);CHKERRQ(ierr);
       blockSize = Nb;
       batchSize = numBlocks * blockSize;
-      ierr      = PetscFESetTileSizes(fe, blockSize, numBlocks, batchSize, numBatches);CHKERRQ(ierr);
+      ierr      = PetscFESetTileSizes(feI, blockSize, numBlocks, batchSize, numBatches);CHKERRQ(ierr);
       numChunks = numCells / (numBatches*batchSize);
       Ne        = numChunks*numBatches*batchSize;
       Nr        = numCells % (numBatches*batchSize);
@@ -2382,6 +2388,10 @@ PetscErrorCode DMPlexComputeJacobian_Hybrid_Internal(DM dm, IS cellIS, PetscReal
       ierr = PetscFEGeomGetChunk(geom,0,offset,&chunkGeom);CHKERRQ(ierr);
       ierr = PetscFEGeomGetChunk(geom,offset,numCells,&remGeom);CHKERRQ(ierr);
       for (fieldJ = 0; fieldJ < Nf; ++fieldJ) {
+        PetscFE feJ;
+
+        ierr = PetscDSGetDiscretization(prob, fieldJ, (PetscObject *) &feJ);CHKERRQ(ierr);
+        if (!feJ) continue;
         if (hasBdJac) {
           ierr = PetscFEIntegrateHybridJacobian(prob, PETSCFE_JACOBIAN, fieldI, fieldJ, Ne, chunkGeom, u, u_t, probAux, a, t, X_tShift, elemMat);CHKERRQ(ierr);
           ierr = PetscFEIntegrateHybridJacobian(prob, PETSCFE_JACOBIAN, fieldI, fieldJ, Nr, remGeom, &u[offset*totDim], u_t ? &u_t[offset*totDim] : NULL, probAux, &a[offset*totDimAux], t, X_tShift, &elemMat[offset*totDim*totDim]);CHKERRQ(ierr);

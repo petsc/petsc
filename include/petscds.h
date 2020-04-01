@@ -21,6 +21,8 @@ J*/
 typedef const char *PetscDSType;
 #define PETSCDSBASIC "basic"
 
+typedef enum {PETSC_DISC_NONE, PETSC_DISC_FE, PETSC_DISC_FV} PetscDiscType;
+
 typedef void (*PetscPointFunc)(PetscInt, PetscInt, PetscInt,
                                const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],

@@ -4608,6 +4608,8 @@ PetscErrorCode DMPlexGetCompressedClosure(DM dm, PetscSection section, PetscInt 
     np   = dof/2;
     pts  = (PetscInt *) &cla[off];
   } else {
+    DMPolytopeType ct;
+
     /* Do not make the label if it does not exist */
     if (!dm->celltypeLabel) {ct = DM_POLYTOPE_POINT;}
     else                    {ierr = DMPlexGetCellType(dm, point, &ct);CHKERRQ(ierr);}

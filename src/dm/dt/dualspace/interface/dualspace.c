@@ -1624,7 +1624,13 @@ PetscErrorCode PetscDualSpaceGetHeightSubspace(PetscDualSpace sp, PetscInt heigh
 
         ierr = DMPlexGetHeightStratum(dm,h,&hStart,&hEnd);CHKERRQ(ierr);
         if (hEnd > hStart) {
+          const char *name;
+
           ierr = PetscObjectReference((PetscObject)(sp->pointSpaces[hStart]));CHKERRQ(ierr);
+          if (sp->pointSpaces[hStart]) {
+            ierr = PetscObjectGetName((PetscObject) sp,                     &name);CHKERRQ(ierr);
+            ierr = PetscObjectSetName((PetscObject) sp->pointSpaces[hStart], name);CHKERRQ(ierr);
+          }
           sp->heightSpaces[h] = sp->pointSpaces[hStart];
         }
       }

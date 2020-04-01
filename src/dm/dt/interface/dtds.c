@@ -382,28 +382,34 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
   for (f = 0; f < Nf; ++f) {
     PetscObject     obj;
     PetscClassId    id;
-    PetscQuadrature q;
+    PetscQuadrature q = NULL;
     PetscInt        Nq = 0, Nb, Nc;
 
     ierr = PetscDSGetDiscretization(prob, f, &obj);CHKERRQ(ierr);
-    ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
-    if (id == PETSCFE_CLASSID)      {
-      PetscFE fe = (PetscFE) obj;
+    if (!obj) {
+      /* Empty mesh */
+      Nb = Nc = 0;
+      prob->T[f] = prob->Tf[f] = NULL;
+    } else {
+      ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+      if (id == PETSCFE_CLASSID)      {
+        PetscFE fe = (PetscFE) obj;
 
-      ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
-      ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
-      ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
-      ierr = PetscFEGetCellTabulation(fe, &prob->T[f]);CHKERRQ(ierr);
-      ierr = PetscFEGetFaceTabulation(fe, &prob->Tf[f]);CHKERRQ(ierr);
-    } else if (id == PETSCFV_CLASSID) {
-      PetscFV fv = (PetscFV) obj;
+        ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
+        ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
+        ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
+        ierr = PetscFEGetCellTabulation(fe, &prob->T[f]);CHKERRQ(ierr);
+        ierr = PetscFEGetFaceTabulation(fe, &prob->Tf[f]);CHKERRQ(ierr);
+      } else if (id == PETSCFV_CLASSID) {
+        PetscFV fv = (PetscFV) obj;
 
-      ierr = PetscFVGetQuadrature(fv, &q);CHKERRQ(ierr);
-      ierr = PetscFVGetNumComponents(fv, &Nc);CHKERRQ(ierr);
-      Nb   = Nc;
-      ierr = PetscFVGetCellTabulation(fv, &prob->T[f]);CHKERRQ(ierr);
-      /* TODO: should PetscFV also have face tabulation? Otherwise there will be a null pointer in prob->basisFace */
-    } else SETERRQ1(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", f);
+        ierr = PetscFVGetQuadrature(fv, &q);CHKERRQ(ierr);
+        ierr = PetscFVGetNumComponents(fv, &Nc);CHKERRQ(ierr);
+        Nb   = Nc;
+        ierr = PetscFVGetCellTabulation(fv, &prob->T[f]);CHKERRQ(ierr);
+        /* TODO: should PetscFV also have face tabulation? Otherwise there will be a null pointer in prob->basisFace */
+      } else SETERRQ1(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", f);
+    }
     prob->Nc[f]       = Nc;
     prob->Nb[f]       = Nb;
     prob->off[f+1]    = Nc     + prob->off[f];
@@ -662,10 +668,12 @@ PetscErrorCode PetscDSGetSpatialDimension(PetscDS prob, PetscInt *dim)
     PetscClassId id;
 
     ierr = PetscDSGetDiscretization(prob, 0, &obj);CHKERRQ(ierr);
-    ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
-    if (id == PETSCFE_CLASSID)      {ierr = PetscFEGetSpatialDimension((PetscFE) obj, dim);CHKERRQ(ierr);}
-    else if (id == PETSCFV_CLASSID) {ierr = PetscFVGetSpatialDimension((PetscFV) obj, dim);CHKERRQ(ierr);}
-    else SETERRQ1(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", 0);
+    if (obj) {
+      ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+      if (id == PETSCFE_CLASSID)      {ierr = PetscFEGetSpatialDimension((PetscFE) obj, dim);CHKERRQ(ierr);}
+      else if (id == PETSCFV_CLASSID) {ierr = PetscFVGetSpatialDimension((PetscFV) obj, dim);CHKERRQ(ierr);}
+      else SETERRQ1(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", 0);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -862,13 +870,13 @@ PetscErrorCode PetscDSSetDiscretization(PetscDS prob, PetscInt f, PetscObject di
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
-  PetscValidPointer(disc, 3);
+  if (disc) PetscValidPointer(disc, 3);
   if (f < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", f);
   ierr = PetscDSEnlarge_Static(prob, f+1);CHKERRQ(ierr);
   ierr = PetscObjectDereference(prob->disc[f]);CHKERRQ(ierr);
   prob->disc[f] = disc;
   ierr = PetscObjectReference(disc);CHKERRQ(ierr);
-  {
+  if (disc) {
     PetscClassId id;
 
     ierr = PetscObjectGetClassId(disc, &id);CHKERRQ(ierr);
@@ -3363,7 +3371,7 @@ PetscErrorCode PetscDSGetHeightSubspace(PetscDS prob, PetscInt height, PetscDS *
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscDSIsFE_Internal(PetscDS ds, PetscInt f, PetscBool *isFE)
+PetscErrorCode PetscDSGetDiscType_Internal(PetscDS ds, PetscInt f, PetscDiscType *disctype)
 {
   PetscObject    obj;
   PetscClassId   id;
@@ -3372,13 +3380,16 @@ PetscErrorCode PetscDSIsFE_Internal(PetscDS ds, PetscInt f, PetscBool *isFE)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
-  PetscValidPointer(isFE, 3);
+  PetscValidPointer(disctype, 3);
+  *disctype = PETSC_DISC_NONE;
   ierr = PetscDSGetNumFields(ds, &Nf);CHKERRQ(ierr);
   if (f >= Nf) SETERRQ2(PetscObjectComm((PetscObject) ds), PETSC_ERR_ARG_SIZ, "Field %D must be in [0, %D)", f, Nf);
   ierr = PetscDSGetDiscretization(ds, f, &obj);CHKERRQ(ierr);
-  ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
-  if (id == PETSCFE_CLASSID) *isFE = PETSC_TRUE;
-  else                       *isFE = PETSC_FALSE;
+  if (obj) {
+    ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+    if (id == PETSCFE_CLASSID) *disctype = PETSC_DISC_FE;
+    else                       *disctype = PETSC_DISC_FV;
+  }
   PetscFunctionReturn(0);
 }
 

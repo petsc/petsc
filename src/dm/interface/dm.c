@@ -5299,14 +5299,16 @@ PetscErrorCode DMCreateDS(DM dm)
       ierr = DMDestroy(&plex);CHKERRQ(ierr);
 
       ierr = DMLabelGetBounds(label, &lStart, &lEnd);CHKERRQ(ierr);
-      ierr = DMPlexGetCellType(dm, lStart, &ct);CHKERRQ(ierr);
-      switch (ct) {
-        case DM_POLYTOPE_POINT_PRISM_TENSOR:
-        case DM_POLYTOPE_SEG_PRISM_TENSOR:
-        case DM_POLYTOPE_TRI_PRISM_TENSOR:
-        case DM_POLYTOPE_QUAD_PRISM_TENSOR:
-          break;
-        default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only support labels over tensor prism cells right now");
+      if (lStart >= 0) {
+        ierr = DMPlexGetCellType(dm, lStart, &ct);CHKERRQ(ierr);
+        switch (ct) {
+          case DM_POLYTOPE_POINT_PRISM_TENSOR:
+          case DM_POLYTOPE_SEG_PRISM_TENSOR:
+          case DM_POLYTOPE_TRI_PRISM_TENSOR:
+          case DM_POLYTOPE_QUAD_PRISM_TENSOR:
+            break;
+            default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only support labels over tensor prism cells right now");
+        }
       }
       ierr = PetscDSCreate(comm, &probh);CHKERRQ(ierr);
       ierr = PetscMalloc1(1, &fld);CHKERRQ(ierr);

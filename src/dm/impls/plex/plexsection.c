@@ -547,7 +547,7 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
           ierr = ISRestoreIndices(tmp, &idx);CHKERRQ(ierr);
           ierr = ISDestroy(&tmp);CHKERRQ(ierr);
         }
-        ierr = ISCreateGeneral(PetscObjectComm(PETSC_COMM_SELF, newn, newidx, PETSC_OWN_POINTER, &bcPoints[bc++]);CHKERRQ(ierr);
+        ierr = ISCreateGeneral(PETSC_COMM_SELF, newn, newidx, PETSC_OWN_POINTER, &bcPoints[bc++]);CHKERRQ(ierr);
       }
     }
   }
