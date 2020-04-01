@@ -2625,7 +2625,7 @@ static PetscErrorCode PetscDualSpaceGetSymmetries_Lagrange(PetscDualSpace sp, co
             if (PetscAbsScalar(vals[j]) > PETSC_SMALL) {
               if (nz_seen) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "This dual space has symmetries that can't be described as a permutation + sign flips");
               nz_seen = PETSC_TRUE;
-              if (PetscAbsReal(PetscAbsScalar(vals[j]) - 1.) > PETSC_SMALL) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "This dual space has symmetries that can't be described as a permutation + sign flips");
+              if (PetscAbsReal(PetscAbsScalar(vals[j]) - PetscRealConstant(1.)) > PETSC_SMALL) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "This dual space has symmetries that can't be described as a permutation + sign flips");
               if (PetscAbsReal(PetscImaginaryPart(vals[j])) > PETSC_SMALL) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "This dual space has symmetries that can't be described as a permutation + sign flips");
               if (perm[cols[j] * nCopies] >= 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "This dual space has symmetries that can't be described as a permutation + sign flips");
               for (k = 0; k < nCopies; k++) {
