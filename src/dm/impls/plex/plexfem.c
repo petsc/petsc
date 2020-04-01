@@ -718,7 +718,7 @@ PetscErrorCode DMPlexCreateBasisRotation(DM dm, PetscReal alpha, PetscReal beta,
 }
 
 /*@C
-  DMPlexInsertBoundaryValuesEssential - Insert boundary values into a local vector
+  DMPlexInsertBoundaryValuesEssential - Insert boundary values into a local vector using a function of the coordinates
 
   Input Parameters:
 + dm     - The DM, with a PetscDS that matches the problem being constrained
@@ -737,7 +737,7 @@ PetscErrorCode DMPlexCreateBasisRotation(DM dm, PetscReal alpha, PetscReal beta,
 
   Level: developer
 
-.seealso: DMPlexInsertBoundaryValuesEssentialField(), DMAddBoundary()
+.seealso: DMPlexInsertBoundaryValuesEssentialField(), DMPlexInsertBoundaryValuesEssentialBdField(), DMAddBoundary()
 @*/
 PetscErrorCode DMPlexInsertBoundaryValuesEssential(DM dm, PetscReal time, PetscInt field, PetscInt Nc, const PetscInt comps[], DMLabel label, PetscInt numids, const PetscInt ids[], PetscErrorCode (*func)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), void *ctx, Vec locX)
 {
@@ -757,7 +757,7 @@ PetscErrorCode DMPlexInsertBoundaryValuesEssential(DM dm, PetscReal time, PetscI
 }
 
 /*@C
-  DMPlexInsertBoundaryValuesEssentialField - Insert boundary values into a local vector
+  DMPlexInsertBoundaryValuesEssentialField - Insert boundary values into a local vector using a function of the coordinates and field data
 
   Input Parameters:
 + dm     - The DM, with a PetscDS that matches the problem being constrained
@@ -777,7 +777,7 @@ PetscErrorCode DMPlexInsertBoundaryValuesEssential(DM dm, PetscReal time, PetscI
 
   Level: developer
 
-.seealso: DMPlexInsertBoundaryValuesEssential(), DMAddBoundary()
+.seealso: DMPlexInsertBoundaryValuesEssential(), DMPlexInsertBoundaryValuesEssentialBdField(), DMAddBoundary()
 @*/
 PetscErrorCode DMPlexInsertBoundaryValuesEssentialField(DM dm, PetscReal time, Vec locU, PetscInt field, PetscInt Nc, const PetscInt comps[], DMLabel label, PetscInt numids, const PetscInt ids[],
                                                         void (*func)(PetscInt, PetscInt, PetscInt,
@@ -801,6 +801,57 @@ PetscErrorCode DMPlexInsertBoundaryValuesEssentialField(DM dm, PetscReal time, V
   funcs[field] = func;
   ctxs[field]  = ctx;
   ierr = DMProjectFieldLabelLocal(dm, time, label, numids, ids, Nc, comps, locU, funcs, INSERT_BC_VALUES, locX);CHKERRQ(ierr);
+  ierr = PetscFree2(funcs,ctxs);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMPlexInsertBoundaryValuesEssentialBdField - Insert boundary values into a local vector using a function of the coodinates and boundary field data
+
+  Collective on dm
+
+  Input Parameters:
++ dm     - The DM, with a PetscDS that matches the problem being constrained
+. time   - The time
+. locU   - A local vector with the input solution values
+. field  - The field to constrain
+. Nc     - The number of constrained field components, or 0 for all components
+. comps  - An array of constrained component numbers, or NULL for all components
+. label  - The DMLabel defining constrained points
+. numids - The number of DMLabel ids for constrained points
+. ids    - An array of ids for constrained points
+. func   - A pointwise function giving boundary values, the calling sequence is given in DMProjectBdFieldLabelLocal()
+- ctx    - An optional user context for bcFunc
+
+  Output Parameter:
+. locX   - A local vector to receive the boundary values
+
+  Level: developer
+
+.seealso: DMProjectBdFieldLabelLocal(), DMPlexInsertBoundaryValuesEssential(), DMPlexInsertBoundaryValuesEssentialField(), DMAddBoundary()
+@*/
+PetscErrorCode DMPlexInsertBoundaryValuesEssentialBdField(DM dm, PetscReal time, Vec locU, PetscInt field, PetscInt Nc, const PetscInt comps[], DMLabel label, PetscInt numids, const PetscInt ids[],
+                                                          void (*func)(PetscInt, PetscInt, PetscInt,
+                                                                       const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                                       const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                                       PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[],
+                                                                       PetscScalar[]),
+                                                          void *ctx, Vec locX)
+{
+  void (**funcs)(PetscInt, PetscInt, PetscInt,
+                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                 PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]);
+  void            **ctxs;
+  PetscInt          numFields;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetNumFields(dm, &numFields);CHKERRQ(ierr);
+  ierr = PetscCalloc2(numFields,&funcs,numFields,&ctxs);CHKERRQ(ierr);
+  funcs[field] = func;
+  ctxs[field]  = ctx;
+  ierr = DMProjectBdFieldLabelLocal(dm, time, label, numids, ids, Nc, comps, locU, funcs, INSERT_BC_VALUES, locX);CHKERRQ(ierr);
   ierr = PetscFree2(funcs,ctxs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

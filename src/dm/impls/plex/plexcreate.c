@@ -2485,6 +2485,7 @@ static PetscErrorCode DMInitialize_Plex(DM dm)
   dm->ops->projectfunctionlabellocal       = DMProjectFunctionLabelLocal_Plex;
   dm->ops->projectfieldlocal               = DMProjectFieldLocal_Plex;
   dm->ops->projectfieldlabellocal          = DMProjectFieldLabelLocal_Plex;
+  dm->ops->projectbdfieldlabellocal        = DMProjectBdFieldLabelLocal_Plex;
   dm->ops->computel2diff                   = DMComputeL2Diff_Plex;
   dm->ops->computel2gradientdiff           = DMComputeL2GradientDiff_Plex;
   dm->ops->computel2fielddiff              = DMComputeL2FieldDiff_Plex;
