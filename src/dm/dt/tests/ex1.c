@@ -67,6 +67,8 @@ static PetscErrorCode CheckQuadrature(PetscInt npoints, PetscReal alpha, PetscRe
 
       tol = eps;
       if (i == j) {
+        PetscReal norm, norm2diff;
+
         I_exact = PetscPowReal(2.0, alpha + beta + 1.) / (2.*i + alpha + beta + 1.);
 #if defined(PETSC_HAVE_LGAMMA)
         I_exact *= PetscExpReal(PetscLGamma(i + alpha + 1.) + PetscLGamma(i + beta + 1.) - (PetscLGamma(i + alpha + beta + 1.) + PetscLGamma(i + 1.)));
@@ -78,6 +80,11 @@ static PetscErrorCode CheckQuadrature(PetscInt npoints, PetscReal alpha, PetscRe
           for (k = 0; k < ibeta; k++) I_exact *= (i + 1. + k) / (i + alpha + 1. + k);
         }
 #endif
+
+        ierr = PetscDTJacobiNorm(alpha, beta, i, &norm);CHKERRQ(ierr);
+        norm2diff = PetscAbsReal(norm*norm - I_exact);
+        if (norm2diff > eps * I_exact) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Jacobi norm error %g\n", (double) norm2diff);
+
         tol = eps * I_exact;
       }
       for (k = 0; k < npoints; k++) I_quad += w[k] * (Pi[k] * Pj[k]);
