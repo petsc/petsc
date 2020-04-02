@@ -570,11 +570,10 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
     PetscFE     fe;
     const char *name;
 
-    if (isFE[f]) {
-      ierr = DMGetField(dm, f, NULL, (PetscObject *) &fe);CHKERRQ(ierr);
-      ierr = PetscObjectGetName((PetscObject) fe, &name);CHKERRQ(ierr);
-      ierr = PetscSectionSetFieldName(section, f, name);CHKERRQ(ierr);
-    }
+    ierr = DMGetField(dm, f, NULL, (PetscObject *) &fe);CHKERRQ(ierr);
+    if (!((PetscObject) fe)->name) continue;
+    ierr = PetscObjectGetName((PetscObject) fe, &name);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldName(section, f, name);CHKERRQ(ierr);
   }
   ierr = DMSetLocalSection(dm, section);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
