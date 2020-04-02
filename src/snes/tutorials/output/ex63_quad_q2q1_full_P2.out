@@ -65,7 +65,7 @@ SNES Object: 2 MPI processes
             PC Object: (fieldsplit_velocity_mg_coarse_) 2 MPI processes
               type: bjacobi
                 number of blocks = 2
-                Local solve is same for all blocks, in the following KSP and PC objects:
+                Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
               KSP Object: (fieldsplit_velocity_mg_coarse_sub_) 1 MPI processes
                 type: preonly
                 maximum iterations=1, initial guess is zero
@@ -201,7 +201,7 @@ SNES Object: 2 MPI processes
                     PC Object: (fieldsplit_velocity_mg_coarse_) 2 MPI processes
                       type: bjacobi
                         number of blocks = 2
-                        Local solve is same for all blocks, in the following KSP and PC objects:
+                        Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
                       KSP Object: (fieldsplit_velocity_mg_coarse_sub_) 1 MPI processes
                         type: preonly
                         maximum iterations=1, initial guess is zero

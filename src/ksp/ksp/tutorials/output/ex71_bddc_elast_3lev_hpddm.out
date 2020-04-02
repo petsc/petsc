@@ -129,7 +129,7 @@ PC Object: 8 MPI processes
       PC Object: (pc_bddc_coarse_pc_hpddm_levels_1_) 8 MPI processes
         type: bjacobi
           number of blocks = 8
-          Local solve is same for all blocks, in the following KSP and PC objects:
+          Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
         linear system matrix followed by preconditioner matrix:
         Mat Object: (pc_bddc_coarse_) 8 MPI processes
           type: is

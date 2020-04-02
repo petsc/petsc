@@ -14,7 +14,7 @@ KSP Object: 4 MPI processes
 PC Object: 4 MPI processes
   type: bjacobi
     number of blocks = 2
-    Local solve is same for all blocks, in the following KSP and PC objects:
+    Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
   KSP Object: (sub_) 2 MPI processes
     type: gmres
       restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement

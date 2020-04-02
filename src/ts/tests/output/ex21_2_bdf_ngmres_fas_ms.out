@@ -89,7 +89,7 @@ TS Object: 2 MPI processes
           PC Object: (npc_fas_coarse_) 2 MPI processes
             type: bjacobi
               number of blocks = 2
-              Local solve is same for all blocks, in the following KSP and PC objects:
+              Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
             KSP Object: (npc_fas_coarse_sub_) 1 MPI processes
               type: preonly
               maximum iterations=10000, initial guess is zero
@@ -137,7 +137,7 @@ TS Object: 2 MPI processes
           PC Object: (npc_fas_levels_1_) 2 MPI processes
             type: bjacobi
               number of blocks = 2
-              Local solve is same for all blocks, in the following KSP and PC objects:
+              Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
             KSP Object: (npc_fas_levels_1_sub_) 1 MPI processes
               type: preonly
               maximum iterations=10000, initial guess is zero
@@ -186,7 +186,7 @@ TS Object: 2 MPI processes
           PC Object: (npc_fas_levels_2_) 2 MPI processes
             type: bjacobi
               number of blocks = 2
-              Local solve is same for all blocks, in the following KSP and PC objects:
+              Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
             KSP Object: (npc_fas_levels_2_sub_) 1 MPI processes
               type: preonly
               maximum iterations=10000, initial guess is zero

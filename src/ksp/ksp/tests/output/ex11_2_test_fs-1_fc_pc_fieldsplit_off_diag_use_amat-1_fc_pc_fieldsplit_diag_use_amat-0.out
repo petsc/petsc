@@ -76,7 +76,7 @@ PC Object: (fc_) 4 MPI processes
       PC Object: (fc_fieldsplit_velocity_) 4 MPI processes
         type: bjacobi
           number of blocks = 4
-          Local solve is same for all blocks, in the following KSP and PC objects:
+          Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
         KSP Object: (fc_fieldsplit_velocity_sub_) 1 MPI processes
           type: preonly
           maximum iterations=10000, initial guess is zero
@@ -131,7 +131,7 @@ PC Object: (fc_) 4 MPI processes
           PC Object: (fc_fieldsplit_pressure_lsc_) 4 MPI processes
             type: bjacobi
               number of blocks = 4
-              Local solve is same for all blocks, in the following KSP and PC objects:
+              Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
             KSP Object: (fc_fieldsplit_pressure_lsc_sub_) 1 MPI processes
               type: preonly
               maximum iterations=10000, initial guess is zero
@@ -199,7 +199,7 @@ PC Object: (fc_) 4 MPI processes
               PC Object: (fc_fieldsplit_velocity_) 4 MPI processes
                 type: bjacobi
                   number of blocks = 4
-                  Local solve is same for all blocks, in the following KSP and PC objects:
+                  Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
                 KSP Object: (fc_fieldsplit_velocity_sub_) 1 MPI processes
                   type: preonly
                   maximum iterations=10000, initial guess is zero
@@ -341,7 +341,7 @@ PC Object: (fc_) 4 MPI processes
       PC Object: (fc_fieldsplit_velocity_) 4 MPI processes
         type: bjacobi
           number of blocks = 4
-          Local solve is same for all blocks, in the following KSP and PC objects:
+          Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
         KSP Object: (fc_fieldsplit_velocity_sub_) 1 MPI processes
           type: preonly
           maximum iterations=10000, initial guess is zero
@@ -396,7 +396,7 @@ PC Object: (fc_) 4 MPI processes
           PC Object: (fc_fieldsplit_pressure_lsc_) 4 MPI processes
             type: bjacobi
               number of blocks = 4
-              Local solve is same for all blocks, in the following KSP and PC objects:
+              Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
             KSP Object: (fc_fieldsplit_pressure_lsc_sub_) 1 MPI processes
               type: preonly
               maximum iterations=10000, initial guess is zero
@@ -464,7 +464,7 @@ PC Object: (fc_) 4 MPI processes
               PC Object: (fc_fieldsplit_velocity_) 4 MPI processes
                 type: bjacobi
                   number of blocks = 4
-                  Local solve is same for all blocks, in the following KSP and PC objects:
+                  Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
                 KSP Object: (fc_fieldsplit_velocity_sub_) 1 MPI processes
                   type: preonly
                   maximum iterations=10000, initial guess is zero
