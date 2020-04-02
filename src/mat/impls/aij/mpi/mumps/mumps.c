@@ -265,11 +265,16 @@ static PetscErrorCode MatMumpsSolveSchur_Private(Mat F)
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
     ierr = MatBindToCPU(X,S->boundtocpu);CHKERRQ(ierr);
 #endif
+    ierr = MatProductCreateWithMat(S,B,NULL,X);CHKERRQ(ierr);
     if (!mumps->id.ICNTL(9)) { /* transpose solve */
-      ierr = MatTransposeMatMult(S,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&X);CHKERRQ(ierr);
+      ierr = MatProductSetType(X,MATPRODUCT_AtB);CHKERRQ(ierr);
     } else {
-      ierr = MatMatMult(S,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&X);CHKERRQ(ierr);
+      ierr = MatProductSetType(X,MATPRODUCT_AB);CHKERRQ(ierr);
     }
+    ierr = MatProductSetFromOptions(X);CHKERRQ(ierr);
+    ierr = MatProductSymbolic(X);CHKERRQ(ierr);
+    ierr = MatProductNumeric(X);CHKERRQ(ierr);
+
     ierr = MatCopy(X,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     break;
   default:

@@ -189,6 +189,7 @@ PETSC_EXTERN PetscErrorCode MatProductSetFromOptions(Mat);
 PETSC_EXTERN PetscErrorCode MatProductSymbolic(Mat);
 PETSC_EXTERN PetscErrorCode MatProductNumeric(Mat);
 PETSC_EXTERN PetscErrorCode MatProductReplaceMats(Mat,Mat,Mat,Mat);
+PETSC_EXTERN PetscErrorCode MatProductClear(Mat);
 
 /* Logging support */
 #define    MAT_FILE_CLASSID 1211216    /* used to indicate matrices in binary files */
