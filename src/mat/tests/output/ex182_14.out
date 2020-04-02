@@ -1,17 +1,1 @@
-[1] MatAssemblyBegin_MPIAIJ(): Stash has 0 entries, uses 0 mallocs.
-[1] MatAssemblyEnd_SeqAIJ(): Matrix size: 5 X 0; storage space: 25 unneeded,0 used
-[1] MatAssemblyEnd_SeqAIJ(): Matrix size: 5 X 5; storage space: 0 unneeded,5 used
-[1] MatAssemblyEnd_SeqAIJ(): Matrix size: 5 X 5; storage space: 25 unneeded,0 used
-[1] MatAssemblyEnd_SeqAIJ(): Maximum nonzeros in any row is 0
-[1] MatAssemblyEnd_SeqAIJ(): Maximum nonzeros in any row is 0
-[1] MatAssemblyEnd_SeqAIJ(): Maximum nonzeros in any row is 1
-[1] MatAssemblyEnd_SeqAIJ(): Number of mallocs during MatSetValues() is 0
-[1] MatAssemblyEnd_SeqAIJ(): Number of mallocs during MatSetValues() is 0
-[1] MatAssemblyEnd_SeqAIJ(): Number of mallocs during MatSetValues() is 0
-[1] MatCheckCompressedRow(): Found the ratio (num_zerorows 0)/(num_localrows 5) < 0.6. Do not use CompressedRow routines.
-[1] MatCheckCompressedRow(): Found the ratio (num_zerorows 5)/(num_localrows 5) > 0.6. Use CompressedRow routines.
-[1] MatCheckCompressedRow(): Found the ratio (num_zerorows 5)/(num_localrows 5) > 0.6. Use CompressedRow routines.
-[1] MatSeqAIJCheckInode(): Found 1 nodes of 5. Limit used: 5. Using Inode routines
-[1] MatSeqAIJCheckInode(): Found 5 nodes out of 5 rows. Not using Inode routines
-[1] PetscFinalize(): PetscFinalize() called
 [1] PetscInfoSetFile(): Opened PetscInfo file ex182info.1

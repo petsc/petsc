@@ -241,6 +241,7 @@ PetscErrorCode PetscInfoGetClass(const char *classname, PetscBool *found)
 
     Output Parameters:
 +   infoEnabled - PETSC_TRUE if PetscInfoAllow(PETSC_TRUE) has been called
+.   classesSet - PETSC_TRUE if the list of classes to filter for has been set
 .   exclude - PETSC_TRUE if the class filtering for PetscInfo() is inverted
 .   locked - PETSC_TRUE if the list of classes to filter for has been locked
 -   commSelfFlag - Enum indicating whether PetscInfo() will print for communicators of size 1, any size != 1, or all
@@ -253,11 +254,11 @@ PetscErrorCode PetscInfoGetClass(const char *classname, PetscBool *found)
 
 .seealso: PetscInfo(), PetscInfoAllow(), PetscInfoSetFilterCommSelf, PetscInfoSetFromOptions()
 @*/
-PetscErrorCode PetscInfoGetInfo(PetscBool *infoEnabled, PetscBool *setup, PetscBool *exclude, PetscBool *locked, PetscInfoCommFlag *commSelfFlag)
+PetscErrorCode PetscInfoGetInfo(PetscBool *infoEnabled, PetscBool *classesSet, PetscBool *exclude, PetscBool *locked, PetscInfoCommFlag *commSelfFlag)
 {
   PetscFunctionBegin;
   if (infoEnabled)  *infoEnabled  = PetscLogPrintInfo;
-  if (setup)        *setup        = PetscInfoSetUp;
+  if (classesSet)   *classesSet   = PetscInfoSetUp;
   if (exclude)      *exclude      = PetscInfoInvertClasses;
   if (locked)       *locked       = PetscInfoClassnamesLocked;
   if (commSelfFlag) *commSelfFlag = PetscInfoCommFilter;
@@ -353,7 +354,6 @@ PetscErrorCode PetscInfoSetFilterCommSelf(PetscInfoCommFlag commSelfFlag)
 @*/
 PetscErrorCode PetscInfoSetFromOptions(PetscOptions options)
 {
-  PetscToken         tok;
   char               optstring[PETSC_MAX_PATH_LEN], *loc0_ = NULL, *loc1_ = NULL, *loc2_ = NULL;
   char               **loc1_array = NULL;
   PetscBool          set, loc1_invert = PETSC_FALSE, loc2_invert = PETSC_FALSE, foundSelf = PETSC_FALSE;
@@ -366,27 +366,20 @@ PetscErrorCode PetscInfoSetFromOptions(PetscOptions options)
   ierr = PetscOptionsDeprecated_Private(NULL,"-info_exclude", NULL, "3.13", "Use -info instead");CHKERRQ(ierr);
   ierr = PetscOptionsGetString(options, NULL, "-info", optstring, PETSC_MAX_PATH_LEN, &set);CHKERRQ(ierr);
   if (set) {
-    /* Allow sys class to be processed as part of setup */
     PetscInfoSetUp = PETSC_TRUE;
     ierr = PetscInfoAllow(PETSC_TRUE);CHKERRQ(ierr);
-    ierr = PetscTokenCreate(optstring, ':', &tok);CHKERRQ(ierr);
-    ierr = PetscTokenFind(tok, &loc0_);CHKERRQ(ierr);
-    ierr = PetscTokenFind(tok, &loc1_);CHKERRQ(ierr);
-    ierr = PetscTokenFind(tok, &loc2_);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(optstring,&loc0_);CHKERRQ(ierr);
+    ierr = PetscStrchr(loc0_,':',&loc1_);CHKERRQ(ierr);
     if (loc1_) {
-      ierr = PetscStrcmp("self", (const char *) loc1_, &foundSelf);CHKERRQ(ierr);
-      if (foundSelf) {
-        /* side effect of PetscTokenFind() if tokens are next to each other, i.e. str="foo::bar", instead of "foo" "" "bar", returns "foo" "bar" "NULL" */
-        loc2_ = loc1_;
-        loc1_ = NULL;
-      } else {
-        if (*loc1_ == '~') {
-          loc1_invert = PETSC_TRUE;
-          ++loc1_;
-        }
+      *loc1_++ = 0;
+      if (*loc1_ == '~') {
+        loc1_invert = PETSC_TRUE;
+        ++loc1_;
       }
+      ierr = PetscStrchr(loc1_,':',&loc2_);CHKERRQ(ierr);
     }
     if (loc2_) {
+      *loc2_++ = 0;
       if (*loc2_ == '~') {
         loc2_invert = PETSC_TRUE;
         ++loc2_;
@@ -414,7 +407,7 @@ PetscErrorCode PetscInfoSetFromOptions(PetscOptions options)
     ierr = PetscInfoSetClasses(loc1_invert,(PetscInt) nLoc1_, (const char *const *) loc1_array);CHKERRQ(ierr);
     ierr = PetscInfoSetFilterCommSelf(commSelfFlag);CHKERRQ(ierr);
     ierr = PetscStrToArrayDestroy(nLoc1_, loc1_array);CHKERRQ(ierr);
-    ierr = PetscTokenDestroy(&tok);CHKERRQ(ierr);
+    ierr = PetscFree(loc0_);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -435,7 +428,7 @@ PetscErrorCode PetscInfoSetFromOptions(PetscOptions options)
 PetscErrorCode PetscInfoDestroy(void)
 {
   PetscErrorCode  ierr;
-  int             err;
+  int             err, i;
 
   PetscFunctionBegin;
   ierr = PetscInfoAllow(PETSC_FALSE);CHKERRQ(ierr);
@@ -446,7 +439,7 @@ PetscErrorCode PetscInfoDestroy(void)
     ierr  = PetscFClose(MPI_COMM_SELF, PetscInfoFile);CHKERRQ(ierr);
   }
   ierr = PetscFree(PetscInfoFilename);CHKERRQ(ierr);
-  memset(PetscInfoFlags, 1, (size_t) 160*sizeof(PetscInfoFlags[0]));
+  for (i=0; i<160; i++) PetscInfoFlags[i] = 1;
   PetscInfoClassnamesLocked = PETSC_FALSE;
   PetscInfoInvertClasses = PETSC_FALSE;
   PetscInfoNumClasses = -1;
