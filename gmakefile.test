@@ -277,7 +277,7 @@ else ifdef searchin
 else ifdef argsearch
   TESTTARGETS := $(foreach v,$(alltesttargets),$(if $(findstring $(argsearch),$($(v)_ARGS)),$(v)))
 else ifdef globsearch
-  TESTTARGETS := $(shell $(PYTHON) -c"import sys,fnmatch,itertools; m=[fnmatch.filter(sys.argv[2].split(),p) for p in sys.argv[1].split()]; print(' '.join(list(itertools.chain.from_iterable(m))))" '$(globsearch)' '$(alltesttargets)')
+  TESTTARGETS := $(shell $(PYTHON) config/query_tests.py 'name' '$(globsearch)')
 else ifdef test-fail
   TESTTARGETS := $(shell $(PETSC_ARCH)/tests/echofailures.sh)
 else ifdef query
@@ -289,7 +289,8 @@ endif
 .PHONY: report_tests print-test
 
 print-test:
-	-@echo $(TESTTARGETS)
+	$(info $(TESTTARGETS))
+	@true
 
 show-fail:
 	-@$(PYTHON) $(CONFIGDIR)/report_tests.py -d $(TESTDIR)/counts -f

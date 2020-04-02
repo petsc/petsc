@@ -212,7 +212,9 @@ clean:
 
 # make print VAR=the-variable
 print:
-	@echo $($(VAR))
+	$(info $($(VAR)))
+	@true
+
 
 allobj.d := $(srcs.o:%.o=%.d)
 # Tell make that allobj.d are all up to date.  Without this, the include
