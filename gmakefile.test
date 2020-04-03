@@ -112,6 +112,12 @@ testsrcs.o := $(foreach pkg, $(pkgs), $(call concattestlang,$(pkg),$(testlangs))
 testsrcs-rel := $(foreach pkg, $(pkgs), $(foreach lang, $(testlangs), $(testsrcs-$(pkg).$(lang))))
 testsrcs := $(foreach sfile, $(testsrcs-rel), $(TESTSRCDIR)/$(sfile))
 
+# workaround win32fe failure
+ifneq (,$(findstring win32fe,$(call quiet,$(cc_name))))
+$(TESTDIR)/ts/tutorials/multirate/ex6: | $(TESTDIR)/ts/tutorials/multirate/ex5
+$(TESTDIR)/ts/tutorials/multirate/ex8: | $(TESTDIR)/ts/tutorials/multirate/ex6
+endif
+
 # Refresh testfiles when sources change, but don't balk if the source file is nonexistent (deleted)
 $(generatedtest) : $(testsrcs)
 $(testsrcs) :
