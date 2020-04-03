@@ -1,7 +1,6 @@
 # --------------------------------------------------------------------
 
 class PCType(object):
-    # native
     NONE               = S_(PCNONE)
     JACOBI             = S_(PCJACOBI)
     SOR                = S_(PCSOR)

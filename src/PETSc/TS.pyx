@@ -39,6 +39,9 @@ class TSRKType(object):
     RK5F  = S_(TSRK5F)
     RK5DP = S_(TSRK5DP)
     RK5BS = S_(TSRK5BS)
+    RK6VR = S_(TSRK6VR)
+    RK7VR = S_(TSRK7VR)
+    RK8VR = S_(TSRK8VR)
 
 class TSARKIMEXType(object):
     ARKIMEX1BEE   = S_(TSARKIMEX1BEE)

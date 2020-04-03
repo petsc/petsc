@@ -8,6 +8,7 @@ class KSPType(object):
     PIPECG     = S_(KSPPIPECG)
     PIPECGRR   = S_(KSPPIPECGRR)
     PIPELCG    = S_(KSPPIPELCG)
+    PIPEPRCG   = S_(KSPPIPEPRCG)
     CGNE       = S_(KSPCGNE)
     NASH       = S_(KSPNASH)
     STCG       = S_(KSPSTCG)

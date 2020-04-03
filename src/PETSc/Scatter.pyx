@@ -1,10 +1,11 @@
 # --------------------------------------------------------------------
 
 class ScatterType(object):
-   SEQ       = S_(SCATTERSEQ)
-   MPI1      = S_(SCATTERMPI1)
-   MPI3      = S_(SCATTERMPI3)
-   MPI3NODE  = S_(SCATTERMPI3NODE)
+   SEQ       = S_(VECSCATTERSEQ)
+   MPI1      = S_(VECSCATTERMPI1)
+   MPI3      = S_(VECSCATTERMPI3)
+   MPI3NODE  = S_(VECSCATTERMPI3NODE)
+   SF        = S_(VECSCATTERSF)
 
 # --------------------------------------------------------------------
 
@@ -56,6 +57,10 @@ cdef class Scatter(Object):
 
     def setFromOptions(self):
         CHKERR( VecScatterSetFromOptions(self.sct) )
+
+    def setUp(self):
+        CHKERR( VecScatterSetUp(self.sct) )
+        return self
 
     def copy(self):
         cdef Scatter scatter = Scatter()
