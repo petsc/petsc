@@ -178,8 +178,10 @@ def processDir(petscdir, bfort, verbose, dirpath, dirnames, filenames):
                '-mpi', '-shortargname', '-ferr', '-ptrprefix Petsc', '-ptr64 PETSC_USE_POINTER_CONVERSION',
                '-fcaps PETSC_HAVE_FORTRAN_CAPS', '-fuscore PETSC_HAVE_FORTRAN_UNDERSCORE',
                '-f90mod_skip_header','-f90modfile','f90module.f90']
-    cmd = 'BFORT_CONFIG_PATH='+os.path.join(petscdir,'lib','petsc','conf')+' '+bfort+' '+' '.join(options+newls)
-    output = check_output(cmd, cwd=dirpath, shell=True, stderr=subprocess.STDOUT)
+    split_ct = 10
+    for i in range(0, len(newls), split_ct):
+      cmd = 'BFORT_CONFIG_PATH='+os.path.join(petscdir,'lib','petsc','conf')+' '+bfort+' '+' '.join(options+newls[i:i+split_ct])
+      output = check_output(cmd, cwd=dirpath, shell=True, stderr=subprocess.STDOUT)
     FixDir(petscdir,outdir,verbose)
 
   # remove from list of subdirectories all directories without source code
