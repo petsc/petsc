@@ -6219,6 +6219,11 @@ DMNetworkSetNumVariables(DM dm, PetscInt p, PetscInt nvar);
 DMNetworkAddNumVariables(DM dm, PetscInt p, PetscInt nvar);
 \end{lstlisting}
 
+Alternatively, the number of variables can be set for a component directly. This allows much finer control, specifically for vertices/edges that have multiple components set on them.
+\begin{lstlisting}
+DMNetworkSetComponentNumVariabes(DM dm, PetscInt p, PetscInt compnum, PetscInt nvar);
+\end{lstisting}
+
 \item Set up network internal data structures.
   %Signal network ready to be distributed.
 \begin{lstlisting}
@@ -6257,6 +6262,13 @@ DMNetworkGetVariableOffset(DM dm, PetscInt p, PetscInt *offset);
 \end{lstlisting}
 \begin{lstlisting}
 DMNetworkGetVariableGlobalOffset(DM dm, PetscInt p, PetscInt *offsetg);
+\end{lstlisting}
+If the number of variables are set at the component level, then their local/global offsets can be retrieved via
+\begin{lstlisting}
+DMNetworkGetComponentVariableOffset(DM dm, PetscInt p, PetscInt compnum, PetscInt *offset);
+\end{lstlisting}
+\begin{lstlisting}
+DMNetworkGetComponentVariableGlobalOffset(DM dm, PetscInt p, PetscInt compnum, PetscInt *offsetg);
 \end{lstlisting}
 In network applications, one frequently needs to find the supporting edges for a vertex or
 the connecting vertices covering an edge. These can be obtained by the following two routines.
