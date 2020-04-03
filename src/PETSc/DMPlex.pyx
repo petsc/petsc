@@ -68,7 +68,7 @@ cdef class DMPlex(DM):
         cdef MPI_Comm  ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscBool interp = interpolate
         cdef PetscDM   newdm = NULL
-        cdef const_char *cfile = NULL
+        cdef const char *cfile = NULL
         filename = str2bytes(filename, &cfile)
         CHKERR( DMPlexCreateFromFile(ccomm, cfile, interp, &newdm) )
         PetscCLEAR(self.obj); self.dm = newdm
@@ -87,7 +87,7 @@ cdef class DMPlex(DM):
         cdef MPI_Comm  ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscBool interp = interpolate
         cdef PetscDM   newdm = NULL
-        cdef const_char *cfile = NULL
+        cdef const char *cfile = NULL
         filename = str2bytes(filename, &cfile)
         CHKERR( DMPlexCreateCGNSFromFile(ccomm, cfile, interp, &newdm) )
         PetscCLEAR(self.obj); self.dm = newdm
@@ -97,7 +97,7 @@ cdef class DMPlex(DM):
         cdef MPI_Comm  ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscBool interp = interpolate
         cdef PetscDM   newdm = NULL
-        cdef const_char *cfile = NULL
+        cdef const char *cfile = NULL
         filename = str2bytes(filename, &cfile)
         CHKERR( DMPlexCreateExodusFromFile(ccomm, cfile, interp, &newdm) )
         PetscCLEAR(self.obj); self.dm = newdm
@@ -160,7 +160,7 @@ cdef class DMPlex(DM):
         CHKERR( DMPlexGetChart(self.dm, &pStart, &pEnd) )
         assert cp>=pStart and cp<pEnd
         cdef PetscInt        ncone = 0
-        cdef const_PetscInt *icone = NULL
+        cdef const PetscInt *icone = NULL
         CHKERR( DMPlexGetConeSize(self.dm, cp, &ncone) )
         CHKERR( DMPlexGetCone(self.dm, cp, &icone) )
         return array_i(ncone, icone)
@@ -202,7 +202,7 @@ cdef class DMPlex(DM):
         CHKERR( DMPlexGetChart(self.dm, &pStart, &pEnd) )
         assert cp>=pStart and cp<pEnd
         cdef PetscInt        norie = 0
-        cdef const_PetscInt *iorie = NULL
+        cdef const PetscInt *iorie = NULL
         CHKERR( DMPlexGetConeSize(self.dm, cp, &norie) )
         CHKERR( DMPlexGetConeOrientation(self.dm, cp, &iorie) )
         return array_i(norie, iorie)
@@ -243,7 +243,7 @@ cdef class DMPlex(DM):
         CHKERR( DMPlexGetChart(self.dm, &pStart, &pEnd) )
         assert cp>=pStart and cp<pEnd
         cdef PetscInt        nsupp = 0
-        cdef const_PetscInt *isupp = NULL
+        cdef const PetscInt *isupp = NULL
         CHKERR( DMPlexGetSupportSize(self.dm, cp, &nsupp) )
         CHKERR( DMPlexGetSupport(self.dm, cp, &isupp) )
         return array_i(nsupp, isupp)
@@ -309,7 +309,7 @@ cdef class DMPlex(DM):
         cdef PetscInt  numPoints = 0
         cdef PetscInt *ipoints = NULL
         cdef PetscInt  numCoveringPoints = 0
-        cdef const_PetscInt *coveringPoints = NULL
+        cdef const PetscInt *coveringPoints = NULL
         points = iarray_i(points, &numPoints, &ipoints)
         CHKERR( DMPlexGetMeet(self.dm, numPoints, ipoints, &numCoveringPoints, &coveringPoints) )
         try:
@@ -321,7 +321,7 @@ cdef class DMPlex(DM):
         cdef PetscInt  numPoints = 0
         cdef PetscInt *ipoints = NULL
         cdef PetscInt  numCoveringPoints = 0
-        cdef const_PetscInt *coveringPoints = NULL
+        cdef const PetscInt *coveringPoints = NULL
         points = iarray_i(points, &numPoints, &ipoints)
         CHKERR( DMPlexGetJoin(self.dm, numPoints, ipoints, &numCoveringPoints, &coveringPoints) )
         try:
@@ -387,7 +387,7 @@ cdef class DMPlex(DM):
 
     def generate(self, DMPlex boundary, name=None, interpolate=True):
         cdef PetscBool interp = interpolate
-        cdef const_char *cname = NULL
+        cdef const char *cname = NULL
         if name: name = str2bytes(name, &cname)
         cdef PetscDM   newdm = NULL
         CHKERR( DMPlexGenerate(boundary.dm, cname, interp, &newdm) )
@@ -395,12 +395,12 @@ cdef class DMPlex(DM):
         return self
 
     def setTriangleOptions(self, opts):
-        cdef const_char *copts = NULL
+        cdef const char *copts = NULL
         opts = str2bytes(opts, &copts)
         CHKERR( DMPlexTriangleSetOptions(self.dm, copts) )
 
     def setTetGenOptions(self, opts):
-        cdef const_char *copts = NULL
+        cdef const char *copts = NULL
         opts = str2bytes(opts, &copts)
         CHKERR( DMPlexTetgenSetOptions(self.dm, copts) )
 
@@ -429,7 +429,7 @@ cdef class DMPlex(DM):
         if value is not None: ival = asInt(value)
         if not self.hasLabel(label):
             self.createLabel(label)
-        cdef const_char *cval = NULL
+        cdef const char *cval = NULL
         label = str2bytes(label, &cval)
         cdef PetscDMLabel clbl = NULL
         CHKERR( DMGetLabel(self.dm, cval, &clbl) )
@@ -641,7 +641,7 @@ cdef class DMPlex(DM):
         return (toReal(vol), array_r(dim, centroid), array_r(dim, normal))
 
     def constructGhostCells(self, labelName=None):
-        cdef const_char *cname = NULL
+        cdef const char *cname = NULL
         labelName = str2bytes(labelName, &cname)
         cdef PetscInt numGhostCells = 0
         cdef PetscDM dmGhosted = NULL

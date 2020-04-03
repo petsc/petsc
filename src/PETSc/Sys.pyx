@@ -77,7 +77,7 @@ cdef class Sys:
             message = ''.join(format) % args
         else:
             message = ''
-        cdef const_char *m = NULL
+        cdef const char *m = NULL
         message = str2bytes(message, &m)
         CHKERR( PetscPrintf(ccomm, m) )
 
@@ -92,7 +92,7 @@ cdef class Sys:
         format = ['%s', sep] * len(args)
         format[-1] = end
         message = ''.join(format) % args
-        cdef const_char *m = NULL
+        cdef const char *m = NULL
         message = str2bytes(message, &m)
         CHKERR( PetscSynchronizedPrintf(ccomm, m) )
         if flush: CHKERR( PetscSynchronizedFlush(ccomm, PETSC_STDOUT) )
@@ -159,8 +159,8 @@ cdef class Sys:
     @classmethod
     def infoAllow(cls, flag, filename=None, mode="w"):
         cdef PetscBool tval = PETSC_FALSE
-        cdef const_char *cfilename = NULL
-        cdef const_char *cmode = NULL
+        cdef const char *cfilename = NULL
+        cdef const char *cmode = NULL
         if flag: tval = PETSC_TRUE
         CHKERR( PetscInfoAllow(tval) )
         if filename is not None:
@@ -171,7 +171,7 @@ cdef class Sys:
     @classmethod
     def registerCitation(cls, citation):
         if not citation: raise ValueError("empty citation")
-        cdef const_char *cit = NULL
+        cdef const char *cit = NULL
         citation = str2bytes(citation, &cit)
         cdef PetscBool flag = get_citation(citation)
         CHKERR( PetscCitationsRegister(cit, &flag) )

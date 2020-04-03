@@ -250,7 +250,7 @@ cdef class IS(Object):
 
     def getIndices(self):
         cdef PetscInt size = 0
-        cdef const_PetscInt *indices = NULL
+        cdef const PetscInt *indices = NULL
         CHKERR( ISGetLocalSize(self.iset, &size) )
         CHKERR( ISGetIndices(self.iset, &indices) )
         cdef object oindices = None
@@ -269,7 +269,7 @@ cdef class IS(Object):
 
     def getBlockIndices(self):
         cdef PetscInt size = 0, bs = 1
-        cdef const_PetscInt *indices = NULL
+        cdef const PetscInt *indices = NULL
         CHKERR( ISGetLocalSize(self.iset, &size) )
         CHKERR( ISGetBlockSize(self.iset, &bs) )
         CHKERR( ISBlockGetIndices(self.iset, &indices) )
@@ -431,7 +431,7 @@ cdef class LGMap(Object):
 
     def getIndices(self):
         cdef PetscInt size = 0
-        cdef const_PetscInt *indices = NULL
+        cdef const PetscInt *indices = NULL
         CHKERR( ISLocalToGlobalMappingGetSize(
                 self.lgm, &size) )
         CHKERR( ISLocalToGlobalMappingGetIndices(
@@ -446,7 +446,7 @@ cdef class LGMap(Object):
 
     def getBlockIndices(self):
         cdef PetscInt size = 0, bs = 1
-        cdef const_PetscInt *indices = NULL
+        cdef const PetscInt *indices = NULL
         CHKERR( ISLocalToGlobalMappingGetSize(
                 self.lgm, &size) )
         CHKERR( ISLocalToGlobalMappingGetBlockSize(

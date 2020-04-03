@@ -1,6 +1,6 @@
 cdef extern from * nogil:
 
-    ctypedef char* PetscKSPType "const char*"
+    ctypedef const char* PetscKSPType "KSPType"
     PetscKSPType KSPRICHARDSON
     PetscKSPType KSPCHEBYSHEV
     PetscKSPType KSPCG

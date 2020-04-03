@@ -1,8 +1,6 @@
 cdef extern from * nogil:
 
-    ctypedef PetscIS const_PetscIS "const PetscIS"
-
-    ctypedef char* PetscISType "const char*"
+    ctypedef const char* PetscISType "ISType"
     PetscISType ISGENERAL
     PetscISType ISSTRIDE
     PetscISType ISBLOCK
@@ -27,8 +25,8 @@ cdef extern from * nogil:
     int ISGetLocalSize(PetscIS,PetscInt*)
     int ISGetBlockSize(PetscIS,PetscInt*)
     int ISSetBlockSize(PetscIS,PetscInt)
-    int ISGetIndices(PetscIS,const_PetscInt*[])
-    int ISRestoreIndices(PetscIS,const_PetscInt*[])
+    int ISGetIndices(PetscIS,const PetscInt*[])
+    int ISRestoreIndices(PetscIS,const PetscInt*[])
 
     int ISEqual(PetscIS,PetscIS,PetscBool*)
 
@@ -50,8 +48,8 @@ cdef extern from * nogil:
     int ISGeneralSetIndices(PetscIS,PetscInt,PetscInt[],PetscCopyMode)
 
     int ISBlockSetIndices(PetscIS,PetscInt,PetscInt,PetscInt[],PetscCopyMode)
-    int ISBlockGetIndices(PetscIS,const_PetscInt*[])
-    int ISBlockRestoreIndices(PetscIS,const_PetscInt*[])
+    int ISBlockGetIndices(PetscIS,const PetscInt*[])
+    int ISBlockRestoreIndices(PetscIS,const PetscInt*[])
 
     int ISStrideSetStride(PetscIS,PetscInt,PetscInt,PetscInt)
     int ISStrideGetInfo(PetscIS,PetscInt*,PetscInt*)
@@ -61,7 +59,7 @@ cdef extern from * nogil:
 
 cdef extern from * nogil:
 
-    ctypedef char* PetscISLocalToGlobalMappingType "const char*"
+    ctypedef const char* PetscISLocalToGlobalMappingType "ISLocalToGlobalMappingType"
     PetscISLocalToGlobalMappingType ISLOCALTOGLOBALMAPPINGBASIC
     PetscISLocalToGlobalMappingType ISLOCALTOGLOBALMAPPINGHASH
 
@@ -78,10 +76,10 @@ cdef extern from * nogil:
     int ISLocalToGlobalMappingDestroy(PetscLGMap*)
     int ISLocalToGlobalMappingGetSize(PetscLGMap,PetscInt*)
     int ISLocalToGlobalMappingGetBlockSize(PetscLGMap,PetscInt*)
-    int ISLocalToGlobalMappingGetIndices(PetscLGMap,const_PetscInt*[])
-    int ISLocalToGlobalMappingRestoreIndices(PetscLGMap,const_PetscInt*[])
-    int ISLocalToGlobalMappingGetBlockIndices(PetscLGMap,const_PetscInt*[])
-    int ISLocalToGlobalMappingRestoreBlockIndices(PetscLGMap,const_PetscInt*[])
+    int ISLocalToGlobalMappingGetIndices(PetscLGMap,const PetscInt*[])
+    int ISLocalToGlobalMappingRestoreIndices(PetscLGMap,const PetscInt*[])
+    int ISLocalToGlobalMappingGetBlockIndices(PetscLGMap,const PetscInt*[])
+    int ISLocalToGlobalMappingRestoreBlockIndices(PetscLGMap,const PetscInt*[])
     int ISLocalToGlobalMappingGetInfo(PetscLGMap,PetscInt*,PetscInt*[],PetscInt*[],PetscInt**[])
     int ISLocalToGlobalMappingRestoreInfo(PetscLGMap,PetscInt*,PetscInt*[],PetscInt*[],PetscInt**[])
     int ISLocalToGlobalMappingGetBlockInfo(PetscLGMap,PetscInt*,PetscInt*[],PetscInt*[],PetscInt**[])
@@ -121,7 +119,7 @@ cdef class _IS_buffer:
 
     cdef PetscIS iset
     cdef PetscInt size
-    cdef const_PetscInt *data
+    cdef const PetscInt *data
     cdef bint hasarray
 
     def __cinit__(self, IS iset):

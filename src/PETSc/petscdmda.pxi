@@ -49,9 +49,9 @@ cdef extern from * nogil:
                             PetscInt*,PetscInt*,PetscInt*,
                             PetscInt*,PetscInt*,PetscInt*)
     int DMDAGetOwnershipRanges(PetscDM,
-                               const_PetscInt*[],
-                               const_PetscInt*[],
-                               const_PetscInt*[])
+                               const PetscInt*[],
+                               const PetscInt*[],
+                               const PetscInt*[])
 
     int DMDASetUniformCoordinates(PetscDM,
                                   PetscReal,PetscReal,
@@ -75,13 +75,13 @@ cdef extern from * nogil:
     int DMDAGetInterpolationType(PetscDM,PetscDMDAInterpolationType*)
     int DMDASetElementType(PetscDM,PetscDMDAElementType)
     int DMDAGetElementType(PetscDM,PetscDMDAElementType*)
-    int DMDAGetElements(PetscDM,PetscInt*,PetscInt*,const_PetscInt**)
-    int DMDARestoreElements(PetscDM,PetscInt*,PetscInt*,const_PetscInt**)
+    int DMDAGetElements(PetscDM,PetscInt*,PetscInt*,const PetscInt**)
+    int DMDARestoreElements(PetscDM,PetscInt*,PetscInt*,const PetscInt**)
 
-    int DMDASetFieldName(PetscDM,PetscInt,const_char[])
-    int DMDAGetFieldName(PetscDM,PetscInt,const_char*[])
-    int DMDASetCoordinateName(PetscDM,PetscInt,const_char[])
-    int DMDAGetCoordinateName(PetscDM,PetscInt,const_char*[])
+    int DMDASetFieldName(PetscDM,PetscInt,const char[])
+    int DMDAGetFieldName(PetscDM,PetscInt,const char*[])
+    int DMDASetCoordinateName(PetscDM,PetscInt,const char[])
+    int DMDAGetCoordinateName(PetscDM,PetscInt,const char*[])
 
 # --------------------------------------------------------------------
 
@@ -182,9 +182,9 @@ cdef inline tuple asOwnershipRanges(object ownership_ranges,
 
 cdef inline tuple toOwnershipRanges(PetscInt dim,
                                     PetscInt m, PetscInt n, PetscInt p,
-                                    const_PetscInt *lx,
-                                    const_PetscInt *ly,
-                                    const_PetscInt *lz):
+                                    const PetscInt *lx,
+                                    const PetscInt *ly,
+                                    const PetscInt *lz):
     # Returns tuple of arrays containing ownership ranges as Python arrays
     ranges = [array_i(m, lx)]
     if dim > 1:

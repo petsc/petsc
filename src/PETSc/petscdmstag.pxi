@@ -38,9 +38,9 @@ cdef extern from * nogil:
         DMSTAG_FRONT_UP_RIGHT
 
 
-    int DMStagCreate1d(MPI_Comm,PetscDMBoundaryType,PetscInt,PetscInt,PetscInt,PetscDMStagStencilType,PetscInt,const_PetscInt[],PetscDM*)
-    int DMStagCreate2d(MPI_Comm,PetscDMBoundaryType,PetscDMBoundaryType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscDMStagStencilType,PetscInt,const_PetscInt[],const_PetscInt[],PetscDM*)
-    int DMStagCreate3d(MPI_Comm,PetscDMBoundaryType,PetscDMBoundaryType,PetscDMBoundaryType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscDMStagStencilType,PetscInt,const_PetscInt[],const_PetscInt[],const_PetscInt[],PetscDM*)
+    int DMStagCreate1d(MPI_Comm,PetscDMBoundaryType,PetscInt,PetscInt,PetscInt,PetscDMStagStencilType,PetscInt,const PetscInt[],PetscDM*)
+    int DMStagCreate2d(MPI_Comm,PetscDMBoundaryType,PetscDMBoundaryType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscDMStagStencilType,PetscInt,const PetscInt[],const PetscInt[],PetscDM*)
+    int DMStagCreate3d(MPI_Comm,PetscDMBoundaryType,PetscDMBoundaryType,PetscDMBoundaryType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscDMStagStencilType,PetscInt,const PetscInt[],const PetscInt[],const PetscInt[],PetscDM*)
 
 
     int DMStagGetCorners(PetscDM,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*)
@@ -54,7 +54,7 @@ cdef extern from * nogil:
     int DMStagGetBoundaryTypes(PetscDM,PetscDMBoundaryType*,PetscDMBoundaryType*,PetscDMBoundaryType*)
     int DMStagGetStencilWidth(PetscDM,PetscInt*)
     int DMStagGetStencilType(PetscDM,PetscDMStagStencilType*)
-    int DMStagGetOwnershipRanges(PetscDM,const_PetscInt*[],const_PetscInt*[],const_PetscInt*[])
+    int DMStagGetOwnershipRanges(PetscDM,const PetscInt*[],const PetscInt*[],const PetscInt*[])
 
     int DMStagSetDOF(PetscDM,PetscInt,PetscInt,PetscInt,PetscInt)
     int DMStagSetNumRanks(PetscDM,PetscInt,PetscInt,PetscInt)    
@@ -62,7 +62,7 @@ cdef extern from * nogil:
     int DMStagSetBoundaryTypes(PetscDM,PetscDMBoundaryType,PetscDMBoundaryType,PetscDMBoundaryType)
     int DMStagSetStencilWidth(PetscDM,PetscInt)
     int DMStagSetStencilType(PetscDM,PetscDMStagStencilType)
-    int DMStagSetOwnershipRanges(PetscDM,const_PetscInt[],const_PetscInt[],const_PetscInt[])
+    int DMStagSetOwnershipRanges(PetscDM,const PetscInt[],const PetscInt[],const PetscInt[])
 
     int DMStagGetLocationSlot(PetscDM,PetscDMStagStencilLocation,PetscInt,PetscInt*)
     int DMStagGetLocationDOF(PetscDM,PetscDMStagStencilLocation,PetscInt*)
@@ -220,9 +220,9 @@ cdef inline tuple asStagOwnershipRanges(object ownership_ranges,
 
 cdef inline tuple toStagOwnershipRanges(PetscInt dim,
                                     PetscInt m, PetscInt n, PetscInt p,
-                                    const_PetscInt *lx,
-                                    const_PetscInt *ly,
-                                    const_PetscInt *lz):
+                                    const PetscInt *lx,
+                                    const PetscInt *ly,
+                                    const PetscInt *lz):
     # Returns tuple of arrays containing ownership ranges as Python arrays
     ranges = [array_i(m, lx)]
     if dim > 1:

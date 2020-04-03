@@ -2,7 +2,7 @@
 
 cdef extern from * nogil:
 
-    ctypedef char* PetscDMType "const char*"
+    ctypedef const char* PetscDMType "DMType"
     PetscDMType DMDA_type "DMDA"
     PetscDMType DMCOMPOSITE
     PetscDMType DMSLICED
@@ -121,24 +121,24 @@ cdef extern from * nogil:
     int DMGetPointSF(PetscDM,PetscSF*)
     int DMSetPointSF(PetscDM,PetscSF)
 
-    int DMCreateLabel(PetscDM,const_char[])
-    int DMGetLabelValue(PetscDM,const_char[],PetscInt,PetscInt*)
-    int DMSetLabelValue(PetscDM,const_char[],PetscInt,PetscInt)
-    int DMHasLabel(PetscDM,const_char[],PetscBool*)
-    int DMClearLabelValue(PetscDM,const_char[],PetscInt,PetscInt)
-    int DMGetLabelSize(PetscDM,const_char[],PetscInt*)
-    int DMGetLabelIdIS(PetscDM,const_char[],PetscIS*)
-    int DMGetStratumSize(PetscDM,const_char[],PetscInt,PetscInt*)
-    int DMGetStratumIS(PetscDM,const_char[],PetscInt,PetscIS*)
-    int DMClearLabelStratum(PetscDM,const_char[],PetscInt)
-    int DMSetLabelOutput(PetscDM,const_char[],PetscBool)
-    int DMGetLabelOutput(PetscDM,const_char[],PetscBool*)
+    int DMCreateLabel(PetscDM,const char[])
+    int DMGetLabelValue(PetscDM,const char[],PetscInt,PetscInt*)
+    int DMSetLabelValue(PetscDM,const char[],PetscInt,PetscInt)
+    int DMHasLabel(PetscDM,const char[],PetscBool*)
+    int DMClearLabelValue(PetscDM,const char[],PetscInt,PetscInt)
+    int DMGetLabelSize(PetscDM,const char[],PetscInt*)
+    int DMGetLabelIdIS(PetscDM,const char[],PetscIS*)
+    int DMGetStratumSize(PetscDM,const char[],PetscInt,PetscInt*)
+    int DMGetStratumIS(PetscDM,const char[],PetscInt,PetscIS*)
+    int DMClearLabelStratum(PetscDM,const char[],PetscInt)
+    int DMSetLabelOutput(PetscDM,const char[],PetscBool)
+    int DMGetLabelOutput(PetscDM,const char[],PetscBool*)
     int DMGetNumLabels(PetscDM,PetscInt*)
-    int DMGetLabelName(PetscDM,PetscInt,const_char**)
-    int DMHasLabel(PetscDM,const_char[],PetscBool*)
-    int DMGetLabel(PetscDM,const_char*,PetscDMLabel*)
+    int DMGetLabelName(PetscDM,PetscInt,const char**)
+    int DMHasLabel(PetscDM,const char[],PetscBool*)
+    int DMGetLabel(PetscDM,const char*,PetscDMLabel*)
     int DMAddLabel(PetscDM,PetscDMLabel)
-    int DMRemoveLabel(PetscDM,const_char[],PetscDMLabel*)
+    int DMRemoveLabel(PetscDM,const char[],PetscDMLabel*)
     int DMLabelDestroy(PetscDMLabel *)
     #int DMCopyLabels(PetscDM,PetscDM)
 

@@ -63,19 +63,19 @@ cdef class Object:
         return self
 
     def getType(self):
-        cdef const_char *cval = NULL
+        cdef const char *cval = NULL
         CHKERR( PetscObjectGetType(self.obj[0], &cval) )
         return bytes2str(cval)
 
     #
 
     def setOptionsPrefix(self, prefix):
-        cdef const_char *cval = NULL
+        cdef const char *cval = NULL
         prefix = str2bytes(prefix, &cval)
         CHKERR( PetscObjectSetOptionsPrefix(self.obj[0], cval) )
 
     def getOptionsPrefix(self):
-        cdef const_char *cval = NULL
+        cdef const char *cval = NULL
         CHKERR( PetscObjectGetOptionsPrefix(self.obj[0], &cval) )
         return bytes2str(cval)
 
@@ -84,7 +84,7 @@ cdef class Object:
 
     def viewFromOptions(self, name, Object prefix=None):
         cdef PetscObject pobj = NULL
-        cdef const_char *cval = NULL
+        cdef const char *cval = NULL
         pobj = prefix.obj[0] if prefix is not None else NULL
         name = str2bytes(name, &cval)
         CHKERR( PetscObjectViewFromOptions(self.obj[0], pobj, cval) )
@@ -97,12 +97,12 @@ cdef class Object:
         return comm
 
     def getName(self):
-        cdef const_char *cval = NULL
+        cdef const char *cval = NULL
         CHKERR( PetscObjectGetName(self.obj[0], &cval) )
         return bytes2str(cval)
 
     def setName(self, name):
-        cdef const_char *cval = NULL
+        cdef const char *cval = NULL
         name = str2bytes(name, &cval)
         CHKERR( PetscObjectSetName(self.obj[0], cval) )
 
@@ -112,7 +112,7 @@ cdef class Object:
         return <long>classid
 
     def getClassName(self):
-        cdef const_char *cval = NULL
+        cdef const char *cval = NULL
         CHKERR( PetscObjectGetClassName(self.obj[0], &cval) )
         return bytes2str(cval)
 
@@ -125,14 +125,14 @@ cdef class Object:
     # --- general support ---
 
     def compose(self, name, Object obj or None):
-        cdef const_char *cval = NULL
+        cdef const char *cval = NULL
         cdef PetscObject cobj = NULL
         name = str2bytes(name, &cval)
         if obj is not None: cobj = obj.obj[0]
         CHKERR( PetscObjectCompose(self.obj[0], cval, cobj) )
 
     def query(self, name):
-        cdef const_char *cval = NULL
+        cdef const char *cval = NULL
         cdef PetscObject cobj = NULL
         name = str2bytes(name, &cval)
         CHKERR( PetscObjectQuery(self.obj[0], cval, &cobj) )
@@ -161,12 +161,12 @@ cdef class Object:
         return (<long>refct)
 
     def getAttr(self, name):
-        cdef const_char *cval = NULL
+        cdef const char *cval = NULL
         name = str2bytes(name, &cval)
         return self.get_attr(<char*>cval)
 
     def setAttr(self, name, attr):
-        cdef const_char *cval = NULL
+        cdef const char *cval = NULL
         name = str2bytes(name, &cval)
         self.set_attr(<char*>cval, attr)
 
@@ -253,7 +253,7 @@ cdef int PyPetscType_Register(int classid, type cls) except -1:
     global type_registry
     cdef object key = <long>classid
     cdef object value = cls
-    cdef const_char *dummy = NULL
+    cdef const char *dummy = NULL
     if key not in type_registry:
         type_registry[key] = cls
         reg_LogClass(str2bytes(cls.__name__, &dummy),

@@ -41,7 +41,7 @@ cdef class SF(Object):
 
     def getType(self):
         cdef PetscSFType cval = NULL
-        CHKERR( PetscObjectGetType(<PetscObject>self.sf, &cval) )
+        CHKERR( PetscSFGetType(self.sf, &cval) )
         return bytes2str(cval)
 
     def setFromOptions(self):
@@ -58,8 +58,8 @@ cdef class SF(Object):
     def getGraph(self):
         """nleaves can be determined from the size of local"""
         cdef PetscInt nroots = 0, nleaves = 0
-        cdef const_PetscInt *ilocal = NULL
-        cdef const_PetscSFNode *iremote = NULL
+        cdef const PetscInt *ilocal = NULL
+        cdef const PetscSFNode *iremote = NULL
         CHKERR( PetscSFGetGraph(self.sf, &nroots, &nleaves, &ilocal, &iremote) )
         if ilocal == NULL:
             local = arange(0, nleaves, 1)
@@ -107,7 +107,7 @@ cdef class SF(Object):
         return sf
 
     def computeDegree(self):
-        cdef const_PetscInt *cdegree = NULL
+        cdef const PetscInt *cdegree = NULL
         cdef PetscInt nroots
         CHKERR( PetscSFComputeDegreeBegin(self.sf, &cdegree) )
         CHKERR( PetscSFComputeDegreeEnd(self.sf, &cdegree) )

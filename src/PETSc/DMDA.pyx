@@ -99,7 +99,7 @@ cdef class DMDA(DM):
                           &ndof, &swidth,
                           &btx, &bty, &btz,
                           &stype) )
-        cdef const_PetscInt *lx = NULL, *ly = NULL, *lz = NULL
+        cdef const PetscInt *lx = NULL, *ly = NULL, *lz = NULL
         CHKERR( DMDAGetOwnershipRanges(self.dm, &lx, &ly, &lz) )
         cdef MPI_Comm comm = MPI_COMM_NULL
         CHKERR( PetscObjectGetComm(<PetscObject>self.dm, &comm) )
@@ -291,7 +291,7 @@ cdef class DMDA(DM):
 
     def getOwnershipRanges(self):
         cdef PetscInt dim=0, m=0, n=0, p=0
-        cdef const_PetscInt *lx = NULL, *ly = NULL, *lz = NULL
+        cdef const PetscInt *lx = NULL, *ly = NULL, *lz = NULL
         CHKERR( DMDAGetInfo(self.dm,
                             &dim,
                             NULL, NULL, NULL,
@@ -324,13 +324,13 @@ cdef class DMDA(DM):
 
     def setFieldName(self, field, name):
         cdef PetscInt ival = asInt(field)
-        cdef const_char *cval = NULL
+        cdef const char *cval = NULL
         name = str2bytes(name, &cval)
         CHKERR( DMDASetFieldName(self.dm, ival, cval) )
 
     def getFieldName(self, field):
         cdef PetscInt ival = asInt(field)
-        cdef const_char *cval = NULL
+        cdef const char *cval = NULL
         CHKERR( DMDAGetFieldName(self.dm, ival, &cval) )
         return bytes2str(cval)
 
@@ -355,13 +355,13 @@ cdef class DMDA(DM):
 
     def setCoordinateName(self, index, name):
         cdef PetscInt ival = asInt(index)
-        cdef const_char *cval = NULL
+        cdef const char *cval = NULL
         name = str2bytes(name, &cval)
         CHKERR( DMDASetCoordinateName(self.dm, ival, cval) )
 
     def getCoordinateName(self, index):
         cdef PetscInt ival = asInt(index)
-        cdef const_char *cval = NULL
+        cdef const char *cval = NULL
         CHKERR( DMDAGetCoordinateName(self.dm, ival, &cval) )
         return bytes2str(cval)
 
@@ -446,7 +446,7 @@ cdef class DMDA(DM):
         cdef PetscInt dim=0
         cdef PetscDMDAElementType etype
         cdef PetscInt nel=0, nen=0
-        cdef const_PetscInt *elems=NULL
+        cdef const PetscInt *elems=NULL
         cdef object elements
         CHKERR( DMDAGetDim(self.dm, &dim) )
         if elem_type is not None:

@@ -1,6 +1,6 @@
 cdef extern from * nogil:
 
-    ctypedef char* PetscMatType "const char*"
+    ctypedef const char* PetscMatType "MatType"
     PetscMatType MATSAME
     PetscMatType MATMAIJ
     PetscMatType   MATSEQMAIJ
@@ -82,7 +82,7 @@ cdef extern from * nogil:
     PetscMatType MATLMVMDIAGBROYDEN
     PetscMatType MATCONSTANTDIAGONAL
 
-    ctypedef char* PetscMatOrderingType "const char*"
+    ctypedef const char* PetscMatOrderingType "MatOrderingType"
     PetscMatOrderingType MATORDERINGNATURAL
     PetscMatOrderingType MATORDERINGND
     PetscMatOrderingType MATORDERING1WD
@@ -93,7 +93,7 @@ cdef extern from * nogil:
     PetscMatOrderingType MATORDERINGSPECTRAL
     PetscMatOrderingType MATORDERINGAMD
 
-    ctypedef char* PetscMatSolverType "const char*"
+    ctypedef const char* PetscMatSolverType "MatSolverType"
     PetscMatSolverType MATSOLVERSUPERLU
     PetscMatSolverType MATSOLVERSUPERLU_DIST
     PetscMatSolverType MATSOLVERSTRUMPACK
@@ -238,9 +238,9 @@ cdef extern from * nogil:
     int MatGetBlockSize(PetscMat,PetscInt*)
     int MatGetBlockSizes(PetscMat,PetscInt*,PetscInt*)
     int MatGetOwnershipRange(PetscMat,PetscInt*,PetscInt*)
-    int MatGetOwnershipRanges(PetscMat,const_PetscInt*[])
+    int MatGetOwnershipRanges(PetscMat,const PetscInt*[])
     int MatGetOwnershipRangeColumn(PetscMat,PetscInt*,PetscInt*)
-    int MatGetOwnershipRangesColumn(PetscMat,const_PetscInt*[])
+    int MatGetOwnershipRangesColumn(PetscMat,const PetscInt*[])
     int MatGetOwnershipIS(PetscMat,PetscIS*,PetscIS*)
     int MatNestGetISs(PetscMat,PetscIS*,PetscIS*)
     int MatNestGetLocalISs(PetscMat,PetscIS*,PetscIS*)
@@ -264,28 +264,28 @@ cdef extern from * nogil:
     int MatCreateVecs(PetscMat,PetscVec*,PetscVec*)
 
     int MatSetValue(PetscMat,PetscInt,PetscInt,PetscScalar,PetscInsertMode)
-    int MatSetValues(PetscMat,PetscInt,PetscInt[],PetscInt,PetscInt[],PetscScalar[],PetscInsertMode)
-    int MatSetValuesBlocked(PetscMat,PetscInt,PetscInt[],PetscInt,PetscInt[],PetscScalar[],PetscInsertMode)
+    int MatSetValues(PetscMat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],PetscInsertMode)
+    int MatSetValuesBlocked(PetscMat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],PetscInsertMode)
 
     int MatSetLocalToGlobalMapping(PetscMat,PetscLGMap,PetscLGMap)
     int MatGetLocalToGlobalMapping(PetscMat,PetscLGMap*,PetscLGMap*)
     int MatSetValueLocal(PetscMat,PetscInt,PetscInt,PetscScalar,PetscInsertMode)
-    int MatSetValuesLocal(PetscMat,PetscInt,PetscInt[],PetscInt,PetscInt[],PetscScalar[],PetscInsertMode)
-    int MatSetValuesBlockedLocal(PetscMat,PetscInt,PetscInt[],PetscInt,PetscInt[],PetscScalar[],PetscInsertMode)
+    int MatSetValuesLocal(PetscMat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],PetscInsertMode)
+    int MatSetValuesBlockedLocal(PetscMat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],PetscInsertMode)
 
-    int MatSetStencil(PetscMat,PetscInt,PetscInt[],PetscInt[],PetscInt)
+    int MatSetStencil(PetscMat,PetscInt,const PetscInt[],const PetscInt[],PetscInt)
     ctypedef struct PetscMatStencil "MatStencil":
         PetscInt k,j,i,c
-    int MatSetValuesStencil(PetscMat,PetscInt,PetscMatStencil[],PetscInt,PetscMatStencil[],PetscScalar[],PetscInsertMode)
-    int MatSetValuesBlockedStencil(PetscMat,PetscInt,PetscMatStencil[],PetscInt,PetscMatStencil[],PetscScalar[],PetscInsertMode)
+    int MatSetValuesStencil(PetscMat,PetscInt,const PetscMatStencil[],PetscInt,const PetscMatStencil[],const PetscScalar[],PetscInsertMode)
+    int MatSetValuesBlockedStencil(PetscMat,PetscInt,const PetscMatStencil[],PetscInt,const PetscMatStencil[],const PetscScalar[],PetscInsertMode)
 
-    int MatGetValues(PetscMat,PetscInt,PetscInt[],PetscInt,PetscInt[],PetscScalar[])
-    int MatGetRow(PetscMat,PetscInt,PetscInt*,const_PetscInt*[],const_PetscScalar*[])
-    int MatRestoreRow(PetscMat,PetscInt,PetscInt*,const_PetscInt*[],const_PetscScalar*[])
-    int MatGetRowIJ(PetscMat,PetscInt,PetscBool,PetscBool,PetscInt*,const_PetscInt*[],const_PetscInt*[],PetscBool*)
-    int MatRestoreRowIJ(PetscMat,PetscInt,PetscBool,PetscBool,PetscInt*,const_PetscInt*[],const_PetscInt*[],PetscBool*)
-    int MatGetColumnIJ(PetscMat,PetscInt,PetscBool,PetscBool,PetscInt*,const_PetscInt*[],const_PetscInt*[],PetscBool*)
-    int MatRestoreColumnIJ(PetscMat,PetscInt,PetscBool,PetscBool,PetscInt*,const_PetscInt*[],const_PetscInt*[],PetscBool*)
+    int MatGetValues(PetscMat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],PetscScalar[])
+    int MatGetRow(PetscMat,PetscInt,PetscInt*,const PetscInt*[],const PetscScalar*[])
+    int MatRestoreRow(PetscMat,PetscInt,PetscInt*,const PetscInt*[],const PetscScalar*[])
+    int MatGetRowIJ(PetscMat,PetscInt,PetscBool,PetscBool,PetscInt*,const PetscInt*[],const PetscInt*[],PetscBool*)
+    int MatRestoreRowIJ(PetscMat,PetscInt,PetscBool,PetscBool,PetscInt*,const PetscInt*[],const PetscInt*[],PetscBool*)
+    int MatGetColumnIJ(PetscMat,PetscInt,PetscBool,PetscBool,PetscInt*,const PetscInt*[],const PetscInt*[],PetscBool*)
+    int MatRestoreColumnIJ(PetscMat,PetscInt,PetscBool,PetscBool,PetscInt*,const PetscInt*[],const PetscInt*[],PetscBool*)
 
     int MatZeroEntries(PetscMat)
     int MatStoreValues(PetscMat)
@@ -339,7 +339,7 @@ cdef extern from * nogil:
 
     int MatGetDiagonal(PetscMat,PetscVec)
     int MatGetRowSum(PetscMat,PetscVec)
-    int MatInvertBlockDiagonal(PetscMat,const_PetscScalar**)
+    int MatInvertBlockDiagonal(PetscMat,const PetscScalar**)
     int MatGetRowMax(PetscMat,PetscVec,PetscInt[])
     int MatGetRowMaxAbs(PetscMat,PetscVec,PetscInt[])
     int MatGetColumnVector(PetscMat,PetscVec,PetscInt)
@@ -447,13 +447,12 @@ cdef extern from "libpetsc4py.h":
 # -----------------------------------------------------------------------------
 
 cdef extern from * nogil:
-    ctypedef PetscVec const_PetscVec "const Vec"
     int MatNullSpaceDestroy(PetscNullSpace*)
     int MatNullSpaceView(PetscNullSpace,PetscViewer)
     int MatNullSpaceCreate(MPI_Comm,PetscBool,PetscInt,PetscVec[],
                            PetscNullSpace*)
     int MatNullSpaceCreateRigidBody(PetscVec,PetscNullSpace*)
-    int MatNullSpaceGetVecs(PetscNullSpace,PetscBool*,PetscInt*,const_PetscVec*[])
+    int MatNullSpaceGetVecs(PetscNullSpace,PetscBool*,PetscInt*,const PetscVec*[])
     int MatNullSpaceRemove(PetscNullSpace,PetscVec)
     int MatNullSpaceTest(PetscNullSpace,PetscMat,PetscBool*)
 
@@ -795,9 +794,10 @@ cdef inline object Mat_AllocDense(PetscMat A, object array):
 
 # -----------------------------------------------------------------------------
 
-ctypedef int MatSetValuesFcn(PetscMat,PetscInt,const_PetscInt[],
-                             PetscInt,const_PetscInt[],
-                             const_PetscScalar[],PetscInsertMode)
+ctypedef int MatSetValuesFcn(PetscMat,
+                             PetscInt,const PetscInt*,
+                             PetscInt,const PetscInt*,
+                             const PetscScalar*,PetscInsertMode)
 
 cdef inline MatSetValuesFcn* matsetvalues_fcn(int blocked, int local):
     cdef MatSetValuesFcn *setvalues = NULL
@@ -827,8 +827,7 @@ cdef inline int matsetvalues(PetscMat A,
         "incompatible array sizes: ni=%d, nj=%d, nv=%d" %
         (toInt(ni), toInt(nj), toInt(nv)) )
     # MatSetValuesXXX function and insert mode
-    cdef MatSetValuesFcn *setvalues = \
-         matsetvalues_fcn(blocked, local)
+    cdef MatSetValuesFcn *setvalues = matsetvalues_fcn(blocked, local)
     cdef PetscInsertMode addv = insertmode(oaddv)
     # actual call
     CHKERR( setvalues(A, ni, i, nj, j, v, addv) )

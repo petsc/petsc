@@ -1,6 +1,6 @@
 cdef extern from * nogil:
 
-    ctypedef char* PetscSNESType "const char*"
+    ctypedef const char* PetscSNESType "SNESType"
     PetscSNESType SNESNEWTONLS
     PetscSNESType SNESNEWTONTR
     #PetscSNESType SNESPYTHON
@@ -209,7 +209,7 @@ cdef extern from * nogil:
     int SNESNASMGetNumber(PetscSNES,PetscInt*)
 
     int SNESPatchSetCellNumbering(PetscSNES, PetscSection)
-    int SNESPatchSetDiscretisationInfo(PetscSNES, PetscInt, PetscDM*, PetscInt*, PetscInt*, const_PetscInt**, const_PetscInt*, PetscInt, const_PetscInt*, PetscInt, const_PetscInt*)
+    int SNESPatchSetDiscretisationInfo(PetscSNES, PetscInt, PetscDM*, PetscInt*, PetscInt*, const PetscInt**, const PetscInt*, PetscInt, const PetscInt*, PetscInt, const PetscInt*)
     int SNESPatchSetComputeOperator(PetscSNES, PetscPCPatchComputeOperator, void*)
     int SNESPatchSetComputeFunction(PetscSNES, PetscPCPatchComputeFunction, void*)
     int SNESPatchSetConstructType(PetscSNES, PetscPCPatchConstructType, PetscPCPatchConstructOperator, void*)
@@ -224,6 +224,27 @@ cdef extern from "custom.h" nogil:
     int SNESConvergenceTestCall(PetscSNES,PetscInt,
                                 PetscReal,PetscReal,PetscReal,
                                 PetscSNESConvergedReason*)
+
+    ctypedef const char* PetscSNESLineSearchType "SNESLineSearchType"
+    PetscSNESLineSearchType SNESLINESEARCHBT
+    PetscSNESLineSearchType SNESLINESEARCHNLEQERR
+    PetscSNESLineSearchType SNESLINESEARCHBASIC
+    PetscSNESLineSearchType SNESLINESEARCHL2
+    PetscSNESLineSearchType SNESLINESEARCHCP
+    PetscSNESLineSearchType SNESLINESEARCHSHELL
+    PetscSNESLineSearchType SNESLINESEARCHNCGLINEAR
+
+    int SNESGetLineSearch(PetscSNES,PetscSNESLineSearch*)
+    int SNESLineSearchSetFromOptions(PetscSNESLineSearch)
+    int SNESLineSearchApply(PetscSNESLineSearch,PetscVec,PetscVec,PetscReal*,PetscVec)
+    int SNESLineSearchDestroy(PetscSNESLineSearch*)
+
+    ctypedef int (*PetscSNESPreCheckFunction)(PetscSNESLineSearch,
+                                              PetscVec,PetscVec,
+                                              PetscBool*,
+                                              void*) except PETSC_ERR_PYTHON
+    int SNESLineSearchSetPreCheck(PetscSNESLineSearch,PetscSNESPreCheckFunction,void*)
+    int SNESLineSearchGetSNES(PetscSNESLineSearch,PetscSNES*)
 
 cdef extern from "libpetsc4py.h":
     PetscSNESType SNESPYTHON

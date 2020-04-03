@@ -1,6 +1,6 @@
 cdef extern from * nogil:
 
-    ctypedef char* PetscPCType "const char*"
+    ctypedef const char* PetscPCType "PCType"
     PetscPCType PCNONE
     PetscPCType PCJACOBI
     PetscPCType PCSOR
@@ -78,12 +78,12 @@ cdef extern from * nogil:
         PC_MG_CYCLE_V
         PC_MG_CYCLE_W
 
-    ctypedef char* PetscPCGAMGType "const char*"
+    ctypedef const char* PetscPCGAMGType "PCGAMGType"
     PetscPCGAMGType PCGAMGAGG
     PetscPCGAMGType PCGAMGGEO
     PetscPCGAMGType PCGAMGCLASSICAL
 
-    ctypedef char* PetscPCHYPREType "const char*"
+    ctypedef const char* PetscPCHYPREType "const char*"
 
     ctypedef enum PetscPCCompositeType "PCCompositeType":
         PC_COMPOSITE_ADDITIVE
@@ -254,8 +254,8 @@ cdef extern from * nogil:
                                                 PetscMat,
                                                 PetscIS,
                                                 PetscInt,
-                                                const_PetscInt*,
-                                                const_PetscInt*,
+                                                const PetscInt*,
+                                                const PetscInt*,
                                                 void*) except PETSC_ERR_PYTHON
     ctypedef int (*PetscPCPatchComputeFunction)(PetscPC,
                                                 PetscInt,
@@ -263,8 +263,8 @@ cdef extern from * nogil:
                                                 PetscVec,
                                                 PetscIS,
                                                 PetscInt,
-                                                const_PetscInt*,
-                                                const_PetscInt*,
+                                                const PetscInt*,
+                                                const PetscInt*,
                                                 void*) except PETSC_ERR_PYTHON
     ctypedef int (*PetscPCPatchConstructOperator)(PetscPC,
                                                   PetscInt*,
@@ -272,7 +272,7 @@ cdef extern from * nogil:
                                                   PetscIS*,
                                                   void*) except PETSC_ERR_PYTHON
     int PCPatchSetCellNumbering(PetscPC, PetscSection)
-    int PCPatchSetDiscretisationInfo(PetscPC, PetscInt, PetscDM*, PetscInt*, PetscInt*, const_PetscInt**, const_PetscInt*, PetscInt, const_PetscInt*, PetscInt, const_PetscInt*)
+    int PCPatchSetDiscretisationInfo(PetscPC, PetscInt, PetscDM*, PetscInt*, PetscInt*, const PetscInt**, const PetscInt*, PetscInt, const PetscInt*, PetscInt, const PetscInt*)
     int PCPatchSetComputeOperator(PetscPC, PetscPCPatchComputeOperator, void*)
     int PCPatchSetComputeOperatorInteriorFacets(PetscPC, PetscPCPatchComputeOperator, void*)
     int PCPatchSetComputeFunction(PetscPC, PetscPCPatchComputeFunction, void*)
@@ -302,8 +302,8 @@ cdef int PCPatch_ComputeOperator(
     PetscMat mat,
     PetscIS cells,
     PetscInt ndof,
-    const_PetscInt *dofmap,
-    const_PetscInt *dofmapWithAll,
+    const PetscInt *dofmap,
+    const PetscInt *dofmapWithAll,
     void *ctx) except PETSC_ERR_PYTHON with gil:
     cdef Vec Vec = ref_Vec(vec)
     cdef Mat Mat = ref_Mat(mat)
@@ -330,8 +330,8 @@ cdef int PCPatch_ComputeFunction(
     PetscVec out,
     PetscIS cells,
     PetscInt ndof,
-    const_PetscInt *dofmap,
-    const_PetscInt *dofmapWithAll,
+    const PetscInt *dofmap,
+    const PetscInt *dofmapWithAll,
     void *ctx) except PETSC_ERR_PYTHON with gil:
     cdef Vec Out = ref_Vec(out)
     cdef Vec Vec = ref_Vec(vec)
@@ -353,8 +353,8 @@ cdef int PCPatch_ComputeOperatorInteriorFacets(
     PetscMat mat,
     PetscIS facets,
     PetscInt ndof,
-    const_PetscInt *dofmap,
-    const_PetscInt *dofmapWithAll,
+    const PetscInt *dofmap,
+    const PetscInt *dofmapWithAll,
     void *ctx) except PETSC_ERR_PYTHON with gil:
     cdef Vec Vec = ref_Vec(vec)
     cdef Mat Mat = ref_Mat(mat)
@@ -381,8 +381,8 @@ cdef int PCPatch_ComputeFunctionInteriorFacets(
     PetscVec out,
     PetscIS facets,
     PetscInt ndof,
-    const_PetscInt *dofmap,
-    const_PetscInt *dofmapWithAll,
+    const PetscInt *dofmap,
+    const PetscInt *dofmapWithAll,
     void *ctx) except PETSC_ERR_PYTHON with gil:
     cdef Vec Out = ref_Vec(out)
     cdef Vec Vec = ref_Vec(vec)

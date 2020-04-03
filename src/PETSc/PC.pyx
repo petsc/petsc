@@ -173,12 +173,12 @@ cdef class PC(Object):
         return bytes2str(cval)
 
     def setOptionsPrefix(self, prefix):
-        cdef const_char *cval = NULL
+        cdef const char *cval = NULL
         prefix = str2bytes(prefix, &cval)
         CHKERR( PCSetOptionsPrefix(self.pc, cval) )
 
     def getOptionsPrefix(self):
-        cdef const_char *cval = NULL
+        cdef const char *cval = NULL
         CHKERR( PCGetOptionsPrefix(self.pc, &cval) )
         return bytes2str(cval)
 
@@ -277,7 +277,7 @@ cdef class PC(Object):
         else: return <object> context
 
     def setPythonType(self, py_type):
-        cdef const_char *cval = NULL
+        cdef const char *cval = NULL
         py_type = str2bytes(py_type, &cval)
         CHKERR( PCPythonSetType(self.pc, cval) )
 
@@ -430,7 +430,7 @@ cdef class PC(Object):
     def setFieldSplitIS(self, *fields):
         cdef object name = None
         cdef IS field = None
-        cdef const_char *cname = NULL
+        cdef const char *cname = NULL
         for name, field in fields:
             name = str2bytes(name, &cname)
             CHKERR( PCFieldSplitSetIS(self.pc, cname, field.iset) )
@@ -440,7 +440,7 @@ cdef class PC(Object):
         CHKERR( PCFieldSplitSetBlockSize(self.pc, bs) )
         cdef object name = None
         cdef object field = None
-        cdef const_char *cname = NULL
+        cdef const char *cname = NULL
         cdef PetscInt nfields = 0, *ifields = NULL
         for name, field in fields:
             name = str2bytes(name, &cname)
@@ -683,7 +683,7 @@ cdef class PC(Object):
         cdef PetscInt numSubSpaces = 0
         cdef PetscInt numGhostBcs = 0, numGlobalBcs = 0
         cdef PetscInt *nodesPerCell = NULL
-        cdef const_PetscInt **ccellNodeMaps = NULL
+        cdef const PetscInt **ccellNodeMaps = NULL
         cdef PetscDM *cdms = NULL
         cdef PetscInt *cbs = NULL
         cdef PetscInt *csubspaceOffsets = NULL

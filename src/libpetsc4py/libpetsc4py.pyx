@@ -256,16 +256,14 @@ cdef inline TS TS_(PetscTS p):
 
 # --------------------------------------------------------------------
 
-cdef extern from *:
-    ctypedef char const_char "const char"
-
-cdef inline object bytes2str(const_char p[]):
-    if p == NULL: return None
-    cdef bytes s = <char*>p
-    if not isinstance(s, str):
-        return s.decode()
-    else:
-        return s
+cdef inline object bytes2str(const char p[]):
+     if p == NULL:
+         return None
+     cdef bytes s = <char*>p
+     if isinstance(s, str):
+         return s
+     else:
+         return s.decode()
 
 cdef object parse_url(object url):
     path, name = url.rsplit(":", 1)
@@ -2533,7 +2531,7 @@ cdef PetscErrorCode TSStep_Python_default(
 
 cdef PetscErrorCode PetscPythonMonitorSet_Python(
     PetscObject obj_p,
-    const_char *url_p,
+    const char *url_p,
     ) \
     except IERR with gil:
     FunctionBegin(b"PetscPythonMonitorSet_Python")
@@ -2565,11 +2563,11 @@ cdef PetscErrorCode PetscPythonMonitorSet_Python(
 
 cdef extern from * nogil:
 
-  char* MATPYTHON  '"python"'
-  char* KSPPYTHON  '"python"'
-  char* PCPYTHON   '"python"'
-  char* SNESPYTHON '"python"'
-  char* TSPYTHON   '"python"'
+  const char* MATPYTHON  '"python"'
+  const char* KSPPYTHON  '"python"'
+  const char* PCPYTHON   '"python"'
+  const char* SNESPYTHON '"python"'
+  const char* TSPYTHON   '"python"'
 
   ctypedef PetscErrorCode MatCreateFunction  (PetscMat)  except IERR
   ctypedef PetscErrorCode PCCreateFunction   (PetscPC)   except IERR
@@ -2577,14 +2575,14 @@ cdef extern from * nogil:
   ctypedef PetscErrorCode SNESCreateFunction (PetscSNES) except IERR
   ctypedef PetscErrorCode TSCreateFunction   (PetscTS)   except IERR
 
-  PetscErrorCode MatRegister  (char[],MatCreateFunction* )
-  PetscErrorCode PCRegister   (char[],PCCreateFunction*  )
-  PetscErrorCode KSPRegister  (char[],KSPCreateFunction* )
-  PetscErrorCode SNESRegister (char[],SNESCreateFunction*)
-  PetscErrorCode TSRegister   (char[],TSCreateFunction*  )
+  PetscErrorCode MatRegister  (const char[],MatCreateFunction* )
+  PetscErrorCode PCRegister   (const char[],PCCreateFunction*  )
+  PetscErrorCode KSPRegister  (const char[],KSPCreateFunction* )
+  PetscErrorCode SNESRegister (const char[],SNESCreateFunction*)
+  PetscErrorCode TSRegister   (const char[],TSCreateFunction*  )
 
   PetscErrorCode (*PetscPythonMonitorSet_C) \
-      (PetscObject, const_char[]) except IERR
+      (PetscObject, const char[]) except IERR
 
 
 cdef public PetscErrorCode PetscPythonRegisterAll() except IERR:

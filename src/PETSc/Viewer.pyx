@@ -115,7 +115,7 @@ cdef class Viewer(Object):
 
     def createASCII(self, name, mode=None, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        cdef const_char *cname = NULL
+        cdef const char *cname = NULL
         name = str2bytes(name, &cname)
         cdef PetscFileMode cmode = PETSC_FILE_MODE_WRITE
         if mode is not None: filemode(mode)
@@ -129,7 +129,7 @@ cdef class Viewer(Object):
 
     def createBinary(self, name, mode=None, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        cdef const_char *cname = NULL
+        cdef const char *cname = NULL
         name = str2bytes(name, &cname)
         cdef PetscFileMode cmode = filemode(mode)
         cdef PetscViewer newvwr = NULL
@@ -139,7 +139,7 @@ cdef class Viewer(Object):
 
     def createMPIIO(self, name, mode=None, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        cdef const_char *cname = NULL
+        cdef const char *cname = NULL
         name = str2bytes(name, &cname)
         cdef PetscFileMode cmode = filemode(mode)
         cdef PetscViewer newvwr = NULL
@@ -153,7 +153,7 @@ cdef class Viewer(Object):
 
     def createVTK(self, name, mode=None, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        cdef const_char *cname = NULL
+        cdef const char *cname = NULL
         name = str2bytes(name, &cname)
         cdef PetscFileMode cmode = filemode(mode)
         cdef PetscViewer newvwr = NULL
@@ -166,7 +166,7 @@ cdef class Viewer(Object):
 
     def createHDF5(self, name, mode=None, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        cdef const_char *cname = NULL
+        cdef const char *cname = NULL
         name = str2bytes(name, &cname)
         cdef PetscFileMode cmode = filemode(mode)
         cdef PetscViewer newvwr = NULL
@@ -180,8 +180,8 @@ cdef class Viewer(Object):
     def createDraw(self, display=None, title=None,
                    position=None, size=None, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        cdef const_char *cdisplay = NULL
-        cdef const_char *ctitle = NULL
+        cdef const char *cdisplay = NULL
+        cdef const char *ctitle = NULL
         display = str2bytes(display, &cdisplay)
         title = str2bytes(title, &ctitle)
         cdef int x, y, h, w
@@ -239,7 +239,7 @@ cdef class Viewer(Object):
     @classmethod
     def ASCII(cls, name, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        cdef const_char *cname = NULL
+        cdef const char *cname = NULL
         name = str2bytes(name, &cname)
         cdef Viewer viewer = Viewer()
         CHKERR( PetscViewerASCIIOpen(ccomm, cname, &viewer.vwr) )
@@ -297,12 +297,12 @@ cdef class Viewer(Object):
         CHKERR( PetscViewerASCIIUseTabs(self.vwr, flg) )
 
     def printfASCII(self, msg):
-        cdef const_char *cmsg = NULL
+        cdef const char *cmsg = NULL
         msg = str2bytes(msg, &cmsg)
         CHKERR( PetscViewerASCIIPrintf(self.vwr, cmsg) )
 
     def printfASCIISynchronized(self, msg):
-        cdef const_char *cmsg = NULL
+        cdef const char *cmsg = NULL
         msg = str2bytes(msg, &cmsg)
         CHKERR( PetscViewerASCIISynchronizedPrintf(self.vwr, cmsg) )
 
@@ -320,20 +320,20 @@ cdef class Viewer(Object):
         return mode
 
     def setFileName(self, name):
-        cdef const_char *cval = NULL
+        cdef const char *cval = NULL
         name = str2bytes(name, &cval)
         CHKERR( PetscViewerFileSetName(self.vwr, cval) )
 
     def getFileName(self):
-        cdef const_char *cval = NULL
+        cdef const char *cval = NULL
         CHKERR( PetscViewerFileGetName(self.vwr, &cval) )
         return bytes2str(cval)
 
     # --- methods specific to draw viewers ---
 
     def setDrawInfo(self,  display=None, title=None, position=None, size=None):
-        cdef const_char *cdisplay = NULL
-        cdef const_char *ctitle = NULL
+        cdef const char *cdisplay = NULL
+        cdef const char *ctitle = NULL
         display = str2bytes(display, &cdisplay)
         title = str2bytes(title, &ctitle)
         cdef int x, y, h, w
@@ -358,7 +358,7 @@ cdef class ViewerHDF5(Viewer):
 
     def create(self, name, mode=None, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        cdef const_char *cname = NULL
+        cdef const char *cname = NULL
         name = str2bytes(name, &cname)
         cdef PetscFileMode cmode = filemode(mode)
         cdef PetscViewer newvwr = NULL
@@ -381,7 +381,7 @@ cdef class ViewerHDF5(Viewer):
         CHKERR( PetscViewerHDF5IncrementTimestep(self.vwr) )
 
     def pushGroup(self, group):
-        cdef const_char *cgroup = NULL
+        cdef const char *cgroup = NULL
         group = str2bytes(group, &cgroup)
         CHKERR( PetscViewerHDF5PushGroup(self.vwr, cgroup) )
 
@@ -389,7 +389,7 @@ cdef class ViewerHDF5(Viewer):
         CHKERR( PetscViewerHDF5PopGroup(self.vwr) )
 
     def getGroup(self):
-        cdef const_char *cgroup = NULL
+        cdef const char *cgroup = NULL
         CHKERR( PetscViewerHDF5GetGroup(self.vwr, &cgroup) )
         return bytes2str(cgroup)
 

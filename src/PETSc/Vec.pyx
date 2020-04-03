@@ -292,12 +292,12 @@ cdef class Vec(Object):
     #
 
     def setOptionsPrefix(self, prefix):
-        cdef const_char *cval = NULL
+        cdef const char *cval = NULL
         prefix = str2bytes(prefix, &cval)
         CHKERR( VecSetOptionsPrefix(self.vec, cval) )
 
     def getOptionsPrefix(self):
-        cdef const_char *cval = NULL
+        cdef const char *cval = NULL
         CHKERR( VecGetOptionsPrefix(self.vec, &cval) )
         return bytes2str(cval)
 
@@ -347,7 +347,7 @@ cdef class Vec(Object):
         return (toInt(low), toInt(high))
 
     def getOwnershipRanges(self):
-        cdef const_PetscInt *rng = NULL
+        cdef const PetscInt *rng = NULL
         CHKERR( VecGetOwnershipRanges(self.vec, &rng) )
         cdef MPI_Comm comm = MPI_COMM_NULL
         CHKERR( PetscObjectGetComm(<PetscObject>self.vec, &comm) )
@@ -392,12 +392,12 @@ cdef class Vec(Object):
 
     def getCUDAHandle(self, mode='rw'):
         cdef PetscScalar *hdl = NULL
-        cdef const_char *m = NULL
+        cdef const char *m = NULL
         if mode is not None: mode = str2bytes(mode, &m)
         if m == NULL or (m[0] == c'r' and m[1] == c'w'):
             CHKERR( VecCUDAGetArray(self.vec, &hdl) )
         elif m[0] == c'r':
-            CHKERR( VecCUDAGetArrayRead(self.vec, <const_PetscScalar**>&hdl) )
+            CHKERR( VecCUDAGetArrayRead(self.vec, <const PetscScalar**>&hdl) )
         elif m[0] == c'w':
             CHKERR( VecCUDAGetArrayWrite(self.vec, &hdl) )
         else:
@@ -406,12 +406,12 @@ cdef class Vec(Object):
 
     def restoreCUDAHandle(self, handle, mode='rw'):
         cdef PetscScalar *hdl = <PetscScalar*>(<Py_uintptr_t>handle)
-        cdef const_char *m = NULL
+        cdef const char *m = NULL
         if mode is not None: mode = str2bytes(mode, &m)
         if m == NULL or (m[0] == c'r' and m[1] == c'w'):
             CHKERR( VecCUDARestoreArray(self.vec, &hdl) )
         elif m[0] == c'r':
-            CHKERR( VecCUDARestoreArrayRead(self.vec, <const_PetscScalar**>&hdl) )
+            CHKERR( VecCUDARestoreArrayRead(self.vec, <const PetscScalar**>&hdl) )
         elif m[0] == c'w':
             CHKERR( VecCUDARestoreArrayWrite(self.vec, &hdl) )
         else:

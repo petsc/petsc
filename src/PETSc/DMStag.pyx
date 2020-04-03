@@ -205,7 +205,7 @@ cdef class DMStag(DM):
 
     def getOwnershipRanges(self):
         cdef PetscInt dim=0, m=0, n=0, p=0
-        cdef const_PetscInt *lx = NULL, *ly = NULL, *lz = NULL
+        cdef const PetscInt *lx = NULL, *ly = NULL, *lz = NULL
         CHKERR( DMGetDimension(self.dm, &dim) )
         CHKERR( DMStagGetNumRanks(self.dm, &m, &n, &p) )
         CHKERR( DMStagGetOwnershipRanges(self.dm, &lx, &ly, &lz) )
@@ -255,7 +255,7 @@ cdef class DMStag(DM):
         CHKERR( DMStagSetUniformCoordinates(self.dm, _xmin, _xmax, _ymin, _ymax, _zmin, _zmax) )        
 
     def setCoordinateDMType(self, dmtype):
-        cdef const_char *cval = NULL
+        cdef PetscDMType cval = NULL
         dmtype = str2bytes(dmtype, &cval)
         CHKERR( DMStagSetCoordinateDMType(self.dm, cval) )
 

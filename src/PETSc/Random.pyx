@@ -36,7 +36,7 @@ cdef class Random(Object):
         return self
 
     def setType(self, rnd_type):
-        cdef const_char *cval = NULL
+        cdef PetscRandomType cval = NULL
         rnd_type = str2bytes(rnd_type, &cval)
         CHKERR( PetscRandomSetType(self.rnd, cval) )
 

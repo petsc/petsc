@@ -2,7 +2,7 @@
 
 cdef extern from * nogil:
   
-    ctypedef char* PetscFEType "const char*"
+    ctypedef const char* PetscFEType
     PetscFEType PETSCFEBASIC
     PetscFEType PETSCFEOPENCL
     PetscFEType PETSCFECOMPOSITE

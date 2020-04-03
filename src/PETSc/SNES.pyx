@@ -103,12 +103,12 @@ cdef class SNES(Object):
         return bytes2str(cval)
 
     def setOptionsPrefix(self, prefix):
-        cdef const_char *cval = NULL
+        cdef const char *cval = NULL
         prefix = str2bytes(prefix, &cval)
         CHKERR( SNESSetOptionsPrefix(self.snes, cval) )
 
     def getOptionsPrefix(self):
-        cdef const_char *cval = NULL
+        cdef const char *cval = NULL
         CHKERR( SNESGetOptionsPrefix(self.snes, &cval) )
         return bytes2str(cval)
 
@@ -734,7 +734,7 @@ cdef class SNES(Object):
         else: return <object> context
 
     def setPythonType(self, py_type):
-        cdef const_char *cval = NULL
+        cdef const char *cval = NULL
         py_type = str2bytes(py_type, &cval)
         CHKERR( SNESPythonSetType(self.snes, cval) )
 
@@ -780,7 +780,7 @@ cdef class SNES(Object):
         cdef PetscInt numSubSpaces = 0
         cdef PetscInt numGhostBcs = 0, numGlobalBcs = 0
         cdef PetscInt *nodesPerCell = NULL
-        cdef const_PetscInt **ccellNodeMaps = NULL
+        cdef const PetscInt **ccellNodeMaps = NULL
         cdef PetscDM *cdms = NULL
         cdef PetscInt *cbs = NULL
         cdef PetscInt *csubspaceOffsets = NULL

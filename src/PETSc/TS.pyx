@@ -188,12 +188,12 @@ cdef class TS(Object):
         return eqtype
 
     def setOptionsPrefix(self, prefix):
-        cdef const_char *cval = NULL
+        cdef const char *cval = NULL
         prefix = str2bytes(prefix, &cval)
         CHKERR( TSSetOptionsPrefix(self.ts, cval) )
 
     def getOptionsPrefix(self):
-        cdef const_char *cval = NULL
+        cdef const char *cval = NULL
         CHKERR( TSGetOptionsPrefix(self.ts, &cval) )
         return bytes2str(cval)
 
@@ -789,7 +789,7 @@ cdef class TS(Object):
         else: return <object> context
 
     def setPythonType(self, py_type):
-        cdef const_char *cval = NULL
+        cdef const char *cval = NULL
         py_type = str2bytes(py_type, &cval)
         CHKERR( TSPythonSetType(self.ts, cval) )
 

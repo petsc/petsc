@@ -32,7 +32,7 @@ cdef class DS(Object):
         return self
 
     def setType(self, ds_type):
-        cdef const_char *cval = NULL
+        cdef PetscDSType cval = NULL
         ds_type = str2bytes(ds_type, &cval)
         CHKERR( PetscDSSetType(self.ds, cval) )
 

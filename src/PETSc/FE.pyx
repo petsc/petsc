@@ -33,7 +33,7 @@ cdef class FE(Object):
         cdef PetscInt cnc = asInt(nc)
         cdef PetscInt cqorder = asInt(qorder)
         cdef PetscBool cisSimplex = asBool(isSimplex)
-        cdef const_char *cprefix = NULL
+        cdef const char *cprefix = NULL
         if prefix:
              prefix = str2bytes(prefix, &cprefix)
         CHKERR( PetscFECreateDefault(ccomm, cdim, cnc, cisSimplex, cprefix, cqorder, &newfe))
@@ -58,8 +58,10 @@ cdef class FE(Object):
         CHKERR( PetscFESetFaceQuadrature(self.fe, quad.quad) )
         return self
 
-    def setType(self, typeFE):
-        CHKERR( PetscFESetType(self.fe, typeFE) )
+    def setType(self, fe_type):
+        cdef PetscFEType cval = NULL
+        fe_type = str2bytes(fe_type, &cval)
+        CHKERR( PetscFESetType(self.fe, cval) )
         return self
 
 # --------------------------------------------------------------------

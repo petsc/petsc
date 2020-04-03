@@ -330,7 +330,7 @@ cdef int DMSHELL_CreateFieldDecomposition(
     PetscDM **dmlist) except PETSC_ERR_PYTHON with gil:
     cdef DM Dm = subtype_DM(dm)()
     cdef int i
-    cdef const_char *cname = NULL
+    cdef const char *cname = NULL
     Dm.dm = dm
     PetscINCREF(Dm.obj)
     context = Dm.get_attr('__create_field_decomp__')
@@ -376,7 +376,7 @@ cdef int DMSHELL_CreateDomainDecomposition(
     PetscDM **dmlist) except PETSC_ERR_PYTHON with gil:
     cdef DM Dm = subtype_DM(dm)()
     cdef int i
-    cdef const_char *cname = NULL
+    cdef const char *cname = NULL
     Dm.dm = dm
     PetscINCREF(Dm.obj)
     context = Dm.get_attr('__create_domain_decomp__')
@@ -431,7 +431,7 @@ cdef int DMSHELL_CreateDomainDecompositionScatters(
 
     cdef DM Dm = subtype_DM(dm)()
     cdef int i
-    cdef const_char *cname = NULL
+    cdef const char *cname = NULL
     cdef DM subdm = None
 
     Dm.dm = dm
@@ -472,7 +472,7 @@ cdef int DMSHELL_CreateDomainDecompositionScatters(
 cdef int DMSHELL_CreateSubDM(
     PetscDM cdm,
     PetscInt numFields,
-    const_PetscInt cfields[],
+    const PetscInt cfields[],
     PetscIS *ciset,
     PetscDM *csubdm) except PETSC_ERR_PYTHON with gil:
     cdef DM dm = subtype_DM(cdm)()

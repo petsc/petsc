@@ -36,7 +36,7 @@ cdef class Partitioner(Object):
         return self
 
     def setType(self, part_type):
-        cdef const_char *cval = NULL
+        cdef PetscPartitionerType cval = NULL
         part_type = str2bytes(part_type, &cval)
         CHKERR( PetscPartitionerSetType(self.part, cval) )
 

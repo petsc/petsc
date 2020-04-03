@@ -48,13 +48,13 @@ cdef class Section(Object):
 
     def getFieldName(self,field):
         cdef PetscInt cfield = asInt(field)
-        cdef const_char *fieldName = NULL
+        cdef const char *fieldName = NULL
         CHKERR( PetscSectionGetFieldName(self.sec,cfield,&fieldName) )
         return bytes2str(fieldName)
 
     def setFieldName(self,field,fieldName):
         cdef PetscInt cfield = asInt(field)
-        cdef const_char *cname = NULL
+        cdef const char *cname = NULL
         fieldName = str2bytes(fieldName, &cname)
         CHKERR( PetscSectionSetFieldName(self.sec,cfield,cname) )
 
@@ -147,7 +147,7 @@ cdef class Section(Object):
     def getConstraintIndices(self,point):
         cdef PetscInt cpoint = asInt(point)
         cdef PetscInt nindex = 0
-        cdef const_PetscInt *indices = NULL
+        cdef const PetscInt *indices = NULL
         CHKERR( PetscSectionGetConstraintDof(self.sec, cpoint, &nindex) )
         CHKERR( PetscSectionGetConstraintIndices(self.sec, cpoint, &indices) )
         return array_i(nindex, indices)
@@ -164,7 +164,7 @@ cdef class Section(Object):
         cdef PetscInt cpoint = asInt(point)
         cdef PetscInt cfield = asInt(field)
         cdef PetscInt nindex = 0
-        cdef const_PetscInt *indices = NULL
+        cdef const PetscInt *indices = NULL
         CHKERR( PetscSectionGetFieldConstraintDof(self.sec,cpoint,cfield,&nindex) )
         CHKERR( PetscSectionGetFieldConstraintIndices(self.sec,cpoint,cfield,&indices) )
         return array_i(nindex, indices)

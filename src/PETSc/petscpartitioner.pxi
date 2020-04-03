@@ -1,6 +1,6 @@
 cdef extern from * nogil:
 
-    ctypedef char* PetscPartitionerType "const char*"
+    ctypedef const char* PetscPartitionerType
     PetscPartitionerType PETSCPARTITIONERCHACO
     PetscPartitionerType PETSCPARTITIONERPARMETIS
     PetscPartitionerType PETSCPARTITIONERPTSCOTCH

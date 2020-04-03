@@ -60,7 +60,7 @@ cdef class Options:
 
     def prefixPush(self, prefix):
         prefix = getprefix(prefix)
-        cdef const_char *cprefix = NULL
+        cdef const char *cprefix = NULL
         prefix = str2bytes(prefix, &cprefix)
         CHKERR( PetscOptionsPrefixPush(self.opt, cprefix) )
 
@@ -69,16 +69,16 @@ cdef class Options:
     #
 
     def hasName(self, name):
-        cdef const_char *pr = NULL
-        cdef const_char *nm = NULL
+        cdef const char *pr = NULL
+        cdef const char *nm = NULL
         tmp = getpair(self.prefix, name, &pr, &nm)
         cdef PetscBool flag = PETSC_FALSE
         CHKERR( PetscOptionsHasName(self.opt, pr, nm, &flag) )
         return toBool(flag)
 
     def setValue(self, name, value):
-        cdef const_char *pr = NULL
-        cdef const_char *nm = NULL
+        cdef const char *pr = NULL
+        cdef const char *nm = NULL
         tmp = getpair(self.prefix, name, &pr, &nm)
         if pr == NULL: 
             option = bytes2str(nm)
@@ -88,21 +88,21 @@ cdef class Options:
             value = str(value).lower()
         elif value is not None : 
             value = str(value)
-        cdef const_char *key = NULL
-        cdef const_char *val = NULL
+        cdef const char *key = NULL
+        cdef const char *val = NULL
         option = str2bytes(option, &key)
         value  = str2bytes(value,  &val)
         CHKERR( PetscOptionsSetValue(self.opt, key, val) )
 
     def delValue(self, name):
-        cdef const_char *pr = NULL
-        cdef const_char *nm = NULL
+        cdef const char *pr = NULL
+        cdef const char *nm = NULL
         tmp = getpair(self.prefix, name, &pr, &nm)
         if pr == NULL: 
             option = bytes2str(nm)
         else: 
             option = '-%s%s' % (bytes2str(pr), bytes2str(&nm[1]))
-        cdef const_char *key = NULL
+        cdef const char *key = NULL
         option = str2bytes(option, &key)
         CHKERR( PetscOptionsClearValue(self.opt, key) )
 
@@ -126,7 +126,7 @@ cdef class Options:
     #
 
     def insertString(self, string):
-        cdef const_char *cstring = NULL
+        cdef const char *cstring = NULL
         string = str2bytes(string, &cstring)
         CHKERR( PetscOptionsInsertString(self.opt, cstring) )
 

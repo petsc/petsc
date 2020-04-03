@@ -59,7 +59,7 @@ cdef class DM(Object):
         return dm
 
     def setType(self, dm_type):
-        cdef const_char *cval = NULL
+        cdef PetscDMType cval = NULL
         dm_type = str2bytes(dm_type, &cval)
         CHKERR( DMSetType(self.dm, cval) )
 
@@ -87,7 +87,7 @@ cdef class DM(Object):
         CHKERR( DMSetCoordinateDim(self.dm, cdim) )
 
     def setOptionsPrefix(self, prefix):
-        cdef const_char *cval = NULL
+        cdef const char *cval = NULL
         prefix = str2bytes(prefix, &cval)
         CHKERR( DMSetOptionsPrefix(self.dm, cval) )
 
@@ -332,7 +332,7 @@ cdef class DM(Object):
         return mat
 
     def convert(self, dm_type):
-        cdef const_char *cval = NULL
+        cdef PetscDMType cval = NULL
         dm_type = str2bytes(dm_type, &cval)
         cdef PetscDM newdm = NULL
         CHKERR( DMConvert(self.dm, cval, &newdm) )
@@ -403,7 +403,7 @@ cdef class DM(Object):
     #
 
     def adaptLabel(self, label):
-        cdef const_char *cval = NULL
+        cdef const char *cval = NULL
         cdef PetscDMLabel clbl = NULL
         label = str2bytes(label, &cval)
         CHKERR( DMGetLabel(self.dm, cval, &clbl) )
@@ -412,7 +412,7 @@ cdef class DM(Object):
         return newdm
 
     def adaptMetric(self, Vec metric, label=None):
-        cdef const_char *cval = NULL
+        cdef const char *cval = NULL
         cdef PetscDMLabel clbl = NULL
         label = str2bytes(label, &cval)
         if cval == NULL: cval = b"" # XXX Should be fixed upstream
@@ -422,7 +422,7 @@ cdef class DM(Object):
         return newdm
 
     def getLabel(self, name):
-        cdef const_char *cname = NULL
+        cdef const char *cname = NULL
         cdef DMLabel dmlabel = DMLabel()
         name = str2bytes(name, &cname)
         CHKERR( DMGetLabel(self.dm, cname, &dmlabel.dmlabel) )
@@ -486,24 +486,24 @@ cdef class DM(Object):
 
     def getLabelName(self, index):
         cdef PetscInt cindex = asInt(index)
-        cdef const_char *cname = NULL
+        cdef const char *cname = NULL
         CHKERR( DMGetLabelName(self.dm, cindex, &cname) )
         return bytes2str(cname)
 
     def hasLabel(self, name):
         cdef PetscBool flag = PETSC_FALSE
-        cdef const_char *cname = NULL
+        cdef const char *cname = NULL
         name = str2bytes(name, &cname)
         CHKERR( DMHasLabel(self.dm, cname, &flag) )
         return toBool(flag)
 
     def createLabel(self, name):
-        cdef const_char *cname = NULL
+        cdef const char *cname = NULL
         name = str2bytes(name, &cname)
         CHKERR( DMCreateLabel(self.dm, cname) )
 
     def removeLabel(self, name):
-        cdef const_char *cname = NULL
+        cdef const char *cname = NULL
         cdef PetscDMLabel clbl = NULL
         name = str2bytes(name, &cname)
         CHKERR( DMRemoveLabel(self.dm, cname, &clbl) )
@@ -512,32 +512,32 @@ cdef class DM(Object):
 
     def getLabelValue(self, name, point):
         cdef PetscInt cpoint = asInt(point), value = 0
-        cdef const_char *cname = NULL
+        cdef const char *cname = NULL
         name = str2bytes(name, &cname)
         CHKERR( DMGetLabelValue(self.dm, cname, cpoint, &value) )
         return toInt(value)
 
     def setLabelValue(self, name, point, value):
         cdef PetscInt cpoint = asInt(point), cvalue = asInt(value)
-        cdef const_char *cname = NULL
+        cdef const char *cname = NULL
         name = str2bytes(name, &cname)
         CHKERR( DMSetLabelValue(self.dm, cname, cpoint, cvalue) )
 
     def clearLabelValue(self, name, point, value):
         cdef PetscInt cpoint = asInt(point), cvalue = asInt(value)
-        cdef const_char *cname = NULL
+        cdef const char *cname = NULL
         name = str2bytes(name, &cname)
         CHKERR( DMClearLabelValue(self.dm, cname, cpoint, cvalue) )
 
     def getLabelSize(self, name):
         cdef PetscInt size = 0
-        cdef const_char *cname = NULL
+        cdef const char *cname = NULL
         name = str2bytes(name, &cname)
         CHKERR( DMGetLabelSize(self.dm, cname, &size) )
         return toInt(size)
 
     def getLabelIdIS(self, name):
-        cdef const_char *cname = NULL
+        cdef const char *cname = NULL
         name = str2bytes(name, &cname)
         cdef IS lis = IS()
         CHKERR( DMGetLabelIdIS(self.dm, cname, &lis.iset) )
@@ -546,14 +546,14 @@ cdef class DM(Object):
     def getStratumSize(self, name, value):
         cdef PetscInt size = 0
         cdef PetscInt cvalue = asInt(value)
-        cdef const_char *cname = NULL
+        cdef const char *cname = NULL
         name = str2bytes(name, &cname)
         CHKERR( DMGetStratumSize(self.dm, cname, cvalue, &size) )
         return toInt(size)
 
     def getStratumIS(self, name, value):
         cdef PetscInt cvalue = asInt(value)
-        cdef const_char *cname = NULL
+        cdef const char *cname = NULL
         name = str2bytes(name, &cname)
         cdef IS sis = IS()
         CHKERR( DMGetStratumIS(self.dm, cname, cvalue, &sis.iset) )
@@ -561,18 +561,18 @@ cdef class DM(Object):
 
     def clearLabelStratum(self, name, value):
         cdef PetscInt cvalue = asInt(value)
-        cdef const_char *cname = NULL
+        cdef const char *cname = NULL
         name = str2bytes(name, &cname)
         CHKERR( DMClearLabelStratum(self.dm, cname, cvalue) )
 
     def setLabelOutput(self, name, output):
-        cdef const_char *cname = NULL
+        cdef const char *cname = NULL
         name = str2bytes(name, &cname)
         cdef PetscBool coutput = output
         CHKERR( DMSetLabelOutput(self.dm, cname, coutput) )
 
     def getLabelOutput(self, name):
-        cdef const_char *cname = NULL
+        cdef const char *cname = NULL
         name = str2bytes(name, &cname)
         cdef PetscBool coutput = PETSC_FALSE
         CHKERR( DMGetLabelOutput(self.dm, cname, &coutput) )

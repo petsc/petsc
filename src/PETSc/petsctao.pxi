@@ -1,6 +1,6 @@
 cdef extern from * nogil:
 
-    ctypedef char* PetscTAOType "const char*"
+    ctypedef const char* PetscTAOType "TaoType"
     PetscTAOType TAOLMVM
     PetscTAOType TAONLS
     PetscTAOType TAONTR

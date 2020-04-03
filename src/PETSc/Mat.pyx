@@ -569,19 +569,19 @@ cdef class Mat(Object):
         else: return <object> context
 
     def setPythonType(self, py_type):
-        cdef const_char *cval = NULL
+        cdef const char *cval = NULL
         py_type = str2bytes(py_type, &cval)
         CHKERR( MatPythonSetType(self.mat, cval) )
 
     #
 
     def setOptionsPrefix(self, prefix):
-        cdef const_char *cval = NULL
+        cdef const char *cval = NULL
         prefix = str2bytes(prefix, &cval)
         CHKERR( MatSetOptionsPrefix(self.mat, cval) )
 
     def getOptionsPrefix(self):
-        cdef const_char *cval = NULL
+        cdef const char *cval = NULL
         CHKERR( MatGetOptionsPrefix(self.mat, &cval) )
         return bytes2str(cval)
 
@@ -633,7 +633,7 @@ cdef class Mat(Object):
         return (toInt(ival1), toInt(ival2))
 
     def getOwnershipRanges(self):
-        cdef const_PetscInt *rowrng = NULL
+        cdef const PetscInt *rowrng = NULL
         CHKERR( MatGetOwnershipRanges(self.mat, &rowrng) )
         cdef MPI_Comm comm = MPI_COMM_NULL
         CHKERR( PetscObjectGetComm(<PetscObject>self.mat, &comm) )
@@ -647,7 +647,7 @@ cdef class Mat(Object):
         return (toInt(ival1), toInt(ival2))
 
     def getOwnershipRangesColumn(self):
-        cdef const_PetscInt *colrng = NULL
+        cdef const PetscInt *colrng = NULL
         CHKERR( MatGetOwnershipRangesColumn(self.mat, &colrng) )
         cdef MPI_Comm comm = MPI_COMM_NULL
         CHKERR( PetscObjectGetComm(<PetscObject>self.mat, &comm) )
@@ -824,8 +824,8 @@ cdef class Mat(Object):
         cdef ndarray aj = oarray_i(empty_i(AI[nrows]), NULL, &AJ)
         cdef PetscScalar *AV = NULL
         cdef ndarray av = oarray_s(empty_s(AI[nrows]), NULL, &AV)
-        cdef const_PetscInt *cols = NULL
-        cdef const_PetscScalar *vals = NULL
+        cdef const PetscInt *cols = NULL
+        cdef const PetscScalar *vals = NULL
         for irow from 0 <= irow < nrows:
             CHKERR( MatGetRow(self.mat, irow+rstart, &ncols, &cols, &vals) )
             CHKERR( PetscMemcpy(AJ+AI[irow], cols, <size_t>ncols*sizeof(PetscInt)) )
@@ -837,8 +837,8 @@ cdef class Mat(Object):
     def getRow(self, row):
         cdef PetscInt irow = asInt(row)
         cdef PetscInt ncols = 0
-        cdef const_PetscInt *icols=NULL
-        cdef const_PetscScalar *svals=NULL
+        cdef const PetscInt *icols=NULL
+        cdef const PetscScalar *svals=NULL
         CHKERR( MatGetRow(self.mat, irow, &ncols, &icols, &svals) )
         cdef object cols = array_i(ncols, icols)
         cdef object vals = array_s(ncols, svals)
@@ -850,8 +850,8 @@ cdef class Mat(Object):
         cdef PetscBool symm=symmetric
         cdef PetscBool bcmp=compressed
         cdef PetscInt n=0
-        cdef const_PetscInt *ia=NULL
-        cdef const_PetscInt *ja=NULL
+        cdef const PetscInt *ia=NULL
+        cdef const PetscInt *ja=NULL
         cdef PetscBool done=PETSC_FALSE
         CHKERR( MatGetRowIJ(self.mat, shift, symm, bcmp, &n, &ia, &ja, &done) )
         cdef object ai=None, aj=None
@@ -864,8 +864,8 @@ cdef class Mat(Object):
         cdef PetscInt shift=0
         cdef PetscBool symm=symmetric, bcmp=compressed
         cdef PetscInt n=0
-        cdef const_PetscInt *ia=NULL
-        cdef const_PetscInt *ja=NULL
+        cdef const PetscInt *ia=NULL
+        cdef const PetscInt *ja=NULL
         cdef PetscBool done=PETSC_FALSE
         CHKERR( MatGetColumnIJ(self.mat, shift, symm, bcmp, &n, &ia, &ja, &done) )
         cdef object ai=None, aj=None
@@ -1133,7 +1133,7 @@ cdef class Mat(Object):
 
     def invertBlockDiagonal(self):
         cdef PetscInt bs = 0, m = 0
-        cdef const_PetscScalar *cibdiag = NULL
+        cdef const PetscScalar *cibdiag = NULL
         CHKERR( MatGetBlockSize(self.mat, &bs) )
         CHKERR( MatGetLocalSize(self.mat, &m, NULL) )
         CHKERR( MatInvertBlockDiagonal(self.mat, &cibdiag) )
@@ -1698,7 +1698,7 @@ cdef class NullSpace(Object):
 
     def getVecs(self):
         cdef PetscInt i = 0, nv = 0
-        cdef const_PetscVec *v = NULL
+        cdef const PetscVec *v = NULL
         CHKERR( MatNullSpaceGetVecs(self.nsp, NULL, &nv, &v) )
         cdef Vec vec = None
         cdef list vectors = []

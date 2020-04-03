@@ -65,6 +65,9 @@ cdef extern from "petsc.h":
     struct _p_SNES
     ctypedef _p_SNES* PetscSNES "SNES"
 
+    struct _p_SNESLineSearch
+    ctypedef _p_SNESLineSearch* PetscSNESLineSearch "SNESLineSearch"
+
     struct _p_TS
     ctypedef _p_TS* PetscTS "TS"
 
@@ -82,9 +85,6 @@ cdef extern from "petsc.h":
 
     struct _p_PetscPartitioner
     ctypedef _p_PetscPartitioner* PetscPartitioner "PetscPartitioner"
-
-    struct _p_SNESLineSearch
-    ctypedef _p_SNESLineSearch* PetscSNESLineSearch "SNESLineSearch"
 
 # --------------------------------------------------------------------
 

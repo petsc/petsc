@@ -2,7 +2,7 @@
 
 cdef extern from * nogil:
 
-    ctypedef char* PetscVecType "const char*"
+    ctypedef const char* PetscVecType "VecType"
     PetscVecType VECSEQ
     PetscVecType VECMPI
     PetscVecType VECSTANDARD
@@ -48,10 +48,10 @@ cdef extern from * nogil:
     int VecSetBlockSize(PetscVec,PetscInt)
     int VecGetBlockSize(PetscVec,PetscInt*)
     int VecGetOwnershipRange(PetscVec,PetscInt*,PetscInt*)
-    int VecGetOwnershipRanges(PetscVec,const_PetscInt*[])
+    int VecGetOwnershipRanges(PetscVec,const PetscInt*[])
 
-    int VecGetArrayRead(PetscVec,const_PetscScalar*[])
-    int VecRestoreArrayRead(PetscVec,const_PetscScalar*[])
+    int VecGetArrayRead(PetscVec,const PetscScalar*[])
+    int VecRestoreArrayRead(PetscVec,const PetscScalar*[])
     int VecGetArray(PetscVec,PetscScalar*[])
     int VecRestoreArray(PetscVec,PetscScalar*[])
     int VecPlaceArray(PetscVec,PetscScalar[])
@@ -70,14 +70,14 @@ cdef extern from * nogil:
     int VecGetValues(PetscVec,PetscInt,PetscInt[],PetscScalar[])
 
     int VecSetValue(PetscVec,PetscInt,PetscScalar,PetscInsertMode)
-    int VecSetValues(PetscVec,PetscInt,PetscInt[],PetscScalar[],PetscInsertMode)
-    int VecSetValuesBlocked(PetscVec,PetscInt,PetscInt[],PetscScalar[],PetscInsertMode)
+    int VecSetValues(PetscVec,PetscInt,const PetscInt[],const PetscScalar[],PetscInsertMode)
+    int VecSetValuesBlocked(PetscVec,PetscInt,const PetscInt[],const PetscScalar[],PetscInsertMode)
 
     int VecSetLocalToGlobalMapping(PetscVec,PetscLGMap)
     int VecGetLocalToGlobalMapping(PetscVec,PetscLGMap*)
     int VecSetValueLocal(PetscVec,PetscInt,PetscScalar,PetscInsertMode)
-    int VecSetValuesLocal(PetscVec,PetscInt,PetscInt[],PetscScalar[],PetscInsertMode)
-    int VecSetValuesBlockedLocal(PetscVec,PetscInt,PetscInt[],PetscScalar[],PetscInsertMode)
+    int VecSetValuesLocal(PetscVec,PetscInt,const PetscInt[],const PetscScalar[],PetscInsertMode)
+    int VecSetValuesBlockedLocal(PetscVec,PetscInt,const PetscInt[],const PetscScalar[],PetscInsertMode)
 
     int VecDot(PetscVec,PetscVec,PetscScalar*)
     int VecDotBegin(PetscVec,PetscVec,PetscScalar*)
@@ -142,7 +142,7 @@ cdef extern from * nogil:
     int VecGhostRestoreLocalForm(PetscVec,PetscVec*)
     int VecGhostUpdateBegin(PetscVec,PetscInsertMode,PetscScatterMode)
     int VecGhostUpdateEnd(PetscVec,PetscInsertMode,PetscScatterMode)
-    int VecMPISetGhost(PetscVec,PetscInt,const_PetscInt*)
+    int VecMPISetGhost(PetscVec,PetscInt,const PetscInt*)
 
     int VecGetSubVector(PetscVec,PetscIS,PetscVec*)
     int VecRestoreSubVector(PetscVec,PetscIS,PetscVec*)
@@ -153,10 +153,10 @@ cdef extern from * nogil:
     int VecISAXPY(PetscVec,PetscIS,PetscScalar,PetscVec)
     int VecISSet(PetscVec,PetscIS,PetscScalar)
 
-    int VecCUDAGetArrayRead(PetscVec,const_PetscScalar*[])
+    int VecCUDAGetArrayRead(PetscVec,const PetscScalar*[])
     int VecCUDAGetArrayWrite(PetscVec,PetscScalar*[])
     int VecCUDAGetArray(PetscVec,PetscScalar*[])
-    int VecCUDARestoreArrayRead(PetscVec,const_PetscScalar*[])
+    int VecCUDARestoreArrayRead(PetscVec,const PetscScalar*[])
     int VecCUDARestoreArrayWrite(PetscVec,PetscScalar*[])
     int VecCUDARestoreArray(PetscVec,PetscScalar*[])
 
@@ -284,8 +284,17 @@ cdef inline int Vec_Sizes(object size, object bsize,
 
 # --------------------------------------------------------------------
 
-ctypedef int VecSetValuesFcn(PetscVec,PetscInt,const_PetscInt[],
-                             const_PetscScalar[],PetscInsertMode)
+ctypedef int VecSetValuesFcn(PetscVec,
+                             PetscInt,const PetscInt*,
+                             const PetscScalar*,PetscInsertMode)
+
+cdef inline VecSetValuesFcn* vecsetvalues_fcn(int blocked, int local):
+    cdef VecSetValuesFcn *setvalues = NULL
+    if blocked and local: setvalues = VecSetValuesBlockedLocal
+    elif blocked:         setvalues = VecSetValuesBlocked
+    elif local:           setvalues = VecSetValuesLocal
+    else:                 setvalues = VecSetValues
+    return setvalues
 
 cdef inline int vecsetvalues(PetscVec V,
                              object oi, object ov, object oim,
@@ -304,14 +313,9 @@ cdef inline int vecsetvalues(PetscVec V,
     if ni*bs != nv: raise ValueError(
         "incompatible array sizes: ni=%d, nv=%d, bs=%d" %
         (toInt(ni), toInt(nv), toInt(bs)) )
-    # insert mode
+    # VecSetValuesXXX function and insert mode
+    cdef VecSetValuesFcn *setvalues = vecsetvalues_fcn(blocked, local)
     cdef PetscInsertMode addv = insertmode(oim)
-    # VecSetValuesXXX function
-    cdef VecSetValuesFcn *setvalues = NULL
-    if blocked and local: setvalues = VecSetValuesBlockedLocal
-    elif blocked:         setvalues = VecSetValuesBlocked
-    elif local:           setvalues = VecSetValuesLocal
-    else:                 setvalues = VecSetValues
     # actual call
     CHKERR( setvalues(V, ni, i, v, addv) )
     return 0
@@ -400,12 +404,12 @@ cdef extern from "pep3118.h":
 # --------------------------------------------------------------------
 
 cdef int Vec_AcquireArray(PetscVec v, PetscScalar *a[], int ro) nogil except -1:
-    if ro: CHKERR( VecGetArrayRead(v, <const_PetscScalar**>a) )
+    if ro: CHKERR( VecGetArrayRead(v, <const PetscScalar**>a) )
     else:  CHKERR( VecGetArray(v, a) )
     return 0
 
 cdef int Vec_ReleaseArray(PetscVec v, PetscScalar *a[], int ro) nogil except -1:
-    if ro: CHKERR( VecRestoreArrayRead(v, <const_PetscScalar**>a) )
+    if ro: CHKERR( VecRestoreArrayRead(v, <const PetscScalar**>a) )
     else:  CHKERR( VecRestoreArray(v, a) )
     return 0
 

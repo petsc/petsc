@@ -5,7 +5,7 @@ cdef class Log:
     @classmethod
     def Stage(cls, name):
         if not name: raise ValueError("empty name")
-        cdef const_char *cname = NULL
+        cdef const char *cname = NULL
         name = str2bytes(name, &cname)
         cdef PetscLogStage stageid = -1
         cdef LogStage stage = get_LogStage(name)
@@ -19,7 +19,7 @@ cdef class Log:
     @classmethod
     def Class(cls, name):
         if not name: raise ValueError("empty name")
-        cdef const_char *cname = NULL
+        cdef const char *cname = NULL
         name = str2bytes(name, &cname)
         cdef PetscLogClass classid = -1
         cdef LogClass klass = get_LogClass(name)
@@ -33,7 +33,7 @@ cdef class Log:
     @classmethod
     def Event(cls, name, klass=None):
         if not name: raise ValueError("empty name")
-        cdef const_char *cname = NULL
+        cdef const char *cname = NULL
         name = str2bytes(name, &cname)
         cdef PetscLogClass classid = PETSC_OBJECT_CLASSID
         cdef PetscLogEvent eventid = -1
@@ -117,7 +117,7 @@ cdef class LogStage:
     #
 
     def getName(self):
-        cdef const_char *cval = NULL
+        cdef const char *cval = NULL
         CHKERR( PetscLogStageFindName(self.id, &cval) )
         return bytes2str(cval)
 
@@ -197,7 +197,7 @@ cdef class LogClass:
     #
 
     def getName(self):
-        cdef const_char *cval = NULL
+        cdef const char *cval = NULL
         CHKERR( PetscLogClassFindName(self.id, &cval) )
         return bytes2str(cval)
 
@@ -278,7 +278,7 @@ cdef class LogEvent:
     #
 
     def getName(self):
-        cdef const_char *cval = NULL
+        cdef const char *cval = NULL
         CHKERR( PetscLogEventFindName(self.id, &cval) )
         return bytes2str(cval)
 

@@ -126,22 +126,22 @@ cdef class KSP(Object):
         return self
 
     def setType(self, ksp_type):
-        cdef const_char *cval = NULL
+        cdef PetscKSPType cval = NULL
         ksp_type = str2bytes(ksp_type, &cval)
         CHKERR( KSPSetType(self.ksp, cval) )
 
     def getType(self):
-        cdef const_char *cval = NULL
+        cdef PetscKSPType cval = NULL
         CHKERR( KSPGetType(self.ksp, &cval) )
         return bytes2str(cval)
 
     def setOptionsPrefix(self, prefix):
-        cdef const_char *cval = NULL
+        cdef const char *cval = NULL
         prefix = str2bytes(prefix, &cval)
         CHKERR( KSPSetOptionsPrefix(self.ksp, cval) )
 
     def getOptionsPrefix(self):
-        cdef const_char *cval = NULL
+        cdef const char *cval = NULL
         CHKERR( KSPGetOptionsPrefix(self.ksp, &cval) )
         return bytes2str(cval)
 
@@ -524,7 +524,7 @@ cdef class KSP(Object):
         else: return <object> context
 
     def setPythonType(self, py_type):
-        cdef const_char *cval = NULL
+        cdef const char *cval = NULL
         py_type = str2bytes(py_type, &cval)
         CHKERR( KSPPythonSetType(self.ksp, cval) )
 

@@ -109,14 +109,14 @@ cdef class TAO(Object):
     def setOptionsPrefix(self, prefix):
         """
         """
-        cdef const_char *cprefix = NULL
+        cdef const char *cprefix = NULL
         prefix = str2bytes(prefix, &cprefix)
         CHKERR( TaoSetOptionsPrefix(self.tao, cprefix) )
 
     def getOptionsPrefix(self):
         """
         """
-        cdef const_char *prefix = NULL
+        cdef const char *prefix = NULL
         CHKERR( TaoGetOptionsPrefix(self.tao, &prefix) )
         return bytes2str(prefix)
 

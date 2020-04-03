@@ -2,7 +2,7 @@
 
 cdef extern from * nogil:
 
-    ctypedef char* PetscScatterType "const char*"
+    ctypedef const char* PetscScatterType "VecScatterType"
     PetscScatterType VECSCATTERSEQ
     PetscScatterType VECSCATTERMPI1
     PetscScatterType VECSCATTERMPI3

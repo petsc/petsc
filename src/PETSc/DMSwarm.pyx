@@ -38,27 +38,27 @@ cdef class DMSwarm(DM):
         return self
 
     def createGlobalVectorFromField(self, fieldname):
-        cdef const_char *cfieldname = NULL
+        cdef const char *cfieldname = NULL
         cdef Vec vg = Vec()
         fieldname = str2bytes(fieldname, &cfieldname)
         CHKERR( DMSwarmCreateGlobalVectorFromField(self.dm, cfieldname, &vg.vec) )
         return vg
 
     def destroyGlobalVectorFromField(self, fieldname):
-        cdef const_char *cfieldname = NULL
+        cdef const char *cfieldname = NULL
         cdef PetscVec vec = NULL
         fieldname = str2bytes(fieldname, &cfieldname)
         CHKERR( DMSwarmDestroyGlobalVectorFromField(self.dm, cfieldname, &vec) )
 
     def createLocalVectorFromField(self, fieldname):
-        cdef const_char *cfieldname = NULL
+        cdef const char *cfieldname = NULL
         cdef Vec vl = Vec()
         fieldname = str2bytes(fieldname, &cfieldname)
         CHKERR( DMSwarmCreateLocalVectorFromField(self.dm, cfieldname, &vl.vec) )
         return vl
 
     def destroyLocalVectorFromField(self, fieldname):
-        cdef const_char *cfieldname = NULL
+        cdef const char *cfieldname = NULL
         cdef PetscVec vec
         fieldname = str2bytes(fieldname, &cfieldname)
         CHKERR( DMSwarmDestroyLocalVectorFromField(self.dm, cfieldname, &vec) )
@@ -76,7 +76,7 @@ cdef class DMSwarm(DM):
         return self
 
     def registerField(self, fieldname, blocksize, dtype=ScalarType):
-        cdef const_char *cfieldname = NULL
+        cdef const char *cfieldname = NULL
         cdef PetscInt cblocksize = asInt(blocksize)
         cdef PetscDataType ctype  = PETSC_DATATYPE_UNKNOWN
         if dtype == IntType:     ctype  = PETSC_INT
@@ -88,7 +88,7 @@ cdef class DMSwarm(DM):
         CHKERR( DMSwarmRegisterPetscDatatypeField(self.dm, cfieldname, cblocksize, ctype) )
 
     def getField(self, fieldname):
-        cdef const_char *cfieldname = NULL
+        cdef const char *cfieldname = NULL
         cdef PetscInt blocksize = 0
         cdef PetscDataType ctype = PETSC_DATATYPE_UNKNOWN
         cdef PetscReal *data = NULL
@@ -106,14 +106,14 @@ cdef class DMSwarm(DM):
         return <object> PyArray_SimpleNewFromData(1, &s, typenum, data)
 
     def restoreField(self, fieldname):
-        cdef const_char *cfieldname = NULL
+        cdef const char *cfieldname = NULL
         cdef PetscInt blocksize = 0
         cdef PetscDataType ctype = PETSC_DATATYPE_UNKNOWN
         fieldname = str2bytes(fieldname, &cfieldname)
         CHKERR( DMSwarmRestoreField(self.dm, cfieldname, &blocksize, &ctype, <void**> 0) )
 
     def vectorDefineField(self, fieldname):
-        cdef const_char *cval = NULL
+        cdef const char *cval = NULL
         fieldname = str2bytes(fieldname, &cval)
         CHKERR( DMSwarmVectorDefineField(self.dm, cval) )
 
@@ -165,8 +165,8 @@ cdef class DMSwarm(DM):
         return dmswarm
 
     def setType(self, dmswarm_type):
-        cdef PetscDMSwarmType cdmswarm_type = dmswarm_type
-        CHKERR( DMSwarmSetType(self.dm, cdmswarm_type) )
+        cdef PetscDMSwarmType cval = dmswarm_type
+        CHKERR( DMSwarmSetType(self.dm, cval) )
 
     def setPointsUniformCoordinates(self, min, max, npoints, mode=None):
         cdef PetscInt dim = asInt(0)
@@ -212,8 +212,8 @@ cdef class DMSwarm(DM):
         CHKERR( DMSwarmSetPointCoordinatesCellwise(self.dm, cnpoints, coords) )
 
     def viewFieldsXDMF(self, filename, fieldnames):
-        cdef const_char *cval = NULL
-        cdef const_char *cfilename = NULL
+        cdef const char *cval = NULL
+        cdef const char *cfilename = NULL
         filename = str2bytes(filename, &cfilename)
         cdef PetscInt cnfields = <PetscInt> len(fieldnames)
         cdef const char** cfieldnames = NULL
@@ -225,7 +225,7 @@ cdef class DMSwarm(DM):
         CHKERR( DMSwarmViewFieldsXDMF(self.dm, cfilename, cnfields, cfieldnames ) )
 
     def viewXDMF(self, filename):
-        cdef const_char *cval = NULL
+        cdef const char *cval = NULL
         filename = str2bytes(filename, &cval)
         CHKERR( DMSwarmViewXDMF(self.dm, cval) )
 
@@ -264,7 +264,7 @@ cdef class DMSwarm(DM):
 
     def projectFields(self, fieldnames, reuse=False):
         cdef PetscBool creuse = asBool(reuse)
-        cdef const_char *cval = NULL
+        cdef const char *cval = NULL
         cdef PetscInt cnfields = <PetscInt> len(fieldnames)
         cdef const char** cfieldnames = NULL
         cdef object tmp = oarray_p(empty_p(cnfields), NULL, <void**>&cfieldnames)

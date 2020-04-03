@@ -12,7 +12,7 @@ cdef class DMLabel(Object):
     def create(self, name, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_SELF)
         cdef PetscDMLabel newdmlabel = NULL
-        cdef const_char *cname = NULL
+        cdef const char *cname = NULL
         name = str2bytes(name, &cname)
         CHKERR( DMLabelCreate(ccomm, cname, &newdmlabel) )
         PetscCLEAR(self.obj); self.dmlabel = newdmlabel

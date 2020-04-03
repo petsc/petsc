@@ -1,6 +1,6 @@
 cdef extern from * nogil:
 
-    ctypedef char* PetscRandomType "const char*"
+    ctypedef const char* PetscRandomType
     PetscRandomType PETSCRAND
     PetscRandomType PETSCRAND48
     PetscRandomType PETSCSPRNG

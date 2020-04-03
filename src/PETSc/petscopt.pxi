@@ -55,12 +55,12 @@ cdef getprefix(prefix, deft=None):
 
 #
 
-cdef opt2str(const_char *pre, const_char *name):
+cdef opt2str(const char *pre, const char *name):
     p = bytes2str(pre)  if pre!=NULL else None
     n = bytes2str(name) if name[0]!=c'-' else bytes2str(&name[1])
     return '(prefix:%s, name:%s)' % (p, n)
 
-cdef getopt_Bool(PetscOptions opt, const_char *pre, const_char *name, object deft):
+cdef getopt_Bool(PetscOptions opt, const char *pre, const char *name, object deft):
     cdef PetscBool value = PETSC_FALSE
     cdef PetscBool flag  = PETSC_FALSE
     CHKERR( PetscOptionsGetBool(opt, pre, name, &value, &flag) )
@@ -68,7 +68,7 @@ cdef getopt_Bool(PetscOptions opt, const_char *pre, const_char *name, object def
     if deft is not None: return deft
     raise KeyError(opt2str(pre, name))
 
-cdef getopt_Int(PetscOptions opt, const_char *pre, const_char *name, object deft):
+cdef getopt_Int(PetscOptions opt, const char *pre, const char *name, object deft):
     cdef PetscInt value = 0
     cdef PetscBool flag = PETSC_FALSE
     CHKERR( PetscOptionsGetInt(opt, pre, name, &value, &flag) )
@@ -76,7 +76,7 @@ cdef getopt_Int(PetscOptions opt, const_char *pre, const_char *name, object deft
     if deft is not None: return deft
     raise KeyError(opt2str(pre, name))
 
-cdef getopt_Real(PetscOptions opt, const_char *pre, const_char *name, object deft):
+cdef getopt_Real(PetscOptions opt, const char *pre, const char *name, object deft):
     cdef PetscReal value = 0
     cdef PetscBool flag = PETSC_FALSE
     CHKERR( PetscOptionsGetReal(opt, pre, name, &value, &flag) )
@@ -84,7 +84,7 @@ cdef getopt_Real(PetscOptions opt, const_char *pre, const_char *name, object def
     if deft is not None: return deft
     raise KeyError(opt2str(pre, name))
 
-cdef getopt_Scalar(PetscOptions opt, const_char *pre, const_char *name, object deft):
+cdef getopt_Scalar(PetscOptions opt, const char *pre, const char *name, object deft):
     cdef PetscScalar value = 0
     cdef PetscBool flag = PETSC_FALSE
     CHKERR( PetscOptionsGetScalar(opt, pre, name, &value, &flag) )
@@ -92,7 +92,7 @@ cdef getopt_Scalar(PetscOptions opt, const_char *pre, const_char *name, object d
     if deft is not None: return deft
     raise KeyError(opt2str(pre, name))
 
-cdef getopt_String(PetscOptions opt, const_char *pre, const_char *name, object deft):
+cdef getopt_String(PetscOptions opt, const char *pre, const char *name, object deft):
     cdef char value[1024+1]
     cdef PetscBool flag = PETSC_FALSE
     CHKERR( PetscOptionsGetString(opt, pre, name, value, 1024, &flag) )
@@ -108,14 +108,14 @@ cdef enum PetscOptType:
     OPT_SCALAR
     OPT_STRING
 
-cdef getpair(prefix, name, const_char **pr, const_char **nm):
+cdef getpair(prefix, name, const char **pr, const char **nm):
     # --
-    cdef const_char *p = NULL
+    cdef const char *p = NULL
     prefix = str2bytes(prefix, &p)
     if p != NULL and p[0] == c'-':
         p = &p[1]
     # --
-    cdef const_char *n = NULL
+    cdef const char *n = NULL
     name = str2bytes(name, &n)
     if n != NULL and n[0] != c'-':
         name = b'-' + name
@@ -126,8 +126,8 @@ cdef getpair(prefix, name, const_char **pr, const_char **nm):
     return (prefix, name)
 
 cdef getopt(PetscOptions opt, PetscOptType otype, prefix, name, deft):
-    cdef const_char *pr = NULL
-    cdef const_char *nm = NULL
+    cdef const char *pr = NULL
+    cdef const char *nm = NULL
     tmp = getpair(prefix, name, &pr, &nm)
     if otype == OPT_BOOL   : return getopt_Bool   (opt, pr, nm, deft)
     if otype == OPT_INT    : return getopt_Int    (opt, pr, nm, deft)
@@ -140,8 +140,8 @@ cdef getopt(PetscOptions opt, PetscOptType otype, prefix, name, deft):
 
 cdef tokenize(options):
   cdef PetscToken t = NULL
-  cdef const_char *s = NULL
-  cdef const_char *p = NULL
+  cdef const char *s = NULL
+  cdef const char *p = NULL
   options = str2bytes(options, &s)
   cdef list tokens = []
   CHKERR( PetscTokenCreate(s, c' ', &t) )
@@ -155,7 +155,7 @@ cdef tokenize(options):
   return tokens
 
 cdef bint iskey(key):
-    cdef const_char *k = NULL
+    cdef const char *k = NULL
     cdef PetscBool b = PETSC_FALSE
     if key:
         key = str2bytes(key, &k)

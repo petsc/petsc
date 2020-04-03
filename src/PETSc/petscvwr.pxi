@@ -1,6 +1,6 @@
 cdef extern from * nogil:
 
-    ctypedef char* PetscViewerType "const char*"
+    ctypedef const char* PetscViewerType
     PetscViewerType PETSCVIEWERSOCKET
     PetscViewerType PETSCVIEWERASCII
     PetscViewerType PETSCVIEWERBINARY
@@ -94,8 +94,8 @@ cdef extern from * nogil:
     int PetscViewerASCIIPushTab(PetscViewer)
     int PetscViewerASCIIPopTab(PetscViewer)
     int PetscViewerASCIIUseTabs(PetscViewer,PetscBool)
-    int PetscViewerASCIIPrintf(PetscViewer,const_char[],...)
-    int PetscViewerASCIISynchronizedPrintf(PetscViewer,const_char[],...)
+    int PetscViewerASCIIPrintf(PetscViewer,const char[],...)
+    int PetscViewerASCIISynchronizedPrintf(PetscViewer,const char[],...)
 
     int PetscViewerFileGetName(PetscViewer,char*[])
     int PetscViewerFileSetName(PetscViewer,char[])

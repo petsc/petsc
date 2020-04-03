@@ -63,10 +63,6 @@ def help(args=None):
         tao = PETSc.TAO().create(comm=COMM)
         tao.setFromOptions()
         tao.destroy()
-    #if 'dm' in args:
-    #    dm = PETSc.DM().create(comm=COMM)
-    #    dm.setFromOptions()
-    #    dm.destroy()
     if 'dmda' in args:
         dmda = PETSc.DMDA().create(comm=COMM)
         dmda.setFromOptions()

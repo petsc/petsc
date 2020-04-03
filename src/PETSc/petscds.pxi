@@ -1,6 +1,6 @@
 cdef extern from * nogil:
 
-    ctypedef char* PetscDSType "const char*"
+    ctypedef const char* PetscDSType
     PetscDSType PETSCDSBASIC
 
     int PetscDSCreate(MPI_Comm,PetscDS*)
