@@ -6,6 +6,12 @@ CHANGES: PETSc for Python
 :Contact: dalcinl@gmail.com
 
 
+Release 3.13.0
+==============
+
+- Update to PETSc 3.13 release.
+
+
 Release 3.12.0
 ==============
 
@@ -25,8 +31,8 @@ Release 3.10.1
 - Fix ``Mat`` in-place divide.
 
 
-  Release 3.10.0
-================
+Release 3.10.0
+==============
 
 - Update to PETSc 3.10 release.
 
