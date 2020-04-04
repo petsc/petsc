@@ -6,7 +6,7 @@ LICENSE: PETSc for Python
 :Contact: dalcinl@gmail.com
 
 
-Copyright (c) 2019, Lisandro Dalcin.
+Copyright (c) 2020, Lisandro Dalcin.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
