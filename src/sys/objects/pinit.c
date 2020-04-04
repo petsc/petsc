@@ -147,7 +147,7 @@ PetscErrorCode  PetscFinalized(PetscBool  *isFinalized)
   return 0;
 }
 
-PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(void);
+PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char []);
 
 /*
        This function is the MPI reduction operation used to compute the sum of the
@@ -981,7 +981,6 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = MPI_Type_commit(&MPIU_2INT);CHKERRQ(ierr);
 #endif
 
-
   /*
      Attributes to be set on PETSc communicators
   */
@@ -999,14 +998,9 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = PetscErrorPrintfInitialize();CHKERRQ(ierr);
 
   /*
-     Print main application help message
+     Check system options and print help
   */
-  ierr = PetscOptionsHasHelp(NULL,&flg);CHKERRQ(ierr);
-  if (help && flg) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,help);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"----------------------------------------\n");CHKERRQ(ierr);
-  }
-  ierr = PetscOptionsCheckInitial_Private();CHKERRQ(ierr);
+  ierr = PetscOptionsCheckInitial_Private(help);CHKERRQ(ierr);
 
   ierr = PetscCitationsInitialize();CHKERRQ(ierr);
 
@@ -1108,7 +1102,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 #endif
 
   /*
-      Once we are completedly initialized then we can set this variables
+      Set flag that we are completely initialized
   */
   PetscInitializeCalled = PETSC_TRUE;
 
