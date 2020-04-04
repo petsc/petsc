@@ -21,7 +21,7 @@ variables:
   GIT_STRATEGY: fetch
   GIT_CLEAN_FLAGS: -ffdxq
   PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
-  TIMEOUT: 600
+  TIMEOUT: 1000
 
 #
 # The most basic template that most tests will expand upon. In particular merge requests and branch pushes DO NOT trigger testing
@@ -246,32 +246,23 @@ checksource:
 # (in a blue box beneath it)
 #
 
-linux-gcc-complex-opt:
+freebsd-cxx-cmplx-64idx-dbg:
   extends:
     - .stage-2
-    - .linux_test
+    - .freebsd_test
   tags:
-    - linux-stage2
+    - os:fbsd
   variables:
-    TEST_ARCH: arch-ci-linux-gcc-complex-opt
+    TEST_ARCH: arch-ci-freebsd-cxx-cmplx-64idx-dbg
 
-linux-gcc-pkgs-opt:
+freebsd-c-single-opt:
   extends:
     - .stage-2
-    - .linux_test
+    - .freebsd_test
   tags:
-    - linux-stage2
+    - os:fbsd
   variables:
-    TEST_ARCH: arch-ci-linux-gcc-pkgs-opt
-
-linux-gcc-quad-64idx-dbg:
-  extends:
-    - .stage-2
-    - .linux_test
-  tags:
-    - linux-stage2
-  variables:
-    TEST_ARCH: arch-ci-linux-gcc-quad-64idx-dbg
+    TEST_ARCH: arch-ci-freebsd-c-single-opt
 
 linux-cuda-double:
   extends:
@@ -283,43 +274,32 @@ linux-cuda-double:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -cuda_initialize 0
     TEST_ARCH: arch-ci-linux-cuda-double
 
-freebsd-c-single-opt:
+linux-gcc-quad-64idx-dbg:
   extends:
     - .stage-2
-    - .freebsd_test
+    - .linux_test
   tags:
-    - os:fbsd
+    - linux-stage2
   variables:
-    TEST_ARCH: arch-ci-freebsd-c-single-opt
+    TEST_ARCH: arch-ci-linux-gcc-quad-64idx-dbg
 
-freebsd-cxx-cmplx-64idx-dbg:
+linux-gcc-pkgs-opt:
   extends:
     - .stage-2
-    - .freebsd_test
+    - .linux_test
   tags:
-    - os:fbsd
+    - linux-stage2
   variables:
-    TEST_ARCH: arch-ci-freebsd-cxx-cmplx-64idx-dbg
+    TEST_ARCH: arch-ci-linux-gcc-pkgs-opt
 
-opensolaris-misc:
+linux-gcc-complex-opt:
   extends:
-    - .stage-3
-    - .opensolaris_test
+    - .stage-2
+    - .linux_test
   tags:
-    - name:n-gage
+    - linux-stage2
   variables:
-    TEST_ARCH: arch-ci-opensolaris-misc
-
-osx-cxx-pkgs-opt:
-  extends:
-    - .stage-3
-    - .osx_test
-  tags:
-    - os:macos, opt
-  variables:
-    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -saws_port_auto_select -saws_port_auto_select_silent -vecscatter_mpi1 false -options_left false
-    TEST_ARCH: arch-ci-osx-cxx-pkgs-opt
-    MAKE_CXXFLAGS: -Werror -Wno-pass-failed
+    TEST_ARCH: arch-ci-linux-gcc-complex-opt
 
 mswin-uni:
   extends:
@@ -352,6 +332,376 @@ mswin-gnu:
 # The following tests run as part of stage-3.
 #
 
+freebsd-cxx-cmplx-pkgs-dbg:
+  extends:
+    - .stage-3
+    - .freebsd_test
+  tags:
+    - os:fbsd
+  variables:
+    TEST_ARCH: arch-ci-freebsd-cxx-cmplx-pkgs-dbg
+
+freebsd-cxx-pkgs-opt:
+  extends:
+    - .stage-3
+    - .freebsd_test
+  tags:
+    - os:fbsd
+  variables:
+    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -saws_port_auto_select -saws_port_auto_select_silent -vecscatter_mpi1 false -options_left false
+    TEST_ARCH: arch-ci-freebsd-cxx-pkgs-opt
+
+freebsd-pkgs-opt:
+  extends:
+    - .stage-3
+    - .freebsd_test
+  tags:
+    - os:fbsd
+  variables:
+    TEST_ARCH: arch-ci-freebsd-pkgs-opt
+
+linux-viennacl:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - gpu:nvidia, os:linux, name:frog
+  variables:
+    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -cuda_initialize 0 -use_gpu_aware_mpi 0
+    TEST_ARCH: arch-ci-linux-viennacl
+
+linux-c-exodus-dbg:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - gpu:nvidia, os:linux
+  variables:
+    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -cuda_initialize 0 -use_gpu_aware_mpi 0
+    TEST_ARCH: arch-ci-linux-c-exodus-dbg
+
+linux-cuda-single-cxx:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - gpu:nvidia, os:linux
+  variables:
+    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -cuda_initialize 0 -use_gpu_aware_mpi 0
+    TEST_ARCH: arch-ci-linux-cuda-single-cxx
+
+linux-without-fc:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - name:si
+  variables:
+    TEST_ARCH: arch-ci-linux-without-fc
+
+linux-cmplx-single:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - name:si
+  variables:
+    TEST_ARCH: arch-ci-linux-cmplx-single
+
+linux-gcc-cxx-avx2:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - name:isdp001
+  variables:
+    TEST_ARCH: arch-ci-linux-gcc-cxx-avx2
+
+linux-clang-avx:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - name:isdp001
+  variables:
+    TEST_ARCH: arch-ci-linux-clang-avx
+
+linux-knl:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - name:isdp001
+  variables:
+    TEST_ARCH: arch-ci-linux-knl
+
+linux-cxx-cmplx-pkgs-64idx:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - name:pj01
+  variables:
+    TEST_ARCH: arch-ci-linux-cxx-cmplx-pkgs-64idx
+
+linux-pkgs-dbg-ftn-interfaces:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - name:pj02
+  variables:
+    TEST_ARCH: arch-ci-linux-pkgs-dbg-ftn-interfaces
+
+linux-pkgs-cxx-mlib:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - name:pj02
+  variables:
+    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -saws_port_auto_select -saws_port_auto_select_silent
+    TEST_ARCH: arch-ci-linux-pkgs-cxx-mlib
+
+linux-pkgs-valgrind:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - gce-nfs, linux-fast
+  variables:
+    TEST_ARCH: arch-ci-linux-pkgs-valgrind
+    TIMEOUT: 7200
+
+linux-pkgs-opt:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - gce-nfs, linux-fast
+  variables:
+    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -saws_port_auto_select -saws_port_auto_select_silent
+    TEST_ARCH: arch-ci-linux-pkgs-opt
+
+linux-pkgs-gcov:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - gce-nfs, linux-fast
+  variables:
+    TEST_ARCH: arch-ci-linux-pkgs-gcov
+  after_script:
+    - make gcov
+  artifacts:
+    when: always
+    paths:
+    - ${TEST_ARCH}/lib/petsc/conf/*.log
+    - ${TEST_ARCH}/tests/testresults.xml
+    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_tap.log
+    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_err.log
+    - ${TEST_ARCH}/gcov.tar.gz
+    expire_in: 4 days
+
+linux-cmplx-gcov:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - gce-nfs, linux-fast
+  variables:
+    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -vecscatter_mpi1 false -options_left false
+    TEST_ARCH: arch-ci-linux-cmplx-gcov
+    LOAD_MODULES: gcc/8.3.0-fjpc5ys
+  after_script:
+    - make gcov
+  artifacts:
+    when: always
+    paths:
+    - ${TEST_ARCH}/lib/petsc/conf/*.log
+    - ${TEST_ARCH}/tests/testresults.xml
+    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_tap.log
+    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_err.log
+    - ${TEST_ARCH}/gcov.tar.gz
+    expire_in: 4 days
+
+linux-pgi:
+  extends:
+    - .stage-3
+    - .linux_test_noflags
+  tags:
+    - gce-nfs, linux-fast
+  variables:
+    TEST_ARCH: arch-ci-linux-pgi
+
+linux-matlab-ilp64-gcov:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - gce-nfs, linux-fast
+  variables:
+    TEST_ARCH: arch-ci-linux-matlab-ilp64-gcov
+    LOAD_MODULES: matlab/R2018a
+  after_script:
+    - make gcov
+  artifacts:
+    when: always
+    paths:
+    - ${TEST_ARCH}/lib/petsc/conf/*.log
+    - ${TEST_ARCH}/tests/testresults.xml
+    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_tap.log
+    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_err.log
+    - ${TEST_ARCH}/gcov.tar.gz
+    expire_in: 4 days
+  allow_failure: true
+
+linux-gcov:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - gce-nfs, linux-fast
+  variables:
+    TEST_ARCH: arch-ci-linux-gcov
+  after_script:
+    - make gcov
+  artifacts:
+    when: always
+    paths:
+    - ${TEST_ARCH}/lib/petsc/conf/*.log
+    - ${TEST_ARCH}/tests/testresults.xml
+    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_tap.log
+    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_err.log
+    - ${TEST_ARCH}/gcov.tar.gz
+    expire_in: 4 days
+
+linux-intel-cmplx:
+  extends:
+    - .stage-3
+    - .linux_test_noflags
+  tags:
+    - gce-nfs
+  variables:
+    TEST_ARCH: arch-ci-linux-intel-cmplx
+    LOAD_MODULES: intel-mkl/19.5 intel/19.0
+
+linux-xsdk-dbg:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - gce-nfs
+  variables:
+    TEST_ARCH: arch-ci-linux-xsdk-dbg
+    LOAD_MODULES: gcc/8.3.0-fjpc5ys
+
+linux-analyzer:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - gce-nfs
+  variables:
+    TEST_ARCH: arch-ci-linux-analyzer
+
+linux-intel:
+  extends:
+    - .stage-3
+    - .linux_test_noflags
+  tags:
+    - gce-nfs
+  variables:
+    TEST_ARCH: arch-ci-linux-intel
+    LOAD_MODULES: intel-mkl/19.5 intel/19.0
+
+linux-opt-misc:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - gce-nfs
+  variables:
+    TEST_ARCH: arch-ci-linux-opt-misc
+    LOAD_MODULES: gcc/6.5.0-57usejd
+
+linux-pkgs-64idx:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - gce-nfs
+  variables:
+    TEST_ARCH: arch-ci-linux-pkgs-64idx
+    LOAD_MODULES: cmake/3.15.5-fh74toq
+
+linux-64idx-i8:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - gce-nfs
+  variables:
+    TEST_ARCH: arch-ci-linux-64idx-i8
+
+linux-gcc-ifc-cmplx:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - gce-nfs
+  variables:
+    TEST_ARCH: arch-ci-linux-gcc-ifc-cmplx
+    LOAD_MODULES: intel/19.0
+
+linux-nagfor:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - mcs-nfs
+  variables:
+    TEST_ARCH: arch-ci-linux-nagfor
+    MAKE_FFLAGS: -DNO_WERROR_FLAG
+
+linux-opt-cxx-quad:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - gce-nfs
+  variables:
+    TEST_ARCH: arch-ci-linux-opt-cxx-quad
+
+linux-ILP64:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - gce-nfs
+  variables:
+    TEST_ARCH: arch-ci-linux-ILP64
+    LOAD_MODULES: gcc/6.5.0-57usejd
+
+linux-uni-pkgs:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - gce-nfs
+  variables:
+    TEST_ARCH: arch-ci-linux-uni-pkgs
+    LOAD_MODULES: llvm/9.0.0-7fyffox cmake/3.14.2-rl3q676
+
+linux-64idx-i8-uni:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - gce-nfs
+  variables:
+    TEST_ARCH: arch-ci-linux-64idx-i8-uni
+
 mswin-intel-cxx-cmplx:
   extends:
     - .stage-3
@@ -380,15 +730,6 @@ mswin-opt-impi:
     TEST_ARCH: arch-ci-mswin-opt-impi
   allow_failure: true
 
-opensolaris-cmplx-pkgs-dbg:
-  extends:
-    - .stage-3
-    - .opensolaris_test
-  tags:
-    - name:n-gage
-  variables:
-    TEST_ARCH: arch-ci-opensolaris-cmplx-pkgs-dbg
-
 opensolaris-pkgs-opt:
   extends:
     - .stage-3
@@ -398,33 +739,23 @@ opensolaris-pkgs-opt:
   variables:
     TEST_ARCH: arch-ci-opensolaris-pkgs-opt
 
-freebsd-pkgs-opt:
+opensolaris-cmplx-pkgs-dbg:
   extends:
     - .stage-3
-    - .freebsd_test
+    - .opensolaris_test
   tags:
-    - os:fbsd
+    - name:n-gage
   variables:
-    TEST_ARCH: arch-ci-freebsd-pkgs-opt
+    TEST_ARCH: arch-ci-opensolaris-cmplx-pkgs-dbg
 
-freebsd-cxx-cmplx-pkgs-dbg:
+opensolaris-misc:
   extends:
     - .stage-3
-    - .freebsd_test
+    - .opensolaris_test
   tags:
-    - os:fbsd
+    - name:n-gage
   variables:
-    TEST_ARCH: arch-ci-freebsd-cxx-cmplx-pkgs-dbg
-
-freebsd-cxx-pkgs-opt:
-  extends:
-    - .stage-3
-    - .freebsd_test
-  tags:
-    - os:fbsd
-  variables:
-    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -saws_port_auto_select -saws_port_auto_select_silent -vecscatter_mpi1 false -options_left false
-    TEST_ARCH: arch-ci-freebsd-cxx-pkgs-opt
+    TEST_ARCH: arch-ci-opensolaris-misc
 
 osx-cxx-cmplx-pkgs-dbg:
   extends:
@@ -434,6 +765,17 @@ osx-cxx-cmplx-pkgs-dbg:
     - os:macos
   variables:
     TEST_ARCH: arch-ci-osx-cxx-cmplx-pkgs-dbg
+
+osx-cxx-pkgs-opt:
+  extends:
+    - .stage-3
+    - .osx_test
+  tags:
+    - os:macos, opt
+  variables:
+    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -saws_port_auto_select -saws_port_auto_select_silent -vecscatter_mpi1 false -options_left false
+    TEST_ARCH: arch-ci-osx-cxx-pkgs-opt
+    MAKE_CXXFLAGS: -Werror -Wno-pass-failed
 
 osx-dbg:
   extends:
@@ -452,351 +794,6 @@ osx-xsdk-opt:
     - os:macos, opt
   variables:
     TEST_ARCH: arch-ci-osx-xsdk-opt
-
-linux-cmplx-gcov:
-  extends:
-    - .stage-3
-    - .linux_test
-  tags:
-    - gce-nfs, linux-fast
-  variables:
-    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -vecscatter_mpi1 false -options_left false
-    TEST_ARCH: arch-ci-linux-cmplx-gcov
-    LOAD_MODULES: gcc/8.3.0-fjpc5ys
-  after_script:
-    - make gcov
-  artifacts:
-    when: always
-    paths:
-    - ${TEST_ARCH}/lib/petsc/conf/*.log
-    - ${TEST_ARCH}/tests/testresults.xml
-    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_tap.log
-    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_err.log
-    - ${TEST_ARCH}/gcov.tar.gz
-    expire_in: 4 days
-
-
-linux-cmplx-single:
-  extends:
-    - .stage-3
-    - .linux_test
-  tags:
-    - name:si
-  variables:
-    TEST_ARCH: arch-ci-linux-cmplx-single
-
-linux-without-fc:
-  extends:
-    - .stage-3
-    - .linux_test
-  tags:
-    - name:si
-  variables:
-    TEST_ARCH: arch-ci-linux-without-fc
-
-linux-clang-avx:
-  extends:
-    - .stage-3
-    - .linux_test
-  tags:
-    - name:isdp001
-  variables:
-    TEST_ARCH: arch-ci-linux-clang-avx
-
-linux-gcc-cxx-avx2:
-  extends:
-    - .stage-3
-    - .linux_test
-  tags:
-    - name:isdp001
-  variables:
-    TEST_ARCH: arch-ci-linux-gcc-cxx-avx2
-
-linux-knl:
-  extends:
-    - .stage-3
-    - .linux_test
-  tags:
-    - name:isdp001
-  variables:
-    TEST_ARCH: arch-ci-linux-knl
-
-linux-c-exodus-dbg:
-  extends:
-    - .stage-3
-    - .linux_test
-  tags:
-    - gpu:nvidia, os:linux
-  variables:
-    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -cuda_initialize 0 -use_gpu_aware_mpi 0
-    TEST_ARCH: arch-ci-linux-c-exodus-dbg
-
-linux-cuda-single-cxx:
-  extends:
-    - .stage-3
-    - .linux_test
-  tags:
-    - gpu:nvidia, os:linux
-  variables:
-    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -cuda_initialize 0 -use_gpu_aware_mpi 0
-    TEST_ARCH: arch-ci-linux-cuda-single-cxx
-
-linux-viennacl:
-  extends:
-    - .stage-3
-    - .linux_test
-  tags:
-    - gpu:nvidia, os:linux, name:frog
-  variables:
-    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -cuda_initialize 0 -use_gpu_aware_mpi 0
-    TEST_ARCH: arch-ci-linux-viennacl
-
-linux-opt-misc:
-  extends:
-    - .stage-3
-    - .linux_test
-  tags:
-    - gce-nfs
-  variables:
-    TEST_ARCH: arch-ci-linux-opt-misc
-    LOAD_MODULES: gcc/6.5.0-57usejd
-
-linux-pkgs-cxx-mlib:
-  extends:
-    - .stage-3
-    - .linux_test
-  tags:
-    - name:pj02
-  variables:
-    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -saws_port_auto_select -saws_port_auto_select_silent
-    TEST_ARCH: arch-ci-linux-pkgs-cxx-mlib
-
-linux-cxx-cmplx-pkgs-64idx:
-  extends:
-    - .stage-3
-    - .linux_test
-  tags:
-    - name:pj01
-  variables:
-    TEST_ARCH: arch-ci-linux-cxx-cmplx-pkgs-64idx
-
-linux-pkgs-dbg-ftn-interfaces:
-  extends:
-    - .stage-3
-    - .linux_test
-  tags:
-    - name:pj02
-  variables:
-    TEST_ARCH: arch-ci-linux-pkgs-dbg-ftn-interfaces
-
-linux-analyzer:
-  extends:
-    - .stage-3
-    - .linux_test
-  tags:
-    - gce-nfs
-  variables:
-    TEST_ARCH: arch-ci-linux-analyzer
-
-linux-gcc-ifc-cmplx:
-  extends:
-    - .stage-3
-    - .linux_test
-  tags:
-    - gce-nfs
-  variables:
-    TEST_ARCH: arch-ci-linux-gcc-ifc-cmplx
-    LOAD_MODULES: intel/19.0
-
-linux-gcov:
-  extends:
-    - .stage-3
-    - .linux_test
-  tags:
-    - gce-nfs, linux-fast
-  variables:
-    TEST_ARCH: arch-ci-linux-gcov
-  after_script:
-    - make gcov
-  artifacts:
-    when: always
-    paths:
-    - ${TEST_ARCH}/lib/petsc/conf/*.log
-    - ${TEST_ARCH}/tests/testresults.xml
-    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_tap.log
-    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_err.log
-    - ${TEST_ARCH}/gcov.tar.gz
-    expire_in: 4 days
-
-
-linux-ILP64:
-  extends:
-    - .stage-3
-    - .linux_test
-  tags:
-    - gce-nfs
-  variables:
-    TEST_ARCH: arch-ci-linux-ILP64
-    LOAD_MODULES: gcc/6.5.0-57usejd
-
-linux-matlab-ilp64-gcov:
-  extends:
-    - .stage-3
-    - .linux_test
-  tags:
-    - gce-nfs, linux-fast
-  variables:
-    TEST_ARCH: arch-ci-linux-matlab-ilp64-gcov
-    LOAD_MODULES: matlab/R2018a
-  after_script:
-    - make gcov
-  artifacts:
-    when: always
-    paths:
-    - ${TEST_ARCH}/lib/petsc/conf/*.log
-    - ${TEST_ARCH}/tests/testresults.xml
-    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_tap.log
-    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_err.log
-    - ${TEST_ARCH}/gcov.tar.gz
-    expire_in: 4 days
-  allow_failure: true
-
-
-linux-opt-cxx-quad:
-  extends:
-    - .stage-3
-    - .linux_test
-  tags:
-    - gce-nfs
-  variables:
-    TEST_ARCH: arch-ci-linux-opt-cxx-quad
-
-linux-pgi:
-  extends:
-    - .stage-3
-    - .linux_test_noflags
-  tags:
-    - gce-nfs, linux-fast
-  variables:
-    TEST_ARCH: arch-ci-linux-pgi
-
-linux-pkgs-64idx:
-  extends:
-    - .stage-3
-    - .linux_test
-  tags:
-    - gce-nfs
-  variables:
-    TEST_ARCH: arch-ci-linux-pkgs-64idx
-    LOAD_MODULES: cmake/3.15.5-fh74toq
-
-linux-pkgs-gcov:
-  extends:
-    - .stage-3
-    - .linux_test
-  tags:
-    - gce-nfs, linux-fast
-  variables:
-    TEST_ARCH: arch-ci-linux-pkgs-gcov
-  after_script:
-    - make gcov
-  artifacts:
-    when: always
-    paths:
-    - ${TEST_ARCH}/lib/petsc/conf/*.log
-    - ${TEST_ARCH}/tests/testresults.xml
-    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_tap.log
-    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_err.log
-    - ${TEST_ARCH}/gcov.tar.gz
-    expire_in: 4 days
-
-linux-pkgs-opt:
-  extends:
-    - .stage-3
-    - .linux_test
-  tags:
-    - gce-nfs, linux-fast
-  variables:
-    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -saws_port_auto_select -saws_port_auto_select_silent
-    TEST_ARCH: arch-ci-linux-pkgs-opt
-
-linux-pkgs-valgrind:
-  extends:
-    - .stage-3
-    - .linux_test
-  tags:
-    - gce-nfs, linux-fast
-  variables:
-    TEST_ARCH: arch-ci-linux-pkgs-valgrind
-    TIMEOUT: 7200
-
-linux-xsdk-dbg:
-  extends:
-    - .stage-3
-    - .linux_test
-  tags:
-    - gce-nfs
-  variables:
-    TEST_ARCH: arch-ci-linux-xsdk-dbg
-    LOAD_MODULES: gcc/8.3.0-fjpc5ys
-
-linux-intel:
-  extends:
-    - .stage-3
-    - .linux_test_noflags
-  tags:
-    - gce-nfs
-  variables:
-    TEST_ARCH: arch-ci-linux-intel
-    LOAD_MODULES: intel-mkl/19.5 intel/19.0
-
-linux-intel-cmplx:
-  extends:
-    - .stage-3
-    - .linux_test_noflags
-  tags:
-    - gce-nfs
-  variables:
-    TEST_ARCH: arch-ci-linux-intel-cmplx
-    LOAD_MODULES: intel-mkl/19.5 intel/19.0
-
-linux-nagfor:
-  extends:
-    - .stage-3
-    - .linux_test
-  tags:
-    - mcs-nfs
-  variables:
-    TEST_ARCH: arch-ci-linux-nagfor
-    MAKE_FFLAGS: -DNO_WERROR_FLAG
-
-linux-uni-pkgs:
-  extends:
-    - .stage-3
-    - .linux_test
-  tags:
-    - gce-nfs
-  variables:
-    TEST_ARCH: arch-ci-linux-uni-pkgs
-    LOAD_MODULES: llvm/9.0.0-7fyffox cmake/3.14.2-rl3q676
-
-linux-64idx-i8:
-  extends:
-    - .stage-3
-    - .linux_test
-  tags:
-    - gce-nfs
-  variables:
-    TEST_ARCH: arch-ci-linux-64idx-i8
-
-linux-64idx-i8-uni:
-  extends:
-    - .stage-3
-    - .linux_test
-  tags:
-    - gce-nfs
-  variables:
-    TEST_ARCH: arch-ci-linux-64idx-i8-uni
 
 # job for analyzing the final coverage results
 analyze-pipeline:

@@ -208,6 +208,11 @@
           <li>Add DMPlexIsInterpolatedCollective() which finds out whether the plex is interpolated on all ranks</li>
           <li>Add DMPlexIsDistributed() which finds out whether the plex is distributed</li>
         </ul>
+      <h4>DMNetwork:</h4>
+        <ul>
+	  <li>Add DMNetworkSetComponentNumVariables(), DMNetworkGetComponentVariableOffset(), and DMNetworkGetComponentVariableGlobalOffset() to
+	      set number of variables for a component, and retrieve its local/global offsets.</li>
+	</ul>
       <h4>DT:</h4>
       <ul>
         <li>All tabulated data is now stored in PetscTabulation structures. This changes interfaces in PetscDS, PetscFE, and PetscFV</li>
