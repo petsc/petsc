@@ -71,40 +71,38 @@ SPHINXOPTS  =
 .PHONY: sphinx sphinx-html sphinx-pdf sphinx-man sphinx-info
 sphinx: sphinx-html sphinx-pdf sphinx-man sphinx-info
 sphinx-html:
-	${PYTHON} -c 'import ${package}.${MODULE}'
 	mkdir -p build/doctrees docs/usrman
 	${SPHINXBUILD} -b html -d build/doctrees ${SPHINXOPTS} \
 	docs/source docs/usrman
 	${RM} docs/usrman/.buildinfo
 sphinx-pdf:
-	${PYTHON} -c 'import ${package}.${MODULE}'
 	mkdir -p build/doctrees build/latex
 	${SPHINXBUILD} -b latex -d build/doctrees ${SPHINXOPTS} \
 	docs/source build/latex
 	${MAKE} -C build/latex all-pdf > /dev/null
 	mv build/latex/*.pdf docs/
 sphinx-man:
-	${PYTHON} -c 'import ${package}.${MODULE}'
 	mkdir -p build/doctrees build/man
 	${SPHINXBUILD} -b man -d build/doctrees ${SPHINXOPTS} \
 	docs/source build/man
 	mv build/man/*.[137] docs/
 sphinx-info:
-	${PYTHON} -c 'import ${package}.${MODULE}'
 	mkdir -p build/doctrees build/texinfo
 	${SPHINXBUILD} -b texinfo -d build/doctrees ${SPHINXOPTS} \
 	docs/source build/texinfo
 	${MAKE} -C build/texinfo info > /dev/null
 	mv build/texinfo/*.info docs/
 
-EPYDOCBUILD = ${PYTHON} ./conf/epydocify.py
+PYTHON2 = python2
+EPYDOCBUILD = ${PYTHON2} ./conf/epydocify.py
 EPYDOCOPTS  =
 .PHONY: epydoc epydoc-html epydoc-pdf
 epydoc: epydoc-html epydoc-pdf
-epydoc-html:
-	${PYTHON} -c 'import ${package}.${MODULE}'
+epydoc-html: srcbuild
 	mkdir -p docs/apiref
-	${EPYDOCBUILD} ${EPYDOCOPTS} --html -o docs/apiref
+	env CFLAGS=-O0 ${PYTHON2} setup.py -q build --build-lib build/lib.py2
+	env PYTHONPATH=$$PWD/build/lib.py2 ${PYTHON2} -c 'import ${package}.${MODULE}'
+	env PYTHONPATH=$$PWD/build/lib.py2 ${EPYDOCBUILD} ${EPYDOCOPTS} --html -o docs/apiref
 epydoc-pdf:
 
 .PHONY: docsclean
