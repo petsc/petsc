@@ -544,7 +544,7 @@ Arg class, which wraps the usual value.'''
   def serve(self):
     '''Start a server'''
     import socket
-    import SocketServer
+    import SocketServer # novermin
 
     if not useThreads:
       raise RuntimeError('Cannot run a server if threads are disabled')
