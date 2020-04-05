@@ -905,6 +905,30 @@ PetscErrorCode SNESLineSearchView(SNESLineSearch linesearch, PetscViewer viewer)
 }
 
 /*@C
+   SNESLineSearchGetType - Gets the linesearch type
+
+   Logically Collective on SNESLineSearch
+
+   Input Parameters:
+.  linesearch - linesearch context
+
+   Output Parameters:
+-  type - The type of line search, or NULL if not set
+
+   Level: intermediate
+
+.seealso: SNESLineSearchCreate(), SNESLineSearchType, SNESLineSearchSetFromOptions(), SNESLineSearchSetType()
+@*/
+PetscErrorCode SNESLineSearchGetType(SNESLineSearch linesearch, SNESLineSearchType *type)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(linesearch,SNESLINESEARCH_CLASSID,1);
+  PetscValidCharPointer(type,2);
+  *type = ((PetscObject)linesearch)->type_name;
+  PetscFunctionReturn(0);
+}
+
+/*@C
    SNESLineSearchSetType - Sets the linesearch type
 
    Logically Collective on SNESLineSearch
@@ -926,7 +950,7 @@ PetscErrorCode SNESLineSearchView(SNESLineSearch linesearch, PetscViewer viewer)
 
    Level: intermediate
 
-.seealso: SNESLineSearchCreate(), SNESLineSearchType, SNESLineSearchSetFromOptions()
+.seealso: SNESLineSearchCreate(), SNESLineSearchType, SNESLineSearchSetFromOptions(), SNESLineSearchGetType()
 @*/
 PetscErrorCode SNESLineSearchSetType(SNESLineSearch linesearch, SNESLineSearchType type)
 {
