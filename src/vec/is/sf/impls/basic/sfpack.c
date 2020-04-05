@@ -1,4 +1,3 @@
-
 #include <../src/vec/is/sf/impls/basic/sfpack.h>
 #include <../src/vec/is/sf/impls/basic/sfbasic.h>
 
@@ -1099,12 +1098,19 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkSyncStreamAfterPackLeafData(PetscS
 PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkSyncStreamAfterUnpackRootData(PetscSF sf,PetscSFLink link)
 {
   PetscSF_Basic  *bas = (PetscSF_Basic*)sf->data;
+  PetscBool      host2host = (link->rootmtype == PETSC_MEMTYPE_HOST) && (link->leafmtype == PETSC_MEMTYPE_HOST) ? PETSC_TRUE : PETSC_FALSE;
 
   PetscFunctionBegin;
-  /* Do nothing if we are expected to put rootdata on default stream */
-  if (sf->use_default_stream || link->rootmtype != PETSC_MEMTYPE_DEVICE) PetscFunctionReturn(0);
-  /* If we have something from local, then we called a scatter kernel (on link->stream), then we must sync it;
-     If we have something from remote and we called unpack kernel, then we must also sycn it.
+  /* Do nothing if host2host OR we are allowed to asynchronously put rootdata on device through the default stream */
+  if (host2host || (link->rootmtype == PETSC_MEMTYPE_DEVICE && sf->use_default_stream)) PetscFunctionReturn(0);
+
+  /* If rootmtype is HOST or DEVICE:
+     If we have data from local, then we called a scatter kernel (on link->stream), then we must sync it;
+     If we have data from remote && no rootdirect(i.e., we called an unpack kernel), then we must also sycn it (if rootdirect,
+     i.e., no unpack kernel after MPI, MPI guarentees rootbuf is ready to use so that we do not need the sync).
+
+     Note a tricky case is when leafmtype=DEVICE, rootmtype=HOST on uni-processor, we must sync the stream otherwise
+     CPU thread might use the yet-to-be-updated rootdata pending in the stream.
    */
   if (bas->rootbuflen[PETSCSF_LOCAL] || (bas->rootbuflen[PETSCSF_REMOTE] && !link->rootdirect[PETSCSF_REMOTE])) {
     cudaError_t cerr = cudaStreamSynchronize(link->stream);CHKERRCUDA(cerr);
@@ -1113,9 +1119,11 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkSyncStreamAfterUnpackRootData(Pets
 }
 PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkSyncStreamAfterUnpackLeafData(PetscSF sf,PetscSFLink link)
 {
+  PetscBool      host2host = (link->rootmtype == PETSC_MEMTYPE_HOST) && (link->leafmtype == PETSC_MEMTYPE_HOST) ? PETSC_TRUE : PETSC_FALSE;
+
   PetscFunctionBegin;
-  /* See comments above */
-  if (sf->use_default_stream || link->leafmtype != PETSC_MEMTYPE_DEVICE) PetscFunctionReturn(0);
+  /* See comments in PetscSFLinkSyncStreamAfterUnpackRootData*/
+  if (host2host || (link->leafmtype == PETSC_MEMTYPE_DEVICE && sf->use_default_stream)) PetscFunctionReturn(0);
   if (sf->leafbuflen[PETSCSF_LOCAL] || (sf->leafbuflen[PETSCSF_REMOTE] && !link->leafdirect[PETSCSF_REMOTE])) {
     cudaError_t cerr = cudaStreamSynchronize(link->stream);CHKERRCUDA(cerr);
   }
