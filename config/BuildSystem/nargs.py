@@ -558,10 +558,10 @@ class ArgDownload(Arg):
       raise TypeError('Invalid download value: '+str(value)+' for key '+str(self.key))
     if isinstance(value, str):
       try:
-        import urlparse
+        import urlparse as urlparse_local # novermin
       except ImportError:
-        from urllib import parse as urlparse
-      if not urlparse.urlparse(value)[0]: # how do we check if the URL is invalid?
+        from urllib import parse as urlparse_local
+      if not urlparse_local.urlparse(value)[0]: # how do we check if the URL is invalid?
         if os.path.isfile(value):
           value = 'file://'+os.path.abspath(value)
         elif os.path.isdir(value):

@@ -7,14 +7,14 @@ try:
 except ImportError:
   from urllib.request import urlretrieve
 try:
-  import urlparse
+  import urlparse as urlparse_local # novermin
 except ImportError:
-  from urllib import parse as urlparse
+  from urllib import parse as urlparse_local
 import config.base
 import socket
 
 # Fix parsing for nonstandard schemes
-urlparse.uses_netloc.extend(['bk', 'ssh', 'svn'])
+urlparse_local.uses_netloc.extend(['bk', 'ssh', 'svn'])
 
 class Retriever(logger.Logger):
   def __init__(self, sourceControl, clArgs = None, argDB = None):
@@ -25,9 +25,9 @@ class Retriever(logger.Logger):
 
   def getAuthorizedUrl(self, url):
     '''This returns a tuple of the unauthorized and authorized URLs for the given URL, and a flag indicating which was input'''
-    (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
+    (scheme, location, path, parameters, query, fragment) = urlparse_local.urlparse(url)
     if not location:
-      url     = urlparse.urlunparse(('', '', path, parameters, query, fragment))
+      url     = urlparse_local.urlunparse(('', '', path, parameters, query, fragment))
       authUrl = None
       wasAuth = 0
     else:
@@ -35,11 +35,11 @@ class Retriever(logger.Logger):
       if index >= 0:
         login   = location[0:index]
         authUrl = url
-        url     = urlparse.urlunparse((scheme, location[index+1:], path, parameters, query, fragment))
+        url     = urlparse_local.urlunparse((scheme, location[index+1:], path, parameters, query, fragment))
         wasAuth = 1
       else:
         login   = location.split('.')[0]
-        authUrl = urlparse.urlunparse((scheme, login+'@'+location, path, parameters, query, fragment))
+        authUrl = urlparse_local.urlunparse((scheme, login+'@'+location, path, parameters, query, fragment))
         wasAuth = 0
     return (url, authUrl, wasAuth)
 
@@ -47,7 +47,7 @@ class Retriever(logger.Logger):
     '''Raise an exception if the URL cannot receive an SSH login without a password'''
     if not authUrl:
       raise RuntimeError('Url is empty')
-    (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(authUrl)
+    (scheme, location, path, parameters, query, fragment) = urlparse_local.urlparse(authUrl)
     return self.executeShellCommand('echo "quit" | ssh -oBatchMode=yes '+location, log = self.log)
 
   def genericRetrieve(self, url, root, package):
@@ -144,7 +144,7 @@ Unable to download package %s from: %s
       return
 
     # get the tarball file name from the URL
-    filename = os.path.basename(urlparse.urlparse(url)[2])
+    filename = os.path.basename(urlparse_local.urlparse(url)[2])
     localFile = os.path.join(root,'_d_'+filename)
     ext =  os.path.splitext(localFile)[1]
     if ext not in ['.bz2','.tbz','.gz','.tgz','.zip','.ZIP']:

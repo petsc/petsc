@@ -468,7 +468,7 @@ prepend-path PATH "%s"
     import time
     import script
     def escape(s):
-      return s.replace('"',r'\"').replace(r'\ ',r'\\ ')
+      return s.replace('"',r'\"').replace(r'\ ',r'\\ ') # novermin
     fd = open(os.path.join(self.arch.arch,'include','petscmachineinfo.h'),'w')
     fd.write('static const char *petscmachineinfo = \"\\n\"\n')
     fd.write('\"-----------------------------------------\\n\"\n')
