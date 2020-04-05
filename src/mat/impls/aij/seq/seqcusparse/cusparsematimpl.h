@@ -15,7 +15,7 @@
 #include <thrust/functional.h>
 #include <thrust/sequence.h>
 
-#if (CUDART_VERSION >= 10010) /* CUDA 10.1 */
+#if (CUSPARSE_VER_MAJOR > 10 || CUSPARSE_VER_MAJOR == 10 && CUSPARSE_VER_MINOR >= 2) /* According to cuda/10.1.168 on OLCF Summit */
 #define CHKERRCUSPARSE(stat) \
 do { \
    if (PetscUnlikely(stat)) { \
