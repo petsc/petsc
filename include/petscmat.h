@@ -103,8 +103,9 @@ typedef const char* MatType;
 #define MATLMVMBADBROYDEN  "lmvmbadbroyden"
 #define MATLMVMSYMBROYDEN  "lmvmsymbroyden"
 #define MATLMVMSYMBADBROYDEN "lmvmsymbadbroyden"
-#define MATLMVMDIAGBROYDEN "lmvmdiagbroyden"
-#define MATCONSTANTDIAGONAL "constantdiagonal"
+#define MATLMVMDIAGBROYDEN   "lmvmdiagbroyden"
+#define MATCONSTANTDIAGONAL  "constantdiagonal"
+#define MATHARA              "hara"
 
 /*J
     MatSolverType - String with the name of a PETSc matrix solver type.
@@ -1781,6 +1782,13 @@ PETSC_EXTERN PetscErrorCode MatFDColoringSetType(MatFDColoring,MatMFFDType);
 
 PETSC_EXTERN PetscErrorCode PetscViewerMathematicaPutMatrix(PetscViewer, PetscInt, PetscInt, PetscReal *);
 PETSC_EXTERN PetscErrorCode PetscViewerMathematicaPutCSRMatrix(PetscViewer, PetscInt, PetscInt, PetscInt *, PetscInt *, PetscReal *);
+
+#ifdef PETSC_HAVE_HARA
+PETSC_EXTERN_TYPEDEF typedef PetscScalar (*MatHaraKernel)(PetscInt,PetscReal[],PetscReal[],void*);
+PETSC_EXTERN PetscErrorCode MatCreateHaraFromKernel(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscReal[],MatHaraKernel,void*,PetscReal,PetscInt,PetscInt,Mat*);
+PETSC_EXTERN PetscErrorCode MatCreateHaraFromMat(Mat,PetscInt,const PetscReal[],PetscReal,PetscInt,PetscInt,PetscInt,PetscReal,Mat*);
+PETSC_EXTERN PetscErrorCode MatHaraSetSamplingMat(Mat,Mat,PetscInt,PetscReal);
+#endif
 
 /*
    PETSc interface to MUMPS

@@ -75,6 +75,11 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat);
 #endif
 
 PETSC_EXTERN PetscErrorCode MatCreate_ConstantDiagonal(Mat);
+
+#if defined(PETSC_HAVE_HARA)
+PETSC_EXTERN PetscErrorCode MatCreate_HARA(Mat);
+#endif
+
 /*@C
   MatRegisterAll - Registers all of the matrix types in PETSc
 
@@ -186,6 +191,10 @@ PetscErrorCode  MatRegisterAll(void)
 
 #if defined(PETSC_HAVE_HYPRE)
   ierr = MatRegister(MATHYPRE,          MatCreate_HYPRE);CHKERRQ(ierr);
+#endif
+
+#if defined(PETSC_HAVE_HARA)
+  ierr = MatRegister(MATHARA,           MatCreate_HARA);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }
