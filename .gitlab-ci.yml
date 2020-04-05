@@ -125,6 +125,13 @@ checksource:
     - make checkbadSource SHELL=bash
     - make check_output SHELL=bash
 
+check-py-vermin:
+  extends: .test
+  stage: stage-1
+  tags:
+    - check-ci-settings
+  script:
+    - vermin -vv  -t=2.6- -t=3.4- config
 #
 # This provides the basic order of operations and options template for stage-2,3 tests.
 # Not all stage-2,3 need to follow this template, but most will.

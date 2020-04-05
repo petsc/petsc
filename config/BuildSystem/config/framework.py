@@ -59,7 +59,7 @@ import pickle
 try:
   from hashlib import md5 as new_md5
 except ImportError:
-  from md5 import new as new_md5
+  from md5 import new as new_md5 # novermin
 
 
 class Framework(config.base.Configure, script.LanguageProcessor):
@@ -1020,7 +1020,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
   #  the only allow non-blocking IO operations etc, they don't provide real parallelism
   #  Also changing values in LIBS is currently buggy for threads as are possible other variables
   def parallelQueueEvaluation(self, depGraph, numThreads = 1):
-    import Queue
+    import Queue # novermin
     from threading import Thread
 
     if numThreads < 1: raise RuntimeError('Parallel configure must use at least one thread')
@@ -1113,7 +1113,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
         # Udpate queue
         #self.logPrint('PUSH  %s to DONE ' % child.__class__.__module__)
         done.put((ret, out, emsg, child))
-        q.task_done()
+        q.task_done() # novermin
         if ret: break
       return
 
@@ -1142,9 +1142,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
         if push:
           #self.logPrint('PUSH %s to   TODO' % child.__class__.__module__)
           todo.put(child)
-      done.task_done()
-    todo.join()
-    done.join()
+      done.task_done() # novermin
+    todo.join() # novermin
+    done.join() # novermin
     return
 
   def serialEvaluation(self, depGraph):
@@ -1208,9 +1208,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     useParallel = False
     if script.useParallel:
       try:
-        import Queue
+        import Queue # novermin
         from threading import Thread
-        if hasattr(Queue.Queue(), 'join'): useParallel = True
+        if hasattr(Queue.Queue(), 'join'): useParallel = True # novermin
       except: pass
     if useParallel:
       self.parallelQueueEvaluation(self.childGraph, script.useParallel)

@@ -267,11 +267,11 @@ def chkrhl9():
   return 0
 
 def chktmpnoexec():
-  if not hasattr(os,'ST_NOEXEC'): return
+  if not hasattr(os,'ST_NOEXEC'): return # novermin
   if 'TMPDIR' in os.environ: tmpDir = os.environ['TMPDIR']
   else: tmpDir = '/tmp'
-  if os.statvfs(tmpDir).f_flag & os.ST_NOEXEC:
-    if os.statvfs(os.path.abspath('.')).f_flag & os.ST_NOEXEC:
+  if os.statvfs(tmpDir).f_flag & os.ST_NOEXEC: # novermin
+    if os.statvfs(os.path.abspath('.')).f_flag & os.ST_NOEXEC: # novermin
       print('************************************************************************')
       print('* TMPDIR '+tmpDir+' has noexec attribute. Same with '+os.path.abspath('.')+' where petsc is built.')
       print('* Suggest building PETSc in a location without this restriction!')
