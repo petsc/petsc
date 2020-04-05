@@ -233,7 +233,9 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Anderson(SNES snes)
   }
 
   ierr = SNESGetLineSearch(snes,&linesearch);CHKERRQ(ierr);
-  ierr = SNESLineSearchSetType(linesearch,SNESLINESEARCHBASIC);CHKERRQ(ierr);
+  if (!((PetscObject)linesearch)->type_name) {
+    ierr = SNESLineSearchSetType(linesearch,SNESLINESEARCHBASIC);CHKERRQ(ierr);
+  }
 
   ngmres->additive_linesearch = NULL;
   ngmres->approxfunc       = PETSC_FALSE;

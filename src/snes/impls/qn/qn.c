@@ -356,12 +356,14 @@ static PetscErrorCode SNESSetFromOptions_QN(PetscOptionItems *PetscOptionsObject
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   if (!snes->linesearch) {
     ierr = SNESGetLineSearch(snes, &linesearch);CHKERRQ(ierr);
-    if (qn->type == SNES_QN_LBFGS) {
-      ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHCP);CHKERRQ(ierr);
-    } else if (qn->type == SNES_QN_BROYDEN) {
-      ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHBASIC);CHKERRQ(ierr);
-    } else {
-      ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHL2);CHKERRQ(ierr);
+    if (!((PetscObject)linesearch)->type_name) {
+      if (qn->type == SNES_QN_LBFGS) {
+        ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHCP);CHKERRQ(ierr);
+      } else if (qn->type == SNES_QN_BROYDEN) {
+        ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHBASIC);CHKERRQ(ierr);
+      } else {
+        ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHL2);CHKERRQ(ierr);
+      }
     }
   }
   if (qn->monflg) {
