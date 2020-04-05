@@ -958,6 +958,17 @@ PetscErrorCode PetscDTGradedOrderToIndex(PetscInt len, const PetscInt degtup[], 
   PetscFunctionReturn(0);
 }
 
+static PetscBool PKDCite = PETSC_FALSE;
+const char       PKDCitation[] = "@article{Kirby2010,\n"
+                                 "  title={Singularity-free evaluation of collapsed-coordinate orthogonal polynomials},\n"
+                                 "  author={Kirby, Robert C},\n"
+                                 "  journal={ACM Transactions on Mathematical Software (TOMS)},\n"
+                                 "  volume={37},\n"
+                                 "  number={1},\n"
+                                 "  pages={1--16},\n"
+                                 "  year={2010},\n"
+                                 "  publisher={ACM New York, NY, USA}\n}\n";
+
 /*@
   PetscDTPKDEvalJet - Evaluate the jet (function and derivatives) of the Prioriol-Koornwinder-Dubiner (PKD) basis for
   the space of polynomials up to a given degree.  The PKD basis is L2-orthonormal on the biunit simplex (which is used
@@ -985,6 +996,8 @@ PetscErrorCode PetscDTGradedOrderToIndex(PetscInt len, const PetscInt degtup[], 
   leading monomial x^3,y^1,z^2, which as degree tuple (2,0,1), which by PetscDTGradedOrderToIndex() has index 12 (it is the 13th basis function in the space);
   the partial derivative $\partial_x \partial_z$ has order tuple (1,0,1), appears at index 6 in the jet (it is the 7th partial derivative in the jet).
 
+  The implementation uses Kirby's singularity-free evaluation algorithm, https://doi.org/10.1145/1644001.1644006.
+
 .seealso: PetscDTGradedOrderToIndex(), PetscDTIndexToGradedOrder(), PetscDTJacobiEvalJet()
 @*/
 PetscErrorCode PetscDTPKDEvalJet(PetscInt dim, PetscInt npoints, const PetscReal points[], PetscInt degree, PetscInt k, PetscReal p[])
@@ -996,6 +1009,7 @@ PetscErrorCode PetscDTPKDEvalJet(PetscInt dim, PetscInt npoints, const PetscReal
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  ierr = PetscCitationsRegister(PKDCitation, &PKDCite);CHKERRQ(ierr);
   ierr = PetscDTBinomialInt(dim + k, k, &Nk);CHKERRQ(ierr);
   ierr = PetscDTBinomialInt(degree + dim, degree, &Ndeg);CHKERRQ(ierr);
   ierr = PetscMalloc2(dim, &degtup, dim, &ktup);CHKERRQ(ierr);
