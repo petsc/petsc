@@ -1731,7 +1731,7 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetDepthLabel(dm, &depthLabel);CHKERRQ(ierr);
   if (subdm) {
-    ierr = DMPlexCreateSubpointIS(subdm, &subpointIS);CHKERRQ(ierr);
+    ierr = DMPlexGetSubpointIS(subdm, &subpointIS);CHKERRQ(ierr);
     if (subpointIS) {
       ierr = ISGetLocalSize(subpointIS, &numSubpoints);CHKERRQ(ierr);
       ierr = ISGetIndices(subpointIS, &subpoints);CHKERRQ(ierr);
@@ -1739,10 +1739,7 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
   }
   /* Mark cell on the fault, and its faces which touch the fault: cell orientation for face gives the side of the fault */
   ierr = DMLabelGetStratumIS(label, dim-1, &dimIS);CHKERRQ(ierr);
-  if (!dimIS) {
-    ierr = ISDestroy(&subpointIS);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
+  if (!dimIS) PetscFunctionReturn(0);
   ierr = ISGetLocalSize(dimIS, &numPoints);CHKERRQ(ierr);
   ierr = ISGetIndices(dimIS, &points);CHKERRQ(ierr);
   for (p = 0; p < numPoints; ++p) { /* Loop over fault faces */
@@ -1803,7 +1800,6 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
   ierr = ISRestoreIndices(dimIS, &points);CHKERRQ(ierr);
   ierr = ISDestroy(&dimIS);CHKERRQ(ierr);
   if (subpointIS) {ierr = ISRestoreIndices(subpointIS, &subpoints);CHKERRQ(ierr);}
-  ierr = ISDestroy(&subpointIS);CHKERRQ(ierr);
   /* Mark boundary points as unsplit */
   if (blabel) {
     ierr = DMLabelGetStratumIS(blabel, 1, &dimIS);CHKERRQ(ierr);
@@ -2028,7 +2024,7 @@ PetscErrorCode DMPlexCheckValidSubmesh_Private(DM dm, DMLabel label, DM subdm)
   PetscFunctionBegin;
   if (!label) PetscFunctionReturn(0);
   ierr = DMLabelGetDefaultValue(label, &defaultValue);CHKERRQ(ierr);
-  ierr = DMPlexCreateSubpointIS(subdm, &subpointIS);CHKERRQ(ierr);
+  ierr = DMPlexGetSubpointIS(subdm, &subpointIS);CHKERRQ(ierr);
   if (!subpointIS) PetscFunctionReturn(0);
   ierr = DMPlexGetHeightStratum(subdm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
@@ -2055,7 +2051,6 @@ PetscErrorCode DMPlexCheckValidSubmesh_Private(DM dm, DMLabel label, DM subdm)
     }
   }
   ierr = ISRestoreIndices(subpointIS, &dmpoints);CHKERRQ(ierr);
-  ierr = ISDestroy(&subpointIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3246,7 +3241,7 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
     ierr = DMGetPointSF(subdm, &sfPointSub);CHKERRQ(ierr);
     ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
     ierr = DMPlexGetChart(subdm, NULL, &numSubroots);CHKERRQ(ierr);
-    ierr = DMPlexCreateSubpointIS(subdm, &subpIS);CHKERRQ(ierr);
+    ierr = DMPlexGetSubpointIS(subdm, &subpIS);CHKERRQ(ierr);
     if (subpIS) {
       ierr = ISGetIndices(subpIS, &subpoints);CHKERRQ(ierr);
       ierr = ISGetLocalSize(subpIS, &numSubpoints);CHKERRQ(ierr);
@@ -3305,7 +3300,6 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
     }
     if (subpIS) {
       ierr = ISRestoreIndices(subpIS, &subpoints);CHKERRQ(ierr);
-      ierr = ISDestroy(&subpIS);CHKERRQ(ierr);
     }
   }
   /* Cleanup */
@@ -3674,7 +3668,7 @@ PetscErrorCode DMPlexFilter(DM dm, DMLabel cellLabel, PetscInt value, DM *subdm)
 
   Level: developer
 
-.seealso: DMPlexCreateSubmesh(), DMPlexCreateSubpointIS()
+.seealso: DMPlexCreateSubmesh(), DMPlexGetSubpointIS()
 @*/
 PetscErrorCode DMPlexGetSubpointMap(DM dm, DMLabel *subpointMap)
 {
@@ -3696,7 +3690,7 @@ PetscErrorCode DMPlexGetSubpointMap(DM dm, DMLabel *subpointMap)
 
   Level: developer
 
-.seealso: DMPlexCreateSubmesh(), DMPlexCreateSubpointIS()
+.seealso: DMPlexCreateSubmesh(), DMPlexGetSubpointIS()
 @*/
 PetscErrorCode DMPlexSetSubpointMap(DM dm, DMLabel subpointMap)
 {
@@ -3713,8 +3707,67 @@ PetscErrorCode DMPlexSetSubpointMap(DM dm, DMLabel subpointMap)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode DMPlexCreateSubpointIS_Internal(DM dm, IS *subpointIS)
+{
+  DMLabel        spmap;
+  PetscInt       depth, d;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexGetSubpointMap(dm, &spmap);CHKERRQ(ierr);
+  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
+  if (spmap && depth >= 0) {
+    DM_Plex  *mesh = (DM_Plex *) dm->data;
+    PetscInt *points, *depths;
+    PetscInt  pStart, pEnd, p, off;
+
+    ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+    if (pStart) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Submeshes must start the point numbering at 0, not %d", pStart);
+    ierr = PetscMalloc1(pEnd, &points);CHKERRQ(ierr);
+    ierr = DMGetWorkArray(dm, depth+1, MPIU_INT, &depths);CHKERRQ(ierr);
+    depths[0] = depth;
+    depths[1] = 0;
+    for(d = 2; d <= depth; ++d) {depths[d] = depth+1 - d;}
+    for(d = 0, off = 0; d <= depth; ++d) {
+      const PetscInt dep = depths[d];
+      PetscInt       depStart, depEnd, n;
+
+      ierr = DMPlexGetDepthStratum(dm, dep, &depStart, &depEnd);CHKERRQ(ierr);
+      ierr = DMLabelGetStratumSize(spmap, dep, &n);CHKERRQ(ierr);
+      if (((d < 2) && (depth > 1)) || (d == 1)) { /* Only check vertices and cells for now since the map is broken for others */
+        if (n != depEnd-depStart) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The number of mapped submesh points %d at depth %d should be %d", n, dep, depEnd-depStart);
+      } else {
+        if (!n) {
+          if (d == 0) {
+            /* Missing cells */
+            for(p = 0; p < depEnd-depStart; ++p, ++off) points[off] = -1;
+          } else {
+            /* Missing faces */
+            for(p = 0; p < depEnd-depStart; ++p, ++off) points[off] = PETSC_MAX_INT;
+          }
+        }
+      }
+      if (n) {
+        IS              is;
+        const PetscInt *opoints;
+
+        ierr = DMLabelGetStratumIS(spmap, dep, &is);CHKERRQ(ierr);
+        ierr = ISGetIndices(is, &opoints);CHKERRQ(ierr);
+        for(p = 0; p < n; ++p, ++off) points[off] = opoints[p];
+        ierr = ISRestoreIndices(is, &opoints);CHKERRQ(ierr);
+        ierr = ISDestroy(&is);CHKERRQ(ierr);
+      }
+    }
+    ierr = DMRestoreWorkArray(dm, depth+1, MPIU_INT, &depths);CHKERRQ(ierr);
+    if (off != pEnd) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The number of mapped submesh points %d should be %d", off, pEnd);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF, pEnd, points, PETSC_OWN_POINTER, subpointIS);CHKERRQ(ierr);
+    ierr = PetscObjectStateGet((PetscObject) spmap, &mesh->subpointState);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 /*@
-  DMPlexCreateSubpointIS - Creates an IS covering the entire subdm chart with the original points as data
+  DMPlexGetSubpointIS - Returns an IS covering the entire subdm chart with the original points as data
 
   Input Parameter:
 . dm - The submesh DM
@@ -3728,61 +3781,20 @@ PetscErrorCode DMPlexSetSubpointMap(DM dm, DMLabel subpointMap)
 
 .seealso: DMPlexCreateSubmesh(), DMPlexGetSubpointMap()
 @*/
-PetscErrorCode DMPlexCreateSubpointIS(DM dm, IS *subpointIS)
+PetscErrorCode DMPlexGetSubpointIS(DM dm, IS *subpointIS)
 {
-  MPI_Comm        comm;
-  DMLabel         subpointMap;
-  IS              is;
-  const PetscInt *opoints;
-  PetscInt       *points, *depths;
-  PetscInt        depth, depStart, depEnd, d, pStart, pEnd, p, n, off;
-  PetscErrorCode  ierr;
+  DM_Plex         *mesh = (DM_Plex *) dm->data;
+  DMLabel          spmap;
+  PetscObjectState state;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(subpointIS, 2);
-  ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
-  *subpointIS = NULL;
-  ierr = DMPlexGetSubpointMap(dm, &subpointMap);CHKERRQ(ierr);
-  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
-  if (subpointMap && depth >= 0) {
-    ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
-    if (pStart) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Submeshes must start the point numbering at 0, not %d", pStart);
-    ierr = DMGetWorkArray(dm, depth+1, MPIU_INT, &depths);CHKERRQ(ierr);
-    depths[0] = depth;
-    depths[1] = 0;
-    for(d = 2; d <= depth; ++d) {depths[d] = depth+1 - d;}
-    ierr = PetscMalloc1(pEnd, &points);CHKERRQ(ierr);
-    for(d = 0, off = 0; d <= depth; ++d) {
-      const PetscInt dep = depths[d];
-
-      ierr = DMPlexGetDepthStratum(dm, dep, &depStart, &depEnd);CHKERRQ(ierr);
-      ierr = DMLabelGetStratumSize(subpointMap, dep, &n);CHKERRQ(ierr);
-      if (((d < 2) && (depth > 1)) || (d == 1)) { /* Only check vertices and cells for now since the map is broken for others */
-        if (n != depEnd-depStart) SETERRQ3(comm, PETSC_ERR_ARG_WRONG, "The number of mapped submesh points %d at depth %d should be %d", n, dep, depEnd-depStart);
-      } else {
-        if (!n) {
-          if (d == 0) {
-            /* Missing cells */
-            for(p = 0; p < depEnd-depStart; ++p, ++off) points[off] = -1;
-          } else {
-            /* Missing faces */
-            for(p = 0; p < depEnd-depStart; ++p, ++off) points[off] = PETSC_MAX_INT;
-          }
-        }
-      }
-      if (n) {
-        ierr = DMLabelGetStratumIS(subpointMap, dep, &is);CHKERRQ(ierr);
-        ierr = ISGetIndices(is, &opoints);CHKERRQ(ierr);
-        for(p = 0; p < n; ++p, ++off) points[off] = opoints[p];
-        ierr = ISRestoreIndices(is, &opoints);CHKERRQ(ierr);
-        ierr = ISDestroy(&is);CHKERRQ(ierr);
-      }
-    }
-    ierr = DMRestoreWorkArray(dm, depth+1, MPIU_INT, &depths);CHKERRQ(ierr);
-    if (off != pEnd) SETERRQ2(comm, PETSC_ERR_ARG_WRONG, "The number of mapped submesh points %d should be %d", off, pEnd);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF, pEnd, points, PETSC_OWN_POINTER, subpointIS);CHKERRQ(ierr);
-  }
+  ierr = DMPlexGetSubpointMap(dm, &spmap);CHKERRQ(ierr);
+  ierr = PetscObjectStateGet((PetscObject) spmap, &state);CHKERRQ(ierr);
+  if (state != mesh->subpointState || !mesh->subpointIS) {ierr = DMPlexCreateSubpointIS_Internal(dm, &mesh->subpointIS);CHKERRQ(ierr);}
+  *subpointIS = mesh->subpointIS;
   PetscFunctionReturn(0);
 }
 
@@ -3861,7 +3873,6 @@ PetscErrorCode DMGetEnclosureRelation(DM dmA, DM dmB, DMEnclosureType *rel)
 PetscErrorCode DMGetEnclosurePoint(DM dmA, DM dmB, DMEnclosureType etype, PetscInt pB, PetscInt *pA)
 {
   DM              sdm;
-  DMLabel         spmap;
   IS              subpointIS;
   const PetscInt *subpoints;
   PetscInt        numSubpoints;
@@ -3872,17 +3883,14 @@ PetscErrorCode DMGetEnclosurePoint(DM dmA, DM dmB, DMEnclosureType etype, PetscI
   switch (etype) {
     case DM_ENC_SUPERMESH:
     sdm  = dmB;
-    ierr = DMPlexGetSubpointMap(sdm, &spmap);CHKERRQ(ierr);
-    ierr = DMPlexCreateSubpointIS(sdm, &subpointIS);CHKERRQ(ierr);
+    ierr = DMPlexGetSubpointIS(sdm, &subpointIS);CHKERRQ(ierr);
     ierr = ISGetIndices(subpointIS, &subpoints);CHKERRQ(ierr);
     *pA  = subpoints[pB];
     ierr = ISRestoreIndices(subpointIS, &subpoints);CHKERRQ(ierr);
-    ierr = ISDestroy(&subpointIS);CHKERRQ(ierr);
     break;
     case DM_ENC_SUBMESH:
     sdm  = dmA;
-    ierr = DMPlexGetSubpointMap(sdm, &spmap);CHKERRQ(ierr);
-    ierr = DMPlexCreateSubpointIS(sdm, &subpointIS);CHKERRQ(ierr);
+    ierr = DMPlexGetSubpointIS(sdm, &subpointIS);CHKERRQ(ierr);
     ierr = ISGetLocalSize(subpointIS, &numSubpoints);CHKERRQ(ierr);
     ierr = ISGetIndices(subpointIS, &subpoints);CHKERRQ(ierr);
     ierr = PetscFindInt(pB, numSubpoints, subpoints, pA);CHKERRQ(ierr);
@@ -3892,7 +3900,6 @@ PetscErrorCode DMGetEnclosurePoint(DM dmA, DM dmB, DMEnclosureType etype, PetscI
       SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %d not found in submesh", pB);
     }
     ierr = ISRestoreIndices(subpointIS, &subpoints);CHKERRQ(ierr);
-    ierr = ISDestroy(&subpointIS);CHKERRQ(ierr);
     break;
     case DM_ENC_EQUALITY:
     case DM_ENC_NONE:

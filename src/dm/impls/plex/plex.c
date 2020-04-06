@@ -1355,6 +1355,7 @@ PetscErrorCode DMDestroy_Plex(DM dm)
   ierr = PetscFree(mesh->triangleOpts);CHKERRQ(ierr);
   ierr = PetscPartitionerDestroy(&mesh->partitioner);CHKERRQ(ierr);
   ierr = DMLabelDestroy(&mesh->subpointMap);CHKERRQ(ierr);
+  ierr = ISDestroy(&mesh->subpointIS);CHKERRQ(ierr);
   ierr = ISDestroy(&mesh->globalVertexNumbers);CHKERRQ(ierr);
   ierr = ISDestroy(&mesh->globalCellNumbers);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&mesh->anchorSection);CHKERRQ(ierr);
@@ -8094,9 +8095,8 @@ PetscErrorCode DMCreateSubDomainDM_Plex(DM dm, DMLabel label, PetscInt value, IS
   /* Create subdomain */
   ierr = DMPlexFilter(dm, label, value, subdm);CHKERRQ(ierr);
   /* Create submodel */
-  ierr = DMPlexCreateSubpointIS(*subdm, &subis);CHKERRQ(ierr);
+  ierr = DMPlexGetSubpointIS(*subdm, &subis);CHKERRQ(ierr);
   ierr = PetscSectionCreateSubmeshSection(section, subis, &subsection);CHKERRQ(ierr);
-  ierr = ISDestroy(&subis);CHKERRQ(ierr);
   ierr = DMSetLocalSection(*subdm, subsection);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&subsection);CHKERRQ(ierr);
   ierr = DMCopyDisc(dm, *subdm);CHKERRQ(ierr);
@@ -8109,7 +8109,7 @@ PetscErrorCode DMCreateSubDomainDM_Plex(DM dm, DMLabel label, PetscInt value, IS
     PetscInt        subSize = 0, subOff = 0, pStart, pEnd, p;
     PetscInt        Nf, f, bs = -1, bsLocal[2], bsMinMax[2];
 
-    ierr = DMPlexCreateSubpointIS(*subdm, &spIS);CHKERRQ(ierr);
+    ierr = DMPlexGetSubpointIS(*subdm, &spIS);CHKERRQ(ierr);
     ierr = ISGetIndices(spIS, &spmap);CHKERRQ(ierr);
     ierr = PetscSectionGetNumFields(section, &Nf);CHKERRQ(ierr);
     ierr = DMGetGlobalSection(dm, &sectionGlobal);CHKERRQ(ierr);
@@ -8170,7 +8170,6 @@ PetscErrorCode DMCreateSubDomainDM_Plex(DM dm, DMLabel label, PetscInt value, IS
       }
     }
     ierr = ISRestoreIndices(spIS, &spmap);CHKERRQ(ierr);
-    ierr = ISDestroy(&spIS);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm), subSize, subIndices, PETSC_OWN_POINTER, is);CHKERRQ(ierr);
     if (bs > 1) {
       /* We need to check that the block size does not come from non-contiguous fields */
