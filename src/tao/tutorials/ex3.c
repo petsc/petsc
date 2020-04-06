@@ -251,7 +251,7 @@ PetscErrorCode CreateCtx(DM dm, AppCtx* user)
   ierr = DMPlexSNESComputeJacobianFEM(dm_laplace, user->data, user->laplace, user->laplace, NULL);CHKERRQ(ierr);
 
   /* Code from Matt to get the indices associated with the boundary dofs */
-  ierr = PetscDSAddBoundary(prob_laplace, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) zero, 1, &id, NULL);CHKERRQ(ierr);
+  ierr = DMAddBoundary(dm_laplace, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) zero, 1, &id, NULL);CHKERRQ(ierr);
   ierr = DMGetLocalSection(dm_laplace, &section);CHKERRQ(ierr);
   ierr = DMGetLabel(dm_laplace, "marker", &label);CHKERRQ(ierr);
   ierr = DMLabelGetStratumSize(label, 1, &n);CHKERRQ(ierr);

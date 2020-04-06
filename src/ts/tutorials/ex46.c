@@ -255,14 +255,16 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
 static PetscErrorCode CreateBCLabel(DM dm, const char name[])
 {
+  DM             plex;
   DMLabel        label;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   ierr = DMCreateLabel(dm, name);CHKERRQ(ierr);
   ierr = DMGetLabel(dm, name, &label);CHKERRQ(ierr);
-  ierr = DMPlexMarkBoundaryFaces(dm, 1, label);CHKERRQ(ierr);
-  ierr = DMPlexLabelComplete(dm, label);CHKERRQ(ierr);
+  ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
+  ierr = DMPlexMarkBoundaryFaces(plex, 1, label);CHKERRQ(ierr);
+  ierr = DMDestroy(&plex);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -326,7 +328,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *ctx)
   default:
     SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %D", ctx->dim);
   }
-  ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) ctx->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
+  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) ctx->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -361,9 +363,9 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *ctx)
     ierr = PetscObjectCompose(pressure, "nullspace", (PetscObject) nsp);CHKERRQ(ierr);
     ierr = MatNullSpaceDestroy(&nsp);CHKERRQ(ierr);
 
-    ierr = DMCopyDisc(dm, cdm);CHKERRQ(ierr);
     ierr = DMHasLabel(cdm, "marker", &hasLabel);CHKERRQ(ierr);
     if (!hasLabel) {ierr = CreateBCLabel(cdm, "marker");CHKERRQ(ierr);}
+    ierr = DMCopyDisc(dm, cdm);CHKERRQ(ierr);
     ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
   }
   ierr = PetscFEDestroy(&fe[0]);CHKERRQ(ierr);

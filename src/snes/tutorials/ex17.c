@@ -441,21 +441,21 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
     PetscInt cmp;
 
     id   = dim == 3 ? 5 : 2;
-    ierr = PetscDSAddBoundary(prob,   DM_BC_NATURAL,   "right",  "marker", 0, 0, NULL, (void (*)(void)) zero, 1, &id, user);CHKERRQ(ierr);
+    ierr = DMAddBoundary(dm,   DM_BC_NATURAL,   "right",  "marker", 0, 0, NULL, (void (*)(void)) zero, 1, &id, user);CHKERRQ(ierr);
     id   = dim == 3 ? 6 : 4;
     cmp  = 0;
-    ierr = PetscDSAddBoundary(prob,   DM_BC_ESSENTIAL, "left",   "marker", 0, 1, &cmp, (void (*)(void)) zero, 1, &id, user);CHKERRQ(ierr);
+    ierr = DMAddBoundary(dm,   DM_BC_ESSENTIAL, "left",   "marker", 0, 1, &cmp, (void (*)(void)) zero, 1, &id, user);CHKERRQ(ierr);
     cmp  = dim == 3 ? 2 : 1;
     id   = dim == 3 ? 1 : 1;
-    ierr = PetscDSAddBoundary(prob,   DM_BC_ESSENTIAL, "bottom", "marker", 0, 1, &cmp, (void (*)(void)) zero, 1, &id, user);CHKERRQ(ierr);
+    ierr = DMAddBoundary(dm,   DM_BC_ESSENTIAL, "bottom", "marker", 0, 1, &cmp, (void (*)(void)) zero, 1, &id, user);CHKERRQ(ierr);
     if (dim == 3) {
       cmp  = 1;
       id   = 3;
-      ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "front",  "marker", 0, 1, &cmp, (void (*)(void)) zero, 1, &id, user);CHKERRQ(ierr);
+      ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "front",  "marker", 0, 1, &cmp, (void (*)(void)) zero, 1, &id, user);CHKERRQ(ierr);
     }
   } else {
     id = 1;
-    ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) exact, 1, &id, user);CHKERRQ(ierr);
+    ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) exact, 1, &id, user);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

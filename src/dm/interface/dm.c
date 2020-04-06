@@ -4922,6 +4922,43 @@ PetscErrorCode DMSetBasicAdjacency(DM dm, PetscBool useCone, PetscBool useClosur
   PetscFunctionReturn(0);
 }
 
+/* Complete labels that are being used for FEM BC */
+static PetscErrorCode DMCompleteBoundaryLabel_Internal(DM dm, PetscDS ds, PetscInt field, PetscInt bdNum, const char labelname[])
+{
+  DMLabel        label;
+  PetscObject    obj;
+  PetscClassId   id;
+  PetscInt       Nbd, bd;
+  PetscBool      isFE      = PETSC_FALSE;
+  PetscBool      duplicate = PETSC_FALSE;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetField(dm, field, NULL, &obj);CHKERRQ(ierr);
+  ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+  if (id == PETSCFE_CLASSID) isFE = PETSC_TRUE;
+  ierr = DMGetLabel(dm, labelname, &label);CHKERRQ(ierr);
+  if (isFE && label) {
+    /* Only want to modify label once */
+    ierr = PetscDSGetNumBoundary(ds, &Nbd);CHKERRQ(ierr);
+    for (bd = 0; bd < PetscMin(Nbd, bdNum); ++bd) {
+      const char *lname;
+
+      ierr = PetscDSGetBoundary(ds, bd, NULL, NULL, &lname, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+      ierr = PetscStrcmp(lname, labelname, &duplicate);CHKERRQ(ierr);
+      if (duplicate) break;
+    }
+    if (!duplicate) {
+      DM plex;
+
+      ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
+      if (plex) {ierr = DMPlexLabelComplete(plex, label);CHKERRQ(ierr);}
+      ierr = DMDestroy(&plex);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode DMDSEnlarge_Static(DM dm, PetscInt NdsNew)
 {
   DMSpace       *tmpd;
@@ -5343,12 +5380,22 @@ PetscErrorCode DMCopyDS(DM dm, DM newdm)
   ierr = DMGetNumDS(dm, &Nds);CHKERRQ(ierr);
   ierr = DMClearDS(newdm);CHKERRQ(ierr);
   for (s = 0; s < Nds; ++s) {
-    DMLabel label;
-    IS      fields;
-    PetscDS ds;
+    DMLabel  label;
+    IS       fields;
+    PetscDS  ds;
+    PetscInt Nbd, bd;
 
     ierr = DMGetRegionNumDS(dm, s, &label, &fields, &ds);CHKERRQ(ierr);
     ierr = DMSetRegionDS(newdm, label, fields, ds);CHKERRQ(ierr);
+    ierr = PetscDSGetNumBoundary(ds, &Nbd);CHKERRQ(ierr);
+    for (bd = 0; bd < Nbd; ++bd) {
+      const char *labelname, *name;
+      PetscInt    field;
+
+      /* Do not check if label exists here, since p4est calls this for the reference tree which does not have the labels */
+      ierr = PetscDSGetBoundary(ds, bd, NULL, &name, &labelname, &field, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+      ierr = DMCompleteBoundaryLabel_Internal(newdm, ds, field, bd, labelname);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -7570,6 +7617,8 @@ PetscErrorCode DMCopyBoundary(DM dm, DM dmNew)
 /*@C
   DMAddBoundary - Add a boundary condition to the model
 
+  Collective on dm
+
   Input Parameters:
 + dm          - The DM, with a PetscDS that matches the problem being constrained
 . type        - The type of condition, e.g. DM_BC_ESSENTIAL_ANALYTIC/DM_BC_ESSENTIAL_FIELD (Dirichlet), or DM_BC_NATURAL (Neumann)
@@ -7598,7 +7647,12 @@ PetscErrorCode DMAddBoundary(DM dm, DMBoundaryConditionType type, const char nam
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidLogicalCollectiveEnum(dm, type, 2);
+  PetscValidLogicalCollectiveInt(dm, field, 5);
+  PetscValidLogicalCollectiveInt(dm, numcomps, 6);
+  PetscValidLogicalCollectiveInt(dm, numids, 9);
   ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
+  ierr = DMCompleteBoundaryLabel_Internal(dm, ds, field, PETSC_MAX_INT, labelname);CHKERRQ(ierr);
   ierr = PetscDSAddBoundary(ds, type,name, labelname, field, numcomps, comps, bcFunc, numids, ids, ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

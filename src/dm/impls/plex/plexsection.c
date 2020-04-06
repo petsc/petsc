@@ -477,24 +477,12 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
     DMLabel                 label;
     const PetscInt         *comps;
     const PetscInt         *values;
-    PetscInt                bd2, field, numComps, numValues;
+    PetscInt                field, numComps, numValues;
     DMBoundaryConditionType type;
-    PetscBool               duplicate = PETSC_FALSE;
 
     ierr = PetscDSGetBoundary(probBC, bd, &type, NULL, &bdLabel, &field, &numComps, &comps, NULL, &numValues, &values, NULL);CHKERRQ(ierr);
     ierr = DMGetLabel(dm, bdLabel, &label);CHKERRQ(ierr);
     if (!isFE[field] || !label) continue;
-    /* Only want to modify label once */
-    for (bd2 = 0; bd2 < bd; ++bd2) {
-      const char *bdname;
-      ierr = PetscDSGetBoundary(probBC, bd2, NULL, NULL, &bdname, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
-      ierr = PetscStrcmp(bdname, bdLabel, &duplicate);CHKERRQ(ierr);
-      if (duplicate) break;
-    }
-    if (!duplicate && (isFE[field])) {
-      /* don't complete cells, which are just present to give orientation to the boundary */
-      ierr = DMPlexLabelComplete(dm, label);CHKERRQ(ierr);
-    }
     /* Filter out cells, if you actually want to constrain cells you need to do things by hand right now */
     if (type & DM_BC_ESSENTIAL) {
       PetscInt       *newidx;
