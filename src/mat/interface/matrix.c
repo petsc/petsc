@@ -9267,14 +9267,15 @@ static PetscErrorCode MatProduct_Private(Mat A,Mat B,MatReuse scall,PetscReal fi
       /* user provide the dense matrix *C without calling MatProductCreate() */
       PetscBool seqdense,mpidense,dense;
 #if defined(PETSC_HAVE_CUDA)
-      PetscBool seqdensecuda;
+      PetscBool seqdensecuda,mpidensecuda;
 #endif
       ierr = PetscObjectTypeCompare((PetscObject)(*C),MATSEQDENSE,&seqdense);CHKERRQ(ierr);
       ierr = PetscObjectTypeCompare((PetscObject)(*C),MATMPIDENSE,&mpidense);CHKERRQ(ierr);
       ierr = PetscObjectTypeCompare((PetscObject)(*C),MATDENSE,&dense);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_CUDA)
       ierr = PetscObjectTypeCompare((PetscObject)(*C),MATSEQDENSECUDA,&seqdensecuda);CHKERRQ(ierr);
-      if (seqdense || mpidense || dense || seqdensecuda) {
+      ierr = PetscObjectTypeCompare((PetscObject)(*C),MATMPIDENSECUDA,&mpidensecuda);CHKERRQ(ierr);
+      if (seqdense || mpidense || dense || seqdensecuda || mpidensecuda) {
 #else
       if (seqdense || mpidense || dense) {
 #endif

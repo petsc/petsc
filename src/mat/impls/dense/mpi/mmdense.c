@@ -9,37 +9,25 @@ PetscErrorCode MatSetUpMultiply_MPIDense(Mat mat)
 {
   Mat_MPIDense   *mdn = (Mat_MPIDense*)mat->data;
   PetscErrorCode ierr;
-  IS             from,to;
-  Vec            gvec;
 
   PetscFunctionBegin;
   /* Create local vector that is used to scatter into */
-  ierr = VecCreateSeq(PETSC_COMM_SELF,mat->cmap->N,&mdn->lvec);CHKERRQ(ierr);
-
-  /* Create temporary index set for building scatter gather */
-  ierr = ISCreateStride(PETSC_COMM_SELF,mat->cmap->N,0,1,&from);CHKERRQ(ierr);
-  ierr = ISCreateStride(PETSC_COMM_SELF,mat->cmap->N,0,1,&to);CHKERRQ(ierr);
-
-  /* Create temporary global vector to generate scatter context */
-  /* n    = mdn->cowners[mdn->rank+1] - mdn->cowners[mdn->rank]; */
-
-  ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)mat),1,mdn->nvec,mat->cmap->N,NULL,&gvec);CHKERRQ(ierr);
-
-  /* Generate the scatter context */
-  ierr = VecScatterCreate(gvec,from,mdn->lvec,to,&mdn->Mvctx);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)mdn->Mvctx);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)mdn->lvec);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)from);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)to);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)gvec);CHKERRQ(ierr);
-
-  ierr = ISDestroy(&to);CHKERRQ(ierr);
-  ierr = ISDestroy(&from);CHKERRQ(ierr);
-  ierr = VecDestroy(&gvec);CHKERRQ(ierr);
+  ierr = VecDestroy(&mdn->lvec);CHKERRQ(ierr);
+  if (mdn->A) {
+    ierr = MatCreateVecs(mdn->A,&mdn->lvec,NULL);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)mdn->lvec);CHKERRQ(ierr);
+  }
+  if (!mdn->Mvctx) {
+    ierr = PetscLayoutSetUp(mat->cmap);CHKERRQ(ierr);
+    ierr = PetscSFCreate(PetscObjectComm((PetscObject)mat),&mdn->Mvctx);CHKERRQ(ierr);
+    ierr = PetscSFSetGraphWithPattern(mdn->Mvctx,mat->cmap,PETSCSF_PATTERN_ALLGATHER);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)mdn->Mvctx);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MatCreateSubMatrices_MPIDense_Local(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat*);
+static PetscErrorCode MatCreateSubMatrices_MPIDense_Local(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat*);
+
 PetscErrorCode MatCreateSubMatrices_MPIDense(Mat C,PetscInt ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submat[])
 {
   PetscErrorCode ierr;
@@ -414,15 +402,10 @@ PetscErrorCode MatCreateSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS
 
 PETSC_INTERN PetscErrorCode MatScale_MPIDense(Mat inA,PetscScalar alpha)
 {
-  Mat_MPIDense   *A     = (Mat_MPIDense*)inA->data;
-  Mat_SeqDense   *a     = (Mat_SeqDense*)A->A->data;
-  PetscScalar    oalpha = alpha;
+  Mat_MPIDense   *A = (Mat_MPIDense*)inA->data;
   PetscErrorCode ierr;
-  PetscBLASInt   one = 1,nz;
 
   PetscFunctionBegin;
-  ierr = PetscBLASIntCast(inA->rmap->n*inA->cmap->N,&nz);CHKERRQ(ierr);
-  PetscStackCallBLAS("BLASscal",BLASscal_(&nz,&oalpha,a->v,&one));
-  ierr = PetscLogFlops(nz);CHKERRQ(ierr);
+  ierr = MatScale(A->A,alpha);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -468,7 +468,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal fill,Mat
   if (!C->preallocated) {
     ierr = MatSetSizes(C,Am,B->cmap->n,A->rmap->N,BN);CHKERRQ(ierr);
     ierr = MatSetBlockSizesFromMats(C,A,B);CHKERRQ(ierr);
-    ierr = MatSetType(C,MATMPIDENSE);CHKERRQ(ierr);
+    ierr = MatSetType(C,((PetscObject)B)->type_name);CHKERRQ(ierr);
     ierr = MatMPIDenseSetPreallocation(C,NULL);CHKERRQ(ierr);
   }
 

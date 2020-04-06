@@ -1,5 +1,6 @@
 
 #include <../src/mat/impls/dense/seq/dense.h>
+#include <petscsf.h>
 
 /*  Data stuctures for basic parallel dense matrix  */
 
@@ -9,7 +10,8 @@ typedef struct { /* used by MatMatMultxxx_MPIDense_MPIDense() */
 } Mat_MatMultDense;
 
 typedef struct { /* used by MatTransposeMatMultXXX_MPIDense_MPIDense() */
-  PetscScalar    *sendbuf,*atbarray;
+  PetscScalar    *sendbuf;
+  Mat            atb;
   PetscMPIInt    *recvcounts;
   PetscErrorCode (*destroy)(Mat);
   PetscMPIInt    tag;
@@ -25,7 +27,6 @@ typedef struct { /* used by MatMatTransposeMultxxx_MPIDense_MPIDense() */
 } Mat_MatTransMultDense;
 
 typedef struct {
-  PetscInt    nvec;                     /* this is the n size for the vector one multiplies with */
   Mat         A;                        /* local submatrix */
   PetscMPIInt size;                     /* size of communicator */
   PetscMPIInt rank;                     /* rank of proc in communicator */
@@ -40,7 +41,7 @@ typedef struct {
 
   /* The following variables are used for matrix-vector products */
   Vec        lvec;                      /* local vector */
-  VecScatter Mvctx;                     /* scatter context for vector */
+  PetscSF    Mvctx;                     /* for mat-mult communications */
   PetscBool  roworiented;               /* if true, row oriented input (default) */
 
   Mat_MatTransMatMult   *atb;           /* used by MatTransposeMatMultxxx_MPIAIJ_MPIDense */

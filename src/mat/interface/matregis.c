@@ -16,10 +16,11 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqSBAIJ(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat);
 
 PETSC_EXTERN PetscErrorCode MatCreate_SeqDense(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MPIDense(Mat);
 #if defined(PETSC_HAVE_CUDA)
 PETSC_EXTERN PetscErrorCode MatCreate_SeqDenseCUDA(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MPIDenseCUDA(Mat);
 #endif
-PETSC_EXTERN PetscErrorCode MatCreate_MPIDense(Mat);
 
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAdj(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_Shell(Mat);
@@ -145,7 +146,9 @@ PetscErrorCode  MatRegisterAll(void)
   ierr = MatRegister(MATMPIDENSE,       MatCreate_MPIDense);CHKERRQ(ierr);
   ierr = MatRegister(MATSEQDENSE,       MatCreate_SeqDense);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_CUDA)
+  ierr = MatRegisterRootName(MATDENSECUDA,MATSEQDENSECUDA,MATMPIDENSECUDA);CHKERRQ(ierr);
   ierr = MatRegister(MATSEQDENSECUDA,   MatCreate_SeqDenseCUDA);CHKERRQ(ierr);
+  ierr = MatRegister(MATMPIDENSECUDA,   MatCreate_MPIDenseCUDA);CHKERRQ(ierr);
 #endif
 
   ierr = MatRegister(MATMPIADJ,         MatCreate_MPIAdj);CHKERRQ(ierr);

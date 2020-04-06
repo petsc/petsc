@@ -67,6 +67,8 @@ PETSC_INTERN PetscErrorCode MatLUFactor_SeqDense(Mat,IS,IS,const MatFactorInfo*)
 PETSC_INTERN PetscErrorCode MatCholeskyFactorSymbolic_SeqDense(Mat,Mat,IS,const MatFactorInfo*);
 PETSC_INTERN PetscErrorCode MatLUFactorSymbolic_SeqDense(Mat,Mat,IS,IS,const MatFactorInfo*);
 PETSC_INTERN PetscErrorCode MatSeqDenseSymmetrize_Private(Mat,PetscBool);
+PETSC_INTERN PetscErrorCode MatGetColumnVector_SeqDense(Mat,Vec,PetscInt);
+PETSC_INTERN PetscErrorCode MatScale_SeqDense(Mat,PetscScalar);
 
 #if defined(PETSC_HAVE_CUDA)
 PETSC_EXTERN PetscErrorCode MatSeqDenseCUDAInvertFactors_Private(Mat);

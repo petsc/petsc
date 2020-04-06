@@ -57,9 +57,11 @@ typedef const char* MatType;
 #define MATMPIBAIJMKL      "mpibaijmkl"
 #define MATSHELL           "shell"
 #define MATDENSE           "dense"
+#define MATDENSECUDA       "densecuda"
 #define MATSEQDENSE        "seqdense"
 #define MATSEQDENSECUDA    "seqdensecuda"
 #define MATMPIDENSE        "mpidense"
+#define MATMPIDENSECUDA    "mpidensecuda"
 #define MATELEMENTAL       "elemental"
 #define MATBAIJ            "baij"
 #define MATSEQBAIJ         "seqbaij"
@@ -1886,6 +1888,19 @@ typedef enum {MAT_CUSPARSE_MULT_DIAG, MAT_CUSPARSE_MULT_OFFDIAG, MAT_CUSPARSE_MU
 PETSC_EXTERN PetscErrorCode MatCreateSeqAIJCUSPARSE(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateAIJCUSPARSE(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
 PETSC_EXTERN PetscErrorCode MatCUSPARSESetFormat(Mat,MatCUSPARSEFormatOperation,MatCUSPARSEStorageFormat);
+
+PETSC_EXTERN PetscErrorCode MatCreateDenseCUDA(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar[],Mat*);
+PETSC_EXTERN PetscErrorCode MatCreateSeqDenseCUDA(MPI_Comm,PetscInt,PetscInt,PetscScalar[],Mat*);
+PETSC_EXTERN PetscErrorCode MatMPIDenseCUDASetPreallocation(Mat,PetscScalar[]);
+PETSC_EXTERN PetscErrorCode MatSeqDenseCUDASetPreallocation(Mat,PetscScalar[]);
+PETSC_EXTERN PetscErrorCode MatDenseCUDAGetArrayWrite(Mat,PetscScalar**);
+PETSC_EXTERN PetscErrorCode MatDenseCUDAGetArrayRead(Mat,const PetscScalar**);
+PETSC_EXTERN PetscErrorCode MatDenseCUDAGetArray(Mat,PetscScalar**);
+PETSC_EXTERN PetscErrorCode MatDenseCUDARestoreArrayWrite(Mat,PetscScalar**);
+PETSC_EXTERN PetscErrorCode MatDenseCUDARestoreArrayRead(Mat,const PetscScalar**);
+PETSC_EXTERN PetscErrorCode MatDenseCUDARestoreArray(Mat,PetscScalar**);
+PETSC_EXTERN PetscErrorCode MatDenseCUDAPlaceArray(Mat,const PetscScalar*);
+PETSC_EXTERN PetscErrorCode MatDenseCUDAResetArray(Mat);
 #endif
 
 #if defined(PETSC_HAVE_VIENNACL)
