@@ -96,8 +96,8 @@ int main(int argc, char **argv)
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","Options for exterior algebra tests","none");CHKERRQ(ierr);
-  ierr = PetscOptionsIntArray("-N", "Up to 5 vector space dimensions to test","ex6.c",n,&numTests,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-verbose", "Verbose test output","ex6.c",verbose,&verbose,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsIntArray("-N", "Up to 5 vector space dimensions to test","ex7.c",n,&numTests,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-verbose", "Verbose test output","ex7.c",verbose,&verbose,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   ierr = PetscRandomCreate(PETSC_COMM_SELF, &rand);CHKERRQ(ierr);
   ierr = PetscRandomSetInterval(rand, -1., 1.);CHKERRQ(ierr);
