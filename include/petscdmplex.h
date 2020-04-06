@@ -263,7 +263,7 @@ PETSC_EXTERN PetscErrorCode DMPlexCreateSubmesh(DM, DMLabel, PetscInt, PetscBool
 PETSC_EXTERN PetscErrorCode DMPlexCreateHybridMesh(DM, DMLabel, DMLabel, DMLabel *, DMLabel *, DM *, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexGetSubpointMap(DM, DMLabel*);
 PETSC_EXTERN PetscErrorCode DMPlexSetSubpointMap(DM, DMLabel);
-PETSC_EXTERN PetscErrorCode DMPlexCreateSubpointIS(DM, IS *);
+PETSC_EXTERN PetscErrorCode DMPlexGetSubpointIS(DM, IS *);
 
 PETSC_EXTERN PetscErrorCode DMGetEnclosureRelation(DM, DM, DMEnclosureType *);
 PETSC_EXTERN PetscErrorCode DMGetEnclosurePoint(DM, DM, DMEnclosureType, PetscInt, PetscInt *);

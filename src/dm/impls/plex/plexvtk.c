@@ -542,7 +542,7 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
             PetscInt        n = 0, q;
 
             ierr = PetscSectionGetChart(section, &qStart, &qEnd);CHKERRQ(ierr);
-            ierr = DMPlexCreateSubpointIS(dm, &subpointIS);CHKERRQ(ierr);
+            ierr = DMPlexGetSubpointIS(dm, &subpointIS);CHKERRQ(ierr);
             if (subpointIS) {
               ierr = ISGetLocalSize(subpointIS, &n);CHKERRQ(ierr);
               ierr = ISGetIndices(subpointIS, &ind);CHKERRQ(ierr);
@@ -564,7 +564,6 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
             }
             if (subpointIS) {
               ierr = ISRestoreIndices(subpointIS, &ind);CHKERRQ(ierr);
-              ierr = ISDestroy(&subpointIS);CHKERRQ(ierr);
             }
             /* No need to setup section */
             section = newSection;

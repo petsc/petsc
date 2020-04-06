@@ -2436,7 +2436,7 @@ PetscErrorCode DMPlexRefineUniform(DM dm, DMPlexCellRefiner cr, DM *dmRefined)
 
   Level: developer
 
-.seealso: DMRefine(), DMPlexSetRefinementUniform(), DMPlexCreateSubpointIS()
+.seealso: DMRefine(), DMPlexSetRefinementUniform(), DMPlexGetSubpointIS()
 @*/
 PetscErrorCode DMPlexCreateCoarsePointIS(DM dm, IS *fpointIS)
 {

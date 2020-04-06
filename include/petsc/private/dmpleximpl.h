@@ -201,6 +201,8 @@ typedef struct {
 
   /* Submesh */
   DMLabel              subpointMap;       /* Label each original mesh point in the submesh with its depth, subpoint are the implicit numbering */
+  IS                   subpointIS;        /* IS holding point number in the enclosing mesh of every point in the submesh chart */
+  PetscObjectState     subpointState;     /* The state of subpointMap when the subpointIS was last created */
 
   /* Labels and numbering */
   PetscObjectState     depthState;        /* State of depth label, so that we can determine if a user changes it */
