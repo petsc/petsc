@@ -141,10 +141,12 @@ static PetscErrorCode SNESSetFromOptions_NCG(PetscOptionItems *PetscOptionsObjec
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   if (!snes->linesearch) {
     ierr = SNESGetLineSearch(snes, &linesearch);CHKERRQ(ierr);
-    if (!snes->npc) {
-      ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHCP);CHKERRQ(ierr);
-    } else {
-      ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHL2);CHKERRQ(ierr);
+    if (!((PetscObject)linesearch)->type_name) {
+      if (!snes->npc) {
+        ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHCP);CHKERRQ(ierr);
+      } else {
+        ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHL2);CHKERRQ(ierr);
+      }
     }
   }
   PetscFunctionReturn(0);
