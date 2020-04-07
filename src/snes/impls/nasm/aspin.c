@@ -125,7 +125,9 @@ PETSC_EXTERN PetscErrorCode SNESCreate_ASPIN(SNES snes)
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
   ierr = SNESGetLineSearch(snes,&linesearch);CHKERRQ(ierr);
-  ierr = SNESLineSearchSetType(linesearch,SNESLINESEARCHBT);CHKERRQ(ierr);
+  if (!((PetscObject)linesearch)->type_name) {
+    ierr = SNESLineSearchSetType(linesearch,SNESLINESEARCHBT);CHKERRQ(ierr);
+  }
 
   /* set up the shell matrix */
   ierr = SNESGetFunction(snes,&F,NULL,NULL);CHKERRQ(ierr);

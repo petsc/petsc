@@ -267,7 +267,9 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NRichardson(SNES snes)
   snes->npcside= PC_LEFT;
 
   ierr = SNESGetLineSearch(snes, &linesearch);CHKERRQ(ierr);
-  ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHL2);CHKERRQ(ierr);
+  if (!((PetscObject)linesearch)->type_name) {
+    ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHL2);CHKERRQ(ierr);
+  }
 
   snes->alwayscomputesfinalresidual = PETSC_TRUE;
 

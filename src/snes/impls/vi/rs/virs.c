@@ -774,7 +774,9 @@ PETSC_EXTERN PetscErrorCode SNESCreate_VINEWTONRSLS(SNES snes)
   snes->usesnpc = PETSC_FALSE;
 
   ierr = SNESGetLineSearch(snes, &linesearch);CHKERRQ(ierr);
-  ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHBT);CHKERRQ(ierr);
+  if (!((PetscObject)linesearch)->type_name) {
+    ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHBT);CHKERRQ(ierr);
+  }
   ierr = SNESLineSearchBTSetAlpha(linesearch, 0.0);CHKERRQ(ierr);
 
   snes->alwayscomputesfinalresidual = PETSC_TRUE;
