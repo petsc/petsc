@@ -82,7 +82,6 @@ int main(int argc,char **argv)
   PetscBool      use_monitor = PETSC_FALSE;
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
-  ierr = PetscOptionsSetFromOptions(NULL);CHKERRQ(ierr);
 
   /* Hardwire several options; can be changed at command line */
   ierr = PetscOptionsInsertString(NULL,common_options);CHKERRQ(ierr);

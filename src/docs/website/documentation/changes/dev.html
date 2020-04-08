@@ -116,6 +116,9 @@
           <li>Add PetscDetermineInitialFPTrap(); fix so that when Linux or MacOS Fortran linker enables catching floating point divide by zero the trapping is disabled for LAPACK routines that generate divide by zero, for example, the reference implementation of ieeeck().</li>
           <li>Add floating point exception handling support for freebsd and Windows.</li>
           <li>Consistently set exception handling for divide by zero, invalid, underflow, and overflow for all systems when possible.</li>
+          <li>-options_monitor and -options_monitor_cancel have immediate global effect, see PetscInitialize() for details</li>
+          <li>Remove PetscOptionsSetFromOptions()</li>
+          <li>Remove PetscOptionsMonitorCancel()</li>
         </ul>
       <h4>Configure/Build:</h4>
         <ul>
