@@ -1,5 +1,5 @@
-PETSC Style Guide
-=================
+PETSc Style and Usage Guide
+===========================
 
 The PETSc team uses certain conventions to make the source code
 consistent and hence easier to maintain. We will interchangeably use the
