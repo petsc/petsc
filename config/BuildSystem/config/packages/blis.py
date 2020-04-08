@@ -3,8 +3,8 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.version   = '0.6.1'
-    self.gitcommit = 'da0c086f' # 0.6.1+ includes OSX build fix
+    self.version   = '0.7.0'
+    self.gitcommit = '0.7.0'
     self.download  = ['git://https://github.com/flame/blis.git', 'https://github.com/flame/blis/archive/%s.tar.gz' % self.gitcommit]
     self.functions = ['bli_init']
     self.includes  = ['blis/blis.h']
