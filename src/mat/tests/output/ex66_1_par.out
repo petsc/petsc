@@ -1,0 +1,4 @@
+MatMult err 0.000322366
+A Matrix norms:        infty=28.3691, norm_1=28.3691, norm_2=-1.
+A Approx Matrix norms: infty=28.3691, norm_1=28.3691, norm_2=23.9864
+B Approx Matrix norms: infty=-1., norm_1=-1., norm_2=-1.
