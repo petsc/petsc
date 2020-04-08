@@ -1795,18 +1795,19 @@ PetscErrorCode PetscOptionsSetFromOptions(PetscOptions options)
 }
 
 /*@C
-   PetscOptionsMonitorDefault - Print all options set value events.
+   PetscOptionsMonitorDefault - Print all options set value events using the supplied PetscViewer.
 
    Logically Collective on ctx
 
    Input Parameters:
 +  name  - option name string
 .  value - option value string
--  ctx - an ASCII viewer
+-  ctx - an ASCII viewer or NULL
 
    Level: intermediate
 
    Notes:
+     If ctx=NULL, PetscPrintf() is used.
      The first MPI rank in the PetscViewer viewer actually prints the values, other
      processes may have different values set
 
@@ -1815,15 +1816,26 @@ PetscErrorCode PetscOptionsSetFromOptions(PetscOptions options)
 PetscErrorCode PetscOptionsMonitorDefault(const char name[],const char value[],void *ctx)
 {
   PetscErrorCode ierr;
-  PetscViewer    viewer = (PetscViewer)ctx;
 
   PetscFunctionBegin;
-  if (!value) {
-    ierr = PetscViewerASCIIPrintf(viewer,"Removing option: %s\n",name,value);CHKERRQ(ierr);
-  } else if (!value[0]) {
-    ierr = PetscViewerASCIIPrintf(viewer,"Setting option: %s (no value)\n",name);CHKERRQ(ierr);
+  if (ctx) {
+    PetscViewer viewer = (PetscViewer)ctx;
+    if (!value) {
+      ierr = PetscViewerASCIIPrintf(viewer,"Removing option: %s\n",name,value);CHKERRQ(ierr);
+    } else if (!value[0]) {
+      ierr = PetscViewerASCIIPrintf(viewer,"Setting option: %s (no value)\n",name);CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer,"Setting option: %s = %s\n",name,value);CHKERRQ(ierr);
+    }
   } else {
-    ierr = PetscViewerASCIIPrintf(viewer,"Setting option: %s = %s\n",name,value);CHKERRQ(ierr);
+    MPI_Comm comm = PETSC_COMM_WORLD;
+    if (!value) {
+      ierr = PetscPrintf(comm,"Removing option: %s\n",name,value);CHKERRQ(ierr);
+    } else if (!value[0]) {
+      ierr = PetscPrintf(comm,"Setting option: %s (no value)\n",name);CHKERRQ(ierr);
+    } else {
+      ierr = PetscPrintf(comm,"Setting option: %s = %s\n",name,value);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -1865,7 +1877,7 @@ $     monitor (const char name[], const char value[], void *mctx)
    PetscOptionsMonitorSet() multiple times; all will be called in the
    order in which they were set.
 
-   Level: beginner
+   Level: intermediate
 
 .seealso: PetscOptionsMonitorDefault(), PetscOptionsMonitorCancel()
 @*/
