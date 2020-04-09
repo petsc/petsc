@@ -3644,7 +3644,7 @@ PetscErrorCode DMPlexGetNumFaceVertices(DM dm, PetscInt cellDim, PetscInt numCor
 
   Level: developer
 
-.seealso: DMPlexGetDepth(), DMPlexGetHeightStratum(), DMPlexGetDepthStratum()
+.seealso: DMPlexGetDepth(), DMPlexGetHeightStratum(), DMPlexGetDepthStratum(), DMPlexGetPointDepth(), 
 @*/
 PetscErrorCode DMPlexGetDepthLabel(DM dm, DMLabel *depthLabel)
 {
@@ -3670,9 +3670,10 @@ PetscErrorCode DMPlexGetDepthLabel(DM dm, DMLabel *depthLabel)
 
   Notes:
   This returns maximum of point depths over all points, i.e. maximum value of the label returned by DMPlexGetDepthLabel().
-  The point depth is described more in detail in DMPlexSymmetrize().
+  The point depth is described more in detail in DMPlexGetDepthStratum().
+  An empty mesh gives -1.
 
-.seealso: DMPlexGetDepthLabel(), DMPlexGetHeightStratum(), DMPlexGetDepthStratum(), DMPlexGetPointDepth(), DMPlexGetPointHeight(), DMPlexSymmetrize()
+.seealso: DMPlexGetDepthLabel(), DMPlexGetDepthStratum(), DMPlexGetPointDepth(), DMPlexSymmetrize()
 @*/
 PetscErrorCode DMPlexGetDepth(DM dm, PetscInt *depth)
 {
@@ -3709,7 +3710,7 @@ PetscErrorCode DMPlexGetDepth(DM dm, PetscInt *depth)
 
   Level: developer
 
-.seealso: DMPlexGetHeightStratum(), DMPlexGetDepth(), DMPlexGetPointDepth()
+.seealso: DMPlexGetHeightStratum(), DMPlexGetDepth(), DMPlexGetDepthLabel(), DMPlexGetPointDepth(), DMPlexSymmetrize(), DMPlexInterpolate()
 @*/
 PetscErrorCode DMPlexGetDepthStratum(DM dm, PetscInt stratumValue, PetscInt *start, PetscInt *end)
 {
@@ -3853,7 +3854,7 @@ PetscErrorCode DMPlexGetPointHeight(DM dm, PetscInt point, PetscInt *height)
 
   Level: developer
 
-.seealso: DMPlexGetCellType(), DMPlexGetDepthLabel(), DMPlexGetDepth(), DMCreateLabel()
+.seealso: DMPlexGetCellType(), DMPlexGetDepthLabel(), DMCreateLabel()
 @*/
 PetscErrorCode DMPlexGetCellTypeLabel(DM dm, DMLabel *celltypeLabel)
 {
