@@ -5,7 +5,8 @@ Contributing to PETSc
 As you gain experience in building, using, and debugging with PETSc, you
 may become able to contribute!
 
-Before contributing code to PETSc, please read the :doc:`style`.
+Before contributing code to PETSc, please read the :doc:`style`. You may also
+be interested to read about :doc:`design`.
 
 See :doc:`integration` for information on how to submit patches and pull requests to PETSc.
 
