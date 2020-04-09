@@ -1,10 +1,16 @@
 body {
   background-color: rgb(213, 234, 255);
+  font-family: 'Lucida Grande', 'Lucida Sans Unicode', 'Geneva', 'Verdana', sans-serif;
+  font-size: 14px;
 }
 
 #sidebar {
   float:left;
   width: 260px;
+}
+
+li {
+  line-height: 1.5;
 }
 
 #logo img {
