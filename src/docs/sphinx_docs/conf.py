@@ -1,5 +1,7 @@
 # Configuration file for the Sphinx documentation builder.
 #
+# Much of this file was generated automatically with sphinx-quickstart
+#
 # This file only contains a selection of the most common options. For a full
 # list see the documentation:
 # http://www.sphinx-doc.org/en/master/config

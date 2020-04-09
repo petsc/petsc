@@ -5,10 +5,17 @@ Developing PETSc Documentation
 .. toctree::
    :maxdepth: 2
 
+
+General Guidelines
+==================
+
+* Good documentation should be like a bonsai tree: alive, on display, frequently tended, and as small as possible (adapted from `these best practices <https://github.com/google/styleguide/blob/gh-pages/docguide/best_practices.md>`__).
+* Wrong, irrelevant, or confusing documentation is worse than no documentation.
+
 .. _docs_build:
 
-Building Documentation
-======================
+Building Main Documentation
+===========================
 
 The documentation tools listed below (except for pdflatex) are
 automatically downloaded and installed by ``./configure``.
@@ -45,10 +52,16 @@ Sphinx Documentation
 The Sphinx documentation is currently not integrated into the main docs build as described
 in :ref:`docs_build`.
 
-`ReadTheDocs <readthedocs.org>`__ generates the Sphinx-based documentation found at
-https://docs.petsc.org from the `PETSc git repository <https://gitlab.com/petsc/petsc>`__.
+`ReadTheDocs <readthedocs.org>`__ generates the documentation at
+https://docs.petsc.org from the `PETSc Git repository <https://gitlab.com/petsc/petsc>`__.
 
-See ``README.md`` in the ``sphinx_docs`` directory for information on building locally.
+Building the Sphinx docs locally
+--------------------------------
+
+* Make sure that you have a recent version of Python 3 and the required modules, as listed in the `ReadTheDocs configuration file <https://github.com/petsc/petsc/blob/master/.readthedocs.yml>`__ and `requirements file for ReadTheDocs <https://github.com/petsc/petsc/blob/master/src/docs/sphinx_docs/requirements.txt>`__ (we use a precise version of Sphinx to avoid issues with our custom extension to create inline links).
+* Navigate to the location of ``conf.py`` for the Sphinx docs (currently ``src/docs/sphinx_docs``).
+* ``make html``
+* Open ``_build/html/index.html`` with your browser.
 
 Sphinx Documentation Guidelines
 -------------------------------
