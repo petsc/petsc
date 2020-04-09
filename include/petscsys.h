@@ -479,6 +479,20 @@ PETSC_EXTERN MPI_Comm PETSC_COMM_WORLD;
 M*/
 #define PETSC_COMM_SELF MPI_COMM_SELF
 
+/*MC
+    PETSC_MPI_THREAD_REQUIRED - the required threading support used if PETSc initializes
+           MPI with MPI_Init_thread.
+
+   Level: beginner
+
+   Notes:
+   By default PETSC_MPI_THREAD_REQUIRED equals MPI_THREAD_FUNNELED.
+
+.seealso: PetscInitialize()
+
+M*/
+PETSC_EXTERN PetscMPIInt PETSC_MPI_THREAD_REQUIRED;
+
 PETSC_EXTERN PetscBool PetscBeganMPI;
 PETSC_EXTERN PetscBool PetscInitializeCalled;
 PETSC_EXTERN PetscBool PetscFinalizeCalled;
