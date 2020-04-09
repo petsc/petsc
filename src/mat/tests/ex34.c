@@ -25,6 +25,8 @@ int main(int argc, char ** argv)
   for (i = 0; i < 4; ++i) data[lda * i] = i * 1.0;
 
   ierr = MatCreateDense(PETSC_COMM_WORLD, 1, PETSC_DECIDE, 2, 4, data, &B);CHKERRQ(ierr);
+  ierr = MatSetOptionsPrefix(B,"b_");CHKERRQ(ierr);
+  ierr = MatSetFromOptions(B);CHKERRQ(ierr);
   ierr = MatDenseGetLocalMatrix(B, &seqB);CHKERRQ(ierr);
   ierr = MatSeqDenseSetLDA(seqB, lda);CHKERRQ(ierr);
 
@@ -65,5 +67,12 @@ int main(int argc, char ** argv)
    test:
       suffix: 1
       nsize: 2
+      output_file: output/ex34.out
+
+   test:
+      suffix: 1_cuda
+      requires: cuda
+      nsize: 2
+      args: -b_mat_type mpidensecuda
       output_file: output/ex34.out
 TEST*/
