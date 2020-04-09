@@ -4444,7 +4444,7 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
         DMAdaptor adaptor;
 
         incall = PETSC_TRUE;
-        ierr = DMAdaptorCreate(PETSC_COMM_WORLD, &adaptor);CHKERRQ(ierr);
+        ierr = DMAdaptorCreate(PetscObjectComm((PetscObject)snes), &adaptor);CHKERRQ(ierr);
         ierr = DMAdaptorSetSolver(adaptor, snes);CHKERRQ(ierr);
         ierr = DMAdaptorSetSequenceLength(adaptor, num);CHKERRQ(ierr);
         ierr = DMAdaptorSetFromOptions(adaptor);CHKERRQ(ierr);
@@ -4460,7 +4460,7 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
         DMAdaptor adaptor;
 
         incall = PETSC_TRUE;
-        ierr = DMAdaptorCreate(PETSC_COMM_WORLD, &adaptor);CHKERRQ(ierr);
+        ierr = DMAdaptorCreate(PetscObjectComm((PetscObject)snes), &adaptor);CHKERRQ(ierr);
         ierr = DMAdaptorSetSolver(adaptor, snes);CHKERRQ(ierr);
         ierr = DMAdaptorSetSequenceLength(adaptor, num);CHKERRQ(ierr);
         ierr = DMAdaptorSetFromOptions(adaptor);CHKERRQ(ierr);
@@ -4963,17 +4963,17 @@ PetscErrorCode  SNESTestLocalMin(SNES snes)
   ierr = VecDuplicate(u,&fh);CHKERRQ(ierr);
 
   /* currently only works for sequential */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Testing FormFunction() for local min\n");CHKERRQ(ierr);
+  ierr = PetscPrintf(PetscObjectComm((PetscObject)snes),"Testing FormFunction() for local min\n");CHKERRQ(ierr);
   ierr = VecGetSize(u,&N);CHKERRQ(ierr);
   for (i=0; i<N; i++) {
     ierr = VecCopy(u,uh);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"i = %D\n",i);CHKERRQ(ierr);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)snes),"i = %D\n",i);CHKERRQ(ierr);
     for (j=-10; j<11; j++) {
       value = PetscSign(j)*PetscExpReal(PetscAbs(j)-10.0);
       ierr  = VecSetValue(uh,i,value,ADD_VALUES);CHKERRQ(ierr);
       ierr  = SNESComputeFunction(snes,uh,fh);CHKERRQ(ierr);
       ierr  = VecNorm(fh,NORM_2,&norm);CHKERRQ(ierr);
-      ierr  = PetscPrintf(PETSC_COMM_WORLD,"       j norm %D %18.16e\n",j,norm);CHKERRQ(ierr);
+      ierr  = PetscPrintf(PetscObjectComm((PetscObject)snes),"       j norm %D %18.16e\n",j,norm);CHKERRQ(ierr);
       value = -value;
       ierr  = VecSetValue(uh,i,value,ADD_VALUES);CHKERRQ(ierr);
     }
