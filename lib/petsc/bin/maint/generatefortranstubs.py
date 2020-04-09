@@ -154,7 +154,7 @@ def FixDir(petscdir,dir,verbose):
         fd =open(fname,'a')
         fd.write(txt)
         fd.close()
-      #os.remove(modfile)
+      os.remove(modfile)
 
 def PrepFtnDir(dir):
   ''' Generate a ftn-auto directory if needed'''
