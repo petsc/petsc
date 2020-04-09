@@ -3290,7 +3290,7 @@ static PetscErrorCode DMStagComputeLocationOffsets_3d(DM dm)
   stag->locationOffsets[DMSTAG_LEFT]             = stag->locationOffsets[DMSTAG_DOWN]            + stag->dof[2];
   stag->locationOffsets[DMSTAG_ELEMENT]          = stag->locationOffsets[DMSTAG_LEFT]            + stag->dof[2];
   stag->locationOffsets[DMSTAG_RIGHT]            = stag->locationOffsets[DMSTAG_LEFT]            + epe;
-  stag->locationOffsets[DMSTAG_UP_LEFT]          = stag->locationOffsets[DMSTAG_DOWN]            + epr;
+  stag->locationOffsets[DMSTAG_UP_LEFT]          = stag->locationOffsets[DMSTAG_DOWN_LEFT]       + epr;
   stag->locationOffsets[DMSTAG_UP]               = stag->locationOffsets[DMSTAG_DOWN]            + epr;
   stag->locationOffsets[DMSTAG_UP_RIGHT]         = stag->locationOffsets[DMSTAG_UP_LEFT]         + epe;
   stag->locationOffsets[DMSTAG_FRONT_DOWN_LEFT]  = stag->locationOffsets[DMSTAG_BACK_DOWN_LEFT]  + epl;
