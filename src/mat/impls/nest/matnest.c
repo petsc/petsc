@@ -1059,7 +1059,7 @@ PetscErrorCode MatNestGetSubMat_Nest(Mat A,PetscInt idxm,PetscInt jdxm,Mat *mat)
 
  Level: developer
 
-.seealso: MatNestGetSize(), MatNestGetSubMats(), MatNestCreate(), MATNEST, MatNestSetSubMat(),
+.seealso: MatNestGetSize(), MatNestGetSubMats(), MatCreateNest(), MATNEST, MatNestSetSubMat(),
           MatNestGetLocalISs(), MatNestGetISs()
 @*/
 PetscErrorCode  MatNestGetSubMat(Mat A,PetscInt idxm,PetscInt jdxm,Mat *sub)
@@ -1119,7 +1119,7 @@ PetscErrorCode MatNestSetSubMat_Nest(Mat A,PetscInt idxm,PetscInt jdxm,Mat mat)
 
  Level: developer
 
-.seealso: MatNestSetSubMats(), MatNestGetSubMats(), MatNestGetLocalISs(), MATNEST, MatNestCreate(),
+.seealso: MatNestSetSubMats(), MatNestGetSubMats(), MatNestGetLocalISs(), MATNEST, MatCreateNest(),
           MatNestGetSubMat(), MatNestGetISs(), MatNestGetSize()
 @*/
 PetscErrorCode  MatNestSetSubMat(Mat A,PetscInt idxm,PetscInt jdxm,Mat sub)
@@ -1165,7 +1165,7 @@ $   call MatNestGetSubMats(A, M, N, mat, ierr)
 
  Level: developer
 
-.seealso: MatNestGetSize(), MatNestGetSubMat(), MatNestGetLocalISs(), MATNEST, MatNestCreate(),
+.seealso: MatNestGetSize(), MatNestGetSubMat(), MatNestGetLocalISs(), MATNEST, MatCreateNest(),
           MatNestSetSubMats(), MatNestGetISs(), MatNestSetSubMat()
 @*/
 PetscErrorCode  MatNestGetSubMats(Mat A,PetscInt *M,PetscInt *N,Mat ***mat)
@@ -1203,7 +1203,7 @@ PetscErrorCode  MatNestGetSize_Nest(Mat A,PetscInt *M,PetscInt *N)
 
  Level: developer
 
-.seealso: MatNestGetSubMat(), MatNestGetSubMats(), MATNEST, MatNestCreate(), MatNestGetLocalISs(),
+.seealso: MatNestGetSubMat(), MatNestGetSubMats(), MATNEST, MatCreateNest(), MatNestGetLocalISs(),
           MatNestGetISs()
 @*/
 PetscErrorCode  MatNestGetSize(Mat A,PetscInt *M,PetscInt *N)
@@ -1244,7 +1244,7 @@ static PetscErrorCode MatNestGetISs_Nest(Mat A,IS rows[],IS cols[])
  The user must have allocated arrays of the correct size. The reference count is not increased on the returned ISs.
 
 .seealso: MatNestGetSubMat(), MatNestGetSubMats(), MatNestGetSize(), MatNestGetLocalISs(), MATNEST,
-          MatNestCreate(), MatNestGetSubMats(), MatNestSetSubMats()
+          MatCreateNest(), MatNestGetSubMats(), MatNestSetSubMats()
 @*/
 PetscErrorCode  MatNestGetISs(Mat A,IS rows[],IS cols[])
 {
@@ -1284,7 +1284,7 @@ static PetscErrorCode MatNestGetLocalISs_Nest(Mat A,IS rows[],IS cols[])
  Notes:
  The user must have allocated arrays of the correct size. The reference count is not increased on the returned ISs.
 
-.seealso: MatNestGetSubMat(), MatNestGetSubMats(), MatNestGetSize(), MatNestGetISs(), MatNestCreate(),
+.seealso: MatNestGetSubMat(), MatNestGetSubMats(), MatNestGetSize(), MatNestGetISs(), MatCreateNest(),
           MATNEST, MatNestSetSubMats(), MatNestSetSubMat()
 @*/
 PetscErrorCode  MatNestGetLocalISs(Mat A,IS rows[],IS cols[])
@@ -1323,7 +1323,7 @@ PetscErrorCode  MatNestSetVecType_Nest(Mat A,VecType vtype)
 
  Level: developer
 
-.seealso: MatCreateVecs(), MATNEST, MatNestCreate()
+.seealso: MatCreateVecs(), MATNEST, MatCreateNest()
 @*/
 PetscErrorCode  MatNestSetVecType(Mat A,VecType vtype)
 {
