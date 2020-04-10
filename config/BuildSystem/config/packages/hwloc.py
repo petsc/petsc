@@ -12,6 +12,12 @@ class Configure(config.package.GNUPackage):
     self.downloadonWindows = 1
     return
 
+  def setupDependencies(self, framework):
+    config.package.Package.setupDependencies(self, framework)
+    self.x       = framework.require('config.packages.X',self)
+    self.odeps   = [self.x]
+    return
+
   def getSearchDirectories(self):
     yield ''
     yield os.path.join('/usr','local')
@@ -20,11 +26,18 @@ class Configure(config.package.GNUPackage):
 
   def formGNUConfigureArgs(self):
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
-    # Don't require x libraries since they may not always be available or hwloc may not be able to locate them on Apple
-    if self.setCompilers.isDarwin(self.log):
-      args.append('--without-x')
+    if self.x.found:
+      args.append('--with-x=yes')
+    else:
+      args.append('--with-x=no')
     # don't require unneeded external dependency
     args.append('--disable-libxml2')
+    args.append('--disable-opencl')
+    args.append('--disable-cuda')
+    args.append('--disable-nvml')
+    args.append('--disable-gl')
+    args.append('CPPFLAGS="'+self.headers.toStringNoDupes(self.dinclude)+'"')
+    args.append('LIBS="'+self.libraries.toStringNoDupes(self.dlib)+'"')
     return args
 
   def configure(self):
