@@ -1,50 +1,52 @@
 body {
   background-color: rgb(213, 234, 255);
+  font-family: 'Lucida Grande', 'Lucida Sans Unicode', 'Geneva', 'Verdana', sans-serif;
+  font-size: 14px;
 }
+
+li {
+  line-height: 1.5;
+}
+
+/* header "table" layout */
+#header {
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  display: table;
+}
+#header > #logo {
+  display: table-cell;
+  vertical-align: middle;
+}
+#header > #logo > img {
+  max-width: 572px;
+  min-width: 260px;
+  display: table-cell;
+}
+#header > #title {
+  width: 50%;
+  display: table-cell;
+  vertical-align: middle;
+}
+#header > #title > h1 {
+  margin: 0;
+  padding: 1ex;
+  float: right;
+  text-align: right;
+  line-height: 2;
+  font-size: 18px;
+}
+
 
 #sidebar {
   float:left;
   width: 260px;
 }
 
-#logo img {
-  float:left;
-}
-
-#logo h1 {
-  font-size: 36pt;
-  color: red;
-  margin: 0;
-}
-
-/* putting #main here since they both have identical styles */
-#header, #main {
+#main {
   padding-bottom: 10px;
   padding-left: 270px; /* use #sidebar.width + extra padding */
-}
-
-/* make all "a" tags float to the right */
-#header > a {
-  float: right;
-  margin-right: 15%;
-}
-
-/* except for the first first "a" tag, make this one float left */
-#header > a:first-child {
-  float: left;
-  margin-left: 15%;
-}
-
-/* all img tags under the "header" div */
-#header img {
-  width: 134px;
-  height: 104px;
-}
-
-#header h1 {
-  clear: both;
-  padding-top: 5pt;
-  margin: 0;
 }
 
 #sidebar li, #footer li {
