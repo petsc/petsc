@@ -6298,7 +6298,7 @@ PetscErrorCode DMSetCoordinatesLocal(DM dm, Vec c)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidHeaderSpecific(c,VEC_CLASSID,2);
+  if (c) PetscValidHeaderSpecific(c,VEC_CLASSID,2);
   ierr = PetscObjectReference((PetscObject) c);CHKERRQ(ierr);
   ierr = VecDestroy(&dm->coordinatesLocal);CHKERRQ(ierr);
 
