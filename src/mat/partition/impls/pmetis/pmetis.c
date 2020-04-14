@@ -62,9 +62,8 @@ static PetscErrorCode MatPartitioningApply_Parmetis_Private(MatPartitioning part
     real_t     *tpwgts,*ubvec,itr=0.1;
 
     ierr = PetscObjectGetComm((PetscObject)pmat,&pcomm);CHKERRQ(ierr);
-#if defined(PETSC_USE_DEBUG)
-    /* check that matrix has no diagonal entries */
-    {
+    if (PetscDefined(USE_DEBUG)) {
+      /* check that matrix has no diagonal entries */
       PetscInt rstart;
       ierr = MatGetOwnershipRange(pmat,&rstart,NULL);CHKERRQ(ierr);
       for (i=0; i<pmat->rmap->n; i++) {
@@ -73,7 +72,6 @@ static PetscErrorCode MatPartitioningApply_Parmetis_Private(MatPartitioning part
         }
       }
     }
-#endif
 
     ierr = PetscMalloc1(pmat->rmap->n,&locals);CHKERRQ(ierr);
 

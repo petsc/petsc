@@ -375,18 +375,17 @@ void PetscDefaultFPTrap(int sig)
   }
 
   (*PetscErrorPrintf)("Try option -start_in_debugger\n");
-#if defined(PETSC_USE_DEBUG)
-  if (!PetscStackActive()) (*PetscErrorPrintf)("  or try option -log_stack\n");
-  else {
-    (*PetscErrorPrintf)("likely location of problem given in stack below\n");
-    (*PetscErrorPrintf)("---------------------  Stack Frames ------------------------------------\n");
-    PetscStackView(PETSC_STDOUT);
+  if (PetscDefined(USE_DEBUG)) {
+    if (!PetscStackActive()) (*PetscErrorPrintf)("  or try option -log_stack\n");
+    else {
+      (*PetscErrorPrintf)("likely location of problem given in stack below\n");
+      (*PetscErrorPrintf)("---------------------  Stack Frames ------------------------------------\n");
+      PetscStackView(PETSC_STDOUT);
+    }
+  } else {
+    (*PetscErrorPrintf)("configure using --with-debugging=yes, recompile, link, and run \n");
+    (*PetscErrorPrintf)("with -start_in_debugger to get more information on the crash.\n");
   }
-#endif
-#if !defined(PETSC_USE_DEBUG)
-  (*PetscErrorPrintf)("configure using --with-debugging=yes, recompile, link, and run \n");
-  (*PetscErrorPrintf)("with -start_in_debugger to get more information on the crash.\n");
-#endif
   PetscError(PETSC_COMM_SELF,0,"User provided function","Unknown file",PETSC_ERR_FP,PETSC_ERROR_INITIAL,"trapped floating point error");
   PETSCABORT(MPI_COMM_WORLD,PETSC_ERR_FP);
 }

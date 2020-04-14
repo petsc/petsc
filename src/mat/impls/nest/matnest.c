@@ -1671,23 +1671,23 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A,PetscInt nr,const IS is_row[
     ierr = ISLocalToGlobalMappingDestroy(&cmap);CHKERRQ(ierr);
   }
 
-#if defined(PETSC_USE_DEBUG)
-  for (i=0; i<vs->nr; i++) {
-    for (j=0; j<vs->nc; j++) {
-      PetscInt m,n,M,N,mi,ni,Mi,Ni;
-      Mat      B = vs->m[i][j];
-      if (!B) continue;
-      ierr = MatGetSize(B,&M,&N);CHKERRQ(ierr);
-      ierr = MatGetLocalSize(B,&m,&n);CHKERRQ(ierr);
-      ierr = ISGetSize(vs->isglobal.row[i],&Mi);CHKERRQ(ierr);
-      ierr = ISGetSize(vs->isglobal.col[j],&Ni);CHKERRQ(ierr);
-      ierr = ISGetLocalSize(vs->isglobal.row[i],&mi);CHKERRQ(ierr);
-      ierr = ISGetLocalSize(vs->isglobal.col[j],&ni);CHKERRQ(ierr);
-      if (M != Mi || N != Ni) SETERRQ6(PetscObjectComm((PetscObject)sub),PETSC_ERR_ARG_INCOMP,"Global sizes (%D,%D) of nested submatrix (%D,%D) do not agree with space defined by index sets (%D,%D)",M,N,i,j,Mi,Ni);
-      if (m != mi || n != ni) SETERRQ6(PetscObjectComm((PetscObject)sub),PETSC_ERR_ARG_INCOMP,"Local sizes (%D,%D) of nested submatrix (%D,%D) do not agree with space defined by index sets (%D,%D)",m,n,i,j,mi,ni);
+  if (PetscDefined(USE_DEBUG)) {
+    for (i=0; i<vs->nr; i++) {
+      for (j=0; j<vs->nc; j++) {
+        PetscInt m,n,M,N,mi,ni,Mi,Ni;
+        Mat      B = vs->m[i][j];
+        if (!B) continue;
+        ierr = MatGetSize(B,&M,&N);CHKERRQ(ierr);
+        ierr = MatGetLocalSize(B,&m,&n);CHKERRQ(ierr);
+        ierr = ISGetSize(vs->isglobal.row[i],&Mi);CHKERRQ(ierr);
+        ierr = ISGetSize(vs->isglobal.col[j],&Ni);CHKERRQ(ierr);
+        ierr = ISGetLocalSize(vs->isglobal.row[i],&mi);CHKERRQ(ierr);
+        ierr = ISGetLocalSize(vs->isglobal.col[j],&ni);CHKERRQ(ierr);
+        if (M != Mi || N != Ni) SETERRQ6(PetscObjectComm((PetscObject)sub),PETSC_ERR_ARG_INCOMP,"Global sizes (%D,%D) of nested submatrix (%D,%D) do not agree with space defined by index sets (%D,%D)",M,N,i,j,Mi,Ni);
+        if (m != mi || n != ni) SETERRQ6(PetscObjectComm((PetscObject)sub),PETSC_ERR_ARG_INCOMP,"Local sizes (%D,%D) of nested submatrix (%D,%D) do not agree with space defined by index sets (%D,%D)",m,n,i,j,mi,ni);
+      }
     }
   }
-#endif
 
   /* Set A->assembled if all non-null blocks are currently assembled */
   for (i=0; i<vs->nr; i++) {

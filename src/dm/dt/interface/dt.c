@@ -2131,14 +2131,14 @@ PetscErrorCode PetscDTReconstructPoly(PetscInt degree,PetscInt nsource,const Pet
   PetscValidRealPointer(targetx,5);
   PetscValidRealPointer(R,6);
   if (degree >= nsource) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Reconstruction degree %D must be less than number of source intervals %D",degree,nsource);
-#if defined(PETSC_USE_DEBUG)
-  for (i=0; i<nsource; i++) {
-    if (sourcex[i] >= sourcex[i+1]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Source interval %D has negative orientation (%g,%g)",i,(double)sourcex[i],(double)sourcex[i+1]);
+  if (PetscDefined(USE_DEBUG)) {
+    for (i=0; i<nsource; i++) {
+      if (sourcex[i] >= sourcex[i+1]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Source interval %D has negative orientation (%g,%g)",i,(double)sourcex[i],(double)sourcex[i+1]);
+    }
+    for (i=0; i<ntarget; i++) {
+      if (targetx[i] >= targetx[i+1]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Target interval %D has negative orientation (%g,%g)",i,(double)targetx[i],(double)targetx[i+1]);
+    }
   }
-  for (i=0; i<ntarget; i++) {
-    if (targetx[i] >= targetx[i+1]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Target interval %D has negative orientation (%g,%g)",i,(double)targetx[i],(double)targetx[i+1]);
-  }
-#endif
   xmin = PetscMin(sourcex[0],targetx[0]);
   xmax = PetscMax(sourcex[nsource],targetx[ntarget]);
   center = (xmin + xmax)/2;

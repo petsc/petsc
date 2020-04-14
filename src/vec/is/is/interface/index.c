@@ -966,8 +966,7 @@ PetscErrorCode  ISSetPermutation(IS is)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
-#if defined(PETSC_USE_DEBUG)
-  {
+  if (PetscDefined(USE_DEBUG)) {
     PetscMPIInt    size;
 
     ierr = MPI_Comm_size(PetscObjectComm((PetscObject)is),&size);CHKERRQ(ierr);
@@ -987,7 +986,6 @@ PetscErrorCode  ISSetPermutation(IS is)
       ierr = ISRestoreIndices(is,&iidx);CHKERRQ(ierr);
     }
   }
-#endif
   ierr = ISSetInfo(is,IS_PERMUTATION,IS_GLOBAL,PETSC_TRUE,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -1183,15 +1183,13 @@ PetscErrorCode PetscOptionsFindPair(PetscOptions options,const char pre[],const 
     name = buf;
   }
 
-#if defined(PETSC_USE_DEBUG)
-  {
+  if (PetscDefined(USE_DEBUG)) {
     PetscBool valid;
     char      key[MAXOPTNAME+1] = "-";
     ierr = PetscStrncpy(key+1,name,sizeof(key)-1);CHKERRQ(ierr);
     ierr = PetscOptionsValidKey(key,&valid);CHKERRQ(ierr);
     if (!valid) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid option '%s' obtained from pre='%s' and name='%s'",key,pre?pre:"",name);
   }
-#endif
 
   if (!options->ht && usehashtable) {
     int i,ret;
@@ -1295,15 +1293,13 @@ PETSC_EXTERN PetscErrorCode PetscOptionsFindPairPrefix_Private(PetscOptions opti
     name = buf;
   }
 
-#if defined(PETSC_USE_DEBUG)
-  {
+  if (PetscDefined(USE_DEBUG)) {
     PetscBool valid;
     char      key[MAXOPTNAME+1] = "-";
     ierr = PetscStrncpy(key+1,name,sizeof(key)-1);CHKERRQ(ierr);
     ierr = PetscOptionsValidKey(key,&valid);CHKERRQ(ierr);
     if (!valid) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid option '%s' obtained from pre='%s' and name='%s'",key,pre?pre:"",name);
   }
-#endif
 
   /* determine the location and number of all _%d_ in the key */
   {

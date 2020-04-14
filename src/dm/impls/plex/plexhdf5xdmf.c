@@ -85,16 +85,14 @@ PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer)
 
   ierr = PetscInfo4(NULL, "Loaded mesh dimensions: numCells %d numCorners %d numVertices %d spatialDim %d\n", numCells, numCorners, numVertices, spatialDim);CHKERRQ(ierr);
 
-#if defined(PETSC_USE_DEBUG)
-  /* Check that maximum index referred in cells is in line with global number of vertices */
-  {
+  if (PetscDefined(USE_DEBUG)) {
+    /* Check that maximum index referred in cells is in line with global number of vertices */
     PetscInt max1, max2;
     ierr = ISGetMinMax(cells, NULL, &max1);CHKERRQ(ierr);
     ierr = VecGetSize(coordinates, &max2);CHKERRQ(ierr);
     max2 /= spatialDim; max2--;
     if (max1 > max2) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "maximum index in cells = %d > %d = total number of vertices - 1", max1, max2);
   }
-#endif
 
   {
     const PetscScalar *coordinates_arr;
@@ -102,39 +100,31 @@ PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer)
     const PetscInt *cells_arr;
     int *cells_arr_int;
     PetscSF sfVert=NULL;
-#if defined(PETSC_USE_64BIT_INDICES) || defined(PETSC_USE_COMPLEX)
     PetscInt i;
-#endif
 
     ierr = VecGetArrayRead(coordinates, &coordinates_arr);CHKERRQ(ierr);
     ierr = ISGetIndices(cells, &cells_arr);CHKERRQ(ierr);
 
-#if defined(PETSC_USE_64BIT_INDICES)
-    /* convert to 32-bit integers if PetscInt is 64-bit */
-    /*TODO More systematic would be to change all the function arguments to PetscInt */
-    ierr = PetscMalloc1(numCells*numCorners, &cells_arr_int);CHKERRQ(ierr);
-    for (i = 0; i < numCells*numCorners; ++i) {
-      ierr = PetscMPIIntCast(cells_arr[i], &cells_arr_int[i]);CHKERRQ(ierr);
-    }
-#else
-    cells_arr_int = (int*)cells_arr;
-#endif
-
-#if defined(PETSC_USE_COMPLEX)
-    /* convert to real numbers if PetscScalar is complex */
-    /*TODO More systematic would be to change all the function arguments to PetscScalar */
-    ierr = PetscMalloc1(numVertices*spatialDim, &coordinates_arr_real);CHKERRQ(ierr);
-    for (i = 0; i < numVertices*spatialDim; ++i) {
-      coordinates_arr_real[i] = PetscRealPart(coordinates_arr[i]);
-#if defined(PETSC_USE_DEBUG)
-      if (PetscImaginaryPart(coordinates_arr[i])) {
-        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Vector of coordinates contains complex numbers but only real vectors are currently supported.");
+    if (PetscDefined(USE_64BIT_INDICES)) {
+      /* convert to 32-bit integers if PetscInt is 64-bit */
+      /*TODO More systematic would be to change all the function arguments to PetscInt */
+      ierr = PetscMalloc1(numCells*numCorners, &cells_arr_int);CHKERRQ(ierr);
+      for (i = 0; i < numCells*numCorners; ++i) {
+        ierr = PetscMPIIntCast(cells_arr[i], &cells_arr_int[i]);CHKERRQ(ierr);
       }
-#endif  /* defined(PETSC_USE_DEBUG) */
-    }
-#else
-    coordinates_arr_real = (PetscReal*)coordinates_arr;
-#endif
+    } else cells_arr_int = (int*)cells_arr;
+
+    if (PetscDefined(USE_COMPLEX)) {
+      /* convert to real numbers if PetscScalar is complex */
+      /*TODO More systematic would be to change all the function arguments to PetscScalar */
+      ierr = PetscMalloc1(numVertices*spatialDim, &coordinates_arr_real);CHKERRQ(ierr);
+      for (i = 0; i < numVertices*spatialDim; ++i) {
+        coordinates_arr_real[i] = PetscRealPart(coordinates_arr[i]);
+        if (PetscDefined(USE_DEBUG) && PetscImaginaryPart(coordinates_arr[i])) {
+          SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Vector of coordinates contains complex numbers but only real vectors are currently supported.");
+        }
+      }
+    } else coordinates_arr_real = (PetscReal*)coordinates_arr;
 
     ierr = DMSetDimension(dm, spatialDim);CHKERRQ(ierr);
     ierr = DMPlexBuildFromCellList_Parallel_Internal(dm, spatialDim, numCells, numVertices, numCorners, cells_arr_int, PETSC_TRUE, &sfVert);CHKERRQ(ierr);
@@ -142,12 +132,8 @@ PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer)
     ierr = VecRestoreArrayRead(coordinates, &coordinates_arr);CHKERRQ(ierr);
     ierr = ISRestoreIndices(cells, &cells_arr);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&sfVert);CHKERRQ(ierr);
-#if defined(PETSC_USE_64BIT_INDICES)
-    ierr = PetscFree(cells_arr_int);CHKERRQ(ierr);
-#endif
-#if defined(PETSC_USE_COMPLEX)
-    ierr = PetscFree(coordinates_arr_real);CHKERRQ(ierr);
-#endif
+    if (PetscDefined(USE_64BIT_INDICES)) {ierr = PetscFree(cells_arr_int);CHKERRQ(ierr);}
+    if (PetscDefined(USE_COMPLEX)) {ierr = PetscFree(coordinates_arr_real);CHKERRQ(ierr);}
   }
   ierr = ISDestroy(&cells);CHKERRQ(ierr);
   ierr = VecDestroy(&coordinates);CHKERRQ(ierr);

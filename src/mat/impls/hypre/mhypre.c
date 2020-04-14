@@ -1974,13 +1974,11 @@ static PetscErrorCode MatGetDiagonal_HYPRE(Mat A, Vec d)
   PetscFunctionBegin;
   ierr = MatHasCongruentLayouts(A,&cong);CHKERRQ(ierr);
   if (!cong) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Only for square matrices with same local distributions of rows and columns");
-#if defined(PETSC_USE_DEBUG)
-  {
+  if (PetscDefined(USE_DEBUG)) {
     PetscBool miss;
     ierr = MatMissingDiagonal(A,&miss,NULL);CHKERRQ(ierr);
     if (miss && A->rmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not implemented when diagonal entries are missing");
   }
-#endif
   ierr = MatHYPREGetParCSR_HYPRE(A,&parcsr);CHKERRQ(ierr);
   dmat = hypre_ParCSRMatrixDiag(parcsr);
   if (dmat) {

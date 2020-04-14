@@ -606,9 +606,7 @@ PetscErrorCode DMPlexOrientInterface_Internal(DM dm)
   ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
   ierr = PetscSFGetRootRanks(sf, &nranks, &ranks, &roffset, NULL, NULL);CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm, NULL, "-before_fix_dm_view");CHKERRQ(ierr);
-#if defined(PETSC_USE_DEBUG)
-  ierr = DMPlexCheckPointSF(dm);CHKERRQ(ierr);
-#endif
+  if (PetscDefined(USE_DEBUG)) {ierr = DMPlexCheckPointSF(dm);CHKERRQ(ierr);}
   ierr = SortRmineRremoteByRemote_Private(sf, &rmine1, &rremote1);CHKERRQ(ierr);
   ierr = PetscMalloc4(nroots, &roots, nroots, &leaves, nroots, &rootsRanks, nroots, &leavesRanks);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
@@ -1696,13 +1694,11 @@ PetscErrorCode DMPlexIsInterpolated(DM dm, DMPlexInterpolatedFlag *interpolated)
   PetscValidPointer(interpolated,2);
   if (plex->interpolated < 0) {
     ierr = DMPlexIsInterpolated_Internal(dm, &plex->interpolated);CHKERRQ(ierr);
-  } else {
-#if defined (PETSC_USE_DEBUG)
+  } else if (PetscDefined (USE_DEBUG)) {
     DMPlexInterpolatedFlag flg;
 
     ierr = DMPlexIsInterpolated_Internal(dm, &flg);CHKERRQ(ierr);
     if (flg != plex->interpolated) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Stashed DMPlexInterpolatedFlag %s is inconsistent with current %s", DMPlexInterpolatedFlags[plex->interpolated], DMPlexInterpolatedFlags[flg]);
-#endif
   }
   *interpolated = plex->interpolated;
   PetscFunctionReturn(0);

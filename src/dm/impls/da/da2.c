@@ -271,13 +271,13 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   for (i=0; i<(rank % m); i++) {
     xs += lx[i];
   }
-#if defined(PETSC_USE_DEBUG)
-  left = xs;
-  for (i=(rank % m); i<m; i++) {
-    left += lx[i];
+  if (PetscDefined(USE_DEBUG)) {
+    left = xs;
+    for (i=(rank % m); i<m; i++) {
+      left += lx[i];
+    }
+    if (left != M) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Sum of lx across processors not equal to M: %D %D",left,M);
   }
-  if (left != M) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Sum of lx across processors not equal to M: %D %D",left,M);
-#endif
 
   /*
      Determine locally owned region
@@ -295,13 +295,13 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   for (i=0; i<(rank/m); i++) {
     ys += ly[i];
   }
-#if defined(PETSC_USE_DEBUG)
-  left = ys;
-  for (i=(rank/m); i<n; i++) {
-    left += ly[i];
+  if (PetscDefined(USE_DEBUG)) {
+    left = ys;
+    for (i=(rank/m); i<n; i++) {
+      left += ly[i];
+    }
+    if (left != N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Sum of ly across processors not equal to N: %D %D",left,N);
   }
-  if (left != N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Sum of ly across processors not equal to N: %D %D",left,N);
-#endif
 
   /*
    check if the scatter requires more than one process neighbor or wraps around

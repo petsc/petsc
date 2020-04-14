@@ -474,22 +474,22 @@ static PetscErrorCode PetscPrintExeSpecs(PetscViewer viewer)
   ierr = PetscViewerXMLPutString(   viewer, "date"        , "Started at"   , date);CHKERRQ(ierr);
   ierr = PetscViewerXMLPutString(   viewer, "petscrelease", "Petsc Release", version);CHKERRQ(ierr);
 
-#if defined(PETSC_USE_DEBUG)
-  ierr = PetscStrlcat(buildoptions, "Debug ", sizeof(buildoptions));CHKERRQ(ierr);
-#endif
-#if defined(PETSC_USE_COMPLEX)
-  ierr = PetscStrlcat(buildoptions, "Complex ", sizeof(buildoptions));CHKERRQ(ierr);
-#endif
-#if defined(PETSC_USE_REAL_SINGLE)
-  ierr = PetscStrlcat(buildoptions, "Single ", sizeof(buildoptions));CHKERRQ(ierr);
-#elif defined(PETSC_USE_REAL___FLOAT128)
-  ierr = PetscStrlcat(buildoptions, "Quadruple ", sizeof(buildoptions));CHKERRQ(ierr);
-#elif defined(PETSC_USE_REAL___FP16)
-  ierr = PetscStrlcat(buildoptions, "Half ", sizeof(buildoptions));CHKERRQ(ierr);
-#endif
-#if defined(PETSC_USE_64BIT_INDICES)
-  ierr = PetscStrlcat(buildoptions, "Int64 ", sizeof(buildoptions));CHKERRQ(ierr);
-#endif
+  if (PetscDefined(USE_DEBUG)) {
+    ierr = PetscStrlcat(buildoptions, "Debug ", sizeof(buildoptions));CHKERRQ(ierr);
+  }
+  if (PetscDefined(USE_COMPLEX)) {
+    ierr = PetscStrlcat(buildoptions, "Complex ", sizeof(buildoptions));CHKERRQ(ierr);
+  }
+  if (PetscDefined(USE_REAL_SINGLE)) {
+    ierr = PetscStrlcat(buildoptions, "Single ", sizeof(buildoptions));CHKERRQ(ierr);
+  } else if (PetscDefined(USE_REAL___FLOAT128)) {
+    ierr = PetscStrlcat(buildoptions, "Quadruple ", sizeof(buildoptions));CHKERRQ(ierr);
+  } else if (PetscDefined(USE_REAL___FP16)) {
+    ierr = PetscStrlcat(buildoptions, "Half ", sizeof(buildoptions));CHKERRQ(ierr);
+  }
+  if (PetscDefined(USE_64BIT_INDICES)) {
+    ierr = PetscStrlcat(buildoptions, "Int64 ", sizeof(buildoptions));CHKERRQ(ierr);
+  }
 #if defined(__cplusplus)
   ierr = PetscStrlcat(buildoptions, "C++ ", sizeof(buildoptions));CHKERRQ(ierr);
 #endif

@@ -34,8 +34,7 @@ static PetscBuildTwoSidedType _twosided_type = PETSC_BUILDTWOSIDED_NOTSET;
 PetscErrorCode PetscCommBuildTwoSidedSetType(MPI_Comm comm,PetscBuildTwoSidedType twosided)
 {
   PetscFunctionBegin;
-#if defined(PETSC_USE_DEBUG)
-  {                             /* We don't have a PetscObject so can't use PetscValidLogicalCollectiveEnum */
+  if (PetscDefined(USE_DEBUG)) {                             /* We don't have a PetscObject so can't use PetscValidLogicalCollectiveEnum */
     PetscMPIInt ierr;
     PetscMPIInt b1[2],b2[2];
     b1[0] = -(PetscMPIInt)twosided;
@@ -43,7 +42,6 @@ PetscErrorCode PetscCommBuildTwoSidedSetType(MPI_Comm comm,PetscBuildTwoSidedTyp
     ierr  = MPIU_Allreduce(b1,b2,2,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
     if (-b2[0] != b2[1]) SETERRQ(comm,PETSC_ERR_ARG_WRONG,"Enum value must be same on all processes");
   }
-#endif
   _twosided_type = twosided;
   PetscFunctionReturn(0);
 }

@@ -1769,11 +1769,7 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
   snes->maxLinearSolveFailures = 1;
 
   snes->vizerotolerance = 1.e-8;
-#if defined(PETSC_USE_DEBUG)
-  snes->checkjacdomainerror = PETSC_TRUE;
-#else
-  snes->checkjacdomainerror = PETSC_FALSE;
-#endif
+  snes->checkjacdomainerror = PetscDefined(USE_DEBUG) ? PETSC_TRUE : PETSC_FALSE;
 
   /* Set this to true if the implementation of SNESSolve_XXX does compute the residual at the final solution. */
   snes->alwayscomputesfinalresidual = PETSC_FALSE;

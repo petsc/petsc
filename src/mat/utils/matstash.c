@@ -838,13 +838,11 @@ static PetscErrorCode MatStashScatterBegin_BTS(Mat mat,MatStash *stash,PetscInt 
   char *sendblocks;
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_DEBUG)
-  {                             /* make sure all processors are either in INSERTMODE or ADDMODE */
+  if (PetscDefined(USE_DEBUG)) { /* make sure all processors are either in INSERTMODE or ADDMODE */
     InsertMode addv;
     ierr = MPIU_Allreduce((PetscEnum*)&mat->insertmode,(PetscEnum*)&addv,1,MPIU_ENUM,MPI_BOR,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
     if (addv == (ADD_VALUES|INSERT_VALUES)) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Some processors inserted others added");
   }
-#endif
 
   ierr = MatStashBlockTypeSetUp(stash);CHKERRQ(ierr);
   ierr = MatStashSortCompress_Private(stash,mat->insertmode);CHKERRQ(ierr);

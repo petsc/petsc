@@ -182,9 +182,7 @@ static PetscErrorCode MatCreateSubMatrices_MPIAdj_Private(Mat mat,PetscInt n,con
     for (j=0; j<irow_n; j++){
       for (k=sxadj[j]; k<sxadj[j+1]; k++){
         ierr = PetscFindInt(sadjncy[k],nindx,indices,&loc);CHKERRQ(ierr);
-#if defined(PETSC_USE_DEBUG)
         if (loc<0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"can not find col %D",sadjncy[k]);
-#endif
         sadjncy[k] = loc;
       }
     }
@@ -626,9 +624,6 @@ static PetscErrorCode  MatMPIAdjSetPreallocation_MPIAdj(Mat B,PetscInt *i,PetscI
   Mat_MPIAdj     *b = (Mat_MPIAdj*)B->data;
   PetscBool       useedgeweights;
   PetscErrorCode ierr;
-#if defined(PETSC_USE_DEBUG)
-  PetscInt ii;
-#endif
 
   PetscFunctionBegin;
   ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
@@ -637,15 +632,17 @@ static PetscErrorCode  MatMPIAdjSetPreallocation_MPIAdj(Mat B,PetscInt *i,PetscI
   /* Make everybody knows if they are using edge weights or not */
   ierr = MPIU_Allreduce((int*)&useedgeweights,(int*)&b->useedgeweights,1,MPI_INT,MPI_MAX,PetscObjectComm((PetscObject)B));CHKERRQ(ierr);
 
-#if defined(PETSC_USE_DEBUG)
-  if (i[0] != 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"First i[] index must be zero, instead it is %D\n",i[0]);
-  for (ii=1; ii<B->rmap->n; ii++) {
-    if (i[ii] < 0 || i[ii] < i[ii-1]) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"i[%D]=%D index is out of range: i[%D]=%D",ii,i[ii],ii-1,i[ii-1]);
+  if (PetscDefined(USE_DEBUG)) {
+    PetscInt ii;
+
+    if (i[0] != 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"First i[] index must be zero, instead it is %D\n",i[0]);
+    for (ii=1; ii<B->rmap->n; ii++) {
+      if (i[ii] < 0 || i[ii] < i[ii-1]) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"i[%D]=%D index is out of range: i[%D]=%D",ii,i[ii],ii-1,i[ii-1]);
+    }
+    for (ii=0; ii<i[B->rmap->n]; ii++) {
+      if (j[ii] < 0 || j[ii] >= B->cmap->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column index %D out of range %D\n",ii,j[ii]);
+    }
   }
-  for (ii=0; ii<i[B->rmap->n]; ii++) {
-    if (j[ii] < 0 || j[ii] >= B->cmap->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column index %D out of range %D\n",ii,j[ii]);
-  }
-#endif
   B->preallocated = PETSC_TRUE;
 
   b->j      = j;

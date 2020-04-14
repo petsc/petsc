@@ -257,8 +257,7 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool has_cnst,PetscInt n,c
       ierr = VecLockReadPush(vecs[i]);CHKERRQ(ierr);
     }
   }
-#if defined(PETSC_USE_DEBUG)
-  if (n) {
+  if (PetscDefined(USE_DEBUG) && n) {
     PetscScalar *dots;
     for (i=0; i<n; i++) {
       PetscReal norm;
@@ -282,7 +281,6 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool has_cnst,PetscInt n,c
     }
     PetscFree(dots);CHKERRQ(ierr);
   }
-#endif
 
   *SP = NULL;
   ierr = MatInitializePackage();CHKERRQ(ierr);

@@ -192,20 +192,17 @@ PetscErrorCode PetscLayoutCreateFromRanges(MPI_Comm comm,const PetscInt range[],
   map->rend   = map->range[rank+1];
   map->n      = map->rend - map->rstart;
   map->N      = map->range[size];
-#if defined(PETSC_USE_DEBUG)
-  /* just check that n, N and bs are consistent */
-  {
+  if (PetscDefined(USE_DEBUG)) {  /* just check that n, N and bs are consistent */
     PetscInt tmp;
     ierr = MPIU_Allreduce(&map->n,&tmp,1,MPIU_INT,MPI_SUM,map->comm);CHKERRQ(ierr);
     if (tmp != map->N) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Sum of local lengths %D does not equal global length %D, my local length %D.\nThe provided PetscLayout is wrong.",tmp,map->N,map->n);
+    if (map->bs > 1) {
+      if (map->n % map->bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Local size %D must be divisible by blocksize %D",map->n,map->bs);
+    }
+    if (map->bs > 1) {
+      if (map->N % map->bs) SETERRQ2(map->comm,PETSC_ERR_PLIB,"Global size %D must be divisible by blocksize %D",map->N,map->bs);
+    }
   }
-  if (map->bs > 1) {
-    if (map->n % map->bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Local size %D must be divisible by blocksize %D",map->n,map->bs);
-  }
-  if (map->bs > 1) {
-    if (map->N % map->bs) SETERRQ2(map->comm,PETSC_ERR_PLIB,"Global size %D must be divisible by blocksize %D",map->N,map->bs);
-  }
-#endif
   /* lock the layout */
   map->setupcalled = PETSC_TRUE;
   map->oldn = map->n;

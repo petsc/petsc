@@ -3593,8 +3593,7 @@ static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex)
     ierr = DMPlexGetChart(adaptPlex,&pStartA,&pEndA);CHKERRQ(ierr);
     ierr = PetscMalloc2(pEnd-pStart,&values,pEndA-pStartA,&adaptValues);CHKERRQ(ierr);
     ierr = DMGetPointSF(plex,&pointSF);CHKERRQ(ierr);
-#if defined(PETSC_USE_DEBUG)
-    {
+    if (PetscDefined(USE_DEBUG)) {
       PetscInt p;
       for (p = pStartA; p < pEndA; p++) adaptValues[p-pStartA] = -1;
       for (p = pStart; p < pEnd; p++)   values[p-pStart]       = -2;
@@ -3624,7 +3623,6 @@ static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex)
         if (values[p-pStart] == -2) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"uncovered point %D",p);
       }
     }
-#endif
     while (next) {
       DMLabel    nextLabel = next->label;
       const char *name;

@@ -1092,15 +1092,13 @@ static PetscErrorCode VecSetUp_NestIS_Private(Vec V,PetscInt nb,IS is[])
       ierr = ISGetLocalSize(is[i],&m);CHKERRQ(ierr);
       ierr = VecGetLocalSize(ctx->v[i],&n);CHKERRQ(ierr);
       if (m != n) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"In slot %D, IS of local size %D is not compatible with Vec of local size %D",i,m,n);
-#if defined(PETSC_USE_DEBUG)
-      {                         /* This test can be expensive */
+      if (PetscDefined(USE_DEBUG)) { /* This test can be expensive */
         PetscInt  start;
         PetscBool contiguous;
         ierr = ISContiguousLocal(is[i],offset,offset+n,&start,&contiguous);CHKERRQ(ierr);
         if (!contiguous) SETERRQ1(PetscObjectComm((PetscObject)V),PETSC_ERR_SUP,"Index set %D is not contiguous with layout of matching vector",i);
         if (start != 0) SETERRQ1(PetscObjectComm((PetscObject)V),PETSC_ERR_SUP,"Index set %D introduces overlap or a hole",i);
       }
-#endif
       ierr = PetscObjectReference((PetscObject)is[i]);CHKERRQ(ierr);
       ctx->is[i] = is[i];
       offset += n;
