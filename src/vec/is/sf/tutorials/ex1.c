@@ -178,7 +178,7 @@ int main(int argc,char **argv)
 
   if (test_bcast) {             /* broadcast rootdata into leafdata */
     PetscInt *rootdata,*leafdata;
-    /* Allocate space for send and recieve buffers. This example communicates PetscInt, but other types, including
+    /* Allocate space for send and receive buffers. This example communicates PetscInt, but other types, including
      * user-defined structures, could also be used. */
     ierr = PetscMalloc2(nrootsalloc,&rootdata,nleavesalloc,&leafdata);CHKERRQ(ierr);
     /* Set rootdata buffer to be broadcast */

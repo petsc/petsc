@@ -109,8 +109,8 @@ int main(int argc,char **argv)
   ierr = VecDuplicate(init_sol,&appctx.ksp_rhs);CHKERRQ(ierr);
   ierr = VecDuplicate(init_sol,&appctx.ksp_sol);CHKERRQ(ierr);
 
-  /* set intial guess */
-  /*------------------*/
+  /* set initial guess */
+  /*-------------------*/
   for (i=0; i<nz-2; i++) {
     val  = exact(z[i+1], 0.0);
     ierr = VecSetValue(init_sol,i,(PetscScalar)val,INSERT_VALUES);CHKERRQ(ierr);

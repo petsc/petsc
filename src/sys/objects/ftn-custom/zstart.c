@@ -466,7 +466,7 @@ static void petscinitialize_internal(char* filename, PetscInt len, PetscBool rea
 #endif
 #if defined(PETSC_USE_LOG)
   *ierr = PetscLogInitialize();
-  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize: intializing logging\n");return;}
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize: initializing logging\n");return;}
 #endif
   *ierr = PetscInitialize_DynamicLibraries();
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Initializing dynamic libraries\n");return;}

@@ -270,11 +270,11 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm,PetscBool remove_sent_points)
     
   }
 
-  /* locate points newly recevied */
+  /* locate points newly received */
   ierr = DMSwarmDataBucketGetSizes(swarm->db,&npoints2,NULL,NULL);CHKERRQ(ierr);
   
 #if 0
-  { /* safe alternative - however this performs two point locations on: (i) the intial points set and; (ii) the (intial + recieved) point set */
+  { /* safe alternative - however this performs two point locations on: (i) the initial points set and; (ii) the (initial + received) point set */
     PetscScalar *LA_coor;
     PetscInt bs;
     DMSwarmDataField PField;
@@ -311,7 +311,7 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm,PetscBool remove_sent_points)
   }
 #endif
 
-  { /* this performs two point locations: (i) on the intial points set prior to communication; and (ii) on the new (recieved) points */
+  { /* this performs two point locations: (i) on the initial points set prior to communication; and (ii) on the new (received) points */
     PetscScalar      *LA_coor;
     PetscInt         npoints_from_neighbours,bs;
     DMSwarmDataField PField;

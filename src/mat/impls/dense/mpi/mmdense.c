@@ -227,7 +227,7 @@ PetscErrorCode MatCreateSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS
     ierr = MPI_Isend(sbuf1[j],w1[2*j],MPIU_INT,j,tag0,comm,s_waits1+i);CHKERRQ(ierr);
   }
 
-  /* Post recieves to capture the row_data from other procs */
+  /* Post receives to capture the row_data from other procs */
   ierr = PetscMalloc1(nrqs+1,&r_waits2);CHKERRQ(ierr);
   ierr = PetscMalloc1(nrqs+1,&rbuf2);CHKERRQ(ierr);
   for (i=0; i<nrqs; i++) {

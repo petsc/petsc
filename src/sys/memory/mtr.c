@@ -51,7 +51,7 @@ static int       TRfrags              = 0;
 static TRSPACE   *TRhead              = NULL;
 static int       TRid                 = 0;
 static PetscBool TRdebugLevel         = PETSC_FALSE;
-static PetscBool TRdebugIintializenan = PETSC_FALSE;
+static PetscBool TRdebugIinitializenan= PETSC_FALSE;
 static size_t    TRMaxMem             = 0;
 static int       NumTRMaxMems         = 0;
 static size_t    TRMaxMems[MAXTRMAXMEMS];
@@ -198,7 +198,7 @@ PetscErrorCode  PetscTrMallocDefault(size_t a,PetscBool clear,int lineno,const c
     head->stack.currentsize = 0;
   }
 #if defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE)
-  if (!clear && TRdebugIintializenan) {
+  if (!clear && TRdebugIinitializenan) {
     size_t     i, n = a/sizeof(PetscReal);
     PetscReal *s = (PetscReal*) inew;
     /* from https://www.doc.ic.ac.uk/~eedwards/compsys/float/nan.html */
@@ -865,7 +865,7 @@ foundit:;
 
     Input Parameter:
 +   eachcall - checks the entire heap of allocated memory for issues on each call to PetscMalloc() and PetscFree()
--   intializenan - initializes all memory with NaN to catch use of unintialized floating point arrays
+-   initializenan - initializes all memory with NaN to catch use of uninitialized floating point arrays
 
     Options Database:
 +   -malloc_debug <true or false> - turns on or off debugging
@@ -897,7 +897,7 @@ PetscErrorCode PetscMallocSetDebug(PetscBool eachcall, PetscBool initializenan)
   TRMaxMem            = 0;
   PetscLogMallocMax   = 10000;
   PetscLogMalloc      = -1;
-  TRdebugIintializenan = initializenan;
+  TRdebugIinitializenan = initializenan;
   PetscFunctionReturn(0);
 }
 
@@ -923,6 +923,6 @@ PetscErrorCode PetscMallocGetDebug(PetscBool *basic, PetscBool *eachcall, PetscB
   PetscFunctionBegin;
   if (basic) *basic = (PetscTrMalloc == PetscTrMallocDefault) ? PETSC_TRUE : PETSC_FALSE;
   if (eachcall) *eachcall           = TRdebugLevel;
-  if (initializenan) *initializenan = TRdebugIintializenan;
+  if (initializenan) *initializenan = TRdebugIinitializenan;
   PetscFunctionReturn(0);
 }

@@ -2074,7 +2074,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
     buf_ri_k[k] = buf_ri[k]; /* beginning of k-th recved i-structure */
     nrows       = *buf_ri_k[k];
     nextrow[k]  = buf_ri_k[k] + 1;  /* next row number of k-th recved i-structure */
-    nextci[k]   = buf_ri_k[k] + (nrows + 1); /* points to the next i-structure of k-th recieved i-structure  */
+    nextci[k]   = buf_ri_k[k] + (nrows + 1); /* points to the next i-structure of k-th received i-structure  */
   }
 
   ierr = PetscLLCondensedCreate_Scalable(Armax,&lnk);CHKERRQ(ierr);
