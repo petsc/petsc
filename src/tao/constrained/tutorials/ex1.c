@@ -124,7 +124,7 @@ PetscErrorCode InitializeProblem(AppCtx *user)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
-  /* create vector x and set intial values */
+  /* create vector x and set initial values */
   user->n = 2; /* global length */
   nloc = (rank==0)?user->n:0;
   ierr = VecCreateMPI(PETSC_COMM_WORLD,nloc,user->n,&user->x);CHKERRQ(ierr);

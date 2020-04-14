@@ -71,7 +71,7 @@
       call PetscSFView(sf,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr);
       call PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr);
 
-!   Allocate space for send and recieve buffers. This example communicates PetscInt, but other types, including
+!   Allocate space for send and receive buffers. This example communicates PetscInt, but other types, including
 !     * user-defined structures, could also be used.
 !     Set rootdata buffer to be broadcast
       do i=1,nrootsalloc

@@ -761,7 +761,7 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
             }
             /* send request tag1 [n, proc, n*[gid1,lid0] ] */
             ierr = MPI_Isend(sbuff, 2*n+2, MPIU_INT, proc, tag1, comm, request);CHKERRQ(ierr);
-            /* post recieve */
+            /* post receive */
             request        = (MPI_Request*)pt;
             rreqs2[nSend1] = request; /* cache recv request */
             pt             = (PetscInt*)(request+1);
@@ -771,7 +771,7 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
             nSend1++;
           }
         }
-        /* recieve requests, send response, clear lists */
+        /* receive requests, send response, clear lists */
         kk     = nactive_edges;
         ierr   = MPIU_Allreduce(&kk,&nactive_edges,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr); /* not correct syncronization and global */
         nSend2 = 0;
@@ -784,9 +784,9 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
           ierr = MPI_Iprobe(MPI_ANY_SOURCE, tag1, comm, &flag, &status);CHKERRQ(ierr);
           if (!flag) break;
           ierr = MPI_Get_count(&status, MPIU_INT, &count);CHKERRQ(ierr);
-          if (count > BF_SZ) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"buffer too small for recieve: %d",count);
+          if (count > BF_SZ) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"buffer too small for receive: %d",count);
           proc = status.MPI_SOURCE;
-          /* recieve request tag1 [n, proc, n*[gid1,lid0] ] */
+          /* receive request tag1 [n, proc, n*[gid1,lid0] ] */
           ierr = MPI_Recv(rbuff, count, MPIU_INT, proc, tag1, comm, &status);CHKERRQ(ierr);
           /* count sends */
           pt = rbuff; count3 = count2 = 0;
@@ -829,7 +829,7 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
           ierr = MPI_Isend(sbuff, count2, MPIU_INT, proc, tag2, comm, request);CHKERRQ(ierr);
         }
 
-        /* recieve tag2 *[lid0, n, n*[gid] ] */
+        /* receive tag2 *[lid0, n, n*[gid] ] */
         for (kk=0; kk<nSend1; kk++) {
           PetscMPIInt count;
           MPI_Request *request;

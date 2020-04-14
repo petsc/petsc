@@ -58,7 +58,7 @@ static PetscErrorCode TSStage_EIMEX(TS ts,PetscInt istage)
   h = ts->time_step/ext->N[istage];/* step size for the istage-th stage */
   ext->shift = 1./h;
   ierr = SNESSetLagJacobian(snes,-2);CHKERRQ(ierr); /* Recompute the Jacobian on this solve, but not again */
-  ierr = VecCopy(ext->VecSolPrev,Y);CHKERRQ(ierr); /* Take the previous solution as intial step */
+  ierr = VecCopy(ext->VecSolPrev,Y);CHKERRQ(ierr); /* Take the previous solution as initial step */
 
   for(i=0; i<ext->N[istage]; i++){
     ext->ctime = ts->ptime + h*i;
