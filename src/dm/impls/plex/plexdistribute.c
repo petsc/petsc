@@ -609,7 +609,7 @@ PetscErrorCode DMPlexCreateOverlapMigrationSF(DM dm, PetscSF overlapSF, PetscSF 
   ierr = PetscSFBcastBegin(overlapSF, MPIU_INT, pointDepths, remoteDepths);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(overlapSF, MPIU_INT, pointDepths, remoteDepths);CHKERRQ(ierr);
 
-  /* Count recevied points in each stratum and compute the internal strata shift */
+  /* Count received points in each stratum and compute the internal strata shift */
   ierr = PetscMalloc3(dim+1, &depthRecv, dim+1, &depthShift, dim+1, &depthIdx);CHKERRQ(ierr);
   for (d=0; d<dim+1; d++) depthRecv[d]=0;
   for (p=0; p<nleaves; p++) depthRecv[remoteDepths[p]]++;

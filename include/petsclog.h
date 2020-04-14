@@ -648,6 +648,13 @@ PETSC_EXTERN PetscErrorCode PetscLogObjectState(PetscObject,const char[],...);
 #define PetscLogEventBegin(e,o1,o2,o3,o4)  0
 #define PetscLogEventEnd(e,o1,o2,o3,o4)    0
 
+#define PetscLogCpuToGpu(a)                0
+#define PetscLogGpuToCpu(a)                0
+#define PetscLogGpuFlops(a)                0
+#define PetscLogGpuTimeBegin()             0
+#define PetscLogGpuTimeEnd()               0
+#define PetscLogGpuTimeAdd(a)              0
+
 /* If PETSC_USE_LOG is NOT defined, these still need to be! */
 #define MPI_Startall_irecv(count,datatype,number,requests) ((number) && MPI_Startall(number,requests))
 #define MPI_Startall_isend(count,datatype,number,requests) ((number) && MPI_Startall(number,requests))
