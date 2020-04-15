@@ -133,5 +133,7 @@ int main(int argc,char **argv)
 /*TEST
 
    test:
+     filter:  sed -e "s/in 5 iterations/in 4 iterations/g"
+
 
 TEST*/

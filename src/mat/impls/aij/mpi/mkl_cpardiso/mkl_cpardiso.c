@@ -523,15 +523,7 @@ PetscErrorCode PetscSetMKL_CPARDISOFromOptions(Mat F, Mat A)
   if (flg) mat_mkl_cpardiso->msglvl = icntl;
 
   ierr = PetscOptionsInt("-mat_mkl_cpardiso_69","Defines the matrix type","None",mat_mkl_cpardiso->mtype,&icntl,&flg);CHKERRQ(ierr);
-  if (flg) {
-    mat_mkl_cpardiso->mtype = icntl;
-#if defined(PETSC_USE_REAL_SINGLE)
-    mat_mkl_cpardiso->iparm[27] = 1;
-#else
-    mat_mkl_cpardiso->iparm[27] = 0;
-#endif
-    mat_mkl_cpardiso->iparm[34] = 1;
-  }
+  if (flg) mat_mkl_cpardiso->mtype = icntl;
   ierr = PetscOptionsInt("-mat_mkl_cpardiso_1","Use default values","None",mat_mkl_cpardiso->iparm[0],&icntl,&flg);CHKERRQ(ierr);
 
   if (flg && icntl != 0) {
@@ -829,15 +821,7 @@ PetscErrorCode MatMkl_CPardisoSetCntl_MKL_CPARDISO(Mat F,PetscInt icntl,PetscInt
     else if (icntl == 66) mat_mkl_cpardiso->maxfct = ival;
     else if (icntl == 67) mat_mkl_cpardiso->mnum = ival;
     else if (icntl == 68) mat_mkl_cpardiso->msglvl = ival;
-    else if (icntl == 69) {
-      mat_mkl_cpardiso->mtype = ival;
-#if defined(PETSC_USE_REAL_SINGLE)
-      mat_mkl_cpardiso->iparm[27] = 1;
-#else
-      mat_mkl_cpardiso->iparm[27] = 0;
-#endif
-      mat_mkl_cpardiso->iparm[34] = 1;
-    }
+    else if (icntl == 69) mat_mkl_cpardiso->mtype = ival;
   }
   PetscFunctionReturn(0);
 }

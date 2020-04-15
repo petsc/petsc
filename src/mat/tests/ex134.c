@@ -20,7 +20,7 @@ PetscErrorCode Assemble(MPI_Comm comm,PetscInt bs,MatType mtype)
   PetscRandom       rdm;
   Vec               b,x,y;
   PetscInt          i,j;
-  PetscReal         norm2,tol=10*PETSC_SMALL;
+  PetscReal         norm2,tol=100*PETSC_SMALL;
   PetscBool         issbaij;
 #endif
   PetscViewer       viewer;
