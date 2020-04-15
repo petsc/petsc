@@ -125,7 +125,7 @@ class Configure(config.base.Configure):
     headersC = map(lambda name: name+'.h',['setjmp','dos','fcntl','float','io','malloc','pwd','strings',
                                             'unistd','sys/sysinfo','machine/endian','sys/param','sys/procfs','sys/resource',
                                             'sys/systeminfo','sys/times','sys/utsname',
-                                            'sys/socket','sys/wait','netinet/in','netdb','Direct','time','Ws2tcpip','sys/types',
+                                            'sys/socket','sys/wait','netinet/in','netdb','direct','time','Ws2tcpip','sys/types',
                                             'WindowsX','float','ieeefp','stdint','pthread','inttypes','immintrin','zmmintrin'])
     functions = ['access','_access','clock','drand48','getcwd','_getcwd','getdomainname','gethostname',
                  'getwd','memalign','popen','PXFGETARG','rand','getpagesize',
