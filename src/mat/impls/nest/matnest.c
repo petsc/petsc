@@ -252,7 +252,7 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_Nest_Dense(Mat C)
   PetscFunctionBegin;
   if (product->type == MATPRODUCT_AB) {
     ierr = MatProductSetFromOptions_Nest_Dense_AB(C);CHKERRQ(ierr);
-  } else SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_SUP,"MatProduct type is not supported");
+  } else SETERRQ1(PetscObjectComm((PetscObject)C),PETSC_ERR_SUP,"MatProduct type %s is not supported for Nest and Dense matrices",MatProductTypes[product->type]);
   PetscFunctionReturn(0);
 }
 /* --------------------------------------------------------- */

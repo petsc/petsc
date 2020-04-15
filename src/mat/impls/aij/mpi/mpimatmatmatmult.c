@@ -44,7 +44,7 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_Transpose_AIJ_AIJ(Mat C)
   PetscFunctionBegin;
   if (product->type == MATPRODUCT_ABC) {
     C->ops->productsymbolic = MatProductSymbolic_ABC_Transpose_AIJ_AIJ;
-  } else SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_SUP,"MatProduct type is not supported");
+  } else SETERRQ1(PetscObjectComm((PetscObject)C),PETSC_ERR_SUP,"MatProduct type %s is not supported for Transpose, AIJ and AIJ matrices",MatProductTypes[product->type]);
   PetscFunctionReturn(0);
 }
 #endif

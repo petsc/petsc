@@ -111,6 +111,13 @@ int main(int argc,char **args)
     /* Test MatProductClear() */
     ierr = MatProductClear(C);CHKERRQ(ierr);
     ierr = MatDestroy(&C);CHKERRQ(ierr);
+
+    /* Test MatMatMult() for dense and aij matrices */
+    ierr = MatConvert(A_save,MATDENSE,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
+    ierr = MatMatMult(A,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
+    ierr = MatDestroy(&C);CHKERRQ(ierr);
+    ierr = MatDestroy(&A);CHKERRQ(ierr);
+
   }
 
   /* Create P and R = P^T  */
@@ -147,7 +154,8 @@ int main(int argc,char **args)
     ierr = MatProductSetAlgorithm(C,"default");CHKERRQ(ierr);
     ierr = MatProductSetFill(C,PETSC_DEFAULT);CHKERRQ(ierr);
     ierr = MatProductSetFromOptions(C);CHKERRQ(ierr);
-    ierr = MatProductSymbolic(C);CHKERRQ(ierr);
+    ierr = MatProductSymbolic(C);CHKERRQ(ierr); /* equivalent to MatSetUp() */
+    ierr = MatSetOption(C,MAT_USE_INODES,PETSC_FALSE);CHKERRQ(ierr); /* illustrate how to call MatSetOption() */
     ierr = MatProductNumeric(C);CHKERRQ(ierr);
     ierr = MatProductNumeric(C);CHKERRQ(ierr);
     ierr = MatTransposeMatMultEqual(P,B,C,10,&flg);CHKERRQ(ierr);
