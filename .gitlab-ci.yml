@@ -442,6 +442,15 @@ linux-knl:
   variables:
     TEST_ARCH: arch-ci-linux-knl
 
+linux-intel-mkl-single:
+  extends:
+    - .stage-3
+    - .linux_test_noflags
+  tags:
+    - name:isdp001
+  variables:
+    TEST_ARCH: arch-ci-linux-intel-mkl-single
+
 linux-cxx-cmplx-pkgs-64idx:
   extends:
     - .stage-3
