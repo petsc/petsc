@@ -1,4 +1,3 @@
-
 /*
    Defines a  (S)SOR  preconditioner for any Mat implementation
 */
@@ -348,8 +347,12 @@ PetscErrorCode  PCSORSetSymmetric(PC pc,MatSORType flag)
 .  -pc_sor_omega <omega> - Sets omega
 
    Level: intermediate
+   
+   Note:
+   If omega != 1, you will need to set the MAT_USE_INODES option to PETSC_FALSE on the matrix.
 
-.seealso: PCSORSetSymmetric(), PCSORSetIterations(), PCEisenstatSetOmega()
+
+.seealso: PCSORSetSymmetric(), PCSORSetIterations(), PCEisenstatSetOmega(), MatSetOption()
 @*/
 PetscErrorCode  PCSORSetOmega(PC pc,PetscReal omega)
 {
@@ -429,9 +432,11 @@ PetscErrorCode  PCSORSetIterations(PC pc,PetscInt its,PetscInt lits)
 
           If used with KSPRICHARDSON and no monitors the convergence test is skipped to improve speed, thus it always iterates 
           the maximum number of iterations you've selected for KSP. It is usually used in this mode as a smoother for multigrid.
+          
+          If omega != 1, you will need to set the MAT_USE_INODES option to PETSC_FALSE on the matrix.
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
-           PCSORSetIterations(), PCSORSetSymmetric(), PCSORSetOmega(), PCEISENSTAT
+           PCSORSetIterations(), PCSORSetSymmetric(), PCSORSetOmega(), PCEISENSTAT, MatSetOption()
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_SOR(PC pc)

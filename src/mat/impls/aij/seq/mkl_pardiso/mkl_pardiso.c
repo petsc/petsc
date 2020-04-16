@@ -682,7 +682,7 @@ PetscErrorCode PetscSetMKL_PARDISOFromOptions(Mat F, Mat A)
 {
   Mat_MKL_PARDISO     *mat_mkl_pardiso = (Mat_MKL_PARDISO*)F->data;
   PetscErrorCode      ierr;
-  PetscInt            icntl,threads=1;
+  PetscInt            icntl,bs,threads=1;
   PetscBool           flg;
 
   PetscFunctionBegin;
@@ -704,13 +704,16 @@ PetscErrorCode PetscSetMKL_PARDISOFromOptions(Mat F, Mat A)
   if (flg) {
     void *pt[IPARM_SIZE];
     mat_mkl_pardiso->mtype = icntl;
+    icntl = mat_mkl_pardiso->iparm[34];
+    bs = mat_mkl_pardiso->iparm[36];
     MKL_PARDISO_INIT(pt, &mat_mkl_pardiso->mtype, mat_mkl_pardiso->iparm);
 #if defined(PETSC_USE_REAL_SINGLE)
     mat_mkl_pardiso->iparm[27] = 1;
 #else
     mat_mkl_pardiso->iparm[27] = 0;
 #endif
-    mat_mkl_pardiso->iparm[34] = 1; /* use 0-based indexing */
+    mat_mkl_pardiso->iparm[34] = icntl;
+    mat_mkl_pardiso->iparm[36] = bs;
   }
   ierr = PetscOptionsInt("-mat_mkl_pardiso_1","Use default values (if 0)","None",mat_mkl_pardiso->iparm[0],&icntl,&flg);CHKERRQ(ierr);
 
@@ -782,6 +785,11 @@ PetscErrorCode MatFactorMKL_PARDISOInitialize_Private(Mat A, MatFactorType ftype
   PetscFunctionBegin;
   for (i=0; i<IPARM_SIZE; i++) mat_mkl_pardiso->iparm[i] = 0;
   for (i=0; i<IPARM_SIZE; i++) mat_mkl_pardiso->pt[i] = 0;
+#if defined(PETSC_USE_REAL_SINGLE)
+  mat_mkl_pardiso->iparm[27] = 1;
+#else
+  mat_mkl_pardiso->iparm[27] = 0;
+#endif
   /* Default options for both sym and unsym */
   mat_mkl_pardiso->iparm[ 0] =  1; /* Solver default parameters overriden with provided by iparm */
   mat_mkl_pardiso->iparm[ 1] =  2; /* Metis reordering */
@@ -977,6 +985,7 @@ PetscErrorCode MatGetInfo_MKL_PARDISO(Mat A, MatInfoType flag, MatInfo *info)
 
 PetscErrorCode MatMkl_PardisoSetCntl_MKL_PARDISO(Mat F,PetscInt icntl,PetscInt ival)
 {
+  PetscInt        backup,bs;
   Mat_MKL_PARDISO *mat_mkl_pardiso = (Mat_MKL_PARDISO*)F->data;
 
   PetscFunctionBegin;
@@ -989,6 +998,8 @@ PetscErrorCode MatMkl_PardisoSetCntl_MKL_PARDISO(Mat F,PetscInt icntl,PetscInt i
     else if (icntl == 68) mat_mkl_pardiso->msglvl = ival;
     else if (icntl == 69) {
       void *pt[IPARM_SIZE];
+      backup = mat_mkl_pardiso->iparm[34];
+      bs = mat_mkl_pardiso->iparm[36];
       mat_mkl_pardiso->mtype = ival;
       MKL_PARDISO_INIT(pt, &mat_mkl_pardiso->mtype, mat_mkl_pardiso->iparm);
 #if defined(PETSC_USE_REAL_SINGLE)
@@ -996,7 +1007,8 @@ PetscErrorCode MatMkl_PardisoSetCntl_MKL_PARDISO(Mat F,PetscInt icntl,PetscInt i
 #else
       mat_mkl_pardiso->iparm[27] = 0;
 #endif
-      mat_mkl_pardiso->iparm[34] = 1;
+      mat_mkl_pardiso->iparm[34] = backup;
+      mat_mkl_pardiso->iparm[36] = bs;
     } else if (icntl==70) mat_mkl_pardiso->solve_interior = (PetscBool)!!ival;
   }
   PetscFunctionReturn(0);
