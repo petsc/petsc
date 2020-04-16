@@ -89,4 +89,3 @@ class Configure(config.package.Package):
   def alternateConfigureLibrary(self):
     self.addMakeRule('slepc-build','')
     self.addMakeRule('slepc-install','')
-
