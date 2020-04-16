@@ -28,6 +28,7 @@ Graph Partitioner: 2 MPI Processes
   use vertex weights: 1
   using partitioning strategy QUALITY
   using load imbalance ratio 0.01
+Minimum number of neighbors: 1
 DM Object: Parallel Mesh 2 MPI processes
   type: plex
   Cell balance: 1.00 (max 2, min 2, empty 0)

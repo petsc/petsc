@@ -8203,11 +8203,11 @@ PetscErrorCode DMAdaptMetric(DM dm, Vec metric, DMLabel bdLabel, DM *dmAdapt)
  Not Collective
 
  Input Parameter:
- . dm    - The DM
+.  dm    - The DM
 
- Output Parameter:
- . nranks - the number of neighbours
- . ranks - the neighbors ranks
+ Output Parameters:
++  nranks - the number of neighbours
+-  ranks - the neighbors ranks
 
  Notes:
  Do not free the array, it is freed when the DM is destroyed.
