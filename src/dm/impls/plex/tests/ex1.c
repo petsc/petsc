@@ -1,6 +1,7 @@
 static char help[] = "Tests various DMPlex routines to construct, refine and distribute a mesh.\n\n";
 
 #include <petscdmplex.h>
+#include <petscsf.h>
 
 typedef enum {BOX, CYLINDER, SPHERE, BALL} DomainShape;
 enum {STAGE_LOAD, STAGE_DISTRIBUTE, STAGE_REFINE, STAGE_OVERLAP};
@@ -412,12 +413,18 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
   /* test redistribution of an already distributed mesh */
   if (user->redistribute) {
-    DM distributedMesh;
-
+    DM       distributedMesh;
+    PetscSF  sf;
+    PetscInt nranks;
 
     ierr = DMViewFromOptions(*dm, NULL, "-dm_pre_redist_view");CHKERRQ(ierr);
     ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
     if (distributedMesh) {
+      ierr = DMGetPointSF(distributedMesh, &sf);CHKERRQ(ierr);
+      ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
+      ierr = DMGetNeighbors(distributedMesh, &nranks, NULL);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(MPI_IN_PLACE, &nranks, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)*dm));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)*dm)), "Minimum number of neighbors: %D\n", nranks);CHKERRQ(ierr);
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = distributedMesh;
     }
