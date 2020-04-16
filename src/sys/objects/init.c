@@ -359,7 +359,7 @@ void PetscMPI_Comm_eh(MPI_Comm *comm, PetscMPIInt *err, ...)
 
 PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 {
-  char              string[64],mname[PETSC_MAX_PATH_LEN];
+  char              string[64];
   MPI_Comm          comm = PETSC_COMM_WORLD;
   PetscBool         flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE,flag;
   PetscErrorCode    ierr;
@@ -369,6 +369,7 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   PetscMPIInt       rank;
   char              version[256],helpoptions[256];
 #if defined(PETSC_USE_LOG)
+  char              mname[PETSC_MAX_PATH_LEN];
   PetscViewerFormat format;
   PetscBool         flg4 = PETSC_FALSE;
 #endif

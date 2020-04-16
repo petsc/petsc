@@ -8214,6 +8214,7 @@ PetscErrorCode DMCreateSubDomainDM_Plex(DM dm, DMLabel label, PetscInt value, IS
 @*/
 PetscErrorCode DMPlexMonitorThroughput(DM dm, void *dummy)
 {
+#if defined(PETSC_USE_LOG)
   PetscStageLog      stageLog;
   PetscLogEvent      event;
   PetscLogStage      stage;
@@ -8222,6 +8223,7 @@ PetscErrorCode DMPlexMonitorThroughput(DM dm, void *dummy)
   PetscInt           cStart, cEnd, Nf, N;
   const char        *name;
   PetscErrorCode     ierr;
+#endif
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
