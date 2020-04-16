@@ -41,10 +41,10 @@ class Configure(config.package.Package):
         shutil.copytree(srcdir,destdir)
       except RuntimeError as e:
         raise RuntimeError('Error installing ViennaCL include files: '+str(e))
+    return self.installDir
 
+  def configureLibrary(self):
+    config.package.Package.configureLibrary(self)
     #check for CUDA:
     if not self.cuda.found:
       self.addDefine('HAVE_VIENNACL_NO_CUDA', 1)
-
-    return self.installDir
-
