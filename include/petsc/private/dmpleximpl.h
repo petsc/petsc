@@ -245,6 +245,9 @@ typedef struct {
   PetscBool            useHashLocation;   /* Use grid hashing for point location */
   PetscGridHash        lbox;              /* Local box for searching */
 
+  /* Neighbors */
+  PetscMPIInt*         neighbors;
+
   /* Debugging */
   PetscBool            printSetValues;
   PetscInt             printFEM;

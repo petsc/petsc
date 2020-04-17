@@ -18,11 +18,13 @@
       PetscReal t(0:213)
       PetscReal y(0:213)
       PetscInt  m,n
+      PetscMPIInt  nn
       PetscMPIInt  rank
       PetscMPIInt  size
-      PetscInt  idle_tag, die_tag
+      PetscMPIInt  idle_tag, die_tag
       parameter (m=214)
       parameter (n=3)
+      parameter (nn=n)
       parameter (idle_tag=2000)
       parameter (die_tag=3000)
 

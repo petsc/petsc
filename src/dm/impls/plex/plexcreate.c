@@ -2434,12 +2434,30 @@ static PetscErrorCode DMGetDimPoints_Plex(DM dm, PetscInt dim, PetscInt *pStart,
 
 static PetscErrorCode DMGetNeighbors_Plex(DM dm, PetscInt *nranks, const PetscMPIInt *ranks[])
 {
-  PetscSF        sf;
-  PetscErrorCode ierr;
+  PetscSF           sf;
+  PetscInt          niranks, njranks, n;
+  const PetscMPIInt *iranks, *jranks;
+  DM_Plex           *data = (DM_Plex*) dm->data;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
-  ierr = PetscSFGetRootRanks(sf, nranks, ranks, NULL, NULL, NULL);CHKERRQ(ierr);
+  if (!data->neighbors) {
+    ierr = PetscSFGetRootRanks(sf, &njranks, &jranks, NULL, NULL, NULL);CHKERRQ(ierr);
+    ierr = PetscSFGetLeafRanks(sf, &niranks, &iranks, NULL, NULL);CHKERRQ(ierr);
+    ierr = PetscMalloc1(njranks + niranks + 1, &data->neighbors);CHKERRQ(ierr);
+    ierr = PetscArraycpy(data->neighbors + 1, jranks, njranks);CHKERRQ(ierr);
+    ierr = PetscArraycpy(data->neighbors + njranks + 1, iranks, niranks);CHKERRQ(ierr);
+    n = njranks + niranks;
+    ierr = PetscSortRemoveDupsMPIInt(&n, data->neighbors + 1);CHKERRQ(ierr);
+    /* The following cast should never fail: can't have more neighbors than PETSC_MPI_INT_MAX */
+    ierr = PetscMPIIntCast(n, data->neighbors);CHKERRQ(ierr);
+  }
+  if (nranks) *nranks = data->neighbors[0];
+  if (ranks) {
+    if (data->neighbors[0]) *ranks = data->neighbors + 1;
+    else                    *ranks = NULL;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -2592,6 +2610,8 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
   mesh->useAnchors          = PETSC_FALSE;
 
   mesh->maxProjectionHeight = 0;
+
+  mesh->neighbors           = NULL;
 
   mesh->printSetValues = PETSC_FALSE;
   mesh->printFEM       = 0;

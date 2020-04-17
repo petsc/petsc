@@ -1367,6 +1367,7 @@ PetscErrorCode DMDestroy_Plex(DM dm)
   ierr = PetscFree(mesh->children);CHKERRQ(ierr);
   ierr = DMDestroy(&mesh->referenceTree);CHKERRQ(ierr);
   ierr = PetscGridHashDestroy(&mesh->lbox);CHKERRQ(ierr);
+  ierr = PetscFree(mesh->neighbors);CHKERRQ(ierr);
   /* This was originally freed in DMDestroy(), but that prevents reference counting of backend objects */
   ierr = PetscFree(mesh);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -8213,6 +8214,7 @@ PetscErrorCode DMCreateSubDomainDM_Plex(DM dm, DMLabel label, PetscInt value, IS
 @*/
 PetscErrorCode DMPlexMonitorThroughput(DM dm, void *dummy)
 {
+#if defined(PETSC_USE_LOG)
   PetscStageLog      stageLog;
   PetscLogEvent      event;
   PetscLogStage      stage;
@@ -8221,6 +8223,7 @@ PetscErrorCode DMPlexMonitorThroughput(DM dm, void *dummy)
   PetscInt           cStart, cEnd, Nf, N;
   const char        *name;
   PetscErrorCode     ierr;
+#endif
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
