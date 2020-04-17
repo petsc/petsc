@@ -177,12 +177,12 @@
             endif
             if (next_task .lt. m) then
                ! Send task to worker
-               call MPI_Send(x_v(x_i),n,MPIU_SCALAR,source,next_task,             &
+               call MPI_Send(x_v(x_i),nn,MPIU_SCALAR,source,next_task,             &
      &              PETSC_COMM_WORLD,ierr)
                next_task = next_task + 1
             else
                ! Send idle message to worker
-               call MPI_Send(x_v(x_i),n,MPIU_SCALAR,source,IDLE_TAG,              &
+               call MPI_Send(x_v(x_i),nn,MPIU_SCALAR,source,IDLE_TAG,              &
      &              PETSC_COMM_WORLD,ierr)
             end if
          enddo
@@ -455,7 +455,7 @@
       call MPI_Send(f,1,MPIU_SCALAR,0,IDLE_TAG,PETSC_COMM_WORLD,ierr)
       CHKERRQ(ierr)
       do while (tag .ne. DIE_TAG)
-         call MPI_Recv(x,n,MPIU_SCALAR,0,MPI_ANY_TAG,PETSC_COMM_WORLD,     &
+         call MPI_Recv(x,nn,MPIU_SCALAR,0,MPI_ANY_TAG,PETSC_COMM_WORLD,     &
      &        status,ierr)
          CHKERRQ(ierr)
          tag = status(MPI_TAG)
@@ -511,7 +511,7 @@
          do i=1,n
            x(i) = 0.0
          enddo
-         call MPI_Send(x,n,MPIU_SCALAR,source,DIE_TAG,PETSC_COMM_WORLD,    &
+         call MPI_Send(x,nn,MPIU_SCALAR,source,DIE_TAG,PETSC_COMM_WORLD,    &
      &        ierr)
          CHKERRQ(ierr)
       enddo
