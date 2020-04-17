@@ -978,10 +978,8 @@ static PetscErrorCode MatSeqAIJCUSPARSEGenerateTransposeForMult(Mat A)
       delete (CsrMatrix*) temp;
     }
   }
-  /* assign the compressed row indices */
-  matstructT->cprowIndices = new THRUSTINTARRAY;
-  matstructT->cprowIndices->resize(A->cmap->n);
-  thrust::sequence(matstructT->cprowIndices->begin(), matstructT->cprowIndices->end());
+  /* the compressed row indices is not used for matTranspose */
+  matstructT->cprowIndices = NULL;
   /* assign the pointer */
   ((Mat_SeqAIJCUSPARSE*)A->spptr)->matTranspose = matstructT;
   PetscFunctionReturn(0);
@@ -1218,7 +1216,7 @@ static PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat A)
   Mat_SeqAIJCUSPARSE           *cusparsestruct = (Mat_SeqAIJCUSPARSE*)A->spptr;
   Mat_SeqAIJCUSPARSEMultStruct *matstruct = cusparsestruct->mat;
   Mat_SeqAIJ                   *a = (Mat_SeqAIJ*)A->data;
-  PetscInt                     m = A->rmap->n,*ii,*ridx;
+  PetscInt                     m = A->rmap->n,*ii,*ridx,tmp;
   PetscErrorCode               ierr;
   cusparseStatus_t             stat;
   cudaError_t                  err;
@@ -1254,29 +1252,16 @@ static PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat A)
       delete cusparsestruct->workVector;
       delete cusparsestruct->rowoffsets_gpu;
       try {
-        cusparsestruct->nonzerorow=0;
-        for (int j = 0; j<m; j++) cusparsestruct->nonzerorow += ((a->i[j+1]-a->i[j])>0);
-
         if (a->compressedrow.use) {
           m    = a->compressedrow.nrows;
           ii   = a->compressedrow.i;
           ridx = a->compressedrow.rindex;
         } else {
-          /* Forcing compressed row on the GPU */
-          int k=0;
-          ierr = PetscMalloc1(cusparsestruct->nonzerorow+1, &ii);CHKERRQ(ierr);
-          ierr = PetscMalloc1(cusparsestruct->nonzerorow, &ridx);CHKERRQ(ierr);
-          ii[0]=0;
-          for (int j = 0; j<m; j++) {
-            if ((a->i[j+1]-a->i[j])>0) {
-              ii[k]  = a->i[j];
-              ridx[k]= j;
-              k++;
-            }
-          }
-          ii[cusparsestruct->nonzerorow] = a->nz;
-          m = cusparsestruct->nonzerorow;
+          m    = A->rmap->n;
+          ii   = a->i;
+          ridx = NULL; /* In this case, one should not dereference ridx */
         }
+        cusparsestruct->nrows = m;
 
         /* allocate space for the triangular factor information */
         matstruct = new Mat_SeqAIJCUSPARSEMultStruct;
@@ -1346,18 +1331,20 @@ static PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat A)
         }
 
         /* assign the compressed row indices */
-        matstruct->cprowIndices = new THRUSTINTARRAY(m);
-        matstruct->cprowIndices->assign(ridx,ridx+m);
-        ierr = PetscLogCpuToGpu(((m+1)+(a->nz))*sizeof(int)+m*sizeof(PetscInt)+(3+(a->nz))*sizeof(PetscScalar));CHKERRQ(ierr);
+        if (a->compressedrow.use) {
+          cusparsestruct->workVector = new THRUSTARRAY(m);
+          matstruct->cprowIndices    = new THRUSTINTARRAY(m);
+          matstruct->cprowIndices->assign(ridx,ridx+m);
+          tmp = m;
+        } else {
+          cusparsestruct->workVector = NULL;
+          matstruct->cprowIndices    = NULL;
+          tmp = 0;
+        }
+        ierr = PetscLogCpuToGpu(((m+1)+(a->nz))*sizeof(int)+tmp*sizeof(PetscInt)+(3+(a->nz))*sizeof(PetscScalar));CHKERRQ(ierr);
 
         /* assign the pointer */
         cusparsestruct->mat = matstruct;
-
-        if (!a->compressedrow.use) {
-          ierr = PetscFree(ii);CHKERRQ(ierr);
-          ierr = PetscFree(ridx);CHKERRQ(ierr);
-        }
-        cusparsestruct->workVector = new THRUSTARRAY(m);
       } catch(char *ex) {
         SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSPARSE error: %s", ex);
       }
@@ -1436,7 +1423,7 @@ static PetscErrorCode MatMultTranspose_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy)
   ierr = VecCUDARestoreArrayWrite(yy,&yarray);CHKERRQ(ierr);
   cerr = WaitForGPU();CHKERRCUDA(cerr);
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
-  ierr = PetscLogGpuFlops(2.0*a->nz - cusparsestruct->nonzerorow);CHKERRQ(ierr);
+  ierr = PetscLogGpuFlops(2.0*a->nz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1451,25 +1438,23 @@ static PetscErrorCode MatMultAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec zz)
   PetscErrorCode               ierr;
   cudaError_t                  cerr;
   cusparseStatus_t             stat;
-  PetscBool                    cmpr; /* if the matrix has been compressed (zero rows) */
+  PetscBool                    compressed = a->compressedrow.use; /* Does the matrix use compressed rows (i.e., drop zero rows)? */
 
   PetscFunctionBegin;
   /* The line below is necessary due to the operations that modify the matrix on the CPU (axpy, scale, etc) */
   ierr = MatSeqAIJCUSPARSECopyToGPU(A);CHKERRQ(ierr);
   matstruct = (Mat_SeqAIJCUSPARSEMultStruct*)cusparsestruct->mat;
   try {
-    cmpr = (PetscBool)(cusparsestruct->workVector->size() == (thrust::detail::vector_base<PetscScalar, thrust::device_malloc_allocator<PetscScalar> >::size_type)(A->rmap->n));
     ierr = VecCUDAGetArrayRead(xx,&xarray);CHKERRQ(ierr);
-    if (yy && !cmpr) { /* MatMultAdd with noncompressed storage -> need uptodate zz vector */
-      ierr = VecCUDAGetArray(zz,&zarray);CHKERRQ(ierr);
-    } else {
-      ierr = VecCUDAGetArrayWrite(zz,&zarray);CHKERRQ(ierr);
-    }
-    dptr = cmpr ? zarray : cusparsestruct->workVector->data().get();
-    beta = (yy == zz && dptr == zarray) ? matstruct->beta_one : matstruct->beta_zero;
+
+    if (yy == zz) {ierr = VecCUDAGetArray(zz,&zarray);CHKERRQ(ierr);} /* read & write zz, so need to get uptodate zarray on GPU */
+    else {ierr = VecCUDAGetArrayWrite(zz,&zarray);CHKERRQ(ierr);} /* write zz, so no need to init zarray on GPU */
+
+    dptr = compressed ? cusparsestruct->workVector->data().get() : zarray; /* Use a work vector for SpMv result if compressed */
+    beta = (yy == zz && !compressed) ? matstruct->beta_one : matstruct->beta_zero;
 
     ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
-    /* csr_spmv is multiply add */
+    /* csr_spmv does y = alpha*Ax + beta*y */
     if (cusparsestruct->format == MAT_CUSPARSE_CSR) {
       /* here we need to be careful to set the number of rows in the multiply to the
          number of compressed rows in the matrix ... which is equivalent to the
@@ -1482,7 +1467,7 @@ static PetscErrorCode MatMultAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec zz)
                                mat->column_indices->data().get(), xarray, beta,
                                dptr);CHKERRCUSPARSE(stat);
     } else {
-      if (cusparsestruct->workVector->size()) {
+      if (cusparsestruct->nrows) {
         cusparseHybMat_t hybMat = (cusparseHybMat_t)matstruct->mat;
         stat = cusparse_hyb_spmv(cusparsestruct->handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
                                  matstruct->alpha, matstruct->descr, hybMat,
@@ -1492,32 +1477,28 @@ static PetscErrorCode MatMultAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec zz)
     }
     ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
 
-    if (yy) {
-      if (dptr != zarray) {
-        ierr = VecCopy_SeqCUDA(yy,zz);CHKERRQ(ierr);
-      } else if (zz != yy) {
-        ierr = VecAXPY_SeqCUDA(zz,1.0,yy);CHKERRQ(ierr);
+    if (yy) { /* MatMultAdd: zz = A*xx + yy */
+      if (compressed) { /* A is compressed. We first copy yy to zz, then ScatterAdd the work vector to zz */
+        ierr = VecCopy_SeqCUDA(yy,zz);CHKERRQ(ierr); /* zz = yy */
+      } else if (zz != yy) { /* A's not compreseed. zz already contains A*xx, and we just need to add yy */
+        ierr = VecAXPY_SeqCUDA(zz,1.0,yy);CHKERRQ(ierr); /* zz += yy */
       }
-    } else if (dptr != zarray) {
+    } else if (compressed) { /* MatMult: zz = A*xx. A is compressed, so we zero zz first, then ScatterAdd the work vector to zz */
       ierr = VecSet_SeqCUDA(zz,0);CHKERRQ(ierr);
     }
-    /* scatter the data from the temporary into the full vector with a += operation */
-    ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
-    if (dptr != zarray) {
-      thrust::device_ptr<PetscScalar> zptr;
 
-      zptr = thrust::device_pointer_cast(zarray);
+    /* ScatterAdd the result from work vector into the full vector when A is compressed */
+    ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
+    if (compressed) {
+      thrust::device_ptr<PetscScalar> zptr = thrust::device_pointer_cast(zarray);
       thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(cusparsestruct->workVector->begin(), thrust::make_permutation_iterator(zptr, matstruct->cprowIndices->begin()))),
                        thrust::make_zip_iterator(thrust::make_tuple(cusparsestruct->workVector->begin(), thrust::make_permutation_iterator(zptr, matstruct->cprowIndices->begin()))) + cusparsestruct->workVector->size(),
                        VecCUDAPlusEquals());
     }
     ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
     ierr = VecCUDARestoreArrayRead(xx,&xarray);CHKERRQ(ierr);
-    if (yy && !cmpr) {
-      ierr = VecCUDARestoreArray(zz,&zarray);CHKERRQ(ierr);
-    } else {
-      ierr = VecCUDARestoreArrayWrite(zz,&zarray);CHKERRQ(ierr);
-    }
+    if (yy == zz) {ierr = VecCUDARestoreArray(zz,&zarray);CHKERRQ(ierr);}
+    else {ierr = VecCUDARestoreArrayWrite(zz,&zarray);CHKERRQ(ierr);}
   } catch(char *ex) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSPARSE error: %s", ex);
   }
@@ -1565,7 +1546,7 @@ static PetscErrorCode MatMultTransposeAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec
                                zarray);CHKERRCUSPARSE(stat);
     } else {
       cusparseHybMat_t hybMat = (cusparseHybMat_t)matstructT->mat;
-      if (cusparsestruct->workVector->size()) {
+      if (cusparsestruct->nrows) {
         stat = cusparse_hyb_spmv(cusparsestruct->handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
                                  matstructT->alpha, matstructT->descr, hybMat,
                                  xarray, beta,
