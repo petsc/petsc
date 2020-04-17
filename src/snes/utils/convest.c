@@ -271,7 +271,9 @@ static PetscErrorCode PetscConvEstGetConvRateSNES_Private(PetscConvEst ce, Petsc
   dm[0] = ce->idm;
   for (r = 0; r <= Nr; ++r) {
     Vec           u;
+#if defined(PETSC_USE_LOG)
     PetscLogStage stage;
+#endif
     char          stageName[PETSC_MAX_PATH_LEN];
     const char   *dmname, *uname;
 
