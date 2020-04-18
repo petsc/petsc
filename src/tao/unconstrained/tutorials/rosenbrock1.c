@@ -344,4 +344,32 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat H, Mat Hpre, void *ptr)
      suffix: 21
      args: -test_lmvm -tao_max_it 10 -tao_bqnk_mat_type lmvmsymbadbroyden
 
+   test:
+     suffix: 22
+     args: -tao_max_it 1 -tao_converged_reason
+
+   test:
+     suffix: 23
+     args: -tao_max_funcs 0 -tao_converged_reason
+
+   test:
+     suffix: 24
+     args: -tao_gatol 10 -tao_converged_reason
+
+   test:
+     suffix: 25
+     args: -tao_grtol 10 -tao_converged_reason
+
+   test:
+     suffix: 26
+     args: -tao_gttol 10 -tao_converged_reason
+
+   test:
+     suffix: 27
+     args: -tao_steptol 10 -tao_converged_reason
+
+   test:
+     suffix: 28
+     args: -tao_fmin 10 -tao_converged_reason
+
 TEST*/
