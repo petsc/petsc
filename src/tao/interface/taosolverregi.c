@@ -45,6 +45,7 @@ const char *TaoConvergedReasons_Shifted[] = {
     "DIVERGED_LS_FAILURE",
     "DIVERGED_MAXFCN",
     "DIVERGED_NAN",
+    "",
     "DIVERGED_MAXITS",
     "DIVERGED_FUNCTION_DOMAIN",
 
@@ -58,7 +59,7 @@ const char *TaoConvergedReasons_Shifted[] = {
     "CONVERGED_STEPTOL",
     "CONVERGED_MINF",
     "CONVERGED_USER" };
-const char **TaoConvergedReasons = TaoConvergedReasons_Shifted + 7;
+const char **TaoConvergedReasons = TaoConvergedReasons_Shifted - TAO_DIVERGED_USER;
 
 /*@C
   TaoRegisterAll - Registers all of the minimization methods in the TAO
