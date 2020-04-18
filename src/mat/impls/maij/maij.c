@@ -2867,7 +2867,7 @@ PetscErrorCode MatProductSetFromOptions_SeqAIJ_SeqMAIJ(Mat C)
   PetscFunctionBegin;
   if (product->type == MATPRODUCT_PtAP) {
     C->ops->productsymbolic = MatProductSymbolic_PtAP_SeqAIJ_SeqMAIJ;
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat Product type is not supported");
+  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat Product type %s is not supported for SeqAIJ and SeqMAIJ matrices",MatProductTypes[product->type]);
   PetscFunctionReturn(0);
 }
 
@@ -2887,7 +2887,7 @@ PetscErrorCode MatProductSetFromOptions_MPIAIJ_MPIMAIJ(Mat C)
 #endif
 
   PetscFunctionBegin;
-  if (product->type != MATPRODUCT_PtAP) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat Product type is not supported");
+  if (product->type != MATPRODUCT_PtAP) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat Product type %s is not supported for MPIAIJ and MPIMAIJ matrices",MatProductTypes[product->type]);
 
   /* PtAP */
   /* Check matrix local sizes */

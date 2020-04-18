@@ -30,6 +30,8 @@
 
 #include <petsc/private/matimpl.h>      /*I "petscmat.h" I*/
 
+const char *const MatProductTypes[] = {"AB","AtB","ABt","PtAP","RARt","ABC","MatProductType","MAT_Product_",0};
+
 static PetscErrorCode MatProductNumeric_PtAP_Basic(Mat C)
 {
   PetscErrorCode ierr;
@@ -933,7 +935,7 @@ PetscErrorCode MatProductSetType(Mat mat,MatProductType productype)
   case MATPRODUCT_ABC:
     mat->ops->productsetfromoptions = MatProductSetFromOptions_ABC;
     break;
-  default: SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"ProductType is not supported\n");
+  default: SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"ProductType %s is not supported",MatProductTypes[product->type]);
   }
   PetscFunctionReturn(0);
 }

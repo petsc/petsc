@@ -409,7 +409,7 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_Elemental(Mat C)
   case MATPRODUCT_ABt:
     ierr = MatProductSetFromOptions_Elemental_ABt(C);CHKERRQ(ierr);
     break;
-  default: SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_SUP,"MatProduct type is not supported");
+  default: SETERRQ1(PetscObjectComm((PetscObject)C),PETSC_ERR_SUP,"MatProduct type %s is not supported for Elemental and Elemental matrices",MatProductTypes[product->type]);
   }
   PetscFunctionReturn(0);
 }
