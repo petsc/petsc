@@ -169,6 +169,7 @@ PETSC_DEPRECATED_FUNCTION("Use MatSolverTypeGet() (since version 3.9)") PETSC_ST
 .seealso: MatSolverType, MatProductSetType()
 E*/
 typedef enum {MATPRODUCT_AB,MATPRODUCT_AtB,MATPRODUCT_ABt,MATPRODUCT_PtAP,MATPRODUCT_RARt,MATPRODUCT_ABC} MatProductType;
+PETSC_EXTERN const char *const MatProductTypes[];
 
 /*J
     MatProductAlgorithm - String with the name of an algorithm for a PETSc matrix product implementation

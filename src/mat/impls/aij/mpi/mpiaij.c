@@ -5828,7 +5828,7 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_MPIDense_MPIAIJ(Mat C)
   PetscFunctionBegin;
   if (product->type == MATPRODUCT_AB) {
     ierr = MatProductSetFromOptions_MPIDense_MPIAIJ_AB(C);CHKERRQ(ierr);
-  } else SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_SUP,"MatProduct type is not supported");
+  } else SETERRQ1(PetscObjectComm((PetscObject)C),PETSC_ERR_SUP,"MatProduct type %s is not supported for MPIDense and MPIAIJ matrices",MatProductTypes[product->type]);
   PetscFunctionReturn(0);
 }
 /* ----------------------------------------------------------------*/

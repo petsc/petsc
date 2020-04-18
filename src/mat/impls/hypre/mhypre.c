@@ -1054,7 +1054,7 @@ static PetscErrorCode MatProductSetFromOptions_HYPRE(Mat C)
   case MATPRODUCT_PtAP:
     ierr = MatProductSetFromOptions_HYPRE_PtAP(C);CHKERRQ(ierr);
     break;
-  default: SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_SUP,"Mat Product type is not supported");
+  default: SETERRQ1(PetscObjectComm((PetscObject)C),PETSC_ERR_SUP,"Mat Product type %s is not supported for HYPRE and HYPRE matrices",MatProductTypes[product->type]);
   }
   PetscFunctionReturn(0);
 }
