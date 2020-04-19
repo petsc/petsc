@@ -2052,6 +2052,7 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_MPIDense(Mat C)
   Mat_Product    *product = C->product;
 
   PetscFunctionBegin;
+  ierr = MatSetType(C,MATMPIDENSE);CHKERRQ(ierr);
   switch (product->type) {
 #if defined(PETSC_HAVE_ELEMENTAL)
   case MATPRODUCT_AB:
