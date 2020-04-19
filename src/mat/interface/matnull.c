@@ -257,7 +257,7 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool has_cnst,PetscInt n,c
       ierr = VecLockReadPush(vecs[i]);CHKERRQ(ierr);
     }
   }
-  if (PetscDefined(USE_DEBUG) && n) {
+  if (PetscUnlikelyDebug(n)) {
     PetscScalar *dots;
     for (i=0; i<n; i++) {
       PetscReal norm;

@@ -2747,7 +2747,7 @@ PetscErrorCode VecScatterCreateLocal_PtoP_MPI3(PetscInt nx,const PetscInt *inidx
         break;
       }
     }
-    if (PetscDefined(USE_DEBUG) && !found) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index %D out of range",idx);
+    if (PetscUnlikelyDebug(!found)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index %D out of range",idx);
     found = PETSC_FALSE;
   }
   nsends = 0;

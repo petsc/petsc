@@ -319,7 +319,7 @@ PETSC_EXTERN FILE* PETSC_STDERR;
 
     Level: advanced
 
-.seealso: PetscLikely(), CHKERRQ
+.seealso: PetscUnlikelyDebug(), PetscLikely(), CHKERRQ
 M*/
 
 /*MC
@@ -349,6 +349,28 @@ M*/
 #  define PetscUnlikely(cond)   (cond)
 #  define PetscLikely(cond)     (cond)
 #endif
+
+/*MC
+    PetscUnlikelyDebug - hints the compiler that the given condition is usually FALSE, eliding the check in optimized mode
+
+    Synopsis:
+    #include <petscsys.h>
+    PetscBool  PetscUnlikelyDebug(PetscBool  cond)
+
+    Not Collective
+
+    Input Parameters:
+.   cond - condition or expression
+
+    Notes:
+    This returns the same truth value, it is only a hint to compilers that the resulting
+    branch is unlikely.  When compiled in optimized mode, it always returns false.
+
+    Level: advanced
+
+.seealso: PetscUnlikely(), CHKERRQ, SETERRQ
+M*/
+#define PetscUnlikelyDebug(cond) (PetscDefined(USE_DEBUG) && PetscUnlikely(cond))
 
 /*
     Declare extern C stuff after including external header files

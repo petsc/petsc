@@ -1396,9 +1396,7 @@ PetscErrorCode  PetscFinalize(void)
 
   flg3 = PETSC_FALSE; /* default value is required */
   ierr = PetscOptionsGetBool(NULL,NULL,"-options_left",&flg3,&flg1);CHKERRQ(ierr);
-#if defined(PETSC_USE_DEBUG)
-  if (!flg1) flg3 = PETSC_TRUE;
-#endif
+  if (PetscDefined(USE_DEBUG) && !flg1) flg3 = PETSC_TRUE;
   if (flg3) {
     if (!flg2 && flg1) { /* have not yet printed the options */
       PetscViewer viewer;
@@ -1486,9 +1484,7 @@ PetscErrorCode  PetscFinalize(void)
 
     flg2 = PETSC_FALSE;
     flg3 = PETSC_FALSE;
-#if defined(PETSC_USE_DEBUG)
-    ierr = PetscOptionsGetBool(NULL,NULL,"-malloc_test",&flg2,NULL);CHKERRQ(ierr);
-#endif
+    if (PetscDefined(USE_DEBUG)) {ierr = PetscOptionsGetBool(NULL,NULL,"-malloc_test",&flg2,NULL);CHKERRQ(ierr);}
     ierr = PetscOptionsGetBool(NULL,NULL,"-malloc_debug",&flg3,NULL);CHKERRQ(ierr);
     fname[0] = 0;
     ierr = PetscOptionsGetString(NULL,NULL,"-malloc_dump",fname,250,&flg1);CHKERRQ(ierr);

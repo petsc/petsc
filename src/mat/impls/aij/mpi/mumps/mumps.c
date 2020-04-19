@@ -61,7 +61,7 @@ typedef MUMPS_INT PetscMUMPSInt;
 PETSC_STATIC_INLINE PetscErrorCode PetscMUMPSIntCast(PetscInt a,PetscMUMPSInt *b)
 {
   PetscFunctionBegin;
-  if (PetscDefined(USE_DEBUG) && PetscDefined(USE_64BIT_INDICES) && (a > PETSC_MUMPS_INT_MAX || a < PETSC_MUMPS_INT_MIN)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"PetscInt too long for PetscMUMPSInt");
+  if (PetscDefined(USE_64BIT_INDICES) && PetscUnlikelyDebug(a > PETSC_MUMPS_INT_MAX || a < PETSC_MUMPS_INT_MIN)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"PetscInt too long for PetscMUMPSInt");
   *b = (PetscMUMPSInt)(a);
   PetscFunctionReturn(0);
 }

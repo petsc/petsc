@@ -508,7 +508,7 @@ PetscErrorCode VecScatterGetRemoteOrdered_Private(VecScatter ctx,PetscBool send,
     if (procs)   *procs   = par ? vs->procs   : NULL;
     if (bs)      *bs      = par ? vs->bs      : 0;
   }
-  if (PetscDefined(USE_DEBUG) && n && procs) {
+  if (PetscUnlikelyDebug(n && procs)) {
     PetscInt i;
     /* from back to front to also handle cases *n=0 */
     for (i=*n-1; i>0; i--) { if ((*procs)[i-1] > (*procs)[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"procs[] are not ordered"); }

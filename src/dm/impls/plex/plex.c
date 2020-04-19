@@ -7872,7 +7872,7 @@ PetscErrorCode DMPlexSetAnchors(DM dm, PetscSection anchorSection, IS anchorIS)
   ierr = ISDestroy(&plex->anchorIS);CHKERRQ(ierr);
   plex->anchorIS = anchorIS;
 
-  if (PetscDefined(USE_DEBUG) && anchorIS && anchorSection) {
+  if (PetscUnlikelyDebug(anchorIS && anchorSection)) {
     PetscInt size, a, pStart, pEnd;
     const PetscInt *anchors;
 
