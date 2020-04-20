@@ -364,7 +364,7 @@ static PetscErrorCode MatCopy_DiagBrdn(Mat B, Mat M, MatStructure str)
   for (i=0; i<=bdata->k; ++i) {
     mctx->yty[i] = bctx->yty[i];
     mctx->yts[i] = bctx->yts[i];
-    mctx->sts[i] = mctx->sts[i];
+    mctx->sts[i] = bctx->sts[i];
   }
   PetscFunctionReturn(0);
 }
