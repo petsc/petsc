@@ -205,9 +205,7 @@ PetscErrorCode PetscOptionsPush(PetscOptions opt)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!defaultoptions) {
-    ierr = PetscOptionsCreateDefault();CHKERRQ(ierr);
-  }
+  ierr = PetscOptionsCreateDefault();CHKERRQ(ierr);
   opt->previous        = defaultoptions;
   defaultoptions       = opt;
   PetscFunctionReturn(0);
@@ -1019,15 +1017,15 @@ PetscErrorCode PetscOptionsSetValue(PetscOptions options,const char name[],const
   char           fullname[MAXOPTNAME] = "";
   PetscErrorCode ierr;
 
-  if (!options && !defaultoptions) {
+  if (!options) {
     ierr = PetscOptionsCreateDefault();if (ierr) return ierr;
+    options = defaultoptions;
   }
-  options = options ? options : defaultoptions;
 
   if (name[0] != '-') return PETSC_ERR_ARG_OUTOFRANGE;
 
   /* this is so that -h and -help are equivalent (p4 does not like -help)*/
-  if (!strcmp(name,"-h")) name = "-help";
+  if (!PetscOptNameCmp(name,"-h")) name = "-help";
   if (!PetscOptNameCmp(name,"-help")) options->help = PETSC_TRUE;
 
   name++; /* skip starting dash */
