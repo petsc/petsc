@@ -38,6 +38,7 @@ PETSC_EXTERN PetscErrorCode PetscViennaCLInit();
    already started before PETSc was initialized.
 */
 PetscBool   PetscBeganMPI         = PETSC_FALSE;
+PetscBool   PetscErrorHandlingInitialized = PETSC_FALSE;
 PetscBool   PetscInitializeCalled = PETSC_FALSE;
 PetscBool   PetscFinalizeCalled   = PETSC_FALSE;
 PetscBool   PetscCUDAInitialized  = PETSC_FALSE;

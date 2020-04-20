@@ -858,6 +858,9 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   PETSC_STDOUT = stdout;
   PETSC_STDERR = stderr;
 
+  /* CHKERRQ can be used from now */
+  PetscErrorHandlingInitialized = PETSC_TRUE;
+
   /* on Windows - set printf to default to printing 2 digit exponents */
 #if defined(PETSC_HAVE__SET_OUTPUT_FORMAT)
   _set_output_format(_TWO_DIGIT_EXPONENT);
@@ -1604,6 +1607,7 @@ PetscErrorCode  PetscFinalize(void)
 */
   ierr = PetscMallocClear();CHKERRQ(ierr);
 
+  PetscErrorHandlingInitialized = PETSC_FALSE;
   PetscInitializeCalled = PETSC_FALSE;
   PetscFinalizeCalled   = PETSC_TRUE;
   PetscFunctionReturn(0);

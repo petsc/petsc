@@ -110,7 +110,7 @@ static PetscErrorCode PetscOptionsMonitor(PetscOptions options,const char name[]
   PetscInt       i;
   PetscErrorCode ierr;
 
-  if (!PetscInitializeCalled) return 0;
+  if (!PetscErrorHandlingInitialized) return 0;
   PetscFunctionBegin;
   for (i=0; i<options->numbermonitors; i++) {
     ierr = (*options->monitor[i])(name,value,options->monitorcontext[i]);CHKERRQ(ierr);
