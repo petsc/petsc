@@ -28,8 +28,8 @@
         stop
       endif
       stride = 2
-      call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr);CHKERRA(ierr);
-      call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr);CHKERRA(ierr);
+      call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr);CHKERRA(ierr)
+      call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr);CHKERRA(ierr)
 
       if (rank == 0) then
          nroots = 3
@@ -61,15 +61,15 @@
       endif
 
 !  Create a star forest for communication
-      call PetscSFCreate(PETSC_COMM_WORLD,sf,ierr);CHKERRA(ierr);
-      call PetscSFSetFromOptions(sf,ierr);CHKERRA(ierr);
-      call PetscSFSetGraph(sf,nrootsalloc,nleaves,mine,PETSC_COPY_VALUES,remote,PETSC_COPY_VALUES,ierr);CHKERRA(ierr);
-      call PetscSFSetUp(sf,ierr);CHKERRA(ierr);
+      call PetscSFCreate(PETSC_COMM_WORLD,sf,ierr);CHKERRA(ierr)
+      call PetscSFSetFromOptions(sf,ierr);CHKERRA(ierr)
+      call PetscSFSetGraph(sf,nrootsalloc,nleaves,mine,PETSC_COPY_VALUES,remote,PETSC_COPY_VALUES,ierr);CHKERRA(ierr)
+      call PetscSFSetUp(sf,ierr);CHKERRA(ierr)
 
 !   View graph, mostly useful for debugging purposes.
-      call PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO_DETAIL,ierr);CHKERRA(ierr);
-      call PetscSFView(sf,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr);
-      call PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr);
+      call PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO_DETAIL,ierr);CHKERRA(ierr)
+      call PetscSFView(sf,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
+      call PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
 
 !   Allocate space for send and receive buffers. This example communicates PetscInt, but other types, including
 !     * user-defined structures, could also be used.
@@ -87,14 +87,14 @@
       enddo
 
 !     Broadcast entries from rootdata to leafdata. Computation or other communication can be performed between the begin and end calls.
-      call PetscSFBcastBegin(sf,MPIU_INTEGER,rootdata,leafdata,ierr);CHKERRA(ierr);
-      call PetscSFBcastEnd(sf,MPIU_INTEGER,rootdata,leafdata,ierr);CHKERRA(ierr);
-      call PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Bcast Rootdata\n",ierr);CHKERRA(ierr);
-      call PetscIntView(nrootsalloc,rootdata,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr);
-      call PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Bcast Leafdata\n",ierr);CHKERRA(ierr);
-      call PetscIntView(nleavesalloc,leafdata,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr);
+      call PetscSFBcastBegin(sf,MPIU_INTEGER,rootdata,leafdata,ierr);CHKERRA(ierr)
+      call PetscSFBcastEnd(sf,MPIU_INTEGER,rootdata,leafdata,ierr);CHKERRA(ierr)
+      call PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Bcast Rootdata\n",ierr);CHKERRA(ierr)
+      call PetscIntView(nrootsalloc,rootdata,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
+      call PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Bcast Leafdata\n",ierr);CHKERRA(ierr)
+      call PetscIntView(nleavesalloc,leafdata,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
 
-      call PetscSFGetGraph(sf,gnroots,gnleaves,gmine,gremote,ierr);CHKERRA(ierr);
+      call PetscSFGetGraph(sf,gnroots,gnleaves,gmine,gremote,ierr);CHKERRA(ierr)
       if (gnleaves .ne. nleaves) then; SETERRA(PETSC_COMM_WORLD,PETSC_ERR_PLIB,'nleaves returned from PetscSFGetGraph() does not match that set with PetscSFSetGraph()'); endif
       do i=1,nleaves
          if (gmine(i) .ne. mine(i)) then; SETERRA(PETSC_COMM_WORLD,PETSC_ERR_PLIB,'Root from PetscSFGetGraph() does not match that set with PetscSFSetGraph()'); endif
@@ -105,7 +105,7 @@
 
       deallocate(gremote)
 !    Clean storage for star forest.
-      call PetscSFDestroy(sf,ierr);CHKERRA(ierr);
+      call PetscSFDestroy(sf,ierr);CHKERRA(ierr)
       call PetscFinalize(ierr);
   end
 

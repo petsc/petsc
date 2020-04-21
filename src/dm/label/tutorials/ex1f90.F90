@@ -21,7 +21,7 @@ program  ex1f90
   call PetscOptionsGetString(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-i",filename,flg,ierr);CHKERRA(ierr)
   call PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-interpolate",interpolate,flg,ierr);CHKERRA(ierr)
 
-  call DMPlexCreateFromFile(PETSC_COMM_WORLD,filename,interpolate,dm,ierr);CHKERRA(ierr);
+  call DMPlexCreateFromFile(PETSC_COMM_WORLD,filename,interpolate,dm,ierr);CHKERRA(ierr)
   call DMPlexDistribute(dm,izero,PETSC_NULL_SF,dmDist,ierr);CHKERRA(ierr)
   if (dmDist /= PETSC_NULL_DM) then
     call DMDestroy(dm,ierr);CHKERRA(ierr)
