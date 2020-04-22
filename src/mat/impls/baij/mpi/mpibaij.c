@@ -1175,7 +1175,7 @@ PetscErrorCode MatView_MPIBAIJ_Binary(Mat mat,PetscViewer viewer)
           matvals[cnt++] = A->a[bs*(bs*ja + l) + k];
       for (; jb<B->i[i+1]; jb++)
         for (l=0; l<bs; l++)
-          matvals[cnt++] = B->a[bs*(bs*jb + l) + k];;
+          matvals[cnt++] = B->a[bs*(bs*jb + l) + k];
     }
   }
   ierr = PetscViewerBinaryWriteAll(viewer,matvals,nz,PETSC_DECIDE,PETSC_DECIDE,PETSC_SCALAR);CHKERRQ(ierr);

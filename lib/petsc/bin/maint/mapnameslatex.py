@@ -227,9 +227,9 @@ if __name__ == "__main__":
 #   replace all _ in tofind with \_
 #            m     = len(tofind)
 #            tfind = tofind[0]
-#	    for j in range(1,m):
-#		if tofind[j] == '_':
-#		    tfind = tfind+'\\'
+#           for j in range(1,m):
+#               if tofind[j] == '_':
+#                   tfind = tfind+'\\'
 #                tfind = tfind+tofind[j]
             mappedstring[tofind] = fl.group(2)
             mappedlink[tofind]   = fl.group(3)
@@ -273,7 +273,7 @@ if __name__ == "__main__":
                 tikzpicture_bracket = tikzpicture_bracket + 1;
             # \href cannot be used in many places in Latex
             if value in ['\\href{','\\findex{','\\sindex{','\\subsection{','\\chapter{','\\section{','\\caption{','\\trl{'] and vbracket == 0 and lstlisting_bracket == 0 and outputlisting_bracket==0 and bashlisting_bracket==0 and makelisting_bracket==0 and tikzpicture_bracket==0:
-        	bracket = bracket + 1;
+                bracket = bracket + 1;
             #We keep track of whether we are inside an inline listing
             elif value in ['\\lstinline{'] and vbracket == 0 and lstlisting_bracket == 0 and outputlisting_bracket==0 and bashlisting_bracket==0 and makelisting_bracket==0 and tikzpicture_bracket==0:
                 lstinline_bracket = lstinline_bracket + 1
@@ -284,8 +284,8 @@ if __name__ == "__main__":
                 if lstinlinemod_bracket > 1 :
                     raise Exception('Nested \\lstinline (mod) detected')
             if bracket == 0 and vbracket == 0 and outputlisting_bracket == 0 and bashlisting_bracket == 0 and makelisting_bracket==0 and tikzpicture_bracket==0:
-        	value = token.value
-        	if value in mappedstring:
+                value = token.value
+                if value in mappedstring:
                     mvalue = mappedstring[value].replace('_','\\_')
                     if lstlisting_bracket > 0 :
                         # NOTE: The latex listings escapechar ($) is hard-coded here 
@@ -299,7 +299,7 @@ if __name__ == "__main__":
                     else :
                         value = '\\href{'+'https://www.mcs.anl.gov/petsc/petsc-'+version+'/docs/'+mappedlink[value]+'}{'+mvalue+'}\\findex{'+value+'}'
             else:
-        	value = token.value
+                value = token.value
             if token.value[0] == '}' and lstinline_bracket > 0 :
                 if bracket > 0 or vbracket > 0 or lstlisting_bracket > 0 or outputlisting_bracket > 0 or bashlisting_bracket > 0 or makelisting_bracket > 0 or tikzpicture_bracket > 0:
                     raise Exception("Unexpected to have anything nested inside of lstinline")
@@ -309,7 +309,7 @@ if __name__ == "__main__":
                     raise Exception("Unexpected to have anything nested inside of lstinline (mod)")
                 lstinlinemod_bracket = lstinlinemod_bracket-1
             elif token.value[0] == '}' and bracket and vbracket == 0 and lstlisting_bracket == 0 and outputlisting_bracket==0 and bashlisting_bracket==0 and makelisting_bracket==0 and tikzpicture_bracket == 0:
-        	bracket = bracket - 1;
+                bracket = bracket - 1;
             elif value == '\\end{verbatim}' and vbracket:
                 vbracket = vbracket - 1;
             elif value == '\\end{outputlisting}' and outputlisting_bracket:

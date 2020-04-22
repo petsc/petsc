@@ -618,7 +618,7 @@ PetscErrorCode PetscViewerBinaryGetSkipOptions(PetscViewer viewer,PetscBool *ski
 
 static PetscErrorCode PetscViewerBinaryGetSkipOptions_Binary(PetscViewer viewer,PetscBool *skip)
 {
-  PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;;
+  PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
   PetscFunctionBegin;
   *skip = vbinary->skipoptions;

@@ -222,7 +222,7 @@ static PetscErrorCode TestIntegration(DM dm, PetscInt cbs, PetscInt its)
   ierr = DMGetCellDS(dm, cStart, &ds);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(ds, &Nf);CHKERRQ(ierr);
   ierr = PetscDSGetTotalDimension(ds, &totDim);CHKERRQ(ierr);
-  ierr = CreateFEGeometry(dm, ds, cellIS, &affineQuad, &affineGeom, &quads, &geoms);CHKERRQ(ierr);;
+  ierr = CreateFEGeometry(dm, ds, cellIS, &affineQuad, &affineGeom, &quads, &geoms);CHKERRQ(ierr);
   ierr = PetscMalloc2(chunkSize*totDim, &u, chunkSize*totDim, &elemVec);CHKERRQ(ierr);
   /* Assumptions:
     - Single field
@@ -249,7 +249,7 @@ static PetscErrorCode TestIntegration(DM dm, PetscInt cbs, PetscInt its)
     }
   }
   ierr = PetscFEGeomRestoreChunk(affineGeom, cStart, cEnd, &chunkGeom);CHKERRQ(ierr);
-  ierr = DestroyFEGeometry(dm, ds, cellIS, &affineQuad, &affineGeom, &quads, &geoms);CHKERRQ(ierr);;
+  ierr = DestroyFEGeometry(dm, ds, cellIS, &affineQuad, &affineGeom, &quads, &geoms);CHKERRQ(ierr);
   ierr = ISDestroy(&cellIS);CHKERRQ(ierr);
   ierr = PetscFree2(u, elemVec);CHKERRQ(ierr);
   ierr = PetscLogStagePop();CHKERRQ(ierr);

@@ -56,11 +56,11 @@
 !      Print the local matrix shape to the screen for each rank
 !
       call MatDenseGetArrayF90(A,array,ierr);CHKERRA(ierr)
-      call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr);CHKERRA(ierr);
+      call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr);CHKERRA(ierr)
       ashape = shape(array)
       write(string, '("[", i0, "]", " shape (", i0, ",", i0, ")", a1)') rank, ashape(1), ashape(2), new_line('a')
-      call PetscSynchronizedPrintf(PETSC_COMM_WORLD, string, ierr);CHKERRA(ierr);
-      call PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT,ierr);CHKERRA(ierr);
+      call PetscSynchronizedPrintf(PETSC_COMM_WORLD, string, ierr);CHKERRA(ierr)
+      call PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT,ierr);CHKERRA(ierr)
       call MatDenseRestoreArrayF90(A,array,ierr);CHKERRA(ierr)
 !
 !      Free the space used by the matrix
