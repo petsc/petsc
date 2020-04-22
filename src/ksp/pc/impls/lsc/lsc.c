@@ -1,4 +1,3 @@
-
 #include <petsc/private/pcimpl.h>   /*I "petscpc.h" I*/
 
 typedef struct {
@@ -169,7 +168,7 @@ static PetscErrorCode PCView_LSC(PC pc,PetscViewer viewer)
 .ve
 
    The product A10 A01 can be computed for you, but you can provide it (this is
-   usually more efficient anyway).  In the case of incompressible flow, A10 A10 is a Laplacian, call it L.  The current
+   usually more efficient anyway).  In the case of incompressible flow, A10 A01 is a Laplacian; call it L.  The current
    interface is to hang L and a preconditioning matrix Lp on the preconditioning matrix.
 
    If you had called KSPSetOperators(ksp,S,Sp), S should have type MATSCHURCOMPLEMENT and Sp can be any type you
