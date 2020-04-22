@@ -23,6 +23,14 @@ OPTIONS
 EOF
   exit $1
 }
+# Unset some environment variables to avoid problems on cygwin
+# See: https://cygwin.com/pipermail/cygwin/2020-March/244153.html
+# Suspect that the problems are with gitlab's environment variables
+unset CI_ENVIRONMENT_NAME
+unset CI_COMMIT_BEFORE_SHA
+unset CI_COMMIT_DESCRIPTION
+unset CI_COMMIT_MESSAGE
+unset CI_CONFIG_PATH
 
 # parse options -- using getopts because it is so easily extensible
 mvfile=false
