@@ -25,8 +25,8 @@
 !     Test IS of size 0
 
        n = 0
-       call ISCreateGeneral(PETSC_COMM_SELF,n,indices,PETSC_COPY_VALUES,is,ierr);CHKERRA(ierr);
-       call ISGetLocalSize(is,n,ierr);CHKERRA(ierr);
+       call ISCreateGeneral(PETSC_COMM_SELF,n,indices,PETSC_COPY_VALUES,is,ierr);CHKERRA(ierr)
+       call ISGetLocalSize(is,n,ierr);CHKERRA(ierr)
        if (n .ne. 0) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error getting size of zero IS'); endif
        call ISDestroy(is,ierr)
 

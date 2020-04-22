@@ -71,7 +71,7 @@
         print*,'Unable to initialize PETSc'
         stop
       endif
-      call PetscLogNestedBegin(ierr);CHKERRA(ierr);
+      call PetscLogNestedBegin(ierr);CHKERRA(ierr)
       threshold = 1.0
       call PetscLogSetThreshold(threshold,oldthreshold,ierr)
 ! dummy test of logging a reduction
