@@ -7,7 +7,6 @@
 import os
 import re
 import sys
-from string import *
 
 def processexample(example):
   mat   = re.compile('<center>[a-zA-Z0-9_ -]*</center>')
