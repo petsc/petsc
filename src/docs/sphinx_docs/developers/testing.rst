@@ -66,7 +66,7 @@ language.
 Runtime Language Options
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-At the end of each test file, a marked comment block, using YAML, is
+At the end of each test file, a marked comment block is
 inserted to describe the test(s) to be run. The elements of the test are
 done with a set of supported key words that sets up the test.
 
