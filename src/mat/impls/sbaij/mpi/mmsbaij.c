@@ -111,7 +111,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
   ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,stmp,PETSC_COPY_VALUES,&to);CHKERRQ(ierr);
 
   /* generate the scatter context
-     -- Mvctx and lvec are not used by MatMult_MPISBAIJ(), but usefull for some applications */
+     -- Mvctx and lvec are not used by MatMult_MPISBAIJ(), but have other uses, such as in MatDiagonalScale_MPISBAIJ */
   ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)mat),1,mat->cmap->n,mat->cmap->N,NULL,&gvec);CHKERRQ(ierr);
   ierr = VecScatterCreate(gvec,from,sbaij->lvec,to,&sbaij->Mvctx);CHKERRQ(ierr);
   ierr = VecDestroy(&gvec);CHKERRQ(ierr);
