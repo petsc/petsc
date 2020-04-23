@@ -282,22 +282,7 @@ C Usage
    ``if (!rank)`` or ``if (!v)`` or ``if (flg)`` or ``if (!flg)``.
 
 #. Do not use ``#ifdef`` or ``#ifndef``. Rather, use ``#if defined(...``
-   or ``#if !defined(...``
-
-#. When possible, use ``PetscDefined()`` instead of preprocessor conditionals.
-   For example use::
-
-     if (PetscDefined(USE_DEBUG)) { ... }
-
-   instead of::
-
-     #if defined(PETSC_USE_DEBUG)
-       ...
-     #endif
-
-   The former usage allows syntax and type checking in all configurations of
-   PETSc, where as the latter needs to be compiled with and without debugging
-   just to confirm that it compiles.
+   or ``#if !defined(...``.  Better, use ``PetscDefined()`` (see below).
 
 #. Never use system random number generators such as ``rand()`` in PETSc
    code or examples because these can produce different results on
@@ -306,7 +291,7 @@ C Usage
    of system it is used on.
 
 #. Variadic macros may be used in PETSc source files, but must work with MSVC
-   and must not be required in headers (which must be usable with strict
+   and must not be required in public headers (which must be usable with strict
    ``-std=c89``).  Most compilers have conforming implementations of the
    C99/C++11 rules for ``__VA_ARGS__``, but MSVC's implementation is not
    conforming and may need workarounds.  See ``PetscDefined()`` for an example
@@ -329,6 +314,21 @@ Usage of PETSc Functions and Macros
 
 #. Public and private PETSc include files cannot reference include files
    located in the PETSc source tree.
+
+#. When possible, use ``PetscDefined()`` instead of preprocessor conditionals.
+   For example use::
+
+     if (PetscDefined(USE_DEBUG)) { ... }
+
+   instead of::
+
+     #if defined(PETSC_USE_DEBUG)
+       ...
+     #endif
+
+   The former usage allows syntax and type checking in all configurations of
+   PETSc, where as the latter needs to be compiled with and without debugging
+   just to confirm that it compiles.
 
 #. The first line of the executable statements in functions must be
    ``PetscFunctionBegin;``
