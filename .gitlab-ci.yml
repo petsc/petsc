@@ -514,7 +514,7 @@ linux-pkgs-gcov:
     - .stage-3
     - .linux_test
   tags:
-    - gce-nfs, linux-fast
+    - gce-nfs, linux-gcov
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-gcov
   after_script:
@@ -534,7 +534,7 @@ linux-cmplx-gcov:
     - .stage-3
     - .linux_test
   tags:
-    - gce-nfs, linux-fast
+    - gce-nfs, linux-gcov
   variables:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -vecscatter_mpi1 false -options_left false
     TEST_ARCH: arch-ci-linux-cmplx-gcov
@@ -551,21 +551,12 @@ linux-cmplx-gcov:
     - ${TEST_ARCH}/gcov.tar.gz
     expire_in: 4 days
 
-linux-pgi:
-  extends:
-    - .stage-3
-    - .linux_test_noflags
-  tags:
-    - gce-nfs, linux-fast
-  variables:
-    TEST_ARCH: arch-ci-linux-pgi
-
 linux-matlab-ilp64-gcov:
   extends:
     - .stage-3
     - .linux_test
   tags:
-    - gce-nfs, linux-fast
+    - gce-nfs, linux-gcov
   variables:
     TEST_ARCH: arch-ci-linux-matlab-ilp64-gcov
     LOAD_MODULES: matlab/R2018a
@@ -587,7 +578,7 @@ linux-gcov:
     - .stage-3
     - .linux_test
   tags:
-    - gce-nfs, linux-fast
+    - gce-nfs, linux-gcov
   variables:
     TEST_ARCH: arch-ci-linux-gcov
   after_script:
@@ -601,6 +592,15 @@ linux-gcov:
     - ${TEST_ARCH}/tests/test_${TEST_ARCH}_err.log
     - ${TEST_ARCH}/gcov.tar.gz
     expire_in: 4 days
+
+linux-pgi:
+  extends:
+    - .stage-3
+    - .linux_test_noflags
+  tags:
+    - gce-nfs, linux-mcpu
+  variables:
+    TEST_ARCH: arch-ci-linux-pgi
 
 linux-intel-cmplx:
   extends:
