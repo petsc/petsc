@@ -1569,20 +1569,8 @@ class GNUPackage(Package):
 
     return args
 
-  def Install(self):
-    ##### getInstallDir calls this, and it sets up self.packageDir (source download), self.confDir and self.installDir
-    args = self.formGNUConfigureArgs()  # allow package to change self.packageDir
-    if self.download and self.argDB['download-'+self.downloadname.lower()+'-configure-arguments']:
-       args.append(self.argDB['download-'+self.downloadname.lower()+'-configure-arguments'])
-    args = ' '.join(args)
-    conffile = os.path.join(self.packageDir,self.package+'.petscconf')
-    fd = open(conffile, 'w')
-    fd.write(args)
-    fd.close()
-    ### Use conffile to check whether a reconfigure/rebuild is required
-    if not self.installNeeded(conffile):
-      return self.installDir
-
+  def preInstall(self):
+    '''Run pre-install steps like generate configure script'''
     if not os.path.isfile(os.path.join(self.packageDir,'configure')):
       if not self.programs.autoreconf:
         raise RuntimeError('autoreconf required for ' + self.PACKAGE+' not found (or broken)! Use your package manager to install autoconf')
@@ -1599,6 +1587,23 @@ class GNUPackage(Package):
           raise RuntimeError('Error in autoreconf: ' + str(e))
       except RuntimeError as e:
         raise RuntimeError('Error running libtoolize or autoreconf on ' + self.PACKAGE+': '+str(e))
+
+
+  def Install(self):
+    ##### getInstallDir calls this, and it sets up self.packageDir (source download), self.confDir and self.installDir
+    args = self.formGNUConfigureArgs()  # allow package to change self.packageDir
+    if self.download and self.argDB['download-'+self.downloadname.lower()+'-configure-arguments']:
+       args.append(self.argDB['download-'+self.downloadname.lower()+'-configure-arguments'])
+    args = ' '.join(args)
+    conffile = os.path.join(self.packageDir,self.package+'.petscconf')
+    fd = open(conffile, 'w')
+    fd.write(args)
+    fd.close()
+    ### Use conffile to check whether a reconfigure/rebuild is required
+    if not self.installNeeded(conffile):
+      return self.installDir
+
+    self.preInstall()
 
     if self.builddir == 'yes':
       folder = os.path.join(self.packageDir, 'petsc-build')
