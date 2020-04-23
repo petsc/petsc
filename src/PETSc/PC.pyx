@@ -291,13 +291,43 @@ cdef class PC(Object):
         cdef PetscInt ival = asInt(overlap)
         CHKERR( PCASMSetOverlap(self.pc, ival) )
 
-    def setASMLocalSubdomains(self, nsd):
+    def setASMLocalSubdomains(self, nsd, is_=None, is_local=None):
         cdef PetscInt n = asInt(nsd)
-        CHKERR( PCASMSetLocalSubdomains(self.pc, n, NULL, NULL) )
+        cdef PetscInt i = 0
+        cdef PetscIS *isets = NULL
+        cdef PetscIS *isets_local = NULL
+        if is_ is not None:
+            assert len(is_) == nsd
+            CHKERR( PetscMalloc(<size_t>n*sizeof(PetscIS), &isets) )
+            for i in range(n):
+                isets[i] = (<IS?>is_[i]).iset
+        if is_local is not None:
+            assert len(is_local) == nsd
+            CHKERR( PetscMalloc(<size_t>n*sizeof(PetscIS), &isets_local) )
+            for i in range(n):
+                isets_local[i] = (<IS?>is_local[i]).iset
+        CHKERR( PCASMSetLocalSubdomains(self.pc, n, isets, isets_local) )
+        CHKERR( PetscFree(isets) )
+        CHKERR( PetscFree(isets_local) )
 
-    def setASMTotalSubdomains(self, nsd):
-        cdef PetscInt N = asInt(nsd)
-        CHKERR( PCASMSetTotalSubdomains(self.pc, N, NULL, NULL) )
+    def setASMTotalSubdomains(self, nsd, is_=None, is_local=None):
+        cdef PetscInt n = asInt(nsd)
+        cdef PetscInt i = 0
+        cdef PetscIS *isets = NULL
+        cdef PetscIS *isets_local = NULL
+        if is_ is not None:
+            assert len(is_) == nsd
+            CHKERR( PetscMalloc(<size_t>n*sizeof(PetscIS), &isets) )
+            for i in range(n):
+                isets[i] = (<IS?>is_[i]).iset
+        if is_local is not None:
+            assert len(is_local) == nsd
+            CHKERR( PetscMalloc(<size_t>n*sizeof(PetscIS), &isets_local) )
+            for i in range(n):
+                isets_local[i] = (<IS?>is_local[i]).iset
+        CHKERR( PCASMSetTotalSubdomains(self.pc, n, isets, isets_local) )
+        CHKERR( PetscFree(isets) )
+        CHKERR( PetscFree(isets_local) )
 
     def getASMSubKSP(self):
         cdef PetscInt i = 0, n = 0
