@@ -375,6 +375,8 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 #endif
 #if defined(PETSC_HAVE_CUDA)
   PetscBool         initCUDA = PETSC_FALSE,mpi_gpu_awareness;
+  cudaError_t       cerr;
+  int               devCount = 0;
 #endif
 
   PetscFunctionBegin;
@@ -673,7 +675,9 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   ierr = PetscOptionsBool("-use_gpu_aware_mpi","Use GPU-aware MPI",NULL,use_gpu_aware_mpi,&use_gpu_aware_mpi,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if (initCUDA) {ierr = PetscCUDAInitialize(PETSC_COMM_WORLD);CHKERRQ(ierr);}
-  if (use_gpu_aware_mpi) {
+  cerr = cudaGetDeviceCount(&devCount);{if (cerr != cudaErrorNoDevice) CHKERRCUDA(cerr);} /* Catch other errors */
+  if (cerr == cudaErrorNoDevice) devCount = 0; /* CUDA does not say what devCount is under this error */
+  if (devCount > 0 && use_gpu_aware_mpi) { /* Only do the MPI GPU awareness check when there are GPU(s) */
 #if defined(PETSC_HAVE_OMPI_MAJOR_VERSION) && defined(MPIX_CUDA_AWARE_SUPPORT) && MPIX_CUDA_AWARE_SUPPORT
     /* Trust OpenMPI's compile time cuda query interface */
     mpi_gpu_awareness = PETSC_TRUE;
