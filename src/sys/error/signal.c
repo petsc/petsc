@@ -5,6 +5,7 @@
 */
 #include <petsc/private/petscimpl.h>             /*I   "petscsys.h"   I*/
 #include <signal.h>
+#include <stdlib.h> /* for _Exit() */
 
 static PetscClassId SIGNAL_CLASSID = 0;
 
@@ -16,6 +17,14 @@ struct SH {
 };
 static struct SH *sh       = NULL;
 static PetscBool SignalSet = PETSC_FALSE;
+
+/* Called by MPI_Abort() to suppress user-registered atexit()/on_exit() functions.
+   See discussion at https://gitlab.com/petsc/petsc/-/merge_requests/2745.
+*/
+static void MyExit(void)
+{
+  _Exit(MPI_ERR_OTHER);
+}
 
 /*
     PetscSignalHandler_Private - This is the signal handler called by the system. This calls
@@ -149,6 +158,7 @@ PetscErrorCode  PetscSignalHandlerDefault(int sig,void *ptr)
   (*PetscErrorPrintf)("to get more information on the crash.\n");
 #endif
   ierr =  PetscError(PETSC_COMM_SELF,0,"User provided function"," unknown file",PETSC_ERR_SIG,PETSC_ERROR_INITIAL,NULL);
+  atexit(MyExit);
   PETSCABORT(PETSC_COMM_WORLD,(int)ierr);
   PetscFunctionReturn(0);
 }
