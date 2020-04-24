@@ -2,8 +2,8 @@
 /*
   Defines basic operations for the MATSEQAIJMKL matrix class.
   This class is derived from the MATSEQAIJ class and retains the
-  compressed row storage (aka Yale sparse matrix format) but uses 
-  sparse BLAS operations from the Intel Math Kernel Library (MKL) 
+  compressed row storage (aka Yale sparse matrix format) but uses
+  sparse BLAS operations from the Intel Math Kernel Library (MKL)
   wherever possible.
 */
 
@@ -47,27 +47,18 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJMKL_SeqAIJ(Mat A,MatType type,MatRe
   B->ops->multtranspose    = MatMultTranspose_SeqAIJ;
   B->ops->multadd          = MatMultAdd_SeqAIJ;
   B->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJ;
-  B->ops->matmult          = MatMatMult_SeqAIJ_SeqAIJ;
   B->ops->matmultnumeric   = MatMatMultNumeric_SeqAIJ_SeqAIJ;
-  B->ops->ptap             = MatPtAP_SeqAIJ_SeqAIJ;
   B->ops->ptapnumeric      = MatPtAPNumeric_SeqAIJ_SeqAIJ;
-  B->ops->transposematmult = MatTransposeMatMult_SeqAIJ_SeqAIJ;
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaijmkl_seqaij_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_seqdense_seqaijmkl_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultSymbolic_seqdense_seqaijmkl_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultNumeric_seqdense_seqaijmkl_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatPtAP_is_seqaijmkl_C",NULL);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_HYPRE)
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMatMult_transpose_seqaijmkl_seqaijmkl_C",NULL);CHKERRQ(ierr);
-#endif
+
 #if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
-  if(!aijmkl->no_SpMV2) {
-    ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_seqaijmkl_seqaijmkl_C",NULL);CHKERRQ(ierr);
+  if (!aijmkl->no_SpMV2) {
 #if defined(PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE)
     ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultNumeric_seqaijmkl_seqaijmkl_C",NULL);CHKERRQ(ierr);
 #endif
-    ierr = PetscObjectComposeFunction((PetscObject)B,"MatTransposeMatMult_seqaijmkl_seqaijmkl_C",NULL);CHKERRQ(ierr);
   }
 
   /* Free everything in the Mat_SeqAIJMKL data structure. Currently, this 
@@ -735,45 +726,6 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,Vec zz)
 }
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
-#if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
-/* Note that this code currently doesn't actually get used when MatMatMult() is called with MAT_REUSE_MATRIX, because 
- * the MatMatMult() interface code calls MatMatMultNumeric() in this case. 
- * For releases of MKL prior to version 18, update 2:
- * MKL has no notion of separately callable symbolic vs. numeric phases of sparse matrix-matrix multiply, so in the 
- * MAT_REUSE_MATRIX case, the SeqAIJ routines end up being used. Even though this means that the (hopefully more 
- * optimized) MKL routines do not get used, this probably is best because the MKL routines would waste time re-computing 
- * the symbolic portion, whereas the native PETSc SeqAIJ routines will avoid this. */
-PetscErrorCode MatMatMult_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat*C)
-{
-  Mat_SeqAIJMKL    *a, *b;
-  sparse_matrix_t  csrA, csrB, csrC;
-  PetscErrorCode   ierr;
-  sparse_status_t  stat = SPARSE_STATUS_SUCCESS;
-  PetscObjectState state;
-
-  PetscFunctionBegin;
-  a = (Mat_SeqAIJMKL*)A->spptr;
-  b = (Mat_SeqAIJMKL*)B->spptr;
-  ierr = PetscObjectStateGet((PetscObject)A,&state);CHKERRQ(ierr);
-  if (!a->sparse_optimized || a->state != state) {
-    MatSeqAIJMKL_create_mkl_handle(A);
-  }
-  ierr = PetscObjectStateGet((PetscObject)B,&state);CHKERRQ(ierr);
-  if (!b->sparse_optimized || b->state != state) {
-    MatSeqAIJMKL_create_mkl_handle(B);
-  }
-  csrA = a->csrA;
-  csrB = b->csrA;
-
-  stat = mkl_sparse_spmm(SPARSE_OPERATION_NON_TRANSPOSE,csrA,csrB,&csrC);
-  if (stat != SPARSE_STATUS_SUCCESS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Intel MKL error: unable to complete sparse matrix-matrix multiply");
-
-  ierr = MatSeqAIJMKL_create_from_mkl_handle(PETSC_COMM_SELF,csrC,scall,C);CHKERRQ(ierr);
-
-  PetscFunctionReturn(0);
-}
-#endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
-
 #if defined(PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE)
 PetscErrorCode MatMatMultNumeric_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat B,Mat C)
 {
@@ -813,38 +765,6 @@ PetscErrorCode MatMatMultNumeric_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat B,Mat C)
   PetscFunctionReturn(0);
 }
 #endif /* PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE */
-
-#if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
-PetscErrorCode MatTransposeMatMult_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat*C)
-{
-  Mat_SeqAIJMKL    *a, *b;
-  sparse_matrix_t  csrA, csrB, csrC;
-  PetscErrorCode   ierr;
-  sparse_status_t  stat = SPARSE_STATUS_SUCCESS;
-  PetscObjectState state;
-
-  PetscFunctionBegin;
-  a = (Mat_SeqAIJMKL*)A->spptr;
-  b = (Mat_SeqAIJMKL*)B->spptr;
-  ierr = PetscObjectStateGet((PetscObject)A,&state);CHKERRQ(ierr);
-  if (!a->sparse_optimized || a->state != state) {
-    MatSeqAIJMKL_create_mkl_handle(A);
-  }
-  ierr = PetscObjectStateGet((PetscObject)B,&state);CHKERRQ(ierr);
-  if (!b->sparse_optimized || b->state != state) {
-    MatSeqAIJMKL_create_mkl_handle(B);
-  }
-  csrA = a->csrA;
-  csrB = b->csrA;
-
-  stat = mkl_sparse_spmm(SPARSE_OPERATION_TRANSPOSE,csrA,csrB,&csrC);
-  if (stat != SPARSE_STATUS_SUCCESS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Intel MKL error: unable to complete sparse matrix-matrix multiply");
-
-  ierr = MatSeqAIJMKL_create_from_mkl_handle(PETSC_COMM_SELF,csrC,scall,C);CHKERRQ(ierr);
-
-  PetscFunctionReturn(0);
-}
-#endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
 #if defined(PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE)
 PetscErrorCode MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat P,Mat C)
@@ -891,62 +811,6 @@ PetscErrorCode MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat P,Mat C)
 
   PetscFunctionReturn(0);
 }
-#endif
-
-#if defined(PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE)
-PetscErrorCode MatPtAP_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
-{
-  Mat_SeqAIJMKL       *a, *p;
-  sparse_matrix_t     csrA, csrP, csrC;
-  PetscBool           set, flag;
-  sparse_status_t     stat = SPARSE_STATUS_SUCCESS;
-  struct matrix_descr descr_type_sym;
-  PetscObjectState    state;
-  PetscErrorCode      ierr;
-
-  PetscFunctionBegin;
-  ierr = MatIsSymmetricKnown(A,&set,&flag);
-  if (!set || (set && !flag)) {
-    ierr = MatPtAP_SeqAIJ_SeqAIJ(A,P,scall,fill,C);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
-
-  if (scall == MAT_REUSE_MATRIX) {
-    ierr = MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL_SpMV2(A,P,*C);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
-
-  a = (Mat_SeqAIJMKL*)A->spptr;
-  p = (Mat_SeqAIJMKL*)P->spptr;
-  ierr = PetscObjectStateGet((PetscObject)A,&state);CHKERRQ(ierr);
-  if (!a->sparse_optimized || a->state != state) {
-    MatSeqAIJMKL_create_mkl_handle(A);
-  }
-  ierr = PetscObjectStateGet((PetscObject)P,&state);CHKERRQ(ierr);
-  if (!p->sparse_optimized || p->state != state) {
-    MatSeqAIJMKL_create_mkl_handle(P);
-  }
-  csrA = a->csrA;
-  csrP = p->csrA;
-  descr_type_sym.type = SPARSE_MATRIX_TYPE_SYMMETRIC;
-  descr_type_sym.mode = SPARSE_FILL_MODE_LOWER;
-  descr_type_sym.diag = SPARSE_DIAG_NON_UNIT;
-
-  /* Note that the call below won't work for complex matrices. (We protect this when pointers are assigned in MatConvert.) */
-  stat = mkl_sparse_sypr(SPARSE_OPERATION_TRANSPOSE,csrP,csrA,descr_type_sym,&csrC,SPARSE_STAGE_FULL_MULT);
-  if (stat != SPARSE_STATUS_SUCCESS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Intel MKL error: unable to complete full mkl_sparse_sypr");
-
-  ierr = MatSeqAIJMKL_create_from_mkl_handle(PETSC_COMM_SELF,csrC,scall,C);CHKERRQ(ierr);
-  ierr = MatSetOption(*C,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-
-  PetscFunctionReturn(0);
-}
-#endif
-
-/* These function prototypes are needed in MatConvert_SeqAIJ_SeqAIJMKL(), below. */
-PETSC_INTERN PetscErrorCode MatPtAP_IS_XAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
-#if defined(PETSC_HAVE_HYPRE)
-PETSC_INTERN PetscErrorCode MatMatMatMult_Transpose_AIJ_AIJ(Mat,Mat,Mat,MatReuse,PetscReal,Mat*);
 #endif
 
 /* MatConvert_SeqAIJ_SeqAIJMKL converts a SeqAIJ matrix into a
@@ -1003,15 +867,12 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A,MatType type,MatRe
   B->ops->multtranspose    = MatMultTranspose_SeqAIJMKL_SpMV2;
   B->ops->multadd          = MatMultAdd_SeqAIJMKL_SpMV2;
   B->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJMKL_SpMV2;
-  B->ops->matmult          = MatMatMult_SeqAIJMKL_SeqAIJMKL_SpMV2;
 # if defined(PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE)
   B->ops->matmultnumeric   = MatMatMultNumeric_SeqAIJMKL_SeqAIJMKL_SpMV2;
 #   if !defined(PETSC_USE_COMPLEX)
-  B->ops->ptap             = MatPtAP_SeqAIJMKL_SeqAIJMKL_SpMV2;
   B->ops->ptapnumeric      = MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL_SpMV2;
 #   endif
 # endif
-  B->ops->transposematmult = MatTransposeMatMult_SeqAIJMKL_SeqAIJMKL_SpMV2;
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
 #if !defined(PETSC_MKL_SPBLAS_DEPRECATED)
@@ -1028,20 +889,14 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A,MatType type,MatRe
 #endif
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaijmkl_seqaij_C",MatConvert_SeqAIJMKL_SeqAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_seqdense_seqaijmkl_C",MatMatMult_SeqDense_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultSymbolic_seqdense_seqaijmkl_C",MatMatMultSymbolic_SeqDense_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultNumeric_seqdense_seqaijmkl_C",MatMatMultNumeric_SeqDense_SeqAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatPtAP_is_seqaijmkl_C",MatPtAP_IS_XAIJ);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_HYPRE)
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMatMult_transpose_seqaijmkl_seqaijmkl_C",MatMatMatMult_Transpose_AIJ_AIJ);CHKERRQ(ierr);
-#endif
+
   if(!aijmkl->no_SpMV2) {
 #if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
-    ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_seqaijmkl_seqaijmkl_C",MatMatMult_SeqAIJMKL_SeqAIJMKL_SpMV2);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE)
     ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultNumeric_seqaijmkl_seqaijmkl_C",MatMatMultNumeric_SeqAIJMKL_SeqAIJMKL_SpMV2);CHKERRQ(ierr);
 #endif
-    ierr = PetscObjectComposeFunction((PetscObject)B,"MatTransposeMatMult_seqaijmkl_seqaijmkl_C",MatTransposeMatMult_SeqAIJMKL_SeqAIJMKL_SpMV2);CHKERRQ(ierr);
 #endif
   }
 
@@ -1052,9 +907,9 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A,MatType type,MatRe
 
 /*@C
    MatCreateSeqAIJMKL - Creates a sparse matrix of type SEQAIJMKL.
-   This type inherits from AIJ and is largely identical, but uses sparse BLAS 
+   This type inherits from AIJ and is largely identical, but uses sparse BLAS
    routines from Intel MKL whenever possible.
-   If the installed version of MKL supports the "SpMV2" sparse 
+   If the installed version of MKL supports the "SpMV2" sparse
    inspector-executor routines, then those are used by default.
    MatMult, MatMultAdd, MatMultTranspose, MatMultTransposeAdd, MatMatMult, MatTransposeMatMult, and MatPtAP (for
    symmetric A) operations are currently supported.

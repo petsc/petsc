@@ -417,6 +417,7 @@ PETSC_EXTERN PetscErrorCode KSPSetSupportedNorm(KSP ksp,KSPNormType,PCSide,Petsc
 PETSC_EXTERN PetscErrorCode KSPSetCheckNormIteration(KSP,PetscInt);
 PETSC_EXTERN PetscErrorCode KSPSetLagNorm(KSP,PetscBool);
 
+#define KSP_DIVERGED_PCSETUP_FAILED_DEPRECATED KSP_DIVERGED_PCSETUP_FAILED PETSC_DEPRECATED_ENUM("Use KSP_DIVERGED_PC_FAILED (since version 3.11)")
 /*E
     KSPConvergedReason - reason a Krylov method was said to have converged or diverged
 
@@ -433,7 +434,6 @@ PETSC_EXTERN PetscErrorCode KSPSetLagNorm(KSP,PetscBool);
 
 .seealso: KSPSolve(), KSPGetConvergedReason(), KSPSetTolerances()
 E*/
-#define KSP_DIVERGED_PCSETUP_FAILED_DEPRECATED KSP_DIVERGED_PCSETUP_FAILED PETSC_DEPRECATED_ENUM("Use KSP_DIVERGED_PC_FAILED (since version 3.11)")
 typedef enum {/* converged */
               KSP_CONVERGED_RTOL_NORMAL        =  1,
               KSP_CONVERGED_ATOL_NORMAL        =  9,
@@ -708,6 +708,12 @@ E*/
 typedef enum {MAT_SCHUR_COMPLEMENT_AINV_DIAG, MAT_SCHUR_COMPLEMENT_AINV_LUMP, MAT_SCHUR_COMPLEMENT_AINV_BLOCK_DIAG} MatSchurComplementAinvType;
 PETSC_EXTERN const char *const MatSchurComplementAinvTypes[];
 
+typedef enum {MAT_LMVM_SYMBROYDEN_SCALE_NONE       = 0,
+              MAT_LMVM_SYMBROYDEN_SCALE_SCALAR     = 1,
+              MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL   = 2,
+              MAT_LMVM_SYMBROYDEN_SCALE_USER       = 3} MatLMVMSymBroydenScaleType;
+PETSC_EXTERN const char *const MatLMVMSymBroydenScaleTypes[];
+
 PETSC_EXTERN PetscErrorCode MatCreateSchurComplement(Mat,Mat,Mat,Mat,Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatSchurComplementGetKSP(Mat,KSP*);
 PETSC_EXTERN PetscErrorCode MatSchurComplementSetKSP(Mat,KSP);
@@ -724,11 +730,11 @@ PETSC_EXTERN PetscErrorCode MatCreateSchurComplementPmat(Mat,Mat,Mat,Mat,MatSchu
 PETSC_EXTERN PetscErrorCode MatCreateLMVMDFP(MPI_Comm,PetscInt,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateLMVMBFGS(MPI_Comm,PetscInt,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateLMVMSR1(MPI_Comm,PetscInt,PetscInt,Mat*);
-PETSC_EXTERN PetscErrorCode MatCreateLMVMBrdn(MPI_Comm,PetscInt,PetscInt,Mat*);
-PETSC_EXTERN PetscErrorCode MatCreateLMVMBadBrdn(MPI_Comm,PetscInt,PetscInt,Mat*);
-PETSC_EXTERN PetscErrorCode MatCreateLMVMSymBrdn(MPI_Comm,PetscInt,PetscInt,Mat*);
-PETSC_EXTERN PetscErrorCode MatCreateLMVMSymBadBrdn(MPI_Comm,PetscInt,PetscInt,Mat*);
-PETSC_EXTERN PetscErrorCode MatCreateLMVMDiagBrdn(MPI_Comm,PetscInt,PetscInt,Mat*);
+PETSC_EXTERN PetscErrorCode MatCreateLMVMBroyden(MPI_Comm,PetscInt,PetscInt,Mat*);
+PETSC_EXTERN PetscErrorCode MatCreateLMVMBadBroyden(MPI_Comm,PetscInt,PetscInt,Mat*);
+PETSC_EXTERN PetscErrorCode MatCreateLMVMSymBroyden(MPI_Comm,PetscInt,PetscInt,Mat*);
+PETSC_EXTERN PetscErrorCode MatCreateLMVMSymBadBroyden(MPI_Comm,PetscInt,PetscInt,Mat*);
+PETSC_EXTERN PetscErrorCode MatCreateLMVMDiagBroyden(MPI_Comm,PetscInt,PetscInt,Mat*);
 
 PETSC_EXTERN PetscErrorCode MatLMVMUpdate(Mat, Vec, Vec);
 PETSC_EXTERN PetscErrorCode MatLMVMIsAllocated(Mat, PetscBool*);
@@ -746,9 +752,11 @@ PETSC_EXTERN PetscErrorCode MatLMVMApplyJ0Inv(Mat, Vec, Vec);
 PETSC_EXTERN PetscErrorCode MatLMVMGetJ0(Mat, Mat*);
 PETSC_EXTERN PetscErrorCode MatLMVMGetJ0PC(Mat, PC*);
 PETSC_EXTERN PetscErrorCode MatLMVMGetJ0KSP(Mat, KSP*);
+PETSC_EXTERN PetscErrorCode MatLMVMSetHistorySize(Mat, PetscInt);
 PETSC_EXTERN PetscErrorCode MatLMVMGetUpdateCount(Mat, PetscInt*);
 PETSC_EXTERN PetscErrorCode MatLMVMGetRejectCount(Mat, PetscInt*);
-PETSC_EXTERN PetscErrorCode MatSymBrdnSetDelta(Mat, PetscScalar);
+PETSC_EXTERN PetscErrorCode MatLMVMSymBroydenSetDelta(Mat, PetscScalar);
+PETSC_EXTERN PetscErrorCode MatLMVMSymBroydenSetScaleType(Mat, MatLMVMSymBroydenScaleType);
 
 PETSC_EXTERN PetscErrorCode KSPSetDM(KSP,DM);
 PETSC_EXTERN PetscErrorCode KSPSetDMActive(KSP,PetscBool );

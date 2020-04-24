@@ -159,9 +159,9 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
     ierr = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
     if (!rank) {
-      ierr = PetscViewerBinaryWrite(viewer,&classid,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscViewerBinaryWrite(viewer,&classid,1,PETSC_INT);CHKERRQ(ierr);
       ierr = PetscStrncpy(type,((PetscObject)ksp)->type_name,256);CHKERRQ(ierr);
-      ierr = PetscViewerBinaryWrite(viewer,type,256,PETSC_CHAR,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscViewerBinaryWrite(viewer,type,256,PETSC_CHAR);CHKERRQ(ierr);
     }
     if (ksp->ops->view) {
       ierr = (*ksp->ops->view)(ksp,viewer);CHKERRQ(ierr);

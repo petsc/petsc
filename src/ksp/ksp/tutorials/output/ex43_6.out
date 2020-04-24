@@ -1,0 +1,124 @@
+KSP Object: (stokes_) 8 MPI processes
+  type: gmres
+    restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+    happy breakdown tolerance 1e-30
+  maximum iterations=10000, initial guess is zero
+  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  left preconditioning
+  using PRECONDITIONED norm type for convergence test
+PC Object: (stokes_) 8 MPI processes
+  type: mg
+    type is MULTIPLICATIVE, levels=2 cycles=v
+      Cycles per PCApply=1
+      Using Galerkin computed coarse grid matrices for pmat
+  Coarse grid solver -- level -------------------------------
+    KSP Object: (stokes_mg_coarse_) 8 MPI processes
+      type: preonly
+      maximum iterations=10000, initial guess is zero
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using NONE norm type for convergence test
+    PC Object: (stokes_mg_coarse_) 8 MPI processes
+      type: telescope
+        petsc subcomm: parent comm size reduction factor = 2
+        petsc subcomm: parent_size = 8 , subcomm_size = 4
+        petsc subcomm type = contiguous
+        setup type: DMDA auto-repartitioning
+        DMDA Object:    (stokes_mg_coarse_telescope_repart_)    4 MPI processes
+          M 6 N 6 m 2 n 2 dof 3 overlap 1
+        Parent DM object: type = da;
+        Sub DM object: type = da; prefix = stokes_mg_coarse_telescope_repart_
+        KSP Object: (stokes_mg_coarse_telescope_) 4 MPI processes
+          type: preonly
+          maximum iterations=10000, initial guess is zero
+          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+          left preconditioning
+          using NONE norm type for convergence test
+        PC Object: (stokes_mg_coarse_telescope_) 4 MPI processes
+          type: bjacobi
+            number of blocks = 4
+            Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
+          linear system matrix = precond matrix:
+          Mat Object: 4 MPI processes
+            type: mpiaij
+            rows=108, cols=108, rbs=3, cbs=1
+            total: nonzeros=2304, allocated nonzeros=2304
+            total number of mallocs used during MatSetValues calls=0
+              using I-node (on process 0) routines: found 9 nodes, limit used is 5
+                KSP Object:       (stokes_mg_coarse_telescope_sub_)       1 MPI processes
+                  type: preonly
+                  maximum iterations=10000, initial guess is zero
+                  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+                  left preconditioning
+                  using NONE norm type for convergence test
+                PC Object:       (stokes_mg_coarse_telescope_sub_)       1 MPI processes
+                  type: ilu
+                    out-of-place factorization
+                    0 levels of fill
+                    tolerance for zero pivot 2.22045e-14
+                    matrix ordering: natural
+                    factor fill ratio given 1., needed 1.
+                      Factored matrix follows:
+                        Mat Object:       1 MPI processes
+                          type: seqaij
+                          rows=27, cols=27, rbs=3, cbs=1
+                          package used to perform factorization: petsc
+                          total: nonzeros=441, allocated nonzeros=441
+                          total number of mallocs used during MatSetValues calls=0
+                            using I-node routines: found 9 nodes, limit used is 5
+                  linear system matrix = precond matrix:
+                  Mat Object:       1 MPI processes
+                    type: seqaij
+                    rows=27, cols=27, rbs=3, cbs=1
+                    total: nonzeros=441, allocated nonzeros=441
+                    total number of mallocs used during MatSetValues calls=0
+                      using I-node routines: found 9 nodes, limit used is 5
+      linear system matrix = precond matrix:
+      Mat Object: 8 MPI processes
+        type: mpiaij
+        rows=108, cols=108, bs=3
+        total: nonzeros=2304, allocated nonzeros=2304
+        total number of mallocs used during MatSetValues calls=0
+          using nonscalable MatPtAP() implementation
+          using I-node (on process 0) routines: found 6 nodes, limit used is 5
+  Down solver (pre-smoother) on level 1 -------------------------------
+    KSP Object: (stokes_mg_levels_1_) 8 MPI processes
+      type: chebyshev
+        eigenvalue estimates used:  min = 0.150726, max = 1.65798
+        eigenvalues estimate via gmres min 0.120492, max 1.50726
+        eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
+        KSP Object: (stokes_mg_levels_1_esteig_) 8 MPI processes
+          type: gmres
+            restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+            happy breakdown tolerance 1e-30
+          maximum iterations=10, initial guess is zero
+          tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
+          left preconditioning
+          using PRECONDITIONED norm type for convergence test
+        estimating eigenvalues using noisy right hand side
+      maximum iterations=2, nonzero initial guess
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using NONE norm type for convergence test
+    PC Object: (stokes_mg_levels_1_) 8 MPI processes
+      type: sor
+        type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
+      linear system matrix = precond matrix:
+      Mat Object: 8 MPI processes
+        type: mpiaij
+        rows=363, cols=363, bs=3
+        total: nonzeros=8649, allocated nonzeros=8649
+        total number of mallocs used during MatSetValues calls=0
+  Up solver (post-smoother) same as down solver (pre-smoother)
+  linear system matrix followed by preconditioner matrix:
+  Mat Object: 8 MPI processes
+    type: mpiaij
+    rows=363, cols=363, bs=3
+    total: nonzeros=8649, allocated nonzeros=8649
+    total number of mallocs used during MatSetValues calls=0
+  Mat Object: 8 MPI processes
+    type: mpiaij
+    rows=363, cols=363, bs=3
+    total: nonzeros=8649, allocated nonzeros=8649
+    total number of mallocs used during MatSetValues calls=0
+9.0909e-02   1.9277e-03   2.9843e-04   4.8733e-03

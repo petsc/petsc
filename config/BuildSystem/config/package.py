@@ -7,7 +7,7 @@ import re
 try:
   from hashlib import md5 as new_md5
 except ImportError:
-  from md5 import new as new_md5
+  from md5 import new as new_md5 # novermin
 
 class FakePETScDir:
   def __init__(self):
@@ -343,6 +343,13 @@ class Package(config.base.Configure):
     if not installDir:
       raise RuntimeError(self.package+' forgot to return the install directory from the method Install()\n')
     return os.path.abspath(installDir)
+
+  def withSudo(self, *args):
+    """Convert args to a list prepended by sudo when using sudo"""
+    if self.installSudo:
+      return [self.installSudo] + list(args)
+    else:
+      return list(args)
 
   def getChecksum(self,source, chunkSize = 1024*1024):
     '''Return the md5 checksum for a given file, which may also be specified by its filename
@@ -1077,6 +1084,8 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
     return
 
   def configure(self):
+    if hasattr(self, 'download_solaris') and config.setCompilers.Configure.isSolaris(self.log):
+      self.download = self.download_solaris
     if self.download and self.argDB['download-'+self.downloadname.lower()] and (not self.framework.batchBodies or self.installwithbatch):
       self.argDB['with-'+self.package] = 1
       downloadPackageVal = self.argDB['download-'+self.downloadname.lower()]
@@ -1201,9 +1210,9 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
         output = output+err
         self.log.write(output)
         if output.find('error') > -1 or output.find('Error') > -1:
-          raise RuntimeError('Error running make test on PETSc: '+output)
+          raise RuntimeError('Error running make check on PETSc: '+output)
       except RuntimeError as e:
-        raise RuntimeError('Error running make test on PETSc: '+str(e))
+        raise RuntimeError('Error running make check on PETSc: '+str(e))
     self.installedpetsc = 1
 
 

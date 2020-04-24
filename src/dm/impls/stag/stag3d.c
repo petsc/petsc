@@ -209,14 +209,14 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_3d(DM dm)
 
   /* Retrieve local size in stag->n */
   for (i=0; i<dim; ++i) stag->n[i] = stag->l[i][stag->rank[i]];
-#if defined(PETSC_USE_DEBUG)
-  for (i=0; i<dim; ++i) {
-    PetscInt Ncheck,j;
-    Ncheck = 0;
-    for (j=0; j<stag->nRanks[i]; ++j) Ncheck += stag->l[i][j];
-    if (Ncheck != stag->N[i]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local sizes in dimension %d don't add up. %d != %d\n",i,Ncheck,stag->N[i]);
+  if (PetscDefined(USE_DEBUG)) {
+    for (i=0; i<dim; ++i) {
+      PetscInt Ncheck,j;
+      Ncheck = 0;
+      for (j=0; j<stag->nRanks[i]; ++j) Ncheck += stag->l[i][j];
+      if (Ncheck != stag->N[i]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local sizes in dimension %d don't add up. %d != %d\n",i,Ncheck,stag->N[i]);
+    }
   }
-#endif
 
   /* Compute starting elements */
   for (i=0; i<dim; ++i) {
@@ -1534,9 +1534,7 @@ static PetscErrorCode DMStagSetUpBuildScatter_3d(DM dm,const PetscInt *globalOff
     ierr = DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2);CHKERRQ(ierr);
   }
 
-#if defined(PETSC_USE_DEBUG)
   if (count != entriesToTransferTotal) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of entries computed in gtol (%d) is not as expected (%d)",count,entriesToTransferTotal);
-#endif
 
   /* Create stag->gtol. The order is computed as PETSc ordering, and doesn't include dummy entries */
   {
@@ -3290,7 +3288,7 @@ static PetscErrorCode DMStagComputeLocationOffsets_3d(DM dm)
   stag->locationOffsets[DMSTAG_LEFT]             = stag->locationOffsets[DMSTAG_DOWN]            + stag->dof[2];
   stag->locationOffsets[DMSTAG_ELEMENT]          = stag->locationOffsets[DMSTAG_LEFT]            + stag->dof[2];
   stag->locationOffsets[DMSTAG_RIGHT]            = stag->locationOffsets[DMSTAG_LEFT]            + epe;
-  stag->locationOffsets[DMSTAG_UP_LEFT]          = stag->locationOffsets[DMSTAG_DOWN]            + epr;
+  stag->locationOffsets[DMSTAG_UP_LEFT]          = stag->locationOffsets[DMSTAG_DOWN_LEFT]       + epr;
   stag->locationOffsets[DMSTAG_UP]               = stag->locationOffsets[DMSTAG_DOWN]            + epr;
   stag->locationOffsets[DMSTAG_UP_RIGHT]         = stag->locationOffsets[DMSTAG_UP_LEFT]         + epe;
   stag->locationOffsets[DMSTAG_FRONT_DOWN_LEFT]  = stag->locationOffsets[DMSTAG_BACK_DOWN_LEFT]  + epl;

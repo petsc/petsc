@@ -1,4 +1,3 @@
-
 #include <../src/vec/is/sf/impls/basic/sfpack.h>
 #include <../src/vec/is/sf/impls/basic/sfbasic.h>
 
@@ -10,407 +9,369 @@
  * therefore we pack data types manually. This file defines packing routines for the standard data types.
  */
 
-#define CPPJoin2(a,b)         a ##_## b
-#define CPPJoin3(a,b,c)       a ##_## b ##_## c
-#define CPPJoin4_(a,b,c,d)    a##b##_##c##_##d
-#define CPPJoin4(a,b,c,d)     CPPJoin4_(a##_,b,c,d)
+#define CPPJoin4(a,b,c,d)  a##_##b##_##c##_##d
 
-#define EXECUTE(statement)    statement /* no braces since the statement might declare a variable; braces impose an unwanted scope */
-#define IGNORE(statement)     do {} while(0)
-
-#define BINARY_OP(r,s,op,t)   do {(r) = (s) op (t);  } while(0)      /* binary ops in the middle such as +, *, && etc. */
-#define FUNCTION_OP(r,s,op,t) do {(r) = op((s),(t)); } while(0)      /* ops like a function, such as PetscMax, PetscMin */
-#define LXOR_OP(r,s,op,t)     do {(r) = (!(s)) != (!(t));} while(0)  /* logical exclusive OR */
-#define PAIRTYPE_OP(r,s,op,t) do {(r).a = (s).a op (t).a; (r).b = (s).b op (t).b;} while(0)
-
-#define PairType(Type1,Type2) Type1##_##Type2 /* typename for struct {Type1 a; Type2 b;} */
+/* Operations working like s += t */
+#define OP_BINARY(op,s,t)   do {(s) = (s) op (t);  } while(0)      /* binary ops in the middle such as +, *, && etc. */
+#define OP_FUNCTION(op,s,t) do {(s) = op((s),(t)); } while(0)      /* ops like a function, such as PetscMax, PetscMin */
+#define OP_LXOR(op,s,t)     do {(s) = (!(s)) != (!(t));} while(0)  /* logical exclusive OR */
+#define OP_ASSIGN(op,s,t)   do {(s) = (t);} while(0)
+/* Ref MPI MAXLOC */
+#define OP_XLOC(op,s,t) \
+  do {                                       \
+    if ((s).u == (t).u) (s).i = PetscMin((s).i,(t).i); \
+    else if (!((s).u op (t).u)) s = t;           \
+  } while(0)
 
 /* DEF_PackFunc - macro defining a Pack routine
 
    Arguments of the macro:
    +Type      Type of the basic data in an entry, i.e., int, PetscInt, PetscReal etc. It is not the type of an entry.
-   .BS        Block size for vectorization. It is a factor of bs.
+   .BS        Block size for vectorization. It is a factor of bsz.
    -EQ        (bs == BS) ? 1 : 0. EQ is a compile-time const to help compiler optimizations. See below.
 
    Arguments of the Pack routine:
-   +count     Number of indices in idx[]
-   .idx       Indices of entries to packed. NULL means contiguous indices, that is [0,count)
+   +count     Number of indices in idx[].
+   .start     When opt and idx are NULL, it means indices are contiguous & start is the first index; otherwise, not used.
+   .opt       Per-pack optimization plan. NULL means no such plan.
+   .idx       Indices of entries to packed.
    .link      Provide a context for the current call, such as link->bs, number of basic types in an entry. Ex. if unit is MPI_2INT, then bs=2 and the basic type is int.
-   .opt       Pack optimization plans. NULL means no plan at all.
-   .unpacked  Address of the unpacked data. The entries will be packed are unpacked[idx[i]],for i in [0,count)
-   -packed    Address of the packed data for each rank
+   .unpacked  Address of the unpacked data. The entries will be packed are unpacked[idx[i]],for i in [0,count).
+   -packed    Address of the packed data.
  */
 #define DEF_PackFunc(Type,BS,EQ) \
-  static PetscErrorCode CPPJoin4(Pack,Type,BS,EQ)(PetscInt count,const PetscInt *idx,PetscSFPack link,PetscSFPackOpt opt,const void *unpacked,void *packed) \
+  static PetscErrorCode CPPJoin4(Pack,Type,BS,EQ)(PetscSFLink link,PetscInt count,PetscInt start,PetscSFPackOpt opt,const PetscInt *idx,const void *unpacked,void *packed) \
   {                                                                                                          \
     PetscErrorCode ierr;                                                                                     \
     const Type     *u = (const Type*)unpacked,*u2;                                                           \
     Type           *p = (Type*)packed,*p2;                                                                   \
-    PetscInt       i,j,k,l,r,step,bs=link->bs;                                                               \
-    const PetscInt *idx2,M = (EQ) ? 1 : bs/BS; /* If EQ, then M=1 enables compiler's const-propagation */    \
+    PetscInt       i,j,k,X,Y,r,bs=link->bs;                                                                  \
+    const PetscInt M = (EQ) ? 1 : bs/BS; /* If EQ, then M=1 enables compiler's const-propagation */          \
     const PetscInt MBS = M*BS; /* MBS=bs. We turn MBS into a compile time const when EQ=1. */                \
     PetscFunctionBegin;                                                                                      \
-    if (!idx) {ierr = PetscArraycpy(p,u,MBS*count);CHKERRQ(ierr);}  /* Indices are contiguous */             \
-    else if (!opt) { /* No optimizations available */                                                        \
+    if (!idx) {ierr = PetscArraycpy(p,u+start*MBS,MBS*count);CHKERRQ(ierr);}/* idx[] are contiguous */       \
+    else if (opt) { /* has optimizations available */                                                        \
+      p2 = p;                                                                                                \
+      for (r=0; r<opt->n; r++) {                                                                             \
+        u2 = u + opt->start[r]*MBS;                                                                          \
+        X  = opt->X[r];                                                                                      \
+        Y  = opt->Y[r];                                                                                      \
+        for (k=0; k<opt->dz[r]; k++)                                                                         \
+          for (j=0; j<opt->dy[r]; j++) {                                                                     \
+            ierr = PetscArraycpy(p2,u2+(X*Y*k+X*j)*MBS,opt->dx[r]*MBS);CHKERRQ(ierr);                        \
+            p2  += opt->dx[r]*MBS;                                                                           \
+          }                                                                                                  \
+      }                                                                                                      \
+    } else {                                                                                                 \
       for (i=0; i<count; i++)                                                                                \
         for (j=0; j<M; j++)     /* Decent compilers should eliminate this loop when M = const 1 */           \
           for (k=0; k<BS; k++)  /* Compiler either unrolls (BS=1) or vectorizes (BS=2,4,8,etc) this loop */  \
             p[i*MBS+j*BS+k] = u[idx[i]*MBS+j*BS+k];                                                          \
-    } else {                                                                                                 \
-      for (r=0; r<opt->n; r++) {                                                                             \
-        p2  = p + opt->offset[r]*MBS;                                                                        \
-        if (opt->type[r] == PETSCSF_PACKOPT_NONE) {                                                          \
-          idx2 = idx + opt->offset[r];                                                                       \
-          for (i=0; i<opt->offset[r+1]-opt->offset[r]; i++)                                                  \
-            for (j=0; j<M; j++)                                                                              \
-              for (k=0; k<BS; k++)                                                                           \
-                p2[i*MBS+j*BS+k] = u[idx2[i]*MBS+j*BS+k];                                                    \
-        } else if (opt->type[r] == PETSCSF_PACKOPT_MULTICOPY) {                                              \
-          for (i=opt->copy_offset[r]; i<opt->copy_offset[r+1]; i++) {                                        \
-            u2   = u + idx[opt->copy_start[i]]*MBS;                                                          \
-            l    = opt->copy_length[i]*MBS; /* length in basic type such as MPI_INT */                       \
-            ierr = PetscArraycpy(p2,u2,l);CHKERRQ(ierr);                                                     \
-            p2  += l;                                                                                        \
-          }                                                                                                  \
-        } else if (opt->type[r] == PETSCSF_PACKOPT_STRIDE) {                                                 \
-          u2   = u + idx[opt->offset[r]]*MBS;                                                                \
-          step = opt->stride_step[r];                                                                        \
-          for (i=0; i<opt->stride_n[r]; i++)                                                                 \
-            for (j=0; j<MBS; j++) p2[i*MBS+j] = u2[i*step*MBS+j];                                            \
-        } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unknown SFPack optimzation type %D",opt->type[r]);   \
-      }                                                                                                      \
     }                                                                                                        \
     PetscFunctionReturn(0);                                                                                  \
   }
 
-/* DEF_Action - macro defining a Unpack(Fetch)AndInsert routine
+/* DEF_Action - macro defining a UnpackAndInsert routine that unpacks data from a contiguous buffer
+                and inserts into a sparse array.
 
    Arguments:
-  +action     Unpack or Fetch
   .Type       Type of the data
   .BS         Block size for vectorization
   .EQ        (bs == BS) ? 1 : 0. EQ is a compile-time const.
-  .FILTER     Macro defining what to do with a statement, either EXECUTE or IGNORE
-  .CType      Type with or without the const qualifier, i.e., const Type or Type
-  .Cvoid      void with or without the const qualifier, i.e., const void or void
 
   Notes:
    This macro is not combined with DEF_ActionAndOp because we want to use memcpy in this macro.
-   The two arguments CType and Cvoid are used (instead of one constness argument), because we want to
-   get rid of compilation warning "empty macro arguments are undefined in ISO C90". With one constness argument,
-   sometimes we input 'const', sometimes we have to input empty.
-
-   If action is Fetch, we may do Malloc/Free in the routine. It is costly but the expectation is that this case is really rare.
  */
-#define DEF_Action(action,Type,BS,EQ,FILTER,CType,Cvoid)               \
-  static PetscErrorCode CPPJoin4(action##AndInsert,Type,BS,EQ)(PetscInt count,const PetscInt *idx,PetscSFPack link,PetscSFPackOpt opt,void *unpacked,Cvoid *packed) \
+#define DEF_UnpackFunc(Type,BS,EQ)               \
+  static PetscErrorCode CPPJoin4(UnpackAndInsert,Type,BS,EQ)(PetscSFLink link,PetscInt count,PetscInt start,PetscSFPackOpt opt,const PetscInt *idx,void *unpacked,const void *packed) \
   {                                                                                                          \
     PetscErrorCode ierr;                                                                                     \
     Type           *u = (Type*)unpacked,*u2;                                                                 \
-    CType          *p = (CType*)packed,*p2;                                                                  \
-    PetscInt       i,j,k,l,r,step,bs=link->bs;                                                               \
-    const PetscInt *idx2,M = (EQ) ? 1 : bs/BS; /* If EQ, then M=1 enables compiler's const-propagation */    \
+    const Type     *p = (const Type*)packed;                                                                 \
+    PetscInt       i,j,k,X,Y,r,bs=link->bs;                                                                  \
+    const PetscInt M = (EQ) ? 1 : bs/BS; /* If EQ, then M=1 enables compiler's const-propagation */          \
     const PetscInt MBS = M*BS; /* MBS=bs. We turn MBS into a compile time const when EQ=1. */                \
     PetscFunctionBegin;                                                                                      \
     if (!idx) {                                                                                              \
-      FILTER(Type *v);                                                                                       \
-      FILTER(ierr = PetscMalloc1(count*MBS,&v);CHKERRQ(ierr));                                               \
-      FILTER(ierr = PetscArraycpy(v,u,count*MBS);CHKERRQ(ierr));                                             \
-             ierr = PetscArraycpy(u,p,count*MBS);CHKERRQ(ierr);                                              \
-      FILTER(ierr = PetscArraycpy(p,v,count*MBS);CHKERRQ(ierr));                                             \
-      FILTER(ierr = PetscFree(v);CHKERRQ(ierr));                                                             \
-    } else if (!opt) { /* No optimizations available */                                                      \
+      u += start*MBS;                                                                                        \
+      if (u != p) {ierr = PetscArraycpy(u,p,count*MBS);CHKERRQ(ierr);}                                       \
+    } else if (opt) { /* has optimizations available */                                                      \
+      for (r=0; r<opt->n; r++) {                                                                             \
+        u2 = u + opt->start[r]*MBS;                                                                          \
+        X  = opt->X[r];                                                                                      \
+        Y  = opt->Y[r];                                                                                      \
+        for (k=0; k<opt->dz[r]; k++)                                                                         \
+          for (j=0; j<opt->dy[r]; j++) {                                                                     \
+            ierr = PetscArraycpy(u2+(X*Y*k+X*j)*MBS,p,opt->dx[r]*MBS);CHKERRQ(ierr);                         \
+            p   += opt->dx[r]*MBS;                                                                           \
+          }                                                                                                  \
+      }                                                                                                      \
+    } else {                                                                                                 \
       for (i=0; i<count; i++)                                                                                \
         for (j=0; j<M; j++)                                                                                  \
-          for (k=0; k<BS; k++) {                                                                             \
-            FILTER(Type t                = u[idx[i]*MBS+j*BS+k]);                                            \
-                   u[idx[i]*MBS+j*BS+k]  = p[i*MBS+j*BS+k];                                                  \
-            FILTER(p[i*MBS+j*BS+k]       = t);                                                               \
-          }                                                                                                  \
-    } else {                                                                                                 \
-      for (r=0; r<opt->n; r++) {                                                                             \
-        p2 = p + opt->offset[r]*MBS;                                                                         \
-        if (opt->type[r] == PETSCSF_PACKOPT_NONE) {                                                          \
-          idx2 = idx + opt->offset[r];                                                                       \
-          for (i=0; i<opt->offset[r+1]-opt->offset[r]; i++)                                                  \
-            for (j=0; j<M; j++)                                                                              \
-              for (k=0; k<BS; k++) {                                                                         \
-                FILTER(Type t                = u[idx2[i]*MBS+j*BS+k]);                                       \
-                       u[idx2[i]*MBS+j*BS+k] = p2[i*MBS+j*BS+k];                                             \
-                FILTER(p2[i*MBS+j*BS+k]      = t);                                                           \
-              }                                                                                              \
-        } else if (opt->type[r] == PETSCSF_PACKOPT_MULTICOPY) {                                              \
-          FILTER(Type *v);                                                                                   \
-          FILTER(ierr = PetscMalloc1((opt->offset[r+1]-opt->offset[r])*MBS,&v);CHKERRQ(ierr)); /* max buf */ \
-          for (i=opt->copy_offset[r]; i<opt->copy_offset[r+1]; i++) { /* i-th piece */                       \
-            u2 = u + idx[opt->copy_start[i]]*MBS;                                                            \
-            l  = opt->copy_length[i]*MBS;                                                                    \
-            FILTER(ierr = PetscArraycpy(v,u2,l);CHKERRQ(ierr));                                              \
-                   ierr = PetscArraycpy(u2,p2,l);CHKERRQ(ierr);                                              \
-            FILTER(ierr = PetscArraycpy(p2,v,l);CHKERRQ(ierr));                                              \
-            p2 += l;                                                                                         \
-          }                                                                                                  \
-          FILTER(ierr = PetscFree(v);CHKERRQ(ierr));                                                         \
-        } else if (opt->type[r] == PETSCSF_PACKOPT_STRIDE) {                                                 \
-          u2   = u + idx[opt->offset[r]]*MBS;                                                                \
-          step = opt->stride_step[r];                                                                        \
-          for (i=0; i<opt->stride_n[r]; i++)                                                                 \
-            for (j=0; j<M; j++)                                                                              \
-              for (k=0; k<BS; k++) {                                                                         \
-                FILTER(Type t                = u2[i*step*MBS+j*BS+k]);                                       \
-                       u2[i*step*MBS+j*BS+k] = p2[i*MBS+j*BS+k];                                             \
-                FILTER(p2[i*MBS+j*BS+k]      = t);                                                           \
-              }                                                                                              \
-        } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unknown SFPack optimzation type %D",opt->type[r]);   \
-      }                                                                                                      \
+          for (k=0; k<BS; k++) u[idx[i]*MBS+j*BS+k] = p[i*MBS+j*BS+k];                                       \
     }                                                                                                        \
     PetscFunctionReturn(0);                                                                                  \
   }
 
-/* DEF_ActionAndOp - macro defining a Unpack(Fetch)AndOp routine. Op can not be Insert, Maxloc or Minloc
+/* DEF_UnpackAndOp - macro defining a UnpackAndOp routine where Op should not be Insert
 
    Arguments:
-  +action     Unpack or Fetch
-  .opname     Name of the Op, such as Add, Mult, LAND, etc.
+  +Opname     Name of the Op, such as Add, Mult, LAND, etc.
   .Type       Type of the data
   .BS         Block size for vectorization
   .EQ         (bs == BS) ? 1 : 0. EQ is a compile-time const.
-  .op         Operator for the op, such as +, *, &&, ||, PetscMax, PetscMin, etc.
-  .APPLY      Macro defining application of the op. Could be BINARY_OP, FUNCTION_OP, LXOR_OP or PAIRTYPE_OP
-  .FILTER     Macro defining what to do with a statement, either EXECUTE or IGNORE
-  .CType      Type with or without the const qualifier, i.e., const Type or Type
-  -Cvoid      void with or without the const qualifier, i.e., const void or void
+  .Op         Operator for the op, such as +, *, &&, ||, PetscMax, PetscMin, etc.
+  .OpApply    Macro defining application of the op. Could be OP_BINARY, OP_FUNCTION, OP_LXOR
  */
-#define DEF_ActionAndOp(action,opname,Type,BS,EQ,op,APPLY,FILTER,CType,Cvoid) \
-  static PetscErrorCode CPPJoin4(action##And##opname,Type,BS,EQ)(PetscInt count,const PetscInt *idx,PetscSFPack link,PetscSFPackOpt opt,void *unpacked,Cvoid *packed) \
+#define DEF_UnpackAndOp(Type,BS,EQ,Opname,Op,OpApply) \
+  static PetscErrorCode CPPJoin4(UnpackAnd##Opname,Type,BS,EQ)(PetscSFLink link,PetscInt count,PetscInt start,PetscSFPackOpt opt,const PetscInt *idx,void *unpacked,const void *packed) \
   {                                                                                                          \
-    Type           *u = (Type*)unpacked,*u2,t;                                                               \
-    CType          *p = (CType*)packed,*p2;                                                                  \
-    PetscInt       i,j,k,l,r,step,bs=link->bs;                                                               \
-    const PetscInt *idx2,M = (EQ) ? 1 : bs/BS; /* If EQ, then M=1 enables compiler's const-propagation */    \
+    Type           *u = (Type*)unpacked,*u2;                                                                 \
+    const Type     *p = (const Type*)packed;                                                                 \
+    PetscInt       i,j,k,X,Y,r,bs=link->bs;                                                                  \
+    const PetscInt M = (EQ) ? 1 : bs/BS; /* If EQ, then M=1 enables compiler's const-propagation */          \
     const PetscInt MBS = M*BS; /* MBS=bs. We turn MBS into a compile time const when EQ=1. */                \
     PetscFunctionBegin;                                                                                      \
     if (!idx) {                                                                                              \
+      u += start*MBS;                                                                                        \
       for (i=0; i<count; i++)                                                                                \
         for (j=0; j<M; j++)                                                                                  \
-          for (k=0; k<BS; k++) {                                                                             \
-            t    = u[i*MBS+j*BS+k];                                                                          \
-            APPLY (u[i*MBS+j*BS+k],t,op,p[i*MBS+j*BS+k]);                                                    \
-            FILTER(p[i*MBS+j*BS+k] = t);                                                                     \
-          }                                                                                                  \
-    } else if (!opt) { /* No optimizations available */                                                      \
-      for (i=0; i<count; i++)                                                                                \
-        for (j=0; j<M; j++)                                                                                  \
-          for (k=0; k<BS; k++) {                                                                             \
-              t    = u[idx[i]*MBS+j*BS+k];                                                                   \
-              APPLY (u[idx[i]*MBS+j*BS+k],t,op,p[i*MBS+j*BS+k]);                                             \
-              FILTER(p[i*MBS+j*BS+k] = t);                                                                   \
-          }                                                                                                  \
-    } else {                                                                                                 \
+          for (k=0; k<BS; k++)                                                                               \
+            OpApply(Op,u[i*MBS+j*BS+k],p[i*MBS+j*BS+k]);                                                     \
+    } else if (opt) { /* idx[] has patterns */                                                               \
       for (r=0; r<opt->n; r++) {                                                                             \
-        p2 = p + opt->offset[r]*MBS;                                                                         \
-        if (opt->type[r] == PETSCSF_PACKOPT_NONE) {                                                          \
-          idx2 = idx + opt->offset[r];                                                                       \
-          for (i=0; i<opt->offset[r+1]-opt->offset[r]; i++)                                                  \
-            for (j=0; j<M; j++)                                                                              \
-              for (k=0; k<BS; k++) {                                                                         \
-                t    = u[idx2[i]*MBS+j*BS+k];                                                                \
-                APPLY (u[idx2[i]*MBS+j*BS+k],t,op,p2[i*MBS+j*BS+k]);                                         \
-                FILTER(p2[i*MBS+j*BS+k] = t);                                                                \
-              }                                                                                              \
-        } else if (opt->type[r] == PETSCSF_PACKOPT_MULTICOPY) {                                              \
-          for (i=opt->copy_offset[r]; i<opt->copy_offset[r+1]; i++) { /* i-th piece */                       \
-            u2 = u + idx[opt->copy_start[i]]*MBS;                                                            \
-            l  = opt->copy_length[i]*MBS;                                                                    \
-            for (j=0; j<l; j++) {                                                                            \
-              t    = u2[j];                                                                                  \
-              APPLY (u2[j],t,op,p2[j]);                                                                      \
-              FILTER(p2[j] = t);                                                                             \
-            }                                                                                                \
-            p2 += l;                                                                                         \
+        u2 = u + opt->start[r]*MBS;                                                                          \
+        X  = opt->X[r];                                                                                      \
+        Y  = opt->Y[r];                                                                                      \
+        for (k=0; k<opt->dz[r]; k++)                                                                         \
+          for (j=0; j<opt->dy[r]; j++) {                                                                     \
+            for (i=0; i<opt->dx[r]*MBS; i++) OpApply(Op,u2[(X*Y*k+X*j)*MBS+i],p[i]);                         \
+            p += opt->dx[r]*MBS;                                                                             \
           }                                                                                                  \
-        } else if (opt->type[r] == PETSCSF_PACKOPT_STRIDE) {                                                 \
-          u2   = u + idx[opt->offset[r]]*MBS;                                                                \
-          step = opt->stride_step[r];                                                                        \
-          for (i=0; i<opt->stride_n[r]; i++)                                                                 \
-            for (j=0; j<M; j++)                                                                              \
-              for (k=0; k<BS; k++) {                                                                         \
-                t    = u2[i*step*MBS+j*BS+k];                                                                \
-                APPLY (u2[i*step*MBS+j*BS+k],t,op,p2[i*MBS+j*BS+k]);                                         \
-                FILTER(p2[i*MBS+j*BS+k] = t);                                                                \
-              }                                                                                              \
-        } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unknown SFPack optimzation type %D",opt->type[r]);   \
+      }                                                                                                      \
+    } else {                                                                                                 \
+      for (i=0; i<count; i++)                                                                                \
+        for (j=0; j<M; j++)                                                                                  \
+          for (k=0; k<BS; k++)                                                                               \
+            OpApply(Op,u[idx[i]*MBS+j*BS+k],p[i*MBS+j*BS+k]);                                                \
+    }                                                                                                        \
+    PetscFunctionReturn(0);                                                                                  \
+  }
+
+#define DEF_FetchAndOp(Type,BS,EQ,Opname,Op,OpApply) \
+  static PetscErrorCode CPPJoin4(FetchAnd##Opname,Type,BS,EQ)(PetscSFLink link,PetscInt count,PetscInt start,PetscSFPackOpt opt,const PetscInt *idx,void *unpacked,void *packed) \
+  {                                                                                                          \
+    Type           *u = (Type*)unpacked,*p = (Type*)packed,tmp;                                              \
+    PetscInt       i,j,k,r,l,bs=link->bs;                                                                    \
+    const PetscInt M = (EQ) ? 1 : bs/BS;                                                                     \
+    const PetscInt MBS = M*BS;                                                                               \
+    PetscFunctionBegin;                                                                                      \
+    for (i=0; i<count; i++) {                                                                                \
+      r = (!idx ? start+i : idx[i])*MBS;                                                                     \
+      l = i*MBS;                                                                                             \
+      for (j=0; j<M; j++)                                                                                    \
+        for (k=0; k<BS; k++) {                                                                               \
+          tmp = u[r+j*BS+k];                                                                                 \
+          OpApply(Op,u[r+j*BS+k],p[l+j*BS+k]);                                                               \
+          p[l+j*BS+k] = tmp;                                                                                 \
+        }                                                                                                    \
+    }                                                                                                        \
+    PetscFunctionReturn(0);                                                                                  \
+  }
+
+#define DEF_ScatterAndOp(Type,BS,EQ,Opname,Op,OpApply) \
+  static PetscErrorCode CPPJoin4(ScatterAnd##Opname,Type,BS,EQ)(PetscSFLink link,PetscInt count,PetscInt srcStart,PetscSFPackOpt srcOpt,const PetscInt *srcIdx,const void *src,PetscInt dstStart,PetscSFPackOpt dstOpt,const PetscInt *dstIdx,void *dst) \
+  {                                                                                                          \
+    PetscErrorCode ierr;                                                                                     \
+    const Type     *u = (const Type*)src;                                                                    \
+    Type           *v = (Type*)dst;                                                                          \
+    PetscInt       i,j,k,s,t,X,Y,bs = link->bs;                                                              \
+    const PetscInt M = (EQ) ? 1 : bs/BS;                                                                     \
+    const PetscInt MBS = M*BS;                                                                               \
+    PetscFunctionBegin;                                                                                      \
+    if (!srcIdx) { /* src is contiguous */                                                                   \
+      u += srcStart*MBS;                                                                                     \
+      ierr = CPPJoin4(UnpackAnd##Opname,Type,BS,EQ)(link,count,dstStart,dstOpt,dstIdx,dst,u);CHKERRQ(ierr);  \
+    } else if (srcOpt && !dstIdx) { /* src is 3D, dst is contiguous */                                       \
+      u += srcOpt->start[0]*MBS;                                                                             \
+      v += dstStart*MBS;                                                                                     \
+      X  = srcOpt->X[0]; Y = srcOpt->Y[0];                                                                   \
+      for (k=0; k<srcOpt->dz[0]; k++)                                                                        \
+        for (j=0; j<srcOpt->dy[0]; j++) {                                                                    \
+          for (i=0; i<srcOpt->dx[0]*MBS; i++) OpApply(Op,v[i],u[(X*Y*k+X*j)*MBS+i]);                         \
+          v += srcOpt->dx[0]*MBS;                                                                            \
+        }                                                                                                    \
+    } else { /* all other cases */                                                                           \
+      for (i=0; i<count; i++) {                                                                              \
+        s = (!srcIdx ? srcStart+i : srcIdx[i])*MBS;                                                          \
+        t = (!dstIdx ? dstStart+i : dstIdx[i])*MBS;                                                          \
+        for (j=0; j<M; j++)                                                                                  \
+          for (k=0; k<BS; k++) OpApply(Op,v[t+j*BS+k],u[s+j*BS+k]);                                          \
       }                                                                                                      \
     }                                                                                                        \
     PetscFunctionReturn(0);                                                                                  \
   }
 
-/* DEF_ActionAndXloc - macro defining a Unpack(Fetch)AndMaxloc(Minloc) routine
-
-   Arguments:
-  +Action     Unpack or Fetch
-  .locname    Max or Min
-  .type1      Type of the first data in a pair type
-  .type2      Type of the second data in a pair type, usually PetscMPIInt for MPI ranks.
-  .op         > or <
-  .FILTER     Macro defining what to do with a statement, either EXECUTE or IGNORE
-  .CType      Type with or without the const qualifier, i.e., const PairType(Type1,Type2) or PairType(Type1,Type2)
-  -Cvoid      void with or without the const qualifier, i.e., const void or void
- */
-#define DEF_ActionAndXloc(action,locname,Type1,Type2,op,FILTER,CType,Cvoid) \
-  static PetscErrorCode CPPJoin4(action##And##locname##loc,PairType(Type1,Type2),1,1)(PetscInt count,const PetscInt *idx,PetscSFPack link,PetscSFPackOpt opt,void *unpacked,Cvoid *packed) { \
-    PairType(Type1,Type2) *u = (PairType(Type1,Type2)*)unpacked;                                             \
-    CType                 *p = (CType*)packed;                                                               \
-    PetscInt              i,j;                                                                               \
+#define DEF_FetchAndOpLocal(Type,BS,EQ,Opname,Op,OpApply) \
+  static PetscErrorCode CPPJoin4(FetchAnd##Opname##Local,Type,BS,EQ)(PetscSFLink link,PetscInt count,PetscInt rootstart,PetscSFPackOpt rootopt,const PetscInt *rootidx,void *rootdata,PetscInt leafstart,PetscSFPackOpt leafopt,const PetscInt *leafidx,const void *leafdata,void *leafupdate) \
+  {                                                                                                          \
+    Type           *rdata = (Type*)rootdata,*lupdate = (Type*)leafupdate;                                    \
+    const Type     *ldata = (const Type*)leafdata;                                                           \
+    PetscInt       i,j,k,r,l,bs = link->bs;                                                                  \
+    const PetscInt M = (EQ) ? 1 : bs/BS;                                                                     \
+    const PetscInt MBS = M*BS;                                                                               \
+    PetscFunctionBegin;                                                                                      \
     for (i=0; i<count; i++) {                                                                                \
-      FILTER(PairType(Type1,Type2) v);                                                                       \
-      j = idx? idx[i] : i;                                                                                   \
-      FILTER(v = u[j]);                                                                                      \
-      if (p[i].a op u[j].a) {                                                                                \
-        u[j] = p[i];                                                                                         \
-      } else if (p[i].a == u[j].a) {                                                                         \
-        u[j].b = PetscMin(u[j].b,p[i].b); /* Minimal rank. Ref MPI MAXLOC */                                 \
-      }                                                                                                      \
-      FILTER(p[i] = v);                                                                                      \
+      r = (rootidx ? rootidx[i] : rootstart+i)*MBS;                                                          \
+      l = (leafidx ? leafidx[i] : leafstart+i)*MBS;                                                          \
+      for (j=0; j<M; j++)                                                                                    \
+        for (k=0; k<BS; k++) {                                                                               \
+          lupdate[l+j*BS+k] = rdata[r+j*BS+k];                                                               \
+          OpApply(Op,rdata[r+j*BS+k],ldata[l+j*BS+k]);                                                       \
+        }                                                                                                    \
     }                                                                                                        \
     PetscFunctionReturn(0);                                                                                  \
   }
 
 /* Pack, Unpack/Fetch ops */
-#define DEF_Pack(Type,BS,EQ)                                                                   \
-  DEF_PackFunc(Type,BS,EQ)                                                                     \
-  DEF_Action(Unpack,Type,BS,EQ,IGNORE,const Type,const void)                                   \
-  DEF_Action(Fetch, Type,BS,EQ,EXECUTE,Type,void)                                              \
-  static void CPPJoin4(PackInit_Pack,Type,BS,EQ)(PetscSFPack link) {                           \
-    link->h_Pack            = CPPJoin4(Pack,           Type,BS,EQ);                            \
-    link->h_UnpackAndInsert = CPPJoin4(UnpackAndInsert,Type,BS,EQ);                            \
-    link->h_FetchAndInsert  = CPPJoin4(FetchAndInsert, Type,BS,EQ);                            \
+#define DEF_Pack(Type,BS,EQ)                                                      \
+  DEF_PackFunc(Type,BS,EQ)                                                        \
+  DEF_UnpackFunc(Type,BS,EQ)                                                      \
+  DEF_ScatterAndOp(Type,BS,EQ,Insert,=,OP_ASSIGN)                                 \
+  static void CPPJoin4(PackInit_Pack,Type,BS,EQ)(PetscSFLink link) {              \
+    link->h_Pack            = CPPJoin4(Pack,           Type,BS,EQ);               \
+    link->h_UnpackAndInsert = CPPJoin4(UnpackAndInsert,Type,BS,EQ);               \
+    link->h_ScatterAndInsert= CPPJoin4(ScatterAndInsert,Type,BS,EQ);              \
   }
 
 /* Add, Mult ops */
-#define DEF_Add(Type,BS,EQ)                                                                    \
-  DEF_ActionAndOp(Unpack,Add, Type,BS,EQ,+,BINARY_OP,IGNORE,const Type,const void)             \
-  DEF_ActionAndOp(Unpack,Mult,Type,BS,EQ,*,BINARY_OP,IGNORE,const Type,const void)             \
-  DEF_ActionAndOp(Fetch, Add, Type,BS,EQ,+,BINARY_OP,EXECUTE,Type,void)                        \
-  DEF_ActionAndOp(Fetch, Mult,Type,BS,EQ,*,BINARY_OP,EXECUTE,Type,void)                        \
-  static void CPPJoin4(PackInit_Add,Type,BS,EQ)(PetscSFPack link) {                            \
-    link->h_UnpackAndAdd    = CPPJoin4(UnpackAndAdd,   Type,BS,EQ);                            \
-    link->h_UnpackAndMult   = CPPJoin4(UnpackAndMult,  Type,BS,EQ);                            \
-    link->h_FetchAndAdd     = CPPJoin4(FetchAndAdd,    Type,BS,EQ);                            \
-    link->h_FetchAndMult    = CPPJoin4(FetchAndMult,   Type,BS,EQ);                            \
+#define DEF_Add(Type,BS,EQ)                                                       \
+  DEF_UnpackAndOp    (Type,BS,EQ,Add, +,OP_BINARY)                                \
+  DEF_UnpackAndOp    (Type,BS,EQ,Mult,*,OP_BINARY)                                \
+  DEF_FetchAndOp     (Type,BS,EQ,Add, +,OP_BINARY)                                \
+  DEF_ScatterAndOp   (Type,BS,EQ,Add, +,OP_BINARY)                                \
+  DEF_ScatterAndOp   (Type,BS,EQ,Mult,*,OP_BINARY)                                \
+  DEF_FetchAndOpLocal(Type,BS,EQ,Add, +,OP_BINARY)                                \
+  static void CPPJoin4(PackInit_Add,Type,BS,EQ)(PetscSFLink link) {               \
+    link->h_UnpackAndAdd     = CPPJoin4(UnpackAndAdd,    Type,BS,EQ);             \
+    link->h_UnpackAndMult    = CPPJoin4(UnpackAndMult,   Type,BS,EQ);             \
+    link->h_FetchAndAdd      = CPPJoin4(FetchAndAdd,     Type,BS,EQ);             \
+    link->h_ScatterAndAdd    = CPPJoin4(ScatterAndAdd,   Type,BS,EQ);             \
+    link->h_ScatterAndMult   = CPPJoin4(ScatterAndMult,  Type,BS,EQ);             \
+    link->h_FetchAndAddLocal = CPPJoin4(FetchAndAddLocal,Type,BS,EQ);             \
   }
 
 /* Max, Min ops */
-#define DEF_Cmp(Type,BS,EQ)                                                                    \
-  DEF_ActionAndOp(Unpack,Max,Type,BS,EQ,PetscMax,FUNCTION_OP,IGNORE,const Type,const void)     \
-  DEF_ActionAndOp(Unpack,Min,Type,BS,EQ,PetscMin,FUNCTION_OP,IGNORE,const Type,const void)     \
-  DEF_ActionAndOp(Fetch, Max,Type,BS,EQ,PetscMax,FUNCTION_OP,EXECUTE,Type,void)                \
-  DEF_ActionAndOp(Fetch, Min,Type,BS,EQ,PetscMin,FUNCTION_OP,EXECUTE,Type,void)                \
-  static void CPPJoin4(PackInit_Compare,Type,BS,EQ)(PetscSFPack link) {                        \
-    link->h_UnpackAndMax    = CPPJoin4(UnpackAndMax,   Type,BS,EQ);                            \
-    link->h_UnpackAndMin    = CPPJoin4(UnpackAndMin,   Type,BS,EQ);                            \
-    link->h_FetchAndMax     = CPPJoin4(FetchAndMax ,   Type,BS,EQ);                            \
-    link->h_FetchAndMin     = CPPJoin4(FetchAndMin ,   Type,BS,EQ);                            \
+#define DEF_Cmp(Type,BS,EQ)                                                       \
+  DEF_UnpackAndOp (Type,BS,EQ,Max,PetscMax,OP_FUNCTION)                           \
+  DEF_UnpackAndOp (Type,BS,EQ,Min,PetscMin,OP_FUNCTION)                           \
+  DEF_ScatterAndOp(Type,BS,EQ,Max,PetscMax,OP_FUNCTION)                           \
+  DEF_ScatterAndOp(Type,BS,EQ,Min,PetscMin,OP_FUNCTION)                           \
+  static void CPPJoin4(PackInit_Compare,Type,BS,EQ)(PetscSFLink link) {           \
+    link->h_UnpackAndMax    = CPPJoin4(UnpackAndMax,   Type,BS,EQ);               \
+    link->h_UnpackAndMin    = CPPJoin4(UnpackAndMin,   Type,BS,EQ);               \
+    link->h_ScatterAndMax   = CPPJoin4(ScatterAndMax,  Type,BS,EQ);               \
+    link->h_ScatterAndMin   = CPPJoin4(ScatterAndMin,  Type,BS,EQ);               \
   }
 
 /* Logical ops.
-  The operator in LXOR_OP should be empty but is &. It is not used. Put here to avoid
+  The operator in OP_LXOR should be empty but is ||. It is not used. Put here to avoid
   the compilation warning "empty macro arguments are undefined in ISO C90"
  */
-#define DEF_Log(Type,BS,EQ)                                                                    \
-  DEF_ActionAndOp(Unpack,LAND,Type,BS,EQ,&&,BINARY_OP,IGNORE,const Type,const void)            \
-  DEF_ActionAndOp(Unpack,LOR, Type,BS,EQ,||,BINARY_OP,IGNORE,const Type,const void)            \
-  DEF_ActionAndOp(Unpack,LXOR,Type,BS,EQ,&, LXOR_OP,  IGNORE,const Type,const void)            \
-  DEF_ActionAndOp(Fetch, LAND,Type,BS,EQ,&&,BINARY_OP,EXECUTE,Type,void)                       \
-  DEF_ActionAndOp(Fetch, LOR, Type,BS,EQ,||,BINARY_OP,EXECUTE,Type,void)                       \
-  DEF_ActionAndOp(Fetch, LXOR,Type,BS,EQ,&, LXOR_OP,  EXECUTE,Type,void)                       \
-  static void CPPJoin4(PackInit_Logical,Type,BS,EQ)(PetscSFPack link) {                        \
-    link->h_UnpackAndLAND   = CPPJoin4(UnpackAndLAND,Type,BS,EQ);                              \
-    link->h_UnpackAndLOR    = CPPJoin4(UnpackAndLOR, Type,BS,EQ);                              \
-    link->h_UnpackAndLXOR   = CPPJoin4(UnpackAndLXOR,Type,BS,EQ);                              \
-    link->h_FetchAndLAND    = CPPJoin4(FetchAndLAND, Type,BS,EQ);                              \
-    link->h_FetchAndLOR     = CPPJoin4(FetchAndLOR,  Type,BS,EQ);                              \
-    link->h_FetchAndLXOR    = CPPJoin4(FetchAndLXOR, Type,BS,EQ);                              \
+#define DEF_Log(Type,BS,EQ)                                                       \
+  DEF_UnpackAndOp (Type,BS,EQ,LAND,&&,OP_BINARY)                                  \
+  DEF_UnpackAndOp (Type,BS,EQ,LOR, ||,OP_BINARY)                                  \
+  DEF_UnpackAndOp (Type,BS,EQ,LXOR,||, OP_LXOR)                                   \
+  DEF_ScatterAndOp(Type,BS,EQ,LAND,&&,OP_BINARY)                                  \
+  DEF_ScatterAndOp(Type,BS,EQ,LOR, ||,OP_BINARY)                                  \
+  DEF_ScatterAndOp(Type,BS,EQ,LXOR,||, OP_LXOR)                                   \
+  static void CPPJoin4(PackInit_Logical,Type,BS,EQ)(PetscSFLink link) {           \
+    link->h_UnpackAndLAND   = CPPJoin4(UnpackAndLAND, Type,BS,EQ);                \
+    link->h_UnpackAndLOR    = CPPJoin4(UnpackAndLOR,  Type,BS,EQ);                \
+    link->h_UnpackAndLXOR   = CPPJoin4(UnpackAndLXOR, Type,BS,EQ);                \
+    link->h_ScatterAndLAND  = CPPJoin4(ScatterAndLAND,Type,BS,EQ);                \
+    link->h_ScatterAndLOR   = CPPJoin4(ScatterAndLOR, Type,BS,EQ);                \
+    link->h_ScatterAndLXOR  = CPPJoin4(ScatterAndLXOR,Type,BS,EQ);                \
   }
 
 /* Bitwise ops */
-#define DEF_Bit(Type,BS,EQ)                                                                    \
-  DEF_ActionAndOp(Unpack,BAND,Type,BS,EQ,&,BINARY_OP,IGNORE,const Type,const void)             \
-  DEF_ActionAndOp(Unpack,BOR, Type,BS,EQ,|,BINARY_OP,IGNORE,const Type,const void)             \
-  DEF_ActionAndOp(Unpack,BXOR,Type,BS,EQ,^,BINARY_OP,IGNORE,const Type,const void)             \
-  DEF_ActionAndOp(Fetch, BAND,Type,BS,EQ,&,BINARY_OP,EXECUTE,Type,void)                        \
-  DEF_ActionAndOp(Fetch, BOR, Type,BS,EQ,|,BINARY_OP,EXECUTE,Type,void)                        \
-  DEF_ActionAndOp(Fetch, BXOR,Type,BS,EQ,^,BINARY_OP,EXECUTE,Type,void)                        \
-  static void CPPJoin4(PackInit_Bitwise,Type,BS,EQ)(PetscSFPack link) {                        \
-    link->h_UnpackAndBAND   = CPPJoin4(UnpackAndBAND,Type,BS,EQ);                              \
-    link->h_UnpackAndBOR    = CPPJoin4(UnpackAndBOR, Type,BS,EQ);                              \
-    link->h_UnpackAndBXOR   = CPPJoin4(UnpackAndBXOR,Type,BS,EQ);                              \
-    link->h_FetchAndBAND    = CPPJoin4(FetchAndBAND, Type,BS,EQ);                              \
-    link->h_FetchAndBOR     = CPPJoin4(FetchAndBOR,  Type,BS,EQ);                              \
-    link->h_FetchAndBXOR    = CPPJoin4(FetchAndBXOR, Type,BS,EQ);                              \
+#define DEF_Bit(Type,BS,EQ)                                                       \
+  DEF_UnpackAndOp (Type,BS,EQ,BAND,&,OP_BINARY)                                   \
+  DEF_UnpackAndOp (Type,BS,EQ,BOR, |,OP_BINARY)                                   \
+  DEF_UnpackAndOp (Type,BS,EQ,BXOR,^,OP_BINARY)                                   \
+  DEF_ScatterAndOp(Type,BS,EQ,BAND,&,OP_BINARY)                                   \
+  DEF_ScatterAndOp(Type,BS,EQ,BOR, |,OP_BINARY)                                   \
+  DEF_ScatterAndOp(Type,BS,EQ,BXOR,^,OP_BINARY)                                   \
+  static void CPPJoin4(PackInit_Bitwise,Type,BS,EQ)(PetscSFLink link) {           \
+    link->h_UnpackAndBAND   = CPPJoin4(UnpackAndBAND, Type,BS,EQ);                \
+    link->h_UnpackAndBOR    = CPPJoin4(UnpackAndBOR,  Type,BS,EQ);                \
+    link->h_UnpackAndBXOR   = CPPJoin4(UnpackAndBXOR, Type,BS,EQ);                \
+    link->h_ScatterAndBAND  = CPPJoin4(ScatterAndBAND,Type,BS,EQ);                \
+    link->h_ScatterAndBOR   = CPPJoin4(ScatterAndBOR, Type,BS,EQ);                \
+    link->h_ScatterAndBXOR  = CPPJoin4(ScatterAndBXOR,Type,BS,EQ);                \
   }
 
-/* Maxloc, Minloc */
-#define DEF_Xloc(Type1,Type2)                                                                  \
-  DEF_ActionAndXloc(Unpack,Max,Type1,Type2,>,IGNORE,const PairType(Type1,Type2),const void)    \
-  DEF_ActionAndXloc(Unpack,Min,Type1,Type2,<,IGNORE,const PairType(Type1,Type2),const void)    \
-  DEF_ActionAndXloc(Fetch, Max,Type1,Type2,>,EXECUTE,PairType(Type1,Type2),void)               \
-  DEF_ActionAndXloc(Fetch, Min,Type1,Type2,<,EXECUTE,PairType(Type1,Type2),void)               \
-  static void CPPJoin3(PackInit_Xloc,Type1,Type2)(PetscSFPack link) {                          \
-    link->h_UnpackAndMaxloc = CPPJoin4(UnpackAndMaxloc,PairType(Type1,Type2),1,1);             \
-    link->h_UnpackAndMinloc = CPPJoin4(UnpackAndMinloc,PairType(Type1,Type2),1,1);             \
-    link->h_FetchAndMaxloc  = CPPJoin4(FetchAndMaxloc, PairType(Type1,Type2),1,1);             \
-    link->h_FetchAndMinloc  = CPPJoin4(FetchAndMinloc, PairType(Type1,Type2),1,1);             \
+/* Maxloc, Minloc ops */
+#define DEF_Xloc(Type,BS,EQ)                                                      \
+  DEF_UnpackAndOp (Type,BS,EQ,Max,>,OP_XLOC)                                      \
+  DEF_UnpackAndOp (Type,BS,EQ,Min,<,OP_XLOC)                                      \
+  DEF_ScatterAndOp(Type,BS,EQ,Max,>,OP_XLOC)                                      \
+  DEF_ScatterAndOp(Type,BS,EQ,Min,<,OP_XLOC)                                      \
+  static void CPPJoin4(PackInit_Xloc,Type,BS,EQ)(PetscSFLink link) {              \
+    link->h_UnpackAndMaxloc  = CPPJoin4(UnpackAndMax, Type,BS,EQ);                \
+    link->h_UnpackAndMinloc  = CPPJoin4(UnpackAndMin, Type,BS,EQ);                \
+    link->h_ScatterAndMaxloc = CPPJoin4(ScatterAndMax,Type,BS,EQ);                \
+    link->h_ScatterAndMinloc = CPPJoin4(ScatterAndMin,Type,BS,EQ);                \
   }
 
-#define DEF_IntegerType(Type,BS,EQ)                                                            \
-  DEF_Pack(Type,BS,EQ)                                                                         \
-  DEF_Add(Type,BS,EQ)                                                                          \
-  DEF_Cmp(Type,BS,EQ)                                                                          \
-  DEF_Log(Type,BS,EQ)                                                                          \
-  DEF_Bit(Type,BS,EQ)                                                                          \
-  static void CPPJoin4(PackInit_IntegerType,Type,BS,EQ)(PetscSFPack link) {                    \
-    CPPJoin4(PackInit_Pack,Type,BS,EQ)(link);                                                  \
-    CPPJoin4(PackInit_Add,Type,BS,EQ)(link);                                                   \
-    CPPJoin4(PackInit_Compare,Type,BS,EQ)(link);                                               \
-    CPPJoin4(PackInit_Logical,Type,BS,EQ)(link);                                               \
-    CPPJoin4(PackInit_Bitwise,Type,BS,EQ)(link);                                               \
+#define DEF_IntegerType(Type,BS,EQ)                                               \
+  DEF_Pack(Type,BS,EQ)                                                            \
+  DEF_Add(Type,BS,EQ)                                                             \
+  DEF_Cmp(Type,BS,EQ)                                                             \
+  DEF_Log(Type,BS,EQ)                                                             \
+  DEF_Bit(Type,BS,EQ)                                                             \
+  static void CPPJoin4(PackInit_IntegerType,Type,BS,EQ)(PetscSFLink link) {       \
+    CPPJoin4(PackInit_Pack,Type,BS,EQ)(link);                                     \
+    CPPJoin4(PackInit_Add,Type,BS,EQ)(link);                                      \
+    CPPJoin4(PackInit_Compare,Type,BS,EQ)(link);                                  \
+    CPPJoin4(PackInit_Logical,Type,BS,EQ)(link);                                  \
+    CPPJoin4(PackInit_Bitwise,Type,BS,EQ)(link);                                  \
   }
 
-#define DEF_RealType(Type,BS,EQ)                                                               \
-  DEF_Pack(Type,BS,EQ)                                                                         \
-  DEF_Add(Type,BS,EQ)                                                                          \
-  DEF_Cmp(Type,BS,EQ)                                                                          \
-  static void CPPJoin4(PackInit_RealType,Type,BS,EQ)(PetscSFPack link) {                       \
-    CPPJoin4(PackInit_Pack,Type,BS,EQ)(link);                                                  \
-    CPPJoin4(PackInit_Add,Type,BS,EQ)(link);                                                   \
-    CPPJoin4(PackInit_Compare,Type,BS,EQ)(link);                                               \
+#define DEF_RealType(Type,BS,EQ)                                                  \
+  DEF_Pack(Type,BS,EQ)                                                            \
+  DEF_Add(Type,BS,EQ)                                                             \
+  DEF_Cmp(Type,BS,EQ)                                                             \
+  static void CPPJoin4(PackInit_RealType,Type,BS,EQ)(PetscSFLink link) {          \
+    CPPJoin4(PackInit_Pack,Type,BS,EQ)(link);                                     \
+    CPPJoin4(PackInit_Add,Type,BS,EQ)(link);                                      \
+    CPPJoin4(PackInit_Compare,Type,BS,EQ)(link);                                  \
   }
 
 #if defined(PETSC_HAVE_COMPLEX)
-#define DEF_ComplexType(Type,BS,EQ)                                                            \
-  DEF_Pack(Type,BS,EQ)                                                                         \
-  DEF_Add(Type,BS,EQ)                                                                          \
-  static void CPPJoin4(PackInit_ComplexType,Type,BS,EQ)(PetscSFPack link) {                    \
-    CPPJoin4(PackInit_Pack,Type,BS,EQ)(link);                                                  \
-    CPPJoin4(PackInit_Add,Type,BS,EQ)(link);                                                   \
+#define DEF_ComplexType(Type,BS,EQ)                                               \
+  DEF_Pack(Type,BS,EQ)                                                            \
+  DEF_Add(Type,BS,EQ)                                                             \
+  static void CPPJoin4(PackInit_ComplexType,Type,BS,EQ)(PetscSFLink link) {       \
+    CPPJoin4(PackInit_Pack,Type,BS,EQ)(link);                                     \
+    CPPJoin4(PackInit_Add,Type,BS,EQ)(link);                                      \
   }
 #endif
 
-#define DEF_DumbType(Type,BS,EQ)                                                               \
-  DEF_Pack(Type,BS,EQ)                                                                         \
-  static void CPPJoin4(PackInit_DumbType,Type,BS,EQ)(PetscSFPack link) {                       \
-    CPPJoin4(PackInit_Pack,Type,BS,EQ)(link);                                                  \
+#define DEF_DumbType(Type,BS,EQ)                                                  \
+  DEF_Pack(Type,BS,EQ)                                                            \
+  static void CPPJoin4(PackInit_DumbType,Type,BS,EQ)(PetscSFLink link) {          \
+    CPPJoin4(PackInit_Pack,Type,BS,EQ)(link);                                     \
   }
 
 /* Maxloc, Minloc */
-#define DEF_PairType(Type1,Type2)                                                              \
-  typedef struct {Type1 a; Type2 b;} PairType(Type1,Type2);                                    \
-  DEF_Pack(PairType(Type1,Type2),1,1)                                                          \
-  DEF_Xloc(Type1,Type2)                                                                        \
-  static void CPPJoin3(PackInit_PairType,Type1,Type2)(PetscSFPack link) {                      \
-    CPPJoin4(PackInit_Pack,PairType(Type1,Type2),1,1)(link);                                   \
-    CPPJoin3(PackInit_Xloc,Type1,Type2)(link);                                                 \
+#define DEF_PairType(Type,BS,EQ)                                                  \
+  DEF_Pack(Type,BS,EQ)                                                            \
+  DEF_Xloc(Type,BS,EQ)                                                            \
+  static void CPPJoin4(PackInit_PairType,Type,BS,EQ)(PetscSFLink link) {          \
+    CPPJoin4(PackInit_Pack,Type,BS,EQ)(link);                                     \
+    CPPJoin4(PackInit_Xloc,Type,BS,EQ)(link);                                     \
   }
 
 DEF_IntegerType(PetscInt,1,1) /* unit = 1 MPIU_INT  */
@@ -474,8 +435,11 @@ DEF_ComplexType(PetscComplex,4,0)
 DEF_ComplexType(PetscComplex,8,0)
 #endif
 
-DEF_PairType(int,int)
-DEF_PairType(PetscInt,PetscInt)
+#define PairType(Type1,Type2) Type1##_##Type2
+typedef struct {int u; int i;}           PairType(int,int);
+typedef struct {PetscInt u; PetscInt i;} PairType(PetscInt,PetscInt);
+DEF_PairType(PairType(int,int),1,1)
+DEF_PairType(PairType(PetscInt,PetscInt),1,1)
 
 /* If we don't know the basic type, we treat it as a stream of chars or ints */
 DEF_DumbType(char,1,1)
@@ -505,10 +469,240 @@ PETSC_STATIC_INLINE int MPI_Type_dup(MPI_Datatype datatype,MPI_Datatype *newtype
 }
 #endif
 
-PetscErrorCode PetscSFPackGetInUse(PetscSF sf,MPI_Datatype unit,const void *rootdata,const void *leafdata,PetscCopyMode cmode,PetscSFPack *mylink)
+/*
+   The routine Creates a communication link for the given operation. It first looks up its link cache. If
+   there is a free & suitable one, it uses it. Otherwise it creates a new one.
+
+   A link contains buffers and MPI requests for send/recv. It also contains pack/unpack routines to pack/unpack
+   root/leafdata to/from these buffers. Buffers are allocated at our discretion. When we find root/leafata
+   can be directly passed to MPI, we won't allocate them. Even we allocate buffers, we only allocate
+   those that are needed by the given `sfop` and `op`, in other words, we do lazy memory-allocation.
+
+   The routine also allocates buffers on CPU when one does not use gpu-aware MPI but data is on GPU.
+
+   In SFBasic, MPI requests are persistent. They are init'ed until we try to get requests from a link.
+
+   The routine is shared by SFBasic and SFNeighbor based on the fact they all deal with sparse graphs and
+   need pack/unpack data.
+*/
+PetscErrorCode PetscSFLinkCreate(PetscSF sf,MPI_Datatype unit,PetscMemType rootmtype,const void *rootdata,PetscMemType leafmtype,const void *leafdata,MPI_Op op,PetscSFOperation sfop,PetscSFLink *mylink)
 {
   PetscErrorCode    ierr;
-  PetscSFPack       link,*p;
+  PetscSF_Basic     *bas = (PetscSF_Basic*)sf->data;
+  PetscInt          i,j,k,nrootreqs,nleafreqs,nreqs;
+  PetscSFLink       *p,link;
+  PetscSFDirection  direction;
+  MPI_Request       *reqs = NULL;
+  PetscBool         match,rootdirect[2],leafdirect[2];
+  PetscMemType      rootmtype_mpi,leafmtype_mpi;   /* mtypes seen by MPI */
+  PetscInt          rootdirect_mpi,leafdirect_mpi; /* root/leafdirect seen by MPI*/
+
+  PetscFunctionBegin;
+  ierr = PetscSFSetErrorOnUnsupportedOverlap(sf,unit,rootdata,leafdata);CHKERRQ(ierr);
+
+  /* Can we directly use root/leafdirect with the given sf, sfop and op? */
+  for (i=PETSCSF_LOCAL; i<=PETSCSF_REMOTE; i++) {
+    if (sfop == PETSCSF_BCAST) {
+      rootdirect[i] = bas->rootcontig[i]; /* Pack roots */
+      leafdirect[i] = (sf->leafcontig[i] && op == MPIU_REPLACE) ? PETSC_TRUE : PETSC_FALSE;  /* Unpack leaves */
+    } else if (sfop == PETSCSF_REDUCE) {
+      leafdirect[i] = sf->leafcontig[i];  /* Pack leaves */
+      rootdirect[i] = (bas->rootcontig[i] && op == MPIU_REPLACE) ? PETSC_TRUE : PETSC_FALSE; /* Unpack roots */
+    } else { /* PETSCSF_FETCH */
+      rootdirect[i] = PETSC_FALSE; /* FETCH always need a separate rootbuf */
+      leafdirect[i] = PETSC_FALSE; /* We also force allocating a separate leafbuf so that leafdata and leafupdate can share mpi requests */
+    }
+  }
+
+  if (sf->use_gpu_aware_mpi) {
+    rootmtype_mpi = rootmtype;
+    leafmtype_mpi = leafmtype;
+  } else {
+    rootmtype_mpi = leafmtype_mpi = PETSC_MEMTYPE_HOST;
+  }
+  /* Will root/leafdata be directly accessed by MPI?  Without use_gpu_aware_mpi, device data is bufferred on host and then passed to MPI */
+  rootdirect_mpi = rootdirect[PETSCSF_REMOTE] && (rootmtype_mpi == rootmtype)? 1 : 0;
+  leafdirect_mpi = leafdirect[PETSCSF_REMOTE] && (leafmtype_mpi == leafmtype)? 1 : 0;
+
+  direction = (sfop == PETSCSF_BCAST)? PETSCSF_ROOT2LEAF : PETSCSF_LEAF2ROOT;
+  nrootreqs = bas->nrootreqs;
+  nleafreqs = sf->nleafreqs;
+
+  /* Look for free links in cache */
+  for (p=&bas->avail; (link=*p); p=&link->next) {
+    ierr = MPIPetsc_Type_compare(unit,link->unit,&match);CHKERRQ(ierr);
+    if (match) {
+      /* If root/leafdata will be directly passed to MPI, test if the data used to initialized the MPI requests matches with current.
+         If not, free old requests. New requests will be lazily init'ed until one calls PetscSFLinkGetMPIBuffersAndRequests().
+      */
+      if (rootdirect_mpi && sf->persistent && link->rootreqsinited[direction][rootmtype][1] && link->rootdatadirect[direction][rootmtype] != rootdata) {
+        reqs = link->rootreqs[direction][rootmtype][1]; /* Here, rootmtype = rootmtype_mpi */
+        for (i=0; i<nrootreqs; i++) {if (reqs[i] != MPI_REQUEST_NULL) {ierr = MPI_Request_free(&reqs[i]);CHKERRQ(ierr);}}
+        link->rootreqsinited[direction][rootmtype][1] = PETSC_FALSE;
+      }
+      if (leafdirect_mpi && sf->persistent && link->leafreqsinited[direction][leafmtype][1] && link->leafdatadirect[direction][leafmtype] != leafdata) {
+        reqs = link->leafreqs[direction][leafmtype][1];
+        for (i=0; i<nleafreqs; i++) {if (reqs[i] != MPI_REQUEST_NULL) {ierr = MPI_Request_free(&reqs[i]);CHKERRQ(ierr);}}
+        link->leafreqsinited[direction][leafmtype][1] = PETSC_FALSE;
+      }
+      *p = link->next; /* Remove from available list */
+      goto found;
+    }
+  }
+
+  ierr = PetscNew(&link);CHKERRQ(ierr);
+  ierr = PetscSFLinkSetUp_Host(sf,link,unit);CHKERRQ(ierr);
+  ierr = PetscCommGetNewTag(PetscObjectComm((PetscObject)sf),&link->tag);CHKERRQ(ierr); /* One tag per link */
+
+  nreqs = (nrootreqs+nleafreqs)*8;
+  ierr  = PetscMalloc1(nreqs,&link->reqs);CHKERRQ(ierr);
+  for (i=0; i<nreqs; i++) link->reqs[i] = MPI_REQUEST_NULL; /* Initialized to NULL so that we know which need to be freed in Destroy */
+
+  for (i=0; i<2; i++) { /* Two communication directions */
+    for (j=0; j<2; j++) { /* Two memory types */
+      for (k=0; k<2; k++) { /* root/leafdirect 0 or 1 */
+        link->rootreqs[i][j][k] = link->reqs + nrootreqs*(4*i+2*j+k);
+        link->leafreqs[i][j][k] = link->reqs + nrootreqs*8 + nleafreqs*(4*i+2*j+k);
+      }
+    }
+  }
+
+found:
+  if ((rootmtype == PETSC_MEMTYPE_DEVICE || leafmtype == PETSC_MEMTYPE_DEVICE) && !link->deviceinited) {ierr = PetscSFLinkSetUp_Device(sf,link,unit);CHKERRQ(ierr);}
+
+  /* Allocate buffers along root/leafdata */
+  for (i=PETSCSF_LOCAL; i<=PETSCSF_REMOTE; i++) {
+    /* For local communication, buffers are only needed when roots and leaves have different mtypes */
+    if (i == PETSCSF_LOCAL && rootmtype == leafmtype) continue;
+    if (bas->rootbuflen[i]) {
+      if (rootdirect[i]) { /* Aha, we disguise rootdata as rootbuf */
+        link->rootbuf[i][rootmtype] = (char*)rootdata + bas->rootstart[i]*link->unitbytes;
+      } else { /* Have to have a separate rootbuf */
+        if (!link->rootbuf_alloc[i][rootmtype]) {
+          ierr = PetscMallocWithMemType(rootmtype,bas->rootbuflen[i]*link->unitbytes,(void**)&link->rootbuf_alloc[i][rootmtype]);CHKERRQ(ierr);
+        }
+        link->rootbuf[i][rootmtype] = link->rootbuf_alloc[i][rootmtype];
+      }
+    }
+
+    if (sf->leafbuflen[i]) {
+      if (leafdirect[i]) {
+        link->leafbuf[i][leafmtype] = (char*)leafdata + sf->leafstart[i]*link->unitbytes;
+      } else {
+        if (!link->leafbuf_alloc[i][leafmtype]) {
+          ierr = PetscMallocWithMemType(leafmtype,sf->leafbuflen[i]*link->unitbytes,(void**)&link->leafbuf_alloc[i][leafmtype]);CHKERRQ(ierr);
+        }
+        link->leafbuf[i][leafmtype] = link->leafbuf_alloc[i][leafmtype];
+      }
+    }
+  }
+
+  /* Allocate buffers on host for buffering data on device in cast not use_gpu_aware_mpi */
+  if (rootmtype == PETSC_MEMTYPE_DEVICE && rootmtype_mpi == PETSC_MEMTYPE_HOST) {
+    if(!link->rootbuf_alloc[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST]) {
+      ierr = PetscMalloc(bas->rootbuflen[PETSCSF_REMOTE]*link->unitbytes,&link->rootbuf_alloc[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST]);CHKERRQ(ierr);
+    }
+    link->rootbuf[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST] = link->rootbuf_alloc[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST];
+  }
+  if (leafmtype == PETSC_MEMTYPE_DEVICE && leafmtype_mpi == PETSC_MEMTYPE_HOST) {
+    if (!link->leafbuf_alloc[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST]) {
+      ierr = PetscMalloc(sf->leafbuflen[PETSCSF_REMOTE]*link->unitbytes,&link->leafbuf_alloc[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST]);CHKERRQ(ierr);
+    }
+    link->leafbuf[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST] = link->leafbuf_alloc[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST];
+  }
+
+  /* Set `current` state of the link. They may change between different SF invocations with the same link */
+  if (sf->persistent) { /* If data is directly passed to MPI and inits MPI requests, record the data for comparison on future invocations */
+    if (rootdirect_mpi) link->rootdatadirect[direction][rootmtype] = rootdata;
+    if (leafdirect_mpi) link->leafdatadirect[direction][leafmtype] = leafdata;
+  }
+
+  link->rootdata = rootdata; /* root/leafdata are keys to look up links in PetscSFXxxEnd */
+  link->leafdata = leafdata;
+  for (i=PETSCSF_LOCAL; i<=PETSCSF_REMOTE; i++) {
+    link->rootdirect[i] = rootdirect[i];
+    link->leafdirect[i] = leafdirect[i];
+  }
+  link->rootdirect_mpi  = rootdirect_mpi;
+  link->leafdirect_mpi  = leafdirect_mpi;
+  link->rootmtype       = rootmtype;
+  link->leafmtype       = leafmtype;
+  link->rootmtype_mpi   = rootmtype_mpi;
+  link->leafmtype_mpi   = leafmtype_mpi;
+
+  link->next            = bas->inuse;
+  bas->inuse            = link;
+  *mylink               = link;
+  PetscFunctionReturn(0);
+}
+
+/* Return root/leaf buffers and MPI requests attached to the link for MPI communication in the given direction.
+   If the sf uses persistent requests and the requests have not been initialized, then initialize them.
+*/
+PetscErrorCode PetscSFLinkGetMPIBuffersAndRequests(PetscSF sf,PetscSFLink link,PetscSFDirection direction,void **rootbuf, void **leafbuf,MPI_Request **rootreqs,MPI_Request **leafreqs)
+{
+  PetscErrorCode       ierr;
+  PetscSF_Basic        *bas = (PetscSF_Basic*)sf->data;
+  PetscInt             i,j,nrootranks,ndrootranks,nleafranks,ndleafranks;
+  const PetscInt       *rootoffset,*leafoffset;
+  PetscMPIInt          n;
+  MPI_Aint             disp;
+  MPI_Comm             comm = PetscObjectComm((PetscObject)sf);
+  MPI_Datatype         unit = link->unit;
+  const PetscMemType   rootmtype_mpi = link->rootmtype_mpi,leafmtype_mpi = link->leafmtype_mpi; /* Used to select buffers passed to MPI */
+  const PetscInt       rootdirect_mpi = link->rootdirect_mpi,leafdirect_mpi = link->leafdirect_mpi;
+
+  PetscFunctionBegin;
+  /* Init persistent MPI requests if not yet. Currently only SFBasic uses persistent MPI */
+  if (sf->persistent) {
+    if (rootreqs && bas->rootbuflen[PETSCSF_REMOTE] && !link->rootreqsinited[direction][rootmtype_mpi][rootdirect_mpi]) {
+      ierr = PetscSFGetRootInfo_Basic(sf,&nrootranks,&ndrootranks,NULL,&rootoffset,NULL);CHKERRQ(ierr);
+      if (direction == PETSCSF_LEAF2ROOT) {
+        for (i=ndrootranks,j=0; i<nrootranks; i++,j++) {
+          disp = (rootoffset[i] - rootoffset[ndrootranks])*link->unitbytes;
+          ierr = PetscMPIIntCast(rootoffset[i+1]-rootoffset[i],&n);CHKERRQ(ierr);
+          ierr = MPI_Recv_init(link->rootbuf[PETSCSF_REMOTE][rootmtype_mpi]+disp,n,unit,bas->iranks[i],link->tag,comm,link->rootreqs[direction][rootmtype_mpi][rootdirect_mpi]+j);CHKERRQ(ierr);
+        }
+      } else { /* PETSCSF_ROOT2LEAF */
+        for (i=ndrootranks,j=0; i<nrootranks; i++,j++) {
+          disp = (rootoffset[i] - rootoffset[ndrootranks])*link->unitbytes;
+          ierr = PetscMPIIntCast(rootoffset[i+1]-rootoffset[i],&n);CHKERRQ(ierr);
+          ierr = MPI_Send_init(link->rootbuf[PETSCSF_REMOTE][rootmtype_mpi]+disp,n,unit,bas->iranks[i],link->tag,comm,link->rootreqs[direction][rootmtype_mpi][rootdirect_mpi]+j);CHKERRQ(ierr);
+        }
+      }
+      link->rootreqsinited[direction][rootmtype_mpi][rootdirect_mpi] = PETSC_TRUE;
+    }
+
+    if (leafreqs && sf->leafbuflen[PETSCSF_REMOTE] && !link->leafreqsinited[direction][leafmtype_mpi][leafdirect_mpi]) {
+      ierr = PetscSFGetLeafInfo_Basic(sf,&nleafranks,&ndleafranks,NULL,&leafoffset,NULL,NULL);CHKERRQ(ierr);
+      if (direction == PETSCSF_LEAF2ROOT) {
+        for (i=ndleafranks,j=0; i<nleafranks; i++,j++) {
+          disp = (leafoffset[i] - leafoffset[ndleafranks])*link->unitbytes;
+          ierr = PetscMPIIntCast(leafoffset[i+1]-leafoffset[i],&n);CHKERRQ(ierr);
+          ierr = MPI_Send_init(link->leafbuf[PETSCSF_REMOTE][leafmtype_mpi]+disp,n,unit,sf->ranks[i],link->tag,comm,link->leafreqs[direction][leafmtype_mpi][leafdirect_mpi]+j);CHKERRQ(ierr);
+        }
+      } else { /* PETSCSF_ROOT2LEAF */
+        for (i=ndleafranks,j=0; i<nleafranks; i++,j++) {
+          disp = (leafoffset[i] - leafoffset[ndleafranks])*link->unitbytes;
+          ierr = PetscMPIIntCast(leafoffset[i+1]-leafoffset[i],&n);CHKERRQ(ierr);
+          ierr = MPI_Recv_init(link->leafbuf[PETSCSF_REMOTE][leafmtype_mpi]+disp,n,unit,sf->ranks[i],link->tag,comm,link->leafreqs[direction][leafmtype_mpi][leafdirect_mpi]+j);CHKERRQ(ierr);
+        }
+      }
+      link->leafreqsinited[direction][leafmtype_mpi][leafdirect_mpi] = PETSC_TRUE;
+    }
+  }
+  if (rootbuf)  *rootbuf  = link->rootbuf[PETSCSF_REMOTE][rootmtype_mpi];
+  if (leafbuf)  *leafbuf  = link->leafbuf[PETSCSF_REMOTE][leafmtype_mpi];
+  if (rootreqs) *rootreqs = link->rootreqs[direction][rootmtype_mpi][rootdirect_mpi];
+  if (leafreqs) *leafreqs = link->leafreqs[direction][leafmtype_mpi][leafdirect_mpi];
+  PetscFunctionReturn(0);
+}
+
+
+PetscErrorCode PetscSFLinkGetInUse(PetscSF sf,MPI_Datatype unit,const void *rootdata,const void *leafdata,PetscCopyMode cmode,PetscSFLink *mylink)
+{
+  PetscErrorCode    ierr;
+  PetscSFLink       link,*p;
   PetscSF_Basic     *bas=(PetscSF_Basic*)sf->data;
 
   PetscFunctionBegin;
@@ -530,9 +724,9 @@ PetscErrorCode PetscSFPackGetInUse(PetscSF sf,MPI_Datatype unit,const void *root
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSFPackReclaim(PetscSF sf,PetscSFPack *link)
+PetscErrorCode PetscSFLinkReclaim(PetscSF sf,PetscSFLink *link)
 {
-  PetscSF_Basic     *bas=(PetscSF_Basic*)sf->data;
+  PetscSF_Basic     *bas = (PetscSF_Basic*)sf->data;
 
   PetscFunctionBegin;
   (*link)->rootdata = NULL;
@@ -543,39 +737,31 @@ PetscErrorCode PetscSFPackReclaim(PetscSF sf,PetscSFPack *link)
   PetscFunctionReturn(0);
 }
 
-/* Destroy all links, i.e., PetscSFPacks in the linked list, usually named 'avail' */
-PetscErrorCode PetscSFPackDestroyAvailable(PetscSF sf,PetscSFPack *avail)
+/* Destroy all links chained in 'avail' */
+PetscErrorCode PetscSFLinkDestroy(PetscSF sf,PetscSFLink *avail)
 {
   PetscErrorCode    ierr;
-  PetscSFPack       link=*avail,next;
-  PetscInt          i;
+  PetscSFLink       link = *avail,next;
+  PetscSF_Basic     *bas = (PetscSF_Basic*)sf->data;
+  PetscInt          i,nreqs = (bas->nrootreqs+sf->nleafreqs)*8;
 
   PetscFunctionBegin;
   for (; link; link=next) {
     next = link->next;
     if (!link->isbuiltin) {ierr = MPI_Type_free(&link->unit);CHKERRQ(ierr);}
-    for (i=0; i<(link->nrootreqs+link->nleafreqs)*4; i++) { /* Persistent reqs must be freed. */
+    for (i=0; i<nreqs; i++) { /* Persistent reqs must be freed. */
       if (link->reqs[i] != MPI_REQUEST_NULL) {ierr = MPI_Request_free(&link->reqs[i]);CHKERRQ(ierr);}
     }
     ierr = PetscFree(link->reqs);CHKERRQ(ierr);
-
+    for (i=PETSCSF_LOCAL; i<=PETSCSF_REMOTE; i++) {
 #if defined(PETSC_HAVE_CUDA)
-    if (!use_gpu_aware_mpi && sf->use_pinned_buf) { /* In case the buffers are allocated specially */
-      if (link->rootmtype == PETSC_MEMTYPE_DEVICE) {ierr = PetscFreePinnedMemory(link->rootbuf[PETSC_MEMTYPE_HOST]);CHKERRQ(ierr);}
-      if (link->leafmtype == PETSC_MEMTYPE_DEVICE) {ierr = PetscFreePinnedMemory(link->leafbuf[PETSC_MEMTYPE_HOST]);CHKERRQ(ierr);}
+      ierr = PetscFreeWithMemType(PETSC_MEMTYPE_DEVICE,link->rootbuf_alloc[i][PETSC_MEMTYPE_DEVICE]);CHKERRQ(ierr);
+      ierr = PetscFreeWithMemType(PETSC_MEMTYPE_DEVICE,link->leafbuf_alloc[i][PETSC_MEMTYPE_DEVICE]);CHKERRQ(ierr);
+      if (link->stream) {cudaError_t err =  cudaStreamDestroy(link->stream);CHKERRCUDA(err); link->stream = NULL;}
+#endif
+      ierr = PetscFree(link->rootbuf_alloc[i][PETSC_MEMTYPE_HOST]);CHKERRQ(ierr);
+      ierr = PetscFree(link->leafbuf_alloc[i][PETSC_MEMTYPE_HOST]);CHKERRQ(ierr);
     }
-#endif
-
-    ierr = PetscFreeWithMemType(PETSC_MEMTYPE_HOST,link->rootbuf[PETSC_MEMTYPE_HOST]);CHKERRQ(ierr);
-    ierr = PetscFreeWithMemType(PETSC_MEMTYPE_HOST,link->leafbuf[PETSC_MEMTYPE_HOST]);CHKERRQ(ierr);
-    ierr = PetscFreeWithMemType(PETSC_MEMTYPE_HOST,link->selfbuf[PETSC_MEMTYPE_HOST]);CHKERRQ(ierr);
-
-#if defined(PETSC_HAVE_CUDA)
-    ierr = PetscFreeWithMemType(PETSC_MEMTYPE_DEVICE,link->rootbuf[PETSC_MEMTYPE_DEVICE]);CHKERRQ(ierr);
-    ierr = PetscFreeWithMemType(PETSC_MEMTYPE_DEVICE,link->leafbuf[PETSC_MEMTYPE_DEVICE]);CHKERRQ(ierr);
-    ierr = PetscFreeWithMemType(PETSC_MEMTYPE_DEVICE,link->selfbuf[PETSC_MEMTYPE_DEVICE]);CHKERRQ(ierr);
-    if (link->stream) {cudaError_t err =  cudaStreamDestroy(link->stream);CHKERRCUDA(err); link->stream = NULL;}
-#endif
     ierr = PetscFree(link);CHKERRQ(ierr);
   }
   *avail = NULL;
@@ -583,27 +769,28 @@ PetscErrorCode PetscSFPackDestroyAvailable(PetscSF sf,PetscSFPack *avail)
 }
 
 /* Error out on unsupported overlapped communications */
-PetscErrorCode PetscSFPackSetErrorOnUnsupportedOverlap(PetscSF sf,MPI_Datatype unit,const void *rootdata,const void *leafdata)
+PetscErrorCode PetscSFSetErrorOnUnsupportedOverlap(PetscSF sf,MPI_Datatype unit,const void *rootdata,const void *leafdata)
 {
   PetscErrorCode    ierr;
-  PetscSFPack       link,*p;
-  PetscSF_Basic     *bas=(PetscSF_Basic*)sf->data;
+  PetscSFLink       link,*p;
+  PetscSF_Basic     *bas = (PetscSF_Basic*)sf->data;
   PetscBool         match;
 
   PetscFunctionBegin;
+  if (!PetscDefined(USE_DEBUG)) PetscFunctionReturn(0);
   /* Look up links in use and error out if there is a match. When both rootdata and leafdata are NULL, ignore
      the potential overlapping since this process does not participate in communication. Overlapping is harmless.
   */
   if (rootdata || leafdata) {
     for (p=&bas->inuse; (link=*p); p=&link->next) {
       ierr = MPIPetsc_Type_compare(unit,link->unit,&match);CHKERRQ(ierr);
-      if (match && (rootdata == link->rootdata) && (leafdata == link->leafdata)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for overlapped PetscSF communications with the same SF, rootdata(%p), leafdata(%p) and data type. You can undo the overlap to avoid the error.",rootdata,leafdata);
+      if (match && (rootdata == link->rootdata) && (leafdata == link->leafdata)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Overlapped PetscSF with the same rootdata(%p), leafdata(%p) and data type. Undo the overlapping to avoid the error.",rootdata,leafdata);
     }
   }
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSFPackSetUp_Host(PetscSF sf,PetscSFPack link,MPI_Datatype unit)
+PetscErrorCode PetscSFLinkSetUp_Host(PetscSF sf,PetscSFLink link,MPI_Datatype unit)
 {
   PetscErrorCode ierr;
   PetscInt       nSignedChar=0,nUnsignedChar=0,nInt=0,nPetscInt=0,nPetscReal=0;
@@ -631,14 +818,14 @@ PetscErrorCode PetscSFPackSetUp_Host(PetscSF sf,PetscSFPack link,MPI_Datatype un
   link->bs = 1; /* default */
 
   if (is2Int) {
-    PackInit_PairType_int_int(link);
+    PackInit_PairType_int_int_1_1(link);
     link->bs        = 1;
     link->unitbytes = 2*sizeof(int);
     link->isbuiltin = PETSC_TRUE; /* unit is PETSc builtin */
     link->basicunit = MPI_2INT;
     link->unit      = MPI_2INT;
   } else if (is2PetscInt) { /* TODO: when is2PetscInt and nPetscInt=2, we don't know which path to take. The two paths support different ops. */
-    PackInit_PairType_PetscInt_PetscInt(link);
+    PackInit_PairType_PetscInt_PetscInt_1_1(link);
     link->bs        = 1;
     link->unitbytes = 2*sizeof(PetscInt);
     link->basicunit = MPIU_2INT;
@@ -730,7 +917,7 @@ PetscErrorCode PetscSFPackSetUp_Host(PetscSF sf,PetscSFPack link,MPI_Datatype un
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSFPackGetUnpackAndOp(PetscSFPack link,PetscMemType mtype,MPI_Op op,PetscBool atomic,PetscErrorCode (**UnpackAndOp)(PetscInt,const PetscInt*,PetscSFPack,PetscSFPackOpt,void*,const void*))
+PetscErrorCode PetscSFLinkGetUnpackAndOp(PetscSFLink link,PetscMemType mtype,MPI_Op op,PetscBool atomic,PetscErrorCode (**UnpackAndOp)(PetscSFLink,PetscInt,PetscInt,PetscSFPackOpt,const PetscInt*,void*,const void*))
 {
   PetscFunctionBegin;
   *UnpackAndOp = NULL;
@@ -780,176 +967,745 @@ PetscErrorCode PetscSFPackGetUnpackAndOp(PetscSFPack link,PetscMemType mtype,MPI
     else if (op == MPI_MINLOC)                *UnpackAndOp = link->da_UnpackAndMinloc;
   }
 #endif
-  else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong PetscMemType %D",mtype);
-
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSFPackGetFetchAndOp(PetscSFPack link,PetscMemType mtype,MPI_Op op,PetscBool atomic,PetscErrorCode (**FetchAndOp)(PetscInt,const PetscInt*,PetscSFPack,PetscSFPackOpt,void*,void*))
+PetscErrorCode PetscSFLinkGetScatterAndOp(PetscSFLink link,PetscMemType mtype,MPI_Op op,PetscBool atomic,PetscErrorCode (**ScatterAndOp)(PetscSFLink,PetscInt,PetscInt,PetscSFPackOpt,const PetscInt*,const void*,PetscInt,PetscSFPackOpt,const PetscInt*,void*))
 {
   PetscFunctionBegin;
-  *FetchAndOp = NULL;
+  *ScatterAndOp = NULL;
   if (mtype == PETSC_MEMTYPE_HOST) {
-    if (op == MPIU_REPLACE)                   *FetchAndOp = link->h_FetchAndInsert;
-    else if (op == MPI_SUM || op == MPIU_SUM) *FetchAndOp = link->h_FetchAndAdd;
-    else if (op == MPI_MAX || op == MPIU_MAX) *FetchAndOp = link->h_FetchAndMax;
-    else if (op == MPI_MIN || op == MPIU_MIN) *FetchAndOp = link->h_FetchAndMin;
-    else if (op == MPI_MAXLOC)                *FetchAndOp = link->h_FetchAndMaxloc;
-    else if (op == MPI_MINLOC)                *FetchAndOp = link->h_FetchAndMinloc;
-    else if (op == MPI_PROD)                  *FetchAndOp = link->h_FetchAndMult;
-    else if (op == MPI_LAND)                  *FetchAndOp = link->h_FetchAndLAND;
-    else if (op == MPI_BAND)                  *FetchAndOp = link->h_FetchAndBAND;
-    else if (op == MPI_LOR)                   *FetchAndOp = link->h_FetchAndLOR;
-    else if (op == MPI_BOR)                   *FetchAndOp = link->h_FetchAndBOR;
-    else if (op == MPI_LXOR)                  *FetchAndOp = link->h_FetchAndLXOR;
-    else if (op == MPI_BXOR)                  *FetchAndOp = link->h_FetchAndBXOR;
-    else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for MPI_Op");
+    if      (op == MPIU_REPLACE)              *ScatterAndOp = link->h_ScatterAndInsert;
+    else if (op == MPI_SUM || op == MPIU_SUM) *ScatterAndOp = link->h_ScatterAndAdd;
+    else if (op == MPI_PROD)                  *ScatterAndOp = link->h_ScatterAndMult;
+    else if (op == MPI_MAX || op == MPIU_MAX) *ScatterAndOp = link->h_ScatterAndMax;
+    else if (op == MPI_MIN || op == MPIU_MIN) *ScatterAndOp = link->h_ScatterAndMin;
+    else if (op == MPI_LAND)                  *ScatterAndOp = link->h_ScatterAndLAND;
+    else if (op == MPI_BAND)                  *ScatterAndOp = link->h_ScatterAndBAND;
+    else if (op == MPI_LOR)                   *ScatterAndOp = link->h_ScatterAndLOR;
+    else if (op == MPI_BOR)                   *ScatterAndOp = link->h_ScatterAndBOR;
+    else if (op == MPI_LXOR)                  *ScatterAndOp = link->h_ScatterAndLXOR;
+    else if (op == MPI_BXOR)                  *ScatterAndOp = link->h_ScatterAndBXOR;
+    else if (op == MPI_MAXLOC)                *ScatterAndOp = link->h_ScatterAndMaxloc;
+    else if (op == MPI_MINLOC)                *ScatterAndOp = link->h_ScatterAndMinloc;
   }
 #if defined(PETSC_HAVE_CUDA)
   else if (mtype == PETSC_MEMTYPE_DEVICE && !atomic) {
-    if (op == MPIU_REPLACE)                   *FetchAndOp = link->d_FetchAndInsert;
-    else if (op == MPI_SUM || op == MPIU_SUM) *FetchAndOp = link->d_FetchAndAdd;
-    else if (op == MPI_MAX || op == MPIU_MAX) *FetchAndOp = link->d_FetchAndMax;
-    else if (op == MPI_MIN || op == MPIU_MIN) *FetchAndOp = link->d_FetchAndMin;
-    else if (op == MPI_MAXLOC)                *FetchAndOp = link->d_FetchAndMaxloc;
-    else if (op == MPI_MINLOC)                *FetchAndOp = link->d_FetchAndMinloc;
-    else if (op == MPI_PROD)                  *FetchAndOp = link->d_FetchAndMult;
-    else if (op == MPI_LAND)                  *FetchAndOp = link->d_FetchAndLAND;
-    else if (op == MPI_BAND)                  *FetchAndOp = link->d_FetchAndBAND;
-    else if (op == MPI_LOR)                   *FetchAndOp = link->d_FetchAndLOR;
-    else if (op == MPI_BOR)                   *FetchAndOp = link->d_FetchAndBOR;
-    else if (op == MPI_LXOR)                  *FetchAndOp = link->d_FetchAndLXOR;
-    else if (op == MPI_BXOR)                  *FetchAndOp = link->d_FetchAndBXOR;
-    else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for MPI_Op");
+    if      (op == MPIU_REPLACE)              *ScatterAndOp = link->d_ScatterAndInsert;
+    else if (op == MPI_SUM || op == MPIU_SUM) *ScatterAndOp = link->d_ScatterAndAdd;
+    else if (op == MPI_PROD)                  *ScatterAndOp = link->d_ScatterAndMult;
+    else if (op == MPI_MAX || op == MPIU_MAX) *ScatterAndOp = link->d_ScatterAndMax;
+    else if (op == MPI_MIN || op == MPIU_MIN) *ScatterAndOp = link->d_ScatterAndMin;
+    else if (op == MPI_LAND)                  *ScatterAndOp = link->d_ScatterAndLAND;
+    else if (op == MPI_BAND)                  *ScatterAndOp = link->d_ScatterAndBAND;
+    else if (op == MPI_LOR)                   *ScatterAndOp = link->d_ScatterAndLOR;
+    else if (op == MPI_BOR)                   *ScatterAndOp = link->d_ScatterAndBOR;
+    else if (op == MPI_LXOR)                  *ScatterAndOp = link->d_ScatterAndLXOR;
+    else if (op == MPI_BXOR)                  *ScatterAndOp = link->d_ScatterAndBXOR;
+    else if (op == MPI_MAXLOC)                *ScatterAndOp = link->d_ScatterAndMaxloc;
+    else if (op == MPI_MINLOC)                *ScatterAndOp = link->d_ScatterAndMinloc;
   } else if (mtype == PETSC_MEMTYPE_DEVICE && atomic) {
-    if (op == MPIU_REPLACE)                   *FetchAndOp = link->da_FetchAndInsert;
-    else if (op == MPI_SUM || op == MPIU_SUM) *FetchAndOp = link->da_FetchAndAdd;
-    else if (op == MPI_MAX || op == MPIU_MAX) *FetchAndOp = link->da_FetchAndMax;
-    else if (op == MPI_MIN || op == MPIU_MIN) *FetchAndOp = link->da_FetchAndMin;
-    else if (op == MPI_MAXLOC)                *FetchAndOp = link->da_FetchAndMaxloc;
-    else if (op == MPI_MINLOC)                *FetchAndOp = link->da_FetchAndMinloc;
-    else if (op == MPI_PROD)                  *FetchAndOp = link->da_FetchAndMult;
-    else if (op == MPI_LAND)                  *FetchAndOp = link->da_FetchAndLAND;
-    else if (op == MPI_BAND)                  *FetchAndOp = link->da_FetchAndBAND;
-    else if (op == MPI_LOR)                   *FetchAndOp = link->da_FetchAndLOR;
-    else if (op == MPI_BOR)                   *FetchAndOp = link->da_FetchAndBOR;
-    else if (op == MPI_LXOR)                  *FetchAndOp = link->da_FetchAndLXOR;
-    else if (op == MPI_BXOR)                  *FetchAndOp = link->da_FetchAndBXOR;
-    else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for MPI_Op");
+    if      (op == MPIU_REPLACE)              *ScatterAndOp = link->da_ScatterAndInsert;
+    else if (op == MPI_SUM || op == MPIU_SUM) *ScatterAndOp = link->da_ScatterAndAdd;
+    else if (op == MPI_PROD)                  *ScatterAndOp = link->da_ScatterAndMult;
+    else if (op == MPI_MAX || op == MPIU_MAX) *ScatterAndOp = link->da_ScatterAndMax;
+    else if (op == MPI_MIN || op == MPIU_MIN) *ScatterAndOp = link->da_ScatterAndMin;
+    else if (op == MPI_LAND)                  *ScatterAndOp = link->da_ScatterAndLAND;
+    else if (op == MPI_BAND)                  *ScatterAndOp = link->da_ScatterAndBAND;
+    else if (op == MPI_LOR)                   *ScatterAndOp = link->da_ScatterAndLOR;
+    else if (op == MPI_BOR)                   *ScatterAndOp = link->da_ScatterAndBOR;
+    else if (op == MPI_LXOR)                  *ScatterAndOp = link->da_ScatterAndLXOR;
+    else if (op == MPI_BXOR)                  *ScatterAndOp = link->da_ScatterAndBXOR;
+    else if (op == MPI_MAXLOC)                *ScatterAndOp = link->da_ScatterAndMaxloc;
+    else if (op == MPI_MINLOC)                *ScatterAndOp = link->da_ScatterAndMinloc;
   }
 #endif
-  else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong PetscMemType %D",mtype);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PetscSFLinkGetFetchAndOp(PetscSFLink link,PetscMemType mtype,MPI_Op op,PetscBool atomic,PetscErrorCode (**FetchAndOp)(PetscSFLink,PetscInt,PetscInt,PetscSFPackOpt,const PetscInt*,void*,void*))
+{
+  PetscFunctionBegin;
+  *FetchAndOp = NULL;
+  if (op != MPI_SUM && op != MPIU_SUM) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for MPI_Op in FetchAndOp");
+  if (mtype == PETSC_MEMTYPE_HOST) *FetchAndOp = link->h_FetchAndAdd;
+#if defined(PETSC_HAVE_CUDA)
+  else if (mtype == PETSC_MEMTYPE_DEVICE && !atomic) *FetchAndOp = link->d_FetchAndAdd;
+  else if (mtype == PETSC_MEMTYPE_DEVICE && atomic)  *FetchAndOp = link->da_FetchAndAdd;
+#endif
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PetscSFLinkGetFetchAndOpLocal(PetscSFLink link,PetscMemType mtype,MPI_Op op,PetscBool atomic,PetscErrorCode (**FetchAndOpLocal)(PetscSFLink,PetscInt,PetscInt,PetscSFPackOpt,const PetscInt*,void*,PetscInt,PetscSFPackOpt,const PetscInt*,const void*,void*))
+{
+  PetscFunctionBegin;
+  *FetchAndOpLocal = NULL;
+  if (op != MPI_SUM && op != MPIU_SUM) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for MPI_Op in FetchAndOp");
+  if (mtype == PETSC_MEMTYPE_HOST) *FetchAndOpLocal = link->h_FetchAndAddLocal;
+#if defined(PETSC_HAVE_CUDA)
+  else if (mtype == PETSC_MEMTYPE_DEVICE && !atomic) *FetchAndOpLocal = link->d_FetchAndAddLocal;
+  else if (mtype == PETSC_MEMTYPE_DEVICE && atomic)  *FetchAndOpLocal = link->da_FetchAndAddLocal;
+#endif
+  PetscFunctionReturn(0);
+}
+
+/*=============================================================================
+              A set of helper routines for Pack/Unpack/Scatter on GPUs
+ ============================================================================*/
+#if defined(PETSC_HAVE_CUDA)
+/* If SF does not know which stream root/leafdata is being computed on, it has to sync the device to
+   make sure the data is ready for packing.
+ */
+PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkSyncDeviceBeforePackData(PetscSF sf,PetscSFLink link)
+{
+  PetscFunctionBegin;
+  if (sf->use_default_stream) PetscFunctionReturn(0);
+  if (link->rootmtype == PETSC_MEMTYPE_DEVICE || link->leafmtype == PETSC_MEMTYPE_DEVICE) {
+    cudaError_t cerr = cudaDeviceSynchronize();CHKERRCUDA(cerr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/* PetscSFLinkSyncStreamAfterPackXxxData routines make sure root/leafbuf for the remote is ready for MPI */
+PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkSyncStreamAfterPackRootData(PetscSF sf,PetscSFLink link)
+{
+  PetscSF_Basic  *bas = (PetscSF_Basic*)sf->data;
+
+  PetscFunctionBegin;
+  /* Do nothing if we use stream aware mpi || has nothing for remote */
+  if (sf->use_stream_aware_mpi || link->rootmtype != PETSC_MEMTYPE_DEVICE || !bas->rootbuflen[PETSCSF_REMOTE]) PetscFunctionReturn(0);
+  /* If we called a packing kernel || we async-copied rootdata from device to host || No cudaDeviceSynchronize was called (since default stream is assumed) */
+  if (!link->rootdirect[PETSCSF_REMOTE] || !sf->use_gpu_aware_mpi || sf->use_default_stream) {
+    cudaError_t cerr = cudaStreamSynchronize(link->stream);CHKERRCUDA(cerr);
+  }
+  PetscFunctionReturn(0);
+}
+PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkSyncStreamAfterPackLeafData(PetscSF sf,PetscSFLink link)
+{
+  PetscFunctionBegin;
+  /* See comments above */
+  if (sf->use_stream_aware_mpi || link->leafmtype != PETSC_MEMTYPE_DEVICE || !sf->leafbuflen[PETSCSF_REMOTE]) PetscFunctionReturn(0);
+  if (!link->leafdirect[PETSCSF_REMOTE] || !sf->use_gpu_aware_mpi || sf->use_default_stream) {
+    cudaError_t cerr = cudaStreamSynchronize(link->stream);CHKERRCUDA(cerr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/* PetscSFLinkSyncStreamAfterUnpackXxx routines make sure root/leafdata (local & remote) is ready to use for SF callers, when SF
+   does not know which stream the callers will use.
+*/
+PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkSyncStreamAfterUnpackRootData(PetscSF sf,PetscSFLink link)
+{
+  PetscSF_Basic  *bas = (PetscSF_Basic*)sf->data;
+  PetscBool      host2host = (link->rootmtype == PETSC_MEMTYPE_HOST) && (link->leafmtype == PETSC_MEMTYPE_HOST) ? PETSC_TRUE : PETSC_FALSE;
+
+  PetscFunctionBegin;
+  /* Do nothing if host2host OR we are allowed to asynchronously put rootdata on device through the default stream */
+  if (host2host || (link->rootmtype == PETSC_MEMTYPE_DEVICE && sf->use_default_stream)) PetscFunctionReturn(0);
+
+  /* If rootmtype is HOST or DEVICE:
+     If we have data from local, then we called a scatter kernel (on link->stream), then we must sync it;
+     If we have data from remote && no rootdirect(i.e., we called an unpack kernel), then we must also sycn it (if rootdirect,
+     i.e., no unpack kernel after MPI, MPI guarentees rootbuf is ready to use so that we do not need the sync).
+
+     Note a tricky case is when leafmtype=DEVICE, rootmtype=HOST on uni-processor, we must sync the stream otherwise
+     CPU thread might use the yet-to-be-updated rootdata pending in the stream.
+   */
+  if (bas->rootbuflen[PETSCSF_LOCAL] || (bas->rootbuflen[PETSCSF_REMOTE] && !link->rootdirect[PETSCSF_REMOTE])) {
+    cudaError_t cerr = cudaStreamSynchronize(link->stream);CHKERRCUDA(cerr);
+  }
+  PetscFunctionReturn(0);
+}
+PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkSyncStreamAfterUnpackLeafData(PetscSF sf,PetscSFLink link)
+{
+  PetscBool      host2host = (link->rootmtype == PETSC_MEMTYPE_HOST) && (link->leafmtype == PETSC_MEMTYPE_HOST) ? PETSC_TRUE : PETSC_FALSE;
+
+  PetscFunctionBegin;
+  /* See comments in PetscSFLinkSyncStreamAfterUnpackRootData*/
+  if (host2host || (link->leafmtype == PETSC_MEMTYPE_DEVICE && sf->use_default_stream)) PetscFunctionReturn(0);
+  if (sf->leafbuflen[PETSCSF_LOCAL] || (sf->leafbuflen[PETSCSF_REMOTE] && !link->leafdirect[PETSCSF_REMOTE])) {
+    cudaError_t cerr = cudaStreamSynchronize(link->stream);CHKERRCUDA(cerr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/* PetscSFLinkCopyXxxxBufferInCaseNotUseGpuAwareMPI routines are simple: if not use_gpu_aware_mpi, we need
+   to copy the buffer from GPU to CPU before MPI calls, and from CPU to GPU after MPI calls.
+*/
+PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkCopyRootBufferInCaseNotUseGpuAwareMPI(PetscSF sf,PetscSFLink link,PetscBool device2host)
+{
+  PetscErrorCode ierr;
+  cudaError_t    cerr;
+  PetscSF_Basic  *bas = (PetscSF_Basic*)sf->data;
+
+  PetscFunctionBegin;
+  if (link->rootmtype == PETSC_MEMTYPE_DEVICE && (link->rootmtype_mpi != link->rootmtype) && bas->rootbuflen[PETSCSF_REMOTE]) {
+    void  *h_buf = link->rootbuf[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST];
+    void  *d_buf = link->rootbuf[PETSCSF_REMOTE][PETSC_MEMTYPE_DEVICE];
+    size_t count = bas->rootbuflen[PETSCSF_REMOTE]*link->unitbytes;
+    if (device2host) {
+      cerr = cudaMemcpyAsync(h_buf,d_buf,count,cudaMemcpyDeviceToHost,link->stream);CHKERRCUDA(cerr);
+      ierr = PetscLogGpuToCpu(count);CHKERRQ(ierr);
+    } else {
+      cerr = cudaMemcpyAsync(d_buf,h_buf,count,cudaMemcpyHostToDevice,link->stream);CHKERRCUDA(cerr);
+      ierr = PetscLogCpuToGpu(count);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkCopyLeafBufferInCaseNotUseGpuAwareMPI(PetscSF sf,PetscSFLink link,PetscBool device2host)
+{
+  PetscErrorCode ierr;
+  cudaError_t    cerr;
+
+  PetscFunctionBegin;
+  if (link->leafmtype == PETSC_MEMTYPE_DEVICE && (link->leafmtype_mpi != link->leafmtype) && sf->leafbuflen[PETSCSF_REMOTE]) {
+    void  *h_buf = link->leafbuf[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST];
+    void  *d_buf = link->leafbuf[PETSCSF_REMOTE][PETSC_MEMTYPE_DEVICE];
+    size_t count = sf->leafbuflen[PETSCSF_REMOTE]*link->unitbytes;
+    if (device2host) {
+      cerr = cudaMemcpyAsync(h_buf,d_buf,count,cudaMemcpyDeviceToHost,link->stream);CHKERRCUDA(cerr);
+      ierr = PetscLogGpuToCpu(count);CHKERRQ(ierr);
+    } else {
+      cerr = cudaMemcpyAsync(d_buf,h_buf,count,cudaMemcpyHostToDevice,link->stream);CHKERRCUDA(cerr);
+      ierr = PetscLogCpuToGpu(count);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+#else
+
+#define PetscSFLinkSyncDeviceBeforePackData(a,b)                0
+#define PetscSFLinkSyncStreamAfterPackRootData(a,b)             0
+#define PetscSFLinkSyncStreamAfterPackLeafData(a,b)             0
+#define PetscSFLinkSyncStreamAfterUnpackRootData(a,b)           0
+#define PetscSFLinkSyncStreamAfterUnpackLeafData(a,b)           0
+#define PetscSFLinkCopyRootBufferInCaseNotUseGpuAwareMPI(a,b,c) 0
+#define PetscSFLinkCopyLeafBufferInCaseNotUseGpuAwareMPI(a,b,c) 0
+
+#endif
+
+PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkLogFlopsAfterUnpackRootData(PetscSF sf,PetscSFLink link,PetscSFScope scope,MPI_Op op)
+{
+  PetscErrorCode ierr;
+  PetscLogDouble flops;
+  PetscSF_Basic  *bas = (PetscSF_Basic*)sf->data;
+
+
+  PetscFunctionBegin;
+  if (op != MPIU_REPLACE && link->basicunit == MPIU_SCALAR) { /* op is a reduction on PetscScalars */
+    flops = bas->rootbuflen[scope]*link->bs; /* # of roots in buffer x # of scalars in unit */
+#if defined(PETSC_HAVE_CUDA)
+    if (link->rootmtype == PETSC_MEMTYPE_DEVICE) {ierr = PetscLogGpuFlops(flops);CHKERRQ(ierr);} else
+#endif
+    {ierr = PetscLogFlops(flops);CHKERRQ(ierr);}
+  }
+  PetscFunctionReturn(0);
+}
+
+PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkLogFlopsAfterUnpackLeafData(PetscSF sf,PetscSFLink link,PetscSFScope scope,MPI_Op op)
+{
+  PetscLogDouble flops;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (op != MPIU_REPLACE && link->basicunit == MPIU_SCALAR) { /* op is a reduction on PetscScalars */
+    flops = sf->leafbuflen[scope]*link->bs; /* # of roots in buffer x # of scalars in unit */
+#if defined(PETSC_HAVE_CUDA)
+    if (link->leafmtype == PETSC_MEMTYPE_DEVICE) {ierr = PetscLogGpuFlops(flops);CHKERRQ(ierr);} else
+#endif
+    {ierr = PetscLogFlops(flops);CHKERRQ(ierr);}
+  }
+  PetscFunctionReturn(0);
+}
+
+/* When SF could not find a proper UnpackAndOp() from link, it falls back to MPI_Reduce_local.
+  Input Arguments:
+  +sf      - The StarForest
+  .link    - The link
+  .count   - Number of entries to unpack
+  .start   - The first index, significent when indices=NULL
+  .indices - Indices of entries in <data>. If NULL, it means indices are contiguous and the first is given in <start>
+  .buf     - A contiguous buffer to unpack from
+  -op      - Operation after unpack
+
+  Output Arguments:
+  .data    - The data to unpack to
+*/
+PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkUnpackDataWithMPIReduceLocal(PetscSF sf,PetscSFLink link,PetscInt count,PetscInt start,const PetscInt *indices,void *data,const void *buf,MPI_Op op)
+{
+  PetscFunctionBegin;
+#if defined(PETSC_HAVE_MPI_REDUCE_LOCAL)
+  {
+    PetscErrorCode ierr;
+    PetscInt       i;
+    PetscMPIInt    n;
+    if (indices) {
+      /* Note we use link->unit instead of link->basicunit. When op can be mapped to MPI_SUM etc, it operates on
+         basic units of a root/leaf element-wisely. Otherwise, it is meant to operate on a whole root/leaf.
+      */
+      for (i=0; i<count; i++) {ierr = MPI_Reduce_local((const char*)buf+i*link->unitbytes,(char*)data+indices[i]*link->unitbytes,1,link->unit,op);CHKERRQ(ierr);}
+    } else {
+      ierr = PetscMPIIntCast(count,&n);CHKERRQ(ierr);
+      ierr = MPI_Reduce_local(buf,(char*)data+start*link->unitbytes,n,link->unit,op);CHKERRQ(ierr);
+    }
+  }
+#else
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No unpacking reduction operation for this MPI_Op");
+#endif
+  PetscFunctionReturn(0);
+}
+
+PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkScatterDataWithMPIReduceLocal(PetscSF sf,PetscSFLink link,PetscInt count,PetscInt srcStart,const PetscInt *srcIdx,const void *src,PetscInt dstStart,const PetscInt *dstIdx,void *dst,MPI_Op op)
+{
+  PetscFunctionBegin;
+#if defined(PETSC_HAVE_MPI_REDUCE_LOCAL)
+  {
+    PetscErrorCode ierr;
+    PetscInt       i,disp;
+    if (!srcIdx) {
+      ierr = PetscSFLinkUnpackDataWithMPIReduceLocal(sf,link,count,dstStart,dstIdx,dst,(const char*)src+srcStart*link->unitbytes,op);CHKERRQ(ierr);
+    } else {
+      for (i=0; i<count; i++) {
+        disp = dstIdx? dstIdx[i] : dstStart + i;
+        ierr = MPI_Reduce_local((const char*)src+srcIdx[i]*link->unitbytes,(char*)dst+disp*link->unitbytes,1,link->unit,op);CHKERRQ(ierr);
+      }
+    }
+  }
+#else
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No unpacking reduction operation for this MPI_Op");
+#endif
+  PetscFunctionReturn(0);
+}
+
+/*=============================================================================
+              Pack/Unpack/Fetch/Scatter routines
+ ============================================================================*/
+
+/* Pack rootdata to rootbuf
+  Input Arguments:
+  + sf       - The SF this packing works on.
+  . link     - It gives the memtype of the roots and also provides root buffer.
+  . scope    - PETSCSF_LOCAL or PETSCSF_REMOTE. Note SF has the ability to do local and remote communications separately.
+  - rootdata - Where to read the roots.
+
+  Notes:
+  When rootdata can be directly used as root buffer, the routine is almost a no-op. After the call, root data is
+  in a place where the underlying MPI is ready can access (use_gpu_aware_mpi or not)
+ */
+PetscErrorCode PetscSFLinkPackRootData(PetscSF sf,PetscSFLink link,PetscSFScope scope,const void *rootdata)
+{
+  PetscErrorCode   ierr;
+  PetscSF_Basic    *bas = (PetscSF_Basic*)sf->data;
+  const PetscInt   *rootindices = NULL;
+  PetscInt         count,start;
+  PetscErrorCode   (*Pack)(PetscSFLink,PetscInt,PetscInt,PetscSFPackOpt,const PetscInt*,const void*,void*) = NULL;
+  PetscMemType     rootmtype = link->rootmtype;
+  PetscSFPackOpt   opt = NULL;
+
+
+  PetscFunctionBegin;
+  ierr = PetscLogEventBegin(PETSCSF_Pack,sf,0,0,0);CHKERRQ(ierr);
+  if (scope == PETSCSF_REMOTE) {ierr = PetscSFLinkSyncDeviceBeforePackData(sf,link);CHKERRQ(ierr);}
+  if (!link->rootdirect[scope] && bas->rootbuflen[scope]) { /* If rootdata works directly as rootbuf, skip packing */
+    ierr = PetscSFLinkGetRootPackOptAndIndices(sf,link,rootmtype,scope,&count,&start,&opt,&rootindices);CHKERRQ(ierr);
+    ierr = PetscSFLinkGetPack(link,rootmtype,&Pack);CHKERRQ(ierr);
+    ierr = (*Pack)(link,count,start,opt,rootindices,rootdata,link->rootbuf[scope][rootmtype]);CHKERRQ(ierr);
+  }
+  if (scope == PETSCSF_REMOTE) {
+    ierr = PetscSFLinkCopyRootBufferInCaseNotUseGpuAwareMPI(sf,link,PETSC_TRUE/*device2host*/);CHKERRQ(ierr);
+    ierr = PetscSFLinkSyncStreamAfterPackRootData(sf,link);CHKERRQ(ierr);
+  }
+  ierr = PetscLogEventEnd(PETSCSF_Pack,sf,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/* Pack leafdata to leafbuf */
+PetscErrorCode PetscSFLinkPackLeafData(PetscSF sf,PetscSFLink link,PetscSFScope scope,const void *leafdata)
+{
+  PetscErrorCode   ierr;
+  const PetscInt   *leafindices = NULL;
+  PetscInt         count,start;
+  PetscErrorCode   (*Pack)(PetscSFLink,PetscInt,PetscInt,PetscSFPackOpt,const PetscInt*,const void*,void*) = NULL;
+  PetscMemType     leafmtype = link->leafmtype;
+  PetscSFPackOpt   opt = NULL;
+
+  PetscFunctionBegin;
+  ierr = PetscLogEventBegin(PETSCSF_Pack,sf,0,0,0);CHKERRQ(ierr);
+  if (scope == PETSCSF_REMOTE) {ierr = PetscSFLinkSyncDeviceBeforePackData(sf,link);CHKERRQ(ierr);}
+  if (!link->leafdirect[scope] && sf->leafbuflen[scope]) { /* If leafdata works directly as rootbuf, skip packing */
+    ierr = PetscSFLinkGetLeafPackOptAndIndices(sf,link,leafmtype,scope,&count,&start,&opt,&leafindices);CHKERRQ(ierr);
+    ierr = PetscSFLinkGetPack(link,leafmtype,&Pack);CHKERRQ(ierr);
+    ierr = (*Pack)(link,count,start,opt,leafindices,leafdata,link->leafbuf[scope][leafmtype]);CHKERRQ(ierr);
+  }
+  if (scope == PETSCSF_REMOTE) {
+    ierr = PetscSFLinkCopyLeafBufferInCaseNotUseGpuAwareMPI(sf,link,PETSC_TRUE/*device2host*/);CHKERRQ(ierr);
+    ierr = PetscSFLinkSyncStreamAfterPackLeafData(sf,link);CHKERRQ(ierr);
+  }
+  ierr = PetscLogEventEnd(PETSCSF_Pack,sf,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/* Unpack rootbuf to rootdata */
+PetscErrorCode PetscSFLinkUnpackRootData(PetscSF sf,PetscSFLink link,PetscSFScope scope,void *rootdata,MPI_Op op)
+{
+  PetscErrorCode   ierr;
+  const PetscInt   *rootindices = NULL;
+  PetscInt         count,start;
+  PetscSF_Basic    *bas = (PetscSF_Basic*)sf->data;
+  PetscErrorCode   (*UnpackAndOp)(PetscSFLink,PetscInt,PetscInt,PetscSFPackOpt,const PetscInt*,void*,const void*) = NULL;
+  PetscMemType     rootmtype = link->rootmtype;
+  PetscSFPackOpt   opt = NULL;
+
+  PetscFunctionBegin;
+  ierr = PetscLogEventBegin(PETSCSF_Unpack,sf,0,0,0);CHKERRQ(ierr);
+  if (scope == PETSCSF_REMOTE) {ierr = PetscSFLinkCopyRootBufferInCaseNotUseGpuAwareMPI(sf,link,PETSC_FALSE);CHKERRQ(ierr);}
+  if (!link->rootdirect[scope] && bas->rootbuflen[scope]) { /* If rootdata works directly as rootbuf, skip unpacking */
+    ierr = PetscSFLinkGetUnpackAndOp(link,rootmtype,op,bas->rootdups[scope],&UnpackAndOp);CHKERRQ(ierr);
+    if (UnpackAndOp) {
+      ierr = PetscSFLinkGetRootPackOptAndIndices(sf,link,rootmtype,scope,&count,&start,&opt,&rootindices);CHKERRQ(ierr);
+      ierr = (*UnpackAndOp)(link,count,start,opt,rootindices,rootdata,link->rootbuf[scope][rootmtype]);CHKERRQ(ierr);
+    } else {
+      ierr = PetscSFLinkGetRootPackOptAndIndices(sf,link,PETSC_MEMTYPE_HOST,scope,&count,&start,&opt,&rootindices);CHKERRQ(ierr);
+      ierr = PetscSFLinkUnpackDataWithMPIReduceLocal(sf,link,count,start,rootindices,rootdata,link->rootbuf[scope][rootmtype],op);CHKERRQ(ierr);
+    }
+  }
+  if (scope == PETSCSF_REMOTE) {ierr = PetscSFLinkSyncStreamAfterUnpackRootData(sf,link);CHKERRQ(ierr);}
+  ierr = PetscSFLinkLogFlopsAfterUnpackRootData(sf,link,scope,op);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PETSCSF_Unpack,sf,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/* Unpack leafbuf to leafdata */
+PetscErrorCode PetscSFLinkUnpackLeafData(PetscSF sf,PetscSFLink link,PetscSFScope scope,void *leafdata,MPI_Op op)
+{
+  PetscErrorCode   ierr;
+  const PetscInt   *leafindices = NULL;
+  PetscInt         count,start;
+  PetscErrorCode   (*UnpackAndOp)(PetscSFLink,PetscInt,PetscInt,PetscSFPackOpt,const PetscInt*,void*,const void*) = NULL;
+  PetscMemType     leafmtype = link->leafmtype;
+  PetscSFPackOpt   opt = NULL;
+
+  PetscFunctionBegin;
+  ierr = PetscLogEventBegin(PETSCSF_Unpack,sf,0,0,0);CHKERRQ(ierr);
+  if (scope == PETSCSF_REMOTE) {ierr = PetscSFLinkCopyLeafBufferInCaseNotUseGpuAwareMPI(sf,link,PETSC_FALSE);CHKERRQ(ierr);}
+  if (!link->leafdirect[scope] && sf->leafbuflen[scope]) { /* If leafdata works directly as rootbuf, skip unpacking */
+    ierr = PetscSFLinkGetUnpackAndOp(link,leafmtype,op,sf->leafdups[scope],&UnpackAndOp);CHKERRQ(ierr);
+    if (UnpackAndOp) {
+      ierr = PetscSFLinkGetLeafPackOptAndIndices(sf,link,leafmtype,scope,&count,&start,&opt,&leafindices);CHKERRQ(ierr);
+      ierr = (*UnpackAndOp)(link,count,start,opt,leafindices,leafdata,link->leafbuf[scope][leafmtype]);CHKERRQ(ierr);
+    } else {
+      ierr = PetscSFLinkGetLeafPackOptAndIndices(sf,link,PETSC_MEMTYPE_HOST,scope,&count,&start,&opt,&leafindices);CHKERRQ(ierr);
+      ierr = PetscSFLinkUnpackDataWithMPIReduceLocal(sf,link,count,start,leafindices,leafdata,link->leafbuf[scope][leafmtype],op);CHKERRQ(ierr);
+    }
+  }
+  if (scope == PETSCSF_REMOTE) {ierr = PetscSFLinkSyncStreamAfterUnpackLeafData(sf,link);CHKERRQ(ierr);}
+  ierr = PetscSFLinkLogFlopsAfterUnpackLeafData(sf,link,scope,op);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PETSCSF_Unpack,sf,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/* FetchAndOp rootdata with rootbuf */
+PetscErrorCode PetscSFLinkFetchRootData(PetscSF sf,PetscSFLink link,PetscSFScope scope,void *rootdata,MPI_Op op)
+{
+  PetscErrorCode     ierr;
+  const PetscInt     *rootindices = NULL;
+  PetscInt           count,start;
+  PetscSF_Basic      *bas = (PetscSF_Basic*)sf->data;
+  PetscErrorCode     (*FetchAndOp)(PetscSFLink,PetscInt,PetscInt,PetscSFPackOpt,const PetscInt*,void*,void*) = NULL;
+  PetscMemType       rootmtype = link->rootmtype;
+  PetscSFPackOpt     opt = NULL;
+
+  PetscFunctionBegin;
+  ierr = PetscLogEventBegin(PETSCSF_Unpack,sf,0,0,0);CHKERRQ(ierr);
+  if (scope == PETSCSF_REMOTE) {ierr = PetscSFLinkCopyRootBufferInCaseNotUseGpuAwareMPI(sf,link,PETSC_FALSE);CHKERRQ(ierr);}
+  if (bas->rootbuflen[scope]) {
+    /* Do FetchAndOp on rootdata with rootbuf */
+    ierr = PetscSFLinkGetFetchAndOp(link,rootmtype,op,bas->rootdups[scope],&FetchAndOp);CHKERRQ(ierr);
+    ierr = PetscSFLinkGetRootPackOptAndIndices(sf,link,rootmtype,scope,&count,&start,&opt,&rootindices);CHKERRQ(ierr);
+    ierr = (*FetchAndOp)(link,count,start,opt,rootindices,rootdata,link->rootbuf[scope][rootmtype]);CHKERRQ(ierr);
+  }
+  if (scope == PETSCSF_REMOTE) {
+    ierr = PetscSFLinkCopyRootBufferInCaseNotUseGpuAwareMPI(sf,link,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = PetscSFLinkSyncStreamAfterUnpackRootData(sf,link);CHKERRQ(ierr);
+  }
+  ierr = PetscSFLinkLogFlopsAfterUnpackRootData(sf,link,scope,op);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PETSCSF_Unpack,sf,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/* Bcast rootdata to leafdata locally (i.e., only for local communication - PETSCSF_LOCAL) */
+PetscErrorCode PetscSFLinkBcastAndOpLocal(PetscSF sf,PetscSFLink link,const void *rootdata,void *leafdata,MPI_Op op)
+{
+  PetscErrorCode       ierr;
+  const PetscInt       *rootindices = NULL,*leafindices = NULL;
+  PetscInt             count,rootstart,leafstart;
+  PetscSF_Basic        *bas = (PetscSF_Basic*)sf->data;
+  PetscErrorCode       (*ScatterAndOp)(PetscSFLink,PetscInt,PetscInt,PetscSFPackOpt,const PetscInt*,const void*,PetscInt,PetscSFPackOpt,const PetscInt*,void*) = NULL;
+  const PetscMemType   rootmtype = link->rootmtype,leafmtype = link->leafmtype;
+  PetscSFPackOpt       leafopt = NULL,rootopt = NULL;
+
+  PetscFunctionBegin;
+  if (!bas->rootbuflen[PETSCSF_LOCAL]) PetscFunctionReturn(0);
+  if (rootmtype != leafmtype) { /* Uncommon case */
+     /* The local communication has to go through pack and unpack */
+    ierr = PetscSFLinkPackRootData(sf,link,PETSCSF_LOCAL,rootdata);CHKERRQ(ierr);
+    ierr = PetscSFLinkMemcpy(sf,link,leafmtype,link->leafbuf[PETSCSF_LOCAL][leafmtype],rootmtype,link->rootbuf[PETSCSF_LOCAL][rootmtype],sf->leafbuflen[PETSCSF_LOCAL]*link->unitbytes);CHKERRQ(ierr);
+    ierr = PetscSFLinkUnpackLeafData(sf,link,PETSCSF_LOCAL,leafdata,op);CHKERRQ(ierr);
+  } else {
+    ierr = PetscSFLinkGetScatterAndOp(link,leafmtype,op,sf->leafdups[PETSCSF_LOCAL],&ScatterAndOp);CHKERRQ(ierr);
+    if (ScatterAndOp) {
+      ierr = PetscSFLinkGetRootPackOptAndIndices(sf,link,rootmtype,PETSCSF_LOCAL,&count,&rootstart,&rootopt,&rootindices);CHKERRQ(ierr);
+      ierr = PetscSFLinkGetLeafPackOptAndIndices(sf,link,leafmtype,PETSCSF_LOCAL,&count,&leafstart,&leafopt,&leafindices);CHKERRQ(ierr);
+      ierr = (*ScatterAndOp)(link,count,rootstart,rootopt,rootindices,rootdata,leafstart,leafopt,leafindices,leafdata);CHKERRQ(ierr);
+    } else {
+      ierr = PetscSFLinkGetRootPackOptAndIndices(sf,link,PETSC_MEMTYPE_HOST,PETSCSF_LOCAL,&count,&rootstart,&rootopt,&rootindices);CHKERRQ(ierr);
+      ierr = PetscSFLinkGetLeafPackOptAndIndices(sf,link,PETSC_MEMTYPE_HOST,PETSCSF_LOCAL,&count,&leafstart,&leafopt,&leafindices);CHKERRQ(ierr);
+      ierr = PetscSFLinkScatterDataWithMPIReduceLocal(sf,link,count,rootstart,rootindices,rootdata,leafstart,leafindices,leafdata,op);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+/* Reduce leafdata to rootdata locally */
+PetscErrorCode PetscSFLinkReduceLocal(PetscSF sf,PetscSFLink link,const void *leafdata,void *rootdata,MPI_Op op)
+{
+  PetscErrorCode       ierr;
+  const PetscInt       *rootindices = NULL,*leafindices = NULL;
+  PetscInt             count,rootstart,leafstart;
+  PetscSF_Basic        *bas = (PetscSF_Basic*)sf->data;
+  PetscErrorCode       (*ScatterAndOp)(PetscSFLink,PetscInt,PetscInt,PetscSFPackOpt,const PetscInt*,const void*,PetscInt,PetscSFPackOpt,const PetscInt*,void*) = NULL;
+  const PetscMemType   rootmtype = link->rootmtype,leafmtype = link->leafmtype;
+  PetscSFPackOpt       leafopt = NULL,rootopt = NULL;
+
+  PetscFunctionBegin;
+  if (!sf->leafbuflen[PETSCSF_LOCAL]) PetscFunctionReturn(0);
+  if (rootmtype != leafmtype) {
+    /* The local communication has to go through pack and unpack */
+    ierr = PetscSFLinkPackLeafData(sf,link,PETSCSF_LOCAL,leafdata);CHKERRQ(ierr);
+    ierr = PetscSFLinkMemcpy(sf,link,rootmtype,link->rootbuf[PETSCSF_LOCAL][rootmtype],leafmtype,link->leafbuf[PETSCSF_LOCAL][leafmtype],bas->rootbuflen[PETSCSF_LOCAL]*link->unitbytes);CHKERRQ(ierr);
+    ierr = PetscSFLinkUnpackRootData(sf,link,PETSCSF_LOCAL,rootdata,op);CHKERRQ(ierr);
+  } else {
+    ierr = PetscSFLinkGetScatterAndOp(link,rootmtype,op,bas->rootdups[PETSCSF_LOCAL],&ScatterAndOp);CHKERRQ(ierr);
+    if (ScatterAndOp) {
+      ierr = PetscSFLinkGetRootPackOptAndIndices(sf,link,rootmtype,PETSCSF_LOCAL,&count,&rootstart,&rootopt,&rootindices);CHKERRQ(ierr);
+      ierr = PetscSFLinkGetLeafPackOptAndIndices(sf,link,leafmtype,PETSCSF_LOCAL,&count,&leafstart,&leafopt,&leafindices);CHKERRQ(ierr);
+      ierr = (*ScatterAndOp)(link,count,leafstart,leafopt,leafindices,leafdata,rootstart,rootopt,rootindices,rootdata);CHKERRQ(ierr);
+    } else {
+      ierr = PetscSFLinkGetRootPackOptAndIndices(sf,link,PETSC_MEMTYPE_HOST,PETSCSF_LOCAL,&count,&rootstart,&rootopt,&rootindices);CHKERRQ(ierr);
+      ierr = PetscSFLinkGetLeafPackOptAndIndices(sf,link,PETSC_MEMTYPE_HOST,PETSCSF_LOCAL,&count,&leafstart,&leafopt,&leafindices);CHKERRQ(ierr);
+      ierr = PetscSFLinkScatterDataWithMPIReduceLocal(sf,link,count,leafstart,leafindices,leafdata,rootstart,rootindices,rootdata,op);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+/* Fetch rootdata to leafdata and leafupdate locally */
+PetscErrorCode PetscSFLinkFetchAndOpLocal(PetscSF sf,PetscSFLink link,void *rootdata,const void *leafdata,void *leafupdate,MPI_Op op)
+{
+  PetscErrorCode       ierr;
+  const PetscInt       *rootindices = NULL,*leafindices = NULL;
+  PetscInt             count,rootstart,leafstart;
+  PetscSF_Basic        *bas = (PetscSF_Basic*)sf->data;
+  PetscErrorCode       (*FetchAndOpLocal)(PetscSFLink,PetscInt,PetscInt,PetscSFPackOpt,const PetscInt*,void*,PetscInt,PetscSFPackOpt,const PetscInt*,const void*,void*) = NULL;
+  const PetscMemType   rootmtype = link->rootmtype,leafmtype = link->leafmtype;
+  PetscSFPackOpt       leafopt = NULL,rootopt = NULL;
+
+  PetscFunctionBegin;
+  if (!bas->rootbuflen[PETSCSF_LOCAL]) PetscFunctionReturn(0);
+  if (rootmtype != leafmtype) {
+   /* The local communication has to go through pack and unpack */
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Doing PetscSFFetchAndOp with rootdata and leafdata on opposite side of CPU and GPU");
+  } else {
+    ierr = PetscSFLinkGetRootPackOptAndIndices(sf,link,rootmtype,PETSCSF_LOCAL,&count,&rootstart,&rootopt,&rootindices);CHKERRQ(ierr);
+    ierr = PetscSFLinkGetLeafPackOptAndIndices(sf,link,leafmtype,PETSCSF_LOCAL,&count,&leafstart,&leafopt,&leafindices);CHKERRQ(ierr);
+    ierr = PetscSFLinkGetFetchAndOpLocal(link,rootmtype,op,bas->rootdups[PETSCSF_LOCAL],&FetchAndOpLocal);CHKERRQ(ierr);
+    ierr = (*FetchAndOpLocal)(link,count,rootstart,rootopt,rootindices,rootdata,leafstart,leafopt,leafindices,leafdata,leafupdate);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
 /*
-  Create pack/unpack optimization plans based on indice patterns available
+  Create per-rank pack/unpack optimizations based on indice patterns
 
    Input Parameters:
-  +  n       - Number of target ranks
+  +  n       - Number of destination ranks
   .  offset  - [n+1] For the i-th rank, its associated indices are idx[offset[i], offset[i+1]). offset[0] needs not to be 0.
   -  idx     - [*]   Array storing indices
 
    Output Parameters:
-  +  opt    - Optimization plans. Maybe NULL if no optimization can be built.
+  +  opt     - Pack optimizations. NULL if no optimizations.
 */
-PetscErrorCode PetscSFPackOptCreate(PetscInt n,const PetscInt *offset,const PetscInt *idx,PetscSFPackOpt *out)
+PetscErrorCode PetscSFCreatePackOpt(PetscInt n,const PetscInt *offset,const PetscInt *idx,PetscSFPackOpt *out)
 {
   PetscErrorCode ierr;
-  PetscInt       i,j,k,n_copies,tot_copies=0,step;
-  PetscBool      strided,optimized=PETSC_FALSE;
+  PetscInt       r,p,start,i,j,k,dx,dy,dz,dydz,m,X,Y;
+  PetscBool      optimizable = PETSC_TRUE;
   PetscSFPackOpt opt;
 
   PetscFunctionBegin;
-  if (!n) {
-    *out = NULL;
-    PetscFunctionReturn(0);
-  }
+  ierr   = PetscMalloc1(1,&opt);CHKERRQ(ierr);
+  ierr   = PetscMalloc1(7*n+2,&opt->array);CHKERRQ(ierr);
+  opt->n      = opt->array[0] = n;
+  opt->offset = opt->array + 1;
+  opt->start  = opt->array + n   + 2;
+  opt->dx     = opt->array + 2*n + 2;
+  opt->dy     = opt->array + 3*n + 2;
+  opt->dz     = opt->array + 4*n + 2;
+  opt->X      = opt->array + 5*n + 2;
+  opt->Y      = opt->array + 6*n + 2;
 
-  ierr = PetscCalloc1(1,&opt);CHKERRQ(ierr);
-  ierr = PetscCalloc3(n,&opt->type,n+1,&opt->offset,n+1,&opt->copy_offset);CHKERRQ(ierr);
-  ierr = PetscArraycpy(opt->offset,offset,n+1);CHKERRQ(ierr);
-  if (offset[0]) {for (i=0; i<n+1; i++) opt->offset[i] -= offset[0];} /* Zero-base offset[]. Note the packing routine is Pack(count, idx[], ...*/
+  for (r=0; r<n; r++) { /* For each destination rank */
+    m     = offset[r+1] - offset[r]; /* Total number of indices for this rank. We want to see if m can be factored into dx*dy*dz */
+    p     = offset[r];
+    start = idx[p]; /* First index for this rank */
+    p++;
 
-  opt->n = n;
-
-  /* Check if the indices are piece-wise contiguous (if yes, we can optimize a packing with multiple memcpy's ) */
-  for (i=0; i<n; i++) { /* for each target processor */
-    /* Scan indices to count n_copies -- the number of contiguous pieces for i-th target */
-    n_copies = 1;
-    for (j=offset[i]; j<offset[i+1]-1; j++) {
-      if (idx[j]+1 != idx[j+1]) n_copies++;
+    /* Search in X dimension */
+    for (dx=1; dx<m; dx++,p++) {
+      if (start+dx != idx[p]) break;
     }
-    /* If the average length (in no. of indices) of contiguous pieces is long enough, say >=32,
-       then it is worth using memcpy for this target. 32 is an arbitrarily chosen number.
-     */
-    if ((offset[i+1]-offset[i])/n_copies >= 32) {
-      opt->type[i] = PETSCSF_PACKOPT_MULTICOPY;
-      optimized    = PETSC_TRUE;
-      tot_copies  += n_copies;
-    }
-  }
 
-  /* Setup memcpy plan for each contiguous piece */
-  k    = 0; /* k-th copy */
-  ierr = PetscMalloc4(tot_copies,&opt->copy_start,tot_copies,&opt->copy_length,n,&opt->stride_step,n,&opt->stride_n);CHKERRQ(ierr);
-  for (i=0; i<n; i++) { /* for each target processor */
-    if (opt->type[i] == PETSCSF_PACKOPT_MULTICOPY) {
-      n_copies           = 1;
-      opt->copy_start[k] = offset[i] - offset[0];
-      for (j=offset[i]; j<offset[i+1]-1; j++) {
-        if (idx[j]+1 != idx[j+1]) { /* meet end of a copy (and next copy must exist) */
-          n_copies++;
-          opt->copy_start[k+1] = j-offset[0]+1;
-          opt->copy_length[k]  = opt->copy_start[k+1] - opt->copy_start[k];
-          k++;
+    dydz = m/dx;
+    X    = dydz > 1 ? (idx[p]-start) : dx;
+    /* Not optimizable if m is not a multiple of dx, or some unrecognized pattern is found */
+    if (m%dx || X <= 0) {optimizable = PETSC_FALSE; goto finish;}
+    for (dy=1; dy<dydz; dy++) { /* Search in Y dimension */
+      for (i=0; i<dx; i++,p++) {
+        if (start+X*dy+i != idx[p]) {
+          if (i) {optimizable = PETSC_FALSE; goto finish;} /* The pattern is violated in the middle of an x-walk */
+          else goto Z_dimension;
         }
       }
-      /* Set copy length of the last copy for this target */
-      opt->copy_length[k] = j-offset[0]+1 - opt->copy_start[k];
-      k++;
     }
-    /* Set offset for next target. When opt->type[i]=PETSCSF_PACKOPT_NONE, copy_offsets[i]=copy_offsets[i+1] */
-    opt->copy_offset[i+1] = k;
+
+Z_dimension:
+    dz = m/(dx*dy);
+    Y  = dz > 1 ? (idx[p]-start)/X : dy;
+    /* Not optimizable if m is not a multiple of dx*dy, or some unrecognized pattern is found */
+    if (m%(dx*dy) || Y <= 0) {optimizable = PETSC_FALSE; goto finish;}
+    for (k=1; k<dz; k++) { /* Go through Z dimension to see if remaining indices follow the pattern */
+      for (j=0; j<dy; j++) {
+        for (i=0; i<dx; i++,p++) {
+          if (start+X*Y*k+X*j+i != idx[p]) {optimizable = PETSC_FALSE; goto finish;}
+        }
+      }
+    }
+    opt->start[r] = start;
+    opt->dx[r]    = dx;
+    opt->dy[r]    = dy;
+    opt->dz[r]    = dz;
+    opt->X[r]     = X;
+    opt->Y[r]     = Y;
   }
 
-  /* Last chance! If the indices do not have long contiguous pieces, are they strided? */
-  for (i=0; i<n; i++) { /* for each remote */
-    if (opt->type[i]==PETSCSF_PACKOPT_NONE && (offset[i+1] - offset[i]) >= 16) { /* few indices (<16) are not worth striding */
-      strided = PETSC_TRUE;
-      step    = idx[offset[i]+1] - idx[offset[i]];
-      for (j=offset[i]; j<offset[i+1]-1; j++) {
-        if (idx[j]+step != idx[j+1]) { strided = PETSC_FALSE; break; }
-      }
-      if (strided) {
-        opt->type[i]         = PETSCSF_PACKOPT_STRIDE;
-        opt->stride_step[i]  = step;
-        opt->stride_n[i]     = offset[i+1] - offset[i];
-        optimized            = PETSC_TRUE;
-      }
-    }
-  }
-  /* If no rank gets optimized, free arrays to save memory */
-  if (!optimized) {
-    ierr = PetscFree3(opt->type,opt->offset,opt->copy_offset);CHKERRQ(ierr);
-    ierr = PetscFree4(opt->copy_start,opt->copy_length,opt->stride_step,opt->stride_n);CHKERRQ(ierr);
+finish:
+  /* If not optimizable, free arrays to save memory */
+  if (!n || !optimizable) {
+    ierr = PetscFree(opt->array);CHKERRQ(ierr);
     ierr = PetscFree(opt);CHKERRQ(ierr);
     *out = NULL;
-  } else *out = opt;
+  } else {
+    opt->offset[0] = 0;
+    for (r=0; r<n; r++) opt->offset[r+1] = opt->offset[r] + opt->dx[r]*opt->dy[r]*opt->dz[r];
+    *out = opt;
+  }
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSFPackOptDestroy(PetscSFPackOpt *out)
+PETSC_STATIC_INLINE PetscErrorCode PetscSFDestroyPackOpt(PetscMemType mtype,PetscSFPackOpt *out)
 {
   PetscErrorCode ierr;
   PetscSFPackOpt opt = *out;
 
   PetscFunctionBegin;
   if (opt) {
-    ierr = PetscFree3(opt->type,opt->offset,opt->copy_offset);CHKERRQ(ierr);
-    ierr = PetscFree4(opt->copy_start,opt->copy_length,opt->stride_step,opt->stride_n);CHKERRQ(ierr);
+    if (mtype == PETSC_MEMTYPE_HOST) {ierr = PetscFree(opt->array);CHKERRQ(ierr);}
+#if defined(PETSC_HAVE_CUDA)
+    else {cudaError_t cerr = cudaFree(opt->array);CHKERRCUDA(cerr);opt->array=NULL;}
+#endif
     ierr = PetscFree(opt);CHKERRQ(ierr);
     *out = NULL;
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PetscSFSetUpPackFields(PetscSF sf)
+{
+  PetscErrorCode ierr;
+  PetscSF_Basic  *bas = (PetscSF_Basic*)sf->data;
+  PetscInt       i,j;
+
+  PetscFunctionBegin;
+  /* [0] for PETSCSF_LOCAL and [1] for PETSCSF_REMOTE in the following */
+  for (i=0; i<2; i++) { /* Set defaults */
+    sf->leafstart[i]   = 0;
+    sf->leafcontig[i]  = PETSC_TRUE;
+    sf->leafdups[i]    = PETSC_FALSE;
+    bas->rootstart[i]  = 0;
+    bas->rootcontig[i] = PETSC_TRUE;
+    bas->rootdups[i]   = PETSC_FALSE;
+  }
+
+  sf->leafbuflen[0] = sf->roffset[sf->ndranks];
+  sf->leafbuflen[1] = sf->roffset[sf->nranks] - sf->roffset[sf->ndranks];
+
+  if (sf->leafbuflen[0]) sf->leafstart[0] = sf->rmine[0];
+  if (sf->leafbuflen[1]) sf->leafstart[1] = sf->rmine[sf->roffset[sf->ndranks]];
+
+  /* Are leaf indices for self and remote contiguous? If yes, it is best for pack/unpack */
+  for (i=0; i<sf->roffset[sf->ndranks]; i++) { /* self */
+    if (sf->rmine[i] != sf->leafstart[0]+i) {sf->leafcontig[0] = PETSC_FALSE; break;}
+  }
+  for (i=sf->roffset[sf->ndranks],j=0; i<sf->roffset[sf->nranks]; i++,j++) { /* remote */
+    if (sf->rmine[i] != sf->leafstart[1]+j) {sf->leafcontig[1] = PETSC_FALSE; break;}
+  }
+
+  /* If not, see if we can have per-rank optimizations by doing index analysis */
+  if (!sf->leafcontig[0]) {ierr = PetscSFCreatePackOpt(sf->ndranks,            sf->roffset,             sf->rmine, &sf->leafpackopt[0]);CHKERRQ(ierr);}
+  if (!sf->leafcontig[1]) {ierr = PetscSFCreatePackOpt(sf->nranks-sf->ndranks, sf->roffset+sf->ndranks, sf->rmine, &sf->leafpackopt[1]);CHKERRQ(ierr);}
+
+  /* Are root indices for self and remote contiguous? */
+  bas->rootbuflen[0] = bas->ioffset[bas->ndiranks];
+  bas->rootbuflen[1] = bas->ioffset[bas->niranks] - bas->ioffset[bas->ndiranks];
+
+  if (bas->rootbuflen[0]) bas->rootstart[0] = bas->irootloc[0];
+  if (bas->rootbuflen[1]) bas->rootstart[1] = bas->irootloc[bas->ioffset[bas->ndiranks]];
+
+  for (i=0; i<bas->ioffset[bas->ndiranks]; i++) {
+    if (bas->irootloc[i] != bas->rootstart[0]+i) {bas->rootcontig[0] = PETSC_FALSE; break;}
+  }
+  for (i=bas->ioffset[bas->ndiranks],j=0; i<bas->ioffset[bas->niranks]; i++,j++) {
+    if (bas->irootloc[i] != bas->rootstart[1]+j) {bas->rootcontig[1] = PETSC_FALSE; break;}
+  }
+
+  if (!bas->rootcontig[0]) {ierr = PetscSFCreatePackOpt(bas->ndiranks,              bas->ioffset,               bas->irootloc, &bas->rootpackopt[0]);CHKERRQ(ierr);}
+  if (!bas->rootcontig[1]) {ierr = PetscSFCreatePackOpt(bas->niranks-bas->ndiranks, bas->ioffset+bas->ndiranks, bas->irootloc, &bas->rootpackopt[1]);CHKERRQ(ierr);}
+
+#if defined(PETSC_HAVE_CUDA)
+    /* Check dups in indices so that CUDA unpacking kernels can use cheaper regular instructions instead of atomics when they know there are no data race chances */
+  if (!sf->leafcontig[0])  {ierr = PetscCheckDupsInt(sf->leafbuflen[0],  sf->rmine,                                 &sf->leafdups[0]);CHKERRQ(ierr);}
+  if (!sf->leafcontig[1])  {ierr = PetscCheckDupsInt(sf->leafbuflen[1],  sf->rmine+sf->roffset[sf->ndranks],        &sf->leafdups[1]);CHKERRQ(ierr);}
+  if (!bas->rootcontig[0]) {ierr = PetscCheckDupsInt(bas->rootbuflen[0], bas->irootloc,                             &bas->rootdups[0]);CHKERRQ(ierr);}
+  if (!bas->rootcontig[1]) {ierr = PetscCheckDupsInt(bas->rootbuflen[1], bas->irootloc+bas->ioffset[bas->ndiranks], &bas->rootdups[1]);CHKERRQ(ierr);}
+#endif
+
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PetscSFResetPackFields(PetscSF sf)
+{
+  PetscErrorCode ierr;
+  PetscSF_Basic  *bas = (PetscSF_Basic*)sf->data;
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  for (i=PETSCSF_LOCAL; i<=PETSCSF_REMOTE; i++) {
+    ierr = PetscSFDestroyPackOpt(PETSC_MEMTYPE_HOST,&sf->leafpackopt[i]);CHKERRQ(ierr);
+    ierr = PetscSFDestroyPackOpt(PETSC_MEMTYPE_DEVICE,&sf->leafpackopt_d[i]);CHKERRQ(ierr);
+    ierr = PetscSFDestroyPackOpt(PETSC_MEMTYPE_HOST,&bas->rootpackopt[i]);CHKERRQ(ierr);
+    ierr = PetscSFDestroyPackOpt(PETSC_MEMTYPE_DEVICE,&bas->rootpackopt_d[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

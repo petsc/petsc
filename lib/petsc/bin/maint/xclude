@@ -1,3 +1,4 @@
+petsc-dist/.readthedocs.yml
 petsc-dist/.travis.yml
 petsc-dist/Jenkinsfile
 petsc-dist/.gitmessage
@@ -71,9 +72,9 @@ petsc-dist/config/python
 petsc-dist/config/solaris2.9
 petsc-dist/config/solaris2.9-lam
 petsc-dist/src/docs
-petsc-dist/src/da/examples/tests/scripts
-petsc-dist/src/contrib/sda/examples/tests/scripts
-petsc-dist/src/ksp/examples/tests/scripts
+petsc-dist/src/da/tests/scripts
+petsc-dist/src/contrib/sda/tests/scripts
+petsc-dist/src/ksp/tests/scripts
 petsc-dist/src/contrib/lahaye/samg
 petsc-dist/src/contrib/markadams2
 petsc-dist/docs/manualpages/logfile.txt
@@ -130,7 +131,7 @@ petsc-dist/src/contrib/tutorials.tar.gz
 petsc-dist/src/contrib/reusememory
 petsc-dist/src/benchmarks/results
 petsc-dist/src/benchmarks/notes
-petsc-dist/src/snes/examples/tutorials/unstruct
+petsc-dist/src/snes/tutorials/unstruct
 petsc-dist/src/adic
 petsc-dist/src/ec
 petsc-dist/bin/petscrun
@@ -142,10 +143,10 @@ petsc-dist/src/contrib/ysmp
 petsc-dist/src/contrib/orderings
 petsc-dist/src/contrib/helmholtz
 petsc-dist/src/contrib/helmholtz_2
-petsc-dist/src/da/examples/tests/scripts
-petsc-dist/src/snes/examples/tests/umin/ex4.c
-petsc-dist/src/snes/examples/tests/umin/ex5.c
-petsc-dist/src/snes/examples/tests/umin/pdgl2fg.f
+petsc-dist/src/da/tests/scripts
+petsc-dist/src/snes/tests/umin/ex4.c
+petsc-dist/src/snes/tests/umin/ex5.c
+petsc-dist/src/snes/tests/umin/pdgl2fg.f
 petsc-dist/src/snes/impls/trdl
 petsc-dist/src/mat/examples/matrices
 petsc-dist/src/examples
@@ -153,6 +154,6 @@ petsc-dist/src/mat/impls/dense/mpi/mdnfact.c
 petsc-dist/src/mat/impls/csn
 petsc-dist/config/BuildSystem/BitKeeper
 petsc-dist/config/BuildSystem/ChangeSet
-petsc-dist/src/dm/impls/mesh/examples/tutorials/illinois
-petsc-dist/src/dm/impls/mesh/examples/tutorials/data
-petsc-dist/src/dm/ao/examples/tests/ex3d
+petsc-dist/src/dm/impls/mesh/tutorials/illinois
+petsc-dist/src/dm/impls/mesh/tutorials/data
+petsc-dist/src/dm/ao/tests/ex3d

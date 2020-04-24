@@ -39,6 +39,26 @@ PETSC_EXTERN void  petscsfgetgraph_(PetscSF *sf,PetscInt *nroots,PetscInt *nleav
   f90arraysfnodecreate_((PetscInt*)iremote,nleaves, airemote PETSC_F90_2PTR_PARAM(piremote));
 }
 
+#if defined(PETSC_HAVE_F90_ASSUMED_TYPE_NOT_PTR)
+PETSC_EXTERN void petscsfbcastbegin_(PetscSF *sf, MPI_Fint *unit, const void *rptr, void *lptr, int *ierr)
+{
+  MPI_Datatype dtype;
+
+  *ierr = PetscMPIFortranDatatypeToC(*unit,&dtype);if (*ierr) return;
+  *ierr = PetscSFBcastBegin(*sf, dtype, rptr, lptr);
+}
+
+
+PETSC_EXTERN void petscsfbcastend_(PetscSF *sf, MPI_Fint *unit, const void *rptr, void *lptr, int *ierr)
+{
+  MPI_Datatype dtype;
+
+  *ierr = PetscMPIFortranDatatypeToC(*unit,&dtype);if (*ierr) return;
+  *ierr = PetscSFBcastEnd(*sf, dtype, rptr, lptr);
+}
+
+#else
+
 PETSC_EXTERN void petscsfbcastbegin_(PetscSF *sf, MPI_Fint *unit,F90Array1d *rptr, F90Array1d *lptr, int *ierr PETSC_F90_2PTR_PROTO(rptrd) PETSC_F90_2PTR_PROTO(lptrd))
 {
   MPI_Datatype dtype;
@@ -71,3 +91,5 @@ PETSC_EXTERN void petscsfviewfromoptions_(PetscSF *ao,PetscObject obj,char* type
   *ierr = PetscSFViewFromOptions(*ao,obj,t);if (*ierr) return;
   FREECHAR(type,t);
 }
+
+#endif

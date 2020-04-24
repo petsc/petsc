@@ -171,9 +171,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
   PetscInt               *sfvleaves,*sfvroots;
   PetscInt               *corners,*cedges;
   PetscInt               *ecount,**eneighs,*vcount,**vneighs;
-#if defined(PETSC_USE_DEBUG)
   PetscInt               *emarks;
-#endif
   PetscBool              print,eerr,done,lrc[2],conforming,global,singular,setprimal;
   PetscErrorCode         ierr;
 
@@ -544,9 +542,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
       if (vorder-test > PETSC_SQRT_MACHINE_EPSILON) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected value for vorder: %g (%D)",vorder,test);
       ord  = 1;
     }
-#if defined(PETSC_USE_DEBUG)
-    if (test%ord) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected number of edge dofs %D connected with nodal dof %D with order %D",test,i,ord);
-#endif
+    if (PetscUnlikelyDebug(test%ord)) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected number of edge dofs %D connected with nodal dof %D with order %D",test,i,ord);
     for (j=ii[i];j<ii[i+1] && sneighs;j++) {
       if (PetscBTLookup(btbd,jj[j])) {
         bdir = PETSC_TRUE;
@@ -707,7 +703,16 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
 
   /* Compute edge connectivity */
   ierr = PetscObjectSetOptionsPrefix((PetscObject)lG,"econn_");CHKERRQ(ierr);
-  ierr = MatMatMultSymbolic(lG,lGt,PETSC_DEFAULT,&conn);CHKERRQ(ierr);
+
+  /* Symbolic conn = lG*lGt */
+  ierr = MatProductCreate(lG,lGt,NULL,&conn);CHKERRQ(ierr);
+  ierr = MatProductSetType(conn,MATPRODUCT_AB);CHKERRQ(ierr);
+  ierr = MatProductSetAlgorithm(conn,"default");CHKERRQ(ierr);
+  ierr = MatProductSetFill(conn,PETSC_DEFAULT);CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)conn,"econn_");CHKERRQ(ierr);
+  ierr = MatProductSetFromOptions(conn);CHKERRQ(ierr);
+  ierr = MatProductSymbolic(conn);CHKERRQ(ierr);
+
   ierr = MatGetRowIJ(conn,0,PETSC_FALSE,PETSC_FALSE,&i,&ii,&jj,&done);CHKERRQ(ierr);
   if (fl2g) {
     PetscBT   btf;
@@ -1123,35 +1128,35 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
   ierr = MatRestoreRowIJ(lG,0,PETSC_FALSE,PETSC_FALSE,&i,&ii,&jj,&done);CHKERRQ(ierr);
   ierr = PetscBTDestroy(&btvc);CHKERRQ(ierr);
 
-#if defined(PETSC_USE_DEBUG)
-  /* Inspects columns of lG (rows of lGt) and make sure the change of basis will
+  if (PetscDefined(USE_DEBUG)) {
+    /* Inspects columns of lG (rows of lGt) and make sure the change of basis will
      not interfere with neighbouring coarse edges */
-  ierr = PetscMalloc1(nee+1,&emarks);CHKERRQ(ierr);
-  ierr = MatGetRowIJ(lGt,0,PETSC_FALSE,PETSC_FALSE,&i,&ii,&jj,&done);CHKERRQ(ierr);
-  for (i=0;i<nv;i++) {
-    PetscInt emax = 0,eemax = 0;
+    ierr = PetscMalloc1(nee+1,&emarks);CHKERRQ(ierr);
+    ierr = MatGetRowIJ(lGt,0,PETSC_FALSE,PETSC_FALSE,&i,&ii,&jj,&done);CHKERRQ(ierr);
+    for (i=0;i<nv;i++) {
+      PetscInt emax = 0,eemax = 0;
 
-    if (ii[i+1]==ii[i] || PetscBTLookup(btv,i)) continue;
-    ierr = PetscArrayzero(emarks,nee+1);CHKERRQ(ierr);
-    for (j=ii[i];j<ii[i+1];j++) emarks[marks[jj[j]]]++;
-    for (j=1;j<nee+1;j++) {
-      if (emax < emarks[j]) {
-        emax = emarks[j];
-        eemax = j;
+      if (ii[i+1]==ii[i] || PetscBTLookup(btv,i)) continue;
+      ierr = PetscArrayzero(emarks,nee+1);CHKERRQ(ierr);
+      for (j=ii[i];j<ii[i+1];j++) emarks[marks[jj[j]]]++;
+      for (j=1;j<nee+1;j++) {
+        if (emax < emarks[j]) {
+          emax = emarks[j];
+          eemax = j;
+        }
+      }
+      /* not relevant for edges */
+      if (!eemax) continue;
+
+      for (j=ii[i];j<ii[i+1];j++) {
+        if (marks[jj[j]] && marks[jj[j]] != eemax) {
+          SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_SUP,"Found 2 coarse edges (id %D and %D) connected through the %D nodal dof at edge dof %D",marks[jj[j]]-1,eemax,i,jj[j]);
+        }
       }
     }
-    /* not relevant for edges */
-    if (!eemax) continue;
-
-    for (j=ii[i];j<ii[i+1];j++) {
-      if (marks[jj[j]] && marks[jj[j]] != eemax) {
-        SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_SUP,"Found 2 coarse edges (id %D and %D) connected through the %D nodal dof at edge dof %D",marks[jj[j]]-1,eemax,i,jj[j]);
-      }
-    }
+    ierr = PetscFree(emarks);CHKERRQ(ierr);
+    ierr = MatRestoreRowIJ(lGt,0,PETSC_FALSE,PETSC_FALSE,&i,&ii,&jj,&done);CHKERRQ(ierr);
   }
-  ierr = PetscFree(emarks);CHKERRQ(ierr);
-  ierr = MatRestoreRowIJ(lGt,0,PETSC_FALSE,PETSC_FALSE,&i,&ii,&jj,&done);CHKERRQ(ierr);
-#endif
 
   /* Compute extended rows indices for edge blocks of the change of basis */
   ierr = MatGetRowIJ(lGt,0,PETSC_FALSE,PETSC_FALSE,&i,&ii,&jj,&done);CHKERRQ(ierr);
@@ -4418,10 +4423,20 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
           ierr = VecResetArray(pcbddc->vec1_R);CHKERRQ(ierr);
         }
         ierr = MatCreateSeqDense(PETSC_COMM_SELF,n_B,n_vertices,work+lda_rhs*n_vertices,&B);CHKERRQ(ierr);
-        ierr = MatMatMult(pcbddc->local_auxmat1,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&S_CV);CHKERRQ(ierr);
+        /* Reuse dense S_C = pcbddc->local_auxmat1 * B */
+        ierr = MatProductCreateWithMat(pcbddc->local_auxmat1,B,NULL,S_CV);CHKERRQ(ierr);
+        ierr = MatProductSetType(S_CV,MATPRODUCT_AB);CHKERRQ(ierr);
+        ierr = MatProductSetFromOptions(S_CV);CHKERRQ(ierr);
+        ierr = MatProductNumeric(S_CV);CHKERRQ(ierr);
+
         ierr = MatDestroy(&B);CHKERRQ(ierr);
         ierr = MatCreateSeqDense(PETSC_COMM_SELF,lda_rhs,n_vertices,work+lda_rhs*n_vertices,&B);CHKERRQ(ierr);
-        ierr = MatMatMult(local_auxmat2_R,S_CV,MAT_REUSE_MATRIX,PETSC_DEFAULT,&B);CHKERRQ(ierr);
+        /* Reuse B = local_auxmat2_R * S_CV */
+        ierr = MatProductCreateWithMat(local_auxmat2_R,S_CV,NULL,B);CHKERRQ(ierr);
+        ierr = MatProductSetType(B,MATPRODUCT_AB);CHKERRQ(ierr);
+        ierr = MatProductSetFromOptions(B);CHKERRQ(ierr);
+        ierr = MatProductNumeric(B);CHKERRQ(ierr);
+
         ierr = MatScale(S_CV,m_one);CHKERRQ(ierr);
         ierr = PetscBLASIntCast(lda_rhs*n_vertices,&B_N);CHKERRQ(ierr);
         PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&B_N,&one,work+lda_rhs*n_vertices,&B_one,work,&B_one));
@@ -4436,7 +4451,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
       /* need A_VR * \Phi * A_RRmA_RV = A_VR * (I+L)^T * A_RRmA_RV, L given as before */
       if (need_benign_correction) {
         PCBDDCReuseSolvers reuse_solver = sub_schurs->reuse_solver;
-        PetscScalar      *marr,*sums;
+        PetscScalar        *marr,*sums;
 
         ierr = PetscMalloc1(n_vertices,&sums);CHKERRQ(ierr);
         ierr = MatDenseGetArray(S_VVt,&marr);CHKERRQ(ierr);
@@ -7502,9 +7517,7 @@ PetscErrorCode PCBDDCMatISGetSubassemblingPattern(Mat mat, PetscInt *n_subdomain
     ierr = ISGetIndices(new_ranks_contig,(const PetscInt**)&is_indices);CHKERRQ(ierr);
     if (!aggregate) {
       if (procs_candidates) { /* shift the pattern on non-active candidates (if any) */
-#if defined(PETSC_USE_DEBUG)
-        if (!oldranks) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"This should not happen");
-#endif
+        if (PetscUnlikelyDebug(!oldranks)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"This should not happen");
         ranks_send_to_idx[0] = procs_candidates[oldranks[is_indices[0]]];
       } else if (oldranks) {
         ranks_send_to_idx[0] = oldranks[is_indices[0]];
@@ -7525,9 +7538,7 @@ PetscErrorCode PCBDDCMatISGetSubassemblingPattern(Mat mat, PetscInt *n_subdomain
       ierr = MPI_Waitall(rend-rstart,reqs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
       ierr = PetscFree(reqs);CHKERRQ(ierr);
       if (procs_candidates) { /* shift the pattern on non-active candidates (if any) */
-#if defined(PETSC_USE_DEBUG)
-        if (!oldranks) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"This should not happen");
-#endif
+        if (PetscUnlikelyDebug(!oldranks)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"This should not happen");
         ranks_send_to_idx[0] = procs_candidates[oldranks[idx]];
       } else if (oldranks) {
         ranks_send_to_idx[0] = oldranks[idx];

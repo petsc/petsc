@@ -69,9 +69,7 @@ PetscErrorCode  PetscStageLogGetCurrent(PetscStageLog stageLog, int *stage)
   } else {
     ierr = PetscIntStackTop(stageLog->stack, stage);CHKERRQ(ierr);
   }
-#ifdef PETSC_USE_DEBUG
   if (*stage != stageLog->curStage) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Inconsistency in stage log: stage %d should be %d", *stage, stageLog->curStage);
-#endif
   PetscFunctionReturn(0);
 }
 

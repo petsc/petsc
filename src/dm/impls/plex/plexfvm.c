@@ -114,7 +114,7 @@ PetscErrorCode DMPlexReconstructGradients_Internal(DM dm, PetscFV fvm, PetscInt 
     }
   }
   /* Limit interior gradients (using cell-based loop because it generalizes better to vector limiters) */
-  ierr = DMPlexGetInteriorCellStratum(dm, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMGetWorkArray(dm, dof, MPIU_REAL, &cellPhi);CHKERRQ(ierr);
   for (cell = (dmGrad && lim) ? cStart : cEnd; cell < cEnd; ++cell) {
     const PetscInt        *faces;

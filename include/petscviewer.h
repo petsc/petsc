@@ -196,7 +196,9 @@ PETSC_EXTERN PetscErrorCode PetscViewerASCIIRead(PetscViewer,void *,PetscInt,Pet
 PETSC_EXTERN PetscErrorCode PetscViewerBinaryGetDescriptor(PetscViewer,int*);
 PETSC_EXTERN PetscErrorCode PetscViewerBinaryGetInfoPointer(PetscViewer,FILE **);
 PETSC_EXTERN PetscErrorCode PetscViewerBinaryRead(PetscViewer,void*,PetscInt,PetscInt*,PetscDataType);
-PETSC_EXTERN PetscErrorCode PetscViewerBinaryWrite(PetscViewer,void*,PetscInt,PetscDataType,PetscBool );
+PETSC_EXTERN PetscErrorCode PetscViewerBinaryWrite(PetscViewer,const void*,PetscInt,PetscDataType);
+PETSC_EXTERN PetscErrorCode PetscViewerBinaryReadAll(PetscViewer,void*,PetscInt,PetscInt,PetscInt,PetscDataType);
+PETSC_EXTERN PetscErrorCode PetscViewerBinaryWriteAll(PetscViewer,const void*,PetscInt,PetscInt,PetscInt,PetscDataType);
 PETSC_EXTERN PetscErrorCode PetscViewerStringSPrintf(PetscViewer,const char[],...);
 PETSC_EXTERN PetscErrorCode PetscViewerStringSetString(PetscViewer,char[],size_t);
 PETSC_EXTERN PetscErrorCode PetscViewerStringGetStringRead(PetscViewer,const char*[],size_t*);

@@ -1,9 +1,0 @@
-DM Object: Simplicial Mesh 1 MPI processes
-  type: plex
-Simplicial Mesh in 2 dimensions:
-  0-cells: 92
-  1-cells: 241
-  2-cells: 150
-Labels:
-  depth: 3 strata with value/size (0 (92), 1 (241), 2 (150))
-  Face Sets: 2 strata with value/size (2 (32), 3 (209))

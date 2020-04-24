@@ -23,13 +23,16 @@ include ${PETSC_DIR}/lib/petsc/conf/test.common
 # benefit from parallelism.
 .NOTPARALLEL:
 
+OMAKE_SELF = $(OMAKE) -f makefile
+OMAKE_SELF_PRINTDIR = $(OMAKE_PRINTDIR) -f makefile
+
 #
 # Basic targets to build PETSc libraries.
 #
 all:
-	+@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} chk_petscdir chk_upgrade | tee ${PETSC_ARCH}/lib/petsc/conf/make.log
+	+@${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} chk_petscdir chk_upgrade | tee ${PETSC_ARCH}/lib/petsc/conf/make.log
 	@ln -sf ${PETSC_ARCH}/lib/petsc/conf/make.log make.log
-	+@${OMAKE_PRINTDIR} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} all-local 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc/conf/make.log;
+	+@${OMAKE_SELF_PRINTDIR} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} all-local 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc/conf/make.log;
 	@egrep -i "( error | error: |no such file or directory)" ${PETSC_ARCH}/lib/petsc/conf/make.log | tee ${PETSC_ARCH}/lib/petsc/conf/error.log > /dev/null
 	+@if test -s ${PETSC_ARCH}/lib/petsc/conf/error.log; then \
            printf ${PETSC_TEXT_HILIGHT}"**************************ERROR*************************************\n" 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc/conf/make.log; \
@@ -37,12 +40,12 @@ all:
            echo "  Send it and ${PETSC_ARCH}/lib/petsc/conf/configure.log to petsc-maint@mcs.anl.gov" 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc/conf/make.log;\
            printf "********************************************************************"${PETSC_TEXT_NORMAL}"\n" 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc/conf/make.log;\
 	 else \
-	  ${OMAKE} print_mesg_after_build PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc/conf/make.log ;\
+	  ${OMAKE_SELF} print_mesg_after_build PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc/conf/make.log ;\
         fi #solaris make likes to print the whole command that gave error. So split this up into the smallest chunk below
 	@echo "Finishing make run at `date +'%a, %d %b %Y %H:%M:%S %z'`" >> ${PETSC_ARCH}/lib/petsc/conf/make.log
 	@if test -s ${PETSC_ARCH}/lib/petsc/conf/error.log; then exit 1; fi
 
-all-local: info libs matlabbin mpi4py-build petsc4py-build libmesh-build mfem-build slepc-build hpddm-build
+all-local: info libs matlabbin mpi4py-build petsc4py-build libmesh-build mfem-build slepc-build hpddm-build amrex-build
 
 #
 # Prints information about the system and version of PETSc being compiled
@@ -128,73 +131,78 @@ matlabbin:
           echo "BEGINNING TO COMPILE MATLAB INTERFACE"; \
             if [ ! -d "${PETSC_DIR}/${PETSC_ARCH}/lib/petsc" ] ; then ${MKDIR}  ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc; fi; \
             if [ ! -d "${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/matlab" ] ; then ${MKDIR}  ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/matlab; fi; \
-            cd src/sys/classes/viewer/impls/socket/matlab && ${OMAKE} matlabcodes PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR}; \
+            cd src/sys/classes/viewer/impls/socket/matlab && ${OMAKE_SELF} matlabcodes PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR}; \
             echo "========================================="; \
         fi
 #
-# Builds PETSc test examples for a given architecture
+# Builds PETSc check examples for a given architecture
 #
-test_install: test
-check: test
-test:
-	-+@${OMAKE} PATH="${PETSC_DIR}/${PETSC_ARCH}/lib:${PATH}" PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} test_build 2>&1 | tee ./${PETSC_ARCH}/lib/petsc/conf/test.log
-testx:
-	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testx_build 2>&1 | tee ./${PETSC_ARCH}/lib/petsc/conf/testx.log
-test_build:
-	-@echo "Running test examples to verify correct installation"
+check_install: check
+check:
+	-+@${OMAKE_SELF} PATH="${PETSC_DIR}/${PETSC_ARCH}/lib:${PATH}" PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} check_build 2>&1 | tee ./${PETSC_ARCH}/lib/petsc/conf/check.log
+checkx:
+	-@${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} checkx_build 2>&1 | tee ./${PETSC_ARCH}/lib/petsc/conf/checkx.log
+check_build:
+	-@echo "Running check examples to verify correct installation"
 	-@echo "Using PETSC_DIR=${PETSC_DIR} and PETSC_ARCH=${PETSC_ARCH}"
-	+@cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean
-	+@cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testex19
+	+@cd src/snes/tutorials >/dev/null; ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean-legacy
+	+@cd src/snes/tutorials >/dev/null; ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testex19
 	+@if [ "${HYPRE_LIB}" != "" ] && [ "${PETSC_WITH_BATCH}" = "" ] &&  [ "${PETSC_SCALAR}" = "real" ]; then \
-          cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} DIFF=${PETSC_DIR}/lib/petsc/bin/petscdiff runex19_hypre; \
+          cd src/snes/tutorials >/dev/null; ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} DIFF=${PETSC_DIR}/lib/petsc/bin/petscdiff runex19_hypre; \
          fi;
 	+@if [ "${MUMPS_LIB}" != "" ] && [ "${PETSC_WITH_BATCH}" = "" ]; then \
-          cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR}  DIFF=${PETSC_DIR}/lib/petsc/bin/petscdiff runex19_fieldsplit_mumps; \
+          cd src/snes/tutorials >/dev/null; ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR}  DIFF=${PETSC_DIR}/lib/petsc/bin/petscdiff runex19_fieldsplit_mumps; \
          fi;
 	+@if [ "${SUPERLU_DIST_LIB}" != "" ] && [ "${PETSC_WITH_BATCH}" = "" ]; then \
-          cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR}  DIFF=${PETSC_DIR}/lib/petsc/bin/petscdiff runex19_superlu_dist; \
+          cd src/snes/tutorials >/dev/null; ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR}  DIFF=${PETSC_DIR}/lib/petsc/bin/petscdiff runex19_superlu_dist; \
          fi;
 	+@if [ "${HDF5_LIB}" != "" ] && [ "${PETSC_WITH_BATCH}" = "" ]; then \
-          cd src/vec/vec/examples/tests >/dev/null; \
-          ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean; \
-          ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} ex47.PETSc DIFF=${PETSC_DIR}/lib/petsc/bin/petscdiff runex47; \
-          ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean; \
+          cd src/vec/vec/tests >/dev/null; \
+          ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean-legacy; \
+          ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} ex47.PETSc DIFF=${PETSC_DIR}/lib/petsc/bin/petscdiff runex47; \
+          ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean-legacy; \
+         fi;
+	+@if [ "${AMREX_LIB}" != "" ] && [ "${PETSC_WITH_BATCH}" = "" ]; then \
+           echo "Running testamres examples to verify correct installation";\
+           echo "Using PETSC_DIR=${PETSC_DIR} and PETSC_ARCH=${PETSC_ARCH}";\
+           cd src/ksp/ksp/tutorials/amrex >/dev/null; ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean-legacy;\
+           ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testamrex;\
          fi;
 	+@if ( [ "${ML_LIB}" != "" ] ||  [ "${TRILINOS_LIB}" != "" ] ) && [ "${PETSC_WITH_BATCH}" = "" ]; then \
-          cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR}  DIFF=${PETSC_DIR}/lib/petsc/bin/petscdiff runex19_ml; \
+          cd src/snes/tutorials >/dev/null; ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR}  DIFF=${PETSC_DIR}/lib/petsc/bin/petscdiff runex19_ml; \
          fi;
 	+@if [ "${SUITESPARSE_LIB}" != "" ] && [ "${PETSC_WITH_BATCH}" = "" ]; then \
-          cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} DIFF=${PETSC_DIR}/lib/petsc/bin/petscdiff runex19_suitesparse; \
+          cd src/snes/tutorials >/dev/null; ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} DIFF=${PETSC_DIR}/lib/petsc/bin/petscdiff runex19_suitesparse; \
          fi;
-	+@cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} ex19.rm
+	+@cd src/snes/tutorials >/dev/null; ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} ex19.rm
 	+@if [ "${PETSC4PY}" = "yes" ]; then \
-          cd src/ksp/ksp/examples/tutorials >/dev/null; \
-          ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean; \
-          ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testex100; \
-          ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean; \
+          cd src/ksp/ksp/tutorials >/dev/null; \
+          ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean-legacy; \
+          ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testex100; \
+          ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean-legacy; \
          fi;
 	+@egrep "^#define PETSC_HAVE_FORTRAN 1" ${PETSCCONF_H} | tee .ftn.log > /dev/null; \
          if test -s .ftn.log; then \
-          cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testex5f; \
+          cd src/snes/tutorials >/dev/null; ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testex5f; \
          fi; ${RM} .ftn.log;
-	+@cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean
+	+@cd src/snes/tutorials >/dev/null; ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean-legacy
 	-@echo "Completed test examples"
-testx_build:
-	-@echo "Running graphics test example to verify correct X11 installation"
+checkx_build:
+	-@echo "Running graphics check example to verify correct X11 installation"
 	-@echo "Using PETSC_DIR=${PETSC_DIR} and PETSC_ARCH=${PETSC_ARCH}"
-	@cd src/snes/examples/tutorials; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean
-	@cd src/snes/examples/tutorials; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testxex19
-	@cd src/snes/examples/tutorials; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean
-	-@echo "Completed graphics test example"
-test_usermakefile:
+	@cd src/snes/tutorials; ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean-legacy
+	@cd src/snes/tutorials; ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testxex19
+	@cd src/snes/tutorials; ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean-legacy
+	-@echo "Completed graphics check example"
+check_usermakefile:
 	-@echo "Testing compile with user makefile"
 	-@echo "Using PETSC_DIR=${PETSC_DIR} and PETSC_ARCH=${PETSC_ARCH}"
-	@cd src/snes/examples/tutorials; ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} -f ${PETSC_DIR}/share/petsc/Makefile.user ex19
+	@cd src/snes/tutorials; ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} -f ${PETSC_DIR}/share/petsc/Makefile.user ex19
 	@egrep "^#define PETSC_HAVE_FORTRAN 1" ${PETSCCONF_H} | tee .ftn.log > /dev/null; \
          if test -s .ftn.log; then \
-          cd src/snes/examples/tutorials; ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} -f ${PETSC_DIR}/share/petsc/Makefile.user ex5f; \
+          cd src/snes/tutorials; ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} -f ${PETSC_DIR}/share/petsc/Makefile.user ex5f; \
          fi; ${RM} .ftn.log;
-	@cd src/snes/examples/tutorials; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean
+	@cd src/snes/tutorials; ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean-legacy
 	-@echo "Completed compile with user makefile"
 
 # Compare ABI/API of two versions of PETSc library with the old one defined by PETSC_{DIR,ARCH}_ABI_OLD
@@ -268,19 +276,19 @@ reconfigure:
 #
 install:
 	@${PYTHON} ./config/install.py -destDir=${DESTDIR}
-	+${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} mpi4py-install petsc4py-install libmesh-install mfem-install slepc-install hpddm-install
+	+${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} mpi4py-install petsc4py-install libmesh-install mfem-install slepc-install hpddm-install amrex-install
 
 mpistreams:
-	+@cd src/benchmarks/streams; ${OMAKE} PATH="${PETSC_DIR}/${PETSC_ARCH}/lib:${PATH}" PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} mpistreams
+	+@cd src/benchmarks/streams; ${OMAKE_SELF} PATH="${PETSC_DIR}/${PETSC_ARCH}/lib:${PATH}" PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} mpistreams
 
 mpistream:
-	+@cd src/benchmarks/streams; ${OMAKE} PATH="${PETSC_DIR}/${PETSC_ARCH}/lib:${PATH}" PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} mpistream
+	+@cd src/benchmarks/streams; ${OMAKE_SELF} PATH="${PETSC_DIR}/${PETSC_ARCH}/lib:${PATH}" PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} mpistream
 
 openmpstreams:
-	+@cd src/benchmarks/streams; ${OMAKE} PATH="${PETSC_DIR}/${PETSC_ARCH}/lib:${PATH}" PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} openmpstreams
+	+@cd src/benchmarks/streams; ${OMAKE_SELF} PATH="${PETSC_DIR}/${PETSC_ARCH}/lib:${PATH}" PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} openmpstreams
 
 openmpstream:
-	+@cd src/benchmarks/streams; ${OMAKE} PATH="${PETSC_DIR}/${PETSC_ARCH}/lib:${PATH}" PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} openmpstream
+	+@cd src/benchmarks/streams; ${OMAKE_SELF} PATH="${PETSC_DIR}/${PETSC_ARCH}/lib:${PATH}" PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} openmpstream
 
 # for legacy reasons
 stream: mpistream
@@ -300,7 +308,7 @@ alletags:
 
 # obtain gtags from http://www.gnu.org/s/global/
 allgtags:
-	-@find ${PETSC_DIR}/include ${PETSC_DIR}/src ${PETSC_DIR}/bin -regex '\(.*makefile\|.*\.\(cc\|hh\|cpp\|C\|hpp\|c\|h\|cu\|m\)$$\)' | grep -v ftn-auto  | gtags -f -
+	-@find ${PETSC_DIR}/include ${PETSC_DIR}/src -regex '\(.*makefile\|.*\.\(cc\|hh\|cpp\|C\|hpp\|c\|h\|cu\|m\)$$\)' | grep -v ftn-auto  | gtags -f -
 
 allfortranstubs:
 	-@${RM} -rf ${PETSC_ARCH}/include/petsc/finclude/ftn-auto/*-tmpdir
@@ -316,36 +324,35 @@ alldoc: allcite allpdf alldoc1 alldoc2 docsetdate
 # Build just citations
 allcite: chk_loc deletemanualpages
 	-${PYTHON} lib/petsc/bin/maint/countpetsccits.py
-	-${OMAKE} ACTION=manualpages_buildcite tree_basic LOC=${LOC}
+	-${OMAKE_SELF} ACTION=manualpages_buildcite tree_basic LOC=${LOC}
 	-@sed -e s%man+../%man+manualpages/% ${LOC}/docs/manualpages/manualpages.cit > ${LOC}/docs/manualpages/htmlmap
 	-@cat ${PETSC_DIR}/src/docs/mpi.www.index >> ${LOC}/docs/manualpages/htmlmap
 
 # Build just PDF manuals + prerequisites
 allpdf: chk_loc allcite
-	-cd src/docs/tex/manual; ${OMAKE} manual.pdf LOC=${LOC}
-	-cd src/docs/tex/manual; ${OMAKE} developers.pdf LOC=${LOC}
-	-cd src/docs/tao_tex/manual; ${OMAKE} manual.pdf LOC=${LOC}
+	-cd src/docs/tex/manual; ${OMAKE_SELF} manual.pdf LOC=${LOC}
+	-cd src/docs/tao_tex/manual; ${OMAKE_SELF} manual.pdf LOC=${LOC}
 
 # Build just manual pages + prerequisites
 allmanpages: chk_loc allcite
-	-${OMAKE} ACTION=manualpages tree_basic LOC=${LOC}
+	-${OMAKE_SELF} ACTION=manualpages tree_basic LOC=${LOC}
 
 # Build just manual examples + prerequisites
 allmanexamples: chk_loc allmanpages
-	-${OMAKE} ACTION=manexamples tree_basic LOC=${LOC}
+	-${OMAKE_SELF} ACTION=manexamples tree_basic LOC=${LOC}
 
 # Build everything that goes into 'doc' dir except html sources
 alldoc1: chk_loc chk_concepts_dir allcite allmanpages allmanexamples
-	-${OMAKE} manimplementations LOC=${LOC}
+	-${OMAKE_SELF} manimplementations LOC=${LOC}
 	-${PYTHON} lib/petsc/bin/maint/wwwindex.py ${PETSC_DIR} ${LOC}
-	-${OMAKE} ACTION=getexlist tree_basic LOC=${LOC}
-	-${OMAKE} ACTION=exampleconcepts tree_basic LOC=${LOC}
+	-${OMAKE_SELF} ACTION=getexlist tree_basic LOC=${LOC}
+	-${OMAKE_SELF} ACTION=exampleconcepts tree_basic LOC=${LOC}
 	-${PYTHON} lib/petsc/bin/maint/helpindex.py ${PETSC_DIR} ${LOC}
 
 # Builds .html versions of the source
 # html overwrites some stuff created by update-docs - hence this is done later.
 alldoc2: chk_loc
-	-${OMAKE} ACTION=html PETSC_DIR=${PETSC_DIR} alltree LOC=${LOC}
+	-${OMAKE_SELF} ACTION=html PETSC_DIR=${PETSC_DIR} alltree LOC=${LOC}
 	-${PYTHON} lib/petsc/bin/maint/update-docs.py ${PETSC_DIR} ${LOC}
 #
 # Makes links for all manual pages in $LOC/docs/manualpages/all
@@ -399,7 +406,7 @@ deletemanualpages: chk_loc
         fi
 
 allcleanhtml:
-	-${OMAKE} ACTION=cleanhtml PETSC_DIR=${PETSC_DIR} alltree
+	-${OMAKE_SELF} ACTION=cleanhtml PETSC_DIR=${PETSC_DIR} alltree
 
 chk_concepts_dir: chk_loc
 	@if [ ! -d "${LOC}/docs/manualpages/concepts" ]; then \
@@ -437,7 +444,6 @@ update-web:
 	/usr/bin/rsync -az -C --exclude=documentation/index.html \
           --exclude=documentation/installation.html --exclude=download/index.html \
 	  ${PETSC_DIR}/src/docs/website/ petsc@login.mcs.anl.gov:/mcs/web/research/projects/petsc
-	@cd ${PETSC_DIR}/docs; /usr/bin/rsync -az developers.pdf petsc@login.mcs.anl.gov:/mcs/web/research/projects/petsc/developers/
 	@cd ${PETSC_DIR}/src/docs/tex; /usr/bin/rsync -az petscapp.bib petsc.bib petsc@login.mcs.anl.gov:/mcs/web/research/projects/petsc/publications
 
 ###########################################################
@@ -459,8 +465,6 @@ includegraph:
 	-@${PETSC_DIR}/src/contrib/style/include-graph.sh includegraph.pdf
 	-@echo Include dependency graph written to includegraph.pdf
 
-check_output:
-	-@${OMAKE} -f gmakefile.test check_output
 #
 # -------------------------------------------------------------------------------
 #

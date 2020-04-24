@@ -1,0 +1,24 @@
+DM Object: Parallel Mesh 2 MPI processes
+  type: plex
+Parallel Mesh in 2 dimensions:
+  0-cells: 6 4
+  1-cells: 6 4 (2)
+  2-cells: 2 1 (1)
+Labels:
+  celltype: 3 strata with value/size (0 (6), 1 (6), 3 (2))
+  depth: 3 strata with value/size (0 (6), 1 (6), 2 (2))
+  fault: 1 strata with value/size (1 (4))
+  vtk: 1 strata with value/size (1 (2))
+  ghost: 1 strata with value/size (1 (4))
+DM Object: Hybrid Mesh 2 MPI processes
+  type: plex
+Hybrid Mesh in 2 dimensions:
+  0-cells: 30 10
+  1-cells: 60 13 (5)
+  2-cells: 32 4 (4)
+Labels:
+  celltype: 3 strata with value/size (1 (60), 3 (32), 0 (30))
+  depth: 3 strata with value/size (0 (30), 1 (60), 2 (32))
+  fault: 1 strata with value/size (1 (4))
+  vtk: 1 strata with value/size (1 (74))
+  ghost: 1 strata with value/size (1 (28))

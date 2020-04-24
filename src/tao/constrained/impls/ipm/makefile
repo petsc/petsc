@@ -2,7 +2,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = ipm.c
+SOURCEC  = ipm.c pdipm.c
 SOURCEF  =
 SOURCEH  = ipm.h
 LIBBASE  = libpetsctao

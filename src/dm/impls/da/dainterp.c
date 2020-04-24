@@ -1362,10 +1362,12 @@ PetscErrorCode  DMCreateInjection_DA(DM dac,DM daf,Mat *mat)
 
 /*@
    DMCreateAggregates - Deprecated, see DMDACreateAggregates.
+
+   Level: intermediate
 @*/
-PetscErrorCode DMCreateAggregates(DM dm1,DM dm2,Mat *mat)
+PetscErrorCode DMCreateAggregates(DM dac,DM daf,Mat *mat)
 {
-  return DMDACreateAggregates(dm1,dm2,mat);
+  return DMDACreateAggregates(dac,daf,mat);
 }
 
 /*@

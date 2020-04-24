@@ -51,11 +51,12 @@ PetscErrorCode  MatMFFDInitializePackage(void)
   ierr = MatMFFDRegisterAll();CHKERRQ(ierr);
   /* Register Events */
   ierr = PetscLogEventRegister("MatMult MF",MATMFFD_CLASSID,&MATMFFD_Mult);CHKERRQ(ierr);
-  /* Process info exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL,"-info_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
-  if (opt) {
-    ierr = PetscStrInList("matmffd",logList,',',&pkg);CHKERRQ(ierr);
-    if (pkg) {ierr = PetscInfoDeactivateClass(MATMFFD_CLASSID);CHKERRQ(ierr);}
+ /* Process Info */
+  {
+    PetscClassId  classids[1];
+
+    classids[0] = MATMFFD_CLASSID;
+    ierr = PetscInfoProcessClass("matmffd", 1, classids);CHKERRQ(ierr);
   }
   /* Process summary exclusions */
   ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);

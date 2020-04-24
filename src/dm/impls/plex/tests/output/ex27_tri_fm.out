@@ -1,0 +1,53 @@
+DM Object: Serial Mesh 1 MPI processes
+  type: plex
+Serial Mesh in 2 dimensions:
+  0-cells: 4
+  1-cells: 5
+  2-cells: 2
+Labels:
+  celltype: 3 strata with value/size (0 (4), 3 (2), 1 (5))
+  depth: 3 strata with value/size (0 (4), 1 (5), 2 (2))
+  marker: 1 strata with value/size (1 (8))
+  Face Sets: 1 strata with value/size (1 (4))
+PetscSection Object: 1 MPI processes
+  type not yet set
+3 fields
+  field 0 with 2 components
+Process 0:
+  (   0) dim  0 offset   0
+  (   1) dim  0 offset   0
+  (   2) dim  2 offset   0
+  (   3) dim  2 offset   2
+  (   4) dim  2 offset   4
+  (   5) dim  2 offset   6
+  (   6) dim  2 offset   8
+  (   7) dim  2 offset  10
+  (   8) dim  2 offset  12
+  (   9) dim  2 offset  14
+  (  10) dim  2 offset  16
+  field 1 with 1 components
+Process 0:
+  (   0) dim  0 offset  18
+  (   1) dim  0 offset  18
+  (   2) dim  1 offset  18
+  (   3) dim  1 offset  19
+  (   4) dim  1 offset  20
+  (   5) dim  1 offset  21
+  (   6) dim  0 offset  22
+  (   7) dim  0 offset  22
+  (   8) dim  0 offset  22
+  (   9) dim  0 offset  22
+  (  10) dim  0 offset  22
+  field 2 with 1 components
+Process 0:
+  (   0) dim  0 offset  22
+  (   1) dim  0 offset  22
+  (   2) dim  1 offset  22
+  (   3) dim  1 offset  23
+  (   4) dim  1 offset  24
+  (   5) dim  1 offset  25
+  (   6) dim  0 offset  26
+  (   7) dim  0 offset  26
+  (   8) dim  0 offset  26
+  (   9) dim  0 offset  26
+  (  10) dim  0 offset  26

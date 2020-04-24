@@ -45,6 +45,9 @@ def query(invDict,label):
     the results 
     """
     results=[]
+    if 'name' in invDict:
+        return fnmatch.filter(invDict['name'],label)
+
     for key in invDict:
         if fnmatch.filter([key],label):
             # Do not return values with not unless label itself has not
@@ -60,12 +63,17 @@ def get_inverse_dictionary(dataDict,field,srcdir):
     the tests as the results.
     """
     invDict={}
+    if field == 'name': invDict['name']=[]
     for root in dataDict:
       for exfile in dataDict[root]:
         for test in dataDict[root][exfile]:
-          if field not in dataDict[root][exfile][test]: continue
           defroot = testparse.getDefaultOutputFileRoot(test)
           name=nameSpace(defroot,os.path.relpath(root,srcdir))
+          if field == 'name':
+              if 'SKIP' in name: continue
+              invDict['name'].append(name)
+              continue
+          if field not in dataDict[root][exfile][test]: continue
           values=dataDict[root][exfile][test][field]
 
           for val in values.split():
@@ -128,6 +136,7 @@ def do_query(use_source, startdir, srcdir, testdir, field, label):
 
     # Get inverse dictionary for searching
     invDict=get_inverse_dictionary(dataDict, field, srcdir)
+    #print(invDict)
 
     # Now do query
     resList=query(invDict, label)
@@ -165,6 +174,7 @@ def main():
         parser.print_usage()
         print('Arguments: ')
         print('  field:          Field to search for; e.g., requires')
+        print('                  To just match names, use "name"')
         print('  match_pattern:  Matching pattern for field; e.g., cuda')
         return
 

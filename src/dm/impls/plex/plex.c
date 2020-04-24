@@ -13,84 +13,62 @@ PetscLogEvent DMPLEX_Interpolate, DMPLEX_Partition, DMPLEX_Distribute, DMPLEX_Di
 PETSC_EXTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
 
 /*@
-  DMPlexRefineSimplexToTensor - Uniformly refines simplicial cells into tensor product cells.
-  3 quadrilaterals per triangle in 2D and 4 hexahedra per tetrahedron in 3D.
+  DMPlexGetSimplexOrBoxCells - Get the range of cells which are neither prisms nor ghost FV cells
 
-  Collective
-
-  Input Parameters:
-. dm - The DMPlex object
+  Input Parameter:
++ dm     - The DMPlex object
+- height - The cell height in the Plex, 0 is the default
 
   Output Parameters:
-. dmRefined - The refined DMPlex object
++ cStart - The first "normal" cell
+- cEnd   - The upper bound on "normal"" cells
 
-  Note: Returns NULL if the mesh is already a tensor product mesh.
+  Note: This just gives the first range of cells found. If the mesh has several cell types, it will only give the first.
 
-  Level: intermediate
+  Level: developer
 
-.seealso: DMPlexCreate(), DMPlexSetRefinementUniform()
+.seealso DMPlexConstructGhostCells(), DMPlexSetGhostCellStratum()
 @*/
-PetscErrorCode DMPlexRefineSimplexToTensor(DM dm, DM *dmRefined)
+PetscErrorCode DMPlexGetSimplexOrBoxCells(DM dm, PetscInt height, PetscInt *cStart, PetscInt *cEnd)
 {
-  CellRefiner      cellRefiner;
-  DMPolytopeType   ct;
-  PetscInt         dim, cMax, fMax, cStart, cEnd;
-  PetscBool        lop, allnoop, localized;
-  PetscErrorCode   ierr;
+  DMPolytopeType ct = DM_POLYTOPE_UNKNOWN;
+  PetscInt       cS, cE, c;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(dmRefined, 1);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm,&cMax,&fMax,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
-  if (!(cEnd - cStart)) cellRefiner = REFINER_NOOP;
-  else {
-    ierr = DMPlexGetCellType(dm, cStart, &ct);CHKERRQ(ierr);
-    switch (ct) {
+  ierr = DMPlexGetHeightStratum(dm, PetscMax(height, 0), &cS, &cE);CHKERRQ(ierr);
+  for (c = cS; c < cE; ++c) {
+    DMPolytopeType cct;
+
+    ierr = DMPlexGetCellType(dm, c, &cct);CHKERRQ(ierr);
+    if ((PetscInt) cct < 0) break;
+    switch (cct) {
       case DM_POLYTOPE_POINT:
       case DM_POLYTOPE_SEGMENT:
-        cellRefiner = REFINER_NOOP;break;
       case DM_POLYTOPE_TRIANGLE:
-        if (cMax >= 0) cellRefiner = REFINER_HYBRID_SIMPLEX_TO_HEX_2D;
-        else           cellRefiner = REFINER_SIMPLEX_TO_HEX_2D;
-        break;
       case DM_POLYTOPE_QUADRILATERAL:
-        if (cMax >= 0) cellRefiner = REFINER_HYBRID_SIMPLEX_TO_HEX_2D;
-        else           cellRefiner = REFINER_NOOP;
-        break;
       case DM_POLYTOPE_TETRAHEDRON:
-        if (cMax >= 0) cellRefiner = REFINER_HYBRID_SIMPLEX_TO_HEX_3D;
-        else           cellRefiner = REFINER_SIMPLEX_TO_HEX_3D;
-        break;
-      case DM_POLYTOPE_TRI_PRISM_TENSOR:
-        cellRefiner = REFINER_HYBRID_SIMPLEX_TO_HEX_3D;break;
       case DM_POLYTOPE_HEXAHEDRON:
-        if (cMax >= 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Simplex2Tensor in 3D with Hybrid mesh not yet done");
-        else           cellRefiner = REFINER_NOOP;
+        ct = cct;
         break;
-      default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot handle cell polytope type %s", DMPolytopeTypes[ct]);
+      default: break;
     }
+    if (ct != DM_POLYTOPE_UNKNOWN) break;
   }
-  /* return if we don't need to refine */
-  lop = (cellRefiner == REFINER_NOOP) ? PETSC_TRUE : PETSC_FALSE;
-  ierr = MPIU_Allreduce(&lop,&allnoop,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
-  if (allnoop) {
-    *dmRefined = NULL;
-    PetscFunctionReturn(0);
+  if (ct != DM_POLYTOPE_UNKNOWN) {
+    DMLabel ctLabel;
+
+    ierr = DMPlexGetCellTypeLabel(dm, &ctLabel);CHKERRQ(ierr);
+    ierr = DMLabelGetStratumBounds(ctLabel, ct, &cS, &cE);CHKERRQ(ierr);
   }
-  ierr = DMPlexRefineUniform_Internal(dm, cellRefiner, dmRefined);CHKERRQ(ierr);
-  ierr = DMCopyBoundary(dm, *dmRefined);CHKERRQ(ierr);
-  ierr = DMGetCoordinatesLocalized(dm, &localized);CHKERRQ(ierr);
-  if (localized) {
-    ierr = DMLocalizeCoordinates(*dmRefined);CHKERRQ(ierr);
-  }
+  if (cStart) *cStart = cS;
+  if (cEnd)   *cEnd   = cE;
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode DMPlexGetFieldType_Internal(DM dm, PetscSection section, PetscInt field, PetscInt *sStart, PetscInt *sEnd, PetscViewerVTKFieldType *ft)
 {
-  PetscInt       cdim, pStart, pEnd, vStart, vEnd, cStart, cEnd, cMax;
+  PetscInt       cdim, pStart, pEnd, vStart, vEnd, cStart, cEnd;
   PetscInt       vcdof[2] = {0,0}, globalvcdof[2];
   PetscErrorCode ierr;
 
@@ -98,9 +76,7 @@ PetscErrorCode DMPlexGetFieldType_Internal(DM dm, PetscSection section, PetscInt
   *ft  = PETSC_VTK_INVALID;
   ierr = DMGetCoordinateDim(dm, &cdim);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
-  cEnd = cMax < 0 ? cEnd : cMax;
+  ierr = DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
   if (field >= 0) {
     if ((vStart >= pStart) && (vStart < pEnd)) {ierr = PetscSectionGetFieldDof(section, vStart, field, &vcdof[0]);CHKERRQ(ierr);}
@@ -616,7 +592,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
 {
   DM_Plex          *mesh = (DM_Plex*) dm->data;
   DM                cdm;
-  DMLabel           markers;
+  DMLabel           markers, celltypes;
   PetscSection      coordSection;
   Vec               coordinates;
   PetscViewerFormat format;
@@ -674,6 +650,8 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     }
     ierr = DMGetLabel(dm, "marker", &markers);CHKERRQ(ierr);
     if (markers) {ierr = DMLabelView(markers,viewer);CHKERRQ(ierr);}
+    ierr = DMPlexGetCellTypeLabel(dm, &celltypes);CHKERRQ(ierr);
+    if (celltypes) {ierr = DMLabelView(celltypes, viewer);CHKERRQ(ierr);}
     if (size > 1) {
       PetscSF sf;
 
@@ -1045,16 +1023,18 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     ierr  = PetscFree(adjacency);CHKERRQ(ierr);
     ierr  = VecDestroy(&acown);CHKERRQ(ierr);
   } else {
-    MPI_Comm    comm;
-    PetscInt   *sizes, *hybsizes, *ghostsizes;
-    PetscInt    locDepth, depth, cellHeight, dim, d, pMax[4];
-    PetscInt    pStart, pEnd, p, gcStart, gcEnd, gcNum;
-    PetscInt    numLabels, l;
-    const char *name;
-    PetscMPIInt size;
+    const char    *name;
+    PetscInt      *sizes, *hybsizes, *ghostsizes;
+    PetscInt       locDepth, depth, cellHeight, dim, d;
+    PetscInt       pStart, pEnd, p, gcStart, gcEnd, gcNum;
+    PetscInt       numLabels, l;
+    DMPolytopeType ct0;
+    MPI_Comm       comm;
+    PetscMPIInt    size, rank;
 
-    ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
+    ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
     ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
     ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
     ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
     ierr = PetscObjectGetName((PetscObject) dm, &name);CHKERRQ(ierr);
@@ -1063,55 +1043,36 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     if (cellHeight) {ierr = PetscViewerASCIIPrintf(viewer, "  Cells are at height %D\n", cellHeight);CHKERRQ(ierr);}
     ierr = DMPlexGetDepth(dm, &locDepth);CHKERRQ(ierr);
     ierr = MPIU_Allreduce(&locDepth, &depth, 1, MPIU_INT, MPI_MAX, comm);CHKERRQ(ierr);
-    ierr = DMPlexGetHybridBounds(dm, &pMax[depth], depth > 0 ? &pMax[depth-1] : NULL, depth > 1 ? &pMax[depth - 2] : NULL, &pMax[0]);CHKERRQ(ierr);
     ierr = DMPlexGetGhostCellStratum(dm, &gcStart, &gcEnd);CHKERRQ(ierr);
     gcNum = gcEnd - gcStart;
     ierr = PetscCalloc3(size,&sizes,size,&hybsizes,size,&ghostsizes);CHKERRQ(ierr);
-    if (depth == 1) {
-      ierr = DMPlexGetDepthStratum(dm, 0, &pStart, &pEnd);CHKERRQ(ierr);
-      pEnd = pEnd - pStart;
-      pMax[0] -= pStart;
-      ierr = MPI_Gather(&pEnd, 1, MPIU_INT, sizes, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
-      ierr = MPI_Gather(&pMax[0], 1, MPIU_INT, hybsizes, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
-      ierr = MPI_Gather(&gcNum, 1, MPIU_INT, ghostsizes, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer, "  %d-cells:", 0);CHKERRQ(ierr);
-      for (p = 0; p < size; ++p) {
-        if (hybsizes[p] >= 0) {ierr = PetscViewerASCIIPrintf(viewer, " %D (%D)", sizes[p], sizes[p] - hybsizes[p]);CHKERRQ(ierr);}
-        else                  {ierr = PetscViewerASCIIPrintf(viewer, " %D", sizes[p]);CHKERRQ(ierr);}
+    for (d = 0; d <= depth; d++) {
+      PetscInt Nc[2] = {0, 0}, ict;
+
+      ierr = DMPlexGetDepthStratum(dm, d, &pStart, &pEnd);CHKERRQ(ierr);
+      ierr = DMPlexGetCellType(dm, pStart, &ct0);CHKERRQ(ierr);
+      ict  = ct0;
+      ierr = MPI_Bcast(&ict, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
+      ct0  = (DMPolytopeType) ict;
+      for (p = pStart; p < pEnd; ++p) {
+        DMPolytopeType ct;
+
+        ierr = DMPlexGetCellType(dm, p, &ct);CHKERRQ(ierr);
+        if (ct == ct0) ++Nc[0];
+        else           ++Nc[1];
       }
-      ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
-      ierr = DMPlexGetHeightStratum(dm, 0, &pStart, &pEnd);CHKERRQ(ierr);
-      pEnd = pEnd - pStart;
-      pMax[depth] -= pStart;
-      ierr = MPI_Gather(&pEnd, 1, MPIU_INT, sizes, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
-      ierr = MPI_Gather(&pMax[depth], 1, MPIU_INT, hybsizes, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer, "  %D-cells:", dim);CHKERRQ(ierr);
+      ierr = MPI_Gather(&Nc[0], 1, MPIU_INT, sizes,    1, MPIU_INT, 0, comm);CHKERRQ(ierr);
+      ierr = MPI_Gather(&Nc[1], 1, MPIU_INT, hybsizes, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
+      if (d == depth) {ierr = MPI_Gather(&gcNum, 1, MPIU_INT, ghostsizes, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);}
+      ierr = PetscViewerASCIIPrintf(viewer, "  %D-cells:", (depth == 1) && d ? dim : d);CHKERRQ(ierr);
       for (p = 0; p < size; ++p) {
-        ierr = PetscViewerASCIIPrintf(viewer, " %D", sizes[p]);CHKERRQ(ierr);
-        if (hybsizes[p] >= 0)   {ierr = PetscViewerASCIIPrintf(viewer, " (%D)", sizes[p] - hybsizes[p]);CHKERRQ(ierr);}
-        if (ghostsizes[p] > 0) {ierr = PetscViewerASCIIPrintf(viewer, " [%D]", ghostsizes[p]);CHKERRQ(ierr);}
-      }
-      ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
-    } else {
-      PetscMPIInt rank;
-      ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-      for (d = 0; d <= dim; d++) {
-        ierr = DMPlexGetDepthStratum(dm, d, &pStart, &pEnd);CHKERRQ(ierr);
-        pEnd    -= pStart;
-        pMax[d] -= pStart;
-        ierr = MPI_Gather(&pEnd, 1, MPIU_INT, sizes, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
-        ierr = MPI_Gather(&pMax[d], 1, MPIU_INT, hybsizes, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
-        if (d == dim) {ierr = MPI_Gather(&gcNum, 1, MPIU_INT, ghostsizes, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);}
-        ierr = PetscViewerASCIIPrintf(viewer, "  %D-cells:", d);CHKERRQ(ierr);
-        for (p = 0; p < size; ++p) {
-          if (!rank) {
-            ierr = PetscViewerASCIIPrintf(viewer, " %D", sizes[p]);CHKERRQ(ierr);
-            if (hybsizes[p] >= 0) {ierr = PetscViewerASCIIPrintf(viewer, " (%D)", sizes[p] - hybsizes[p]);CHKERRQ(ierr);}
-            if (d == dim && ghostsizes[p] > 0) {ierr = PetscViewerASCIIPrintf(viewer, " [%D]", ghostsizes[p]);CHKERRQ(ierr);}
-          }
+        if (!rank) {
+          ierr = PetscViewerASCIIPrintf(viewer, " %D", sizes[p]+hybsizes[p]);CHKERRQ(ierr);
+          if (hybsizes[p]   > 0) {ierr = PetscViewerASCIIPrintf(viewer, " (%D)", hybsizes[p]);CHKERRQ(ierr);}
+          if (ghostsizes[p] > 0) {ierr = PetscViewerASCIIPrintf(viewer, " [%D]", ghostsizes[p]);CHKERRQ(ierr);}
         }
-        ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
       }
+      ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
     }
     ierr = PetscFree3(sizes,hybsizes,ghostsizes);CHKERRQ(ierr);
     ierr = DMGetNumLabels(dm, &numLabels);CHKERRQ(ierr);
@@ -1394,6 +1355,7 @@ PetscErrorCode DMDestroy_Plex(DM dm)
   ierr = PetscFree(mesh->triangleOpts);CHKERRQ(ierr);
   ierr = PetscPartitionerDestroy(&mesh->partitioner);CHKERRQ(ierr);
   ierr = DMLabelDestroy(&mesh->subpointMap);CHKERRQ(ierr);
+  ierr = ISDestroy(&mesh->subpointIS);CHKERRQ(ierr);
   ierr = ISDestroy(&mesh->globalVertexNumbers);CHKERRQ(ierr);
   ierr = ISDestroy(&mesh->globalCellNumbers);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&mesh->anchorSection);CHKERRQ(ierr);
@@ -1405,6 +1367,7 @@ PetscErrorCode DMDestroy_Plex(DM dm)
   ierr = PetscFree(mesh->children);CHKERRQ(ierr);
   ierr = DMDestroy(&mesh->referenceTree);CHKERRQ(ierr);
   ierr = PetscGridHashDestroy(&mesh->lbox);CHKERRQ(ierr);
+  ierr = PetscFree(mesh->neighbors);CHKERRQ(ierr);
   /* This was originally freed in DMDestroy(), but that prevents reference counting of backend objects */
   ierr = PetscFree(mesh);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2005,13 +1968,11 @@ PetscErrorCode DMPlexGetConeOrientation(DM dm, PetscInt p, const PetscInt *coneO
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-#if defined(PETSC_USE_DEBUG)
-  {
+  if (PetscDefined(USE_DEBUG)) {
     PetscInt dof;
     ierr = PetscSectionGetDof(mesh->coneSection, p, &dof);CHKERRQ(ierr);
     if (dof) PetscValidPointer(coneOrientation, 3);
   }
-#endif
   ierr = PetscSectionGetOffset(mesh->coneSection, p, &off);CHKERRQ(ierr);
 
   *coneOrientation = &mesh->coneOrientations[off];
@@ -2819,8 +2780,7 @@ static PetscErrorCode DMPlexCreateDepthStratum(DM dm, DMLabel label, PetscInt de
 
   PetscFunctionBegin;
   if (pStart >= pEnd) PetscFunctionReturn(0);
-#if defined(PETSC_USE_DEBUG)
-  {
+  if (PetscDefined(USE_DEBUG)) {
     PetscInt  qStart, qEnd, numLevels, level;
     PetscBool overlap = PETSC_FALSE;
     ierr = DMLabelGetNumValues(label, &numLevels);CHKERRQ(ierr);
@@ -2830,14 +2790,11 @@ static PetscErrorCode DMPlexCreateDepthStratum(DM dm, DMLabel label, PetscInt de
     }
     if (overlap) SETERRQ6(PETSC_COMM_SELF, PETSC_ERR_PLIB, "New depth %D range [%D,%D) overlaps with depth %D range [%D,%D)", depth, pStart, pEnd, level, qStart, qEnd);
   }
-#endif
   ierr = ISCreateStride(PETSC_COMM_SELF, pEnd-pStart, pStart, 1, &stratumIS);CHKERRQ(ierr);
   ierr = DMLabelSetStratumIS(label, depth, stratumIS);CHKERRQ(ierr);
   ierr = ISDestroy(&stratumIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-static PetscErrorCode DMPlexCreateDimStratum(DM,DMLabel,DMLabel,PetscInt,PetscInt);
 
 /*@
   DMPlexStratify - The DAG for most topologies is a graded poset (https://en.wikipedia.org/wiki/Graded_poset), and
@@ -2882,7 +2839,6 @@ PetscErrorCode DMPlexStratify(DM dm)
   DMLabel        label;
   PetscInt       pStart, pEnd, p;
   PetscInt       numRoots = 0, numLeaves = 0;
-  PetscInt       cMax, fMax, eMax, vMax;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2967,21 +2923,78 @@ PetscErrorCode DMPlexStratify(DM dm)
     }
   }
   ierr = PetscObjectStateGet((PetscObject) label, &mesh->depthState);CHKERRQ(ierr);
-
-  ierr = DMPlexGetHybridBounds(dm, &cMax, &fMax, &eMax, &vMax);CHKERRQ(ierr);
-  if (cMax >= 0 || fMax >= 0 || eMax >= 0 || vMax >= 0) {
-    PetscInt dim;
-    DMLabel  dimLabel;
-
-    ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-    ierr = DMCreateLabel(dm, "dim");CHKERRQ(ierr);
-    ierr = DMGetLabel(dm, "dim", &dimLabel);CHKERRQ(ierr);
-    if (cMax >= 0) {ierr = DMPlexCreateDimStratum(dm, label, dimLabel, dim, cMax);CHKERRQ(ierr);}
-    if (fMax >= 0) {ierr = DMPlexCreateDimStratum(dm, label, dimLabel, dim - 1, fMax);CHKERRQ(ierr);}
-    if (eMax >= 0) {ierr = DMPlexCreateDimStratum(dm, label, dimLabel, 1, eMax);CHKERRQ(ierr);}
-    if (vMax >= 0) {ierr = DMPlexCreateDimStratum(dm, label, dimLabel, 0, vMax);CHKERRQ(ierr);}
-  }
   ierr = PetscLogEventEnd(DMPLEX_Stratify,dm,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMPlexComputeCellType_Internal(DM dm, PetscInt p, PetscInt pdepth, DMPolytopeType *pt)
+{
+  DMPolytopeType ct = DM_POLYTOPE_UNKNOWN;
+  PetscInt       dim, depth, pheight, coneSize;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginHot;
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
+  ierr = DMPlexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
+  pheight = depth - pdepth;
+  if (depth <= 1) {
+    switch (pdepth) {
+      case 0: ct = DM_POLYTOPE_POINT;break;
+      case 1:
+        switch (coneSize) {
+          case 2: ct = DM_POLYTOPE_SEGMENT;break;
+          case 3: ct = DM_POLYTOPE_TRIANGLE;break;
+          case 4:
+          switch (dim) {
+            case 2: ct = DM_POLYTOPE_QUADRILATERAL;break;
+            case 3: ct = DM_POLYTOPE_TETRAHEDRON;break;
+            default: break;
+          }
+          break;
+        case 6: ct = DM_POLYTOPE_TRI_PRISM_TENSOR;break;
+        case 8: ct = DM_POLYTOPE_HEXAHEDRON;break;
+        default: break;
+      }
+    }
+  } else {
+    if (pdepth == 0) {
+      ct = DM_POLYTOPE_POINT;
+    } else if (pheight == 0) {
+      switch (dim) {
+        case 1:
+          switch (coneSize) {
+            case 2: ct = DM_POLYTOPE_SEGMENT;break;
+            default: break;
+          }
+          break;
+        case 2:
+          switch (coneSize) {
+            case 3: ct = DM_POLYTOPE_TRIANGLE;break;
+            case 4: ct = DM_POLYTOPE_QUADRILATERAL;break;
+            default: break;
+          }
+          break;
+        case 3:
+          switch (coneSize) {
+            case 4: ct = DM_POLYTOPE_TETRAHEDRON;break;
+            case 5: ct = DM_POLYTOPE_TRI_PRISM_TENSOR;break;
+            case 6: ct = DM_POLYTOPE_HEXAHEDRON;break;
+            default: break;
+          }
+          break;
+        default: break;
+      }
+    } else if (pheight > 0) {
+      switch (coneSize) {
+        case 2: ct = DM_POLYTOPE_SEGMENT;break;
+        case 3: ct = DM_POLYTOPE_TRIANGLE;break;
+        case 4: ct = DM_POLYTOPE_QUADRILATERAL;break;
+        default: break;
+      }
+    }
+  }
+  *pt = ct;
   PetscFunctionReturn(0);
 }
 
@@ -2995,99 +3008,38 @@ PetscErrorCode DMPlexStratify(DM dm)
 
   DMPlexComputeCellTypes() should be called after all calls to DMPlexSymmetrize() and DMPlexStratify()
 
-  Level: beginner
+  Level: developer
 
-.seealso: DMPlexCreate(), DMPlexSymmetrize(), DMPlexStratify()
+  Note: This function is normally called automatically by Plex when a cell type is requested. It creates an
+  internal DMLabel named "celltype" which can be directly accessed using DMGetLabel(). A user may disable
+  automatic creation by creating the label manually, using DMCreateLabel(dm, "celltype").
+
+.seealso: DMPlexCreate(), DMPlexSymmetrize(), DMPlexStratify(), DMGetLabel(), DMCreateLabel()
 @*/
 PetscErrorCode DMPlexComputeCellTypes(DM dm)
 {
   DM_Plex       *mesh;
-  DMLabel        label;
-  PetscInt       dim, depth, gcStart, gcEnd, pStart, pEnd, p;
+  DMLabel        ctLabel;
+  PetscInt       pStart, pEnd, p;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   mesh = (DM_Plex *) dm->data;
   ierr = DMCreateLabel(dm, "celltype");CHKERRQ(ierr);
-  ierr = DMPlexGetCellTypeLabel(dm, &label);CHKERRQ(ierr);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
+  ierr = DMPlexGetCellTypeLabel(dm, &ctLabel);CHKERRQ(ierr);
   ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetGhostCellStratum(dm, &gcStart, &gcEnd);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; ++p) {
-    DMPolytopeType ct = DM_POLYTOPE_UNKNOWN;
-    PetscInt       pdepth, pheight, coneSize;
+    DMPolytopeType ct;
+    PetscInt       pdepth;
 
     ierr = DMPlexGetPointDepth(dm, p, &pdepth);CHKERRQ(ierr);
-    ierr = DMPlexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
-    pheight = depth - pdepth;
-    if (depth <= 1) {
-      switch (pdepth) {
-        case 0: ct = DM_POLYTOPE_POINT;break;
-        case 1:
-          switch (coneSize) {
-            case 2: ct = DM_POLYTOPE_SEGMENT;break;
-            case 3: ct = DM_POLYTOPE_TRIANGLE;break;
-            case 4:
-            switch (dim) {
-              case 2: ct = DM_POLYTOPE_QUADRILATERAL;break;
-              case 3: ct = DM_POLYTOPE_TETRAHEDRON;break;
-              default: break;
-            }
-            break;
-          case 6: ct = DM_POLYTOPE_TRI_PRISM_TENSOR;break;
-          case 8: ct = DM_POLYTOPE_HEXAHEDRON;break;
-          default: break;
-        }
-      }
-    } else {
-      if (pdepth == 0) {
-        ct = DM_POLYTOPE_POINT;
-      } else if (pheight == 0) {
-        if ((p >= gcStart) && (p < gcEnd)) {
-          if (coneSize == 1) ct = DM_POLYTOPE_FV_GHOST;
-          else SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Ghost cell %D should have a cone size of 1, not %D", p, coneSize);
-        } else {
-          switch (dim) {
-            case 1:
-              switch (coneSize) {
-                case 2: ct = DM_POLYTOPE_SEGMENT;break;
-                default: break;
-              }
-              break;
-            case 2:
-              switch (coneSize) {
-                case 3: ct = DM_POLYTOPE_TRIANGLE;break;
-                case 4: ct = DM_POLYTOPE_QUADRILATERAL;break;
-                default: break;
-              }
-              break;
-            case 3:
-              switch (coneSize) {
-                case 4: ct = DM_POLYTOPE_TETRAHEDRON;break;
-                case 5: ct = DM_POLYTOPE_TRI_PRISM_TENSOR;break;
-                case 6: ct = DM_POLYTOPE_HEXAHEDRON;break;
-                default: break;
-              }
-              break;
-            default: break;
-          }
-        }
-      } else if (pheight > 0) {
-        switch (coneSize) {
-          case 2: ct = DM_POLYTOPE_SEGMENT;break;
-          case 3: ct = DM_POLYTOPE_TRIANGLE;break;
-          case 4: ct = DM_POLYTOPE_QUADRILATERAL;break;
-          default: break;
-        }
-      }
-    }
+    ierr = DMPlexComputeCellType_Internal(dm, p, pdepth, &ct);CHKERRQ(ierr);
     if (ct == DM_POLYTOPE_UNKNOWN) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Point %D is screwed up", p);
-    ierr = DMLabelSetValue(label, p, ct);CHKERRQ(ierr);
+    ierr = DMLabelSetValue(ctLabel, p, ct);CHKERRQ(ierr);
   }
-  ierr = PetscObjectStateGet((PetscObject) label, &mesh->celltypeState);CHKERRQ(ierr);
-  ierr = PetscObjectViewFromOptions((PetscObject) label, NULL, "-dm_plex_celltypes_view");CHKERRQ(ierr);
+  ierr = PetscObjectStateGet((PetscObject) ctLabel, &mesh->celltypeState);CHKERRQ(ierr);
+  ierr = PetscObjectViewFromOptions((PetscObject) ctLabel, NULL, "-dm_plex_celltypes_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3689,7 +3641,7 @@ PetscErrorCode DMPlexGetNumFaceVertices(DM dm, PetscInt cellDim, PetscInt numCor
 
   Level: developer
 
-.seealso: DMPlexGetDepth(), DMPlexGetHeightStratum(), DMPlexGetDepthStratum()
+.seealso: DMPlexGetDepth(), DMPlexGetHeightStratum(), DMPlexGetDepthStratum(), DMPlexGetPointDepth(), 
 @*/
 PetscErrorCode DMPlexGetDepthLabel(DM dm, DMLabel *depthLabel)
 {
@@ -3715,9 +3667,10 @@ PetscErrorCode DMPlexGetDepthLabel(DM dm, DMLabel *depthLabel)
 
   Notes:
   This returns maximum of point depths over all points, i.e. maximum value of the label returned by DMPlexGetDepthLabel().
-  The point depth is described more in detail in DMPlexSymmetrize().
+  The point depth is described more in detail in DMPlexGetDepthStratum().
+  An empty mesh gives -1.
 
-.seealso: DMPlexGetDepthLabel(), DMPlexGetHeightStratum(), DMPlexGetDepthStratum(), DMPlexGetPointDepth(), DMPlexGetPointHeight(), DMPlexSymmetrize()
+.seealso: DMPlexGetDepthLabel(), DMPlexGetDepthStratum(), DMPlexGetPointDepth(), DMPlexSymmetrize()
 @*/
 PetscErrorCode DMPlexGetDepth(DM dm, PetscInt *depth)
 {
@@ -3754,7 +3707,7 @@ PetscErrorCode DMPlexGetDepth(DM dm, PetscInt *depth)
 
   Level: developer
 
-.seealso: DMPlexGetHeightStratum(), DMPlexGetDepth(), DMPlexGetPointDepth()
+.seealso: DMPlexGetHeightStratum(), DMPlexGetDepth(), DMPlexGetDepthLabel(), DMPlexGetPointDepth(), DMPlexSymmetrize(), DMPlexInterpolate()
 @*/
 PetscErrorCode DMPlexGetDepthStratum(DM dm, PetscInt stratumValue, PetscInt *start, PetscInt *end)
 {
@@ -3893,9 +3846,12 @@ PetscErrorCode DMPlexGetPointHeight(DM dm, PetscInt point, PetscInt *height)
   Output Parameter:
 . celltypeLabel - The DMLabel recording cell polytope type
 
+  Note: This function will trigger automatica computation of cell types. This can be disabled by calling
+  DMCreateLabel(dm, "celltype") beforehand.
+
   Level: developer
 
-.seealso: DMPlexGetCellType(), DMPlexGetDepthLabel(), DMPlexGetDepth()
+.seealso: DMPlexGetCellType(), DMPlexGetDepthLabel(), DMCreateLabel()
 @*/
 PetscErrorCode DMPlexGetCellTypeLabel(DM dm, DMLabel *celltypeLabel)
 {
@@ -3937,6 +3893,37 @@ PetscErrorCode DMPlexGetCellType(DM dm, PetscInt cell, DMPolytopeType *celltype)
   ierr = DMPlexGetCellTypeLabel(dm, &label);CHKERRQ(ierr);
   ierr = DMLabelGetValue(label, cell, &ct);CHKERRQ(ierr);
   *celltype = (DMPolytopeType) ct;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexSetCellType - Set the polytope type of a given cell
+
+  Not Collective
+
+  Input Parameters:
++ dm   - The DMPlex object
+. cell - The cell
+- celltype - The polytope type of the cell
+
+  Note: By default, cell types will be automatically computed using DMPlexComputeCellTypes() before this function
+  is executed. This function will override the computed type. However, if automatic classification will not succeed
+  and a user wants to manually specify all types, the classification must be disabled by calling
+  DMCreaateLabel(dm, "celltype") before getting or setting any cell types.
+
+  Level: advanced
+
+.seealso: DMPlexGetCellTypeLabel(), DMPlexGetDepthLabel(), DMPlexGetDepth(), DMPlexComputeCellTypes(), DMCreateLabel()
+@*/
+PetscErrorCode DMPlexSetCellType(DM dm, PetscInt cell, DMPolytopeType celltype)
+{
+  DMLabel        label;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMPlexGetCellTypeLabel(dm, &label);CHKERRQ(ierr);
+  ierr = DMLabelSetValue(label, cell, celltype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -6441,7 +6428,7 @@ PetscErrorCode DMPlexMatSetClosureRefined(DM dmf, PetscSection fsection, PetscSe
   PetscInt       *findices, *cindices;
   const PetscInt *fclperm = NULL, *cclperm = NULL; /* Closure permutations cannot work here */
   PetscInt        foffsets[32], coffsets[32];
-  CellRefiner     cellRefiner;
+  DMPolytopeType  ct;
   PetscInt        numFields, numSubcells, maxFPoints, numFPoints, numCPoints, numFIndices, numCIndices, dof, off, globalOff, pStart, pEnd, p, q, r, s, f;
   PetscErrorCode  ierr;
 
@@ -6488,8 +6475,13 @@ PetscErrorCode DMPlexMatSetClosureRefined(DM dmf, PetscSection fsection, PetscSe
   }
   for (f = 1; f < numFields; ++f) coffsets[f+1] += coffsets[f];
   /* Row indices */
-  ierr = DMPlexGetCellRefiner_Internal(dmc, &cellRefiner);CHKERRQ(ierr);
-  ierr = CellRefinerGetAffineTransforms_Internal(cellRefiner, &numSubcells, NULL, NULL, NULL);CHKERRQ(ierr);
+  ierr = DMPlexGetCellType(dmc, point, &ct);CHKERRQ(ierr);
+  {
+    DMPlexCellRefiner cr;
+    ierr = DMPlexCellRefinerCreate(dmc, &cr);CHKERRQ(ierr);
+    ierr = DMPlexCellRefinerGetAffineTransforms(cr, ct, &numSubcells, NULL, NULL, NULL);CHKERRQ(ierr);
+    ierr = DMPlexCellRefinerDestroy(&cr);CHKERRQ(ierr);
+  }
   ierr = DMGetWorkArray(dmf, maxFPoints*2*numSubcells, MPIU_INT, &ftotpoints);CHKERRQ(ierr);
   for (r = 0, q = 0; r < numSubcells; ++r) {
     /* TODO Map from coarse to fine cells */
@@ -6595,7 +6587,7 @@ PetscErrorCode DMPlexMatGetClosureIndicesRefined(DM dmf, PetscSection fsection, 
   PetscInt      *cpoints = NULL;
   PetscInt       foffsets[32], coffsets[32];
   const PetscInt *fclperm = NULL, *cclperm = NULL; /* Closure permutations cannot work here */
-  CellRefiner    cellRefiner;
+  DMPolytopeType ct;
   PetscInt       numFields, numSubcells, maxFPoints, numFPoints, numCPoints, numFIndices, numCIndices, dof, off, globalOff, pStart, pEnd, p, q, r, s, f;
   PetscErrorCode ierr;
 
@@ -6641,8 +6633,13 @@ PetscErrorCode DMPlexMatGetClosureIndicesRefined(DM dmf, PetscSection fsection, 
   }
   for (f = 1; f < numFields; ++f) coffsets[f+1] += coffsets[f];
   /* Row indices */
-  ierr = DMPlexGetCellRefiner_Internal(dmc, &cellRefiner);CHKERRQ(ierr);
-  ierr = CellRefinerGetAffineTransforms_Internal(cellRefiner, &numSubcells, NULL, NULL, NULL);CHKERRQ(ierr);
+  ierr = DMPlexGetCellType(dmc, point, &ct);CHKERRQ(ierr);
+  {
+    DMPlexCellRefiner cr;
+    ierr = DMPlexCellRefinerCreate(dmc, &cr);CHKERRQ(ierr);
+    ierr = DMPlexCellRefinerGetAffineTransforms(cr, ct, &numSubcells, NULL, NULL, NULL);CHKERRQ(ierr);
+    ierr = DMPlexCellRefinerDestroy(&cr);CHKERRQ(ierr);
+  }
   ierr = DMGetWorkArray(dmf, maxFPoints*2*numSubcells, MPIU_INT, &ftotpoints);CHKERRQ(ierr);
   for (r = 0, q = 0; r < numSubcells; ++r) {
     /* TODO Map from coarse to fine cells */
@@ -6724,89 +6721,6 @@ PetscErrorCode DMPlexMatGetClosureIndicesRefined(DM dmf, PetscSection fsection, 
   PetscFunctionReturn(0);
 }
 
-/*@
-  DMPlexGetHybridBounds - Get the first mesh point of each dimension which is a hybrid
-
-  Input Parameter:
-. dm - The DMPlex object
-
-  Output Parameters:
-+ cMax - The first hybrid cell
-. fMax - The first hybrid face
-. eMax - The first hybrid edge
-- vMax - The first hybrid vertex
-
-  Level: developer
-
-.seealso DMPlexCreateHybridMesh(), DMPlexSetHybridBounds()
-@*/
-PetscErrorCode DMPlexGetHybridBounds(DM dm, PetscInt *cMax, PetscInt *fMax, PetscInt *eMax, PetscInt *vMax)
-{
-  DM_Plex       *mesh = (DM_Plex*) dm->data;
-  PetscInt       dim;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  if (dim < 0) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DM dimension not yet set");
-  if (cMax) *cMax = mesh->hybridPointMax[dim];
-  if (fMax) *fMax = mesh->hybridPointMax[PetscMax(dim-1,0)];
-  if (eMax) *eMax = mesh->hybridPointMax[1];
-  if (vMax) *vMax = mesh->hybridPointMax[0];
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode DMPlexCreateDimStratum(DM dm, DMLabel depthLabel, DMLabel dimLabel, PetscInt d, PetscInt dMax)
-{
-  IS             is, his;
-  PetscInt       first = 0, stride;
-  PetscBool      isStride;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DMLabelGetStratumIS(depthLabel, d, &is);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject) is, ISSTRIDE, &isStride);CHKERRQ(ierr);
-  if (isStride) {ierr = ISStrideGetInfo(is, &first, &stride);CHKERRQ(ierr);}
-  if (is && (!isStride || stride != 1)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "DM is not stratified: depth %D IS is not contiguous", d);
-  ierr = ISCreateStride(PETSC_COMM_SELF, (dMax - first), first, 1, &his);CHKERRQ(ierr);
-  ierr = DMLabelSetStratumIS(dimLabel, d, his);CHKERRQ(ierr);
-  ierr = ISDestroy(&his);CHKERRQ(ierr);
-  ierr = ISDestroy(&is);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*@
-  DMPlexSetHybridBounds - Set the first mesh point of each dimension which is a hybrid
-
-  Input Parameters:
-+ dm   - The DMPlex object
-. cMax - The first hybrid cell
-. fMax - The first hybrid face
-. eMax - The first hybrid edge
-- vMax - The first hybrid vertex
-
-  Level: developer
-
-.seealso DMPlexCreateHybridMesh(), DMPlexGetHybridBounds()
-@*/
-PetscErrorCode DMPlexSetHybridBounds(DM dm, PetscInt cMax, PetscInt fMax, PetscInt eMax, PetscInt vMax)
-{
-  DM_Plex       *mesh = (DM_Plex*) dm->data;
-  PetscInt       dim;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  if (dim < 0) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DM dimension not yet set");
-  if (cMax >= 0) mesh->hybridPointMax[dim]               = cMax;
-  if (fMax >= 0) mesh->hybridPointMax[PetscMax(dim-1,0)] = fMax;
-  if (eMax >= 0) mesh->hybridPointMax[1]                 = eMax;
-  if (vMax >= 0) mesh->hybridPointMax[0]                 = vMax;
-  PetscFunctionReturn(0);
-}
-
 /*@C
   DMPlexGetVTKCellHeight - Returns the height in the DAG used to determine which points are cells (normally 0)
 
@@ -6864,85 +6778,17 @@ PetscErrorCode DMPlexSetVTKCellHeight(DM dm, PetscInt cellHeight)
 
   Level: advanced
 
-.seealso DMPlexConstructGhostCells(), DMPlexSetGhostCellStratum(), DMPlexGetHybridBounds()
+.seealso DMPlexConstructGhostCells(), DMPlexSetGhostCellStratum()
 @*/
 PetscErrorCode DMPlexGetGhostCellStratum(DM dm, PetscInt *gcStart, PetscInt *gcEnd)
 {
-  DM_Plex       *mesh = (DM_Plex*) dm->data;
-  PetscInt       dim;
+  DMLabel        ctLabel;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  if (dim < 0) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DM dimension not yet set");
-  if (gcStart) {PetscValidIntPointer(gcStart, 2); *gcStart = mesh->ghostCellStart;}
-  if (gcEnd)   {
-    PetscValidIntPointer(gcEnd, 3);
-    if (mesh->ghostCellStart >= 0) {ierr = DMPlexGetHeightStratum(dm, 0, NULL, gcEnd);CHKERRQ(ierr);}
-    else                           {*gcEnd = -1;}
-  }
-  PetscFunctionReturn(0);
-}
-
-/*@
-  DMPlexSetGhostCellStratum - Set the range of cells which are used to enforce FV boundary conditions
-
-  Input Parameters:
-+ dm      - The DMPlex object
-. gcStart - The first ghost cell, or PETSC_DETERMINE
-- gcEnd   - The upper bound on ghost cells, or PETSC_DETERMINE
-
-  Level: advanced
-
-  Note: This is not usually called directly by a user.
-
-.seealso DMPlexConstructGhostCells(), DMPlexGetGhostCellStratum(), DMPlexSetHybridBounds()
-@*/
-PetscErrorCode DMPlexSetGhostCellStratum(DM dm, PetscInt gcStart, PetscInt gcEnd)
-{
-  DM_Plex       *mesh = (DM_Plex*) dm->data;
-  PetscInt       dim;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  if (dim < 0) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DM dimension not yet set");
-  mesh->ghostCellStart = gcStart;
-  if (gcEnd >= 0) {
-    PetscInt cEnd;
-    ierr = DMPlexGetHeightStratum(dm, 0, NULL, &cEnd);CHKERRQ(ierr);
-    if (gcEnd != cEnd) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Ghost cells must appear at the end of the cell range, but gcEnd %D is not equal to cEnd %D", gcEnd, cEnd);
-  }
-  PetscFunctionReturn(0);
-}
-
-/*@
-  DMPlexGetInteriorCellStratum - Get the range of cells which are neither hybrid nor ghost FV cells
-
-  Input Parameter:
-. dm - The DMPlex object
-
-  Output Parameters:
-+ cStartInterior - The first ghost cell
-- cEndInterior   - The upper bound on ghost cells
-
-  Level: developer
-
-.seealso DMPlexConstructGhostCells(), DMPlexSetGhostCellStratum(), DMPlexGetHybridBounds()
-@*/
-PetscErrorCode DMPlexGetInteriorCellStratum(DM dm, PetscInt *cStartInterior, PetscInt *cEndInterior)
-{
-  PetscInt       gcEnd, cMax;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DMPlexGetHeightStratum(dm, 0, cStartInterior, cEndInterior);CHKERRQ(ierr);
-  ierr = DMPlexGetGhostCellStratum(dm, &gcEnd, NULL);CHKERRQ(ierr);
-  *cEndInterior = gcEnd < 0 ? *cEndInterior : gcEnd;
-  ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
-  *cEndInterior = cMax  < 0 ? *cEndInterior : cMax;
+  ierr = DMPlexGetCellTypeLabel(dm, &ctLabel);CHKERRQ(ierr);
+  ierr = DMLabelGetStratumBounds(ctLabel, DM_POLYTOPE_FV_GHOST, gcStart, gcEnd);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -6981,14 +6827,13 @@ PetscErrorCode DMPlexCreateNumbering_Plex(DM dm, PetscInt pStart, PetscInt pEnd,
 
 PetscErrorCode DMPlexCreateCellNumbering_Internal(DM dm, PetscBool includeHybrid, IS *globalCellNumbers)
 {
-  PetscInt       cellHeight, cStart, cEnd, cMax;
+  PetscInt       cellHeight, cStart, cEnd;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
-  if (cMax >= 0 && !includeHybrid) cEnd = PetscMin(cEnd, cMax);
+  if (includeHybrid) {ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);}
+  else               {ierr = DMPlexGetSimplexOrBoxCells(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);}
   ierr = DMPlexCreateNumbering_Plex(dm, cStart, cEnd, 0, NULL, dm->sf, globalCellNumbers);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -7020,14 +6865,12 @@ PetscErrorCode DMPlexGetCellNumbering(DM dm, IS *globalCellNumbers)
 
 PetscErrorCode DMPlexCreateVertexNumbering_Internal(DM dm, PetscBool includeHybrid, IS *globalVertexNumbers)
 {
-  PetscInt       vStart, vEnd, vMax;
+  PetscInt       vStart, vEnd;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, NULL, NULL, NULL, &vMax);CHKERRQ(ierr);
-  if (vMax >= 0 && !includeHybrid) vEnd = PetscMin(vEnd, vMax);
   ierr = DMPlexCreateNumbering_Plex(dm, vStart, vEnd, 0, NULL, dm->sf, globalVertexNumbers);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -7237,6 +7080,7 @@ PetscErrorCode DMPlexCheckSymmetry(DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMViewFromOptions(dm, NULL, "-sym_dm_view");CHKERRQ(ierr);
   ierr = DMPlexGetConeSection(dm, &coneSection);CHKERRQ(ierr);
   ierr = DMPlexGetSupportSection(dm, &supportSection);CHKERRQ(ierr);
   /* Check that point p is found in the support of its cone points, and vice versa */
@@ -7305,6 +7149,54 @@ PetscErrorCode DMPlexCheckSymmetry(DM dm)
   PetscFunctionReturn(0);
 }
 
+/*
+  For submeshes with cohesive cells (see DMPlexConstructCohesiveCells()), we allow a special case where some of the boundary of a face (edges and vertices) are not duplicated. We call these special boundary points "unsplit", since the same edge or vertex appears in both copies of the face. These unsplit points throw off our counting, so we have to explicitly account for them here.
+*/
+static PetscErrorCode DMPlexCellUnsplitVertices_Private(DM dm, PetscInt c, DMPolytopeType ct, PetscInt *unsplit)
+{
+  DMPolytopeType  cct;
+  PetscInt        ptpoints[4];
+  const PetscInt *cone, *ccone, *ptcone;
+  PetscInt        coneSize, cp, cconeSize, ccp, npt = 0, pt;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  *unsplit = 0;
+  switch (ct) {
+    case DM_POLYTOPE_SEG_PRISM_TENSOR:
+      ierr = DMPlexGetCone(dm, c, &cone);CHKERRQ(ierr);
+      ierr = DMPlexGetConeSize(dm, c, &coneSize);CHKERRQ(ierr);
+      for (cp = 0; cp < coneSize; ++cp) {
+        ierr = DMPlexGetCellType(dm, cone[cp], &cct);CHKERRQ(ierr);
+        if (cct == DM_POLYTOPE_POINT_PRISM_TENSOR) ptpoints[npt++] = cone[cp];
+      }
+      break;
+    case DM_POLYTOPE_TRI_PRISM_TENSOR:
+    case DM_POLYTOPE_QUAD_PRISM_TENSOR:
+      ierr = DMPlexGetCone(dm, c, &cone);CHKERRQ(ierr);
+      ierr = DMPlexGetConeSize(dm, c, &coneSize);CHKERRQ(ierr);
+      for (cp = 0; cp < coneSize; ++cp) {
+        ierr = DMPlexGetCone(dm, cone[cp], &ccone);CHKERRQ(ierr);
+        ierr = DMPlexGetConeSize(dm, cone[cp], &cconeSize);CHKERRQ(ierr);
+        for (ccp = 0; ccp < cconeSize; ++ccp) {
+          ierr = DMPlexGetCellType(dm, ccone[ccp], &cct);CHKERRQ(ierr);
+          if (cct == DM_POLYTOPE_POINT_PRISM_TENSOR) {
+            PetscInt p;
+            for (p = 0; p < npt; ++p) if (ptpoints[p] == ccone[ccp]) break;
+            if (p == npt) ptpoints[npt++] = ccone[ccp];
+          }
+        }
+      }
+      break;
+    default: break;
+  }
+  for (pt = 0; pt < npt; ++pt) {
+    ierr = DMPlexGetCone(dm, ptpoints[pt], &ptcone);CHKERRQ(ierr);
+    if (ptcone[0] == ptcone[1]) ++(*unsplit);
+  }
+  PetscFunctionReturn(0);
+}
+
 /*@
   DMPlexCheckSkeleton - Check that each cell has the correct number of vertices
 
@@ -7324,49 +7216,41 @@ PetscErrorCode DMPlexCheckSymmetry(DM dm)
 @*/
 PetscErrorCode DMPlexCheckSkeleton(DM dm, PetscInt cellHeight)
 {
-  PetscInt       dim, numCorners, numHybridCorners, vStart, vEnd, cStart, cEnd, cMax, c;
-  PetscBool      isSimplex = PETSC_FALSE;
-  PetscErrorCode ierr;
+  DMPlexInterpolatedFlag interp;
+  DMPolytopeType         ct;
+  PetscInt               vStart, vEnd, cStart, cEnd, c;
+  PetscErrorCode         ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexIsInterpolated(dm, &interp);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
-  if (cStart < cEnd) {
-    ierr = DMPlexGetConeSize(dm, cStart, &c);CHKERRQ(ierr);
-    isSimplex = c == dim+1 ? PETSC_TRUE : PETSC_FALSE;
-  }
-  switch (dim) {
-  case 1: numCorners = isSimplex ? 2 : 2; numHybridCorners = isSimplex ? 2 : 2; break;
-  case 2: numCorners = isSimplex ? 3 : 4; numHybridCorners = isSimplex ? 4 : 4; break;
-  case 3: numCorners = isSimplex ? 4 : 8; numHybridCorners = isSimplex ? 6 : 8; break;
-  default:
-    SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle meshes of dimension %D", dim);
-  }
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
-  cMax = cMax >= 0 ? cMax : cEnd;
-  for (c = cStart; c < cMax; ++c) {
-    PetscInt *closure = NULL, closureSize, cl, coneSize = 0;
+  for (c = cStart; c < cEnd; ++c) {
+    PetscInt *closure = NULL;
+    PetscInt  coneSize, closureSize, cl, Nv = 0;
 
+    ierr = DMPlexGetCellType(dm, c, &ct);CHKERRQ(ierr);
+    if ((PetscInt) ct < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell %D has no cell type", c);
+    if (ct == DM_POLYTOPE_UNKNOWN) continue;
+    if (interp == DMPLEX_INTERPOLATED_FULL) {
+      ierr = DMPlexGetConeSize(dm, c, &coneSize);CHKERRQ(ierr);
+      if (coneSize != DMPolytopeTypeGetConeSize(ct)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell %D has cone size %D != %D", c, coneSize, DMPolytopeTypeGetConeSize(ct));
+    }
     ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     for (cl = 0; cl < closureSize*2; cl += 2) {
       const PetscInt p = closure[cl];
-      if ((p >= vStart) && (p < vEnd)) ++coneSize;
+      if ((p >= vStart) && (p < vEnd)) ++Nv;
     }
     ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
-    if (coneSize != numCorners) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell %D has  %D vertices != %D", c, coneSize, numCorners);
-  }
-  for (c = cMax; c < cEnd; ++c) {
-    PetscInt *closure = NULL, closureSize, cl, coneSize = 0;
+    /* Special Case: Tensor faces with identified vertices */
+    if (Nv < DMPolytopeTypeGetNumVertices(ct)) {
+      PetscInt unsplit;
 
-    ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
-    for (cl = 0; cl < closureSize*2; cl += 2) {
-      const PetscInt p = closure[cl];
-      if ((p >= vStart) && (p < vEnd)) ++coneSize;
+      ierr = DMPlexCellUnsplitVertices_Private(dm, c, ct, &unsplit);CHKERRQ(ierr);
+      if (Nv + unsplit == DMPolytopeTypeGetNumVertices(ct)) continue;
     }
-    ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
-    if (coneSize > numHybridCorners) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Hybrid cell %D has  %D vertices > %D", c, coneSize, numHybridCorners);
+    if (Nv != DMPolytopeTypeGetNumVertices(ct)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell %D has %D vertices != %D", c, Nv, DMPolytopeTypeGetNumVertices(ct));
   }
   PetscFunctionReturn(0);
 }
@@ -7394,7 +7278,6 @@ PetscErrorCode DMPlexCheckSkeleton(DM dm, PetscInt cellHeight)
 @*/
 PetscErrorCode DMPlexCheckFaces(DM dm, PetscInt cellHeight)
 {
-  PetscInt       pMax[4];
   PetscInt       dim, depth, vStart, vEnd, cStart, cEnd, c, h;
   PetscErrorCode ierr;
   DMPlexInterpolatedFlag interpEnum;
@@ -7415,17 +7298,18 @@ PetscErrorCode DMPlexCheckFaces(DM dm, PetscInt cellHeight)
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &pMax[dim], &pMax[dim-1], &pMax[1], &pMax[0]);CHKERRQ(ierr);
   for (h = cellHeight; h < PetscMin(depth, dim); ++h) {
     ierr = DMPlexGetHeightStratum(dm, h, &cStart, &cEnd);CHKERRQ(ierr);
     for (c = cStart; c < cEnd; ++c) {
-      const PetscInt *cone, *ornt, *faces;
-      DMPolytopeType  ct;
-      PetscInt        numFaces, faceSize, coneSize,f;
-      PetscInt       *closure = NULL, closureSize, cl, numCorners = 0;
+      const PetscInt      *cone, *ornt, *faceSizes, *faces;
+      const DMPolytopeType *faceTypes;
+      DMPolytopeType        ct;
+      PetscInt              numFaces, coneSize, f;
+      PetscInt             *closure = NULL, closureSize, cl, numCorners = 0, fOff = 0, unsplit;
 
-      if (pMax[dim-h] >= 0 && c >= pMax[dim-h]) continue;
       ierr = DMPlexGetCellType(dm, c, &ct);CHKERRQ(ierr);
+      ierr = DMPlexCellUnsplitVertices_Private(dm, c, ct, &unsplit);CHKERRQ(ierr);
+      if (unsplit) continue;
       ierr = DMPlexGetConeSize(dm, c, &coneSize);CHKERRQ(ierr);
       ierr = DMPlexGetCone(dm, c, &cone);CHKERRQ(ierr);
       ierr = DMPlexGetConeOrientation(dm, c, &ornt);CHKERRQ(ierr);
@@ -7434,7 +7318,7 @@ PetscErrorCode DMPlexCheckFaces(DM dm, PetscInt cellHeight)
         const PetscInt p = closure[cl];
         if ((p >= vStart) && (p < vEnd)) closure[numCorners++] = p;
       }
-      ierr = DMPlexGetRawFaces_Internal(dm, ct, closure, &numFaces, &faceSize, &faces);CHKERRQ(ierr);
+      ierr = DMPlexGetRawFaces_Internal(dm, ct, closure, &numFaces, &faceTypes, &faceSizes, &faces);CHKERRQ(ierr);
       if (coneSize != numFaces) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell %D has %D faces but should have %D", c, coneSize, numFaces);
       for (f = 0; f < numFaces; ++f) {
         PetscInt *fclosure = NULL, fclosureSize, cl, fnumCorners = 0, v;
@@ -7444,13 +7328,14 @@ PetscErrorCode DMPlexCheckFaces(DM dm, PetscInt cellHeight)
           const PetscInt p = fclosure[cl];
           if ((p >= vStart) && (p < vEnd)) fclosure[fnumCorners++] = p;
         }
-        if (fnumCorners != faceSize) SETERRQ5(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %D (%D) of cell %D has %D vertices but should have %D", cone[f], f, c, fnumCorners, faceSize);
+        if (fnumCorners != faceSizes[f]) SETERRQ5(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %D (%D) of cell %D has %D vertices but should have %D", cone[f], f, c, fnumCorners, faceSizes[f]);
         for (v = 0; v < fnumCorners; ++v) {
-          if (fclosure[v] != faces[f*faceSize+v]) SETERRQ6(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %D (%d) of cell %D vertex %D, %D != %D", cone[f], f, c, v, fclosure[v], faces[f*faceSize+v]);
+          if (fclosure[v] != faces[fOff+v]) SETERRQ6(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %D (%d) of cell %D vertex %D, %D != %D", cone[f], f, c, v, fclosure[v], faces[fOff+v]);
         }
         ierr = DMPlexRestoreTransitiveClosure(dm, cone[f], PETSC_TRUE, &fclosureSize, &fclosure);CHKERRQ(ierr);
+        fOff += faceSizes[f];
       }
-      ierr = DMPlexRestoreFaces_Internal(dm, ct, &numFaces, &faceSize, &faces);CHKERRQ(ierr);
+      ierr = DMPlexRestoreRawFaces_Internal(dm, ct, closure, &numFaces, &faceTypes, &faceSizes, &faces);CHKERRQ(ierr);
       ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     }
   }
@@ -7476,23 +7361,44 @@ PetscErrorCode DMPlexCheckGeometry(DM dm)
 {
   PetscReal      detJ, J[9], refVol = 1.0;
   PetscReal      vol;
-  PetscInt       dim, depth, d, cStart, cEnd, c, cMax;
+  PetscBool      periodic;
+  PetscInt       dim, depth, d, cStart, cEnd, c;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
+  ierr = DMGetPeriodicity(dm, &periodic, NULL, NULL, NULL);CHKERRQ(ierr);
   for (d = 0; d < dim; ++d) refVol *= 2.0;
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
-  cMax = cMax < 0 ? cEnd : cMax;
-  for (c = cStart; c < cMax; ++c) {
+  for (c = cStart; c < cEnd; ++c) {
+    DMPolytopeType ct;
+    PetscInt       unsplit;
+    PetscBool      ignoreZeroVol = PETSC_FALSE;
+
+    ierr = DMPlexGetCellType(dm, c, &ct);CHKERRQ(ierr);
+    switch (ct) {
+      case DM_POLYTOPE_SEG_PRISM_TENSOR:
+      case DM_POLYTOPE_TRI_PRISM_TENSOR:
+      case DM_POLYTOPE_QUAD_PRISM_TENSOR:
+        ignoreZeroVol = PETSC_TRUE; break;
+      default: break;
+    }
+    switch (ct) {
+      case DM_POLYTOPE_TRI_PRISM:
+      case DM_POLYTOPE_TRI_PRISM_TENSOR:
+      case DM_POLYTOPE_QUAD_PRISM_TENSOR:
+        continue;
+      default: break;
+    }
+    ierr = DMPlexCellUnsplitVertices_Private(dm, c, ct, &unsplit);CHKERRQ(ierr);
+    if (unsplit) continue;
     ierr = DMPlexComputeCellGeometryFEM(dm, c, NULL, NULL, J, NULL, &detJ);CHKERRQ(ierr);
-    if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %D is inverted, |J| = %g", c, (double) detJ);
+    if (detJ < -PETSC_SMALL || (detJ <= 0.0 && !ignoreZeroVol)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %D is inverted, |J| = %g", c, (double) detJ);
     ierr = PetscInfo2(dm, "Cell %D FEM Volume %g\n", c, (double) detJ*refVol);CHKERRQ(ierr);
-    if (depth > 1) {
+    if (depth > 1 && !periodic) {
       ierr = DMPlexComputeCellGeometryFVM(dm, c, &vol, NULL, NULL);CHKERRQ(ierr);
-      if (vol <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %d is inverted, vol = %g", c, (double) vol);
+      if (vol < -PETSC_SMALL || (vol <= 0.0 && !ignoreZeroVol)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %d is inverted, vol = %g", c, (double) vol);
       ierr = PetscInfo2(dm, "Cell %D FVM Volume %g\n", c, (double) vol);CHKERRQ(ierr);
     }
   }
@@ -7614,7 +7520,7 @@ PetscErrorCode DMPlexCheckCellShape(DM dm, PetscBool output, PetscReal condLimit
   MPI_Comm       comm = PetscObjectComm((PetscObject)dm);
   PetscReal      *J, *invJ, min = 0, max = 0, mean = 0, stdev = 0;
   PetscReal      limit = condLimit > 0 ? condLimit : PETSC_MAX_REAL;
-  PetscInt       cdim, cStart, cEnd, cMax, c, eStart, eEnd, count = 0;
+  PetscInt       cdim, cStart, cEnd, c, eStart, eEnd, count = 0;
   PetscMPIInt    rank,size;
   PetscErrorCode ierr;
 
@@ -7629,11 +7535,9 @@ PetscErrorCode DMPlexCheckCellShape(DM dm, PetscBool output, PetscReal condLimit
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dm,&cdim);CHKERRQ(ierr);
   ierr = PetscMalloc2(PetscSqr(cdim), &J, PetscSqr(cdim), &invJ);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetSimplexOrBoxCells(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm,1,&eStart,&eEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm,&cMax,NULL,NULL,NULL);CHKERRQ(ierr);
-  cMax = cMax < 0 ? cEnd : cMax;
-  for (c = cStart; c < cMax; c++) {
+  for (c = cStart; c < cEnd; c++) {
     PetscInt  i;
     PetscReal frobJ = 0., frobInvJ = 0., cond2, cond, detJ;
 
@@ -7847,6 +7751,47 @@ PetscErrorCode DMPlexSetRegularRefinement(DM dm, PetscBool regular)
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMPlexGetCellRefinerType - Get the strategy for refining a cell
+
+  Input Parameter:
+. dm - The DMPlex object
+
+  Output Parameter:
+. cr - The strategy number
+
+  Level: intermediate
+
+.seealso: DMPlexSetCellRefinerType(), DMPlexSetRegularRefinement()
+@*/
+PetscErrorCode DMPlexGetCellRefinerType(DM dm, DMPlexCellRefinerType *cr)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(cr, 2);
+  *cr = ((DM_Plex *) dm->data)->cellRefiner;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexSetCellRefinerType - Set the strategy for refining a cell
+
+  Input Parameters:
++ dm - The DMPlex object
+- cr - The strategy number
+
+  Level: intermediate
+
+.seealso: DMPlexGetCellRefinerType(), DMPlexGetRegularRefinement()
+@*/
+PetscErrorCode DMPlexSetCellRefinerType(DM dm, DMPlexCellRefinerType cr)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ((DM_Plex *) dm->data)->cellRefiner = cr;
+  PetscFunctionReturn(0);
+}
+
 /* anchors */
 /*@
   DMPlexGetAnchors - Get the layout of the anchor (point-to-point) constraints.  Typically, the user will not have to
@@ -7927,8 +7872,7 @@ PetscErrorCode DMPlexSetAnchors(DM dm, PetscSection anchorSection, IS anchorIS)
   ierr = ISDestroy(&plex->anchorIS);CHKERRQ(ierr);
   plex->anchorIS = anchorIS;
 
-#if defined(PETSC_USE_DEBUG)
-  if (anchorIS && anchorSection) {
+  if (PetscUnlikelyDebug(anchorIS && anchorSection)) {
     PetscInt size, a, pStart, pEnd;
     const PetscInt *anchors;
 
@@ -7953,7 +7897,6 @@ PetscErrorCode DMPlexSetAnchors(DM dm, PetscSection anchorSection, IS anchorIS)
     }
     ierr = ISRestoreIndices(anchorIS,&anchors);CHKERRQ(ierr);
   }
-#endif
   /* reset the generic constraints */
   ierr = DMSetDefaultConstraints(dm,NULL,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -8148,9 +8091,8 @@ PetscErrorCode DMCreateSubDomainDM_Plex(DM dm, DMLabel label, PetscInt value, IS
   /* Create subdomain */
   ierr = DMPlexFilter(dm, label, value, subdm);CHKERRQ(ierr);
   /* Create submodel */
-  ierr = DMPlexCreateSubpointIS(*subdm, &subis);CHKERRQ(ierr);
+  ierr = DMPlexGetSubpointIS(*subdm, &subis);CHKERRQ(ierr);
   ierr = PetscSectionCreateSubmeshSection(section, subis, &subsection);CHKERRQ(ierr);
-  ierr = ISDestroy(&subis);CHKERRQ(ierr);
   ierr = DMSetLocalSection(*subdm, subsection);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&subsection);CHKERRQ(ierr);
   ierr = DMCopyDisc(dm, *subdm);CHKERRQ(ierr);
@@ -8163,7 +8105,7 @@ PetscErrorCode DMCreateSubDomainDM_Plex(DM dm, DMLabel label, PetscInt value, IS
     PetscInt        subSize = 0, subOff = 0, pStart, pEnd, p;
     PetscInt        Nf, f, bs = -1, bsLocal[2], bsMinMax[2];
 
-    ierr = DMPlexCreateSubpointIS(*subdm, &spIS);CHKERRQ(ierr);
+    ierr = DMPlexGetSubpointIS(*subdm, &spIS);CHKERRQ(ierr);
     ierr = ISGetIndices(spIS, &spmap);CHKERRQ(ierr);
     ierr = PetscSectionGetNumFields(section, &Nf);CHKERRQ(ierr);
     ierr = DMGetGlobalSection(dm, &sectionGlobal);CHKERRQ(ierr);
@@ -8224,7 +8166,6 @@ PetscErrorCode DMCreateSubDomainDM_Plex(DM dm, DMLabel label, PetscInt value, IS
       }
     }
     ierr = ISRestoreIndices(spIS, &spmap);CHKERRQ(ierr);
-    ierr = ISDestroy(&spIS);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm), subSize, subIndices, PETSC_OWN_POINTER, is);CHKERRQ(ierr);
     if (bs > 1) {
       /* We need to check that the block size does not come from non-contiguous fields */
@@ -8267,6 +8208,7 @@ PetscErrorCode DMCreateSubDomainDM_Plex(DM dm, DMLabel label, PetscInt value, IS
 @*/
 PetscErrorCode DMPlexMonitorThroughput(DM dm, void *dummy)
 {
+#if defined(PETSC_USE_LOG)
   PetscStageLog      stageLog;
   PetscLogEvent      event;
   PetscLogStage      stage;
@@ -8275,6 +8217,7 @@ PetscErrorCode DMPlexMonitorThroughput(DM dm, void *dummy)
   PetscInt           cStart, cEnd, Nf, N;
   const char        *name;
   PetscErrorCode     ierr;
+#endif
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);

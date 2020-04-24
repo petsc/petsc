@@ -1,3 +1,4 @@
+-include ../petscdir.mk
 #requirespackage 'PETSC_HAVE_CUDA'
 #requiresprecision single
 #requiresscalar    complex

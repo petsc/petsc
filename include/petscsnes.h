@@ -185,6 +185,7 @@ PETSC_EXTERN PetscErrorCode SNESSetJacobianDomainError(SNES);
 PETSC_EXTERN PetscErrorCode SNESSetCheckJacobianDomainError(SNES,PetscBool);
 PETSC_EXTERN PetscErrorCode SNESGetCheckJacobianDomainError(SNES,PetscBool*);
 
+#define SNES_CONVERGED_TR_DELTA_DEPRECATED SNES_CONVERGED_TR_DELTA PETSC_DEPRECATED_ENUM("Use SNES_DIVERGED_TR_DELTA (since version 3.12)")
 /*E
     SNESConvergedReason - reason a SNES method was said to
          have converged or diverged
@@ -235,7 +236,6 @@ $      testing with -pc_type lu to eliminate the linear solver as the cause of t
 
 .seealso: SNESSolve(), SNESGetConvergedReason(), KSPConvergedReason, SNESSetConvergenceTest()
 E*/
-#define SNES_CONVERGED_TR_DELTA_DEPRECATED SNES_CONVERGED_TR_DELTA PETSC_DEPRECATED_ENUM("Use SNES_DIVERGED_TR_DELTA (since version 3.12)")
 typedef enum {/* converged */
               SNES_CONVERGED_FNORM_ABS         =  2, /* ||F|| < atol */
               SNES_CONVERGED_FNORM_RELATIVE    =  3, /* ||F|| < rtol*||F_initial|| */
@@ -560,6 +560,7 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchCreate(MPI_Comm, SNESLineSearch*);
 PETSC_EXTERN PetscErrorCode SNESLineSearchReset(SNESLineSearch);
 PETSC_EXTERN PetscErrorCode SNESLineSearchView(SNESLineSearch,PetscViewer);
 PETSC_EXTERN PetscErrorCode SNESLineSearchDestroy(SNESLineSearch *);
+PETSC_EXTERN PetscErrorCode SNESLineSearchGetType(SNESLineSearch, SNESLineSearchType *);
 PETSC_EXTERN PetscErrorCode SNESLineSearchSetType(SNESLineSearch, SNESLineSearchType);
 PETSC_EXTERN PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch);
 PETSC_EXTERN PetscErrorCode SNESLineSearchSetFunction(SNESLineSearch,PetscErrorCode (*)(SNES,Vec,Vec));
@@ -782,8 +783,8 @@ PETSC_EXTERN PetscErrorCode SNESNCGSetType(SNES, SNESNCGType);
 
 typedef enum {SNES_QN_SCALE_DEFAULT    = 0,
               SNES_QN_SCALE_NONE       = 1,
-              SNES_QN_SCALE_SHANNO     = 2,
-              SNES_QN_SCALE_LINESEARCH = 3,
+              SNES_QN_SCALE_SCALAR     = 2,
+              SNES_QN_SCALE_DIAGONAL   = 3,
               SNES_QN_SCALE_JACOBIAN   = 4} SNESQNScaleType;
 PETSC_EXTERN const char *const SNESQNScaleTypes[];
 typedef enum {SNES_QN_RESTART_DEFAULT  = 0,

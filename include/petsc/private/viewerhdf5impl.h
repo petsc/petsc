@@ -2,6 +2,11 @@
 #ifndef __VIEWERHDF5IMPL_H
 #define __VIEWERHDF5IMPL_H
 
+#if defined(H5_VERSION)
+#  error "viewerhdf5impl.h must be included *before* any other HDF5 headers"
+#else
+#  define H5_USE_18_API
+#endif
 #include <petscviewerhdf5.h>
 
 #if defined(PETSC_HAVE_HDF5)

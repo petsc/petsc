@@ -1,0 +1,25 @@
+DM Object: Mesh 1 MPI processes
+  type: plex
+Mesh in 3 dimensions:
+  0-cells: 8
+  1-cells: 19
+  2-cells: 18
+  3-cells: 6
+Labels:
+  celltype: 4 strata with value/size (0 (8), 6 (6), 3 (18), 1 (19))
+  depth: 4 strata with value/size (0 (8), 1 (19), 2 (18), 3 (6))
+DM Object: Particles 1 MPI processes
+  type: swarm
+DMSwarmDataBucketView: 
+  L                  = 30 
+  buffer             = 0 
+  allocated          = 30 
+  nfields registered = 5 
+                            blocksize        = 1 
+                            blocksize        = 1 
+                            blocksize        = 3 
+                            blocksize        = 1 
+                            blocksize        = 1 
+L2 projection mass:     6.6668169350e+00, x-momentum:     2.4495008732e+00, energy:     7.9215379943e+00.
+L2 projection mass:     6.6668169350e+00, x-momentum:     2.4495008732e+00, energy:     7.9215379943e+00.
+L2 projection mass:     6.6668169350e+00, x-momentum:     2.4495008732e+00, energy:     7.9215379943e+00.

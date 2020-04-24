@@ -27,6 +27,9 @@ PetscErrorCode PetscOptionsBegin_Private(PetscOptionItems *PetscOptionsObject,MP
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (prefix) PetscValidCharPointer(prefix,2);
+  PetscValidCharPointer(title,3);
+  if (mansec) PetscValidCharPointer(mansec,4);
   if (!PetscOptionsObject->alreadyprinted) {
     if (!PetscOptionsHelpPrintedSingleton) {
       ierr = PetscOptionsHelpPrintedCreate(&PetscOptionsHelpPrintedSingleton);CHKERRQ(ierr);
@@ -43,7 +46,7 @@ PetscErrorCode PetscOptionsBegin_Private(PetscOptionItems *PetscOptionsObject,MP
   ierr = PetscOptionsHasHelp(PetscOptionsObject->options,&PetscOptionsObject->printhelp);CHKERRQ(ierr);
   if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1) {
     if (!PetscOptionsObject->alreadyprinted) {
-      ierr = (*PetscHelpPrintf)(comm,"%s -------------------------------------------------\n",title);CHKERRQ(ierr);
+      ierr = (*PetscHelpPrintf)(comm,"----------------------------------------\n%s:\n",title);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -193,7 +196,7 @@ PetscErrorCode PetscOptionsGetFromTextInput(PetscOptionItems *PetscOptionsObject
   size_t          i;
 
   PetscFunctionBegin;
-  ierr = (*PetscPrintf)(PETSC_COMM_WORLD,"%s -------------------------------------------------\n",PetscOptionsObject->title);CHKERRQ(ierr);
+  ierr = (*PetscPrintf)(PETSC_COMM_WORLD,"%s --------------------\n",PetscOptionsObject->title);CHKERRQ(ierr);
   while (next) {
     switch (next->type) {
     case OPTION_HEAD:

@@ -719,7 +719,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
 
       ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
       ierr = DMLabelCreate(PETSC_COMM_SELF, "adapt", &adaptLabel);CHKERRQ(ierr);
-      ierr = DMPlexGetInteriorCellStratum(plex, &cStart, &cEnd);CHKERRQ(ierr);
+      ierr = DMPlexGetSimplexOrBoxCells(plex, 0, &cStart, &cEnd);CHKERRQ(ierr);
 
       ierr = VecCreateMPI(PetscObjectComm((PetscObject) adaptor), cEnd-cStart, PETSC_DETERMINE, &errVec);CHKERRQ(ierr);
       ierr = VecSetUp(errVec);CHKERRQ(ierr);
@@ -937,7 +937,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
 - -adapt_metric_view : View the metric tensor for adaptive mesh refinement
 
   Note: The available adaptation strategies are:
-$ 1) Adapt the intial mesh until a quality metric, e,g, a priori error bound, is satisfied
+$ 1) Adapt the initial mesh until a quality metric, e.g., a priori error bound, is satisfied
 $ 2) Solve the problem on a series of adapted meshes until a quality metric, e.g. a posteriori error bound, is satisfied
 $ 3) Solve the problem on a hierarchy of adapted meshes generated to satisfy a quality metric using multigrid
 

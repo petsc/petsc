@@ -14,9 +14,9 @@ proc  --------->  proc
          11
         twin
 
-Eg: Proc 0 send to proc 1 with message id is 10. To recieve the correct
+Eg: Proc 0 send to proc 1 with message id is 10. To receive the correct
 message, proc 1 looks for the edge connected to proc 0, and then the
-messgae id comes from the twin of that edge
+message id comes from the twin of that edge
 
 2)
 A DomainExchangerArrayPacker.
@@ -219,7 +219,7 @@ PetscErrorCode DMSwarmDataExTopologyAddNeighbour(DMSwarmDataEx d,const PetscMPII
 
   PetscFunctionBegin;
   if (d->topology_status == DEOBJECT_FINALIZED) SETERRQ(d->comm, PETSC_ERR_ARG_WRONGSTATE, "Topology has been finalized. To modify or update call DMSwarmDataExTopologyInitialize() first");
-  else if (d->topology_status != DEOBJECT_INITIALIZED) SETERRQ(d->comm, PETSC_ERR_ARG_WRONGSTATE, "Topology must be intialised. Call DMSwarmDataExTopologyInitialize() first");
+  else if (d->topology_status != DEOBJECT_INITIALIZED) SETERRQ(d->comm, PETSC_ERR_ARG_WRONGSTATE, "Topology must be initialised. Call DMSwarmDataExTopologyInitialize() first");
 
   /* error on negative entries */
   if (proc_id < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Trying to set proc neighbour with a rank < 0");
@@ -366,7 +366,7 @@ PetscErrorCode DMSwarmDataExTopologyFinalize(DMSwarmDataEx d)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (d->topology_status != DEOBJECT_INITIALIZED) SETERRQ(d->comm, PETSC_ERR_ARG_WRONGSTATE, "Topology must be intialised. Call DMSwarmDataExTopologyInitialize() first");
+  if (d->topology_status != DEOBJECT_INITIALIZED) SETERRQ(d->comm, PETSC_ERR_ARG_WRONGSTATE, "Topology must be initialised. Call DMSwarmDataExTopologyInitialize() first");
 
   ierr = PetscLogEventBegin(DMSWARM_DataExchangerTopologySetup,0,0,0,0);CHKERRQ(ierr);
   /* given infomation about all my neighbours, make map symmetric */
@@ -604,7 +604,7 @@ PetscErrorCode DMSwarmDataExPackFinalize(DMSwarmDataEx de)
   ierr = PetscMalloc(de->unit_message_size * (total + 1), &de->recv_message);CHKERRQ(ierr);
   /* initialize memory */
   ierr = PetscMemzero(de->recv_message, de->unit_message_size * (total + 1));CHKERRQ(ierr);
-  /* set total items to recieve */
+  /* set total items to receive */
   de->recv_message_length = total;
   de->packer_status = DEOBJECT_FINALIZED;
   de->communication_status = DEOBJECT_INITIALIZED;

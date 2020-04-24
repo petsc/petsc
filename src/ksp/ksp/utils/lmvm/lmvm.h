@@ -29,7 +29,7 @@ typedef struct {
   /* Core data structures for stored updates */
   PETSCHEADER(struct _MatOps_LMVM);
   PetscBool allocated, prev_set;
-  PetscInt m, k, nupdates, nrejects, nresets;
+  PetscInt m_old, m, k, nupdates, nrejects, nresets;
   Vec *S, *Y;
   Vec Xprev, Fprev;
   

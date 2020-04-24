@@ -460,10 +460,10 @@ M*/
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ2()
 M*/
-#define CHKERRQ(ierr)          do {if (PetscUnlikely(ierr)) return PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_REPEAT," ");} while (0)
-#define CHKERRV(ierr)          do {if (PetscUnlikely(ierr)) {ierr = PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_REPEAT," ");return;}} while(0)
-#define CHKERRABORT(comm,ierr) do {if (PetscUnlikely(ierr)) {PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_REPEAT," ");MPI_Abort(comm,ierr);}} while (0)
-#define CHKERRCONTINUE(ierr)   do {if (PetscUnlikely(ierr)) {PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_REPEAT," ");}} while (0)
+#define CHKERRQ(ierr)          do {PetscErrorCode ierr__ = (ierr); if (PetscUnlikely(ierr__)) return PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr__,PETSC_ERROR_REPEAT," ");} while (0)
+#define CHKERRV(ierr)          do {PetscErrorCode ierr__ = (ierr); if (PetscUnlikely(ierr__)) {PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr__,PETSC_ERROR_REPEAT," ");return;}} while(0)
+#define CHKERRABORT(comm,ierr) do {PetscErrorCode ierr__ = (ierr); if (PetscUnlikely(ierr__)) {PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr__,PETSC_ERROR_REPEAT," ");MPI_Abort(comm,ierr);}} while (0)
+#define CHKERRCONTINUE(ierr)   do {PetscErrorCode ierr__ = (ierr); if (PetscUnlikely(ierr__)) {PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr__,PETSC_ERROR_REPEAT," ");}} while (0)
 
 PETSC_EXTERN PetscErrorCode PetscAbortFindSourceFile_Private(const char*,PetscInt*);
 
@@ -617,7 +617,8 @@ PETSC_EXTERN PetscErrorCode PetscSignalHandlerDefault(int,void*);
 PETSC_EXTERN PetscErrorCode PetscPushSignalHandler(PetscErrorCode (*)(int,void *),void*);
 PETSC_EXTERN PetscErrorCode PetscPopSignalHandler(void);
 PETSC_EXTERN PetscErrorCode PetscCheckPointerSetIntensity(PetscInt);
-PETSC_EXTERN void PetscSignalSegvCheckPointer(void);
+PETSC_EXTERN void PetscSignalSegvCheckPointerOrMpi(void);
+PETSC_DEPRECATED_FUNCTION("Use PetscSignalSegvCheckPointerOrMpi() (since version 3.13)") PETSC_STATIC_INLINE void PetscSignalSegvCheckPointer(void) {PetscSignalSegvCheckPointerOrMpi();}
 
 /*MC
     PetscErrorPrintf - Prints error messages.

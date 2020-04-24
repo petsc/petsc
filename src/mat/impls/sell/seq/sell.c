@@ -1010,18 +1010,14 @@ PetscErrorCode MatGetValues_SeqSELL(Mat A,PetscInt m,const PetscInt im[],PetscIn
   for (k=0; k<m; k++) { /* loop over requested rows */
     row = im[k];
     if (row<0) continue;
-#if defined(PETSC_USE_DEBUG)
-    if (row >= A->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",row,A->rmap->n-1);
-#endif
+    if (PetscUnlikelyDebug(row >= A->rmap->n)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",row,A->rmap->n-1);
     shift = a->sliidx[row>>3]+(row&0x07); /* starting index of the row */
     cp = a->colidx+shift; /* pointer to the row */
     vp = a->val+shift; /* pointer to the row */
     for (l=0; l<n; l++) { /* loop over requested columns */
       col = in[l];
       if (col<0) continue;
-#if defined(PETSC_USE_DEBUG)
-      if (col >= A->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: row %D max %D",col,A->cmap->n-1);
-#endif
+      if (PetscUnlikelyDebug(col >= A->cmap->n)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: row %D max %D",col,A->cmap->n-1);
       high = a->rlen[row]; low = 0; /* assume unsorted */
       while (high-low > 5) {
         t = (low+high)/2;
@@ -1481,9 +1477,7 @@ PetscErrorCode MatSetValues_SeqSELL(Mat A,PetscInt m,const PetscInt im[],PetscIn
   for (k=0; k<m; k++) { /* loop over added rows */
     row = im[k];
     if (row < 0) continue;
-#if defined(PETSC_USE_DEBUG)
-    if (row >= A->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",row,A->rmap->n-1);
-#endif
+    if (PetscUnlikelyDebug(row >= A->rmap->n)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",row,A->rmap->n-1);
     shift = a->sliidx[row>>3]+(row&0x07); /* starting index of the row */
     cp    = a->colidx+shift; /* pointer to the row */
     vp    = a->val+shift; /* pointer to the row */
@@ -1494,9 +1488,7 @@ PetscErrorCode MatSetValues_SeqSELL(Mat A,PetscInt m,const PetscInt im[],PetscIn
     for (l=0; l<n; l++) { /* loop over added columns */
       col = in[l];
       if (col<0) continue;
-#if defined(PETSC_USE_DEBUG)
-      if (col >= A->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Col too large: row %D max %D",col,A->cmap->n-1);
-#endif
+      if (PetscUnlikelyDebug(col >= A->cmap->n)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Col too large: row %D max %D",col,A->cmap->n-1);
       if (a->roworiented) {
         value = v[l+k*n];
       } else {

@@ -709,7 +709,7 @@ One can also supply their own preconditioner, serving as a Hessian initializatio
  the above diagonal scaling.
 The appropriate user function in the code is {\tt TaoBNCGSetH0(tao, H0)} where 
 {\tt H0} is the user-defined {\tt Mat} object that serves as a preconditioner. 
-For an example of similar usage, see {\tt tao/examples/tutorials/ex3.c}.
+For an example of similar usage, see {\tt tao/tutorials/ex3.c}.
 
 The active set estimation uses the Bertsekas-based method described in Section~\ref{sec:bnk},
 which can be deactivated using {\tt -tao\_bncg\_as\_type none}, in which case the 
@@ -1453,3 +1453,65 @@ of which fact can be set via {\tt TaoADMMSetMisfitHessianChangeStatus()}, and {\
 Also, it may appear in certain cases where augmented Lagrangian's Hessian may become nearly singular depending on the 
 $\rho$, which may change in the case of \texttt{-tao\_admm\_dual\_update <update\_adaptive>, <update\_adaptive\_relaxed>}.
 This issue can be prevented by {\tt TaoADMMSetMinimumSpectralPenalty()}.
+
+\section{General Nonlinear Programming problems}
+General nonlinear programming problems are of the form
+\[
+\begin{array}{ll}
+\displaystyle \min_{x} & f(x) \\
+\mbox{subject to} & g(x) = 0 \\
+                  & h(x) \geq 0 \\
+                  & x^- \leq x \leq x^+
+\end{array}
+\label{eq:nlp_gen}
+\]
+Here, $f(x)$ is the nonlinear objective function, $g(x)$, $h(x)$ are the equality
+and inequality constraints, and $x^-$ and $x^+$ are the lower and upper bounds
+on decision variables $x$.
+
+\subsection{Interior-point Newton's method}
+The PDIPM ({\tt -tao\_type pdipm}) algorithm implements a primal-dual interior point method for solving general
+nonlinear programming problems. Using slack variables $z$ and a log-barrier term, \ref{eq:nlp_gen}
+is transformed to 
+
+\begin{equation}
+    \begin{aligned}
+    \text{min}~&f(x) - \mu\sum_{i=1}^{nci}\ln z_i\\
+    \text{s.t.}& \\
+        &ce(x) = 0 \\
+        &ci(x) - z = 0 \\
+    \end{aligned}
+    \label{eq:nlp_gen}
+\end{equation}
+Here, $ce(x)$ is set of equality constraints that include $g(x)$ and fixed
+decision variables, i.e., $x^- = x = x^+$. Similarly, $ci(x)$ are inequality constraints
+including $h(x)$ and lower/upper/box-constraints on $x$.
+$\mu$ is a parameter that is driven to zero as the optimization progresses.
+
+The Lagrangian for Equation(\ref{eq:nlp_gen}) is
+\begin{equation}
+    L_{\mu}(x,\lambda_{ce},\lambda_{ci},z) = f(x) + \lambda_{ce}^Tce(x) - \lambda_{ci}^T(ci(x) - z) - \mu\sum_{i=1}^{nci}\ln z_i
+    \label{eq:lagrangian}
+\end{equation}
+where, $\lambda_{ce}$ and $\lambda_{ci}$ are the lagrangian multipliers for the equality and inequality constraints, respectively.
+
+The first order KKT conditions for optimality are as follows
+\begin{equation}
+\nabla L_{\mu}(x,\lambda_{ce},\lambda_{ci},z)    =
+    \begin{bmatrix}
+        \nabla f(x) + \nabla ce(x)^T\lambda_{ce} -  \nabla ci(x)^T \lambda_{ci} \\
+        ce(x) \\
+        ci(x) - z \\
+        Z\Lambda_{ci}e - \mu e
+    \end{bmatrix}
+= 0
+\label{eq:nlp_kkt}
+\end{equation}
+
+Eq. \ref{eq:nlp_kkt} is solved iteratively using Newton's method using PETSc's SNES object. After each Newton iteration, 
+a line-search is performed to update $x$ and enforce $z,\lambda_{ci} \geq 0$. The barrier parameter $\mu$ is also updated
+after each Newton iteration. The Newton update is obtained by solving the second-order KKT system $Hd = -\nabla L_{\mu}$. Here,$H$
+is the Hessian matrix of the KKT system. For interior-point methods such as PDIPM, the Hessian matrix tends to be ill-conditioned,
+thus neccessitating the use of a direct solver. We recommend using LU preconditioner {\tt -pc\_type lu} and using direct linear
+solver packages such {\tt SuperLU\_Dist} or {\tt MUMPS}.
+

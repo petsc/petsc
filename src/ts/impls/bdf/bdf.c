@@ -17,16 +17,21 @@ typedef struct {
   PetscInt  k,n;
   PetscReal time[6+2];
   Vec       work[6+2];
+  Vec       tvwork[6+2];
   PetscReal shift;
-  Vec       vec_dot;
+  Vec       vec_dot;            /* Xdot when !transientvar, else Cdot where C(X) is the transient variable. */
   Vec       vec_wrk;
   Vec       vec_lte;
 
+  PetscBool    transientvar;
   PetscInt     order;
   TSStepStatus status;
 } TS_BDF;
 
 
+/* Compute Lagrange polynomials on T[:n] evaluated at t.
+ * If one has data (T[i], Y[i]), then the interpolation/extrapolation is f(t) = \sum_i L[i]*Y[i].
+ */
 PETSC_STATIC_INLINE void LagrangeBasisVals(PetscInt n,PetscReal t,const PetscReal T[],PetscScalar L[])
 {
   PetscInt k,j;
@@ -113,18 +118,21 @@ static PetscErrorCode TSBDF_Advance(TS ts,PetscReal t,Vec X)
 {
   TS_BDF         *bdf = (TS_BDF*)ts->data;
   PetscInt       i,n = (PetscInt)(sizeof(bdf->work)/sizeof(Vec));
-  Vec            tail = bdf->work[n-1];
+  Vec            tail = bdf->work[n-1],tvtail = bdf->tvwork[n-1];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   for (i=n-1; i>=2; i--) {
     bdf->time[i] = bdf->time[i-1];
     bdf->work[i] = bdf->work[i-1];
+    bdf->tvwork[i] = bdf->tvwork[i-1];
   }
   bdf->n       = PetscMin(bdf->n+1,n-1);
   bdf->time[1] = t;
   bdf->work[1] = tail;
+  bdf->tvwork[1] = tvtail;
   ierr = VecCopy(X,tail);CHKERRQ(ierr);
+  ierr = TSComputeTransientVariable(ts,tail,tvtail);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -179,6 +187,10 @@ static PetscErrorCode TSBDF_Interpolate(TS ts,PetscInt order,PetscReal t,Vec X)
   PetscFunctionReturn(0);
 }
 
+/* Compute the affine term V0 such that Xdot = shift*X + V0.
+ *
+ * When using transient variables, we're computing Cdot = shift*C(X) + V0, and thus choose a linear combination of tvwork.
+ */
 static PetscErrorCode TSBDF_PreSolve(TS ts)
 {
   TS_BDF         *bdf = (TS_BDF*)ts->data;
@@ -191,7 +203,9 @@ static PetscErrorCode TSBDF_PreSolve(TS ts)
   PetscFunctionBegin;
   ierr = TSBDF_GetVecs(ts,NULL,&V,&V0);CHKERRQ(ierr);
   LagrangeBasisDers(n,bdf->time[0],bdf->time,alpha);
-  for (i=1; i<n; i++) vecs[i] = bdf->work[i];
+  for (i=1; i<n; i++) {
+    vecs[i] = bdf->transientvar ? bdf->tvwork[i] : bdf->work[i];
+  }
   ierr = VecZeroEntries(V0);CHKERRQ(ierr);
   ierr = VecMAXPY(V0,n-1,alpha+1,vecs+1);CHKERRQ(ierr);
   bdf->shift = PetscRealPart(alpha[0]);
@@ -233,6 +247,7 @@ static PetscErrorCode TSBDF_Restart(TS ts,PetscBool *accept)
   bdf->k = PetscMin(2,bdf->order); bdf->n++;
   ierr = VecCopy(bdf->work[0],bdf->work[2]);CHKERRQ(ierr);
   bdf->time[2] = bdf->time[0];
+  ierr = TSComputeTransientVariable(ts,bdf->work[2],bdf->tvwork[2]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -341,7 +356,12 @@ static PetscErrorCode SNESTSFormFunction_BDF(SNES snes,Vec X,Vec F,TS ts)
   PetscFunctionBegin;
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = TSBDF_GetVecs(ts,dm,&V,&V0);CHKERRQ(ierr);
-  ierr = VecWAXPY(V,shift,X,V0);CHKERRQ(ierr);
+  if (bdf->transientvar) {      /* shift*C(X) + V0 */
+    ierr = TSComputeTransientVariable(ts,X,V);CHKERRQ(ierr);
+    ierr = VecAYPX(V,shift,V0);CHKERRQ(ierr);
+  } else {                      /* shift*X + V0 */
+    ierr = VecWAXPY(V,shift,X,V0);CHKERRQ(ierr);
+  }
 
   /* F = Function(t,X,V) */
   ts->dm = dm;
@@ -382,7 +402,10 @@ static PetscErrorCode TSReset_BDF(TS ts)
 
   PetscFunctionBegin;
   bdf->k = bdf->n = 0;
-  for (i=0; i<n; i++) {ierr = VecDestroy(&bdf->work[i]);CHKERRQ(ierr);}
+  for (i=0; i<n; i++) {
+    ierr = VecDestroy(&bdf->work[i]);CHKERRQ(ierr);
+    ierr = VecDestroy(&bdf->tvwork[i]);CHKERRQ(ierr);
+  }
   ierr = VecDestroy(&bdf->vec_dot);CHKERRQ(ierr);
   ierr = VecDestroy(&bdf->vec_wrk);CHKERRQ(ierr);
   ierr = VecDestroy(&bdf->vec_lte);CHKERRQ(ierr);
@@ -410,8 +433,14 @@ static PetscErrorCode TSSetUp_BDF(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = TSHasTransientVariable(ts,&bdf->transientvar);CHKERRQ(ierr);
   bdf->k = bdf->n = 0;
-  for (i=0; i<n; i++) {ierr = VecDuplicate(ts->vec_sol,&bdf->work[i]);CHKERRQ(ierr);}
+  for (i=0; i<n; i++) {
+    ierr = VecDuplicate(ts->vec_sol,&bdf->work[i]);CHKERRQ(ierr);
+    if (i && bdf->transientvar) {
+      ierr = VecDuplicate(ts->vec_sol,&bdf->tvwork[i]);CHKERRQ(ierr);
+    }
+  }
   ierr = VecDuplicate(ts->vec_sol,&bdf->vec_dot);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&bdf->vec_wrk);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&bdf->vec_lte);CHKERRQ(ierr);

@@ -1,0 +1,154 @@
+  Residual norms for stokes_ solve.
+  0 KSP Residual norm 0.0221957 
+  1 KSP Residual norm 0.00560206 
+  2 KSP Residual norm 0.00418829 
+  3 KSP Residual norm 0.00405949 
+  4 KSP Residual norm 0.00274707 
+  5 KSP Residual norm 0.00165006 
+  6 KSP Residual norm 0.000652805 
+  7 KSP Residual norm 0.000481844 
+  8 KSP Residual norm 0.000312855 
+  9 KSP Residual norm 0.000217507 
+ 10 KSP Residual norm 0.000176853 
+ 11 KSP Residual norm 0.000136575 
+ 12 KSP Residual norm 7.5976e-05 
+ 13 KSP Residual norm 9.70067e-05 
+ 14 KSP Residual norm 0.000112772 
+ 15 KSP Residual norm 8.02602e-05 
+ 16 KSP Residual norm 4.98782e-05 
+ 17 KSP Residual norm 1.53686e-05 
+ 18 KSP Residual norm 1.42465e-05 
+ 19 KSP Residual norm 1.70432e-05 
+ 20 KSP Residual norm 2.77866e-05 
+ 21 KSP Residual norm 2.57057e-05 
+ 22 KSP Residual norm 1.34637e-05 
+ 23 KSP Residual norm 1.19698e-05 
+ 24 KSP Residual norm 1.13968e-05 
+ 25 KSP Residual norm 5.80531e-06 
+ 26 KSP Residual norm 2.21233e-06 
+ 27 KSP Residual norm 1.44776e-06 
+ 28 KSP Residual norm 2.63384e-06 
+ 29 KSP Residual norm 2.6659e-06 
+ 30 KSP Residual norm 1.40985e-06 
+ 31 KSP Residual norm 5.79017e-07 
+ 32 KSP Residual norm 1.27601e-07 
+KSP Object: (stokes_) 4 MPI processes
+  type: pipegcr
+    max previous directions = 15
+    preallocated 5 directions
+    Using Notay's truncation strategy
+    w unrolling = 1 
+    restarts performed = 0 
+  maximum iterations=10000, initial guess is zero
+  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  left preconditioning
+  using NATURAL norm type for convergence test
+PC Object: (stokes_) 4 MPI processes
+  type: fieldsplit
+    FieldSplit with SYMMETRIC_MULTIPLICATIVE composition: total splits = 2, blocksize = 3
+    using Amat (not Pmat) as operator for off-diagonal blocks
+    Solver info for each split is in the following KSP objects:
+    Split number 0 Fields  0, 1
+    KSP Object: (stokes_fieldsplit_0_) 4 MPI processes
+      type: preonly
+      maximum iterations=10000, initial guess is zero
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using NONE norm type for convergence test
+    PC Object: (stokes_fieldsplit_0_) 4 MPI processes
+      type: bjacobi
+        number of blocks = 4
+        Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
+      KSP Object: (stokes_fieldsplit_0_sub_) 1 MPI processes
+        type: preonly
+        maximum iterations=10000, initial guess is zero
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        left preconditioning
+        using NONE norm type for convergence test
+      PC Object: (stokes_fieldsplit_0_sub_) 1 MPI processes
+        type: ilu
+          out-of-place factorization
+          0 levels of fill
+          tolerance for zero pivot 2.22045e-14
+          matrix ordering: natural
+          factor fill ratio given 1., needed 1.
+            Factored matrix follows:
+              Mat Object: 1 MPI processes
+                type: seqaij
+                rows=242, cols=242, bs=2
+                package used to perform factorization: petsc
+                total: nonzeros=3844, allocated nonzeros=3844
+                total number of mallocs used during MatSetValues calls=0
+                  using I-node routines: found 121 nodes, limit used is 5
+        linear system matrix = precond matrix:
+        Mat Object: (stokes_fieldsplit_0_) 1 MPI processes
+          type: seqaij
+          rows=242, cols=242, bs=2
+          total: nonzeros=3844, allocated nonzeros=3844
+          total number of mallocs used during MatSetValues calls=0
+            using I-node routines: found 121 nodes, limit used is 5
+      linear system matrix = precond matrix:
+      Mat Object: (stokes_fieldsplit_0_) 4 MPI processes
+        type: mpiaij
+        rows=882, cols=882, bs=2
+        total: nonzeros=14884, allocated nonzeros=14884
+        total number of mallocs used during MatSetValues calls=0
+          using I-node (on process 0) routines: found 121 nodes, limit used is 5
+    Split number 1 Fields  2
+    KSP Object: (stokes_fieldsplit_1_) 4 MPI processes
+      type: preonly
+      maximum iterations=10000, initial guess is zero
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using NONE norm type for convergence test
+    PC Object: (stokes_fieldsplit_1_) 4 MPI processes
+      type: bjacobi
+        number of blocks = 4
+        Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
+      KSP Object: (stokes_fieldsplit_1_sub_) 1 MPI processes
+        type: preonly
+        maximum iterations=10000, initial guess is zero
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        left preconditioning
+        using NONE norm type for convergence test
+      PC Object: (stokes_fieldsplit_1_sub_) 1 MPI processes
+        type: ilu
+          out-of-place factorization
+          0 levels of fill
+          tolerance for zero pivot 2.22045e-14
+          matrix ordering: natural
+          factor fill ratio given 1., needed 1.
+            Factored matrix follows:
+              Mat Object: 1 MPI processes
+                type: seqaij
+                rows=121, cols=121
+                package used to perform factorization: petsc
+                total: nonzeros=961, allocated nonzeros=961
+                total number of mallocs used during MatSetValues calls=0
+                  not using I-node routines
+        linear system matrix = precond matrix:
+        Mat Object: (stokes_fieldsplit_1_) 1 MPI processes
+          type: seqaij
+          rows=121, cols=121
+          total: nonzeros=961, allocated nonzeros=961
+          total number of mallocs used during MatSetValues calls=0
+            not using I-node routines
+      linear system matrix = precond matrix:
+      Mat Object: (stokes_fieldsplit_1_) 4 MPI processes
+        type: mpiaij
+        rows=441, cols=441
+        total: nonzeros=3721, allocated nonzeros=3721
+        total number of mallocs used during MatSetValues calls=0
+          not using I-node (on process 0) routines
+  linear system matrix followed by preconditioner matrix:
+  Mat Object: 4 MPI processes
+    type: mpiaij
+    rows=1323, cols=1323, bs=3
+    total: nonzeros=33489, allocated nonzeros=33489
+    total number of mallocs used during MatSetValues calls=0
+  Mat Object: 4 MPI processes
+    type: mpiaij
+    rows=1323, cols=1323, bs=3
+    total: nonzeros=33489, allocated nonzeros=33489
+    total number of mallocs used during MatSetValues calls=0
+4.7619e-02   2.2576e-03   7.1483e-05   2.3346e-03

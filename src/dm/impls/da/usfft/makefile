@@ -1,4 +1,4 @@
-
+-include ../petscdir.mk
 #requirespackage   'PETSC_HAVE_FFTW'
 #requiresprecision double
 

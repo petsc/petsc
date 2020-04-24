@@ -1,3 +1,4 @@
+-include ../petscdir.mk
 ALL: lib
 
 CPPFLAGS =
@@ -6,7 +7,7 @@ FFLAGS   =
 SOURCEC  = forest.c
 SOURCEF  =
 SOURCEH  =
-DIRS     = p4est examples
+DIRS     = p4est tests tutorials
 LIBBASE  = libpetscdm
 MANSEC   = DM
 SUBMANSEC= DMFOREST

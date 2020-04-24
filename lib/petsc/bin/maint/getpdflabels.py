@@ -9,14 +9,9 @@
 #      | getpdflabels.py
 #
 from __future__ import print_function
-import urllib
 import os
-import ftplib
-import httplib
 import sys
-from exceptions import *
 from sys import *
-from string import *
 import re
 
 def main():

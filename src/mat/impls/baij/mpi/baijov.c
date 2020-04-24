@@ -53,7 +53,7 @@ PetscErrorCode MatIncreaseOverlap_MPIBAIJ(Mat C,PetscInt imax,IS is[],PetscInt o
 
   Notes:
   nrqs - no of requests sent (or to be sent out)
-  nrqr - no of requests recieved (which have to be or which have been processed
+  nrqr - no of requests received (which have to be or which have been processed)
 */
 PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C,PetscInt imax,IS is[])
 {
@@ -383,13 +383,13 @@ static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Local(Mat C,PetscInt imax,Petsc
   PetscFunctionReturn(0);
 }
 /*
-      MatIncreaseOverlap_MPIBAIJ_Receive - Process the recieved messages,
+      MatIncreaseOverlap_MPIBAIJ_Receive - Process the received messages,
          and return the output
 
          Input:
            C    - the matrix
            nrqr - no of messages being processed.
-           rbuf - an array of pointers to the recieved requests
+           rbuf - an array of pointers to the received requests
 
          Output:
            xdata - array of messages to be sent back

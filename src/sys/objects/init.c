@@ -23,6 +23,9 @@ PETSC_INTERN PetscErrorCode PetscLogInitialize(void);
 #if defined(PETSC_HAVE_CUDA)
 #include <cuda_runtime.h>
 #include <petsccublas.h>
+#if defined(PETSC_HAVE_OMPI_MAJOR_VERSION)
+#include "mpi-ext.h" /* Needed for OpenMPI CUDA-aware check */
+#endif
 #endif
 
 #if defined(PETSC_HAVE_VIENNACL)
@@ -41,6 +44,8 @@ PetscBool   PetscCUDAInitialized  = PETSC_FALSE;
 
 PetscMPIInt PetscGlobalRank       = -1;
 PetscMPIInt PetscGlobalSize       = -1;
+
+PetscBool   use_gpu_aware_mpi     = PETSC_TRUE;
 
 #if defined(PETSC_HAVE_COMPLEX)
 #if defined(PETSC_COMPLEX_INSTANTIATE)
@@ -131,11 +136,11 @@ PetscErrorCode  PetscOpenHistoryFile(const char filename[],FILE **fd)
     *fd = fopen(fname,"a");
     if (!fd) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file: %s",fname);
 
-    ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"---------------------------------------------------------\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"----------------------------------------\n");CHKERRQ(ierr);
     ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"%s %s\n",version,date);CHKERRQ(ierr);
     ierr = PetscGetProgramName(pname,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
     ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"%s on a %s, %d proc. with options:\n",pname,arch,size);CHKERRQ(ierr);
-    ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"---------------------------------------------------------\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"----------------------------------------\n");CHKERRQ(ierr);
 
     err = fflush(*fd);
     if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
@@ -154,9 +159,9 @@ PETSC_INTERN PetscErrorCode PetscCloseHistoryFile(FILE **fd)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscGetDate(date,64);CHKERRQ(ierr);
-    ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"---------------------------------------------------------\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"----------------------------------------\n");CHKERRQ(ierr);
     ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"Finished at %s\n",date);CHKERRQ(ierr);
-    ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"---------------------------------------------------------\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"----------------------------------------\n");CHKERRQ(ierr);
     err  = fflush(*fd);
     if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
     err = fclose(*fd);
@@ -207,7 +212,8 @@ void Petsc_MPI_DebuggerOnError(MPI_Comm *comm,PetscMPIInt *flag,...)
                                when the first CUDA call is made unless you call PetscCUDAInitialize() before any CUDA operations are performed
 .  -cuda_view - view information about the CUDA devices
 .  -cuda_synchronize - wait at the end of asynchronize CUDA calls so that their time gets credited to the current event; default with -log_view
--  -cuda_set_device <gpu> - integer number of the device
+.  -cuda_set_device <gpu> - integer number of the device
+-  -use_gpu_aware_mpi     - Assume the MPI is GPU-aware when communicating data on GPU
 
   Level: beginner
 
@@ -353,7 +359,7 @@ void PetscMPI_Comm_eh(MPI_Comm *comm, PetscMPIInt *err, ...)
 
 PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 {
-  char              string[64],mname[PETSC_MAX_PATH_LEN],*f;
+  char              string[64];
   MPI_Comm          comm = PETSC_COMM_WORLD;
   PetscBool         flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE,flag;
   PetscErrorCode    ierr;
@@ -363,11 +369,12 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   PetscMPIInt       rank;
   char              version[256],helpoptions[256];
 #if defined(PETSC_USE_LOG)
+  char              mname[PETSC_MAX_PATH_LEN];
   PetscViewerFormat format;
   PetscBool         flg4 = PETSC_FALSE;
 #endif
 #if defined(PETSC_HAVE_CUDA)
-  PetscBool         initCuda = PETSC_TRUE;
+  PetscBool         initCUDA = PETSC_TRUE,mpi_gpu_awareness;
 #endif
 
   PetscFunctionBegin;
@@ -380,15 +387,15 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     */
     PetscBool         mdebug = PETSC_FALSE, eachcall = PETSC_FALSE, initializenan = PETSC_FALSE, mlog = PETSC_FALSE;
 
-#if defined(PETSC_USE_DEBUG)
-    mdebug        = PETSC_TRUE;
-    initializenan = PETSC_TRUE;
-    ierr   = PetscOptionsHasName(NULL,NULL,"-malloc_test",&flg1);CHKERRQ(ierr);
-#else
-    /* don't warn about unused option */
-    ierr = PetscOptionsHasName(NULL,NULL,"-malloc_test",&flg1);CHKERRQ(ierr);
-    flg1 = PETSC_FALSE;
-#endif
+    if (PetscDefined(USE_DEBUG)) {
+      mdebug        = PETSC_TRUE;
+      initializenan = PETSC_TRUE;
+      ierr   = PetscOptionsHasName(NULL,NULL,"-malloc_test",&flg1);CHKERRQ(ierr);
+    } else {
+      /* don't warn about unused option */
+      ierr = PetscOptionsHasName(NULL,NULL,"-malloc_test",&flg1);CHKERRQ(ierr);
+      flg1 = PETSC_FALSE;
+    }
     ierr = PetscOptionsGetBool(NULL,NULL,"-malloc_debug",&flg2,&flg3);CHKERRQ(ierr);
     if (flg1 || flg2) {
       mdebug        = PETSC_TRUE;
@@ -464,14 +471,13 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     }
 
     ierr = PetscGetVersion(version,256);CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm,"--------------------------------------------------------------------------\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"%s\n",version);CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"%s",PETSC_AUTHOR_INFO);CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"See docs/changes/index.html for recent updates.\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"See docs/faq.html for problems.\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"See docs/manualpages/index.html for help. \n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"Libraries linked from %s\n",PETSC_LIB_DIR);CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm,"--------------------------------------------------------------------------\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm,"----------------------------------------\n");CHKERRQ(ierr);
   }
 
   /*
@@ -603,13 +609,7 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   */
 #if defined(PETSC_USE_INFO)
   {
-    char logname[PETSC_MAX_PATH_LEN]; logname[0] = 0;
-    ierr = PetscOptionsGetString(NULL,NULL,"-info",logname,250,&flg1);CHKERRQ(ierr);
-    if (flg1 && logname[0]) {
-      ierr = PetscInfoAllow(PETSC_TRUE,logname);CHKERRQ(ierr);
-    } else if (flg1) {
-      ierr = PetscInfoAllow(PETSC_TRUE,NULL);CHKERRQ(ierr);
-    }
+    ierr = PetscInfoSetFromOptions(NULL);CHKERRQ(ierr);
   }
 #endif
 #if defined(PETSC_USE_LOG)
@@ -669,9 +669,30 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 
 #if defined(PETSC_HAVE_CUDA)
   ierr = PetscOptionsBegin(comm,NULL,"CUDA initialize","Sys");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-cuda_initialize","Initialize the CUDA devices and cuBLAS during PetscInitialize()",NULL,initCuda,&initCuda,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-cuda_initialize","Initialize the CUDA devices and cuBLAS during PetscInitialize()",NULL,initCUDA,&initCUDA,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-use_gpu_aware_mpi","Use GPU-aware MPI",NULL,use_gpu_aware_mpi,&use_gpu_aware_mpi,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  if (initCuda) {ierr = PetscCUDAInitialize(PETSC_COMM_WORLD);CHKERRQ(ierr);}
+  if (initCUDA) {ierr = PetscCUDAInitialize(PETSC_COMM_WORLD);CHKERRQ(ierr);}
+  if (use_gpu_aware_mpi) {
+#if defined(PETSC_HAVE_OMPI_MAJOR_VERSION) && defined(MPIX_CUDA_AWARE_SUPPORT) && MPIX_CUDA_AWARE_SUPPORT
+    /* Trust OpenMPI's compile time cuda query interface */
+    mpi_gpu_awareness = PETSC_TRUE;
+#else
+    /* For other MPI implementations without cuda query API, we do a GPU MPI call to see if it segfaults.
+       Note that Spectrum MPI sets OMPI_MAJOR_VERSION and is CUDA-aware, but does not have MPIX_CUDA_AWARE_SUPPORT.
+    */
+    mpi_gpu_awareness = PetscCheckMpiGpuAwareness();
+#endif
+    if (!mpi_gpu_awareness) {
+      (*PetscErrorPrintf)("PETSc is configured with GPU support, but your MPI is not GPU-aware. For better performance, please use a GPU-aware MPI.\n");
+      (*PetscErrorPrintf)("For IBM Spectrum MPI on OLCF Summit, you may need jsrun --smpiargs=-gpu.\n");
+      (*PetscErrorPrintf)("For OpenMPI, you need to configure it --with-cuda (https://www.open-mpi.org/faq/?category=buildcuda)\n");
+      (*PetscErrorPrintf)("For MVAPICH2-GDR, you need to set MV2_USE_CUDA=1 (http://mvapich.cse.ohio-state.edu/userguide/gdr/)\n");
+      (*PetscErrorPrintf)("For Cray-MPICH, you need to set MPICH_RDMA_ENABLED_CUDA=1 (https://www.olcf.ornl.gov/tutorials/gpudirect-mpich-enabled-cuda/)\n");
+      (*PetscErrorPrintf)("If you do not care, use option -use_gpu_aware_mpi 0, then PETSc will copy data from GPU to CPU for communication.\n");
+      PETSCABORT(PETSC_COMM_WORLD,PETSC_ERR_LIB);
+    }
+  }
 #endif
 
   /*
@@ -716,15 +737,17 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     ierr = (*PetscHelpPrintf)(comm," -get_total_flops: total flops over all processors\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -log_view [:filename:[format]]: logging objects and events\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -log_trace [filename]: prints trace of all PETSc calls\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -log_exclude <list,of,classnames>: exclude given classes from logging\n");CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MPE)
     ierr = (*PetscHelpPrintf)(comm," -log_mpe: Also create logfile viewable through Jumpshot\n");CHKERRQ(ierr);
 #endif
-    ierr = (*PetscHelpPrintf)(comm," -info <optional filename>: print informative messages about the calculations\n");CHKERRQ(ierr);
+#endif
+#if defined(PETSC_USE_INFO)
+    ierr = (*PetscHelpPrintf)(comm," -info [filename][:[~]<list,of,classnames>[:[~]self]]: print verbose information\n");CHKERRQ(ierr);
 #endif
     ierr = (*PetscHelpPrintf)(comm," -v: prints PETSc version number and release date\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -options_file <file>: reads options from file\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -petsc_sleep n: sleeps n seconds before running program\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm,"-----------------------------------------------\n");CHKERRQ(ierr);
   }
 
 #if defined(PETSC_HAVE_POPEN)
@@ -740,14 +763,6 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   ierr = PetscOptionsGetReal(NULL,NULL,"-petsc_sleep",&si,&flg1);CHKERRQ(ierr);
   if (flg1) {
     ierr = PetscSleep(si);CHKERRQ(ierr);
-  }
-
-  ierr = PetscOptionsGetString(NULL,NULL,"-info_exclude",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
-  if (flg1) {
-    ierr = PetscStrstr(mname,"null",&f);CHKERRQ(ierr);
-    if (f) {
-      ierr = PetscInfoDeactivateClass(0);CHKERRQ(ierr);
-    }
   }
 
 #if defined(PETSC_HAVE_VIENNACL)

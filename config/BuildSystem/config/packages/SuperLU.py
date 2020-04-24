@@ -7,7 +7,7 @@ class Configure(config.package.CMakePackage):
     self.version          = '5.2.1'
     self.minversion       = '5.2.1' # bugs in 5.2.0 prevent it from functioning
     self.versionname      = 'SUPERLU_MAJOR_VERSION.SUPERLU_MINOR_VERSION.SUPERLU_PATCH_VERSION'
-    self.gitcommit        = '52fc55d' #master/v5.2.1+ from jul-30-2018
+    self.gitcommit        = 'a3d5233' # master mar-15-2020
     self.download         = ['git://https://github.com/xiaoyeli/superlu','https://github.com/xiaoyeli/superlu/archive/'+self.gitcommit+'.tar.gz']
     self.downloaddirnames  = ['SuperLU','superlu']
     self.functions        = ['set_default_options']

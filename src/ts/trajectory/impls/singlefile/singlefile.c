@@ -20,7 +20,7 @@ static PetscErrorCode TSTrajectorySet_Singlefile(TSTrajectory tj,TS ts,PetscInt 
     ierr = PetscViewerFileSetName(sf->viewer,filename);CHKERRQ(ierr);
   }
   ierr = VecView(X,sf->viewer);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryWrite(sf->viewer,&time,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryWrite(sf->viewer,&time,1,PETSC_REAL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

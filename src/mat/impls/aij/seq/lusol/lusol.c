@@ -102,7 +102,7 @@ typedef struct  {
  *                        maxrow = maxcol - 1.
  *
  *
- *  Output parameters
+ *  Output parameters:
  *
  *  luparm(9) = inform   Return code from last call to any LU routine.
  *  luparm(10) = nsing    No. of singularities marked in the
@@ -156,7 +156,7 @@ typedef struct  {
  *                        all the remaining rows and columns.
  *
  *
- *  Output parameters
+ *  Output parameters:
  *
  *  parmlu(9) = amax     Maximum element in  A.
  *  parmlu(10) = elmax    Maximum multiplier in current  L.

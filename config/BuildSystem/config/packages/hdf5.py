@@ -6,8 +6,9 @@ class Configure(config.package.GNUPackage):
     config.package.GNUPackage.__init__(self, framework)
     self.minversion       = '1.8'
     self.versionname      = 'H5_VERSION'
-    self.download         = ['https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.5/src/hdf5-1.10.5.tar.gz',
-                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/hdf5-1.10.5.tar.gz']
+    self.download         = ['https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.0/src/hdf5-1.12.0.tar.bz2',
+                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/hdf5-1.12.0.tar.bz2']
+    self.download_solaris = ['https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.6/src/hdf5-1.10.6.tar.bz2']
 # David Moulton reports that HDF5 configure can fail on NERSC systems and this can be worked around by removing the
 #   getpwuid from the test for ac_func in gethostname getpwuid getrusage lstat
     self.functions        = ['H5T_init']
@@ -31,8 +32,8 @@ class Configure(config.package.GNUPackage):
     self.mathlib        = framework.require('config.packages.mathlib',self)
     self.zlib           = framework.require('config.packages.zlib',self)
     self.szlib          = framework.require('config.packages.szlib',self)
-    self.deps           = [self.mpi,self.mathlib]
-    self.odeps          = [self.zlib,self.szlib]
+    self.deps           = [self.mathlib]
+    self.odeps          = [self.mpi, self.zlib,self.szlib]
     return
 
   def versionToStandardForm(self,ver):
@@ -61,8 +62,8 @@ class Configure(config.package.GNUPackage):
     ''' Add HDF5 specific --enable-parallel flag and enable Fortran if available '''
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
 
-    args.append('--with-default-api-version=v18') # for hdf-1.10
-    args.append('--enable-parallel')
+    if not self.mpi.usingMPIUni:
+      args.append('--enable-parallel')
     if not self.argDB['download-hdf5-shared-libraries']:
       args.append('--enable-shared=0')
     if hasattr(self.compilers, 'FC') and self.argDB['download-hdf5-fortran-bindings']:

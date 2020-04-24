@@ -1,0 +1,13 @@
+DM Object: Mesh 1 MPI processes
+  type: plex
+Mesh in 3 dimensions:
+  0-cells: 729
+  1-cells: 4184
+  2-cells: 6528
+  3-cells: 3072
+Labels:
+  celltype: 4 strata with value/size (1 (4184), 3 (6528), 6 (3072), 0 (729))
+  depth: 4 strata with value/size (0 (729), 1 (4184), 2 (6528), 3 (3072))
+  marker: 1 strata with value/size (1 (2036))
+L_2 Error: 0.00631862
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1

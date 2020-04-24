@@ -28,6 +28,26 @@ $  PETSCGAUSSLOBATTOLEGENDRE_VIA_NEWTON - compute the nodes by solving a nonline
 E*/
 typedef enum {PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEAR_ALGEBRA,PETSCGAUSSLOBATTOLEGENDRE_VIA_NEWTON} PetscGaussLobattoLegendreCreateType;
 
+/*E
+  PetscDTNodeType - A description of strategies for generating nodes (both
+  quadrature nodes and nodes for Lagrange polynomials)
+
+  Level: intermediate
+
+$  PETSCDTNODES_DEFAULT - Nodes chosen by PETSc
+$  PETSCDTNODES_GAUSSJACOBI - Nodes at either Gauss-Jacobi or Gauss-Lobatto-Jacobi quadrature points
+$  PETSCDTNODES_EQUISPACED - Nodes equispaced either including the endpoints or excluding them
+$  PETSCDTNODES_TANHSINH - Nodes at Tanh-Sinh quadrature points
+
+  Note: a PetscDTNodeType can be paired with a PetscBool to indicate whether
+  the nodes include endpoints or not, and in the case of PETSCDT_GAUSSJACOBI
+  with exponents for the weight function.
+
+E*/
+typedef enum {PETSCDTNODES_DEFAULT=-1, PETSCDTNODES_GAUSSJACOBI, PETSCDTNODES_EQUISPACED, PETSCDTNODES_TANHSINH} PetscDTNodeType;
+
+PETSC_EXTERN const char *const PetscDTNodeTypes[];
+
 PETSC_EXTERN PetscErrorCode PetscQuadratureCreate(MPI_Comm, PetscQuadrature *);
 PETSC_EXTERN PetscErrorCode PetscQuadratureDuplicate(PetscQuadrature, PetscQuadrature *);
 PETSC_EXTERN PetscErrorCode PetscQuadratureGetOrder(PetscQuadrature, PetscInt*);
@@ -44,7 +64,10 @@ PETSC_EXTERN PetscErrorCode PetscQuadratureExpandComposite(PetscQuadrature, Pets
 PETSC_EXTERN PetscErrorCode PetscQuadraturePushForward(PetscQuadrature, PetscInt, const PetscReal[], const PetscReal[], const PetscReal[], PetscInt, PetscQuadrature *);
 
 PETSC_EXTERN PetscErrorCode PetscDTLegendreEval(PetscInt,const PetscReal*,PetscInt,const PetscInt*,PetscReal*,PetscReal*,PetscReal*);
+PETSC_EXTERN PetscErrorCode PetscDTJacobiNorm(PetscReal,PetscReal,PetscInt,PetscReal *);
 PETSC_EXTERN PetscErrorCode PetscDTJacobiEval(PetscInt,PetscReal,PetscReal,const PetscReal*,PetscInt,const PetscInt*,PetscReal*,PetscReal*,PetscReal*);
+PETSC_EXTERN PetscErrorCode PetscDTJacobiEvalJet(PetscReal,PetscReal,PetscInt,const PetscReal[],PetscInt,PetscInt,PetscReal[]);
+PETSC_EXTERN PetscErrorCode PetscDTPKDEvalJet(PetscInt,PetscInt,const PetscReal[],PetscInt,PetscInt,PetscReal[]);
 PETSC_EXTERN PetscErrorCode PetscDTGaussQuadrature(PetscInt,PetscReal,PetscReal,PetscReal*,PetscReal*);
 PETSC_EXTERN PetscErrorCode PetscDTGaussJacobiQuadrature(PetscInt,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal*,PetscReal*);
 PETSC_EXTERN PetscErrorCode PetscDTGaussLobattoJacobiQuadrature(PetscInt,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal*,PetscReal*);
@@ -76,6 +99,11 @@ PETSC_EXTERN PetscErrorCode PetscDTAltVInterior(PetscInt, PetscInt, const PetscR
 PETSC_EXTERN PetscErrorCode PetscDTAltVInteriorMatrix(PetscInt, PetscInt, const PetscReal *, PetscReal *);
 PETSC_EXTERN PetscErrorCode PetscDTAltVInteriorPattern(PetscInt, PetscInt, PetscInt (*)[3]);
 PETSC_EXTERN PetscErrorCode PetscDTAltVStar(PetscInt, PetscInt, PetscInt, const PetscReal *, PetscReal *);
+
+PETSC_EXTERN PetscErrorCode PetscDTBaryToIndex(PetscInt,PetscInt,const PetscInt[],PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscDTIndexToBary(PetscInt,PetscInt,PetscInt,PetscInt[]);
+PETSC_EXTERN PetscErrorCode PetscDTGradedOrderToIndex(PetscInt,const PetscInt[],PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscDTIndexToGradedOrder(PetscInt,PetscInt,PetscInt[]);
 
 #if defined(PETSC_USE_64BIT_INDICES)
 #define PETSC_FACTORIAL_MAX 20
@@ -269,7 +297,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTEnumPerm(PetscInt n, PetscInt k, Petsc
 
    Output Arguments:
 +  k - an integer in [0, n!)
-.  isOdd - if not NULL, returns wether the permutation used an even or odd number of swaps.
+-  isOdd - if not NULL, returns wether the permutation used an even or odd number of swaps.
 
    Note: this is limited to n such that n! can be represented by PetscInt, which is 12 if PetscInt is a signed 32-bit integer and 20 if PetscInt is a signed 64-bit integer.
 

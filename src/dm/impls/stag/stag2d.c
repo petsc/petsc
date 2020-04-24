@@ -178,14 +178,14 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm)
 
   /* Retrieve local size in stag->n */
   for (i=0; i<dim; ++i) stag->n[i] = stag->l[i][stag->rank[i]];
-#if defined(PETSC_USE_DEBUG)
-  for (i=0; i<dim; ++i) {
-    PetscInt Ncheck,j;
-    Ncheck = 0;
-    for (j=0; j<stag->nRanks[i]; ++j) Ncheck += stag->l[i][j];
-    if (Ncheck != stag->N[i]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local sizes in dimension %d don't add up. %d != %d\n",i,Ncheck,stag->N[i]);
+  if (PetscDefined(USE_DEBUG)) {
+    for (i=0; i<dim; ++i) {
+      PetscInt Ncheck,j;
+      Ncheck = 0;
+      for (j=0; j<stag->nRanks[i]; ++j) Ncheck += stag->l[i][j];
+      if (Ncheck != stag->N[i]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local sizes in dimension %d don't add up. %d != %d\n",i,Ncheck,stag->N[i]);
+    }
   }
-#endif
 
   /* Compute starting elements */
   for (i=0; i<dim; ++i) {
@@ -634,9 +634,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm)
       }
     }
 
-#if defined(PETSC_USE_DEBUG)
     if (count != entriesToTransferTotal) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of entries computed in gtol (%d) is not as expected (%d)",count,entriesToTransferTotal);
-#endif
 
     /* Create Local and Global ISs (transferring pointer ownership) */
     ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm),entriesToTransferTotal,idxLocal,PETSC_OWN_POINTER,&isLocal);CHKERRQ(ierr);

@@ -220,9 +220,6 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   if (((PetscInt64) M)*((PetscInt64) N)*((PetscInt64) dof) > (PetscInt64) PETSC_MPI_INT_MAX) SETERRQ3(comm,PETSC_ERR_INT_OVERFLOW,"Mesh of %D by %D by %D (dof) is too large for 32 bit indices",M,N,dof);
 #endif
 
-  if (dof < 1) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"Must have 1 or more degrees of freedom per node: %D",dof);
-  if (s < 0) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"Stencil width cannot be negative: %D",s);
-
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
@@ -274,13 +271,13 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   for (i=0; i<(rank % m); i++) {
     xs += lx[i];
   }
-#if defined(PETSC_USE_DEBUG)
-  left = xs;
-  for (i=(rank % m); i<m; i++) {
-    left += lx[i];
+  if (PetscDefined(USE_DEBUG)) {
+    left = xs;
+    for (i=(rank % m); i<m; i++) {
+      left += lx[i];
+    }
+    if (left != M) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Sum of lx across processors not equal to M: %D %D",left,M);
   }
-  if (left != M) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Sum of lx across processors not equal to M: %D %D",left,M);
-#endif
 
   /*
      Determine locally owned region
@@ -298,13 +295,13 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   for (i=0; i<(rank/m); i++) {
     ys += ly[i];
   }
-#if defined(PETSC_USE_DEBUG)
-  left = ys;
-  for (i=(rank/m); i<n; i++) {
-    left += ly[i];
+  if (PetscDefined(USE_DEBUG)) {
+    left = ys;
+    for (i=(rank/m); i<n; i++) {
+      left += ly[i];
+    }
+    if (left != N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Sum of ly across processors not equal to N: %D %D",left,N);
   }
-  if (left != N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Sum of ly across processors not equal to N: %D %D",left,N);
-#endif
 
   /*
    check if the scatter requires more than one process neighbor or wraps around

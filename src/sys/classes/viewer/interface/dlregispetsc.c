@@ -51,11 +51,12 @@ PetscErrorCode  PetscSysInitializePackage(void)
   ierr = PetscLogEventRegister("PetscBarrier", PETSC_SMALLEST_CLASSID,&PETSC_Barrier);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("BuildTwoSided",PETSC_SMALLEST_CLASSID,&PETSC_BuildTwoSided);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("BuildTwoSidedF",PETSC_SMALLEST_CLASSID,&PETSC_BuildTwoSidedF);CHKERRQ(ierr);
-  /* Process info exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL,"-info_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
-  if (opt) {
-    ierr = PetscStrInList("null",logList,',',&pkg);CHKERRQ(ierr);
-    if (pkg) {ierr = PetscInfoDeactivateClass(0);CHKERRQ(ierr);}
+  /* Process Info */
+  {
+    PetscClassId  classids[1];
+
+    classids[0] = PETSC_SMALLEST_CLASSID;
+    ierr = PetscInfoProcessClass("sys", 1, classids);CHKERRQ(ierr);
   }
   /* Process summary exclusions */
   ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);

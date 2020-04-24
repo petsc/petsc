@@ -43,7 +43,7 @@
         <li><a href="../publications/index.html">Applications/Publications</a></li>
         <li><a href="../miscellaneous/index.html">Miscellaneous</a></li>
         <li><a href="../miscellaneous/external.html">External Software</a></li>
-        <li><a href="../developers/index.html">Developers Site</a></li>
+        <li><a href="https://docs.petsc.org/en/latest/developers/index.html">Developers Site</a></li>
       </ul>
     </div>
 
@@ -223,7 +223,7 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
           <li>
             specify enviornment variable for csh/tcsh [can be specified in ~/.cshrc]
             <ul>
-              <li>setenv PETSC_DIR /home/balay/petsc-3.12.0</li>
+              <li>setenv PETSC_DIR /home/balay/petsc-3.13.0</li>
               <li>setenv PETSC_ARCH linux-gnu-c-debug</li>
             </ul>
           </li>
@@ -231,7 +231,7 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
           <li>
             specify enviornment variable for bash [can be specified in ~/.bashrc]
             <ul>
-              <li>export PETSC_DIR=/home/balay/petsc-3.12.0</li>
+              <li>export PETSC_DIR=/home/balay/petsc-3.13.0</li>
               <li>export PETSC_ARCH=linux-gnu-c-debug</li>
             </ul>
           </li>
@@ -239,14 +239,14 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
           <li>
             specify variable on commandline to configure
             <ul>
-              <li>./configure PETSC_DIR=/home/balay/petsc-3.12.0 PETSC_ARCH=linux-gnu-c-debug [other configure options]</li>
+              <li>./configure PETSC_DIR=/home/balay/petsc-3.13.0 PETSC_ARCH=linux-gnu-c-debug [other configure options]</li>
             </ul>
           </li>
 
           <li>
             specify variables on command line to make
             <ul>
-              <li>make PETSC_DIR=/home/balay/petsc-3.12.0 PETSC_ARCH=linux-gnu-c-debug [other make options]</li>
+              <li>make PETSC_DIR=/home/balay/petsc-3.13.0 PETSC_ARCH=linux-gnu-c-debug [other make options]</li>
             </ul>
           </li>
         </ul>
@@ -866,13 +866,13 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
         <ul>
           <li>
             create an empty project file with one of the examples say
-            <code>src/ksp/ksp/examples/tutorials/ex2.c</code>
+            <code>src/ksp/ksp/tutorials/ex2.c</code>
           </li>
 
           <li>
             try compiling the example from Cygwin bash shell - using makefile - for eg:
             <ul>
-              <li>cd src/ksp/ksp/examples/tutorials</li>
+              <li>cd src/ksp/ksp/tutorials</li>
               <li>make ex2</li>
             </ul>
           </li>
@@ -949,8 +949,8 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
           <li>sudo mkdir /opt/petsc</li>
           <li>sudo chown user:group /opt/petsc</li>
           <li>cd /opt/petsc</li>
-          <li>tar -xzf petsc-3.12.0.tar.gz</li>
-          <li>cd petsc-3.12.0</li>
+          <li>tar -xzf petsc-3.13.0.tar.gz</li>
+          <li>cd petsc-3.13.0</li>
           <li>./configure</li>
           <li>make</li>
         </ul>
@@ -959,14 +959,14 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
         <p>One can also use the GNU <b>--prefix</b> install mode.</p>
 
         <ul class="code">
-          <li>./configure --prefix=/opt/petsc/petsc-3.12.0  [other configure options]</li>
+          <li>./configure --prefix=/opt/petsc/petsc-3.13.0  [other configure options]</li>
           <li>make</li>
           <li>[sudo] make install</li>
-          <li>[user can now use this PETSc install with:] make PETSC_DIR=/opt/petsc/petsc-3.12.0 ex1</li>
+          <li>[user can now use this PETSc install with:] make PETSC_DIR=/opt/petsc/petsc-3.13.0 ex1</li>
         </ul>
 
         <p>
-          Note: one has to switch to using <code>PETSC_DIR=/opt/petsc/petsc-3.12.0</code> after
+          Note: one has to switch to using <code>PETSC_DIR=/opt/petsc/petsc-3.13.0</code> after
           install is done - and <b>NOT</b> use PETSC_ARCH anymore.
         </p>
 
@@ -978,11 +978,11 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
         </p>
 
         <ul class="code">
-          <li>./configure --prefix=/opt/petsc/petsc-3.12.0</li>
+          <li>./configure --prefix=/opt/petsc/petsc-3.13.0</li>
           <li>make</li>
           <li>make install DESTDIR=/tmp/petsc-pkg</li>
-          <li>[package up /tmp/petsc-pkg The package should then be installed at /opt/petsc/petsc-3.12.0]</li>
-          <li>[user can now use this PETSc install with:] make PETSC_DIR=/opt/petsc/petsc-3.12.0 ex1</li>
+          <li>[package up /tmp/petsc-pkg The package should then be installed at /opt/petsc/petsc-3.13.0]</li>
+          <li>[user can now use this PETSc install with:] make PETSC_DIR=/opt/petsc/petsc-3.13.0 ex1</li>
         </ul>
 
         <h4>Multiple installs using --prefix and DESTDIR:</h4>
@@ -991,11 +991,11 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
 
         <ul class="code">
           <li>untar petsc tar ball</li>
-          <li>./configure --prefix=/opt/petsc/petsc-3.12.0-mpich --with-mpi-dir=/opt/mpich</li>
+          <li>./configure --prefix=/opt/petsc/petsc-3.13.0-mpich --with-mpi-dir=/opt/mpich</li>
           <li>make</li>
           <li>make install DESTDIR=/tmp/petsc-pkg</li>
           <li>untar petsc tar ball</li>
-          <li>./configure --prefix=/opt/petsc/petsc-3.12.0-openmpi --with-mpi-dir=/opt/openmpi</li>
+          <li>./configure --prefix=/opt/petsc/petsc-3.13.0-openmpi --with-mpi-dir=/opt/openmpi</li>
           <li>make</li>
           <li>make install DESTDIR=/tmp/petsc-pkg</li>
         </ul>
@@ -1045,7 +1045,7 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
 
         <p>
           On systems where you need to use a job scheduler or batch submission to run jobs
-          use the configure option  <code>--with-batch</code>. On such systems the <code>make test</code> option will not work
+          use the configure option  <code>--with-batch</code>. On such systems the <code>make check</code> option will not work
         </p>
 
         <ul>

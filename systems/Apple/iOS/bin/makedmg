@@ -17,15 +17,15 @@ cp -r  ${PETSC_DIR}/systems/Apple/iOS/examples tempsource/PETSc-iOS.examples
 
 # copy the PETSc source for the examples into the example directories and modify the include to point to them 
 # in the PETSc tree the examples point to the original source elsewhere in the PETSc tree
-cp ${PETSC_DIR}/src/snes/examples/tutorials/ex19.c tempsource/PETSc-iOS.examples/Basic/Classes
-cp ${PETSC_DIR}/src/snes/examples/tutorials/ex48.c tempsource/PETSc-iOS.examples/Basic/Classes
-sed -i "" s?../../../../../../src/snes/examples/tutorials/??g tempsource/PETSc-iOS.examples/Basic/Classes/iphoneViewController.m
-cp ${PETSC_DIR}/src/snes/examples/tutorials/ex19.c tempsource/PETSc-iOS.examples/testopengl/Classes
-cp ${PETSC_DIR}/src/snes/examples/tutorials/ex48.c tempsource/PETSc-iOS.examples/testopengl/Classes
-cp ${PETSC_DIR}/src/sys/classes/draw/examples/tests/ex3.c tempsource/PETSc-iOS.examples/testopengl/Classes
-cp ${PETSC_DIR}/src/sys/classes/draw/examples/tests/ex4.c tempsource/PETSc-iOS.examples/testopengl/Classes
-sed -i "" s?../../../../../../src/snes/examples/tutorials/??g tempsource/PETSc-iOS.examples/testopengl/Classes/iphoneViewController.m
-sed -i "" s?../../../../../../src/sys/classes/draw/examples/tests/??g tempsource/PETSc-iOS.examples/testopengl/Classes/iphoneViewController.m
+cp ${PETSC_DIR}/src/snes/tutorials/ex19.c tempsource/PETSc-iOS.examples/Basic/Classes
+cp ${PETSC_DIR}/src/snes/tutorials/ex48.c tempsource/PETSc-iOS.examples/Basic/Classes
+sed -i "" s?../../../../../../src/snes/tutorials/??g tempsource/PETSc-iOS.examples/Basic/Classes/iphoneViewController.m
+cp ${PETSC_DIR}/src/snes/tutorials/ex19.c tempsource/PETSc-iOS.examples/testopengl/Classes
+cp ${PETSC_DIR}/src/snes/tutorials/ex48.c tempsource/PETSc-iOS.examples/testopengl/Classes
+cp ${PETSC_DIR}/src/sys/classes/draw/tests/ex3.c tempsource/PETSc-iOS.examples/testopengl/Classes
+cp ${PETSC_DIR}/src/sys/classes/draw/tests/ex4.c tempsource/PETSc-iOS.examples/testopengl/Classes
+sed -i "" s?../../../../../../src/snes/tutorials/??g tempsource/PETSc-iOS.examples/testopengl/Classes/iphoneViewController.m
+sed -i "" s?../../../../../../src/sys/classes/draw/tests/??g tempsource/PETSc-iOS.examples/testopengl/Classes/iphoneViewController.m
 
 
 let size=`du  -c tempsource | tail -1 | cut -f1`

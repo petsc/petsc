@@ -1,4 +1,4 @@
-
+-include ../petscdir.mk
 ALL: lib
 
 CFLAGS    =
@@ -6,7 +6,7 @@ FFLAGS    =
 SOURCEC   = dspacelagrange.c
 SOURCEF   =
 LIBBASE   = libpetscdm
-DIRS      =
+DIRS      = tests tutorials
 LOCDIR    = src/dm/dt/dualspace/impls/lagrange/
 MANSEC    = DM
 SUBMANSEC = DUALSPACE

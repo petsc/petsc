@@ -32,25 +32,19 @@ static PetscErrorCode DMStagCreateCompatibleDMDA(DM dm,DMStagStencilLocation loc
       break;
     case DMSTAG_LEFT:
     case DMSTAG_RIGHT:
-#if defined(PETSC_USE_DEBUG)
       if (dim<1) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Incompatible dim (%d) and loc(%s) combination",dim,DMStagStencilLocations[loc]);
-#endif
       l[0][stag->nRanks[0]-1] += 1; /* extra vertex in direction 0 on last rank in dimension 0 */
       N[0] += 1;
       break;
     case DMSTAG_UP:
     case DMSTAG_DOWN:
-#if defined(PETSC_USE_DEBUG)
       if (dim < 2) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Incompatible dim (%d) and loc(%s) combination",dim,DMStagStencilLocations[loc]);
-#endif
       l[1][stag->nRanks[1]-1] += 1; /* extra vertex in direction 1 on last rank in dimension 1 */
       N[1] += 1;
       break;
     case DMSTAG_BACK:
     case DMSTAG_FRONT:
-#if defined(PETSC_USE_DEBUG)
       if (dim < 3) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Incompatible dim (%d) and loc(%s) combination",dim,DMStagStencilLocations[loc]);
-#endif
       l[2][stag->nRanks[2]-1] += 1; /* extra vertex in direction 2 on last rank in dimension 2 */
       N[2] += 1;
       break;
@@ -58,9 +52,7 @@ static PetscErrorCode DMStagCreateCompatibleDMDA(DM dm,DMStagStencilLocation loc
     case DMSTAG_DOWN_RIGHT :
     case DMSTAG_UP_LEFT :
     case DMSTAG_UP_RIGHT :
-#if defined(PETSC_USE_DEBUG)
       if (dim < 2) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Incompatible dim (%d) and loc(%s) combination",dim,DMStagStencilLocations[loc]);
-#endif
       for (i=0; i<2; ++i) { /* extra vertex in direction i on last rank in dimension i = 0,1 */
         l[i][stag->nRanks[i]-1] += 1;
         N[i] += 1;
@@ -70,9 +62,7 @@ static PetscErrorCode DMStagCreateCompatibleDMDA(DM dm,DMStagStencilLocation loc
     case DMSTAG_BACK_RIGHT:
     case DMSTAG_FRONT_LEFT:
     case DMSTAG_FRONT_RIGHT:
-#if defined(PETSC_USE_DEBUG)
       if (dim < 3) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Incompatible dim (%d) and loc(%s) combination",dim,DMStagStencilLocations[loc]);
-#endif
       for (i=0; i<3; i+=2) { /* extra vertex in direction i on last rank in dimension i = 0,2 */
         l[i][stag->nRanks[i]-1] += 1;
         N[i] += 1;
@@ -82,9 +72,7 @@ static PetscErrorCode DMStagCreateCompatibleDMDA(DM dm,DMStagStencilLocation loc
     case DMSTAG_BACK_UP:
     case DMSTAG_FRONT_DOWN:
     case DMSTAG_FRONT_UP:
-#if defined(PETSC_USE_DEBUG)
       if (dim < 3) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Incompatible dim (%d) and loc(%s) combination",dim,DMStagStencilLocations[loc]);
-#endif
       for (i=1; i<3; ++i) { /* extra vertex in direction i on last rank in dimension i = 1,2 */
         l[i][stag->nRanks[i]-1] += 1;
         N[i] += 1;
@@ -98,9 +86,7 @@ static PetscErrorCode DMStagCreateCompatibleDMDA(DM dm,DMStagStencilLocation loc
     case DMSTAG_FRONT_DOWN_RIGHT:
     case DMSTAG_FRONT_UP_LEFT:
     case DMSTAG_FRONT_UP_RIGHT:
-#if defined(PETSC_USE_DEBUG)
       if (dim < 3) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Incompatible dim (%d) and loc(%s) combination",dim,DMStagStencilLocations[loc]);
-#endif
       for (i=0; i<3; ++i) { /* extra vertex in direction i on last rank in dimension i = 0,1,2 */
         l[i][stag->nRanks[i]-1] += 1;
         N[i] += 1;
@@ -190,9 +176,7 @@ static PetscErrorCode DMStagMigrateVecDMDA(DM dm,Vec vec,DMStagStencilLocation l
   PetscValidHeaderSpecific(vecTo,VEC_CLASSID,5);
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   ierr = DMDAGetDof(dmTo,&dofToMax);CHKERRQ(ierr);
-#if defined(PETSC_USE_DEBUG)
   if (-c > dofToMax) SETERRQ1(PetscObjectComm((PetscObject)dmTo),PETSC_ERR_ARG_OUTOFRANGE,"Invalid negative component value. Must be >= -%D",dofToMax);
-#endif
   ierr = DMStagGetCorners(dm,&start[0],&start[1],&start[2],&n[0],&n[1],&n[2],NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = DMStagDMDAGetExtraPoints(dm,loc,extraPoint);CHKERRQ(ierr);
   ierr = DMStagGetLocationDOF(dm,loc,&dof);CHKERRQ(ierr);

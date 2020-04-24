@@ -535,9 +535,9 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt cellHeight, PetscInt *num
           }
         }
       }
-#if defined(PETSC_USE_DEBUG)
-      for (c = 0; c < cEnd-cStart; ++c) if (tmp[c] != off[c+1]) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Offset %d != %d for cell %d", tmp[c], off[c], c+cStart);
-#endif
+      if (PetscDefined(USE_DEBUG)) {
+        for (c = 0; c < cEnd-cStart; ++c) if (tmp[c] != off[c+1]) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Offset %d != %d for cell %d", tmp[c], off[c], c+cStart);
+      }
       ierr = PetscFree(tmp);CHKERRQ(ierr);
     }
     if (numVertices) *numVertices = numCells;
@@ -946,8 +946,8 @@ PetscErrorCode PetscPartitionerDestroy(PetscPartitioner *part)
 - partition       - The list of points by partition
 
   Options Database:
-. -petscpartitioner_view - View the partitioner information
-. -petscpartitioner_view_graph - View the graph we are partitioning
++ -petscpartitioner_view - View the partitioner information
+- -petscpartitioner_view_graph - View the graph we are partitioning
 
   Notes:
     The chart of the vertexSection (if present) must contain [0,numVertices), with the number of dofs in the section specifying the absolute weight for each vertex.
@@ -1430,7 +1430,7 @@ PetscErrorCode PetscPartitionerShellSetRandom(PetscPartitioner part, PetscBool r
   Input Parameter:
 . part   - The PetscPartitioner
 
-  Output Parameter
+  Output Parameter:
 . random - The flag to use a random partition
 
   Level: intermediate
@@ -1788,8 +1788,7 @@ static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, Pet
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)part,&comm);CHKERRQ(ierr);
-#if defined (PETSC_USE_DEBUG)
-  {
+  if (PetscDefined (USE_DEBUG)) {
     int ival,isum;
     PetscBool distributed;
 
@@ -1798,7 +1797,6 @@ static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, Pet
     distributed = (isum > 1) ? PETSC_TRUE : PETSC_FALSE;
     if (distributed) SETERRQ(comm, PETSC_ERR_SUP, "Chaco cannot partition a distributed graph");
   }
-#endif
   if (!numVertices) { /* distributed case, return if not holding the graph */
     ierr = ISCreateGeneral(comm, 0, NULL, PETSC_OWN_POINTER, partition);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -2741,7 +2739,7 @@ PetscErrorCode DMPlexPartitionLabelClosure(DM dm, DMLabel label)
 
   Level: developer
 
-.seealso: DMPlexPartitionLabelCreateSF, DMPlexDistribute(), DMPlexCreateOverlap
+.seealso: DMPlexPartitionLabelCreateSF(), DMPlexDistribute(), DMPlexCreateOverlap()
 @*/
 PetscErrorCode DMPlexPartitionLabelAdjacency(DM dm, DMLabel label)
 {
@@ -2787,7 +2785,7 @@ PetscErrorCode DMPlexPartitionLabelAdjacency(DM dm, DMLabel label)
   Note: This is required when generating multi-level overlaps to capture
   overlap points from non-neighbouring partitions.
 
-.seealso: DMPlexPartitionLabelCreateSF, DMPlexDistribute(), DMPlexCreateOverlap
+.seealso: DMPlexPartitionLabelCreateSF(), DMPlexDistribute(), DMPlexCreateOverlap()
 @*/
 PetscErrorCode DMPlexPartitionLabelPropagate(DM dm, DMLabel label)
 {
@@ -2853,7 +2851,7 @@ PetscErrorCode DMPlexPartitionLabelPropagate(DM dm, DMLabel label)
 
   Level: developer
 
-.seealso: DMPlexPartitionLabelCreateSF, DMPlexDistribute(), DMPlexCreateOverlap
+.seealso: DMPlexPartitionLabelCreateSF(), DMPlexDistribute(), DMPlexCreateOverlap()
 @*/
 PetscErrorCode DMPlexPartitionLabelInvert(DM dm, DMLabel rootLabel, PetscSF processSF, DMLabel leafLabel)
 {
@@ -2978,7 +2976,7 @@ PetscErrorCode DMPlexPartitionLabelInvert(DM dm, DMLabel rootLabel, PetscSF proc
 
   Input Parameters:
 + dm    - The DM
-. label - DMLabel assinging ranks to remote roots
+- label - DMLabel assinging ranks to remote roots
 
   Output Parameter:
 . sf    - The star forest communication context encapsulating the defined mapping

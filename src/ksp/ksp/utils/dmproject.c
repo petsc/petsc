@@ -85,7 +85,7 @@ PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
     /* mark points in the closure */
     ierr = DMCreateLocalVector(dm,&mask);CHKERRQ(ierr);
     ierr = VecSet(mask,0.0);CHKERRQ(ierr);
-    ierr = DMPlexGetInteriorCellStratum(dm,&cStart,&cEnd);CHKERRQ(ierr);
+    ierr = DMPlexGetSimplexOrBoxCells(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
     if (cEnd > cStart) {
       PetscScalar *ones;
       PetscInt numValues, i;

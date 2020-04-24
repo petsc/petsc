@@ -812,10 +812,10 @@ PetscErrorCode  PetscStrbeginswith(const char a[],const char b[],PetscBool *flg)
 
    Input Parameters:
 +  a - pointer to string
--  bs - strings to endwith (last entry must be null)
+-  bs - strings to end with (last entry must be NULL)
 
    Output Parameter:
-.  cnt - the index of the string it ends with or 1+the last possible index
+.  cnt - the index of the string it ends with or the index of NULL
 
    Notes:
     Not for use in Fortran

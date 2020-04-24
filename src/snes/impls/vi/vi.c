@@ -4,7 +4,7 @@
 /*@C
    SNESVISetComputeVariableBounds - Sets a function that is called to compute the variable bounds
 
-   Input parameter
+   Input parameter:
 +  snes - the SNES context
 -  compute - computes the bounds
 
@@ -254,12 +254,12 @@ PetscErrorCode SNESVIProjectOntoBounds(SNES snes,Vec X)
 /*
    SNESVIGetActiveSetIndices - Gets the global indices for the active set variables
 
-   Input parameter
+   Input parameter:
 .  snes - the SNES context
 .  X    - the snes solution vector
 .  F    - the nonlinear function vector
 
-   Output parameter
+   Output parameter:
 .  ISact - active set index set
  */
 PetscErrorCode SNESVIGetActiveSetIS(SNES snes,Vec X,Vec F,IS *ISact)

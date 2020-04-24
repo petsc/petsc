@@ -2,12 +2,14 @@
 #include <petscsnes.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define sneslinesearchgettype_          SNESLINESEARCHGETTYPE
 #define sneslinesearchsettype_          SNESLINESEARCHSETTYPE
 #define sneslinesearchsetprecheck_      SNESLINESEARCHSETPRECHECK
 #define sneslinesearchgetprecheck_      SNESLINESEARCHGETPRECHECK
 #define sneslinesearchsetpostcheck_     SNESLINESEARCHSETPOSTCHECK
 #define sneslinesearchgetpostcheck_     SNESLINESEARCHGETPOSTCHECK
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define sneslinesearchgettype_          sneslinesearchgettype
 #define sneslinesearchsettype_          sneslinesearchsettype
 #define sneslinesearchsetprecheck_      sneslinesearchsetprecheck
 #define sneslinesearchgetprecheck_      sneslinesearchgetprecheck
@@ -31,6 +33,15 @@ static PetscErrorCode oursneslinesearchpostcheck(SNESLineSearch linesearch, Vec 
   (*(void (*)(SNESLineSearch*,Vec*,Vec*,Vec*,PetscBool*,PetscBool*,void*,PetscErrorCode*))
      (((PetscObject)linesearch)->fortran_func_pointers[2]))(&linesearch,&X,&Y,&W,changed_Y,changed_W,ctx,&ierr);CHKERRQ(ierr);
   return 0;
+}
+
+PETSC_EXTERN void sneslinesearchgettype_(SNESLineSearch *linesearch,char* name, PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
+{
+  const char *tname;
+
+  *ierr = SNESLineSearchGetType(*linesearch,&tname);
+  *ierr = PetscStrncpy(name,tname,len);if (*ierr) return;
+  FIXRETURNCHAR(PETSC_TRUE,name,len);
 }
 
 PETSC_EXTERN void sneslinesearchsettype_(SNESLineSearch *linesearch,char* type,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)

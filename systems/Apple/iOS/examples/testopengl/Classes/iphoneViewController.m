@@ -115,26 +115,26 @@ PetscErrorCode PetscVFPrintfiPhone(FILE *fd,const char *format,va_list Argp)
 #define help help19
 #define Field Field19
 #define PETSC_APPLE_FRAMEWORK
-#include "../../../../../../src/snes/examples/tutorials/ex19.c"
+#include "../../../../../../src/snes/tutorials/ex19.c"
 #undef main 
 #undef help
 #undef Field
 #define main ex48
 #define help help48
 #define Field Field48
-#include "../../../../../../src/snes/examples/tutorials/ex48.c"
+#include "../../../../../../src/snes/tutorials/ex48.c"
 #undef main
 #undef help
 #undef Field
 #define main ex4
 #define help help4
-#include "../../../../../../src/sys/classes/draw/examples/tests/ex4.c"
+#include "../../../../../../src/sys/classes/draw/tests/ex4.c"
 #undef main
 #undef help
 #undef Field
 #define main ex3
 #define help help3
-#include "../../../../../../src/sys/classes/draw/examples/tests/ex3.c"
+#include "../../../../../../src/sys/classes/draw/tests/ex3.c"
 
 extern PetscErrorCode  PetscDrawOpenGLESRegisterGLKView(GLKView *);
 

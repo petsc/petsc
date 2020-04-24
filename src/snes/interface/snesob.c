@@ -10,7 +10,6 @@
      Input Parameters:
 +      snes - the SNES context
 .      X - solution
-.      F - current function/gradient
 .      obj - real to hold the objective value
 -      ctx - optional user-defined objective context
 

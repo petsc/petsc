@@ -86,8 +86,7 @@ PetscErrorCode DMPlexOrientCell(DM dm, PetscInt p, PetscInt masterConeSize, cons
   if (!coneSize) PetscFunctionReturn(0); /* do nothing for points with no cone */
   ierr = DMPlexCompareOrientations(dm, p, masterConeSize, masterCone, &start1, &reverse1);CHKERRQ(ierr);
   ierr = DMPlexOrientCell_Internal(dm, p, start1, reverse1);CHKERRQ(ierr);
-#if defined(PETSC_USE_DEBUG)
-  {
+  if (PetscDefined(USE_DEBUG)) {
     PetscInt        c;
     const PetscInt *cone;
     ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
@@ -95,7 +94,6 @@ PetscErrorCode DMPlexOrientCell(DM dm, PetscInt p, PetscInt masterConeSize, cons
       if (PetscUnlikely(cone[c] != masterCone[c])) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "The algorithm above is wrong as cone[%d] = %d != %d = masterCone[%d]", c, cone[c], masterCone[c], c);
     }
   }
-#endif
   PetscFunctionReturn(0);
 }
 

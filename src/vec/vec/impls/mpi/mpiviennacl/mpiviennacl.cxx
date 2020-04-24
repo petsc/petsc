@@ -6,6 +6,17 @@
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>   /*I  "petscvec.h"   I*/
 #include <../src/vec/vec/impls/seq/seqviennacl/viennaclvecimpl.h>
 
+/*MC
+   VECVIENNACL - VECVIENNACL = "viennacl" - A VECSEQVIENNACL on a single-process communicator, and VECMPIVIENNACL otherwise.
+
+   Options Database Keys:
+. -vec_type viennacl - sets the vector type to VECVIENNACL during a call to VecSetFromOptions()
+
+  Level: beginner
+
+.seealso: VecCreate(), VecSetType(), VecSetFromOptions(), VecCreateMPIWithArray(), VECSEQVIENNACL, VECMPIVIENNACL, VECSTANDARD, VecType, VecCreateMPI(), VecCreateMPI()
+M*/
+
 PetscErrorCode VecDestroy_MPIViennaCL(Vec v)
 {
   PetscErrorCode ierr;

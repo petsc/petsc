@@ -1542,19 +1542,17 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
   PetscInt             vertOff = 1 + P4EST_FACES;
 #endif
   p4est_connectivity_t *conn;
-  PetscInt             cStart, cEnd, c, vStart, vEnd, vEndInterior, v, fStart, fEnd, fEndInterior, f, eEndInterior;
+  PetscInt             cStart, cEnd, c, vStart, vEnd, v, fStart, fEnd, f;
   PetscInt             *star = NULL, *closure = NULL, closureSize, starSize, cttSize;
   PetscInt             *ttf;
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
   /* 1: count objects, allocate */
-  ierr = DMPlexGetInteriorCellStratum(dm,&cStart,&cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, NULL, &fEndInterior, &eEndInterior, &vEndInterior);CHKERRQ(ierr);
-  ierr     = P4estTopidxCast(cEnd-cStart,&numTrees);CHKERRQ(ierr);
+  ierr = DMPlexGetSimplexOrBoxCells(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
+  ierr = P4estTopidxCast(cEnd-cStart,&numTrees);CHKERRQ(ierr);
   numVerts = P4EST_CHILDREN * numTrees;
-  ierr     = DMPlexGetDepthStratum(dm,0,&vStart,&vEnd);CHKERRQ(ierr);
-  vEnd     = vEndInterior < 0 ? vEnd : vEndInterior;
+  ierr = DMPlexGetDepthStratum(dm,0,&vStart,&vEnd);CHKERRQ(ierr);
   ierr = P4estTopidxCast(vEnd-vStart,&numCorns);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PETSC_COMM_SELF,&ctt);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(ctt,vStart,vEnd);CHKERRQ(ierr);
@@ -1569,7 +1567,7 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
         /* we want to count every time cell p references v, so we see how many times it comes up in the closure.  This
          * only protects against periodicity problems */
         ierr = DMPlexGetTransitiveClosure(dm,p,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
-        if (closureSize != P4EST_INSUL) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cell %D with wrong closure size", p);
+        if (closureSize != P4EST_INSUL) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cell %D with wrong closure size %D != %D", p, closureSize, P4EST_INSUL);
         for (c = 0; c < P4EST_CHILDREN; c++) {
           PetscInt cellVert = closure[2 * (c + vertOff)];
 
@@ -1587,8 +1585,7 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
   ierr = PetscSectionGetStorageSize(ctt,&cttSize);CHKERRQ(ierr);
   ierr = P4estTopidxCast(cttSize,&numCtt);CHKERRQ(ierr);
 #if defined(P4_TO_P8)
-  ierr = DMPlexGetDepthStratum(dm,1,&eStart,&eEnd);CHKERRQ(ierr);
-  eEnd = eEndInterior < 0 ? eEnd : eEndInterior;
+  ierr = DMPlexGetSimplexOrBoxCells(dm,P4EST_DIM-1,&eStart,&eEnd);CHKERRQ(ierr);
   ierr = P4estTopidxCast(eEnd-eStart,&numEdges);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PETSC_COMM_SELF,&ett);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(ett,eStart,eEnd);CHKERRQ(ierr);
@@ -1628,8 +1625,7 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
 #endif
 
   /* 2: visit every face, determine neighboring cells(trees) */
-  ierr = DMPlexGetHeightStratum(dm,1,&fStart,&fEnd);CHKERRQ(ierr);
-  fEnd = fEndInterior < 0 ? fEnd : fEndInterior;
+  ierr = DMPlexGetSimplexOrBoxCells(dm,1,&fStart,&fEnd);CHKERRQ(ierr);
   ierr = PetscMalloc1((cEnd-cStart) * P4EST_FACES,&ttf);CHKERRQ(ierr);
   for (f = fStart; f < fEnd; f++) {
     PetscInt       numSupp, s;
@@ -1668,6 +1664,11 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
         }
       }
       if (i >= P4EST_FACES) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"cell %D faced %D mismatch",p,f);
+      if (p < cStart || p >= cEnd) {
+        DMPolytopeType ct;
+        ierr = DMPlexGetCellType(dm, p, &ct);CHKERRQ(ierr);
+        SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"cell %D (%s) should be in [%D, %D)",p,DMPolytopeTypes[ct],cStart,cEnd);
+      }
       ttf[P4EST_FACES * (p - cStart) + PetscFaceToP4estFace[i]] = f - fStart;
       if (numSupp == 1) {
         /* boundary faces indicated by self reference */
@@ -2524,7 +2525,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
       MPI_Datatype     blockTypes[4] = {MPI_INT32_T,MPI_INT8_T,MPI_INT16_T,MPI_INT32_T/* p.which_tree */};
       MPI_Datatype     quadStruct,quadType;
 
-      ierr  = DMPlexGetInteriorCellStratum(plexC,&cStartC,&cEndC);CHKERRQ(ierr);
+      ierr  = DMPlexGetSimplexOrBoxCells(plexC,0,&cStartC,&cEndC);CHKERRQ(ierr);
       ierr  = DMPforestGetCellCoveringSF(comm,p4estC,p4estF,pforestC->cLocalStart,pforestC->cLocalEnd,&coveringSF);CHKERRQ(ierr);
       ierr  = PetscSFGetGraph(coveringSF,NULL,&nleaves,NULL,NULL);CHKERRQ(ierr);
       ierr  = PetscMalloc1(numClosureIndices*nleaves,&newClosurePointsC);CHKERRQ(ierr);
@@ -3019,7 +3020,6 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
     const PetscSFNode *iremote;
     PetscInt          d;
     PetscSection      leafSection, rootSection;
-    PetscInt          endInterior[4];
     /* count leaves */
 
     ierr = PetscSFGetGraph(pointTransferSF,&numRoots,&numLeaves,&leaves,&iremote);CHKERRQ(ierr);
@@ -3028,23 +3028,19 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
     ierr = PetscSectionSetChart(rootSection,pStartC,pEndC);CHKERRQ(ierr);
     ierr = PetscSectionSetChart(leafSection,pStartF,pEndF);CHKERRQ(ierr);
 
-    ierr = DMPlexGetHybridBounds(plexC,&endInterior[P4EST_DIM],&endInterior[P4EST_DIM - 1],&endInterior[1],&endInterior[0]);CHKERRQ(ierr);
     for (d = 0; d <= P4EST_DIM; d++) {
       PetscInt startC, endC, e;
 
-      ierr = DMPlexGetDepthStratum(plexC,d,&startC,&endC);CHKERRQ(ierr);
-      endC = endInterior[d] < 0 ? endC : endInterior[d];
+      ierr = DMPlexGetSimplexOrBoxCells(plexC,P4EST_DIM-d,&startC,&endC);CHKERRQ(ierr);
       for (e = startC; e < endC; e++) {
         ierr = PetscSectionSetDof(rootSection,e,dofPerDim[d]);CHKERRQ(ierr);
       }
     }
 
-    ierr = DMPlexGetHybridBounds(plexF,&endInterior[P4EST_DIM],&endInterior[P4EST_DIM - 1],&endInterior[1],&endInterior[0]);CHKERRQ(ierr);
     for (d = 0; d <= P4EST_DIM; d++) {
       PetscInt startF, endF, e;
 
-      ierr = DMPlexGetDepthStratum(plexF,d,&startF,&endF);CHKERRQ(ierr);
-      endF = endInterior[d] < 0 ? endF : endInterior[d];
+      ierr = DMPlexGetSimplexOrBoxCells(plexF,P4EST_DIM-d,&startF,&endF);CHKERRQ(ierr);
       for (e = startF; e < endF; e++) {
         ierr = PetscSectionSetDof(leafSection,e,dofPerDim[d]);CHKERRQ(ierr);
       }
@@ -3140,8 +3136,6 @@ static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
   DM_Forest_pforest *pforest = (DM_Forest_pforest*) forest->data;
   PetscInt          cLocalStart, cLocalEnd, cStart, cEnd, fStart, fEnd, eStart, eEnd, vStart, vEnd;
   PetscInt          cStartBase, cEndBase, fStartBase, fEndBase, vStartBase, vEndBase, eStartBase, eEndBase;
-  PetscInt          fEndBaseInterior, vEndBaseInterior, eEndBaseInterior;
-  PetscInt          fEndInterior, vEndInterior, eEndInterior;
   PetscInt          pStart, pEnd, pStartBase, pEndBase, p;
   DM                base;
   PetscInt          *star     = NULL, starSize;
@@ -3204,23 +3198,15 @@ static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
     }
     PetscFunctionReturn(0);
   }
-  ierr     = DMPlexGetHybridBounds(base,NULL,&fEndBaseInterior,&eEndBaseInterior,&vEndBaseInterior);CHKERRQ(ierr);
-  ierr     = DMPlexGetInteriorCellStratum(base,&cStartBase,&cEndBase);CHKERRQ(ierr);
-  ierr     = DMPlexGetHeightStratum(base,1,&fStartBase,&fEndBase);CHKERRQ(ierr);
-  fEndBase = fEndBaseInterior < 0 ? fEndBase : fEndBaseInterior;
-  ierr     = DMPlexGetDepthStratum(base,1,&eStartBase,&eEndBase);CHKERRQ(ierr);
-  eEndBase = eEndBaseInterior < 0 ? eEndBase : eEndBaseInterior;
+  ierr     = DMPlexGetSimplexOrBoxCells(base,0,&cStartBase,&cEndBase);CHKERRQ(ierr);
+  ierr     = DMPlexGetSimplexOrBoxCells(base,1,&fStartBase,&fEndBase);CHKERRQ(ierr);
+  ierr     = DMPlexGetSimplexOrBoxCells(base,P4EST_DIM-1,&eStartBase,&eEndBase);CHKERRQ(ierr);
   ierr     = DMPlexGetDepthStratum(base,0,&vStartBase,&vEndBase);CHKERRQ(ierr);
-  vEndBase = vEndBaseInterior < 0 ? vEndBase : vEndBaseInterior;
 
-  ierr = DMPlexGetHybridBounds(plex,NULL,&fEndInterior,&eEndInterior,&vEndInterior);CHKERRQ(ierr);
-  ierr = DMPlexGetInteriorCellStratum(plex,&cStart,&cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(plex,1,&fStart,&fEnd);CHKERRQ(ierr);
-  fEnd = fEndInterior < 0 ? fEnd : fEndInterior;
-  ierr = DMPlexGetDepthStratum(plex,1,&eStart,&eEnd);CHKERRQ(ierr);
-  eEnd = eEndInterior < 0 ? eEnd : eEndInterior;
+  ierr = DMPlexGetSimplexOrBoxCells(plex,0,&cStart,&cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetSimplexOrBoxCells(plex,1,&fStart,&fEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetSimplexOrBoxCells(plex,P4EST_DIM-1,&eStart,&eEnd);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(plex,0,&vStart,&vEnd);CHKERRQ(ierr);
-  vEnd = vEndInterior < 0 ? vEnd : vEndInterior;
 
   ierr = DMPlexGetChart(plex,&pStart,&pEnd);CHKERRQ(ierr);
   ierr = DMPlexGetChart(base,&pStartBase,&pEndBase);CHKERRQ(ierr);
@@ -3607,8 +3593,7 @@ static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex)
     ierr = DMPlexGetChart(adaptPlex,&pStartA,&pEndA);CHKERRQ(ierr);
     ierr = PetscMalloc2(pEnd-pStart,&values,pEndA-pStartA,&adaptValues);CHKERRQ(ierr);
     ierr = DMGetPointSF(plex,&pointSF);CHKERRQ(ierr);
-#if defined(PETSC_USE_DEBUG)
-    {
+    if (PetscDefined(USE_DEBUG)) {
       PetscInt p;
       for (p = pStartA; p < pEndA; p++) adaptValues[p-pStartA] = -1;
       for (p = pStart; p < pEnd; p++)   values[p-pStart]       = -2;
@@ -3638,7 +3623,6 @@ static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex)
         if (values[p-pStart] == -2) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"uncovered point %D",p);
       }
     }
-#endif
     while (next) {
       DMLabel    nextLabel = next->label;
       const char *name;
@@ -4311,6 +4295,7 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
     }
     if (ctype != P4EST_CONNECT_FULL) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONG,"Adjacency dimension %D / codimension %D not supported yet",adjDim,adjCodim);
     ierr = DMForestGetPartitionOverlap(dm,&overlap);CHKERRQ(ierr);
+    ((DM_Plex *) newPlex->data)->overlap = overlap;
 
     points_per_dim    = sc_array_new(sizeof(p4est_locidx_t));
     cone_sizes        = sc_array_new(sizeof(p4est_locidx_t));
@@ -5272,6 +5257,7 @@ static PetscErrorCode DMInitialize_pforest(DM dm)
   ierr = PetscObjectComposeFunction((PetscObject)dm,_pforest_string(DMConvert_plex_pforest) "_C",DMConvert_plex_pforest);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)dm,_pforest_string(DMConvert_pforest_plex) "_C",DMConvert_pforest_plex);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)dm,"DMCreateNeumannOverlap_C",DMCreateNeumannOverlap_pforest);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)dm,"DMPlexGetOverlap_C",DMForestGetPartitionOverlap);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -216,17 +216,17 @@ PETSC_EXTERN PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl,c
     entry->next    = NULL;
     *fl            = entry;
 
-#if defined(PETSC_USE_DEBUG)
-    /* add this new list to list of all lists */
-    if (!dlallhead) {
-      dlallhead        = *fl;
-      (*fl)->next_list = NULL;
-    } else {
-      ne               = dlallhead;
-      dlallhead        = *fl;
-      (*fl)->next_list = ne;
+    if (PetscDefined(USE_DEBUG)) {
+      /* add this new list to list of all lists */
+      if (!dlallhead) {
+        dlallhead        = *fl;
+        (*fl)->next_list = NULL;
+      } else {
+        ne               = dlallhead;
+        dlallhead        = *fl;
+        (*fl)->next_list = ne;
+      }
     }
-#endif
 
   } else {
     /* search list to see if it is already there */

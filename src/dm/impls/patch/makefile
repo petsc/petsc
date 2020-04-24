@@ -1,3 +1,4 @@
+-include ../petscdir.mk
 ALL: lib
 
 CPPFLAGS =
@@ -6,7 +7,7 @@ FFLAGS   =
 SOURCEC  = patchcreate.c patch.c
 SOURCEF  =
 SOURCEH  =
-DIRS     = examples
+DIRS     = tests
 LIBBASE  = libpetscdm
 MANSEC   = DM
 SUBMANSEC= DMPATCH

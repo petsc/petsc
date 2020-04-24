@@ -3021,7 +3021,7 @@ PetscErrorCode PCFieldSplitSetDetectSaddlePoint(PC pc,PetscBool flg)
 .   -pc_fieldsplit_block_size <bs> - size of block that defines fields (i.e. there are bs fields)
 .   -pc_fieldsplit_type <additive,multiplicative,symmetric_multiplicative,schur,gkb> - type of relaxation or factorization splitting
 .   -pc_fieldsplit_schur_precondition <self,selfp,user,a11,full> - default is a11; see PCFieldSplitSetSchurPre()
-.   -pc_fieldsplit_schur_fact_type <diag,lower,upper,full> - set factorization type when using -pc_fieldsplit_type schur
+.   -pc_fieldsplit_schur_fact_type <diag,lower,upper,full> - set factorization type when using -pc_fieldsplit_type schur; see PCFieldSplitSetSchurFactType()
 -   -pc_fieldsplit_detect_saddle_point - automatically finds rows with zero diagonal and uses Schur complement with no preconditioner as the solver
 
      Options prefixes for inner solvers when using the Schur complement preconditioner are -fieldsplit_0_ and -fieldsplit_1_ .
@@ -3089,10 +3089,10 @@ $        ( A01' 0   )
 
 [Ar13] Generalized Golub-Kahan bidiagonalization and stopping criteria, SIAM J. Matrix Anal. Appl., Vol. 34, No. 2, pp. 571-592, 2013.
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, Block_Preconditioners, PCLSC,
-           PCFieldSplitGetSubKSP(), PCFieldSplitSchurGetSubKSP(), PCFieldSplitSetFields(), PCFieldSplitSetType(), PCFieldSplitSetIS(), PCFieldSplitSetSchurPre(),
-          MatSchurComplementSetAinvType(), PCFieldSplitSetSchurScale(),
-          PCFieldSplitSetDetectSaddlePoint()
+.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCLSC,
+           PCFieldSplitGetSubKSP(), PCFieldSplitSchurGetSubKSP(), PCFieldSplitSetFields(),
+           PCFieldSplitSetType(), PCFieldSplitSetIS(), PCFieldSplitSetSchurPre(), PCFieldSplitSetSchurFactType(),
+           MatSchurComplementSetAinvType(), PCFieldSplitSetSchurScale(), PCFieldSplitSetDetectSaddlePoint()
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_FieldSplit(PC pc)

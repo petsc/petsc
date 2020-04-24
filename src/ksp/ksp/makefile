@@ -1,8 +1,8 @@
-
+-include ../petscdir.mk
 ALL: lib
 
 SOURCEH  = ../../../include/petsc/private/kspimpl.h ../../../include/petscksp.h
-DIRS     = interface impls examples utils guess
+DIRS     = interface impls tests tutorials utils guess
 LOCDIR   = src/ksp/ksp/
 MANSEC   = KSP
 

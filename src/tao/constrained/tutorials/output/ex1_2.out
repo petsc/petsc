@@ -1,0 +1,9 @@
+---- Constrained Problem -----
+Solution should be f(1,1)=-2
+TAO solve converged due to CONVERGED_GTTOL iterations 7
+Vec Object: 2 MPI processes
+  type: mpi
+Process [0]
+1.
+1.
+Process [1]

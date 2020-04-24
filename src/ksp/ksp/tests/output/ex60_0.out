@@ -1,0 +1,49 @@
+KSP Object: 1 MPI processes
+  type: gmres
+    restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+    happy breakdown tolerance 1e-30
+  maximum iterations=10000, initial guess is zero
+  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  left preconditioning
+  using PRECONDITIONED norm type for convergence test
+PC Object: 1 MPI processes
+  type: asm
+    total subdomain blocks = 1, amount of overlap = 1
+    restriction/interpolation type - RESTRICT
+    Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
+    KSP Object: (sub_) 1 MPI processes
+      type: preonly
+      maximum iterations=10000, initial guess is zero
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using NONE norm type for convergence test
+    PC Object: (sub_) 1 MPI processes
+      type: ilu
+        out-of-place factorization
+        0 levels of fill
+        tolerance for zero pivot 2.22045e-14
+        matrix ordering: natural
+        factor fill ratio given 1., needed 1.
+          Factored matrix follows:
+            Mat Object: 1 MPI processes
+              type: seqaij
+              rows=64, cols=64
+              package used to perform factorization: petsc
+              total: nonzeros=288, allocated nonzeros=288
+              total number of mallocs used during MatSetValues calls=0
+                not using I-node routines
+      linear system matrix = precond matrix:
+      Mat Object: 1 MPI processes
+        type: seqaij
+        rows=64, cols=64
+        total: nonzeros=288, allocated nonzeros=288
+        total number of mallocs used during MatSetValues calls=0
+          not using I-node routines
+  linear system matrix = precond matrix:
+  Mat Object: 1 MPI processes
+    type: seqaij
+    rows=64, cols=64
+    total: nonzeros=288, allocated nonzeros=320
+    total number of mallocs used during MatSetValues calls=0
+      not using I-node routines
+Infinity norm of the error: 1.30446e-06

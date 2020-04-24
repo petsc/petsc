@@ -78,18 +78,18 @@ PetscErrorCode DMTSView(DMTS kdm,PetscViewer viewer)
     funcstruct.ifunction         = kdm->ops->ifunction;
     funcviewstruct.ifunctionview = kdm->ops->ifunctionview;
     funcloadstruct.ifunctionload = kdm->ops->ifunctionload;
-    ierr = PetscViewerBinaryWrite(viewer,&funcstruct,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryWrite(viewer,&funcviewstruct,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryWrite(viewer,&funcloadstruct,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,&funcstruct,1,PETSC_FUNCTION);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,&funcviewstruct,1,PETSC_FUNCTION);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,&funcloadstruct,1,PETSC_FUNCTION);CHKERRQ(ierr);
     if (kdm->ops->ifunctionview) {
       ierr = (*kdm->ops->ifunctionview)(kdm->ifunctionctx,viewer);CHKERRQ(ierr);
     }
     jacstruct.ijacobian = kdm->ops->ijacobian;
     jacviewstruct.ijacobianview = kdm->ops->ijacobianview;
     jacloadstruct.ijacobianload = kdm->ops->ijacobianload;
-    ierr = PetscViewerBinaryWrite(viewer,&jacstruct,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryWrite(viewer,&jacviewstruct,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryWrite(viewer,&jacloadstruct,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,&jacstruct,1,PETSC_FUNCTION);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,&jacviewstruct,1,PETSC_FUNCTION);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,&jacloadstruct,1,PETSC_FUNCTION);CHKERRQ(ierr);
     if (kdm->ops->ijacobianview) {
       ierr = (*kdm->ops->ijacobianview)(kdm->ijacobianctx,viewer);CHKERRQ(ierr);
     }
@@ -522,6 +522,71 @@ PetscErrorCode DMTSSetRHSFunction(DM dm,TSRHSFunction func,void *ctx)
   ierr = DMGetDMTSWrite(dm,&tsdm);CHKERRQ(ierr);
   if (func) tsdm->ops->rhsfunction = func;
   if (ctx)  tsdm->rhsfunctionctx = ctx;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   DMTSSetTransientVariable - sets function to transform from state to transient variables
+
+   Logically Collective
+
+   Input Arguments:
++  dm - DM to be used with TS
+.  tvar - a function that transforms in-place to transient variables
+-  ctx - a context for tvar
+
+   Level: advanced
+
+   Notes:
+   This is typically used to transform from primitive to conservative variables so that a time integrator (e.g., TSBDF)
+   can be conservative.  In this context, primitive variables P are used to model the state (e.g., because they lead to
+   well-conditioned formulations even in limiting cases such as low-Mach or zero porosity).  The transient variable is
+   C(P), specified by calling this function.  An IFunction thus receives arguments (P, Cdot) and the IJacobian must be
+   evaluated via the chain rule, as in
+
+     dF/dP + shift * dF/dCdot dC/dP.
+
+.seealso: TSSetTransientVariable(), DMTSGetTransientVariable(), DMTSSetIFunction(), DMTSSetIJacobian()
+@*/
+PetscErrorCode DMTSSetTransientVariable(DM dm,TSTransientVariable tvar,void *ctx)
+{
+  PetscErrorCode ierr;
+  DMTS           dmts;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMGetDMTSWrite(dm,&dmts);CHKERRQ(ierr);
+  dmts->ops->transientvar = tvar;
+  dmts->transientvarctx = ctx;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   DMTSGetTransientVariable - gets function to transform from state to transient variables
+
+   Logically Collective
+
+   Input Arguments:
+.  dm - DM to be used with TS
+
+   Output Arguments:
++  tvar - a function that transforms in-place to transient variables
+-  ctx - a context for tvar
+
+   Level: advanced
+
+.seealso: DMTSSetTransientVariable(), DMTSGetIFunction(), DMTSGetIJacobian()
+@*/
+PetscErrorCode DMTSGetTransientVariable(DM dm,TSTransientVariable *tvar,void *ctx)
+{
+  PetscErrorCode ierr;
+  DMTS           dmts;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMGetDMTS(dm,&dmts);CHKERRQ(ierr);
+  if (tvar) *tvar = dmts->ops->transientvar;
+  if (ctx)  *(void**)ctx = dmts->transientvarctx;
   PetscFunctionReturn(0);
 }
 

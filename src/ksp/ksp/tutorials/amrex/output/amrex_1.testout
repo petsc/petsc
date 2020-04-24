@@ -1,0 +1,40 @@
+MPI initialized with 1 MPI processes
+vfrc min = 3.480440756e-06
+MLMG: # of AMR levels: 1
+      # of MG levels on the coarsest AMR level: 6
+MLMG: Initial rhs               = 0
+MLMG: Initial residual (resid0) = 185122.4409
+
+3 PETSc Iterations, Residual Norm 3.420233052e-05
+MLMG: Iteration   1 Fine resid/resid0 = 0.01636365038
+
+3 PETSc Iterations, Residual Norm 1.017925689e-05
+MLMG: Iteration   2 Fine resid/resid0 = 0.001297168758
+
+3 PETSc Iterations, Residual Norm 8.724502215e-07
+MLMG: Iteration   3 Fine resid/resid0 = 4.381158904e-05
+
+3 PETSc Iterations, Residual Norm 2.945975387e-08
+MLMG: Iteration   4 Fine resid/resid0 = 2.141691197e-06
+
+3 PETSc Iterations, Residual Norm 1.242865386e-09
+MLMG: Iteration   5 Fine resid/resid0 = 8.41401185e-08
+
+3 PETSc Iterations, Residual Norm 4.294037629e-11
+MLMG: Iteration   6 Fine resid/resid0 = 3.747643254e-09
+
+3 PETSc Iterations, Residual Norm 1.193741828e-12
+MLMG: Iteration   7 Fine resid/resid0 = 1.512551751e-10
+
+3 PETSc Iterations, Residual Norm 5.498964746e-14
+MLMG: Iteration   8 Fine resid/resid0 = 6.320765265e-12
+
+3 PETSc Iterations, Residual Norm 2.67865766e-15
+MLMG: Iteration   9 Fine resid/resid0 = 2.584294803e-13
+MLMG: Final Iter. 9 resid, resid/resid0 = 4.78410962e-08, 2.584294803e-13
+Unused ParmParse Variables:
+  [TOP]::eb2.box_lo(nvals = 3)  :: [0.23, 0.37, 0.4]
+  [TOP]::eb2.box_hi(nvals = 3)  :: [0.55, 0.88, 0.7]
+  [TOP]::eb2.box_has_fluid_inside(nvals = 1)  :: [0]
+
+[The  Pinned Arena] space (MB) used spread across MPI: [8 ... 8]

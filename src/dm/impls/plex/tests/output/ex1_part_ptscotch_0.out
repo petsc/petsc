@@ -1,0 +1,35 @@
+[0]Nv: 4
+[0]  1 2 [0-2)
+[0]  0 3 [2-4)
+[0]  0 3 [4-6)
+[0]  1 2 [6-8)
+[1]Nv: 0
+Graph Partitioner: 2 MPI Processes
+  type: ptscotch
+  edge cut: 0
+  balance: 0
+  use vertex weights: 1
+  using partitioning strategy QUALITY
+  using load imbalance ratio 0.01
+DM Object: Parallel Mesh 2 MPI processes
+  type: plex
+  Cell balance: 1.00 (max 2, min 2, empty 0)
+  Edge Cut: 2 (on node 1.000)
+[0]Nv: 2
+[0]  1 2 [0-2)
+[0]  0 3 [2-4)
+[1]Nv: 2
+[1]  0 3 [0-2)
+[1]  1 2 [2-4)
+Graph Partitioner: 2 MPI Processes
+  type: ptscotch
+  edge cut: 0
+  balance: 0
+  use vertex weights: 1
+  using partitioning strategy QUALITY
+  using load imbalance ratio 0.01
+Minimum number of neighbors: 1
+DM Object: Parallel Mesh 2 MPI processes
+  type: plex
+  Cell balance: 1.00 (max 2, min 2, empty 0)
+  Edge Cut: 2 (on node 1.000)

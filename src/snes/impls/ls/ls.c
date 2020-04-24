@@ -405,7 +405,9 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONLS(SNES snes)
   snes->usesnpc = PETSC_TRUE;
 
   ierr = SNESGetLineSearch(snes, &linesearch);CHKERRQ(ierr);
-  ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHBT);CHKERRQ(ierr);
+  if (!((PetscObject)linesearch)->type_name) {
+    ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHBT);CHKERRQ(ierr);
+  }
 
   snes->alwayscomputesfinalresidual = PETSC_TRUE;
 

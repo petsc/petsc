@@ -182,12 +182,11 @@ static PetscErrorCode MatSetFromOptions_LMVMSymBadBrdn(PetscOptionItems *PetscOp
 
   PetscFunctionBegin;
   ierr = MatSetFromOptions_LMVMSymBrdn(PetscOptionsObject, B);CHKERRQ(ierr);
-  if (lsb->scale_type == SYMBRDN_SCALE_DIAG) {
+  if (lsb->scale_type == MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL) {
     dbase = (Mat_LMVM*)lsb->D->data;
     dctx = (Mat_DiagBrdn*)dbase->ctx;
     dctx->forward = PETSC_FALSE;
   }
-  if (Scale_Table[0][0] == '#') SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Scale_Table starts with illegal hashtag character!");  /* Dummy use of Scale_Table to prevent unused variable warnings in this translation unit */
   PetscFunctionReturn(0);
 }
 
@@ -200,7 +199,7 @@ PetscErrorCode MatCreate_LMVMSymBadBrdn(Mat B)
 
   PetscFunctionBegin;
   ierr = MatCreate_LMVMSymBrdn(B);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)B, MATLMVMSYMBADBRDN);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)B, MATLMVMSYMBADBROYDEN);CHKERRQ(ierr);
   B->ops->setfromoptions = MatSetFromOptions_LMVMSymBadBrdn;
   B->ops->solve = MatSolve_LMVMSymBadBrdn;
   
@@ -212,9 +211,9 @@ PetscErrorCode MatCreate_LMVMSymBadBrdn(Mat B)
 /*------------------------------------------------------------*/
 
 /*@
-   MatCreateLMVMSymBadBrdn - Creates a limited-memory Symmetric "Bad" Broyden-type matrix used
+   MatCreateLMVMSymBadBroyden - Creates a limited-memory Symmetric "Bad" Broyden-type matrix used
    for approximating Jacobians. L-SymBadBrdn is a convex combination of L-DFP and
-   L-BFGS such that SymBrdn^{-1} = (1 - phi)*BFGS^{-1} + phi*DFP^{-1}. The combination factor
+   L-BFGS such that `^{-1} = (1 - phi)*BFGS^{-1} + phi*DFP^{-1}. The combination factor
    phi is restricted to the range [0, 1], where the L-SymBadBrdn matrix is guaranteed
    to be symmetric positive-definite. Note that this combination is on the inverses and not
    on the forwards. For forward convex combinations, use the L-SymBrdn matrix.
@@ -252,17 +251,17 @@ PetscErrorCode MatCreate_LMVMSymBadBrdn(Mat B)
 
    Level: intermediate
 
-.seealso: MatCreate(), MATLMVM, MATLMVMSYMBRDN, MatCreateLMVMDFP(), MatCreateLMVMSR1(),
+.seealso: MatCreate(), MATLMVM, MATLMVMSYMBROYDEN, MatCreateLMVMDFP(), MatCreateLMVMSR1(),
           MatCreateLMVMBFGS(), MatCreateLMVMBrdn(), MatCreateLMVMBadBrdn()
 @*/
-PetscErrorCode MatCreateLMVMSymBadBrdn(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B)
+PetscErrorCode MatCreateLMVMSymBadBroyden(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B)
 {
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = MatCreate(comm, B);CHKERRQ(ierr);
   ierr = MatSetSizes(*B, n, n, N, N);CHKERRQ(ierr);
-  ierr = MatSetType(*B, MATLMVMSYMBADBRDN);CHKERRQ(ierr);
+  ierr = MatSetType(*B, MATLMVMSYMBADBROYDEN);CHKERRQ(ierr);
   ierr = MatSetUp(*B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

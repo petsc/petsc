@@ -157,9 +157,7 @@ PetscErrorCode MatSetValues_MPISELL(Mat mat,PetscInt m,const PetscInt im[],Petsc
   PetscFunctionBegin;
   for (i=0; i<m; i++) {
     if (im[i] < 0) continue;
-#if defined(PETSC_USE_DEBUG)
-    if (im[i] >= mat->rmap->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",im[i],mat->rmap->N-1);
-#endif
+    if (PetscUnlikelyDebug(im[i] >= mat->rmap->N)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",im[i],mat->rmap->N-1);
     if (im[i] >= rstart && im[i] < rend) {
       row      = im[i] - rstart;
       lastcol1 = -1;
@@ -185,9 +183,7 @@ PetscErrorCode MatSetValues_MPISELL(Mat mat,PetscInt m,const PetscInt im[],Petsc
           col   = in[j] - cstart;
           MatSetValue_SeqSELL_Private(A,row,col,value,addv,im[i],in[j],cp1,vp1,lastcol1,low1,high1); /* set one value */
         } else if (in[j] < 0) continue;
-#if defined(PETSC_USE_DEBUG)
-        else if (in[j] >= mat->cmap->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",in[j],mat->cmap->N-1);
-#endif
+        else if (PetscUnlikelyDebug(in[j] >= mat->cmap->N)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",in[j],mat->cmap->N-1);
         else {
           if (mat->was_assembled) {
             if (!sell->colmap) {

@@ -1,12 +1,12 @@
-
+-include ../petscdir.mk
 
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = brdn.c
+SOURCEC  = brdn.c badbrdn.c
 SOURCEF  =
-SOURCEH  =
+SOURCEH  = brdn.h
 LIBBASE  = libpetscksp
 DIRS     =
 MANSEC   = KSP

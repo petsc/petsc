@@ -86,7 +86,7 @@ PetscErrorCode  KSPComputeExtremeSingularValues(KSP ksp,PetscReal *emax,PetscRea
 -  neig - actual number of eigenvalues computed (will be less than or equal to n)
 
    Options Database Keys:
-+  -ksp_view_eigenvalues - Prints eigenvalues to stdout
+.  -ksp_view_eigenvalues - Prints eigenvalues to stdout
 
    Notes:
    The number of eigenvalues estimated depends on the size of the Krylov space
@@ -792,7 +792,7 @@ static PetscErrorCode KSPSolve_Private(KSP ksp,Vec b,Vec x)
 .  -ksp_view_pmat binary - save matrix used to build preconditioner to the default binary viewer
 .  -ksp_view_rhs binary - save right hand side vector to the default binary viewer
 .  -ksp_view_solution binary - save computed solution vector to the default binary viewer
-           (can be read later with src/ksp/examples/tutorials/ex10.c for testing solvers)
+           (can be read later with src/ksp/tutorials/ex10.c for testing solvers)
 .  -ksp_view_mat_explicit - for matrix-free operators, computes the matrix entries and views them
 .  -ksp_view_preconditioned_operator_explicit - computes the product of the preconditioner and matrix as an explicit matrix and views it
 .  -ksp_converged_reason - print reason for converged or diverged, also prints number of iterations

@@ -1,0 +1,59 @@
+  0 KSP Residual norm 104.813 
+  1 KSP Residual norm 40.4428 
+  2 KSP Residual norm 15.6387 
+  3 KSP Residual norm 3.50016 
+  4 KSP Residual norm 0.614837 
+  5 KSP Residual norm 0.222981 
+  6 KSP Residual norm 0.0543251 
+  7 KSP Residual norm 0.0115868 
+  8 KSP Residual norm 0.00298028 
+  9 KSP Residual norm 0.00046493 
+KSP Object: 2 MPI processes
+  type: gmres
+    restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+    happy breakdown tolerance 1e-30
+  maximum iterations=10000, initial guess is zero
+  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  left preconditioning
+  using PRECONDITIONED norm type for convergence test
+PC Object: 2 MPI processes
+  type: bjacobi
+    number of blocks = 2
+    Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
+  KSP Object: (sub_) 1 MPI processes
+    type: preonly
+    maximum iterations=10000, initial guess is zero
+    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+    left preconditioning
+    using NONE norm type for convergence test
+  PC Object: (sub_) 1 MPI processes
+    type: ilu
+      out-of-place factorization
+      0 levels of fill
+      tolerance for zero pivot 2.22045e-14
+      matrix ordering: natural
+      factor fill ratio given 1., needed 1.
+        Factored matrix follows:
+          Mat Object: 1 MPI processes
+            type: seqaij
+            rows=18, cols=18
+            package used to perform factorization: petsc
+            total: nonzeros=72, allocated nonzeros=72
+            total number of mallocs used during MatSetValues calls=0
+              not using I-node routines
+    linear system matrix = precond matrix:
+    Mat Object: 1 MPI processes
+      type: seqaijperm
+      rows=18, cols=18
+      total: nonzeros=72, allocated nonzeros=72
+      total number of mallocs used during MatSetValues calls=0
+        not using I-node routines
+  linear system matrix = precond matrix:
+  Mat Object: 2 MPI processes
+    type: mpiaijperm
+    rows=36, cols=36
+    total: nonzeros=156, allocated nonzeros=156
+    total number of mallocs used during MatSetValues calls=0
+      not using I-node (on process 0) routines
+Number of iterations =   9
+Residual norm 0.001523

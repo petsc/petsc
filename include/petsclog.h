@@ -8,16 +8,16 @@
 #include <petsctime.h>
 
 /* General logging of information; different from event logging */
-PETSC_EXTERN PetscErrorCode PetscInfo_Private(const char[],void*,const char[],...);
+PETSC_EXTERN PetscErrorCode PetscInfo_Private(const char[],PetscObject,const char[],...);
 #if defined(PETSC_USE_INFO)
-#define PetscInfo(A,S)                       PetscInfo_Private(PETSC_FUNCTION_NAME,A,S)
-#define PetscInfo1(A,S,a1)                   PetscInfo_Private(PETSC_FUNCTION_NAME,A,S,a1)
-#define PetscInfo2(A,S,a1,a2)                PetscInfo_Private(PETSC_FUNCTION_NAME,A,S,a1,a2)
-#define PetscInfo3(A,S,a1,a2,a3)             PetscInfo_Private(PETSC_FUNCTION_NAME,A,S,a1,a2,a3)
-#define PetscInfo4(A,S,a1,a2,a3,a4)          PetscInfo_Private(PETSC_FUNCTION_NAME,A,S,a1,a2,a3,a4)
-#define PetscInfo5(A,S,a1,a2,a3,a4,a5)       PetscInfo_Private(PETSC_FUNCTION_NAME,A,S,a1,a2,a3,a4,a5)
-#define PetscInfo6(A,S,a1,a2,a3,a4,a5,a6)    PetscInfo_Private(PETSC_FUNCTION_NAME,A,S,a1,a2,a3,a4,a5,a6)
-#define PetscInfo7(A,S,a1,a2,a3,a4,a5,a6,a7) PetscInfo_Private(PETSC_FUNCTION_NAME,A,S,a1,a2,a3,a4,a5,a6,a7)
+#define PetscInfo(A,S)                       PetscInfo_Private(PETSC_FUNCTION_NAME,((PetscObject)A),S)
+#define PetscInfo1(A,S,a1)                   PetscInfo_Private(PETSC_FUNCTION_NAME,((PetscObject)A),S,a1)
+#define PetscInfo2(A,S,a1,a2)                PetscInfo_Private(PETSC_FUNCTION_NAME,((PetscObject)A),S,a1,a2)
+#define PetscInfo3(A,S,a1,a2,a3)             PetscInfo_Private(PETSC_FUNCTION_NAME,((PetscObject)A),S,a1,a2,a3)
+#define PetscInfo4(A,S,a1,a2,a3,a4)          PetscInfo_Private(PETSC_FUNCTION_NAME,((PetscObject)A),S,a1,a2,a3,a4)
+#define PetscInfo5(A,S,a1,a2,a3,a4,a5)       PetscInfo_Private(PETSC_FUNCTION_NAME,((PetscObject)A),S,a1,a2,a3,a4,a5)
+#define PetscInfo6(A,S,a1,a2,a3,a4,a5,a6)    PetscInfo_Private(PETSC_FUNCTION_NAME,((PetscObject)A),S,a1,a2,a3,a4,a5,a6)
+#define PetscInfo7(A,S,a1,a2,a3,a4,a5,a6,a7) PetscInfo_Private(PETSC_FUNCTION_NAME,((PetscObject)A),S,a1,a2,a3,a4,a5,a6,a7)
 #else
 #define PetscInfo(A,S)                       0
 #define PetscInfo1(A,S,a1)                   0
@@ -28,9 +28,42 @@ PETSC_EXTERN PetscErrorCode PetscInfo_Private(const char[],void*,const char[],..
 #define PetscInfo6(A,S,a1,a2,a3,a4,a5,a6)    0
 #define PetscInfo7(A,S,a1,a2,a3,a4,a5,a6,a7) 0
 #endif
+
+/*E
+    PetscInfoCommFlag - Describes the method by which to filter PetscInfo() by communicator size
+
+    Used as an input for PetscInfoSetFilterCommSelf()
+
+$   PETSC_INFO_COMM_ALL - Default uninitialized value. PetscInfo() will not filter based on communicator size (i.e. will
+print for all communicators)
+$   PETSC_INFO_COMM_NO_SELF - PetscInfo() will NOT print for communicators with size = 1 (i.e. *_COMM_SELF)
+$   PETSC_INFO_COMM_ONLY_SELF - PetscInfo will ONLY print for communicators with size = 1
+
+    Level: intermediate
+
+.seealso: PetscInfo(), PetscInfoSetFromOptions(), PetscInfoSetFilterCommSelf()
+E*/
+typedef enum {
+  PETSC_INFO_COMM_ALL = -1,
+  PETSC_INFO_COMM_NO_SELF = 0,
+  PETSC_INFO_COMM_ONLY_SELF = 1
+} PetscInfoCommFlag;
+
+PETSC_EXTERN const char * const PetscInfoCommFlags[];
 PETSC_EXTERN PetscErrorCode PetscInfoDeactivateClass(PetscClassId);
 PETSC_EXTERN PetscErrorCode PetscInfoActivateClass(PetscClassId);
-PETSC_EXTERN PetscBool PetscLogPrintInfo;  /* if true, indicates PetscInfo() is turned on */
+PETSC_EXTERN PetscErrorCode PetscInfoEnabled(PetscClassId, PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscInfoAllow(PetscBool);
+PETSC_EXTERN PetscErrorCode PetscInfoSetFile(const char[],const char[]);
+PETSC_EXTERN PetscErrorCode PetscInfoGetFile(char **,FILE **);
+PETSC_EXTERN PetscErrorCode PetscInfoSetClasses(PetscBool,PetscInt,const char *const *);
+PETSC_EXTERN PetscErrorCode PetscInfoGetClass(const char *, PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscInfoGetInfo(PetscBool *,PetscBool *,PetscBool *,PetscBool *,PetscInfoCommFlag *);
+PETSC_EXTERN PetscErrorCode PetscInfoProcessClass(const char[],PetscInt,PetscClassId[]);
+PETSC_EXTERN PetscErrorCode PetscInfoSetFilterCommSelf(PetscInfoCommFlag);
+PETSC_EXTERN PetscErrorCode PetscInfoSetFromOptions(PetscOptions);
+PETSC_EXTERN PetscErrorCode PetscInfoDestroy(void);
+PETSC_EXTERN PetscBool      PetscLogPrintInfo;  /* if true, indicates PetscInfo() is turned on */
 
 /*MC
     PetscLogEvent - id used to identify PETSc or user events which timed portions (blocks of executable)
@@ -614,6 +647,13 @@ PETSC_EXTERN PetscErrorCode PetscLogObjectState(PetscObject,const char[],...);
 #define PetscLogEventSync(e,comm)          0
 #define PetscLogEventBegin(e,o1,o2,o3,o4)  0
 #define PetscLogEventEnd(e,o1,o2,o3,o4)    0
+
+#define PetscLogCpuToGpu(a)                0
+#define PetscLogGpuToCpu(a)                0
+#define PetscLogGpuFlops(a)                0
+#define PetscLogGpuTimeBegin()             0
+#define PetscLogGpuTimeEnd()               0
+#define PetscLogGpuTimeAdd(a)              0
 
 /* If PETSC_USE_LOG is NOT defined, these still need to be! */
 #define MPI_Startall_irecv(count,datatype,number,requests) ((number) && MPI_Startall(number,requests))

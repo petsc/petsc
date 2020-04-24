@@ -8,8 +8,8 @@
 #  - Check everything in src/ts:
 #    $> stylecheck path/to/src/ts/
 #
-#  - Check only src/ts/examples/tutorials/ex1.c:
-#    $> stylecheck path/to/src/ts/examples/tutorials/ex1.c
+#  - Check only src/ts/tutorials/ex1.c:
+#    $> stylecheck path/to/src/ts/tutorials/ex1.c
 #
 
 usage() {
@@ -19,8 +19,8 @@ usage: $0 [options] PATH ...
 Runs style checkers in specified directories.
 Options:
     -h    --help        shows this message
-    --skip-tests        skip examples/tests
-    --skip-examples     skips examples/tests and examples/tutorials
+    --skip-tests        skip tests
+    --skip-examples     skips tests and tutorials
 EOF
 }
 
@@ -38,7 +38,7 @@ while true; do
             ;;
         --skip-tests)
             echo 'Skipping tests'
-            exclude="$exclude"' ! -path *examples/tests*'
+            exclude="$exclude"' ! -path *tests*'
             shift
             ;;
         -*)

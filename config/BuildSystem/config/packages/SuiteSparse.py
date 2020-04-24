@@ -3,11 +3,13 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self,framework)
-    self.version           = '5.6.0'
+    self.minversion        = '5.6.0'
+    self.version           = '5.7.1'
     self.versioninclude    = 'SuiteSparse_config.h'
     self.versionname       = 'SUITESPARSE_MAIN_VERSION.SUITESPARSE_SUB_VERSION.SUITESPARSE_SUBSUB_VERSION'
     self.gitcommit         = 'v'+self.version
     self.download          = ['git://https://github.com/DrTimothyAldenDavis/SuiteSparse','https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/'+self.gitcommit+'.tar.gz']
+    self.download_solaris  = ['https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/v5.6.0.tar.gz']
     self.liblist           = [['libumfpack.a','libklu.a','libcholmod.a','libbtf.a','libccolamd.a','libcolamd.a','libcamd.a','libamd.a','libsuitesparseconfig.a'],
                              ['libumfpack.a','libklu.a','libcholmod.a','libbtf.a','libccolamd.a','libcolamd.a','libcamd.a','libamd.a','libsuitesparseconfig.a','librt.a'],
                              ['libumfpack.a','libklu.a','libcholmod.a','libbtf.a','libccolamd.a','libcolamd.a','libcamd.a','libamd.a','libmetis.a','libsuitesparseconfig.a'],
@@ -53,7 +55,10 @@ class Configure(config.package.Package):
     self.setCompilers.pushLanguage('C')
     args.append('CC="'+self.setCompilers.getCompiler()+'"')
     cflags=self.removeWarningFlags(self.setCompilers.getCompilerFlags())
-    ldflags=self.setCompilers.getDynamicLinkerFlags()
+    if self.checkSharedLibrariesEnabled():
+      ldflags=self.setCompilers.getDynamicLinkerFlags()
+    else:
+      ldflags=''
     ldflags+=self.setCompilers.LDFLAGS
     # SuiteSparse 5.6.0 makefile has a bug in how it treats LDFLAGS (not using the override directive)
     ldflags+=" -L\$(INSTALL_LIB)"
@@ -136,15 +141,26 @@ class Configure(config.package.Package):
         # SuiteSparse install may not create missing directories, hence we need to create them first
         output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'lib'), timeout=2500, log=self.log)
         output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'include'), timeout=2500, log=self.log)
-        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/SuiteSparse_config && '+makewithargs+' clean && '+makewithargs+' && '+self.installSudo+makewithargs+' install && '+makewithargs+' clean', timeout=2500, log=self.log)
-        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/AMD                && '+makewithargs+' clean && '+makewithargs+' library && '+self.installSudo+makewithargs+' install && '+makewithargs+' clean', timeout=2500, log=self.log)
-        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/COLAMD             && '+makewithargs+' clean && '+makewithargs+' library && '+self.installSudo+makewithargs+' install && '+makewithargs+' clean', timeout=2500, log=self.log)
-        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/BTF                && '+makewithargs+' clean && '+makewithargs+' library && '+self.installSudo+makewithargs+' install && '+makewithargs+' clean', timeout=2500, log=self.log)
-        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/CAMD               && '+makewithargs+' clean && '+makewithargs+' library && '+self.installSudo+makewithargs+' install && '+makewithargs+' clean', timeout=2500, log=self.log)
-        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/CCOLAMD            && '+makewithargs+' clean && '+makewithargs+' library && '+self.installSudo+makewithargs+' install && '+makewithargs+' clean', timeout=2500, log=self.log)
-        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/CHOLMOD            && '+makewithargs+' clean && '+makewithargs+' library && '+self.installSudo+makewithargs+' install && '+makewithargs+' clean', timeout=2500, log=self.log)
-        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/UMFPACK            && '+makewithargs+' clean && '+makewithargs+' library && '+self.installSudo+makewithargs+' install && '+makewithargs+' clean', timeout=2500, log=self.log)
-        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/KLU                && '+makewithargs+' clean && '+makewithargs+' library && '+self.installSudo+makewithargs+' install && '+makewithargs+' clean', timeout=2500, log=self.log)
+        if self.checkSharedLibrariesEnabled():
+          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/SuiteSparse_config && '+makewithargs+' clean && '+makewithargs+' && '+self.installSudo+makewithargs+' install && '+makewithargs+' clean', timeout=2500, log=self.log)
+          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/AMD                && '+makewithargs+' clean && '+makewithargs+' library && '+self.installSudo+makewithargs+' install && '+makewithargs+' clean', timeout=2500, log=self.log)
+          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/COLAMD             && '+makewithargs+' clean && '+makewithargs+' library && '+self.installSudo+makewithargs+' install && '+makewithargs+' clean', timeout=2500, log=self.log)
+          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/BTF                && '+makewithargs+' clean && '+makewithargs+' library && '+self.installSudo+makewithargs+' install && '+makewithargs+' clean', timeout=2500, log=self.log)
+          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/CAMD               && '+makewithargs+' clean && '+makewithargs+' library && '+self.installSudo+makewithargs+' install && '+makewithargs+' clean', timeout=2500, log=self.log)
+          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/CCOLAMD            && '+makewithargs+' clean && '+makewithargs+' library && '+self.installSudo+makewithargs+' install && '+makewithargs+' clean', timeout=2500, log=self.log)
+          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/CHOLMOD            && '+makewithargs+' clean && '+makewithargs+' library && '+self.installSudo+makewithargs+' install && '+makewithargs+' clean', timeout=2500, log=self.log)
+          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/UMFPACK            && '+makewithargs+' clean && '+makewithargs+' library && '+self.installSudo+makewithargs+' install && '+makewithargs+' clean', timeout=2500, log=self.log)
+          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/KLU                && '+makewithargs+' clean && '+makewithargs+' library && '+self.installSudo+makewithargs+' install && '+makewithargs+' clean', timeout=2500, log=self.log)
+        else:
+          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/SuiteSparse_config && '+makewithargs+' clean && '+makewithargs+' static && '+self.installSudo+self.programs.cp+' *h '+os.path.join(self.installDir,'include')+' && '+self.installSudo+self.programs.cp+' libsuitesparseconfig.* '+os.path.join(self.installDir,'lib')+' && '+makewithargs+' clean', timeout=2500, log=self.log)
+          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/AMD                && '+makewithargs+' clean && '+makewithargs+' static && '+self.installSudo+self.programs.cp+' '+os.path.join('Include','amd.h')+' '+os.path.join(self.installDir,'include')+' && '+self.installSudo+self.programs.cp+' '+os.path.join('Lib','libamd.*')+' '+os.path.join(self.installDir,'lib')+' && '+makewithargs+' clean', timeout=2500, log=self.log)
+          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/COLAMD             && '+makewithargs+' clean && '+makewithargs+' static && '+self.installSudo+self.programs.cp+' '+os.path.join('Include','*h')+' '+os.path.join(self.installDir,'include')+' && '+self.installSudo+self.programs.cp+' '+os.path.join('Lib','libcolamd.*')+' '+os.path.join(self.installDir,'lib')+' && '+makewithargs+' clean', timeout=2500, log=self.log)
+          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/BTF                && '+makewithargs+' clean && '+makewithargs+' static && '+self.installSudo+self.programs.cp+' '+os.path.join('Include','btf.h')+' '+os.path.join(self.installDir,'include')+' && '+self.installSudo+self.programs.cp+' '+os.path.join('Lib','libbtf.*')+' '+os.path.join(self.installDir,'lib')+' && '+makewithargs+' clean', timeout=2500, log=self.log)
+          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/CAMD               && '+makewithargs+' clean && '+makewithargs+' static && '+self.installSudo+self.programs.cp+' '+os.path.join('Include','camd.h')+' '+os.path.join(self.installDir,'include')+' && '+self.installSudo+self.programs.cp+' '+os.path.join('Lib','libcamd.*')+' '+os.path.join(self.installDir,'lib')+' && '+makewithargs+' clean', timeout=2500, log=self.log)
+          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/CCOLAMD            && '+makewithargs+' clean && '+makewithargs+' static && '+self.installSudo+self.programs.cp+' '+os.path.join('Include','*h')+' '+os.path.join(self.installDir,'include')+' && '+self.installSudo+self.programs.cp+' '+os.path.join('Lib','libccolamd.*')+' '+os.path.join(self.installDir,'lib')+' && '+makewithargs+' clean', timeout=2500, log=self.log)
+          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/CHOLMOD            && '+makewithargs+' clean && '+makewithargs+' static && '+self.installSudo+self.programs.cp+' '+os.path.join('Include','*h')+' '+os.path.join(self.installDir,'include')+' && '+self.installSudo+self.programs.cp+' '+os.path.join('Lib','libcholmod.*')+' '+os.path.join(self.installDir,'lib')+' && '+makewithargs+' clean', timeout=2500, log=self.log)
+          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/UMFPACK            && '+makewithargs+' clean && '+makewithargs+' static && '+self.installSudo+self.programs.cp+' '+os.path.join('Include','*h')+' '+os.path.join(self.installDir,'include')+' && '+self.installSudo+self.programs.cp+' '+os.path.join('Lib','libumfpack.*')+' '+os.path.join(self.installDir,'lib')+' && '+makewithargs+' clean', timeout=2500, log=self.log)
+          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/KLU                && '+makewithargs+' clean && '+makewithargs+' static && '+self.installSudo+self.programs.cp+' '+os.path.join('Include','*h')+' '+os.path.join(self.installDir,'include')+' && '+self.installSudo+self.programs.cp+' '+os.path.join('Lib','libklu.*')+' '+os.path.join(self.installDir,'lib')+' && '+makewithargs+' clean', timeout=2500, log=self.log)
 
         self.addDefine('HAVE_SUITESPARSE',1)
       except RuntimeError as e:

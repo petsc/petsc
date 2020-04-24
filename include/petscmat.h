@@ -97,11 +97,11 @@ typedef const char* MatType;
 #define MATLMVMDFP         "lmvmdfp"
 #define MATLMVMBFGS        "lmvmbfgs"
 #define MATLMVMSR1         "lmvmsr1"
-#define MATLMVMBRDN        "lmvmbrdn"
-#define MATLMVMBADBRDN     "lmvmbadbrdn"
-#define MATLMVMSYMBRDN     "lmvmsymbrdn"
-#define MATLMVMSYMBADBRDN  "lmvmsymbadbrdn"
-#define MATLMVMDIAGBRDN    "lmvmdiagbrdn"
+#define MATLMVMBROYDEN     "lmvmbroyden"
+#define MATLMVMBADBROYDEN  "lmvmbadbroyden"
+#define MATLMVMSYMBROYDEN  "lmvmsymbroyden"
+#define MATLMVMSYMBADBROYDEN "lmvmsymbadbroyden"
+#define MATLMVMDIAGBROYDEN "lmvmdiagbroyden"
 #define MATCONSTANTDIAGONAL "constantdiagonal"
 
 /*J
@@ -160,6 +160,37 @@ PETSC_DEPRECATED_FUNCTION("Use MatSolverTypeRegister() (since version 3.9)") PET
 { return MatSolverTypeRegister(stype,mtype,ftype,f); }
 PETSC_DEPRECATED_FUNCTION("Use MatSolverTypeGet() (since version 3.9)") PETSC_STATIC_INLINE PetscErrorCode MatSolverPackageGet(MatSolverType stype,MatType mtype,MatFactorType ftype,PetscBool *foundmtype,PetscBool *foundstype,PetscErrorCode(**f)(Mat,MatFactorType,Mat*))
 { return MatSolverTypeGet(stype,mtype,ftype,foundmtype,foundstype,f); }
+
+/*E
+    MatProductType - indicates what type of matrix product is requested
+
+    Level: beginner
+
+.seealso: MatSolverType, MatProductSetType()
+E*/
+typedef enum {MATPRODUCT_AB,MATPRODUCT_AtB,MATPRODUCT_ABt,MATPRODUCT_PtAP,MATPRODUCT_RARt,MATPRODUCT_ABC} MatProductType;
+PETSC_EXTERN const char *const MatProductTypes[];
+
+/*J
+    MatProductAlgorithm - String with the name of an algorithm for a PETSc matrix product implementation
+
+   Level: beginner
+
+.seealso: MatSetType(), Mat, MatSolverType, MatRegister(), MatProductSetAlgorithm(), MatProductType
+J*/
+typedef const char* MatProductAlgorithm;
+#define MATPRODUCTALGORITHM_DEFAULT       "default"
+
+PETSC_EXTERN PetscErrorCode MatProductCreate(Mat,Mat,Mat,Mat*);
+PETSC_EXTERN PetscErrorCode MatProductCreateWithMat(Mat,Mat,Mat,Mat);
+PETSC_EXTERN PetscErrorCode MatProductSetType(Mat,MatProductType);
+PETSC_EXTERN PetscErrorCode MatProductSetAlgorithm(Mat,MatProductAlgorithm);
+PETSC_EXTERN PetscErrorCode MatProductSetFill(Mat,PetscReal);
+PETSC_EXTERN PetscErrorCode MatProductSetFromOptions(Mat);
+PETSC_EXTERN PetscErrorCode MatProductSymbolic(Mat);
+PETSC_EXTERN PetscErrorCode MatProductNumeric(Mat);
+PETSC_EXTERN PetscErrorCode MatProductReplaceMats(Mat,Mat,Mat,Mat);
+PETSC_EXTERN PetscErrorCode MatProductClear(Mat);
 
 /* Logging support */
 #define    MAT_FILE_CLASSID 1211216    /* used to indicate matrices in binary files */
@@ -561,6 +592,7 @@ PETSC_EXTERN PetscErrorCode MatMultTransposeAddEqual(Mat,Mat,PetscInt,PetscBool*
 PETSC_EXTERN PetscErrorCode MatMatMultEqual(Mat,Mat,Mat,PetscInt,PetscBool*);
 PETSC_EXTERN PetscErrorCode MatTransposeMatMultEqual(Mat,Mat,Mat,PetscInt,PetscBool*);
 PETSC_EXTERN PetscErrorCode MatMatTransposeMultEqual(Mat,Mat,Mat,PetscInt,PetscBool*);
+PETSC_EXTERN PetscErrorCode MatPtAPMultEqual(Mat,Mat,Mat,PetscInt,PetscBool*);
 PETSC_EXTERN PetscErrorCode MatIsLinear(Mat,PetscInt,PetscBool*);
 
 PETSC_EXTERN PetscErrorCode MatNorm(Mat,NormType,PetscReal*);
@@ -607,25 +639,15 @@ PETSC_EXTERN PetscErrorCode MatIncreaseOverlapSplit(Mat mat,PetscInt n,IS is[],P
 PETSC_EXTERN PetscErrorCode MatMPIAIJSetUseScalableIncreaseOverlap(Mat,PetscBool);
 
 PETSC_EXTERN PetscErrorCode MatMatMult(Mat,Mat,MatReuse,PetscReal,Mat*);
-PETSC_EXTERN PetscErrorCode MatMatMultSymbolic(Mat,Mat,PetscReal,Mat*);
-PETSC_EXTERN PetscErrorCode MatMatMultNumeric(Mat,Mat,Mat);
 
 PETSC_EXTERN PetscErrorCode MatMatMatMult(Mat,Mat,Mat,MatReuse,PetscReal,Mat*);
 PETSC_EXTERN PetscErrorCode MatGalerkin(Mat,Mat,Mat,MatReuse,PetscReal,Mat*);
 
 PETSC_EXTERN PetscErrorCode MatPtAP(Mat,Mat,MatReuse,PetscReal,Mat*);
-PETSC_EXTERN PetscErrorCode MatPtAPSymbolic(Mat,Mat,PetscReal,Mat*);
-PETSC_EXTERN PetscErrorCode MatPtAPNumeric(Mat,Mat,Mat);
 PETSC_EXTERN PetscErrorCode MatRARt(Mat,Mat,MatReuse,PetscReal,Mat*);
-PETSC_EXTERN PetscErrorCode MatRARtSymbolic(Mat,Mat,PetscReal,Mat*);
-PETSC_EXTERN PetscErrorCode MatRARtNumeric(Mat,Mat,Mat);
 
 PETSC_EXTERN PetscErrorCode MatTransposeMatMult(Mat,Mat,MatReuse,PetscReal,Mat*);
-PETSC_EXTERN PetscErrorCode MatTransposetMatMultSymbolic(Mat,Mat,PetscReal,Mat*);
-PETSC_EXTERN PetscErrorCode MatTransposetMatMultNumeric(Mat,Mat,Mat);
 PETSC_EXTERN PetscErrorCode MatMatTransposeMult(Mat,Mat,MatReuse,PetscReal,Mat*);
-PETSC_EXTERN PetscErrorCode MatMatTransposeMultSymbolic(Mat,Mat,PetscReal,Mat*);
-PETSC_EXTERN PetscErrorCode MatMatTransposeMultNumeric(Mat,Mat,Mat);
 
 PETSC_EXTERN PetscErrorCode MatAXPY(Mat,PetscScalar,Mat,MatStructure);
 PETSC_EXTERN PetscErrorCode MatAYPX(Mat,PetscScalar,Mat,MatStructure);

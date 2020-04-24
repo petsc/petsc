@@ -272,7 +272,7 @@ PetscErrorCode DMSNESSetJacobianLocal(DM dm,PetscErrorCode (*func)(DM,Vec,Mat,Ma
    Not Collective
 
    Input Arguments:
-+  dm - DM with the associated callback
+.  dm - DM with the associated callback
 
    Output Arguments:
 +  func - local residual evaluation
@@ -303,7 +303,7 @@ PetscErrorCode DMSNESGetFunctionLocal(DM dm,PetscErrorCode (**func)(DM,Vec,Vec,v
    Not Collective
 
    Input Arguments:
-+  dm - DM with the associated callback
+.  dm - DM with the associated callback
 
    Output Arguments:
 +  func - local boundary value evaluation
@@ -334,7 +334,7 @@ PetscErrorCode DMSNESGetBoundaryLocal(DM dm,PetscErrorCode (**func)(DM,Vec,void*
    Logically Collective
 
    Input Arguments:
-+  dm - DM with the associated callback
+.  dm - DM with the associated callback
 
    Output Arguments:
 +  func - local Jacobian evaluation

@@ -1,0 +1,76 @@
+Mat Object:
+  type: mpicrl
+  rows=36, cols=36
+  total: nonzeros=156, allocated nonzeros=156
+    not using I-node (on process 0) routines
+Mat Object:
+  type: seqaij
+  rows=18, cols=18
+  package used to perform factorization: petsc
+  total: nonzeros=72, allocated nonzeros=72
+    not using I-node routines
+Mat Object:
+  type: seqaij
+  rows=18, cols=18
+  package used to perform factorization: petsc
+  total: nonzeros=72, allocated nonzeros=72
+    not using I-node routines
+  0 KSP Residual norm 104.813 
+  1 KSP Residual norm 40.4428 
+  2 KSP Residual norm 15.6387 
+  3 KSP Residual norm 3.50016 
+  4 KSP Residual norm 0.614837 
+  5 KSP Residual norm 0.222981 
+  6 KSP Residual norm 0.0543251 
+  7 KSP Residual norm 0.0115868 
+  8 KSP Residual norm 0.00298028 
+  9 KSP Residual norm 0.00046493 
+KSP Object:
+  type: gmres
+    restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+    happy breakdown tolerance 1e-30
+  maximum iterations=10000, initial guess is zero
+  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  left preconditioning
+  using PRECONDITIONED norm type for convergence test
+PC Object:
+  type: bjacobi
+    number of blocks = 2
+    Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
+  KSP Object:(sub_)
+    type: preonly
+    maximum iterations=10000, initial guess is zero
+    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+    left preconditioning
+    using PRECONDITIONED norm type for convergence test
+  PC Object:(sub_)
+    type: ilu
+      0 levels of fill
+      factor fill ratio allocated 1
+      tolerance for zero pivot 1e-12
+      using diagonal shift to prevent zero pivot [NONZERO]
+      using diagonal shift on blocks to prevent zero pivot [INBLOCKS]
+           out-of-place factorization
+           matrix ordering: natural
+      factor fill ratio needed 1
+           Factored matrix follows
+          Mat Object:
+            type: seqaij
+            rows=18, cols=18
+            package used to perform factorization: petsc
+            total: nonzeros=72, allocated nonzeros=72
+              not using I-node routines
+    linear system matrix = precond matrix:
+    Mat Object:
+      type: seqaij
+      rows=18, cols=18
+      total: nonzeros=72, allocated nonzeros=72
+        not using I-node routines
+  linear system matrix = precond matrix:
+  Mat Object:
+    type: mpicrl
+    rows=36, cols=36
+    total: nonzeros=156, allocated nonzeros=156
+      not using I-node (on process 0) routines
+Number of iterations =   9
+Residual norm 0.001523

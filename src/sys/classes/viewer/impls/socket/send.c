@@ -286,7 +286,7 @@ $    -viewer_socket_port <port>
 -   PETSC_VIEWER_SOCKET_MACHINE - machine name
 
      Currently the only socket client available is MATLAB. See
-     src/dm/examples/tests/ex12.c and ex12.m for an example of usage.
+     src/dm/tests/ex12.c and ex12.m for an example of usage.
 
    Notes:
     The socket viewer is in some sense a subclass of the binary viewer, to read and write to the socket
@@ -495,7 +495,7 @@ $    -viewer_socket_port <port>
 $       XXXView(XXX object,PETSC_VIEWER_SOCKET_(comm));
 
      Currently the only socket client available is MATLAB. See
-     src/dm/examples/tests/ex12.c and ex12.m for an example of usage.
+     src/dm/tests/ex12.c and ex12.m for an example of usage.
 
      Connects to a waiting socket and stays connected until PetscViewerDestroy() is called.
 

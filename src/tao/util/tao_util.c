@@ -486,7 +486,7 @@ PETSC_STATIC_INLINE PetscReal ST_InternalPP(PetscScalar in, PetscReal lb, PetscR
    Input Parameters:
 +  in - input vector to be thresholded
 .  lb - lower bound
-.  ub - upper bound
+-  ub - upper bound
 
    Output Parameters:
 .  out - Soft thresholded output vector

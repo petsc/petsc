@@ -1,3 +1,4 @@
+-include ../petscdir.mk
 ALL: lib
 
 CPPFLAGS =
@@ -6,7 +7,7 @@ FFLAGS   =
 SOURCEC  = dmlabel.c
 SOURCEF  =
 SOURCEH  =
-DIRS     = examples
+DIRS     = tutorials
 LIBBASE  = libpetscdm
 MANSEC   = DM
 SUBMANSEC= DMLABEL

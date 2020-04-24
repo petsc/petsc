@@ -1,4 +1,5 @@
 # -*- mode: makefile-gmake -*-
+include petscdir.mk
 
 # If $(PETSC_ARCH) is empty, this defines it and PETSC_DIR
 include ./$(PETSC_ARCH)/lib/petsc/conf/petscvariables
@@ -50,7 +51,8 @@ libpetscall := $(if $(filter-out no,$(BUILDSHAREDLIB)),$(libpetscall_shared),$(l
 
 generated      := $(PETSC_ARCH)/lib/petsc/conf/files
 
-all : $(generated) $(libpetscall)
+libs : $(libpetscall)
+.PHONY: libs
 
 .SECONDEXPANSION:		# to expand $$(@D)/.DIR
 
@@ -61,7 +63,7 @@ $(generated) : $(petscconf) $(petscvariables) config/gmakegen.py
 	$(PYTHON) ./config/gmakegen.py --petsc-arch=$(PETSC_ARCH)
 
 # Skip including generated files (which triggers rebuilding them) when we're just going to clean anyway.
-ifneq ($(MAKECMDGOALS:clean%=clean),clean)
+ifneq ($(filter-out clean check,$(MAKECMDGOALS:clean%=clean)),)
 include $(generated)
 endif
 
@@ -210,7 +212,9 @@ clean:
 
 # make print VAR=the-variable
 print:
-	@echo $($(VAR))
+	$(info $($(VAR)))
+	@true
+
 
 allobj.d := $(srcs.o:%.o=%.d)
 # Tell make that allobj.d are all up to date.  Without this, the include

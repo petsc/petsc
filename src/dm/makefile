@@ -1,4 +1,4 @@
-
+-include ../petscdir.mk
 ALL: lib
 
 SOURCEH  = ../../include/petscdm.h ../../include/petscdmtypes.h \
@@ -9,7 +9,7 @@ SOURCEH  = ../../include/petscdm.h ../../include/petscdmtypes.h \
         ../../include/petscdmcomposite.h ../../include/petscdmmoab.h ../../include/petscdmnetwork.h \
         ../../include/petscdmpatch.h ../../include/petscdmplex.h ../../include/petscdmlabel.h \
         ../../include/petsc/private/dmlabelimpl.h
-DIRS     = impls f90-mod interface examples dt label field
+DIRS     = impls f90-mod interface tests tutorials dt label field
 LOCDIR   = src/dm/
 MANSEC   = DM
 

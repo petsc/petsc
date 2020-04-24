@@ -2532,11 +2532,11 @@ PetscErrorCode VecScatterCreateCommon_PtoS_MPI3(VecScatter_MPI_General *from,Vec
   }
   ierr = PetscInfo1(ctx,"Using blocksize %D scatter\n",bs);CHKERRQ(ierr);
 
-#if defined(PETSC_USE_DEBUG)
-  ierr = MPIU_Allreduce(&bs,&i,1,MPIU_INT,MPI_MIN,PetscObjectComm((PetscObject)ctx));CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&bs,&n,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)ctx));CHKERRQ(ierr);
-  if (bs!=i || bs!=n) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Blocks size %D != %D or %D",bs,i,n);
-#endif
+  if (PetscDefined(USE_DEBUG)) {
+    ierr = MPIU_Allreduce(&bs,&i,1,MPIU_INT,MPI_MIN,PetscObjectComm((PetscObject)ctx));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&bs,&n,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)ctx));CHKERRQ(ierr);
+    if (bs!=i || bs!=n) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Blocks size %D != %D or %D",bs,i,n);
+  }
 
   ierr = VecScatterGetType(ctx,&type);CHKERRQ(ierr);
   ierr = PetscStrcmp(type,"mpi3node",&mpi3node);CHKERRQ(ierr);
@@ -2713,9 +2713,7 @@ PetscErrorCode VecScatterCreateLocal_PtoP_MPI3(PetscInt nx,const PetscInt *inidx
   MPI_Request    *send_waits = NULL,*recv_waits = NULL;
   MPI_Status     recv_status,*send_status = NULL;
   PetscBool      duplicate = PETSC_FALSE;
-#if defined(PETSC_USE_DEBUG)
   PetscBool      found = PETSC_FALSE;
-#endif
 
   PetscFunctionBegin;
   ierr = PetscObjectGetNewTag((PetscObject)ctx,&tag);CHKERRQ(ierr);
@@ -2745,16 +2743,12 @@ PetscErrorCode VecScatterCreateLocal_PtoP_MPI3(PetscInt nx,const PetscInt *inidx
       if (idx >= owners[j] && idx < owners[j+1]) {
         nprocs[j]++;
         owner[i] = j;
-#if defined(PETSC_USE_DEBUG)
         found = PETSC_TRUE;
-#endif
         break;
       }
     }
-#if defined(PETSC_USE_DEBUG)
-    if (!found) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index %D out of range",idx);
+    if (PetscUnlikelyDebug(!found)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index %D out of range",idx);
     found = PETSC_FALSE;
-#endif
   }
   nsends = 0;
   for (i=0; i<size; i++) nsends += (nprocs[i] > 0);

@@ -48,4 +48,6 @@
 #define DMP8EST     'p8est'
 #define DMSWARM     'swarm'
 
+#define DMPlexCellRefiner type(tDMPlexCellRefiner)
+
 #endif

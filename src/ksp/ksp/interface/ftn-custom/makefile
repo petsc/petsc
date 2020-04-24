@@ -1,6 +1,7 @@
-
+-include ../petscdir.mk
 #requiresdefine   'PETSC_HAVE_FORTRAN'
 ALL: lib
+
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = zitclf.c  zitcreatef.c  zitfuncf.c  zxonf.c zdmkspf.c ziguess.c

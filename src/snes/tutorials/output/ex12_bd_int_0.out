@@ -1,0 +1,18 @@
+DM Object: Mesh 1 MPI processes
+  type: plex
+Mesh in 2 dimensions:
+  0-cells: 9
+  1-cells: 16
+  2-cells: 8
+Labels:
+  celltype: 3 strata with value/size (0 (9), 3 (8), 1 (16))
+  depth: 3 strata with value/size (0 (9), 1 (16), 2 (8))
+  marker: 1 strata with value/size (1 (16))
+  Face Sets: 1 strata with value/size (1 (8))
+Initial guess
+L_2 Error: < 1.0e-11
+Initial Residual
+L_2 Residual: 0.
+Au - b = Au + F(0)
+Linear L_2 Residual: 0.
+Solution boundary integral: 3.333

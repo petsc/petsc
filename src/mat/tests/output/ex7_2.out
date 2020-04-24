@@ -1,0 +1,13 @@
+  type: seqaij
+row 0: (0, 4.) 
+  type: general
+Index set is permutation
+Number of indices in set 1
+0 0
+  type: seq
+4.
+  type: seq
+1.
+Norm of error 0.
+original matrix nonzeros = 1
+factored matrix nonzeros = 1

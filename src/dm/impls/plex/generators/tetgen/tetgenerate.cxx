@@ -3,15 +3,14 @@
 #include <tetgen.h>
 
 /* This is to fix the tetrahedron orientation from TetGen */
-static PetscErrorCode DMPlexInvertCells_Internal(PetscInt dim, PetscInt numCells, PetscInt numCorners, int cells[])
+static PetscErrorCode DMPlexInvertCells_Tetgen(PetscInt numCells, PetscInt numCorners, int cells[])
 {
-  PetscInt       bound = numCells*numCorners, coff;
-  PetscErrorCode ierr;
+  PetscInt bound = numCells*numCorners, coff;
 
   PetscFunctionBegin;
-  for (coff = 0; coff < bound; coff += numCorners) {
-    ierr = DMPlexInvertCell(dim, numCorners, &cells[coff]);CHKERRQ(ierr);
-  }
+#define SWAP(a,b) do { int tmp = (a); (a) = (b); (b) = tmp; } while(0)
+  for (coff = 0; coff < bound; coff += numCorners) SWAP(cells[coff],cells[coff+1]);
+#undef SWAP
   PetscFunctionReturn(0);
 }
 
@@ -114,9 +113,9 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpo
     const double   *meshCoords = out.pointlist;
     int            *cells      = out.tetrahedronlist;
 
-    ierr = DMPlexInvertCells_Internal(dim, numCells, numCorners, cells);CHKERRQ(ierr);
+    ierr = DMPlexInvertCells_Tetgen(numCells, numCorners, cells);CHKERRQ(ierr);
     ierr = DMPlexCreateFromCellList(comm, dim, numCells, numVertices, numCorners, interpolate, cells, dim, meshCoords, dm);CHKERRQ(ierr);
-    if (label) {ierr = DMCreateLabel(*dm, labelName); ierr = DMGetLabel(*dm, labelName, &glabel);}
+    if (label) {ierr = DMCreateLabel(*dm, labelName);CHKERRQ(ierr); ierr = DMGetLabel(*dm, labelName, &glabel);CHKERRQ(ierr);}
     /* Set labels */
     for (v = 0; v < numVertices; ++v) {
       if (out.pointmarkerlist[v]) {
@@ -251,7 +250,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *d
 
     PetscBool      interpolate = depthGlobal > 1 ? PETSC_TRUE : PETSC_FALSE;
 
-    ierr = DMPlexInvertCells_Internal(dim, numCells, numCorners, cells);CHKERRQ(ierr);
+    ierr = DMPlexInvertCells_Tetgen(numCells, numCorners, cells);CHKERRQ(ierr);
     ierr = DMPlexCreateFromCellList(comm, dim, numCells, numVertices, numCorners, interpolate, cells, dim, meshCoords, dmRefined);CHKERRQ(ierr);
     if (label) {ierr = DMCreateLabel(*dmRefined, labelName); ierr = DMGetLabel(*dmRefined, labelName, &rlabel);}
     /* Set labels */

@@ -70,84 +70,74 @@ manual.pdf: chk_loc chk intro.tex abstract.tex acknowl.tex manual.tex part1.tex 
 
 # Wrap some listings so that they can be processed
 # Some relax the break-only-at-whitespace requirement
-listing_kspex1tmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/ksp/ksp/examples/tutorials/ex1.c
+listing_kspex1tmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/ksp/ksp/tutorials/ex1.c
 	-@printf '\\begin{lstlisting}[breakatwhitespace=false]\n' > listing_tmp.tex
-	-@cat ../../../../src/ksp/ksp/examples/tutorials/ex1.c | sed "/TEST/,/TEST/d" >> listing_tmp.tex
+	-@cat ../../../../src/ksp/ksp/tutorials/ex1.c | sed "/TEST/,/TEST/d" >> listing_tmp.tex
 	-@printf '\\end{lstlisting}\n' >> listing_tmp.tex
 	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat listing_tmp.tex | \
 	  ${PYTHON} ../../../../lib/petsc/bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > $@
 	-@$(RM) listing_tmp.tex
 
-listing_kspex2tmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/ksp/ksp/examples/tutorials/ex2.c
+listing_kspex2tmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/ksp/ksp/tutorials/ex2.c
 	-@printf '\\begin{lstlisting}\n' > listing_tmp.tex
-	-@cat ../../../../src/ksp/ksp/examples/tutorials/ex2.c  | sed "/TEST/,/TEST/d" >> listing_tmp.tex
+	-@cat ../../../../src/ksp/ksp/tutorials/ex2.c  | sed "/TEST/,/TEST/d" >> listing_tmp.tex
 	-@printf '\\end{lstlisting}\n' >> listing_tmp.tex
 	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat listing_tmp.tex | \
 	  ${PYTHON} ../../../../lib/petsc/bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > $@
 	-@$(RM) listing_tmp.tex
 
-listing_snesex1tmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/snes/examples/tutorials/ex1.c
+listing_snesex1tmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/snes/tutorials/ex1.c
 	-@printf '\\begin{lstlisting}[breakatwhitespace=false]\n' > listing_tmp.tex
-	-@cat ../../../../src/snes/examples/tutorials/ex1.c >> listing_tmp.tex
+	-@cat ../../../../src/snes/tutorials/ex1.c >> listing_tmp.tex
 	-@printf '\\end{lstlisting}\n' >> listing_tmp.tex
 	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat listing_tmp.tex | \
 	  ${PYTHON} ../../../../lib/petsc/bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > $@
 	-@$(RM) listing_tmp.tex
 
-listing_snesex3tmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/snes/examples/tutorials/ex3.c
+listing_snesex3tmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/snes/tutorials/ex3.c
 	-@printf '\\begin{lstlisting}[breakatwhitespace=false]\n' > listing_tmp.tex
-	-@cat ../../../../src/snes/examples/tutorials/ex3.c >> listing_tmp.tex
+	-@cat ../../../../src/snes/tutorials/ex3.c >> listing_tmp.tex
 	-@printf '\\end{lstlisting}\n' >> listing_tmp.tex
 	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat listing_tmp.tex | \
 	  ${PYTHON} ../../../../lib/petsc/bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > $@
 	-@$(RM) listing_tmp.tex
 
-listing_vecex19ftmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/vec/vec/examples/tests/ex19f.F
+listing_vecex19ftmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/vec/vec/tests/ex19f.F
 	-@printf '\\begin{lstlisting}\n' > listing_tmp.tex
-	-@cat ../../../../src/vec/vec/examples/tests/ex19f.F >> listing_tmp.tex
+	-@cat ../../../../src/vec/vec/tests/ex19f.F >> listing_tmp.tex
 	-@printf '\\end{lstlisting}\n' >> listing_tmp.tex
 	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat listing_tmp.tex | \
 	  ${PYTHON} ../../../../lib/petsc/bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > $@
 	-@$(RM) listing_tmp.tex
 
-listing_vecex4ftmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/vec/vec/examples/tutorials/ex4f.F
+listing_vecex4ftmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/vec/vec/tutorials/ex4f.F
 	-@printf '\\begin{lstlisting}\n' > listing_tmp.tex
-	-@cat ../../../../src/vec/vec/examples/tutorials/ex4f.F >> listing_tmp.tex
+	-@cat ../../../../src/vec/vec/tutorials/ex4f.F >> listing_tmp.tex
 	-@printf '\\end{lstlisting}\n' >> listing_tmp.tex
 	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat listing_tmp.tex | \
 	  ${PYTHON} ../../../../lib/petsc/bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > $@
 	-@$(RM) listing_tmp.tex
 
-listing_drawex5ftmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/sys/classes/draw/examples/tests/ex5f.F
+listing_drawex5ftmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/sys/classes/draw/tests/ex5f.F
 	-@printf '\\begin{lstlisting}\n' > listing_tmp.tex
-	-@cat ../../../../src/sys/classes/draw/examples/tests/ex5f.F >> listing_tmp.tex
+	-@cat ../../../../src/sys/classes/draw/tests/ex5f.F >> listing_tmp.tex
 	-@printf '\\end{lstlisting}\n' >> listing_tmp.tex
 	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat listing_tmp.tex | \
 	  ${PYTHON} ../../../../lib/petsc/bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > $@
 	-@$(RM) listing_tmp.tex
 
-listing_snesex1ftmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/snes/examples/tutorials/ex1f.F90
+listing_snesex1ftmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/snes/tutorials/ex1f.F90
 	-@printf '\\begin{lstlisting}\n' > listing_tmp.tex
-	-@cat ../../../../src/snes/examples/tutorials/ex1f.F90 >> listing_tmp.tex
+	-@cat ../../../../src/snes/tutorials/ex1f.F90 >> listing_tmp.tex
 	-@printf '\\end{lstlisting}\n' >> listing_tmp.tex
 	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat listing_tmp.tex | \
 	  ${PYTHON} ../../../../lib/petsc/bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > $@
 	-@$(RM) listing_tmp.tex
 
-listing_drawex3tmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/sys/classes/draw/examples/tests/ex3.c
+listing_drawex3tmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/sys/classes/draw/tests/ex3.c
 	-@printf '\\begin{lstlisting}[breakatwhitespace=false]\n' > listing_tmp.tex
-	-@cat ../../../../src/sys/classes/draw/examples/tests/ex3.c >> listing_tmp.tex
+	-@cat ../../../../src/sys/classes/draw/tests/ex3.c >> listing_tmp.tex
 	-@printf '\\end{lstlisting}\n' >> listing_tmp.tex
 	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat listing_tmp.tex | \
 	  ${PYTHON} ../../../../lib/petsc/bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > $@
 	-@$(RM) listing_tmp.tex
-
-developers.pdf: chk_loc chk developers.tex
-	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat developers.tex | \
-	  ${PYTHON} ../../../../lib/petsc/bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > developerstmp.tex
-	${PDFLATEX} ${PDFLATEXOPTS} developerstmp.tex ${GONULL}
-	bibtex developerstmp ${GONULL}
-	${PDFLATEX} ${PDFLATEXOPTS} developerstmp.tex ${GONULL}
-	${PDFLATEX} ${PDFLATEXOPTS} developerstmp.tex ${GONULL}
-	${MV} developerstmp.pdf ${LOC}/docs/developers.pdf
-

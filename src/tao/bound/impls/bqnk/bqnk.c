@@ -33,7 +33,7 @@ static PetscErrorCode TaoBQNKComputeHessian(Tao tao)
     } else {
       delta = 2.0 * PetscAbsScalar(bnk->f) / gnorm2;
     }
-    ierr = MatSymBrdnSetDelta(bqnk->B, delta);CHKERRQ(ierr);
+    ierr = MatLMVMSymBroydenSetDelta(bqnk->B, delta);CHKERRQ(ierr);
   }
   ierr = MatLMVMUpdate(tao->hessian, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
   ierr = MatLMVMResetShift(tao->hessian);CHKERRQ(ierr);

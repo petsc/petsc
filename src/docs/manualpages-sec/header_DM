@@ -4,7 +4,7 @@
 </HEAD>
 <BODY BGCOLOR="FFFFFF">
 
-<H2> DM <A HREF="PETSC_DIRsrc/dm/examples/tutorials/index.html">Examples</A></H2>
+<H2> DM <A HREF="PETSC_DIRsrc/dm/tutorials/index.html">Examples</A></H2>
 
 DM objects are used to manage communication between the algebraic structures in PETSc (Vec and Mat) and mesh data structures
 in PDE-based (or other) simulations. See, for example, DMDACreate().

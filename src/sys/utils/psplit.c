@@ -76,8 +76,7 @@ PetscErrorCode  PetscSplitOwnership(MPI_Comm comm,PetscInt *n,PetscInt *N)
 
   PetscFunctionBegin;
   if (*N == PETSC_DECIDE && *n == PETSC_DECIDE) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Both n and N cannot be PETSC_DECIDE\n  likely a call to VecSetSizes() or MatSetSizes() is wrong.\nSee https://www.mcs.anl.gov/petsc/documentation/faq.html#split");
-#if defined(PETSC_USE_DEBUG)
-  {
+  if (PetscDefined(USE_DEBUG)) {
     PetscMPIInt l[2],g[2];
     l[0] = (*n == PETSC_DECIDE) ? 1 : 0;
     l[1] = (*N == PETSC_DECIDE) ? 1 : 0;
@@ -86,7 +85,6 @@ PetscErrorCode  PetscSplitOwnership(MPI_Comm comm,PetscInt *n,PetscInt *N)
     if (g[0] && g[0] != size) SETERRQ(comm,PETSC_ERR_ARG_INCOMP,"All processes must supply PETSC_DECIDE for local size");
     if (g[1] && g[1] != size) SETERRQ(comm,PETSC_ERR_ARG_INCOMP,"All processes must supply PETSC_DECIDE for global size");
   }
-#endif
 
   if (*N == PETSC_DECIDE) {
     PetscInt64 m = *n, M;
@@ -97,12 +95,10 @@ PetscErrorCode  PetscSplitOwnership(MPI_Comm comm,PetscInt *n,PetscInt *N)
     ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
     *n   = *N/size + ((*N % size) > rank);
-#if defined(PETSC_USE_DEBUG)
-  } else {
+  } else if (PetscDefined(USE_DEBUG)) {
     PetscInt tmp;
     ierr = MPIU_Allreduce(n,&tmp,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
     if (tmp != *N) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Sum of local lengths %D does not equal global length %D, my local length %D\n  likely a call to VecSetSizes() or MatSetSizes() is wrong.\nSee https://www.mcs.anl.gov/petsc/documentation/faq.html#split",tmp,*N,*n);
-#endif
   }
   PetscFunctionReturn(0);
 }

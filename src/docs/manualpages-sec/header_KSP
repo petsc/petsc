@@ -4,7 +4,7 @@
 </HEAD>
 <BODY BGCOLOR="FFFFFF">
 
-<H2> Krylov Methods - KSP: : <A HREF="PETSC_DIRsrc/ksp/ksp/examples/tutorials/index.html">Examples</A></H2> 
+<H2> Krylov Methods - KSP: : <A HREF="PETSC_DIRsrc/ksp/ksp/tutorials/index.html">Examples</A></H2> 
 
 The
 <A HREF="PETSC_DIRdocs/manualpages/KSP/index.html">scalable linear equations solvers (KSP)</A>

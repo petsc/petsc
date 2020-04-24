@@ -1,8 +1,0 @@
-DM Object: Sphere 1 MPI processes
-  type: plex
-Sphere in 2 dimensions:
-  0-cells: 12
-  1-cells: 30
-  2-cells: 20
-Labels:
-  depth: 3 strata with value/size (0 (12), 1 (30), 2 (20))

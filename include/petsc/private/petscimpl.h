@@ -188,7 +188,9 @@ PETSC_INTERN PetscErrorCode PetscFreeMPIResources(void);
 
 
 PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
-
+#if defined(PETSC_HAVE_CUDA)
+PETSC_EXTERN PetscBool PetscCheckMpiGpuAwareness(void);
+#endif
 /*
     Macros to test if a PETSc object is valid and if pointers are valid
 */
@@ -530,7 +532,7 @@ M*/
 +  obj - the object from which data is to be retrieved
 -  id - the identifier for the data
 
-   Output parameters
+   Output parameters:
 +  data - the data to be retrieved
 -  flag - PETSC_TRUE if the data item exists and is valid, PETSC_FALSE otherwise
 
@@ -580,7 +582,7 @@ M*/
 +  obj - the object from which data is to be retrieved
 -  id - the identifier for the data
 
-   Output parameters
+   Output parameters:
 +  data - the data to be retrieved
 -  flag - PETSC_TRUE if the data item exists and is valid, PETSC_FALSE otherwise
 
@@ -629,7 +631,7 @@ M*/
 +  obj - the object from which data is to be retrieved
 -  id - the identifier for the data
 
-   Output parameters
+   Output parameters:
 +  data - the data to be retrieved
 -  flag - PETSC_TRUE if the data item exists and is valid, PETSC_FALSE otherwise
 
@@ -679,7 +681,7 @@ M*/
 +  obj - the object from which data is to be retrieved
 -  id - the identifier for the data
 
-   Output parameters
+   Output parameters:
 +  data - the data to be retrieved
 -  flag - PETSC_TRUE if the data item exists and is valid, PETSC_FALSE otherwise
 
@@ -732,7 +734,7 @@ M*/
 +  obj - the object from which data is to be retrieved
 -  id - the identifier for the data
 
-   Output parameters
+   Output parameters:
 +  data - the data to be retrieved
 -  flag - PETSC_TRUE if the data item exists and is valid, PETSC_FALSE otherwise
 
@@ -791,7 +793,7 @@ M*/
 +  obj - the object from which data is to be retrieved
 -  id - the identifier for the data
 
-   Output parameters
+   Output parameters:
 +  data - the data to be retrieved
 -  flag - PETSC_TRUE if the data item exists and is valid, PETSC_FALSE otherwise
 
@@ -822,6 +824,7 @@ typedef struct {
   PetscMPIInt tag;              /* next free tag value */
   PetscInt    refcount;         /* number of references, communicator can be freed when this reaches 0 */
   PetscInt    namecount;        /* used to generate the next name, as in Vec_0, Mat_1, ... */
+  PetscMPIInt *iflags;          /* length of comm size, shared by all calls to PetscCommBuildTwoSided_Allreduce/RedScatter on this comm */
 } PetscCommCounter;
 
 /*E
@@ -936,14 +939,10 @@ PETSC_INTERN PetscSpinlock PetscCommSpinLock;
 PETSC_EXTERN PetscLogEvent PETSC_Barrier;
 PETSC_EXTERN PetscLogEvent PETSC_BuildTwoSided;
 PETSC_EXTERN PetscLogEvent PETSC_BuildTwoSidedF;
+PETSC_EXTERN PetscBool     use_gpu_aware_mpi;
 
 #if defined(PETSC_HAVE_ADIOS)
 PETSC_EXTERN int64_t Petsc_adios_group;
-#endif
-
-PETSC_EXTERN PetscBool use_gpu_aware_mpi;
-#if defined(PETSC_HAVE_CUDA)
-PETSC_EXTERN PetscBool sf_use_default_cuda_stream;
 #endif
 
 #endif /* PETSCIMPL_H */

@@ -1,9 +1,9 @@
-
+-include ../petscdir.mk
 ALL: lib
 
 SOURCEH = ../../../include/petsc/private/dmfieldimpl.h \
           ../../../include/petscdmfield.h
-DIRS    = interface impls examples
+DIRS    = interface impls tutorials
 LOCDIR  = src/dm/field/
 MANSEC  = DM
 

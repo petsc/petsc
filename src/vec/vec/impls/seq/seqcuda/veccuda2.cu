@@ -26,15 +26,16 @@ PetscErrorCode VecCUDAAllocateCheck(Vec v)
   PetscErrorCode ierr;
   cudaError_t    err;
   Vec_CUDA       *veccuda;
+  PetscBool      option_set;
 
   PetscFunctionBegin;
   if (!v->spptr) {
+    PetscReal pinned_memory_min;
     ierr = PetscMalloc(sizeof(Vec_CUDA),&v->spptr);CHKERRQ(ierr);
     veccuda = (Vec_CUDA*)v->spptr;
     err = cudaMalloc((void**)&veccuda->GPUarray_allocated,sizeof(PetscScalar)*((PetscBLASInt)v->map->n));CHKERRCUDA(err);
     veccuda->GPUarray = veccuda->GPUarray_allocated;
     veccuda->stream = 0;  /* using default stream */
-    veccuda->hostDataRegisteredAsPageLocked = PETSC_FALSE;
     if (v->offloadmask == PETSC_OFFLOAD_UNALLOCATED) {
       if (v->data && ((Vec_Seq*)v->data)->array) {
         v->offloadmask = PETSC_OFFLOAD_CPU;
@@ -42,6 +43,14 @@ PetscErrorCode VecCUDAAllocateCheck(Vec v)
         v->offloadmask = PETSC_OFFLOAD_GPU;
       }
     }
+    pinned_memory_min = 0;
+
+    /* Need to parse command line for minimum size to use for pinned memory allocations on host here.
+       Note: This same code duplicated in VecCreate_SeqCUDA_Private() and VecCreate_MPICUDA_Private(). Is there a good way to avoid this? */
+    ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)v),((PetscObject)v)->prefix,"VECCUDA Options","Vec");CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-vec_pinned_memory_min","Minimum size (in bytes) for an allocation to use pinned memory on host","VecSetPinnedMemoryMin",pinned_memory_min,&pinned_memory_min,&option_set);CHKERRQ(ierr);
+    if (option_set) v->minimum_bytes_pinned_memory = pinned_memory_min;
+    ierr = PetscOptionsEnd();CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -187,7 +196,7 @@ PetscErrorCode VecCUDACopyFromGPUSome(Vec v, PetscCUDAIndices ci,ScatterMode mod
 
   Level: beginner
 
-.seealso: VecCreate(), VecSetType(), VecSetFromOptions(), VecCreateSeqWithArray(), VECMPI, VecType, VecCreateMPI(), VecCreateSeq()
+.seealso: VecCreate(), VecSetType(), VecSetFromOptions(), VecCreateSeqWithArray(), VECMPI, VecType, VecCreateMPI(), VecCreateSeq(), VecSetPinnedMemoryMin()
 M*/
 
 PetscErrorCode VecAYPX_SeqCUDA(Vec yin,PetscScalar alpha,Vec xin)
@@ -1136,9 +1145,9 @@ PetscErrorCode VecDestroy_SeqCUDA(Vec v)
     if (((Vec_CUDA*)v->spptr)->stream) {
       err = cudaStreamDestroy(((Vec_CUDA*)v->spptr)->stream);CHKERRCUDA(err);
     }
-    ierr = PetscFree(v->spptr);CHKERRQ(ierr);
   }
   ierr = VecDestroy_SeqCUDA_Private(v);CHKERRQ(ierr);
+  ierr = PetscFree(v->spptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1192,7 +1201,14 @@ PetscErrorCode VecGetLocalVector_SeqCUDA(Vec v,Vec w)
 
   if (w->data) {
     if (((Vec_Seq*)w->data)->array_allocated) {
+      if (w->pinned_memory) {
+        ierr = PetscMallocSetCUDAHost();CHKERRQ(ierr);
+      }
       ierr = PetscFree(((Vec_Seq*)w->data)->array_allocated);CHKERRQ(ierr);
+      if (w->pinned_memory) {
+        ierr = PetscMallocResetCUDAHost();CHKERRQ(ierr);
+        w->pinned_memory = PETSC_FALSE;
+      }
     }
     ((Vec_Seq*)w->data)->array = NULL;
     ((Vec_Seq*)w->data)->unplacedarray = NULL;
@@ -1212,6 +1228,7 @@ PetscErrorCode VecGetLocalVector_SeqCUDA(Vec v,Vec w)
     ierr = PetscFree(w->data);CHKERRQ(ierr);
     w->data = v->data;
     w->offloadmask = v->offloadmask;
+    w->pinned_memory = v->pinned_memory;
     w->spptr = v->spptr;
     ierr = PetscObjectStateIncrease((PetscObject)w);CHKERRQ(ierr);
   } else {
@@ -1235,6 +1252,7 @@ PetscErrorCode VecRestoreLocalVector_SeqCUDA(Vec v,Vec w)
   if (v->petscnative) {
     v->data = w->data;
     v->offloadmask = w->offloadmask;
+    v->pinned_memory = w->pinned_memory;
     v->spptr = w->spptr;
     ierr = VecCUDACopyFromGPU(v);CHKERRQ(ierr);
     ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);

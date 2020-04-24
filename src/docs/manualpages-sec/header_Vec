@@ -4,7 +4,7 @@
 </HEAD>
 <BODY BGCOLOR="FFFFFF">
 
-<H2> Vectors: <A HREF="PETSC_DIRsrc/vec/vec/examples/tutorials/index.html">Examples</A> </H2>
+<H2> Vectors: <A HREF="PETSC_DIRsrc/vec/vec/tutorials/index.html">Examples</A> </H2>
 
   PETSc vectors (Vec objects) are used to store the field variables 
 in PDE-based (or other) simulations. 

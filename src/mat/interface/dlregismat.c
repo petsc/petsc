@@ -149,6 +149,7 @@ PetscErrorCode  MatInitializePackage(void)
 {
   char           logList[256];
   PetscBool      opt,pkg;
+
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -224,24 +225,18 @@ PetscErrorCode  MatInitializePackage(void)
   ierr = PetscLogEventRegister("MatFDColorApply",  MAT_FDCOLORING_CLASSID,&MAT_FDColoringApply);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatFDColorFunc",   MAT_FDCOLORING_CLASSID,&MAT_FDColoringFunction);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatTranspose",     MAT_CLASSID,&MAT_Transpose);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatMatMult",       MAT_CLASSID,&MAT_MatMult);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatMatSolve",      MAT_CLASSID,&MAT_MatSolve);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatMatTrSolve",    MAT_CLASSID,&MAT_MatTrSolve);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatMatMultSym",    MAT_CLASSID,&MAT_MatMultSymbolic);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatMatMultNum",    MAT_CLASSID,&MAT_MatMultNumeric);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatMatMatMult",    MAT_CLASSID,&MAT_MatMatMult);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatMatMatMultSym", MAT_CLASSID,&MAT_MatMatMultSymbolic);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatMatMatMultNum", MAT_CLASSID,&MAT_MatMatMultNumeric);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatPtAP",          MAT_CLASSID,&MAT_PtAP);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatPtAPSymbolic",  MAT_CLASSID,&MAT_PtAPSymbolic);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatPtAPNumeric",   MAT_CLASSID,&MAT_PtAPNumeric);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatRARt",          MAT_CLASSID,&MAT_RARt);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatRARtSym",       MAT_CLASSID,&MAT_RARtSymbolic);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatRARtNum",       MAT_CLASSID,&MAT_RARtNumeric);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatMatTransMult",  MAT_CLASSID,&MAT_MatTransposeMult);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatMatTrnMultSym", MAT_CLASSID,&MAT_MatTransposeMultSymbolic);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatMatTrnMultNum", MAT_CLASSID,&MAT_MatTransposeMultNumeric);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatTrnMatMult",    MAT_CLASSID,&MAT_TransposeMatMult);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatTrnMatMultSym", MAT_CLASSID,&MAT_TransposeMatMultSymbolic);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatTrnMatMultNum", MAT_CLASSID,&MAT_TransposeMatMultNumeric);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatTrnColorCreate",MAT_CLASSID,&MAT_TransposeColoringCreate);CHKERRQ(ierr);
@@ -287,18 +282,18 @@ PetscErrorCode  MatInitializePackage(void)
   ierr = PetscLogEventSetActiveAll(MAT_SetValues, PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscLogEventSetActiveAll(MAT_GetValues, PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscLogEventSetActiveAll(MAT_GetRow,    PETSC_FALSE);CHKERRQ(ierr);
+  /* Process Info */
+  {
+    PetscClassId  classids[7];
 
-  /* Process info exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL,"-info_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
-  if (opt) {
-    ierr = PetscStrInList("mat",logList,',',&pkg);CHKERRQ(ierr);
-    if (pkg) {ierr = PetscInfoDeactivateClass(MAT_CLASSID);CHKERRQ(ierr);}
-    if (pkg) {ierr = PetscInfoDeactivateClass(MAT_FDCOLORING_CLASSID);CHKERRQ(ierr);}
-    if (pkg) {ierr = PetscInfoDeactivateClass(MAT_COLORING_CLASSID);CHKERRQ(ierr);}
-    if (pkg) {ierr = PetscInfoDeactivateClass(MAT_TRANSPOSECOLORING_CLASSID);CHKERRQ(ierr);}
-    if (pkg) {ierr = PetscInfoDeactivateClass(MAT_PARTITIONING_CLASSID);CHKERRQ(ierr);}
-    if (pkg) {ierr = PetscInfoDeactivateClass(MAT_COARSEN_CLASSID);CHKERRQ(ierr);}
-    if (pkg) {ierr = PetscInfoDeactivateClass(MAT_NULLSPACE_CLASSID);CHKERRQ(ierr);}
+    classids[0] = MAT_CLASSID;
+    classids[1] = MAT_FDCOLORING_CLASSID;
+    classids[2] = MAT_COLORING_CLASSID;
+    classids[3] = MAT_TRANSPOSECOLORING_CLASSID;
+    classids[4] = MAT_PARTITIONING_CLASSID;
+    classids[5] = MAT_COARSEN_CLASSID;
+    classids[6] = MAT_NULLSPACE_CLASSID;
+    ierr = PetscInfoProcessClass("mat", 7, classids);CHKERRQ(ierr);
   }
 
   /* Process summary exclusions */

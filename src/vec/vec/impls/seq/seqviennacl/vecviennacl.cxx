@@ -332,7 +332,7 @@ static PetscErrorCode VecDestroy_SeqViennaCL_Private(Vec v)
 #if defined(PETSC_USE_LOG)
   PetscLogObjectState((PetscObject)v,"Length=%D",v->map->n);
 #endif
-  if (vs->array_allocated) ierr = PetscFree(vs->array_allocated);CHKERRQ(ierr);
+  if (vs->array_allocated) { ierr = PetscFree(vs->array_allocated);CHKERRQ(ierr); }
   ierr = PetscFree(vs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1171,7 +1171,7 @@ PETSC_EXTERN PetscErrorCode VecCreate_SeqViennaCL(Vec V)
   ierr = PetscObjectChangeTypeName((PetscObject)V,VECSEQVIENNACL);CHKERRQ(ierr);
 
   ierr = VecBindToCPU_SeqAIJViennaCL(V,PETSC_FALSE);CHKERRQ(ierr);
-  V->ops->pintocpu = VecBindToCPU_SeqAIJViennaCL;
+  V->ops->bindtocpu = VecBindToCPU_SeqAIJViennaCL;
 
   ierr = VecViennaCLAllocateCheck(V);CHKERRQ(ierr);
   ierr = VecViennaCLAllocateCheckHost(V);CHKERRQ(ierr);

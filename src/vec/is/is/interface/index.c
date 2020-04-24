@@ -8,6 +8,7 @@
 /* Logging support */
 PetscClassId IS_CLASSID;
 /* TODO: Much more events are missing! */
+PetscLogEvent IS_View;
 PetscLogEvent IS_Load;
 
 /*@
@@ -965,8 +966,7 @@ PetscErrorCode  ISSetPermutation(IS is)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
-#if defined(PETSC_USE_DEBUG)
-  {
+  if (PetscDefined(USE_DEBUG)) {
     PetscMPIInt    size;
 
     ierr = MPI_Comm_size(PetscObjectComm((PetscObject)is),&size);CHKERRQ(ierr);
@@ -986,7 +986,6 @@ PetscErrorCode  ISSetPermutation(IS is)
       ierr = ISRestoreIndices(is,&iidx);CHKERRQ(ierr);
     }
   }
-#endif
   ierr = ISSetInfo(is,IS_PERMUTATION,IS_GLOBAL,PETSC_TRUE,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1146,6 +1145,7 @@ PetscErrorCode ISGetLayout(IS is,PetscLayout *map)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
+  PetscValidIntPointer(map,2);
   *map = is->map;
   PetscFunctionReturn(0);
 }
@@ -1186,7 +1186,7 @@ $          call ISGetIndicesF90(i,array,ierr)
 
 
    See the Fortran chapter of the users manual and
-   petsc/src/is/examples/[tutorials,tests] for details.
+   petsc/src/is/[tutorials,tests] for details.
 
    Level: intermediate
 
@@ -1306,7 +1306,7 @@ $      ...... other code
 $       call ISRestoreIndices(is,is_array,i_is,ierr)
 
    See the Fortran chapter of the users manual and
-   petsc/src/is/examples/[tutorials,tests] for details.
+   petsc/src/vec/is/tests for details.
 
    Level: intermediate
 
@@ -1623,14 +1623,14 @@ PetscErrorCode  ISView(IS is,PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
-  if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)is),&viewer);CHKERRQ(ierr);
-  }
+  if (!viewer) {ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)is),&viewer);CHKERRQ(ierr);}
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(is,1,viewer,2);
 
   ierr = PetscObjectPrintClassNamePrefixType((PetscObject)is,viewer);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(IS_View,is,viewer,0,0);CHKERRQ(ierr);
   ierr = (*is->ops->view)(is,viewer);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(IS_View,is,viewer,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1660,13 +1660,14 @@ PetscErrorCode ISLoad(IS is, PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  PetscCheckSameComm(is,1,viewer,2);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERBINARY, &isbinary);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5);CHKERRQ(ierr);
   if (!isbinary && !ishdf5) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
   if (!((PetscObject)is)->type_name) {ierr = ISSetType(is, ISGENERAL);CHKERRQ(ierr);}
-  ierr = PetscLogEventBegin(IS_Load,viewer,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(IS_Load,is,viewer,0,0);CHKERRQ(ierr);
   ierr = (*is->ops->load)(is, viewer);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(IS_Load,viewer,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(IS_Load,is,viewer,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

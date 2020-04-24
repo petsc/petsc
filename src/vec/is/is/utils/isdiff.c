@@ -450,9 +450,9 @@ PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS 
 
   PetscFunctionBegin;
   PetscValidPointer(islist,3);
-#if defined(PETSC_USE_DEBUG)
-  for (i = 0; i < len; ++i) if (islist[i]) PetscValidHeaderSpecific(islist[i], IS_CLASSID, 3);
-#endif
+  if (PetscDefined(USE_DEBUG)) {
+    for (i = 0; i < len; ++i) if (islist[i]) PetscValidHeaderSpecific(islist[i], IS_CLASSID, 3);
+  }
   PetscValidPointer(isout, 4);
   if (!len) {
     ierr = ISCreateStride(comm, 0,0,0, isout);CHKERRQ(ierr);

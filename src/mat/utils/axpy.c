@@ -482,6 +482,7 @@ PetscErrorCode MatChop(Mat A, PetscReal tol)
 
   PetscFunctionBegin;
   ierr = MatGetOwnershipRange(A, &rStart, &rEnd);CHKERRQ(ierr);
+  ierr = MatGetRowUpperTriangular(A);CHKERRQ(ierr);
   for (r = rStart; r < rEnd; ++r) {
     PetscInt ncols;
 
@@ -510,6 +511,7 @@ PetscErrorCode MatChop(Mat A, PetscReal tol)
     ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
+  ierr = MatRestoreRowUpperTriangular(A);CHKERRQ(ierr);
   ierr = PetscFree2(newCols,newVals);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

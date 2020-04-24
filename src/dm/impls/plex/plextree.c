@@ -41,7 +41,7 @@ PetscErrorCode DMPlexSetReferenceTree(DM dm, DM ref)
   Input Parameters:
 . dm - The DMPlex object
 
-  Output Parameters
+  Output Parameters:
 . ref - The reference tree DMPlex object
 
   Level: intermediate
@@ -1760,13 +1760,13 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_FromReference(DM dm, PetscS
         else           {ierr = PetscSectionGetPointSyms(section,closureSize,closure,&perms,&flips);CHKERRQ(ierr);}
 
         /* make sure that every row for this point is the same size */
-#if defined(PETSC_USE_DEBUG)
-        for (r = 0; r < cDof; r++) {
-          if (cDof > 1 && r) {
-            if ((ia[cOff+r+1]-ia[cOff+r]) != (ia[cOff+r]-ia[cOff+r-1])) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Two point rows have different nnz: %D vs. %D", (ia[cOff+r+1]-ia[cOff+r]), (ia[cOff+r]-ia[cOff+r-1]));
+        if (PetscDefined(USE_DEBUG)) {
+          for (r = 0; r < cDof; r++) {
+            if (cDof > 1 && r) {
+              if ((ia[cOff+r+1]-ia[cOff+r]) != (ia[cOff+r]-ia[cOff+r-1])) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Two point rows have different nnz: %D vs. %D", (ia[cOff+r+1]-ia[cOff+r]), (ia[cOff+r]-ia[cOff+r-1]));
+            }
           }
         }
-#endif
         /* zero rows */
         for (i = ia[cOff] ; i< ia[cOff+cDof];i++) {
           vals[i] = 0.;
@@ -2084,8 +2084,7 @@ PetscErrorCode DMPlexTreeRefineCell (DM dm, PetscInt cell, DM *ncdm)
       PetscInt dof, off;
       PetscReal v0[3], J[9], detJ;
 
-#if defined(PETSC_USE_DEBUG)
-      {
+      if (PetscDefined(USE_DEBUG)) {
         PetscInt k;
         ierr = DMPlexGetHeightStratum(K,0,&kStart,&kEnd);CHKERRQ(ierr);
         for (k = kStart; k < kEnd; k++) {
@@ -2093,7 +2092,6 @@ PetscErrorCode DMPlexTreeRefineCell (DM dm, PetscInt cell, DM *ncdm)
           if (detJ <= 0.) SETERRQ1 (PETSC_COMM_SELF,PETSC_ERR_PLIB,"reference tree cell %d has bad determinant",k);
         }
       }
-#endif
       ierr = DMPlexComputeCellGeometryFEM(dm, cell, NULL, v0, J, NULL, &detJ);CHKERRQ(ierr);
       ierr = DMGetCoordinateSection(dm,&vSection);CHKERRQ(ierr);
       ierr = DMGetCoordinatesLocal(dm,&coords);CHKERRQ(ierr);
@@ -3986,7 +3984,7 @@ static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse
   const PetscInt    *anchors;
   Mat               cMat;
   PetscInt          numFields;
-  PetscInt          pStartC, pEndC, pStartF, pEndF, p, cellStart, cellEnd, cellEndInterior;
+  PetscInt          pStartC, pEndC, pStartF, pEndF, p, cellStart, cellEnd;
   PetscInt          aStart, aEnd, cStart, cEnd;
   PetscInt          *maxChildIds;
   PetscInt          *offsets, *newOffsets, *offsetsCopy, *newOffsetsCopy, *rowOffsets, *numD, *numO;
@@ -4000,9 +3998,7 @@ static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse
   PetscFunctionBegin;
   ierr = VecSetOption(vecFine,VEC_IGNORE_NEGATIVE_INDICES,PETSC_TRUE);CHKERRQ(ierr);
   ierr = DMPlexGetChart(coarse,&pStartC,&pEndC);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(coarse,0,&cellStart,&cellEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(coarse,&cellEndInterior,NULL,NULL,NULL);CHKERRQ(ierr);
-  cellEnd = (cellEndInterior < 0) ? cellEnd : cellEndInterior;
+  ierr = DMPlexGetSimplexOrBoxCells(coarse,0,&cellStart,&cellEnd);CHKERRQ(ierr);
   ierr = DMPlexGetChart(fine,&pStartF,&pEndF);CHKERRQ(ierr);
   ierr = DMGetGlobalSection(fine,&globalFine);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(coarse,&dim);CHKERRQ(ierr);
@@ -4202,9 +4198,7 @@ static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse
     ierr = DMPlexGetAnchors(refTree,&refAnSec,NULL);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(refConSec,&pRefStart,&pRefEnd);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(leafValuesSec,&leafStart,&leafEnd);CHKERRQ(ierr);
-    ierr = DMPlexGetHeightStratum(fine,0,&cellStart,&cellEnd);CHKERRQ(ierr);
-    ierr = DMPlexGetHybridBounds(fine,&cellEndInterior,NULL,NULL,NULL);CHKERRQ(ierr);
-    cellEnd = (cellEndInterior < 0) ? cellEnd : cellEndInterior;
+    ierr = DMPlexGetSimplexOrBoxCells(fine,0,&cellStart,&cellEnd);CHKERRQ(ierr);
     for (p = leafStart; p < leafEnd; p++) {
       PetscInt          gDof, gcDof, gOff, lDof;
       PetscInt          numValues, pValOff;

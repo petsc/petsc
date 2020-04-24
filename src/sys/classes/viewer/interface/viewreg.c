@@ -239,16 +239,13 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,PetscOptions options,const c
       ierr = PetscOptionsHelpPrintedCreate(&PetscOptionsHelpPrintedSingleton);CHKERRQ(ierr);
     }
     ierr = PetscOptionsHelpPrintedCheck(PetscOptionsHelpPrintedSingleton,pre,name,&found);CHKERRQ(ierr);
-    if (!found) {
-      if (viewer) {
-        ierr = (*PetscHelpPrintf)(comm,"\n  -%s%s ascii[:[filename][:[format][:append]]]: %s (%s)\n",pre ? pre : "",name+1,"Prints object to stdout or ASCII file","PetscOptionsGetViewer");CHKERRQ(ierr);
-        ierr = (*PetscHelpPrintf)(comm,"    -%s%s binary[:[filename][:[format][:append]]]: %s (%s)\n",pre ? pre : "",name+1,"Saves object to a binary file","PetscOptionsGetViewer");CHKERRQ(ierr);
-        ierr = (*PetscHelpPrintf)(comm,"    -%s%s draw[:[drawtype][:filename|format]] %s (%s)\n",pre ? pre : "",name+1,"Draws object","PetscOptionsGetViewer");CHKERRQ(ierr);
-        ierr = (*PetscHelpPrintf)(comm,"    -%s%s socket[:port]: %s (%s)\n",pre ? pre : "",name+1,"Pushes object to a Unix socket","PetscOptionsGetViewer");CHKERRQ(ierr);
-        ierr = (*PetscHelpPrintf)(comm,"    -%s%s saws[:communicatorname]: %s (%s)\n\n",pre ? pre : "",name+1,"Publishes object to SAWs","PetscOptionsGetViewer");CHKERRQ(ierr);
-      } else {
-        ierr = (*PetscHelpPrintf)(comm,"    -%s%s\n",pre ? pre : "",name+1);CHKERRQ(ierr);
-      }
+    if (!found && viewer) {
+      ierr = (*PetscHelpPrintf)(comm,"----------------------------------------\nViewer (-%s%s) options:\n",pre ? pre : "",name+1);CHKERRQ(ierr);
+      ierr = (*PetscHelpPrintf)(comm,"  -%s%s ascii[:[filename][:[format][:append]]]: %s (%s)\n",pre ? pre : "",name+1,"Prints object to stdout or ASCII file","PetscOptionsGetViewer");CHKERRQ(ierr);
+      ierr = (*PetscHelpPrintf)(comm,"  -%s%s binary[:[filename][:[format][:append]]]: %s (%s)\n",pre ? pre : "",name+1,"Saves object to a binary file","PetscOptionsGetViewer");CHKERRQ(ierr);
+      ierr = (*PetscHelpPrintf)(comm,"  -%s%s draw[:[drawtype][:filename|format]] %s (%s)\n",pre ? pre : "",name+1,"Draws object","PetscOptionsGetViewer");CHKERRQ(ierr);
+      ierr = (*PetscHelpPrintf)(comm,"  -%s%s socket[:port]: %s (%s)\n",pre ? pre : "",name+1,"Pushes object to a Unix socket","PetscOptionsGetViewer");CHKERRQ(ierr);
+      ierr = (*PetscHelpPrintf)(comm,"  -%s%s saws[:communicatorname]: %s (%s)\n",pre ? pre : "",name+1,"Publishes object to SAWs","PetscOptionsGetViewer");CHKERRQ(ierr);
     }
   }
 
@@ -395,7 +392,7 @@ PetscErrorCode  PetscViewerCreate(MPI_Comm comm,PetscViewer *inviewer)
   PetscFunctionBegin;
   *inviewer = NULL;
   ierr = PetscViewerInitializePackage();CHKERRQ(ierr);
-  ierr         = PetscHeaderCreate(viewer,PETSC_VIEWER_CLASSID,"PetscViewer","PetscViewer","Viewer",comm,PetscViewerDestroy,NULL);CHKERRQ(ierr);
+  ierr         = PetscHeaderCreate(viewer,PETSC_VIEWER_CLASSID,"PetscViewer","PetscViewer","Viewer",comm,PetscViewerDestroy,PetscViewerView);CHKERRQ(ierr);
   *inviewer    = viewer;
   viewer->data = NULL;
   PetscFunctionReturn(0);

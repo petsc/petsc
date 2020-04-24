@@ -1,0 +1,7 @@
+New space: vertex, order 0, trimmed 0, tensor 0, continuous 0, form degree 0
+  All nodes:
+      Quadrature of order -1 on 1 points (dim 0)
+  All node indices:
+( 1,): [ 1.,]
+  All matrix: 1 nonzeros
+  Interior data is the same as all data

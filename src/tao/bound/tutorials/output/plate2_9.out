@@ -1,0 +1,59 @@
+
+---- Minimum Surface Area With Plate Problem -----
+mx:8, my:6, bmx:3, bmy:3, height:0.2
+iter =   0, Function value 1.67039, Residual: 0.47529 
+iter =   0, Function value 1.57666, Residual: 0.422933 
+iter =   1, Function value 1.5357, Residual: 0.235251 
+iter =   2, Function value 1.52086, Residual: 0.15742 
+iter =   3, Function value 1.51361, Residual: 0.261202 
+iter =   4, Function value 1.50947, Residual: 0.117507 
+iter =   5, Function value 1.50778, Residual: 0.0626655 
+iter =   6, Function value 1.50687, Residual: 0.0385374 
+iter =   7, Function value 1.5063, Residual: 0.0318989 
+iter =   8, Function value 1.50589, Residual: 0.022596 
+iter =   9, Function value 1.50576, Residual: 0.0199543 
+iter =  10, Function value 1.5057, Residual: 0.00853368 
+iter =  11, Function value 1.50568, Residual: 0.00479411 
+iter =  12, Function value 1.50567, Residual: 0.00348973 
+iter =  13, Function value 1.50567, Residual: 0.00513368 
+iter =  14, Function value 1.50566, Residual: 0.00110589 
+iter =  15, Function value 1.50566, Residual: 0.000705631 
+iter =  16, Function value 1.50566, Residual: 0.000326351 
+iter =  17, Function value 1.50566, Residual: 0.000313038 
+iter =  18, Function value 1.50566, Residual: 0.000144096 
+iter =  19, Function value 1.50566, Residual: 8.16242e-05 
+Tao Object: 1 MPI processes
+  type: bncg
+    CG Type: ssml_bfgs
+    Skipped Stepdirection Updates: 0
+    Scaled gradient steps: 0
+    Pure gradient steps: 0
+    Not a descent direction: 0
+    Line search fails: 0
+    Mat Object: (tao_bncg_) 1 MPI processes
+      type: lmvmdiagbroyden
+      rows=48, cols=48
+        Scale history: 1
+        Scale params: alpha=1., beta=0.5, rho=1.
+        Convex factor: theta=0.
+        Max. storage: 1
+        Used storage: 1
+        Number of updates: 18
+        Number of rejects: 0
+        Number of resets: 1
+  TaoLineSearch Object: 1 MPI processes
+    type: more-thuente
+    maximum function evaluations=30
+    tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9
+    total number of function evaluations=0
+    total number of gradient evaluations=0
+    total number of function/gradient evaluations=1
+    using variable bounds
+    Termination reason: 1
+  Active Set subset type: subvec
+  convergence tolerances: gatol=0.0001,   steptol=0.,   gttol=0.
+  Residual in Function/Gradient:=8.16242e-05
+  Objective value=1.50566
+  total number of iterations=19,                          (max: 2000)
+  total number of function/gradient evaluations=25,      (max: 4000)
+  Solution converged:    ||g(X)|| <= gatol

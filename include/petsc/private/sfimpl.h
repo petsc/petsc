@@ -23,9 +23,12 @@ PETSC_EXTERN PetscLogEvent PETSCSF_EmbedSF;
 PETSC_EXTERN PetscLogEvent PETSCSF_DistSect;
 PETSC_EXTERN PetscLogEvent PETSCSF_SectSF;
 PETSC_EXTERN PetscLogEvent PETSCSF_RemoteOff;
+PETSC_EXTERN PetscLogEvent PETSCSF_Pack;
+PETSC_EXTERN PetscLogEvent PETSCSF_Unpack;
 
-typedef enum {PETSCSF_LEAF2ROOT_REDUCE=0, PETSCSF_ROOT2LEAF_BCAST=1} PetscSFDirection;
-typedef enum {PETSC_MEMTYPE_HOST=0, PETSC_MEMTYPE_DEVICE=1} PetscMemType;
+typedef enum {PETSCSF_ROOT2LEAF=0, PETSCSF_LEAF2ROOT} PetscSFDirection;
+typedef enum {PETSCSF_BCAST=0, PETSCSF_REDUCE, PETSCSF_FETCH} PetscSFOperation;
+typedef enum {PETSC_MEMTYPE_HOST=0, PETSC_MEMTYPE_DEVICE} PetscMemType;
 
 struct _PetscSFOps {
   PetscErrorCode (*Reset)(PetscSF);
@@ -34,12 +37,12 @@ struct _PetscSFOps {
   PetscErrorCode (*SetFromOptions)(PetscOptionItems*,PetscSF);
   PetscErrorCode (*View)(PetscSF,PetscViewer);
   PetscErrorCode (*Duplicate)(PetscSF,PetscSFDuplicateOption,PetscSF);
-  PetscErrorCode (*BcastAndOpBegin)(PetscSF,MPI_Datatype,PetscMemType,const void*,PetscMemType,      void*,      MPI_Op);
-  PetscErrorCode (*BcastAndOpEnd)  (PetscSF,MPI_Datatype,PetscMemType,const void*,PetscMemType,      void*,      MPI_Op);
-  PetscErrorCode (*ReduceBegin)    (PetscSF,MPI_Datatype,PetscMemType,const void*,PetscMemType,      void*,      MPI_Op);
-  PetscErrorCode (*ReduceEnd)      (PetscSF,MPI_Datatype,PetscMemType,const void*,PetscMemType,      void*,      MPI_Op);
-  PetscErrorCode (*FetchAndOpBegin)(PetscSF,MPI_Datatype,PetscMemType,      void*,PetscMemType,const void*,void*,MPI_Op);
-  PetscErrorCode (*FetchAndOpEnd)  (PetscSF,MPI_Datatype,PetscMemType,      void*,PetscMemType,const void*,void*,MPI_Op);
+  PetscErrorCode (*BcastAndOpBegin)(PetscSF,MPI_Datatype,PetscMemType,const void*,PetscMemType,void*,MPI_Op);
+  PetscErrorCode (*BcastAndOpEnd)  (PetscSF,MPI_Datatype,const void*,void*,MPI_Op);
+  PetscErrorCode (*ReduceBegin)    (PetscSF,MPI_Datatype,PetscMemType,const void*,PetscMemType,void*,MPI_Op);
+  PetscErrorCode (*ReduceEnd)      (PetscSF,MPI_Datatype,const void*,void*,MPI_Op);
+  PetscErrorCode (*FetchAndOpBegin)(PetscSF,MPI_Datatype,PetscMemType,void*,PetscMemType,const void*,void*,MPI_Op);
+  PetscErrorCode (*FetchAndOpEnd)  (PetscSF,MPI_Datatype,void*,const void*,void*,MPI_Op);
   PetscErrorCode (*BcastToZero)    (PetscSF,MPI_Datatype,PetscMemType,const void*,PetscMemType,      void*); /* For interal use only */
   PetscErrorCode (*GetRootRanks)(PetscSF,PetscInt*,const PetscMPIInt**,const PetscInt**,const PetscInt**,const PetscInt**);
   PetscErrorCode (*GetLeafRanks)(PetscSF,PetscInt*,const PetscMPIInt**,const PetscInt**,const PetscInt**);
@@ -65,6 +68,17 @@ struct _p_PetscSF {
   PetscMPIInt     *ranks;          /* List of ranks referenced by "remote" */
   PetscInt        *roffset;        /* Array of length nranks+1, offset in rmine/rremote for each rank */
   PetscInt        *rmine;          /* Concatenated array holding local indices referencing each remote rank */
+  PetscInt        *rmine_d[2];     /* A copy of rmine[local/remote] in device memory if needed */
+
+  /* Some results useful in packing by analyzing rmine[] */
+  PetscInt        leafbuflen[2];   /* Length (in unit) of leaf buffers, in layout of [PETSCSF_LOCAL/REMOTE] */
+  PetscBool       leafcontig[2];   /* True means indices in rmine[self part] or rmine[remote part] are contiguous, and they start from ... */
+  PetscInt        leafstart[2];    /* ... leafstart[0] and leafstart[1] respectively */
+  PetscSFPackOpt  leafpackopt[2];  /* Optimization plans to (un)pack leaves connected to remote roots, based on index patterns in rmine[]. NULL for no optimization */
+  PetscSFPackOpt  leafpackopt_d[2];/* Copy of leafpackopt_d[] on device if needed */
+  PetscBool       leafdups[2];     /* Indices in rmine[] for self(0)/remote(1) communication have dups? TRUE implies theads working on them in parallel may have data race. */
+
+  PetscInt        nleafreqs;       /* Number of MPI reqests for leaves */
   PetscInt        *rremote;        /* Concatenated array holding remote indices referenced for each remote rank */
   PetscBool       degreeknown;     /* The degree is currently known, do not have to recompute */
   PetscInt        *degree;         /* Degree of each of my root vertices */
@@ -75,17 +89,13 @@ struct _p_PetscSF {
   PetscSF         multi;           /* Internal graph used to implement gather and scatter operations */
   PetscBool       graphset;        /* Flag indicating that the graph has been set, required before calling communication routines */
   PetscBool       setupcalled;     /* Type and communication structures have been set up */
-  PetscSFPackOpt  leafpackopt;     /* Optimization plans to (un)pack leaves connected to remote roots, based on index patterns in rmine[]. NULL for no optimization */
-  PetscSFPackOpt  selfleafpackopt; /* Optimization plans to (un)pack leaves connected to local roots */
-  PetscBool       selfleafdups;    /* Indices of leaves in rmine[0,roffset[ndranks]) have dups, implying theads working ... */
-                                   /* ... on these leaves in parallel may have data race. */
-  PetscBool       remoteleafdups;  /* Indices of leaves in rmine[roffset[ndranks],roffset[nranks]) have dups */
-
   PetscSFPattern  pattern;         /* Pattern of the graph */
+  PetscBool       persistent;      /* Does this SF use MPI persistent requests for communication */
   PetscLayout     map;             /* Layout of leaves over all processes when building a patterned graph */
-  PetscBool       use_pinned_buf;  /* Whether use pinned (i.e., non-pagable) host memory for send/recv buffers */
+  PetscBool       use_default_stream;  /* If true, SF assumes root/leafdata is on the default stream upon input and will also leave them there upon output */
+  PetscBool       use_gpu_aware_mpi;   /* If true, SF assumes it can pass GPU pointers to MPI */
+  PetscBool       use_stream_aware_mpi;/* If true, SF assumes the underlying MPI is cuda-stream aware and we won't sync streams for send/recv buffers passed to MPI */
 #if defined(PETSC_HAVE_CUDA)
-  PetscInt        *rmine_d;        /* A copy of rmine in device memory */
   PetscInt        maxResidentThreadsPerGPU;
 #endif
   void *data;                      /* Pointer to implementation */
@@ -128,44 +138,16 @@ PETSC_STATIC_INLINE PetscErrorCode PetscGetMemType(const void *data,PetscMemType
   PetscValidPointer(mtype,2);
   *mtype = PETSC_MEMTYPE_HOST;
 #if defined(PETSC_HAVE_CUDA)
-  {
-    struct cudaPointerAttributes attr;
-    if (data) {
-#if (CUDART_VERSION < 10000)
-      attr.memoryType = cudaMemoryTypeHost;
-      cudaPointerGetAttributes(&attr,data);
-      cudaGetLastError();
-      if (attr.memoryType == cudaMemoryTypeDevice) *mtype = PETSC_MEMTYPE_DEVICE;
-#else
-      attr.type = cudaMemoryTypeHost;
-      cudaPointerGetAttributes(&attr,data); /* Do not check error since before CUDA 11.0, passing host pointer will return cudaErrorInvalidValue */
-      cudaGetLastError(); /* Get and then clear the last error */
-      if (attr.type == cudaMemoryTypeDevice || attr.type == cudaMemoryTypeManaged) *mtype = PETSC_MEMTYPE_DEVICE;
-#endif
-    }
+  if (data) {
+    /* Use CUDA driver API cuPointerGetAttribute() directly since it is lighter and faster than CUDA runtime API cudaPointerGetAttributes() */
+    CUmemorytype  cumtype = CU_MEMORYTYPE_HOST;
+    CUresult      cuerr;
+    cuerr = cuPointerGetAttribute(&cumtype,CU_POINTER_ATTRIBUTE_MEMORY_TYPE,(CUdeviceptr)data);
+    if (cuerr == CUDA_SUCCESS && cumtype == CU_MEMORYTYPE_DEVICE) *mtype = PETSC_MEMTYPE_DEVICE;
   }
 #endif
   PetscFunctionReturn(0);
 }
-
-#if defined(PETSC_HAVE_CUDA)
-PETSC_STATIC_INLINE PetscErrorCode PetscMallocPinnedMemory(size_t size,void** ptr)
-{
-  cudaError_t cerr;
-  PetscFunctionBegin;
-  cerr = cudaMallocHost(ptr,size);CHKERRCUDA(cerr);
-  PetscFunctionReturn(0);
-}
-
-PETSC_STATIC_INLINE PetscErrorCode PetscFreePinnedMemory_Private(void* ptr)
-{
-  cudaError_t cerr;
-  PetscFunctionBegin;
-  cerr = cudaFreeHost(ptr);CHKERRCUDA(cerr);
-  PetscFunctionReturn(0);
-}
-#define PetscFreePinnedMemory(p) ((p) && (PetscFreePinnedMemory_Private(p) || ((p)=NULL,0)))
-#endif
 
 PETSC_STATIC_INLINE PetscErrorCode PetscMallocWithMemType(PetscMemType mtype,size_t size,void** ptr)
 {
@@ -191,24 +173,5 @@ PETSC_STATIC_INLINE PetscErrorCode PetscFreeWithMemType_Private(PetscMemType mty
 
 /* Free memory and set ptr to NULL when succeeded */
 #define PetscFreeWithMemType(t,p) ((p) && (PetscFreeWithMemType_Private((t),(p)) || ((p)=NULL,0)))
-
-PETSC_STATIC_INLINE PetscErrorCode PetscMemcpyWithMemType(PetscMemType dstmtype,PetscMemType srcmtype,void* dst,const void*src,size_t n)
-{
-  PetscFunctionBegin;
-  if (n) {
-    if (dstmtype == PETSC_MEMTYPE_HOST && srcmtype == PETSC_MEMTYPE_HOST) {PetscErrorCode ierr = PetscMemcpy(dst,src,n);CHKERRQ(ierr);}
-#if defined(PETSC_HAVE_CUDA)
-    else if (dstmtype == PETSC_MEMTYPE_DEVICE && srcmtype == PETSC_MEMTYPE_HOST)   {
-      cudaError_t    err  = cudaMemcpy(dst,src,n,cudaMemcpyHostToDevice);CHKERRCUDA(err);
-      PetscErrorCode ierr = PetscLogCpuToGpu(n);CHKERRQ(ierr);
-    } else if (dstmtype == PETSC_MEMTYPE_HOST && srcmtype == PETSC_MEMTYPE_DEVICE) {
-      cudaError_t     err = cudaMemcpy(dst,src,n,cudaMemcpyDeviceToHost);CHKERRCUDA(err);
-      PetscErrorCode ierr = PetscLogGpuToCpu(n);CHKERRQ(ierr);
-    } else if (dstmtype == PETSC_MEMTYPE_DEVICE && srcmtype == PETSC_MEMTYPE_DEVICE) {cudaError_t err = cudaMemcpy(dst,src,n,cudaMemcpyDeviceToDevice);CHKERRCUDA(err);}
-#endif
-    else SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong PetscMemType for dst %d and src %d",(int)dstmtype,(int)srcmtype);
-  }
-  PetscFunctionReturn(0);
-}
 
 #endif

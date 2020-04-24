@@ -1,0 +1,102 @@
+  0 TAO,  Function value: 0.0305641,  Residual: 0.0140536 
+  1 TAO,  Function value: 0.0120167,  Residual: 0.00811768 
+  2 TAO,  Function value: 0.00342817,  Residual: 0.00223305 
+  3 TAO,  Function value: 0.00211342,  Residual: 0.0014349 
+  4 TAO,  Function value: 0.000810666,  Residual: 0.000650661 
+  5 TAO,  Function value: 0.000301229,  Residual: 0.000317393 
+  6 TAO,  Function value: 7.64603e-05,  Residual: 0.000132062 
+  7 TAO,  Function value: 1.24576e-05,  Residual: 4.64611e-05 
+  8 TAO,  Function value: 1.00205e-06,  Residual: 1.2071e-05 
+  9 TAO,  Function value: 2.8188e-08,  Residual: 1.95297e-06 
+ 10 TAO,  Function value: 1.12133e-10,  Residual: 1.22269e-07 
+ 11 TAO,  Function value: 1.55922e-14,  Residual: 1.44107e-09 
+Tao Object: 1 MPI processes
+  type: bqnls
+    Rejected BFGS updates: 0
+    CG steps: 0
+    Newton steps: 0
+    BFGS steps: 10
+    Scaled gradient steps: 1
+    Gradient steps: 0
+    KSP termination reasons:
+      atol: 0
+      rtol: 0
+      ctol: 0
+      negc: 0
+      dtol: 0
+      iter: 0
+      othr: 0
+  Mat Object: (tao_bqnls_) 1 MPI processes
+    type: lmvmbfgs
+    rows=1, cols=1
+      Scale type: DIAGONAL
+      Scale history: 1
+      Scale params: alpha=1., beta=0.5, rho=1.
+      Convex factors: phi=0., theta=0.125
+      Max. storage: 5
+      Used storage: 5
+      Number of updates: 10
+      Number of rejects: 0
+      Number of resets: 0
+      Mat Object: (J0_) 1 MPI processes
+        type: lmvmdiagbroyden
+        rows=1, cols=1
+          Scale history: 1
+          Scale params: alpha=1., beta=0.5, rho=1.
+          Convex factor: theta=0.125
+          Max. storage: 1
+          Used storage: 1
+          Number of updates: 10
+          Number of rejects: 0
+          Number of resets: 0
+  TaoLineSearch Object: 1 MPI processes
+    type: more-thuente
+    maximum function evaluations=30
+    tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9
+    total number of function evaluations=0
+    total number of gradient evaluations=0
+    total number of function/gradient evaluations=1
+    Termination reason: 1
+  KSP Object: (unused) 1 MPI processes
+    type: stcg
+    maximum iterations=10000, initial guess is zero
+    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+    left preconditioning
+    using DEFAULT norm type for convergence test
+  PC Object: (unused) 1 MPI processes
+    type: lmvm
+    PC has not been set up so information may be incomplete
+    Mat Object: (tao_bqnls_) 1 MPI processes
+      type: lmvmbfgs
+      rows=1, cols=1
+        Scale type: DIAGONAL
+        Scale history: 1
+        Scale params: alpha=1., beta=0.5, rho=1.
+        Convex factors: phi=0., theta=0.125
+        Max. storage: 5
+        Used storage: 5
+        Number of updates: 10
+        Number of rejects: 0
+        Number of resets: 0
+        Mat Object: (J0_) 1 MPI processes
+          type: lmvmdiagbroyden
+          rows=1, cols=1
+            Scale history: 1
+            Scale params: alpha=1., beta=0.5, rho=1.
+            Convex factor: theta=0.125
+            Max. storage: 1
+            Used storage: 1
+            Number of updates: 10
+            Number of rejects: 0
+            Number of resets: 0
+  total KSP iterations: 0
+  Active Set subset type: subvec
+  convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.
+  Residual in Function/Gradient:=1.44107e-09
+  Objective value=1.55922e-14
+  total number of iterations=11,                          (max: 50)
+  total number of function/gradient evaluations=12,      (max: 10000)
+  Solution converged:    ||g(X)|| <= gatol
+Vec Object: 1 MPI processes
+  type: seq
+9.99998

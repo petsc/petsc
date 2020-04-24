@@ -11,6 +11,7 @@ if __name__ == '__main__':
   configure_options = [
     '--package-prefix-hash='+petsc_hash_pkgs,
     '--download-f2cblaslapack',
+    '--download-blis',
     '--download-mpich',
     '--with-cc=clang',
     '--with-cxx=clang++',

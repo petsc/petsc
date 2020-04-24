@@ -17,52 +17,34 @@ PetscErrorCode MatDestroy_SeqAIJ_MatMatMatMult(Mat A)
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode MatMatMatMult_SeqAIJ_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C,MatReuse scall,PetscReal fill,Mat *D)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (scall == MAT_INITIAL_MATRIX) {
-    ierr = PetscLogEventBegin(MAT_MatMatMultSymbolic,A,B,C,0);CHKERRQ(ierr);
-    ierr = MatMatMatMultSymbolic_SeqAIJ_SeqAIJ_SeqAIJ(A,B,C,fill,D);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(MAT_MatMatMultSymbolic,A,B,C,0);CHKERRQ(ierr);
-  }
-  ierr = PetscLogEventBegin(MAT_MatMatMultNumeric,A,B,C,0);CHKERRQ(ierr);
-  ierr = ((*D)->ops->matmatmultnumeric)(A,B,C,*D);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_MatMatMultNumeric,A,B,C,0);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode MatMatMatMultSymbolic_SeqAIJ_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C,PetscReal fill,Mat *D)
+PetscErrorCode MatMatMatMultSymbolic_SeqAIJ_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C,PetscReal fill,Mat D)
 {
   PetscErrorCode    ierr;
   Mat               BC;
   Mat_MatMatMatMult *matmatmatmult;
   Mat_SeqAIJ        *d;
-  PetscBool         scalable=PETSC_FALSE;
+  Mat_Product       *product = D->product;
+  MatProductAlgorithm alg=product->alg;
 
   PetscFunctionBegin;
-  ierr = PetscObjectOptionsBegin((PetscObject)B);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-matmatmatmult_scalable","Use a scalable but slower D=A*B*C","",scalable,&scalable,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  if (scalable) {
-    ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable(B,C,fill,&BC);CHKERRQ(ierr);
-    ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable(A,BC,fill,D);CHKERRQ(ierr);
-  } else {
-    ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(B,C,fill,&BC);CHKERRQ(ierr);
-    ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(A,BC,fill,D);CHKERRQ(ierr);
-  }
+  if (!product) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Data struc Mat_Product is not created, call MatProductCreate() first");
+  ierr = MatCreate(PETSC_COMM_SELF,&BC);CHKERRQ(ierr);
+  ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(B,C,fill,BC);CHKERRQ(ierr);
 
-  /* create struct Mat_MatMatMatMult and attached it to *D */
+  ierr = MatProductSetAlgorithm(D,"sorted");CHKERRQ(ierr); /* set alg for D = A*BC */
+  ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(A,BC,fill,D);CHKERRQ(ierr);
+  D->product->alg = alg; /* resume original algorithm for D */
+
+  /* create struct Mat_MatMatMatMult and attached it to D */
   ierr = PetscNew(&matmatmatmult);CHKERRQ(ierr);
 
   matmatmatmult->BC      = BC;
-  matmatmatmult->destroy = (*D)->ops->destroy;
-  d                      = (Mat_SeqAIJ*)(*D)->data;
+  matmatmatmult->destroy = D->ops->destroy;
+  d                      = (Mat_SeqAIJ*)D->data;
   d->matmatmatmult       = matmatmatmult;
 
-  (*D)->ops->matmatmultnumeric = MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqAIJ;
-  (*D)->ops->destroy           = MatDestroy_SeqAIJ_MatMatMatMult;
+  D->ops->matmatmultnumeric = MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqAIJ;
+  D->ops->destroy           = MatDestroy_SeqAIJ_MatMatMatMult;
   PetscFunctionReturn(0);
 }
 
@@ -78,3 +60,4 @@ PetscErrorCode MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C,Mat D
   ierr = (D->ops->matmultnumeric)(A,BC,D);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+

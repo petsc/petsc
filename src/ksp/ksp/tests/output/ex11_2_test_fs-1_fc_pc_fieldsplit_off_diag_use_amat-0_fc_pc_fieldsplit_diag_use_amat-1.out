@@ -1,0 +1,559 @@
+[0] lnu = 512 | lnp = 256 
+[0] s_u = 0 | e_u = 512 
+[0] s_p = 0 | e_p = 256 
+[0] is_u (offset) = 0 
+[0] is_p (offset) = 512 
+[1] lnu = 512 | lnp = 256 
+[1] s_u = 512 | e_u = 1024 
+[1] s_p = 256 | e_p = 512 
+[1] is_u (offset) = 768 
+[1] is_p (offset) = 1280 
+[2] lnu = 511 | lnp = 256 
+[2] s_u = 1024 | e_u = 1535 
+[2] s_p = 512 | e_p = 768 
+[2] is_u (offset) = 1536 
+[2] is_p (offset) = 2047 
+[3] lnu = 511 | lnp = 256 
+[3] s_u = 1535 | e_u = 2046 
+[3] s_p = 768 | e_p = 1024 
+[3] is_u (offset) = 2303 
+[3] is_p (offset) = 2814 
+  Residual norms for fc_ solve.
+  0 KSP Residual norm 0.145891 
+    Residual norms for fc_fieldsplit_pressure_ solve.
+    0 KSP Residual norm < 1.e-11
+  1 KSP Residual norm 0.0413945 
+    Residual norms for fc_fieldsplit_pressure_ solve.
+    0 KSP Residual norm 1. 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 16
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 15
+    1 KSP Residual norm 0.542365 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 23
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 15
+    2 KSP Residual norm 0.219772 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 28
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 18
+    3 KSP Residual norm 0.0566766 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 27
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 15
+    4 KSP Residual norm 0.0143372 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 27
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 12
+    5 KSP Residual norm 0.00215169 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 21
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 9
+    6 KSP Residual norm 0.000294116 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 21
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 12
+    7 KSP Residual norm 5.72041e-05 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 21
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 10
+    8 KSP Residual norm 3.68232e-06 
+  2 KSP Residual norm 8.84386e-07 
+KSP Object: (fc_) 4 MPI processes
+  type: fgmres
+    restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+    happy breakdown tolerance 1e-30
+  maximum iterations=4000, initial guess is zero
+  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  right preconditioning
+  diagonally scaled system
+  using UNPRECONDITIONED norm type for convergence test
+PC Object: (fc_) 4 MPI processes
+  type: fieldsplit
+    FieldSplit with Schur preconditioner, blocksize = 2, factorization UPPER
+    Preconditioner for the Schur complement formed from A11
+    Split info:
+    Split number 0 Defined by IS
+    Split number 1 Defined by IS
+    KSP solver for A00 block
+      KSP Object: (fc_fieldsplit_velocity_) 4 MPI processes
+        type: cg
+        maximum iterations=10000, initial guess is zero
+        tolerances:  relative=1e-06, absolute=1e-50, divergence=10000.
+        left preconditioning
+        using PRECONDITIONED norm type for convergence test
+      PC Object: (fc_fieldsplit_velocity_) 4 MPI processes
+        type: bjacobi
+          number of blocks = 4
+          Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
+        KSP Object: (fc_fieldsplit_velocity_sub_) 1 MPI processes
+          type: preonly
+          maximum iterations=10000, initial guess is zero
+          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+          left preconditioning
+          using NONE norm type for convergence test
+        PC Object: (fc_fieldsplit_velocity_sub_) 1 MPI processes
+          type: cholesky
+            out-of-place factorization
+            tolerance for zero pivot 2.22045e-14
+            matrix ordering: nd
+            factor fill ratio given 5., needed 2.84512
+              Factored matrix follows:
+                Mat Object: 1 MPI processes
+                  type: seqsbaij
+                  rows=512, cols=512
+                  package used to perform factorization: petsc
+                  total: nonzeros=12308, allocated nonzeros=12308
+                  total number of mallocs used during MatSetValues calls=0
+                      block size is 1
+          linear system matrix = precond matrix:
+          Mat Object: (fc_fieldsplit_velocity_) 1 MPI processes
+            type: seqaij
+            rows=512, cols=512
+            total: nonzeros=8140, allocated nonzeros=8140
+            total number of mallocs used during MatSetValues calls=0
+              using I-node routines: found 279 nodes, limit used is 5
+        linear system matrix followed by preconditioner matrix:
+        Mat Object: (a11_) 4 MPI processes
+          type: mpiaij
+          rows=2046, cols=2046
+          total: nonzeros=34952, allocated nonzeros=34952
+          total number of mallocs used during MatSetValues calls=0
+            using I-node (on process 0) routines: found 279 nodes, limit used is 5
+        Mat Object: (fc_fieldsplit_velocity_) 4 MPI processes
+          type: mpiaij
+          rows=2046, cols=2046
+          total: nonzeros=34952, allocated nonzeros=34952
+          total number of mallocs used during MatSetValues calls=0
+            using I-node (on process 0) routines: found 279 nodes, limit used is 5
+    KSP solver for S = A11 - A10 inv(A00) A01 
+      KSP Object: (fc_fieldsplit_pressure_) 4 MPI processes
+        type: fgmres
+          restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+          happy breakdown tolerance 1e-30
+        maximum iterations=10000, initial guess is zero
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        right preconditioning
+        using UNPRECONDITIONED norm type for convergence test
+      PC Object: (fc_fieldsplit_pressure_) 4 MPI processes
+        type: lsc
+          KSP Object: (fc_fieldsplit_pressure_lsc_) 4 MPI processes
+            type: cg
+            maximum iterations=10000, initial guess is zero
+            tolerances:  relative=0.01, absolute=1e-50, divergence=10000.
+            left preconditioning
+            using PRECONDITIONED norm type for convergence test
+          PC Object: (fc_fieldsplit_pressure_lsc_) 4 MPI processes
+            type: bjacobi
+              number of blocks = 4
+              Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
+            KSP Object: (fc_fieldsplit_pressure_lsc_sub_) 1 MPI processes
+              type: preonly
+              maximum iterations=10000, initial guess is zero
+              tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+              left preconditioning
+              using NONE norm type for convergence test
+            PC Object: (fc_fieldsplit_pressure_lsc_sub_) 1 MPI processes
+              type: icc
+                out-of-place factorization
+                0 levels of fill
+                tolerance for zero pivot 2.22045e-14
+                using Manteuffel shift [POSITIVE_DEFINITE]
+                matrix ordering: natural
+                factor fill ratio given 1., needed 1.
+                  Factored matrix follows:
+                    Mat Object: 1 MPI processes
+                      type: seqsbaij
+                      rows=256, cols=256
+                      package used to perform factorization: petsc
+                      total: nonzeros=1162, allocated nonzeros=1162
+                      total number of mallocs used during MatSetValues calls=0
+                          block size is 1
+              linear system matrix = precond matrix:
+              Mat Object: 1 MPI processes
+                type: seqaij
+                rows=256, cols=256
+                total: nonzeros=2068, allocated nonzeros=2068
+                total number of mallocs used during MatSetValues calls=0
+                  not using I-node routines
+            linear system matrix = precond matrix:
+            Mat Object: 4 MPI processes
+              type: mpiaij
+              rows=1024, cols=1024
+              total: nonzeros=8836, allocated nonzeros=8836
+              total number of mallocs used during MatSetValues calls=0
+                has attached null space
+                not using I-node (on process 0) routines
+        linear system matrix followed by preconditioner matrix:
+        Mat Object: (fc_fieldsplit_pressure_) 4 MPI processes
+          type: schurcomplement
+          rows=1024, cols=1024
+            has attached null space
+            Schur complement A11 - A10 inv(A00) A01
+            A11
+              Mat Object: (a22_) 4 MPI processes
+                type: mpiaij
+                rows=1024, cols=1024
+                total: nonzeros=1024, allocated nonzeros=1024
+                total number of mallocs used during MatSetValues calls=0
+                  not using I-node (on process 0) routines
+            A10
+              Mat Object: 4 MPI processes
+                type: mpiaij
+                rows=1024, cols=2046
+                total: nonzeros=7936, allocated nonzeros=7936
+                total number of mallocs used during MatSetValues calls=0
+                  not using I-node (on process 0) routines
+            KSP of A00
+              KSP Object: (fc_fieldsplit_velocity_) 4 MPI processes
+                type: cg
+                maximum iterations=10000, initial guess is zero
+                tolerances:  relative=1e-06, absolute=1e-50, divergence=10000.
+                left preconditioning
+                using PRECONDITIONED norm type for convergence test
+              PC Object: (fc_fieldsplit_velocity_) 4 MPI processes
+                type: bjacobi
+                  number of blocks = 4
+                  Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
+                KSP Object: (fc_fieldsplit_velocity_sub_) 1 MPI processes
+                  type: preonly
+                  maximum iterations=10000, initial guess is zero
+                  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+                  left preconditioning
+                  using NONE norm type for convergence test
+                PC Object: (fc_fieldsplit_velocity_sub_) 1 MPI processes
+                  type: cholesky
+                    out-of-place factorization
+                    tolerance for zero pivot 2.22045e-14
+                    matrix ordering: nd
+                    factor fill ratio given 5., needed 2.84512
+                      Factored matrix follows:
+                        Mat Object: 1 MPI processes
+                          type: seqsbaij
+                          rows=512, cols=512
+                          package used to perform factorization: petsc
+                          total: nonzeros=12308, allocated nonzeros=12308
+                          total number of mallocs used during MatSetValues calls=0
+                              block size is 1
+                  linear system matrix = precond matrix:
+                  Mat Object: (fc_fieldsplit_velocity_) 1 MPI processes
+                    type: seqaij
+                    rows=512, cols=512
+                    total: nonzeros=8140, allocated nonzeros=8140
+                    total number of mallocs used during MatSetValues calls=0
+                      using I-node routines: found 279 nodes, limit used is 5
+                linear system matrix followed by preconditioner matrix:
+                Mat Object: (a11_) 4 MPI processes
+                  type: mpiaij
+                  rows=2046, cols=2046
+                  total: nonzeros=34952, allocated nonzeros=34952
+                  total number of mallocs used during MatSetValues calls=0
+                    using I-node (on process 0) routines: found 279 nodes, limit used is 5
+                Mat Object: (fc_fieldsplit_velocity_) 4 MPI processes
+                  type: mpiaij
+                  rows=2046, cols=2046
+                  total: nonzeros=34952, allocated nonzeros=34952
+                  total number of mallocs used during MatSetValues calls=0
+                    using I-node (on process 0) routines: found 279 nodes, limit used is 5
+            A01
+              Mat Object: 4 MPI processes
+                type: mpiaij
+                rows=2046, cols=1024
+                total: nonzeros=7936, allocated nonzeros=7936
+                total number of mallocs used during MatSetValues calls=0
+                  using I-node (on process 0) routines: found 279 nodes, limit used is 5
+        Mat Object: (fc_fieldsplit_pressure_) 4 MPI processes
+          type: mpiaij
+          rows=1024, cols=1024
+          total: nonzeros=1024, allocated nonzeros=1024
+          total number of mallocs used during MatSetValues calls=0
+            not using I-node (on process 0) routines
+  linear system matrix followed by preconditioner matrix:
+  Mat Object: 4 MPI processes
+    type: nest
+    rows=3070, cols=3070
+      Matrix object: 
+        type=nest, rows=2, cols=2 
+        MatNest structure: 
+        (0,0) : prefix="a11_", type=mpiaij, rows=2046, cols=2046 
+        (0,1) : type=mpiaij, rows=2046, cols=1024 
+        (1,0) : type=mpiaij, rows=1024, cols=2046 
+        (1,1) : prefix="a22_", type=mpiaij, rows=1024, cols=1024 
+  Mat Object: 4 MPI processes
+    type: nest
+    rows=3070, cols=3070
+      Matrix object: 
+        type=nest, rows=2, cols=2 
+        MatNest structure: 
+        (0,0) : prefix="fc_fieldsplit_velocity_", type=mpiaij, rows=2046, cols=2046 
+        (0,1) : type=mpiaij, rows=2046, cols=1024 
+        (1,0) : type=mpiaij, rows=1024, cols=2046 
+        (1,1) : prefix="fc_fieldsplit_pressure_", type=mpiaij, rows=1024, cols=1024 
+-- vector vector values --
+  Min(u)  = -0.017280 [loc=2035]
+  Max(u)  = 0.018577 [loc=2024]
+  Norm(u) = 0.249725 
+  Sum(u)  = 0.189621 
+-- pressure vector values --
+  Min(p)  = -6.120912 [loc=844]
+  Max(p)  = 4.836587 [loc=16]
+  Norm(p) = 94.133704 
+  Sum(p)  = 0.000000 
+-- Full vector values --
+  Min(u,p)  = -6.120912 [loc=2890]
+  Max(u,p)  = 4.836587 [loc=528]
+  Norm(u,p) = 94.134036 
+  Sum(u,p)  = 0.189621 
+  Residual norms for fc_ solve.
+  0 KSP Residual norm 0.0747999 
+    Residual norms for fc_fieldsplit_pressure_ solve.
+    0 KSP Residual norm < 1.e-11
+  1 KSP Residual norm 0.0189051 
+    Residual norms for fc_fieldsplit_pressure_ solve.
+    0 KSP Residual norm 1. 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 16
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 15
+    1 KSP Residual norm 0.61226 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 23
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 15
+    2 KSP Residual norm 0.204669 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 28
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 18
+    3 KSP Residual norm 0.0698981 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 27
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 17
+    4 KSP Residual norm 0.0140512 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 26
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 12
+    5 KSP Residual norm 0.00207217 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 21
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 8
+    6 KSP Residual norm 0.000284037 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 20
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 12
+    7 KSP Residual norm 5.89015e-05 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 21
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 10
+    8 KSP Residual norm 5.09296e-06 
+  2 KSP Residual norm 4.75869e-07 
+KSP Object: (fc_) 4 MPI processes
+  type: fgmres
+    restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+    happy breakdown tolerance 1e-30
+  maximum iterations=4000, initial guess is zero
+  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  right preconditioning
+  diagonally scaled system
+  using UNPRECONDITIONED norm type for convergence test
+PC Object: (fc_) 4 MPI processes
+  type: fieldsplit
+    FieldSplit with Schur preconditioner, blocksize = 2, factorization UPPER
+    Preconditioner for the Schur complement formed from A11
+    Split info:
+    Split number 0 Defined by IS
+    Split number 1 Defined by IS
+    KSP solver for A00 block
+      KSP Object: (fc_fieldsplit_velocity_) 4 MPI processes
+        type: cg
+        maximum iterations=10000, initial guess is zero
+        tolerances:  relative=1e-06, absolute=1e-50, divergence=10000.
+        left preconditioning
+        using PRECONDITIONED norm type for convergence test
+      PC Object: (fc_fieldsplit_velocity_) 4 MPI processes
+        type: bjacobi
+          number of blocks = 4
+          Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
+        KSP Object: (fc_fieldsplit_velocity_sub_) 1 MPI processes
+          type: preonly
+          maximum iterations=10000, initial guess is zero
+          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+          left preconditioning
+          using NONE norm type for convergence test
+        PC Object: (fc_fieldsplit_velocity_sub_) 1 MPI processes
+          type: cholesky
+            out-of-place factorization
+            tolerance for zero pivot 2.22045e-14
+            matrix ordering: nd
+            factor fill ratio given 5., needed 2.84512
+              Factored matrix follows:
+                Mat Object: 1 MPI processes
+                  type: seqsbaij
+                  rows=512, cols=512
+                  package used to perform factorization: petsc
+                  total: nonzeros=12308, allocated nonzeros=12308
+                  total number of mallocs used during MatSetValues calls=0
+                      block size is 1
+          linear system matrix = precond matrix:
+          Mat Object: (fc_fieldsplit_velocity_) 1 MPI processes
+            type: seqaij
+            rows=512, cols=512
+            total: nonzeros=8140, allocated nonzeros=8140
+            total number of mallocs used during MatSetValues calls=0
+              using I-node routines: found 279 nodes, limit used is 5
+        linear system matrix followed by preconditioner matrix:
+        Mat Object: (a11_) 4 MPI processes
+          type: mpiaij
+          rows=2046, cols=2046
+          total: nonzeros=34952, allocated nonzeros=34952
+          total number of mallocs used during MatSetValues calls=0
+            using I-node (on process 0) routines: found 279 nodes, limit used is 5
+        Mat Object: (fc_fieldsplit_velocity_) 4 MPI processes
+          type: mpiaij
+          rows=2046, cols=2046
+          total: nonzeros=34952, allocated nonzeros=34952
+          total number of mallocs used during MatSetValues calls=0
+            using I-node (on process 0) routines: found 279 nodes, limit used is 5
+    KSP solver for S = A11 - A10 inv(A00) A01 
+      KSP Object: (fc_fieldsplit_pressure_) 4 MPI processes
+        type: fgmres
+          restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+          happy breakdown tolerance 1e-30
+        maximum iterations=10000, initial guess is zero
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        right preconditioning
+        using UNPRECONDITIONED norm type for convergence test
+      PC Object: (fc_fieldsplit_pressure_) 4 MPI processes
+        type: lsc
+          KSP Object: (fc_fieldsplit_pressure_lsc_) 4 MPI processes
+            type: cg
+            maximum iterations=10000, initial guess is zero
+            tolerances:  relative=0.01, absolute=1e-50, divergence=10000.
+            left preconditioning
+            using PRECONDITIONED norm type for convergence test
+          PC Object: (fc_fieldsplit_pressure_lsc_) 4 MPI processes
+            type: bjacobi
+              number of blocks = 4
+              Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
+            KSP Object: (fc_fieldsplit_pressure_lsc_sub_) 1 MPI processes
+              type: preonly
+              maximum iterations=10000, initial guess is zero
+              tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+              left preconditioning
+              using NONE norm type for convergence test
+            PC Object: (fc_fieldsplit_pressure_lsc_sub_) 1 MPI processes
+              type: icc
+                out-of-place factorization
+                0 levels of fill
+                tolerance for zero pivot 2.22045e-14
+                using Manteuffel shift [POSITIVE_DEFINITE]
+                matrix ordering: natural
+                factor fill ratio given 1., needed 1.
+                  Factored matrix follows:
+                    Mat Object: 1 MPI processes
+                      type: seqsbaij
+                      rows=256, cols=256
+                      package used to perform factorization: petsc
+                      total: nonzeros=1162, allocated nonzeros=1162
+                      total number of mallocs used during MatSetValues calls=0
+                          block size is 1
+              linear system matrix = precond matrix:
+              Mat Object: 1 MPI processes
+                type: seqaij
+                rows=256, cols=256
+                total: nonzeros=2068, allocated nonzeros=2068
+                total number of mallocs used during MatSetValues calls=0
+                  not using I-node routines
+            linear system matrix = precond matrix:
+            Mat Object: 4 MPI processes
+              type: mpiaij
+              rows=1024, cols=1024
+              total: nonzeros=8836, allocated nonzeros=8836
+              total number of mallocs used during MatSetValues calls=0
+                has attached null space
+                not using I-node (on process 0) routines
+        linear system matrix followed by preconditioner matrix:
+        Mat Object: (fc_fieldsplit_pressure_) 4 MPI processes
+          type: schurcomplement
+          rows=1024, cols=1024
+            has attached null space
+            Schur complement A11 - A10 inv(A00) A01
+            A11
+              Mat Object: (a22_) 4 MPI processes
+                type: mpiaij
+                rows=1024, cols=1024
+                total: nonzeros=1024, allocated nonzeros=1024
+                total number of mallocs used during MatSetValues calls=0
+                  not using I-node (on process 0) routines
+            A10
+              Mat Object: 4 MPI processes
+                type: mpiaij
+                rows=1024, cols=2046
+                total: nonzeros=7936, allocated nonzeros=7936
+                total number of mallocs used during MatSetValues calls=0
+                  not using I-node (on process 0) routines
+            KSP of A00
+              KSP Object: (fc_fieldsplit_velocity_) 4 MPI processes
+                type: cg
+                maximum iterations=10000, initial guess is zero
+                tolerances:  relative=1e-06, absolute=1e-50, divergence=10000.
+                left preconditioning
+                using PRECONDITIONED norm type for convergence test
+              PC Object: (fc_fieldsplit_velocity_) 4 MPI processes
+                type: bjacobi
+                  number of blocks = 4
+                  Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
+                KSP Object: (fc_fieldsplit_velocity_sub_) 1 MPI processes
+                  type: preonly
+                  maximum iterations=10000, initial guess is zero
+                  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+                  left preconditioning
+                  using NONE norm type for convergence test
+                PC Object: (fc_fieldsplit_velocity_sub_) 1 MPI processes
+                  type: cholesky
+                    out-of-place factorization
+                    tolerance for zero pivot 2.22045e-14
+                    matrix ordering: nd
+                    factor fill ratio given 5., needed 2.84512
+                      Factored matrix follows:
+                        Mat Object: 1 MPI processes
+                          type: seqsbaij
+                          rows=512, cols=512
+                          package used to perform factorization: petsc
+                          total: nonzeros=12308, allocated nonzeros=12308
+                          total number of mallocs used during MatSetValues calls=0
+                              block size is 1
+                  linear system matrix = precond matrix:
+                  Mat Object: (fc_fieldsplit_velocity_) 1 MPI processes
+                    type: seqaij
+                    rows=512, cols=512
+                    total: nonzeros=8140, allocated nonzeros=8140
+                    total number of mallocs used during MatSetValues calls=0
+                      using I-node routines: found 279 nodes, limit used is 5
+                linear system matrix followed by preconditioner matrix:
+                Mat Object: (a11_) 4 MPI processes
+                  type: mpiaij
+                  rows=2046, cols=2046
+                  total: nonzeros=34952, allocated nonzeros=34952
+                  total number of mallocs used during MatSetValues calls=0
+                    using I-node (on process 0) routines: found 279 nodes, limit used is 5
+                Mat Object: (fc_fieldsplit_velocity_) 4 MPI processes
+                  type: mpiaij
+                  rows=2046, cols=2046
+                  total: nonzeros=34952, allocated nonzeros=34952
+                  total number of mallocs used during MatSetValues calls=0
+                    using I-node (on process 0) routines: found 279 nodes, limit used is 5
+            A01
+              Mat Object: 4 MPI processes
+                type: mpiaij
+                rows=2046, cols=1024
+                total: nonzeros=7936, allocated nonzeros=7936
+                total number of mallocs used during MatSetValues calls=0
+                  using I-node (on process 0) routines: found 279 nodes, limit used is 5
+        Mat Object: (fc_fieldsplit_pressure_) 4 MPI processes
+          type: mpiaij
+          rows=1024, cols=1024
+          total: nonzeros=1024, allocated nonzeros=1024
+          total number of mallocs used during MatSetValues calls=0
+            not using I-node (on process 0) routines
+  linear system matrix followed by preconditioner matrix:
+  Mat Object: 4 MPI processes
+    type: nest
+    rows=3070, cols=3070
+      Matrix object: 
+        type=nest, rows=2, cols=2 
+        MatNest structure: 
+        (0,0) : prefix="a11_", type=mpiaij, rows=2046, cols=2046 
+        (0,1) : type=mpiaij, rows=2046, cols=1024 
+        (1,0) : type=mpiaij, rows=1024, cols=2046 
+        (1,1) : prefix="a22_", type=mpiaij, rows=1024, cols=1024 
+  Mat Object: 4 MPI processes
+    type: nest
+    rows=3070, cols=3070
+      Matrix object: 
+        type=nest, rows=2, cols=2 
+        MatNest structure: 
+        (0,0) : prefix="fc_fieldsplit_velocity_", type=mpiaij, rows=2046, cols=2046 
+        (0,1) : type=mpiaij, rows=2046, cols=1024 
+        (1,0) : type=mpiaij, rows=1024, cols=2046 
+        (1,1) : prefix="fc_fieldsplit_pressure_", type=mpiaij, rows=1024, cols=1024 

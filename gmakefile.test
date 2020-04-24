@@ -1,4 +1,5 @@
 # -*- mode: makefile-gmake -*-
+-include petscdir.mk
 
 CONFIGDIR := $(PETSC_DIR)/config
 
@@ -7,8 +8,8 @@ CONFIGDIR := $(PETSC_DIR)/config
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 TESTSRCDIR := $(dir $(mkfile_path))src
 
-include $(PETSC_DIR)/$(PETSC_ARCH)/lib/petsc/conf/petscvariables
-include $(PETSC_DIR)/lib/petsc/conf/variables
+-include $(PETSC_DIR)/$(PETSC_ARCH)/lib/petsc/conf/petscvariables
+-include $(PETSC_DIR)/lib/petsc/conf/variables
 
 TESTDIR ?= ./$(PETSC_ARCH)/tests
 MODDIR := $(PETSC_DIR)/$(PETSC_ARCH)/include
@@ -62,6 +63,10 @@ endif
 ifeq ($(ALT),1)
   TESTFLAGS += -M    # Replace alt files by passing -M to petscdiff
 endif
+PRINTONLY ?= 0
+ifeq ($(PRINTONLY),1)
+  TESTFLAGS += -p    # Pass -p to petscdiff to print only command
+endif
 ifeq ($(DIFF_NUMBERS),1)
   TESTFLAGS += -j    # Pass -j to petscdiff to diff the actual numbers
 endif
@@ -83,7 +88,7 @@ endif
 $(generatedtest) : $(petscconf) $(petscvariables) $(CONFIGDIR)/gmakegentest.py $(TESTDIR)/.DIR | $$(@D)/.DIR
 	$(PYTHON) $(CONFIGDIR)/gmakegentest.py --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) --testdir=$(TESTDIR)
 
-ifneq ($(MAKECMDGOALS:clean%=clean),clean)
+ifneq ($(filter-out clean check,$(MAKECMDGOALS:clean%=clean)),)
 include $(generatedtest)
 endif
 
@@ -106,6 +111,12 @@ concattestlang = $(foreach lang, $(2), $(testsrcs-$(1).$(lang):%.$(lang)=$(TESTD
 testsrcs.o := $(foreach pkg, $(pkgs), $(call concattestlang,$(pkg),$(testlangs)))
 testsrcs-rel := $(foreach pkg, $(pkgs), $(foreach lang, $(testlangs), $(testsrcs-$(pkg).$(lang))))
 testsrcs := $(foreach sfile, $(testsrcs-rel), $(TESTSRCDIR)/$(sfile))
+
+# workaround win32fe failure
+ifneq (,$(findstring win32fe,$(call quiet,$(cc_name))))
+$(TESTDIR)/ts/tutorials/multirate/ex6: | $(TESTDIR)/ts/tutorials/multirate/ex5
+$(TESTDIR)/ts/tutorials/multirate/ex8: | $(TESTDIR)/ts/tutorials/multirate/ex6
+endif
 
 # Refresh testfiles when sources change, but don't balk if the source file is nonexistent (deleted)
 $(generatedtest) : $(testsrcs)
@@ -157,14 +168,14 @@ PETSC_TEST_LIB = $(C_SH_LIB_PATH) $(PETSC_EXTERNAL_LIB_BASIC)
 endif
 
 # manually list some some library dependencies to check for circular dependencies
-$(TESTDIR)/sys/examples/tests/ex9: PETSC_TEST_LIB = $(PETSC_SYS_LIB)
-$(TESTDIR)/vec/vec/examples/tests/ex1: PETSC_TEST_LIB = $(PETSC_VEC_LIB)
-$(TESTDIR)/mat/examples/tests/ex1: PETSC_TEST_LIB = $(PETSC_MAT_LIB)
-$(TESTDIR)/dm/examples/tests/ex1: PETSC_TEST_LIB = $(PETSC_DM_LIB)
-$(TESTDIR)/ksp/ksp/examples/tests/ex1: PETSC_TEST_LIB = $(PETSC_KSP_LIB)
-$(TESTDIR)/snes/examples/tests/ex1: PETSC_TEST_LIB = $(PETSC_SNES_LIB)
-$(TESTDIR)/ts/examples/tests/ex2: PETSC_TEST_LIB = $(PETSC_TS_LIB)
-$(TESTDIR)/tao/examples/tutorials/ex1: PETSC_TEST_LIB = $(PETSC_TAO_LIB)
+$(TESTDIR)/sys/tests/ex9: PETSC_TEST_LIB = $(PETSC_SYS_LIB)
+$(TESTDIR)/vec/vec/tests/ex1: PETSC_TEST_LIB = $(PETSC_VEC_LIB)
+$(TESTDIR)/mat/tests/ex1: PETSC_TEST_LIB = $(PETSC_MAT_LIB)
+$(TESTDIR)/dm/tests/ex1: PETSC_TEST_LIB = $(PETSC_DM_LIB)
+$(TESTDIR)/ksp/ksp/tests/ex1: PETSC_TEST_LIB = $(PETSC_KSP_LIB)
+$(TESTDIR)/snes/tests/ex1: PETSC_TEST_LIB = $(PETSC_SNES_LIB)
+$(TESTDIR)/ts/tests/ex2: PETSC_TEST_LIB = $(PETSC_TS_LIB)
+$(TESTDIR)/tao/tutorials/ex1: PETSC_TEST_LIB = $(PETSC_TAO_LIB)
 
 # Test executables
 $(testexe.F) $(testexe.F90) : $(TESTDIR)/% : $(TESTDIR)/%.o $$^ $(libpetscall)
@@ -272,7 +283,7 @@ else ifdef searchin
 else ifdef argsearch
   TESTTARGETS := $(foreach v,$(alltesttargets),$(if $(findstring $(argsearch),$($(v)_ARGS)),$(v)))
 else ifdef globsearch
-  TESTTARGETS := $(shell $(PYTHON) -c"import sys,fnmatch,itertools; m=[fnmatch.filter(sys.argv[2].split(),p) for p in sys.argv[1].split()]; print(' '.join(list(itertools.chain.from_iterable(m))))" '$(globsearch)' '$(alltesttargets)')
+  TESTTARGETS := $(shell $(PYTHON) config/query_tests.py 'name' '$(globsearch)')
 else ifdef test-fail
   TESTTARGETS := $(shell $(PETSC_ARCH)/tests/echofailures.sh)
 else ifdef query
@@ -284,7 +295,8 @@ endif
 .PHONY: report_tests print-test
 
 print-test:
-	-@echo $(TESTTARGETS)
+	$(info $(TESTTARGETS))
+	@true
 
 show-fail:
 	-@$(PYTHON) $(CONFIGDIR)/report_tests.py -d $(TESTDIR)/counts -f
@@ -300,8 +312,9 @@ starttime: pre-clean $(libpetscall)
 
 report_tests: starttime $(TESTTARGETS)
 	@$(eval ENDTIME := $(shell date +%s))
-	-@elapsed_time=$$(($(ENDTIME)- $(STARTTIME))) && \
-	$(PYTHON) $(CONFIGDIR)/report_tests.py -m $(MAKE) -d $(TESTDIR)/counts -t 5 -e $${elapsed_time}
+	-@if test ${PRINTONLY} -ne 1; then  elapsed_time=$$(($(ENDTIME)- $(STARTTIME))) && \
+	$(PYTHON) $(CONFIGDIR)/report_tests.py -m $(MAKE) -d $(TESTDIR)/counts -t 5 -e $${elapsed_time};\
+    fi
 
 check_output: 
 	$(PYTHON) $(CONFIGDIR)/gmakegentest.py --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) --testdir=$(TESTDIR) --check-output
@@ -351,6 +364,7 @@ help-test:
 	-@echo "  VALGRIND=1        Execute the tests using valgrind (-V to test scripts)"
 	-@echo "  NP=<num proc>     Set a number of processors to pass to scripts."
 	-@echo "  FORCE=1           Force SKIP or TODO tests to run"
+	-@echo "  PRINTONLY=1       Print the command, but do not run.  For loops print first command"
 	-@echo "  TIMEOUT=<time>    Test timeout limit in seconds (default in config/petsc_harness.sh)"
 	-@echo "  TESTDIR='tests'   Subdirectory where tests are run ($${PETSC_DIR}/$${PETSC_ARCH}/$${TESTDIR}"
 	-@echo "                    or $${PREFIX_DIR}/$${TESTDIR}"
@@ -388,6 +402,6 @@ help-test:
 	-@echo "    make -f ${makefile} print VAR=TESTTARGETS search='sys%'"
 	-@echo
 	-@echo "  To build an executable, give full path to location:"
-	-@echo '    make -f ${makefile} $${PETSC_ARCH}/tests/sys/examples/tests/ex1'
+	-@echo '    make -f ${makefile} $${PETSC_ARCH}/tests/sys/tests/ex1'
 	-@echo "  or make the test with NO_RM=1"
 	-@echo

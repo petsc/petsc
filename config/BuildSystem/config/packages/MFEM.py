@@ -85,7 +85,7 @@ class Configure(config.package.Package):
       g.write('ARFLAGS = '+self.setCompilers.AR_FLAGS+'\n')
       g.write('LDFLAGS = '+ldflags+'\n')
       g.write('MFEM_USE_MPI = YES\n')
-      g.write('MFEM_MPIEXEC = '+self.mpi.mpiexec+'\n')
+      g.write('MFEM_MPIEXEC = '+self.mpi.getMakeMacro('MPIEXEC')+'\n')
       g.write('MFEM_USE_METIS_5 = YES\n')
       g.write('MFEM_USE_METIS = YES\n')
       g.write('MFEM_USE_PETSC = YES\n')

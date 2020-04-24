@@ -38,7 +38,7 @@ import pickle
 try:
   from hashlib import md5 as new_md5
 except ImportError:
-  from md5 import new as new_md5
+  from md5 import new as new_md5 # novermin
 
 
 class SourceDB (dict, logger.Logger):

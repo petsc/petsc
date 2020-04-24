@@ -75,12 +75,12 @@ PetscErrorCode  PetscCommGetNewTag(MPI_Comm comm,PetscMPIInt *tag)
   }
 
   *tag = counter->tag--;
-#if defined(PETSC_USE_DEBUG)
-  /*
+  if (PetscDefined(USE_DEBUG)) {
+    /*
      Hanging here means that some processes have called PetscCommGetNewTag() and others have not.
-  */
-  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
-#endif
+     */
+    ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -126,12 +126,8 @@ PetscErrorCode  PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPII
       ierr = MPI_Comm_dup(comm_in,comm_out);CHKERRQ(ierr);
       ierr = MPI_Comm_get_attr(MPI_COMM_WORLD,MPI_TAG_UB,&maxval,&flg);CHKERRQ(ierr);
       if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"MPI error: MPI_Comm_get_attr() is not returning a MPI_TAG_UB");
-      ierr = PetscNew(&counter);CHKERRQ(ierr);
-
-      counter->tag       = *maxval;
-      counter->refcount  = 0;
-      counter->namecount = 0;
-
+      ierr = PetscNew(&counter);CHKERRQ(ierr); /* all fields of counter are zero'ed */
+      counter->tag = *maxval;
       ierr = MPI_Comm_set_attr(*comm_out,Petsc_Counter_keyval,counter);CHKERRQ(ierr);
       ierr = PetscInfo3(NULL,"Duplicating a communicator %ld %ld max tags = %d\n",(long)comm_in,(long)*comm_out,*maxval);CHKERRQ(ierr);
 
@@ -149,14 +145,14 @@ PetscErrorCode  PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPII
     }
   } else *comm_out = comm_in;
 
-#if defined(PETSC_USE_DEBUG)
-  /*
+  if (PetscDefined(USE_DEBUG)) {
+    /*
      Hanging here means that some processes have called PetscCommDuplicate() and others have not.
      This likley means that a subset of processes in a MPI_Comm have attempted to create a PetscObject!
      ALL processes that share a communicator MUST shared objects created from that communicator.
-  */
-  ierr = MPI_Barrier(comm_in);CHKERRQ(ierr);
-#endif
+     */
+    ierr = MPI_Barrier(comm_in);CHKERRQ(ierr);
+  }
 
   if (counter->tag < 1) {
     ierr = PetscInfo1(NULL,"Out of tags for object, starting to recycle. Comm reference count %d\n",counter->refcount);CHKERRQ(ierr);

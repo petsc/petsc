@@ -1,3 +1,4 @@
+-include ../petscdir.mk
 #requirespackage  'PETSC_HAVE_MOAB'
 
 ALL: lib
@@ -7,7 +8,7 @@ FFLAGS   =
 SOURCECXX= dmmoab.cxx dmmbvec.cxx dmmbmat.cxx dmmbfield.cxx dmmbmg.cxx dmmbfem.cxx dmmbio.cxx dmmbutil.cxx
 SOURCEF  =
 SOURCEH  =
-DIRS     = examples
+DIRS     = tests
 LIBBASE  = libpetscdm
 MANSEC   = DM
 SUBMANSEC= DMMOAB

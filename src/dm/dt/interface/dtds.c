@@ -2677,14 +2677,16 @@ PetscErrorCode PetscDSGetWorkspace(PetscDS prob, PetscReal **x, PetscScalar **ba
   ierr = PetscDSSetUp(prob);CHKERRQ(ierr);
   if (x)            {PetscValidPointer(x, 2);            *x            = prob->x;}
   if (basisReal)    {PetscValidPointer(basisReal, 3);    *basisReal    = prob->basisReal;}
-  if (basisDerReal) {PetscValidPointer(basisDerReal, 3); *basisDerReal = prob->basisDerReal;}
-  if (testReal)     {PetscValidPointer(testReal, 3);     *testReal     = prob->testReal;}
-  if (testDerReal)  {PetscValidPointer(testDerReal, 3);  *testDerReal  = prob->testDerReal;}
+  if (basisDerReal) {PetscValidPointer(basisDerReal, 4); *basisDerReal = prob->basisDerReal;}
+  if (testReal)     {PetscValidPointer(testReal, 5);     *testReal     = prob->testReal;}
+  if (testDerReal)  {PetscValidPointer(testDerReal, 6);  *testDerReal  = prob->testDerReal;}
   PetscFunctionReturn(0);
 }
 
 /*@C
   PetscDSAddBoundary - Add a boundary condition to the model
+
+  Collective on ds
 
   Input Parameters:
 + ds          - The PetscDS object
@@ -2714,6 +2716,10 @@ PetscErrorCode PetscDSAddBoundary(PetscDS ds, DMBoundaryConditionType type, cons
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
+  PetscValidLogicalCollectiveEnum(ds, type, 2);
+  PetscValidLogicalCollectiveInt(ds, field, 5);
+  PetscValidLogicalCollectiveInt(ds, numcomps, 6);
+  PetscValidLogicalCollectiveInt(ds, numids, 9);
   ierr = PetscNew(&b);CHKERRQ(ierr);
   ierr = PetscStrallocpy(name, (char **) &b->name);CHKERRQ(ierr);
   ierr = PetscStrallocpy(labelname, (char **) &b->labelname);CHKERRQ(ierr);

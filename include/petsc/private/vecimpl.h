@@ -93,7 +93,7 @@ struct _VecOps {
   PetscErrorCode (*restorelocalvector)(Vec,Vec);
   PetscErrorCode (*getlocalvectorread)(Vec,Vec);
   PetscErrorCode (*restorelocalvectorread)(Vec,Vec);
-  PetscErrorCode (*pintocpu)(Vec,PetscBool);
+  PetscErrorCode (*bindtocpu)(Vec,PetscBool);
   PetscErrorCode (*getarraywrite)(Vec,PetscScalar**);
   PetscErrorCode (*restorearraywrite)(Vec,PetscScalar**);
 };
@@ -141,9 +141,11 @@ struct _p_Vec {
   PetscBool              petscnative;  /* means the ->data starts with VECHEADER and can use VecGetArrayFast()*/
   PetscInt               lock;         /* lock state. vector can be free (=0), locked for read (>0) or locked for write(<0) */
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+  void                   *spptr; /* this is the special pointer to the array on the GPU */
   PetscOffloadMask       offloadmask;  /* a mask which indicates where the valid vector data is (GPU, CPU or both) */
   PetscBool              boundtocpu;
-  void                   *spptr; /* this is the special pointer to the array on the GPU */
+  size_t                 minimum_bytes_pinned_memory; /* minimum data size in bytes for which pinned memory will be allocated */
+  PetscBool              pinned_memory; /* PETSC_TRUE if the current host allocation has been made from pinned memory. */
 #endif
 };
 
@@ -216,7 +218,8 @@ PETSC_INTERN PetscErrorCode VecLockWriteSet_Private(Vec,PetscBool);
 /* Default obtain and release vectors; can be used by any implementation */
 PETSC_EXTERN PetscErrorCode VecDuplicateVecs_Default(Vec,PetscInt,Vec *[]);
 PETSC_EXTERN PetscErrorCode VecDestroyVecs_Default(PetscInt,Vec []);
-PETSC_INTERN PetscErrorCode VecLoad_Binary(Vec, PetscViewer);
+PETSC_EXTERN PetscErrorCode VecView_Binary(Vec, PetscViewer);
+PETSC_EXTERN PetscErrorCode VecLoad_Binary(Vec, PetscViewer);
 PETSC_EXTERN PetscErrorCode VecLoad_Default(Vec, PetscViewer);
 
 PETSC_EXTERN PetscInt  NormIds[7];  /* map from NormType to IDs used to cache/retreive values of norms */

@@ -336,6 +336,7 @@ PETSC_EXTERN PetscErrorCode DMProjectFunctionLabel(DM, PetscReal, DMLabel, Petsc
 PETSC_EXTERN PetscErrorCode DMProjectFunctionLabelLocal(DM,PetscReal,DMLabel,PetscInt,const PetscInt[],PetscInt,const PetscInt[],PetscErrorCode(**)(PetscInt,PetscReal,const PetscReal[],PetscInt,PetscScalar *,void *),void **,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMProjectFieldLocal(DM,PetscReal,Vec,void (**)(PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[],const PetscScalar[],const PetscScalar[],const PetscInt[],const PetscInt[],const PetscScalar[],const PetscScalar[],const PetscScalar[],PetscReal,const PetscReal[],PetscInt,const PetscScalar[],PetscScalar[]),InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMProjectFieldLabelLocal(DM,PetscReal,DMLabel,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Vec,void (**)(PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[],const PetscScalar[],const PetscScalar[],const PetscInt[],const PetscInt[],const PetscScalar[],const PetscScalar[],const PetscScalar[],PetscReal,const PetscReal[],PetscInt,const PetscScalar[],PetscScalar[]),InsertMode,Vec);
+PETSC_EXTERN PetscErrorCode DMProjectBdFieldLabelLocal(DM,PetscReal,DMLabel,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Vec,void (**)(PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[],const PetscScalar[],const PetscScalar[],const PetscInt[],const PetscInt[],const PetscScalar[],const PetscScalar[],const PetscScalar[],PetscReal,const PetscReal[],const PetscReal[],PetscInt,const PetscScalar[],PetscScalar[]),InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMComputeL2Diff(DM,PetscReal,PetscErrorCode(**)(PetscInt,PetscReal,const PetscReal[],PetscInt,PetscScalar *,void *),void **,Vec,PetscReal *);
 PETSC_EXTERN PetscErrorCode DMComputeL2GradientDiff(DM, PetscReal, PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal [], const PetscReal [], PetscInt, PetscScalar *, void *), void **, Vec, const PetscReal [], PetscReal *);
 PETSC_EXTERN PetscErrorCode DMComputeL2FieldDiff(DM,PetscReal,PetscErrorCode(**)(PetscInt,PetscReal,const PetscReal[],PetscInt,PetscScalar *,void *),void **,Vec,PetscReal *);
@@ -351,5 +352,62 @@ PETSC_EXTERN PetscErrorCode DMMonitorSet(DM, PetscErrorCode (*)(DM, void *), voi
 PETSC_EXTERN PetscErrorCode DMMonitorCancel(DM);
 PETSC_EXTERN PetscErrorCode DMMonitorSetFromOptions(DM, const char[], const char[], const char[], PetscErrorCode (*)(DM, void *), PetscErrorCode (*)(DM, PetscViewerAndFormat *), PetscBool *);
 PETSC_EXTERN PetscErrorCode DMMonitor(DM);
+
+PETSC_STATIC_INLINE PetscInt DMPolytopeTypeGetDim(DMPolytopeType ct) {
+  switch (ct) {
+    case DM_POLYTOPE_POINT:
+      return 0;
+    case DM_POLYTOPE_SEGMENT:
+    case DM_POLYTOPE_POINT_PRISM_TENSOR:
+      return 1;
+    case DM_POLYTOPE_TRIANGLE:
+    case DM_POLYTOPE_QUADRILATERAL:
+    case DM_POLYTOPE_SEG_PRISM_TENSOR:
+      return 2;
+    case DM_POLYTOPE_TETRAHEDRON:
+    case DM_POLYTOPE_HEXAHEDRON:
+    case DM_POLYTOPE_TRI_PRISM:
+    case DM_POLYTOPE_TRI_PRISM_TENSOR:
+    case DM_POLYTOPE_QUAD_PRISM_TENSOR:
+      return 3;
+    default: return -1;
+  }
+}
+
+PETSC_STATIC_INLINE PetscInt DMPolytopeTypeGetConeSize(DMPolytopeType ct)
+{
+  switch (ct) {
+    case DM_POLYTOPE_POINT:              return 0;
+    case DM_POLYTOPE_SEGMENT:            return 2;
+    case DM_POLYTOPE_POINT_PRISM_TENSOR: return 2;
+    case DM_POLYTOPE_TRIANGLE:           return 3;
+    case DM_POLYTOPE_QUADRILATERAL:      return 4;
+    case DM_POLYTOPE_SEG_PRISM_TENSOR:   return 4;
+    case DM_POLYTOPE_TETRAHEDRON:        return 4;
+    case DM_POLYTOPE_HEXAHEDRON:         return 6;
+    case DM_POLYTOPE_TRI_PRISM:          return 5;
+    case DM_POLYTOPE_TRI_PRISM_TENSOR:   return 5;
+    case DM_POLYTOPE_QUAD_PRISM_TENSOR:  return 6;
+    default: return -1;
+  }
+}
+
+PETSC_STATIC_INLINE PetscInt DMPolytopeTypeGetNumVertices(DMPolytopeType ct)
+{
+  switch (ct) {
+    case DM_POLYTOPE_POINT:              return 1;
+    case DM_POLYTOPE_SEGMENT:            return 2;
+    case DM_POLYTOPE_POINT_PRISM_TENSOR: return 2;
+    case DM_POLYTOPE_TRIANGLE:           return 3;
+    case DM_POLYTOPE_QUADRILATERAL:      return 4;
+    case DM_POLYTOPE_SEG_PRISM_TENSOR:   return 4;
+    case DM_POLYTOPE_TETRAHEDRON:        return 4;
+    case DM_POLYTOPE_HEXAHEDRON:         return 8;
+    case DM_POLYTOPE_TRI_PRISM:          return 6;
+    case DM_POLYTOPE_TRI_PRISM_TENSOR:   return 6;
+    case DM_POLYTOPE_QUAD_PRISM_TENSOR:  return 8;
+    default: return -1;
+  }
+}
 
 #endif

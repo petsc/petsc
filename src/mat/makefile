@@ -1,4 +1,4 @@
-
+-include ../petscdir.mk
 ALL: lib
 
 CFLAGS   =
@@ -12,7 +12,7 @@ SOURCEH  = ../../include/petsc/private/matimpl.h \
            ../../include/petsc/private/kernels/blockmatmult.h \
            ../../include/petscmatelemental.h
 LIBBASE  = libpetscmat
-DIRS     = interface impls examples utils matfd partition coarsen order color f90-mod ftn-kernels
+DIRS     = interface impls tests tutorials utils matfd partition coarsen order color f90-mod ftn-kernels
 LOCDIR   = src/mat/
 MANSEC   = Mat
 

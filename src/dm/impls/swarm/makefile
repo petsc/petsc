@@ -1,3 +1,4 @@
+-include ../petscdir.mk
 ALL: lib
 
 CPPFLAGS =
@@ -6,7 +7,7 @@ FFLAGS   =
 SOURCEC  = swarm.c data_bucket.c data_ex.c swarm_migrate.c swarmpic.c swarmpic_da.c swarmpic_plex.c swarmpic_view.c swarmpic_sort.c
 SOURCEF  =
 SOURCEH  =
-DIRS     = 
+DIRS     = tests
 LIBBASE  = libpetscdm
 MANSEC   = DM
 SUBMANSEC= DMSWARM

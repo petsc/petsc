@@ -4,7 +4,6 @@ set -x
 export LANG=en_US
 export LC=C
 export LC_ALL=C
-export PATH=$HOME/bin/python2:$PATH
 
 PETSC_DIR=/home/balay/git-repo/petsc-maint.clone
 

@@ -9,13 +9,6 @@ petsc_arch = ''
 if 'LC_LOCAL' in os.environ and os.environ['LC_LOCAL'] != '' and os.environ['LC_LOCAL'] != 'en_US' and os.environ['LC_LOCAL']!= 'en_US.UTF-8': os.environ['LC_LOCAL'] = 'en_US.UTF-8'
 if 'LANG' in os.environ and os.environ['LANG'] != '' and os.environ['LANG'] != 'en_US' and os.environ['LANG'] != 'en_US.UTF-8': os.environ['LANG'] = 'en_US.UTF-8'
 
-if sys.version_info < (2,6):
-  print('************************************************************************')
-  print('*      Python version 2.6+ or 3.4+ is required to run ./configure      *')
-  print('*         Try: "python2.7 ./configure" or "python3 ./configure"        *')
-  print('************************************************************************')
-  sys.exit(4)
-
 def check_for_option_mistakes(opts):
   for opt in opts[1:]:
     name = opt.split('=')[0]
@@ -274,11 +267,11 @@ def chkrhl9():
   return 0
 
 def chktmpnoexec():
-  if not hasattr(os,'ST_NOEXEC'): return
+  if not hasattr(os,'ST_NOEXEC'): return # novermin
   if 'TMPDIR' in os.environ: tmpDir = os.environ['TMPDIR']
   else: tmpDir = '/tmp'
-  if os.statvfs(tmpDir).f_flag & os.ST_NOEXEC:
-    if os.statvfs(os.path.abspath('.')).f_flag & os.ST_NOEXEC:
+  if os.statvfs(tmpDir).f_flag & os.ST_NOEXEC: # novermin
+    if os.statvfs(os.path.abspath('.')).f_flag & os.ST_NOEXEC: # novermin
       print('************************************************************************')
       print('* TMPDIR '+tmpDir+' has noexec attribute. Same with '+os.path.abspath('.')+' where petsc is built.')
       print('* Suggest building PETSc in a location without this restriction!')

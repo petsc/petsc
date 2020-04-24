@@ -337,9 +337,7 @@ static PetscErrorCode MatPartitioningApply_PTScotch_Private(MatPartitioning part
       ierr = SCOTCH_dgraphBuild(&grafdat,0,vertlocnbr,vertlocnbr,adj->i,adj->i+1,veloloctab,
                                 NULL,edgelocnbr,edgelocnbr,adj->j,NULL,edloloctab);CHKERRQ(ierr);
 
-#if defined(PETSC_USE_DEBUG)
-      ierr = SCOTCH_dgraphCheck(&grafdat);CHKERRQ(ierr);
-#endif
+      if (PetscDefined(USE_DEBUG)) {ierr = SCOTCH_dgraphCheck(&grafdat);CHKERRQ(ierr);}
 
       ierr = SCOTCH_archInit(&archdat);CHKERRQ(ierr);
       ierr = SCOTCH_stratInit(&stradat);CHKERRQ(ierr);
@@ -364,9 +362,7 @@ static PetscErrorCode MatPartitioningApply_PTScotch_Private(MatPartitioning part
 
       ierr = SCOTCH_graphInit(&grafdat);CHKERRQ(ierr);
       ierr = SCOTCH_graphBuild(&grafdat,0,vertlocnbr,adj->i,adj->i+1,veloloctab,NULL,edgelocnbr,adj->j,edloloctab);CHKERRQ(ierr);
-#if defined(PETSC_USE_DEBUG)
-      ierr = SCOTCH_graphCheck(&grafdat);CHKERRQ(ierr);
-#endif
+      if (PetscDefined(USE_DEBUG)) {ierr = SCOTCH_graphCheck(&grafdat);CHKERRQ(ierr);}
       ierr = SCOTCH_stratInit(&stradat);CHKERRQ(ierr);
       ierr = SCOTCH_stratGraphMapBuild(&stradat,scotch->strategy,nparts,scotch->imbalance);CHKERRQ(ierr);
       if (velotab) {

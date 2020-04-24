@@ -1,0 +1,270 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8">
+    <link href="../../style.css" rel="stylesheet" type="text/css">
+    <link rel="icon" href="../images/PETSc_RGB-logo.png" type="image/png" sizes="16x16">
+    <title>PETSc: Documentation: Changes: 3.13</title>
+  </head>
+  <body>
+
+    <div id="logo">
+      <h1>PETSc</h1>
+    </div>
+
+    <div id="header">
+      <h1><!--begin-->Documentation: Changes: 3.13<!--end--></h1>
+    </div>
+
+    <hr>
+
+    <div id="sidebar">
+      <ul>
+        <li><a href="../../index.html">Home</a></li>
+        <li><a href="../../download/index.html">Download</a></li>
+        <li><a href="../../features/index.html">Features</a></li>
+        <li>
+          <a href="../../documentation/index.html">Documentation</a>
+          <ul>
+            <li><a href="../index.html">Manual pages and Users Manual</a></li>
+            <li><a href="../referencing.html">Citing PETSc</a></li>
+            <li><a href="../tutorials/index.html">Tutorials</a></li>
+            <li><a href="../installation.html">Installation</a></li>
+            <li><a href="../saws.html">SAWs</a></li>
+            <li>
+              <a href="index.html">Changes</a>
+              <ul>
+                <li><a href="dev.html">dev</a></li>
+                <li><span class="current">3.13</span></li>
+                <li><a href="312.html">3.12</a></li>
+                <li><a href="311.html">3.11</a></li>
+                <li><a href="310.html">3.10</a></li>
+                <li><a href="39.html">3.9</a></li>
+                <li><a href="38.html">3.8</a></li>
+                <li><a href="37.html">3.7</a></li>
+                <li><a href="36.html">3.6</a></li>
+                <li><a href="35.html">3.5</a></li>
+                <li><a href="34.html">3.4</a></li>
+                <li><a href="33.html">3.3</a></li>
+                <li><a href="32.html">3.2</a></li>
+                <li><a href="31.html">3.1</a></li>
+                <li><a href="300.html">3.0.0</a></li>
+                <li><a href="233.html">2.3.3</a></li>
+                <li><a href="232.html">2.3.2</a></li>
+                <li><a href="231.html">2.3.1</a></li>
+                <li><a href="230.html">2.3.0</a></li>
+                <li><a href="221.html">2.2.1</a></li>
+                <li><a href="220.html">2.2.0</a></li>
+                <li><a href="216.html">2.1.6</a></li>
+                <li><a href="215.html">2.1.5</a></li>
+                <li><a href="213.html">2.1.3</a></li>
+                <li><a href="212.html">2.1.2</a></li>
+                <li><a href="211.html">2.1.1</a></li>
+                <li><a href="21.html">2.1.0</a></li>
+                <li><a href="2029.html">2.0.29</a></li>
+                <li><a href="2028.html">2.0.28</a></li>
+                <li><a href="2024.html">2.0.24</a></li>
+                <li><a href="2022.html">2.0.22</a></li>
+                <li><a href="2018-21.html">2.0.18-21</a></li>
+                <li><a href="2017.html">2.0.17</a></li>
+                <li><a href="2016.html">2.0.16</a></li>
+                <li><a href="2015.html">2.0.15</a></li>
+              </ul>
+            </li>
+            <li><a href="../bugreporting.html">Bug Reporting</a></li>
+            <li><a href="../codemanagement.html">Code Management</a></li>
+            <li><a href="../faq.html">FAQ</a></li>
+            <li><a href="../license.html">License</a></li>
+            <li><a href="../linearsolvertable.html">Linear Solver Table</a></li>
+          </ul>
+        </li>
+        <li><a href="../../publications/index.html">Applications/Publications</a></li>
+        <li><a href="../../miscellaneous/index.html">Miscellaneous</a></li>
+        <li><a href="../../miscellaneous/external.html">External Software</a></li>
+        <li><a href="https://docs.petsc.org/en/latest/developers/index.html">Developers Site</a></li>
+      </ul>
+    </div>
+
+    <!--begin-->
+
+    <style type="text/css">
+      h2 {
+        color: red;
+      }
+
+      h4 {
+        font-weight: bold;
+        text-decoration: underline;
+      }
+    </style>
+
+    <div id="main">
+
+      <div align="center">
+        <h2><a name="CHANGES">CHANGES in the PETSc 3.13 Version</a></h2>
+      </div>
+
+      <!-- Please use Imperative with first letter cap, e.g. Add, Improve, Change etc. WITHOUT dot at the end -->
+      <h4>General:</h4>
+        <ul>
+          <li>Update <code>make test</code> to run the full test suite. Use <code>make check</code> to run the short test</li>
+          <li>Remove last PetscBool argument from PetscBinaryWrite() and PetscBinarySynchronizedWrite()</li>
+          <li>Change PetscLayoutFindOwner() and PetscLayoutFindOwnerIndex() to return a PetscMPIInt instead of a PetscInt</li>
+          <li>Support for Compaq F90 is removed along with supporting flags PETSC_HAVE_FORTRAN_STDCALL, PETSC_BLASLAPACK_STDCALL, HAVE_FORTRAN_MIXED_STR_ARG</li>
+          <li>Promote all example directories <code>examples/tutorials/</code> and <code>examples/tests/</code> to <code>tutorials/</code> and <code>tests/</code> respectively</li>
+          <li>Make title argument of PetscOptionsBegin() obligatory</li>
+        </ul>
+      <h4>Configure/Build:</h4>
+      <h4>IS:</h4>
+        <ul>
+          <li>Add ISSetInfo(): set local and global properties of an IS (whether the IS is sorted, unique, a permutation, an interval, or identity)</li>
+          <li>Add ISGetInfo(): query local and global properties of an IS</li>
+        </ul>
+      <h4>PetscDraw:</h4>
+      <h4>PetscSF:</h4>
+        <ul>
+          <li>Fix few bugs in PETSCSFWINDOW when using PETSCSF_WINDOW_SYNC_LOCK or PETSCSF_WINDOW_SYNC_ACTIVE synchronization types</li>
+          <li>Add window reusage for PETSCSFWINDOW and support for different creation flavor types. See PetscSFWindowFlavorType man page for details</li>
+          <li>Set default of -use_gpu_aware_mpi from false to true</li>
+        </ul>
+      <h4>PF:</h4>
+      <h4>Vec:</h4>
+      <ul>
+          <li>VecPinToCPU() is deprecated in favor of VecBindToCPU()</li>
+          <li>Add Vec{Set|Get}PinnedMemoryMin() and -vec_pinned_memory_min option. Note that VECCUDA now defaults to using pinned memory for host allocations</li>
+      </ul>
+      <h4>VecScatter:</h4>
+      <h4>PetscSection:</h4>
+      <h4>PetscPartitioner:</h4>
+        <ul>
+          <li>PetscPartitionerPartition() does not longer gets a DM as input. Vertex weights can be specified through PetscSection</li>
+          <li>Add support for target partition weights for PETSCPARTITIONERSIMPLE, PETSCPARTITIONERPARMETIS and PETSCPARTITIONERPTSCOTCH</li>
+        </ul>
+      <h4>Mat:</h4>
+        <ul>
+          <li>Improve the performance of MatConvert_AIJ_BAIJ by preallocating the Mat before dispatching to MatConvert_Basic</li>
+          <li>Change the behavior of MatConvert_AIJ_SBAIJ for block size greater than one, the block structure is now preserved (even for the diagonal entries)</li>
+          <li>Fix various bugs related with matrix conversions from Hermitian SBAIJ matrices with complex numbers</li>
+          <li>Add MatPropagateSymmetryOptions to propagate symmetry information from one matrix to another</li>
+          <li>Fix a bug in MATSUPERLU_DIST interface when MATMPIAIJ with commsize 1 is used</li>
+          <li>Add MATCHOLMOD support for block solves</li>
+          <li>--download-suitesparse now uses the official SuiteSparse repository</li>
+          <li>MatPinToCPU() is deprecated in favor of MatBindToCPU()</li>
+          <li>Fix MatAXPY for MATSHELL</li>
+          <li>MatAXPY(Y,0.0,X,DIFFERENT_NONZERO_PATTERN) no longer modifies the nonzero pattern of Y to include that of X</li>
+          <li>Add support of selective 64-bit MUMPS, i.e., the regular/default build of MUMPS. One should still build PETSc --with-64-bit-indices to handle matrices with >2G nonzeros</li>
+          <li>Add MatProductCreate(), MatProductCreateWithMat(), MatProductSetType(), MatProductSetAlgorithm(), MatProductSetFill(), MatProductSetFromOptions(), MatProductSymbolic(), MatProductNumeric(), MatProductReplaceMats(), MatProductClear() </li>
+          <li>Deprecate MatMatMultSymbolic(), MatMatMultNumeric()</li>
+          <li>Deprecate MatMatTransposeMultSymbolic(), MatMatTransposeMultNumeric()</li>
+          <li>Deprecate MatPtAPSymbolic(), MatPtAPNumeric()</li>
+          <li>Deprecate MatRARtSymbolic(), MatRARtNumeric()</li>
+        </ul>
+      <h4>PC:</h4>
+        <ul>
+          <li>Change the default  behavior of PCASM and PCGASM to not automatically switch to PCASMType BASIC if the matrices are symmetric</li>
+          <li>Change the default behavior of PCCHOLESKY to use nested dissection ordering for AIJ matrix</li>
+        </ul>
+      <h4>KSP:</h4>
+        <ul>
+          <li>Add KSPHPDDMGetDeflationSpace and KSPHPDDMSetDeflationSpace for recycling Krylov methods in KSPHPDDM</li>
+        </ul>
+      <h4>SNES:</h4>
+        <ul>
+          <li>Deprecate <code>-snes_test_jacobian_display</code> and <code>-snes_test_jacobian_display_threshold</code>.  <code>-snes_test_jacobian</code> accepts an optional threshold parameter (since v3.10) and <code>-snes_test_jacobian_view</code> should be used in favor of <code>-snes_test_jacobian_display</code></li>
+        </ul>
+      <h4>SNESLineSearch:</h4>
+      <ul>
+        <li>Add SNESLineSearchGetType() in v3.13.1.</li>
+      </ul>
+      <h4>TS:</h4>
+      <h4>TAO:</h4>
+        <ul>
+	  <li>TAOPDIPM: A new solver in TAO for general NLP problems</li>
+	</ul>
+      <h4>DM/DA:</h4>
+        <ul>
+          <li>DMCopyLabels(): add two additional input flags</li>
+          <li>DMPlexDistribute(): fix a bug associated with vertex partition weights and overlapped meshes</li>
+          <li>DMPlexDistribute(): vertex partition weights are now computed by summing all the local section dofs in the transitive closure of each cell</li>
+          <li>Add PetscTabulation to hold function tabulation data</li>
+          <li>Add DMEnclosureType to describe relations between meshes</li>
+          <li>Add DMGetEnclosureRelation() and DMGetEnclosurePoint() to discover relations between meshes</li>
+          <li>Add DMPolytopeType to describe different cell constructions</li>
+        </ul>
+      <h4>DMPlex:</h4>
+        <ul>
+          <li>DMPlexInterpolate() now works correctly for distributed DMPlex</li>
+          <li>The idea of hybrid and ghost cells has been removed from Plex in favor of cell type</li>
+          <li>Plex can now classify points by cell type, stored in a DMLabel. This is useful for operations that require more than topological data, such as mesh interpolation, geometric calculations, and is also used an index to avoid repeated topological queries</li>
+          <li>Add DMPlexSetCellType() and DMPlexCreateReferenceCellByType()</li>
+          <li>Distribution sorts strata by cell type.</li>
+          <li>Plex can now allow any number of cell types in a single mesh. Interpolation, refinement, and extraction of submeshes mixed meshes work smoothly. Both oriented and tensor-product prisms can be used in the same mesh</li>
+          <li>Cell refiners have been abstracted. Currently there are two (regular refinement, and conversion to hexes). The plan is to add more, such as local extrusion and conversion to simplices</li>
+          <li>Remove SimplexToTensor in favor of DM_REFINER_TO_BOX</li>
+          <li>DMForest now responds to DMPlexGetOverlap() and propagates its overlap to the underlying Plex</li>
+          <li>Add DMPlexGetSimplexOrBoxCells() to replace DMPlexGetInteriorCellStratum()</li>
+          <li>Add DMPolytopTypeGetDim(), DMPolyTopeTypeGetConeSize(), DMPolytopeTypeGetNumVertices()</li>
+          <li>Add DMLabelSetStratumBounds()</li>
+          <li>Add DMPlexOrientCell() which orients a single cell</li>
+          <li>Add DMPlexCompareOrientations() which compares the cone point order of a single cell with the given reference cone</li>
+          <li>Add DMPlexIsInterpolated() which finds out whether the plex is interpolated</li>
+          <li>Add DMPlexIsInterpolatedCollective() which finds out whether the plex is interpolated on all ranks</li>
+          <li>Add DMPlexIsDistributed() which finds out whether the plex is distributed</li>
+        </ul>
+      <h4>DMNetwork:</h4>
+        <ul>
+	  <li>Add DMNetworkSetComponentNumVariables(), DMNetworkGetComponentVariableOffset(), and DMNetworkGetComponentVariableGlobalOffset() to
+	      set number of variables for a component, and retrieve its local/global offsets.</li>
+	</ul>
+      <h4>DT:</h4>
+      <ul>
+        <li>All tabulated data is now stored in PetscTabulation structures. This changes interfaces in PetscDS, PetscFE, and PetscFV</li>
+        <li>Rename DefaultTabulation to CellTabulation everywhere</li>
+        <li>PetscDTGaussJacobiQuadrature() is now truly Gauss-Jacobi quadrature.  The quadrature for the simplex (without weight function) is now called PetscDTStroudConicalQuadrature()</li>
+        <li>Add PetscDTJacobiEval(), PetscDTGaussLobattoJacobiQuadrature()</li>
+        <li>Add PetscDTIndexToBary() and PetscDTBaryToIndex() for barycentric lattice calculations</li>
+        <li>Add PetscDTNodeType to enumerate methods of defining interpolation nodes</li>
+        <li>PetscDualSpace now has PetscDualSpaceSetFormDegree() and PetscDualSpaceGetFormDegree() for governing functional pushforward/pullback behavior</li>
+        <li>PETSCDUALSPACELAGRANGE now has PetscDualSpaceGetTrimmed() and PetscDualSpaceSetTrimmed() for creating degrees of freedom for trimmed polynomial spaces</li>
+        <li>PETSCDUALSPACELAGRANGE now has PetscDualSpaceGetNodeType() and PetscDualSpaceSetNodType() for controlling the placement of interpolation nodes</li>
+        <li>PETSCDUALSPACEBDM was removed: its functionality is now a part of PETSCDUALSPACELAGRANGE</li>
+      </ul>
+      <h4>PetscViewer:</h4>
+        <ul>
+          <li>Remove last PetscBool argument from PetscViewerBinaryWrite()</li>
+          <li>Add "fieldnum" argument to PetscViewerVTKAddField() to indicate only one field of the vector should be viewed</li>
+        </ul>
+      <h4>SYS:</h4>
+        <ul>
+          <li>Rename PetscSignalSegvCheckPointer() to PetscSignalSegvCheckPointerOrMpi()</li>
+          <li>Extend -info option controlling PetscInfo(). It now takes takes optional arguments <code>-info [filename][:[~]list,of,classnames[:[~]self]]</code>. See PetscInfo() manpage</li>
+          <li>Add new API to control PetscInfo() programatically:
+            <ul>
+              <li>Add PetscInfoEnabled() - Indicate whether a given PETSc class is allowed in PetscInfo()</li>
+              <li>Add PetscInfoSetFile() - Set output destination of PetscInfo()</li>
+              <li>Add PetscInfoGetFile() - Get output destination of PetscInfo()</li>
+              <li>Add PetscInfoSetClasses() - Sets the classes which PetscInfo() is filtered for/against</li>
+              <li>Add PetscInfoGetClass() - Indicates whether the provided classname is marked as a filter in PetscInfo() as set by PetscInfoSetClasses()</li>
+              <li>Add PetscInfoProcessClass() - Activates or deactivates a class based on the filtering status of PetscInfo()</li>
+              <li>Add PetscInfoGetInfo() - Returns the current state of several indicator flags for PetscInfo()</li>
+              <li>Add PetscInfoSetFilterCommSelf() - Sets PetscInfoCommFlag enum to control communicator size filtering for PetscInfo()</li>
+              <li>Add PetscInfoDestroy() - Destroys and resets internal PetscInfo() filter options</li>
+              <li>Change PetscInfoAllow() to only activate/deactivate PetscInfo(), file setting is now handled separately by PetscInfoSetFile()</li>
+            </ul>
+          </li>
+          <li>Add PetscSubcommGetParent() - Gets the communicator that was used to create the PetscSubcomm</li>
+          <li>Add PetscSubcommGetContiguousParent() - Gets a communicator that that is a duplicate of the parent but has the ranks reordered by the order they are in the children</li>
+          <li>Add PetscSubcommGetChild() - Gets the communicator created by the PetscSubcomm</li>
+          <li>Change the default option of -build_twosided from ibarrier to allreduce for communicators with no more than 1024 ranks </li>
+        </ul>
+      <h4>AO:</h4>
+      <h4>Sieve:</h4>
+      <h4>Fortran:</h4>
+    </div>
+
+    <!--end-->
+
+    <hr>
+
+  </body>
+</html>

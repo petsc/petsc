@@ -224,7 +224,7 @@ class Make(script.Script):
     return 1
 
 try:
-  import sets
+  import sets # novermin
 except ImportError:
   import config.setsBackport as sets
 

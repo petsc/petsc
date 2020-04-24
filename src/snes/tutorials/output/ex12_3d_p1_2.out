@@ -1,0 +1,116 @@
+DM Object: Mesh 1 MPI processes
+  type: plex
+Mesh in 3 dimensions:
+  0-cells: 27
+  1-cells: 98
+  2-cells: 120
+  3-cells: 48
+Labels:
+  celltype: 4 strata with value/size (0 (27), 6 (48), 3 (120), 1 (98))
+  depth: 4 strata with value/size (0 (27), 1 (98), 2 (120), 3 (48))
+  marker: 1 strata with value/size (1 (74))
+Local function:
+Vec Object: 1 MPI processes
+  type: seq
+0.
+0.666667
+0.666667
+1.33333
+0.666667
+1.33333
+1.33333
+2.
+0.833333
+0.833333
+1.5
+1.5
+0.166667
+0.166667
+0.833333
+0.833333
+0.166667
+0.833333
+0.833333
+1.5
+0.333333
+1.
+1.
+0.333333
+0.333333
+1.
+0.5
+Initial guess
+Vec Object: potential 1 MPI processes
+  type: seq
+0.5
+L_2 Error: 0.0845613
+Residual:
+Vec Object: 1 MPI processes
+  type: seq
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.333333
+Initial Residual
+Vec Object: Residual, Iterate 0 1 MPI processes
+  type: seq
+0.333333
+L_2 Residual: 0.333333
+Residual:
+Vec Object: 1 MPI processes
+  type: seq
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+-1.66667
+Au - b = Au + F(0)
+Vec Object: Residual, Iterate 0 1 MPI processes
+  type: seq
+0.333333
+Linear L_2 Residual: 0.333333

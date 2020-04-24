@@ -12,6 +12,8 @@
 #include <mpfr.h>
 #endif
 
+const char *const PetscDTNodeTypes[] = {"gaussjacobi", "equispaced", "tanhsinh", "PETSCDTNODES_", 0};
+
 static PetscBool GolubWelschCite       = PETSC_FALSE;
 const char       GolubWelschCitation[] = "@article{GolubWelsch1969,\n"
                                          "  author  = {Golub and Welsch},\n"
@@ -22,7 +24,7 @@ const char       GolubWelschCitation[] = "@article{GolubWelsch1969,\n"
                                          "  pages   = {221--230},\n"
                                          "  year    = {1969}\n}\n";
 
-/* Numerical tests in src/dm/dt/examples/tests/ex1.c show that when computing the nodes and weights of Gauss-Jacobi
+/* Numerical tests in src/dm/dt/tests/ex1.c show that when computing the nodes and weights of Gauss-Jacobi
    quadrature rules:
 
    - in double precision, Newton's method and Golub & Welsch both work for moderate degrees (< 100),
@@ -283,6 +285,7 @@ static PetscErrorCode PetscDTJacobianInverse_Internal(PetscInt m, PetscInt n, co
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!m || !n) PetscFunctionReturn(0);
   ierr = PetscBLASIntCast(m, &bm);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(n, &bn);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
@@ -350,7 +353,7 @@ static PetscErrorCode PetscDTJacobianInverse_Internal(PetscInt m, PetscInt n, co
       }
     }
 
-    PetscStackCallBLAS("LAPACKgetrf", LAPACKgetrf_(&bn, &bn, JTJ, &bm, pivots, &info));
+    PetscStackCallBLAS("LAPACKgetrf", LAPACKgetrf_(&bn, &bn, JTJ, &bn, pivots, &info));
     if (info) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from LAPACKgetrf %D",(PetscInt)info);
     PetscStackCallBLAS("LAPACKgetri", LAPACKgetri_(&bn, JTJ, &bn, pivots, W, &bn, &info));
     if (info) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from LAPACKgetri %D",(PetscInt)info);
@@ -390,6 +393,8 @@ static PetscErrorCode PetscDTJacobianInverse_Internal(PetscInt m, PetscInt n, co
 
    Note: the new quadrature rule will have a different number of components if spaces have different dimensions.  For example, pushing a 2-form forward from a two dimensional space to a three dimensional space changes the number of components from 1 to 3.
 
+   Level: intermediate
+
 .seealso: PetscDTAltVPullback(), PetscDTAltVPullbackMatrix()
 @*/
 PetscErrorCode PetscQuadraturePushForward(PetscQuadrature q, PetscInt imageDim, const PetscReal origin[], const PetscReal originImage[], const PetscReal J[], PetscInt formDegree, PetscQuadrature *Jinvstarq)
@@ -403,7 +408,7 @@ PetscErrorCode PetscQuadraturePushForward(PetscQuadrature q, PetscInt imageDim, 
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(q, PETSC_OBJECT_CLASSID, 1);
+  PetscValidHeaderSpecific(q, PETSCQUADRATURE_CLASSID, 1);
   if (imageDim < PetscAbsInt(formDegree)) SETERRQ2(PetscObjectComm((PetscObject)q), PETSC_ERR_ARG_INCOMP, "Cannot represent a %D-form in %D dimensions", PetscAbsInt(formDegree), imageDim);
   ierr = PetscQuadratureGetData(q, &dim, &Nc, &Npoints, &points, &weights);CHKERRQ(ierr);
   ierr = PetscDTBinomialInt(dim, PetscAbsInt(formDegree), &formSize);CHKERRQ(ierr);
@@ -414,7 +419,7 @@ PetscErrorCode PetscQuadraturePushForward(PetscQuadrature q, PetscInt imageDim, 
   ierr = PetscMalloc1(Npoints * imageDim, &imagePoints);CHKERRQ(ierr);
   ierr = PetscMalloc1(Npoints * imageNc, &imageWeights);CHKERRQ(ierr);
   ierr = PetscMalloc2(imageDim * dim, &Jinv, formSize * imageFormSize, &Jinvstar);CHKERRQ(ierr);
-  ierr = PetscDTJacobianInverse_Internal(dim, imageDim, J, Jinv);CHKERRQ(ierr);
+  ierr = PetscDTJacobianInverse_Internal(imageDim, dim, J, Jinv);CHKERRQ(ierr);
   ierr = PetscDTAltVPullbackMatrix(imageDim, dim, Jinv, formDegree, Jinvstar);CHKERRQ(ierr);
   for (pt = 0; pt < Npoints; pt++) {
     const PetscReal *point = &points[pt * dim];
@@ -623,6 +628,67 @@ do {                                                            \
   }                                                             \
 } while (0)
 
+/*@
+  PetscDTJacobiNorm - Compute the weighted L2 norm of a Jacobi polynomial.
+
+  $\| P^{\alpha,\beta}_n \|_{\alpha,\beta}^2 = \int_{-1}^1 (1 + x)^{\alpha} (1 - x)^{\beta} P^{\alpha,\beta}_n (x)^2 dx.$
+
+  Input Arguments:
+- alpha - the left exponent > -1
+. beta - the right exponent > -1
++ n - the polynomial degree
+
+  Output Arguments:
+. norm - the weighted L2 norm
+
+  Level: beginner
+
+.seealso: PetscDTJacobiEval()
+@*/
+PetscErrorCode PetscDTJacobiNorm(PetscReal alpha, PetscReal beta, PetscInt n, PetscReal *norm)
+{
+  PetscReal twoab1;
+  PetscReal gr;
+
+  PetscFunctionBegin;
+  if (alpha <= -1.) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Exponent alpha %g <= -1. invalid\n", (double) alpha);
+  if (beta <= -1.) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Exponent beta %g <= -1. invalid\n", (double) beta);
+  if (n < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "n %D < 0 invalid\n", n);
+  twoab1 = PetscPowReal(2., alpha + beta + 1.);
+#if defined(PETSC_HAVE_LGAMMA)
+  if (!n) {
+    gr = PetscExpReal(PetscLGamma(alpha+1.) + PetscLGamma(beta+1.) - PetscLGamma(alpha+beta+2.));
+  } else {
+    gr = PetscExpReal(PetscLGamma(n+alpha+1.) + PetscLGamma(n+beta+1.) - (PetscLGamma(n+1.) + PetscLGamma(n+alpha+beta+1.))) / (n+n+alpha+beta+1.);
+  }
+#else
+  {
+    PetscInt alphai = (PetscInt) alpha;
+    PetscInt betai = (PetscInt) beta;
+    PetscInt i;
+
+    gr = n ? (1. / (n+n+alpha+beta+1.)) : 1.;
+    if ((PetscReal) alphai == alpha) {
+      if (!n) {
+        for (i = 0; i < alphai; i++) gr *= (i+1.) / (beta+i+1.);
+        gr /= (alpha+beta+1.);
+      } else {
+        for (i = 0; i < alphai; i++) gr *= (n+i+1.) / (n+beta+i+1.);
+      }
+    } else if ((PetscReal) betai == beta) {
+      if (!n) {
+        for (i = 0; i < betai; i++) gr *= (i+1.) / (alpha+i+2.);
+        gr /= (alpha+beta+1.);
+      } else {
+        for (i = 0; i < betai; i++) gr *= (n+i+1.) / (n+alpha+i+1.);
+      }
+    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"lgamma() - math routine is unavailable.");
+  }
+#endif
+  *norm = PetscSqrtReal(twoab1 * gr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PetscDTJacobiEval_Internal(PetscInt npoints, PetscReal a, PetscReal b, PetscInt k, const PetscReal *points, PetscInt ndegree, const PetscInt *degrees, PetscReal *p)
 {
   PetscReal ak, bk;
@@ -676,6 +742,59 @@ static PetscErrorCode PetscDTJacobiEval_Internal(PetscInt npoints, PetscReal a, 
     }
     p += ndegree;
   }
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscDTJacobiEvalJet - Evaluate the jet (function and derivatives) of the Jacobi polynomials basis up to a given degree.  The Jacobi polynomials with indices $\alpha$ and $\beta$ are orthogonal with respect to the weighted inner product $\langle f, g \rangle = \int_{-1}^1 (1+x)^{\alpha} (1-x)^{\beta) f(x) g(x) dx$.
+
+  Input Arguments:
++ alpha - the left exponent of the weight
+. beta - the right exponetn of the weight
+. npoints - the number of points to evaluate the polynomials at
+. points - [npoints] array of point coordinates
+. degree - the maximm degree polynomial space to evaluate, (degree + 1) will be evaluated total.
+- k - the maximum derivative to evaluate in the jet, (k + 1) will be evaluated total.
+
+  Output Argments:
+- p - an array containing the evaluations of the Jacobi polynomials's jets on the points.  the size is (degree + 1) x
+  (k + 1) x npoints, which also describes the order of the dimensions of this three-dimensional array: the first
+  (slowest varying) dimension is polynomial degree; the second dimension is derivative order; the third (fastest
+  varying) dimension is the index of the evaluation point.
+
+  Level: advanced
+
+.seealso: PetscDTJacobiEval(), PetscDTPKDEvalJet()
+@*/
+PetscErrorCode PetscDTJacobiEvalJet(PetscReal alpha, PetscReal beta, PetscInt npoints, const PetscReal points[], PetscInt degree, PetscInt k, PetscReal p[])
+{
+  PetscInt        i, j, l;
+  PetscInt       *degrees;
+  PetscReal      *psingle;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  if (degree == 0) {
+    PetscInt zero = 0;
+
+    for (i = 0; i <= k; i++) {
+      ierr = PetscDTJacobiEval_Internal(npoints, alpha, beta, i, points, 1, &zero, &p[i*npoints]);CHKERRQ(ierr);
+    }
+    PetscFunctionReturn(0);
+  }
+  ierr = PetscMalloc1(degree + 1, &degrees);CHKERRQ(ierr);
+  ierr = PetscMalloc1((degree + 1) * npoints, &psingle);CHKERRQ(ierr);
+  for (i = 0; i <= degree; i++) degrees[i] = i;
+  for (i = 0; i <= k; i++) {
+    ierr = PetscDTJacobiEval_Internal(npoints, alpha, beta, i, points, degree + 1, degrees, psingle);CHKERRQ(ierr);
+    for (j = 0; j <= degree; j++) {
+      for (l = 0; l < npoints; l++) {
+        p[(j * (k + 1) + i) * npoints + l] = psingle[l * (degree + 1) + j];
+      }
+    }
+  }
+  ierr = PetscFree(psingle);CHKERRQ(ierr);
+  ierr = PetscFree(degrees);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -742,6 +861,281 @@ PetscErrorCode PetscDTLegendreEval(PetscInt npoints,const PetscReal *points,Pets
 
   PetscFunctionBegin;
   ierr = PetscDTJacobiEval(npoints, 0., 0., points, ndegree, degrees, B, D, D2);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscDTIndexToGradedOrder - convert an index into a tuple of monomial degrees in a graded order (that is, if the degree sum of tuple x is less than the degree sum of tuple y, then the index of x is smaller than the index of y)
+
+  Input Parameters:
++ len - the desired length of the degree tuple
+- index - the index to convert: should be >= 0
+
+  Output Parameter:
+. degtup - will be filled with a tuple of degrees
+
+  Level: beginner
+
+  Note: for two tuples x and y with the same degree sum, partial degree sums over the final elements of the tuples
+  acts as a tiebreaker.  For example, (2, 1, 1) and (1, 2, 1) have the same degree sum, but the degree sum over the
+  last two elements is smaller for the former, so (2, 1, 1) < (1, 2, 1).
+
+.seealso: PetscDTGradedOrderToIndex()
+@*/
+PetscErrorCode PetscDTIndexToGradedOrder(PetscInt len, PetscInt index, PetscInt degtup[])
+{
+  PetscInt i, total;
+  PetscInt sum;
+
+  PetscFunctionBeginHot;
+  if (len < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "length must be non-negative");
+  if (index < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "index must be non-negative");
+  total = 1;
+  sum = 0;
+  while (index >= total) {
+    index -= total;
+    total = (total * (len + sum)) / (sum + 1);
+    sum++;
+  }
+  for (i = 0; i < len; i++) {
+    PetscInt c;
+
+    degtup[i] = sum;
+    for (c = 0, total = 1; c < sum; c++) {
+      /* going into the loop, total is the number of way to have a tuple of sum exactly c with length len - 1 - i */
+      if (index < total) break;
+      index -= total;
+      total = (total * (len - 1 - i + c)) / (c + 1);
+      degtup[i]--;
+    }
+    sum -= degtup[i];
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscDTGradedOrderToIndex - convert a tuple into an index in a graded order, the inverse of PetscDTIndexToGradedOrder().
+
+  Input Parameters:
++ len - the length of the degree tuple
+- degtup - tuple with this length
+
+  Output Parameter:
+. index - index in graded order: >= 0
+
+  Level: Beginner
+
+  Note: for two tuples x and y with the same degree sum, partial degree sums over the final elements of the tuples
+  acts as a tiebreaker.  For example, (2, 1, 1) and (1, 2, 1) have the same degree sum, but the degree sum over the
+  last two elements is smaller for the former, so (2, 1, 1) < (1, 2, 1).
+
+.seealso: PetscDTIndexToGradedOrder()
+@*/
+PetscErrorCode PetscDTGradedOrderToIndex(PetscInt len, const PetscInt degtup[], PetscInt *index)
+{
+  PetscInt i, idx, sum, total;
+
+  PetscFunctionBeginHot;
+  if (len < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "length must be non-negative");
+  for (i = 0, sum = 0; i < len; i++) sum += degtup[i];
+  idx = 0;
+  total = 1;
+  for (i = 0; i < sum; i++) {
+    idx += total;
+    total = (total * (len + i)) / (i + 1);
+  }
+  for (i = 0; i < len - 1; i++) {
+    PetscInt c;
+
+    total = 1;
+    sum -= degtup[i];
+    for (c = 0; c < sum; c++) {
+      idx += total;
+      total = (total * (len - 1 - i + c)) / (c + 1);
+    }
+  }
+  *index = idx;
+  PetscFunctionReturn(0);
+}
+
+static PetscBool PKDCite = PETSC_FALSE;
+const char       PKDCitation[] = "@article{Kirby2010,\n"
+                                 "  title={Singularity-free evaluation of collapsed-coordinate orthogonal polynomials},\n"
+                                 "  author={Kirby, Robert C},\n"
+                                 "  journal={ACM Transactions on Mathematical Software (TOMS)},\n"
+                                 "  volume={37},\n"
+                                 "  number={1},\n"
+                                 "  pages={1--16},\n"
+                                 "  year={2010},\n"
+                                 "  publisher={ACM New York, NY, USA}\n}\n";
+
+/*@
+  PetscDTPKDEvalJet - Evaluate the jet (function and derivatives) of the Prioriol-Koornwinder-Dubiner (PKD) basis for
+  the space of polynomials up to a given degree.  The PKD basis is L2-orthonormal on the biunit simplex (which is used
+  as the reference element for finite elements in PETSc), which makes it a stable basis to use for evaluating
+  polynomials in that domain.
+
+  Input Arguments:
++ dim - the number of variables in the multivariate polynomials
+. npoints - the number of points to evaluate the polynomials at
+. points - [npoints x dim] array of point coordinates
+. degree - the degree (sum of degrees on the variables in a monomial) of the polynomial space to evaluate.  There are ((dim + degree) choose dim) polynomials in this space.
+- k - the maximum order partial derivative to evaluate in the jet.  There are (dim + k choose dim) partial derivatives
+  in the jet.  Choosing k = 0 means to evaluate just the function and no derivatives
+
+  Output Argments:
+- p - an array containing the evaluations of the PKD polynomials' jets on the points.  The size is ((dim + degree)
+  choose dim) x ((dim + k) choose dim) x npoints, which also describes the order of the dimensions of this
+  three-dimensional array: the first (slowest varying) dimension is basis function index; the second dimension is jet
+  index; the third (fastest varying) dimension is the index of the evaluation point.
+
+  Level: advanced
+
+  Note: The ordering of the basis functions, and the ordering of the derivatives in the jet, both follow the graded
+  ordering of PetscDTIndexToGradedOrder() and PetscDTGradedOrderToIndex().  For example, in 3D, the polynomial with
+  leading monomial x^3,y^1,z^2, which as degree tuple (2,0,1), which by PetscDTGradedOrderToIndex() has index 12 (it is the 13th basis function in the space);
+  the partial derivative $\partial_x \partial_z$ has order tuple (1,0,1), appears at index 6 in the jet (it is the 7th partial derivative in the jet).
+
+  The implementation uses Kirby's singularity-free evaluation algorithm, https://doi.org/10.1145/1644001.1644006.
+
+.seealso: PetscDTGradedOrderToIndex(), PetscDTIndexToGradedOrder(), PetscDTJacobiEvalJet()
+@*/
+PetscErrorCode PetscDTPKDEvalJet(PetscInt dim, PetscInt npoints, const PetscReal points[], PetscInt degree, PetscInt k, PetscReal p[])
+{
+  PetscInt        degidx, kidx, d, pt;
+  PetscInt        Nk, Ndeg;
+  PetscInt       *ktup, *degtup;
+  PetscReal      *scales, initscale, scaleexp;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscCitationsRegister(PKDCitation, &PKDCite);CHKERRQ(ierr);
+  ierr = PetscDTBinomialInt(dim + k, k, &Nk);CHKERRQ(ierr);
+  ierr = PetscDTBinomialInt(degree + dim, degree, &Ndeg);CHKERRQ(ierr);
+  ierr = PetscMalloc2(dim, &degtup, dim, &ktup);CHKERRQ(ierr);
+  ierr = PetscMalloc1(Ndeg, &scales);CHKERRQ(ierr);
+  initscale = 1.;
+  if (dim > 1) {
+    ierr = PetscDTBinomial(dim,2,&scaleexp);CHKERRQ(ierr);
+    initscale = PetscPowReal(2.,scaleexp*0.5);CHKERRQ(ierr);
+  }
+  for (degidx = 0; degidx < Ndeg; degidx++) {
+    PetscInt e, i;
+    PetscInt m1idx = -1, m2idx = -1;
+    PetscInt n;
+    PetscInt degsum;
+    PetscReal alpha;
+    PetscReal cnm1, cnm1x, cnm2;
+    PetscReal norm;
+
+    ierr = PetscDTIndexToGradedOrder(dim, degidx, degtup);CHKERRQ(ierr);
+    for (d = dim - 1; d >= 0; d--) if (degtup[d]) break;
+    if (d < 0) { /* constant is 1 everywhere, all derivatives are zero */
+      scales[degidx] = initscale;
+      for (e = 0; e < dim; e++) {
+        ierr = PetscDTJacobiNorm(e,0.,0,&norm);CHKERRQ(ierr);
+        scales[degidx] /= norm;
+      }
+      for (i = 0; i < npoints; i++) p[degidx * Nk * npoints + i] = 1.;
+      for (i = 0; i < (Nk - 1) * npoints; i++) p[(degidx * Nk + 1) * npoints + i] = 0.;
+      continue;
+    }
+    n = degtup[d];
+    degtup[d]--;
+    ierr = PetscDTGradedOrderToIndex(dim, degtup, &m1idx);CHKERRQ(ierr);
+    if (degtup[d] > 0) {
+      degtup[d]--;
+      ierr = PetscDTGradedOrderToIndex(dim, degtup, &m2idx);CHKERRQ(ierr);
+      degtup[d]++;
+    }
+    degtup[d]++;
+    for (e = 0, degsum = 0; e < d; e++) degsum += degtup[e];
+    alpha = 2 * degsum + d;
+    PetscDTJacobiRecurrence_Internal(n,alpha,0.,cnm1,cnm1x,cnm2);
+
+
+    scales[degidx] = initscale;
+    for (e = 0, degsum = 0; e < dim; e++) {
+      PetscInt  f;
+      PetscReal ealpha;
+      PetscReal enorm;
+
+      ealpha = 2 * degsum + e;
+      for (f = 0; f < degsum; f++) scales[degidx] *= 2.;
+      ierr = PetscDTJacobiNorm(ealpha,0.,degtup[e],&enorm);CHKERRQ(ierr);
+      scales[degidx] /= enorm;
+      degsum += degtup[e];
+    }
+
+    for (pt = 0; pt < npoints; pt++) {
+      /* compute the multipliers */
+      PetscReal thetanm1, thetanm1x, thetanm2;
+
+      thetanm1x = dim - (d+1) + 2.*points[pt * dim + d];
+      for (e = d+1; e < dim; e++) thetanm1x += points[pt * dim + e];
+      thetanm1x *= 0.5;
+      thetanm1 = (2. - (dim-(d+1)));
+      for (e = d+1; e < dim; e++) thetanm1 -= points[pt * dim + e];
+      thetanm1 *= 0.5;
+      thetanm2 = thetanm1 * thetanm1;
+
+      for (kidx = 0; kidx < Nk; kidx++) {
+        PetscInt f;
+
+        ierr = PetscDTIndexToGradedOrder(dim, kidx, ktup);CHKERRQ(ierr);
+        /* first sum in the same derivative terms */
+        p[(degidx * Nk + kidx) * npoints + pt] = (cnm1 * thetanm1 + cnm1x * thetanm1x) * p[(m1idx * Nk + kidx) * npoints + pt];
+        if (m2idx >= 0) {
+          p[(degidx * Nk + kidx) * npoints + pt] -= cnm2 * thetanm2 * p[(m2idx * Nk + kidx) * npoints + pt];
+        }
+
+        for (f = d; f < dim; f++) {
+          PetscInt km1idx, mplty = ktup[f];
+
+          if (!mplty) continue;
+          ktup[f]--;
+          ierr = PetscDTGradedOrderToIndex(dim, ktup, &km1idx);CHKERRQ(ierr);
+
+          /* the derivative of  cnm1x * thetanm1x  wrt x variable f is 0.5 * cnm1x if f > d otherwise it is cnm1x */
+          /* the derivative of  cnm1  * thetanm1   wrt x variable f is 0 if f == d, otherwise it is -0.5 * cnm1 */
+          /* the derivative of -cnm2  * thetanm2   wrt x variable f is 0 if f == d, otherwise it is cnm2 * thetanm1 */
+          if (f > d) {
+            PetscInt f2;
+
+            p[(degidx * Nk + kidx) * npoints + pt] += mplty * 0.5 * (cnm1x - cnm1) * p[(m1idx * Nk + km1idx) * npoints + pt];
+            if (m2idx >= 0) {
+              p[(degidx * Nk + kidx) * npoints + pt] += mplty * cnm2 * thetanm1 * p[(m2idx * Nk + km1idx) * npoints + pt];
+            }
+            /* second derivatives of -cnm2  * thetanm2   wrt x variable f,f2 is like - 0.5 * cnm2 */
+            for (f2 = f; f2 < dim; f2++) {
+              PetscInt km2idx, mplty2 = ktup[f2];
+              PetscInt factor;
+
+              if (!mplty2) continue;
+              ktup[f2]--;
+              ierr = PetscDTGradedOrderToIndex(dim, ktup, &km2idx);CHKERRQ(ierr);
+
+              factor = mplty * mplty2;
+              if (f == f2) factor /= 2;
+              p[(degidx * Nk + kidx) * npoints + pt] -= 0.5 * factor * cnm2 * p[(m2idx * Nk + km2idx) * npoints + pt];
+              ktup[f2]++;
+            }
+          } else {
+            p[(degidx * Nk + kidx) * npoints + pt] += mplty * cnm1x * p[(m1idx * Nk + km1idx) * npoints + pt];
+          }
+          ktup[f]++;
+        }
+      }
+    }
+  }
+  for (degidx = 0; degidx < Ndeg; degidx++) {
+    PetscReal scale = scales[degidx];
+    PetscInt i;
+
+    for (i = 0; i < Nk * npoints; i++) p[degidx*Nk*npoints + i] *= scale;
+  }
+  ierr = PetscFree(scales);CHKERRQ(ierr);
+  ierr = PetscFree2(degtup, ktup);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -882,20 +1276,11 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTComputeJacobiDerivative(PetscReal a, P
   PetscFunctionReturn(0);
 }
 
-/* Maps from [-1,1]^2 to the (-1,1) reference triangle */
-PETSC_STATIC_INLINE PetscErrorCode PetscDTMapSquareToTriangle_Internal(PetscReal x, PetscReal y, PetscReal *xi, PetscReal *eta)
-{
-  PetscFunctionBegin;
-  *xi  = 0.5 * (1.0 + x) * (1.0 - y) - 1.0;
-  *eta = y;
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode PetscDTGaussJacobiQuadrature_Newton_Internal(PetscInt npoints, PetscReal a, PetscReal b, PetscReal x[], PetscReal w[])
 {
   PetscInt       maxIter = 100;
   PetscReal      eps     = PetscExpReal(0.75 * PetscLogReal(PETSC_MACHINE_EPSILON));
-  PetscReal      a1, a2, a3, a4, a5, a6, gf;
+  PetscReal      a1, a6, gf;
   PetscInt       k;
   PetscErrorCode ierr;
 
@@ -903,11 +1288,14 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature_Newton_Internal(PetscInt npoi
 
   a1 = PetscPowReal(2.0, a+b+1);
 #if defined(PETSC_HAVE_LGAMMA)
-  a2 = PetscLGamma(a + npoints + 1);
-  a3 = PetscLGamma(b + npoints + 1);
-  a4 = PetscLGamma(a + b + npoints + 1);
-  a5 = PetscLGamma(npoints + 1);
-  gf = PetscExpReal(a2 + a3 - (a4 + a5));
+  {
+    PetscReal a2, a3, a4, a5;
+    a2 = PetscLGamma(a + npoints + 1);
+    a3 = PetscLGamma(b + npoints + 1);
+    a4 = PetscLGamma(a + b + npoints + 1);
+    a5 = PetscLGamma(npoints + 1);
+    gf = PetscExpReal(a2 + a3 - (a4 + a5));
+  }
 #else
   {
     PetscInt ia, ib;
@@ -1322,17 +1710,6 @@ PetscErrorCode PetscDTGaussTensorQuadrature(PetscInt dim, PetscInt Nc, PetscInt 
   PetscFunctionReturn(0);
 }
 
-/* Maps from [-1,1]^2 to the (-1,1) reference triangle */
-PETSC_STATIC_INLINE PetscErrorCode PetscDTMapCubeToTetrahedron_Internal(PetscReal x, PetscReal y, PetscReal z, PetscReal *xi, PetscReal *eta, PetscReal *zeta)
-{
-  PetscFunctionBegin;
-  *xi   = 0.25 * (1.0 + x) * (1.0 - y) * (1.0 - z) - 1.0;
-  *eta  = 0.5  * (1.0 + y) * (1.0 - z) - 1.0;
-  *zeta = z;
-  PetscFunctionReturn(0);
-}
-
-
 /*@
   PetscDTStroudConicalQuadrature - create Stroud conical quadrature for a simplex
 
@@ -1359,63 +1736,43 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTMapCubeToTetrahedron_Internal(PetscRea
 @*/
 PetscErrorCode PetscDTStroudConicalQuadrature(PetscInt dim, PetscInt Nc, PetscInt npoints, PetscReal a, PetscReal b, PetscQuadrature *q)
 {
-  PetscInt       totpoints = dim > 1 ? dim > 2 ? npoints*PetscSqr(npoints) : PetscSqr(npoints) : npoints;
-  PetscReal     *px, *wx, *py, *wy, *pz, *wz, *x, *w;
-  PetscInt       i, j, k, c; PetscErrorCode ierr;
+  PetscInt       totprev, totrem;
+  PetscInt       totpoints;
+  PetscReal     *p1, *w1;
+  PetscReal     *x, *w;
+  PetscInt       i, j, k, l, m, pt, c;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if ((a != -1.0) || (b != 1.0)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must use default internal right now");
+  totpoints = 1;
+  for (i = 0, totpoints = 1; i < dim; i++) totpoints *= npoints;
   ierr = PetscMalloc1(totpoints*dim, &x);CHKERRQ(ierr);
   ierr = PetscMalloc1(totpoints*Nc, &w);CHKERRQ(ierr);
-  switch (dim) {
-  case 0:
-    ierr = PetscFree(x);CHKERRQ(ierr);
-    ierr = PetscFree(w);CHKERRQ(ierr);
-    ierr = PetscMalloc1(1, &x);CHKERRQ(ierr);
-    ierr = PetscMalloc1(Nc, &w);CHKERRQ(ierr);
-    x[0] = 0.0;
-    for (c = 0; c < Nc; ++c) w[c] = 1.0;
-    break;
-  case 1:
-    ierr = PetscMalloc1(npoints,&wx);CHKERRQ(ierr);
-    ierr = PetscDTGaussJacobiQuadrature(npoints, -1., 1., 0.0, 0.0, x, wx);CHKERRQ(ierr);
-    for (i = 0; i < npoints; ++i) for (c = 0; c < Nc; ++c) w[i*Nc+c] = wx[i];
-    ierr = PetscFree(wx);CHKERRQ(ierr);
-    break;
-  case 2:
-    ierr = PetscMalloc4(npoints,&px,npoints,&wx,npoints,&py,npoints,&wy);CHKERRQ(ierr);
-    ierr = PetscDTGaussJacobiQuadrature(npoints, -1., 1., 0.0, 0.0, px, wx);CHKERRQ(ierr);
-    ierr = PetscDTGaussJacobiQuadrature(npoints, -1., 1., 1.0, 0.0, py, wy);CHKERRQ(ierr);
-    for (i = 0; i < npoints; ++i) {
-      for (j = 0; j < npoints; ++j) {
-        ierr = PetscDTMapSquareToTriangle_Internal(px[i], py[j], &x[(i*npoints+j)*2+0], &x[(i*npoints+j)*2+1]);CHKERRQ(ierr);
-        for (c = 0; c < Nc; ++c) w[(i*npoints+j)*Nc+c] = 0.5 * wx[i] * wy[j];
-      }
-    }
-    ierr = PetscFree4(px,wx,py,wy);CHKERRQ(ierr);
-    break;
-  case 3:
-    ierr = PetscMalloc6(npoints,&px,npoints,&wx,npoints,&py,npoints,&wy,npoints,&pz,npoints,&wz);CHKERRQ(ierr);
-    ierr = PetscDTGaussJacobiQuadrature(npoints, -1., 1., 0.0, 0.0, px, wx);CHKERRQ(ierr);
-    ierr = PetscDTGaussJacobiQuadrature(npoints, -1., 1., 1.0, 0.0, py, wy);CHKERRQ(ierr);
-    ierr = PetscDTGaussJacobiQuadrature(npoints, -1., 1., 2.0, 0.0, pz, wz);CHKERRQ(ierr);
-    for (i = 0; i < npoints; ++i) {
-      for (j = 0; j < npoints; ++j) {
-        for (k = 0; k < npoints; ++k) {
-          ierr = PetscDTMapCubeToTetrahedron_Internal(px[i], py[j], pz[k], &x[((i*npoints+j)*npoints+k)*3+0], &x[((i*npoints+j)*npoints+k)*3+1], &x[((i*npoints+j)*npoints+k)*3+2]);CHKERRQ(ierr);
-          for (c = 0; c < Nc; ++c) w[((i*npoints+j)*npoints+k)*Nc+c] = 0.125 * wx[i] * wy[j] * wz[k];
+  ierr = PetscMalloc2(npoints, &p1, npoints, &w1);CHKERRQ(ierr);
+  for (i = 0; i < totpoints*Nc; i++) w[i] = 1.;
+  for (i = 0, totprev = 1, totrem = totpoints / npoints; i < dim; i++) {
+    PetscReal mul;
+
+    mul = PetscPowReal(2.,-i);
+    ierr = PetscDTGaussJacobiQuadrature(npoints, -1., 1., i, 0.0, p1, w1);CHKERRQ(ierr);
+    for (pt = 0, l = 0; l < totprev; l++) {
+      for (j = 0; j < npoints; j++) {
+        for (m = 0; m < totrem; m++, pt++) {
+          for (k = 0; k < i; k++) x[pt*dim+k] = (x[pt*dim+k]+1.)*(1.-p1[j])*0.5 - 1.;
+          x[pt * dim + i] = p1[j];
+          for (c = 0; c < Nc; c++) w[pt*Nc + c] *= mul * w1[j];
         }
       }
     }
-    ierr = PetscFree6(px,wx,py,wy,pz,wz);CHKERRQ(ierr);
-    break;
-  default:
-    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot construct quadrature rule for dimension %d", dim);
+    totprev *= npoints;
+    totrem /= npoints;
   }
+  ierr = PetscFree2(p1, w1);CHKERRQ(ierr);
   ierr = PetscQuadratureCreate(PETSC_COMM_SELF, q);CHKERRQ(ierr);
   ierr = PetscQuadratureSetOrder(*q, 2*npoints-1);CHKERRQ(ierr);
   ierr = PetscQuadratureSetData(*q, dim, Nc, totpoints, x, w);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)*q,"GaussJacobi");CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)*q,"StroudConical");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1774,14 +2131,14 @@ PetscErrorCode PetscDTReconstructPoly(PetscInt degree,PetscInt nsource,const Pet
   PetscValidRealPointer(targetx,5);
   PetscValidRealPointer(R,6);
   if (degree >= nsource) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Reconstruction degree %D must be less than number of source intervals %D",degree,nsource);
-#if defined(PETSC_USE_DEBUG)
-  for (i=0; i<nsource; i++) {
-    if (sourcex[i] >= sourcex[i+1]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Source interval %D has negative orientation (%g,%g)",i,(double)sourcex[i],(double)sourcex[i+1]);
+  if (PetscDefined(USE_DEBUG)) {
+    for (i=0; i<nsource; i++) {
+      if (sourcex[i] >= sourcex[i+1]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Source interval %D has negative orientation (%g,%g)",i,(double)sourcex[i],(double)sourcex[i+1]);
+    }
+    for (i=0; i<ntarget; i++) {
+      if (targetx[i] >= targetx[i+1]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Target interval %D has negative orientation (%g,%g)",i,(double)targetx[i],(double)targetx[i+1]);
+    }
   }
-  for (i=0; i<ntarget; i++) {
-    if (targetx[i] >= targetx[i+1]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Target interval %D has negative orientation (%g,%g)",i,(double)targetx[i],(double)targetx[i+1]);
-  }
-#endif
   xmin = PetscMin(sourcex[0],targetx[0]);
   xmax = PetscMax(sourcex[nsource],targetx[ntarget]);
   center = (xmin + xmax)/2;
@@ -1821,7 +2178,7 @@ PetscErrorCode PetscDTReconstructPoly(PetscInt degree,PetscInt nsource,const Pet
 +  n - the number of GLL nodes
 .  nodes - the GLL nodes
 .  weights - the GLL weights
-.  f - the function values at the nodes
+-  f - the function values at the nodes
 
    Output Parameter:
 .  in - the value of the integral
@@ -1851,7 +2208,7 @@ PetscErrorCode PetscGaussLobattoLegendreIntegrate(PetscInt n,PetscReal *nodes,Pe
    Input Parameter:
 +  n - the number of GLL nodes
 .  nodes - the GLL nodes
-.  weights - the GLL weights
+-  weights - the GLL weights
 
    Output Parameter:
 .  A - the stiffness element
@@ -2070,7 +2427,7 @@ PetscErrorCode PetscGaussLobattoLegendreElementGradientDestroy(PetscInt n,PetscR
    Input Parameter:
 +  n - the number of GLL nodes
 .  nodes - the GLL nodes
-.  weights - the GLL weightss
+-  weights - the GLL weightss
 
    Output Parameter:
 .  AA - the stiffness element
@@ -2164,5 +2521,110 @@ PetscErrorCode PetscGaussLobattoLegendreElementMassDestroy(PetscInt n,PetscReal 
   ierr = PetscFree((*AA)[0]);CHKERRQ(ierr);
   ierr = PetscFree(*AA);CHKERRQ(ierr);
   *AA  = NULL;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscDTIndexToBary - convert an index into a barycentric coordinate.
+
+  Input Parameters:
++ len - the desired length of the barycentric tuple (usually 1 more than the dimension it represents, so a barycentric coordinate in a triangle has length 3)
+. sum - the value that the sum of the barycentric coordinates (which will be non-negative integers) should sum to
+- index - the index to convert: should be >= 0 and < Binomial(len - 1 + sum, sum)
+
+  Output Parameter:
+. coord - will be filled with the barycentric coordinate
+
+  Level: beginner
+
+  Note: the indices map to barycentric coordinates in lexicographic order, where the first index is the
+  least significant and the last index is the most significant.
+
+.seealso: PetscDTBaryToIndex()
+@*/
+PetscErrorCode PetscDTIndexToBary(PetscInt len, PetscInt sum, PetscInt index, PetscInt coord[])
+{
+  PetscInt c, d, s, total, subtotal, nexttotal;
+
+  PetscFunctionBeginHot;
+  if (len < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "length must be non-negative");
+  if (index < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "index must be non-negative");
+  if (!len) {
+    if (!sum && !index) PetscFunctionReturn(0);
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid index or sum for length 0 barycentric coordinate");
+  }
+  for (c = 1, total = 1; c <= len; c++) {
+    /* total is the number of ways to have a tuple of length c with sum */
+    if (index < total) break;
+    total = (total * (sum + c)) / c;
+  }
+  if (c > len) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "index out of range");
+  for (d = c; d < len; d++) coord[d] = 0;
+  for (s = 0, subtotal = 1, nexttotal = 1; c > 0;) {
+    /* subtotal is the number of ways to have a tuple of length c with sum s */
+    /* nexttotal is the number of ways to have a tuple of length c-1 with sum s */
+    if ((index + subtotal) >= total) {
+      coord[--c] = sum - s;
+      index -= (total - subtotal);
+      sum = s;
+      total = nexttotal;
+      subtotal = 1;
+      nexttotal = 1;
+      s = 0;
+    } else {
+      subtotal = (subtotal * (c + s)) / (s + 1);
+      nexttotal = (nexttotal * (c - 1 + s)) / (s + 1);
+      s++;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscDTBaryToIndex - convert a barycentric coordinate to an index
+
+  Input Parameters:
++ len - the desired length of the barycentric tuple (usually 1 more than the dimension it represents, so a barycentric coordinate in a triangle has length 3)
+. sum - the value that the sum of the barycentric coordinates (which will be non-negative integers) should sum to
+- coord - a barycentric coordinate with the given length and sum
+
+  Output Parameter:
+. index - the unique index for the coordinate, >= 0 and < Binomial(len - 1 + sum, sum)
+
+  Level: beginner
+
+  Note: the indices map to barycentric coordinates in lexicographic order, where the first index is the
+  least significant and the last index is the most significant.
+
+.seealso: PetscDTIndexToBary
+@*/
+PetscErrorCode PetscDTBaryToIndex(PetscInt len, PetscInt sum, const PetscInt coord[], PetscInt *index)
+{
+  PetscInt c;
+  PetscInt i;
+  PetscInt total;
+
+  PetscFunctionBeginHot;
+  if (len < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "length must be non-negative");
+  if (!len) {
+    if (!sum) {
+      *index = 0;
+      PetscFunctionReturn(0);
+    }
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid index or sum for length 0 barycentric coordinate");
+  }
+  for (c = 1, total = 1; c < len; c++) total = (total * (sum + c)) / c;
+  i = total - 1;
+  c = len - 1;
+  sum -= coord[c];
+  while (sum > 0) {
+    PetscInt subtotal;
+    PetscInt s;
+
+    for (s = 1, subtotal = 1; s < sum; s++) subtotal = (subtotal * (c + s)) / s;
+    i   -= subtotal;
+    sum -= coord[--c];
+  }
+  *index = i;
   PetscFunctionReturn(0);
 }

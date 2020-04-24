@@ -27,6 +27,8 @@
 #define MatFactorType PetscEnum
 #define MatFactorError PetscEnum
 #define MatFactorShiftType PetscEnum
+#define MatProductType PetscEnum
+#define MatProductAlgorithm character*(80)
 #define MatFactorSchurStatus PetscEnum
 #define MatOrderingType character*(80)
 #define MatSORType PetscEnum
@@ -140,6 +142,16 @@
 #define MATSEQSELL         'seqsell'
 #define MATMPISELL         'mpisell'
 #define MATDUMMY           'dummy'
+
+#define MATLMVM            'lmvm'
+#define MATLMVMBROYDEN     'lmvmbroyden'
+#define MATLMVMBADBROYDEN  'lmvmbadbroyden'
+#define MATLMVMSYMBROYDEN  'lmvmsymbroyden'
+#define MATLMVMSYMBADBROYDEN 'lmvmsymbadbroyden'
+#define MATLMVMDIAGBROYDEN 'lmvmdiagbroyden'
+#define MATLMVMSR1         'lmvmsr1'
+#define MATLMVMDFP         'lmvmdfp'
+#define MATLMVMBFGS        'lmvmbfgs'
 
 !
 ! MatMFFDType values

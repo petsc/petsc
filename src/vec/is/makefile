@@ -1,8 +1,8 @@
-
+-include ../petscdir.mk
 ALL: lib
 
 SOURCEH   =
-DIRS      = is sf ao section utils examples
+DIRS      = is sf ao section utils tests
 LOCDIR    = src/vec/is/
 MANSEC    = Vec
 SUBMANSEC = IS

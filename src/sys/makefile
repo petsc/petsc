@@ -2,7 +2,7 @@
 ALL: lib
 SOURCEH   =
 DIRS      = mpiuni f90-mod classes error dll fileio memory objects time utils logging \
-	    examples info fsrc f90-src python ams totalview yaml \
+	    tests tutorials info fsrc f90-src python ams totalview yaml \
             webclient
 LOCDIR    = src/sys/
 MANSEC    = Sys

@@ -32,6 +32,7 @@ PETSC_EXTERN PetscErrorCode DMLabelHasStratum(DMLabel, PetscInt, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMLabelGetStratumSize(DMLabel, PetscInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMLabelGetStratumIS(DMLabel, PetscInt, IS *);
 PETSC_EXTERN PetscErrorCode DMLabelSetStratumIS(DMLabel, PetscInt, IS);
+PETSC_EXTERN PetscErrorCode DMLabelSetStratumBounds(DMLabel, PetscInt, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode DMLabelClearStratum(DMLabel, PetscInt);
 
 PETSC_EXTERN PetscErrorCode DMLabelComputeIndex(DMLabel);

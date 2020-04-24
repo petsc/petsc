@@ -55,7 +55,7 @@ static PetscErrorCode DMProjectPoint_Func_Private(DM dm, PetscDS ds, DM dmIn, Pe
         DM                rdm;
 
         ierr = PetscDualSpaceGetDM(sp[f],&rdm);CHKERRQ(ierr);
-        ierr = PetscDualSpaceGetAllPoints(sp[f], &allPoints);CHKERRQ(ierr);
+        ierr = PetscDualSpaceGetAllData(sp[f], &allPoints, NULL);CHKERRQ(ierr);
         ierr = PetscQuadratureGetData(allPoints,&dim,NULL,&numPoints,&points,NULL);CHKERRQ(ierr);
         ierr = DMGetWorkArray(rdm,numPoints*Nc[f],MPIU_SCALAR,&pointEval);CHKERRQ(ierr);
         ierr = DMGetWorkArray(rdm,coordDim,MPIU_REAL,&x);CHKERRQ(ierr);
@@ -187,7 +187,7 @@ static PetscErrorCode DMProjectPoint_Field_Private(DM dm, PetscDS ds, DM dmIn, D
       continue;
     }
     ierr = PetscDualSpaceGetDM(sp[f],&dm);CHKERRQ(ierr);
-    ierr = PetscDualSpaceGetAllPoints(sp[f], &allPoints);CHKERRQ(ierr);
+    ierr = PetscDualSpaceGetAllData(sp[f], &allPoints, NULL);CHKERRQ(ierr);
     ierr = PetscQuadratureGetData(allPoints,&dim,NULL,&numPoints,&points,NULL);CHKERRQ(ierr);
     ierr = DMGetWorkArray(dm,numPoints*Nc[f],MPIU_SCALAR,&pointEval);CHKERRQ(ierr);
     for (q = 0; q < numPoints; ++q, ++tp) {
@@ -290,7 +290,7 @@ static PetscErrorCode DMProjectPoint_BdField_Private(DM dm, PetscDS ds, DM dmIn,
       continue;
     }
     ierr = PetscDualSpaceGetDM(sp[f],&dm);CHKERRQ(ierr);
-    ierr = PetscDualSpaceGetAllPoints(sp[f], &allPoints);CHKERRQ(ierr);
+    ierr = PetscDualSpaceGetAllData(sp[f], &allPoints, NULL);CHKERRQ(ierr);
     ierr = PetscQuadratureGetData(allPoints,&dim,NULL,&numPoints,&points,NULL);CHKERRQ(ierr);
     ierr = DMGetWorkArray(dm,numPoints*Nc[f],MPIU_SCALAR,&pointEval);CHKERRQ(ierr);
     for (q = 0; q < numPoints; ++q, ++tp) {
@@ -368,7 +368,7 @@ static PetscErrorCode PetscDualSpaceGetAllPointsUnion(PetscInt Nf, PetscDualSpac
       PetscQuadrature fAllPoints;
       PetscInt        fNumPoints;
 
-      ierr = PetscDualSpaceGetAllPoints(sp[f],&fAllPoints);CHKERRQ(ierr);
+      ierr = PetscDualSpaceGetAllData(sp[f],&fAllPoints, NULL);CHKERRQ(ierr);
       ierr = PetscQuadratureGetData(fAllPoints, NULL, NULL, &fNumPoints, NULL, NULL);CHKERRQ(ierr);
       numPoints += fNumPoints;
     }
@@ -384,7 +384,7 @@ static PetscErrorCode PetscDualSpaceGetAllPointsUnion(PetscInt Nf, PetscDualSpac
       PetscInt        qdim, fNumPoints, q;
       const PetscReal *fPoints;
 
-      ierr = PetscDualSpaceGetAllPoints(sp[f],&fAllPoints);CHKERRQ(ierr);
+      ierr = PetscDualSpaceGetAllData(sp[f],&fAllPoints, NULL);CHKERRQ(ierr);
       ierr = PetscQuadratureGetData(fAllPoints, &qdim, NULL, &fNumPoints, &fPoints, NULL);CHKERRQ(ierr);
       if (qdim != dim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Spatial dimension %D for dual basis does not match input dimension %D", qdim, dim);
       for (q = 0; q < fNumPoints*dim; ++q) points[numPoints*dim+q] = fPoints[q];
@@ -561,7 +561,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
     } else SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", f);
   }
   ierr = DMGetCoordinateField(dm,&coordField);CHKERRQ(ierr);
-  if (type == DM_BC_ESSENTIAL_FIELD || type == DM_BC_NATURAL_FIELD) {
+  if (type == DM_BC_ESSENTIAL_FIELD || type == DM_BC_ESSENTIAL_BD_FIELD || type == DM_BC_NATURAL_FIELD) {
     PetscInt         effectiveHeight = auxBd ? minHeight : 0;
     PetscFE          fem, subfem;
     PetscBool        isfe;
@@ -604,15 +604,9 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
     IS           heightIS;
 
     /* Note we assume that dm and dmIn share the same topology */
-    ierr = DMPlexGetHeightStratum(plex, h, &pStart, &pEnd);CHKERRQ(ierr);
+    ierr = DMPlexGetSimplexOrBoxCells(plex, h, &pStart, &pEnd);CHKERRQ(ierr);
     ierr = DMGetFirstLabelEntry_Private(dm, dm, label, numIds, ids, h, &lStart, NULL);CHKERRQ(ierr);
     ierr = DMLabelGetStratumIS(depthLabel, depth - h, &heightIS);CHKERRQ(ierr);
-    if (!h) {
-      PetscInt cEndInterior;
-
-      ierr = DMPlexGetInteriorCellStratum(dm, NULL, &cEndInterior);CHKERRQ(ierr);
-      pEnd = cEndInterior < 0 ? pEnd : cEndInterior;
-    }
     if (pEnd <= pStart) {
       ierr = ISDestroy(&heightIS);CHKERRQ(ierr);
       continue;
@@ -733,7 +727,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
     ierr = DMRestoreWorkArray(dm, Nf, MPI_INT, &fieldActive);CHKERRQ(ierr);
   }
   /* Cleanup */
-  if (type == DM_BC_ESSENTIAL_FIELD || type == DM_BC_NATURAL_FIELD) {
+  if (type == DM_BC_ESSENTIAL_FIELD || type == DM_BC_ESSENTIAL_BD_FIELD || type == DM_BC_NATURAL_FIELD) {
     PetscInt  effectiveHeight = auxBd ? minHeight : 0;
     PetscFE   fem, subfem;
     PetscBool isfe;
@@ -806,5 +800,19 @@ PetscErrorCode DMProjectFieldLabelLocal_Plex(DM dm, PetscReal time, DMLabel labe
 
   PetscFunctionBegin;
   ierr = DMProjectLocal_Generic_Plex(dm, time, localU, Ncc, comps, label, numIds, ids, DM_BC_ESSENTIAL_FIELD, (void (**)(void)) funcs, NULL, mode, localX);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMProjectBdFieldLabelLocal_Plex(DM dm, PetscReal time, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscInt Ncc, const PetscInt comps[], Vec localU,
+                                               void (**funcs)(PetscInt, PetscInt, PetscInt,
+                                                              const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                              const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                              PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]),
+                                               InsertMode mode, Vec localX)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMProjectLocal_Generic_Plex(dm, time, localU, Ncc, comps, label, numIds, ids, DM_BC_ESSENTIAL_BD_FIELD, (void (**)(void)) funcs, NULL, mode, localX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

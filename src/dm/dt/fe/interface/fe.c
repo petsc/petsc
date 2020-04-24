@@ -1011,8 +1011,7 @@ PetscErrorCode PetscFEComputeTabulation(PetscFE fem, PetscInt npoints, const Pet
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
   PetscValidPointer(points, 3);
   PetscValidPointer(T, 5);
-#ifdef PETSC_USE_DEBUG
-  {
+  if (PetscDefined(USE_DEBUG)) {
     DM               dm;
     PetscDualSpace   Q;
     PetscInt         Nb;   /* Dimension of FE space P */
@@ -1029,7 +1028,6 @@ PetscErrorCode PetscFEComputeTabulation(PetscFE fem, PetscInt npoints, const Pet
     if (T->Nc   != Nc)              SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Tabulation Nc %D must match requested Nc %D", T->Nc, Nc);
     if (T->cdim != cdim)            SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Tabulation cdim %D must match requested cdim %D", T->cdim, cdim);
   }
-#endif
   T->Nr = 1;
   T->Np = npoints;
   ierr = (*fem->ops->createtabulation)(fem, npoints, points, K, T);CHKERRQ(ierr);
@@ -1188,6 +1186,8 @@ PetscErrorCode PetscFEGetDimension(PetscFE fem, PetscInt *dim)
 
   Note: This just forwards the call onto PetscDualSpacePushforward().
 
+  Note: This only handles tranformations when the embedding dimension of the geometry in fegeom is the same as the reference dimension.
+
 .seealso: PetscDualSpacePushforward()
 @*/
 PetscErrorCode PetscFEPushforward(PetscFE fe, PetscFEGeom *fegeom, PetscInt Nv, PetscScalar vals[])
@@ -1214,6 +1214,8 @@ PetscErrorCode PetscFEPushforward(PetscFE fe, PetscFEGeom *fegeom, PetscInt Nv, 
   Level: advanced
 
   Note: This just forwards the call onto PetscDualSpacePushforwardGradient().
+
+  Note: This only handles tranformations when the embedding dimension of the geometry in fegeom is the same as the reference dimension.
 
 .seealso: PetscFEPushforward(), PetscDualSpacePushforwardGradient(), PetscDualSpacePushforward()
 @*/
@@ -1329,7 +1331,7 @@ __kernel void integrateElementQuadrature(int N_cb, __global float *coefficients,
 . probAux      - The PetscDS specifying the auxiliary discretizations
 - coefficientsAux - The array of FEM auxiliary basis coefficients for the elements
 
-  Output Parameter
+  Output Parameter:
 . integral     - the integral for this field
 
   Level: intermediate
@@ -1365,7 +1367,7 @@ PetscErrorCode PetscFEIntegrate(PetscDS prob, PetscInt field, PetscInt Ne, Petsc
 . probAux      - The PetscDS specifying the auxiliary discretizations
 - coefficientsAux - The array of FEM auxiliary basis coefficients for the elements
 
-  Output Parameter
+  Output Parameter:
 . integral     - the integral for this field
 
   Level: intermediate
@@ -1406,7 +1408,7 @@ PetscErrorCode PetscFEIntegrateBd(PetscDS prob, PetscInt field,
 . coefficientsAux - The array of FEM auxiliary basis coefficients for the elements
 - t            - The time
 
-  Output Parameter
+  Output Parameter:
 . elemVec      - the element residual vectors from each element
 
   Note:
@@ -1451,7 +1453,7 @@ PetscErrorCode PetscFEIntegrateResidual(PetscDS prob, PetscInt field, PetscInt N
 . coefficientsAux - The array of FEM auxiliary basis coefficients for the elements
 - t            - The time
 
-  Output Parameter
+  Output Parameter:
 . elemVec      - the element residual vectors from each element
 
   Level: intermediate
@@ -1491,7 +1493,7 @@ PetscErrorCode PetscFEIntegrateBdResidual(PetscDS prob, PetscInt field, PetscInt
 . t            - The time
 - u_tShift     - A multiplier for the dF/du_t term (as opposed to the dF/du term)
 
-  Output Parameter
+  Output Parameter:
 . elemMat      - the element matrices for the Jacobian from each element
 
   Note:
@@ -1526,7 +1528,7 @@ PetscErrorCode PetscFEIntegrateJacobian(PetscDS prob, PetscFEJacobianType jtype,
   Not collective
 
   Input Parameters:
-. prob         - The PetscDS specifying the discretizations and continuum functions
++ prob         - The PetscDS specifying the discretizations and continuum functions
 . fieldI       - The test field being integrated
 . fieldJ       - The basis field being integrated
 . Ne           - The number of elements in the chunk
@@ -1538,7 +1540,7 @@ PetscErrorCode PetscFEIntegrateJacobian(PetscDS prob, PetscFEJacobianType jtype,
 . t            - The time
 - u_tShift     - A multiplier for the dF/du_t term (as opposed to the dF/du term)
 
-  Output Parameter
+  Output Parameter:
 . elemMat              - the element matrices for the Jacobian from each element
 
   Note:
@@ -1657,6 +1659,8 @@ PetscErrorCode PetscFERefine(PetscFE fe, PetscFE *feRef)
   PetscQuadrature  q, qref;
   const PetscReal *v0, *jac;
   PetscInt         numComp, numSubelements;
+  PetscInt         cStart, cEnd, c;
+  PetscDualSpace  *cellSpaces;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -1669,8 +1673,15 @@ PetscErrorCode PetscFERefine(PetscFE fe, PetscFE *feRef)
   Pref = P;
   /* Create dual space */
   ierr = PetscDualSpaceDuplicate(Q, &Qref);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetType(Qref, PETSCDUALSPACEREFINED);CHKERRQ(ierr);
   ierr = DMRefine(K, PetscObjectComm((PetscObject) fe), &Kref);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetDM(Qref, Kref);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(Kref, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = PetscMalloc1(cEnd - cStart, &cellSpaces);CHKERRQ(ierr);
+  /* TODO: fix for non-uniform refinement */
+  for (c = 0; c < cEnd - cStart; c++) cellSpaces[c] = Q;
+  ierr = PetscDualSpaceRefinedSetCellSpaces(Qref, cellSpaces);CHKERRQ(ierr);
+  ierr = PetscFree(cellSpaces);CHKERRQ(ierr);
   ierr = DMDestroy(&Kref);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetUp(Qref);CHKERRQ(ierr);
   /* Create element */

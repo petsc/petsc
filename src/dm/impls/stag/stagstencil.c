@@ -112,8 +112,7 @@ static PetscErrorCode DMStagStencilToIndexLocal(DM dm,PetscInt n,const DMStagSte
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
-#if defined(PETSC_USE_DEBUG)
-  {
+  if (PetscDefined(USE_DEBUG)) {
     PetscInt i,nGhost[DMSTAG_MAX_DIM],endGhost[DMSTAG_MAX_DIM];
     ierr = DMStagGetGhostCorners(dm,&startGhost[0],&startGhost[1],&startGhost[2],&nGhost[0],&nGhost[1],&nGhost[2]);CHKERRQ(ierr);
     for (i=0; i<DMSTAG_MAX_DIM; ++i) endGhost[i] = startGhost[i] + nGhost[i];
@@ -127,10 +126,9 @@ static PetscErrorCode DMStagStencilToIndexLocal(DM dm,PetscInt n,const DMStagSte
       if (dim > 1 && (pos[i].j >= endGhost[1] || pos[i].j < startGhost[1])) SETERRQ3(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Supplied y element index %D out of range. Should be in [%D,%D]",pos[i].j,startGhost[1],endGhost[1]-1);
       if (dim > 2 && (pos[i].k >= endGhost[2] || pos[i].k < startGhost[2])) SETERRQ3(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Supplied z element index %D out of range. Should be in [%D,%D]",pos[i].k,startGhost[2],endGhost[2]-1);
     }
+  } else {
+    ierr = DMStagGetGhostCorners(dm,&startGhost[0],&startGhost[1],&startGhost[2],NULL,NULL,NULL);CHKERRQ(ierr);
   }
-#else
-  ierr = DMStagGetGhostCorners(dm,&startGhost[0],&startGhost[1],&startGhost[2],NULL,NULL,NULL);CHKERRQ(ierr);
-#endif
   if (dim == 1) {
     for (idx=0; idx<n; ++idx) {
       const PetscInt eLocal = pos[idx].i - startGhost[0]; /* Local element number */

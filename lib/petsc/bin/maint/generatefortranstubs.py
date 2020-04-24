@@ -74,6 +74,8 @@ def FixDir(petscdir,dir,verbose):
       + Fixes the C stub files to be compilable C
       + Generates a makefile
       + copies over Fortran interface files that are generated'''
+  import re
+
   submansec = 'unknown'
   mansec = 'unknown'
   cnames = []
@@ -138,21 +140,21 @@ def FixDir(petscdir,dir,verbose):
     os.rmdir(dir)
 
   # save Fortran interface file generated (it is merged with others in a post-processing step)
-  modfile = os.path.join(parentdir,'f90module.f90')
-  if os.path.exists(modfile):
-    if verbose: print('Generating F90 interface for '+modfile)
-    fd = open(modfile)
-    txt = fd.read()
-    fd.close()
-    if txt:
-      if not os.path.isdir(os.path.join(petscdir,'src',mansec,'f90-mod','ftn-auto-interfaces')): os.mkdir(os.path.join(petscdir,'src',mansec,'f90-mod','ftn-auto-interfaces'))
-      if not os.path.isdir(os.path.join(petscdir,'src',mansec,'f90-mod','ftn-auto-interfaces',submansec+'-tmpdir')): os.mkdir(os.path.join(petscdir,'src',mansec,'f90-mod','ftn-auto-interfaces',submansec+'-tmpdir'))
-      fname =  os.path.join(petscdir,'src',mansec,'f90-mod','ftn-auto-interfaces',submansec+'-tmpdir',parentdir.replace('/','_')+'.h90')
-      fd =open(fname,'w')
-      fd.write(txt)
+  for filename in [f for f in os.listdir(parentdir) if re.match(r'f90module[0-9]+.f90', f)]:
+    modfile = os.path.join(parentdir, filename)
+    if os.path.exists(modfile):
+      if verbose: print('Generating F90 interface for '+modfile)
+      fd = open(modfile)
+      txt = fd.read()
       fd.close()
-    os.remove(modfile)
-
+      if txt:
+        if not os.path.isdir(os.path.join(petscdir,'src',mansec,'f90-mod','ftn-auto-interfaces')): os.mkdir(os.path.join(petscdir,'src',mansec,'f90-mod','ftn-auto-interfaces'))
+        if not os.path.isdir(os.path.join(petscdir,'src',mansec,'f90-mod','ftn-auto-interfaces',submansec+'-tmpdir')): os.mkdir(os.path.join(petscdir,'src',mansec,'f90-mod','ftn-auto-interfaces',submansec+'-tmpdir'))
+        fname =  os.path.join(petscdir,'src',mansec,'f90-mod','ftn-auto-interfaces',submansec+'-tmpdir',parentdir.replace('/','_')+'.h90')
+        fd =open(fname,'a')
+        fd.write(txt)
+        fd.close()
+      os.remove(modfile)
 
 def PrepFtnDir(dir):
   ''' Generate a ftn-auto directory if needed'''
@@ -177,9 +179,11 @@ def processDir(petscdir, bfort, verbose, dirpath, dirnames, filenames):
     options = ['-dir '+outdir, '-mnative', '-ansi', '-nomsgs', '-noprofile', '-anyname', '-mapptr',
                '-mpi', '-shortargname', '-ferr', '-ptrprefix Petsc', '-ptr64 PETSC_USE_POINTER_CONVERSION',
                '-fcaps PETSC_HAVE_FORTRAN_CAPS', '-fuscore PETSC_HAVE_FORTRAN_UNDERSCORE',
-               '-f90mod_skip_header','-f90modfile','f90module.f90']
-    cmd = 'BFORT_CONFIG_PATH='+os.path.join(petscdir,'lib','petsc','conf')+' '+bfort+' '+' '.join(options+newls)
-    output = check_output(cmd, cwd=dirpath, shell=True, stderr=subprocess.STDOUT)
+               '-f90mod_skip_header']
+    split_ct = 10
+    for i in range(0, len(newls), split_ct):
+      cmd = 'BFORT_CONFIG_PATH='+os.path.join(petscdir,'lib','petsc','conf')+' '+bfort+' '+' '.join(options+newls[i:i+split_ct])+' -f90modfile f90module'+str(i)+'.f90'
+      output = check_output(cmd, cwd=dirpath, shell=True, stderr=subprocess.STDOUT)
     FixDir(petscdir,outdir,verbose)
 
   # remove from list of subdirectories all directories without source code
@@ -243,4 +247,3 @@ if __name__ ==  '__main__':
     main(petscdir,sys.argv[1],os.getcwd(),verbose)
   else:
     processf90interfaces(petscdir,verbose)
-

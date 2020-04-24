@@ -14,9 +14,7 @@
 ##
 import os
 import re
-from exceptions import *
 import sys
-from string import *
 import pickle
 
 # list of classes found
@@ -44,9 +42,9 @@ def getenums(filename):
         fl = reg.search(line)
         if fl:
           struct = struct.replace("\\","")
-  	  struct = struct.replace("\n","")
-  	  struct = struct.replace(";","")
-  	  struct = struct.replace("typedef enum","")	
+          struct = struct.replace("\n","")
+          struct = struct.replace(";","")
+          struct = struct.replace("typedef enum","")
           struct = regcomment.sub("",struct)
           struct = regblank.sub(" ",struct)
 
@@ -109,10 +107,10 @@ def getstructs(filename):
         fl = reg.search(line)
         if fl:
           struct = struct.replace("\\","")
-  	  struct = struct.replace("\n","")
-  	  struct = struct.replace("typedef struct {","")
+          struct = struct.replace("\n","")
+          struct = struct.replace("typedef struct {","")
           struct = regblank.sub(" ",struct)
-  	  struct = struct.replace("; ",";")	
+          struct = struct.replace("; ",";")
           struct = regcomment.sub("",struct)
 
           name = regname.search(struct)

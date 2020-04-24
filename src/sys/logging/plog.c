@@ -1325,20 +1325,42 @@ static PetscErrorCode PetscLogViewWarnSync(MPI_Comm comm,FILE *fd)
 
 static PetscErrorCode PetscLogViewWarnDebugging(MPI_Comm comm,FILE *fd)
 {
-#if defined(PETSC_USE_DEBUG)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (PetscDefined(USE_DEBUG)) {
+    ierr = PetscFPrintf(comm, fd, "\n\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm, fd, "      ##########################################################\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm, fd, "      #                                                        #\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm, fd, "      #                       WARNING!!!                       #\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm, fd, "      #                                                        #\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm, fd, "      #   This code was compiled with a debugging option.      #\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm, fd, "      #   To get timing results run ./configure                #\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm, fd, "      #   using --with-debugging=no, the performance will      #\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm, fd, "      #   be generally two or three times faster.              #\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm, fd, "      #                                                        #\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm, fd, "      ##########################################################\n\n\n");CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PetscLogViewWarnNoGpuAwareMpi(MPI_Comm comm,FILE *fd)
+{
+#if defined(PETSC_HAVE_CUDA)
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (use_gpu_aware_mpi) PetscFunctionReturn(0);
   ierr = PetscFPrintf(comm, fd, "\n\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "      ##########################################################\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "      #                                                        #\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "      #                       WARNING!!!                       #\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "      #                                                        #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      #   This code was compiled with a debugging option.      #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      #   To get timing results run ./configure                #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      #   using --with-debugging=no, the performance will      #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      #   be generally two or three times faster.              #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      #                                                        #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "      #   This code was compiled with GPU support but you used #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "      #   an MPI that's not GPU-aware, such Petsc had to copy  #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "      #   data from GPU to CPU for MPI communication. To get   #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "      #   meaningfull timing results, please use a GPU-aware   #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "      #   MPI instead.                                         #\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "      ##########################################################\n\n\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 #else
@@ -1395,6 +1417,7 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
   ierr = PetscFPrintf(comm, fd, "\n---------------------------------------------- PETSc Performance Summary: ----------------------------------------------\n\n");CHKERRQ(ierr);
   ierr = PetscLogViewWarnSync(comm,fd);CHKERRQ(ierr);
   ierr = PetscLogViewWarnDebugging(comm,fd);CHKERRQ(ierr);
+  ierr = PetscLogViewWarnNoGpuAwareMpi(comm,fd);CHKERRQ(ierr);
   ierr = PetscGetArchType(arch,sizeof(arch));CHKERRQ(ierr);
   ierr = PetscGetHostName(hostname,sizeof(hostname));CHKERRQ(ierr);
   ierr = PetscGetUserName(username,sizeof(username));CHKERRQ(ierr);
@@ -1856,6 +1879,7 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
 
   /* Cleanup */
   ierr = PetscFPrintf(comm, fd, "\n");CHKERRQ(ierr);
+  ierr = PetscLogViewWarnNoGpuAwareMpi(comm,fd);CHKERRQ(ierr);
   ierr = PetscLogViewWarnDebugging(comm,fd);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2310,7 +2334,7 @@ static const char *PetscLogMPERGBColors[PETSC_RGB_COLORS_MAX] = {
 
   Not collective. Maybe it should be?
 
-  Output Parameter
+  Output Parameter:
 . str - character string representing the color
 
   Level: developer

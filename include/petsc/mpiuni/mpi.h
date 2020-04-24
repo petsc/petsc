@@ -992,6 +992,42 @@ typedef int MPI_Offset;
    MPIUNI_ARG(status),\
    MPIUni_Abort(MPI_COMM_WORLD,0))
 
+#define MPI_File_write_at(mpi_fh,off,buf,count,datatype,status) \
+  (MPIUNI_ARG(mpi_fh),\
+   MPIUNI_ARG(off),\
+   MPIUNI_ARG(buf),\
+   MPIUNI_ARG(count),\
+   MPIUNI_ARG(datatype),\
+   MPIUNI_ARG(status),\
+   MPIUni_Abort(MPI_COMM_WORLD,0))
+
+#define MPI_File_read_at(mpi_fh,off,buf,count,datatype,status) \
+  (MPIUNI_ARG(mpi_fh),\
+   MPIUNI_ARG(off),\
+   MPIUNI_ARG(buf),\
+   MPIUNI_ARG(count),\
+   MPIUNI_ARG(datatype),\
+   MPIUNI_ARG(status),\
+   MPIUni_Abort(MPI_COMM_WORLD,0))
+
+#define MPI_File_write_at_all(mpi_fh,off,buf,count,datatype,status) \
+  (MPIUNI_ARG(mpi_fh),\
+   MPIUNI_ARG(off),\
+   MPIUNI_ARG(buf),\
+   MPIUNI_ARG(count),\
+   MPIUNI_ARG(datatype),\
+   MPIUNI_ARG(status),\
+   MPIUni_Abort(MPI_COMM_WORLD,0))
+
+#define MPI_File_read_at_all(mpi_fh,off,buf,count,datatype,status) \
+  (MPIUNI_ARG(mpi_fh),\
+   MPIUNI_ARG(off),\
+   MPIUNI_ARG(buf),\
+   MPIUNI_ARG(count),\
+   MPIUNI_ARG(datatype),\
+   MPIUNI_ARG(status),\
+   MPIUni_Abort(MPI_COMM_WORLD,0))
+
   /* called from PetscInitialize() - so return success */
 #define MPI_Register_datarep(name,read_conv_fn,write_conv_fn,extent_fn,state) \
   (MPIUNI_ARG(name),\

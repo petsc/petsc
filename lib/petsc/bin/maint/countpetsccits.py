@@ -4,9 +4,7 @@
 #    Counts the number of cites of PETSc in different categories in petscapp.bib
 import os
 import re
-from exceptions import *
 import sys
-from string import *
 
 def main():
   tcount = 0

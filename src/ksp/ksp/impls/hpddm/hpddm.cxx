@@ -180,10 +180,10 @@ PetscErrorCode KSPHPDDMSetDeflationSpace(KSP ksp, Mat U)
      KSPHPDDMGetDeflationSpace - Gets the deflation space computed by Krylov methods with recycling or NULL if KSPSolve() has not been called yet. This space is viewed as a set of vectors stored in a MATDENSE (column major). It is the responsibility of the user to free the returned Mat.
 
    Input Parameter:
-+     ksp - iterative context
+.     ksp - iterative context
 
    Output Parameter:
-+     U - deflation space generated during KSPSolve()
+.     U - deflation space generated during KSPSolve()
 
    Level: intermediate
 

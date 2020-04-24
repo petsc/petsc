@@ -87,12 +87,12 @@ PetscErrorCode  PCInitializePackage(void)
   ierr = PetscLogEventRegister("KSPSolve_FS_Schu", KSP_CLASSID,&KSP_Solve_FS_S);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("KSPSolve_FS_Up",   KSP_CLASSID,&KSP_Solve_FS_U);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("KSPSolve_FS_Low",  KSP_CLASSID,&KSP_Solve_FS_L);CHKERRQ(ierr);
+  /* Process Info */
+  {
+    PetscClassId  classids[1];
 
-  /* Process info exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL,"-info_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
-  if (opt) {
-    ierr = PetscStrInList("pc",logList,',',&pkg);CHKERRQ(ierr);
-    if (pkg) {ierr = PetscInfoDeactivateClass(PC_CLASSID);CHKERRQ(ierr);}
+    classids[0] = PC_CLASSID;
+    ierr = PetscInfoProcessClass("pc", 1, classids);CHKERRQ(ierr);
   }
   /* Process summary exclusions */
   ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
@@ -174,15 +174,16 @@ PetscErrorCode  KSPInitializePackage(void)
   ierr = PetscLogEventRegister("KSPSolve",         KSP_CLASSID,&KSP_Solve);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("KSPGMRESOrthog",   KSP_CLASSID,&KSP_GMRESOrthogonalization);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("KSPSolveTranspos", KSP_CLASSID,&KSP_SolveTranspose);CHKERRQ(ierr);
-  /* Process info exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL,"-info_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
-  if (opt) {
-    ierr = PetscStrInList("ksp",logList,',',&pkg);CHKERRQ(ierr);
-    if (pkg) {ierr = PetscInfoDeactivateClass(KSP_CLASSID);CHKERRQ(ierr);}
-    ierr = PetscStrInList("dm",logList,',',&cls);CHKERRQ(ierr);
-    if (pkg || cls) {ierr = PetscInfoDeactivateClass(DMKSP_CLASSID);CHKERRQ(ierr);}
-    ierr = PetscStrInList("kspguess",logList,',',&cls);CHKERRQ(ierr);
-    if (pkg || cls) {ierr = PetscInfoDeactivateClass(KSPGUESS_CLASSID);CHKERRQ(ierr);}
+  /* Process Info */
+  {
+    PetscClassId  classids[3];
+
+    classids[0] = KSP_CLASSID;
+    classids[1] = DMKSP_CLASSID;
+    classids[2] = KSPGUESS_CLASSID;
+    ierr = PetscInfoProcessClass("ksp", 1, &classids[0]);CHKERRQ(ierr);
+    ierr = PetscInfoProcessClass("dm", 1, &classids[1]);CHKERRQ(ierr);
+    ierr = PetscInfoProcessClass("kspguess", 1, &classids[2]);CHKERRQ(ierr);
   }
   /* Process summary exclusions */
   ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);

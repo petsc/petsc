@@ -204,14 +204,14 @@ PetscErrorCode VecScatterRegister(const char sname[], PetscErrorCode (*function)
 .  newctx - location to store the new scatter context
 
    Options Database Keys:
-.  -vecscatter_view         - Prints detail of communications
++  -vecscatter_view         - Prints detail of communications
 .  -vecscatter_view ::ascii_info    - Print less details about communication
 .  -vecscatter_merge        - VecScatterBegin() handles all of the communication, VecScatterEnd() is a nop
                               eliminates the chance for overlap of computation and communication
 .  -vecscatter_packtogether - Pack all messages before sending, receive all messages before unpacking
                               will make the results of scatters deterministic when otherwise they are not (it may be slower also).
 .  -vecscatter_type sf      - Use the PetscSF implementation of vecscatter (Default). One can use PetscSF options to control the communication.
-.  -vecscatter_packongpu    - For GPU vectors, pack needed entries on GPU, then copy packed data to CPU, then do MPI.
+-  -vecscatter_packongpu    - For GPU vectors, pack needed entries on GPU, then copy packed data to CPU, then do MPI.
                               Otherwise, we might copy a segment encompassing needed entries. Default is TRUE.
 
     Level: intermediate
@@ -245,7 +245,6 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   VecScatter        ctx;
   PetscErrorCode    ierr;
   PetscMPIInt       xsize,ysize,result;
-  PetscBool         vseq = PETSC_TRUE;
   MPI_Comm          comm,xcomm,ycomm;
 
   PetscFunctionBegin;
@@ -259,8 +258,6 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   ierr = MPI_Comm_size(xcomm,&xsize);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)yin,&ycomm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(ycomm,&ysize);CHKERRQ(ierr);
-  vseq = ysize > 1 ? PETSC_FALSE : vseq;
-  vseq = xsize > 1 ? PETSC_FALSE : vseq;
   if (xsize > 1 && ysize > 1) {
     ierr = MPI_Comm_compare(xcomm,ycomm,&result);CHKERRQ(ierr);
     if (result == MPI_UNEQUAL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMECOMM,"VecScatterCreate: parallel vectors xin and yin must have identical/congruent/similar communicators");
@@ -284,7 +281,7 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   ierr = VecGetLocalSize(yin,&ctx->to_n);CHKERRQ(ierr);
 
   /* Set default scatter type */
-  ierr = VecScatterSetType(ctx,vseq ? VECSCATTERSEQ : VECSCATTERSF);CHKERRQ(ierr);
+  ierr = VecScatterSetType(ctx,VECSCATTERSF);CHKERRQ(ierr);
 
   ierr = VecScatterSetFromOptions(ctx);CHKERRQ(ierr);
   ierr = VecScatterSetUp(ctx);CHKERRQ(ierr);

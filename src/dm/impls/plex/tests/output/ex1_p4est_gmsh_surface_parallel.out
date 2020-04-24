@@ -1,0 +1,4 @@
+DM Object: Simplicial Mesh 2 MPI processes
+  type: plex
+  Cell balance: 1.00 (max 1540, min 1538, empty 0)
+  Edge Cut: 153 (on node 0.000)

@@ -178,7 +178,7 @@ static PetscErrorCode MatMatSolve_SuperLU_DIST(Mat A,Mat B_mpi,Mat X)
     /* communication pattern of SOLVEstruct is unlikely created for matmatsolve,
        thus destroy it and create a new SOLVEstruct.
        Otherwise it may result in memory corruption or incorrect solution
-       See src/mat/examples/tests/ex125.c */
+       See src/mat/tests/ex125.c */
 #if defined(PETSC_USE_COMPLEX)
     PetscStackCall("SuperLU_DIST:zSolveFinalize",zSolveFinalize(&lu->options, &lu->SOLVEstruct));
 #else

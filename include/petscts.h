@@ -541,6 +541,13 @@ PETSC_EXTERN PetscErrorCode DMTSGetI2Function(DM,TSI2Function*,void**);
 PETSC_EXTERN PetscErrorCode DMTSSetI2Jacobian(DM,TSI2Jacobian,void*);
 PETSC_EXTERN PetscErrorCode DMTSGetI2Jacobian(DM,TSI2Jacobian*,void**);
 
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSTransientVariable)(TS,Vec,Vec,void*);
+PETSC_EXTERN PetscErrorCode TSSetTransientVariable(TS,TSTransientVariable,void*);
+PETSC_EXTERN PetscErrorCode DMTSSetTransientVariable(DM,TSTransientVariable,void*);
+PETSC_EXTERN PetscErrorCode DMTSGetTransientVariable(DM,TSTransientVariable*,void*);
+PETSC_EXTERN PetscErrorCode TSComputeTransientVariable(TS,Vec,Vec);
+PETSC_EXTERN PetscErrorCode TSHasTransientVariable(TS,PetscBool*);
+
 PETSC_EXTERN PetscErrorCode DMTSSetSolutionFunction(DM,TSSolutionFunction,void*);
 PETSC_EXTERN PetscErrorCode DMTSGetSolutionFunction(DM,TSSolutionFunction*,void**);
 PETSC_EXTERN PetscErrorCode DMTSSetForcingFunction(DM,TSForcingFunction,void*);
@@ -664,13 +671,13 @@ PETSC_EXTERN PetscFunctionList TSSSPList;
 S*/
 typedef struct _p_TSAdapt *TSAdapt;
 
-/*E
+/*J
     TSAdaptType - String with the name of TSAdapt scheme.
 
    Level: beginner
 
 .seealso: TSAdaptSetType(), TS
-E*/
+J*/
 typedef const char *TSAdaptType;
 #define TSADAPTNONE    "none"
 #define TSADAPTBASIC   "basic"
@@ -705,6 +712,8 @@ PETSC_EXTERN PetscErrorCode TSAdaptSetMaxIgnore(TSAdapt,PetscReal);
 PETSC_EXTERN PetscErrorCode TSAdaptGetMaxIgnore(TSAdapt,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSAdaptSetClip(TSAdapt,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode TSAdaptGetClip(TSAdapt,PetscReal*,PetscReal*);
+PETSC_EXTERN PetscErrorCode TSAdaptSetScaleSolveFailed(TSAdapt,PetscReal);
+PETSC_EXTERN PetscErrorCode TSAdaptGetScaleSolveFailed(TSAdapt,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSAdaptSetStepLimits(TSAdapt,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode TSAdaptGetStepLimits(TSAdapt,PetscReal*,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSAdaptSetCheckStage(TSAdapt,PetscErrorCode(*)(TSAdapt,TS,PetscReal,Vec,PetscBool*));

@@ -1,0 +1,224 @@
+DM Object: 2 MPI processes
+  type: da
+Processor [0] M 17 N 17 m 1 n 2 w 1 s 1
+X range of indices: 0 17, Y range of indices: 0 9
+Processor [1] M 17 N 17 m 1 n 2 w 1 s 1
+X range of indices: 0 17, Y range of indices: 9 17
+DM Object: 2 MPI processes
+  type: da
+Processor [0] M 17 N 17 m 1 n 2 w 2 s 1
+X range of indices: 0 17, Y range of indices: 0 9
+Processor [1] M 17 N 17 m 1 n 2 w 2 s 1
+X range of indices: 0 17, Y range of indices: 9 17
+0 TS dt 0.001 time 0.
+DM Object: 2 MPI processes
+  type: da
+Processor [0] M 9 N 9 m 1 n 2 w 1 s 1
+X range of indices: 0 9, Y range of indices: 0 5
+Processor [1] M 9 N 9 m 1 n 2 w 1 s 1
+X range of indices: 0 9, Y range of indices: 5 9
+DM Object: 2 MPI processes
+  type: da
+Processor [0] M 9 N 9 m 1 n 2 w 2 s 1
+X range of indices: 0 9, Y range of indices: 0 5
+Processor [1] M 9 N 9 m 1 n 2 w 2 s 1
+X range of indices: 0 9, Y range of indices: 5 9
+DM Object: 2 MPI processes
+  type: da
+Processor [0] M 5 N 5 m 1 n 2 w 1 s 1
+X range of indices: 0 5, Y range of indices: 0 3
+Processor [1] M 5 N 5 m 1 n 2 w 1 s 1
+X range of indices: 0 5, Y range of indices: 3 5
+DM Object: 2 MPI processes
+  type: da
+Processor [0] M 5 N 5 m 1 n 2 w 2 s 1
+X range of indices: 0 5, Y range of indices: 0 3
+Processor [1] M 5 N 5 m 1 n 2 w 2 s 1
+X range of indices: 0 5, Y range of indices: 3 5
+1 TS dt 0.001 time 0.001
+2 TS dt 0.001 time 0.002
+3 TS dt 0.001 time 0.003
+4 TS dt 0.001 time 0.004
+5 TS dt 0.001 time 0.005
+TS Object: 2 MPI processes
+  type: bdf
+    Order=2
+  maximum steps=5
+  maximum time=1.
+  using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001
+  TSAdapt Object: 2 MPI processes
+    type: none
+  SNES Object: 2 MPI processes
+    type: ngmres
+      Number of stored past updates: 30
+      Residual selection: gammaA=2e+00, gammaC=2e+00
+      Difference restart: epsilonB=1e-01, deltaB=9e-01
+      Restart on F_M residual increase: FALSE
+    maximum iterations=10000, maximum function evaluations=30000
+    tolerances: relative=1e-06, absolute=1e-50, solution=1e-08
+    norm schedule ALWAYS
+    SNESLineSearch Object: 2 MPI processes
+      type: basic
+      maxstep=1.000000e+08, minlambda=1.000000e-12
+      tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+      maximum iterations=1
+    SNES Object: (npc_) 2 MPI processes
+      type: fas
+        type is MULTIPLICATIVE, levels=3, cycles=1
+        Not using Galerkin computed coarse grid function evaluation
+        Coarse grid solver -- level 0 -------------------------------
+        SNES Object: (npc_fas_coarse_) 2 MPI processes
+          type: newtonls
+          maximum iterations=50, maximum function evaluations=10000
+          tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+          SNESLineSearch Object: (npc_fas_coarse_) 2 MPI processes
+            type: bt
+              interpolation: cubic
+              alpha=1.000000e-04
+            maxstep=1.000000e+08, minlambda=1.000000e-12
+            tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+            maximum iterations=40
+          KSP Object: (npc_fas_coarse_) 2 MPI processes
+            type: gmres
+              restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+              happy breakdown tolerance 1e-30
+            maximum iterations=10000, initial guess is zero
+            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+            left preconditioning
+            using PRECONDITIONED norm type for convergence test
+          PC Object: (npc_fas_coarse_) 2 MPI processes
+            type: bjacobi
+              number of blocks = 2
+              Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
+            KSP Object: (npc_fas_coarse_sub_) 1 MPI processes
+              type: preonly
+              maximum iterations=10000, initial guess is zero
+              tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+              left preconditioning
+              using NONE norm type for convergence test
+            PC Object: (npc_fas_coarse_sub_) 1 MPI processes
+              type: ilu
+                out-of-place factorization
+                0 levels of fill
+                tolerance for zero pivot 2.22045e-14
+                matrix ordering: natural
+                factor fill ratio given 1., needed 1.
+                  Factored matrix follows:
+                    Mat Object: 1 MPI processes
+                      type: seqaij
+                      rows=15, cols=15
+                      package used to perform factorization: petsc
+                      total: nonzeros=59, allocated nonzeros=59
+                        not using I-node routines
+              linear system matrix = precond matrix:
+              Mat Object: 1 MPI processes
+                type: seqaij
+                rows=15, cols=15
+                total: nonzeros=59, allocated nonzeros=59
+                  not using I-node routines
+            linear system matrix = precond matrix:
+            Mat Object: 2 MPI processes
+              type: mpiaij
+              rows=25, cols=25
+              total: nonzeros=105, allocated nonzeros=105
+        Down solver (pre-smoother) on level 1 -------------------------------
+        SNES Object: (npc_fas_levels_1_) 2 MPI processes
+          type: ms
+            multi-stage method type: m62
+          maximum iterations=5, maximum function evaluations=30000
+          tolerances: relative=0., absolute=0., solution=0.
+          norm schedule FINALONLY
+          KSP Object: (npc_fas_levels_1_) 2 MPI processes
+            type: preonly
+            maximum iterations=10000, initial guess is zero
+            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+            left preconditioning
+            using NONE norm type for convergence test
+          PC Object: (npc_fas_levels_1_) 2 MPI processes
+            type: bjacobi
+              number of blocks = 2
+              Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
+            KSP Object: (npc_fas_levels_1_sub_) 1 MPI processes
+              type: preonly
+              maximum iterations=10000, initial guess is zero
+              tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+              left preconditioning
+              using NONE norm type for convergence test
+            PC Object: (npc_fas_levels_1_sub_) 1 MPI processes
+              type: ilu
+                out-of-place factorization
+                0 levels of fill
+                tolerance for zero pivot 2.22045e-14
+                matrix ordering: natural
+                factor fill ratio given 1., needed 1.
+                  Factored matrix follows:
+                    Mat Object: 1 MPI processes
+                      type: seqaij
+                      rows=45, cols=45
+                      package used to perform factorization: petsc
+                      total: nonzeros=197, allocated nonzeros=197
+                        not using I-node routines
+              linear system matrix = precond matrix:
+              Mat Object: 1 MPI processes
+                type: seqaij
+                rows=45, cols=45
+                total: nonzeros=197, allocated nonzeros=197
+                  not using I-node routines
+            linear system matrix = precond matrix:
+            Mat Object: 2 MPI processes
+              type: mpiaij
+              rows=81, cols=81
+              total: nonzeros=369, allocated nonzeros=369
+        Up solver (post-smoother) same as down solver (pre-smoother)
+        Down solver (pre-smoother) on level 2 -------------------------------
+        SNES Object: (npc_fas_levels_2_) 2 MPI processes
+          type: ms
+            multi-stage method type: m62
+          maximum iterations=5, maximum function evaluations=30000
+          tolerances: relative=0., absolute=0., solution=0.
+          norm schedule FINALONLY
+          KSP Object: (npc_fas_levels_2_) 2 MPI processes
+            type: preonly
+            maximum iterations=10000, initial guess is zero
+            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+            left preconditioning
+            using NONE norm type for convergence test
+          PC Object: (npc_fas_levels_2_) 2 MPI processes
+            type: bjacobi
+              number of blocks = 2
+              Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
+            KSP Object: (npc_fas_levels_2_sub_) 1 MPI processes
+              type: preonly
+              maximum iterations=10000, initial guess is zero
+              tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+              left preconditioning
+              using NONE norm type for convergence test
+            PC Object: (npc_fas_levels_2_sub_) 1 MPI processes
+              type: ilu
+                out-of-place factorization
+                0 levels of fill
+                tolerance for zero pivot 2.22045e-14
+                matrix ordering: natural
+                factor fill ratio given 1., needed 1.
+                  Factored matrix follows:
+                    Mat Object: 1 MPI processes
+                      type: seqaij
+                      rows=153, cols=153
+                      package used to perform factorization: petsc
+                      total: nonzeros=713, allocated nonzeros=713
+                        not using I-node routines
+              linear system matrix = precond matrix:
+              Mat Object: 1 MPI processes
+                type: seqaij
+                rows=153, cols=153
+                total: nonzeros=713, allocated nonzeros=713
+                  not using I-node routines
+            linear system matrix = precond matrix:
+            Mat Object: 2 MPI processes
+              type: mpiaij
+              rows=289, cols=289
+              total: nonzeros=1377, allocated nonzeros=1377
+        Up solver (post-smoother) same as down solver (pre-smoother)
+      maximum iterations=1, maximum function evaluations=30000
+      tolerances: relative=0., absolute=0., solution=0.
+      norm schedule FINALONLY

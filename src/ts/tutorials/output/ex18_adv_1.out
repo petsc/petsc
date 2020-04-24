@@ -1,0 +1,27 @@
+DM Object: Mesh 1 MPI processes
+  type: plex
+Mesh in 2 dimensions:
+  0-cells: 16
+  1-cells: 24
+  2-cells: 21 (12) [12]
+Labels:
+  depth: 3 strata with value/size (0 (16), 1 (24), 2 (21))
+  celltype: 4 strata with value/size (0 (16), 1 (24), 4 (9), 11 (12))
+  marker: 1 strata with value/size (1 (24))
+  Face Sets: 4 strata with value/size (4 (3), 2 (3), 1 (3), 3 (3))
+  vtk: 1 strata with value/size (1 (9))
+  ghost: 0 strata with value/size ()
+  0  time        0  |x| (       0,    3.333) |x|_1 (       0,       18)  
+  1  time   0.9934  |x| (       0,    1.464) |x|_1 (       0,    9.842)  
+  2  time    1.987  |x| (       0,    1.892) |x|_1 (       0,    16.17)  
+  3  time     2.98  |x| (       0,    1.978) |x|_1 (       0,     17.6)  
+TS Object: 1 MPI processes
+  type: ssp
+    Scheme: rks2
+  maximum steps=1000
+  maximum time=2.
+  total number of rejected steps=0
+  using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001
+  TSAdapt Object: 1 MPI processes
+    type: none
+CONVERGED_TIME at time 2.98018 after 3 steps

@@ -1,32 +1,10 @@
 #include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 
-PetscErrorCode DMPlexInvertCell_Internal(PetscInt dim, PetscInt numCorners, PetscInt cone[])
-{
-  int tmpc;
-
-  PetscFunctionBegin;
-  if (dim != 3) PetscFunctionReturn(0);
-  switch (numCorners) {
-  case 4:
-    tmpc    = cone[0];
-    cone[0] = cone[1];
-    cone[1] = tmpc;
-    break;
-  case 8:
-    tmpc    = cone[1];
-    cone[1] = cone[3];
-    cone[3] = tmpc;
-    break;
-  default: break;
-  }
-  PetscFunctionReturn(0);
-}
-
 /*@C
-  DMPlexInvertCell - This flips tetrahedron and hexahedron orientation since Plex stores them internally with outward normals. Other cells are left untouched.
+  DMPlexInvertCell - Flips cell orientations since Plex stores some of them internally with outward normals.
 
   Input Parameters:
-+ numCorners - The number of vertices in a cell
++ cellType - The cell type
 - cone - The incoming cone
 
   Output Parameter:
@@ -36,25 +14,58 @@ PetscErrorCode DMPlexInvertCell_Internal(PetscInt dim, PetscInt numCorners, Pets
 
 .seealso: DMPlexGenerate()
 @*/
-PetscErrorCode DMPlexInvertCell(PetscInt dim, PetscInt numCorners, int cone[])
+PetscErrorCode DMPlexInvertCell(DMPolytopeType cellType, PetscInt cone[])
 {
-  int tmpc;
+#define SWAPCONE(cone,i,j)  \
+  do {                      \
+    PetscInt _cone_tmp;     \
+    _cone_tmp = (cone)[i];  \
+    (cone)[i] = (cone)[j];  \
+    (cone)[j] = _cone_tmp;  \
+  } while (0)
 
   PetscFunctionBegin;
-  if (dim != 3) PetscFunctionReturn(0);
-  switch (numCorners) {
-  case 4:
-    tmpc    = cone[0];
-    cone[0] = cone[1];
-    cone[1] = tmpc;
-    break;
-  case 8:
-    tmpc    = cone[1];
-    cone[1] = cone[3];
-    cone[3] = tmpc;
-    break;
+  switch (cellType) {
+  case DM_POLYTOPE_POINT:              break;
+  case DM_POLYTOPE_SEGMENT:            break;
+  case DM_POLYTOPE_POINT_PRISM_TENSOR: break;
+  case DM_POLYTOPE_TRIANGLE:           break;
+  case DM_POLYTOPE_QUADRILATERAL:      break;
+  case DM_POLYTOPE_SEG_PRISM_TENSOR:   SWAPCONE(cone,2,3); break;
+  case DM_POLYTOPE_TETRAHEDRON:        SWAPCONE(cone,0,1); break;
+  case DM_POLYTOPE_HEXAHEDRON:         SWAPCONE(cone,1,3); break;
+  case DM_POLYTOPE_TRI_PRISM:          SWAPCONE(cone,1,2); break;
+  case DM_POLYTOPE_TRI_PRISM_TENSOR:   break;
+  case DM_POLYTOPE_QUAD_PRISM_TENSOR:  break;
   default: break;
   }
+  PetscFunctionReturn(0);
+#undef SWAPCONE
+}
+
+/*@C
+  DMPlexReorderCell - Flips cell orientations since Plex stores some of them internally with outward normals.
+
+  Input Parameters:
++ dm - The DMPlex object
+. cell - The cell
+- cone - The incoming cone
+
+  Output Parameter:
+. cone - The reordered cone (in-place)
+
+  Level: developer
+
+.seealso: DMPlexGenerate()
+@*/
+PetscErrorCode DMPlexReorderCell(DM dm, PetscInt cell, PetscInt cone[])
+{
+  DMPolytopeType cellType;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexGetCellType(dm, cell, &cellType);CHKERRQ(ierr);
+  ierr = DMPlexInvertCell(cellType, cone);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

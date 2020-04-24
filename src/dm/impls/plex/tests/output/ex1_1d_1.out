@@ -1,0 +1,44 @@
+DM Object: Simplicial Mesh 1 MPI processes
+  type: plex
+Simplicial Mesh in 1 dimension:
+Supports:
+[0] Max support size: 2
+[0]: 4 ----> 0
+[0]: 4 ----> 1
+[0]: 5 ----> 2
+[0]: 5 ----> 3
+[0]: 6 ----> 1
+[0]: 6 ----> 2
+[0]: 7 ----> 0
+[0]: 8 ----> 3
+Cones:
+[0] Max cone size: 2
+[0]: 0 <---- 7 (0)
+[0]: 0 <---- 4 (0)
+[0]: 1 <---- 4 (0)
+[0]: 1 <---- 6 (0)
+[0]: 2 <---- 6 (0)
+[0]: 2 <---- 5 (0)
+[0]: 3 <---- 5 (0)
+[0]: 3 <---- 8 (0)
+coordinates with 1 fields
+  field 0 with 1 components
+Process 0:
+  (   4) dim  1 offset   0 0.25
+  (   5) dim  1 offset   1 0.75
+  (   6) dim  1 offset   2 0.5
+  (   7) dim  1 offset   3 0.
+  (   8) dim  1 offset   4 1.
+Label 'marker':
+[0]: 7 (1)
+[0]: 8 (1)
+Label 'celltype':
+[0]: 4 (0)
+[0]: 5 (0)
+[0]: 6 (0)
+[0]: 7 (0)
+[0]: 8 (0)
+[0]: 0 (1)
+[0]: 1 (1)
+[0]: 2 (1)
+[0]: 3 (1)
