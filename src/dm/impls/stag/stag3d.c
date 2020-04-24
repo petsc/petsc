@@ -251,9 +251,9 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_3d(DM dm)
   }
 
   /* Check that we will not overflow 32 bit indices (slightly overconservative) */
-#if !defined(PETSC_USE_64BIT_INDICES)
-  if (((PetscInt64) stag->n[0])*((PetscInt64) stag->n[1])*((PetscInt64) stag->n[2])*((PetscInt64) stag->entriesPerElement) > (PetscInt64) PETSC_MPI_INT_MAX) SETERRQ4(PetscObjectComm((PetscObject)dm),PETSC_ERR_INT_OVERFLOW,"Mesh of %D x %D x %D with %D entries per (interior) element is likely too large for 32 bit indices",stag->n[0],stag->n[1],stag->n[2],stag->entriesPerElement);
-#endif
+  if (!PetscDefined(USE_64BIT_INDICES)) {
+    if (((PetscInt64) stag->n[0])*((PetscInt64) stag->n[1])*((PetscInt64) stag->n[2])*((PetscInt64) stag->entriesPerElement) > (PetscInt64) PETSC_MPI_INT_MAX) SETERRQ4(PetscObjectComm((PetscObject)dm),PETSC_ERR_INT_OVERFLOW,"Mesh of %D x %D x %D with %D entries per (interior) element is likely too large for 32 bit indices",stag->n[0],stag->n[1],stag->n[2],stag->entriesPerElement);
+  }
 
   /* Compute offsets for each rank into global vectors
 
