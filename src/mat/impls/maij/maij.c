@@ -2862,9 +2862,11 @@ PetscErrorCode MatMultTransposeAdd_MPIMAIJ_dof(Mat A,Vec xx,Vec yy,Vec zz)
 /* ----------------------------------------------------------------*/
 PetscErrorCode MatProductSetFromOptions_SeqAIJ_SeqMAIJ(Mat C)
 {
+  PetscErrorCode ierr;
   Mat_Product    *product = C->product;
 
   PetscFunctionBegin;
+  ierr = MatSetType(C,MATSEQAIJ);CHKERRQ(ierr);
   if (product->type == MATPRODUCT_PtAP) {
     C->ops->productsymbolic = MatProductSymbolic_PtAP_SeqAIJ_SeqMAIJ;
   } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat Product type %s is not supported for SeqAIJ and SeqMAIJ matrices",MatProductTypes[product->type]);
@@ -2887,6 +2889,7 @@ PetscErrorCode MatProductSetFromOptions_MPIAIJ_MPIMAIJ(Mat C)
 #endif
 
   PetscFunctionBegin;
+  ierr = MatSetType(C,MATMPIAIJ);CHKERRQ(ierr);
   if (product->type != MATPRODUCT_PtAP) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat Product type %s is not supported for MPIAIJ and MPIMAIJ matrices",MatProductTypes[product->type]);
 
   /* PtAP */

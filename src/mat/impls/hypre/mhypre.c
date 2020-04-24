@@ -1047,6 +1047,7 @@ static PetscErrorCode MatProductSetFromOptions_HYPRE(Mat C)
   Mat_Product    *product = C->product;
 
   PetscFunctionBegin;
+  ierr = MatSetType(C,MATHYPRE);CHKERRQ(ierr);
   switch (product->type) {
   case MATPRODUCT_AB:
     ierr = MatProductSetFromOptions_HYPRE_AB(C);CHKERRQ(ierr);
