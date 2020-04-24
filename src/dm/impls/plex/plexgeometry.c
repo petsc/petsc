@@ -46,9 +46,8 @@ PetscErrorCode DMPlexFindVertices(DM dm, PetscInt npoints, const PetscReal coord
   ierr = DMGetCoordinatesLocal(dm, &allCoordsVec);CHKERRQ(ierr);
   ierr = VecGetArrayRead(allCoordsVec, &allCoords);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-#if defined(PETSC_USE_DEBUG)
-  /* check coordinate section is consistent with DM dimension */
-  {
+  if (PetscDefined(USE_DEBUG)) {
+    /* check coordinate section is consistent with DM dimension */
     PetscSection      cs;
     PetscInt          ndof;
 
@@ -58,7 +57,6 @@ PetscErrorCode DMPlexFindVertices(DM dm, PetscInt npoints, const PetscReal coord
       if (PetscUnlikely(ndof != dim)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "point %D: ndof = %D != %D = dim", p, ndof, dim);
     }
   }
-#endif
   if (eps == 0.0) {
     for (i=0,j=0; i < npoints; i++,j+=dim) {
       dagPoints[i] = -1;
@@ -2744,8 +2742,7 @@ static PetscErrorCode DMPlexCoordinatesToReference_Tensor(DM dm, PetscInt cell, 
           }
         }
       }
-#if 0 && defined(PETSC_USE_DEBUG)
-      {
+      if (0 && PetscDefined(USE_DEBUG)) {
         PetscReal maxAbs = 0.;
 
         for (l = 0; l < dimC; l++) {
@@ -2753,7 +2750,6 @@ static PetscErrorCode DMPlexCoordinatesToReference_Tensor(DM dm, PetscInt cell, 
         }
         ierr = PetscInfo4(dm,"cell %D, point %D, iter %D: res %g\n",cell,j,i,(double) maxAbs);CHKERRQ(ierr);
       }
-#endif
 
       ierr = DMPlexCoordinatesToReference_NewtonUpdate(dimC,dimR,J,invJ,work,resNeg,guess);CHKERRQ(ierr);
     }
@@ -2888,8 +2884,7 @@ static PetscErrorCode DMPlexCoordinatesToReference_FE(DM dm, PetscFE fe, PetscIn
           }
         }
       }
-#if 0 && defined(PETSC_USE_DEBUG)
-      {
+      if (0 && PetscDefined(USE_DEBUG)) {
         PetscReal maxAbs = 0.;
 
         for (l = 0; l < Nc; l++) {
@@ -2897,7 +2892,6 @@ static PetscErrorCode DMPlexCoordinatesToReference_FE(DM dm, PetscFE fe, PetscIn
         }
         ierr = PetscInfo4(dm,"cell %D, point %D, iter %D: res %g\n",cell,j,i,(double) maxAbs);CHKERRQ(ierr);
       }
-#endif
       ierr = DMPlexCoordinatesToReference_NewtonUpdate(Nc,dimR,J,invJ,work,resNeg,guess);CHKERRQ(ierr);
     }
   }

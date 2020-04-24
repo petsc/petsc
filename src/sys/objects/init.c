@@ -387,15 +387,15 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     */
     PetscBool         mdebug = PETSC_FALSE, eachcall = PETSC_FALSE, initializenan = PETSC_FALSE, mlog = PETSC_FALSE;
 
-#if defined(PETSC_USE_DEBUG)
-    mdebug        = PETSC_TRUE;
-    initializenan = PETSC_TRUE;
-    ierr   = PetscOptionsHasName(NULL,NULL,"-malloc_test",&flg1);CHKERRQ(ierr);
-#else
-    /* don't warn about unused option */
-    ierr = PetscOptionsHasName(NULL,NULL,"-malloc_test",&flg1);CHKERRQ(ierr);
-    flg1 = PETSC_FALSE;
-#endif
+    if (PetscDefined(USE_DEBUG)) {
+      mdebug        = PETSC_TRUE;
+      initializenan = PETSC_TRUE;
+      ierr   = PetscOptionsHasName(NULL,NULL,"-malloc_test",&flg1);CHKERRQ(ierr);
+    } else {
+      /* don't warn about unused option */
+      ierr = PetscOptionsHasName(NULL,NULL,"-malloc_test",&flg1);CHKERRQ(ierr);
+      flg1 = PETSC_FALSE;
+    }
     ierr = PetscOptionsGetBool(NULL,NULL,"-malloc_debug",&flg2,&flg3);CHKERRQ(ierr);
     if (flg1 || flg2) {
       mdebug        = PETSC_TRUE;

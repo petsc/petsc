@@ -616,9 +616,8 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
       /* TODO create MatInheritOption(Mat,MatOption) */
       ierr = MatGetOption(Amat,MAT_SPD,&flgspd);CHKERRQ(ierr);
       ierr = MatSetOption(def->WtAW,MAT_SPD,flgspd);CHKERRQ(ierr);
-#if defined(PETSC_USE_DEBUG)
-      /* Check columns of W are not in kernel of A */
-      {
+      if (PetscDefined(USE_DEBUG)) {
+        /* Check columns of W are not in kernel of A */
         PetscReal *norms;
         ierr = PetscMalloc1(m,&norms);CHKERRQ(ierr);
         ierr = MatGetColumnNorms(def->WtAW,NORM_INFINITY,norms);CHKERRQ(ierr);
@@ -629,7 +628,6 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
         }
         ierr = PetscFree(norms);CHKERRQ(ierr);
       }
-#endif
     } else {
       ierr = MatGetOption(def->WtAW,MAT_SPD,&flgspd);CHKERRQ(ierr);
     }

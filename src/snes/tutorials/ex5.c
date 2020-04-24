@@ -1,4 +1,3 @@
-
 static char help[] = "Bratu nonlinear PDE in 2d.\n\
 We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular\n\
 domain, using distributed arrays (DMDAs) to partition the parallel grid.\n\
@@ -87,9 +86,7 @@ extern PetscErrorCode MMSSolution4(AppCtx*,const DMDACoor2d*,PetscScalar*);
 extern PetscErrorCode MMSForcing4(AppCtx*,const DMDACoor2d*,PetscScalar*);
 extern PetscErrorCode FormJacobianLocal(DMDALocalInfo*,PetscScalar**,Mat,Mat,AppCtx*);
 extern PetscErrorCode FormObjectiveLocal(DMDALocalInfo*,PetscScalar**,PetscReal*,AppCtx*);
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
 extern PetscErrorCode FormFunctionMatlab(SNES,Vec,Vec,void*);
-#endif
 extern PetscErrorCode NonlinearGS(SNES,Vec,Vec,void*);
 
 int main(int argc,char **argv)
@@ -104,10 +101,7 @@ int main(int argc,char **argv)
   PetscInt       MMS              = 0;
   PetscBool      flg              = PETSC_FALSE;
   DM             da;
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
   Vec            r               = NULL;
-  PetscBool      matlab_function = PETSC_FALSE;
-#endif
   KSP            ksp;
   PetscInt       lits,slits;
 
@@ -177,13 +171,14 @@ int main(int argc,char **argv)
     ierr = DMDASNESSetObjectiveLocal(da,(DMDASNESObjective)FormObjectiveLocal,&user);CHKERRQ(ierr);
   }
 
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
-  ierr = PetscOptionsGetBool(NULL,NULL,"-matlab_function",&matlab_function,0);CHKERRQ(ierr);
-  if (matlab_function) {
-    ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
-    ierr = SNESSetFunction(snes,r,FormFunctionMatlab,&user);CHKERRQ(ierr);
+  if (PetscDefined(HAVE_MATLAB_ENGINE)) {
+    PetscBool matlab_function = PETSC_FALSE;
+    ierr = PetscOptionsGetBool(NULL,NULL,"-matlab_function",&matlab_function,0);CHKERRQ(ierr);
+    if (matlab_function) {
+      ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
+      ierr = SNESSetFunction(snes,r,FormFunctionMatlab,&user);CHKERRQ(ierr);
+    }
   }
-#endif
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver; set runtime options
@@ -232,9 +227,7 @@ int main(int argc,char **argv)
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
   ierr = VecDestroy(&r);CHKERRQ(ierr);
-#endif
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
@@ -613,9 +606,9 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,Mat
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
 PetscErrorCode FormFunctionMatlab(SNES snes,Vec X,Vec F,void *ptr)
 {
+#if PetscDefined(HAVE_MATLAB_ENGINE)
   AppCtx         *user = (AppCtx*)ptr;
   PetscErrorCode ierr;
   PetscInt       Mx,My;
@@ -657,8 +650,10 @@ PetscErrorCode FormFunctionMatlab(SNES snes,Vec X,Vec F,void *ptr)
   ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localF);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-}
+#else
+    return 0;                     /* Never called */
 #endif
+}
 
 /* ------------------------------------------------------------------- */
 /*

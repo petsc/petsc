@@ -26,15 +26,13 @@ static PetscErrorCode  KSPSolve_PREONLY(KSP ksp)
   } else {
     ksp->its    = 1;
     ksp->reason = KSP_CONVERGED_ITS;
-#if defined(PETSC_USE_DEBUG)
-    {
+    if (PetscDefined(USE_DEBUG)) {
       PetscReal norm;
       ierr = VecNorm(ksp->vec_sol,NORM_2,&norm);CHKERRQ(ierr);
       if (PetscIsInfOrNanReal(norm)) {
         ksp->reason = KSP_DIVERGED_NANORINF;
       }
     }
-#endif
   }
   PetscFunctionReturn(0);
 }

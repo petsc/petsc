@@ -127,9 +127,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
   PC_IS          *pcis=(PC_IS*)fetidpmat_ctx->pc->data;
   PC_BDDC        *pcbddc=(PC_BDDC*)fetidpmat_ctx->pc->data;
   PCBDDCGraph    mat_graph=pcbddc->mat_graph;
-#if defined(PETSC_USE_DEBUG)
   Mat_IS         *matis  = (Mat_IS*)fetidpmat_ctx->pc->pmat->data;
-#endif
   MPI_Comm       comm;
   Mat            ScalingMat,BD1,BD2;
   Vec            fetidp_global;
@@ -289,14 +287,14 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
   ierr = ISRenumber(subset,subset_mult,&fetidpmat_ctx->n_lambda,&subset_n);CHKERRQ(ierr);
   ierr = ISDestroy(&subset);CHKERRQ(ierr);
 
-#if defined(PETSC_USE_DEBUG)
-  ierr = VecSet(pcis->vec1_global,0.0);CHKERRQ(ierr);
-  ierr = VecScatterBegin(matis->rctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd(matis->rctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecSum(pcis->vec1_global,&scalar_value);CHKERRQ(ierr);
-  i = (PetscInt)PetscRealPart(scalar_value);
-  if (i != fetidpmat_ctx->n_lambda) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Global number of multipliers mismatch! (%D != %D)",fetidpmat_ctx->n_lambda,i);
-#endif
+  if (PetscDefined(USE_DEBUG)) {
+    ierr = VecSet(pcis->vec1_global,0.0);CHKERRQ(ierr);
+    ierr = VecScatterBegin(matis->rctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd(matis->rctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecSum(pcis->vec1_global,&scalar_value);CHKERRQ(ierr);
+    i = (PetscInt)PetscRealPart(scalar_value);
+    if (i != fetidpmat_ctx->n_lambda) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Global number of multipliers mismatch! (%D != %D)",fetidpmat_ctx->n_lambda,i);
+  }
 
   /* init data for scaling factors exchange */
   if (!pcbddc->use_deluxe_scaling) {

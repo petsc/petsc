@@ -1024,14 +1024,14 @@ PetscErrorCode  VecStrideSubSetGather_Default(Vec v,PetscInt nidx,const PetscInt
   bss = s->map->bs;
   n  =  n/bs;
 
-#if defined(PETSC_USE_DEBUG)
-  if (n != ns/bss) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Incompatible layout of vectors");
-  for (j=0; j<nidx; j++) {
-    if (idxv[j] < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"idx[%D] %D is negative",j,idxv[j]);
-    if (idxv[j] >= bs) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"idx[%D] %D is greater than or equal to vector blocksize %D",j,idxv[j],bs);
+  if (PetscDefined(USE_DEBUG)) {
+    if (n != ns/bss) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Incompatible layout of vectors");
+    for (j=0; j<nidx; j++) {
+      if (idxv[j] < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"idx[%D] %D is negative",j,idxv[j]);
+      if (idxv[j] >= bs) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"idx[%D] %D is greater than or equal to vector blocksize %D",j,idxv[j],bs);
+    }
+    if (!idxs && bss != nidx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must provide idxs when not gathering into all locations");
   }
-  if (!idxs && bss != nidx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must provide idxs when not gathering into all locations");
-#endif
 
   if (addv == INSERT_VALUES) {
     if (!idxs) {
@@ -1089,16 +1089,16 @@ PetscErrorCode  VecStrideSubSetScatter_Default(Vec s,PetscInt nidx,const PetscIn
   bss = s->map->bs;
   n  =  n/bs;
 
-#if defined(PETSC_USE_DEBUG)
-  if (n != ns/bss) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Incompatible layout of vectors");
-  for (j=0; j<bss; j++) {
-    if (idxs) {
-      if (idxs[j] < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"idx[%D] %D is negative",j,idxs[j]);
-      if (idxs[j] >= bs) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"idx[%D] %D is greater than or equal to vector blocksize %D",j,idxs[j],bs);
+  if (PetscDefined(USE_DEBUG)) {
+    if (n != ns/bss) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Incompatible layout of vectors");
+    for (j=0; j<bss; j++) {
+      if (idxs) {
+        if (idxs[j] < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"idx[%D] %D is negative",j,idxs[j]);
+        if (idxs[j] >= bs) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"idx[%D] %D is greater than or equal to vector blocksize %D",j,idxs[j],bs);
+      }
     }
+    if (!idxs && bss != nidx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must provide idxs when not scattering from all locations");
   }
-  if (!idxs && bss != nidx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must provide idxs when not scattering from all locations");
-#endif
 
   if (addv == INSERT_VALUES) {
     if (!idxs) {
@@ -1517,11 +1517,11 @@ PetscErrorCode  VecPermute(Vec x, IS row, PetscBool inv)
   ierr = ISGetIndices(row, &idx);CHKERRQ(ierr);
   ierr = VecGetArrayRead(x, &array);CHKERRQ(ierr);
   ierr = PetscMalloc1(x->map->n, &newArray);CHKERRQ(ierr);
-#if defined(PETSC_USE_DEBUG)
-  for (i = 0; i < x->map->n; i++) {
-    if ((idx[i] < rstart) || (idx[i] >= rend)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT, "Permutation index %D is out of bounds: %D", i, idx[i]);
+  if (PetscDefined(USE_DEBUG)) {
+    for (i = 0; i < x->map->n; i++) {
+      if ((idx[i] < rstart) || (idx[i] >= rend)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT, "Permutation index %D is out of bounds: %D", i, idx[i]);
+    }
   }
-#endif
   if (!inv) {
     for (i = 0; i < x->map->n; i++) newArray[i] = array[idx[i]-rstart];
   } else {

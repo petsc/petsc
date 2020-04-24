@@ -256,17 +256,13 @@ static PetscErrorCode DMPlexGetPointMFEMCellID_Internal(DM dm, DMLabel label, Pe
     *mid = *mid - minl + 1; /* MFEM does not like negative markers */
   } else *mid = 1;
   if (depth >=0 && dim != depth) { /* not interpolated, it assumes cell-vertex mesh */
-#if defined PETSC_USE_DEBUG
     if (dim < 0 || dim > 3) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Dimension %D",dim);
     if (csize > 8) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Found cone size %D for point %D",csize,p);
     if (depth != 1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Found depth %D for point %D. You should interpolate the mesh first",depth,p);
-#endif
     *cid = mfem_table_cid_unint[dim][csize];
   } else {
-#if defined PETSC_USE_DEBUG
     if (csize > 6) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cone size %D for point %D",csize,p);
     if (pdepth < 0 || pdepth > 3) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Depth %D for point %D",csize,p);
-#endif
     *cid = mfem_table_cid[pdepth][csize];
   }
   PetscFunctionReturn(0);

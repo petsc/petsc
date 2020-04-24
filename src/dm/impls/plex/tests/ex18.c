@@ -1141,12 +1141,10 @@ static PetscErrorCode DMPlexSetOrientInterface_Private(DM dm, PetscBool enable)
     }
     wasSetTrue = PETSC_FALSE;
   }
-#if defined(PETSC_USE_DEBUG)
-  {
+  if (PetscDefined(USE_DEBUG)) {
     ierr = PetscOptionsGetBool(options, prefix, opt, &flg, &set);CHKERRQ(ierr);
     if (PetscUnlikely(set && flg != enable)) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "PetscOptionsSetValue did not have the desired effect");
   }
-#endif
   PetscFunctionReturn(0);
 }
 

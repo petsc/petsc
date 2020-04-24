@@ -163,11 +163,7 @@ struct _n_PetscSFLink {
   PetscSFLink  next;
 };
 
-#if defined(PETSC_USE_DEBUG)
 PETSC_INTERN PetscErrorCode PetscSFSetErrorOnUnsupportedOverlap(PetscSF,MPI_Datatype,const void*,const void*);
-#else
-#define PetscSFSetErrorOnUnsupportedOverlap(a,b,c,d) 0
-#endif
 
 /* Create/setup/retrieve/destroy a link */
 PETSC_INTERN PetscErrorCode PetscSFLinkCreate(PetscSF,MPI_Datatype,PetscMemType,const void*,PetscMemType,const void*,MPI_Op,PetscSFOperation,PetscSFLink*);

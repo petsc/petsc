@@ -199,13 +199,11 @@ static PetscErrorCode VecAssemblyBegin_MPI_BTS(Vec X)
 
   ierr = PetscObjectGetComm((PetscObject)X,&comm);CHKERRQ(ierr);
   ierr = VecGetBlockSize(X,&bs);CHKERRQ(ierr);
-#if defined(PETSC_USE_DEBUG)
-  {
+  if (PetscDefined(USE_DEBUG)) {
     InsertMode addv;
     ierr = MPIU_Allreduce((PetscEnum*)&X->stash.insertmode,(PetscEnum*)&addv,1,MPIU_ENUM,MPI_BOR,comm);CHKERRQ(ierr);
     if (addv == (ADD_VALUES|INSERT_VALUES)) SETERRQ(comm,PETSC_ERR_ARG_NOTSAMETYPE,"Some processors inserted values while others added");
   }
-#endif
   X->bstash.insertmode = X->stash.insertmode; /* Block stash implicitly tracks InsertMode of scalar stash */
 
   ierr = VecStashSortCompress_Private(&X->stash);CHKERRQ(ierr);

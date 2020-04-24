@@ -75,12 +75,12 @@ PetscErrorCode  PetscCommGetNewTag(MPI_Comm comm,PetscMPIInt *tag)
   }
 
   *tag = counter->tag--;
-#if defined(PETSC_USE_DEBUG)
-  /*
+  if (PetscDefined(USE_DEBUG)) {
+    /*
      Hanging here means that some processes have called PetscCommGetNewTag() and others have not.
-  */
-  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
-#endif
+     */
+    ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -145,14 +145,14 @@ PetscErrorCode  PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPII
     }
   } else *comm_out = comm_in;
 
-#if defined(PETSC_USE_DEBUG)
-  /*
+  if (PetscDefined(USE_DEBUG)) {
+    /*
      Hanging here means that some processes have called PetscCommDuplicate() and others have not.
      This likley means that a subset of processes in a MPI_Comm have attempted to create a PetscObject!
      ALL processes that share a communicator MUST shared objects created from that communicator.
-  */
-  ierr = MPI_Barrier(comm_in);CHKERRQ(ierr);
-#endif
+     */
+    ierr = MPI_Barrier(comm_in);CHKERRQ(ierr);
+  }
 
   if (counter->tag < 1) {
     ierr = PetscInfo1(NULL,"Out of tags for object, starting to recycle. Comm reference count %d\n",counter->refcount);CHKERRQ(ierr);

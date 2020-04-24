@@ -392,9 +392,7 @@ static PetscErrorCode PetscSFGetWindow(PetscSF sf,MPI_Datatype unit,void *array,
   MPI_Aint       winaddr;
   PetscInt       nranks;
   PetscBool      reuse = PETSC_FALSE, update = PETSC_FALSE;
-#if defined(PETSC_USE_DEBUG)
   PetscBool      dummy[2];
-#endif
   MPI_Aint       wsize;
 
   PetscFunctionBegin;
@@ -409,25 +407,23 @@ static PetscErrorCode PetscSFGetWindow(PetscSF sf,MPI_Datatype unit,void *array,
     switch (w->flavor) {
     case PETSCSF_WINDOW_FLAVOR_DYNAMIC: /* check available matching array, error if in use (we additionally check that the matching condition is the same across processes) */
       if (array == link->addr) {
-#if defined(PETSC_USE_DEBUG)
-        dummy[0] = PETSC_TRUE;
-        dummy[1] = PETSC_TRUE;
-        ierr = MPI_Allreduce(MPI_IN_PLACE,dummy  ,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)sf));CHKERRQ(ierr);
-        ierr = MPI_Allreduce(MPI_IN_PLACE,dummy+1,1,MPIU_BOOL,MPI_LOR ,PetscObjectComm((PetscObject)sf));CHKERRQ(ierr);
-        if (dummy[0] != dummy[1]) SETERRQ(PetscObjectComm((PetscObject)sf),PETSC_ERR_SUP,"PETSCSF_WINDOW_FLAVOR_DYNAMIC requires root pointers to be consistently used across the comm. Use PETSCSF_WINDOW_FLAVOR_CREATE or PETSCSF_WINDOW_FLAVOR_ALLOCATE instead");
-#endif
+        if (PetscDefined(USE_DEBUG)) {
+          dummy[0] = PETSC_TRUE;
+          dummy[1] = PETSC_TRUE;
+          ierr = MPI_Allreduce(MPI_IN_PLACE,dummy  ,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)sf));CHKERRQ(ierr);
+          ierr = MPI_Allreduce(MPI_IN_PLACE,dummy+1,1,MPIU_BOOL,MPI_LOR ,PetscObjectComm((PetscObject)sf));CHKERRQ(ierr);
+          if (dummy[0] != dummy[1]) SETERRQ(PetscObjectComm((PetscObject)sf),PETSC_ERR_SUP,"PETSCSF_WINDOW_FLAVOR_DYNAMIC requires root pointers to be consistently used across the comm. Use PETSCSF_WINDOW_FLAVOR_CREATE or PETSCSF_WINDOW_FLAVOR_ALLOCATE instead");
+        }
         if (link->inuse) SETERRQ(PetscObjectComm((PetscObject)sf),PETSC_ERR_PLIB,"Window in use");
         if (epoch && link->epoch) SETERRQ(PetscObjectComm((PetscObject)sf),PETSC_ERR_PLIB,"Window epoch not finished");
         winok = PETSC_TRUE;
         link->paddr = array;
-#if defined(PETSC_USE_DEBUG)
-      } else {
+      } else if (PetscDefined(USE_DEBUG)) {
         dummy[0] = PETSC_FALSE;
         dummy[1] = PETSC_FALSE;
         ierr = MPI_Allreduce(MPI_IN_PLACE,dummy  ,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)sf));CHKERRQ(ierr);
         ierr = MPI_Allreduce(MPI_IN_PLACE,dummy+1,1,MPIU_BOOL,MPI_LOR ,PetscObjectComm((PetscObject)sf));CHKERRQ(ierr);
         if (dummy[0] != dummy[1]) SETERRQ(PetscObjectComm((PetscObject)sf),PETSC_ERR_SUP,"PETSCSF_WINDOW_FLAVOR_DYNAMIC requires root pointers to be consistently used across the comm. Use PETSCSF_WINDOW_FLAVOR_CREATE or PETSCSF_WINDOW_FLAVOR_ALLOCATE instead");
-#endif
       }
       break;
     case PETSCSF_WINDOW_FLAVOR_ALLOCATE: /* check available by matching size, allocate if in use */

@@ -1968,13 +1968,11 @@ PetscErrorCode DMPlexGetConeOrientation(DM dm, PetscInt p, const PetscInt *coneO
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-#if defined(PETSC_USE_DEBUG)
-  {
+  if (PetscDefined(USE_DEBUG)) {
     PetscInt dof;
     ierr = PetscSectionGetDof(mesh->coneSection, p, &dof);CHKERRQ(ierr);
     if (dof) PetscValidPointer(coneOrientation, 3);
   }
-#endif
   ierr = PetscSectionGetOffset(mesh->coneSection, p, &off);CHKERRQ(ierr);
 
   *coneOrientation = &mesh->coneOrientations[off];
@@ -2782,8 +2780,7 @@ static PetscErrorCode DMPlexCreateDepthStratum(DM dm, DMLabel label, PetscInt de
 
   PetscFunctionBegin;
   if (pStart >= pEnd) PetscFunctionReturn(0);
-#if defined(PETSC_USE_DEBUG)
-  {
+  if (PetscDefined(USE_DEBUG)) {
     PetscInt  qStart, qEnd, numLevels, level;
     PetscBool overlap = PETSC_FALSE;
     ierr = DMLabelGetNumValues(label, &numLevels);CHKERRQ(ierr);
@@ -2793,7 +2790,6 @@ static PetscErrorCode DMPlexCreateDepthStratum(DM dm, DMLabel label, PetscInt de
     }
     if (overlap) SETERRQ6(PETSC_COMM_SELF, PETSC_ERR_PLIB, "New depth %D range [%D,%D) overlaps with depth %D range [%D,%D)", depth, pStart, pEnd, level, qStart, qEnd);
   }
-#endif
   ierr = ISCreateStride(PETSC_COMM_SELF, pEnd-pStart, pStart, 1, &stratumIS);CHKERRQ(ierr);
   ierr = DMLabelSetStratumIS(label, depth, stratumIS);CHKERRQ(ierr);
   ierr = ISDestroy(&stratumIS);CHKERRQ(ierr);
@@ -7876,8 +7872,7 @@ PetscErrorCode DMPlexSetAnchors(DM dm, PetscSection anchorSection, IS anchorIS)
   ierr = ISDestroy(&plex->anchorIS);CHKERRQ(ierr);
   plex->anchorIS = anchorIS;
 
-#if defined(PETSC_USE_DEBUG)
-  if (anchorIS && anchorSection) {
+  if (PetscUnlikelyDebug(anchorIS && anchorSection)) {
     PetscInt size, a, pStart, pEnd;
     const PetscInt *anchors;
 
@@ -7902,7 +7897,6 @@ PetscErrorCode DMPlexSetAnchors(DM dm, PetscSection anchorSection, IS anchorIS)
     }
     ierr = ISRestoreIndices(anchorIS,&anchors);CHKERRQ(ierr);
   }
-#endif
   /* reset the generic constraints */
   ierr = DMSetDefaultConstraints(dm,NULL,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -1325,25 +1325,23 @@ static PetscErrorCode PetscLogViewWarnSync(MPI_Comm comm,FILE *fd)
 
 static PetscErrorCode PetscLogViewWarnDebugging(MPI_Comm comm,FILE *fd)
 {
-#if defined(PETSC_USE_DEBUG)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFPrintf(comm, fd, "\n\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      ##########################################################\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      #                                                        #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      #                       WARNING!!!                       #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      #                                                        #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      #   This code was compiled with a debugging option.      #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      #   To get timing results run ./configure                #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      #   using --with-debugging=no, the performance will      #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      #   be generally two or three times faster.              #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      #                                                        #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      ##########################################################\n\n\n");CHKERRQ(ierr);
+  if (PetscDefined(USE_DEBUG)) {
+    ierr = PetscFPrintf(comm, fd, "\n\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm, fd, "      ##########################################################\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm, fd, "      #                                                        #\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm, fd, "      #                       WARNING!!!                       #\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm, fd, "      #                                                        #\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm, fd, "      #   This code was compiled with a debugging option.      #\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm, fd, "      #   To get timing results run ./configure                #\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm, fd, "      #   using --with-debugging=no, the performance will      #\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm, fd, "      #   be generally two or three times faster.              #\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm, fd, "      #                                                        #\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm, fd, "      ##########################################################\n\n\n");CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
-#else
-  return 0;
-#endif
 }
 
 static PetscErrorCode PetscLogViewWarnNoGpuAwareMpi(MPI_Comm comm,FILE *fd)

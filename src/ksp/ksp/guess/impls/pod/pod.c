@@ -392,25 +392,25 @@ complete_request:
       ierr = PetscPrintf(PetscObjectComm((PetscObject)guess),"%1.6e (%d) ",pod->eigs[i]/toten,i >= pod->st ? 1 : 0);CHKERRQ(ierr);
     }
     ierr = PetscPrintf(PetscObjectComm((PetscObject)guess),"\n");CHKERRQ(ierr);
-#if defined(PETSC_USE_DEBUG)
-    for (i=0;i<pod->n;i++) {
-      Vec v;
-      PetscInt j;
-      PetscBLASInt bNen,ione = 1;
+    if (PetscDefined(USE_DEBUG)) {
+      for (i=0;i<pod->n;i++) {
+        Vec v;
+        PetscInt j;
+        PetscBLASInt bNen,ione = 1;
 
-      ierr = VecDuplicate(pod->xsnap[i],&v);CHKERRQ(ierr);
-      ierr = VecCopy(pod->xsnap[i],v);CHKERRQ(ierr);
-      ierr = PetscBLASIntCast(pod->nen,&bNen);CHKERRQ(ierr);
-      PetscStackCallBLAS("BLASgemv",BLASgemv_("T",&bN,&bNen,&one,pod->eigv+pod->st*pod->n,&bN,pod->corr+pod->maxn*i,&ione,&zero,pod->swork,&ione));
-      PetscStackCallBLAS("BLASgemv",BLASgemv_("N",&bN,&bNen,&one,pod->eigv+pod->st*pod->n,&bN,pod->swork,&ione,&zero,pod->swork+pod->n,&ione));
-      for (j=0;j<pod->n;j++) pod->swork[j] = -pod->swork[pod->n+j];
-      ierr = VecMAXPY(v,pod->n,pod->swork,pod->xsnap);CHKERRQ(ierr);
-      ierr = VecDot(v,v,pod->swork);CHKERRQ(ierr);
-      ierr = MPIU_Allreduce(pod->swork,pod->swork + 1,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)guess));CHKERRQ(ierr);
-      ierr = PetscPrintf(PetscObjectComm((PetscObject)guess),"  Error projection %D: %g (expected lower than %g)\n",i,(double)PetscRealPart(pod->swork[1]),(double)(toten-parten));CHKERRQ(ierr);
-      ierr = VecDestroy(&v);CHKERRQ(ierr);
+        ierr = VecDuplicate(pod->xsnap[i],&v);CHKERRQ(ierr);
+        ierr = VecCopy(pod->xsnap[i],v);CHKERRQ(ierr);
+        ierr = PetscBLASIntCast(pod->nen,&bNen);CHKERRQ(ierr);
+        PetscStackCallBLAS("BLASgemv",BLASgemv_("T",&bN,&bNen,&one,pod->eigv+pod->st*pod->n,&bN,pod->corr+pod->maxn*i,&ione,&zero,pod->swork,&ione));
+        PetscStackCallBLAS("BLASgemv",BLASgemv_("N",&bN,&bNen,&one,pod->eigv+pod->st*pod->n,&bN,pod->swork,&ione,&zero,pod->swork+pod->n,&ione));
+        for (j=0;j<pod->n;j++) pod->swork[j] = -pod->swork[pod->n+j];
+        ierr = VecMAXPY(v,pod->n,pod->swork,pod->xsnap);CHKERRQ(ierr);
+        ierr = VecDot(v,v,pod->swork);CHKERRQ(ierr);
+        ierr = MPIU_Allreduce(pod->swork,pod->swork + 1,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)guess));CHKERRQ(ierr);
+        ierr = PetscPrintf(PetscObjectComm((PetscObject)guess),"  Error projection %D: %g (expected lower than %g)\n",i,(double)PetscRealPart(pod->swork[1]),(double)(toten-parten));CHKERRQ(ierr);
+        ierr = VecDestroy(&v);CHKERRQ(ierr);
+      }
     }
-#endif
   }
   /* new tip */
   pod->curr = (pod->curr+1)%pod->maxn;

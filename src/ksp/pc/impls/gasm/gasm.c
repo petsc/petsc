@@ -939,8 +939,7 @@ static PetscErrorCode  PCGASMSetSubdomains_GASM(PC pc,PetscInt n,IS iis[],IS ois
       /* if user does not provide outer indices, we will create the corresponding outer indices using  osm->overlap =1 in PCSetUp_GASM */
     }
   }
-#if defined(PETSC_USE_DEBUG)
-  {
+  if (PetscDefined(USE_DEBUG)) {
     PetscInt        j,rstart,rend,*covered,lsize;
     const PetscInt  *indices;
     /* check if the inner indices cover and only cover the local portion of the preconditioning matrix */
@@ -963,7 +962,6 @@ static PetscErrorCode  PCGASMSetSubdomains_GASM(PC pc,PetscInt n,IS iis[],IS ois
     }
     ierr = PetscFree(covered);CHKERRQ(ierr);
   }
-#endif
   if (iis)  osm->user_subdomains = PETSC_TRUE;
   PetscFunctionReturn(0);
 }

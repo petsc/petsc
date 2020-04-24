@@ -670,15 +670,15 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
         ierr = ISDestroy(&data->is);CHKERRQ(ierr);
         data->is = is[0];
       } else {
-#if defined(PETSC_USE_DEBUG)
-        PetscBool equal;
-        IS        intersect;
+        if (PetscDefined(USE_DEBUG)) {
+          PetscBool equal;
+          IS        intersect;
 
-        ierr = ISIntersect(data->is, loc, &intersect);CHKERRQ(ierr);
-        ierr = ISEqualUnsorted(loc, intersect, &equal);CHKERRQ(ierr);
-        ierr = ISDestroy(&intersect);CHKERRQ(ierr);
-        if (!equal) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "IS of the auxiliary Mat does not include all local rows of A");
-#endif
+          ierr = ISIntersect(data->is, loc, &intersect);CHKERRQ(ierr);
+          ierr = ISEqualUnsorted(loc, intersect, &equal);CHKERRQ(ierr);
+          ierr = ISDestroy(&intersect);CHKERRQ(ierr);
+          if (!equal) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "IS of the auxiliary Mat does not include all local rows of A");
+        }
         if (!data->Neumann) {
           ierr = PetscObjectTypeCompare((PetscObject)P, MATMPISBAIJ, &flag);CHKERRQ(ierr);
           if (flag) {
@@ -776,9 +776,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
         ierr = PCDestroy(&data->levels[n]->pc);CHKERRQ(ierr);
       }
     }
-#if defined(PETSC_USE_DEBUG)
-    SETERRQ7(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "%D levels requested, only %D built + %D reused. Options for level(s) > %D, including -%spc_hpddm_coarse_ will not be taken into account. It is best to tune parameters, e.g., a higher value for -%spc_hpddm_levels_%D_eps_threshold so that at least one local deflation vector will be selected. If you don't want this to error out, compile --with-debugging=0", requested, data->N, reused, data->N, pcpre ? pcpre : "", pcpre ? pcpre : "", data->N);
-#endif
+    if (PetscDefined(USE_DEBUG)) SETERRQ7(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "%D levels requested, only %D built + %D reused. Options for level(s) > %D, including -%spc_hpddm_coarse_ will not be taken into account. It is best to tune parameters, e.g., a higher value for -%spc_hpddm_levels_%D_eps_threshold so that at least one local deflation vector will be selected. If you don't want this to error out, compile --with-debugging=0", requested, data->N, reused, data->N, pcpre ? pcpre : "", pcpre ? pcpre : "", data->N);
   }
 
   /* these solvers are created after PCSetFromOptions is called */

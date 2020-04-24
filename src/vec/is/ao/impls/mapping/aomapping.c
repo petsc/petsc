@@ -306,12 +306,12 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
   /* Form map between aomap->petsc[] and aomap->app[] */
   for (i = 0; i < N; i++) aomap->petscPerm[i] = allapp[petscPerm[i]];
 
-#if defined(PETSC_USE_DEBUG)
-  /* Check that the permutations are complementary */
-  for (i = 0; i < N; i++) {
-    if (i != aomap->appPerm[aomap->petscPerm[i]]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid ordering");
+  if (PetscDefined(USE_DEBUG)) {
+    /* Check that the permutations are complementary */
+    for (i = 0; i < N; i++) {
+      if (i != aomap->appPerm[aomap->petscPerm[i]]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid ordering");
+    }
   }
-#endif
   /* Cleanup */
   if (!mypetsc) {
     ierr = PetscFree(petsc);CHKERRQ(ierr);

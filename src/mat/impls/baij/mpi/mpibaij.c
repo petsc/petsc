@@ -194,9 +194,7 @@ PetscErrorCode MatSetValues_MPIBAIJ(Mat mat,PetscInt m,const PetscInt im[],Petsc
   PetscFunctionBegin;
   for (i=0; i<m; i++) {
     if (im[i] < 0) continue;
-#if defined(PETSC_USE_DEBUG)
-    if (im[i] >= mat->rmap->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",im[i],mat->rmap->N-1);
-#endif
+    if (PetscUnlikelyDebug(im[i] >= mat->rmap->N)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",im[i],mat->rmap->N-1);
     if (im[i] >= rstart_orig && im[i] < rend_orig) {
       row = im[i] - rstart_orig;
       for (j=0; j<n; j++) {
@@ -206,10 +204,9 @@ PetscErrorCode MatSetValues_MPIBAIJ(Mat mat,PetscInt m,const PetscInt im[],Petsc
           else             value = v[i+j*m];
           MatSetValues_SeqBAIJ_A_Private(row,col,value,addv,im[i],in[j]);
         } else if (in[j] < 0) continue;
-#if defined(PETSC_USE_DEBUG)
-        else if (in[j] >= mat->cmap->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",in[j],mat->cmap->N-1);
-#endif
-        else {
+        else if (PetscUnlikelyDebug(in[j] >= mat->cmap->N)) {
+          SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",in[j],mat->cmap->N-1);
+        } else {
           if (mat->was_assembled) {
             if (!baij->colmap) {
               ierr = MatCreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
@@ -367,9 +364,7 @@ PetscErrorCode MatSetValuesBlocked_MPIBAIJ(Mat mat,PetscInt m,const PetscInt im[
 
   for (i=0; i<m; i++) {
     if (im[i] < 0) continue;
-#if defined(PETSC_USE_DEBUG)
-    if (im[i] >= baij->Mbs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Block indexed row too large %D max %D",im[i],baij->Mbs-1);
-#endif
+    if (PetscUnlikelyDebug(im[i] >= baij->Mbs)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Block indexed row too large %D max %D",im[i],baij->Mbs-1);
     if (im[i] >= rstart && im[i] < rend) {
       row = im[i] - rstart;
       for (j=0; j<n; j++) {
@@ -395,10 +390,9 @@ PetscErrorCode MatSetValuesBlocked_MPIBAIJ(Mat mat,PetscInt m,const PetscInt im[
           col  = in[j] - cstart;
           ierr = MatSetValuesBlocked_SeqBAIJ_Inlined(baij->A,row,col,barray,addv,im[i],in[j]);CHKERRQ(ierr);
         } else if (in[j] < 0) continue;
-#if defined(PETSC_USE_DEBUG)
-        else if (in[j] >= baij->Nbs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Block indexed column too large %D max %D",in[j],baij->Nbs-1);
-#endif
-        else {
+        else if (PetscUnlikelyDebug(in[j] >= baij->Nbs)) {
+          SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Block indexed column too large %D max %D",in[j],baij->Nbs-1);
+        } else {
           if (mat->was_assembled) {
             if (!baij->colmap) {
               ierr = MatCreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
@@ -457,16 +451,14 @@ PetscErrorCode MatSetValues_MPIBAIJ_HT(Mat mat,PetscInt m,const PetscInt im[],Pe
   PetscInt       h1,key,size=baij->ht_size,bs=mat->rmap->bs,*HT=baij->ht,idx;
   PetscReal      tmp;
   MatScalar      **HD = baij->hd,value;
-#if defined(PETSC_USE_DEBUG)
   PetscInt       total_ct=baij->ht_total_ct,insert_ct=baij->ht_insert_ct;
-#endif
 
   PetscFunctionBegin;
   for (i=0; i<m; i++) {
-#if defined(PETSC_USE_DEBUG)
-    if (im[i] < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative row");
-    if (im[i] >= mat->rmap->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",im[i],mat->rmap->N-1);
-#endif
+    if (PetscDefined(USE_DEBUG)) {
+      if (im[i] < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative row");
+      if (im[i] >= mat->rmap->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",im[i],mat->rmap->N-1);
+    }
     row = im[i];
     if (row >= rstart_orig && row < rend_orig) {
       for (j=0; j<n; j++) {
@@ -479,25 +471,23 @@ PetscErrorCode MatSetValues_MPIBAIJ_HT(Mat mat,PetscInt m,const PetscInt im[],Pe
 
 
         idx = h1;
-#if defined(PETSC_USE_DEBUG)
-        insert_ct++;
-        total_ct++;
-        if (HT[idx] != key) {
-          for (idx=h1; (idx<size) && (HT[idx]!=key); idx++,total_ct++) ;
-          if (idx == size) {
-            for (idx=0; (idx<h1) && (HT[idx]!=key); idx++,total_ct++) ;
-            if (idx == h1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"(%D,%D) has no entry in the hash table", row, col);
+        if (PetscDefined(USE_DEBUG)) {
+          insert_ct++;
+          total_ct++;
+          if (HT[idx] != key) {
+            for (idx=h1; (idx<size) && (HT[idx]!=key); idx++,total_ct++) ;
+            if (idx == size) {
+              for (idx=0; (idx<h1) && (HT[idx]!=key); idx++,total_ct++) ;
+              if (idx == h1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"(%D,%D) has no entry in the hash table", row, col);
+            }
           }
-        }
-#else
-        if (HT[idx] != key) {
+        } else if (HT[idx] != key) {
           for (idx=h1; (idx<size) && (HT[idx]!=key); idx++) ;
           if (idx == size) {
             for (idx=0; (idx<h1) && (HT[idx]!=key); idx++) ;
             if (idx == h1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"(%D,%D) has no entry in the hash table", row, col);
           }
         }
-#endif
         /* A HASH table entry is found, so insert the values at the correct address */
         if (addv == ADD_VALUES) *(HD[idx]+ (col % bs)*bs + (row % bs)) += value;
         else                    *(HD[idx]+ (col % bs)*bs + (row % bs))  = value;
@@ -510,10 +500,10 @@ PetscErrorCode MatSetValues_MPIBAIJ_HT(Mat mat,PetscInt m,const PetscInt im[],Pe
       }
     }
   }
-#if defined(PETSC_USE_DEBUG)
-  baij->ht_total_ct  += total_ct;
-  baij->ht_insert_ct += insert_ct;
-#endif
+  if (PetscDefined(USE_DEBUG)) {
+    baij->ht_total_ct  += total_ct;
+    baij->ht_insert_ct += insert_ct;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -529,19 +519,17 @@ PetscErrorCode MatSetValuesBlocked_MPIBAIJ_HT(Mat mat,PetscInt m,const PetscInt 
   PetscReal         tmp;
   MatScalar         **HD = baij->hd,*baij_a;
   const PetscScalar *v_t,*value;
-#if defined(PETSC_USE_DEBUG)
   PetscInt          total_ct=baij->ht_total_ct,insert_ct=baij->ht_insert_ct;
-#endif
 
   PetscFunctionBegin;
   if (roworiented) stepval = (n-1)*bs;
   else stepval = (m-1)*bs;
 
   for (i=0; i<m; i++) {
-#if defined(PETSC_USE_DEBUG)
-    if (im[i] < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative row: %D",im[i]);
-    if (im[i] >= baij->Mbs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",im[i],baij->Mbs-1);
-#endif
+    if (PetscDefined(USE_DEBUG)) {
+      if (im[i] < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative row: %D",im[i]);
+      if (im[i] >= baij->Mbs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",im[i],baij->Mbs-1);
+    }
     row = im[i];
     v_t = v + i*nbs2;
     if (row >= rstart && row < rend) {
@@ -553,25 +541,23 @@ PetscErrorCode MatSetValuesBlocked_MPIBAIJ_HT(Mat mat,PetscInt m,const PetscInt 
         h1  = HASH(size,key,tmp);
 
         idx = h1;
-#if defined(PETSC_USE_DEBUG)
-        total_ct++;
-        insert_ct++;
-        if (HT[idx] != key) {
-          for (idx=h1; (idx<size) && (HT[idx]!=key); idx++,total_ct++) ;
-          if (idx == size) {
-            for (idx=0; (idx<h1) && (HT[idx]!=key); idx++,total_ct++) ;
-            if (idx == h1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"(%D,%D) has no entry in the hash table", row, col);
+        if (PetscDefined(USE_DEBUG)) {
+          total_ct++;
+          insert_ct++;
+          if (HT[idx] != key) {
+            for (idx=h1; (idx<size) && (HT[idx]!=key); idx++,total_ct++) ;
+            if (idx == size) {
+              for (idx=0; (idx<h1) && (HT[idx]!=key); idx++,total_ct++) ;
+              if (idx == h1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"(%D,%D) has no entry in the hash table", row, col);
+            }
           }
-        }
-#else
-        if (HT[idx] != key) {
+        } else if (HT[idx] != key) {
           for (idx=h1; (idx<size) && (HT[idx]!=key); idx++) ;
           if (idx == size) {
             for (idx=0; (idx<h1) && (HT[idx]!=key); idx++) ;
             if (idx == h1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"(%D,%D) has no entry in the hash table", row, col);
           }
         }
-#endif
         baij_a = HD[idx];
         if (roworiented) {
           /*value = v + i*(stepval+bs)*bs + j*bs;*/
@@ -618,10 +604,10 @@ PetscErrorCode MatSetValuesBlocked_MPIBAIJ_HT(Mat mat,PetscInt m,const PetscInt 
       }
     }
   }
-#if defined(PETSC_USE_DEBUG)
-  baij->ht_total_ct  += total_ct;
-  baij->ht_insert_ct += insert_ct;
-#endif
+  if (PetscDefined(USE_DEBUG)) {
+    baij->ht_total_ct  += total_ct;
+    baij->ht_insert_ct += insert_ct;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -3490,10 +3476,8 @@ PetscErrorCode matmpibaijsetvaluesblocked_(Mat *matin,PetscInt *min,const PetscI
   PetscFunctionBegin;
   /* tasks normally handled by MatSetValuesBlocked() */
   if (mat->insertmode == NOT_SET_VALUES) mat->insertmode = addv;
-#if defined(PETSC_USE_DEBUG)
-  else if (mat->insertmode != addv) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot mix add values and insert values");
-  if (mat->factortype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-#endif
+  else if (PetscUnlikely(mat->insertmode != addv)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot mix add values and insert values");
+  if (PetscUnlikely(mat->factortype)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   if (mat->assembled) {
     mat->was_assembled = PETSC_TRUE;
     mat->assembled     = PETSC_FALSE;
@@ -3511,9 +3495,7 @@ PetscErrorCode matmpibaijsetvaluesblocked_(Mat *matin,PetscInt *min,const PetscI
 
   for (i=0; i<m; i++) {
     if (im[i] < 0) continue;
-#if defined(PETSC_USE_DEBUG)
-    if (im[i] >= baij->Mbs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large, row %D max %D",im[i],baij->Mbs-1);
-#endif
+    if (PetscUnlikelyDebug(im[i] >= baij->Mbs)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large, row %D max %D",im[i],baij->Mbs-1);
     if (im[i] >= rstart && im[i] < rend) {
       row = im[i] - rstart;
       for (j=0; j<n; j++) {
@@ -3540,9 +3522,7 @@ PetscErrorCode matmpibaijsetvaluesblocked_(Mat *matin,PetscInt *min,const PetscI
           col  = in[j] - cstart;
           ierr = MatSetValuesBlocked_SeqBAIJ_Inlined(baij->A,row,col,barray,addv,im[i],in[j]);CHKERRQ(ierr);
         } else if (in[j] < 0) continue;
-#if defined(PETSC_USE_DEBUG)
-        else if (in[j] >= baij->Nbs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large, col %D max %D",in[j],baij->Nbs-1);
-#endif
+        else if (PetscUnlikelyDebug(in[j] >= baij->Nbs)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large, col %D max %D",in[j],baij->Nbs-1);
         else {
           if (mat->was_assembled) {
             if (!baij->colmap) {

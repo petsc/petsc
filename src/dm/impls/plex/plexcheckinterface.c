@@ -140,9 +140,7 @@ static PetscErrorCode PetscSFComputeMultiRootOriginalNumberingByRank_Private(Pet
   PetscFunctionBegin;
   ierr = PetscSFGetGraph(imsf, NULL, &nileaves, NULL, NULL);CHKERRQ(ierr);
   ierr = PetscSFGetRootRanks(imsf, &niranks, NULL, &iroffset, &irmine, NULL);CHKERRQ(ierr);
-#if defined(PETSC_USE_DEBUG)
   if (PetscUnlikely(nileaves != iroffset[niranks])) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"nileaves != iroffset[niranks])");
-#endif
   ierr = PetscSFComputeDegreeBegin(sf, &degree);CHKERRQ(ierr);
   ierr = PetscSFComputeDegreeEnd(sf, &degree);CHKERRQ(ierr);
   ierr = PetscSFComputeMultiRootOriginalNumbering(sf, degree, NULL, &mRootsOrigNumbering);CHKERRQ(ierr);

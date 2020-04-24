@@ -88,14 +88,12 @@ PetscErrorCode  PetscTableCreateCopy(const PetscTable intable,PetscTable *rta)
   ierr          = PetscMalloc1(ta->tablesize,&ta->table);CHKERRQ(ierr);
   ierr          = PetscMemcpy(ta->keytable,intable->keytable,ta->tablesize*sizeof(PetscInt));CHKERRQ(ierr);
   ierr          = PetscMemcpy(ta->table,intable->table,ta->tablesize*sizeof(PetscInt));CHKERRQ(ierr);
-#if defined(PETSC_USE_DEBUG)
-  {
-  PetscInt i;
-  for (i = 0; i < ta->tablesize; i++) {
-    if (ta->keytable[i] < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"ta->keytable[i] < 0");
+  if (PetscDefined(USE_DEBUG)) {
+    PetscInt i;
+    for (i = 0; i < ta->tablesize; i++) {
+      if (ta->keytable[i] < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"ta->keytable[i] < 0");
+    }
   }
-  }
-#endif
   ta->head   = 0;
   ta->count  = intable->count;
   ta->maxkey = intable->maxkey;

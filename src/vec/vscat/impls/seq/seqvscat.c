@@ -11,7 +11,6 @@
 #include <../src/vec/vec/impls/seq/seqcuda/cudavecimpl.h>
 #endif
 
-#if defined(PETSC_USE_DEBUG)
 /*
      Checks if any indices are less than zero and generates an error
 */
@@ -20,13 +19,13 @@ static PetscErrorCode VecScatterCheckIndices_Private(PetscInt nmax,PetscInt n,co
   PetscInt i;
 
   PetscFunctionBegin;
+  if (!PetscDefined(USE_DEBUG)) PetscFunctionReturn(0);
   for (i=0; i<n; i++) {
     if (idx[i] < 0)     SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative index %D at %D location",idx[i],i);
     if (idx[i] >= nmax) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index %D at %D location greater than max %D",idx[i],i,nmax);
   }
   PetscFunctionReturn(0);
 }
-#endif
 
 PetscErrorCode VecScatterDestroy_SGToSG(VecScatter ctx)
 {
@@ -696,14 +695,10 @@ PetscErrorCode VecScatterSetUp_Seq(VecScatter ctx)
     ierr  = PetscMalloc2(1,&to,1,&from);CHKERRQ(ierr);
     ierr  = PetscMalloc2(nx,&to->vslots,nx,&from->vslots);CHKERRQ(ierr);
     to->n = nx;
-#if defined(PETSC_USE_DEBUG)
     ierr = VecScatterCheckIndices_Private(ctx->to_n,ny,idy);CHKERRQ(ierr);
-#endif
     ierr    = PetscArraycpy(to->vslots,idy,nx);CHKERRQ(ierr);
     from->n = nx;
-#if defined(PETSC_USE_DEBUG)
     ierr = VecScatterCheckIndices_Private(ctx->from_n,nx,idx);CHKERRQ(ierr);
-#endif
     ierr              = PetscArraycpy(from->vslots,idx,nx);CHKERRQ(ierr);
     to->format        = VEC_SCATTER_SEQ_GENERAL;
     from->format      = VEC_SCATTER_SEQ_GENERAL;
@@ -762,9 +757,7 @@ PetscErrorCode VecScatterSetUp_Seq(VecScatter ctx)
     to9->first = first;
     to9->step  = step;
     from9->n   = nx;
-#if defined(PETSC_USE_DEBUG)
     ierr           = VecScatterCheckIndices_Private(ctx->from_n,nx,idx);CHKERRQ(ierr);
-#endif
     ierr           = PetscArraycpy(from9->vslots,idx,nx);CHKERRQ(ierr);
     ctx->todata    = (void*)to9; ctx->fromdata = (void*)from9;
     if (step == 1) {
@@ -801,9 +794,7 @@ PetscErrorCode VecScatterSetUp_Seq(VecScatter ctx)
     from10->first = first;
     from10->step  = step;
     to10->n       = nx;
-#if defined(PETSC_USE_DEBUG)
     ierr = VecScatterCheckIndices_Private(ctx->to_n,ny,idy);CHKERRQ(ierr);
-#endif
     ierr = PetscArraycpy(to10->vslots,idy,nx);CHKERRQ(ierr);
     ctx->todata   = (void*)to10;
     ctx->fromdata = (void*)from10;
@@ -862,14 +853,10 @@ PetscErrorCode VecScatterSetUp_Seq(VecScatter ctx)
     ierr = PetscMalloc2(1,&to11,1,&from11);CHKERRQ(ierr);
     ierr = PetscMalloc2(nx,&to11->vslots,nx,&from11->vslots);CHKERRQ(ierr);
     to11->n = nx;
-#if defined(PETSC_USE_DEBUG)
     ierr = VecScatterCheckIndices_Private(ctx->to_n,ny,idy);CHKERRQ(ierr);
-#endif
     ierr = PetscArraycpy(to11->vslots,idy,nx);CHKERRQ(ierr);
     from11->n = nx;
-#if defined(PETSC_USE_DEBUG)
     ierr = VecScatterCheckIndices_Private(ctx->from_n,nx,idx);CHKERRQ(ierr);
-#endif
     ierr = PetscArraycpy(from11->vslots,idx,nx);CHKERRQ(ierr);
     to11->format        = VEC_SCATTER_SEQ_GENERAL;
     from11->format      = VEC_SCATTER_SEQ_GENERAL;

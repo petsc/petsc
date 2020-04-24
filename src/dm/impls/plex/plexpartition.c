@@ -535,9 +535,9 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt cellHeight, PetscInt *num
           }
         }
       }
-#if defined(PETSC_USE_DEBUG)
-      for (c = 0; c < cEnd-cStart; ++c) if (tmp[c] != off[c+1]) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Offset %d != %d for cell %d", tmp[c], off[c], c+cStart);
-#endif
+      if (PetscDefined(USE_DEBUG)) {
+        for (c = 0; c < cEnd-cStart; ++c) if (tmp[c] != off[c+1]) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Offset %d != %d for cell %d", tmp[c], off[c], c+cStart);
+      }
       ierr = PetscFree(tmp);CHKERRQ(ierr);
     }
     if (numVertices) *numVertices = numCells;
@@ -1788,8 +1788,7 @@ static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, Pet
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)part,&comm);CHKERRQ(ierr);
-#if defined (PETSC_USE_DEBUG)
-  {
+  if (PetscDefined (USE_DEBUG)) {
     int ival,isum;
     PetscBool distributed;
 
@@ -1798,7 +1797,6 @@ static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, Pet
     distributed = (isum > 1) ? PETSC_TRUE : PETSC_FALSE;
     if (distributed) SETERRQ(comm, PETSC_ERR_SUP, "Chaco cannot partition a distributed graph");
   }
-#endif
   if (!numVertices) { /* distributed case, return if not holding the graph */
     ierr = ISCreateGeneral(comm, 0, NULL, PETSC_OWN_POINTER, partition);CHKERRQ(ierr);
     PetscFunctionReturn(0);

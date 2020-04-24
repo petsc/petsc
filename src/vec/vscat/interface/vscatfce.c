@@ -74,34 +74,33 @@ PetscErrorCode  VecScatterGetMerged(VecScatter ctx,PetscBool  *flg)
 PetscErrorCode  VecScatterBegin(VecScatter ctx,Vec x,Vec y,InsertMode addv,ScatterMode mode)
 {
   PetscErrorCode ierr;
-#if defined(PETSC_USE_DEBUG)
   PetscInt       to_n,from_n;
-#endif
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ctx,VEC_SCATTER_CLASSID,1);
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);
   PetscValidHeaderSpecific(y,VEC_CLASSID,3);
   if (ctx->inuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE," Scatter ctx already in use");
 
-#if defined(PETSC_USE_DEBUG)
-  /*
+  if (PetscDefined(USE_DEBUG)) {
+    /*
      Error checking to make sure these vectors match the vectors used
-   to create the vector scatter context. -1 in the from_n and to_n indicate the
-   vector lengths are unknown (for example with mapped scatters) and thus
-   no error checking is performed.
-  */
-  if (ctx->from_n >= 0 && ctx->to_n >= 0) {
-    ierr = VecGetLocalSize(x,&from_n);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(y,&to_n);CHKERRQ(ierr);
-    if (mode & SCATTER_REVERSE) {
-      if (to_n != ctx->from_n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Vector wrong size %D for scatter %D (scatter reverse and vector to != ctx from size)",to_n,ctx->from_n);
-      if (from_n != ctx->to_n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Vector wrong size %D for scatter %D (scatter reverse and vector from != ctx to size)",from_n,ctx->to_n);
-    } else {
-      if (to_n != ctx->to_n)     SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Vector wrong size %D for scatter %D (scatter forward and vector to != ctx to size)",to_n,ctx->to_n);
-      if (from_n != ctx->from_n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Vector wrong size %D for scatter %D (scatter forward and vector from != ctx from size)",from_n,ctx->from_n);
+     to create the vector scatter context. -1 in the from_n and to_n indicate the
+     vector lengths are unknown (for example with mapped scatters) and thus
+     no error checking is performed.
+     */
+    if (ctx->from_n >= 0 && ctx->to_n >= 0) {
+      ierr = VecGetLocalSize(x,&from_n);CHKERRQ(ierr);
+      ierr = VecGetLocalSize(y,&to_n);CHKERRQ(ierr);
+      if (mode & SCATTER_REVERSE) {
+        if (to_n != ctx->from_n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Vector wrong size %D for scatter %D (scatter reverse and vector to != ctx from size)",to_n,ctx->from_n);
+        if (from_n != ctx->to_n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Vector wrong size %D for scatter %D (scatter reverse and vector from != ctx to size)",from_n,ctx->to_n);
+      } else {
+        if (to_n != ctx->to_n)     SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Vector wrong size %D for scatter %D (scatter forward and vector to != ctx to size)",to_n,ctx->to_n);
+        if (from_n != ctx->from_n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Vector wrong size %D for scatter %D (scatter forward and vector from != ctx from size)",from_n,ctx->from_n);
+      }
     }
   }
-#endif
 
   ctx->inuse = PETSC_TRUE;
   ierr = PetscLogEventBegin(VEC_ScatterBegin,ctx,x,y,0);CHKERRQ(ierr);
@@ -509,13 +508,11 @@ PetscErrorCode VecScatterGetRemoteOrdered_Private(VecScatter ctx,PetscBool send,
     if (procs)   *procs   = par ? vs->procs   : NULL;
     if (bs)      *bs      = par ? vs->bs      : 0;
   }
-#if defined(PETSC_USE_DEBUG)
-  if (n && procs) {
+  if (PetscUnlikelyDebug(n && procs)) {
     PetscInt i;
     /* from back to front to also handle cases *n=0 */
     for (i=*n-1; i>0; i--) { if ((*procs)[i-1] > (*procs)[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"procs[] are not ordered"); }
   }
-#endif
   PetscFunctionReturn(0);
 }
 

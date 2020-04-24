@@ -152,12 +152,7 @@ PetscErrorCode PetscShmCommGlobalToLocal(PetscShmComm pshmcomm,PetscMPIInt grank
 PetscErrorCode PetscShmCommLocalToGlobal(PetscShmComm pshmcomm,PetscMPIInt lrank,PetscMPIInt *grank)
 {
   PetscFunctionBegin;
-#ifdef PETSC_USE_DEBUG
-  {
-    PetscErrorCode ierr;
-    if (lrank < 0 || lrank >= pshmcomm->shmsize) { SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"No rank %D in the shared memory communicator",lrank);CHKERRQ(ierr); }
-  }
-#endif
+  if (lrank < 0 || lrank >= pshmcomm->shmsize) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"No rank %D in the shared memory communicator",lrank);
   *grank = pshmcomm->globranks[lrank];
   PetscFunctionReturn(0);
 }

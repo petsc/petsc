@@ -1011,8 +1011,7 @@ PetscErrorCode PetscFEComputeTabulation(PetscFE fem, PetscInt npoints, const Pet
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
   PetscValidPointer(points, 3);
   PetscValidPointer(T, 5);
-#ifdef PETSC_USE_DEBUG
-  {
+  if (PetscDefined(USE_DEBUG)) {
     DM               dm;
     PetscDualSpace   Q;
     PetscInt         Nb;   /* Dimension of FE space P */
@@ -1029,7 +1028,6 @@ PetscErrorCode PetscFEComputeTabulation(PetscFE fem, PetscInt npoints, const Pet
     if (T->Nc   != Nc)              SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Tabulation Nc %D must match requested Nc %D", T->Nc, Nc);
     if (T->cdim != cdim)            SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Tabulation cdim %D must match requested cdim %D", T->cdim, cdim);
   }
-#endif
   T->Nr = 1;
   T->Np = npoints;
   ierr = (*fem->ops->createtabulation)(fem, npoints, points, K, T);CHKERRQ(ierr);

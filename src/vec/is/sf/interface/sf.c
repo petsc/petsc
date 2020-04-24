@@ -205,7 +205,6 @@ PetscErrorCode PetscSFDestroy(PetscSF *sf)
 
 static PetscErrorCode PetscSFCheckGraphValid_Private(PetscSF sf)
 {
-#if defined(PETSC_USE_DEBUG)
   PetscInt           i, nleaves;
   PetscMPIInt        size;
   const PetscInt    *ilocal;
@@ -213,7 +212,7 @@ static PetscErrorCode PetscSFCheckGraphValid_Private(PetscSF sf)
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  if (!sf->graphset) PetscFunctionReturn(0);
+  if (!sf->graphset || !PetscDefined(USE_DEBUG)) PetscFunctionReturn(0);
   ierr = PetscSFGetGraph(sf,NULL,&nleaves,&ilocal,&iremote);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)sf),&size);CHKERRQ(ierr);
   for (i = 0; i < nleaves; i++) {
@@ -225,10 +224,6 @@ static PetscErrorCode PetscSFCheckGraphValid_Private(PetscSF sf)
     if (leaf < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Provided location (%D) for leaf %D is invalid, should be >= 0",leaf,i);
   }
   PetscFunctionReturn(0);
-#else
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-#endif
 }
 
 /*@
@@ -1113,11 +1108,11 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF sf,PetscSF *multi)
     ierr = PetscSFFetchAndOpBegin(sf,MPIU_INT,inoffset,outones,outoffset,MPI_SUM);CHKERRQ(ierr);
     ierr = PetscSFFetchAndOpEnd(sf,MPIU_INT,inoffset,outones,outoffset,MPI_SUM);CHKERRQ(ierr);
     for (i=0; i<sf->nroots; i++) inoffset[i] -= indegree[i]; /* Undo the increment */
-#if defined(PETSC_USE_DEBUG)                                 /* Check that the expected number of increments occurred */
-    for (i=0; i<sf->nroots; i++) {
-      if (inoffset[i] + indegree[i] != inoffset[i+1]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Incorrect result after PetscSFFetchAndOp");
+    if (PetscDefined(USE_DEBUG)) { /* Check that the expected number of increments occurred */
+      for (i=0; i<sf->nroots; i++) {
+        if (inoffset[i] + indegree[i] != inoffset[i+1]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Incorrect result after PetscSFFetchAndOp");
+      }
     }
-#endif
     ierr = PetscMalloc1(sf->nleaves,&remote);CHKERRQ(ierr);
     for (i=0; i<sf->nleaves; i++) {
       remote[i].rank  = sf->remote[i].rank;
@@ -1201,16 +1196,14 @@ PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF sf,PetscInt nselected,const Petsc
   ierr = PetscObjectGetComm((PetscObject)sf,&comm);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sf,&nroots,&nleaves,&ilocal,&iremote);CHKERRQ(ierr);
 
-#if defined(PETSC_USE_DEBUG)
-  /* Error out if selected[] has dups or  out of range indices */
-  {
+  if (PetscDefined(USE_DEBUG)) {  /* Error out if selected[] has dups or  out of range indices */
+
     PetscBool dups;
     ierr = PetscCheckDupsInt(nselected,selected,&dups);CHKERRQ(ierr);
     if (dups) SETERRQ(comm,PETSC_ERR_ARG_WRONG,"selected[] has dups");
     for (i=0; i<nselected; i++)
       if (selected[i] < 0 || selected[i] >= nroots) SETERRQ2(comm,PETSC_ERR_ARG_OUTOFRANGE,"selected root indice %D is out of [0,%D)",selected[i],nroots);
   }
-#endif
 
   if (sf->ops->CreateEmbeddedSF) {
     ierr = (*sf->ops->CreateEmbeddedSF)(sf,nselected,selected,esf);CHKERRQ(ierr);
@@ -1637,9 +1630,7 @@ PetscErrorCode PetscSFComputeMultiRootOriginalNumbering(PetscSF sf, const PetscI
       (*multiRootsOrigNumbering)[k] = i;
     }
   }
-#if defined(PETSC_USE_DEBUG)
   if (PetscUnlikely(k != nmroots)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"sanity check fail");
-#endif
   if (nMultiRoots) *nMultiRoots = nmroots;
   PetscFunctionReturn(0);
 }
@@ -1766,13 +1757,13 @@ PetscErrorCode PetscSFScatterEnd(PetscSF sf,MPI_Datatype unit,const void *multir
 
 static PetscErrorCode PetscSFCheckLeavesUnique_Private(PetscSF sf)
 {
-#if defined(PETSC_USE_DEBUG)
   PetscInt        i, n, nleaves;
   const PetscInt *ilocal = NULL;
   PetscHSetI      seen;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  if (!PetscDefined(USE_DEBUG)) PetscFunctionReturn(0);
   ierr = PetscSFGetGraph(sf,NULL,&nleaves,&ilocal,NULL);CHKERRQ(ierr);
   ierr = PetscHSetICreate(&seen);CHKERRQ(ierr);
   for (i = 0; i < nleaves; i++) {
@@ -1783,10 +1774,6 @@ static PetscErrorCode PetscSFCheckLeavesUnique_Private(PetscSF sf)
   if (n != nleaves) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Provided leaves have repeated values: all leaves must be unique");
   ierr = PetscHSetIDestroy(&seen);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-#else
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-#endif
 }
 
 /*@

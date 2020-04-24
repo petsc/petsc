@@ -2455,10 +2455,10 @@ PetscErrorCode PetscDualSpaceCreateInteriorSymmetryMatrix_Lagrange(PetscDualSpac
       if (d < nodeIdxDim) break;
     }
     /* permOrnt[[n, nEnd)] is a group of dofs that, under the symmetry are at the same location */
-#if defined(PETSC_USE_DEBUG)
+
     /* the symmetry had better map the group of dofs with the same permuted nodeIdx
      * to a group of dofs with the same size, otherwise we messed up */
-    {
+    if (PetscDefined(USE_DEBUG)) {
       PetscInt m;
       PetscInt *nind = &(intNodeIndices->nodeIdx[perm[n] * nodeIdxDim]);
 
@@ -2472,7 +2472,6 @@ PetscErrorCode PetscDualSpaceCreateInteriorSymmetryMatrix_Lagrange(PetscDualSpac
       }
       if (m < nEnd) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Dofs with same index after symmetry not same block size");
     }
-#endif
     groupSize = nEnd - n;
     /* each pushforward dof vector will be expressed in a basis of the unpermuted dofs */
     for (m = n; m < nEnd; m++) nnz[permOrnt[m]] = groupSize;
