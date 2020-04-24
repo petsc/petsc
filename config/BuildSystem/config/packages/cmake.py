@@ -20,6 +20,7 @@ class Configure(config.package.GNUPackage):
     import nargs
     config.package.GNUPackage.setupHelp(self, help)
     help.addArgument('CMAKE', '-download-cmake-cc=<prog>',                   nargs.Arg(None, None, 'C compiler for Cmake configure'))
+    help.addArgument('CMAKE', '-download-cmake-cxx=<prog>',                  nargs.Arg(None, None, 'C++ compiler for Cmake configure'))
     help.addArgument('CMAKE', '-download-cmake-configure-options=<options>', nargs.Arg(None, None, 'Additional options for Cmake configure'))
     help.addArgument('CMAKE', '-with-cmake-exec=<executable>',                nargs.Arg(None, None, 'CMake executable to look for'))
     help.addArgument('CMAKE', '-with-ctest-exec=<executable>',                nargs.Arg(None, None, 'Ctest executable to look for'))
@@ -32,6 +33,8 @@ class Configure(config.package.GNUPackage):
     args.append('--parallel='+str(self.make.make_np))
     if 'download-cmake-cc' in self.argDB and self.argDB['download-cmake-cc']:
       args.append('CC="'+self.argDB['download-cmake-cc']+'"')
+    if 'download-cmake-cxx' in self.argDB and self.argDB['download-cmake-cxx']:
+      args.append('CXX="'+self.argDB['download-cmake-cxx']+'"')
     if 'download-cmake-configure-options' in self.argDB and self.argDB['download-cmake-configure-options']:
       args.append(self.argDB['download-cmake-configure-options'])
     return args
