@@ -431,6 +431,8 @@ PetscErrorCode MatBindToCPU(Mat A,PetscBool flg)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidLogicalCollectiveBool(A,flg,2);
   if (A->boundtocpu == flg) PetscFunctionReturn(0);
   A->boundtocpu = flg;
   if (A->ops->bindtocpu) {
@@ -438,6 +440,9 @@ PetscErrorCode MatBindToCPU(Mat A,PetscBool flg)
   }
   PetscFunctionReturn(0);
 #else
-  return 0;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidLogicalCollectiveBool(A,flg,2);
+  PetscFunctionReturn(0);
 #endif
 }
