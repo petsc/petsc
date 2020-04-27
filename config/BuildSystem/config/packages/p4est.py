@@ -57,8 +57,8 @@ class Configure(config.package.GNUPackage):
         raise RuntimeError('Could not initialize sc submodule needed by p4est')
     return
 
-  def Install(self):
-    '''bootstrap, then standar GNU configure; make; make install'''
+  def preInstall(self):
+    '''check for configure script - and run bootstrap - if needed'''
     import os
     if not os.path.isfile(os.path.join(self.packageDir,'configure')):
       if not self.programs.libtoolize:
@@ -70,4 +70,3 @@ class Configure(config.package.GNUPackage):
         self.executeShellCommand('./bootstrap',cwd=self.packageDir,log=self.log)
       except RuntimeError as e:
         raise RuntimeError('Could not bootstrap p4est using autotools: maybe autotools (or recent enough autotools) could not be found?\nError: '+str(e))
-    return config.package.GNUPackage.Install(self)
