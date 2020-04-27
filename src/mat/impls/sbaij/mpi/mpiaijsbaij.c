@@ -42,11 +42,13 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPISBAIJ(Mat A, MatType newtype,Ma
     ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
     for (i=rstart; i<rend; i++) {
       ierr = MatGetRow(A,i,&nz,&cwork,&vwork);CHKERRQ(ierr);
-      j    = 0;
-      while (cwork[j] < i) {
-        j++; nz--;
+      if (nz) {
+        j = 0;
+        while (cwork[j] < i) {
+          j++; nz--;
+        }
+        ierr = MatSetValues(M,1,&i,nz,cwork+j,vwork+j,INSERT_VALUES);CHKERRQ(ierr);
       }
-      ierr = MatSetValues(M,1,&i,nz,cwork+j,vwork+j,INSERT_VALUES);CHKERRQ(ierr);
       ierr = MatRestoreRow(A,i,&nz,&cwork,&vwork);CHKERRQ(ierr);
     }
     ierr = MatAssemblyBegin(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
