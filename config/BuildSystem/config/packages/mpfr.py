@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.download  = ['http://www.mpfr.org/mpfr-current/mpfr-3.1.5.tar.gz']
+    self.download  = ['http://www.mpfr.org/mpfr-3.1.5/mpfr-3.1.5.tar.gz']
     self.functions = ['mpfr_get_version']
     self.includes  = ['mpfr.h']
     self.liblist   = [['libmpfr.a']]

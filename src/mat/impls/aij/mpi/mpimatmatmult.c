@@ -352,6 +352,7 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_MPIAIJ_MPIDense(Mat C)
   Mat_Product    *product = C->product;
 
   PetscFunctionBegin;
+  ierr = MatSetType(C,MATMPIDENSE);CHKERRQ(ierr);
   switch (product->type) {
   case MATPRODUCT_AB:
     ierr = MatProductSetFromOptions_MPIAIJ_MPIDense_AB(C);CHKERRQ(ierr);
@@ -2492,6 +2493,7 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_MPIAIJ(Mat C)
   Mat_Product    *product = C->product;
 
   PetscFunctionBegin;
+  ierr = MatSetType(C,MATMPIAIJ);CHKERRQ(ierr);
   switch (product->type) {
   case MATPRODUCT_AB:
     ierr = MatProductSetFromOptions_MPIAIJ_AB(C);CHKERRQ(ierr);
