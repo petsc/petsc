@@ -1,6 +1,7 @@
   Iteration information for tao_brgn_subsolver_ solve.
   0 TAO,  Function value: 0.65125,  Residual: 2.50483 
-  1 TAO,  Function value: 4.5516e-09,  Residual: 1.29926e-14 
+  Linear tao_brgn_subsolver_ solve converged due to CONVERGED_RTOL iterations 3
+  1 TAO,  Function value: 4.5516e-09,  Residual: 1.86211e-15 
 -------- result x, residual f=A*x-b, and Jacobian=A. -------- 
 Vec Object: 1 MPI processes
   type: seq
