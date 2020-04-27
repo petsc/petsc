@@ -36,7 +36,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_SeqAIJ_SeqDense(Mat A,Mat B,PetscReal
   /* create output dense matrix C = A^T*B */
   ierr = MatSetSizes(C,n,BN,n,BN);CHKERRQ(ierr);
   ierr = MatSetType(C,MATSEQDENSE);CHKERRQ(ierr);
-  ierr = MatSeqDenseSetPreallocation(C,NULL);CHKERRQ(ierr);
+  ierr = MatSetUp(C);CHKERRQ(ierr);
 
   /* create vectors bt and ct to hold locally transposed arrays of B and C */
   ierr = VecCreate(PETSC_COMM_SELF,&bt);CHKERRQ(ierr);

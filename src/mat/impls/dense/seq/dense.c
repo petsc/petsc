@@ -2032,7 +2032,11 @@ static PetscErrorCode MatSetUp_SeqDense(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatSeqDenseSetPreallocation(A,0);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
+  if (!A->preallocated) {
+    ierr = MatSeqDenseSetPreallocation(A,0);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -2086,7 +2090,7 @@ PetscErrorCode MatMatMultSymbolic_SeqDense_SeqDense(Mat A,Mat B,PetscReal fill,M
   ierr = MatSetSizes(C,m,n,m,n);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)B,((PetscObject)A)->type_name,&flg);CHKERRQ(ierr);
   ierr = MatSetType(C,flg ? ((PetscObject)A)->type_name : MATDENSE);CHKERRQ(ierr);
-  ierr = MatSeqDenseSetPreallocation(C,NULL);CHKERRQ(ierr);
+  ierr = MatSetUp(C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2142,8 +2146,7 @@ PetscErrorCode MatMatTransposeMultSymbolic_SeqDense_SeqDense(Mat A,Mat B,PetscRe
   ierr = MatSetSizes(C,m,n,m,n);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)B,((PetscObject)A)->type_name,&flg);CHKERRQ(ierr);
   ierr = MatSetType(C,flg ? ((PetscObject)A)->type_name : MATDENSE);CHKERRQ(ierr);
-  ierr = MatSeqDenseSetPreallocation(C,NULL);CHKERRQ(ierr);
-  C->ops->mattransposemultnumeric = MatMatTransposeMultNumeric_SeqDense_SeqDense;
+  ierr = MatSetUp(C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2176,7 +2179,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_SeqDense_SeqDense(Mat A,Mat B,PetscRe
   ierr = MatSetSizes(C,m,n,m,n);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)B,((PetscObject)A)->type_name,&flg);CHKERRQ(ierr);
   ierr = MatSetType(C,flg ? ((PetscObject)A)->type_name : MATDENSE);CHKERRQ(ierr);
-  ierr = MatSeqDenseSetPreallocation(C,NULL);CHKERRQ(ierr);
+  ierr = MatSetUp(C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2241,7 +2244,6 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_SeqDense(Mat C)
   Mat_Product    *product = C->product;
 
   PetscFunctionBegin;
-  ierr = MatSetType(C,MATSEQDENSE);CHKERRQ(ierr);
   switch (product->type) {
   case MATPRODUCT_AB:
     ierr = MatProductSetFromOptions_SeqDense_AB(C);CHKERRQ(ierr);
