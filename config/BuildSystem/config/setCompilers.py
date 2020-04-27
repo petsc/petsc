@@ -141,6 +141,17 @@ class Configure(config.base.Configure):
       pass
 
   @staticmethod
+  def isMINGW(compiler, log):
+    '''Returns true if the compiler is a MINGW GCC compiler'''
+    try:
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -v',checkCommand = noCheck, log = log)
+      output = output + error
+      if output.find('w64-mingw32') >= 0:
+        return 1
+    except RuntimeError:
+      pass
+
+  @staticmethod
   def isGNU(compiler, log):
     '''Returns true if the compiler is a GNU compiler'''
     try:
