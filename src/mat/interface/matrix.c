@@ -9324,9 +9324,7 @@ PetscErrorCode MatMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
 
         ierr = MatProductSetType(*C,MATPRODUCT_AB);CHKERRQ(ierr);
         ierr = MatProductSetFromOptions(*C);CHKERRQ(ierr);
-        if (!(*C)->assembled) {
-          ierr = MatProductSymbolic(*C);CHKERRQ(ierr);
-        }
+        ierr = MatProductSymbolic(*C);CHKERRQ(ierr);
       } else SETERRQ(PetscObjectComm((PetscObject)(*C)),PETSC_ERR_SUP,"Call MatProductCreate() or MatProductReplaceProduct() first");
     } else { /* user may chage input matrices A or B when REUSE */
       ierr = MatProductReplaceMats(A,B,NULL,*C);CHKERRQ(ierr);

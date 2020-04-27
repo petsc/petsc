@@ -173,8 +173,8 @@ PETSC_INTERN PetscErrorCode MatMatMultSymbolic_Nest_Dense(Mat A,Mat B,PetscReal 
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
+  ierr = MatGetSize(B,NULL,&N);CHKERRQ(ierr);
   if (!C->assembled) {
-    ierr = MatGetSize(B,NULL,&N);CHKERRQ(ierr);
     ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
     ierr = MatGetSize(A,&M,NULL);CHKERRQ(ierr);
 
