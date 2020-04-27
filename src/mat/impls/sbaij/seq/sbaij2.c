@@ -739,7 +739,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_1(Mat A,Vec xx,Vec yy,Vec zz)
     ib          = aj + *ai;
     jmin        = 0;
     nonzerorow += (n>0);
-    if (*ib == i) {            /* (diag of A)*x */
+    if (n && *ib == i) {            /* (diag of A)*x */
       z[i] += *v++ * x[*ib++]; jmin++;
     }
     if (aconj) {
