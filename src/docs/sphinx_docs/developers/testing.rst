@@ -196,30 +196,28 @@ Additional Specifications
 In addition to the above keywords, other language features are
 supported.
 
-    -  for loops: Specifying ``!``\  ... shared output! or ``!``\  ...
-       separate output! will create for loops over an enclosed
-       space-delmited list. If the loop causes a different output, then
-       separate output would be used. If the loop does not cause
-       separate output, then the shared (in shorthand notation, ``!``\
-       ... !) syntax must be used.
+-  **for loops**: Specifying ``{{list of values}}`` will generate a loop over
+   an enclosed space-delimited list of values.
+   It is supported within ``nsize`` and ``args``. For example,
+   ::
 
-       For loops are supported within nsize and args. An example is
+       nsize: {{1 2 4}}
+       args: -matload_block_size {{2 3}}
+       
+   Here the output for each ``-matload_block_size`` value is assumed to give
+   the same output so that only one output file is needed.
+   
+   If the loop causes a different output, then separate output needs to be used:
+   ::
 
-       ::
+       args: -matload_block_size {{2 3}separate output}
 
-           args: -matload_block_size {{2 3}}
+   In this case, each loop value generates a separate script,
+   and a separate output file is needed.
+   
+   Note that ``{{...}shared output}`` is equivalent to ``{{...}}``. 
 
-       In this case, two execution lines would be addded with two
-       different arguments. Associated ``diff`` lines would be added as
-       well automatically.
-
-       Here the output for each ``matloadblocksize`` is assumed to give
-       the same output so that only one diff file is needed. If the
-       variables produced different output, then the ``separate output``
-       option would be added. In this case, each loop variable and value
-       become a separate script.
-
-       See examples below for how it works in practice.
+   See examples below for how it works in practice.
 
 Test Block Examples
 ~~~~~~~~~~~~~~~~~~~
@@ -228,19 +226,9 @@ The following is the simplest test block:
 
 ::
 
-    /*TEST test: TEST*/
-
-which is equivalent to
-
-::
-
-    /*TEST testset: test: TEST*/
-
-which is equivalent to
-
-::
-
-    /*TEST testset: TEST*/
+    /*TEST
+      test:
+    TEST*/
 
 If this block is in ``src/a/b/examples/tutorials/ex1.c``, then it will
 create ``a_b_tutorials-ex1`` test that requires only one
@@ -251,7 +239,9 @@ For Fortran, the equivalent is
 
 .. code-block:: fortran
 
-    !/*TEST ! test: !TEST*/
+    !/*TEST
+    !  test:
+    !TEST*/
 
 A more complete example is
 
@@ -399,7 +389,11 @@ A typical example for compiling for only real numbers is
 
 ::
 
-    /*T build: requires: !complex T*/
+    /*TEST
+      build:
+        requires: !complex
+      test:
+    TEST*/
 
 PETSC Test Harness
 ------------------
