@@ -59,6 +59,26 @@
 #include <petsc/finclude/petscdraw.h>
       use petscsnes
       implicit none
+      interface SNESSetJacobian
+      subroutine SNESSetJacobian1(a,b,c,d,e,z)
+       use petscsnes
+       SNES a
+       Mat b
+       Mat c
+       external d
+       MatFDColoring e
+       PetscErrorCode z
+      end subroutine
+      subroutine SNESSetJacobian2(a,b,c,d,e,z)
+       use petscsnes
+       SNES a
+       Mat b
+       Mat c
+       external d
+       integer e
+       PetscErrorCode z
+      end subroutine
+      end interface
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
