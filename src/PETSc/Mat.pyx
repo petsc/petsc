@@ -1588,6 +1588,19 @@ cdef class Mat(Object):
         PetscINCREF(localmat.obj)
         return localmat
 
+    # DM
+
+    def getDM(self):
+        cdef PetscDM newdm = NULL
+        CHKERR( MatGetDM(self.mat, &newdm) )
+        cdef DM dm = subtype_DM(newdm)()
+        dm.dm = newdm
+        PetscINCREF(dm.obj)
+        return dm
+
+    def setDM(self, DM dm):
+        CHKERR( MatSetDM(self.mat, dm.dm) )
+
     #
 
     property sizes:
