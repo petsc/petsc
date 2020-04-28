@@ -101,82 +101,6 @@ PetscErrorCode DMStagGetLocationDOF(DM dm,DMStagStencilLocation loc,PetscInt *do
 }
 
 /*@C
-  DMStagStencilToIndexLocal - Convert an array of DMStagStencil objects to an array of indices into a local vector.
-
-  Not Collective
-
-  Input Parameters:
-+ dm - the DMStag object
-. n - the number of DMStagStencil objects
-- pos - an array of n DMStagStencil objects
-
-  Output Parameter:
-. ix - output array of n indices
-
-  Notes:
-  The .c fields in pos must always be set (even if to 0).
-
-  Level: developer
-
-.seealso: DMSTAG, DMStagStencilLocation, DMStagStencil, DMGetLocalVector, DMCreateLocalVector
-@*/
-PetscErrorCode DMStagStencilToIndexLocal(DM dm,PetscInt n,const DMStagStencil *pos,PetscInt *ix)
-{
-  PetscErrorCode        ierr;
-  const DM_Stag * const stag = (DM_Stag*)dm->data;
-  PetscInt              idx,dim,startGhost[DMSTAG_MAX_DIM];
-  const PetscInt        epe = stag->entriesPerElement;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
-  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
-  if (PetscDefined(USE_DEBUG)) {
-    PetscInt i,nGhost[DMSTAG_MAX_DIM],endGhost[DMSTAG_MAX_DIM];
-    ierr = DMStagGetGhostCorners(dm,&startGhost[0],&startGhost[1],&startGhost[2],&nGhost[0],&nGhost[1],&nGhost[2]);CHKERRQ(ierr);
-    for (i=0; i<DMSTAG_MAX_DIM; ++i) endGhost[i] = startGhost[i] + nGhost[i];
-    for (i=0; i<n; ++i) {
-      PetscInt dof;
-      ierr = DMStagGetLocationDOF(dm,pos[i].loc,&dof);CHKERRQ(ierr);
-      if (dof < 1) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Location %s has no dof attached",DMStagStencilLocations[pos[i].loc]);
-      if (pos[i].c < 0) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Negative component number (%d) supplied in loc[%D]",pos[i].c,i);
-      if (pos[i].c > dof-1) SETERRQ3(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Supplied component number (%D) for location %s is too big (maximum %D)",pos[i].c,DMStagStencilLocations[pos[i].loc],dof-1);
-      if (pos[i].i >= endGhost[0] || pos[i].i < startGhost[0]) SETERRQ3(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Supplied x element index %D out of range. Should be in [%D,%D]",pos[i].i,startGhost[0],endGhost[0]-1);
-      if (dim > 1 && (pos[i].j >= endGhost[1] || pos[i].j < startGhost[1])) SETERRQ3(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Supplied y element index %D out of range. Should be in [%D,%D]",pos[i].j,startGhost[1],endGhost[1]-1);
-      if (dim > 2 && (pos[i].k >= endGhost[2] || pos[i].k < startGhost[2])) SETERRQ3(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Supplied z element index %D out of range. Should be in [%D,%D]",pos[i].k,startGhost[2],endGhost[2]-1);
-    }
-  } else {
-    ierr = DMStagGetGhostCorners(dm,&startGhost[0],&startGhost[1],&startGhost[2],NULL,NULL,NULL);CHKERRQ(ierr);
-  }
-  if (dim == 1) {
-    for (idx=0; idx<n; ++idx) {
-      const PetscInt eLocal = pos[idx].i - startGhost[0]; /* Local element number */
-      ix[idx] = eLocal * epe + stag->locationOffsets[pos[idx].loc] + pos[idx].c;
-    }
-  } else if (dim == 2) {
-    const PetscInt epr = stag->nGhost[0];
-    ierr = DMStagGetGhostCorners(dm,&startGhost[0],&startGhost[1],NULL,NULL,NULL,NULL);CHKERRQ(ierr);
-    for (idx=0; idx<n; ++idx) {
-      const PetscInt eLocalx = pos[idx].i - startGhost[0];
-      const PetscInt eLocaly = pos[idx].j - startGhost[1];
-      const PetscInt eLocal = eLocalx + epr*eLocaly;
-      ix[idx] = eLocal * epe + stag->locationOffsets[pos[idx].loc] + pos[idx].c;
-    }
-  } else if (dim == 3) {
-    const PetscInt epr = stag->nGhost[0];
-    const PetscInt epl = stag->nGhost[0]*stag->nGhost[1];
-    ierr = DMStagGetGhostCorners(dm,&startGhost[0],&startGhost[1],&startGhost[2],NULL,NULL,NULL);CHKERRQ(ierr);
-    for (idx=0; idx<n; ++idx) {
-      const PetscInt eLocalx = pos[idx].i - startGhost[0];
-      const PetscInt eLocaly = pos[idx].j - startGhost[1];
-      const PetscInt eLocalz = pos[idx].k - startGhost[2];
-      const PetscInt eLocal  = epl*eLocalz + epr*eLocaly + eLocalx;
-      ix[idx] = eLocal * epe + stag->locationOffsets[pos[idx].loc] + pos[idx].c;
-    }
-  } else SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Unsupported dimension %d",dim);
-  PetscFunctionReturn(0);
-}
-
-/*@C
   DMStagMatGetValuesStencil - retrieve local matrix entries using grid indexing
 
   Not Collective
@@ -207,8 +131,8 @@ PetscErrorCode DMStagMatGetValuesStencil(DM dm,Mat mat,PetscInt nRow,const DMSta
   PetscValidHeaderSpecific(mat,MAT_CLASSID,2);
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   ierr = PetscMalloc2(nRow,&ir,nCol,&ic);CHKERRQ(ierr);
-  ierr = DMStagStencilToIndexLocal(dm,nRow,posRow,ir);CHKERRQ(ierr);
-  ierr = DMStagStencilToIndexLocal(dm,nCol,posCol,ic);CHKERRQ(ierr);
+  ierr = DMStagStencilToIndexLocal(dm,dim,nRow,posRow,ir);CHKERRQ(ierr);
+  ierr = DMStagStencilToIndexLocal(dm,dim,nCol,posCol,ic);CHKERRQ(ierr);
   ierr = MatGetValuesLocal(mat,nRow,ir,nCol,ic,val);CHKERRQ(ierr);
   ierr = PetscFree2(ir,ic);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -247,10 +171,72 @@ PetscErrorCode DMStagMatSetValuesStencil(DM dm,Mat mat,PetscInt nRow,const DMSta
   PetscValidHeaderSpecific(mat,MAT_CLASSID,2);
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   ierr = PetscMalloc2(nRow,&ir,nCol,&ic);CHKERRQ(ierr);
-  ierr = DMStagStencilToIndexLocal(dm,nRow,posRow,ir);CHKERRQ(ierr);
-  ierr = DMStagStencilToIndexLocal(dm,nCol,posCol,ic);CHKERRQ(ierr);
+  ierr = DMStagStencilToIndexLocal(dm,dim,nRow,posRow,ir);CHKERRQ(ierr);
+  ierr = DMStagStencilToIndexLocal(dm,dim,nCol,posCol,ic);CHKERRQ(ierr);
   ierr = MatSetValuesLocal(mat,nRow,ir,nCol,ic,val,insertMode);CHKERRQ(ierr);
   ierr = PetscFree2(ir,ic);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMStagStencilToIndexLocal - Convert an array of DMStagStencil objects to an array of indices into a local vector.
+
+  Not Collective
+
+  Input Parameters:
++ dm - the DMStag object
+. dim - the dimension of the DMStag object
+. n - the number of DMStagStencil objects
+- pos - an array of n DMStagStencil objects
+
+  Output Parameter:
+. ix - output array of n indices
+
+  Notes:
+  The .c fields in pos must always be set (even if to 0).
+
+  Developer Notes:
+  This is a "hot" function, and accepts the dimension redundantly to avoid having to perform any error checking inside the function.
+
+  Level: developer
+
+.seealso: DMSTAG, DMStagStencilLocation, DMStagStencil, DMGetLocalVector, DMCreateLocalVector
+@*/
+PetscErrorCode DMStagStencilToIndexLocal(DM dm,PetscInt dim,PetscInt n,const DMStagStencil *pos,PetscInt *ix)
+{
+  const DM_Stag * const stag = (DM_Stag*)dm->data;
+  const PetscInt        epe = stag->entriesPerElement;
+
+  PetscFunctionBeginHot;
+  if (dim == 1) {
+    for (PetscInt idx=0; idx<n; ++idx) {
+      const PetscInt eLocal = pos[idx].i - stag->startGhost[0];
+
+      ix[idx] = eLocal * epe + stag->locationOffsets[pos[idx].loc] + pos[idx].c;
+    }
+  } else if (dim == 2) {
+    const PetscInt epr = stag->nGhost[0];
+
+    for (PetscInt idx=0; idx<n; ++idx) {
+      const PetscInt eLocalx = pos[idx].i - stag->startGhost[0];
+      const PetscInt eLocaly = pos[idx].j - stag->startGhost[1];
+      const PetscInt eLocal = eLocalx + epr*eLocaly;
+
+      ix[idx] = eLocal * epe + stag->locationOffsets[pos[idx].loc] + pos[idx].c;
+    }
+  } else if (dim == 3) {
+    const PetscInt epr = stag->nGhost[0];
+    const PetscInt epl = stag->nGhost[0]*stag->nGhost[1];
+
+    for (PetscInt idx=0; idx<n; ++idx) {
+      const PetscInt eLocalx = pos[idx].i - stag->startGhost[0];
+      const PetscInt eLocaly = pos[idx].j - stag->startGhost[1];
+      const PetscInt eLocalz = pos[idx].k - stag->startGhost[2];
+      const PetscInt eLocal  = epl*eLocalz + epr*eLocaly + eLocalx;
+
+      ix[idx] = eLocal * epe + stag->locationOffsets[pos[idx].loc] + pos[idx].c;
+    }
+  } else SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Unsupported dimension %d",dim);
   PetscFunctionReturn(0);
 }
 
@@ -293,7 +279,7 @@ PetscErrorCode DMStagVecGetValuesStencil(DM dm, Vec vec,PetscInt n,const DMStagS
   ierr = VecGetLocalSize(vec,&nLocal);CHKERRQ(ierr);
   if (nLocal != stag->entriesGhost) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Vector should be a local vector. Local size %d does not match expected %d\n",nLocal,stag->entriesGhost);
   ierr = PetscMalloc1(n,&ix);CHKERRQ(ierr);
-  ierr = DMStagStencilToIndexLocal(dm,n,pos,ix);CHKERRQ(ierr);
+  ierr = DMStagStencilToIndexLocal(dm,dim,n,pos,ix);CHKERRQ(ierr);
   ierr = VecGetArrayRead(vec,&arr);CHKERRQ(ierr);
   for (idx=0; idx<n; ++idx) val[idx] = arr[ix[idx]];
   ierr = VecRestoreArrayRead(vec,&arr);CHKERRQ(ierr);
@@ -338,7 +324,7 @@ PetscErrorCode DMStagVecSetValuesStencil(DM dm,Vec vec,PetscInt n,const DMStagSt
   ierr = VecGetLocalSize(vec,&nLocal);CHKERRQ(ierr);
   if (nLocal != stag->entries) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONG,"Provided vec has a different number of local entries (%D) than expected (%D). It should be a global vector",nLocal,stag->entries);
   ierr = PetscMalloc1(n,&ix);CHKERRQ(ierr);
-  ierr = DMStagStencilToIndexLocal(dm,n,pos,ix);CHKERRQ(ierr);
+  ierr = DMStagStencilToIndexLocal(dm,dim,n,pos,ix);CHKERRQ(ierr);
   ierr = VecSetValuesLocal(vec,n,ix,val,insertMode);CHKERRQ(ierr);
   ierr = PetscFree(ix);CHKERRQ(ierr);
   PetscFunctionReturn(0);

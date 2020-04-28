@@ -116,7 +116,7 @@ PETSC_EXTERN PetscErrorCode DMStagSetStencilWidth(DM,PetscInt);
 PETSC_EXTERN PetscErrorCode DMStagSetUniformCoordinates(DM,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit(DM,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode DMStagSetUniformCoordinatesProduct(DM,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal);
-PETSC_EXTERN PetscErrorCode DMStagStencilToIndexLocal(DM,PetscInt,const DMStagStencil*,PetscInt*);
+PETSC_EXTERN PetscErrorCode DMStagStencilToIndexLocal(DM,PetscInt,PetscInt,const DMStagStencil*,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMStagVecGetArray(DM,Vec,void*);
 PETSC_EXTERN PetscErrorCode DMStagVecGetArrayRead(DM,Vec,void*);
 PETSC_EXTERN PetscErrorCode DMStagVecGetValuesStencil(DM,Vec,PetscInt,const DMStagStencil*,PetscScalar*);
