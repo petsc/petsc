@@ -4,7 +4,9 @@ import os
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/Triangle.tar.gz']
+    self.gitcommit        = 'v1.3-p2'
+    self.download         = ['git://https://bitbucket.org/petsc/pkg-triangle','https://bitbucket.org/petsc/pkg-triangle/get/'+self.gitcommit+'.tar.gz']
+    self.downloaddirnames = ['petsc-pkg-triangle','Triangle']
     self.functions        = ['triangulate']
     self.includes         = ['triangle.h']
     self.liblist          = [['libtriangle.a']]
