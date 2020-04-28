@@ -657,14 +657,15 @@ PetscErrorCode PetscFESetQuadrature(PetscFE fem, PetscQuadrature q)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
+  if (q == fem->quadrature) PetscFunctionReturn(0);
   ierr = PetscFEGetNumComponents(fem, &Nc);CHKERRQ(ierr);
   ierr = PetscQuadratureGetNumComponents(q, &qNc);CHKERRQ(ierr);
   if ((qNc != 1) && (Nc != qNc)) SETERRQ2(PetscObjectComm((PetscObject) fem), PETSC_ERR_ARG_SIZ, "FE components %D != Quadrature components %D and non-scalar quadrature", Nc, qNc);
   ierr = PetscTabulationDestroy(&fem->T);CHKERRQ(ierr);
   ierr = PetscTabulationDestroy(&fem->Tc);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject) q);CHKERRQ(ierr);
   ierr = PetscQuadratureDestroy(&fem->quadrature);CHKERRQ(ierr);
   fem->quadrature = q;
-  ierr = PetscObjectReference((PetscObject) q);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
