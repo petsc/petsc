@@ -1513,6 +1513,11 @@ PetscErrorCode MatMatMult_SeqSBAIJ_1_Private(Mat A,PetscScalar* b,PetscInt bm,Pe
   PetscScalar       x1;
   const MatScalar   *v = a->a,*vv;
   PetscInt          mbs = a->mbs,i,*idx = a->j,*ii = a->i,j,*jj,n,k;
+#if defined(PETSC_USE_COMPLEX)
+  const int         aconj = A->hermitian;
+#else
+  const int         aconj = 0;
+#endif
 
   PetscFunctionBegin;
   for (i=0; i<mbs; i++) {
@@ -1527,7 +1532,7 @@ PetscErrorCode MatMatMult_SeqSBAIJ_1_Private(Mat A,PetscScalar* b,PetscInt bm,Pe
       for (j=0; j<n; j++) {
         xb = b + (*idx); x1 = xb[0+k*bm];
         z[0+k*cm] += v[0]*x1;
-        if (*idx != i) c[(*idx)+k*cm] += v[0]*b[i+k*bm];
+        if (*idx != i) c[(*idx)+k*cm] += (aconj ? PetscConj(v[0]) : v[0])*b[i+k*bm];
         v += 1;
         ++idx;
       }
