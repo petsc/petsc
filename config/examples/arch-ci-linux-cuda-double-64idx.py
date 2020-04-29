@@ -11,7 +11,7 @@ if __name__ == '__main__':
   configure_options = [
     '--package-prefix-hash='+petsc_hash_pkgs,
     '--with-make-test-np=2',
-    '--with-mpi-dir=/home/petsc/soft/openmpi-4.0.2-cuda',
+    '--download-openmpi=1',
     'COPTFLAGS=-g -O',
     'FOPTFLAGS=-g -O',
     'CXXOPTFLAGS=-g -O',

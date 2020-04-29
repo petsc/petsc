@@ -37,9 +37,9 @@ class Configure(config.package.Package):
     self.popLanguage()
     self.getExecutable(petscNvcc,getFullPath=1,resultName='systemNvcc')
     if hasattr(self,'systemNvcc'):
-      nvccDir = os.path.dirname(self.systemNvcc)
-      cudaDir = os.path.split(nvccDir)[0]
-      yield cudaDir
+      self.nvccDir = os.path.dirname(self.systemNvcc)
+      self.cudaDir = os.path.split(self.nvccDir)[0]
+      yield self.cudaDir
     return
 
   def checkSizeofVoidP(self):
