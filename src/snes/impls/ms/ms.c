@@ -68,31 +68,38 @@ PetscErrorCode SNESMSRegisterAll(void)
     PetscReal betasub[4]  = {0.25, 0.5, 0.55, 1.0};
     ierr = SNESMSRegister(SNESMSJAMESON83,4,3,1.0,&gamma[0][0],delta,betasub);CHKERRQ(ierr);
   }
-  {                             /* Van Leer, Tai, and Powell (1989) 2 stage, order 1 */
+
+  { /* Van Leer, Tai, and Powell (1989) 1 stage, order 1 */
+    PetscReal gamma[3][1] = {{0},{0},{1}};
+    PetscReal delta[1]    = {0};
+    PetscReal betasub[1]  = {1.0};
+    ierr = SNESMSRegister(SNESMSVLTP11,1,3,0.5,&gamma[0][0],delta,betasub);CHKERRQ(ierr);
+  }
+  { /* Van Leer, Tai, and Powell (1989) 2 stage, order 1 */
     PetscReal gamma[3][2] = {{0,0},{0,0},{1,1}};
     PetscReal delta[2]    = {0,0};
     PetscReal betasub[2]  = {0.3333,1.0};
     ierr = SNESMSRegister(SNESMSVLTP21,2,3,1.0,&gamma[0][0],delta,betasub);CHKERRQ(ierr);
   }
-  {                             /* Van Leer, Tai, and Powell (1989) 3 stage, order 1 */
+  { /* Van Leer, Tai, and Powell (1989) 3 stage, order 1 */
     PetscReal gamma[3][3] = {{0,0,0},{0,0,0},{1,1,1}};
     PetscReal delta[3]    = {0,0,0};
     PetscReal betasub[3]  = {0.1481,0.4000,1.0};
     ierr = SNESMSRegister(SNESMSVLTP31,3,3,1.5,&gamma[0][0],delta,betasub);CHKERRQ(ierr);
   }
-  {                             /* Van Leer, Tai, and Powell (1989) 4 stage, order 1 */
+  { /* Van Leer, Tai, and Powell (1989) 4 stage, order 1 */
     PetscReal gamma[3][4] = {{0,0,0,0},{0,0,0,0},{1,1,1,1}};
     PetscReal delta[4]    = {0,0,0,0};
     PetscReal betasub[4]  = {0.0833,0.2069,0.4265,1.0};
     ierr = SNESMSRegister(SNESMSVLTP41,4,3,2.0,&gamma[0][0],delta,betasub);CHKERRQ(ierr);
   }
-  {                             /* Van Leer, Tai, and Powell (1989) 5 stage, order 1 */
+  { /* Van Leer, Tai, and Powell (1989) 5 stage, order 1 */
     PetscReal gamma[3][5] = {{0,0,0,0,0},{0,0,0,0,0},{1,1,1,1,1}};
     PetscReal delta[5]    = {0,0,0,0,0};
     PetscReal betasub[5]  = {0.0533,0.1263,0.2375,0.4414,1.0};
     ierr = SNESMSRegister(SNESMSVLTP51,5,3,2.5,&gamma[0][0],delta,betasub);CHKERRQ(ierr);
   }
-  {                             /* Van Leer, Tai, and Powell (1989) 6 stage, order 1 */
+  { /* Van Leer, Tai, and Powell (1989) 6 stage, order 1 */
     PetscReal gamma[3][6] = {{0,0,0,0,0,0},{0,0,0,0,0,0},{1,1,1,1,1,1}};
     PetscReal delta[6]    = {0,0,0,0,0,0};
     PetscReal betasub[6]  = {0.0370,0.0851,0.1521,0.2562,0.4512,1.0};

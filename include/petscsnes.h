@@ -738,6 +738,7 @@ typedef const char* SNESMSType;
 #define SNESMSM62       "m62"
 #define SNESMSEULER     "euler"
 #define SNESMSJAMESON83 "jameson83"
+#define SNESMSVLTP11    "vltp11"
 #define SNESMSVLTP21    "vltp21"
 #define SNESMSVLTP31    "vltp31"
 #define SNESMSVLTP41    "vltp41"
