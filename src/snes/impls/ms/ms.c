@@ -102,13 +102,13 @@ PetscErrorCode SNESMSRegisterAll(void)
 }
 
 /*@C
-   SNESMSRegisterDestroy - Frees the list of schemes that were registered by TSRosWRegister().
+   SNESMSRegisterDestroy - Frees the list of schemes that were registered by SNESMSRegister().
 
    Not Collective
 
    Level: advanced
 
-.seealso: TSRosWRegister(), TSRosWRegisterAll(), TSRosWRegister()
+.seealso: SNESMSRegister(), SNESMSRegisterAll()
 @*/
 PetscErrorCode SNESMSRegisterDestroy(void)
 {
@@ -343,11 +343,9 @@ static PetscErrorCode SNESSolve_MS(SNES snes)
 
 static PetscErrorCode SNESSetUp_MS(SNES snes)
 {
-  SNES_MS        *ms = (SNES_MS*)snes->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!ms->tableau) {ierr = SNESMSSetType(snes,SNESMSDefault);CHKERRQ(ierr);}
   ierr = SNESSetWorkVecs(snes,3);CHKERRQ(ierr);
   ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -355,7 +353,6 @@ static PetscErrorCode SNESSetUp_MS(SNES snes)
 
 static PetscErrorCode SNESReset_MS(SNES snes)
 {
-
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
@@ -367,7 +364,10 @@ static PetscErrorCode SNESDestroy_MS(SNES snes)
   PetscFunctionBegin;
   ierr = SNESReset_MS(snes);CHKERRQ(ierr);
   ierr = PetscFree(snes->data);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESMSGetType_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESMSSetType_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESMSGetDamping_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESMSSetDamping_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -376,12 +376,12 @@ static PetscErrorCode SNESView_MS(SNES snes,PetscViewer viewer)
   PetscBool      iascii;
   PetscErrorCode ierr;
   SNES_MS        *ms = (SNES_MS*)snes->data;
+  SNESMSTableau  tab = ms->tableau;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
   if (iascii) {
-    SNESMSTableau tab = ms->tableau;
-    ierr = PetscViewerASCIIPrintf(viewer,"  multi-stage method type: %s\n",tab ? tab->name : "not yet set");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  multi-stage method type: %s\n",tab->name);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -398,28 +398,41 @@ static PetscErrorCode SNESSetFromOptions_MS(PetscOptionItems *PetscOptionsObject
     PetscInt          count,choice;
     PetscBool         flg;
     const char        **namelist;
-    char              mstype[256];
+    SNESMSType        mstype;
+    PetscReal         damping;
 
-    ierr = PetscStrncpy(mstype,SNESMSDefault,sizeof(mstype));CHKERRQ(ierr);
+    ierr = SNESMSGetType(snes,&mstype);CHKERRQ(ierr);
     for (link=SNESMSTableauList,count=0; link; link=link->next,count++) ;
     ierr = PetscMalloc1(count,(char***)&namelist);CHKERRQ(ierr);
     for (link=SNESMSTableauList,count=0; link; link=link->next,count++) namelist[count] = link->tab.name;
     ierr = PetscOptionsEList("-snes_ms_type","Multistage smoother type","SNESMSSetType",(const char*const*)namelist,count,mstype,&choice,&flg);CHKERRQ(ierr);
-    ierr = SNESMSSetType(snes,flg ? namelist[choice] : mstype);CHKERRQ(ierr);
+    if (flg) {ierr = SNESMSSetType(snes,namelist[choice]);CHKERRQ(ierr);}
     ierr = PetscFree(namelist);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-snes_ms_damping","Damping for multistage method","SNESMSSetDamping",ms->damping,&ms->damping,NULL);CHKERRQ(ierr);
+    ierr = SNESMSGetDamping(snes,&damping);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_ms_damping","Damping for multistage method","SNESMSSetDamping",damping,&damping,&flg);CHKERRQ(ierr);
+    if (flg) {ierr = SNESMSSetDamping(snes,damping);CHKERRQ(ierr);}
     ierr = PetscOptionsBool("-snes_ms_norms","Compute norms for monitoring","none",ms->norms,&ms->norms,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  SNESMSSetType_MS(SNES snes,SNESMSType mstype)
+static PetscErrorCode SNESMSGetType_MS(SNES snes,SNESMSType *mstype)
 {
-  PetscErrorCode    ierr;
+  SNES_MS        *ms = (SNES_MS*)snes->data;
+  SNESMSTableau  tab = ms->tableau;
+
+  PetscFunctionBegin;
+  *mstype = tab->name;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode SNESMSSetType_MS(SNES snes,SNESMSType mstype)
+{
   SNES_MS           *ms = (SNES_MS*)snes->data;
   SNESMSTableauLink link;
   PetscBool         match;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   if (ms->tableau) {
@@ -429,12 +442,39 @@ PetscErrorCode  SNESMSSetType_MS(SNES snes,SNESMSType mstype)
   for (link = SNESMSTableauList; link; link=link->next) {
     ierr = PetscStrcmp(link->tab.name,mstype,&match);CHKERRQ(ierr);
     if (match) {
-      ierr        = SNESReset_MS(snes);CHKERRQ(ierr);
+      if (snes->setupcalled)  {ierr = SNESReset_MS(snes);CHKERRQ(ierr);}
       ms->tableau = &link->tab;
+      if (snes->setupcalled)  {ierr = SNESSetUp_MS(snes);CHKERRQ(ierr);}
       PetscFunctionReturn(0);
     }
   }
   SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_UNKNOWN_TYPE,"Could not find '%s'",mstype);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  SNESMSGetType - Get the type of multistage smoother
+
+  Not collective
+
+  Input Parameter:
+.  snes - nonlinear solver context
+
+  Output Parameter:
+.  mstype - type of multistage method
+
+  Level: beginner
+
+.seealso: SNESMSSetType(), SNESMSType, SNESMS
+@*/
+PetscErrorCode SNESMSGetType(SNES snes,SNESMSType *mstype)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidPointer(mstype,2);
+  ierr = PetscUseMethod(snes,"SNESMSGetType_C",(SNES,SNESMSType*),(snes,mstype));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -449,15 +489,84 @@ PetscErrorCode  SNESMSSetType_MS(SNES snes,SNESMSType mstype)
 
   Level: beginner
 
-.seealso: SNESMSGetType(), SNESMS
+.seealso: SNESMSGetType(), SNESMSType, SNESMS
 @*/
-PetscErrorCode SNESMSSetType(SNES snes,SNESMSType rostype)
+PetscErrorCode SNESMSSetType(SNES snes,SNESMSType mstype)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  ierr = PetscTryMethod(snes,"SNESMSSetType_C",(SNES,SNESMSType),(snes,rostype));CHKERRQ(ierr);
+  PetscValidPointer(mstype,2);
+  ierr = PetscTryMethod(snes,"SNESMSSetType_C",(SNES,SNESMSType),(snes,mstype));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode SNESMSGetDamping_MS(SNES snes,PetscReal *damping)
+{
+  SNES_MS        *ms = (SNES_MS*)snes->data;
+
+  PetscFunctionBegin;
+  *damping = ms->damping;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode SNESMSSetDamping_MS(SNES snes,PetscReal damping)
+{
+  SNES_MS           *ms = (SNES_MS*)snes->data;
+
+  PetscFunctionBegin;
+  ms->damping = damping;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  SNESMSGetDamping - Get the damping parameter
+
+  Not collective
+
+  Input Parameter:
+.  snes - nonlinear solver context
+
+  Output Parameter:
+.  damping - damping parameter
+
+  Level: advanced
+
+.seealso: SNESMSSetDamping(), SNESMS
+@*/
+PetscErrorCode SNESMSGetDamping(SNES snes,PetscReal *damping)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidPointer(damping,2);
+  ierr = PetscUseMethod(snes,"SNESMSGetDamping_C",(SNES,PetscReal*),(snes,damping));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  SNESMSSetDamping - Set the damping parameter
+
+  Logically collective
+
+  Input Parameter:
++  snes - nonlinear solver context
+-  damping - damping parameter
+
+  Level: advanced
+
+.seealso: SNESMSGetDamping(), SNESMS
+@*/
+PetscErrorCode SNESMSSetDamping(SNES snes,PetscReal damping)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidLogicalCollectiveReal(snes,damping,2);
+  ierr = PetscTryMethod(snes,"SNESMSSetDamping_C",(SNES,PetscReal),(snes,damping));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -479,9 +588,10 @@ PetscErrorCode SNESMSSetType(SNES snes,SNESMSType rostype)
       The methods are specified in low storage form (Ketcheson 2010). New methods can be registered with SNESMSRegister().
 
       References:
-+   1. -   Ketcheson (2010) Runge Kutta methods with minimum storage implementations.
-.   2. -   Jameson (1983) Solution of the Euler equations for two dimensional transonic flow by a multigrid method.
--   3. -   Pierce and Giles (1997) Preconditioned multigrid methods for compressible flow calculations on stretched meshes.
++   1. -   Ketcheson (2010) Runge Kutta methods with minimum storage implementations (https://doi.org/10.1016/j.jcp.2009.11.006).
+.   2. -   Jameson (1983) Solution of the Euler equations for two dimensional transonic flow by a multigrid method (https://doi.org/10.1016/0096-3003(83)90019-X).
+.   3. -   Pierce and Giles (1997) Preconditioned multigrid methods for compressible flow calculations on stretched meshes (https://doi.org/10.1006/jcph.1997.5772).
+-   4. -   Van Leer, Tai, and Powell (1989) Design of optimally smoothing multi-stage schemes for the Euler equations (https://doi.org/10.2514/6.1989-1933).
 
       Level: beginner
 
@@ -513,7 +623,12 @@ PETSC_EXTERN PetscErrorCode SNESCreate_MS(SNES snes)
   ms->damping = 0.9;
   ms->norms   = PETSC_FALSE;
 
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESMSGetType_C",SNESMSGetType_MS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESMSSetType_C",SNESMSSetType_MS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESMSGetDamping_C",SNESMSGetDamping_MS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESMSSetDamping_C",SNESMSSetDamping_MS);CHKERRQ(ierr);
+
+  ierr = SNESMSSetType(snes,SNESMSDefault);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

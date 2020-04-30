@@ -732,7 +732,7 @@ PETSC_EXTERN PetscErrorCode SNESMultiblockSetType(SNES, PCCompositeType);
 
    Level: intermediate
 
-.seealso: SNESMSSetType(), SNES
+.seealso: SNESMSGetType(), SNESMSSetType(), SNES
 J*/
 typedef const char* SNESMSType;
 #define SNESMSM62       "m62"
@@ -745,7 +745,10 @@ typedef const char* SNESMSType;
 #define SNESMSVLTP61    "vltp61"
 
 PETSC_EXTERN PetscErrorCode SNESMSRegister(SNESMSType,PetscInt,PetscInt,PetscReal,const PetscReal[],const PetscReal[],const PetscReal[]);
+PETSC_EXTERN PetscErrorCode SNESMSGetType(SNES,SNESMSType*);
 PETSC_EXTERN PetscErrorCode SNESMSSetType(SNES,SNESMSType);
+PETSC_EXTERN PetscErrorCode SNESMSGetDamping(SNES,PetscReal*);
+PETSC_EXTERN PetscErrorCode SNESMSSetDamping(SNES,PetscReal);
 PETSC_EXTERN PetscErrorCode SNESMSFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode SNESMSInitializePackage(void);
 PETSC_EXTERN PetscErrorCode SNESMSRegisterDestroy(void);

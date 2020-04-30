@@ -751,6 +751,6 @@ PetscErrorCode MatrixFreePreconditioner(PC pc,Vec x,Vec y)
       suffix: 11
       requires: double !complex !single
       nsize: 4
-      args: -test_jacobian_domain_error -snes_converged_reason -snes_type ms -snes_check_jacobian_domain_error 1
+      args: -test_jacobian_domain_error -snes_converged_reason -snes_type ms -snes_ms_type m62 -snes_ms_damping 0.9 -snes_check_jacobian_domain_error 1
 
 TEST*/
