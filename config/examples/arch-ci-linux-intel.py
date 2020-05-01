@@ -18,7 +18,6 @@ if __name__ == '__main__':
     'CXXOPTFLAGS=-g -O',
     '--with-blaslapack-dir='+os.environ['MKLROOT'],
     '--with-mkl_pardiso-dir='+os.environ['MKLROOT'],
-    '--with-mkl_sparse_optimize=0',
     '--download-mpich=1',
     '--download-triangle=1',
     '--download-ctetgen=1',

@@ -19,7 +19,6 @@ if __name__ == '__main__':
     '--with-scalar-type=complex',
     '--with-blaslapack-dir='+os.environ['MKLROOT'],
     '--with-mkl_pardiso-dir='+os.environ['MKLROOT'],
-    '--with-mkl_sparse_optimize=0',
     '--download-mpich',
     '--download-chaco',
     '--download-codipack',
