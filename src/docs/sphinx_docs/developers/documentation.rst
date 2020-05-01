@@ -63,6 +63,8 @@ Building the Sphinx docs locally
 * ``make html``
 * Open ``_build/html/index.html`` with your browser.
 
+.. _sphinx_guidelines:
+
 Sphinx Documentation Guidelines
 -------------------------------
 
@@ -77,3 +79,72 @@ Sphinx Documentation Guidelines
        :start-at: PetscErrorCode PetscError(
        :end-at: PetscFunctionReturn(0)
        :append: }
+
+* We use the `sphinxcontrib-biblatex extension <https://sphinxcontrib-bibtex.readthedocs.io/en/latest/>`__.
+  This does not currently work perfectly, but its `development branch <https://github.com/mcmtroffaes/sphinxcontrib-bibtex>`__
+  promises to support our use case, so we're delaying to see if it's ever released.
+
+Porting LaTeX to Sphinx
+-----------------------
+
+These are instructions relevant to porting the Users manual from its previous
+LaTeX incarnation, to Sphinx (as here). This section can be removed once the
+manual and TAO manual are ported.
+
+The first steps are to modify the LaTeX source to the point that it can
+be converted to RST by `Pandoc <pandoc.org>`__.
+
+* Copy the target file, say ``cp manual.tex manual_consolidated.tex``
+* copy all files used with ``\input`` into place, using e.g. ``part1.tex`` instead of ``part1tmp.tex`` (as we don't need the HTML links)
+* Remove essentially all of the preamble, leaving only ``\documentclass{book}`` followed by ``\begin{document}``
+* Save a copy of this file, say ``manual_to_process.tex``.
+* Perform some global cleanup operations, as with this script
+
+  .. code-block:: bash
+
+      #!/usr/bin/env bash
+
+      target=${1:-manual_to_process.tex}
+      sed=gsed  # change this to sed on a GNU/Linux system
+
+      # \trl{foo} --> \verb|foo|
+      # \lstinline{foo} --> \lstinline|foo|
+      # only works if there are no }'s inside, so we take care of special cases beforehand,
+      # of the form \trl{${PETSC_DIR}/${PETSC_ARCH}/bar/baz} ane \trl{${FOO}/bar/baz}
+
+      ${sed} -i 's/\\trl{${PETSC_DIR}\/${PETSC_ARCH}\([^}]*\)}/\\verb|${PETSC_DIR}\/${PETSC_ARCH}\1|/g' ${target}
+      ${sed} -i 's/\\trl{${\([^}]*\)}\([^}]*\)}/\\verb|${\1}\2|/g' ${target}
+
+      ${sed} -i       's/\\trl{\([^}]*\)}/\\verb|\1|/g' ${target}
+      ${sed} -i 's/\\lstinline{\([^}]*\)}/\\verb|\1|/g' ${target}
+
+      ${sed} -i 's/\\lstinline|/\\verb|/g' ${target}
+
+      ${sed} -i 's/tightitemize/itemize/g' ${target}
+      ${sed} -i 's/tightenumerate/enumerate/g' ${target}
+
+      ${sed} -i 's/lstlisting/verbatim/g' ${target}
+      ${sed} -i 's/bashlisting/verbatim/g' ${target}
+      ${sed} -i 's/makelisting/verbatim/g' ${target}
+      ${sed} -i 's/outputlisting/verbatim/g' ${target}
+      ${sed} -i 's/pythonlisting/verbatim/g' ${target}
+
+* Fix any typos like this (extra right brace) : ``PetscViewerPushFormat(viewer,PETSC_VIEWER_BINARY_MATLAB}``
+  These will produce very unhelpful Pandoc error messages at the end of the file like
+  ``Error at "source" (line 4873, column 10): unexpected end of input %%% End:``
+* Convert to ``.rst`` with pandoc (tested with v2.9.2), e.g. ``pandoc -s -t rst -f latex manual_to_process.tex -o manual.rst``.
+* Move to Sphinx docs tree (perhaps renaming or splitting up) and build.
+
+Next, one must examine the output, ideally comparing to the original rendered LaTeX, and make fixes on the ``.rst`` file, including but not limited to:
+
+* Check links
+* Add correct code block languages when not C, e.g. replace ``::`` with ``.. code-block:: bash``
+* Re-add citations with ``:cite:`` (see examples in the dev manual)
+* Fix footnotes
+* Fix section labels and links
+* Fix links with literals in the link text
+* Itemized lists
+* Replace Tikz with graphviz (or images or something else)
+* Replace/fix tables
+* Replace included source code with "literalinclude" (see :ref:`sphinx_guidelines`)
+* (please add more common fixes here as you find them) ...
