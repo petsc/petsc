@@ -42,10 +42,12 @@ class Configure(config.package.Package):
     g.write('CDEFS        = '+fdef+'\n')
     self.setCompilers.pushLanguage('FC')
     g.write('FC           = '+self.setCompilers.getCompiler()+'\n')
+    extra_fcflags = ''
     if config.setCompilers.Configure.isNAG(self.setCompilers.getLinker(), self.log):
-      g.write('FCFLAGS      =  -dusty -dcfuns '+self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','').replace('-Mfree','')+'\n')
-    else:
-      g.write('FCFLAGS      = '+self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','').replace('-Mfree','')+'\n')
+      extra_fcflags = '-dusty -dcfuns '
+    elif config.setCompilers.Configure.isGfortran100plus(self.setCompilers.getCompiler(), self.log):
+      extra_fcflags = '-fallow-argument-mismatch '
+    g.write('FCFLAGS      = '+extra_fcflags+self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','').replace('-Mfree','')+'\n')
     g.write('FCLOADER     = '+self.setCompilers.getLinker()+'\n')
     g.write('FCLOADFLAGS  = '+self.setCompilers.getLinkerFlags()+'\n')
     self.setCompilers.popLanguage()

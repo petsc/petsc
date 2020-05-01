@@ -93,14 +93,14 @@
       integer, parameter :: nz_per_row = 9
       integer, parameter :: n =100 
       integer :: i,j,ij,ij2,ii,jj,nz,ip, dx,dy,icase
-      integer, dimension(n*n*nz_per_row) :: ilist,jlist
+      integer, allocatable :: ilist(:),jlist(:)
       PetscScalar :: aij
-      PetscScalar, dimension(n*n*nz_per_row) :: alist
+      PetscScalar, allocatable :: alist(:)
       logical :: isvalid_ii, isvalid_jj, is_diag
 
       PetscInt nrow
       PetscInt ncol
-      PetscScalar, dimension(0:(n*n-1)) :: x, b
+      PetscScalar, allocatable :: x(:), b(:)
       real(8) :: err(NCASES)
 
       integer :: t1,t2,count_rate
@@ -112,6 +112,8 @@
         stop
       endif
 
+      allocate(ilist(n*n*nz_per_row),jlist(n*n*nz_per_row),alist(n*n*nz_per_row))
+      allocate(x(0:(n*n-1)),b(0:(n*n-1)))
       nrow = n*n
       ncol = nrow
 
@@ -320,6 +322,8 @@
         endif
        enddo
 
+       deallocate(ilist,jlist,alist)
+       deallocate(x,b)
        call PetscFinalize(ierr)
        call assert(ierr.eq.0,'petscfinalize return ierr',ierr)
 

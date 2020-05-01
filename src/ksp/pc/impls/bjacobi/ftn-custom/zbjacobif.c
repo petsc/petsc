@@ -2,12 +2,14 @@
 #include <petscksp.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define pcbjacobigetsubksp_        PCBJACOBIGETSUBKSP
+#define pcbjacobigetsubksp1_        PCBJACOBIGETSUBKSP1
+#define pcbjacobigetsubksp2_        PCBJACOBIGETSUBKSP2
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define pcbjacobigetsubksp_        pcbjacobigetsubksp
+#define pcbjacobigetsubksp1_        pcbjacobigetsubksp1
+#define pcbjacobigetsubksp2_        pcbjacobigetsubksp2
 #endif
 
-PETSC_EXTERN void pcbjacobigetsubksp_(PC *pc,PetscInt *n_local,PetscInt *first_local,KSP *ksp,PetscErrorCode *ierr)
+PETSC_EXTERN void pcbjacobigetsubksp1_(PC *pc,PetscInt *n_local,PetscInt *first_local,KSP *ksp,PetscErrorCode *ierr)
 {
   KSP      *tksp;
   PetscInt i,nloc;
@@ -21,4 +23,8 @@ PETSC_EXTERN void pcbjacobigetsubksp_(PC *pc,PetscInt *n_local,PetscInt *first_l
       ksp[i] = tksp[i];
     }
   }
+}
+PETSC_EXTERN void pcbjacobigetsubksp2_(PC *pc,PetscInt *n_local,PetscInt *first_local,KSP *ksp,PetscErrorCode *ierr)
+{
+  pcbjacobigetsubksp1_(pc,n_local,first_local,ksp,ierr);
 }
