@@ -6,7 +6,7 @@ FPPFLAGS         =
 LOCDIR           = src/ksp/ksp/tutorials/
 DIRS             = network
 EXAMPLESC        = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c \
-                   ex10.c ex11.c ex12.c ex13.c ex15.c ex16.c ex18.c ex23.c \
+                   ex10.c ex11.c ex12.c ex13.c ex15.c ex16.c ex18.c ex21.c ex23.c \
                    ex25.c ex27.c ex28.c ex29.c ex32.c ex34.c \
                    ex41.c ex42.c ex43.c \
                    ex45.c ex46.c  ex49.c ex50.c ex51.c ex52.c ex53.c \
