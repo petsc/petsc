@@ -83,7 +83,6 @@ class Package(config.base.Configure):
     self.requires32bitintblas   = 1  # 1 means that the package will not work with 64 bit integer BLAS/LAPACK
     self.skippackagewithoptions = 0  # packages like fblaslapack and MPICH do not support --with-package* options so do not print them in help
     self.alternativedownload    = [] # Used by, for example mpi.py to print useful error messages, which does not support --download-mpi but one can use --download-mpich
-    self.requirec99flag         = 0  # package must be compiled with C99 flags
     self.usesopenmp             = 'no'  # yes, no, unknow package is built to use OpenMP
 
     # Outside coupling
@@ -1673,10 +1672,6 @@ class CMakePackage(Package):
     ranlib = shlex.split(self.setCompilers.RANLIB)[0]
     args.append('-DCMAKE_RANLIB='+ranlib)
     cflags = self.removeWarningFlags(self.setCompilers.getCompilerFlags())
-    if self.requirec99flag:
-      if (self.compilers.c99flag == None):
-        raise RuntimeError('Requires c99 compiler. Configure cold not determine compatible compiler flag. Perhaps you can specify via CFLAG')
-      cflags += ' '+self.compilers.c99flag
     args.append('-DCMAKE_C_FLAGS:STRING="'+cflags+'"')
     args.append('-DCMAKE_C_FLAGS_DEBUG:STRING="'+cflags+'"')
     args.append('-DCMAKE_C_FLAGS_RELEASE:STRING="'+cflags+'"')

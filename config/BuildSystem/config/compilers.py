@@ -1424,19 +1424,20 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
       if self.setCompilers.checkCompilerFlag(flag, includes, body):
         self.logWrite(self.setCompilers.restoreLog())
         self.c99flag = flag
+        self.setCompilers.CPPFLAGS += ' ' + flag
         self.framework.logPrint('Accepted C99 compile flag: '+flag)
-        if self.c99flag == '': self.addDefine('HAVE_C99', 1)
         break
       else:
         self.logWrite(self.setCompilers.restoreLog())
     self.setCompilers.popLanguage()
-
+    if self.c99flag is None: raise RuntimeError('PETSc requires c99 compiler! Configure could not determine compatible compiler flag. Perhaps you can specify via CFLAGS')
     return
 
   def configure(self):
     import config.setCompilers
     if hasattr(self.setCompilers, 'CC'):
       self.isGCC = config.setCompilers.Configure.isGNU(self.setCompilers.CC, self.log)
+      self.executeTest(self.checkC99Flag)
       self.executeTest(self.checkRestrict,['C'])
       self.executeTest(self.checkCFormatting)
       self.executeTest(self.checkCInline)
@@ -1444,17 +1445,16 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
       if self.argDB['with-clib-autodetect']:
         self.executeTest(self.checkCLibraries)
       self.executeTest(self.checkDependencyGenerationFlag)
-      self.executeTest(self.checkC99Flag)
     else:
       self.isGCC = 0
     if hasattr(self.setCompilers, 'CXX'):
       self.isGCXX = config.setCompilers.Configure.isGNU(self.setCompilers.CXX, self.log)
       self.executeTest(self.checkRestrict,['Cxx'])
+      self.executeTest(self.checkCxxDialect)
       self.executeTest(self.checkCxxOptionalExtensions)
       self.executeTest(self.checkCxxInline)
       if self.argDB['with-cxxlib-autodetect']:
         self.executeTest(self.checkCxxLibraries)
-      self.executeTest(self.checkCxxDialect)
       # To skip Sun C++ compiler warnings/errors
       if config.setCompilers.Configure.isSun(self.setCompilers.CXX, self.log):
         self.addDefine('HAVE_SUN_CXX', 1)
