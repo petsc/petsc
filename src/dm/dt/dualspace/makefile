@@ -1,4 +1,4 @@
--include ../petscdir.mk
+-include ../../../../petscdir.mk
 ALL: lib
 
 SOURCEH   = ../../../../include/petscdt.h ../../../../include/petscfe.h ../../../../include/petscfetypes.h

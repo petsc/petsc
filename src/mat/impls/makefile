@@ -1,4 +1,4 @@
--include ../petscdir.mk
+-include ../../../petscdir.mk
 ALL: lib
 
 DIRS     = dense aij shell baij adj maij kaij is sbaij normal lrc scatter blockmat composite cufft mffd transpose python submat localref nest fft elemental preallocator hypre sell dummy cdiagonal

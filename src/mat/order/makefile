@@ -1,4 +1,4 @@
--include ../petscdir.mk
+-include ../../../petscdir.mk
 #
 #  All the Sparspack routines have been converted to C with the F2C
 # converter.
