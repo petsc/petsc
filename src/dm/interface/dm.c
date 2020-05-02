@@ -2183,7 +2183,7 @@ PetscErrorCode DMGetBasisTransformVec_Internal(DM dm, Vec *tv)
 
   Level: developer
 
-.seealso: DMPlexGlobalToLocalBasis(), DMPlexLocalToGlobalBasis()()
+.seealso: DMPlexGlobalToLocalBasis(), DMPlexLocalToGlobalBasis(), DMPlexCreateBasisRotation()
 @*/
 PetscErrorCode DMHasBasisTransform(DM dm, PetscBool *flg)
 {
