@@ -451,34 +451,6 @@ class Configure(config.base.Configure):
       self.logWrite(self.setCompilers.restoreLog())
     return
 
-  def checkC99Flag(self):
-    '''Check for -std=c99 or equivalent flag'''
-    includes = "#include <float.h>"
-    body = """
-    float x[2],y;
-    y = FLT_ROUNDS;
-    // c++ comment
-    int j = 2;
-    for (int i=0; i<2; i++){
-      x[i] = i*j*y;
-    }
-    """
-    self.setCompilers.saveLog()
-    self.setCompilers.pushLanguage('C')
-    restoredlog = 0
-    flags_to_try = ['','-std=c99','-std=gnu99','-std=c11''-std=gnu11','-c99']
-    for flag in flags_to_try:
-      if self.setCompilers.checkCompilerFlag(flag, includes, body):
-        self.c99flag = flag
-        self.logWrite(self.setCompilers.restoreLog())
-        restoredlog = 1
-        self.framework.logPrint('Accepted C99 compile flag: '+flag)
-        break
-    self.setCompilers.popLanguage()
-    if not restoredlog:
-      self.logWrite(self.setCompilers.restoreLog())
-    return
-
   def configure(self):
     import config.setCompilers
     if hasattr(self.setCompilers, 'FC'):

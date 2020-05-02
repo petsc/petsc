@@ -18,7 +18,6 @@ class Configure(config.package.CMakePackage):
     self.downloadonWindows= 1
     self.hastests         = 1
     self.hastestsdatafiles= 1
-    self.requirec99flag   = 1 # SuperLU_Dist uses C99 features
     self.precisions       = ['double']
     self.cxx              = 1
     self.requirescxx11    = 1
