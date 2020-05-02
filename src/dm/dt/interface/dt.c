@@ -1269,7 +1269,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTComputeJacobiDerivative(PetscReal a, P
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (k > n) {*P = 0.0; PetscFunctionReturn(0);}
+  *P = 0.0;
+  if (k > n) PetscFunctionReturn(0);
   ierr = PetscDTComputeJacobi(a+k, b+k, n-k, x, &nP);CHKERRQ(ierr);
   for (i = 0; i < k; i++) nP *= (a + b + n + 1. + i) * 0.5;
   *P = nP;

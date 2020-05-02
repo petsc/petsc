@@ -1240,8 +1240,8 @@ PetscErrorCode  SNESGetApplicationContext(SNES snes,void *usrP)
 
    Input Parameters:
 +  snes - SNES context
-.  mf - use matrix-free for both the Amat and Pmat used by SNESSetJacobian(), both the Amat and Pmat set in SNESSetJacobian() will be ignored
--  mf_operator - use matrix-free only for the Amat used by SNESSetJacobian(), this means the user provided Pmat will continue to be used
+.  mf_operator - use matrix-free only for the Amat used by SNESSetJacobian(), this means the user provided Pmat will continue to be used
+-  mf - use matrix-free for both the Amat and Pmat used by SNESSetJacobian(), both the Amat and Pmat set in SNESSetJacobian() will be ignored
 
    Options Database:
 + -snes_mf - use matrix free for both the mat and pmat operator
@@ -1263,8 +1263,7 @@ PetscErrorCode  SNESSetUseMatrixFree(SNES snes,PetscBool mf_operator,PetscBool m
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidLogicalCollectiveBool(snes,mf_operator,2);
   PetscValidLogicalCollectiveBool(snes,mf,3);
-  if (mf && !mf_operator) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_INCOMP,"If using mf must also use mf_operator");
-  snes->mf          = mf;
+  snes->mf          = mf_operator ? PETSC_TRUE : mf;
   snes->mf_operator = mf_operator;
   PetscFunctionReturn(0);
 }
@@ -1278,8 +1277,8 @@ PetscErrorCode  SNESSetUseMatrixFree(SNES snes,PetscBool mf_operator,PetscBool m
 .  snes - SNES context
 
    Output Parameters:
-+  mf - use matrix-free for both the Amat and Pmat used by SNESSetJacobian(), both the Amat and Pmat set in SNESSetJacobian() will be ignored
--  mf_operator - use matrix-free only for the Amat used by SNESSetJacobian(), this means the user provided Pmat will continue to be used
++  mf_operator - use matrix-free only for the Amat used by SNESSetJacobian(), this means the user provided Pmat will continue to be used
+-  mf - use matrix-free for both the Amat and Pmat used by SNESSetJacobian(), both the Amat and Pmat set in SNESSetJacobian() will be ignored
 
    Options Database:
 + -snes_mf - use matrix free for both the mat and pmat operator

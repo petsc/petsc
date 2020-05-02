@@ -48,7 +48,7 @@
       Mat         A
       KSP         ksp
       PetscRandom rctx
-      PetscViewerAndFormat vf;
+      PetscViewerAndFormat vf,vzero
 
 !  These variables are not currently used.
 !      PC          pc
@@ -219,7 +219,8 @@
 
       call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-my_ksp_monitor',flg,ierr)
       if (flg) then
-        call KSPMonitorSet(ksp,MyKSPMonitor,0,PETSC_NULL_FUNCTION,ierr)
+        vzero = 0
+        call KSPMonitorSet(ksp,MyKSPMonitor,vzero,PETSC_NULL_FUNCTION,ierr)
 !
 !     Also use the default KSP monitor routine showing how it may be used from Fortran
 !

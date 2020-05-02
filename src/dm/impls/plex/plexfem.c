@@ -636,7 +636,7 @@ static PetscErrorCode DMPlexBasisTransform_Internal(DM dm, Vec lv, PetscBool l2g
 
   Level: developer
 
-.seealso: DMPlexLocalToGlobalBasis(), DMGetLocalSection()
+.seealso: DMPlexLocalToGlobalBasis(), DMGetLocalSection(), DMPlexCreateBasisRotation()
 @*/
 PetscErrorCode DMPlexGlobalToLocalBasis(DM dm, Vec lv)
 {
@@ -663,7 +663,7 @@ PetscErrorCode DMPlexGlobalToLocalBasis(DM dm, Vec lv)
 
   Level: developer
 
-.seealso: DMPlexGlobalToLocalBasis(), DMGetLocalSection()
+.seealso: DMPlexGlobalToLocalBasis(), DMGetLocalSection(), DMPlexCreateBasisRotation()
 @*/
 PetscErrorCode DMPlexLocalToGlobalBasis(DM dm, Vec lv)
 {

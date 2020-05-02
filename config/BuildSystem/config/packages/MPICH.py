@@ -63,6 +63,8 @@ class Configure(config.package.GNUPackage):
       self.setCompilers.pushLanguage('FC')
       if config.setCompilers.Configure.isNAG(self.setCompilers.getLinker(), self.log):
         args = self.addArgStartsWith(args,'FFLAGS','-mismatch')
+      elif config.setCompilers.Configure.isGfortran100plus(self.setCompilers.getCompiler(), self.log):
+        args = self.addArgStartsWith(args,'FFLAGS','-fallow-argument-mismatch')
       self.setCompilers.popLanguage()
 
     # MPICH configure errors out on certain standard configure arguments

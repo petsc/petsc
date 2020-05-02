@@ -110,10 +110,12 @@ class Configure(config.package.Package):
     self.setCompilers.pushLanguage('FC')
     g.write('FC = '+self.setCompilers.getCompiler()+'\n')
     g.write('FL = '+self.setCompilers.getCompiler()+'\n')
+    extra_fcflags = ''
     if config.setCompilers.Configure.isNAG(self.setCompilers.getLinker(), self.log):
-      g.write('OPTF    = -dusty -dcfuns '+ self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','').replace('-Mfree','') +'\n')
-    else:
-      g.write('OPTF    = '+ self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','').replace('-Mfree','') +'\n')
+      extra_fcflags = '-dusty -dcfuns '
+    elif config.setCompilers.Configure.isGfortran100plus(self.setCompilers.getCompiler(), self.log):
+      extra_fcflags = '-fallow-argument-mismatch '
+    g.write('OPTF    = '+extra_fcflags+self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','').replace('-Mfree','') +'\n')
     g.write('OUTF = -o \n')
     self.setCompilers.popLanguage()
 

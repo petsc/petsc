@@ -17,3 +17,22 @@
        PetscErrorCode z
        end subroutine
       end Interface
+
+      Interface PCBJacobiGetSubKSP
+      subroutine PCBJacobiGetSubKSP1(a,b,c,d,z)
+       use petsckspdef
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       KSP d ! KSP
+       PetscErrorCode z
+      end subroutine
+      subroutine PCBJacobiGetSubKSP2(a,b,c,d,z)
+       use petsckspdef
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       KSP d(*) ! KSP
+       PetscErrorCode z
+      end subroutine
+      end Interface

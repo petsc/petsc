@@ -140,7 +140,7 @@
 ! will return an array of doubles referenced by x_array offset by x_index.
 !  i.e.,  to reference the kth element of X, use x_array(k + x_index).
 ! Notice that by declaring the arrays with range (0:1), we are using the C 0-indexing practice.
-      PetscReal        f_v(0:1),x_v(0:1),fval
+      PetscReal        f_v(0:1),x_v(0:1),fval(1)
       PetscOffset      f_i,x_i
 
       ierr = 0
@@ -172,7 +172,7 @@
             if (tag .eq. IDLE_TAG) then
                checkedin = checkedin + 1
             else
-               f_v(f_i+tag) = fval
+               f_v(f_i+tag) = fval(1)
                finished_tasks = finished_tasks + 1
             endif
             if (next_task .lt. m) then
@@ -444,7 +444,7 @@
 #include "chwirut2f.h"
 
       PetscErrorCode ierr
-      PetscReal x(n),f
+      PetscReal x(n),f(1)
       PetscMPIInt tag
       PetscInt index
       PetscMPIInt status(MPI_STATUS_SIZE)
@@ -466,7 +466,7 @@
          else if (tag .ne. DIE_TAG) then
             index = tag
             ! Compute local part of residual
-            call RunSimulation(x,index,f,ierr)
+            call RunSimulation(x,index,f(1),ierr)
             CHKERRQ(ierr)
 
             ! Return residual to master
@@ -497,7 +497,7 @@
       integer checkedin
       PetscMPIInt status(MPI_STATUS_SIZE)
       PetscMPIInt source
-      PetscReal f,x(n)
+      PetscReal f(1),x(n)
       PetscErrorCode ierr
       PetscInt i
 
