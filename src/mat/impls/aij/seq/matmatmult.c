@@ -1600,7 +1600,6 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_SeqXBAIJ_SeqDense(Mat C)
   Mat_Product    *product = C->product;
 
   PetscFunctionBegin;
-  ierr = MatSetType(C,MATSEQDENSE);CHKERRQ(ierr);
   if (product->type == MATPRODUCT_AB) {
     ierr = MatProductSetFromOptions_SeqXBAIJ_SeqDense_AB(C);CHKERRQ(ierr);
   } else SETERRQ1(PetscObjectComm((PetscObject)C),PETSC_ERR_SUP,"MatProduct type %s is not supported for SeqXBAIJ and SeqDense matrices",MatProductTypes[product->type]);
@@ -1622,7 +1621,6 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_SeqDense_SeqAIJ(Mat C)
   Mat_Product    *product = C->product;
 
   PetscFunctionBegin;
-  ierr = MatSetType(C,MATSEQDENSE);CHKERRQ(ierr);
   if (product->type == MATPRODUCT_AB) {
     ierr = MatProductSetFromOptions_SeqDense_SeqAIJ_AB(C);CHKERRQ(ierr);
   } else SETERRQ1(PetscObjectComm((PetscObject)C),PETSC_ERR_SUP,"MatProduct type %s is not supported for SeqDense and SeqAIJ matrices",MatProductTypes[product->type]);
@@ -2100,7 +2098,6 @@ PetscErrorCode MatProductSetFromOptions_SeqAIJ(Mat C)
   Mat_Product    *product = C->product;
 
   PetscFunctionBegin;
-  ierr = MatSetType(C,MATSEQAIJ);CHKERRQ(ierr);
   switch (product->type) {
   case MATPRODUCT_AB:
     ierr = MatProductSetFromOptions_SeqAIJ_AB(C);CHKERRQ(ierr);

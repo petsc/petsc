@@ -1801,20 +1801,11 @@ PetscErrorCode MatSetOption_MPIAIJ(Mat A,MatOption op,PetscBool flg)
   case MAT_UNUSED_NONZERO_LOCATION_ERR:
   case MAT_KEEP_NONZERO_PATTERN:
   case MAT_NEW_NONZERO_LOCATION_ERR:
+  case MAT_USE_INODES:
   case MAT_IGNORE_ZERO_ENTRIES:
     MatCheckPreallocated(A,1);
     ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);
     ierr = MatSetOption(a->B,op,flg);CHKERRQ(ierr);
-    break;
-  case MAT_USE_INODES:
-    if (PetscUnlikely(!(A)->preallocated)) {
-      a->inode_setoption = PETSC_TRUE; /* option will be set in MatMPIAIJSetPreallocation_MPIAIJ() */
-      a->inode_use       = flg;
-    } else {
-      a->inode_setoption = PETSC_FALSE;
-      ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);
-      ierr = MatSetOption(a->B,op,flg);CHKERRQ(ierr);
-    }
     break;
   case MAT_ROW_ORIENTED:
     MatCheckPreallocated(A,1);
@@ -2813,12 +2804,6 @@ PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJ(Mat B,PetscInt d_nz,const Petsc
   B->preallocated  = PETSC_TRUE;
   B->was_assembled = PETSC_FALSE;
   B->assembled     = PETSC_FALSE;
-
-  /* Set inode option */
-  if (b->inode_setoption) {
-    ierr = MatSetOption(b->A,MAT_USE_INODES,b->inode_use);CHKERRQ(ierr);
-    ierr = MatSetOption(b->B,MAT_USE_INODES,b->inode_use);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
@@ -5841,7 +5826,6 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_MPIDense_MPIAIJ(Mat C)
   Mat_Product    *product = C->product;
 
   PetscFunctionBegin;
-  ierr = MatSetType(C,MATMPIDENSE);CHKERRQ(ierr);
   if (product->type == MATPRODUCT_AB) {
     ierr = MatProductSetFromOptions_MPIDense_MPIAIJ_AB(C);CHKERRQ(ierr);
   } else SETERRQ1(PetscObjectComm((PetscObject)C),PETSC_ERR_SUP,"MatProduct type %s is not supported for MPIDense and MPIAIJ matrices",MatProductTypes[product->type]);

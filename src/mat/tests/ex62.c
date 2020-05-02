@@ -78,7 +78,6 @@ int main(int argc,char **args)
 
     /* (1.1) Test developer API */
     ierr = MatProductCreate(A,B,NULL,&C);CHKERRQ(ierr);
-    ierr = MatSetOptionsPrefix(C,"AB_");CHKERRQ(ierr);
     ierr = MatProductSetType(C,MATPRODUCT_AB);CHKERRQ(ierr);
     ierr = MatProductSetAlgorithm(C,"default");CHKERRQ(ierr);
     ierr = MatProductSetFill(C,PETSC_DEFAULT);CHKERRQ(ierr);
@@ -151,16 +150,14 @@ int main(int argc,char **args)
   if (Test_MatTrMat) {
     /* (2.1) Test developer driver C = P^T*B */
     ierr = MatProductCreate(P,B,NULL,&C);CHKERRQ(ierr);
-    ierr = MatSetOptionsPrefix(C,"AtB_");CHKERRQ(ierr);
     ierr = MatProductSetType(C,MATPRODUCT_AtB);CHKERRQ(ierr);
     ierr = MatProductSetAlgorithm(C,"default");CHKERRQ(ierr);
     ierr = MatProductSetFill(C,PETSC_DEFAULT);CHKERRQ(ierr);
     ierr = MatProductSetFromOptions(C);CHKERRQ(ierr);
-    ierr = MatSetOption(C,MAT_USE_INODES,PETSC_FALSE);CHKERRQ(ierr); /* illustrate how to call MatSetOption() */
     ierr = MatProductSymbolic(C);CHKERRQ(ierr); /* equivalent to MatSetUp() */
+    ierr = MatSetOption(C,MAT_USE_INODES,PETSC_FALSE);CHKERRQ(ierr); /* illustrate how to call MatSetOption() */
     ierr = MatProductNumeric(C);CHKERRQ(ierr);
-    ierr = MatProductNumeric(C);CHKERRQ(ierr); /* test reuse symbolic C */
-
+    ierr = MatProductNumeric(C);CHKERRQ(ierr);
     ierr = MatTransposeMatMultEqual(P,B,C,10,&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error: developer driver C = P^T*B");
     ierr = MatDestroy(&C);CHKERRQ(ierr);
@@ -183,14 +180,14 @@ int main(int argc,char **args)
     ierr = MatDestroy(&C);CHKERRQ(ierr);
   }
 
-  /* 3) MatMatTransposeMult() */
+  /* 3) MatTransposeMatMult() */
   /* ------------------------ */
   if (Test_MatMatTr) {
     /* C = B*R^T */
     ierr = PetscObjectTypeCompare((PetscObject)B,MATSEQAIJ,&seqaij);CHKERRQ(ierr);
     if (size == 1 && seqaij) {
       ierr = MatMatTransposeMult(B,R,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
-      ierr = MatSetOptionsPrefix(C,"ABt_");CHKERRQ(ierr); /* enable '-ABt_' for matrix C */
+      ierr = MatSetOptionsPrefix(C,"matmatmulttr_");CHKERRQ(ierr); /* enable '-matmatmulttr_' for matrix C */
       ierr = MatGetInfo(C,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
 
       /* Test MAT_REUSE_MATRIX - reuse symbolic C */
@@ -212,7 +209,6 @@ int main(int argc,char **args)
 
     /* (4.1) Test developer API */
     ierr = MatProductCreate(A,P,NULL,&C);CHKERRQ(ierr);
-    ierr = MatSetOptionsPrefix(C,"PtAP_");CHKERRQ(ierr);
     ierr = MatProductSetType(C,MATPRODUCT_PtAP);CHKERRQ(ierr);
     ierr = MatProductSetAlgorithm(C,"default");CHKERRQ(ierr);
     ierr = MatProductSetFill(C,PETSC_DEFAULT);CHKERRQ(ierr);
@@ -244,24 +240,8 @@ int main(int argc,char **args)
     if (Test_MatRARt) {
       Mat RARt;
       ierr = MatTranspose(P,MAT_REUSE_MATRIX,&R);CHKERRQ(ierr);
-
-      /* (5.1) Test developer driver RARt = R*A*Rt */
-      ierr = MatProductCreate(A,R,NULL,&RARt);CHKERRQ(ierr);
-      ierr = MatSetOptionsPrefix(RARt,"RARt_");CHKERRQ(ierr);
-      ierr = MatProductSetType(RARt,MATPRODUCT_RARt);CHKERRQ(ierr);
-      ierr = MatProductSetAlgorithm(RARt,"default");CHKERRQ(ierr);
-      ierr = MatProductSetFill(RARt,PETSC_DEFAULT);CHKERRQ(ierr);
-      ierr = MatProductSetFromOptions(RARt);CHKERRQ(ierr);
-      ierr = MatSetOption(RARt,MAT_USE_INODES,PETSC_FALSE);CHKERRQ(ierr); /* illustrate how to call MatSetOption() */
-      ierr = MatProductSymbolic(RARt);CHKERRQ(ierr); /* equivalent to MatSetUp() */
-      ierr = MatProductNumeric(RARt);CHKERRQ(ierr);
-      ierr = MatProductNumeric(RARt);CHKERRQ(ierr); /* test reuse symbolic RARt */
-      ierr = MatDestroy(&RARt);CHKERRQ(ierr);
-
-      /* (2.2) Test user driver RARt = R*A*Rt */
       ierr = MatRARt(A,R,MAT_INITIAL_MATRIX,2.0,&RARt);CHKERRQ(ierr);
       ierr = MatRARt(A,R,MAT_REUSE_MATRIX,2.0,&RARt);CHKERRQ(ierr);
-
       ierr = MatNormDifference(C,RARt,&norm);CHKERRQ(ierr);
       if (norm > PETSC_SMALL) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"|PtAP - RARt| = %g",(double)norm);
       ierr = MatDestroy(&RARt);CHKERRQ(ierr);
@@ -294,43 +274,43 @@ int main(int argc,char **args)
    test:
      suffix: 2_ab_scalable
      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
-     args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -AB_matproduct_ab_via scalable -matmatmult_via scalable -AtB_matproduct_atb_via outerproduct -mattransposematmult_via outerproduct
+     args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -matproduct_ab_via scalable -matmatmult_via scalable -matproduct_atb_via outerproduct -mattransposematmult_via outerproduct
      output_file: output/ex62_1.out
 
    test:
      suffix: 3_ab_scalable_fast
      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
-     args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -AB_matproduct_ab_via scalable_fast -matmatmult_via scalable_fast -matmattransmult_via color
+     args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -matproduct_ab_via scalable_fast -matmatmult_via scalable_fast -matmattransmult_via color
      output_file: output/ex62_1.out
 
    test:
      suffix: 4_ab_heap
      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
-     args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -AB_matproduct_ab_via heap -matmatmult_via heap -PtAP_matproduct_ptap_via rap -matptap_via rap
+     args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -matproduct_ab_via heap -matmatmult_via heap -matproduct_ptap_via rap -matptap_via rap
      output_file: output/ex62_1.out
 
    test:
      suffix: 5_ab_btheap
      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
-     args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -AB_matproduct_ab_via btheap -matmatmult_via btheap -matrart_via r*art
+     args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -matproduct_ab_via btheap -matmatmult_via btheap -matrart_via r*art
      output_file: output/ex62_1.out
 
    test:
      suffix: 6_ab_llcondensed
      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
-     args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -AB_matproduct_ab_via llcondensed -matmatmult_via llcondensed -matrart_via coloring_rart
+     args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -matproduct_ab_via llcondensed -matmatmult_via llcondensed -matrart_via coloring_rart
      output_file: output/ex62_1.out
 
    test:
      suffix: 7_ab_rowmerge
      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
-     args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -AB_matproduct_ab_via rowmerge -matmatmult_via rowmerge
+     args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -matproduct_ab_via rowmerge -matmatmult_via rowmerge
      output_file: output/ex62_1.out
 
    test:
      suffix: 8_ab_hypre
      requires: hypre datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
-     args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -AB_matproduct_ab_via hypre -matmatmult_via hypre -PtAP_matproduct_ptap_via hypre -matptap_via hypre
+     args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -matproduct_ab_via hypre -matmatmult_via hypre -matproduct_ptap_via hypre -matptap_via hypre
      output_file: output/ex62_1.out
 
    test:
@@ -344,21 +324,21 @@ int main(int argc,char **args)
      suffix: 11_ab_scalable
      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
      nsize: 3
-     args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -AB_matproduct_ab_via scalable -matmatmult_via scalable -AtB_matproduct_atb_via scalable -mattransposematmult_via scalable
+     args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -matproduct_ab_via scalable -matmatmult_via scalable -matproduct_atb_via scalable -mattransposematmult_via scalable
      output_file: output/ex62_1.out
 
    test:
      suffix: 12_ab_seqmpi
      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
      nsize: 3
-     args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -AB_matproduct_ab_via seqmpi -matmatmult_via seqmpi -AtB_matproduct_atb_via at*b -mattransposematmult_via at*b
+     args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -matproduct_ab_via seqmpi -matmatmult_via seqmpi -matproduct_atb_via at*b -mattransposematmult_via at*b
      output_file: output/ex62_1.out
 
    test:
      suffix: 13_ab_hypre
      requires: hypre datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
      nsize: 3
-     args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -AB_matproduct_ab_via hypre -matmatmult_via hypre -PtAP_matproduct_ptap_via hypre -matptap_via hypre
+     args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -matproduct_ab_via hypre -matmatmult_via hypre -matproduct_ptap_via hypre -matptap_via hypre
      output_file: output/ex62_1.out
 
 TEST*/
