@@ -1105,20 +1105,20 @@ PetscErrorCode PetscDTPKDEvalJet(PetscInt dim, PetscInt npoints, const PetscReal
             p[(degidx * Nk + kidx) * npoints + pt] += mplty * 0.5 * (cnm1x - cnm1) * p[(m1idx * Nk + km1idx) * npoints + pt];
             if (m2idx >= 0) {
               p[(degidx * Nk + kidx) * npoints + pt] += mplty * cnm2 * thetanm1 * p[(m2idx * Nk + km1idx) * npoints + pt];
-            }
-            /* second derivatives of -cnm2  * thetanm2   wrt x variable f,f2 is like - 0.5 * cnm2 */
-            for (f2 = f; f2 < dim; f2++) {
-              PetscInt km2idx, mplty2 = ktup[f2];
-              PetscInt factor;
+              /* second derivatives of -cnm2  * thetanm2   wrt x variable f,f2 is like - 0.5 * cnm2 */
+              for (f2 = f; f2 < dim; f2++) {
+                PetscInt km2idx, mplty2 = ktup[f2];
+                PetscInt factor;
 
-              if (!mplty2) continue;
-              ktup[f2]--;
-              ierr = PetscDTGradedOrderToIndex(dim, ktup, &km2idx);CHKERRQ(ierr);
+                if (!mplty2) continue;
+                ktup[f2]--;
+                ierr = PetscDTGradedOrderToIndex(dim, ktup, &km2idx);CHKERRQ(ierr);
 
-              factor = mplty * mplty2;
-              if (f == f2) factor /= 2;
-              p[(degidx * Nk + kidx) * npoints + pt] -= 0.5 * factor * cnm2 * p[(m2idx * Nk + km2idx) * npoints + pt];
-              ktup[f2]++;
+                factor = mplty * mplty2;
+                if (f == f2) factor /= 2;
+                p[(degidx * Nk + kidx) * npoints + pt] -= 0.5 * factor * cnm2 * p[(m2idx * Nk + km2idx) * npoints + pt];
+                ktup[f2]++;
+              }
             }
           } else {
             p[(degidx * Nk + kidx) * npoints + pt] += mplty * cnm1x * p[(m1idx * Nk + km1idx) * npoints + pt];
