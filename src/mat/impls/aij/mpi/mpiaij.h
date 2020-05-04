@@ -81,8 +81,6 @@ typedef struct {
   /* Used by MPICUSP and MPICUSPARSE classes */
   void * spptr;
 
-  /* Used by MatSetOption_MPIAIJ() */
-  PetscBool         inode_setoption,inode_use;
 } Mat_MPIAIJ;
 
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat);

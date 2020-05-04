@@ -261,8 +261,10 @@ static PetscErrorCode MatProductSetFromOptions_AB(Mat mat)
   ierr = PetscStrcmp(((PetscObject)A)->type_name,((PetscObject)B)->type_name,&sametype);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)A,MATTRANSPOSEMAT,&A_istrans);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)B,MATTRANSPOSEMAT,&B_istrans);CHKERRQ(ierr);
+  ierr = PetscInfo2(mat,"for A %s, B %s\n",((PetscObject)A)->type_name,((PetscObject)B)->type_name);CHKERRQ(ierr);
 
   if (fB == fA && sametype && (!A_istrans || !B_istrans)) {
+    ierr = PetscInfo(mat,"  sametype and matching op\n");CHKERRQ(ierr);
     f = fB;
   } else {
     char      mtypes[256];
@@ -334,8 +336,10 @@ static PetscErrorCode MatProductSetFromOptions_AB(Mat mat)
     ierr = PetscStrlcat(mtypes,"_",sizeof(mtypes));CHKERRQ(ierr);
     ierr = PetscStrlcat(mtypes,((PetscObject)B)->type_name,sizeof(mtypes));CHKERRQ(ierr);
     ierr = PetscStrlcat(mtypes,"_C",sizeof(mtypes));CHKERRQ(ierr);
+    ierr = PetscInfo1(mat,"  querying %s\n",f);CHKERRQ(ierr);
     ierr = PetscObjectQueryFunction((PetscObject)A,mtypes,&f);CHKERRQ(ierr);
     if (!f) {
+      ierr = PetscInfo1(mat,"  querying %s\n",f);CHKERRQ(ierr);
       ierr = PetscObjectQueryFunction((PetscObject)B,mtypes,&f);CHKERRQ(ierr);
     }
   }
@@ -363,8 +367,10 @@ static PetscErrorCode MatProductSetFromOptions_AtB(Mat mat)
   fB = B->ops->productsetfromoptions;
 
   ierr = PetscStrcmp(((PetscObject)A)->type_name,((PetscObject)B)->type_name,&sametype);CHKERRQ(ierr);
+  ierr = PetscInfo2(mat,"for A %s, B %s\n",((PetscObject)A)->type_name,((PetscObject)B)->type_name);CHKERRQ(ierr);
 
   if (fB == fA && sametype) {
+    ierr = PetscInfo(mat,"  sametype and matching op\n");CHKERRQ(ierr);
     f = fB;
   } else {
     char      mtypes[256];
@@ -377,6 +383,7 @@ static PetscErrorCode MatProductSetFromOptions_AtB(Mat mat)
       ierr = PetscStrlcat(mtypes,"_",sizeof(mtypes));CHKERRQ(ierr);
       ierr = PetscStrlcat(mtypes,((PetscObject)B)->type_name,sizeof(mtypes));CHKERRQ(ierr);
       ierr = PetscStrlcat(mtypes,"_C",sizeof(mtypes));CHKERRQ(ierr);
+      ierr = PetscInfo1(mat,"  querying %s\n",f);CHKERRQ(ierr);
       ierr = PetscObjectQueryFunction((PetscObject)B,mtypes,&f);CHKERRQ(ierr);
     } else {
       Mat T = NULL;
@@ -390,10 +397,12 @@ static PetscErrorCode MatProductSetFromOptions_AtB(Mat mat)
       ierr = PetscStrlcat(mtypes,"_C",sizeof(mtypes));CHKERRQ(ierr);
 
       product->type = MATPRODUCT_AtB;
+      ierr = PetscInfo1(mat,"  querying %s\n",f);CHKERRQ(ierr);
       ierr = PetscObjectQueryFunction((PetscObject)B,mtypes,&f);CHKERRQ(ierr);
     }
 
     if (!f) {
+      ierr = PetscInfo1(mat,"  querying %s\n",f);CHKERRQ(ierr);
       ierr = PetscObjectQueryFunction((PetscObject)A,mtypes,&f);CHKERRQ(ierr);
     }
   }
@@ -421,8 +430,9 @@ static PetscErrorCode MatProductSetFromOptions_ABt(Mat mat)
   fB = B->ops->productsetfromoptions;
 
   ierr = PetscStrcmp(((PetscObject)A)->type_name,((PetscObject)B)->type_name,&sametype);CHKERRQ(ierr);
-
+  ierr = PetscInfo2(mat,"for A %s, B %s\n",((PetscObject)A)->type_name,((PetscObject)B)->type_name);CHKERRQ(ierr);
   if (fB == fA && sametype) {
+    ierr = PetscInfo(mat,"  sametype and matching op\n");CHKERRQ(ierr);
     f = fB;
   } else {
     char      mtypes[256];
@@ -435,6 +445,7 @@ static PetscErrorCode MatProductSetFromOptions_ABt(Mat mat)
       ierr = PetscStrlcat(mtypes,"_",sizeof(mtypes));CHKERRQ(ierr);
       ierr = PetscStrlcat(mtypes,((PetscObject)B)->type_name,sizeof(mtypes));CHKERRQ(ierr);
       ierr = PetscStrlcat(mtypes,"_C",sizeof(mtypes));CHKERRQ(ierr);
+      ierr = PetscInfo1(mat,"  querying %s\n",f);CHKERRQ(ierr);
       ierr = PetscObjectQueryFunction((PetscObject)B,mtypes,&f);CHKERRQ(ierr);
     } else {
       Mat T = NULL;
@@ -448,10 +459,12 @@ static PetscErrorCode MatProductSetFromOptions_ABt(Mat mat)
       ierr = PetscStrlcat(mtypes,"_C",sizeof(mtypes));CHKERRQ(ierr);
 
       product->type = MATPRODUCT_ABt;
+      ierr = PetscInfo1(mat,"  querying %s (ABt)\n",f);CHKERRQ(ierr);
       ierr = PetscObjectQueryFunction((PetscObject)B,mtypes,&f);CHKERRQ(ierr);
     }
 
     if (!f) {
+      ierr = PetscInfo1(mat,"  querying %s\n",f);CHKERRQ(ierr);
       ierr = PetscObjectQueryFunction((PetscObject)A,mtypes,&f);CHKERRQ(ierr);
     }
   }
@@ -481,8 +494,10 @@ static PetscErrorCode MatProductSetFromOptions_PtAP(Mat mat)
   fA = A->ops->productsetfromoptions;
   fB = B->ops->productsetfromoptions;
 
+  ierr = PetscInfo2(mat,"for A %s, P %s\n",((PetscObject)A)->type_name,((PetscObject)B)->type_name);CHKERRQ(ierr);
   ierr = PetscStrcmp(((PetscObject)A)->type_name,((PetscObject)B)->type_name,&sametype);CHKERRQ(ierr);
   if (fB == fA && sametype) {
+    ierr = PetscInfo(mat,"  sametype and matching op\n");CHKERRQ(ierr);
     f = fB;
   } else {
     /* query MatProductSetFromOptions_Atype_Btype */
@@ -492,9 +507,11 @@ static PetscErrorCode MatProductSetFromOptions_PtAP(Mat mat)
     ierr = PetscStrlcat(mtypes,"_",sizeof(mtypes));CHKERRQ(ierr);
     ierr = PetscStrlcat(mtypes,((PetscObject)B)->type_name,sizeof(mtypes));CHKERRQ(ierr);
     ierr = PetscStrlcat(mtypes,"_C",sizeof(mtypes));CHKERRQ(ierr);
+    ierr = PetscInfo1(mat,"  querying %s\n",f);CHKERRQ(ierr);
     ierr = PetscObjectQueryFunction((PetscObject)B,mtypes,&f);CHKERRQ(ierr);
 
     if (!f) {
+      ierr = PetscInfo1(mat,"  querying %s\n",f);CHKERRQ(ierr);
       ierr = PetscObjectQueryFunction((PetscObject)A,mtypes,&f);CHKERRQ(ierr);
     }
   }
@@ -503,7 +520,7 @@ static PetscErrorCode MatProductSetFromOptions_PtAP(Mat mat)
     ierr = (*f)(mat);CHKERRQ(ierr);
   } else {
     mat->ops->productsymbolic = MatProductSymbolic_Basic;
-    PetscInfo2((PetscObject)mat, "MatProductSetFromOptions_PtAP for A %s, P %s uses MatProduct_Basic() implementation",((PetscObject)A)->type_name,((PetscObject)B)->type_name);
+    ierr = PetscInfo2(mat,"  for A %s, P %s uses MatProduct_Basic() implementation",((PetscObject)A)->type_name,((PetscObject)B)->type_name);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -527,7 +544,9 @@ static PetscErrorCode MatProductSetFromOptions_RARt(Mat mat)
   fB = B->ops->productsetfromoptions;
 
   ierr = PetscStrcmp(((PetscObject)A)->type_name,((PetscObject)B)->type_name,&sametype);CHKERRQ(ierr);
+  ierr = PetscInfo2(mat,"for A %s, B %s\n",((PetscObject)A)->type_name,((PetscObject)B)->type_name);CHKERRQ(ierr);
   if (fB == fA && sametype) {
+    ierr = PetscInfo(mat,"  sametype and matching op\n");CHKERRQ(ierr);
     f = fB;
   } else {
     /* query MatProductSetFromOptions_Atype_Btype */
@@ -537,9 +556,11 @@ static PetscErrorCode MatProductSetFromOptions_RARt(Mat mat)
     ierr = PetscStrlcat(mtypes,"_",sizeof(mtypes));CHKERRQ(ierr);
     ierr = PetscStrlcat(mtypes,((PetscObject)B)->type_name,sizeof(mtypes));CHKERRQ(ierr);
     ierr = PetscStrlcat(mtypes,"_C",sizeof(mtypes));CHKERRQ(ierr);
+    ierr = PetscInfo1(mat,"  querying %s\n",f);CHKERRQ(ierr);
     ierr = PetscObjectQueryFunction((PetscObject)B,mtypes,&f);CHKERRQ(ierr);
 
     if (!f) {
+      ierr = PetscInfo1(mat,"  querying %s\n",f);CHKERRQ(ierr);
       ierr = PetscObjectQueryFunction((PetscObject)A,mtypes,&f);CHKERRQ(ierr);
     }
   }
@@ -547,6 +568,7 @@ static PetscErrorCode MatProductSetFromOptions_RARt(Mat mat)
   if (f) {
     ierr = (*f)(mat);CHKERRQ(ierr);
   } else {
+    ierr = PetscInfo2(mat,"  for A %s, P %s uses MatProduct_Basic() implementation",((PetscObject)A)->type_name,((PetscObject)B)->type_name);CHKERRQ(ierr);
     mat->ops->productsymbolic = MatProductSymbolic_Basic;
   }
   PetscFunctionReturn(0);
@@ -570,7 +592,9 @@ static PetscErrorCode MatProductSetFromOptions_ABC(Mat mat)
   fA = A->ops->productsetfromoptions;
   fB = B->ops->productsetfromoptions;
   fC = C->ops->productsetfromoptions;
+  ierr = PetscInfo3(mat,"for A %s, B %s and C %s\n",((PetscObject)A)->type_name,((PetscObject)B)->type_name,((PetscObject)C)->type_name);CHKERRQ(ierr);
   if (fA == fB && fA == fC && fA) {
+    ierr = PetscInfo(mat,"  matching op\n");CHKERRQ(ierr);
     f = fA;
   } else {
     /* query MatProductSetFromOptions_Atype_Btype_Ctype */
@@ -583,11 +607,14 @@ static PetscErrorCode MatProductSetFromOptions_ABC(Mat mat)
     ierr = PetscStrlcat(mtypes,((PetscObject)C)->type_name,sizeof(mtypes));CHKERRQ(ierr);
     ierr = PetscStrlcat(mtypes,"_C",sizeof(mtypes));CHKERRQ(ierr);
 
+    ierr = PetscInfo1(mat,"  querying %s\n",f);CHKERRQ(ierr);
     ierr = PetscObjectQueryFunction((PetscObject)A,mtypes,&f);CHKERRQ(ierr);
     if (!f) {
+      ierr = PetscInfo1(mat,"  querying %s\n",f);CHKERRQ(ierr);
       ierr = PetscObjectQueryFunction((PetscObject)B,mtypes,&f);CHKERRQ(ierr);
     }
     if (!f) {
+      ierr = PetscInfo1(mat,"  querying %s\n",f);CHKERRQ(ierr);
       ierr = PetscObjectQueryFunction((PetscObject)C,mtypes,&f);CHKERRQ(ierr);
     }
   }
@@ -595,6 +622,7 @@ static PetscErrorCode MatProductSetFromOptions_ABC(Mat mat)
   if (f) {
     ierr = (*f)(mat);CHKERRQ(ierr);
   } else { /* use MatProductSymbolic/Numeric_Basic() */
+    ierr = PetscInfo3(mat,"  for A %s, B %s and C %s uses MatProduct_Basic() implementation",((PetscObject)A)->type_name,((PetscObject)B)->type_name,((PetscObject)C)->type_name);CHKERRQ(ierr);
     mat->ops->productsymbolic = MatProductSymbolic_Basic;
   }
   PetscFunctionReturn(0);

@@ -9,7 +9,7 @@ int main(int argc,char **argv)
   PetscScalar    v;
   PetscErrorCode ierr;
   PetscRandom    r;
-  PetscBool      equal=PETSC_FALSE;
+  PetscBool      equal=PETSC_FALSE,flg;
   PetscReal      fill = 1.0,norm;
   PetscMPIInt    size;
 
@@ -124,6 +124,23 @@ int main(int argc,char **argv)
   if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"D != B*C^T (dense*dense)");
   ierr = MatDestroy(&D);CHKERRQ(ierr);
 
+  /* Test MatProductCreateWithMat() and reuse C and B for B = A*C */
+  flg = PETSC_FALSE;
+  ierr = PetscOptionsHasName(NULL,NULL,"-test_userAPI",&flg);CHKERRQ(ierr);
+  if (flg) {
+    /* user driver */
+    ierr = MatMatMult(A,C,MAT_REUSE_MATRIX,fill,&B);CHKERRQ(ierr);
+  } else {
+    /* clear internal data structures related with previous products to avoid circular references */
+    ierr = MatProductClear(A);CHKERRQ(ierr);
+    ierr = MatProductClear(B);CHKERRQ(ierr);
+    ierr = MatProductClear(C);CHKERRQ(ierr);
+    ierr = MatProductCreateWithMat(A,C,NULL,B);CHKERRQ(ierr);
+    ierr = MatProductSetType(B,MATPRODUCT_AB);CHKERRQ(ierr);
+    ierr = MatProductSetFromOptions(B);CHKERRQ(ierr);
+    ierr = MatProductNumeric(B);CHKERRQ(ierr);
+  }
+
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
@@ -147,6 +164,17 @@ int main(int argc,char **argv)
       suffix: 3
       nsize: 2
       args: -matmattransmult_mpidense_mpidense_via cyclic
+      output_file: output/ex109.out
+
+   test:
+      suffix: 4
+      args: -test_userAPI
+      output_file: output/ex109.out
+
+   test:
+      suffix: 5
+      nsize: 3
+      args: -test_userAPI
       output_file: output/ex109.out
 
 TEST*/

@@ -1016,7 +1016,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     if (n_I) {
       IS        is_schur;
       char      stype[64];
-      PetscBool gpu;
+      PetscBool gpu = PETSC_FALSE;
 
       if (use_cholesky) {
         ierr = MatGetFactor(A,sub_schurs->mat_solver_type,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
@@ -1072,7 +1072,9 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       /* get explicit Schur Complement computed during numeric factorization */
       ierr = MatFactorGetSchurComplement(F,&S_all,NULL);CHKERRQ(ierr);
       ierr = PetscStrncpy(stype,MATSEQDENSE,sizeof(stype));CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
       ierr = PetscObjectTypeCompareAny((PetscObject)A,&gpu,MATSEQAIJVIENNACL,MATSEQAIJCUSPARSE,"");CHKERRQ(ierr);
+#endif
       if (gpu) {
         ierr = PetscStrncpy(stype,MATSEQDENSECUDA,sizeof(stype));CHKERRQ(ierr);
       }

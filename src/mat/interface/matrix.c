@@ -9251,6 +9251,64 @@ PetscErrorCode MatRARt(Mat A,Mat R,MatReuse scall,PetscReal fill,Mat *C)
   PetscFunctionReturn(0);
 }
 
+
+static PetscErrorCode MatProduct_Private(Mat A,Mat B,MatReuse scall,PetscReal fill,MatProductType ptype, Mat *C)
+{
+  PetscBool      clearproduct = PETSC_FALSE;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (scall == MAT_INPLACE_MATRIX) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Inplace product not supported");
+
+  if (scall == MAT_INITIAL_MATRIX) {
+    ierr = MatProductCreate(A,B,NULL,C);CHKERRQ(ierr);
+    ierr = MatProductSetType(*C,ptype);CHKERRQ(ierr);
+    ierr = MatProductSetAlgorithm(*C,"default");CHKERRQ(ierr);
+    ierr = MatProductSetFill(*C,fill);CHKERRQ(ierr);
+
+    (*C)->product->api_user = PETSC_TRUE;
+    ierr = MatProductSetFromOptions(*C);CHKERRQ(ierr);
+    ierr = MatProductSymbolic(*C);CHKERRQ(ierr);
+  } else { /* scall == MAT_REUSE_MATRIX */
+    Mat_Product *product = (*C)->product;
+    if (!product) {
+      /* user provide the dense matrix *C without calling MatProductCreate() */
+      PetscBool seqdense,mpidense,dense;
+#if defined(PETSC_HAVE_CUDA)
+      PetscBool seqdensecuda;
+#endif
+      ierr = PetscObjectTypeCompare((PetscObject)(*C),MATSEQDENSE,&seqdense);CHKERRQ(ierr);
+      ierr = PetscObjectTypeCompare((PetscObject)(*C),MATMPIDENSE,&mpidense);CHKERRQ(ierr);
+      ierr = PetscObjectTypeCompare((PetscObject)(*C),MATDENSE,&dense);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+      ierr = PetscObjectTypeCompare((PetscObject)(*C),MATSEQDENSECUDA,&seqdensecuda);CHKERRQ(ierr);
+      if (seqdense || mpidense || dense || seqdensecuda) {
+#else
+      if (seqdense || mpidense || dense) {
+#endif
+        /* user wants to reuse an assembled dense matrix */
+        /* Create product -- see MatCreateProduct() */
+        ierr = MatProductCreate_Private(A,B,NULL,*C);CHKERRQ(ierr);
+        product = (*C)->product;
+        product->fill     = fill;
+        product->api_user = PETSC_TRUE;
+
+        ierr = MatProductSetType(*C,ptype);CHKERRQ(ierr);
+        ierr = MatProductSetFromOptions(*C);CHKERRQ(ierr);
+        ierr = MatProductSymbolic(*C);CHKERRQ(ierr);
+      } else SETERRQ(PetscObjectComm((PetscObject)(*C)),PETSC_ERR_SUP,"Call MatProductCreate() or MatProductReplaceProduct() first");
+      clearproduct = PETSC_TRUE;
+    } else { /* user may chage input matrices A or B when REUSE */
+      ierr = MatProductReplaceMats(A,B,NULL,*C);CHKERRQ(ierr);
+    }
+  }
+  ierr = MatProductNumeric(*C);CHKERRQ(ierr);
+  if (clearproduct) {
+    ierr = MatProductClear(*C);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 /*@
    MatMatMult - Performs Matrix-Matrix Multiplication C=A*B.
 
@@ -9287,52 +9345,7 @@ PetscErrorCode MatMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (scall == MAT_INPLACE_MATRIX) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Inplace product not supported");
-
-  if (scall == MAT_INITIAL_MATRIX) {
-    ierr = MatProductCreate(A,B,NULL,C);CHKERRQ(ierr);
-    ierr = MatProductSetType(*C,MATPRODUCT_AB);CHKERRQ(ierr);
-    ierr = MatProductSetAlgorithm(*C,"default");CHKERRQ(ierr);
-    ierr = MatProductSetFill(*C,fill);CHKERRQ(ierr);
-
-    (*C)->product->api_user = PETSC_TRUE;
-    ierr = MatProductSetFromOptions(*C);CHKERRQ(ierr);
-    ierr = MatProductSymbolic(*C);CHKERRQ(ierr);
-  } else { /* scall == MAT_REUSE_MATRIX */
-    Mat_Product *product = (*C)->product;
-    if (!product) {
-      /* user provide the dense matrix *C without calling MatProductCreate() */
-      PetscBool seqdense,mpidense,dense;
-#if defined(PETSC_HAVE_CUDA)
-      PetscBool seqdensecuda;
-#endif
-      ierr = PetscObjectTypeCompare((PetscObject)(*C),MATSEQDENSE,&seqdense);CHKERRQ(ierr);
-      ierr = PetscObjectTypeCompare((PetscObject)(*C),MATMPIDENSE,&mpidense);CHKERRQ(ierr);
-      ierr = PetscObjectTypeCompare((PetscObject)(*C),MATDENSE,&dense);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_CUDA)
-      ierr = PetscObjectTypeCompare((PetscObject)(*C),MATSEQDENSECUDA,&seqdensecuda);CHKERRQ(ierr);
-      if (seqdense || mpidense || dense || seqdensecuda) {
-#else
-      if (seqdense || mpidense || dense) {
-#endif
-        /* user wants to reuse an assembled dense matrix */
-        /* Create product -- see MatCreateProduct() */
-        ierr = MatProductCreate_Private(A,B,NULL,*C);CHKERRQ(ierr);
-        product = (*C)->product;
-        product->fill     = fill;
-        product->api_user = PETSC_TRUE;
-
-        ierr = MatProductSetType(*C,MATPRODUCT_AB);CHKERRQ(ierr);
-        ierr = MatProductSetFromOptions(*C);CHKERRQ(ierr);
-        if (!(*C)->assembled) {
-          ierr = MatProductSymbolic(*C);CHKERRQ(ierr);
-        }
-      } else SETERRQ(PetscObjectComm((PetscObject)(*C)),PETSC_ERR_SUP,"Call MatProductCreate() or MatProductReplaceProduct() first");
-    } else { /* user may chage input matrices A or B when REUSE */
-      ierr = MatProductReplaceMats(A,B,NULL,*C);CHKERRQ(ierr);
-    }
-  }
-  ierr = MatProductNumeric(*C);CHKERRQ(ierr);
+  ierr = MatProduct_Private(A,B,scall,fill,MATPRODUCT_AB,C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -9375,41 +9388,7 @@ PetscErrorCode MatMatTransposeMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (scall == MAT_INPLACE_MATRIX) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Inplace product not supported");
-
-  if (scall == MAT_INITIAL_MATRIX) {
-    ierr = MatProductCreate(A,B,NULL,C);CHKERRQ(ierr);
-    ierr = MatProductSetType(*C, MATPRODUCT_ABt);CHKERRQ(ierr);
-    ierr = MatProductSetAlgorithm(*C,"default");CHKERRQ(ierr);
-    ierr = MatProductSetFill(*C,fill);CHKERRQ(ierr);
-
-    (*C)->product->api_user = PETSC_TRUE;
-    ierr = MatProductSetFromOptions(*C);CHKERRQ(ierr);
-    ierr = MatProductSymbolic(*C);CHKERRQ(ierr);
-  } else {
-    Mat_Product *product = (*C)->product;
-    if (!product) {
-      PetscBool seqdense,mpidense,dense;
-      ierr = PetscObjectTypeCompare((PetscObject)(*C),MATSEQDENSE,&seqdense);CHKERRQ(ierr);
-      ierr = PetscObjectTypeCompare((PetscObject)(*C),MATMPIDENSE,&mpidense);CHKERRQ(ierr);
-      ierr = PetscObjectTypeCompare((PetscObject)(*C),MATDENSE,&dense);CHKERRQ(ierr);
-      if ((*C)->assembled && (seqdense || mpidense || dense)) {
-        /* user wants to reuse an assembled dense matrix */
-        /* Create product -- see MatCreateProduct() */
-        ierr = MatProductCreate_Private(A,B,NULL,*C);CHKERRQ(ierr);
-        product = (*C)->product;
-        product->fill     = fill;
-        product->api_user = PETSC_TRUE;
-
-        ierr = MatProductSetType(*C,MATPRODUCT_ABt);CHKERRQ(ierr);
-        ierr = MatProductSetFromOptions(*C);CHKERRQ(ierr);
-        ierr = MatProductSymbolic(*C);CHKERRQ(ierr);
-      } else SETERRQ(PetscObjectComm((PetscObject)(*C)),PETSC_ERR_SUP,"Call MatProductCreate() first");
-    } else { /* user may chage input matrices A or B when REUSE */
-      ierr = MatProductReplaceMats(A,B,NULL,*C);CHKERRQ(ierr);
-    }
-  }
-  ierr = MatProductNumeric(*C);CHKERRQ(ierr);
+  ierr = MatProduct_Private(A,B,scall,fill,MATPRODUCT_ABt,C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -9447,40 +9426,7 @@ PetscErrorCode MatTransposeMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (scall == MAT_INPLACE_MATRIX) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Inplace product not supported");
-
-  if (scall == MAT_INITIAL_MATRIX) {
-    ierr = MatProductCreate(A,B,NULL,C);CHKERRQ(ierr);
-    ierr = MatProductSetType(*C,MATPRODUCT_AtB);CHKERRQ(ierr);
-    ierr = MatProductSetAlgorithm(*C,"default");CHKERRQ(ierr);
-    ierr = MatProductSetFill(*C,fill);CHKERRQ(ierr);
-
-    (*C)->product->api_user = PETSC_TRUE;
-    ierr = MatProductSetFromOptions(*C);CHKERRQ(ierr);
-    ierr = MatProductSymbolic(*C);CHKERRQ(ierr);
-  } else {
-    Mat_Product *product = (*C)->product;
-    if (!product) {
-      PetscBool seqdense,mpidense,dense;
-      ierr = PetscObjectTypeCompare((PetscObject)(*C),MATSEQDENSE,&seqdense);CHKERRQ(ierr);
-      ierr = PetscObjectTypeCompare((PetscObject)(*C),MATMPIDENSE,&mpidense);CHKERRQ(ierr);
-      ierr = PetscObjectTypeCompare((PetscObject)(*C),MATDENSE,&dense);CHKERRQ(ierr);
-      if ((*C)->assembled && (seqdense || mpidense || dense)) {
-        /* user wants to reuse an assembled dense matrix */
-        /* Create product -- see MatCreateProduct() */
-        ierr = MatProductCreate_Private(A,B,NULL,*C);CHKERRQ(ierr);
-        product = (*C)->product;
-        product->fill     = fill;
-        product->api_user = PETSC_TRUE;
-
-        ierr = MatProductSetType(*C,MATPRODUCT_AtB);CHKERRQ(ierr);
-        ierr = MatProductSetFromOptions(*C);CHKERRQ(ierr);
-      } else SETERRQ(PetscObjectComm((PetscObject)(*C)),PETSC_ERR_SUP,"Call MatProductCreate() first");
-    } else { /* user may chage input matrices A or B when REUSE */
-      ierr = MatProductReplaceMats(A,B,NULL,*C);CHKERRQ(ierr);
-    }
-  }
-  ierr = MatProductNumeric(*C);CHKERRQ(ierr);
+  ierr = MatProduct_Private(A,B,scall,fill,MATPRODUCT_AtB,C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -10094,6 +10040,8 @@ PetscErrorCode MatTransColoringApplyDenToSp(MatTransposeColoring matcoloring,Mat
 
   if (!Csp->ops->transcoloringapplydentosp) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not supported for this matrix type %s",((PetscObject)Csp)->type_name);
   ierr = (Csp->ops->transcoloringapplydentosp)(matcoloring,Cden,Csp);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(Csp,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(Csp,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -268,11 +268,15 @@ static PetscErrorCode MatMKLPardisoSolveSchur_Private(Mat F, PetscScalar *B, Pet
     }
     break;
   case MAT_FACTOR_SCHUR_INVERTED:
+    ierr = MatProductCreateWithMat(S,Bmat,NULL,Xmat);CHKERRQ(ierr);
     if (!mpardiso->iparm[12-1]) {
-      ierr = MatMatMult(S,Bmat,MAT_REUSE_MATRIX,PETSC_DEFAULT,&Xmat);CHKERRQ(ierr);
+      ierr = MatProductSetType(Xmat,MATPRODUCT_AB);CHKERRQ(ierr);
     } else { /* transpose solve */
-      ierr = MatTransposeMatMult(S,Bmat,MAT_REUSE_MATRIX,PETSC_DEFAULT,&Xmat);CHKERRQ(ierr);
+      ierr = MatProductSetType(Xmat,MATPRODUCT_AtB);CHKERRQ(ierr);
     }
+    ierr = MatProductSetFromOptions(Xmat);CHKERRQ(ierr);
+    ierr = MatProductNumeric(Xmat);CHKERRQ(ierr);
+    ierr = MatProductClear(Xmat);CHKERRQ(ierr);
     break;
   default:
     SETERRQ1(PetscObjectComm((PetscObject)F),PETSC_ERR_SUP,"Unhandled MatFactorSchurStatus %D",F->schur_status);

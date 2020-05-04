@@ -4432,6 +4432,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
         ierr = MatProductSetType(S_CV,MATPRODUCT_AB);CHKERRQ(ierr);
         ierr = MatProductSetFromOptions(S_CV);CHKERRQ(ierr);
         ierr = MatProductNumeric(S_CV);CHKERRQ(ierr);
+        ierr = MatProductClear(S_CV);CHKERRQ(ierr);
 
         ierr = MatDestroy(&B);CHKERRQ(ierr);
         ierr = MatCreateSeqDense(PETSC_COMM_SELF,lda_rhs,n_vertices,work+lda_rhs*n_vertices,&B);CHKERRQ(ierr);
@@ -4536,7 +4537,11 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
 
     ierr = MatCreateSeqDense(PETSC_COMM_SELF,lda_rhs,n_constraints,work,&B);CHKERRQ(ierr);
     ierr = MatScale(S_CC,m_one);CHKERRQ(ierr);
-    ierr = MatMatMult(local_auxmat2_R,S_CC,MAT_REUSE_MATRIX,PETSC_DEFAULT,&B);CHKERRQ(ierr);
+    ierr = MatProductCreateWithMat(local_auxmat2_R,S_CC,NULL,B);CHKERRQ(ierr);
+    ierr = MatProductSetType(B,MATPRODUCT_AB);CHKERRQ(ierr);
+    ierr = MatProductSetFromOptions(B);CHKERRQ(ierr);
+    ierr = MatProductNumeric(B);CHKERRQ(ierr);
+
     ierr = MatScale(S_CC,m_one);CHKERRQ(ierr);
     if (n_vertices) {
       if (isCHOL || need_benign_correction) { /* if we can solve the interior problem with cholesky, we should also be fine with transposing here */
