@@ -129,7 +129,7 @@ PETSC_INTERN PetscErrorCode MatMatMultNumeric_Nest_Dense(Mat A,Mat B,Mat C)
       workC             = contents->workC[i*nc + j];
       productB          = workC->product->B;
       workC->product->B = viewB; /* use newly created dense matrix viewB */
-      ierr = (workC->ops->productnumeric)(workC);CHKERRQ(ierr);
+      ierr = (*workC->ops->productnumeric)(workC);CHKERRQ(ierr);
       ierr = MatDestroy(&viewB);CHKERRQ(ierr);
       workC->product->B = productB; /* resume original B */
 
@@ -173,15 +173,14 @@ PETSC_INTERN PetscErrorCode MatMatMultSymbolic_Nest_Dense(Mat A,Mat B,PetscReal 
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
+  ierr = MatGetSize(B,NULL,&N);CHKERRQ(ierr);
   if (!C->assembled) {
-    ierr = MatGetSize(B,NULL,&N);CHKERRQ(ierr);
     ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
     ierr = MatGetSize(A,&M,NULL);CHKERRQ(ierr);
 
     ierr = MatSetSizes(C,m,PETSC_DECIDE,M,N);CHKERRQ(ierr);
     ierr = MatSetType(C,MATDENSE);CHKERRQ(ierr);
-    ierr = MatSeqDenseSetPreallocation(C,NULL);CHKERRQ(ierr);
-    ierr = MatMPIDenseSetPreallocation(C,NULL);CHKERRQ(ierr);
+    ierr = MatSetUp(C);CHKERRQ(ierr);
   }
 
   ierr = PetscNew(&contents);CHKERRQ(ierr);
@@ -250,7 +249,6 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_Nest_Dense(Mat C)
   Mat_Product    *product = C->product;
 
   PetscFunctionBegin;
-  ierr = MatSetType(C,MATDENSE);CHKERRQ(ierr);
   if (product->type == MATPRODUCT_AB) {
     ierr = MatProductSetFromOptions_Nest_Dense_AB(C);CHKERRQ(ierr);
   } else SETERRQ1(PetscObjectComm((PetscObject)C),PETSC_ERR_SUP,"MatProduct type %s is not supported for Nest and Dense matrices",MatProductTypes[product->type]);

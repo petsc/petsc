@@ -156,8 +156,8 @@ int main(int argc,char **args)
     ierr = MatProductSetAlgorithm(C,"default");CHKERRQ(ierr);
     ierr = MatProductSetFill(C,PETSC_DEFAULT);CHKERRQ(ierr);
     ierr = MatProductSetFromOptions(C);CHKERRQ(ierr);
-    ierr = MatSetOption(C,MAT_USE_INODES,PETSC_FALSE);CHKERRQ(ierr); /* illustrate how to call MatSetOption() */
     ierr = MatProductSymbolic(C);CHKERRQ(ierr); /* equivalent to MatSetUp() */
+    ierr = MatSetOption(C,MAT_USE_INODES,PETSC_FALSE);CHKERRQ(ierr); /* illustrate how to call MatSetOption() */
     ierr = MatProductNumeric(C);CHKERRQ(ierr);
     ierr = MatProductNumeric(C);CHKERRQ(ierr); /* test reuse symbolic C */
 
@@ -252,8 +252,8 @@ int main(int argc,char **args)
       ierr = MatProductSetAlgorithm(RARt,"default");CHKERRQ(ierr);
       ierr = MatProductSetFill(RARt,PETSC_DEFAULT);CHKERRQ(ierr);
       ierr = MatProductSetFromOptions(RARt);CHKERRQ(ierr);
-      ierr = MatSetOption(RARt,MAT_USE_INODES,PETSC_FALSE);CHKERRQ(ierr); /* illustrate how to call MatSetOption() */
       ierr = MatProductSymbolic(RARt);CHKERRQ(ierr); /* equivalent to MatSetUp() */
+      ierr = MatSetOption(RARt,MAT_USE_INODES,PETSC_FALSE);CHKERRQ(ierr); /* illustrate how to call MatSetOption() */
       ierr = MatProductNumeric(RARt);CHKERRQ(ierr);
       ierr = MatProductNumeric(RARt);CHKERRQ(ierr); /* test reuse symbolic RARt */
       ierr = MatDestroy(&RARt);CHKERRQ(ierr);

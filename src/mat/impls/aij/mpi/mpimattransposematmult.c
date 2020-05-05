@@ -35,9 +35,9 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal
   ierr = PetscNew(&atb);CHKERRQ(ierr);
 
   /* create output dense matrix C = A^T*B */
-  ierr = MatSetSizes(C,n,PETSC_DECIDE,PETSC_DECIDE,BN);CHKERRQ(ierr);
+  ierr = MatSetSizes(C,n,B->cmap->n,A->cmap->N,BN);CHKERRQ(ierr);
   ierr = MatSetType(C,MATMPIDENSE);CHKERRQ(ierr);
-  ierr = MatMPIDenseSetPreallocation(C,NULL);CHKERRQ(ierr);
+  ierr = MatSetUp(C);CHKERRQ(ierr);
 
   /* create vectors bt and ct to hold locally transposed arrays of B and C */
   ierr = VecCreate(PetscObjectComm((PetscObject)A),&bt);CHKERRQ(ierr);
