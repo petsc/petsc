@@ -466,9 +466,14 @@ class Configure(config.base.Configure):
         else: setattr(self, flagsArg, '')
         self.logPrint('Initialized '+flagsArg+' to '+str(getattr(self, flagsArg)))
       self.popLanguage()
-    for flagsArg in ['CPPFLAGS', 'FPPFLAGS', 'CUDAPPFLAGS', 'CXXPPFLAGS', 'CC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'CUDAC_LINKER_FLAGS','sharedLibraryFlags', 'dynamicLibraryFlags']:
+    for flagsArg in ['CPPFLAGS', 'FPPFLAGS', 'CUDAPPFLAGS', 'CXXPPFLAGS']:
       if flagsArg in self.argDB: setattr(self, flagsArg, self.argDB[flagsArg])
       else: setattr(self, flagsArg, '')
+      self.logPrint('Initialized '+flagsArg+' to '+str(getattr(self, flagsArg)))
+    for flagsArg in ['CC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'CUDAC_LINKER_FLAGS','sharedLibraryFlags', 'dynamicLibraryFlags']:
+      if isinstance(self.argDB[flagsArg],str): val = [self.argDB[flagsArg]]
+      else: val = self.argDB[flagsArg]
+      setattr(self, flagsArg, val)
       self.logPrint('Initialized '+flagsArg+' to '+str(getattr(self, flagsArg)))
     if 'LIBS' in self.argDB:
       self.LIBS = self.argDB['LIBS']
