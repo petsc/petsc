@@ -2256,11 +2256,12 @@ PetscErrorCode DMPlexComputeBdIntegral(DM dm, Vec X, DMLabel label, PetscInt num
 }
 
 /*@
-  DMPlexComputeInterpolatorNested - Form the local portion of the interpolation matrix I from the coarse DM to the uniformly refined DM.
+  DMPlexComputeInterpolatorNested - Form the local portion of the interpolation matrix I from the coarse DM to a uniformly refined DM.
 
   Input Parameters:
-+ dmf  - The fine mesh
-. dmc  - The coarse mesh
++ dmc  - The coarse mesh
+. dmf  - The fine mesh
+. isRefined - Flag indicating regular refinement, rather than the same topology
 - user - The user context
 
   Output Parameter:
@@ -2270,7 +2271,7 @@ PetscErrorCode DMPlexComputeBdIntegral(DM dm, Vec X, DMLabel label, PetscInt num
 
 .seealso: DMPlexComputeInterpolatorGeneral(), DMPlexComputeJacobianFEM()
 @*/
-PetscErrorCode DMPlexComputeInterpolatorNested(DM dmc, DM dmf, Mat In, void *user)
+PetscErrorCode DMPlexComputeInterpolatorNested(DM dmc, DM dmf, PetscBool isRefined, Mat In, void *user)
 {
   DM_Plex          *mesh  = (DM_Plex *) dmc->data;
   const char       *name  = "Interpolator";
@@ -2306,14 +2307,24 @@ PetscErrorCode DMPlexComputeInterpolatorNested(DM dmc, DM dmf, Mat In, void *use
     if (id == PETSCFE_CLASSID) {
       PetscFE fe = (PetscFE) obj;
 
-      ierr = PetscFERefine(fe, &feRef[f]);CHKERRQ(ierr);
+      if (isRefined) {
+        ierr = PetscFERefine(fe, &feRef[f]);CHKERRQ(ierr);
+      } else {
+        ierr = PetscObjectReference((PetscObject) fe);CHKERRQ(ierr);
+        feRef[f] = fe;
+      }
       ierr = PetscFEGetDimension(feRef[f], &rNb);CHKERRQ(ierr);
       ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
     } else if (id == PETSCFV_CLASSID) {
       PetscFV        fv = (PetscFV) obj;
       PetscDualSpace Q;
 
-      ierr = PetscFVRefine(fv, &fvRef[f]);CHKERRQ(ierr);
+      if (isRefined) {
+        ierr = PetscFVRefine(fv, &fvRef[f]);CHKERRQ(ierr);
+      } else {
+        ierr = PetscObjectReference((PetscObject) fv);CHKERRQ(ierr);
+        fvRef[f] = fv;
+      }
       ierr = PetscFVGetDualSpace(fvRef[f], &Q);CHKERRQ(ierr);
       ierr = PetscDualSpaceGetDimension(Q, &rNb);CHKERRQ(ierr);
       ierr = PetscFVGetNumComponents(fv, &Nc);CHKERRQ(ierr);
@@ -2430,8 +2441,12 @@ PetscErrorCode DMPlexComputeInterpolatorNested(DM dmc, DM dmf, Mat In, void *use
     ierr = MatSetUp(preallocator);CHKERRQ(ierr);
     ierr = PetscCalloc3(rTotDim*cTotDim, &vals,cTotDim,&cellCIndices,rTotDim,&cellFIndices);CHKERRQ(ierr);
     for (cell = cStart; cell < cEnd; ++cell) {
-      ierr = DMPlexMatGetClosureIndicesRefined(dmf, fsection, fglobalSection, dmc, csection, cglobalSection, cell, cellCIndices, cellFIndices);CHKERRQ(ierr);
-      ierr = MatSetValues(preallocator, rTotDim, cellFIndices, cTotDim, cellCIndices, vals, INSERT_VALUES);CHKERRQ(ierr);
+      if (isRefined) {
+        ierr = DMPlexMatGetClosureIndicesRefined(dmf, fsection, fglobalSection, dmc, csection, cglobalSection, cell, cellCIndices, cellFIndices);CHKERRQ(ierr);
+        ierr = MatSetValues(preallocator, rTotDim, cellFIndices, cTotDim, cellCIndices, vals, INSERT_VALUES);CHKERRQ(ierr);
+      } else {
+        ierr = DMPlexMatSetClosureGeneral(dmf, fsection, fglobalSection, dmc, csection, cglobalSection, preallocator, cell, vals, INSERT_VALUES);CHKERRQ(ierr);
+      }
     }
     ierr = PetscFree3(vals,cellCIndices,cellFIndices);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(preallocator, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -2442,7 +2457,11 @@ PetscErrorCode DMPlexComputeInterpolatorNested(DM dmc, DM dmf, Mat In, void *use
   /* Fill matrix */
   ierr = MatZeroEntries(In);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
-    ierr = DMPlexMatSetClosureRefined(dmf, fsection, fglobalSection, dmc, csection, cglobalSection, In, c, elemMat, INSERT_VALUES);CHKERRQ(ierr);
+    if (isRefined) {
+      ierr = DMPlexMatSetClosureRefined(dmf, fsection, fglobalSection, dmc, csection, cglobalSection, In, c, elemMat, INSERT_VALUES);CHKERRQ(ierr);
+    } else {
+      ierr = DMPlexMatSetClosureGeneral(dmf, fsection, fglobalSection, dmc, csection, cglobalSection, In, c, elemMat, INSERT_VALUES);CHKERRQ(ierr);
+    }
   }
   for (f = 0; f < Nf; ++f) {ierr = PetscFEDestroy(&feRef[f]);CHKERRQ(ierr);}
   ierr = PetscFree2(feRef,fvRef);CHKERRQ(ierr);
