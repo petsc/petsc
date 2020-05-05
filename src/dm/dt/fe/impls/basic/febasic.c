@@ -216,16 +216,16 @@ static PetscErrorCode PetscFEIntegrate_Basic(PetscDS ds, PetscInt field, PetscIn
     if (isAffine) {
       fegeom.v    = x;
       fegeom.xi   = cgeom->xi;
-      fegeom.J    = &cgeom->J[e*dE*dE];
-      fegeom.invJ = &cgeom->invJ[e*dE*dE];
-      fegeom.detJ = &cgeom->detJ[e];
+      fegeom.J    = &cgeom->J[e*Np*dE*dE];
+      fegeom.invJ = &cgeom->invJ[e*Np*dE*dE];
+      fegeom.detJ = &cgeom->detJ[e*Np];
     }
     for (q = 0; q < Nq; ++q) {
       PetscScalar integrand;
       PetscReal   w;
 
       if (isAffine) {
-        CoordinatesRefToReal(dE, dim, fegeom.xi, &cgeom->v[e*dE], fegeom.J, &quadPoints[q*dim], x);
+        CoordinatesRefToReal(dE, dim, fegeom.xi, &cgeom->v[e*Np*dE], fegeom.J, &quadPoints[q*dim], x);
       } else {
         fegeom.v    = &cgeom->v[(e*Np+q)*dE];
         fegeom.J    = &cgeom->J[(e*Np+q)*dE*dE];
@@ -310,21 +310,21 @@ static PetscErrorCode PetscFEIntegrateBd_Basic(PetscDS ds, PetscInt field,
     if (isAffine) {
       fegeom.v    = x;
       fegeom.xi   = fgeom->xi;
-      fegeom.J    = &fgeom->J[e*dE*dE];
-      fegeom.invJ = &fgeom->invJ[e*dE*dE];
-      fegeom.detJ = &fgeom->detJ[e];
-      fegeom.n    = &fgeom->n[e*dE];
+      fegeom.J    = &fgeom->J[e*Np*dE*dE];
+      fegeom.invJ = &fgeom->invJ[e*Np*dE*dE];
+      fegeom.detJ = &fgeom->detJ[e*Np];
+      fegeom.n    = &fgeom->n[e*Np*dE];
 
-      cgeom.J     = &fgeom->suppJ[0][e*dE*dE];
-      cgeom.invJ  = &fgeom->suppInvJ[0][e*dE*dE];
-      cgeom.detJ  = &fgeom->suppDetJ[0][e];
+      cgeom.J     = &fgeom->suppJ[0][e*Np*dE*dE];
+      cgeom.invJ  = &fgeom->suppInvJ[0][e*Np*dE*dE];
+      cgeom.detJ  = &fgeom->suppDetJ[0][e*Np];
     }
     for (q = 0; q < Nq; ++q) {
       PetscScalar integrand;
       PetscReal   w;
 
       if (isAffine) {
-        CoordinatesRefToReal(dE, dim-1, fegeom.xi, &fgeom->v[e*dE], fegeom.J, &quadPoints[q*(dim-1)], x);
+        CoordinatesRefToReal(dE, dim-1, fegeom.xi, &fgeom->v[e*Np*dE], fegeom.J, &quadPoints[q*(dim-1)], x);
       } else {
         fegeom.v    = &fgeom->v[(e*Np+q)*dE];
         fegeom.J    = &fgeom->J[(e*Np+q)*dE*dE];
@@ -411,9 +411,9 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscDS ds, PetscInt field, PetscI
     if (isAffine) {
       fegeom.v    = x;
       fegeom.xi   = cgeom->xi;
-      fegeom.J    = &cgeom->J[e*dE*dE];
-      fegeom.invJ = &cgeom->invJ[e*dE*dE];
-      fegeom.detJ = &cgeom->detJ[e];
+      fegeom.J    = &cgeom->J[e*Np*dE*dE];
+      fegeom.invJ = &cgeom->invJ[e*Np*dE*dE];
+      fegeom.detJ = &cgeom->detJ[e*Np];
     }
     ierr = PetscArrayzero(f0, Nq*T[field]->Nc);CHKERRQ(ierr);
     ierr = PetscArrayzero(f1, Nq*T[field]->Nc*dim);CHKERRQ(ierr);
@@ -422,7 +422,7 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscDS ds, PetscInt field, PetscI
       PetscInt  c, d;
 
       if (isAffine) {
-        CoordinatesRefToReal(dE, dim, fegeom.xi, &cgeom->v[e*dE], fegeom.J, &quadPoints[q*dim], x);
+        CoordinatesRefToReal(dE, dim, fegeom.xi, &cgeom->v[e*Np*dE], fegeom.J, &quadPoints[q*dim], x);
       } else {
         fegeom.v    = &cgeom->v[(e*Np+q)*dE];
         fegeom.J    = &cgeom->J[(e*Np+q)*dE*dE];
@@ -517,14 +517,14 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscDS ds, PetscInt field, Pets
     if (isAffine) {
       fegeom.v    = x;
       fegeom.xi   = fgeom->xi;
-      fegeom.J    = &fgeom->J[e*dE*dE];
-      fegeom.invJ = &fgeom->invJ[e*dE*dE];
-      fegeom.detJ = &fgeom->detJ[e];
-      fegeom.n    = &fgeom->n[e*dE];
+      fegeom.J    = &fgeom->J[e*Np*dE*dE];
+      fegeom.invJ = &fgeom->invJ[e*Np*dE*dE];
+      fegeom.detJ = &fgeom->detJ[e*Np];
+      fegeom.n    = &fgeom->n[e*Np*dE];
 
-      cgeom.J     = &fgeom->suppJ[0][e*dE*dE];
-      cgeom.invJ  = &fgeom->suppInvJ[0][e*dE*dE];
-      cgeom.detJ  = &fgeom->suppDetJ[0][e];
+      cgeom.J     = &fgeom->suppJ[0][e*Np*dE*dE];
+      cgeom.invJ  = &fgeom->suppInvJ[0][e*Np*dE*dE];
+      cgeom.detJ  = &fgeom->suppDetJ[0][e*Np];
     }
     ierr = PetscArrayzero(f0, Nq*NcI);CHKERRQ(ierr);
     ierr = PetscArrayzero(f1, Nq*NcI*dim);CHKERRQ(ierr);
@@ -533,7 +533,7 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscDS ds, PetscInt field, Pets
       PetscInt  c, d;
 
       if (isAffine) {
-        CoordinatesRefToReal(dE, dim-1, fegeom.xi, &fgeom->v[e*dE], fegeom.J, &quadPoints[q*(dim-1)], x);
+        CoordinatesRefToReal(dE, dim-1, fegeom.xi, &fgeom->v[e*Np*dE], fegeom.J, &quadPoints[q*(dim-1)], x);
       } else {
         fegeom.v    = &fgeom->v[(e*Np+q)*dE];
         fegeom.J    = &fgeom->J[(e*Np+q)*dE*dE];
@@ -643,9 +643,9 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscDS ds, PetscFEJacobianType jt
     if (isAffine) {
       fegeom.v    = x;
       fegeom.xi   = cgeom->xi;
-      fegeom.J    = &cgeom->J[e*dE*dE];
-      fegeom.invJ = &cgeom->invJ[e*dE*dE];
-      fegeom.detJ = &cgeom->detJ[e];
+      fegeom.J    = &cgeom->J[e*Np*dE*dE];
+      fegeom.invJ = &cgeom->invJ[e*Np*dE*dE];
+      fegeom.detJ = &cgeom->detJ[e*Np];
     }
     for (q = 0; q < Nq; ++q) {
       PetscReal w;
@@ -653,7 +653,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscDS ds, PetscFEJacobianType jt
 
       if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
       if (isAffine) {
-        CoordinatesRefToReal(dE, dim, fegeom.xi, &cgeom->v[e*dE], fegeom.J, &quadPoints[q*dim], x);
+        CoordinatesRefToReal(dE, dim, fegeom.xi, &cgeom->v[e*Np*dE], fegeom.J, &quadPoints[q*dim], x);
       } else {
         fegeom.v    = &cgeom->v[(e*Np+q)*dE];
         fegeom.J    = &cgeom->J[(e*Np+q)*dE*dE];
@@ -785,14 +785,14 @@ static PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscDS ds, PetscInt fiel
     if (isAffine) {
       fegeom.v    = x;
       fegeom.xi   = fgeom->xi;
-      fegeom.J    = &fgeom->J[e*dE*dE];
-      fegeom.invJ = &fgeom->invJ[e*dE*dE];
-      fegeom.detJ = &fgeom->detJ[e];
-      fegeom.n    = &fgeom->n[e*dE];
+      fegeom.J    = &fgeom->J[e*Np*dE*dE];
+      fegeom.invJ = &fgeom->invJ[e*Np*dE*dE];
+      fegeom.detJ = &fgeom->detJ[e*Np];
+      fegeom.n    = &fgeom->n[e*Np*dE];
 
-      cgeom.J     = &fgeom->suppJ[0][e*dE*dE];
-      cgeom.invJ  = &fgeom->suppInvJ[0][e*dE*dE];
-      cgeom.detJ  = &fgeom->suppDetJ[0][e];
+      cgeom.J     = &fgeom->suppJ[0][e*Np*dE*dE];
+      cgeom.invJ  = &fgeom->suppInvJ[0][e*Np*dE*dE];
+      cgeom.detJ  = &fgeom->suppDetJ[0][e*Np];
     }
     for (q = 0; q < Nq; ++q) {
       PetscReal w;
@@ -800,7 +800,7 @@ static PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscDS ds, PetscInt fiel
 
       if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
       if (isAffine) {
-        CoordinatesRefToReal(dE, dim-1, fegeom.xi, &fgeom->v[e*dE], fegeom.J, &quadPoints[q*(dim-1)], x);
+        CoordinatesRefToReal(dE, dim-1, fegeom.xi, &fgeom->v[e*Np*dE], fegeom.J, &quadPoints[q*(dim-1)], x);
       } else {
         fegeom.v    = &fgeom->v[(e*Np+q)*dE];
         fegeom.J    = &fgeom->J[(e*Np+q)*dE*dE];
