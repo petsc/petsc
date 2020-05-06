@@ -474,6 +474,8 @@ PETSC_EXTERN PetscErrorCode MatDensePlaceArray(Mat,const PetscScalar[]);
 PETSC_EXTERN PetscErrorCode MatDenseResetArray(Mat);
 PETSC_EXTERN PetscErrorCode MatDenseGetArrayRead(Mat,const PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode MatDenseRestoreArrayRead(Mat,const PetscScalar *[]);
+PETSC_EXTERN PetscErrorCode MatDenseGetArrayWrite(Mat,PetscScalar *[]);
+PETSC_EXTERN PetscErrorCode MatDenseRestoreArrayWrite(Mat,PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode MatGetBlockSize(Mat,PetscInt *);
 PETSC_EXTERN PetscErrorCode MatSetBlockSize(Mat,PetscInt);
 PETSC_EXTERN PetscErrorCode MatGetBlockSizes(Mat,PetscInt *,PetscInt *);
@@ -482,8 +484,14 @@ PETSC_EXTERN PetscErrorCode MatSetBlockSizesFromMats(Mat,Mat,Mat);
 PETSC_EXTERN PetscErrorCode MatSetVariableBlockSizes(Mat,PetscInt,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatGetVariableBlockSizes(Mat,PetscInt*,const PetscInt**);
 
-PETSC_EXTERN PetscErrorCode MatDenseGetColumn(Mat,PetscInt,PetscScalar *[]);
-PETSC_EXTERN PetscErrorCode MatDenseRestoreColumn(Mat,PetscScalar *[]);
+PETSC_EXTERN PetscErrorCode MatDenseGetColumn(Mat,PetscInt,PetscScalar*[]);
+PETSC_EXTERN PetscErrorCode MatDenseRestoreColumn(Mat,PetscScalar*[]);
+PETSC_EXTERN PetscErrorCode MatDenseGetColumnVec(Mat,PetscInt,Vec*);
+PETSC_EXTERN PetscErrorCode MatDenseRestoreColumnVec(Mat,PetscInt,Vec*);
+PETSC_EXTERN PetscErrorCode MatDenseGetColumnVecRead(Mat,PetscInt,Vec*);
+PETSC_EXTERN PetscErrorCode MatDenseRestoreColumnVecRead(Mat,PetscInt,Vec*);
+PETSC_EXTERN PetscErrorCode MatDenseGetColumnVecWrite(Mat,PetscInt,Vec*);
+PETSC_EXTERN PetscErrorCode MatDenseRestoreColumnVecWrite(Mat,PetscInt,Vec*);
 
 PETSC_EXTERN PetscErrorCode MatMult(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatMultDiagonalBlock(Mat,Vec,Vec);

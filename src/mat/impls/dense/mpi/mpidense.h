@@ -44,6 +44,11 @@ typedef struct {
   PetscSF    Mvctx;                     /* for mat-mult communications */
   PetscBool  roworiented;               /* if true, row oriented input (default) */
 
+  /* Support for MatDenseGetColumnVec */
+  Vec               cvec;      /* vector representation of a given column */
+  const PetscScalar *ptrinuse; /* holds array to be restored (just a placeholder) */
+  PetscInt          vecinuse;  /* if cvec is in use (col = vecinuse-1) */
+
   Mat_MatTransMatMult   *atb;           /* used by MatTransposeMatMultxxx_MPIAIJ_MPIDense */
   Mat_TransMatMultDense *atbdense;      /* used by MatTransposeMatMultxxx_MPIDense_MPIDense */
   Mat_MatMultDense      *abdense;       /* used by MatMatMultxxx_MPIDense_MPIDense */
