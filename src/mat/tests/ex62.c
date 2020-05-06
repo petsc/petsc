@@ -80,9 +80,11 @@ int main(int argc,char **args)
     ierr = MatProductCreate(A,B,NULL,&C);CHKERRQ(ierr);
     ierr = MatSetOptionsPrefix(C,"AB_");CHKERRQ(ierr);
     ierr = MatProductSetType(C,MATPRODUCT_AB);CHKERRQ(ierr);
-    ierr = MatProductSetAlgorithm(C,"default");CHKERRQ(ierr);
+    ierr = MatProductSetAlgorithm(C,MATPRODUCTALGORITHM_DEFAULT);CHKERRQ(ierr);
     ierr = MatProductSetFill(C,PETSC_DEFAULT);CHKERRQ(ierr);
     ierr = MatProductSetFromOptions(C);CHKERRQ(ierr);
+    /* we can inquire about MATOP_PRODUCTSYMBOLIC even if the destination matrix type has not been set yet */
+    ierr = MatHasOperation(C,MATOP_PRODUCTSYMBOLIC,&flg);CHKERRQ(ierr);
     ierr = MatProductSymbolic(C);CHKERRQ(ierr);
     ierr = MatProductNumeric(C);CHKERRQ(ierr);
 
@@ -153,7 +155,7 @@ int main(int argc,char **args)
     ierr = MatProductCreate(P,B,NULL,&C);CHKERRQ(ierr);
     ierr = MatSetOptionsPrefix(C,"AtB_");CHKERRQ(ierr);
     ierr = MatProductSetType(C,MATPRODUCT_AtB);CHKERRQ(ierr);
-    ierr = MatProductSetAlgorithm(C,"default");CHKERRQ(ierr);
+    ierr = MatProductSetAlgorithm(C,MATPRODUCTALGORITHM_DEFAULT);CHKERRQ(ierr);
     ierr = MatProductSetFill(C,PETSC_DEFAULT);CHKERRQ(ierr);
     ierr = MatProductSetFromOptions(C);CHKERRQ(ierr);
     ierr = MatProductSymbolic(C);CHKERRQ(ierr); /* equivalent to MatSetUp() */
@@ -214,7 +216,7 @@ int main(int argc,char **args)
     ierr = MatProductCreate(A,P,NULL,&C);CHKERRQ(ierr);
     ierr = MatSetOptionsPrefix(C,"PtAP_");CHKERRQ(ierr);
     ierr = MatProductSetType(C,MATPRODUCT_PtAP);CHKERRQ(ierr);
-    ierr = MatProductSetAlgorithm(C,"default");CHKERRQ(ierr);
+    ierr = MatProductSetAlgorithm(C,MATPRODUCTALGORITHM_DEFAULT);CHKERRQ(ierr);
     ierr = MatProductSetFill(C,PETSC_DEFAULT);CHKERRQ(ierr);
     ierr = MatProductSetFromOptions(C);CHKERRQ(ierr);
     ierr = MatProductSymbolic(C);CHKERRQ(ierr);
@@ -249,7 +251,7 @@ int main(int argc,char **args)
       ierr = MatProductCreate(A,R,NULL,&RARt);CHKERRQ(ierr);
       ierr = MatSetOptionsPrefix(RARt,"RARt_");CHKERRQ(ierr);
       ierr = MatProductSetType(RARt,MATPRODUCT_RARt);CHKERRQ(ierr);
-      ierr = MatProductSetAlgorithm(RARt,"default");CHKERRQ(ierr);
+      ierr = MatProductSetAlgorithm(RARt,MATPRODUCTALGORITHM_DEFAULT);CHKERRQ(ierr);
       ierr = MatProductSetFill(RARt,PETSC_DEFAULT);CHKERRQ(ierr);
       ierr = MatProductSetFromOptions(RARt);CHKERRQ(ierr);
       ierr = MatProductSymbolic(RARt);CHKERRQ(ierr); /* equivalent to MatSetUp() */
