@@ -231,8 +231,7 @@ static PetscErrorCode MatDenseWrapCholmod(Mat X,PetscInt rw,cholmod_dense *Y)
     ierr = MatDenseGetArrayRead(X,(const PetscScalar**)&x);CHKERRQ(ierr);
     break;
   case GET_ARRAY_WRITE:
-    /* we don't have MatDenseGetArrayWrite */
-    ierr = MatDenseGetArray(X,&x);CHKERRQ(ierr);
+    ierr = MatDenseGetArrayWrite(X,&x);CHKERRQ(ierr);
     break;
   default:
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Case %D not handled",rw);
