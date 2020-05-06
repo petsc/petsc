@@ -9255,7 +9255,7 @@ static PetscErrorCode MatProduct_Private(Mat A,Mat B,MatReuse scall,PetscReal fi
   if (scall == MAT_INITIAL_MATRIX) {
     ierr = MatProductCreate(A,B,NULL,C);CHKERRQ(ierr);
     ierr = MatProductSetType(*C,ptype);CHKERRQ(ierr);
-    ierr = MatProductSetAlgorithm(*C,"default");CHKERRQ(ierr);
+    ierr = MatProductSetAlgorithm(*C,MATPRODUCTALGORITHM_DEFAULT);CHKERRQ(ierr);
     ierr = MatProductSetFill(*C,fill);CHKERRQ(ierr);
 
     (*C)->product->api_user = PETSC_TRUE;
@@ -9265,20 +9265,10 @@ static PetscErrorCode MatProduct_Private(Mat A,Mat B,MatReuse scall,PetscReal fi
     Mat_Product *product = (*C)->product;
     if (!product) {
       /* user provide the dense matrix *C without calling MatProductCreate() */
-      PetscBool seqdense,mpidense,dense;
-#if defined(PETSC_HAVE_CUDA)
-      PetscBool seqdensecuda,mpidensecuda;
-#endif
-      ierr = PetscObjectTypeCompare((PetscObject)(*C),MATSEQDENSE,&seqdense);CHKERRQ(ierr);
-      ierr = PetscObjectTypeCompare((PetscObject)(*C),MATMPIDENSE,&mpidense);CHKERRQ(ierr);
-      ierr = PetscObjectTypeCompare((PetscObject)(*C),MATDENSE,&dense);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_CUDA)
-      ierr = PetscObjectTypeCompare((PetscObject)(*C),MATSEQDENSECUDA,&seqdensecuda);CHKERRQ(ierr);
-      ierr = PetscObjectTypeCompare((PetscObject)(*C),MATMPIDENSECUDA,&mpidensecuda);CHKERRQ(ierr);
-      if (seqdense || mpidense || dense || seqdensecuda || mpidensecuda) {
-#else
-      if (seqdense || mpidense || dense) {
-#endif
+      PetscBool isdense;
+
+      ierr = PetscObjectBaseTypeCompareAny((PetscObject)(*C),&isdense,MATSEQDENSE,MATMPIDENSE,"");CHKERRQ(ierr);
+      if (isdense) {
         /* user wants to reuse an assembled dense matrix */
         /* Create product -- see MatCreateProduct() */
         ierr = MatProductCreate_Private(A,B,NULL,*C);CHKERRQ(ierr);
@@ -10354,7 +10344,8 @@ PetscErrorCode MatHasOperation(Mat mat,MatOperation op,PetscBool *has)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscValidType(mat,1);
+  /* symbolic product can be set before matrix type */
+  if (op != MATOP_PRODUCTSYMBOLIC) PetscValidType(mat,1);
   PetscValidPointer(has,3);
   if (mat->ops->hasoperation) {
     ierr = (*mat->ops->hasoperation)(mat,op,has);CHKERRQ(ierr);

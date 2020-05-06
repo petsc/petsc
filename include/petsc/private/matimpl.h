@@ -391,12 +391,12 @@ typedef struct { /* used by MatCreateRedundantMatrix() for reusing matredundant 
 } Mat_Redundant;
 
 typedef struct { /* used by MatProduct() */
-  MatProductType       type;
-  MatProductAlgorithm  alg;
-  Mat                  A,B,C,Dwork;
-  PetscReal            fill;
-  PetscBool            Areplaced,Breplaced; /* if an internal implementation changes user's input A or B, these matrices cannot be called by MatProductReplaceMats(). */
-  PetscBool            api_user; /* used by MatProductSetFromOptions_xxx() */
+  MatProductType type;
+  char           *alg;
+  Mat            A,B,C,Dwork;
+  PetscReal      fill;
+  PetscBool      Areplaced,Breplaced; /* if an internal implementation changes user's input A or B, these matrices cannot be called by MatProductReplaceMats(). */
+  PetscBool      api_user; /* used by MatProductSetFromOptions_xxx() */
 } Mat_Product;
 
 struct _p_Mat {

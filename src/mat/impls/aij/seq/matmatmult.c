@@ -1353,7 +1353,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
     ierr = MatSetType(At,((PetscObject)A)->type_name);CHKERRQ(ierr);
 
     /* get symbolic C=At*B */
-    product->alg = "sorted";
+    ierr = MatProductSetAlgorithm(C,"sorted");CHKERRQ(ierr);
     ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(At,B,fill,C);CHKERRQ(ierr);
 
     /* clean up */
@@ -1361,6 +1361,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
     ierr = MatRestoreSymbolicTranspose_SeqAIJ(A,&ati,&atj);CHKERRQ(ierr);
 
     C->ops->mattransposemultnumeric = MatTransposeMatMultNumeric_SeqAIJ_SeqAIJ; /* outerproduct */
+    ierr = MatProductSetAlgorithm(C,"outerproduct");CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
@@ -1372,7 +1373,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
 
     ierr = PetscNew(&atb);CHKERRQ(ierr);
     ierr = MatTranspose_SeqAIJ(A,MAT_INITIAL_MATRIX,&At);CHKERRQ(ierr);
-    product->alg = "sorted";
+    ierr = MatProductSetAlgorithm(C,"sorted");CHKERRQ(ierr);
     ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(At,B,fill,C);CHKERRQ(ierr);
 
     c               = (Mat_SeqAIJ*)C->data;
@@ -1383,6 +1384,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
     C->ops->destroy = MatDestroy_SeqAIJ_MatTransMatMult;
 
     C->ops->mattransposemultnumeric = NULL; /* see MatProductNumeric_AtB_SeqAIJ_SeqAIJ */
+    ierr = MatProductSetAlgorithm(C,"at*b");CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 

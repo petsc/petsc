@@ -181,7 +181,7 @@ PETSC_EXTERN const char *const MatProductTypes[];
 .seealso: MatSetType(), Mat, MatSolverType, MatRegister(), MatProductSetAlgorithm(), MatProductType
 J*/
 typedef const char* MatProductAlgorithm;
-#define MATPRODUCTALGORITHM_DEFAULT       "default"
+#define MATPRODUCTALGORITHM_DEFAULT "default"
 
 PETSC_EXTERN PetscErrorCode MatProductCreate(Mat,Mat,Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatProductCreateWithMat(Mat,Mat,Mat,Mat);
@@ -1583,9 +1583,9 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_MAT_TRANSPOSE_MULT_SYMBO=96,
                MATOP_MAT_TRANSPOSE_MULT_NUMER=97,
                /* MATOP_PLACEHOLDER_98=98, */
-               /* MATOP_PLACEHOLDER_99=99, */
-               /* MATOP_PLACEHOLDER_100=100, */
-               /* MATOP_PLACEHOLDER_101=101, */
+               MATOP_PRODUCTSETFROMOPTIONS=99,
+               MATOP_PRODUCTSYMBOLIC=100,
+               MATOP_PRODUCTNUMERIC=101,
                MATOP_CONJUGATE=102,
                /* MATOP_PLACEHOLDER_103=103, */
                MATOP_SET_VALUES_ROW=104,

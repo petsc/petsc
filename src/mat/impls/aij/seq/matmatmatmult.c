@@ -33,7 +33,7 @@ PetscErrorCode MatMatMatMultSymbolic_SeqAIJ_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C,Pets
 
   ierr = MatProductSetAlgorithm(D,"sorted");CHKERRQ(ierr); /* set alg for D = A*BC */
   ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(A,BC,fill,D);CHKERRQ(ierr);
-  D->product->alg = alg; /* resume original algorithm for D */
+  ierr = MatProductSetAlgorithm(D,alg);CHKERRQ(ierr); /* resume original algorithm */
 
   /* create struct Mat_MatMatMatMult and attached it to D */
   ierr = PetscNew(&matmatmatmult);CHKERRQ(ierr);
@@ -60,4 +60,3 @@ PetscErrorCode MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C,Mat D
   ierr = (D->ops->matmultnumeric)(A,BC,D);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-

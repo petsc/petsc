@@ -164,19 +164,24 @@ PetscErrorCode MatPtAPNumeric_SeqDense_SeqDense(Mat A,Mat P,Mat C)
 PetscErrorCode MatPtAPSymbolic_SeqDense_SeqDense(Mat A,Mat P,PetscReal fill,Mat C)
 {
   Mat_SeqDense   *c;
-  PetscBool      flg;
+  PetscBool      cisdense;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)P,((PetscObject)A)->type_name,&flg);CHKERRQ(ierr);
   ierr = MatSetSizes(C,P->cmap->n,P->cmap->n,P->cmap->N,P->cmap->N);CHKERRQ(ierr);
-  ierr = MatSetType(C,flg ? ((PetscObject)A)->type_name : MATDENSE);CHKERRQ(ierr);
-  ierr = MatSeqDenseSetPreallocation(C,NULL);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompareAny((PetscObject)C,&cisdense,MATSEQDENSE,MATSEQDENSECUDA,"");CHKERRQ(ierr);
+  if (!cisdense) {
+    PetscBool flg;
+
+    ierr = PetscObjectTypeCompare((PetscObject)P,((PetscObject)A)->type_name,&flg);CHKERRQ(ierr);
+    ierr = MatSetType(C,flg ? ((PetscObject)A)->type_name : MATDENSE);CHKERRQ(ierr);
+  }
+  ierr = MatSetUp(C);CHKERRQ(ierr);
   c    = (Mat_SeqDense*)C->data;
   ierr = MatCreate(PetscObjectComm((PetscObject)A),&c->ptapwork);CHKERRQ(ierr);
   ierr = MatSetSizes(c->ptapwork,A->rmap->n,P->cmap->n,A->rmap->N,P->cmap->N);CHKERRQ(ierr);
-  ierr = MatSetType(c->ptapwork,flg ? ((PetscObject)A)->type_name : MATDENSE);CHKERRQ(ierr);
-  ierr = MatSeqDenseSetPreallocation(c->ptapwork,NULL);CHKERRQ(ierr);
+  ierr = MatSetType(c->ptapwork,((PetscObject)C)->type_name);CHKERRQ(ierr);
+  ierr = MatSetUp(c->ptapwork);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2114,12 +2119,17 @@ PetscErrorCode MatMatMultSymbolic_SeqDense_SeqDense(Mat A,Mat B,PetscReal fill,M
 {
   PetscErrorCode ierr;
   PetscInt       m=A->rmap->n,n=B->cmap->n;
-  PetscBool      flg;
+  PetscBool      cisdense;
 
   PetscFunctionBegin;
   ierr = MatSetSizes(C,m,n,m,n);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)B,((PetscObject)A)->type_name,&flg);CHKERRQ(ierr);
-  ierr = MatSetType(C,flg ? ((PetscObject)A)->type_name : MATDENSE);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompareAny((PetscObject)C,&cisdense,MATSEQDENSE,MATSEQDENSECUDA,"");CHKERRQ(ierr);
+  if (!cisdense) {
+    PetscBool flg;
+
+    ierr = PetscObjectTypeCompare((PetscObject)B,((PetscObject)A)->type_name,&flg);CHKERRQ(ierr);
+    ierr = MatSetType(C,flg ? ((PetscObject)A)->type_name : MATDENSE);CHKERRQ(ierr);
+  }
   ierr = MatSetUp(C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2170,12 +2180,17 @@ PetscErrorCode MatMatTransposeMultSymbolic_SeqDense_SeqDense(Mat A,Mat B,PetscRe
 {
   PetscErrorCode ierr;
   PetscInt       m=A->rmap->n,n=B->rmap->n;
-  PetscBool      flg;
+  PetscBool      cisdense;
 
   PetscFunctionBegin;
   ierr = MatSetSizes(C,m,n,m,n);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)B,((PetscObject)A)->type_name,&flg);CHKERRQ(ierr);
-  ierr = MatSetType(C,flg ? ((PetscObject)A)->type_name : MATDENSE);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompareAny((PetscObject)C,&cisdense,MATSEQDENSE,MATSEQDENSECUDA,"");CHKERRQ(ierr);
+  if (!cisdense) {
+    PetscBool flg;
+
+    ierr = PetscObjectTypeCompare((PetscObject)B,((PetscObject)A)->type_name,&flg);CHKERRQ(ierr);
+    ierr = MatSetType(C,flg ? ((PetscObject)A)->type_name : MATDENSE);CHKERRQ(ierr);
+  }
   ierr = MatSetUp(C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2203,12 +2218,17 @@ PetscErrorCode MatTransposeMatMultSymbolic_SeqDense_SeqDense(Mat A,Mat B,PetscRe
 {
   PetscErrorCode ierr;
   PetscInt       m=A->cmap->n,n=B->cmap->n;
-  PetscBool      flg;
+  PetscBool      cisdense;
 
   PetscFunctionBegin;
   ierr = MatSetSizes(C,m,n,m,n);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)B,((PetscObject)A)->type_name,&flg);CHKERRQ(ierr);
-  ierr = MatSetType(C,flg ? ((PetscObject)A)->type_name : MATDENSE);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompareAny((PetscObject)C,&cisdense,MATSEQDENSE,MATSEQDENSECUDA,"");CHKERRQ(ierr);
+  if (!cisdense) {
+    PetscBool flg;
+
+    ierr = PetscObjectTypeCompare((PetscObject)B,((PetscObject)A)->type_name,&flg);CHKERRQ(ierr);
+    ierr = MatSetType(C,flg ? ((PetscObject)A)->type_name : MATDENSE);CHKERRQ(ierr);
+  }
   ierr = MatSetUp(C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

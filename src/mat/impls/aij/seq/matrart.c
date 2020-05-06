@@ -269,9 +269,11 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ_matmattransposemult(Mat A,Mat R,Pet
   ierr = MatProductSymbolic(ARt);CHKERRQ(ierr);
 
   /* compute symbolic C = R*ARt */
-  C->product->alg = "sorted"; /* set algorithm for C = R*ARt */
+  /* set algorithm for C = R*ARt */
+  ierr = MatProductSetAlgorithm(C,"sorted");CHKERRQ(ierr);
   ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(R,ARt,fill,C);CHKERRQ(ierr);
-  C->product->alg = alg; /* resume original algorithm for C */
+  /* resume original algorithm for C */
+  ierr = MatProductSetAlgorithm(C,alg);CHKERRQ(ierr);
 
   C->ops->rartnumeric = MatRARtNumeric_SeqAIJ_SeqAIJ_matmattransposemult;
 
@@ -281,9 +283,7 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ_matmattransposemult(Mat A,Mat R,Pet
   rart->ARt = ARt;
   rart->destroy   = C->ops->destroy;
   C->ops->destroy = MatDestroy_SeqAIJ_RARt;
-#if defined(PETSC_USE_INFO)
   ierr = PetscInfo(C,"Use ARt=A*R^T, C=R*ARt via MatMatTransposeMult(). Coloring can be applied to A*R^T.\n");CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -318,9 +318,7 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat R,PetscReal fill,Mat C)
   rart->destroy       = C->ops->destroy;
   C->ops->destroy     = MatDestroy_SeqAIJ_RARt;
   C->ops->rartnumeric = MatRARtNumeric_SeqAIJ_SeqAIJ;
-#if defined(PETSC_USE_INFO)
   ierr = PetscInfo(C,"Use Rt=R^T and C=R*A*Rt via MatMatMatMult() to avoid sparse inner products\n");CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }
 

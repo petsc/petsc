@@ -256,9 +256,9 @@
       PetscEnum, parameter :: MATOP_MAT_TRANSPOSE_MULT_SYMBO=96
       PetscEnum, parameter :: MATOP_MAT_TRANSPOSE_MULT_NUMER=97
 !     PetscEnum, parameter :: MATOP_PLACEHOLDER_98=98
-!     PetscEnum, parameter :: MATOP_PRODUCTSETFROMOPTIONS=99
-!     PetscEnum, parameter :: MATOP_PRODUCTSYMBOLIC=100
-!     PetscEnum, parameter :: MATOP_PRODUCTNUMERIC=101
+      PetscEnum, parameter :: MATOP_PRODUCTSETFROMOPTIONS=99
+      PetscEnum, parameter :: MATOP_PRODUCTSYMBOLIC=100
+      PetscEnum, parameter :: MATOP_PRODUCTNUMERIC=101
       PetscEnum, parameter :: MATOP_CONJUGATE=102
 !     PetscEnum, parameter :: MATOP_PLACEHOLDER_103=103
       PetscEnum, parameter :: MATOP_SET_VALUES_ROW=104

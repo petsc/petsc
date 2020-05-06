@@ -29,22 +29,26 @@ PetscErrorCode MatTransposeMatMultSymbolic_SeqAIJ_SeqDense(Mat A,Mat B,PetscReal
   Mat_MatTransMatMult *atb;
   Vec                 bt,ct;
   Mat_SeqDense        *c;
+  PetscBool           cisdense;
 
   PetscFunctionBegin;
   ierr = PetscNew(&atb);CHKERRQ(ierr);
 
   /* create output dense matrix C = A^T*B */
   ierr = MatSetSizes(C,n,BN,n,BN);CHKERRQ(ierr);
-  ierr = MatSetType(C,MATSEQDENSE);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompareAny((PetscObject)C,&cisdense,MATSEQDENSE,MATSEQDENSECUDA,"");CHKERRQ(ierr);
+  if (!cisdense) {
+    ierr = MatSetType(C,((PetscObject)B)->type_name);CHKERRQ(ierr);
+  }
   ierr = MatSetUp(C);CHKERRQ(ierr);
 
   /* create vectors bt and ct to hold locally transposed arrays of B and C */
   ierr = VecCreate(PETSC_COMM_SELF,&bt);CHKERRQ(ierr);
   ierr = VecSetSizes(bt,m*BN,m*BN);CHKERRQ(ierr);
-  ierr = VecSetType(bt,VECSTANDARD);CHKERRQ(ierr);
+  ierr = VecSetType(bt,A->defaultvectype);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_SELF,&ct);CHKERRQ(ierr);
   ierr = VecSetSizes(ct,n*BN,n*BN);CHKERRQ(ierr);
-  ierr = VecSetType(ct,VECSTANDARD);CHKERRQ(ierr);
+  ierr = VecSetType(ct,A->defaultvectype);CHKERRQ(ierr);
   atb->bt = bt;
   atb->ct = ct;
 
@@ -71,7 +75,7 @@ PetscErrorCode MatTransposeMatMultNumeric_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
   ierr = MatDestroy(&atb->mA);CHKERRQ(ierr);
   ierr = MatCreateMAIJ(A,BN,&atb->mA);CHKERRQ(ierr);
 
-  /* transpose local arry of B, then copy it to vector bt */
+  /* transpose local array of B, then copy it to vector bt */
   ierr = MatDenseGetArrayRead(B,&Barray);CHKERRQ(ierr);
   ierr = VecGetArray(bt,&btarray);CHKERRQ(ierr);
 
@@ -85,7 +89,7 @@ PetscErrorCode MatTransposeMatMultNumeric_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
   /* compute ct = mA^T * cb */
   ierr = MatMultTranspose(atb->mA,bt,ct);CHKERRQ(ierr);
 
-  /* transpose local arry of ct to matrix C */
+  /* transpose local array of ct to matrix C */
   ierr = MatDenseGetArray(C,&Carray);CHKERRQ(ierr);
   ierr = VecGetArrayRead(ct,&ctarray);CHKERRQ(ierr);
   k = 0;
