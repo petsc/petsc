@@ -595,6 +595,7 @@ PETSC_EXTERN PetscErrorCode MatMatMultEqual(Mat,Mat,Mat,PetscInt,PetscBool*);
 PETSC_EXTERN PetscErrorCode MatTransposeMatMultEqual(Mat,Mat,Mat,PetscInt,PetscBool*);
 PETSC_EXTERN PetscErrorCode MatMatTransposeMultEqual(Mat,Mat,Mat,PetscInt,PetscBool*);
 PETSC_EXTERN PetscErrorCode MatPtAPMultEqual(Mat,Mat,Mat,PetscInt,PetscBool*);
+PETSC_EXTERN PetscErrorCode MatRARtMultEqual(Mat,Mat,Mat,PetscInt,PetscBool*);
 PETSC_EXTERN PetscErrorCode MatIsLinear(Mat,PetscInt,PetscBool*);
 
 PETSC_EXTERN PetscErrorCode MatNorm(Mat,NormType,PetscReal*);
