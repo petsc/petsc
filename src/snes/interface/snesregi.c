@@ -24,13 +24,13 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Patch(SNES);
 const char *SNESConvergedReasons_Shifted[] = {" ","DIVERGED_TR_DELTA","DIVERGED_JACOBIAN_DOMAIN","DIVERGED_DTOL","DIVERGED_LOCAL_MIN","DIVERGED_INNER","DIVERGED_LINE_SEARCH","DIVERGED_MAX_IT",
                                               "DIVERGED_FNORM_NAN","DIVERGED_LINEAR_SOLVE","DIVERGED_FUNCTION_COUNT","DIVERGED_FUNCTION_DOMAIN",
                                               "CONVERGED_ITERATING"," ","CONVERGED_FNORM_ABS","CONVERGED_FNORM_RELATIVE",
-                                              "CONVERGED_SNORM_RELATIVE","CONVERGED_ITS"," ","SNESConvergedReason","",0};
+                                              "CONVERGED_SNORM_RELATIVE","CONVERGED_ITS"," ","SNESConvergedReason","",NULL};
 const char *const *SNESConvergedReasons = SNESConvergedReasons_Shifted + 12;
 
-const char *SNESNormSchedules_Shifted[]    = {"DEFAULT","NONE","ALWAYS","INITIALONLY","FINALONLY","INITIALFINALONLY","SNESNormSchedule","SNES_NORM_",0};
+const char *SNESNormSchedules_Shifted[]    = {"DEFAULT","NONE","ALWAYS","INITIALONLY","FINALONLY","INITIALFINALONLY","SNESNormSchedule","SNES_NORM_",NULL};
 const char *const *const SNESNormSchedules = SNESNormSchedules_Shifted + 1;
 
-const char *SNESFunctionTypes_Shifted[]    = {"DEFAULT","UNPRECONDITIONED","PRECONDITIONED","SNESFunctionType","SNES_FUNCTION_",0};
+const char *SNESFunctionTypes_Shifted[]    = {"DEFAULT","UNPRECONDITIONED","PRECONDITIONED","SNESFunctionType","SNES_FUNCTION_",NULL};
 const char *const *const SNESFunctionTypes = SNESFunctionTypes_Shifted + 1;
 
 /*@C

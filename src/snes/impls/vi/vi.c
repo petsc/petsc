@@ -45,7 +45,7 @@ PetscErrorCode  SNESVIMonitorResidual(SNES snes,PetscInt its,PetscReal fgnorm,vo
   PetscViewer    viewer = (PetscViewer) dummy;
 
   PetscFunctionBegin;
-  ierr = SNESGetFunction(snes,&F,0,0);CHKERRQ(ierr);
+  ierr = SNESGetFunction(snes,&F,NULL,NULL);CHKERRQ(ierr);
   ierr = SNESGetSolution(snes,&X);CHKERRQ(ierr);
   ierr = SNESVIGetActiveSetIS(snes,X,F,&isactive);CHKERRQ(ierr);
   ierr = VecDuplicate(F,&Finactive);CHKERRQ(ierr);

@@ -83,7 +83,7 @@ PetscErrorCode  DMCreateInterpolation_SNESVI(DM dm1,DM dm2,Mat *mat,Vec *vec)
   ierr = (*dmsnesvi1->createinterpolation)(dm1,dm2,&interp,NULL);CHKERRQ(ierr);
   ierr = MatCreateSubMatrix(interp,dmsnesvi2->inactive,dmsnesvi1->inactive,MAT_INITIAL_MATRIX,mat);CHKERRQ(ierr);
   ierr = MatDestroy(&interp);CHKERRQ(ierr);
-  *vec = 0;
+  *vec = NULL;
   PetscFunctionReturn(0);
 }
 

@@ -1,7 +1,7 @@
 /* Defines the basic SNES object */
 #include <../src/snes/impls/fas/fasimpls.h>    /*I  "petscsnes.h"  I*/
 
-const char *const SNESFASTypes[] = {"MULTIPLICATIVE","ADDITIVE","FULL","KASKADE","SNESFASType","SNES_FAS",0};
+const char *const SNESFASTypes[] = {"MULTIPLICATIVE","ADDITIVE","FULL","KASKADE","SNESFASType","SNES_FAS",NULL};
 
 static PetscErrorCode SNESReset_FAS(SNES snes)
 {

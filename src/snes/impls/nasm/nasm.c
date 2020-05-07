@@ -28,7 +28,7 @@ typedef struct {
   Vec           xinit;             /* initial solution in case the final jacobian type is computed as first */
 } SNES_NASM;
 
-const char *const SNESNASMTypes[] = {"NONE","RESTRICT","INTERPOLATE","BASIC","PCASMType","PC_ASM_",0};
+const char *const SNESNASMTypes[] = {"NONE","RESTRICT","INTERPOLATE","BASIC","PCASMType","PC_ASM_",NULL};
 const char *const SNESNASMFJTypes[] = {"FINALOUTER","FINALINNER","INITIAL"};
 
 static PetscErrorCode SNESReset_NASM(SNES snes)
@@ -882,15 +882,15 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NASM(SNES snes)
   snes->data = (void*)nasm;
 
   nasm->n        = PETSC_DECIDE;
-  nasm->subsnes  = 0;
-  nasm->x        = 0;
-  nasm->xl       = 0;
-  nasm->y        = 0;
-  nasm->b        = 0;
-  nasm->oscatter = 0;
-  nasm->oscatter_copy = 0;
-  nasm->iscatter = 0;
-  nasm->gscatter = 0;
+  nasm->subsnes  = NULL;
+  nasm->x        = NULL;
+  nasm->xl       = NULL;
+  nasm->y        = NULL;
+  nasm->b        = NULL;
+  nasm->oscatter = NULL;
+  nasm->oscatter_copy = NULL;
+  nasm->iscatter = NULL;
+  nasm->gscatter = NULL;
   nasm->damping  = 1.;
 
   nasm->type              = PC_ASM_BASIC;

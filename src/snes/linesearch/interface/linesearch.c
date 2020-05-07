@@ -645,7 +645,7 @@ PetscErrorCode SNESLineSearchDestroy(SNESLineSearch * linesearch)
   PetscFunctionBegin;
   if (!*linesearch) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*linesearch),SNESLINESEARCH_CLASSID,1);
-  if (--((PetscObject)(*linesearch))->refct > 0) {*linesearch = 0; PetscFunctionReturn(0);}
+  if (--((PetscObject)(*linesearch))->refct > 0) {*linesearch = NULL; PetscFunctionReturn(0);}
   ierr = PetscObjectSAWsViewOff((PetscObject)*linesearch);CHKERRQ(ierr);
   ierr = SNESLineSearchReset(*linesearch);CHKERRQ(ierr);
   if ((*linesearch)->ops->destroy) (*linesearch)->ops->destroy(*linesearch);
@@ -969,14 +969,13 @@ PetscErrorCode SNESLineSearchSetType(SNESLineSearch linesearch, SNESLineSearchTy
   /* Destroy the previous private linesearch context */
   if (linesearch->ops->destroy) {
     ierr = (*(linesearch)->ops->destroy)(linesearch);CHKERRQ(ierr);
-
     linesearch->ops->destroy = NULL;
   }
   /* Reinitialize function pointers in SNESLineSearchOps structure */
-  linesearch->ops->apply          = 0;
-  linesearch->ops->view           = 0;
-  linesearch->ops->setfromoptions = 0;
-  linesearch->ops->destroy        = 0;
+  linesearch->ops->apply          = NULL;
+  linesearch->ops->view           = NULL;
+  linesearch->ops->setfromoptions = NULL;
+  linesearch->ops->destroy        = NULL;
 
   ierr = PetscObjectChangeTypeName((PetscObject)linesearch,type);CHKERRQ(ierr);
   ierr = (*r)(linesearch);CHKERRQ(ierr);

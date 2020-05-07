@@ -24,7 +24,7 @@ static PetscErrorCode SNESTR_KSPConverged_Private(KSP ksp,PetscInt n,PetscReal r
     ierr = PetscInfo2(snes,"Default or user provided convergence test KSP iterations=%D, rnorm=%g\n",n,(double)rnorm);CHKERRQ(ierr);
   }
   /* Determine norm of solution */
-  ierr = KSPBuildSolution(ksp,0,&x);CHKERRQ(ierr);
+  ierr = KSPBuildSolution(ksp,NULL,&x);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&nrm);CHKERRQ(ierr);
   if (nrm >= neP->delta) {
     ierr    = PetscInfo2(snes,"Ending linear iteration early, delta=%g, length=%g\n",(double)neP->delta,(double)nrm);CHKERRQ(ierr);
