@@ -235,6 +235,8 @@ PETSC_EXTERN PetscErrorCode MatInitializePackage(void);
 PETSC_EXTERN PetscErrorCode MatCreate(MPI_Comm,Mat*);
 PETSC_EXTERN PetscErrorCode MatSetSizes(Mat,PetscInt,PetscInt,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode MatSetType(Mat,MatType);
+PETSC_EXTERN PetscErrorCode MatGetVecType(Mat,VecType*);
+PETSC_EXTERN PetscErrorCode MatSetVecType(Mat,VecType);
 PETSC_EXTERN PetscErrorCode MatSetFromOptions(Mat);
 PETSC_EXTERN PetscErrorCode MatViewFromOptions(Mat,PetscObject,const char[]);
 PETSC_EXTERN PetscErrorCode MatRegister(const char[],PetscErrorCode(*)(Mat));
