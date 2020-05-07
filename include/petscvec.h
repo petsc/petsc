@@ -404,8 +404,8 @@ PETSC_EXTERN PetscErrorCode VecCUDARestoreArrayRead(Vec,const PetscScalar**);
 PETSC_EXTERN PetscErrorCode VecCUDAGetArrayWrite(Vec,PetscScalar**);
 PETSC_EXTERN PetscErrorCode VecCUDARestoreArrayWrite(Vec,PetscScalar**);
 
-PETSC_EXTERN PetscErrorCode VecCUDAPlaceArray(Vec,PetscScalar*);
-PETSC_EXTERN PetscErrorCode VecCUDAReplaceArray(Vec,PetscScalar*);
+PETSC_EXTERN PetscErrorCode VecCUDAPlaceArray(Vec,const PetscScalar[]);
+PETSC_EXTERN PetscErrorCode VecCUDAReplaceArray(Vec,const PetscScalar[]);
 PETSC_EXTERN PetscErrorCode VecCUDAResetArray(Vec);
 
 /*MC
