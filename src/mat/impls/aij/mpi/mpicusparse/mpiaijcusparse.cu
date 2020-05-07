@@ -185,8 +185,8 @@ PetscErrorCode MatDestroy_MPIAIJCUSPARSE(Mat A)
 
   PetscFunctionBegin;
   try {
-    ierr = MatCUSPARSEClearHandle(a->A);CHKERRQ(ierr);
-    ierr = MatCUSPARSEClearHandle(a->B);CHKERRQ(ierr);
+    if (a->A) { ierr = MatCUSPARSEClearHandle(a->A);CHKERRQ(ierr); }
+    if (a->B) { ierr = MatCUSPARSEClearHandle(a->B);CHKERRQ(ierr); }
     stat = cusparseDestroy(cusparseStruct->handle);CHKERRCUSPARSE(stat);
     if (cusparseStruct->stream) {
       err = cudaStreamDestroy(cusparseStruct->stream);CHKERRCUDA(err);
