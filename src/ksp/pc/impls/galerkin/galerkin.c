@@ -236,7 +236,7 @@ $    computeAsub(PC pc,Mat A, Mat Ap, Mat *cAP,void *ctx);
     Instead of providing this routine you can call PCGalerkinGetKSP() and then KSPSetOperators() to provide the submatrix,
           but that will not work for multiple KSPSolves with different matrices unless you call it for each solve.
 
-          This routine is called each time the outter matrix is changed. In the first call the Ap argument is NULL and the routine should create the
+          This routine is called each time the outer matrix is changed. In the first call the Ap argument is NULL and the routine should create the
           matrix and computes its values in cAp. On each subsequent call the routine should up the Ap matrix.
 
    Developer Notes:

@@ -1,6 +1,5 @@
-static char help[] = "\
-Solves the constant-coefficient 1D Heat equation with an Implicit   \n\
-Runge-Kutta method using MatKAIJ.                                   \n\
+static char help[] = "Solves the constant-coefficient 1D heat equation \n\
+with an Implicit Runge-Kutta method using MatKAIJ.                  \n\
                                                                     \n\
     du      d^2 u                                                   \n\
     --  = a ----- ; 0 <= x <= 1;                                    \n\
@@ -184,7 +183,7 @@ int main(int argc, char **argv)
   ierr = MatSetSizes(Identity,matie-matis,matie-matis,ctxt.imax,ctxt.imax);CHKERRQ(ierr);
   ierr = MatSetUp(Identity);CHKERRQ(ierr);
   for (i=matis; i<matie; i++) {
-    ierr= MatSetValues(Identity,1,&i,1,&i,&one,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(Identity,1,&i,1,&i,&one,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(Identity,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd  (Identity,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -369,7 +368,7 @@ static PetscErrorCode Assemble_AdvDiff(MPI_Comm comm,UserContext *user,Mat *J)
       col[1] = i;
       col[2] = i+1;
     }
-    ierr= MatSetValues(*J,1,&i,3,col,values,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(*J,1,&i,3,col,values,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd  (*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
