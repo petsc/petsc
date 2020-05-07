@@ -1454,13 +1454,15 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqDense(Mat A,Mat B,PetscReal fill,Mat
 PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
 {
   Mat_SeqAIJ        *a=(Mat_SeqAIJ*)A->data;
-  Mat_SeqDense      *bd = (Mat_SeqDense*)B->data;
+  Mat_SeqDense      *bd=(Mat_SeqDense*)B->data;
+  Mat_SeqDense      *cd=(Mat_SeqDense*)C->data;
   PetscErrorCode    ierr;
-  PetscScalar       *c,r1,r2,r3,r4,*c1,*c2,*c3,*c4,aatmp;
+  PetscScalar       *c,r1,r2,r3,r4,*c1,*c2,*c3,*c4;
   const PetscScalar *aa,*b,*b1,*b2,*b3,*b4,*av;
   const PetscInt    *aj;
   PetscInt          cm=C->rmap->n,cn=B->cmap->n,bm=bd->lda,am=A->rmap->n;
-  PetscInt          am4=4*am,bm4=4*bm,col,i,j,n,ajtmp;
+  PetscInt          clda=cd->lda;
+  PetscInt          am4=4*clda,bm4=4*bm,col,i,j,n;
 
   PetscFunctionBegin;
   if (!cm || !cn) PetscFunctionReturn(0);
@@ -1468,15 +1470,16 @@ PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
   ierr = MatDenseGetArray(C,&c);CHKERRQ(ierr);
   ierr = MatDenseGetArrayRead(B,&b);CHKERRQ(ierr);
   b1 = b; b2 = b1 + bm; b3 = b2 + bm; b4 = b3 + bm;
-  c1 = c; c2 = c1 + am; c3 = c2 + am; c4 = c3 + am;
-  for (col=0; col<cn-4; col += 4) {  /* over columns of C */
-    for (i=0; i<am; i++) {        /* over rows of C in those columns */
+  c1 = c; c2 = c1 + clda; c3 = c2 + clda; c4 = c3 + clda;
+  for (col=0; col<(cn/4)*4; col += 4) {  /* over columns of C */
+    for (i=0; i<am; i++) {        /* over rows of A in those columns */
       r1 = r2 = r3 = r4 = 0.0;
       n  = a->i[i+1] - a->i[i];
       aj = a->j + a->i[i];
       aa = av + a->i[i];
       for (j=0; j<n; j++) {
-        aatmp = aa[j]; ajtmp = aj[j];
+        const PetscScalar aatmp = aa[j];
+        const PetscInt    ajtmp = aj[j];
         r1 += aatmp*b1[ajtmp];
         r2 += aatmp*b2[ajtmp];
         r3 += aatmp*b3[ajtmp];
@@ -1502,7 +1505,7 @@ PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
       c1[i] += r1;
     }
     b1 += bm;
-    c1 += am;
+    c1 += clda;
   }
   ierr = PetscLogFlops(cn*(2.0*a->nz));CHKERRQ(ierr);
   ierr = MatDenseRestoreArray(C,&c);CHKERRQ(ierr);
