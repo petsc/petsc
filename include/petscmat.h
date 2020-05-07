@@ -1708,8 +1708,9 @@ PETSC_EXTERN PetscErrorCode MatKAIJGetTRead(Mat,PetscInt*,PetscInt*,const PetscS
 PETSC_EXTERN PetscErrorCode MatKAIJRestoreT(Mat,PetscScalar**);
 PETSC_EXTERN PetscErrorCode MatKAIJRestoreTRead(Mat,const PetscScalar**);
 PETSC_EXTERN PetscErrorCode MatKAIJSetAIJ(Mat,Mat);
-PETSC_EXTERN PetscErrorCode MatKAIJSetS(Mat,PetscInt,PetscInt,const PetscScalar []);
-PETSC_EXTERN PetscErrorCode MatKAIJSetT(Mat,PetscInt,PetscInt,const PetscScalar []);
+PETSC_EXTERN PetscErrorCode MatKAIJSetS(Mat,PetscInt,PetscInt,const PetscScalar[]);
+PETSC_EXTERN PetscErrorCode MatKAIJSetT(Mat,PetscInt,PetscInt,const PetscScalar[]);
+PETSC_EXTERN PetscErrorCode MatKAIJGetScaledIdentity(Mat,PetscBool*);
 
 PETSC_EXTERN PetscErrorCode MatDiagonalScaleLocal(Mat,Vec);
 

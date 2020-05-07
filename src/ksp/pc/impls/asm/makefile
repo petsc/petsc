@@ -1,11 +1,11 @@
--include ../petscdir.mk
+-include ../../../../../petscdir.mk
 ALL: lib
 
 CFLAGS    =
 FFLAGS    =
 SOURCEC   = asm.c
 SOURCEF   =
-SOURCEH   =
+SOURCEH   = asm.h
 LIBBASE   = libpetscksp
 DIRS      =
 MANSEC    = KSP

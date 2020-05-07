@@ -10,7 +10,7 @@ PETSC_EXTERN PetscLogEvent PC_HPDDM_Next;
 
 namespace HPDDM {
   template<class K> class Schwarz;       /* forward definitions of two needed HPDDM classes */
-  struct PETScOperator;
+  class PETScOperator;
 }
 
 struct PC_HPDDM_Level {

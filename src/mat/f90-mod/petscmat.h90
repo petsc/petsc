@@ -12,7 +12,6 @@
         End Subroutine
       End Interface
 
-
       Interface
         Subroutine MatFDColoringRestorePerturbedColumnsF90(i,array,ierr)
           use petscmatdef
@@ -587,11 +586,29 @@
         End Subroutine
       End Interface
 
-
       Interface
         Subroutine MatDenseRestoreArrayF90(v,array,ierr)
           use petscmatdef
           PetscScalar, pointer :: array(:,:)
+          PetscErrorCode ierr
+          Mat     v
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine MatDenseGetColumnF90(v,col,array,ierr)
+          use petscmatdef
+          PetscScalar, pointer :: array(:)
+          PetscErrorCode ierr
+          Mat     v
+          PetscInt col
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine MatDenseRestoreColumnF90(v,array,ierr)
+          use petscmatdef
+          PetscScalar, pointer :: array(:)
           PetscErrorCode ierr
           Mat     v
         End Subroutine
@@ -883,10 +900,9 @@
        IS, intent(out) :: b
        PetscErrorCode :: ierr
       end subroutine
-     
+
       end interface
 
 ! revert MAT_INFO_SIZE and MAT_FACTORINFO_SIZE defines
 #undef MAT_INFO_SIZE
 #undef MAT_FACTORINFO_SIZE
-

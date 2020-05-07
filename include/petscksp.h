@@ -231,6 +231,7 @@ PETSC_EXTERN PetscErrorCode KSPFETIDPSetPressureOperator(KSP,Mat);
 
 PETSC_EXTERN PetscErrorCode KSPHPDDMSetDeflationSpace(KSP,Mat);
 PETSC_EXTERN PetscErrorCode KSPHPDDMGetDeflationSpace(KSP,Mat*);
+PETSC_EXTERN PetscErrorCode KSPHPDDMMatSolve(KSP,Mat,Mat);
 
 /*E
     KSPGMRESCGSRefinementType - How the classical (unmodified) Gram-Schmidt is performed.

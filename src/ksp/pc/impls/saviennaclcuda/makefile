@@ -1,4 +1,4 @@
--include ../petscdir.mk
+-include ../../../../../petscdir.mk
 #requirespackage 'PETSC_HAVE_VIENNACL'
 #requiresdefine 'PETSC_HAVE_CUDA'
 ALL: lib
