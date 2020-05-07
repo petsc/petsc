@@ -1,4 +1,4 @@
--include ../petscdir.mk 
+-include ../../../../../../petscdir.mk
 ALL: lib
 
 CFLAGS    =

@@ -1,4 +1,4 @@
--include ../petscdir.mk
+-include ../../../../petscdir.mk
 CLFAGS          =
 FFLAGS	        =
 CPPFLAGS        =

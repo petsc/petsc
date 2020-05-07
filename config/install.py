@@ -214,6 +214,8 @@ class Installer(script.Script):
     elif not os.path.isdir(dst):
       raise shutil.Error('Destination is not a directory')
     errors = []
+    srclinks = []
+    dstlinks = []
     for name in names:
       srcname = os.path.join(src, name)
       dstname = os.path.join(dst, name)
@@ -224,9 +226,23 @@ class Installer(script.Script):
         elif os.path.isdir(srcname) and recurse and not os.path.basename(srcname) in exclude:
           copies.extend(self.copytree(srcname, dstname, symlinks,exclude = exclude, exclude_ext = exclude_ext))
         elif os.path.isfile(srcname) and not os.path.basename(srcname) in exclude and os.path.splitext(name)[1] not in exclude_ext :
-          copyFunc(srcname, dstname)
-          copies.append((srcname, dstname))
+          if os.path.islink(srcname):
+            srclinks.append(srcname)
+            dstlinks.append(dstname)
+          else:
+            copyFunc(srcname, dstname)
+            copies.append((srcname, dstname))
         # XXX What about devices, sockets etc.?
+      except (IOError, os.error) as why:
+        errors.append((srcname, dstname, str(why)))
+      # catch the Error from the recursive copytree so that we can
+      # continue with other files
+      except shutil.Error as err:
+        errors.extend((srcname,dstname,str(err.args[0])))
+    for srcname, dstname in zip(srclinks, dstlinks):
+      try:
+        copyFunc(srcname, dstname)
+        copies.append((srcname, dstname))
       except (IOError, os.error) as why:
         errors.append((srcname, dstname, str(why)))
       # catch the Error from the recursive copytree so that we can
