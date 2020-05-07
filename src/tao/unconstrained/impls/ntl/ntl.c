@@ -622,8 +622,8 @@ static PetscErrorCode TaoSetUp_NTL(Tao tao)
   if (!tl->W) { ierr = VecDuplicate(tao->solution, &tl->W);CHKERRQ(ierr);}
   if (!tl->Xold) { ierr = VecDuplicate(tao->solution, &tl->Xold);CHKERRQ(ierr);}
   if (!tl->Gold) { ierr = VecDuplicate(tao->solution, &tl->Gold);CHKERRQ(ierr);}
-  tl->bfgs_pre = 0;
-  tl->M = 0;
+  tl->bfgs_pre = NULL;
+  tl->M = NULL;
   PetscFunctionReturn(0);
 }
 

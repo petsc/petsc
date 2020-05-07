@@ -210,7 +210,7 @@ static PetscErrorCode TaoSetup_IPM(Tao tao)
 
   PetscFunctionBegin;
   ipmP->nb = ipmP->mi = ipmP->me = 0;
-  ipmP->K=0;
+  ipmP->K = NULL;
   ierr = VecGetSize(tao->solution,&ipmP->n);CHKERRQ(ierr);
   if (!tao->gradient) {
     ierr = VecDuplicate(tao->solution, &tao->gradient);CHKERRQ(ierr);
@@ -254,7 +254,7 @@ static PetscErrorCode IPMInitializeBounds(Tao tao)
   MPI_Comm       comm;
 
   PetscFunctionBegin;
-  cind=xind=ucind=uceind=stepind=0;
+  cind=xind=ucind=uceind=stepind=NULL;
   ipmP->mi=0;
   ipmP->nxlb=0;
   ipmP->nxub=0;

@@ -327,11 +327,11 @@ PETSC_EXTERN PetscErrorCode TaoCreate_OWLQN(Tao tao)
   tao->ops->destroy = TaoDestroy_OWLQN;
 
   ierr = PetscNewLog(tao,&lmP);CHKERRQ(ierr);
-  lmP->D = 0;
-  lmP->M = 0;
-  lmP->GV = 0;
-  lmP->Xold = 0;
-  lmP->Gold = 0;
+  lmP->D = NULL;
+  lmP->M = NULL;
+  lmP->GV = NULL;
+  lmP->Xold = NULL;
+  lmP->Gold = NULL;
   lmP->lambda = 1.0;
 
   tao->data = (void*)lmP;

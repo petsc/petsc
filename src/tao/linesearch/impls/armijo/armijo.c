@@ -316,8 +316,8 @@ PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_Armijo(TaoLineSearch ls)
   armP->nondescending=PETSC_FALSE;
   ls->data = (void*)armP;
   ls->initstep=1.0;
-  ls->ops->setup=0;
-  ls->ops->apply=TaoLineSearchApply_Armijo;
+  ls->ops->setup = NULL;
+  ls->ops->apply = TaoLineSearchApply_Armijo;
   ls->ops->view = TaoLineSearchView_Armijo;
   ls->ops->destroy = TaoLineSearchDestroy_Armijo;
   ls->ops->reset = TaoLineSearchReset_Armijo;

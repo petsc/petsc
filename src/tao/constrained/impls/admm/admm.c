@@ -795,11 +795,11 @@ PETSC_EXTERN PetscErrorCode TaoCreate_ADMM(Tao tao)
   am->const_norm      = 0;
   am->resnorm         = 0;
   am->dualres         = 0;
-  am->ops->regobjgrad = 0;
-  am->ops->reghess    = 0;
+  am->ops->regobjgrad = NULL;
+  am->ops->reghess    = NULL;
   am->gamma           = 1;
-  am->regobjgradP     = 0;
-  am->reghessP        = 0;
+  am->regobjgradP     = NULL;
+  am->reghessP        = NULL;
   am->gatol_admm      = 1e-8;
   am->catol_admm      = 0;
   am->Hxchange        = PETSC_TRUE;
