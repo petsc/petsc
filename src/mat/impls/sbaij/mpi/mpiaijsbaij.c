@@ -26,7 +26,11 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPISBAIJ(Mat A, MatType newtype,Ma
 
     ierr = MatMarkDiagonal_SeqAIJ(mpimat->A);CHKERRQ(ierr);
     for (i=0; i<lm/bs; i++) {
-      d_nnz[i] = (Aa->i[i*bs+1] - Aa->diag[i*bs])/bs;
+      if (Aa->i[i*bs+1] == Aa->diag[i*bs]) { /* misses diagonal entry */
+        d_nnz[i] = (Aa->i[i*bs+1] - Aa->i[i*bs])/bs;
+      } else {
+        d_nnz[i] = (Aa->i[i*bs+1] - Aa->diag[i*bs])/bs;
+      }
       o_nnz[i] = (Ba->i[i*bs+1] - Ba->i[i*bs])/bs;
     }
 
