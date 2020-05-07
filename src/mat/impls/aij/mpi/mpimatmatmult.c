@@ -139,7 +139,7 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,Mat C)
     cdnz = cd->i[i+1] - cd->i[i];
     conz = co->i[i+1] - co->i[i];
 
-    /* 1st off-diagoanl part of C */
+    /* 1st off-diagonal part of C */
     ca = coa + co->i[i];
     k  = 0;
     for (k0=0; k0<conz; k0++) {
@@ -155,7 +155,7 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,Mat C)
       apa[apJ[k++]] = 0.0;
     }
 
-    /* 2nd off-diagoanl part of C */
+    /* 2nd off-diagonal part of C */
     ca = coa + co->i[i];
     for (; k0<conz; k0++) {
       ca[k0]      = apa[apJ[k]];
@@ -559,6 +559,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal fill,Mat
   ierr = PetscContainerSetUserDestroy(container,MatMPIAIJ_MPIDenseDestroy);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)C,"workB",(PetscObject)container);CHKERRQ(ierr);
   ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
+  ierr = MatSetOption(C,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   C->ops->matmultnumeric = MatMatMultNumeric_MPIAIJ_MPIDense;
@@ -819,7 +820,7 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
     cdnz = cd->i[i+1] - cd->i[i];
     conz = co->i[i+1] - co->i[i];
 
-    /* 1st off-diagoanl part of C */
+    /* 1st off-diagonal part of C */
     ca = coa + co->i[i];
     k  = 0;
     for (k0=0; k0<conz; k0++) {
@@ -837,7 +838,7 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
       k++;
     }
 
-    /* 2nd off-diagoanl part of C */
+    /* 2nd off-diagonal part of C */
     ca = coa + co->i[i];
     for (; k0<conz; k0++) {
       ca[k0]        = apa_sparse[k];

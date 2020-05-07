@@ -2726,7 +2726,7 @@ PetscErrorCode MatMatMultNumeric_SeqBAIJ_SeqDense(Mat A,Mat B,Mat C)
 {
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
   Mat_SeqDense      *bd = (Mat_SeqDense*)B->data;
-  Mat_SeqDense      *cd = (Mat_SeqDense*)B->data;
+  Mat_SeqDense      *cd = (Mat_SeqDense*)C->data;
   PetscInt          cm=cd->lda,cn=B->cmap->n,bm=bd->lda;
   PetscInt          mbs,i,bs=A->rmap->bs,j,n,bs2=a->bs2;
   PetscBLASInt      bbs,bcn,bbm,bcm;

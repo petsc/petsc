@@ -14,8 +14,7 @@
       KSP             ksp
       PetscInt        i,j,nmat
       PetscViewer     viewer
-      character*(128) name
-      character*(128) dir
+      character*(128) dir,name
       character*(8)   fmt
       character(3)    cmat
       PetscBool       flg,reset
@@ -49,7 +48,6 @@
         call PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,viewer,ierr);CHKERRA(ierr)
         call VecLoad(b,viewer,ierr);CHKERRA(ierr)
         call PetscViewerDestroy(viewer,ierr);CHKERRA(ierr)
-        call KSPSetOperators(ksp,A,A,ierr);CHKERRA(ierr)
         call KSPSetFromOptions(ksp,ierr);CHKERRA(ierr)
         call KSPSolve(ksp,b,x,ierr);CHKERRA(ierr)
 #if defined(PETSC_HAVE_HPDDM)
@@ -81,14 +79,14 @@
 !      output_file: output/ex75_1.out
 !      nsize: 1
 !      requires: hpddm datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
-!      args: -nmat 1 -pc_type none -ksp_converged_reason -ksp_type {{gmres hpddm}shared ouput} -ksp_max_it 1000 -ksp_gmres_restart 1000 -ksp_rtol 1e-10 -load_dir ${DATAFILESPATH}/matrices/hpddm/GCRODR
+!      args: -nmat 1 -pc_type none -ksp_converged_reason -ksp_type {{gmres hpddm}shared output} -ksp_max_it 1000 -ksp_gmres_restart 1000 -ksp_rtol 1e-10 -load_dir ${DATAFILESPATH}/matrices/hpddm/GCRODR
 !
 !   test:
 !      requires: hpddm datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
 !      suffix: 1_icc
 !      output_file: output/ex75_1_icc.out
 !      nsize: 1
-!      args: -nmat 1 -pc_type icc -ksp_converged_reason -ksp_type {{gmres hpddm}shared ouput} -ksp_max_it 1000 -ksp_gmres_restart 1000 -ksp_rtol 1e-10 -load_dir ${DATAFILESPATH}/matrices/hpddm/GCRODR
+!      args: -nmat 1 -pc_type icc -ksp_converged_reason -ksp_type {{gmres hpddm}shared output} -ksp_max_it 1000 -ksp_gmres_restart 1000 -ksp_rtol 1e-10 -load_dir ${DATAFILESPATH}/matrices/hpddm/GCRODR
 !
 !   testset:
 !      requires: hpddm datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)

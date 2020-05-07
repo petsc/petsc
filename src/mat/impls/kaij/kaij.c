@@ -328,7 +328,7 @@ PetscErrorCode MatKAIJSetAIJ(Mat A,Mat B)
 .  q - the number of columns in S
 -  S - the S matrix, in form of a scalar array in column-major format
 
-   Notes: The dimensions p and q must match those of the transformation matrix T associated with the KAIJ matrix. 
+   Notes: The dimensions p and q must match those of the transformation matrix T associated with the KAIJ matrix.
    The S matrix is copied, so the user can destroy this array.
 
    Level: Advanced
@@ -353,6 +353,47 @@ PetscErrorCode MatKAIJSetS(Mat A,PetscInt p,PetscInt q,const PetscScalar S[])
 }
 
 /*@C
+   MatKAIJGetScaledIdentity - Check if both S and T are scaled identities.
+
+   Logically Collective.
+
+   Input Parameter:
+.  A - the KAIJ matrix
+
+  Output Parameter:
+.  identity - the Boolean value
+
+   Level: Advanced
+
+.seealso: MatKAIJGetS(), MatKAIJGetT()
+@*/
+PetscErrorCode MatKAIJGetScaledIdentity(Mat A,PetscBool* identity)
+{
+  Mat_SeqKAIJ *a = (Mat_SeqKAIJ*)A->data;
+  PetscInt    i,j;
+
+  PetscFunctionBegin;
+  if (a->p != a->q) {
+    *identity = PETSC_FALSE;
+    PetscFunctionReturn(0);
+  } else *identity = PETSC_TRUE;
+  if (!a->isTI || a->S) {
+    for (i=0; i<a->p && *identity; i++) {
+      for (j=0; j<a->p && *identity; j++) {
+        if (i != j) {
+          if(a->S && PetscAbsScalar(a->S[i+j*a->p]) > PETSC_SMALL) *identity = PETSC_FALSE;
+          if(a->T && PetscAbsScalar(a->T[i+j*a->p]) > PETSC_SMALL) *identity = PETSC_FALSE;
+        } else {
+          if(a->S && PetscAbsScalar(a->S[i*(a->p+1)]-a->S[0]) > PETSC_SMALL) *identity = PETSC_FALSE;
+          if(a->T && PetscAbsScalar(a->T[i*(a->p+1)]-a->T[0]) > PETSC_SMALL) *identity = PETSC_FALSE;
+        }
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@C
    MatKAIJSetT - Set the transformation matrix T associated with the KAIJ matrix
 
    Logically Collective; the entire T is stored independently on all processes.
@@ -363,7 +404,7 @@ PetscErrorCode MatKAIJSetS(Mat A,PetscInt p,PetscInt q,const PetscScalar S[])
 .  q - the number of columns in S
 -  T - the T matrix, in form of a scalar array in column-major format
 
-   Notes: The dimensions p and q must match those of the shift matrix S associated with the KAIJ matrix. 
+   Notes: The dimensions p and q must match those of the shift matrix S associated with the KAIJ matrix.
    The T matrix is copied, so the user can destroy this array.
 
    Level: Advanced
@@ -465,7 +506,7 @@ PetscErrorCode MatSetUp_KAIJ(Mat A)
         }
       }
     } else T = a->T;
-    ierr = MatCreateKAIJ(mpiaij->A,a->p,a->q,a->S,T,&a->AIJ);CHKERRQ(ierr); 
+    ierr = MatCreateKAIJ(mpiaij->A,a->p,a->q,a->S,T,&a->AIJ);CHKERRQ(ierr);
     ierr = MatCreateKAIJ(mpiaij->B,a->p,a->q,NULL,T,&a->OAIJ);CHKERRQ(ierr);
     if (a->isTI) {
       ierr = PetscFree(T);CHKERRQ(ierr);
@@ -599,7 +640,7 @@ PetscErrorCode MatMultAdd_SeqKAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 
   PetscFunctionBegin;
   if (!yy) {
-    ierr = VecSet(zz,0.0);CHKERRQ(ierr); 
+    ierr = VecSet(zz,0.0);CHKERRQ(ierr);
   } else {
     ierr = VecCopy(yy,zz);CHKERRQ(ierr);
   }
@@ -929,7 +970,7 @@ PetscErrorCode MatSOR_SeqKAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
       if (xb == b) {
         for (i=m-1; i>=0; i--) {
           ierr = PetscMemcpy(w,b+i2,bs*sizeof(PetscScalar));CHKERRQ(ierr);
-  
+
           v  = aa + ai[i];
           vi = aj + ai[i];
           nz = diag[i] - ai[i];
@@ -1124,7 +1165,7 @@ PetscErrorCode MatGetRow_SeqKAIJ(Mat A,PetscInt row,PetscInt *ncols,PetscInt **c
     }
     if (S) {
       for (j=0; j<q; j++) {
-        idx[c*q+j] = r*q+j; 
+        idx[c*q+j] = r*q+j;
         v[c*q+j]  += S[s+j*p];
       }
     }
@@ -1228,7 +1269,7 @@ PetscErrorCode MatGetRow_MPIKAIJ(Mat A,PetscInt row,PetscInt *ncols,PetscInt **c
     }
     if (S) {
       for (j=0; j<q; j++) {
-        idx[c*q+j] = (r+rstart/p)*q+j; 
+        idx[c*q+j] = (r+rstart/p)*q+j;
         v[c*q+j]  += S[s+j*p];
       }
     }
@@ -1273,9 +1314,9 @@ PetscErrorCode  MatCreateSubMatrix_KAIJ(Mat mat,IS isrow,IS iscol,MatReuse cll,M
     A is an AIJ  (n \times n) matrix
     I is the identity matrix
   The resulting matrix is (np \times nq)
-  
+
   S and T are always stored independently on all processes as PetscScalar arrays in column-major format.
-  
+
   Collective
 
   Input Parameters:
@@ -1325,7 +1366,7 @@ PetscErrorCode  MatCreateKAIJ(Mat A,PetscInt p,PetscInt q,const PetscScalar S[],
     A is an AIJ  (n \times n) matrix,
     and I is the identity matrix.
   The resulting matrix is (np \times nq).
-  
+
   S and T are always stored independently on all processes as PetscScalar arrays in column-major format.
 
   Notes:

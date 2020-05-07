@@ -9,32 +9,8 @@
        n_local_true - actual number of subdomains on this processor
        n_local = maximum over all processors of n_local_true
 */
-#include <petsc/private/pcimpl.h>     /*I "petscpc.h" I*/
-#include <petscdm.h>
 
-typedef struct {
-  PetscInt   n, n_local, n_local_true;
-  PetscInt   overlap;             /* overlap requested by user */
-  KSP        *ksp;                /* linear solvers for each block */
-  VecScatter restriction;         /* mapping from global to overlapping (process) subdomain*/
-  VecScatter *lrestriction;       /* mapping from subregion to overlapping (process) subdomain */
-  VecScatter *lprolongation;      /* mapping from non-overlapping subregion to overlapping (process) subdomain; used for restrict additive version of algorithms */
-  Vec        lx, ly;              /* work vectors */
-  Vec        *x,*y;               /* work vectors */
-  IS         lis;                 /* index set that defines each overlapping multiplicative (process) subdomain */
-  IS         *is;                 /* index set that defines each overlapping subdomain */
-  IS         *is_local;           /* index set that defines each non-overlapping subdomain, may be NULL */
-  Mat        *mat,*pmat;          /* mat is not currently used */
-  PCASMType  type;                /* use reduced interpolation, restriction or both */
-  PetscBool  type_set;            /* if user set this value (so won't change it for symmetric problems) */
-  PetscBool  same_local_solves;   /* flag indicating whether all local solvers are same */
-  PetscBool  sort_indices;        /* flag to sort subdomain indices */
-  PetscBool  dm_subdomains;       /* whether DM is allowed to define subdomains */
-  PCCompositeType loctype;        /* the type of composition for local solves */
-  MatType    sub_mat_type;        /* the type of Mat used for subdomain solves (can be MATSAME or NULL) */
-  /* For multiplicative solve */
-  Mat       *lmats;               /* submatrices for overlapping multiplicative (process) subdomain */
-} PC_ASM;
+#include <../src/ksp/pc/impls/asm/asm.h> /*I "petscpc.h" I*/
 
 static PetscErrorCode PCView_ASM(PC pc,PetscViewer viewer)
 {
@@ -336,7 +312,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
     }
   }
 
-  if(!pc->setupcalled){
+  if (!pc->setupcalled) {
     /* Create the local work vectors (from the local matrices) and scatter contexts */
     ierr = MatCreateVecs(pc->pmat,&vec,0);CHKERRQ(ierr);
 
@@ -378,7 +354,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
       ierr = VecScatterCreate(osm->ly,isll,osm->y[i],isl,&osm->lrestriction[i]);CHKERRQ(ierr);
       ierr = ISDestroy(&isll);CHKERRQ(ierr);
       ierr = ISDestroy(&isl);CHKERRQ(ierr);
-      if (osm->lprolongation) { /* generate a scatter from y[i] to ly picking only the the non-overalapping is_local[i] entries */
+      if (osm->lprolongation) { /* generate a scatter from y[i] to ly picking only the the non-overlapping is_local[i] entries */
         ISLocalToGlobalMapping ltog;
         IS                     isll,isll_local;
         const PetscInt         *idx_local;
@@ -476,9 +452,9 @@ static PetscErrorCode PCApply_ASM(PC pc,Vec x,Vec y)
     reverse = SCATTER_REVERSE_LOCAL;
   }
 
-  if(osm->loctype == PC_COMPOSITE_MULTIPLICATIVE || osm->loctype == PC_COMPOSITE_ADDITIVE){
+  if (osm->loctype == PC_COMPOSITE_MULTIPLICATIVE || osm->loctype == PC_COMPOSITE_ADDITIVE) {
     /* zero the global and the local solutions */
-    ierr = VecZeroEntries(y);CHKERRQ(ierr);
+    ierr = VecSet(y, 0.0);CHKERRQ(ierr);
     ierr = VecSet(osm->ly, 0.0);CHKERRQ(ierr);
 
     /* Copy the global RHS to local RHS including the ghost nodes */
@@ -487,7 +463,7 @@ static PetscErrorCode PCApply_ASM(PC pc,Vec x,Vec y)
 
     /* Restrict local RHS to the overlapping 0-block RHS */
     ierr = VecScatterBegin(osm->lrestriction[0], osm->lx, osm->x[0], INSERT_VALUES, forward);CHKERRQ(ierr);
-    ierr = VecScatterEnd(osm->lrestriction[0], osm->lx, osm->x[0],  INSERT_VALUES, forward);CHKERRQ(ierr);
+    ierr = VecScatterEnd(osm->lrestriction[0], osm->lx, osm->x[0], INSERT_VALUES, forward);CHKERRQ(ierr);
 
     /* do the local solves */
     for (i = 0; i < n_local_true; ++i) {
@@ -498,11 +474,11 @@ static PetscErrorCode PCApply_ASM(PC pc,Vec x,Vec y)
       ierr = KSPCheckSolve(osm->ksp[i],pc,osm->y[i]);CHKERRQ(ierr);
       ierr = PetscLogEventEnd(PC_ApplyOnBlocks,osm->ksp[i],osm->x[i],osm->y[i],0);CHKERRQ(ierr);
 
-      if (osm->lprolongation) { /* interpolate the non-overalapping i-block solution to the local solution (only for restrictive additive) */
+      if (osm->lprolongation) { /* interpolate the non-overlapping i-block solution to the local solution (only for restrictive additive) */
         ierr = VecScatterBegin(osm->lprolongation[i], osm->y[i], osm->ly, ADD_VALUES, forward);CHKERRQ(ierr);
         ierr = VecScatterEnd(osm->lprolongation[i], osm->y[i], osm->ly, ADD_VALUES, forward);CHKERRQ(ierr);
       }
-      else{ /* interpolate the overalapping i-block solution to the local solution */
+      else { /* interpolate the overlapping i-block solution to the local solution */
         ierr = VecScatterBegin(osm->lrestriction[i], osm->y[i], osm->ly, ADD_VALUES, reverse);CHKERRQ(ierr);
         ierr = VecScatterEnd(osm->lrestriction[i], osm->y[i], osm->ly, ADD_VALUES, reverse);CHKERRQ(ierr);
       }
@@ -520,10 +496,10 @@ static PetscErrorCode PCApply_ASM(PC pc,Vec x,Vec y)
       }
     }
     /* Add the local solution to the global solution including the ghost nodes */
-    ierr = VecScatterBegin(osm->restriction, osm->ly, y,  ADD_VALUES, reverse);CHKERRQ(ierr);
-    ierr = VecScatterEnd(osm->restriction,  osm->ly, y, ADD_VALUES, reverse);CHKERRQ(ierr);
-  }else{
-    SETERRQ1(PetscObjectComm((PetscObject) pc), PETSC_ERR_ARG_WRONG, "Invalid local composition type: %s", PCCompositeTypes[osm->loctype]);
+    ierr = VecScatterBegin(osm->restriction, osm->ly, y, ADD_VALUES, reverse);CHKERRQ(ierr);
+    ierr = VecScatterEnd(osm->restriction, osm->ly, y, ADD_VALUES, reverse);CHKERRQ(ierr);
+  } else {
+    SETERRQ1(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Invalid local composition type: %s", PCCompositeTypes[osm->loctype]);
   }
   PetscFunctionReturn(0);
 }
@@ -552,7 +528,7 @@ static PetscErrorCode PCApplyTranspose_ASM(PC pc,Vec x,Vec y)
   if (!(osm->type & PC_ASM_RESTRICT)) reverse = SCATTER_REVERSE_LOCAL;
 
   /* zero the global and the local solutions */
-  ierr = VecZeroEntries(y);CHKERRQ(ierr);
+  ierr = VecSet(y, 0.0);CHKERRQ(ierr);
   ierr = VecSet(osm->ly, 0.0);CHKERRQ(ierr);
 
   /* Copy the global RHS to local RHS including the ghost nodes */
@@ -561,7 +537,7 @@ static PetscErrorCode PCApplyTranspose_ASM(PC pc,Vec x,Vec y)
 
   /* Restrict local RHS to the overlapping 0-block RHS */
   ierr = VecScatterBegin(osm->lrestriction[0], osm->lx, osm->x[0], INSERT_VALUES, forward);CHKERRQ(ierr);
-  ierr = VecScatterEnd(osm->lrestriction[0], osm->lx, osm->x[0],  INSERT_VALUES, forward);CHKERRQ(ierr);
+  ierr = VecScatterEnd(osm->lrestriction[0], osm->lx, osm->x[0], INSERT_VALUES, forward);CHKERRQ(ierr);
 
   /* do the local solves */
   for (i = 0; i < n_local_true; ++i) {
@@ -572,11 +548,10 @@ static PetscErrorCode PCApplyTranspose_ASM(PC pc,Vec x,Vec y)
     ierr = KSPCheckSolve(osm->ksp[i],pc,osm->y[i]);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(PC_ApplyOnBlocks,osm->ksp[i],osm->x[i],osm->y[i],0);CHKERRQ(ierr);
 
-    if (osm->lprolongation) { /* interpolate the non-overalapping i-block solution to the local solution */
-     ierr = VecScatterBegin(osm->lprolongation[i], osm->y[i], osm->ly, ADD_VALUES, forward);CHKERRQ(ierr);
-     ierr = VecScatterEnd(osm->lprolongation[i], osm->y[i], osm->ly, ADD_VALUES, forward);CHKERRQ(ierr);
-    }
-    else{ /* interpolate the overalapping i-block solution to the local solution */
+    if (osm->lprolongation) { /* interpolate the non-overlapping i-block solution to the local solution */
+      ierr = VecScatterBegin(osm->lprolongation[i], osm->y[i], osm->ly, ADD_VALUES, forward);CHKERRQ(ierr);
+      ierr = VecScatterEnd(osm->lprolongation[i], osm->y[i], osm->ly, ADD_VALUES, forward);CHKERRQ(ierr);
+    } else { /* interpolate the overlapping i-block solution to the local solution */
       ierr = VecScatterBegin(osm->lrestriction[i], osm->y[i], osm->ly, ADD_VALUES, reverse);CHKERRQ(ierr);
       ierr = VecScatterEnd(osm->lrestriction[i], osm->y[i], osm->ly, ADD_VALUES, reverse);CHKERRQ(ierr);
     }
@@ -588,8 +563,8 @@ static PetscErrorCode PCApplyTranspose_ASM(PC pc,Vec x,Vec y)
     }
   }
   /* Add the local solution to the global solution including the ghost nodes */
-  ierr = VecScatterBegin(osm->restriction, osm->ly, y,  ADD_VALUES, reverse);CHKERRQ(ierr);
-  ierr = VecScatterEnd(osm->restriction,  osm->ly, y, ADD_VALUES, reverse);CHKERRQ(ierr);
+  ierr = VecScatterBegin(osm->restriction, osm->ly, y, ADD_VALUES, reverse);CHKERRQ(ierr);
+  ierr = VecScatterEnd(osm->restriction, osm->ly, y, ADD_VALUES, reverse);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 
@@ -694,7 +669,7 @@ static PetscErrorCode PCSetFromOptions_ASM(PetscOptionItems *PetscOptionsObject,
   ierr = PetscOptionsEnum("-pc_asm_local_type","Type of local solver composition","PCASMSetLocalType",PCCompositeTypes,(PetscEnum)osm->loctype,(PetscEnum*)&loctype,&flg);CHKERRQ(ierr);
   if (flg) {ierr = PCASMSetLocalType(pc,loctype);CHKERRQ(ierr); }
   ierr = PetscOptionsFList("-pc_asm_sub_mat_type","Subsolve Matrix Type","PCASMSetSubMatType",MatList,NULL,sub_mat_type,256,&flg);CHKERRQ(ierr);
-  if(flg){
+  if (flg) {
     ierr = PCASMSetSubMatType(pc,sub_mat_type);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);

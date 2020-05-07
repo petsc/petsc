@@ -1,4 +1,3 @@
-
 #if !defined(__BJACOBI_H)
 #define __BJACOBI_H
 /*
@@ -48,5 +47,3 @@ typedef struct {
   PetscSubcomm psubcomm;
 } PC_BJacobi_Multiproc;
 #endif
-
-

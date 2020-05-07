@@ -183,7 +183,6 @@ static PetscErrorCode PCSetFromOptions_HPDDM(PetscOptionItems *PetscOptionsObjec
 {
   PC_HPDDM       *data = (PC_HPDDM*)pc->data;
   PC_HPDDM_Level **levels = data->levels;
-  MPI_Comm       comm;
   char           prefix[256];
   int            i = 1;
   PetscMPIInt    size, previous;
@@ -197,8 +196,7 @@ static PetscErrorCode PCSetFromOptions_HPDDM(PetscOptionItems *PetscOptionsObjec
     data->levels = levels;
   }
   ierr = PetscOptionsHead(PetscOptionsObject, "PCHPDDM options");CHKERRQ(ierr);
-  ierr = PetscObjectGetComm((PetscObject)pc, &comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc), &size);CHKERRQ(ierr);
   previous = size;
   while (i < PETSC_HPDDM_MAXLEVELS) {
     PetscInt p = 1;
@@ -519,7 +517,6 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
   std::vector<Vec>         initial;
   IS                       is[1], loc, uis = data->is;
   ISLocalToGlobalMapping   l2g;
-  MPI_Comm                 comm;
   char                     prefix[256];
   const char               *pcpre;
   const PetscScalar* const *ev;
@@ -532,9 +529,8 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
   if (!data->levels[0]) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not a single level allocated");
   ierr = PCGetOptionsPrefix(pc, &pcpre);CHKERRQ(ierr);
   ierr = PCGetOperators(pc, &A, &P);CHKERRQ(ierr);
-  ierr = PetscObjectGetComm((PetscObject)pc, &comm);CHKERRQ(ierr);
   if (!data->levels[0]->ksp) {
-    ierr = KSPCreate(comm, &data->levels[0]->ksp);CHKERRQ(ierr);
+    ierr = KSPCreate(PetscObjectComm((PetscObject)pc), &data->levels[0]->ksp);CHKERRQ(ierr);
     ierr = PetscSNPrintf(prefix, sizeof(prefix), "%spc_hpddm_%s_", pcpre ? pcpre : "", data->N > 1 ? "levels_1" : "coarse");CHKERRQ(ierr);
     ierr = KSPSetOptionsPrefix(data->levels[0]->ksp, prefix);CHKERRQ(ierr);
     ierr = KSPSetType(data->levels[0]->ksp, KSPPREONLY);CHKERRQ(ierr);
@@ -563,7 +559,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
       ierr = PCDestroy(&data->levels[n]->pc);CHKERRQ(ierr);
     }
     /* check if some coarser levels are being reused */
-    ierr = MPI_Allreduce(MPI_IN_PLACE, &reused, 1, MPIU_INT, MPI_MAX, comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(MPI_IN_PLACE, &reused, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
     const int *addr = data->levels[0]->P ? data->levels[0]->P->getAddrLocal() : &HPDDM::i__0;
 
     if (addr != &HPDDM::i__0 && reused != data->N - 1) {
@@ -652,8 +648,8 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
       ierr = ISCreateStride(PETSC_COMM_SELF, n, 0, 1, &loc);CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingApplyIS(l2g, loc, &is[0]);CHKERRQ(ierr);
       ierr = ISDestroy(&loc);CHKERRQ(ierr);
-      /* the auxiliary Mat is _not_ the local Neumann matrix */
-      /* it is the local Neumann matrix augmented (with zeros) through MatIncreaseOverlap */
+      /* the auxiliary Mat is _not_ the local Neumann matrix                                */
+      /* it is the local Neumann matrix augmented (with zeros) through MatIncreaseOverlap() */
       data->Neumann = PETSC_FALSE;
     } else {
       is[0] = data->is;
