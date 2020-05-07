@@ -105,9 +105,9 @@ PETSC_EXTERN PetscErrorCode SNESCreate_KSPONLY(SNES snes)
   snes->ops->setup          = SNESSetUp_KSPONLY;
   snes->ops->solve          = SNESSolve_KSPONLY;
   snes->ops->destroy        = SNESDestroy_KSPONLY;
-  snes->ops->setfromoptions = 0;
-  snes->ops->view           = 0;
-  snes->ops->reset          = 0;
+  snes->ops->setfromoptions = NULL;
+  snes->ops->view           = NULL;
+  snes->ops->reset          = NULL;
 
   snes->usesksp = PETSC_TRUE;
   snes->usesnpc = PETSC_FALSE;

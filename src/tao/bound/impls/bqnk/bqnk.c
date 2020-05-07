@@ -103,9 +103,9 @@ static PetscErrorCode TaoSetFromOptions_BQNK(PetscOptionItems *PetscOptionsObjec
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"Quasi-Newton-Krylov method for bound constrained optimization");CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-tao_bqnk_init_type", "radius initialization type", "", BQNK_INIT, BQNK_INIT_TYPES, BQNK_INIT[bnk->init_type], &bnk->init_type, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-tao_bqnk_update_type", "radius update type", "", BNK_UPDATE, BNK_UPDATE_TYPES, BNK_UPDATE[bnk->update_type], &bnk->update_type, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-tao_bqnk_as_type", "active set estimation method", "", BNK_AS, BNK_AS_TYPES, BNK_AS[bnk->as_type], &bnk->as_type, 0);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-tao_bqnk_init_type", "radius initialization type", "", BQNK_INIT, BQNK_INIT_TYPES, BQNK_INIT[bnk->init_type], &bnk->init_type, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-tao_bqnk_update_type", "radius update type", "", BNK_UPDATE, BNK_UPDATE_TYPES, BNK_UPDATE[bnk->update_type], &bnk->update_type, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-tao_bqnk_as_type", "active set estimation method", "", BNK_AS, BNK_AS_TYPES, BNK_AS[bnk->as_type], &bnk->as_type, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_bqnk_sval", "(developer) Hessian perturbation starting value", "", bnk->sval, &bnk->sval,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_bqnk_imin", "(developer) minimum initial Hessian perturbation", "", bnk->imin, &bnk->imin,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_bqnk_imax", "(developer) maximum initial Hessian perturbation", "", bnk->imax, &bnk->imax,NULL);CHKERRQ(ierr);

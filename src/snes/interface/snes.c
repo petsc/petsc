@@ -610,18 +610,18 @@ static PetscErrorCode SNESSetUpMatrixFree_Private(SNES snes, PetscBool hasOperat
 
     /* This version replaces the user provided Jacobian matrix with a
        matrix-free version but still employs the user-provided preconditioner matrix. */
-    ierr = SNESSetJacobian(snes,J,0,0,0);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,J,NULL,NULL,NULL);CHKERRQ(ierr);
   } else {
     /* This version replaces both the user-provided Jacobian and the user-
      provided preconditioner Jacobian with the default matrix free version. */
     if ((snes->npcside== PC_LEFT) && snes->npc) {
-      if (!snes->jacobian){ierr = SNESSetJacobian(snes,J,0,0,0);CHKERRQ(ierr);}
+      if (!snes->jacobian){ierr = SNESSetJacobian(snes,J,NULL,NULL,NULL);CHKERRQ(ierr);}
     } else {
       KSP       ksp;
       PC        pc;
       PetscBool match;
 
-      ierr = SNESSetJacobian(snes,J,J,MatMFFDComputeJacobian,0);CHKERRQ(ierr);
+      ierr = SNESSetJacobian(snes,J,J,MatMFFDComputeJacobian,NULL);CHKERRQ(ierr);
       /* Force no preconditioner */
       ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
       ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
@@ -698,7 +698,7 @@ static PetscErrorCode KSPComputeOperators_SNES(KSP ksp,Mat A,Mat B,void *ctx)
     ierr = SNESGetJacobian(snes,NULL,NULL,&jac,&ctxsave);CHKERRQ(ierr);
     /* If the DM's don't match up, the MatFDColoring context needed for the jacobian won't match up either -- fixit. */
     if (jac == SNESComputeJacobianDefaultColor) {
-      ierr = SNESSetJacobian(snes,NULL,NULL,SNESComputeJacobianDefaultColor,0);CHKERRQ(ierr);
+      ierr = SNESSetJacobian(snes,NULL,NULL,SNESComputeJacobianDefaultColor,NULL);CHKERRQ(ierr);
     }
   }
   /* Make sure KSP DM has the Jacobian computation routine */
@@ -751,7 +751,7 @@ PetscErrorCode SNESSetUpMatrices(SNES snes)
     ierr = MatMFFDSetOptionsPrefix(J,((PetscObject)snes)->prefix);CHKERRQ(ierr);
     ierr = MatSetFromOptions(J);CHKERRQ(ierr);
     ierr = SNESGetFunction(snes,NULL,NULL,&functx);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,J,J,0,0);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,J,J,NULL,NULL);CHKERRQ(ierr);
     ierr = MatDestroy(&J);CHKERRQ(ierr);
   } else if (snes->mf_operator && !snes->jacobian_pre && !snes->jacobian) {
     Mat J,B;
@@ -999,7 +999,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   ierr = SNESMonitorSetFromOptions(snes,"-snes_monitor_jacupdate_spectrum","Print the change in the spectrum of the Jacobian","SNESMonitorJacUpdateSpectrum",SNESMonitorJacUpdateSpectrum,NULL);CHKERRQ(ierr);
   ierr = SNESMonitorSetFromOptions(snes,"-snes_monitor_fields","Monitor norm of function per field","SNESMonitorSet",SNESMonitorFields,NULL);CHKERRQ(ierr);
 
-  ierr = PetscOptionsString("-snes_monitor_python","Use Python function","SNESMonitorSet",0,monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-snes_monitor_python","Use Python function","SNESMonitorSet",NULL,monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (flg) {ierr = PetscPythonMonitorSet((PetscObject)snes,monfilename);CHKERRQ(ierr);}
 
   flg  = PETSC_FALSE;
@@ -1047,7 +1047,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
     ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
     ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
     sdm->jacobianctx = NULL;
-    ierr = SNESSetJacobian(snes,snes->jacobian,snes->jacobian_pre,SNESComputeJacobianDefaultColor,0);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,snes->jacobian,snes->jacobian_pre,SNESComputeJacobianDefaultColor,NULL);CHKERRQ(ierr);
     ierr = PetscInfo(snes,"Setting default finite difference coloring Jacobian matrix\n");CHKERRQ(ierr);
   }
 
@@ -1060,7 +1060,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   flg  = PETSC_FALSE;
   ierr = PetscOptionsBool("-snes_mf","Use a Matrix-Free Jacobian with no preconditioner matrix","SNESSetUseMatrixFree",PETSC_FALSE,&snes->mf,&flg);CHKERRQ(ierr);
   if (!flg && snes->mf_operator) snes->mf = PETSC_TRUE;
-  ierr = PetscOptionsInt("-snes_mf_version","Matrix-Free routines version 1 or 2","None",snes->mf_version,&snes->mf_version,0);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-snes_mf_version","Matrix-Free routines version 1 or 2","None",snes->mf_version,&snes->mf_version,NULL);CHKERRQ(ierr);
 
   flg  = PETSC_FALSE;
   ierr = SNESGetNPCSide(snes,&pcside);CHKERRQ(ierr);
@@ -1742,13 +1742,13 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
   snes->pre_iter          = 0;
   snes->lagpre_persist    = PETSC_FALSE;
   snes->numbermonitors    = 0;
-  snes->data              = 0;
+  snes->data              = NULL;
   snes->setupcalled       = PETSC_FALSE;
   snes->ksp_ewconv        = PETSC_FALSE;
   snes->nwork             = 0;
-  snes->work              = 0;
+  snes->work              = NULL;
   snes->nvwork            = 0;
-  snes->vwork             = 0;
+  snes->vwork             = NULL;
   snes->conv_hist_len     = 0;
   snes->conv_hist_max     = 0;
   snes->conv_hist         = NULL;
@@ -2765,7 +2765,7 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat A,Mat B)
       ierr = SNESComputeJacobianDefault(snes,X,FDexp,FDexp,NULL);CHKERRQ(ierr);
       ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)snes),&vstdout);CHKERRQ(ierr);
       if (flag_draw || flag_contour) {
-        ierr = PetscViewerDrawOpen(PetscObjectComm((PetscObject)snes),0,"Explicit Jacobians",PETSC_DECIDE,PETSC_DECIDE,300,300,&vdraw);CHKERRQ(ierr);
+        ierr = PetscViewerDrawOpen(PetscObjectComm((PetscObject)snes),NULL,"Explicit Jacobians",PETSC_DECIDE,PETSC_DECIDE,300,300,&vdraw);CHKERRQ(ierr);
         if (flag_contour) {ierr = PetscViewerPushFormat(vdraw,PETSC_VIEWER_DRAW_CONTOUR);CHKERRQ(ierr);}
       } else vdraw = NULL;
       ierr = PetscViewerASCIIPrintf(vstdout,"Explicit %s\n",flag_operator ? "Jacobian" : "preconditioning Jacobian");CHKERRQ(ierr);
@@ -2832,7 +2832,7 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat A,Mat B)
 
       ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)snes),&vstdout);CHKERRQ(ierr);
       if (flag_draw || flag_contour) {
-        ierr = PetscViewerDrawOpen(PetscObjectComm((PetscObject)snes),0,"Colored Jacobians",PETSC_DECIDE,PETSC_DECIDE,300,300,&vdraw);CHKERRQ(ierr);
+        ierr = PetscViewerDrawOpen(PetscObjectComm((PetscObject)snes),NULL,"Colored Jacobians",PETSC_DECIDE,PETSC_DECIDE,300,300,&vdraw);CHKERRQ(ierr);
         if (flag_contour) {ierr = PetscViewerPushFormat(vdraw,PETSC_VIEWER_DRAW_CONTOUR);CHKERRQ(ierr);}
       } else vdraw = NULL;
       ierr = PetscViewerASCIIPrintf(vstdout,"Explicit preconditioning Jacobian\n");CHKERRQ(ierr);
@@ -3232,7 +3232,7 @@ PetscErrorCode  SNESDestroy(SNES *snes)
   PetscFunctionBegin;
   if (!*snes) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*snes),SNES_CLASSID,1);
-  if (--((PetscObject)(*snes))->refct > 0) {*snes = 0; PetscFunctionReturn(0);}
+  if (--((PetscObject)(*snes))->refct > 0) {*snes = NULL; PetscFunctionReturn(0);}
 
   ierr = SNESReset((*snes));CHKERRQ(ierr);
   ierr = SNESDestroy(&(*snes)->npc);CHKERRQ(ierr);
@@ -4618,11 +4618,11 @@ PetscErrorCode  SNESSetType(SNES snes,SNESType type)
     snes->ops->destroy = NULL;
   }
   /* Reinitialize function pointers in SNESOps structure */
-  snes->ops->setup          = 0;
-  snes->ops->solve          = 0;
-  snes->ops->view           = 0;
-  snes->ops->setfromoptions = 0;
-  snes->ops->destroy        = 0;
+  snes->ops->setup          = NULL;
+  snes->ops->solve          = NULL;
+  snes->ops->view           = NULL;
+  snes->ops->setfromoptions = NULL;
+  snes->ops->destroy        = NULL;
 
   /* It may happen the user has customized the line search before calling SNESSetType */
   if (((PetscObject)snes)->type_name) {
@@ -5221,7 +5221,7 @@ PetscErrorCode KSPPostSolve_SNESEW(KSP ksp, Vec b, Vec x, SNES snes)
 
   PetscFunctionBegin;
   if (!snes->ksp_ewconv) PetscFunctionReturn(0);
-  ierr = KSPGetTolerances(ksp,&kctx->rtol_last,0,0,0);CHKERRQ(ierr);
+  ierr = KSPGetTolerances(ksp,&kctx->rtol_last,NULL,NULL,NULL);CHKERRQ(ierr);
   kctx->norm_last = snes->norm;
   if (kctx->version == 1) {
     PC        pc;

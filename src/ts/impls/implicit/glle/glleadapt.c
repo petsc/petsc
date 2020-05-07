@@ -167,7 +167,7 @@ PetscErrorCode  TSGLLEAdaptDestroy(TSGLLEAdapt *adapt)
   PetscFunctionBegin;
   if (!*adapt) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*adapt,TSGLLEADAPT_CLASSID,1);
-  if (--((PetscObject)(*adapt))->refct > 0) {*adapt = 0; PetscFunctionReturn(0);}
+  if (--((PetscObject)(*adapt))->refct > 0) {*adapt = NULL; PetscFunctionReturn(0);}
   if ((*adapt)->ops->destroy) {ierr = (*(*adapt)->ops->destroy)(*adapt);CHKERRQ(ierr);}
   ierr = PetscHeaderDestroy(adapt);CHKERRQ(ierr);
   PetscFunctionReturn(0);

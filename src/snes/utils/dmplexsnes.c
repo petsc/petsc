@@ -958,7 +958,7 @@ PetscErrorCode SNESMonitorFields(SNES snes, PetscInt its, PetscReal fgnorm, Pets
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
-  ierr = SNESGetFunction(snes, &res, 0, 0);CHKERRQ(ierr);
+  ierr = SNESGetFunction(snes, &res, NULL, NULL);CHKERRQ(ierr);
   ierr = SNESGetDM(snes, &dm);CHKERRQ(ierr);
   ierr = DMGetLocalSection(dm, &s);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(s, &numFields);CHKERRQ(ierr);

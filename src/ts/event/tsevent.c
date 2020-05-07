@@ -26,7 +26,7 @@ PetscErrorCode TSEventDestroy(TSEvent *event)
   PetscFunctionBegin;
   PetscValidPointer(event,1);
   if (!*event) PetscFunctionReturn(0);
-  if (--(*event)->refct > 0) {*event = 0; PetscFunctionReturn(0);}
+  if (--(*event)->refct > 0) {*event = NULL; PetscFunctionReturn(0);}
 
   ierr = PetscFree((*event)->fvalue);CHKERRQ(ierr);
   ierr = PetscFree((*event)->fvalue_prev);CHKERRQ(ierr);

@@ -262,10 +262,10 @@ PETSC_EXTERN PetscErrorCode TaoCreate_LMVM(Tao tao)
   tao->ops->destroy = TaoDestroy_LMVM;
 
   ierr = PetscNewLog(tao,&lmP);CHKERRQ(ierr);
-  lmP->D = 0;
-  lmP->M = 0;
-  lmP->Xold = 0;
-  lmP->Gold = 0;
+  lmP->D = NULL;
+  lmP->M = NULL;
+  lmP->Xold = NULL;
+  lmP->Gold = NULL;
   lmP->H0   = NULL;
   lmP->recycle = PETSC_FALSE;
 
@@ -279,7 +279,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_LMVM(Tao tao)
   ierr = TaoLineSearchSetType(tao->linesearch,morethuente_type);CHKERRQ(ierr);
   ierr = TaoLineSearchUseTaoRoutines(tao->linesearch,tao);CHKERRQ(ierr);
   ierr = TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix);CHKERRQ(ierr);
-  
+
   ierr = KSPInitializePackage();CHKERRQ(ierr);
   ierr = MatCreate(((PetscObject)tao)->comm, &lmP->M);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject)lmP->M, (PetscObject)tao, 1);CHKERRQ(ierr);

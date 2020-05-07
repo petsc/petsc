@@ -494,8 +494,8 @@ static PetscErrorCode TaoSetUp_NTR(Tao tao)
   if (!tao->stepdirection) {ierr = VecDuplicate(tao->solution, &tao->stepdirection);CHKERRQ(ierr);}
   if (!tr->W) {ierr = VecDuplicate(tao->solution, &tr->W);CHKERRQ(ierr);}
 
-  tr->bfgs_pre = 0;
-  tr->M = 0;
+  tr->bfgs_pre = NULL;
+  tr->M = NULL;
   PetscFunctionReturn(0);
 }
 
