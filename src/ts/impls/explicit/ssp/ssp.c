@@ -3,7 +3,7 @@
 */
 #include <petsc/private/tsimpl.h>                /*I   "petscts.h"   I*/
 
-PetscFunctionList TSSSPList = 0;
+PetscFunctionList TSSSPList = NULL;
 static PetscBool TSSSPPackageInitialized;
 
 typedef struct {

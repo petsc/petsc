@@ -12,7 +12,7 @@ const char *const TSConvergedReasons_Shifted[] = {
   "CONVERGED_EVENT",
   "CONVERGED_PSEUDO_FATOL",
   "CONVERGED_PSEUDO_FATOL",
-  "TSConvergedReason","TS_",0};
+  "TSConvergedReason","TS_",NULL};
 const char *const*TSConvergedReasons = TSConvergedReasons_Shifted + 4;
 
 /*@C

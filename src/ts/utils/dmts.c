@@ -8,7 +8,7 @@ static PetscErrorCode DMTSDestroy(DMTS *kdm)
   PetscFunctionBegin;
   if (!*kdm) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*kdm),DMTS_CLASSID,1);
-  if (--((PetscObject)(*kdm))->refct > 0) {*kdm = 0; PetscFunctionReturn(0);}
+  if (--((PetscObject)(*kdm))->refct > 0) {*kdm = NULL; PetscFunctionReturn(0);}
   if ((*kdm)->ops->destroy) {ierr = ((*kdm)->ops->destroy)(*kdm);CHKERRQ(ierr);}
   ierr = PetscHeaderDestroy(kdm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
