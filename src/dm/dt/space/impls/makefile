@@ -2,7 +2,7 @@
 ALL: lib
 
 LIBBASE  = libpetscdm
-DIRS     = poly tensor point subspace
+DIRS     = poly tensor point subspace sum
 LOCDIR   = src/dm/dt/space/impls
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
