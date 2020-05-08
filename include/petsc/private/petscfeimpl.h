@@ -58,6 +58,13 @@ typedef struct {
 } PetscSpace_Tensor;
 
 typedef struct {
+  PetscSpace *sumspaces;
+  PetscInt    numSumSpaces;
+  PetscBool   concatenate;
+  PetscBool   setupCalled;
+} PetscSpace_Sum;
+
+typedef struct {
   PetscQuadrature quad;         /* The points defining the space */
 } PetscSpace_Point;
 

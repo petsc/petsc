@@ -225,7 +225,7 @@ static PetscErrorCode PerturbMesh(DM *mesh,PetscScalar *coordVals,PetscInt npoin
 {
   PetscInt       i,j,k;
   PetscErrorCode ierr;
-  PetscReal      minCoords[3],maxCoords[3],maxPert[3],randVal,phase,amp;
+  PetscReal      minCoords[3],maxCoords[3],maxPert[3],randVal,amp;
   PetscRandom    ran;
 
   PetscFunctionBegin;
@@ -233,22 +233,19 @@ static PetscErrorCode PerturbMesh(DM *mesh,PetscScalar *coordVals,PetscInt npoin
   ierr = DMGetLocalBoundingBox(*mesh,minCoords,maxCoords);CHKERRQ(ierr);
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&ran);CHKERRQ(ierr);
 
-/* Compute something approximately equal to half an edge length. This is the
- * most we can perturb points and gaurantee that there won't be any topology
- * issues. */
-  for (k = 0; k < dim; ++k) maxPert[k] = 0.5 * (maxCoords[k] - minCoords[k]) / (PetscPowReal(npoints,1. / dim) - 1);
+  /* Compute something approximately equal to half an edge length. This is the
+   * most we can perturb points and gaurantee that there won't be any topology
+   * issues. */
+  for (k = 0; k < dim; ++k) maxPert[k] = 0.025 * (maxCoords[k] - minCoords[k]) / (PetscPowReal(npoints,1. / dim) - 1);
   /* For each mesh vertex */
   for (i = 0; i < npoints; ++i) {
     /* For each coordinate of the vertex */
     for (j = 0; j < dim; ++j) {
-      /* Generate random phase in [-0.5\pi, 0.5\pi] */
-      ierr  = PetscRandomGetValueReal(ran,&randVal);CHKERRQ(ierr);
-      phase = PETSC_PI * (randVal - 0.5);
       /* Generate a random amplitude in [-0.5*maxPert, 0.5*maxPert] */
       ierr = PetscRandomGetValueReal(ran,&randVal);CHKERRQ(ierr);
       amp  = maxPert[j] * (randVal - 0.5);
       /* Add the perturbation to the vertex*/
-      coordVals[dim * i + j] += amp * PetscSinReal(2 * PETSC_PI / maxCoords[j] * coordVals[dim * i + j] + phase);
+      coordVals[dim * i + j] += amp;
     }
   }
 
@@ -274,7 +271,7 @@ static PetscErrorCode SkewMesh(DM * mesh,PetscScalar * coordVals,PetscInt npoint
   for (i = 0; i < dim; ++i) {
     for (j = 0; j < dim; ++j) {
       ierr = PetscRandomGetValueReal(ran,&randVal);CHKERRQ(ierr);
-      if (i == j) transMat[i * dim + j] = randVal;
+      if (i == j) transMat[i * dim + j] = 1.;
       else if (j < i) transMat[i * dim + j] = 2 * (j + i)*randVal;
       else transMat[i * dim + j] = 0;
     }
@@ -475,7 +472,7 @@ int main(int argc,char **argv)
   PetscErrorCode  ierr;
   IS              * fieldIS;
   PetscBool       exampleSuccess = PETSC_FALSE;
-  const PetscReal errTol         = 1e-10;
+  const PetscReal errTol         = 10. * PETSC_SMALL;
 
   char stdFormat[] = "L2 Norm of the Divergence Error is: %g\n H(div) elements working correctly: %s\n";
 
@@ -536,7 +533,8 @@ int main(int argc,char **argv)
     suffix: 2d_bdm
     requires: triangle
     args: -dim 2 \
-      - simplex true \
+      -simplex true \
+      -velocity_petscfe_default_quadrature_order 1 \
       -velocity_petscspace_degree 1 \
       -velocity_petscdualspace_type bdm \
       -divErr_petscspace_degree 1 \
@@ -569,9 +567,10 @@ int main(int argc,char **argv)
     TODO: broken
     suffix: 2d_bdmq
     args: -dim 2 \
-      - simplex false \
+      -simplex false \
       -velocity_petscspace_degree 1 \
       -velocity_petscdualspace_type bdm \
+      -velocity_petscdualspace_lagrange_tensor 1 \
       -divErr_petscspace_degree 1 \
       -divErr_petscdualspace_lagrange_continuity false \
       -dm_refine 0 \
@@ -599,7 +598,6 @@ int main(int argc,char **argv)
       args: -sol_form sinusoidal -mesh_transform skew_perturb
 
   testset:
-    TODO: broken
     suffix: 3d_bdm
     requires: ctetgen
     args: -dim 3 \
@@ -640,6 +638,7 @@ int main(int argc,char **argv)
       -simplex false \
       -velocity_petscspace_degree 1 \
       -velocity_petscdualspace_type bdm \
+      -velocity_petscdualspace_lagrange_tensor 1 \
       -divErr_petscspace_degree 1 \
       -divErr_petscdualspace_lagrange_continuity false \
       -dm_refine 0 \
@@ -665,4 +664,39 @@ int main(int argc,char **argv)
     test:
       suffix: sinusoidal_skew_perturb
       args: -sol_form sinusoidal -mesh_transform skew_perturb
+
+  test:
+    suffix: quad_rt_0
+    args: -dim 2 -simplex false -mesh_transform skew \
+          -divErr_petscspace_degree 1 \
+          -divErr_petscdualspace_lagrange_continuity false \
+          -dm_refine 0 \
+          -snes_error_if_not_converged \
+          -ksp_rtol 1e-10 \
+          -ksp_error_if_not_converged \
+          -pc_type fieldsplit\
+          -pc_fieldsplit_detect_saddle_point\
+          -pc_fieldsplit_type schur\
+          -pc_fieldsplit_schur_precondition full \
+          -velocity_petscfe_default_quadrature_order 1 \
+          -velocity_petscspace_type sum \
+          -velocity_petscspace_variables 2 \
+          -velocity_petscspace_components 2 \
+          -velocity_petscspace_sum_spaces 2 \
+          -velocity_petscspace_sum_concatenate true \
+          -velocity_subspace0_petscspace_variables 2 \
+          -velocity_subspace0_petscspace_type tensor \
+          -velocity_subspace0_petscspace_tensor_spaces 2 \
+          -velocity_subspace0_petscspace_tensor_uniform false \
+          -velocity_subspace0_subspace_0_petscspace_degree 1 \
+          -velocity_subspace0_subspace_1_petscspace_degree 0 \
+          -velocity_subspace1_petscspace_variables 2 \
+          -velocity_subspace1_petscspace_type tensor \
+          -velocity_subspace1_petscspace_tensor_spaces 2 \
+          -velocity_subspace1_petscspace_tensor_uniform false \
+          -velocity_subspace1_subspace_0_petscspace_degree 0 \
+          -velocity_subspace1_subspace_1_petscspace_degree 1 \
+          -velocity_petscdualspace_form_degree -1 \
+          -velocity_petscdualspace_order 1 \
+          -velocity_petscdualspace_lagrange_trimmed true
 TEST*/

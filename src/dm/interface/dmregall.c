@@ -111,6 +111,7 @@ PetscErrorCode PetscPartitionerRegisterAll(void)
 
 PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Polynomial(PetscSpace);
 PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Tensor(PetscSpace);
+PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Sum(PetscSpace);
 PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Point(PetscSpace);
 PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Subspace(PetscSpace);
 
@@ -136,6 +137,7 @@ PetscErrorCode PetscSpaceRegisterAll(void)
 
   ierr = PetscSpaceRegister(PETSCSPACEPOLYNOMIAL, PetscSpaceCreate_Polynomial);CHKERRQ(ierr);
   ierr = PetscSpaceRegister(PETSCSPACETENSOR,     PetscSpaceCreate_Tensor);CHKERRQ(ierr);
+  ierr = PetscSpaceRegister(PETSCSPACESUM,        PetscSpaceCreate_Sum);CHKERRQ(ierr);
   ierr = PetscSpaceRegister(PETSCSPACEPOINT,      PetscSpaceCreate_Point);CHKERRQ(ierr);
   ierr = PetscSpaceRegister(PETSCSPACESUBSPACE,   PetscSpaceCreate_Subspace);CHKERRQ(ierr);
   PetscFunctionReturn(0);
