@@ -471,6 +471,7 @@ PETSC_EXTERN PetscErrorCode MatSeqSBAIJRestoreArray(Mat,PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode MatDenseGetArray(Mat,PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode MatDenseRestoreArray(Mat,PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode MatDensePlaceArray(Mat,const PetscScalar[]);
+PETSC_EXTERN PetscErrorCode MatDenseReplaceArray(Mat,const PetscScalar[]);
 PETSC_EXTERN PetscErrorCode MatDenseResetArray(Mat);
 PETSC_EXTERN PetscErrorCode MatDenseGetArrayRead(Mat,const PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode MatDenseRestoreArrayRead(Mat,const PetscScalar *[]);
@@ -1908,6 +1909,7 @@ PETSC_EXTERN PetscErrorCode MatDenseCUDARestoreArrayWrite(Mat,PetscScalar**);
 PETSC_EXTERN PetscErrorCode MatDenseCUDARestoreArrayRead(Mat,const PetscScalar**);
 PETSC_EXTERN PetscErrorCode MatDenseCUDARestoreArray(Mat,PetscScalar**);
 PETSC_EXTERN PetscErrorCode MatDenseCUDAPlaceArray(Mat,const PetscScalar*);
+PETSC_EXTERN PetscErrorCode MatDenseCUDAReplaceArray(Mat,const PetscScalar*);
 PETSC_EXTERN PetscErrorCode MatDenseCUDAResetArray(Mat);
 #endif
 

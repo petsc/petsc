@@ -28,6 +28,8 @@ PetscErrorCode MatDenseGetLocalMatrix(Mat A,Mat *B)
   PetscBool      flg;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidPointer(B,2);
   ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIDENSE,&flg);CHKERRQ(ierr);
   if (flg) *B = mat->A;
   else *B = A;
@@ -206,6 +208,17 @@ static PetscErrorCode MatDenseResetArray_MPIDense(Mat A)
   PetscFunctionBegin;
   if (a->vecinuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseRestoreColumnVec first");
   ierr = MatDenseResetArray(a->A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatDenseReplaceArray_MPIDense(Mat A,const PetscScalar *array)
+{
+  Mat_MPIDense   *a = (Mat_MPIDense*)A->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (a->vecinuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseRestoreColumnVec first");
+  ierr = MatDenseReplaceArray(a->A,array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -537,6 +550,7 @@ PetscErrorCode MatDestroy_MPIDense(Mat mat)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseRestoreArrayWrite_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDensePlaceArray_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseResetArray_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseReplaceArray_C",NULL);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_ELEMENTAL)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpidense_elemental_C",NULL);CHKERRQ(ierr);
 #endif
@@ -1102,6 +1116,17 @@ static PetscErrorCode MatDenseCUDAResetArray_MPIDenseCUDA(Mat A)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatDenseCUDAReplaceArray_MPIDenseCUDA(Mat A, const PetscScalar *a)
+{
+  Mat_MPIDense   *l = (Mat_MPIDense*) A->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (l->vecinuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseRestoreColumnVec first");
+  ierr = MatDenseCUDAReplaceArray(l->A,a);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode MatDenseCUDAGetArrayWrite_MPIDenseCUDA(Mat A, PetscScalar **a)
 {
   Mat_MPIDense   *l = (Mat_MPIDense*) A->data;
@@ -1211,6 +1236,7 @@ PetscErrorCode MatMPIDenseCUDASetPreallocation(Mat A, PetscScalar *d_data)
   PetscBool      iscuda;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIDENSECUDA,&iscuda);CHKERRQ(ierr);
   if (!iscuda) PetscFunctionReturn(0);
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
@@ -1542,6 +1568,7 @@ PetscErrorCode MatConvert_MPIDenseCUDA_MPIDense(Mat M,MatType type,MatReuse reus
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatDenseCUDARestoreArrayWrite_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatDenseCUDAPlaceArray_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatDenseCUDAResetArray_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatDenseCUDAReplaceArray_C",NULL);CHKERRQ(ierr);
   m    = (Mat_MPIDense*)(B)->data;
   if (m->A) {
     ierr = MatConvert(m->A,MATSEQDENSE,MAT_INPLACE_MATRIX,&m->A);CHKERRQ(ierr);
@@ -1580,6 +1607,7 @@ PetscErrorCode MatConvert_MPIDense_MPIDenseCUDA(Mat M,MatType type,MatReuse reus
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatDenseCUDARestoreArrayWrite_C",               MatDenseCUDARestoreArrayWrite_MPIDenseCUDA);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatDenseCUDAPlaceArray_C",                      MatDenseCUDAPlaceArray_MPIDenseCUDA);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatDenseCUDAResetArray_C",                      MatDenseCUDAResetArray_MPIDenseCUDA);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatDenseCUDAReplaceArray_C",                    MatDenseCUDAReplaceArray_MPIDenseCUDA);CHKERRQ(ierr);
   m    = (Mat_MPIDense*)(B)->data;
   if (m->A) {
     ierr = MatConvert(m->A,MATSEQDENSECUDA,MAT_INPLACE_MATRIX,&m->A);CHKERRQ(ierr);
@@ -1732,6 +1760,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIDense(Mat mat)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseRestoreArrayWrite_C",MatDenseRestoreArrayWrite_MPIDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDensePlaceArray_C",MatDensePlaceArray_MPIDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseResetArray_C",MatDenseResetArray_MPIDense);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseReplaceArray_C",MatDenseReplaceArray_MPIDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseGetColumnVec_C",MatDenseGetColumnVec_MPIDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseRestoreColumnVec_C",MatDenseRestoreColumnVec_MPIDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseGetColumnVecRead_C",MatDenseGetColumnVecRead_MPIDense);CHKERRQ(ierr);
@@ -1839,6 +1868,7 @@ PetscErrorCode  MatMPIDenseSetPreallocation(Mat B,PetscScalar *data)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(B,MAT_CLASSID,1);
   ierr = PetscTryMethod(B,"MatMPIDenseSetPreallocation_C",(Mat,PetscScalar*),(B,data));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1868,6 +1898,7 @@ PetscErrorCode  MatDensePlaceArray(Mat mat,const PetscScalar *array)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   ierr = PetscUseMethod(mat,"MatDensePlaceArray_C",(Mat,const PetscScalar*),(mat,array));CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_CUDA)
@@ -1897,8 +1928,42 @@ PetscErrorCode  MatDenseResetArray(Mat mat)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   ierr = PetscUseMethod(mat,"MatDenseResetArray_C",(Mat),(mat));CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   MatDenseReplaceArray - Allows one to replace the array in a dense matrix with an
+   array provided by the user. This is useful to avoid copying an array
+   into a matrix
+
+   Not Collective
+
+   Input Parameters:
++  mat - the matrix
+-  array - the array in column major order
+
+   Notes:
+   The memory passed in MUST be obtained with PetscMalloc() and CANNOT be
+   freed by the user. It will be freed when the matrix is destroyed.
+
+   Level: developer
+
+.seealso: MatDenseGetArray(), VecReplaceArray()
+@*/
+PetscErrorCode  MatDenseReplaceArray(Mat mat,const PetscScalar *array)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  ierr = PetscUseMethod(mat,"MatDenseReplaceArray_C",(Mat,const PetscScalar*),(mat,array));CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  mat->offloadmask = PETSC_OFFLOAD_CPU;
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -1927,6 +1992,7 @@ PetscErrorCode  MatDenseCUDAPlaceArray(Mat mat,const PetscScalar *array)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   ierr = PetscUseMethod(mat,"MatDenseCUDAPlaceArray_C",(Mat,const PetscScalar*),(mat,array));CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
   mat->offloadmask = PETSC_OFFLOAD_GPU;
@@ -1954,8 +2020,41 @@ PetscErrorCode  MatDenseCUDAResetArray(Mat mat)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   ierr = PetscUseMethod(mat,"MatDenseCUDAResetArray_C",(Mat),(mat));CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatDenseCUDAReplaceArray - Allows one to replace the GPU array in a dense matrix with an
+   array provided by the user. This is useful to avoid copying an array
+   into a matrix
+
+   Not Collective
+
+   Input Parameters:
++  mat - the matrix
+-  array - the array in column major order
+
+   Notes:
+   This permanently replaces the GPU array and frees the memory associated with the old GPU array.
+   The memory passed in CANNOT be freed by the user. It will be freed
+   when the matrix is destroyed. The array should respect the matrix leading dimension.
+
+   Level: developer
+
+.seealso: MatDenseCUDAGetArray(), MatDenseCUDAPlaceArray(), MatDenseCUDAResetArray()
+@*/
+PetscErrorCode  MatDenseCUDAReplaceArray(Mat mat,const PetscScalar *array)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  ierr = PetscUseMethod(mat,"MatDenseCUDAReplaceArray_C",(Mat,const PetscScalar*),(mat,array));CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
+  mat->offloadmask = PETSC_OFFLOAD_GPU;
   PetscFunctionReturn(0);
 }
 
@@ -1982,6 +2081,7 @@ PetscErrorCode MatDenseCUDAGetArrayWrite(Mat A, PetscScalar **a)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   ierr = PetscUseMethod(A,"MatDenseCUDAGetArrayWrite_C",(Mat,PetscScalar**),(A,a));CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2007,6 +2107,7 @@ PetscErrorCode MatDenseCUDARestoreArrayWrite(Mat A, PetscScalar **a)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   ierr = PetscUseMethod(A,"MatDenseCUDARestoreArrayWrite_C",(Mat,PetscScalar**),(A,a));CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)A);CHKERRQ(ierr);
   A->offloadmask = PETSC_OFFLOAD_GPU;
@@ -2036,6 +2137,7 @@ PetscErrorCode MatDenseCUDAGetArrayRead(Mat A, const PetscScalar **a)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   ierr = PetscUseMethod(A,"MatDenseCUDAGetArrayRead_C",(Mat,const PetscScalar**),(A,a));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2088,6 +2190,7 @@ PetscErrorCode MatDenseCUDAGetArray(Mat A, PetscScalar **a)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   ierr = PetscUseMethod(A,"MatDenseCUDAGetArray_C",(Mat,PetscScalar**),(A,a));CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2113,6 +2216,7 @@ PetscErrorCode MatDenseCUDARestoreArray(Mat A, PetscScalar **a)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   ierr = PetscUseMethod(A,"MatDenseCUDARestoreArray_C",(Mat,PetscScalar**),(A,a));CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)A);CHKERRQ(ierr);
   A->offloadmask = PETSC_OFFLOAD_GPU;

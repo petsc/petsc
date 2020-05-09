@@ -115,10 +115,10 @@ PetscErrorCode MatSeqDenseCUDACopyFromGPU(Mat A)
   PetscFunctionBegin;
   PetscCheckTypeName(A,MATSEQDENSECUDA);
   ierr = PetscInfo3(A,"%s matrix %d x %d\n",A->offloadmask == PETSC_OFFLOAD_GPU ? "Copy" : "Reusing",A->rmap->n,A->cmap->n);CHKERRQ(ierr);
-  if (!cA->v) { /* MatCreateSeqDenseCUDA may not allocate CPU memory. Allocate if needed */
-    ierr = MatSeqDenseSetPreallocation(A,NULL);CHKERRQ(ierr);
-  }
   if (A->offloadmask == PETSC_OFFLOAD_GPU) {
+    if (!cA->v) { /* MatCreateSeqDenseCUDA may not allocate CPU memory. Allocate if needed */
+      ierr = MatSeqDenseSetPreallocation(A,NULL);CHKERRQ(ierr);
+    }
     ierr = PetscLogEventBegin(MAT_DenseCopyFromGPU,A,0,0,0);CHKERRQ(ierr);
     if (cA->lda > A->rmap->n) {
       PetscInt j,m = A->rmap->n;
@@ -148,12 +148,12 @@ PetscErrorCode MatSeqDenseCUDACopyToGPU(Mat A)
   PetscFunctionBegin;
   PetscCheckTypeName(A,MATSEQDENSECUDA);
   if (A->boundtocpu) PetscFunctionReturn(0);
-  if (!dA->d_v) { /* Allocate GPU memory if not present */
-    ierr = MatSeqDenseCUDASetPreallocation(A,NULL);CHKERRQ(ierr);
-  }
   copy = (PetscBool)(A->offloadmask == PETSC_OFFLOAD_CPU || A->offloadmask == PETSC_OFFLOAD_UNALLOCATED);
   ierr = PetscInfo3(A,"%s matrix %d x %d\n",copy ? "Copy" : "Reusing",A->rmap->n,A->cmap->n);CHKERRQ(ierr);
   if (copy) {
+    if (!dA->d_v) { /* Allocate GPU memory if not present */
+      ierr = MatSeqDenseCUDASetPreallocation(A,NULL);CHKERRQ(ierr);
+    }
     ierr = PetscLogEventBegin(MAT_DenseCopyToGPU,A,0,0,0);CHKERRQ(ierr);
     if (cA->lda > A->rmap->n) {
       PetscInt j,m = A->rmap->n;
@@ -181,7 +181,7 @@ static PetscErrorCode MatDenseCUDAPlaceArray_SeqDenseCUDA(Mat A, const PetscScal
   PetscFunctionBegin;
   if (aa->vecinuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseRestoreColumnVec first");
   if (dA->unplacedarray) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"MatDenseCUDAResetArray() must be called first");
-  ierr = MatSeqDenseCUDACopyToGPU(A);CHKERRQ(ierr);
+  if (aa->v) { ierr = MatSeqDenseCUDACopyToGPU(A);CHKERRQ(ierr); }
   dA->unplacedarray = dA->d_v;
   dA->unplaced_user_alloc = dA->user_alloc;
   dA->d_v = (PetscScalar*)a;
@@ -197,11 +197,25 @@ static PetscErrorCode MatDenseCUDAResetArray_SeqDenseCUDA(Mat A)
 
   PetscFunctionBegin;
   if (a->vecinuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseRestoreColumnVec first");
-  if (!dA->unplacedarray) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"MatDenseCUDAPlaceArray() must be called first");
-  ierr = MatSeqDenseCUDACopyToGPU(A);CHKERRQ(ierr);
+  if (a->v) { ierr = MatSeqDenseCUDACopyToGPU(A);CHKERRQ(ierr); }
   dA->d_v = dA->unplacedarray;
   dA->user_alloc = dA->unplaced_user_alloc;
   dA->unplacedarray = NULL;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatDenseCUDAReplaceArray_SeqDenseCUDA(Mat A, const PetscScalar *a)
+{
+  Mat_SeqDense     *aa = (Mat_SeqDense*)A->data;
+  Mat_SeqDenseCUDA *dA = (Mat_SeqDenseCUDA*)A->spptr;
+  cudaError_t      cerr;
+
+  PetscFunctionBegin;
+  if (aa->vecinuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseRestoreColumnVec first");
+  if (dA->unplacedarray) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"MatDenseCUDAResetArray() must be called first");
+  if (!dA->user_alloc) { cerr = cudaFree(dA->d_v);CHKERRCUDA(cerr); }
+  dA->d_v = (PetscScalar*)a;
+  dA->user_alloc = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -1186,6 +1200,7 @@ PetscErrorCode MatConvert_SeqDenseCUDA_SeqDense(Mat M,MatType type,MatReuse reus
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatDenseCUDARestoreArrayWrite_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatDenseCUDAPlaceArray_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatDenseCUDAResetArray_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatDenseCUDAReplaceArray_C",NULL);CHKERRQ(ierr);
 
   B->ops->bindtocpu = NULL;
   B->ops->destroy = MatDestroy_SeqDense;
@@ -1219,6 +1234,7 @@ PetscErrorCode MatConvert_SeqDense_SeqDenseCUDA(Mat M,MatType type,MatReuse reus
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatDenseCUDARestoreArrayWrite_C",   MatDenseCUDARestoreArrayWrite_SeqDenseCUDA);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatDenseCUDAPlaceArray_C",          MatDenseCUDAPlaceArray_SeqDenseCUDA);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatDenseCUDAResetArray_C",          MatDenseCUDAResetArray_SeqDenseCUDA);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatDenseCUDAReplaceArray_C",        MatDenseCUDAReplaceArray_SeqDenseCUDA);CHKERRQ(ierr);
 
   ierr     = PetscNewLog(B,&dB);CHKERRQ(ierr);
   B->spptr = dB;
