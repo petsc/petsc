@@ -197,8 +197,7 @@ PetscErrorCode PetscOptionsCreateDefault(void)
 
    Level: advanced
 
-.seealso: PetscOptionsPop(), PetscOptionsCreate(), PetscOptionDestroy(), PetscOptionsInsert(), PetscOptionsSetValue(),
-          PetscOptionsLeft()
+.seealso: PetscOptionsPop(), PetscOptionsCreate(), PetscOptionsInsert(), PetscOptionsSetValue(), PetscOptionsLeft()
 
 @*/
 PetscErrorCode PetscOptionsPush(PetscOptions opt)
@@ -225,8 +224,7 @@ PetscErrorCode PetscOptionsPush(PetscOptions opt)
 
    Level: advanced
 
-.seealso: PetscOptionsPop(), PetscOptionsCreate(), PetscOptionDestroy(), PetscOptionsInsert(), PetscOptionsSetValue(),
-          PetscOptionsLeft()
+.seealso: PetscOptionsPop(), PetscOptionsCreate(), PetscOptionsInsert(), PetscOptionsSetValue(), PetscOptionsLeft()
 
 @*/
 PetscErrorCode PetscOptionsPop(void)
@@ -1589,7 +1587,7 @@ PetscErrorCode PetscOptionsAllUsed(PetscOptions options,PetscInt *N)
 .  options - options database; use NULL for default global database
 
    Options Database Key:
-.  -options_left - Activates OptionsAllUsed() within PetscFinalize()
+.  -options_left - activates PetscOptionsAllUsed() within PetscFinalize()
 
    Notes:
       This is rarely used directly, it is called by PetscFinalize() in debug more or if -options_left

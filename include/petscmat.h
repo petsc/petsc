@@ -1621,8 +1621,8 @@ typedef enum { MATOP_SET_VALUES=0,
              } MatOperation;
 PETSC_EXTERN PetscErrorCode MatSetOperation(Mat,MatOperation,void(*)(void));
 PETSC_EXTERN PetscErrorCode MatGetOperation(Mat,MatOperation,void(**)(void));
-PETSC_EXTERN PetscErrorCode MatHasOperation(Mat,MatOperation,PetscBool *);
-PETSC_EXTERN PetscErrorCode MatHasCongruentLayouts(Mat,PetscBool *);
+PETSC_EXTERN PetscErrorCode MatHasOperation(Mat,MatOperation,PetscBool*);
+PETSC_EXTERN PetscErrorCode MatHasCongruentLayouts(Mat,PetscBool*);
 PETSC_EXTERN PetscErrorCode MatFreeIntermediateDataStructures(Mat);
 
 PETSC_EXTERN PetscErrorCode MatShellSetOperation(Mat,MatOperation,void(*)(void));
