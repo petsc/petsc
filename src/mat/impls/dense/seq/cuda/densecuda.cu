@@ -87,13 +87,11 @@ PetscErrorCode MatSeqDenseCUDASetPreallocation(Mat A, PetscScalar *d_data)
   /* it may happen CPU preallocation has not been performed */
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
-  if (cA->lda <= 0 || cA->changelda) cA->lda = A->rmap->n;
+  if (cA->lda <= 0) cA->lda = A->rmap->n;
   if (!dA->user_alloc) { cerr = cudaFree(dA->d_v);CHKERRCUDA(cerr); }
   if (!d_data) { /* petsc-allocated storage */
-    cA->Mmax = A->rmap->n;
-    cA->Nmax = A->cmap->n;
-    ierr = PetscIntMultError(cA->lda,cA->Nmax,NULL);CHKERRQ(ierr);
-    cerr = cudaMalloc((void**)&dA->d_v,cA->lda*cA->Nmax*sizeof(PetscScalar));CHKERRCUDA(cerr);
+    ierr = PetscIntMultError(cA->lda,A->cmap->n,NULL);CHKERRQ(ierr);
+    cerr = cudaMalloc((void**)&dA->d_v,cA->lda*A->cmap->n*sizeof(PetscScalar));CHKERRCUDA(cerr);
     dA->user_alloc = PETSC_FALSE;
   } else { /* user-allocated storage */
     dA->d_v        = d_data;

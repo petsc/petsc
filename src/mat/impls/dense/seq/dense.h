@@ -17,8 +17,6 @@ typedef struct {
   PetscBLASInt lfwork;            /* length of work array in factorization */
   PetscScalar  *fwork;            /* work array in factorization */
   PetscBLASInt lda;               /* Lapack leading dimension of data */
-  PetscBool    changelda;         /* change lda on resize? Default unless user set lda */
-  PetscBLASInt Mmax,Nmax;         /* indicates the largest dimensions of data possible */
   PetscBool    user_alloc;        /* true if the user provided the dense data */
   PetscBool    unplaced_user_alloc;
   Mat          ptapwork;          /* workspace (SeqDense matrix) for PtAP */

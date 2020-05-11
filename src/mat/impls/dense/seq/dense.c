@@ -1426,6 +1426,7 @@ PetscErrorCode MatDestroy_SeqDense(Mat mat)
 
   ierr = PetscObjectChangeTypeName((PetscObject)mat,0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseGetLDA_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseSetLDA_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseGetArray_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseRestoreArray_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDensePlaceArray_C",NULL);CHKERRQ(ierr);
@@ -1804,7 +1805,7 @@ PetscErrorCode MatDenseRestoreArray_SeqDense(Mat A,PetscScalar **array)
 /*@C
    MatDenseGetLDA - gets the leading dimension of the array returned from MatDenseGetArray()
 
-   Logically Collective on Mat
+   Not collective
 
    Input Parameter:
 .  mat - a MATSEQDENSE or MATMPIDENSE matrix
@@ -1814,7 +1815,7 @@ PetscErrorCode MatDenseRestoreArray_SeqDense(Mat A,PetscScalar **array)
 
    Level: intermediate
 
-.seealso: MatDenseGetArray(), MatDenseRestoreArray(), MatDenseGetArrayRead(), MatDenseRestoreArrayRead(), MatSeqDenseSetLDA()
+.seealso: MatDenseGetArray(), MatDenseRestoreArray(), MatDenseGetArrayRead(), MatDenseRestoreArrayRead(), MatDenseSetLDA()
 @*/
 PetscErrorCode  MatDenseGetLDA(Mat A,PetscInt *lda)
 {
@@ -1824,6 +1825,29 @@ PetscErrorCode  MatDenseGetLDA(Mat A,PetscInt *lda)
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidPointer(lda,2);
   ierr = PetscUseMethod(A,"MatDenseGetLDA_C",(Mat,PetscInt*),(A,lda));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatDenseSetLDA - Sets the leading dimension of the array used by the dense matrix
+
+   Not collective
+
+   Input Parameter:
++  mat - a MATSEQDENSE or MATMPIDENSE matrix
+-  lda - the leading dimension
+
+   Level: intermediate
+
+.seealso: MatDenseGetArray(), MatDenseRestoreArray(), MatDenseGetArrayRead(), MatDenseRestoreArrayRead(), MatDenseGetLDA()
+@*/
+PetscErrorCode  MatDenseSetLDA(Mat A,PetscInt lda)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  ierr = PetscTryMethod(A,"MatDenseSetLDA_C",(Mat,PetscInt),(A,lda));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2735,7 +2759,7 @@ PetscErrorCode  MatCreateSeqDense(MPI_Comm comm,PetscInt m,PetscInt n,PetscScala
 
    Level: intermediate
 
-.seealso: MatCreate(), MatCreateDense(), MatSetValues(), MatSeqDenseSetLDA()
+.seealso: MatCreate(), MatCreateDense(), MatSetValues(), MatDenseSetLDA()
 
 @*/
 PetscErrorCode  MatSeqDenseSetPreallocation(Mat B,PetscScalar data[])
@@ -2750,7 +2774,7 @@ PetscErrorCode  MatSeqDenseSetPreallocation(Mat B,PetscScalar data[])
 
 PetscErrorCode  MatSeqDenseSetPreallocation_SeqDense(Mat B,PetscScalar *data)
 {
-  Mat_SeqDense   *b;
+  Mat_SeqDense   *b = (Mat_SeqDense*)B->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2759,16 +2783,13 @@ PetscErrorCode  MatSeqDenseSetPreallocation_SeqDense(Mat B,PetscScalar *data)
   ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
 
-  b       = (Mat_SeqDense*)B->data;
-  b->Mmax = B->rmap->n;
-  b->Nmax = B->cmap->n;
-  if (b->lda <= 0 || b->changelda) b->lda = B->rmap->n;
+  if (b->lda <= 0) b->lda = B->rmap->n;
 
-  ierr = PetscIntMultError(b->lda,b->Nmax,NULL);CHKERRQ(ierr);
+  ierr = PetscIntMultError(b->lda,B->cmap->n,NULL);CHKERRQ(ierr);
   if (!data) { /* petsc-allocated storage */
     if (!b->user_alloc) { ierr = PetscFree(b->v);CHKERRQ(ierr); }
-    ierr = PetscCalloc1((size_t)b->lda*b->Nmax,&b->v);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory((PetscObject)B,b->lda*b->Nmax*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscCalloc1((size_t)b->lda*B->cmap->n,&b->v);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)B,b->lda*B->cmap->n*sizeof(PetscScalar));CHKERRQ(ierr);
 
     b->user_alloc = PETSC_FALSE;
   } else { /* user-allocated storage */
@@ -2825,37 +2846,13 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqDense_Elemental(Mat A, MatType newtype
 }
 #endif
 
-/*@C
-  MatSeqDenseSetLDA - Declare the leading dimension of the user-provided array
-
-  Input parameter:
-+ A - the matrix
-- lda - the leading dimension
-
-  Notes:
-  This routine is to be used in conjunction with MatSeqDenseSetPreallocation();
-  it asserts that the preallocation has a leading dimension (the LDA parameter
-  of Blas and Lapack fame) larger than M, the first dimension of the matrix.
-
-  Level: intermediate
-
-.seealso: MatCreate(), MatCreateSeqDense(), MatSeqDenseSetPreallocation(), MatSetMaximumSize()
-
-@*/
-PetscErrorCode  MatSeqDenseSetLDA(Mat B,PetscInt lda)
+static PetscErrorCode  MatDenseSetLDA_SeqDense(Mat B,PetscInt lda)
 {
-  Mat_SeqDense   *b = (Mat_SeqDense*)B->data;
-  PetscBool      flg;
-  PetscErrorCode ierr;
+  Mat_SeqDense *b = (Mat_SeqDense*)B->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(B,MAT_CLASSID,1);
-  ierr = PetscObjectTypeCompareAny((PetscObject)B,&flg,MATSEQDENSE,MATSEQDENSECUDA,"");CHKERRQ(ierr);
-  if (!flg) PetscFunctionReturn(0);
   if (lda < B->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"LDA %D must be at least matrix dimension %D",lda,B->rmap->n);
-  b->lda       = lda;
-  b->changelda = PETSC_FALSE;
-  b->Mmax      = PetscMax(b->Mmax,lda);
+  b->lda = lda;
   PetscFunctionReturn(0);
 }
 
@@ -3004,6 +3001,7 @@ PetscErrorCode MatCreate_SeqDense(Mat B)
   b->roworiented = PETSC_TRUE;
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatDenseGetLDA_C",MatDenseGetLDA_SeqDense);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatDenseSetLDA_C",MatDenseSetLDA_SeqDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatDenseGetArray_C",MatDenseGetArray_SeqDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatDenseRestoreArray_C",MatDenseRestoreArray_SeqDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatDensePlaceArray_C",MatDensePlaceArray_SeqDense);CHKERRQ(ierr);

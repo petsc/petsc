@@ -1,11 +1,11 @@
 static char help[] = "Test MatMatMult() and MatTransposeMatMult() for MPIAIJ and MPIDENSE matrices. \n\
-                      Sequential part of mpidense matrix allows changes made by MatSeqDenseSetLDA(). \n\n";
+                      Sequential part of mpidense matrix allows changes made by MatDenseSetLDA(). \n\n";
 
 #include <petsc.h>
 
 int main(int argc, char ** argv)
 {
-  Mat            A, B, C, C1, seqB;
+  Mat            A, B, C, C1;
   PetscMPIInt    size;
   PetscErrorCode ierr;
   PetscInt       i,ia[2] = { 0, 2 }, ja[2] = { 0, 1 }, lda = 4;
@@ -27,8 +27,7 @@ int main(int argc, char ** argv)
   ierr = MatCreateDense(PETSC_COMM_WORLD, 1, PETSC_DECIDE, 2, 4, data, &B);CHKERRQ(ierr);
   ierr = MatSetOptionsPrefix(B,"b_");CHKERRQ(ierr);
   ierr = MatSetFromOptions(B);CHKERRQ(ierr);
-  ierr = MatDenseGetLocalMatrix(B, &seqB);CHKERRQ(ierr);
-  ierr = MatSeqDenseSetLDA(seqB, lda);CHKERRQ(ierr);
+  ierr = MatDenseSetLDA(B, lda);CHKERRQ(ierr);
 
   /* Test MatMatMult() */
   ierr = MatMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C);CHKERRQ(ierr);

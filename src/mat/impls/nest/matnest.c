@@ -117,13 +117,13 @@ PETSC_INTERN PetscErrorCode MatMatMultNumeric_Nest_Dense(Mat A,Mat B,Mat C)
     ierr = ISGetSize(bA->isglobal.row[i],&M);CHKERRQ(ierr);
     ierr = MatCreateDense(PetscObjectComm((PetscObject)A),contents->dm[i+1]-contents->dm[i],PETSC_DECIDE,M,N,carray+contents->dm[i],&viewC);CHKERRQ(ierr);
     ierr = MatDenseGetLocalMatrix(viewC,&seq);CHKERRQ(ierr);
-    ierr = MatSeqDenseSetLDA(seq,ldc);CHKERRQ(ierr);
+    ierr = MatDenseSetLDA(seq,ldc);CHKERRQ(ierr);
     for (j=0; j<nc; j++) {
       if (!bA->m[i][j]) continue;
       ierr = ISGetSize(bA->isglobal.col[j],&M);CHKERRQ(ierr);
       ierr = MatCreateDense(PetscObjectComm((PetscObject)A),contents->dn[j+1]-contents->dn[j],PETSC_DECIDE,M,N,(PetscScalar*)(barray+contents->dn[j]),&viewB);CHKERRQ(ierr);
       ierr = MatDenseGetLocalMatrix(viewB,&seq);CHKERRQ(ierr);
-      ierr = MatSeqDenseSetLDA(seq,ldb);CHKERRQ(ierr);
+      ierr = MatDenseSetLDA(seq,ldb);CHKERRQ(ierr);
 
       /* MatMatMultNumeric(bA->m[i][j],viewB,contents->workC[i*nc + j]); */
       workC             = contents->workC[i*nc + j];
@@ -209,7 +209,7 @@ PETSC_INTERN PetscErrorCode MatMatMultSymbolic_Nest_Dense(Mat A,Mat B,PetscReal 
     ierr = ISGetSize(bA->isglobal.col[j],&M);CHKERRQ(ierr);
     ierr = MatCreateDense(PetscObjectComm((PetscObject)A),contents->dn[j+1]-contents->dn[j],PETSC_DECIDE,M,N,(PetscScalar*)(barray+contents->dn[j]),&viewB);CHKERRQ(ierr);
     ierr = MatDenseGetLocalMatrix(viewB,&viewSeq);CHKERRQ(ierr);
-    ierr = MatSeqDenseSetLDA(viewSeq,ldb);CHKERRQ(ierr);
+    ierr = MatDenseSetLDA(viewSeq,ldb);CHKERRQ(ierr);
     for (i=0; i<nr; i++) {
       if (!bA->m[i][j]) continue;
       /* MatMatMultSymbolic may attach a specific container (depending on MatType of bA->m[i][j]) to workC[i][j] */

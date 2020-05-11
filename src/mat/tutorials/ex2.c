@@ -32,7 +32,7 @@ int main(int argc,char **argv)
       b[i+j*size] = a[i+j*size];
     }
   }
-  ierr = MatCreate(MPI_COMM_SELF,&A);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,size,size,size,size);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQDENSE);CHKERRQ(ierr);
   ierr = MatSeqDenseSetPreallocation(A,a);CHKERRQ(ierr);
@@ -43,59 +43,59 @@ int main(int argc,char **argv)
   for (i=0; i<size; i++) {
     x[i] = one;
   }
-  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,1,size,x,&X);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,size,x,&X);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(X);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(X);CHKERRQ(ierr);
 
   ierr = PetscMalloc1(size,&y);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,1,size,y,&Y);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,size,y,&Y);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(Y);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(Y);CHKERRQ(ierr);
 
   ierr = PetscMalloc1(size,&z);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,1,size,z,&Z);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,size,z,&Z);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(Z);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(Z);CHKERRQ(ierr);
 
   /*
    * Now create submatrices and subvectors
    */
-  ierr = MatCreate(MPI_COMM_SELF,&A11);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,&A11);CHKERRQ(ierr);
   ierr = MatSetSizes(A11,size1,size1,size1,size1);CHKERRQ(ierr);
   ierr = MatSetType(A11,MATSEQDENSE);CHKERRQ(ierr);
   ierr = MatSeqDenseSetPreallocation(A11,b);CHKERRQ(ierr);
-  ierr = MatSeqDenseSetLDA(A11,size);CHKERRQ(ierr);
+  ierr = MatDenseSetLDA(A11,size);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A11,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A11,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = MatCreate(MPI_COMM_SELF,&A12);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,&A12);CHKERRQ(ierr);
   ierr = MatSetSizes(A12,size1,size2,size1,size2);CHKERRQ(ierr);
   ierr = MatSetType(A12,MATSEQDENSE);CHKERRQ(ierr);
   ierr = MatSeqDenseSetPreallocation(A12,b+size1*size);CHKERRQ(ierr);
-  ierr = MatSeqDenseSetLDA(A12,size);CHKERRQ(ierr);
+  ierr = MatDenseSetLDA(A12,size);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A12,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A12,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = MatCreate(MPI_COMM_SELF,&A21);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,&A21);CHKERRQ(ierr);
   ierr = MatSetSizes(A21,size2,size1,size2,size1);CHKERRQ(ierr);
   ierr = MatSetType(A21,MATSEQDENSE);CHKERRQ(ierr);
   ierr = MatSeqDenseSetPreallocation(A21,b+size1);CHKERRQ(ierr);
-  ierr = MatSeqDenseSetLDA(A21,size);CHKERRQ(ierr);
+  ierr = MatDenseSetLDA(A21,size);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A21,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A21,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = MatCreate(MPI_COMM_SELF,&A22);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,&A22);CHKERRQ(ierr);
   ierr = MatSetSizes(A22,size2,size2,size2,size2);CHKERRQ(ierr);
   ierr = MatSetType(A22,MATSEQDENSE);CHKERRQ(ierr);
   ierr = MatSeqDenseSetPreallocation(A22,b+size1*size+size1);CHKERRQ(ierr);
-  ierr = MatSeqDenseSetLDA(A22,size);CHKERRQ(ierr);
+  ierr = MatDenseSetLDA(A22,size);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A22,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A22,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,1,size1,x,&X1);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,1,size2,x+size1,&X2);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,1,size1,z,&Z1);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,1,size2,z+size1,&Z2);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,size1,x,&X1);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,size2,x+size1,&X2);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,size1,z,&Z1);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,size2,z+size1,&Z2);CHKERRQ(ierr);
 
   /*
    * Now multiple matrix times input in two ways;
