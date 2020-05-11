@@ -107,6 +107,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.createChildren()
     # Create argDB for user specified options only
     self.clArgDB = dict([(nargs.Arg.parseArgument(arg)[0], arg) for arg in self.clArgs])
+    self.defineDict = {}
     return
 
   def __getstate__(self):
@@ -677,7 +678,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     if prefix:         prefix = prefix+'_'
     return prefix+name
 
-  def outputDefines(self, f, child, prefix = None):
+  def processDefines(self, child, prefix = None):
     '''If the child contains a dictionary named "defines", the entries are output as defines in the config header.
     The prefix to each define is calculated as follows:
     - If the prefix argument is given, this is used, otherwise
@@ -691,13 +692,18 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       help = child.help
     else:
       help = {}
-    for pair in sorted(child.defines.items()):
+    for pair in child.defines.items():
       if not pair[1]: continue
       if pair[0] in help:
-        self.outputDefine(f, self.getFullDefineName(child, pair[0], prefix), pair[1], help[pair[0]])
+        item = (self.getFullDefineName(child, pair[0], prefix), pair[1], help[pair[0]])
       else:
-        self.outputDefine(f, self.getFullDefineName(child, pair[0], prefix), pair[1])
+        item = (self.getFullDefineName(child, pair[0], prefix), pair[1])
+      self.defineDict.update({item[0] : item})
     return
+
+  def outputDefines(self, f):
+    for item in sorted(self.defineDict):
+      self.outputDefine(f, *self.defineDict[item])
 
   def outputPkgVersion(self, f, child):
     '''If the child contains a tuple named "version_tuple", the entries are output in the config package header.'''
@@ -808,9 +814,10 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     f.write('#define '+guard+'\n\n')
     if hasattr(self, 'headerTop'):
       f.write(str(self.headerTop)+'\n')
-    self.outputDefines(f, self, prefix)
+    self.processDefines(self, prefix)
     for child in self.childGraph.vertices:
-      self.outputDefines(f, child, prefix)
+      self.processDefines(child, prefix)
+    self.outputDefines(f)
     if hasattr(self, 'headerBottom'):
       f.write(str(self.headerBottom)+'\n')
     f.write('#endif\n')
