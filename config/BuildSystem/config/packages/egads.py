@@ -4,15 +4,17 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.gitcommit         = '09fe8f0fe689bea60354eb3e9977fd8452c05573'
+    self.gitcommit         = 'bcd82f996542f6d667ccf70a6d8644be1ef7a30f'
     self.download          = ['git://https://github.com/bldenton/EGADSlite.git']
-    self.functions         = []
-    self.includes          = []
+    self.functions         = ['EG_open']
+    self.includes          = ['egads.h']
     self.hastests          = 1
     return
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
+    self.pthread = self.framework.require('config.packages.pthread',self)
+    self.deps    = [self.pthread]
     return
 
   def createMakefile(self):
