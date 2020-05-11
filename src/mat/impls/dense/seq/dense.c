@@ -2305,6 +2305,7 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_SeqDense(Mat C)
     ierr = MatProductSetFromOptions_SeqDense_ABt(C);CHKERRQ(ierr);
     break;
   case MATPRODUCT_PtAP:
+  case MATPRODUCT_RARt:
     ierr = MatProductSetFromOptions_SeqDense_PtAP(C);CHKERRQ(ierr);
     break;
   default: SETERRQ1(PetscObjectComm((PetscObject)C),PETSC_ERR_SUP,"MatProduct type %s is not supported for SeqDense and SeqDense matrices",MatProductTypes[product->type]);
