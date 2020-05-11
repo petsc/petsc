@@ -3586,7 +3586,7 @@ These can be accessed with \trl{-pc_fieldsplit_type<additive,multiplicative,}\br
 By default blocks $A_{00}, A_{01}$ and so on are extracted out of \trl{Pmat}, the matrix that the \lstinline{KSP} uses to build the preconditioner,
 and not out of \trl{Amat} (i.e., $A$ itself). As discussed above in Sec.~\ref{sec:combining-pcs}, however, it is possible to use \lstinline{Amat}
 instead of \trl{Pmat} by calling \lstinline{PCSetUseAmat(pc)} or using \trl{-pc_use_amat} on the command line.  Alternatively, you can have \lstinline{PCFieldSplit}
-extract the diagonal blocks $A_{00}, A_{11}$ etc. out of \lstinline{Amat} by calling \lstinline{PCFieldSplitSetDiagUseAmat(pc,PETSC_TRUE}) or supplying
+extract the diagonal blocks $A_{00}, A_{11}$ etc. out of \lstinline{Amat} by calling \lstinline{PCFieldSplitSetDiagUseAmat(pc,PETSC_TRUE)} or supplying
 command-line argument \trl{-pc_fieldsplit_diag_use_amat}.  Similarly, \break\lstinline{PCFieldSplitSetOffDiagUseAmat(pc,{PETSC_TRUE}) or \trl{-pc_fieldsplit_off_diag_use_amat}
 will cause the off-diagonal blocks $A_{01},A_{10}$ etc. to be extracted out of \lstinline{Amat}.
 
@@ -6676,7 +6676,7 @@ One can also read PETSc binary files (see Section \ref{sec_viewers}) directly in
 This requires less disk space and is recommended for all but the smallest data sizes.
 One can also use
 \begin{lstlisting}
-PetscViewerPushFormat(viewer,PETSC_VIEWER_BINARY_MATLAB}
+PetscViewerPushFormat(viewer,PETSC_VIEWER_BINARY_MATLAB)
 \end{lstlisting}
 to dump both a PETSc binary file and a corresponding \trl{.info} file which
 \lstinline{PetscReadBinaryMatlab.m} will use to format the binary file in more complex cases, such as using a \lstinline{DMDA}.
