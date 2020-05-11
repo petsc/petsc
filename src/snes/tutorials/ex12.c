@@ -1591,6 +1591,7 @@ int main(int argc, char **argv)
     suffix: fas_newton_1
     requires: triangle !single
     args: -run_type full -dm_refine_hierarchy 3 -interpolate 1 -petscspace_degree 1 -snes_type fas -snes_fas_levels 3 -fas_coarse_pc_type lu -fas_coarse_snes_monitor_short -snes_monitor_short -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_snes_linesearch_type basic -fas_levels_ksp_rtol 1.0e-10 -fas_levels_snes_monitor_short
+    filter: sed -e "s/total number of linear solver iterations=14/total number of linear solver iterations=15/g"
 
   test:
     suffix: fas_ngs_0
