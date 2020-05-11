@@ -4091,10 +4091,12 @@ PetscErrorCode MatMatMultNumeric_SeqDense_SeqAIJ(Mat A,Mat B,Mat C)
   Mat_SeqDense      *sub_a = (Mat_SeqDense*)A->data;
   Mat_SeqAIJ        *sub_b = (Mat_SeqAIJ*)B->data;
   Mat_SeqDense      *sub_c = (Mat_SeqDense*)C->data;
-  PetscInt          i,n,m,q,p;
+  PetscInt          i,j,n,m,q,p;
   const PetscInt    *ii,*idx;
   const PetscScalar *b,*a,*a_q;
   PetscScalar       *c,*c_q;
+  PetscInt          clda = sub_c->lda;
+  PetscInt          alda = sub_a->lda;
 
   PetscFunctionBegin;
   m    = A->rmap->n;
@@ -4103,15 +4105,20 @@ PetscErrorCode MatMatMultNumeric_SeqDense_SeqAIJ(Mat A,Mat B,Mat C)
   a    = sub_a->v;
   b    = sub_b->a;
   c    = sub_c->v;
-  ierr = PetscArrayzero(c,m*p);CHKERRQ(ierr);
-
+  if (clda == m) {
+    ierr = PetscArrayzero(c,m*p);CHKERRQ(ierr);
+  } else {
+    for (j=0;j<p;j++)
+      for (i=0;i<m;i++)
+        c[j*clda + i] = 0.0;
+  }
   ii  = sub_b->i;
   idx = sub_b->j;
   for (i=0; i<n; i++) {
     q = ii[i+1] - ii[i];
     while (q-->0) {
-      c_q = c + m*(*idx);
-      a_q = a + m*i;
+      c_q = c + clda*(*idx);
+      a_q = a + alda*i;
       PetscKernelAXPY(c_q,*b,a_q,m);
       idx++;
       b++;
@@ -4124,13 +4131,17 @@ PetscErrorCode MatMatMultSymbolic_SeqDense_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat
 {
   PetscErrorCode ierr;
   PetscInt       m=A->rmap->n,n=B->cmap->n;
+  PetscBool      cisdense;
 
   PetscFunctionBegin;
   if (A->cmap->n != B->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"A->cmap->n %D != B->rmap->n %D\n",A->cmap->n,B->rmap->n);
   ierr = MatSetSizes(C,m,n,m,n);CHKERRQ(ierr);
   ierr = MatSetBlockSizesFromMats(C,A,B);CHKERRQ(ierr);
-  ierr = MatSetType(C,MATSEQDENSE);CHKERRQ(ierr);
-  ierr = MatSeqDenseSetPreallocation(C,NULL);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompareAny((PetscObject)C,&cisdense,MATSEQDENSE,MATSEQDENSECUDA,"");CHKERRQ(ierr);
+  if (!cisdense) {
+    ierr = MatSetType(C,MATDENSE);CHKERRQ(ierr);
+  }
+  ierr = MatSetUp(C);CHKERRQ(ierr);
 
   C->ops->matmultnumeric = MatMatMultNumeric_SeqDense_SeqAIJ;
   PetscFunctionReturn(0);
