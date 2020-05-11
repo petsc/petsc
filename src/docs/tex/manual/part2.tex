@@ -1264,8 +1264,8 @@ The sequential and parallel AIJ matrix storage formats by default
 employ {\em i-nodes} (identical nodes) when possible.  We search for
 consecutive rows with the same nonzero structure, thereby reusing
 matrix information for increased efficiency.  Related options database
-keys are \trl{-mat_no_inode} (do not use inodes) and \trl{
--mat_inode_limit <limit>} (set inode limit (max limit=5)).
+keys are \trl{-mat_no_inode} (do not use inodes) and 
+\trl{-mat_inode_limit <limit>} (set inode limit (max limit=5)).
 Note that problems with a single degree of freedom per grid node
 will automatically not use I-nodes.
 
@@ -2212,8 +2212,8 @@ KSPRichardsonSetScale(KSP ksp,PetscReal scale);
 KSPChebyshevSetEigenvalues(KSP ksp,PetscReal emax,PetscReal emin);
 KSPGMRESSetRestart(KSP ksp,PetscInt max_steps);
 \end{lstlisting}
-The default parameter values are \trl{damping_factor=1.0,
-emax=0.01, emin=100.0}, and \trl{max_steps=30}. The GMRES
+The default parameter values are \trl{damping_factor=1.0, emax=0.01, emin=100.0}, 
+and \trl{max_steps=30}. The GMRES
 \sindex{restart} restart and Richardson damping factor
 can also be set with the options \trl{-ksp_gmres_restart <n>}
 and \trl{-ksp_richardson_scale <factor>}. \findex{-ksp_gmres_restart}
@@ -2659,8 +2659,7 @@ factorization. These options may be set in the database with
 \item \trl{-pc_factor_reuse_fill}
 \item \trl{-pc_factor_in_place}
 \item \trl{-pc_factor_nonzeros_along_diagonal}
-\item \trl{-pc_factor_diagonal_fill
-}
+\item \trl{-pc_factor_diagonal_fill}
 \end{tightitemize}
 \findex{-pc_factor_levels} \findex{-pc_factor_reuse_ordering}
 %\findex{-pc_factor_drop_tolerance}
@@ -3312,8 +3311,8 @@ indicates which form of multigrid to apply \cite{1sbg}.
 \sindex{multigrid, multiplicative}
 \sindex{multigrid, additive} \sindex{multigrid, full} \sindex{multigrid, Kaskade}
 
-For standard V or W-cycle multigrids, one sets the \trl{
-mode} to be \findex{PC_MG_MULTIPLICATIVE} \lstinline{PC_MG_MULTIPLICATIVE}; for the
+For standard V or W-cycle multigrids, one sets the 
+\trl{mode} to be \findex{PC_MG_MULTIPLICATIVE} \lstinline{PC_MG_MULTIPLICATIVE}; for the
 additive form (which in certain cases reduces to the BPX method, or additive
 multilevel Schwarz, or multilevel diagonal scaling), one uses
 \findex{PC_MG_ADDITIVE} \trl{PC_MG_ADDITIVE} as the \lstinline{mode}.  For a variant
@@ -4005,8 +4004,8 @@ as is typically done with
 \begin{lstlisting}
 SNESSetJacobian(SNES snes,Mat Amat,Mat Pmat,PetscErrorCode (*FormJacobian)(SNES snes, Vec x,Mat A,Mat B,void *ctx),void *ctx);
 \end{lstlisting}
-The arguments of the routine \trl{
-FormJacobian()} are the current iterate, \trl{x}; the (approximate) Jacobian matrix,
+The arguments of the routine \trl{FormJacobian()} are the current iterate, 
+\trl{x}; the (approximate) Jacobian matrix,
 \trl{Amat}; the matrix from which the preconditioner is constructed, \trl{Pmat} (which is usually the same
 as \trl{Amat});  and an optional user-defined Jacobian
 context, \trl{ctx}, for application-specific data.
@@ -4421,8 +4420,8 @@ these matrices against finite difference versions.  In the simplest
 form of comparison, users can employ the option \trl{-snes_test_jacobian}
 to compare the matrices at several points.  Although not exhaustive,
 this test will generally catch obvious problems.  One can compare the
-elements of the two matrices by using the option \trl{
--snes_test_jacobian_view} \findex{-snes_test_jacobian_view}, which causes the two
+elements of the two matrices by using the option 
+\trl{-snes_test_jacobian_view} \findex{-snes_test_jacobian_view}, which causes the two
 matrices to be printed to the screen.  \sindex{Jacobian, testing}
 
 Another means for verifying the correctness of a code for Jacobian
@@ -7266,8 +7265,8 @@ times in a code (e.g., \lstinline{VecSetValues()}, \lstinline{MatSetValues()}).
 \label{sec_PetscLoginfo}
 
 Users can activate the printing of verbose information about
-algorithms, data structures, etc. to the screen by using the option \trl{
--info} \findex{-info} or by calling \lstinline{PetscInfoAllow(PETSC_TRUE)}.
+algorithms, data structures, etc. to the screen by using the option 
+\trl{-info} \findex{-info} or by calling \lstinline{PetscInfoAllow(PETSC_TRUE)}.
 Such logging, which is used throughout the PETSc libraries,
 can aid the user in understanding algorithms and
 tuning program performance.  For example, as discussed in
@@ -8115,8 +8114,8 @@ for Fortran); its purpose is to
 allow someone to rename all the options in a package without knowing
 the names of the individual options.  For example, when using block
 Jacobi preconditioning, the \lstinline{KSP} and \lstinline{PC} methods used on the individual
-blocks can be controlled via the options \trl{-sub_ksp_type} and \trl{
--sub_pc_type}. \sindex{block Jacobi}
+blocks can be controlled via the options \trl{-sub_ksp_type} and 
+\trl{-sub_pc_type}. \sindex{block Jacobi}
 
 \subsection{Keeping Track of Options}
 
@@ -9031,7 +9030,7 @@ def configure(self):
   self.logClear()
   return
 \end{pythonlisting}
-The \trl{Dump} method runs over the tree of configure modules, and outputs the data necessary for building, usually employing the \trl{addMakeMacro()}, \trl{addMakeRule()} and \trl{addDefine()} methods. These method funnel output to the include and make files defined by the framework object, and set at the beginning of this trl{configure()} method. There is also some simple information that is often used, which we define in the constructor,
+The \trl{Dump} method runs over the tree of configure modules, and outputs the data necessary for building, usually employing the \trl{addMakeMacro()}, \trl{addMakeRule()} and \trl{addDefine()} methods. These method funnel output to the include and make files defined by the framework object, and set at the beginning of this \trl{configure()} method. There is also some simple information that is often used, which we define in the constructor,
 \begin{pythonlisting}
 def __init__(self, framework):
   config.base.Configure.__init__(self, framework)
