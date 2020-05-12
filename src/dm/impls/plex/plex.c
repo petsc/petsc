@@ -6221,7 +6221,7 @@ PetscErrorCode DMPlexAnchorsModifyMat(DM dm, PetscSection section, PetscInt numP
   PetscFunctionReturn(0);
 }
 
-/*
+/*@C
   DMPlexGetClosureIndices - Gets the global dof indices associated with the closure of the given point within the provided sections.
 
   Not collective
@@ -6251,7 +6251,7 @@ PetscErrorCode DMPlexAnchorsModifyMat(DM dm, PetscSection section, PetscInt numP
   Level: advanced
 
 .seealso DMPlexRestoreClosureIndices(), DMPlexVecGetClosure(), DMPlexMatSetClosure(), DMGetLocalSection(), DMGetGlobalSection()
-*/
+@*/
 PetscErrorCode DMPlexGetClosureIndices(DM dm, PetscSection section, PetscSection idxSection, PetscInt point, PetscBool useClPerm,
                                        PetscInt *numIndices, PetscInt *indices[], PetscInt outOffsets[], PetscScalar *values[])
 {
@@ -6471,7 +6471,7 @@ PetscErrorCode DMPlexRestoreClosureIndices(DM dm, PetscSection section, PetscSec
 
   Level: intermediate
 
-.seealso DMPlexVecGetClosure(), DMPlexVecSetClosure()
+.seealso DMPlexMatSetClosureGeneral(), DMPlexVecGetClosure(), DMPlexVecSetClosure()
 @*/
 PetscErrorCode DMPlexMatSetClosure(DM dm, PetscSection section, PetscSection globalSection, Mat A, PetscInt point, const PetscScalar values[], InsertMode mode)
 {
@@ -6492,13 +6492,7 @@ PetscErrorCode DMPlexMatSetClosure(DM dm, PetscSection section, PetscSection glo
   ierr = DMPlexGetClosureIndices(dm, section, globalSection, point, PETSC_TRUE, &numIndices, &indices, NULL, (PetscScalar **) &values);CHKERRQ(ierr);
 
   if (mesh->printSetValues) {ierr = DMPlexPrintMatSetValues(PETSC_VIEWER_STDOUT_SELF, A, point, numIndices, indices, 0, NULL, values);CHKERRQ(ierr);}
-  ierr = MatSetValues(A, numIndices, indices, numIndices, indices, values, mode);CHKERRQ(ierr);
-  if (mesh->printFEM > 1) {
-    PetscInt i;
-    ierr = PetscPrintf(PETSC_COMM_SELF, "  Indices:");CHKERRQ(ierr);
-    for (i = 0; i < numIndices; ++i) {ierr = PetscPrintf(PETSC_COMM_SELF, " %D", indices[i]);CHKERRQ(ierr);}
-    ierr = PetscPrintf(PETSC_COMM_SELF, "\n");CHKERRQ(ierr);
-  }
+  ierr = MatSetValues(A, numIndices, indices, numIndices, indices, values, mode);
   if (ierr) {
     PetscMPIInt    rank;
     PetscErrorCode ierr2;
@@ -6510,12 +6504,39 @@ PetscErrorCode DMPlexMatSetClosure(DM dm, PetscSection section, PetscSection glo
     if (values != valuesOrig) {ierr2 = DMRestoreWorkArray(dm, 0, MPIU_SCALAR, &values);CHKERRQ(ierr2);}
     CHKERRQ(ierr);
   }
+  if (mesh->printFEM > 1) {
+    PetscInt i;
+    ierr = PetscPrintf(PETSC_COMM_SELF, "  Indices:");CHKERRQ(ierr);
+    for (i = 0; i < numIndices; ++i) {ierr = PetscPrintf(PETSC_COMM_SELF, " %D", indices[i]);CHKERRQ(ierr);}
+    ierr = PetscPrintf(PETSC_COMM_SELF, "\n");CHKERRQ(ierr);
+  }
 
   ierr = DMPlexRestoreClosureIndices(dm, section, globalSection, point, PETSC_TRUE, &numIndices, &indices, NULL, (PetscScalar **) &values);CHKERRQ(ierr);
   if (values != valuesOrig) {ierr = DMRestoreWorkArray(dm, 0, MPIU_SCALAR, &values);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
+/*@C
+  DMPlexMatSetClosure - Set an array of the values on the closure of 'point' using a different row and column section
+
+  Not collective
+
+  Input Parameters:
++ dmRow - The DM for the row fields
+. sectionRow - The section describing the layout, or NULL to use the default section in dmRow
+. globalSectionRow - The section describing the layout, or NULL to use the default global section in dmRow
+. dmCol - The DM for the column fields
+. sectionCol - The section describing the layout, or NULL to use the default section in dmCol
+. globalSectionCol - The section describing the layout, or NULL to use the default global section in dmCol
+. A - The matrix
+. point - The point in the DMs
+. values - The array of values
+- mode - The insert mode, where INSERT_ALL_VALUES and ADD_ALL_VALUES also overwrite boundary conditions
+
+  Level: intermediate
+
+.seealso DMPlexMatSetClosure(), DMPlexVecGetClosure(), DMPlexVecSetClosure()
+@*/
 PetscErrorCode DMPlexMatSetClosureGeneral(DM dmRow, PetscSection sectionRow, PetscSection globalSectionRow, DM dmCol, PetscSection sectionCol, PetscSection globalSectionCol, Mat A, PetscInt point, const PetscScalar values[], InsertMode mode)
 {
   DM_Plex           *mesh = (DM_Plex*) dmRow->data;
@@ -6541,7 +6562,7 @@ PetscErrorCode DMPlexMatSetClosureGeneral(DM dmRow, PetscSection sectionRow, Pet
   ierr = DMPlexGetClosureIndices(dmCol, sectionCol, globalSectionCol, point, PETSC_TRUE, &numIndicesCol, &indicesCol, NULL, (PetscScalar **) &values);CHKERRQ(ierr);
 
   if (mesh->printSetValues) {ierr = DMPlexPrintMatSetValues(PETSC_VIEWER_STDOUT_SELF, A, point, numIndicesRow, indicesRow, numIndicesCol, indicesCol, values);CHKERRQ(ierr);}
-  ierr = MatSetValues(A, numIndicesRow, indicesRow, numIndicesCol, indicesCol, values, mode);CHKERRQ(ierr);
+  ierr = MatSetValues(A, numIndicesRow, indicesRow, numIndicesCol, indicesCol, values, mode);
   if (ierr) {
     PetscMPIInt    rank;
     PetscErrorCode ierr2;
