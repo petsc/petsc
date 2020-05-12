@@ -679,7 +679,7 @@ linux-64idx-i8:
 linux-gcc-ifc-cmplx:
   extends:
     - .stage-3
-    - .linux_test
+    - .linux_test_nofflags
   tags:
     - gce-nfs
   variables:
