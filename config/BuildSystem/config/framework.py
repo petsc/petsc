@@ -621,16 +621,13 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.actions.addArgument('Framework', 'RDict update', 'Substitutions were stored in RDict with parent '+str(argDB.parentDirectory))
     return
 
-  def outputDefine(self, f, name, value = None, comment = ''):
+  def outputDefine(self, f, name, value = None):
     '''Define "name" to "value" in the configuration header'''
     # we need to keep the libraries in this list and simply not print them at the end
     # because libraries.havelib() is used to find library in this list we had to list the libraries in the
     # list even though we don't need them in petscconf.h
     # two packages have LIB in there name so we have to include them here
     if (name.startswith('PETSC_HAVE_LIB') and not name in ['PETSC_HAVE_LIBPNG','PETSC_HAVE_LIBJPEG']) or (name.startswith('PETSC_HAVE_') and name.endswith('LIB')): return
-    if comment:
-      for line in comment.split('\n'):
-        if line: f.write('/* '+line+' */\n')
     if value:
       f.write('#define '+name+' '+str(value)+'\n')
     else:
@@ -685,19 +682,11 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     - If the child contains "headerPrefix", this is used, otherwise
     - If the module containing the child class is not "__main__", this is used, otherwise
     - No prefix is used
-    If the child contains a dictionary named "help", then a help string will be added before the define
     '''
     if not hasattr(child, 'defines') or not isinstance(child.defines, dict): return
-    if hasattr(child, 'help') and isinstance(child.help, dict):
-      help = child.help
-    else:
-      help = {}
     for pair in child.defines.items():
       if not pair[1]: continue
-      if pair[0] in help:
-        item = (self.getFullDefineName(child, pair[0], prefix), pair[1], help[pair[0]])
-      else:
-        item = (self.getFullDefineName(child, pair[0], prefix), pair[1])
+      item = (self.getFullDefineName(child, pair[0], prefix), pair[1])
       self.defineDict.update({item[0] : item})
     return
 
