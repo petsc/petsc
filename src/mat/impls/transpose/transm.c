@@ -102,10 +102,15 @@ PetscErrorCode MatHasOperation_Transpose(Mat mat,MatOperation op,PetscBool *has)
   PetscFunctionBegin;
 
   *has = PETSC_FALSE;
-  if (op == MATOP_MAT_MULT || op == MATOP_TRANSPOSE_MAT_MULT) {
-    ierr = MatHasOperation(X->A,op == MATOP_MAT_MULT ? MATOP_TRANSPOSE_MAT_MULT : MATOP_MAT_MULT,has);CHKERRQ(ierr);
-  }
-  else if (((void**)mat->ops)[op]) *has = PETSC_TRUE;
+  if (op == MATOP_MULT) {
+    ierr = MatHasOperation(X->A,MATOP_MULT_TRANSPOSE,has);CHKERRQ(ierr);
+  } else if (op == MATOP_MULT_TRANSPOSE) {
+    ierr = MatHasOperation(X->A,MATOP_MULT,has);CHKERRQ(ierr);
+  } else if (op == MATOP_MULT_ADD) {
+    ierr = MatHasOperation(X->A,MATOP_MULT_TRANSPOSE_ADD,has);CHKERRQ(ierr);
+  } else if (op == MATOP_MULT_TRANSPOSE_ADD) {
+    ierr = MatHasOperation(X->A,MATOP_MULT_ADD,has);CHKERRQ(ierr);
+  } else if (((void**)mat->ops)[op]) *has = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
