@@ -639,6 +639,9 @@ PetscErrorCode DMStagGetOwnershipRanges(DM dm,const PetscInt *lx[],const PetscIn
 
   Notes:
   Dof supplied for strata too big for the dimension are ignored; these may be set to 0.
+  For example, for a 2-dimensional DMStag, dof2 sets the number of dof per element,
+  and dof3 is unused. For a 3-dimensional DMStag, dof3 sets the number of dof per element.
+  
   In contrast to DMDACreateCompatibleDMDA(), coordinates are not reused.
 
   Level: intermediate

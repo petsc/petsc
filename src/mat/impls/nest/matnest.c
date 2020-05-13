@@ -2095,22 +2095,24 @@ PETSC_INTERN PetscErrorCode MatConvert_Nest_AIJ(Mat A,MatType newtype,MatReuse r
 PetscErrorCode MatHasOperation_Nest(Mat mat,MatOperation op,PetscBool *has)
 {
   Mat_Nest       *bA = (Mat_Nest*)mat->data;
+  MatOperation   opAdd;
   PetscInt       i,j,nr = bA->nr,nc = bA->nc;
   PetscBool      flg;
   PetscErrorCode ierr;
   PetscFunctionBegin;
 
   *has = PETSC_FALSE;
-  if (op == MATOP_MULT_TRANSPOSE || op == MATOP_MAT_MULT) {
+  if (op == MATOP_MULT || op == MATOP_MULT_ADD || op == MATOP_MULT_TRANSPOSE || op == MATOP_MULT_TRANSPOSE_ADD) {
+    opAdd = (op == MATOP_MULT || op == MATOP_MULT_ADD ? MATOP_MULT_ADD : MATOP_MULT_TRANSPOSE_ADD);
     for (j=0; j<nc; j++) {
       for (i=0; i<nr; i++) {
         if (!bA->m[i][j]) continue;
-        ierr = MatHasOperation(bA->m[i][j],op,&flg);CHKERRQ(ierr);
+        ierr = MatHasOperation(bA->m[i][j],opAdd,&flg);CHKERRQ(ierr);
         if (!flg) PetscFunctionReturn(0);
       }
     }
   }
-  if (((void**)mat->ops)[op] || (op == MATOP_MAT_MULT && flg)) *has = PETSC_TRUE;
+  if (((void**)mat->ops)[op]) *has = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
