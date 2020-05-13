@@ -20,6 +20,8 @@
    that are not in is1. This requires O(imax-imin) memory and O(imax-imin)
    work, where imin and imax are the bounds on the indices in is1.
 
+   If is2 is NULL, the result is the same as for an empty IS, i.e., a duplicate of is1.
+
    Level: intermediate
 
 .seealso: ISDestroy(), ISView(), ISSum(), ISExpand()
@@ -34,8 +36,12 @@ PetscErrorCode  ISDifference(IS is1,IS is2,IS *isout)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is1,IS_CLASSID,1);
-  PetscValidHeaderSpecific(is2,IS_CLASSID,2);
   PetscValidPointer(isout,3);
+  if (!is2) {
+    ierr = ISDuplicate(is1, isout);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+  PetscValidHeaderSpecific(is2,IS_CLASSID,2);
 
   ierr = ISGetIndices(is1,&i1);CHKERRQ(ierr);
   ierr = ISGetLocalSize(is1,&n1);CHKERRQ(ierr);

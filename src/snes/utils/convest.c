@@ -153,19 +153,33 @@ PetscErrorCode PetscConvEstSetSolver(PetscConvEst ce, PetscObject solver)
 @*/
 PetscErrorCode PetscConvEstSetUp(PetscConvEst ce)
 {
-  PetscDS        ds;
-  PetscInt       Nf, f;
+  PetscInt       Nf, f, Nds, s;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetDS(ce->idm, &ds);CHKERRQ(ierr);
-  ierr = PetscDSGetNumFields(ds, &Nf);CHKERRQ(ierr);
+  ierr = DMGetNumFields(ce->idm, &Nf);CHKERRQ(ierr);
   ce->Nf = PetscMax(Nf, 1);
   ierr = PetscMalloc1((ce->Nr+1)*ce->Nf, &ce->errors);CHKERRQ(ierr);
-  ierr = PetscMalloc3(ce->Nf, &ce->initGuess, ce->Nf, &ce->exactSol, ce->Nf, &ce->ctxs);CHKERRQ(ierr);
+  ierr = PetscCalloc3(ce->Nf, &ce->initGuess, ce->Nf, &ce->exactSol, ce->Nf, &ce->ctxs);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) ce->initGuess[f] = zero_private;
+  ierr = DMGetNumDS(ce->idm, &Nds);CHKERRQ(ierr);
+  for (s = 0; s < Nds; ++s) {
+    PetscDS         ds;
+    DMLabel         label;
+    IS              fieldIS;
+    const PetscInt *fields;
+    PetscInt        dsNf;
+
+    ierr = DMGetRegionNumDS(ce->idm, s, &label, &fieldIS, &ds);CHKERRQ(ierr);
+    ierr = PetscDSGetNumFields(ds, &dsNf);CHKERRQ(ierr);
+    if (fieldIS) {ierr = ISGetIndices(fieldIS, &fields);CHKERRQ(ierr);}
+    for (f = 0; f < dsNf; ++f) {
+      const PetscInt field = fields[f];
+      ierr = PetscDSGetExactSolution(ds, field, &ce->exactSol[field], &ce->ctxs[field]);CHKERRQ(ierr);
+    }
+    if (fieldIS) {ierr = ISRestoreIndices(fieldIS, &fields);CHKERRQ(ierr);}
+  }
   for (f = 0; f < Nf; ++f) {
-    ierr = PetscDSGetExactSolution(ds, f, &ce->exactSol[f], &ce->ctxs[f]);CHKERRQ(ierr);
     if (!ce->exactSol[f]) SETERRQ1(PetscObjectComm((PetscObject) ce), PETSC_ERR_ARG_WRONG, "DS must contain exact solution functions in order to estimate convergence, missing for field %D", f);
   }
   PetscFunctionReturn(0);
