@@ -1673,9 +1673,12 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_FE(DM dm, PetscFE fe, PetscIn
       for (q = 0; q < Nq; ++q) {
         PetscInt i, k;
 
-        for (k = 0; k < pdim; ++k)
-          for (i = 0; i < cdim; ++i)
-            v[q*cdim + i] += basis[q*pdim + k] * PetscRealPart(coords[k*cdim + i]);
+        for (k = 0; k < pdim; ++k) {
+          const PetscInt vertex = k/cdim;
+          for (i = 0; i < cdim; ++i) {
+            v[q*cdim + i] += basis[(q*pdim + k)*cdim + i] * PetscRealPart(coords[vertex*cdim + i]);
+          }
+        }
         ierr = PetscLogFlops(2.0*pdim*cdim);CHKERRQ(ierr);
       }
     }
@@ -1685,10 +1688,14 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_FE(DM dm, PetscFE fe, PetscIn
         PetscInt i, j, k, c, r;
 
         /* J = dx_i/d\xi_j = sum[k=0,n-1] dN_k/d\xi_j * x_i(k) */
-        for (k = 0; k < pdim; ++k)
-          for (j = 0; j < dim; ++j)
-            for (i = 0; i < cdim; ++i)
-              J[(q*cdim + i)*cdim + j] += basisDer[(q*pdim + k)*dim + j] * PetscRealPart(coords[k*cdim + i]);
+        for (k = 0; k < pdim; ++k) {
+          const PetscInt vertex = k/cdim;
+          for (j = 0; j < dim; ++j) {
+            for (i = 0; i < cdim; ++i) {
+              J[(q*cdim + i)*cdim + j] += basisDer[((q*pdim + k)*cdim + i)*dim + j] * PetscRealPart(coords[vertex*cdim + i]);
+            }
+          }
+        }
         ierr = PetscLogFlops(2.0*pdim*dim*cdim);CHKERRQ(ierr);
         if (cdim > dim) {
           for (c = dim; c < cdim; ++c)

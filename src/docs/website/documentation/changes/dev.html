@@ -128,6 +128,9 @@
       <h4>DM/DA:</h4>
       <h4>DMPlex:</h4>
         <ul>
+          <li>Add DMPlexMatSetClosureGeneral() for different row and column layouts</li>
+          <li>DMPlexGet/RestoreClosureIndices() now take argument for ignoring the closure permutation and for modifying the input values for SetClosure()</li>
+          <li>DMPlexComputeInterpolatorNested() now takes a flag allowing nested interpolation between different spaces on the same mesh</li>
           <li>Add DMPlexInsertBoundaryValuesEssentialBdField() to insert boundary values using a field only supported on the boundary</li>
           <li>Change DMPlexCreateSubpointIS() to DMPlexGetSubpointIS()</li>
         </ul>

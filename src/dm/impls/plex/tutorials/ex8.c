@@ -27,10 +27,10 @@ int main(int argc, char **argv)
   ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
   for (c=cStart; c<cEnd; c++) {
     PetscInt numindices,*indices;
-    ierr = DMPlexGetClosureIndices(dm,section,section,c,&numindices,&indices,NULL);CHKERRQ(ierr);
+    ierr = DMPlexGetClosureIndices(dm,section,section,c,PETSC_TRUE,&numindices,&indices,NULL,NULL);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_SELF,"Element #%D\n",c-cStart);CHKERRQ(ierr);
     ierr = PetscIntView(numindices,indices,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-    ierr = DMPlexRestoreClosureIndices(dm,section,section,c,&numindices,&indices,NULL);CHKERRQ(ierr);
+    ierr = DMPlexRestoreClosureIndices(dm,section,section,c,PETSC_TRUE,&numindices,&indices,NULL,NULL);CHKERRQ(ierr);
   }
 
   ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);

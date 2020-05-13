@@ -458,7 +458,7 @@ static PetscErrorCode DMGetFirstLabelEntry_Private(DM dm, DM odm, DMLabel label,
 
   If we are using an input field (DM_BC_ESSENTIAL_FIELD or DM_BC_NATURAL_FIELD), we need to evaluate it at all the quadrature points of the dual basis functionals.
     - We use effectiveHeight to mean the height above our incoming DS. For example, if the DS is for a submesh then the effective height is zero, whereas if the DS
-      is for the volumetric mesh, but we are iterating over a surface, then the effective height is nonzero. When th effective height is nonzero, we need to extract
+      is for the volumetric mesh, but we are iterating over a surface, then the effective height is nonzero. When the effective height is nonzero, we need to extract
       dual spaces for the boundary from our input spaces.
     - After extracting all quadrature points, we tabulate the input fields and auxiliary fields on them.
 
@@ -677,7 +677,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
             CHKERRQ(ierr);
           }
           if (transform) {ierr = DMPlexBasisTransformPoint_Internal(plex, tdm, tv, point, fieldActive, PETSC_FALSE, values);CHKERRQ(ierr);}
-          ierr = DMPlexVecSetFieldClosure_Internal(plex, section, localX, fieldActive, point, Ncc, comps, values, mode);CHKERRQ(ierr);
+          ierr = DMPlexVecSetFieldClosure_Internal(plex, section, localX, fieldActive, point, Ncc, comps, label, ids[i], values, mode);CHKERRQ(ierr);
         }
         ierr = PetscFEGeomRestoreChunk(fegeom,p,p+1,&chunkgeom);CHKERRQ(ierr);
         ierr = PetscFEGeomDestroy(&fegeom);CHKERRQ(ierr);
@@ -715,7 +715,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
           CHKERRQ(ierr);
         }
         if (transform) {ierr = DMPlexBasisTransformPoint_Internal(plex, tdm, tv, p, fieldActive, PETSC_FALSE, values);CHKERRQ(ierr);}
-        ierr = DMPlexVecSetFieldClosure_Internal(plex, section, localX, fieldActive, p, Ncc, comps, values, mode);CHKERRQ(ierr);
+        ierr = DMPlexVecSetFieldClosure_Internal(plex, section, localX, fieldActive, p, Ncc, comps, NULL, -1, values, mode);CHKERRQ(ierr);
       }
       ierr = PetscFEGeomRestoreChunk(fegeom,p-pStart,pStart-p+1,&chunkgeom);CHKERRQ(ierr);
       ierr = PetscFEGeomDestroy(&fegeom);CHKERRQ(ierr);
