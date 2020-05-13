@@ -22,10 +22,22 @@ int main(int argc,char **argv)
 
 
 /*TEST
-   
+
    test:
       requires: yaml
       args: -options_file_yaml ex23options
       localrunfiles: ex23options
+
+   test:
+      suffix: string
+      requires: yaml
+      args: -options_string_yaml "
+        ts:
+          view: true
+          max:
+            steps: 10
+            time: 1.4
+        snes:
+          max_it: 5"
 
 TEST*/

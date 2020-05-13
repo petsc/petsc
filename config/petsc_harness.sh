@@ -248,6 +248,6 @@ function petsc_mpiexec_valgrind() {
 
   valgrind="valgrind -q --tool=memcheck --leak-check=yes --num-callers=20 --track-origins=yes --suppressions=$petsc_bindir/maint/petsc-val.supp --error-exitcode=10"
 
-  $_mpiexec $npopt $np $valgrind $*
+  $_mpiexec $npopt $np $valgrind "$@"
 }
 export LC_ALL=C
