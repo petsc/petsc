@@ -741,7 +741,9 @@ PetscErrorCode DMPlexStratifyMigrationSF(DM dm, PetscSF sf, PetscSF *migrationSF
   {
     PetscInt depths[4], dims[4], shift = 0, i, c;
 
-    /* Cells (depth), Vertices (0), Faces (depth-1), Edges (1) */
+    /* Cells (depth), Vertices (0), Faces (depth-1), Edges (1)
+         Consider DM_POLYTOPE_FV_GHOST and DM_POLYTOPE_INTERIOR_GHOST as cells
+     */
     depths[0] = depth; depths[1] = 0; depths[2] = depth-1; depths[3] = 1;
     dims[0]   = dim;   dims[1]   = 0; dims[2]   = dim-1;   dims[3]   = 1;
     for (i = 0; i <= depth; ++i) {
@@ -749,7 +751,7 @@ PetscErrorCode DMPlexStratifyMigrationSF(DM dm, PetscSF sf, PetscSF *migrationSF
       const PetscInt dim = dims[i];
 
       for (c = 0; c < DM_NUM_POLYTOPES; ++c) {
-        if (DMPolytopeTypeGetDim((DMPolytopeType) c) != dim && !(i == 0 && c == DM_POLYTOPE_FV_GHOST)) continue;
+        if (DMPolytopeTypeGetDim((DMPolytopeType) c) != dim && !(i == 0 && (c == DM_POLYTOPE_FV_GHOST || c == DM_POLYTOPE_INTERIOR_GHOST))) continue;
         ctShift[c] = shift;
         shift     += ctRecv[c];
       }
@@ -759,7 +761,7 @@ PetscErrorCode DMPlexStratifyMigrationSF(DM dm, PetscSF sf, PetscSF *migrationSF
     for (c = 0; c < DM_NUM_POLYTOPES; ++c) {
       const PetscInt ctDim = DMPolytopeTypeGetDim((DMPolytopeType) c);
 
-      if ((ctDim < 0 || ctDim > dim) && c != DM_POLYTOPE_FV_GHOST) {
+      if ((ctDim < 0 || ctDim > dim) && (c != DM_POLYTOPE_FV_GHOST && c != DM_POLYTOPE_INTERIOR_GHOST)) {
         ctShift[c] = shift;
         shift     += ctRecv[c];
       }
