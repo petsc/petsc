@@ -3,61 +3,46 @@
 
 enum storage_flags {VAR,VAL,SEQ};     /* "Store as" switch */
 
-static PetscErrorCode PetscParseLayerYAML(PetscOptions options, yaml_parser_t *parser,int *lvl)
+static PetscErrorCode PetscParseLayerYAML(PetscOptions options, yaml_document_t *doc, yaml_node_t *node)
 {
-  yaml_event_t    event;
-  int             storage = VAR; /* mapping cannot start with VAL definition w/o VAR key */
-  char            key[PETSC_MAX_PATH_LEN],option[PETSC_MAX_PATH_LEN],prefix[PETSC_MAX_PATH_LEN];
+  char            option[PETSC_MAX_PATH_LEN],prefix[PETSC_MAX_PATH_LEN];
+  yaml_node_pair_t *start, *top;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = PetscSNPrintf(option,PETSC_MAX_PATH_LEN,"%s"," ");CHKERRQ(ierr);
-  do {
-    if(!yaml_parser_parse(parser,&event)){
-      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_LIB,"YAML parse error (for instance, improper indentation)");
-    }
-    /* Parse value either as a new leaf in the mapping */
-    /*  or as a leaf value (one of them, in case it's a sequence) */
-    switch (event.type) {
-      case YAML_SCALAR_EVENT:
-        if (storage) {
-          ierr = PetscSNPrintf(option,PETSC_MAX_PATH_LEN,"-%s %s",key,(char*)event.data.scalar.value);CHKERRQ(ierr);
-          ierr = PetscOptionsInsertString(options,option);CHKERRQ(ierr);
-        } else {
-          ierr = PetscStrncpy(key,(char*)event.data.scalar.value,event.data.scalar.length+1);CHKERRQ(ierr);
-        }
-        storage ^= VAL;           /* Flip VAR/VAL switch for the next event */
-        yaml_event_delete(&event);
-        break;
-      case YAML_SEQUENCE_START_EVENT:
-        /* Sequence - all the following scalars will be appended to the last_leaf */
-        storage = SEQ;
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP ,"Unable to open YAML option file: sequences not supported");
-        yaml_event_delete(&event);
-        break;
-      case YAML_SEQUENCE_END_EVENT:
-        storage = VAR;
-        yaml_event_delete(&event);
-        break;
-      case YAML_MAPPING_START_EVENT:
-        if (*lvl > 0) {
-          ierr = PetscSNPrintf(prefix,PETSC_MAX_PATH_LEN,"%s_",key);CHKERRQ(ierr);
-          ierr = PetscOptionsPrefixPush(options,prefix);CHKERRQ(ierr);
-        }
-        (*lvl)++;
-        ierr = PetscParseLayerYAML(options,parser,lvl);CHKERRQ(ierr);
-        (*lvl)--;
-        if (*lvl > 0) {
-          ierr = PetscOptionsPrefixPop(options);CHKERRQ(ierr);
-        }
-        storage ^= VAL;           /* Flip VAR/VAL, w/o touching SEQ */
-        yaml_event_delete(&event);
-        break;
-      default:
-        break;
-    }
+  if (node->type != YAML_MAPPING_NODE) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Unsupported yaml node type: expected mapping");
+  start = node->data.mapping.pairs.start;
+  top   = node->data.mapping.pairs.top;
+  for (yaml_node_pair_t *pair = start; pair < top; pair++) {
+    int key_id = pair->key;
+    int value_id = pair->value;
+    yaml_node_t *key = NULL;
+    yaml_node_t *value = NULL;
+
+    key = yaml_document_get_node(doc, key_id);
+    if (!key) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_LIB, "Corrupt yaml document");
+    value = yaml_document_get_node(doc, value_id);
+    if (!value) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_LIB, "Corrupt yaml document");
+    if (key->type != YAML_SCALAR_NODE) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Unsupported yaml node type: expected scalar");
+    if (value->type == YAML_SCALAR_NODE) {
+      ierr = PetscSNPrintf(option,PETSC_MAX_PATH_LEN,"-%s %s",(char *)(key->data.scalar.value),(char*)(value->data.scalar.value));CHKERRQ(ierr);
+      ierr = PetscOptionsInsertString(options, option);CHKERRQ(ierr);
+    } else if (value->type == YAML_MAPPING_NODE) {
+      PetscBool isMerge;
+
+      /* "<<" is the merge key: don't increment the prefix */
+      ierr = PetscStrcmp((char *)(key->data.scalar.value), "<<", &isMerge);CHKERRQ(ierr);
+      if (!isMerge) {
+        ierr = PetscSNPrintf(prefix,PETSC_MAX_PATH_LEN,"%s_",(char *)(key->data.scalar.value));CHKERRQ(ierr);
+        ierr = PetscOptionsPrefixPush(options, prefix);CHKERRQ(ierr);
+      }
+      ierr = PetscParseLayerYAML(options, doc, value);CHKERRQ(ierr);
+      if (!isMerge) {
+        ierr = PetscOptionsPrefixPop(options);CHKERRQ(ierr);
+      }
+    } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Unsupported yaml node tye: expected scalar or mapping");
   }
-  while ((event.type != YAML_MAPPING_END_EVENT) && (event.type != YAML_STREAM_END_EVENT));
   PetscFunctionReturn(0);
 }
 
@@ -67,7 +52,8 @@ static PetscErrorCode PetscParseLayerYAML(PetscOptions options, yaml_parser_t *p
    Logically Collective
 
    Input Parameter:
-.  in_str - YAML-formatted string op options
++  options - options object
+-  in_str - YAML-formatted string op options
 
    Level: intermediate
 
@@ -83,7 +69,8 @@ PetscErrorCode PetscOptionsInsertStringYAML(PetscOptions options,const char in_s
   PetscErrorCode ierr;
   size_t         yamlLength;
   yaml_parser_t  parser;
-  int            lvl=0;
+  yaml_document_t doc;
+  yaml_node_t    *root = NULL;
 
   PetscFunctionBegin;
   ierr = PetscStrlen(in_str, &yamlLength);CHKERRQ(ierr);
@@ -91,7 +78,14 @@ PetscErrorCode PetscOptionsInsertStringYAML(PetscOptions options,const char in_s
     SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_LIB,"YAML parser initialization error");
   }
   yaml_parser_set_input_string(&parser,(const unsigned char *) in_str,yamlLength);
-  ierr = PetscParseLayerYAML(options, &parser,&lvl);CHKERRQ(ierr);
+  if (!yaml_parser_load(&parser, &doc)) {
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_LIB,"YAML parser loading error");
+  }
+  root = yaml_document_get_root_node(&doc);
+  if (root) {
+    ierr = PetscParseLayerYAML(options, &doc, root);CHKERRQ(ierr);
+  }
+  yaml_document_delete(&doc);
   yaml_parser_delete(&parser);
   PetscFunctionReturn(0);
 }
@@ -107,8 +101,8 @@ PetscErrorCode PetscOptionsInsertStringYAML(PetscOptions options,const char in_s
 .   file - name of file
 -   require - if PETSC_TRUE will generate an error if the file does not exist
 
-  Only a small subset of the YAML standard is implemented. Sequences and alias
-  are NOT supported.
+  Only a small subset of the YAML standard is implemented. Sequences are NOT supported;
+  aliases and the merge key "<<" are.
   The algorithm recursively parses the yaml file, pushing and popping prefixes
   and inserting key + values pairs using PetscOptionsInsertString().
 

@@ -697,6 +697,26 @@ PetscErrorCode PetscOptionsInsert(PetscOptions options,int *argc,char ***args,co
 
 #if defined(PETSC_HAVE_YAML)
   {
+    char   *eoptions = NULL;
+    size_t len       = 0;
+    if (!rank) {
+      eoptions = (char*)getenv("PETSC_OPTIONS_YAML");
+      ierr     = PetscStrlen(eoptions,&len);CHKERRQ(ierr);
+      ierr     = MPI_Bcast(&len,1,MPIU_SIZE_T,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+    } else {
+      ierr = MPI_Bcast(&len,1,MPIU_SIZE_T,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+      if (len) {
+        ierr = PetscMalloc1(len+1,&eoptions);CHKERRQ(ierr);
+      }
+    }
+    if (len) {
+      ierr = MPI_Bcast(eoptions,len,MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+      if (rank) eoptions[len] = 0;
+      ierr = PetscOptionsInsertStringYAML(options,eoptions);CHKERRQ(ierr);
+      if (rank) {ierr = PetscFree(eoptions);CHKERRQ(ierr);}
+    }
+  }
+  {
     char      yaml_file[PETSC_MAX_PATH_LEN];
     char      yaml_string[BUFSIZ];
     PetscBool yaml_flg;
