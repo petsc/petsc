@@ -728,6 +728,8 @@ PetscInt PetscNumOMPThreads;
 +   PETSC_TMP - alternative tmp directory
 .   PETSC_SHARED_TMP - tmp is shared by all processes
 .   PETSC_NOT_SHARED_TMP - each process has its own private tmp
+.   PETSC_OPTIONS - a string containing additional options for petsc in the form of command line "-key value" pairs
+.   PETSC_OPTIONS_YAML - (requires configuring PETSc to use libyaml) a string containing additional options for petsc in the form of a YAML document
 .   PETSC_VIEWER_SOCKET_PORT - socket number to use for socket viewer
 -   PETSC_VIEWER_SOCKET_MACHINE - machine to use for socket viewer to connect to
 
