@@ -603,15 +603,13 @@ static PetscErrorCode MatCholeskyFactor_SeqDenseCUDA(Mat A,IS perm,const MatFact
 }
 
 /* GEMM kernel: C = op(A)*op(B), tA, tB flag transposition */
-static PetscErrorCode MatMatMultNumeric_SeqDenseCUDA_SeqDenseCUDA_Private(Mat A,Mat B,Mat C,PetscBool tA, PetscBool tB)
+PETSC_INTERN PetscErrorCode MatMatMultNumeric_SeqDenseCUDA_SeqDenseCUDA_Private(Mat A,Mat B,Mat C,PetscBool tA,PetscBool tB)
 {
-  Mat_SeqDense      *a = (Mat_SeqDense*)A->data;
-  Mat_SeqDense      *b = (Mat_SeqDense*)B->data;
-  Mat_SeqDense      *c = (Mat_SeqDense*)C->data;
   const PetscScalar *da,*db;
   PetscScalar       *dc;
   PetscScalar       one=1.0,zero=0.0;
-  int               m,n,k,alda,blda,clda;
+  int               m,n,k;
+  PetscInt          alda,blda,clda;
   PetscErrorCode    ierr;
   cublasHandle_t    cublasv2handle;
   PetscBool         Aiscuda,Biscuda;
@@ -640,9 +638,9 @@ static PetscErrorCode MatMatMultNumeric_SeqDenseCUDA_SeqDenseCUDA_Private(Mat A,
   ierr = MatDenseCUDAGetArrayRead(A,&da);CHKERRQ(ierr);
   ierr = MatDenseCUDAGetArrayRead(B,&db);CHKERRQ(ierr);
   ierr = MatDenseCUDAGetArrayWrite(C,&dc);CHKERRQ(ierr);
-  ierr = PetscMPIIntCast(a->lda,&alda);CHKERRQ(ierr);
-  ierr = PetscMPIIntCast(b->lda,&blda);CHKERRQ(ierr);
-  ierr = PetscMPIIntCast(c->lda,&clda);CHKERRQ(ierr);
+  ierr = MatDenseGetLDA(A,&alda);CHKERRQ(ierr);
+  ierr = MatDenseGetLDA(B,&blda);CHKERRQ(ierr);
+  ierr = MatDenseGetLDA(C,&clda);CHKERRQ(ierr);
   ierr = PetscCUBLASGetHandle(&cublasv2handle);CHKERRQ(ierr);
   ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
   berr = cublasXgemm(cublasv2handle,tA ? CUBLAS_OP_T : CUBLAS_OP_N,tB ? CUBLAS_OP_T : CUBLAS_OP_N,
