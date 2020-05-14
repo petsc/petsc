@@ -67,8 +67,8 @@ static PetscErrorCode  KSPSolve_CGS(KSP ksp)
   */
   if (ksp->normtype == KSP_NORM_NATURAL) {
     PetscReal   vr0max;
-    PetscScalar *tmp_RP=0;
-    PetscInt    numnp  =0, *max_pos=0;
+    PetscScalar *tmp_RP=NULL;
+    PetscInt    numnp  =0, *max_pos=NULL;
     ierr = VecMax(RP, max_pos, &vr0max);CHKERRQ(ierr);
     ierr = VecGetArray(RP, &tmp_RP);CHKERRQ(ierr);
     ierr = VecGetLocalSize(RP, &numnp);CHKERRQ(ierr);
@@ -166,7 +166,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CGS(KSP ksp)
   ksp->ops->destroy        = KSPDestroyDefault;
   ksp->ops->buildsolution  = KSPBuildSolutionDefault;
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
-  ksp->ops->setfromoptions = 0;
-  ksp->ops->view           = 0;
+  ksp->ops->setfromoptions = NULL;
+  ksp->ops->view           = NULL;
   PetscFunctionReturn(0);
 }

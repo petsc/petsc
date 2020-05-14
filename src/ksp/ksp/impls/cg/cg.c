@@ -96,7 +96,7 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       i,stored_max_it,eigs;
-  PetscScalar    dpi = 0.0,a = 1.0,beta,betaold = 1.0,b = 0,*e = 0,*d = 0,dpiold;
+  PetscScalar    dpi = 0.0,a = 1.0,beta,betaold = 1.0,b = 0,*e = NULL,*d = NULL,dpiold;
   PetscReal      dp  = 0.0;
   Vec            X,B,Z,R,P,W;
   KSP_CG         *cg;
@@ -256,7 +256,7 @@ static PetscErrorCode KSPSolve_CG_SingleReduction(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       i,stored_max_it,eigs;
-  PetscScalar    dpi = 0.0,a = 1.0,beta,betaold = 1.0,b = 0,*e = 0,*d = 0,delta,dpiold,tmp[2];
+  PetscScalar    dpi = 0.0,a = 1.0,beta,betaold = 1.0,b = 0,*e = NULL,*d = NULL,delta,dpiold,tmp[2];
   PetscReal      dp  = 0.0;
   Vec            X,B,Z,R,P,S,W,tmpvecs[2];
   KSP_CG         *cg;

@@ -33,7 +33,7 @@ static PetscErrorCode PCSetUp_CP(PC pc)
   if (!cp->d) {ierr = PetscMalloc1(cp->n,&cp->d);CHKERRQ(ierr);}
   if (cp->a && pc->flag != SAME_NONZERO_PATTERN) {
     ierr  = PetscFree3(cp->a,cp->i,cp->j);CHKERRQ(ierr);
-    cp->a = 0;
+    cp->a = NULL;
   }
 
   /* convert to column format */
@@ -181,8 +181,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_CP(PC pc)
   pc->ops->reset           = PCReset_CP;
   pc->ops->destroy         = PCDestroy_CP;
   pc->ops->setfromoptions  = PCSetFromOptions_CP;
-  pc->ops->view            = 0;
-  pc->ops->applyrichardson = 0;
+  pc->ops->view            = NULL;
+  pc->ops->applyrichardson = NULL;
   PetscFunctionReturn(0);
 }
 

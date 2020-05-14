@@ -2440,8 +2440,8 @@ PetscErrorCode PCBDDCDetectDisconnectedComponents(PC pc, PetscBool filter, Petsc
     }
   }
   /* clean up graph */
-  graph->xadj = 0;
-  graph->adjncy = 0;
+  graph->xadj = NULL;
+  graph->adjncy = NULL;
   ierr = PCBDDCGraphDestroy(&graph);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -5428,7 +5428,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
   PetscInt       n_D,n_R;
   PetscBool      issbaij,opts;
   PetscErrorCode ierr;
-  void           (*f)(void) = 0;
+  void           (*f)(void) = NULL;
   char           dir_prefix[256],neu_prefix[256],str_level[16];
   size_t         len;
 
@@ -5556,7 +5556,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
   }
 
   /* NEUMANN PROBLEM */
-  A_RR = 0;
+  A_RR = NULL;
   if (neumann) {
     PCBDDCSubSchurs sub_schurs = pcbddc->sub_schurs;
     PetscInt        ibs,mbs;
@@ -7658,7 +7658,7 @@ PetscErrorCode PCBDDCMatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomain
   ierr = PetscFree(iflags);CHKERRQ(ierr);
 
   /* restrict comm if requested */
-  subcomm = 0;
+  subcomm = NULL;
   destroy_mat = PETSC_FALSE;
   if (restrict_comm) {
     PetscMPIInt color,subcommsize;
@@ -7919,7 +7919,7 @@ PetscErrorCode PCBDDCMatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomain
   /* set preallocation */
   ierr = PetscObjectTypeCompare((PetscObject)local_mat,MATSEQDENSE,&newisdense);CHKERRQ(ierr);
   if (!newisdense) {
-    PetscInt *new_local_nnz=0;
+    PetscInt *new_local_nnz=NULL;
 
     ptr_idxs = recv_buffer_idxs_local;
     if (n_recvs) {
@@ -9412,8 +9412,8 @@ PetscErrorCode MatMPIAIJRestrict(Mat A, MPI_Comm ccomm, Mat *B)
 
     b->donotstash      = a->donotstash;
     b->roworiented     = a->roworiented;
-    b->rowindices      = 0;
-    b->rowvalues       = 0;
+    b->rowindices      = NULL;
+    b->rowvalues       = NULL;
     b->getrowactive    = PETSC_FALSE;
 
     (*B)->rmap         = rmap;
@@ -9430,14 +9430,14 @@ PetscErrorCode MatMPIAIJRestrict(Mat A, MPI_Comm ccomm, Mat *B)
       ierr = PetscLogObjectMemory((PetscObject)*B,At->cmap->N*sizeof(PetscInt));CHKERRQ(ierr);
       ierr = PetscArraycpy(b->colmap,a->colmap,At->cmap->N);CHKERRQ(ierr);
 #endif
-    } else b->colmap = 0;
+    } else b->colmap = NULL;
     if (a->garray) {
       PetscInt len;
       len  = a->B->cmap->n;
       ierr = PetscMalloc1(len+1,&b->garray);CHKERRQ(ierr);
       ierr = PetscLogObjectMemory((PetscObject)(*B),len*sizeof(PetscInt));CHKERRQ(ierr);
       if (len) { ierr = PetscArraycpy(b->garray,a->garray,len);CHKERRQ(ierr); }
-    } else b->garray = 0;
+    } else b->garray = NULL;
 
     ierr    = PetscObjectReference((PetscObject)a->lvec);CHKERRQ(ierr);
     b->lvec = a->lvec;

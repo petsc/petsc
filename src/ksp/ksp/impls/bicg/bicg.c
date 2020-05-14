@@ -160,8 +160,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_BiCG(KSP ksp)
   ksp->ops->setup          = KSPSetUp_BiCG;
   ksp->ops->solve          = KSPSolve_BiCG;
   ksp->ops->destroy        = KSPDestroyDefault;
-  ksp->ops->view           = 0;
-  ksp->ops->setfromoptions = 0;
+  ksp->ops->view           = NULL;
+  ksp->ops->setfromoptions = NULL;
   ksp->ops->buildsolution  = KSPBuildSolutionDefault;
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
   PetscFunctionReturn(0);

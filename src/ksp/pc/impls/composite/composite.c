@@ -175,7 +175,7 @@ static PetscErrorCode PCSetUp_Composite(PC pc)
 
   PetscFunctionBegin;
   if (!jac->work1) {
-    ierr = MatCreateVecs(pc->pmat,&jac->work1,0);CHKERRQ(ierr);
+    ierr = MatCreateVecs(pc->pmat,&jac->work1,NULL);CHKERRQ(ierr);
   }
   ierr = PCGetDM(pc,&dm);CHKERRQ(ierr);
   while (next) {
@@ -334,7 +334,7 @@ static PetscErrorCode  PCCompositeAddPC_Composite(PC pc,PCType type)
 
   PetscFunctionBegin;
   ierr        = PetscNewLog(pc,&ilink);CHKERRQ(ierr);
-  ilink->next = 0;
+  ilink->next = NULL;
   ierr        = PCCreate(PetscObjectComm((PetscObject)pc),&ilink->pc);CHKERRQ(ierr);
   ierr        = PetscObjectIncrementTabLevel((PetscObject)ilink->pc,(PetscObject)pc,1);CHKERRQ(ierr);
   ierr        = PetscLogObjectParent((PetscObject)pc,(PetscObject)ilink->pc);CHKERRQ(ierr);
@@ -594,13 +594,13 @@ PETSC_EXTERN PetscErrorCode PCCreate_Composite(PC pc)
   pc->ops->destroy         = PCDestroy_Composite;
   pc->ops->setfromoptions  = PCSetFromOptions_Composite;
   pc->ops->view            = PCView_Composite;
-  pc->ops->applyrichardson = 0;
+  pc->ops->applyrichardson = NULL;
 
   pc->data   = (void*)jac;
   jac->type  = PC_COMPOSITE_ADDITIVE;
-  jac->work1 = 0;
-  jac->work2 = 0;
-  jac->head  = 0;
+  jac->work1 = NULL;
+  jac->work2 = NULL;
+  jac->head  = NULL;
 
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeSetType_C",PCCompositeSetType_Composite);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeGetType_C",PCCompositeGetType_Composite);CHKERRQ(ierr);

@@ -225,7 +225,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPEPRCG(KSP ksp)
   ksp->ops->setup          = KSPSetUp_PIPEPRCG;
   ksp->ops->solve          = KSPSolve_PIPEPRCG;
   ksp->ops->destroy        = KSPDestroyDefault;
-  ksp->ops->view           = 0;
+  ksp->ops->view           = NULL;
   ksp->ops->setfromoptions = KSPSetFromOptions_PIPEPRCG;
   ksp->ops->buildsolution  = KSPBuildSolutionDefault;
   ksp->ops->buildresidual  = KSPBuildResidualDefault;

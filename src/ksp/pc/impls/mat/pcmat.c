@@ -45,13 +45,13 @@ PETSC_EXTERN PetscErrorCode PCCreate_Mat(PC pc)
   PetscFunctionBegin;
   pc->ops->apply               = PCApply_Mat;
   pc->ops->applytranspose      = PCApplyTranspose_Mat;
-  pc->ops->setup               = 0;
+  pc->ops->setup               = NULL;
   pc->ops->destroy             = PCDestroy_Mat;
-  pc->ops->setfromoptions      = 0;
-  pc->ops->view                = 0;
-  pc->ops->applyrichardson     = 0;
-  pc->ops->applysymmetricleft  = 0;
-  pc->ops->applysymmetricright = 0;
+  pc->ops->setfromoptions      = NULL;
+  pc->ops->view                = NULL;
+  pc->ops->applyrichardson     = NULL;
+  pc->ops->applysymmetricleft  = NULL;
+  pc->ops->applysymmetricright = NULL;
   PetscFunctionReturn(0);
 }
 

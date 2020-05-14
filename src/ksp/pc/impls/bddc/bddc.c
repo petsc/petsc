@@ -205,7 +205,7 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
 
     /* compute interface size */
     ierr = VecSet(pcis->vec1_B,1.0);CHKERRQ(ierr);
-    ierr = MatCreateVecs(pc->pmat,&counter,0);CHKERRQ(ierr);
+    ierr = MatCreateVecs(pc->pmat,&counter,NULL);CHKERRQ(ierr);
     ierr = VecSet(counter,0.0);CHKERRQ(ierr);
     ierr = VecScatterBegin(pcis->global_to_B,pcis->vec1_B,counter,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterEnd(pcis->global_to_B,pcis->vec1_B,counter,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
@@ -1142,7 +1142,7 @@ static PetscErrorCode PCBDDCSetLocalAdjacencyGraph_BDDC(PC pc, PetscInt nvtxs,co
 @*/
 PetscErrorCode PCBDDCSetLocalAdjacencyGraph(PC pc,PetscInt nvtxs,const PetscInt xadj[],const PetscInt adjncy[], PetscCopyMode copymode)
 {
-  void (*f)(void) = 0;
+  void (*f)(void) = NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -3041,9 +3041,9 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pc->ops->destroy             = PCDestroy_BDDC;
   pc->ops->setfromoptions      = PCSetFromOptions_BDDC;
   pc->ops->view                = PCView_BDDC;
-  pc->ops->applyrichardson     = 0;
-  pc->ops->applysymmetricleft  = 0;
-  pc->ops->applysymmetricright = 0;
+  pc->ops->applyrichardson     = NULL;
+  pc->ops->applysymmetricleft  = NULL;
+  pc->ops->applysymmetricright = NULL;
   pc->ops->presolve            = PCPreSolve_BDDC;
   pc->ops->postsolve           = PCPostSolve_BDDC;
   pc->ops->reset               = PCReset_BDDC;

@@ -351,7 +351,7 @@ PetscErrorCode KSPSetUp(KSP ksp)
     PetscBool   zeroflag = PETSC_FALSE;
     if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
     if (!ksp->diagonal) { /* allocate vector to hold diagonal */
-      ierr = MatCreateVecs(pmat,&ksp->diagonal,0);CHKERRQ(ierr);
+      ierr = MatCreateVecs(pmat,&ksp->diagonal,NULL);CHKERRQ(ierr);
     }
     ierr = MatGetDiagonal(pmat,ksp->diagonal);CHKERRQ(ierr);
     ierr = VecGetLocalSize(ksp->diagonal,&n);CHKERRQ(ierr);
@@ -524,7 +524,7 @@ static PetscErrorCode KSPViewEigenvalues_Internal(KSP ksp, PetscBool isExplicit,
     if (format == PETSC_VIEWER_DRAW_CONTOUR) {
       ierr = KSPPlotEigenContours_Private(ksp,neig,r,c);CHKERRQ(ierr);
     } else {
-      if (!ksp->eigviewer) {ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,isExplicit ? "Explicitly Computed Eigenvalues" : "Iteratively Computed Eigenvalues",PETSC_DECIDE,PETSC_DECIDE,400,400,&ksp->eigviewer);CHKERRQ(ierr);}
+      if (!ksp->eigviewer) {ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,NULL,isExplicit ? "Explicitly Computed Eigenvalues" : "Iteratively Computed Eigenvalues",PETSC_DECIDE,PETSC_DECIDE,400,400,&ksp->eigviewer);CHKERRQ(ierr);}
       ierr = PetscViewerDrawGetDraw(ksp->eigviewer,0,&draw);CHKERRQ(ierr);
       ierr = PetscDrawSPCreate(draw,1,&drawsp);CHKERRQ(ierr);
       ierr = PetscDrawSPReset(drawsp);CHKERRQ(ierr);
@@ -585,7 +585,7 @@ static PetscErrorCode KSPSolve_Private(KSP ksp,Vec b,Vec x)
   Mat            mat,pmat;
   MPI_Comm       comm;
   MatNullSpace   nullsp;
-  Vec            btmp,vec_rhs=0;
+  Vec            btmp,vec_rhs=NULL;
 
   PetscFunctionBegin;
   comm = PetscObjectComm((PetscObject)ksp);
@@ -997,7 +997,7 @@ PetscErrorCode  KSPDestroy(KSP *ksp)
   PetscFunctionBegin;
   if (!*ksp) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*ksp),KSP_CLASSID,1);
-  if (--((PetscObject)(*ksp))->refct > 0) {*ksp = 0; PetscFunctionReturn(0);}
+  if (--((PetscObject)(*ksp))->refct > 0) {*ksp = NULL; PetscFunctionReturn(0);}
 
   ierr = PetscObjectSAWsViewOff((PetscObject)*ksp);CHKERRQ(ierr);
 

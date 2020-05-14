@@ -203,8 +203,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPECG(KSP ksp)
   ksp->ops->setup          = KSPSetUp_PIPECG;
   ksp->ops->solve          = KSPSolve_PIPECG;
   ksp->ops->destroy        = KSPDestroyDefault;
-  ksp->ops->view           = 0;
-  ksp->ops->setfromoptions = 0;
+  ksp->ops->view           = NULL;
+  ksp->ops->setfromoptions = NULL;
   ksp->ops->buildsolution  = KSPBuildSolutionDefault;
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
   PetscFunctionReturn(0);

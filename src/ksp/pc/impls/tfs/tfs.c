@@ -173,22 +173,22 @@ PETSC_EXTERN PetscErrorCode PCCreate_TFS(PC pc)
   if (cmp != MPI_IDENT && cmp != MPI_CONGRUENT) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"TFS only works with PETSC_COMM_WORLD objects");
   ierr = PetscNewLog(pc,&tfs);CHKERRQ(ierr);
 
-  tfs->xxt = 0;
-  tfs->xyt = 0;
-  tfs->b   = 0;
-  tfs->xd  = 0;
-  tfs->xo  = 0;
+  tfs->xxt = NULL;
+  tfs->xyt = NULL;
+  tfs->b   = NULL;
+  tfs->xd  = NULL;
+  tfs->xo  = NULL;
   tfs->nd  = 0;
 
-  pc->ops->apply               = 0;
-  pc->ops->applytranspose      = 0;
+  pc->ops->apply               = NULL;
+  pc->ops->applytranspose      = NULL;
   pc->ops->setup               = PCSetUp_TFS;
   pc->ops->destroy             = PCDestroy_TFS;
   pc->ops->setfromoptions      = PCSetFromOptions_TFS;
   pc->ops->view                = PCView_TFS;
-  pc->ops->applyrichardson     = 0;
-  pc->ops->applysymmetricleft  = 0;
-  pc->ops->applysymmetricright = 0;
+  pc->ops->applyrichardson     = NULL;
+  pc->ops->applysymmetricleft  = NULL;
+  pc->ops->applysymmetricright = NULL;
   pc->data                     = (void*)tfs;
   PetscFunctionReturn(0);
 }

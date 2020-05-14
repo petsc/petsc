@@ -196,13 +196,13 @@ PETSC_EXTERN PetscErrorCode PCCreate_VPBJacobi(PC pc)
       not needed.
   */
   pc->ops->apply               = PCApply_VPBJacobi;
-  pc->ops->applytranspose      = 0;
+  pc->ops->applytranspose      = NULL;
   pc->ops->setup               = PCSetUp_VPBJacobi;
   pc->ops->destroy             = PCDestroy_VPBJacobi;
-  pc->ops->setfromoptions      = 0;
-  pc->ops->applyrichardson     = 0;
-  pc->ops->applysymmetricleft  = 0;
-  pc->ops->applysymmetricright = 0;
+  pc->ops->setfromoptions      = NULL;
+  pc->ops->applyrichardson     = NULL;
+  pc->ops->applysymmetricleft  = NULL;
+  pc->ops->applysymmetricright = NULL;
   PetscFunctionReturn(0);
 }
 

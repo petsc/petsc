@@ -172,8 +172,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPECR(KSP ksp)
   ksp->ops->setup          = KSPSetUp_PIPECR;
   ksp->ops->solve          = KSPSolve_PIPECR;
   ksp->ops->destroy        = KSPDestroyDefault;
-  ksp->ops->view           = 0;
-  ksp->ops->setfromoptions = 0;
+  ksp->ops->view           = NULL;
+  ksp->ops->setfromoptions = NULL;
   ksp->ops->buildsolution  = KSPBuildSolutionDefault;
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
   PetscFunctionReturn(0);

@@ -402,7 +402,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_QCG(KSP ksp)
   ksp->ops->destroy        = KSPDestroy_QCG;
   ksp->ops->buildsolution  = KSPBuildSolutionDefault;
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
-  ksp->ops->view           = 0;
+  ksp->ops->view           = NULL;
 
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPQCGGetQuadratic_C",KSPQCGGetQuadratic_QCG);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPQCGGetTrialStepNorm_C",KSPQCGGetTrialStepNorm_QCG);CHKERRQ(ierr);

@@ -334,7 +334,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Redistribute(PC pc)
   pc->data = (void*)red;
 
   pc->ops->apply          = PCApply_Redistribute;
-  pc->ops->applytranspose = 0;
+  pc->ops->applytranspose = NULL;
   pc->ops->setup          = PCSetUp_Redistribute;
   pc->ops->destroy        = PCDestroy_Redistribute;
   pc->ops->setfromoptions = PCSetFromOptions_Redistribute;

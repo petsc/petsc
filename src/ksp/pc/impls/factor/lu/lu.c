@@ -33,7 +33,7 @@ static PetscErrorCode PCSetFromOptions_LU(PetscOptionItems *PetscOptionsObject,P
   ierr = PetscOptionsName("-pc_factor_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","PCFactorReorderForNonzeroDiagonal",&flg);CHKERRQ(ierr);
   if (flg) {
     tol  = PETSC_DECIDE;
-    ierr = PetscOptionsReal("-pc_factor_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","PCFactorReorderForNonzeroDiagonal",lu->nonzerosalongdiagonaltol,&tol,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-pc_factor_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","PCFactorReorderForNonzeroDiagonal",lu->nonzerosalongdiagonaltol,&tol,NULL);CHKERRQ(ierr);
     ierr = PCFactorReorderForNonzeroDiagonal(pc,tol);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -247,8 +247,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_LU(PC pc)
   ((PC_Factor*)dir)->info.fill          = 5.0;
   ((PC_Factor*)dir)->info.dtcol         = 1.e-6;  /* default to pivoting; this is only thing PETSc LU supports */
   ((PC_Factor*)dir)->info.shifttype     = (PetscReal)MAT_SHIFT_NONE;
-  dir->col                              = 0;
-  dir->row                              = 0;
+  dir->col                              = NULL;
+  dir->row                              = NULL;
 
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
   if (size == 1) {
@@ -264,7 +264,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_LU(PC pc)
   pc->ops->setup             = PCSetUp_LU;
   pc->ops->setfromoptions    = PCSetFromOptions_LU;
   pc->ops->view              = PCView_Factor;
-  pc->ops->applyrichardson   = 0;
+  pc->ops->applyrichardson   = NULL;
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorReorderForNonzeroDiagonal_C",PCFactorReorderForNonzeroDiagonal_LU);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
