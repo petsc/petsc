@@ -1203,11 +1203,6 @@ PetscErrorCode  VecSetRandom(Vec x,PetscRandom rctx)
 
   Level: beginner
 
-  Developer Note: This routine does not need to exist since the exact functionality is obtained with
-     VecSet(vec,0);  I guess someone added it to mirror the functionality of MatZeroEntries() but Mat is nothing
-     like a Vec (one is an operator and one is an element of a vector space, yeah yeah dual blah blah blah) so
-     this routine should not exist.
-
 .seealso: VecCreate(),  VecSetOptionsPrefix(), VecSet(), VecSetValues()
 @*/
 PetscErrorCode  VecZeroEntries(Vec vec)
