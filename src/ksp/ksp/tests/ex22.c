@@ -91,9 +91,9 @@ PetscErrorCode test_solve(void)
 
   ierr = KSPCreate(PETSC_COMM_WORLD, &ksp);CHKERRQ(ierr);
   ierr = KSPSetOperators(ksp, A, A);CHKERRQ(ierr);
-  ierr = KSPSetType(ksp, "gmres");CHKERRQ(ierr);
+  ierr = KSPSetType(ksp, KSPGMRES);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
-  ierr = PCSetType(pc, "none");CHKERRQ(ierr);
+  ierr = PCSetType(pc, PCNONE);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
   ierr = KSPSolve(ksp, b, x);CHKERRQ(ierr);
