@@ -323,6 +323,51 @@ def splitTests(testname,sdict):
 
   return testnames, sdicts
 
+
+def testSplit(striptest):
+  """
+  Split up a test into lines, but use a shell parser to detect when newlines are within quotation marks
+  and keep those together
+  """
+  import shlex
+
+  sl = shlex.shlex()
+  sl.whitespace_split = True # only split at whitespace
+  sl.commenters = ''
+  sl.push_source(striptest)
+  last_pos = sl.instream.tell()
+  try:
+    last_token = sl.read_token()
+  except ValueError:
+    print(striptest)
+    raise ValueError
+  last_line = ''
+  while last_token != '':
+    new_pos = sl.instream.tell()
+    block = striptest[last_pos:new_pos]
+    token_start = block.find(last_token)
+    leading = block[0:token_start]
+    trailing = block[(token_start + len(last_token)):]
+    leading_split = leading.split('\n')
+    if len(leading_split) > 1:
+      yield last_line
+      last_line = ''
+    last_line += leading_split[-1]
+    last_line += last_token
+    trailing_split = trailing.split('\n')
+    last_line += trailing_split[0]
+    if len(trailing_split) > 1:
+      yield last_line
+      last_line = ''
+    last_pos = new_pos
+    try:
+      last_token = sl.read_token()
+    except ValueError:
+      print(striptest)
+      raise ValueError
+  yield last_line
+
+
 def parseTest(testStr,srcfile,verbosity):
   """
   This parses an individual test
@@ -345,7 +390,7 @@ def parseTest(testStr,srcfile,verbosity):
   subdict={}
   comments=[]
   indentlevel=0
-  for ln in striptest.split("\n"):
+  for ln in testSplit(striptest):
     line=ln.split('#')[0].rstrip()
     if verbosity>2: print(line)
     comment=("" if len(ln.split("#"))>0 else " ".join(ln.split("#")[1:]).strip())

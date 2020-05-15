@@ -1,0 +1,4 @@
+-ts_view = true
+-ts_max_time = 1.400000
+-ts_max_steps = 10
+-snes_max_it = 5

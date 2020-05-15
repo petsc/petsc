@@ -294,7 +294,8 @@ PetscErrorCode PetscOptionsValidKey(const char key[],PetscBool *valid)
    Logically Collective
 
    Input Parameter:
-.  in_str - string that contains options separated by blanks
++  options - options object
+-  in_str - string that contains options separated by blanks
 
    Level: intermediate
 
@@ -696,11 +697,36 @@ PetscErrorCode PetscOptionsInsert(PetscOptions options,int *argc,char ***args,co
 
 #if defined(PETSC_HAVE_YAML)
   {
+    char   *eoptions = NULL;
+    size_t len       = 0;
+    if (!rank) {
+      eoptions = (char*)getenv("PETSC_OPTIONS_YAML");
+      ierr     = PetscStrlen(eoptions,&len);CHKERRQ(ierr);
+      ierr     = MPI_Bcast(&len,1,MPIU_SIZE_T,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+    } else {
+      ierr = MPI_Bcast(&len,1,MPIU_SIZE_T,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+      if (len) {
+        ierr = PetscMalloc1(len+1,&eoptions);CHKERRQ(ierr);
+      }
+    }
+    if (len) {
+      ierr = MPI_Bcast(eoptions,len,MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+      if (rank) eoptions[len] = 0;
+      ierr = PetscOptionsInsertStringYAML(options,eoptions);CHKERRQ(ierr);
+      if (rank) {ierr = PetscFree(eoptions);CHKERRQ(ierr);}
+    }
+  }
+  {
     char      yaml_file[PETSC_MAX_PATH_LEN];
+    char      yaml_string[BUFSIZ];
     PetscBool yaml_flg;
     ierr = PetscOptionsGetString(NULL,NULL,"-options_file_yaml",yaml_file,PETSC_MAX_PATH_LEN,&yaml_flg);CHKERRQ(ierr);
     if (yaml_flg) {
       ierr = PetscOptionsInsertFileYAML(PETSC_COMM_WORLD,yaml_file,PETSC_TRUE);CHKERRQ(ierr);
+    }
+    ierr = PetscOptionsGetString(NULL,NULL,"-options_string_yaml",yaml_string,BUFSIZ,&yaml_flg);CHKERRQ(ierr);
+    if (yaml_flg) {
+      ierr = PetscOptionsInsertStringYAML(NULL,yaml_string);CHKERRQ(ierr);
     }
   }
 #endif
