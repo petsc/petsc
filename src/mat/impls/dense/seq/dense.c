@@ -394,11 +394,14 @@ PetscErrorCode MatDuplicateNoCreate_SeqDense(Mat newi,Mat A,MatDuplicateOption c
 {
   Mat_SeqDense   *mat = (Mat_SeqDense*)A->data;
   PetscErrorCode ierr;
-  PetscInt       lda = (PetscInt)mat->lda,j,m;
+  PetscInt       lda = (PetscInt)mat->lda,j,m,nlda = lda;
 
   PetscFunctionBegin;
   ierr = PetscLayoutReference(A->rmap,&newi->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutReference(A->cmap,&newi->cmap);CHKERRQ(ierr);
+  if (cpvalues == MAT_SHARE_NONZERO_PATTERN) { /* propagate LDA */
+    ierr = MatDenseSetLDA(newi,lda);CHKERRQ(ierr);
+  }
   ierr = MatSeqDenseSetPreallocation(newi,NULL);CHKERRQ(ierr);
   if (cpvalues == MAT_COPY_VALUES) {
     const PetscScalar *av;
@@ -406,10 +409,11 @@ PetscErrorCode MatDuplicateNoCreate_SeqDense(Mat newi,Mat A,MatDuplicateOption c
 
     ierr = MatDenseGetArrayRead(A,&av);CHKERRQ(ierr);
     ierr = MatDenseGetArray(newi,&v);CHKERRQ(ierr);
-    if (lda>A->rmap->n) {
-      m = A->rmap->n;
+    ierr = MatDenseGetLDA(newi,&nlda);CHKERRQ(ierr);
+    m    = A->rmap->n;
+    if (lda>m || nlda>m) {
       for (j=0; j<A->cmap->n; j++) {
-        ierr = PetscArraycpy(v+j*m,av+j*lda,m);CHKERRQ(ierr);
+        ierr = PetscArraycpy(v+j*nlda,av+j*lda,m);CHKERRQ(ierr);
       }
     } else {
       ierr = PetscArraycpy(v,av,A->rmap->n*A->cmap->n);CHKERRQ(ierr);

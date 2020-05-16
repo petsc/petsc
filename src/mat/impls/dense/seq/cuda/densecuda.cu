@@ -932,17 +932,19 @@ PetscErrorCode MatDuplicate_SeqDenseCUDA(Mat A,MatDuplicateOption cpvalues,Mat *
     const PetscScalar *da;
     PetscScalar       *db;
     cudaError_t       cerr;
+    PetscInt          ldb;
 
     ierr = MatDenseCUDAGetArrayRead(A,&da);CHKERRQ(ierr);
     ierr = MatDenseCUDAGetArrayWrite(*B,&db);CHKERRQ(ierr);
-    if (a->lda > A->rmap->n) {
+    ierr = MatDenseGetLDA(*B,&ldb);CHKERRQ(ierr);
+    if (a->lda > A->rmap->n || ldb > A->rmap->n) {
       PetscInt j,m = A->rmap->n;
 
       for (j=0; j<A->cmap->n; j++) { /* it can be done better */
-        cerr = cudaMemcpy(db+j*m,da+j*a->lda,m*sizeof(PetscScalar),cudaMemcpyDeviceToDevice);CHKERRCUDA(cerr);
+        cerr = cudaMemcpy(db+j*ldb,da+j*a->lda,m*sizeof(PetscScalar),cudaMemcpyDeviceToDevice);CHKERRCUDA(cerr);
       }
     } else {
-      cerr = cudaMemcpy(db,da,a->lda*sizeof(PetscScalar)*A->cmap->n,cudaMemcpyDeviceToDevice);CHKERRCUDA(cerr);
+      cerr = cudaMemcpy(db,da,(sizeof(PetscScalar)*A->cmap->n)*A->rmap->n,cudaMemcpyDeviceToDevice);CHKERRCUDA(cerr);
     }
     ierr = MatDenseCUDARestoreArrayRead(A,&da);CHKERRQ(ierr);
     ierr = MatDenseCUDARestoreArrayWrite(*B,&db);CHKERRQ(ierr);
