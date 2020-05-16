@@ -509,11 +509,11 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PGMRES(KSP ksp)
   pgmres->q_preallocate  = 0;
   pgmres->delta_allocate = PGMRES_DELTA_DIRECTIONS;
   pgmres->orthog         = KSPGMRESClassicalGramSchmidtOrthogonalization;
-  pgmres->nrs            = 0;
-  pgmres->sol_temp       = 0;
+  pgmres->nrs            = NULL;
+  pgmres->sol_temp       = NULL;
   pgmres->max_k          = PGMRES_DEFAULT_MAXK;
-  pgmres->Rsvd           = 0;
-  pgmres->orthogwork     = 0;
+  pgmres->Rsvd           = NULL;
+  pgmres->orthogwork     = NULL;
   pgmres->cgstype        = KSP_GMRES_CGS_REFINE_NEVER;
   PetscFunctionReturn(0);
 }

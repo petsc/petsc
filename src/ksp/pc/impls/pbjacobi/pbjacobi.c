@@ -368,7 +368,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_PBJacobi(PC pc)
      Initialize the pointers to vectors to ZERO; these will be used to store
      diagonal entries of the matrix for fast preconditioner application.
   */
-  jac->diag = 0;
+  jac->diag = NULL;
 
   /*
       Set the pointers for the functions that are provided above.
@@ -377,15 +377,15 @@ PETSC_EXTERN PetscErrorCode PCCreate_PBJacobi(PC pc)
       choose not to provide a couple of these functions since they are
       not needed.
   */
-  pc->ops->apply               = 0; /*set depending on the block size */
-  pc->ops->applytranspose      = 0;
+  pc->ops->apply               = NULL; /*set depending on the block size */
+  pc->ops->applytranspose      = NULL;
   pc->ops->setup               = PCSetUp_PBJacobi;
   pc->ops->destroy             = PCDestroy_PBJacobi;
-  pc->ops->setfromoptions      = 0;
+  pc->ops->setfromoptions      = NULL;
   pc->ops->view                = PCView_PBJacobi;
-  pc->ops->applyrichardson     = 0;
-  pc->ops->applysymmetricleft  = 0;
-  pc->ops->applysymmetricright = 0;
+  pc->ops->applyrichardson     = NULL;
+  pc->ops->applysymmetricleft  = NULL;
+  pc->ops->applysymmetricright = NULL;
   PetscFunctionReturn(0);
 }
 

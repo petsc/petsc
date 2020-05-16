@@ -90,7 +90,7 @@ static PetscErrorCode KSPSolve_FCG(KSP ksp)
   Mat            Amat,Pmat;
   PetscInt       eigs = ksp->calc_sings; /* Variables for eigen estimation - START*/
   PetscInt       stored_max_it = ksp->max_it;
-  PetscScalar    alphaold = 0,betaold = 1.0,*e = 0,*d = 0;/* Variables for eigen estimation  - FINISH */
+  PetscScalar    alphaold = 0,betaold = 1.0,*e = NULL,*d = NULL;/* Variables for eigen estimation  - FINISH */
 
   PetscFunctionBegin;
 

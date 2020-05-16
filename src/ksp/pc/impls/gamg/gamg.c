@@ -25,7 +25,7 @@ PetscLogEvent PC_GAMGOptProlongator_AGG;
 static PetscLogStage gamg_stages[PETSC_MG_MAXLEVELS];
 #endif
 
-static PetscFunctionList GAMGList = 0;
+static PetscFunctionList GAMGList = NULL;
 static PetscBool PCGAMGPackageInitialized;
 
 /* ----------------------------------------------------------------------------- */
@@ -173,10 +173,10 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
         ierr = MatGetOwnershipRange(Cmat, &Istart_crs, &Iend_crs);CHKERRQ(ierr);
         ierr = MatGetSize(Cmat, &M, &N);CHKERRQ(ierr);
         for (Ii = Istart_crs, jj = 0; Ii < Iend_crs; Ii += cr_bs, jj++) {
-          ierr      = MatGetRow(Cmat,Ii,&ncols,0,0);CHKERRQ(ierr);
+          ierr      = MatGetRow(Cmat,Ii,&ncols,NULL,NULL);CHKERRQ(ierr);
           d_nnz[jj] = ncols/cr_bs;
           o_nnz[jj] = ncols/cr_bs;
-          ierr      = MatRestoreRow(Cmat,Ii,&ncols,0,0);CHKERRQ(ierr);
+          ierr      = MatRestoreRow(Cmat,Ii,&ncols,NULL,NULL);CHKERRQ(ierr);
           if (d_nnz[jj] > ncrs) d_nnz[jj] = ncrs;
           if (o_nnz[jj] > (M/cr_bs-ncrs)) o_nnz[jj] = M/cr_bs-ncrs;
         }
@@ -1520,7 +1520,7 @@ PetscErrorCode PCSetFromOptions_GAMG(PetscOptionItems *PetscOptionsObject,PC pc)
   char           prefix[256],tname[32];
   PetscInt       i,n;
   const char     *pcpre;
-  static const char *LayoutTypes[] = {"compact","spread","PCGAMGLayoutType","PC_GAMG_LAYOUT",0};
+  static const char *LayoutTypes[] = {"compact","spread","PCGAMGLayoutType","PC_GAMG_LAYOUT",NULL};
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
   ierr = PetscOptionsHead(PetscOptionsObject,"GAMG options");CHKERRQ(ierr);
@@ -1635,7 +1635,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
   pc_gamg->setup_count = 0;
   /* these should be in subctx but repartitioning needs simple arrays */
   pc_gamg->data_sz = 0;
-  pc_gamg->data    = 0;
+  pc_gamg->data    = NULL;
 
   /* overwrite the pointers of PCMG by the functions of base class PCGAMG */
   pc->ops->setfromoptions = PCSetFromOptions_GAMG;

@@ -134,9 +134,9 @@ PetscErrorCode PCGAMGCreateGraph(Mat Amat, Mat *a_Gmat)
       for (Ii = 0, jj = 0; Ii < Iend - Istart; Ii += bs, jj++) {
         o_nnz[jj] = 0;
         for (kk=0; kk<bs; kk++) { /* rows that get collapsed to a single row */
-          ierr = MatGetRow(Oaij,Ii+kk,&ncols,0,0);CHKERRQ(ierr);
+          ierr = MatGetRow(Oaij,Ii+kk,&ncols,NULL,NULL);CHKERRQ(ierr);
           o_nnz[jj] += ncols;
-          ierr = MatRestoreRow(Oaij,Ii+kk,&ncols,0,0);CHKERRQ(ierr);
+          ierr = MatRestoreRow(Oaij,Ii+kk,&ncols,NULL,NULL);CHKERRQ(ierr);
         }
         if (o_nnz[jj] > (NN/bs-nloc)) o_nnz[jj] = NN/bs-nloc;
       }
@@ -214,7 +214,7 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm)
   ierr = PetscLogEventBegin(petsc_gamg_setup_events[GRAPH],0,0,0,0);CHKERRQ(ierr);
 #endif
   /* scale Gmat for all values between -1 and 1 */
-  ierr = MatCreateVecs(Gmat, &diag, 0);CHKERRQ(ierr);
+  ierr = MatCreateVecs(Gmat, &diag, NULL);CHKERRQ(ierr);
   ierr = MatGetDiagonal(Gmat, diag);CHKERRQ(ierr);
   ierr = VecReciprocal(diag);CHKERRQ(ierr);
   ierr = VecSqrtAbs(diag);CHKERRQ(ierr);
@@ -356,7 +356,7 @@ PetscErrorCode PCGAMGGetDataWithGhosts(Mat Gmat,PetscInt data_sz,PetscReal data_
   ierr      = VecGetLocalSize(mpimat->lvec, &num_ghosts);CHKERRQ(ierr);
   nnodes    = num_ghosts + nloc;
   *a_stride = nnodes;
-  ierr      = MatCreateVecs(Gmat, &tmp_crds, 0);CHKERRQ(ierr);
+  ierr      = MatCreateVecs(Gmat, &tmp_crds, NULL);CHKERRQ(ierr);
 
   ierr = PetscMalloc1(data_sz*nnodes, &datas);CHKERRQ(ierr);
   for (dir=0; dir<data_sz; dir++) {

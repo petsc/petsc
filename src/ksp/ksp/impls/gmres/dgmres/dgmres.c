@@ -1195,12 +1195,12 @@ PETSC_EXTERN PetscErrorCode KSPCreate_DGMRES(KSP ksp)
   dgmres->q_preallocate  = 0;
   dgmres->delta_allocate = GMRES_DELTA_DIRECTIONS;
   dgmres->orthog         = KSPGMRESClassicalGramSchmidtOrthogonalization;
-  dgmres->nrs            = 0;
-  dgmres->sol_temp       = 0;
+  dgmres->nrs            = NULL;
+  dgmres->sol_temp       = NULL;
   dgmres->max_k          = GMRES_DEFAULT_MAXK;
-  dgmres->Rsvd           = 0;
+  dgmres->Rsvd           = NULL;
   dgmres->cgstype        = KSP_GMRES_CGS_REFINE_NEVER;
-  dgmres->orthogwork     = 0;
+  dgmres->orthogwork     = NULL;
 
   /* Default values for the deflation */
   dgmres->r           = 0;

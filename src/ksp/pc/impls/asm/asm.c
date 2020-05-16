@@ -314,7 +314,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
 
   if (!pc->setupcalled) {
     /* Create the local work vectors (from the local matrices) and scatter contexts */
-    ierr = MatCreateVecs(pc->pmat,&vec,0);CHKERRQ(ierr);
+    ierr = MatCreateVecs(pc->pmat,&vec,NULL);CHKERRQ(ierr);
 
     if (osm->is_local && (osm->type == PC_ASM_INTERPOLATE || osm->type == PC_ASM_NONE )) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot use interpolate or none PCASMType if is_local was provided to PCASMSetLocalSubdomains()");
     if (osm->is_local && osm->type == PC_ASM_RESTRICT && osm->loctype == PC_COMPOSITE_ADDITIVE) {
@@ -611,8 +611,8 @@ static PetscErrorCode PCReset_ASM(PC pc)
 
   ierr = PetscFree(osm->sub_mat_type);CHKERRQ(ierr);
 
-  osm->is       = 0;
-  osm->is_local = 0;
+  osm->is       = NULL;
+  osm->is_local = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -698,8 +698,8 @@ static PetscErrorCode  PCASMSetLocalSubdomains_ASM(PC pc,PetscInt n,IS is[],IS i
     ierr = PCASMDestroySubdomains(osm->n_local_true,osm->is,osm->is_local);CHKERRQ(ierr);
 
     osm->n_local_true = n;
-    osm->is           = 0;
-    osm->is_local     = 0;
+    osm->is           = NULL;
+    osm->is_local     = NULL;
     if (is) {
       ierr = PetscMalloc1(n,&osm->is);CHKERRQ(ierr);
       for (i=0; i<n; i++) osm->is[i] = is[i];
@@ -749,8 +749,8 @@ static PetscErrorCode  PCASMSetTotalSubdomains_ASM(PC pc,PetscInt N,IS *is,IS *i
     ierr = PCASMDestroySubdomains(osm->n_local_true,osm->is,osm->is_local);CHKERRQ(ierr);
 
     osm->n_local_true = n;
-    osm->is           = 0;
-    osm->is_local     = 0;
+    osm->is           = NULL;
+    osm->is_local     = NULL;
   }
   PetscFunctionReturn(0);
 }
@@ -1257,16 +1257,16 @@ PETSC_EXTERN PetscErrorCode PCCreate_ASM(PC pc)
   osm->n_local           = 0;
   osm->n_local_true      = PETSC_DECIDE;
   osm->overlap           = 1;
-  osm->ksp               = 0;
-  osm->restriction       = 0;
-  osm->lprolongation     = 0;
-  osm->lrestriction      = 0;
-  osm->x                 = 0;
-  osm->y                 = 0;
-  osm->is                = 0;
-  osm->is_local          = 0;
-  osm->mat               = 0;
-  osm->pmat              = 0;
+  osm->ksp               = NULL;
+  osm->restriction       = NULL;
+  osm->lprolongation     = NULL;
+  osm->lrestriction      = NULL;
+  osm->x                 = NULL;
+  osm->y                 = NULL;
+  osm->is                = NULL;
+  osm->is_local          = NULL;
+  osm->mat               = NULL;
+  osm->pmat              = NULL;
   osm->type              = PC_ASM_RESTRICT;
   osm->loctype           = PC_COMPOSITE_ADDITIVE;
   osm->same_local_solves = PETSC_TRUE;
@@ -1283,7 +1283,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_ASM(PC pc)
   pc->ops->setfromoptions  = PCSetFromOptions_ASM;
   pc->ops->setuponblocks   = PCSetUpOnBlocks_ASM;
   pc->ops->view            = PCView_ASM;
-  pc->ops->applyrichardson = 0;
+  pc->ops->applyrichardson = NULL;
 
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASMSetLocalSubdomains_C",PCASMSetLocalSubdomains_ASM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASMSetTotalSubdomains_C",PCASMSetTotalSubdomains_ASM);CHKERRQ(ierr);
@@ -1370,7 +1370,7 @@ PetscErrorCode  PCASMCreateSubdomains(Mat A, PetscInt n, IS* outis[])
            MatConvert(Ad,MATMPIADJ,MAT_INITIAL_MATRIX,&adj) will
            remove the block-aij structure and we cannot expect
            MatPartitioning to split vertices as we need */
-        PetscInt       i,j,len,nnz,cnt,*iia=0,*jja=0;
+        PetscInt       i,j,len,nnz,cnt,*iia=NULL,*jja=NULL;
         const PetscInt *row;
         nnz = 0;
         for (i=0; i<na; i++) { /* count number of nonzeros */

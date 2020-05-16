@@ -808,12 +808,12 @@ PETSC_EXTERN PetscErrorCode KSPCreate_LGMRES(KSP ksp)
   lgmres->q_preallocate  = 0;
   lgmres->delta_allocate = LGMRES_DELTA_DIRECTIONS;
   lgmres->orthog         = KSPGMRESClassicalGramSchmidtOrthogonalization;
-  lgmres->nrs            = 0;
-  lgmres->sol_temp       = 0;
+  lgmres->nrs            = NULL;
+  lgmres->sol_temp       = NULL;
   lgmres->max_k          = LGMRES_DEFAULT_MAXK;
-  lgmres->Rsvd           = 0;
+  lgmres->Rsvd           = NULL;
   lgmres->cgstype        = KSP_GMRES_CGS_REFINE_NEVER;
-  lgmres->orthogwork     = 0;
+  lgmres->orthogwork     = NULL;
 
   /*LGMRES_MOD - new defaults */
   lgmres->aug_dim         = LGMRES_DEFAULT_AUGDIM;

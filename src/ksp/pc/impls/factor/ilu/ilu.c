@@ -62,7 +62,7 @@ static PetscErrorCode PCSetFromOptions_ILU(PetscOptionItems *PetscOptionsObject,
   ierr = PetscOptionsName("-pc_factor_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","PCFactorReorderForNonzeroDiagonal",&flg);CHKERRQ(ierr);
   if (flg) {
     tol  = PETSC_DECIDE;
-    ierr = PetscOptionsReal("-pc_factor_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","PCFactorReorderForNonzeroDiagonal",ilu->nonzerosalongdiagonaltol,&tol,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-pc_factor_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","PCFactorReorderForNonzeroDiagonal",ilu->nonzerosalongdiagonaltol,&tol,NULL);CHKERRQ(ierr);
     ierr = PCFactorReorderForNonzeroDiagonal(pc,tol);CHKERRQ(ierr);
   }
 
@@ -294,8 +294,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_ILU(PC pc)
   ((PC_Factor*)ilu)->factortype         = MAT_FACTOR_ILU;
   ((PC_Factor*)ilu)->info.levels        = 0.;
   ((PC_Factor*)ilu)->info.fill          = 1.0;
-  ilu->col                              = 0;
-  ilu->row                              = 0;
+  ilu->col                              = NULL;
+  ilu->row                              = NULL;
   ierr                                  = PetscStrallocpy(MATORDERINGNATURAL,(char**)&((PC_Factor*)ilu)->ordering);CHKERRQ(ierr);
   ((PC_Factor*)ilu)->info.dt            = PETSC_DEFAULT;
   ((PC_Factor*)ilu)->info.dtcount       = PETSC_DEFAULT;
@@ -310,7 +310,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_ILU(PC pc)
   pc->ops->view                = PCView_Factor;
   pc->ops->applysymmetricleft  = PCApplySymmetricLeft_ILU;
   pc->ops->applysymmetricright = PCApplySymmetricRight_ILU;
-  pc->ops->applyrichardson     = 0;
+  pc->ops->applyrichardson     = NULL;
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetDropTolerance_C",PCFactorSetDropTolerance_ILU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorReorderForNonzeroDiagonal_C",PCFactorReorderForNonzeroDiagonal_ILU);CHKERRQ(ierr);
   PetscFunctionReturn(0);

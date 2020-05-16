@@ -487,9 +487,9 @@ PetscErrorCode PCSetFromOptions_MG(PetscOptionItems *PetscOptionsObject,PC pc)
   PetscFunctionReturn(0);
 }
 
-const char *const PCMGTypes[] = {"MULTIPLICATIVE","ADDITIVE","FULL","KASKADE","PCMGType","PC_MG",0};
-const char *const PCMGCycleTypes[] = {"invalid","v","w","PCMGCycleType","PC_MG_CYCLE",0};
-const char *const PCMGGalerkinTypes[] = {"both","pmat","mat","none","external","PCMGGalerkinType","PC_MG_GALERKIN",0};
+const char *const PCMGTypes[] = {"MULTIPLICATIVE","ADDITIVE","FULL","KASKADE","PCMGType","PC_MG",NULL};
+const char *const PCMGCycleTypes[] = {"invalid","v","w","PCMGCycleType","PC_MG_CYCLE",NULL};
+const char *const PCMGGalerkinTypes[] = {"both","pmat","mat","none","external","PCMGGalerkinType","PC_MG_GALERKIN",NULL};
 
 #include <petscdraw.h>
 PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
@@ -594,7 +594,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
   Mat            dA,dB;
   Vec            tvec;
   DM             *dms;
-  PetscViewer    viewer = 0;
+  PetscViewer    viewer = NULL;
   PetscBool      dAeqdB = PETSC_FALSE, needRestricts = PETSC_FALSE;
 
   PetscFunctionBegin;

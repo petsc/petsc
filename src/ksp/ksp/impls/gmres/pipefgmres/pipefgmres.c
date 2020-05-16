@@ -722,12 +722,12 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPEFGMRES(KSP ksp)
   pipefgmres->haptol         = 1.0e-30;
   pipefgmres->q_preallocate  = 0;
   pipefgmres->delta_allocate = PIPEFGMRES_DELTA_DIRECTIONS;
-  pipefgmres->orthog         = 0;
-  pipefgmres->nrs            = 0;
-  pipefgmres->sol_temp       = 0;
+  pipefgmres->orthog         = NULL;
+  pipefgmres->nrs            = NULL;
+  pipefgmres->sol_temp       = NULL;
   pipefgmres->max_k          = PIPEFGMRES_DEFAULT_MAXK;
-  pipefgmres->Rsvd           = 0;
-  pipefgmres->orthogwork     = 0;
+  pipefgmres->Rsvd           = NULL;
+  pipefgmres->orthogwork     = NULL;
   pipefgmres->cgstype        = KSP_GMRES_CGS_REFINE_NEVER;
   pipefgmres->shift          = 1.0;
   PetscFunctionReturn(0);

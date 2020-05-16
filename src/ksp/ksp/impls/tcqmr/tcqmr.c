@@ -188,7 +188,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_TCQMR(KSP ksp)
   ksp->ops->setup          = KSPSetUp_TCQMR;
   ksp->ops->solve          = KSPSolve_TCQMR;
   ksp->ops->destroy        = KSPDestroyDefault;
-  ksp->ops->setfromoptions = 0;
-  ksp->ops->view           = 0;
+  ksp->ops->setfromoptions = NULL;
+  ksp->ops->view           = NULL;
   PetscFunctionReturn(0);
 }

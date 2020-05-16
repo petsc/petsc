@@ -175,7 +175,7 @@ static PetscErrorCode PCSetUp_Eisenstat(PC pc)
   }
   if (!eis->usediag) PetscFunctionReturn(0);
   if (!pc->setupcalled) {
-    ierr = MatCreateVecs(pc->pmat,&eis->diag,0);CHKERRQ(ierr);
+    ierr = MatCreateVecs(pc->pmat,&eis->diag,NULL);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)eis->diag);CHKERRQ(ierr);
   }
   ierr = MatGetDiagonal(pc->pmat,eis->diag);CHKERRQ(ierr);
@@ -403,7 +403,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Eisenstat(PC pc)
   pc->ops->apply           = PCApply_Eisenstat;
   pc->ops->presolve        = PCPreSolve_Eisenstat;
   pc->ops->postsolve       = PCPostSolve_Eisenstat;
-  pc->ops->applyrichardson = 0;
+  pc->ops->applyrichardson = NULL;
   pc->ops->setfromoptions  = PCSetFromOptions_Eisenstat;
   pc->ops->destroy         = PCDestroy_Eisenstat;
   pc->ops->reset           = PCReset_Eisenstat;
@@ -412,9 +412,9 @@ PETSC_EXTERN PetscErrorCode PCCreate_Eisenstat(PC pc)
 
   pc->data     = (void*)eis;
   eis->omega   = 1.0;
-  eis->b[0]    = 0;
-  eis->b[1]    = 0;
-  eis->diag    = 0;
+  eis->b[0]    = NULL;
+  eis->b[1]    = NULL;
+  eis->diag    = NULL;
   eis->usediag = PETSC_TRUE;
 
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCEisenstatSetOmega_C",PCEisenstatSetOmega_Eisenstat);CHKERRQ(ierr);

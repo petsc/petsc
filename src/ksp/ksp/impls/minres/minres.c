@@ -229,7 +229,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_MINRES(KSP ksp)
   ksp->ops->setup          = KSPSetUp_MINRES;
   ksp->ops->solve          = KSPSolve_MINRES;
   ksp->ops->destroy        = KSPDestroyDefault;
-  ksp->ops->setfromoptions = 0;
+  ksp->ops->setfromoptions = NULL;
   ksp->ops->buildsolution  = KSPBuildSolutionDefault;
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
   PetscFunctionReturn(0);

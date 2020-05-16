@@ -50,7 +50,7 @@
 
 #include <petsc/private/pcimpl.h>   /*I "petscpc.h" I*/
 
-const char *const PCJacobiTypes[]    = {"DIAGONAL","ROWMAX","ROWSUM","PCJacobiType","PC_JACOBI_",0};
+const char *const PCJacobiTypes[]    = {"DIAGONAL","ROWMAX","ROWSUM","PCJacobiType","PC_JACOBI_",NULL};
 
 /*
    Private context (data structure) for the Jacobi preconditioner.
@@ -222,7 +222,7 @@ static PetscErrorCode PCSetUp_Jacobi_Symmetric(PC pc)
   PC_Jacobi      *jac = (PC_Jacobi*)pc->data;
 
   PetscFunctionBegin;
-  ierr = MatCreateVecs(pc->pmat,&jac->diagsqrt,0);CHKERRQ(ierr);
+  ierr = MatCreateVecs(pc->pmat,&jac->diagsqrt,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)jac->diagsqrt);CHKERRQ(ierr);
   ierr = PCSetUp_Jacobi(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -242,7 +242,7 @@ static PetscErrorCode PCSetUp_Jacobi_NonSymmetric(PC pc)
   PC_Jacobi      *jac = (PC_Jacobi*)pc->data;
 
   PetscFunctionBegin;
-  ierr = MatCreateVecs(pc->pmat,&jac->diag,0);CHKERRQ(ierr);
+  ierr = MatCreateVecs(pc->pmat,&jac->diag,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)jac->diag);CHKERRQ(ierr);
   ierr = PCSetUp_Jacobi(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -402,8 +402,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_Jacobi(PC pc)
      Initialize the pointers to vectors to ZERO; these will be used to store
      diagonal entries of the matrix for fast preconditioner application.
   */
-  jac->diag      = 0;
-  jac->diagsqrt  = 0;
+  jac->diag      = NULL;
+  jac->diagsqrt  = NULL;
   jac->userowmax = PETSC_FALSE;
   jac->userowsum = PETSC_FALSE;
   jac->useabs    = PETSC_FALSE;
@@ -421,8 +421,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_Jacobi(PC pc)
   pc->ops->reset               = PCReset_Jacobi;
   pc->ops->destroy             = PCDestroy_Jacobi;
   pc->ops->setfromoptions      = PCSetFromOptions_Jacobi;
-  pc->ops->view                = 0;
-  pc->ops->applyrichardson     = 0;
+  pc->ops->view                = NULL;
+  pc->ops->applyrichardson     = NULL;
   pc->ops->applysymmetricleft  = PCApplySymmetricLeftOrRight_Jacobi;
   pc->ops->applysymmetricright = PCApplySymmetricLeftOrRight_Jacobi;
 

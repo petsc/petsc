@@ -55,7 +55,7 @@ PetscErrorCode  PCShellGetContext(PC pc,void **ctx)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidPointer(ctx,2);
   ierr = PetscObjectTypeCompare((PetscObject)pc,PCSHELL,&flg);CHKERRQ(ierr);
-  if (!flg) *ctx = 0;
+  if (!flg) *ctx = NULL;
   else      *ctx = ((PC_Shell*)(pc->data))->ctx;
   PetscFunctionReturn(0);
 }
@@ -292,7 +292,7 @@ static PetscErrorCode  PCShellSetSetUp_Shell(PC pc, PetscErrorCode (*setup)(PC))
   PetscFunctionBegin;
   shell->setup = setup;
   if (setup) pc->ops->setup = PCSetUp_Shell;
-  else       pc->ops->setup = 0;
+  else       pc->ops->setup = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -330,7 +330,7 @@ static PetscErrorCode  PCShellSetApplyBA_Shell(PC pc,PetscErrorCode (*applyBA)(P
   PetscFunctionBegin;
   shell->applyBA = applyBA;
   if (applyBA) pc->ops->applyBA  = PCApplyBA_Shell;
-  else         pc->ops->applyBA  = 0;
+  else         pc->ops->applyBA  = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -345,7 +345,7 @@ static PetscErrorCode  PCShellSetPreSolve_Shell(PC pc,PetscErrorCode (*presolve)
     pc->ops->presolve = PCPreSolve_Shell;
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPreSolveChangeRHS_C",PCPreSolveChangeRHS_Shell);CHKERRQ(ierr);
   } else {
-    pc->ops->presolve = 0;
+    pc->ops->presolve = NULL;
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPreSolveChangeRHS_C",NULL);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -358,7 +358,7 @@ static PetscErrorCode  PCShellSetPostSolve_Shell(PC pc,PetscErrorCode (*postsolv
   PetscFunctionBegin;
   shell->postsolve = postsolve;
   if (postsolve) pc->ops->postsolve = PCPostSolve_Shell;
-  else           pc->ops->postsolve = 0;
+  else           pc->ops->postsolve = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -378,7 +378,7 @@ static PetscErrorCode  PCShellSetApplyTranspose_Shell(PC pc,PetscErrorCode (*app
   PetscFunctionBegin;
   shell->applytranspose = applytranspose;
   if (applytranspose) pc->ops->applytranspose = PCApplyTranspose_Shell;
-  else                pc->ops->applytranspose = 0;
+  else                pc->ops->applytranspose = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -389,7 +389,7 @@ static PetscErrorCode  PCShellSetApplyRichardson_Shell(PC pc,PetscErrorCode (*ap
   PetscFunctionBegin;
   shell->applyrich = applyrich;
   if (applyrich) pc->ops->applyrichardson = PCApplyRichardson_Shell;
-  else           pc->ops->applyrichardson = 0;
+  else           pc->ops->applyrichardson = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -905,24 +905,24 @@ PETSC_EXTERN PetscErrorCode PCCreate_Shell(PC pc)
   pc->ops->apply           = PCApply_Shell;
   pc->ops->applysymmetricleft  = PCApplySymmetricLeft_Shell;
   pc->ops->applysymmetricright = PCApplySymmetricRight_Shell;
-  pc->ops->applytranspose  = 0;
-  pc->ops->applyrichardson = 0;
-  pc->ops->setup           = 0;
-  pc->ops->presolve        = 0;
-  pc->ops->postsolve       = 0;
+  pc->ops->applytranspose  = NULL;
+  pc->ops->applyrichardson = NULL;
+  pc->ops->setup           = NULL;
+  pc->ops->presolve        = NULL;
+  pc->ops->postsolve       = NULL;
 
-  shell->apply          = 0;
-  shell->applytranspose = 0;
-  shell->name           = 0;
-  shell->applyrich      = 0;
-  shell->presolve       = 0;
-  shell->postsolve      = 0;
-  shell->ctx            = 0;
-  shell->setup          = 0;
-  shell->view           = 0;
-  shell->destroy        = 0;
-  shell->applysymmetricleft  = 0;
-  shell->applysymmetricright = 0;
+  shell->apply          = NULL;
+  shell->applytranspose = NULL;
+  shell->name           = NULL;
+  shell->applyrich      = NULL;
+  shell->presolve       = NULL;
+  shell->postsolve      = NULL;
+  shell->ctx            = NULL;
+  shell->setup          = NULL;
+  shell->view           = NULL;
+  shell->destroy        = NULL;
+  shell->applysymmetricleft  = NULL;
+  shell->applysymmetricright = NULL;
 
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetDestroy_C",PCShellSetDestroy_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetSetUp_C",PCShellSetSetUp_Shell);CHKERRQ(ierr);

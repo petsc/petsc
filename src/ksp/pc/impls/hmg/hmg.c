@@ -168,11 +168,11 @@ PetscErrorCode PCSetUp_HMG(PC pc)
   }
 
   ierr = PCDestroy(&hmg->innerpc);CHKERRQ(ierr);
-  hmg->innerpc = 0;
+  hmg->innerpc = NULL;
   ierr = PCMGSetLevels_MG(pc,num_levels,NULL);CHKERRQ(ierr);
   /* Set coarse matrices and interpolations to PCMG */
   for (level=num_levels-1; level>0; level--) {
-    Mat P=0, pmat=0;
+    Mat P=NULL, pmat=NULL;
     Vec b, x,r;
     if (hmg->subcoarsening) {
       if (hmg->usematmaij) {
@@ -507,7 +507,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_HMG(PC pc)
   /* if type was previously mg; must manually destroy it because call to PCSetType(pc,PCMG) will not destroy it */
   if (pc->ops->destroy) {
     ierr =  (*pc->ops->destroy)(pc);CHKERRQ(ierr);
-    pc->data = 0;
+    pc->data = NULL;
   }
   ierr = PetscFree(((PetscObject)pc)->type_name);CHKERRQ(ierr);
 
