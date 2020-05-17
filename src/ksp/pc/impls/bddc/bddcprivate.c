@@ -4427,6 +4427,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
         ierr = MatProductCreateWithMat(pcbddc->local_auxmat1,B,NULL,S_CV);CHKERRQ(ierr);
         ierr = MatProductSetType(S_CV,MATPRODUCT_AB);CHKERRQ(ierr);
         ierr = MatProductSetFromOptions(S_CV);CHKERRQ(ierr);
+        ierr = MatProductSymbolic(S_CV);CHKERRQ(ierr);
         ierr = MatProductNumeric(S_CV);CHKERRQ(ierr);
         ierr = MatProductClear(S_CV);CHKERRQ(ierr);
 
@@ -4436,6 +4437,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
         ierr = MatProductCreateWithMat(local_auxmat2_R,S_CV,NULL,B);CHKERRQ(ierr);
         ierr = MatProductSetType(B,MATPRODUCT_AB);CHKERRQ(ierr);
         ierr = MatProductSetFromOptions(B);CHKERRQ(ierr);
+        ierr = MatProductSymbolic(B);CHKERRQ(ierr);
         ierr = MatProductNumeric(B);CHKERRQ(ierr);
 
         ierr = MatScale(S_CV,m_one);CHKERRQ(ierr);
@@ -4536,6 +4538,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
     ierr = MatProductCreateWithMat(local_auxmat2_R,S_CC,NULL,B);CHKERRQ(ierr);
     ierr = MatProductSetType(B,MATPRODUCT_AB);CHKERRQ(ierr);
     ierr = MatProductSetFromOptions(B);CHKERRQ(ierr);
+    ierr = MatProductSymbolic(B);CHKERRQ(ierr);
     ierr = MatProductNumeric(B);CHKERRQ(ierr);
 
     ierr = MatScale(S_CC,m_one);CHKERRQ(ierr);

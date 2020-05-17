@@ -49,44 +49,20 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_Transpose_AIJ_AIJ(Mat C)
 }
 #endif
 
-PetscErrorCode MatFreeIntermediateDataStructures_MPIAIJ_BC(Mat ABC)
-{
-  Mat_MPIAIJ        *a = (Mat_MPIAIJ*)ABC->data;
-  Mat_MatMatMatMult *matmatmatmult = a->matmatmatmult;
-  PetscErrorCode    ierr;
-
-  PetscFunctionBegin;
-  if (!matmatmatmult) PetscFunctionReturn(0);
-
-  ierr = MatDestroy(&matmatmatmult->BC);CHKERRQ(ierr);
-  ABC->ops->destroy = matmatmatmult->destroy;
-  ierr = PetscFree(a->matmatmatmult);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode MatDestroy_MPIAIJ_MatMatMatMult(Mat A)
-{
-  PetscErrorCode    ierr;
-
-  PetscFunctionBegin;
-  ierr = (*A->ops->freeintermediatedatastructures)(A);CHKERRQ(ierr);
-  ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 PetscErrorCode MatMatMatMultSymbolic_MPIAIJ_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C,PetscReal fill,Mat D)
 {
   PetscErrorCode ierr;
   Mat            BC;
   PetscBool      scalable;
-  Mat_Product    *product = D->product;
+  Mat_Product    *product;
 
   PetscFunctionBegin;
-  ierr = MatCreate(PetscObjectComm((PetscObject)A),&BC);CHKERRQ(ierr);
-  if (product) {
-    ierr = PetscStrcmp(product->alg,"scalable",&scalable);CHKERRQ(ierr);
-  } else SETERRQ(PetscObjectComm((PetscObject)D),PETSC_ERR_ARG_NULL,"Call MatProductCreate() first");
-
+  MatCheckProduct(D,4);
+  if (D->product->data) SETERRQ(PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"Product data not empty");
+  product = D->product;
+  ierr = MatProductCreate(B,C,NULL,&BC);CHKERRQ(ierr);
+  ierr = MatProductSetType(BC,MATPRODUCT_AB);CHKERRQ(ierr);
+  ierr = PetscStrcmp(product->alg,"scalable",&scalable);CHKERRQ(ierr);
   if (scalable) {
     ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ(B,C,fill,BC);CHKERRQ(ierr);
     ierr = MatZeroEntries(BC);CHKERRQ(ierr); /* initialize value entries of BC */
@@ -96,38 +72,41 @@ PetscErrorCode MatMatMatMultSymbolic_MPIAIJ_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C,Pets
     ierr = MatZeroEntries(BC);CHKERRQ(ierr); /* initialize value entries of BC */
     ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(A,BC,fill,D);CHKERRQ(ierr);
   }
+  ierr = MatDestroy(&product->Dwork);CHKERRQ(ierr);
   product->Dwork = BC;
 
   D->ops->matmatmultnumeric = MatMatMatMultNumeric_MPIAIJ_MPIAIJ_MPIAIJ;
-  D->ops->freeintermediatedatastructures = MatFreeIntermediateDataStructures_MPIAIJ_BC;
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatMatMatMultNumeric_MPIAIJ_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C,Mat D)
 {
   PetscErrorCode ierr;
-  Mat_Product    *product = D->product;
-  Mat            BC = product->Dwork;
+  Mat_Product    *product;
+  Mat            BC;
 
   PetscFunctionBegin;
-  ierr = (BC->ops->matmultnumeric)(B,C,BC);CHKERRQ(ierr);
-  ierr = (D->ops->matmultnumeric)(A,BC,D);CHKERRQ(ierr);
+  MatCheckProduct(D,4);
+  if (!D->product->data) SETERRQ(PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"Product data empty");
+  product = D->product;
+  BC = product->Dwork;
+  if (!BC->ops->matmultnumeric) SETERRQ(PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"Missing numeric operation");
+  ierr = (*BC->ops->matmultnumeric)(B,C,BC);CHKERRQ(ierr);
+  if (!D->ops->matmultnumeric) SETERRQ(PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"Missing numeric operation");
+  ierr = (*D->ops->matmultnumeric)(A,BC,D);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /* ----------------------------------------------------- */
-PetscErrorCode MatDestroy_MPIAIJ_RARt(Mat C)
+PetscErrorCode MatDestroy_MPIAIJ_RARt(void *data)
 {
   PetscErrorCode ierr;
-  Mat_MPIAIJ     *c    = (Mat_MPIAIJ*)C->data;
-  Mat_RARt       *rart = c->rart;
+  Mat_RARt       *rart = (Mat_RARt*)data;
 
   PetscFunctionBegin;
   ierr = MatDestroy(&rart->Rt);CHKERRQ(ierr);
-
-  C->ops->destroy = rart->destroy;
-  if (C->ops->destroy) {
-    ierr = (*C->ops->destroy)(C);CHKERRQ(ierr);
+  if (rart->destroy) {
+    ierr = (*rart->destroy)(rart->data);CHKERRQ(ierr);
   }
   ierr = PetscFree(rart);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -136,38 +115,45 @@ PetscErrorCode MatDestroy_MPIAIJ_RARt(Mat C)
 PetscErrorCode MatProductNumeric_RARt_MPIAIJ_MPIAIJ(Mat C)
 {
   PetscErrorCode ierr;
-  Mat_MPIAIJ     *c = (Mat_MPIAIJ*)C->data;
-  Mat_RARt       *rart = c->rart;
-  Mat_Product    *product = C->product;
-  Mat            A=product->A,R=product->B,Rt=rart->Rt;
+  Mat_RARt       *rart;
+  Mat            A,R,Rt;
 
   PetscFunctionBegin;
+  MatCheckProduct(C,1);
+  if (!C->product->data) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data empty");
+  rart = (Mat_RARt*)C->product->data;
+  A    = C->product->A;
+  R    = C->product->B;
+  Rt   = rart->Rt;
   ierr = MatTranspose(R,MAT_REUSE_MATRIX,&Rt);CHKERRQ(ierr);
-  ierr = (C->ops->matmatmultnumeric)(R,A,Rt,C);CHKERRQ(ierr);
+  if (rart->data) C->product->data = rart->data;
+  ierr = (*C->ops->matmatmultnumeric)(R,A,Rt,C);CHKERRQ(ierr);
+  C->product->data = rart;
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatProductSymbolic_RARt_MPIAIJ_MPIAIJ(Mat C)
 {
-  PetscErrorCode      ierr;
-  Mat_Product         *product = C->product;
-  Mat                 A=product->A,R=product->B,Rt;
-  PetscReal           fill=product->fill;
-  Mat_RARt            *rart;
-  Mat_MPIAIJ          *c;
+  PetscErrorCode ierr;
+  Mat            A,R,Rt;
+  Mat_RARt       *rart;
 
   PetscFunctionBegin;
+  MatCheckProduct(C,1);
+  if (C->product->data) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data not empty");
+  A    = C->product->A;
+  R    = C->product->B;
   ierr = MatTranspose(R,MAT_INITIAL_MATRIX,&Rt);CHKERRQ(ierr);
   /* product->Dwork is used to store A*Rt in MatMatMatMultSymbolic_MPIAIJ_MPIAIJ_MPIAIJ() */
-  ierr = MatMatMatMultSymbolic_MPIAIJ_MPIAIJ_MPIAIJ(R,A,Rt,fill,C);CHKERRQ(ierr);
+  ierr = MatMatMatMultSymbolic_MPIAIJ_MPIAIJ_MPIAIJ(R,A,Rt,C->product->fill,C);CHKERRQ(ierr);
   C->ops->productnumeric = MatProductNumeric_RARt_MPIAIJ_MPIAIJ;
 
   /* create a supporting struct */
-  ierr     = PetscNew(&rart);CHKERRQ(ierr);
-  c        = (Mat_MPIAIJ*)C->data;
-  c->rart  = rart;
-  rart->Rt = Rt;
-  rart->destroy   = C->ops->destroy;
-  C->ops->destroy = MatDestroy_MPIAIJ_RARt;
+  ierr = PetscNew(&rart);CHKERRQ(ierr);
+  rart->Rt      = Rt;
+  rart->data    = C->product->data;
+  rart->destroy = C->product->destroy;
+  C->product->data    = rart;
+  C->product->destroy = MatDestroy_MPIAIJ_RARt;
   PetscFunctionReturn(0);
 }

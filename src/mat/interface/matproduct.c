@@ -2,36 +2,52 @@
 /*
     Routines for matrix products. Calling procedure:
 
-    MatProductCreate(A,B,C,&D); or MatProductCreateWithMat(A,B,C,D);
-    MatProductSetType(D, MATPRODUCT_AB/AtB/ABt/PtAP/RARt/ABC);
-    MatProductSetAlgorithm(D, alg);
-    MatProductSetFill(D,fill);
-    MatProductSetFromOptions(D);
-      -> MatProductSetFromOptions_producttype(D):
+    MatProductCreate(A,B,C,&D); or MatProductCreateWithMat(A,B,C,D)
+    MatProductSetType(D, MATPRODUCT_AB/AtB/ABt/PtAP/RARt/ABC)
+    MatProductSetAlgorithm(D, alg)
+    MatProductSetFill(D,fill)
+    MatProductSetFromOptions(D)
+      -> MatProductSetFromOptions_Private(D)
            # Check matrix global sizes
-           -> MatProductSetFromOptions_Atype_Btype_Ctype(D);
-                ->MatProductSetFromOptions_Atype_Btype_Ctype_productype(D):
-                    # Check matrix local sizes for mpi matrices
-                    # Set default algorithm
-                    # Get runtime option
-                    # Set D->ops->productsymbolic = MatProductSymbolic_productype_Atype_Btype_Ctype;
+           if the matrices have the same setfromoptions routine, use it
+           if not, try:
+             -> Query MatProductSetFromOptions_Atype_Btype_Ctype_C(D) from A, B and C (in order)
+             if found -> run the specific setup that must set the symbolic operation (these callbacks should never fail)
+           if callback not found or no symbolic operation set
+             -> Query MatProductSetFromOptions_anytype_C(D) from A, B and C (in order) (e.g, matrices may have inner matrices like MATTRANPOSEMAT)
+           if dispatch found but combination still not present do
+             -> check if B is dense and product type AtB or AB -> if true, basic looping of dense columns
+             -> check if triple product (PtAP, RARt or ABC) -> if true, set the Basic routines
+
+    #  The setfromoptions calls MatProductSetFromOptions_Atype_Btype_Ctype should
+    #    Check matrix local sizes for mpi matrices
+    #    Set default algorithm
+    #    Get runtime option
+    #    Set D->ops->productsymbolic = MatProductSymbolic_productype_Atype_Btype_Ctype if found
 
     PetscLogEventBegin()
-    MatProductSymbolic(D):
-      # Call MatxxxSymbolic_Atype_Btype_Ctype();
-      # Set D->ops->productnumeric = MatProductNumeric_productype_Atype_Btype_Ctype;
+    MatProductSymbolic(D)
+      # Call MatProductSymbolic_productype_Atype_Btype_Ctype()
+        the callback must set the numeric phase D->ops->productnumeric = MatProductNumeric_productype_Atype_Btype_Ctype
     PetscLogEventEnd()
 
     PetscLogEventBegin()
-    MatProductNumeric(D);
-      # Call (D->ops->matxxxnumeric)();
+    MatProductNumeric(D)
+      # Call the numeric phase
     PetscLogEventEnd()
+
+    # The symbolic phases are allowed to set extra data structures and attach those to the product
+    # this additional data can be reused between multiple numeric phases with the same matrices
+    # if not needed, call
+    MatProductClear(D)
 */
 
 #include <petsc/private/matimpl.h>      /*I "petscmat.h" I*/
 
-const char *const MatProductTypes[] = {"AB","AtB","ABt","PtAP","RARt","ABC","MatProductType","MAT_Product_",0};
+const char *const MatProductTypes[] = {"UNSPECIFIED","AB","AtB","ABt","PtAP","RARt","ABC"};
 
+/* these are basic implementations relying on the old function pointers
+ * they are dangerous and should be removed in the future */
 static PetscErrorCode MatProductNumeric_PtAP_Basic(Mat C)
 {
   PetscErrorCode ierr;
@@ -55,6 +71,7 @@ static PetscErrorCode MatProductSymbolic_PtAP_Basic(Mat C)
   PetscReal      fill=product->fill;
 
   PetscFunctionBegin;
+  ierr = PetscInfo2((PetscObject)C,"for A %s, P %s is used\n",((PetscObject)product->A)->type_name,((PetscObject)product->B)->type_name);CHKERRQ(ierr);
   /* AP = A*P */
   ierr = MatProductCreate(A,P,NULL,&AP);CHKERRQ(ierr);
   ierr = MatProductSetType(AP,MATPRODUCT_AB);CHKERRQ(ierr);
@@ -103,6 +120,7 @@ static PetscErrorCode MatProductSymbolic_RARt_Basic(Mat C)
   PetscReal      fill=product->fill;
 
   PetscFunctionBegin;
+  ierr = PetscInfo2((PetscObject)C,"for A %s, R %s is used\n",((PetscObject)product->A)->type_name,((PetscObject)product->B)->type_name);CHKERRQ(ierr);
   /* RA = R*A */
   ierr = MatProductCreate(R,A,NULL,&RA);CHKERRQ(ierr);
   ierr = MatProductSetType(RA,MATPRODUCT_AB);CHKERRQ(ierr);
@@ -148,6 +166,7 @@ static PetscErrorCode MatProductSymbolic_ABC_Basic(Mat mat)
   PetscReal      fill=product->fill;
 
   PetscFunctionBegin;
+  ierr = PetscInfo3((PetscObject)mat,"for A %s, B %s, C %s is used\n",((PetscObject)product->A)->type_name,((PetscObject)product->B)->type_name,((PetscObject)product->C)->type_name);CHKERRQ(ierr);
   /* Symbolic BC = B*C */
   ierr = MatProductCreate(B,C,NULL,&BC);CHKERRQ(ierr);
   ierr = MatProductSetType(BC,MATPRODUCT_AB);CHKERRQ(ierr);
@@ -170,7 +189,7 @@ static PetscErrorCode MatProductSymbolic_ABC_Basic(Mat mat)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatProductSymbolic_Basic(Mat mat)
+static PetscErrorCode MatProductSymbolic_Basic(Mat mat)
 {
   PetscErrorCode ierr;
   Mat_Product    *product = mat->product;
@@ -178,18 +197,15 @@ PetscErrorCode MatProductSymbolic_Basic(Mat mat)
   PetscFunctionBegin;
   switch (product->type) {
   case MATPRODUCT_PtAP:
-    ierr = PetscInfo2((PetscObject)mat, "MatProduct_Basic_PtAP() for A %s, P %s is used\n",((PetscObject)product->A)->type_name,((PetscObject)product->B)->type_name);CHKERRQ(ierr);
     ierr = MatProductSymbolic_PtAP_Basic(mat);CHKERRQ(ierr);
     break;
   case MATPRODUCT_RARt:
-    ierr = PetscInfo2((PetscObject)mat, "MatProduct_Basic_RARt() for A %s, R %s is used\n",((PetscObject)product->A)->type_name,((PetscObject)product->B)->type_name);CHKERRQ(ierr);
     ierr = MatProductSymbolic_RARt_Basic(mat);CHKERRQ(ierr);
     break;
   case MATPRODUCT_ABC:
-    ierr = PetscInfo3((PetscObject)mat, "MatProduct_Basic_ABC() for A %s, B %s, C %s is used\n",((PetscObject)product->A)->type_name,((PetscObject)product->B)->type_name,((PetscObject)product->C)->type_name);CHKERRQ(ierr);
     ierr = MatProductSymbolic_ABC_Basic(mat);CHKERRQ(ierr);
     break;
-  default: SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"ProductType is not supported");
+  default: SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"ProductType %s is not supported",MatProductTypes[product->type]);
   }
   PetscFunctionReturn(0);
 }
@@ -209,39 +225,53 @@ PetscErrorCode MatProductSymbolic_Basic(Mat mat)
    Level: intermediate
 
    Notes:
-     Input matrix must have exactly same data structure as replaced one.
+     To reuse the symbolic phase, input matrices must have exactly the same data structure as the replaced one.
+     If the type of any of the input matrices is different than what previously used, the product is cleared and MatProductSetFromOptions()/MatProductSymbolic() are invoked again.
 
-.seealso: MatProductCreate()
+.seealso: MatProductCreate(), MatProductSetFromOptions(), MatProductSymbolic(). MatProductClear()
 @*/
 PetscErrorCode MatProductReplaceMats(Mat A,Mat B,Mat C,Mat D)
 {
   PetscErrorCode ierr;
-  Mat_Product    *product=D->product;
+  Mat_Product    *product;
+  PetscBool      flgA = PETSC_TRUE,flgB = PETSC_TRUE,flgC = PETSC_TRUE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(D,MAT_CLASSID,4);
-  if (!product) SETERRQ(PetscObjectComm((PetscObject)D),PETSC_ERR_ORDER,"Mat D does not have struct 'product'. Call MatProductReplaceProduct()");
+  MatCheckProduct(D,4);
+  product = D->product;
   if (A) {
     PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-    if (!product->Areplaced) {
-      ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr); /* take ownership of input */
-      ierr = MatDestroy(&product->A);CHKERRQ(ierr); /* release old reference */
-      product->A = A;
-    } else SETERRQ(PetscObjectComm((PetscObject)D),PETSC_ERR_SUP,"Matrix A was changed by a PETSc internal routine, cannot be replaced");
+    ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)product->A,((PetscObject)A)->type_name,&flgA);CHKERRQ(ierr);
+    ierr = MatDestroy(&product->A);CHKERRQ(ierr);
+    product->A = A;
   }
   if (B) {
     PetscValidHeaderSpecific(B,MAT_CLASSID,2);
-    if (!product->Breplaced) {
-      ierr = PetscObjectReference((PetscObject)B);CHKERRQ(ierr); /* take ownership of input */
-      ierr = MatDestroy(&product->B);CHKERRQ(ierr); /* release old reference */
-      product->B = B;
-    } else SETERRQ(PetscObjectComm((PetscObject)D),PETSC_ERR_SUP,"Matrix B was changed by a PETSc internal routine, cannot be replaced");
+    ierr = PetscObjectReference((PetscObject)B);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)product->B,((PetscObject)B)->type_name,&flgB);CHKERRQ(ierr);
+    ierr = MatDestroy(&product->B);CHKERRQ(ierr);
+    product->B = B;
   }
   if (C) {
     PetscValidHeaderSpecific(C,MAT_CLASSID,3);
-    ierr = PetscObjectReference((PetscObject)C);CHKERRQ(ierr); /* take ownership of input */
-    ierr = MatDestroy(&product->C);CHKERRQ(ierr); /* release old reference */
+    ierr = PetscObjectReference((PetscObject)C);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)product->C,((PetscObject)C)->type_name,&flgC);CHKERRQ(ierr);
+    ierr = MatDestroy(&product->C);CHKERRQ(ierr);
     product->C = C;
+  }
+  /* Any of the replaced mats is of a different type, reset */
+  if (!flgA || !flgB || !flgC) {
+    if (D->product->destroy) {
+      ierr = (*D->product->destroy)(D->product->data);CHKERRQ(ierr);
+    }
+    D->product->destroy = NULL;
+    D->product->data = NULL;
+    if (D->ops->productnumeric || D->ops->productsymbolic) {
+      ierr = MatProductSetFromOptions(D);CHKERRQ(ierr);
+      ierr = MatProductSymbolic(D);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -342,436 +372,60 @@ static PetscErrorCode MatProductSymbolic_X_Dense(Mat C)
   ierr = PetscObjectBaseTypeCompareAny((PetscObject)C,&isdense,MATSEQDENSE,MATMPIDENSE,"");CHKERRQ(ierr);
   if (!isdense) {
     ierr = MatSetType(C,((PetscObject)B)->type_name);CHKERRQ(ierr);
-    /* If matrix type of C was not set or not dense, we need to reset this pointers */
+    /* If matrix type of C was not set or not dense, we need to reset the pointer */
     C->ops->productsymbolic = MatProductSymbolic_X_Dense;
-    C->ops->productnumeric  = MatProductNumeric_X_Dense;
   }
+  C->ops->productnumeric = MatProductNumeric_X_Dense;
   ierr = MatSetUp(C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatProductSetFromOptions_X_Dense(Mat C)
+/* a single driver to query the dispatching */
+static PetscErrorCode MatProductSetFromOptions_Private(Mat mat)
 {
-  Mat_Product *product = C->product;
-  Mat         A = product->A, B = product->B;
+  PetscErrorCode    ierr;
+  Mat_Product       *product = mat->product;
+  PetscInt          Am,An,Bm,Bn,Cm,Cn;
+  Mat               A = product->A,B = product->B,C = product->C;
+  const char* const Bnames[] = { "B", "R", "P" };
+  const char*       bname;
+  PetscErrorCode    (*fA)(Mat);
+  PetscErrorCode    (*fB)(Mat);
+  PetscErrorCode    (*fC)(Mat);
+  PetscErrorCode    (*f)(Mat)=NULL;
 
   PetscFunctionBegin;
-  C->ops->productsymbolic = NULL;
-  C->ops->productnumeric  = NULL;
-  switch (product->type) {
-  case MATPRODUCT_AB:
-  case MATPRODUCT_AtB:
-    C->ops->productsymbolic = MatProductSymbolic_X_Dense;
-    C->ops->productnumeric  = MatProductNumeric_X_Dense;
-    break;
-  default: SETERRQ3(PetscObjectComm((PetscObject)C),PETSC_ERR_SUP,"MatProduct type %s not supported for %s and %s matrices",MatProductTypes[product->type],((PetscObject)A)->type_name,((PetscObject)B)->type_name);
-  }
-  PetscFunctionReturn(0);
-}
+  mat->ops->productsymbolic = NULL;
+  mat->ops->productnumeric = NULL;
+  if (product->type == MATPRODUCT_UNSPECIFIED) PetscFunctionReturn(0);
+  if (product->type != MATPRODUCT_ABC) C = NULL; /* do not use C if not needed */
+  if (product->type == MATPRODUCT_RARt) bname = Bnames[1];
+  else if (product->type == MATPRODUCT_PtAP) bname = Bnames[2];
+  else bname = Bnames[0];
 
-/* ----------------------------------------------- */
-static PetscErrorCode MatProductSetFromOptions_AB(Mat mat)
-{
-  PetscErrorCode ierr;
-  Mat_Product    *product = mat->product;
-  Mat            A=product->A,B=product->B;
-  PetscBool      sametype;
-  PetscErrorCode (*fA)(Mat);
-  PetscErrorCode (*fB)(Mat);
-  PetscErrorCode (*f)(Mat)=NULL;
-  PetscBool      A_istrans,B_istrans;
-
-  PetscFunctionBegin;
-  /* Check matrix global sizes */
-  if (B->rmap->N!=A->cmap->N) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",B->rmap->N,A->cmap->N);
+  /* Check matrices sizes */
+  Am = A->rmap->N;
+  An = A->cmap->N;
+  Bm = B->rmap->N;
+  Bn = B->cmap->N;
+  Cm = C ? C->rmap->N : 0;
+  Cn = C ? C->cmap->N : 0;
+  if (product->type == MATPRODUCT_RARt || product->type == MATPRODUCT_ABt) { PetscInt t = Bn; Bn = Bm; Bm = t; }
+  if (product->type == MATPRODUCT_AtB) { PetscInt t = An; An = Am; Am = t; }
+  if (An != Bm) SETERRQ7(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_SIZ,"Matrix dimensions of A and %s are incompatible for MatProductType %s: A %Dx%D, %s %Dx%D",bname,MatProductTypes[product->type],A->rmap->N,A->cmap->N,bname,B->rmap->N,B->cmap->N);
+  if (Cm && Cm != Bn) SETERRQ5(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_SIZ,"Matrix dimensions of B and C are incompatible for MatProductType %s: B %Dx%D, C %Dx%D",MatProductTypes[product->type],B->rmap->N,B->cmap->N,Cm,Cn);
 
   fA = A->ops->productsetfromoptions;
   fB = B->ops->productsetfromoptions;
-
-  ierr = PetscStrcmp(((PetscObject)A)->type_name,((PetscObject)B)->type_name,&sametype);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)A,MATTRANSPOSEMAT,&A_istrans);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)B,MATTRANSPOSEMAT,&B_istrans);CHKERRQ(ierr);
-  ierr = PetscInfo2(mat,"for A %s, B %s\n",((PetscObject)A)->type_name,((PetscObject)B)->type_name);CHKERRQ(ierr);
-
-  if (fB == fA && sametype && (!A_istrans || !B_istrans)) {
-    ierr = PetscInfo(mat,"  sametype and matching op\n");CHKERRQ(ierr);
-    f = fB;
+  fC = C ? C->ops->productsetfromoptions : fA;
+  if (C) {
+    ierr = PetscInfo5(mat,"MatProductType %s for A %s, %s %s, C %s\n",MatProductTypes[product->type],((PetscObject)A)->type_name,bname,((PetscObject)B)->type_name,((PetscObject)C)->type_name);CHKERRQ(ierr);
   } else {
-    char      mtypes[256];
-    PetscBool At_istrans=PETSC_TRUE,Bt_istrans=PETSC_TRUE;
-    Mat       At = NULL,Bt = NULL;
-
-    if (A_istrans && !B_istrans) {
-      ierr = MatTransposeGetMat(A,&At);CHKERRQ(ierr);
-      ierr = PetscObjectTypeCompare((PetscObject)At,MATTRANSPOSEMAT,&At_istrans);CHKERRQ(ierr);
-      if (At_istrans) { /* mat = ATT * B */
-        Mat Att = NULL;
-        ierr = MatTransposeGetMat(At,&Att);CHKERRQ(ierr);
-        ierr = PetscObjectReference((PetscObject)Att);CHKERRQ(ierr);
-        ierr = MatDestroy(&product->A);CHKERRQ(ierr);
-        A                  = Att;
-        product->A         = Att; /* use Att for matproduct */
-        product->Areplaced = PETSC_TRUE; /* Att = A, but has native matrix type */
-      } else { /* !At_istrans: mat = At^T*B */
-        ierr = PetscObjectReference((PetscObject)At);CHKERRQ(ierr);
-        ierr = MatDestroy(&product->A);CHKERRQ(ierr);
-        A                  = At;
-        product->A         = At;
-        product->Areplaced = PETSC_TRUE;
-        product->type      = MATPRODUCT_AtB;
-      }
-    } else if (!A_istrans && B_istrans) {
-      ierr = MatTransposeGetMat(B,&Bt);CHKERRQ(ierr);
-      ierr = PetscObjectTypeCompare((PetscObject)Bt,MATTRANSPOSEMAT,&Bt_istrans);CHKERRQ(ierr);
-      if (Bt_istrans) { /* mat = A * BTT */
-        Mat Btt = NULL;
-        ierr = MatTransposeGetMat(Bt,&Btt);CHKERRQ(ierr);
-        ierr = PetscObjectReference((PetscObject)Btt);CHKERRQ(ierr);
-        ierr = MatDestroy(&product->B);CHKERRQ(ierr);
-        B                  = Btt;
-        product->B         = Btt; /* use Btt for matproduct */
-        product->Breplaced = PETSC_TRUE;
-      } else { /* !Bt_istrans */
-        /* mat = A*Bt^T */
-        ierr = PetscObjectReference((PetscObject)Bt);CHKERRQ(ierr);
-        ierr = MatDestroy(&product->B);CHKERRQ(ierr);
-        B                  = Bt;
-        product->B         = Bt;
-        product->Breplaced = PETSC_TRUE;
-        product->type = MATPRODUCT_ABt;
-      }
-    } else if (A_istrans && B_istrans) { /* mat = At^T * Bt^T */
-      ierr = MatTransposeGetMat(A,&At);CHKERRQ(ierr);
-      ierr = PetscObjectTypeCompare((PetscObject)At,MATTRANSPOSEMAT,&At_istrans);CHKERRQ(ierr);
-      ierr = MatTransposeGetMat(B,&Bt);CHKERRQ(ierr);
-      ierr = PetscObjectTypeCompare((PetscObject)Bt,MATTRANSPOSEMAT,&Bt_istrans);CHKERRQ(ierr);
-      if (At_istrans && Bt_istrans) {
-        Mat Att= NULL,Btt = NULL;
-        ierr = MatTransposeGetMat(At,&Att);CHKERRQ(ierr);
-        ierr = MatTransposeGetMat(Bt,&Btt);CHKERRQ(ierr);
-        ierr = PetscObjectReference((PetscObject)Att);CHKERRQ(ierr);
-        ierr = PetscObjectReference((PetscObject)Btt);CHKERRQ(ierr);
-        ierr = MatDestroy(&product->A);CHKERRQ(ierr);
-        ierr = MatDestroy(&product->B);CHKERRQ(ierr);
-        A             = Att;
-        product->A    = Att; product->Areplaced = PETSC_TRUE;
-        B             = Btt;
-        product->B    = Btt; product->Breplaced = PETSC_TRUE;
-      } else SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Not supported yet");
-    }
-
-    /* query MatProductSetFromOptions_Atype_Btype */
-    ierr = PetscStrncpy(mtypes,"MatProductSetFromOptions_",sizeof(mtypes));CHKERRQ(ierr);
-    ierr = PetscStrlcat(mtypes,((PetscObject)A)->type_name,sizeof(mtypes));CHKERRQ(ierr);
-    ierr = PetscStrlcat(mtypes,"_",sizeof(mtypes));CHKERRQ(ierr);
-    ierr = PetscStrlcat(mtypes,((PetscObject)B)->type_name,sizeof(mtypes));CHKERRQ(ierr);
-    ierr = PetscStrlcat(mtypes,"_C",sizeof(mtypes));CHKERRQ(ierr);
-    ierr = PetscObjectQueryFunction((PetscObject)A,mtypes,&f);CHKERRQ(ierr);
-    ierr = PetscInfo2(mat,"  querying %s? %p\n",mtypes,f);CHKERRQ(ierr);
-    if (!f) {
-      ierr = PetscObjectQueryFunction((PetscObject)B,mtypes,&f);CHKERRQ(ierr);
-      ierr = PetscInfo2(mat,"  querying %s? %p\n",mtypes,f);CHKERRQ(ierr);
-    }
+    ierr = PetscInfo4(mat,"MatProductType %s for A %s, %s %s\n",MatProductTypes[product->type],((PetscObject)A)->type_name,bname,((PetscObject)B)->type_name);CHKERRQ(ierr);
   }
-
-  /* last chance, we can still compute the product if B is of type dense */
-  if (!f && (product->type == MATPRODUCT_AB || product->type == MATPRODUCT_AtB)) {
-    PetscBool isdense;
-
-    ierr = PetscObjectBaseTypeCompareAny((PetscObject)B,&isdense,MATSEQDENSE,MATMPIDENSE,"");CHKERRQ(ierr);
-    if (isdense) {
-      f    = MatProductSetFromOptions_X_Dense;
-      ierr = PetscInfo(mat,"  using basic looping over columns of a dense matrix\n");CHKERRQ(ierr);
-    }
-  }
-
-  if (f) {
-    ierr = (*f)(mat);CHKERRQ(ierr);
-  } else { /* reset pointers since the matrix types combination is not available */
-    ierr = PetscInfo2(mat,"  for A %s and B %s is not supported\n",((PetscObject)A)->type_name,((PetscObject)B)->type_name);CHKERRQ(ierr);
-    mat->ops->productsymbolic = NULL;
-    mat->ops->productnumeric  = NULL;
-  }
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode MatProductSetFromOptions_AtB(Mat mat)
-{
-  PetscErrorCode ierr;
-  Mat_Product    *product = mat->product;
-  Mat            A=product->A,B=product->B;
-  PetscBool      sametype;
-  PetscErrorCode (*fA)(Mat);
-  PetscErrorCode (*fB)(Mat);
-  PetscErrorCode (*f)(Mat)=NULL;
-
-  PetscFunctionBegin;
-  /* Check matrix global sizes */
-  if (B->rmap->N!=A->rmap->N) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",B->rmap->N,A->rmap->N);
-
-  fA = A->ops->productsetfromoptions;
-  fB = B->ops->productsetfromoptions;
-
-  ierr = PetscStrcmp(((PetscObject)A)->type_name,((PetscObject)B)->type_name,&sametype);CHKERRQ(ierr);
-  ierr = PetscInfo2(mat,"for A %s, B %s\n",((PetscObject)A)->type_name,((PetscObject)B)->type_name);CHKERRQ(ierr);
-
-  if (fB == fA && sametype) {
-    ierr = PetscInfo(mat,"  sametype and matching op\n");CHKERRQ(ierr);
-    f = fB;
-  } else {
-    char      mtypes[256];
-    PetscBool istrans;
-    ierr = PetscObjectTypeCompare((PetscObject)A,MATTRANSPOSEMAT,&istrans);CHKERRQ(ierr);
-    if (!istrans) {
-      /* query MatProductSetFromOptions_Atype_Btype */
-      ierr = PetscStrncpy(mtypes,"MatProductSetFromOptions_",sizeof(mtypes));CHKERRQ(ierr);
-      ierr = PetscStrlcat(mtypes,((PetscObject)A)->type_name,sizeof(mtypes));CHKERRQ(ierr);
-      ierr = PetscStrlcat(mtypes,"_",sizeof(mtypes));CHKERRQ(ierr);
-      ierr = PetscStrlcat(mtypes,((PetscObject)B)->type_name,sizeof(mtypes));CHKERRQ(ierr);
-      ierr = PetscStrlcat(mtypes,"_C",sizeof(mtypes));CHKERRQ(ierr);
-      ierr = PetscObjectQueryFunction((PetscObject)B,mtypes,&f);CHKERRQ(ierr);
-      ierr = PetscInfo2(mat,"  querying %s? %p\n",mtypes,f);CHKERRQ(ierr);
-    } else {
-      Mat T = NULL;
-      SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"MatProductSetFromOptions_AtB for A %s and B %s is not supported",((PetscObject)A)->type_name,((PetscObject)B)->type_name);
-
-      ierr = MatTransposeGetMat(A,&T);CHKERRQ(ierr);
-      ierr = PetscStrncpy(mtypes,"MatProductSetFromOptions_",sizeof(mtypes));CHKERRQ(ierr);
-      ierr = PetscStrlcat(mtypes,((PetscObject)T)->type_name,sizeof(mtypes));CHKERRQ(ierr);
-      ierr = PetscStrlcat(mtypes,"_",sizeof(mtypes));CHKERRQ(ierr);
-      ierr = PetscStrlcat(mtypes,((PetscObject)B)->type_name,sizeof(mtypes));CHKERRQ(ierr);
-      ierr = PetscStrlcat(mtypes,"_C",sizeof(mtypes));CHKERRQ(ierr);
-
-      product->type = MATPRODUCT_AtB;
-      ierr = PetscObjectQueryFunction((PetscObject)B,mtypes,&f);CHKERRQ(ierr);
-      ierr = PetscInfo2(mat,"  querying %s? %p\n",mtypes,f);CHKERRQ(ierr);
-    }
-
-    if (!f) {
-      ierr = PetscObjectQueryFunction((PetscObject)A,mtypes,&f);CHKERRQ(ierr);
-      ierr = PetscInfo2(mat,"  querying %s? %p\n",mtypes,f);CHKERRQ(ierr);
-    }
-  }
-
-  /* last chance, we can still compute the product if B is of type dense */
-  if (!f && (product->type == MATPRODUCT_AB || product->type == MATPRODUCT_AtB)) {
-    PetscBool isdense;
-
-    ierr = PetscObjectBaseTypeCompareAny((PetscObject)B,&isdense,MATSEQDENSE,MATMPIDENSE,"");CHKERRQ(ierr);
-    if (isdense) {
-      f    = MatProductSetFromOptions_X_Dense;
-      ierr = PetscInfo(mat,"  using basic looping over columns of a dense matrix\n");CHKERRQ(ierr);
-    }
-  }
-
-  if (f) {
-    ierr = (*f)(mat);CHKERRQ(ierr);
-  } else { /* reset pointers since the matrix types combination is not available */
-    ierr = PetscInfo2(mat,"  for A %s and B %s is not supported\n",((PetscObject)A)->type_name,((PetscObject)B)->type_name);CHKERRQ(ierr);
-    mat->ops->productsymbolic = NULL;
-    mat->ops->productnumeric  = NULL;
-  }
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode MatProductSetFromOptions_ABt(Mat mat)
-{
-  PetscErrorCode ierr;
-  Mat_Product    *product = mat->product;
-  Mat            A=product->A,B=product->B;
-  PetscBool      sametype;
-  PetscErrorCode (*fA)(Mat);
-  PetscErrorCode (*fB)(Mat);
-  PetscErrorCode (*f)(Mat)=NULL;
-
-  PetscFunctionBegin;
-  /* Check matrix global sizes */
-  if (B->cmap->N!=A->cmap->N) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, AN %D != BN %D",A->cmap->N,B->cmap->N);
-
-  fA = A->ops->productsetfromoptions;
-  fB = B->ops->productsetfromoptions;
-
-  ierr = PetscStrcmp(((PetscObject)A)->type_name,((PetscObject)B)->type_name,&sametype);CHKERRQ(ierr);
-  ierr = PetscInfo2(mat,"for A %s, B %s\n",((PetscObject)A)->type_name,((PetscObject)B)->type_name);CHKERRQ(ierr);
-  if (fB == fA && sametype) {
-    ierr = PetscInfo(mat,"  sametype and matching op\n");CHKERRQ(ierr);
-    f = fB;
-  } else {
-    char      mtypes[256];
-    PetscBool istrans;
-    ierr = PetscObjectTypeCompare((PetscObject)A,MATTRANSPOSEMAT,&istrans);CHKERRQ(ierr);
-    if (!istrans) {
-      /* query MatProductSetFromOptions_Atype_Btype */
-      ierr = PetscStrncpy(mtypes,"MatProductSetFromOptions_",sizeof(mtypes));CHKERRQ(ierr);
-      ierr = PetscStrlcat(mtypes,((PetscObject)A)->type_name,sizeof(mtypes));CHKERRQ(ierr);
-      ierr = PetscStrlcat(mtypes,"_",sizeof(mtypes));CHKERRQ(ierr);
-      ierr = PetscStrlcat(mtypes,((PetscObject)B)->type_name,sizeof(mtypes));CHKERRQ(ierr);
-      ierr = PetscStrlcat(mtypes,"_C",sizeof(mtypes));CHKERRQ(ierr);
-      ierr = PetscObjectQueryFunction((PetscObject)B,mtypes,&f);CHKERRQ(ierr);
-      ierr = PetscInfo2(mat,"  querying %s? %p\n",mtypes,f);CHKERRQ(ierr);
-    } else {
-      Mat T = NULL;
-      SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"MatProductSetFromOptions_ABt for A %s and B %s is not supported",((PetscObject)A)->type_name,((PetscObject)B)->type_name);
-
-      ierr = MatTransposeGetMat(A,&T);CHKERRQ(ierr);
-      ierr = PetscStrncpy(mtypes,"MatProductSetFromOptions_",sizeof(mtypes));CHKERRQ(ierr);
-      ierr = PetscStrlcat(mtypes,((PetscObject)T)->type_name,sizeof(mtypes));CHKERRQ(ierr);
-      ierr = PetscStrlcat(mtypes,"_",sizeof(mtypes));CHKERRQ(ierr);
-      ierr = PetscStrlcat(mtypes,((PetscObject)B)->type_name,sizeof(mtypes));CHKERRQ(ierr);
-      ierr = PetscStrlcat(mtypes,"_C",sizeof(mtypes));CHKERRQ(ierr);
-
-      product->type = MATPRODUCT_ABt;
-      ierr = PetscObjectQueryFunction((PetscObject)B,mtypes,&f);CHKERRQ(ierr);
-      ierr = PetscInfo2(mat,"  querying %s (ABt)? %p\n",mtypes,f);CHKERRQ(ierr);
-    }
-
-    if (!f) {
-      ierr = PetscObjectQueryFunction((PetscObject)A,mtypes,&f);CHKERRQ(ierr);
-      ierr = PetscInfo2(mat,"  querying %s (ABt)? %p\n",mtypes,f);CHKERRQ(ierr);
-    }
-  }
-
-  /* last chance, we can still compute the product if B is of type dense */
-  if (!f && (product->type == MATPRODUCT_AB || product->type == MATPRODUCT_AtB)) {
-    PetscBool isdense;
-
-    ierr = PetscObjectBaseTypeCompareAny((PetscObject)B,&isdense,MATSEQDENSE,MATMPIDENSE,"");CHKERRQ(ierr);
-    if (isdense) {
-      f    = MatProductSetFromOptions_X_Dense;
-      ierr = PetscInfo(mat,"  using basic looping over columns of a dense matrix\n");CHKERRQ(ierr);
-    }
-  }
-
-  if (f) {
-    ierr = (*f)(mat);CHKERRQ(ierr);
-  } else { /* reset pointers since the matrix types combination is not available */
-    ierr = PetscInfo2(mat,"  for A %s and B %s is not supported\n",((PetscObject)A)->type_name,((PetscObject)B)->type_name);CHKERRQ(ierr);
-    mat->ops->productsymbolic = NULL;
-    mat->ops->productnumeric  = NULL;
-  }
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode MatProductSetFromOptions_PtAP(Mat mat)
-{
-  PetscErrorCode ierr;
-  Mat_Product    *product = mat->product;
-  Mat            A=product->A,B=product->B;
-  PetscBool      sametype;
-  PetscErrorCode (*fA)(Mat);
-  PetscErrorCode (*fB)(Mat);
-  PetscErrorCode (*f)(Mat)=NULL;
-
-  PetscFunctionBegin;
-  /* Check matrix global sizes */
-  if (A->rmap->N != A->cmap->N) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Matrix A must be square, %D != %D",A->rmap->N,A->cmap->N);
-  if (B->rmap->N != A->cmap->N) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",B->rmap->N,A->cmap->N);
-
-  fA = A->ops->productsetfromoptions;
-  fB = B->ops->productsetfromoptions;
-
-  ierr = PetscInfo2(mat,"for A %s, P %s\n",((PetscObject)A)->type_name,((PetscObject)B)->type_name);CHKERRQ(ierr);
-  ierr = PetscStrcmp(((PetscObject)A)->type_name,((PetscObject)B)->type_name,&sametype);CHKERRQ(ierr);
-  if (fB == fA && sametype) {
-    ierr = PetscInfo(mat,"  sametype and matching op\n");CHKERRQ(ierr);
-    f = fB;
-  } else {
-    /* query MatProductSetFromOptions_Atype_Btype */
-    char  mtypes[256];
-    ierr = PetscStrncpy(mtypes,"MatProductSetFromOptions_",sizeof(mtypes));CHKERRQ(ierr);
-    ierr = PetscStrlcat(mtypes,((PetscObject)A)->type_name,sizeof(mtypes));CHKERRQ(ierr);
-    ierr = PetscStrlcat(mtypes,"_",sizeof(mtypes));CHKERRQ(ierr);
-    ierr = PetscStrlcat(mtypes,((PetscObject)B)->type_name,sizeof(mtypes));CHKERRQ(ierr);
-    ierr = PetscStrlcat(mtypes,"_C",sizeof(mtypes));CHKERRQ(ierr);
-    ierr = PetscObjectQueryFunction((PetscObject)B,mtypes,&f);CHKERRQ(ierr);
-    ierr = PetscInfo2(mat,"  querying %s? %p\n",mtypes,f);CHKERRQ(ierr);
-
-    if (!f) {
-      ierr = PetscObjectQueryFunction((PetscObject)A,mtypes,&f);CHKERRQ(ierr);
-      ierr = PetscInfo2(mat,"  querying %s? %p\n",mtypes,f);CHKERRQ(ierr);
-    }
-  }
-
-  if (f) {
-    ierr = (*f)(mat);CHKERRQ(ierr);
-  } else {
-    ierr = PetscInfo2(mat,"  for A %s, P %s uses MatProduct_Basic() implementation\n",((PetscObject)A)->type_name,((PetscObject)B)->type_name);CHKERRQ(ierr);
-    mat->ops->productsymbolic = MatProductSymbolic_Basic;
-  }
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode MatProductSetFromOptions_RARt(Mat mat)
-{
-  PetscErrorCode ierr;
-  Mat_Product    *product = mat->product;
-  Mat            A=product->A,B=product->B;
-  PetscBool      sametype;
-  PetscErrorCode (*fA)(Mat);
-  PetscErrorCode (*fB)(Mat);
-  PetscErrorCode (*f)(Mat)=NULL;
-
-  PetscFunctionBegin;
-  /* Check matrix global sizes */
-  if (A->rmap->N != B->cmap->N) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Matrix A must be square, %D != %D",A->rmap->N,A->cmap->N);
-  if (B->cmap->N != A->cmap->N) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",B->cmap->N,A->cmap->N);
-
-  fA = A->ops->productsetfromoptions;
-  fB = B->ops->productsetfromoptions;
-
-  ierr = PetscStrcmp(((PetscObject)A)->type_name,((PetscObject)B)->type_name,&sametype);CHKERRQ(ierr);
-  ierr = PetscInfo2(mat,"for A %s, B %s\n",((PetscObject)A)->type_name,((PetscObject)B)->type_name);CHKERRQ(ierr);
-  if (fB == fA && sametype) {
-    ierr = PetscInfo(mat,"  sametype and matching op\n");CHKERRQ(ierr);
-    f = fB;
-  } else {
-    /* query MatProductSetFromOptions_Atype_Btype */
-    char  mtypes[256];
-    ierr = PetscStrncpy(mtypes,"MatProductSetFromOptions_",sizeof(mtypes));CHKERRQ(ierr);
-    ierr = PetscStrlcat(mtypes,((PetscObject)A)->type_name,sizeof(mtypes));CHKERRQ(ierr);
-    ierr = PetscStrlcat(mtypes,"_",sizeof(mtypes));CHKERRQ(ierr);
-    ierr = PetscStrlcat(mtypes,((PetscObject)B)->type_name,sizeof(mtypes));CHKERRQ(ierr);
-    ierr = PetscStrlcat(mtypes,"_C",sizeof(mtypes));CHKERRQ(ierr);
-    ierr = PetscObjectQueryFunction((PetscObject)B,mtypes,&f);CHKERRQ(ierr);
-    ierr = PetscInfo2(mat,"  querying %s? %p\n",mtypes,f);CHKERRQ(ierr);
-
-    if (!f) {
-      ierr = PetscObjectQueryFunction((PetscObject)A,mtypes,&f);CHKERRQ(ierr);
-      ierr = PetscInfo2(mat,"  querying %s? %p\n",mtypes,f);CHKERRQ(ierr);
-    }
-  }
-
-  if (f) {
-    ierr = (*f)(mat);CHKERRQ(ierr);
-  } else {
-    ierr = PetscInfo2(mat,"  for A %s, P %s uses MatProduct_Basic() implementation\n",((PetscObject)A)->type_name,((PetscObject)B)->type_name);CHKERRQ(ierr);
-    mat->ops->productsymbolic = MatProductSymbolic_Basic;
-  }
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode MatProductSetFromOptions_ABC(Mat mat)
-{
-  PetscErrorCode ierr;
-  Mat_Product    *product = mat->product;
-  Mat            A=product->A,B=product->B,C=product->C;
-  PetscErrorCode (*fA)(Mat);
-  PetscErrorCode (*fB)(Mat);
-  PetscErrorCode (*fC)(Mat);
-  PetscErrorCode (*f)(Mat)=NULL;
-
-  PetscFunctionBegin;
-  /* Check matrix global sizes */
-  if (B->rmap->N!= A->cmap->N) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",B->rmap->N,A->cmap->N);
-  if (C->rmap->N!= B->cmap->N) SETERRQ2(PetscObjectComm((PetscObject)B),PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",C->rmap->N,B->cmap->N);
-
-  fA = A->ops->productsetfromoptions;
-  fB = B->ops->productsetfromoptions;
-  fC = C->ops->productsetfromoptions;
-  ierr = PetscInfo3(mat,"for A %s, B %s and C %s\n",((PetscObject)A)->type_name,((PetscObject)B)->type_name,((PetscObject)C)->type_name);CHKERRQ(ierr);
   if (fA == fB && fA == fC && fA) {
     ierr = PetscInfo(mat,"  matching op\n");CHKERRQ(ierr);
-    f = fA;
+    ierr = (*fA)(mat);CHKERRQ(ierr);
   } else {
     /* query MatProductSetFromOptions_Atype_Btype_Ctype */
     char  mtypes[256];
@@ -779,27 +433,66 @@ static PetscErrorCode MatProductSetFromOptions_ABC(Mat mat)
     ierr = PetscStrlcat(mtypes,((PetscObject)A)->type_name,sizeof(mtypes));CHKERRQ(ierr);
     ierr = PetscStrlcat(mtypes,"_",sizeof(mtypes));CHKERRQ(ierr);
     ierr = PetscStrlcat(mtypes,((PetscObject)B)->type_name,sizeof(mtypes));CHKERRQ(ierr);
-    ierr = PetscStrlcat(mtypes,"_",sizeof(mtypes));CHKERRQ(ierr);
-    ierr = PetscStrlcat(mtypes,((PetscObject)C)->type_name,sizeof(mtypes));CHKERRQ(ierr);
+    if (C) {
+      ierr = PetscStrlcat(mtypes,"_",sizeof(mtypes));CHKERRQ(ierr);
+      ierr = PetscStrlcat(mtypes,((PetscObject)C)->type_name,sizeof(mtypes));CHKERRQ(ierr);
+    }
     ierr = PetscStrlcat(mtypes,"_C",sizeof(mtypes));CHKERRQ(ierr);
 
     ierr = PetscObjectQueryFunction((PetscObject)A,mtypes,&f);CHKERRQ(ierr);
-    ierr = PetscInfo2(mat,"  querying %s? %p\n",mtypes,f);CHKERRQ(ierr);
+    ierr = PetscInfo2(mat,"  querying %s from A? %p\n",mtypes,f);CHKERRQ(ierr);
     if (!f) {
       ierr = PetscObjectQueryFunction((PetscObject)B,mtypes,&f);CHKERRQ(ierr);
-      ierr = PetscInfo2(mat,"  querying %s? %p\n",mtypes,f);CHKERRQ(ierr);
+      ierr = PetscInfo3(mat,"  querying %s from %s? %p\n",mtypes,bname,f);CHKERRQ(ierr);
     }
-    if (!f) {
+    if (!f && C) {
       ierr = PetscObjectQueryFunction((PetscObject)C,mtypes,&f);CHKERRQ(ierr);
-      ierr = PetscInfo2(mat,"  querying %s? %p\n",mtypes,f);CHKERRQ(ierr);
+      ierr = PetscInfo2(mat,"  querying %s from C? %p\n",mtypes,f);CHKERRQ(ierr);
     }
+    if (f) { ierr = (*f)(mat);CHKERRQ(ierr); }
+
+    /* We may have found f but it did not succeed */
+    /* some matrices (i.e. MATTRANSPOSE, MATSHELL constructed from MatConvert), knows what to do with their inner matrices */
+    if (!mat->ops->productsymbolic) {
+      ierr = PetscStrncpy(mtypes,"MatProductSetFromOptions_anytype_C",sizeof(mtypes));CHKERRQ(ierr);
+      ierr = PetscObjectQueryFunction((PetscObject)A,mtypes,&f);CHKERRQ(ierr);
+      ierr = PetscInfo2(mat,"  querying %s from A? %p\n",mtypes,f);CHKERRQ(ierr);
+      if (!f) {
+        ierr = PetscObjectQueryFunction((PetscObject)B,mtypes,&f);CHKERRQ(ierr);
+        ierr = PetscInfo3(mat,"  querying %s from %s? %p\n",mtypes,bname,f);CHKERRQ(ierr);
+      }
+      if (!f && C) {
+        ierr = PetscObjectQueryFunction((PetscObject)C,mtypes,&f);CHKERRQ(ierr);
+        ierr = PetscInfo2(mat,"  querying %s from C? %p\n",mtypes,f);CHKERRQ(ierr);
+      }
+    }
+    if (f) { ierr = (*f)(mat);CHKERRQ(ierr); }
   }
 
-  if (f) {
-    ierr = (*f)(mat);CHKERRQ(ierr);
-  } else { /* use MatProductSymbolic/Numeric_Basic() */
-    ierr = PetscInfo3(mat,"  for A %s, B %s and C %s uses MatProduct_Basic() implementation",((PetscObject)A)->type_name,((PetscObject)B)->type_name,((PetscObject)C)->type_name);CHKERRQ(ierr);
-    mat->ops->productsymbolic = MatProductSymbolic_Basic;
+  /* We may have found f but it did not succeed */
+  if (!mat->ops->productsymbolic) {
+    /* we can still compute the product if B is of type dense */
+    if (product->type == MATPRODUCT_AB || product->type == MATPRODUCT_AtB) {
+      PetscBool isdense;
+
+      ierr = PetscObjectBaseTypeCompareAny((PetscObject)B,&isdense,MATSEQDENSE,MATMPIDENSE,"");CHKERRQ(ierr);
+      if (isdense) {
+
+        mat->ops->productsymbolic = MatProductSymbolic_X_Dense;
+        ierr = PetscInfo(mat,"  using basic looping over columns of a dense matrix\n");CHKERRQ(ierr);
+      }
+    } else if (product->type != MATPRODUCT_ABt) { /* use MatProductSymbolic/Numeric_Basic() for triple products only */
+      /*
+         TODO: this should be changed to a proper setfromoptions, not setting the symbolic pointer here, because we do not know if
+               the compination will succeed. In order to be sure, we need MatProductGetProductType to return the type of the result
+               before computing the symbolic phase
+      */
+      ierr = PetscInfo(mat,"  symbolic product not supported, using MatProductSymbolic_Basic() implementation\n");CHKERRQ(ierr);
+      mat->ops->productsymbolic = MatProductSymbolic_Basic;
+    }
+  }
+  if (!mat->ops->productsymbolic) {
+    ierr = PetscInfo(mat,"  symbolic product is not supported\n");CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -812,9 +505,12 @@ static PetscErrorCode MatProductSetFromOptions_ABC(Mat mat)
    Input Parameter:
 .  mat - the matrix
 
-   Level: beginner
+   Options Database Keys:
+.    -mat_product_clear - Clear intermediate data structures after MatProductNumeric() has been called
 
-.seealso: MatSetFromOptions()
+   Level: intermediate
+
+.seealso: MatSetFromOptions(), MatProductCreate(), MatProductCreateWithMat()
 @*/
 PetscErrorCode MatProductSetFromOptions(Mat mat)
 {
@@ -822,13 +518,48 @@ PetscErrorCode MatProductSetFromOptions(Mat mat)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  if (mat->ops->productsetfromoptions) {
-    ierr = (*mat->ops->productsetfromoptions)(mat);CHKERRQ(ierr);
-  } else SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ORDER,"Call MatProductSetType() first");
+  MatCheckProduct(mat,1);
+  if (mat->product->data) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ORDER,"Cannot call MatProductSetFromOptions with already present data");
+  ierr = PetscObjectOptionsBegin((PetscObject)mat);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-mat_product_clear","Clear intermediate data structures after MatProductNumeric() has been called","MatProductClear",mat->product->clear,&mat->product->clear,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsDeprecated("-mat_freeintermediatedatastructures","-mat_product_clear","3.13","Or call MatProductClear() after MatProductNumeric()");CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = MatProductSetFromOptions_Private(mat);CHKERRQ(ierr);
+  if (!mat->product) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_PLIB,"Missing product after setup phase");
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatProductView - View a MatProduct
+
+   Logically Collective on Mat
+
+   Input Parameter:
+.  mat - the matrix obtained with MatProductCreate() or MatProductCreateWithMat()
+
+   Level: intermediate
+
+.seealso: MatView(), MatProductCreate(), MatProductCreateWithMat()
+@*/
+PetscErrorCode MatProductView(Mat mat, PetscViewer viewer)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  if (!mat->product) PetscFunctionReturn(0);
+  if (!viewer) {ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)mat),&viewer);CHKERRQ(ierr);}
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
+  PetscCheckSameComm(mat,1,viewer,2);
+  if (mat->product->view) {
+    ierr = (*mat->product->view)(mat,viewer);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
 /* ----------------------------------------------- */
+/* these are basic implementations relying on the old function pointers
+ * they are dangerous and should be removed in the future */
 PetscErrorCode MatProductNumeric_AB(Mat mat)
 {
   PetscErrorCode ierr;
@@ -913,20 +644,21 @@ PetscErrorCode MatProductNumeric_ABC(Mat mat)
   PetscFunctionReturn(0);
 }
 
+/* ----------------------------------------------- */
+
 /*@
    MatProductNumeric - Implement a matrix product with numerical values.
 
    Collective on Mat
 
-   Input Parameters:
-.  mat - the matrix to hold a product
-
-   Output Parameters:
-.  mat - the matrix product
+   Input/Output Parameter:
+.  mat - the matrix holding the product
 
    Level: intermediate
 
-.seealso: MatProductCreate(), MatSetType()
+   Notes: MatProductSymbolic() must have been called on mat before calling this function
+
+.seealso: MatProductCreate(), MatSetType(), MatProductSymbolic()
 @*/
 PetscErrorCode MatProductNumeric(Mat mat)
 {
@@ -934,13 +666,20 @@ PetscErrorCode MatProductNumeric(Mat mat)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  MatCheckProduct(mat,1);
   if (mat->ops->productnumeric) {
     ierr = (*mat->ops->productnumeric)(mat);CHKERRQ(ierr);
   } else SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ORDER,"Call MatProductSymbolic() first");
+  if (!mat->product) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_PLIB,"Missing product after numeric phase");
+  if (mat->product->clear) {
+    ierr = MatProductClear(mat);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
 /* ----------------------------------------------- */
+/* these are basic implementations relying on the old function pointers
+ * they are dangerous and should be removed in the future */
 PetscErrorCode MatProductSymbolic_AB(Mat mat)
 {
   PetscErrorCode ierr;
@@ -993,33 +732,34 @@ PetscErrorCode MatProductSymbolic_ABC(Mat mat)
   PetscFunctionReturn(0);
 }
 
+/* ----------------------------------------------- */
+
 /*@
    MatProductSymbolic - Perform the symbolic portion of a matrix product, this creates a data structure for use with the numerical produce.
 
    Collective on Mat
 
-   Input Parameters:
+   Input/Output Parameter:
 .  mat - the matrix to hold a product
-
-   Output Parameters:
-.  mat - the matrix product data structure
 
    Level: intermediate
 
-.seealso: MatProductCreate(), MatSetType(), MatProductNumeric(), MatProductType, MatProductAlgorithm
+   Notes: MatProductSetFromOptions() must have been called on mat before calling this function
+
+.seealso: MatProductCreate(), MatProductCreateWithMat(), MatProductSetFromOptions(), MatProductNumeric(), MatProductSetType(), MatProductSetAlgorithm()
 @*/
 PetscErrorCode MatProductSymbolic(Mat mat)
 {
   PetscErrorCode ierr;
-  Mat_Product    *product = mat->product;
-  MatProductType productype = product->type;
   PetscLogEvent  eventtype=-1;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  MatCheckProduct(mat,1);
+  if (mat->product->data) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ORDER,"Cannot run symbolic phase. Product data not empty");
 
   /* log event */
-  switch (productype) {
+  switch (mat->product->type) {
   case MATPRODUCT_AB:
     eventtype = MAT_MatMultSymbolic;
     break;
@@ -1038,14 +778,17 @@ PetscErrorCode MatProductSymbolic(Mat mat)
   case MATPRODUCT_ABC:
     eventtype = MAT_MatMatMultSymbolic;
     break;
-  default: SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"MATPRODUCT type is not supported");
+  default: SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"ProductType %s is not supported",MatProductTypes[mat->product->type]);
   }
 
+  mat->ops->productnumeric = NULL;
   if (mat->ops->productsymbolic) {
     ierr = PetscLogEventBegin(eventtype,mat,0,0,0);CHKERRQ(ierr);
     ierr = (*mat->ops->productsymbolic)(mat);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(eventtype,mat,0,0,0);CHKERRQ(ierr);
   } else SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ORDER,"Call MatProductSetFromOptions() first");
+  if (!mat->product) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_PLIB,"Missing product after symbolic phase");
+  if (!mat->ops->productnumeric) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_PLIB,"Symbolic phase did not specify the numeric phase");
   PetscFunctionReturn(0);
 }
 
@@ -1064,13 +807,11 @@ PetscErrorCode MatProductSymbolic(Mat mat)
 @*/
 PetscErrorCode MatProductSetFill(Mat mat,PetscReal fill)
 {
-  Mat_Product *product = mat->product;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  if (!product) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ORDER,"Data struct Mat_Product is not created, call MatProductCreate() first");
-  if (fill == PETSC_DEFAULT || fill == PETSC_DECIDE) product->fill = 2.0;
-  else product->fill = fill;
+  MatCheckProduct(mat,1);
+  if (fill == PETSC_DEFAULT || fill == PETSC_DECIDE) mat->product->fill = 2.0;
+  else mat->product->fill = fill;
   PetscFunctionReturn(0);
 }
 
@@ -1085,23 +826,22 @@ PetscErrorCode MatProductSetFill(Mat mat,PetscReal fill)
 
    Level: intermediate
 
-.seealso: MatProductSetType(), MatProductSetFill(), MatProductCreate()
+.seealso: MatProductSetType(), MatProductSetFill(), MatProductCreate(), MatProductAlgorithm
 @*/
 PetscErrorCode MatProductSetAlgorithm(Mat mat,MatProductAlgorithm alg)
 {
   PetscErrorCode ierr;
-  Mat_Product    *product = mat->product;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  if (!product) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ORDER,"Data struct Mat_Product is not created, call MatProductCreate() first");
-  ierr = PetscFree(product->alg);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(alg,&product->alg);CHKERRQ(ierr);
+  MatCheckProduct(mat,1);
+  ierr = PetscFree(mat->product->alg);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(alg,&mat->product->alg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*@
-   MatProductSetType - Sets a particular matrix product type, for example Mat*Mat.
+   MatProductSetType - Sets a particular matrix product type
 
    Collective on Mat
 
@@ -1111,39 +851,26 @@ PetscErrorCode MatProductSetAlgorithm(Mat mat,MatProductAlgorithm alg)
 
    Level: intermediate
 
-.seealso: MatProductCreate(), MatProductType, MatProductAlgorithm
+.seealso: MatProductCreate(), MatProductType
 @*/
 PetscErrorCode MatProductSetType(Mat mat,MatProductType productype)
 {
-  Mat_Product *product = mat->product;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  MatCheckProduct(mat,1);
   PetscValidLogicalCollectiveEnum(mat,productype,2);
-  if (!product) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ORDER,"Data struct Mat_Product is not created, call MatProductCreate() first");
-  product->type = productype;
-
-  switch (productype) {
-  case MATPRODUCT_AB:
-    mat->ops->productsetfromoptions = MatProductSetFromOptions_AB;
-    break;
-  case MATPRODUCT_AtB:
-    mat->ops->productsetfromoptions = MatProductSetFromOptions_AtB;
-    break;
-  case MATPRODUCT_ABt:
-    mat->ops->productsetfromoptions = MatProductSetFromOptions_ABt;
-    break;
-  case MATPRODUCT_PtAP:
-    mat->ops->productsetfromoptions = MatProductSetFromOptions_PtAP;
-    break;
-  case MATPRODUCT_RARt:
-    mat->ops->productsetfromoptions = MatProductSetFromOptions_RARt;
-    break;
-  case MATPRODUCT_ABC:
-    mat->ops->productsetfromoptions = MatProductSetFromOptions_ABC;
-    break;
-  default: SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"ProductType %s is not supported",MatProductTypes[product->type]);
+  if (productype != mat->product->type) {
+    if (mat->product->destroy) {
+      ierr = (*mat->product->destroy)(mat->product->data);CHKERRQ(ierr);
+    }
+    mat->product->destroy = NULL;
+    mat->product->data = NULL;
+    mat->ops->productsymbolic = NULL;
+    mat->ops->productnumeric  = NULL;
   }
+  mat->product->type = productype;
   PetscFunctionReturn(0);
 }
 
@@ -1156,6 +883,9 @@ PetscErrorCode MatProductSetType(Mat mat,MatProductType productype)
 .  mat - the product matrix
 
    Level: intermediate
+
+   Notes: this function should be called to remove any intermediate data used by the product
+          After having called this function, MatProduct operations can no longer be used on mat
 @*/
 PetscErrorCode MatProductClear(Mat mat)
 {
@@ -1165,14 +895,18 @@ PetscErrorCode MatProductClear(Mat mat)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   if (product) {
-    /* release reference */
     ierr = MatDestroy(&product->A);CHKERRQ(ierr);
     ierr = MatDestroy(&product->B);CHKERRQ(ierr);
     ierr = MatDestroy(&product->C);CHKERRQ(ierr);
     ierr = PetscFree(product->alg);CHKERRQ(ierr);
     ierr = MatDestroy(&product->Dwork);CHKERRQ(ierr);
-    ierr = PetscFree(mat->product);CHKERRQ(ierr);
+    if (product->destroy) {
+      ierr = (*product->destroy)(product->data);CHKERRQ(ierr);
+    }
   }
+  ierr = PetscFree(mat->product);CHKERRQ(ierr);
+  mat->ops->productsymbolic = NULL;
+  mat->ops->productnumeric = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -1183,20 +917,21 @@ PetscErrorCode MatProductCreate_Private(Mat A,Mat B,Mat C,Mat D)
   Mat_Product    *product=NULL;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(D,MAT_CLASSID,4);
+  if (D->product) SETERRQ(PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"Product already present");
   ierr = PetscNewLog(D,&product);CHKERRQ(ierr);
   product->A        = A;
   product->B        = B;
   product->C        = C;
+  product->type     = MATPRODUCT_UNSPECIFIED;
   product->Dwork    = NULL;
-  product->fill     = 2.0; /* PETSC_DEFAULT */
-  product->Areplaced = PETSC_FALSE;
-  product->Breplaced = PETSC_FALSE;
-  product->api_user  = PETSC_FALSE;
-  D->product         = product;
+  product->api_user = PETSC_FALSE;
+  product->clear    = PETSC_FALSE;
+  D->product        = product;
 
   ierr = MatProductSetAlgorithm(D,MATPRODUCTALGORITHM_DEFAULT);CHKERRQ(ierr);
+  ierr = MatProductSetFill(D,PETSC_DEFAULT);CHKERRQ(ierr);
 
-  /* take ownership */
   ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)B);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)C);CHKERRQ(ierr);
@@ -1217,9 +952,12 @@ PetscErrorCode MatProductCreate_Private(Mat A,Mat B,Mat C,Mat D)
    Output Parameters:
 .  D - the product matrix
 
+   Notes:
+     Any product data attached to D will be cleared
+
    Level: intermediate
 
-.seealso: MatProductCreate()
+.seealso: MatProductCreate(), MatProductClear()
 @*/
 PetscErrorCode MatProductCreateWithMat(Mat A,Mat B,Mat C,Mat D)
 {
@@ -1253,6 +991,7 @@ PetscErrorCode MatProductCreateWithMat(Mat A,Mat B,Mat C,Mat D)
   if (D->factortype) SETERRQ(PetscObjectComm((PetscObject)D),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
 
   /* Create a supporting struct and attach it to D */
+  ierr = MatProductClear(D);CHKERRQ(ierr);
   ierr = MatProductCreate_Private(A,B,C,D);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1300,7 +1039,6 @@ PetscErrorCode MatProductCreate(Mat A,Mat B,Mat C,Mat *D)
   }
 
   PetscValidPointer(D,4);
-
   ierr = MatCreate(PetscObjectComm((PetscObject)A),D);CHKERRQ(ierr);
   ierr = MatProductCreate_Private(A,B,C,*D);CHKERRQ(ierr);
   PetscFunctionReturn(0);

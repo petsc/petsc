@@ -229,9 +229,9 @@ int main(int argc,char **args)
       ierr = PetscPrintf(PETSC_COMM_WORLD,"C = P^T * B:\n");CHKERRQ(ierr);
       ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
-    ierr = MatFreeIntermediateDataStructures(C);CHKERRQ(ierr);
+    ierr = MatProductClear(C);CHKERRQ(ierr);
     if (view) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"\nC = P^T * B after MatFreeIntermediateDataStructures():\n");CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"\nC = P^T * B after MatProductClear():\n");CHKERRQ(ierr);
       ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
 
@@ -347,8 +347,8 @@ int main(int argc,char **args)
       ierr = PetscPrintf(PETSC_COMM_WORLD,"\nC = P^T * A * P:\n");CHKERRQ(ierr);
       ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-      ierr = MatFreeIntermediateDataStructures(C);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"\nC = P^T * A * P after MatFreeIntermediateDataStructures():\n");CHKERRQ(ierr);
+      ierr = MatProductClear(C);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"\nC = P^T * A * P after MatProductClear():\n");CHKERRQ(ierr);
       ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
       ierr = PetscPrintf(PETSC_COMM_WORLD,"\nCdup:\n");CHKERRQ(ierr);

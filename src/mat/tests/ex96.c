@@ -161,7 +161,7 @@ int main(int argc,char **argv)
       ierr   = MatMatMult(A_tmp,P,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
     }
     /* Free intermediate data structures created for reuse of C=Pt*A*P */
-    ierr = MatFreeIntermediateDataStructures(C);CHKERRQ(ierr);
+    ierr = MatProductClear(C);CHKERRQ(ierr);
 
     /* Test MatDuplicate()        */
     /*----------------------------*/
@@ -212,7 +212,7 @@ int main(int argc,char **argv)
     }
 
     /* Free intermediate data structures created for reuse of C=Pt*A*P */
-    ierr = MatFreeIntermediateDataStructures(C);CHKERRQ(ierr);
+    ierr = MatProductClear(C);CHKERRQ(ierr);
 
     /* Test MatDuplicate()        */
     /*----------------------------*/

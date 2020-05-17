@@ -171,7 +171,7 @@ int main(int argc,char **args)
     ierr = MatTransposeMatMult(P,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
     ierr = MatTransposeMatMult(P,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
     ierr = MatGetInfo(C,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
-    ierr = MatFreeIntermediateDataStructures(C);CHKERRQ(ierr);
+    ierr = MatProductClear(C);CHKERRQ(ierr);
 
     /* Compare P^T*B and R*B */
     ierr = MatMatMult(R,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C1);CHKERRQ(ierr);

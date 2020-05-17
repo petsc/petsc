@@ -190,7 +190,7 @@
       PetscEnum, parameter :: MATOP_ILUFACTOR_SYMBOLIC=30
       PetscEnum, parameter :: MATOP_ICCFACTOR_SYMBOLIC=31
       PetscEnum, parameter :: MATOP_GET_DIAGONAL_BLOCK=32
-!     PetscEnum, parameter :: MATOP_FREE_INTER_STRUCT=33
+      PetscEnum, parameter :: MATOP_PLACEHOLDER_33=33
       PetscEnum, parameter :: MATOP_DUPLICATE=34
       PetscEnum, parameter :: MATOP_FORWARD_SOLVE=35
       PetscEnum, parameter :: MATOP_BACKWARD_SOLVE=36

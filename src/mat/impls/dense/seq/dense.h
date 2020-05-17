@@ -2,6 +2,7 @@
 #if !defined(__DENSE_H)
 #define __DENSE_H
 #include <petsc/private/matimpl.h>
+/* TODO REMOVE */
 #include <../src/mat/impls/aij/seq/aij.h> /* Mat_MatTransMatMult is defined here */
 
 /*
@@ -20,12 +21,11 @@ typedef struct {
   PetscBool    user_alloc;        /* true if the user provided the dense data */
   PetscBool    unplaced_user_alloc;
   Mat          ptapwork;          /* workspace (SeqDense matrix) for PtAP */
+
   /* Support for MatDenseGetColumnVec */
   Vec               cvec;      /* vector representation of a given column */
   const PetscScalar *ptrinuse; /* holds array to be restored (just a placeholder) */
   PetscInt          vecinuse;  /* if cvec is in use (col = vecinuse-1) */
-
-  Mat_MatTransMatMult *atb;       /* used by MatTransposeMatMultxxx_SeqAIJ_SeqDense */
 } Mat_SeqDense;
 
 PETSC_INTERN PetscErrorCode MatMatMultSymbolic_SeqDense_SeqDense(Mat,Mat,PetscReal,Mat);
@@ -84,7 +84,6 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqDenseCUDA_SeqDense(Mat,MatType,MatReus
 PETSC_INTERN PetscErrorCode MatConvert_SeqDense_SeqDenseCUDA(Mat,MatType,MatReuse,Mat*);
 #endif
 
-PETSC_INTERN PetscErrorCode MatDestroy_SeqDense_MatTransMatMult(Mat);
 PETSC_EXTERN PetscErrorCode MatSeqDenseInvertFactors_Private(Mat);
 
 PETSC_INTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat_SeqDense(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
