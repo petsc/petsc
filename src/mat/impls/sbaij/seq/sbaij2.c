@@ -658,8 +658,11 @@ PetscErrorCode MatMult_SeqSBAIJ_N(Mat A,Vec xx,Vec zz)
   PetscFunctionBegin;
   ierr = VecSet(zz,zero);CHKERRQ(ierr);
   if (!a->nz) PetscFunctionReturn(0);
-  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);x_ptr = x;
-  ierr = VecGetArray(zz,&z);CHKERRQ(ierr); z_ptr=z;
+  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
+
+  x_ptr = x;
+  z_ptr = z;
 
   aj = a->j;
   v  = a->a;
@@ -686,7 +689,7 @@ PetscErrorCode MatMult_SeqSBAIJ_N(Mat A,Vec xx,Vec zz)
 
     /* strict lower triangular part */
     idx = aj+ii[0];
-    if (*idx == i) {
+    if (n && *idx == i) {
       ncols -= bs; v += bs2; idx++; n--;
     }
 
@@ -791,7 +794,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_2(Mat A,Vec xx,Vec yy,Vec zz)
     ib          = aj + *ai;
     jmin        = 0;
     nonzerorow += (n>0);
-    if (*ib == i) {      /* (diag of A)*x */
+    if (n && *ib == i) {      /* (diag of A)*x */
       z[2*i]   += v[0]*x1 + v[2]*x2;
       z[2*i+1] += v[2]*x1 + v[3]*x2;
       v        += 4; jmin++;
@@ -843,7 +846,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_3(Mat A,Vec xx,Vec yy,Vec zz)
     ib          = aj + *ai;
     jmin        = 0;
     nonzerorow += (n>0);
-    if (*ib == i) {     /* (diag of A)*x */
+    if (n && *ib == i) {     /* (diag of A)*x */
       z[3*i]   += v[0]*x1 + v[3]*x2 + v[6]*x3;
       z[3*i+1] += v[3]*x1 + v[4]*x2 + v[7]*x3;
       z[3*i+2] += v[6]*x1 + v[7]*x2 + v[8]*x3;
@@ -899,7 +902,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_4(Mat A,Vec xx,Vec yy,Vec zz)
     ib          = aj + *ai;
     jmin        = 0;
     nonzerorow += (n>0);
-    if (*ib == i) {      /* (diag of A)*x */
+    if (n && *ib == i) {      /* (diag of A)*x */
       z[4*i]   += v[0]*x1 + v[4]*x2 +  v[8]*x3 + v[12]*x4;
       z[4*i+1] += v[4]*x1 + v[5]*x2 +  v[9]*x3 + v[13]*x4;
       z[4*i+2] += v[8]*x1 + v[9]*x2 + v[10]*x3 + v[14]*x4;
@@ -958,7 +961,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
     ib          = aj + *ai;
     jmin        = 0;
     nonzerorow += (n>0);
-    if (*ib == i) {      /* (diag of A)*x */
+    if (n && *ib == i) {      /* (diag of A)*x */
       z[5*i]   += v[0]*x1  + v[5]*x2 + v[10]*x3 + v[15]*x4+ v[20]*x5;
       z[5*i+1] += v[5]*x1  + v[6]*x2 + v[11]*x3 + v[16]*x4+ v[21]*x5;
       z[5*i+2] += v[10]*x1 +v[11]*x2 + v[12]*x3 + v[17]*x4+ v[22]*x5;
@@ -1020,7 +1023,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
     ib          = aj + *ai;
     jmin        = 0;
     nonzerorow += (n>0);
-    if (*ib == i) {     /* (diag of A)*x */
+    if (n && *ib == i) {     /* (diag of A)*x */
       z[6*i]   += v[0]*x1  + v[6]*x2 + v[12]*x3 + v[18]*x4+ v[24]*x5 + v[30]*x6;
       z[6*i+1] += v[6]*x1  + v[7]*x2 + v[13]*x3 + v[19]*x4+ v[25]*x5 + v[31]*x6;
       z[6*i+2] += v[12]*x1 +v[13]*x2 + v[14]*x3 + v[20]*x4+ v[26]*x5 + v[32]*x6;
@@ -1085,7 +1088,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
     ib          = aj + *ai;
     jmin        = 0;
     nonzerorow += (n>0);
-    if (*ib == i) {     /* (diag of A)*x */
+    if (n && *ib == i) {     /* (diag of A)*x */
       z[7*i]   += v[0]*x1 + v[7]*x2 + v[14]*x3 + v[21]*x4+ v[28]*x5 + v[35]*x6+ v[42]*x7;
       z[7*i+1] += v[7]*x1 + v[8]*x2 + v[15]*x3 + v[22]*x4+ v[29]*x5 + v[36]*x6+ v[43]*x7;
       z[7*i+2] += v[14]*x1+ v[15]*x2 +v[16]*x3 + v[23]*x4+ v[30]*x5 + v[37]*x6+ v[44]*x7;
@@ -1170,7 +1173,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
 
     /* strict lower triangular part */
     idx = aj+ii[0];
-    if (*idx == i) {
+    if (n && *idx == i) {
       ncols -= bs; v += bs2; idx++; n--;
     }
     if (ncols > 0) {
@@ -1224,9 +1227,10 @@ PetscErrorCode MatNorm_SeqSBAIJ(Mat A,NormType type,PetscReal *norm)
   }
   if (type == NORM_FROBENIUS) {
     for (k=0; k<mbs; k++) {
-      jmin = a->i[k]; jmax = a->i[k+1];
+      jmin = a->i[k];
+      jmax = a->i[k+1];
       col  = aj + jmin;
-      if (*col == k) {         /* diagonal block */
+      if (jmax-jmin > 0 && *col == k) {         /* diagonal block */
         for (i=0; i<bs2; i++) {
           sum_diag += PetscRealPart(PetscConj(*v)*(*v)); v++;
         }
@@ -1272,7 +1276,8 @@ PetscErrorCode MatNorm_SeqSBAIJ(Mat A,NormType type,PetscReal *norm)
         i = nexti;
       }
       /*-- row sum --*/
-      jmin = a->i[k]; jmax = a->i[k+1];
+      jmin = a->i[k];
+      jmax = a->i[k+1];
       for (i=jmin; i<jmax; i++) {
         for (j=0; j<bs; j++) {
           v = a->a + i*bs2 + j;
@@ -1283,7 +1288,7 @@ PetscErrorCode MatNorm_SeqSBAIJ(Mat A,NormType type,PetscReal *norm)
       }
       /* add k_th block row to il, jl */
       col = aj+jmin;
-      if (*col == k) jmin++;
+      if (jmax - jmin > 0 && *col == k) jmin++;
       if (jmin < jmax) {
         il[k] = jmin;
         j = a->j[jmin]; jl[k] = jl[j]; jl[j] = k;
@@ -1356,7 +1361,7 @@ PetscErrorCode MatGetDiagonal_SeqSBAIJ(Mat A,Vec v)
   if (!a->nz) PetscFunctionReturn(0);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   for (i=0; i<ambs; i++) {
-    j=ai[i];
+    j = ai[i];
     if (aj[j] == i) {    /* if this is a diagonal element */
       row  = i*bs;
       aa_j = aa + j*bs2;
