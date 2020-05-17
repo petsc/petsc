@@ -126,6 +126,12 @@
         </ul>
       <h4>VecScatter:</h4>
       <h4>PetscSection:</h4>
+      <ul>
+        <li>PetscSectionGetClosurePermutation(), PetscSectionSetClosurePermutation(), and PetscSectionGetClosureInversePermutation() all require a new argument depth and the getters require closure size to be specified by the caller.
+          This allows multiple closure permutations to be specified, e.g., for mixed topology meshes and boundary faces and for variable-degree spaces.
+          The previous behavior only applied to points at height zero.
+        </li>
+      </ul>
       <h4>PetscPartitioner:</h4>
       <h4>Mat:</h4>
         <ul>

@@ -4407,7 +4407,7 @@ PetscErrorCode DMPlexSetClosurePermutationTensor(DM dm, PetscInt point, PetscSec
     for (i = 0; i < size; ++i) {if (check[i] < 0) SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "Missing permutation index %D", i);}
     ierr = PetscFree(check);CHKERRQ(ierr);
   }
-  ierr = PetscSectionSetClosurePermutation_Internal(section, (PetscObject) dm, size, PETSC_OWN_POINTER, perm);CHKERRQ(ierr);
+  ierr = PetscSectionSetClosurePermutation_Internal(section, (PetscObject) dm, dim, size, PETSC_OWN_POINTER, perm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4794,11 +4794,9 @@ PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt 
 {
   PetscSection       clSection;
   IS                 clPoints;
-  PetscScalar       *array;
-  const PetscScalar *vArray;
   PetscInt          *points = NULL;
-  const PetscInt    *clp, *perm = NULL;
-  PetscInt           depth, numFields, numPoints, size;
+  const PetscInt    *clp, *perm;
+  PetscInt           depth, numFields, numPoints, asize;
   PetscErrorCode     ierr;
 
   PetscFunctionBeginHot;
@@ -4814,39 +4812,32 @@ PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt 
   }
   /* Get points */
   ierr = DMPlexGetCompressedClosure(dm,section,point,&numPoints,&points,&clSection,&clPoints,&clp);CHKERRQ(ierr);
-  ierr = PetscSectionGetClosureInversePermutation_Internal(section, (PetscObject) dm, NULL, &perm);CHKERRQ(ierr);
-  /* Get array */
-  if (!values || !*values) {
-    PetscInt asize = 0, dof, p;
-
-    for (p = 0; p < numPoints*2; p += 2) {
-      ierr = PetscSectionGetDof(section, points[p], &dof);CHKERRQ(ierr);
-      asize += dof;
-    }
-    if (!values) {
-      ierr = DMPlexRestoreCompressedClosure(dm,section,point,&numPoints,&points,&clSection,&clPoints,&clp);CHKERRQ(ierr);
-      if (csize) *csize = asize;
-      PetscFunctionReturn(0);
-    }
-    ierr = DMGetWorkArray(dm, asize, MPIU_SCALAR, &array);CHKERRQ(ierr);
-  } else {
-    array = *values;
+  /* Get sizes */
+  asize = 0;
+  for (PetscInt p = 0; p < numPoints*2; p += 2) {
+    PetscInt dof;
+    ierr = PetscSectionGetDof(section, points[p], &dof);CHKERRQ(ierr);
+    asize += dof;
   }
-  ierr = VecGetArrayRead(v, &vArray);CHKERRQ(ierr);
-  /* Get values */
-  if (numFields > 0) {ierr = DMPlexVecGetClosure_Fields_Static(dm, section, numPoints, points, numFields, perm, vArray, &size, array);CHKERRQ(ierr);}
-  else               {ierr = DMPlexVecGetClosure_Static(dm, section, numPoints, points, perm, vArray, &size, array);CHKERRQ(ierr);}
+  if (values) {
+    const PetscScalar *vArray;
+    PetscInt          size;
+
+    if (*values) {
+      if (PetscUnlikely(*csize < asize)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Provided array size %D not sufficient to hold closure size %D", *csize, asize);
+    } else {ierr = DMGetWorkArray(dm, asize, MPIU_SCALAR, values);CHKERRQ(ierr);}
+    ierr = PetscSectionGetClosureInversePermutation_Internal(section, (PetscObject) dm, depth, asize, &perm);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(v, &vArray);CHKERRQ(ierr);
+    /* Get values */
+    if (numFields > 0) {ierr = DMPlexVecGetClosure_Fields_Static(dm, section, numPoints, points, numFields, perm, vArray, &size, *values);CHKERRQ(ierr);}
+    else               {ierr = DMPlexVecGetClosure_Static(dm, section, numPoints, points, perm, vArray, &size, *values);CHKERRQ(ierr);}
+    if (PetscUnlikely(asize != size)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Section size %D does not match Vec closure size %D", asize, size);
+    /* Cleanup array */
+    ierr = VecRestoreArrayRead(v, &vArray);CHKERRQ(ierr);
+  }
+  if (csize) *csize = asize;
   /* Cleanup points */
   ierr = DMPlexRestoreCompressedClosure(dm,section,point,&numPoints,&points,&clSection,&clPoints,&clp);CHKERRQ(ierr);
-  /* Cleanup array */
-  ierr = VecRestoreArrayRead(v, &vArray);CHKERRQ(ierr);
-  if (!*values) {
-    if (csize) *csize = size;
-    *values = array;
-  } else {
-    if (size > *csize) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Size of input array %D < actual size %D", *csize, size);
-    *csize = size;
-  }
   PetscFunctionReturn(0);
 }
 
@@ -4858,8 +4849,8 @@ PetscErrorCode DMPlexVecGetClosureAtDepth_Internal(DM dm, PetscSection section, 
   PetscScalar       *array;
   const PetscScalar *vArray;
   PetscInt          *points = NULL;
-  const PetscInt    *clp, *perm;
-  PetscInt           mdepth, numFields, numPoints, Np = 0, p, size;
+  const PetscInt    *clp, *perm = NULL;
+  PetscInt           mdepth, numFields, numPoints, Np = 0, p, clsize, size;
   PetscErrorCode     ierr;
 
   PetscFunctionBeginHot;
@@ -4876,7 +4867,12 @@ PetscErrorCode DMPlexVecGetClosureAtDepth_Internal(DM dm, PetscSection section, 
   }
   /* Get points */
   ierr = DMPlexGetCompressedClosure(dm,section,point,&numPoints,&points,&clSection,&clPoints,&clp);CHKERRQ(ierr);
-  ierr = PetscSectionGetClosureInversePermutation_Internal(section, (PetscObject) dm, NULL, &perm);CHKERRQ(ierr);
+  for (clsize=0,p=0; p<Np; p++) {
+    PetscInt dof;
+    ierr = PetscSectionGetDof(section, points[2*p], &dof);CHKERRQ(ierr);
+    clsize += dof;
+  }
+  ierr = PetscSectionGetClosureInversePermutation_Internal(section, (PetscObject) dm, depth, clsize, &perm);CHKERRQ(ierr);
   /* Filter points */
   for (p = 0; p < numPoints*2; p += 2) {
     PetscInt dep;
@@ -5294,7 +5290,7 @@ PetscErrorCode DMPlexVecSetClosure(DM dm, PetscSection section, Vec v, PetscInt 
   PetscScalar    *array;
   PetscInt       *points = NULL;
   const PetscInt *clp, *clperm = NULL;
-  PetscInt        depth, numFields, numPoints, p;
+  PetscInt        depth, numFields, numPoints, p, clsize;
   PetscErrorCode  ierr;
 
   PetscFunctionBeginHot;
@@ -5309,8 +5305,13 @@ PetscErrorCode DMPlexVecSetClosure(DM dm, PetscSection section, Vec v, PetscInt 
     PetscFunctionReturn(0);
   }
   /* Get points */
-  ierr = PetscSectionGetClosureInversePermutation_Internal(section, (PetscObject) dm, NULL, &clperm);CHKERRQ(ierr);
   ierr = DMPlexGetCompressedClosure(dm,section,point,&numPoints,&points,&clSection,&clPoints,&clp);CHKERRQ(ierr);
+  for (clsize=0,p=0; p<numPoints; p++) {
+    PetscInt dof;
+    ierr = PetscSectionGetDof(section, points[2*p], &dof);CHKERRQ(ierr);
+    clsize += dof;
+  }
+  ierr = PetscSectionGetClosureInversePermutation_Internal(section, (PetscObject) dm, depth, clsize, &clperm);CHKERRQ(ierr);
   /* Get array */
   ierr = VecGetArray(v, &array);CHKERRQ(ierr);
   /* Get values */
@@ -6356,7 +6357,16 @@ PetscErrorCode DMPlexGetClosureIndices(DM dm, PetscSection section, PetscSection
   ierr = PetscArrayzero(offsets, 32);CHKERRQ(ierr);
   /* 1) Get points in closure */
   ierr = DMPlexGetCompressedClosure(dm, section, point, &Ncl, &points, &clSection, &clPoints, &clp);CHKERRQ(ierr);
-  if (useClPerm) {ierr = PetscSectionGetClosureInversePermutation_Internal(section, (PetscObject) dm, NULL, &clperm);CHKERRQ(ierr);}
+  if (useClPerm) {
+    PetscInt depth, clsize;
+    ierr = DMPlexGetPointDepth(dm, point, &depth);CHKERRQ(ierr);
+    for (clsize=0,p=0; p<Ncl; p++) {
+      PetscInt dof;
+      ierr = PetscSectionGetDof(section, points[2*p], &dof);CHKERRQ(ierr);
+      clsize += dof;
+    }
+    ierr = PetscSectionGetClosureInversePermutation_Internal(section, (PetscObject) dm, depth, clsize, &clperm);CHKERRQ(ierr);
+  }
   /* 2) Get number of indices on these points and field offsets from section */
   for (p = 0; p < Ncl*2; p += 2) {
     PetscInt dof, fdof;
