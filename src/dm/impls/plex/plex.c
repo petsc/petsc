@@ -4192,8 +4192,7 @@ static PetscErrorCode PetscSectionFieldGetTensorDegree_Private(PetscSection sect
 PetscErrorCode DMPlexSetClosurePermutationTensor(DM dm, PetscInt point, PetscSection section)
 {
   DMLabel        label;
-  PetscInt      *perm;
-  PetscInt       dim, depth = -1, eStart = -1, k, Nf, f, Nc, c, i, j, size = 0, offset = 0, foffset = 0;
+  PetscInt       dim, depth = -1, eStart = -1, Nf;
   PetscBool      vertexchart;
   PetscErrorCode ierr;
 
@@ -4229,72 +4228,76 @@ PetscErrorCode DMPlexSetClosurePermutationTensor(DM dm, PetscInt point, PetscSec
     else vertexchart = PETSC_FALSE;                                 /* Assume all interpolated points are in chart */
   }
   ierr = PetscSectionGetNumFields(section, &Nf);CHKERRQ(ierr);
-  for (f = 0; f < Nf; ++f) {
-    ierr = PetscSectionFieldGetTensorDegree_Private(section,f,eStart,vertexchart,&Nc,&k);CHKERRQ(ierr);
-    size += PetscPowInt(k+1, dim)*Nc;
-  }
-  ierr = PetscMalloc1(size, &perm);CHKERRQ(ierr);
-  for (f = 0; f < Nf; ++f) {
-    switch (dim) {
-    case 1:
+  for (PetscInt d=1; d<=dim; d++) {
+    PetscInt k, f, Nc, c, i, j, size = 0, offset = 0, foffset = 0;
+    PetscInt *perm;
+
+    for (f = 0; f < Nf; ++f) {
       ierr = PetscSectionFieldGetTensorDegree_Private(section,f,eStart,vertexchart,&Nc,&k);CHKERRQ(ierr);
-      /*
-        Original ordering is [ edge of length k-1; vtx0; vtx1 ]
-        We want              [ vtx0; edge of length k-1; vtx1 ]
-      */
-      for (c=0; c<Nc; c++,offset++) perm[offset] = (k-1)*Nc + c + foffset;
-      for (i=0; i<k-1; i++) for (c=0; c<Nc; c++,offset++) perm[offset] = i*Nc + c + foffset;
-      for (c=0; c<Nc; c++,offset++) perm[offset] = k*Nc + c + foffset;
-      foffset = offset;
-      break;
-    case 2:
-      /* The original quad closure is oriented clockwise, {f, e_b, e_r, e_t, e_l, v_lb, v_rb, v_tr, v_tl} */
-      ierr = PetscSectionFieldGetTensorDegree_Private(section,f,eStart,vertexchart,&Nc,&k);CHKERRQ(ierr);
-      /* The SEM order is
+      size += PetscPowInt(k+1, d)*Nc;
+    }
+    ierr = PetscMalloc1(size, &perm);CHKERRQ(ierr);
+    for (f = 0; f < Nf; ++f) {
+      switch (d) {
+      case 1:
+        ierr = PetscSectionFieldGetTensorDegree_Private(section,f,eStart,vertexchart,&Nc,&k);CHKERRQ(ierr);
+        /*
+         Original ordering is [ edge of length k-1; vtx0; vtx1 ]
+         We want              [ vtx0; edge of length k-1; vtx1 ]
+         */
+        for (c=0; c<Nc; c++,offset++) perm[offset] = (k-1)*Nc + c + foffset;
+        for (i=0; i<k-1; i++) for (c=0; c<Nc; c++,offset++) perm[offset] = i*Nc + c + foffset;
+        for (c=0; c<Nc; c++,offset++) perm[offset] = k*Nc + c + foffset;
+        foffset = offset;
+        break;
+      case 2:
+        /* The original quad closure is oriented clockwise, {f, e_b, e_r, e_t, e_l, v_lb, v_rb, v_tr, v_tl} */
+        ierr = PetscSectionFieldGetTensorDegree_Private(section,f,eStart,vertexchart,&Nc,&k);CHKERRQ(ierr);
+        /* The SEM order is
 
          v_lb, {e_b}, v_rb,
          e^{(k-1)-i}_l, {f^{i*(k-1)}}, e^i_r,
          v_lt, reverse {e_t}, v_rt
-      */
-      {
-        const PetscInt of   = 0;
-        const PetscInt oeb  = of   + PetscSqr(k-1);
-        const PetscInt oer  = oeb  + (k-1);
-        const PetscInt oet  = oer  + (k-1);
-        const PetscInt oel  = oet  + (k-1);
-        const PetscInt ovlb = oel  + (k-1);
-        const PetscInt ovrb = ovlb + 1;
-        const PetscInt ovrt = ovrb + 1;
-        const PetscInt ovlt = ovrt + 1;
-        PetscInt       o;
+         */
+        {
+          const PetscInt of   = 0;
+          const PetscInt oeb  = of   + PetscSqr(k-1);
+          const PetscInt oer  = oeb  + (k-1);
+          const PetscInt oet  = oer  + (k-1);
+          const PetscInt oel  = oet  + (k-1);
+          const PetscInt ovlb = oel  + (k-1);
+          const PetscInt ovrb = ovlb + 1;
+          const PetscInt ovrt = ovrb + 1;
+          const PetscInt ovlt = ovrt + 1;
+          PetscInt       o;
 
-        /* bottom */
-        for (c = 0; c < Nc; ++c, ++offset) perm[offset] = ovlb*Nc + c + foffset;
-        for (o = oeb; o < oer; ++o) for (c = 0; c < Nc; ++c, ++offset) perm[offset] = o*Nc + c + foffset;
-        for (c = 0; c < Nc; ++c, ++offset) perm[offset] = ovrb*Nc + c + foffset;
-        /* middle */
-        for (i = 0; i < k-1; ++i) {
-          for (c = 0; c < Nc; ++c, ++offset) perm[offset] = (oel+(k-2)-i)*Nc + c + foffset;
-          for (o = of+(k-1)*i; o < of+(k-1)*(i+1); ++o) for (c = 0; c < Nc; ++c, ++offset) perm[offset] = o*Nc + c + foffset;
-          for (c = 0; c < Nc; ++c, ++offset) perm[offset] = (oer+i)*Nc + c + foffset;
+          /* bottom */
+          for (c = 0; c < Nc; ++c, ++offset) perm[offset] = ovlb*Nc + c + foffset;
+          for (o = oeb; o < oer; ++o) for (c = 0; c < Nc; ++c, ++offset) perm[offset] = o*Nc + c + foffset;
+          for (c = 0; c < Nc; ++c, ++offset) perm[offset] = ovrb*Nc + c + foffset;
+          /* middle */
+          for (i = 0; i < k-1; ++i) {
+            for (c = 0; c < Nc; ++c, ++offset) perm[offset] = (oel+(k-2)-i)*Nc + c + foffset;
+            for (o = of+(k-1)*i; o < of+(k-1)*(i+1); ++o) for (c = 0; c < Nc; ++c, ++offset) perm[offset] = o*Nc + c + foffset;
+            for (c = 0; c < Nc; ++c, ++offset) perm[offset] = (oer+i)*Nc + c + foffset;
+          }
+          /* top */
+          for (c = 0; c < Nc; ++c, ++offset) perm[offset] = ovlt*Nc + c + foffset;
+          for (o = oel-1; o >= oet; --o) for (c = 0; c < Nc; ++c, ++offset) perm[offset] = o*Nc + c + foffset;
+          for (c = 0; c < Nc; ++c, ++offset) perm[offset] = ovrt*Nc + c + foffset;
+          foffset = offset;
         }
-        /* top */
-        for (c = 0; c < Nc; ++c, ++offset) perm[offset] = ovlt*Nc + c + foffset;
-        for (o = oel-1; o >= oet; --o) for (c = 0; c < Nc; ++c, ++offset) perm[offset] = o*Nc + c + foffset;
-        for (c = 0; c < Nc; ++c, ++offset) perm[offset] = ovrt*Nc + c + foffset;
-        foffset = offset;
-      }
-      break;
-    case 3:
-      /* The original hex closure is
+        break;
+      case 3:
+        /* The original hex closure is
 
          {c,
-          f_b, f_t, f_f, f_b, f_r, f_l,
-          e_bl, e_bb, e_br, e_bf,  e_tf, e_tr, e_tb, e_tl,  e_rf, e_lf, e_lb, e_rb,
-          v_blf, v_blb, v_brb, v_brf, v_tlf, v_trf, v_trb, v_tlb}
-      */
-      ierr = PetscSectionFieldGetTensorDegree_Private(section,f,eStart,vertexchart,&Nc,&k);CHKERRQ(ierr);
-      /* The SEM order is
+         f_b, f_t, f_f, f_b, f_r, f_l,
+         e_bl, e_bb, e_br, e_bf,  e_tf, e_tr, e_tb, e_tl,  e_rf, e_lf, e_lb, e_rb,
+         v_blf, v_blb, v_brb, v_brf, v_tlf, v_trf, v_trb, v_tlb}
+         */
+        ierr = PetscSectionFieldGetTensorDegree_Private(section,f,eStart,vertexchart,&Nc,&k);CHKERRQ(ierr);
+        /* The SEM order is
          Bottom Slice
          v_blf, {e^{(k-1)-n}_bf}, v_brf,
          e^{i}_bl, f^{n*(k-1)+(k-1)-i}_b, e^{(k-1)-i}_br,
@@ -4309,105 +4312,106 @@ PetscErrorCode DMPlexSetClosurePermutationTensor(DM dm, PetscInt point, PetscSec
          v_tlf, {e_tf}, v_trf,
          e^{(k-1)-i}_tl, {f^{i*(k-1)}_t}, e^{i}_tr,
          v_tlb, {e^{(k-1)-n}_tb}, v_trb,
-      */
-      {
-        const PetscInt oc    = 0;
-        const PetscInt ofb   = oc    + PetscSqr(k-1)*(k-1);
-        const PetscInt oft   = ofb   + PetscSqr(k-1);
-        const PetscInt off   = oft   + PetscSqr(k-1);
-        const PetscInt ofk   = off   + PetscSqr(k-1);
-        const PetscInt ofr   = ofk   + PetscSqr(k-1);
-        const PetscInt ofl   = ofr   + PetscSqr(k-1);
-        const PetscInt oebl  = ofl   + PetscSqr(k-1);
-        const PetscInt oebb  = oebl  + (k-1);
-        const PetscInt oebr  = oebb  + (k-1);
-        const PetscInt oebf  = oebr  + (k-1);
-        const PetscInt oetf  = oebf  + (k-1);
-        const PetscInt oetr  = oetf  + (k-1);
-        const PetscInt oetb  = oetr  + (k-1);
-        const PetscInt oetl  = oetb  + (k-1);
-        const PetscInt oerf  = oetl  + (k-1);
-        const PetscInt oelf  = oerf  + (k-1);
-        const PetscInt oelb  = oelf  + (k-1);
-        const PetscInt oerb  = oelb  + (k-1);
-        const PetscInt ovblf = oerb  + (k-1);
-        const PetscInt ovblb = ovblf + 1;
-        const PetscInt ovbrb = ovblb + 1;
-        const PetscInt ovbrf = ovbrb + 1;
-        const PetscInt ovtlf = ovbrf + 1;
-        const PetscInt ovtrf = ovtlf + 1;
-        const PetscInt ovtrb = ovtrf + 1;
-        const PetscInt ovtlb = ovtrb + 1;
-        PetscInt       o, n;
+         */
+        {
+          const PetscInt oc    = 0;
+          const PetscInt ofb   = oc    + PetscSqr(k-1)*(k-1);
+          const PetscInt oft   = ofb   + PetscSqr(k-1);
+          const PetscInt off   = oft   + PetscSqr(k-1);
+          const PetscInt ofk   = off   + PetscSqr(k-1);
+          const PetscInt ofr   = ofk   + PetscSqr(k-1);
+          const PetscInt ofl   = ofr   + PetscSqr(k-1);
+          const PetscInt oebl  = ofl   + PetscSqr(k-1);
+          const PetscInt oebb  = oebl  + (k-1);
+          const PetscInt oebr  = oebb  + (k-1);
+          const PetscInt oebf  = oebr  + (k-1);
+          const PetscInt oetf  = oebf  + (k-1);
+          const PetscInt oetr  = oetf  + (k-1);
+          const PetscInt oetb  = oetr  + (k-1);
+          const PetscInt oetl  = oetb  + (k-1);
+          const PetscInt oerf  = oetl  + (k-1);
+          const PetscInt oelf  = oerf  + (k-1);
+          const PetscInt oelb  = oelf  + (k-1);
+          const PetscInt oerb  = oelb  + (k-1);
+          const PetscInt ovblf = oerb  + (k-1);
+          const PetscInt ovblb = ovblf + 1;
+          const PetscInt ovbrb = ovblb + 1;
+          const PetscInt ovbrf = ovbrb + 1;
+          const PetscInt ovtlf = ovbrf + 1;
+          const PetscInt ovtrf = ovtlf + 1;
+          const PetscInt ovtrb = ovtrf + 1;
+          const PetscInt ovtlb = ovtrb + 1;
+          PetscInt       o, n;
 
-        /* Bottom Slice */
-        /*   bottom */
-        for (c = 0; c < Nc; ++c, ++offset) perm[offset] = ovblf*Nc + c + foffset;
-        for (o = oetf-1; o >= oebf; --o) for (c = 0; c < Nc; ++c, ++offset) perm[offset] = o*Nc + c + foffset;
-        for (c = 0; c < Nc; ++c, ++offset) perm[offset] = ovbrf*Nc + c + foffset;
-        /*   middle */
-        for (i = 0; i < k-1; ++i) {
-          for (c = 0; c < Nc; ++c, ++offset) perm[offset] = (oebl+i)*Nc + c + foffset;
-          for (n = 0; n < k-1; ++n) {o = ofb+n*(k-1)+i; for (c = 0; c < Nc; ++c, ++offset) perm[offset] = o*Nc + c + foffset;}
-          for (c = 0; c < Nc; ++c, ++offset) perm[offset] = (oebr+(k-2)-i)*Nc + c + foffset;
-        }
-        /*   top */
-        for (c = 0; c < Nc; ++c, ++offset) perm[offset] = ovblb*Nc + c + foffset;
-        for (o = oebb; o < oebr; ++o) for (c = 0; c < Nc; ++c, ++offset) perm[offset] = o*Nc + c + foffset;
-        for (c = 0; c < Nc; ++c, ++offset) perm[offset] = ovbrb*Nc + c + foffset;
-
-        /* Middle Slice */
-        for (j = 0; j < k-1; ++j) {
+          /* Bottom Slice */
           /*   bottom */
-          for (c = 0; c < Nc; ++c, ++offset) perm[offset] = (oelf+(k-2)-j)*Nc + c + foffset;
-          for (o = off+j*(k-1); o < off+(j+1)*(k-1); ++o) for (c = 0; c < Nc; ++c, ++offset) perm[offset] = o*Nc + c + foffset;
-          for (c = 0; c < Nc; ++c, ++offset) perm[offset] = (oerf+j)*Nc + c + foffset;
+          for (c = 0; c < Nc; ++c, ++offset) perm[offset] = ovblf*Nc + c + foffset;
+          for (o = oetf-1; o >= oebf; --o) for (c = 0; c < Nc; ++c, ++offset) perm[offset] = o*Nc + c + foffset;
+          for (c = 0; c < Nc; ++c, ++offset) perm[offset] = ovbrf*Nc + c + foffset;
           /*   middle */
           for (i = 0; i < k-1; ++i) {
-            for (c = 0; c < Nc; ++c, ++offset) perm[offset] = (ofl+i*(k-1)+j)*Nc + c + foffset;
-            for (n = 0; n < k-1; ++n) for (c = 0; c < Nc; ++c, ++offset) perm[offset] = (oc+(j*(k-1)+i)*(k-1)+n)*Nc + c + foffset;
-            for (c = 0; c < Nc; ++c, ++offset) perm[offset] = (ofr+j*(k-1)+i)*Nc + c + foffset;
+            for (c = 0; c < Nc; ++c, ++offset) perm[offset] = (oebl+i)*Nc + c + foffset;
+            for (n = 0; n < k-1; ++n) {o = ofb+n*(k-1)+i; for (c = 0; c < Nc; ++c, ++offset) perm[offset] = o*Nc + c + foffset;}
+            for (c = 0; c < Nc; ++c, ++offset) perm[offset] = (oebr+(k-2)-i)*Nc + c + foffset;
           }
           /*   top */
-          for (c = 0; c < Nc; ++c, ++offset) perm[offset] = (oelb+j)*Nc + c + foffset;
-          for (o = ofk+j*(k-1)+(k-2); o >= ofk+j*(k-1); --o) for (c = 0; c < Nc; ++c, ++offset) perm[offset] = o*Nc + c + foffset;
-          for (c = 0; c < Nc; ++c, ++offset) perm[offset] = (oerb+(k-2)-j)*Nc + c + foffset;
-        }
+          for (c = 0; c < Nc; ++c, ++offset) perm[offset] = ovblb*Nc + c + foffset;
+          for (o = oebb; o < oebr; ++o) for (c = 0; c < Nc; ++c, ++offset) perm[offset] = o*Nc + c + foffset;
+          for (c = 0; c < Nc; ++c, ++offset) perm[offset] = ovbrb*Nc + c + foffset;
 
-        /* Top Slice */
-        /*   bottom */
-        for (c = 0; c < Nc; ++c, ++offset) perm[offset] = ovtlf*Nc + c + foffset;
-        for (o = oetf; o < oetr; ++o) for (c = 0; c < Nc; ++c, ++offset) perm[offset] = o*Nc + c + foffset;
-        for (c = 0; c < Nc; ++c, ++offset) perm[offset] = ovtrf*Nc + c + foffset;
-        /*   middle */
-        for (i = 0; i < k-1; ++i) {
-          for (c = 0; c < Nc; ++c, ++offset) perm[offset] = (oetl+(k-2)-i)*Nc + c + foffset;
-          for (n = 0; n < k-1; ++n) for (c = 0; c < Nc; ++c, ++offset) perm[offset] = (oft+i*(k-1)+n)*Nc + c + foffset;
-          for (c = 0; c < Nc; ++c, ++offset) perm[offset] = (oetr+i)*Nc + c + foffset;
-        }
-        /*   top */
-        for (c = 0; c < Nc; ++c, ++offset) perm[offset] = ovtlb*Nc + c + foffset;
-        for (o = oetl-1; o >= oetb; --o) for (c = 0; c < Nc; ++c, ++offset) perm[offset] = o*Nc + c + foffset;
-        for (c = 0; c < Nc; ++c, ++offset) perm[offset] = ovtrb*Nc + c + foffset;
+          /* Middle Slice */
+          for (j = 0; j < k-1; ++j) {
+            /*   bottom */
+            for (c = 0; c < Nc; ++c, ++offset) perm[offset] = (oelf+(k-2)-j)*Nc + c + foffset;
+            for (o = off+j*(k-1); o < off+(j+1)*(k-1); ++o) for (c = 0; c < Nc; ++c, ++offset) perm[offset] = o*Nc + c + foffset;
+            for (c = 0; c < Nc; ++c, ++offset) perm[offset] = (oerf+j)*Nc + c + foffset;
+            /*   middle */
+            for (i = 0; i < k-1; ++i) {
+              for (c = 0; c < Nc; ++c, ++offset) perm[offset] = (ofl+i*(k-1)+j)*Nc + c + foffset;
+              for (n = 0; n < k-1; ++n) for (c = 0; c < Nc; ++c, ++offset) perm[offset] = (oc+(j*(k-1)+i)*(k-1)+n)*Nc + c + foffset;
+              for (c = 0; c < Nc; ++c, ++offset) perm[offset] = (ofr+j*(k-1)+i)*Nc + c + foffset;
+            }
+            /*   top */
+            for (c = 0; c < Nc; ++c, ++offset) perm[offset] = (oelb+j)*Nc + c + foffset;
+            for (o = ofk+j*(k-1)+(k-2); o >= ofk+j*(k-1); --o) for (c = 0; c < Nc; ++c, ++offset) perm[offset] = o*Nc + c + foffset;
+            for (c = 0; c < Nc; ++c, ++offset) perm[offset] = (oerb+(k-2)-j)*Nc + c + foffset;
+          }
 
-        foffset = offset;
+          /* Top Slice */
+          /*   bottom */
+          for (c = 0; c < Nc; ++c, ++offset) perm[offset] = ovtlf*Nc + c + foffset;
+          for (o = oetf; o < oetr; ++o) for (c = 0; c < Nc; ++c, ++offset) perm[offset] = o*Nc + c + foffset;
+          for (c = 0; c < Nc; ++c, ++offset) perm[offset] = ovtrf*Nc + c + foffset;
+          /*   middle */
+          for (i = 0; i < k-1; ++i) {
+            for (c = 0; c < Nc; ++c, ++offset) perm[offset] = (oetl+(k-2)-i)*Nc + c + foffset;
+            for (n = 0; n < k-1; ++n) for (c = 0; c < Nc; ++c, ++offset) perm[offset] = (oft+i*(k-1)+n)*Nc + c + foffset;
+            for (c = 0; c < Nc; ++c, ++offset) perm[offset] = (oetr+i)*Nc + c + foffset;
+          }
+          /*   top */
+          for (c = 0; c < Nc; ++c, ++offset) perm[offset] = ovtlb*Nc + c + foffset;
+          for (o = oetl-1; o >= oetb; --o) for (c = 0; c < Nc; ++c, ++offset) perm[offset] = o*Nc + c + foffset;
+          for (c = 0; c < Nc; ++c, ++offset) perm[offset] = ovtrb*Nc + c + foffset;
+
+          foffset = offset;
+        }
+        break;
+      default: SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "No spectral ordering for dimension %D", d);
       }
-      break;
-    default: SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "No spectral ordering for dimension %D", dim);
     }
-  }
-  if (offset != size) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "Number of permutation entries %D != %D", offset, size);
-  /* Check permutation */
-  {
-    PetscInt *check;
+    if (offset != size) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "Number of permutation entries %D != %D", offset, size);
+    /* Check permutation */
+    {
+      PetscInt *check;
 
-    ierr = PetscMalloc1(size, &check);CHKERRQ(ierr);
-    for (i = 0; i < size; ++i) {check[i] = -1; if (perm[i] < 0 || perm[i] >= size) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "Invalid permutation index p[%D] = %D", i, perm[i]);}
-    for (i = 0; i < size; ++i) check[perm[i]] = i;
-    for (i = 0; i < size; ++i) {if (check[i] < 0) SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "Missing permutation index %D", i);}
-    ierr = PetscFree(check);CHKERRQ(ierr);
+      ierr = PetscMalloc1(size, &check);CHKERRQ(ierr);
+      for (i = 0; i < size; ++i) {check[i] = -1; if (perm[i] < 0 || perm[i] >= size) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "Invalid permutation index p[%D] = %D", i, perm[i]);}
+      for (i = 0; i < size; ++i) check[perm[i]] = i;
+      for (i = 0; i < size; ++i) {if (check[i] < 0) SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "Missing permutation index %D", i);}
+      ierr = PetscFree(check);CHKERRQ(ierr);
+    }
+    ierr = PetscSectionSetClosurePermutation_Internal(section, (PetscObject) dm, d, size, PETSC_OWN_POINTER, perm);CHKERRQ(ierr);
   }
-  ierr = PetscSectionSetClosurePermutation_Internal(section, (PetscObject) dm, dim, size, PETSC_OWN_POINTER, perm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
