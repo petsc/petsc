@@ -6,6 +6,10 @@
 #include <petscsf.h>
 #include <petscds.h>
 
+#if defined(PETSC_HAVE_VALGRIND)
+#  include <valgrind/memcheck.h>
+#endif
+
 PetscClassId  DM_CLASSID;
 PetscClassId  DMLABEL_CLASSID;
 PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal, DM_LocalToLocal, DM_LocatePoints, DM_Coarsen, DM_Refine, DM_CreateInterpolation, DM_CreateRestriction, DM_CreateInjection, DM_CreateMatrix, DM_Load;
@@ -1460,6 +1464,10 @@ PetscErrorCode DMGetWorkArray(DM dm,PetscInt count,MPI_Datatype dtype,void *mem)
   }
   link->next   = dm->workout;
   dm->workout  = link;
+#if defined(PETSC_HAVE_VALGRIND)
+  VALGRIND_MAKE_MEM_NOACCESS((char*)link->mem + (size_t)dsize*count, link->bytes - (size_t)dsize*count);
+  VALGRIND_MAKE_MEM_UNDEFINED(link->mem, (size_t)dsize*count);
+#endif
   *(void**)mem = link->mem;
   PetscFunctionReturn(0);
 }
