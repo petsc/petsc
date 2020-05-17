@@ -69,21 +69,24 @@ PetscErrorCode  MatGetDiagonalBlock_MPIDense(Mat A,Mat *a)
   PetscInt       m = A->rmap->n,rstart = A->rmap->rstart;
   PetscScalar    *array;
   MPI_Comm       comm;
-  PetscBool      cong;
+  PetscBool      flg;
   Mat            B;
 
   PetscFunctionBegin;
-  ierr = MatHasCongruentLayouts(A,&cong);CHKERRQ(ierr);
-  if (!cong) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only square matrices supported.");
+  ierr = MatHasCongruentLayouts(A,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only square matrices supported.");
   ierr = PetscObjectQuery((PetscObject)A,"DiagonalBlock",(PetscObject*)&B);CHKERRQ(ierr);
-  if (!B) {
+  if (!B) { /* This should use a new function, e.g. MatDenseGetSubMatrix (not create) */
+
+    ierr = PetscObjectTypeCompare((PetscObject)mdn->A,MATSEQDENSECUDA,&flg);CHKERRQ(ierr);
+    if (flg) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not coded for %s. Send an email to petsc-dev@mcs.anl.gov to request this feature",MATSEQDENSECUDA);
     ierr = PetscObjectGetComm((PetscObject)(mdn->A),&comm);CHKERRQ(ierr);
     ierr = MatCreate(comm,&B);CHKERRQ(ierr);
     ierr = MatSetSizes(B,m,m,m,m);CHKERRQ(ierr);
     ierr = MatSetType(B,((PetscObject)mdn->A)->type_name);CHKERRQ(ierr);
-    ierr = MatDenseGetArray(mdn->A,&array);CHKERRQ(ierr);
+    ierr = MatDenseGetArrayRead(mdn->A,(const PetscScalar**)&array);CHKERRQ(ierr);
     ierr = MatSeqDenseSetPreallocation(B,array+m*rstart);CHKERRQ(ierr);
-    ierr = MatDenseRestoreArray(mdn->A,&array);CHKERRQ(ierr);
+    ierr = MatDenseRestoreArrayRead(mdn->A,(const PetscScalar**)&array);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)A,"DiagonalBlock",(PetscObject)B);CHKERRQ(ierr);
