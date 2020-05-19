@@ -337,6 +337,10 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat *C)
   Mat_Product    *product;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(*C,MAT_CLASSID,2);
+  if (A == *C) PetscFunctionReturn(0);
+  PetscCheckSameComm(A,1,*C,2);
   /* save the parts of A we need */
   Abops = ((PetscObject)A)->bops[0];
   Aops  = A->ops[0];
