@@ -1624,7 +1624,13 @@ PetscErrorCode PetscDualSpaceGetHeightSubspace(PetscDualSpace sp, PetscInt heigh
 
         ierr = DMPlexGetHeightStratum(dm,h,&hStart,&hEnd);CHKERRQ(ierr);
         if (hEnd > hStart) {
+          const char *name;
+
           ierr = PetscObjectReference((PetscObject)(sp->pointSpaces[hStart]));CHKERRQ(ierr);
+          if (sp->pointSpaces[hStart]) {
+            ierr = PetscObjectGetName((PetscObject) sp,                     &name);CHKERRQ(ierr);
+            ierr = PetscObjectSetName((PetscObject) sp->pointSpaces[hStart], name);CHKERRQ(ierr);
+          }
           sp->heightSpaces[h] = sp->pointSpaces[hStart];
         }
       }
@@ -1900,22 +1906,33 @@ PetscErrorCode PetscDualSpaceTransform(PetscDualSpace dsp, PetscDualSpaceTransfo
 @*/
 PetscErrorCode PetscDualSpaceTransformGradient(PetscDualSpace dsp, PetscDualSpaceTransformType trans, PetscBool isInverse, PetscFEGeom *fegeom, PetscInt Nv, PetscInt Nc, PetscScalar vals[])
 {
-  PetscInt dim, v, c, d;
+  const PetscInt dim = dsp->dm->dim, dE = fegeom->dimEmbed;
+  PetscInt       v, c, d;
 
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(dsp, PETSCDUALSPACE_CLASSID, 1);
   PetscValidPointer(fegeom, 4);
   PetscValidPointer(vals, 7);
-  dim = dsp->dm->dim;
+#ifdef PETSC_USE_DEBUG
+  if (dE <= 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid embedding dimension %D", dE);
+#endif
   /* Transform gradient */
-  for (v = 0; v < Nv; ++v) {
-    for (c = 0; c < Nc; ++c) {
-      switch (dim)
-      {
-        case 1: vals[(v*Nc+c)*dim] *= fegeom->invJ[0];break;
-        case 2: DMPlex_MultTranspose2DReal_Internal(fegeom->invJ, 1, &vals[(v*Nc+c)*dim], &vals[(v*Nc+c)*dim]);break;
-        case 3: DMPlex_MultTranspose3DReal_Internal(fegeom->invJ, 1, &vals[(v*Nc+c)*dim], &vals[(v*Nc+c)*dim]);break;
-        default: SETERRQ1(PetscObjectComm((PetscObject) dsp), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dim %D for transformation", dim);
+  if (dim == dE) {
+    for (v = 0; v < Nv; ++v) {
+      for (c = 0; c < Nc; ++c) {
+        switch (dim)
+        {
+          case 1: vals[(v*Nc+c)*dim] *= fegeom->invJ[0];break;
+          case 2: DMPlex_MultTranspose2DReal_Internal(fegeom->invJ, 1, &vals[(v*Nc+c)*dim], &vals[(v*Nc+c)*dim]);break;
+          case 3: DMPlex_MultTranspose3DReal_Internal(fegeom->invJ, 1, &vals[(v*Nc+c)*dim], &vals[(v*Nc+c)*dim]);break;
+          default: SETERRQ1(PetscObjectComm((PetscObject) dsp), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dim %D for transformation", dim);
+        }
+      }
+    }
+  } else {
+    for (v = 0; v < Nv; ++v) {
+      for (c = 0; c < Nc; ++c) {
+        DMPlex_MultTransposeReal_Internal(fegeom->invJ, dim, dE, 1, &vals[(v*Nc+c)*dE], &vals[(v*Nc+c)*dE]);
       }
     }
   }

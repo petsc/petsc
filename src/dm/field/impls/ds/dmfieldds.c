@@ -819,7 +819,7 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
     ierr = PetscMalloc2(numFaces, &co, coneSize, &counts);CHKERRQ(ierr);
     ierr = PetscMalloc1(dE*Nq, &cellPoints);CHKERRQ(ierr);
     ierr = PetscMalloc1(Nq, &dummyWeights);CHKERRQ(ierr);
-    ierr = PetscQuadratureCreate(PetscObjectComm((PetscObject)field), &cellQuad);CHKERRQ(ierr);
+    ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &cellQuad);CHKERRQ(ierr);
     ierr = PetscQuadratureSetData(cellQuad, dE, 1, Nq, cellPoints, dummyWeights);CHKERRQ(ierr);
     minOrient = PETSC_MAX_INT;
     maxOrient = PETSC_MIN_INT;
@@ -1080,14 +1080,14 @@ PetscErrorCode DMFieldCreateDS(DM dm, PetscInt fieldNum, Vec vec,DMField *field)
     }
     ierr = MPI_Allreduce(&localConeSize,&coneSize,1,MPIU_INT,MPI_MAX,comm);CHKERRQ(ierr);
     isSimplex = (coneSize == (dim + 1)) ? PETSC_TRUE : PETSC_FALSE;
-    ierr = PetscSpaceCreate(comm, &P);CHKERRQ(ierr);
+    ierr = PetscSpaceCreate(PETSC_COMM_SELF, &P);CHKERRQ(ierr);
     ierr = PetscSpaceSetType(P,PETSCSPACEPOLYNOMIAL);CHKERRQ(ierr);
     ierr = PetscSpaceSetDegree(P, 1, PETSC_DETERMINE);CHKERRQ(ierr);
     ierr = PetscSpaceSetNumComponents(P, numComponents);CHKERRQ(ierr);
     ierr = PetscSpaceSetNumVariables(P, dim);CHKERRQ(ierr);
     ierr = PetscSpacePolynomialSetTensor(P, isSimplex ? PETSC_FALSE : PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscSpaceSetUp(P);CHKERRQ(ierr);
-    ierr = PetscDualSpaceCreate(comm, &Q);CHKERRQ(ierr);
+    ierr = PetscDualSpaceCreate(PETSC_COMM_SELF, &Q);CHKERRQ(ierr);
     ierr = PetscDualSpaceSetType(Q,PETSCDUALSPACELAGRANGE);CHKERRQ(ierr);
     ierr = PetscDualSpaceCreateReferenceCell(Q, dim, isSimplex, &K);CHKERRQ(ierr);
     ierr = PetscDualSpaceSetDM(Q, K);CHKERRQ(ierr);
@@ -1096,7 +1096,7 @@ PetscErrorCode DMFieldCreateDS(DM dm, PetscInt fieldNum, Vec vec,DMField *field)
     ierr = PetscDualSpaceSetOrder(Q, 1);CHKERRQ(ierr);
     ierr = PetscDualSpaceLagrangeSetTensor(Q, isSimplex ? PETSC_FALSE : PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscDualSpaceSetUp(Q);CHKERRQ(ierr);
-    ierr = PetscFECreate(comm, &fe);CHKERRQ(ierr);
+    ierr = PetscFECreate(PETSC_COMM_SELF, &fe);CHKERRQ(ierr);
     ierr = PetscFESetType(fe,PETSCFEBASIC);CHKERRQ(ierr);
     ierr = PetscFESetBasisSpace(fe, P);CHKERRQ(ierr);
     ierr = PetscFESetDualSpace(fe, Q);CHKERRQ(ierr);

@@ -51,6 +51,7 @@ struct _p_PetscDS {
   PetscPointJac        *gt;            /* Weak form integrands for dF/du_t, g_0, g_1, g_2, g_3 */
   PetscBdPointFunc     *fBd;           /* Weak form boundary integrands F_bd, f_0, f_1 */
   PetscBdPointJac      *gBd;           /* Weak form boundary integrands J_bd = dF_bd/du, g_0, g_1, g_2, g_3 */
+  PetscBdPointJac      *gpBd;          /* Weak form integrands for preconditioner for J_bd, g_0, g_1, g_2, g_3 */
   PetscRiemannFunc     *r;             /* Riemann solvers */
   PetscPointFunc       *update;        /* Direct update of field coefficients */
   PetscSimplePointFunc *exactSol;      /* Exact solutions for each field */
@@ -84,6 +85,6 @@ typedef struct {
   PetscInt dummy; /* */
 } PetscDS_Basic;
 
-PETSC_INTERN PetscErrorCode PetscDSIsFE_Internal(PetscDS, PetscInt, PetscBool *);
+PETSC_INTERN PetscErrorCode PetscDSGetDiscType_Internal(PetscDS, PetscInt, PetscDiscType *);
 
 #endif

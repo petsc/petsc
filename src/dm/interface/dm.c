@@ -5082,6 +5082,7 @@ PetscErrorCode DMGetCellDS(DM dm, PetscInt point, PetscDS *prob)
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(prob, 3);
+  if (point < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Mesh point cannot be negative: %D", point);
   *prob = NULL;
   for (s = 0; s < dm->Nds; ++s) {
     PetscInt val;
@@ -5206,7 +5207,10 @@ PetscErrorCode DMSetRegionDS(DM dm, DMLabel label, IS fields, PetscDS ds)
   for (s = 0; s < Nds; ++s) {
     if (dm->probs[s].label == label) {
       ierr = PetscDSDestroy(&dm->probs[s].ds);CHKERRQ(ierr);
-      dm->probs[s].ds = ds;
+      ierr = PetscObjectReference((PetscObject) fields);CHKERRQ(ierr);
+      ierr = PetscObjectReference((PetscObject) ds);CHKERRQ(ierr);
+      dm->probs[s].fields = fields;
+      dm->probs[s].ds     = ds;
       PetscFunctionReturn(0);
     }
   }
@@ -5250,6 +5254,7 @@ PetscErrorCode DMCreateDS(DM dm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (!dm->fields) PetscFunctionReturn(0);
+  if (dm->Nds > 1) PetscFunctionReturn(0);
   /* Can only handle two label cases right now:
    1) NULL
    2) Hybrid cells
@@ -5294,14 +5299,16 @@ PetscErrorCode DMCreateDS(DM dm)
       ierr = DMDestroy(&plex);CHKERRQ(ierr);
 
       ierr = DMLabelGetBounds(label, &lStart, &lEnd);CHKERRQ(ierr);
-      ierr = DMPlexGetCellType(dm, lStart, &ct);CHKERRQ(ierr);
-      switch (ct) {
-        case DM_POLYTOPE_POINT_PRISM_TENSOR:
-        case DM_POLYTOPE_SEG_PRISM_TENSOR:
-        case DM_POLYTOPE_TRI_PRISM_TENSOR:
-        case DM_POLYTOPE_QUAD_PRISM_TENSOR:
-          break;
-        default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only support labels over tensor prism cells right now");
+      if (lStart >= 0) {
+        ierr = DMPlexGetCellType(dm, lStart, &ct);CHKERRQ(ierr);
+        switch (ct) {
+          case DM_POLYTOPE_POINT_PRISM_TENSOR:
+          case DM_POLYTOPE_SEG_PRISM_TENSOR:
+          case DM_POLYTOPE_TRI_PRISM_TENSOR:
+          case DM_POLYTOPE_QUAD_PRISM_TENSOR:
+            break;
+            default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only support labels over tensor prism cells right now");
+        }
       }
       ierr = PetscDSCreate(comm, &probh);CHKERRQ(ierr);
       ierr = PetscMalloc1(1, &fld);CHKERRQ(ierr);

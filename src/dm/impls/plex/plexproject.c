@@ -30,7 +30,7 @@ static PetscErrorCode DMProjectPoint_Func_Private(DM dm, PetscDS ds, DM dmIn, Pe
                                                   PetscScalar values[])
 {
   PetscInt       coordDim, Nf, *Nc, f, spDim, d, v, tp;
-  PetscBool      isAffine, transform;
+  PetscBool      isAffine, isHybrid, transform;
   PetscErrorCode ierr;
 
   PetscFunctionBeginHot;
@@ -38,6 +38,7 @@ static PetscErrorCode DMProjectPoint_Func_Private(DM dm, PetscDS ds, DM dmIn, Pe
   ierr = DMHasBasisTransform(dmIn, &transform);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(ds, &Nf);CHKERRQ(ierr);
   ierr = PetscDSGetComponents(ds, &Nc);CHKERRQ(ierr);
+  ierr = PetscDSGetHybrid(ds, &isHybrid);CHKERRQ(ierr);
   /* Get values for closure */
   isAffine = fegeom->isAffine;
   for (f = 0, v = 0, tp = 0; f < Nf; ++f) {
@@ -63,7 +64,17 @@ static PetscErrorCode DMProjectPoint_Func_Private(DM dm, PetscDS ds, DM dmIn, Pe
           const PetscReal *v0;
 
           if (isAffine) {
-            CoordinatesRefToReal(coordDim, fegeom->dim, fegeom->xi, fegeom->v, fegeom->J, &points[q*dim], x);
+            const PetscReal *refpoint = &points[q*dim];
+            PetscReal        injpoint[3] = {0., 0., 0.};
+
+            if (dim != fegeom->dim) {
+              if (isHybrid) {
+                /* We just need to inject into the higher dimensional space assuming the last dimension is collapsed */
+                for (d = 0; d < dim; ++d) injpoint[d] = refpoint[d];
+                refpoint = injpoint;
+              } else SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Reference spatial dimension %D != %D dual basis spatial dimension", fegeom->dim, dim);
+            }
+            CoordinatesRefToReal(coordDim, fegeom->dim, fegeom->xi, fegeom->v, fegeom->J, refpoint, x);
             v0 = x;
           } else {
             v0 = &fegeom->v[tp*coordDim];
@@ -77,13 +88,19 @@ static PetscErrorCode DMProjectPoint_Func_Private(DM dm, PetscDS ds, DM dmIn, Pe
         ierr = DMRestoreWorkArray(rdm,coordDim,MPIU_REAL,&x);CHKERRQ(ierr);
         ierr = DMRestoreWorkArray(rdm,numPoints*Nc[f],MPIU_SCALAR,&pointEval);CHKERRQ(ierr);
         v += spDim;
+        if (isHybrid && (f < Nf-1)) {
+          for (d = 0; d < spDim; d++, v++) values[v] = values[v - spDim];
+        }
       } else {
         for (d = 0; d < spDim; ++d, ++v) {
           ierr = PetscDualSpaceApplyFVM(sp[f], d, time, fvgeom, Nc[f], funcs[f], ctx, &values[v]);CHKERRQ(ierr);
         }
       }
     } else {
-      for (d = 0; d < spDim; d++, v++) {values[v] = 0.0;}
+      for (d = 0; d < spDim; d++, v++) values[v] = 0.;
+      if (isHybrid && (f < Nf-1)) {
+        for (d = 0; d < spDim; d++, v++) values[v] = 0.;
+      }
     }
   }
   PetscFunctionReturn(0);
@@ -137,12 +154,13 @@ static PetscErrorCode DMProjectPoint_Field_Private(DM dm, PetscDS ds, DM dmIn, D
   PetscFEGeom        fegeom;
   const PetscInt     dE = cgeom->dimEmbed;
   PetscInt           numConstants, Nf, NfIn, NfAux = 0, f, spDim, d, v, inp, tp = 0;
-  PetscBool          isAffine, transform;
+  PetscBool          isAffine, isHybrid, transform;
   PetscErrorCode     ierr;
 
   PetscFunctionBeginHot;
   ierr = PetscDSGetNumFields(ds, &Nf);CHKERRQ(ierr);
   ierr = PetscDSGetComponents(ds, &Nc);CHKERRQ(ierr);
+  ierr = PetscDSGetHybrid(ds, &isHybrid);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(dsIn, &NfIn);CHKERRQ(ierr);
   ierr = PetscDSGetComponentOffsets(dsIn, &uOff);CHKERRQ(ierr);
   ierr = PetscDSGetComponentDerivativeOffsets(dsIn, &uOff_x);CHKERRQ(ierr);
@@ -166,6 +184,8 @@ static PetscErrorCode DMProjectPoint_Field_Private(DM dm, PetscDS ds, DM dmIn, D
   }
   /* Get values for closure */
   isAffine = cgeom->isAffine;
+  fegeom.dim      = cgeom->dim;
+  fegeom.dimEmbed = cgeom->dimEmbed;
   if (isAffine) {
     fegeom.v    = x;
     fegeom.xi   = cgeom->xi;
@@ -184,6 +204,9 @@ static PetscErrorCode DMProjectPoint_Field_Private(DM dm, PetscDS ds, DM dmIn, D
     ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
     if (!funcs[f]) {
       for (d = 0; d < spDim; d++, v++) values[v] = 0.;
+      if (isHybrid && (f < Nf-1)) {
+        for (d = 0; d < spDim; d++, v++) values[v] = 0.;
+      }
       continue;
     }
     ierr = PetscDualSpaceGetDM(sp[f],&dm);CHKERRQ(ierr);
@@ -207,6 +230,10 @@ static PetscErrorCode DMProjectPoint_Field_Private(DM dm, PetscDS ds, DM dmIn, D
     ierr = PetscDualSpaceApplyAll(sp[f], pointEval, &values[v]);CHKERRQ(ierr);
     ierr = DMRestoreWorkArray(dm,numPoints*Nc[f],MPIU_SCALAR,&pointEval);CHKERRQ(ierr);
     v += spDim;
+    /* TODO: For now, set both sides equal, but this should use info from other support cell */
+    if (isHybrid && (f < Nf-1)) {
+      for (d = 0; d < spDim; d++, v++) values[v] = values[v - spDim];
+    }
   }
   ierr = DMPlexVecRestoreClosure(dmIn, section, localU, inp, NULL, &coefficients);CHKERRQ(ierr);
   if (dmAux) {ierr = DMPlexVecRestoreClosure(dmAux, sectionAux, localA, p, NULL, &coefficientsAux);CHKERRQ(ierr);}
@@ -376,9 +403,6 @@ static PetscErrorCode PetscDualSpaceGetAllPointsUnion(PetscInt Nf, PetscDualSpac
   ierr = PetscMalloc1(dim*numPoints,&points);CHKERRQ(ierr);
   numPoints = 0;
   for (f = 0; f < Nf; ++f) {
-    PetscInt spDim;
-
-    ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
     if (funcs[f]) {
       PetscQuadrature fAllPoints;
       PetscInt        qdim, fNumPoints, q;
@@ -480,7 +504,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
   PetscTabulation *T = NULL, *TAux = NULL;
   PetscInt          *Nc;
   PetscInt           dim, dimEmbed, depth, minHeight, maxHeight, h, Nf, NfIn, NfAux = 0, f;
-  PetscBool         *isFE, hasFE = PETSC_FALSE, hasFV = PETSC_FALSE, auxBd = PETSC_FALSE, transform;
+  PetscBool         *isFE, hasFE = PETSC_FALSE, hasFV = PETSC_FALSE, auxBd = PETSC_FALSE, isHybrid = PETSC_FALSE, transform;
   DMField            coordField;
   DMLabel            depthLabel;
   PetscQuadrature    allPoints = NULL;
@@ -528,6 +552,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
   if (!dsIn) {ierr = DMGetDS(dmIn, &dsIn);CHKERRQ(ierr);}
   ierr = PetscDSGetNumFields(ds, &Nf);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(dsIn, &NfIn);CHKERRQ(ierr);
+  ierr = PetscDSGetHybrid(ds, &isHybrid);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dm, &dimEmbed);CHKERRQ(ierr);
   ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);
   if (dmAux) {
@@ -541,30 +566,33 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
   if (localU && localU != localX) {ierr = DMPlexInsertBoundaryValues(plex, PETSC_TRUE, localU, time, NULL, NULL, NULL);CHKERRQ(ierr);}
   /* Get cell dual spaces */
   for (f = 0; f < Nf; ++f) {
-    PetscObject  obj;
-    PetscClassId id;
+    PetscDiscType disctype;
 
-    ierr = PetscDSGetDiscretization(ds, f, &obj);CHKERRQ(ierr);
-    ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
-    if (id == PETSCFE_CLASSID) {
-      PetscFE fe = (PetscFE) obj;
+    ierr = PetscDSGetDiscType_Internal(ds, f, &disctype);CHKERRQ(ierr);
+    if (disctype == PETSC_DISC_FE) {
+      PetscFE fe;
 
-      hasFE   = PETSC_TRUE;
       isFE[f] = PETSC_TRUE;
-      ierr  = PetscFEGetDualSpace(fe, &cellsp[f]);CHKERRQ(ierr);
-    } else if (id == PETSCFV_CLASSID) {
-      PetscFV fv = (PetscFV) obj;
+      hasFE   = PETSC_TRUE;
+      ierr = PetscDSGetDiscretization(ds, f, (PetscObject *) &fe);CHKERRQ(ierr);
+      ierr = PetscFEGetDualSpace(fe, &cellsp[f]);CHKERRQ(ierr);
+    } else if (disctype == PETSC_DISC_FV) {
+      PetscFV fv;
 
-      hasFV   = PETSC_TRUE;
       isFE[f] = PETSC_FALSE;
+      hasFV   = PETSC_TRUE;
+      ierr = PetscDSGetDiscretization(ds, f, (PetscObject *) &fv);CHKERRQ(ierr);
       ierr = PetscFVGetDualSpace(fv, &cellsp[f]);CHKERRQ(ierr);
-    } else SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", f);
+    } else {
+      isFE[f]   = PETSC_FALSE;
+      cellsp[f] = NULL;
+    }
   }
   ierr = DMGetCoordinateField(dm,&coordField);CHKERRQ(ierr);
   if (type == DM_BC_ESSENTIAL_FIELD || type == DM_BC_ESSENTIAL_BD_FIELD || type == DM_BC_NATURAL_FIELD) {
     PetscInt         effectiveHeight = auxBd ? minHeight : 0;
     PetscFE          fem, subfem;
-    PetscBool        isfe;
+    PetscDiscType    disctype;
     const PetscReal *points;
     PetscInt         numPoints;
 
@@ -577,16 +605,16 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
     ierr = PetscQuadratureGetData(allPoints,NULL,NULL,&numPoints,&points,NULL);CHKERRQ(ierr);
     ierr = PetscMalloc2(NfIn, &T, NfAux, &TAux);CHKERRQ(ierr);
     for (f = 0; f < NfIn; ++f) {
-      ierr = PetscDSIsFE_Internal(dsIn, f, &isfe);CHKERRQ(ierr);
-      if (!isfe) continue;
+      ierr = PetscDSGetDiscType_Internal(dsIn, f, &disctype);CHKERRQ(ierr);
+      if (disctype != PETSC_DISC_FE) continue;
       ierr = PetscDSGetDiscretization(dsIn, f, (PetscObject *) &fem);CHKERRQ(ierr);
       if (!effectiveHeight) {subfem = fem;}
       else                  {ierr = PetscFEGetHeightSubspace(fem, effectiveHeight, &subfem);CHKERRQ(ierr);}
       ierr = PetscFECreateTabulation(subfem, 1, numPoints, points, 1, &T[f]);CHKERRQ(ierr);
     }
     for (f = 0; f < NfAux; ++f) {
-      ierr = PetscDSIsFE_Internal(dsAux, f, &isfe);CHKERRQ(ierr);
-      if (!isfe) continue;
+      ierr = PetscDSGetDiscType_Internal(dsAux, f, &disctype);CHKERRQ(ierr);
+      if (disctype != PETSC_DISC_FE) continue;
       ierr = PetscDSGetDiscretization(dsAux, f, (PetscObject *) &fem);CHKERRQ(ierr);
       if (!effectiveHeight || auxBd) {subfem = fem;}
       else                           {ierr = PetscFEGetHeightSubspace(fem, effectiveHeight, &subfem);CHKERRQ(ierr);}
@@ -618,10 +646,11 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
         sp[f] = cellsp[f];
       } else {
         ierr = PetscDualSpaceGetHeightSubspace(cellsp[f], effectiveHeight, &sp[f]);CHKERRQ(ierr);
-        if (!sp[f]) continue;
       }
+      if (!sp[f]) continue;
       ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
       totDim += spDim;
+      if (isHybrid && (f < Nf-1)) totDim += spDim;
     }
     ierr = DMPlexVecGetClosure(plex, section, localX, lStart < 0 ? pStart : lStart, &numValues, NULL);CHKERRQ(ierr);
     if (numValues != totDim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The section point closure size %d != dual space dimension %d", numValues, totDim);
@@ -660,7 +689,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
             quad = allPoints;
             allPoints = NULL;
           } else {
-            ierr = PetscDualSpaceGetAllPointsUnion(Nf,sp,dim-h,funcs,&quad);CHKERRQ(ierr);
+            ierr = PetscDualSpaceGetAllPointsUnion(Nf,sp,isHybrid ? dim-h-1 : dim-h,funcs,&quad);CHKERRQ(ierr);
           }
         }
         ierr = DMFieldCreateFEGeom(coordField,isectIS,quad,(effectiveHeight && h == minHeight)?PETSC_TRUE:PETSC_FALSE,&fegeom);CHKERRQ(ierr);
@@ -728,19 +757,16 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
   }
   /* Cleanup */
   if (type == DM_BC_ESSENTIAL_FIELD || type == DM_BC_ESSENTIAL_BD_FIELD || type == DM_BC_NATURAL_FIELD) {
-    PetscInt  effectiveHeight = auxBd ? minHeight : 0;
-    PetscFE   fem, subfem;
-    PetscBool isfe;
+    PetscInt effectiveHeight = auxBd ? minHeight : 0;
+    PetscFE  fem, subfem;
 
     for (f = 0; f < NfIn; ++f) {
-      ierr = PetscDSIsFE_Internal(dsIn, f, &isfe);CHKERRQ(ierr);
       ierr = PetscDSGetDiscretization(dsIn, f, (PetscObject *) &fem);CHKERRQ(ierr);
       if (!effectiveHeight) {subfem = fem;}
       else                  {ierr = PetscFEGetHeightSubspace(fem, effectiveHeight, &subfem);CHKERRQ(ierr);}
       ierr = PetscTabulationDestroy(&T[f]);CHKERRQ(ierr);
     }
     for (f = 0; f < NfAux; ++f) {
-      ierr = PetscDSIsFE_Internal(dsAux, f, &isfe);CHKERRQ(ierr);
       ierr = PetscDSGetDiscretization(dsAux, f, (PetscObject *) &fem);CHKERRQ(ierr);
       if (!effectiveHeight || auxBd) {subfem = fem;}
       else                           {ierr = PetscFEGetHeightSubspace(fem, effectiveHeight, &subfem);CHKERRQ(ierr);}
