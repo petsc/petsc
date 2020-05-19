@@ -107,6 +107,7 @@
       <!-- Please use Imperative with first letter cap, e.g. Add, Improve, Change etc. WITHOUT dot at the end -->
       <h4>General:</h4>
         <ul>
+          <li>Add PETSC_MPI_THREAD_REQUIRED to control the requested threading level for MPI_Init</li>
           <li>Change the default of -cuda_initialize from yes to no</li>
           <li>Add PetscOptionsInsertStringYAML() and "-options_string_yaml" for YAML-formatted options on the command line</li>
           <li>Add PETSC_OPTIONS_YAML environment variable for setting options in YAML format</li>
@@ -117,11 +118,27 @@
       <h4>PetscSF:</h4>
       <h4>PF:</h4>
       <h4>Vec:</h4>
+        <ul>
+          <li>Fix memory leaks when requesting -vec_type {standard|cuda|viennacl} when the vector is already of the desired type</li>
+        </ul>
       <h4>VecScatter:</h4>
       <h4>PetscSection:</h4>
       <h4>PetscPartitioner:</h4>
       <h4>Mat:</h4>
+        <ul>
+          <li>Fix few bugs for MATSEQSBAIJ when missing diagonal entries</li>
+          <li>Fix few bugs when trying to reuse matrices within MatMat operations</li>
+          <li>Deprecate MatFreeIntermediateDataStructures() in favor of MatProductClear()</li>
+          <li>Add MatShellSetMatProductOperation() to allow users specify symbolic and numeric phases for MatMat operations with MATSHELL matrices</li>
+          <li>Add support for distributed dense matrices on GPUs (MATMPIDENSECUDA)</li>
+          <li>Add few missing get/set/replace array operations for MATDENSE and MATDENSECUDA matrices</li>
+          <li>Deprecate MatSeqDenseSetLDA in favor of MatDenseSetLDA</li>
+          <li>Add support for A*B and A^t*B operations with A = AIJCUSPARSE and B = DENSECUDA matrices</li>
+        </ul>
       <h4>PC:</h4>
+        <ul>
+          <li>Fix bugs related with reusing PCILU/PCICC/PCLU/PCCHOLESKY preconditioners with SEQAIJCUSPARSE matrices</li>
+        </ul>
       <h4>KSP:</h4>
       <h4>SNES:</h4>
       <h4>SNESLineSearch:</h4>
