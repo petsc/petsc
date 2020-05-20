@@ -1,6 +1,6 @@
 #include <petsc/private/dmpleximpl.h> /*I   "petscdmplex.h"   I*/
 
-/*
+/*@C
      DMCreateNeumannOverlap - Generates an IS, an unassembled (Neumann) Mat, a setup function, and the corresponding context to be used by PCHPDDM.
 
    Input Parameter:
@@ -19,7 +19,7 @@
    Level: advanced
 
 .seealso:  DMCreate(), DM, MATIS, PCHPDDM, PCHPDDMSetAuxiliaryMat()
-*/
+@*/
 PetscErrorCode DMCreateNeumannOverlap_Plex(DM dm, IS *ovl, Mat *J, PetscErrorCode (**setup)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void*), void **setup_ctx)
 {
   DM                     odm;
