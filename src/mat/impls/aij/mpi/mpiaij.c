@@ -4368,7 +4368,7 @@ PetscErrorCode  MatCreateAIJ(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,Pets
 
   Level: intermediate
 
-.seealso: MatMPIAIJGetLocalMat(), MatMPIAIJGetLocalMatCondensed(), MatCreateAIJ(), MATMPIAJ, MATSEQAIJ
+.seealso: MatMPIAIJGetLocalMat(), MatMPIAIJGetLocalMatCondensed(), MatCreateAIJ(), MATMPIAIJ, MATSEQAIJ
 @*/
 PetscErrorCode MatMPIAIJGetSeqAIJ(Mat A,Mat *Ad,Mat *Ao,const PetscInt *colmap[])
 {

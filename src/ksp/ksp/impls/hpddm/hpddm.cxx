@@ -34,7 +34,10 @@ static PetscErrorCode KSPSetFromOptions_HPDDM(PetscOptionItems *PetscOptionsObje
     ierr = PetscOptionsReal("-ksp_richardson_scale", "Damping factor used in Richardson iterations", "KSPHPDDM", data->rcntl[0], data->rcntl, NULL);CHKERRQ(ierr);
   } else {
     i = HPDDM_VARIANT_LEFT;
-    ierr = PetscOptionsEList("-ksp_hpddm_variant", "Left, right, or variable preconditioning", "KSPHPDDM", HPDDMVariant, ALEN(HPDDMVariant), HPDDMVariant[HPDDM_VARIANT_LEFT], &i, NULL);CHKERRQ(ierr);
+    if (ksp->pc_side_set == PC_SIDE_DEFAULT) {
+      ierr = PetscOptionsEList("-ksp_hpddm_variant", "Left, right, or variable preconditioning", "KSPHPDDM", HPDDMVariant, ALEN(HPDDMVariant), HPDDMVariant[HPDDM_VARIANT_LEFT], &i, NULL);CHKERRQ(ierr);
+    } else if (ksp->pc_side_set == PC_RIGHT) i = HPDDM_VARIANT_RIGHT;
+    else if (ksp->pc_side_set == PC_SYMMETRIC) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Symmetric preconditioning not implemented");
     if (i != HPDDM_VARIANT_LEFT && (data->cntl[5] == HPDDM_KRYLOV_METHOD_BCG || data->cntl[5] == HPDDM_KRYLOV_METHOD_BFBCG)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Right and flexible preconditioned (BF)BCG not implemented");
     data->cntl[1] = i;
     if (i > 0) {
@@ -151,6 +154,22 @@ static PetscErrorCode KSPDestroy_HPDDM(KSP ksp)
   PetscFunctionReturn(0);
 }
 
+PETSC_STATIC_INLINE PetscErrorCode KSPSolve_HPDDM_Private(KSP ksp, const PetscScalar *b, PetscScalar *x, PetscInt n)
+{
+  KSP_HPDDM      *data = (KSP_HPDDM*)ksp->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = static_cast<PetscInt>(HPDDM::IterativeMethod::solve(*data->op, b, x, n, PetscObjectComm((PetscObject)ksp)));
+  /* big assumption from HPDDM: all PetscErrorCode are positive                                            */
+  /* if a PETSc call fails inside HPDDM, -ierr is returned (always negative given the previous assumption) */
+  /* if a KSPSolve succeeds, the number of iterations is returned instead (always positive or null)        */
+  ksp->its = 0;
+  if (ierr >= 0) ksp->its = ierr;
+  else           return PetscError(PETSC_COMM_SELF, __LINE__, "KSPSolve_HPDDM_Private", __FILE__, -ierr, PETSC_ERROR_INITIAL, "PETSc error detected in HPDDM");
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode KSPSolve_HPDDM(KSP ksp)
 {
   KSP_HPDDM         *data = (KSP_HPDDM*)ksp->data;
@@ -168,7 +187,7 @@ static PetscErrorCode KSPSolve_HPDDM(KSP ksp)
   ierr = VecGetArray(ksp->vec_sol, &x);CHKERRQ(ierr);
   ierr = VecGetArrayRead(ksp->vec_rhs, &b);CHKERRQ(ierr);
   if (!flg) {
-    ksp->its = HPDDM::IterativeMethod::solve(*data->op, b, x, 1, PetscObjectComm((PetscObject)ksp));
+    ierr = KSPSolve_HPDDM_Private(ksp, b, x, 1);CHKERRQ(ierr);
   } else {
       ierr = MatKAIJGetScaledIdentity(A, &flg);CHKERRQ(ierr);
       ierr = MatKAIJGetAIJ(A, &B);CHKERRQ(ierr);
@@ -196,7 +215,7 @@ static PetscErrorCode KSPSolve_HPDDM(KSP ksp)
         std::swap(*ptr, bt);
         HPDDM::Wrapper<PetscScalar>::imatcopy<'T'>(i, n, x, n, i);
       }
-      ksp->its = HPDDM::IterativeMethod::solve(*data->op, b, x, flg ? n : 1, PetscObjectComm((PetscObject)ksp));
+      ierr = KSPSolve_HPDDM_Private(ksp, b, x, flg ? n : 1);CHKERRQ(ierr);
       if (flg && n > 1) {
         std::swap(*ptr, bt);
         ierr = PetscFree(bt);CHKERRQ(ierr);
@@ -436,15 +455,13 @@ static PetscErrorCode KSPHPDDMMatSolve_HPDDM(KSP ksp, Mat B, Mat X)
       }
     }
     ierr = PetscLogEventBegin(KSP_Solve, ksp, 0, 0, 0);CHKERRQ(ierr);
-    ksp->its = HPDDM::IterativeMethod::solve(*data->op, b, x, N1, PetscObjectComm((PetscObject)ksp));
+    ierr = KSPSolve_HPDDM_Private(ksp, b, x, N1);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(KSP_Solve, ksp, 0, 0, 0);CHKERRQ(ierr);
     /* if the PetscBool same_local_solves is not reset after the solve, KSPView() is way too verbose */
     if (same_local_solves) {
       if (bjacobi) bjacobi->same_local_solves = PETSC_TRUE;
       if (osm) osm->same_local_solves = PETSC_TRUE;
     }
-    ierr = MatDenseRestoreArray(X, &x);CHKERRQ(ierr);
-    ierr = MatDenseRestoreArrayRead(B, &b);CHKERRQ(ierr);
     if (ksp->its < ksp->max_it) ksp->reason = KSP_CONVERGED_RTOL;
     else ksp->reason = KSP_DIVERGED_ITS;
     /* stripped-down version of KSPSolve(), which only handles -ksp_view -ksp_converged_reason -ksp_view_final_residual */
@@ -464,6 +481,8 @@ static PetscErrorCode KSPHPDDMMatSolve_HPDDM(KSP ksp, Mat B, Mat X)
     ierr = VecDestroy(&cb);CHKERRQ(ierr);
     ierr = VecDestroy(&cx);CHKERRQ(ierr);
   }
+  ierr = MatDenseRestoreArray(X, &x);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArrayRead(B, &b);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -480,7 +499,7 @@ static PetscErrorCode KSPHPDDMMatSolve_HPDDM(KSP ksp, Mat B, Mat X)
 .   -ksp_hpddm_enlarge_krylov_subspace <p, default=1> - split the initial right-hand side into multiple vectors (only relevant with nonblock methods)
 .   -ksp_hpddm_orthogonalization <type, default=cgs> - any of cgs or mgs, see KSPGMRES
 .   -ksp_hpddm_qr <type, default=cholqr> - distributed QR factorizations with any of cholqr, cgs, or mgs (only relevant with block methods)
-.   -ksp_hpddm_variant <type, default=left> - any of left, right, or flexible
+.   -ksp_hpddm_variant <type, default=left> - any of left, right, or flexible (this option is superseded by KSPSetPCSide())
 .   -ksp_hpddm_recycle <n, default=0> - number of harmonic Ritz vectors to compute (only relevant with GCRODR or BGCRODR)
 .   -ksp_hpddm_recycle_target <type, default=SM> - criterion to select harmonic Ritz vectors using either SM, LM, SR, LR, SI, or LI (only relevant with GCRODR or BGCRODR)
 -   -ksp_hpddm_recycle_strategy <type, default=A> - generalized eigenvalue problem A or B to solve for recycling (only relevant with flexible GCRODR or BGCRODR)

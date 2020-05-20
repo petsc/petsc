@@ -1498,6 +1498,7 @@ PetscErrorCode TSAdjointStep(TS ts)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = TSAdjointSetUp(ts);CHKERRQ(ierr);
+  ts->steps--; /* must decrease the step index before the adjoint step is taken. */
 
   ts->reason = TS_CONVERGED_ITERATING;
   ts->ptime_prev = ts->ptime;
@@ -1505,7 +1506,7 @@ PetscErrorCode TSAdjointStep(TS ts)
   ierr = PetscLogEventBegin(TS_AdjointStep,ts,0,0,0);CHKERRQ(ierr);
   ierr = (*ts->ops->adjointstep)(ts);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(TS_AdjointStep,ts,0,0,0);CHKERRQ(ierr);
-  ts->adjoint_steps++; ts->steps--;
+  ts->adjoint_steps++;
 
   if (ts->reason < 0) {
     if (ts->errorifstepfailed) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSAdjointStep has failed due to %s",TSConvergedReasons[ts->reason]);
