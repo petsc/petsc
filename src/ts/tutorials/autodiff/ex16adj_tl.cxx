@@ -45,7 +45,7 @@ struct _n_User {
   Residual evaluation templated, so as to allow for PetscScalar or adouble
   arguments.
 */
-template <class T> PetscErrorCode EvaluateResidual(T *x,T mu,T *f)
+template <class T> PetscErrorCode EvaluateResidual(const T *x,T mu,T *f)
 {
   PetscFunctionBegin;
   f[0] = x[1];
@@ -60,13 +60,14 @@ static PetscErrorCode RHSFunctionPassive(TS ts,PetscReal t,Vec X,Vec F,void *ctx
 {
   PetscErrorCode    ierr;
   User              user = (User)ctx;
-  PetscScalar       *f,*x;
+  PetscScalar       *f;
+  const PetscScalar *x;
 
   PetscFunctionBeginUser;
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   ierr = EvaluateResidual(x,user->mu,f);CHKERRQ(ierr);
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -76,21 +77,21 @@ static PetscErrorCode RHSFunctionPassive(TS ts,PetscReal t,Vec X,Vec F,void *ctx
 */
 static PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec X,Mat A,Mat B,void *ctx)
 {
-  PetscErrorCode ierr;
-  User           user = (User)ctx;
-  PetscScalar    *x,**J;
-  adouble        f_a[2];      /* 'active' double for dependent variables */
-  adouble        x_a[2],mu_a; /* 'active' doubles for independent variables */
-  PetscInt       i,j;
+  PetscErrorCode    ierr;
+  User              user = (User)ctx;
+  PetscScalar       **J;
+  const PetscScalar *x;
+  adouble           f_a[2];      /* 'active' double for dependent variables */
+  adouble           x_a[2],mu_a; /* 'active' doubles for independent variables */
+  PetscInt          i,j;
 
   PetscFunctionBeginUser;
-
   /* Set values for independent variables and parameters */
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   x_a[0].setValue(x[0]);
   x_a[1].setValue(x[1]);
   mu_a.setValue(user->mu);
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
 
   /* Set seed matrix as 3x3 identity matrix */
   x_a[0].setADValue(0,1.);x_a[0].setADValue(1,0.);x_a[0].setADValue(2,0.);
@@ -208,7 +209,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_MPI_WRONG_SIZE,"This is a uniprocessor example only!");
+  if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Set runtime options and create AdolcCtx

@@ -747,11 +747,11 @@ PetscErrorCode RHSFunctionActive(TS ts,PetscReal ftime,Vec U,Vec F,void *ptr)
 
 PetscErrorCode IJacobianAdolc(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A,Mat B,void *ctx)
 {
-  AppCtx         *appctx = (AppCtx*)ctx;
-  DM             da;
-  PetscErrorCode ierr;
-  PetscScalar    *u_vec;
-  Vec            localU;
+  AppCtx            *appctx = (AppCtx*)ctx;
+  DM                da;
+  PetscErrorCode    ierr;
+  const PetscScalar *u_vec;
+  Vec               localU;
 
   PetscFunctionBegin;
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
@@ -767,7 +767,7 @@ PetscErrorCode IJacobianAdolc(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A
   ierr = DMGlobalToLocalEnd(da,U,INSERT_VALUES,localU);CHKERRQ(ierr);
 
   /* Get pointers to vector data */
-  ierr = VecGetArray(localU,&u_vec);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(localU,&u_vec);CHKERRQ(ierr);
 
   /*
     Compute Jacobian
@@ -777,7 +777,7 @@ PetscErrorCode IJacobianAdolc(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A
   /*
      Restore vectors
   */
-  ierr = VecRestoreArray(localU,&u_vec);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(localU,&u_vec);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localU);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

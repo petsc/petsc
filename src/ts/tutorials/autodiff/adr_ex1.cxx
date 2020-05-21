@@ -145,9 +145,9 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A,Mat 
   PetscScalar    *u;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(U,&u);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
   ierr = PetscAdolcComputeIJacobian(1,2,A,u,a,appctx->adctx);CHKERRQ(ierr);
-  ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
