@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.version          = '2.6.0'
+    self.version          = '2.7.2'
     self.download         = ['https://www.coin-or.org/download/source/ADOL-C/ADOL-C-' + self.version + '.tgz']
     self.includes         = ['adolc/adolc.h']
     self.liblist          = [['libadolc.a']]
