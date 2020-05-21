@@ -38,7 +38,8 @@ class Configure(config.package.Package):
 
     buildDir = os.path.join(self.packageDir,'petsc-build')
     configDir = os.path.join(buildDir,'config')
-    os.makedirs(configDir)
+    if not os.path.exists(configDir):
+      os.makedirs(configDir)
 
     if self.framework.argDB['prefix']:
       PETSC_DIR  = os.path.abspath(os.path.expanduser(self.argDB['prefix']))
