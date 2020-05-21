@@ -132,8 +132,10 @@
           <li>Add MatShellSetMatProductOperation() to allow users specify symbolic and numeric phases for MatMat operations with MATSHELL matrices</li>
           <li>Add support for distributed dense matrices on GPUs (MATMPIDENSECUDA)</li>
           <li>Add few missing get/set/replace array operations for MATDENSE and MATDENSECUDA matrices</li>
+          <li>Add MatDense{Get|Restore}ColumnVec to access memory of a dense matrix as a Vec, together with read-only and write-only variants</li>
           <li>Deprecate MatSeqDenseSetLDA in favor of MatDenseSetLDA</li>
           <li>Add support for A*B and A^t*B operations with A = AIJCUSPARSE and B = DENSECUDA matrices</li>
+          <li>Added basic support for MATPRODUCT_AB (resp. MATPRODUCT_AtB) for any matrices with mult (multtranpose) operation defined and B dense</li>
         </ul>
       <h4>PC:</h4>
         <ul>
