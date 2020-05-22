@@ -40,6 +40,8 @@ configure_options = [
   '--download-saws',
   '--download-egads',
   '--package-prefix-hash='+petsc_hash_pkgs,
+  '--download-adolc',
+  '--download-colpack',
   ]
 
 if __name__ == '__main__':

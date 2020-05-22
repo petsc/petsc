@@ -131,7 +131,7 @@ static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
 
 int main(int argc,char **argv)
 {
-  TS                 ts;          /* nonlinear solver */
+  TS                 ts = NULL;          /* nonlinear solver */
   Vec                ic,r;
   PetscBool          monitor = PETSC_FALSE;
   PetscScalar        *x_ptr;

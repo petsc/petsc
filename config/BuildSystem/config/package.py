@@ -84,6 +84,7 @@ class Package(config.base.Configure):
     self.skippackagewithoptions = 0  # packages like fblaslapack and MPICH do not support --with-package* options so do not print them in help
     self.alternativedownload    = [] # Used by, for example mpi.py to print useful error messages, which does not support --download-mpi but one can use --download-mpich
     self.usesopenmp             = 'no'  # yes, no, unknow package is built to use OpenMP
+    self.cmakelistsdir          = '' # Location of CMakeLists.txt - if not located at the top level of the package dir
 
     # Outside coupling
     self.defaultInstallDir      = ''
@@ -1746,7 +1747,7 @@ class CMakePackage(Package):
         raise RuntimeError('CMake not found, needed to build '+self.PACKAGE+'. Rerun configure with --download-cmake.')
 
       # effectively, this is 'make clean'
-      folder = os.path.join(self.packageDir, 'petsc-build')
+      folder = os.path.join(self.packageDir, self.cmakelistsdir, 'petsc-build')
       if os.path.isdir(folder):
         import shutil
         shutil.rmtree(folder)

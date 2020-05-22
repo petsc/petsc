@@ -140,9 +140,9 @@ PetscErrorCode IFunctionActive2(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *c
 */
 PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A,Mat B,AppCtx *ctx)
 {
-  PetscErrorCode ierr;
-  AppCtx         *appctx = (AppCtx*)ctx;
-  PetscScalar    *u;
+  PetscErrorCode    ierr;
+  AppCtx            *appctx = (AppCtx*)ctx;
+  const PetscScalar *u;
 
   PetscFunctionBegin;
   ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);

@@ -75,8 +75,8 @@ extern PetscErrorCode RHSJacobianAdolc(TS ts,PetscReal t,Vec U,Mat A,Mat B,void 
 
 int main(int argc,char **argv)
 {
-  TS             ts;                            /* ODE integrator */
-  Vec            x,r,xdot;                      /* solution, residual, derivative */
+  TS             ts;
+  Vec            x,r,xdot;
   PetscErrorCode ierr;
   DM             da;
   AppCtx         appctx;
@@ -141,7 +141,6 @@ int main(int argc,char **argv)
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        Trace function(s) just once
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-    ierr = PetscMalloc1(adctx->n,&u_vec);CHKERRQ(ierr);
     if (!implicitform) {
       ierr = RHSFunctionActive(ts,1.0,x,r,&appctx);CHKERRQ(ierr);
     } else {
@@ -156,7 +155,6 @@ int main(int argc,char **argv)
       these objects once.
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     if (adctx->sparse) {
-
       /*
          Generate sparsity pattern
 
@@ -510,6 +508,8 @@ PetscErrorCode IFunctionActive(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *
   ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArrayRead(da,localU,&u);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArrayRead(da,Udot,&udot);CHKERRQ(ierr);
+
+  ierr = DMRestoreLocalVector(da,&localU);CHKERRQ(ierr);
 
   /* Destroy AFields appropriately */
   f_a += info.gys;

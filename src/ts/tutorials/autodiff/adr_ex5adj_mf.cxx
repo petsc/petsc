@@ -233,8 +233,8 @@ PetscErrorCode InitializeLambda(DM da,Vec lambda,PetscReal x,PetscReal y)
    PetscInt i,j,Mx,My,xs,ys,xm,ym;
    PetscErrorCode ierr;
    Field **l;
-   PetscFunctionBegin;
 
+   PetscFunctionBegin;
    ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
    /* locate the global i index for x and j index for y */
    i = (PetscInt)(x*(Mx-1));
@@ -298,7 +298,6 @@ PetscErrorCode IFunctionActive(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *
   PetscScalar    dummy;
 
   PetscFunctionBegin;
-
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da,&localU);CHKERRQ(ierr);
@@ -395,6 +394,8 @@ PetscErrorCode IFunctionActive(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *
   ierr = DMDAVecRestoreArrayRead(da,localU,&u);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArrayRead(da,Udot,&udot);CHKERRQ(ierr);
 
+  ierr = DMRestoreLocalVector(da,&localU);CHKERRQ(ierr);
+
   /* Destroy AFields appropriately */
   f_a += info.gys;
   u_a += info.gys;
@@ -402,7 +403,6 @@ PetscErrorCode IFunctionActive(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *
   delete[] u_a;
   delete[] f_c;
   delete[] u_c;
-
   PetscFunctionReturn(0);
 }
 
