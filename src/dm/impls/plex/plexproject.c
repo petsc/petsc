@@ -653,7 +653,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
       if (isHybrid && (f < Nf-1)) totDim += spDim;
     }
     ierr = DMPlexVecGetClosure(plex, section, localX, lStart < 0 ? pStart : lStart, &numValues, NULL);CHKERRQ(ierr);
-    if (numValues != totDim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The section point closure size %d != dual space dimension %d", numValues, totDim);
+    if (numValues != totDim) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The section point (%D) closure size %D != dual space dimension %D", lStart < 0 ? pStart : lStart, numValues, totDim);
     if (!totDim) {
       ierr = ISDestroy(&heightIS);CHKERRQ(ierr);
       continue;

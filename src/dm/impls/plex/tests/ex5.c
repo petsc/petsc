@@ -1036,7 +1036,8 @@ int main(int argc, char **argv)
       args: -dim 2
 
   testset:
-    args: -orig_dm_plex_check_all -dm_plex_check_all
+    args: -orig_dm_plex_check_all -dm_plex_check_all \
+          -displacement_petscspace_degree 1 -faulttraction_petscspace_degree 1 -petscds_view
     # 2D Quads
     test:
       suffix: quad_0

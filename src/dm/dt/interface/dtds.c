@@ -912,6 +912,38 @@ PetscErrorCode PetscDSAddDiscretization(PetscDS prob, PetscObject disc)
 }
 
 /*@
+  PetscDSGetQuadrature - Returns the quadrature, which must agree for all fields in the DS
+
+  Not collective
+
+  Input Parameter:
+. prob - The PetscDS object
+
+  Output Parameter:
+. q - The quadrature object
+
+Level: intermediate
+
+.seealso: PetscDSSetImplicit(), PetscDSSetDiscretization(), PetscDSAddDiscretization(), PetscDSGetNumFields(), PetscDSCreate()
+@*/
+PetscErrorCode PetscDSGetQuadrature(PetscDS prob, PetscQuadrature *q)
+{
+  PetscObject    obj;
+  PetscClassId   id;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *q = NULL;
+  if (!prob->Nf) PetscFunctionReturn(0);
+  ierr = PetscDSGetDiscretization(prob, 0, &obj);CHKERRQ(ierr);
+  ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+  if      (id == PETSCFE_CLASSID) {ierr = PetscFEGetQuadrature((PetscFE) obj, q);CHKERRQ(ierr);}
+  else if (id == PETSCFV_CLASSID) {ierr = PetscFVGetQuadrature((PetscFV) obj, q);CHKERRQ(ierr);}
+  else SETERRQ1(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", 0);
+  PetscFunctionReturn(0);
+}
+
+/*@
   PetscDSGetImplicit - Returns the flag for implicit solve for this field. This is just a guide for IMEX
 
   Not collective

@@ -19,3 +19,47 @@ Label 'cohesive':
 [1]: 1 (1)
 [1]: 13 (1)
 [1]: 14 (1)
+Discrete System with 1 fields
+    cell total dim 8 total comp 2
+  Field displacement FEM2 components (implicit) (Nq 4 Nqc 1)
+    PetscFE Object: displacement (displacement_) 1 MPI processes
+      type: basic
+      Basic Finite Element in 2 dimensions with 2 components
+      PetscSpace Object: displacement (displacement_) 1 MPI processes
+        type: poly
+        Space in 2 variables with 2 components, size 8
+        Tensor polynomial space of degree 1
+      PetscDualSpace Object: displacement (displacement_) 1 MPI processes
+        type: lagrange
+        Dual space with 2 components, size 8
+        Continuous tensor Lagrange dual space
+        Quadrature of order 3 on 4 points (dim 2)
+Discrete System with 2 fields
+    cell total dim 12 total comp 4
+    hybrid cell
+  Field displacement FEM2 components (implicit) (Nq 2 Nqc 1)
+    PetscFE Object: displacement 1 MPI processes
+      type: basic
+      Basic Finite Element in 1 dimensions with 2 components
+      PetscSpace Object: displacement 1 MPI processes
+        type: poly
+        Space in 1 variables with 2 components, size 4
+        Tensor polynomial space of degree 1
+      PetscDualSpace Object: displacement 1 MPI processes
+        type: lagrange
+        Dual space with 2 components, size 4
+        Continuous Lagrange dual space
+        Quadrature of order 3 on 2 points (dim 1)
+  Field fault traction FEM2 components (implicit) (Nq 2 Nqc 1)
+    PetscFE Object: fault traction (faulttraction_) 1 MPI processes
+      type: basic
+      Basic Finite Element in 1 dimensions with 2 components
+      PetscSpace Object: fault traction (faulttraction_) 1 MPI processes
+        type: poly
+        Space in 1 variables with 2 components, size 4
+        Tensor polynomial space of degree 1
+      PetscDualSpace Object: fault traction (faulttraction_) 1 MPI processes
+        type: lagrange
+        Dual space with 2 components, size 4
+        Continuous Lagrange dual space
+        Quadrature of order 3 on 2 points (dim 1)
