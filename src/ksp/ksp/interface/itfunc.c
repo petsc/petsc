@@ -75,7 +75,7 @@ PetscErrorCode  KSPComputeExtremeSingularValues(KSP ksp,PetscReal *emax,PetscRea
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  ksp - iterative context obtained from KSPCreate()
 -  n - size of arrays r and c. The number of eigenvalues computed (neig) will, in
        general, be less than this.
@@ -138,7 +138,7 @@ PetscErrorCode  KSPComputeEigenvalues(KSP ksp,PetscInt n,PetscReal r[],PetscReal
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  ksp   - iterative context obtained from KSPCreate()
 .  ritz  - PETSC_TRUE or PETSC_FALSE for ritz pairs or harmonic Ritz pairs, respectively
 .  small - PETSC_TRUE or PETSC_FALSE for smallest or largest (harmonic) Ritz values, respectively
@@ -809,10 +809,10 @@ static PetscErrorCode KSPSolve_Private(KSP ksp,Vec b,Vec x)
 
    Collective on ksp
 
-   Parameter:
+   Parameters:
 +  ksp - iterative context obtained from KSPCreate()
 .  b - the right hand side vector
--  x - the solution  (this may be the same vector as b, then b will be overwritten with answer)
+-  x - the solution (this may be the same vector as b, then b will be overwritten with answer)
 
    Options Database Keys:
 +  -ksp_view_eigenvalues - compute preconditioned operators eigenvalues
@@ -888,7 +888,7 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
 
    Collective on ksp
 
-   Input Parameter:
+   Input Parameters:
 +  ksp - iterative context obtained from KSPCreate()
 .  b - right hand side vector
 -  x - solution vector
@@ -914,6 +914,181 @@ PetscErrorCode KSPSolveTranspose(KSP ksp,Vec b,Vec x)
   if (x) PetscValidHeaderSpecific(x,VEC_CLASSID,3);
   ksp->transpose_solve = PETSC_TRUE;
   ierr = KSPSolve_Private(ksp,b,x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode KSPViewFinalMatResidual_Internal(KSP ksp, Mat B, Mat X, PetscViewer viewer, PetscViewerFormat format, PetscInt shift)
+{
+  Mat            A, R;
+  PetscReal      *norms;
+  PetscInt       i, N;
+  PetscBool      flg;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PCGetOperators(ksp->pc, &A, NULL);CHKERRQ(ierr);
+    ierr = MatAssembled(X, &flg);CHKERRQ(ierr);
+    if (!flg) {
+      ierr = MatSetOption(X, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE);CHKERRQ(ierr);
+      ierr = MatAssemblyBegin(X, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = MatAssemblyEnd(X, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    }
+    /* A and X must be assembled */
+    ierr = MatMatMult(A, X, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &R);CHKERRQ(ierr);
+    ierr = MatAYPX(R, -1.0, B, SAME_NONZERO_PATTERN);
+    ierr = MatGetSize(R, NULL, &N);
+    ierr = PetscMalloc1(N, &norms);CHKERRQ(ierr);
+    ierr = MatGetColumnNorms(R, NORM_2, norms);CHKERRQ(ierr);
+    ierr = MatDestroy(&R);CHKERRQ(ierr);
+    for (i = 0; i < N; ++i) {
+      ierr = PetscViewerASCIIPrintf(viewer, "%s #%D %g\n", i == 0 ? "KSP final norm of residual" : "                          ", shift + i, (double)norms[i]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(norms);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+     KSPMatSolve - Solves a linear system with multiple right-hand sides stored as a MATDENSE. Unlike KSPSolve(), B and X must be different matrices.
+
+   Input Parameters:
++     ksp - iterative context
+-     B - block of right-hand sides
+
+   Output Parameter:
+.     X - block of solutions
+
+   Notes:
+     This is a stripped-down version of KSPSolve(), which only handles -ksp_view, -ksp_converged_reason, and -ksp_view_final_residual.
+
+   Level: intermediate
+
+.seealso:  KSPSolve(), MatMatSolve(), MATDENSE, KSPHPDDM, PCBJACOBI, PCASM
+@*/
+PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
+{
+  Mat            A, vB, vX;
+  Vec            cb, cx;
+  PetscInt       m1, M1, m2, M2, n1, N1, n2, N2, Bbn = PETSC_DECIDE;
+  PetscBool      match;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
+  PetscValidHeaderSpecific(B, MAT_CLASSID, 2);
+  PetscValidHeaderSpecific(X, MAT_CLASSID, 3);
+  PetscCheckSameComm(ksp, 1, B, 2);
+  PetscCheckSameComm(ksp, 1, X, 3);
+  if (B == X) SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_IDN, "B and X must be different matrices");
+  ierr = KSPGetOperators(ksp, &A, NULL);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(A, &m1, NULL);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(B, &m2, &n2);CHKERRQ(ierr);
+  ierr = MatGetSize(A, &M1, NULL);CHKERRQ(ierr);
+  ierr = MatGetSize(B, &M2, &N2);CHKERRQ(ierr);
+  if (m1 != m2 || M1 != M2) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Cannot use a block of right-hand sides with (m2,M2) = (%D,%D) for a linear system with (m1,M1) = (%D,%D)", m2, M2, m1, M1);
+  ierr = MatGetLocalSize(X, &m1, &n1);CHKERRQ(ierr);
+  ierr = MatGetSize(X, &M1, &N1);CHKERRQ(ierr);
+  if (m1 != m2 || M1 != M2 || n1 != n2 || N1 != N2) SETERRQ8(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Incompatible block of right-hand sides (m2,M2)x(n2,N2) = (%D,%D)x(%D,%D) and solutions (m1,M1)x(n1,N1) = (%D,%D)x(%D,%D)", m2, M2, n2, N2, m1, M1, n1, N1);
+  ierr = PetscObjectBaseTypeCompareAny((PetscObject)B, &match, MATSEQDENSE, MATMPIDENSE, "");CHKERRQ(ierr);
+  if (!match) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Provided block of right-hand sides not stored in a dense Mat");
+  ierr = PetscObjectBaseTypeCompareAny((PetscObject)X, &match, MATSEQDENSE, MATMPIDENSE, "");CHKERRQ(ierr);
+  if (!match) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Provided block of solutions not stored in a dense Mat");
+  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
+  if (ksp->ops->matsolve) {
+    ierr = PetscLogEventBegin(KSP_MatSolve, ksp, B, X, 0);CHKERRQ(ierr);
+    ierr = KSPGetMatSolveBlockSize(ksp, &Bbn);CHKERRQ(ierr);
+    /* by default, do a single solve with all columns */
+    if (Bbn == PETSC_DECIDE) Bbn = N2;
+    else if (Bbn < 1)        SETERRQ1(PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "KSPMatSolve() block size %D must be positive", Bbn);
+    ierr = PetscInfo2(ksp, "KSP type %s solving using blocks of width at most %D\n", ((PetscObject)ksp)->type_name, Bbn);CHKERRQ(ierr);
+    /* if -ksp_matsolve_block_size is greater than the actual number of columns, do a single solve with all columns */
+    if (Bbn >= N2) {
+      ierr = (*ksp->ops->matsolve)(ksp, B, X);CHKERRQ(ierr);
+      if (ksp->viewFinalRes) {
+        ierr = KSPViewFinalMatResidual_Internal(ksp, B, X, ksp->viewerFinalRes, ksp->formatFinalRes, 0);CHKERRQ(ierr);
+      }
+      if (ksp->viewReason) {
+        ierr = KSPReasonView(ksp, ksp->viewerReason);CHKERRQ(ierr);
+      }
+    } else {
+      for (n2 = 0; n2 < N2; n2 += Bbn) {
+        ierr = MatDenseGetSubMatrix(B, n2, PetscMin(n2+Bbn, N2), &vB);CHKERRQ(ierr);
+        ierr = MatDenseGetSubMatrix(X, n2, PetscMin(n2+Bbn, N2), &vX);CHKERRQ(ierr);
+        ierr = (*ksp->ops->matsolve)(ksp, vB, vX);CHKERRQ(ierr);
+        if (ksp->viewFinalRes) {
+          ierr = KSPViewFinalMatResidual_Internal(ksp, vB, vX, ksp->viewerFinalRes, ksp->formatFinalRes, n2);CHKERRQ(ierr);
+        }
+        if (ksp->viewReason) {
+          ierr = KSPReasonView(ksp, ksp->viewerReason);CHKERRQ(ierr);
+        }
+        ierr = MatDenseRestoreSubMatrix(B, &vB);CHKERRQ(ierr);
+        ierr = MatDenseRestoreSubMatrix(X, &vX);CHKERRQ(ierr);
+      }
+    }
+    if (ksp->view) {
+      ierr = KSPView(ksp, ksp->viewer);CHKERRQ(ierr);
+    }
+    ierr = PetscLogEventEnd(KSP_MatSolve, ksp, B, X, 0);CHKERRQ(ierr);
+  } else {
+    ierr = PetscInfo1(ksp, "KSP type %s solving column by column\n", ((PetscObject)ksp)->type_name);CHKERRQ(ierr);
+    for (n2 = 0; n2 < N2; ++n2) {
+      ierr = MatDenseGetColumnVecRead(B, n2, &cb);CHKERRQ(ierr);
+      ierr = MatDenseGetColumnVecWrite(X, n2, &cx);CHKERRQ(ierr);
+      ierr = KSPSolve(ksp, cb, cx);CHKERRQ(ierr);
+      ierr = MatDenseRestoreColumnVecWrite(X, n2, &cx);CHKERRQ(ierr);
+      ierr = MatDenseRestoreColumnVecRead(B, n2, &cb);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+     KSPSetMatSolveBlockSize - Sets the maximum number of columns treated simultaneously in KSPMatSolve().
+
+    Logically collective
+
+   Input Parameters:
++     ksp - iterative context
+-     bs - block size
+
+   Level: advanced
+
+.seealso:  KSPMatSolve(), KSPGetMatSolveBlockSize(), -mat_mumps_icntl_27, -matmatmult_Bbn
+@*/
+PetscErrorCode KSPSetMatSolveBlockSize(KSP ksp, PetscInt bs)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
+  PetscValidLogicalCollectiveInt(ksp, bs, 2);
+  ierr = PetscTryMethod(ksp, "KSPSetMatSolveBlockSize_C", (KSP, PetscInt), (ksp, bs));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+     KSPGetMatSolveBlockSize - Gets the maximum number of columns treated simultaneously in KSPMatSolve().
+
+   Input Parameter:
+.     ksp - iterative context
+
+   Output Parameter:
+.     bs - block size
+
+   Level: advanced
+
+.seealso:  KSPMatSolve(), KSPSetMatSolveBlockSize(), -mat_mumps_icntl_27, -matmatmult_Bbn
+@*/
+PetscErrorCode KSPGetMatSolveBlockSize(KSP ksp, PetscInt *bs)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
+  *bs = PETSC_DECIDE;
+  ierr = PetscTryMethod(ksp, "KSPGetMatSolveBlockSize_C", (KSP, PetscInt*), (ksp, bs));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

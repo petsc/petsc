@@ -50,8 +50,8 @@
         call PetscViewerDestroy(viewer,ierr);CHKERRA(ierr)
         call KSPSetFromOptions(ksp,ierr);CHKERRA(ierr)
         call KSPSolve(ksp,b,x,ierr);CHKERRA(ierr)
-#if defined(PETSC_HAVE_HPDDM)
         call PetscObjectTypeCompare(ksp,KSPHPDDM,flg,ierr);CHKERRA(ierr)
+#if defined(PETSC_HAVE_HPDDM)
         if (flg .and. reset) then
           call KSPHPDDMGetDeflationSpace(ksp,U,ierr);CHKERRA(ierr)
           call KSPReset(ksp,ierr);CHKERRA(ierr)

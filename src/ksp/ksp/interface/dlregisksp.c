@@ -174,6 +174,7 @@ PetscErrorCode  KSPInitializePackage(void)
   ierr = PetscLogEventRegister("KSPSolve",         KSP_CLASSID,&KSP_Solve);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("KSPGMRESOrthog",   KSP_CLASSID,&KSP_GMRESOrthogonalization);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("KSPSolveTranspos", KSP_CLASSID,&KSP_SolveTranspose);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("KSPMatSolve",      KSP_CLASSID,&KSP_MatSolve);CHKERRQ(ierr);
   /* Process Info */
   {
     PetscClassId  classids[3];

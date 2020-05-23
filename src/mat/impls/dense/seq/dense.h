@@ -22,10 +22,12 @@ typedef struct {
   PetscBool    unplaced_user_alloc;
   Mat          ptapwork;          /* workspace (SeqDense matrix) for PtAP */
 
-  /* Support for MatDenseGetColumnVec */
+  /* Support for MatDenseGetColumnVec and MatDenseGetSubMatrix */
+  Mat               cmat;      /* matrix representation of a given subset of columns */
   Vec               cvec;      /* vector representation of a given column */
   const PetscScalar *ptrinuse; /* holds array to be restored (just a placeholder) */
   PetscInt          vecinuse;  /* if cvec is in use (col = vecinuse-1) */
+  PetscInt          matinuse;  /* if cmat is in use (cbegin = matinuse-1) */
 } Mat_SeqDense;
 
 PETSC_INTERN PetscErrorCode MatMatMultSymbolic_SeqDense_SeqDense(Mat,Mat,PetscReal,Mat);
@@ -77,6 +79,8 @@ PETSC_INTERN PetscErrorCode MatDenseGetColumnVecRead_SeqDense(Mat,PetscInt,Vec*)
 PETSC_INTERN PetscErrorCode MatDenseRestoreColumnVecRead_SeqDense(Mat,PetscInt,Vec*);
 PETSC_INTERN PetscErrorCode MatDenseGetColumnVecWrite_SeqDense(Mat,PetscInt,Vec*);
 PETSC_INTERN PetscErrorCode MatDenseRestoreColumnVecWrite_SeqDense(Mat,PetscInt,Vec*);
+PETSC_INTERN PetscErrorCode MatDenseGetSubMatrix_SeqDense(Mat,PetscInt,PetscInt,Mat*);
+PETSC_INTERN PetscErrorCode MatDenseRestoreSubMatrix_SeqDense(Mat,Mat*);
 
 #if defined(PETSC_HAVE_CUDA)
 PETSC_EXTERN PetscErrorCode MatSeqDenseCUDAInvertFactors_Private(Mat);

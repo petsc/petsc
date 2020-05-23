@@ -260,7 +260,7 @@ static PetscErrorCode PCApplySymmetricRight_ILU(PC pc,Vec x,Vec y)
           The "symmetric" application of this preconditioner is not actually symmetric since L is not transpose(U)
           even when the matrix is not symmetric since the U stores the diagonals of the factorization.
 
-          If you are using MATSEQAIJCUSPARSE matrices (or MATMPIAIJCUSPARESE matrices with block Jacobi), factorization 
+          If you are using MATSEQAIJCUSPARSE matrices (or MATMPIAIJCUSPARSE matrices with block Jacobi), factorization 
           is never done on the GPU).
 
    References:

@@ -7,6 +7,7 @@ PETSC_EXTERN PetscLogEvent PC_HPDDM_Strc;
 PETSC_EXTERN PetscLogEvent PC_HPDDM_PtAP;
 PETSC_EXTERN PetscLogEvent PC_HPDDM_PtBP;
 PETSC_EXTERN PetscLogEvent PC_HPDDM_Next;
+PETSC_INTERN PetscErrorCode HPDDMLoadDL_Private(PetscBool*);
 
 namespace HPDDM {
   template<class K> class Schwarz;       /* forward definitions of two needed HPDDM classes */
@@ -40,7 +41,7 @@ struct PC_HPDDM {
 struct KSP_HPDDM {
   HPDDM::PETScOperator *op;
   PetscReal            rcntl[2];
-  int                  icntl[1];
+  int                  icntl[2];
   unsigned short       scntl[3];
   char                 cntl [6];
 };

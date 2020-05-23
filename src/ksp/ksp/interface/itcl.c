@@ -315,16 +315,14 @@ PetscErrorCode  KSPMonitorSetFromOptions(KSP ksp,const char name[],const char he
 @*/
 PetscErrorCode  KSPSetFromOptions(KSP ksp)
 {
-  PetscInt       indx;
-  const char     *convtests[] = {"default","skip","lsqr"};
-  char           type[256], guesstype[256], monfilename[PETSC_MAX_PATH_LEN];
+  const char     *convtests[]={"default","skip","lsqr"},*prefix;
+  char           type[256],guesstype[256],monfilename[PETSC_MAX_PATH_LEN];
   PetscBool      flg,flag,reuse,set;
-  PetscInt       model[2]={0,0},nmax;
+  PetscInt       indx,model[2]={0,0},nmax;
   KSPNormType    normtype;
   PCSide         pcside;
   void           *ctx;
   MPI_Comm       comm;
-  const char    *prefix;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -635,6 +633,12 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   }
   }
 #endif
+
+  nmax = PETSC_DECIDE;
+  ierr = PetscOptionsInt("-ksp_matsolve_block_size", "Maximum number of columns treated simultaneously", "KSPMatSolve", nmax, &nmax, &flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = KSPSetMatSolveBlockSize(ksp, nmax);CHKERRQ(ierr);
+  }
 
   if (ksp->ops->setfromoptions) {
     ierr = (*ksp->ops->setfromoptions)(PetscOptionsObject,ksp);CHKERRQ(ierr);

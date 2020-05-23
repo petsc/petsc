@@ -8,9 +8,12 @@ int main(int argc,char **args)
   Vec               cx,cb;       /* columns of X and B */
   Mat               A,KA = NULL; /* linear system matrix */
   KSP               ksp;         /* linear solver context */
+  PC                pc;          /* preconditioner context */
+  Mat               F;           /* factored matrix from the preconditioner context */
   const PetscScalar *b;
   PetscScalar       *x,*S = NULL,*T = NULL;
-  PetscInt          m,n,M,N = 5,i,j;
+  PetscReal         norm;
+  PetscInt          m,M,N = 5,i,j;
   const char        *deft = MATAIJ;
   PetscViewer       viewer;
   char              dir[PETSC_MAX_PATH_LEN],name[256],type[256];
@@ -54,26 +57,21 @@ int main(int argc,char **args)
   ierr = MatSetRandom(B,NULL);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   if (!flg) {
-    ierr = KSPSetUp(ksp);CHKERRQ(ierr);
-    ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPHPDDM,&flg);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_HPDDM)
+    ierr = KSPMatSolve(ksp,B,X);CHKERRQ(ierr);
+    ierr = KSPGetMatSolveBlockSize(ksp,&M);CHKERRQ(ierr);
+    if (M != PETSC_DECIDE) {
+      ierr = KSPSetMatSolveBlockSize(ksp,PETSC_DECIDE);CHKERRQ(ierr);
+      ierr = MatZeroEntries(X);CHKERRQ(ierr);
+      ierr = KSPMatSolve(ksp,B,X);CHKERRQ(ierr);
+    }
+    ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)pc,PCLU,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = KSPHPDDMMatSolve(ksp,B,X);CHKERRQ(ierr);
-    } else
-#endif
-    {
-      ierr = MatGetSize(A,&M,NULL);CHKERRQ(ierr);
-      for (n=0; n<N; n++) {
-        ierr = MatDenseGetColumn(B,n,(PetscScalar**)&b);CHKERRQ(ierr);
-        ierr = MatDenseGetColumn(X,n,&x);CHKERRQ(ierr);
-        ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,1,m,M,b,&cb);CHKERRQ(ierr);
-        ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,1,m,M,x,&cx);CHKERRQ(ierr);
-        ierr = KSPSolve(ksp,cb,cx);CHKERRQ(ierr);
-        ierr = VecDestroy(&cx);CHKERRQ(ierr);
-        ierr = VecDestroy(&cb);CHKERRQ(ierr);
-        ierr = MatDenseRestoreColumn(X,&x);CHKERRQ(ierr);
-        ierr = MatDenseRestoreColumn(B,(PetscScalar**)&b);CHKERRQ(ierr);
-      }
+      ierr = PCFactorGetMatrix(pc,&F);
+      ierr = MatMatSolve(F,B,B);CHKERRQ(ierr);
+      ierr = MatAYPX(B,-1.0,X,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = MatNorm(B,NORM_INFINITY,&norm);CHKERRQ(ierr);
+      if (norm > 100*PETSC_MACHINE_EPSILON) SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"KSPMatSolve() and MatMatSolve() difference has nonzero norm %g",(double)norm);
     }
   } else {
     ierr = KSPSetOperators(ksp,KA,KA);CHKERRQ(ierr);
@@ -104,21 +102,33 @@ int main(int argc,char **args)
 
    testset:
       nsize: 2
-      requires: hpddm datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
       args: -ksp_converged_reason -ksp_max_it 500 -load_dir ${DATAFILESPATH}/matrices/hpddm/GCRODR -mat_type {{aij sbaij}shared output}
       test:
          suffix: 1
          args:
       test:
          suffix: 2
-         args: -ksp_type hpddm -pc_type asm -ksp_hpddm_type {{gmres bgmres}separate_output}
+         requires: hpddm
+         args: -ksp_type hpddm -pc_type asm -ksp_hpddm_type {{gmres bgmres}separate output}
       test:
          suffix: 3
-         args: -ksp_type hpddm -ksp_hpddm_recycle 10 -ksp_hpddm_type {{gcrodr bgcrodr}separate_output}
+         requires: hpddm
+         args: -ksp_type hpddm -ksp_hpddm_recycle 5 -ksp_hpddm_type {{gcrodr bgcrodr}separate output}
+      test:
+         suffix: 4
+         requires: hpddm
+         args: -ksp_type hpddm -ksp_hpddm_recycle 5 -ksp_hpddm_type bgcrodr -ksp_view_final_residual -N 12 -ksp_matsolve_block_size 5
+
+   test:
+      nsize: 1
+      requires: hpddm datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      suffix: preonly
+      args: -N 6 -load_dir ${DATAFILESPATH}/matrices/hpddm/GCRODR -pc_type lu -ksp_type hpddm -ksp_hpddm_type preonly
 
    test:
       nsize: 2
       requires: hpddm datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
-      args: -N 12 -ksp_converged_reason -ksp_max_it 500 -load_dir ${DATAFILESPATH}/matrices/hpddm/GCRODR -mat_type kaij -pc_type pbjacobi -ksp_type hpddm -ksp_hpddm_type {{gmres bgmres}separate_output}
+      args: -N 12 -ksp_converged_reason -ksp_max_it 500 -load_dir ${DATAFILESPATH}/matrices/hpddm/GCRODR -mat_type kaij -pc_type pbjacobi -ksp_type hpddm -ksp_hpddm_type {{gmres bgmres}separate output}
 
 TEST*/

@@ -20,6 +20,7 @@ struct _KSPOps {
                                                           calculates the residual in a
                                                           user-provided area.  */
   PetscErrorCode (*solve)(KSP);                        /* actual solver */
+  PetscErrorCode (*matsolve)(KSP,Mat,Mat);             /* multiple dense RHS solver */
   PetscErrorCode (*setup)(KSP);
   PetscErrorCode (*setfromoptions)(PetscOptionItems*,KSP);
   PetscErrorCode (*publishoptions)(KSP);
@@ -340,6 +341,7 @@ PETSC_EXTERN PetscLogEvent KSP_Solve_FS_S;
 PETSC_EXTERN PetscLogEvent KSP_Solve_FS_L;
 PETSC_EXTERN PetscLogEvent KSP_Solve_FS_U;
 PETSC_EXTERN PetscLogEvent KSP_SolveTranspose;
+PETSC_EXTERN PetscLogEvent KSP_MatSolve;
 
 PETSC_INTERN PetscErrorCode MatGetSchurComplement_Basic(Mat,IS,IS,IS,IS,MatReuse,Mat*,MatSchurComplementAinvType,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode PCPreSolveChangeRHS(PC,PetscBool*);
