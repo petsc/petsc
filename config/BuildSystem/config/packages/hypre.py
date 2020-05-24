@@ -4,13 +4,12 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    #self.version         = '2.18.2'
+    self.version         = '2.19.0'
     self.minversion      = '2.14'
     self.versionname     = 'HYPRE_RELEASE_VERSION'
     self.versioninclude  = 'HYPRE_config.h'
     self.requiresversion = 1
-    #self.gitcommit       = 'v'+self.version
-    self.gitcommit       = '93baaa8c9' # v2.18.2+valgrind-fix
+    self.gitcommit       = 'v'+self.version
     self.download        = ['git://https://github.com/hypre-space/hypre','https://github.com/hypre-space/hypre/archive/'+self.gitcommit+'.tar.gz']
     self.functions       = ['HYPRE_IJMatrixCreate']
     self.includes        = ['HYPRE.h']
@@ -34,7 +33,7 @@ class Configure(config.package.GNUPackage):
     self.scalar     = framework.require('PETSc.options.scalarTypes',self)
     self.deps       = [self.mpi,self.blasLapack,self.cxxlibs,self.mathlib]
     if self.setCompilers.isCrayKNL(None,self.log):
-      self.installwithbatch  = 0
+      self.installwithbatch = 0
 
   def formGNUConfigureArgs(self):
     self.packageDir = os.path.join(self.packageDir,'src')
