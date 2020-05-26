@@ -1,16 +1,9 @@
 nb = 9, ngen = 3, nload = 3, nbranch = 9
-[0] Total local nvertices 9 + 7 = 16, nedges 9 + 7 = 16
-Power network: nv 9, ne 9
-Water network: nv 7, ne 7
+[0] Total local nvertices 9 + 0 = 9, nedges 9 + 0 + 0 = 9
+[1] Total local nvertices 0 + 7 = 7, nedges 0 + 7 + 0 = 7
+[2] Total local nvertices 0 + 0 = 0, nedges 0 + 0 + 0 = 0
 SNES_coupled setup ......
 SNES_power setup ......
 SNES_water setup......
-  0 SNES Function norm 11.5586 
-  1 SNES Function norm 3.99648 
-  2 SNES Function norm 2.73589 
-  3 SNES Function norm 1.27956 
-  4 SNES Function norm 0.143609 
-  5 SNES Function norm 0.00179068 
-  6 SNES Function norm 6.71012e-06 
-  7 SNES Function norm 8.931e-11 
+Nonlinear coupled_ solve converged due to CONVERGED_FNORM_ABS iterations 7
 Coupled_SNES converged in 1 iterations
