@@ -1,5 +1,5 @@
-#if !defined(_matelemimpl_h)
-#define _matelemimpl_h
+#if !defined(_PETSCELEMENTAL_H)
+#define _PETSCELEMENTAL_H
 
 #include <El.hpp>
 #include <petsc/private/matimpl.h>
