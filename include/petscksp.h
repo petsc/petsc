@@ -608,6 +608,7 @@ PETSC_EXTERN PetscErrorCode KSPConvergedDefaultDestroy(void*);
 PETSC_EXTERN PetscErrorCode KSPConvergedDefaultCreate(void**);
 PETSC_EXTERN PetscErrorCode KSPConvergedDefaultSetUIRNorm(KSP);
 PETSC_EXTERN PetscErrorCode KSPConvergedDefaultSetUMIRNorm(KSP);
+PETSC_EXTERN PetscErrorCode KSPConvergedDefaultSetConvergedMaxits(KSP,PetscBool);
 PETSC_EXTERN PetscErrorCode KSPConvergedSkip(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*);
 PETSC_EXTERN PetscErrorCode KSPGetConvergedReason(KSP,KSPConvergedReason*);
 
