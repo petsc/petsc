@@ -245,6 +245,35 @@ PetscErrorCode  KSPSetReusePreconditioner(KSP ksp,PetscBool flag)
 }
 
 /*@
+   KSPGetReusePreconditioner - Determines if the KSP reuses the current preconditioner even if the operator in the preconditioner has changed.
+
+   Collective on ksp
+
+   Input Parameters:
+.  ksp   - iterative context obtained from KSPCreate()
+
+   Output Parameters:
+.  flag - the boolean flag
+
+   Level: intermediate
+
+.seealso: KSPCreate(), KSPSolve(), KSPDestroy(), KSPSetReusePreconditioner(), KSP
+@*/
+PetscErrorCode  KSPGetReusePreconditioner(KSP ksp,PetscBool *flag)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidPointer(flag,2);
+  *flag = PETSC_FALSE;
+  if (ksp->pc) {
+    ierr = PCGetReusePreconditioner(ksp->pc,flag);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
    KSPSetSkipPCSetFromOptions - prevents KSPSetFromOptions() from call PCSetFromOptions(). This is used if the same PC is shared by more than one KSP so its options are not resetable for each KSP
 
    Collective on ksp

@@ -212,8 +212,7 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
   } else if (ksp->ops->view) {
     ierr = (*ksp->ops->view)(ksp,viewer);CHKERRQ(ierr);
   }
-  if (!ksp->skippcsetfromoptions) {
-    if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
+  if (ksp->pc) {
     ierr = PCView(ksp->pc,viewer);CHKERRQ(ierr);
   }
   if (isdraw) {

@@ -353,10 +353,10 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
 
   ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPPREONLY,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PCGetReusePreconditioner(ksp->pc,&reuse);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-ksp_error_if_not_converged","Generate error if solver does not converge","KSPSetErrorIfNotConverged",ksp->errorifnotconverged,&ksp->errorifnotconverged,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-ksp_reuse_preconditioner","Use initial preconditioner and don't ever compute a new one ","KSPReusePreconditioner",reuse,&reuse,NULL);CHKERRQ(ierr);
+    ierr = KSPGetReusePreconditioner(ksp,&reuse);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-ksp_reuse_preconditioner","Use initial preconditioner and don't ever compute a new one","KSPReusePreconditioner",reuse,&reuse,NULL);CHKERRQ(ierr);
     ierr = KSPSetReusePreconditioner(ksp,reuse);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-ksp_error_if_not_converged","Generate error if solver does not converge","KSPSetErrorIfNotConverged",ksp->errorifnotconverged,&ksp->errorifnotconverged,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view",&ksp->viewer, &ksp->format,&ksp->view);CHKERRQ(ierr);
     ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_converged_reason",&ksp->viewerReason,&ksp->formatReason,&ksp->viewReason);CHKERRQ(ierr);
     ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_mat",&ksp->viewerMat,&ksp->formatMat,&ksp->viewMat);CHKERRQ(ierr);
@@ -396,8 +396,8 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   if (flg) {
     ierr = KSPSetInitialGuessNonzero(ksp,flag);CHKERRQ(ierr);
   }
-  ierr = PCGetReusePreconditioner(ksp->pc,&reuse);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-ksp_reuse_preconditioner","Use initial preconditioner and don't ever compute a new one ","KSPReusePreconditioner",reuse,&reuse,NULL);CHKERRQ(ierr);
+  ierr = KSPGetReusePreconditioner(ksp,&reuse);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ksp_reuse_preconditioner","Use initial preconditioner and don't ever compute a new one","KSPReusePreconditioner",reuse,&reuse,NULL);CHKERRQ(ierr);
   ierr = KSPSetReusePreconditioner(ksp,reuse);CHKERRQ(ierr);
 
   ierr = PetscOptionsBool("-ksp_knoll","Use preconditioner applied to b for initial guess","KSPSetInitialGuessKnoll",ksp->guess_knoll,&ksp->guess_knoll,NULL);CHKERRQ(ierr);
@@ -423,7 +423,9 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
       ierr = KSPConvergedDefaultCreate(&ctx);CHKERRQ(ierr);
       ierr = KSPSetConvergenceTest(ksp,KSPConvergedDefault,ctx,KSPConvergedDefaultDestroy);CHKERRQ(ierr);
       break;
-    case 1: ierr = KSPSetConvergenceTest(ksp,KSPConvergedSkip,NULL,NULL);CHKERRQ(ierr);    break;
+    case 1:
+      ierr = KSPSetConvergenceTest(ksp,KSPConvergedSkip,NULL,NULL);CHKERRQ(ierr);
+      break;
     case 2:
       ierr = KSPConvergedDefaultCreate(&ctx);CHKERRQ(ierr);
       ierr = KSPSetConvergenceTest(ksp,KSPLSQRConvergedDefault,ctx,KSPConvergedDefaultDestroy);CHKERRQ(ierr);
@@ -456,10 +458,10 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   ierr = PetscOptionsBool("-ksp_constant_null_space","Add constant null space to Krylov solver matrix","MatSetNullSpace",PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
   if (set && flg) {
     MatNullSpace nsp;
-    Mat          Amat;
+    Mat          Amat = NULL;
 
     ierr = MatNullSpaceCreate(comm,PETSC_TRUE,0,NULL,&nsp);CHKERRQ(ierr);
-    ierr = PCGetOperators(ksp->pc,&Amat,NULL);CHKERRQ(ierr);
+    if (ksp->pc) { ierr = PCGetOperators(ksp->pc,&Amat,NULL);CHKERRQ(ierr); }
     if (Amat) {
       ierr = MatSetNullSpace(Amat,nsp);CHKERRQ(ierr);
       ierr = MatNullSpaceDestroy(&nsp);CHKERRQ(ierr);
@@ -485,9 +487,12 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   if (flg) {
     ierr = KSPSetComputeSingularValues(ksp,PETSC_TRUE);CHKERRQ(ierr);
   }
-  ierr = PetscObjectTypeCompare((PetscObject)ksp->pc,PCKSP,&flg);CHKERRQ(ierr);
-  if (!flg) ierr = PetscObjectTypeCompare((PetscObject)ksp->pc,PCBJACOBI,&flg);CHKERRQ(ierr);
-  if (!flg) ierr = PetscObjectTypeCompare((PetscObject)ksp->pc,PCDEFLATION,&flg);CHKERRQ(ierr);
+  flg = PETSC_FALSE;
+  if (ksp->pc) {
+    ierr = PetscObjectTypeCompare((PetscObject)ksp->pc,PCKSP,&flg);CHKERRQ(ierr);
+    if (!flg) ierr = PetscObjectTypeCompare((PetscObject)ksp->pc,PCBJACOBI,&flg);CHKERRQ(ierr);
+    if (!flg) ierr = PetscObjectTypeCompare((PetscObject)ksp->pc,PCDEFLATION,&flg);CHKERRQ(ierr);
+  }
 
   if (flg) {
     /* A hack for using dynamic tolerance in preconditioner */
