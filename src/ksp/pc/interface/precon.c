@@ -1100,6 +1100,7 @@ PetscErrorCode  PCSetReusePreconditioner(PC pc,PetscBool flag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidLogicalCollectiveBool(pc,flag,2);
   pc->reusepreconditioner = flag;
   PetscFunctionReturn(0);
 }
@@ -1123,6 +1124,7 @@ PetscErrorCode  PCGetReusePreconditioner(PC pc,PetscBool *flag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidPointer(flag,2);
   *flag = pc->reusepreconditioner;
   PetscFunctionReturn(0);
 }
