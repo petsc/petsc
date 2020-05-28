@@ -198,6 +198,17 @@
         <li>Add DMGet/SetFieldAvoidTensor() to allow fields to exclude tensor cells in their definition</li>
         <li>Remove regular refinement and marking from DMPlexCreateDoublet()</li>
       </ul>
+      </ul>
+      <h4>DMNetwork:</h4>
+      <ul>
+        <li>Add DMNetworkAddSubnetwork() for network of subnetworks</li>
+        <li>Add DMNetworkAdd/GetSharedVertices(), DMNetworkIsSharedVertex()</li>
+        <li>Remove DMNetworkSetEdgeList(), DMNetworkSet/GetComponentNumVariables(), DMNetworkSet/Add/GetNumVariables(), DMNetworkGetComponentKeyOffset(), DMNetworkGetVariableOffset(), DMNetworkGetVariableGlobalOffset()</li>
+        <li>Change the prototypes for DMNetworkAdd/GetComponent()</li>
+        <li>Rename DMNetworkSet/GetSizes() to DMNetworkSet/GetNumSubNetworks()
+        <li>Rename DMNetworkGetComponentVariableOffset() to DMNetworkGetLocalVecOffset(), DMNetworkGetComponentVariableGlobalOffset() to DMNetworkGetGlobalVecOffset()</li>
+        <li>Rename DMNetworkGetSubnetworkInfo() to DMNetworkGetSubnetwork()</li>
+      </ul>
       <h4>DT:</h4>
       <h4>PetscViewer:</h4>
       <h4>SYS:</h4>

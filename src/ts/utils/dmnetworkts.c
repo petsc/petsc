@@ -41,14 +41,14 @@ PetscErrorCode  TSMonitorLGCtxNetworkCreate(TS ts,const char host[],const char l
   /* loop over edges counting number of line graphs needed */
   ierr = DMNetworkGetEdgeRange(dm,&Start,&End);CHKERRQ(ierr);
   for (e=Start; e<End; e++) {
-    ierr = DMNetworkGetNumVariables(dm,e,&nvar);CHKERRQ(ierr);
+    ierr = DMNetworkGetComponent(dm,e,ALL_COMPONENTS,NULL,NULL,&nvar);CHKERRQ(ierr);
     if (!nvar) continue;
     i++;
   }
   /* loop over vertices */
   ierr = DMNetworkGetVertexRange(dm,&Start,&End);CHKERRQ(ierr);
   for (e=Start; e<End; e++) {
-    ierr = DMNetworkGetNumVariables(dm,e,&nvar);CHKERRQ(ierr);
+    ierr = DMNetworkGetComponent(dm,e,ALL_COMPONENTS,NULL,NULL,&nvar);CHKERRQ(ierr);
     if (!nvar) continue;
     i++;
   }
@@ -59,7 +59,7 @@ PetscErrorCode  TSMonitorLGCtxNetworkCreate(TS ts,const char host[],const char l
   /* loop over edges creating all needed line graphs*/
   ierr = DMNetworkGetEdgeRange(dm,&Start,&End);CHKERRQ(ierr);
   for (e=Start; e<End; e++) {
-    ierr = DMNetworkGetNumVariables(dm,e,&nvar);CHKERRQ(ierr);
+    ierr = DMNetworkGetComponent(dm,e,ALL_COMPONENTS,NULL,NULL,&nvar);CHKERRQ(ierr);
     if (!nvar) continue;
     ierr = PetscDrawCreate(comm,host,label,x,y,m,n,&draw);CHKERRQ(ierr);
     ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
@@ -71,7 +71,7 @@ PetscErrorCode  TSMonitorLGCtxNetworkCreate(TS ts,const char host[],const char l
   /* loop over vertices */
   ierr = DMNetworkGetVertexRange(dm,&Start,&End);CHKERRQ(ierr);
   for (e=Start; e<End; e++) {
-    ierr = DMNetworkGetNumVariables(dm,e,&nvar);CHKERRQ(ierr);
+    ierr = DMNetworkGetComponent(dm,e,ALL_COMPONENTS,NULL,NULL,&nvar);CHKERRQ(ierr);
     if (!nvar) continue;
     ierr = PetscDrawCreate(comm,host,label,x,y,m,n,&draw);CHKERRQ(ierr);
     ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
@@ -149,10 +149,10 @@ PetscErrorCode  TSMonitorLGCtxNetworkSolution(TS ts,PetscInt step,PetscReal ptim
   i = 0;
   ierr = DMNetworkGetEdgeRange(dm,&Start,&End);CHKERRQ(ierr);
   for (e=Start; e<End; e++) {
-    ierr = DMNetworkGetNumVariables(dm,e,&nvar);CHKERRQ(ierr);
+    ierr = DMNetworkGetComponent(dm,e,ALL_COMPONENTS,NULL,NULL,&nvar);CHKERRQ(ierr);
     if (!nvar) continue;
 
-    ierr = DMNetworkGetVariableOffset(dm,e,&offset);CHKERRQ(ierr);
+    ierr = DMNetworkGetLocalVecOffset(dm,e,ALL_COMPONENTS,&offset);CHKERRQ(ierr);
     ierr = PetscDrawLGAddCommonPoint(ctx->lg[i],ptime,(const PetscReal*)(xv+offset));CHKERRQ(ierr);
     i++;
   }
@@ -160,10 +160,10 @@ PetscErrorCode  TSMonitorLGCtxNetworkSolution(TS ts,PetscInt step,PetscReal ptim
   /* iterate over vertices */
   ierr = DMNetworkGetVertexRange(dm,&Start,&End);CHKERRQ(ierr);
   for (v=Start; v<End; v++) {
-    ierr = DMNetworkGetNumVariables(dm,v,&nvar);CHKERRQ(ierr);
+    ierr = DMNetworkGetComponent(dm,v,ALL_COMPONENTS,NULL,NULL,&nvar);CHKERRQ(ierr);
     if (!nvar) continue;
 
-    ierr = DMNetworkGetVariableOffset(dm,v,&offset);CHKERRQ(ierr);
+    ierr = DMNetworkGetLocalVecOffset(dm,v,ALL_COMPONENTS,&offset);CHKERRQ(ierr);
     ierr = PetscDrawLGAddCommonPoint(ctx->lg[i],ptime,(const PetscReal*)(xv+offset));CHKERRQ(ierr);
     i++;
   }

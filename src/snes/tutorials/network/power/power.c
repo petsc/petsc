@@ -33,7 +33,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F,void *appctx)
   ierr = DMGlobalToLocalBegin(networkdm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(networkdm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
 
-  ierr = DMNetworkGetSubnetworkInfo(networkdm,0,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
+  ierr = DMNetworkGetSubnetwork(networkdm,0,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
   ierr = FormFunction_Power(networkdm,localX,localF,nv,ne,vtx,edges,User);CHKERRQ(ierr);
 
   ierr = DMRestoreLocalVector(networkdm,&localX);CHKERRQ(ierr);
@@ -61,7 +61,7 @@ PetscErrorCode SetInitialValues(DM networkdm,Vec X,void* appctx)
   ierr = DMGlobalToLocalBegin(networkdm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(networkdm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
 
-  ierr = DMNetworkGetSubnetworkInfo(networkdm,0,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
+  ierr = DMNetworkGetSubnetwork(networkdm,0,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
   ierr = SetInitialGuess_Power(networkdm,localX,nv,ne,vtx,edges,user_power);CHKERRQ(ierr);
 
   ierr = DMLocalToGlobalBegin(networkdm,localX,ADD_VALUES,X);CHKERRQ(ierr);
@@ -131,9 +131,9 @@ int main(int argc,char ** argv)
     ierr = PetscLogStageRegister("Create network",&stage2);CHKERRQ(ierr);
     PetscLogStagePush(stage2);
     /* Set number of nodes/edges */
-    ierr = DMNetworkSetSizes(networkdm,1,&numVertices,&numEdges,0,NULL);CHKERRQ(ierr);
-    /* Add edge connectivity */
-    ierr = DMNetworkSetEdgeList(networkdm,&edges,NULL);CHKERRQ(ierr);
+    ierr = DMNetworkSetNumSubNetworks(networkdm,PETSC_DECIDE,1);CHKERRQ(ierr);
+    ierr = DMNetworkAddSubnetwork(networkdm,"",numVertices,numEdges,edges,NULL);CHKERRQ(ierr);
+
     /* Set up the network layout */
     ierr = DMNetworkLayoutSetUp(networkdm);CHKERRQ(ierr);
 
@@ -141,28 +141,26 @@ int main(int argc,char ** argv)
       ierr = PetscFree(edges);CHKERRQ(ierr);
     }
 
-    /* Add network components only process 0 has any data to add*/
+    /* Add network components only process 0 has any data to add */
     if (!crank) {
       genj=0; loadj=0;
       ierr = DMNetworkGetEdgeRange(networkdm,&eStart,&eEnd);CHKERRQ(ierr);
       for (i = eStart; i < eEnd; i++) {
-        ierr = DMNetworkAddComponent(networkdm,i,User.compkey_branch,&pfdata->branch[i-eStart]);CHKERRQ(ierr);
+        ierr = DMNetworkAddComponent(networkdm,i,User.compkey_branch,&pfdata->branch[i-eStart],0);CHKERRQ(ierr);
       }
       ierr = DMNetworkGetVertexRange(networkdm,&vStart,&vEnd);CHKERRQ(ierr);
       for (i = vStart; i < vEnd; i++) {
-        ierr = DMNetworkAddComponent(networkdm,i,User.compkey_bus,&pfdata->bus[i-vStart]);CHKERRQ(ierr);
+        ierr = DMNetworkAddComponent(networkdm,i,User.compkey_bus,&pfdata->bus[i-vStart],2);CHKERRQ(ierr);
         if (pfdata->bus[i-vStart].ngen) {
           for (j = 0; j < pfdata->bus[i-vStart].ngen; j++) {
-            ierr = DMNetworkAddComponent(networkdm,i,User.compkey_gen,&pfdata->gen[genj++]);CHKERRQ(ierr);
+            ierr = DMNetworkAddComponent(networkdm,i,User.compkey_gen,&pfdata->gen[genj++],0);CHKERRQ(ierr);
           }
         }
         if (pfdata->bus[i-vStart].nload) {
           for (j=0; j < pfdata->bus[i-vStart].nload; j++) {
-            ierr = DMNetworkAddComponent(networkdm,i,User.compkey_load,&pfdata->load[loadj++]);CHKERRQ(ierr);
+            ierr = DMNetworkAddComponent(networkdm,i,User.compkey_load,&pfdata->load[loadj++],0);CHKERRQ(ierr);
           }
         }
-        /* Add number of variables */
-        ierr = DMNetworkAddNumVariables(networkdm,i,2);CHKERRQ(ierr);
       }
     }
 
@@ -252,12 +250,10 @@ int main(int argc,char ** argv)
      depends: PFReadData.c pffunctions.c
      requires: !complex double define(PETSC_HAVE_ATTRIBUTEALIGNED)
 
-
    test:
      args: -snes_rtol 1.e-3
      localrunfiles: poweroptions case9.m
      output_file: output/power_1.out
-     requires: double !complex define(PETSC_HAVE_ATTRIBUTEALIGNED)
 
    test:
      suffix: 2
@@ -265,6 +261,5 @@ int main(int argc,char ** argv)
      nsize: 4
      localrunfiles: poweroptions case9.m
      output_file: output/power_1.out
-     requires: double !complex define(PETSC_HAVE_ATTRIBUTEALIGNED)
 
 TEST*/
