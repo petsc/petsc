@@ -36,7 +36,6 @@ static PetscErrorCode KSPSolve_CGLS(KSP ksp)
   Vec            x,b,r,p,q,ss;
   PetscScalar    beta;
   PetscReal      alpha,gamma,oldgamma;
-  PetscInt       maxiter_ls = 15;
   
   PetscFunctionBegin;
   ierr = KSPGetOperators(ksp,&A,NULL);CHKERRQ(ierr); /* Matrix of the system */
@@ -61,6 +60,7 @@ static PetscErrorCode KSPSolve_CGLS(KSP ksp)
   KSPCheckNorm(ksp,gamma);
   ksp->rnorm = gamma;
   ierr = (*ksp->converged)(ksp,ksp->its,ksp->rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+  if (ksp->reason) PetscFunctionReturn(0);
   gamma = gamma*gamma;                          /* gamma = norm2(s)^2 */
 
   do {
@@ -79,12 +79,13 @@ static PetscErrorCode KSPSolve_CGLS(KSP ksp)
     ksp->rnorm = gamma;
     ierr = KSPMonitor(ksp,ksp->its,ksp->rnorm);CHKERRQ(ierr);
     ierr = (*ksp->converged)(ksp,ksp->its,ksp->rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+    if (ksp->reason) PetscFunctionReturn(0);
     gamma = gamma*gamma;                           /* gamma = norm2(s)^2      */
     beta = gamma/oldgamma;                         /* beta = gamma / oldgamma */
     ierr = VecAYPX(p,beta,ss);CHKERRQ(ierr);       /* p = s + beta * p        */
-  } while (ksp->its<ksp->max_it && !ksp->reason);
+  } while (ksp->its<ksp->max_it);
   
-  if (ksp->its>=maxiter_ls && !ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
+  if (ksp->its >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
   PetscFunctionReturn(0);
 }
 

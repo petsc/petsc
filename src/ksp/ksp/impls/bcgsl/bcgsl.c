@@ -86,7 +86,12 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
 
     ierr = (*ksp->converged)(ksp, k, zeta, &ksp->reason, ksp->cnvP);CHKERRQ(ierr);
     if (ksp->reason < 0) PetscFunctionReturn(0);
-    else if (ksp->reason) break;
+    if (ksp->reason) {
+      if (bcgsl->delta>0.0) {
+        ierr = VecAXPY(VX,1.0,VXR);CHKERRQ(ierr);
+      }
+      PetscFunctionReturn(0);
+    }
 
     /* BiCG part */
     rho0 = -omega*rho0;

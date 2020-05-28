@@ -18,10 +18,6 @@ static PetscErrorCode KSPSetUp_PIPECR(KSP ksp)
 
 /*
  KSPSolve_PIPECR - This routine actually applies the pipelined conjugate residual method
-
- Input Parameter:
- .     ksp - the Krylov space object that was set to use conjugate gradient, by, for
-             example, KSPCreate(MPI_Comm,KSP *ksp); KSPSetType(ksp,KSPCG);
 */
 static PetscErrorCode  KSPSolve_PIPECR(KSP ksp)
 {
@@ -103,7 +99,7 @@ static PetscErrorCode  KSPSolve_PIPECR(KSP ksp)
       ierr = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
       ierr = KSPMonitor(ksp,i,dp);CHKERRQ(ierr);
       ierr = (*ksp->converged)(ksp,i,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
-      if (ksp->reason) break;
+      if (ksp->reason) PetscFunctionReturn(0);
     }
 
     if (i == 0) {
@@ -132,7 +128,7 @@ static PetscErrorCode  KSPSolve_PIPECR(KSP ksp)
     /*   ierr = KSP_MatMult(ksp,Amat,U,W);CHKERRQ(ierr); */
     /* } */
 
-  } while (i<ksp->max_it);
+  } while (i<=ksp->max_it);
   if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
   PetscFunctionReturn(0);
 }
