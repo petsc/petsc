@@ -862,8 +862,6 @@ PetscErrorCode MatDestroy_SeqSELL(Mat A)
   ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatStoreValues_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatRetrieveValues_C",NULL);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_ELEMENTAL)
-#endif
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqSELLSetPreallocation_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

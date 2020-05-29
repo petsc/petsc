@@ -65,7 +65,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJViennaCL(Mat);
 #if defined(PETSC_HAVE_FFTW)
 PETSC_EXTERN PetscErrorCode MatCreate_FFTW(Mat);
 #endif
+#if defined(PETSC_HAVE_ELEMENTAL)
 PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat);
+#endif
 
 PETSC_EXTERN PetscErrorCode MatCreate_Preallocator(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_Dummy(Mat);

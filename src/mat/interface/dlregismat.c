@@ -412,9 +412,6 @@ PetscErrorCode  MatInitializePackage(void)
 #if defined(PETSC_HAVE_LUSOL)
   ierr = MatSolverTypeRegister_Lusol();CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_ELEMENTAL)
-  ierr = MatSolverTypeRegister_SparseElemental();CHKERRQ(ierr);
-#endif
   /* Register package finalizer */
   ierr = PetscRegisterFinalize(MatFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
