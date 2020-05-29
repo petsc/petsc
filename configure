@@ -1,4 +1,13 @@
-#!/usr/bin/env python
+#!/bin/sh
+
+"true" '''\'
+for pyimpl in python3 python python2; do
+  which $pyimpl > /dev/null 2>&1  && echo "Using $pyimpl for Python" && exec $pyimpl "$0" "$@"
+done
+echo "Error! Could not locate python! Please install and have python3, python, or python2 in PATH."
+echo "Or use: /path/to/valid/python configure $@"
+exit 127
+'''
 
 import sys, os
 
