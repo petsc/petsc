@@ -11,7 +11,6 @@ class Configure(config.package.Package):
     self.functions        = ['pssytrd']
     self.functionsFortran = 1
     self.fc               = 1
-    self.useddirectly     = 0 # PETSc does not use ScaLAPACK, it is only used by MUMPS
     self.precisions       = ['single','double']
     self.downloadonWindows= 1
     return

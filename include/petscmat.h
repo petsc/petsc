@@ -63,6 +63,7 @@ typedef const char* MatType;
 #define MATMPIDENSE        "mpidense"
 #define MATMPIDENSECUDA    "mpidensecuda"
 #define MATELEMENTAL       "elemental"
+#define MATSCALAPACK       "scalapack"
 #define MATBAIJ            "baij"
 #define MATSEQBAIJ         "seqbaij"
 #define MATMPIBAIJ         "mpibaij"
@@ -127,6 +128,7 @@ typedef const char* MatSolverType;
 #define MATSOLVERKLU              "klu"
 #define MATSOLVERSPARSEELEMENTAL  "sparseelemental"
 #define MATSOLVERELEMENTAL        "elemental"
+#define MATSOLVERSCALAPACK        "scalapack"
 #define MATSOLVERESSL             "essl"
 #define MATSOLVERLUSOL            "lusol"
 #define MATSOLVERMUMPS            "mumps"
@@ -1938,6 +1940,12 @@ PETSC_EXTERN PetscErrorCode MatCreateAIJViennaCL(MPI_Comm,PetscInt,PetscInt,Pets
 PETSC_EXTERN PetscErrorCode VecScatterPetscToFFTW(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode VecScatterFFTWToPetsc(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatCreateVecsFFTW(Mat,Vec*,Vec*,Vec*);
+#endif
+
+#if defined(PETSC_HAVE_SCALAPACK)
+PETSC_EXTERN PetscErrorCode MatCreateScaLAPACK(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,Mat*);
+PETSC_EXTERN PetscErrorCode MatScaLAPACKSetBlockSizes(Mat,PetscInt,PetscInt);
+PETSC_EXTERN PetscErrorCode MatScaLAPACKGetBlockSizes(Mat,PetscInt*,PetscInt*);
 #endif
 
 PETSC_EXTERN PetscErrorCode MatCreateNest(MPI_Comm,PetscInt,const IS[],PetscInt,const IS[],const Mat[],Mat*);

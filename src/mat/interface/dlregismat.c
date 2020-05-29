@@ -92,6 +92,9 @@ PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_ViennaCL(void);
 #if defined(PETSC_HAVE_ELEMENTAL)
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_Elemental(void);
 #endif
+#if defined(PETSC_HAVE_SCALAPACK)
+PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_ScaLAPACK(void);
+#endif
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_Matlab(void);
 #endif
@@ -378,6 +381,9 @@ PetscErrorCode  MatInitializePackage(void)
 #endif
 #if defined(PETSC_HAVE_ELEMENTAL)
   ierr = MatSolverTypeRegister_Elemental();CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_SCALAPACK)
+  ierr = MatSolverTypeRegister_ScaLAPACK();CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   ierr = MatSolverTypeRegister_Matlab();CHKERRQ(ierr);

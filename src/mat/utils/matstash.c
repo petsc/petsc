@@ -4,8 +4,8 @@
 #define DEFAULT_STASH_SIZE   10000
 
 static PetscErrorCode MatStashScatterBegin_Ref(Mat,MatStash*,PetscInt*);
-static PetscErrorCode MatStashScatterGetMesg_Ref(MatStash*,PetscMPIInt*,PetscInt**,PetscInt**,PetscScalar**,PetscInt*);
-static PetscErrorCode MatStashScatterEnd_Ref(MatStash*);
+PETSC_INTERN PetscErrorCode MatStashScatterGetMesg_Ref(MatStash*,PetscMPIInt*,PetscInt**,PetscInt**,PetscScalar**,PetscInt*);
+PETSC_INTERN PetscErrorCode MatStashScatterEnd_Ref(MatStash*);
 #if !defined(PETSC_HAVE_MPIUNI)
 static PetscErrorCode MatStashScatterBegin_BTS(Mat,MatStash*,PetscInt*);
 static PetscErrorCode MatStashScatterGetMesg_BTS(MatStash*,PetscMPIInt*,PetscInt**,PetscInt**,PetscScalar**,PetscInt*);
@@ -134,7 +134,7 @@ PetscErrorCode MatStashScatterEnd_Private(MatStash *stash)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatStashScatterEnd_Ref(MatStash *stash)
+PETSC_INTERN PetscErrorCode MatStashScatterEnd_Ref(MatStash *stash)
 {
   PetscErrorCode ierr;
   PetscInt       nsends=stash->nsends,bs2,oldnmax,i;
@@ -644,7 +644,7 @@ PetscErrorCode MatStashScatterGetMesg_Private(MatStash *stash,PetscMPIInt *nvals
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatStashScatterGetMesg_Ref(MatStash *stash,PetscMPIInt *nvals,PetscInt **rows,PetscInt **cols,PetscScalar **vals,PetscInt *flg)
+PETSC_INTERN PetscErrorCode MatStashScatterGetMesg_Ref(MatStash *stash,PetscMPIInt *nvals,PetscInt **rows,PetscInt **cols,PetscScalar **vals,PetscInt *flg)
 {
   PetscErrorCode ierr;
   PetscMPIInt    i,*flg_v = stash->flg_v,i1,i2;
