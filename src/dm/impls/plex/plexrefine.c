@@ -2090,12 +2090,13 @@ static PetscErrorCode DMPlexCellRefinerSetCoordinates(DMPlexCellRefiner cr, DM r
       ierr = DMPlexVecRestoreClosure(dm, coordSection, coordsLocal, p, &Nc, &pcoords);CHKERRQ(ierr);
       for (n = 0; n < Nct; ++n) {
         if (rct[n] != DM_POLYTOPE_POINT) continue;
+        if (rsize[n] > 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Only support creating a single vertex in cell refinement, not %D", rsize[n]);
         for (r = 0; r < rsize[n]; ++r) {
           PetscInt vNew, off;
 
           ierr = DMPlexCellRefinerGetNewPoint(cr, ct, rct[n], p, r, &vNew);CHKERRQ(ierr);
           ierr = PetscSectionGetOffset(coordSectionNew, vNew, &off);CHKERRQ(ierr);
-          for (d = 0; d < dE; ++d) coordsNew[off+d] = vcoords[d];
+          ierr = DMPlexSnapToGeomModel(dm, p, vcoords, &coordsNew[off]);CHKERRQ(ierr);
         }
       }
     }
