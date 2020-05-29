@@ -3697,13 +3697,13 @@ PetscErrorCode  TSStep(TS ts)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  ierr = PetscCitationsRegister("@techreport{tspaper,\n"
-                                "  title       = {{PETSc/TS}: A Modern Scalable {DAE/ODE} Solver Library},\n"
-                                "  author      = {Shrirang Abhyankar and Jed Brown and Emil Constantinescu and Debojyoti Ghosh and Barry F. Smith},\n"
-                                "  type        = {Preprint},\n"
-                                "  number      = {ANL/MCS-P5061-0114},\n"
-                                "  institution = {Argonne National Laboratory},\n"
-                                "  year        = {2014}\n}\n",&cite);CHKERRQ(ierr);
+  ierr = PetscCitationsRegister("@article{tspaper,\n"
+                                "  title         = {{PETSc/TS}: A Modern Scalable {DAE/ODE} Solver Library},\n"
+                                "  author        = {Abhyankar, Shrirang and Brown, Jed and Constantinescu, Emil and Ghosh, Debojyoti and Smith, Barry F. and Zhang, Hong},\n"
+                                "  journal       = {arXiv e-preprints},\n"
+                                "  eprint        = {1806.01437},\n"
+                                "  archivePrefix = {arXiv},\n"
+                                "  year          = {2018}\n}\n",&cite);CHKERRQ(ierr);
 
   ierr = TSSetUp(ts);CHKERRQ(ierr);
   ierr = TSTrajectorySetUp(ts->trajectory,ts);CHKERRQ(ierr);
