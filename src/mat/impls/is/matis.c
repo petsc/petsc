@@ -278,7 +278,7 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_IS_XAIJ(Mat C)
   PetscFunctionBegin;
   if (product->type == MATPRODUCT_PtAP) {
     ierr = MatProductSetFromOptions_IS_XAIJ_PtAP(C);CHKERRQ(ierr);
-  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatProduct type %s is not supported for IS and XAIJ matrices",MatProductTypes[product->type]);
+  }
   PetscFunctionReturn(0);
 }
 

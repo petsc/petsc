@@ -215,12 +215,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLAllocateCheckHost(Vec v)
  */
 PetscErrorCode VecViennaCLAllocateCheck(Vec v)
 {
-  PetscErrorCode ierr;
-  int            rank;
-
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  // First allocate memory on the GPU if needed
   if (!v->spptr) {
     try {
       v->spptr                            = new Vec_ViennaCL;

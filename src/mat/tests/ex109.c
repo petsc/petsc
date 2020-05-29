@@ -138,6 +138,7 @@ int main(int argc,char **argv)
     ierr = MatProductCreateWithMat(A,C,NULL,B);CHKERRQ(ierr);
     ierr = MatProductSetType(B,MATPRODUCT_AB);CHKERRQ(ierr);
     ierr = MatProductSetFromOptions(B);CHKERRQ(ierr);
+    ierr = MatProductSymbolic(B);CHKERRQ(ierr);
     ierr = MatProductNumeric(B);CHKERRQ(ierr);
   }
 

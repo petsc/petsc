@@ -16,7 +16,7 @@ static PetscErrorCode PetscFEDestroy_OpenCL(PetscFE fem)
   PetscFunctionReturn(0);
 }
 
-#define STRING_ERROR_CHECK(MSG) do {CHKERRQ(ierr); string_tail += count; if (string_tail == end_of_buffer) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, MSG);} while(0)
+#define STRING_ERROR_CHECK(MSG) do {CHKERRQ(ierr); string_tail += count; if (string_tail == end_of_buffer) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, MSG);} while(0)
 enum {LAPLACIAN = 0, ELASTICITY = 1};
 
 /* NOTE: This is now broken for vector problems. Must redo loops to respect vector basis elements */
@@ -382,7 +382,7 @@ static PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **s
     }}
     break;
   default:
-    SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_SUP, "PDE operator %d is not supported", op);
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "PDE operator %d is not supported", op);
   }
   if (useF0) {ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,"      f_0[fidx] *= detJ[cell]*w;\n", &count);STRING_ERROR_CHECK("Message to short");}
   if (useF1) {

@@ -1,0 +1,8 @@
+MatMult err 0.173727
+A Matrix norms:        infty=36.8972, norm_1=36.8972, norm_2=-1.
+A Approx Matrix norms: infty=36.8972, norm_1=36.8972, norm_2=32.2763
+B Approx Matrix norms: infty=36.8972, norm_1=36.8972, norm_2=32.2763
+MatMultTranspose err 0.229125
+Approximation error 0.547759 (19.0695 / 34.8137, 34.8137)
+Approximation error transpose 0.547759 (19.0695 / 34.8137, 34.8137)
+Approximation error B - (B^T)^T 1.13493e-15

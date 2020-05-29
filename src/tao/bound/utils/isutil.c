@@ -80,7 +80,7 @@ PetscErrorCode TaoVecGetSubVec(Vec vfull, IS is, TaoSubsetType reduced_type, Pet
       ierr = VecGetArray(vfull,&fv);CHKERRQ(ierr);
       ierr = VecGetArray(*vreduced,&rv);CHKERRQ(ierr);
       ierr = ISGetIndices(is,&s);CHKERRQ(ierr);
-      if (nlocal > (fhigh-flow)) SETERRQ2(PETSC_COMM_WORLD,1,"IS local size %d > Vec local size %d",nlocal,fhigh-flow);
+      if (nlocal > (fhigh-flow)) SETERRQ2(PETSC_COMM_SELF,1,"IS local size %D > Vec local size %D",nlocal,fhigh-flow);
       for (i=0;i<nlocal;++i) {
         rv[s[i]-flow] = fv[s[i]-flow];
       }

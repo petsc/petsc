@@ -41,8 +41,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  ierr = VecCreate(PETSC_COMM_WORLD,&yy);CHKERRQ(ierr);
-  ierr = VecSetSizes(yy,PETSC_DECIDE,m*n);CHKERRQ(ierr);
+  ierr = MatCreateVecs(C,NULL,&yy);CHKERRQ(ierr);
   ierr = VecSetFromOptions(yy);CHKERRQ(ierr);
 
   ierr = MatGetColumnVector(C,yy,col);CHKERRQ(ierr);
@@ -65,6 +64,15 @@ int main(int argc,char **args)
    test:
       suffix: dense
       nsize: 3
-      args: -col 7 -mat_type dense
+      args: -col 7 -mat_type dense -vec_type {{mpi standard}}
+      filter: grep -v type
+
+   test:
+      requires: cuda
+      suffix: dense_cuda
+      nsize: 3
+      output_file: output/ex60_dense.out
+      args: -col 7 -mat_type {{mpidense mpidensecuda}} -vec_type {{mpi standard cuda mpicuda}}
+      filter: grep -v type
 
 TEST*/

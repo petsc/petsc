@@ -609,6 +609,57 @@ PetscErrorCode  PetscLayoutGetRanges(PetscLayout map,const PetscInt *range[])
 }
 
 /*@C
+   PetscLayoutsCreateSF - Creates a parallel star forest mapping two PetscLayout objects
+
+   Collective
+
+   Input Arguments:
++  rmap - PetscLayout defining the global root space
+-  lmap - PetscLayout defining the global leaf space
+
+   Output Arguments:
+.  sf - The parallel star forest
+
+   Level: intermediate
+
+.seealso: PetscSFCreate(), PetscLayoutCreate(), PetscSFSetGraphLayout()
+@*/
+PetscErrorCode PetscLayoutsCreateSF(PetscLayout rmap, PetscLayout lmap, PetscSF* sf)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,nroots,nleaves = 0;
+  PetscInt       rN, lst, len;
+  PetscMPIInt    owner = -1;
+  PetscSFNode    *remote;
+  MPI_Comm       rcomm = rmap->comm;
+  MPI_Comm       lcomm = lmap->comm;
+  PetscMPIInt    flg;
+
+  PetscFunctionBegin;
+  PetscValidPointer(sf,3);
+  if (!rmap->setupcalled) SETERRQ(rcomm,PETSC_ERR_ARG_WRONGSTATE,"Root layout not setup");
+  if (!lmap->setupcalled) SETERRQ(lcomm,PETSC_ERR_ARG_WRONGSTATE,"Leaf layout not setup");
+  ierr = MPI_Comm_compare(rcomm,lcomm,&flg);CHKERRQ(ierr);
+  if (flg != MPI_CONGRUENT && flg != MPI_IDENT) SETERRQ(rcomm,PETSC_ERR_SUP,"cannot map two layouts with non-matching communicators");
+  ierr = PetscSFCreate(rcomm,sf);CHKERRQ(ierr);
+  ierr = PetscLayoutGetLocalSize(rmap,&nroots);CHKERRQ(ierr);
+  ierr = PetscLayoutGetSize(rmap,&rN);CHKERRQ(ierr);
+  ierr = PetscLayoutGetRange(lmap,&lst,&len);CHKERRQ(ierr);
+  ierr = PetscMalloc1(len-lst,&remote);CHKERRQ(ierr);
+  for (i = lst; i < len && i < rN; i++) {
+    if (owner < -1 || i >= rmap->range[owner+1]) {
+      ierr = PetscLayoutFindOwner(rmap,i,&owner);CHKERRQ(ierr);
+    }
+    remote[nleaves].rank  = owner;
+    remote[nleaves].index = i - rmap->range[owner];
+    nleaves++;
+  }
+  ierr = PetscSFSetGraph(*sf,nroots,nleaves,NULL,PETSC_OWN_POINTER,remote,PETSC_COPY_VALUES);CHKERRQ(ierr);
+  ierr = PetscFree(remote);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
    PetscSFSetGraphLayout - Set a parallel star forest via global indices and a PetscLayout
 
    Collective

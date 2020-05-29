@@ -29,34 +29,37 @@ do { \
 #endif
 
 #if defined(PETSC_USE_COMPLEX)
-#if defined(PETSC_USE_REAL_SINGLE)  
-#define cusparse_solve(a,b,c,d,e,f,g,h,i,j,k)        cusparseCcsrsv_solve((a),(b),(c),(cuComplex*)(d),(e),(cuComplex*)(f),(g),(h),(i),(cuComplex*)(j),(cuComplex*)(k))
-#define cusparse_analysis(a,b,c,d,e,f,g,h,i)         cusparseCcsrsv_analysis((a),(b),(c),(d),(e),(cuComplex*)(f),(g),(h),(i))
-#define cusparse_csr_spmv(a,b,c,d,e,f,g,h,i,j,k,l,m) cusparseCcsrmv((a),(b),(c),(d),(e),(cuComplex*)(f),(g),(cuComplex*)(h),(i),(j),(cuComplex*)(k),(cuComplex*)(l),(cuComplex*)(m))
-#define cusparse_csr2csc(a,b,c,d,e,f,g,h,i,j,k,l)    cusparseCcsr2csc((a),(b),(c),(d),(cuComplex*)(e),(f),(g),(cuComplex*)(h),(i),(j),(k),(l))
-#define cusparse_hyb_spmv(a,b,c,d,e,f,g,h)           cusparseChybmv((a),(b),(cuComplex*)(c),(d),(e),(cuComplex*)(f),(cuComplex*)(g),(cuComplex*)(h))
-#define cusparse_csr2hyb(a,b,c,d,e,f,g,h,i,j)        cusparseCcsr2hyb((a),(b),(c),(d),(cuComplex*)(e),(f),(g),(h),(i),(j))
-#define cusparse_hyb2csr(a,b,c,d,e,f)                cusparseChyb2csr((a),(b),(c),(cuComplex*)(d),(e),(f))
-const cuFloatComplex PETSC_CUSPARSE_ONE  = {1.0f, 0.0f};
-const cuFloatComplex PETSC_CUSPARSE_ZERO = {0.0f, 0.0f};
+#if defined(PETSC_USE_REAL_SINGLE)
+const cuComplex PETSC_CUSPARSE_ONE  = {1.0f, 0.0f};
+const cuComplex PETSC_CUSPARSE_ZERO = {0.0f, 0.0f};
+#define cusparse_solve(a,b,c,d,e,f,g,h,i,j,k)              cusparseCcsrsv_solve((a),(b),(c),(cuComplex*)(d),(e),(cuComplex*)(f),(g),(h),(i),(cuComplex*)(j),(cuComplex*)(k))
+#define cusparse_analysis(a,b,c,d,e,f,g,h,i)               cusparseCcsrsv_analysis((a),(b),(c),(d),(e),(cuComplex*)(f),(g),(h),(i))
+#define cusparse_csr_spmv(a,b,c,d,e,f,g,h,i,j,k,l,m)       cusparseCcsrmv((a),(b),(c),(d),(e),(cuComplex*)(f),(g),(cuComplex*)(h),(i),(j),(cuComplex*)(k),(cuComplex*)(l),(cuComplex*)(m))
+#define cusparse_csr_spmm(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p) cusparseCcsrmm((a),(b),(c),(d),(e),(f),(cuComplex*)(g),(h),(cuComplex*)(i),(j),(k),(cuComplex*)(l),(m),(cuComplex*)(n),(cuComplex*)(o),(p))
+#define cusparse_csr2csc(a,b,c,d,e,f,g,h,i,j,k,l)          cusparseCcsr2csc((a),(b),(c),(d),(cuComplex*)(e),(f),(g),(cuComplex*)(h),(i),(j),(k),(l))
+#define cusparse_hyb_spmv(a,b,c,d,e,f,g,h)                 cusparseChybmv((a),(b),(cuComplex*)(c),(d),(e),(cuComplex*)(f),(cuComplex*)(g),(cuComplex*)(h))
+#define cusparse_csr2hyb(a,b,c,d,e,f,g,h,i,j)              cusparseCcsr2hyb((a),(b),(c),(d),(cuComplex*)(e),(f),(g),(h),(i),(j))
+#define cusparse_hyb2csr(a,b,c,d,e,f)                      cusparseChyb2csr((a),(b),(c),(cuComplex*)(d),(e),(f))
 #elif defined(PETSC_USE_REAL_DOUBLE)
-#define cusparse_solve(a,b,c,d,e,f,g,h,i,j,k)        cusparseZcsrsv_solve((a),(b),(c),(cuDoubleComplex*)(d),(e),(cuDoubleComplex*)(f),(g),(h),(i),(cuDoubleComplex*)(j),(cuDoubleComplex*)(k))
-#define cusparse_analysis(a,b,c,d,e,f,g,h,i)         cusparseZcsrsv_analysis((a),(b),(c),(d),(e),(cuDoubleComplex*)(f),(g),(h),(i))
-#define cusparse_csr_spmv(a,b,c,d,e,f,g,h,i,j,k,l,m) cusparseZcsrmv((a),(b),(c),(d),(e),(cuDoubleComplex*)(f),(g),(cuDoubleComplex*)(h),(i),(j),(cuDoubleComplex*)(k),(cuDoubleComplex*)(l),(cuDoubleComplex*)(m))
-#define cusparse_csr2csc(a,b,c,d,e,f,g,h,i,j,k,l)    cusparseZcsr2csc((a),(b),(c),(d),(cuDoubleComplex*)(e),(f),(g),(cuDoubleComplex*)(h),(i),(j),(k),(l))
-#define cusparse_hyb_spmv(a,b,c,d,e,f,g,h)           cusparseZhybmv((a),(b),(cuDoubleComplex*)(c),(d),(e),(cuDoubleComplex*)(f),(cuDoubleComplex*)(g),(cuDoubleComplex*)(h))
-#define cusparse_csr2hyb(a,b,c,d,e,f,g,h,i,j)        cusparseZcsr2hyb((a),(b),(c),(d),(cuDoubleComplex*)(e),(f),(g),(h),(i),(j))
-#define cusparse_hyb2csr(a,b,c,d,e,f)                cusparseZhyb2csr((a),(b),(c),(cuDoubleComplex*)(d),(e),(f))
 const cuDoubleComplex PETSC_CUSPARSE_ONE  = {1.0, 0.0};
 const cuDoubleComplex PETSC_CUSPARSE_ZERO = {0.0, 0.0};
+#define cusparse_solve(a,b,c,d,e,f,g,h,i,j,k)              cusparseZcsrsv_solve((a),(b),(c),(cuDoubleComplex*)(d),(e),(cuDoubleComplex*)(f),(g),(h),(i),(cuDoubleComplex*)(j),(cuDoubleComplex*)(k))
+#define cusparse_analysis(a,b,c,d,e,f,g,h,i)               cusparseZcsrsv_analysis((a),(b),(c),(d),(e),(cuDoubleComplex*)(f),(g),(h),(i))
+#define cusparse_csr_spmv(a,b,c,d,e,f,g,h,i,j,k,l,m)       cusparseZcsrmv((a),(b),(c),(d),(e),(cuDoubleComplex*)(f),(g),(cuDoubleComplex*)(h),(i),(j),(cuDoubleComplex*)(k),(cuDoubleComplex*)(l),(cuDoubleComplex*)(m))
+#define cusparse_csr_spmm(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p) cusparseZcsrmm((a),(b),(c),(d),(e),(f),(cuDoubleComplex*)(g),(h),(cuDoubleComplex*)(i),(j),(k),(cuDoubleComplex*)(l),(m),(cuDoubleComplex*)(n),(cuDoubleComplex*)(o),(p))
+#define cusparse_csr2csc(a,b,c,d,e,f,g,h,i,j,k,l)          cusparseZcsr2csc((a),(b),(c),(d),(cuDoubleComplex*)(e),(f),(g),(cuDoubleComplex*)(h),(i),(j),(k),(l))
+#define cusparse_hyb_spmv(a,b,c,d,e,f,g,h)                 cusparseZhybmv((a),(b),(cuDoubleComplex*)(c),(d),(e),(cuDoubleComplex*)(f),(cuDoubleComplex*)(g),(cuDoubleComplex*)(h))
+#define cusparse_csr2hyb(a,b,c,d,e,f,g,h,i,j)              cusparseZcsr2hyb((a),(b),(c),(d),(cuDoubleComplex*)(e),(f),(g),(h),(i),(j))
+#define cusparse_hyb2csr(a,b,c,d,e,f)                      cusparseZhyb2csr((a),(b),(c),(cuDoubleComplex*)(d),(e),(f))
 #endif
 #else
 const PetscScalar PETSC_CUSPARSE_ONE  = 1.0;
 const PetscScalar PETSC_CUSPARSE_ZERO = 0.0;
-#if defined(PETSC_USE_REAL_SINGLE)  
+#if defined(PETSC_USE_REAL_SINGLE)
 #define cusparse_solve    cusparseScsrsv_solve
 #define cusparse_analysis cusparseScsrsv_analysis
 #define cusparse_csr_spmv cusparseScsrmv
+#define cusparse_csr_spmm cusparseScsrmm
 #define cusparse_csr2csc  cusparseScsr2csc
 #define cusparse_hyb_spmv cusparseShybmv
 #define cusparse_csr2hyb  cusparseScsr2hyb
@@ -65,6 +68,7 @@ const PetscScalar PETSC_CUSPARSE_ZERO = 0.0;
 #define cusparse_solve    cusparseDcsrsv_solve
 #define cusparse_analysis cusparseDcsrsv_analysis
 #define cusparse_csr_spmv cusparseDcsrmv
+#define cusparse_csr_spmm cusparseDcsrmm
 #define cusparse_csr2csc  cusparseDcsr2csc
 #define cusparse_hyb_spmv cusparseDhybmv
 #define cusparse_csr2hyb  cusparseDcsr2hyb
@@ -86,15 +90,13 @@ struct CsrMatrix {
   THRUSTARRAY      *values;
 };
 
-//#define CUSPMATRIXCSR32 cusp::csr_matrix<int,PetscScalar,cusp::device_memory>
-
 /* This is struct holding the relevant data needed to a MatSolve */
 struct Mat_SeqAIJCUSPARSETriFactorStruct {
   /* Data needed for triangular solve */
   cusparseMatDescr_t          descr;
   cusparseSolveAnalysisInfo_t solveInfo;
   cusparseOperation_t         solveOp;
-  CsrMatrix                   *csrMat; 
+  CsrMatrix                   *csrMat;
 };
 
 /* This is struct holding the relevant data needed to a MatMult */

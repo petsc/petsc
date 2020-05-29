@@ -121,6 +121,56 @@ PetscErrorCode  MatGetType(Mat mat,MatType *type)
   PetscFunctionReturn(0);
 }
 
+/*@C
+   MatGetVecType - Gets the vector type used by the matrix object.
+
+   Not Collective
+
+   Input Parameter:
+.  mat - the matrix
+
+   Output Parameter:
+.  name - name of vector type
+
+   Level: intermediate
+
+.seealso: MatSetVecType()
+@*/
+PetscErrorCode MatGetVecType(Mat mat,VecType *vtype)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidPointer(vtype,2);
+  *vtype = mat->defaultvectype;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatSetVecType - Set the vector type to be used for a matrix object
+
+   Collective on Mat
+
+   Input Parameters:
++  mat   - the matrix object
+-  vtype - vector type
+
+   Notes:
+     This is rarely needed in practice since each matrix object internally sets the proper vector type.
+
+  Level: intermediate
+
+.seealso: VecSetType(), MatGetVecType()
+@*/
+PetscErrorCode MatSetVecType(Mat mat,VecType vtype)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  ierr = PetscFree(mat->defaultvectype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(vtype,&mat->defaultvectype);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 /*@C
   MatRegister -  - Adds a new matrix type
@@ -204,10 +254,3 @@ PetscErrorCode  MatRegisterRootName(const char rname[],const char sname[],const 
   }
   PetscFunctionReturn(0);
 }
-
-
-
-
-
-
-

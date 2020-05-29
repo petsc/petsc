@@ -46,7 +46,7 @@ class Configure(config.package.CMakePackage):
       # SuperLU_DIST CMake doesn't know about GPU builds
       for place,item in enumerate(args):
         if item.find('CMAKE_C_FLAGS') >= 0:
-          args[place]=item[:-1]+' -DGPU_ACC '+self.headers.toString(self.cuda.include)+'"'
+          args[place]=item[:-1]+' -DGPU_ACC '+self.headers.toString(self.cuda.include)+' -DDEBUGlevel=0 -DPRNTlevel=0"'
     args.append('-DUSE_XSDK_DEFAULTS=YES')
     args.append('-DTPL_BLAS_LIBRARIES="'+self.libraries.toString(self.blasLapack.dlib)+'"')
     args.append('-DTPL_LAPACK_LIBRARIES="'+self.libraries.toString(self.blasLapack.dlib)+'"')

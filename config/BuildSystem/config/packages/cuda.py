@@ -4,24 +4,26 @@ import os
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.minversion       = '7.5'
-    self.versionname      = 'CUDA_VERSION'
-    self.versioninclude   = 'cuda.h'
-    self.requiresversion  = 1
-    self.functions        = ['cublasInit', 'cufftDestroy','cuInit']
-    self.includes         = ['cublas.h','cufft.h','cusparse.h','cusolverDn.h','thrust/version.h']
-    self.liblist          = [['libcufft.a', 'libcublas.a','libcudart.a','libcusparse.a','libcusolver.a','libcuda.a'],
-                             ['cufft.lib','cublas.lib','cudart.lib','cusparse.lib','cusolver.lib','cuda.lib']]
-    self.precisions       = ['single','double']
-    self.cxx              = 0
-    self.complex          = 1
-    self.hastests         = 0
-    self.hastestsdatafiles= 0
+    self.minversion        = '7.5'
+    self.versionname       = 'CUDA_VERSION'
+    self.versioninclude    = 'cuda.h'
+    self.requiresversion   = 1
+    self.functions         = ['cublasInit', 'cufftDestroy','cuInit']
+    self.includes          = ['cublas.h','cufft.h','cusparse.h','cusolverDn.h','thrust/version.h']
+    self.liblist           = [['libcufft.a', 'libcublas.a','libcudart.a','libcusparse.a','libcusolver.a','libcuda.a'],
+                              ['cufft.lib','cublas.lib','cudart.lib','cusparse.lib','cusolver.lib','cuda.lib']]
+    self.precisions        = ['single','double']
+    self.cxx               = 0
+    self.complex           = 1
+    self.hastests          = 0
+    self.hastestsdatafiles = 0
+    self.gencodearch       = ''
     return
 
   def setupHelp(self, help):
     import nargs
     config.package.Package.setupHelp(self, help)
+    help.addArgument('CUDA', '-with-cuda-gencodearch', nargs.ArgInt(None, 0, 'Cuda architecture for code generation (may be used by external packages)'))
     return
 
   def setupDependencies(self, framework):
@@ -77,5 +79,8 @@ class Configure(config.package.Package):
     config.package.Package.configureLibrary(self)
     self.checkNVCCDoubleAlign()
     self.configureTypes()
+    gencodearch = self.argDB['with-cuda-gencodearch']
+    if gencodearch:
+      self.gencodearch = str(gencodearch)
     self.addDefine('HAVE_CUDA','1')
     return

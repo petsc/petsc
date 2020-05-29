@@ -47,10 +47,10 @@ struct _MatOps {
   PetscErrorCode (*lufactor)(Mat,IS,IS,const MatFactorInfo*);
   PetscErrorCode (*choleskyfactor)(Mat,IS,const MatFactorInfo*);
   PetscErrorCode (*sor)(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscInt,PetscInt,Vec);
-  PetscErrorCode (*transpose)(Mat,MatReuse,Mat *);
+  PetscErrorCode (*transpose)(Mat,MatReuse,Mat*);
   /*15*/
   PetscErrorCode (*getinfo)(Mat,MatInfoType,MatInfo*);
-  PetscErrorCode (*equal)(Mat,Mat,PetscBool  *);
+  PetscErrorCode (*equal)(Mat,Mat,PetscBool*);
   PetscErrorCode (*getdiagonal)(Mat,Vec);
   PetscErrorCode (*diagonalscale)(Mat,Vec,Vec);
   PetscErrorCode (*norm)(Mat,NormType,PetscReal*);
@@ -70,7 +70,7 @@ struct _MatOps {
   PetscErrorCode (*ilufactorsymbolic)(Mat,Mat,IS,IS,const MatFactorInfo*);
   PetscErrorCode (*iccfactorsymbolic)(Mat,Mat,IS,const MatFactorInfo*);
   PetscErrorCode (*getdiagonalblock)(Mat,Mat*);
-  PetscErrorCode (*freeintermediatedatastructures)(Mat);
+  PetscErrorCode (*placeholder_33)(void);
   /*34*/
   PetscErrorCode (*duplicate)(Mat,MatDuplicateOption,Mat*);
   PetscErrorCode (*forwardsolve)(Mat,Vec,Vec);
@@ -106,7 +106,7 @@ struct _MatOps {
   PetscErrorCode (*destroy)(Mat);
   PetscErrorCode (*view)(Mat,PetscViewer);
   PetscErrorCode (*convertfrom)(Mat,MatType,MatReuse,Mat*);
-  PetscErrorCode (*placeholder_63)(Mat);
+  PetscErrorCode (*placeholder_63)(void);
   /*64*/
   PetscErrorCode (*matmatmultsymbolic)(Mat,Mat,Mat,PetscReal,Mat);
   PetscErrorCode (*matmatmultnumeric)(Mat,Mat,Mat,Mat);
@@ -118,7 +118,7 @@ struct _MatOps {
   PetscErrorCode (*getrowminabs)(Mat,Vec,PetscInt[]);
   PetscErrorCode (*convert)(Mat, MatType,MatReuse,Mat*);
   PetscErrorCode (*hasoperation)(Mat,MatOperation,PetscBool*);
-  PetscErrorCode (*placeholder_73)(Mat,void*);
+  PetscErrorCode (*placeholder_73)(void);
   /*74*/
   PetscErrorCode (*setvaluesadifor)(Mat,PetscInt,void*);
   PetscErrorCode (*fdcoloringapply)(Mat,MatFDColoring,Vec,void*);
@@ -127,25 +127,25 @@ struct _MatOps {
   PetscErrorCode (*multtransposeconstrained)(Mat,Vec,Vec);
   /*79*/
   PetscErrorCode (*findzerodiagonals)(Mat,IS*);
-  PetscErrorCode (*mults)(Mat, Vecs, Vecs);
-  PetscErrorCode (*solves)(Mat, Vecs, Vecs);
+  PetscErrorCode (*mults)(Mat,Vecs,Vecs);
+  PetscErrorCode (*solves)(Mat,Vecs,Vecs);
   PetscErrorCode (*getinertia)(Mat,PetscInt*,PetscInt*,PetscInt*);
-  PetscErrorCode (*load)(Mat, PetscViewer);
+  PetscErrorCode (*load)(Mat,PetscViewer);
   /*84*/
-  PetscErrorCode (*issymmetric)(Mat,PetscReal,PetscBool *);
-  PetscErrorCode (*ishermitian)(Mat,PetscReal,PetscBool *);
+  PetscErrorCode (*issymmetric)(Mat,PetscReal,PetscBool*);
+  PetscErrorCode (*ishermitian)(Mat,PetscReal,PetscBool*);
   PetscErrorCode (*isstructurallysymmetric)(Mat,PetscBool *);
   PetscErrorCode (*setvaluesblockedlocal)(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
   PetscErrorCode (*getvecs)(Mat,Vec*,Vec*);
   /*89*/
-  PetscErrorCode (*placeholder_89)(Mat,void*);
+  PetscErrorCode (*placeholder_89)(void);
   PetscErrorCode (*matmultsymbolic)(Mat,Mat,PetscReal,Mat);
   PetscErrorCode (*matmultnumeric)(Mat,Mat,Mat);
-  PetscErrorCode (*placeholder_92)(Mat,void*);
+  PetscErrorCode (*placeholder_92)(void);
   PetscErrorCode (*ptapsymbolic)(Mat,Mat,PetscReal,Mat); /* double dispatch wrapper routine */
   /*94*/
   PetscErrorCode (*ptapnumeric)(Mat,Mat,Mat);            /* double dispatch wrapper routine */
-  PetscErrorCode (*placeholder_95)(Mat,void*);
+  PetscErrorCode (*placeholder_95)(void);
   PetscErrorCode (*mattransposemultsymbolic)(Mat,Mat,PetscReal,Mat);
   PetscErrorCode (*mattransposemultnumeric)(Mat,Mat,Mat);
   PetscErrorCode (*bindtocpu)(Mat,PetscBool);
@@ -187,14 +187,14 @@ struct _MatOps {
   PetscErrorCode (*createsubmatricesmpi)(Mat,PetscInt,const IS[], const IS[], MatReuse, Mat**);
   /*129*/
   PetscErrorCode (*setvaluesbatch)(Mat,PetscInt,PetscInt,PetscInt*,const PetscScalar*);
-  PetscErrorCode (*placeholder_130)(Mat,void*);
+  PetscErrorCode (*placeholder_130)(void);
   PetscErrorCode (*transposematmultsymbolic)(Mat,Mat,PetscReal,Mat);
   PetscErrorCode (*transposematmultnumeric)(Mat,Mat,Mat);
   PetscErrorCode (*transposecoloringcreate)(Mat,ISColoring,MatTransposeColoring);
   /*134*/
   PetscErrorCode (*transcoloringapplysptoden)(MatTransposeColoring,Mat,Mat);
   PetscErrorCode (*transcoloringapplydentosp)(MatTransposeColoring,Mat,Mat);
-  PetscErrorCode (*placeholder_136)(Mat,void*);
+  PetscErrorCode (*placeholder_136)(void);
   PetscErrorCode (*rartsymbolic)(Mat,Mat,PetscReal,Mat); /* double dispatch wrapper routine */
   PetscErrorCode (*rartnumeric)(Mat,Mat,Mat);            /* double dispatch wrapper routine */
   /*139*/
@@ -236,18 +236,17 @@ PETSC_INTERN PetscErrorCode MatConvertFrom_Shell(Mat,MatType,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatCopy_Basic(Mat,Mat,MatStructure);
 PETSC_INTERN PetscErrorCode MatDiagonalSet_Default(Mat,Vec,InsertMode);
 
-PETSC_INTERN PetscErrorCode MatProductSymbolic_Basic(Mat);
-PETSC_EXTERN PetscErrorCode MatProductSymbolic_AB(Mat);
-PETSC_EXTERN PetscErrorCode MatProductNumeric_AB(Mat);
-PETSC_EXTERN PetscErrorCode MatProductSymbolic_AtB(Mat);
-PETSC_EXTERN PetscErrorCode MatProductNumeric_AtB(Mat);
-PETSC_EXTERN PetscErrorCode MatProductSymbolic_ABt(Mat);
-PETSC_EXTERN PetscErrorCode MatProductNumeric_ABt(Mat);
-PETSC_EXTERN PetscErrorCode MatProductNumeric_PtAP(Mat);
-PETSC_EXTERN PetscErrorCode MatProductNumeric_RARt(Mat);
-PETSC_EXTERN PetscErrorCode MatProductSymbolic_ABC(Mat);
-PETSC_EXTERN PetscErrorCode MatProductNumeric_ABC(Mat);
-PETSC_EXTERN PetscErrorCode MatProductCreate_Private(Mat,Mat,Mat,Mat);
+PETSC_INTERN PetscErrorCode MatProductSymbolic_AB(Mat);
+PETSC_INTERN PetscErrorCode MatProductNumeric_AB(Mat);
+PETSC_INTERN PetscErrorCode MatProductSymbolic_AtB(Mat);
+PETSC_INTERN PetscErrorCode MatProductNumeric_AtB(Mat);
+PETSC_INTERN PetscErrorCode MatProductSymbolic_ABt(Mat);
+PETSC_INTERN PetscErrorCode MatProductNumeric_ABt(Mat);
+PETSC_INTERN PetscErrorCode MatProductNumeric_PtAP(Mat);
+PETSC_INTERN PetscErrorCode MatProductNumeric_RARt(Mat);
+PETSC_INTERN PetscErrorCode MatProductSymbolic_ABC(Mat);
+PETSC_INTERN PetscErrorCode MatProductNumeric_ABC(Mat);
+PETSC_INTERN PetscErrorCode MatProductCreate_Private(Mat,Mat,Mat,Mat);
 
 #if defined(PETSC_USE_DEBUG)
 #  define MatCheckPreallocated(A,arg) do {                              \
@@ -255,6 +254,14 @@ PETSC_EXTERN PetscErrorCode MatProductCreate_Private(Mat,Mat,Mat,Mat);
   } while (0)
 #else
 #  define MatCheckPreallocated(A,arg) do {} while (0)
+#endif
+
+#if defined(PETSC_USE_DEBUG)
+#  define MatCheckProduct(A,arg) do {                              \
+    if (PetscUnlikely(!(A)->product)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Argument %D \"%s\" is not a matrix obtained from MatProductCreate()",(arg),#A); \
+  } while (0)
+#else
+#  define MatCheckProduct(A,arg) do {} while (0)
 #endif
 
 /*
@@ -391,12 +398,19 @@ typedef struct { /* used by MatCreateRedundantMatrix() for reusing matredundant 
 } Mat_Redundant;
 
 typedef struct { /* used by MatProduct() */
-  MatProductType       type;
-  MatProductAlgorithm  alg;
-  Mat                  A,B,C,Dwork;
-  PetscReal            fill;
-  PetscBool            Areplaced,Breplaced; /* if an internal implementation changes user's input A or B, these matrices cannot be called by MatProductReplaceMats(). */
-  PetscBool            api_user; /* used by MatProductSetFromOptions_xxx() */
+  MatProductType type;
+  char           *alg;
+  Mat            A,B,C,Dwork;
+  PetscReal      fill;
+  PetscBool      api_user; /* used by MatProductSetFromOptions_xxx() to distinguish command line options */
+
+  /* Some products may display the information on the algorithm used */
+  PetscErrorCode (*view)(Mat,PetscViewer);
+
+  /* many products have intermediate data structures, each specific to Mat types and product type */
+  PetscBool      clear;             /* whether or not to clear the data structures after MatProductNumeric has been called */
+  void           *data;             /* where to stash those structures */
+  PetscErrorCode (*destroy)(void*); /* destroy routine */
 } Mat_Product;
 
 struct _p_Mat {

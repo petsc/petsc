@@ -81,7 +81,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsHasName(NULL,NULL,"-rectB",&flg);CHKERRQ(ierr);
   if (flg) {n -= 2; rect = 1;}
 
-  /* ------- Assemble matrix, test MatValid() --------- */
+  /* ------- Assemble matrix --------- */
   ierr = MatCreate(PETSC_COMM_WORLD,&mat);CHKERRQ(ierr);
   ierr = MatSetSizes(mat,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(mat);CHKERRQ(ierr);
@@ -162,15 +162,21 @@ int main(int argc,char **argv)
     }
     ierr = MatAssemblyBegin(matB,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(matB,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD," A: original matrix:\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD," A: original matrix:\n");CHKERRQ(ierr);
     ierr = MatView(mat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD," B(a subset of A):\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD," B(a subset of A):\n");CHKERRQ(ierr);
     ierr = MatView(matB,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"MatAXPY:  B = B + alpha * A, SUBSET_NONZERO_PATTERN\n");CHKERRQ(ierr);
     ierr = MatAXPY(mat,alpha,matB,SUBSET_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatView(mat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = MatDestroy(&matB);CHKERRQ(ierr);
   }
+
+  /* Test MatZeroRows */
+  j = rstart - 1;
+  if (j < 0) j = m-1;
+  ierr = MatZeroRows(mat,1,&j,0.0,NULL,NULL);CHKERRQ(ierr);
+  ierr = MatView(mat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   /* Free data structures */
@@ -179,10 +185,6 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
-
-
-
-
 
 /*TEST
 
@@ -194,7 +196,14 @@ int main(int argc,char **argv)
    test:
       suffix: 12_A
       args: -mat_type seqdense -rectA
-      filter: grep -v "Mat Object"
+      filter: grep -v type | grep -v "Mat Object"
+
+   test:
+      requires: cuda
+      suffix: 12_A_cuda
+      args: -mat_type seqdensecuda -rectA
+      output_file: output/ex2_12_A.out
+      filter: grep -v type | grep -v "Mat Object"
 
    test:
       suffix: 11_B
@@ -204,15 +213,31 @@ int main(int argc,char **argv)
    test:
       suffix: 12_B
       args: -mat_type seqdense -rectB
-      filter: grep -v "Mat Object"
+      filter: grep -v type | grep -v "Mat Object"
+
+   test:
+      requires: cuda
+      suffix: 12_B_cuda
+      args: -mat_type seqdensecuda -rectB
+      output_file: output/ex2_12_B.out
+      filter: grep -v type | grep -v "Mat Object"
 
    test:
       suffix: 21
       args: -mat_type mpiaij
+      filter: grep -v type | grep -v "MPI processes"
 
    test:
       suffix: 22
       args: -mat_type mpidense
+      filter: grep -v type | grep -v "Mat Object"
+
+   test:
+      requires: cuda
+      suffix: 22_cuda
+      output_file: output/ex2_22.out
+      args: -mat_type mpidensecuda
+      filter: grep -v type | grep -v "Mat Object"
 
    test:
       suffix: 23
@@ -224,11 +249,20 @@ int main(int argc,char **argv)
       suffix: 24
       nsize: 3
       args: -mat_type mpidense
+      filter: grep -v type | grep -v "Mat Object"
+
+   test:
+      requires: cuda
+      suffix: 24_cuda
+      nsize: 3
+      output_file: output/ex2_24.out
+      args: -mat_type mpidensecuda
+      filter: grep -v type | grep -v "Mat Object"
 
    test:
       suffix: 2_aijcusparse_1
       args: -mat_type mpiaijcusparse
-      output_file: output/ex2_23.out
+      output_file: output/ex2_21.out
       requires: cuda
       filter: grep -v type | grep -v "MPI processes"
 
@@ -255,6 +289,15 @@ int main(int argc,char **argv)
       suffix: 4
       nsize: 2
       args: -mat_type mpidense -rectA
+      filter: grep -v type | grep -v "MPI processes"
+
+   test:
+      requires: cuda
+      suffix: 4_cuda
+      nsize: 2
+      output_file: output/ex2_4.out
+      args: -mat_type mpidensecuda -rectA
+      filter: grep -v type | grep -v "MPI processes"
 
    test:
       suffix: aijcusparse_1

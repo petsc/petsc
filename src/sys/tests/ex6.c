@@ -16,8 +16,11 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscOptionsSetValue(NULL,"-skip_petscrc", NULL);if (ierr) return ierr;
+  ierr = PetscOptionsSetValue(NULL,"-use_gpu_aware_mpi", "0");if (ierr) return ierr;
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
 
+  ierr = PetscOptionsHasName(NULL,NULL,"-use_gpu_aware_mpi",&has);CHKERRQ(ierr);
+  PetscAssert(has == PETSC_TRUE);
   ierr = PetscOptionsHasName(NULL,NULL,"-abc",&has);CHKERRQ(ierr);
   PetscAssert(has == PETSC_FALSE);
   ierr = PetscOptionsHasName(NULL,"","-abc",&has);CHKERRQ(ierr);

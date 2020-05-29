@@ -30,8 +30,13 @@ PETSC_INTERN PetscErrorCode PetscSequentialPhaseBegin_Private(MPI_Comm,int);
 PETSC_INTERN PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm,int);
 PETSC_INTERN PetscErrorCode PetscCloseHistoryFile(FILE**);
 
-/* user may set this BEFORE calling PetscInitialize() */
+/* user may set these BEFORE calling PetscInitialize() */
 MPI_Comm PETSC_COMM_WORLD = MPI_COMM_NULL;
+#if defined(PETSC_HAVE_MPI_INIT_THREAD)
+PetscMPIInt PETSC_MPI_THREAD_REQUIRED = MPI_THREAD_FUNNELED;
+#else
+PetscMPIInt PETSC_MPI_THREAD_REQUIRED = 0;
+#endif
 
 PetscMPIInt Petsc_Counter_keyval   = MPI_KEYVAL_INVALID;
 PetscMPIInt Petsc_InnerComm_keyval = MPI_KEYVAL_INVALID;
@@ -877,7 +882,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 #if defined(PETSC_HAVE_MPI_INIT_THREAD)
     {
       PetscMPIInt provided;
-      ierr = MPI_Init_thread(argc,args,MPI_THREAD_FUNNELED,&provided);CHKERRQ(ierr);
+      ierr = MPI_Init_thread(argc,args,PETSC_MPI_THREAD_REQUIRED,&provided);CHKERRQ(ierr);
     }
 #else
     ierr = MPI_Init(argc,args);CHKERRQ(ierr);

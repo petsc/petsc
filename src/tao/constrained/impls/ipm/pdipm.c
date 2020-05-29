@@ -702,7 +702,7 @@ PetscErrorCode TaoSolve_PDIPM(Tao tao)
     /* Check SNES convergence */
     ierr = SNESGetConvergedReason(pdipm->snes,&reason);CHKERRQ(ierr);
     if (reason < 0) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"SNES solve did not converged due to reason %D\n",reason);CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)pdipm->snes),"SNES solve did not converged due to reason %D\n",reason);CHKERRQ(ierr);
     }
 
     /* Check TAO convergence */

@@ -337,6 +337,10 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat *C)
   Mat_Product    *product;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(*C,MAT_CLASSID,2);
+  if (A == *C) PetscFunctionReturn(0);
+  PetscCheckSameComm(A,1,*C,2);
   /* save the parts of A we need */
   Abops = ((PetscObject)A)->bops[0];
   Aops  = A->ops[0];
@@ -431,6 +435,8 @@ PetscErrorCode MatBindToCPU(Mat A,PetscBool flg)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidLogicalCollectiveBool(A,flg,2);
   if (A->boundtocpu == flg) PetscFunctionReturn(0);
   A->boundtocpu = flg;
   if (A->ops->bindtocpu) {
@@ -438,6 +444,9 @@ PetscErrorCode MatBindToCPU(Mat A,PetscBool flg)
   }
   PetscFunctionReturn(0);
 #else
-  return 0;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidLogicalCollectiveBool(A,flg,2);
+  PetscFunctionReturn(0);
 #endif
 }

@@ -1279,6 +1279,9 @@ PetscErrorCode MatDestroy_MPIAIJ(Mat mat)
   ierr = PetscFree(aij->ld);CHKERRQ(ierr);
   ierr = PetscFree(mat->data);CHKERRQ(ierr);
 
+  /* may be created by MatCreateMPIAIJSumSeqAIJSymbolic */
+  ierr = PetscObjectCompose((PetscObject)mat,"MatMergeSeqsToMPI",NULL);CHKERRQ(ierr);
+
   ierr = PetscObjectChangeTypeName((PetscObject)mat,0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatStoreValues_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatRetrieveValues_C",NULL);CHKERRQ(ierr);
@@ -4479,33 +4482,27 @@ PetscErrorCode MatFileSplit(Mat A,char *outfile)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatDestroy_MPIAIJ_SeqsToMPI(Mat A)
+static PetscErrorCode MatDestroy_MPIAIJ_SeqsToMPI(void *data)
 {
   PetscErrorCode      ierr;
-  Mat_Merge_SeqsToMPI *merge;
-  PetscContainer      container;
+  Mat_Merge_SeqsToMPI *merge = (Mat_Merge_SeqsToMPI *)data;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject)A,"MatMergeSeqsToMPI",(PetscObject*)&container);CHKERRQ(ierr);
-  if (container) {
-    ierr = PetscContainerGetPointer(container,(void**)&merge);CHKERRQ(ierr);
-    ierr = PetscFree(merge->id_r);CHKERRQ(ierr);
-    ierr = PetscFree(merge->len_s);CHKERRQ(ierr);
-    ierr = PetscFree(merge->len_r);CHKERRQ(ierr);
-    ierr = PetscFree(merge->bi);CHKERRQ(ierr);
-    ierr = PetscFree(merge->bj);CHKERRQ(ierr);
-    ierr = PetscFree(merge->buf_ri[0]);CHKERRQ(ierr);
-    ierr = PetscFree(merge->buf_ri);CHKERRQ(ierr);
-    ierr = PetscFree(merge->buf_rj[0]);CHKERRQ(ierr);
-    ierr = PetscFree(merge->buf_rj);CHKERRQ(ierr);
-    ierr = PetscFree(merge->coi);CHKERRQ(ierr);
-    ierr = PetscFree(merge->coj);CHKERRQ(ierr);
-    ierr = PetscFree(merge->owners_co);CHKERRQ(ierr);
-    ierr = PetscLayoutDestroy(&merge->rowmap);CHKERRQ(ierr);
-    ierr = PetscFree(merge);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject)A,"MatMergeSeqsToMPI",0);CHKERRQ(ierr);
-  }
-  ierr = MatDestroy_MPIAIJ(A);CHKERRQ(ierr);
+  if (!merge) PetscFunctionReturn(0);
+  ierr = PetscFree(merge->id_r);CHKERRQ(ierr);
+  ierr = PetscFree(merge->len_s);CHKERRQ(ierr);
+  ierr = PetscFree(merge->len_r);CHKERRQ(ierr);
+  ierr = PetscFree(merge->bi);CHKERRQ(ierr);
+  ierr = PetscFree(merge->bj);CHKERRQ(ierr);
+  ierr = PetscFree(merge->buf_ri[0]);CHKERRQ(ierr);
+  ierr = PetscFree(merge->buf_ri);CHKERRQ(ierr);
+  ierr = PetscFree(merge->buf_rj[0]);CHKERRQ(ierr);
+  ierr = PetscFree(merge->buf_rj);CHKERRQ(ierr);
+  ierr = PetscFree(merge->coi);CHKERRQ(ierr);
+  ierr = PetscFree(merge->coj);CHKERRQ(ierr);
+  ierr = PetscFree(merge->owners_co);CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(&merge->rowmap);CHKERRQ(ierr);
+  ierr = PetscFree(merge);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4538,6 +4535,7 @@ PetscErrorCode MatCreateMPIAIJSumSeqAIJNumeric(Mat seqmat,Mat mpimat)
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   ierr = PetscObjectQuery((PetscObject)mpimat,"MatMergeSeqsToMPI",(PetscObject*)&container);CHKERRQ(ierr);
+  if (!container) SETERRQ(PetscObjectComm((PetscObject)mpimat),PETSC_ERR_PLIB,"Mat not created from MatCreateMPIAIJSumSeqAIJSymbolic");
   ierr = PetscContainerGetPointer(container,(void**)&merge);CHKERRQ(ierr);
 
   bi     = merge->bi;
@@ -4857,21 +4855,21 @@ PetscErrorCode  MatCreateMPIAIJSumSeqAIJSymbolic(MPI_Comm comm,Mat seqmat,PetscI
   ierr = MatSetOption(B_mpi,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
 
   /* B_mpi is not ready for use - assembly will be done by MatCreateMPIAIJSumSeqAIJNumeric() */
-  B_mpi->assembled    = PETSC_FALSE;
-  B_mpi->ops->destroy = MatDestroy_MPIAIJ_SeqsToMPI;
-  merge->bi           = bi;
-  merge->bj           = bj;
-  merge->buf_ri       = buf_ri;
-  merge->buf_rj       = buf_rj;
-  merge->coi          = NULL;
-  merge->coj          = NULL;
-  merge->owners_co    = NULL;
+  B_mpi->assembled  = PETSC_FALSE;
+  merge->bi         = bi;
+  merge->bj         = bj;
+  merge->buf_ri     = buf_ri;
+  merge->buf_rj     = buf_rj;
+  merge->coi        = NULL;
+  merge->coj        = NULL;
+  merge->owners_co  = NULL;
 
   ierr = PetscCommDestroy(&comm);CHKERRQ(ierr);
 
   /* attach the supporting struct to B_mpi for reuse */
   ierr    = PetscContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
   ierr    = PetscContainerSetPointer(container,merge);CHKERRQ(ierr);
+  ierr    = PetscContainerSetUserDestroy(container,MatDestroy_MPIAIJ_SeqsToMPI);CHKERRQ(ierr);
   ierr    = PetscObjectCompose((PetscObject)B_mpi,"MatMergeSeqsToMPI",(PetscObject)container);CHKERRQ(ierr);
   ierr    = PetscContainerDestroy(&container);CHKERRQ(ierr);
   *mpimat = B_mpi;
@@ -5124,27 +5122,6 @@ PetscErrorCode MatMPIAIJGetLocalMatCondensed(Mat A,MatReuse scall,IS *row,IS *co
 }
 
 /*
- * Destroy a mat that may be composed with PetscSF communication objects.
- * The SF objects were created in MatCreateSeqSubMatrixWithRows_Private.
- * */
-PetscErrorCode MatDestroy_SeqAIJ_PetscSF(Mat mat)
-{
-  PetscSF          sf,osf;
-  IS               map;
-  PetscErrorCode   ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject)mat,"diagsf",(PetscObject*)&sf);CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject)mat,"offdiagsf",(PetscObject*)&osf);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&osf);CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject)mat,"aoffdiagtopothmapping",(PetscObject*)&map);CHKERRQ(ierr);
-  ierr = ISDestroy(&map);CHKERRQ(ierr);
-  ierr = MatDestroy_SeqAIJ(mat);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*
  * Create a sequential AIJ matrix based on row indices. a whole column is extracted once a row is matched.
  * Row could be local or remote.The routine is designed to be scalable in memory so that nothing is based
  * on a global size.
@@ -5309,8 +5286,8 @@ PetscErrorCode MatCreateSeqSubMatrixWithRows_Private(Mat P,IS rows,Mat *P_oth)
   /* Attach PetscSF objects to P_oth so that we can reuse it later */
   ierr = PetscObjectCompose((PetscObject)*P_oth,"diagsf",(PetscObject)sf);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)*P_oth,"offdiagsf",(PetscObject)osf);CHKERRQ(ierr);
-  /* ``New MatDestroy" takes care of PetscSF objects as well */
-  (*P_oth)->ops->destroy = MatDestroy_SeqAIJ_PetscSF;
+  ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&osf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -5337,7 +5314,7 @@ PetscErrorCode MatGetBrowsOfAcols_MPIXAIJ(Mat A,Mat P,PetscInt dof,MatReuse reus
   /* If it is the first time, create an index set of off-diag nonzero columns of A,
    *  and then create a submatrix (that often is an overlapping matrix)
    * */
-  if (reuse==MAT_INITIAL_MATRIX) {
+  if (reuse == MAT_INITIAL_MATRIX) {
     /* Use a hash table to figure out unique keys */
     ierr = PetscHMapICreate(&hamp);CHKERRQ(ierr);
     ierr = PetscHMapIResize(hamp,a->B->cmap->n);CHKERRQ(ierr);
@@ -5368,25 +5345,22 @@ PetscErrorCode MatGetBrowsOfAcols_MPIXAIJ(Mat A,Mat P,PetscInt dof,MatReuse reus
     ierr = MatDestroy(P_oth);CHKERRQ(ierr);
     ierr = MatCreateSeqSubMatrixWithRows_Private(P,rows,P_oth);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)*P_oth,"aoffdiagtopothmapping",(PetscObject)map);CHKERRQ(ierr);
+    ierr = ISDestroy(&map);CHKERRQ(ierr);
     ierr = ISDestroy(&rows);CHKERRQ(ierr);
-  } else if (reuse==MAT_REUSE_MATRIX) {
+  } else if (reuse == MAT_REUSE_MATRIX) {
     /* If matrix was already created, we simply update values using SF objects
      * that as attached to the matrix ealier.
      *  */
     ierr = PetscObjectQuery((PetscObject)*P_oth,"diagsf",(PetscObject*)&sf);CHKERRQ(ierr);
     ierr = PetscObjectQuery((PetscObject)*P_oth,"offdiagsf",(PetscObject*)&osf);CHKERRQ(ierr);
-    if (!sf || !osf) {
-      SETERRQ(comm,PETSC_ERR_ARG_NULL,"Matrix is not initialized yet \n");
-    }
+    if (!sf || !osf) SETERRQ(comm,PETSC_ERR_ARG_NULL,"Matrix is not initialized yet");
     p_oth = (Mat_SeqAIJ*) (*P_oth)->data;
     /* Update values in place */
     ierr = PetscSFBcastBegin(sf,MPIU_SCALAR,pd->a,p_oth->a);CHKERRQ(ierr);
     ierr = PetscSFBcastBegin(osf,MPIU_SCALAR,po->a,p_oth->a);CHKERRQ(ierr);
     ierr = PetscSFBcastEnd(sf,MPIU_SCALAR,pd->a,p_oth->a);CHKERRQ(ierr);
     ierr = PetscSFBcastEnd(osf,MPIU_SCALAR,po->a,p_oth->a);CHKERRQ(ierr);
-  } else {
-    SETERRQ(comm,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown reuse type \n");
-  }
+  } else SETERRQ(comm,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown reuse type");
   ierr = PetscLogEventEnd(MAT_GetBrowsOfAocols,A,P,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -5766,7 +5740,7 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_IS_XAIJ(Mat);
         (              )       (              )         (                  )
 
 */
-PetscErrorCode MatMatMultNumeric_MPIDense_MPIAIJ(Mat A,Mat B,Mat C)
+static PetscErrorCode MatMatMultNumeric_MPIDense_MPIAIJ(Mat A,Mat B,Mat C)
 {
   PetscErrorCode ierr;
   Mat            At,Bt,Ct;
@@ -5774,7 +5748,7 @@ PetscErrorCode MatMatMultNumeric_MPIDense_MPIAIJ(Mat A,Mat B,Mat C)
   PetscFunctionBegin;
   ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&At);CHKERRQ(ierr);
   ierr = MatTranspose(B,MAT_INITIAL_MATRIX,&Bt);CHKERRQ(ierr);
-  ierr = MatMatMult(Bt,At,MAT_INITIAL_MATRIX,1.0,&Ct);CHKERRQ(ierr);
+  ierr = MatMatMult(Bt,At,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&Ct);CHKERRQ(ierr);
   ierr = MatDestroy(&At);CHKERRQ(ierr);
   ierr = MatDestroy(&Bt);CHKERRQ(ierr);
   ierr = MatTranspose(Ct,MAT_REUSE_MATRIX,&C);CHKERRQ(ierr);
@@ -5782,19 +5756,20 @@ PetscErrorCode MatMatMultNumeric_MPIDense_MPIAIJ(Mat A,Mat B,Mat C)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatMatMultSymbolic_MPIDense_MPIAIJ(Mat A,Mat B,PetscReal fill,Mat C)
+static PetscErrorCode MatMatMultSymbolic_MPIDense_MPIAIJ(Mat A,Mat B,PetscReal fill,Mat C)
 {
   PetscErrorCode ierr;
-  PetscInt       m=A->rmap->n,n=B->cmap->n;
+  PetscBool      cisdense;
 
   PetscFunctionBegin;
   if (A->cmap->n != B->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"A->cmap->n %d != B->rmap->n %d\n",A->cmap->n,B->rmap->n);
-  ierr = MatSetSizes(C,m,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = MatSetSizes(C,A->rmap->n,B->cmap->n,A->rmap->N,B->cmap->N);CHKERRQ(ierr);
   ierr = MatSetBlockSizesFromMats(C,A,B);CHKERRQ(ierr);
-  ierr = MatSetType(C,MATMPIDENSE);CHKERRQ(ierr);
-  ierr = MatMPIDenseSetPreallocation(C,NULL);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompareAny((PetscObject)C,&cisdense,MATMPIDENSE,MATMPIDENSECUDA,"");CHKERRQ(ierr);
+  if (!cisdense) {
+    ierr = MatSetType(C,((PetscObject)A)->type_name);CHKERRQ(ierr);
+  }
+  ierr = MatSetUp(C);CHKERRQ(ierr);
 
   C->ops->matmultnumeric = MatMatMultNumeric_MPIDense_MPIAIJ;
   PetscFunctionReturn(0);
@@ -5823,7 +5798,7 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_MPIDense_MPIAIJ(Mat C)
   PetscFunctionBegin;
   if (product->type == MATPRODUCT_AB) {
     ierr = MatProductSetFromOptions_MPIDense_MPIAIJ_AB(C);CHKERRQ(ierr);
-  } else SETERRQ1(PetscObjectComm((PetscObject)C),PETSC_ERR_SUP,"MatProduct type %s is not supported for MPIDense and MPIAIJ matrices",MatProductTypes[product->type]);
+  }
   PetscFunctionReturn(0);
 }
 /* ----------------------------------------------------------------*/
@@ -5906,8 +5881,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat B)
 #endif
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_is_C",MatConvert_XAIJ_IS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_mpisell_C",MatConvert_MPIAIJ_MPISELL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultSymbolic_mpidense_mpiaij_C",MatMatMultSymbolic_MPIDense_MPIAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultNumeric_mpidense_mpiaij_C",MatMatMultNumeric_MPIDense_MPIAIJ);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_HYPRE)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_hypre_C",MatConvert_AIJ_HYPRE);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatProductSetFromOptions_transpose_mpiaij_mpiaij_C",MatProductSetFromOptions_Transpose_AIJ_AIJ);CHKERRQ(ierr);

@@ -226,8 +226,9 @@ PetscErrorCode PetscObjectTypeCompareAny(PetscObject obj,PetscBool *match,const 
   va_list        Argp;
 
   PetscFunctionBegin;
-  PetscValidPointer(match,3);
+  PetscValidPointer(match,2);
   *match = PETSC_FALSE;
+  if (!obj) PetscFunctionReturn(0);
   va_start(Argp,type_name);
   while (type_name && type_name[0]) {
     PetscBool found;

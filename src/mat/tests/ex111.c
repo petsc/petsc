@@ -159,7 +159,7 @@ int main(int argc,char **argv)
 
   ierr = MatMatMatMult(R,A,P,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
   ierr = MatMatMatMult(R,A,P,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
-  ierr = MatFreeIntermediateDataStructures(C);CHKERRQ(ierr);
+  ierr = MatProductClear(C);CHKERRQ(ierr);
 
   /* Test D == C */
   ierr = MatEqual(D,C,&flg);CHKERRQ(ierr);

@@ -152,6 +152,7 @@
 #define MATLMVMSR1         'lmvmsr1'
 #define MATLMVMDFP         'lmvmdfp'
 #define MATLMVMBFGS        'lmvmbfgs'
+#define MATHARA            'hara'
 
 !
 ! MatMFFDType values

@@ -585,7 +585,7 @@ static PetscErrorCode TaoSetUp_ADMM(Tao tao)
   /* If Jacobian is given as NULL, it means Jacobian is identity matrix with size of solution vector */
   if (!am->JB) {
     am->zJI   = PETSC_TRUE;
-    ierr      = MatCreateShell(PETSC_COMM_WORLD,n,n,PETSC_DETERMINE,PETSC_DETERMINE,NULL,&am->JB);CHKERRQ(ierr);
+    ierr      = MatCreateShell(PetscObjectComm((PetscObject)tao),n,n,PETSC_DETERMINE,PETSC_DETERMINE,NULL,&am->JB);CHKERRQ(ierr);
     ierr      = MatShellSetOperation(am->JB,MATOP_MULT,(void (*)(void))JacobianIdentityB);CHKERRQ(ierr);
     ierr      = MatShellSetOperation(am->JB,MATOP_MULT_TRANSPOSE,(void (*)(void))JacobianIdentityB);CHKERRQ(ierr);
     ierr      = MatShellSetOperation(am->JB,MATOP_TRANSPOSE_MAT_MULT,(void (*)(void))JacobianIdentityB);CHKERRQ(ierr);
@@ -593,7 +593,7 @@ static PetscErrorCode TaoSetUp_ADMM(Tao tao)
   }
   if (!am->JA) {
     am->xJI   = PETSC_TRUE;
-    ierr      = MatCreateShell(PETSC_COMM_WORLD,n,n,PETSC_DETERMINE,PETSC_DETERMINE,NULL,&am->JA);CHKERRQ(ierr);
+    ierr      = MatCreateShell(PetscObjectComm((PetscObject)tao),n,n,PETSC_DETERMINE,PETSC_DETERMINE,NULL,&am->JA);CHKERRQ(ierr);
     ierr      = MatShellSetOperation(am->JA,MATOP_MULT,(void (*)(void))JacobianIdentity);CHKERRQ(ierr);
     ierr      = MatShellSetOperation(am->JA,MATOP_MULT_TRANSPOSE,(void (*)(void))JacobianIdentity);CHKERRQ(ierr);
     ierr      = MatShellSetOperation(am->JA,MATOP_TRANSPOSE_MAT_MULT,(void (*)(void))JacobianIdentity);CHKERRQ(ierr);

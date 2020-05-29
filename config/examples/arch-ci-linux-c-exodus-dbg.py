@@ -33,6 +33,8 @@ if __name__ == '__main__':
     '--download-p4est',
     '--with-cuda',
     '--with-shared-libraries',
+    '--download-magma',
+    '--with-magma-fortran-bindings=0',
   ]
 
   configure.petsc_configure(configure_options)

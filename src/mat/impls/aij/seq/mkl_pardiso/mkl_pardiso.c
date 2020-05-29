@@ -275,6 +275,7 @@ static PetscErrorCode MatMKLPardisoSolveSchur_Private(Mat F, PetscScalar *B, Pet
       ierr = MatProductSetType(Xmat,MATPRODUCT_AtB);CHKERRQ(ierr);
     }
     ierr = MatProductSetFromOptions(Xmat);CHKERRQ(ierr);
+    ierr = MatProductSymbolic(Xmat);CHKERRQ(ierr);
     ierr = MatProductNumeric(Xmat);CHKERRQ(ierr);
     ierr = MatProductClear(Xmat);CHKERRQ(ierr);
     break;

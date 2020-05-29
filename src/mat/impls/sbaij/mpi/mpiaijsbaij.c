@@ -18,7 +18,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPISBAIJ(Mat A, MatType newtype,Ma
   const PetscInt    *cwork;
 
   PetscFunctionBegin;
-  if (!A->symmetric) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_USER,"Matrix must be symmetric. Call MatSetOption(mat,MAT_SYMMETRIC,PETSC_TRUE)");
+  if (!A->symmetric && !A->hermitian) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_USER,"Matrix must be symmetric or hermitian. Call MatSetOption(mat,MAT_SYMMETRIC,PETSC_TRUE) or MatSetOption(mat,MAT_HERMITIAN,PETSC_TRUE)");
   if (reuse != MAT_REUSE_MATRIX) {
     ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
     ierr = MatGetLocalSize(A,&lm,&ln);CHKERRQ(ierr);
@@ -26,7 +26,11 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPISBAIJ(Mat A, MatType newtype,Ma
 
     ierr = MatMarkDiagonal_SeqAIJ(mpimat->A);CHKERRQ(ierr);
     for (i=0; i<lm/bs; i++) {
-      d_nnz[i] = (Aa->i[i*bs+1] - Aa->diag[i*bs])/bs;
+      if (Aa->i[i*bs+1] == Aa->diag[i*bs]) { /* misses diagonal entry */
+        d_nnz[i] = (Aa->i[i*bs+1] - Aa->i[i*bs])/bs;
+      } else {
+        d_nnz[i] = (Aa->i[i*bs+1] - Aa->diag[i*bs])/bs;
+      }
       o_nnz[i] = (Ba->i[i*bs+1] - Ba->i[i*bs])/bs;
     }
 

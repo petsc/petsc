@@ -988,7 +988,7 @@ static PetscErrorCode MatProductSetFromOptions_HYPRE_AB(Mat C)
     C->ops->productsymbolic = MatProductSymbolic_AB_HYPRE;
     C->ops->matmultnumeric  = MatMatMultNumeric_HYPRE_HYPRE;
     PetscFunctionReturn(0);
-  } else SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_SUP,"A must be Hyper type");
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1054,7 +1054,8 @@ static PetscErrorCode MatProductSetFromOptions_HYPRE(Mat C)
   case MATPRODUCT_PtAP:
     ierr = MatProductSetFromOptions_HYPRE_PtAP(C);CHKERRQ(ierr);
     break;
-  default: SETERRQ1(PetscObjectComm((PetscObject)C),PETSC_ERR_SUP,"Mat Product type %s is not supported for HYPRE and HYPRE matrices",MatProductTypes[product->type]);
+  default:
+    break;
   }
   PetscFunctionReturn(0);
 }
