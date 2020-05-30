@@ -142,6 +142,10 @@
           <li>Fix bugs related with reusing PCILU/PCICC/PCLU/PCCHOLESKY preconditioners with SEQAIJCUSPARSE matrices</li>
         </ul>
       <h4>KSP:</h4>
+        <ul>
+          <li>Add KSPConvergedDefaultSetConvergedMaxits() to declare convergence when the maximum number of iterations is reached</li>
+          <li>Fix many KSP implementations to actually perform the number of iterations requested</li>
+        </ul>
       <h4>SNES:</h4>
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>
