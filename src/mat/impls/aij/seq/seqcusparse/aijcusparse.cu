@@ -1448,7 +1448,6 @@ static PetscErrorCode MatProductNumeric_SeqAIJCUSPARSE_SeqDENSECUDA(Mat C)
     k   = B->cmap->n;
     n   = B->rmap->n;
     break;
-    break;
   default:
     SETERRQ1(PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Unsupported product type %s",MatProductTypes[product->type]);
   }
