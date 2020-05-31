@@ -543,7 +543,7 @@ PetscErrorCode  KSPConvergedSkip(KSP ksp,PetscInt n,PetscReal rnorm,KSPConverged
    Level: intermediate
 
 .seealso: KSPConvergedDefault(), KSPConvergedDefaultDestroy(), KSPSetConvergenceTest(), KSPSetTolerances(),
-          KSPConvergedSkip(), KSPConvergedReason, KSPGetConvergedReason(), KSPConvergedDefaultSetUIRNorm(), KSPConvergedDefaultSetUMIRNorm()
+          KSPConvergedSkip(), KSPConvergedReason, KSPGetConvergedReason(), KSPConvergedDefaultSetUIRNorm(), KSPConvergedDefaultSetUMIRNorm(), KSPConvergedDefaultSetConvergedMaxits()
 @*/
 PetscErrorCode  KSPConvergedDefaultCreate(void **ctx)
 {
@@ -582,7 +582,7 @@ PetscErrorCode  KSPConvergedDefaultCreate(void **ctx)
 
    Level: intermediate
 
-.seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPConvergedSkip(), KSPConvergedReason, KSPGetConvergedReason(), KSPConvergedDefaultSetUMIRNorm()
+.seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPConvergedSkip(), KSPConvergedReason, KSPGetConvergedReason(), KSPConvergedDefaultSetUMIRNorm(), KSPConvergedDefaultSetConvergedMaxits()
 @*/
 PetscErrorCode  KSPConvergedDefaultSetUIRNorm(KSP ksp)
 {
@@ -616,7 +616,7 @@ PetscErrorCode  KSPConvergedDefaultSetUIRNorm(KSP ksp)
 
    Level: intermediate
 
-.seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPConvergedSkip(), KSPConvergedReason, KSPGetConvergedReason(), KSPConvergedDefaultSetUIRNorm()
+.seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPConvergedSkip(), KSPConvergedReason, KSPGetConvergedReason(), KSPConvergedDefaultSetUIRNorm(), KSPConvergedDefaultSetConvergedMaxits()
 @*/
 PetscErrorCode  KSPConvergedDefaultSetUMIRNorm(KSP ksp)
 {
@@ -627,6 +627,39 @@ PetscErrorCode  KSPConvergedDefaultSetUMIRNorm(KSP ksp)
   if (ksp->converged != KSPConvergedDefault) PetscFunctionReturn(0);
   if (ctx->initialrtol) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"Cannot use KSPConvergedDefaultSetUIRNorm() and KSPConvergedDefaultSetUMIRNorm() together");
   ctx->mininitialrtol = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   KSPConvergedDefaultSetConvergedMaxits - allows the default convergence test to declare convergence and return KSP_CONVERGED_ITS if the maximum number of iterations is reached
+
+   Collective on ksp
+
+   Input Parameters:
++  ksp - iterative context
+-  flg - boolean flag
+
+   Options Database:
+.   -ksp_converged_maxits
+
+   Use KSPSetTolerances() to alter the defaults for rtol, abstol, dtol.
+
+   The precise values of reason are macros such as KSP_CONVERGED_RTOL, which
+   are defined in petscksp.h.
+
+   Level: intermediate
+
+.seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPConvergedSkip(), KSPConvergedReason, KSPGetConvergedReason(), KSPConvergedDefaultSetUMIRNorm(), KSPConvergedDefaultSetUIRNorm()
+@*/
+PetscErrorCode  KSPConvergedDefaultSetConvergedMaxits(KSP ksp, PetscBool flg)
+{
+  KSPConvergedDefaultCtx *ctx = (KSPConvergedDefaultCtx*) ksp->cnvP;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidLogicalCollectiveBool(ksp,flg,2);
+  if (ksp->converged != KSPConvergedDefault) PetscFunctionReturn(0);
+  ctx->convmaxits = flg;
   PetscFunctionReturn(0);
 }
 
@@ -642,13 +675,15 @@ PetscErrorCode  KSPConvergedDefaultSetUMIRNorm(KSP ksp)
 -  ctx - convergence context which must be created by KSPConvergedDefaultCreate()
 
    Output Parameter:
-+   positive - if the iteration has converged;
-.   negative - if residual norm exceeds divergence threshold;
--   0 - otherwise.
++   positive - if the iteration has converged
+.   negative - if the iteration has diverged
+-   KSP_CONVERGED_ITERATING - otherwise.
 
    Notes:
    KSPConvergedDefault() reaches convergence when   rnorm < MAX (rtol * rnorm_0, abstol);
-   Divergence is detected if  rnorm > dtol * rnorm_0,
+   Divergence is detected if rnorm > dtol * rnorm_0, or when failures are detected throughout the iteration.
+   By default, reaching the maximum number of iterations is considered divergence (i.e. KSP_DIVERGED_ITS).
+   In order to have PETSc declaring convergence in such a case (i.e. KSP_CONVERGED_ITS), users can use KSPConvergedDefaultSetConvergedMaxits()
 
    where:
 +     rtol = relative tolerance,
@@ -672,7 +707,7 @@ PetscErrorCode  KSPConvergedDefaultSetUMIRNorm(KSP ksp)
    Level: intermediate
 
 .seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPConvergedSkip(), KSPConvergedReason, KSPGetConvergedReason(),
-          KSPConvergedDefaultSetUIRNorm(), KSPConvergedDefaultSetUMIRNorm(), KSPConvergedDefaultCreate(), KSPConvergedDefaultDestroy()
+          KSPConvergedDefaultSetUIRNorm(), KSPConvergedDefaultSetUMIRNorm(), KSPConvergedDefaultSetConvergedMaxits(), KSPConvergedDefaultCreate(), KSPConvergedDefaultDestroy()
 @*/
 PetscErrorCode  KSPConvergedDefault(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedReason *reason,void *ctx)
 {
@@ -682,13 +717,19 @@ PetscErrorCode  KSPConvergedDefault(KSP ksp,PetscInt n,PetscReal rnorm,KSPConver
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidLogicalCollectiveInt(ksp,n,2);
   PetscValidPointer(reason,4);
+  if (!cctx) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_NULL,"Convergence context must have been created with KSPConvergedDefaultCreate()");
   *reason = KSP_CONVERGED_ITERATING;
 
+  if (cctx->convmaxits && n >= ksp->max_it) {
+    *reason = KSP_CONVERGED_ITS;
+    ierr    = PetscInfo1(ksp,"Linear solver has converged. Maximum number of iterations reached %D\n",n);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
   ierr = KSPGetNormType(ksp,&normtype);CHKERRQ(ierr);
   if (normtype == KSP_NORM_NONE) PetscFunctionReturn(0);
 
-  if (!cctx) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_NULL,"Convergence context must have been created with KSPConvergedDefaultCreate()");
   if (!n) {
     /* if user gives initial guess need to compute norm of b */
     if (!ksp->guess_zero && !cctx->initialrtol) {
@@ -1263,4 +1304,3 @@ PetscErrorCode KSPCheckSolve(KSP ksp,PC pc,Vec vec)
   }
   PetscFunctionReturn(0);
 }
- 

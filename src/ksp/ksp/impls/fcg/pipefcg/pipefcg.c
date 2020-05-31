@@ -59,7 +59,7 @@ static PetscErrorCode KSPAllocateVectors_PIPEFCG(KSP ksp, PetscInt nvecsneeded, 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode    KSPSetUp_PIPEFCG(KSP ksp)
+static PetscErrorCode KSPSetUp_PIPEFCG(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_PIPEFCG    *pipefcg;
@@ -193,8 +193,8 @@ static PetscErrorCode KSPSolve_PIPEFCG_cycle(KSP ksp)
     ksp->rnorm = dp;
     KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
     ierr = KSPMonitor(ksp,ksp->its,dp);CHKERRQ(ierr);
-    ierr = (*ksp->converged)(ksp,ksp->its+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
-    if (ksp->reason) break;
+    ierr = (*ksp->converged)(ksp,ksp->its,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+    if (ksp->reason) PetscFunctionReturn(0);
 
     /* Computations of current iteration done */
     ++i;
@@ -272,6 +272,7 @@ static PetscErrorCode KSPSolve_PIPEFCG_cycle(KSP ksp)
     ierr = VecMAXPY(ZETAcurr,j,betas,pipefcg->ZETAold);CHKERRQ(ierr); /* zetai <- n  - sum_k beta_k zeta_k */
 
   } while (ksp->its < ksp->max_it);
+  if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
   PetscFunctionReturn(0);
 }
 
@@ -328,11 +329,7 @@ static PetscErrorCode KSPSolve_PIPEFCG(KSP ksp)
   ierr       = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
   ierr       = KSPMonitor(ksp,0,dp);CHKERRQ(ierr);
   ksp->rnorm = dp;
-  if (ksp->normtype == KSP_NORM_NONE) {
-    ierr = KSPConvergedSkip (ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
-  } else {
-    ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
-  }
+  ierr       = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   if (ksp->reason) PetscFunctionReturn(0);
 
   do {
@@ -340,7 +337,7 @@ static PetscErrorCode KSPSolve_PIPEFCG(KSP ksp)
        This is coded this way to allow both truncation and truncation-restart strategy
        (see KSPFCDGetNumOldDirections()) */
     ierr = KSPSolve_PIPEFCG_cycle(ksp);CHKERRQ(ierr);
-    if (ksp->reason) break;
+    if (ksp->reason) PetscFunctionReturn(0);
     if (pipefcg->norm_breakdown) {
       pipefcg->n_restarts++;
       pipefcg->norm_breakdown = PETSC_FALSE;

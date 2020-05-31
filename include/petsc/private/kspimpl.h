@@ -168,6 +168,7 @@ typedef struct { /* dummy data structure used in KSPMonitorDynamicTolerance() */
 typedef struct {
   PetscBool  initialrtol;    /* default relative residual decrease is computing from initial residual, not rhs */
   PetscBool  mininitialrtol; /* default relative residual decrease is computing from min of initial residual and rhs */
+  PetscBool  convmaxits;     /* if true, the convergence test returns KSP_CONVERGED_ITS if the maximum number of iterations is reached */
   Vec        work;
 } KSPConvergedDefaultCtx;
 

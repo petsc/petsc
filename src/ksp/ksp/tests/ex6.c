@@ -64,20 +64,20 @@ int main(int argc,char **args)
   ierr = VecSet(x,0.0);CHKERRQ(ierr);
   ierr = PetscBarrier((PetscObject)A);CHKERRQ(ierr);
 
-  PetscLogStageRegister("mystage 1",&stage1);
-  PetscLogStagePush(stage1);
-  ierr   = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr   = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
-  ierr   = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr   = KSPSetUp(ksp);CHKERRQ(ierr);
-  ierr   = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
-  PetscLogStagePop();
+  ierr = PetscLogStageRegister("mystage 1",&stage1);CHKERRQ(ierr);
+  ierr = PetscLogStagePush(stage1);CHKERRQ(ierr);
+  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
+  ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
+  ierr = PetscLogStagePop();CHKERRQ(ierr);
   ierr = PetscBarrier((PetscObject)A);CHKERRQ(ierr);
 
-  PetscLogStageRegister("mystage 2",&stage2);
-  PetscLogStagePush(stage2);
-  ierr   = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-  PetscLogStagePop();
+  ierr = PetscLogStageRegister("mystage 2",&stage2);CHKERRQ(ierr);
+  ierr = PetscLogStagePush(stage2);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+  ierr = PetscLogStagePop();CHKERRQ(ierr);
 
   /* Show result */
   ierr = MatMult(A,x,u);CHKERRQ(ierr);
@@ -111,7 +111,7 @@ int main(int argc,char **args)
 /*TEST
 
     test:
-      args: -ksp_type preonly  -pc_type lu -options_left no  -f ${DATAFILESPATH}/matrices/arco1 
+      args: -ksp_type preonly  -pc_type lu -options_left no  -f ${DATAFILESPATH}/matrices/arco1
       requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
 
     test:
@@ -121,7 +121,19 @@ int main(int argc,char **args)
 
     test:
       suffix: 7
-      args: -ksp_gmres_cgs_refinement_type refine_always -pc_type asm -pc_asm_blocks 6 -f ${DATAFILESPATH}/matrices/small -matload_block_size 6  -ksp_monitor_short  
+      args: -ksp_gmres_cgs_refinement_type refine_always -pc_type asm -pc_asm_blocks 6 -f ${DATAFILESPATH}/matrices/small -matload_block_size 6  -ksp_monitor_short
       requires: datafilespath double  !complex !define(PETSC_USE_64BIT_INDICES)
+
+    test:
+      requires: double !complex !define(PETSC_USE_64BIT_INDICES)
+      suffix: 3
+      filter: sed -e "s/CONVERGED_RTOL/CONVERGED_ATOL/g"
+      args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int32-float64 -pc_type none -ksp_type {{cg groppcg pipecg pipecgrr pipelcg pipeprcg cgne nash stcg gltr fcg pipefcg gmres pipefgmres fgmres lgmres dgmres pgmres tcqmr bcgs ibcgs fbcgs fbcgsr bcgsl pipebcgs cgs tfqmr cr pipecr lsqr qcg bicg minres symmlq lcd gcr pipegcr cgls}} -ksp_max_it 20 -ksp_error_if_not_converged -ksp_converged_reason
+
+    test:
+      requires: double !complex !define(PETSC_USE_64BIT_INDICES)
+      suffix: 3_maxits
+      output_file: output/ex6_maxits.out
+      args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int32-float64 -pc_type none -ksp_type {{chebyshev cg groppcg pipecg pipecgrr pipelcg pipeprcg cgne nash stcg gltr fcg pipefcg gmres pipefgmres fgmres lgmres dgmres pgmres tcqmr bcgs ibcgs fbcgs fbcgsr bcgsl pipebcgs cgs tfqmr cr pipecr qcg bicg minres symmlq lcd gcr pipegcr cgls richardson}} -ksp_max_it 3 -ksp_error_if_not_converged -ksp_converged_maxits -ksp_converged_reason
 
 TEST*/

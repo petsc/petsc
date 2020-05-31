@@ -86,6 +86,16 @@ SNES Object: 4 MPI processes
       left preconditioning
       using NONE norm type for convergence test
     PC Object: (pc_hpddm_levels_1_) 4 MPI processes
+      type: shell
+        no name
+      linear system matrix = precond matrix:
+      Mat Object: 4 MPI processes
+        type: mpiaij
+        rows=2145, cols=2145
+        total: nonzeros=32465, allocated nonzeros=32465
+        total number of mallocs used during MatSetValues calls=0
+          not using I-node (on process 0) routines
+    PC Object: (pc_hpddm_levels_1_) 4 MPI processes
       type: bjacobi
         number of blocks = 4
         Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:

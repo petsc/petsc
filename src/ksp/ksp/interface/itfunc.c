@@ -245,6 +245,35 @@ PetscErrorCode  KSPSetReusePreconditioner(KSP ksp,PetscBool flag)
 }
 
 /*@
+   KSPGetReusePreconditioner - Determines if the KSP reuses the current preconditioner even if the operator in the preconditioner has changed.
+
+   Collective on ksp
+
+   Input Parameters:
+.  ksp   - iterative context obtained from KSPCreate()
+
+   Output Parameters:
+.  flag - the boolean flag
+
+   Level: intermediate
+
+.seealso: KSPCreate(), KSPSolve(), KSPDestroy(), KSPSetReusePreconditioner(), KSP
+@*/
+PetscErrorCode  KSPGetReusePreconditioner(KSP ksp,PetscBool *flag)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidPointer(flag,2);
+  *flag = PETSC_FALSE;
+  if (ksp->pc) {
+    ierr = PCGetReusePreconditioner(ksp->pc,flag);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
    KSPSetSkipPCSetFromOptions - prevents KSPSetFromOptions() from call PCSetFromOptions(). This is used if the same PC is shared by more than one KSP so its options are not resetable for each KSP
 
    Collective on ksp
@@ -1565,11 +1594,10 @@ PetscErrorCode  KSPGetSolution(KSP ksp,Vec *v)
 
    Input Parameters:
 +  ksp - iterative context obtained from KSPCreate()
--  pc   - the preconditioner object
+-  pc   - the preconditioner object (can be NULL)
 
    Notes:
-   Use KSPGetPC() to retrieve the preconditioner context (for example,
-   to free it at the end of the computations).
+   Use KSPGetPC() to retrieve the preconditioner context.
 
    Level: developer
 
@@ -1581,8 +1609,10 @@ PetscErrorCode  KSPSetPC(KSP ksp,PC pc)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidHeaderSpecific(pc,PC_CLASSID,2);
-  PetscCheckSameComm(ksp,1,pc,2);
+  if (pc) {
+    PetscValidHeaderSpecific(pc,PC_CLASSID,2);
+    PetscCheckSameComm(ksp,1,pc,2);
+  }
   ierr    = PetscObjectReference((PetscObject)pc);CHKERRQ(ierr);
   ierr    = PCDestroy(&ksp->pc);CHKERRQ(ierr);
   ksp->pc = pc;

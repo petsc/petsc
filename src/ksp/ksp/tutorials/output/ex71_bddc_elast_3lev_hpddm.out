@@ -119,13 +119,28 @@ PC Object: 8 MPI processes
       levels: 2
       Neumann matrix attached? FALSE
       coarse correction: deflated
-      on process #0, value (+ threshold if available) for selecting deflation vectors:  6
+      on process #0, value (+ threshold if available) for selecting deflation vectors: 6
       grid and operator complexities: 1.30189 1.08854
       KSP Object: (pc_bddc_coarse_pc_hpddm_levels_1_) 8 MPI processes
         type: preonly
         maximum iterations=10000, initial guess is zero
         left preconditioning
         using NONE norm type for convergence test
+      PC Object: (pc_bddc_coarse_pc_hpddm_levels_1_) 8 MPI processes
+        type: shell
+          no name
+        linear system matrix followed by preconditioner matrix:
+        Mat Object: (pc_bddc_coarse_) 8 MPI processes
+          type: is
+          rows=159, cols=159
+          total: nonzeros=23328, allocated nonzeros=23328
+          total number of mallocs used during MatSetValues calls=0
+        Mat Object: 8 MPI processes
+          type: mpiaij
+          rows=159, cols=159
+          total: nonzeros=14637, allocated nonzeros=18661
+          total number of mallocs used during MatSetValues calls=0
+            using I-node (on process 0) routines: found 4 nodes, limit used is 5
       PC Object: (pc_bddc_coarse_pc_hpddm_levels_1_) 8 MPI processes
         type: bjacobi
           number of blocks = 8

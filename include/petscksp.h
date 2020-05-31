@@ -94,6 +94,7 @@ PETSC_EXTERN PetscErrorCode KSPReset(KSP);
 PETSC_EXTERN PetscErrorCode KSPResetViewers(KSP);
 PETSC_EXTERN PetscErrorCode KSPDestroy(KSP*);
 PETSC_EXTERN PetscErrorCode KSPSetReusePreconditioner(KSP,PetscBool);
+PETSC_EXTERN PetscErrorCode KSPGetReusePreconditioner(KSP,PetscBool*);
 PETSC_EXTERN PetscErrorCode KSPSetSkipPCSetFromOptions(KSP,PetscBool);
 PETSC_EXTERN PetscErrorCode KSPCheckSolve(KSP,PC,Vec);
 
@@ -608,6 +609,7 @@ PETSC_EXTERN PetscErrorCode KSPConvergedDefaultDestroy(void*);
 PETSC_EXTERN PetscErrorCode KSPConvergedDefaultCreate(void**);
 PETSC_EXTERN PetscErrorCode KSPConvergedDefaultSetUIRNorm(KSP);
 PETSC_EXTERN PetscErrorCode KSPConvergedDefaultSetUMIRNorm(KSP);
+PETSC_EXTERN PetscErrorCode KSPConvergedDefaultSetConvergedMaxits(KSP,PetscBool);
 PETSC_EXTERN PetscErrorCode KSPConvergedSkip(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*);
 PETSC_EXTERN PetscErrorCode KSPGetConvergedReason(KSP,KSPConvergedReason*);
 
