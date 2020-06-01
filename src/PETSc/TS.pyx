@@ -334,7 +334,7 @@ cdef class TS(Object):
                          Mat J, imex=False):
         cdef PetscReal rval1 = asReal(t)
         cdef PetscReal rval2 = asReal(a)
-        cdef PetscBool bval  = imex
+        cdef PetscBool bval  = asBool(imex)
         cdef PetscMat jmat = J.mat
         CHKERR( TSComputeIJacobian(self.ts, rval1, x.vec, xdot.vec, rval2,
                                    jmat, bval) )
