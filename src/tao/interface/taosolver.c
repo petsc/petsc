@@ -2744,13 +2744,9 @@ PetscErrorCode  TaoSetGradientNorm(Tao tao, Mat M)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-
-  if (tao->gradient_norm) {
-    ierr = PetscObjectDereference((PetscObject)tao->gradient_norm);CHKERRQ(ierr);
-    ierr = VecDestroy(&tao->gradient_norm_tmp);CHKERRQ(ierr);
-  }
-
   ierr = PetscObjectReference((PetscObject)M);CHKERRQ(ierr);
+  ierr = MatDestroy(&tao->gradient_norm);CHKERRQ(ierr);
+  ierr = VecDestroy(&tao->gradient_norm_tmp);CHKERRQ(ierr);
   tao->gradient_norm = M;
   ierr = MatCreateVecs(M, NULL, &tao->gradient_norm_tmp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2801,12 +2797,14 @@ PetscErrorCode  TaoGradientNorm(Tao tao, Vec gradient, NormType type, PetscReal 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(gradient,VEC_CLASSID,1);
-
+  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
+  PetscValidHeaderSpecific(gradient,VEC_CLASSID,2);
+  PetscValidLogicalCollectiveEnum(tao,type,3);
+  PetscValidPointer(gnorm,4);
   if (tao->gradient_norm) {
     PetscScalar gnorms;
 
-    if (type != NORM_2) SETERRQ(PetscObjectComm((PetscObject)gradient), PETSC_ERR_ARG_WRONGSTATE, "Norm type must be NORM_2 if an inner product for the gradient norm is set.");
+    if (type != NORM_2) SETERRQ(PetscObjectComm((PetscObject)gradient), PETSC_ERR_ARG_WRONG, "Norm type must be NORM_2 if an inner product for the gradient norm is set.");
     ierr = MatMult(tao->gradient_norm, gradient, tao->gradient_norm_tmp);CHKERRQ(ierr);
     ierr = VecDot(gradient, tao->gradient_norm_tmp, &gnorms);CHKERRQ(ierr);
     *gnorm = PetscRealPart(PetscSqrtScalar(gnorms));
