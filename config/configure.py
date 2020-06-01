@@ -6,8 +6,19 @@ extraLogs = []
 petsc_arch = ''
 
 # Use en_US as language so that BuildSystem parses compiler messages in english
-if 'LC_LOCAL' in os.environ and os.environ['LC_LOCAL'] != '' and os.environ['LC_LOCAL'] != 'en_US' and os.environ['LC_LOCAL']!= 'en_US.UTF-8': os.environ['LC_LOCAL'] = 'en_US.UTF-8'
-if 'LANG' in os.environ and os.environ['LANG'] != '' and os.environ['LANG'] != 'en_US' and os.environ['LANG'] != 'en_US.UTF-8': os.environ['LANG'] = 'en_US.UTF-8'
+def fixLang(lang):
+  if lang in os.environ and os.environ[lang] != '':
+    lv = os.environ[lang]
+    enc = ''
+    try: lv,enc = lv.split('.')
+    except: pass
+    if lv not in ['en_US','C']: lv = 'en_US'
+    if enc: lv = lv+'.'+enc
+    os.environ[lang] = lv
+
+fixLang('LC_LOCAL')
+fixLang('LANG')
+
 
 def check_for_option_mistakes(opts):
   for opt in opts[1:]:
