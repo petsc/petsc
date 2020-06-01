@@ -2621,7 +2621,7 @@ PetscErrorCode PetscDSGetTabulation(PetscDS prob, PetscTabulation *T[])
 . prob - The PetscDS object
 
   Output Parameter:
-. Tf - The basis function and derviative tabulation on each lcoal face at quadrature points for each and field
+. Tf - The basis function and derviative tabulation on each local face at quadrature points for each and field
 
   Level: intermediate
 
