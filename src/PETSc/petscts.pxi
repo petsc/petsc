@@ -90,6 +90,14 @@ cdef extern from * nogil:
                                              PetscMat,
                                              void*) except PETSC_ERR_PYTHON
 
+    ctypedef int (*PetscTSIJacobianPFunction)(PetscTS,
+                                             PetscReal,
+                                             PetscVec,
+                                             PetscVec,
+                                             PetscReal,
+                                             PetscMat,
+                                             void*) except PETSC_ERR_PYTHON
+
     ctypedef int (*PetscTSI2FunctionFunction)(PetscTS,
                                               PetscReal,
                                               PetscVec,
@@ -146,6 +154,7 @@ cdef extern from * nogil:
     int TSSetRHSJacobian(PetscTS,PetscMat,PetscMat,PetscTSJacobianFunction,void*)
     int TSSetIFunction(PetscTS,PetscVec,PetscTSIFunctionFunction,void*)
     int TSSetIJacobian(PetscTS,PetscMat,PetscMat,PetscTSIJacobianFunction,void*)
+    int TSSetIJacobianP(PetscTS,PetscMat*,PetscTSIJacobianPFunction,void**)
     int TSGetIFunction(PetscTS,PetscVec*,PetscTSIFunctionFunction*,void*)
     int TSGetIJacobian(PetscTS,PetscMat*,PetscMat*,PetscTSIJacobianFunction*,void**)
     int TSSetI2Function(PetscTS,PetscVec,PetscTSI2FunctionFunction,void*)
@@ -165,6 +174,7 @@ cdef extern from * nogil:
     int TSComputeRHSJacobianConstant(PetscTS,PetscReal,PetscVec,PetscMat,PetscMat,void*)
     int TSComputeIFunction(PetscTS,PetscReal,PetscVec,PetscVec,PetscVec,PetscBool)
     int TSComputeIJacobian(PetscTS,PetscReal,PetscVec,PetscVec,PetscReal,PetscMat,PetscMat,PetscBool)
+    int TSComputeIJacobianP(PetscTS,PetscReal,PetscVec,PetscVec,PetscReal,PetscMat,PetscBool)
     int TSComputeI2Function(PetscTS,PetscReal,PetscVec,PetscVec,PetscVec,PetscVec)
     int TSComputeI2Jacobian(PetscTS,PetscReal,PetscVec,PetscVec,PetscVec,PetscReal,PetscReal,PetscMat,PetscMat)
 
@@ -380,6 +390,26 @@ cdef int TS_IJacobian(
     assert context is not None and type(context) is tuple # sanity check
     (jacobian, args, kargs) = context
     jacobian(Ts, toReal(t), Xvec, XDvec, toReal(a), Jmat, Pmat, *args, **kargs)
+    return 0
+
+cdef int TS_IJacobianP(
+    PetscTS   ts,
+    PetscReal t,
+    PetscVec  x,
+    PetscVec  xdot,
+    PetscReal a,
+    PetscMat  J,
+    void*     ctx,
+    ) except PETSC_ERR_PYTHON with gil:
+    cdef TS   Ts    = ref_TS(ts)
+    cdef Vec  Xvec  = ref_Vec(x)
+    cdef Vec  XDvec = ref_Vec(xdot)
+    cdef Mat  Jmat  = ref_Mat(J)
+    cdef object context = Ts.get_attr('__ijacobianp__')
+    if context is None and ctx != NULL: context = <object>ctx
+    assert context is not None and type(context) is tuple # sanity check
+    (jacobian, args, kargs) = context
+    jacobian(Ts, toReal(t), Xvec, XDvec, toReal(a), Jmat, *args, **kargs)
     return 0
 
 cdef int TS_I2Function(
