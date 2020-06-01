@@ -29,7 +29,7 @@ PETSC_EXTERN void petscdsgettabulation_(PetscDS *prob, PetscInt *f, F90Array1d *
   *ierr = PetscQuadratureGetData(q, NULL, NULL, &Nq, NULL, NULL);if (*ierr) return;
   *ierr = PetscDSGetTabulation(*prob, &T);if (*ierr) return;
   *ierr = F90Array1dCreate((void *) T[*f]->T[0], MPIU_REAL, 1, Nq*Nb*Nc,     ptrB PETSC_F90_2PTR_PARAM(ptrb));if (*ierr) return;
-  *ierr = F90Array1dCreate((void *) T[*f]->T[0], MPIU_REAL, 1, Nq*Nb*Nc*dim, ptrD PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = F90Array1dCreate((void *) T[*f]->T[1], MPIU_REAL, 1, Nq*Nb*Nc*dim, ptrD PETSC_F90_2PTR_PARAM(ptrd));
 }
 
 PETSC_EXTERN void petscdsrestoretabulation_(PetscDS *prob, PetscInt *f, F90Array1d *ptrB, F90Array1d *ptrD, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrb) PETSC_F90_2PTR_PROTO(ptrd))
