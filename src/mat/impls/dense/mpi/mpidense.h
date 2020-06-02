@@ -25,8 +25,6 @@ typedef struct { /* used by MatMatTransposeMultxxx_MPIDense_MPIDense() */
 
 typedef struct {
   Mat         A;                        /* local submatrix */
-  PetscMPIInt size;                     /* size of communicator */
-  PetscMPIInt rank;                     /* rank of proc in communicator */
 
   /* The following variables are used for matrix assembly */
   PetscBool   donotstash;               /* Flag indicationg if values should be stashed */

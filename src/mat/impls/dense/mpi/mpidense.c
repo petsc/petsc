@@ -76,7 +76,7 @@ PetscErrorCode  MatGetDiagonalBlock_MPIDense(Mat A,Mat *a)
   ierr = MatHasCongruentLayouts(A,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only square matrices supported.");
   ierr = PetscObjectQuery((PetscObject)A,"DiagonalBlock",(PetscObject*)&B);CHKERRQ(ierr);
-  if (!B) { /* This should use a new function, e.g. MatDenseGetSubMatrix (not create) */
+  if (!B) { /* This should use MatDenseGetSubMatrix (not create), but we would need a call like MatRestoreDiagonalBlock */
 
     ierr = PetscObjectTypeCompare((PetscObject)mdn->A,MATSEQDENSECUDA,&flg);CHKERRQ(ierr);
     if (flg) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not coded for %s. Send an email to petsc-dev@mcs.anl.gov to request this feature",MATSEQDENSECUDA);
@@ -178,6 +178,7 @@ static PetscErrorCode MatDenseGetArray_MPIDense(Mat A,PetscScalar **array)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (a->matinuse) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Need to call MatDenseRestoreSubMatrix() first");
   ierr = MatDenseGetArray(a->A,array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -188,6 +189,7 @@ static PetscErrorCode MatDenseGetArrayRead_MPIDense(Mat A,const PetscScalar **ar
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (a->matinuse) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Need to call MatDenseRestoreSubMatrix() first");
   ierr = MatDenseGetArrayRead(a->A,array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -198,6 +200,7 @@ static PetscErrorCode MatDenseGetArrayWrite_MPIDense(Mat A,PetscScalar **array)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (a->matinuse) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Need to call MatDenseRestoreSubMatrix() first");
   ierr = MatDenseGetArrayWrite(a->A,array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -208,8 +211,8 @@ static PetscErrorCode MatDensePlaceArray_MPIDense(Mat A,const PetscScalar *array
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (a->vecinuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseRestoreColumnVec() first");
-  if (a->matinuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseRestoreSubMatrix() first");
+  if (a->vecinuse) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Need to call MatDenseRestoreColumnVec() first");
+  if (a->matinuse) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Need to call MatDenseRestoreSubMatrix() first");
   ierr = MatDensePlaceArray(a->A,array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -220,8 +223,8 @@ static PetscErrorCode MatDenseResetArray_MPIDense(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (a->vecinuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseRestoreColumnVec() first");
-  if (a->matinuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseRestoreSubMatrix() first");
+  if (a->vecinuse) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Need to call MatDenseRestoreColumnVec() first");
+  if (a->matinuse) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Need to call MatDenseRestoreSubMatrix() first");
   ierr = MatDenseResetArray(a->A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -232,8 +235,8 @@ static PetscErrorCode MatDenseReplaceArray_MPIDense(Mat A,const PetscScalar *arr
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (a->vecinuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseRestoreColumnVec() first");
-  if (a->matinuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseRestoreSubMatrix() first");
+  if (a->vecinuse) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Need to call MatDenseRestoreColumnVec() first");
+  if (a->matinuse) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Need to call MatDenseRestoreSubMatrix() first");
   ierr = MatDenseReplaceArray(a->A,array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -549,8 +552,8 @@ PetscErrorCode MatDestroy_MPIDense(Mat mat)
   PetscLogObjectState((PetscObject)mat,"Rows=%D, Cols=%D",mat->rmap->N,mat->cmap->N);
 #endif
   ierr = MatStashDestroy_Private(&mat->stash);CHKERRQ(ierr);
-  if (mdn->vecinuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseRestoreColumnVec() first");
-  if (mdn->matinuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseRestoreSubMatrix() first");
+  if (mdn->vecinuse) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ORDER,"Need to call MatDenseRestoreColumnVec() first");
+  if (mdn->matinuse) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ORDER,"Need to call MatDenseRestoreSubMatrix() first");
   ierr = MatDestroy(&mdn->A);CHKERRQ(ierr);
   ierr = VecDestroy(&mdn->lvec);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&mdn->Mvctx);CHKERRQ(ierr);
@@ -601,13 +604,14 @@ static PetscErrorCode MatView_MPIDense_ASCIIorDraworSocket(Mat mat,PetscViewer v
 {
   Mat_MPIDense      *mdn = (Mat_MPIDense*)mat->data;
   PetscErrorCode    ierr;
-  PetscMPIInt       rank = mdn->rank;
+  PetscMPIInt       rank;
   PetscViewerType   vtype;
   PetscBool         iascii,isdraw;
   PetscViewer       sviewer;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)mat),&rank);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
   if (iascii) {
@@ -833,14 +837,16 @@ PetscErrorCode MatNorm_MPIDense(Mat A,NormType type,PetscReal *nrm)
   Mat_MPIDense      *mdn = (Mat_MPIDense*)A->data;
   PetscErrorCode    ierr;
   PetscInt          i,j;
+  PetscMPIInt       size;
   PetscReal         sum = 0.0;
   const PetscScalar *av,*v;
 
   PetscFunctionBegin;
   ierr = MatDenseGetArrayRead(mdn->A,&av);CHKERRQ(ierr);
   v    = av;
-  if (mdn->size == 1) {
-    ierr =  MatNorm(mdn->A,type,nrm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
+  if (size == 1) {
+    ierr = MatNorm(mdn->A,type,nrm);CHKERRQ(ierr);
   } else {
     if (type == NORM_FROBENIUS) {
       for (i=0; i<mdn->A->cmap->n*mdn->A->rmap->n; i++) {
@@ -1017,10 +1023,11 @@ static PetscErrorCode MatDenseGetColumnVec_MPIDenseCUDA(Mat A,PetscInt col,Vec *
   PetscInt       lda;
 
   PetscFunctionBegin;
-  if (a->vecinuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseRestoreColumnVec() first");
-  if (a->matinuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseRestoreSubMatrix() first");
+  if (a->vecinuse) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Need to call MatDenseRestoreColumnVec() first");
+  if (a->matinuse) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Need to call MatDenseRestoreSubMatrix() first");
   if (!a->cvec) {
     ierr = VecCreateMPICUDAWithArray(PetscObjectComm((PetscObject)A),A->rmap->bs,A->rmap->n,A->rmap->N,NULL,&a->cvec);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)A,(PetscObject)a->cvec);CHKERRQ(ierr);
   }
   a->vecinuse = col + 1;
   ierr = MatDenseGetLDA(a->A,&lda);CHKERRQ(ierr);
@@ -1052,10 +1059,11 @@ static PetscErrorCode MatDenseGetColumnVecRead_MPIDenseCUDA(Mat A,PetscInt col,V
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (a->vecinuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseRestoreColumnVec() first");
-  if (a->matinuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseRestoreSubMatrix() first");
+  if (a->vecinuse) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Need to call MatDenseRestoreColumnVec() first");
+  if (a->matinuse) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Need to call MatDenseRestoreSubMatrix() first");
   if (!a->cvec) {
     ierr = VecCreateMPICUDAWithArray(PetscObjectComm((PetscObject)A),A->rmap->bs,A->rmap->n,A->rmap->N,NULL,&a->cvec);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)A,(PetscObject)a->cvec);CHKERRQ(ierr);
   }
   a->vecinuse = col + 1;
   ierr = MatDenseGetLDA(a->A,&lda);CHKERRQ(ierr);
@@ -1072,8 +1080,8 @@ static PetscErrorCode MatDenseRestoreColumnVecRead_MPIDenseCUDA(Mat A,PetscInt c
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!a->vecinuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseGetColumnVec() first");
-  if (!a->cvec) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing internal column vector");
+  if (!a->vecinuse) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Need to call MatDenseGetColumnVec() first");
+  if (!a->cvec) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Missing internal column vector");
   a->vecinuse = 0;
   ierr = MatDenseCUDARestoreArrayRead(a->A,&a->ptrinuse);CHKERRQ(ierr);
   ierr = VecLockReadPop(a->cvec);CHKERRQ(ierr);
@@ -1089,10 +1097,11 @@ static PetscErrorCode MatDenseGetColumnVecWrite_MPIDenseCUDA(Mat A,PetscInt col,
   PetscInt       lda;
 
   PetscFunctionBegin;
-  if (a->vecinuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseRestoreColumnVec() first");
-  if (a->matinuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseRestoreSubMatrix() first");
+  if (a->vecinuse) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Need to call MatDenseRestoreColumnVec() first");
+  if (a->matinuse) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Need to call MatDenseRestoreSubMatrix() first");
   if (!a->cvec) {
     ierr = VecCreateMPICUDAWithArray(PetscObjectComm((PetscObject)A),A->rmap->bs,A->rmap->n,A->rmap->N,NULL,&a->cvec);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)A,(PetscObject)a->cvec);CHKERRQ(ierr);
   }
   a->vecinuse = col + 1;
   ierr = MatDenseGetLDA(a->A,&lda);CHKERRQ(ierr);
@@ -1108,51 +1117,11 @@ static PetscErrorCode MatDenseRestoreColumnVecWrite_MPIDenseCUDA(Mat A,PetscInt 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!a->vecinuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseGetColumnVec() first");
-  if (!a->cvec) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing internal column vector");
+  if (!a->vecinuse) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Need to call MatDenseGetColumnVec() first");
+  if (!a->cvec) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Missing internal column vector");
   a->vecinuse = 0;
   ierr = MatDenseCUDARestoreArrayWrite(a->A,(PetscScalar**)&a->ptrinuse);CHKERRQ(ierr);
   ierr = VecCUDAResetArray(a->cvec);CHKERRQ(ierr);
-  *v   = NULL;
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode MatDenseGetSubMatrix_MPIDenseCUDA(Mat A,PetscInt cbegin,PetscInt cend,Mat *v)
-{
-  Mat_MPIDense   *a = (Mat_MPIDense*)A->data;
-  PetscInt       lda;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (a->vecinuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseRestoreColumnVec() first");
-  if (a->matinuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseRestoreSubMatrix() first");
-  if (a->cmat && cend-cbegin != a->cmat->cmap->N) {
-    ierr = MatDestroy(&a->cmat);CHKERRQ(ierr);
-  }
-  ierr = MatDenseCUDAGetArray(a->A,(PetscScalar**)&a->ptrinuse);CHKERRQ(ierr);
-  ierr = MatDenseGetLDA(a->A,&lda);CHKERRQ(ierr);
-  if (!a->cmat) {
-    ierr = MatCreateDenseCUDA(PetscObjectComm((PetscObject)A),A->rmap->n,PETSC_DECIDE,A->rmap->N,cend-cbegin,(PetscScalar*)a->ptrinuse + (size_t)cbegin * (size_t)lda,&a->cmat);CHKERRQ(ierr);
-    ierr = MatDenseSetLDA(a->cmat,lda);CHKERRQ(ierr);
-  } else {
-    ierr = MatDenseCUDAPlaceArray(a->cmat,a->ptrinuse + (size_t)cbegin * (size_t)lda);CHKERRQ(ierr);
-  }
-  a->matinuse = cbegin + 1;
-  *v = a->cmat;
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode MatDenseRestoreSubMatrix_MPIDenseCUDA(Mat A,Mat *v)
-{
-  Mat_MPIDense   *a = (Mat_MPIDense*)A->data;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (!a->matinuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseGetSubMatrix() first");
-  if (!a->cmat) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing internal column matrix");
-  a->matinuse = 0;
-  ierr = MatDenseCUDARestoreArray(a->A,(PetscScalar**)&a->ptrinuse);CHKERRQ(ierr);
-  ierr = MatDenseCUDAResetArray(a->cmat);CHKERRQ(ierr);
   *v   = NULL;
   PetscFunctionReturn(0);
 }
@@ -1163,8 +1132,8 @@ static PetscErrorCode MatDenseCUDAPlaceArray_MPIDenseCUDA(Mat A, const PetscScal
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (l->vecinuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseRestoreColumnVec() first");
-  if (l->matinuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseRestoreSubMatrix() first");
+  if (l->vecinuse) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Need to call MatDenseRestoreColumnVec() first");
+  if (l->matinuse) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Need to call MatDenseRestoreSubMatrix() first");
   ierr = MatDenseCUDAPlaceArray(l->A,a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1175,8 +1144,8 @@ static PetscErrorCode MatDenseCUDAResetArray_MPIDenseCUDA(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (l->vecinuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseRestoreColumnVec() first");
-  if (l->matinuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseRestoreSubMatrix() first");
+  if (l->vecinuse) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Need to call MatDenseRestoreColumnVec() first");
+  if (l->matinuse) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Need to call MatDenseRestoreSubMatrix() first");
   ierr = MatDenseCUDAResetArray(l->A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1187,8 +1156,8 @@ static PetscErrorCode MatDenseCUDAReplaceArray_MPIDenseCUDA(Mat A, const PetscSc
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (l->vecinuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseRestoreColumnVec() first");
-  if (l->matinuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseRestoreSubMatrix() first");
+  if (l->vecinuse) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Need to call MatDenseRestoreColumnVec() first");
+  if (l->matinuse) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Need to call MatDenseRestoreSubMatrix() first");
   ierr = MatDenseCUDAReplaceArray(l->A,a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1256,7 +1225,6 @@ static PetscErrorCode MatDenseCUDARestoreArray_MPIDenseCUDA(Mat A, PetscScalar *
 static PetscErrorCode MatDenseGetColumnVecWrite_MPIDense(Mat,PetscInt,Vec*);
 static PetscErrorCode MatDenseGetColumnVecRead_MPIDense(Mat,PetscInt,Vec*);
 static PetscErrorCode MatDenseGetColumnVec_MPIDense(Mat,PetscInt,Vec*);
-static PetscErrorCode MatDenseGetSubMatrix_MPIDense(Mat,PetscInt,PetscInt,Mat*);
 static PetscErrorCode MatDenseRestoreColumnVecWrite_MPIDense(Mat,PetscInt,Vec*);
 static PetscErrorCode MatDenseRestoreColumnVecRead_MPIDense(Mat,PetscInt,Vec*);
 static PetscErrorCode MatDenseRestoreColumnVec_MPIDense(Mat,PetscInt,Vec*);
@@ -1268,8 +1236,8 @@ static PetscErrorCode MatBindToCPU_MPIDenseCUDA(Mat mat,PetscBool bind)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (d->vecinuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseRestoreColumnVec() first");
-  if (d->matinuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseRestoreSubMatrix() first");
+  if (d->vecinuse) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ORDER,"Need to call MatDenseRestoreColumnVec() first");
+  if (d->matinuse) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ORDER,"Need to call MatDenseRestoreSubMatrix() first");
   if (d->A) {
     ierr = MatBindToCPU(d->A,bind);CHKERRQ(ierr);
   }
@@ -1280,6 +1248,9 @@ static PetscErrorCode MatBindToCPU_MPIDenseCUDA(Mat mat,PetscBool bind)
     ierr = PetscObjectTypeCompare((PetscObject)d->cvec,VECMPICUDA,&iscuda);CHKERRQ(ierr);
     if (!iscuda) {
       ierr = VecDestroy(&d->cvec);CHKERRQ(ierr);
+    }
+    ierr = PetscObjectTypeCompare((PetscObject)d->cmat,MATMPIDENSECUDA,&iscuda);CHKERRQ(ierr);
+    if (!iscuda) {
       ierr = MatDestroy(&d->cmat);CHKERRQ(ierr);
     }
     ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseGetColumnVec_C",MatDenseGetColumnVec_MPIDenseCUDA);CHKERRQ(ierr);
@@ -1288,8 +1259,6 @@ static PetscErrorCode MatBindToCPU_MPIDenseCUDA(Mat mat,PetscBool bind)
     ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseRestoreColumnVecRead_C",MatDenseRestoreColumnVecRead_MPIDenseCUDA);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseGetColumnVecWrite_C",MatDenseGetColumnVecWrite_MPIDenseCUDA);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseRestoreColumnVecWrite_C",MatDenseRestoreColumnVecWrite_MPIDenseCUDA);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseGetSubMatrix_C",MatDenseGetSubMatrix_MPIDenseCUDA);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseRestoreSubMatrix_C",MatDenseRestoreSubMatrix_MPIDenseCUDA);CHKERRQ(ierr);
   } else {
     ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseGetColumnVec_C",MatDenseGetColumnVec_MPIDense);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseRestoreColumnVec_C",MatDenseRestoreColumnVec_MPIDense);CHKERRQ(ierr);
@@ -1297,8 +1266,9 @@ static PetscErrorCode MatBindToCPU_MPIDenseCUDA(Mat mat,PetscBool bind)
     ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseRestoreColumnVecRead_C",MatDenseRestoreColumnVecRead_MPIDense);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseGetColumnVecWrite_C",MatDenseGetColumnVecWrite_MPIDense);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseRestoreColumnVecWrite_C",MatDenseRestoreColumnVecWrite_MPIDense);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseGetSubMatrix_C",MatDenseGetSubMatrix_MPIDense);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseRestoreSubMatrix_C",MatDenseRestoreSubMatrix_MPIDense);CHKERRQ(ierr);
+  }
+  if (d->cmat) {
+    ierr = MatBindToCPU(d->cmat,bind);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1509,6 +1479,7 @@ PetscErrorCode  MatMPIDenseSetPreallocation_MPIDense(Mat mat,PetscScalar *data)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (a->matinuse) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ORDER,"Need to call MatDenseRestoreSubMatrix() first");
   ierr = PetscLayoutSetUp(mat->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(mat->cmap);CHKERRQ(ierr);
   if (!a->A) {
@@ -1710,8 +1681,8 @@ PetscErrorCode MatDenseGetColumnVec_MPIDense(Mat A,PetscInt col,Vec *v)
   PetscInt       lda;
 
   PetscFunctionBegin;
-  if (a->vecinuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseRestoreColumnVec() first");
-  if (a->matinuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseRestoreSubMatrix() first");
+  if (a->vecinuse) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Need to call MatDenseRestoreColumnVec() first");
+  if (a->matinuse) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Need to call MatDenseRestoreSubMatrix() first");
   if (!a->cvec) {
     ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)A),A->rmap->bs,A->rmap->n,A->rmap->N,NULL,&a->cvec);CHKERRQ(ierr);
   }
@@ -1745,8 +1716,8 @@ PetscErrorCode MatDenseGetColumnVecRead_MPIDense(Mat A,PetscInt col,Vec *v)
   PetscInt       lda;
 
   PetscFunctionBegin;
-  if (a->vecinuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseRestoreColumnVec() first");
-  if (a->matinuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseRestoreSubMatrix() first");
+  if (a->vecinuse) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Need to call MatDenseRestoreColumnVec() first");
+  if (a->matinuse) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Need to call MatDenseRestoreSubMatrix() first");
   if (!a->cvec) {
     ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)A),A->rmap->bs,A->rmap->n,A->rmap->N,NULL,&a->cvec);CHKERRQ(ierr);
   }
@@ -1765,8 +1736,8 @@ PetscErrorCode MatDenseRestoreColumnVecRead_MPIDense(Mat A,PetscInt col,Vec *v)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!a->vecinuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseGetColumnVec() first");
-  if (!a->cvec) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing internal column vector");
+  if (!a->vecinuse) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Need to call MatDenseGetColumnVec() first");
+  if (!a->cvec) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Missing internal column vector");
   a->vecinuse = 0;
   ierr = MatDenseRestoreArrayRead(a->A,&a->ptrinuse);CHKERRQ(ierr);
   ierr = VecLockReadPop(a->cvec);CHKERRQ(ierr);
@@ -1782,8 +1753,8 @@ PetscErrorCode MatDenseGetColumnVecWrite_MPIDense(Mat A,PetscInt col,Vec *v)
   PetscInt       lda;
 
   PetscFunctionBegin;
-  if (a->vecinuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseRestoreColumnVec() first");
-  if (a->matinuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseRestoreSubMatrix() first");
+  if (a->vecinuse) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Need to call MatDenseRestoreColumnVec() first");
+  if (a->matinuse) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Need to call MatDenseRestoreSubMatrix() first");
   if (!a->cvec) {
     ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)A),A->rmap->bs,A->rmap->n,A->rmap->N,NULL,&a->cvec);CHKERRQ(ierr);
   }
@@ -1801,8 +1772,8 @@ PetscErrorCode MatDenseRestoreColumnVecWrite_MPIDense(Mat A,PetscInt col,Vec *v)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!a->vecinuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseGetColumnVec() first");
-  if (!a->cvec) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing internal column vector");
+  if (!a->vecinuse) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Need to call MatDenseGetColumnVec() first");
+  if (!a->cvec) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Missing internal column vector");
   a->vecinuse = 0;
   ierr = MatDenseRestoreArrayWrite(a->A,(PetscScalar**)&a->ptrinuse);CHKERRQ(ierr);
   ierr = VecResetArray(a->cvec);CHKERRQ(ierr);
@@ -1813,23 +1784,38 @@ PetscErrorCode MatDenseRestoreColumnVecWrite_MPIDense(Mat A,PetscInt col,Vec *v)
 PetscErrorCode MatDenseGetSubMatrix_MPIDense(Mat A,PetscInt cbegin,PetscInt cend,Mat *v)
 {
   Mat_MPIDense   *a = (Mat_MPIDense*)A->data;
-  PetscInt       lda;
+  Mat_MPIDense   *c;
   PetscErrorCode ierr;
+  MPI_Comm       comm;
+  PetscBool      setup = PETSC_FALSE;
 
   PetscFunctionBegin;
-  if (a->vecinuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseRestoreColumnVec() first");
-  if (a->matinuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseRestoreSubMatrix() first");
-  if (a->cmat && cend-cbegin != a->cmat->cmap->N) {
-    ierr = MatDestroy(&a->cmat);CHKERRQ(ierr);
-  }
-  ierr = MatDenseGetArray(a->A,(PetscScalar**)&a->ptrinuse);CHKERRQ(ierr);
-  ierr = MatDenseGetLDA(a->A,&lda);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+  if (a->vecinuse) SETERRQ(comm,PETSC_ERR_ORDER,"Need to call MatDenseRestoreColumnVec() first");
+  if (a->matinuse) SETERRQ(comm,PETSC_ERR_ORDER,"Need to call MatDenseRestoreSubMatrix() first");
   if (!a->cmat) {
-    ierr = MatCreateDense(PetscObjectComm((PetscObject)A),A->rmap->n,PETSC_DECIDE,A->rmap->N,cend-cbegin,(PetscScalar*)a->ptrinuse + (size_t)cbegin * (size_t)lda,&a->cmat);CHKERRQ(ierr);
-    ierr = MatDenseSetLDA(a->cmat,lda);CHKERRQ(ierr);
-  } else {
-    ierr = MatDensePlaceArray(a->cmat,a->ptrinuse + (size_t)cbegin * (size_t)lda);CHKERRQ(ierr);
+    setup = PETSC_TRUE;
+    ierr = MatCreate(comm,&a->cmat);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)A,(PetscObject)a->cmat);CHKERRQ(ierr);
+    ierr = MatSetType(a->cmat,((PetscObject)A)->type_name);CHKERRQ(ierr);
+    ierr = PetscLayoutReference(A->rmap,&a->cmat->rmap);CHKERRQ(ierr);
+    ierr = PetscLayoutSetSize(a->cmat->cmap,cend-cbegin);CHKERRQ(ierr);
+    ierr = PetscLayoutSetUp(a->cmat->cmap);CHKERRQ(ierr);
+  } else if (cend-cbegin != a->cmat->cmap->N) {
+    setup = PETSC_TRUE;
+    ierr = PetscLayoutDestroy(&a->cmat->cmap);CHKERRQ(ierr);
+    ierr = PetscLayoutCreate(comm,&a->cmat->cmap);CHKERRQ(ierr);
+    ierr = PetscLayoutSetSize(a->cmat->cmap,cend-cbegin);CHKERRQ(ierr);
+    ierr = PetscLayoutSetUp(a->cmat->cmap);CHKERRQ(ierr);
   }
+  c = (Mat_MPIDense*)a->cmat->data;
+  if (c->A) SETERRQ(comm,PETSC_ERR_ORDER,"Need to call MatDenseRestoreSubMatrix() first");
+  ierr = MatDenseGetSubMatrix(a->A,cbegin,cend,&c->A);CHKERRQ(ierr);
+  if (setup) { /* do we really need this? */
+    ierr = MatSetUpMultiply_MPIDense(a->cmat);CHKERRQ(ierr);
+  }
+  a->cmat->preallocated = PETSC_TRUE;
+  a->cmat->assembled = PETSC_TRUE;
   a->matinuse = cbegin + 1;
   *v = a->cmat;
   PetscFunctionReturn(0);
@@ -1838,14 +1824,16 @@ PetscErrorCode MatDenseGetSubMatrix_MPIDense(Mat A,PetscInt cbegin,PetscInt cend
 PetscErrorCode MatDenseRestoreSubMatrix_MPIDense(Mat A,Mat *v)
 {
   Mat_MPIDense   *a = (Mat_MPIDense*)A->data;
+  Mat_MPIDense   *c;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!a->matinuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseGetSubMatrix() first");
-  if (!a->cmat) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing internal matrix");
+  if (!a->matinuse) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Need to call MatDenseGetSubMatrix() first");
+  if (!a->cmat) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Missing internal matrix");
+  if (*v != a->cmat) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not the matrix obtained from MatDenseGetSubMatrix()");
   a->matinuse = 0;
-  ierr = MatDenseRestoreArray(a->A,(PetscScalar**)&a->ptrinuse);CHKERRQ(ierr);
-  ierr = MatDenseResetArray(a->cmat);CHKERRQ(ierr);
+  c    = (Mat_MPIDense*)a->cmat->data;
+  ierr = MatDenseRestoreSubMatrix(a->A,&c->A);CHKERRQ(ierr);
   *v   = NULL;
   PetscFunctionReturn(0);
 }
@@ -1861,8 +1849,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIDense(Mat mat)
   ierr      = PetscMemcpy(mat->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
 
   mat->insertmode = NOT_SET_VALUES;
-  ierr            = MPI_Comm_rank(PetscObjectComm((PetscObject)mat),&a->rank);CHKERRQ(ierr);
-  ierr            = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&a->size);CHKERRQ(ierr);
 
   /* build cache for off array entries formed */
   a->donotstash = PETSC_FALSE;
@@ -2470,8 +2456,6 @@ static PetscErrorCode MatDuplicate_MPIDense(Mat A,MatDuplicateOption cpvalues,Ma
   mat->assembled    = PETSC_TRUE;
   mat->preallocated = PETSC_TRUE;
 
-  a->size         = oldmat->size;
-  a->rank         = oldmat->rank;
   mat->insertmode = NOT_SET_VALUES;
   a->donotstash   = oldmat->donotstash;
 
