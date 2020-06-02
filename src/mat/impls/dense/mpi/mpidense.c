@@ -2578,7 +2578,6 @@ static PetscErrorCode MatTransposeMatMultNumeric_MPIDense_MPIDense(Mat A,Mat B,M
   ierr = MatTransposeMatMult(a->A,b->A,atb->atb ? MAT_REUSE_MATRIX : MAT_INITIAL_MATRIX,PETSC_DEFAULT,&atb->atb);CHKERRQ(ierr);
 
   ierr = MatGetOwnershipRanges(C,&ranges);CHKERRQ(ierr);
-  for (i=0; i<size; i++) recvcounts[i] = (ranges[i+1] - ranges[i])*cN;
 
   /* arrange atbarray into sendbuf */
   ierr = MatDenseGetArrayRead(atb->atb,&atbarray);CHKERRQ(ierr);
@@ -2590,9 +2589,11 @@ static PetscErrorCode MatTransposeMatMultNumeric_MPIDense_MPIDense(Mat A,Mat B,M
   ierr = MatDenseRestoreArrayRead(atb->atb,&atbarray);CHKERRQ(ierr);
 
   /* sum all atbarray to local values of C */
-  ierr = MatDenseGetArray(c->A,&carray);CHKERRQ(ierr);
+  ierr = MatDenseGetArrayWrite(c->A,&carray);CHKERRQ(ierr);
   ierr = MPI_Reduce_scatter(sendbuf,carray,recvcounts,MPIU_SCALAR,MPIU_SUM,comm);CHKERRQ(ierr);
-  ierr = MatDenseRestoreArray(c->A,&carray);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArrayWrite(c->A,&carray);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2604,6 +2605,8 @@ static PetscErrorCode MatTransposeMatMultSymbolic_MPIDense_MPIDense(Mat A,Mat B,
   PetscInt              cm=A->cmap->n,cM,cN=B->cmap->N;
   Mat_TransMatMultDense *atb;
   PetscBool             cisdense;
+  PetscInt              i;
+  const PetscInt        *ranges;
 
   PetscFunctionBegin;
   MatCheckProduct(C,3);
@@ -2620,14 +2623,14 @@ static PetscErrorCode MatTransposeMatMultSymbolic_MPIDense_MPIDense(Mat A,Mat B,
     ierr = MatSetType(C,((PetscObject)A)->type_name);CHKERRQ(ierr);
   }
   ierr = MatSetUp(C);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* create data structure for reuse C */
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = PetscNew(&atb);CHKERRQ(ierr);
   cM   = C->rmap->N;
   ierr = PetscMalloc2((size_t)cM*(size_t)cN,&atb->sendbuf,size,&atb->recvcounts);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRanges(C,&ranges);CHKERRQ(ierr);
+  for (i=0; i<size; i++) atb->recvcounts[i] = (ranges[i+1] - ranges[i])*cN;
 
   C->product->data    = atb;
   C->product->destroy = MatDestroy_MatTransMatMult_MPIDense_MPIDense;
@@ -2660,8 +2663,6 @@ static PetscErrorCode MatMatTransposeMultSymbolic_MPIDense_MPIDense(Mat A, Mat B
   ierr = MatSetType(C,MATMPIDENSE);CHKERRQ(ierr);
   ierr = MatSetUp(C);CHKERRQ(ierr);
   ierr = PetscObjectGetNewTag((PetscObject)C,&tag);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* create data structure for reuse C */
   ierr = PetscObjectGetComm((PetscObject)C,&comm);CHKERRQ(ierr);
@@ -2713,7 +2714,7 @@ static PetscErrorCode MatMatTransposeMultNumeric_MPIDense_MPIDense_Cyclic(Mat A,
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MatDenseGetArrayRead(a->A,&av);CHKERRQ(ierr);
   ierr = MatDenseGetArrayRead(b->A,&bv);CHKERRQ(ierr);
-  ierr = MatDenseGetArray(c->A,&cv);CHKERRQ(ierr);
+  ierr = MatDenseGetArrayWrite(c->A,&cv);CHKERRQ(ierr);
   ierr = MatDenseGetLDA(a->A,&i);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(i,&alda);CHKERRQ(ierr);
   ierr = MatDenseGetLDA(b->A,&i);CHKERRQ(ierr);
@@ -2769,7 +2770,9 @@ static PetscErrorCode MatMatTransposeMultNumeric_MPIDense_MPIDense_Cyclic(Mat A,
   }
   ierr = MatDenseRestoreArrayRead(a->A,&av);CHKERRQ(ierr);
   ierr = MatDenseRestoreArrayRead(b->A,&bv);CHKERRQ(ierr);
-  ierr = MatDenseRestoreArray(c->A,&cv);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArrayWrite(c->A,&cv);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2794,7 +2797,7 @@ static PetscErrorCode MatMatTransposeMultNumeric_MPIDense_MPIDense_Allgatherv(Ma
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MatDenseGetArrayRead(a->A,&av);CHKERRQ(ierr);
   ierr = MatDenseGetArrayRead(b->A,&bv);CHKERRQ(ierr);
-  ierr = MatDenseGetArray(c->A,&cv);CHKERRQ(ierr);
+  ierr = MatDenseGetArrayWrite(c->A,&cv);CHKERRQ(ierr);
   ierr = MatDenseGetLDA(a->A,&i);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(i,&alda);CHKERRQ(ierr);
   ierr = MatDenseGetLDA(b->A,&blda);CHKERRQ(ierr);
@@ -2817,7 +2820,9 @@ static PetscErrorCode MatMatTransposeMultNumeric_MPIDense_MPIDense_Allgatherv(Ma
   if (cm && cn && ck) PetscStackCallBLAS("BLASgemm",BLASgemm_("N","N",&cm,&cn,&ck,&_DOne,av,&alda,recvbuf,&ck,&_DZero,cv,&clda));
   ierr = MatDenseRestoreArrayRead(a->A,&av);CHKERRQ(ierr);
   ierr = MatDenseRestoreArrayRead(b->A,&bv);CHKERRQ(ierr);
-  ierr = MatDenseRestoreArray(c->A,&cv);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArrayWrite(c->A,&cv);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
