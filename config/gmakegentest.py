@@ -189,6 +189,23 @@ class generateExamples(Petsc):
     #if not langReq: print("ERROR: ", srcext, srcfile)
     return langReq
 
+  def _getAltList(self,output_file,srcdir):
+    ''' Calculate AltList based on output file-- see
+       src/snes/tutorials/output/ex22*.out
+    '''
+    altlist=[output_file]
+    basefile,ext = os.path.splitext(output_file)
+    for i in range(1,9):
+      altroot=basefile+"_alt"
+      if i > 1: altroot=altroot+"_"+str(i)
+      af=altroot+".out"
+      srcaf=os.path.join(srcdir,af)
+      fullaf=os.path.join(self.petsc_dir,srcaf)
+      if os.path.isfile(fullaf): altlist.append(srcaf)
+
+    return altlist
+
+
   def _getLoopVars(self,inDict,testname, isSubtest=False):
     """
     Given: 'args: -bs {{1 2 3 4 5}} -pc_type {{cholesky sor}} -ksp_monitor'
@@ -223,10 +240,10 @@ class generateExamples(Petsc):
           loopVars[akey][keyvar]=[keyvar,lvars]
           if akey=='nsize':
             if len(lvars.split()) > 1:
-              lsuffix += akey +'-${' + keyvar + '}'
+              lsuffix += akey +'-${i' + keyvar + '}'
           else:
-            inDict[akey] += ' -'+keyvar+' ${' + keyvar + '}'
-            lsuffix+=keyvar+'-${' + keyvar + '}_'
+            inDict[akey] += ' -'+keyvar+' ${i' + keyvar + '}'
+            lsuffix+=keyvar+'-${i' + keyvar + '}_'
         else:
           if key=='args':
             newargs.append(varset.strip())
@@ -387,22 +404,6 @@ class generateExamples(Petsc):
 
     # Add in the full path here.
     subst['output_file']=os.path.join(subst['srcdir'],subst['output_file'])
-    if not os.path.isfile(os.path.join(self.petsc_dir,subst['output_file'])):
-      if not subst['TODO']:
-        print("Warning: "+subst['output_file']+" not found.")
-    # Worry about alt files here -- see
-    #   src/snes/tutorials/output/ex22*.out
-    altlist=[subst['output_file']]
-    basefile,ext = os.path.splitext(subst['output_file'])
-    for i in range(1,9):
-      altroot=basefile+"_alt"
-      if i > 1: altroot=altroot+"_"+str(i)
-      af=altroot+".out"
-      srcaf=os.path.join(subst['srcdir'],af)
-      fullaf=os.path.join(self.petsc_dir,srcaf)
-      if os.path.isfile(fullaf): altlist.append(srcaf)
-    if len(altlist)>1: subst['altfiles']=altlist
-    #if len(altlist)>1: print("Found alt files: ",altlist)
 
     subst['regexes']={}
     for subkey in subst:
@@ -425,7 +426,7 @@ class generateExamples(Petsc):
       Str=subst['regexes'][subkey].sub(lambda x: subst[subkey],Str)
     return Str
 
-  def getCmds(self,subst,i):
+  def getCmds(self,subst,i, debug=False):
     """
       Generate bash script using template found next to this file.
       This file is read in at constructor time to avoid file I/O
@@ -443,16 +444,25 @@ class generateExamples(Petsc):
 
     cmdLines+=cmdindnt+'if test $res = 0; then\n'
     diffindnt=self.indent*(nindnt+1)
-    if 'altfiles' not in subst:
+
+    # Do some checks on existence of output_file and alt files
+    if not os.path.isfile(os.path.join(self.petsc_dir,subst['output_file'])):
+      if not subst['TODO']:
+        print("Warning: "+subst['output_file']+" not found.")
+    altlist=self._getAltList(subst['output_file'], subst['srcdir'])
+
+    # altlist always has output_file
+    if len(altlist)==1:
       cmd=diffindnt+self._substVars(subst,example_template.difftest)
     else:
+      if debug: print("Found alt files: ",altlist)
       # Have to do it by hand a bit because of variable number of alt files
       rf=subst['redirect_file']
       cmd=diffindnt+example_template.difftest.split('@')[0]
-      for i in range(len(subst['altfiles'])):
-        af=subst['altfiles'][i]
+      for i in range(len(altlist)):
+        af=altlist[i]
         cmd+=af+' '+rf
-        if i!=len(subst['altfiles'])-1:
+        if i!=len(altlist)-1:
           cmd+=' > diff-${testname}-'+str(i)+'.out 2> diff-${testname}-'+str(i)+'.out'
           cmd+=' || ${diff_exe} '
         else:
@@ -502,7 +512,6 @@ class generateExamples(Petsc):
     outstr=''; indnt=self.indent
 
     for key in loopVars:
-      if key in usedVars: continue         # Do not duplicate setting vars
       for var in loopVars[key]['varlist']:
         varval=loopVars[key][var]
         outstr += "{0}_in=${{{0}:-{1}}}\n".format(*varval)
@@ -511,7 +520,7 @@ class generateExamples(Petsc):
     for key in loopVars:
       for var in loopVars[key]['varlist']:
         varval=loopVars[key][var]
-        outstr += indnt * i + "for {0} in ${{{0}_in}}; do\n".format(*varval)
+        outstr += indnt * i + "for i{0} in ${{{0}_in}}; do\n".format(*varval)
         i = i + 1
     return (outstr,i)
 

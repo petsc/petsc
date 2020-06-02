@@ -942,4 +942,9 @@ int main(int argc,char **argv)
       args: -viewer_binary_skip_info
       localrunfiles: petscoptions X.bin Ybus.bin
 
+   test:
+      suffix: 2
+      args: -viewer_binary_skip_info -ts_type beuler
+      localrunfiles: petscoptions X.bin Ybus.bin
+
 TEST*/

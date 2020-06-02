@@ -309,6 +309,7 @@ static PetscErrorCode TSAdjointStepBEuler_Private(TS ts)
   }
 
   /* Build LHS for first-order adjoint */
+  th->shift = 1./adjoint_time_step;
   ierr = TSComputeSNESJacobian(ts,th->X,J,Jpre);CHKERRQ(ierr);
   ierr = KSPSetOperators(ksp,J,Jpre);CHKERRQ(ierr);
 

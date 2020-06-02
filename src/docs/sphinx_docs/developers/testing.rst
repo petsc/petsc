@@ -113,6 +113,12 @@ With this background, these keywords are as follows.
 
    -  These arguments are passed to the executable.
 
+-  **diff_args**: (*Optional*; *Default:* ``""``)
+
+   -  These arguments are passed to the ``lib/petsc/bin/petscdiff`` script that
+      is used in the diff part of the test.  For example, ``-j`` enables testing
+      the floating point numbers.
+
 -  **TODO**: (*Optional*; *Default:* ``False``)
 
    -  Setting this Boolean to True will tell the test to appear in the
