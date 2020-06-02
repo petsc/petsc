@@ -346,6 +346,32 @@ int main(int argc,char **args)
   }
   ierr = CheckLocal(B,X,aB,aX);CHKERRQ(ierr);
 
+  /* Test MatDenseGetSubMatrix */
+  {
+    Mat B2,T3,T4;
+
+    ierr = MatDuplicate(B,MAT_COPY_VALUES,&B2);CHKERRQ(ierr);
+    ierr = MatDuplicate(B,MAT_DO_NOT_COPY_VALUES,&T4);CHKERRQ(ierr);
+    ierr = MatSetRandom(T4,NULL);CHKERRQ(ierr);
+    ierr = MatAXPY(B2,1.0,T4,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = MatDenseGetSubMatrix(B,PetscMin(1,K),PetscMin(2,K),&T);CHKERRQ(ierr);
+    ierr = MatDenseGetSubMatrix(T4,PetscMin(1,K),PetscMin(2,K),&T2);CHKERRQ(ierr);
+    ierr = MatDenseGetSubMatrix(B2,PetscMin(1,K),PetscMin(2,K),&T3);CHKERRQ(ierr);
+    ierr = MatAXPY(T,1.0,T2,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = MatAXPY(T3,-1.0,T,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = MatNorm(T3,NORM_FROBENIUS,&err);CHKERRQ(ierr);
+    if (err > PETSC_SMALL) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with MatDenseGetSubMatrix\n");CHKERRQ(ierr);
+      ierr = MatView(T3,NULL);CHKERRQ(ierr);
+    }
+    ierr = MatDenseRestoreSubMatrix(B,&T);CHKERRQ(ierr);
+    ierr = MatDenseRestoreSubMatrix(T4,&T2);CHKERRQ(ierr);
+    ierr = MatDenseRestoreSubMatrix(B2,&T3);CHKERRQ(ierr);
+    ierr = CheckLocal(B,NULL,aB,NULL);CHKERRQ(ierr);
+    ierr = MatDestroy(&B2);CHKERRQ(ierr);
+    ierr = MatDestroy(&T4);CHKERRQ(ierr);
+  }
+
   /* Test reusing a previously allocated dense buffer */
   ierr = MatMatMult(A,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&X);CHKERRQ(ierr);
   ierr = CheckLocal(B,X,aB,aX);CHKERRQ(ierr);
