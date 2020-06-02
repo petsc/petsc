@@ -175,7 +175,7 @@ int main(int argc, char **argv)
   ierr = PetscOptionsBool("-coords","Transfer a simple coordinate function", "ex2.c", coords, &coords, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-use_fv","Use a finite volume approximation", "ex2.c", useFV, &useFV, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_convert","Test conversion to DMPLEX",NULL,conv,&conv,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-filename", "Read the base mesh from file", "ex2.c", filename, filename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-filename", "Read the base mesh from file", "ex2.c", filename, filename, sizeof(filename), NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-distribute_base","Distribute base DM", "ex2.c", distribute_base, &distribute_base, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-transfer_from_base","Transfer a vector from base DM to DMForest", "ex2.c", transfer_from_base[0], &transfer_from_base[0], NULL);CHKERRQ(ierr);
   transfer_from_base[1] = transfer_from_base[0];

@@ -79,8 +79,8 @@ PetscErrorCode main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char *)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   /* Specify default parameters for the problem, check for command-line overrides */
-  ierr = PetscStrncpy(user.name,"HS21",8);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,NULL,"-cutername",user.name,24,&flg);CHKERRQ(ierr);
+  ierr = PetscStrncpy(user.name,"HS21",sizeof(user.name));CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-cutername",user.name,sizeof(user.name),&flg);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\n---- MAROS Problem %s -----\n",user.name);CHKERRQ(ierr);
   ierr = InitializeProblem(&user);CHKERRQ(ierr);

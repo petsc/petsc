@@ -102,7 +102,7 @@ static PetscErrorCode PFSetFromOptions_String(PetscOptionItems *PetscOptionsObje
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"String function options");CHKERRQ(ierr);
-  ierr = PetscOptionsString("-pf_string","Enter the function","PFStringCreateFunction","",value,PETSC_MAX_PATH_LEN,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-pf_string","Enter the function","PFStringCreateFunction","",value,sizeof(value),&flag);CHKERRQ(ierr);
   if (flag) {
     ierr           = PFStringCreateFunction(pf,value,(void**)&f);CHKERRQ(ierr);
     pf->ops->apply = f;

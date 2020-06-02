@@ -494,7 +494,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
 
   if (flg) {
     /* A hack for using dynamic tolerance in preconditioner */
-    ierr = PetscOptionsString("-sub_ksp_dynamic_tolerance","Use dynamic tolerance for PC if PC is a KSP","KSPMonitorDynamicTolerance","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-sub_ksp_dynamic_tolerance","Use dynamic tolerance for PC if PC is a KSP","KSPMonitorDynamicTolerance","stdout",monfilename,sizeof(monfilename),&flg);CHKERRQ(ierr);
     if (flg) {
       KSPDynTolCtx *scale;
       ierr        = PetscMalloc1(1,&scale);CHKERRQ(ierr);
@@ -508,7 +508,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   /*
    Calls Python function
   */
-  ierr = PetscOptionsString("-ksp_monitor_python","Use Python function","KSPMonitorSet",NULL,monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-ksp_monitor_python","Use Python function","KSPMonitorSet",NULL,monfilename,sizeof(monfilename),&flg);CHKERRQ(ierr);
   if (flg) {ierr = PetscPythonMonitorSet((PetscObject)ksp,monfilename);CHKERRQ(ierr);}
   /*
     Graphically plots preconditioned residual norm

@@ -52,7 +52,7 @@ int main(int argc,char **argv)
   char           type[256];
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetString(NULL,NULL,"-snes_linesearch_type",type,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-snes_linesearch_type",type,sizeof(type),&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscStrcmp(type,SNESLINESEARCHBT,&flg);CHKERRQ(ierr);
     if (flg) infatcount = 1;

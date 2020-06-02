@@ -730,11 +730,11 @@ PetscErrorCode PetscOptionsInsert(PetscOptions options,int *argc,char ***args,co
     char      yaml_file[PETSC_MAX_PATH_LEN];
     char      yaml_string[BUFSIZ];
     PetscBool yaml_flg;
-    ierr = PetscOptionsGetString(NULL,NULL,"-options_file_yaml",yaml_file,PETSC_MAX_PATH_LEN,&yaml_flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,NULL,"-options_file_yaml",yaml_file,sizeof(yaml_file),&yaml_flg);CHKERRQ(ierr);
     if (yaml_flg) {
       ierr = PetscOptionsInsertFileYAML(PETSC_COMM_WORLD,yaml_file,PETSC_TRUE);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsGetString(NULL,NULL,"-options_string_yaml",yaml_string,BUFSIZ,&yaml_flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,NULL,"-options_string_yaml",yaml_string,sizeof(yaml_string),&yaml_flg);CHKERRQ(ierr);
     if (yaml_flg) {
       ierr = PetscOptionsInsertStringYAML(NULL,yaml_string);CHKERRQ(ierr);
     }
@@ -1783,7 +1783,7 @@ PetscErrorCode PetscOptionsSetFromOptions(PetscOptions options)
      options = options ? options : defaultoptions;
   */
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Options for handling options","PetscOptions");CHKERRQ(ierr);
-  ierr = PetscOptionsString("-options_monitor","Monitor options database","PetscOptionsMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flgm);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-options_monitor","Monitor options database","PetscOptionsMonitorSet","stdout",monfilename,sizeof(monfilename),&flgm);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-options_monitor_cancel","Cancel all options database monitors","PetscOptionsMonitorCancel",flgc,&flgc,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if (flgm) {

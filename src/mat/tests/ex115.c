@@ -16,7 +16,7 @@ int main(int argc,char **args)
   char               file[256];
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
   testptap = PETSC_FALSE;
   testmatmatmult = PETSC_FALSE;

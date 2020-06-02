@@ -604,7 +604,7 @@ PetscErrorCode InitializeOptions(UserContext* user)
   ierr = PetscOptionsBool("-tet", "Use tetrahedra to discretize the domain", "ex36.cxx", user->usetet, &user->usetet, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-error", "Compute the discrete L_2 and L_inf errors of the solution", "ex36.cxx", user->error, &user->error, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEList("-bc", "Type of boundary condition", "ex36.cxx", bcTypes, 2, bcTypes[0], &bc, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-file", "The mesh file for the problem", "ex36.cxx", "", user->filename, PETSC_MAX_PATH_LEN, &user->use_extfile);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-file", "The mesh file for the problem", "ex36.cxx", "", user->filename, sizeof(user->filename), &user->use_extfile);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   if (user->problem < 1 || user->problem > 2) user->problem = 1;

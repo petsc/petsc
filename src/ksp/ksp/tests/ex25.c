@@ -22,7 +22,7 @@ int main(int argc,char **args)
 
   /* Load the binary data file "filein". Set runtime option: -f filein */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\n Load dataset ...\n");CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,NULL,"-f",filein,128,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-f",filein,sizeof(filein),NULL);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filein,FILE_MODE_READ,&view);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
   ierr = MatSetType(C,MATMPISBAIJ);CHKERRQ(ierr);

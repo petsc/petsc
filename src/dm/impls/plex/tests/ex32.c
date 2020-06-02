@@ -35,7 +35,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsIntArray("-faces", "Faces per direction", "ex32.c", options->faces, &n, NULL);CHKERRQ(ierr);
   n    = 3;
   ierr = PetscOptionsEnumArray("-periodicity", "Periodicity per direction", "ex32.c", DMBoundaryTypes, (PetscEnum *) options->periodicity, &n, &options->isPeriodic);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-filename", "The mesh file", "ex32.c", options->filename, options->filename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-filename", "The mesh file", "ex32.c", options->filename, options->filename, sizeof(options->filename), NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }

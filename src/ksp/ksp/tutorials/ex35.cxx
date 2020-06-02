@@ -624,7 +624,7 @@ PetscErrorCode InitializeOptions(UserContext* user)
   ierr = PetscOptionsBool("-tri", "Use triangles to discretize the domain", "ex35.cxx", user->usetri, &user->usetri, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-error", "Compute the discrete L_2 and L_inf errors of the solution", "ex35.cxx", user->error, &user->error, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEList("-bc", "Type of boundary condition", "ex35.cxx", bcTypes, 2, bcTypes[0], &bc, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-file", "The mesh file for the problem", "ex35.cxx", "", user->filename, PETSC_MAX_PATH_LEN, &user->use_extfile);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-file", "The mesh file for the problem", "ex35.cxx", "", user->filename, sizeof(user->filename), &user->use_extfile);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   if (user->problem < 1 || user->problem > 3) user->problem = 1;

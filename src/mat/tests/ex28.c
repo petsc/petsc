@@ -51,7 +51,7 @@ int main(int argc,char **args)
   ierr = VecSet(b,1.0);CHKERRQ(ierr);
 
   /* Get a symbolic factor F from A[0] */
-  ierr = PetscOptionsGetString(NULL, NULL, "-mat_solver_type",solvertype,64,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL, NULL, "-mat_solver_type",solvertype,sizeof(solvertype),&flg);CHKERRQ(ierr);
   ierr = PetscStrcmp(solvertype,"superlu",&flg_superlu);CHKERRQ(ierr);
   ierr = PetscStrcmp(solvertype,"mumps",&flg_mumps);CHKERRQ(ierr);
 

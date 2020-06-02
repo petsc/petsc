@@ -99,7 +99,7 @@ PETSC_EXTERN PetscErrorCode PetscViennaCLInit()
 
   PetscFunctionBegin;
   /* ViennaCL backend selection: CUDA, OpenCL, or OpenMP */
-  ierr = PetscOptionsGetString(NULL,NULL,"-viennacl_backend",string,12,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-viennacl_backend",string,sizeof(string),&flg);CHKERRQ(ierr);
   if (flg) {
     try {
       ierr = PetscStrcasecmp(string,"cuda",&flg_cuda);CHKERRQ(ierr);
@@ -122,7 +122,7 @@ PETSC_EXTERN PetscErrorCode PetscViennaCLInit()
 
 #if defined(PETSC_HAVE_OPENCL)
   /* ViennaCL OpenCL device type configuration */
-  ierr = PetscOptionsGetString(NULL,NULL,"-viennacl_opencl_device_type",string,12,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-viennacl_opencl_device_type",string,sizeof(string),&flg);CHKERRQ(ierr);
   if (flg) {
     try {
       ierr = PetscStrcasecmp(string,"cpu",&flg);CHKERRQ(ierr);

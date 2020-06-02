@@ -17,7 +17,7 @@ int main(int argc,char **args)
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,NULL,"-mtype",mtype,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-mtype",mtype,sizeof(mtype),&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-no_inodes",&no_inodes,NULL);CHKERRQ(ierr);
   ierr = MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,M,N,NULL,&Ad);CHKERRQ(ierr);
   ierr = MatSetRandom(Ad,NULL);CHKERRQ(ierr);
