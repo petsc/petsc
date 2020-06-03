@@ -1380,10 +1380,12 @@ PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (
     PetscFEGeom      fegeom;
     PetscReal       *coords, *gcoords;
     PetscScalar     *funcVal, *interpolant;
+    PetscBool        isHybrid;
     PetscInt         qNc, Nq, totNc, cStart = 0, cEnd, c, dsNf;
 
     ierr = DMGetRegionNumDS(dm, s, &label, &fieldIS, &ds);CHKERRQ(ierr);
     ierr = ISGetIndices(fieldIS, &fields);CHKERRQ(ierr);
+    ierr = PetscDSGetHybrid(ds, &isHybrid);CHKERRQ(ierr);
     ierr = PetscDSGetNumFields(ds, &dsNf);CHKERRQ(ierr);
     ierr = PetscDSGetTotalComponents(ds, &totNc);CHKERRQ(ierr);
     ierr = PetscDSGetQuadrature(ds, &quad);CHKERRQ(ierr);
@@ -1400,13 +1402,20 @@ PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (
     for (c = cStart; c < cEnd; ++c) {
       const PetscInt cell = points ? points[c] : c;
       PetscScalar   *x    = NULL;
-      PetscInt       qc   = 0, fOff = 0, dep;
+      PetscInt       qc   = 0, fOff = 0, dep, fStart = isHybrid ? dsNf-1 : 0;
 
       ierr = DMLabelGetValue(depthLabel, cell, &dep);CHKERRQ(ierr);
       if (dep != depth-1) continue;
-      ierr = DMPlexComputeCellGeometryFEM(dm, cell, quad, coords, fegeom.J, fegeom.invJ, fegeom.detJ);CHKERRQ(ierr);
+      if (isHybrid) {
+        const PetscInt *cone;
+
+        ierr = DMPlexGetCone(dm, cell, &cone);CHKERRQ(ierr);
+        ierr = DMPlexComputeCellGeometryFEM(dm, cone[0], quad, coords, fegeom.J, fegeom.invJ, fegeom.detJ);CHKERRQ(ierr);
+      } else {
+        ierr = DMPlexComputeCellGeometryFEM(dm, cell, quad, coords, fegeom.J, fegeom.invJ, fegeom.detJ);CHKERRQ(ierr);
+      }
       ierr = DMPlexVecGetClosure(dm, NULL, localX, cell, NULL, &x);CHKERRQ(ierr);
-      for (f = 0; f < dsNf; ++f) {
+      for (f = fStart; f < dsNf; ++f) {
         PetscObject  obj;
         PetscClassId id;
         void * const ctx = ctxs ? ctxs[fields[f]] : NULL;
@@ -1446,6 +1455,7 @@ PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (
             CHKERRQ(ierr);
           }
           if (transform) {ierr = DMPlexBasisTransformApply_Internal(dm, &coords[dE*q], PETSC_FALSE, Nc, funcVal, funcVal, dm->transformCtx);CHKERRQ(ierr);}
+          /* Call once for each face, except for lagrange field */
           if (id == PETSCFE_CLASSID)      {ierr = PetscFEInterpolate_Static((PetscFE) obj, &x[fOff], &qgeom, q, interpolant);CHKERRQ(ierr);}
           else if (id == PETSCFV_CLASSID) {ierr = PetscFVInterpolate_Static((PetscFV) obj, &x[fOff], q, interpolant);CHKERRQ(ierr);}
           else SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %D", fields[f]);
