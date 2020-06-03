@@ -1656,7 +1656,7 @@ PetscErrorCode PetscSetMUMPSFromOptions(Mat F, Mat A)
 
   ierr = PetscOptionsMUMPSInt("-mat_mumps_icntl_25","ICNTL(25): computes a solution of a deficient matrix and a null space basis","None",mumps->id.ICNTL(25),&mumps->id.ICNTL(25),NULL);CHKERRQ(ierr);
   ierr = PetscOptionsMUMPSInt("-mat_mumps_icntl_26","ICNTL(26): drives the solution phase if a Schur complement matrix","None",mumps->id.ICNTL(26),&mumps->id.ICNTL(26),NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsMUMPSInt("-mat_mumps_icntl_27","ICNTL(27): the blocking size for multiple right-hand sides","None",mumps->id.ICNTL(27),&mumps->id.ICNTL(27),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsMUMPSInt("-mat_mumps_icntl_27","ICNTL(27): controls the blocking size for multiple right-hand sides","None",mumps->id.ICNTL(27),&mumps->id.ICNTL(27),NULL);CHKERRQ(ierr);
   ierr = PetscOptionsMUMPSInt("-mat_mumps_icntl_28","ICNTL(28): use 1 for sequential analysis and ictnl(7) ordering, or 2 for parallel analysis and ictnl(29) ordering","None",mumps->id.ICNTL(28),&mumps->id.ICNTL(28),NULL);CHKERRQ(ierr);
   ierr = PetscOptionsMUMPSInt("-mat_mumps_icntl_29","ICNTL(29): parallel ordering 1 = ptscotch, 2 = parmetis","None",mumps->id.ICNTL(29),&mumps->id.ICNTL(29),NULL);CHKERRQ(ierr);
   /* ierr = PetscOptionsMUMPSInt("-mat_mumps_icntl_30","ICNTL(30): compute user-specified set of entries in inv(A)","None",mumps->id.ICNTL(30),&mumps->id.ICNTL(30),NULL);CHKERRQ(ierr); */ /* call MatMumpsGetInverse() directly */
@@ -2010,15 +2010,15 @@ PetscErrorCode MatView_MUMPS(Mat A,PetscViewer viewer)
       /* ICNTL(15-17) not used */
       ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(18) (input mat struct):                           %d \n",mumps->id.ICNTL(18));CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(19) (Schur complement info):                      %d \n",mumps->id.ICNTL(19));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(20) (rhs sparse pattern):                         %d \n",mumps->id.ICNTL(20));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(20) (RHS sparse pattern):                         %d \n",mumps->id.ICNTL(20));CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(21) (solution struct):                            %d \n",mumps->id.ICNTL(21));CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(22) (in-core/out-of-core facility):               %d \n",mumps->id.ICNTL(22));CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(23) (max size of memory can be allocated locally):%d \n",mumps->id.ICNTL(23));CHKERRQ(ierr);
 
       ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(24) (detection of null pivot rows):               %d \n",mumps->id.ICNTL(24));CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(25) (computation of a null space basis):          %d \n",mumps->id.ICNTL(25));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(26) (Schur options for rhs or solution):          %d \n",mumps->id.ICNTL(26));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(27) (experimental parameter):                     %d \n",mumps->id.ICNTL(27));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(26) (Schur options for RHS or solution):          %d \n",mumps->id.ICNTL(26));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(27) (blocking size for multiple RHS):             %d \n",mumps->id.ICNTL(27));CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(28) (use parallel or sequential ordering):        %d \n",mumps->id.ICNTL(28));CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(29) (parallel ordering):                          %d \n",mumps->id.ICNTL(29));CHKERRQ(ierr);
 
@@ -2293,7 +2293,7 @@ PetscErrorCode MatMumpsGetIcntl_MUMPS(Mat F,PetscInt icntl,PetscInt *ival)
    References:
 .     MUMPS Users' Guide
 
-.seealso: MatGetFactor(), MatMumpsSetICntl(), MatMumpsGetIcntl(), MatMumpsSetCntl(), MatMumpsGetCntl(), MatMumpsGetInfo(), MatMumpsGetInfog(), MatMumpsGetRinfo(), MatMumpsGetRinfog()
+.seealso: MatGetFactor(), MatMumpsGetIcntl(), MatMumpsSetCntl(), MatMumpsGetCntl(), MatMumpsGetInfo(), MatMumpsGetInfog(), MatMumpsGetRinfo(), MatMumpsGetRinfog()
  @*/
 PetscErrorCode MatMumpsSetIcntl(Mat F,PetscInt icntl,PetscInt ival)
 {
@@ -2325,7 +2325,7 @@ PetscErrorCode MatMumpsSetIcntl(Mat F,PetscInt icntl,PetscInt ival)
    References:
 .     MUMPS Users' Guide
 
-.seealso: MatGetFactor(), MatMumpsSetICntl(), MatMumpsGetIcntl(), MatMumpsSetCntl(), MatMumpsGetCntl(), MatMumpsGetInfo(), MatMumpsGetInfog(), MatMumpsGetRinfo(), MatMumpsGetRinfog()
+.seealso: MatGetFactor(), MatMumpsSetIcntl(), MatMumpsSetCntl(), MatMumpsGetCntl(), MatMumpsGetInfo(), MatMumpsGetInfog(), MatMumpsGetRinfo(), MatMumpsGetRinfog()
 @*/
 PetscErrorCode MatMumpsGetIcntl(Mat F,PetscInt icntl,PetscInt *ival)
 {
@@ -2377,7 +2377,7 @@ PetscErrorCode MatMumpsGetCntl_MUMPS(Mat F,PetscInt icntl,PetscReal *val)
    References:
 .     MUMPS Users' Guide
 
-.seealso: MatGetFactor(), MatMumpsSetICntl(), MatMumpsGetIcntl(), MatMumpsSetCntl(), MatMumpsGetCntl(), MatMumpsGetInfo(), MatMumpsGetInfog(), MatMumpsGetRinfo(), MatMumpsGetRinfog()
+.seealso: MatGetFactor(), MatMumpsSetIcntl(), MatMumpsGetIcntl(), MatMumpsGetCntl(), MatMumpsGetInfo(), MatMumpsGetInfog(), MatMumpsGetRinfo(), MatMumpsGetRinfog()
 @*/
 PetscErrorCode MatMumpsSetCntl(Mat F,PetscInt icntl,PetscReal val)
 {
@@ -2409,7 +2409,7 @@ PetscErrorCode MatMumpsSetCntl(Mat F,PetscInt icntl,PetscReal val)
    References:
 .      MUMPS Users' Guide
 
-.seealso: MatGetFactor(), MatMumpsSetICntl(), MatMumpsGetIcntl(), MatMumpsSetCntl(), MatMumpsGetCntl(), MatMumpsGetInfo(), MatMumpsGetInfog(), MatMumpsGetRinfo(), MatMumpsGetRinfog()
+.seealso: MatGetFactor(), MatMumpsSetIcntl(), MatMumpsGetIcntl(), MatMumpsSetCntl(), MatMumpsGetInfo(), MatMumpsGetInfog(), MatMumpsGetRinfo(), MatMumpsGetRinfog()
 @*/
 PetscErrorCode MatMumpsGetCntl(Mat F,PetscInt icntl,PetscReal *val)
 {
@@ -2613,7 +2613,7 @@ PetscErrorCode MatMumpsGetInverseTranspose(Mat F,Mat spRHST)
    References:
 .      MUMPS Users' Guide
 
-.seealso: MatGetFactor(), MatMumpsSetICntl(), MatMumpsGetIcntl(), MatMumpsSetCntl(), MatMumpsGetCntl(), MatMumpsGetInfo(), MatMumpsGetInfog(), MatMumpsGetRinfo(), MatMumpsGetRinfog()
+.seealso: MatGetFactor(), MatMumpsSetIcntl(), MatMumpsGetIcntl(), MatMumpsSetCntl(), MatMumpsGetCntl(), MatMumpsGetInfog(), MatMumpsGetRinfo(), MatMumpsGetRinfog()
 @*/
 PetscErrorCode MatMumpsGetInfo(Mat F,PetscInt icntl,PetscInt *ival)
 {
@@ -2644,7 +2644,7 @@ PetscErrorCode MatMumpsGetInfo(Mat F,PetscInt icntl,PetscInt *ival)
    References:
 .      MUMPS Users' Guide
 
-.seealso: MatGetFactor(), MatMumpsSetICntl(), MatMumpsGetIcntl(), MatMumpsSetCntl(), MatMumpsGetCntl(), MatMumpsGetInfo(), MatMumpsGetInfog(), MatMumpsGetRinfo(), MatMumpsGetRinfog()
+.seealso: MatGetFactor(), MatMumpsSetIcntl(), MatMumpsGetIcntl(), MatMumpsSetCntl(), MatMumpsGetCntl(), MatMumpsGetInfo(), MatMumpsGetRinfo(), MatMumpsGetRinfog()
 @*/
 PetscErrorCode MatMumpsGetInfog(Mat F,PetscInt icntl,PetscInt *ival)
 {
@@ -2675,7 +2675,7 @@ PetscErrorCode MatMumpsGetInfog(Mat F,PetscInt icntl,PetscInt *ival)
    References:
 .       MUMPS Users' Guide
 
-.seealso: MatGetFactor(), MatMumpsSetICntl(), MatMumpsGetIcntl(), MatMumpsSetCntl(), MatMumpsGetCntl(), MatMumpsGetInfo(), MatMumpsGetInfog(), MatMumpsGetRinfo(), MatMumpsGetRinfog()
+.seealso: MatGetFactor(), MatMumpsSetIcntl(), MatMumpsGetIcntl(), MatMumpsSetCntl(), MatMumpsGetCntl(), MatMumpsGetInfo(), MatMumpsGetInfog(), MatMumpsGetRinfog()
 @*/
 PetscErrorCode MatMumpsGetRinfo(Mat F,PetscInt icntl,PetscReal *val)
 {
@@ -2706,7 +2706,7 @@ PetscErrorCode MatMumpsGetRinfo(Mat F,PetscInt icntl,PetscReal *val)
    References:
 .      MUMPS Users' Guide
 
-.seealso: MatGetFactor(), MatMumpsSetICntl(), MatMumpsGetIcntl(), MatMumpsSetCntl(), MatMumpsGetCntl(), MatMumpsGetInfo(), MatMumpsGetInfog(), MatMumpsGetRinfo(), MatMumpsGetRinfog()
+.seealso: MatGetFactor(), MatMumpsSetIcntl(), MatMumpsGetIcntl(), MatMumpsSetCntl(), MatMumpsGetCntl(), MatMumpsGetInfo(), MatMumpsGetInfog(), MatMumpsGetRinfo()
 @*/
 PetscErrorCode MatMumpsGetRinfog(Mat F,PetscInt icntl,PetscReal *val)
 {
@@ -2815,7 +2815,7 @@ $     if a compute node has 32 cores and you run on two nodes, you may use "mpir
 +   1. - Heroux, Michael A., R. Brightwell, and Michael M. Wolf. "Bi-modal MPI and MPI+ threads computing on scalable multicore systems." IJHPCA (Submitted) (2011).
 -   2. - Gutierrez, Samuel K., et al. "Accommodating Thread-Level Heterogeneity in Coupled Parallel Applications." Parallel and Distributed Processing Symposium (IPDPS), 2017 IEEE International. IEEE, 2017.
 
-.seealso: PCFactorSetMatSolverType(), MatSolverType, MatMumpsSetICntl(), MatMumpsGetIcntl(), MatMumpsSetCntl(), MatMumpsGetCntl(), MatMumpsGetInfo(), MatMumpsGetInfog(), MatMumpsGetRinfo(), MatMumpsGetRinfog(), KSPGetPC(), PCGetFactor(), PCFactorGetMatrix()
+.seealso: PCFactorSetMatSolverType(), MatSolverType, MatMumpsSetIcntl(), MatMumpsGetIcntl(), MatMumpsSetCntl(), MatMumpsGetCntl(), MatMumpsGetInfo(), MatMumpsGetInfog(), MatMumpsGetRinfo(), MatMumpsGetRinfog(), KSPGetPC(), PCGetFactor(), PCFactorGetMatrix()
 
 M*/
 

@@ -88,14 +88,14 @@ PC Object: 8 MPI processes
               ICNTL(14) (percentage of estimated workspace increase): 5 
               ICNTL(18) (input mat struct):                           0 
               ICNTL(19) (Schur complement info):                      2 
-              ICNTL(20) (rhs sparse pattern):                         0 
+              ICNTL(20) (RHS sparse pattern):                         0 
               ICNTL(21) (solution struct):                            0 
               ICNTL(22) (in-core/out-of-core facility):               0 
               ICNTL(23) (max size of memory can be allocated locally):0 
               ICNTL(24) (detection of null pivot rows):               0 
               ICNTL(25) (computation of a null space basis):          0 
-              ICNTL(26) (Schur options for rhs or solution):          -1 
-              ICNTL(27) (experimental parameter):                     -32 
+              ICNTL(26) (Schur options for RHS or solution):          -1 
+              ICNTL(27) (blocking size for multiple RHS):             -32 
               ICNTL(28) (use parallel or sequential ordering):        1 
               ICNTL(29) (parallel ordering):                          0 
               ICNTL(30) (user-specified set of entries in inv(A)):    0 
