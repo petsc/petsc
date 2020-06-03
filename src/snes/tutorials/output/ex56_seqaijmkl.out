@@ -1,0 +1,72 @@
+  0 SNES Function norm 122.396 
+    0 KSP Residual norm 122.396 
+    1 KSP Residual norm 11.5745 
+    2 KSP Residual norm 3.60108 
+    3 KSP Residual norm 0.238408 
+    4 KSP Residual norm 0.0574787 
+    5 KSP Residual norm 0.00507786 
+    6 KSP Residual norm 0.00017392 
+    7 KSP Residual norm 6.71288e-06 
+    8 KSP Residual norm 2.70595e-07 
+    9 KSP Residual norm 1.45828e-08 
+   10 KSP Residual norm 2.223e-10 
+  Linear solve converged due to CONVERGED_RTOL iterations 10
+  1 SNES Function norm 2.222e-10 
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+DM Object: Mesh (ex56_) 1 MPI processes
+  type: plex
+Mesh in 3 dimensions:
+  0-cells: 18
+  1-cells: 33
+  2-cells: 20
+  3-cells: 4
+Labels:
+  marker: 1 strata with value/size (1 (48))
+  Face Sets: 6 strata with value/size (6 (2), 5 (2), 3 (2), 4 (2), 1 (4), 2 (4))
+  depth: 4 strata with value/size (0 (18), 1 (33), 2 (20), 3 (4))
+  boundary: 1 strata with value/size (1 (66))
+  celltype: 4 strata with value/size (7 (4), 0 (18), 4 (20), 1 (33))
+Field deformation:
+  adjacency FEM
+  0 SNES Function norm 49.7106 
+    0 KSP Residual norm 49.7106 
+    1 KSP Residual norm 23.9028 
+    2 KSP Residual norm 6.73562 
+    3 KSP Residual norm 2.11962 
+    4 KSP Residual norm 0.689733 
+    5 KSP Residual norm 0.207942 
+    6 KSP Residual norm 0.0540621 
+    7 KSP Residual norm 0.0139094 
+    8 KSP Residual norm 0.00390972 
+    9 KSP Residual norm 0.00101569 
+   10 KSP Residual norm 0.00030072 
+   11 KSP Residual norm 9.10064e-05 
+   12 KSP Residual norm 3.31799e-05 
+   13 KSP Residual norm 9.52625e-06 
+   14 KSP Residual norm 2.59807e-06 
+   15 KSP Residual norm 8.14097e-07 
+   16 KSP Residual norm 2.49894e-07 
+   17 KSP Residual norm 7.10462e-08 
+   18 KSP Residual norm 1.97985e-08 
+   19 KSP Residual norm 4.61424e-09 
+   20 KSP Residual norm 1.08604e-09 
+   21 KSP Residual norm 2.956e-10 
+  Linear solve converged due to CONVERGED_RTOL iterations 21
+  1 SNES Function norm 2.956e-10 
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+DM Object: Mesh (ex56_) 1 MPI processes
+  type: plex
+Mesh in 3 dimensions:
+  0-cells: 75
+  1-cells: 170
+  2-cells: 128
+  3-cells: 32
+Labels:
+  celltype: 4 strata with value/size (0 (75), 1 (170), 4 (128), 7 (32))
+  depth: 4 strata with value/size (0 (75), 1 (170), 2 (128), 3 (32))
+  marker: 1 strata with value/size (1 (240))
+  Face Sets: 6 strata with value/size (6 (18), 5 (18), 3 (18), 4 (18), 1 (36), 2 (36))
+  boundary: 1 strata with value/size (1 (258))
+Field deformation:
+  adjacency FEM
+[0] 1) N=         441, max displ=5.5560415e+01, disp diff= 1.19e+01, error=4.415e+00, rate=1.9
