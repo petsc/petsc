@@ -48,6 +48,33 @@ class VDP(object):
         Jp[1,0] = (1.-u[0]*u[0])*u[1]-u[0]
         Jp.assemble()
         return True
+    def evalIFunction(self, ts, t, u, udot, f):
+        mu = self.mu_
+        f[0] = udot[0]-u[1]
+        f[1] = udot[1]-mu*((1.-u[0]*u[0])*u[1]-u[0])
+        f.assemble()
+    def evalIJacobian(self, ts, t, u, udot, shift, A, B):
+        if not self.mf_:
+            J = A
+        else :
+            J = self.J_
+        mu = self.mu_
+        J[0,0] = shift
+        J[1,0] = mu*(2.0*u[1]*u[0]+1.)
+        J[0,1] = -1.0
+        J[1,1] = shift-mu*(1.0-u[0]*u[0])
+        J.assemble()
+        if A != B: B.assemble()
+        return True # same nonzero pattern
+    def evalIJacobianP(self, ts, t, u, udot, shift, C):
+        if not self.mf_:
+            Jp = C
+        else:
+            Jp = self.Jp_
+        Jp[0,0] = 0
+        Jp[1,0] = u[0]-(1.-u[0]*u[0])*u[1]
+        Jp.assemble()
+        return True
 
 class JacShell:
     def __init__(self, ode):
@@ -69,6 +96,8 @@ OptDB = PETSc.Options()
 
 mu_ = OptDB.getScalar('mu', 1.0e3)
 mf_ = OptDB.getBool('mf', False)
+
+implicitform_ = OptDB.getBool('implicitform', False)
 
 ode = VDP(mu_,mf_)
 
@@ -104,11 +133,17 @@ adj_p.append(PETSc.Vec().createSeq(1, comm=ode.comm))
 
 ts = PETSc.TS().create(comm=ode.comm)
 ts.setProblemType(ts.ProblemType.NONLINEAR)
-ts.setType(ts.Type.RK)
 
-ts.setRHSFunction(ode.evalFunction, f)
-ts.setRHSJacobian(ode.evalJacobian, J)
-ts.setRHSJacobianP(ode.evalJacobianP, Jp)
+if implicitform_:
+    ts.setType(ts.Type.CN)
+    ts.setIFunction(ode.evalIFunction, f)
+    ts.setIJacobian(ode.evalIJacobian, J)
+    ts.setIJacobianP(ode.evalIJacobianP, Jp)
+else:
+    ts.setType(ts.Type.RK)
+    ts.setRHSFunction(ode.evalFunction, f)
+    ts.setRHSJacobian(ode.evalJacobian, J)
+    ts.setRHSJacobianP(ode.evalJacobianP, Jp)
 
 ts.setSaveTrajectory()
 ts.setTime(0.0)

@@ -298,6 +298,18 @@ cdef class TS(Object):
         else:
             CHKERR( TSSetIJacobian(self.ts, Jmat, Pmat, NULL, NULL) )
 
+    def setIJacobianP(self, jacobian, Mat J=None, args=None, kargs=None):
+        cdef PetscMat Jmat=NULL
+        if J is not None: Jmat = J.mat
+        if jacobian is not None:
+            if args  is None: args  = ()
+            if kargs is None: kargs = {}
+            context = (jacobian, args, kargs)
+            self.set_attr('__ijacobianp__', context)
+            CHKERR( TSSetIJacobianP(self.ts, Jmat, TS_IJacobianP, <void*>context) )
+        else:
+            CHKERR( TSSetIJacobianP(self.ts, Jmat, NULL, NULL) )
+
     def computeIFunction(self,
                          t, Vec x, Vec xdot,
                          Vec f, imex=False):
@@ -316,6 +328,16 @@ cdef class TS(Object):
         if P is not None: pmat = P.mat
         CHKERR( TSComputeIJacobian(self.ts, rval1, x.vec, xdot.vec, rval2,
                                    jmat, pmat, bval) )
+
+    def computeIJacobianP(self,
+                         t, Vec x, Vec xdot, a,
+                         Mat J, imex=False):
+        cdef PetscReal rval1 = asReal(t)
+        cdef PetscReal rval2 = asReal(a)
+        cdef PetscBool bval  = asBool(imex)
+        cdef PetscMat jmat = J.mat
+        CHKERR( TSComputeIJacobianP(self.ts, rval1, x.vec, xdot.vec, rval2,
+                                   jmat, bval) )
 
     def getIFunction(self):
         cdef Vec f = Vec()
