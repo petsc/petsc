@@ -152,8 +152,8 @@ int main(int argc,char **argv)
   ierr = TSSetRHSFunction(ts,NULL,(TSRHSFunction)RHSFunction,&ctx);CHKERRQ(ierr);
   ierr = TSRHSSplitSetIS(ts,"slow",iss);CHKERRQ(ierr);
   ierr = TSRHSSplitSetIS(ts,"fast",isf);CHKERRQ(ierr);
-  ierr = TSRHSSplitSetRHSFunction(ts,"slow",NULL,(TSRHSFunctionslow)RHSFunctionslow,&ctx);CHKERRQ(ierr);
-  ierr = TSRHSSplitSetRHSFunction(ts,"fast",NULL,(TSRHSFunctionfast)RHSFunctionfast,&ctx);CHKERRQ(ierr);
+  ierr = TSRHSSplitSetRHSFunction(ts,"slow",NULL,(TSRHSFunction)RHSFunctionslow,&ctx);CHKERRQ(ierr);
+  ierr = TSRHSSplitSetRHSFunction(ts,"fast",NULL,(TSRHSFunction)RHSFunctionfast,&ctx);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
@@ -200,3 +200,11 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+    build:
+      requires: !complex c99
+
+    test:
+
+TEST*/

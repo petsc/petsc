@@ -1,5 +1,5 @@
 #include <petsc/private/tsimpl.h>        /*I "petscts.h"  I*/
-#include <petscdm.h>
+
 static PetscErrorCode TSRHSSplitGetRHSSplit(TS ts,const char splitname[],TS_RHSSplitLink *isplit)
 {
   PetscBool       found = PETSC_FALSE;
@@ -51,6 +51,7 @@ PetscErrorCode TSRHSSplitSetIS(TS ts,const char splitname[],IS is)
   ierr = PetscObjectReference((PetscObject)is);CHKERRQ(ierr);
   newsplit->is = is;
   ierr = TSCreate(PetscObjectComm((PetscObject)ts),&newsplit->ts);CHKERRQ(ierr);
+
   ierr = PetscObjectIncrementTabLevel((PetscObject)newsplit->ts,(PetscObject)ts,1);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)ts,(PetscObject)newsplit->ts);CHKERRQ(ierr);
   ierr = PetscSNPrintf(prefix,sizeof(prefix),"%srhsplit_%s_",((PetscObject)ts)->prefix ? ((PetscObject)ts)->prefix : "",newsplit->splitname);CHKERRQ(ierr);
@@ -121,7 +122,6 @@ $  rhsfunc(TS ts,PetscReal t,Vec u,Vec f,ctx);
 PetscErrorCode TSRHSSplitSetRHSFunction(TS ts,const char splitname[],Vec r,TSRHSFunction rhsfunc,void *ctx)
 {
   TS_RHSSplitLink isplit;
-  DM              dmc;
   Vec             subvec,ralloc = NULL;
   PetscErrorCode  ierr;
 
@@ -139,13 +139,6 @@ PetscErrorCode TSRHSSplitSetRHSFunction(TS ts,const char splitname[],Vec r,TSRHS
     r    = ralloc;
     ierr = VecRestoreSubVector(ts->vec_sol,isplit->is,&subvec);CHKERRQ(ierr);
   }
-  
-  if(ts->dm){
-    ierr = DMClone(ts->dm, &dmc);CHKERRQ(ierr);
-    ierr = TSSetDM(isplit->ts, dmc);CHKERRQ(ierr);
-    ierr = DMDestroy(&dmc);CHKERRQ(ierr);
-  }
-  
   ierr = TSSetRHSFunction(isplit->ts,r,rhsfunc,ctx);CHKERRQ(ierr);
   ierr = VecDestroy(&ralloc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
