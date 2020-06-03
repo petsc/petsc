@@ -336,7 +336,7 @@ cdef class TS(Object):
         cdef PetscReal rval2 = asReal(a)
         cdef PetscBool bval  = asBool(imex)
         cdef PetscMat jmat = J.mat
-        CHKERR( TSComputeIJacobian(self.ts, rval1, x.vec, xdot.vec, rval2,
+        CHKERR( TSComputeIJacobianP(self.ts, rval1, x.vec, xdot.vec, rval2,
                                    jmat, bval) )
 
     def getIFunction(self):
