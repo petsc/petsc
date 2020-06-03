@@ -573,6 +573,13 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
       for (nadj=0; nadj<ts->numcost; nadj++) {
         ierr = MatMultTranspose(ts->Jacp,VecsDeltaLam[nadj],VecsDeltaMu[nadj]);CHKERRQ(ierr);
         ierr = VecAXPY(ts->vecs_sensip[nadj],-adjoint_time_step*th->Theta,VecsDeltaMu[nadj]);CHKERRQ(ierr);
+        if (quadJp) {
+          ierr = MatDenseGetColumn(quadJp,nadj,&xarr);CHKERRQ(ierr);
+          ierr = VecPlaceArray(ts->vec_drdp_col,xarr);CHKERRQ(ierr);
+          ierr = VecAXPY(ts->vecs_sensip[nadj],adjoint_time_step*th->Theta,ts->vec_drdp_col);CHKERRQ(ierr);
+          ierr = VecResetArray(ts->vec_drdp_col);CHKERRQ(ierr);
+          ierr = MatDenseRestoreColumn(quadJp,&xarr);CHKERRQ(ierr);
+        }
       }
       if (ts->vecs_sensi2p) { /* second-order */
         /* Get w1 at t_{n+1} from TLM matrix */
@@ -606,6 +613,13 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
       for (nadj=0; nadj<ts->numcost; nadj++) {
         ierr = MatMultTranspose(ts->Jacp,VecsDeltaLam[nadj],VecsDeltaMu[nadj]);CHKERRQ(ierr);
         ierr = VecAXPY(ts->vecs_sensip[nadj],-adjoint_time_step*(1.0-th->Theta),VecsDeltaMu[nadj]);CHKERRQ(ierr);
+        if (quadJp) {
+          ierr = MatDenseGetColumn(quadJp,nadj,&xarr);CHKERRQ(ierr);
+          ierr = VecPlaceArray(ts->vec_drdp_col,xarr);CHKERRQ(ierr);
+          ierr = VecAXPY(ts->vecs_sensip[nadj],adjoint_time_step*(1.0-th->Theta),ts->vec_drdp_col);CHKERRQ(ierr);
+          ierr = VecResetArray(ts->vec_drdp_col);CHKERRQ(ierr);
+          ierr = MatDenseRestoreColumn(quadJp,&xarr);CHKERRQ(ierr);
+        }
         if (ts->vecs_sensi2p) { /* second-order */
           /* Get w1 at t_n from TLM matrix */
           ierr = MatDenseGetColumn(th->MatFwdSensip0,0,&xarr);CHKERRQ(ierr);
