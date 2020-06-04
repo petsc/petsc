@@ -420,7 +420,8 @@ PetscErrorCode PetscOptionsInsertFile(MPI_Comm comm,PetscOptions options,const c
   FILE           *fd;
   PetscToken     token;
   int            err;
-  char           cmt[1]={'#'},*cmatch;
+  char           *cmatch;
+  const char     cmt='#';
   PetscMPIInt    rank,cnt=0,acnt=0,counts[2];
   PetscBool      isdir;
 
@@ -444,10 +445,8 @@ PetscErrorCode PetscOptionsInsertFile(MPI_Comm comm,PetscOptions options,const c
 
       while ((string = Petscgetline(fd))) {
         /* eliminate comments from each line */
-        for (i=0; i<1; i++) {
-          ierr = PetscStrchr(string,cmt[i],&cmatch);CHKERRQ(ierr);
-          if (cmatch) *cmatch = 0;
-        }
+        ierr = PetscStrchr(string,cmt,&cmatch);CHKERRQ(ierr);
+        if (cmatch) *cmatch = 0;
         ierr = PetscStrlen(string,&len);CHKERRQ(ierr);
         /* replace tabs, ^M, \n with " " */
         for (i=0; i<len; i++) {
