@@ -414,11 +414,12 @@ static char *Petscgetline(FILE * f)
 @*/
 PetscErrorCode PetscOptionsInsertFile(MPI_Comm comm,PetscOptions options,const char file[],PetscBool require)
 {
-  char           *string,fname[PETSC_MAX_PATH_LEN],*first,*second,*third,*vstring = NULL,*astring = NULL,*packed = NULL;
+  char           *string,fname[PETSC_MAX_PATH_LEN],*vstring = NULL,*astring = NULL,*packed = NULL;
+  char           *tokens[4];
   PetscErrorCode ierr;
   size_t         i,len,bytes;
   FILE           *fd;
-  PetscToken     token;
+  PetscToken     token=NULL;
   int            err;
   char           *cmatch;
   const char     cmt='#';
@@ -427,6 +428,7 @@ PetscErrorCode PetscOptionsInsertFile(MPI_Comm comm,PetscOptions options,const c
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = PetscMemzero(tokens,sizeof(tokens));CHKERRQ(ierr);
   if (!rank) {
     cnt        = 0;
     acnt       = 0;
@@ -455,43 +457,44 @@ PetscErrorCode PetscOptionsInsertFile(MPI_Comm comm,PetscOptions options,const c
           }
         }
         ierr = PetscTokenCreate(string,' ',&token);CHKERRQ(ierr);
-        ierr = PetscTokenFind(token,&first);CHKERRQ(ierr);
-        if (!first) {
+        ierr = PetscTokenFind(token,&tokens[0]);CHKERRQ(ierr);
+        if (!tokens[0]) {
           goto destroy;
-        } else if (!first[0]) { /* if first token is empty spaces, redo first token */
-          ierr = PetscTokenFind(token,&first);CHKERRQ(ierr);
+        } else if (!tokens[0][0]) { /* if token 0 is empty (string begins with spaces), redo */
+          ierr = PetscTokenFind(token,&tokens[0]);CHKERRQ(ierr);
         }
-        ierr = PetscTokenFind(token,&second);CHKERRQ(ierr);
-        if (!first) {
+        for (i=1; i<4; i++) {
+          ierr = PetscTokenFind(token,&tokens[i]);CHKERRQ(ierr);
+        }
+        if (!tokens[0]) {
           goto destroy;
-        } else if (first[0] == '-') {
-          ierr = PetscStrlen(first,&len);CHKERRQ(ierr);
+        } else if (tokens[0][0] == '-') {
+          ierr = PetscStrlen(tokens[0],&len);CHKERRQ(ierr);
           ierr = PetscSegBufferGet(vseg,len+1,&vstring);CHKERRQ(ierr);
-          ierr = PetscArraycpy(vstring,first,len);CHKERRQ(ierr);
+          ierr = PetscArraycpy(vstring,tokens[0],len);CHKERRQ(ierr);
           vstring[len] = ' ';
-          if (second) {
-            ierr = PetscStrlen(second,&len);CHKERRQ(ierr);
+          if (tokens[1]) {
+            ierr = PetscStrlen(tokens[1],&len);CHKERRQ(ierr);
             ierr = PetscSegBufferGet(vseg,len+3,&vstring);CHKERRQ(ierr);
             vstring[0] = '"';
-            ierr = PetscArraycpy(vstring+1,second,len);CHKERRQ(ierr);
+            ierr = PetscArraycpy(vstring+1,tokens[1],len);CHKERRQ(ierr);
             vstring[len+1] = '"';
             vstring[len+2] = ' ';
           }
         } else {
           PetscBool match;
 
-          ierr = PetscStrcasecmp(first,"alias",&match);CHKERRQ(ierr);
+          ierr = PetscStrcasecmp(tokens[0],"alias",&match);CHKERRQ(ierr);
           if (match) {
-            ierr = PetscTokenFind(token,&third);CHKERRQ(ierr);
-            if (!third) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in options file:alias missing (%s)",second);
-            ierr = PetscStrlen(second,&len);CHKERRQ(ierr);
+            if (!tokens[2]) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in options file:alias missing (%s)",tokens[1]);
+            ierr = PetscStrlen(tokens[1],&len);CHKERRQ(ierr);
             ierr = PetscSegBufferGet(aseg,len+1,&astring);CHKERRQ(ierr);
-            ierr = PetscArraycpy(astring,second,len);CHKERRQ(ierr);
+            ierr = PetscArraycpy(astring,tokens[1],len);CHKERRQ(ierr);
             astring[len] = ' ';
 
-            ierr = PetscStrlen(third,&len);CHKERRQ(ierr);
+            ierr = PetscStrlen(tokens[2],&len);CHKERRQ(ierr);
             ierr = PetscSegBufferGet(aseg,len+1,&astring);CHKERRQ(ierr);
-            ierr = PetscArraycpy(astring,third,len);CHKERRQ(ierr);
+            ierr = PetscArraycpy(astring,tokens[2],len);CHKERRQ(ierr);
             astring[len] = ' ';
           } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown statement in options file: (%s)",string);
         }
@@ -532,15 +535,12 @@ destroy:
   }
 
   if (acnt) {
-    PetscToken token;
-    char       *first,*second;
-
     ierr = PetscTokenCreate(astring,' ',&token);CHKERRQ(ierr);
-    ierr = PetscTokenFind(token,&first);CHKERRQ(ierr);
-    while (first) {
-      ierr = PetscTokenFind(token,&second);CHKERRQ(ierr);
-      ierr = PetscOptionsSetAlias(options,first,second);CHKERRQ(ierr);
-      ierr = PetscTokenFind(token,&first);CHKERRQ(ierr);
+    ierr = PetscTokenFind(token,&tokens[0]);CHKERRQ(ierr);
+    while (tokens[0]) {
+      ierr = PetscTokenFind(token,&tokens[1]);CHKERRQ(ierr);
+      ierr = PetscOptionsSetAlias(options,tokens[0],tokens[1]);CHKERRQ(ierr);
+      ierr = PetscTokenFind(token,&tokens[0]);CHKERRQ(ierr);
     }
     ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
   }
