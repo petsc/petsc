@@ -1,0 +1,5 @@
+alias -option_in_file_2 -alias_opt
+-option_in_file_1
+-option_in_file_2 option_in_file_2_val
+-alias_opt alias_val
+-skip_petscrc

@@ -1,0 +1,15 @@
+* Setting option: option4 = value4
+* Setting option: option5 (no value)
+#PETSc Option Table entries:
+-alias_opt alias_val
+-option1 1
+-option2
+-option3 value3
+-option4 value4
+-option5
+-option_in_file_1
+-options_monitor_cancel 0
+-options_monitor_viewer ascii
+-options_view
+-skip_petscrc 1
+#End of PETSc Option Table entries

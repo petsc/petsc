@@ -1,0 +1,31 @@
+Setting option: options_monitor (no value)
+Setting option: options_monitor_cancel = 1
+Setting option: skip_petscrc = 1
+Setting option: option_in_file_1 (no value)
+Setting option: alias_opt = option_in_file_2_val
+Setting option: alias_opt = alias_val
+Setting option: options_view (no value)
+Setting option: options_monitor_viewer = ascii
+Setting option: option_cmd_1 = option_cmd_1_val
+Setting option: option_cmd_2 (no value)
+Setting option: option1 = 1
+Setting option: option2 (no value)
+Setting option: option3 = value3
+Setting option: option4 = value4
+Setting option: option5 (no value)
+#PETSc Option Table entries:
+-alias_opt alias_val
+-option1 1
+-option2
+-option3 value3
+-option4 value4
+-option5
+-option_cmd_1 option_cmd_1_val
+-option_cmd_2
+-option_in_file_1
+-options_monitor
+-options_monitor_cancel 1
+-options_monitor_viewer ascii
+-options_view
+-skip_petscrc 1
+#End of PETSc Option Table entries
