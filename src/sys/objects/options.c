@@ -423,8 +423,9 @@ PetscErrorCode PetscOptionsInsertFile(MPI_Comm comm,PetscOptions options,const c
   int            err;
   char           *cmatch;
   const char     cmt='#';
+  PetscInt       line=1;
   PetscMPIInt    rank,cnt=0,acnt=0,counts[2];
-  PetscBool      isdir;
+  PetscBool      isdir,alias=PETSC_FALSE,valid;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -469,11 +470,15 @@ PetscErrorCode PetscOptionsInsertFile(MPI_Comm comm,PetscOptions options,const c
         if (!tokens[0]) {
           goto destroy;
         } else if (tokens[0][0] == '-') {
+          ierr = PetscOptionsValidKey(tokens[0],&valid);CHKERRQ(ierr);
+          if (!valid) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in options file %s line %D: invalid option %s",fname,line,tokens[0]);
           ierr = PetscStrlen(tokens[0],&len);CHKERRQ(ierr);
           ierr = PetscSegBufferGet(vseg,len+1,&vstring);CHKERRQ(ierr);
           ierr = PetscArraycpy(vstring,tokens[0],len);CHKERRQ(ierr);
           vstring[len] = ' ';
           if (tokens[1]) {
+            ierr = PetscOptionsValidKey(tokens[1],&valid);CHKERRQ(ierr);
+            if (valid) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in options file %s line %D: cannot specify two options per line (%s %s)",fname,line,tokens[0],tokens[1]);
             ierr = PetscStrlen(tokens[1],&len);CHKERRQ(ierr);
             ierr = PetscSegBufferGet(vseg,len+3,&vstring);CHKERRQ(ierr);
             vstring[0] = '"';
@@ -482,11 +487,13 @@ PetscErrorCode PetscOptionsInsertFile(MPI_Comm comm,PetscOptions options,const c
             vstring[len+2] = ' ';
           }
         } else {
-          PetscBool match;
-
-          ierr = PetscStrcasecmp(tokens[0],"alias",&match);CHKERRQ(ierr);
-          if (match) {
-            if (!tokens[2]) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in options file:alias missing (%s)",tokens[1]);
+          ierr = PetscStrcasecmp(tokens[0],"alias",&alias);CHKERRQ(ierr);
+          if (alias) {
+            ierr = PetscOptionsValidKey(tokens[1],&valid);CHKERRQ(ierr);
+            if (!valid) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in options file %s line %D: invalid aliased option %s",fname,line,tokens[1]);
+            if (!tokens[2]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in options file %s line %D: alias missing for %s",fname,line,tokens[1]);
+            ierr = PetscOptionsValidKey(tokens[2],&valid);CHKERRQ(ierr);
+            if (!valid) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in options file %s line %D: invalid aliasee option %s",fname,line,tokens[2]);
             ierr = PetscStrlen(tokens[1],&len);CHKERRQ(ierr);
             ierr = PetscSegBufferGet(aseg,len+1,&astring);CHKERRQ(ierr);
             ierr = PetscArraycpy(astring,tokens[1],len);CHKERRQ(ierr);
@@ -496,14 +503,20 @@ PetscErrorCode PetscOptionsInsertFile(MPI_Comm comm,PetscOptions options,const c
             ierr = PetscSegBufferGet(aseg,len+1,&astring);CHKERRQ(ierr);
             ierr = PetscArraycpy(astring,tokens[2],len);CHKERRQ(ierr);
             astring[len] = ' ';
-          } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown statement in options file: (%s)",string);
+          } else SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown first token in options file %s line %D: %s",fname,line,tokens[0]);
+        }
+        {
+          const char *extraToken = alias ? tokens[3] : tokens[2];
+          if (extraToken) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in options file %s line %D: extra token %s",fname,line,extraToken);
         }
 destroy:
         free(string);
         ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
+        alias = PETSC_FALSE;
+        line++;
       }
       err = fclose(fd);
-      if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
+      if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file %s",fname);
       ierr = PetscSegBufferGetSize(aseg,&bytes);CHKERRQ(ierr); /* size without null termination */
       ierr = PetscMPIIntCast(bytes,&acnt);CHKERRQ(ierr);
       ierr = PetscSegBufferGet(aseg,1,&astring);CHKERRQ(ierr);
@@ -517,7 +530,7 @@ destroy:
       ierr = PetscSegBufferExtractTo(vseg,packed+acnt+1);CHKERRQ(ierr);
       ierr = PetscSegBufferDestroy(&aseg);CHKERRQ(ierr);
       ierr = PetscSegBufferDestroy(&vseg);CHKERRQ(ierr);
-    } else if (require) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Unable to open Options File %s",fname);
+    } else if (require) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Unable to open options file %s",fname);
   }
 
   counts[0] = acnt;
@@ -960,14 +973,17 @@ PetscErrorCode PetscOptionsSetAlias(PetscOptions options,const char newname[],co
 {
   PetscInt       n;
   size_t         len;
+  PetscBool      valid;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidCharPointer(newname,2);
   PetscValidCharPointer(oldname,3);
   options = options ? options : defaultoptions;
-  if (newname[0] != '-') SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"aliased must start with '-': Instead %s",newname);
-  if (oldname[0] != '-') SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"aliasee must start with '-': Instead %s",oldname);
+  ierr = PetscOptionsValidKey(newname,&valid);CHKERRQ(ierr);
+  if (!valid) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid aliased option %s",newname);
+  ierr = PetscOptionsValidKey(oldname,&valid);CHKERRQ(ierr);
+  if (!valid) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid aliasee option %s",oldname);
 
   n = options->Naliases;
   if (n >= MAXALIASES) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MEM,"You have defined to many PETSc options aliases, limit %d recompile \n  src/sys/objects/options.c with larger value for MAXALIASES",MAXALIASES);
