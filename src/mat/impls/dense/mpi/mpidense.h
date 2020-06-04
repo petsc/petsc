@@ -25,8 +25,6 @@ typedef struct { /* used by MatMatTransposeMultxxx_MPIDense_MPIDense() */
 
 typedef struct {
   Mat         A;                        /* local submatrix */
-  PetscMPIInt size;                     /* size of communicator */
-  PetscMPIInt rank;                     /* rank of proc in communicator */
 
   /* The following variables are used for matrix assembly */
   PetscBool   donotstash;               /* Flag indicationg if values should be stashed */
@@ -41,10 +39,12 @@ typedef struct {
   PetscSF    Mvctx;                     /* for mat-mult communications */
   PetscBool  roworiented;               /* if true, row oriented input (default) */
 
-  /* Support for MatDenseGetColumnVec */
+  /* Support for MatDenseGetColumnVec and MatDenseGetSubMatrix */
+  Mat               cmat;      /* matrix representation of a given subset of columns */
   Vec               cvec;      /* vector representation of a given column */
   const PetscScalar *ptrinuse; /* holds array to be restored (just a placeholder) */
   PetscInt          vecinuse;  /* if cvec is in use (col = vecinuse-1) */
+  PetscInt          matinuse;  /* if cmat is in use (cbegin = matinuse-1) */
 } Mat_MPIDense;
 
 PETSC_INTERN PetscErrorCode MatSetUpMultiply_MPIDense(Mat);

@@ -7,11 +7,13 @@
       use petscksp
       implicit none
       Mat             X,B
-      Vec             cx,cb
       Mat             A
       KSP             ksp
-      PetscScalar, pointer :: x_v(:),b_v(:)
-      PetscInt        m,n,L,K
+      PC              pc
+      Mat             F
+      PetscScalar     alpha
+      PetscReal       norm
+      PetscInt        m,K
       PetscViewer     viewer
       character*(128) dir,name
       PetscBool       flg
@@ -39,27 +41,25 @@
       call MatSetRandom(B,PETSC_NULL_RANDOM,ierr);CHKERRA(ierr)
       call KSPSetFromOptions(ksp,ierr);CHKERRA(ierr)
       call KSPSetUp(ksp,ierr);CHKERRA(ierr)
-      call PetscObjectTypeCompare(ksp,KSPHPDDM,flg,ierr);CHKERRA(ierr)
-#if defined(PETSC_HAVE_HPDDM)
-      if (flg) then
-        call KSPHPDDMMatSolve(ksp,B,X,ierr);CHKERRA(ierr)
-      else
-#endif
-        call MatGetSize(A,L,PETSC_NULL_INTEGER,ierr);CHKERRA(ierr)
-        do 50 n=0,K-1
-          call MatDenseGetColumnF90(B,n,b_v,ierr);CHKERRA(ierr)
-          call MatDenseGetColumnF90(X,n,x_v,ierr);CHKERRA(ierr)
-          call VecCreateMPIWithArray(PETSC_COMM_WORLD,1,m,L,b_v,cb,ierr);CHKERRA(ierr)
-          call VecCreateMPIWithArray(PETSC_COMM_WORLD,1,m,L,x_v,cx,ierr);CHKERRA(ierr)
-          call KSPSolve(ksp,cb,cx,ierr);CHKERRA(ierr)
-          call VecDestroy(cx,ierr);CHKERRA(ierr)
-          call VecDestroy(cb,ierr);CHKERRA(ierr)
-          call MatDenseRestoreColumnF90(X,x_v,ierr);CHKERRA(ierr)
-          call MatDenseRestoreColumnF90(B,b_v,ierr);CHKERRA(ierr)
-  50    continue
-#if defined(PETSC_HAVE_HPDDM)
+      call KSPMatSolve(ksp,B,X,ierr);CHKERRA(ierr)
+      call KSPGetMatSolveBlockSize(ksp,M,ierr);CHKERRA(ierr)
+      if (M .ne. PETSC_DECIDE) then
+        call KSPSetMatSolveBlockSize(ksp,PETSC_DECIDE,ierr);CHKERRA(ierr)
+        call MatZeroEntries(X,ierr);CHKERRA(ierr)
+        call KSPMatSolve(ksp,B,X,ierr);CHKERRA(ierr)
       endif
-#endif
+      call KSPGetPC(ksp,pc,ierr);CHKERRA(ierr)
+      call PetscObjectTypeCompare(pc,PCLU,flg,ierr);CHKERRA(ierr)
+      if (flg) then
+        call PCFactorGetMatrix(pc,F,ierr);CHKERRA(ierr)
+        call MatMatSolve(F,B,B,ierr);CHKERRA(ierr)
+        alpha = -1.0
+        call MatAYPX(B,alpha,X,SAME_NONZERO_PATTERN,ierr);CHKERRA(ierr)
+        call MatNorm(B,NORM_INFINITY,norm,ierr);CHKERRA(ierr)
+        if (norm > 100*PETSC_MACHINE_EPSILON) then
+          SETERRA(PETSC_COMM_WORLD,PETSC_ERR_PLIB,'KSPMatSolve() and MatMatSolve() difference has nonzero norm')
+        endif
+      endif
       call MatDestroy(X,ierr);CHKERRA(ierr)
       call MatDestroy(B,ierr);CHKERRA(ierr)
       call MatDestroy(A,ierr);CHKERRA(ierr)
@@ -71,7 +71,7 @@
 !
 !   testset:
 !      nsize: 2
-!      requires: hpddm datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+!      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
 !      args: -ksp_converged_reason -ksp_max_it 1000 -load_dir ${DATAFILESPATH}/matrices/hpddm/GCRODR
 !      test:
 !         suffix: 1
@@ -79,19 +79,34 @@
 !         args:
 !      test:
 !         suffix: 2a
+!         requires: hpddm
 !         output_file: output/ex77_2_ksp_hpddm_type-gmres.out
 !         args: -ksp_type hpddm -pc_type asm -ksp_hpddm_type gmres
 !      test:
 !         suffix: 2b
+!         requires: hpddm
 !         output_file: output/ex77_2_ksp_hpddm_type-bgmres.out
 !         args: -ksp_type hpddm -pc_type asm -ksp_hpddm_type bgmres
 !      test:
 !         suffix: 3a
+!         requires: hpddm
 !         output_file: output/ex77_3_ksp_hpddm_type-gcrodr.out
-!         args: -ksp_type hpddm -ksp_hpddm_recycle 10 -ksp_hpddm_type gcrodr
+!         args: -ksp_type hpddm -ksp_hpddm_recycle 5 -ksp_hpddm_type gcrodr
 !      test:
 !         suffix: 3b
+!         requires: hpddm
 !         output_file: output/ex77_3_ksp_hpddm_type-bgcrodr.out
-!         args: -ksp_type hpddm -ksp_hpddm_recycle 10 -ksp_hpddm_type bgcrodr
+!         args: -ksp_type hpddm -ksp_hpddm_recycle 5 -ksp_hpddm_type bgcrodr
+!      test:
+!         suffix: 4
+!         requires: hpddm
+!         output_file: output/ex77_4.out
+!         args: -ksp_type hpddm -ksp_hpddm_recycle 5 -ksp_hpddm_type bgcrodr -ksp_view_final_residual -N 12 -ksp_matsolve_block_size 5
+!   test:
+!      nsize: 1
+!      suffix: preonly
+!      requires: hpddm datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+!      output_file: output/ex77_preonly.out
+!      args: -N 6 -load_dir ${DATAFILESPATH}/matrices/hpddm/GCRODR -pc_type lu -ksp_type hpddm -ksp_hpddm_type preonly
 !
 !TEST*/

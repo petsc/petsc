@@ -353,9 +353,8 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_MPIAIJ_MPIDense(Mat C)
 /* ------------------------------------------------------- */
 
 typedef struct {
-  Mat          workB,Bb,Cb,workB1,Bb1,Cb1;
+  Mat          workB,workB1;
   MPI_Request  *rwaits,*swaits;
-  PetscInt     numBb;  /* num of Bb matrices */
   PetscInt     nsends,nrecvs;
   MPI_Datatype *stype,*rtype;
   PetscInt     blda;
@@ -369,15 +368,7 @@ PetscErrorCode MatMPIAIJ_MPIDenseDestroy(void *ctx)
 
   PetscFunctionBegin;
   ierr = MatDestroy(&contents->workB);CHKERRQ(ierr);
-
-  if (contents->numBb) {
-    ierr = MatDestroy(&contents->Bb);CHKERRQ(ierr);
-    ierr = MatDestroy(&contents->Cb);CHKERRQ(ierr);
-
-    ierr = MatDestroy(&contents->workB1);CHKERRQ(ierr);
-    ierr = MatDestroy(&contents->Bb1);CHKERRQ(ierr);
-    ierr = MatDestroy(&contents->Cb1);CHKERRQ(ierr);
-  }
+  ierr = MatDestroy(&contents->workB1);CHKERRQ(ierr);
   for (i=0; i<contents->nsends; i++) {
     ierr = MPI_Type_free(&contents->stype[i]);CHKERRQ(ierr);
   }
@@ -389,26 +380,6 @@ PetscErrorCode MatMPIAIJ_MPIDenseDestroy(void *ctx)
   PetscFunctionReturn(0);
 }
 
-/*
-  Create Bb, Cb, Bb1 and Cb1 matrices to be used by MatMatMultSymbolic_MPIAIJ_MPIDense().
-  These matrices are used as wrappers for sub-columns of B and C, thus their own matrix operations are not used.
-  Modified from MatCreateDense().
-*/
-PETSC_STATIC_INLINE PetscErrorCode MatCreateSubMPIDense_private(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt rbs,PetscInt cbs,PetscInt lda,PetscScalar *data,Mat *A)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MatCreate(comm,A);CHKERRQ(ierr);
-  ierr = MatSetSizes(*A,m,n,M,N);CHKERRQ(ierr);
-  ierr = MatSetBlockSizes(*A,rbs,cbs);CHKERRQ(ierr);
-  ierr = MatSetType(*A,MATMPIDENSE);CHKERRQ(ierr);
-  ierr = MatMPIDenseSetPreallocation(*A,data);CHKERRQ(ierr);
-  ierr = MatDenseSetLDA(*A,lda);CHKERRQ(ierr);
-  (*A)->assembled = PETSC_TRUE;
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal fill,Mat C)
 {
   PetscErrorCode  ierr;
@@ -416,7 +387,7 @@ static PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal f
   PetscInt        nz=aij->B->cmap->n,nsends,nrecvs,i,nrows_to,j,blda,clda;
   MPIAIJ_MPIDense *contents;
   VecScatter      ctx=aij->Mvctx;
-  PetscInt        Am=A->rmap->n,Bm=B->rmap->n,BN=B->cmap->N,Bbn,Bbn1,bs,nrows_from;
+  PetscInt        Am=A->rmap->n,Bm=B->rmap->n,BN=B->cmap->N,Bbn,Bbn1,bs,nrows_from,numBb;
   MPI_Comm        comm;
   MPI_Datatype    type1,*stype,*rtype;
   const PetscInt  *sindices,*sstarts,*rstarts;
@@ -427,7 +398,7 @@ static PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal f
   MatCheckProduct(C,4);
   if (C->product->data) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data not empty");
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompareAny((PetscObject)C,&cisdense,MATMPIDENSE,MATMPIDENSECUDA,"");CHKERRQ(ierr);
+  ierr = PetscObjectBaseTypeCompare((PetscObject)C,MATMPIDENSE,&cisdense);CHKERRQ(ierr);
   if (!cisdense) {
     ierr = MatSetType(C,((PetscObject)B)->type_name);CHKERRQ(ierr);
   }
@@ -437,7 +408,6 @@ static PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal f
   ierr = MatDenseGetLDA(B,&blda);CHKERRQ(ierr);
   ierr = MatDenseGetLDA(C,&clda);CHKERRQ(ierr);
   ierr = PetscNew(&contents);CHKERRQ(ierr);
-  contents->numBb = 0;
 
   ierr = VecScatterGetRemote_Private(ctx,PETSC_TRUE/*send*/,&nsends,&sstarts,&sindices,NULL,NULL);CHKERRQ(ierr);
   ierr = VecScatterGetRemoteOrdered_Private(ctx,PETSC_FALSE/*recv*/,&nrecvs,&rstarts,NULL,NULL,NULL);CHKERRQ(ierr);
@@ -460,25 +430,17 @@ static PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal f
   Bbn  = PetscMin(Bbn,BN);
 
   if (Bbn > 0 && Bbn < BN) {
-    contents->numBb = BN/Bbn;
-    Bbn1 = BN - contents->numBb*Bbn;
-  }
+    numBb = BN/Bbn;
+    Bbn1 = BN - numBb*Bbn;
+  } else numBb = 0;
 
-  if (contents->numBb) {
-    PetscScalar data[1]; /* fake array for Bb and Cb */
-
-    ierr = PetscInfo3(C,"use Bb, BN=%D, Bbn=%D; numBb=%D\n",BN,Bbn,contents->numBb);CHKERRQ(ierr);
-    ierr = MatCreateSubMPIDense_private(comm,B->rmap->n,PETSC_DECIDE,A->rmap->N,Bbn,B->rmap->bs,B->cmap->bs,blda,data,&contents->Bb);CHKERRQ(ierr);
-    ierr = MatCreateSubMPIDense_private(comm,Am,PETSC_DECIDE,A->rmap->N,Bbn,C->rmap->bs,C->cmap->bs,clda,data,&contents->Cb);CHKERRQ(ierr);
-
-    if (Bbn1) { /* Create Bb1 and Cb1 for the remaining columns */
+  if (numBb) {
+    ierr = PetscInfo3(C,"use Bb, BN=%D, Bbn=%D; numBb=%D\n",BN,Bbn,numBb);CHKERRQ(ierr);
+    if (Bbn1) { /* Create workB1 for the remaining columns */
       ierr = PetscInfo2(C,"use Bb1, BN=%D, Bbn1=%D\n",BN,Bbn1);CHKERRQ(ierr);
-      ierr = MatCreateSubMPIDense_private(comm,B->rmap->n,PETSC_DECIDE,A->rmap->N,Bbn1,B->rmap->bs,B->cmap->bs,blda,data,&contents->Bb1);CHKERRQ(ierr);
-      ierr = MatCreateSubMPIDense_private(comm,Am,PETSC_DECIDE,A->rmap->N,Bbn1,C->rmap->bs,C->cmap->bs,clda,data,&contents->Cb1);CHKERRQ(ierr);
-
       /* Create work matrix used to store off processor rows of B needed for local product */
       ierr = MatCreateSeqDense(PETSC_COMM_SELF,nz,Bbn1,NULL,&contents->workB1);CHKERRQ(ierr);
-    }
+    } else contents->workB1 = NULL;
   }
 
   /* Create work matrix used to store off processor rows of B needed for local product */
@@ -596,34 +558,6 @@ PetscErrorCode MatMPIDenseScatter(Mat A,Mat B,PetscInt Bbidx,Mat C,Mat *outworkB
   ierr = VecScatterRestoreRemoteOrdered_Private(ctx,PETSC_FALSE/*recv*/,&nrecvs,&rstarts,NULL,&rprocs,NULL);CHKERRQ(ierr);
   ierr = MatDenseRestoreArrayRead(B,&b);CHKERRQ(ierr);
   ierr = MatDenseRestoreArray(workB,&rvalues);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(workB,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(workB,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*
-  Compute Cb = A*Bb
-*/
-static PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense_private(Mat A,Mat Bb,PetscInt Bbidx,Mat C,const PetscScalar *barray,PetscScalar *carray,Mat Cb)
-{
-  PetscErrorCode  ierr;
-  Mat             workB;
-  Mat_MPIAIJ      *aij = (Mat_MPIAIJ*)A->data;
-  Mat_MPIDense    *cbdense = (Mat_MPIDense*)Cb->data;
-
-  PetscFunctionBegin;
-  /* Place barray to Bb */
-  ierr = MatDensePlaceArray(Bb,barray);CHKERRQ(ierr);
-
-  /* get off processor parts of Bb needed to complete Cb=A*Bb */
-  ierr = MatMPIDenseScatter(A,Bb,Bbidx,C,&workB);CHKERRQ(ierr);
-  ierr = MatDenseResetArray(Bb);CHKERRQ(ierr);
-
-  /* off-diagonal block of A times nonlocal rows of Bb */
-  /* Place carray to Cb */
-  ierr = MatDensePlaceArray(Cb,carray);CHKERRQ(ierr);
-  ierr = MatMatMultNumericAdd_SeqAIJ_SeqDense(aij->B,workB,cbdense->A);CHKERRQ(ierr);
-  ierr = MatDenseResetArray(Cb);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -635,43 +569,38 @@ static PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat A,Mat B,Mat C)
   Mat_MPIDense    *cdense = (Mat_MPIDense*)C->data;
   Mat             workB;
   MPIAIJ_MPIDense *contents;
-  PetscInt        numBb;
 
   PetscFunctionBegin;
   MatCheckProduct(C,3);
   if (!C->product->data) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data empty");
   contents = (MPIAIJ_MPIDense*)C->product->data;
-  /* diagonal block of A times all local rows of B*/
+  /* diagonal block of A times all local rows of B */
+  /* TODO: this calls a symbolic multiplication every time, which could be avoided */
   ierr = MatMatMult(aij->A,bdense->A,MAT_REUSE_MATRIX,PETSC_DEFAULT,&cdense->A);CHKERRQ(ierr);
-  numBb = contents->numBb;
-  if (!numBb) {
+  if (contents->workB->cmap->n == B->cmap->N) {
     /* get off processor parts of B needed to complete C=A*B */
     ierr = MatMPIDenseScatter(A,B,0,C,&workB);CHKERRQ(ierr);
 
     /* off-diagonal block of A times nonlocal rows of B */
     ierr = MatMatMultNumericAdd_SeqAIJ_SeqDense(aij->B,workB,cdense->A);CHKERRQ(ierr);
   } else {
-    const PetscScalar *barray,*bptr;
-    PetscScalar       *carray,*cptr;
-    PetscInt          BbN=contents->Bb->cmap->N,i,blda,clda;
+    Mat      Bb,Cb;
+    PetscInt BN=B->cmap->N,n=contents->workB->cmap->n,i;
 
-    ierr = MatDenseGetArrayRead(B,&barray);CHKERRQ(ierr);
-    ierr = MatDenseGetArray(C,&carray);CHKERRQ(ierr);
-    ierr = MatDenseGetLDA(B,&blda);CHKERRQ(ierr);
-    ierr = MatDenseGetLDA(C,&clda);CHKERRQ(ierr);
-    bptr = barray;
-    cptr = carray;
-    for (i=0; i<numBb; i++) {
-      ierr = MatMatMultNumeric_MPIAIJ_MPIDense_private(A,contents->Bb,0,C,bptr,cptr,contents->Cb);CHKERRQ(ierr);
-      bptr += (size_t)blda*(size_t)BbN;
-      cptr += (size_t)clda*(size_t)BbN;
-    }
+    for (i=0; i<BN; i+=n) {
+      ierr = MatDenseGetSubMatrix(B,i,PetscMin(i+n,BN),&Bb);CHKERRQ(ierr);
+      ierr = MatDenseGetSubMatrix(C,i,PetscMin(i+n,BN),&Cb);CHKERRQ(ierr);
 
-    if (contents->Bb1) {
-      ierr = MatMatMultNumeric_MPIAIJ_MPIDense_private(A,contents->Bb1,1,C,bptr,cptr,contents->Cb1);CHKERRQ(ierr);
+      /* get off processor parts of B needed to complete C=A*B */
+      ierr = MatMPIDenseScatter(A,Bb,i+n>BN,C,&workB);CHKERRQ(ierr);
+
+      /* off-diagonal block of A times nonlocal rows of B */
+      cdense = (Mat_MPIDense*)Cb->data;
+      ierr = MatMatMultNumericAdd_SeqAIJ_SeqDense(aij->B,workB,cdense->A);CHKERRQ(ierr);
+
+      ierr = MatDenseRestoreSubMatrix(B,&Bb);CHKERRQ(ierr);
+      ierr = MatDenseRestoreSubMatrix(C,&Cb);CHKERRQ(ierr);
     }
-    ierr = MatDenseRestoreArrayRead(B,&barray);CHKERRQ(ierr);
-    ierr = MatDenseRestoreArray(C,&carray);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -80,8 +80,8 @@ PetscErrorCode MatCreateSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)C,&comm);CHKERRQ(ierr);
   tag0 = ((PetscObject)C)->tag;
-  size = c->size;
-  rank = c->rank;
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   m    = C->rmap->N;
 
   /* Get some new tags to keep the communication clean */

@@ -4177,7 +4177,7 @@ $   call SNESGetConvergenceHistory(SNES snes, integer na, integer ierr)
 
    Level: intermediate
 
-.seealso: SNESSetConvergencHistory()
+.seealso: SNESSetConvergenceHistory()
 
 @*/
 PetscErrorCode  SNESGetConvergenceHistory(SNES snes,PetscReal *a[],PetscInt *its[],PetscInt *na)

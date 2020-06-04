@@ -3,9 +3,8 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self,framework):
     config.package.Package.__init__(self,framework)
-    self.gitcommit              = '21c972f' # master may-15-2020
+    self.gitcommit              = 'ce6ce80' # master june-03-2020
     self.download               = ['git://https://github.com/hpddm/hpddm','https://github.com/hpddm/hpddm/archive/'+self.gitcommit+'.tar.gz']
-    self.version                = '2.0.5'
     self.minversion             = '2.0.3' # prior versions are not handling KSPHPDDM options properly
     self.versionname            = 'HPDDM_VERSION'
     self.versioninclude         = 'HPDDM_define.hpp'
@@ -54,9 +53,9 @@ class Configure(config.package.Package):
     incDir = os.path.join(prefix,'include')
     libDir = os.path.join(prefix,'lib')
     if self.installSudo:
-       newuser = self.installSudo+' -u $${SUDO_USER} '
+      newuser = self.installSudo+' -u $${SUDO_USER} '
     else:
-       newuser = ''
+      newuser = ''
     self.addMakeMacro('HPDDM','yes')
     self.include = [incDir]
     if not hasattr(self.framework,'packages'):
@@ -85,9 +84,9 @@ class Configure(config.package.Package):
         self.compilers.CXXPPFLAGS = oldFlags
         # check for Windows-specific define
         if self.sharedLibraries.getMakeMacro('PETSC_DLL_EXPORTS'):
-            cxxflags += ' -Dpetsc_EXPORTS'
-            # need to explicitly link to PETSc and BLAS on Windows
-            ldflags += ' '+self.libraries.toStringNoDupes([os.path.join(libDir,'libpetsc.'+self.setCompilers.sharedLibraryExt),self.libraries.toStringNoDupes(self.blasLapack.lib)])
+          cxxflags += ' -Dpetsc_EXPORTS'
+          # need to explicitly link to PETSc and BLAS on Windows
+          ldflags += ' '+self.libraries.toStringNoDupes([os.path.join(libDir,'libpetsc.'+self.setCompilers.sharedLibraryExt),self.libraries.toStringNoDupes(self.blasLapack.lib)])
         self.addMakeRule('hpddmcopy','',\
                            ['@echo "*** Copying HPDDM ***"',\
                             '@${RM} -f ${PETSC_ARCH}/lib/petsc/conf/hpddm.errorflg',\

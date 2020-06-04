@@ -495,6 +495,8 @@ PETSC_EXTERN PetscErrorCode MatDenseGetColumnVecRead(Mat,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode MatDenseRestoreColumnVecRead(Mat,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode MatDenseGetColumnVecWrite(Mat,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode MatDenseRestoreColumnVecWrite(Mat,PetscInt,Vec*);
+PETSC_EXTERN PetscErrorCode MatDenseGetSubMatrix(Mat,PetscInt,PetscInt,Mat*);
+PETSC_EXTERN PetscErrorCode MatDenseRestoreSubMatrix(Mat,Mat*);
 
 PETSC_EXTERN PetscErrorCode MatMult(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatMultDiagonalBlock(Mat,Vec,Vec);

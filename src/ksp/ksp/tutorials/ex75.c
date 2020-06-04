@@ -9,12 +9,11 @@ int main(int argc,char **args)
   KSP            ksp;        /* linear solver context */
 #if defined(PETSC_HAVE_HPDDM)
   Mat            U;          /* deflation space */
-  PetscBool      flg;
 #endif
   PetscInt       i,j,nmat = 10;
   PetscViewer    viewer;
   char           dir[PETSC_MAX_PATH_LEN],name[256];
-  PetscBool      reset = PETSC_FALSE;
+  PetscBool      flg,reset = PETSC_FALSE;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&args,NULL,help);if (ierr) return ierr;
@@ -40,8 +39,8 @@ int main(int argc,char **args)
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
     ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_HPDDM)
     ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPHPDDM,&flg);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_HPDDM)
     if (flg && reset) {
       ierr = KSPHPDDMGetDeflationSpace(ksp,&U);CHKERRQ(ierr);
       ierr = KSPReset(ksp);CHKERRQ(ierr);

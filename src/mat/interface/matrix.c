@@ -3406,7 +3406,7 @@ static PetscErrorCode MatMatSolve_Basic(Mat A,Mat B,Mat X,PetscBool trans)
 .  X - the result matrix (dense matrix)
 
    Notes:
-   If B is a MATDENSE matrix then one can call MatMatSolve(A,B,B);
+   If B is a MATDENSE matrix then one can call MatMatSolve(A,B,B) except with MKL_CPARDISO;
    otherwise, B and X cannot be the same.
 
    Notes:

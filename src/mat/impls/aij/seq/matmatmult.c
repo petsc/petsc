@@ -357,7 +357,6 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ_Scalable(Mat A,Mat B,Mat C)
     aj += anzi; aa += anzi;
     cj += cnzi; ca += cnzi;
   }
-
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscLogFlops(flops);CHKERRQ(ierr);
@@ -1457,7 +1456,6 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqDense(Mat A,Mat B,PetscReal fill,Mat
 
   PetscFunctionBegin;
   ierr = MatMatMultSymbolic_SeqDense_SeqDense(A,B,0.0,C);CHKERRQ(ierr);
-
   C->ops->matmultnumeric = MatMatMultNumeric_SeqAIJ_SeqDense;
   PetscFunctionReturn(0);
 }
@@ -1522,8 +1520,6 @@ PETSC_INTERN PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A,Mat B,Mat
   ierr = MatDenseRestoreArray(C,&c);CHKERRQ(ierr);
   ierr = MatDenseRestoreArrayRead(B,&b);CHKERRQ(ierr);
   ierr = MatSeqAIJRestoreArrayRead(A,&av);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
