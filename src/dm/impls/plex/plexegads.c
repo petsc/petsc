@@ -40,46 +40,74 @@
 PetscErrorCode DMPlexSnapToGeomModel(DM dm, PetscInt p, const PetscScalar mcoords[], PetscScalar gcoords[])
 {
 #ifdef PETSC_HAVE_EGADS
+  DM             cdm;
   DMLabel        bodyLabel, faceLabel, edgeLabel;
   PetscContainer modelObj;
   PetscInt       bodyID, faceID, edgeID;
   ego           *bodies;
-  ego            model, geom, body, face, edge;
-  double         point[3], params[3], result[3];
+  ego            model, geom, body, obj;
+  /* result has to hold derviatives, along with the value */
+  double         params[3], result[18], paramsV[16*3], resultV[16*3];
   int            Nb, oclass, mtype, *senses;
+  Vec            coordinatesLocal;
+  PetscScalar   *coords = NULL;
+  PetscInt       Nv, v, Np = 0, pm;
 #endif
-  PetscInt       cdim, d;
+  PetscInt       dE, d;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetCoordinateDim(dm, &cdim);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(dm, &dE);CHKERRQ(ierr);
 #ifdef PETSC_HAVE_EGADS
-  ierr = DMGetLabel(dm, "EGADS Body ID", &bodyLabel);CHKERRQ(ierr);
-  ierr = DMGetLabel(dm, "EGADS Face ID", &faceLabel);CHKERRQ(ierr);
-  ierr = DMGetLabel(dm, "EGADS Edge ID", &edgeLabel);CHKERRQ(ierr);
+  ierr = DMGetLabel(dm, "EGADS Body ID",   &bodyLabel);CHKERRQ(ierr);
+  ierr = DMGetLabel(dm, "EGADS Face ID",   &faceLabel);CHKERRQ(ierr);
+  ierr = DMGetLabel(dm, "EGADS Edge ID",   &edgeLabel);CHKERRQ(ierr);
   if (!bodyLabel || !faceLabel || !edgeLabel) {
-    for (d = 0; d < cdim; ++d) gcoords[d] = mcoords[d];
+    for (d = 0; d < dE; ++d) gcoords[d] = mcoords[d];
     PetscFunctionReturn(0);
   }
-  ierr = DMLabelGetValue(bodyLabel, p, &bodyID);CHKERRQ(ierr);
-  ierr = DMLabelGetValue(faceLabel, p, &faceID);CHKERRQ(ierr);
-  ierr = DMLabelGetValue(edgeLabel, p, &edgeID);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dm, &coordinatesLocal);CHKERRQ(ierr);
+  ierr = DMLabelGetValue(bodyLabel,   p, &bodyID);CHKERRQ(ierr);
+  ierr = DMLabelGetValue(faceLabel,   p, &faceID);CHKERRQ(ierr);
+  ierr = DMLabelGetValue(edgeLabel,   p, &edgeID);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject) dm, "EGADS Model", (PetscObject *) &modelObj);CHKERRQ(ierr);
   ierr = PetscContainerGetPointer(modelObj, (void **) &model);CHKERRQ(ierr);
   ierr = EG_getTopology(model, &geom, &oclass, &mtype, NULL, &Nb, &bodies, &senses);CHKERRQ(ierr);
-  if (bodyID >= Nb) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Body %D is not in [0, %d)", bodyID, Nb);
+  if (bodyID < 0 || bodyID >= Nb) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Body %D is not in [0, %d)", bodyID, Nb);
   body = bodies[bodyID];
-  for (d = 0; d < cdim; ++d) point[d] = mcoords[d];
-  if (edgeID >= 0) {
-    ierr = EG_objectBodyTopo(body, EDGE, edgeID, &edge);CHKERRQ(ierr);
-    ierr = EG_invEvaluate(edge, point, params, result);
-  } else {
-    ierr = EG_objectBodyTopo(body, FACE, faceID, &face);CHKERRQ(ierr);
-    ierr = EG_invEvaluate(face, point, params, result);
+
+  if (edgeID >= 0)      {ierr = EG_objectBodyTopo(body, EDGE, edgeID, &obj);CHKERRQ(ierr); Np = 1;}
+  else if (faceID >= 0) {ierr = EG_objectBodyTopo(body, FACE, faceID, &obj);CHKERRQ(ierr); Np = 2;}
+  else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %D is not in edge or face label for EGADS", p);
+  /* Calculate parameters (t or u,v) for vertices */
+  ierr = DMPlexVecGetClosure(cdm, NULL, coordinatesLocal, p, &Nv, &coords);CHKERRQ(ierr);
+  Nv  /= dE;
+  if (Nv == 1) {
+    ierr = DMPlexVecRestoreClosure(cdm, NULL, coordinatesLocal, p, &Nv, &coords);CHKERRQ(ierr);
+    for (d = 0; d < dE; ++d) gcoords[d] = mcoords[d];
+    PetscFunctionReturn(0);
   }
-  for (d = 0; d < cdim; ++d) gcoords[d] = result[d];
+  if (Nv > 16) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle %D coordinates associated to point %D", Nv, p);
+  for (v = 0; v < Nv; ++v) {ierr = EG_invEvaluate(obj, &coords[v*dE], &paramsV[v*3], &resultV[v*3]);CHKERRQ(ierr);}
+  ierr = DMPlexVecRestoreClosure(cdm, NULL, coordinatesLocal, p, &Nv, &coords);CHKERRQ(ierr);
+  /* Calculate parameters (t or u,v) for new vertex at edge midpoint */
+  for (pm = 0; pm < Np; ++pm) {
+    params[pm] = 0.;
+    for (v = 0; v < Nv; ++v) {params[pm] += paramsV[v*3+pm];}
+    params[pm] /= Nv;
+  }
+  /* TODO Check
+    double range[4]; // [umin, umax, vmin, vmax]
+    int    peri;
+    ierr = EG_getRange(face, range, &peri); CHKERRQ(ierr);
+    if ((paramsNew[0] < range[0]) || (paramsNew[0] > range[1]) || (paramsNew[1] < range[2]) || (paramsNew[1] > range[3])) SETERRQ();
+  */
+  /* Put coordinates for new vertex in result[] */
+  ierr = EG_evaluate(obj, params, result);CHKERRQ(ierr);
+  for (d = 0; d < dE; ++d) gcoords[d] = result[d];
 #else
-  for (d = 0; d < cdim; ++d) gcoords[d] = mcoords[d];
+  for (d = 0; d < dE; ++d) gcoords[d] = mcoords[d];
 #endif
   PetscFunctionReturn(0);
 }
