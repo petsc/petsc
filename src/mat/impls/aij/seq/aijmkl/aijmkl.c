@@ -294,6 +294,51 @@ static PetscErrorCode MatSeqAIJMKL_update_from_mkl_handle(Mat A)
 }
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
+#if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
+PETSC_INTERN PetscErrorCode MatSeqAIJMKL_view_mkl_handle(Mat A,PetscViewer viewer)
+{
+  PetscInt            i,j,k;
+  PetscInt            nrows,ncols;
+  PetscInt            nz;
+  PetscInt            *ai,*aj,*dummy;
+  PetscScalar         *aa;
+  PetscErrorCode      ierr;
+  Mat_SeqAIJMKL       *aijmkl;
+  sparse_status_t     stat;
+  sparse_index_base_t indexing;
+
+  aijmkl = (Mat_SeqAIJMKL*) A->spptr;
+
+  ierr = PetscViewerASCIIPrintf(viewer,"Contents of MKL sparse matrix handle for MATSEQAIJMKL object:\n");CHKERRQ(ierr);
+
+  /* Exit immediately in case of the MKL matrix handle being NULL; this will be the case for empty matrices (zero rows or columns). */
+  if (!aijmkl->csrA) {
+    ierr = PetscViewerASCIIPrintf(viewer,"MKL matrix handle is NULL\n");CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+
+  /* Note: Must pass in &dummy below since MKL can't accept NULL for this output array we don't actually want. */
+  stat = mkl_sparse_x_export_csr(aijmkl->csrA,&indexing,&nrows,&ncols,&ai,&dummy,&aj,&aa);
+  if (stat != SPARSE_STATUS_SUCCESS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Intel MKL error: unable to complete mkl_sparse_x_export_csr()");
+
+  k = 0;
+  for (i=0; i<nrows; i++) {
+    ierr = PetscViewerASCIIPrintf(viewer,"row %D: ",i);CHKERRQ(ierr);
+    nz = ai[i+1] - ai[i];
+    for (j=0; j<nz; j++) {
+      if (aa) {
+        ierr = PetscViewerASCIIPrintf(viewer,"(%D, %g)  ",aj[k],aa[k]);CHKERRQ(ierr);
+      } else {
+        ierr = PetscViewerASCIIPrintf(viewer,"(%D, NULL)",aj[k]);CHKERRQ(ierr);
+      }
+      k++;
+    }
+    ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+#endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
+
 PetscErrorCode MatDuplicate_SeqAIJMKL(Mat A, MatDuplicateOption op, Mat *M)
 {
   PetscErrorCode ierr;
