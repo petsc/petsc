@@ -118,20 +118,24 @@ struct _DMPlexCellRefinerOps {
   PetscErrorCode (*getaffinefacetransforms)(DMPlexCellRefiner, DMPolytopeType, PetscInt *, PetscReal *[], PetscReal *[], PetscReal *[], PetscReal *[]);
   PetscErrorCode (*getcellvertices)(DMPlexCellRefiner, DMPolytopeType, PetscInt *, PetscReal *[]);
   PetscErrorCode (*getsubcellvertices)(DMPlexCellRefiner, DMPolytopeType, DMPolytopeType, PetscInt, PetscInt *, PetscInt *[]);
+  PetscErrorCode (*mapcoords)(DMPlexCellRefiner, DMPolytopeType, DMPolytopeType, PetscInt, PetscInt, PetscInt, const PetscScalar[], PetscScalar[]);
+  PetscErrorCode (*setup)(DMPlexCellRefiner);
+  PetscErrorCode (*destroy)(DMPlexCellRefiner);
 };
 
 struct _p_DMPlexCellRefiner {
   PETSCHEADER(struct _DMPlexCellRefinerOps);
-  DM        dm;         /* The original DM */
-  PetscBool setupcalled;
+  DM                    dm;          /* The original DM */
+  PetscBool             setupcalled;
   DMPlexCellRefinerType type;
-  PetscInt *ctOrder;    /* [i] = ct: An array with cell types in depth order */
-  PetscInt *ctOrderInv; /* [ct] = i: An array with the ordinal numbers for each cell type */
-  PetscInt *ctStart;    /* The number for the first cell of each polytope type in the original mesh, indexed by cell type */
-  PetscInt *ctStartNew; /* The number for the first cell of each polytope type in the new mesh, indexed by cell type */
-  PetscInt *offset;     /* [ct][ctNew]: The offset in the new point numbering of a point of type ctNew produced from an old point of type ct */
-  PetscFE      *coordFE; /* Finite element for each cell type, used for localized coordinate interpolation */
-  PetscFEGeom **refGeom; /* Geometry of the reference cell for each cell type */
+  PetscInt              *ctOrder;    /* [i] = ct: An array with cell types in depth order */
+  PetscInt              *ctOrderInv; /* [ct] = i: An array with the ordinal numbers for each cell type */
+  PetscInt              *ctStart;    /* The number for the first cell of each polytope type in the original mesh, indexed by cell type */
+  PetscInt              *ctStartNew; /* The number for the first cell of each polytope type in the new mesh, indexed by cell type */
+  PetscInt              *offset;     /* [ct][ctNew]: The offset in the new point numbering of a point of type ctNew produced from an old point of type ct */
+  PetscFE               *coordFE;    /* Finite element for each cell type, used for localized coordinate interpolation */
+  PetscFEGeom           **refGeom;   /* Geometry of the reference cell for each cell type */
+  void                  *data;       /* refiner private data */
 };
 
 /* Utility struct to store the contents of a Fluent file in memory */
