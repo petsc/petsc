@@ -8821,7 +8821,7 @@ INCLUDEPATH += $$PETSC_INCLUDES
 LIBS += $$PETSC_LIBS
 
 # 2-Automatic: Use the PKGCONFIG funtionality
-# NOTE: PETSc.pc must be in the pkgconfig path. You might need to adjust PKG_CONFIG_PATH
+# NOTE: petsc.pc must be in the pkgconfig path. You might need to adjust PKG_CONFIG_PATH
 CONFIG += link_pkgconfig
 PKGCONFIG += PETSc
 
@@ -8852,7 +8852,7 @@ In this example, keywords include:
 \item \lstinline{LIBS}: Defines all required external libraries to link with the application. To get PETSc's linking libraries, use \trl{make getlinklibs}.
 \item \lstinline{CONFIG}: Configuration options to be used by \trl{qmake}. Here, the option \lstinline{link_pkgconfig} instructs \trl{qmake} to internally
   use \lstinline{pkgconfig} to resolve \lstinline{INCLUDEPATH} and \lstinline{LIBS} variables.
-\item \lstinline{PKGCONFIG}: Name of the configuration file (the \trl{.pc} file -- here \trl{PETSc.pc}) to be passed to \trl{pkgconfig}. Note that for this functionality to work, \trl{PETSc.pc} must be in path which might require adjusting the \lstinline{PKG_CONFIG_PATH} enviroment variable.
+\item \lstinline{PKGCONFIG}: Name of the configuration file (the \trl{.pc} file -- here \trl{petsc.pc}) to be passed to \trl{pkgconfig}. Note that for this functionality to work, \trl{petsc.pc} must be in path which might require adjusting the \lstinline{PKG_CONFIG_PATH} enviroment variable.
   For more information see \url{https://doc.qt.io/qtcreator/creator-build-settings.html#build-environment}.
 \item \lstinline{QMAKE_CC} and \lstinline{QMAKE_CXX}: Define which C/C++ compilers use.
 \item \lstinline{QMAKE_LINK}: Defines the proper linker to be used. Relevant if compiling C++ projects.

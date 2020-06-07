@@ -142,11 +142,11 @@ class Configure(config.base.Configure):
       self.libraries.libraries.extend(librariessock)
     return
 
-  def DumpPkgconfig(self):
+  def DumpPkgconfig(self, petsc_pc):
     ''' Create a pkg-config file '''
     if not os.path.exists(os.path.join(self.petscdir.dir,self.arch.arch,'lib','pkgconfig')):
       os.makedirs(os.path.join(self.petscdir.dir,self.arch.arch,'lib','pkgconfig'))
-    fd = open(os.path.join(self.petscdir.dir,self.arch.arch,'lib','pkgconfig','PETSc.pc'),'w')
+    fd = open(os.path.join(self.petscdir.dir,self.arch.arch,'lib','pkgconfig',petsc_pc),'w')
     cflags_inc = ['-I${includedir}']
     if self.framework.argDB['prefix']:
       fd.write('prefix='+self.installdir.dir+'\n')
@@ -940,7 +940,8 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
     self.framework.storeSubstitutions(self.framework.argDB)
     self.framework.argDB['configureCache'] = pickle.dumps(self.framework)
     self.framework.argDB.save(force = True)
-    self.DumpPkgconfig()
+    self.DumpPkgconfig('PETSc.pc')
+    self.DumpPkgconfig('petsc.pc')
     self.DumpModule()
     self.postProcessPackages()
     self.framework.log.write('================================================================================\n')
