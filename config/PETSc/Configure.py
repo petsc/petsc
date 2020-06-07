@@ -146,45 +146,40 @@ class Configure(config.base.Configure):
     ''' Create a pkg-config file '''
     if not os.path.exists(os.path.join(self.petscdir.dir,self.arch.arch,'lib','pkgconfig')):
       os.makedirs(os.path.join(self.petscdir.dir,self.arch.arch,'lib','pkgconfig'))
-    fd = open(os.path.join(self.petscdir.dir,self.arch.arch,'lib','pkgconfig',petsc_pc),'w')
-    cflags_inc = ['-I${includedir}']
-    if self.framework.argDB['prefix']:
-      fd.write('prefix='+self.installdir.dir+'\n')
-    else:
-      fd.write('prefix='+os.path.join(self.petscdir.dir, self.arch.arch)+'\n')
-      cflags_inc.append('-I' + os.path.join(self.petscdir.dir, 'include'))
-    fd.write('exec_prefix=${prefix}\n')
-    fd.write('includedir=${prefix}/include\n')
-    fd.write('libdir=${prefix}/lib\n')
+    with open(os.path.join(self.petscdir.dir,self.arch.arch,'lib','pkgconfig',petsc_pc),'w') as fd:
+      cflags_inc = ['-I${includedir}']
+      if self.framework.argDB['prefix']:
+        fd.write('prefix='+self.installdir.dir+'\n')
+      else:
+        fd.write('prefix='+os.path.join(self.petscdir.dir, self.arch.arch)+'\n')
+        cflags_inc.append('-I' + os.path.join(self.petscdir.dir, 'include'))
+      fd.write('exec_prefix=${prefix}\n')
+      fd.write('includedir=${prefix}/include\n')
+      fd.write('libdir=${prefix}/lib\n')
 
-    self.setCompilers.pushLanguage('C')
-    fd.write('ccompiler='+self.setCompilers.getCompiler()+'\n')
-    fd.write('cflags_extra='+self.setCompilers.getCompilerFlags().strip()+'\n')
-    fd.write('cflags_dep='+self.compilers.dependenciesGenerationFlag.get('C','')+'\n')
-    fd.write('ldflag_rpath='+self.setCompilers.CSharedLinkerFlag+'\n')
-    self.setCompilers.popLanguage()
-    if hasattr(self.compilers, 'CXX'):
-      self.setCompilers.pushLanguage('C++')
-      fd.write('cxxcompiler='+self.setCompilers.getCompiler()+'\n')
-      fd.write('cxxflags_extra='+self.setCompilers.getCompilerFlags().strip()+'\n')
-      self.setCompilers.popLanguage()
-    if hasattr(self.compilers, 'FC'):
-      self.setCompilers.pushLanguage('FC')
-      fd.write('fcompiler='+self.setCompilers.getCompiler()+'\n')
-      fd.write('fflags_extra='+self.setCompilers.getCompilerFlags().strip()+'\n')
-      self.setCompilers.popLanguage()
+      with self.setCompilers.Language('C'):
+        fd.write('ccompiler='+self.setCompilers.getCompiler()+'\n')
+        fd.write('cflags_extra='+self.setCompilers.getCompilerFlags().strip()+'\n')
+        fd.write('cflags_dep='+self.compilers.dependenciesGenerationFlag.get('C','')+'\n')
+        fd.write('ldflag_rpath='+self.setCompilers.CSharedLinkerFlag+'\n')
+      if hasattr(self.compilers, 'CXX'):
+        with self.setCompilers.Language('C++'):
+          fd.write('cxxcompiler='+self.setCompilers.getCompiler()+'\n')
+          fd.write('cxxflags_extra='+self.setCompilers.getCompilerFlags().strip()+'\n')
+      if hasattr(self.compilers, 'FC'):
+        with self.setCompilers.Language('FC'):
+          fd.write('fcompiler='+self.setCompilers.getCompiler()+'\n')
+          fd.write('fflags_extra='+self.setCompilers.getCompilerFlags().strip()+'\n')
 
-    fd.write('\n')
-    fd.write('Name: PETSc\n')
-    fd.write('Description: Library to solve ODEs and algebraic equations\n')
-    fd.write('Version: %s\n' % self.petscdir.version)
-    fd.write('Cflags: ' + ' '.join([self.setCompilers.CPPFLAGS] + cflags_inc) + '\n')
-    fd.write('Libs: '+self.libraries.toStringNoDupes(['-L${libdir}', self.petsclib], with_rpath=False)+'\n')
-    # Remove RPATH flags from library list.  User can add them using
-    # pkg-config --variable=ldflag_rpath and pkg-config --libs-only-L
-    fd.write('Libs.private: '+self.libraries.toStringNoDupes([f for f in self.packagelibs+self.complibs if not f.startswith(self.setCompilers.CSharedLinkerFlag)], with_rpath=False)+'\n')
-
-    fd.close()
+      fd.write('\n')
+      fd.write('Name: PETSc\n')
+      fd.write('Description: Library to solve ODEs and algebraic equations\n')
+      fd.write('Version: %s\n' % self.petscdir.version)
+      fd.write('Cflags: ' + ' '.join([self.setCompilers.CPPFLAGS] + cflags_inc) + '\n')
+      fd.write('Libs: '+self.libraries.toStringNoDupes(['-L${libdir}', self.petsclib], with_rpath=False)+'\n')
+      # Remove RPATH flags from library list.  User can add them using
+      # pkg-config --variable=ldflag_rpath and pkg-config --libs-only-L
+      fd.write('Libs.private: '+self.libraries.toStringNoDupes([f for f in self.packagelibs+self.complibs if not f.startswith(self.setCompilers.CSharedLinkerFlag)], with_rpath=False)+'\n')
     return
 
   def DumpModule(self):
