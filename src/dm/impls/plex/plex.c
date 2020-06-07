@@ -7465,7 +7465,7 @@ PetscErrorCode DMPlexCheckSkeleton(DM dm, PetscInt cellHeight)
     if (ct == DM_POLYTOPE_UNKNOWN) continue;
     if (interp == DMPLEX_INTERPOLATED_FULL) {
       ierr = DMPlexGetConeSize(dm, c, &coneSize);CHKERRQ(ierr);
-      if (coneSize != DMPolytopeTypeGetConeSize(ct)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell %D has cone size %D != %D", c, coneSize, DMPolytopeTypeGetConeSize(ct));
+      if (coneSize != DMPolytopeTypeGetConeSize(ct)) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell %D of type %s has cone size %D != %D", c, DMPolytopeTypes[ct], coneSize, DMPolytopeTypeGetConeSize(ct));
     }
     ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     for (cl = 0; cl < closureSize*2; cl += 2) {
@@ -7480,7 +7480,7 @@ PetscErrorCode DMPlexCheckSkeleton(DM dm, PetscInt cellHeight)
       ierr = DMPlexCellUnsplitVertices_Private(dm, c, ct, &unsplit);CHKERRQ(ierr);
       if (Nv + unsplit == DMPolytopeTypeGetNumVertices(ct)) continue;
     }
-    if (Nv != DMPolytopeTypeGetNumVertices(ct)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell %D has %D vertices != %D", c, Nv, DMPolytopeTypeGetNumVertices(ct));
+    if (Nv != DMPolytopeTypeGetNumVertices(ct)) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell %D of type %s has %D vertices != %D", c, DMPolytopeTypes[ct], Nv, DMPolytopeTypeGetNumVertices(ct));
   }
   PetscFunctionReturn(0);
 }
@@ -7549,18 +7549,20 @@ PetscErrorCode DMPlexCheckFaces(DM dm, PetscInt cellHeight)
         if ((p >= vStart) && (p < vEnd)) closure[numCorners++] = p;
       }
       ierr = DMPlexGetRawFaces_Internal(dm, ct, closure, &numFaces, &faceTypes, &faceSizes, &faces);CHKERRQ(ierr);
-      if (coneSize != numFaces) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell %D has %D faces but should have %D", c, coneSize, numFaces);
+      if (coneSize != numFaces) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell %D of type %s has %D faces but should have %D", c, DMPolytopeTypes[ct], coneSize, numFaces);
       for (f = 0; f < numFaces; ++f) {
-        PetscInt *fclosure = NULL, fclosureSize, cl, fnumCorners = 0, v;
+        DMPolytopeType fct;
+        PetscInt       *fclosure = NULL, fclosureSize, cl, fnumCorners = 0, v;
 
+        ierr = DMPlexGetCellType(dm, cone[f], &fct);CHKERRQ(ierr);
         ierr = DMPlexGetTransitiveClosure_Internal(dm, cone[f], ornt[f], PETSC_TRUE, &fclosureSize, &fclosure);CHKERRQ(ierr);
         for (cl = 0; cl < fclosureSize*2; cl += 2) {
           const PetscInt p = fclosure[cl];
           if ((p >= vStart) && (p < vEnd)) fclosure[fnumCorners++] = p;
         }
-        if (fnumCorners != faceSizes[f]) SETERRQ5(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %D (%D) of cell %D has %D vertices but should have %D", cone[f], f, c, fnumCorners, faceSizes[f]);
+        if (fnumCorners != faceSizes[f]) SETERRQ7(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %D of type %s (cone idx %D) of cell %D of type %s has %D vertices but should have %D", cone[f], DMPolytopeTypes[fct], f, c, DMPolytopeTypes[ct], fnumCorners, faceSizes[f]);
         for (v = 0; v < fnumCorners; ++v) {
-          if (fclosure[v] != faces[fOff+v]) SETERRQ6(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %D (%d) of cell %D vertex %D, %D != %D", cone[f], f, c, v, fclosure[v], faces[fOff+v]);
+          if (fclosure[v] != faces[fOff+v]) SETERRQ8(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %D of type %s (cone idx %d) of cell %D of type %s vertex %D, %D != %D", cone[f], DMPolytopeTypes[fct], f, c, DMPolytopeTypes[ct], v, fclosure[v], faces[fOff+v]);
         }
         ierr = DMPlexRestoreTransitiveClosure(dm, cone[f], PETSC_TRUE, &fclosureSize, &fclosure);CHKERRQ(ierr);
         fOff += faceSizes[f];
@@ -7624,11 +7626,11 @@ PetscErrorCode DMPlexCheckGeometry(DM dm)
     ierr = DMPlexCellUnsplitVertices_Private(dm, c, ct, &unsplit);CHKERRQ(ierr);
     if (unsplit) continue;
     ierr = DMPlexComputeCellGeometryFEM(dm, c, NULL, NULL, J, NULL, &detJ);CHKERRQ(ierr);
-    if (detJ < -PETSC_SMALL || (detJ <= 0.0 && !ignoreZeroVol)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %D is inverted, |J| = %g", c, (double) detJ);
+    if (detJ < -PETSC_SMALL || (detJ <= 0.0 && !ignoreZeroVol)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %D of type %s is inverted, |J| = %g", c, DMPolytopeTypes[ct], (double) detJ);
     ierr = PetscInfo2(dm, "Cell %D FEM Volume %g\n", c, (double) detJ*refVol);CHKERRQ(ierr);
     if (depth > 1 && !periodic) {
       ierr = DMPlexComputeCellGeometryFVM(dm, c, &vol, NULL, NULL);CHKERRQ(ierr);
-      if (vol < -PETSC_SMALL || (vol <= 0.0 && !ignoreZeroVol)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %d is inverted, vol = %g", c, (double) vol);
+      if (vol < -PETSC_SMALL || (vol <= 0.0 && !ignoreZeroVol)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %D of type %s is inverted, vol = %g", c, DMPolytopeTypes[ct], (double) vol);
       ierr = PetscInfo2(dm, "Cell %D FVM Volume %g\n", c, (double) vol);CHKERRQ(ierr);
     }
   }
