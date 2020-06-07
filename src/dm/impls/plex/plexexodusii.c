@@ -1246,29 +1246,13 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
       PetscStackCallStandard(ex_get_conn,(exoid, EX_ELEM_BLOCK, cs_id[cs], cs_connect,NULL,NULL));
       /* EXO uses Fortran-based indexing, DMPlex uses C-style and numbers cell first then vertices. */
       for (c_loc = 0, v = 0; c_loc < num_cell_in_set; ++c_loc, ++c) {
+        DMPolytopeType ct;
+
         for (v_loc = 0; v_loc < num_vertex_per_cell; ++v_loc, ++v) {
           cone[v_loc] = cs_connect[v]+numCells-1;
         }
-        if (dim == 3) {
-          /* Tetrahedra are inverted */
-          if (num_vertex_per_cell == 4) {
-            PetscInt tmp = cone[0];
-            cone[0] = cone[1];
-            cone[1] = tmp;
-          }
-          /* Hexahedra are inverted */
-          if (num_vertex_per_cell == 8) {
-            PetscInt tmp = cone[1];
-            cone[1] = cone[3];
-            cone[3] = tmp;
-          }
-          /* Triangular prisms are inverted */
-          if (num_vertex_per_cell == 6) {
-            PetscInt tmp = cone[1];
-            cone[1] = cone[2];
-            cone[2] = tmp;
-          }
-        }
+        ierr = DMPlexGetCellType(*dm, c, &ct);CHKERRQ(ierr);
+        ierr = DMPlexInvertCell(ct, cone);CHKERRQ(ierr);
         ierr = DMPlexSetCone(*dm, c, cone);CHKERRQ(ierr);
         ierr = DMSetLabelValue(*dm, "Cell Sets", c, cs_id[cs]);CHKERRQ(ierr);
       }
