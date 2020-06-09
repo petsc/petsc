@@ -49,7 +49,6 @@ PETSC_INTERN PetscErrorCode MatDestroy_MPISELL_PtAP(Mat);
 PETSC_INTERN PetscErrorCode MatDestroy_MPISELL(Mat);
 
 PETSC_INTERN PetscErrorCode MatSetValues_MPISELL(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar [],InsertMode);
-PETSC_INTERN PetscErrorCode MatDestroy_MPISELL_MatMatMult(Mat);
 PETSC_INTERN PetscErrorCode MatSetOption_MPISELL(Mat,MatOption,PetscBool);
 PETSC_INTERN PetscErrorCode MatGetSeqNonzeroStructure_MPISELL(Mat,Mat*);
 
