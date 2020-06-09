@@ -168,6 +168,7 @@ class Package(config.base.Configure):
     name:         The module name (usually the filename)
     package:      The lowercase name
     PACKAGE:      The uppercase name
+    pkgname:      The name of pkg-config (.pc) file
     downloadname:     Name for download option (usually name)
     downloaddirnames: names for downloaded directory (first part of string) (usually downloadname)
     '''
@@ -178,8 +179,8 @@ class Package(config.base.Configure):
       self.name           = 'DEBUGGING'
     self.PACKAGE          = self.name.upper()
     self.package          = self.name.lower()
+    self.pkgname          = self.package
     self.downloadname     = self.name
-    self.pkgname          = self.name
     self.downloaddirnames = [self.downloadname];
     return
 
