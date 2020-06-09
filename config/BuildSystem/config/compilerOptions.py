@@ -7,14 +7,15 @@ class CompilerOptions(config.base.Configure):
   def getCFlags(self, compiler, bopt, language):
     import config.setCompilers
 
-    if compiler.endswith('mpicc') or compiler.endswith('mpiicc') :
-      try:
-        output   = self.executeShellCommand(compiler + ' -show', log = self.log)[0]
-        self.framework.addMakeMacro('MPICC_SHOW',output.strip().replace('\n','\\\\n'))
-      except:
+    if language == 'C':
+      if compiler.endswith('mpicc') or compiler.endswith('mpiicc') :
+        try:
+          output   = self.executeShellCommand(compiler + ' -show', log = self.log)[0]
+          self.framework.addMakeMacro('MPICC_SHOW',output.strip().replace('\n','\\\\n'))
+        except:
+          self.framework.addMakeMacro('MPICC_SHOW',"Unavailable")
+      else:
         self.framework.addMakeMacro('MPICC_SHOW',"Unavailable")
-    else:
-      self.framework.addMakeMacro('MPICC_SHOW',"Unavailable")
 
     flags = []
     # GNU gcc
