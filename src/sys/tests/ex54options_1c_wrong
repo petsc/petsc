@@ -1,0 +1,7 @@
+# This options file is malformed.
+alias -option1             # missing alias for -option1
+alias -option2 value2      # value instead of aliasee option
+alias -option3 -alias3 bla # extra token bla
+-option3 value3 value33    # extra value
+-option4 -option5          # two options at the same line
+-alias3 alias_value3

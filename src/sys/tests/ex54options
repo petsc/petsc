@@ -1,0 +1,11 @@
+# This options file is correct.
+alias -option2 -alias2
+-option1
+# Initial spaces are allowed.
+  -option2 value2
+-num_option_1 1
+-num_option_2 2.2
+-num_option_3 .3
+-num_option_4 -4
+-num_option_5 -5.5
+-num_option_6 -.6
