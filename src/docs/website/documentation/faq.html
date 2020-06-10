@@ -180,6 +180,7 @@ See https://www.mcs.anl.gov/petsc/documentation/faq.html
         <li><a href="#doubleits">Why do some Krylov methods seem to print two residual norms per iteration?</a></li>
         <li><a href="#dylib">Unable to locate PETSc dynamic library /home/balay/spetsc/lib/libg/linux/libpetsc</a></li>
         <li><a href="#bisect">How do I determine what update to PETSc broke my code?</a></li>
+        <li><a href="#openmpithreaderror">How to fix the error PMIX ERROR: ERROR in file gds_ds12_lock_pthread.c?</a></li>
       </ul>
 
       <h4><a href="#shared-libraries">Shared Libraries</a></h4>
@@ -2178,10 +2179,18 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh
           See <a href="https://mirrors.edge.kernel.org/pub/software/scm/git/docs/git-bisect.html">git-bisect(1)</a>
           and the <a href="https://git-scm.com/book/en/Git-Tools-Debugging-with-Git">debugging
           section of the Git Book</a> for more debugging tips.
-        <li>
+        </li>
       </ul>
 
       <hr>
+
+      <h3><a name="openmpithreaderror">How to fix the error  PMIX ERROR: ERROR in file gds_ds12_lock_pthread.c?</a></h3>
+
+        This seems to be an error when using OpenMPI and OpenBLAS with threads (or perhaps other packages that use threads). </p>
+
+        export PMIX_MCA_gds=hash</p>
+
+        Should resolve the problem.
 
       <h2><a name="shared-libraries">Shared Libraries</a></h2>
 
