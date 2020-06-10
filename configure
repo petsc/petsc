@@ -2,9 +2,17 @@
 
 "true" '''\'
 for pyimpl in python3 python python2; do
-  which $pyimpl > /dev/null 2>&1  && echo "Using $pyimpl for Python" && exec $pyimpl "$0" "$@"
+  which $pyimpl > /dev/null 2>&1
+  if [ $? -eq 0 ]; then
+    $pyimpl -c "import distutils.sysconfig" > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+      echo "Using $pyimpl for Python" && exec $pyimpl "$0" "$@"
+    else
+      echo "$pyimpl is missing distutils.sysconfig, Skipping..."
+    fi
+  fi
 done
-echo "Error! Could not locate python! Please install and have python3, python, or python2 in PATH."
+echo "Error! Could not locate Python (with distutils.sysconfig)! Please install and have python3, python, or python2 (with distutils.sysconfig) in PATH."
 echo "Or use: /path/to/valid/python configure $@"
 exit 127
 '''
@@ -15,6 +23,15 @@ if sys.version_info < (2,6) or (sys.version_info >= (3,0) and sys.version_info <
   print('************************************************************************')
   print('*      Python version 2.6+ or 3.4+ is required to run ./configure      *')
   print('*         Try: "python2.7 ./configure" or "python3 ./configure"        *')
+  print('************************************************************************')
+  sys.exit(4)
+
+try:
+  import distutils.sysconfig
+except:
+  print('************************************************************************')
+  print('* '+sys.executable+' is missing "distutils.sysconfig" module! Its required to build PETSc **')
+  print('* Try installing (for ex: on Ubuntu) "python3-distutils"  or equivalent package that is compatible with '+sys.executable+' ***')
   print('************************************************************************')
   sys.exit(4)
 

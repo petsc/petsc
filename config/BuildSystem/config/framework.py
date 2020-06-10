@@ -1161,7 +1161,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       # note, only classes derived from package.py have this attribute
       if hasattr(child,'deps'):
         found = 0
-        if child.lookforbydefault: found = 1
+        if child.required or child.lookforbydefault: found = 1
         if 'download-'+child.package in self.framework.clArgDB and self.argDB['download-'+child.package]: found = 1
         if 'with-'+child.package in self.framework.clArgDB and self.argDB['with-'+child.package]: found = 1
         if 'with-'+child.package+'-lib' in self.framework.clArgDB and self.argDB['with-'+child.package+'-lib']: found = 1
@@ -1170,7 +1170,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
         msg = ''
         for dep in child.deps:
           found = 0
-          if dep.lookforbydefault: found = 1
+          if dep.required or dep.lookforbydefault: found = 1
           if 'download-'+dep.package in self.framework.clArgDB and self.argDB['download-'+dep.package]: found = 1
           if 'with-'+dep.package in self.framework.clArgDB and self.argDB['with-'+dep.package]: found = 1
           if 'with-'+dep.package+'-lib' in self.framework.clArgDB and self.argDB['with-'+dep.package+'-lib']: found = 1

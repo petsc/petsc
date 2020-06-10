@@ -13,7 +13,6 @@ class Configure(config.package.Package):
     self.mkl                 = 0  # indicates BLAS/LAPACK library used is Intel MKL
     self.separateBlas        = 1
     self.required            = 1
-    self.lookforbydefault    = 1
     self.alternativedownload = 'f2cblaslapack'
     self.missingRoutines     = []
     self.has_cheaders        = 0

@@ -1131,10 +1131,10 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Sorted(Mat A,Mat B,PetscReal fil
   C->ops->matmultnumeric = MatMatMultNumeric_SeqAIJ_SeqAIJ_Sorted;
 
   /* set MatInfo */
-  afill = (PetscReal)ci[am]/(ai[am]+bi[bm]) + 1.e-5;
+  afill = (PetscReal)ci[am]/PetscMax(ai[am]+bi[bm],1) + 1.e-5;
   if (afill < 1.0) afill = 1.0;
-  c->maxnz                     = ci[am];
-  c->nz                        = ci[am];
+  c->maxnz                  = ci[am];
+  c->nz                     = ci[am];
   C->info.mallocs           = ndouble;
   C->info.fill_ratio_given  = fill;
   C->info.fill_ratio_needed = afill;
