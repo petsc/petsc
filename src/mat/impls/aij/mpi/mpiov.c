@@ -1266,6 +1266,8 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,c
   PetscBool      isrowsorted,iscolsorted;
 
   PetscFunctionBegin;
+  PetscValidLogicalCollectiveInt(C,ismax,2);
+  PetscValidLogicalCollectiveEnum(C,scall,5);
   if (ismax != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This routine only works when all processes have ismax=1");
 
   ierr = PetscObjectGetComm((PetscObject)C,&comm);CHKERRQ(ierr);
@@ -1510,7 +1512,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,c
     ierr = PetscCalloc1(C->rmap->n,&rmap_loc);CHKERRQ(ierr);
 #else
     if (!allcolumns) {
-      ierr   = PetscCalloc1(C->cmap->N,&cmap);CHKERRQ(ierr);
+      ierr = PetscCalloc1(C->cmap->N,&cmap);CHKERRQ(ierr);
       for (j=0; j<ncol; j++) cmap[icol[j]] = j+1;
     } else {
       cmap = NULL;
