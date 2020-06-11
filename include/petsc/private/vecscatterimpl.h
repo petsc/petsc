@@ -128,8 +128,8 @@ PETSC_INTERN PetscErrorCode VecScatterMemcpyPlanDestroy_PtoP(VecScatter_MPI_Gene
 PETSC_STATIC_INLINE PetscErrorCode VecScatterMemcpyPlanExecute_Pack(PetscInt i,const PetscScalar *PETSC_RESTRICT x,const VecScatterMemcpyPlan *xplan,PetscScalar *PETSC_RESTRICT y,InsertMode addv,PetscInt bs)
 {
   PetscErrorCode    ierr;
-  PetscInt          j,k,len,step,n;
-  const PetscScalar *xv;
+  PetscInt          j,k,len,step = 0,n = 0;
+  const PetscScalar *xv = NULL;
   PetscBool         strided;
 
   PetscFunctionBegin;
@@ -189,8 +189,8 @@ PETSC_STATIC_INLINE PetscErrorCode VecScatterMemcpyPlanExecute_Pack(PetscInt i,c
 PETSC_STATIC_INLINE PetscErrorCode VecScatterMemcpyPlanExecute_Unpack(PetscInt i,const PetscScalar *PETSC_RESTRICT x,PetscScalar *PETSC_RESTRICT y,const VecScatterMemcpyPlan *yplan,InsertMode addv,PetscInt bs)
 {
   PetscErrorCode ierr;
-  PetscInt       j,k,len,step,n;
-  PetscScalar    *yv;
+  PetscInt       j,k,len,step = 0,n = 0;
+  PetscScalar    *yv = NULL;
   PetscBool      strided;
 
   PetscFunctionBegin;
