@@ -654,7 +654,7 @@ M*/
    Not Collective
 
    Input Parameter:
-+  x - value to use if within interval (a,b)
++  x - value to use if within interval [a,b]
 .  a - lower end of interval
 -  b - upper end of interval
 
