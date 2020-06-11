@@ -1460,7 +1460,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqDense(Mat A,Mat B,PetscReal fill,Mat
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
+PETSC_INTERN PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A,Mat B,Mat C,const PetscBool add)
 {
   Mat_SeqAIJ        *a=(Mat_SeqAIJ*)A->data;
   Mat_SeqDense      *bd=(Mat_SeqDense*)B->data;
@@ -1476,7 +1476,11 @@ PETSC_INTERN PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A,Mat B,Mat
   PetscFunctionBegin;
   if (!cm || !cn) PetscFunctionReturn(0);
   ierr = MatSeqAIJGetArrayRead(A,&av);CHKERRQ(ierr);
-  ierr = MatDenseGetArray(C,&c);CHKERRQ(ierr);
+  if (add) {
+    ierr = MatDenseGetArray(C,&c);CHKERRQ(ierr);
+  } else {
+    ierr = MatDenseGetArrayWrite(C,&c);CHKERRQ(ierr);
+  }
   ierr = MatDenseGetArrayRead(B,&b);CHKERRQ(ierr);
   b1 = b; b2 = b1 + bm; b3 = b2 + bm; b4 = b3 + bm;
   c1 = c; c2 = c1 + clda; c3 = c2 + clda; c4 = c3 + clda;
@@ -1494,30 +1498,86 @@ PETSC_INTERN PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A,Mat B,Mat
         r3 += aatmp*b3[ajtmp];
         r4 += aatmp*b4[ajtmp];
       }
-      c1[i] += r1;
-      c2[i] += r2;
-      c3[i] += r3;
-      c4[i] += r4;
+      if (add) {
+        c1[i] += r1;
+        c2[i] += r2;
+        c3[i] += r3;
+        c4[i] += r4;
+      } else {
+        c1[i] = r1;
+        c2[i] = r2;
+        c3[i] = r3;
+        c4[i] = r4;
+      }
     }
     b1 += bm4; b2 += bm4; b3 += bm4; b4 += bm4;
     c1 += am4; c2 += am4; c3 += am4; c4 += am4;
   }
-  for (; col<cn; col++) {   /* over extra columns of C */
-    for (i=0; i<am; i++) {  /* over rows of C in those columns */
-      r1 = 0.0;
-      n  = a->i[i+1] - a->i[i];
-      aj = a->j + a->i[i];
-      aa = av + a->i[i];
-      for (j=0; j<n; j++) {
-        r1 += aa[j]*b1[aj[j]];
+  /* process remaining columns */
+  if (col != cn) {
+    PetscInt rc = cn-col;
+
+    if (rc == 1) {
+      for (i=0; i<am; i++) {
+        r1 = 0.0;
+        n  = a->i[i+1] - a->i[i];
+        aj = a->j + a->i[i];
+        aa = av + a->i[i];
+        for (j=0; j<n; j++) r1 += aa[j]*b1[aj[j]];
+        if (add) c1[i] += r1;
+        else c1[i] = r1;
       }
-      c1[i] += r1;
+    } else if (rc == 2) {
+      for (i=0; i<am; i++) {
+        r1 = r2 = 0.0;
+        n  = a->i[i+1] - a->i[i];
+        aj = a->j + a->i[i];
+        aa = av + a->i[i];
+        for (j=0; j<n; j++) {
+          const PetscScalar aatmp = aa[j];
+          const PetscInt    ajtmp = aj[j];
+          r1 += aatmp*b1[ajtmp];
+          r2 += aatmp*b2[ajtmp];
+        }
+        if (add) {
+          c1[i] += r1;
+          c2[i] += r2;
+        } else {
+          c1[i] = r1;
+          c2[i] = r2;
+        }
+      }
+    } else {
+      for (i=0; i<am; i++) {
+        r1 = r2 = r3 = 0.0;
+        n  = a->i[i+1] - a->i[i];
+        aj = a->j + a->i[i];
+        aa = av + a->i[i];
+        for (j=0; j<n; j++) {
+          const PetscScalar aatmp = aa[j];
+          const PetscInt    ajtmp = aj[j];
+          r1 += aatmp*b1[ajtmp];
+          r2 += aatmp*b2[ajtmp];
+          r3 += aatmp*b3[ajtmp];
+        }
+        if (add) {
+          c1[i] += r1;
+          c2[i] += r2;
+          c3[i] += r3;
+        } else {
+          c1[i] = r1;
+          c2[i] = r2;
+          c3[i] = r3;
+        }
+      }
     }
-    b1 += bm;
-    c1 += clda;
   }
   ierr = PetscLogFlops(cn*(2.0*a->nz));CHKERRQ(ierr);
-  ierr = MatDenseRestoreArray(C,&c);CHKERRQ(ierr);
+  if (add) {
+    ierr = MatDenseRestoreArray(C,&c);CHKERRQ(ierr);
+  } else {
+    ierr = MatDenseRestoreArrayWrite(C,&c);CHKERRQ(ierr);
+  }
   ierr = MatDenseRestoreArrayRead(B,&b);CHKERRQ(ierr);
   ierr = MatSeqAIJRestoreArrayRead(A,&av);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1532,8 +1592,7 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
   if (A->rmap->n != C->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number rows in C %D not equal rows in A %D\n",C->rmap->n,A->rmap->n);
   if (B->cmap->n != C->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number columns in B %D not equal columns in C %D\n",B->cmap->n,C->cmap->n);
 
-  ierr = MatZeroEntries(C);CHKERRQ(ierr);
-  ierr = MatMatMultNumericAdd_SeqAIJ_SeqDense(A,B,C);CHKERRQ(ierr);
+  ierr = MatMatMultNumericAdd_SeqAIJ_SeqDense(A,B,C,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
