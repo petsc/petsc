@@ -922,7 +922,6 @@ PetscErrorCode VecNorm_SeqViennaCL(Vec xin,NormType type,PetscReal *z)
       ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
       ierr = PetscLogGpuFlops(PetscMax(2.0*n-1,0.0));CHKERRQ(ierr);
     } else if (type == NORM_INFINITY) {
-      ierr = VecViennaCLGetArrayRead(xin,&xgpu);CHKERRQ(ierr);
       ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
       try {
         *z = viennacl::linalg::norm_inf(*xgpu);
@@ -931,7 +930,6 @@ PetscErrorCode VecNorm_SeqViennaCL(Vec xin,NormType type,PetscReal *z)
         SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
       }
       ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
-      ierr = VecViennaCLRestoreArrayRead(xin,&xgpu);CHKERRQ(ierr);
     } else if (type == NORM_1) {
       ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
       try {
