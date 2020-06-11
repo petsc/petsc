@@ -2442,7 +2442,7 @@ PetscErrorCode DMPlexCreateCoarsePointIS(DM dm, IS *fpointIS)
 {
   DMPlexCellRefiner cr;
   PetscInt         *fpoints;
-  PetscInt          pStart, pEnd, p, vStart, vEnd, v, vNew;
+  PetscInt          pStart, pEnd, p, vStart, vEnd, v;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -2453,6 +2453,8 @@ PetscErrorCode DMPlexCreateCoarsePointIS(DM dm, IS *fpointIS)
   ierr = PetscMalloc1(pEnd-pStart, &fpoints);CHKERRQ(ierr);
   for (p = 0; p < pEnd-pStart; ++p) fpoints[p] = -1;
   for (v = vStart; v < vEnd; ++v) {
+    PetscInt vNew = -1; /* silent overzelous may be used uninitialized */
+
     ierr = DMPlexCellRefinerGetNewPoint(cr, DM_POLYTOPE_POINT, DM_POLYTOPE_POINT, p, 0, &vNew);CHKERRQ(ierr);
     fpoints[v-pStart] = vNew;
   }
