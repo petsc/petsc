@@ -1407,6 +1407,7 @@ static PetscErrorCode MatProductNumeric_SeqAIJCUSPARSE_SeqDENSECUDA(Mat C)
   MatMatCusparse               *mmdata;
   Mat_SeqAIJCUSPARSEMultStruct *mat;
   CsrMatrix                    *csrmat;
+  cudaError_t                  cuer;
 
   PetscFunctionBegin;
   MatCheckProduct(C,1);
@@ -1461,6 +1462,16 @@ static PetscErrorCode MatProductNumeric_SeqAIJCUSPARSE_SeqDENSECUDA(Mat C)
   }
   ierr = MatDenseCUDAGetArrayRead(B,&barray);CHKERRQ(ierr);
   ierr = MatDenseGetLDA(B,&blda);CHKERRQ(ierr);
+  if (product->type == MATPRODUCT_RARt || product->type == MATPRODUCT_PtAP) {
+    ierr = MatDenseCUDAGetArrayWrite(mmdata->X,&carray);CHKERRQ(ierr);
+    ierr = MatDenseGetLDA(mmdata->X,&clda);CHKERRQ(ierr);
+  } else {
+    ierr = MatDenseCUDAGetArrayWrite(C,&carray);CHKERRQ(ierr);
+    ierr = MatDenseGetLDA(C,&clda);CHKERRQ(ierr);
+  }
+
+  ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
+
   /* cusparse spmm does not support transpose on B */
   if (product->type == MATPRODUCT_ABt || product->type == MATPRODUCT_RARt) {
     cublasHandle_t cublasv2handle;
@@ -1474,13 +1485,6 @@ static PetscErrorCode MatProductNumeric_SeqAIJCUSPARSE_SeqDENSECUDA(Mat C)
                        mmdata->Bt,B->cmap->n);CHKERRCUBLAS(cerr);
     blda = B->cmap->n;
   }
-  if (product->type == MATPRODUCT_RARt || product->type == MATPRODUCT_PtAP) {
-    ierr = MatDenseCUDAGetArrayWrite(mmdata->X,&carray);CHKERRQ(ierr);
-    ierr = MatDenseGetLDA(mmdata->X,&clda);CHKERRQ(ierr);
-  } else {
-    ierr = MatDenseCUDAGetArrayWrite(C,&carray);CHKERRQ(ierr);
-    ierr = MatDenseGetLDA(C,&clda);CHKERRQ(ierr);
-  }
 
   /* perform the MatMat operation */
   stat = cusparse_csr_spmm(cusp->handle,opA,m,n,k,
@@ -1490,7 +1494,9 @@ static PetscErrorCode MatProductNumeric_SeqAIJCUSPARSE_SeqDENSECUDA(Mat C)
                            csrmat->column_indices->data().get(),
                            mmdata->Bt ? mmdata->Bt : barray,blda,mat->beta_zero,
                            carray,clda);CHKERRCUSPARSE(stat);
-
+  cuer = WaitForGPU();CHKERRCUDA(cuer);
+  ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
+  ierr = PetscLogGpuFlops(n*2.0*csrmat->num_entries);CHKERRQ(ierr);
   ierr = MatDenseCUDARestoreArrayRead(B,&barray);CHKERRQ(ierr);
   if (product->type == MATPRODUCT_RARt) {
     ierr = MatDenseCUDARestoreArrayWrite(mmdata->X,&carray);CHKERRQ(ierr);
