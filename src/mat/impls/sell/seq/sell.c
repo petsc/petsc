@@ -2083,15 +2083,15 @@ PetscErrorCode MatDuplicate_SeqSELL(Mat A,MatDuplicateOption cpvalues,Mat *B)
  Collective
 
  Input Parameters:
- +  comm - MPI communicator, set to PETSC_COMM_SELF
- .  m - number of rows
- .  n - number of columns
- .  rlenmax - maximum number of nonzeros in a row
- -  rlen - array containing the number of nonzeros in the various rows
++  comm - MPI communicator, set to PETSC_COMM_SELF
+.  m - number of rows
+.  n - number of columns
+.  rlenmax - maximum number of nonzeros in a row
+-  rlen - array containing the number of nonzeros in the various rows
  (possibly different for each row) or NULL
 
  Output Parameter:
- .  A - the matrix
+.  A - the matrix
 
  It is recommended that one use the MatCreate(), MatSetType() and/or MatSetFromOptions(),
  MatXXXXSetPreallocation() paradigm instead of this routine directly.
@@ -2107,7 +2107,7 @@ PetscErrorCode MatDuplicate_SeqSELL(Mat A,MatDuplicateOption cpvalues,Mat *B)
 
  Level: intermediate
 
- .seealso: MatCreate(), MatCreateSELL(), MatSetValues(), MatCreateSeqSELLWithArrays()
+ .seealso: MatCreate(), MatCreateSELL(), MatSetValues()
 
  @*/
 PetscErrorCode MatCreateSeqSELL(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt maxallocrow,const PetscInt rlen[],Mat *A)
