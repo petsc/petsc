@@ -52,6 +52,7 @@ def check_for_option_changed(opts):
             ('c-blas-lapack','f2cblaslapack'),
             ('cholmod','suitesparse'),
             ('umfpack','suitesparse'),
+            ('matlabengine','matlab-engine'),            
             ('f-blas-lapack','fblaslapack'),
             ('with-cuda-arch',
              'CUDAFLAGS=-arch'),
