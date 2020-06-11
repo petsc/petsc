@@ -296,10 +296,18 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLogGpuFlops(PetscLogDouble n)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_USE_DEBUG)
+static PetscBool petsc_gtime_inuse = PETSC_FALSE;
+#endif
+
 PETSC_STATIC_INLINE PetscErrorCode PetscLogGpuTimeBegin()
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
+#if defined(PETSC_USE_DEBUG)
+  if (petsc_gtime_inuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Forgot to call PetscLogGpuTimeEnd()?");
+  petsc_gtime_inuse = PETSC_TRUE;
+#endif
   ierr = PetscTimeSubtract(&petsc_gtime);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -308,6 +316,10 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLogGpuTimeEnd()
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
+#if defined(PETSC_USE_DEBUG)
+  if (!petsc_gtime_inuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Forgot to call PetscLogGpuTimeBegin()?");
+  petsc_gtime_inuse = PETSC_FALSE;
+#endif
   ierr = PetscTimeAdd(&petsc_gtime);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
