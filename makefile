@@ -185,6 +185,10 @@ check_build:
          if test -s .ftn.log; then \
           cd src/snes/tutorials >/dev/null; ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testex5f; \
          fi; ${RM} .ftn.log;
+	+@egrep "^#define PETSC_HAVE_MATLAB_ENGINE 1" ${PETSCCONF_H} | tee .ftn.log > /dev/null; \
+         if test -s .ftn.log; then \
+          cd src/vec/vec/tutorials >/dev/null; ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testex31; \
+         fi; ${RM} .ftn.log;
 	+@cd src/snes/tutorials >/dev/null; ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean-legacy
 	-@echo "Completed test examples"
 checkx_build:
