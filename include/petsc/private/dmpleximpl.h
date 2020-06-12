@@ -235,6 +235,7 @@ typedef struct {
 
   /* Projection */
   PetscInt             maxProjectionHeight; /* maximum height of cells used in DMPlexProject functions */
+  PetscInt             activePoint;         /* current active point in iteration */
 
   /* Output */
   PetscInt             vtkCellHeight;            /* The height of cells for output, default is 0 */
