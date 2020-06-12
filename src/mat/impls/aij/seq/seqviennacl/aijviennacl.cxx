@@ -212,7 +212,7 @@ PetscErrorCode MatMult_SeqAIJViennaCL(Mat A,Vec xx,Vec yy)
     ierr = VecViennaCLRestoreArrayWrite(yy,&ygpu);CHKERRQ(ierr);
     ierr = PetscLogGpuFlops(2.0*a->nz - a->nonzerorowcnt);CHKERRQ(ierr);
   } else {
-    ierr = VecSet(yy,0);CHKERRQ(ierr);
+    ierr = VecSet_SeqViennaCL(yy,0);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -249,7 +249,7 @@ PetscErrorCode MatMultAdd_SeqAIJViennaCL(Mat A,Vec xx,Vec yy,Vec zz)
     }
     ierr = PetscLogGpuFlops(2.0*a->nz);CHKERRQ(ierr);
   } else {
-    ierr = VecCopy(yy,zz);CHKERRQ(ierr);
+    ierr = VecCopy_SeqViennaCL(yy,zz);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
