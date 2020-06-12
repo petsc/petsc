@@ -198,6 +198,8 @@ PetscErrorCode PetscFEInitializePackage(void)
   ierr = PetscDualSpaceRegisterAll();CHKERRQ(ierr);
   ierr = PetscFERegisterAll();CHKERRQ(ierr);
   /* Register Events */
+  ierr = PetscLogEventRegister("DualSpaceSetUp", PETSCDUALSPACE_CLASSID, &PETSCDUALSPACE_SetUp);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("FESetUp",        PETSCFE_CLASSID,        &PETSCFE_SetUp);CHKERRQ(ierr);
   /* Process Info */
   {
     PetscClassId  classids[3];

@@ -3,6 +3,8 @@
 
 PetscClassId PETSCDUALSPACE_CLASSID = 0;
 
+PetscLogEvent PETSCDUALSPACE_SetUp;
+
 PetscFunctionList PetscDualSpaceList              = NULL;
 PetscBool         PetscDualSpaceRegisterAllCalled = PETSC_FALSE;
 
@@ -346,8 +348,10 @@ PetscErrorCode PetscDualSpaceSetUp(PetscDualSpace sp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   if (sp->setupcalled) PetscFunctionReturn(0);
+  ierr = PetscLogEventBegin(PETSCDUALSPACE_SetUp, sp, 0, 0, 0);CHKERRQ(ierr);
   sp->setupcalled = PETSC_TRUE;
   if (sp->ops->setup) {ierr = (*sp->ops->setup)(sp);CHKERRQ(ierr);}
+  ierr = PetscLogEventEnd(PETSCDUALSPACE_SetUp, sp, 0, 0, 0);CHKERRQ(ierr);
   if (sp->setfromoptionscalled) {ierr = PetscDualSpaceViewFromOptions(sp, NULL, "-petscdualspace_view");CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
