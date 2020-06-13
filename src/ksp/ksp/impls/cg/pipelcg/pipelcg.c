@@ -47,7 +47,7 @@ static PetscErrorCode KSPSetUp_PIPELCG(KSP ksp)
   if (l > max_it) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"%s: pipel argument must be less than max_it.",((PetscObject)ksp)->type_name);
 
   ierr = KSPSetWorkVecs(ksp,1);CHKERRQ(ierr); /* get work vectors needed by PIPELCG */
-  plcg->p   = ksp->work[0];
+  plcg->p = ksp->work[0];
 
   ierr = VecDuplicateVecs(plcg->p,PetscMax(3,l+1),&plcg->Z);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(plcg->p,3,&plcg->U);CHKERRQ(ierr);

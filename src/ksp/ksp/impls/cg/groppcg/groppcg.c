@@ -143,6 +143,8 @@ static PetscErrorCode  KSPSolve_GROPPCG(KSP ksp)
   PetscFunctionReturn(0);
 }
 
+PETSC_INTERN PetscErrorCode KSPBuildResidual_CG(KSP,Vec,Vec,Vec*);
+
 /*MC
    KSPGROPPCG - A pipelined conjugate gradient method from Bill Gropp
 
@@ -182,6 +184,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GROPPCG(KSP ksp)
   ksp->ops->view           = NULL;
   ksp->ops->setfromoptions = NULL;
   ksp->ops->buildsolution  = KSPBuildSolutionDefault;
-  ksp->ops->buildresidual  = KSPBuildResidualDefault;
+  ksp->ops->buildresidual  = KSPBuildResidual_CG;
   PetscFunctionReturn(0);
 }

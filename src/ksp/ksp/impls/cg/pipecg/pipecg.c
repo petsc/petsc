@@ -36,14 +36,14 @@ static PetscErrorCode  KSPSolve_PIPECG(KSP ksp)
 
   X = ksp->vec_sol;
   B = ksp->vec_rhs;
-  M = ksp->work[0];
+  R = ksp->work[0];
   Z = ksp->work[1];
   P = ksp->work[2];
   N = ksp->work[3];
   W = ksp->work[4];
   Q = ksp->work[5];
   U = ksp->work[6];
-  R = ksp->work[7];
+  M = ksp->work[7];
   S = ksp->work[8];
 
   ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
@@ -162,6 +162,7 @@ static PetscErrorCode  KSPSolve_PIPECG(KSP ksp)
   PetscFunctionReturn(0);
 }
 
+PETSC_INTERN PetscErrorCode KSPBuildResidual_CG(KSP,Vec,Vec,Vec*);
 
 /*MC
    KSPPIPECG - Pipelined conjugate gradient method.
@@ -202,6 +203,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPECG(KSP ksp)
   ksp->ops->view           = NULL;
   ksp->ops->setfromoptions = NULL;
   ksp->ops->buildsolution  = KSPBuildSolutionDefault;
-  ksp->ops->buildresidual  = KSPBuildResidualDefault;
+  ksp->ops->buildresidual  = KSPBuildResidual_CG;
   PetscFunctionReturn(0);
 }
