@@ -663,6 +663,7 @@ typedef enum {PETSC_FP_TRAP_OFF=0,PETSC_FP_TRAP_ON=1} PetscFPTrap;
 PETSC_EXTERN PetscErrorCode PetscSetFPTrap(PetscFPTrap);
 PETSC_EXTERN PetscErrorCode PetscFPTrapPush(PetscFPTrap);
 PETSC_EXTERN PetscErrorCode PetscFPTrapPop(void);
+PETSC_EXTERN PetscErrorCode PetscDetermineInitalFPTrap(void);
 
 /*
       Allows the code to build a stack frame as it runs

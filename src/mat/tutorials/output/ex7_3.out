@@ -1,6 +1,6 @@
-[0] PetscInfoSetFile(): Opened PetscInfo file ex7info.0
-[0] PetscInfoSetFile(): Opened PetscInfo file ex7info.0
-[0] PetscInfoSetFile(): Opened PetscInfo file ex7info.0
+[0] PetscInfoSetFile(): Opened PetscInfo file ex7info.3.0
+[0] PetscInfoSetFile(): Opened PetscInfo file ex7info.3.0
+[0] PetscInfoSetFile(): Opened PetscInfo file ex7info.3.0
 [0] PetscInitialize(): PETSc successfully started: number of processors = 2
 [0] main(): Mat info is enabled
 [0] main(): Mat info is enabled again through PetscInfoActivateClass
