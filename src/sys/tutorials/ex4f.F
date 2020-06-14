@@ -21,7 +21,9 @@
 !     for MPI
 
       call MPI_Init(ierr)
-
+#if defined(PETSC_HAVE_ELEMENTAL)
+      call PetscElementalInitializePackage(ierr)
+#endif
 !     We can now change the communicator universe for PETSc
 
       two = 2
@@ -31,7 +33,6 @@
 
 !     Every PETSc routine should begin with the PetscInitialize()
 !     routine.
-
       call PetscInitializeNoArguments(ierr)
       if (ierr .ne. 0) then
          print*,'Unable to initialize PETSc'
@@ -61,8 +62,10 @@
 !     information.
 
       call PetscFinalize(ierr)
-
       call MPI_Comm_free(PETSC_COMM_WORLD,ierr)
+#if defined(PETSC_HAVE_ELEMENTAL)
+      call PetscElementalFinalizePackage(ierr)
+#endif
 
 
 !     Since we initialized MPI, we must call MPI_Finalize()

@@ -17,7 +17,9 @@ int main(int argc, char *argv[])
 
   /* We must call MPI_Init() first, making us, not PETSc, responsible for MPI */
   ierr = MPI_Init(&argc, &argv);if (ierr) return ierr;
-
+#if defined(PETSC_HAVE_ELEMENTAL)
+  ierr = PetscElementalInitializePackage();if (ierr) return ierr;
+#endif
   /* We can now change the communicator universe for PETSc */
   ierr = MPI_Comm_rank(MPI_COMM_WORLD, &rank);if (ierr) return ierr;
   ierr = MPI_Comm_split(MPI_COMM_WORLD, rank%2, 0, &PETSC_COMM_WORLD);if (ierr) return ierr;
@@ -56,8 +58,10 @@ int main(int argc, char *argv[])
      manpage for more information.
   */
   ierr = PetscFinalize();if (ierr) return ierr;
-
   ierr = MPI_Comm_free(&PETSC_COMM_WORLD);if (ierr) return ierr;
+#if defined(PETSC_HAVE_ELEMENTAL)
+  ierr = PetscElementalFinalizePackage();if (ierr) return ierr;
+#endif
   /* Since we initialized MPI, we must call MPI_Finalize() */
   ierr = MPI_Finalize();
   return ierr;

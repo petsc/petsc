@@ -97,8 +97,6 @@ PetscErrorCode MatFactorGetSolverType_SparseElemental(Mat A,MatSolverType *type)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode PetscElementalInitializePackage(void);
-
 static PetscErrorCode MatGetFactor_aij_sparseelemental(Mat A,MatFactorType ftype,Mat *F)
 {
   PetscFunctionBegin;

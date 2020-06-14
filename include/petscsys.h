@@ -431,6 +431,12 @@ PETSC_EXTERN PetscErrorCode PetscCommDestroy(MPI_Comm*);
 PETSC_EXTERN PetscErrorCode PetscCUDAInitialize(MPI_Comm);
 #endif
 
+#if defined(PETSC_HAVE_ELEMENTAL)
+PETSC_EXTERN PetscErrorCode PetscElementalInitializePackage(void);
+PETSC_EXTERN PetscErrorCode PetscElementalInitialized(PetscBool*);
+PETSC_EXTERN PetscErrorCode PetscElementalFinalizePackage(void);
+#endif
+
 /*MC
    PetscMalloc - Allocates memory, One should use PetscNew(), PetscMalloc1() or PetscCalloc1() usually instead of this
 
