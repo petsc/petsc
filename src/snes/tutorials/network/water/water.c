@@ -44,7 +44,7 @@ int main(int argc,char ** argv)
   /* READ THE DATA */
   if (!crank) {
     /* READ DATA. Only rank 0 reads the data */
-    ierr = PetscOptionsGetString(NULL,NULL,"-waterdata",waterdata_file,PETSC_MAX_PATH_LEN-1,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,NULL,"-waterdata",waterdata_file,sizeof(waterdata_file),NULL);CHKERRQ(ierr);
     ierr = WaterReadData(waterdata,waterdata_file);CHKERRQ(ierr);
 
     ierr = PetscCalloc1(2*waterdata->nedge,&edgelist);CHKERRQ(ierr);

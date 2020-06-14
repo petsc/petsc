@@ -29,7 +29,7 @@ int main(int argc,char **args)
 
   /* Determine file from which we read the matrix A */
   ftyp = MAT_FACTOR_LU;
-  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,&data_provided);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&data_provided);CHKERRQ(ierr);
   if (!data_provided) { /* get matrices from PETSc distribution */
     ierr = PetscStrcpy(file,"${PETSC_DIR}/share/petsc/datafiles/matrices/");CHKERRQ(ierr);
     if (hpd) {

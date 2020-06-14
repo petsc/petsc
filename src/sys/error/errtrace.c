@@ -62,7 +62,7 @@ PetscErrorCode  PetscErrorPrintfInitialize(void)
   ierr = PetscGetArchType(arch,sizeof(arch));CHKERRQ(ierr);
   ierr = PetscGetHostName(hostname,sizeof(hostname));CHKERRQ(ierr);
   ierr = PetscGetUserName(username,sizeof(username));CHKERRQ(ierr);
-  ierr = PetscGetProgramName(pname,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+  ierr = PetscGetProgramName(pname,sizeof(pname));CHKERRQ(ierr);
   ierr = PetscGetDate(date,sizeof(date));CHKERRQ(ierr);
   ierr = PetscGetVersion(version,sizeof(version));CHKERRQ(ierr);
 

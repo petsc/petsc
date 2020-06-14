@@ -684,7 +684,7 @@ int GetLocalOrdering(GRID *grid)
   ICALLOC(grid_param,&tmp);
   if (!rank) {
     PetscBool exists;
-    ierr = PetscOptionsGetString(NULL,NULL,"-mesh",mesh_file,256,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,NULL,"-mesh",mesh_file,sizeof(mesh_file),&flg);CHKERRQ(ierr);
     ierr = PetscTestFile(mesh_file,'r',&exists);CHKERRQ(ierr);
     if (!exists) { /* try uns3d.msh as the file name */
       ierr = PetscStrcpy(mesh_file,"uns3d.msh");CHKERRQ(ierr);
@@ -740,7 +740,7 @@ int GetLocalOrdering(GRID *grid)
       char      spart_file[PETSC_MAX_PATH_LEN],part_file[PETSC_MAX_PATH_LEN];
       PetscBool exists;
 
-      ierr = PetscOptionsGetString(NULL,NULL,"-partition",spart_file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+      ierr = PetscOptionsGetString(NULL,NULL,"-partition",spart_file,sizeof(spart_file),&flg);CHKERRQ(ierr);
       ierr = PetscTestFile(spart_file,'r',&exists);CHKERRQ(ierr);
       if (!exists) { /* try appending the number of processors */
         sprintf(part_file,"part_vec.part.%d",size);

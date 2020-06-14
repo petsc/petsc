@@ -448,11 +448,11 @@ PetscErrorCode MatPartitioningSetFromOptions_Hierarchical(PetscOptionItems *Pets
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"Set hierarchical partitioning options");CHKERRQ(ierr);
-  ierr = PetscOptionsString("-mat_partitioning_hierarchical_coarseparttype","coarse part type",NULL,NULL,value,1024,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-mat_partitioning_hierarchical_coarseparttype","coarse part type",NULL,NULL,value,sizeof(value),&flag);CHKERRQ(ierr);
   if (flag){
    ierr = PetscStrallocpy(value,&hpart->coarseparttype);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsString("-mat_partitioning_hierarchical_fineparttype","fine part type",NULL,NULL,value,1024,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-mat_partitioning_hierarchical_fineparttype","fine part type",NULL,NULL,value,sizeof(value),&flag);CHKERRQ(ierr);
   if (flag){
     ierr = PetscStrallocpy(value,&hpart->fineparttype);CHKERRQ(ierr);
   }

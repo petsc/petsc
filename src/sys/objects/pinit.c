@@ -387,7 +387,7 @@ PetscErrorCode  PetscSetProgramName(const char name[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr  = PetscStrncpy(programname,name,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+  ierr  = PetscStrncpy(programname,name,sizeof(programname));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -526,14 +526,14 @@ PETSC_INTERN PetscErrorCode PetscInitializeSAWs(const char help[])
     if (flg) {
       char  sawslog[PETSC_MAX_PATH_LEN];
 
-      ierr = PetscOptionsGetString(NULL,NULL,"-saws_log",sawslog,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsGetString(NULL,NULL,"-saws_log",sawslog,sizeof(sawslog),NULL);CHKERRQ(ierr);
       if (sawslog[0]) {
         PetscStackCallSAWs(SAWs_Set_Use_Logfile,(sawslog));
       } else {
         PetscStackCallSAWs(SAWs_Set_Use_Logfile,(NULL));
       }
     }
-    ierr = PetscOptionsGetString(NULL,NULL,"-saws_https",cert,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,NULL,"-saws_https",cert,sizeof(cert),&flg);CHKERRQ(ierr);
     if (flg) {
       PetscStackCallSAWs(SAWs_Set_Use_HTTPS,(cert));
     }
@@ -547,14 +547,14 @@ PETSC_INTERN PetscErrorCode PetscInitializeSAWs(const char help[])
         PetscStackCallSAWs(SAWs_Set_Port,(port));
       }
     }
-    ierr = PetscOptionsGetString(NULL,NULL,"-saws_root",root,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,NULL,"-saws_root",root,sizeof(root),&flg);CHKERRQ(ierr);
     if (flg) {
       PetscStackCallSAWs(SAWs_Set_Document_Root,(root));CHKERRQ(ierr);
       ierr = PetscStrcmp(root,".",&rootlocal);CHKERRQ(ierr);
     } else {
       ierr = PetscOptionsHasName(NULL,NULL,"-saws_options",&flg);CHKERRQ(ierr);
       if (flg) {
-        ierr = PetscStrreplace(PETSC_COMM_WORLD,"${PETSC_DIR}/share/petsc/saws",root,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+        ierr = PetscStrreplace(PETSC_COMM_WORLD,"${PETSC_DIR}/share/petsc/saws",root,sizeof(root));CHKERRQ(ierr);
         PetscStackCallSAWs(SAWs_Set_Document_Root,(root));CHKERRQ(ierr);
       }
     }
@@ -562,12 +562,12 @@ PETSC_INTERN PetscErrorCode PetscInitializeSAWs(const char help[])
     if (flg2) {
       char jsdir[PETSC_MAX_PATH_LEN];
       if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"-saws_local option requires -saws_root option");
-      ierr = PetscSNPrintf(jsdir,PETSC_MAX_PATH_LEN,"%s/js",root);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(jsdir,sizeof(jsdir),"%s/js",root);CHKERRQ(ierr);
       ierr = PetscTestDirectory(jsdir,'r',&flg);CHKERRQ(ierr);
       if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"-saws_local option requires js directory in root directory");
       PetscStackCallSAWs(SAWs_Push_Local_Header,());CHKERRQ(ierr);
     }
-    ierr = PetscGetProgramName(programname,64);CHKERRQ(ierr);
+    ierr = PetscGetProgramName(programname,sizeof(programname));CHKERRQ(ierr);
     ierr = PetscStrlen(help,&applinelen);CHKERRQ(ierr);
     introlen   = 4096 + applinelen;
     applinelen += 1024;
@@ -1217,7 +1217,7 @@ PetscErrorCode  PetscFinalize(void)
     char  *cits, filename[PETSC_MAX_PATH_LEN];
     FILE  *fd = PETSC_STDOUT;
 
-    ierr = PetscOptionsGetString(NULL,NULL,"-citations",filename,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,NULL,"-citations",filename,sizeof(filename),NULL);CHKERRQ(ierr);
     if (filename[0]) {
       ierr = PetscFOpen(PETSC_COMM_WORLD,filename,"w",&fd);CHKERRQ(ierr);
     }
@@ -1326,7 +1326,7 @@ PetscErrorCode  PetscFinalize(void)
 #if defined(PETSC_USE_LOG)
 #if defined(PETSC_HAVE_MPE)
   mname[0] = 0;
-  ierr = PetscOptionsGetString(NULL,NULL,"-log_mpe",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-log_mpe",mname,sizeof(mname),&flg1);CHKERRQ(ierr);
   if (flg1) {
     if (mname[0]) {ierr = PetscLogMPEDump(mname);CHKERRQ(ierr);}
     else          {ierr = PetscLogMPEDump(0);CHKERRQ(ierr);}
@@ -1345,7 +1345,7 @@ PetscErrorCode  PetscFinalize(void)
   ierr = PetscOptionsPopGetViewerOff();CHKERRQ(ierr);
 
   mname[0] = 0;
-  ierr = PetscOptionsGetString(NULL,NULL,"-log_summary",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-log_summary",mname,sizeof(mname),&flg1);CHKERRQ(ierr);
   if (flg1) {
     PetscViewer viewer;
     ierr = (*PetscHelpPrintf)(PETSC_COMM_WORLD,"\n\n WARNING:   -log_summary is being deprecated; switch to -log_view\n\n\n");CHKERRQ(ierr);
@@ -1367,8 +1367,8 @@ PetscErrorCode  PetscFinalize(void)
   ierr = PetscObjectRegisterDestroyAll();CHKERRQ(ierr);
 
   mname[0] = 0;
-  ierr = PetscOptionsGetString(NULL,NULL,"-log_all",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,NULL,"-log",mname,PETSC_MAX_PATH_LEN,&flg2);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-log_all",mname,sizeof(mname),&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-log",mname,sizeof(mname),&flg2);CHKERRQ(ierr);
   if (flg1 || flg2) {ierr = PetscLogDump(mname);CHKERRQ(ierr);}
 #endif
 
@@ -1444,7 +1444,7 @@ PetscErrorCode  PetscFinalize(void)
       MPI_Comm local_comm;
       char     string[64];
 
-      ierr = PetscOptionsGetString(NULL,NULL,"-objects_dump",string,64,NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsGetString(NULL,NULL,"-objects_dump",string,sizeof(string),NULL);CHKERRQ(ierr);
       ierr = MPI_Comm_dup(MPI_COMM_WORLD,&local_comm);CHKERRQ(ierr);
       ierr = PetscSequentialPhaseBegin_Private(local_comm,1);CHKERRQ(ierr);
       ierr = PetscObjectsDump(stdout,(string[0] == 'a') ? PETSC_TRUE : PETSC_FALSE);CHKERRQ(ierr);
@@ -1494,10 +1494,10 @@ PetscErrorCode  PetscFinalize(void)
     if (PetscDefined(USE_DEBUG)) {ierr = PetscOptionsGetBool(NULL,NULL,"-malloc_test",&flg2,NULL);CHKERRQ(ierr);}
     ierr = PetscOptionsGetBool(NULL,NULL,"-malloc_debug",&flg3,NULL);CHKERRQ(ierr);
     fname[0] = 0;
-    ierr = PetscOptionsGetString(NULL,NULL,"-malloc_dump",fname,250,&flg1);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,NULL,"-malloc_dump",fname,sizeof(fname),&flg1);CHKERRQ(ierr);
     if (flg1 && fname[0]) {
 
-      PetscSNPrintf(sname,PETSC_MAX_PATH_LEN,"%s_%d",fname,rank);
+      PetscSNPrintf(sname,sizeof(sname),"%s_%d",fname,rank);
       fd   = fopen(sname,"w"); if (!fd) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open log file: %s",sname);
       ierr = PetscMallocDump(fd);CHKERRQ(ierr);
       err  = fclose(fd);
@@ -1512,10 +1512,10 @@ PetscErrorCode  PetscFinalize(void)
       ierr = MPI_Comm_free(&local_comm);CHKERRQ(ierr);
     }
     fname[0] = 0;
-    ierr = PetscOptionsGetString(NULL,NULL,"-malloc_view",fname,250,&flg1);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,NULL,"-malloc_view",fname,sizeof(fname),&flg1);CHKERRQ(ierr);
     if (flg1 && fname[0]) {
 
-      PetscSNPrintf(sname,PETSC_MAX_PATH_LEN,"%s_%d",fname,rank);
+      PetscSNPrintf(sname,sizeof(sname),"%s_%d",fname,rank);
       fd   = fopen(sname,"w"); if (!fd) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open log file: %s",sname);
       ierr = PetscMallocView(fd);CHKERRQ(ierr);
       err  = fclose(fd);

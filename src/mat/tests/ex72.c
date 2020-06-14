@@ -39,9 +39,9 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
 
-  ierr = PetscOptionsGetString(NULL,NULL,"-fin",filein,PETSC_MAX_PATH_LEN,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-fin",filein,sizeof(filein),&flag);CHKERRQ(ierr);
   if (!flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER_INPUT,"Please use -fin <filename> to specify the input file name!");
-  ierr = PetscOptionsGetString(NULL,NULL,"-fout",fileout,PETSC_MAX_PATH_LEN,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-fout",fileout,sizeof(fileout),&flag);CHKERRQ(ierr);
   if (!flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER_INPUT,"Please use -fout <filename> to specify the output file name!");
   ierr = PetscOptionsGetBool(NULL,NULL,"-aij_only",&aijonly,NULL);CHKERRQ(ierr);
 

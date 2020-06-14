@@ -68,11 +68,11 @@ int main(int argc,char **args)
      Determine files from which we read the linear system
      (matrix, right-hand-side and initial guess vector).
   */
-  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,NULL,"-f_x0",file_x0,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,NULL,"-A_name",A_name,128,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,NULL,"-b_name",b_name,128,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,NULL,"-x0_name",x0_name,128,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-f_x0",file_x0,sizeof(file_x0),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-A_name",A_name,sizeof(A_name),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-b_name",b_name,sizeof(b_name),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-x0_name",x0_name,sizeof(x0_name),NULL);CHKERRQ(ierr);
   /*
      Decide whether to solve the original system (-solve_normal 0)
      or the normal equation (-solve_normal 1).

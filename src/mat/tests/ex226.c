@@ -22,7 +22,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-o",&o,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(NULL,NULL,"-result_view",&mat_view);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,NULL,"-stencil",stencil,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-stencil",stencil,sizeof(stencil),NULL);CHKERRQ(ierr);
 
   /* Create a aij matrix A */
   M    = N = m*n*o;

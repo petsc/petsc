@@ -58,7 +58,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
 
     ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
     ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "advection_DMPLEX.c",options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsString("-filename", "The mesh file", "advection_DMPLEX.c", options->filename, options->filename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-filename", "The mesh file", "advection_DMPLEX.c", options->filename, options->filename, sizeof(options->filename), NULL);CHKERRQ(ierr);
     ierr = PetscOptionsRangeInt("-dim", "Problem dimension used for the non-file mesh.", "ex7.c", options->dim, &options->dim, NULL,1,3);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-u", "The x component of the convective coefficient", "advection_DMPLEX.c", options->u, &options->u, NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-v", "The y component of the convective coefficient", "advection_DMPLEX.c", options->v, &options->v, NULL);CHKERRQ(ierr);

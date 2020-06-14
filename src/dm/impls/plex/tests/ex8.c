@@ -42,7 +42,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   run  = options->runType;
   ierr = PetscOptionsEList("-run_type", "The run type", "ex8.c", runTypes, 3, runTypes[options->runType], &run, NULL);CHKERRQ(ierr);
   options->runType = (RunType) run;
-  ierr = PetscOptionsString("-filename", "The mesh file", "ex8.c", options->filename, options->filename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-filename", "The mesh file", "ex8.c", options->filename, options->filename, sizeof(options->filename), NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-interpolate", "Interpolate the mesh", "ex8.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-transform", "Use random transforms", "ex8.c", options->transform, &options->transform, NULL);CHKERRQ(ierr);
 

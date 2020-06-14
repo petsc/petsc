@@ -67,7 +67,7 @@ int main(int argc,char **argv)
   ierr            = PetscOptionsBool("-test_char","Test signed char, unsigned char, and char","",test_char,&test_char,NULL);CHKERRQ(ierr);
   mop             = MPI_SUM;
   ierr            = PetscStrcpy(opstring,"sum");CHKERRQ(ierr);
-  ierr            = PetscOptionsString("-test_op","Designate which MPI_Op to use","",opstring,opstring,256,NULL);CHKERRQ(ierr);
+  ierr            = PetscOptionsString("-test_op","Designate which MPI_Op to use","",opstring,opstring,sizeof(opstring),NULL);CHKERRQ(ierr);
   ierr = PetscStrcmp("sum",opstring,&strflg);CHKERRQ(ierr);
   if (strflg) {
     mop = MPIU_SUM;
@@ -124,7 +124,7 @@ int main(int argc,char **argv)
   ierr            = PetscOptionsInt("-stride","Stride for leaf and root data","",stride,&stride,NULL);CHKERRQ(ierr);
   test_sf_distribute = PETSC_FALSE;
   ierr            = PetscOptionsBool("-test_sf_distribute","Create an SF that 'distributes' to each process, like an alltoall","",test_sf_distribute,&test_sf_distribute,NULL);CHKERRQ(ierr);
-  ierr            = PetscOptionsString("-test_op","Designate which MPI_Op to use","",opstring,opstring,256,NULL);CHKERRQ(ierr);
+  ierr            = PetscOptionsString("-test_op","Designate which MPI_Op to use","",opstring,opstring,sizeof(opstring),NULL);CHKERRQ(ierr);
   ierr            = PetscOptionsEnd();CHKERRQ(ierr);
 
   if (test_sf_distribute) {

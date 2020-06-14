@@ -22,7 +22,7 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetString(NULL,NULL,"-op",opname,64,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-op",opname,sizeof(opname),&flag);CHKERRQ(ierr);
   ierr = PetscStrcmp(opname,"replace",&isreplace);CHKERRQ(ierr);
   ierr = PetscStrcmp(opname,"sum",&issum);CHKERRQ(ierr);
 

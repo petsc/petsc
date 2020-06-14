@@ -34,7 +34,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetReal(NULL,NULL,"-tol",&tol,NULL);CHKERRQ(ierr);
 
   /* Determine file from which we read the matrix A */
-  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,&data_provided);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&data_provided);CHKERRQ(ierr);
   if (!data_provided) { /* get matrices from PETSc distribution */
     ierr = PetscStrncpy(file,"${PETSC_DIR}/share/petsc/datafiles/matrices/",sizeof(file));CHKERRQ(ierr);
     if (symm) {

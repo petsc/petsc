@@ -309,7 +309,7 @@ PetscMatlabEngine  PETSC_MATLAB_ENGINE_(MPI_Comm comm)
   if (!flg) { /* viewer not yet created */
     char *machinename = 0,machine[64];
 
-    ierr = PetscOptionsGetString(NULL,NULL,"-matlab_engine_machine",machine,64,&flg);
+    ierr = PetscOptionsGetString(NULL,NULL,"-matlab_engine_machine",machine,sizeof(machine),&flg);
     if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," "); mengine = 0;}
     if (flg) machinename = machine;
     ierr = PetscMatlabEngineCreate(comm,machinename,&mengine);

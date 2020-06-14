@@ -28,7 +28,7 @@ int main(int argc, char **argv)
 
   ierr = PetscInitialize(&argc,&argv, (char*)0, help);if (ierr) return ierr;
   ierr = PetscOptionsSetValue(NULL,"-viewer_binary_skip_info","true");CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,NULL,"-f",filename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-f",filename,sizeof(filename),&flg);CHKERRQ(ierr);
   if (!flg) {
     ierr = PetscOptionsGetInt(NULL,NULL,"-random_seed",&seed,&sflg);CHKERRQ(ierr);
     if (!sflg) {

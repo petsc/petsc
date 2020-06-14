@@ -862,7 +862,7 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
 
   ierr = PetscOptionsHasName(NULL,NULL,"-quiet",&(param->quiet));CHKERRQ(ierr);
   ierr = PetscOptionsHasName(NULL,NULL,"-test",&(param->param_test));CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,NULL,"-file",param->filename,PETSC_MAX_PATH_LEN,&(param->output_to_file));CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-file",param->filename,sizeof(param->filename),&(param->output_to_file));CHKERRQ(ierr);
 
   /* advection */
   param->adv_scheme = ADVECT_FROMM;       /* advection scheme: 0=finite vol, 1=Fromm */

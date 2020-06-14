@@ -28,7 +28,7 @@ int main(int argc,char **argv)
   PetscBool      flg;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetString(NULL,NULL,"-dm_vec_type",typeName,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-dm_vec_type",typeName,sizeof(typeName),&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscStrstr(typeName,"cuda",&tmp);CHKERRQ(ierr);
     if (tmp) useCUDA = PETSC_TRUE;

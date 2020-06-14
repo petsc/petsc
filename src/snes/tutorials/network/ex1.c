@@ -352,7 +352,7 @@ int main(int argc,char **argv)
 
   /* proc[0] READ THE DATA FOR THE FIRST SUBNETWORK: Electric Power Grid */
   if (rank == 0) {
-    ierr = PetscOptionsGetString(NULL,NULL,"-pfdata",pfdata_file,PETSC_MAX_PATH_LEN-1,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,NULL,"-pfdata",pfdata_file,sizeof(pfdata_file),NULL);CHKERRQ(ierr);
     ierr = PetscNew(&pfdata);CHKERRQ(ierr);
     ierr = PFReadMatPowerData(pfdata,pfdata_file);CHKERRQ(ierr);
     Sbase = pfdata->sbase;
@@ -373,7 +373,7 @@ int main(int argc,char **argv)
   /* proc[1] GET DATA FOR THE SECOND SUBNETWORK: Water */
   if (size == 1 || (size > 1 && rank == 1)) {
     ierr = PetscNew(&waterdata);CHKERRQ(ierr);
-    ierr = PetscOptionsGetString(NULL,NULL,"-waterdata",waterdata_file,PETSC_MAX_PATH_LEN-1,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,NULL,"-waterdata",waterdata_file,sizeof(waterdata_file),NULL);CHKERRQ(ierr);
     ierr = WaterReadData(waterdata,waterdata_file);CHKERRQ(ierr);
 
     ierr = PetscCalloc1(2*waterdata->nedge,&edgelist_water);CHKERRQ(ierr);

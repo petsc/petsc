@@ -2277,7 +2277,7 @@ PetscErrorCode  PetscLogMPEDump(const char sname[])
     if (sname) {
       ierr = PetscStrcpy(name,sname);CHKERRQ(ierr);
     } else {
-      ierr = PetscGetProgramName(name,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+      ierr = PetscGetProgramName(name,sizeof(name));CHKERRQ(ierr);
     }
     ierr = MPE_Finish_log(name);CHKERRQ(ierr);
   } else {
