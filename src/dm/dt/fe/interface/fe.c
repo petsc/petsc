@@ -50,6 +50,8 @@ const char FECitation[] = "@article{kirby2004,\n"
 
 PetscClassId PETSCFE_CLASSID = 0;
 
+PetscLogEvent PETSCFE_SetUp;
+
 PetscFunctionList PetscFEList              = NULL;
 PetscBool         PetscFERegisterAllCalled = PETSC_FALSE;
 
@@ -284,8 +286,10 @@ PetscErrorCode PetscFESetUp(PetscFE fem)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
   if (fem->setupcalled) PetscFunctionReturn(0);
+  ierr = PetscLogEventBegin(PETSCFE_SetUp, fem, 0, 0, 0);CHKERRQ(ierr);
   fem->setupcalled = PETSC_TRUE;
   if (fem->ops->setup) {ierr = (*fem->ops->setup)(fem);CHKERRQ(ierr);}
+  ierr = PetscLogEventEnd(PETSCFE_SetUp, fem, 0, 0, 0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
