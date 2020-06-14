@@ -1,0 +1,13 @@
+Label 'Orthogonal_Quality':
+[0]: 0 (1)
+[0]: 1 (1)
+[1]: 0 (1)
+[1]: 1 (1)
+Vec Object: 2 MPI processes
+  type: mpi
+Process [0]
+1.
+1.
+Process [1]
+1.
+1.
