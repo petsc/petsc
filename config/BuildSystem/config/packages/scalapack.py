@@ -7,7 +7,11 @@ class Configure(config.package.Package):
     self.download         = ['git://https://bitbucket.org/petsc/pkg-scalapack','https://bitbucket.org/petsc/pkg-scalapack/get/'+self.gitcommit+'.tar.gz']
     self.downloaddirnames = ['petsc-pkg-scalapack','scalapack']
     self.includes         = []
-    self.liblist          = [['libscalapack.a']]
+    self.liblist          = [['libscalapack.a'],
+                             ['libmkl_scalapack_lp64.a','libmkl_blacs_intelmpi_lp64.a'],
+                             ['libmkl_scalapack_lp64.a','libmkl_blacs_mpich_lp64.a'],
+                             ['libmkl_scalapack_lp64.a','libmkl_blacs_sgimpt_lp64.a'],
+                             ['libmkl_scalapack_lp64.a','libmkl_blacs_openmpi_lp64.a']]
     self.functions        = ['pssytrd']
     self.functionsFortran = 1
     self.fc               = 1
@@ -79,3 +83,8 @@ class Configure(config.package.Package):
         raise RuntimeError('Error running make on SCALAPACK')
       self.postInstall(output,'SLmake.inc')
     return self.installDir
+
+def getSearchDirectories(self):
+  '''Generate list of possible locations of Scalapack'''
+  yield ''
+  if os.getenv('MKLROOT'): yield os.getenv('MKLROOT')
