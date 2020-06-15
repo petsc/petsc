@@ -20,6 +20,7 @@ class Configure(config.package.Package):
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
+    self.python          = framework.require('config.packages.python',self)
     self.setCompilers    = framework.require('config.setCompilers',self)
     self.sharedLibraries = framework.require('PETSc.options.sharedLibraries', self)
     self.installdir      = framework.require('PETSc.options.installDir',self)
@@ -38,7 +39,7 @@ class Configure(config.package.Package):
 
     # if installing prefix location then need to set new value for PETSC_DIR/PETSC_ARCH
     if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
-       iarch = 'installed-'+self.parch.nativeArch
+       iarch = 'installed-'+self.parch.nativeArch.replace('linux-','linux2-')
        if self.scalartypes.scalartype != 'real':
          iarch += '-' + self.scalartypes.scalartype
        carg = 'SLEPC_DIR='+self.packageDir+' PETSC_DIR='+os.path.abspath(os.path.expanduser(self.argDB['prefix']))+' PETSC_ARCH="" '
@@ -55,7 +56,7 @@ class Configure(config.package.Package):
                        ['@echo "*** Building slepc ***"',\
                           '@${RM} -f ${PETSC_ARCH}/lib/petsc/conf/slepc.errorflg',\
                           '@(cd '+self.packageDir+' && \\\n\
-           '+carg+'./configure --with-clean --prefix='+prefix+' && \\\n\
+           '+carg+self.python.pyexe+' ./configure --with-clean --prefix='+prefix+' && \\\n\
            '+barg+'${OMAKE} '+barg+') > ${PETSC_ARCH}/lib/petsc/conf/slepc.log 2>&1 || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
              echo "Error building slepc. Check ${PETSC_ARCH}/lib/petsc/conf/slepc.log" && \\\n\
