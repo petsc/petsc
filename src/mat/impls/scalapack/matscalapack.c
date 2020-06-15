@@ -981,6 +981,7 @@ PETSC_INTERN PetscErrorCode MatConvert_Dense_ScaLAPACK(Mat A,MatType newtype,Mat
   const PetscInt *ranges;
   PetscBLASInt   adesc[9],amb,zero=0,one=1,lld,info;
   PetscScalar    *aarray;
+  PetscInt       lda;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
@@ -997,7 +998,8 @@ PETSC_INTERN PetscErrorCode MatConvert_Dense_ScaLAPACK(Mat A,MatType newtype,Mat
   /* create ScaLAPACK descriptor for A (1d block distribution) */
   ierr = PetscLayoutGetRanges(A->rmap,&ranges);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(ranges[1],&amb);CHKERRQ(ierr);  /* row block size */
-  lld = PetscMax(A->rmap->n,1);  /* local leading dimension */
+  ierr = MatDenseGetLDA(A,&lda);CHKERRQ(ierr);
+  lld = PetscMax(lda,1);  /* local leading dimension */
   PetscStackCallBLAS("SCALAPACKdescinit",SCALAPACKdescinit_(adesc,&b->M,&b->N,&amb,&b->N,&zero,&zero,&b->grid->ictxcol,&lld,&info));
   PetscCheckScaLapackInfo("descinit",info);
 
