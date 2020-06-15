@@ -209,7 +209,7 @@ M*/
 
    Synopsis:
    #include <petscsys.h>
-   PetscErrorCode SETERRQ4(MPI_Comm comm,PetscErrorCode ierr,char *formatmessage,arg1,arg2,arg3)
+   PetscErrorCode SETERRQ4(MPI_Comm comm,PetscErrorCode ierr,char *formatmessage,arg1,arg2,arg3,arg4)
 
    Collective
 
@@ -240,7 +240,7 @@ M*/
 
    Synopsis:
    #include <petscsys.h>
-   PetscErrorCode SETERRQ5(MPI_Comm comm,PetscErrorCode ierr,char *formatmessage,arg1,arg2,arg3)
+   PetscErrorCode SETERRQ5(MPI_Comm comm,PetscErrorCode ierr,char *formatmessage,arg1,arg2,arg3,arg4,arg5)
 
    Collective
 
@@ -272,7 +272,7 @@ M*/
 
    Synopsis:
    #include <petscsys.h>
-   PetscErrorCode SETERRQ6(MPI_Comm comm,PetscErrorCode ierr,char *formatmessage,arg1,arg2,arg3)
+   PetscErrorCode SETERRQ6(MPI_Comm comm,PetscErrorCode ierr,char *formatmessage,arg1,arg2,arg3,arg4,arg5,arg6)
 
    Collective
 
@@ -305,7 +305,7 @@ M*/
 
    Synopsis:
    #include <petscsys.h>
-   PetscErrorCode SETERRQ7(MPI_Comm comm,PetscErrorCode ierr,char *formatmessage,arg1,arg2,arg3)
+   PetscErrorCode SETERRQ7(MPI_Comm comm,PetscErrorCode ierr,char *formatmessage,arg1,arg2,arg3,arg4,arg5,arg6,arg7)
 
    Collective
 
@@ -339,7 +339,7 @@ M*/
 
    Synopsis:
    #include <petscsys.h>
-   PetscErrorCode SETERRQ8(MPI_Comm comm,PetscErrorCode ierr,char *formatmessage,arg1,arg2,arg3)
+   PetscErrorCode SETERRQ8(MPI_Comm comm,PetscErrorCode ierr,char *formatmessage,arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8)
 
    Collective
 
@@ -374,7 +374,7 @@ M*/
 
    Synopsis:
    #include <petscsys.h>
-   PetscErrorCode SETERRQ9(MPI_Comm comm,PetscErrorCode ierr,char *formatmessage,arg1,arg2,arg3)
+   PetscErrorCode SETERRQ9(MPI_Comm comm,PetscErrorCode ierr,char *formatmessage,arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9)
 
    Collective
 
