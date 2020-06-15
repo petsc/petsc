@@ -265,7 +265,7 @@ PetscErrorCode MatCreateSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS
         for (k=0; k<N; k++) {
           sbuf2_i[0] = v_start[0];
           sbuf2_i++;
-          v_start += C->rmap->n;
+          v_start += a->lda;
         }
       }
       /* Now send off the data */
@@ -318,7 +318,7 @@ PetscErrorCode MatCreateSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS
           imat_vi = imat_v + j;
           for (k=0; k<ncol[i]; k++) {
             col          = icol[i][k];
-            imat_vi[k*m] = mat_vi[col*C->rmap->n];
+            imat_vi[k*m] = mat_vi[col*a->lda];
           }
         }
       }
