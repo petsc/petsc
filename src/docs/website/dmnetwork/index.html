@@ -8,26 +8,16 @@
   </head>
   <body>
 
-    <div id="logo">
-      <h1>PETSc</h1>
-    </div>
-
     <div id="header">
       <h1>PETSc DMNetwork</h1>
     </div>
 
     <hr>
 
-    <div id="sidebar">
+    <div id="sidebardmnetwork">
       <ul>
-        <li><a href="../index.html">Home</a></li>
-        <li><a href="../download/index.html">Download</a></li>
-        <li><a href="../features/index.html">Features</a></li>
+        <li><a href="../index.html">PETSc</a></li>
         <li><a href="../documentation/index.html">Documentation</a></li>
-        <li><a href="../Publications/index.html">Documentation</a></li>
-        <li><a href="../miscellaneous/index.html">Miscellaneous</a></li>
-        <li><a href="../miscellaneous/external.html">External Software</a></li>
-        <li><a href="https://docs.petsc.org/en/latest/developers/index.html">Developers Site</a></li>
         <li>
           <!-- <a href="../dmnetwork/index.html">DMNetwork</a> -->
           <span class="current">DMNetwork</span>
@@ -40,35 +30,42 @@
       </ul>
     </div>
 
-    <div id="main">
+    <div id="maindmnetwork">
 
       <p>
         PETSc DMNetwork provides a powerful flexible scalable framework for simulation of multiphysics
-        phenomena over large-scale networked systems. It eases the applications development cycle by providing the necessary infrastructure through simple abstractions to define and query the network components. Some complex systems that could exploit PETSc DMNetwork include critical infrastructures (power, water, gas, transportation,
+        phenomena over large-scale networked systems. It eases the applications development cycle by providing the necessary infrastructure through simple abstractions to define and query the network components.</p>
+
+        Some complex systems that could exploit PETSc DMNetwork include critical infrastructures (power, water, gas, transportation,
         and telecommunicaiton), human body (brain and blood circulation), ecology (foodweb and pollinator-plant), disease (epidemic and virus-host networks) and other social networks.
       </p>
 
-      <center>
+   </div>
+
+    <div id="below">
+    <center>
         <img alt="" src="images/network.jpg"/>
-      </center>
+    </center>
 
       <p>
         PETSc DMNetwork provides data and topology management, parallelization for multiphysics systems over a network, and hierarchical and composable solvers to exploit the problem structure. The key features of DMNetwork include creating the network layout,
         partitioning for efficient parallelism, parallel data movement, utility routines for extracting
         connectivity information, and linear, nonlinear,
-        and time-stepping solvers. The steps for using DMNetwork is illustrated in the figure below and they include:
-        (i) Create network graph, (ii) Add physics components, and variabeles to the network elements (edges and vertices),
-        (iii) Distribute the poplulated network to multiple processors,
+        and time-stepping solvers.</p>
+
+        The steps for using DMNetwork is illustrated in the figure below; they include:
+        (i) Create network graph, (ii) Add physics components, and variables to the network elements (edges and vertices),
+        (iii) Distribute the populated network to multiple processors,
         and (iv) decompose the domains and associate them with their respective linear, nonlinear, time-stepping solvers.
       </p>
 
       <center>
         <img alt="" src="images/dmnetwork.png"/>
       </center>
+    <hr>
 
     </div>
 
-    <hr>
 
   </body>
 </html>

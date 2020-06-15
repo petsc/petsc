@@ -8,26 +8,16 @@
   </head>
   <body>
 
-    <div id="logo">
-      <h1>PETSc</h1>
-    </div>
-
     <div id="header">
       <h1>PETSc DMNetwork: Case Studies</h1>
     </div>
 
     <hr>
 
-    <div id="sidebar">
+    <div id="sidebardmnetwork">
       <ul>
-        <li><a href="../index.html">Home</a></li>
-        <li><a href="../download/index.html">Download</a></li>
-        <li><a href="../features/index.html">Features</a></li>
+        <li><a href="../index.html">PETSc</a></li>
         <li><a href="../documentation/index.html">Documentation</a></li>
-        <li><a href="../Publications/index.html">Documentation</a></li>
-        <li><a href="../miscellaneous/index.html">Miscellaneous</a></li>
-        <li><a href="../miscellaneous/external.html">External Software</a></li>
-        <li><a href="https://docs.petsc.org/en/latest/developers/index.html">Developers Site</a></li>
         <li>
           <a href="../dmnetwork/index.html">DMNetwork</a>
           <ul>
@@ -39,7 +29,7 @@
       </ul>
     </div>
 
-    <div id="main">
+    <div id="maindmnetwork">
 
       <div id="study1">
         <h2>Case Study 1: Power Flow Simulation </h2>
@@ -51,15 +41,21 @@
         (<a href="https://matpower.org/">matpower.org</a>). The total numbers of buses,
         generators, loads, and branches are 82,000,
         13,419, 37,755, and 104,121 respectively. The total number of unknowns solved
-        is around half million. The scaling results shows that doubling the number
-        of compute nodes doubled the speedup. Increasing the number of cores from 128 to 2048,
+        is around half a million. Increasing the number of cores from 128 to 2048,
         provided a speedup of twelve.
         <a href="documents/Application1_Betrie_etal-2019_poster.pdf"> Poster</a>
       </p>
-      <center>
-        <img alt="" src="images/power.png" width="1000" height="400"/>
-      </center>
+      </div>
+    </div>
+    
+    <div id="below">
+      <div id="sudy11">
 
+        <p>
+          
+      <center>
+        <img alt="" src="images/power.png" align="middle" width="1000" height="400"/>
+      </center>
       </div>
 
       <div id="sudy2">
@@ -68,8 +64,8 @@
         A river flow simulation done on the U.S. river
         networks using DMNetwork. The input file was obtained from the NHDPlus dataset
         (<a href="https://www.horizon-systems.com">horizon-systems.com</a>).
-        The total numbers of reaches and junctions are 3098638 and 3036092, respectively.
-        The total number of unknowns solved is around a half a billion.
+        The total numbers of reaches and junctions are 3,098,638 and 3,036,092, respectively.
+        The total number of unknowns solved is around half a billion.
         Increasing the number of cores from 1,024 to 65,536, provided a speedup of 35.
          <a href="documents/poster1.pdf">Poster</a>
       </p>
