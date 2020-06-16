@@ -152,11 +152,12 @@ PetscErrorCode KSPDGMRESCycle(PetscInt *itcount,KSP ksp)
 
   /* check for the convergence */
   ierr       = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
-  ksp->rnorm = res;
+  if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = res;
+  else ksp->rnorm = 0.0;
   ierr       = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
   dgmres->it = (it - 1);
-  ierr       = KSPLogResidualHistory(ksp,res);CHKERRQ(ierr);
-  ierr       = KSPMonitor(ksp,ksp->its,res);CHKERRQ(ierr);
+  ierr       = KSPLogResidualHistory(ksp,ksp->rnorm);CHKERRQ(ierr);
+  ierr       = KSPMonitor(ksp,ksp->its,ksp->rnorm);CHKERRQ(ierr);
   if (!res) {
     if (itcount) *itcount = 0;
     ksp->reason = KSP_CONVERGED_ATOL;
@@ -166,11 +167,11 @@ PetscErrorCode KSPDGMRESCycle(PetscInt *itcount,KSP ksp)
   /* record the residual norm to test if deflation is needed */
   res_old = res;
 
-  ierr = (*ksp->converged)(ksp,ksp->its,res,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+  ierr = (*ksp->converged)(ksp,ksp->its,ksp->rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   while (!ksp->reason && it < max_k && ksp->its < ksp->max_it) {
     if (it) {
-      ierr = KSPLogResidualHistory(ksp,res);CHKERRQ(ierr);
-      ierr = KSPMonitor(ksp,ksp->its,res);CHKERRQ(ierr);
+      ierr = KSPLogResidualHistory(ksp,ksp->rnorm);CHKERRQ(ierr);
+      ierr = KSPMonitor(ksp,ksp->its,ksp->rnorm);CHKERRQ(ierr);
     }
     dgmres->it = (it - 1);
     if (dgmres->vv_allocated <= it + VEC_OFFSET + 1) {
@@ -211,10 +212,11 @@ PetscErrorCode KSPDGMRESCycle(PetscInt *itcount,KSP ksp)
     it++;
     dgmres->it = (it-1);     /* For converged */
     ksp->its++;
-    ksp->rnorm = res;
+    if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = res;
+    else ksp->rnorm = 0.0;
     if (ksp->reason) break;
 
-    ierr = (*ksp->converged)(ksp,ksp->its,res,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+    ierr = (*ksp->converged)(ksp,ksp->its,ksp->rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
 
     /* Catch error in happy breakdown and signal convergence and break from loop */
     if (hapend) {
@@ -230,8 +232,8 @@ PetscErrorCode KSPDGMRESCycle(PetscInt *itcount,KSP ksp)
 
   /* Monitor if we know that we will not return for a restart */
   if (it && (ksp->reason || ksp->its >= ksp->max_it)) {
-    ierr = KSPLogResidualHistory(ksp,res);CHKERRQ(ierr);
-    ierr = KSPMonitor(ksp,ksp->its,res);CHKERRQ(ierr);
+    ierr = KSPLogResidualHistory(ksp,ksp->rnorm);CHKERRQ(ierr);
+    ierr = KSPMonitor(ksp,ksp->its,ksp->rnorm);CHKERRQ(ierr);
   }
   if (itcount) *itcount = it;
 
@@ -1140,7 +1142,7 @@ static PetscErrorCode  KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
 
  References:
 +  1. - J. Erhel, K. Burrage and B. Pohl,  Restarted GMRES preconditioned by deflation,J. Computational and Applied Mathematics, 69(1996).
--  2. - D. NUENTSA WAKAM and F. PACULL, Memory Efficient Hybrid Algebraic Solvers for Linear Systems Arising from Compressible Flows, Computers and Fluids, 
+-  2. - D. NUENTSA WAKAM and F. PACULL, Memory Efficient Hybrid Algebraic Solvers for Linear Systems Arising from Compressible Flows, Computers and Fluids,
    In Press, http://dx.doi.org/10.1016/j.compfluid.2012.03.023
 
  Contributed by: Desire NUENTSA WAKAM,INRIA
@@ -1163,6 +1165,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_DGMRES(KSP ksp)
 
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,1);CHKERRQ(ierr);
 
   ksp->ops->buildsolution                = KSPBuildSolution_DGMRES;
   ksp->ops->setup                        = KSPSetUp_DGMRES;
@@ -1213,4 +1216,3 @@ PETSC_EXTERN PetscErrorCode KSPCreate_DGMRES(KSP ksp)
   dgmres->HasSchur    = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
-

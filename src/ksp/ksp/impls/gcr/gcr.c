@@ -59,7 +59,7 @@ static PetscErrorCode KSPSolve_GCR_cycle(KSP ksp)
     ierr    = VecScale(s, 1.0/nrm);CHKERRQ(ierr);
     ierr    = VecAXPY(x,  r_dot_v, s);CHKERRQ(ierr);
     ierr    = VecAXPY(r, -r_dot_v, v);CHKERRQ(ierr);
-    if (ksp->its > ksp->chknorm) {
+    if (ksp->its > ksp->chknorm && ksp->normtype != KSP_NORM_NONE) {
       ierr = VecNorm(r, NORM_2, &norm_r);CHKERRQ(ierr);
       KSPCheckNorm(ksp,norm_r);
     }
@@ -90,7 +90,7 @@ static PetscErrorCode KSPSolve_GCR(KSP ksp)
   PetscErrorCode ierr;
   Mat            A, B;
   Vec            r,b,x;
-  PetscReal      norm_r;
+  PetscReal      norm_r = 0.0;
 
   PetscFunctionBegin;
   ierr = KSPGetOperators(ksp, &A, &B);CHKERRQ(ierr);
@@ -101,8 +101,10 @@ static PetscErrorCode KSPSolve_GCR(KSP ksp)
   /* compute initial residual */
   ierr = KSP_MatMult(ksp,A, x, r);CHKERRQ(ierr);
   ierr = VecAYPX(r, -1.0, b);CHKERRQ(ierr); /* r = b - A x  */
-  ierr = VecNorm(r, NORM_2, &norm_r);CHKERRQ(ierr);
-  KSPCheckNorm(ksp,norm_r);
+  if (ksp->normtype != KSP_NORM_NONE) {
+    ierr = VecNorm(r, NORM_2, &norm_r);CHKERRQ(ierr);
+    KSPCheckNorm(ksp,norm_r);
+  }
   ksp->its    = 0;
   ksp->rnorm0 = norm_r;
 
@@ -351,6 +353,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GCR(KSP ksp)
   ctx->n_restarts = 0;
   ksp->data       = (void*)ctx;
 
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,1);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,3);CHKERRQ(ierr);
 
   ksp->ops->setup          = KSPSetUp_GCR;
@@ -362,12 +365,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GCR(KSP ksp)
   ksp->ops->buildsolution  = KSPBuildSolution_GCR;
   ksp->ops->buildresidual  = KSPBuildResidual_GCR;
 
-  ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPGCRSetRestart_C",KSPGCRSetRestart_GCR);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGCRSetRestart_C",KSPGCRSetRestart_GCR);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGCRSetModifyPC_C",KSPGCRSetModifyPC_GCR);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
-
-
-

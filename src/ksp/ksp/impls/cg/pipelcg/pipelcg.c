@@ -550,6 +550,7 @@ PetscErrorCode KSPCreate_PIPELCG(KSP ksp)
   ierr = PetscNewLog(ksp,&plcg);CHKERRQ(ierr);
   ksp->data = (void*)plcg;
 
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,2);CHKERRQ(ierr);
 

@@ -74,10 +74,11 @@ static PetscErrorCode  KSPSolve_MINRES(KSP ksp)
     PetscFunctionReturn(0);
   }
 
-  ierr       = KSPLogResidualHistory(ksp,np);CHKERRQ(ierr);
-  ierr       = KSPMonitor(ksp,0,np);CHKERRQ(ierr);
-  ksp->rnorm = np;
-  ierr       = (*ksp->converged)(ksp,0,np,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); /* test for convergence */
+  ksp->rnorm = 0.0;
+  if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = np;
+  ierr = KSPLogResidualHistory(ksp,ksp->rnorm);CHKERRQ(ierr);
+  ierr = KSPMonitor(ksp,0,ksp->rnorm);CHKERRQ(ierr);
+  ierr = (*ksp->converged)(ksp,0,ksp->rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); /* test for convergence */
   if (ksp->reason) PetscFunctionReturn(0);
 
   dp   = PetscAbsScalar(dp);
@@ -153,13 +154,13 @@ static PetscErrorCode  KSPSolve_MINRES(KSP ksp)
       KSPCheckNorm(ksp,np);
     } else {
       /* otherwise compute new residual norm via recurrence relation */
-      np = ksp->rnorm * PetscAbsScalar(s);
+      np *= PetscAbsScalar(s);
     }
 
-    ksp->rnorm = np;
-    ierr = KSPLogResidualHistory(ksp,np);CHKERRQ(ierr);
-    ierr = KSPMonitor(ksp,i+1,np);CHKERRQ(ierr);
-    ierr = (*ksp->converged)(ksp,i+1,np,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); /* test for convergence */
+    if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = np;
+    ierr = KSPLogResidualHistory(ksp,ksp->rnorm);CHKERRQ(ierr);
+    ierr = KSPMonitor(ksp,i+1,ksp->rnorm);CHKERRQ(ierr);
+    ierr = (*ksp->converged)(ksp,i+1,ksp->rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); /* test for convergence */
     if (ksp->reason) break;
 
     if (PetscRealPart(dp) < minres->haptol) {
@@ -209,8 +210,9 @@ PETSC_EXTERN PetscErrorCode KSPCreate_MINRES(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr           = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
-  ierr           = PetscNewLog(ksp,&minres);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp,&minres);CHKERRQ(ierr);
 
   /* this parameter is arbitrary; but e-50 didn't work for __float128 in one example */
 #if defined(PETSC_USE_REAL___FLOAT128)
@@ -234,8 +236,3 @@ PETSC_EXTERN PetscErrorCode KSPCreate_MINRES(KSP ksp)
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
   PetscFunctionReturn(0);
 }
-
-
-
-
-

@@ -37,14 +37,15 @@ static PetscErrorCode  KSPSolve_TFQMR(KSP ksp)
   ierr = KSPInitialResidual(ksp,X,V,T,R,B);CHKERRQ(ierr);
 
   /* Test for nothing to do */
-  ierr       = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
+  ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
   KSPCheckNorm(ksp,dp);
-  ierr       = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
-  ksp->rnorm = dp;
-  ksp->its   = 0;
-  ierr       = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
-  ierr       = KSPMonitor(ksp,0,dp);CHKERRQ(ierr);
-  ierr       = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+  ierr = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+  if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = dp;
+  else ksp->rnorm = 0.0;
+  ksp->its = 0;
+  ierr     = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+  ierr     = KSPMonitor(ksp,0,ksp->rnorm);CHKERRQ(ierr);
+  ierr     = (*ksp->converged)(ksp,0,ksp->rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   if (ksp->reason) PetscFunctionReturn(0);
 
   /* Make the initial Rp == R */
@@ -91,13 +92,14 @@ static PetscErrorCode  KSPSolve_TFQMR(KSP ksp)
       }
       ierr = VecAXPY(X,eta,D);CHKERRQ(ierr);
 
-      dpest      = PetscSqrtReal(m + 1.0) * tau;
-      ierr       = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
-      ksp->rnorm = dpest;
-      ierr       = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
-      ierr = KSPLogResidualHistory(ksp,dpest);CHKERRQ(ierr);
-      ierr = KSPMonitor(ksp,i+1,dpest);CHKERRQ(ierr);
-      ierr = (*ksp->converged)(ksp,i+1,dpest,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+      dpest = PetscSqrtReal(m + 1.0) * tau;
+      ierr  = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+      if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = dpest;
+      else ksp->rnorm = 0.0;
+      ierr = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+      ierr = KSPLogResidualHistory(ksp,ksp->rnorm);CHKERRQ(ierr);
+      ierr = KSPMonitor(ksp,i+1,ksp->rnorm);CHKERRQ(ierr);
+      ierr = (*ksp->converged)(ksp,i+1,ksp->rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
       if (ksp->reason) break;
 
       etaold = eta;
@@ -150,6 +152,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_TFQMR(KSP ksp)
   PetscFunctionBegin;
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,1);CHKERRQ(ierr);
 
   ksp->data                = (void*)0;
   ksp->ops->setup          = KSPSetUp_TFQMR;

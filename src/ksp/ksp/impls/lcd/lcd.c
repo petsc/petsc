@@ -33,7 +33,7 @@ PetscErrorCode  KSPSolve_LCD(KSP ksp)
   PetscErrorCode ierr;
   PetscInt       it,j,max_k;
   PetscScalar    alfa, beta, num, den, mone;
-  PetscReal      rnorm;
+  PetscReal      rnorm = 0.0;
   Vec            X,B,R,Z;
   KSP_LCD        *lcd;
   Mat            Amat,Pmat;
@@ -62,8 +62,10 @@ PetscErrorCode  KSPSolve_LCD(KSP ksp)
   }
 
   ierr = KSP_PCApply(ksp,Z,R);CHKERRQ(ierr);                   /*     r <- M^-1z         */
-  ierr = VecNorm(R,NORM_2,&rnorm);CHKERRQ(ierr);
-  KSPCheckNorm(ksp,rnorm);
+  if (ksp->normtype != KSP_NORM_NONE) {
+    ierr = VecNorm(R,NORM_2,&rnorm);CHKERRQ(ierr);
+    KSPCheckNorm(ksp,rnorm);
+  }
   ierr = KSPLogResidualHistory(ksp,rnorm);CHKERRQ(ierr);
   ierr       = KSPMonitor(ksp,0,rnorm);CHKERRQ(ierr);
   ksp->rnorm = rnorm;
@@ -87,8 +89,10 @@ PetscErrorCode  KSPSolve_LCD(KSP ksp)
       alfa = num/den;
       ierr = VecAXPY(X,alfa,lcd->P[it]);CHKERRQ(ierr);
       ierr = VecAXPY(R,-alfa,lcd->Q[it]);CHKERRQ(ierr);
-      ierr = VecNorm(R,NORM_2,&rnorm);CHKERRQ(ierr);
-      KSPCheckNorm(ksp,rnorm);
+      if (ksp->normtype != KSP_NORM_NONE) {
+        ierr = VecNorm(R,NORM_2,&rnorm);CHKERRQ(ierr);
+        KSPCheckNorm(ksp,rnorm);
+      }
 
       ksp->rnorm = rnorm;
       ierr = KSPLogResidualHistory(ksp,rnorm);CHKERRQ(ierr);
@@ -231,6 +235,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_LCD(KSP ksp)
   PetscFunctionBegin;
   ierr         = PetscNewLog(ksp,&lcd);CHKERRQ(ierr);
   ksp->data    = (void*)lcd;
+  ierr         = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
   ierr         = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
   lcd->restart = 30;
   lcd->haptol  = 1.0e-30;
@@ -249,8 +254,3 @@ PETSC_EXTERN PetscErrorCode KSPCreate_LCD(KSP ksp)
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
   PetscFunctionReturn(0);
 }
-
-
-
-
-

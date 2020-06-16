@@ -147,7 +147,8 @@ PetscErrorCode KSPLGMRESCycle(PetscInt *itcount,KSP ksp)
   /* scale VEC_VV (the initial residual) */
   tmp = 1.0/res_norm; ierr = VecScale(VEC_VV(0),tmp);CHKERRQ(ierr);
 
-  ksp->rnorm = res;
+  if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = res;
+  else ksp->rnorm = 0.0;
 
 
   /* note: (lgmres->it) is always set one less than (loc_it) It is used in
@@ -225,8 +226,9 @@ PetscErrorCode KSPLGMRESCycle(PetscInt *itcount,KSP ksp)
 
     ierr = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
     ksp->its++;
-    ksp->rnorm = res;
-    ierr       = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+    if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = res;
+    else ksp->rnorm = 0.0;
+    ierr = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
 
     ierr = (*ksp->converged)(ksp,ksp->its,res,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
 
@@ -788,6 +790,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_LGMRES(KSP ksp)
 
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,1);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C",KSPGMRESSetPreAllocateVectors_GMRES);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetOrthogonalization_C",KSPGMRESSetOrthogonalization_GMRES);CHKERRQ(ierr);

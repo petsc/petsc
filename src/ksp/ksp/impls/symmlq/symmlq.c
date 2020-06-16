@@ -21,7 +21,7 @@ PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
   PetscScalar    alpha,beta,ibeta,betaold,beta1,ceta = 0,ceta_oold = 0.0, ceta_old = 0.0,ceta_bar;
   PetscScalar    c  = 1.0,cold=1.0,s=0.0,sold=0.0,coold,soold,rho0,rho1,rho2,rho3;
   PetscScalar    dp = 0.0;
-  PetscReal      np,s_prod;
+  PetscReal      np = 0.0,s_prod;
   Vec            X,B,R,Z,U,V,W,UOLD,VOLD,Wbar;
   Mat            Amat,Pmat;
   KSP_SYMMLQ     *symmlq = (KSP_SYMMLQ*)ksp->data;
@@ -84,8 +84,10 @@ PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
   ierr  = VecScale(V,ibeta);CHKERRQ(ierr);    /* v <- ibeta*v; */
   ierr  = VecScale(U,ibeta);CHKERRQ(ierr);    /* u <- ibeta*u; */
   ierr  = VecCopy(U,Wbar);CHKERRQ(ierr);       /* w_bar <- u;   */
-  ierr  = VecNorm(Z,NORM_2,&np);CHKERRQ(ierr);     /*   np <- ||z||        */
-  KSPCheckNorm(ksp,np);
+  if (ksp->normtype != KSP_NORM_NONE) {
+    ierr  = VecNorm(Z,NORM_2,&np);CHKERRQ(ierr);     /*   np <- ||z||        */
+    KSPCheckNorm(ksp,np);
+  }
   ierr = KSPLogResidualHistory(ksp,np);CHKERRQ(ierr);
   ierr       = KSPMonitor(ksp,0,np);CHKERRQ(ierr);
   ksp->rnorm = np;
@@ -159,10 +161,11 @@ PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
     if (c == 0.0) np = s_prod*1.e16;
     else np = s_prod/PetscAbsScalar(c);       /* residual norm for xc_k (CGNORM) */
 
-    ksp->rnorm = np;
-    ierr = KSPLogResidualHistory(ksp,np);CHKERRQ(ierr);
-    ierr = KSPMonitor(ksp,i+1,np);CHKERRQ(ierr);
-    ierr = (*ksp->converged)(ksp,i+1,np,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); /* test for convergence */
+    if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = np;
+    else ksp->rnorm = 0.0;
+    ierr = KSPLogResidualHistory(ksp,ksp->rnorm);CHKERRQ(ierr);
+    ierr = KSPMonitor(ksp,i+1,ksp->rnorm);CHKERRQ(ierr);
+    ierr = (*ksp->converged)(ksp,i+1,ksp->rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); /* test for convergence */
     if (ksp->reason) break;
     i++;
   } while (i<ksp->max_it);
@@ -202,6 +205,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_SYMMLQ(KSP ksp)
 
   PetscFunctionBegin;
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
 
   ierr           = PetscNewLog(ksp,&symmlq);CHKERRQ(ierr);
   symmlq->haptol = 1.e-18;
@@ -219,8 +223,3 @@ PETSC_EXTERN PetscErrorCode KSPCreate_SYMMLQ(KSP ksp)
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
   PetscFunctionReturn(0);
 }
-
-
-
-
-

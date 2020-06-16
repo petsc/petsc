@@ -52,9 +52,10 @@ static PetscErrorCode  KSPSolve_BiCG(KSP ksp)
   ierr = VecConjugate(Zl);CHKERRQ(ierr);
   if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
     ierr = VecNorm(Zr,NORM_2,&dp);CHKERRQ(ierr);  /*    dp <- z'*z       */
-  } else {
+  } else if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
     ierr = VecNorm(Rr,NORM_2,&dp);CHKERRQ(ierr);  /*    dp <- r'*r       */
-  }
+  } else dp = 0.0;
+
   KSPCheckNorm(ksp,dp);
   ierr       = KSPMonitor(ksp,0,dp);CHKERRQ(ierr);
   ierr       = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
@@ -103,9 +104,10 @@ static PetscErrorCode  KSPSolve_BiCG(KSP ksp)
       ierr = VecConjugate(Rl);CHKERRQ(ierr);
       ierr = VecConjugate(Zl);CHKERRQ(ierr);
       ierr = VecNorm(Zr,NORM_2,&dp);CHKERRQ(ierr);  /*    dp <- z'*z       */
-    } else {
+    } else if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
       ierr = VecNorm(Rr,NORM_2,&dp);CHKERRQ(ierr);  /*    dp <- r'*r       */
-    }
+    } else dp = 0.0;
+
     KSPCheckNorm(ksp,dp);
     ierr       = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
     ksp->its   = i+1;
@@ -153,9 +155,9 @@ PETSC_EXTERN PetscErrorCode KSPCreate_BiCG(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ksp->data = (void*)0;
-  ierr      = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
-  ierr      = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
 
   ksp->ops->setup          = KSPSetUp_BiCG;
   ksp->ops->solve          = KSPSolve_BiCG;
@@ -166,8 +168,3 @@ PETSC_EXTERN PetscErrorCode KSPCreate_BiCG(KSP ksp)
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
   PetscFunctionReturn(0);
 }
-
-
-
-
-
