@@ -176,11 +176,16 @@ def modifylevel(filename,secname):
       re_loc = re.compile('(<FONT COLOR="#CC3333">Location:</FONT>)')
       tmpbuf = re_loc.sub('</B><H3><FONT COLOR="#CC3333">Level</FONT></H3>' + level + r'<BR>\n<H3><FONT COLOR="#CC3333">Location</FONT></H3>\n',tmpbuf)
 
-      # Modify .c#,.h# to .c.html#,.h.html
+      # Modify .c#,.h#,.cu#,.cxx# to .c.html#,.h.html#,.cu.html#,.cxx.html#
       re_loc = re.compile('.c#')
       tmpbuf = re_loc.sub('.c.html#',tmpbuf)
       re_loc = re.compile('.h#')
       tmpbuf = re_loc.sub('.h.html#',tmpbuf)
+      re_loc = re.compile('.cu#')
+      tmpbuf = re_loc.sub('.cu.html#',tmpbuf)
+      re_loc = re.compile('.cxx#')
+      tmpbuf = re_loc.sub('.cxx.html#',tmpbuf)
+
 
       re_loc = re.compile('</BODY></HTML>')
       outbuf = re_loc.sub('<BR><A HREF="./index.html">Index of all ' + secname + ' routines</A>\n<BR><A HREF="../../index.html">Table of Contents for all manual pages</A>\n<BR><A HREF="../singleindex.html">Index of all manual pages</A>\n</BODY></HTML>',tmpbuf)
