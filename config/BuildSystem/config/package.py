@@ -142,7 +142,7 @@ class Package(config.base.Configure):
       self.petscdir        = FakePETScDir()
     # All packages depend on make
     self.make          = framework.require('config.packages.make',self)
-    if not self.isMPI and not self.package in ['make','cuda']:
+    if not self.isMPI and not self.package in ['make','cuda','thrust']:
       # force MPI to be the first package configured since all other packages
       # may depend on its compilers defined here
       self.mpi         = framework.require('config.packages.MPI',self)
@@ -325,7 +325,7 @@ class Package(config.base.Configure):
   def getInstallDir(self):
     '''Returns --prefix (or the value computed from --package-prefix-hash) if provided otherwise $PETSC_DIR/$PETSC_ARCH'''
     '''Special case for packages such as sowing that are have self.publicInstall == 0 it always locates them in $PETSC_DIR/$PETSC_ARCH'''
-    '''Special special case if --package-prefix-hash then even self.publicInstall == 0 are installed in the prefix location'''
+    '''Special case if --package-prefix-hash then even self.publicInstall == 0 are installed in the prefix location'''
     self.confDir    = self.installDirProvider.confDir  # private install location; $PETSC_DIR/$PETSC_ARCH for PETSc
     self.packageDir = self.getDir()
     if not self.packageDir: self.packageDir = self.downLoad()
@@ -1392,7 +1392,7 @@ Brief overview of how BuildSystem\'s configuration of packages works.
                 downLoad():
                   ...
                   download and unpack the source to self.packageDir,
-          Install():
+            Install():
             /* This must be implemented by a package subclass */
 
     Install:

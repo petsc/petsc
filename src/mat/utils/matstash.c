@@ -764,11 +764,23 @@ static PetscErrorCode MatStashBlockTypeSetUp(MatStash *stash)
     PetscMPIInt  blocklens[2];
     MPI_Aint     displs[2];
     MPI_Datatype types[2],stype;
-    /* C++ std::complex is not my favorite datatype.  Since it is not POD, we cannot use offsetof to find the offset of
-     * vals.  But the layout is actually guaranteed by the standard, so we do a little dance here with struct
-     * DummyBlock, substituting PetscReal for PetscComplex so that we can determine the offset.
+    /* Note that DummyBlock is a type having standard layout, even when PetscScalar is C++ std::complex.
+       std::complex itself has standard layout, so does DummyBlock, recursively.
+       To be compatiable with C++ std::complex, complex implementations on GPUs must also have standard layout,
+       though they can have different alignment, e.g, 16 bytes for double complex, instead of 8 bytes as in GCC stdlibc++.
+       offsetof(type, member) only requires type to have standard layout. Ref. https://en.cppreference.com/w/cpp/types/offsetof.
+
+       We can test if std::complex has standard layout with the following code:
+       #include <iostream>
+       #include <type_traits>
+       #include <complex>
+       int main() {
+         std::cout << std::boolalpha;
+         std::cout << std::is_standard_layout<std::complex<double> >::value << '\n';
+       }
+       Output: true
      */
-    struct DummyBlock {PetscInt row,col; PetscReal vals;};
+    struct DummyBlock {PetscInt row,col; PetscScalar vals;};
 
     stash->blocktype_size = offsetof(struct DummyBlock,vals) + bs2*sizeof(PetscScalar);
     if (stash->blocktype_size % sizeof(PetscInt)) { /* Implies that PetscInt is larger and does not satisfy alignment without padding */

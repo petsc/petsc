@@ -87,6 +87,9 @@ PetscLogDouble petsc_ctog_sz         = 0.0;  /* The total size of CPU to GPU cop
 PetscLogDouble petsc_gtoc_sz         = 0.0;  /* The total size of GPU to CPU copies */
 PetscLogDouble petsc_gflops          = 0.0;  /* The flops done on a GPU */
 PetscLogDouble petsc_gtime           = 0.0;  /* The time spent on a GPU */
+#if defined(PETSC_USE_DEBUG)
+PetscBool petsc_gtime_inuse = PETSC_FALSE;
+#endif
 #endif
 
 /* Logging functions */
