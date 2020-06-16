@@ -395,9 +395,9 @@ Label 'EGADS Edge ID':
 [0]: 25 (18)
 [0]: 13 (19)
 [0]: 8 (20)
-DM Object: DM_0x84000000_0 1 MPI processes
+DM Object: DM__0 1 MPI processes
   type: plex
-DM_0x84000000_0 in 2 dimensions:
+DM__0 in 2 dimensions:
 Supports:
 [0] Max support size: 4
 [0]: 8 ----> 14
