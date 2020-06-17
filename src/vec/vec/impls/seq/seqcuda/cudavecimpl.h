@@ -5,15 +5,11 @@
 #include <petsccublas.h>
 #include <petsc/private/vecimpl.h>
 
-#include <cublas_v2.h>
-
 typedef struct {
   PetscScalar  *GPUarray;           /* this always holds the GPU data */
   PetscScalar  *GPUarray_allocated; /* if the array was allocated by PETSc this is its pointer */
   cudaStream_t stream;              /* A stream for doing asynchronous data transfers */
 } Vec_CUDA;
-
-#include <cuda_runtime.h>
 
 PETSC_INTERN PetscErrorCode VecDotNorm2_SeqCUDA(Vec,Vec,PetscScalar*, PetscScalar*);
 PETSC_INTERN PetscErrorCode VecPointwiseDivide_SeqCUDA(Vec,Vec,Vec);
