@@ -3033,7 +3033,7 @@ PetscErrorCode DMPlexComputeCellTypes(DM dm)
   ierr = DMPlexGetCellTypeLabel(dm, &ctLabel);CHKERRQ(ierr);
   ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; ++p) {
-    DMPolytopeType ct;
+    DMPolytopeType ct = DM_POLYTOPE_UNKNOWN;
     PetscInt       pdepth;
 
     ierr = DMPlexGetPointDepth(dm, p, &pdepth);CHKERRQ(ierr);
