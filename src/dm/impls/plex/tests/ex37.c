@@ -316,6 +316,7 @@ int main(int argc, char *argv[])
 
   test:
     suffix: sphere_0
+    filter: sed "s/DM_[0-9a-zA-Z]*_0/DM__0/g"
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/unit_sphere.egadslite -dm_view ::ascii_info_detail
 
 TEST*/

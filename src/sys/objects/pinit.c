@@ -123,7 +123,7 @@ PetscErrorCode  PetscInitializeNoArguments(void)
 
 .seealso: PetscInitialize(), PetscInitializeNoArguments(), PetscInitializeFortran()
 @*/
-PetscErrorCode PetscInitialized(PetscBool  *isInitialized)
+PetscErrorCode PetscInitialized(PetscBool *isInitialized)
 {
   *isInitialized = PetscInitializeCalled;
   return 0;
