@@ -47,6 +47,11 @@ class Configure(config.base.Configure):
       self.dsymutil = 'true'
     self.addMakeMacro('DSYMUTIL', self.dsymutil)
 
+    if config.setCompilers.Configure.isDarwin(self.log):
+      # This seems to be needed around version 11.5 of XCode
+      # It would be good to have a configure test for this, not sure if this will work for older versions of XCode
+      self.addDefine('DO_NOT_SWAP_CHILD_FOR_DEBUGGER',1)
+
     if hasattr(self, 'dbx'):
       import re
       if self.argDB['with-batch']: return
