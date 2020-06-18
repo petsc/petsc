@@ -1,0 +1,12 @@
+ex125: nrhs 2
+ CUSPARSE CHOLESKY:
+ 0-the CHOLESKY numfactorization 
+   0-the MatMatSolve 
+   1-the MatMatSolve 
+   0-the MatSolve 
+   1-the MatSolve 
+ 1-the CHOLESKY numfactorization 
+   0-the MatMatSolve 
+   1-the MatMatSolve 
+   0-the MatSolve 
+   1-the MatSolve 
