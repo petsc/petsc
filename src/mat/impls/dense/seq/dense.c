@@ -2824,9 +2824,11 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqDense_Elemental(Mat A, MatType newtype
 PetscErrorCode  MatDenseSetLDA_SeqDense(Mat B,PetscInt lda)
 {
   Mat_SeqDense *b = (Mat_SeqDense*)B->data;
+  PetscBool    data;
 
   PetscFunctionBegin;
-  if (!b->user_alloc && B->preallocated && b->lda!=lda) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"LDA cannot be changed after allocation of internal storage");
+  data = (PetscBool)((B->rmap->n > 0 && B->cmap->n > 0) ? (b->v ? PETSC_TRUE : PETSC_FALSE) : PETSC_FALSE);
+  if (!b->user_alloc && data && b->lda!=lda) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"LDA cannot be changed after allocation of internal storage");
   if (lda < B->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"LDA %D must be at least matrix dimension %D",lda,B->rmap->n);
   b->lda = lda;
   PetscFunctionReturn(0);
