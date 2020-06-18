@@ -32,6 +32,7 @@ variables:
     refs:
 #     Set with CI/CD Shedules - New Schedule
       - schedules
+      - api
 #     Set with CI/CD Pipelines - Run Pipeline
       - web
       - merge_requests

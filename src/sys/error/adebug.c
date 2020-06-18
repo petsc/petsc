@@ -211,8 +211,10 @@ PetscErrorCode  PetscAttachDebugger(void)
       Swap role the parent and child. This is (I think) so that control c typed
     in the debugger goes to the correct process.
   */
+#if !defined(PETSC_DO_NOT_SWAP_CHILD_FOR_DEBUGGER)
   if (child) child = 0;
   else       child = (int)getppid();
+#endif
 
   if (child) { /* I am the parent, will run the debugger */
     const char *args[10];
