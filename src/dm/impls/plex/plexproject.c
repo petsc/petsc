@@ -2,6 +2,46 @@
 
 #include <petsc/private/petscfeimpl.h>
 
+/*@
+  DMPlexGetActivePoint - Get the point on which projection is currently working
+
+  Not collective
+
+  Input Argument:
+. dm   - the DM
+
+  Output Argument:
+. point - The mesh point involved in the current projection
+
+  Level: developer
+
+.seealso: DMPlexSetActivePoint()
+@*/
+PetscErrorCode DMPlexGetActivePoint(DM dm, PetscInt *point) {
+  PetscFunctionBeginHot;
+  *point = ((DM_Plex *) dm->data)->activePoint;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexSetActivePoint - Set the point on which projection is currently working
+
+  Not collective
+
+  Input Arguments:
++ dm   - the DM
+- point - The mesh point involved in the current projection
+
+  Level: developer
+
+.seealso: DMPlexGetActivePoint()
+@*/
+PetscErrorCode DMPlexSetActivePoint(DM dm, PetscInt point) {
+  PetscFunctionBeginHot;
+  ((DM_Plex *) dm->data)->activePoint = point;
+  PetscFunctionReturn(0);
+}
+
 /*
   DMProjectPoint_Func_Private - Interpolate the given function in the output basis on the given point
 
@@ -698,6 +738,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
 
           ierr = PetscArrayzero(values, numValues);CHKERRQ(ierr);
           ierr = PetscFEGeomGetChunk(fegeom,p,p+1,&chunkgeom);CHKERRQ(ierr);
+          ierr = DMPlexSetActivePoint(dm, point);CHKERRQ(ierr);
           ierr = DMProjectPoint_Private(dm, dsEff, plexIn, encIn, dsIn, plexAux, encAux, dsAux, chunkgeom, effectiveHeight, time, localU, localA, hasFE, hasFV, isFE, sp, point, T, TAux, type, funcs, ctxs, fieldActive, values);
           if (ierr) {
             PetscErrorCode ierr2;
@@ -736,6 +777,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
       for (p = pStart; p < pEnd; ++p) {
         ierr = PetscArrayzero(values, numValues);CHKERRQ(ierr);
         ierr = PetscFEGeomGetChunk(fegeom,p-pStart,p-pStart+1,&chunkgeom);CHKERRQ(ierr);
+        ierr = DMPlexSetActivePoint(dm, p);CHKERRQ(ierr);
         ierr = DMProjectPoint_Private(dm, dsEff, plexIn, encIn, dsIn, plexAux, encAux, dsAux, chunkgeom, effectiveHeight, time, localU, localA, hasFE, hasFV, isFE, sp, p, T, TAux, type, funcs, ctxs, fieldActive, values);
         if (ierr) {
           PetscErrorCode ierr2;
