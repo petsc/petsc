@@ -4473,8 +4473,8 @@ PetscErrorCode MatFileSplit(Mat A,char *outfile)
 
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)A),&rank);CHKERRQ(ierr);
   ierr = PetscStrlen(outfile,&len);CHKERRQ(ierr);
-  ierr = PetscMalloc1(len+5,&name);CHKERRQ(ierr);
-  sprintf(name,"%s.%d",outfile,rank);
+  ierr = PetscMalloc1(len+6,&name);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(name,len+6,"%s.%d",outfile,rank);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,name,FILE_MODE_APPEND,&out);CHKERRQ(ierr);
   ierr = PetscFree(name);CHKERRQ(ierr);
   ierr = MatView(B,out);CHKERRQ(ierr);
