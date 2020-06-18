@@ -1157,9 +1157,11 @@ static PetscErrorCode  MatDenseSetLDA_SeqDenseCUDA(Mat A,PetscInt lda)
 {
   Mat_SeqDense     *cA = (Mat_SeqDense*)A->data;
   Mat_SeqDenseCUDA *dA = (Mat_SeqDenseCUDA*)A->spptr;
+  PetscBool        data;
 
   PetscFunctionBegin;
-  if (!dA->user_alloc && A->preallocated && cA->lda!=lda) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"LDA cannot be changed after allocation of internal storage");
+  data = (PetscBool)((A->rmap->n > 0 && A->cmap->n > 0) ? (dA->d_v  ? PETSC_TRUE : PETSC_FALSE) : PETSC_FALSE);
+  if (!dA->user_alloc && data && cA->lda!=lda) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"LDA cannot be changed after allocation of internal storage");
   if (lda < A->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"LDA %D must be at least matrix dimension %D",lda,A->rmap->n);
   cA->lda = lda;
   PetscFunctionReturn(0);
