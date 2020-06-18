@@ -6,7 +6,7 @@ class Configure(config.package.Package):
     self.version          = '5.3.3'
     self.minversion       = '5.2.1'
     self.versionname      = 'MUMPS_VERSION'
-    self.gitcommit        = 'v'+self.version+'-p1'
+    self.gitcommit        = 'v'+self.version+'-p2'
     self.download         = ['git://https://bitbucket.org/petsc/pkg-mumps.git',
                              'https://bitbucket.org/petsc/pkg-mumps/get/'+self.gitcommit+'.tar.gz']
     self.download_darwin  = ['https://bitbucket.org/petsc/pkg-mumps/get/v5.2.1-p2.tar.gz']
@@ -144,7 +144,7 @@ class Configure(config.package.Package):
     g.write('INCSEQ  = -I$(topdir)/libseq\n')
     g.write('LIBSEQ  =  $(LAPACK) -L$(topdir)/libseq -lmpiseq\n')
     g.write('LIBBLAS = '+self.libraries.toString(self.blasLapack.dlib)+'\n')
-    g.write('OPTL    = -O -I.\n')
+    g.write('OPTL    = '+self.setCompilers.getLinkerFlags()+'\n')
     g.write('INCS = $(INCPAR)\n')
     g.write('LIBS = $(LIBPAR)\n')
     if self.argDB['with-mumps-serial']:
