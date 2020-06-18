@@ -2,7 +2,7 @@
 
    This file defines part of the initialization of PETSc
 
-  This file uses regular malloc and free because it cannot known
+  This file uses regular malloc and free because it cannot be known
   what malloc is being used until it has already processed the input.
 */
 

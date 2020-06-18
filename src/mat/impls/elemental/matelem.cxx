@@ -6,42 +6,6 @@
 */
 static PetscMPIInt Petsc_Elemental_keyval = MPI_KEYVAL_INVALID;
 
-/*@C
-   PetscElementalInitializePackage - Initialize Elemental package
-
-   Logically Collective
-
-   Level: developer
-
-.seealso: MATELEMENTAL, PetscElementalFinalizePackage()
-@*/
-PetscErrorCode PetscElementalInitializePackage(void)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (El::Initialized()) PetscFunctionReturn(0);
-  El::Initialize();   /* called by the 1st call of MatCreate_Elemental */
-  ierr = PetscRegisterFinalize(PetscElementalFinalizePackage);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   PetscElementalFinalizePackage - Finalize Elemental package
-
-   Logically Collective
-
-   Level: developer
-
-.seealso: MATELEMENTAL, PetscElementalInitializePackage()
-@*/
-PetscErrorCode PetscElementalFinalizePackage(void)
-{
-  PetscFunctionBegin;
-  El::Finalize();  /* called by PetscFinalize() */
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode MatView_Elemental(Mat A,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -1352,7 +1316,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
   PetscInt           optv1;
 
   PetscFunctionBegin;
-  ierr = PetscElementalInitializePackage();CHKERRQ(ierr);
   ierr = PetscMemcpy(A->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   A->insertmode = NOT_SET_VALUES;
 

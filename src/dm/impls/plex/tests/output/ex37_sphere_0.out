@@ -651,9 +651,9 @@ Label 'EGADS Edge ID':
 [0]: 49 (18)
 [0]: 90 (18)
 [0]: 92 (18)
-DM Object: DM_0x84000000_0 1 MPI processes
+DM Object: DM__0 1 MPI processes
   type: plex
-DM_0x84000000_0 in 2 dimensions:
+DM__0 in 2 dimensions:
   0-cells: 66
   1-cells: 192
   2-cells: 128

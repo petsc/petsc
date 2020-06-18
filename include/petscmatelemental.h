@@ -10,8 +10,6 @@ typedef El::Complex<PetscReal> PetscElemScalar;
 #else
 typedef PetscScalar PetscElemScalar;
 #endif
-PETSC_EXTERN PetscErrorCode PetscElementalInitializePackage(void);
-PETSC_EXTERN PetscErrorCode PetscElementalFinalizePackage(void);
 #endif
 
 #endif /* PETSCMATELEMENTAL_H */
