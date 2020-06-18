@@ -15,12 +15,6 @@ PETSC_EXTERN PetscErrorCode PetscVFPrintfDefault(FILE*,const char[],va_list);
 PETSC_EXTERN PetscErrorCode PetscVFPrintfSetClosure(int (^)(const char*));
 #endif
 
-
-#if defined(PETSC_HAVE_CUDA)
-#include <cuda.h>
-#include <cublas_v2.h>
-#endif
-
 /*
    All major PETSc data structures have a common core; this is defined
    below by PETSCHEADER.
