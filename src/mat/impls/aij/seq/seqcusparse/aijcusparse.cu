@@ -1956,45 +1956,53 @@ static PetscErrorCode MatBindToCPU_SeqAIJCUSPARSE(Mat A,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCUSPARSE(Mat B, MatType mtype, MatReuse reuse, Mat* newmat)
+PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCUSPARSE(Mat A, MatType mtype, MatReuse reuse, Mat* newmat)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode   ierr;
   cusparseStatus_t stat;
   cusparseHandle_t handle=0;
+  Mat              B;
 
   PetscFunctionBegin;
-  if (reuse != MAT_INPLACE_MATRIX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not yet supported");
+  if (reuse == MAT_INITIAL_MATRIX) {
+    ierr = MatDuplicate(A,MAT_COPY_VALUES,newmat);CHKERRQ(ierr);
+  } else if (reuse == MAT_REUSE_MATRIX) {
+    ierr = MatCopy(A,*newmat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  }
+  B = *newmat;
+
   ierr = PetscFree(B->defaultvectype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(VECCUDA,&B->defaultvectype);CHKERRQ(ierr);
 
-  if (B->factortype == MAT_FACTOR_NONE) {
-    /* you cannot check the inode.use flag here since the matrix was just created.
-       now build a GPU matrix data structure */
-    B->spptr = new Mat_SeqAIJCUSPARSE;
-    ((Mat_SeqAIJCUSPARSE*)B->spptr)->mat            = 0;
-    ((Mat_SeqAIJCUSPARSE*)B->spptr)->matTranspose   = 0;
-    ((Mat_SeqAIJCUSPARSE*)B->spptr)->workVector     = 0;
-    ((Mat_SeqAIJCUSPARSE*)B->spptr)->rowoffsets_gpu = 0;
-    ((Mat_SeqAIJCUSPARSE*)B->spptr)->format         = MAT_CUSPARSE_CSR;
-    ((Mat_SeqAIJCUSPARSE*)B->spptr)->stream         = 0;
-    stat = cusparseCreate(&handle);CHKERRCUSPARSE(stat);
-    ((Mat_SeqAIJCUSPARSE*)B->spptr)->handle         = handle;
-    ((Mat_SeqAIJCUSPARSE*)B->spptr)->nonzerostate   = 0;
-  } else {
-    /* NEXT, set the pointers to the triangular factors */
-    B->spptr = new Mat_SeqAIJCUSPARSETriFactors;
-    ((Mat_SeqAIJCUSPARSETriFactors*)B->spptr)->loTriFactorPtr          = 0;
-    ((Mat_SeqAIJCUSPARSETriFactors*)B->spptr)->upTriFactorPtr          = 0;
-    ((Mat_SeqAIJCUSPARSETriFactors*)B->spptr)->loTriFactorPtrTranspose = 0;
-    ((Mat_SeqAIJCUSPARSETriFactors*)B->spptr)->upTriFactorPtrTranspose = 0;
-    ((Mat_SeqAIJCUSPARSETriFactors*)B->spptr)->rpermIndices            = 0;
-    ((Mat_SeqAIJCUSPARSETriFactors*)B->spptr)->cpermIndices            = 0;
-    ((Mat_SeqAIJCUSPARSETriFactors*)B->spptr)->workVector              = 0;
-    stat = cusparseCreate(&handle);CHKERRCUSPARSE(stat);
-    ((Mat_SeqAIJCUSPARSETriFactors*)B->spptr)->handle                  = handle;
-    ((Mat_SeqAIJCUSPARSETriFactors*)B->spptr)->nnz                     = 0;
+  if (reuse != MAT_REUSE_MATRIX && !B->spptr) {
+    if (B->factortype == MAT_FACTOR_NONE) {
+      /* you cannot check the inode.use flag here since the matrix was just created.
+         now build a GPU matrix data structure */
+      B->spptr = new Mat_SeqAIJCUSPARSE;
+      ((Mat_SeqAIJCUSPARSE*)B->spptr)->mat            = 0;
+      ((Mat_SeqAIJCUSPARSE*)B->spptr)->matTranspose   = 0;
+      ((Mat_SeqAIJCUSPARSE*)B->spptr)->workVector     = 0;
+      ((Mat_SeqAIJCUSPARSE*)B->spptr)->rowoffsets_gpu = 0;
+      ((Mat_SeqAIJCUSPARSE*)B->spptr)->format         = MAT_CUSPARSE_CSR;
+      ((Mat_SeqAIJCUSPARSE*)B->spptr)->stream         = 0;
+      stat = cusparseCreate(&handle);CHKERRCUSPARSE(stat);
+      ((Mat_SeqAIJCUSPARSE*)B->spptr)->handle         = handle;
+      ((Mat_SeqAIJCUSPARSE*)B->spptr)->nonzerostate   = 0;
+    } else {
+      /* NEXT, set the pointers to the triangular factors */
+      B->spptr = new Mat_SeqAIJCUSPARSETriFactors;
+      ((Mat_SeqAIJCUSPARSETriFactors*)B->spptr)->loTriFactorPtr          = 0;
+      ((Mat_SeqAIJCUSPARSETriFactors*)B->spptr)->upTriFactorPtr          = 0;
+      ((Mat_SeqAIJCUSPARSETriFactors*)B->spptr)->loTriFactorPtrTranspose = 0;
+      ((Mat_SeqAIJCUSPARSETriFactors*)B->spptr)->upTriFactorPtrTranspose = 0;
+      ((Mat_SeqAIJCUSPARSETriFactors*)B->spptr)->rpermIndices            = 0;
+      ((Mat_SeqAIJCUSPARSETriFactors*)B->spptr)->cpermIndices            = 0;
+      ((Mat_SeqAIJCUSPARSETriFactors*)B->spptr)->workVector              = 0;
+      stat = cusparseCreate(&handle);CHKERRCUSPARSE(stat);
+      ((Mat_SeqAIJCUSPARSETriFactors*)B->spptr)->handle                  = handle;
+      ((Mat_SeqAIJCUSPARSETriFactors*)B->spptr)->nnz                     = 0;
+    }
   }
-
   B->ops->assemblyend      = MatAssemblyEnd_SeqAIJCUSPARSE;
   B->ops->destroy          = MatDestroy_SeqAIJCUSPARSE;
   B->ops->setfromoptions   = MatSetFromOptions_SeqAIJCUSPARSE;
