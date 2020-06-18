@@ -22,8 +22,9 @@ static PetscErrorCode KSPSolve_TCQMR(KSP ksp)
   ierr = KSPInitialResidual(ksp,x,u,v,r,b);CHKERRQ(ierr);
   ierr = VecNorm(r,NORM_2,&rnorm0);CHKERRQ(ierr);          /*  rnorm0 = ||r|| */
   KSPCheckNorm(ksp,rnorm0);
-
-  ierr = (*ksp->converged)(ksp,0,rnorm0,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+  if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = rnorm0;
+  else ksp->rnorm = 0;
+  ierr = (*ksp->converged)(ksp,0,ksp->rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   if (ksp->reason) PetscFunctionReturn(0);
 
   ierr  = VecSet(um1,0.0);CHKERRQ(ierr);
@@ -51,9 +52,11 @@ static PetscErrorCode KSPSolve_TCQMR(KSP ksp)
   /*
    CALCULATE SQUARED LANCZOS  vectors
    */
-  ierr = (*ksp->converged)(ksp,ksp->its,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+  if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = rnorm;
+  else ksp->rnorm = 0;
+  ierr = (*ksp->converged)(ksp,ksp->its,ksp->rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   while (!ksp->reason) {
-    ierr = KSPMonitor(ksp,ksp->its,rnorm);CHKERRQ(ierr);
+    ierr = KSPMonitor(ksp,ksp->its,ksp->rnorm);CHKERRQ(ierr);
     ksp->its++;
 
     ierr   = KSP_PCApplyBAorAB(ksp,u,y,vtmp);CHKERRQ(ierr); /* y = A*u */
@@ -130,13 +133,15 @@ static PetscErrorCode KSPSolve_TCQMR(KSP ksp)
     /* Compute the upper bound on the residual norm r (See QMR paper p. 13) */
     sprod = sprod*PetscAbsScalar(s);
     rnorm = rnorm0 * PetscSqrtReal((PetscReal)ksp->its+2.0) * PetscRealPart(sprod);
-    ierr  = (*ksp->converged)(ksp,ksp->its,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+    if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = rnorm;
+    else ksp->rnorm = 0;
+    ierr  = (*ksp->converged)(ksp,ksp->its,ksp->rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
     if (ksp->its >= ksp->max_it) {
       if (!ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
       break;
     }
   }
-  ierr = KSPMonitor(ksp,ksp->its,rnorm);CHKERRQ(ierr);
+  ierr = KSPMonitor(ksp,ksp->its,ksp->rnorm);CHKERRQ(ierr);
   ierr = KSPUnwindPreconditioner(ksp,x,vtmp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -181,6 +186,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_TCQMR(KSP ksp)
   PetscFunctionBegin;
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,1);CHKERRQ(ierr);
 
   ksp->data                = (void*)0;
   ksp->ops->buildsolution  = KSPBuildSolutionDefault;

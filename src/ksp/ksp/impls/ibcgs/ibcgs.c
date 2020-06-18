@@ -42,10 +42,10 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       i,N;
-  PetscReal      rnorm,rnormin = 0.0;
+  PetscReal      rnorm = 0.0,rnormin = 0.0;
 #if defined(PETSC_HAVE_MPI_LONG_DOUBLE) && !defined(PETSC_USE_COMPLEX) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
   /* Because of possible instabilities in the algorithm (as indicated by different residual histories for the same problem
-     on the same number of processes  with different runs) we support computing the inner products using Intel's 80 bit arithematic
+     on the same number of processes  with different runs) we support computing the inner products using Intel's 80 bit arithmetic
      rather than just 64 bit. Thus we copy our double precision values into long doubles (hoping this keeps the 16 extra bits)
      and tell MPI to do its ALlreduces with MPI_LONG_DOUBLE.
 
@@ -94,9 +94,10 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
   /* ierr = KSP_PCApplyBAorAB(ksp,Xn_1,Rn_1,Tn);CHKERRQ(ierr);
      ierr = VecAYPX(Rn_1,-1.0,B);CHKERRQ(ierr); */
   ierr = KSPInitialResidual(ksp,Xn_1,Tn,Sn,Rn_1,B);CHKERRQ(ierr);
-
-  ierr = VecNorm(Rn_1,NORM_2,&rnorm);CHKERRQ(ierr);
-  KSPCheckNorm(ksp,rnorm);
+  if (ksp->normtype != KSP_NORM_NONE) {
+    ierr = VecNorm(Rn_1,NORM_2,&rnorm);CHKERRQ(ierr);
+    KSPCheckNorm(ksp,rnorm);
+  }
   ierr = KSPMonitor(ksp,0,rnorm);CHKERRQ(ierr);
   ierr = (*ksp->converged)(ksp,0,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   if (ksp->reason) PetscFunctionReturn(0);
@@ -213,7 +214,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
       ierr = MPIU_Allreduce(insums,outsums,6,MPI_LONG_DOUBLE,MPI_SUM,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
     }
 #else
-    if (ksp->lagnorm && ksp->its > 1) {
+    if (ksp->lagnorm && ksp->its > 1 && ksp->normtype != KSP_NORM_NONE) {
       ierr = MPIU_Allreduce(insums,outsums,7,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
     } else {
       ierr = MPIU_Allreduce(insums,outsums,6,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
@@ -226,7 +227,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
     etan   = outsums[3];
     thetan = outsums[4];
     kappan = outsums[5];
-    if (ksp->lagnorm && ksp->its > 1) rnorm = PetscSqrtReal(PetscRealPart(outsums[6]));
+    if (ksp->lagnorm && ksp->its > 1 && ksp->normtype != KSP_NORM_NONE) rnorm = PetscSqrtReal(PetscRealPart(outsums[6]));
 
     if (kappan == 0.0) {
       if (ksp->errorifnotconverged) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to kappan is zero, iteration %D",ksp->its);
@@ -260,7 +261,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
     ierr = PetscLogFlops(7.0*N);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(VEC_Ops,0,0,0,0);CHKERRQ(ierr);
 
-    if (!ksp->lagnorm && ksp->chknorm < ksp->its) {
+    if (!ksp->lagnorm && ksp->chknorm < ksp->its && ksp->normtype != KSP_NORM_NONE) {
       ierr  = PetscLogEventBegin(VEC_ReduceCommunication,0,0,0,0);CHKERRQ(ierr);
       ierr  = MPIU_Allreduce(&rnormin,&rnorm,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
       ierr  = PetscLogEventEnd(VEC_ReduceCommunication,0,0,0,0);CHKERRQ(ierr);
@@ -329,10 +330,10 @@ PETSC_EXTERN PetscErrorCode KSPCreate_IBCGS(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ksp->data = (void*)0;
 
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,1);CHKERRQ(ierr);
 
   ksp->ops->setup          = KSPSetUp_IBCGS;
   ksp->ops->solve          = KSPSolve_IBCGS;

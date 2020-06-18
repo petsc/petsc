@@ -62,18 +62,19 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount,KSP ksp)
 
   /* check for the convergence */
   ierr       = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
-  ksp->rnorm = res;
+  if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = res;
+  else ksp->rnorm = 0;
   ierr       = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
   pgmres->it = it-2;
-  ierr = KSPLogResidualHistory(ksp,res);CHKERRQ(ierr);
-  ierr = KSPMonitor(ksp,ksp->its,res);CHKERRQ(ierr);
+  ierr = KSPLogResidualHistory(ksp,ksp->rnorm);CHKERRQ(ierr);
+  ierr = KSPMonitor(ksp,ksp->its,ksp->rnorm);CHKERRQ(ierr);
   if (!res) {
     ksp->reason = KSP_CONVERGED_ATOL;
     ierr        = PetscInfo(ksp,"Converged due to zero residual norm on entry\n");CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
-  ierr = (*ksp->converged)(ksp,ksp->its,res,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+  ierr = (*ksp->converged)(ksp,ksp->its,ksp->rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   for (; !ksp->reason; it++) {
     Vec Zcur,Znext;
     if (pgmres->vv_allocated <= it + VEC_OFFSET + 1) {
@@ -103,12 +104,13 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount,KSP ksp)
       ierr       = KSPPGMRESUpdateHessenberg(ksp,it-2,&hapend,&res);CHKERRQ(ierr);
       pgmres->it = it-2;
       ksp->its++;
-      ksp->rnorm = res;
+      if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = res;
+      else ksp->rnorm = 0;
 
-      ierr = (*ksp->converged)(ksp,ksp->its,res,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+      ierr = (*ksp->converged)(ksp,ksp->its,ksp->rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
       if (it < pgmres->max_k+1 || ksp->reason || ksp->its == ksp->max_it) {  /* Monitor if we are done or still iterating, but not before a restart. */
-        ierr = KSPLogResidualHistory(ksp,res);CHKERRQ(ierr);
-        ierr = KSPMonitor(ksp,ksp->its,res);CHKERRQ(ierr);
+        ierr = KSPLogResidualHistory(ksp,ksp->rnorm);CHKERRQ(ierr);
+        ierr = KSPMonitor(ksp,ksp->its,ksp->rnorm);CHKERRQ(ierr);
       }
       if (ksp->reason) break;
       /* Catch error in happy breakdown and signal convergence and break from loop */
@@ -495,6 +497,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PGMRES(KSP ksp)
 
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,1);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C",KSPGMRESSetPreAllocateVectors_GMRES);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetOrthogonalization_C",KSPGMRESSetOrthogonalization_GMRES);CHKERRQ(ierr);

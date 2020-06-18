@@ -135,12 +135,15 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount,KSP ksp)
      the initial residual norm */
   *RS(0) = res_norm;
 
-  ksp->rnorm = res_norm;
-  ierr       = KSPLogResidualHistory(ksp,res_norm);CHKERRQ(ierr);
-  ierr       = KSPMonitor(ksp,ksp->its,res_norm);CHKERRQ(ierr);
+  ierr = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+  if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = res_norm;
+  else ksp->rnorm = 0;
+  ierr = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+  ierr = KSPLogResidualHistory(ksp,ksp->rnorm);CHKERRQ(ierr);
+  ierr = KSPMonitor(ksp,ksp->its,ksp->rnorm);CHKERRQ(ierr);
 
   /* check for the convergence - maybe the current guess is good enough */
-  ierr = (*ksp->converged)(ksp,ksp->its,res_norm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+  ierr = (*ksp->converged)(ksp,ksp->its,ksp->rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   if (ksp->reason) {
     if (itcount) *itcount = 0;
     PetscFunctionReturn(0);
@@ -306,10 +309,11 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount,KSP ksp)
 
     ierr = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
     ksp->its++;
-    ksp->rnorm = res_norm;
-    ierr       = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+    if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = res_norm;
+    else ksp->rnorm = 0;
+    ierr = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
 
-    ierr = (*ksp->converged)(ksp,ksp->its,res_norm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+    ierr = (*ksp->converged)(ksp,ksp->its,ksp->rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
 
     /* Catch error in happy breakdown and signal convergence and break from loop */
     if (hapend) {
@@ -323,12 +327,12 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount,KSP ksp)
     }
   }
   /* END OF ITERATION LOOP */
-  ierr = KSPLogResidualHistory(ksp,res_norm);CHKERRQ(ierr);
+  ierr = KSPLogResidualHistory(ksp,ksp->rnorm);CHKERRQ(ierr);
 
   /*
      Monitor if we know that we will not return for a restart */
   if (loc_it && (ksp->reason || ksp->its >= ksp->max_it)) {
-    ierr = KSPMonitor(ksp,ksp->its,res_norm);CHKERRQ(ierr);
+    ierr = KSPMonitor(ksp,ksp->its,ksp->rnorm);CHKERRQ(ierr);
   }
 
   if (itcount) *itcount = loc_it;
@@ -713,6 +717,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPEFGMRES(KSP ksp)
   ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_GMRES;
 
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,3);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,1);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C",KSPGMRESSetPreAllocateVectors_GMRES);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetRestart_C",KSPGMRESSetRestart_GMRES);CHKERRQ(ierr);
