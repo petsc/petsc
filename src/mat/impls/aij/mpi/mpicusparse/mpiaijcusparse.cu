@@ -195,31 +195,41 @@ PetscErrorCode MatDestroy_MPIAIJCUSPARSE(Mat A)
   } catch(char *ex) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Mat_MPIAIJCUSPARSE error: %s", ex);
   }
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMPIAIJSetPreallocation_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatCUSPARSESetFormat_C",NULL);CHKERRQ(ierr);
   ierr = MatDestroy_MPIAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSPARSE(Mat A)
+PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCUSPARSE(Mat B, MatType mtype, MatReuse reuse, Mat* newmat)
 {
   PetscErrorCode     ierr;
   Mat_MPIAIJ         *a;
-  Mat_MPIAIJCUSPARSE * cusparseStruct;
+  Mat_MPIAIJCUSPARSE *cusparseStruct;
   cusparseStatus_t   stat;
+  Mat                A;
 
   PetscFunctionBegin;
-  ierr = MatCreate_MPIAIJ(A);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMPIAIJSetPreallocation_C",MatMPIAIJSetPreallocation_MPIAIJCUSPARSE);CHKERRQ(ierr);
+  if (reuse == MAT_INITIAL_MATRIX) {
+    ierr = MatDuplicate(B,MAT_COPY_VALUES,newmat);CHKERRQ(ierr);
+  } else if (reuse == MAT_REUSE_MATRIX) {
+    ierr = MatCopy(B,*newmat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  }
+  A = *newmat;
+
   ierr = PetscFree(A->defaultvectype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(VECCUDA,&A->defaultvectype);CHKERRQ(ierr);
 
-  a        = (Mat_MPIAIJ*)A->data;
-  a->spptr = new Mat_MPIAIJCUSPARSE;
+  a = (Mat_MPIAIJ*)A->data;
+  if (reuse != MAT_REUSE_MATRIX && !a->spptr) {
+    a->spptr = new Mat_MPIAIJCUSPARSE;
 
-  cusparseStruct                      = (Mat_MPIAIJCUSPARSE*)a->spptr;
-  cusparseStruct->diagGPUMatFormat    = MAT_CUSPARSE_CSR;
-  cusparseStruct->offdiagGPUMatFormat = MAT_CUSPARSE_CSR;
-  cusparseStruct->stream              = 0;
-  stat = cusparseCreate(&(cusparseStruct->handle));CHKERRCUSPARSE(stat);
+    cusparseStruct                      = (Mat_MPIAIJCUSPARSE*)a->spptr;
+    cusparseStruct->diagGPUMatFormat    = MAT_CUSPARSE_CSR;
+    cusparseStruct->offdiagGPUMatFormat = MAT_CUSPARSE_CSR;
+    cusparseStruct->stream              = 0;
+    stat = cusparseCreate(&(cusparseStruct->handle));CHKERRCUSPARSE(stat);
+  }
 
   A->ops->assemblyend    = MatAssemblyEnd_MPIAIJCUSPARSE;
   A->ops->mult           = MatMult_MPIAIJCUSPARSE;
@@ -229,7 +239,18 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSPARSE(Mat A)
   A->ops->destroy        = MatDestroy_MPIAIJCUSPARSE;
 
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATMPIAIJCUSPARSE);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatCUSPARSESetFormat_C",  MatCUSPARSESetFormat_MPIAIJCUSPARSE);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMPIAIJSetPreallocation_C",MatMPIAIJSetPreallocation_MPIAIJCUSPARSE);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatCUSPARSESetFormat_C",MatCUSPARSESetFormat_MPIAIJCUSPARSE);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSPARSE(Mat A)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatCreate_MPIAIJ(A);CHKERRQ(ierr);
+  ierr = MatConvert_MPIAIJ_MPIAIJCUSPARSE(A,MATMPIAIJCUSPARSE,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
