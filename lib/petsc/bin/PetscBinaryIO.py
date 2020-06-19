@@ -241,7 +241,7 @@ class PetscBinaryIO(object):
             vals = np.fromfile(fh, dtype=self._scalartype, count=1)
         except MemoryError:
             raise IOError('Inconsistent or invalid real data in file')
-        if (len(vals) is 0):
+        if not vals:
             raise IOError('Inconsistent or invalid real data in file')
         return vals
 
@@ -254,7 +254,7 @@ class PetscBinaryIO(object):
             vals = np.fromfile(fh, dtype=self._scalartype, count=nz)
         except MemoryError:
             raise IOError('Inconsistent or invalid Vec data in file')
-        if (len(vals) is 0):
+        if not vals:
             raise IOError('Inconsistent or invalid Vec data in file')
         return vals.view(Vec)
 
