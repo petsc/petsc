@@ -160,9 +160,9 @@ cdef class DMSwarm(DM):
         CHKERR( DMSwarmSetCellDM(self.dm, dm.dm) )
 
     def getCellDM(self):
-        cdef DMSwarm dmswarm = DMSwarm()
-        CHKERR( DMSwarmGetCellDM(self.dm, &dmswarm.dm) )
-        return dmswarm
+        cdef DM dm = DM()
+        CHKERR( DMSwarmGetCellDM(self.dm, &dm.dm) )
+        return dm
 
     def setType(self, dmswarm_type):
         cdef PetscDMSwarmType cval = dmswarm_type
