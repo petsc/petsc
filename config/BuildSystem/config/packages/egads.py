@@ -4,7 +4,7 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.gitcommit         = 'bcd82f996542f6d667ccf70a6d8644be1ef7a30f'
+    self.gitcommit         = '11501e852fd2b647c0788bc12f7a42ce9e427934'
     self.download          = ['git://https://github.com/bldenton/EGADSlite.git']
     self.functions         = ['EG_open']
     self.includes          = ['egads.h']
@@ -30,11 +30,11 @@ SRCDIR     = src
 LIBBASE    = libegadslite
 LIBNAME    = ${LIBBASE}.${AR_LIB_SUFFIX}
 LIBSRC.h   = $(INCDIR)/egads.h $(INCDIR)/egadsErrors.h $(INCDIR)/egadsInternals.h $(INCDIR)/egadsTris.h \
-             $(INCDIR)/egadsTypes.h $(INCDIR)/emp.h $(INCDIR)/liteClasses.h
+             $(INCDIR)/egadsTypes.h $(INCDIR)/emp.h $(INCDIR)/liteClasses.h $(INCDIR)/regQuads.h
 LIBSRC.c   = $(SRCDIR)/liteAttrs.c $(SRCDIR)/liteBase.c $(SRCDIR)/liteGeom.c $(SRCDIR)/liteImport.c \
              $(SRCDIR)/liteMemory.c $(SRCDIR)/liteTopo.c $(SRCDIR)/egadsTess.c $(SRCDIR)/egadsTris.c \
              $(SRCDIR)/egadsQuads.c $(SRCDIR)/egadsTessInp.c $(SRCDIR)/egadsRobust.c \
-			 		 	 $(SRCDIR)/emp.c $(SRCDIR)/evaluate.c $(SRCDIR)/rational.c
+			 		 	 $(SRCDIR)/emp.c $(SRCDIR)/evaluate.c $(SRCDIR)/rational.c $(SRCDIR)/regQuads.c
 LIBSRC.o   = $(LIBSRC.c:%.c=%.o)
 
 lib : $(LIBNAME) ;
