@@ -317,19 +317,19 @@ linux-gcc-complex-opt:
 
 mswin-uni:
   extends:
-    - .stage-2
+    - .stage-3
     - .mswin_test
   tags:
-    - name:ps5-2
+    - name:spirit
   variables:
     TEST_ARCH: arch-ci-mswin-uni
 
 mswin-gnu:
   extends:
-    - .stage-2
+    - .stage-3
     - .mswin_test
   tags:
-    - name:ps5-3
+    - name:spirit
   variables:
     TEST_ARCH: arch-ci-mswin-gnu
     MAKE_CFLAGS: -Werror
@@ -734,23 +734,15 @@ linux-64idx-i8-uni:
   variables:
     TEST_ARCH: arch-ci-linux-64idx-i8-uni
 
-mswin-intel-cxx-cmplx:
-  extends:
-    - .stage-3
-    - .mswin_test
-  tags:
-    - name:ps5
-  variables:
-    TEST_ARCH: arch-ci-mswin-intel-cxx-cmplx
-
 mswin-intel:
   extends:
     - .stage-3
     - .mswin_test
   tags:
-    - name:ps5
+    - name:ps4
   variables:
     TEST_ARCH: arch-ci-mswin-intel
+    DISABLE_TESTS: 1
 
 mswin-opt-impi:
   extends:
