@@ -394,7 +394,8 @@ PETSC_INTERN PetscErrorCode MatConvert_AIJ_HYPRE(Mat A, MatType type, MatReuse r
     hB   = (Mat_HYPRE*)(M->data);
     if (reuse == MAT_INITIAL_MATRIX) *B = M;
   }
-  ierr = MatSetOption(*B,MAT_SORTED_FULL,PETSC_TRUE); /* "perfect" preallocation, so no need for hypre_AuxParCSRMatrixNeedAux */
+  ierr = MatSetOption(*B,MAT_SORTED_FULL,PETSC_TRUE);CHKERRQ(ierr); /* "perfect" preallocation, so no need for hypre_AuxParCSRMatrixNeedAux */
+  ierr = MatSetOption(*B,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatHYPRE_CreateFromMat(A,hB);CHKERRQ(ierr);
   ierr = MatHYPRE_IJMatrixCopy(A,hB->ij);CHKERRQ(ierr);
   if (reuse == MAT_INPLACE_MATRIX) {
