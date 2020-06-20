@@ -30,7 +30,9 @@ class Configure(config.package.Package):
     self.hypre = framework.require('config.packages.hypre',self)
     self.mpi   = framework.require('config.packages.MPI',self)
     self.metis = framework.require('config.packages.metis',self)
+    self.slepc = framework.require('config.packages.slepc',self)
     self.deps  = [self.mpi,self.hypre,self.metis]
+    self.odeps = [self.slepc]
     return
 
   def Install(self):
@@ -81,6 +83,7 @@ class Configure(config.package.Package):
     # The -dynamic at the end makes cc think it is creating an executable
     ldflags = self.setCompilers.LDFLAGS.replace('-dynamic','')
 
+    makedepend = ''
     with open(os.path.join(configDir,'user.mk'),'w') as g:
       g.write('PREFIX = '+prefix+'\n')
       g.write('MPICXX = '+cxx+'\n')
@@ -123,6 +126,18 @@ class Configure(config.package.Package):
       else:
         petscrpt = ''
       g.write('PETSC_LIB = '+petscrpt+' '+petsclib+' '+petscext+'\n')
+      if self.slepc.found:
+        g.write('MFEM_USE_SLEPC = YES\n')
+        g.write('SLEPC_OPT = '+PETSC_OPT+'\n')
+        g.write('SLEPC_DIR = '+PETSC_DIR+'\n')
+        g.write('SLEPC_ARCH = '+PETSC_ARCH+'\n')
+        g.write('SLEPC_VARS = '+prefix+'/lib/slepc/conf/slepc_variables\n')
+        g.write('SLEPC_LIB = dummy\n')
+        g.write('include '+prefix+'/lib/slepc/conf/slepc_variables\n')
+        if self.argDB['prefix']:
+          makedepend = 'slepc-install'
+        else:
+          makedepend = 'slepc-build'
       g.close()
 
     #  if installing as Superuser than want to return to regular user for clean and build
@@ -133,7 +148,7 @@ class Configure(config.package.Package):
 
     self.addDefine('HAVE_MFEM',1)
     self.addMakeMacro('MFEM','yes')
-    self.addMakeRule('mfembuild','', \
+    self.addMakeRule('mfembuild',makedepend, \
                        ['@echo "*** Building mfem ***"',\
                           '@${RM} -f ${PETSC_ARCH}/lib/petsc/conf/mfem.errorflg',\
                           '@(cd '+buildDir+' && \\\n\
