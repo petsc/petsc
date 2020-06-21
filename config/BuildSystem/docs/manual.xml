@@ -137,8 +137,6 @@ Compilers:
   --with-cc=&lt;prog&gt;                 : Specify the C compiler
   --with-cxx=&lt;prog&gt;                : Specify the C++ compiler
   --with-fc=&lt;prog&gt;                 : Specify the Fortran compiler
-  --with-gnu-compilers=&lt;bool&gt;      : Try to use GNU compilers                                              current: 1
-  --with-vendor-compilers=&lt;vendor&gt; : Try to use vendor compilers (no argument all vendors, 0 no vendors)   current: 
   --with-64-bit-pointers=&lt;bool&gt;    : Use 64 bit compilers and libraries                                    current: 0
   --CPP=&lt;prog&gt;                     : Specify the C preprocessor
   --CPPFLAGS=&lt;string&gt;              : Specify the C preprocessor options                                    current: 
