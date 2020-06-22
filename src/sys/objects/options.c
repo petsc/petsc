@@ -1924,7 +1924,8 @@ PetscErrorCode PetscOptionsMonitorCancel(void)
 }
 
 /*
-   PetscOptionsStringToBool - Converts string to PetscBool , handles cases like "yes", "no", "true", "false", "0", "1", "off", "on".
+   PetscOptionsStringToBool - Converts string to PetscBool, handles cases like "yes", "no", "true", "false", "0", "1", "off", "on".
+     Empty string is considered as true.
 */
 PetscErrorCode PetscOptionsStringToBool(const char value[],PetscBool *a)
 {
@@ -1933,8 +1934,9 @@ PetscErrorCode PetscOptionsStringToBool(const char value[],PetscBool *a)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  /* PetscStrlen() returns 0 for NULL or "" */
   ierr = PetscStrlen(value,&len);CHKERRQ(ierr);
-  if (!len) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Character string of length zero has no logical value");
+  if (!len)  {*a = PETSC_TRUE; PetscFunctionReturn(0);}
   ierr = PetscStrcasecmp(value,"TRUE",&istrue);CHKERRQ(ierr);
   if (istrue) {*a = PETSC_TRUE; PetscFunctionReturn(0);}
   ierr = PetscStrcasecmp(value,"YES",&istrue);CHKERRQ(ierr);
@@ -2157,12 +2159,8 @@ PetscErrorCode PetscOptionsGetBool(PetscOptions options,const char pre[],const c
   ierr = PetscOptionsFindPair(options,pre,name,&value,&flag);CHKERRQ(ierr);
   if (flag) {
     if (set) *set = PETSC_TRUE;
-    if (!value) {
-      if (ivalue) *ivalue = PETSC_TRUE;
-    } else {
-      ierr = PetscOptionsStringToBool(value, &flag);CHKERRQ(ierr);
-      if (ivalue) *ivalue = flag;
-    }
+    ierr = PetscOptionsStringToBool(value, &flag);CHKERRQ(ierr);
+    if (ivalue) *ivalue = flag;
   } else {
     if (set) *set = PETSC_FALSE;
   }
