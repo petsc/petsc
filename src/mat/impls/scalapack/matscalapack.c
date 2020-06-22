@@ -937,6 +937,7 @@ static PetscErrorCode MatConvert_ScaLAPACK_Dense(Mat A,MatType newtype,MatReuse 
   Mat_ScaLAPACK  *a = (Mat_ScaLAPACK*)A->data;
   Mat            Bmpi;
   MPI_Comm       comm;
+  PetscInt       M=A->rmap->N,N=A->cmap->N,m,n;
   const PetscInt *ranges;
   PetscBLASInt   bdesc[9],bmb,zero=0,one=1,lld,info;
   PetscScalar    *barray;
@@ -947,7 +948,11 @@ static PetscErrorCode MatConvert_ScaLAPACK_Dense(Mat A,MatType newtype,MatReuse 
   if (reuse == MAT_REUSE_MATRIX) Bmpi = *B;
   else {
     ierr = MatCreate(comm,&Bmpi);CHKERRQ(ierr);
-    ierr = MatSetSizes(Bmpi,A->rmap->n,A->cmap->n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+    m = PETSC_DECIDE;
+    ierr = PetscSplitOwnershipEqual(comm,&m,&M);CHKERRQ(ierr);
+    n = PETSC_DECIDE;
+    ierr = PetscSplitOwnershipEqual(comm,&n,&N);CHKERRQ(ierr);
+    ierr = MatSetSizes(Bmpi,m,n,M,N);CHKERRQ(ierr);
     ierr = MatSetType(Bmpi,MATDENSE);CHKERRQ(ierr);
     ierr = MatSetUp(Bmpi);CHKERRQ(ierr);
   }
@@ -978,6 +983,7 @@ PETSC_INTERN PetscErrorCode MatConvert_Dense_ScaLAPACK(Mat A,MatType newtype,Mat
   Mat_ScaLAPACK  *b;
   Mat            Bmpi;
   MPI_Comm       comm;
+  PetscInt       M=A->rmap->N,N=A->cmap->N,m,n;
   const PetscInt *ranges;
   PetscBLASInt   adesc[9],amb,zero=0,one=1,lld,info;
   PetscScalar    *aarray;
@@ -989,7 +995,11 @@ PETSC_INTERN PetscErrorCode MatConvert_Dense_ScaLAPACK(Mat A,MatType newtype,Mat
   if (reuse == MAT_REUSE_MATRIX) Bmpi = *B;
   else {
     ierr = MatCreate(comm,&Bmpi);CHKERRQ(ierr);
-    ierr = MatSetSizes(Bmpi,A->rmap->n,A->cmap->n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+    m = PETSC_DECIDE;
+    ierr = PetscSplitOwnershipEqual(comm,&m,&M);CHKERRQ(ierr);
+    n = PETSC_DECIDE;
+    ierr = PetscSplitOwnershipEqual(comm,&n,&N);CHKERRQ(ierr);
+    ierr = MatSetSizes(Bmpi,m,n,M,N);CHKERRQ(ierr);
     ierr = MatSetType(Bmpi,MATSCALAPACK);CHKERRQ(ierr);
     ierr = MatSetUp(Bmpi);CHKERRQ(ierr);
   }
