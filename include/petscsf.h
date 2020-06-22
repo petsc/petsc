@@ -103,8 +103,8 @@ PETSC_EXTERN PetscErrorCode PetscSFWindowSetSyncType(PetscSF,PetscSFWindowSyncTy
 PETSC_EXTERN PetscErrorCode PetscSFWindowGetSyncType(PetscSF,PetscSFWindowSyncType*);
 PETSC_EXTERN PetscErrorCode PetscSFWindowSetFlavorType(PetscSF,PetscSFWindowFlavorType);
 PETSC_EXTERN PetscErrorCode PetscSFWindowGetFlavorType(PetscSF,PetscSFWindowFlavorType*);
-PETSC_EXTERN PetscErrorCode MPIAPI PetscSFWindowSetInfo(PetscSF,MPI_Info);
-PETSC_EXTERN PetscErrorCode MPIAPI PetscSFWindowGetInfo(PetscSF,MPI_Info*);
+PETSC_EXTERN PetscErrorCode PetscSFWindowSetInfo(PetscSF,MPI_Info);
+PETSC_EXTERN PetscErrorCode PetscSFWindowGetInfo(PetscSF,MPI_Info*);
 PETSC_EXTERN PetscErrorCode PetscSFSetRankOrder(PetscSF,PetscBool);
 PETSC_EXTERN PetscErrorCode PetscSFSetGraph(PetscSF,PetscInt,PetscInt,const PetscInt*,PetscCopyMode,const PetscSFNode*,PetscCopyMode);
 PETSC_EXTERN PetscErrorCode PetscSFSetGraphWithPattern(PetscSF,PetscLayout,PetscSFPattern);
