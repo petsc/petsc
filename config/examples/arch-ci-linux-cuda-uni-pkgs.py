@@ -14,11 +14,14 @@ if __name__ == '__main__':
     '--with-cc=clang',
     '--with-cxx=clang++',
     '--with-fc=gfortran',
+    '--with-cuda=1',
     '--download-hdf5',
     '--download-metis',
     '--download-superlu',
     '--download-mumps',
     '--with-mumps-serial',
+    'CUDAFLAGS=-ccbin clang++',
+    'CFLAGS=-Wall -Wwrite-strings -Wno-strict-aliasing -Wno-unknown-pragmas -fstack-protector -fvisibility=hidden -Wno-unused-function', # should be CXXFLAGS
   ]
   configure.petsc_configure(configure_options)
 
