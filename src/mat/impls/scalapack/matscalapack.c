@@ -937,16 +937,25 @@ static PetscErrorCode MatConvert_ScaLAPACK_Dense(Mat A,MatType newtype,MatReuse 
   Mat_ScaLAPACK  *a = (Mat_ScaLAPACK*)A->data;
   Mat            Bmpi;
   MPI_Comm       comm;
-  PetscInt       M=A->rmap->N,N=A->cmap->N,m,n;
-  const PetscInt *ranges;
+  PetscInt       i,M=A->rmap->N,N=A->cmap->N,m,n,rstart,rend,nz;
+  const PetscInt *ranges,*branges,*cwork;
+  const PetscScalar *vwork;
   PetscBLASInt   bdesc[9],bmb,zero=0,one=1,lld,info;
   PetscScalar    *barray;
+  PetscBool      differ=PETSC_FALSE;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+  ierr = PetscLayoutGetRanges(A->rmap,&ranges);CHKERRQ(ierr);
 
-  if (reuse == MAT_REUSE_MATRIX) Bmpi = *B;
-  else {
+  if (reuse == MAT_REUSE_MATRIX) { /* check if local sizes differ in A and B */
+    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+    ierr = PetscLayoutGetRanges((*B)->rmap,&branges);CHKERRQ(ierr);
+    for (i=0;i<size;i++) if (ranges[i+1]!=branges[i+1]) { differ=PETSC_TRUE; break; }
+  }
+
+  if (reuse == MAT_REUSE_MATRIX && differ) { /* special case, use auxiliary dense matrix */
     ierr = MatCreate(comm,&Bmpi);CHKERRQ(ierr);
     m = PETSC_DECIDE;
     ierr = PetscSplitOwnershipEqual(comm,&m,&M);CHKERRQ(ierr);
@@ -955,25 +964,62 @@ static PetscErrorCode MatConvert_ScaLAPACK_Dense(Mat A,MatType newtype,MatReuse 
     ierr = MatSetSizes(Bmpi,m,n,M,N);CHKERRQ(ierr);
     ierr = MatSetType(Bmpi,MATDENSE);CHKERRQ(ierr);
     ierr = MatSetUp(Bmpi);CHKERRQ(ierr);
+
+    /* create ScaLAPACK descriptor for B (1d block distribution) */
+    ierr = PetscBLASIntCast(ranges[1],&bmb);CHKERRQ(ierr);  /* row block size */
+    lld = PetscMax(A->rmap->n,1);  /* local leading dimension */
+    PetscStackCallBLAS("SCALAPACKdescinit",SCALAPACKdescinit_(bdesc,&a->M,&a->N,&bmb,&a->N,&zero,&zero,&a->grid->ictxcol,&lld,&info));
+    PetscCheckScaLapackInfo("descinit",info);
+
+    /* redistribute matrix */
+    ierr = MatDenseGetArray(Bmpi,&barray);CHKERRQ(ierr);
+    PetscStackCallBLAS("SCALAPACKgemr2d",SCALAPACKgemr2d_(&a->M,&a->N,a->loc,&one,&one,a->desc,barray,&one,&one,bdesc,&a->grid->ictxcol));
+    ierr = MatDenseRestoreArray(Bmpi,&barray);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(Bmpi,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(Bmpi,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+    /* transfer rows of auxiliary matrix to the final matrix B */
+    ierr = MatGetOwnershipRange(Bmpi,&rstart,&rend);CHKERRQ(ierr);
+    for (i=rstart;i<rend;i++) {
+      ierr = MatGetRow(Bmpi,i,&nz,&cwork,&vwork);CHKERRQ(ierr);
+      ierr = MatSetValues(*B,1,&i,nz,cwork,vwork,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatRestoreRow(Bmpi,i,&nz,&cwork,&vwork);CHKERRQ(ierr);
+    }
+    ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatDestroy(&Bmpi);CHKERRQ(ierr);
+
+  } else {  /* normal cases */
+
+    if (reuse == MAT_REUSE_MATRIX) Bmpi = *B;
+    else {
+      ierr = MatCreate(comm,&Bmpi);CHKERRQ(ierr);
+      m = PETSC_DECIDE;
+      ierr = PetscSplitOwnershipEqual(comm,&m,&M);CHKERRQ(ierr);
+      n = PETSC_DECIDE;
+      ierr = PetscSplitOwnershipEqual(comm,&n,&N);CHKERRQ(ierr);
+      ierr = MatSetSizes(Bmpi,m,n,M,N);CHKERRQ(ierr);
+      ierr = MatSetType(Bmpi,MATDENSE);CHKERRQ(ierr);
+      ierr = MatSetUp(Bmpi);CHKERRQ(ierr);
+    }
+
+    /* create ScaLAPACK descriptor for B (1d block distribution) */
+    ierr = PetscBLASIntCast(ranges[1],&bmb);CHKERRQ(ierr);  /* row block size */
+    lld = PetscMax(A->rmap->n,1);  /* local leading dimension */
+    PetscStackCallBLAS("SCALAPACKdescinit",SCALAPACKdescinit_(bdesc,&a->M,&a->N,&bmb,&a->N,&zero,&zero,&a->grid->ictxcol,&lld,&info));
+    PetscCheckScaLapackInfo("descinit",info);
+
+    /* redistribute matrix */
+    ierr = MatDenseGetArray(Bmpi,&barray);CHKERRQ(ierr);
+    PetscStackCallBLAS("SCALAPACKgemr2d",SCALAPACKgemr2d_(&a->M,&a->N,a->loc,&one,&one,a->desc,barray,&one,&one,bdesc,&a->grid->ictxcol));
+    ierr = MatDenseRestoreArray(Bmpi,&barray);CHKERRQ(ierr);
+
+    ierr = MatAssemblyBegin(Bmpi,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(Bmpi,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    if (reuse == MAT_INPLACE_MATRIX) {
+      ierr = MatHeaderReplace(A,&Bmpi);CHKERRQ(ierr);
+    } else *B = Bmpi;
   }
-
-  /* create ScaLAPACK descriptor for B (1d block distribution) */
-  ierr = PetscLayoutGetRanges(A->rmap,&ranges);CHKERRQ(ierr);
-  ierr = PetscBLASIntCast(ranges[1],&bmb);CHKERRQ(ierr);  /* row block size */
-  lld = PetscMax(A->rmap->n,1);  /* local leading dimension */
-  PetscStackCallBLAS("SCALAPACKdescinit",SCALAPACKdescinit_(bdesc,&a->M,&a->N,&bmb,&a->N,&zero,&zero,&a->grid->ictxcol,&lld,&info));
-  PetscCheckScaLapackInfo("descinit",info);
-
-  /* redistribute matrix */
-  ierr = MatDenseGetArray(Bmpi,&barray);CHKERRQ(ierr);
-  PetscStackCallBLAS("SCALAPACKgemr2d",SCALAPACKgemr2d_(&a->M,&a->N,a->loc,&one,&one,a->desc,barray,&one,&one,bdesc,&a->grid->ictxcol));
-  ierr = MatDenseRestoreArray(Bmpi,&barray);CHKERRQ(ierr);
-
-  ierr = MatAssemblyBegin(Bmpi,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(Bmpi,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (reuse == MAT_INPLACE_MATRIX) {
-    ierr = MatHeaderReplace(A,&Bmpi);CHKERRQ(ierr);
-  } else *B = Bmpi;
   PetscFunctionReturn(0);
 }
 
