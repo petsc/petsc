@@ -5289,6 +5289,38 @@ PetscErrorCode DMSetRegionNumDS(DM dm, PetscInt num, DMLabel label, IS fields, P
 }
 
 /*@
+  DMFindRegionNum - Find the region number for a given PetscDS, or -1 if it is not found.
+
+  Not collective
+
+  Input Parameters:
++ dm  - The DM
+- ds  - The PetscDS defined on the given region
+
+  Output Parameter:
+. num - The region number, in [0, Nds), or -1 if not found
+
+  Level: advanced
+
+.seealso: DMGetRegionNumDS(), DMGetRegionDS(), DMSetRegionDS(), DMGetDS(), DMGetCellDS()
+@*/
+PetscErrorCode DMFindRegionNum(DM dm, PetscDS ds, PetscInt *num)
+{
+  PetscInt       Nds, n;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 2);
+  PetscValidPointer(num, 3);
+  ierr = DMGetNumDS(dm, &Nds);CHKERRQ(ierr);
+  for (n = 0; n < Nds; ++n) if (ds == dm->probs[n].ds) break;
+  if (n >= Nds) *num = -1;
+  else          *num = n;
+  PetscFunctionReturn(0);
+}
+
+/*@
   DMCreateDS - Create the discrete systems for the DM based upon the fields added to the DM
 
   Collective on dm
