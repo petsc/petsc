@@ -23,7 +23,7 @@ struct PetscFPTrapLink {
   PetscFPTrap            trapmode;
   struct PetscFPTrapLink *next;
 };
-static PetscFPTrap            _trapmode = PETSC_FP_TRAP_OFF; /* Current trapping mode; see PetscDetermineInitalFPTrap() */
+static PetscFPTrap            _trapmode = PETSC_FP_TRAP_OFF; /* Current trapping mode; see PetscDetermineInitialFPTrap() */
 static struct PetscFPTrapLink *_trapstack;                   /* Any pushed states of _trapmode */
 
 /*@
@@ -47,7 +47,7 @@ static struct PetscFPTrapLink *_trapstack;                   /* Any pushed state
 $       gfortran -ffpe-trap=invalid,zero,overflow,underflow,denormal
 $       ifort -fpe0
 
-.seealso: PetscFPTrapPop(), PetscSetFPTrap(), PetscDetermineInitalFPTrap()
+.seealso: PetscFPTrapPop(), PetscSetFPTrap(), PetscDetermineInitialFPTrap()
 @*/
 PetscErrorCode PetscFPTrapPush(PetscFPTrap trap)
 {
@@ -70,7 +70,7 @@ PetscErrorCode PetscFPTrapPush(PetscFPTrap trap)
 
    Level: advanced
 
-.seealso: PetscFPTrapPush(), PetscSetFPTrap(), PetscDetermineInitalFPTrap()
+.seealso: PetscFPTrapPush(), PetscSetFPTrap(), PetscDetermineInitialFPTrap()
 @*/
 PetscErrorCode PetscFPTrapPop(void)
 {
@@ -156,7 +156,7 @@ sigfpe_handler_type PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp,c
    trapping may be VERY slow!
 
 
-.seealso: PetscFPTrapPush(), PetscFPTrapPop(), PetscDetermineInitalFPTrap()
+.seealso: PetscFPTrapPush(), PetscFPTrapPop(), PetscDetermineInitialFPTrap()
 @*/
 PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
 {
@@ -178,7 +178,7 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
 }
 
 /*@
-   PetscDetermineInitalFPTrap - Attempts to determine the floating point trapping that exists when PetscInitialize() is called
+   PetscDetermineInitialFPTrap - Attempts to determine the floating point trapping that exists when PetscInitialize() is called
 
    Not Collective
 
@@ -186,9 +186,9 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
       Currently only supported on Linux and MacOS. Checks if divide by zero is enable and if so declares that trapping is on.
 
 
-.seealso: PetscFPTrapPush(), PetscFPTrapPop(), PetscDetermineInitalFPTrap()
+.seealso: PetscFPTrapPush(), PetscFPTrapPop(), PetscDetermineInitialFPTrap()
 @*/
-PetscErrorCode  PetscDetermineInitalFPTrap(void)
+PetscErrorCode  PetscDetermineInitialFPTrap(void)
 {
   PetscErrorCode ierr;
 
@@ -248,7 +248,7 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  PetscDetermineInitalFPTrap(void)
+PetscErrorCode  PetscDetermineInitialFPTrap(void)
 {
   PetscErrorCode ierr;
 
@@ -293,7 +293,7 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  PetscDetermineInitalFPTrap(void)
+PetscErrorCode  PetscDetermineInitialFPTrap(void)
 {
   PetscErrorCode ierr;
 
@@ -353,7 +353,7 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  PetscDetermineInitalFPTrap(void)
+PetscErrorCode  PetscDetermineInitialFPTrap(void)
 {
   PetscErrorCode ierr;
 
@@ -436,7 +436,7 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap on)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  PetscDetermineInitalFPTrap(void)
+PetscErrorCode  PetscDetermineInitialFPTrap(void)
 {
   PetscErrorCode ierr;
 
@@ -473,7 +473,7 @@ PetscErrorCode  PetscSetFPTrap(PetscFPTrap on)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  PetscDetermineInitalFPTrap(void)
+PetscErrorCode  PetscDetermineInitialFPTrap(void)
 {
   PetscErrorCode ierr;
 
@@ -575,7 +575,7 @@ PetscErrorCode  PetscSetFPTrap(PetscFPTrap on)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  PetscDetermineInitalFPTrap(void)
+PetscErrorCode  PetscDetermineInitialFPTrap(void)
 {
 #if defined(FE_NOMASK_ENV) || defined PETSC_HAVE_XMMINTRIN_H
   unsigned int   flags;
@@ -639,7 +639,7 @@ PetscErrorCode  PetscSetFPTrap(PetscFPTrap on)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  PetscDetermineInitalFPTrap(void)
+PetscErrorCode  PetscDetermineInitialFPTrap(void)
 {
   PetscErrorCode ierr;
 
@@ -670,7 +670,7 @@ PetscErrorCode  PetscSetFPTrap(PetscFPTrap on)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  PetscDetermineInitalFPTrap(void)
+PetscErrorCode  PetscDetermineInitialFPTrap(void)
 {
   PetscErrorCode ierr;
 

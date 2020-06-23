@@ -172,32 +172,32 @@ int main(int argc, char **argv)
       requires: define(PETSC_USE_INFO)
       suffix: 1
       args: -info
-      filter: grep -h -ve Running -ve communicator -ve MPI_Comm -ve OpenMP -ve PetscGetHostName -ve PetscDetermineInitalFPTrap
+      filter: grep -h -ve Running -ve communicator -ve MPI_Comm -ve OpenMP -ve PetscGetHostName -ve PetscDetermineInitialFPTrap
 
    test:
       requires: define(PETSC_USE_INFO)
       suffix: 2
       args: -info ex7info.2
-      filter: grep -h -ve Running -ve communicator -ve MPI_Comm -ve OpenMP -ve PetscGetHostName -ve PetscDetermineInitalFPTrap "ex7info.2.0"
+      filter: grep -h -ve Running -ve communicator -ve MPI_Comm -ve OpenMP -ve PetscGetHostName -ve PetscDetermineInitialFPTrap "ex7info.2.0"
 
    test:
       requires: define(PETSC_USE_INFO)
       suffix: 3
       nsize: 2
       args: -info ex7info.3
-      filter: grep -h -ve Running -ve communicator -ve MPI_Comm -ve OpenMP -ve PetscGetHostName  -ve PetscDetermineInitalFPTrap "ex7info.3.0" | sort -b
+      filter: grep -h -ve Running -ve communicator -ve MPI_Comm -ve OpenMP -ve PetscGetHostName  -ve PetscDetermineInitialFPTrap "ex7info.3.0" | sort -b
 
    test:
       requires: define(PETSC_USE_INFO)
       suffix: 4
       args: -info :mat,vec:
-      filter: grep -h -ve Running -ve communicator -ve MPI_Comm -ve OpenMP -ve PetscGetHostName -ve PetscDetermineInitalFPTrap
+      filter: grep -h -ve Running -ve communicator -ve MPI_Comm -ve OpenMP -ve PetscGetHostName -ve PetscDetermineInitialFPTrap
 
    test:
       requires: define(PETSC_USE_INFO)
       suffix: 5
       args: -info :~sys:
-      filter: grep -h  -ve PetscDetermineInitalFPTrap
+      filter: grep -h  -ve PetscDetermineInitialFPTrap
 
    test:
       requires: define(PETSC_USE_INFO)

@@ -111,7 +111,7 @@
           <li>Change the default of -cuda_initialize from yes to no</li>
           <li>Add PetscOptionsInsertStringYAML() and "-options_string_yaml" for YAML-formatted options on the command line</li>
           <li>Add PETSC_OPTIONS_YAML environment variable for setting options in YAML format</li>
-          <li>Add PetscDetermineInitalFPTrap(); fix so that when Linux or MacOS Fortran linker enables catching floating point divide by zero the trapping is disabled for LAPACK routines that generate divide by zero, for example, the reference implementation of ieeeck().</li>
+          <li>Add PetscDetermineInitialFPTrap(); fix so that when Linux or MacOS Fortran linker enables catching floating point divide by zero the trapping is disabled for LAPACK routines that generate divide by zero, for example, the reference implementation of ieeeck().</li>
           <li>Add floating point exception handling support for freebsd and Windows.</li>
           <li>Consistently set exception handling for divide by zero, invalid, underflow, and overflow for all systems when possible.</li>
         </ul>
