@@ -2095,9 +2095,7 @@ PetscErrorCode PetscFEEvaluateFaceFields_Internal(PetscDS prob, PetscInt field, 
     for (c = 0; c < Nc; ++c) {u[c] = 0.0;}
     for (b = 0; b < Nb; ++b) {
       for (c = 0; c < Nc; ++c) {
-        const PetscInt cidx = b*Nc+c;
-
-        u[c] += coefficients[cidx]*faceBasis[faceLoc*Nb*Nc+cidx];
+        u[c] += coefficients[b] * faceBasis[(faceLoc*Nb + b)*Nc + c];
       }
     }
   }

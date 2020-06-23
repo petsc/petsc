@@ -129,6 +129,12 @@
         </ul>
       <h4>VecScatter:</h4>
       <h4>PetscSection:</h4>
+      <ul>
+        <li>PetscSectionGetClosurePermutation(), PetscSectionSetClosurePermutation(), and PetscSectionGetClosureInversePermutation() all require a new argument depth and the getters require closure size to be specified by the caller.
+          This allows multiple closure permutations to be specified, e.g., for mixed topology meshes and boundary faces and for variable-degree spaces.
+          The previous behavior only applied to points at height zero.
+        </li>
+      </ul>
       <h4>PetscPartitioner:</h4>
       <h4>Mat:</h4>
         <ul>
@@ -172,6 +178,7 @@
           <li>Add several refinement methods for Plex</li>
           <li>Add DMPlexGet/SetActivePoint() to allow user to see which mesh point is being handled by projection</li>
           <li>Add DMPlexComputeOrthogonalQuality() to compute cell-wise orthogonality quality mesh statistic</li>
+          <li>DMPlexSetClosurePermutationTensor() now sets tensor permutations at every depth, instead of just height 0.</li>
         </ul>
       <h4>DT:</h4>
         <ul>

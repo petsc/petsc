@@ -3,6 +3,22 @@
 
 #include <petscsection.h>
 #include <petsc/private/petscimpl.h>
+#include <petsc/private/hashmap.h>
+
+typedef struct PetscSectionClosurePermKey {
+  PetscInt    depth, size;
+} PetscSectionClosurePermKey;
+typedef struct {
+  PetscInt *perm, *invPerm;
+} PetscSectionClosurePermVal;
+PETSC_STATIC_INLINE PetscHash_t PetscSectionClosurePermHash(PetscSectionClosurePermKey k) {
+  return PetscHashCombine(PetscHashInt(k.depth), PetscHashInt(k.size));
+}
+PETSC_STATIC_INLINE int PetscSectionClosurePermEqual(PetscSectionClosurePermKey k1, PetscSectionClosurePermKey k2) {
+  return k1.depth == k2.depth && k1.size == k2.size;
+}
+static const PetscSectionClosurePermVal PetscSectionClosurePermVal_Empty = {NULL, NULL};
+PETSC_HASH_MAP(ClPerm, PetscSectionClosurePermKey, PetscSectionClosurePermVal, PetscSectionClosurePermHash, PetscSectionClosurePermEqual, PetscSectionClosurePermVal_Empty)
 
 struct _p_PetscSection {
   PETSCHEADER(int);
@@ -24,11 +40,9 @@ struct _p_PetscSection {
   char                        ***compNames;   /* The component names */
 
   PetscObject                   clObj;        /* Key for the closure (right now we only have one) */
+  PetscClPerm                   clHash;       /* Hash of (depth, size) to perm and invPerm */
   PetscSection                  clSection;    /* Section giving the number of points in each closure */
   IS                            clPoints;     /* Points in each closure */
-  PetscInt                      clSize;       /* The size of a dof closure of a cell, when it is uniform */
-  PetscInt                     *clPerm;       /* A permutation of the cell dof closure, of size clSize */
-  PetscInt                     *clInvPerm;    /* The inverse of clPerm */
   PetscSectionSym               sym;          /* Symmetries of the data */
 };
 
@@ -55,9 +69,9 @@ struct _p_PetscSectionSym {
   SymWorkLink workout;
 };
 
-PETSC_EXTERN PetscErrorCode PetscSectionSetClosurePermutation_Internal(PetscSection, PetscObject, PetscInt, PetscCopyMode, PetscInt *);
-PETSC_EXTERN PetscErrorCode PetscSectionGetClosurePermutation_Internal(PetscSection, PetscObject, PetscInt *, const PetscInt *[]);
-PETSC_EXTERN PetscErrorCode PetscSectionGetClosureInversePermutation_Internal(PetscSection, PetscObject, PetscInt *, const PetscInt *[]);
+PETSC_EXTERN PetscErrorCode PetscSectionSetClosurePermutation_Internal(PetscSection, PetscObject, PetscInt, PetscInt, PetscCopyMode, PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscSectionGetClosurePermutation_Internal(PetscSection, PetscObject, PetscInt, PetscInt, const PetscInt *[]);
+PETSC_EXTERN PetscErrorCode PetscSectionGetClosureInversePermutation_Internal(PetscSection, PetscObject, PetscInt, PetscInt, const PetscInt *[]);
 PETSC_EXTERN PetscErrorCode ISIntersect_Caching_Internal(IS, IS, IS *);
 
 #endif

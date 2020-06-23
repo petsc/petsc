@@ -369,7 +369,7 @@ int main(int argc, char **argv)
   case 3: ierr = LoadData3D(dm, 2, 2, 2, size, u, &user);CHKERRQ(ierr);break;
   }
   /* Remove ordering and check some values */
-  ierr = PetscSectionSetClosurePermutation(s, (PetscObject) dm, NULL);CHKERRQ(ierr);
+  ierr = PetscSectionSetClosurePermutation(s, (PetscObject) dm, user.dim, NULL);CHKERRQ(ierr);
   switch (user.dim) {
   case 2:
     ierr = CheckPoint(dm, u,  0, &user);CHKERRQ(ierr);
