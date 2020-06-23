@@ -599,7 +599,7 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     ierr = PetscInfoSetFromOptions(NULL);CHKERRQ(ierr);
   }
 #endif
-  ierr = PetscDetermineInitalFPTrap();
+  ierr = PetscDetermineInitialFPTrap();
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,NULL,"-fp_trap",&flg1,&flag);CHKERRQ(ierr);
   if (flag) {ierr = PetscSetFPTrap((PetscFPTrap)flg1);CHKERRQ(ierr);}
