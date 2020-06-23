@@ -539,11 +539,12 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
   DMEnclosureType    encIn, encAux;
   PetscDS            ds = NULL, dsIn = NULL, dsAux = NULL;
   Vec                localA = NULL, tv;
+  IS                 fieldIS;
   PetscSection       section;
   PetscDualSpace    *sp, *cellsp;
   PetscTabulation *T = NULL, *TAux = NULL;
   PetscInt          *Nc;
-  PetscInt           dim, dimEmbed, depth, minHeight, maxHeight, h, Nf, NfIn, NfAux = 0, f;
+  PetscInt           dim, dimEmbed, depth, minHeight, maxHeight, h, regionNum, Nf, NfIn, NfAux = 0, NfTot, f;
   PetscBool         *isFE, hasFE = PETSC_FALSE, hasFV = PETSC_FALSE, auxBd = PETSC_FALSE, isHybrid = PETSC_FALSE, transform;
   DMField            coordField;
   DMLabel            depthLabel;
@@ -592,6 +593,9 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
   if (!dsIn) {ierr = DMGetDS(dmIn, &dsIn);CHKERRQ(ierr);}
   ierr = PetscDSGetNumFields(ds, &Nf);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(dsIn, &NfIn);CHKERRQ(ierr);
+  ierr = DMGetNumFields(dm, &NfTot);CHKERRQ(ierr);
+  ierr = DMFindRegionNum(dm, ds, &regionNum);CHKERRQ(ierr);
+  ierr = DMGetRegionNumDS(dm, regionNum, NULL, &fieldIS, NULL);CHKERRQ(ierr);
   ierr = PetscDSGetHybrid(ds, &isHybrid);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dm, &dimEmbed);CHKERRQ(ierr);
   ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);
@@ -701,8 +705,15 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
     if (effectiveHeight) {ierr = PetscDSGetHeightSubspace(ds, effectiveHeight, &dsEff);CHKERRQ(ierr);}
     /* Loop over points at this height */
     ierr = DMGetWorkArray(dm, numValues, MPIU_SCALAR, &values);CHKERRQ(ierr);
-    ierr = DMGetWorkArray(dm, Nf, MPI_INT, &fieldActive);CHKERRQ(ierr);
-    for (f = 0; f < Nf; ++f) fieldActive[f] = (funcs[f] && sp[f]) ? PETSC_TRUE : PETSC_FALSE;
+    ierr = DMGetWorkArray(dm, NfTot, MPI_INT, &fieldActive);CHKERRQ(ierr);
+    {
+      const PetscInt *fields;
+
+      ierr = ISGetIndices(fieldIS, &fields);CHKERRQ(ierr);
+      for (f = 0; f < NfTot; ++f) {fieldActive[f] = PETSC_FALSE;}
+      for (f = 0; f < Nf; ++f) {fieldActive[fields[f]] = (funcs[f] && sp[f]) ? PETSC_TRUE : PETSC_FALSE;}
+      ierr = ISRestoreIndices(fieldIS, &fields);CHKERRQ(ierr);
+    }
     if (label) {
       PetscInt i;
 
