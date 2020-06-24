@@ -149,6 +149,7 @@ check-py-vermin:
     - make CFLAGS=${MAKE_CFLAGS} CXXFLAGS=${MAKE_CXXFLAGS} FFLAGS=${MAKE_FFLAGS} check
     - make updatedatafiles
     - if [ -z ${DISABLE_TESTS+x} ]; then make CFLAGS=${MAKE_CFLAGS} CXXFLAGS=${MAKE_CXXFLAGS} FFLAGS=${MAKE_FFLAGS} cleantest allgtests-tap TIMEOUT=${TIMEOUT}; fi
+    - if [ ! -z ${RUN_GCOV+x} ]; then make gcov; fi
   artifacts:
     reports:
       junit: ${TEST_ARCH}/tests/testresults.xml
@@ -160,6 +161,7 @@ check-py-vermin:
     - ${TEST_ARCH}/tests/testresults.xml
     - ${TEST_ARCH}/tests/test_${TEST_ARCH}_tap.log
     - ${TEST_ARCH}/tests/test_${TEST_ARCH}_err.log
+    - ${TEST_ARCH}/gcov.tar.gz
     expire_in: 4 days
   variables:
     OPENBLAS_NUM_THREADS: 1
@@ -524,17 +526,7 @@ linux-pkgs-gcov:
     - gce-nfs, linux-gcov
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-gcov
-  after_script:
-    - make gcov
-  artifacts:
-    when: always
-    paths:
-    - ${TEST_ARCH}/lib/petsc/conf/*.log
-    - ${TEST_ARCH}/tests/testresults.xml
-    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_tap.log
-    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_err.log
-    - ${TEST_ARCH}/gcov.tar.gz
-    expire_in: 4 days
+    RUN_GCOV: 1
 
 linux-cmplx-gcov:
   extends:
@@ -546,17 +538,7 @@ linux-cmplx-gcov:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -vecscatter_mpi1 false -options_left false
     TEST_ARCH: arch-ci-linux-cmplx-gcov
     LOAD_MODULES: gcc/8.3.0-fjpc5ys
-  after_script:
-    - make gcov
-  artifacts:
-    when: always
-    paths:
-    - ${TEST_ARCH}/lib/petsc/conf/*.log
-    - ${TEST_ARCH}/tests/testresults.xml
-    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_tap.log
-    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_err.log
-    - ${TEST_ARCH}/gcov.tar.gz
-    expire_in: 4 days
+    RUN_GCOV: 1
 
 linux-matlab-ilp64-gcov:
   extends:
@@ -567,17 +549,7 @@ linux-matlab-ilp64-gcov:
   variables:
     TEST_ARCH: arch-ci-linux-matlab-ilp64-gcov
     LOAD_MODULES: matlab/R2018a
-  after_script:
-    - make gcov
-  artifacts:
-    when: always
-    paths:
-    - ${TEST_ARCH}/lib/petsc/conf/*.log
-    - ${TEST_ARCH}/tests/testresults.xml
-    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_tap.log
-    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_err.log
-    - ${TEST_ARCH}/gcov.tar.gz
-    expire_in: 4 days
+    RUN_GCOV: 1
   allow_failure: true
 
 linux-gcov:
@@ -588,17 +560,7 @@ linux-gcov:
     - gce-nfs, linux-gcov
   variables:
     TEST_ARCH: arch-ci-linux-gcov
-  after_script:
-    - make gcov
-  artifacts:
-    when: always
-    paths:
-    - ${TEST_ARCH}/lib/petsc/conf/*.log
-    - ${TEST_ARCH}/tests/testresults.xml
-    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_tap.log
-    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_err.log
-    - ${TEST_ARCH}/gcov.tar.gz
-    expire_in: 4 days
+    RUN_GCOV: 1
 
 linux-pgi:
   extends:
