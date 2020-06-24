@@ -1,4 +1,4 @@
-/* https://github.com/attractivechaos/klib/blob/503312bb4d7a00e69cadaa1d691e9dfba2d3b022/khash.h */
+/* https://github.com/attractivechaos/klib/blob/928581a78413bed4efa956731b35b18a638f20f3/khash.h */
 
 /* The MIT License
 
@@ -580,7 +580,7 @@ static kh_inline khint_t __ac_Wang_hash(khint_t key)
 		code;												\
 	} }
 
-/* More conenient interfaces */
+/* More convenient interfaces */
 
 /*! @function
   @abstract     Instantiate a hash set containing integer keys
@@ -598,7 +598,7 @@ static kh_inline khint_t __ac_Wang_hash(khint_t key)
 	KHASH_INIT(name, khint32_t, khval_t, 1, kh_int_hash_func, kh_int_hash_equal)
 
 /*! @function
-  @abstract     Instantiate a hash map containing 64-bit integer keys
+  @abstract     Instantiate a hash set containing 64-bit integer keys
   @param  name  Name of the hash table [symbol]
  */
 #define KHASH_SET_INIT_INT64(name)										\
