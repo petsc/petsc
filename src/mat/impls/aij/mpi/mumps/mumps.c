@@ -1776,9 +1776,9 @@ PetscErrorCode PetscSetMUMPSFromOptions(Mat F, Mat A)
   ierr = PetscOptionsMUMPSInt("-mat_mumps_icntl_6","ICNTL(6): permutes to a zero-free diagonal and/or scale the matrix (0 to 7)","None",mumps->id.ICNTL(6),&icntl,&flg);CHKERRQ(ierr);
   if (flg) mumps->id.ICNTL(6) = icntl;
 
-  ierr = PetscOptionsMUMPSInt("-mat_mumps_icntl_7","ICNTL(7): computes a symmetric permutation in sequential analysis (0 to 7). 3=Scotch, 4=PORD, 5=Metis","None",mumps->id.ICNTL(7),&icntl,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsMUMPSInt("-mat_mumps_icntl_7","ICNTL(7): computes a symmetric permutation in sequential analysis (0 to 7). 1=Petsc (sequential only), 3=Scotch, 4=PORD, 5=Metis","None",mumps->id.ICNTL(7),&icntl,&flg);CHKERRQ(ierr);
   if (flg) {
-    if (icntl== 1 && mumps->petsc_size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"pivot order be set by the user in PERM_IN -- not supported by the PETSc/MUMPS interface\n");
+    if (icntl== 1 && mumps->petsc_size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not supported by the PETSc/MUMPS interface for parallel matrices\n");
     else mumps->id.ICNTL(7) = icntl;
   }
 
@@ -1963,12 +1963,6 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFacto
       mumps->id.jcn = mumps->jcn;
       if (mumps->id.ICNTL(6)>1) mumps->id.a = (MumpsScalar*)mumps->val;
       if (mumps->id.ICNTL(7) == 1) { /* use user-provide matrix ordering - assuming r = c ordering */
-        /*
-        PetscBool      flag;
-        ierr = ISEqual(r,c,&flag);CHKERRQ(ierr);
-        if (!flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"row_perm != col_perm");
-        ierr = ISView(r,PETSC_VIEWER_STDOUT_SELF);
-         */
         if (!mumps->myid) {
           const PetscInt *idx;
           PetscInt       i;
@@ -2888,7 +2882,7 @@ PetscErrorCode MatMumpsGetRinfog(Mat F,PetscInt icntl,PetscReal *val)
 .  -mat_mumps_icntl_3 -  ICNTL(3): output stream for global information, collected on the host
 .  -mat_mumps_icntl_4 -  ICNTL(4): level of printing (0 to 4)
 .  -mat_mumps_icntl_6 - ICNTL(6): permutes to a zero-free diagonal and/or scale the matrix (0 to 7)
-.  -mat_mumps_icntl_7 - ICNTL(7): computes a symmetric permutation in sequential analysis (0 to 7). 3=Scotch, 4=PORD, 5=Metis
+.  -mat_mumps_icntl_7 - ICNTL(7): computes a symmetric permutation in sequential analysis (0 to 7). 1=PETSc (sequential only) 3=Scotch, 4=PORD, 5=Metis
 .  -mat_mumps_icntl_8  - ICNTL(8): scaling strategy (-2 to 8 or 77)
 .  -mat_mumps_icntl_10  - ICNTL(10): max num of refinements
 .  -mat_mumps_icntl_11  - ICNTL(11): statistics related to an error analysis (via -ksp_view)
@@ -2917,6 +2911,8 @@ PetscErrorCode MatMumpsGetRinfog(Mat F,PetscInt icntl,PetscReal *val)
 .  -mat_mumps_cntl_7 - CNTL(7): precision of the dropping parameter used during BLR factorization
 -  -mat_mumps_use_omp_threads [m] - run MUMPS in MPI+OpenMP hybrid mode as if omp_set_num_threads(m) is called before calling MUMPS.
                                    Default might be the number of cores per CPU package (socket) as reported by hwloc and suggested by the MUMPS manual.
+
+   If run sequentially can use the PETSc provided ordering with the option -mat_mumps_icntl_7 1
 
   Level: beginner
 
@@ -2983,6 +2979,7 @@ static PetscErrorCode MatGetFactor_aij_mumps(Mat A,MatFactorType ftype,Mat *F)
   PetscErrorCode ierr;
   Mat_MUMPS      *mumps;
   PetscBool      isSeqAIJ;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
  #if defined(PETSC_USE_COMPLEX)
@@ -3036,6 +3033,11 @@ static PetscErrorCode MatGetFactor_aij_mumps(Mat A,MatFactorType ftype,Mat *F)
   /* set solvertype */
   ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(MATSOLVERMUMPS,&B->solvertype);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
+  if (size == 1) {
+    /* MUMPS option can use ordering with "-mat_mumps_icntl_7 1 when sequential so generate the ordering, even if it may not be used */
+    B->useordering = PETSC_TRUE;
+  }
 
   B->ops->destroy = MatDestroy_MUMPS;
   B->data         = (void*)mumps;
@@ -3053,6 +3055,7 @@ static PetscErrorCode MatGetFactor_sbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
   PetscErrorCode ierr;
   Mat_MUMPS      *mumps;
   PetscBool      isSeqSBAIJ;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
  #if defined(PETSC_USE_COMPLEX)
@@ -3100,6 +3103,11 @@ static PetscErrorCode MatGetFactor_sbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
   /* set solvertype */
   ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(MATSOLVERMUMPS,&B->solvertype);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
+  if (size == 1) {
+    /* MUMPS option can use ordering with "-mat_mumps_icntl_7 1 when sequential so generate the ordering, even if it may not be used */
+    B->useordering = PETSC_TRUE;
+  }
 
   B->ops->destroy = MatDestroy_MUMPS;
   B->data         = (void*)mumps;
@@ -3116,6 +3124,7 @@ static PetscErrorCode MatGetFactor_baij_mumps(Mat A,MatFactorType ftype,Mat *F)
   PetscErrorCode ierr;
   Mat_MUMPS      *mumps;
   PetscBool      isSeqBAIJ;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
   /* Create the factorization matrix */
@@ -3154,6 +3163,11 @@ static PetscErrorCode MatGetFactor_baij_mumps(Mat A,MatFactorType ftype,Mat *F)
   /* set solvertype */
   ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(MATSOLVERMUMPS,&B->solvertype);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
+  if (size == 1) {
+    /* MUMPS option can use ordering with "-mat_mumps_icntl_7 1 when sequential so generate the ordering, even if it may not be used */
+    B->useordering = PETSC_TRUE;
+  }
 
   B->ops->destroy = MatDestroy_MUMPS;
   B->data         = (void*)mumps;
@@ -3171,6 +3185,7 @@ static PetscErrorCode MatGetFactor_sell_mumps(Mat A,MatFactorType ftype,Mat *F)
   PetscErrorCode ierr;
   Mat_MUMPS      *mumps;
   PetscBool      isSeqSELL;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
   /* Create the factorization matrix */
@@ -3208,6 +3223,11 @@ static PetscErrorCode MatGetFactor_sell_mumps(Mat A,MatFactorType ftype,Mat *F)
   /* set solvertype */
   ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(MATSOLVERMUMPS,&B->solvertype);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
+  if (size == 1) {
+    /* MUMPS option can use ordering with "-mat_mumps_icntl_7 1 when sequential so generate the ordering, even if it may not be used */
+    B->useordering = PETSC_TRUE;
+  }
 
   B->ops->destroy = MatDestroy_MUMPS;
   B->data         = (void*)mumps;

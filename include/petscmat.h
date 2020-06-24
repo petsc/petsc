@@ -155,6 +155,7 @@ PETSC_EXTERN const char *const MatFactorTypes[];
 
 PETSC_EXTERN PetscErrorCode MatGetFactor(Mat,MatSolverType,MatFactorType,Mat*);
 PETSC_EXTERN PetscErrorCode MatGetFactorAvailable(Mat,MatSolverType,MatFactorType,PetscBool *);
+PETSC_EXTERN PetscErrorCode MatFactorGetUseOrdering(Mat, PetscBool*);
 PETSC_EXTERN PetscErrorCode MatFactorGetSolverType(Mat,MatSolverType*);
 PETSC_EXTERN PetscErrorCode MatGetFactorType(Mat,MatFactorType*);
 PETSC_EXTERN PetscErrorCode MatSetFactorType(Mat,MatFactorType);
@@ -1128,6 +1129,9 @@ PETSC_EXTERN PetscErrorCode MatFindZeroRows(Mat,IS*);
 
    Level: beginner
 
+   Notes:
+      If MATORDERINGEXTERNAL is used then PETSc does not compute an ordering and utilizes one built into the factorization package
+
 .seealso: MatGetOrdering()
 J*/
 typedef const char* MatOrderingType;
@@ -1141,6 +1145,7 @@ typedef const char* MatOrderingType;
 #define MATORDERINGSPECTRAL       "spectral"
 #define MATORDERINGAMD            "amd"            /* only works if UMFPACK is installed with PETSc */
 #define MATORDERINGNATURAL_OR_ND  "natural_or_nd"  /* special coase used for Cholesky and ICC, allows ND when AIJ matrix is used but Natural when SBAIJ is used */
+#define MATORDERINGEXTERNAL       "external"       /* uses an ordering type internal to the factorization package */
 
 PETSC_EXTERN PetscErrorCode MatGetOrdering(Mat,MatOrderingType,IS*,IS*);
 PETSC_EXTERN PetscErrorCode MatGetOrderingList(PetscFunctionList*);

@@ -158,12 +158,15 @@
           <li>Add support for MUMPS-5.3.0 distributed right hand side</li>
           <li>Add support for MatMultHermitianTranspose with SEQAIJCUSPARSE</li>
           <li>Remove default generation of explicit matrix for MatMultTranspose operations with SEQAIJCUSPARSE. Users can still require it via MatSeqAIJCUSPARSESetGenerateTranspose</li>
+          <li>Add MatOrderingType external returns a NULL ordering to allow solver types  MATSOLVERUMFPACK and MATSOLVERCHOLMOD to use their orderings
         </ul>
       <h4>PC:</h4>
         <ul>
           <li>Fix bugs related with reusing PCILU/PCICC/PCLU/PCCHOLESKY preconditioners with SEQAIJCUSPARSE matrices</li>
           <li>GAMG uses MAT_SPD to default to CG for the eigen estimate in Chebyshev smoothers</li>
           <li>Add PCMatApply() for applying a preconditioner to a block of vectors
+          <li>Add -pc_factor_mat_ordering_type external to use ordering methods of MATSOLVERUMFPACK and MATSOLVERCHOLMOD
+          <li>PCSetUp_LU,ILU,Cholesky,ICC() no longer compute an ordering if it is not to be used by the factorization (optimization)
         </ul>
       <h4>KSP:</h4>
         <ul>

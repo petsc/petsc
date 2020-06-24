@@ -72,6 +72,7 @@
 #define MATORDERINGWBM       'wbm'
 #define MATORDERINGSPECTRAL  'spectral'
 #define MATORDERINGAMD       'amd'
+#define MATORDERINGEXTERNAL  'external'
 !
 !  Matrix types
 !

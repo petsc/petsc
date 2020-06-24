@@ -281,7 +281,7 @@ PetscErrorCode PCView_Factor(PC pc,PetscViewer viewer)
 {
   PC_Factor       *factor = (PC_Factor*)pc->data;
   PetscErrorCode  ierr;
-  PetscBool       isstring,iascii,flg;
+  PetscBool       isstring,iascii,flg,useordering;
   MatOrderingType ordering;
 
   PetscFunctionBegin;
@@ -325,6 +325,8 @@ PetscErrorCode PCView_Factor(PC pc,PetscViewer viewer)
     } else {
       ordering = factor->ordering;
     }
+    ierr = MatFactorGetUseOrdering(factor->fact,&useordering);CHKERRQ(ierr);
+    if (!useordering) ordering = "external";
     ierr = PetscViewerASCIIPrintf(viewer,"  matrix ordering: %s\n",ordering);CHKERRQ(ierr);
 
     if (factor->fact) {
